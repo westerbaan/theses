@@ -1,0 +1,103 @@
+\usepackage{xparse}
+\usepackage{xcolor}
+\usepackage{marginnote}
+\usepackage{ifthen}
+\usepackage{calc}
+
+% macros concerning textstyle
+\colorlet{darkblue}{blue!75!black}
+\newcommand{\textParsecHeader}[1]{\textcolor{darkblue}{\textbf{\textsf{#1}}}}
+\newcommand{\textParsecNumber}[1]{\textcolor{darkblue}{\textbf{\textsf{#1}}}}
+
+
+\newcounter{tmp} % used for arithmetic
+
+% The content of this thesis is grouped into numbered paragraphs,
+% which are called "parsecs" (for paragraph--section).
+\newcounter{parsec} % keeps track of the currect parsec number
+
+% The first argument is the label this parsec will have--use \sref 
+% 	to refer to a parsec.
+% The second argument is the header of the parsec, such as "Theorem".
+\NewDocumentEnvironment{parsec}{m g}{%
+	\par\penalty-200\vskip1em\noindent%
+	\refstepcounter{parsec}%
+	% In the footer of every odd page we list the parsecs present on 
+	% the spread.  We pass this information to the footer via the 
+	% \markboth,\leftmark,\rightmark-mechanism, which is normally
+	% used to display the section and subsection names and numbers
+	% in the header.
+	% 	Recall that \leftmark will return the LAST value passed
+	% to the first argument of \markboth on this page. (The difficulty
+	% of implementing \leftmark is that a \markboth that will belong
+	% to the next page can be called before the current page is shipped,
+	% because this \markboth may be part of the text that overflows the
+	% current page.)
+	%	\rightmark will return the FIRST value passed to the second
+	% argument of \markboth on this page.
+	%	Since we would not only like to know if this parsec with number
+	% say  N  is present on this spread, but also whether it spills over 
+	% to the next spread (or has spilled over from the previous spread),
+	% we keep track of whether the parsec started on this spread, 
+	% encoded by  2N,  or whether the parsec ended on this spread,
+	% encoded by  2N+1.
+	\setcounter{tmp}{2*\value{parsec}}%
+	\markboth{\the\value{tmp}}{\the\value{tmp}}%
+	\label{#1}%
+	% Display the parsec number in the margin.
+	\marginnote{\makebox[3em][c]{\textParsecNumber{\the\value{parsec}}}}%
+	% The header of the parsec.
+	\IfValueT{#2}{\textParsecHeader{#2}\ \ }%
+}{%
+	\setcounter{tmp}{2*\value{parsec}+1}%
+	\markboth{\the\value{tmp}}{\the\value{tmp}}%
+}
+
+% Refer to a parsec.
+\newcommand{\sref}[1]{\S\ref{#1}}
+
+
+
+% Adjust footer and header:
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\renewcommand{\headrulewidth}{0pt} % we want no header line
+
+% Since we use \markboth,\leftmark,\rightmark to keep track of the parsecs
+% on a given spread, we should neutralize its old user:
+\renewcommand{\chaptermark}[1]{}  
+\renewcommand{\sectionmark}[1]{}
+
+\fancyhead{}
+
+% These counters are used for computation
+\newcounter{firstParsec}
+\newcounter{lastParsec}
+\newcounter{firstParsecF}
+\newcounter{lastParsecF}
+
+% parsecToBeContinued is 1 if the previous spread spilled a parsec,
+% and 0 otherwise.
+\newcounter{parsecToBeContinued}  
+\setcounter{parsecToBeContinued}{0}
+
+% Set the footer.  It contains the parsecs on this page.
+\fancyfoot[CE]{\setcounter{firstParsecF}{\rightmark}}
+\fancyfoot[CO]{%
+% firstParsecF is already set by the even page that came before
+\setcounter{firstParsec}{\value{firstParsecF}/2}%
+\setcounter{lastParsecF}{\leftmark}%
+\setcounter{lastParsec}{\value{lastParsecF}/2}%
+\textParsecNumber{%
+\ifthenelse{\equal{\value{parsecToBeContinued}}{1}}{..}{}%
+\the\value{firstParsec}%
+\ifthenelse{\equal{\value{firstParsec}}{\value{lastParsec}}}%
+	{}{%
+\setcounter{tmp}{\value{firstParsec}+1}%
+\ifthenelse{\equal{\value{tmp}}{\value{lastParsec}}}{, }{--}%
+\the\value{lastParsec}}%
+\setcounter{tmp}{\value{lastParsec}*2}%
+\ifthenelse{\equal{\value{tmp}}{\value{lastParsecF}}}%
+{..\setcounter{parsecToBeContinued}{1}}%
+{\setcounter{parsecToBeContinued}{0}}%
+}}
