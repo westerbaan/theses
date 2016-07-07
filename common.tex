@@ -3,25 +3,49 @@
 \usepackage{marginnote}
 \usepackage{ifthen}
 \usepackage{calc}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{mathrsfs}
+
+
+\newcommand{\IGNORE}[1]{}
 
 % macros concerning textstyle
 \colorlet{darkblue}{blue!75!black}
+\colorlet{lightblue}{blue!50!white}
+\colorlet{darkgray}{gray!75!black}
+\newcommand{\textPointHeader}[1]{\textcolor{darkblue}{\textsf{#1}}}
 \newcommand{\textParsecHeader}[1]{\textcolor{darkblue}{\textbf{\textsf{#1}}}}
 \newcommand{\textParsecNumber}[1]{\textcolor{darkblue}{\textbf{\textsf{#1}}}}
+\newcommand{\textPointNumber}[1]{\textcolor{lightblue}{\textsf{#1}}}
+\newcommand{\textDefine}[1]{\textcolor{darkblue}{#1}}
+
+\newcommand{\define}[1]{\textDefine{#1}}
+\newcommand{\grayed}[1]{\textcolor{darkgray}{#1}}
+
+
+% Common symbols
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\spec}{\mathrm{sp}}
+\newcommand{\scrA}{\mathscr{A}}
+\newcommand{\scrB}{\mathscr{B}}
+\newcommand{\scrC}{\mathscr{C}}
+\newcommand{\scrH}{\mathscr{H}}
 
 
 \newcounter{tmp} % used for arithmetic
 
 % The content of this thesis is grouped into numbered paragraphs,
-% which are called "parsecs" (for paragraph--section).
-\newcounter{parsec} % keeps track of the currect parsec number
+% which are called "parsecs" (for paragraph--section),
+% and these parsecs contain several points.
+\newcounter{parsec} % keeps track of the current parsec number
 
 % The first argument is the label this parsec will have--use \sref 
 % 	to refer to a parsec.
-% The second argument is the header of the parsec, such as "Theorem".
-\NewDocumentEnvironment{parsec}{m g}{%
+\NewDocumentEnvironment{parsec}{o}{%
 	\par\penalty-200\vskip1em\noindent%
 	\refstepcounter{parsec}%
+	\setcounter{point}{0}%
 	% In the footer of every odd page we list the parsecs present on 
 	% the spread.  We pass this information to the footer via the 
 	% \markboth,\leftmark,\rightmark-mechanism, which is normally
@@ -46,11 +70,29 @@
 	\label{#1}%
 	% Display the parsec number in the margin.
 	\marginnote{\makebox[3em][c]{\textParsecNumber{\the\value{parsec}}}}%
-	% The header of the parsec.
-	\IfValueT{#2}{\textParsecHeader{#2}\ \ }%
 }{%
 	\setcounter{tmp}{2*\value{parsec}+1}%
 	\markboth{\the\value{tmp}}{\the\value{tmp}}%
+}
+
+\newcounter{point} % keeps track of the current point
+\newcounter{pointdepth}  % keeps track of the depth of the current point
+			 % --- points may be nested.
+
+\NewDocumentEnvironment{point}{o g}{%
+	\setcounter{pointdepth}{\value{pointdepth}+1}%
+	\ifthenelse{\equal{\value{point}}{0}}{}{%
+		\par\penalty-100\vskip.3em\noindent%
+		\marginnote{\makebox[1em][c]{%
+			\textPointNumber{\Roman{point}}}}%
+	}%
+	\IfValueT{#2}{\ifthenelse{\equal{\value{point}}{0}}%
+		{\textParsecHeader{#2}}%
+		{\textPointHeader{#2}}%
+	\ \ }%	
+	\refstepcounter{point}%
+}{%
+\setcounter{pointdepth}{\value{pointdepth}-1}%
 }
 
 % Refer to a parsec.
@@ -82,17 +124,21 @@
 \setcounter{parsecToBeContinued}{0}
 
 % Set the footer.  It contains the parsecs on this page.
-\fancyfoot[CE]{\setcounter{firstParsecF}{\rightmark}}
+% We use "\rightmark+0", because \rightmark might be empty.
+\fancyfoot[CE]{\setcounter{firstParsecF}{\rightmark+0}}
 \fancyfoot[CO]{%
 % firstParsecF is already set by the even page that came before
 \setcounter{firstParsec}{\value{firstParsecF}/2}%
-\setcounter{lastParsecF}{\leftmark}%
+\setcounter{lastParsecF}{\leftmark+0}%
+\ifthenelse{\equal{\value{lastParsecF}}{0}}%
+{}% do nothing
+{%
 \setcounter{lastParsec}{\value{lastParsecF}/2}%
 \textParsecNumber{%
 \ifthenelse{\equal{\value{parsecToBeContinued}}{1}}{..}{}%
 \the\value{firstParsec}%
 \ifthenelse{\equal{\value{firstParsec}}{\value{lastParsec}}}%
-	{}{%
+	{}{%  no footer without parsecs
 \setcounter{tmp}{\value{firstParsec}+1}%
 \ifthenelse{\equal{\value{tmp}}{\value{lastParsec}}}{, }{--}%
 \the\value{lastParsec}}%
@@ -100,4 +146,6 @@
 \ifthenelse{\equal{\value{tmp}}{\value{lastParsecF}}}%
 {..\setcounter{parsecToBeContinued}{1}}%
 {\setcounter{parsecToBeContinued}{0}}%
-}}
+}% \textParsecNumber{
+}% \ifthenelse{
+}% \fancyfoot[CO]{
