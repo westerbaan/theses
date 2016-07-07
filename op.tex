@@ -1,0 +1,134 @@
+\documentclass[main]{subfiles}
+\begin{document}
+\begin{parsec}%
+\begin{point}{Definition}%
+A \define{$C^*$-algebra}
+is a complex vector space~$\scrA$
+endowed with
+\begin{enumerate}
+\item
+a binary operation,
+called \define{multiplication}
+(and denoted as such),
+which is associative, and linear in both coordinates;
+\item
+an element~$1$, called \define{unit},
+such that $1\cdot a = a = a\cdot 1$
+for all~$a\in \scrA$;
+\item
+a unary operation $(\,\cdot\,)^*$,
+called \define{involution},
+such that $(a^*)^*=a$,
+$(ab)^*=b^*a^*$,
+$(\lambda a)^* = \bar\lambda a^*$,
+and $(a+b)^* = a^*+b^*$
+for all~$a,b\in\scrA$ and~$\lambda\in \C$;
+\item
+a complete \define{norm} $\|\,\cdot\,\|$
+such that
+$\|ab\|\leq\|a\|\|b\|$
+for all~$a,b\in\scrA$,
+and 
+\begin{equation*}
+\label{eq:Cstar-identity}
+\|a^*a\|\ =\ \|a\|^2
+\end{equation*}
+holds, which is called the \define{$C^*$-identity}.
+\end{enumerate}
+The $C^*$-algebra $\scrA$ is called \define{commutative}
+if $ab=ba$ for all~$a,b\in\scrA$.
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}{Examples}%
+The set~$\C$ of \define{complex numbers}
+forms a commutative  $C^*$-algebra
+in which addition, (scalar) multiplication, and~$1$
+have their usual meaning.
+Involution is given by conjugation ($z^*=\bar{z}$),
+and norm by modulus ($\|z\|=|z|$).
+\begin{point}%
+Let~$X$ be a compact Hausdorff space.
+The set $\define{C(X)}$ of \define{continuous functions}
+from~$\scrA$ to~$\C$
+forms a commutative $C^*$-algebra
+when addition, (scalar) multiplication, involution and~$1$ are
+interpretted coordinatewise \grayed{(e.g.~$(f+g)(x)=f(x)+g(x)$)},
+and the norm is taken to be 
+$\|f\|=\sup_{x\in X} |f(x)|$
+(the \define{sup-norm}).
+\begin{point}%
+The set~$\scrB(\scrH)$ of bounded operators
+on a Hilbert space~$\scrH$ forms a $C^*$-algebra.
+\end{point}
+\end{point}
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}{Definition}
+An element $a$ of a $C^*$-algebra $\scrA$ is called
+\begin{enumerate}
+\item \define{self-adjoint} if $a^* =a$;
+\item \define{positive}
+if $a\equiv b^*b$ for some $b\in \scrA$;
+\item a \define{projection} if $a=a^*a$;
+\item \define{central} if $ab=ba$ for all~$b\in\scrA$.
+\end{enumerate}
+\end{point}
+\end{parsec}
+%
+% morphisms between C^*-algebras
+%
+\begin{parsec}
+\begin{point}{Definition}
+A linear map $f\colon \scrA \to \scrB$
+between $C^*$-algebras
+is called
+\begin{enumerate}
+\item
+\define{\textbf{m}ultiplicative}
+if $f(ab)=f(a)f(b)$ for all $a,b\in\scrA$;
+\item
+\define{\textbf{i}nvolutive}
+if $f(a^*)=f(a)^*$ for all~$a\in\scrA$;
+\item
+\define{\textbf{p}ositive}
+if $f(a)$ is positive
+for every positive $a\in\scrA$, and
+\item
+\define{\textbf{u}nital}
+if $f(1)=1$.
+\end{enumerate}
+\end{point}
+\begin{point}%
+We use the bold letters as abbreviations,
+so for instance,
+$f$ is \define{pu} if it is positive and unital,
+and a \define{miu-map}
+is a multiplicative, involutive, unital linear map between $C^*$-algebras,
+(which is usually called a \define{unital $*$-homomorphism}.)
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}{Gelfand's Representation Theorem}%
+Let~$\scrA$ be a commutative $C^*$-algebra.
+\begin{enumerate}
+\item
+The \define{spectrum} of~$\scrA$, \define{$\spec(\scrA)$},
+the set 
+of miu-maps $\scrA\to \C$
+endowed with the topology of pointwise convergence,
+is a compact Hausdorff space.
+
+\item
+The \define{Gelfand transform},
+the map $\gamma\colon \scrA\to C(\spec(\scrA))$
+given by $\gamma(a)(\varphi)=\varphi(a)$,
+is an isomorphism.
+\end{enumerate}
+\end{point}
+\end{parsec}
+
+
+\end{document}
