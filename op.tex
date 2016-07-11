@@ -110,7 +110,7 @@ is a multiplicative, involutive, unital linear map between $C^*$-algebras,
 \end{point}
 \end{parsec}
 
-\begin{parsec}%
+\begin{parsec}[gelfand]%
 \begin{point}{Gelfand's Representation Theorem}%
 Let~$\scrA$ be a commutative $C^*$-algebra.
 \begin{enumerate}
@@ -129,6 +129,146 @@ is an isomorphism.
 \end{enumerate}
 \end{point}
 \end{parsec}
+
+\begin{parsec}[cstar-square]%
+\begin{point}{Corollary}%
+For each positive element~$a$ of a $C^*$-algebra~$\scrA$,
+there is a unique positive element~\define{$\sqrt{a}$} of~$\scrA$
+with $(\sqrt{a})^2 = a$.
+
+\begin{point}[cstar-square-commutes]%
+Moreover,
+if $b\in \scrA$ commutes with~$a$,
+then~$b$ commutes with~$\sqrt{a}$.
+\end{point}
+\end{point}
+\end{parsec}
+
+\begin{parsec}[ad-is-monotone]%
+\begin{point}{Exercise}%
+Prove that $b\leq c\implies a^*ba \leq a^*ca$
+for $a,b,c$ from a $C^*$-algebra.
+\end{point}
+\end{parsec}
+
+%
+% Suprema in a von Neumann algebra
+%
+\begin{parsec}[vna-suprema]%
+\begin{point}{Lemma}%
+Let~$D$ be a directed set of self-adjoint elements
+of a von Neumann algebra~$\scrA$
+(so $D\subseteq \sa{\scrA}$).
+Then~$D$ has a supremum, $\bigvee D$
+(in $\sa{\scrA}$.)
+\begin{point}[vna-supremum-commutes]%
+Moreover, 
+if $a\in\scrA$ commutes with all~$d\in D$,
+then $a$ commutes with~$\bigvee D$.
+\end{point}
+\end{point}
+\begin{point}{Proof}%
+\TODO{Prove}
+\end{point}
+\end{parsec}
+
+
+\begin{parsec}[ad-contraposed]%
+\begin{point}{Lemma}%
+Let~$a$ be an element of a $C^*$-algebra~$\scrA$
+with $\|a\|\leq 1$,
+and let~$p$ and~$q$ be projections on~$\scrA$.
+Then 
+$a^* p a \leq q^\perp$
+iff $paq=0$
+iff  $aqa^*\leq p^\perp$.
+\end{point}
+\begin{point}{Proof}%
+Suppose that~$a^*pa\leq q^\perp$.
+Then we have $q a^*pa q \leq qq^\perp q = 0$
+(see \sref{ad-is-monotone})
+and so $paq=0$,
+because $\|paq\|^2=\|(paq)^*paq\|=0$
+by the $C^*$-identity.
+Applying $(\,\cdot\,)^*$,
+we get $qa^*p=0$, and so both $qa^* = qa^*p^\perp$
+and $aq = p^\perp aq$, giving
+us $aqa^* = p^\perp a q a^* p^\perp 
+\leq p^\perp$,
+where we used that $aqa^*\leq aa^*\leq \|aa^*\|=\|a\|^2\leq 1$.
+By a similar reasoning,
+we get $aqa^*\leq p^\perp \implies paq=0\implies a^*pa\leq q^\perp$.
+\end{point}
+\begin{point}[projection-above-effect]{Corollary}%
+Let~$a$ be an effect of a $C^*$-algebra~$\scrA$,
+and let~$p$ be a projection from~$\scrA$.
+Then $a\leq p$ iff $ap=p$ iff $pa=p$ iff $ap^\perp=0$ iff $p^\perp a=0$.
+\end{point}
+\end{parsec}
+
+%
+% Projections
+%
+\begin{parsec}%
+\begin{point}{Proposition}%
+Above every effect~$b$ of a von Neumann algebra~$\scrA$,
+there is a smallest projection, \define{$\ceil{b}$},
+called the \define{ceiling} of~$b$,
+ given by $\ceil{b}=\bigvee_{n=0}^\infty b^{\nicefrac{1}{2^n}}$.
+\begin{point}[vna-ceil-commutes]%
+Moreover, if $a\in \scrA$ commutes with $b$,
+then~$a$ commutes with~$\ceil{b}$.
+\end{point}
+\end{point}
+\begin{point}{Proof}
+Let~$p$ denote the supremum of~$0\leq b\leq b^{\nicefrac{1}{2}}\leq
+b^{\nicefrac{1}{4}}\leq\dotsb\leq 1$.
+
+\begin{point}[vna-ceil-point-1]%
+To begin,
+note that if~$a\in \scrA$
+commutes with~$b$,
+then~$a$ commutes with~$p$.
+Indeed, for such~$a$ we have~$a\sqrt{b}=\sqrt{b}a$
+by~\sref{cstar-square-commutes},
+and so $a b^{\nicefrac{1}{2^n}} = b^{\nicefrac{1}{2^n}} a$
+for each~$n$
+by induction.
+Thus~$ap=pa$ by~\sref{vna-supremum-commutes}.
+\end{point}
+\begin{point}%
+To see that~$p$ is a projection,
+it suffices 
+(by~\sref{gelfand})
+to show that~$p^3=p$
+since~$p$ is positive.
+Note that, because~$b^{\nicefrac{1}{2}}=\sqrt{b}$
+commutes with~$b$,
+we see that~$\sqrt{b}$ commutes 
+with~$p$ (by~\sref{vna-ceil-point-1}.)
+Thus $bp = \sqrt{b}\,p\,\sqrt{b}
+=\bigvee_{n=0}^\infty \sqrt{b} \,b^{\nicefrac{1}{2^n}}\,\sqrt{b} = p$
+by~\sref{vna-ad-supremum}.
+Similarly, for each~$n$,
+we get $b^{\nicefrac{1}{2^n}} p = p = p b^{\nicefrac{1}{2^n}}$,
+thus $ p\, b^{\nicefrac{1}{2^n}}\,p=p$,
+and so $p^3 = \bigvee_n p\,b^{\nicefrac{1}{2^n}} \,p = p$.
+Thus~$p$ is a projection.
+\end{point}
+\begin{point}%
+It remains to be shown that~$p$ is the \emph{least} projection
+above~$b$.
+Let~$q$ be a projection in~$\scrA$ with $b\leq q$;
+we must show that~$q\leq p$.
+Since~$q$ commutes with~$b$ (by~\sref{projection-above-effect}),
+we have $b^{\nicefrac{1}{2}}\leq q$ 
+(by Gelfand's Representation Theorem, \sref{gelfand}.)
+Since by induction $b^{\nicefrac{1}{2^n}}\leq q$ for all~$n$,
+we get $p\leq q$ by definition of~$p$.
+\end{point}
+\end{point}
+\end{parsec}
+
 
 
 \end{document}

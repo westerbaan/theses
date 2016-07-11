@@ -6,6 +6,7 @@
 \usepackage{amssymb}
 \usepackage{amsmath}
 \usepackage{mathrsfs}
+\usepackage{nicefrac}
 
 
 \newcommand{\IGNORE}[1]{}
@@ -14,23 +15,33 @@
 \colorlet{darkblue}{blue!75!black}
 \colorlet{lightblue}{blue!50!white}
 \colorlet{darkgray}{gray!75!black}
+\colorlet{darkred}{red!75!black}
 \newcommand{\textPointHeader}[1]{\textcolor{darkblue}{\textsf{#1}}}
 \newcommand{\textParsecHeader}[1]{\textcolor{darkblue}{\textbf{\textsf{#1}}}}
 \newcommand{\textParsecNumber}[1]{\textcolor{darkblue}{\textbf{\textsf{#1}}}}
 \newcommand{\textPointNumber}[1]{\textcolor{lightblue}{\textsf{#1}}}
 \newcommand{\textDefine}[1]{\textcolor{darkblue}{#1}}
+\newcommand{\textSref}[1]{\textsf{#1}}
+\newcommand{\textTodo}[1]{\textcolor{darkred}{#1}}
 
+\newcommand{\TODO}[1]{\textTodo{\textbf{TODO}:\ #1}}
 \newcommand{\define}[1]{\textDefine{#1}}
 \newcommand{\grayed}[1]{\textcolor{darkgray}{#1}}
 
 
 % Common symbols
 \newcommand{\C}{\mathbb{C}}
+\newcommand{\R}{\mathbb{R}}
 \newcommand{\spec}{\mathrm{sp}}
 \newcommand{\scrA}{\mathscr{A}}
 \newcommand{\scrB}{\mathscr{B}}
 \newcommand{\scrC}{\mathscr{C}}
 \newcommand{\scrH}{\mathscr{H}}
+
+\newcommand{\ceil}[1]{\left\lceil#1\right\rceil}
+\newcommand{\floor}[1]{\left\lfloor#1\right\rfloor}
+
+\newcommand{\sa}[1]{#1_{\R}}
 
 
 \newcounter{tmp} % used for arithmetic
@@ -76,29 +87,29 @@
 }
 
 \newcounter{point} % keeps track of the current point
+\renewcommand{\thepoint}{\theparsec\Roman{point}}
 \newcounter{pointdepth}  % keeps track of the depth of the current point
 			 % --- points may be nested.
 
 \NewDocumentEnvironment{point}{o g}{%
 	\setcounter{pointdepth}{\value{pointdepth}+1}%
-	\ifthenelse{\equal{\value{point}}{0}}{}{%
+	\refstepcounter{point}%
+	\IfValueT{#1}{\label{#1}}%
+	\ifthenelse{\equal{\value{point}}{1}}{}{%
 		\par\penalty-100\vskip.3em\noindent%
 		\marginnote{\makebox[1em][c]{%
 			\textPointNumber{\Roman{point}}}}%
 	}%
-	\IfValueT{#2}{\ifthenelse{\equal{\value{point}}{0}}%
+	\IfValueT{#2}{\ifthenelse{\equal{\value{point}}{1}}%
 		{\textParsecHeader{#2}}%
 		{\textPointHeader{#2}}%
 	\ \ }%	
-	\refstepcounter{point}%
 }{%
 \setcounter{pointdepth}{\value{pointdepth}-1}%
 }
 
 % Refer to a parsec.
-\newcommand{\sref}[1]{\S\ref{#1}}
-
-
+\NewDocumentCommand{\sref}{m}{\textSref{\ref{#1}}}
 
 % Adjust footer and header:
 \usepackage{fancyhdr}
