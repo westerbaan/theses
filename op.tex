@@ -143,20 +143,21 @@ then~$b$ commutes with~$\sqrt{a}$.
 \end{point}
 \end{point}
 \end{parsec}
-
-\begin{parsec}[ad-is-monotone]%
+%
+%
+%
+\begin{parsec}[ad-monotone]%
 \begin{point}{Exercise}%
 Prove that $b\leq c\implies a^*ba \leq a^*ca$
 for $a,b,c$ from a $C^*$-algebra.
 \end{point}
 \end{parsec}
-
 %
 % Suprema in a von Neumann algebra
 %
 \begin{parsec}[vna-suprema]%
 \begin{point}{Lemma}%
-Let~$D$ be a directed set of self-adjoint elements
+Let~$D$ be a bounded directed set of self-adjoint elements
 of a von Neumann algebra~$\scrA$
 (so $D\subseteq \sa{\scrA}$).
 Then~$D$ has a supremum, $\bigvee D$
@@ -168,9 +169,33 @@ then $a$ commutes with~$\bigvee D$.
 \end{point}
 \end{point}
 \begin{point}{Proof}%
-\TODO{Prove}
+\TODO{}
 \end{point}
 \end{parsec}
+%
+%
+%
+\begin{parsec}[ad-normal]%
+\begin{point}{Proposition}%
+Let~$a$ be an element of a von Neumann algebra~$\scrA$.
+Then~$\bigvee_{d\in D} a^*\,d\,a = a^*\,(\bigvee D)\, a$
+for every bounded directed subset~$D$ of self-adjoint
+elements of~$\scrA$.
+\end{point}
+\begin{point}{Proof}%
+If~$a$ is invertible,
+then the (by~\sref{ad-monotone}) order preserving map $b\mapsto a^*ba$
+has an order preserving inverse (namely $b\mapsto (a^{-1})^* b a^{-1}$),
+and therefor preserves all suprema.
+\begin{point}%
+The general case (in which~$a$ need not be invertible)
+requires more effort.
+
+
+\end{point}
+\end{point}
+\end{parsec}
+
 
 
 \begin{parsec}[ad-contraposed]%
@@ -186,7 +211,7 @@ iff  $aqa^*\leq p^\perp$.
 \begin{point}{Proof}%
 Suppose that~$a^*pa\leq q^\perp$.
 Then we have $q a^*pa q \leq qq^\perp q = 0$
-(see \sref{ad-is-monotone})
+(see \sref{ad-monotone})
 and so $paq=0$,
 because $\|paq\|^2=\|(paq)^*paq\|=0$
 by the $C^*$-identity.
@@ -248,7 +273,7 @@ we see that~$\sqrt{b}$ commutes
 with~$p$ (by~\sref{vna-ceil-point-1}.)
 Thus $bp = \sqrt{b}\,p\,\sqrt{b}
 =\bigvee_{n=0}^\infty \sqrt{b} \,b^{\nicefrac{1}{2^n}}\,\sqrt{b} = p$
-by~\sref{vna-ad-supremum}.
+by~\sref{ad-normal}.
 Similarly, for each~$n$,
 we get $b^{\nicefrac{1}{2^n}} p = p = p b^{\nicefrac{1}{2^n}}$,
 thus $ p\, b^{\nicefrac{1}{2^n}}\,p=p$,
