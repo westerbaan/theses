@@ -109,6 +109,66 @@ is a multiplicative, involutive, unital linear map between $C^*$-algebras,
 (which is usually called a \define{unital $*$-homomorphism}.)
 \end{point}
 \end{parsec}
+%
+%
+%
+\begin{parsec}[ad-monotone]%
+\begin{point}{Exercise}%
+Show that~$a^*ba$
+is positive
+when~$b$ is a positive of a $C^*$-algebra~$\scrA$,
+and $a\in \scrA$ is any element.
+\end{point}
+\end{parsec}
+
+%
+% geometric series 
+%
+\begin{parsec}[geometric]%
+\begin{point}{Lemma}%
+Let~$a$ be an element of a $C^*$-algebra~$\scrA$ with~$\|a\|<1$.
+Then~$a^\perp=1-a$ has an inverse,
+namely~$(a^\perp)^{-1}= \sum_{n=0}^\infty\, a^n$
+(norm convergence).
+\end{point}
+\begin{point}{Proof}%
+Note that
+$(1-\|a\|)\,(1+\|a\|+\|a\|^2+\dotsb+\|a\|^N) \,=\, 1-\|a\|^{N+1}$,
+and so 
+\begin{equation*}
+\sum_{n=0}^N \|a\|^n \ =\  \frac{1-\|a\|^{N+1}}{1-\|a\|}
+\end{equation*}
+for every~$N$.
+Thus,
+since $\|a\|^N$ converges to~$0$
+(by~\TODO{} because $\|a\|<1$),
+we  get $\sum_{n=0}^\infty \|a\|^n = (1-\|a\|)^{-1}$.
+
+\begin{point}%
+Note that $a^N$ norm converges to~$0$,
+because $\|a\|^N$ converges to~$0$.
+Also (but slightly less obvious),
+$\sum_n a^n$ norm converges,
+because~$\sum_n \|a\|^n$ converges.
+\end{point}
+\begin{point}%
+Thus, taking the norm limit
+on both sides of $(1-a)(1+a+a^2+\dotsb a^N) = 1-a^{N+1}$,
+gives us $(1-a)(\sum_n a^n) = 1$.
+Since we can derive $(\sum_n a^n)(1-a) = 1$
+in a similar manner, 
+we see that $\sum_n a^n$ is the inverse of~$1-a$.
+\end{point}
+\end{point}
+\begin{point}[spectrum-bounded]{Exercise}
+Deduce from the result above that $a-\lambda$ is invertible
+when~$|\lambda|>\|a\|$,
+where~$a$ is an element of a $C^*$-algebra~$\scrA$,
+and~$\lambda\in\C$.
+\end{point}
+\end{parsec}
+
+
 
 \begin{parsec}[gelfand]%
 \begin{point}{Gelfand's Representation Theorem}%
@@ -129,7 +189,9 @@ is an isomorphism.
 \end{enumerate}
 \end{point}
 \end{parsec}
-
+%
+% square root
+%
 \begin{parsec}[cstar-square]%
 \begin{point}{Corollary}%
 For each positive element~$a$ of a $C^*$-algebra~$\scrA$,
@@ -143,15 +205,42 @@ then~$b$ commutes with~$\sqrt{a}$.
 \end{point}
 \end{point}
 \end{parsec}
+
 %
+% von Neumann algebras
 %
-%
-\begin{parsec}[ad-monotone]%
-\begin{point}{Exercise}%
-Prove that $b\leq c\implies a^*ba \leq a^*ca$
-for $a,b,c$ from a $C^*$-algebra.
+\begin{parsec}[vna]%
+\begin{point}{Definition}%
+A $C^*$-algebra~$\scrA$
+is a \define{von Neumann algebra}
+when
+\begin{enumerate}
+\item
+every bounded directed subset~$D$
+of self-adjoint elements of~$\scrA$ (so $D\subseteq \sa{\scrA}$) 
+has a supremum $\bigvee D$ in $\sa{\scrA}$, and
+\item
+if $a$ is a positive element of~$\scrA$
+with $\omega(a)=0$ for every \emph{normal} (see below) positive 
+linear map $\omega\colon \scrA\to \C$,
+then~$a=0$.
+\end{enumerate}
+\begin{point}%
+A positive linear map $\omega\colon \scrA\to \C$
+is called \define{normal}
+if $\omega(\bigvee D) = \bigvee_{d\in D} \omega(d)$
+for every bounded directed subset of self-adjoint elements of~$D$
+which has a supremum $\bigvee D$ in $\sa{\scrA}$.
+\end{point}%
+\begin{point}%
+The \define{ultraweak topology} on $\scrA$
+is the least topology on~$\scrA$
+that makes all normal positive linear maps $\omega\colon \scrA\to \C$
+continuous.
+\end{point}
 \end{point}
 \end{parsec}
+
 %
 % Suprema in a von Neumann algebra
 %
@@ -173,7 +262,37 @@ then $a$ commutes with~$\bigvee D$.
 \end{point}
 \end{parsec}
 %
+% multiplication turns suprema into ultraweak limits
 %
+\begin{parsec}%
+\begin{point}{Lemma}%
+Let~$D$ be a bounded directed subset of self-adjoint
+elements of a von Neumann algebra~$\scrA$,
+and let~$a\in \scrA$.
+Then~$a^*d$ converges ultraweakly to $a^*\bigvee D$.
+\end{point}
+\begin{point}{Proof}%
+Let~$\omega\colon \scrA\to \C$ be a normal positive linear map,
+and let~$d \in D$.
+Then by~\TODO{} we have,
+writing $s:=\bigvee D$,
+\begin{alignat*}{3}
+|\,\omega(\, a^*s\,-\,a^*d\,)\, |^2
+\ &=\  |\,\omega(\ (\,\sqrt{s-d}\,a\,)^*\ \sqrt{s-d}\ )\,|^2\\
+\ &\leq\ 
+\omega(\,a^*\,(s-d)\,a\,)\ \omega(s-d) \\
+\ &\leq\ 
+2(\sup_{d'\in D}\|d'
+\|)\ 
+\omega(\,a^*a\,)\ 
+\omega(s-d).
+\end{alignat*}
+Thus~$\omega(a^*s-a^*d)$ converges to~$0$.
+Hence~$a^*d$ converges ultraweakly to~$a^*s$.
+\end{point}
+\end{parsec}
+%
+%  ad is normal
 %
 \begin{parsec}[ad-normal]%
 \begin{point}{Proposition}%
@@ -182,16 +301,31 @@ Then~$\bigvee_{d\in D} a^*\,d\,a = a^*\,(\bigvee D)\, a$
 for every bounded directed subset~$D$ of self-adjoint
 elements of~$\scrA$.
 \end{point}
-\begin{point}{Proof}%
+\begin{point}[ad-normal-1]{Proof}%
 If~$a$ is invertible,
 then the (by~\sref{ad-monotone}) order preserving map $b\mapsto a^*ba$
 has an order preserving inverse (namely $b\mapsto (a^{-1})^* b a^{-1}$),
 and therefor preserves all suprema.
 \begin{point}%
-The general case (in which~$a$ need not be invertible)
-requires more effort.
-
-
+The general case reduces to the case that~$a$ 
+is invertible
+in the following way.
+There is (by~\sref{spectrum-bounded})
+ $\lambda>0$ such that $\lambda+a$ is invertible.
+Then 
+\begin{equation*}
+a^*\,d\,a \ \equiv\  (\lambda+a)^*\,d\,(\lambda+a) \,-\,
+ \lambda^2 \,-\, \lambda a^*d \,-\, \lambda da.
+\end{equation*}
+converges ultraweakly
+to~$a^* \,(\bigvee D)\,a$,
+because $(\lambda+a)^*\,d\,(\lambda+a)$
+converges ultraweakly to $(\lambda+a)^*\,(\bigvee D)\,(\lambda+a)$
+by~\sref{ad-normal-1} and~\TODO{},
+and $a^*d+da$ converges ultraweakly to $a^*(\bigvee D)+(\bigvee D)a$
+by~\sref{}.
+Hence~$\bigvee_{d\in D} a^* \,d\, a = a^*\,(\bigvee D)\,a$
+by~\sref{}.
 \end{point}
 \end{point}
 \end{parsec}
