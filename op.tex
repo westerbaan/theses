@@ -167,6 +167,21 @@ where~$a$ is an element of a $C^*$-algebra~$\scrA$,
 and~$\lambda\in\C$.
 \end{point}
 \end{parsec}
+%
+%  Cauchy--Schwarz for positive functionals
+%
+\begin{parsec}[cstar-cs]%
+\begin{point}{Lemma}%
+Let~$\scrA$ be a $C^*$-algebra,
+and let~$f\colon \scrA\to \C$ be a positive linear map.\\
+Then, for all~$a,b\in\scrA$,\quad
+$\left|f(a^*b)\right|^2 \ \leq\ f(a^*a)\,f(b^*b)$.
+\end{point}
+\begin{point}{Proof}%
+\TODO{give; NB: it is not trivial that~$f$ is involutive}
+\end{point}
+\end{parsec}
+
 
 
 
@@ -205,6 +220,16 @@ then~$b$ commutes with~$\sqrt{a}$.
 \end{point}
 \end{point}
 \end{parsec}
+%
+%
+%
+\begin{parsec}%
+\begin{point}{Exercise}
+Show that a positive map between $C^*$-algebras
+is involutive.
+\end{point}
+\end{parsec}
+
 
 %
 % von Neumann algebras
@@ -240,55 +265,57 @@ continuous.
 \end{point}
 \end{point}
 \end{parsec}
-
-%
-% Suprema in a von Neumann algebra
-%
-\begin{parsec}[vna-suprema]%
-\begin{point}{Lemma}%
-Let~$D$ be a bounded directed set of self-adjoint elements
-of a von Neumann algebra~$\scrA$
-(so $D\subseteq \sa{\scrA}$).
-Then~$D$ has a supremum, $\bigvee D$
-(in $\sa{\scrA}$.)
-\begin{point}[vna-supremum-commutes]%
-Moreover, 
-if $a\in\scrA$ commutes with all~$d\in D$,
-then $a$ commutes with~$\bigvee D$.
-\end{point}
-\end{point}
-\begin{point}{Proof}%
-\TODO{}
-\end{point}
-\end{parsec}
 %
 % multiplication turns suprema into ultraweak limits
 %
-\begin{parsec}%
+\begin{parsec}[vanishing-effects]%
 \begin{point}{Lemma}%
-Let~$D$ be a bounded directed subset of self-adjoint
-elements of a von Neumann algebra~$\scrA$,
-and let~$a\in \scrA$.
-Then~$a^*d$ converges ultraweakly to $a^*\bigvee D$.
+Let~$(x_\alpha)_\alpha$ be 
+a net of effects of a von Neumann algebra~$\scrA$
+which converges ultraweakly to~$0$.
+Then $(x_\alpha a)_\alpha$ converges ultraweakly
+to $0$ for every~$a\in\scrA$.
 \end{point}
 \begin{point}{Proof}%
-Let~$\omega\colon \scrA\to \C$ be a normal positive linear map,
-and let~$d \in D$.
-Then by~\TODO{} we have,
-writing $s:=\bigvee D$,
+Let~$\omega\colon \scrA\to \C$ be a normal positive linear map.
+We have, for each~$\alpha$,
 \begin{alignat*}{3}
-|\,\omega(\, a^*s\,-\,a^*d\,)\, |^2
-\ &=\  |\,\omega(\ (\,\sqrt{s-d}\,a\,)^*\ \sqrt{s-d}\ )\,|^2\\
+\left|\,\omega(x_\alpha a)\,\right|^2
+\ &=\ 
+\left|\, \omega(\,\sqrt{x_\alpha}\,\sqrt{x_\alpha}\,a\,)\, \right|^2
+\qquad&&\text{since $x_\alpha\geq 0$}\\
 \ &\leq\ 
-\omega(\,a^*\,(s-d)\,a\,)\ \omega(s-d) \\
+\omega(x_\alpha)\  \omega(\,a^* x_\alpha a\,) 
+\qquad&&\text{by \sref{cstar-cs}}\\
 \ &\leq\ 
-2(\sup_{d'\in D}\|d'
-\|)\ 
-\omega(\,a^*a\,)\ 
-\omega(s-d).
+\omega(x_\alpha)\ \omega(a^*a)
+\qquad&&\text{since $x_\alpha\leq 1$}.
 \end{alignat*}
-Thus~$\omega(a^*s-a^*d)$ converges to~$0$.
-Hence~$a^*d$ converges ultraweakly to~$a^*s$.
+Thus,
+since $(\omega(x_\alpha))_\alpha$
+converges to~$0$,
+we see that $(\omega(x_\alpha a))_\alpha$
+converges to~$0$,
+and so $(x_\alpha a)_\alpha$ converges ultraweakly to~$0$.
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}{Exercise}
+Let~$D$ be a bounded directed set of self-adjoint
+elements of a von Neumann algebra~$\scrA$,
+and let~$a\in \scrA$.
+\begin{point}[vna-supremum-uwlimit]%
+Show that the net~$(d)_{d\in D}$ converges ultraweakly to~$\bigvee D$.
+\end{point}
+\begin{point}[vna-supremum-mult]%
+Use~\sref{vanishing-effects}
+to show that $(da)_d$ converges ultraweakly to~$(\bigvee D)a$,
+and that~$(a^*d)_d$ converges ultraweakly to~$a^* (\bigvee D)$.
+\end{point}
+\begin{point}[vna-supremum-commutes]%
+Show that if~$ad=da$ for all~$d\in D$,
+then $a(\bigvee D) = (\bigvee D)a $.
+\end{point}
 \end{point}
 \end{parsec}
 %
@@ -312,20 +339,20 @@ is invertible
 in the following way.
 There is (by~\sref{spectrum-bounded})
  $\lambda>0$ such that $\lambda+a$ is invertible.
-Then 
+Then as $d$ increases 
 \begin{equation*}
 a^*\,d\,a \ \equiv\  (\lambda+a)^*\,d\,(\lambda+a) \,-\,
- \lambda^2 \,-\, \lambda a^*d \,-\, \lambda da.
+ \lambda^2 \,-\, \lambda a^*d \,-\, \lambda da
 \end{equation*}
 converges ultraweakly
 to~$a^* \,(\bigvee D)\,a$,
-because $(\lambda+a)^*\,d\,(\lambda+a)$
+because $(\ (\lambda+a)^*\,d\,(\lambda+a)\ )_d$
 converges ultraweakly to $(\lambda+a)^*\,(\bigvee D)\,(\lambda+a)$
-by~\sref{ad-normal-1} and~\TODO{},
-and $a^*d+da$ converges ultraweakly to $a^*(\bigvee D)+(\bigvee D)a$
-by~\sref{}.
-Hence~$\bigvee_{d\in D} a^* \,d\, a = a^*\,(\bigvee D)\,a$
-by~\sref{}.
+by~\sref{ad-normal-1} and~\sref{vna-supremum-uwlimit},
+and $(a^*d+da)_d$ converges ultraweakly to $a^*(\bigvee D)+(\bigvee D)a$
+by~\sref{vna-supremum-mult}.
+Since~$(a^*da)_d$ converges to~$\bigvee_{d\in D} a^*d a$ too,
+we conclude that~$\bigvee_{d\in D} a^* \,d\, a = a^*\,(\bigvee D)\,a$.
 \end{point}
 \end{point}
 \end{parsec}
