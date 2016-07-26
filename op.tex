@@ -409,7 +409,6 @@ then~$a$ commutes with~$\ceil{b}$.
 \begin{point}{Proof}
 Let~$p$ denote the supremum of~$0\leq b\leq b^{\nicefrac{1}{2}}\leq
 b^{\nicefrac{1}{4}}\leq\dotsb\leq 1$.
-
 \begin{point}[vna-ceil-point-1]%
 To begin,
 note that if~$a\in \scrA$
@@ -423,23 +422,23 @@ by induction.
 Thus~$ap=pa$ by~\sref{vna-supremum-commutes}.
 \end{point}
 \begin{point}%
-To see that~$p$ is a projection,
-it suffices 
-(by~\sref{gelfand})
-to show that~$p^3=p$
-since~$p$ is positive.
-Note that, because~$b^{\nicefrac{1}{2}}=\sqrt{b}$
-commutes with~$b$,
-we see that~$\sqrt{b}$ commutes 
-with~$p$ (by~\sref{vna-ceil-point-1}.)
-Thus $bp = \sqrt{b}\,p\,\sqrt{b}
-=\bigvee_{n=0}^\infty \sqrt{b} \,b^{\nicefrac{1}{2^n}}\,\sqrt{b} = p$
-by~\sref{ad-normal}.
-Similarly, for each~$n$,
-we get $b^{\nicefrac{1}{2^n}} p = p = p b^{\nicefrac{1}{2^n}}$,
-thus $ p\, b^{\nicefrac{1}{2^n}}\,p=p$,
-and so $p^3 = \bigvee_n p\,b^{\nicefrac{1}{2^n}} \,p = p$.
-Thus~$p$ is a projection.
+Let us prove that~$p$ is a projection, c.q.~$p^2=p$. 
+Since~$p\leq 1$, we already have $p^2\equiv \sqrt{p}p\sqrt{p}\leq p$
+by~\sref{ad-monotone},
+and so we only need to show that $p\leq p^2$. We have:
+\begin{alignat*}{3}
+ p^2 \ &=\  \textstyle \bigvee_m \sqrt{p} \,b^{\nicefrac{1}{2^m}} \,\sqrt{p}
+\qquad&&\text{by \sref{ad-normal}} \\
+&=\ \textstyle\bigvee_m b^{\nicefrac{1}{2^{m+1}}}\, p\,
+b^{\nicefrac{1}{2^{m+1}}} 
+\qquad&&\text{by \sref{vna-ceil-point-1} and \sref{cstar-square-commutes}} \\
+&=\ \textstyle \bigvee_m \bigvee_n \, 
+b^{\nicefrac{1}{2^{m+1}}}\, b^{\nicefrac{1}{2^n}}\,
+b^{\nicefrac{1}{2^{m+1}}} \qquad && \text{by \sref{ad-normal}}
+\end{alignat*}
+Thus $p^2 \geq b^{\nicefrac{1}{2^k}}$
+for each~$k$ (taking $n=m=k+1$,)
+and so~$p^2 \geq p$.
 \end{point}
 \begin{point}%
 It remains to be shown that~$p$ is the \emph{least} projection
