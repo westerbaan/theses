@@ -385,14 +385,37 @@ where we used that $aqa^*\leq aa^*\leq \|aa^*\|=\|a\|^2\leq 1$.
 By a similar reasoning,
 we get $aqa^*\leq p^\perp \implies paq=0\implies a^*pa\leq q^\perp$.
 \end{point}
-\begin{point}[projection-above-effect]{Corollary}%
+\end{parsec}
+\begin{parsec}%
+\begin{point}{Exercise}%
 Let~$a$ be an effect of a $C^*$-algebra~$\scrA$,
-and let~$p$ be a projection from~$\scrA$.
-Then $a\leq p$ iff $\sqrt{a}p=p$ iff $p\sqrt{a}=p$
-iff $\sqrt{a}p^\perp = 0$ iff $p^\perp\sqrt{a}=0$ 
-iff  $ap=p$ iff $pa=p$ iff $ap^\perp=0$ iff $p^\perp a=0$
-iff $a^2 \leq p$
+and~$p$ be a projection from~$\scrA$.
+\begin{point}[projection-above-effect]%
+Show that $a\leq p$
+iff $p\sqrt{a} = \sqrt{a}$
+iff $\sqrt{a}p = \sqrt{a}$
+iff $p^\perp\sqrt{a} = 0$
+iff $\sqrt{a}p^\perp = 0$
+iff $a^2\leq p$
+iff $p a  = a$
+iff $ a p = a $
+iff $p^\perp a  = 0$
+iff $ap^\perp = 0$
 iff $\sqrt{a}\leq p$.
+\end{point}
+\begin{point}[projection-below-effect]%
+Show that $p\leq a$
+iff $p \sqrt{a} = p$
+iff $\sqrt{a} p = p$
+iff $ p\sqrt{a}^\perp = 0$
+iff $\sqrt{a}^\perp p = 0$
+iff $p\leq a^2$
+iff $ap=p$
+iff $pa = p$
+iff $pa^\perp =0$
+iff $a^\perp p =0$
+iff $p\leq \sqrt{a}$.
+\end{point}
 \end{point}
 \end{parsec}
 
@@ -499,6 +522,15 @@ b^{2^{m-1}}\, b^{2^n}\, b^{2^{m-1}}\qquad
 \end{alignat*}
 and $p\leq b^{2^{m-1}}\, b^{2^n}\,b^{2^{m-1}}$
 for all~$n,m$, we get~$p\leq p^2$.
+\end{point}
+\begin{point}%
+It remains to be shown that~$p$ is the greatest projection above~$b$.
+Let~$q$ be a projection in~$\scrA$ with~$q\leq b$
+we must show that~$q\leq p$.
+Since~$q\leq b$,
+we have~$q\leq b^2$ (by~\sref{projection-below-effect}),
+and so~$q\leq b^{2^n}$ for each~$n$ by induction.
+Thus~$q\leq p\equiv\bigwedge_n b^{2^n}$.
 \end{point}
 \end{point}
 \end{parsec}
