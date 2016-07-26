@@ -388,7 +388,11 @@ we get $aqa^*\leq p^\perp \implies paq=0\implies a^*pa\leq q^\perp$.
 \begin{point}[projection-above-effect]{Corollary}%
 Let~$a$ be an effect of a $C^*$-algebra~$\scrA$,
 and let~$p$ be a projection from~$\scrA$.
-Then $a\leq p$ iff $ap=p$ iff $pa=p$ iff $ap^\perp=0$ iff $p^\perp a=0$.
+Then $a\leq p$ iff $\sqrt{a}p=p$ iff $p\sqrt{a}=p$
+iff $\sqrt{a}p^\perp = 0$ iff $p^\perp\sqrt{a}=0$ 
+iff  $ap=p$ iff $pa=p$ iff $ap^\perp=0$ iff $p^\perp a=0$
+iff $a^2 \leq p$
+iff $\sqrt{a}\leq p$.
 \end{point}
 \end{parsec}
 
@@ -445,11 +449,10 @@ It remains to be shown that~$p$ is the \emph{least} projection
 above~$b$.
 Let~$q$ be a projection in~$\scrA$ with $b\leq q$;
 we must show that~$q\leq p$.
-Since~$q$ commutes with~$b$ (by~\sref{projection-above-effect}),
-we have $b^{\nicefrac{1}{2}}\leq q$ 
-(by Gelfand's Representation Theorem, \sref{gelfand}.)
-Since by induction $b^{\nicefrac{1}{2^n}}\leq q$ for all~$n$,
-we get $p\leq q$ by definition of~$p$.
+We have $b^{\nicefrac{1}{2}}\leq q$
+by~\sref{projection-above-effect},
+and so $b^{\nicefrac{1}{2^n}}\leq q$ for each~$n$ by induction.
+Hence $p\leq q$.
 \end{point}
 \end{point}
 \end{parsec}
