@@ -457,6 +457,52 @@ Hence $p\leq q$.
 \end{point}
 \end{parsec}
 
+%
+%	floor
+%
+\begin{parsec}[vna-floor]%
+\begin{point}{Proposition}%
+Below every effect~$b$ of a von Neumann algebra~$\scrA$,
+there is greatest projection, $\floor{b}$,
+called the \define{floor} of~$b$,
+given by~$\floor{b} = \bigwedge_{n=0}^\infty b^{2^{n}}$.
+\begin{point}%
+Moreover, if~$a\in \scrA$ commutes with~$b$,
+then~$b$ commutes with~$\floor{b}$.
+\end{point}
+\end{point}
+\begin{point}{Proof}%
+Let~$p$ denote the infimum of $1\geq b\geq b^2 \geq b^4 \geq  \dotsb \geq 0$.
+\begin{point}[vna-floor-point-1]%
+If~$a\in \scrA$ commutes with~$b$,
+then~$a$ commutes with~$p$.
+Indeed, such~$a$ commutes with~$b^2$ (because
+$ab^2 = bab = b^2a$,)
+and so~$a$ commutes with~$b^{2^n}$ for each~$n$ by induction.
+Thus~$a$ commutes with~$p\equiv\bigwedge_n b^{2^n}$ 
+(by a variation on~\sref{vna-supremum-commutes}.)
+\end{point}
+\begin{point}%
+To see that~$p$ is a projection, c.q.~$p^2=p$,
+we only need to show that~$p\leq p^2$,
+because we get $p^2\equiv \sqrt{p}\,p\,\sqrt{p}\leq p$
+from $p\leq 1$ (using~\sref{ad-monotone}.)
+Now, since
+\begin{alignat*}{3}
+p^2 \ &=\ \textstyle \bigwedge_m\  \sqrt{p}\, b^{2^m} \sqrt{p}\qquad
+&&\text{by a variation on~\sref{ad-normal}}\\
+&=\ \textstyle \bigwedge_m \ b^{2^{m-1}} p\, b^{2^{m-1}}\qquad
+&&\text{by~\sref{vna-floor-point-1} and~\sref{cstar-square-commutes}}\\
+&=\ \textstyle \bigwedge_m \bigwedge_n \ 
+b^{2^{m-1}}\, b^{2^n}\, b^{2^{m-1}}\qquad
+&&\text{by~\sref{ad-normal},}
+\end{alignat*}
+and $p\leq b^{2^{m-1}}\, b^{2^n}\,b^{2^{m-1}}$
+for all~$n,m$, we get~$p\leq p^2$.
+\end{point}
+\end{point}
+\end{parsec}
+
 
 
 \end{document}
