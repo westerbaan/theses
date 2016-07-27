@@ -359,6 +359,23 @@ we conclude that~$\bigvee_{d\in D} a^* \,d\, a = a^*\,(\bigvee D)\,a$.
 
 
 
+\subsection{Projections}
+Let us now turn to the projections in a von Neumann algebra.
+
+\TODO{Supremum/infimum of projections}
+
+\TODO{Relation between  $\floor{\cdot}$, $\ceil{\cdot}$ and NCPsU-maps}
+
+\TODO{NCPsU-maps with sharp $f(1)$ as restriction category}
+
+\TODO{Central carier and von Neumann--Murray equivalence (for Paschke.)}
+
+\TODO{$\ceil{pqp}=p\cdot q$ (Sakai product) and counter-example non-projections}
+
+\TODO{$\floor{aba}=\floor{a}\cap \floor{b}$}
+
+
+
 \begin{parsec}[ad-contraposed]%
 \begin{point}{Lemma}%
 Let~$a$ be an element of a $C^*$-algebra~$\scrA$
@@ -534,7 +551,48 @@ Thus~$q\leq p\equiv\bigwedge_n b^{2^n}$.
 \end{point}
 \end{point}
 \end{parsec}
+%
+%
+%
+\begin{parsec}%
+\begin{point}{Exercise}%
+Let~$a,b$ be effects of a von Neumann algebra~$\scrA$,
+and let~$\lambda\in [0,1]$.
+\begin{point}%
+Show that $\ceil{a}^\perp = \floor{a^\perp}$
+and $\floor{a}^\perp = \ceil{a^\perp}$.
+\end{point}
+\begin{point}%
+Show that~$\ceil{\lambda a} = \ceil{a}$
+when~$\lambda\neq 0$.
+Use this to prove that~$\ceil{\lambda a+\lambda^\perp b}$
+is the supremum of~$\ceil{a}$ and~$\ceil{b}$
+in the poset of projections of~$\scrA$
+when~$\lambda\neq 0$ and~$\lambda\neq 1$.
+\end{point}
+\end{point}
+\end{parsec}
 
-
+%
+%	directed supremum of projections
+%
+\begin{parsec}%
+\begin{point}[vna-directed-supremum-projections]{Lemma}%
+The supremum of a directed set~$D$ of projections
+from a von Neumann algebra~$\scrA$ is a projection.
+\end{point}
+\begin{point}{Proof}%
+Writing $p=\bigvee D$,
+we must show that $p^2=p$.
+Note that $dp=d$ for all~$d\in D$
+(by~\sref{projection-below-effect} because~$d\leq p$.)
+Now, on the one hand, $(d)_{d\in D}$
+converges ultraweakly to~$p$.
+On the other hand,
+$(dp)_{d\in D}$
+converges ultraweakly to~$p^2$ by~\sref{vna-supremum-mult}.
+Hence~$p=p^2$ by uniqueness of ultraweak limits.
+\end{point}
+\end{parsec}
 
 \end{document}
