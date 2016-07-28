@@ -161,13 +161,147 @@ in a similar manner,
 we see that $\sum_n a^n$ is the inverse of~$1-a$.
 \end{point}
 \end{point}
-\begin{point}[spectrum-bounded]{Exercise}
-Deduce from the result above that $a-\lambda$ is invertible
-when~$|\lambda|>\|a\|$,
-where~$a$ is an element of a $C^*$-algebra~$\scrA$,
-and~$\lambda\in\C$.
+\begin{point}{Exercise}
+Let~$a$ be an element of a $C^*$-algebra~$\scrA$.
+\begin{point}[spectrum-bounded]%
+Show that $a-\lambda$ is invertible
+for every~$\lambda\in\C$ with~$\|a\|< \left|\lambda\right|$.
+\end{point}
+\begin{point}%
+Show that $a-b$ is invertible
+when~$b\in\scrA$ is invertible and $\|a\| < \|b\|$.
+\end{point}
+\begin{point}%
+Show that $U:=\{\ b\in\scrA\colon\ \text{$b$ is invertible}\ \}$
+is an open subset of~$\scrA$.
+\end{point}
+\begin{point}[cstar-inv-continuous]%
+Show that $a\mapsto a^{-1}$ (as map from~$U$ to~$\scrA$)
+is continuous.
+
+\TODO{Give hint.}
+\end{point}
 \end{point}
 \end{parsec}
+%
+%	Towards spectral permanence
+%
+\begin{parsec}%
+\begin{point}{Lemma}%
+For a self-adjoint element~$a$ from a $C^*$-algebra,
+$a-i$ is invertible.
+\end{point}
+\begin{point}{Proof}%
+The trick
+is to 
+write~$a-i\equiv (a+ni)\,-\,(n+1)i$
+for sufficiently large~$n$,
+because  
+then
+$a-i$
+is invertible provided that~$n+1 > \|a+ni\|$
+by~\sref{spectrum-bounded}.
+Indeed, for~$n$ such that~$\|a\|<2n+1$,
+we have $\|a+ni\|^2 = \|(a+ni)^*(a+ni)\|
+= \|a^2+n^2\|
+\leq \|a\|^2+n^2 < 2n+1+n^2 = (n+1)^2$,
+and so $\|a+ni\| < n+1$.
+
+(Based on Kadison--Ringrose Proposition 4.1.1(ii).)
+\end{point}
+\begin{point}[spectrum-self-adjoint-real]{Exercise}%
+Let~$a$ be a self-adjoint element of a $C^*$-algebra,
+and let~$\lambda\in\C\backslash\R$.
+Show that~$a-\lambda$ is invertible.
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}{Proposition}%
+Let~$\scrA$ be a $C^*$-subalgebra
+of a $C^*$-algebra $\scrB$.
+Let~$a$ be a self-adjoint element of~$\scrA$,
+which has an inverse, $a^{-1}$, in~$\scrB$.
+Then~$a^{-1}\in\scrA$.
+\end{point}
+\begin{point}{Proof}%
+While we do not know yet that~$a$ is invertible in~$\scrA$,
+we do know that~$a+\nicefrac{i}{n}$ 
+has an inverse $(a+\nicefrac{i}{n})^{-1}$ in~$\scrA$
+by~\sref{spectrum-self-adjoint-real}
+for each~$n$
+(using that $a$ is self-adjoint.)
+Since~$a+\nicefrac{i}{n}$ converges to~$a$ in~$\scrB$ as~$n$ increases,
+we see that $(a+\nicefrac{i}{n})^{-1}$ converges to~$a^{-1}$
+in~$\scrB$ by~\sref{cstar-inv-continuous}.
+Thus, as all~$(a+\nicefrac{1}{n}i)^{-1}$ are in~$\scrA$,
+and~$\scrA$ is closed in~$\scrB$,
+we see that~$a^{-1}$ is in~$\scrA$.
+\end{point}
+\begin{point}{Exercise}%
+Show that the assumption that~$a$ is self-adjoint
+can be dropped. 
+
+(Hint: consider $a^*a$; c.f.~Conway Proposition VIII.1.14.)
+\end{point}
+\end{parsec}
+
+
+
+%
+%	The spectrum
+%
+\subsection{The spectrum}
+\begin{parsec}%
+\begin{point}{Definition}%
+The \define{spectrum} of an element $a$
+of a $C^*$-algebra
+is the set \define{$\spec(a)$}
+of complex numbers~$\lambda$
+for which~$a-\lambda$ is not invertible.
+\end{point}
+\begin{point}{Example}%
+For a function $f\in C(X)$,
+we have $\spec(f) = f(X)$.
+\end{point}
+\begin{point}{Example}%
+For a matrix $A\in M_n$,
+$\spec(A)$ is the set of eigenvalues of~$A$.
+\end{point}
+\end{parsec}
+%
+%
+%
+\begin{parsec}%
+\begin{point}{Proposition}%
+For an element~$a$ of a $C^*$-algebra~$\scrA$,
+we have
+\begin{equation*}
+\|a\|\,=\,\sup\{\,\left|\lambda\right|\colon \,\lambda\in \spec(a)\,\}.
+\end{equation*}
+\end{point}
+\begin{point}{Proof}%
+From~\sref{spectrum-bounded}
+we see that~$|\lambda|\leq \|a\|$
+for all~$\lambda\in\spec(a)$.
+Thus we only need to show
+that for every $\varepsilon>0$
+there is~$\lambda\in\spec(a)$ with $\|a\|-|\lambda| <\varepsilon$.
+
+\TODO{complete}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}{Theorem}%
+Let~$\scrB$ be a $C^*$-subalgebra of a $C^*$-algebra $\scrA$.
+Then~$\spec_{\scrA}(a)=\spec_\scrB(a)$
+for every element~$a$ of~$\scrB$.
+\end{point}
+\end{parsec}
+
+
+
 %
 %  Cauchy--Schwarz for positive functionals
 %
@@ -440,7 +574,7 @@ iff $p\leq \sqrt{a}$.
 %
 % Projections
 %
-\begin{parsec}%
+\begin{parsec}[vna-ceil]%
 \begin{point}{Proposition}%
 Above every effect~$b$ of a von Neumann algebra~$\scrA$,
 there is a smallest projection, \define{$\ceil{b}$},
@@ -593,6 +727,68 @@ On the other hand,
 $(dp)_{d\in D}$
 converges ultraweakly to~$p^2$ by~\sref{vna-supremum-mult}.
 Hence~$p=p^2$ by uniqueness of ultraweak limits.
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}{Proposition}%
+For a cp-map~$f\colon \scrA\to\scrB$
+ between $C^*$-algebras, and $a,b\in\scrA$, 
+\begin{equation*}
+f(b^*a)\,f(a^*b)\ \leq\ \|f(a^*a)\|\,f(b^*b).
+\end{equation*}
+\end{point}%
+\begin{point}{Proof}%
+\TODO{add}
+\end{point}
+\end{parsec}
+%
+%
+%
+\begin{parsec}%
+\begin{point}[cp-kadison-ineq]{Exercise}%
+Assume that~$f(1)\leq 1$,
+and let~$a\in \scrA$ be positive.
+\begin{point}%
+Show that~$f(a)^2 \leq f(a^2)$.
+\end{point}
+\begin{point}%
+Use this, and~\sref{cstar-sqrt-monotone},
+to show that~$f(a^{\nicefrac{1}{2}}) \leq f(a)^{\nicefrac{1}{2}}$.
+\end{point}
+\begin{point}[cpsu-2nthroot]%
+Go on, and show that $f(a^{\nicefrac{1}{2^n}})
+\leq f(a)^{\nicefrac{1}{2^n}}$ for each~$n$.
+\end{point}
+\end{point}
+\end{parsec}
+
+%
+%
+%
+\begin{parsec}%
+\begin{point}{Proposition}%
+Let $f\colon \scrA\to\scrB$ be a ncpsu-map
+between von Neumann algebras.
+Then $\ceil{f(a)}=\ceil{f(\ceil{a})}$
+for every effect~$a$ from~$\scrA$.
+\end{point}
+\begin{point}{Proof}%
+Since~$a\leq \ceil{a}$
+we have $f(a)\leq f(\ceil{a})$,
+and so~$\ceil{f(a)}\leq \ceil{f(\ceil{a})}$.
+\begin{point}%
+It remains to be shown that $\ceil{f(\ceil{a})}\leq \ceil{f(a)}$,
+that is, $f(\ceil{a})\leq \ceil{f(a)}$.
+Since  $\ceil{a}=\bigvee_n a^{\nicefrac{1}{2^n}}$ 
+(by~\sref{vna-ceil})
+and~$f$ is normal,
+we have $f(\ceil{a})=\bigvee_n f(a^{\nicefrac{1}{2^n}})$.
+Now, since $f(a^{\nicefrac{1}{2^n}})\leq f(a)^{\nicefrac{1}{2^n}}
+\leq \ceil{f(a)}$
+by~\sref{cpsu-2nthroot} for each~$n$,
+we have~$f(\ceil{a})\leq \ceil{f(a)}$.
+\end{point}
 \end{point}
 \end{parsec}
 
