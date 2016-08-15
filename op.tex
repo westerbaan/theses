@@ -131,6 +131,8 @@ Let~$a$ be an element of a $C^*$-algebra~$\scrA$ with~$\|a\|<1$.
 Then~$a^\perp=1-a$ has an inverse,
 namely~$(a^\perp)^{-1}= \sum_{n=0}^\infty\, a^n$
 (norm convergence).
+
+\TODO{absolute convergence?}
 \end{point}
 \begin{point}{Proof}%
 Note that
@@ -318,11 +320,28 @@ we have
 From~\sref{spectrum-bounded}
 we see that~$|\lambda|\leq \|a\|$
 for all~$\lambda\in\spec(a)$.
+\TODO{finish}
 Thus we only need to show
 that for every $\varepsilon>0$
 there is~$\lambda\in\spec(a)$ with $\|a\|-|\lambda| <\varepsilon$.
+\begin{point}%
+The trick is to consider the power series
+$z\sum_n (za)^n$.
+On the one hand,
+we know by~\TODO{divergence of the geometric series} 
+that~$z\sum_n (za)^n$ should diverge
+for some~$z\in\C$ with $\|za\| \geq 1$,
+that is, $\left|z\right|^{-1}\leq \|a\|$.
 
-\TODO{complete}
+On the other hand,
+the holomorphic function~$f$ defined on
+\begin{equation*}
+G\ :=\ \{0\}\,\cup \,\{\,z^{-1}\colon\,z\notin \spec(a)\,\}
+\end{equation*}
+by $f(0)=0$ and $f(z)=(z^{-1}-a)^{-1}$ for $z\neq 0$
+ha
+ 
+\end{point}
 \end{point}
 \end{parsec}
 
