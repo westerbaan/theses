@@ -800,39 +800,40 @@ is an order isomorphism on the poset of projections on~$\scrA$.)
 %
 \begin{parsec}%
 \begin{point}{Lemma}%
-Let~$p,q$ be projections in a von Neumann algebra~$\scrA$.
-Then~$\floor{pqp}$ is the greatest projection
-below~$p$ and~$q$, that is, in symbols, $\floor{pqp}=p\cap q$.
+Let~$a,b$ be effects of a von Neumann algebra~$\scrA$.
+Then~$\floor{\sqrt{a}b\sqrt{a}}$ is the greatest projection
+below~$a$ and~$b$, that is, in symbols, 
+$\floor{\sqrt{a}b\sqrt{a}}=\floor{a}\cap \floor{b}$.
 \end{point}
 \begin{point}{Proof}%
-Surely, $\floor{pqp}\leq pqp \leq p$.
-Let us prove that~$\floor{pqp}\leq q$.
+Surely, $\floor{\sqrt{a}b\sqrt{a}}\leq \sqrt{a}b\sqrt{a} \leq a$.
+Let us prove that~$\floor{\sqrt{a}b\sqrt{a}}\leq b$.
 To this end,
 recall
 that (by~\sref{projection-below-effect})
-a projection~$e$ of~$\scrA$ is below an effect~$a$ of~$\scrA$
-($e\leq a$) iff $ea=e$ iff $ae=e$.
+a projection~$e$ is below an effect~$c$
+iff $ec=e$ iff $e\sqrt{c}=e$.
 In particular,
-since~$\floor{pqp}\leq pqp$ and $\floor{pqp}\leq p$,
+since~$\floor{\sqrt{a}b\sqrt{a}}\leq \sqrt{a}b\sqrt{a}$ and 
+$\floor{\sqrt{a}b\sqrt{a}}\leq a$,
 we get
 \begin{equation*}
-\floor{pqp}\ =\ \floor{pqp}^2\ =\ \floor{pqp}pqp\floor{pqp} \ =\ 
-\floor{pqp}q\floor{pqp},
+\floor{\sqrt{a}b\sqrt{a}}
+\ =\ \floor{\sqrt{a}b\sqrt{a}}\sqrt{a}b\sqrt{a}\floor{\sqrt{a}b\sqrt{a}} \ =\ 
+\floor{\sqrt{a}b\sqrt{a}}b\floor{\sqrt{a}b\sqrt{a}},
 \end{equation*}
-and so $\floor{pqp}q^\perp\floor{pqp}=0$,
+and so $\floor{\sqrt{a}b\sqrt{a}}b^\perp\floor{\sqrt{a}b\sqrt{a}}=0$,
 which implies that
-$\floor{pqp}\leq q$ by~\sref{ad-contraposed}.
+$\floor{\sqrt{a}b\sqrt{a}}\leq b$ by~\sref{ad-contraposed}.
 \begin{point}%
-Let~$e$ be a projection below~$p$ and~$q$,
-that is, $ep=e$ and~$eq=e$.
-We must show that~$e\leq \floor{pqp}$,
-or equivalently, $e\leq pqp$,
-or put yet differently, $epqp=e$.
-But this is obvious: $e=ep=(eq)p=(ep)qp$.
+Now,
+let~$e$ be a projection below~$a$ and~$b$,
+that is, $e\sqrt{a}=e$ and~$eb=e$.
+We must show that~$e\leq \floor{\sqrt{a}b\sqrt{a}}$,
+or equivalently, $e\leq \sqrt{a}b\sqrt{a}$,
+or put yet differently, $e\sqrt{a}b\sqrt{a}=e$.
+But this is obvious: $e=e\sqrt{a}=eb\sqrt{a}=e\sqrt{a}b\sqrt{a}$.
 \end{point}
-\end{point}
-\begin{point}{Remark}
-\TODO{Make remark on $\floor{pqp}$ when $p$ and~$q$ are effects.}
 \end{point}
 \end{parsec}
 
