@@ -799,9 +799,40 @@ is an order isomorphism on the poset of projections on~$\scrA$.)
 %
 %
 \begin{parsec}%
-\begin{point}%
+\begin{point}{Lemma}%
 Let~$p,q$ be projections in a von Neumann algebra~$\scrA$.
-Then~$\floor{pqp}=p\cap q$.
+Then~$\floor{pqp}$ is the greatest projection
+below~$p$ and~$q$, that is, in symbols, $\floor{pqp}=p\cap q$.
+\end{point}
+\begin{point}{Proof}%
+Surely, $\floor{pqp}\leq pqp \leq p$.
+Let us prove that~$\floor{pqp}\leq q$.
+To this end,
+recall
+that (by~\sref{projection-below-effect})
+a projection~$e$ of~$\scrA$ is below an effect~$a$ of~$\scrA$
+($e\leq a$) iff $ea=e$ iff $ae=e$.
+In particular,
+since~$\floor{pqp}\leq pqp$ and $\floor{pqp}\leq p$,
+we get
+\begin{equation*}
+\floor{pqp}\ =\ \floor{pqp}^2\ =\ \floor{pqp}pqp\floor{pqp} \ =\ 
+\floor{pqp}q\floor{pqp},
+\end{equation*}
+and so $\floor{pqp}q^\perp\floor{pqp}=0$,
+which implies that
+$\floor{pqp}\leq q$ by~\sref{ad-contraposed}.
+\begin{point}%
+Let~$e$ be a projection below~$p$ and~$q$,
+that is, $ep=e$ and~$eq=e$.
+We must show that~$e\leq \floor{pqp}$,
+or equivalently, $e\leq pqp$,
+or put yet differently, $epqp=e$.
+But this is obvious: $e=ep=(eq)p=(ep)qp$.
+\end{point}
+\end{point}
+\begin{point}{Remark}
+\TODO{Make remark on $\floor{pqp}$ when $p$ and~$q$ are effects.}
 \end{point}
 \end{parsec}
 
