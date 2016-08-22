@@ -622,6 +622,11 @@ iff $a^\perp p =0$
 iff $p\leq \sqrt{a}$.
 \end{point}
 \end{point}
+\begin{point}[projection-below-projection]{Exercise}%
+Let~$p$ and~$q$ be projections from a $C^*$-algebra
+with~$p\leq q$.\\
+Show that~$q-p$ is a projection.
+\end{point}
 \end{parsec}
 
 %
@@ -798,7 +803,7 @@ is an order isomorphism on the poset of projections on~$\scrA$.)
 %
 %
 %
-\begin{parsec}%
+\begin{parsec}[floor-sequential-product]%
 \begin{point}{Lemma}%
 Let~$a,b$ be effects of a von Neumann algebra~$\scrA$.
 Then~$\floor{\sqrt{a}b\sqrt{a}}$ is the greatest projection
@@ -833,6 +838,63 @@ We must show that~$e\leq \floor{\sqrt{a}b\sqrt{a}}$,
 or equivalently, $e\leq \sqrt{a}b\sqrt{a}$,
 or put yet differently, $e\sqrt{a}b\sqrt{a}=e$.
 But this is obvious: $e=e\sqrt{a}=eb\sqrt{a}=e\sqrt{a}b\sqrt{a}$.
+\end{point}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}%
+Having seen that~$\floor{\sqrt{a}b\sqrt{a}} = \floor{a}\cap\floor{b}$
+in~\sref{floor-sequential-product}
+one might wonder whether
+there is a similar expression for $\ceil{\sqrt{a}b\sqrt{a}}$.
+If~$a$ and~$b$ are projection,
+$\ceil{aba}$ turns out to coincide with the \define{Sasaki product},
+$a\cap (a^\perp \cup b)$,
+as we will show below.
+\TODO{Reference for the Sasaki product.}
+\TODO{Thank Kenta}
+\end{point}
+\begin{point}[floor-difference]{Lemma}%
+Let~$p$ be a projection,
+and let~$a$ be an effect of a von Neumann algebra
+with $a\leq p$.
+We have $p-\ceil{a}=\floor{p-a}$.
+\end{point}
+\begin{point}{Proof}%
+We must show that $p-\ceil{a}$ is the greatest projection below $p-a$.
+To begin, $p-\ceil{a}\leq p-a$,
+because $a\leq \ceil{a}$.
+Further, since~$a\leq p$, we have $\ceil{a}\leq p$,
+and so~$p-\ceil{a}$ is a projection
+(by~\sref{projection-below-projection}).
+\begin{point}%
+Let~$q$ be a projection below~$p-a$.
+We must show that~$q\leq p-\ceil{a}$.
+The trick is to note that~$a\leq p-q$.
+Since~$p-q$ is a projection (by~\sref{projection-below-projection}
+because $q\leq p-a\leq p$),
+we have $\ceil{a}\leq p-q$,
+and so $q\leq p-\ceil{a}$.
+\begin{point}[ceil-sequential-product]{Lemma}%
+For projections $p,q$ from a von Neumann algebra,
+$\ceil{pqp}=p\cap (p^\perp \cup q)$.
+\end{point}
+\end{point}
+\end{point}
+\begin{point}[ceil-sequential-product-1]{Proof}%
+Observe that $(\ p\cap (p^\perp \cup q)\ )^\perp 
+= p^\perp \cup(p\cap q^\perp)$.
+Since~$p^\perp$ and $p\cap q^\perp$ are disjoint,
+we have $p^\perp \cup (p\cap q^\perp) = p^\perp + p\cap q^\perp$,
+and so $p\cap (p^\perp \cup q) = p-p\cap q^\perp$.
+\begin{point}%
+By point~\sref{ceil-sequential-product-1}, 
+it suffices to show that~$\ceil{pqp}=p- p\cap q^\perp$,
+that is, $p-\ceil{pqp}=p\cap q^\perp$.
+Since $p-\ceil{pqp} = \floor{p-pqp}$
+by~\sref{floor-difference} and $\floor{pq^\perp p}=p\cap q^\perp$
+by~\sref{floor-sequential-product} we are done.
 \end{point}
 \end{point}
 \end{parsec}
