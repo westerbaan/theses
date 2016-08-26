@@ -7,7 +7,7 @@
 \usepackage{amsmath}
 \usepackage{mathrsfs}
 \usepackage{nicefrac}
-
+\usepackage{hyperref}
 
 \newcommand{\IGNORE}[1]{}
 
@@ -58,7 +58,7 @@
 \NewDocumentEnvironment{parsec}{o}{%
 	\par\penalty-200\vskip1em\noindent%
 	\refstepcounter{parsec}%
-	\setcounter{point}{0}%
+	%%\setcounter{point}{0}%
 	% In the footer of every odd page we list the parsecs present on 
 	% the spread.  We pass this information to the footer via the 
 	% \markboth,\leftmark,\rightmark-mechanism, which is normally
@@ -89,7 +89,8 @@
 }
 
 \newcounter{point} % keeps track of the current point
-\renewcommand{\thepoint}{\theparsec\Roman{point}}
+\numberwithin{point}{parsec}
+\renewcommand{\thepoint}{\theparsec\,\Roman{point}}
 \newcounter{pointdepth}  % keeps track of the depth of the current point
 			 % --- points may be nested.
 
@@ -166,3 +167,4 @@
 }% \textParsecNumber{
 }% \ifthenelse{
 }% \fancyfoot[CO]{
+
