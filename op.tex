@@ -127,7 +127,14 @@ and $a\in \scrA$ is any element.
 %
 \begin{parsec}%
 \begin{point}%
-We'll derive some basic facts about the invertible elements.
+We'll derive some basic facts about the invertible elements
+in $C^*$-algebra,
+that built up to the technicallt important result,
+that if an element $a$ of a $C^*$-subalgebra~$\scrB$
+of some (larger) $C^*$-algebra~$\scrA$
+is invertible in~$\scrA$,
+then~$a$ is already invertible in~$\scrB$,
+see~\sref{inverse-permanence}.
 \end{point}
 \begin{point}[geometric]{Lemma}%
 Let~$a$ be an element of a $C^*$-algebra~$\scrA$ with~$\|a\|<1$.
@@ -270,7 +277,7 @@ and~$\scrA$ is closed in~$\scrB$,
 we see that~$a^{-1}$ is in~$\scrA$.
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[inverse-permanence]{Exercise}%
 Show that the assumption that~$a$ is self-adjoint
 can be dropped. 
 
@@ -285,13 +292,19 @@ can be dropped.
 %
 \subsection{The spectrum}
 \begin{parsec}%
+\begin{point}%
+We now turn to the \emph{spectrum} of an element of a $C^*$-algebra,
+which not only 
+generalises the notion of eigenvalue also to infinite dimensions,
+but is important in the proof
+of Gelfand's representation theorem too. \TODO{add ref.}
+\end{point}
 \begin{point}{Definition}%
 The \define{spectrum} of an element $a$
 of a $C^*$-algebra
 is the set \define{$\spec(a)$}
 of complex numbers~$\lambda$
 for which~$a-\lambda$ is not invertible.
-\end{point}
 \begin{point}{Example}%
 For a function $f\in C(X)$,
 we have $\spec(f) = f(X)$.
@@ -300,23 +313,47 @@ we have $\spec(f) = f(X)$.
 For a matrix $A\in M_n$,
 $\spec(A)$ is the set of eigenvalues of~$A$.
 \end{point}
-\end{parsec}
-%
-%
-%
-\begin{parsec}%
+\end{point}
+\begin{point}%
+On first sight,
+the spectrum $\spec(a)$
+of an element~$a$ of a $C^*$-algebra~$\scrA$ 
+depends not only on~$a$,
+but also on the surrounding $C^*$-algebra~$\scrA$ for it determines
+for which~$\lambda\in\C$ the operator $a-\lambda$ is invertible.
+Thus we should perhaps write $\spec_\scrA(a)$ instead
+of~$\spec(a)$.
+However, such careful bookkeeping turns out 
+be unnecessary
+by the following result.
+\end{point}
+\begin{point}{Theorem (Spectral Permanence)}%
+Let~$\scrB$ be a $C^*$-subalgebra of a $C^*$-algebra $\scrA$.
+Then~$\spec_{\scrA}(a)=\spec_\scrB(a)$
+for every element~$a$ of~$\scrB$.
+\begin{point}{Proof}%
+Let~$a$ be an element of~$\scrB$,
+and let~$\lambda\in \C$.
+We must show that $a-\lambda$ is invertible in~$\scrA$
+iff $a-\lambda$ is invertible in~$\scrB$.
+Surely,
+if $a-\lambda$ has an inverse $(a-\lambda)^{-1}$ in~$\scrB$,
+then~$(a-\lambda)^{-1}$ is also an inverse of~$a-\lambda$ in~$\scrA$,
+since~$\scrB\subseteq \scrA$.
+The other, non-trivial, direction follows
+directly from~\sref{inverse-permanence}.\qed%
+\end{point}
+\end{point}
 \begin{point}{Proposition}%
 For an element~$a$ of a $C^*$-algebra~$\scrA$,
 we have
 \begin{equation*}
 \|a\|\,=\,\sup\{\,\left|\lambda\right|\colon \,\lambda\in \spec(a)\,\}.
 \end{equation*}
-\end{point}
 \begin{point}{Proof}%
 From~\sref{spectrum-bounded}
 we see that~$|\lambda|\leq \|a\|$
 for all~$\lambda\in\spec(a)$.
-\TODO{finish}
 Thus we only need to show
 that for every $\varepsilon>0$
 there is~$\lambda\in\spec(a)$ with $\|a\|-|\lambda| <\varepsilon$.
@@ -335,17 +372,14 @@ the holomorphic function~$f$ defined on
 G\ :=\ \{0\}\,\cup \,\{\,z^{-1}\colon\,z\notin \spec(a)\,\}
 \end{equation*}
 by $f(0)=0$ and $f(z)=(z^{-1}-a)^{-1}$ for $z\neq 0$
-ha
+has a power series expansion around~$0$,
+that is, $f(z)=\sum_n a_n z^n$ for some $a_1,a_2,\dotsc \in\scrA$.
+By~\sref{geometric},
+it's easy to see that~$f(z)=z \sum_n (za)^n$.
  
+\TODO{finish}
 \end{point}
 \end{point}
-\end{parsec}
-
-\begin{parsec}%
-\begin{point}{Theorem}%
-Let~$\scrB$ be a $C^*$-subalgebra of a $C^*$-algebra $\scrA$.
-Then~$\spec_{\scrA}(a)=\spec_\scrB(a)$
-for every element~$a$ of~$\scrB$.
 \end{point}
 \end{parsec}
 
