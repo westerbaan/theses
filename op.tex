@@ -125,15 +125,17 @@ and $a\in \scrA$ is any element.
 %
 % geometric series 
 %
-\begin{parsec}[geometric]%
-\begin{point}{Lemma}%
+\begin{parsec}%
+\begin{point}%
+We'll derive some basic facts about the invertible elements.
+\end{point}
+\begin{point}[geometric]{Lemma}%
 Let~$a$ be an element of a $C^*$-algebra~$\scrA$ with~$\|a\|<1$.
 Then~$a^\perp=1-a$ has an inverse,
 namely~$(a^\perp)^{-1}= \sum_{n=0}^\infty\, a^n$
 (norm convergence).
 
 \TODO{absolute convergence?}
-\end{point}
 \begin{point}{Proof}%
 Note that
 $(1-\|a\|)\,(1+\|a\|+\|a\|^2+\dotsb+\|a\|^N) \,=\, 1-\|a\|^{N+1}$,
@@ -163,6 +165,7 @@ in a similar manner,
 we see that $\sum_n a^n$ is the inverse of~$1-a$.
 \end{point}
 \end{point}
+\end{point}
 \begin{point}{Exercise}
 Let~$a$ be an element of a $C^*$-algebra~$\scrA$.
 \begin{point}[spectrum-bounded]%
@@ -178,15 +181,12 @@ Show that $U:=\{\ b\in\scrA\colon\ \text{$b$ is invertible}\ \}$
 is an open subset of~$\scrA$.
 \end{point}
 \end{point}
-\end{parsec}
-\begin{parsec}%
 \begin{point}[cstar-inv-continuous]{Lemma}%
 Let~$\scrA$ be a $C^*$-algebra.
 The assignment $a\mapsto a^{-1}$
 gives a  continuous map
 (from $\{\,b\in \scrA\colon\, \text{$b$ is invertible}\,\}$
 to~$\scrA$.)
-\end{point}
 \begin{point}[cstar-inv-continuous-1]{Proof}
 First we establish continuity at~$1$:
 let~$a\in\scrA$ with $\|1-a\|\leq \frac{1}{2}$ be given;
@@ -218,15 +218,13 @@ Hence $\|a^{-1}-b^{-1}\| = \|(1-(a^{-1}b)^{-1})a^{-1}\|
 (Based on Kadison--Ringrose Proposition 3.1.6.)
 \end{point}
 \end{point}
-\end{parsec}
+\end{point}
 %
 %	Towards spectral permanence
 %
-\begin{parsec}%
 \begin{point}{Lemma}%
 For a self-adjoint element~$a$ from a $C^*$-algebra,
 $a-i$ is invertible.
-\end{point}
 \begin{point}{Proof}%
 The trick
 is to 
@@ -250,16 +248,13 @@ Let~$a$ be a self-adjoint element of a $C^*$-algebra,
 and let~$\lambda\in\C\backslash\R$.
 Show that~$a-\lambda$ is invertible.
 \end{point}
-\end{parsec}
-
-\begin{parsec}%
+\end{point}
 \begin{point}{Proposition}%
 Let~$\scrA$ be a $C^*$-subalgebra
 of a $C^*$-algebra $\scrB$.
 Let~$a$ be a self-adjoint element of~$\scrA$,
 which has an inverse, $a^{-1}$, in~$\scrB$.
 Then~$a^{-1}\in\scrA$.
-\end{point}
 \begin{point}{Proof}%
 While we do not know yet that~$a$ is invertible in~$\scrA$,
 we do know that~$a+\nicefrac{i}{n}$ 
@@ -273,6 +268,7 @@ in~$\scrB$ by~\sref{cstar-inv-continuous}.
 Thus, as all~$(a+\nicefrac{1}{n}i)^{-1}$ are in~$\scrA$,
 and~$\scrA$ is closed in~$\scrB$,
 we see that~$a^{-1}$ is in~$\scrA$.
+\end{point}
 \end{point}
 \begin{point}{Exercise}%
 Show that the assumption that~$a$ is self-adjoint

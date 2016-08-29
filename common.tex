@@ -17,11 +17,13 @@
 \colorlet{lightgray}{gray!50!white}
 \colorlet{darkgray}{gray!75!black}
 \colorlet{darkred}{red!75!black}
-\newcommand{\textPointHeader}[1]{\textcolor{darkblue}{\textsf{#1}}}
-\newcommand{\textParsecHeader}[1]{\textcolor{darkblue}{\textbf{\textsf{#1}}}}
+\newcommand{\textPointHeaderI}[1]{\textcolor{darkblue}{\textbf{\textsf{#1}}}}
+\newcommand{\textPointHeaderII}[1]{\textcolor{darkblue}{\textsf{#1}}}
+\newcommand{\textPointHeaderIII}[1]{\textcolor{lightgray}{\textsf{#1}}}
 \newcommand{\textParsecNumber}[1]{\textcolor{darkblue}{\textbf{\textsf{#1}}}}
-\newcommand{\textPointNumberI}[1]{\textcolor{lightblue}{\textsf{#1}}}
-\newcommand{\textPointNumberII}[1]{\textcolor{lightgray}{\textsf{#1}}}
+\newcommand{\textPointNumberI}[1]{\textcolor{darkblue}{\textsf{#1}}}
+\newcommand{\textPointNumberII}[1]{\textcolor{lightblue}{\textsf{#1}}}
+\newcommand{\textPointNumberIII}[1]{\textcolor{lightgray}{\textsf{#1}}}
 \newcommand{\textDefine}[1]{\textcolor{darkblue}{#1}}
 \newcommand{\textSref}[1]{\textsf{#1}}
 \newcommand{\textTodo}[1]{\textcolor{darkred}{#1}}
@@ -58,7 +60,7 @@
 \NewDocumentEnvironment{parsec}{o}{%
 	\par\penalty-200\vskip1em\noindent%
 	\refstepcounter{parsec}%
-	%%\setcounter{point}{0}%
+	%%\setcounter{point}{0}% - point is set to 0 by \numberwithin
 	% In the footer of every odd page we list the parsecs present on 
 	% the spread.  We pass this information to the footer via the 
 	% \markboth,\leftmark,\rightmark-mechanism, which is normally
@@ -104,12 +106,22 @@
 			\ifthenelse{\equal{\value{pointdepth}}{1}}{%
 				\textPointNumberI{\Roman{point}}%
 			}{%
-				\textPointNumberII{\Roman{point}}%
+				\ifthenelse{\equal{\value{pointdepth}}{2}}{%
+					\textPointNumberII{\Roman{point}}%
+				}{%
+					\textPointNumberIII{\Roman{point}}%
+				}%
 		}}}%
 	}%
-	\IfValueT{#2}{\ifthenelse{\equal{\value{point}}{1}}%
-		{\textParsecHeader{#2}}%
-		{\textPointHeader{#2}}%
+	\IfValueT{#2}{%
+		\ifthenelse{\equal{\value{pointdepth}}{1}}{%
+			\textPointHeaderI{#2}%
+		}{%
+			\ifthenelse{\equal{\value{pointdepth}}{2}}{%
+				\textPointHeaderII{#2}%
+			}{%
+				\textPointHeaderIII{#2}%
+			}}%
 	\ \ }%	
 }{%
 \setcounter{pointdepth}{\value{pointdepth}-1}%
@@ -152,7 +164,7 @@
 {}% do nothing
 {%
 \setcounter{lastParsec}{\value{lastParsecF}/2}%
-\textParsecNumber{%
+\textPointNumberI{%
 \ifthenelse{\equal{\value{parsecToBeContinued}}{1}}{..}{}%
 \the\value{firstParsec}%
 \ifthenelse{\equal{\value{firstParsec}}{\value{lastParsec}}}%
@@ -164,7 +176,7 @@
 \ifthenelse{\equal{\value{tmp}}{\value{lastParsecF}}}%
 {..\setcounter{parsecToBeContinued}{1}}%
 {\setcounter{parsecToBeContinued}{0}}%
-}% \textParsecNumber{
+}% \textPointNumberI{
 }% \ifthenelse{
 }% \fancyfoot[CO]{
 
