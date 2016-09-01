@@ -7,7 +7,8 @@
 \usepackage{amsmath}
 \usepackage{mathrsfs}
 \usepackage{nicefrac}
-\usepackage{hyperref}
+\usepackage{sectsty}
+\usepackage{hyperref} % <- should be last because it redefined \ref, etc..
 
 \newcommand{\IGNORE}[1]{}
 
@@ -17,6 +18,9 @@
 \colorlet{lightgray}{gray!50!white}
 \colorlet{darkgray}{gray!75!black}
 \colorlet{darkred}{red!75!black}
+
+\allsectionsfont{\sffamily\color{darkblue}}
+
 \newcommand{\textPointHeaderI}[1]{\textcolor{darkblue}{\textbf{\textsf{#1}}}}
 \newcommand{\textPointHeaderII}[1]{\textcolor{darkblue}{\textsf{#1}}}
 \newcommand{\textPointHeaderIII}[1]{\textcolor{lightgray}{\textsf{#1}}}
@@ -31,6 +35,9 @@
 \newcommand{\TODO}[1]{\textTodo{\textbf{TODO}:\ #1}}
 \newcommand{\define}[1]{\textDefine{#1}}
 \newcommand{\grayed}[1]{\textcolor{darkgray}{#1}}
+
+
+
 
 
 % Common symbols
