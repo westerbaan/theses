@@ -302,40 +302,136 @@ The other, non-trivial, direction follows
 directly from~\sref{inverse-permanence}.\qed%
 \end{point}
 \end{point}
-\begin{point}{Proposition}%
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}%
+The next order of business
+is to show that among the elements~$\lambda$ of the spectrum
+of an element~$a$ of a $C^*$-algebra~$\scrA$
+there is one with $\|a\|=\left|\lambda\right|$.
+Somewhat baffling,
+the canoncal and seemingly
+easiest way to derive this fact is by considering the power series
+expansing of a cleverly chosen $\scrA$-valued function
+(see~\sref{norm-spectrum}).
+To this end,
+we'll first quickly redevelop some complex analysis
+for~$\scrA$-valued functions
+(instead of $\C$-valued functions).
+\end{point}
+\begin{point}{Setting}%
+Fix a $C^*$-algebra~$\scrA$ for the remainder of this paragraph.
+For brevity,
+we'll say that a \define{function}
+is a partially defined map $f\colon \C\to \mathscr{A}$
+whose domain of definition $\dom(f)$ is an open subset of~$\C$.
+Such a function is called \define{holomorphic} at a point~$z\in \C$
+if $f$ is defined on~$z$ (that is, $z\in \dom(f)$),
+and 
+\begin{equation*}
+\frac{f(x)-f(y)}{x-y}
+\end{equation*}
+converges (with respect to the norm on~$\scrA$)
+to some element~$f'(x)$ of~$\scrA$
+as $y\in \dom(f)\backslash\{x\}$
+converges to~$x$.
+
+We say that~$f$ is \define{holomorphic}
+if~$f$ is holomorphic at~$x$ for all~$x\in \dom(f)$,
+and the function $z\mapsto f'(z)$
+with $\dom(f')=\dom(f)$
+is its \define{derivative}.
+\end{point}
+\begin{point}{Exercise}%
+Verify the following examples of holomorphic functions.
+\begin{enumerate}
+\item
+If~$f$ and $g$ are holomorphic functions with $\dom(f)=\dom(g)$,
+then $f+g$ and $f\cdot g$ are holomorphic,
+and $(f+g)'=f'+g'$ and $(f\cdot g)' = f'g+g'f$.
+
+\item
+The function~$f$ given by $f(z)=z$ and~$\dom(f)=\C$
+is holomorphic, and $f'(z)=1$ for all $z\in\C$.
+
+\item
+Let~$a\in \scrA$. The constant function $f$ given by $f(z)=a$
+for all~$z\in \C$ is holomorphic, and $f'(z)=0$ for all~$z\in \scrA$.
+
+\item
+Any polynomial,
+that is, function~$f$ of the form $f(z)\equiv a_n z^n+\dotsb+a_1 z+a_0$
+is holomorphic with $f'(z)=na_nz^{n-1}+\dotsb+2a_2z+a_1$.
+\end{enumerate}
+\end{point}
+\begin{point}[norm-spectrum]{Proposition}%
 For an element~$a$ of a $C^*$-algebra~$\scrA$,
 we have
-\begin{equation*}
-\|a\|\,=\,\sup\{\,\left|\lambda\right|\colon \,\lambda\in \spec(a)\,\}.
-\end{equation*}
+\begin{equation}
+\label{eq:norm-spectrum}
+\|a\|\,=\,\sup\{\,\left|\lambda\right|\colon 
+\,\lambda\in \spec(a)\backslash\{0\}\,\}.
+\end{equation}
 \begin{point}{Proof}%
-From~\sref{spectrum-bounded}
-we see that~$|\lambda|\leq \|a\|$
-for all~$\lambda\in\spec(a)$.
-Thus we only need to show
-that for every $\varepsilon>0$
-there is~$\lambda\in\spec(a)$ with $\|a\|-|\lambda| <\varepsilon$.
+Write~$r=
+\sup\{\left|\,\lambda\right|\colon\, \lambda\in \spec(a)\backslash\{0\}\,\}$.
+Since~$\left|\lambda\right| \leq \|a\|$
+for all~$\lambda\in\spec(a)$
+(\sref{spectrum-bounded})
+we see that~$r\leq \|a\|$.
+Thus we only need to show that~$\|a\|\leq r$. 
 \begin{point}%
-The trick is to consider the power series
-$z\sum_n (za)^n$.
-On the one hand,
-we know by~\TODO{divergence of the geometric series} 
-that~$z\sum_n (za)^n$ should diverge
-for some~$z\in\C$ with $\|za\| \geq 1$,
-that is, $\left|z\right|^{-1}\leq \|a\|$.
-
-On the other hand,
-the holomorphic function~$f$ defined on
-\begin{equation*}
-G\ :=\ \{0\}\,\cup \,\{\,z^{-1}\colon\,z\notin \spec(a)\,\}
-\end{equation*}
-by $f(0)=0$ and $f(z)=(z^{-1}-a)^{-1}$ for $z\neq 0$
-has a power series expansion around~$0$,
-that is, $f(z)=\sum_n a_n z^n$ for some $a_1,a_2,\dotsc \in\scrA$.
-By~\sref{geometric},
-it's easy to see that~$f(z)=z \sum_n (za)^n$.
- 
-\TODO{finish}
+The trick is to consider
+the power series expansion
+around~$0$ of the holomorphic function~$f$ defined
+on~$G:=\{\,z\in \C\colon 1-az\text{ is invertible}\,\}$ 
+by  $f(z)=z(1-az)^{-1}$.
+\end{point}
+\begin{point}%
+Indeed, we have $f(z) = \sum_n a^nz^{n+1}$
+for all~$z\in \C$ with $\left|z\right|\|a\|<1$
+because for such~$z$
+we have $\sum_n (az)^n=(1-az)^{-1}$
+by~\sref{geometric},
+and thus~$f(z)=z(1-az)^{-1}=z\sum_n (az)^n = \sum_n a^nz^{n+1}$.
+\end{point}
+\begin{point}[norm-spectrum-2]%
+Moreover,
+we know by
+\TODO{divergence of the geometric series},
+that there is a $z'\in\C$ with $\left|z'\right|\|a\|=1$
+such 
+that ($\sum_n(az')^n$ 
+and thus) $\sum_n a^n{z'}^{n+1}$ diverges.
+\end{point}
+\begin{point}%
+Let~$R$ denote the distance of~$0$ to
+the border of~$G$,
+that is, 
+$R= \inf\{\left|\lambda\right|\in \C\colon \lambda\notin G\}$.
+We claim that~$R^{-1}=r$.
+To begin,
+recall that $\lambda\notin G$ iff $1-a\lambda$ is invertible.
+Since clearly~$0\in G$,
+we have $\lambda\notin G$ iff $\lambda\neq 0$ and $\lambda^{-1}-a$ 
+is invertible, that is, $\lambda^{-1}\in \spec(a)\backslash\{0\}$.
+Thus we see that $R^{-1}=r$.
+\end{point}
+\begin{point}[norm-spectrum-3]%
+We know by~\TODO{power series expansion},
+that the expansion $f(z)=\sum_na^nz^{n+1}$
+must be valid not only for~$z\in\C$ with $\left|z\right|\|a\|<1$,
+but for all~$z\in\C$ with 
+$\|z\|< R$,
+that is, $\left|z\right|r\equiv \left|z\right| R^{-1} < 1$.
+In particular,
+for~$z'$ from~\sref{norm-spectrum-2}
+we cannot have $\|z'\| r <1$,
+and so we must have $\left|z'\right| r \geq 1$.
+Since~$\left|z'\right| \|a\|=1$,
+we see  that
+$r=\|a\|\left|z'\right| r \geq \|a\|$.\qed
 \end{point}
 \end{point}
 \end{point}
