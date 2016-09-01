@@ -1,5 +1,6 @@
 \documentclass[main]{subfiles}
 \begin{document}
+\section{$C^*$-algebras}
 \begin{parsec}%
 \begin{point}{Definition}%
 A \define{$C^*$-algebra}
@@ -38,16 +39,15 @@ holds, which is called the \define{$C^*$-identity}.
 The $C^*$-algebra $\scrA$ is called \define{commutative}
 if $ab=ba$ for all~$a,b\in\scrA$.
 \end{point}
-\end{parsec}
-\begin{parsec}%
-\begin{point}{Examples}%
+\begin{point}{Example}%
 The set~$\C$ of \define{complex numbers}
 forms a commutative  $C^*$-algebra
 in which addition, (scalar) multiplication, and~$1$
 have their usual meaning.
 Involution is given by conjugation ($z^*=\bar{z}$),
 and norm by modulus ($\|z\|=|z|$).
-\begin{point}%
+\end{point}
+\begin{point}{Example}%
 Let~$X$ be a compact Hausdorff space.
 The set $\define{C(X)}$ of \define{continuous functions}
 from~$\scrA$ to~$\C$
@@ -57,15 +57,12 @@ interpretted coordinatewise \grayed{(e.g.~$(f+g)(x)=f(x)+g(x)$)},
 and the norm is taken to be 
 $\|f\|=\sup_{x\in X} |f(x)|$
 (the \define{sup-norm}).
-\begin{point}%
+\end{point}
+\begin{point}{Example}%
 The set~$\scrB(\scrH)$ of bounded operators
 on a Hilbert space~$\scrH$ forms a $C^*$-algebra.
 \end{point}
-\end{point}
-\end{point}
-\end{parsec}
-\begin{parsec}%
-\begin{point}{Definition}
+\begin{point}{Definitions}%
 An element $a$ of a $C^*$-algebra $\scrA$ is called
 \begin{enumerate}
 \item \define{self-adjoint} if $a^* =a$;
@@ -76,45 +73,7 @@ if $a\equiv b^*b$ for some $b\in \scrA$;
 \item \define{central} if $ab=ba$ for all~$b\in\scrA$.
 \end{enumerate}
 \end{point}
-\end{parsec}
-%
-% morphisms between C^*-algebras
-%
-\begin{parsec}
-\begin{point}{Definition}
-A linear map $f\colon \scrA \to \scrB$
-between $C^*$-algebras
-is called
-\begin{enumerate}
-\item
-\define{\textbf{m}ultiplicative}
-if $f(ab)=f(a)f(b)$ for all $a,b\in\scrA$;
-\item
-\define{\textbf{i}nvolutive}
-if $f(a^*)=f(a)^*$ for all~$a\in\scrA$;
-\item
-\define{\textbf{p}ositive}
-if $f(a)$ is positive
-for every positive $a\in\scrA$, and
-\item
-\define{\textbf{u}nital}
-if $f(1)=1$.
-\end{enumerate}
-\end{point}
-\begin{point}%
-We use the bold letters as abbreviations,
-so for instance,
-$f$ is \define{pu} if it is positive and unital,
-and a \define{miu-map}
-is a multiplicative, involutive, unital linear map between $C^*$-algebras,
-(which is usually called a \define{unital $*$-homomorphism}.)
-\end{point}
-\end{parsec}
-%
-%
-%
-\begin{parsec}[ad-monotone]%
-\begin{point}{Exercise}%
+\begin{point}[ad-monotone]{Exercise}%
 Show that~$a^*ba$
 is positive
 when~$b$ is a positive of a $C^*$-algebra~$\scrA$,
@@ -127,11 +86,13 @@ and $a\in \scrA$ is any element.
 %
 \begin{parsec}%
 \begin{point}%
-We'll derive some basic facts about the invertible elements
-in $C^*$-algebra,
-that built up to the technicallt important result,
-that if an element $a$ of a $C^*$-subalgebra~$\scrB$
-of some (larger) $C^*$-algebra~$\scrA$
+Let us first study the invertible elements
+of a $C^*$-algebra,
+whose role 
+is as important as it is technical.
+This paragraph culminates in what is essentially
+ \emph{spectral permanence} (\sref{spectral-permanence}):
+the fact that if an element $a$ of a $C^*$-subalgebra $\scrB$
 is invertible in~$\scrA$,
 then~$a$ is already invertible in~$\scrB$,
 see~\sref{inverse-permanence}.
@@ -286,11 +247,6 @@ can be dropped.
 \end{parsec}
 
 
-
-%
-%	The spectrum
-%
-\subsection{The spectrum}
 \begin{parsec}%
 \begin{point}%
 We now turn to the \emph{spectrum} of an element of a $C^*$-algebra,
@@ -327,7 +283,7 @@ However, such careful bookkeeping turns out
 be unnecessary
 by the following result.
 \end{point}
-\begin{point}{Theorem (Spectral Permanence)}%
+\begin{point}[spectral-permanence]{Theorem (Spectral Permanence)}%
 Let~$\scrB$ be a $C^*$-subalgebra of a $C^*$-algebra $\scrA$.
 Then~$\spec_{\scrA}(a)=\spec_\scrB(a)$
 for every element~$a$ of~$\scrB$.
@@ -401,6 +357,39 @@ $\left|f(a^*b)\right|^2 \ \leq\ f(a^*a)\,f(b^*b)$.
 \end{parsec}
 
 
+%
+% morphisms between C^*-algebras
+%
+\begin{parsec}
+\begin{point}{Definition}
+A linear map $f\colon \scrA \to \scrB$
+between $C^*$-algebras
+is called
+\begin{enumerate}
+\item
+\define{\textbf{m}ultiplicative}
+if $f(ab)=f(a)f(b)$ for all $a,b\in\scrA$;
+\item
+\define{\textbf{i}nvolutive}
+if $f(a^*)=f(a)^*$ for all~$a\in\scrA$;
+\item
+\define{\textbf{p}ositive}
+if $f(a)$ is positive
+for every positive $a\in\scrA$, and
+\item
+\define{\textbf{u}nital}
+if $f(1)=1$.
+\end{enumerate}
+\end{point}
+\begin{point}%
+We use the bold letters as abbreviations,
+so for instance,
+$f$ is \define{pu} if it is positive and unital,
+and a \define{miu-map}
+is a multiplicative, involutive, unital linear map between $C^*$-algebras,
+(which is usually called a \define{unital $*$-homomorphism}.)
+\end{point}
+\end{parsec}
 
 
 \begin{parsec}[gelfand]%
