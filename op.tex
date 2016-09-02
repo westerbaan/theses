@@ -104,8 +104,6 @@ Let~$a$ be an element of a $C^*$-algebra~$\scrA$ with~$\|a\|<1$.
 Then~$a^\perp=1-a$ has an inverse,
 namely~$(a^\perp)^{-1}= \sum_{n=0}^\infty\, a^n$
 (norm convergence).
-
-\TODO{absolute convergence?}
 \begin{point}{Proof}%
 Note that
 $(1-\|a\|)\,(1+\|a\|+\|a\|^2+\dotsb+\|a\|^N) \,=\, 1-\|a\|^{N+1}$,
@@ -149,6 +147,15 @@ when~$b\in\scrA$ is invertible and $\|a\| < \|b\|$.
 \begin{point}%
 Show that $U:=\{\ b\in\scrA\colon\ \text{$b$ is invertible}\ \}$
 is an open subset of~$\scrA$.
+\end{point}
+\end{point}
+\begin{point}{Exercise}%
+Let~$a$ be an element of a $C^*$-algebra $\scrA$ with $\|a\|>1$.
+\begin{point}%
+Show that $1,\,a,\,a^2,\,a^3,\,\dotsc$ diverges.
+\end{point}
+\begin{point}[harmonic-divergence]%
+Show that $\sum_n a^n$ diverges.
 \end{point}
 \end{point}
 \begin{point}[cstar-inv-continuous]{Lemma}%
@@ -389,8 +396,7 @@ and thus~$f(z)=z(1-az)^{-1}=z\sum_n (az)^n = \sum_n a^nz^{n+1}$.
 \end{point}
 \begin{point}[norm-spectrum-2]%
 Moreover,
-we know by
-\TODO{divergence of the geometric series},
+we know by~\sref{harmonic-divergence}
 that for every $z\in\C$ with $\left|z\right|\|a\|>1$
 the series $\sum_n(az)^n$ 
 and thus $\sum_n a^n{z}^{n+1}$ diverges.
@@ -426,6 +432,26 @@ Since we can choose~$z$ such that  $\left|z\right|\|a\|\leq 1+\varepsilon$,
 we see that $\|a\|\leq \|a\|\left|z\right|r \leq (1+\varepsilon)r $,
 and so we are done.\qed
 \end{point}
+\end{point}
+\end{point}
+\begin{point}[spectrum-non-empty]{Corollary}%
+For an element~$a$ of a $C^*$-algebra,
+$\spec(a)\neq \varnothing$.
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}{Theorem (Gelfand--Mazur)}%
+Let~$\scrA$ be a $C^*$-algebra in which every non-zero element
+has an inverse, but $0\neq 1$.
+Then~$\scrA = \C$.
+\begin{point}{Proof}%
+Let~$a\in\scrA$.
+Since~$\spec(a)\neq \varnothing$ by~\sref{spectrum-non-empty},
+there is~$\lambda\in \scrA$
+such that~$a-\lambda$ is not invertible.
+Since every non-zero element in~$\scrA$ has an inverse in~$\scrA$
+by assumption,
+we have $a-\lambda=0$, and so $a=\lambda$.\qed
 \end{point}
 \end{point}
 \end{parsec}
