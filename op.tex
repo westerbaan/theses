@@ -246,17 +246,6 @@ can be dropped.
 
 (Hint: consider $a^*a$; c.f.~Conway Proposition VIII.1.14.)
 \end{point}
-\end{parsec}
-
-
-\begin{parsec}%
-\begin{point}%
-We now turn to the \emph{spectrum} of an element of a $C^*$-algebra,
-which not only 
-generalises the notion of eigenvalue also to infinite dimensions,
-but is important in the proof
-of Gelfand's representation theorem too. \TODO{add ref.}
-\end{point}
 \begin{point}{Definition}%
 The \define{spectrum} of an element $a$
 of a $C^*$-algebra
@@ -368,11 +357,10 @@ is holomorphic with $f'(z)=na_nz^{n-1}+\dotsb+2a_2z+a_1$.
 \begin{point}[norm-spectrum]{Proposition}%
 For an element~$a$ of a $C^*$-algebra~$\scrA$,
 we have
-\begin{equation}
-\label{eq:norm-spectrum}
+\begin{equation*}
 \|a\|\,=\,\sup\{\,\left|\lambda\right|\colon 
 \,\lambda\in \spec(a)\backslash\{0\}\,\}.
-\end{equation}
+\end{equation*}
 \begin{point}{Proof}%
 Write~$r=
 \sup\{\left|\,\lambda\right|\colon\, \lambda\in \spec(a)\backslash\{0\}\,\}$.
@@ -381,6 +369,9 @@ for all~$\lambda\in\spec(a)$
 (\sref{spectrum-bounded})
 we see that~$r\leq \|a\|$.
 Thus we only need to show that~$\|a\|\leq r$. 
+
+Let~$\varepsilon>0$ be given.
+It suffices to show that~$\|a\|\leq (1+\varepsilon)\,r$.
 \begin{point}%
 The trick is to consider
 the power series expansion
@@ -400,10 +391,9 @@ and thus~$f(z)=z(1-az)^{-1}=z\sum_n (az)^n = \sum_n a^nz^{n+1}$.
 Moreover,
 we know by
 \TODO{divergence of the geometric series},
-that there is a $z'\in\C$ with $\left|z'\right|\|a\|=1$
-such 
-that ($\sum_n(az')^n$ 
-and thus) $\sum_n a^n{z'}^{n+1}$ diverges.
+that for every $z\in\C$ with $\left|z\right|\|a\|>1$
+the series $\sum_n(az)^n$ 
+and thus $\sum_n a^n{z}^{n+1}$ diverges.
 \end{point}
 \begin{point}%
 Let~$R$ denote the distance of~$0$ to
@@ -426,12 +416,15 @@ but for all~$z\in\C$ with
 $\|z\|< R$,
 that is, $\left|z\right|r\equiv \left|z\right| R^{-1} < 1$.
 In particular,
-for~$z'$ from~\sref{norm-spectrum-2}
-we cannot have $\|z'\| r <1$,
-and so we must have $\left|z'\right| r \geq 1$.
-Since~$\left|z'\right| \|a\|=1$,
-we see  that
-$r=\|a\|\left|z'\right| r \geq \|a\|$.\qed
+for any~$z$ with $\left|z\right|\|a\|>1$ 
+(see~\sref{norm-spectrum-2})
+we cannot have $\|z\| r <1$,
+and so we must have $\left|z\right| r \geq 1$.
+Multiplying by~$\|a\|$,
+we see that $\|a\|\leq \|a\|\left|z\right|r$.
+Since we can choose~$z$ such that  $\left|z\right|\|a\|\leq 1+\varepsilon$,
+we see that $\|a\|\leq \|a\|\left|z\right|r \leq (1+\varepsilon)r $,
+and so we are done.\qed
 \end{point}
 \end{point}
 \end{point}
