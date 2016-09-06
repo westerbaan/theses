@@ -366,11 +366,104 @@ that is, function~$f$ of the form $f(z)\equiv a_n z^n+\dotsb+a_1 z+a_0$
 is holomorphic with $f'(z)=na_nz^{n-1}+\dotsb+2a_2z+a_1$.
 \end{enumerate}
 \end{point}
+\TODO{Definition of polygonal paths}
+\TODO{Definition of integration along these}
 \begin{point}{Goursat's Theorem}%
 Let~$f$ be a holomorphic function,
 and let~$T$ be a triangle whose interior
 is entirely contained in~$\dom(f)$.
 Then~$\int_T f = 0$.
+\begin{point}[goursat-1]{Proof}%
+Note that if~$f$ has a primitive,
+that is, $f\equiv g'$ for some holomorphic function~$g$,
+then it is clear that~$\int_T f=0$
+by \TODO{the fundamental theorem of calculus}.
+Although it is true that every holomorphic function
+with simply connected domain has a primitive,
+this result is not yet available 
+(and in fact depends on this very theorem).
+Instead we will approximate~$f$
+by an affine function
+(which does have a primitive)
+using the derivative of~$f$.
+But since such an approximation only
+concerns a single point,
+we first need to zoom in.
+\begin{point}[goursat-2]%
+If we split~$T$ into four similar triangles
+$T^\text{i}$, $T^\text{ii}$,
+$T^\text{iii}$, $T^\text{iv}$
+(see picture~\TODO{})
+we have $\smash{\int_Tf = \sum_{n={\text{i}}}^{\text{iv}} \int_{T^n}f}$.
+There is $T'$ among
+$T^\text{i}$, $T^\text{ii}$,
+$T^\text{iii}$, $T^\text{iv}$
+with 
+ $\|\int_Tf\|\leq 4 \|\int_{T'} f\|$.
+Clearly, $\length(T)=2\length(T')$.
+Write~$T_0 := T$ and $T_1 := T'$. 
+
+From this it is clear how to
+ get a sequence of similar triangles $T_0, T_1, T_2, \dotsc$
+with $\|\int_Tf\|\leq 4^n \|\int_{T_n} f\|$,
+and $\length(T)=2^n\length(T_n)$.
+\end{point}
+\begin{point}%
+If we pick a point on each triangle~$T_n$ 
+we get a Cauchy sequence
+that converges to some point~$z_0\in\C$
+which lies in (or on) each of the triangles~$T_1,T_2,\dotsc$.
+We can approximate $f$ by an affine
+function at~$z_0$ as follows.
+For $z\in \dom(f)$,
+\begin{equation*}
+f(z)\ = \ f(z_0)\,+\,f'(z_0)\,(z-z_0)\,+\,r(z)\,(z-z_0),
+\end{equation*}
+where~$r\colon \dom(f)\to \C$
+is given by $r(z)=f'(z_0)-(f(z)-f(z_0))(z-z_0)^{-1}$ for $z\neq z_0$
+and $r(z_0)=0$.
+We see that~$r(z)$ converges to~$0$ as~$z\to z_0$.
+
+Let~$\varepsilon >0$ be given.
+There is~$\delta>0$
+such that $z\in\dom(f)$
+and $\|r(z)\|\leq \varepsilon$
+for all~$z\in \C$ with $\|z-z_0\|<\delta$.
+There is~$n$ such that the triangle~$T_n$ is contained
+in the ball around~$z_0$ of radius~$\delta$.
+Note that $\int_{T_n} f(z_0)+f'(z_0)(z-z_0)\,dz=0$
+by the discussion in~\sref{goursat-1}, because
+the integrated function is affine.
+Thus
+\begin{equation*}
+\textstyle
+\int_{T_n} f \  = \ \int_{T_n}r(z)\,(z-z_0)\,dz.
+\end{equation*}
+Note that for $z\in T_n$,
+we have  $\|z-z_0\|\leq \length(T_n)$,
+and $\|r(z)\|\leq \varepsilon$ (because $\|z-z_0\|\leq \delta$),
+and so $\|r(z)(z-z_0)\|\leq \varepsilon\,\length(T_n)$.
+Thus:
+\begin{equation*}
+\textstyle
+\|\int_{T_n} f\| \  = \ \|\int_{T_n}r(z)\,(z-z_0)\,dz\|
+\ \leq\ \varepsilon\length(T_n)^2.
+\end{equation*}
+Using the inequalities from~\sref{goursat-2},
+we get
+\begin{equation*}
+\textstyle
+\|\int_T f\|\ \leq\ 4^n\, \|\int_{T_n} f\|
+\ \leq\ \varepsilon \,4^n\,\length(T_n)^2 
+\ \equiv\ \varepsilon \length(T)^2.
+\end{equation*}
+Since~$\varepsilon>0$ was arbitrary,
+we see that~$\int_T f=0$.\qed
+\end{point}
+\end{point}
+
+
+(Proof is based on~\cite{moore1900}.)
 \end{point}
 \begin{point}[norm-spectrum]{Proposition}%
 For an element~$a$ of a $C^*$-algebra~$\scrA$,
