@@ -465,7 +465,7 @@ we see that~$\int_T f=0$.\qed
 
 (Proof is based on~\cite{moore1900}.)
 \end{point}%
-\begin{point}{Theorem (Cauchy's Integral Formula)}%
+\begin{point}[cauchy-formula]{Theorem (Cauchy's Integral Formula)}%
 Let~$f$ be a holomorphic $\scrA$-valued function.
 Let~$p$ be a simple positively oriented 
 polygon with $\interior(p)\subseteq\dom(f)$.
@@ -514,6 +514,39 @@ Since~$\varepsilon>0$ was arbitrary,
 we get Eq.~\eqref{eq:cauchy-formula-1}
 from Eq.~\eqref{eq:cauchy-formula-2}.\qed
 \end{point}
+\end{point}
+\end{point}
+\begin{point}[taylor]{Proposition}%
+Let~$f$ be a holomorphic $\scrA$-valued function.
+Let~$p$ be a simple positively oriented polygon 
+with $\interior(p) \subseteq \dom(f)$.
+Then for all~$w,z\in \interior(p)$
+with $\|z-w\|<\inf_{u\in \partial p} \left| u-w \right|$,
+we have:
+\begin{equation*}
+f(z)\ = \ 
+\sum_{n=0}^\infty \ \frac{1}{2\pi i}\int_p \frac{f(u)}{(u-w)^{n+1}}\,du
+\ (z-w)^n.
+\end{equation*} 
+\begin{point}{Proof}%
+By~\sref{cauchy-formula} we have
+\begin{alignat*}{3}
+2\pi if(z)\ &=\  \int_p \frac{f(u)}{u-z}\,du
+\ =\ 
+  \int_p  \frac{f(u)}{u-w}\,\frac{1}{1-\frac{z-w}{u-w}}\,du
+\end{alignat*}
+Since~$\left|z-w\right|<\left|u-w\right|$
+for~$u\in \partial p$,
+we get, by~\sref{geometric},
+\begin{equation*}
+2\pi if(z) \ = \ 
+  \int_p \frac{f(u)}{u-w}\, \sum_{n=0}^\infty 
+\frac{(z-w)^n}{(u-w)^n}
+ \,du\ = \ 
+  \sum_{n=0}^\infty \ \int_p   \frac{f(u)}{(u-w)^{n+1}}du \ (z-w)^n,
+\end{equation*}
+where the interchange of ``$\sum$'' and ``$\int$''
+was allowed by~\TODO{to add}.\qed
 \end{point}
 \end{point}
 \begin{point}[norm-spectrum]{Proposition}%
@@ -570,7 +603,7 @@ is invertible, that is, $\lambda^{-1}\in \spec(a)\backslash\{0\}$.
 Thus we see that $R^{-1}=r$.
 \end{point}
 \begin{point}[norm-spectrum-3]%
-We know by~\TODO{power series expansion},
+We know by~\sref{taylor}
 that the expansion $f(z)=\sum_na^nz^{n+1}$
 must be valid not only for~$z\in\C$ with $\left|z\right|\|a\|<1$,
 but for all~$z\in\C$ with 
