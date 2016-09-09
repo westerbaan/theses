@@ -368,7 +368,7 @@ is holomorphic with $f'(z)=na_nz^{n-1}+\dotsb+2a_2z+a_1$.
 \end{point}
 \TODO{Definition of polygonal paths}
 \TODO{Definition of integration along these}
-\begin{point}{Goursat's Theorem}%
+\begin{point}[goursat]{Goursat's Theorem}%
 Let~$f$ be a holomorphic function,
 and let~$T$ be a triangle whose interior
 is entirely contained in~$\dom(f)$.
@@ -464,6 +464,57 @@ we see that~$\int_T f=0$.\qed
 
 
 (Proof is based on~\cite{moore1900}.)
+\end{point}%
+\begin{point}{Theorem (Cauchy's Integral Formula)}%
+Let~$f$ be a holomorphic $\scrA$-valued function.
+Let~$p$ be a simple positively oriented 
+polygon with $\interior(p)\subseteq\dom(f)$.
+Then for $z_0\in \interior(p)$,
+\begin{equation*}
+f(z_0)\ = \ \frac{1}{2\pi i}\,\int_p \frac{f(z)}{z-z_0}\,dz
+\end{equation*}
+\begin{point}{Proof}%
+Since~$\int_p \frac{f(z_0)}{z-z_0}\,dz
+= 2\pi i f(z_0)$ by~\TODO{reason},
+it suffices to show that
+\begin{equation}
+\label{eq:cauchy-formula-1}
+\int_p \frac{f(z)-f(z_0)}{z-z_0}\,dz \ = \ 0.
+\end{equation}
+\begin{point}[cauchy-formula-1]%
+Let~$\varepsilon>0$ be given.
+Since~$f$ is holomorphic at~$z_0$
+we can find $\delta>0$ with
+$\|f(z)-f(z_0)\|\leq \|z-z_0\|$
+for all~$z\in\dom(f)$ with $\|z-z_0\|\leq \delta$. 
+\end{point}
+\begin{point}%
+To use~\sref{cauchy-formula-1},
+we must restrict our attention to a smaller polygon.
+Let~$q$ be a simple positively oriented polygon 
+with $z_0\in \interior(q)$,  $\overline{q}\subseteq \interior(p)$,
+$\length(q)\leq \varepsilon$,
+and $\|z_0-z\|\leq \delta$ for all~$z\in \partial q$.
+By~\sref{goursat}, we have
+\begin{equation}
+\label{eq:cauchy-formula-2}
+\int_p \frac{f(z)-f(z_0)}{z-z_0}
+\ = \ 
+\int_q \frac{f(z)-f(z_0)}{z-z_0}.
+\end{equation}
+By~\sref{cauchy-formula-1}
+we have
+\begin{equation*}
+\left\|\,\int_q \frac{f(z)-f(z_0)}{z-z_0}\,dz\,\right\|
+\ \leq \ \length(q)\,\cdot\,
+\sup_{z\in\partial q} \,\left\|\,\frac{f(z)-f(z_0)}{z-z_0}\,\right\|
+\ \leq \ \varepsilon.
+\end{equation*}
+Since~$\varepsilon>0$ was arbitrary,
+we get Eq.~\eqref{eq:cauchy-formula-1}
+from Eq.~\eqref{eq:cauchy-formula-2}.\qed
+\end{point}
+\end{point}
 \end{point}
 \begin{point}[norm-spectrum]{Proposition}%
 For an element~$a$ of a $C^*$-algebra~$\scrA$,
