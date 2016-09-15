@@ -128,8 +128,8 @@
 				\par\penalty-50\vskip.3em\noindent%
 			}{%
 				\par\penalty-25\vskip.2em\noindent%
-			}
-		}
+			}%
+		}%
 		\marginnote{\makebox[2em][c]{%
 			\ifthenelse{\equal{\value{pointdepth}}{1}}{%
 				\textPointNumberI{\Roman{point}}%
@@ -148,7 +148,7 @@
 			\ifthenelse{\equal{\value{pointdepth}}{2}}{%
 				\textPointHeaderII{#2}%
 			}{%
-				\textPointHeaderIII{#2}%
+				\textPointHeaderIII{(#2)}%
 			}}%
 	\ \ }%	
 }{%
