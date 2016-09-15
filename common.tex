@@ -117,7 +117,15 @@
 	\refstepcounter{point}%
 	\IfValueT{#1}{\label{#1}}%
 	\ifthenelse{\equal{\value{point}}{1}}{}{%
-		\par\penalty-100\vskip.3em\noindent%
+		\ifthenelse{\equal{\value{pointdepth}}{1}}{%
+			\par\penalty-100\vskip.5em\noindent%
+		}{%
+			\ifthenelse{\equal{\value{pointdepth}}{2}}{%
+				\par\penalty-50\vskip.3em\noindent%
+			}{%
+				\par\penalty-25\vskip.2em\noindent%
+			}
+		}
 		\marginnote{\makebox[2em][c]{%
 			\ifthenelse{\equal{\value{pointdepth}}{1}}{%
 				\textPointNumberI{\Roman{point}}%
