@@ -9,6 +9,7 @@
 \usepackage{mathrsfs}
 \usepackage{nicefrac}
 \usepackage{sectsty}
+\usepackage{xypic}
 \usepackage{hyperref} % <- should be last because it redefined \ref, etc..
 
 \newcommand{\IGNORE}[1]{}
@@ -34,11 +35,12 @@
 \newcommand{\textTodo}[1]{\textcolor{darkred}{#1}}
 
 \newcommand{\TODO}[1]{\textTodo{\textbf{TODO}:\ #1}}
-\newcommand{\define}[1]{\textDefine{#1}}
+\newcommand{\Define}[1]{\textDefine{#1}}
 \newcommand{\grayed}[1]{\textcolor{darkgray}{#1}}
 
 \newcommand{\Cat}[1]{\mathbf{#1}}
 \newcommand{\cW}[1]{\Cat{cW}^*_{\text{\textsc{#1}}}}
+\newcommand{\W}[1]{\Cat{W}^*_{\text{\textsc{#1}}}}
 
 
 
@@ -62,6 +64,9 @@
 \DeclareMathOperator{\interior}{in}
 \DeclareMathOperator{\Stat}{Stat}
 \DeclareMathOperator{\Cont}{C}
+\DeclareMathOperator{\Colim}{Colim}
+\DeclareMathOperator{\id}{id}
+\DeclareMathOperator{\hZ}{hZ}
 
 
 % typesetting theorems
