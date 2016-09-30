@@ -643,6 +643,33 @@ we have $a-\lambda=0$, and so $a=\lambda$.\qed
 \end{point}
 \end{point}
 \end{parsec}
+\begin{parsec}%
+\begin{point}%
+To apply this version of Gelfand--Mazur,
+we must first study the positive elements,
+approximate identity,
+and quotients of $C^*$-algebras,
+in that order.
+\end{point}
+\begin{point}{Proposition}%
+For a self-adjoint element $a$ of a $C^*$-algebra~$\scrA$,
+the following are equivalent.
+\begin{enumerate}
+\item $\|a-t\|\leq t$
+for some $t\geq \frac{1}{2}\|a\|$;
+\item $\|a-t\|\leq t$
+for all $t\geq \frac{1}{2}\|a\|$;
+\item 
+$\lambda\geq 0$ for all $\lambda \in \spec(a)$.
+\end{enumerate}
+\begin{point}{Proof}%
+\TODO{do}
+\end{point}
+\end{point}
+\begin{point}%
+\TODO{Can we already show that $a^*a$ is positive?}
+\end{point}
+\end{parsec}
 
 
 
@@ -739,6 +766,27 @@ then~$b$ commutes with~$\sqrt{a}$.
 \begin{point}{Exercise}
 Show that a positive map between $C^*$-algebras
 is involutive.
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}%
+We now turn to quotients of $C^*$-algebras.
+\TODO{Do we need quotients of $C^*$-algebras?}
+\end{point}
+\begin{point}{Definition}%
+An \Define{ideal} of a $C^*$-algebra~$\scrA$
+is linear subspace~$\scrD$ of~$\scrA$
+such that	
+\begin{enumerate}
+\item $ad,da\in \scrD$ for all $a\in \scrA$ and $d\in \scrD$, and
+\item $d^* \in \scrD$ for all $d\in \scrD$.
+\end{enumerate}
+\begin{point}{Remark}%
+The second requirement turns out to be redundant
+(see~\TODO{}),
+and is therefor omitted in the literature.
+\end{point}
 \end{point}
 \end{parsec}
 
@@ -1329,4 +1377,297 @@ and~$\floor{a}=\bigwedge_n a^{2^n}$ (see~\sref{vna-floor}).
 \end{point}
 \end{parsec}
 
+\begin{parsec}%
+\begin{point}%
+Parsec about commutative $C^*$-algebras:
+\end{point}
+\begin{point}[ccstar-proj]{Theorem}%
+The projections~$\Proj(\scrA)$ of a commutative $C^*$-algebra~$\scrA$
+form a Boolean algebra.
+If~$\scrA$ is monotone complete,
+then~$\Proj(\scrA)$ is a complete Boolean algebra.
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}%
+Let us now turn to quotients of von Neumann algebras.
+Recall that given a norm closed two-sided ideal~$\scrD$
+of a $C^*$-algebra $\scrA$
+we can form the quotient $\scrA/\scrD$,
+(which is again a $C^*$-algebra),
+and the quotient map $q\colon \scrA\to \scrA/\scrD$
+which is a \textsc{miu}-map.
+If~$\scrA$ is a von Neumann algebra,
+then~$\scrA/\scrD$ might not be a von Neumann algebra,
+either because~$\scrA/\scrD$ is not be monotone complete 
+(see~\sref{vn-quotient-not-monotone-complete}),
+or because~$\scrA/\scrD$ does not have a separating set of normal states
+(see~\TODO{}).
+However, if~$\scrD$ is ultraweakly closed,
+then~$\scrA/\scrD$ is a von Neumann algebra,
+as one might have suspected.
+To prove this,
+we need the somewhat surprising
+fact that every ultraweakly closed
+ideal~$\scrD$ is of the form $\scrD\equiv c\scrA$,
+where~$c$ is a central projection~$c$ of~$\scrA$.
+(The quotient~$\scrA/c\scrA$ is then simply~$c^\perp\scrA$.)
+\TODO{connection between uw-closed ideals and central projections}
+\TODO{universal property for \textsc{n(c)p(s)(u)}-maps}
+\end{point}
+\begin{point}[vn-quotient-not-monotone-complete]{Example}%
+The quotient of a von Neumann algebra
+by an closed ideal
+need not be a von Neumann algebra:
+we will show that $\ell^\infty/c_0$
+is not monotone complete,
+where~$\ell^\infty$ is the von Neumann algebra
+of bounded sequences,
+and~$c_0\subseteq \ell^\infty$
+is the norm closed ideal of
+sequences which converge to~$0$.
+By~\sref{ccstar-proj}
+it suffices to show that the Boolean algebra~$\Proj(\ell^\infty/c_0)$
+of projections of~$\ell^\infty/c_0$ is not complete.
+\begin{point}%
+We claim that $\Proj(\ell^\infty/c_0)$
+is isomorphic to the Boolean algebra
+ $\wp(\N)/\wp_{fin}(\N)$
+of subsets of~$\N$ modulo 
+the filter~$\wp_{fin}(\N)$ of finite subsets.
+
+It is easy to see that the assignment $A\mapsto [\mathbf{1}_A]_{c_0}$
+(where $\mathbf{1}_A$ is the indicator function of~$A$)
+gives a Boolean algebra homomorphism 
+$f\colon \wp(\N)\to \Proj(\ell^\infty/c_0)$,
+that the kernel of~$f$
+is $\wp_{fin}(\N)$
+(because for $A\subseteq \N$
+we have $\mathbf{1}_A\in c_0$ iff $A$ is finite).
+It remains to be shown that~$f$ is surjective,
+which requires some fiddling.
+
+Let~$\alpha\in \ell^\infty$
+be
+such that $[\alpha]_{c_0}$ is a projection in $\ell^\infty/c_0$.
+We claim that
+$\mathbf{1}_A - \alpha \in c_0$ (and so $\alpha=f(A)$)
+for some~$A\subseteq \N$.
+Note that since $[\alpha]_{c_0}$ is self-adjoint,
+we have $[\alpha]_{c_0}=(\,[\alpha]_{c_0}\,)_\R = [\,\alpha_\R\,]_{c_0}$,
+and so we may assume without loss of generality
+that~$\alpha$ is self-adjoint
+(replacing $\alpha$ by $\alpha_\R$ is necessary).
+Define $A=\{n\in\N\colon \left|1-\alpha(n)\right|<\frac{1}{2}\}$.
+
+Let~$\varepsilon>0$ with $\varepsilon<\nicefrac{1}{2}$ be given.
+We must find~$N\in\N$ with 
+$\left| \mathbf{1}_A(n)-\alpha(n)\right|\leq \varepsilon$
+for all~$n\geq N$.
+Since~$[\alpha]_{c_0}$ is a projection,
+$\alpha-\alpha^2\in c_0$,
+and so
+there is~$N\in \N$
+with $\left|\alpha(n)\right| \,\left| 1-\alpha(n)\right|
+\,\equiv\, \left| \alpha(n) - \alpha(n)^2 \right| \leq 
+\nicefrac{1}{2}\,\varepsilon < \nicefrac{1}{4}$
+for all~$n\geq N$.
+
+Let~$n\geq N$ be given.
+Note that either 
+$\left|1-\alpha(n)\right|\geq \nicefrac{1}{2}$
+or 
+$\left|\alpha(n)\right|\geq \nicefrac{1}{2}$.
+If~$\left|1-\alpha(n)\right|\geq\nicefrac{1}{2}$,
+then $\mathbf{1}_A(n)=0$
+(by definition of~$A$),
+and so $\left|\mathbf{1}_A(n)-\alpha(n)\right|\equiv \left|\alpha(n)\right| 
+\leq 2 \,\left|\alpha(n)\right|\,\left| 1-\alpha(n)\right|
+\leq \varepsilon$.
+On the other hand,
+if  $\left|\alpha(n)\right| \geq \nicefrac{1}{2}$,
+then $\left|1-\alpha(n)\right| < \nicefrac{1}{2}$
+(because otherwise $\left|\alpha(n)\right|\left|1-\alpha(n)\right|
+\geq \nicefrac{1}{4}$),
+so $\mathbf{1}_A(n)=1$,
+and thus
+$\left|\mathbf{1}_A(n)-\alpha(n)\right|
+\equiv \left|1-\alpha(n)\right|
+\leq 2 \left|\alpha(n)\right|\left|1-\alpha(n)\right|
+\leq \varepsilon$.
+
+Hence $\mathbf{1}_A - \alpha \in c_0$,
+and so~$f$ is surjective.
+It follows that $\Proj(\ell^\infty/c_0)$
+is isomorphic to $\wp(\N)/\wp_{fin}(\N)$.
+\end{point}
+\begin{point}%
+We claim that the Boolean algebra~$\wp(\N)/\wp_{fin}(\N)$
+is not complete.
+To see this,
+find a partition of~$\N$ into infinite subsets
+$A_1,A_2,\dotsc$.
+We claim that~$A_1,A_2,\dotsc$ has no supremum in~$\wp(\N)/\wp_{fin}(\N)$
+because there is no minimal upper bound.
+Indeed,
+let~$A$ be an upper bound of~$A_1,A_2,\dotsc$ in~$\wp(\N)/\wp_{fin}(\N)$,
+that is, $A_n\backslash A$ is finite for every~$n$;
+we will define an upper bound~$A'$ of $A_1,A_2,\dotsc$
+which is strictly below~$A$ in~$\wp(\N)/\wp_{fin}(\N)$.
+Since~$A_n$ is infinite,
+and~$A_n\backslash A$ is finite,
+we can pick $a_n\in A_n\cap A$ for each~$n$.
+Then~$A':=A \backslash \{a_1,a_2,a_3,\dotsc\}$
+is an upper bound for~$A_1,A_2,\dotsc$,
+because $A_n\backslash A' = (A_n\backslash A)\cup\{a_n\}$ is finite
+for each~$n$,
+and~$A'$ is strictly below~$A$ in~$\wp(\N)/\wp_{fin}(\N)$,
+because $A'\backslash A$ is infinite.
+Hence~$\wp(\N)/\wp_{fin}(\N)$
+is not complete.
+\end{point}
+\begin{point}%
+\TODO{connection with $\beta\N\backslash\N$
+being non-Stonean.}
+\end{point}
+\end{point}
+\begin{point}{Proposition}%
+\label{prop:weakly-closed-ideal}
+For every ultraweakly closed two-sided
+ideal~$\mathscr{D}$ of a von Neumann algebra~$\scrA$
+there is a unique central projection~$c\in\scrA$
+such that $\mathscr{D} = c\scrA$.
+
+Moreover, $c$ is the greatest projection in~$\mathscr{D}$.
+\begin{point}{Proof}%
+\emph{(if $a\in \mathscr{D}\cap [0,1]_{\scrA}$, 
+then $\ceil{a}\in\mathscr{D}$)}\ 
+Let~$a\in\mathscr{D}$ with $0\leq a \leq 1$
+be given.
+Recall that $\ceil{a}$
+is the ultraweak limit of $a,\ a^{\frac{1}{2}},\ a^{\frac{1}{4}},\ \dotsc$.
+Since~$\mathscr{D}$ is a $C^*$-subalgebra of~$\scrA$,
+we have $a^{\frac{1}{2}}\in \mathscr{D}$.
+Then $(a^{\frac{1}{2}})^{\frac{1}{2}} \equiv a^{\frac{1}{4}}\in \mathscr{D}$
+by the same token,
+and so on.
+Thus, as~$\mathscr{D}$ is ultraweakly closed, $\ceil{a}\in\mathscr{D}$.
+
+\emph{($\mathscr{D}\cap [0,1]_\scrA$ is directed)}\ 
+Let~$a,b\in \mathscr{D}\cap[0,1]_\scrA$ be given.
+We're looking for an element~$u\in \mathscr{D}\cap[0,1]_\scrA$
+with $a\leq u$ and $b\leq u$.
+Note that $\frac{1}{2}a + \frac{1}{2}b$
+is in~$\mathscr{D}\cap[0,1]_{\scrA}$.
+Define
+$u:=\ceil{\frac{1}{2}a+\frac{1}{2}b}$.
+Then  $u\in \mathscr{D}\cap[0,1]_\scrA$
+by the previous point.
+Now, 
+as $\frac{1}{2}a \leq \frac{1}{2}a+\frac{1}{2}b \leq u$,
+we have $a \leq \ceil{a} =\ceil{\frac{1}{2}a} \leq 
+\ceil{ \frac{1}{2}a+\frac{1}{2}b} = u$.
+Similarly, $b\leq u$.
+
+
+\emph{($\mathscr{D}\cap [0,1]_\scrA$
+has a greatest element, $c$)}\ 
+As~$\mathscr{D}\cap[0,1]_\scrA$
+is a directed subset of self-adjoint elements 
+of~$\scrA$ bounded above by~$1$,
+it has a supremum in~$\scrA_\mathrm{sa}$,
+say~$c$.
+As~$c$ is the ultraweak limit of~$(c)_{c\in \mathscr{D}\cap[0,1]_\scrA}$
+and~$\mathscr{D}\cap[0,1]_\scrA$ is ultraweakly closed,
+we have~$c\in \mathscr{D}\cap[0,1]_\scrA$.
+Thus~$c$ is the greatest element of~$\mathscr{D}\cap[0,1]_\scrA$.
+
+\emph{($c$ is a projection)}\ 
+It suffices to show that~$c=\ceil{c}$ since~$\ceil{c}$ is a projection.
+Since~$c\leq \ceil{c}$, it suffices to show that~$\ceil{c}\leq c$.
+As before,~$c\in \mathscr{D}\cap[0,1]_\scrA$
+entails~$\ceil{c}\in\mathscr{D}\cap[0,1]_\scrA$.
+Thus~$\ceil{c}\leq c$, since~$c$ is the
+greatest element of~$\mathscr{D}\cap[0,1]_\scrA$.
+Hence~$c=\ceil{c}$ is a projection.
+
+\emph{(for all $a\in \scrA$
+we have: $a\in \mathscr{D}$ iff $ca=a$)}\ 
+Since~$c\in \mathscr{D}$,
+and~$\mathscr{D}$ is a two-sided ideal,
+$ca\in \mathscr{D}$, and so $ca=a$ entails~$a\in\mathscr{D}$.
+Thus we only need to show that~$a\in\mathscr{D}$
+entails~$ca=a$.
+Let~$a\in\mathscr{D}$
+be given.
+We must show that~$ca=a$.
+
+If~$a\in [0,1]_\scrA$,
+then this is clear:
+$a\leq c$, since~$c$ is the greatest element
+of~$\mathscr{D}\cap [0,1]_\scrA$,
+and so~$ca=ac=a$ by Lemma~\ref{lem:projection-order}.
+
+If~$a\in \scrA_{\mathrm{sa}}$
+with~$a\neq 0$,
+then $a\cdot\|a\|^{-1} \in [0,1]_\scrA\cap \mathscr{D}$,
+and so $ca \|a\|^{-1} = a \|a\|^{-1}$,
+which entails $ca = a$.
+
+(For arbitrary $a\in \scrA$,)
+we have $a= a_{\mathbb{R}} + i a_{\mathbb{I}}$,
+where $a_\mathbb{R}=\frac{1}{2}(a+a^*)$
+and $a_\mathbb{I} = \frac{1}{2i}(a-a^*)$
+are self-adjoint elements of~$\mathscr{D}$.
+Then~$ca_\mathbb{R}=a_\mathbb{R}$
+and $ca_\mathbb{I}=a_\mathbb{I}$
+by the previous paragraph.
+Thus~$ca=ca_\mathbb{R}+ica_\mathbb{I}=a_\mathbb{R}+ia_\mathbb{I}=a$.
+
+\emph{($c$ is central)}\ 
+Let~$a\in\scrA$ be given.
+We must show that~$ca=ac$.
+Since~$\mathscr{D}$ is a two-sided ideal,
+we have~$ac\in \mathscr{D}$,
+and so~$c(ac)=ac$ by the previous point.
+By a similar reasoning we get~$(ca)c=ca$.
+Thus~$ac=ca$.
+Thus~$c$ is central.
+
+\emph{($\mathscr{D} = c\scrA$)}\ 
+Clearly $c\scrA\subseteq\mathscr{D}$
+since~$c\in\mathscr{D}$ and~$\mathscr{D}$ is an ideal.
+On the other hand,
+if~$a\in\mathscr{D}$,
+then~$ca=a$
+(as we saw),
+and thus~$a\in c\scrA$.
+Hence~$\mathscr{D} = c\scrA$.
+
+\emph{(uniqueness)}\ 
+Let~$c_1$ and~$c_2$ be central projections 
+with~$c_1\scrA = \mathscr{D}=c_2\scrA$.
+We must show that~$c_1=c_2$.
+
+As~$c_2\in\mathscr{D}=c_1 \scrA$,
+there is~$a_1\in \scrA$
+with~$c_2 = c_1a_1$.
+Then~$c_2 = c_2c_2^* = c_1a_1a_1^*c_1^*\leq 
+c_1c_1^*\|a_1a_1^*\|=c_1\|a_1\|^2$.
+Thus~$c_1c_2=c_2c_1=c_2$ by Lemma~\ref{lem:projection-order}.
+
+Similarly, $c_2c_1 = c_1c_2 = c_1$, and so $c_1=c_1c_2=c_2$.
+
+\emph{($c$ is the greatest projection of~$\mathscr{D}$)}\ 
+Let~$p$ be a projection in~$\mathscr{D}$.
+We must show that~$p\leq c$.
+Since~$p$ is a projection,
+we have $0\leq p\leq 1$, and so $p\in \mathscr{D}\cap [0,1]_\scrA$.
+Thus, $p\leq c$, by definition of~$c$.
+\end{point}
+\end{point}
+
+
+\end{parsec}
 \end{document}
