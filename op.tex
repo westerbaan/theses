@@ -65,21 +65,31 @@ The set~$\scrB(\scrH)$ of bounded operators
 on a Hilbert space~$\scrH$ forms a $C^*$-algebra.
 \end{point}
 \begin{point}{Definitions}%
-An element $a$ of a $C^*$-algebra $\scrA$ is called
+Given an element $a$ of a $C^*$-algebra $\scrA$, 
 \begin{enumerate}
-\item \Define{self-adjoint} if $a^* =a$;
-\item \Define{positive}
-if $a\equiv b^*b$ for some $b\in \scrA$;
-\item an \Define{effect} if~$a$ and~$\Define{a^\perp}:=1-a$ are positive;
-\item a \Define{projection} if $a=a^*a$;
-\item \Define{central} if $ab=ba$ for all~$b\in\scrA$.
+\item we say that $a$ is \Define{self-adjoint} if $a^* =a$, and
+\item we write $\Define{\Real{a}}:= \frac{1}{2}(a+a^*)$
+and $\Define{\Imag{a}}:=\frac{1}{2i}(a-a^*)$.
 \end{enumerate}
+The set of self-adjoint elements of~$\scrA$
+is denoted by~$\sa{\scrA}$.
 \end{point}
-\begin{point}[ad-monotone]{Exercise}%
-Show that~$a^*ba$
-is positive
-when~$b$ is a positive of a $C^*$-algebra~$\scrA$,
-and $a\in \scrA$ is any element.
+\begin{point}{Exercise}%
+Let~$a$ be an element of a $C^*$-algebra.
+\begin{enumerate}
+\item 
+Show that $\Real{a}$ and $\Imag{a}$ are self-adjoint,
+and  $a= \Real{a}+i\Imag{a}$.
+\item
+Show that $\Real{(a^*)}=\Real{a}$ and $\Imag{(a^*)}=-\Imag{a}$.
+\item 
+Show that~$a$ is self-adjoint iff $\Real{a}=a$ iff $\Imag{a}=0$.
+\item
+Show that $a^*a$ is self-adjoint,
+and  $a^*a=\Real{a}^2+\Imag{a}^2+i(\Real{a}\Imag{a}-\Imag{a}\Real{a})$.
+\item
+Give an example of an~$a$ with  $\Real{a}\Imag{a} \neq \Imag{a}\Real{a}$.
+\end{enumerate}
 \end{point}
 \end{parsec}
 
@@ -134,29 +144,28 @@ we see that $\sum_n a^n$ is the inverse of~$1-a$.
 \end{point}
 \end{point}
 \end{point}
-\begin{point}{Exercise}
+\begin{point}[spectrum-bounded]{Exercise}
 Let~$a$ be an element of a $C^*$-algebra~$\scrA$.
-\begin{point}[spectrum-bounded]%
+\begin{enumerate}
+\item
 Show that $a-\lambda$ is invertible
 for every~$\lambda\in\C$ with~$\|a\|< \left|\lambda\right|$.
-\end{point}
-\begin{point}%
+\item
 Show that $a-b$ is invertible
 when~$b\in\scrA$ is invertible and $\|a\| < \|b\|$.
-\end{point}
-\begin{point}%
+\item
 Show that $U:=\{\ b\in\scrA\colon\ \text{$b$ is invertible}\ \}$
 is an open subset of~$\scrA$.
+\end{enumerate}
 \end{point}
-\end{point}
-\begin{point}{Exercise}%
+\begin{point}[harmonic-divergence]{Exercise}%
 Let~$a$ be an element of a $C^*$-algebra $\scrA$ with $\|a\|>1$.
-\begin{point}%
+\begin{enumerate}
+\item
 Show that $1,\,a,\,a^2,\,a^3,\,\dotsc$ diverges.
-\end{point}
-\begin{point}[harmonic-divergence]%
+\item
 Show that $\sum_n a^n$ diverges.
-\end{point}
+\end{enumerate}
 \end{point}
 \begin{point}[cstar-inv-continuous]{Lemma}%
 Let~$\scrA$ be a $C^*$-algebra.
@@ -221,9 +230,28 @@ and so $\|a+ni\| < n+1$.
 (Based on Kadison--Ringrose Proposition 4.1.1(ii).)
 \end{point}
 \begin{point}[spectrum-self-adjoint-real]{Exercise}%
-Let~$a$ be a self-adjoint element of a $C^*$-algebra,
-and let~$\lambda\in\C\backslash\R$.
-Show that~$a-\lambda$ is invertible.
+Let~$a$ be a self-adjoint element of a $C^*$-algebra.
+\begin{enumerate}
+\item
+Show that~$a-\lambda$ is invertible for all $\lambda\in \C\backslash \R$.
+\item
+Show that $a^2-\lambda$ is invertible for all 
+$\lambda\in \C\backslash[0,\infty)$.\\
+(Hint: first prove that
+ $a^2+1 \equiv (a+i)(a-i)$ is invertible.)
+
+Conclude that $a^n-\lambda$ is invertible for all 
+$\lambda\in\C\backslash[0,\infty)$ and \emph{even} $n\in\N$.
+\item
+Let~$n\in \N$ be \emph{odd}.
+Show that $a^n-\lambda$ is invertible
+for all~$\lambda\in \C\backslash[0,\infty)$
+if and only if $a-\lambda$ is invertible
+for all~$\lambda\in \C\backslash[0,\infty)$.\\
+(Hint: show that
+$a^n+1= \prod_{k=1}^n a+\zeta^{2k+1}$
+where $\zeta=e^{\frac{\pi i}{n}}$.)
+\end{enumerate}
 \end{point}
 \end{point}
 \begin{point}{Proposition}%
@@ -246,12 +274,12 @@ Thus, as all~$(a+\nicefrac{1}{n}i)^{-1}$ are in~$\scrA$,
 and~$\scrA$ is closed in~$\scrB$,
 we see that~$a^{-1}$ is in~$\scrA$.
 \end{point}
-\end{point}
 \begin{point}[inverse-permanence]{Exercise}%
 Show that the assumption that~$a$ is self-adjoint
 can be dropped. 
 
 (Hint: consider $a^*a$; c.f.~Conway Proposition VIII.1.14.)
+\end{point}
 \end{point}
 \begin{point}{Definition}%
 The \Define{spectrum} of an element $a$
@@ -259,13 +287,46 @@ of a $C^*$-algebra
 is the set \Define{$\spec(a)$}
 of complex numbers~$\lambda$
 for which~$a-\lambda$ is not invertible.
-\begin{point}{Example}%
-For a function $f\in C(X)$,
-we have $\spec(f) = f(X)$.
+\begin{point}{Exercise}%
+Verify the following examples.
+\begin{enumerate}
+\item
+The spectrum of a continuous function~$f\colon X\to \R$
+on a compact Hausdorff space~$X$
+being an element of the $C^*$-algebra $C(X)$
+is the image of~$f$, that is,
+$\spec(f) = \{f(x)\colon x\in X\}$.
+\item
+The spectrum of a square matrix~$A$
+from the $C^*$-algebra $M_n$
+is the set of eigenvalues of~$A$.
+\end{enumerate}
 \end{point}
-\begin{point}{Example}%
-For a matrix $A\in M_n$,
-$\spec(A)$ is the set of eigenvalues of~$A$.
+\begin{point}[spectrum-basic]{Exercise}%
+Let~$a$ be an element of a $C^*$-algebra $\scrA$.
+\begin{enumerate}
+\item
+Prove that $\spec(a)\subseteq \R$ when $a$ is self-adjoint
+(see~\sref{spectrum-self-adjoint-real}).
+
+The reverse implication also holds,
+as we'll see later on in \TODO{}.
+\item
+Show that $\spec(a^2)\subseteq [0,\infty)$ when $a$ is self-adjoint
+(see~\sref{spectrum-self-adjoint-real}).
+
+\item
+Show that $|\lambda|\leq \|a\|$ for all~$\lambda\in\spec(a)$
+using~\sref{spectrum-bounded}.
+
+In fact, we will see in~\sref{norm-spectrum},
+that $\|a\|=\sup\{\left|\lambda\right|\colon \lambda\in \spec(a)\}$.
+\item
+Show that $\spec(a)$ is closed (using~\sref{spectrum-bounded}).
+\item
+Show that $\spec(a+z)=\{\lambda+z\colon \lambda\in\spec(a)\}$
+for all~$z\in \C$.
+\end{enumerate}
 \end{point}
 \end{point}
 \begin{point}%
@@ -622,9 +683,12 @@ and so we are done.\qed
 \end{point}
 \end{point}
 \end{point}
-\begin{point}[spectrum-non-empty]{Corollary}%
-For an element~$a$ of a $C^*$-algebra,
-$\spec(a)\neq \varnothing$.
+\begin{point}[spectrum-non-empty]{Exercise}%
+Given an element~$a$ of a $C^*$-algebra show that
+\begin{enumerate}
+\item $\spec(a)\neq \varnothing$;
+\item $\spec(a) =\{\lambda\}$ iff $a=\lambda$ for every $\lambda \in\C$.
+\end{enumerate}
 \end{point}
 \end{parsec}
 \begin{parsec}%
@@ -646,24 +710,283 @@ we have $a-\lambda=0$, and so $a=\lambda$.\qed
 \begin{parsec}%
 \begin{point}%
 To apply this version of Gelfand--Mazur,
-we must first study the positive elements,
-approximate identity,
-and quotients of $C^*$-algebras,
-in that order.
+we study the positive elements 
+in a $C^*$-algebra.
+Usually,
+elements of the form $a^*a$ are defined to be positive,
+but at this stage a definition (\sref{cstar-positive}) based
+on the following observation is more convenient.
 \end{point}
-\begin{point}{Proposition}%
-For a self-adjoint element $a$ of a $C^*$-algebra~$\scrA$,
+\begin{point}[real-pos-ineq]{Exercise}%
+Show that 
+$\left|\,\lambda-t\,\right| \,\leq\, t$ iff  $\lambda \in[0,2t]$,
+where $\lambda,t\in\R$.
+\end{point}
+\begin{point}[pos-spectrum]{Proposition}%
+For a self-adjoint element $a$ from a $C^*$-algebra,
+and $t\in [0,\infty]$, 
+\begin{equation*}
+\|a-t\|\,\leq\, t\qquad\iff\qquad \spec(a)\subseteq [0,2t].
+\end{equation*}%
+\begin{point}{Proof}%
+To begin, note that~$\spec(a-t)=\spec(a)-t\subseteq \R$ 
+by~\sref{spectrum-basic},
+because~$a$ is self-adjoint.
+Thus $\|a-t\|=\sup\{\,\left|\lambda-t\right|\colon \lambda\in \spec(a)\,\}$
+by~\sref{norm-spectrum}.
+Hence $\|a-t\|\leq t$
+iff $\left|\lambda-t\right|\leq t$ for all~$\lambda\in\spec(a)$
+iff $\spec(a)\subseteq [0,2t]$ (by \sref{real-pos-ineq}).\qed
+\end{point}
+\begin{point}{Exercise}%
+Show
+(using~\sref{pos-spectrum} and~\sref{spectrum-basic})
+that
+for any self-adjoint element $a$ of a $C^*$-algebra~$\scrA$,
 the following are equivalent.
 \begin{enumerate}
-\item $\|a-t\|\leq t$
+\item 
+\label{cstar-pos-1}
+$\|a-t\|\leq t$
 for some $t\geq \frac{1}{2}\|a\|$;
-\item $\|a-t\|\leq t$
+\item 
+\label{cstar-pos-2}
+$\|a-t\|\leq t$
 for all $t\geq \frac{1}{2}\|a\|$;
 \item 
-$\lambda\geq 0$ for all $\lambda \in \spec(a)$.
+\label{cstar-pos-3}
+$\spec(a)\subseteq[0,\infty)$.
 \end{enumerate}
+\end{point}
+\end{point}
+\begin{point}[cstar-positive]{Definition}%
+Let $\scrA$ be a $C^*$-algebra.
+We say that $a\in \scrA$
+is \Define{positive} if $a^*=a$ and  $\|a-t\|\leq t$
+for some $t\geq \frac{1}{2}\|a\|$.
+We denote the set of positive elements of~$\scrA$ by~$\Define{\pos{\scrA}}$,
+and write $a\leq b$ for $a,b\in\scrA$ when $b-a$ is positive.
+\begin{point}{Exercise}%
+Let~$\scrA$ be a $C^*$-algebra.
+\begin{enumerate}
+\item
+Show that~$\pos{\scrA}$ is a \emph{cone}:
+$0\in \pos{\scrA}$,
+$a+b\in \pos{\scrA}$ for all $a,b\in\pos{\scrA}$,
+and
+$\lambda a\in \pos{\scrA}$  
+for all $a\in \pos{\scrA}$ and $\lambda\in [0,\infty)$.
+Show that~$\pos{\scrA}$ is closed,
+and~$1\in\pos{\scrA}$.
+Conclude that~$\leq$ is a partial order on~$\scrA$,
+and that~$\sa{\scrA}$ is an ordered vector space.
+\item
+Let~$a$ be a self-adjoint element of~$\scrA$.
+Show that $-\|a\|\leq a \leq \|a\|$.
+(Thus, $a$ is an \emph{order unit} of~$\sa{\scrA}$.)
+In fact, prove that
+ $-\lambda \leq a\leq \lambda$
+iff $\|a\|\leq \lambda$,
+for $\lambda\in [0,\infty)$.
+Conclude that $\|a\| = \inf\{ \lambda \in \R\colon 
+-\lambda \leq a\leq \lambda\}$.
+(Thus $\sa{\scrA}$ is a \emph{complete Archimedean order unit space}
+see~\TODO{}.)
+
+Show that $0\leq a \leq b$ entails $\|a\|\leq \|b\|$
+for $a,b\in\sa{\scrA}$.
+
+\item
+Give an example of positive elements $a$ and~$b$
+from a $C^*$-algebra
+such that $ab$ is not positive.
+
+\item 
+Show that $a^2$ is positive for every self-adjoint element~$a$ of~$\scrA$.
+
+Show that $a^n$ is positive for \emph{even} $n\in \N$ and~$a\in\sa{\scrA}$.
+
+Show that $a^n$ is positive iff $a$ is positive for \emph{odd} $n\in \N$
+and $a\in\sa{\scrA}$.
+
+Show that $a^n$ is positive
+for every positive $a$ from~$\scrA$ and~$n\in \N$.
+\end{enumerate}
+\end{point}
+\end{point}
+\begin{point}{Lemma}%
+Let $a$ be an element of a $C^*$-algebra $\scrA$
+with $0\leq a\leq 1$.
+Then there is a unique element~$b\in\scrA$ 
+with, $0\leq b\leq 1$,
+$ab=ba$,
+and~$(1-b)^2 = 1-a$.
+To be more specific,
+$b$ is the limit of
+the sequence $b_0\leq b_1\leq \dotsb$
+given by $b_0=0$ and $b_{n+1} = \frac{1}{2}(a+b_n^2)$.
+Moreover,
+if~$c\in\scrA$ commutes with~$a$, then~$c$ commutes with~$b$,
+and if in addition $a\leq 1-c^2$ and $c^*=c$,
+we have $b\leq 1-c$.
 \begin{point}{Proof}%
-\TODO{do}
+When discussing $b_n$ it 
+is convenient to write~$b_n \equiv q_n(a)$
+where~$q_0,q_1,\dotsc$ are the polynomials over~$\R$ given by
+$q_0=0$ and $q_{n+1}=\frac{1}{2}(x + q_n^2)$.
+For example,
+we have~$b_n\geq 0$, 
+because all coefficients of~$q_n$ are all positive,
+and $a,a^2,a^3,\dotsc$ are positive by~\sref{cstar-pos-power}.
+With a similar argument we can see that
+ $b_0 \leq b_1\leq b_2\leq \dotsb$.
+Indeed, 
+the coefficients of~$q_{n+1}-q_n$
+are positive,
+by induction,
+because
+\begin{alignat*}{3}
+q_{n+2}-q_{n+1} \ &=\ \textstyle \frac{1}{2}(x+ q_{n+1}^2)
+\,-\, \textstyle\frac{1}{2}(x+q_n^2) \\
+&=\ \textstyle\frac{1}{2}(q_{n+1}^2- q_n^2) \\
+&=\ \textstyle\frac{1}{2}(q_{n+1}+q_n)(q_{n+1}-q_n) \\
+&=\ (q_n+\textstyle\frac{1}{2}(q_{n+1}-q_n))(q_{n+1}-q_n),
+\end{alignat*}
+has positive coefficients
+if~$q_{n+1}-q_n$ has positive coefficients,
+and $q_1-q_0\equiv \frac{1}{2}x$ clearly has positive coefficients.
+Hence~$b_{n+1}-b_{n} = q_{n+1}(a)- q_n(a)$ is positive.
+(Note that we have carefully avoided
+using the fact here that the product of positive 
+commuting elements is positive,
+which is not available to us until~\sref{ineq-square-root}.)
+
+Let us now show that~$b_1\leq b_2\leq \dotsb$ converges.
+Let~$n\geq N$ from~$\N$ be given.
+Since the coefficients of $q_n-q_N$ are positive,
+and $\|a\|\leq 1$,
+the triangle inequality gives us
+$\|b_n-b_N\|\equiv \|(q_n-q_N)(a)\|\leq q_n(1)-q_N(1)$,
+and
+so it suffices to 
+show that the ascending sequence
+ $q_0(1)\leq q_1(1)\leq \dotsb$
+of real numbers
+converges,
+c.q.~is bounded.
+Indeed,
+we have $q_n(1)\leq 1$,
+by induction,
+because $q_{n+1}(1)\equiv \frac{1}{2}(1+q_n(1)^2)
+\leq 1$ if $q_n(1)\leq 1$,
+and clearly $0\equiv q_0(1)\leq 1$.
+
+Let~$b$ be the limit of $b_0\leq b_1\leq\dotsb$.
+Then~$b$ being the limit of positive elements
+is positive
+(see~\sref{positive-norm-closed}),
+and if $c\in \scrA$ commutes with~$a$,
+then $c$ commutes with all powers of~$a$,
+and therefore with all~$b_n$,
+and thus with~$b$.
+Further, 
+from the recurrence relation $q_{n+1} = \frac{1}{2}(a+q_n^2)$
+we get $b=\frac{1}{2}(a+b^2)$,
+and so $-a = -2b+b^2$, 
+giving us  $(1-b)^2 = 1-2b+b^2 = 1-a$.
+
+Let us prove that~$b\leq 1$.
+To begin, note that~$\|b_n\|\leq 1$ for all~$n$, by induction,
+because, $0\equiv \|b_0\|\leq 1$,
+and if $\|b_n\|\leq 1$, then $\|b_{n+1}\|\leq \frac{1}{2}(\|a\|+\|b_n\|^2)
+\leq 1$, since $\|a\|\leq 1$.
+Since~$b_n\geq 0$, we get $-1\leq b_n\leq 1$ for all~$n$,
+and so $b\leq 1$.
+
+\begin{point}[square-commuting-monotone]%
+Let us take a step back for the moment.
+From what we have proven so far
+we see that each positive $c\in\scrA$
+is of the form $c\equiv d^2$ for some positive~$d\in\scrA$
+which commutes with all~$e\in \scrA$ that commute with~$c$.
+
+From this we can see that $c_1c_2\geq 0$
+for  
+ $c_1,c_2 \in\pos{\scrA}$
+with $c_1c_2 = c_2c_1$.
+Indeed, writing $c_i\equiv d_i^2$ with $d_i$ as above,
+we have $d_1c_2=c_2d_1$ (because $c_1c_2=c_2c_1$), and thus 
+$d_1d_2=d_2d_1$. It follows that $d_1d_2$ is self-adjoint,
+and $c_1c_2 = (d_1d_2)^2$. Hence $c_1c_2\geq 0$.
+
+We will also need the following corollary.
+For~$c,d\in\pos{\scrA}$ with $c\leq d$ and $cd=dc$,
+we have $c^2\leq d^2$.
+Indeed, $d^2-c^2 \equiv d(d-c)+c(d-c)$
+is positive by the previous paragraph.
+\end{point}
+\begin{point}[ineq-square-root]%
+Let~$c\in\sa{\scrA}$ be such that~$ca=ac$ and  $a\leq 1-c^2$.
+We must show that $b\leq 1-c$.
+Of course,
+since~$b$ is the limit of $b_1,b_2,\dotsc$,
+it suffices to show that~$b_n\leq 1-c$,
+and we'll do this by induction.
+Since $0\leq c^2 \leq 1-a$,
+ we have $\|c\|^2\leq \|1-a\|\leq 1$,
+and so $-1\leq c\leq 1$.
+Thus $b_0\equiv 0\leq 1-c$.
+Now, suppose that~$b_n\leq 1-c$ for some~$n$.
+Then $b_{n+1} = \frac{1}{2}(a+b_n^2)
+\leq \frac{1}{2}( (1-c^2)+(1-c)^2) = 1-c$,
+where we have used that $b_n^2 \leq (1-c)^2$,
+because $b_n\leq 1-c$
+by~\sref{square-commuting-monotone}.
+\begin{point}%
+We can now show that~$b$ is unique.
+Let~$b'\in \scrA$ with $0\leq b'\leq 1$,
+ $b'a=ab'$ and $(1-b')^2=1-a$ be given;
+we must prove that $b'=b$.
+Note that $b'\leq 1$,
+because $\|1-b'\|^2=\|1-a\|\leq 1$,
+
+From $a=1-(1-b')^2$,
+we immediately get $b \leq 1-(1-b')=b'$ by~\sref{ineq-square-root}.
+For the other direction,
+note that
+$(1-b')^2= (1-b)^2 \equiv (1-b'+(b'-b))^2 = (1-b')^2+2(1-b')(b'-b)+(b'-b)^2$,
+which gives $0=2(1-b')(b'-b)+(b'-b)^2$.
+Now, since~$1-b'$ and $b'-b$ are positive,
+and commute, we see that $(1-b')(b'-b)$ is positive 
+by~\sref{ineq-square-root}, and so 
+ $0=2(1-b')(b'-b)+(b'-b)^2\geq (b'-b)^2 \geq 0$,
+which entails $(b'-b)^2=0$, and so $\|(b'-b)^2\|=\|b'-b\|^2=0$,
+yielding $b=b'$.\qed
+\end{point}
+\end{point}
+\TODO{Thank Sander}
+\end{point}
+\end{point}
+\begin{point}{Exercise}%
+Let~$a$ be a positive element of a $C^*$-algebra~$\scrA$.
+Show that there is a unique 
+positive element of~$\scrA$
+denoted by $\Define{\sqrt{a}}$ with $\smash{\sqrt{a}^2}=a$
+and $a\sqrt{a}=\sqrt{a}a$.
+Show that if~$c\in\scrA$ commutes with~$a$,
+then $c\sqrt{a}=\sqrt{a}c$,
+and if in addition $c^*=c$ and $c^2\leq a$,
+then $c\leq \sqrt{a}$.
+\end{point}
+\begin{point}{Exercise}%
+Let~$a$ and~$b$ be positive elements of a $C^*$-algebra.
+Then $a\leq b$ entails $\sqrt{a}\leq \sqrt{b}$.
+\end{point}
+\begin{point}{Lemma}%
+$aba$ is positive for all self-adjoint elements $a,b$
+from a $C^*$-algebra $\scrA$.
+\begin{point}{Proof}%
+\TODO{asdasd}
 \end{point}
 \end{point}
 \begin{point}%
@@ -756,6 +1079,13 @@ with $(\sqrt{a})^2 = a$.
 Moreover,
 if $b\in \scrA$ commutes with~$a$,
 then~$b$ commutes with~$\sqrt{a}$.
+\end{point}
+\begin{point}[ad-monotone]{Exercise}%
+Show that~$a^*ba$
+is positive
+when~$b$ is a positive of a $C^*$-algebra~$\scrA$,
+and $a\in \scrA$ is any element.
+\TODO{Move this down}
 \end{point}
 \end{point}
 \end{parsec}
