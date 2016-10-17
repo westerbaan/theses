@@ -814,6 +814,44 @@ for every positive $a$ from~$\scrA$ and~$n\in \N$.
 \end{enumerate}
 \end{point}
 \end{point}
+\begin{point}[prod-spec]{Lemma}%
+For elements $a$ and $b$ from a $C^*$-algebra,
+we have
+\begin{equation*}
+\spec(ab)\backslash\{0\}\ =\ \spec(ba)\backslash\{0\}.
+\end{equation*}
+\begin{point}{Proof}%
+Let~$\lambda\in \C$ with $\lambda\neq 0$ be given.
+We must show that $\lambda - ab$ is invertible
+iff $\lambda - ba$ is invertible.
+Suppose that $\lambda-ab$ is invertible.
+Then using the equality$a(\lambda-ba)=(\lambda-ab)a$
+one sees that $(1+b(\lambda-ab)^{-1}a)(\lambda-ba)=\lambda$.
+Since similarly $(\lambda-ba)(1+b(\lambda-ab)^{-1}a)=\lambda$,
+we see that $\lambda^{-1}(1+b(\lambda-ab)a)$
+is the inverse of~$\lambda-ba$.\qed
+\end{point}
+\end{point}
+\begin{point}[astara-non-neggative]{Lemma}%
+We have $a^*a  \leq 0\implies a=0$
+for every element~$a$ of a $C^*$-algebra.
+\begin{point}{Proof}%
+Suppose that $a^*a\leq 0$.
+Then~$\spec(a^*a)\subseteq (-\infty,0]$, almost by definition,
+and so $\spec(aa^*)\subseteq (-\infty,0]$ by~\sref{prod-spec},
+giving $aa^*\leq 0$.
+Thus $a^*a+aa^*\leq 0$.
+
+But on the other hand, 
+$a^*a+aa^* = 2(\Real{a}^2 + \Imag{a}^2) \geq 0$,
+and so~$a^*a+aa^*=0$.
+Then $0\geq a^*a=-aa^*\geq 0$ gives $a^*a=0$,
+and $a=0$.\qed
+\end{point}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
 \begin{point}{Lemma}%
 Let $a$ be an element of a $C^*$-algebra $\scrA$
 with $0\leq a\leq 1$.
@@ -967,7 +1005,7 @@ yielding $b=b'$.\qed
 \TODO{Thank Sander}
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[sqrt]{Exercise}%
 Let~$a$ be a positive element of a $C^*$-algebra~$\scrA$.
 Show that there is a unique 
 positive element of~$\scrA$
@@ -978,19 +1016,41 @@ then $c\sqrt{a}=\sqrt{a}c$,
 and if in addition $c^*=c$ and $c^2\leq a$,
 then $c\leq \sqrt{a}$.
 \end{point}
+\begin{point}{Definition}
+Given a self-adjoint element~$a$ of a $C^*$-algebra $\scrA$,
+we write
+\begin{equation*}
+\textstyle
+\Define{\left|a\right|}\ :=\ \sqrt{a^2}
+\qquad
+\Define{\pos{a}}\ :=\ \frac{1}{2}(\left|a\right| + a)
+\qquad
+\Define{a_{-}}\ :=\ \frac{1}{2}(\left|a\right| - a).
+\end{equation*}
+We call $a_+$ the \Define{positive part} of~$a$,
+and $a_-$ the \Define{negative part}.
+\end{point}
 \begin{point}{Exercise}%
-Let~$a$ and~$b$ be positive elements of a $C^*$-algebra.
-Then $a\leq b$ entails $\sqrt{a}\leq \sqrt{b}$.
+Let~$a$ be a self-adjoint element of a
+ $C^*$-algebra $\scrA$.
+\begin{enumerate}
+\item
+Show that $-\left|a\right| \leq a \leq \left| a \right|$,
+and $\|\,\left|a\right|\,\|= \|a\|$.
+\item
+Prove that $a_+$ and $a_-$ are positive,  $a=a_+-a_-$
+and $a_+a_-=a_-a_+=0$.
+\end{enumerate}
 \end{point}
 \begin{point}{Lemma}%
-$aba$ is positive for all self-adjoint elements $a,b$
-from a $C^*$-algebra $\scrA$.
+Given an element $a$ of a $C^*$-algebra $\scrA$,
+we have $a^*a\geq 0$.
 \begin{point}{Proof}%
-\TODO{asdasd}
+Writing $b:=a((a^*a)_-)^{\nicefrac{1}{2}}$,
+we have $b^*b=-((a^*a)_-)^2\leq 0$,
+and so $b=0$ by~\sref{astara-non-neggative}.
+Hence~$a^*a_-=0$ giving us $a^*a=(a^*a)_+\geq 0$.\qed
 \end{point}
-\end{point}
-\begin{point}%
-\TODO{Can we already show that $a^*a$ is positive?}
 \end{point}
 \end{parsec}
 
