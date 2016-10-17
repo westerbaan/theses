@@ -89,6 +89,8 @@ Show that $a^*a$ is self-adjoint,
 and  $a^*a=\Real{a}^2+\Imag{a}^2+i(\Real{a}\Imag{a}-\Imag{a}\Real{a})$.
 \item
 Give an example of an~$a$ with  $\Real{a}\Imag{a} \neq \Imag{a}\Real{a}$.
+\item
+Show that $a^*a+aa^* = 2(\Real{a}^2+\Imag{a}^2)$.
 \end{enumerate}
 \end{point}
 \end{parsec}
@@ -1054,6 +1056,64 @@ Hence~$a^*a_-=0$ giving us $a^*a=(a^*a)_+\geq 0$.\qed
 \end{point}
 \end{parsec}
 
+\begin{parsec}%
+\begin{point}%
+Now that we have have a firm grip
+on the positive elements of a $C^*$-algebra,
+we can expose the true nature of 
+commutative $C^*$-algebras.
+\end{point}
+\begin{point}{Lemma}%
+Let~$a$ be a positive element of a commutative $C^*$-algebra,
+which is not invertible.
+Then there is a miu-map $\varphi\colon \scrA\to \C$
+with $\varphi(a)=0$.
+\begin{point}{Proof}%
+Please indulge me,
+whilst I call
+a linear subspace $I$ of~$\scrA$
+a \Define{Riesz ideal} 
+when $x\in I\implies x^*\in I$ and 
+ $x\leq b\leq y \implies b\in I$
+for $x,y\in I\cap\sa{\scrA}$ and $b\in \scrA$.
+Note that $1\in I$ if and only if~$I=\scrA$.
+The smallest Riesz ideal 
+that contains a positive element~$c$ of~$\scrA$
+is
+\begin{equation*}I(c) \ :=\ \{\ b\in \scrA\colon\  
+\exists n\in \N\  -nc\leq \Real{b},\Imag{b} \leq nc\,\ \}.
+\end{equation*}
+Note that $I(c)=\scrA$ iff $1\in I(c)$ iff~$c$ is invertible (see~\TODO{ref.}).
+
+In particular, we have $1\notin I(a)$,
+because~$a$ is not invertible,
+and so by Zorn's Lemma
+there is a maximal Riesz ideal~$I$
+with $a \in I$ but $1\notin I$.
+
+We claim that $\scrA/I$ can be turned into a $C^*$-algebra
+in such a way that the quotient map $q\colon \scrA\to \scrA/I$
+is miu.  It follows that $\scrA/I$ has only two Riesz ideals
+(viz.~$\{0\}$ and $\scrA/I$),
+because if~$J$ is a Riesz ideal of~$\scrA/I$ with $J\neq \scrA/I$,
+then $I\subseteq q^{-1}(J)$ is a Riesz ideal of~$\scrA$
+with $1\notin q^{-1}(J)$,
+and so~$q^{-1}(J)=I$ by maximality of~$I$,
+giving us $J=\{0\}$.
+Since~$\scrA/I$ has only two Riesz ideals,
+every positive non-zero element of~$\scrA/I$ will be invertible,
+and so~$\C = \scrA/I$ by~\sref{gelfand-mazur}.
+Then the quotient map $q\colon \scrA\to\scrA/I=\C$
+is miu and~$q(a)=0$.
+\begin{point}%
+Our task then,
+is to show that~$\scrA/I$
+can be turned into a $C^*$-algebra
+such that the quotient map is miu.
+\end{point}
+\end{point}
+\end{point}
+\end{parsec}
 
 
 %
