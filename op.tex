@@ -1042,6 +1042,16 @@ and $\|\,\left|a\right|\,\|= \|a\|$.
 \item
 Prove that $a_+$ and $a_-$ are positive,  $a=a_+-a_-$
 and $a_+a_-=a_-a_+=0$.
+\item
+One should not read too much into the notation
+$\left|\,\cdot\,\right|$:
+give an example of
+self-adjoint elements~$a$ and~$b$ of a $C^*$-algebra with
+ $\left|a+b\right|\nleq \left|a\right|+ \left|b\right|$.
+
+(Hint: one may take  
+$a=\frac{1}{2}\left(\begin{smallmatrix}1 & 1 \\ 1 & 1\end{smallmatrix}\right)$
+and $b=-\left(\begin{smallmatrix}1 & 0 \\ 0 & 0 \end{smallmatrix}\right)$.)
 \end{enumerate}
 \end{point}
 \begin{point}{Lemma}%
@@ -1060,58 +1070,124 @@ Hence~$a^*a_-=0$ giving us $a^*a=(a^*a)_+\geq 0$.\qed
 \begin{point}%
 Now that we have have a firm grip
 on the positive elements of a $C^*$-algebra,
-we can expose the true nature of 
-commutative $C^*$-algebras.
+we turn to the representation
+of (commutative) $C^*$-algebras.
+The key is the existence of enough (multiplicative)
+positive functionals.
+\end{point}
+\begin{point}{Definition}%
+An \Define{order ideal}
+of a $C^*$-algebra~$\scrA$
+is a linear subspace~$I$ of~$\scrA$
+with $b\in I\implies b^*\in I$
+and $b\in I\cap\pos{\scrA}\implies [-b,b]\subseteq I$.
+
+If in addition $a\in I\cap\sa{\scrA} \implies \left|a\right|\in I$,
+we say that~$I$ is a \Define{Riesz ideal}.
 \end{point}
 \begin{point}{Lemma}%
-Let~$a$ be a positive element of a commutative $C^*$-algebra,
-which is not invertible.
-Then there is a miu-map $\varphi\colon \scrA\to \C$
-with $\varphi(a)=0$.
+Let~$I$ be maximal among order ideals
+of a  $C^*$-algebra~$\scrA$ with~$1\notin I$.
+Then there is a pu-map $f\colon \scrA\to \C$
+with $\ker(f)=I$.
 \begin{point}{Proof}%
-Please indulge me,
-whilst I call
-a linear subspace $I$ of~$\scrA$
-a \Define{Riesz ideal} 
-when $x\in I\implies x^*\in I$ and 
- $x\leq b\leq y \implies b\in I$
-for $x,y\in I\cap\sa{\scrA}$ and $b\in \scrA$.
-Note that $1\in I$ if and only if~$I=\scrA$.
-The smallest Riesz ideal 
-that contains a positive element~$c$ of~$\scrA$
-is
-\begin{equation*}I(c) \ :=\ \{\ b\in \scrA\colon\  
-\exists n\in \N\  -nc\leq \Real{b},\Imag{b} \leq nc\,\ \}.
+Form the quotient vector space $\scrA/I$
+with quotient map $q\colon \scrA\to \scrA/I$.
+Note that since~$1\notin I$
+we have $q(1)\neq 0$
+and so we may regard~$\C$ 
+to be a linear subspace of~$\scrA/I$
+via $\lambda\mapsto q(\lambda)$.
+We will, in fact, show that~$\C=\scrA/I$.
+
+But let us first put an order on~$\scrA/I$:
+we say that $\mathfrak{a}\in \scrA/I$ is positive
+if $\mathfrak{a}\equiv q(a)$ for some~$a\in\pos{\scrA}$,
+and write $\mathfrak{a}\leq \mathfrak{b}$ 
+if $\mathfrak{b}-\mathfrak{a}$ is positive
+for $\mathfrak{a},\mathfrak{b}\in\scrA/I$.
+Note that the definition of ``order ideal'' is such
+that if both~$\mathfrak{a}$ and $-\mathfrak{a}$ are positive,
+then~$\mathfrak{a}=0$.
+We leave it to the reader to verify 
+that~$\scrA/I$ becomes a partially ordered vector space
+with the order defined above.
+There is, however,
+one detail to which I want to draw you attention,
+namely that a scalar $\lambda$ is positive in~$\scrA/I$
+iff $\lambda$ is positive in~$\C$.
+Indeed, if~$\lambda\geq 0$ in~$\C$,
+then $\lambda\geq 0$ in~$\scrA$, and so~$\lambda \geq 0$ in~$\scrA/I$.
+On the other hand,
+if~$\lambda\geq 0$ in~$\scrA/I$, but~$\lambda\leq 0$ in~$\C$,
+then $\lambda\leq 0$ in~$\scrA/I$,
+and so $\lambda=0$.
+This detail
+has the desirable consequence
+that once we have shown that~$\scrA/I=\C$,
+we automatically get that~$q\colon \scrA\to\C$ is positive.
+
+\begin{point}[pos-hahn-banach-1]%
+Let~$a\in \sa{\scrA}$ be given.
+Define~$\alpha := \inf\{\,\lambda\in\R\colon\, q(a)\leq \lambda\,\}$.
+Note that $-\|a\| \leq \alpha\leq \|a\|$.
+We will prove that~$q(a)=\alpha$
+by considering the order ideal
+\TODO{Double check this proof,
+because it is simpler than the one given by Kadison---he first 
+shows that $\scrA/I$ is total and Archimedean.}
+\begin{equation*}
+J\ := \ \{\,b\in \scrA\colon\, \exists m,n\in \Z\,[\ 
+m(\alpha-q(a)) \,\leq\, q(\Real{b}),q(\Imag{b})\,\leq\, n(\alpha-q(a))\ ]\,\}.
 \end{equation*}
-Note that $I(c)=\scrA$ iff $1\in I(c)$ iff~$c$ is invertible (see~\TODO{ref.}).
+We claim that $1\notin I$.
+Indeed, suppose not---towards a contradiction.
+Then there is~$n\in \Z$
+with $1\leq n(\alpha-q(a))$.
+What can we say about~$n$?
+If~$n<0$,
+then $0\geq \frac{1}{n}\geq \alpha-q(a)$,
+so~$\alpha-\frac{1}{n} \leq q(a)$,
+but $q(a)\leq \alpha+\varepsilon$
+for every~$\varepsilon>0$,
+and so~$\alpha-\frac{1}{n}\leq q(a)\leq \alpha-\frac{1}{2n}
+\leq \alpha-\frac{1}{n}$,
+which implies $\frac{1}{2n}=0$,
+which is absurd.
+If $n=0$,
+then we get $1\leq n(\alpha-q(a))\equiv 0$, which is absurd.
+If $n> 0$,
+then $\frac{1}{n}\leq \alpha-q(a)$,
+or in other words,
+ $q(a) \leq \alpha - \nicefrac{1}{n}$,
+giving $\alpha \leq \alpha-\nicefrac{1}{n}$
+by definition of~$\alpha$,
+which is absurd.
+Hence~$1\notin J$.
 
-In particular, we have $1\notin I(a)$,
-because~$a$ is not invertible,
-and so by Zorn's Lemma
-there is a maximal Riesz ideal~$I$
-with $a \in I$ but $1\notin I$.
-
-We claim that $\scrA/I$ can be turned into a $C^*$-algebra
-in such a way that the quotient map $q\colon \scrA\to \scrA/I$
-is miu.  It follows that $\scrA/I$ has only two Riesz ideals
-(viz.~$\{0\}$ and $\scrA/I$),
-because if~$J$ is a Riesz ideal of~$\scrA/I$ with $J\neq \scrA/I$,
-then $I\subseteq q^{-1}(J)$ is a Riesz ideal of~$\scrA$
-with $1\notin q^{-1}(J)$,
-and so~$q^{-1}(J)=I$ by maximality of~$I$,
-giving us $J=\{0\}$.
-Since~$\scrA/I$ has only two Riesz ideals,
-every positive non-zero element of~$\scrA/I$ will be invertible,
-and so~$\C = \scrA/I$ by~\sref{gelfand-mazur}.
-Then the quotient map $q\colon \scrA\to\scrA/I=\C$
-is miu and~$q(a)=0$.
+But then since~$I\subseteq J$,
+we get~$I=J$, by maximality of~$I$.
+Thus, as $\alpha-a\in J$, we have $\alpha-a\in I$,
+and so $q(a)=\alpha$, as desired.
+\end{point}
 \begin{point}%
-Our task then,
-is to show that~$\scrA/I$
-can be turned into a $C^*$-algebra
-such that the quotient map is miu.
+Let~$a\in \scrA$ be given.
+Then~$a=\Real{a}+i\Imag{a}$.
+By~\sref{pos-hahn-banach-1},
+there are $\alpha,\beta\in \R$ with $q(\Real{a})=\alpha$,
+and $q(\Imag{a})=\beta$.
+Thus~$q(a)=\alpha+i\beta$.
+Hence~$\scrA/I=\C$.
+Since the quotient map $q\colon \scrA\to \scrA/I\equiv \C$
+is pu, and $\ker(q)=I$, we are done.\qed
 \end{point}
 \end{point}
+\end{point}
+\begin{point}%
+Let~$\scrA$ be a $C^*$-algebra,
+and let~$f\colon \scrA\to \C$ be a pu-map
+\TODO{finish}
+
 \end{point}
 \end{parsec}
 
