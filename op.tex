@@ -324,10 +324,14 @@ using~\sref{spectrum-bounded}.
 In fact, we will see in~\sref{norm-spectrum},
 that $\|a\|=\sup\{\left|\lambda\right|\colon \lambda\in \spec(a)\}$.
 \item
-Show that $\spec(a)$ is closed (using~\sref{spectrum-bounded}).
+Show that $\spec(a)$ is closed (using~\sref{spectrum-bounded}).\\
+Conclude that~$\spec(a)$ is compact.
 \item
 Show that $\spec(a+z)=\{\lambda+z\colon \lambda\in\spec(a)\}$
 for all~$z\in \C$.
+\item
+Prove that~$\spec(a^{-1})=\{\lambda^{-1}\colon \lambda\in \spec(a)\}$
+if~$a$ is invertible (and~$0\notin \spec(a)$).
 \end{enumerate}
 \end{point}
 \end{point}
@@ -813,6 +817,13 @@ and $a\in\sa{\scrA}$.
 
 Show that $a^n$ is positive
 for every positive $a$ from~$\scrA$ and~$n\in \N$.
+\item
+Let~$a$ be an invertible element of~$\scrA$.
+Show that $a\geq 0$ iff $a^{-1}\geq 0$.
+
+\item
+Show that a positive element~$a$ of~$\scrA$ is invertible
+iff $a\geq \frac{1}{n}$ for some~$n\in \N$.
 \end{enumerate}
 \end{point}
 \end{point}
@@ -939,7 +950,8 @@ Show that
 \end{equation*}
 is the least order ideal that contains~$a$.
 
-Show that~$1\in (a)$ if and only if $a$ in invertible.
+Show that~$1\in (a)$ if and only if $a$ is invertible
+and either $0\leq a$ or $a\leq 0$.
 
 \item
 Let~$a$ be a self-adjoint element of~$\scrA$ which
@@ -1289,16 +1301,84 @@ Hence~$a^*a_-=0$ giving us $a^*a=(a^*a)_+\geq 0$.\qed
 \begin{point}%
 Now that we have have a firm grip
 on the positive elements of a $C^*$-algebra,
-we turn to the representation
-of (commutative) $C^*$-algebras.
-The key is the existence of enough (multiplicative)
-positive functionals.
-\end{point}
-\begin{point}%
-Let~$\scrA$ be a $C^*$-algebra,
-and let~$f\colon \scrA\to \C$ be a pu-map
-\TODO{finish}
+we turn to the multiplicative states
+on a commutative $C^*$-algebra.
+To obtain such multiplicative states
+we consider a special type
+of order ideal.
 
+\TODO{Show that a $C^*$-algebra need not have any
+multiplicative states. 
+Make remark on extreme states.}
+\end{point}
+\begin{point}{Definition}%
+Let~$\scrA$ be a commutative $C^*$-algebra.
+A \Define{Riesz ideal} of~$\scrA$
+is an order ideal~$I$
+such that $a\in I\cap\sa{\scrA}\implies \left|a\right|\in I$.
+A \Define{maximal Riesz ideal}
+is a proper Riesz ideal which is maximal among
+proper Riesz ideals.
+\end{point}
+\begin{point}{Exercise}%
+Let~$\scrA$ be a commutative $C^*$-algebra.
+\begin{enumerate}
+\item
+Let~$a$ be a self-adjoint element
+of~$\scrA$.
+Show that
+\begin{equation*}
+(a)_m\ :=\ \{\,b\in \scrA\colon\, 
+\exists n\in \N\,[\ \left|\Real{b}\right|,\,\left|\Imag{b}\right|
+\,\leq\, n\left|a\right| \ ]\,\}
+\end{equation*}
+is the least Riesz ideal that contains~$a$.
+
+Show that $(a)_m=\scrA$ iff $a$ is invertible.
+
+Show that~$(a)=(a)_m$ when~$a\geq 0$.
+
+Give an example of~$\scrA$ and self-adjoint~$a$ with~$(a)\neq (a)_m$.
+\item
+Show that~$I+J$ is a Riesz ideal of~$\scrA$
+when $I$ and~$J$ are Riesz ideals.
+\TODO{Riesz decomposition theorem}
+
+Give an example of~$\scrA$ and order ideals~$I$ and~$J$ of~$\scrA$
+such that $I+J$ is not an order ideal.
+
+\item
+Show that each proper Riesz ideal is contained
+in a maximal Riesz ideal.
+\end{enumerate}
+\end{point}
+\begin{point}{Lemma}%
+A maximal Riesz ideal~$I$ of a commutative $C^*$-algebra $\scrA$
+is not only maximal in the set of proper Riesz ideal,
+but is also  maximal in the set of proper order ideals.
+\begin{point}{Proof}%
+Let~$J$ be a proper order ideal with $I\subseteq J$.
+We must show that $J=I$.
+Let~$a\in J$ be given;
+we must show that $a\in I$.
+Since~$\Real{a},\Imag{a}\in J$,
+it suffices to show that~$\Real{a},\Imag{a}\in I$,
+and so we might as well assume that~$a$ is self-adjoint
+to begin with.
+Similarly,
+since~$\left|a\right|\in J$,
+and it suffices to show that~$\left|a\right|\in I$,
+because then $-\left|a\right|\leq a\leq \left|a\right|$
+entails $a\in I$,
+we might as well assume that~$a$ is positive.
+
+Note that the least ideal~$(a)$ that contains~$a$
+is also a Riesz ideal by~\sref{}.
+Hence  $I+(a)$ is a Riesz ideal by \TODO{}.
+Since~$a\in J$, we have $(a)\subseteq J$,
+and so~$I+(a)\subseteq J$ is proper.
+It follows that $a\in I+(a)=I$ by maximality of~$I$.\qed
+\end{point}
 \end{point}
 \end{parsec}
 
