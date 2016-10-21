@@ -1,8 +1,8 @@
 \documentclass[main]{subfiles}
 \begin{document}
-\chapter{Operator Algebras}
+\chapter{$C^*$-algebras}
+
 \TODO{Introduction}
-\section{$C^*$-algebras}
 \begin{parsec}%
 \begin{point}{Definition}%
 A \Define{$C^*$-algebra}
@@ -854,6 +854,225 @@ and $a=0$.\qed
 \end{parsec}
 
 \begin{parsec}%
+\begin{point}%
+There is much more that must be said
+about the positive elements of a $C^*$-algebra.
+But let us for a moment
+turn our attention to the states of a $C^*$-algebra
+(see \sref{state}),
+which will be
+essential
+in the proof that every $C^*$-algebra
+is isomorphic to a $C^*$-algebra of operators on a Hilbert space.
+\end{point}
+\begin{point}{Definition}
+A linear map $f\colon \scrA \to \scrB$
+between $C^*$-algebras
+is called
+\begin{enumerate}
+\item
+\Define{\textbf{m}ultiplicative}
+if $f(ab)=f(a)f(b)$ for all $a,b\in\scrA$;
+\item
+\Define{\textbf{i}nvolutive}
+if $f(a^*)=f(a)^*$ for all~$a\in\scrA$;
+\item
+\Define{\textbf{p}ositive}
+if $f(a)$ is positive
+for every positive $a\in\scrA$, and
+\item
+\Define{\textbf{u}nital}
+if $f(1)=1$.
+\end{enumerate}
+\begin{point}%
+We use the bold letters as abbreviations,
+so for instance,
+$f$ is \Define{pu} if it is positive and unital,
+and a \Define{miu-map}
+is a multiplicative, involutive, unital linear map between $C^*$-algebras,
+(which is usually called a \Define{unital $*$-homomorphism}.)
+\end{point}
+
+\end{point}
+\begin{point}[state]{Definition}%
+A \Define{state} of a $C^*$-algebra~$\scrA$
+is a piu-map $f\colon \scrA\to \C$.
+\begin{point}{Remark}%
+\TODO{about piu instead of pu}
+\end{point}
+\end{point}
+\begin{point}
+Our program is to show that 
+for every self-adjoint element~$a\in \scrA$
+of a $C^*$-algebra~$\scrA$,
+there is a state~$f$ of~$\scrA$ with $f(a)=\|a\|$ or $f(a)=-\|a\|$.
+
+To obtain such a state
+we first find its kernel,
+which leads us to the following definitions.
+\end{point}
+\begin{point}{Definition}%
+An \Define{order ideal}
+of a $C^*$-algebra~$\scrA$
+is a linear subspace~$I$ of~$\scrA$
+with $b\in I\implies b^*\in I$
+and $b\in I\cap\pos{\scrA}\implies [-b,b]\subseteq I$.
+It is called \Define{proper} if~$1\notin I$,
+and \Define{maximal} if it is maximal among all proper order ideals.
+\end{point}
+\begin{point}{Exercise}%
+Let~$\scrA$ be a $C^*$-algebra.
+\begin{enumerate}
+\item
+Show that the kernel of a state is a maximal order ideal.
+\item
+Let~$I$ be a proper order ideal of~$\scrA$.
+Show that there is a maximal 
+order ideal~$J$ of~$\scrA$ with $I\subseteq J$.
+(Hint: Zorn's Lemma may be useful.)
+\item
+Let~$a\in \sa{\scrA}$.
+Show that 
+\begin{equation*}
+(a)\ := \ \{\, b\in \scrA\colon\, \exists n,m\in \Z\,
+[\ na \,\leq\, \Real{b},\Imag{b}\,\leq\, ma\ ]\,\}
+\end{equation*}
+is the least order ideal that contains~$a$.
+
+Show that~$1\in (a)$ if and only if $a$ in invertible.
+
+\item
+Let~$a$ be a self-adjoint element of~$\scrA$ which
+is not invertible.
+Show that there is a maximal order ideal~$J$
+of~$\scrA$
+with $a\in J$.
+
+\item
+Let~$a$ be a self-adjoint element of~$\scrA$.
+Show that  $\|a\|-a$
+or $\|a\|+a$ is not invertible.
+\end{enumerate}
+\end{point}
+\begin{point}{Lemma}%
+Let~$I$ be a maximal ideal of a $C^*$-algebra.
+Then there is a state $f\colon \scrA\to \C$
+with $\ker(f)=I$.
+\begin{point}{Proof}%
+Form the quotient vector space $\scrA/I$
+with quotient map $q\colon \scrA\to \scrA/I$.
+Note that since~$1\notin I$
+we have $q(1)\neq 0$
+and so we may regard~$\C$ 
+to be a linear subspace of~$\scrA/I$
+via $\lambda\mapsto q(\lambda)$.
+We will, in fact, show that~$\C=\scrA/I$.
+
+But let us first put an order on~$\scrA/I$:
+we say that $\mathfrak{a}\in \scrA/I$ is positive
+if $\mathfrak{a}\equiv q(a)$ for some~$a\in\pos{\scrA}$,
+and write $\mathfrak{a}\leq \mathfrak{b}$ 
+if $\mathfrak{b}-\mathfrak{a}$ is positive
+for $\mathfrak{a},\mathfrak{b}\in\scrA/I$.
+Note that the definition of ``order ideal'' is such
+that if both~$\mathfrak{a}$ and $-\mathfrak{a}$ are positive,
+then~$\mathfrak{a}=0$.
+We leave it to the reader to verify 
+that~$\scrA/I$ becomes a partially ordered vector space
+with the order defined above.
+There is, however,
+one detail to which I want to draw you attention,
+namely that a scalar $\lambda$ is positive in~$\scrA/I$
+iff $\lambda$ is positive in~$\C$.
+Indeed, if~$\lambda\geq 0$ in~$\C$,
+then $\lambda\geq 0$ in~$\scrA$, and so~$\lambda \geq 0$ in~$\scrA/I$.
+On the other hand,
+if~$\lambda\geq 0$ in~$\scrA/I$, but~$\lambda\leq 0$ in~$\C$,
+then $\lambda\leq 0$ in~$\scrA/I$,
+and so $\lambda=0$.
+This detail
+has the desirable consequence
+that once we have shown that~$\scrA/I=\C$,
+we automatically get that~$q\colon \scrA\to\C$ is positive.
+
+\begin{point}[pos-hahn-banach-1]%
+Let~$a\in \sa{\scrA}$ be given.
+Define~$\alpha := \inf\{\,\lambda\in\R\colon\, q(a)\leq \lambda\,\}$.
+Note that $-\|a\| \leq \alpha\leq \|a\|$.
+We will prove that~$q(a)=\alpha$
+by considering the order ideal
+\TODO{Double check this proof,
+because it is simpler than the one given by Kadison---he first 
+shows that $\scrA/I$ is total and Archimedean.}
+\begin{equation*}
+J\ := \ \{\,b\in \scrA\colon\, \exists m,n\in \Z\,[\ 
+m(\alpha-q(a)) \,\leq\, q(\Real{b}),q(\Imag{b})\,\leq\, n(\alpha-q(a))\ ]\,\}.
+\end{equation*}
+We claim that $1\notin I$.
+Indeed, suppose not---towards a contradiction.
+Then there is~$n\in \Z$
+with $1\leq n(\alpha-q(a))$.
+What can we say about~$n$?
+If~$n<0$,
+then $0\geq \frac{1}{n}\geq \alpha-q(a)$,
+so~$\alpha-\frac{1}{n} \leq q(a)$,
+but $q(a)\leq \alpha+\varepsilon$
+for every~$\varepsilon>0$,
+and so~$\alpha-\frac{1}{n}\leq q(a)\leq \alpha-\frac{1}{2n}
+\leq \alpha-\frac{1}{n}$,
+which implies $\frac{1}{2n}=0$,
+which is absurd.
+If $n=0$,
+then we get $1\leq n(\alpha-q(a))\equiv 0$, which is absurd.
+If $n> 0$,
+then $\frac{1}{n}\leq \alpha-q(a)$,
+or in other words,
+ $q(a) \leq \alpha - \nicefrac{1}{n}$,
+giving $\alpha \leq \alpha-\nicefrac{1}{n}$
+by definition of~$\alpha$,
+which is absurd.
+Hence~$1\notin J$.
+
+But then since~$I\subseteq J$,
+we get~$I=J$, by maximality of~$I$.
+Thus, as $\alpha-a\in J$, we have $\alpha-a\in I$,
+and so $q(a)=\alpha$, as desired.
+\end{point}
+\begin{point}%
+Let~$a\in \scrA$ be given.
+Then~$a=\Real{a}+i\Imag{a}$.
+By~\sref{pos-hahn-banach-1},
+there are $\alpha,\beta\in \R$ with $q(\Real{a})=\alpha$,
+and $q(\Imag{a})=\beta$.
+Thus~$q(a)=\alpha+i\beta$.
+Hence~$\scrA/I=\C$.
+Since the quotient map $q\colon \scrA\to \scrA/I\equiv \C$
+is pu, and $\ker(q)=I$, we are done.\qed
+\end{point}
+\end{point}
+\begin{point}{Exercise}%
+Let~$a$ be a self-adjoint element of a $C^*$-algebra~$\scrA$.
+\begin{enumerate}
+\item
+Show that there is a state~$f$ of~$\scrA$ with $\left|f(a)\right|=\|a\|$.
+\item
+Show that~$a$ is positive iff $f(a)\geq 0$ for every state~$f$ of~$\scrA$.
+\end{enumerate}
+\end{point}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}%
+The key that unlocks the remaining basic facts 
+about the (positive) elements of a  $C^*$-algebra
+is the existence of the square root~$\sqrt{a}$ of a positive element~$a$,
+and its properties.
+For technical reasons,
+we will assume $\|a\|\leq 1$,
+and construct
+ $1-\sqrt{1-a}$ instead of~$\sqrt{a}$.
+\end{point}
 \begin{point}{Lemma}%
 Let $a$ be an element of a $C^*$-algebra $\scrA$
 with $0\leq a\leq 1$.
@@ -1075,114 +1294,6 @@ of (commutative) $C^*$-algebras.
 The key is the existence of enough (multiplicative)
 positive functionals.
 \end{point}
-\begin{point}{Definition}%
-An \Define{order ideal}
-of a $C^*$-algebra~$\scrA$
-is a linear subspace~$I$ of~$\scrA$
-with $b\in I\implies b^*\in I$
-and $b\in I\cap\pos{\scrA}\implies [-b,b]\subseteq I$.
-
-If in addition $a\in I\cap\sa{\scrA} \implies \left|a\right|\in I$,
-we say that~$I$ is a \Define{Riesz ideal}.
-\end{point}
-\begin{point}{Lemma}%
-Let~$I$ be maximal among order ideals
-of a  $C^*$-algebra~$\scrA$ with~$1\notin I$.
-Then there is a pu-map $f\colon \scrA\to \C$
-with $\ker(f)=I$.
-\begin{point}{Proof}%
-Form the quotient vector space $\scrA/I$
-with quotient map $q\colon \scrA\to \scrA/I$.
-Note that since~$1\notin I$
-we have $q(1)\neq 0$
-and so we may regard~$\C$ 
-to be a linear subspace of~$\scrA/I$
-via $\lambda\mapsto q(\lambda)$.
-We will, in fact, show that~$\C=\scrA/I$.
-
-But let us first put an order on~$\scrA/I$:
-we say that $\mathfrak{a}\in \scrA/I$ is positive
-if $\mathfrak{a}\equiv q(a)$ for some~$a\in\pos{\scrA}$,
-and write $\mathfrak{a}\leq \mathfrak{b}$ 
-if $\mathfrak{b}-\mathfrak{a}$ is positive
-for $\mathfrak{a},\mathfrak{b}\in\scrA/I$.
-Note that the definition of ``order ideal'' is such
-that if both~$\mathfrak{a}$ and $-\mathfrak{a}$ are positive,
-then~$\mathfrak{a}=0$.
-We leave it to the reader to verify 
-that~$\scrA/I$ becomes a partially ordered vector space
-with the order defined above.
-There is, however,
-one detail to which I want to draw you attention,
-namely that a scalar $\lambda$ is positive in~$\scrA/I$
-iff $\lambda$ is positive in~$\C$.
-Indeed, if~$\lambda\geq 0$ in~$\C$,
-then $\lambda\geq 0$ in~$\scrA$, and so~$\lambda \geq 0$ in~$\scrA/I$.
-On the other hand,
-if~$\lambda\geq 0$ in~$\scrA/I$, but~$\lambda\leq 0$ in~$\C$,
-then $\lambda\leq 0$ in~$\scrA/I$,
-and so $\lambda=0$.
-This detail
-has the desirable consequence
-that once we have shown that~$\scrA/I=\C$,
-we automatically get that~$q\colon \scrA\to\C$ is positive.
-
-\begin{point}[pos-hahn-banach-1]%
-Let~$a\in \sa{\scrA}$ be given.
-Define~$\alpha := \inf\{\,\lambda\in\R\colon\, q(a)\leq \lambda\,\}$.
-Note that $-\|a\| \leq \alpha\leq \|a\|$.
-We will prove that~$q(a)=\alpha$
-by considering the order ideal
-\TODO{Double check this proof,
-because it is simpler than the one given by Kadison---he first 
-shows that $\scrA/I$ is total and Archimedean.}
-\begin{equation*}
-J\ := \ \{\,b\in \scrA\colon\, \exists m,n\in \Z\,[\ 
-m(\alpha-q(a)) \,\leq\, q(\Real{b}),q(\Imag{b})\,\leq\, n(\alpha-q(a))\ ]\,\}.
-\end{equation*}
-We claim that $1\notin I$.
-Indeed, suppose not---towards a contradiction.
-Then there is~$n\in \Z$
-with $1\leq n(\alpha-q(a))$.
-What can we say about~$n$?
-If~$n<0$,
-then $0\geq \frac{1}{n}\geq \alpha-q(a)$,
-so~$\alpha-\frac{1}{n} \leq q(a)$,
-but $q(a)\leq \alpha+\varepsilon$
-for every~$\varepsilon>0$,
-and so~$\alpha-\frac{1}{n}\leq q(a)\leq \alpha-\frac{1}{2n}
-\leq \alpha-\frac{1}{n}$,
-which implies $\frac{1}{2n}=0$,
-which is absurd.
-If $n=0$,
-then we get $1\leq n(\alpha-q(a))\equiv 0$, which is absurd.
-If $n> 0$,
-then $\frac{1}{n}\leq \alpha-q(a)$,
-or in other words,
- $q(a) \leq \alpha - \nicefrac{1}{n}$,
-giving $\alpha \leq \alpha-\nicefrac{1}{n}$
-by definition of~$\alpha$,
-which is absurd.
-Hence~$1\notin J$.
-
-But then since~$I\subseteq J$,
-we get~$I=J$, by maximality of~$I$.
-Thus, as $\alpha-a\in J$, we have $\alpha-a\in I$,
-and so $q(a)=\alpha$, as desired.
-\end{point}
-\begin{point}%
-Let~$a\in \scrA$ be given.
-Then~$a=\Real{a}+i\Imag{a}$.
-By~\sref{pos-hahn-banach-1},
-there are $\alpha,\beta\in \R$ with $q(\Real{a})=\alpha$,
-and $q(\Imag{a})=\beta$.
-Thus~$q(a)=\alpha+i\beta$.
-Hence~$\scrA/I=\C$.
-Since the quotient map $q\colon \scrA\to \scrA/I\equiv \C$
-is pu, and $\ker(q)=I$, we are done.\qed
-\end{point}
-\end{point}
-\end{point}
 \begin{point}%
 Let~$\scrA$ be a $C^*$-algebra,
 and let~$f\colon \scrA\to \C$ be a pu-map
@@ -1208,39 +1319,6 @@ $\left|f(a^*b)\right|^2 \ \leq\ f(a^*a)\,f(b^*b)$.
 \end{parsec}
 
 
-%
-% morphisms between C^*-algebras
-%
-\begin{parsec}
-\begin{point}{Definition}
-A linear map $f\colon \scrA \to \scrB$
-between $C^*$-algebras
-is called
-\begin{enumerate}
-\item
-\Define{\textbf{m}ultiplicative}
-if $f(ab)=f(a)f(b)$ for all $a,b\in\scrA$;
-\item
-\Define{\textbf{i}nvolutive}
-if $f(a^*)=f(a)^*$ for all~$a\in\scrA$;
-\item
-\Define{\textbf{p}ositive}
-if $f(a)$ is positive
-for every positive $a\in\scrA$, and
-\item
-\Define{\textbf{u}nital}
-if $f(1)=1$.
-\end{enumerate}
-\end{point}
-\begin{point}%
-We use the bold letters as abbreviations,
-so for instance,
-$f$ is \Define{pu} if it is positive and unital,
-and a \Define{miu-map}
-is a multiplicative, involutive, unital linear map between $C^*$-algebras,
-(which is usually called a \Define{unital $*$-homomorphism}.)
-\end{point}
-\end{parsec}
 
 
 \begin{parsec}[gelfand]%
@@ -1260,29 +1338,6 @@ the map $\gamma\colon \scrA\to C(\spec(\scrA))$
 given by $\gamma(a)(\varphi)=\varphi(a)$,
 is an isomorphism.
 \end{enumerate}
-\end{point}
-\end{parsec}
-%
-% square root
-%
-\begin{parsec}[cstar-square]%
-\begin{point}{Corollary}%
-For each positive element~$a$ of a $C^*$-algebra~$\scrA$,
-there is a unique positive element~\Define{$\sqrt{a}$} of~$\scrA$
-with $(\sqrt{a})^2 = a$.
-
-\begin{point}[cstar-square-commutes]%
-Moreover,
-if $b\in \scrA$ commutes with~$a$,
-then~$b$ commutes with~$\sqrt{a}$.
-\end{point}
-\begin{point}[ad-monotone]{Exercise}%
-Show that~$a^*ba$
-is positive
-when~$b$ is a positive of a $C^*$-algebra~$\scrA$,
-and $a\in \scrA$ is any element.
-\TODO{Move this down}
-\end{point}
 \end{point}
 \end{parsec}
 %
