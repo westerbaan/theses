@@ -966,7 +966,7 @@ Show that  $\|a\|-a$
 or $\|a\|+a$ is not invertible.
 \end{enumerate}
 \end{point}
-\begin{point}{Lemma}%
+\begin{point}[maximal-ideal-state]{Lemma}%
 Let~$I$ be a maximal ideal of a $C^*$-algebra.
 Then there is a state $f\colon \scrA\to \C$
 with $\ker(f)=I$.
@@ -1275,7 +1275,8 @@ Prove that $a_+$ and $a_-$ are positive,  $a=a_+-a_-$
 and $a_+a_-=a_-a_+=0$.
 \item
 One should not read too much into the notation
-$\left|\,\cdot\,\right|$:
+$\left|\,\cdot\,\right|$
+in the non-commutative case:
 give an example of
 self-adjoint elements~$a$ and~$b$ of a $C^*$-algebra with
  $\left|a+b\right|\nleq \left|a\right|+ \left|b\right|$.
@@ -1299,10 +1300,49 @@ Hence~$a^*a_-=0$ giving us $a^*a=(a^*a)_+\geq 0$.\qed
 
 \begin{parsec}%
 \begin{point}%
+The interaction between the multiplication and order
+on a $C^*$-algebra can be subtle
+as we have seen in~\TODO{}.  However,
+when the $C^*$-algebra is commutative
+almost all peculiarities disappear,
+as we see in this paragraph.
+This is to be expected
+as we will see that any commutative $C^*$-algebra
+is isomorphic to a $C^*$-algebra
+of functions on a compact Hausdorff space.
+\end{point}
+\begin{point}{Exercise}%
+Let~$\scrA$ be a \emph{commutative} $C^*$-algebra.
+Let~$a,b,c\in\sa{\scrA}$.
+\begin{enumerate}
+\item
+Show that $\left| a\right|$ is the supremum of~$a$ and~$-a$
+in~$\sa{\scrA}$.
+\item
+Show that if~$a$ and $b$ have a supremum, $a\vee b$, in $\sa{\scrA}$,
+then~$c+a\vee b$ is the supremum of~$a+c$ and $b+c$.
+\item
+Show that~$\sa{\scrA}$ is a \Define{Riesz space},
+that is,  a lattice ordered vector space.\\
+(Hint: prove that $\frac{1}{2}(a+b+\left|a-b\right|)$
+is the supremum of~$a$ and~$b$ in~$\sa{\scrA}$.)
+\end{enumerate}
+\end{point}
+\begin{point}[riesz-decomposition-lemma]{Exercise}%
+Prove the \Define{Riesz decomposition lemma}:\\
+For positive elements~$a,b,c$ of a commutative $C^*$-algebra~$\scrA$
+with~$c\leq a+b$
+we have $c\equiv a'+b'$
+where  $0\leq a'\leq a$ and $0\leq b'\leq b$.
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}%
 Now that we have have a firm grip
 on the positive elements of a $C^*$-algebra,
 we turn to the multiplicative states
-on a commutative $C^*$-algebra.
+on a commutative $C^*$-algebra~$\scrA$.
 To obtain such multiplicative states
 we consider a special type
 of order ideal.
@@ -1320,7 +1360,28 @@ A \Define{maximal Riesz ideal}
 is a proper Riesz ideal which is maximal among
 proper Riesz ideals.
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[riesz-ideal-ring-ideal]{Lemma}%
+Let~$I$ be a Riesz ideal of a commutative $C^*$-algebra~$\scrA$.
+For all~$a\in \scrA$ and $x\in I$ we have $ax\in I$.
+\begin{point}{Proof}%
+Since~$x=\Real{x}+i\Imag{x}$,
+it suffices to show that~$a\Real{x}\in I$ and $a\Imag{x}\in I$.
+Note that~$\Real{x},\Imag{x}\in I$,
+so we might as well assume that~$x$ is self-adjoint to begin with.
+Similarly, using that
+ $\pos{x}\in I$ (because $\pos{x}=\frac{1}{2}(\left|x\right|+x)$
+and~$\left|x\right|\in I$) and $x_-\in I$,
+we can reduce the problem to the case that~$x$ is positive.
+We may also assume that~$a$ is self-adjoint.
+
+Now, since~$x\geq 0$ and $-\|a\|\leq a\leq \|a\|$,
+we have $-\|a\|x \leq ax\leq \|a\|x$
+by~\TODO{multiplication by a commuting positive operator is monotone},
+and so~$ax\in I$,
+because $\|a\|x\in I$.\qed
+\end{point}
+\end{point}
+\begin{point}[riesz-ideal-basic]{Exercise}%
 Let~$\scrA$ be a commutative $C^*$-algebra.
 \begin{enumerate}
 \item
@@ -1341,8 +1402,7 @@ Show that~$(a)=(a)_m$ when~$a\geq 0$.
 Give an example of~$\scrA$ and self-adjoint~$a$ with~$(a)\neq (a)_m$.
 \item
 Show that~$I+J$ is a Riesz ideal of~$\scrA$
-when $I$ and~$J$ are Riesz ideals.
-\TODO{Riesz decomposition theorem}
+when $I$ and~$J$ are Riesz ideals. (Hint: use~\sref{riesz-decomposition-lemma}.)
 
 Give an example of~$\scrA$ and order ideals~$I$ and~$J$ of~$\scrA$
 such that $I+J$ is not an order ideal.
@@ -1352,10 +1412,9 @@ Show that each proper Riesz ideal is contained
 in a maximal Riesz ideal.
 \end{enumerate}
 \end{point}
-\begin{point}{Lemma}%
+\begin{point}[maximal-riesz-ideal-maximal-order-ideal]{Lemma}%
 A maximal Riesz ideal~$I$ of a commutative $C^*$-algebra $\scrA$
-is not only maximal in the set of proper Riesz ideal,
-but is also  maximal in the set of proper order ideals.
+is a maximal order ideal.
 \begin{point}{Proof}%
 Let~$J$ be a proper order ideal with $I\subseteq J$.
 We must show that $J=I$.
@@ -1373,12 +1432,48 @@ entails $a\in I$,
 we might as well assume that~$a$ is positive.
 
 Note that the least ideal~$(a)$ that contains~$a$
-is also a Riesz ideal by~\sref{}.
-Hence  $I+(a)$ is a Riesz ideal by \TODO{}.
+is also a Riesz ideal by~\sref{riesz-ideal-basic}.
+Hence  $I+(a)$ is a Riesz ideal by~\sref{riesz-ideal-basic}
 Since~$a\in J$, we have $(a)\subseteq J$,
 and so~$I+(a)\subseteq J$ is proper.
 It follows that $a\in I+(a)=I$ by maximality of~$I$.\qed
 \end{point}
+\end{point}
+\begin{point}{Proposition}
+Let~$I$ be a maximal Riesz ideal of a commutative $C^*$-algebra.
+Then there is a miu-map $f\colon \scrA\to \C$
+with $\ker(f)=I$.
+\begin{point}{Proof}%
+Since~$I$ is a maximal order ideal 
+by~\sref{maximal-riesz-ideal-maximal-order-ideal},
+there is a piu-map $f\colon \scrA\to \C$
+with~$\ker(f)=I$ by~\sref{maximal-ideal-state}.
+It remains to be shown that~$f$ is multiplicative.
+Let~$a,b\in \scrA$ be given;
+we must show that $f(ab)=f(a)f(b)$.
+Surely, since~$f$ is unital,
+we have $f(b-f(b))=f(b)-f(b)=0$,
+an so $b-f(b)\in \ker(f)\equiv I$.
+Now, since~$I$ is a Riesz ideal,
+we have $a(b-f(b))\in I\equiv \ker(f)$ by~\sref{riesz-ideal-ring-ideal},
+and so~$0=f(\,a(b-f(b))\,)=f(ab)-f(a)f(b)$.
+Hence~$f$ is multiplicative.\qed
+\end{point}
+\end{point}
+\begin{point}{Definition}%
+The \Define{spectrum} of a commutative $C^*$-algebra~$\scrA$,
+denoted by~\Define{$\spec(a)$},
+is the set of miu-maps $f\colon \scrA\to\C$.
+
+We endow~$\spec(\scrA)$
+with the topology of pointwise convergence
+(that is, the topology $\spec(\scrA)$ inherits
+being a subset of the product space $ \prod_{a\in\scrA} \C$).
+\end{point}
+\begin{point}{Exercise}%
+For an element~$a$ of a commutative $C^*$-algebra
+we have
+$\spec(a) = \{f(a)\colon f\in \spec(\scrA)\}$.
 \end{point}
 \end{parsec}
 
