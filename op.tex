@@ -696,27 +696,52 @@ Given an element~$a$ of a $C^*$-algebra show that
 \item $\spec(a) =\{\lambda\}$ iff $a=\lambda$ for every $\lambda \in\C$.
 \end{enumerate}
 \end{point}
-\end{parsec}
-\begin{parsec}%
-\begin{point}{Theorem (Gelfand--Mazur)}%
-Let~$\scrA$ be a $C^*$-algebra in which every non-zero element
-has an inverse, but $0\neq 1$.
-Then~$\scrA = \C$.
-\begin{point}{Proof}%
-Let~$a\in\scrA$.
-Since~$\spec(a)\neq \varnothing$ by~\sref{spectrum-non-empty},
-there is~$\lambda\in \scrA$
-such that~$a-\lambda$ is not invertible.
-Since every non-zero element in~$\scrA$ has an inverse in~$\scrA$
-by assumption,
-we have $a-\lambda=0$, and so $a=\lambda$.\qed
+\begin{point}{Exercise (Gelfand--Mazur's Theorem for $C^*$-algebras)}%
+Prove that if every non-zero element of a $C^*$-algebra~$\scrA$
+is invertible, then~$\scrA=\C$ or~$\scrA=\{0\}$.
 \end{point}
+\begin{point}%
+A logical next step
+towards Gelfand's representation theorem
+is to show that if~$\lambda\in\spec(a)$
+for some element~$a$ of a \emph{commutative} $C^*$-algebra~$\scrA$,
+then there is a miu-map $f\colon \scrA\to \C$
+with~$f(a)=\lambda$.
+Here we have moved ourselves in a tight spot
+by evading Banach algebras,
+because the mentioned result is usually obtained
+by finding a maximal ideal~$I$ of~$\scrA$
+(by Zorn's Lemma) that contains~$\lambda-a$,
+and then forming the \emph{Banach algebra} quotient~$\scrA/I$.
+One then applies Gelfand--Mazur's Theorem for \emph{Banach algebras}, 
+to see that
+$\scrA/I= \C$,
+and thereby obtain a miu-map~$f\colon \scrA\to C$ with~$f(a-\lambda)=0$.
+The problem here is that while $\scrA/I$
+will turn out to be a $C^*$-algebra (indeed, be $\C$)
+the formation of the $C^*$-algebra quotient
+is non-trivial and depends on Gelfand's representation theorem
+(see e.g.~\TODO{conway})
+which is the very theorem we are working towards.
+The way out of this predicament
+is to avoid ideals and quotients of $C^*$- and Banach algebras
+altogether,
+and instead work 
+with order ideals (and what are essentially
+ quotients of Riesz and order unit spaces).
+To this end,
+we develop the theory
+of the positive elements of a $C^*$-algebra
+farther than is usually done
+before Gelfand's representation theorem.
 \end{point}
 \end{parsec}
+
 \begin{parsec}%
 \begin{point}%
-To apply this version of Gelfand--Mazur,
-we study the positive elements 
+\TODO{Remark on Gelfand--Mazur not useful}
+
+We now turn to the positive elements 
 in a $C^*$-algebra.
 Usually,
 elements of the form $a^*a$ are defined to be positive,
@@ -931,7 +956,7 @@ and $b\in I\cap\pos{\scrA}\implies [-b,b]\subseteq I$.
 It is called \Define{proper} if~$1\notin I$,
 and \Define{maximal} if it is maximal among all proper order ideals.
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[order-ideal-basic]{Exercise}%
 Let~$\scrA$ be a $C^*$-algebra.
 \begin{enumerate}
 \item
@@ -1340,28 +1365,66 @@ where  $0\leq a'\leq a$ and $0\leq b'\leq b$.
 \begin{parsec}%
 \begin{point}%
 Now that we have have a firm grip
-on the positive elements of a $C^*$-algebra,
-we turn to the multiplicative states
-on a commutative $C^*$-algebra~$\scrA$.
-To obtain such multiplicative states
-we consider a special type
-of order ideal.
+on the positive elements of a $C^*$-algebra
+we turn to what is perhaps the most important
+fact about commutative $C^*$-algebras:
+that they are isomorphic to $C^*$-algebras
+of continous functions on a compact Hausdorff space,
+via the \emph{Gelfand representation}.
 
-\TODO{Show that a $C^*$-algebra need not have any
-multiplicative states. 
-Make remark on extreme states.}
+\TODO{Show that $\spec(\scrA)$ is a compact Hausdorff space.}
+\end{point}
+\begin{point}{Setting}%
+In this paragraph,
+$\scrA$ is a commutative $C^*$-algebra.
 \end{point}
 \begin{point}{Definition}%
-Let~$\scrA$ be a commutative $C^*$-algebra.
+The \Define{spectrum} of~$\scrA$,
+denoted by \Define{$\spec(\scrA)$},
+is the set of all miu-maps $f\colon \scrA\to \C$.
+We endow~$\spec(\scrA)$
+with the topology of pointwise convergence.
+
+The \Define{Gelfand representation}
+of~$\scrA$
+is the miu-map~$\gamma\colon \scrA\to C(\spec(\scrA))$
+given by $\gamma(a)(f)=f(a)$.
+\begin{point}{Exercise}%
+Verify that 
+ the map $\spec(\scrA)\to \C,\ f\mapsto f(a)$ is indeed
+continuous for every~$a\in\scrA$,
+and that~$\gamma$ miu.
+\end{point}
+\end{point}
+\begin{point}%
+Our program for this paragraph is to show that
+the Gelfand representation~$\gamma$ is 
+a miu-isomorphism.
+In fact,
+we will show that it gives the unit
+of an equivalence between the category of commutative $C^*$-algebras
+and the opposite of the category of compact Hausdorff spaces.
+The first hurdle we take is the injectivity of~$\gamma$
+--- that there are sufficiently many
+points in the spectrum of a commutative $C^*$-algebra,
+so to speak ---,
+and involves Zorn's Lemma,
+naturally,
+but also the following special type of order ideal.
+\end{point}
+\begin{point}{Definition}%
 A \Define{Riesz ideal} of~$\scrA$
 is an order ideal~$I$
 such that $a\in I\cap\sa{\scrA}\implies \left|a\right|\in I$.
 A \Define{maximal Riesz ideal}
 is a proper Riesz ideal which is maximal among
 proper Riesz ideals.
+\begin{point}{Remark}%
+\TODO{Make remark on why Riesz ideals instead of $*$-ring ideals.}
+\end{point}
 \end{point}
 \begin{point}[riesz-ideal-ring-ideal]{Lemma}%
-Let~$I$ be a Riesz ideal of a commutative $C^*$-algebra~$\scrA$.
+Let~$I$ be a Riesz ideal of~$\scrA$.
 For all~$a\in \scrA$ and $x\in I$ we have $ax\in I$.
 \begin{point}{Proof}%
 Since~$x=\Real{x}+i\Imag{x}$,
@@ -1382,38 +1445,33 @@ because $\|a\|x\in I$.\qed
 \end{point}
 \end{point}
 \begin{point}[riesz-ideal-basic]{Exercise}%
-Let~$\scrA$ be a commutative $C^*$-algebra.
+Verify the following facts about Riesz ideals.
 \begin{enumerate}
 \item
-Let~$a$ be a self-adjoint element
-of~$\scrA$.
-Show that
+The least Riesz ideal that contains a self-adjoint element~$a$
+of~$\scrA$ is
 \begin{equation*}
 (a)_m\ :=\ \{\,b\in \scrA\colon\, 
 \exists n\in \N\,[\ \left|\Real{b}\right|,\,\left|\Imag{b}\right|
-\,\leq\, n\left|a\right| \ ]\,\}
+\,\leq\, n\left|a\right| \ ]\,\}.
 \end{equation*}
-is the least Riesz ideal that contains~$a$.
-
-Show that $(a)_m=\scrA$ iff $a$ is invertible.
-
-Show that~$(a)=(a)_m$ when~$a\geq 0$.
-
-Give an example of~$\scrA$ and self-adjoint~$a$ with~$(a)\neq (a)_m$.
+Moreover,  $(a)_m=\scrA$ iff $a$ is invertible,
+and we have~$(a)=(a)_m$ when~$a\geq 0$
+(where $(a)$ is the least order ideal that contains~$a$,
+see~\sref{order-ideal-basic}).
+For non-positive~$a$, however, we may have~$(a)\neq (a)_m$.
 \item
-Show that~$I+J$ is a Riesz ideal of~$\scrA$
+$I+J$ is a Riesz ideal of~$\scrA$
 when $I$ and~$J$ are Riesz ideals. (Hint: use~\sref{riesz-decomposition-lemma}.)
-
-Give an example of~$\scrA$ and order ideals~$I$ and~$J$ of~$\scrA$
-such that $I+J$ is not an order ideal.
+But~$I+J$ might not be an order ideal
+when~$I$ and~$J$ are order ideals.
 
 \item
-Show that each proper Riesz ideal is contained
-in a maximal Riesz ideal.
+Each proper Riesz ideal is contained in a maximal Riesz ideal.
 \end{enumerate}
 \end{point}
 \begin{point}[maximal-riesz-ideal-maximal-order-ideal]{Lemma}%
-A maximal Riesz ideal~$I$ of a commutative $C^*$-algebra $\scrA$
+A maximal Riesz ideal~$I$ of~$\scrA$
 is a maximal order ideal.
 \begin{point}{Proof}%
 Let~$J$ be a proper order ideal with $I\subseteq J$.
@@ -1439,8 +1497,8 @@ and so~$I+(a)\subseteq J$ is proper.
 It follows that $a\in I+(a)=I$ by maximality of~$I$.\qed
 \end{point}
 \end{point}
-\begin{point}{Proposition}
-Let~$I$ be a maximal Riesz ideal of a commutative $C^*$-algebra.
+\begin{point}[riesz-ideal-miu-map]{Lemma}%
+Let~$I$ be a maximal Riesz ideal of~$\scrA$.
 Then there is a miu-map $f\colon \scrA\to \C$
 with $\ker(f)=I$.
 \begin{point}{Proof}%
@@ -1460,20 +1518,161 @@ and so~$0=f(\,a(b-f(b))\,)=f(ab)-f(a)f(b)$.
 Hence~$f$ is multiplicative.\qed
 \end{point}
 \end{point}
-\begin{point}{Definition}%
-The \Define{spectrum} of a commutative $C^*$-algebra~$\scrA$,
-denoted by~\Define{$\spec(a)$},
-is the set of miu-maps $f\colon \scrA\to\C$.
+\begin{point}[spectrum-miu]{Lemma}%
+For each~$a\in\scrA$ we have $\spec(a)=\{f(a)\colon f\in\spec(\scrA)\}$.
+\begin{point}{Proof}%
+Let~$f\in \spec(\scrA)$,
+and~$a\in\scrA$.
+If~$a-f(a)$ would have had an inverse~$b$ in~$\scrA$,
+then~$f(b)$ would be an inverse
+of~$f(\,a-f(a)\,)=0$ in~$\C$,
+which does not exist. Thus~$a-f(a)$ is not invertible,
+that is, $f(a)\in \spec(a)$.
 
-We endow~$\spec(\scrA)$
-with the topology of pointwise convergence
-(that is, the topology $\spec(\scrA)$ inherits
-being a subset of the product space $ \prod_{a\in\scrA} \C$).
+\TODO{fix error: $a$ must be self-adjoint}
+Let~$\lambda\in\spec(a)$.
+We must find~$f\in \spec(\scrA)$ with~$f(a)=\lambda$.
+Since~$a-\lambda$ is not invertible,
+the Riesz ideal $(a-\lambda)_m$ is proper
+and so there is a maximal Riesz ideal~$I$ that contains~$a-\lambda$
+(see~\sref{riesz-ideal-basic}).
+By~\sref{riesz-ideal-miu-map}
+there is a miu-map $f\in \spec(\scrA)$ with~$\ker(f)=I$.
+For this~$f$,
+we have, $f(\lambda-a)=0$
+(since $\lambda-a\in I$),
+and so~$f(a)=\lambda$.\qed
+\end{point}
 \end{point}
 \begin{point}{Exercise}%
-For an element~$a$ of a commutative $C^*$-algebra
-we have
-$\spec(a) = \{f(a)\colon f\in \spec(\scrA)\}$.
+Prove that $\|\gamma(a)\|=\|a\|$
+for each~$a\in\scrA$
+using~\sref{spectrum-miu} and~\sref{norm-spectrum}.
+Conclude that the Gelfand representation $\gamma\colon \scrA\to C(\spec(\scrA))$
+is injective,
+and that its range $\{\gamma(a)\colon a\in\scrA\}$
+is a $C^*$-subalgebra of~$C(\spec(\scrA))$.
+\end{point}
+\begin{point}%
+To show that~$\gamma$ is surjective,
+we use the following special case of
+the Stone--Weierstra\ss{} theorem. 
+\end{point}
+\begin{point}{Theorem}%
+Let~$X$ be a compact Hausdorff space,
+and let~$\scrS$ be a $C^*$-subalgebra of~$C(X)$
+which `separates the points of~$X$',
+that is, for all~$x,y\in X$
+there is~$f\in \scrS$ with $f(x)\neq f(y)$.
+Then~$\scrS=C(X)$.
+\begin{point}{Proof}%
+Let~$g\in \pos{C(X)}$ and $\varepsilon >0$.
+To prove that~$\scrS=C(X)$,
+it suffices to show that~$g\in \scrS$,
+and for this,
+it suffices to find~$f\in \scrS$ with $\|f-g\|\leq \varepsilon$,
+because~$\scrS$ is closed.
+It is convenient to assume that~$g(x)> 0$ for all~$x\in X$,
+which we may, without loss of generality,
+by replacing~$g$ by~$1+g$.
+
+\begin{point}[stone-weierstrass-1]%
+Let~$x,y\in X$.
+We know there is~$f\in \scrS$ with $f(x)\neq f(y)$.
+Note that we can assume that~$f(x)=0$ (by replacing~$f$ by~$f-f(x)$),
+and that~$f$ is self-adjoint (by replacing~$f$
+by either~$\Real{f}$ or~$\Imag{f}$),
+and that~$f$ is positive
+(by replacing~$f$ by~$f_+$ or~$f_-$),
+and that~$f(y)=g(y)>0$
+(by replacing $f$ by $\frac{g(y)}{f(y)} f$),
+and that~$f\leq g(y)$
+(by replacing $f$ by $f\wedge g(y)$).
+\end{point}
+\begin{point}%
+Let~$y\in X$ be given.
+We will show that there is~$f\in\scrS$
+with $0\leq f\leq g+\varepsilon$
+and~$f(y)=g(y)$.
+Indeed,
+since~$g$ is continuous
+there is an open neighbourhood~$V$ of~$y$
+with~$g(y) \leq  g(x)+\varepsilon$
+for all~$x\in V$.
+For each~$x\in X\backslash V$ there is $f_x \in [0,f(y)]_{\scrS}$
+with $f_x(x)=0$ and~$f_x(y)=g(y)$ by~\sref{stone-weierstrass-1}.
+Since the open subsets
+$U_x := \{\,z\in X\colon f_x(z)\leq \varepsilon\,\}$
+with~$x\in X\backslash V$
+form an open cover of the closed (and thus compact) subset $X\backslash V$,
+there are $x_1,\dotsc,x_N\in X\backslash U$
+with $U_{x_1}\cup\dotsb\cup U_{x_N}=X$.
+Define $f:=f_{x_1}\wedge \dotsb \wedge f_{x_N}$.
+Then~$f\in \scrS$, $0\leq f\leq g(y)$, $f(y)=g(y)$,
+and $f(x)\leq \varepsilon$
+for every~$x\in X\backslash U$.
+
+We claim that $f\leq g+\varepsilon$.
+Indeed,
+if~$x\in X\backslash U$,
+then $f(x)\leq \varepsilon\leq g(x)+\varepsilon$.
+If~$x\in U$,
+then $f(x)\leq g(y)\leq g(x)+\varepsilon$
+(by definition of~$U$).
+Hence $f\leq g+\varepsilon$.
+\end{point}
+\begin{point}%
+Thus for each~$y\in X$
+there is $f_y\in \scrS$ with $0\leq f_y \leq g+\varepsilon$
+and~$f_y(y)=g(y)$.
+Since~$f_y$ is continuous at~$y$,
+and~$f_y(y)=g(y)$,
+there is an open neighbourhood~$U_y$ of~$y$
+with $g(y)-\varepsilon\leq f_y(x)$
+for all~$x\in U_y$.
+Since these open neighbourhoods cover~$X$,
+and~$X$ is compact,
+there are $y_1,\dotsc,y_N\in X$
+with $U_{y_1}\cup\dotsb\cup U_{y_N} = X$.
+Define $f:=f_{y_1}\vee \dotsb\vee f_{y_N}$.
+Then~$f\in\scrS$,
+and $g-\varepsilon \leq f\leq g+\varepsilon$,
+giving $\|f-g\|\leq \varepsilon$.\qed
+\end{point}
+\end{point}
+\end{point}
+\begin{point}{Gelfand's Representation Theorem}%
+For a commutative $C^*$-algebra~$\scrA$,
+the Gelfand representation
+ $\gamma\colon \scrA\to C(\spec(\scrA))$,
+given by $\gamma(a)(f)=f(a)$,
+is a miu-isomorphism.
+\end{point}
+\begin{point}{Lemma}%
+Let~$X$ be a compact Hausdorff space,
+and let~$\tau \colon C(X)\to \C$ be a miu-map.
+Then there is~$x\in X$ with $\tau(f)=f (x)$.
+\begin{point}{Proof}%
+We are going to use the fact that each
+net in~$X$ has a convergent subnet
+to obtain the point~$x$.
+Let~$D$ be the set of $f\in C(X)$
+with~$\tau(f)=1$ and $0\leq f\leq 1$
+Then~$D$ is downwards directed,
+because if~$f,g\in D$,
+then $\tau(f g)=\tau(f)\,\tau(g)=1$,
+and $0\leq fg\leq f\wedge g$.
+Since clearly $0\notin D$,
+we can choose for each~$f\in D$
+a point $x_f\in X$ with~$f(x_f)>0$.
+Now, since~$X$ is compact,
+the net~$(x_f)_{f\in D}$
+has a subnet which converges to some~$x\in X$.
+
+
+
+
+\end{point}
 \end{point}
 \end{parsec}
 
@@ -1490,59 +1689,6 @@ $\left|f(a^*b)\right|^2 \ \leq\ f(a^*a)\,f(b^*b)$.
 \end{point}
 \begin{point}{Proof}%
 \TODO{give; NB: it is not trivial that~$f$ is involutive}
-\end{point}
-\end{parsec}
-
-
-
-
-\begin{parsec}[gelfand]%
-\begin{point}{Gelfand's Representation Theorem}%
-Let~$\scrA$ be a commutative $C^*$-algebra.
-\begin{enumerate}
-\item
-The \Define{spectrum} of~$\scrA$, \Define{$\spec(\scrA)$},
-the set 
-of miu-maps $\scrA\to \C$
-endowed with the topology of pointwise convergence,
-is a compact Hausdorff space.
-
-\item
-The \Define{Gelfand transform},
-the map $\gamma\colon \scrA\to C(\spec(\scrA))$
-given by $\gamma(a)(\varphi)=\varphi(a)$,
-is an isomorphism.
-\end{enumerate}
-\end{point}
-\end{parsec}
-%
-%
-%
-\begin{parsec}%
-\begin{point}{Exercise}
-Show that a positive map between $C^*$-algebras
-is involutive.
-\end{point}
-\end{parsec}
-
-\begin{parsec}%
-\begin{point}%
-We now turn to quotients of $C^*$-algebras.
-\TODO{Do we need quotients of $C^*$-algebras?}
-\end{point}
-\begin{point}{Definition}%
-An \Define{ideal} of a $C^*$-algebra~$\scrA$
-is linear subspace~$\scrD$ of~$\scrA$
-such that	
-\begin{enumerate}
-\item $ad,da\in \scrD$ for all $a\in \scrA$ and $d\in \scrD$, and
-\item $d^* \in \scrD$ for all $d\in \scrD$.
-\end{enumerate}
-\begin{point}{Remark}%
-The second requirement turns out to be redundant
-(see~\TODO{}),
-and is therefor omitted in the literature.
-\end{point}
 \end{point}
 \end{parsec}
 
