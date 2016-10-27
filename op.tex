@@ -1653,25 +1653,69 @@ Let~$X$ be a compact Hausdorff space,
 and let~$\tau \colon C(X)\to \C$ be a miu-map.
 Then there is~$x\in X$ with $\tau(f)=f (x)$.
 \begin{point}{Proof}%
-We are going to use the fact that each
-net in~$X$ has a convergent subnet
-to obtain the point~$x$.
-Let~$D$ be the set of $f\in C(X)$
-with~$\tau(f)=1$ and $0\leq f\leq 1$
-Then~$D$ is downwards directed,
-because if~$f,g\in D$,
-then $\tau(f g)=\tau(f)\,\tau(g)=1$,
-and $0\leq fg\leq f\wedge g$.
-Since clearly $0\notin D$,
-we can choose for each~$f\in D$
-a point $x_f\in X$ with~$f(x_f)>0$.
-Now, since~$X$ is compact,
-the net~$(x_f)_{f\in D}$
-has a subnet which converges to some~$x\in X$.
+Define
+$Z\,= \, \{\,x\in X\colon \ h(x)\neq 0\text{ for some~$h\in \pos{C(X)}$
+with $\tau(h)=0$}\,\}$.
+We'll prove~$X\backslash Z$ contains
+exactly one point, $x_0$, and $\tau(f)=f(x_0)$ for all~$f$.
+\begin{point}%`
+To see that~$X\backslash Z$ contains no more than one point,
+let~$x,y\in X$ with $x\neq y$ be given;
+we will show that either~$x\in Z$ or~$y\in Z$.
+By the usual topological trickery,
+we can find~$f,g\in \pos{C(X)}$
+with $fg=0$, $f(x)=1$ and~$g(y)=1$.
+Then~$0=\tau(fg)=\eta(f)\,\eta(g)$,
+so either~$\tau(f)=0$ (and~$x\in Z$), or~$\tau(g)=0$
+(and~$y\in Z$).
 
+That~$X\backslash Z$ is non-empty
+follows from the following result (by taking~$f=1$).
+\end{point}
+\begin{point}[multiplicative-state-on-cx-1]%
+For~$f\in \pos{C(X)}$
+with~$f(x)> 0 \implies x\in Z$ for all~$x\in X$
+we have~$\tau(f)=0$.
+Indeed, for each~$x\in X$ with~$f(x)>0$
+(and so~$x\in Z$)
+we can find~$h\in \pos{C(X)}$
+with $\tau(h)=0$ and~$h(x)\neq 0$.
+Then~$f(x)< g(x)$
+and~$\tau(g)=0$
+for $g:=(\frac{f(x)}{g(x)}+1)h$.
+By compactness,
+we can find $g_1,\dotsc,g_N\in \pos{C(X)}$
+with~$\tau(g_n)=0$,
+such that for every~$x\in X$
+there is~$n$ with $g(x)<f_n(x)$.
+Then writing $g:=g_1\vee \dotsb \vee g_N$,
+we have $0\leq f\leq g$ and~$\tau(g)=0$
+(by~\TODO{miu-map preserves infima}).
+It follows that~$\tau(f)=0$.
+\end{point}
+\begin{point}%
+We now know that~$X\backslash Z$ contains exactly
+one point, say~$x_0$.
+To see that~$\tau(f)=f(x_0)$
+for~$f\in C(X)$,
+write $g:=(f-f(x_0))^*(f-f(x_0))$
+and note that $g(x)>0\implies x\neq x_0\implies  x\in Z$.
+Thus by~\sref{multiplicative-state-on-cx-1},
+we get $0=\tau(g)=\left|\tau(f)-f(x_0)\right|^2$,
+and so $\tau(f)=f(x_0)$.\qed
+\end{point}
+\end{point}
+\begin{point}{Exercise}%
+Let~$X$ be a compact Hausdorff space.
 
+Show that for every~$x\in X$
+the map $\delta_x\colon C(X)\to \C,\ f\mapsto f(x)$
+is miu.
 
-
+Show that the map $X\to \spec(C(X)),\ x\mapsto \delta_x$
+is a continuous bijection
+onto a compact Hausdorff space,
+and thus a homeomorphism.
 \end{point}
 \end{point}
 \end{parsec}
