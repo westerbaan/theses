@@ -1,8 +1,61 @@
 \documentclass[main]{subfiles}
 \begin{document}
 \chapter{$C^*$-algebras}
-
-\TODO{Introduction}
+As a warming-up
+we develop the essentials of the theory of $C^*$-algebras
+in this chapter.
+Since we are ultimately interested
+in von Neumann algebras in this text
+we have evaded
+delicate
+topics such as tensor products (of $C^*$-algebras), 
+quotients, approximate identities,
+and $C^*$-algebras without a unit.
+Our end goal
+for this chapter
+is Gelfand's representation theorem,
+the fact that every commutative $C^*$-algebra
+is isomorphic
+to the $C^*$-algebra
+$C(X)$ of continuous functions on some compact Hausdorff space~$X$.
+We begin easy with the definition and elementary properties
+of self-adjoint, positive and invertible elements of a $C^*$-algebra,
+and we introduce the spectrum of an element in~\sref{}.
+Without breaking a sweat,
+we obtain an important technical result
+called spectral permanence in~\sref{}
+with algebraic manipulations and simple analysis.
+However, to reach Gelfand's representation theorem,
+we will take three hurdles:
+\begin{enumerate}
+\item
+first we employ complex analysis
+to connect the invertible elements of a $C^*$-algebra
+with the norm;
+\item
+then we connect multiplication
+and positive elements via the construction of the square root
+of positive elements;
+\item
+and finally we connect the multiplicative states
+on a commutative $C^*$-algebra
+with the spectrum of its elements
+using `maximal Riesz ideals'.
+\end{enumerate}
+To make this chapter
+as accessible as possible,
+we have made every effort to identify
+and remove
+extranious material
+from the ordinary development
+of the theory
+such as the more general theory of Banach algebras
+and Banach spaces (and its pathology)
+To accommodate these simplifications
+we were forced
+to take a slightly different path than in the literature,
+for while we obtain Gelfand--Mazur's theorem for $C^*$-algebras,
+but cannot apply it, see~\sref{}.
 \begin{parsec}%
 \begin{point}{Definition}%
 A \Define{$C^*$-algebra}
@@ -36,15 +89,18 @@ and
 \label{eq:Cstar-identity}
 \|a^*a\|\ =\ \|a\|^2
 \end{equation*}
-holds, which is called the \Define{$C^*$-identity}.
+holds. The latter equality is called the \Define{$C^*$-identity}.
 \end{enumerate}
 The $C^*$-algebra $\scrA$ is called \Define{commutative}
 if $ab=ba$ for all~$a,b\in\scrA$.
 \end{point}
+\begin{point}{Exercise}%
+Verify the following examples of $C^*$-algebras.
 \begin{point}{Example}%
-The set~$\C$ of \Define{complex numbers}
+The vector space~$\C$ of \Define{complex numbers}
 forms a commutative  $C^*$-algebra
-in which addition, (scalar) multiplication, and~$1$
+in which
+multiplication and~$1$
 have their usual meaning.
 Involution is given by conjugation ($z^*=\bar{z}$),
 and norm by modulus ($\|z\|=|z|$).
@@ -64,7 +120,38 @@ $\|f\|=\sup_{x\in X} |f(x)|$
 The set~$\scrB(\scrH)$ of bounded operators
 on a Hilbert space~$\scrH$ forms a $C^*$-algebra.
 \end{point}
-\begin{point}{Definitions}%
+\begin{point}{Example}%
+A \Define{$C^*$-subalgebra}
+of a $C^*$-algebra~$\scrA$
+is a subset~$\scrB$ of~$\scrA$,
+which is a linear subspace of~$\scrA$,
+contains the unit, $1$, is closed under multiplication
+and involution, 
+and is closed with respect to the norm of~$\scrA$;
+such a $C^*$-subalgebra of~$\scrA$
+is itself a $C^*$-algebra
+when endowed with the operations and norm
+of~$\scrA$.
+\end{point}
+\begin{point}{Example}%
+Let~$\scrA_i$ be a $C^*$-algebra
+for every element~$i$ of some set~$I$.
+The \Define{direct product}
+of the family $(\scrA_i)_i$
+is the $C^*$-algebra
+denoted by $\bigoplus_{i\in I}\scrA_i$ on the set
+\begin{equation*}
+\textstyle
+\{\  a\in \prod_{i\in I}\scrA_i\colon\  \sup_{i \in I} \|a(i)\|< \infty \ \}
+\end{equation*}
+whose operations are defined coordinatewise,
+and whose norm is a \Define{sup-norm} given by $\|a\|=\sup_{i}\|a(i)\|$.
+\end{point}
+\end{point}
+
+\end{parsec}
+\begin{parsec}%
+\begin{point}{Definition}%
 Given an element $a$ of a $C^*$-algebra $\scrA$, 
 \begin{enumerate}
 \item we say that $a$ is \Define{self-adjoint} if $a^* =a$, and
@@ -72,7 +159,7 @@ Given an element $a$ of a $C^*$-algebra $\scrA$,
 and $\Define{\Imag{a}}:=\frac{1}{2i}(a-a^*)$.
 \end{enumerate}
 The set of self-adjoint elements of~$\scrA$
-is denoted by~$\sa{\scrA}$.
+is denoted by~\Define{$\sa{\scrA}$}.
 \end{point}
 \begin{point}{Exercise}%
 Let~$a$ be an element of a $C^*$-algebra.
@@ -92,6 +179,53 @@ Give an example of an~$a$ with  $\Real{a}\Imag{a} \neq \Imag{a}\Real{a}$.
 \item
 Show that $a^*a+aa^* = 2(\Real{a}^2+\Imag{a}^2)$.
 \end{enumerate}
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}{Definition}%
+A self-adjoint element~$a$ of a $C^*$-algebra~$\scrA$ is called
+\Define{positive} if $\|a-\|a\|\|\leq \|a\|$,
+and the set of positive elements of~$\scrA$
+is denoted by~$\pos{\scrA}$.
+\end{point}
+\TODO{move the definition of positive,
+and some elementary properties here}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}{Definition}
+A linear map $f\colon \scrA \to \scrB$
+between $C^*$-algebras
+is called
+\begin{enumerate}
+\item
+\Define{\textbf{m}ultiplicative}
+if $f(ab)=f(a)f(b)$ for all $a,b\in\scrA$;
+\item
+\Define{\textbf{i}nvolutive}
+if $f(a^*)=f(a)^*$ for all~$a\in\scrA$;
+\item
+\Define{\textbf{p}ositive}
+if $f(a)$ is positive
+for every positive $a\in\scrA$, and
+\item
+\Define{\textbf{u}nital}
+if $f(1)=1$.
+\end{enumerate}
+\begin{point}%
+We use the bold letters as abbreviations,
+so for instance,
+$f$ is \Define{pu} if it is positive and unital,
+and a \Define{miu-map}
+is a multiplicative, involutive, unital linear map between $C^*$-algebras,
+(which is usually called a \Define{unital $*$-homomorphism}.)
+\end{point}
+\begin{point}%
+The miu-maps between $C^*$-algebras
+form a category which we denote by~$\Cstar{miu}$.
+The full subcategory of commutative $C^*$-algebras
+is denoted by~$\cCstar{miu}$.
+\end{point}
 \end{point}
 \end{parsec}
 
@@ -901,35 +1035,6 @@ essential
 in the proof that every $C^*$-algebra
 is isomorphic to a $C^*$-algebra of operators on a Hilbert space.
 \end{point}
-\begin{point}{Definition}
-A linear map $f\colon \scrA \to \scrB$
-between $C^*$-algebras
-is called
-\begin{enumerate}
-\item
-\Define{\textbf{m}ultiplicative}
-if $f(ab)=f(a)f(b)$ for all $a,b\in\scrA$;
-\item
-\Define{\textbf{i}nvolutive}
-if $f(a^*)=f(a)^*$ for all~$a\in\scrA$;
-\item
-\Define{\textbf{p}ositive}
-if $f(a)$ is positive
-for every positive $a\in\scrA$, and
-\item
-\Define{\textbf{u}nital}
-if $f(1)=1$.
-\end{enumerate}
-\begin{point}%
-We use the bold letters as abbreviations,
-so for instance,
-$f$ is \Define{pu} if it is positive and unital,
-and a \Define{miu-map}
-is a multiplicative, involutive, unital linear map between $C^*$-algebras,
-(which is usually called a \Define{unital $*$-homomorphism}.)
-\end{point}
-
-\end{point}
 \begin{point}[state]{Definition}%
 A \Define{state} of a $C^*$-algebra~$\scrA$
 is a piu-map $f\colon \scrA\to \C$.
@@ -1273,6 +1378,18 @@ Show that if~$c\in\scrA$ commutes with~$a$,
 then $c\sqrt{a}=\sqrt{a}c$,
 and if in addition $c^*=c$ and $c^2\leq a$,
 then $c\leq \sqrt{a}$.
+Using this, verify the following facts.
+\begin{enumerate}
+\item
+If~$a,b\in \scrA$ are positive,
+and~$ab=ba$,
+then $ab\geq 0$.
+
+\item
+Let~$a\in\pos{\scrA}$.
+If $b,c\in \sa{\scrA}$ commute with~$a$,
+then $b\leq c$ implies $ab\leq ac$.
+\end{enumerate}
 \end{point}
 \begin{point}{Definition}
 Given a self-adjoint element~$a$ of a $C^*$-algebra $\scrA$,
@@ -1378,7 +1495,7 @@ via the \emph{Gelfand representation}.
 In this paragraph,
 $\scrA$ is a commutative $C^*$-algebra.
 \end{point}
-\begin{point}{Definition}%
+\begin{point}[gelfand-representation]{Definition}%
 The \Define{spectrum} of~$\scrA$,
 denoted by \Define{$\spec(\scrA)$},
 is the set of all miu-maps $f\colon \scrA\to \C$.
@@ -1389,7 +1506,7 @@ The \Define{Gelfand representation}
 of~$\scrA$
 is the miu-map~$\gamma\colon \scrA\to C(\spec(\scrA))$
 given by $\gamma(a)(f)=f(a)$.
-\begin{point}{Exercise}%
+\begin{point}[gelfand-representation-basic]{Exercise}%
 Verify that 
  the map $\spec(\scrA)\to \C,\ f\mapsto f(a)$ is indeed
 continuous for every~$a\in\scrA$,
@@ -1436,10 +1553,9 @@ Similarly, using that
 and~$\left|x\right|\in I$) and $x_-\in I$,
 we can reduce the problem to the case that~$x$ is positive.
 We may also assume that~$a$ is self-adjoint.
-
 Now, since~$x\geq 0$ and $-\|a\|\leq a\leq \|a\|$,
 we have $-\|a\|x \leq ax\leq \|a\|x$
-by~\TODO{multiplication by a commuting positive operator is monotone},
+by~\sref{sqrt},
 and so~$ax\in I$,
 because $\|a\|x\in I$.\qed
 \end{point}
@@ -1519,20 +1635,21 @@ Hence~$f$ is multiplicative.\qed
 \end{point}
 \end{point}
 \begin{point}[spectrum-miu]{Lemma}%
-For each~$a\in\scrA$ we have $\spec(a)=\{f(a)\colon f\in\spec(\scrA)\}$.
+For each self-adjoint~$a\in\scrA$ 
+we have $\spec(a)=\{f(a)\colon f\in\spec(\scrA)\}$.
 \begin{point}{Proof}%
 Let~$f\in \spec(\scrA)$,
-and~$a\in\scrA$.
+and~$a\in\sa{\scrA}$.
 If~$a-f(a)$ would have had an inverse~$b$ in~$\scrA$,
 then~$f(b)$ would be an inverse
 of~$f(\,a-f(a)\,)=0$ in~$\C$,
 which does not exist. Thus~$a-f(a)$ is not invertible,
 that is, $f(a)\in \spec(a)$.
 
-\TODO{fix error: $a$ must be self-adjoint}
 Let~$\lambda\in\spec(a)$.
 We must find~$f\in \spec(\scrA)$ with~$f(a)=\lambda$.
-Since~$a-\lambda$ is not invertible,
+Since~$a-\lambda$ is not invertible
+and self-adjoint	,
 the Riesz ideal $(a-\lambda)_m$ is proper
 and so there is a maximal Riesz ideal~$I$ that contains~$a-\lambda$
 (see~\sref{riesz-ideal-basic}).
@@ -1542,12 +1659,18 @@ For this~$f$,
 we have, $f(\lambda-a)=0$
 (since $\lambda-a\in I$),
 and so~$f(a)=\lambda$.\qed
+
+\TODO{What about non-self-adjoint~$a$?}
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[gelfand-representation-isometry]{Exercise}%
 Prove that $\|\gamma(a)\|=\|a\|$
-for each~$a\in\scrA$
-using~\sref{spectrum-miu} and~\sref{norm-spectrum}.
+for each~$a\in\scrA$.
+(Hint: first assume that~$a$ is self-adjoint,
+and use \sref{spectrum-miu} and~\sref{norm-spectrum}.
+For the general case,
+use the $C^*$-identity.)
+
 Conclude that the Gelfand representation $\gamma\colon \scrA\to C(\spec(\scrA))$
 is injective,
 and that its range $\{\gamma(a)\colon a\in\scrA\}$
@@ -1558,7 +1681,7 @@ To show that~$\gamma$ is surjective,
 we use the following special case of
 the Stone--Weierstra\ss{} theorem. 
 \end{point}
-\begin{point}{Theorem}%
+\begin{point}[stone-weierstrass]{Theorem}%
 Let~$X$ be a compact Hausdorff space,
 and let~$\scrS$ be a $C^*$-subalgebra of~$C(X)$
 which `separates the points of~$X$',
@@ -1641,17 +1764,83 @@ giving $\|f-g\|\leq \varepsilon$.\qed
 \end{point}
 \end{point}
 \end{point}
-\begin{point}{Gelfand's Representation Theorem}%
+\begin{point}[spectrum-calg-compact-hausdorff]{Lemma}%
+The spectrum $\spec(\scrA)$ of~$\scrA$ is a compact Hausdorff space.
+\begin{point}{Proof}%
+Since for each~$a\in \scrA$
+and~$f\in \spec(\scrA)$
+we have  $\|f(a)\|\leq \|a\|$ 
+by~\TODO{},
+we see that~$f(a)$ is an element of the compact set
+$\{\,z\in \C\colon\, \left|z\right|\leq\|a\|\,\}$,
+and so~$\spec(\scrA)$ is a subset of
+\begin{equation*}
+\textstyle
+\prod_{a\in \scrA}\, \{\,z\in \C\colon\, \left|z\right|\leq \|a\|\,\},
+\end{equation*}
+which is a compact Hausdorff space
+(by Tychonoff's theorem \TODO{ref}, under the product topology
+it inherits
+from the space of all functions $\scrA\to \C$).
+So to prove that~$\spec(\scrA)$
+is a compact Hausdorff space,
+it suffices to show that~$\spec(\scrA)$
+is closed.
+In other words,
+we must show that if~$f\colon \scrA\to \C$
+is the pointwise limit of a net of miu-maps $(f_i)_i$,
+then~$f$ is a miu-map as well.
+But this is easily achieved
+using the continuity of addition, involution and multiplication on~$\C$,
+because, for instance, 
+for~$a,b\in\scrA$, we have $f(ab)
+= \lim_i f_i(ab)=\lim_i f_i(a)f_i(b)
+ = (\lim_i f_i(a))\,(\lim_i f_i(b))
+= f(a) \,f(b)$.\qed
+\end{point}
+\end{point}
+\begin{point}[gelfand]{Gelfand's Representation Theorem}%
 For a commutative $C^*$-algebra~$\scrA$,
-the Gelfand representation
- $\gamma\colon \scrA\to C(\spec(\scrA))$,
-given by $\gamma(a)(f)=f(a)$,
+the Gelfand representation, 
+ $\gamma\colon \scrA\to C(\spec(\scrA))$
+defined in~\sref{gelfand-representation}
 is a miu-isomorphism.
+\begin{point}{Proof}%
+We already know that~$\gamma$ is an injective miu-map
+(see~\sref{gelfand-representation-basic} 
+and~\sref{gelfand-representation-isometry}).
+So to prove that~$\gamma$ is a miu-isomorphism,
+it remains to be shown that~$\gamma$ is surjective.
+Since~$\spec(\scrA)$ is a compact Hausdorff space 
+(by~\sref{spectrum-calg-compact-hausdorff}),
+and~$\gamma(\scrA)\equiv \{\gamma(a)\colon a\in \scrA\}$
+is a $C^*$-subalgebra of~$C(\spec(\scrA))$
+(by~\sref{gelfand-representation-isometry}),
+it suffices to show that~$\gamma(\scrA)$
+separates the points of~$\spec(X)$
+by~\sref{stone-weierstrass}.
+This is obvious,
+because
+for~$f,g\in \spec(\scrA)$ with~$f\neq g$
+there is~$a\in \scrA$ with~$f(a)\equiv \gamma(a)(f)
+\neq \gamma(a)(g)\equiv g(a)$.\qed
+\end{point}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}%
+As a cherry on the cake,
+we turn Gelfand's representation theorem~\sref{gelfand}
+to an equivalence between the categories $\op{(\cCstar{miu})}$
+and~$\CH$.
+For this, we need one more result.
 \end{point}
 \begin{point}{Lemma}%
 Let~$X$ be a compact Hausdorff space,
 and let~$\tau \colon C(X)\to \C$ be a miu-map.
-Then there is~$x\in X$ with $\tau(f)=f (x)$.
+Then there is~$x\in X$ with $\tau(f)=f (x)$
+for all~$f\in C(X)$.
 \begin{point}{Proof}%
 Define
 $Z\,= \, \{\,x\in X\colon \ h(x)\neq 0\text{ for some~$h\in \pos{C(X)}$
@@ -1665,7 +1854,7 @@ we will show that either~$x\in Z$ or~$y\in Z$.
 By the usual topological trickery,
 we can find~$f,g\in \pos{C(X)}$
 with $fg=0$, $f(x)=1$ and~$g(y)=1$.
-Then~$0=\tau(fg)=\eta(f)\,\eta(g)$,
+Then~$0=\tau(fg)=\tau(f)\,\tau(g)$,
 so either~$\tau(f)=0$ (and~$x\in Z$), or~$\tau(g)=0$
 (and~$y\in Z$).
 
@@ -1707,16 +1896,17 @@ and so $\tau(f)=f(x_0)$.\qed
 \end{point}
 \begin{point}{Exercise}%
 Let~$X$ be a compact Hausdorff space.
-
 Show that for every~$x\in X$
 the map $\delta_x\colon C(X)\to \C,\ f\mapsto f(x)$
 is miu.
-
 Show that the map $X\to \spec(C(X)),\ x\mapsto \delta_x$
 is a continuous bijection
 onto a compact Hausdorff space,
 and thus a homeomorphism.
 \end{point}
+\end{point}
+\begin{point}{Theorem}%
+The Gelfand representation\TODO{...}
 \end{point}
 \end{parsec}
 
