@@ -115,10 +115,8 @@ interpretted coordinatewise \grayed{(e.g.~$(f+g)(x)=f(x)+g(x)$)},
 and the norm is taken to be 
 $\|f\|=\sup_{x\in X} |f(x)|$
 (the \Define{sup-norm}).
-\end{point}
-\begin{point}{Example}%
-The set~$\scrB(\scrH)$ of bounded operators
-on a Hilbert space~$\scrH$ forms a $C^*$-algebra.
+
+\TODO{refer to an appendix on topology.}
 \end{point}
 \begin{point}{Example}%
 A \Define{$C^*$-subalgebra}
@@ -132,6 +130,22 @@ such a $C^*$-subalgebra of~$\scrA$
 is itself a $C^*$-algebra
 when endowed with the operations and norm
 of~$\scrA$.
+\end{point}
+\begin{point}{Example}%
+The vector space~$\scrB(\scrH)$ of bounded operators
+on a Hilbert space~$\scrH$ forms a $C^*$-algebra
+when endowed with the operator norm.
+The multiplication is given by composition,
+involution by taking the adjoint,
+and unit by the identity operator.
+A \Define{concrete $C^*$-algebra} or
+a \Define{$C^*$-algebra of bounded operators} 
+refers to a $C^*$-subalgebra of~$\scrB(\scrH)$.
+(We'll see later on that every $C^*$-algebra
+is isomorphic to a $C^*$-algebra
+of bounded operators.)
+
+\TODO{refer to an appendix on Hilbert space}
 \end{point}
 \begin{point}{Example}%
 Let~$\scrA_i$ be a $C^*$-algebra
@@ -178,21 +192,157 @@ and  $a^*a=\Real{a}^2+\Imag{a}^2+i(\Real{a}\Imag{a}-\Imag{a}\Real{a})$.
 Give an example of an~$a$ with  $\Real{a}\Imag{a} \neq \Imag{a}\Real{a}$.
 \item
 Show that $a^*a+aa^* = 2(\Real{a}^2+\Imag{a}^2)$.
+\item
+The product of self-adjoint elements $b$, $c$ needs not be self-adjoint;
+show that, in fact, $bc$ is self-adjoint iff $bc=cb$.
 \end{enumerate}
 \end{point}
 \end{parsec}
 \begin{parsec}%
-\begin{point}{Definition}%
-A self-adjoint element~$a$ of a $C^*$-algebra~$\scrA$ is called
-\Define{positive} if $\|a-\|a\|\|\leq \|a\|$,
-and the set of positive elements of~$\scrA$
-is denoted by~$\pos{\scrA}$.
+\begin{point}{Notation}%
+Recall that (in this text) every $C^*$-algebra~$\scrA$ has a unit, $1$.
+Thus, for every scalar $\lambda\in \C$,
+we have an element $\lambda\cdot 1$ of~$\scrA$,
+which we will simply denote by~$\lambda$.
+This should hardly cause any confusion,
+for while an expression of an element of~$\scrA$
+such as $i+2+5a$ (where $a\in \scrA$) 
+may be interpretted in several ways,
+the result is always the same.
 \end{point}
-\TODO{move the definition of positive,
-and some elementary properties here}
+\begin{point}{Exercise}%
+There is, however, one subtle point regarding
+the interpretation
+of the norm~$\|\lambda\|$ of a
+scalar~$\lambda\in \C$ inside a $C^*$-algebra~$\scrA$.
+\begin{enumerate}
+\item 
+Show that $\|\lambda\|\leq \left| \lambda\right|$ (in~$\C$).
+\item
+Show that $\|1\|=0\neq 1$ when~$\scrA=\{0\}$ is the trivial $C^*$-algebra.
+\item
+Show that~$\|\lambda\|=\left|\lambda\right|$
+when~$\|\lambda\|$ and~$\left|\lambda\right|$
+are interpretted as elements of~$\scrA$.
+\end{enumerate}
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+Let us now generalize the notion of a positive function
+in~$C(X)$
+to a positive element of a $C^*$-algebra.
+There are several descriptions of
+positive functions in~$C(X)$ in terms of the $C^*$-algebra structure
+(see~\sref{cx-positive}) on which we can base such a  generalization,
+and while we will eventually see that these all yield the same notion
+of positive element of a $C^*$-algebra (see~\sref{cstar-positive-final})
+we base our definition of positive element (\sref{cstar-positive})
+on the description that is perhaps
+not most familiar,
+but does give us the richest structure at this stage.
+\end{point}
+\begin{point}[cx-positive]{Exercise}%
+Let~$X$ be a compact Hausdorff space.
+Show that for self-adjoint $f\in C(X)$, the following are equivalent.
+\begin{enumerate}
+\item \label{cx-positive-1}
+$f(X)\subseteq [0,\infty)$;
+\item
+$f\equiv g^2$ for some $g\in \sa{C(X)}$;
+\item
+$f\equiv g^* g$ for some~$g\in C(X)$;
+\item
+$\|f-t\|\leq t$ for some $t\geq \frac{1}{2}\|f\|$.
+
+\TODO{add picture?}
+\end{enumerate}
+\begin{point}{Exercise}%
+To see how condition~\ref{cx-positive-1}
+can be expressed in terms of the $C^*$-algebra structure of~$C(X)$,
+prove that  $\lambda\in f(X)$ iff $f-\lambda$
+is not invertible.
+\end{point}
+\end{point}
+\begin{point}[cstar-positive]{Definition}%
+A self-adjoint element~$a$ of a $C^*$-algebra~$\scrA$ is called
+\Define{positive} if $\|a-t\|\leq t$
+for some~$t\geq \frac{1}{2}\|a\|$.
+We write $a\leq b$ for $a,b\in\scrA$ when $b-a$ is positive,
+and we denote the set of positive elements of~$\scrA$
+by~$\pos{\scrA}$.
+\end{point}
+\begin{point}{Lemma}%
+Let~$a,b$ be positive elements of a $C^*$-algebra.
+Then $a+b$ is positive.
+\begin{point}{Proof}
+Since~$t\geq 0$,
+there is~$t\geq \frac{1}{2}\|a\|$ with $\|a-t\|\leq t$.
+Similarly, there is~$s\geq \frac{1}{2}\|b\|$
+with $\|b-s\|\leq s$.
+Then $\|a+b-(t+s)\|\leq \|a-t\|+\|b-s\|\leq t+s$
+and $t+s\geq \frac{1}{2}(\|a\|+\|b\|) \geq \frac{1}{2}\|a+b\|$,
+so~$a+b\geq 0$.\qed
+\end{point}
+\end{point}
+\begin{point}{Exercise}%
+Let~$\scrA$ be a $C^*$-algebra.
+\begin{enumerate}
+\item
+Show that~$\pos{\scrA}$ is a \emph{cone}:
+$0\in \pos{\scrA}$,
+$a+b\in \pos{\scrA}$ for all $a,b\in\pos{\scrA}$,
+and
+$\lambda a\in \pos{\scrA}$  
+for all $a\in \pos{\scrA}$ and $\lambda\in [0,\infty)$.
+Conclude that~$\leq$ is a partial order on~$\scrA$,
+and that~$\sa{\scrA}$ is an ordered vector space.
+\item
+Show that~$1$ is positive, and  $-\|a\|\leq a \leq \|a\|$
+for every self-adjoint element~$a$ of~$\scrA$.
+(Thus $1$ is an \emph{order unit} of~$\sa{\scrA}$.)
+\item
+The behaviour of positive elements may be surprising:
+give an example of positive elements $a$ and~$b$
+from a $C^*$-algebra
+such that $ab$ is not positive.
+\item
+Given a self-adjoint element~$a$ of~$\scrA$ define
+\begin{equation*}
+\|a\|_o \ = \ \inf\{\ \lambda\in[0,\infty)\colon \ 
+-\lambda\leq a\leq \lambda\ \}.
+\end{equation*}
+Show that $\|-\|_o$ is a seminorm on~$\sa{\scrA}$,
+and that~$\|a\|_o\leq \|a\|$
+for all~$a\in\sa{\scrA}$.
+
+Prove that $0\leq a\leq b$ implies that~$\|a\|_o\leq\|b\|_o$
+for $a,b\in\sa{\scrA}$.
+
+\item
+There is not much more that can easily be
+proven about positive elements, at this point,
+but don't take my word for it:
+try to prove the following facts
+about a self-adjoint element~$a$ of~$\scrA$ directly.
+\begin{enumerate}
+\item $a^2$ is positive;
+\item if $a$ is the limit of positive $a_n\in\scrA$,
+then $a$ is positive;
+\item if $a\geq -\frac{1}{n}$ for all~$n\in \N$, then $a\geq 0$;
+\item  $\|a\|=\|a\|_o$.
+\end{enumerate}
+We will prove these facts
+when we return to the positive elements in~\sref{cstar-positive-2}.
+\end{enumerate}
+\end{point}
 \end{parsec}
 
 \begin{parsec}%
+\begin{point}%
+Let us spend some words
+on the morphisms between $C^*$-algebras.
+\end{point}
 \begin{point}{Definition}
 A linear map $f\colon \scrA \to \scrB$
 between $C^*$-algebras
@@ -225,6 +375,7 @@ The miu-maps between $C^*$-algebras
 form a category which we denote by~$\Cstar{miu}$.
 The full subcategory of commutative $C^*$-algebras
 is denoted by~$\cCstar{miu}$.
+\TODO{products and equalizers in $\Cstar{miu}$}
 \end{point}
 \end{point}
 \end{parsec}
@@ -871,16 +1022,11 @@ before Gelfand's representation theorem.
 \end{point}
 \end{parsec}
 
-\begin{parsec}%
-\begin{point}%
-\TODO{Remark on Gelfand--Mazur not useful}
 
-We now turn to the positive elements 
-in a $C^*$-algebra.
-Usually,
-elements of the form $a^*a$ are defined to be positive,
-but at this stage a definition (\sref{cstar-positive}) based
-on the following observation is more convenient.
+\begin{parsec}[cstar-positive-2]%
+\begin{point}%
+We return to the positive elements 
+in a $C^*$-algebra (see~\sref{cstar-positive}).
 \end{point}
 \begin{point}[real-pos-ineq]{Exercise}%
 Show that 
@@ -920,53 +1066,35 @@ $\|a-t\|\leq t$
 for all $t\geq \frac{1}{2}\|a\|$;
 \item 
 \label{cstar-pos-3}
-$\spec(a)\subseteq[0,\infty)$.
+$\spec(a)\subseteq[0,\infty)$;
+\item
+$a$ is positive.
 \end{enumerate}
+We will complete this list in~\sref{cstar-positive-final}.
 \end{point}
 \end{point}
-\begin{point}[cstar-positive]{Definition}%
-Let $\scrA$ be a $C^*$-algebra.
-We say that $a\in \scrA$
-is \Define{positive} if $a^*=a$ and  $\|a-t\|\leq t$
-for some $t\geq \frac{1}{2}\|a\|$.
-We denote the set of positive elements of~$\scrA$ by~$\Define{\pos{\scrA}}$,
-and write $a\leq b$ for $a,b\in\scrA$ when $b-a$ is positive.
 \begin{point}{Exercise}%
 Let~$\scrA$ be a $C^*$-algebra.
 \begin{enumerate}
 \item
-Show that~$\pos{\scrA}$ is a \emph{cone}:
-$0\in \pos{\scrA}$,
-$a+b\in \pos{\scrA}$ for all $a,b\in\pos{\scrA}$,
-and
-$\lambda a\in \pos{\scrA}$  
-for all $a\in \pos{\scrA}$ and $\lambda\in [0,\infty)$.
-Show that~$\pos{\scrA}$ is closed,
-and~$1\in\pos{\scrA}$.
-Conclude that~$\leq$ is a partial order on~$\scrA$,
-and that~$\sa{\scrA}$ is an ordered vector space.
+Show that~$\pos{\scrA}$ is closed.
 \item
 Let~$a$ be a self-adjoint element of~$\scrA$.
-Show that $-\|a\|\leq a \leq \|a\|$.
-(Thus, $a$ is an \emph{order unit} of~$\sa{\scrA}$.)
-In fact, prove that
+Show that
  $-\lambda \leq a\leq \lambda$
 iff $\|a\|\leq \lambda$,
 for $\lambda\in [0,\infty)$.
 Conclude that $\|a\| = \inf\{ \lambda \in \R\colon 
 -\lambda \leq a\leq \lambda\}$.
-(Thus $\sa{\scrA}$ is a \emph{complete Archimedean order unit space}
-see~\TODO{}.)
+(Thus $\sa{\scrA}$ is a \emph{complete Archimedean order unit space},
+see \TODO{}.)
 
 Show that $0\leq a \leq b$ entails $\|a\|\leq \|b\|$
 for $a,b\in\sa{\scrA}$.
 
-\item
-Give an example of positive elements $a$ and~$b$
-from a $C^*$-algebra
-such that $ab$ is not positive.
-
 \item 
+Recall that $ab$ need not be positive if~$a,b\geq 0$. However:
+
 Show that $a^2$ is positive for every self-adjoint element~$a$ of~$\scrA$.
 
 Show that $a^n$ is positive for \emph{even} $n\in \N$ and~$a\in\sa{\scrA}$.
@@ -984,7 +1112,6 @@ Show that $a\geq 0$ iff $a^{-1}\geq 0$.
 Show that a positive element~$a$ of~$\scrA$ is invertible
 iff $a\geq \frac{1}{n}$ for some~$n\in \N$.
 \end{enumerate}
-\end{point}
 \end{point}
 \begin{point}[prod-spec]{Lemma}%
 For elements $a$ and $b$ from a $C^*$-algebra,
@@ -1022,15 +1149,15 @@ and $a=0$.\qed
 \end{point}
 \end{point}
 \end{parsec}
-
 \begin{parsec}%
 \begin{point}%
-There is much more that must be said
-about the positive elements of a $C^*$-algebra.
-But let us for a moment
+There is much more that can be said
+about the positive elements of a $C^*$-algebra
+(as we will in~\sref{sqrt}),
+but let us for a moment
 turn our attention to the states of a $C^*$-algebra
 (see \sref{state}),
-which will be
+which are
 essential
 in the proof that every $C^*$-algebra
 is isomorphic to a $C^*$-algebra of operators on a Hilbert space.
@@ -1437,6 +1564,26 @@ we have $b^*b=-((a^*a)_-)^2\leq 0$,
 and so $b=0$ by~\sref{astara-non-neggative}.
 Hence~$a^*a_-=0$ giving us $a^*a=(a^*a)_+\geq 0$.\qed
 \end{point}
+\end{point}
+\begin{point}[cstar-positive-final]{Exercise}%
+Round up our results regarding positive elements
+to 
+prove that
+the following are equivalent
+for a self-adjoint element $a$ of a $C^*$-algebra.
+\begin{enumerate}
+\item 
+$a$ is positive, that is,  $\|a-t\|\leq t$
+for some $t\geq \frac{1}{2}\|a\|$;
+\item
+$\|a-t\|\leq t$ for all~$t\geq \frac{1}{2}\|a\|$;
+\item
+$a\equiv b^2$ for some self-adjoint $b\in\scrA$;
+\item
+$a\equiv c^* c$ for some $c\in\scrA$;
+\item
+$\spec(a)\subseteq [0,\infty)$.
+\end{enumerate}
 \end{point}
 \end{parsec}
 
