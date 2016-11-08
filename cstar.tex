@@ -94,8 +94,6 @@ holds. The latter equality is called the \Define{$C^*$-identity}.
 The $C^*$-algebra $\scrA$ is called \Define{commutative}
 if $ab=ba$ for all~$a,b\in\scrA$.
 \end{point}
-\begin{point}{Exercise}%
-Verify the following examples of $C^*$-algebras.
 \begin{point}{Example}%
 The vector space~$\C$ of \Define{complex numbers}
 forms a commutative  $C^*$-algebra
@@ -131,21 +129,24 @@ is itself a $C^*$-algebra
 when endowed with the operations and norm
 of~$\scrA$.
 \end{point}
-\begin{point}{Example}%
+\begin{point}[example-hilb]{Example}%
 The vector space~$\scrB(\scrH)$ of bounded operators
 on a Hilbert space~$\scrH$ forms a $C^*$-algebra
-when endowed with the operator norm.
-The multiplication is given by composition,
+when endowed with the operator 
+norm.
+Multiplication is given by composition,
 involution by taking the adjoint,
 and unit by the identity operator.
 A \Define{concrete $C^*$-algebra} or
 a \Define{$C^*$-algebra of bounded operators} 
 refers to a $C^*$-subalgebra of~$\scrB(\scrH)$.
-(We'll see later on that every $C^*$-algebra
-is isomorphic to a $C^*$-algebra
-of bounded operators.)
+We elaborate on this example in~\sref{hilb},
+and we will see
+that every $C^*$-algebra is isomorphic to a $C^*$-algebra
+of bounded operators in~\sref{gelfand-naimark}.
 
-\TODO{refer to an appendix on Hilbert space}
+\TODO{make parsec/appendix on bounded operators between normed vector
+spaces and the operator norm}
 \end{point}
 \begin{point}{Example}%
 Let~$\scrA_i$ be a $C^*$-algebra
@@ -161,9 +162,274 @@ denoted by $\bigoplus_{i\in I}\scrA_i$ on the set
 whose operations are defined coordinatewise,
 and whose norm is a \Define{sup-norm} given by $\|a\|=\sup_{i}\|a(i)\|$.
 \end{point}
-\end{point}
-
 \end{parsec}
+\TODO{$\|a^*\|=\|a\|$}
+
+\begin{parsec}[hilb]%
+\begin{point}%
+Let us show in detail
+that the bounded operators on a Hilbert space
+form a $C^*$-algebra
+as described in~\sref{example-hilb}.
+\end{point}
+\begin{point}{Definition}%
+An \Define{inner product}
+on a complex vector space~$V$ 
+is a map $\left<\,\cdot\,,\,\cdot\,\right>\colon V\times V\to \C$
+such that,
+for all~$x,y\in V$,
+$\left<x,\,\cdot\,\right>\colon V\to V$ is linear;
+$\left<x,x\right>\geq 0$;
+and
+$\left<x,y\right>=\overline{\left<y,x\right>}$.
+We say that the inner product is \Define{definite}
+when~$\left<x,x\right>=0\implies x=0$ for~$x\in V$.
+A \Define{pre-Hilbert space}~$\scrH$
+is a complex vector space endowed with a definite inner product.
+We'll shortly see that every such~$\scrH$
+carries a norm
+given by
+ $\|x\|:= \left<x,x\right>^{\nicefrac{1}{2}}$;
+if~$\scrH$ is complete with respect to this norm,
+we say that~$\scrH$ is a \Define{Hilbert space}.
+\end{point}
+\begin{point}[positive-2x2matrix]{Lemma}%
+For a positive matrix $A\equiv 
+\left(\begin{smallmatrix}p & \overline{c} \\ c & q\end{smallmatrix}\right)$
+(i.e.~$\left(
+\begin{smallmatrix}\overline{u}&\overline{v}\end{smallmatrix}\right)
+A
+\left(\begin{smallmatrix}u \\ v \end{smallmatrix}\right) \,\geq \, 0$
+for all~$u,v\in \C$),
+we have
+$p,q\geq 0$, and $\left|c\right|^2 \leq pq$.
+\begin{point}{Proof}%
+Let~$u,v\in\C$ be given.
+We have
+\begin{equation*}
+0\ \leq\ 
+\left(\begin{smallmatrix}\overline{u}&\overline{v}\end{smallmatrix}\right)
+A
+\left(\begin{smallmatrix}u \\ v \end{smallmatrix}\right)
+\ = \ 
+\left|u\right|^2 p\,+\, 
+\overline{u}v\,\overline{c} \,+\,
+u\overline{v}\,c \,+\,
+\left|v\right|^2 q.
+\end{equation*}
+By taking~$u=1$ and $v=0$, we see that~$p\geq 0$,
+and similarly $q\geq 0$.
+
+The trick to see that~$\left|c\right|^2\leq pq$
+is to
+take~$v=1$ and $u=t\overline{c}$ with~$t\in \R$:
+\begin{equation*}
+0 \ \leq\ p\left|c\right|^2t^2
+\,+\,2\left|c\right|^2t 
+\,+\, q.
+\end{equation*}
+If~$p=0$, then~$-2\left|c\right|^2t \leq q $
+for all~$t\in \R$,
+which implies that~$\left|c\right|^2=0=pq$.
+
+Suppose that~$p>0$.
+Then taking~$t=-p^{-1}$ we see that
+\begin{equation*}
+0 \ \leq\ \left|c\right|^2p^{-1}
+\,-\,2\left|c\right|^2p^{-1} 
+\,+\, q \ = \ -\left|c\right|^2p^{-1}\,+\,q.
+\end{equation*}
+Rewriting gives us
+ $\left|c\right|^2\leq pq$.\qed
+\end{point}
+\end{point}
+\begin{point}[inner-product-basic]{Exercise}%
+Let~$\left<\,\cdot\,,\,\cdot\,\right>$
+be an inner product on a vector space~$V$.
+Show that
+the formula~$\Define{\|x\|}=\smash{\sqrt{\left<x,x\right>}}$
+defines a seminorm on~$V$,
+that is,
+$\|x\|\geq 0$,
+$\|\lambda x\|=\left|\lambda\right|\|x\|$,
+and---the \Define{triangle inequality}---$\|x+y\|\leq \|x\|+\|y\|$
+for all~$\lambda\in \C$ and~$x,y\in V$.
+
+Moreover, prove that~$\|\,\cdot\,\|$
+is a norm when~$\left<\,\cdot\,,\,\cdot\,\right>$
+is definite,
+and for~$x,y\in V$:
+\begin{enumerate}
+\item
+The \Define{Cauchy--Schwarz inequality}:
+$\left|\left<x,y\right>\right|^2\,\leq\, \left<x,x\right>
+\,\left<y,y\right>$;
+\item
+\Define{Pythagoras' theorem}:
+$\|x\|^2+\|y\|^2\,=\,\|x+y\|^2$ when~$\left<x,y\right>=0$;
+\item
+The \Define{parallelogram law}:
+$\|x\|^2\,+\,
+\|y\|^2
+\,= \,
+\frac{1}{2}(\,\|x+y\|^2\,+\,\|x-y\|^2\,)$;
+\item
+The \Define{polarization identity}:
+$\left<x,y\right> \,=\, \frac{1}{4}\sum_{n=0}^3i^n\|i^nx+y\|^2$.
+\end{enumerate}
+
+(Hint: prove the Cauchy--Schwarz inequality
+before the triangle inequality
+by applying~\sref{positive-2x2matrix} to the matrix
+$\smash{\bigl(\begin{smallmatrix}
+\smash{\left<x,x\right>} & \smash{\left<x,y\right>} \\
+\smash{\left<y,x\right>} & \smash{\left<y,y\right>}
+\end{smallmatrix}\bigr)}$.
+Then prove $\|x+y\|^2\leq (\|x\|+\|y\|)^2$
+using the inequalities~$\left<x,y\right>+\left<y,x\right>
+\leq 2\left|\left<x,y\right>\right| \leq 2\|x\|\|y\|$.)
+\end{point}
+\begin{point}{Definition}
+Let~$x$ be an element of a Hilbert space~$\scrH$.
+We say that an element~$y$ of a linear subspace~$C$
+of~$\scrH$ is a \Define{projection of~$x$ on~$C$}
+if
+\begin{equation*}
+\|x-y\|\,=\,\min\{\,\|x-y'\|\colon \,y'\in C\,\}.
+\end{equation*}
+\end{point}
+\begin{point}{Lemma}%
+Let~$\scrH$ be a pre-Hilbert space,
+and let $x,e\in\scrH$ with
+$\|e\|=1$.
+
+Then~$y=\left<e,x\right>e$ is the unique projection of~$x$ on~$e\C$.
+\begin{point}{Proof}%
+Let~$y'\in e\C$
+with~$y'\neq y$
+be given.
+To prove that~$y$
+is the unique projection of~$x$ on $e\C$
+it suffices to show that $\|x-y\|<\|x-y'\|$.
+Since~$y'\neq y\equiv \left<e,x\right>e$,
+there is~$\lambda\in \C$, $\lambda\neq 0$ 
+with $y'=(\lambda+\left<e,x\right>)e$.
+
+Note that $\left<e,y\right>=\left<e,\left<e,x\right>e\right>=
+\left<e,x\right>\left<e,e\right>
+= \left<e,x\right>$,
+and so~$\left<e,x-y\right>=0$.
+Then~$y'-y\equiv \lambda e$ and~$x-y$ are orthogonal too,
+and thus, by Pythagoras'~theorem (see~\sref{inner-product-basic}),
+we have $\|y'-x\|^2
+=\|y'-y\|^2+\|y-x\|^2\equiv \left|\lambda\right|^2+\|x-y\|^2
+>\|x-y\|^2$, because~$\lambda\neq 0$.
+Hence~$\|y'-x\|>\|y-x\|$.\qed
+\end{point}
+\end{point}
+\begin{point}[hilb-projection-basic]{Exercise}%
+Let~$y$ be a projection of an element~$x$ of a Hilbert space~$\scrH$
+on a linear subspace~$C$.
+Show that~$y$ is a projection of~$x$ on $y\C$.
+Conclude that~$y$ is the unique projection of~$x$ on~$C$,
+and that~$\left<y,x-y\right>=0$.
+Show that~$y+c$ is the projection of~$x+c$ on~$C$
+for every~$c\in C$.
+Conclude that~$\left<y',x-y\right>\equiv\left<y',(x+y'-y)-y'\right>=0$ 
+for every~$y'\in C$.
+\end{point}
+\begin{point}[projection-theorem]{Projection Theorem}%
+Let~$C$ be a closed linear subspace
+of a Hilbert space~$\scrH$.
+Each~$x\in \scrH$
+has a unique projection~$y$ on~$C$,
+and $\left<y',y\right>=\left<y',x\right>$ for~$y'\in C$.
+\begin{point}{Proof}%
+We only need to show that there is a projection~$y$
+of~$x$ on~$C$,
+because~\sref{hilb-projection-basic}
+gives us that such~$y$ is unique and satisfies
+$\left<y',y\right> = \left<y',x\right>$ for all~$y'\in C$.
+
+Write~$r:=\inf\{\,\|x-y'\|\colon\, y'\in C\,\}$,
+and pick a sequence $y_1,y_2,\dotsc \in C$
+such that $\|x-y_n\|\rightarrow r$.
+We will show that~$y_1,y_2,\dotsc$ is Cauchy.
+Let~$\varepsilon >0$
+be given,
+and pick~$N$ such that $\|y_n-x\|^2\leq r^2+\frac{1}{4}\varepsilon$
+for all~$n\geq N$.
+Let~$n,m\geq N$ be given.
+Then since $\frac{1}{2}(y_n+y_m)$
+is in~$C$, we have
+$\frac{1}{2}\|y_n+y_m-2x\|\equiv 
+\|\frac{1}{2}(y_n+y_m)-x\|\geq r$,
+and so by the parallelogram law (see \sref{inner-product-basic}),
+\begin{alignat*}{3}
+\|y_n-y_m\|^2
+\ &\equiv\ 
+\|(y_n-x)-(y_m-x)\|^2\\
+\ &=\ 
+2\|y_n-x\|^2 + 2\|y_m-x\|^2
+- \|y_n+y_m-x\|^2\\
+\ &\leq\ 
+4r^2 + \varepsilon - 4r^2 \ \leq \ \varepsilon.
+\end{alignat*}
+Hence~$y_1,y_2,\dotsc$ is Cauchy,
+and converges to some~$y\in C$,
+because~$\scrH$ is complete and~$C$ is closed.
+It follows easily that~$\|x-y\|=r$,
+and thus~$y$ is the projection of~$x$ on~$C$.\qed
+\end{point}
+\end{point}
+\begin{point}{Riesz Representation Theorem}%
+Let~$\scrH$ be a Hilbert space.
+For every bounded linear map~$f\colon \scrH\to\C$
+there is a unique vector~$x\in \scrH$
+with $\left<x,\,\cdot\,\right>=f$.
+\begin{point}%
+If~$f=0$, then $y=0$ does the job.
+Suppose that~$f\neq 0$.
+There is~$x'\in\scrH$ with~$f(x')\neq 0$.
+Note that~$\ker(f)$ is closed, because~$f$
+is bounded.
+So by~\sref{projection-theorem},
+we know that~$x'$
+has a projection~$y$ on~$\ker(f)$,
+and $\left<x',z\right>=\left<y,z\right>$
+for all~$z\in \ker(f)$.
+Then for~$x'':=f(x'-y)^{-1}(x'-y)$,
+we have $f(x'')=1$ and~$\left<x'',y'\right>=0$
+for all~$y'\in \ker(f)$.
+
+Let~$z\in \scrH$. 
+Then $f(\,z-f(z)x''\,)=0$,
+so~$z-f(z)x''\in \ker(f)$,
+and thus~$0=\left<x'',z-f(z)x''\right>\equiv \left<x'',z\right>-f(z)\|x''\|^2$.
+Hence with $x:=x''\|x''\|^{-2}$
+we have~$f(z)=\left<x''\|x''\|^{-2},z\right>$
+for all~$z\in \scrH$.
+
+Concerning uniqueness, let $x_1,x_2\in \scrH$
+with $\left<x_1,z\right>=\left<x_2,z\right>$
+for all~$z\in \scrH$ be given.
+Taking $z=x_1-x_2$,
+we see that $\|x_1-x_2\|^2=\left<x_1-x_2,x_1-x_2\right>=0$,
+and so~$x_1=x_2$.\qed
+\end{point}
+\end{point}
+\begin{point}{Exercise}%
+Let~$T\colon \scrH\to \scrK$ be a bounded linear map
+between Hilbert spaces.
+Show that there is a unique bounded linear 
+map~$\Define{T^*}\colon \scrK\to\scrH$
+called the \Define{adjoint} of~$T$ with
+$\left<T^*x,y\right>=\left<x,Ty\right>$
+for all~$x,y\in\scrH$.
+\end{point}
+\end{parsec}
+
+
 \begin{parsec}%
 \begin{point}{Definition}%
 Given an element $a$ of a $C^*$-algebra $\scrA$, 
@@ -1555,7 +1821,7 @@ $a=\frac{1}{2}\left(\begin{smallmatrix}1 & 1 \\ 1 & 1\end{smallmatrix}\right)$
 and $b=-\left(\begin{smallmatrix}1 & 0 \\ 0 & 0 \end{smallmatrix}\right)$.)
 \end{enumerate}
 \end{point}
-\begin{point}{Lemma}%
+\begin{point}[astara-positive]{Lemma}%
 Given an element $a$ of a $C^*$-algebra $\scrA$,
 we have $a^*a\geq 0$.
 \begin{point}{Proof}%
@@ -2078,14 +2344,27 @@ and thus a homeomorphism.
 %  Cauchy--Schwarz for positive functionals
 %
 \begin{parsec}[cstar-cs]%
+\begin{point}%
+We will now prove that every $C^*$-algebra
+is isomorphic
+to a $C^*$-algebra
+of bounded operators.
+We will generalize this construction
+in Chapter~\TODO{Paschke}.
+\end{point}
 \begin{point}{Lemma}%
 Let~$\scrA$ be a $C^*$-algebra,
-and let~$f\colon \scrA\to \C$ be a positive linear map.\\
+and let~$f\colon \scrA\to \C$ be a pi-map.\\
 Then, for all~$a,b\in\scrA$,\quad
 $\left|f(a^*b)\right|^2 \ \leq\ f(a^*a)\,f(b^*b)$.
-\end{point}
 \begin{point}{Proof}%
-\TODO{give; NB: it is not trivial that~$f$ is involutive}
+Apply~\sref{cs}
+to the inner product on~$\scrA$ given 
+by $\left<a,b\right>=f(a^*b)$.
+(Note that $f(a^*a)\equiv \left<a,a\right>\geq 0$,
+because $a^*a$ is positive
+by~\sref{astara-positive}.)\qed
+\end{point}
 \end{point}
 \end{parsec}
 \end{document}
