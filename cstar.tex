@@ -165,12 +165,66 @@ and whose norm is a \Define{sup-norm} given by $\|a\|=\sup_{i}\|a(i)\|$.
 \end{parsec}
 \TODO{$\|a^*\|=\|a\|$}
 
+\TODO{$\|a^*\|=\|a\|$ and $\|1\|\leq 1$}
+
 \begin{parsec}[hilb]%
 \begin{point}%
 Let us show in detail
 that the bounded operators on a Hilbert space
 form a $C^*$-algebra
 as described in~\sref{example-hilb}.
+Let us recall the definition of ``bounded operators''.
+\end{point}
+\begin{point}{Definition}%
+Let~$\scrX$ and~$\scrY$ be normed
+vector spaces.
+We say that~$r\in [0,\infty)$
+is a \Define{bound} for a linear map (=\Define{operator}) 
+$T\colon \scrX\to\scrY$
+when  $\|Tx\|\leq r\|x\|$ for all~$x\in \scrX$,
+and we say that~$T$ is \Define{bounded}
+when there is such a bound.
+In that case~$T$ has a least bound,
+which is called the \Define{operator norm} of~$T$,
+and is denoted by~$\Define{\|T\|}$.
+The vector space of bounded operators
+from~$\scrX$ to~$\scrY$
+is denoted by~$\scrB(\scrX,\scrY)$,
+and the vector space of bounded operators
+from~$\scrX$ to itself is denoted by~$\scrB(\scrX)$.
+\end{point}
+\begin{point}[bounded-operators-basic]{Exercise}%
+Let~$\scrX$, $\scrY$ and~$\scrZ$ be normed complex vector spaces.
+\begin{enumerate}
+\item
+Show that the operator norm on~$\scrB(\scrX,\scrY)$
+is, indeed, a norm.
+\item
+Let~$T\colon \scrX\to \scrY$ and~$S\colon \scrY\to\scrZ$
+be bounded operators.
+Show that $ST$ is bounded by~$\|S\|\|T\|$,
+so that~$\|ST\|\leq\|S\|\|T\|$.
+\item
+Show that~$\scrB(\scrX,\scrY)$ 
+is complete when~$\scrY$ is complete.
+\item
+Show that the identity operator $\id\colon \scrX\to \scrX$
+is bounded by~$1$.
+\end{enumerate}
+\end{point}
+\begin{point}%
+From~\sref{bounded-operators-basic}
+it is clear that the complex vector space
+of bounded operators~$\scrB(\scrX)$
+on a complete normed vector space~$\scrX$
+with composition as multiplication
+and the identity operator as unit
+satisfies all the requirements
+to be $C^*$-algebra that do not involve the involution, $(\,\cdot\,)^*$
+(that is, $\scrB(\scrX)$ is a \Define{Banach algebra}).
+To get an involution,
+we need the additional structure
+provided by a Hilbert space:
 \end{point}
 \begin{point}{Definition}%
 An \Define{inner product}
@@ -192,6 +246,35 @@ given by
  $\|x\|:= \left<x,x\right>^{\nicefrac{1}{2}}$;
 if~$\scrH$ is complete with respect to this norm,
 we say that~$\scrH$ is a \Define{Hilbert space}.
+
+Let~$\scrH$ and~$\scrK$ be pre-Hilbert spaces.
+We say that a bounded operator~$T\colon \scrH\to \scrK$
+is \Define{adjoint}
+to a bounded operator
+$S\colon \scrK\to \scrH$ 
+when
+\begin{equation*}
+\left<Tx,y\right> \ = \ \left<x,Sy\right>
+\qquad\text{for all $x\in \scrH$ and $y\in \scrK$.}
+\end{equation*}
+In that case, we call~$T$ \Define{adjointable}.
+It is easy to that such adjointable~$T$ is adjoint to at most one~$S$,
+which we denote by~\Define{$T^*$}.
+\end{point}
+\begin{point}{Exercise}%
+Let~$S$ and~$T$ be adjointable operators on a pre-Hilbert space.
+\begin{enumerate}
+\item
+Show that~$T^*$ is adjoint to~$T$ (and so $T^{**}=T$).
+\item
+Show that~$(T+S)^*=T^*+S^*$
+and $(\lambda S)^*=\overline{\lambda}S^*$
+for every~$\lambda\in C$.
+\item
+Show that~$ST$ is adjoint to $T^*S^*$ (and so $(ST)^*=T^*S^*$).
+\end{enumerate}
+(We will show, of course,
+that every bounded operator on a Hilbert space is adjointable.)
 \end{point}
 \begin{point}[positive-2x2matrix]{Lemma}%
 For a positive matrix $A\equiv 
@@ -288,6 +371,36 @@ $\smash{\bigl(\begin{smallmatrix}
 Then prove $\|x+y\|^2\leq (\|x\|+\|y\|)^2$
 using the inequalities~$\left<x,y\right>+\left<y,x\right>
 \leq 2\left|\left<x,y\right>\right| \leq 2\|x\|\|y\|$.)
+\end{point}
+\begin{point}{Lemma}%
+For an adjointable operator~$T$ on a pre-Hilbert space~$\scrH$
+\begin{equation*}
+\|T^*T\|\ =\ \|T\|^2\qquad\text{and}\qquad\|T^*\|\ =\ \|T\|.
+\end{equation*}
+\begin{point}{Proof}%
+If~$T=0$, then~$T^*=0$, and the statements are surely true.
+
+Suppose~$T\neq 0$ (and so~$T^*\neq 0$).
+Since $\|Tx\|^2=\left<Tx,Tx\right>=\left<x,T^*Tx\right>
+\leq \|x\|\,\|T^*Tx\|\leq \|x\|^2\|T^*T\|$
+for every~$x\in \scrH$
+by Cauchy--Schwarz,
+we have $\|T\|^2\leq \|T^*T\|$.
+Since~$\|T^*T\|\leq \|T^*\|\|T\|$
+and $\|T\|\neq 0$,
+it follows that~$\|T^*\|\leq \|T\|$.
+Since by a similar reasoning $\|T\|\leq \|T^*\|$,
+we get~$\|T\|=\|T^*\|$.
+But then $\|T\|^2\leq \|T^*T\|\leq \|T^*\|\|T\|=\|T\|^2$,
+and so $\|T\|^2=\|T^*T\|$.\qed
+\end{point}
+\end{point}
+\begin{point}%
+At this point
+it is clear that the vector space of adjointable operators
+on a Hilbert space forms a $C^*$-algebra.
+So it remains to be shown that every bounded operator
+is adjointable.
 \end{point}
 \begin{point}{Definition}
 Let~$x$ be an element of a Hilbert space~$\scrH$.
@@ -419,13 +532,15 @@ and so~$x_1=x_2$.\qed
 \end{point}
 \end{point}
 \begin{point}{Exercise}%
-Let~$T\colon \scrH\to \scrK$ be a bounded linear map
-between Hilbert spaces.
-Show that there is a unique bounded linear 
-map~$\Define{T^*}\colon \scrK\to\scrH$
-called the \Define{adjoint} of~$T$ with
-$\left<T^*x,y\right>=\left<x,Ty\right>$
-for all~$x,y\in\scrH$.
+Prove that every bounded operator~$T$ on a Hilbert space~$\scrH$
+is adjointable, as follows.
+Let~$x\in \scrH$ be given.
+Prove that~$\left<x,T(\,\cdot\,)\right>\colon \scrH\to \C$
+is a bounded linear map.
+Let~$Sx$ be the unique vector with $\left<Sx,\,\cdot\,\right>
+=\left<x,T(\,\cdot\,)\right>$.
+Show that~$x\mapsto Sx$
+gives a bounded linear map $S$, which is adjoint to~$T$.
 \end{point}
 \end{parsec}
 
