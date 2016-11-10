@@ -226,7 +226,7 @@ To get an involution,
 we need the additional structure
 provided by a Hilbert space:
 \end{point}
-\begin{point}{Definition}%
+\begin{point}[hilb-def]{Definition}%
 An \Define{inner product}
 on a complex vector space~$V$ 
 is a map $\left<\,\cdot\,,\,\cdot\,\right>\colon V\times V\to \C$
@@ -273,8 +273,13 @@ for every~$\lambda\in C$.
 \item
 Show that~$ST$ is adjoint to $T^*S^*$ (and so $(ST)^*=T^*S^*$).
 \end{enumerate}
-(We will show, of course,
-that every bounded operator on a Hilbert space is adjointable.)
+We will, of course, show
+that every bounded operator on a Hilbert space is adjointable,
+see~\sref{bounded-operator-adjointable}.
+But let us first show that~$\|\,\cdot\,\|$
+defined in~\sref{hilb-def} is a norm,
+which boils down to the following fact
+about  $2\times 2$-matrices.
 \end{point}
 \begin{point}[positive-2x2matrix]{Lemma}%
 For a positive matrix $A\equiv 
@@ -400,7 +405,11 @@ At this point
 it is clear that the vector space of adjointable operators
 on a Hilbert space forms a $C^*$-algebra.
 So it remains to be shown that every bounded operator
-is adjointable.
+is adjointable (which we'll do in~\sref{bounded-operator-adjointable}).
+We first show that each bounded functional $f\colon \scrH\to \C$
+has an adjoint, see~\sref{riesz-representation-theorem},
+and for this we need the (existence and) properties of ``projections''
+on (closed) linear subspaces:
 \end{point}
 \begin{point}{Definition}
 Let~$x$ be an element of a Hilbert space~$\scrH$.
@@ -495,7 +504,7 @@ It follows easily that~$\|x-y\|=r$,
 and thus~$y$ is the projection of~$x$ on~$C$.\qed
 \end{point}
 \end{point}
-\begin{point}{Riesz Representation Theorem}%
+\begin{point}[riesz-representation-theorem]{Riesz Representation Theorem}%
 Let~$\scrH$ be a Hilbert space.
 For every bounded linear map~$f\colon \scrH\to\C$
 there is a unique vector~$x\in \scrH$
@@ -531,16 +540,29 @@ we see that $\|x_1-x_2\|^2=\left<x_1-x_2,x_1-x_2\right>=0$,
 and so~$x_1=x_2$.\qed
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[bounded-operator-adjointable]{Exercise}%
 Prove that every bounded operator~$T$ on a Hilbert space~$\scrH$
 is adjointable, as follows.
 Let~$x\in \scrH$ be given.
 Prove that~$\left<x,T(\,\cdot\,)\right>\colon \scrH\to \C$
 is a bounded linear map.
 Let~$Sx$ be the unique vector with $\left<Sx,\,\cdot\,\right>
-=\left<x,T(\,\cdot\,)\right>$.
+=\left<x,T(\,\cdot\,)\right>$,
+which exists by~\sref{riesz-representation-theorem}.
 Show that~$x\mapsto Sx$
 gives a bounded linear map $S$, which is adjoint to~$T$.
+\end{point}
+\begin{point}%
+Thus the vector space~$\scrB(\scrH)$
+of bounded operators
+on a Hilbert space~$\scrH$
+form a $C^*$-algebra
+as described in~\sref{example-hilb}.
+We will return to Hilbert spaces
+in~\sref{gelfand-naimark},
+where we show that every $C^*$-algebra
+is isomorphic to a $C^*$-subalgebra of
+a $\scrB(\scrH)$.
 \end{point}
 \end{parsec}
 
@@ -2458,14 +2480,13 @@ and thus a homeomorphism.
 %
 %  Cauchy--Schwarz for positive functionals
 %
-\begin{parsec}[cstar-cs]%
+\begin{parsec}%
 \begin{point}%
 We will now prove that every $C^*$-algebra
 is isomorphic
 to a $C^*$-algebra
 of bounded operators.
-We will generalize this construction
-in Chapter~\TODO{Paschke}.
+\TODO{Paschke}.
 \end{point}
 \begin{point}{Lemma}%
 Let~$\scrA$ be a $C^*$-algebra,
