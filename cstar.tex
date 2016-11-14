@@ -2060,7 +2060,7 @@ given by $\gamma(a)(f)=f(a)$.
 Verify that 
  the map $\spec(\scrA)\to \C,\ f\mapsto f(a)$ is indeed
 continuous for every~$a\in\scrA$,
-and that~$\gamma$ miu.
+and that~$\gamma$ is miu.
 \end{point}
 \end{point}
 \begin{point}%
@@ -2377,6 +2377,31 @@ there is~$a\in \scrA$ with~$f(a)\equiv \gamma(a)(f)
 \end{point}
 \end{point}
 \end{parsec}
+\begin{parsec}%
+\begin{point}%
+While Gelfand's representation theorem
+is a result about commutative $C^*$-algebras,
+it tells us a lot about non-commutative $C^*$-algebras too,
+via their commutative $C^*$-subalgebras.
+\end{point}
+\begin{point}{Exercise}%
+Let~$a$ be an element of a $C^*$-algebra~$\scrA$.
+
+Show that there is a least $C^*$-subalgebra of~$\scrA$
+--- which we denote by \Define{$C^*(a)$} --- 
+that contains~$a$,
+and it is the closure of $\{p(a,a^*)\colon p(x,y)\in \C[x,y]\}$,
+where~$\C\left[x,y\right]$ is the
+ring of polynomials over two non-commuting
+variables~$x$ and~$y$.
+
+Show that~$C^*(a)$ is commutative
+iff $aa^*=a^*a$ iff $\Real{a}\Imag{a}=\Imag{a}\Real{a}$.
+Such~$a$ are called~\Define{normal}.
+
+\TODO{More work}
+\end{point}
+\end{parsec}
 
 \begin{parsec}%
 \begin{point}%
@@ -2467,12 +2492,48 @@ and so $\tau(f)=f(x_0)$.\qed
 Let~$X$ be a compact Hausdorff space.
 Show that for every~$x\in X$
 the map $\delta_x\colon C(X)\to \C,\ f\mapsto f(x)$
-is miu.
-Show that the map $X\to \spec(C(X)),\ x\mapsto \delta_x$
+is miu,
+and that the map $X\to \spec(C(X)),\ x\mapsto \delta_x$
 is a continuous bijection
 onto a compact Hausdorff space,
 and thus a homeomorphism.
 \end{point}
+\end{point}
+\begin{point}[injective-miu-isometry]{Exercise}%
+As an application of the equivalence
+between $\op{(\cCstar{MIU})}$
+and~$\CH$,
+we will show that every injective miu-map
+between $C^*$-algebras
+is an isometry.
+
+Show that an arrow $f\colon X\to Y$
+in~$\CH$ is mono iff injective, and epi iff surjective
+(using complete regularity of~$Y$).
+Conclude that~$f$ is both epi and mono in~$\CH$
+only if~$f$ is an isomorphism (c.q.~homeomorphism).
+
+Let~$\varrho\colon \scrA\to\scrB$
+be an injective miu-map between $C^*$-algebras.
+Let~$a$ be a self-adjoint element of~$\scrA$.
+Show that~$\varrho$ can be restricted
+to a miu-map $\sigma\colon C^*(a)\to C^*(\varrho(a))$,
+which is both epi and mono in~$\cCstar{MIU}$.
+Conclude that~$\sigma$ is an isomorphism,
+and thus~$\|\varrho(a)\|=\|a\|$.
+Use the $C^*$-identity
+to extend the equality $\|\varrho(a)\|=\|a\|$ 
+to (not necessarily self-adjoint) $a\in \scrA$.
+\end{point}
+\begin{point}{Exercise}%
+Let~$\varrho\colon \scrA\to\scrB$ 
+be an injective miu-map.
+Show that~$\varrho(\scrA)$
+is closed (using~\sref{injective-miu-isometry}).
+Conclude that~$\varrho(\scrA)$
+is a
+ $C^*$-subalgebra of~$\scrB$
+isomorphic to~$\scrA$.
 \end{point}
 \end{parsec}
 
