@@ -1,6 +1,6 @@
 \documentclass[main]{subfiles}
 \begin{document}
-\section{Von Neumann algebras}
+\chapter{Von Neumann algebras}
 %
 % von Neumann algebras
 %
@@ -33,19 +33,43 @@ is the least topology on~$\scrA$
 that makes all normal positive linear maps $\omega\colon \scrA\to \C$
 continuous.
 \end{point}
+\begin{point}%
+The \Define{ultrastrong topology} on~$\scrA$
+is the least topology on~$\scrA$
+that makes $a\mapsto \omega(a^*a)$ continuous
+for every np-map~$\omega\colon \scrA\to \C$.
+\end{point}
 \end{point}
 \end{parsec}
 %
 % multiplication turns suprema into ultraweak limits
 %
-\begin{parsec}[vanishing-effects]%
-\begin{point}{Lemma}%
+\begin{parsec}%
+\begin{point}%
+It is clear that translation and scaling
+on a von Neumann algebra
+are ultraweakly (and ultrastrongly) continuous.
+We will see in this paragraph that multiplication
+is also ultraweakly (and ultrastrongly) continuous
+in each coordinate.
+Quite surprisingly,
+the problem reduces to the ultraweak continuity
+of $b\mapsto a^*ba$ by the following identity
+(cf.~\TODO{refer to polarization identity}).
+\end{point}
+\begin{point}{Exercise}%
+Show that for elements~$a,b,c$ of a $C^*$-algebra,
+\begin{equation*}
+\textstyle
+a^*\,c\,b\ =\ \frac{1}{4}\,\sum_{k=0}^3\ i^k\  (i^ka+b)^*\,c\,(i^ka+b).
+\end{equation*}
+\end{point}
+\begin{point}[vanishing-effects]{Lemma}%
 Let~$(x_\alpha)_\alpha$ be 
 a net of effects of a von Neumann algebra~$\scrA$
 which converges ultraweakly to~$0$.
 Then $(x_\alpha a)_\alpha$ converges ultraweakly
 to $0$ for every~$a\in\scrA$.
-\end{point}
 \begin{point}{Proof}%
 Let~$\omega\colon \scrA\to \C$ be a normal positive linear map.
 We have, for each~$\alpha$,
@@ -66,10 +90,9 @@ since $(\omega(x_\alpha))_\alpha$
 converges to~$0$,
 we see that $(\omega(x_\alpha a))_\alpha$
 converges to~$0$,
-and so $(x_\alpha a)_\alpha$ converges ultraweakly to~$0$.
+and so $(x_\alpha a)_\alpha$ converges ultraweakly to~$0$.\qed
 \end{point}
-\end{parsec}
-\begin{parsec}%
+\end{point}
 \begin{point}{Exercise}
 Let~$D$ be a bounded directed set of self-adjoint
 elements of a von Neumann algebra~$\scrA$,
@@ -87,17 +110,14 @@ Show that if~$ad=da$ for all~$d\in D$,
 then $a(\bigvee D) = (\bigvee D)a $.
 \end{point}
 \end{point}
-\end{parsec}
 %
 %  ad is normal
 %
-\begin{parsec}[ad-normal]%
-\begin{point}{Proposition}%
+\begin{point}[ad-normal]{Proposition}%
 Let~$a$ be an element of a von Neumann algebra~$\scrA$.
 Then~$\bigvee_{d\in D} a^*\,d\,a = a^*\,(\bigvee D)\, a$
 for every bounded directed subset~$D$ of self-adjoint
 elements of~$\scrA$.
-\end{point}
 \begin{point}[ad-normal-1]{Proof}%
 If~$a$ is invertible,
 then the (by~\sref{ad-monotone}) order preserving map $b\mapsto a^*ba$
@@ -122,8 +142,55 @@ by~\sref{ad-normal-1} and~\sref{vna-supremum-uwlimit},
 and $(a^*d+da)_d$ converges ultraweakly to $a^*(\bigvee D)+(\bigvee D)a$
 by~\sref{vna-supremum-mult}.
 Since~$(a^*da)_d$ converges to~$\bigvee_{d\in D} a^*d a$ too,
-we conclude that~$\bigvee_{d\in D} a^* \,d\, a = a^*\,(\bigvee D)\,a$.
+we conclude that~$\bigvee_{d\in D} a^* \,d\, a = a^*\,(\bigvee D)\,a$.\qed
 \end{point}
+\end{point}
+\end{point}
+\begin{point}{Exercise}%
+Show that for a positive linear map $f\colon \scrA\to\scrB$
+between von Neumann algebras,
+the following are equivalent.
+\begin{enumerate}
+\item
+$f$ is ultraweakly continuous;
+\item 
+$\omega\circ f\colon \scrA\to\C$ is normal 
+for each np-map $f\colon \scrB\to\C$;
+\item
+$f(\bigvee D)=\bigvee_{d\in D}f(d)$ for each bounded 
+directed~$D\subseteq\sa{\scrA}$.
+\end{enumerate}
+Conclude that $b\mapsto a^*ba,\,\scrA\to\scrA$
+is ultraweakly continuous for every element~$a$ of a von Neumann 
+algebra~$\scrA$.
+\end{point}
+\begin{point}{Proposition}%
+The map $b\mapsto a^*ba,\,\scrA\to\scrA$
+is ultrastrongly continuous for every
+ element~$a$ of a von Neumann algebra~$\scrA$.
+\begin{point}{Proof}%
+To show that the linear map~$b\mapsto a^*ba$
+is ultrastrongly continuous,
+it suffices to show that it is ultrastrongly continuous at~$0$.
+So let~$(b_\alpha)_\alpha$ be a net in~$\scrA$
+which converges ultrastrongly to~$0$;
+we must show that $(a^*b_\alpha a)_\alpha$
+converges ultrastrongly to~$0$, c.q.~that
+$(a^*b^*_\alpha aa^*b_\alpha a)_\alpha$ converges ultraweakly to~$0$.
+Since
+$a^*b^*_\alpha a a^* b_\alpha a \leq \|a\|^2 a^* b_\alpha^* b_\alpha a$
+it suffices to show that~$(a^*b_\alpha^*b_\alpha a)_\alpha$
+converges ultraweakly to~$0$,
+but this follows from the
+fact that~$c\mapsto a^*ca$ is ultraweakly continuous,
+and~$(b_\alpha^*b_\alpha)_\alpha$
+converges ultraweakly to~$0$.
+\end{point}
+\end{point}
+\begin{point}{Exercise}%
+Show that the maps $b\mapsto ab,\,ba\colon\ \scrA\to\scrA$
+are ultraweakly and ultrastrongly continuous
+for every element~$a$ of a von Neumann algebra~$\scrA$.
 \end{point}
 \end{parsec}
 
@@ -876,5 +943,6 @@ we have $0\leq p\leq 1$, and so $p\in \mathscr{D}\cap [0,1]_\scrA$.
 Thus, $p\leq c$, by definition of~$c$.
 \end{point}
 \end{point}
+\end{parsec}
 \end{document}
 
