@@ -194,6 +194,93 @@ for every element~$a$ of a von Neumann algebra~$\scrA$.
 \end{point}
 \end{parsec}
 
+\begin{parsec}%
+\begin{point}%
+We now turn to (what is perhaps)
+the raison d'\^{e}tre
+of the ultrastrong topology:
+the map $a\mapsto \left|a\right|,\ \sa{\scrA}\to\sa{\scrA}$
+is ultrastrongly, but not ultraweakly continuous.
+This fact
+is not at all obvious,
+for while $\left|a\right|\equiv \smash{\sqrt{a^2}}$,
+neither $a\mapsto a^2$ nor $a\mapsto \sqrt{a}$
+are ultrastrongly \TODO{check!} or ultraweakly continuous 
+(as maps $\sa{\scrA}\to\sa{\scrA}$):
+\end{point}
+\begin{point}{Example}%
+Some subtleties of the ultrastrong and ultraweak topology
+can be illustrated
+by the sequence $a_1,a_2,\dotsc$
+given by
+\begin{equation*}
+a_n \ = \ \ketbra{1}{n}
+\end{equation*}
+in the von Neumann algebra~$\mathscr{B}(\ell^2)$.
+
+Here $\ketbra{n}{m}$
+for $n,m\in\N$ denotes the bounded operator on~$\ell^2$
+given by $(\ketbra{n}{m})(f)(n)=f(m)$
+and~$(\ketbra{n}{m})(f)(k)=0$ for $k\neq n$
+and $f\in \ell^2$.
+We leave it to the reader
+to verify computation rules
+such as $\ketbra{n}{m} \ketbra{m}{k} = \ketbra{n}{k}$,
+$(\ketbra{n}{m})^* = \ketbra{m}{n}$,
+and $\ketbra{n}{m}\ketbra{k}{\ell}=0$
+if $m\neq k$.
+
+To begin,
+the involution $a\mapsto a^*$ is clearly ultraweakly continuous,
+but not ultrastrongly:
+Indeed, since
+ $a_n^*a_n =\ketbra{n}{1}\ketbra{1}{n}=\ketbra{n}{n}$,
+and~$1=\sum_{n=1}^\infty \ketbra{n}{n}$,
+we see that~$\ketbra{n}{n}$ converges ultraweakly to~$0$,
+and so~$a_n$ converges ultrastrongly to~$0$.
+However, since $a_na_n^* = \ketbra{1}{1}$,
+we see that~$a_n^*$ does not converge ultrastrongly~$0$,
+and so~$a\mapsto a^*$ is not ultrastrongly
+continuous on~$\scrA$.
+
+The map $a\mapsto a^2,\ \sa{\scrA}\to\sa{\scrA}$ is not ultraweakly continuous,
+because 
+the sequence of self-adjoint elements $b_1,b_2,\dotsc$
+given by
+\begin{equation*}
+b_n \ =\ \ketbra{n}{1}\,+\,\ketbra{1}{n}
+\end{equation*}
+converges ultraweakly to~$0$,
+but their squares
+\begin{equation*}
+c_n\ :=\ b_n^2\,\equiv\, \ketbra{1}{1} \,+\, \ketbra{n}{n}
+\end{equation*}
+converge ultraweakly to~$\ketbra{1}{1}$.
+
+Note that~$c_n^2=c_n$, and so~$\sqrt{c_n}=c_n$.
+So we see that that~$a\mapsto \left|a\right|,\ \sa{\scrA}\to\sa{\scrA}$
+is not ultraweakly continuous,
+because $b_1,b_2,\dotsc$ converges ultraweakly to~$0$,
+but~$\left|b_n\right|\equiv \sqrt{c_n}=c_n$ converges ultraweakly
+to~$\ketbra{1}{1}$.
+
+Note that $1+\ketbra{1}{n}+\ketbra{1}{n}$
+are all positive,
+and 
+converge ultraweakly to~$1$,
+while their squares
+$1+\ketbra{n}{n}+\ketbra{1}{1}+\ketbra{1}{n}+\ketbra{n}{1}$
+converge ultraweakly to $1+\ketbra{1}{1}$.
+Thus~$a\mapsto \sqrt{a},\ \pos{\scrA}\to\pos{\scrA}$
+is not ultraweakly continuous.
+\end{point}
+\begin{point}%
+Prove that~$a\mapsto \left|a\right|$ is ultrastrongly continuous.
+\end{point}
+\end{parsec}
+\begin{parsec}%
+
+\end{parsec}
 
 
 
