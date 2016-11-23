@@ -41,6 +41,20 @@ for every np-map~$\omega\colon \scrA\to \C$.
 \end{point}
 \end{point}
 \end{parsec}
+\begin{parsec}%
+\begin{point}[von-neumann-subalgebra]{Example}%
+A $C^*$-subalgebra~$\scrB$
+of a von Neumann algebra~$\scrA$
+is called a \Define{von Neumann subalgebra}
+(and is itself a von Neumann algebra)
+if for every bounded directed subset~$D$
+of self-adjoint elements from~$\scrB$
+we have $\bigvee D\in\scrB$
+(where the supremum is taken in~$\sa{\scrA}$).
+\end{point}
+
+\TODO{add more examples}
+\end{parsec}
 %
 % multiplication turns suprema into ultraweak limits
 %
@@ -274,12 +288,185 @@ converge ultraweakly to $1+\ketbra{1}{1}$.
 Thus~$a\mapsto \sqrt{a},\ \pos{\scrA}\to\pos{\scrA}$
 is not ultraweakly continuous.
 \end{point}
-\begin{point}%
+\begin{point}[mult-us-cont]%
 Prove that~$a\mapsto \left|a\right|$ is ultrastrongly continuous.
+\end{point}
+\begin{point}[kaplansky]{Kaplansky Density Theorem}%
+Let~$\scrA$ be a $C^*$-subalgebra
+of a von Neumann algebra~$\scrB$.
+Let~$b$ be an effect of~$\scrA$ which is the ultrastrong limit
+of a net in~$\scrA$.
+Then~$b$ is the ultrastrong limit of a net of effects from~$\scrA$.
+\begin{point}{Proof}%
+Let~$(b_\alpha)_\alpha$
+be a net in~$\scrA$ which converges ultrastrongly
+to~$b$.
+Then the effects  $(0\vee b_\alpha)\wedge 1$
+of~$\scrA$ 
+converge ultrastrongly to~$(0\vee b)\wedge 1 = b$
+by~\TODO{}.\qed
+\end{point}
 \end{point}
 \end{parsec}
 \begin{parsec}%
+\begin{point}%
+Recall that according to our definition (\sref{von-neumann-subalgebra})
+a von Neumann subalgebra~$\scrB$ 
+of a von Neumann algebra~$\scrA$
+is a $C^*$-subalgebra of~$\scrA$
+which is closed under suprema
+of bounded directed sets of self-adjoint elements.
+We will show that such~$\scrB$ is ultrastrongly closed in~$\scrA$.
+\end{point}
+\begin{point}{Lemma}%
+Let~$\scrB$ be a von Neumann subalgebra
+of a von Neumann algebra~$\scrA$.
+Let~$p$ be a projection of~$\scrA$,
+which is the ultrastrong limit of a net in~$\scrB$.
 
+For all npu-maps $\omega_0,\omega_1\colon \scrA\to\C$
+with~$\omega_0(p)=0= \omega_1(p^\perp)$
+there is a projection~$q$ of~$\scrB$
+with~$\omega_0(q)=0=\omega_1(q^\perp)$.
+\begin{point}{Proof}%
+(Based on Lemma~45.3 and Theorem~45.6 of~\cite{conway2000}.)
+
+Note that it suffices to find an effect~$a$ in~$\scrB$
+with $\omega_0(a) = 0 = \omega_1(a^\perp)$,
+because then~$\omega_0(\ceil{a}) = 0 = \omega_1(\ceil{a}^\perp)$
+and~$\ceil{a}\in\scrB$ by~\TODO{}.
+
+Let~$(b_\alpha)_\alpha$ be a net in~$\scrB$
+which converges ultrastrongly to~$p$.
+We may assume that all~$b_\alpha$
+are effects
+by~\sref{kaplansky}
+because~$p$ is a projection (and thus an effect).
+ Since~$pp^\perp=0=p^\perp p$
+and multiplication by a fixed element is ultrastrongly 
+continuous (\sref{mult-us-cont}),
+we see that $(b_\alpha p^\perp)_\alpha$ and $(b_\alpha^\perp p)_\alpha$
+converge ultrastrongly to~$0$.
+Caring only about~$\omega_0$ and~$\omega_1$,
+pick a subsequence~$(b_n)_n$ of~$(b_\alpha)_\alpha$
+such that $\omega_0( (b_n p^\perp)^* b_n p^\perp ) 
+\leq (n2^n)^{-2}$
+and $\omega_1( (p b_n^\perp)^* p b_n^\perp)\leq n^{-2}$
+for all~$n$.
+For~$n < m$, define
+\begin{equation*}
+\textstyle
+a_{nm}\ = \ (1+\sum_{k=n}^m kb_k)^{-1} \,\sum_{k=n}^m kb_k.
+\end{equation*}
+Since we have seen in~\sref{}
+that the map~$d\mapsto (1+d)^{-1}d$ is order preserving
+(on~$\pos{\scrB}$),
+we have $0\leq a_{nm}\leq \frac{1}{2}$
+and we get the formation
+\begin{equation*}
+\renewcommand{\labelstyle}{\textstyle}
+\xymatrix{
+a_{12}\ar@{}|-{\leq}[r] & 
+a_{13}\ar@{}|-{\leq}[r] & 
+a_{14}\ar@{}|-{\leq}[r]  & 
+\dotsb & \ar@{}|-{\leq}[r]& a_1 \\
+&
+a_{23} \ar@{}|-{\leq}[r] \ar@{}[u]|-{\uleq} &
+a_{24} \ar@{}|-{\leq}[r]  \ar@{}[u]|-{\uleq} &
+\dotsb &\ar@{}|-{\leq}[r]& a_2  \ar@{}[u]|-{\uleq} \\
+&
+&
+a_{34} \ar@{}|-{\leq}[r]  \ar@{}[u]|-{\uleq} & 
+\dotsb & \ar@{}|-{\leq}[r] & a_3  \ar@{}[u]|-{\uleq} 
+\\
+&&&\ddots&&\vdots \ar@{}[u]|-{\uleq}& \\
+&&&&&a\ar@{}[u]|-{\uleq}
+},
+\end{equation*}
+where~$a_n:= \bigvee_m a_{nm}$
+and~$a := \bigwedge_n a_n$.
+We will prove that~$\omega_0(a)=0=\omega_1(a^\perp)$.
+\begin{point}{$\omega_0(a^\perp)=0$}%
+Note that $\omega_0(b_n)^2\leq
+\omega_0(b_n^2) =
+\omega_0(p^\perp b_n^2 p^\perp) \leq (n2^n)^{-2}$
+by \TODO{Cauchy--Schwarz and Comprehension-stuff}
+(because~$\omega_0(p)=0$),
+and so~$\omega_0(b_n)\leq n2^n$ for all~$n$.
+Then, since $a_{nm}\leq \sum_{k=n}^m k b_k$,
+we get~$\omega_0(a_{nm})=\sum_{k=n}^m k\omega_0(b_k) \leq 2^{n-1}$,
+and so $\omega_0(a)=\bigwedge_n\bigvee_{m\geq n} \omega_0(a_{nm})
+\leq \bigwedge_n 2^{n-1} = 0$.
+\end{point}
+\begin{point}{$\omega_1(a)=0$}%
+Note that~$\omega_1(pb_n^\perp p)^2
+\leq \omega_1(pb_n^\perp pb_n^\perp p)
+= \omega_1(b_n^\perp p b_n^\perp ) 
+\leq n^{-2}$
+(because~$\omega_1(p)=0$),
+and so~$\omega_1(b_n^\perp)\leq \frac{1}{n}$
+for every~$n$.
+Let~$m> n$ be given.
+Since~$\sum_{k=n}^m b_k \geq mb_k$
+and $d\mapsto (1+d)^{-1}d$
+is monotone on~$\pos{\scrB}$
+we get~$a_{nm} \geq (1+mb_m)^{-1} mb_m$,
+and so~$a_{nm}^\perp \leq (1+mb_m)^{-1}$.
+
+Observe that for a real number $t\in[0,1]$,
+we have $tt^\perp \geq 0$,
+and so $(1+mt)(1+mt^\perp) = 1+m+m^2tt^\perp \geq 1+m$.
+This yields the inequality $(1+mt)^{-1}\leq (1+m)^{-1}(1+mt^\perp)$
+for real numbers~$t\in[0,1]$.
+The corresponding inequality for effects of a $C^*$-algebra
+(obtained via Gelfand's representation theorem, \sref{gelfand})
+gives us $\omega_1(a_{nm}^\perp)\leq \omega_1((1+mb_m)^{-1})
+\leq (1+m)^{-1}(1+m\omega_1(b_m^\perp))\leq \frac{2}{1+m}$.
+Hence~$\omega_1(a_n^\perp)=\bigwedge_{m\geq n} \omega_1(a_{nm}^\perp)
+\leq \bigwedge_{m\geq n} \frac{2}{1+m}=0$ for all~$n$,
+and so~$\omega_1(a^\perp)=\bigvee_1\omega_1(a_n^\perp)=0$.\qed
+\end{point}
+\end{point}
+\end{point}
+\begin{point}{Theorem}%
+A von Neumann subalgebra~$\scrB$ of a von Neumann algebra~$\scrA$
+is ultrastrongly closed.
+\begin{point}{Proof}%
+\TODO{Reduction to projections}
+
+Let~$p$ be a projection of~$\scrA$ which is the ultrastrong limit
+of a net from~$\scrB$. We must show that~$p\in\scrB$.
+Given an npu-map $\omega\colon \scrA\to \C$
+ (i.e.~$\omega\in\NStat(\scrA)$),
+write~ $\ceil{\omega}_\scrB$ for the carrier
+of the restriction of~$\omega$
+to a npu-map~$\scrB\to \C$.
+Note that~$\ceil{\omega}\leq \ceil{\omega}_\scrB$,
+but equality need not hold in general.
+We prove that~$p\in\scrB$ by approximating~$p$
+by these~$\ceil{\omega}_\scrB\in\scrB$; define
+\begin{alignat*}{3}
+q\ &= \textstyle\ \bigvee\{ \ \ceil{\omega_1}_\scrB\colon\ 
+\omega_1(p^\perp)=0
+\text{ where }
+\omega_1\in\NStat(\scrA)\ \} \\
+r\ &=\ 
+ \textstyle\bigvee\{ \ \ceil{\omega_0}_\scrB\colon\ 
+\omega_0(p)=0\
+\text{ where }
+\omega_0\in\NStat(\scrA)\ \}. 
+\end{alignat*}
+Note that the set of which~$q$ is defined to be the supremum is directed,
+because for~$\omega_1,\omega_1'\in\NStat(\scrA)$
+with $\omega_1(p^\perp)=0=\omega_1'(p^\perp)$
+writing $\omega_1'':= \frac{1}{2}\omega_1 + \frac{1}{2}\omega_1'$
+we have $\ceil{\omega_1}_\scrB \vee \ceil{\omega_1'} 
+ = \ceil{\omega_1''}$
+and~$\omega_1''(p^\perp)=0$.
+\TODO{finish...}
+
+\end{point}
+\end{point}
 \end{parsec}
 
 

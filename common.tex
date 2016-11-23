@@ -1,6 +1,7 @@
 \usepackage{cite}
 \usepackage{xparse}
 \usepackage{xcolor}
+\usepackage{graphicx}
 \usepackage{marginnote}
 \usepackage{ifthen}
 \usepackage{calc}
@@ -47,7 +48,7 @@
 \newcommand{\op}[1]{{#1}{^{\mathsf{op}}}}
 
 \newcommand{\ketbra}[2]{\left|#1\right>\!\left<#2\right|}
-
+\newcommand{\uleq}{\mathbin{\rotatebox[origin=c]{90}{$\leq$}}}
 
 
 % Common symbols
@@ -80,6 +81,7 @@
 \DeclareMathOperator{\length}{length}
 \DeclareMathOperator{\interior}{in}
 \DeclareMathOperator{\Stat}{Stat}
+\DeclareMathOperator{\NStat}{NStat}
 \DeclareMathOperator{\Cont}{C}
 \DeclareMathOperator{\Colim}{Colim}
 \DeclareMathOperator{\id}{id}
