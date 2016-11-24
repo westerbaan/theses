@@ -1,6 +1,6 @@
 \documentclass[main]{subfiles}
 \begin{document}
-\chapter{Von Neumann algebras}
+\chapter{Von Neumann Algebras}
 %
 % von Neumann algebras
 %
@@ -32,8 +32,6 @@ The \Define{ultraweak topology} on $\scrA$
 is the least topology on~$\scrA$
 that makes all normal positive linear maps $\omega\colon \scrA\to \C$
 continuous.
-\end{point}
-\begin{point}%
 The \Define{ultrastrong topology} on~$\scrA$
 is the least topology on~$\scrA$
 that makes $a\mapsto \omega(a^*a)$ continuous
@@ -207,7 +205,251 @@ are ultraweakly and ultrastrongly continuous
 for every element~$a$ of a von Neumann algebra~$\scrA$.
 \end{point}
 \end{parsec}
-
+\begin{parsec}%
+\begin{point}%
+One pertinant feature
+of von Neumann algebras
+is an abundance of projections:
+above each effect~$a$ 
+there is a least projection~$\ceil{a}$
+called the ceiling of~$a$;
+for every np-map $\omega\colon \scrA\to \scrB$
+between von Neumann algebras
+there is a least projection~$p$ with~$\omega(p^\perp)$
+called the carrier of~$\omega$;
+the directed supremum of projections is again a projection;
+the partial order of projections forms a complete lattice;
+and each element is the norm limit
+of linear combinations of projections.
+\end{point}
+\begin{point}{Definition}%
+An element~$p$ of a $C^*$-algebra
+is a \Define{projection}
+when~$p^*p=p$.
+\end{point}
+\begin{point}{Exercise}%
+Show that in a $C^*$-algebra:
+\begin{enumerate}
+\item
+$0$ and~$1$ are projections.
+\item
+A projection~$p$ is an effect,
+that is, $p^*=p$
+and $0\leq p\leq 1$.
+\item
+An effect~$a$ is a projection iff $aa^\perp=0$.
+\end{enumerate}
+\end{point}
+\begin{point}[ad-contraposed]{Lemma}%
+Let~$a$ be an element of a $C^*$-algebra~$\scrA$
+with $\|a\|\leq 1$,
+and let~$p$ and~$q$ be projections on~$\scrA$.
+Then 
+$a^* p a \leq q^\perp$
+iff $paq=0$
+iff  $aqa^*\leq p^\perp$.
+\begin{point}{Proof}%
+Suppose that~$a^*pa\leq q^\perp$.
+Then we have $q a^*pa q \leq qq^\perp q = 0$
+(see \sref{ad-monotone})
+and so $paq=0$,
+because $\|paq\|^2=\|(paq)^*paq\|=0$
+by the $C^*$-identity.
+Applying $(\,\cdot\,)^*$,
+we get $qa^*p=0$, and so both $qa^* = qa^*p^\perp$
+and $aq = p^\perp aq$, giving
+us $aqa^* = p^\perp a q a^* p^\perp 
+\leq p^\perp$,
+where we used that $aqa^*\leq aa^*\leq \|aa^*\|=\|a\|^2\leq 1$.
+By a similar reasoning,
+we get $aqa^*\leq p^\perp \implies paq=0\implies a^*pa\leq q^\perp$.\qed
+\end{point}
+\end{point}
+\begin{point}{Exercise}%
+Let~$a$ be an effect of a $C^*$-algebra~$\scrA$,
+and~$p$ be a projection from~$\scrA$.
+\begin{point}[projection-above-effect]%
+Show that $a\leq p$
+iff $p\sqrt{a} = \sqrt{a}$
+iff $\sqrt{a}p = \sqrt{a}$
+iff $p^\perp\sqrt{a} = 0$
+iff $\sqrt{a}p^\perp = 0$
+iff $a^2\leq p$
+iff $p a  = a$
+iff $ a p = a $
+iff $p^\perp a  = 0$
+iff $ap^\perp = 0$
+iff $\sqrt{a}\leq p$.
+\end{point}
+\begin{point}[projection-below-effect]%
+Show that $p\leq a$
+iff $p \sqrt{a} = p$
+iff $\sqrt{a} p = p$
+iff $ p\sqrt{a}^\perp = 0$
+iff $\sqrt{a}^\perp p = 0$
+iff $p\leq a^2$
+iff $ap=p$
+iff $pa = p$
+iff $pa^\perp =0$
+iff $a^\perp p =0$
+iff $p\leq \sqrt{a}$.
+\end{point}
+\end{point}
+\begin{point}[projection-below-projection]{Exercise}%
+Let~$p$ and~$q$ be projections from a $C^*$-algebra
+with~$p\leq q$.\\
+Show that~$q-p$ is a projection.
+\end{point}
+\begin{point}[vna-ceil]{Proposition}%
+Above every effect~$b$ of a von Neumann algebra~$\scrA$,
+there is a smallest projection, \Define{$\ceil{b}$},
+called the \Define{ceiling} of~$b$,
+ given by $\ceil{b}=\bigvee_{n=0}^\infty b^{\nicefrac{1}{2^n}}$.
+\begin{point}[vna-ceil-commutes]%
+Moreover, if $a\in \scrA$ commutes with $b$,
+then~$a$ commutes with~$\ceil{b}$.
+\end{point}
+\begin{point}{Proof}
+Let~$p$ denote the supremum of~$0\leq b\leq b^{\nicefrac{1}{2}}\leq
+b^{\nicefrac{1}{4}}\leq\dotsb\leq 1$.
+\begin{point}[vna-ceil-point-1]%
+To begin,
+note that if~$a\in \scrA$
+commutes with~$b$,
+then~$a$ commutes with~$p$.
+Indeed, for such~$a$ we have~$a\sqrt{b}=\sqrt{b}a$
+by~\sref{cstar-square-commutes},
+and so $a b^{\nicefrac{1}{2^n}} = b^{\nicefrac{1}{2^n}} a$
+for each~$n$
+by induction.
+Thus~$ap=pa$ by~\sref{vna-supremum-commutes}.
+\end{point}
+\begin{point}%
+Let us prove that~$p$ is a projection, c.q.~$p^2=p$. 
+Since~$p\leq 1$, we already have $p^2\equiv \sqrt{p}p\sqrt{p}\leq p$
+by~\sref{ad-monotone},
+and so we only need to show that $p\leq p^2$. We have:
+\begin{alignat*}{3}
+ p^2 \ &=\  \textstyle \bigvee_m \sqrt{p} \,b^{\nicefrac{1}{2^m}} \,\sqrt{p}
+\qquad&&\text{by \sref{ad-normal}} \\
+&=\ \textstyle\bigvee_m b^{\nicefrac{1}{2^{m+1}}}\, p\,
+b^{\nicefrac{1}{2^{m+1}}} 
+\qquad&&\text{by \sref{vna-ceil-point-1} and \sref{cstar-square-commutes}} \\
+&=\ \textstyle \bigvee_m \bigvee_n \, 
+b^{\nicefrac{1}{2^{m+1}}}\, b^{\nicefrac{1}{2^n}}\,
+b^{\nicefrac{1}{2^{m+1}}} \qquad && \text{by \sref{ad-normal}}
+\end{alignat*}
+Thus $p^2 \geq b^{\nicefrac{1}{2^k}}$
+for each~$k$ (taking $n=m=k+1$,)
+and so~$p^2 \geq p$.
+\end{point}
+\begin{point}%
+It remains to be shown that~$p$ is the \emph{least} projection
+above~$b$.
+Let~$q$ be a projection in~$\scrA$ with $b\leq q$;
+we must show that~$q\leq p$.
+We have $b^{\nicefrac{1}{2}}\leq q$
+by~\sref{projection-above-effect},
+and so $b^{\nicefrac{1}{2^n}}\leq q$ for each~$n$ by induction.
+Hence $p\leq q$.\qed
+\end{point}
+\end{point}
+\end{point}
+\begin{point}[vna-floor]{Proposition}%
+Below every effect~$b$ of a von Neumann algebra~$\scrA$,
+there is greatest projection, \Define{$\floor{b}$},
+called the \Define{floor} of~$b$,
+given by~$\floor{b} = \bigwedge_{n=0}^\infty b^{2^{n}}$.
+\begin{point}%
+Moreover, if~$a\in \scrA$ commutes with~$b$,
+then~$b$ commutes with~$\floor{b}$.
+\end{point}
+\begin{point}{Proof}%
+Let~$p$ denote the infimum of $1\geq b\geq b^2 \geq b^4 \geq  \dotsb \geq 0$.
+\begin{point}[vna-floor-point-1]%
+If~$a\in \scrA$ commutes with~$b$,
+then~$a$ commutes with~$p$.
+Indeed, such~$a$ commutes with~$b^2$ (because
+$ab^2 = bab = b^2a$,)
+and so~$a$ commutes with~$b^{2^n}$ for each~$n$ by induction.
+Thus~$a$ commutes with~$p\equiv\bigwedge_n b^{2^n}$ 
+(by a variation on~\sref{vna-supremum-commutes}.)
+\end{point}
+\begin{point}%
+To see that~$p$ is a projection, c.q.~$p^2=p$,
+we only need to show that~$p\leq p^2$,
+because we get $p^2\equiv \sqrt{p}\,p\,\sqrt{p}\leq p$
+from $p\leq 1$ (using~\sref{ad-monotone}.)
+Now, since
+\begin{alignat*}{3}
+p^2 \ &=\ \textstyle \bigwedge_m\  \sqrt{p}\, b^{2^m} \sqrt{p}\qquad
+&&\text{by a variation on~\sref{ad-normal}}\\
+&=\ \textstyle \bigwedge_m \ b^{2^{m-1}} p\, b^{2^{m-1}}\qquad
+&&\text{by~\sref{vna-floor-point-1} and~\sref{cstar-square-commutes}}\\
+&=\ \textstyle \bigwedge_m \bigwedge_n \ 
+b^{2^{m-1}}\, b^{2^n}\, b^{2^{m-1}}\qquad
+&&\text{by~\sref{ad-normal},}
+\end{alignat*}
+and $p\leq b^{2^{m-1}}\, b^{2^n}\,b^{2^{m-1}}$
+for all~$n,m$, we get~$p\leq p^2$.
+\end{point}
+\begin{point}%
+It remains to be shown that~$p$ is the greatest projection above~$b$.
+Let~$q$ be a projection in~$\scrA$ with~$q\leq b$
+we must show that~$q\leq p$.
+Since~$q\leq b$,
+we have~$q\leq b^2$ (by~\sref{projection-below-effect}),
+and so~$q\leq b^{2^n}$ for each~$n$ by induction.
+Thus~$q\leq p\equiv\bigwedge_n b^{2^n}$.
+\end{point}
+\end{point}
+\end{point}
+\begin{point}{Exercise}%
+Let~$a,b$ be effects of a von Neumann algebra~$\scrA$,
+and let~$\lambda\in [0,1]$.
+\begin{point}%
+Show that $\ceil{a}^\perp = \floor{a^\perp}$
+and $\floor{a}^\perp = \ceil{a^\perp}$.
+\end{point}
+\begin{point}[vna-binary-supremum-projections]%
+Show that~$\ceil{\lambda a} = \ceil{a}$
+when~$\lambda\neq 0$.
+Use this to prove that~$\ceil{\lambda a+\lambda^\perp b}$
+is the supremum of~$\ceil{a}$ and~$\ceil{b}$
+in the poset of projections of~$\scrA$
+when~$\lambda\neq 0$ and~$\lambda\neq 1$.
+\end{point}
+\begin{point}[vna-floor-square]%
+Show that $\floor{a}=\floor{a^2}$.
+\end{point}
+\end{point}
+\begin{point}[vna-directed-supremum-projections]{Lemma}%
+The supremum of a directed set~$D$ of projections
+from a von Neumann algebra~$\scrA$ is a projection.
+\begin{point}{Proof}%
+Writing $p=\bigvee D$,
+we must show that $p^2=p$.
+Note that $dp=d$ for all~$d\in D$
+(by~\sref{projection-below-effect} because~$d\leq p$.)
+Now, on the one hand, $(d)_{d\in D}$
+converges ultraweakly to~$p$.
+On the other hand,
+$(dp)_{d\in D}$
+converges ultraweakly to~$p^2$ by~\sref{vna-supremum-mult}.
+Hence~$p=p^2$ by uniqueness of ultraweak limits.
+\end{point}
+\end{point}
+\begin{point}{Exercise}%
+Deduce from this result
+ that every set~$A$ of projections from~$\scrA$
+has a supremum $\Define{\bigcup A}$
+and an infimum $\Define{\bigcap A}$
+\emph{in the poset of projections from~$\scrA$}.\\
+(Hint: use~\sref{vna-binary-supremum-projections},
+and the fact that $p\mapsto p^\perp$ 
+is an order isomorphism on the poset of projections on~$\scrA$.)
+\end{point}
+\end{parsec}
 \begin{parsec}%
 \begin{point}%
 We now turn to (what is perhaps)
@@ -309,6 +551,45 @@ by~\TODO{}.\qed
 \end{point}
 \end{parsec}
 \begin{parsec}%
+\begin{point}[carrier]{Definition}%
+Let $f\colon\scrA\to\scrB$
+be an np-map between von Neumann algebras.
+The \Define{carrier} of~$f$, denoted by~$\Define{\ceil{f}}$,
+is the greatest projection~$p$
+of~$\scrA$ with~$f(p^\perp)= 0 $.
+
+\TODO{Add proof that such projection exists.}
+\end{point}
+\begin{point}[carrier-basic]{Exercise}%
+Show that $\ceil{\lambda f} = \ceil{f}$ for~$\lambda>0$,
+and~$\ceil{f+g} = \ceil{f}\cup \ceil{g}$.
+\end{point}
+\begin{point}{Definition}%
+We call a projection~$p$ of a von Neumann algebra~$\scrA$
+\Define{ultracyclic} if~$p=\ceil{\omega}$
+for some np-map $\omega\colon \scrA\to\C$.
+\end{point}
+\begin{point}[ultracyclic-basic]{Exercise}%
+Verify the following facts about ultracyclic projections.
+\begin{enumerate}
+\item
+If~$p$ and~$q$ are ultracyclic projections,
+so is~$p\cup q$.
+\item
+If~$p \leq q$ are projections,
+and~$q$ is ultracyclic,
+then~$p$ is ultracyclic.
+
+\TODO{add definition of $(\,\cdot\,)_\bullet$}
+\item
+Every projection is a directed supremum
+of ultracyclic projections.\\
+(Hint: first show that~$1$ is the supremum of all ultracyclic projections.)
+\end{enumerate}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
 \begin{point}%
 Recall that according to our definition (\sref{von-neumann-subalgebra})
 a von Neumann subalgebra~$\scrB$ 
@@ -318,7 +599,7 @@ which is closed under suprema
 of bounded directed sets of self-adjoint elements.
 We will show that such~$\scrB$ is ultrastrongly closed in~$\scrA$.
 \end{point}
-\begin{point}{Lemma}%
+\begin{point}[kadisons-lemma]{Lemma}%
 Let~$\scrB$ be a von Neumann subalgebra
 of a von Neumann algebra~$\scrA$.
 Let~$p$ be a projection of~$\scrA$,
@@ -383,7 +664,7 @@ a_{34} \ar@{}|-{\leq}[r]  \ar@{}[u]|-{\uleq} &
 &&&&&a\ar@{}[u]|-{\uleq}
 },
 \end{equation*}
-where~$a_n:= \bigvee_m a_{nm}$
+where~$a_n:= \bigvee_{m\geq n} a_{nm}$
 and~$a := \bigwedge_n a_n$.
 We will prove that~$\omega_0(a)=0=\omega_1(a^\perp)$.
 \begin{point}{$\omega_0(a^\perp)=0$}%
@@ -432,298 +713,58 @@ and so~$\omega_1(a^\perp)=\bigvee_1\omega_1(a_n^\perp)=0$.\qed
 A von Neumann subalgebra~$\scrB$ of a von Neumann algebra~$\scrA$
 is ultrastrongly closed.
 \begin{point}{Proof}%
-\TODO{Reduction to projections}
-
 Let~$p$ be a projection of~$\scrA$ which is the ultrastrong limit
-of a net from~$\scrB$. We must show that~$p\in\scrB$.
-Given an npu-map $\omega\colon \scrA\to \C$
- (i.e.~$\omega\in\NStat(\scrA)$),
-write~ $\ceil{\omega}_\scrB$ for the carrier
-of the restriction of~$\omega$
-to a npu-map~$\scrB\to \C$.
-Note that~$\ceil{\omega}\leq \ceil{\omega}_\scrB$,
-but equality need not hold in general.
-We prove that~$p\in\scrB$ by approximating~$p$
-by these~$\ceil{\omega}_\scrB\in\scrB$; define
-\begin{alignat*}{3}
-q\ &= \textstyle\ \bigvee\{ \ \ceil{\omega_1}_\scrB\colon\ 
-\omega_1(p^\perp)=0
-\text{ where }
-\omega_1\in\NStat(\scrA)\ \} \\
-r\ &=\ 
- \textstyle\bigvee\{ \ \ceil{\omega_0}_\scrB\colon\ 
-\omega_0(p)=0\
-\text{ where }
-\omega_0\in\NStat(\scrA)\ \}. 
-\end{alignat*}
-Note that the set of which~$q$ is defined to be the supremum is directed,
-because for~$\omega_1,\omega_1'\in\NStat(\scrA)$
-with $\omega_1(p^\perp)=0=\omega_1'(p^\perp)$
-writing $\omega_1'':= \frac{1}{2}\omega_1 + \frac{1}{2}\omega_1'$
-we have $\ceil{\omega_1}_\scrB \vee \ceil{\omega_1'} 
- = \ceil{\omega_1''}$
-and~$\omega_1''(p^\perp)=0$.
-\TODO{finish...}
-
+of a net from~$\scrB$. It suffices to show that~$p\in\scrB$,
+because the ultrastrong closure of~$\scrB$
+being a von Neumann algebra (\TODO{add ref.})
+is generated by its projections (\TODO{add ref.}).
+Note that given an np-map $\omega\colon \scrA\to\C$,
+the carrier~$\ceil{\omega}$ of~$\omega$
+need not be equal to the carrier
+of~$\omega$ restricted to~$\scrB$,
+which we'll therefore denote by~$\ceil{\omega}_\scrB$;
+but we do have $\ceil{\omega}\leq \ceil{\omega}_\scrB$.
+Then by~\sref{ultracyclic-basic}
+\begin{equation}
+\label{ultracyclic-proof}
+\textstyle
+\bigvee_{\omega_1}
+\ceil{\omega_1}_\scrB \ \geq\ 
+\bigvee_{\omega_1}
+\ceil{\omega_1}\ =\ p\ =\ 
+\bigwedge_{\omega_0} \ceil{\omega_0}^\perp
+\ \geq\ \bigwedge_{\omega_0} \ceil{\omega_0}_{\scrB}^\perp,
+\end{equation}
+where~$\omega_0$ ranges over np-maps $\omega_0\colon \scrA\to\C$
+with~$\omega_0(p)=0$,
+ and $\omega_1$ ranges over
+np-maps $\omega_1\colon \scrA\to\C$ with~$\omega_1(p^\perp)=0$.
+Since for such~$\omega_0$ and~$\omega_1$
+there is 
+by~\sref{kadisons-lemma}
+a projection~$q$ in~$\scrB$
+with $\omega_0(q)=0=\omega_1(q^\perp)$,
+we get 
+$\ceil{\omega_1}_\scrB \geq q \geq 
+\ceil{\omega_0}_\scrB^\perp$,
+and so~$\bigwedge_{\omega_0} \ceil{\omega_0}_\scrB^\perp 
+\geq \bigvee_{\omega_1} \ceil{\omega_1}_\scrB$.
+It follows that the inequalities in~\eqref{ultracyclic-proof}
+are in fact equalities,
+and so~$p=\bigvee_{\omega_1}\ceil{\omega_1}_\scrB \in \scrB$.\qed
 \end{point}
+\end{point}
+\begin{point}%
+\TODO{Show that a von Neumann algebra is (bounded?) ultraweakly complete.}
 \end{point}
 \end{parsec}
 
 
-
-\section{Projections}
-Let us now turn to the projections in a von Neumann algebra.
-
-\TODO{Supremum/infimum of projections}
-
-\TODO{Relation between  $\floor{\cdot}$, $\ceil{\cdot}$ and NCPsU-maps}
 
 \TODO{NCPsU-maps with sharp $f(1)$ as restriction category}
 
 \TODO{Central carier and von Neumann--Murray equivalence (for Paschke.)}
 
-\TODO{$\ceil{pqp}=p\cdot q$ (Sakai product) and counter-example non-projections}
-
-\TODO{$\floor{aba}=\floor{a}\cap \floor{b}$}
-
-
-
-\begin{parsec}[ad-contraposed]%
-\begin{point}{Lemma}%
-Let~$a$ be an element of a $C^*$-algebra~$\scrA$
-with $\|a\|\leq 1$,
-and let~$p$ and~$q$ be projections on~$\scrA$.
-Then 
-$a^* p a \leq q^\perp$
-iff $paq=0$
-iff  $aqa^*\leq p^\perp$.
-\end{point}
-\begin{point}{Proof}%
-Suppose that~$a^*pa\leq q^\perp$.
-Then we have $q a^*pa q \leq qq^\perp q = 0$
-(see \sref{ad-monotone})
-and so $paq=0$,
-because $\|paq\|^2=\|(paq)^*paq\|=0$
-by the $C^*$-identity.
-Applying $(\,\cdot\,)^*$,
-we get $qa^*p=0$, and so both $qa^* = qa^*p^\perp$
-and $aq = p^\perp aq$, giving
-us $aqa^* = p^\perp a q a^* p^\perp 
-\leq p^\perp$,
-where we used that $aqa^*\leq aa^*\leq \|aa^*\|=\|a\|^2\leq 1$.
-By a similar reasoning,
-we get $aqa^*\leq p^\perp \implies paq=0\implies a^*pa\leq q^\perp$.
-\end{point}
-\end{parsec}
-\begin{parsec}%
-\begin{point}{Exercise}%
-Let~$a$ be an effect of a $C^*$-algebra~$\scrA$,
-and~$p$ be a projection from~$\scrA$.
-\begin{point}[projection-above-effect]%
-Show that $a\leq p$
-iff $p\sqrt{a} = \sqrt{a}$
-iff $\sqrt{a}p = \sqrt{a}$
-iff $p^\perp\sqrt{a} = 0$
-iff $\sqrt{a}p^\perp = 0$
-iff $a^2\leq p$
-iff $p a  = a$
-iff $ a p = a $
-iff $p^\perp a  = 0$
-iff $ap^\perp = 0$
-iff $\sqrt{a}\leq p$.
-\end{point}
-\begin{point}[projection-below-effect]%
-Show that $p\leq a$
-iff $p \sqrt{a} = p$
-iff $\sqrt{a} p = p$
-iff $ p\sqrt{a}^\perp = 0$
-iff $\sqrt{a}^\perp p = 0$
-iff $p\leq a^2$
-iff $ap=p$
-iff $pa = p$
-iff $pa^\perp =0$
-iff $a^\perp p =0$
-iff $p\leq \sqrt{a}$.
-\end{point}
-\end{point}
-\begin{point}[projection-below-projection]{Exercise}%
-Let~$p$ and~$q$ be projections from a $C^*$-algebra
-with~$p\leq q$.\\
-Show that~$q-p$ is a projection.
-\end{point}
-\end{parsec}
-
-%
-% Projections
-%
-\begin{parsec}[vna-ceil]%
-\begin{point}{Proposition}%
-Above every effect~$b$ of a von Neumann algebra~$\scrA$,
-there is a smallest projection, \Define{$\ceil{b}$},
-called the \Define{ceiling} of~$b$,
- given by $\ceil{b}=\bigvee_{n=0}^\infty b^{\nicefrac{1}{2^n}}$.
-\begin{point}[vna-ceil-commutes]%
-Moreover, if $a\in \scrA$ commutes with $b$,
-then~$a$ commutes with~$\ceil{b}$.
-\end{point}
-\end{point}
-\begin{point}{Proof}
-Let~$p$ denote the supremum of~$0\leq b\leq b^{\nicefrac{1}{2}}\leq
-b^{\nicefrac{1}{4}}\leq\dotsb\leq 1$.
-\begin{point}[vna-ceil-point-1]%
-To begin,
-note that if~$a\in \scrA$
-commutes with~$b$,
-then~$a$ commutes with~$p$.
-Indeed, for such~$a$ we have~$a\sqrt{b}=\sqrt{b}a$
-by~\sref{cstar-square-commutes},
-and so $a b^{\nicefrac{1}{2^n}} = b^{\nicefrac{1}{2^n}} a$
-for each~$n$
-by induction.
-Thus~$ap=pa$ by~\sref{vna-supremum-commutes}.
-\end{point}
-\begin{point}%
-Let us prove that~$p$ is a projection, c.q.~$p^2=p$. 
-Since~$p\leq 1$, we already have $p^2\equiv \sqrt{p}p\sqrt{p}\leq p$
-by~\sref{ad-monotone},
-and so we only need to show that $p\leq p^2$. We have:
-\begin{alignat*}{3}
- p^2 \ &=\  \textstyle \bigvee_m \sqrt{p} \,b^{\nicefrac{1}{2^m}} \,\sqrt{p}
-\qquad&&\text{by \sref{ad-normal}} \\
-&=\ \textstyle\bigvee_m b^{\nicefrac{1}{2^{m+1}}}\, p\,
-b^{\nicefrac{1}{2^{m+1}}} 
-\qquad&&\text{by \sref{vna-ceil-point-1} and \sref{cstar-square-commutes}} \\
-&=\ \textstyle \bigvee_m \bigvee_n \, 
-b^{\nicefrac{1}{2^{m+1}}}\, b^{\nicefrac{1}{2^n}}\,
-b^{\nicefrac{1}{2^{m+1}}} \qquad && \text{by \sref{ad-normal}}
-\end{alignat*}
-Thus $p^2 \geq b^{\nicefrac{1}{2^k}}$
-for each~$k$ (taking $n=m=k+1$,)
-and so~$p^2 \geq p$.
-\end{point}
-\begin{point}%
-It remains to be shown that~$p$ is the \emph{least} projection
-above~$b$.
-Let~$q$ be a projection in~$\scrA$ with $b\leq q$;
-we must show that~$q\leq p$.
-We have $b^{\nicefrac{1}{2}}\leq q$
-by~\sref{projection-above-effect},
-and so $b^{\nicefrac{1}{2^n}}\leq q$ for each~$n$ by induction.
-Hence $p\leq q$.
-\end{point}
-\end{point}
-\end{parsec}
-
-%
-%	floor
-%
-\begin{parsec}[vna-floor]%
-\begin{point}{Proposition}%
-Below every effect~$b$ of a von Neumann algebra~$\scrA$,
-there is greatest projection, $\floor{b}$,
-called the \Define{floor} of~$b$,
-given by~$\floor{b} = \bigwedge_{n=0}^\infty b^{2^{n}}$.
-\begin{point}%
-Moreover, if~$a\in \scrA$ commutes with~$b$,
-then~$b$ commutes with~$\floor{b}$.
-\end{point}
-\end{point}
-\begin{point}{Proof}%
-Let~$p$ denote the infimum of $1\geq b\geq b^2 \geq b^4 \geq  \dotsb \geq 0$.
-\begin{point}[vna-floor-point-1]%
-If~$a\in \scrA$ commutes with~$b$,
-then~$a$ commutes with~$p$.
-Indeed, such~$a$ commutes with~$b^2$ (because
-$ab^2 = bab = b^2a$,)
-and so~$a$ commutes with~$b^{2^n}$ for each~$n$ by induction.
-Thus~$a$ commutes with~$p\equiv\bigwedge_n b^{2^n}$ 
-(by a variation on~\sref{vna-supremum-commutes}.)
-\end{point}
-\begin{point}%
-To see that~$p$ is a projection, c.q.~$p^2=p$,
-we only need to show that~$p\leq p^2$,
-because we get $p^2\equiv \sqrt{p}\,p\,\sqrt{p}\leq p$
-from $p\leq 1$ (using~\sref{ad-monotone}.)
-Now, since
-\begin{alignat*}{3}
-p^2 \ &=\ \textstyle \bigwedge_m\  \sqrt{p}\, b^{2^m} \sqrt{p}\qquad
-&&\text{by a variation on~\sref{ad-normal}}\\
-&=\ \textstyle \bigwedge_m \ b^{2^{m-1}} p\, b^{2^{m-1}}\qquad
-&&\text{by~\sref{vna-floor-point-1} and~\sref{cstar-square-commutes}}\\
-&=\ \textstyle \bigwedge_m \bigwedge_n \ 
-b^{2^{m-1}}\, b^{2^n}\, b^{2^{m-1}}\qquad
-&&\text{by~\sref{ad-normal},}
-\end{alignat*}
-and $p\leq b^{2^{m-1}}\, b^{2^n}\,b^{2^{m-1}}$
-for all~$n,m$, we get~$p\leq p^2$.
-\end{point}
-\begin{point}%
-It remains to be shown that~$p$ is the greatest projection above~$b$.
-Let~$q$ be a projection in~$\scrA$ with~$q\leq b$
-we must show that~$q\leq p$.
-Since~$q\leq b$,
-we have~$q\leq b^2$ (by~\sref{projection-below-effect}),
-and so~$q\leq b^{2^n}$ for each~$n$ by induction.
-Thus~$q\leq p\equiv\bigwedge_n b^{2^n}$.
-\end{point}
-\end{point}
-\end{parsec}
-%
-%
-%
-\begin{parsec}%
-\begin{point}{Exercise}%
-Let~$a,b$ be effects of a von Neumann algebra~$\scrA$,
-and let~$\lambda\in [0,1]$.
-\begin{point}%
-Show that $\ceil{a}^\perp = \floor{a^\perp}$
-and $\floor{a}^\perp = \ceil{a^\perp}$.
-\end{point}
-\begin{point}[vna-binary-supremum-projections]%
-Show that~$\ceil{\lambda a} = \ceil{a}$
-when~$\lambda\neq 0$.
-Use this to prove that~$\ceil{\lambda a+\lambda^\perp b}$
-is the supremum of~$\ceil{a}$ and~$\ceil{b}$
-in the poset of projections of~$\scrA$
-when~$\lambda\neq 0$ and~$\lambda\neq 1$.
-\end{point}
-\begin{point}[vna-floor-square]%
-Show that $\floor{a}=\floor{a^2}$.
-\end{point}
-\end{point}
-\end{parsec}
-
-%
-%	directed supremum of projections
-%
-\begin{parsec}%
-\begin{point}[vna-directed-supremum-projections]{Lemma}%
-The supremum of a directed set~$D$ of projections
-from a von Neumann algebra~$\scrA$ is a projection.
-\end{point}
-\begin{point}{Proof}%
-Writing $p=\bigvee D$,
-we must show that $p^2=p$.
-Note that $dp=d$ for all~$d\in D$
-(by~\sref{projection-below-effect} because~$d\leq p$.)
-Now, on the one hand, $(d)_{d\in D}$
-converges ultraweakly to~$p$.
-On the other hand,
-$(dp)_{d\in D}$
-converges ultraweakly to~$p^2$ by~\sref{vna-supremum-mult}.
-Hence~$p=p^2$ by uniqueness of ultraweak limits.
-\end{point}
-\begin{point}{Exerise}%
-Deduce from this result
- that every set~$A$ of projections from~$\scrA$
-has a supremum $\Define{\bigcup A}$
-and an infimum $\Define{\bigcap A}$
-\emph{in the poset of projections from~$\scrA$}.\\
-(Hint: use~\sref{vna-binary-supremum-projections},
-and the fact that $p\mapsto p^\perp$ 
-is an order isomorphism on the poset of projections on~$\scrA$.)
-\end{point}
-\end{parsec}
 %
 %
 %
