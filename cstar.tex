@@ -5,7 +5,8 @@ As a warming-up
 we develop the essentials of the theory of $C^*$-algebras
 in this chapter.
 Since we are ultimately interested
-in von Neumann algebras in this text
+in von Neumann algebras
+(a special type of $C^*$-algebras)
 we have evaded
 delicate
 topics such as tensor products (of $C^*$-algebras), 
@@ -13,49 +14,61 @@ quotients, approximate identities,
 and $C^*$-algebras without a unit.
 Our end goal
 for this chapter
-is Gelfand's representation theorem,
+is \emph{Gelfand's representation theorem} (see~\sref{gelfand}),
 the fact that every commutative $C^*$-algebra
 is isomorphic
 to the $C^*$-algebra
-$C(X)$ of continuous functions on some compact Hausdorff space~$X$.
-We begin easy with the definition and elementary properties
-of self-adjoint, positive and invertible elements of a $C^*$-algebra,
-and we introduce the spectrum of an element in~\sref{}.
-Without breaking a sweat,
-we obtain an important technical result
-called spectral permanence in~\sref{}
-with algebraic manipulations and simple analysis.
-However, to reach Gelfand's representation theorem,
-we will take three hurdles:
+$C(X)$ of continuous functions on some compact Hausdorff space~$X$
+--- it yields a duality
+between the category~$\CH$ of compact hausdorff spaces (and continuous maps)
+and the category~$\cCstar{miu}$ of commutative $C^*$-algebras (and
+unital $*$-homomorphisms,
+the appropriate structure preservering maps), see~\sref{gelfand-equivalence}.
+
+As the road to Gelfand's representation theorem 
+is a bit winding ---
+involving intricate relations between technical concepts --- 
+we have put emphasis on the invertible and  positive elements
+so that the important
+theorems about them may serve as landmarks along the way:
 \begin{enumerate}
 \item
-first we employ complex analysis
-to connect the invertible elements of a $C^*$-algebra
-with the norm;
+first we show that the norm
+on a $C^*$-algebra
+is determined by the invertible elements
+(via the \emph{spectral radius}), see~\sref{norm-spectrum};
+
 \item
-then we connect multiplication
-and positive elements via the construction of the square root
-of positive elements;
+then we construct a \emph{square root} of a positive element in~\sref{sqrt};
+
 \item
-and finally we connect the multiplicative states
-on a commutative $C^*$-algebra
-with the spectrum of its elements
-using `maximal Riesz ideals'.
+and finally we
+show that an element of a commutative $C^*$-algebra
+is not invertible iff it is mapped to~$0$
+by some multiplicative state, see~\sref{inv-mult-state}.
 \end{enumerate}
+At every step
+the positive and invertible elements 
+(and the norm, multiplicative states, multiplication
+and other structure on a $C^*$-algebra)
+are bound more tightly together
+until Gelfand's representation theorem rolls out.
+
 To make this chapter
-as accessible as possible,
-we have made every effort to identify
-and remove
-extranious material
+more accessible
+we have removed
+much material
 from the ordinary development
-of the theory
+of $C^*$-algebras
 such as the more general theory of Banach algebras
-and Banach spaces (and its pathology)
-To accommodate these simplifications
-we were forced
-to take a slightly different path than in the literature,
-for while we obtain Gelfand--Mazur's theorem for $C^*$-algebras,
-but cannot apply it, see~\sref{}.
+and Banach spaces (and its pathology).
+This forced us
+to take a slightly different path than in the literature
+(for while we obtain Gelfand--Mazur's theorem for $C^*$-algebras,
+we could not apply it, see~\sref{}).
+
+Let us begin with the definition
+and examples.
 \begin{parsec}%
 \begin{point}{Definition}%
 A \Define{$C^*$-algebra}
@@ -89,7 +102,7 @@ and
 \label{eq:Cstar-identity}
 \|a^*a\|\ =\ \|a\|^2
 \end{equation*}
-holds. The latter equality is called the \Define{$C^*$-identity}.
+holds; this equality is called the \Define{$C^*$-identity}.
 \end{enumerate}
 The $C^*$-algebra $\scrA$ is called \Define{commutative}
 if $ab=ba$ for all~$a,b\in\scrA$.
@@ -104,19 +117,6 @@ Involution is given by conjugation ($z^*=\bar{z}$),
 and norm by modulus ($\|z\|=|z|$).
 \end{point}
 \begin{point}{Example}%
-Let~$X$ be a compact Hausdorff space.
-The set $\Define{C(X)}$ of \Define{continuous functions}
-from~$\scrA$ to~$\C$
-forms a commutative $C^*$-algebra
-when addition, (scalar) multiplication, involution and~$1$ are
-interpretted coordinatewise \grayed{(e.g.~$(f+g)(x)=f(x)+g(x)$)},
-and the norm is taken to be 
-$\|f\|=\sup_{x\in X} |f(x)|$
-(the \Define{sup-norm}).
-
-\TODO{refer to an appendix on topology.}
-\end{point}
-\begin{point}{Example}%
 A \Define{$C^*$-subalgebra}
 of a $C^*$-algebra~$\scrA$
 is a subset~$\scrB$ of~$\scrA$,
@@ -129,53 +129,112 @@ is itself a $C^*$-algebra
 when endowed with the operations and norm
 of~$\scrA$.
 \end{point}
-\begin{point}[example-hilb]{Example}%
-The vector space~$\scrB(\scrH)$ of bounded operators
-on a Hilbert space~$\scrH$ forms a $C^*$-algebra
-when endowed with the operator 
-norm.
-Multiplication is given by composition,
-involution by taking the adjoint,
-and unit by the identity operator.
-A \Define{concrete $C^*$-algebra} or
-a \Define{$C^*$-algebra of bounded operators} 
-refers to a $C^*$-subalgebra of~$\scrB(\scrH)$.
-We elaborate on this example in~\sref{hilb},
-and we will see
-that every $C^*$-algebra is isomorphic to a $C^*$-algebra
-of bounded operators in~\sref{gelfand-naimark}.
-
-\TODO{make parsec/appendix on bounded operators between normed vector
-spaces and the operator norm}
-\end{point}
-\begin{point}{Example}%
+\begin{point}[cstar-product]{Example}%
+One can form products (in the categorical sense,
+see~\TODO{add ref.}) of $C^*$-algebras as follows.
 Let~$\scrA_i$ be a $C^*$-algebra
 for every element~$i$ of some set~$I$.
 The \Define{direct product}
 of the family $(\scrA_i)_i$
 is the $C^*$-algebra
-denoted by $\bigoplus_{i\in I}\scrA_i$ on the set
+denoted by \Define{$\bigoplus_{i\in I}\scrA_i$} on the set
 \begin{equation*}
 \textstyle
 \{\  a\in \prod_{i\in I}\scrA_i\colon\  \sup_{i \in I} \|a(i)\|< \infty \ \}
 \end{equation*}
-whose operations are defined coordinatewise,
+whose operations are defined pointwise,
 and whose norm is a \Define{sup-norm} given by $\|a\|=\sup_{i}\|a(i)\|$.
+If each~$\scrA_i$ is commutative,
+then~$\bigoplus_{i\in I}\scrA_i$
+is commutative.
+
+In particular,
+taking~$\scrA_i\equiv \C$,
+we see that
+the vector space of bounded complex-valued functions
+on a set~$X$ forms a commutative $C^*$-algebra
+with pointwise operations and sup-norm.
+\end{point}
+\begin{point}{Example}%
+The \Define{bounded continuous functions
+on a topological space}~$X$
+form a commutative $C^*$-subalgebra~\Define{$BC(X)$}
+of the $C^*$-algebra
+of bounded functions $X\to \C$.
+In particular,
+since a continuous function on a compact Hausdorff space is 
+automatically bounded,
+we see that the \Define{continuous functions
+on a compact Hausdorff space} $X$
+form a commutative $C^*$-algebra~\Define{$C(X)$}
+with pointwise operations and sup-norm.
+We'll see that every commutative $C^*$-algebra
+is isomorphic to a~$C(X)$
+in~\sref{gelfand}.
+\end{point}
+\begin{point}{Example}%
+An example of a non-commutative
+$C^*$-algebra
+is
+the vector space~\Define{$M_n$}
+of \Define{$n\times n$-matrices} ($n>1$) over~$\C$
+with the usual (matrix) multiplication,
+the identity matrix as unit,
+and conjugate transpose
+as involution
+(so~$(A^*)_{ij} = \overline{A_{ji}}$).
+The norm~$\|A\|$ of a matrix~$A$ in~$M_n$
+is less obvious,
+being
+the \emph{operator norm}
+(cf.~\sref{bounded-linear-maps})
+of the associated linear map~$v\mapsto Av,\ \C^n\to\C^n$,
+that is,
+$\|A\|$ is
+the least number~$r\geq 0$
+with $\|Av\|_2\leq r\|v\|_2$
+for all~$v\in \C^n$
+(where $\|w\|_2=(\sum_i \left|w_i\right|^2)^{\nicefrac{1}{2}}$
+denotes the $2$-norm
+of~$w\in \C^n$).
+
+It is not entirely obvious that~$\|A^*A\|=\|A\|^2$
+holds
+and~$M_n$ is complete.
+We will prove these facts in the more general setting
+of bounded operators between Hilbert spaces, 
+see~\sref{adjointables-cstar-algebra}.
+Suffice it to say, $\C^n$ is a Hilbert space
+with~$\left<v,w\right>=\sum_i \overline{v}_iw_i$
+as inner product,
+each matrix gives a (bounded) linear map $v\mapsto Av,\C^n\to \C^n$,
+and the conjugate transpose $A^*$ is \emph{adjoint} to~$A$
+in the sense that $\left<v,Aw\right> = \left<vA^*,w\right>$
+for all~$v,w\in\C^n$.
+\end{point}
+\begin{point}{Example}%
+\TODO{Write about finite dimensional $C^*$-algebras,
+$CP^*$, and the Artin--Wedderburn theorem.}
 \end{point}
 \end{parsec}
-\TODO{$\|a^*\|=\|a\|$}
-
-\TODO{$\|a^*\|=\|a\|$ and $\|1\|\leq 1$}
-
 \begin{parsec}[hilb]%
-\begin{point}%
-Let us show in detail
-that the bounded operators on a Hilbert space
-form a $C^*$-algebra
-as described in~\sref{example-hilb}.
-Let us recall the definition of ``bounded operators''.
+\begin{point}[example-hilb]{Example}%
+In this paragraph
+we'll show that the vector space~\Define{$\scrB(\scrH)$} 
+of \Define{bounded operators
+on a Hilbert space}~$\scrH$ forms a $C^*$-algebra
+when endowed with the operator 
+norm.
+Multiplication is given by composition,
+involution by taking the \emph{adjoint} (see ),
+and unit by the identity operator.
+A \Define{concrete $C^*$-algebra} or
+a \Define{$C^*$-algebra of bounded operators} 
+refers to a $C^*$-subalgebra of~$\scrB(\scrH)$.
+We will see that every $C^*$-algebra is isomorphic to a $C^*$-algebra
+of bounded operators in~\sref{gelfand-naimark}.
 \end{point}
-\begin{point}{Definition}%
+\begin{point}[bounded-linear-maps]{Definition}%
 Let~$\scrX$ and~$\scrY$ be normed
 vector spaces.
 We say that~$r\in [0,\infty)$
@@ -377,7 +436,7 @@ Then prove $\|x+y\|^2\leq (\|x\|+\|y\|)^2$
 using the inequalities~$\left<x,y\right>+\left<y,x\right>
 \leq 2\left|\left<x,y\right>\right| \leq 2\|x\|\|y\|$.)
 \end{point}
-\begin{point}{Lemma}%
+\begin{point}[operators-cstar-identity]{Lemma}%
 For an adjointable operator~$T$ on a pre-Hilbert space~$\scrH$
 \begin{equation*}
 \|T^*T\|\ =\ \|T\|^2\qquad\text{and}\qquad\|T^*\|\ =\ \|T\|.
@@ -400,7 +459,7 @@ But then $\|T\|^2\leq \|T^*T\|\leq \|T^*\|\|T\|=\|T\|^2$,
 and so $\|T\|^2=\|T^*T\|$.\qed
 \end{point}
 \end{point}
-\begin{point}%
+\begin{point}[adjointables-cstar-algebra]%
 At this point
 it is clear that the vector space of adjointable operators
 on a Hilbert space forms a $C^*$-algebra.
@@ -1309,8 +1368,10 @@ For an element~$a$ of a $C^*$-algebra~$\scrA$,
 we have
 \begin{equation*}
 \|a\|\,=\,\sup\{\,\left|\lambda\right|\colon 
-\,\lambda\in \spec(a)\backslash\{0\}\,\}.
+\,\lambda\in \spec(a)\,\}.
 \end{equation*}
+(The quantity on the right hand-side above
+is called the \Define{spectral radius} of~$a$.)
 \begin{point}{Proof}%
 Write~$r=
 \sup\{\left|\,\lambda\right|\colon\, \lambda\in \spec(a)\backslash\{0\}\,\}$.
@@ -2209,6 +2270,15 @@ and so~$0=f(\,a(b-f(b))\,)=f(ab)-f(a)f(b)$.
 Hence~$f$ is multiplicative.\qed
 \end{point}
 \end{point}
+\begin{point}[inv-mult-state]{Proposition}%
+Let~$a$ be a self-adjoint element of a $C^*$-algebra.
+Then~$a$ is not invertible
+iff there is $f\in\spec(\scrA)$ 
+with~$f(a)=0$.
+\begin{point}{Proof}%
+
+\end{point}
+\end{point}
 \begin{point}[spectrum-miu]{Lemma}%
 For each self-adjoint~$a\in\scrA$ 
 we have $\spec(a)=\{f(a)\colon f\in\spec(\scrA)\}$.
@@ -2428,7 +2498,7 @@ Such~$a$ are called~\Define{normal}.
 \end{point}
 \end{parsec}
 
-\begin{parsec}%
+\begin{parsec}[gelfand-equivalence]%
 \begin{point}%
 As a cherry on the cake,
 we use Gelfand's representation theorem~\sref{gelfand}
