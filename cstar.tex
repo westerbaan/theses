@@ -2,7 +2,7 @@
 \begin{document}
 \chapter{$C^*$-algebras}
 As a warming-up
-we develop the essentials of the theory of $C^*$-algebras
+we develop the essentials of the theory of (unital) $C^*$-algebras
 in this chapter.
 Since we are ultimately interested
 in von Neumann algebras
@@ -61,11 +61,11 @@ much material
 from the ordinary development
 of $C^*$-algebras
 such as the more general theory of Banach algebras
-and Banach spaces (and its pathology).
+(and its pathology).
 This forced us
-to take a slightly different path than in the literature
+to take a slightly different path than is usual in the literature
 (for while we obtain Gelfand--Mazur's theorem for $C^*$-algebras,
-we could not apply it, see~\sref{}).
+we could not apply it, see~\sref{gelfand-mazur-predicament}).
 
 Let us begin with the definition
 and examples.
@@ -106,6 +106,13 @@ holds; this equality is called the \Define{$C^*$-identity}.
 \end{enumerate}
 The $C^*$-algebra $\scrA$ is called \Define{commutative}
 if $ab=ba$ for all~$a,b\in\scrA$.
+\begin{point}{Warning}%
+In the literature it is usually not
+required that a $C^*$-algebra
+possesses a unit ($1$),
+and it is called
+a \Define{unital $C^*$-algebra} when it does.
+\end{point}
 \end{point}
 \begin{point}{Example}%
 The vector space~$\C$ of \Define{complex numbers}
@@ -226,7 +233,7 @@ on a Hilbert space}~$\scrH$ forms a $C^*$-algebra
 when endowed with the operator 
 norm.
 Multiplication is given by composition,
-involution by taking the \emph{adjoint} (see ),
+involution by taking the \emph{adjoint} (see~\sref{hilb-def}),
 and unit by the identity operator.
 A \Define{concrete $C^*$-algebra} or
 a \Define{$C^*$-algebra of bounded operators} 
@@ -264,15 +271,55 @@ be bounded operators.
 Show that $ST$ is bounded by~$\|S\|\|T\|$,
 so that~$\|ST\|\leq\|S\|\|T\|$.
 \item
-Show that~$\scrB(\scrX,\scrY)$ 
-is complete when~$\scrY$ is complete.
-\item
 Show that the identity operator $\id\colon \scrX\to \scrX$
 is bounded by~$1$.
 \end{enumerate}
 \end{point}
+\begin{point}[operator-norm-complete]{Lemma}%
+The operator norm on~$\scrB(\scrX,\scrY)$ is complete
+when~$\scrY$ is a complete.
+\begin{point}%
+Let~$(T_n)_n$ be a Cauchy sequence in~$\scrB(\scrX,\scrY)$.
+We must show that~$(T_n)_n$ converges to some
+bounded operator $T\colon \scrX\to\scrY$.
+Let~$x\in \scrX$ be given.
+Since 
+\begin{equation*}
+\|\,T_nx - T_mx\,\|\ =\ \|\,(T_n-T_m)\,x\,\|\ \leq\  \|T_n-T_m\|\,\|x\|
+\end{equation*}
+and~$\|T_n-T_m\|\to 0$ as~$n,m\to \infty$ 
+(because~$(T_k)_k$ is Cauchy),
+we see that $\|\,T_nx-T_mx\,\|\to 0$ as $n,m\to \infty$,
+and so $(T_nx)_n$ is a Cauchy sequence in~$\scrY$.
+Since~$\scrY$ is complete,
+ $(T_nx)_n$ converges,
+and  we may define $Tx:=\lim_n T_nx$,
+giving a map $T\colon \scrX\to \scrY$,
+which is easily seen to be linear
+(by continuity of addition and scalar multiplication).
+
+It remains to be shown that~$T$ is bounded,
+and that~$(T_n)_n$ converges to~$T$ with respect to the operator norm.
+Let~$\varepsilon>0$ be given, and pick~$N$ be such that
+$\|T_n-T_m\|\leq \frac{1}{2}\varepsilon$ for all~$n,m\geq N$.
+Then for every~$x\in \scrX$
+we can find~$M\geq N$ with 
+$\|T x - T_m x\|\leq \frac{1}{2}\varepsilon\|x\|$ for all $m\geq M$,
+and so,
+for $n\geq N$, $m\geq M$,
+\begin{equation*}
+\|(T - T_n) x\| \ \leq\ \|T x - T_mx\|\,+\,\|T_m x - T_n x\|
+\ \leq\  \varepsilon\|x\|
+\end{equation*}
+giving that~$T-T_n$ is bounded
+and $\|T-T_n\|\leq \varepsilon$ for all~$n\geq N$.
+Whence~$T$ is bounded too,
+and $(T_n)_n$ converges to~$T$.\qed
+\end{point}
+\end{point}
 \begin{point}%
 From~\sref{bounded-operators-basic}
+and~\sref{operator-norm-complete}
 it is clear that the complex vector space
 of bounded operators~$\scrB(\scrX)$
 on a complete normed vector space~$\scrX$
@@ -459,25 +506,30 @@ But then $\|T\|^2\leq \|T^*T\|\leq \|T^*\|\|T\|=\|T\|^2$,
 and so $\|T\|^2=\|T^*T\|$.\qed
 \end{point}
 \end{point}
+\end{parsec}
+\begin{parsec}%
 \begin{point}[adjointables-cstar-algebra]%
 At this point
 it is clear that the vector space of adjointable operators
 on a Hilbert space forms a $C^*$-algebra.
-So it remains to be shown that every bounded operator
+So to prove that $\scrB(\scrH)$
+is a $C^*$-algebra,
+it remains to be shown that every bounded operator
 is adjointable (which we'll do in~\sref{bounded-operator-adjointable}).
 We first show that each bounded functional $f\colon \scrH\to \C$
 has an adjoint, see~\sref{riesz-representation-theorem},
-and for this we need the (existence and) properties of ``projections''
+for which we need the (existence and) properties of ``projections''
 on (closed) linear subspaces:
 \end{point}
 \begin{point}{Definition}
-Let~$x$ be an element of a Hilbert space~$\scrH$.
+Let~$x$ be an element of a pre-Hilbert space~$\scrH$.
 We say that an element~$y$ of a linear subspace~$C$
 of~$\scrH$ is a \Define{projection of~$x$ on~$C$}
 if
 \begin{equation*}
 \|x-y\|\,=\,\min\{\,\|x-y'\|\colon \,y'\in C\,\}.
 \end{equation*}
+(In other words,~$y$ is one of the elements of~$C$ closest to~$x$.)
 \end{point}
 \begin{point}{Lemma}%
 Let~$\scrH$ be a pre-Hilbert space,
@@ -509,7 +561,7 @@ Hence~$\|y'-x\|>\|y-x\|$.\qed
 \end{point}
 \end{point}
 \begin{point}[hilb-projection-basic]{Exercise}%
-Let~$y$ be a projection of an element~$x$ of a Hilbert space~$\scrH$
+Let~$y$ be a projection of an element~$x$ of a pre-Hilbert space~$\scrH$
 on a linear subspace~$C$.
 Show that~$y$ is a projection of~$x$ on $y\C$.
 Conclude that~$y$ is the unique projection of~$x$ on~$C$,
@@ -612,10 +664,9 @@ Show that~$x\mapsto Sx$
 gives a bounded linear map $S$, which is adjoint to~$T$.
 \end{point}
 \begin{point}%
-Thus the vector space~$\scrB(\scrH)$
-of bounded operators
+Thus the bounded operators
 on a Hilbert space~$\scrH$
-form a $C^*$-algebra
+form a $C^*$-algebra~$\scrB(\scrH)$
 as described in~\sref{example-hilb}.
 We will return to Hilbert spaces
 in~\sref{gelfand-naimark},
@@ -1363,6 +1414,23 @@ where the interchange of ``$\sum$'' and ``$\int$''
 was allowed by~\TODO{to add}.\qed
 \end{point}
 \end{point}
+\begin{point}[rigid-expansion]{Exercise}%
+Let~$f$ be a holomorphic function with domain~$G$.
+We will show that if~$f$ has a power series expansion on a disk around~$0$,
+then this power series expansion is also valid on any larger disk
+that still fits in~$G$, the domain of~$f$.
+
+Let $S>0$ and $a_1,a_2,\dotsc \in\scrA$ be
+such that $z\in G$ and  $f(z)\equiv \sum_n a_nz^n$
+for all~$z\in \C$ with $\left|z\right|< S$.
+Let~$R\in [0,\infty]$ be the distance of~$0$ to the border of~$G$,
+that is,
+$R:=\inf\{\left|z\right|\in \C\colon z\notin G\}$.
+
+Show that~$f(z)=\sum_n a_n z^n$
+for all~$z\in \C$ with $\left|z\right|< R$.
+\TODO{add hints}
+\end{point}
 \begin{point}[norm-spectrum]{Proposition}%
 For an element~$a$ of a $C^*$-algebra~$\scrA$,
 we have
@@ -1378,64 +1446,43 @@ Write~$r=
 Since~$\left|\lambda\right| \leq \|a\|$
 for all~$\lambda\in\spec(a)$
 (\sref{spectrum-bounded})
-we see that~$r\leq \|a\|$.
-Thus we only need to show that~$\|a\|\leq r$. 
+we see that~$r\leq \|a\|$,
+and so we only need to show that~$\|a\|\leq r$. 
+Note that this is clearly true if~$\|a\|=0$,
+so we may assume that~$\|a\|\neq 0$.
 
-Let~$\varepsilon>0$ be given.
-It suffices to show that~$\|a\|\leq (1+\varepsilon)\,r$.
-\begin{point}%
 The trick is to consider
 the power series expansion
 around~$0$ of the holomorphic function~$f$ defined
 on~$G:=\{\,z\in \C\colon 1-az\text{ is invertible}\,\}$ 
 by  $f(z)=z(1-az)^{-1}$.
-\end{point}
-\begin{point}%
-Indeed, we have $f(z) = \sum_n a^nz^{n+1}$
-for all~$z\in \C$ with $\left|z\right|\|a\|<1$
+More specifically,
+we are interested in the distance~$R$
+of~$0$ to the complement of~$G$,
+viz.~$R= \inf\{\left|\lambda\right|\in \C\colon \lambda\notin G\}$,
+because since $0\in G$
+and $z\notin G\iff z^{-1}\in \spec(a)$,
+we have~$R=r^{-1}$
+(using the convention $0^{-1}=\infty$).
+
+Note that $f$ has the power series expansion
+$f(z) = \sum_n a^nz^{n+1}$
+for all~$z\in \C$ with $\|z\|<\|a\|^{-1}$,
 because for such~$z$
 we have $\sum_n (az)^n=(1-az)^{-1}$
 by~\sref{geometric},
 and thus~$f(z)=z(1-az)^{-1}=z\sum_n (az)^n = \sum_n a^nz^{n+1}$.
-\end{point}
-\begin{point}[norm-spectrum-2]%
-Moreover,
-we know by~\sref{harmonic-divergence}
-that for every $z\in\C$ with $\left|z\right|\|a\|>1$
+
+By~\sref{rigid-expansion}
+we know that~$f(z)=\sum_n a^nz^{n+1}$
+is valid not only for~$z\in \C$ with $\|z\|\leq \|a\|^{-1}$,
+but for all~$z$ with $\|z\|\leq R$.
+
+However, $R$ cannot be strictly larger than~$\|a\|^{-1}$,
+because for every $z\in\C$ with $\left|z\right|>\|a\|^{-1}$
 the series $\sum_n(az)^n$ 
-and thus $\sum_n a^n{z}^{n+1}$ diverges.
-\end{point}
-\begin{point}%
-Let~$R$ denote the distance of~$0$ to
-the border of~$G$,
-that is, 
-$R= \inf\{\left|\lambda\right|\in \C\colon \lambda\notin G\}$.
-We claim that~$R^{-1}=r$.
-To begin,
-recall that $\lambda\notin G$ iff $1-a\lambda$ is invertible.
-Since clearly~$0\in G$,
-we have $\lambda\notin G$ iff $\lambda\neq 0$ and $\lambda^{-1}-a$ 
-is invertible, that is, $\lambda^{-1}\in \spec(a)\backslash\{0\}$.
-Thus we see that $R^{-1}=r$.
-\end{point}
-\begin{point}[norm-spectrum-3]%
-We know by~\sref{rigid-expansion}
-that the expansion $f(z)=\sum_na^nz^{n+1}$
-must be valid not only for~$z\in\C$ with $\left|z\right|\|a\|<1$,
-but for all~$z\in\C$ with 
-$\|z\|< R$,
-that is, $\left|z\right|r\equiv \left|z\right| R^{-1} < 1$.
-In particular,
-for any~$z$ with $\left|z\right|\|a\|>1$ 
-(see~\sref{norm-spectrum-2})
-we cannot have $\|z\| r <1$,
-and so we must have $\left|z\right| r \geq 1$.
-Multiplying by~$\|a\|$,
-we see that $\|a\|\leq \|a\|\left|z\right|r$.
-Since we can choose~$z$ such that  $\left|z\right|\|a\|\leq 1+\varepsilon$,
-we see that $\|a\|\leq \|a\|\left|z\right|r \leq (1+\varepsilon)r $,
-and so we are done.\qed
-\end{point}
+and thus $\sum_n a^n{z}^{n+1}$ diverges (see~\sref{harmonic-divergence}).
+Hence~$R=\|a\|^{-1}$, and so~$r=\|a\|$.\qed
 \end{point}
 \end{point}
 \begin{point}[spectrum-non-empty]{Exercise}%
@@ -1449,7 +1496,7 @@ Given an element~$a$ of a $C^*$-algebra show that
 Prove that if every non-zero element of a $C^*$-algebra~$\scrA$
 is invertible, then~$\scrA=\C$ or~$\scrA=\{0\}$.
 \end{point}
-\begin{point}%
+\begin{point}[gelfand-mazur-predicament]%
 A logical next step
 towards Gelfand's representation theorem
 is to show that if~$\lambda\in\spec(a)$
@@ -1537,7 +1584,7 @@ $a$ is positive.
 We will complete this list in~\sref{cstar-positive-final}.
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[positive-basic-2]{Exercise}%
 Let~$\scrA$ be a $C^*$-algebra.
 \begin{enumerate}
 \item
@@ -1829,7 +1876,7 @@ $q_0=0$ and $q_{n+1}=\frac{1}{2}(x + q_n^2)$.
 For example,
 we have~$b_n\geq 0$, 
 because all coefficients of~$q_n$ are all positive,
-and $a,a^2,a^3,\dotsc$ are positive by~\sref{cstar-pos-power}.
+and $a,a^2,a^3,\dotsc$ are positive by~\sref{positive-basic-2}.
 With a similar argument we can see that
  $b_0 \leq b_1\leq b_2\leq \dotsb$.
 Indeed, 
@@ -1876,7 +1923,7 @@ and clearly $0\equiv q_0(1)\leq 1$.
 Let~$b$ be the limit of $b_0\leq b_1\leq\dotsb$.
 Then~$b$ being the limit of positive elements
 is positive
-(see~\sref{positive-norm-closed}),
+(see~\sref{positive-basic-2}),
 and if $c\in \scrA$ commutes with~$a$,
 then $c$ commutes with all powers of~$a$,
 and therefore with all~$b_n$,
@@ -2650,13 +2697,16 @@ and let~$f\colon \scrA\to \C$ be a pi-map.\\
 Then, for all~$a,b\in\scrA$,\quad
 $\left|f(a^*b)\right|^2 \ \leq\ f(a^*a)\,f(b^*b)$.
 \begin{point}{Proof}%
-Apply~\sref{cs}
+Apply Cauchy--Schwarz (\sref{inner-product-basic})
 to the inner product on~$\scrA$ given 
 by $\left<a,b\right>=f(a^*b)$.
 (Note that $f(a^*a)\equiv \left<a,a\right>\geq 0$,
 because $a^*a$ is positive
 by~\sref{astara-positive}.)\qed
 \end{point}
+\end{point}
+\begin{point}[gelfand-naimark]{Theorem (Gelfand--Naimark)}%
+\TODO{formulate and prove}
 \end{point}
 \end{parsec}
 \end{document}
