@@ -109,9 +109,8 @@ if $ab=ba$ for all~$a,b\in\scrA$.
 \begin{point}{Warning}%
 In the literature it is usually not
 required that a $C^*$-algebra
-possesses a unit ($1$),
-and it is called
-a \Define{unital $C^*$-algebra} when it does.
+possesses a unit; but when it does it is called
+a \Define{unital $C^*$-algebra}.
 \end{point}
 \end{point}
 \begin{point}{Example}%
@@ -138,7 +137,7 @@ of~$\scrA$.
 \end{point}
 \begin{point}[cstar-product]{Example}%
 One can form products (in the categorical sense,
-see~\TODO{add ref.}) of $C^*$-algebras as follows.
+see~\sref{cstar-categorical-product}) of $C^*$-algebras as follows.
 Let~$\scrA_i$ be a $C^*$-algebra
 for every element~$i$ of some set~$I$.
 The \Define{direct product}
@@ -226,7 +225,8 @@ $CP^*$, and the Artin--Wedderburn theorem.}
 \end{parsec}
 \begin{parsec}[hilb]%
 \begin{point}[example-hilb]{Example}%
-In this paragraph
+Let us now turn to perhaps the most important
+and difficult example:
 we'll show that the vector space~\Define{$\scrB(\scrH)$} 
 of \Define{bounded operators
 on a Hilbert space}~$\scrH$ forms a $C^*$-algebra
@@ -678,6 +678,12 @@ a $\scrB(\scrH)$.
 
 
 \begin{parsec}%
+\begin{point}%
+Now that the most important examples
+of $C^*$-algebras are out the way,
+we can begin developing the theory.
+We'll start easy with the self-adjoint elements:
+\end{point}
 \begin{point}{Definition}%
 Given an element $a$ of a $C^*$-algebra $\scrA$, 
 \begin{enumerate}
@@ -703,11 +709,15 @@ Show that $a^*a$ is self-adjoint,
 and  $a^*a=\Real{a}^2+\Imag{a}^2+i(\Real{a}\Imag{a}-\Imag{a}\Real{a})$.
 \item
 Give an example of an~$a$ with  $\Real{a}\Imag{a} \neq \Imag{a}\Real{a}$.
+
+(This simple observation is the source of many technical difficulties.)
 \item
 Show that $a^*a+aa^* = 2(\Real{a}^2+\Imag{a}^2)$.
 \item
 The product of self-adjoint elements $b$, $c$ needs not be self-adjoint;
 show that, in fact, $bc$ is self-adjoint iff $bc=cb$.
+\item
+Show that $\|a^*\| = \|a\|$. (Hint:  $\|a\|^2=\|a^*a\|\leq \|a^*\|\|a\|$.)
 \end{enumerate}
 \end{point}
 \end{parsec}
@@ -888,9 +898,16 @@ The miu-maps between $C^*$-algebras
 form a category which we denote by~$\Cstar{miu}$.
 The full subcategory of commutative $C^*$-algebras
 is denoted by~$\cCstar{miu}$.
-\TODO{products and equalizers in $\Cstar{miu}$}
 \end{point}
 \end{point}
+\begin{point}[cstar-categorical-product]{Exercise}%
+Show that the direct product of $C^*$-algebras
+defined in~\sref{cstar-product}
+provides products in the categories~$\Cstar{miu}$
+and~$\cCstar{miu}$.
+\end{point}
+
+\TODO{equalizers}
 \end{parsec}
 
 %
@@ -898,7 +915,8 @@ is denoted by~$\cCstar{miu}$.
 %
 \begin{parsec}%
 \begin{point}%
-Let us first study the invertible elements
+Let us explore our second landmark,
+the  invertible elements
 of a $C^*$-algebra,
 whose role 
 is as important as it is technical.
@@ -1538,6 +1556,11 @@ before Gelfand's representation theorem.
 \begin{point}%
 We return to the positive elements 
 in a $C^*$-algebra (see~\sref{cstar-positive}).
+We'll see that the connection we have establised
+between the norm and invertible elements
+of a $C^*$-algebra
+via the spectral radius (\sref{norm-spectrum})
+affects the positive elements as well, see~\sref{cstar-positive-1}.
 \end{point}
 \begin{point}[real-pos-ineq]{Exercise}%
 Show that 
@@ -1560,7 +1583,7 @@ Hence $\|a-t\|\leq t$
 iff $\left|\lambda-t\right|\leq t$ for all~$\lambda\in\spec(a)$
 iff $\spec(a)\subseteq [0,2t]$ (by \sref{real-pos-ineq}).\qed
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[cstar-positive-1]{Exercise}%
 Show
 (using~\sref{pos-spectrum} and~\sref{spectrum-basic})
 that
@@ -2323,7 +2346,7 @@ Then~$a$ is not invertible
 iff there is $f\in\spec(\scrA)$ 
 with~$f(a)=0$.
 \begin{point}{Proof}%
-
+\TODO{Move the proof below here.}
 \end{point}
 \end{point}
 \begin{point}[spectrum-miu]{Lemma}%
