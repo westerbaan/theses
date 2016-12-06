@@ -603,16 +603,19 @@ which is closed under suprema
 of bounded directed sets of self-adjoint elements.
 We will show that such~$\scrB$ is ultrastrongly closed in~$\scrA$.
 \end{point}
-\begin{point}[kadisons-lemma]{Lemma}%
+\begin{point}[sequence-separation-lemma]{Lemma}%
 Let~$\scrB$ be a von Neumann subalgebra
 of a von Neumann algebra~$\scrA$.
-Let~$p$ be a projection of~$\scrA$,
-which is the ultrastrong limit of a net in~$\scrB$.
-
-For all npu-maps $\omega_0,\omega_1\colon \scrA\to\C$
-with~$\omega_0(p)=0= \omega_1(p^\perp)$
-there is a projection~$q$ of~$\scrB$
-with~$\omega_0(q)=0=\omega_1(q^\perp)$.
+Let~$\omega_0,\omega_1\colon \scrA\to\C$
+be npu-maps,
+which are separated
+by a net $(b_\alpha)_\alpha$
+of effects of~$\scrB$ 
+in the sense that~$\lim_\alpha \omega_0(b_\alpha)=0$
+and $\lim_\alpha \omega_1(b_\alpha^\perp)=0$.
+Then~$\omega_0$ and~$\omega_1$ are separated by a 
+projection~$q$ of~$\scrB$ 
+in the sense that~$\omega_0(q)= 0 = \omega_1(q^\perp)$.
 \begin{point}{Proof}%
 (Based on Lemma~45.3 and Theorem~45.6 of~\cite{conway2000}.)
 
@@ -621,22 +624,10 @@ with $\omega_0(a) = 0 = \omega_1(a^\perp)$,
 because then~$\omega_0(\ceil{a}) = 0 = \omega_1(\ceil{a}^\perp)$
 and~$\ceil{a}\in\scrB$ by~\TODO{}.
 
-Let~$(b_\alpha)_\alpha$ be a net in~$\scrB$
-which converges ultrastrongly to~$p$.
-We may assume that all~$b_\alpha$
-are effects
-by~\sref{kaplansky}
-because~$p$ is a projection (and thus an effect).
- Since~$pp^\perp=0=p^\perp p$
-and multiplication by a fixed element is ultrastrongly 
-continuous (\sref{mult-us-cont}),
-we see that $(b_\alpha p^\perp)_\alpha$ and $(b_\alpha^\perp p)_\alpha$
-converge ultrastrongly to~$0$.
-Caring only about~$\omega_0$ and~$\omega_1$,
-pick a subsequence~$(b_n)_n$ of~$(b_\alpha)_\alpha$
-such that $\omega_0( (b_n p^\perp)^* b_n p^\perp ) 
-\leq (n2^n)^{-2}$
-and $\omega_1( (p b_n^\perp)^* p b_n^\perp)\leq n^{-2}$
+Note that we may find a subsequence~$(b_n)_n$ of~$(b_\alpha)_\alpha$
+such that $\omega_0( b_n ) 
+\leq n2^{-n}$
+and $\omega_1(b_n^\perp)\leq n^{-1}$
 for all~$n$.
 For~$n < m$, define
 \begin{equation*}
@@ -670,27 +661,15 @@ a_{34} \ar@{}|-{\leq}[r]  \ar@{}[u]|-{\uleq} &
 \end{equation*}
 where~$a_n:= \bigvee_{m\geq n} a_{nm}$
 and~$a := \bigwedge_n a_n$.
-We will prove that~$\omega_0(a)=0=\omega_1(a^\perp)$.
+We'll prove that~$\omega_0(a)=0=\omega_1(a^\perp)$.
 \begin{point}{$\omega_0(a^\perp)=0$}%
-Note that $\omega_0(b_n)^2\leq
-\omega_0(b_n^2) =
-\omega_0(p^\perp b_n^2 p^\perp) \leq (n2^n)^{-2}$
-by \TODO{Cauchy--Schwarz and Comprehension-stuff}
-(because~$\omega_0(p)=0$),
-and so~$\omega_0(b_n)\leq n2^n$ for all~$n$.
-Then, since $a_{nm}\leq \sum_{k=n}^m k b_k$,
+Since~$\omega_0(b_n)\leq n2^n$ 
+and $a_{nm}\leq \sum_{k=n}^m k b_k$,
 we get~$\omega_0(a_{nm})=\sum_{k=n}^m k\omega_0(b_k) \leq 2^{n-1}$,
 and so $\omega_0(a)=\bigwedge_n\bigvee_{m\geq n} \omega_0(a_{nm})
 \leq \bigwedge_n 2^{n-1} = 0$.
 \end{point}
 \begin{point}{$\omega_1(a)=0$}%
-Note that~$\omega_1(pb_n^\perp p)^2
-\leq \omega_1(pb_n^\perp pb_n^\perp p)
-= \omega_1(b_n^\perp p b_n^\perp ) 
-\leq n^{-2}$
-(because~$\omega_1(p)=0$),
-and so~$\omega_1(b_n^\perp)\leq \frac{1}{n}$
-for every~$n$.
 Let~$m> n$ be given.
 Since~$\sum_{k=n}^m b_k \geq mb_k$
 and $d\mapsto (1+d)^{-1}d$
@@ -706,11 +685,41 @@ for real numbers~$t\in[0,1]$.
 The corresponding inequality for effects of a $C^*$-algebra
 (obtained via Gelfand's representation theorem, \sref{gelfand})
 gives us $\omega_1(a_{nm}^\perp)\leq \omega_1((1+mb_m)^{-1})
-\leq (1+m)^{-1}(1+m\omega_1(b_m^\perp))\leq \frac{2}{1+m}$.
+\leq (1+m)^{-1}(1+m\omega_1(b_m^\perp))\leq \frac{2}{1+m}$,
+where we have used that~$\omega_1(b_m^\perp)\leq \frac{1}{m}$.
 Hence~$\omega_1(a_n^\perp)=\bigwedge_{m\geq n} \omega_1(a_{nm}^\perp)
 \leq \bigwedge_{m\geq n} \frac{2}{1+m}=0$ for all~$n$,
 and so~$\omega_1(a^\perp)=\bigvee_1\omega_1(a_n^\perp)=0$.\qed
 \end{point}
+\end{point}
+
+
+\end{point}
+\begin{point}[kadisons-lemma]{Lemma}%
+Let~$\scrB$ be a von Neumann subalgebra
+of a von Neumann algebra~$\scrA$.
+Let~$p$ be a projection of~$\scrA$,
+which is the ultrastrong limit of a net in~$\scrB$.
+
+For all npu-maps $\omega_0,\omega_1\colon \scrA\to\C$
+with~$\omega_0(p)=0= \omega_1(p^\perp)$
+there is a projection~$q$ of~$\scrB$
+with~$\omega_0(q)=0=\omega_1(q^\perp)$.
+\begin{point}{Proof}%
+Let~$(b_\alpha)_\alpha$ be a net in~$\scrB$
+which converges ultrastrongly to~$p$.
+We may assume that all~$b_\alpha$
+are effects
+by Kaplansky's density theorem (\sref{kaplansky}).
+% Since~$pp^\perp=0=p^\perp p$
+%and multiplication by a fixed element is ultrastrongly 
+%continuous (\sref{mult-us-cont}),
+%we see that $(b_\alpha p^\perp)_\alpha$ and $(b_\alpha^\perp p)_\alpha$
+%converge ultrastrongly to~$0$.
+Note that~$(\omega_0(b_\alpha))_\alpha$ converges to~$\omega_0(p)\equiv 0$,
+and $(\omega_1(b^\perp_\alpha))_\alpha$ converges 
+to~$\omega_1(p^\perp)\equiv 0$.
+Now apply~\sref{sequence-separation-lemma}.\qed
 \end{point}
 \end{point}
 \begin{point}{Theorem}%
