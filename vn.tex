@@ -38,6 +38,23 @@ that makes $a\mapsto \omega(a^*a)$ continuous
 for every np-map~$\omega\colon \scrA\to \C$.
 \end{point}
 \end{point}
+\begin{point}%
+We work with the ultraweak and ultrastrong topology in tandem,
+because neither is ideal, and they tend to be complementary:
+for example, $a\mapsto a^*$ is ultraweakly continuous
+but not ultrastrongly (see~\TODO{}), 
+while $a\mapsto \left|a\right|$
+is ultrastrongly continuous (see~\TODO{}) but not ultraweakly
+(\TODO{}).
+
+When dealing with the ultrastrong topology
+it is useful to recall that
+every np-map gives rise
+to an inner-product $[a,b]_\omega = \omega(a^*b)$
+and semi-norm $\|a\|_\omega = \|[a,a]_\omega\|^{\nicefrac{1}{2}}
+= \omega(a^*a)^{\nicefrac{1}{2}}$.
+\TODO{finish}
+\end{point}
 \end{parsec}
 \begin{parsec}%
 \begin{point}[von-neumann-subalgebra]{Example}%
@@ -52,6 +69,145 @@ we have $\bigvee D\in\scrB$
 \end{point}
 
 \TODO{add more examples}
+\end{parsec}
+\begin{parsec}%
+\begin{point}{Exercise}%
+We start with some counterexamples in $\scrB(\ell^2)$
+to hone your understanding of the ultrastrong and ultraweak topologies,
+and we hope you'll thereby appreciate 
+the strange maneuvers we'll need to pull off later on.
+\begin{enumerate}
+\item
+Given~$n,m\in \N$,
+we denote by $\ketbra{n}{m}$
+the bounded operator on~$\ell^2$
+given by $(\ketbra{n}{m})(f)(n)=f(m)$
+and~$(\ketbra{n}{m})(f)(k)=0$ for $k\neq n$
+and $f\in \ell^2$.
+
+Verify the following computation rules,
+where $k,\ell,m,n\in \N$.
+\begin{equation*}
+(\ketbra{n}{m})^*\ =\ \ketbra{m}{n},
+\qquad
+\ketbra{n}{m}\ketbra{\ell}{k}\ =\ 
+\begin{cases}
+\ \ \ketbra{n}{k} & \text{if $m=k$} \\
+\ \ 0 & \text{otherwise}
+\end{cases}
+\end{equation*}
+\item
+Show that $\bigvee_N \sum_{n=0}^N \ketbra{n}{n}=1$.
+
+Conclude that~$(\,\ketbra{n}{n}\,)_n$
+converges ultrastrongly (and ultraweakly) to~$0$.
+
+Thus ultrastrong (and ultraweak) convergence does not imply norm convergence,
+as one might have expected.
+But we also see that if a sequence~$(b_n)_n$ converges ultrastrongly
+(or ultraweakly) to some~$b$,
+then $(\|b_n\|)_n$ doesn't even have to converge to~$\|b\|$
+(compare this with Lebesgue's dominated convergence
+theorem \TODO{add ref.}).
+
+(Note that~$(\ketbra{n}{n})_n$ resembles a moving bump, from measure theory.)
+\item
+Show that~$(\,\ketbra{n}{0}\,)_n$ converges ultrastrongly to~$0$,
+while $(\,\ketbra{0}{n}\,)_n$ does not converge ultrastrongly at all.
+
+Conclude that~$a\mapsto a^*$ is not ultrastrongly continuous 
+on~$\scrB(\ell^2)$.
+
+(This has the annoying side-effect,
+that it is not immediately clear that the ultrastrong
+closure of a $C^*$-subalgebra of a von Neumann algebra
+ultrastrongly closed; we'll deal with this is~\TODO{}.)
+\item
+Show that $\ketbra{n}{0}+\ketbra{0}{n}$
+converges ultraweakly to~$0$ as $n\to \infty$,
+while $(\ketbra{n}{0}+\ketbra{0}{n})^2\equiv \ketbra{0}{0}+\ketbra{n}{n}$
+converges ultraweakly to~$\ketbra{0}{0}$.
+
+Conclude that~$a\mapsto a^2$ is not ultraweakly continuous on~$\scrB(\ell^2)$.
+
+Conclude that $a,b\mapsto ab$ is not jointly ultraweakly continuous
+on~$\scrB(\ell^2)$.
+
+Prove that~$\left|\, \ketbra{n}{0}+\ketbra{0}{n}\,\right|
+= \ketbra{0}{0}+\ketbra{n}{n}$.
+
+Conclude that~$a\mapsto \left|a\right|$
+is not ultraweakly continuous on~$\sa{(\scrB(\ell^2))}$.
+
+(But we'll see in~\TODO{} that $a\mapsto \left|a\right|$
+is ultrastrongly continuous.)
+\item
+Show that $1+\ketbra{n}{0}+\ketbra{0}{n}$
+are positive,
+and 
+converge ultraweakly to~$1$,
+while their squares
+$1+\ketbra{n}{n}+\ketbra{0}{0}+\ketbra{n}{0}+\ketbra{0}{n}$
+converge ultraweakly to $1+\ketbra{0}{0}$
+(as $n\to\infty$).
+
+Hence~$a\mapsto a^2$
+and $a\mapsto \sqrt{a}$
+are not ultraweakly continuous on $\pos{\scrB(\ell^2)}$.
+
+\item
+For the next counterexample,
+we need a growing moving bump,
+which still converges ultraweakly.
+Sequences won't work here:
+
+Show that $n\ketbra{n}{n}$ does not converge ultraweakly as~$n\to\infty$.
+
+Show that $n \ketbra{f(n)}{f(n)}$ does not converge ultraweakly
+as $n\to\infty$
+for every strictly monotone map~$f\colon \N\to\N$.
+
+So we'll resort to a net.
+Let~$D$ be the directed set which consists of pairs $(n,f)$,
+where $n\in \N\backslash\{0\}$ and $f\colon \N\to\N$
+is monotone, ordered by $(n,f)\leq (m,g)$ iff $n\leq m$ and $f\leq g$.
+
+Show that the net $(\, n\ketbra{f(n)}{f(n)}\,)_{n,f\in D}$
+converges ultrastrongly to~$0$.
+
+So a net which converges ultrastrongly need not be bounded!
+(The cure for this pathology is Kaplansky's density theorem, 
+see~\TODO{})
+
+Show that $\frac{1}{n} \ketbra{f(n)}{0}$
+converges ultrastrongly to~$0$ as $D\ni(n,f)\to \infty$.
+
+Show that the product
+$\ketbra{f(n)}{0} = (\,n\ketbra{f(n)}{f(n)}\,)\,(\,\frac{1}{n}
+\ketbra{f(n)}{0}\,)$
+does not converge ultrastrongly 
+as $D\ni(n,f)\to\infty$.
+
+Conclude that multiplication $a,b\mapsto ab$
+is not jointly ultrastrongly continuous on~$\scrB(\ell^2)$,
+even when~$b$ is restricted to a bounded set.
+
+(Nevertheless we'll see that multiplication is ultrastrongly continuous
+when~$a$ is restricted to a bounded set,
+and that multiplication is ultrastrongly continuous
+separately in both arguments.)
+
+\item
+Show that
+$a_{n,f} = \frac{1}{n}(\ketbra{f(n)}{0}+\ketbra{0}{f(n)})
+\,+\, n\ketbra{f(n)}{f(n)}$
+converges ultrastrongly to~$0$
+as $D\ni(n,f)\to\infty$,
+while $a_{n,f}^2$ does not.
+
+Hence~$a\mapsto a^2$ is not ultrastrongly continuous on~$\sa{\scrB(\ell^2)}$.
+\end{enumerate}
+\end{point}
 \end{parsec}
 %
 % multiplication turns suprema into ultraweak limits
@@ -455,171 +611,6 @@ is an order isomorphism on the poset of projections on~$\scrA$.)
 \end{point}
 \end{parsec}
 \begin{parsec}%
-\begin{point}%
-We now turn to (what is perhaps)
-the raison d'\^{e}tre
-of the ultrastrong topology:
-the map $a\mapsto \left|a\right|,\ \sa{\scrA}\to\sa{\scrA}$
-is ultrastrongly, but not ultraweakly continuous.
-This fact
-is not entirely obvious,
-for while $a\mapsto\sqrt{a}$ is ultrastrongly
-continuous, the map $a\mapsto a^2$ is not
-(as maps $\sa{\scrA}\to\sa{\scrA}$).
-\end{point}
-\begin{point}{Example}%
-Some subtleties of the ultrastrong and ultraweak topology
-can be illustrated
-by the sequence $a_1,a_2,\dotsc$
-given by
-\begin{equation*}
-a_n \ = \ \ketbra{1}{n}
-\end{equation*}
-in the von Neumann algebra~$\mathscr{B}(\ell^2)$.
-
-Here $\ketbra{n}{m}$
-for $n,m\in\N$ denotes the bounded operator on~$\ell^2$
-given by $(\ketbra{n}{m})(f)(n)=f(m)$
-and~$(\ketbra{n}{m})(f)(k)=0$ for $k\neq n$
-and $f\in \ell^2$.
-We leave it to the reader
-to verify computation rules
-such as $\ketbra{n}{m} \ketbra{m}{k} = \ketbra{n}{k}$,
-$(\ketbra{n}{m})^* = \ketbra{m}{n}$,
-and $\ketbra{n}{m}\ketbra{k}{\ell}=0$
-if $m\neq k$.
-
-To begin,
-the involution $a\mapsto a^*$ is clearly ultraweakly continuous,
-but not ultrastrongly:
-Indeed, since
- $a_n^*a_n =\ketbra{n}{1}\ketbra{1}{n}=\ketbra{n}{n}$,
-and~$1=\sum_{n=1}^\infty \ketbra{n}{n}$,
-we see that~$\ketbra{n}{n}$ converges ultraweakly to~$0$,
-and so~$a_n$ converges ultrastrongly to~$0$.
-However, since $a_na_n^* = \ketbra{1}{1}$,
-we see that~$a_n^*$ does not converge ultrastrongly~$0$,
-and so~$a\mapsto a^*$ is not ultrastrongly
-continuous on~$\scrA$.
-
-The map $a\mapsto a^2,\ \sa{\scrA}\to\sa{\scrA}$ is not ultraweakly continuous,
-because 
-the sequence of self-adjoint elements $b_1,b_2,\dotsc$
-given by
-\begin{equation*}
-b_n \ =\ \ketbra{n}{1}\,+\,\ketbra{1}{n}
-\end{equation*}
-converges ultraweakly to~$0$,
-but their squares
-\begin{equation*}
-c_n\ :=\ b_n^2\,\equiv\, \ketbra{1}{1} \,+\, \ketbra{n}{n}
-\end{equation*}
-converge ultraweakly to~$\ketbra{1}{1}$.
-
-Note that~$c_n^2=c_n$, and so~$\sqrt{c_n}=c_n$.
-So we see that that~$a\mapsto \left|a\right|,\ \sa{\scrA}\to\sa{\scrA}$
-is not ultraweakly continuous,
-because $b_1,b_2,\dotsc$ converges ultraweakly to~$0$,
-but~$\left|b_n\right|\equiv \sqrt{c_n}=c_n$ converges ultraweakly
-to~$\ketbra{1}{1}$.
-
-Note that $1+\ketbra{1}{n}+\ketbra{1}{n}$
-are all positive,
-and 
-converge ultraweakly to~$1$,
-while their squares
-$1+\ketbra{n}{n}+\ketbra{1}{1}+\ketbra{1}{n}+\ketbra{n}{1}$
-converge ultraweakly to $1+\ketbra{1}{1}$.
-Thus~$a\mapsto \sqrt{a},\ \pos{\scrA}\to\pos{\scrA}$
-is not ultraweakly continuous.
-\end{point}
-\begin{point}{Exercise}%
-Let~$X$ be any infinite set.
-We will show that~$a\mapsto a^2$
-is not ultrastrongly continuous
-on the self-adjoint elements of the 
-von Neumann algebra~$\scrA:=\scrB(\ell^2(X))$
-by producing a net $(b_\alpha)_\alpha$
-in~$\sa{\scrA}$ which converges ultrastrongly to~$0$,
-while $(b_\alpha^2)_\alpha$ does not converge ultrastrongly to~$0$.
-\begin{enumerate}
-\item
-Show that if~$(c_\alpha)_\alpha$ is a net in~$\sa{\scrA}$,
-which converges ultrastrongly
-to~$0$,
-then $\lim_\alpha\|c_\alpha x\|=0$
-for all~$x\in X$.
-
-\item
-Let~$\omega\colon \scrA\to \C$ be an np-map.
-Show that $\lim_n\omega(\ketbra{n}{n})=0$
-Conclude that~$\ketbra{n}{n}$
-converges ultrastrongly to~$0$ as $n\to \infty$.
-\item
-Show that~$n \ketbra{n}{n}$
-does not converge ultrastrongly (to~$0$) as $n\to \infty$.
-\item
-Let~$D$ be the directed set
-of pairs $(n,f)$
-where $n\in \N$ and $f\colon \N\to[0,\infty)$
-with $\lim_n f(n)=0$~$D$ ordered pointwise,
-viz.~$(n,f)\leq (m,g)$ iff $n\leq m$ and $f\leq g$.
-
-Show that $(\, f(n)\,\ketbra{n}{n}\,)_{n,f\in D}$
-converges ultrastrongly to~$0$.
-
-\end{enumerate}
-
-We will show that $a\mapsto a^2$
-is not ultrastrongly continuous
-on the self-adjoint elements 
-of the von Neumann algebra $\scrA:=\scrB(\ell^2(X))$,
-where~$X$ is an uncountable set.
-Let~$x\in X$. 
-Note that if $a\mapsto a^2$ were ultrastrongly continuous,
-then the map $a\mapsto \|a^2x\|^2\equiv \left<x,a^4x\right>,\sa{\scrA}\to\C$
-would be ultrastrongly continuous, 
-where $x$ doubles as the element of~$\ell^2(X)$
-which is zero everywhere except on~$x$ where it takes the value~$1$.
-We will show that this map is not continuous at~$0$
-by producing for all np-maps $\omega_1,\dotsc,\omega_N\colon \scrA\to\C$
-and~$\varepsilon>0$
-a self-adjoint element~$a$ of~$\scrA$
-with 
-\begin{equation*}
-\omega_n(a^2)\,\leq\, \varepsilon
-\qquad\text{while}
-\qquad\|a^2x\|\,\geq\, 1.
-\end{equation*}
-It is harmless (but convenient)
-to assume that~$\omega_n(1)=1$ for all~$n$.
-Pick~$y\in X$ with $x\neq y$
-and $\omega_n(\ketbra{y}{y})=0$ for all~$n$.
-Such~$y$ exists,
-because~$X$ is uncountable,
-while~$\omega_n(\ketbra{y}{y})$
-can only be non-zero for at most countable many~$y\in X$.
-\TODO{add exercise to this effect?}
-
-We claim that $a:= \varepsilon^{\nicefrac{1}{2}}(\ketbra{x}{y}+\ketbra{y}{x})
-+\varepsilon^{-\nicefrac{1}{2}} \ketbra{y}{y}$
-does the job. 
-Indeed, first note that
- $ax=\varepsilon^{\nicefrac{1}{2}} y$, 
-and $ay=\varepsilon^{\nicefrac{1}{2}} x + \varepsilon^{-\nicefrac{1}{2}} y$,
-from which we see that~$\|a^2x\|=\|\varepsilon x+y\|\geq \|y\|=1$.
-Now, since
-$a\ketbra{y}{y} = \varepsilon^{\nicefrac{1}{2}}\ketbra{x}{y}+
-\varepsilon^{-\nicefrac{1}{2}}\ketbra{y}{y}$
-we have $a\ketbra{y}{y}^\perp = \varepsilon^{\nicefrac{1}{2}}\ketbra{y}{x}$,
-and so $\omega_n(a^2)
-=\omega_n(\ketbra{y}{y}^\perp \,a^2\,\ketbra{y}{y}^\perp)
-=\omega_n(\varepsilon^{\nicefrac{1}{2}}\ketbra{x}{y}
-	\ketbra{y}{x}\varepsilon^{\nicefrac{1}{2}})
-\leq \varepsilon$ for all~$n$.
-
-\TODO{Make this while paragraph into an exercise?}
-\end{point}
 \begin{point}{Proposition}%
 Let~$\scrA$ be a von Neumann algebra,
 and let~$f\colon \R\to\R$ be a continuous map 
