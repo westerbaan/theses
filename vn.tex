@@ -361,6 +361,132 @@ are ultraweakly and ultrastrongly continuous
 for every element~$a$ of a von Neumann algebra~$\scrA$.
 \end{point}
 \end{parsec}
+%
+%	ultrastrong and ultraweak closure of a convex subset
+%
+\begin{parsec}%
+\begin{point}%
+We'll show that the ultrastrong and ultraweak closure
+of a convex set agree. 
+For this we need the following proto-Hahn--Banach separation theorem,
+which concerns the following notion of openess.
+\end{point}
+\begin{point}{Definition}%
+A subset~$A$ of a real vector space~$V$ 
+is called \Define{radially open}
+if for all~$a\in A$ and~$v\in V$
+there is $t\in (0,\infty)$
+with $a+sv\in A$ for all~$s\in [0,t)$.
+\end{point}
+\begin{point}{Exercise}%
+Let~$V$ be a vector space.
+\begin{enumerate}
+\item
+Show that the radially open subsets of~$V$ form a topology.
+\item
+Show that with respect to this topology,
+scalar multiplication and translations $x\mapsto x+a$
+by a fixed vector~$a\in V$ are continuous.
+\item
+Show that $\{(0,0)\}\cup B_1(-1)\cup B_1(1)\cup B_2(-2)^c\cup B_2(2)^c$
+is a radially open subset of~$\R^2$, 
+which is not open
+in the usual topology.\TODO{picture}
+
+\item
+Show that addition on~$\R^2$ is not jointly radially continuous.
+\item
+Show that nevertheless $\{s\in \R \colon sx+s^\perp y\in A\}$
+is open for every radially open~$A\subseteq V$, and $x,y\in V$.
+\item
+Show that $A+B$ is radially open when~$A,B\subseteq V$ are radially open.
+
+Show that $\{\lambda a\colon a\in A,\lambda>0\}$ is radially open
+when~$A$ is radially open.
+\end{enumerate}
+\end{point}
+\begin{point}{Theorem}%
+For every radially open
+convex subset~$K$ of a real vector space~$V$
+with~$0\notin K$
+there is a linear map $f\colon V\to\R$
+with $f(x)>0$ for all~$x\in K$.
+\begin{point}{Proof}%
+(Based on Theorem~1.1.2 of~\cite{kr}.)
+
+By Zorn's Lemma we may assume without loss of generality that~$K$ is maximal
+among radially open convex subsets of~$V$ that do not contain~$0$.
+
+We also assume that~$K$ is non-empty,
+because if~$K=\varnothing$, the result is trivial.
+
+We will show in a moment that~$H:=\{x\in V\colon -x,x\notin K\}$
+is a linear subspace and~$V/H$ is one-dimensional.
+From this we see that there is a linear map $f\colon V\to\R$
+with~$\ker(f)=H$.
+Since~$f(K)$ is a convex subset which does not contain~$0$
+(because $H\cap K=\varnothing$)
+we either have $f(K)\subseteq (0,\infty)$
+or $f(K)\subseteq(-\infty,0)$.
+Thus, by replacing $f$ by $-f$ if necessary,
+we see that there is a linear map $f\colon V\to \R$
+with $f(x)>0$ for all~$x\in K$.
+\begin{point}{$H$ is a linear subspace}%
+Note that~$x\in K,\,\lambda>0\implies \lambda x\in K$,
+because the subset 
+$\{\lambda x\colon x\in K,\lambda\in(0,\infty)\}\supseteq K$
+is radially open, convex, doesn't contain~$0$,
+and is thus~$K$ itself.
+Furthermore,
+$x,y\in K\implies x+y\in K$, because
+$x+y=2(\frac{1}{2}x + \frac{1}{2}y)$, and~$K$ is convex.
+
+Let~$\overline{K}$ be the set of all~$x\in V$
+with $x+y\in K$ for all~$y\in K$.
+Then it is not difficult to check that~$\overline{K}$ is a cone:
+ $0\in\overline{K}$,
+and
+$x\in \overline{K},\lambda\geq 0\implies \lambda x\in \overline{K}$, and
+$x,y\in\overline{K}\implies x+y\in \overline{K}$.
+
+We claim that~$x\in \overline{K}$ iff $-x\notin K$.
+Indeed, if~$x\in\overline{K}$, then $-x\notin K$, because otherwise
+$-x\in K$ and so
+$0=x+(-x)\in K$, which is absurd.
+For the other direction, suppose that $-x\notin K$.
+Then $x+y\in K$ for all~$y\in K$,
+because
+$\{\lambda x+y\colon y\in K,\lambda\geq0\}\supseteq K$
+is radially open, convex, doesn't contain~$0$,
+and is thus~$K$.
+
+It follows that~$H=\overline{K}\cap -\overline{K}$.
+Since~$\overline{K}$ is a cone, $-\overline{K}$ is a cone,
+and thus~$H$ is a cone.  But then~$-H=H$ is a cone too,
+and thus~$H$ is a linear subspace.
+\end{point}
+\begin{point}{$V/H$ is one-dimensional}%
+Note that~$H\neq V$, because~$K\cap H=\varnothing$
+and~$K$ is (assumed to be) non-empty.
+So to show that~$V/H$ is one-dimensional,
+it suffices to show that
+any~$x,y\in V$ 
+ are linearly dependent in~$V/H$.
+We may assume that~$x\in K$ and~$y\in -K$.
+It suffices to find~$s\in [0,1]$ with $0=sx+s^\perp y$.
+The trick is to consider the sets
+ $S_0 = \{s\in [0,1]\colon sx+s^\perp y \in -K\}$
+and~$S_1 = \{s\in [0,1]\colon sx+s^\perp y \in K\}$,
+which are open (because~$K$ and~$-K$ are radially open),
+non-empty (because $0\in S_0$ and~$1\in S_1$),
+and therefore not disjoint
+(because~$[0,1]$ is connected).
+So there is~$s\in [0,1]$ with $sx+s^\perp y \in H$.\qed
+\end{point}
+\end{point}
+\end{point}
+
+\end{parsec}
 \begin{parsec}%
 \begin{point}%
 One pertinant feature
