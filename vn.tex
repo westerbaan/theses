@@ -225,7 +225,7 @@ the problem reduces to the ultraweak continuity
 of $b\mapsto a^*ba$ by the following identity
 (cf.~\TODO{refer to polarization identity}).
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[mult-polarization]{Exercise}%
 Show that for elements~$a,b,c$ of a $C^*$-algebra,
 \begin{equation*}
 \textstyle
@@ -233,35 +233,40 @@ a^*\,c\,b\ =\ \frac{1}{4}\,\sum_{k=0}^3\ i^k\  (i^ka+b)^*\,c\,(i^ka+b).
 \end{equation*}
 \end{point}
 \begin{point}[vanishing-effects]{Lemma}%
-Let~$(x_\alpha)_\alpha$ be 
-a net of effects of a von Neumann algebra~$\scrA$
+Let~$(x_\alpha)_{\alpha\in D}$ be 
+a net of effects of a von Neumann algebra~$\scrA$,
 which converges ultraweakly to~$0$.
-Then $(x_\alpha a)_\alpha$ converges ultraweakly
-to $0$ for every~$a\in\scrA$.
+Let~$(b_\alpha)_{\alpha\in D}$ be a 
+net of elements with~$\|b_\alpha\| \leq 1$ for all~$\alpha$.
+Then $(x_\alpha b_\alpha)_\alpha$ converges ultraweakly
+to~$0$.
 \begin{point}{Proof}%
-Let~$\omega\colon \scrA\to \C$ be a normal positive linear map.
+Let~$\omega\colon \scrA\to \C$ be an np-map.
 We have, for each~$\alpha$,
 \begin{alignat*}{3}
-\left|\,\omega(x_\alpha a)\,\right|^2
+\left|\,\omega(x_\alpha b_\alpha)\,\right|^2
 \ &=\ 
-\left|\, \omega(\,\sqrt{x_\alpha}\,\sqrt{x_\alpha}\,a\,)\, \right|^2
+\left|\, \omega(\,\sqrt{x_\alpha}\,\sqrt{x_\alpha}\,b_\alpha\,)\, \right|^2
 \qquad&&\text{since $x_\alpha\geq 0$}\\
 \ &\leq\ 
-\omega(x_\alpha)\  \omega(\,a^* x_\alpha a\,) 
+\omega(x_\alpha)\  \omega(\,b_\alpha^* x_\alpha b_\alpha\,) 
 \qquad&&\text{by \sref{cstar-cs}}\\
 \ &\leq\ 
-\omega(x_\alpha)\ \omega(a^*a)
-\qquad&&\text{since $x_\alpha\leq 1$}.
+\omega(x_\alpha)\ \omega(b_\alpha^* b_\alpha)
+\qquad&&\text{since $x_\alpha\leq 1$}\\
+\ &\leq\ 
+\omega(x_\alpha)\ \omega(1)
+\qquad&&\text{since $b_\alpha^*b_\alpha\leq 1$ by \TODO{}}.
 \end{alignat*}
 Thus,
 since $(\omega(x_\alpha))_\alpha$
 converges to~$0$,
-we see that $(\omega(x_\alpha a))_\alpha$
+we see that $(\omega(x_\alpha b_\alpha))_\alpha$
 converges to~$0$,
-and so $(x_\alpha a)_\alpha$ converges ultraweakly to~$0$.\qed
+and so $(x_\alpha b_\alpha)_\alpha$ converges ultraweakly to~$0$.\qed
 \end{point}
 \end{point}
-\begin{point}{Exercise}
+\begin{point}{Exercise}%
 Let~$D$ be a bounded directed set of self-adjoint
 elements of a von Neumann algebra~$\scrA$,
 and let~$a\in \scrA$.
@@ -276,6 +281,12 @@ and that~$(a^*d)_d$ converges ultraweakly to~$a^* (\bigvee D)$.
 \begin{point}[vna-supremum-commutes]%
 Show that if~$ad=da$ for all~$d\in D$,
 then $a(\bigvee D) = (\bigvee D)a $.
+\end{point}
+\begin{point}%
+Use~\sref{vanishing-effects}
+to show that $(\bigvee D-d)^2$ converges ultraweakly to~$0$.
+
+Conclude that~$(d)_{d\in D}$ converges ultrastrongly to~$\bigvee D$.
 \end{point}
 \end{point}
 %
@@ -321,21 +332,28 @@ the following are equivalent.
 \begin{enumerate}
 \item
 $f$ is ultraweakly continuous;
-\item 
-$\omega\circ f\colon \scrA\to\C$ is normal 
-for each np-map $f\colon \scrB\to\C$;
 \item
 $f(\bigvee D)=\bigvee_{d\in D}f(d)$ for each bounded 
-directed~$D\subseteq\sa{\scrA}$.
+directed~$D\subseteq\sa{\scrA}$;
+\item 
+$\omega\circ f\colon \scrA\to\C$ is normal 
+for each np-map $f\colon \scrB\to\C$.
 \end{enumerate}
 Conclude that $b\mapsto a^*ba,\,\scrA\to\scrA$
-is ultraweakly continuous for every element~$a$ of a von Neumann 
+is ultraweakly
+continuous for every element~$a$ of a von Neumann 
 algebra~$\scrA$.
+
+Show that a map~$f$ which satisfies one of the equivalent conditions above
+need not be ultrastrongly continuous. (Hint: transpose.)
 \end{point}
 \begin{point}{Proposition}%
 The map $b\mapsto a^*ba,\,\scrA\to\scrA$
 is ultrastrongly continuous for every
  element~$a$ of a von Neumann algebra~$\scrA$.
+
+\TODO{Perhaps generalize from $b\mapsto a^*ba$
+to a cp-map?}
 \begin{point}{Proof}%
 To show that the linear map~$b\mapsto a^*ba$
 is ultrastrongly continuous,
@@ -352,14 +370,91 @@ converges ultraweakly to~$0$,
 but this follows from the
 fact that~$c\mapsto a^*ca$ is ultraweakly continuous,
 and~$(b_\alpha^*b_\alpha)_\alpha$
-converges ultraweakly to~$0$.
+converges ultraweakly to~$0$.\qed
 \end{point}
 \end{point}
 \begin{point}{Exercise}%
-Show that the maps $b\mapsto ab,\,ba\colon\ \scrA\to\scrA$
+Use this,
+and~\sref{mult-polarization},
+to
+show that $b\mapsto ab,\,ba\colon\ \scrA\to\scrA$
 are ultraweakly and ultrastrongly continuous
 for every element~$a$ of a von Neumann algebra~$\scrA$.
 \end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+We have seen that a positive functional on a von Neumann algebra
+is ultraweakly continuous iff it is ultrastrongly continuous
+(iff it is normal).
+What about arbitrary functionals?
+\end{point}
+\begin{point}{Proposition}%
+For a linear map~$f\colon \scrA\to \C$
+on a von Neumann algebra~$\scrA$ the following are equivalent.
+\begin{enumerate}
+\item
+\label{normal-functional-1}
+$f$ is ultraweakly continuous;
+\item
+\label{normal-funtional-2}
+$\left|f(a)\right|\leq 
+\left|\omega_1(a)\right|\vee\dotsb\vee \left|\omega_N(a)\right|$
+for all~$a\in \scrA$, for some np-maps $\omega_n\colon 
+\scrA\to \C$;
+\item
+\label{normal-functional-3}
+$f=\omega_1-\omega_2+i(\omega_3-\omega_4)$
+for some np-maps $\omega_1,\dotsc,\omega_4\colon \scrA\to\C$;
+\item
+\label{normal-functional-4}
+$f$ is ultrastrongly continuous;
+\item
+\label{normal-functional-5}
+There is~$\delta >0$ and an np-map $\omega\colon \scrA\to\C$
+such that 
+\begin{equation*}
+\sup\,\{\ \left|f(a)\right|\colon\, 
+a\in \scrA\colon\, \|a\|_\omega\leq \delta\ \}
+\ < \ \infty,
+\end{equation*}
+(that is, $f$ is bounded on some $\|\,\cdot\,\|_\omega$-ball);
+\item
+\label{normal-functional-6}
+$\left|f(a)\right| \leq \|a\|_\omega$ for all~$a\in \scrA$,
+for some np-map $\omega\colon \scrA\to\C$;
+
+\TODO{verify this carefully! (or find ref.)}
+\end{enumerate}
+\begin{point}{Proof}%
+The implications
+\ref{normal-functional-3}$\Longrightarrow$\ref{normal-functional-4},
+\ref{normal-functional-4}$\Longrightarrow$\ref{normal-functional-5},
+and
+\ref{normal-functional-5}$\Longrightarrow$\ref{normal-functional-1}
+are relatively obvious, and are left to the reader,
+ which leaves us with
+only two implications to prove.
+\begin{point}{\ref{normal-functional-3}$\Longrightarrow$\ref{normal-functional-4}}%
+Let~$B>0$ be such that~$\left|f(a)\right|\leq B$ for all~$a\in \scrA$
+with $\|a\|_\omega\leq \delta$.
+Let~$a\in\scrA$, and~$\varepsilon>0$ be given.
+Then for~$\tilde{a}:=\delta(\varepsilon+\|a\|_\omega)^{-1}\,a$,
+we have $\|\tilde{a}\|_\omega\leq \delta$,
+and so~$\left|f(\tilde{a})\right|
+\equiv \delta(\varepsilon +\|a\|_\omega)^{-1} \,\left|f(a)\right|
+\leq B$,
+which entails $\left|f(a)\right|\leq 
+B\delta^{-1}(\varepsilon+\|a\|_\omega)$.
+Since~$\varepsilon>0$ was arbitrary, we get~$\left|f(a)\right|\leq
+B\delta^{-1}\|a\|_\omega = \|a\|_{B^2\delta^{-2}\omega}$.
+\end{point}
+\begin{point}{\ref{normal-functional-4}$\Longrightarrow$\ref{normal-functional-5}}%
+asdasd
+\end{point}
+\end{point}
+\end{point}
+
 \end{parsec}
 %
 %	ultrastrong and ultraweak closure of a convex subset
@@ -484,6 +579,21 @@ and therefore not disjoint
 So there is~$s\in [0,1]$ with $sx+s^\perp y \in H$.\qed
 \end{point}
 \end{point}
+\end{point}
+\begin{point}{Exercise}%
+\begin{enumerate}
+\item
+Show that an $\R$-linear map
+$f\colon V\to \R$
+on a complex vector space~$V$
+can be extended to a $\C$-linear map
+$g\colon V\to \C$
+by $g(x)= f(x)-if(ix)$.
+
+(Hint: browse~\sref{cstar-involution-basic}.)
+\item
+
+\end{enumerate}
 \end{point}
 
 \end{parsec}
