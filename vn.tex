@@ -384,10 +384,41 @@ for every element~$a$ of a von Neumann algebra~$\scrA$.
 \end{parsec}
 \begin{parsec}%
 \begin{point}%
-We have seen that a positive functional on a von Neumann algebra
+We have seen that a \emph{positive} functional on a von Neumann algebra
 is ultraweakly continuous iff it is ultrastrongly continuous
 (iff it is normal).
 What about arbitrary functionals?
+\end{point}
+\begin{point}[normal-functionals-lemma]{Lemma}%
+Let~$\omega\colon \scrA\to\C$ be an np-map,
+and let~$f\colon \scrA\to \C$ be a linear map.
+The following are equivalent.
+\begin{enumerate}
+\item\label{normal-functionals-lemma-1}
+$\left|f(a)\right| \leq \|a\|_\omega$ for all~$a\in\scrA$;
+\item\label{normal-functionals-lemma-2}
+$f(a)=[b,a]_\omega$ for all~$a\in\scrA$, 
+for some~$b\in\scrH_\omega$ with~$\|b\|_\omega\leq 1$ (see \TODO{}).
+\end{enumerate}
+Moreover, such~$f$ is ultraweakly continuous.
+\begin{point}{Proof}%
+The implication 
+\ref{normal-functionals-lemma-2}$\Longrightarrow$%
+\ref{normal-functionals-lemma-1}
+follows immediately from Cauchy--Schwarz (\sref{cs}),
+while the implication
+\ref{normal-functionals-lemma-1}$\Longrightarrow$%
+\ref{normal-functionals-lemma-2}
+follows from Riesz' representation theorem (\TODO{}),
+because  to a unique linear map 
+$\scrH_\omega\to\C$
+ \TODO{ref?}.
+
+
+
+
+
+\end{point}
 \end{point}
 \begin{point}{Proposition}%
 For a linear map~$f\colon \scrA\to \C$
