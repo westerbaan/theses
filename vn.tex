@@ -328,7 +328,7 @@ we conclude that~$\bigvee_{d\in D} a^* \,d\, a = a^*\,(\bigvee D)\,a$.\qed
 \end{point}
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[p-uwcont]{Exercise}%
 Show that for a positive linear map $f\colon \scrA\to\scrB$
 between von Neumann algebras,
 the following are equivalent.
@@ -347,36 +347,54 @@ is ultraweakly
 continuous for every element~$a$ of a von Neumann 
 algebra~$\scrA$.
 
-Show that a map~$f$ which satisfies one of the equivalent conditions above
-need not be ultrastrongly continuous. (Hint: transpose.)
-\end{point}
-\begin{point}{Proposition}%
-The map $b\mapsto a^*ba,\,\scrA\to\scrA$
-is ultrastrongly continuous for every
- element~$a$ of a von Neumann algebra~$\scrA$.
+Show that if such a positive linear map $f\colon \scrA\to\scrB$
+is ultrastrongly continuous, then~$f$ is ultraweakly continuous.
+(Hint: use that a bounded directed set 
+$D\subseteq \sa{\scrA}$ converges ultrastrongly to~$\bigvee D$.)
 
-\TODO{Perhaps generalize from $b\mapsto a^*ba$
-to a cp-map?}
+The converse does not hold: give an example of a map~$f$ 
+which is ultraweakly continuous, but 
+not be ultrastrongly continuous. (Hint: transpose.)
+\end{point}
+\begin{point}[cp-uscont]{Proposition}%
+Let $f\colon \scrA\to \scrB$
+be a
+positive linear map 
+between von Neumann algebras $\scrA$ and~$\scrB$
+with $f(a)^*f(a)\leq f(a^*a) \,\|f(1)\|$
+for all~$a\in\scrA$.
+
+If~$f$ is ultraweakly continuous,
+then~$f$ is ultrastrongly continuous.
 \begin{point}{Proof}%
-To show that the linear map~$b\mapsto a^*ba$
+To show that~$f$
 is ultrastrongly continuous,
-it suffices to show that it is ultrastrongly continuous at~$0$.
+it suffices to show that~$f$ is ultrastrongly continuous at~$0$.
 So let~$(b_\alpha)_\alpha$ be a net in~$\scrA$
 which converges ultrastrongly to~$0$;
-we must show that $(a^*b_\alpha a)_\alpha$
+we must show that $(f(b_\alpha))_\alpha$
 converges ultrastrongly to~$0$, c.q.~that
-$(a^*b^*_\alpha aa^*b_\alpha a)_\alpha$ converges ultraweakly to~$0$.
+$(\,f(b_\alpha)^*f(b_\alpha)\,)_\alpha$ converges ultraweakly to~$0$.
 Since
-$a^*b^*_\alpha a a^* b_\alpha a \leq \|a\|^2 a^* b_\alpha^* b_\alpha a$
-it suffices to show that~$(a^*b_\alpha^*b_\alpha a)_\alpha$
+$f(b_\alpha)^*f(b_\alpha) \leq f(b_\alpha^*b_\alpha) \|f(1)\|$
+it suffices to show that~$(\,f(b_\alpha^*b_\alpha)\,)_\alpha$
 converges ultraweakly to~$0$,
 but this follows from the
-fact that~$c\mapsto a^*ca$ is ultraweakly continuous,
+fact that~$f$ is ultraweakly continuous,
 and~$(b_\alpha^*b_\alpha)_\alpha$
-converges ultraweakly to~$0$.\qed
+converges ultraweakly to~$0$
+(since~$(b_\alpha)_\alpha$ converges ultrastrongly to~$0$).\qed
 \end{point}
 \end{point}
 \begin{point}[mult-uws-cont]{Exercise}%
+Let~$\scrA$ be a von Neumann algebra.
+Show that~$b^*a^*b\,b^*ab \leq b^*a^*ab \|b^*b\|$
+for all~$a,b\in\scrA$.
+Conclude (using~\sref{cp-uscont}) 
+that the map $a\mapsto b^*ab,\,\scrA\to\scrA$
+is ultrastrongly continuous for every
+ element~$b\in\scrA$.
+
 Use this,
 and~\sref{mult-polarization},
 to
@@ -384,36 +402,83 @@ show that $b\mapsto ab,\,ba\colon\ \scrA\to\scrA$
 are ultraweakly and ultrastrongly continuous
 for every element~$a$ of a von Neumann algebra~$\scrA$.
 \end{point}
+\begin{point}[npuws]{Exercise}%
+Show that for a positive linear map $\omega \colon \scrA\to\C$
+on a von Neumann algebra~$\scrA$
+the following are equivalent
+\begin{enumerate}
+\item
+	$\omega$ is normal;
+\item
+	$\omega$ is ultraweakly continuous;
+\item
+	$\omega$ is ultrastrongly continuous.
+\end{enumerate}
+(Hint: combine~\sref{p-uwcont} and \sref{cp-uscont}.)
+\end{point}
 \end{parsec}
 \begin{parsec}%
 \begin{point}%
-We have seen that a \emph{positive} functional on a von Neumann algebra
-is ultraweakly continuous iff it is ultrastrongly continuous
-(iff it is normal).
-In this section,
-we'll show that the same result holds for arbitrary functionals.
+	We have just seen (in~\sref{npuws})
+	that a \emph{positive} linear functional~$f$
+on a von Neumann algebra 
+is ultrastrongly continuous iff it is ultraweakly continuous.
+In this section, we'll show that the same result holds
+for an arbitrary linear functional~$f$.
+Note that if~$f$ is ultraweakly continuous,
+then~$f$ is automatically ultrastrongly continuous
+(because ultrastrong convergence implies ultraweak convergence).
+For the other direction,
+we'll show that if~$f$ is ultrastrongly continuous,
+then~$f$ can be written as a linear combination
+$f\equiv f_0+if_1-f_2-if_3$,
+of np-maps $f_1,\dotsc,f_4$,
+and must therefore be ultraweakly continuous.
+We'll need the following tool.
 \end{point}
-\begin{point}{Definition}%
-Given an np-map $\omega\colon \scrA\to\C$
-on a von Neumann algebra~$\scrA$,$b\in \scrA$,
-let $\Define{a*\omega}\colon \scrA\to \C$ be
-the np-map given by
+\begin{point}[bstaromega]{Definition}%
+Let~$\scrA$ be a von Neumann algebra.
+Given an np-map $\omega\colon \scrA\to\C$,
+and~$b\in \scrA$,
+define~$\Define{b*\omega}\colon \scrA\to \C$ by
 $(b*\omega)(a)=\omega(b^*ab)$ for all~$a\in \scrA$.
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[bstaromega-basic]{Exercise}%
 Let~$\omega\colon \scrA\to \C$ be an np-map on a von Neumann algebra~$\scrA$.
 \begin{enumerate}
 \item
-Show that $\left|\omega(a^*bc)\right| 
-\leq \|\omega\|\|a\|_\omega \|b\| \|c\|_\omega$
-for all~$a,b,c\in\scrA$.
+Show that $b*\omega\colon \scrA\to\C$
+is an np-map for all~$b\in \scrA$
+(using \TODO{}).
 \item
-Let~$b_1,b_2,\dotsc$ be a sequence in~$\scrA$,
+Show that $\left|\omega(a^*bc)\right| 
+\,\leq\, \|\omega\|\,\|a\|_\omega\, \|b\|\, \|c\|_\omega$
+for all~$a,b,c\in\scrA$.
+
+Deduce that $\| b*\omega - b'*\omega\|
+\,\leq\, \|\omega\| \,\|b-b'\|_\omega\, (\|b\|_\omega + \|b'\|_\omega)$
+for all~$b,b'\in\scrA$.
+
+\item
+Let~$b_1,b_2,\dotsc$  a sequence in~$\scrA$,
 which is Cauchy with respect to~$\|\,\cdot\,\|_\omega$.
-Show that~$b_1*\omega,b_2*\omega,\dotsc$ Cauchy (in the operator norm
+Show that the sequence~$b_1*\omega,\,b_2*\omega,\,\dotsc$ 
+is Cauchy (in the operator norm
 on bounded linear functionals $\scrA\to\C$),
-and converges to an np-map.
+and converges to a bounded linear map~$f\colon \scrA\to\C$.
+Show that~$f$ is an np-map.
 \end{enumerate}
+\end{point}
+\begin{point}{Exercise}%
+Let~$f\colon \scrA\to \C$ be a ultrastrongly continuous linear
+functional on a von Neumann algebra~$\scrA$.
+Show that there is an np-map
+$\omega\colon \scrA\to \C$
+and $\delta>0$
+with $\left|f(a)\right|\leq 1$
+for all~$a\in\scrA$ with $\|a\|_\omega \leq \delta$.
+
+(Keep this in mind when reading the following lemma.)
 \end{point}
 \begin{point}[normal-functionals-lemma]{Lemma}%
 Let~$\omega\colon \scrA\to\C$ be an np-map,
@@ -489,97 +554,53 @@ Then the maps $[b_n,\,\cdot\,]_\omega\colon \scrA\to \C$
 approximate~$f=[b,\,\cdot\,]_\omega$
 in the sense that 
 $\left|f(a)-[b_n,a]_\omega\right|=\left|[b-b_n,a]_\omega\right|
-\leq \|b-b_n\|_\omega \|a\|_\omega$
+\leq \|b-b_n\|_\omega \|a\|_\omega
+\leq \|b-b_n\|_\omega \|\omega\| \|a\|$
 for all~$a\in \scrA$.
-Note that $[b_n,a]_\omega = \sum_{k=0}^3 i^kf_{k,n}(a)$,
-where $f_{k,n}\colon \scrA\to \C$
-is the np-map given by $f_{k,n}(a)=\omega(\,(i^kb_n+1)^*\,a\,(i^kb_n+1)\,)$.
-We claim that~$(f_{k,n})_n$
-is Cauchy in the operator norm
-so that by~\TODO{} it converges to some np-map $f_k\colon \scrA\to \C$.
-Indeed, given $k,m,n$, and~$a\in\scrA$, we have
-\begin{alignat*}{3}
-	\left|f_{k,n}(a)-f_{k,m}(a)\right|
-	\ &\leq\ 
-\left|\omega(\, (b_n-b_m)^*\,a\,(i^kb_n+1)\,)\right|
-\,+\,
-\left|\omega(\,(i^kb_m+1)^*\,a\,(b_n-b_m)\,)\right| \\
-&\leq\ 
-\|b_n-b_m\|_\omega \|a\| \|i^kb_n+1\|_\omega
-\,+\,
-\|i^kb_m+1\|_\omega \|a\| \|b_n-b_m\|_\omega.
-\end{alignat*}
+In particular, $[b_1,\,\cdot\,]_\omega,\,[b_2,\,\cdot\,]_\omega,\,\dotsc$
+converges to~$f$ (in the operator norm).
+By ``polarization'' (c.f.~\sref{mult-polarization}),
+we have $[b_n,a]_\omega = \sum_{k=0}^3 i^kf_{k,n}(a)$,
+where $f_{k,n} := (i^kb_n+1)*\omega$ is an np-map.
+Since~$(i^kb_n+1)_n$ is Cauchy with respect to~$\|\,\cdot\|_\omega$,
+we see by~\sref{bstaromega-basic} that 
+$(f_{k,n})_n$ converges to an np-map $f_k\colon \scrA\to\C$
+(with respect to the operator norm).
+It follows that~$f=\sum_{k=0}^3 i^k f_k$.
 
-
+It remains to be shown that there is~$B>0$ with $f_k(a)\leq B\omega(a)$
+for all~$k$ and~$a\in\pos{\scrA}$.
+Note that since $f_{k,n}(a) \leq \|i^kb_n+1\|_\omega \,\omega(a)
+\leq (\|b_n\|_\omega+1) \,\omega(a)$,
+for all~$n$, $k$, and~$a\in\pos{\scrA}$,
+the number $B:=\lim_n \|b_n\|_\omega +1 $ will do.\qed
 \end{point}
 \end{point}
 \end{point}
-\begin{point}{Proposition}%
+\begin{point}{Corollary}%
 For a linear map~$f\colon \scrA\to \C$
 on a von Neumann algebra~$\scrA$ the following are equivalent.
 \begin{enumerate}
 \item
-\label{normal-functional-1}
-$f$ is ultraweakly continuous;
-\item
-\label{normal-funtional-2}
-$\left|f(a)\right|\leq 
-\left|\omega_1(a)\right|\vee\dotsb\vee \left|\omega_N(a)\right|$
-for all~$a\in \scrA$, for some np-maps $\omega_n\colon 
-\scrA\to \C$;
-\item
-\label{normal-functional-3}
-$f=\omega_1-\omega_2+i(\omega_3-\omega_4)$
-for some np-maps $\omega_1,\dotsc,\omega_4\colon \scrA\to\C$;
-\item
-\label{normal-functional-4}
 $f$ is ultrastrongly continuous;
 \item
-\label{normal-functional-5}
-There is~$\delta >0$ and an np-map $\omega\colon \scrA\to\C$
-such that 
-\begin{equation*}
-\sup\,\{\ \left|f(a)\right|\colon\, 
-a\in \scrA\colon\, \|a\|_\omega\leq \delta\ \}
-\ < \ \infty,
-\end{equation*}
-(that is, $f$ is bounded on some $\|\,\cdot\,\|_\omega$-ball);
+$f$ is ultraweakly continuous;
 \item
-\label{normal-functional-6}
-$\left|f(a)\right| \leq \|a\|_\omega$ for all~$a\in \scrA$,
-for some np-map $\omega\colon \scrA\to\C$;
-
-\TODO{verify this carefully! (or find ref.)}
+$f\equiv f_0+if_1-f_2-if_3$
+for some~np-maps $f_0,\dotsc,f_3\colon \scrA\to\C$;
+\item
+``$f$ is bounded on some $\|\,\cdot\,\|_\omega$-ball,''
+that is,
+\begin{equation*}
+	\sup\{\ \left|f(a)\right|\colon a\in \scrA\colon 
+		\|a\|_\omega\leq \delta\ \}\ <\ \infty
+\end{equation*}
+for some $\delta>0$ and  np-map $\omega\colon \scrA\to\C$;
+\item
+$\left|f(a)\right|\leq \|a\|_\omega$
+for all~$a\in \scrA$, for some np-map $\omega\colon \scrA\to\C$.
 \end{enumerate}
-\begin{point}{Proof}%
-The implications
-\ref{normal-functional-3}$\Longrightarrow$\ref{normal-functional-4},
-\ref{normal-functional-4}$\Longrightarrow$\ref{normal-functional-5},
-and
-\ref{normal-functional-5}$\Longrightarrow$\ref{normal-functional-1}
-are relatively obvious, and are left to the reader,
- which leaves us with
-only two implications to prove.
-\begin{point}{\ref{normal-functional-3}$\Longrightarrow$\ref{normal-functional-4}}%
-Let~$B>0$ be such that~$\left|f(a)\right|\leq B$ for all~$a\in \scrA$
-with $\|a\|_\omega\leq \delta$.
-Let~$a\in\scrA$, and~$\varepsilon>0$ be given.
-Then for~$\tilde{a}:=\delta(\varepsilon+\|a\|_\omega)^{-1}\,a$,
-we have $\|\tilde{a}\|_\omega\leq \delta$,
-and so~$\left|f(\tilde{a})\right|
-\equiv \delta(\varepsilon +\|a\|_\omega)^{-1} \,\left|f(a)\right|
-\leq B$,
-which entails $\left|f(a)\right|\leq 
-B\delta^{-1}(\varepsilon+\|a\|_\omega)$.
-Since~$\varepsilon>0$ was arbitrary, we get~$\left|f(a)\right|\leq
-B\delta^{-1}\|a\|_\omega = \|a\|_{B^2\delta^{-2}\omega}$.
 \end{point}
-\begin{point}{\ref{normal-functional-4}$\Longrightarrow$\ref{normal-functional-5}}%
-asdasd
-\end{point}
-\end{point}
-\end{point}
-
 \end{parsec}
 %
 %	ultrastrong and ultraweak closure of a convex subset
