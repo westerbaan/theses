@@ -206,6 +206,9 @@ as $D\ni(n,f)\to\infty$,
 while $a_{n,f}^2$ does not.
 
 Hence~$a\mapsto a^2$ is not ultrastrongly continuous on~$\sa{\scrB(\ell^2)}$.
+
+\TODO{Is a von Neumann algebra ultraweakly complete (so not restricted
+to a bounded set) ?}
 \end{enumerate}
 \end{point}
 \end{parsec}
@@ -373,7 +376,7 @@ and~$(b_\alpha^*b_\alpha)_\alpha$
 converges ultraweakly to~$0$.\qed
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[mult-uws-cont]{Exercise}%
 Use this,
 and~\sref{mult-polarization},
 to
@@ -387,37 +390,128 @@ for every element~$a$ of a von Neumann algebra~$\scrA$.
 We have seen that a \emph{positive} functional on a von Neumann algebra
 is ultraweakly continuous iff it is ultrastrongly continuous
 (iff it is normal).
-What about arbitrary functionals?
+In this section,
+we'll show that the same result holds for arbitrary functionals.
+\end{point}
+\begin{point}{Definition}%
+Given an np-map $\omega\colon \scrA\to\C$
+on a von Neumann algebra~$\scrA$,$b\in \scrA$,
+let $\Define{a*\omega}\colon \scrA\to \C$ be
+the np-map given by
+$(b*\omega)(a)=\omega(b^*ab)$ for all~$a\in \scrA$.
+\end{point}
+\begin{point}{Exercise}%
+Let~$\omega\colon \scrA\to \C$ be an np-map on a von Neumann algebra~$\scrA$.
+\begin{enumerate}
+\item
+Show that $\left|\omega(a^*bc)\right| 
+\leq \|\omega\|\|a\|_\omega \|b\| \|c\|_\omega$
+for all~$a,b,c\in\scrA$.
+\item
+Let~$b_1,b_2,\dotsc$ be a sequence in~$\scrA$,
+which is Cauchy with respect to~$\|\,\cdot\,\|_\omega$.
+Show that~$b_1*\omega,b_2*\omega,\dotsc$ Cauchy (in the operator norm
+on bounded linear functionals $\scrA\to\C$),
+and converges to an np-map.
+\end{enumerate}
 \end{point}
 \begin{point}[normal-functionals-lemma]{Lemma}%
 Let~$\omega\colon \scrA\to\C$ be an np-map,
 and let~$f\colon \scrA\to \C$ be a linear map.
 The following are equivalent.
 \begin{enumerate}
+\item\label{normal-functionals-lemma-0}
+$\left|f(a)\right|\leq B$ for all~$a\in \scrA$
+with $\|a\|_\omega\leq \delta$, for some $\delta,B>0$;
 \item\label{normal-functionals-lemma-1}
-$\left|f(a)\right| \leq \|a\|_\omega$ for all~$a\in\scrA$;
+$\left|f(a)\right| \leq B \|a\|_\omega$ for all~$a\in\scrA$,
+for some~$B>0$;
 \item\label{normal-functionals-lemma-2}
 $f(a)=[b,a]_\omega$ for all~$a\in\scrA$, 
-for some~$b\in\scrH_\omega$ with~$\|b\|_\omega\leq 1$ (see \TODO{}).
+for some~$b\in\scrH_\omega$
+(where $\scrH_\omega$ is the Hilbert space completion of~$\scrA$
+with respect to the inner-product
+$[\,\cdot\,,\,\cdot\,]_\omega$).
+\item\label{normal-functionals-lemma-3}
+$f\equiv f_0+if_1-f_2-if_3$
+where $f_0,\dotsc,f_3\colon \scrA\to \C$
+are np-maps for which there is~$B>0$
+such that~$f_k(a)\leq B \omega(a)$ for all~$a\in\pos{\scrA}$ 
+and~$k$. 
 \end{enumerate}
-Moreover, such~$f$ is ultraweakly continuous.
 \begin{point}{Proof}%
-The implication 
-\ref{normal-functionals-lemma-2}$\Longrightarrow$%
-\ref{normal-functionals-lemma-1}
-follows immediately from Cauchy--Schwarz (\sref{cs}),
-while the implication
+We make a circle.
+\begin{point}{%
+\ref{normal-functionals-lemma-3}$\Longrightarrow$%
+\ref{normal-functionals-lemma-0}}%
+For $a\in \scrA$ and~$k$, we have
+$\left|f_k(a)\right|^2 \leq
+f_k(1)\,f_k(a^*a) \leq f_k(1)B \,\omega(a^*a)$,
+giving~$\left|f_k(a)\right| \leq (f_k(1)B)^{\nicefrac{1}{2}} \|a\|_\omega$,
+and so~$\left|f(a)\right|\leq \tilde{B} \|a\|_\omega$,
+where $\tilde{B} = B^{\nicefrac{1}{2}}\sum_{k=0}^3f_k(1)^{\nicefrac{1}{2}}$.
+Hence~$\left|f(a)\right|\leq \tilde{B}$
+for all~$a\in\scrA$ with $\|a\|_\omega\leq 1$.
+\end{point}
+\begin{point}{\ref{normal-functionals-lemma-0}$\Longrightarrow$%
+\ref{normal-functionals-lemma-1}}%
+Let~$a\in\scrA$, and~$\varepsilon>0$ be given.
+Then for~$\tilde{a}:=\delta(\varepsilon+\|a\|_\omega)^{-1}\,a$,
+we have $\|\tilde{a}\|_\omega\leq \delta$,
+and so~$\left|f(\tilde{a})\right|
+\equiv \delta(\varepsilon +\|a\|_\omega)^{-1} \,\left|f(a)\right|
+\leq B$,
+which entails $\left|f(a)\right|\leq 
+B\delta^{-1}(\varepsilon+\|a\|_\omega)$.
+Since~$\varepsilon>0$ was arbitrary, we get~$\left|f(a)\right|\leq
+B\delta^{-1}\|a\|_\omega$.
+\end{point}
+\begin{point}{%
 \ref{normal-functionals-lemma-1}$\Longrightarrow$%
-\ref{normal-functionals-lemma-2}
-follows from Riesz' representation theorem (\TODO{}),
-because  to a unique linear map 
-$\scrH_\omega\to\C$
- \TODO{ref?}.
+\ref{normal-functionals-lemma-2}}%
+Since~$\left|f(a)\right|\leq B\|a\|_\omega$ for all~$a\in\scrA$,
+the map~$f$ can be extended to a bounded linear map 
+$\tilde{f}\colon \scrH_\omega\to \C$.
+Then by Riesz' representation theorem (\TODO{}),
+there is~$b\in \scrH_\omega$ with $\tilde{f}(x)=[b,x]_\omega$
+for all~$x\in \scrH_\omega$.  
+In particular,
+$f(a)=[b,a]_\omega$ for all~$a\in \scrA$.
+\end{point}
+\begin{point}{\ref{normal-functionals-lemma-2}$\Longrightarrow$%
+\ref{normal-functionals-lemma-3}}%
+We know that~$f(a)\equiv [b,a]_\omega$ for all~$a\in \scrA$,
+for some~$b\in\scrH_\omega$.
+Then, by definition of~$\scrH_\omega$,
+there is a sequence~$b_1,b_2,\dotsc$ in~$\scrA$
+which converges to~$b$ in~$\scrH_\omega$.
+Then the maps $[b_n,\,\cdot\,]_\omega\colon \scrA\to \C$
+approximate~$f=[b,\,\cdot\,]_\omega$
+in the sense that 
+$\left|f(a)-[b_n,a]_\omega\right|=\left|[b-b_n,a]_\omega\right|
+\leq \|b-b_n\|_\omega \|a\|_\omega$
+for all~$a\in \scrA$.
+Note that $[b_n,a]_\omega = \sum_{k=0}^3 i^kf_{k,n}(a)$,
+where $f_{k,n}\colon \scrA\to \C$
+is the np-map given by $f_{k,n}(a)=\omega(\,(i^kb_n+1)^*\,a\,(i^kb_n+1)\,)$.
+We claim that~$(f_{k,n})_n$
+is Cauchy in the operator norm
+so that by~\TODO{} it converges to some np-map $f_k\colon \scrA\to \C$.
+Indeed, given $k,m,n$, and~$a\in\scrA$, we have
+\begin{alignat*}{3}
+	\left|f_{k,n}(a)-f_{k,m}(a)\right|
+	\ &\leq\ 
+\left|\omega(\, (b_n-b_m)^*\,a\,(i^kb_n+1)\,)\right|
+\,+\,
+\left|\omega(\,(i^kb_m+1)^*\,a\,(b_n-b_m)\,)\right| \\
+&\leq\ 
+\|b_n-b_m\|_\omega \|a\| \|i^kb_n+1\|_\omega
+\,+\,
+\|i^kb_m+1\|_\omega \|a\| \|b_n-b_m\|_\omega.
+\end{alignat*}
 
 
-
-
-
+\end{point}
 \end{point}
 \end{point}
 \begin{point}{Proposition}%

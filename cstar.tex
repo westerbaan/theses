@@ -627,8 +627,8 @@ Let~$\scrH$ be a Hilbert space.
 For every bounded linear map~$f\colon \scrH\to\C$
 there is a unique vector~$x\in \scrH$
 with $\left<x,\,\cdot\,\right>=f$.
-\begin{point}%
-If~$f=0$, then $y=0$ does the job.
+\begin{point}{Proof}%
+If~$f=0$, then $x=0$ does the job.
 Suppose that~$f\neq 0$.
 There is~$x'\in\scrH$ with~$f(x')\neq 0$.
 Note that~$\ker(f)$ is closed, because~$f$
@@ -650,12 +650,7 @@ Hence with $x:=x''\|x''\|^{-2}$
 we have~$f(z)=\left<x''\|x''\|^{-2},z\right>$
 for all~$z\in \scrH$.
 
-Concerning uniqueness, let $x_1,x_2\in \scrH$
-with $\left<x_1,z\right>=\left<x_2,z\right>$
-for all~$z\in \scrH$ be given.
-Taking $z=x_1-x_2$,
-we see that $\|x_1-x_2\|^2=\left<x_1-x_2,x_1-x_2\right>=0$,
-and so~$x_1=x_2$.\qed
+Uniqueness follows from~\sref{uniqueness-adjoint}.\qed
 \end{point}
 \end{point}
 \begin{point}[bounded-operator-adjointable]{Exercise}%
