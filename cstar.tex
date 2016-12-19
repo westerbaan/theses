@@ -1,8 +1,8 @@
 \documentclass[main]{subfiles}
 \begin{document}
 \chapter{$C^*$-algebras}
-As a warming-up
-we develop the essentials of the theory of (unital) $C^*$-algebras
+As an appetizer
+we redevelop the essentials of the theory of (unital) $C^*$-algebras
 in this chapter.
 Since we are ultimately interested
 in von Neumann algebras
@@ -47,12 +47,12 @@ show that an element of a commutative $C^*$-algebra
 is not invertible iff it is mapped to~$0$
 by some multiplicative state, see~\sref{inv-mult-state}.
 \end{enumerate}
-At every step
+At every step along the way
 the positive and invertible elements 
 (and the norm, multiplicative states, multiplication
 and other structure on a $C^*$-algebra)
 are bound more tightly together
-until Gelfand's representation theorem rolls out.
+until Gelfand's representation theorem emerges.
 
 To make this chapter
 more accessible
@@ -62,10 +62,9 @@ from the ordinary development
 of $C^*$-algebras
 such as the more general theory of Banach algebras
 (and its pathology).
-This forced us
-to take a slightly different path than is usual in the literature
-(for while we obtain Gelfand--Mazur's theorem for $C^*$-algebras,
-we could not apply it, see~\sref{gelfand-mazur-predicament}).
+This forces us
+to take a slightly different path than is usual in the literature 
+(see e.g.~\sref{gelfand-mazur-predicament}).
 
 Let us begin with the definition
 and examples.
@@ -139,7 +138,7 @@ of~$\scrA$.
 One can form products (in the categorical sense,
 see~\sref{cstar-categorical-product}) of $C^*$-algebras as follows.
 Let~$\scrA_i$ be a $C^*$-algebra
-for every element~$i$ of some set~$I$.
+for every element~$i$ of some index set~$I$.
 The \Define{direct product}
 of the family $(\scrA_i)_i$
 is the $C^*$-algebra
@@ -157,7 +156,7 @@ is commutative.
 In particular,
 taking~$\scrA_i\equiv \C$,
 we see that
-the vector space of bounded complex-valued functions
+the vector space~\Define{$\ell^\infty(X)$} of bounded complex-valued functions
 on a set~$X$ forms a commutative $C^*$-algebra
 with pointwise operations and sup-norm.
 \end{point}
@@ -165,8 +164,7 @@ with pointwise operations and sup-norm.
 The \Define{bounded continuous functions
 on a topological space}~$X$
 form a commutative $C^*$-subalgebra~\Define{$BC(X)$}
-of the $C^*$-algebra
-of bounded functions $X\to \C$.
+of~$\ell^\infty(X)$ (see above).
 In particular,
 since a continuous function on a compact Hausdorff space is 
 automatically bounded,
@@ -206,7 +204,7 @@ of~$w\in \C^n$).
 
 It is not entirely obvious that~$\|A^*A\|=\|A\|^2$
 holds
-and~$M_n$ is complete.
+and that $M_n$ is complete.
 We will prove these facts in the more general setting
 of bounded operators between Hilbert spaces, 
 see~\sref{adjointables-cstar-algebra}.
@@ -277,8 +275,8 @@ is bounded by~$1$.
 \end{point}
 \begin{point}[operator-norm-complete]{Lemma}%
 The operator norm on~$\scrB(\scrX,\scrY)$ is complete
-when~$\scrY$ is a complete.
-\begin{point}%
+when~$\scrY$ is a complete normed vector space.
+\begin{point}{Proof}%
 Let~$(T_n)_n$ be a Cauchy sequence in~$\scrB(\scrX,\scrY)$.
 We must show that~$(T_n)_n$ converges to some
 bounded operator $T\colon \scrX\to\scrY$.
@@ -330,7 +328,7 @@ to be $C^*$-algebra that do not involve the involution, $(\,\cdot\,)^*$
 (that is, $\scrB(\scrX)$ is a \Define{Banach algebra}).
 To get an involution,
 we need the additional structure
-provided by a Hilbert space:
+provided by a Hilbert space as follows.
 \end{point}
 \begin{point}[hilb-def]{Definition}%
 An \Define{inner product}
@@ -364,8 +362,17 @@ when
 \qquad\text{for all $x\in \scrH$ and $y\in \scrK$.}
 \end{equation*}
 In that case, we call~$T$ \Define{adjointable}.
-It is easy to that such adjointable~$T$ is adjoint to at most one~$S$,
+We'll see (in~\sref{uniqueness-adjoint})
+that such adjointable~$T$ is adjoint to exactly one~$S$,
 which we denote by~\Define{$T^*$}.
+\end{point}
+\begin{point}[uniqueness-adjoint]{Exercise}%
+Let~$x$ and~$x'$ be elements of a pre-Hilbert space~$\scrH$
+with $\left<y,x\right>=\left<y,x'\right>$
+for all~$y\in\scrH$.
+Show that~$x=x'$ (by taking $y=x-x'$).
+Conclude that every bounded operator between pre-Hilbert spaces
+has at most one adjoint.
 \end{point}
 \begin{point}{Exercise}%
 Let~$S$ and~$T$ be adjointable operators on a pre-Hilbert space.
@@ -679,8 +686,8 @@ a $\scrB(\scrH)$.
 
 \begin{parsec}%
 \begin{point}%
-Now that the most important examples
-of $C^*$-algebras are out the way,
+Now that we have seen the most important examples
+of $C^*$-algebras,
 we can begin developing the theory.
 We'll start easy with the self-adjoint elements:
 \end{point}
@@ -713,13 +720,14 @@ Show that $\Imag{a} = -\Real{(ia)}$ and $\Real{a}=\Imag{(ia)}$.
 Show that $a^*a$ is self-adjoint,
 and  $a^*a=\Real{a}^2+\Imag{a}^2+i(\Real{a}\Imag{a}-\Imag{a}\Real{a})$.
 \item
-Give an example of an~$a$ with  $\Real{a}\Imag{a} \neq \Imag{a}\Real{a}$.
+Give an example of~$\scrA$ and~$a$ 
+with  $\Real{a}\Imag{a} \neq \Imag{a}\Real{a}$.
 
 (This simple observation is the source of many technical difficulties.)
 \item
 Show that $a^*a+aa^* = 2(\Real{a}^2+\Imag{a}^2)$.
 \item
-The product of self-adjoint elements $b$, $c$ needs not be self-adjoint;
+The product of self-adjoint elements $b$, $c$ need not be self-adjoint;
 show that, in fact, $bc$ is self-adjoint iff $bc=cb$.
 \item
 Show that $\|a^*\| = \|a\|$. (Hint:  $\|a\|^2=\|a^*a\|\leq \|a^*\|\|a\|$.)
