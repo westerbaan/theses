@@ -2698,7 +2698,7 @@ Use the $C^*$-identity
 to extend the equality $\|\varrho(a)\|=\|a\|$ 
 to (not necessarily self-adjoint) $a\in \scrA$.
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[injective-miu-iso-on-image]{Exercise}%
 Let~$\varrho\colon \scrA\to\scrB$ 
 be an injective miu-map.
 Show that~$\varrho(\scrA)$
@@ -2710,31 +2710,148 @@ isomorphic to~$\scrA$.
 \end{point}
 \end{parsec}
 
-
-%
-%  Cauchy--Schwarz for positive functionals
-%
 \begin{parsec}%
 \begin{point}%
-We will now prove that every $C^*$-algebra
+Let us prove that every $C^*$-algebra~$\scrA$
 is isomorphic
 to a $C^*$-algebra
-of bounded operators.
-\TODO{Paschke}.
+of bounded operators on some Hilbert space.
+We proceed as follows.
+To each p-map $\omega\colon \scrA\to\C$
+we assign a inner product $[\,\cdot\,,\,\cdot\,]_\omega$ on~$\scrA$,
+which can be ``completed'' to a Hilbert space $\scrH_\omega$.
+Every element~$a\in \scrA$ gives an bounded operator on~$\scrH_\omega$
+via the action $b\mapsto ab$, which in turn gives a 
+miu-map $\varrho_\omega\colon \scrA\to \scrB (\scrH_\omega)$.
+In general $\varrho_\omega$ is not injective,
+but if~$\Omega$ is a set of p-maps which separates the
+points of~$\scrA$,
+then the composition
+\begin{equation*}
+	\xymatrix@C=6em{
+		\scrA\ar[r]^-{\left<\varrho_\omega\right>_{\omega\in \Omega}}
+		&
+		\bigoplus_{\omega\in\Omega} \scrB(\scrH_\omega)
+		\ar[r]
+		&
+		\scrB(\,\bigoplus_{\omega\in\Omega}\scrH_\omega\,)
+	}
+\end{equation*}
+does give an injective miu-map~$\varrho$,
+which restricts to an isomorphism 
+(\sref{injective-miu-iso-on-image})
+from~$\scrA$
+to the $C^*$-algebra~$\varrho(\scrA)$
+of bounded operators
+on $\bigoplus_{\omega\in \Omega} \scrH_\omega$.
+
+The creation of~$\varrho_\omega$ from~$\omega$
+is known as the \emph{Gelfand--Naimark--Segal construction},
+and will make a reappearance in the theory of von Neumann algebras
+(in~\sref{normal-functionals-lemma}).
+
+\TODO{Mention Paschke as generalization of GNS}.
 \end{point}
-\begin{point}{Lemma}%
-Let~$\scrA$ be a $C^*$-algebra,
-and let~$f\colon \scrA\to \C$ be a pi-map.\\
-Then, for all~$a,b\in\scrA$,\quad
-$\left|f(a^*b)\right|^2 \ \leq\ f(a^*a)\,f(b^*b)$.
-\begin{point}{Proof}%
-Apply Cauchy--Schwarz (\sref{inner-product-basic})
-to the inner product on~$\scrA$ given 
-by $\left<a,b\right>=f(a^*b)$.
-(Note that $f(a^*a)\equiv \left<a,a\right>\geq 0$,
-because $a^*a$ is positive
-by~\sref{astara-positive}.)\qed
+\begin{point}[inner-product-completion]{Exercise}%
+Let us begin by showing how a complex vector space~$V$
+with inner product
+$[\,\cdot\,,\,\cdot\,]$ can be ``completed'' to a Hilbert space~$\scrH$.
+
+We will take for~$\scrH$ the set of Cauchy sequences on~$V$
+modulo the following equivalence relation.
+Two Cauchy sequences $(a_n)_n$ and~$(b_n)_n$ in~$V$
+are considered equivalent
+iff $\lim_n \|a_n-b_n\|=0$.
+We ``embed'' $V$ into~$\scrH$ via the map $\eta\colon V\to \scrH$
+which sends~$a$ to
+the constant sequence $a,a,a,\dotsc$.
+Note, however, that $\eta$ need not be injective:
+show that $\eta(a)=\eta(b)$ iff $\|a-b\|=0$ for all $a,b\in V$.
+
+Show that $d(\,(a_n)_n,\,(b_n)_n\,) = \lim_n \|a_n-b_n\|$
+defines a metric on~$\scrH$,
+that~$\scrH$ is complete with respect to this metric,
+and that if $(a_n)_n$ is a Cauchy sequence in~$V$,
+then $(\eta(a_n))_n$ converges to the \emph{element}~$(a_n)_n$ of~$\scrH$
+(so $V$ is dense in~$\scrH$).
+
+Show that every uniformly continuous 
+map $f\colon V\to X$ to a complete metric space~$X$
+can be uniquely extended to a uniformly continuous map $g\colon \scrH\to X$.
+(We say that~$g$ extends~$f$ when $f=g\circ \eta$.)
+
+Show that addition, scalar multiplication, and inner product on~$V$
+(being uniformly continuous)
+can be uniquely extended to uniformly continuous operations on~$\scrH$,
+and turn~$\scrH$ into a Hilbert space.
+(Also verify that the extended inner product agrees with the complete
+metric we've already put on~$\scrH$.)
+
+Show that every bounded linear map $f\colon V\to\scrK$
+to a Hilbert space~$\scrK$
+can be uniquely extended to a bounded linear map $g\colon \scrH\to\scrK$.
+
+(Categorically speaking,
+Hilbert spaces
+form a reflexive subcategory of
+the category of bounded linear maps between
+complex vector spaces with an inner product.)
 \end{point}
+\begin{point}{Exercise}%
+We will now perform the \Define{Gelfand--Naimark--Segal construction}
+to a p-map $\omega\colon \scrA\to\C$ on a $C^*$-algebra.
+
+Show that $\Define{[a,b]_\omega} :=\omega(a^*b)$
+for~$a,b\in\scrA$
+gives an inner product on~$\scrA$.
+(Recall that $a^*a$ is positive, \sref{astara-positive},
+and that~$\omega(a^*)=\omega(a)^*$, \sref{}\TODO{}, for all $a\in \scrA$).
+
+Deduce from this, and~\sref{inner-product-basic}, that
+$\Define{\|a\|_\omega}:=\omega(a^*a)^{\nicefrac{1}{2}}$
+gives a semi-norm on~$\scrA$,
+and use Cauchy--Schwarz
+to prove \Define{Kadison's inequality}: for all~$a,b\in\scrA$,
+\begin{equation*}
+\left|\omega(a^*b)\right|^2\ \leq\ \omega(a^*a)\,\omega(b^*b).
+\end{equation*}
+
+Let~$\Define{\scrH_\omega}$ denote the completion
+of~$\scrA$ (with inner product $[\,\cdot\,,\,\cdot\,]_\omega$)
+to a Hilbert space as discussed in~\sref{inner-product-completion}.
+Recall that there is an ``embedding'' $\eta\colon \scrA\to\scrH_\omega$
+with $\left<\eta(a),\eta(b)\right>= [a,b]_\omega$ for all~$a,b\in \scrA$.
+
+Given $a\in \scrA$
+we will denote the element $\eta(a)$ of~$\scrH_\omega$ simply by~$a$ 
+(accepting that distinct elements, $a\neq b$, of~$\scrA$ might be equal 
+in~$\scrH_\omega$).
+
+Prove that for $a,b\in \scrA$
+we have $\|ab\|_\omega\leq \|\omega\|\,\|a\|\,\|b\|_\omega$.
+(using the fact that $a^*a\leq \|a\|^2$, see~\TODO{}).
+
+In case you are wondering:
+show that the inequalities
+$\|ab\|_\omega \leq \|a\|_\omega \|b\|_\omega$
+and $\|ab\|_\omega\leq \|a\|_\omega \|\omega\|\|b\|$
+do not hold in general,
+and neither does $\|a^*a\|_\omega = \|a\|_\omega^2$.
+
+Deduce that for every~$a\in \scrA$
+the map $b\mapsto ab,\ \scrA\to\scrA$ is uniformly continuous
+with respect to~$\|\,\cdot\,\|_\omega$,
+and can thus be uniquely extended to a bounded linear map
+$\scrH_\omega\to\scrH_\omega$,
+which we'll denote by~$\varrho(a)$.
+
+Show that $a\mapsto \varrho(a)$ gives a miu-map 
+$\varrho\colon \scrA\to\mathscr{B}(\scrH_\omega)$.
+(Hint: 
+to see that $\varrho$ is involutive,
+first
+prove that $[b,\varrho(a)c]_\omega = [\varrho(a^*)b,c]_\omega$
+for all~$a,b,c\in \scrA$.)
 \end{point}
 \begin{point}[gelfand-naimark]{Theorem (Gelfand--Naimark)}%
 \TODO{formulate and prove}

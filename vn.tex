@@ -577,7 +577,7 @@ the number $B:=\lim_n \|b_n\|_\omega +1 $ will do.\qed
 \end{point}
 \end{point}
 \end{point}
-\begin{point}{Corollary}%
+\begin{point}[luws]{Corollary}%
 For a linear map~$f\colon \scrA\to \C$
 on a von Neumann algebra~$\scrA$ the following are equivalent.
 \begin{enumerate}
@@ -646,7 +646,7 @@ Show that $\{\lambda a\colon a\in A,\lambda>0\}$ is radially open
 when~$A$ is radially open.
 \end{enumerate}
 \end{point}
-\begin{point}{Theorem}%
+\begin{point}[hahn-banach]{Theorem}%
 For every radially open
 convex subset~$K$ of a real vector space~$V$
 with~$0\notin K$
@@ -727,18 +727,62 @@ So there is~$s\in [0,1]$ with $sx+s^\perp y \in H$.\qed
 \end{point}
 \end{point}
 \begin{point}{Exercise}%
+We will use~\sref{hahn-banach}
+to prove that 
+an ultrastrongly closed convex subset~$K$ of a 
+von Neumann algebra~$\scrA$
+is ultraweakly closed as well.
+
+Let us first simplify the problem a bit.
+If~$K$ is empty, the result is trivial,
+so we may as well assume that $K\neq \varnothing$.
+Note that we must show that no net in~$K$ converges ultraweakly
+to any element~$a_0\in\scrA$ outside~$K$,
+but by considering~$K-a_0$ instead of~$K$,
+we see that it suffices to show that
+no net in~$K$ converges ultraweakly to~$0$
+under the assumption that~$0\notin K$.
+To this end we'll find an ultraweakly continuous linear map
+$g\colon \scrA\to \C$ and~$\delta>0$ 
+with~$\Real{g(k)}\geq \delta$ for all~$k\in K$---if
+a net $(k_\alpha)_\alpha$ in~$K$ were to converge ultraweakly to~$0$,
+then~$\Real{g(k_\alpha)}$ would converge to~$0$ as well,
+which is impossible.
 \begin{enumerate}
 \item
-Show that an $\R$-linear map
-$f\colon V\to \R$
-on a complex vector space~$V$
-can be extended to a $\C$-linear map
-$g\colon V\to \C$
-by $g(x)= f(x)-if(ix)$.
-
-(Hint: browse~\sref{cstar-involution-basic}.)
+	Show that 
+	there is an np-map~$\omega \colon\scrA\to\C$
+	and~$\varepsilon>0$ 
+	with $\|k\|_\omega \geq \varepsilon$ for all~$k\in K$.
+	(Hint: use that~$K$ is ultrastrongly closed).
 \item
+	Show that~$B:= \{ b\in \scrA\colon \|b\|_\omega < \varepsilon\}$
+	 is convex, radially open, $B\cap K=\varnothing$.
 
+	Show that $B-K$ is convex, radially open, and $0\notin B-K$.
+\item
+	Use~\sref{hahn-banach} to show that
+	 there is an $\R$-linear map $f\colon \scrA\to \R$
+	with $f(b)<f(k)$ for all~$b\in B$ and~$k\in K$.
+	Show that~$f$
+	can be extended to a $\C$-linear map
+	$g \colon \scrA\to \C$
+	by $g(a)= f(a)-if(ia)$ for all~$a\in\scrA$.
+\item
+	Show that $\left| f(b)\right| \leq f(k)$ 
+	and $\left|g(b)\right|\leq 2f(k)$
+	for all~$b\in B$ and $k\in K$.\\
+	(Hint: $b\in B\implies -b\in B$.)
+
+	Conclude that~$g$ is ultraweakly continuous
+	(using~\sref{luws} and $K\neq \varnothing$).
+\item
+	It remains to be shown that
+	there is $\delta>0$ with $f(k)\equiv \Real{g(k)}\geq \delta$
+	for all~$k\in K$.
+	Show that there is $b_0\in B$
+	with $f(b_0) >0$.
+	Conclude that $f(k)\geq f(b_0)>0 $ for all~$k\in K$.
 \end{enumerate}
 \end{point}
 
