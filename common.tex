@@ -137,14 +137,26 @@
 
 \newcounter{point} % keeps track of the current point
 \numberwithin{point}{parsec}
-\renewcommand{\thepoint}{\theparsec\,\Roman{point}}
 \newcounter{pointdepth}  % keeps track of the depth of the current point
 			 % --- points may be nested.
 
 \NewDocumentEnvironment{point}{o g}{%
 	\setcounter{pointdepth}{\value{pointdepth}+1}%
 	\refstepcounter{point}%
-	\IfValueT{#1}{\label{#1}}%
+	\IfValueT{#1}{%
+		\renewcommand{\thepoint}{\the\value{parsec}}%
+		\setcounter{point}{\value{point}-1}%
+		\refstepcounter{point}%
+		\label{#1::parsec}%
+		\renewcommand{\thepoint}{\Roman{point}}%
+		\setcounter{point}{\value{point}-1}%
+		\refstepcounter{point}%
+		\label{#1::point}%
+		\renewcommand{\thepoint}{\theparsec\,\Roman{point}}%
+		\setcounter{point}{\value{point}-1}%
+		\refstepcounter{point}%
+		\label{#1}%
+	}%
 	\ifthenelse{\equal{\value{point}}{1}}{}{%
 		\ifthenelse{\equal{\value{pointdepth}}{1}}{%
 			\par\penalty-100\vskip.5em\noindent%
@@ -181,7 +193,15 @@
 }
 
 % Refer to a parsec.
-\NewDocumentCommand{\sref}{m}{\textSref{\ref{#1}}}
+\NewDocumentCommand{\sref}{m}{\textSref{%
+	\ifthenelse{%
+		\equal{\value{parsec}}{\ref{#1::parsec}}%
+	}{%
+		\Roman{\ref{#1::point}}%
+	}{%
+		\ref{#1}%
+	}%
+}}
 
 % Adjust footer and header:
 \usepackage{fancyhdr}
