@@ -2787,7 +2787,7 @@ and will make a reappearance in the theory of von Neumann algebras
 
 \TODO{Mention Paschke as generalization of GNS}.
 \end{point}
-\begin{point}{Lemma}%
+\begin{point}[state-inner-product]{Lemma}%
 For every p-map~$\omega\colon \scrA\to \C$ on a
 $C^*$-algebra~$\scrA$,
 $\Define{[a,b]_\omega} = \omega(a^*b)$
@@ -2803,30 +2803,52 @@ Finally, it is clear that $[a,\,\cdot\,]_\omega\equiv\omega(a^*\,\cdot\,)$
 is linear for each~$a\in\scrA$.\qed
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[omega-norm-basic]{Exercise}%
 Let~$\omega\colon \scrA\to\C$
 be a p-map on a $C^*$-algebra.
-The semi-norm
+Let us for a moment study
+the 
+semi-norm
 $\Define{\|\,\cdot\,\|_\omega}$ on~$\scrA$
-given by the inner product $[\,\cdot\,,\,\cdot\,]_\omega$
-(viz.~$\|a\|_\omega = \omega(a^*a)^{\nicefrac{1}{2}}$)
-will play a prominent role in this section,
-and all throughout the next chapter, 
-and so deserves some scrutiny.
+induced by the inner product $[\,\cdot\,,\,\cdot\,]_\omega$
+(so~$\smash{\|a\|_\omega = \omega(a^*a)^{\nicefrac{1}{2}}}$),
+because it plays an important role
+here,
+and all throughout the next chapter.
 \begin{enumerate}
 \item
 Use Cauchy--Schwarz
+(\sref{inner-product-basic})
 to prove \Define{Kadison's inequality}: for all~$a,b\in\scrA$,
 \begin{equation*}
-\left|\omega(a^*b)\right|^2\ \leq\ \omega(a^*a)\,\omega(b^*b).
+\left|\omega(a^*b)\right|^2\ \leq\ \omega(a^*a)\ \omega(b^*b).
 \end{equation*}
 \item
 Show that $\|ab\|_\omega \leq \|\omega\| \,\|a\|\,\|b\|_\omega$
+for all $a,b\in\scrA$
 (using $a^*a\leq \|a\|^2$).
 
-However,
-show that we do not have $\|ab\|_\omega \leq \|a\|_\omega \|b\|_\omega$
+Show that we do \emph{not} always have 
+$\|ab\|_\omega\leq \|\omega\|\|a\|_\omega \|b\|$.
 
+(Hint:
+take $a=(\begin{smallmatrix}0&0\\0&1\end{smallmatrix})$
+and $b=\frac{1}{2}(\begin{smallmatrix}1&1\\1&1\end{smallmatrix})$
+from~$\scrA=M_2$,
+and $\omega(\,(\begin{smallmatrix}c & d\\e&f\end{smallmatrix})\,)=c$.)
+
+Show that neither always
+$\|ab\|_\omega \leq \|a\|_\omega \|b\|_\omega$,
+or
+$\|a^*a\|_\omega = \|a\|^2_\omega$.
+
+(Hint: 
+take~$a=b=\frac{1}{2}(\begin{smallmatrix}1 & 1 \\ 1 & 1\end{smallmatrix})$
+from~$\scrA= M_2$,
+and 
+$\omega((\,(\begin{smallmatrix}c&d\\e&f\end{smallmatrix})\,)=c$.)
+
+Give a counterexample to $\|a^*\|_\omega = \|a\|_\omega$.
 \end{enumerate}
 \end{point}
 \begin{point}[inner-product-completion]{Exercise}%
@@ -2874,61 +2896,43 @@ form a reflexive subcategory of
 the category of bounded linear maps between
 complex vector spaces with an inner product.)
 \end{point}
-\begin{point}{Exercise}%
-We will now perform the \Define{Gelfand--Naimark--Segal construction}
-to a p-map $\omega\colon \scrA\to\C$ on a $C^*$-algebra.
-
-Show that $\Define{[a,b]_\omega} :=\omega(a^*b)$
-for~$a,b\in\scrA$
-gives an inner product on~$\scrA$.
-(Recall that $a^*a$ is positive, \sref{astara-positive},
-and that~$\omega(a^*)=\omega(a)^*$, \sref{}\TODO{}, for all $a\in \scrA$).
-
-Deduce from this, and~\sref{inner-product-basic}, that
-$\Define{\|a\|_\omega}:=\omega(a^*a)^{\nicefrac{1}{2}}$
-gives a semi-norm on~$\scrA$,
-and use Cauchy--Schwarz
-to prove \Define{Kadison's inequality}: for all~$a,b\in\scrA$,
-\begin{equation*}
-\left|\omega(a^*b)\right|^2\ \leq\ \omega(a^*a)\,\omega(b^*b).
-\end{equation*}
+\begin{point}{Definition (Gelfand--Naimark--Segal construction)}%
+	\\
+\TODO{Do we really not need the fact that $\omega$ is unital?}
+Let $\omega\colon \scrA\to\C$ be a p-map on a $C^*$-algebra~$\scrA$.
 
 Let~$\Define{\scrH_\omega}$ denote the completion
-of~$\scrA$ (with inner product $[\,\cdot\,,\,\cdot\,]_\omega$)
+of~$\scrA$ endowed with the inner product $[\,\cdot\,,\,\cdot\,]_\omega$
+(see~\sref{state-inner-product})
 to a Hilbert space as discussed in~\sref{inner-product-completion}.
-Recall that there is an ``embedding'' $\eta\colon \scrA\to\scrH_\omega$
-with $\left<\eta(a),\eta(b)\right>= [a,b]_\omega$ for all~$a,b\in \scrA$.
-
-Given $a\in \scrA$
-we will denote the element $\eta(a)$ of~$\scrH_\omega$ simply by~$a$ 
+Recall that we have an ``embedding''
+$\eta\colon \scrA\to\scrH_\omega$
+with $\left<\eta(a),\eta(b)\right>= [a,b]_\omega$ for all~$a,b\in \scrA$,
+but instead of using it,
+we will, given $a\in \scrA$,
+ denote the element $\eta(a)$ of~$\scrH_\omega$ simply by~$a$ 
 (accepting that distinct elements, $a\neq b$, of~$\scrA$ might be equal 
 in~$\scrH_\omega$).
 
-Prove that for $a,b\in \scrA$
-we have $\|ab\|_\omega\leq \|\omega\|\,\|a\|\,\|b\|_\omega$.
-(using the fact that $a^*a\leq \|a\|^2$, see~\TODO{}).
-
-In case you are wondering:
-show that the inequalities
-$\|ab\|_\omega \leq \|a\|_\omega \|b\|_\omega$
-and $\|ab\|_\omega\leq \|a\|_\omega \|\omega\|\|b\|$
-do not hold in general,
-and neither does $\|a^*a\|_\omega = \|a\|_\omega^2$.
-
-Deduce that for every~$a\in \scrA$
-the map $b\mapsto ab,\ \scrA\to\scrA$ is uniformly continuous
-with respect to~$\|\,\cdot\,\|_\omega$,
-and can thus be uniquely extended to a bounded linear map
-$\scrH_\omega\to\scrH_\omega$,
-which we'll denote by~$\varrho(a)$.
-
-Show that $a\mapsto \varrho(a)$ gives a miu-map 
-$\varrho\colon \scrA\to\mathscr{B}(\scrH_\omega)$.
+Since given~$a\in \scrA$
+the map $b\mapsto ab,\ \scrA\to\scrA$ is
+bounded with respect to~$\|\,\cdot\,\|_\omega$
+(because $\|ab\|_\omega\leq \|\omega\|\|a\|\|b\|_\omega$
+by~\sref{omega-norm-basic}),
+it can uniquely extended to a bounded linear map
+$\scrH_\omega\to\scrH_\omega$
+(by the universal property of~$\scrH_\omega$, 
+see~\sref{inner-product-completion}),
+which we'll denote by~$\Define{\varrho_\omega}(a)$.
+\begin{point}{Exercise}%
+Show that $a\mapsto \varrho_\omega(a)$ gives a miu-map 
+$\Define{\varrho_\omega}\colon \scrA\to\mathscr{B}(\scrH_\omega)$.
 (Hint: 
 to see that $\varrho$ is involutive,
 first
 prove that $[b,\varrho(a)c]_\omega = [\varrho(a^*)b,c]_\omega$
 for all~$a,b,c\in \scrA$.)
+\end{point}
 \end{point}
 \begin{point}[gelfand-naimark]{Theorem (Gelfand--Naimark)}%
 \TODO{formulate and prove}
