@@ -1708,10 +1708,15 @@ is isomorphic to a $C^*$-algebra of operators on a Hilbert space.
 A \Define{state} of a $C^*$-algebra~$\scrA$
 is a piu-map $f\colon \scrA\to \C$.
 \begin{point}{Remark}%
-\TODO{about piu instead of pu}
+We will realize later on that the
+requirement that a state is involutive
+is redundant,
+(because
+every positive map between $C^*$-algebras
+is involutive, see~\sref{p-implies-i}.)
 \end{point}
 \end{point}
-\begin{point}
+\begin{point}%
 Our program is to show that 
 for every self-adjoint element~$a\in \scrA$
 of a $C^*$-algebra~$\scrA$,
@@ -2095,6 +2100,32 @@ self-adjoint elements~$a$ and~$b$ of a $C^*$-algebra with
 (Hint: one may take  
 $a=\frac{1}{2}\left(\begin{smallmatrix}1 & 1 \\ 1 & 1\end{smallmatrix}\right)$
 and $b=-\left(\begin{smallmatrix}1 & 0 \\ 0 & 0 \end{smallmatrix}\right)$.)
+\end{enumerate}
+\end{point}
+\begin{point}%
+The existence of positive and negative parts
+in a $C^*$-algebra
+has many pleasant and subtle consequences
+of which we'll now show two (\sref{p-implies-i} and \sref{astara-positive}).
+\end{point}
+\begin{point}[p-implies-i]{Exercise}%
+	Let~$f\colon \scrA\to\scrB$
+	be a p-map between $C^*$-algebras $\scrA$ and~$\scrB$.
+	We will see that~$f$ is involutive,
+	that is, $f(a^*)=f(a)^*$ for all~$a\in \scrA$.
+\begin{enumerate}
+	\item
+		Show that~$f(a)$ is self-adjoint
+		for every self-adjoint $a\in \scrA$
+		(by writing $a\equiv a_+ - a_-$ and using that~$f$
+		is positive).
+	\item
+		Deduce 
+		that $f(\Real{a})=\Real{f(a)}$
+		and $f(\Imag{a}) = \Imag{f(a)}$
+		for all~$a\in \scrA$ (see~\sref{cstar-involution-basic}).
+	\item
+		Conclude that $f(a^*)=f(a)^*$ for all~$a\in\scrA$.
 \end{enumerate}
 \end{point}
 \begin{point}[astara-positive]{Lemma}%
@@ -2751,6 +2782,48 @@ and will make a reappearance in the theory of von Neumann algebras
 (in~\sref{normal-functionals-lemma}).
 
 \TODO{Mention Paschke as generalization of GNS}.
+\end{point}
+\begin{point}{Lemma}%
+For every p-map~$\omega\colon \scrA\to \C$ on a
+$C^*$-algebra~$\scrA$,
+$\Define{[a,b]_\omega} = \omega(a^*b)$
+defines an inner product~$\Define{[\,\cdot\,,\,\cdot\,]_\omega}$ on~$\scrA$
+(see~\sref{hilb-def}).
+\begin{point}{Proof}%
+Note that $[a,a]_\omega\equiv \omega(a^*a)\geq 0$ for each~$a\in\scrA$,
+because $a^*a\geq 0$ (by~\sref{astara-positive});
+and  $\smash{\overline{[a,b]}_\omega}=[b,a]_\omega$
+for $a,b\in\scrA$,
+because $\omega$ is involutive (by~\sref{p-implies-i}).
+Finally, it is clear that $[a,\,\cdot\,]_\omega\equiv\omega(a^*\,\cdot\,)$
+is linear for each~$a\in\scrA$.\qed
+\end{point}
+\end{point}
+\begin{point}{Exercise}%
+Let~$\omega\colon \scrA\to\C$
+be a p-map on a $C^*$-algebra.
+The semi-norm
+$\Define{\|\,\cdot\,\|_\omega}$ on~$\scrA$
+given by the inner product $[\,\cdot\,,\,\cdot\,]_\omega$
+(viz.~$\|a\|_\omega = \omega(a^*a)^{\nicefrac{1}{2}}$)
+will play a prominent role in this section,
+and all throughout the next chapter, 
+and so deserves some scrutiny.
+\begin{enumerate}
+\item
+Use Cauchy--Schwarz
+to prove \Define{Kadison's inequality}: for all~$a,b\in\scrA$,
+\begin{equation*}
+\left|\omega(a^*b)\right|^2\ \leq\ \omega(a^*a)\,\omega(b^*b).
+\end{equation*}
+\item
+Show that $\|ab\|_\omega \leq \|\omega\| \,\|a\|\,\|b\|_\omega$
+(using $a^*a\leq \|a\|^2$).
+
+However,
+show that we do not have $\|ab\|_\omega \leq \|a\|_\omega \|b\|_\omega$
+
+\end{enumerate}
 \end{point}
 \begin{point}[inner-product-completion]{Exercise}%
 Let us begin by showing how a complex vector space~$V$
