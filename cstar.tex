@@ -1870,13 +1870,18 @@ Since the quotient map $q\colon \scrA\to \scrA/I\equiv \C$
 is pu, and $\ker(q)=I$, we are done.\qed
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
-Let~$a$ be a self-adjoint element of a $C^*$-algebra~$\scrA$.
+\begin{point}[separation-by-states]{Exercise}%
+Let~$a$ be an element of a $C^*$-algebra~$\scrA$.
 \begin{enumerate}
 \item
-Show that there is a state~$f$ of~$\scrA$ with $\left|f(a)\right|=\|a\|$.
+Show that if~$a$ is self-adjoint, then 
+there is a state~$f$ of~$\scrA$ with $\left|f(a)\right|=\|a\|$.
+\item
+Show that $a$ is self-adjoint iff $f(a)\in \R$ for every state~$f$ on~$\scrA$.
 \item
 Show that~$a$ is positive iff $f(a)\geq 0$ for every state~$f$ of~$\scrA$.
+\item
+Show that~$a=0$ iff $f(a)=0$ for every state~$f$ on~$\scrA$.
 \end{enumerate}
 \end{point}
 \end{point}
@@ -2896,7 +2901,7 @@ form a reflexive subcategory of
 the category of bounded linear maps between
 complex vector spaces with an inner product.)
 \end{point}
-\begin{point}{Definition (Gelfand--Naimark--Segal construction)}%
+\begin{point}[gns]{Definition (Gelfand--Naimark--Segal construction)}%
 	\\
 \TODO{Do we really not need the fact that $\omega$ is unital?}
 Let $\omega\colon \scrA\to\C$ be a p-map on a $C^*$-algebra~$\scrA$.
@@ -2906,13 +2911,9 @@ of~$\scrA$ endowed with the inner product $[\,\cdot\,,\,\cdot\,]_\omega$
 (see~\sref{state-inner-product})
 to a Hilbert space as discussed in~\sref{inner-product-completion}.
 Recall that we have an ``embedding''
-$\eta\colon \scrA\to\scrH_\omega$
-with $\left<\eta(a),\eta(b)\right>= [a,b]_\omega$ for all~$a,b\in \scrA$,
-but instead of using it,
-we will, given $a\in \scrA$,
- denote the element $\eta(a)$ of~$\scrH_\omega$ simply by~$a$ 
-(accepting that distinct elements, $a\neq b$, of~$\scrA$ might be equal 
-in~$\scrH_\omega$).
+$\Define{\eta_\omega}\colon \scrA\to\scrH_\omega$
+with $\left<\eta_\omega(a),\eta_\omega(b)\right>
+= [a,b]_\omega$ for all~$a,b\in \scrA$.
 
 Since given~$a\in \scrA$
 the map $b\mapsto ab,\ \scrA\to\scrA$ is
@@ -2924,18 +2925,119 @@ $\scrH_\omega\to\scrH_\omega$
 (by the universal property of~$\scrH_\omega$, 
 see~\sref{inner-product-completion}),
 which we'll denote by~$\Define{\varrho_\omega}(a)$.
-\begin{point}{Exercise}%
-Show that $a\mapsto \varrho_\omega(a)$ gives a miu-map 
-$\Define{\varrho_\omega}\colon \scrA\to\mathscr{B}(\scrH_\omega)$.
-(Hint: 
-to see that $\varrho$ is involutive,
-first
-prove that $[b,\varrho(a)c]_\omega = [\varrho(a^*)b,c]_\omega$
-for all~$a,b,c\in \scrA$.)
+So~$\varrho_\omega(a)$ is the unique
+bounded linear map $\scrH_\omega\to\scrH_\omega$
+with $\varrho_\omega(a)(\eta_\omega(b)) = \eta_\omega(ab)$
+for all~$b\in\scrA$.
+\end{point}
+\begin{point}{Proposition}%
+The map $\varrho_\omega\colon \scrA\to\scrB(\scrH_\omega)$
+given by~\sref{gns} is a miu-map.
+\begin{point}{Proof}%
+Let~$a_1,a_2\in\scrA$ be given.
+Since $\varrho_\omega(a_1+a_2)\,\eta_\omega(b)
+= \eta_\omega((a_1+a_2)b)
+= \eta_\omega(a_1b)+\eta_\omega(a_2b)
+= (\varrho_\omega(a_1) + \varrho_\omega(a_2))\,\eta_\omega(b)$
+for all $b\in\scrA$,
+and~$\{\eta_\omega(b)\colon b\in\scrA\}$
+is dense in~$\scrH_\omega$,
+we see that $\varrho_\omega(a_1+a_2)
+=\varrho_\omega(a_1)+\varrho_\omega(a_2)$.
+Since similarly $\varrho_\omega(\lambda a)
+= \lambda\varrho_\omega(a)$
+for $\lambda\in\C$ and~$a\in\scrA$,
+we see that~$\varrho_\omega$ is linear.
+
+Since $\varrho_\omega(1)\,\eta_\omega(b)
+= \eta_\omega(b)$ for all~$b\in\scrA$,
+we have $\varrho_\omega(1)\,x=x$
+for all~$x\in\scrH_\omega$,
+and so~$\varrho_\omega$ is unital,
+$\varrho_\omega(1)=1$.
+
+To see that~$\varrho_\omega$ is multiplicative,
+note that
+$(\varrho_\omega(a_1)\,\varrho_\omega(a_2))\,\eta_\omega(b)
+= \eta_\omega(a_1a_2b)=\varrho_\omega(a_1a_2)\,\eta_\omega(b)$
+for all~$a_1,a_2,b\in\scrA$.
+
+Let~$a\in\scrA$ be given.
+To show that~$\varrho_\omega$ is involutive
+it suffices to prove that~$\varrho_\omega(a^*)$
+is the adjoint of~$\varrho_\omega(a)$.
+Since~$\left<\varrho_\omega(a^*)\,\eta_\omega(b),\eta_\omega(c)\right>
+\equiv [a^*b,c]_\omega = \omega(b^*ac)=[b,ac]_\omega
+\equiv \left<\eta_\omega(b),\varrho_\omega(a)\,\eta_\omega(c)\right>$
+for all~$b,c\in\scrA$,
+and~$\{\eta_\omega(b)\colon b\in\scrA\}$
+is dense in~$\scrH_\omega$,
+we get~$\left<\varrho_\omega(a^*)x,y\right>=\left<x,\varrho_\omega(a)y\right>$
+for all~$x,y\in\scrH_\omega$,
+and so~$\varrho_\omega(a^*)=\varrho_\omega(a)^*$.\qed
+\end{point}
+\end{point}
+\begin{point}[gelfand-naimark-representation]{Definition}%
+Given a collection~$\Omega$ of p-maps $\omega\colon \scrA\to\C$
+on a $C^*$-algebra~$\scrA$,
+let $\Define{\varrho_\Omega}\colon \scrA\to \scrB(\scrH_\Omega)$
+be the miu-map given by~$\varrho_\Omega(a)x 
+= \sum_{\omega\in\Omega} \varrho_\omega(a)x(\omega)$,
+where~$\Define{\scrH_\Omega}=\bigoplus_{\omega\in\Omega}\scrH_\omega$
+(and $\varrho_\omega$ is as in~\sref{gns}).
+\end{point}
+\begin{point}[proto-gelfand-naimark]{Proposition}%
+Let~$\scrA$ be a $C^*$-algebra,
+and let~$\Omega$ be a collection of p-maps
+$\scrA\to\C$.
+Then the miu-map~$\varrho_\Omega\colon \scrA\to\scrB(\scrH_\Omega)$
+is injective provided that, for all~$a\in \pos{\scrA}$,
+\begin{equation}
+	\label{gelfand-naimark-representation-injective}
+	\forall \omega\in \Omega\ 
+	\forall b\in\scrA \ 
+	[\ 
+	\omega(b^*\,a\,b)=0\ ]
+\qquad\implies\qquad
+a=0,
+\end{equation}
+and in that case, $\varrho_\Omega(\scrA)$ is a $C^*$-subalgebra
+of~$\scrB(\scrH_\Omega)$,
+and~$\varrho_\Omega$
+restricts to a miu-isomorphism from~$\scrA$ to~$\varrho_\Omega(\scrA)$.
+\begin{point}{Proof}%
+Suppose that~\ref{gelfand-naimark-representation-injective}
+holds, and let~$a\in \scrA$ with $\varrho_\Omega(a)=0$ be given.
+We must show that~$a=0$ (in order to show that~$\varrho_\Omega$
+is injective).
+Let~$b\in\scrA$ and~$\omega\in\Omega$ be given.
+By~\ref{gelfand-naimark-representation-injective},
+it suffices to show that $0=\omega(b^*a^*ab) \equiv \|ab\|_\omega^2$
+(because $a^*a=0$ implies $a=0$).
+Since~$\varrho_\Omega(a)=0$,
+we have $\varrho_\omega(a)=0$
+
+Note that~$\varrho_\Omega(a)=0$
+
+
 \end{point}
 \end{point}
 \begin{point}[gelfand-naimark]{Theorem (Gelfand--Naimark)}%
-\TODO{formulate and prove}
+Every $C^*$-algebra~$\scrA$ is miu-isomorphic
+to a $C^*$-algebra of operators on a Hilbert space.
+\begin{point}{Proof}%
+	Recall (from~\sref{separation-by-states}),
+	that an element $a$ of~$\scrA$ is zero
+	iff $\omega(a)=0$ for every state $\omega\colon \scrA\to\C$.
+	It follows that the collection~$\Omega$ of all states $\scrA\to \C$
+obeys the condition of~\sref{proto-gelfand-naimark},
+and so
+the miu-map $\varrho_\Omega\colon \scrA\to\scrB(\scrH_\Omega)$
+(defined in~\sref{gelfand-naimark-representation})
+restricts to a miu-isomorphism
+from~$\scrA$ onto the $C^*$-subalgebra
+$\varrho(\scrA)$ of~$\scrB(\scrH_\Omega)$.\qed
+\end{point}
 \end{point}
 \end{parsec}
 \end{document}
