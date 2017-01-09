@@ -370,6 +370,18 @@ We'll see (in~\sref{uniqueness-adjoint})
 that such adjointable~$T$ is adjoint to exactly one~$S$,
 which we denote by~\Define{$T^*$}.
 \end{point}
+\begin{point}[hilb-basic-examples]{Example}%
+We endow $\C^N$
+(where~$N$ is a natural number)
+with the inner product
+given by
+$\left<x,y\right>=\sum_i \overline{x}_iy_i$,
+making it a Hilbert space.
+
+(We'll shortly see infinite dimensional examples of Hilbert spaces,
+in~\sref{}.)
+\end{point}
+
 \begin{point}[uniqueness-adjoint]{Exercise}%
 Let~$x$ and~$x'$ be elements of a pre-Hilbert space~$\scrH$
 with $\left<y,x\right>=\left<y,x'\right>$
@@ -516,6 +528,14 @@ we get~$\|T\|=\|T^*\|$.
 But then $\|T\|^2\leq \|T^*T\|\leq \|T^*\|\|T\|=\|T\|^2$,
 and so $\|T\|^2=\|T^*T\|$.\qed
 \end{point}
+\end{point}
+\begin{point}[hilb-examples]{Exercise}%
+Verify the following examples of Hilbert spaces.
+\begin{enumerate}
+\item
+	Given a set~$X$,
+	\TODO{define $\ell^2(X)$ and $\bigoplus_i \scrH_i$.}
+\end{enumerate}
 \end{point}
 \end{parsec}
 \begin{parsec}%
@@ -2993,7 +3013,7 @@ Let~$\scrA$ be a $C^*$-algebra,
 and let~$\Omega$ be a collection of p-maps
 $\scrA\to\C$.
 Then the miu-map~$\varrho_\Omega\colon \scrA\to\scrB(\scrH_\Omega)$
-is injective provided that, for all~$a\in \pos{\scrA}$,
+is injective iff, for all~$a\in \pos{\scrA}$,
 \begin{equation}
 	\label{gelfand-naimark-representation-injective}
 	\forall \omega\in \Omega\ 
@@ -3008,20 +3028,42 @@ of~$\scrB(\scrH_\Omega)$,
 and~$\varrho_\Omega$
 restricts to a miu-isomorphism from~$\scrA$ to~$\varrho_\Omega(\scrA)$.
 \begin{point}{Proof}%
-Suppose that~\ref{gelfand-naimark-representation-injective}
+Suppose that~\eqref{gelfand-naimark-representation-injective}
 holds, and let~$a\in \scrA$ with $\varrho_\Omega(a)=0$ be given.
 We must show that~$a=0$ (in order to show that~$\varrho_\Omega$
-is injective).
+is injective),
+and for this it is enough to prove that~$a^*a=0$.
 Let~$b\in\scrA$ and~$\omega\in\Omega$ be given.
 By~\ref{gelfand-naimark-representation-injective},
-it suffices to show that $0=\omega(b^*a^*ab) \equiv \|ab\|_\omega^2$
-(because $a^*a=0$ implies $a=0$).
+it suffices to show that $0=\omega(b^*a^*ab) \equiv \|ab\|_\omega^2$.
 Since~$\varrho_\Omega(a)=0$,
-we have $\varrho_\omega(a)=0$
+we have $\varrho_\omega(a)=0$,
+thus $0=\varrho_\omega(a)\,\eta_\omega(b)
+=\eta_\omega(ab)$,
+and so $\|ab\|_\omega=0$.
+Hence~$\varrho_\Omega$ is injective.
 
-Note that~$\varrho_\Omega(a)=0$
+For the converse, suppose that~$\varrho_\Omega$ is injective,
+and let~$a\in\scrA_+$ with $\omega(b^*ab)=0$
+for all~$\omega\in\Omega$ and~$b\in\scrA$ be given.
+We must show that~$a=0$.
+It suffices to show that~$\sqrt{a}=0$,
+and since~$\varrho_\Omega$ is injective,
+proving that~$\varrho_\Omega(\sqrt{a})=0$ will do.
+Let $\omega\in\Omega$. We must show that
+$\varrho_\omega(\sqrt{a})=0$,
+and for this it suffices to show that
+for all~$b\in \scrA$ we have
+$\eta_\omega(ab)\equiv\varrho_\omega(\sqrt{a})\,\eta_\omega(b)=0$,
+that is, $\omega(b^*ab)\equiv\|\sqrt{a}b\|_\omega^2=0$,
+which is what we have assumed.
 
-
+Now, if~$\varrho_\Omega$ is injective,
+then as we have seen in~\sref{injective-miu-iso-on-image},
+$\varrho_\Omega(\scrA)$ is a $C^*$-subalgebra
+of~$\scrB(\scrH_\Omega)$,
+and~$\varrho_\Omega$ restricts to a miu-isomorphism
+from~$\scrA$ to~$\varrho_\Omega(\scrA)$.\qed
 \end{point}
 \end{point}
 \begin{point}[gelfand-naimark]{Theorem (Gelfand--Naimark)}%
