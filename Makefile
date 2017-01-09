@@ -1,7 +1,7 @@
 .PHONY: all clean
 
-main.pdf: com.tex common.tex cstar.tex main.tex vn.tex
-	latexmk -pdf -use-make main.tex
+A.pdf: com.tex common.tex cstar.tex A.tex vn.tex
+	latexmk -pdf -use-make A.tex
 
 cstar.pdf: common.tex cstar.tex
 	latexmk -pdf -use-make cstar.tex
