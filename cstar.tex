@@ -707,6 +707,9 @@ Let~$a$ be an element of a $C^*$-algebra.
 Show that $\Real{a}$ and $\Imag{a}$ are self-adjoint,
 and  $a= \Real{a}+i\Imag{a}$.
 \item
+Show that if $a\equiv b+ic$ for self-adjoint elements $b$, $c$ of~$\scrA$,
+then $b=\Real{a}$ and~$c=\Imag{a}$.
+\item
 Show that $\Real{(a^*)}=\Real{a}$ and $\Imag{(a^*)}=-\Imag{a}$.
 \item 
 Show that~$a$ is self-adjoint iff $\Real{a}=a$ iff $\Imag{a}=0$.
@@ -820,7 +823,7 @@ and $t+s\geq \frac{1}{2}(\|a\|+\|b\|) \geq \frac{1}{2}\|a+b\|$,
 so~$a+b\geq 0$.\qed
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[cstar-positive]{Exercise}%
 Let~$\scrA$ be a $C^*$-algebra.
 \begin{enumerate}
 \item
@@ -905,12 +908,39 @@ and a \Define{miu-map}
 is a multiplicative, involutive, unital linear map between $C^*$-algebras,
 (which is usually called a \Define{unital $*$-homomorphism}.)
 \end{point}
+\end{point}
+\begin{point}{Lemma (``p$\Rightarrow$i'')}%
+A positive map $f\colon \scrA\to\scrB$ between
+$C^*$-algebras is involutive.
+\begin{point}{Proof}%
+Let~$a\in \scrA$ be given. We must show that~$f(a^*)=f(a)^*$.
+
+But first we'll show that if~$a$ is self-adjoint,
+then so is~$f(a)$.
+Indeed, since $\|a\|$ and $\|a\|-a$ are positive (see~\sref{cstar-positive}),
+we see that $f(\|a\|)$ and $f(\|a\|-a)$ are positive,
+and so~$f(a)=f(\|a\|)-f(\|a\|-a)$ is self-adjoint.
+
+It follows that $\Real{f(a)}=f(\Real{a})$
+and $\Imag{f(a)}=f(\Imag{a})$ (for~$a\in\scrA$),
+because $f(a)\equiv f(\Real{a})+if(\Imag{a})$,
+and~$f(\Real{a})$ and~$f(\Imag{a})$
+are self-adjoint
+(see~\sref{cstar-involution-basic}).
+
+Hence $f(a^*)\equiv f(\Real{a}-i\Imag{a})
+=\Real{f(a)}-i\Imag{f(a)}\equiv f(a)^*$.\qed
+\end{point}
+\end{point}
+\begin{point}{Remark}%
+We will see later on (in~\sref{}),
+that an mi-map is positive.
+\end{point}
 \begin{point}%
 The miu-maps between $C^*$-algebras
 form a category which we denote by~$\Cstar{miu}$.
 The full subcategory of commutative $C^*$-algebras
 is denoted by~$\cCstar{miu}$.
-\end{point}
 \end{point}
 \begin{point}[cstar-categorical-product]{Exercise}%
 Show that the direct product of $C^*$-algebras
@@ -1710,15 +1740,7 @@ is isomorphic to a $C^*$-algebra of operators on a Hilbert space.
 \end{point}
 \begin{point}[state]{Definition}%
 A \Define{state} of a $C^*$-algebra~$\scrA$
-is a piu-map $f\colon \scrA\to \C$.
-\begin{point}{Remark}%
-We will realize later on that the
-requirement that a state is involutive
-is redundant,
-(because
-every positive map between $C^*$-algebras
-is involutive, see~\sref{p-implies-i}.)
-\end{point}
+is a pu-map $f\colon \scrA\to \C$.
 \end{point}
 \begin{point}%
 Our program is to show that 
@@ -2115,27 +2137,7 @@ and $b=-\left(\begin{smallmatrix}1 & 0 \\ 0 & 0 \end{smallmatrix}\right)$.)
 The existence of positive and negative parts
 in a $C^*$-algebra
 has many pleasant and subtle consequences
-of which we'll now show two (\sref{p-implies-i} and \sref{astara-positive}).
-\end{point}
-\begin{point}[p-implies-i]{Exercise}%
-	Let~$f\colon \scrA\to\scrB$
-	be a p-map between $C^*$-algebras $\scrA$ and~$\scrB$.
-	We will see that~$f$ is involutive,
-	that is, $f(a^*)=f(a)^*$ for all~$a\in \scrA$.
-\begin{enumerate}
-	\item
-		Show that~$f(a)$ is self-adjoint
-		for every self-adjoint $a\in \scrA$
-		(by writing $a\equiv a_+ - a_-$ and using that~$f$
-		is positive).
-	\item
-		Deduce 
-		that $f(\Real{a})=\Real{f(a)}$
-		and $f(\Imag{a}) = \Imag{f(a)}$
-		for all~$a\in \scrA$ (see~\sref{cstar-involution-basic}).
-	\item
-		Conclude that $f(a^*)=f(a)^*$ for all~$a\in\scrA$.
-\end{enumerate}
+of which we'll now show one (\sref{astara-positive}).
 \end{point}
 \begin{point}[astara-positive]{Lemma}%
 Given an element $a$ of a $C^*$-algebra $\scrA$,
@@ -2374,7 +2376,7 @@ with $\ker(f)=I$.
 \begin{point}{Proof}%
 Since~$I$ is a maximal order ideal 
 by~\sref{maximal-riesz-ideal-maximal-order-ideal},
-there is a piu-map $f\colon \scrA\to \C$
+there is a pu-map $f\colon \scrA\to \C$
 with~$\ker(f)=I$ by~\sref{maximal-ideal-state}.
 It remains to be shown that~$f$ is multiplicative.
 Let~$a,b\in \scrA$ be given;
