@@ -370,6 +370,41 @@ We'll see (in~\sref{uniqueness-adjoint})
 that such adjointable~$T$ is adjoint to exactly one~$S$,
 which we denote by~\Define{$T^*$}.
 \end{point}
+\begin{point}[hilb-examples]{Exercise}%
+Verify the following examples
+of (pre-)Hilbert spaces.
+\begin{enumerate}
+\item
+	The complex numbers~$\C$
+	form a Hilbert space
+	with $\left<w,z\right>=\overline{w}z$.
+\item
+	One can combine pre-Hilbert spaces
+	in a sort of sum
+	as follows.
+	Let~$\scrH_i$ be a pre-Hilbert space for every element~$i$
+	of some index set~$I$.
+	The \Define{direct sum} of the family~$(\scrH_i)_i$
+	is the pre-Hilbert space denoted by 
+	$\Define{\bigoplus_{i\in I}\scrH_i}$
+	formed by the vector space
+	\begin{equation*}
+		\textstyle
+		\bigl\{ \ x\in \prod_{i\in I}\scrH_i\colon\ 
+		\sum_{i\in I}\|x(i)\|^2<\infty\ \bigr\}
+	\end{equation*}
+	with inner product
+	$\left<x,y\right>=\sum_{i\in I} \left<x(i),y(i)\right>$.
+	
+	If all $\scrH_i$ are complete (i.e.~are Hilbert spaces),
+	then so is~$\bigoplus_i \scrH_i$.
+
+	In particular, given a set~$I$, 
+	the $I$-fold direct sum $\bigoplus_{i\in I}\C$
+	of the Hilbert space of complex numbers~$\C$
+	is a Hilbert space, which we denoted by~\Define{$\ell^2(X)$}.
+\end{enumerate}
+\end{point}
 \begin{point}[uniqueness-adjoint]{Exercise}%
 Let~$x$ and~$x'$ be elements of a pre-Hilbert space~$\scrH$
 with $\left<y,x\right>=\left<y,x'\right>$
