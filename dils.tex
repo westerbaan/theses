@@ -1,0 +1,50 @@
+\documentclass[B]{subfiles}
+\begin{document}
+\chapter{Dilations}
+
+\begin{parsec}[dils-intro]%
+\begin{point}%
+In this chapter we will study various dilation theorems.
+The common theme is that a complicated map
+    is actually the composition of a simpler map
+    after a representation into a larger algebra.
+We already saw a dilation theorem in disguise:
+    using the Gel'fand--Naimark--Segal construction (see \sref{gns})
+    one shows every state is a vector state on a larger algebra:
+\end{point}
+\begin{point}{Exercise}%
+    Show that
+    for each pu-map~$\omega\colon \scrA \to \C$
+        from a~C$^*$-algebra~$\scrA$
+    there is a Hilbert space~$\scrH$,
+    a miu-map~$\varrho\colon \scrA \to \scrB(\scrH)$
+    and vector~$x \in \scrH$
+    such that~$\omega = h \after \varrho$
+    where~$h \colon \scrB(\scrH) \to \C$
+    is given by~$h(T) = \left<Tx,x\right>$.
+\end{point}
+
+\begin{point}
+Probably the most famous dilation theorem is that
+of Stinespring\cite[Theorem 1]{stinespring}.
+As we will see in the proof
+    the construction of the larger Hilbert space
+    is similar to the GNS-construction.
+The idea is to replace the state~$\omega\colon \scrA \to \C$
+    by a pu-map~$\varphi\colon \scrA \to \scrB(\scrH)$.
+Positivity does not
+\end{point}
+
+\begin{point}{Theorem (Stinespring)}
+    For every cp-map~$\varphi\colon \scrA \to \scrB (\scrH)$
+    there is a Hilbert space~$\scrK$,
+        miu-map~$\varrho\colon \scrA \to \scrB(\scrK)$
+        and bounded operator~$V\colon \scrH \to \scrK$
+        such that~$\varphi = \ad_V \after \varrho$,
+        where~$\Define{\ad_V} \colon \scrB(\scrK) \to \scrB(\scrH)$
+        is given by~$\ad_V(T):= V^*TV$.
+\end{point}
+
+\end{parsec}
+
+\end{document}
