@@ -319,7 +319,7 @@ Whence~$T$ is bounded too,
 and $(T_n)_n$ converges to~$T$.\qed
 \end{point}
 \end{point}
-\begin{point}%
+\begin{point}[bounded-operators-banach-algebra]%
 From~\sref{bounded-operators-basic}
 and~\sref{operator-norm-complete}
 it is clear that the complex vector space
@@ -3103,9 +3103,9 @@ $N\times N$-matrices \emph{over a $C^*$-algebra~$\scrA$}
 form a $C^*$-algebra by interpreting them
 as \emph{adjointable module maps} on
 the \emph{Hilbert $\scrA$-module} $\scrA^n$,
-see~\sref{} and~\sref{}.
+see~\sref{chilb-basic} and~\sref{bax-cstar}.
 \end{point}
-\begin{point}{Definition}%
+\begin{point}[chilb-basic]{Definition}%
 An \Define{inner product} on a right $\scrA$-module
 ($\scrA$ being a $C^*$-algebra) is a map
 $\left<\,\cdot\,,\,\cdot\,\right>\colon X\times X\to\scrA$
@@ -3123,7 +3123,7 @@ Such~$X$ is called
 a \Define{Hilbert $\scrA$-module}
 when it is complete
 with respect to
-the norm we'll define in~\sref{}.
+the norm we'll define in~\sref{chilb-norm-basic}.
 
 Let~$X$ and~$Y$ be pre-Hilbert $\scrA$-module.
 We say that a bounded module map $T\colon X\to Y$
@@ -3133,9 +3133,12 @@ when
 \left<Tx,y\right>\ =\ \left<x,Sy\right>
 \qquad \text{for all $x\in X$ and $y\in Y$}.
 \end{equation*}
-In that case, we call~$T$ adjointable.
-We'll see (in~\sref{}) that such adjointable~$T$
-is adjoint to exactly one~$S$, which we denote by~$T^*$.
+In that case, we call~$T$ \Define{adjointable}.
+It is not difficult to see that such adjointable~$T$
+is adjoint to exactly one~$S$, which we denote by~$\Define{T^*}$.
+The set of such adjointable bounded module maps~$T$ is denoted
+by~$\Define{\scrB_a(X,Y)}$,
+and we write $\Define{\scrB_a(X)}=\scrB_a(X,X)$.
 \end{point}
 \begin{point}{Example}%
 We endow $\scrA^N$
@@ -3163,7 +3166,7 @@ is always adjointable (see~\sref{hilb-adjoint}),
 a bounded module map
 between Hilbert $\scrA$-modules
 might have no adjoint
-as shown by the following example
+as is revealed by the following example
 (based on~\cite{paschke}, p.~447).
 
 Prove that~$J:=\{\,f\in C[0,1]\colon\, f(0)=0\,\}$
@@ -3199,10 +3202,12 @@ but more on that in~\sref{}.
 	We have
 $\left<x,y\right>\,\left<y,x\right>
 \,\leq\,\left\|\left<y,y\right>\right\|\,\left<x,x\right>$
-for all elements $x$, $y$ of a pre-Hilbert $\scrA$-module.
+for every inner product $\left<\,\cdot\,,\,\cdot\,\right>$
+on a right $\scrA$-module~$X$,
+and $x,y\in X$.
 \begin{point}{Proof}%
 Let~$\omega\colon \scrA\to \C$ be a state of~$\scrA$.
-By~\sref{}, it suffices to show that
+By~\sref{separation-by-states}, it suffices to show that
 $\omega(\,\left<x,y\right>\,\left<y,x\right>\,)
 \,\leq\,\left\|\left<y,y\right>\right\|\,\omega(\left<x,x\right>)$.
 Noting that $(u,v)\mapsto \omega(\left<u,v\right>)$
@@ -3238,7 +3243,81 @@ that $\omega(\,\left<x,y\right>\,\left<y,x\right>\,)\leq
 and so we're done.\qed
 \end{point}
 \end{point}
+\begin{point}{Remark}%
+\TODO{that the ``$\|$'' in this version of Cauchy--Schwarz
+cannot be dropped}
+\end{point}
+\begin{point}[chilb-norm-basic]{Exercise}%
+Let~$X$ be a pre-Hilbert $\scrA$-module.
+Verify that
+\begin{enumerate}
+	\item
+$\Define{\|x\|} = \left\|\left<x,x\right>\right\|^{\nicefrac{1}{2}}$
+defines a norm~$\left\|\,\cdot\,\right\|$ on~$X$, and
+\item
+$\left\|xb\right\|\leq \left\|x\right\|\left\|b\right\|$
+and $\left\|\left<x,y\right>\right\|\leq \left\|x\right\|
+\left\|y\right\|$
+for all~$x,y\in X$ and $b\in \scrA$.
+\end{enumerate}
+\end{point}
+\begin{point}[module-maps-cstar-identity]{Exercise}%
+Show that $\|T^*T\|=\|T\|^2$ and $\|T^*\|=\|T\|$
+for every adjointable module map~$T$ on a pre-Hilbert $\scrA$-module.
+(Hint: adapt the proof of~\sref{operators-cstar-identity}.)
+\end{point}
+\begin{point}[bax-cstar]{Proposition}%
+The adjointable bounded module maps~$\scrB_a(X)$
+on a Hilbert $\scrA$-module
+form a $C^*$-algebra
+with composition as multiplication,
+adjoint as involution,
+and the operator norm as norm.
+\begin{point}{Proof}%
+Considering~\sref{bounded-operators-banach-algebra}
+and~\sref{module-maps-cstar-identity},
+the only thing that remains to be shown is that~$\scrB_a(X)$
+is closed (with respect to the operator norm)
+in the set of all bounded \emph{linear} maps $\scrB(X)$.
+So let~$T\colon X\to X$ be a bounded linear map
+which is the limit of a sequence $T_1,T_2,\dotsc$
+of adjointable bounded module maps.
 
+Since given $x\in X$, and $b\in\scrA$, we have, for all~$n$,
+using~\sref{chilb-norm-basic}
+\begin{alignat*}{3}
+\left\|\,(Tx)b-T(xb)\,\right\|
+\ &\leq\ \left\|((T-T_n)x)b\right\|
+\,+\,\left\|(T_n-T)(xb)\right\|
+\\
+&\leq\ 
+2\|T-T_n\|\|x\|\|b\|,
+\end{alignat*}
+we see that $(Tx)b=T(xb)$, and so~$T$ is a module map.
 
+To see that~$T$ has an adjoint,
+note that~$\left\|T_n^*-T_m^*\right\|
+=\left\|(T_n-T_m)^*\right\|
+=\left\|T_n-T_m\right\|$
+for all~$n,m$, and so $T_1^*,\,T_2^*,\,\dotsc$
+is a Cauchy sequence,
+and converges to some bounded operator~$S$ on~$X$.
+Since for~$x,y\in X$ and~$n$,
+\begin{alignat*}{3}
+\left|\left<Sx,y\right>-\left<x,Ty\right>\right|
+\ &\leq\ 
+\left|\left<(S-T^*_n)x,y\right>\right|
+\,+\,
+\left|\left<x,(T_n-T)y\right>\right|
+\\
+\ &\leq\ 
+\|S-T^*_n\|\|x\|\|y\|\,+\,\|T_n-T\|\|x\|\|y\|,
+\end{alignat*}
+we see that $\left<Sx,y\right>=\left<x,Ty\right>$,
+so~$S$ is the adjoint of~$T$,
+and~$T$ is adjointable.
+\qed
+\end{point}
+\end{point}
 \end{parsec}
 \end{document}
