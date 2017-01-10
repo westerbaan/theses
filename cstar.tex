@@ -398,7 +398,7 @@ Show that~$T^*$ is adjoint to~$T$ (and so $T^{**}=T$).
 \item
 Show that~$(T+S)^*=T^*+S^*$
 and $(\lambda S)^*=\overline{\lambda}S^*$
-for every~$\lambda\in C$.
+for every~$\lambda\in \C$.
 \item
 Show that~$ST$ is adjoint to $T^*S^*$ (and so $(ST)^*=T^*S^*$).
 \end{enumerate}
@@ -538,7 +538,7 @@ Verify the following examples of Hilbert spaces.
 \end{enumerate}
 \end{point}
 \end{parsec}
-\begin{parsec}%
+\begin{parsec}[hilb-adjoint]%
 \begin{point}[adjointables-cstar-algebra]%
 At this point
 it is clear that the vector space of adjointable operators
@@ -646,7 +646,7 @@ It follows easily that~$\|x-y\|=r$,
 and thus~$y$ is the projection of~$x$ on~$C$.\qed
 \end{point}
 \end{point}
-\begin{point}[riesz-representation-theorem]{Riesz Representation Theorem}%
+\begin{point}[riesz-representation-theorem]{Riesz'~Representation Theorem}%
 Let~$\scrH$ be a Hilbert space.
 For every bounded linear map~$f\colon \scrH\to\C$
 there is a unique vector~$x\in \scrH$
@@ -3083,5 +3083,116 @@ from~$\scrA$ onto the $C^*$-subalgebra
 $\varrho(\scrA)$ of~$\scrB(\scrH_\Omega)$.\qed
 \end{point}
 \end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+\TODO{see if this material can be moved up}
+
+We have seen (in~\sref{hilb}) that the $N\times N$-matrices
+($N$ being a natural number) over the complex numbers~$\C$
+form a $C^*$-algebra (denoted by~$M_N$) by interpreting
+them as bounded operators on the Hilbert space $\C^N$,
+and proving
+that the bounded operators~$\scrB(\scrH)$
+on any Hilbert space~$\scrH$ form a $C^*$-algebra.
+
+In this paragraph, we'll prove the analogous
+and more general
+result that the 
+$N\times N$-matrices \emph{over a $C^*$-algebra~$\scrA$}
+form a $C^*$-algebra by interpreting them
+as \emph{adjointable module maps} on
+the \emph{Hilbert $\scrA$-module} $\scrA^n$,
+see~\sref{} and~\sref{}.
+\end{point}
+\begin{point}{Definition}%
+An \Define{inner product} on a right $\scrA$-module
+($\scrA$ being a $C^*$-algebra) is a map
+$\left<\,\cdot\,,\,\cdot\,\right>\colon X\times X\to\scrA$
+such that, for all $x,y\in X$,
+$\left<x,\,\cdot\,\right>\colon X\to X$
+is a module map, $\left<x,x\right>\geq 0$,
+and $\left<x,y\right>=\left<y,x\right>^*$.
+We say that such an inner product is \Define{definite}
+if~$\left<x,x\right>=0\implies x=0$ for all~$x\in X$.
+
+A \Define{pre-Hilbert $\scrA$-module} $X$
+(where~$\scrA$ is always assumed to be a $C^*$-algebra)
+is a right $\scrA$-module endowed with a definite inner product.
+Such~$X$ is called
+a \Define{Hilbert $\scrA$-module}
+when it is complete
+with respect to
+the norm we'll define in~\sref{}.
+
+Let~$X$ and~$Y$ be pre-Hilbert $\scrA$-module.
+We say that a bounded module map $T\colon X\to Y$
+is adjoint to a bounded module map $S\colon Y\to X$
+when
+\begin{equation*}
+\left<Tx,y\right>\ =\ \left<x,Sy\right>
+\qquad \text{for all $x\in X$ and $y\in Y$}.
+\end{equation*}
+In that case, we call~$T$ adjointable.
+We'll see (in~\sref{}) that such adjointable~$T$
+is adjoint to exactly one~$S$, which we denote by~$T^*$.
+\end{point}
+\begin{point}{Example}%
+We endow $\scrA^N$
+(where~$\scrA$ is a $C^*$-algebra and~$N$ is a natural number)
+with the inner product $\left<x,y\right>=\sum_n x_n^*y_n$,
+making it a Hilbert $C^*$-module.
+\end{point}
+\begin{point}{Exercise}%
+Let~$S$ and~$T$ be adjointable operators on a 
+pre-Hilbert $\scrA$-module.
+\begin{enumerate}
+\item
+	Show that~$T^*$ is adjoint to~$T$ (and so~$T^{**}=T$).
+\item
+Show that $(T+S)^*=T^*+S^*$ 
+and $(\lambda S)^*=\overline{\lambda}S^*$ for $\lambda\in \C$.
+\item
+Show that $ST$ is adjoint to $T^*S^*$
+(and so $(ST)^*=T^*S^*$).
+\end{enumerate}
+\end{point}
+\begin{point}{Exercise}%
+Although a bounded linear map between Hilbert spaces
+is always adjointable (see~\sref{hilb-adjoint}),
+a bounded module map
+between Hilbert $\scrA$-modules
+might have no adjoint
+as shown by the following example
+(based on~\cite{paschke}, p.~447).
+
+Prove that~$J:=\{f\in C[0,1]\colon f(0)=0\}$
+is a closed right ideal of~$C[0,1]$, and thus a
+Hilbert $C[0,1]$-module.
+
+Show that the inclusion $T\colon J\to \scrA$
+is a bounded module map,
+which has no adjoint
+by proving that there is no~$b\in J$
+with $\left<b,a\right>=Ta\equiv a$ for all~$a\in J$
+(for if~$T$ had an adjoint~$T^*$,
+then $\left<T^*1,a\right>=\left<1,Ta\right>=a$).
+
+\begin{point}{Remark}%
+Note that part of the problem here is the lack 
+of the obvious analog to
+Riesz'~representation theorem (\sref{riesz-representation-theorem})  
+for Hilbert $\scrA$-modules.
+One solution (taken in the literature) is to simply 
+add Riesz'~representation theorem as axiom
+giving us the \emph{self-dual} Hilbert $\scrA$-modules,
+but we'd like to keep Riesz'~representation theorem as a theorem,
+and instead assume the Hilbert $\scrA$-module
+is complete with respect to a suitable uniformity.
+\TODO{add reference, and, of course, the theorem itself}
+\end{point}
+\end{point}
+
+
 \end{parsec}
 \end{document}
