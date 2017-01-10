@@ -3195,6 +3195,49 @@ but more on that in~\sref{}.
 \TODO{add reference, and, of course, the theorem itself}
 \end{point}
 \end{point}
+\begin{point}{Proposition (Cauchy--Schwarz)}%
+	We have
+$\left<x,y\right>\,\left<y,x\right>
+\,\leq\,\left\|\left<y,y\right>\right\|\,\left<x,x\right>$
+for all elements $x$, $y$ of a pre-Hilbert $\scrA$-module.
+\begin{point}{Proof}%
+Let~$\omega\colon \scrA\to \C$ be a state of~$\scrA$.
+By~\sref{}, it suffices to show that
+$\omega(\,\left<x,y\right>\,\left<y,x\right>\,)
+\,\leq\,\left\|\left<y,y\right>\right\|\,\omega(\left<x,x\right>)$.
+Noting that $(u,v)\mapsto \omega(\left<u,v\right>)$
+is a complex-valued inner product on~$X$,
+we compute
+\begin{alignat*}{3}
+	\omega&(\,\left<x,y\right>\,\left<y,x\right>\,)^2\\
+\ &= \ 
+\omega(\,\left<x,\,y\left<y,x\right>\right>\,)^2
+\\
+&\leq\ 
+\omega(\left<x,x\right>)\ 
+\omega(\,\left<\,y\left<y,x\right>,\, y\left<y,x\right>\,\right>\,)
+\qquad
+&&\text{by Cauchy--Schwarz, \sref{inner-product-basic}}
+\\
+&=\ 
+\omega(\left<x,x\right>)\ 
+\omega(\,\left<x,y\right> \,\left<y,y\right>\, \left<y,x\right>\,)
+\\
+&\leq\ 
+\omega(\left<x,x\right>)\ 
+\omega(\,\left<x,y\right>\left<y,x\right>\,)
+\  \left\|\left<y,y\right>\right\|
+\qquad
+&&\text{since $\left<y,y\right>\leq \left\|\left<y,y\right>\right\|$.}
+\end{alignat*}
+It follows
+(also when~$\omega(\,\left<x,y\right>\,\left<y,x\right>\,)=0$),
+that $\omega(\,\left<x,y\right>\,\left<y,x\right>\,)\leq
+\left\|\left<y,y\right>\right\|\,
+\omega(\left<x,x\right>)$,
+and so we're done.\qed
+\end{point}
+\end{point}
 
 
 \end{parsec}
