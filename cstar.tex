@@ -920,7 +920,7 @@ is called
 \Define{\textbf{m}ultiplicative}
 if $f(ab)=f(a)f(b)$ for all $a,b\in\scrA$;
 \item
-\Define{\textbf{i}nvolutive}
+\Define{\textbf{i}nvolution preserving}
 if $f(a^*)=f(a)^*$ for all~$a\in\scrA$;
 \item
 \Define{\textbf{u}nital}
@@ -942,13 +942,14 @@ We use the bold letters as abbreviations,
 so for instance,
 $f$ is \Define{pu} if it is positive and unital,
 and a \Define{miu-map}
-is a multiplicative, involutive, unital linear map between $C^*$-algebras,
+is a multiplicative, involution preserving,
+unital linear map between $C^*$-algebras,
 (which is usually called a \Define{unital $*$-homomorphism}.)
 \end{point}
 \end{point}
 \begin{point}{Lemma (``p$\Rightarrow$i'')}%
 A positive map $f\colon \scrA\to\scrB$ between
-$C^*$-algebras is involutive.
+$C^*$-algebras is involution preserving.
 \begin{point}{Proof}%
 Let~$a\in \scrA$ be given. We must show that~$f(a^*)=f(a)^*$.
 
@@ -2847,7 +2848,7 @@ Note that $[a,a]_\omega\equiv \omega(a^*a)\geq 0$ for each~$a\in\scrA$,
 because $a^*a\geq 0$ (by~\sref{astara-positive});
 and  $\smash{\overline{[a,b]}_\omega}=[b,a]_\omega$
 for $a,b\in\scrA$,
-because $\omega$ is involutive (by~\sref{p-implies-i}).
+because $\omega$ is involution preserving (by~\sref{p-implies-i}).
 Finally, it is clear that $[a,\,\cdot\,]_\omega\equiv\omega(a^*\,\cdot\,)$
 is linear for each~$a\in\scrA$.\qed
 \end{point}
@@ -3007,7 +3008,7 @@ $(\varrho_\omega(a_1)\,\varrho_\omega(a_2))\,\eta_\omega(b)
 for all~$a_1,a_2,b\in\scrA$.
 
 Let~$a\in\scrA$ be given.
-To show that~$\varrho_\omega$ is involutive
+To show that~$\varrho_\omega$ is involution preserving
 it suffices to prove that~$\varrho_\omega(a^*)$
 is the adjoint of~$\varrho_\omega(a)$.
 Since~$\left<\varrho_\omega(a^*)\,\eta_\omega(b),\eta_\omega(c)\right>
