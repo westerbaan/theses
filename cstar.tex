@@ -356,9 +356,9 @@ if~$\scrH$ is complete with respect to this norm,
 we say that~$\scrH$ is a \Define{Hilbert space}.
 
 Let~$\scrH$ and~$\scrK$ be pre-Hilbert spaces.
-We say that a bounded operator~$T\colon \scrH\to \scrK$
+We say that a operator~$T\colon \scrH\to \scrK$
 is \Define{adjoint}
-to a bounded operator
+to a operator
 $S\colon \scrK\to \scrH$ 
 when
 \begin{equation*}
@@ -387,8 +387,18 @@ Let~$x$ and~$x'$ be elements of a pre-Hilbert space~$\scrH$
 with $\left<y,x\right>=\left<y,x'\right>$
 for all~$y\in\scrH$.
 Show that~$x=x'$ (by taking $y=x-x'$).
-Conclude that every bounded operator between pre-Hilbert spaces
+Conclude that every operator between pre-Hilbert spaces
 has at most one adjoint.
+\end{point}
+\begin{point}%
+Note that we did not require that
+an adjointable operator $T\colon \scrH\to\scrK$
+between pre-Hilbert spaces is bounded,
+and in fact, it might not be.
+
+\TODO{Is the adjoint of a bounded operator bounded?}
+
+
 \end{point}
 \begin{point}{Exercise}%
 Let~$S$ and~$T$ be adjointable operators on a pre-Hilbert space.
@@ -522,8 +532,8 @@ by Cauchy--Schwarz,
 we have $\|T\|^2\leq \|T^*T\|$.
 Since~$\|T^*T\|\leq \|T^*\|\|T\|$
 and $\|T\|\neq 0$,
-it follows that~$\|T^*\|\leq \|T\|$.
-Since by a similar reasoning $\|T\|\leq \|T^*\|$,
+it follows that~$\|T\|\leq \|T^*\|$.
+Since by a similar reasoning $\|T^*\|\leq \|T\|$,
 we get~$\|T\|=\|T^*\|$.
 But then $\|T\|^2\leq \|T^*T\|\leq \|T^*\|\|T\|=\|T\|^2$,
 and so $\|T\|^2=\|T^*T\|$.\qed
