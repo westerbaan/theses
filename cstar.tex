@@ -3495,7 +3495,7 @@ by~\sref{pub}.
 
 It follows that~$\|\left<y,Tx\right>\|\leq B\|y\|\|x\|$
 for all~$y\in Y$ and~$x\in X$,
-and thus~$T$ and~$T^*$ are bounded, by~\TODO{}.\qed
+and thus~$T$ and~$T^*$ are bounded, by~\sref{chilb-form-bounded}.\qed
 \end{point}
 \begin{point}{Remark}%
 As a special case of the preceding theorem
@@ -3514,6 +3514,128 @@ because~$T$ maps $(1,\frac{1}{2},\dotsc,\frac{1}{n},0,0,\dotsc)$
 having 2-norm below~$\frac{\pi}{\sqrt{6}}$
 to $(1,1,\dotsc,1,0,0,\dotsc)$,
 which has $2$-norm equal to~$\sqrt{n}$.
+\end{point}
+\end{point}
+\begin{point}{Definition}%
+Let~$\scrH$ be a Hilbert space.
+The \Define{weak operator topology}
+on~$\scrB(\scrH)$ is least topology on~$\scrB(\scrH)$
+with respect to which $T\mapsto \left<x,Tx\right>,\,\scrB(\scrH)\to\C$
+is continuous for every~$x\in\scrH$.
+\end{point}
+\begin{point}[bh-wot-complete]{Proposition}%
+The space
+$\scrB(\scrH)$
+of bounded operators
+on a Hilbert space~$\scrH$
+is complete with respect to the weak operator topology.
+\begin{point}{Proof}%
+Let $(T_\alpha)_\alpha$ be a net in~$\scrB(\scrH)$
+which is Cauchy with respect to the weak operator topology (WOT),
+that is, $(\,\left<x,T_\alpha x\right>\,)_\alpha$
+is Cauchy for every~$x\in \scrH$.
+We must show that~$(T_\alpha)_\alpha$
+WOT-converges to some operator~$T$.
+
+Let~$x,y \in \scrH$ be given.
+Since by a routine computation
+\begin{equation*}
+	\left<T_\alpha x, y\right>
+\ =\ \frac{1}{4}\ \sum_{n=0}^3 \,i^n\,\left<\,T_\alpha( i^nx+y),
+\,i^nx+y\,\right>
+\end{equation*}
+for all~$\alpha$,
+we see that $(\,\left<T_\alpha x, y\right>\,)_\alpha$
+is Cauchy,
+and therefore converges to some complex number $\omega_x(y)$,
+giving a map $\omega_x\colon \scrH\to \C$ for every~$x\in \scrH$.
+Since such~$\omega_x$ is the pointwise limit of the
+bounded linear functionals~$(\left<x,T_\alpha\,\cdot\,\right>)_\alpha$,
+we see that~$\omega_x$ is itself a bounded linear functional (by~\sref{}),
+and thus of the form $\omega_x\equiv \left<Tx,\,\cdot\,\right>$
+for some~$Tx\in\scrH$
+by Riesz' Representation Theorem 
+(see~\sref{riesz-representation-theorem}),
+giving us a map $T\colon \scrH\to\scrH$
+with $\left<Tx,y\right> = \lim_\alpha\left<T_\alpha x,y\right>$
+for all~$x,y\in \scrH$.
+Thus, if~$T$ were to be an element of~$\scrB(\scrH)$,
+then it would be the WOT-limit of  $(T_\alpha)_\alpha$,
+and we'd be done.
+
+To see that~$T$ is a bounded operator,
+it suffices to show that~$T$ is adjointable
+(in the sense of~\sref{chilb-basic}),
+because then~$T$ is clearly linear, 
+but also bounded by~\sref{hellinger-toeplitz}.
+
+In order to find an adjoint for~$T$,
+observe that~$\left<T_\alpha^* y,x\right>=\left<x,T_\alpha y\right>$
+for all~$\alpha$,
+and so $(\,\left<T_\alpha^* y,x\right>\,)_\alpha$
+is Cauchy too for all~$x,y\in\scrH$.
+Thus a similar reasoning as before, but now for~$(T_\alpha^*)_\alpha$
+instead of~$(T_\alpha)_\alpha$,
+provides us with a linear map $S\colon \scrH\to\scrH$
+with $\left<Sy,x\right> = \lim_\alpha\left<T^*_\alpha y,x\right>$
+for all~$x,y\in\scrH$,
+which is therefore adjoint to~$T$.\qed
+\end{point}
+\end{point}
+\begin{point}{Proposition}%
+Let~$\scrH$ be a Hilbert space,
+and~$\scrD$ an upwards directed subset of~$\Real{\scrB(\scrH)}$
+with $\sup_{T\in \scrD} \left<x,Tx\right> <\infty$
+for all~$x\in \scrH$. Then
+\begin{enumerate}
+\item
+$(T)_{T\in\scrD}$
+converges 
+in the weak operator topology
+to some~$T'$ in~$\Real{(\scrB(\scrH))}$,
+\item
+$T'$ is the supremum of~$\scrD$
+in $\Real{(\scrB(\scrH))}$,
+and 
+\item
+$\left<x,T'x\right> = 
+\sup_{T\in\scrD}\left<x,Tx\right> $
+for all~$x\in \scrH$.
+\end{enumerate}
+\begin{point}{Proof}%
+Let~$x\in \scrH$.
+Since $\left<x,(\,\cdot\,)x\right>\colon \scrB(\scrH)\to \C$
+is positive (by~\TODO{}),
+we see that
+$(\left<x,Tx\right>)_{T\in\scrD}$
+is an increasing net in~$\R$, 
+bounded from above (by assumption),
+and therefore converges to~$\sup_{T\in\scrD}\left<x,Tx\right>$.
+In particular,~$(T)_{T\in\scrD}$
+is WOT-Cauchy,
+and thus
+(by~\sref{bh-wot-complete})
+WOT-converges to some~$T'$ from~$\scrB(\scrH)$.
+
+Since $(\,\left<x,Tx\right>\,)_{T\in\scrD}$
+converges both to~$\left<x,T'x\right>$,
+and to~$\sup_{T\in\scrD} \left<x,Tx\right>$,
+we conclude that $\left<x,T'x\right>=\sup_{T\in\scrD}\left<x,Tx\right>$
+for every~$x\in\scrH$.
+In particular,  $\left<x,Tx\right>\leq \left<x,T'x\right>$
+for all~$x\in\scrH$ and $T\in\scrD$, and thus $T\leq T'$
+for all~$T\in\scrD$.
+
+Let~$S$ be a self-adjoint bounded operator on~$\scrH$ with $T\leq S$
+for all~$T\in\scrD$.
+To prove that~$T'$ is the supremum of~$\scrD$,
+we must show that~$T'\leq S$.
+Let~$x\in \scrH$ be given.
+Since $\left<x,Tx\right>\leq \left<x,Sx\right>$
+for each~$T\in \scrD$ (because $T\leq S$),
+we have $\left<x,T'x\right>\equiv \sup_{T\in\scrD} \left<x,Tx\right>
+\leq \left<x,Sx\right>$,
+and therefore $T'\leq S$ by~\TODO{}.\qed
 \end{point}
 \end{point}
 \end{parsec}
