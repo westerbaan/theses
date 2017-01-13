@@ -3149,17 +3149,28 @@ with respect to
 the norm we'll define in~\sref{chilb-norm-basic}.
 
 Let~$X$ and~$Y$ be pre-Hilbert $\scrA$-module.
-We say that a bounded module map $T\colon X\to Y$
-is adjoint to a bounded module map $S\colon Y\to X$
+We say that a map $T\colon X\to Y$
+is adjoint to a map $S\colon Y\to X$
 when
 \begin{equation*}
 \left<Tx,y\right>\ =\ \left<x,Sy\right>
 \qquad \text{for all $x\in X$ and $y\in Y$}.
 \end{equation*}
 In that case, we call~$T$ \Define{adjointable}.
-It is not difficult to see that such adjointable~$T$
-is adjoint to exactly one~$S$, which we denote by~$\Define{T^*}$.
-The set of such adjointable bounded module maps~$T$ is denoted
+It is not difficult to see that~$T$
+must be linear, and a module map, and 
+adjoint to exactly one~$S$, which we denote by~$\Define{T^*}$.
+
+(Note that we did not require that~$T$
+is bounded, and in fact, it need not be, 
+see~\sref{hellinger-toeplitz-needs-complete}.
+However, if~$T$ is bounded, then so is~$T^*$, 
+see~\sref{chilb-form-bounded},
+and if either~$X$ or~$Y$ is complete,
+then~$T$ is automatically bounded, see~\sref{hellinger-toeplitz}.)
+
+The vector space of adjointable bounded module maps~$T\colon X\to Y$ 
+is denoted
 by~$\Define{\scrB_a(X,Y)}$,
 and we write $\Define{\scrB_a(X)}=\scrB_a(X,X)$.
 \end{point}
@@ -3284,9 +3295,51 @@ and $\left\|\left<x,y\right>\right\|\leq \left\|x\right\|
 for all~$x,y\in X$ and $b\in \scrA$.
 \end{enumerate}
 \end{point}
+\begin{point}[chilb-form-bounded]{Lemma}%
+For a linear map~$T\colon X\to Y$
+between pre-Hilbert $\scrA$-modules,
+and $B>0$,
+the following are equivalent.
+\begin{enumerate}
+\item 
+\label{chilb-form-bounded-1}
+$\|Tx\|\leq B\,\|x\|$ for all~$x\in X$
+(that is, $T$ is bounded by~$B$);
+\item
+\label{chilb-form-bounded-2}
+$\left\|\left<y,Tx\right>\right\|\leq B\,\|y\|\|x\|$
+for all~$x\in X$, $y\in Y$.
+\end{enumerate}
+Moreover,
+if~$T$ is adjointable,
+and bounded, then $\|T^*\|=\|T\|$.
+\begin{point}{Proof}%
+If~$\|Tx\|\leq B\|x\|$ for all~$x\in X$,
+then~$T$ is bounded, $\|T\|\leq B$, and therefore
+$\left\|\left<y,Tx\right>\right\|
+\leq \|y\|\,\|Tx\|\leq B \|y\|\|x\|$
+for all~$x\in X$ and~$y\in Y$ using~\sref{chilb-cs}.
+
+On the other hand,
+if~\ref{chilb-form-bounded-2} holds,
+and~$x\in X$ is given,
+then we have $\|Tx\|^2=\left\|\left<Tx,Tx\right>\right\|
+\leq B \,\|Tx\|\|x\|$,
+entailing $\|Tx\|\leq B\|x\|$
+(also when~$\|Tx\|=0$).
+
+If~$T$ is adjointable, and bounded,
+then~$\left\|\left<x,T^*y\right>\right\|=\left\|\left<y,Tx\right>\right\|
+\leq \|T\|\|y\|\|x\|$ for all~$x\in X$, $y\in Y$,
+so~$\|T^*\|\leq \|T\|$,
+giving us that~$T^*$ is bounded.
+Since by a similar reasoning $\|T\|\leq \|T^*\|$,
+we get $\|T\|=\|T^*\|$.\qed
+\end{point}
+\end{point}
 \begin{point}[module-maps-cstar-identity]{Exercise}%
-Show that $\|T^*T\|=\|T\|^2$ and $\|T^*\|=\|T\|$
-for every adjointable module map~$T$ on a pre-Hilbert $\scrA$-module.
+Show that $\|T^*T\|=\|T\|^2$
+for every adjointable bounded map~$T$ on a pre-Hilbert $\scrA$-module.
 (Hint: adapt the proof of~\sref{operators-cstar-identity}.)
 \end{point}
 \begin{point}[bax-cstar]{Proposition}%
@@ -3413,7 +3466,7 @@ the assumption that $\sup_{T\in \scrF} \|Tx\| <\infty$.\qed
 \end{point}
 \end{point}
 \end{point}
-\begin{point}{Theorem}%
+\begin{point}[hellinger-toeplitz]{Theorem}%
 Let~$T\colon X\to Y$ be an adjointable map
 between pre-Hilbert $\scrA$-modules.
 If either~$X$ or~$Y$ is complete,
@@ -3450,6 +3503,17 @@ we get the fact,
 known as the \Define{Hellinger--Toeplitz theorem},
 that every symmetric
 operator on a Hilbert space is bounded.
+\end{point}
+\begin{point}[hellinger-toeplitz-needs-complete]{Example}%
+The condition that either~$X$ or~$Y$ is complete cannot be dropped:
+the linear map $T\colon c_{00}\to c_{00}$
+given by $T\alpha = (n\alpha_n)_n$ for $\alpha\in c_{00}$
+is self-adjoint,
+but not bounded,
+because~$T$ maps $(1,\frac{1}{2},\dotsc,\frac{1}{n},0,0,\dotsc)$
+having 2-norm below~$\frac{\pi}{\sqrt{6}}$
+to $(1,1,\dotsc,1,0,0,\dotsc)$,
+which has $2$-norm equal to~$\sqrt{n}$.
 \end{point}
 \end{point}
 \end{parsec}
