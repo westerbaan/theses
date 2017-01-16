@@ -3518,10 +3518,19 @@ which has $2$-norm equal to~$\sqrt{n}$.
 \end{point}
 \begin{point}{Definition}%
 Let~$\scrH$ be a Hilbert space.
+\begin{enumerate}
+\item
 The \Define{weak operator topology}
-on~$\scrB(\scrH)$ is least topology on~$\scrB(\scrH)$
+on~$\scrB(\scrH)$ is least topology
 with respect to which $T\mapsto \left<x,Tx\right>,\,\scrB(\scrH)\to\C$
 is continuous for every~$x\in\scrH$.
+\item
+The \Define{strong operator topology}
+on~$\scrB(\scrH)$ is the least topology
+with respect to which $T\mapsto \|Tx\|\equiv \smash{\left<x,T^*Tx\right>^{%
+\nicefrac{1}{2}}}$
+is continuous for every~$x\in\scrH$.
+\end{enumerate}
 \end{point}
 \begin{point}[bh-wot-complete]{Proposition}%
 The space
