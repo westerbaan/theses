@@ -3532,65 +3532,6 @@ with respect to which $T\mapsto \|Tx\|\equiv \smash{\left<x,T^*Tx\right>^{%
 is continuous for every~$x\in\scrH$.
 \end{enumerate}
 \end{point}
-\begin{point}[bh-wot-complete]{Proposition}%
-The space
-$\scrB(\scrH)$
-of bounded operators
-on a Hilbert space~$\scrH$
-is complete with respect to the weak operator topology.
-\begin{point}{Proof}%
-Let $(T_\alpha)_\alpha$ be a net in~$\scrB(\scrH)$
-which is Cauchy with respect to the weak operator topology (WOT),
-that is, $(\,\left<x,T_\alpha x\right>\,)_\alpha$
-is Cauchy for every~$x\in \scrH$.
-We must show that~$(T_\alpha)_\alpha$
-WOT-converges to some operator~$T$.
-
-Let~$x,y \in \scrH$ be given.
-Since by a routine computation
-\begin{equation*}
-	\left<T_\alpha x, y\right>
-\ =\ \frac{1}{4}\ \sum_{n=0}^3 \,i^n\,\left<\,T_\alpha( i^nx+y),
-\,i^nx+y\,\right>
-\end{equation*}
-for all~$\alpha$,
-we see that $(\,\left<T_\alpha x, y\right>\,)_\alpha$
-is Cauchy,
-and therefore converges to some complex number $\omega_x(y)$,
-giving a map $\omega_x\colon \scrH\to \C$ for every~$x\in \scrH$.
-Since such~$\omega_x$ is the pointwise limit of the
-bounded linear functionals~$(\left<x,T_\alpha\,\cdot\,\right>)_\alpha$,
-we see that~$\omega_x$ is itself a bounded linear functional (by~\sref{}),
-and thus of the form $\omega_x\equiv \left<Tx,\,\cdot\,\right>$
-for some~$Tx\in\scrH$
-by Riesz' Representation Theorem 
-(see~\sref{riesz-representation-theorem}),
-giving us a map $T\colon \scrH\to\scrH$
-with $\left<Tx,y\right> = \lim_\alpha\left<T_\alpha x,y\right>$
-for all~$x,y\in \scrH$.
-Thus, if~$T$ were to be an element of~$\scrB(\scrH)$,
-then it would be the WOT-limit of  $(T_\alpha)_\alpha$,
-and we'd be done.
-
-To see that~$T$ is a bounded operator,
-it suffices to show that~$T$ is adjointable
-(in the sense of~\sref{chilb-basic}),
-because then~$T$ is clearly linear, 
-but also bounded by~\sref{hellinger-toeplitz}.
-
-In order to find an adjoint for~$T$,
-observe that~$\left<T_\alpha^* y,x\right>=\left<x,T_\alpha y\right>$
-for all~$\alpha$,
-and so $(\,\left<T_\alpha^* y,x\right>\,)_\alpha$
-is Cauchy too for all~$x,y\in\scrH$.
-Thus a similar reasoning as before, but now for~$(T_\alpha^*)_\alpha$
-instead of~$(T_\alpha)_\alpha$,
-provides us with a linear map $S\colon \scrH\to\scrH$
-with $\left<Sy,x\right> = \lim_\alpha\left<T^*_\alpha y,x\right>$
-for all~$x,y\in\scrH$,
-which is therefore adjoint to~$T$.\qed
-\end{point}
-\end{point}
 \begin{point}{Proposition}%
 Let~$\scrH$ be a Hilbert space,
 and~$\scrD$ an upwards directed subset of~$\Real{\scrB(\scrH)}$
