@@ -3549,7 +3549,7 @@ with respect to which $T\mapsto \|Tx\|\equiv \smash{\left<x,T^*Tx\right>^{%
 is continuous for every~$x\in\scrH$.
 \end{enumerate}
 \end{point}
-\begin{point}{Proposition}%
+\begin{point}[hilb-suprema]{Proposition}%
 Let~$\scrH$ be a Hilbert space,
 and~$\scrD$ an upwards directed subset of~$\Real{\scrB(\scrH)}$
 with $\sup_{T\in \scrD} \left<x,Tx\right> <\infty$
@@ -3604,6 +3604,28 @@ we have $\left<x,T'x\right>\equiv \sup_{T\in\scrD} \left<x,Tx\right>
 \leq \left<x,Sx\right>$,
 and therefore $T'\leq S$ by~\TODO{}.\qed
 \end{point}
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+Let~$\scrH$ be a Hilbert space.
+In~\sref{hilb-suprema}
+we saw that maps of the form $a\mapsto \left<x,ax\right>$
+preserve
+suprema of bounded operators on~$\scrH$.  
+As it turns out,
+not every p-map
+enjoys has this property,
+and in fact,
+we'll show that if a p-map $\omega\colon \scrB(\scrH)\to\C$ preserves
+suprema of self-adjoint operators,
+then $\omega\equiv \sum_{n=1}^\infty \left<x_n,(\,\cdot\,)x_n\right>$
+for some $x_1,x_2,\dotsc$ in~$\scrH$
+with $\sum_n \|x_n\|^2 <\infty$.
+
+\TODO{Proof that these maps are indeed.}
+
+\TODO{Remark on the ultraweak topology.}
 \end{point}
 \end{parsec}
 \end{document}
