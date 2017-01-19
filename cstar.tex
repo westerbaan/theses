@@ -3537,7 +3537,7 @@ which has $2$-norm equal to~$\sqrt{n}$.
 	Another consequence of~\sref{pub}
 	is this:
 \end{point}
-\begin{point}[hilb-weak-bounded-completeness]{Proposition}%
+\begin{point}[hilb-weakly-bounded-complete]{Proposition}%
 Given a net~$(y_\alpha)_\alpha$
 in a Hilbert space~$\scrH$
 for which $\left<y_\alpha,x\right>$
@@ -3567,7 +3567,7 @@ for all~$x\in \scrH$,
 and so we're done.\qed
 \end{point}
 \begin{point}{Remark}%
-The condition in~\sref{hilb-weak-bounded-completeness} 
+The condition in~\sref{hilb-weakly-bounded-complete} 
 that the net~$(\,\left<y_\alpha,x\right>\,)_\alpha$
 is bounded for every~$x$ cannot be omitted
 (even though $(\,\left<y_\alpha,x\right>\,)_\alpha$
@@ -3621,6 +3621,48 @@ with respect to which $T\mapsto \|Tx\|\equiv \smash{\left<x,T^*Tx\right>^{%
 is continuous for every~$x\in\scrH$.
 \end{enumerate}
 \end{point}
+\begin{point}[bh-wot-bounded-complete]{Lemma}%
+Let~$(T_\alpha)_\alpha$ be a net of bounded operators
+on a Hilbert space~$\scrH$
+such that $(\,\left<x,T_\alpha x \right>\,)$ is
+Cauchy and bounded for every~$x\in \scrH$.
+
+Then~$(T_\alpha)_\alpha$
+WOT-converges to some bounded operator~$T$ in $\scrB(\scrH)$.
+\begin{point}{Proof}%
+Let~$x,y\in \scrH$ be given.
+Since by a simple computation
+\begin{equation*}
+	\textstyle
+	\left<y,T_\alpha x\right>
+	\ = \ \frac{1}{4}\sum_{k=0}^3
+	i^k\left<\,i^ky+x,\,T_\alpha (i^ky+x)\,\right>,
+\end{equation*}
+ $(\,\left<y,T_\alpha x\right>\,)_\alpha$
+is bounded for every~$y\in \scrH$,
+and so by~\sref{hilb-weakly-bounded-complete} there is~$Tx\in \scrH$ 
+with $\left<y,Tx\right>=\lim_\alpha \left<y,T_\alpha x\right>$
+for all~$y\in\scrH$,
+giving us a linear map $T\colon \scrH\to \scrH$.
+It is clear that~$(T_\alpha)_\alpha$
+WOT-converges to~$T$,
+provided that~$T$ is bounded.
+
+So to complete the proof,
+we must show that~$T$ is bounded,
+and we'll do this by showing that~$T$ has an adjoint
+(see~\sref{hellinger-toeplitz}).
+Note that $\left<x,T_\alpha^* x\right>=\overline{\left<x,T_\alpha x\right>}$
+is Cauchy and bounded (with~$\alpha$ running),
+so by a similar reasoning as before (but with~$T^*_\alpha$
+instead of~$T_\alpha$)
+we get a map
+$S\colon \scrH\to\scrH$
+with $\left<x,Sy\right>=\lim_\alpha \left<x,T^*_\alpha y\right>$
+for all~$x,y\in\scrH$, which will be adjoint to~$T$,
+which is therefore bounded.\qed
+\end{point}
+\end{point}
 \begin{point}[hilb-suprema]{Proposition}%
 Let~$\scrH$ be a Hilbert space,
 and~$\scrD$ an upwards directed subset of~$\Real{\scrB(\scrH)}$
@@ -3652,8 +3694,9 @@ bounded from above (by assumption),
 and therefore converges to~$\sup_{T\in\scrD}\left<x,Tx\right>$.
 In particular,~$(T)_{T\in\scrD}$
 is WOT-Cauchy,
+and WOT-bounded,
 and thus
-(by~\sref{bh-wot-complete})
+(by~\sref{bh-wot-bounded-complete})
 WOT-converges to some~$T'$ from~$\scrB(\scrH)$.
 
 Since $(\,\left<x,Tx\right>\,)_{T\in\scrD}$
