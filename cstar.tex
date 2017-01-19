@@ -3533,6 +3533,78 @@ to $(1,1,\dotsc,1,0,0,\dotsc)$,
 which has $2$-norm equal to~$\sqrt{n}$.
 \end{point}
 \end{point}
+\begin{point}%
+	Another consequence of~\sref{pub}
+	is this:
+\end{point}
+\begin{point}[hilb-weak-bounded-completeness]{Proposition}%
+Given a net~$(y_\alpha)_\alpha$
+in a Hilbert space~$\scrH$
+for which $\left<y_\alpha,x\right>$
+is Cauchy \emph{and bounded}
+for every~$x\in \scrH$,
+there is a unique~$y\in\scrH$
+with $\left<y,x\right>=\lim_\alpha \left<y_\alpha,x\right>$
+for all~$y\in\scrH$.
+\begin{point}{Proof}%
+To obtain~$x$,
+we want to apply  Riesz' representation theorem
+(\sref{riesz-representation-theorem})
+to the linear map $f\colon \scrH\to\C$
+defined by~$f(x)=\lim_\alpha\left<y_\alpha,x\right>$,
+but must first show that~$f$ is bounded.
+For this it suffices to show
+that~$\sup_\alpha \left \|\left<y_\alpha,(\,\cdot\,)\right>\right\|<\infty$,
+and this follows by~\sref{pub}
+from the assumption 
+that $\sup_{\alpha} \left|\left<y_\alpha,x\right>\right| <\infty$
+for every~$x\in \scrH$.
+
+By Riesz' representation theorem (\sref{riesz-representation-theorem}),
+there is a unique~$x\in\scrH$ with 
+$\left<y,x\right>=f(x)\equiv \lim_\alpha \left<y_\alpha,x\right>$
+for all~$x\in \scrH$,
+and so we're done.\qed
+\end{point}
+\begin{point}{Remark}%
+The condition in~\sref{hilb-weak-bounded-completeness} 
+that the net~$(\,\left<y_\alpha,x\right>\,)_\alpha$
+is bounded for every~$x$ cannot be omitted
+(even though $(\,\left<y_\alpha,x\right>\,)_\alpha$
+being Cauchy is eventually bounded).
+
+To see this,
+consider a linear map $f\colon \scrH\to\C$ on a Hilbert space~$\scrH$
+which is not bounded.
+We claim that there is a net~$(y_\alpha)_\alpha$ in~$\scrH$
+with $f(x)=\lim_\alpha \left<y_\alpha,x\right>$ for all~$x\in\scrH$,
+and so there can be no~$y\in \scrH$ 
+with $\left<y,x\right> = \lim_\alpha \left<y_\alpha,x\right>$
+for all~$x\in \scrH$, because 
+that would imply that~$f$ is bounded.
+
+To create this net,
+note that~$f$ is bounded
+on the span $\left<F\right>$ of every 
+finite subset $F\equiv \{x_1,\dotsc,x_n\}$
+of vectors from~$\scrH$,
+and so by Riesz' representation theorem~\sref{riesz-representation-theorem}
+applied to~$f$ restricted to closed subspace~$\left<F\right>$
+of~$\scrH$ there is a unique $y_F\in \left<F\right>$
+such that~$f(x)=\left<y_F,x\right>$
+for all~$x\in\left<F\right>$.
+
+These $y_F$'s form a net in~$\scrH$
+(when we order the finite subsets~$F$ of~$\scrH$ by inclusion),
+which approximates~$f$ in the
+sense that~$f(x)=\lim_F \left<y_F,x\right>$
+for every~$x\in \scrH$,
+(because 
+$f(x)=\left<y_F,x\right>$
+for every~$F$
+with $\{x\}\subseteq F$).
+\end{point}
+\end{point}
 \begin{point}{Definition}%
 Let~$\scrH$ be a Hilbert space.
 \begin{enumerate}
