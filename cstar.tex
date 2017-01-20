@@ -3533,6 +3533,56 @@ to $(1,1,\dotsc,1,0,0,\dotsc)$,
 which has $2$-norm equal to~$\sqrt{n}$.
 \end{point}
 \end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}{Definition}%
+A Hilbert $\scrA$-module~$X$ is \Define{self-dual}
+when every bounded module map $r\colon X\to \scrA$
+is of the form $r\equiv \left<y,(\,\cdot\,)\right>$
+for some~$y\in X$.
+\end{point}
+\begin{point}{Example}%
+By Riesz' representation theorem (\sref{riesz-representation-theorem})
+every Hilbert space is self-dual.
+\end{point}
+\begin{point}{Definition}%
+Let us say that a \Define{form}
+on Hilbert $\scrA$-modules
+$X$ and~$Y$
+is a map $[\,\cdot\,,\,\cdot\,]\colon X\times Y\to \scrA$
+such that $[x,\,\cdot\,]\colon Y\to \scrA$
+and $[\,\cdot\,,y]^*\colon X\to \scrA$
+are bounded module maps for all~$x\in X$ and~$y\in Y$.
+\end{point}
+\begin{point}{Proposition}%
+For every form  $[\,\cdot\,,\,\cdot\,]\colon X\times Y\rightarrow \scrA$
+on self-dual Hilbert $\scrA$-modules
+$X$ and~$Y$
+there is a unique adjointable bounded module map 
+$T\colon X\to Y$
+with
+$[x,y] =\left<Tx,y\right>$
+for all~$x\in X$ and $y\in Y$.
+\begin{point}{Proof}%
+Let $x\in X$ be given.
+Since~$[x,\,\cdot\,]\colon Y\to \scrA$ is a
+a bounded module map,
+and~$Y$ is self-dual,
+there is a unique $Tx\in Y$ with
+$[x,y]=\left<Tx,y\right>$
+for all~$y\in Y$,
+giving a map $T\colon X\to Y$.
+For a similar reason
+we get a map $S\colon Y\to X$
+with $\left<Sy,x\right>=[x,y]^*$ 
+for all~$x\in X$ and~$y\in Y$.
+Since $S$ and~$T$ are clearly adjoint,
+they are bounded module maps by~\sref{hellinger-toeplitz}.\qed
+\end{point}
+\end{point}
+\end{parsec}
+\begin{parsec}%
 \begin{point}%
 	Another consequence of~\sref{pub}
 	is this:
@@ -3737,7 +3787,8 @@ for every bounded directed subset $\scrD$ of~$\Real{\scrB(\scrH)}$.
 \begin{point}[bh-normal-effects]{Exercise}%
 To show that a map is normal, it suffices to show 
 that it preserves directed suprema of \emph{effects}:
-show that given a Hilbert space~$\scrH$
+
+Show that given a Hilbert space~$\scrH$
 a  positive map $\omega\colon \scrB(\scrH)\to\C$
 is normal 
 provided that $\omega(\bigvee \scrD) = \bigvee_{T\in\scrD} \omega(T)$
@@ -3784,7 +3835,7 @@ By~\sref{bh-normal-effects}
 we may assume without loss of generality that 
 $\scrD\subseteq [0,1]_{\scrB(\scrH)}$.
 This has the benefit that $\left<x_n,T x_n\right>$
-is positive for all~$N$ and~$T\in\scrD$,
+is positive for all~$n$ and~$T\in\scrD$,
 so that their sum (over~$n$) is given by
 a supremum over partial sums, viz.~$\sum_n\left<x_n,Tx_n\right>
 =\bigvee_N\sum_{n=1}^N\left<x_n,Tx_n\right>$.
@@ -3802,7 +3853,7 @@ interchanging suprema,
 	\textstyle\bigvee_N \sum_{n=1}^N \left<x_n,(\bigvee \scrD )\,x_n\right>
 	\ =\ \textstyle\omega(\bigvee\scrD),
 \end{alignat*}
-and using that~$\sum_{n=1}^N \left<x_n,(\,\cdot\,)x_n\right>$
+where we used that~$\sum_{n=1}^N \left<x_n,(\,\cdot\,)x_n\right>$
 is normal.\qed
 
 \TODO{Perhaps a better way to present this is:
@@ -3810,6 +3861,7 @@ np-maps are closed under suprema and finite sums,
 and thus under arbitrary sums}
 \end{point}
 \end{point}
+
 
 \TODO{Remark on the ultraweak topology.}
 \end{parsec}
