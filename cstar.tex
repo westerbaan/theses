@@ -3720,27 +3720,97 @@ we have $\left<x,T'x\right>\equiv \sup_{T\in\scrD} \left<x,Tx\right>
 and therefore $T'\leq S$ by~\TODO{}.\qed
 \end{point}
 \end{point}
+\begin{point}{Definition}%
+Let~$\scrH$ be a Hilbert space.
+\begin{enumerate}
+\item
+The supremum of a (norm) bounded directed subset~$\scrD$ 
+in~$\Real{(\scrB(\scrH))}$
+is denoted by~$\Define{\bigvee\scrD}$.
+\item
+A p-map $\omega\colon \scrB(\scrH)\to\C$
+is called \Define{normal} when
+$\omega(\bigvee \scrD)=\bigvee_{T\in\scrD} \omega(T)$
+for every bounded directed subset $\scrD$ of~$\Real{\scrB(\scrH)}$.
+\end{enumerate}
+\end{point}
+\begin{point}[bh-normal-effects]{Exercise}%
+To show that a map is normal, it suffices to show 
+that it preserves directed suprema of \emph{effects}:
+show that given a Hilbert space~$\scrH$
+a  positive map $\omega\colon \scrB(\scrH)\to\C$
+is normal 
+provided that $\omega(\bigvee \scrD) = \bigvee_{T\in\scrD} \omega(T)$
+for every directed subset $\scrD$ of $[0,1]_{\scrB(\scrH)}$.
+\end{point}
 \end{parsec}
 \begin{parsec}%
 \begin{point}%
 Let~$\scrH$ be a Hilbert space.
 In~\sref{hilb-suprema}
 we saw that maps of the form $a\mapsto \left<x,ax\right>$
-preserve
-suprema of bounded operators on~$\scrH$.  
+are normal 
+(i.e.~preserve
+suprema of bounded operators on~$\scrH$).
 As it turns out,
 not every p-map
-enjoys has this property,
+is normal,
 and in fact,
-we'll show that if a p-map $\omega\colon \scrB(\scrH)\to\C$ preserves
-suprema of self-adjoint operators,
+we'll show that if a p-map $\omega$ is normal,
 then $\omega\equiv \sum_{n=1}^\infty \left<x_n,(\,\cdot\,)x_n\right>$
 for some $x_1,x_2,\dotsc$ in~$\scrH$
 with $\sum_n \|x_n\|^2 <\infty$.
+\end{point}
+\begin{point}{Lemma}%
+Every sequence $x_1,x_2,\dotsc $ in a Hilbert space~$\scrH$
+with $\sum_n \|x_n\|^2 < \infty$
+gives a normal p-map $\omega\colon\scrB(\scrH)\to\C$
+defined by~$\omega(T)=\sum_n \left<x_n,Tx_n\right>$.
+\begin{point}{Proof}%
+Given $T\in\scrB(\scrH)$ 
+we have $\left|\left<x_n,Tx_n\right>\right|\leq \|x_n\|^2\|T\|$ 
+by Cauchy--Schwarz (\sref{inner-product-basic}),
+so $\sum_n \left|\left<x_n,Tx_n\right>\right|
+\leq \|T\| \sum_n \|x_n\|^2$,
+which means that~$\sum_n \left<x_n,Tx_n\right>$
+converges, 
+and so we may define~$\omega$ as above.
 
-\TODO{Proof that these maps are indeed.}
+It is easy that~$\omega$ is linear and positive,
+so we'll only show that~$\omega$ is normal.
+We must prove that $\omega(\bigvee \scrD)=\bigvee_{T\in\scrD} \omega(T)$
+for every bounded directed subset of~$\Real{(\scrB(\scrH))}$.
+By~\sref{bh-normal-effects}
+we may assume without loss of generality that 
+$\scrD\subseteq [0,1]_{\scrB(\scrH)}$.
+This has the benefit that $\left<x_n,T x_n\right>$
+is positive for all~$N$ and~$T\in\scrD$,
+so that their sum (over~$n$) is given by
+a supremum over partial sums, viz.~$\sum_n\left<x_n,Tx_n\right>
+=\bigvee_N\sum_{n=1}^N\left<x_n,Tx_n\right>$.
+Completing the proof is now simply a matter of
+interchanging suprema,
+\begin{alignat*}{3}
+	\textstyle \bigvee_{T\in \scrD} \omega(T)
+	\ &=\ 
+	\textstyle\bigvee_{T\in \scrD} \bigvee_N \sum_{n=1}^N 
+	\left<x_n,Tx_n\right>\\
+	\ &=\ 
+	\textstyle\bigvee_N \bigvee_{T\in \scrD}\sum_{n=1}^N 
+	\left<x_n,Tx_n\right>\\
+	\ &=\ 
+	\textstyle\bigvee_N \sum_{n=1}^N \left<x_n,(\bigvee \scrD )\,x_n\right>
+	\ =\ \textstyle\omega(\bigvee\scrD),
+\end{alignat*}
+and using that~$\sum_{n=1}^N \left<x_n,(\,\cdot\,)x_n\right>$
+is normal.\qed
+
+\TODO{Perhaps a better way to present this is:
+np-maps are closed under suprema and finite sums,
+and thus under arbitrary sums}
+\end{point}
+\end{point}
 
 \TODO{Remark on the ultraweak topology.}
-\end{point}
 \end{parsec}
 \end{document}
