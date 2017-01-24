@@ -3471,7 +3471,24 @@ to the completely positive maps (defined in~\sref{maps}),
 to show that a map $f$ between $C^*$-algebras
 is completely positive precisely
 when~$M_Nf$ is positive for all~$N$.
-We'll also prove two handy lemmas for later use.
+
+We also prove two lemmas
+stating special properties of completely positive maps (setting
+them apart from plain positive maps),
+that'll come in very handy later on.
+The first one is a variation on Cauchy--Schwarz
+(\sref{cp-cs}),
+and the second one concerns
+the points at which a cpu-map is multiplicative (\sref{choi}).
+
+Completely maps are often touted as 
+a good model for quantum processes
+(over plain positive maps)
+with an argument involving the tensor product.
+We found that the absense of the lemmas \sref{cp-cs} and~\sref{choi}
+for positive maps already 
+make cp-maps indispensable,
+long before the tensor product properly comes into play.
 \end{point}
 \begin{point}[n-pos]{Lemma}%
 For a linear map $f\colon \scrA\to\scrB$
@@ -3519,9 +3536,46 @@ completely positive.
 Show that a mi-map~$f$ is completely positive.
 (Hint: $M_Nf$ is a mi-map too.)
 \end{point}
-\begin{point}{Lemma}%
-	$f(a^*b) f(b^*a)\leq \|f(b^*b)\|\,f(a^*a)$
-for every linear map $f\colon \scrA\to\scrB$
+\begin{point}[cstar-positive-2x2matrix]{Lemma}%
+For a positive
+matrix $A\equiv \bigl(\begin{smallmatrix} p & a \\ a^* & q
+\end{smallmatrix}\bigr)$
+over a $C^*$-algebra~$\scrA$
+we have
+\begin{equation*}
+	a^*a\ \leq\  \|p\|q
+	\quad\text{ and }\quad
+	aa^*\leq \|q\|p.
+\end{equation*}
+In particular,
+if $p=0$ or~$q=0$, then~$a=a^*=0$.
+\begin{point}{Proof}%
+Since $(x,y)\mapsto \left<x,Ay\right>$
+gives an $\scrA$-valued inner product
+on~$\scrA^2$,
+{
+\newcommand\twovect[2]{%
+\left(\begin{smallmatrix}#1\\#2\end{smallmatrix}\right)}
+\newcommand\onezero{\twovect{1}{0}}
+\newcommand\zeroone{\twovect{0}{1}}
+\begin{alignat*}{3}
+	aa^*
+	\ &=\  \left<\,\onezero,\,A\zeroone\,\right> \ 
+\left<\,\zeroone,\,A\onezero\,\right> \\
+\ &\leq\  
+\left\|\left<\,\zeroone,\,A\zeroone\right>\right\| \ 
+\left<\,\onezero,\,A\onezero\,\right>
+\ =\  \|q\|\  p
+\end{alignat*}
+}
+by Cauchy--Schwarz (see \sref{chilb-cs}).
+
+By a similar reasoning, we get $a^*a\leq \|p\|q$.\qed
+\end{point}
+\end{point}
+\begin{point}[cp-cs]{Lemma}%
+We have $f(a^*b) f(b^*a)\leq \|f(b^*b)\|\,f(a^*a)$
+for every p-map $f\colon \scrA\to\scrB$
 between $C^*$-algebras
 and $a,b\in\scrA$,
 provided that $M_2f$ is positive.
@@ -3540,28 +3594,57 @@ the $2\times 2$ matrix $T:=\bigl(
 	f(a^*a) & f(a^*b) \\
 	f(b^*a) & f(b^* b)
 \end{smallmatrix}\bigr)$
-in~$M_2\scrB$ is positive,
-and so $(x,y)\mapsto \left<x,Ty\right>$
-gives an $\scrB$-valued inner product
-on~$\scrB^2$.
-Then  
-{
-\newcommand\twovect[2]{%
-\left(\begin{smallmatrix}#1\\#2\end{smallmatrix}\right)}
-\newcommand\onezero{\twovect{1}{0}}
-\newcommand\zeroone{\twovect{0}{1}}
+in~$M_2\scrB$ is positive.
+Thus we get $f(a^*b) f(b^*a)\leq \|f(b^*b)\|\,f(a^*a)$
+by~\sref{cstar-positive-2x2matrix}.\qed
+\end{point}
+\end{point}
+\begin{point}[choi]{Lemma (Choi)}%
+We have
+$f(a)^*f(a) \leq f(a^* a)$ for
+every
+cpu-map~$f\colon \scrA\to\scrB$ between $C^*$-algebras,
+and~$a\in\scrA$.
+Moreover, if $f(a^*a)=f(a)^*f(a)$
+for some~$a\in\scrA$,
+then~$f(ba)=f(b)(a)$
+for all~$b\in \scrA$.
+\begin{point}{Proof}%
+By~\sref{cp-cs}
+we have $f(a)^*f(a)=f(a^* 1)f(1^* a) \leq
+\|f(1^*1)\| f(a^*a)=f(a^*a)$,
+where we used that~$f$ is unital, viz.~$f(1)=1$.
+
+Let~$a,b\in \scrA$ be given,
+and assume that $f(a^*a)=f(a)^*f(a)$.
+Instead of~$f(ba)=f(b)f(a)$,
+we'll prove that $f(a^*b)=f(a)^*f(b)$
+(but this nothing more than  a reformution).
+Since~$M_2f$ is cp,
+we have, writing 
+$A\equiv\bigl(\begin{smallmatrix}a&b\\0&0\end{smallmatrix}\bigr)$,
 \begin{alignat*}{3}
-	f(a^*b)\,f(b^*a)
-	\ &=\  \left<\,\onezero,\,T\zeroone\,\right> \ 
-\left<\,\zeroone,\,T\onezero\,\right> \\
-\ &\leq\  
-\left\|\left<\,\zeroone,\,T\zeroone\right>\right\| \ 
-\left<\,\onezero,\,T\onezero\,\right>
-\ =\  \|f(b^*b)\|\  f(a^*a)
+\left(\,\begin{matrix}f(a)^*f(a)&f(a)^*f(b)\\
+f(b)^*f(a)&f(b)^*f(b)\end{matrix}\,\right) 
+	\ &=\ (M_2f)(A)^*\,(M_2f)(A)\\
+\ &\leq\ (M_2f)(A^*A) \ =\ 
+\left(\,\begin{matrix}f(a^*a)&f(a^*b)\\
+f(b^*a)&f(b^*b)\end{matrix}\,\right).
 \end{alignat*}
-}
-by Cauchy--Schwarz for $\left<\,\cdot\,,T\,\cdot\,\right>$, 
-see \sref{chilb-cs}. \qed
+Hence
+(using that $f(a^*a)=f(a)^*f(a)$)
+the following matrix is positive.
+\begin{equation*}
+\left(\,\begin{matrix}
+0 & f(a^*b) - f(a)^*f(b) \\
+f(b^*a)-f(b)^*f(a) & f(b^*b)-f(b)^*f(b)
+\end{matrix}\,\right)
+\end{equation*}
+But then
+the corners must vanish
+(by~\sref{cstar-positive-2x2matrix}),
+and so
+$f(a^*b)-f(a)^*f(b)=0$.\qed
 \end{point}
 \end{point}
 \end{parsec}
