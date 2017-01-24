@@ -911,7 +911,7 @@ when we return to the positive elements in~\sref{cstar-positive-2}.
 Let us spend some words
 on the morphisms between $C^*$-algebras.
 \end{point}
-\begin{point}{Definition}
+\begin{point}[maps]{Definition}
 A linear map $f\colon \scrA \to \scrB$
 between $C^*$-algebras
 is called
@@ -3410,6 +3410,158 @@ we see that $\left<Sx,y\right>=\left<x,Ty\right>$,
 so~$S$ is the adjoint of~$T$,
 and~$T$ is adjointable.
 \qed
+\end{point}
+\end{point}
+\begin{point}{Exercise}%
+Let us consider matrices over a $C^*$-algebra $\scrA$.
+\begin{enumerate}
+\item
+	Show that every $N\times M$-matrix~$A$ (over~$\scrA$)
+gives a bounded module map~$\underline{A}\colon \scrA^N\to\scrA^M$ 
+via $\underline{A}(a_1,\dotsc,a_N)= A(a_1,\dotsc,a_M)$,
+which is adjoint to~$\underline{A^*}$
+(where $\Define{A^*}= (A_{ji}^*)_{ij}$ is conjugate transpose).
+
+\item
+Show that $A\mapsto \underline{A}$
+gives a linear bijection between the vector 
+space of $N\times M$-matrices 
+over~$\scrA$ and the vector space of adjointable bounded
+module maps~$\scrB^a(\scrA^N,\scrA^M)$.
+
+\item
+Show that~$\underline{A}\circ \underline{B} = \underline{AB}$
+when $A$ is an $N\times M$ and~$B$ an $M\times K$ matrix.
+
+\item
+Conclude that the vector space $\Define{M_N\scrA}$
+of $N\times N$-matrices over~$\scrA$
+is a $C^*$-algebra
+with matrix multiplication (as multiplication),
+conjugate transpose as involution,
+and the operator norm (as norm, so~$\|A\|=\|\underline{A}\|$).
+\end{enumerate}
+\end{point}
+\begin{point}{Exercise}%
+Let~$f\colon \scrA\to\scrB$ be a linear map between $C^*$-algebras.
+\begin{enumerate}
+\item
+Show that applying~$f$ entrywise to a $N\times N$ matrix~$A$
+over~$\scrA$ (yielding the matrix $(f(A_{ij}))_{ij}$ over~$\scrB$)
+gives a linear map,
+which we'll denote by~$\Define{M_Nf}\colon M_N\scrA\to M_N\scrB$.
+\item
+The map~$M_Nf$ inherits some traits of~$f$:
+show that if~$f$ is unital, then~$M_Nf$ unital;
+if~$f$ is multiplicative, then $M_Nf$ is multiplicative; and
+if~$f$ is involution preserving, then so is~$M_Nf$.
+\item
+However,
+show that $M_nf$ need not be positive when~$f$ is positive,
+and that~$M_nf$ need not be bounded, when~$f$ is.
+\TODO{give concrete example of a non-completely-positive positive map}
+\TODO{give concrete example of a  non-completely-bounded bounded maps}
+\end{enumerate}
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+Let us briefly return
+to the completely positive maps (defined in~\sref{maps}),
+to show that a map $f$ between $C^*$-algebras
+is completely positive precisely
+when~$M_Nf$ is positive for all~$N$.
+We'll also prove two handy lemmas for later use.
+\end{point}
+\begin{point}[n-pos]{Lemma}%
+For a linear map $f\colon \scrA\to\scrB$
+between $C^*$-algebras,
+and natural number~$N$,
+the following are equivalent.
+\begin{enumerate}
+\item
+\label{n-pos-1}
+$M_Nf\colon M_N\scrA\to M_N\scrB$
+is positive;
+\item
+\label{n-pos-2}
+	$\sum_{ij} b^*_if(a^*_ia_j)b_j \geq 0$
+	for all~$a\equiv(a_1,\dotsc,a_N)\in \scrA^N$
+	and $b\in \scrB^N$.
+\end{enumerate}
+\begin{point}{Proof}%
+Recall that~$M_Nf$ is positive
+iff $(M_Nf)(C)$ is positive for all $C\in \pos{(M_N\scrA)}$.
+The trick is to note that such~$C$ can be written as $C\equiv A^*A$
+for some~$A\in M_N\scrA$,
+and thus as $C \equiv (a_1^T)^* a_1^T+\dotsb+(a_N^T)^*a_N^T$,
+where $a_n\equiv(A_{n1},\dotsc,A_{nN})$ is the $n$-th row of~$A$.
+Hence~$M_Nf$ is positive
+iff $(M_Nf)(\,(a^T)^*a^T\, )$ is positive
+for all tuples~$a\in\scrA^N$.
+Since~$B\in M_N\scrB$ is positive iff $\left<b,Bb\right>\geq 0$
+for all~$b\in \scrB^N$,
+we conclude:
+$M_Nf$ is positive iff 
+$0\leq\left<b,(M_Nf)(\, (a^T)^*a^T\,) b\right>
+= \sum_{ij} b_i^*f(a_i^*a_j)b_j$
+for all~$a\in\scrA^N$ and~$b\in\scrB^N$.\qed
+\end{point}
+\end{point}
+\begin{point}{Exercise}%
+Conclude from~\sref{n-pos}
+that a linear map~$f$ between $C^*$-algebras
+is completely positive iff~$M_Nf$ is positive for all~$N$.
+
+Deduce that the composition of cp-maps is
+completely positive.
+
+Show that a mi-map~$f$ is completely positive.
+(Hint: $M_Nf$ is a mi-map too.)
+\end{point}
+\begin{point}{Lemma}%
+	$f(a^*b) f(b^*a)\leq \|f(b^*b)\|\,f(a^*a)$
+for every linear map $f\colon \scrA\to\scrB$
+between $C^*$-algebras
+and $a,b\in\scrA$,
+provided that $M_2f$ is positive.
+\begin{point}{Proof}%
+Since writing $x\equiv (a,b)\in \scrA^2$,
+the $2\times 2$ matrix $(x^T)^* x^T\equiv 
+	\bigl(
+\begin{smallmatrix}
+a^*a & a^*b \\
+b^*a & b^* b
+\end{smallmatrix} \bigr)$
+in $M_2\scrA$
+is positive,
+the $2\times 2$ matrix $T:=\bigl(
+\begin{smallmatrix}
+	f(a^*a) & f(a^*b) \\
+	f(b^*a) & f(b^* b)
+\end{smallmatrix}\bigr)$
+in~$M_2\scrB$ is positive,
+and so $(x,y)\mapsto \left<x,Ty\right>$
+gives an $\scrB$-valued inner product
+on~$\scrB^2$.
+Then  
+{
+\newcommand\twovect[2]{%
+\left(\begin{smallmatrix}#1\\#2\end{smallmatrix}\right)}
+\newcommand\onezero{\twovect{1}{0}}
+\newcommand\zeroone{\twovect{0}{1}}
+\begin{alignat*}{3}
+	f(a^*b)\,f(b^*a)
+	\ &=\  \left<\,\onezero,\,T\zeroone\,\right> \ 
+\left<\,\zeroone,\,T\onezero\,\right> \\
+\ &\leq\  
+\left\|\left<\,\zeroone,\,T\zeroone\right>\right\| \ 
+\left<\,\onezero,\,T\onezero\,\right>
+\ =\  \|f(b^*b)\|\  f(a^*a)
+\end{alignat*}
+}
+by Cauchy--Schwarz for $\left<\,\cdot\,,T\,\cdot\,\right>$, 
+see \sref{chilb-cs}. \qed
 \end{point}
 \end{point}
 \end{parsec}
