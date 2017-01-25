@@ -1,0 +1,44 @@
+\documentclass[a]{subfiles}
+\begin{document}
+\chapter{Processes}
+\section{Tensor Product}
+\begin{parsec}%
+\begin{point}{Definition}%
+Let~$\scrA$ and~$\scrB$ be von Neumann algebras.
+\begin{enumerate}
+\item
+The \Define{ultraweak tensor product topology}
+on the algebraic tensor product~$\scrA\odot\scrB$
+is the least topology that makes
+all linear maps of the form $\sum_n \sigma_n \odot \tau_n
+\colon \scrA \odot \scrB\to\C$
+continuous,
+where $\sigma_1,\sigma_2,\dotsc \colon \scrA\to \C$
+and $\tau_1,\tau_2,\dotsc \colon \scrB\to \C$
+are np-maps
+with $\sum_{n=1}^\infty\sigma_n(1)\tau_n(1)< \infty$.
+\item
+A bilinear map $\beta\colon \scrA\times \scrB\to\scrC$
+to a von Neumann algebra~$\scrC$
+is called \Define{normal}
+when the unique extension $\beta_\odot \colon \scrA\odot \scrB\to \scrC$
+is continuous with respect to the ultraweak tensor product topology 
+on~$\scrA\odot\scrB$
+and the ultraweak topology on~$\scrC$.
+\end{enumerate}
+\end{point}
+\begin{point}{Theorem}%
+Given von Neumann algebras~$\scrA$ and~$\scrB$
+there is a von Neumann algebra~$\scrA\otimes\scrB$
+and a normal miu
+bilinear map $\otimes \colon \scrA\times \scrB\to
+\scrA\otimes \scrB$
+such that for every 
+normal miu bilinear map $\beta\colon \scrA\times \scrB\to\scrC$
+to a von Neumann algebra~$\scrC$
+there is a unique nmiu-map $\beta_\otimes\colon \scrA\otimes \scrB
+\to \scrC$ with $\beta_\otimes(a\otimes b) = \beta(a,b)$
+for all~$a\in \scrA$ and $b\in\scrB$.
+\end{point}
+\end{parsec}
+\end{document}
