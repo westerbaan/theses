@@ -12,7 +12,7 @@ We already saw a dilation theorem in disguise:
     using the Gel'fand--Naimark--Segal construction (see \sref{gns})
     one shows every state is a vector state on a larger algebra:
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{Exercise (GNS')}%
     Show that
     for each pu-map~$\omega\colon \scrA \to \C$
         from a~C$^*$-algebra~$\scrA$
@@ -24,15 +24,9 @@ We already saw a dilation theorem in disguise:
     is given by~$h(T) = \left<Tx,x\right>$.
 \end{point}
 
-\begin{point}
+\begin{point}%
 Probably the most famous dilation theorem is that
-of Stinespring\cite[Theorem 1]{stinespring}.
-As we will see in the proof
-    the construction of the larger Hilbert space
-    is similar to the GNS-construction.
-The idea is to replace the state~$\omega\colon \scrA \to \C$
-    by a pu-map~$\varphi\colon \scrA \to \scrB(\scrH)$.
-Positivity does not
+of Stinespring\cite[Thm.~1]{stinespring}.
 \end{point}
 
 \begin{point}{Theorem (Stinespring)}
@@ -43,8 +37,66 @@ Positivity does not
         such that~$\varphi = \ad_V \after \varrho$,
         where~$\Define{\ad_V} \colon \scrB(\scrK) \to \scrB(\scrH)$
         is given by~$\ad_V(T):= V^*TV$.
+
+Furthermore:
+\begin{inparaenum}
+\item
+    if~$\varphi$ is normal, then~$\varrho$ is also normal \emph{and}
+\item
+    if~$\varphi$ is unital, then~$V$ is an isometry
+        (or equivalently~$\ad_V$ is unital).
+\end{inparaenum}
 \end{point}
+
+\begin{point}%
+(We will see a detailed proof later in \TODO{}.)
+Stinespring's theorem
+is fundamental in the study
+of quantum information and quantum computing:
+it is used to prove entropy inequalities (e.g.~\cite{lindblad}),
+bounds on optimal cloners (e.g.~\cite{werner}),
+full completeness of quantum programming languages (e.g.~\cite{staton}),
+security of quantum key distribution (e.g.~\cite{werner2}),
+analyze quantum alternation (e.g.~\cite{prakash}),
+to categorify quantum processes (e.g.~\cite{selinger}) \emph{and}
+as an axiom to single out
+quantum theory among information processing theories.\cite{chiribella}
+A fair overview of all uses of Stinespring's theorem and its consequences
+is a formidable task out of scope of this text.
+
+Stinespring's theorem only applies
+to maps of the form~$\scrA \to \scrB(\scrH)$
+    and so do most of its usefull consequences.
+One wonders:
+    is there an extension of Stinespring's theorem
+    to arbitrary np-maps~$\scrA \to \scrB$?
+A different and less common question might be:
+    is Stinespring's dilation categorical in some way.
+That is: does it have a defining universal property?
+Both questions turn out to be true:
+Paschke's generalization of GNS for Hilbert C$^*$-modules\cite{paschke}
+    turns out to have the same universal property
+        as Stinespring's dilation and so it extends Stinespring
+        to arbitrary np-maps.
+
+First we will proof Stinespring's theorem.
+Then we show it obeys a universal property.
+Before we move on to Paschke's GNS
+    we need to develop Paschke's theory of self-dual Hilbert C$^*$-modules.
+Paschke's work builds on Sakai's characterization of von Neumann algebra's,
+    which would take considerable effort to develop.
+Thus to be as complete as possible
+we avoid Sakai's characterization (in contrast to \cite{wwpaschke})
+    and give new proofs
+    of Paschke's results where required.
+One major difference is that we will use
+    a restricted completion (see \TODO{}) of a uniformity
+    instead of considering the dual space of a Hilbert C$^*$-module.
+\end{point}
+
 
 \end{parsec}
 
 \end{document}
+
+% vim: ft=tex.latex
