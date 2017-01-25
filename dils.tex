@@ -12,7 +12,7 @@ We already saw a dilation theorem in disguise:
     using the Gel'fand--Naimark--Segal construction (see \sref{gns})
     one shows every state is a vector state on a larger algebra:
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{Exercise (GNS')}%
     Show that
     for each pu-map~$\omega\colon \scrA \to \C$
         from a~C$^*$-algebra~$\scrA$
@@ -24,15 +24,9 @@ We already saw a dilation theorem in disguise:
     is given by~$h(T) = \left<Tx,x\right>$.
 \end{point}
 
-\begin{point}
+\begin{point}%
 Probably the most famous dilation theorem is that
-of Stinespring\cite[Theorem 1]{stinespring}.
-As we will see in the proof
-    the construction of the larger Hilbert space
-    is similar to the GNS-construction.
-The idea is to replace the state~$\omega\colon \scrA \to \C$
-    by a pu-map~$\varphi\colon \scrA \to \scrB(\scrH)$.
-Positivity does not
+of Stinespring\cite[Thm.~1]{stinespring}.
 \end{point}
 
 \begin{point}{Theorem (Stinespring)}
@@ -43,8 +37,20 @@ Positivity does not
         such that~$\varphi = \ad_V \after \varrho$,
         where~$\Define{\ad_V} \colon \scrB(\scrK) \to \scrB(\scrH)$
         is given by~$\ad_V(T):= V^*TV$.
+
+Furthermore:
+\begin{inparaenum}
+\item
+    if~$\varphi$ is normal, then~$\varrho$ is also normal \emph{and}
+\item
+    if~$\varphi$ is unital, then~$V$ is an isometry
+        (or equivalently~$\ad_V$ is unital).
+\end{inparaenum}
 \end{point}
+
 
 \end{parsec}
 
 \end{document}
+
+% vim: ft=tex.latex
