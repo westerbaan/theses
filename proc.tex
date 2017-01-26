@@ -100,36 +100,60 @@ and the ultraweak topology on~$\scrC$.
 \end{point}
 \begin{point}{Theorem}%
 Given von Neumann algebras~$\scrA$ and~$\scrB$
-there is a von Neumann algebra~$\scrA\otimes\scrB$
+there is a von Neumann algebra~$\Define{\scrA\otimes\scrB}$
+(called the \Define{tensor product} of~$\scrA$ and~$\scrB$)
 and a normal
-bilinear map $\otimes \colon \scrA\times \scrB\to
+bilinear map $\Define{\otimes} \colon \scrA\times \scrB\to
 \scrA\otimes \scrB$
-such that for every 
+with the property, that for every 
 normal bilinear map $\beta\colon \scrA\times \scrB\to\scrC$
 to a von Neumann algebra~$\scrC$
 there is a unique ultraweakly continuous
-map $\beta_\otimes\colon \scrA\otimes \scrB
+map $\Define{\beta_\otimes}\colon \scrA\otimes \scrB
 \to \scrC$ with $\beta_\otimes(a\otimes b) = \beta(a,b)$
 for all~$a\in \scrA$ and $b\in\scrB$.
 Moreover,
+$\beta_\otimes$ is
 \begin{enumerate}
 \item
-$\beta_\otimes$ is multiplicative
+multiplicative
 iff $\beta(a_1,b_1)\beta(a_2,b_2)=\beta(a_1a_2,b_1b_2)$
 for all~$a_1,a_2\in\scrA$ and $b_1,b_2\in\scrB$;
 \item
-$\beta_\otimes$ is involution preserving
+involution preserving
 iff $\beta(a,b)^* = \beta(a^*,b^*)$ for all~$a\in\scrA$
 and $b\in\scrB$;
 \item
-$\beta_\otimes$ is unital iff $\beta(1,1)=1$;
+unital iff $\beta(1,1)=1$;
+subunital iff $\beta(1,1)\leq 1$;
 \item
-$\beta_\otimes$ is positive iff 
+positive iff 
 $\sum_{i,j} \beta(a_i^*a_j,b_i^*b_j) \geq 0$
+for all~$a_1,\dotsc,a_N\in\scrA$,$b_1,\dotsc,b_N\in\scrB$;
+\item
+completely positive iff 
+the matrix $(\ \beta(a_i^*a_j,b_i^*b_j)\ )_{i,j}\geq 0$
+is positive
 for all~$a_1,\dotsc,a_N\in\scrA$
 and $b_1,\dotsc,b_N\in\scrB$;
-\item
-$\beta_\otimes$ is completely positive
+\end{enumerate}
+Given ultraweakly continuous maps $f\colon \scrA\to\scrA'$
+and $g\colon \scrB\to\scrB'$
+to von Neumann algebras $\scrA'$ and~$\scrB'$,
+the assignment $(a,b)\mapsto f(a)\otimes g(b)$
+gives a normal bilinear map 
+$\beta\colon \scrA\times \scrB\to \scrA'\otimes \scrB'$.
+Then $\Define{f\otimes g}:=\beta_\otimes\colon \scrA\otimes \scrB
+\to\scrA'\otimes \scrB'$
+is
+\begin{enumerate}
+\item multiplicative
+when $f$ and~$g$ are multiplicative;
+\item involution preserving
+when $f$ and~$g$ are involution preserving;
+\item unital when $f$ and~$g$ are unital;
+	subunital when $f$ and~$g$ are subunital;
+\item completely positive when $f$ and~$g$ are completely positive.
 \end{enumerate}
 \end{point}
 \end{parsec}
