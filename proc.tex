@@ -1,6 +1,60 @@
 \documentclass[a]{subfiles}
 \begin{document}
 \chapter{Processes}
+\begin{parsec}%
+\begin{point}[uwc-bounded]{Proposition}%
+An ultraweakly continuous linear map $f\colon \scrA\to\scrB$
+between von Neumann algebras is bounded.
+\begin{point}[uwc-bounded-1]{Proof}%
+Suppose for now that~$\scrB=\C$
+(so that the norm topology and ultraweak topology on~$\scrB$ coincide).
+Then any sequence $a_1,a_2,\dotsc$
+in~$\scrA$ which converges in the norm to~$0$,
+also converges ultraweakly to~$0$,
+and so~$f(a_1),\,f(a_2),\,\dotsc$ converges
+to~$0$ (because~$f$ is ultraweakly continuous).
+It follows that~$f$ is continuous with respect to the norm
+on~$\scrA$, and therefore bounded.
+\begin{point}%
+Let~$\scrB$ again be arbitrary.
+Writing~$\Omega$ for the set of npu-maps $\omega\colon \scrB\to\C$
+we have $\|f(a)\|=\sup_{\omega\in\Omega} \left|\omega(f(a))\right|$
+for all~$a\in\scrA$
+by \TODO{}.
+Hence it suffices to show that $\omega\circ f$
+is bounded for each~$\omega\in\Omega$,
+because then $\|f(a)\|\leq (\sup_{\omega\in\Omega}\|\omega\circ f\|)\,\|a\|$
+for all~$a\in \scrA$,
+and~$\sup_{\omega\in \Omega} \|\omega\circ f\|<\infty$
+by the Principle of Uniform Boundedness (\sref{pub}).
+Now,~$\omega\circ f$ is bounded by~\sref{uwc-bounded-1} 
+(where~$\omega\in\Omega$),
+because $\omega\circ f$ is ultraweakly continuous
+(because $\omega$ and~$f$ are ultraweakly continuous).\qed
+\end{point}
+\end{point}
+\end{point}
+\begin{point}[vn-dense-pos]{Lemma}%
+Let~$\scrS$ be an ultrastrongly dense $C^*$-subalgebra
+of a von Neumann algebra~$\scrA$.
+Let~$D$ be a norm dense subset of~$\scrS$.
+Then~$\{\,d^*d\colon\,d\in D\,\}$
+is ultrastrongly dense in~$\pos{\scrA}$.
+\begin{point}{Proof}%
+By Kaplansky's Density Theorem (\sref{kaplansky})
+$\pos{\scrS}$ 
+is ultrastrongly dense in~$\pos{\scrA}$,
+so it suffices to show that $\{\, d^*d\,\colon d\in D\}$
+is ultrastrongly dense in~$\pos{\scrS}$.
+Given~$a\in \pos{\scrS}$,
+there is a sequence $d_1,d_2,\dotsc \in D$
+that norm converges to~$\sqrt{a}$,
+so that~$d_1^*d_1,\,d_2^*d_2,\,\dotsc$
+converges to~$\sqrt{a}^*\sqrt{a}\equiv a$
+with respect to the norm, and thus ultrastrongly too.\qed
+\end{point}
+\end{point}
+\end{parsec}%
 \section{Tensor Product}
 \begin{parsec}%
 \begin{point}{Definition}%
@@ -10,13 +64,30 @@ Let~$\scrA$ and~$\scrB$ be von Neumann algebras.
 The \Define{ultraweak tensor product topology}
 on the algebraic tensor product~$\scrA\odot\scrB$
 is the least topology that makes
-all linear maps of the form $\sum_n \sigma_n \odot \tau_n
+all linear maps of the form $\sum_n \omega_n
 \colon \scrA \odot \scrB\to\C$
 continuous,
-where $\sigma_1,\sigma_2,\dotsc \colon \scrA\to \C$
-and $\tau_1,\tau_2,\dotsc \colon \scrB\to \C$
-are np-maps
-with $\sum_{n=1}^\infty\sigma_n(1)\tau_n(1)< \infty$.
+where $\omega_1,\omega_2,\dotsc \colon \scrA\to \C$
+are linear maps which
+are \emph{simple} and \emph{positive} (see below),
+and $\sum_n \omega_n(1) <\infty$.
+
+A linear map $\omega\colon \scrA\odot \scrB\to\C$
+is 
+\begin{enumerate}
+\item
+\Define{simple}
+iff $\omega$ is of the form $\omega \equiv \sum_{n=1}^N \sigma_n\odot\tau_n$
+for some ultraweakly continuous linear maps 
+$\sigma_1,\dotsc,\sigma_N\colon \scrA\to\C$ and 
+$\tau_1,\dotsc,\tau_N\colon \scrB\to\C$;
+\item
+\Define{positive}
+iff $\sum_{i,j}\omega(\,a_i^*a_j\,\otimes\, b_i^*b_j\,)$
+is positive 
+for all $a_1,\dots,a_N\in\scrA$
+and~$b_1,\dotsc,b_N\in\scrB$.
+\end{enumerate}
 \item
 A bilinear map $\beta\colon \scrA\times \scrB\to\scrC$
 to a von Neumann algebra~$\scrC$
@@ -30,15 +101,36 @@ and the ultraweak topology on~$\scrC$.
 \begin{point}{Theorem}%
 Given von Neumann algebras~$\scrA$ and~$\scrB$
 there is a von Neumann algebra~$\scrA\otimes\scrB$
-and a normal miu
+and a normal
 bilinear map $\otimes \colon \scrA\times \scrB\to
 \scrA\otimes \scrB$
 such that for every 
-normal miu bilinear map $\beta\colon \scrA\times \scrB\to\scrC$
+normal bilinear map $\beta\colon \scrA\times \scrB\to\scrC$
 to a von Neumann algebra~$\scrC$
-there is a unique nmiu-map $\beta_\otimes\colon \scrA\otimes \scrB
+there is a unique ultraweakly continuous
+map $\beta_\otimes\colon \scrA\otimes \scrB
 \to \scrC$ with $\beta_\otimes(a\otimes b) = \beta(a,b)$
 for all~$a\in \scrA$ and $b\in\scrB$.
+Moreover,
+\begin{enumerate}
+\item
+$\beta_\otimes$ is multiplicative
+iff $\beta(a_1,b_1)\beta(a_2,b_2)=\beta(a_1a_2,b_1b_2)$
+for all~$a_1,a_2\in\scrA$ and $b_1,b_2\in\scrB$;
+\item
+$\beta_\otimes$ is involution preserving
+iff $\beta(a,b)^* = \beta(a^*,b^*)$ for all~$a\in\scrA$
+and $b\in\scrB$;
+\item
+$\beta_\otimes$ is unital iff $\beta(1,1)=1$;
+\item
+$\beta_\otimes$ is positive iff 
+$\sum_{i,j} \beta(a_i^*a_j,b_i^*b_j) \geq 0$
+for all~$a_1,\dotsc,a_N\in\scrA$
+and $b_1,\dotsc,b_N\in\scrB$;
+\item
+$\beta_\otimes$ is completely positive
+\end{enumerate}
 \end{point}
 \end{parsec}
 \end{document}
