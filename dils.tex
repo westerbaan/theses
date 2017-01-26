@@ -79,12 +79,12 @@ Paschke's generalization of GNS for Hilbert C$^*$-modules\cite{paschke}
         as Stinespring's dilation and so it extends Stinespring
         to arbitrary np-maps.
 
-First we will proof Stinespring's theorem.
-Then we show it obeys a universal property.
+We start of this chapter with a detailed proof of Stinespring's theorem.
+We continue to show it obeys a universal property.
 Before we move on to Paschke's GNS
     we need to develop Paschke's theory of self-dual Hilbert C$^*$-modules.
-Paschke's work builds on Sakai's characterization of von Neumann algebra's,
-    which would take considerable effort to develop.
+Paschke's work builds on Sakai's characterization of von Neumann algebras,
+    which would take considerable effort to develop in detail.
 Thus to be as complete as possible
 we avoid Sakai's characterization (in contrast to \cite{wwpaschke})
     and give new proofs
@@ -92,9 +92,78 @@ we avoid Sakai's characterization (in contrast to \cite{wwpaschke})
 One major difference is that we will use
     a restricted completion (see \TODO{}) of a uniformity
     instead of considering the dual space of a Hilbert C$^*$-module.
+We finish the first part of this chapter
+    by constructing Paschke's dilation
+    and establishing it indeed extends Stinespring's dilation.
+In the second part of this chaper
+    we prove several results about Paschke's dilations.
+\TODO{more intro}
+\end{point}
+\end{parsec}
+
+\begin{parsec}[dils-stinespring]%
+\begin{point}%
+For the GNS-construction
+it was necessary to ``complete''\footnote{Note that
+        we do not require an inner product to be definite.
+    The inner product on a Hilbert space \emph{is} definite.
+    Thus the completion will quotient out those vectors with
+        zero norm with respect to the inner product.}
+    a complex vector space with inner product into a Hilbert space.
+This completion was only sketched in \sref{completion-inner-product-space}.
+Here we will work through the details
+    as the corresponding completion required
+    in Paschke's dilation
+    is more complex and its exposition will benefit
+    from this familiar analogon.
 \end{point}
 
-
+\begin{point}{Proposition}%
+    Let~$V$ be a complex vector space with inner
+        product~$[\,\cdot\,,\,\cdot\,]$.
+    There is a Hilbert space~$\scrH$
+        together with bounded linear map~$\eta\colon V \to \scrH$
+            such that
+        \begin{inparaenum}
+        \item
+        $[v,w] = \left<\eta(v), \eta(w)\right>$
+            for all~$v,w \in V$ and
+        \item
+        the image of~$\eta$ is dense in~$\scrH$.
+        \end{inparaenum}
+\begin{point}{Proof}%
+We will form~$\scrH$ from the set of Cauchy sequences in~$V$
+    with a little twist.
+Recall two Cauchy
+    sequences~$(v_n)_n$ and~$(w_n)_n$ in~$V$
+    are said to be equivalent
+    if for every~$\varepsilon > 0$
+    there is a~$n_0$
+    such that~$\| v_n - w_n \| \leq \varepsilon$
+    for all~$n \geq n_0$,
+    where $\|v\| \equiv \sqrt{[v,v]}$.
+Call a Cauchy sequence~$(v_n)_n$ \Define{fast}
+    if for each~$n_0$
+    we have~$\| v_n - v_m\| \leq \frac{1}{2^{n_0}}$
+    for all~$n,m \geq n_0$.
+Clearly every Cauchy sequence has a fast subsequence
+    which is (as are all subsequences) equivalent with it.
+\begin{point}%
+    Define~$\scrH$ to be the set of fast Cauchy sequences modulo
+        equivalence.
+To define the inner product on~$\scrH$,
+first note that for Cauchy sequences~$(v_n)_n$ and~$(w_n)_n$ in~$V$
+the sequence~$([v_n,w_n])_n$ is Cauchy in~$\C$.
+Indeed as with Cauchy--Schwarz (\sref{chilb-cs}) we have
+\begin{align*}
+    \bigl|[v_n,w_n] - [v_m,w_m]\bigr|
+    & \ =\  \bigl|[v_n,w_n-w_m] + [v_n - v_m,w_m]\bigr| \\
+    & \ \leq\  \|v_n\| \|w_n - w_m\| + \|v_n-v_m\|\|w_m\|,
+\end{align*}
+and Cauchy sequences are bounded
+\end{point}
+\end{point}
+\end{point}
 \end{parsec}
 
 \end{document}
