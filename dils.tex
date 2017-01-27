@@ -151,16 +151,66 @@ Clearly every Cauchy sequence has a fast subsequence
 \begin{point}%
     Define~$\scrH$ to be the set of fast Cauchy sequences modulo
         equivalence.
+For brevity we denote a Cauchy sequence~$(v_n)_n$ simply by~$v$.
+The set~$\scrH$ is a metric space with the standard
+    distance~$d(v, w) \equiv \lim_{n\to\infty} \| v_n - w_n\|$.
+To show it's complete, assume
+$v^1, v^2, \ldots$
+is a fast Cauchy sequence of fast Cauchy sequences.
+Assume~$n,m,k \geq N$.  We have
+\begin{equation*}
+    \| v^n_n - v^m_m \|
+        \leq
+    \| v^n_n - v^n_k \| +
+    \| v^n_k - v^m_k \| +
+    \| v^m_k - v^m_m \| \leq
+    \| v^n_k - v^m_k \|+ \frac{2}{2^N}.
+\end{equation*}
+Because~$\lim_{k\to\infty} \|v_k^n-v_k^m \| =d(v^n,v^m) \leq 2^{-N}$
+    we can find a~$k \geq N$
+    such that~$\| v^n_k - v^m_k \| \leq \frac{2}{2^N}$
+    and so~$\|v^n_n - v^m_m\| \leq \frac{4}{2^N}$.
+    Thus~$(v^n_n)_n$ is a Cauchy sequence.
+It's easily checked~$v^1, v^2, \ldots$
+converges to~$(v^n_n)_n$ with respect to~$d$.
+The sequence~$(v^n_n)_n$ might not be fast
+    and so, might not be in~$\scrH$,
+    but like any other Cauchy sequence,
+    it has a fast subsequence.
+The equivalence class
+of this subsequence is the limit of
+the equivalence classes of~$v^1, v^2, \ldots$ in~$\scrH$.
+We have shown~$\scrH$ is complete.
+\end{point}
+\begin{point}%
+Define~$\eta\colon V \to \scrH$
+    by mapping~$v$ to the equivalence class of the
+    constant sequence~$v$.
+Let~$f\colon V \to X$
+    be any uniformly continuous map to a complete metric space~$X$.
+We will show there is a unique extension~$g\colon \scrH \to X$
+    such that~$g \after \eta = f$.
+\end{point}
+\begin{point}%
 To define the inner product on~$\scrH$,
 first note that for Cauchy sequences~$(v_n)_n$ and~$(w_n)_n$ in~$V$
-the sequence~$([v_n,w_n])_n$ is Cauchy in~$\C$.
-Indeed as with Cauchy--Schwarz (\sref{chilb-cs}) we have
+we have (using Cauchy--Schwarz, \sref{chilb-cs}, on the second line):
 \begin{align*}
     \bigl|[v_n,w_n] - [v_m,w_m]\bigr|
     & \ =\  \bigl|[v_n,w_n-w_m] + [v_n - v_m,w_m]\bigr| \\
-    & \ \leq\  \|v_n\| \|w_n - w_m\| + \|v_n-v_m\|\|w_m\|,
+    & \ \leq\  \|v_n\| \|w_n - w_m\| + \|v_n-v_m\|\|w_m\|.
 \end{align*}
-and Cauchy sequences are bounded
+Thus as~$(\|v_n\|)_n$ and~$(\|w_n\|)_n$ are bounded
+we see~$([v_n,w_n])_n$ is Cauchy.
+In a similar fashion we see~$\bigl|[v_n,w_n] - [v'_n,w'_n]\bigr|
+    \leq \|v_n\| \|w_n - w_n'\| + \|v_n-v_n'\|\|w'_n\|\to 0$ as~$n\to \infty$
+    for~$(v'_n)_n$ and~$(w'_n)_n$ Cauchy sequences equivalent
+to~$(v_n)_n$ respectively~$(w_n)_n$.
+Thus
+$([v_n,w_n])_n$ is equivalent to
+$([v'_n,w'_n])_n$
+    and so on~$\scrH$
+    we may define~$\left<(v_n)_n,(w_n)_n\right> \equiv \lim_{n\to \infty} [v_n,w_n]$.
 \end{point}
 \end{point}
 \end{point}
