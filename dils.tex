@@ -29,7 +29,7 @@ Probably the most famous dilation theorem is that
 of Stinespring\cite[Thm.~1]{stinespring}.
 \end{point}
 
-\begin{point}{Theorem (Stinespring)}
+\begin{point}{Theorem (Stinespring)}\label{stinespring-theorem}
     For every cp-map~$\varphi\colon \scrA \to \scrB (\scrH)$
     there is a Hilbert space~$\scrK$,
         miu-map~$\varrho\colon \scrA \to \scrB(\scrK)$
@@ -101,7 +101,7 @@ In the second part of this chaper
 \end{point}
 \end{parsec}
 
-\begin{parsec}[dils-stinespring]%
+\begin{parsec}[dils-completion-to-hilb]%
 \begin{point}%
 For the GNS-construction
 it was necessary to ``complete''\footnote{Note that
@@ -251,8 +251,27 @@ The metric induced by the inner product coincides with~$d$:
     = d(v,w)^2.
 \end{equation*}
 And so~$\scrH$ is a Hilbert space.
-Finally, the identity~$\left<\eta(v),\eta(w)\right>=[v,w]$ is direct.
+Finally, $\left<\eta(v),\eta(w)\right>=[v,w]$ is direct.\qed
 \end{point}
+\end{point}
+\end{point}
+\end{parsec}
+
+\begin{parsec}[dils-stinespring]%
+\begin{point}%
+We are ready to prove Stinespring's dilation theorem.
+\begin{point}{Proof of Stinespring's theorem, see \sref{stinespring-theorem}}%
+Let~$\varphi\colon \scrA \to \scrB(\scrH)$
+    be a cp-map.
+Write~$\scrA \odot \scrH$ for the tensor product of~$\scrA$ and~$\scrH$
+    as vector spaces.
+By linear extension,
+the following fixes a sesquilinear form on~$\scrA \odot \scrH$:
+\begin{equation*}
+    [a\otimes x, b \otimes y] = \left<\varphi(a^*b)x, y\right>_{\scrH}.
+\end{equation*}
+As~$\varphi$ preserves involution as a positive map,\TODO{ref}
+this is also a symmetric form, i.e.: $[t,s]=\overline{[s,t]}$.
 \end{point}
 \end{point}
 \end{parsec}
