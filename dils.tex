@@ -151,7 +151,10 @@ Clearly every Cauchy sequence has a fast subsequence
 \begin{point}%
     Define~$\scrH$ to be the set of fast Cauchy sequences modulo
         equivalence.
-For brevity we denote a Cauchy sequence~$(v_n)_n$ simply by~$v$.
+For brevity we will denote an element of~$\scrH$,
+    which is an equivalence class of Cauchy sequences, simply by
+    a single representative.
+Also, we often tersely write~$v$ for the Cauchy sequence~$(v_n)_n$.
 The set~$\scrH$ is a metric space with the standard
     distance~$d(v, w) \equiv \lim_{n\to\infty} \| v_n - w_n\|$.
 To show it's complete, assume
@@ -178,22 +181,48 @@ The sequence~$(v^n_n)_n$ might not be fast
     but like any other Cauchy sequence,
     it has a fast subsequence.
 The equivalence class
-of this subsequence is the limit of
-the equivalence classes of~$v^1, v^2, \ldots$ in~$\scrH$.
+of this subsequence is the limit of~$v^1, v^2, \ldots$ in~$\scrH$.
 We have shown~$\scrH$ is complete.
 \end{point}
 \begin{point}%
 Define~$\eta\colon V \to \scrH$
-    by mapping~$v$ to the equivalence class of the
-    constant sequence~$v$.
+    to be the map which sends~$v$ to the equivalence class of the
+    constant sequence~$(v)_n$.
+By construction of~$\eta$ and~$\scrH$,
+    the image of~$\eta$ is dense in~$\scrH$.
 Let~$f\colon V \to X$
     be any uniformly continuous map to a complete metric space~$X$.
-We will show there is a unique extension~$g\colon \scrH \to X$
+We will show there is a unique continuous~$g\colon \scrH \to X$
     such that~$g \after \eta = f$.
+From the uniform continuity it easily follows
+    that~$f$ maps Cauchy sequences to Cauchy sequences
+    and preserves equivalence between them.
+Together with the completeness of ~$X$
+    there is a unique~$g\colon \scrH \to X$
+    fixed by~$g((v_n)_n) = \lim_{n\to\infty}f(v_n)$.
+Clearly~$g \after \eta = f$.
+Finally, $g$ is unique as it's fixed on the image of~$\eta$, which is dense.
+\end{point}
+\begin{point}\label{completion-to-hilb-vect}%
+Thus we directly get a scalar multiplication
+    on~$\scrH$ by extending~$\eta \after r_z \colon V \to \scrH$
+    where~$r_z(v) = zv$ is scalar multiplication by~$z \in C$,
+    which is uniformly continuous.
+In fact~$z (v_n)_n \equiv (z v_n)_n$.
+Extending addition is less direct, but straight-forward:
+    given representatives~$v,w \in \scrH$
+    we know~$(v_n+w_n)_n$ is Cauchy in~$V$
+    by uniform continuity of addition and so~$v+w \equiv (v_n+w_n)_n$
+        fixes an addition on~$\scrH$.
+With this expression for addition and the similar one for
+    scalar multiplication it is easy to see
+    they turn~$\scrH$ into a complex vector space with zero~$\eta(0)$
+    for which~$\eta$ is linear.
+Extending the inner product is bit trickier.
 \end{point}
 \begin{point}%
 To define the inner product on~$\scrH$,
-first note that for Cauchy sequences~$(v_n)_n$ and~$(w_n)_n$ in~$V$
+first note that for Cauchy sequences~$v$ and~$w$ in~$V$
 we have (using Cauchy--Schwarz, \sref{chilb-cs}, on the second line):
 \begin{align*}
     \bigl|[v_n,w_n] - [v_m,w_m]\bigr|
@@ -204,13 +233,25 @@ Thus as~$(\|v_n\|)_n$ and~$(\|w_n\|)_n$ are bounded
 we see~$([v_n,w_n])_n$ is Cauchy.
 In a similar fashion we see~$\bigl|[v_n,w_n] - [v'_n,w'_n]\bigr|
     \leq \|v_n\| \|w_n - w_n'\| + \|v_n-v_n'\|\|w'_n\|\to 0$ as~$n\to \infty$
-    for~$(v'_n)_n$ and~$(w'_n)_n$ Cauchy sequences equivalent
-to~$(v_n)_n$ respectively~$(w_n)_n$.
+    for~$v'$ and~$w'$ Cauchy sequences equivalent
+to~$v$ respectively~$w$.
 Thus
 $([v_n,w_n])_n$ is equivalent to
 $([v'_n,w'_n])_n$
-    and so on~$\scrH$
-    we may define~$\left<(v_n)_n,(w_n)_n\right> \equiv \lim_{n\to \infty} [v_n,w_n]$.
+    and so
+    we define~$\left<v,w\right>
+        \equiv \lim_{n\to \infty} [v_n,w_n]$ on~$\scrH$.
+With vector space structure from~\sref{completion-to-hilb-vect}
+we easily see this is an inner product~$\scrH$.
+The metric induced by the inner product coincides with~$d$:
+\begin{equation*}
+    \left<v-w,v-w\right>
+   =\lim_{n}[v_n-w_n,v_n-w_n]
+    =\lim_{n}\|v_n-w_n\|^2
+    = d(v,w)^2.
+\end{equation*}
+And so~$\scrH$ is a Hilbert space.
+Finally, the identity~$\left<\eta(v),\eta(w)\right>=[v,w]$ is direct.
 \end{point}
 \end{point}
 \end{point}
