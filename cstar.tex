@@ -3504,7 +3504,11 @@ is positive;
 \label{n-pos-2}
 	$\sum_{ij} b^*_if(a^*_ia_j)b_j \geq 0$
 	for all~$a\equiv(a_1,\dotsc,a_N)\in \scrA^N$
-	and $b\in \scrB^N$.
+	and $b\in \scrB^N$;
+\item
+\label{n-pos-3}
+the matrix $(\,f(a_i^*a_j)\,)_{ij}$
+is positive in $M_N\scrB$ for all $a\in\scrA^N$.
 \end{enumerate}
 \begin{point}{Proof}%
 Recall that~$M_Nf$ is positive
@@ -3514,7 +3518,7 @@ for some~$A\in M_N\scrA$,
 and thus as $C \equiv (a_1^T)^* a_1^T+\dotsb+(a_N^T)^*a_N^T$,
 where $a_n\equiv(A_{n1},\dotsc,A_{nN})$ is the $n$-th row of~$A$.
 Hence~$M_Nf$ is positive
-iff $(M_Nf)(\,(a^T)^*a^T\, )$ is positive
+iff $(M_Nf)(\,(a^T)^*a^T\, )\equiv(\,f(a_i^*a_j)\,)_{i,j}$ is positive
 for all tuples~$a\in\scrA^N$.
 Since~$B\in M_N\scrB$ is positive iff $\left<b,Bb\right>\geq 0$
 for all~$b\in \scrB^N$,
@@ -3528,7 +3532,11 @@ for all~$a\in\scrA^N$ and~$b\in\scrB^N$.\qed
 \begin{point}{Exercise}%
 Conclude from~\sref{n-pos}
 that a linear map~$f$ between $C^*$-algebras
-is completely positive iff~$M_Nf$ is positive for all~$N$.
+is completely positive iff~$M_Nf$ is positive for all~$N$
+iff 
+for all~$N$ and~$a\in \scrA^N$
+the matrix $(\,f(a_i^*a_j)\,)_{i,j}$ 
+is positive in~$M_N\scrB$.
 
 Deduce that the composition of cp-maps is
 completely positive.
