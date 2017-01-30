@@ -832,7 +832,7 @@ prove that  $\lambda\in f(X)$ iff $f-\lambda$
 is not invertible.
 \end{point}
 \end{point}
-\begin{point}[cstar-positive]{Definition}%
+\begin{point}[cstar-positive-def]{Definition}%
 A self-adjoint element~$a$ of a $C^*$-algebra~$\scrA$ is called
 \Define{positive} if $\|a-t\|\leq t$
 for some~$t\geq \frac{1}{2}\|a\|$.
@@ -1765,6 +1765,56 @@ $a^*a+aa^* = 2(\Real{a}^2 + \Imag{a}^2) \geq 0$,
 and so~$a^*a+aa^*=0$.
 Then $0\geq a^*a=-aa^*\geq 0$ gives $a^*a=0$,
 and $a=0$.\qed
+\end{point}
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+\TODO{perhaps move this down, below
+complete positivity}
+Observe that the norm and order on 
+(the self-adjoint elements of a) $C^*$-algebra~$\scrA$
+completely determine one another (using the unit):
+on the one hand
+$\|a\|=\inf\{\lambda\geq 0\colon -\lambda\leq a\leq \lambda\}$
+by~\sref{cstar-positive-1},
+and on the other hand
+$a\geq 0$ iff $\|a-s\|\leq s$ for some $s\geq \frac{1}{2}\|a\|$
+by definition (\sref{cstar-positive-def}).
+This has the obvious --- but important --- consequence
+that any unital map between $C^*$-algebras
+preserves the order iff it preserves the norm
+of self-adjoint elements.
+\end{point}
+\begin{point}{Exercise}%
+Show that for a unital linear map $f\colon \scrA\to\scrB$
+between $C^*$-algebras,
+the following are equivalent.
+\begin{enumerate}
+\item
+	$f$ is an \Define{isometry on~$\sa{\scrA}$}, 
+	that is, $\|f(a)\|=\|a\|$ for all~$\in \sa{\scrA}$,
+	and
+\item
+	$f$ is \Define{bipositive}, that is, $f(a)\geq 0$ iff $a\geq 0$
+	for all~$a\in\scrA$.
+\end{enumerate}
+\begin{point}{Warning}%
+While a bipositive unital map between $C^*$-algebras
+is an isometry on self-adjoint elements,
+it may not preserve the norm of arbitrary elements:
+the map $A\mapsto \frac{1}{2}A+\frac{1}{2}A^T\colon M_2\to M_2$
+is bipositive and unital,
+but
+\begin{equation*}
+\left\|\left(\begin{matrix}0&1\\0&0\end{matrix}
+\right)\right\|
+\ = \ 1 \ \neq \ \frac{1}{2}\ = \ 
+\left\|\,\left(\begin{matrix}0 & \nicefrac{1}{2} \\ 0 & 0
+\end{matrix}\right)
+\,+\,\left(\begin{matrix}0 & 0\\ \nicefrac{1}{2} & 0
+\end{matrix}\right)\,\right\|.
+\end{equation*}
 \end{point}
 \end{point}
 \end{parsec}
