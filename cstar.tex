@@ -3594,6 +3594,28 @@ completely positive.
 Show that a mi-map~$f$ is completely positive.
 (Hint: $M_Nf$ is a mi-map too.)
 \end{point}
+\begin{point}{Proposition}%
+Let~$f\colon \scrA\to\scrB$ be a positive map between
+$C^*$-algebras.
+If either~$\scrA$ or~$\scrB$ is commutative,
+then~$f$ is completely positive.
+\begin{point}{Proof}%
+Let~$a_1,\dotsc,a_N\in \scrA$
+and $b_1,\dotsc,b_N\in\scrB$ be given.
+
+Suppose that~$\scrB$ is commutative.
+Since for every miu-map $\omega\colon\scrB\to\C$,
+we have
+$\omega(\,\sum_{i,j} b_i^*f(a_i^*a_j)b_j\,)
+= \omega(f(\,\sum_{i,j}(a_i\omega(b_i))^*\,a_j \omega(b_j)\,))\,\geq \,0$,
+we see that $\sum_{i,j} b_i^*f(a_i^*a_j)b_j$ is positive
+(by \sref{gelfand}),
+and so~$f$ is completely positive.
+
+Suppose instead that~$\scrA$ is commutative.
+\TODO{complete}\qed
+\end{point}
+\end{point}
 \begin{point}[cstar-positive-2x2matrix]{Lemma}%
 For a positive
 matrix $A\equiv \bigl(\begin{smallmatrix} p & a \\ a^* & q
