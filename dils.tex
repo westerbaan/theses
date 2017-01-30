@@ -118,7 +118,7 @@ Here we will work through the details
     from this familiar analogon.
 \end{point}
 
-\begin{point}{Proposition}%
+\begin{point}{Proposition}\label{prop-complete-into-hilbert-space}%
     Let~$V$ be a complex vector space with inner
         product~$[\,\cdot\,,\,\cdot\,]$.
     There is a Hilbert space~$\scrH$
@@ -184,7 +184,7 @@ The equivalence class
 of this subsequence is the limit of~$v^1, v^2, \ldots$ in~$\scrH$.
 We have shown~$\scrH$ is complete.
 \end{point}
-\begin{point}%
+\begin{point}\label{prop-hilbert-space-completion-extension}%
 Define~$\eta\colon V \to \scrH$
     to be the map which sends~$v$ to the equivalence class of the
     constant sequence~$(v)_n$.
@@ -272,6 +272,32 @@ the following fixes a sesquilinear form on~$\scrA \odot \scrH$:
 \end{equation*}
 As~$\varphi$ preserves involution as a positive map,\TODO{ref}
 this is also a symmetric form, i.e.: $[t,s]=\overline{[s,t]}$.
+    Assume~$\sum^n_{i=1} a_i\otimes x_i$
+is an arbitrary element of~$A \odot \scrH$.
+To see $[\,\cdot\,,\,\cdot\,]$ is positive,
+we need to show
+\begin{equation*}
+    0 \leq [\sum_i a_i\otimes x_i, \sum_j a_j\otimes x_j]
+        = \sum_{i,j} [a_i\otimes x_i, a_j\otimes x_j]
+        = \sum_{i,j} \left< \varphi(a_i^*a_j) x_i,x_j \right>,
+\end{equation*}
+which is equivalent to the complete positivity of~$\varphi$
+by~\TODO{}.
+Let~$\eta\colon A\odot \scrH \to \scrK$ denote the Hilbert space completion
+    described in~\sref{prop-complete-into-hilbert-space}.
+\begin{point}%
+Let~$T\colon A \odot \scrH \to A \odot \scrH$
+be a bouned linear map.
+We show there is a unique lifting to~$\scrB{\scrK}$.
+The operator $\hat{T}$
+uniformly continuous and so is~$\eta\after T \colon A\odot\scrH \to\scrK$.
+Thus by \sref{prop-hilbert-space-completion-extension}
+there is a unique continuous extension~$\hat{T} \colon \scrK \to \scrK$
+with~$\hat{T}(\eta(x)) = T(x)$.
+Clearly~$\hat{T}$ is linear on the image of~$\eta$,
+    which is dense and so~$\hat{T}$ is linear everwhere.
+Hence~$\hat{T}$ is bounded, hence~$\hat{T} \in \scrB(\scrK)$.
+\end{point}
 \end{point}
 \end{point}
 \end{parsec}
