@@ -268,7 +268,7 @@ Write~$\scrA \odot \scrH$ for the tensor product of~$\scrA$ and~$\scrH$
 By linear extension,
 the following fixes a sesquilinear form on~$\scrA \odot \scrH$:
 \begin{equation*}
-    [a\otimes x, b \otimes y] = \left<\varphi(a^*b)x, y\right>_{\scrH}.
+    [a\otimes x, b \otimes y] = \left<x, \varphi(a^*b)y\right>_{\scrH}.
 \end{equation*}
 As~$\varphi$ preserves involution as a positive map,\TODO{ref}
 this is also a symmetric form, i.e.: $[t,s]=\overline{[s,t]}$.
@@ -277,26 +277,85 @@ is an arbitrary element of~$A \odot \scrH$.
 To see $[\,\cdot\,,\,\cdot\,]$ is positive,
 we need to show
 \begin{equation*}
-    0 \leq [\sum_i a_i\otimes x_i, \sum_j a_j\otimes x_j]
+    0 \leq \bigl[\sum_i a_i\otimes x_i, \sum_j a_j\otimes x_j\bigr]
         = \sum_{i,j} [a_i\otimes x_i, a_j\otimes x_j]
-        = \sum_{i,j} \left< \varphi(a_i^*a_j) x_i,x_j \right>,
+        = \sum_{i,j} \left< x_i, \varphi(a_i^*a_j) x_j \right>.
 \end{equation*}
-which is equivalent to the complete positivity of~$\varphi$
-by~\TODO{}.
-Let~$\eta\colon A\odot \scrH \to \scrK$ denote the Hilbert space completion
+The matrix algebra~$M_n\scrB(\scrH)$
+acts on~$\scrH^{\oplus n}$
+as~$(A (x_1,\ldots,x_n)^\T)_i = \sum_j A_{ij} x_j$.
+(In fact, this gives an
+    isomorphism~$M_n\scrB(\scrH) \cong \scrB(\scrH^{\oplus n})$.)
+Writing~$x$ for the vector~$(x_1,\ldots,x_n)^\T$ in~$\scrH^{\oplus n}$,
+    we get
+\begin{equation}\label{eq-stinespring-norm-tensor}
+    \sum_{i,j} \left< x_i, \varphi(a_i^*a_j) x_j \right>
+    = \bigl<
+    x,
+    (M_n\varphi) \bigl(\, (a_i^*a_j)_{ij} \, \bigr)\,
+    x \bigr>_{\scrH^{\oplus n}}.
+\end{equation}
+The matrix~$(a_i^*a_j)_{ij}$
+is positive as~$(C^*C)_{ij} = a_i^*a_j$
+    with~$C_{ij} \equiv \frac{1}{\sqrt{n}} a_j$.
+    By complete positivity~$M_n\varphi(\,(a_i^*a_j)_{ij}\,)$ is positive
+    and so is~\eqref{eq-stinespring-norm-tensor},
+    hence~$[\,\cdot\,,\,\cdot\,]$ is an inner product.
+Write~$\eta\colon A\odot \scrH \to \scrK$ for the Hilbert space completion
     described in~\sref{prop-complete-into-hilbert-space}.
-\begin{point}%
+\begin{point}\label{stinespring-extend-operator}%
 Let~$T\colon A \odot \scrH \to A \odot \scrH$
 be a bouned linear map.
-We show there is a unique lifting to~$\scrB{\scrK}$.
-The operator $\hat{T}$
+We show there is an extension~$\hat{T} \colon \scrK \to \scrK$.
+The operator $T$
 uniformly continuous and so is~$\eta\after T \colon A\odot\scrH \to\scrK$.
 Thus by \sref{prop-hilbert-space-completion-extension}
 there is a unique continuous extension~$\hat{T} \colon \scrK \to \scrK$
-with~$\hat{T}(\eta(x)) = T(x)$.
+with~$\hat{T}(\eta(t)) = \eta(T(t))$
+    for all~$t \in \scrA\odot\scrH$.
 Clearly~$\hat{T}$ is linear on the image of~$\eta$,
     which is dense and so~$\hat{T}$ is linear everwhere.
-Hence~$\hat{T}$ is bounded, hence~$\hat{T} \in \scrB(\scrK)$.
+Hence~$\hat{T}$ is bounded, so~$\hat{T} \in \scrB(\scrK)$.
+It is easy to see~$\widehat{T+S}=\hat{T}+\hat{S}$ and
+    $\widehat{\lambda T} = \lambda \hat{T}$
+    for operators~$S,T$ on~$\scrA \odot \scrH$ and~$\lambda \in \C$.
+Also~$\widehat{TS} = \hat{T}\hat{S}$:
+indeed~$\hat{T}\hat{S} \eta(t)
+            = \hat{T} \eta(St)
+            = \eta(TSt)$
+    and so by uniqueness~$\hat{T}\hat{S} = \widehat{TS}$.
+\end{point}
+\begin{point}%
+    Assume~$b\in \scrA$.
+    Let~$\varrho_0(b)$ be the operator on~$\scrA \otimes \scrH$
+    fixed by~$\varrho_0(b) a\otimes x = (b a) \otimes x$.
+Clearly $\varrho_0$ is linear, unital and multiplicative.
+We want to show~$\varrho_0(b)$ is bounded for fixed~$b \in \scrA$.
+To show this, we claim that in~$M_n\scrB(\scrH)$
+we have~$(a_i^*b^*ba_j)_{ij} \leq \|b\|^2 (a_i^*a_j)_{ij}$.
+Indeed, as~$b^*b \leq \|b\|^2$,
+    there is some~$c$ with~$c^*c = \|b\|^2 - b^*b$.
+Define~$C_{ij} \equiv \frac{1}{\sqrt{n}} ca_j$.
+We compute:
+$ (C^*C)_{ij} = a_i^*c^*ca_j = a_i^* (\|b\|^2 - b^*b) a_j$
+and get the claimed inequality with which
+\begin{equation*}
+    \begin{split}
+    \bigl\| \sum_i (ba_i) \otimes x_i \bigr\|^2
+    & = \bigl< x, (M_n\varphi)(\, (a_i^* b^*b a_j)_{ij}\,)x\bigr> \\
+    &\leq \|b\|^2 \bigl< x, (M_n\varphi)(\, (a_i^* a_j)_{ij}\,)x\bigr>
+    = \|b\|^2 \bigl\| \sum_i a_i \otimes x_i \bigr\|^2
+    \end{split}
+\end{equation*}
+and so~$\varrho_0(b)$ is bounded.
+Now define~$\varrho(b) \colon \scrA \to \scrB(\scrH)$
+    by~$\varrho(b) \equiv \widehat{\varrho_0(b)}$.
+\end{point}
+\begin{point}%
+We already know~$\varrho$ is a~mu-map.
+We want to show it preserves involution: $\varrho(c^*) = \varrho(c)^*$.
+Concretely~$\left<\varrho(c^*)x,y\right> = \left<x, \varrho(c)y\right>$
+for all~$x,y\in \scrK$ and~$c\in \scrA$.
 \end{point}
 \end{point}
 \end{point}
