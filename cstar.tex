@@ -66,6 +66,7 @@ This forces us
 to take a slightly different path than is usual in the literature 
 (see e.g.~\sref{gelfand-mazur-predicament}).
 
+\section{Definition and examples}
 Let us begin with the definition
 and examples.
 \begin{parsec}%
@@ -712,6 +713,7 @@ a $\scrB(\scrH)$.
 \end{point}
 \end{parsec}
 
+\section{The basics}
 
 \begin{parsec}%
 \begin{point}%
@@ -1267,7 +1269,7 @@ directly from~\sref{inverse-permanence}.\qed%
 \end{point}
 \end{point}
 \end{parsec}
-
+\section{Positive elements}
 \begin{parsec}%
 \begin{point}%
 The next order of business
@@ -1800,9 +1802,7 @@ the following are equivalent.
 	for all~$a\in\scrA$.
 \end{enumerate}
 \begin{point}{Warning}%
-While a bipositive unital map between $C^*$-algebras
-is an isometry on self-adjoint elements,
-it may not preserve the norm of arbitrary elements:
+Such a map~$f$ need not preserve the norm of arbitrary elements:
 the map $A\mapsto \frac{1}{2}A+\frac{1}{2}A^T\colon M_2\to M_2$
 is bipositive and unital,
 but
@@ -1815,6 +1815,9 @@ but
 \,+\,\left(\begin{matrix}0 & 0\\ \nicefrac{1}{2} & 0
 \end{matrix}\right)\,\right\|.
 \end{equation*}
+Nevertheless, we will see in~\sref{cp-isometry} that 
+such a bipositive map~$f$ is an isometry (on all of~$\scrA$)
+provided that~$f$ is completely positive.
 \end{point}
 \end{point}
 \end{parsec}
@@ -2001,7 +2004,6 @@ Show that~$a=0$ iff $f(a)=0$ for every state~$f$ on~$\scrA$.
 \end{point}
 \end{point}
 \end{parsec}
-
 \begin{parsec}%
 \begin{point}%
 The key that unlocks the remaining basic facts 
@@ -2344,6 +2346,7 @@ we have $c\equiv a'+b'$
 where  $0\leq a'\leq a$ and $0\leq b'\leq b$.
 \end{point}
 \end{parsec}
+\section{Two representation theorems}
 
 \begin{parsec}%
 \begin{point}%
@@ -2861,7 +2864,6 @@ is a
 isomorphic to~$\scrA$.
 \end{point}
 \end{parsec}
-
 \begin{parsec}%
 \begin{point}\label{completion-inner-product-space}%
 Let us prove that every $C^*$-algebra~$\scrA$
@@ -3174,6 +3176,7 @@ $\varrho(\scrA)$ of~$\scrB(\scrH_\Omega)$.\qed
 \end{point}
 \end{point}
 \end{parsec}
+\section{Matrices over $C^*$-algebras}
 \begin{parsec}%
 \begin{point}%
 \TODO{see if this material can be moved up}
@@ -3514,7 +3517,6 @@ and that~$M_nf$ need not be bounded, when~$f$ is.
 \end{enumerate}
 \end{point}
 \end{parsec}
-\section{Completely positive maps}
 \begin{parsec}%
 \begin{point}%
 Let us briefly return
@@ -3809,6 +3811,7 @@ $f(a^*b)-f(a)^*f(b)=0$.\qed
 \end{point}
 \end{point}
 \end{parsec}
+\section{Towards von Neumann algebras}
 \begin{parsec}%
 \begin{point}%
 Let us work towards
