@@ -6,6 +6,7 @@
 \usepackage{ifthen}
 \usepackage{paralist}
 \usepackage{calc}
+\usepackage{picins}
 \usepackage{amssymb}
 \usepackage{amsmath}
 \usepackage{mathrsfs}
@@ -103,7 +104,7 @@
 \newcommand{\qed}{\hfill\textcolor{darkblue}{\ensuremath{\square}}}
 
 
-\newcounter{tmp} % used for arithmetic
+\newcounter{tmptmp} % used for arithmetic
 
 % The content of this thesis is grouped into numbered paragraphs,
 % which are called "parsecs" (for paragraph--section),
@@ -135,14 +136,14 @@
 	% we keep track of whether the parsec started on this spread, 
 	% encoded by  2N,  or whether the parsec ended on this spread,
 	% encoded by  2N+1.
-	\setcounter{tmp}{2*\value{parsec}}%
-	\markboth{\the\value{tmp}}{\the\value{tmp}}%
+	\setcounter{tmptmp}{2*\value{parsec}}%
+	\markboth{\the\value{tmptmp}}{\the\value{tmptmp}}%
 	\IfValueT{#1}{\label{#1}}%
 	% Display the parsec number in the margin.
 	\marginnote{\makebox[3em][c]{\textParsecNumber{\the\value{parsec}}}}%
 }{%
-	\setcounter{tmp}{2*\value{parsec}+1}%
-	\markboth{\the\value{tmp}}{\the\value{tmp}}%
+	\setcounter{tmptmp}{2*\value{parsec}+1}%
+	\markboth{\the\value{tmptmp}}{\the\value{tmptmp}}%
 }
 
 \newcounter{point} % keeps track of the current point
@@ -252,11 +253,11 @@
 \the\value{firstParsec}%
 \ifthenelse{\equal{\value{firstParsec}}{\value{lastParsec}}}%
 	{}{%  no footer without parsecs
-\setcounter{tmp}{\value{firstParsec}+1}%
-\ifthenelse{\equal{\value{tmp}}{\value{lastParsec}}}{, }{--}%
+\setcounter{tmptmp}{\value{firstParsec}+1}%
+\ifthenelse{\equal{\value{tmptmp}}{\value{lastParsec}}}{, }{--}%
 \the\value{lastParsec}}%
-\setcounter{tmp}{\value{lastParsec}*2}%
-\ifthenelse{\equal{\value{tmp}}{\value{lastParsecF}}}%
+\setcounter{tmptmp}{\value{lastParsec}*2}%
+\ifthenelse{\equal{\value{tmptmp}}{\value{lastParsecF}}}%
 {..\setcounter{parsecToBeContinued}{1}}%
 {\setcounter{parsecToBeContinued}{0}}%
 }% \textPointNumberI{

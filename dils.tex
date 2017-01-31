@@ -12,7 +12,7 @@ We already saw a dilation theorem in disguise:
     using the Gel'fand--Naimark--Segal construction (see \sref{gns})
     one shows every state is a vector state on a larger algebra:
 \end{point}
-\begin{point}{Exercise (GNS')}\label{dils-gns}%
+\begin{point}[dils-gns]{Exercise (GNS')}%
     Show that
     for each pu-map~$\omega\colon \scrA \to \C$
         from a~C$^*$-algebra~$\scrA$
@@ -29,7 +29,7 @@ Probably the most famous dilation theorem is that
 of Stinespring\cite[Thm.~1]{stinespring}.
 \end{point}
 
-\begin{point}{Theorem (Stinespring)}\label{stinespring-theorem}
+\begin{point}[stinespring-theorem]{Theorem (Stinespring)}
     For every cp-map~$\varphi\colon \scrA \to \scrB (\scrH)$
     there is a Hilbert space~$\scrK$,
         miu-map~$\varrho\colon \scrA \to \scrB(\scrK)$
@@ -102,6 +102,7 @@ In the second part of this chaper
 \end{point}
 \end{parsec}
 
+\section*{Stinespring's theorem}
 \begin{parsec}[dils-completion-to-hilb]%
 \begin{point}%
 For the GNS-construction
@@ -119,7 +120,7 @@ Here we will work through the details
     from this familiar analogon.
 \end{point}
 
-\begin{point}{Proposition}\label{prop-complete-into-hilbert-space}%
+\begin{point}[prop-complete-into-hilbert-space]{Proposition}%
     Let~$V$ be a complex vector space with inner
         product~$[\,\cdot\,,\,\cdot\,]$.
     There is a Hilbert space~$\scrH$
@@ -185,7 +186,7 @@ The equivalence class
 of this subsequence is the limit of~$v^1, v^2, \ldots$ in~$\scrH$.
 We have shown~$\scrH$ is complete.
 \end{point}
-\begin{point}\label{prop-hilbert-space-completion-extension}%
+\begin{point}[prop-hilbert-space-completion-extension]%
 Define~$\eta\colon V \to \scrH$
     to be the map which sends~$v$ to the equivalence class of the
     constant sequence~$(v)_n$.
@@ -204,7 +205,7 @@ Together with the completeness of ~$X$
 Clearly~$g \after \eta = f$.
 Finally, $g$ is unique as it's fixed on the image of~$\eta$, which is dense.
 \end{point}
-\begin{point}\label{completion-to-hilb-vect}%
+\begin{point}[completion-to-hilb-vect]%
 Thus we directly get a scalar multiplication
     on~$\scrH$ by extending~$\eta \after r_z \colon V \to \scrH$
     where~$r_z(v) = zv$ is scalar multiplication by~$z \in C$,
@@ -261,7 +262,7 @@ Finally, $\left<\eta(v),\eta(w)\right>=[v,w]$ is direct.\qed
 \begin{parsec}[dils-stinespring]%
 \begin{point}%
 We are ready to prove Stinespring's dilation theorem.
-\begin{point}{Proof of Stinespring's theorem, see \sref{stinespring-theorem}}%
+\begin{point}{Proof of Stinespring's theorem \sref{stinespring-theorem}}%
 Let~$\varphi\colon \scrA \to \scrB(\scrH)$
     be a cp-map.
 Write~$\scrA \odot \scrH$ for the tensor product of~$\scrA$ and~$\scrH$
@@ -304,7 +305,7 @@ is positive as~$(C^*C)_{ij} = a_i^*a_j$
     hence~$[\,\cdot\,,\,\cdot\,]$ is an inner product.
 Write~$\eta\colon A\odot \scrH \to \scrK$ for the Hilbert space completion
     described in~\sref{prop-complete-into-hilbert-space}.
-\begin{point}\label{stinespring-extend-operator}%
+\begin{point}[stinespring-extend-operator]%
 Let~$T\colon A \odot \scrH \to A \odot \scrH$
 be a bouned linear map.
 We show there is an extension~$\hat{T} \colon \scrK \to \scrK$.
@@ -418,6 +419,7 @@ Hence~$
     Here we used that~$\left<x, (\,\cdot\,)x\right>$,
         $M_n\varphi$ and 
     $d \mapsto (a_i^*da_j)_{ij}$ are normal.
+    The first is normal by~\sref{hilb-suprema}.
     \TODO{}
     At the moment it will be a bit tricky to show~$(a_i^*da_j)_{ij}$
     is normal.  Later (\TODO{}) we will have a simpler argument.
@@ -425,10 +427,11 @@ Hence~$
         and~$\Delta\colon \scrA \to M_n \scrA$
         by~$\Delta(d)_{ij} = \delta_{ij}$.\TODO{kronecker}.
     Then~$(C^*\Delta(d)C)_{ij} = a_i^* d a_j$.
-    Thus by~\TODO{} it is sufficient to show~$\Delta$ is normal.
+    As~$C^*(\,\cdot\,)C$ is normal by~\sref{ad-normal},
+        it is sufficient to show~$\Delta$ is normal.
     Without loss of generality, we may assume~$\scrA$
         is an algebra of operators on a Hilbert spaces~$\scrL$.
-    By~\TODO{} 
+        By~\sref{vna-supremum-uslimit}
         $(d)_{d \in D}$ converges ultrastrongly to~$\sup D$.
     In particular it converges in the WOT.
     Similarly
@@ -449,10 +452,73 @@ Hence~$
 \end{point}
 \end{point}
 \begin{point}%
-Stinespring is a generalization of GNS.
+Stinespring's theorem generalizes GNS.
 It seems tempting to directly prove Stinespring instead of GNS ---
-however, we used GNS in the proof of Stinespring to show
+however, we used GNS in the proof of Stinespring theorem to show
 that~$\varrho$ is normal, when~$\varphi$ is.
+\end{point}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+Let~$\varphi\colon \scrA \to \scrB(\scrH)$
+    be any ncp-map.
+A \Define{normal Stinespring dilation}
+    is a triplet~$(\scrK,\varrho, V)$
+    with~$\scrK$ a Hilbert space,
+    $\varrho\colon \scrA \to \scrB(\scrK)$ a nmiu-map
+        (i.e.~normal representation)
+        and~$V\colon \scrH \to \scrK$ a bounded linear map
+        with~$\varphi = \ad_V \after \varrho$.
+We just saw every~$\varphi$ has a normal Stinespring dilation.
+If the linear span of~$\{ \varrho(a) Vx; \ a \in \scrA,\ x\in \scrH\}$
+is dense in~$\scrK$
+then the Stinespring dilation $(\scrK,\varrho,V)$ is said to be \Define{minimal}.
+Every Stinespring dilation of~$\varphi$ can be restricted to a minimal one
+    for~$\varphi$.
+\begin{point}%
+It is a well-known fact that all minimal normal Stinespring dilations
+    for a fixed~$\varphi$ are unitarily equivalent,
+    see for instance~\cite[Proposition 4.2]{paulsen}.
+We will adapt its proof to show that a minimal normal Stinespring
+    dilation admits a universal property \TODO{},
+    which we will need later on.
+This adapation is mostly straight-forward, except for the following lemma.
+\end{point}
+\begin{point}{Lemma}%
+% \TODO{}\parpic[r]{
+% $\xymatrix{\mathscr{A} \ar[r]^\varrho \ar[rd]_{\varrho'}&
+% \mathscr{B} \\
+% & \mathscr{C} \ar[u]_\sigma}$}
+Let~$\varrho\colon \scrA \to \scrB$ and~$\varrho'\colon \scrA \to \scrC$
+    be nmiu-maps between von Neumann algebras,
+        and let~$\sigma \colon \scrC \to \scrB$ be a ncp-map
+        such that~$\sigma \after \varrho' = \varrho$.\\
+Then~$\sigma(\varrho'(a_1)c \varrho'(a_2)) =  \varrho(a_1) \sigma(c) \varrho(a_2)$
+    for all~$a_1,a_2 \in \scrA$ and~$c \in \scrC$.
+\begin{point}{Proof}%
+By Theorem 3.1 of \cite{choi} (see \sref{choi}),
+we know that for all~$c,d\in\scrC$:
+\begin{equation}
+    \sigma(d^*d) = \sigma(d)^*\sigma(d) \quad \implies \quad
+    \sigma(cd) = \sigma(c)\sigma(d).\label{dils-eq-choi}
+\end{equation}
+Let~$a \in \scrA$.
+We have~$\sigma(\varrho'(a)^* \varrho'(a))
+    = \sigma(\varrho'(a^*a))
+    = \varrho(a^*a)
+    = \varrho(a)^*\varrho(a)
+    = \sigma(\varrho'(a))^*\sigma(\varrho'(a))$.
+By \eqref{dils-eq-choi},
+    we have~$\sigma(c\varrho'(a)))
+        = \sigma(c)\sigma(\varrho'(a)) = \sigma(c)\varrho(a)$
+        for all~$c \in \scrC$.
+Thus also (taking adjoints):
+$\sigma(\varrho'(a)c) = \varrho(a)\sigma(c)$ for all~$c \in \scrC$.
+Hence~$\sigma(\varrho'(a_1)c\varrho'(a_2))
+            = \varrho(a_1)\sigma(c \varrho'(a_2))
+            = \varrho(a_1) \sigma(c) \varrho(a_2)$
+    for all~$a_1,a_2 \in \scrA$ and~$c\in \scrC$ as desired.\qed
 \end{point}
 \end{point}
 \end{parsec}
