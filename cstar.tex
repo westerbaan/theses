@@ -3520,7 +3520,8 @@ Let us briefly return
 to the completely positive maps (defined in~\sref{maps}),
 to show that a map $f$ between $C^*$-algebras
 is completely positive precisely
-when~$M_Nf$ is positive for all~$N$.
+when~$M_Nf$ is positive for all~$N$,
+and to give some examples of completely positive maps.
 
 We also prove two lemmas
 stating special properties of completely positive maps (setting
@@ -3579,7 +3580,7 @@ $0\leq\left<b,(M_Nf)(\, (a^T)^*a^T\,) b\right>
 for all~$a\in\scrA^N$ and~$b\in\scrB^N$.\qed
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[cp]{Exercise}%
 Conclude from~\sref{n-pos}
 that a linear map~$f$ between $C^*$-algebras
 is completely positive iff~$M_Nf$ is positive for all~$N$
@@ -3594,26 +3595,95 @@ completely positive.
 Show that a mi-map~$f$ is completely positive.
 (Hint: $M_Nf$ is a mi-map too.)
 \end{point}
+\begin{point}[ccstar-pos-mat]{Lemma}%
+Let~$\scrA$ be a commutative $C^*$-algebra,
+and let~$N$ be a natural number.
+The set of  matrices of the form $\sum_k a_k B_k$,
+where $a_1,\dotsc,a_K\in \scrA$
+and $B_1,\dotsc,B_K\in M_N(\C)$,
+is norm dense in~$(M_N\scrA)_+$.
+
+\TODO{Compare this with that $a\otimes b$ where $a\in\scrA_+$
+and $b\in \scrB_+$ do not generate $(\scrA\otimes\scrB)_+$.}
+\begin{point}{Proof}%
+Since~$\scrA$ is isomorphic to~$C(X)$ for some compact
+Hausdorff space~$X$ (by~$\sref{gelfand})$),
+we may as well assume that~$\scrA\equiv C(X)$.
+
+Let~$A\in (M_NC(X))_+$ and~$\varepsilon>0$ be given.
+We're looking for $g_1,\dotsc,g_K\in C(X)$
+and $B_1,\dotsc,B_K\in M_N$
+with $\|A-\sum_k g_k B_k\|\leq \varepsilon$.
+Since $A(x):=(A_{ij}(x))_{ij}$
+gives a continuous map $X\to M_N$,
+the sets
+$U_x = \{\,y\in X\colon \, \|A(x)-  A(y)\| < \varepsilon\,\}$
+form an open cover of~$X$.
+By compactness of~$X$
+this cover has a finite subcover;
+there are $x_1,\dotsc,x_K\in X$ with
+$U_{x_1}\cup\dotsb\cup U_{x_K}=X$.
+
+Let~$y\in X$ be given. Since $y\in U_{x_k}$
+for some~$k$, there is, by complete regularity of~$X$,
+a function $f_y\in (C(X))_+$
+with $f_y(y)>0$
+and $\supp(f_y)\subseteq U_{x_k}$.
+Since the open subsets~$\supp(f_y)$
+cover~$X$
+there are (by compactness of~$X$) finitely many $y_1,\dotsc y_L$
+with $X = \supp(f_{y_1})\cup \dotsb \cup \supp(f_{y_L})$,
+and so~$\sum_\ell f_{y_\ell} > 0$.
+Let us group together the $f_{y_\ell}$s:
+pick for each~$\ell$ an $k_\ell$ with $\supp(f_{y_\ell})\subseteq 
+U_{x_{k_\ell}}$,
+and let $g_k:= \sum\{f_\ell\colon k_\ell = k\}$.
+Then $g_k\in (C(X))_+$,
+$\supp(g_k)\subseteq U_k$,
+and $\sum_k g_k >0$.
+Upon replacing $g_k$ with $g^{-1} g$ if necessary,
+we see that $\sum_k g_k=1$.
+
+Since~$\supp(g_k)\subseteq U_{x_k}$,
+we have $-\varepsilon \leq A(x)-A(x_k)\leq \varepsilon$
+for all~$x\in \supp(g_k)$,
+and so  $-g_k(x) \varepsilon
+\,\leq\, g_k(x) A(x) - g_k(x) A(x_k)\,\leq\, g_k(x) \varepsilon$
+for all~$x\in X$,
+that is,  $-g_k \varepsilon
+\,\leq\, g_k A - g_k A(x_k)\,\leq\, g_k \varepsilon$.
+Summing yields
+$-\varepsilon \,\leq\, A- \sum_k g_k A(x_k)\,\leq\, \varepsilon$,
+and so $\|A-\sum_k g_k A(x_k)\|\leq \varepsilon$.\qed
+\end{point}
+\end{point}
 \begin{point}{Proposition}%
-Let~$f\colon \scrA\to\scrB$ be a positive map between
-$C^*$-algebras.
+Let~$f\colon \scrA\to\scrB$ be a 
+positive map between $C^*$-algebras.
 If either~$\scrA$ or~$\scrB$ is commutative,
 then~$f$ is completely positive.
 \begin{point}{Proof}%
-Let~$a_1,\dotsc,a_N\in \scrA$
-and $b_1,\dotsc,b_N\in\scrB$ be given.
-
-Suppose that~$\scrB$ is commutative.
-Since for every miu-map $\omega\colon\scrB\to\C$,
-we have
+Suppose that~$\scrB$ is commutative,
+and let~$a_1,\dotsc,a_N\in \scrA$,
+$b_1,\dotsc,b_N\in\scrB$ be given.
+We must
+show that $\sum_{i,j} b_i^*f(a_i^*a_j)b_j$ is positive.
+This follows from the observation that
 $\omega(\,\sum_{i,j} b_i^*f(a_i^*a_j)b_j\,)
-= \omega(f(\,\sum_{i,j}(a_i\omega(b_i))^*\,a_j \omega(b_j)\,))\,\geq \,0$,
-we see that $\sum_{i,j} b_i^*f(a_i^*a_j)b_j$ is positive
-(by \sref{gelfand}),
-and so~$f$ is completely positive.
-
-Suppose instead that~$\scrA$ is commutative.
-\TODO{complete}\qed
+= \omega(f(\,\sum_{i,j}(a_i\omega(b_i))^*\,a_j \omega(b_j)\,))\,\geq \,0$
+for every~$\omega\in\spec(\scrA)$.
+\begin{point}%
+Suppose instead that~$\scrA$ is commutative,
+and let $A\in (M_N\scrA)_+$
+be given for some natural number~$N$.
+We must show that~$(M_Nf)(A)$ is positive in~$M_N\scrB$.
+By~\sref{ccstar-pos-mat},
+the problem reduces to the case that~$A\equiv a B$
+where~$a\in \scrA_+$ and~$B\in (M_N)_+$.
+Since $(M_Nf)(aB)\equiv f(a)B$ is clearly positive
+in~$M_N\scrB$,
+we are done.\qed
+\end{point}
 \end{point}
 \end{point}
 \begin{point}[cstar-positive-2x2matrix]{Lemma}%
