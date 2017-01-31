@@ -353,9 +353,27 @@ Now define~$\varrho(b) \colon \scrA \to \scrB(\scrH)$
 \end{point}
 \begin{point}%
 We already know~$\varrho$ is a~mu-map.
-We want to show it preserves involution: $\varrho(c^*) = \varrho(c)^*$.
-Concretely~$\left<\varrho(c^*)x,y\right> = \left<x, \varrho(c)y\right>$
-for all~$x,y\in \scrK$ and~$c\in \scrA$.
+We want to show it preserves involution: $\varrho(c^*) = \varrho(c)^*$
+for all~$c \in \scrA$.
+Indeed, for every~$a,b \in \scrA$ and~$x,y \in \scrH$
+    we have
+    \begin{equation*}
+        [\varrho_0(c^*) \, a\otimes x,b \otimes y]
+        = [(c^* a)\otimes x,b \otimes y]
+        = \left<x, \varphi(a^*cb) y \right>
+        = [a\otimes x,\varrho_0(c)\, b \otimes y].
+    \end{equation*}
+Hence~$
+    \left<\varrho(c^*) \eta(a\otimes x), \eta(b\otimes y)\right>=
+    \left< \eta(a\otimes x), \varrho(c)\eta(b\otimes y)\right>$.
+    As the linear span of~$\eta(a\otimes x)$ is dense in~$\scrK$,
+        we find~$\varrho(c^*) = \varrho(c)^*$, as desired.
+\end{point}
+\begin{point}%
+    Let~$V_0 \colon \scrH \to \scrA \odot \scrH$
+        be given by~$V_0 x = 1 \otimes x$.
+        It's bounded: $\| V_0 x\| = \left<x, \varphi(1^*1) x\right>^{\frac{1}{2}}
+        = \|\sqrt{\varphi(1)} x\| \leq \|\sqrt{\varphi(1)}\| \|x\|$.
 \end{point}
 \end{point}
 \end{point}
