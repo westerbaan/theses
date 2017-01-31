@@ -353,9 +353,71 @@ Now define~$\varrho(b) \colon \scrA \to \scrB(\scrH)$
 \end{point}
 \begin{point}%
 We already know~$\varrho$ is a~mu-map.
-We want to show it preserves involution: $\varrho(c^*) = \varrho(c)^*$.
-Concretely~$\left<\varrho(c^*)x,y\right> = \left<x, \varrho(c)y\right>$
-for all~$x,y\in \scrK$ and~$c\in \scrA$.
+We want to show it preserves involution: $\varrho(c^*) = \varrho(c)^*$
+for all~$c \in \scrA$.
+Indeed, for every~$a,b \in \scrA$ and~$x,y \in \scrH$
+    we have
+    \begin{equation*}
+        [\varrho_0(c^*) \, a\otimes x,b \otimes y]
+        = [(c^* a)\otimes x,b \otimes y]
+        = \left<x, \varphi(a^*cb) y \right>
+        = [a\otimes x,\varrho_0(c)\, b \otimes y].
+    \end{equation*}
+Hence~$
+    \left<\varrho(c^*) \eta(a\otimes x), \eta(b\otimes y)\right>=
+    \left< \eta(a\otimes x), \varrho(c)\eta(b\otimes y)\right>$.
+    As the linear span of~$\eta(a\otimes x)$ is dense in~$\scrK$,
+        we find~$\varrho(c^*) = \varrho(c)^*$, as desired.
+\end{point}
+\begin{point}%
+    Let~$V_0 \colon \scrH \to \scrA \odot \scrH$
+        be given by~$V_0 x = 1 \otimes x$.
+        It's bounded: $\| V_0 x\| = \left<x, \varphi(1^*1) x\right>^{\frac{1}{2}}
+        = \|\sqrt{\varphi(1)} x\| \leq \|\sqrt{\varphi(1)}\| \|x\|$.
+    Define~$V \equiv \eta \after V_0$.
+    For all~$a \in \scrA$ and~$x,y \in \scrH$ we have
+            $[a \otimes x, V_0 y]
+            = \left<x, \varphi(a^*)y\right>
+            = \left<x, \varphi(a)^*y\right>
+            = \left<\varphi(a) x, y\right>$.
+    Thus~$V^*$ satisfies~$V^* \eta(a \otimes x) = \varphi(a)x$.
+    Hence for all~$a \in \scrA$ and~$x \in \scrH$:
+    $V^* \varrho(a) V x = V^* \varrho(a) \eta(1 \otimes x)
+        = V^* \eta(a\otimes x)
+        = \varphi(a)x$.
+        So~$\ad_V \after \varrho = \varphi$.
+
+    If~$\varphi$ is unital,
+    then~$V^*Vx = V^* (1\otimes x) = \varphi(1)x=x$
+        for all~$x \in \scrH$ and so~$V$ is an isometry.
+    (Or equivalently~$\ad_V$ is unital.)
+\end{point}
+\begin{point}%
+    It remains to be shown that~$\varrho$
+        is normal when~$\varphi$ is.
+    Assume~$D \subseteq \scrA$ is a bounded set of self adjoint elements.
+    We need to show~$\sup_{d \in D} \varrho (d) = \varrho(\sup D)$.
+    Let~$t$ be in the image of~$\eta$.
+    It is sufficient to show~$\left<t, \varrho(\sup D) t\right>
+        = \left<t, \sup_{d \in D} \varrho(d)t\right>$.
+    We have~$t = \sum_{i=1}^n a_i \otimes x_i$
+        for some~$n \in \N$, $a_1, \ldots, a_n \in \scrA$
+            and~$x_1,\ldots, x_n \in \scrH$.
+    Write~$x$ for the vector~$(x_1, \ldots, x_n)^\T$
+        in~$\scrH^{\oplus n}$.
+    Then
+    \begin{align*}
+        \left<t, \varrho(\sup D) t\right>
+        &= \bigl< x, (M_n\varphi)\bigl(\, ( a_i^* (\sup D) a_j)_{ij} \,\bigr) x \bigr>_{\scrH^{\oplus n}} \\
+        &= \sup_{d\in D} \bigl< x, (M_n\varphi)\bigl(\, ( a_i^* d a_j)_{ij} \,\bigr) x \bigr>_{\scrH^{\oplus n}}\\
+        & = \sup_{d\in D} \left<t, \varrho(d)t\right>
+            = \bigl<t, \sup_{d \in D} \varrho(d) t\bigr>.
+    \end{align*}
+    Here we used that~$\left<x, (\,\cdot\,)x\right>$,
+        $M_n\varphi$ and 
+    $d \mapsto (a_i^*da_j)_{ij}$ are normal.
+    \TODO{}
+    Clearly the map
 \end{point}
 \end{point}
 \end{point}
