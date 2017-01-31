@@ -12,7 +12,7 @@ We already saw a dilation theorem in disguise:
     using the Gel'fand--Naimark--Segal construction (see \sref{gns})
     one shows every state is a vector state on a larger algebra:
 \end{point}
-\begin{point}{Exercise (GNS')}%
+\begin{point}{Exercise (GNS')}\label{dils-gns}%
     Show that
     for each pu-map~$\omega\colon \scrA \to \C$
         from a~C$^*$-algebra~$\scrA$
@@ -86,7 +86,8 @@ Before we move on to Paschke's GNS
 Paschke's work builds on Sakai's characterization of von Neumann algebras,
     which would take considerable effort to develop in detail.
 Thus to be as complete as possible
-we avoid Sakai's characterization (in contrast to \cite{wwpaschke})
+we avoid Sakai's characterization (in contrast to our
+    article \cite{wwpaschke})
     and give new proofs
     of Paschke's results where required.
 One major difference is that we will use
@@ -241,7 +242,7 @@ $([v'_n,w'_n])_n$
     and so
     we define~$\left<v,w\right>
         \equiv \lim_{n\to \infty} [v_n,w_n]$ on~$\scrH$.
-With vector space structure from~\sref{completion-to-hilb-vect}\TODO{fix ref}
+With vector space structure from~\sref{completion-to-hilb-vect}
 we easily see this is an inner product~$\scrH$.
 The metric induced by the inner product coincides with~$d$:
 \begin{equation*}
@@ -270,8 +271,8 @@ the following fixes a sesquilinear form on~$\scrA \odot \scrH$:
 \begin{equation*}
     [a\otimes x, b \otimes y] = \left<x, \varphi(a^*b)y\right>_{\scrH}.
 \end{equation*}
-As~$\varphi$ preserves involution as a positive map,\TODO{ref}
-this is also a symmetric form, i.e.: $[t,s]=\overline{[s,t]}$.
+As~$\varphi$ preserves involution as a positive map,
+see \sref{cstar-p-implies-i}, this is also a symmetric form, i.e.: $[t,s]=\overline{[s,t]}$.
     Assume~$\sum^n_{i=1} a_i\otimes x_i$
 is an arbitrary element of~$A \odot \scrH$.
 To see $[\,\cdot\,,\,\cdot\,]$ is positive,
@@ -395,7 +396,8 @@ Hence~$
 \begin{point}%
     It remains to be shown that~$\varrho$
         is normal when~$\varphi$ is.
-    Assume~$D \subseteq \scrA$ is a bounded set of self adjoint elements.
+    Assume~$D \subseteq \scrA$ is a bounded directed
+    set of self adjoint elements.
     We need to show~$\sup_{d \in D} \varrho (d) = \varrho(\sup D)$.
     Let~$t$ be in the image of~$\eta$.
     It is sufficient to show~$\left<t, \varrho(\sup D) t\right>
@@ -417,8 +419,40 @@ Hence~$
         $M_n\varphi$ and 
     $d \mapsto (a_i^*da_j)_{ij}$ are normal.
     \TODO{}
-    Clearly the map
+    At the moment it will be a bit tricky to show~$(a_i^*da_j)_{ij}$
+    is normal.  Later (\TODO{}) we will have a simpler argument.
+    Define~$C_{ij} = \frac{1}{\sqrt{n}} a_j$
+        and~$\Delta\colon \scrA \to M_n \scrA$
+        by~$\Delta(d)_{ij} = \delta_{ij}$.\TODO{kronecker}.
+    Then~$(C^*\Delta(d)C)_{ij} = a_i^* d a_j$.
+    Thus by~\TODO{} it is sufficient to show~$\Delta$ is normal.
+    Without loss of generality, we may assume~$\scrA$
+        is an algebra of operators on a Hilbert spaces~$\scrL$.
+    By~\TODO{} 
+        $(d)_{d \in D}$ converges ultrastrongly to~$\sup D$.
+    In particular it converges in the WOT.
+    Similarly
+    $(\Delta(d))_{d \in D}$
+        converges in the WOT
+        to~$\sup_{d \in D} \Delta(d)$.
+        Let~$x \equiv (x_1, \ldots, x_n)^\T$ be a vector in~$\scrL^{\oplus n}$.
+        Then~$
+        (\left<x,  \Delta(d)x\right>)_{d \in D}
+        = (\sum_i \left<x_i,  dx_i \right>)_{d \in D}$
+        converges to
+        $ \sum_i \left<x_i,  (\sup D )x_i \right>
+            = \left<x,  \Delta(\sup D )x \right>$
+    and so~$(\Delta(d))_{d \in D}$
+    also converges in the WOT to $\Delta(\sup D)$.
+    Hence~$\Delta(\sup D) = \sup_{d \in D} \Delta(D)$
+        and so~$\Delta$ is normal.\qed
 \end{point}
+\end{point}
+\begin{point}%
+Stinespring is a generalization of GNS.
+It seems tempting to directly prove Stinespring instead of GNS ---
+however, we used GNS in the proof of Stinespring to show
+that~$\varrho$ is normal, when~$\varphi$ is.
 \end{point}
 \end{point}
 \end{parsec}
