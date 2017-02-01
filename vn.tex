@@ -1417,11 +1417,56 @@ we conclude \TODO{} that~$\bigvee_{d\in D} \varrho_\omega(d)
 and so~$\varrho_\omega$ is normal.\qed
 \end{point}
 \end{point}
-
-\TODO{Show that $\varrho_\Omega$ is normal.}
-
-\TODO{Show that every von Neumann algebra is isomorphic
-to a von Neumann algebra of operators.}
+\begin{point}[varrho-Omega-normal]{Exercise}%
+Show that the map $\varrho_\Omega$ 
+from~\sref{gelfand-naimark-representation}
+is normal for every collection~$\Omega$ of np-maps $\scrA\to\C$
+on a von Neumann algebra $\scrA$.
+\end{point}
+\begin{point}[injective-nmiu-iso-on-image]{Lemma}%
+Let~$f\colon \scrA\to\scrB$ be an injective nmiu-map
+between von Neumann algebras.
+Then~$f(\scrA)$ is a von Neumann subalgebra of~$\scrB$,
+and~$f$ restricts to a nmiu-isomorphism from~$\scrA$
+to~$f(\scrA)$.
+\begin{point}{Proof}%
+We already know by~\sref{injective-miu-iso-on-image}
+that~$f(\scrA)$ is a $C^*$-subalgebra of~$\scrA$,
+and that~$f$ restricts to a miu-isomorphism~$f'\colon \scrA\to f(\scrA)$.
+The only thing left to show is that~$f(\scrA)$
+is a von Neumann subalgebra of~$\scrB$,
+because a miu-isomorphism between von Neumann algebras
+(being an order isomorphism)
+will automatically be a nmiu-isomorphism.
+Let~$D$ be a bounded directed subset of~$f(D)$.
+Note that~$S:=(f')^{-1}(D)$ is a bounded
+directed subset of~$\scrA$,
+and so~$\bigvee D\equiv  \bigvee f(\,S\,)
+= f(\bigvee S)$, because~$f$ is normal.
+Thus~$\bigvee f(D)\in f(\scrA)$,
+and so $f(\scrA)$ is a von Neumann subalgebra of~$\scrB$.\qed
+\end{point}
+\end{point}
+\begin{point}{Theorem (normal Gelfand--Naimark)}%
+Every von Neumann algebra~$\scrA$ is nmiu-isomorphic
+to von Neumann algebra of operators on a Hilbert space.
+\begin{point}{Proof}%
+Recall that an element $a\in \scrA$ is zero iff $\omega(a)=0$
+for all np-maps $\omega\colon \scrA\to\C$.
+It follows that the collection~$\Omega$
+of all np-maps $\scrA\to\C$
+obeys the condition of~\sref{proto-gelfand-naimark},
+and so the miu-map $\varrho_\Omega\colon \scrA\to\scrB(\scrH_\Omega)$
+(from~\sref{gelfand-naimark-representation})
+is injective.
+Since~$\varrho_\Omega$
+is also normal by~\sref{varrho-Omega-normal},
+we see by~\sref{injective-nmiu-iso-on-image} that~$\varrho_\Omega$
+restricts to a nmiu-isomorphism
+from~$\scrA$ to the von Neumann subalgebra~$\varrho_\Omega(\scrA)$
+of~$\scrB(\scrH_\Omega)$.\qed
+\end{point}
+\end{point}
 \end{parsec}
 
 
