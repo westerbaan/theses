@@ -652,6 +652,9 @@ Let~$\scrB$ be a von Neumann algebra
 The correspoding uniformity is called the \Define{ultraweak uniformity}.
     \end{enumerate}
 \end{point}
+\end{parsec}
+
+\begin{parsec}%
 \begin{point}{Definition}%
 Let~$X$ be a uniform space with entourages~$\Phi$.
 It is easy to translate the familiar notions for
@@ -674,11 +677,121 @@ this will be the case.
 The uniform space $X$ is \Define{complete}
     when every Cauchy net converges.
 \item
-Let~$(X',\Phi')$ be another uniform space.
+Let~$(Y,\Psi)$ be another uniform space.
 A map~$f\colon X \to X'$
 is said to be \Define{uniformly continuous}
-if for each~$\varepsilon \in \Phi'$
+if for each~$\varepsilon \in \Psi$
+there is a~$\delta \in \Phi$
+such that for all~$x \mathrel\delta y$
+we have~$f(x) \mathrel\varepsilon f(y)$.
+The map~$f$ is merely \Define{continuous}
+if for each~$x$ and~$\varepsilon\in\Psi$,
+there is a~$\delta \in \Phi$
+such that for all~$x \mathrel{\delta} y$
+we know~$f(x) \mathrel\varepsilon f(y)$.
+\item
+We say two Cauchy nets
+$(x_\alpha)_{\alpha\in I}$
+and$(y_\beta)_{\beta\in J}$ are \Define{equivalent}
+when for every~$\varepsilon \in \Phi$
+there are~$\alpha_0 \in I$ and~$\beta_0 \in J$
+such that for all~$\alpha < \alpha_0$ and~$\beta < \beta_0$
+we have~$x_\alpha \mathrel\varepsilon x_\beta$.
+
+\item
+A subset~$D \subseteq X$ is said to be \Define{dense}
+    if for each~$\varepsilon \in \Phi$ and~$x \in X$,
+    there is a~$y \in D$
+    with~$x \mathrel\varepsilon y$.
 \end{enumerate}
+\end{point}
+\begin{point}{Exercise}%
+    In the same setting.
+    \begin{enumerate}
+\item
+    Show that equivalence of Cauchy nets is an equivalence relation.
+    Show that if~$(x_\alpha)_\alpha$ is a subnet of~$(y_\alpha)_\alpha$,
+        that~$(x_\alpha)_\alpha$ is equivalent to~$(y_\alpha)_\alpha$.
+\item
+    Show that if~$f\colon X \to Y$ is a continuous
+    between uniform spaces
+        and we have~$x_\alpha \to x$ in~$X$,
+        then~$f(x_\alpha) \to f(x)$ in~$Y$.
+\item
+    Assume~$f$ is a uniformly continuous map between uniform spaces.
+    Show that $f$ maps Cauchy nets to Cauchy nets
+    and furthermore that~$f$ maps equivalent Cauchy nets to equivalent
+        Cauchy nets.
+    \end{enumerate}
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+It is well known that a uniform space~$X$ can be completed
+    by embedding it in a uniform space of equivalence classes
+    of Cauchy nets~$C$,
+    see e.g.~\cite[Thm.~39.12]{willard}.
+Call this embedding~$\eta\colon X \to C$.
+It comes with a extension theorem:
+    every uniformly continuous~$f\colon X \to Y$
+    to some complete uniformity~$Y$
+    can be uniquely lifted to a continuous
+    map~$g\colon C \to X$ such that~$g\after \eta = f$.
+The similar extension theorem
+    for metric spaces allowed us to extend
+    the inner product on a complex vector space
+    to its metric completion.
+Unfortunately, we could not find a suitable uniformity on~$\scrB$
+    which is complete.
+Luckily, we do not need full completeness.
+\end{point}
+\begin{point}{Definition}
+    Let~$X$ be a uniform space with entourages~$\Phi$.
+         A \Define{bounded Cauchy net} $(x_\alpha)_\alpha$
+                is a Cauchy net such that for every~$\varepsilon \in \Phi$
+                there is an~$n\in \N$
+                such that~$x_\alpha \mathrel\varepsilon^n x_\beta$
+                for all~$\alpha,\beta$.
+         The uniform space~$X$ is said to be \Define{bounded complete}
+                if every bounded Cauchy net converges.
+\end{point}
+\begin{point}{Proposition}%
+    Assume~$X$ is a uniform space with entourages~$\Phi$.
+    There exists a bounded complete uniform space~$C$
+        with uniformly continuous~$\eta \colon X \to C$
+        such that the image of~$\eta$ is dense in~$C$.
+    Furthermore, for every uniformly continuous~$f\colon X \to Y$
+        into a bounded complete uniform space~$Y$,
+        there exists a unique continuous map~$g\colon C \to Y$
+        such that~$g \after \eta = f$.
+\begin{point}{Proof}%
+    The set of entourages~$\Phi$ is a filter
+        and thus can be used as index set for a net
+        using reverse inclusion as order.
+        Thus~$\varepsilon \geq \delta
+        \ \Leftrightarrow\ \varepsilon \subseteq \delta$.
+We say a net~$(x_\alpha)_{\alpha \in \Phi}$  indexed by entourages
+    is \Define{fast} if for every~$\varepsilon \in \Phi$
+        and~$\alpha,\beta \geq \varepsilon$
+        we have~$x_\alpha \mathrel\varepsilon x_\beta$.
+
+\begin{point}%
+Every Cauchy-net is equivalent to a fast one, but this is not as
+        easy as in the metric case.
+Let~$(x_\alpha)_{\alpha \in I}$
+    be an arbitrary Cauchy net in~$X$.
+By definition we can find~$\alpha_\varepsilon \in I$
+    such that for each~$\varepsilon \in \Phi$
+    and~$\alpha,\beta \geq \alpha_\varepsilon$
+    we have~$x_\alpha \mathrel{\nicefrac{\varepsilon}{2}} x_\beta$.
+Unfortunately~$\alpha_{(\,\cdot\,)}$ need not be order preserving
+    and so~$(x_{\alpha_{\varepsilon}})_{\varepsilon\in\Phi}$
+    need not be a subnet of~$(x_\alpha)_{\alpha \in I}$.
+The net~$(x_{\alpha_{\varepsilon}})_{\varepsilon\in\Phi}$
+    is a fast and Cauchy:
+
+\end{point}
+\end{point}
 \end{point}
 \end{parsec}
 
