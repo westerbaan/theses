@@ -91,7 +91,7 @@ we avoid Sakai's characterization (in contrast to our
     and give new proofs
     of Paschke's results where required.
 One major difference is that we will use
-    a restricted completion (see \TODO{}) of a uniformity
+    a restricted completion (see \TODO{}) of a uniform space
     instead of considering the dual space of a Hilbert C$^*$-module.
 We finish the first part of this chapter
     by constructing Paschke's dilation
@@ -519,6 +519,98 @@ Hence~$\sigma(\varrho'(a_1)c\varrho'(a_2))
             = \varrho(a_1)\sigma(c \varrho'(a_2))
             = \varrho(a_1) \sigma(c) \varrho(a_2)$
     for all~$a_1,a_2 \in \scrA$ and~$c\in \scrC$ as desired.\qed
+\end{point}
+\end{point}
+\end{parsec}
+
+\TODO{universal property}
+\TODO{kraus}
+
+\section*{Hilbert C$^*$-modules}
+
+\begin{parsec}%
+\begin{point}%
+In \sref{prop-complete-into-hilbert-space}
+    we saw how to complete a complex vector space with inner product
+    to a Hilbert space.
+Now we will see how to complete a right-$\scrB$-module
+    with $\scrB$-valued inner product
+    to a self-dual Hilbert~$\scrB$-module
+    under the assumption~$\scrB$ is a von Neumann algebra.
+We will use a different construction than Paschke.
+He shows that for a pre-Hilbert $\scrB$-module~$X$
+    the set of functionals~$X'$
+        (i.e.~$\scrB$-module homomorphisms into~$\scrB$)
+    turns out to  be a self-dual Hilbert~$\scrB$-module,
+    which he uses as the completion of~$X$.
+A considerable part of his paper \cite{paschke}
+    is devoted to this construction.
+It requires Sakai's characterization of von Neumann algebras,
+    which we have not covered.
+To avoid developing Sakai's theory,
+    we give a different construction.
+Instead of embedding~$X$ into a dual space,
+    we will stay closer to the similar fact for Hilbert spaces
+    and use an topological completion.
+A simple metric completion will not do,
+    we will need to complete $X$ as a \emph{uniform space}.
+Uniformities are structures that sit between topological spaces
+and metric spaces.
+\end{point}
+\begin{point}{Definition}%
+    A \Define{uniform space} is a set~$X$
+    together with a family of relations
+    $\Phi \subseteq X\times X$ called \Define{entourages}
+        satisfying the following conditions.
+    \begin{enumerate}
+    \item
+        The diagonal is an entourage: ~$\{(x,x);\ x\in X\} \in \Phi$.
+    \item
+        The set of entourages~$\Phi$ is a filter.
+        That is:
+        \begin{inparaenum}
+        \item
+        if~$\varepsilon,\delta \in \Phi$,
+            then~$\varepsilon \cap \delta \in \Phi$
+        \emph{and}
+        \item
+        if~$\varepsilon \subseteq \delta \in \Phi$,
+            then~$\varepsilon \in \Phi$.
+        \end{inparaenum}
+    \item
+        For each~$\varepsilon \in \Phi$,
+            there is a~$\delta \in \Phi$
+            such that~$\delta^2 \subseteq \varepsilon$.
+        Thus, if~$x \mathrel\delta y$ and~$y \mathrel\delta z$
+            then~$x \mathrel\varepsilon z$ for any $x,y,z \in X$.
+    \item
+        For every~$\varepsilon \in \Phi$,
+            there is a~$\delta \in \Phi$
+                with~$\delta^{-1}\subseteq \varepsilon$.
+        Thus, if~$x \mathrel\delta y$ then~$y \mathrel\varepsilon x$
+            for any~$x,y \in X$.
+    \end{enumerate}
+\begin{point}%
+The elements of~$X$ are the points of the uniform space.
+The entourages~$\varepsilon \in \Phi$
+    are generalized distances:
+one reads~$x \mathrel\varepsilon y$ as
+    `the point $x$ is~$\varepsilon$-close to~$y$'.
+With this in mind, the first axiom states every point is arbitrarily close
+    to itself.
+The third axiom requires that for every entourage~$\varepsilon$
+    there is an entourage which acts like~$\nicefrac{\varepsilon}{2}$.
+There might be several~$\nicefrac{\varepsilon}{2}$
+    which fit the bill.
+Whenever we write~$\nicefrac{\varepsilon}{2}$
+    we implicitly pick some entourage that
+    satisfies~$(\nicefrac{\varepsilon}{2})^2 \subseteq \varepsilon$.
+Also we will use the obvious shorthand~$\nicefrac{\varepsilon}{2}
+=   \nicefrac{(\nicefrac{\varepsilon}{2})}{2}$.
+\end{point}
+\begin{point}{Example}%
+Let~$(X,d)$ be a metric space.
+
 \end{point}
 \end{point}
 \end{parsec}
