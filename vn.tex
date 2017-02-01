@@ -1379,6 +1379,50 @@ and so~$p=\bigvee_{\omega_1}\ceil{\omega_1}_\scrB \in \scrB$.\qed
 \TODO{Show that a von Neumann algebra is (bounded?) ultraweakly complete.}
 \end{point}
 \end{parsec}
+\begin{parsec}%
+\begin{point}{Proposition}%
+Given an np-map~$\omega\colon \scrA \to \C$
+on a von Neumann algebra~$\scrA$,
+the map $\varrho_\omega\colon \scrA\to\scrB(\scrH_\omega)$
+from~\sref{gns} is normal.
+\begin{point}{Proof}%
+Let~$D$ be a bounded directed subset of~$\Real{\scrA}$.
+Given $a\in \scrA$, we have
+\begin{alignat*}{3}
+	\textstyle
+	\left<\,\eta_\omega(a),\, 
+	\bigvee_{d\in D}\varrho_\omega(d)
+	\,\eta_\omega(a)\,\right>
+\ &=\ 
+	\textstyle
+	\bigvee_{d\in D}\ \left<\,\eta_\omega(a),\, 
+	\varrho_\omega(d)
+	\,\eta_\omega(a)\,\right>\\
+\ &=\
+	\textstyle
+	\bigvee_{d\in D}\ \omega(a^*d a) \\
+\ &=\ 
+	\textstyle
+	\omega(a^*\,\bigvee D\, a) \\
+\ &=\
+	\textstyle
+	\left<\,\eta_\omega(a),\, 
+	\varrho_\omega(\bigvee D)
+	\,\eta_\omega(a)\,\right>.
+\end{alignat*}
+Since~$\{\,\eta_\omega(a)\colon \,a\in\scrA\,\}$
+is dense in~$\scrH_\omega$,
+we conclude \TODO{} that~$\bigvee_{d\in D} \varrho_\omega(d)
+= \varrho_\omega(\bigvee D)$,
+and so~$\varrho_\omega$ is normal.\qed
+\end{point}
+\end{point}
+
+\TODO{Show that $\varrho_\Omega$ is normal.}
+
+\TODO{Show that every von Neumann algebra is isomorphic
+to a von Neumann algebra of operators.}
+\end{parsec}
 
 
 
