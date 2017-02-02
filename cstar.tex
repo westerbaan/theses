@@ -949,7 +949,7 @@ unital linear map between $C^*$-algebras,
 (which is usually called a \Define{unital $*$-homomorphism}.)
 \end{point}
 \end{point}
-\begin{point}{Lemma (``p$\Rightarrow$i'')}\label{cstar-p-implies-i}%
+\begin{point}[cstar-p-implies-i]{Lemma (``p$\Rightarrow$i'')}
 A positive map $f\colon \scrA\to\scrB$ between
 $C^*$-algebras is involution preserving.
 \begin{point}{Proof}%
@@ -1772,35 +1772,111 @@ and $a=0$.\qed
 \end{parsec}
 \begin{parsec}%
 \begin{point}%
-\TODO{perhaps move this down, below
-complete positivity}
 Observe that the norm and order on 
 (the self-adjoint elements of a) $C^*$-algebra~$\scrA$
 completely determine one another (using the unit):
 on the one hand
 $\|a\|=\inf\{\lambda\geq 0\colon -\lambda\leq a\leq \lambda\}$
-by~\sref{cstar-positive-1},
+by~\sref{positive-basic-2},
 and on the other hand
 $a\geq 0$ iff $\|a-s\|\leq s$ for some $s\geq \frac{1}{2}\|a\|$
 by definition (\sref{cstar-positive-def}).
-This has the obvious --- but important --- consequence
-that any unital map between $C^*$-algebras
-preserves the order iff it preserves the norm
-of self-adjoint elements.
+This has some useful consequences.
 \end{point}
-\begin{point}[cstar-isometry]{Exercise}%
-Show that for a unital linear map $f\colon \scrA\to\scrB$
+\begin{point}[weak-russo-dye]{Lemma}%
+A positive map~$f\colon \scrA\to\scrB$
+between $C^*$-algebras
+is bounded.
+More specifically,
+we have
+$\|f(a)\|\leq \|f(1)\|\,\|a\|$
+for all self-adjoint~$a\in\sa{\scrA}$,
+and we have $\|f(a)\|\leq 2\|f(1)\|\,\|a\|$
+for arbitrary $a\in \scrA$.
+\begin{point}{Proof}%
+Given~$a\in\sa{\scrA}$
+we have~$-\|a\|\leq a \leq \|a\|$,
+and $-\|a\|\,f(1)\leq f(a)\leq \|a\|\,f(1)$
+(because $f$ is positive),
+and thus~$\|f(a)\|\leq f(1)\,\|a\|\leq \|f(1)\|\,\|a\|$ 
+by~\sref{positive-basic-2}.
+
+For an arbitrary element $a\equiv \Real{a}+i\Imag{a}$
+of~$\scrA$
+we have 
+$\|f(a)\|\leq \|f(\Real{a})\|+\|f(\Imag{a})\|\leq 2\|f(1)\|\,\|a\|$.\qed
+\end{point}
+\begin{point}{Remark}%
+It is a non-trivial theorem (known as \Define{Russo--Dye}
+in \cite{paulsen}),
+that the factor ``2'' in statement above
+can be dropped, i.e.~$\|f\|=\|f(1)\|$
+(c.f.~Corollary~1 of~\cite{russodye}).
+Fortunately for us,
+this improved bound
+is much easier to obtain
+for completely positive maps,
+as we'll see in~\sref{cp-russo-dye}.
+\end{point}
+\end{point}
+\begin{point}[cstar-isometry]{Lemma}%
+Show that for a pu-map $f\colon \scrA\to\scrB$
 between $C^*$-algebras,
 the following are equivalent.
 \begin{enumerate}
-\item
-	$f$ is an \Define{isometry on~$\sa{\scrA}$}, 
-	that is, $\|f(a)\|=\|a\|$ for all~$\in \sa{\scrA}$,
-	and
-\item
+\item\label{cstar-isometry-1}
 	$f$ is \Define{bipositive}, that is, $f(a)\geq 0$ iff $a\geq 0$
-	for all~$a\in\scrA$.
+	for all~$a\in\scrA$;
+\item\label{cstar-isometry-2}
+	$f$ is an isometry on~$\sa{\scrA}$, 
+	that is, $\|f(a)\|=\|a\|$ for all~$\in \sa{\scrA}$;
+\item\label{cstar-isometry-3}
+	$f$ is an isometry on~$\pos{\scrA}$.
 \end{enumerate}
+\begin{point}{Proof}%
+It is clear that \ref{cstar-isometry-2} implies~\ref{cstar-isometry-3}.
+\begin{point}{\ref{cstar-isometry-1}$\Longrightarrow$\ref{cstar-isometry-2}}%
+Let~$a\in \sa{\scrA}$ be given.
+Note that $-\lambda \leq a\leq \lambda$
+iff $-\lambda \leq f(a) \leq \lambda$
+for all~$\lambda \geq 0$,
+because~$f$ is bipositive and unital.
+In particular,
+since~$-\|a\|\leq a\leq \|a\|$,
+we have $-\|a\|\leq f(a)\leq \|a\|$,
+and so~$\|f(a)\|\leq \|a\|$.
+On the other hand,
+$-\|f(a)\|\leq f(a)\leq \|f(a)\|$
+implies $-\|f(a)\|\leq a\leq \|f(a)\|$,
+and so $\|a\|\leq \|f(a)\|$.
+Thus $\|a\|=\|f(a)\|$,
+and $f$ is an isometry on~$\sa{\scrA}$.
+\end{point}
+\begin{point}{\ref{cstar-isometry-3}$\Longrightarrow$\ref{cstar-isometry-1}}%
+Let~$a\in \scrA$ be given.
+We must show that~$f(a)\geq 0$ iff $a\geq 0$.
+Since~$f$ is involution preserving (\sref{cstar-p-implies-i})
+$a$ is self-adjoint iff $f(a)$ is self-adjoint,
+and so we might as well assume that~$a$ is self-adjoint
+to start with.
+Since~$f$ is an isometry on~$\scrA_+$,
+$\|a\|-a$ is positive,
+and $f$ is unital,
+we have $\|\,\|a\|-a\,\|=\|f(\|a\|-a)\|=\|\,\|a\|-f(a)\,\|$.
+Now,
+observe that
+$0\leq a$
+iff
+$ \|\,\|a\|-a\,\|\leq \|a\|$,
+and that
+$\|\,\|a\|-f(a)\,\|\leq \|a\|$ 
+iff $0\leq f(a)$,
+by~\sref{positive-basic-2},
+because $\frac{1}{2}\|a\|\leq \|a\|$
+and $\frac{1}{2}\|f(a)\|\leq  \|a\|$
+(by~\sref{weak-russo-dye}).\qed
+\end{point}
+\end{point}
 \begin{point}{Warning}%
 Such a map~$f$ need not preserve the norm of arbitrary elements:
 the map $A\mapsto \frac{1}{2}A+\frac{1}{2}A^T\colon M_2\to M_2$
@@ -3760,6 +3836,21 @@ the $2\times 2$ matrix $T:=\bigl(
 in~$M_2\scrB$ is positive.
 Thus we get $f(a^*b) f(b^*a)\leq \|f(b^*b)\|\,f(a^*a)$
 by~\sref{cstar-positive-2x2matrix}.\qed
+\end{point}
+\end{point}
+\begin{point}[cp-russo-dye]{Corollary}
+We have $\|f\|= \|f(1)\|$
+for every cp-map between $C^*$-algebras.
+\begin{point}{Proof}%
+On the one hand $\|f(1)\|\leq \|f\|\|1\| \leq \|f\|$,
+and on the other $\|f\|\leq \|f(1)\|$,
+because
+ $\|f(a)\|^2=\|f(a)^*f(a)\|=\|f(a^*1)f(1^*a)\|
+\leq \|f(1^*1)\|\,\|f(a^*a)\|
+\leq \|f(1)\|^2 \,\|a^*a\|
+= \|f(1)\|^2 \|a\|^2$
+for all $a\in \scrA$
+by~\sref{cp-cs} and~\sref{weak-russo-dye}.\qed
 \end{point}
 \end{point}
 \begin{point}[choi]{Lemma (Choi)}%
