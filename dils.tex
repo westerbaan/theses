@@ -576,7 +576,8 @@ and metric spaces.
             then~$\varepsilon \in \Phi$.
         \end{inparaenum}
     \item
-        The diagonal is an entourage: $\{(x,x);\ x\in X\} \in \Phi$.
+        For every~$\varepsilon \in \Phi$
+            and~$x \in X$ we have~$x \mathrel\varepsilon x$.
     \item
         For each~$\varepsilon \in \Phi$,
             there is a~$\delta \in \Phi$
@@ -590,6 +591,10 @@ and metric spaces.
         Thus, if~$x \mathrel\delta y$ then~$y \mathrel\varepsilon x$
             for any~$x,y \in X$.
     \end{enumerate}
+    A uniform space is \Define{Hausdorff}
+        whenever~$x \mathrel\varepsilon y$
+            for all~$\varepsilon \in \Phi$
+            imlies~$x=y$.
 \begin{point}%
 The elements of~$X$ are the points of the uniform space.
 The entourages~$\varepsilon \in \Phi$
@@ -727,14 +732,13 @@ A subset~$D \subseteq X$ is said to be \Define{dense}
 \end{parsec}
 \begin{parsec}%
 \begin{point}%
-It is well known that a uniform space~$X$ can be completed
-    by embedding it in a uniform space of equivalence classes
-    of Cauchy nets~$C$,
+It is well known that a Hausdorff uniform space~$X$ can
+    be embedded in a complete uniform space~$C$,
     see e.g.~\cite[Thm.~39.12]{willard}.
 Call this embedding~$\eta\colon X \to C$.
 It comes with a extension theorem:
     every uniformly continuous~$f\colon X \to Y$
-    to some complete uniformity~$Y$
+    to some complete Hausdorff uniformity~$Y$
     can be uniquely lifted to a continuous
     map~$g\colon C \to X$ such that~$g\after \eta = f$.
 The similar extension theorem
@@ -761,7 +765,7 @@ Luckily, we do not need full completeness.
         with uniformly continuous~$\eta \colon X \to C$
         such that the image of~$\eta$ is dense in~$C$.
     Furthermore, for every uniformly continuous~$f\colon X \to Y$
-        into a bounded complete uniform space~$Y$,
+        into a bounded complete Hausdorff uniform space~$Y$,
         there exists a unique continuous map~$g\colon C \to Y$
         such that~$g \after \eta = f$.
 \begin{point}{Proof}%
@@ -774,8 +778,9 @@ We say a net~$(x_\alpha)_{\alpha \in \Phi}$  indexed by entourages
     is \Define{fast} if for every~$\varepsilon \in \Phi$
         and~$\alpha,\beta \geq \varepsilon$
         we have~$x_\alpha \mathrel{\varepsilon^2} x_\beta$.
+We construct the completion using bounded fast Cauchy nets.
 \begin{point}%
-Every Cauchy-net is equivalent to a fast one, but this is not as
+Every Cauchy net is equivalent to a fast one, but this is not as
         easy as in the metric case.
 Let~$(x_\alpha)_{\alpha \in I}$
     be an arbitrary Cauchy net in~$X$.
@@ -806,6 +811,76 @@ Then~$x_\beta \mathrel{\nicefrac{\varepsilon}{2}}
 x_{\gamma} \mathrel{\delta} x_{\alpha_{\delta}}$
 and so as~$\delta\subseteq \nicefrac{\varepsilon}{2}$
 we get~$x_\beta \mathrel\varepsilon x_{\alpha_\delta}$.
+
+Note that if fast Cauchy nets~$(x_\alpha)_{\alpha \in \Phi}$
+    and~$(y_\alpha)_{\alpha \in \Phi}$ are equivalent,
+    we can find for every~$\varepsilon \in \Phi$
+    some~$\beta \in \Phi$
+    such that for all~$\gamma \geq \beta$
+    we have~$x_\gamma \mathrel{\varepsilon} y_\gamma$.
+\end{point}
+\begin{point}%
+Write~$N$ for the set of bounded fast Cauchy nets
+    and~$C$ for~$N$ modulo equivalence of Cauchy nets.
+Let~$\varepsilon \in \Phi$.
+For nets~$(x_\alpha)_{\alpha}$
+    and~$(y_\alpha)_{\alpha}$ in~$N$,
+    define
+    \begin{equation*}
+        (x_\alpha)_\alpha \mathrel{\Define{\hat\varepsilon}}
+            (y_\alpha)_\alpha
+            \quad\Leftrightarrow\quad
+        \exists \beta \in \Phi \, \forall \gamma \geq \beta. \ 
+        x_\gamma \mathrel{\varepsilon} y_\gamma.
+    \end{equation*}
+Note $\hat\varepsilon \subseteq \hat\delta$
+whenever~$\varepsilon \subseteq \delta$
+and
+$\hat\varepsilon_1 \after \hat\varepsilon_2 
+\subseteq\widehat{\varepsilon_1 \after \varepsilon_2}$.
+So~$
+\widehat{\nicefrac{\varepsilon}{2}} \after
+\widehat{\nicefrac{\varepsilon}{2}} \subseteq
+\widehat{\nicefrac{\varepsilon}{2} \after
+\nicefrac{\varepsilon}{2}} \subseteq \widehat{\varepsilon}$,
+which is one requirement for~$\{ \hat\varepsilon; \ \varepsilon \in \Phi\}$
+to be a fundamental system of entourages for~$N$.
+The others are easy as well.
+Unfortunately the entourages~$\hat\varepsilon$ do not necessarily preserve
+    equivalence of Cauchy nets and do not lift directly to~$C$.
+\end{point}
+\begin{point}{$N$ is bounded complete}%
+As every bounded Cauchy net is equivalent to a fast one,
+it is sufficient to show convergence of bounded fast Cauchy nets.
+Thus let~$((x^\gamma_\alpha)_\alpha)_\gamma$
+    be a bounded fast Cauchy net in~$N$.
+First we will show~$(x^{\hat\alpha}_\alpha)_\alpha$
+    is a bounded Cauchy net.
+It might not be fast, so
+    formally~$((x^\gamma_\alpha)_\alpha)_\gamma$
+    cannot converge to it,
+    but it will converge to an equivalent fast Cauchy net.
+As~$((x^\gamma_\alpha)_\alpha)_\gamma$
+    is fast Cauchy,
+    we know that for every~$\gamma_1,\gamma_2 \geq \hat\varepsilon$
+we have~$
+(x^{\gamma_1}_\alpha)_\alpha \mathrel{\hat\varepsilon^2}
+        (x^{\gamma_2}_\alpha)_\alpha$.
+So there is a~$\zeta_{\gamma_1,\gamma_2} \in \Phi$
+such that for~$\alpha \geq \zeta_{\gamma_1,\gamma_2}$
+    we have~$x^{\gamma_1}_\alpha
+        \mathrel{\varepsilon^2}
+        x^{\gamma_2}_\alpha$.
+Assume~$\alpha,\beta \geq \varepsilon$.
+Pick~$\xi \geq \alpha,\beta,\zeta_{\hat\alpha,\hat\beta}$.
+Then we have $ x^{\hat{\alpha}}_\alpha
+            \mathrel{\varepsilon^2}
+        x^{\hat{\alpha}}_\xi
+            \mathrel{\varepsilon^2}
+        x^{\hat{\beta}}_\xi
+            \mathrel{\varepsilon^2}
+            x^{\hat{\beta}}_\beta$ and so~$(x_\alpha^{\hat\alpha})_\alpha$
+            is Cauchy.
 \end{point}
 \end{point}
 \end{point}
