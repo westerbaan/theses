@@ -773,8 +773,7 @@ Luckily, we do not need full completeness.
 We say a net~$(x_\alpha)_{\alpha \in \Phi}$  indexed by entourages
     is \Define{fast} if for every~$\varepsilon \in \Phi$
         and~$\alpha,\beta \geq \varepsilon$
-        we have~$x_\alpha \mathrel\varepsilon x_\beta$.
-
+        we have~$x_\alpha \mathrel{\varepsilon^2} x_\beta$.
 \begin{point}%
 Every Cauchy-net is equivalent to a fast one, but this is not as
         easy as in the metric case.
@@ -783,13 +782,30 @@ Let~$(x_\alpha)_{\alpha \in I}$
 By definition we can find~$\alpha_\varepsilon \in I$
     such that for each~$\varepsilon \in \Phi$
     and~$\alpha,\beta \geq \alpha_\varepsilon$
-    we have~$x_\alpha \mathrel{\nicefrac{\varepsilon}{2}} x_\beta$.
+    we have~$x_\alpha \mathrel{\varepsilon} x_\beta$.
 Unfortunately~$\alpha_{(\,\cdot\,)}$ need not be order preserving
     and so~$(x_{\alpha_{\varepsilon}})_{\varepsilon\in\Phi}$
     need not be a subnet of~$(x_\alpha)_{\alpha \in I}$.
-The net~$(x_{\alpha_{\varepsilon}})_{\varepsilon\in\Phi}$
-    is a fast and Cauchy:
-
+However, we claim the net~$(x_{\alpha_{\varepsilon}})_{\varepsilon\in\Phi}$
+    is a Cauchy, fast and equivalent to~$(x_{\alpha})_{\alpha\in I}$.
+To show it's Cauchy and fast, assume~$\varepsilon \in \Phi$
+    and~$\zeta,\xi \geq \varepsilon$
+    (that is: $\zeta,\xi \subseteq \varepsilon$).
+As~$I$ is a net, we can find~$\beta\in I$
+    with~$\beta \geq \alpha_\zeta, \alpha_\xi$.
+By definition of~$\alpha_{(\,\cdot\,)}$
+    we have~$x_{\alpha_\zeta} \mathrel\zeta x_{\beta}
+        \mathrel\xi x_{\alpha_\xi}$
+        and so~$x_{\alpha_\zeta} \mathrel{\varepsilon^2}
+                x_{\alpha_\xi}$, as desired.
+To show equivalence, assume~$\varepsilon \in \Phi$ is given.
+Assume~$\delta \geq \nicefrac{\varepsilon}{2}$
+and~$\beta \geq \alpha_{\nicefrac{\varepsilon}{2}}$.
+There is a~$\gamma \in I$ with~$\gamma \geq \alpha_\delta,\beta$.
+Then~$x_\beta \mathrel{\nicefrac{\varepsilon}{2}}
+x_{\gamma} \mathrel{\delta} x_{\alpha_{\delta}}$
+and so as~$\delta\subseteq \nicefrac{\varepsilon}{2}$
+we get~$x_\beta \mathrel\varepsilon x_{\alpha_\delta}$.
 \end{point}
 \end{point}
 \end{point}
