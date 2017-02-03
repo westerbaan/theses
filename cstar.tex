@@ -1896,6 +1896,31 @@ even if~$f$ is completely positive (see~\sref{cp})
 $f$ might still only preserve the norm of self-adjoint elements.
 \end{point}
 \end{point}
+\begin{point}{Corollary}%
+For a collection $\Omega$ 
+of pu-maps
+on a $C^*$-algebra~$\scrA$
+--- so each $\omega\in\Omega$ is of the form
+$\omega\colon \scrA\to\scrB_\omega$
+for some~$C^*$-algebra $\scrB_\omega$ ---
+the following are equivalent.
+\begin{enumerate}
+\item 
+	$0\leq a$ iff $\forall \omega\in\Omega\ [\ 0\leq \omega(a)\ ]$.
+\item
+	$\|a\|= \sup_{\omega\in\Omega} \left\|\omega(a)\right\|$
+	for all $a\in \sa{\scrA}$;
+\item
+	$\|a\| = \sup_{\omega\in\Omega} \left\|\omega(a)\right\|$
+	for all~$a\in \pos{\scrA}$;
+\end{enumerate}
+\begin{point}{Proof}%
+Apply~\sref{cstar-isometry}
+to the pu-map $\left<\omega\right>_{\omega\in\Omega}\colon 
+\scrA\to\bigoplus_{\omega\in\Omega}
+\scrB_\omega$.~\TODO{tupling of pu-maps}\qed
+\end{point}
+\end{point}
 \end{parsec}
 \begin{parsec}%
 \begin{point}%
