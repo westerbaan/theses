@@ -1896,55 +1896,115 @@ even if~$f$ is completely positive (see~\sref{cp})
 $f$ might still only preserve the norm of self-adjoint elements.
 \end{point}
 \end{point}
-\begin{point}{Corollary}%
-For a collection $\Omega$ 
-of pu-maps
-on a $C^*$-algebra~$\scrA$
---- so each $\omega\in\Omega$ is of the form
-$\omega\colon \scrA\to\scrB_\omega$
-for some~$C^*$-algebra $\scrB_\omega$ ---
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}[separating]{Definition}%
+A collection~$\Omega$ of maps on a $C^*$-algebra~$\scrA$
+will be called
+\begin{enumerate}
+\item
+\Define{separating} if an element~$a$ of~$\scrA$
+is zero iff $\omega(a)=0$ for all~$\omega\in\Omega$;
+\item
+\Define{order separating} if an element~$a$ of~$\scrA$
+is positive iff $0\leq \omega(a)$
+for all~$\omega\in \Omega$.
+\end{enumerate}
+\end{point}
+\begin{point}{Remark}%
+It is clear that an order-separating collection
+is separating as well,
+and that order separation is the more desirable property.
+We'll see an example
+of a separating but not order-separating collection
+in~\TODO{}.
+
+Examples of order-separating
+collections will include
+\begin{enumerate}
+\item
+on a $C^*$-algebra~$\scrA$:
+the set of all pu-maps $\omega\colon \scrA\to\C$
+(see~\sref{states-order-separating});
+\item
+on a commutative $C^*$-algebra~$\scrA$:
+the set of all miu-maps $\omega\colon \scrA\to\C$
+(see \TODO{});
+\item
+on the $C^*$-algebra~$\scrB(\scrH)$
+of bounded operators on some Hilbert space~$\scrH$:
+the collection of maps  $\left<x,(\,\cdot\,)x\right>
+\colon \scrB(\scrH)\to\C$ where $x\in \scrH$
+(see~\sref{vector-states-order-separating});
+\item
+on a $C^*$-algebra $\scrA$:
+the collection of all miu-maps $\varrho\colon \scrA\to\scrB(\scrH)$
+where~$\scrH$ is some Hilbert space (see \TODO{}).
+\end{enumerate}
+\end{point}
+\begin{point}{Exercise}%
+Let~$\Omega$ be a separating collection of maps on a $C^*$-algebra~$\scrA$.
+\begin{enumerate}
+\item
+Assuming that each~$\omega\in\Omega$ is involution preserving,
+show that $a\in\scrA$ is self-adjoint
+iff $\omega(a)$ is self-adjoint for all~$\omega\in\Omega$.
+\end{enumerate}
+\end{point}
+\begin{point}[order-separating-norm]{Proposition}%
+For a collection~$\Omega$ of pu-maps on a $C^*$-algebra~$\scrA$
 the following are equivalent.
 \begin{enumerate}
 \item 
-	$0\leq a$ iff $\forall \omega\in\Omega\ [\ 0\leq \omega(a)\ ]$.
+	$\Omega$ is order separating;
 \item
 	$\|a\|= \sup_{\omega\in\Omega} \left\|\omega(a)\right\|$
 	for all $a\in \sa{\scrA}$;
 \item
 	$\|a\| = \sup_{\omega\in\Omega} \left\|\omega(a)\right\|$
-	for all~$a\in \pos{\scrA}$;
+	for all~$a\in \pos{\scrA}$.
 \end{enumerate}
 \begin{point}{Proof}%
-Apply~\sref{cstar-isometry}
+Denoting the codomain of~$\omega\in\Omega$
+by~$\scrB_\omega$
+(so that $\omega\colon \scrA\to\scrB_\omega$),
+apply~\sref{cstar-isometry}
 to the pu-map $\left<\omega\right>_{\omega\in\Omega}\colon 
 \scrA\to\bigoplus_{\omega\in\Omega}
 \scrB_\omega$.~\TODO{tupling of pu-maps}\qed
+\end{point}
+\begin{point}{Warning}%
+The formula
+$\|a\|=\sup_{\omega\in\Omega} \|\omega(a)\|$
+need not be correct
+for an arbitrary (not necessarily self-adjoint)
+element~$a$.
+Indeed,
+consider the matrix $A:=\smash{%
+\bigl(\begin{smallmatrix}0&1\\0&0\end{smallmatrix}\bigr)}$,
+and the collection $\Omega=\{\,\left<x,(\,\cdot\,)x\right>\colon 
+x\in \C^2,\,\|x\|=1\,\}$,
+which will turn out to be order separating.
+We have $\|A\|=1$,
+while $\left| \left<x,\omega(A)x\right>\right|
+ =\left|x_1\right|\left|x_2\right|$
+ never exceeds~$\nicefrac{1}{2}$
+for $x\equiv (x_1,x_2)\in \scrH$ with $1=\|x\|$.
 \end{point}
 \end{point}
 \end{parsec}
 \begin{parsec}%
 \begin{point}%
-There is much more that can be said
-about the positive elements of a $C^*$-algebra
-(as we will in~\sref{sqrt}),
-but let us for a moment
-turn our attention to the states of a $C^*$-algebra
-(see \sref{state}),
-which are
-essential
-in the proof that every $C^*$-algebra
-is isomorphic to a $C^*$-algebra of operators on a Hilbert space.
-\end{point}
-\begin{point}[state]{Definition}%
-A \Define{state} of a $C^*$-algebra~$\scrA$
-is a pu-map $f\colon \scrA\to \C$.
-\end{point}
-\begin{point}%
-Our program is to show that 
+Let us prove
+that the pu-maps $\omega\colon \scrA\to\C$
+on a $C^*$-algebra~$\scrA$
+(called \Define{states} of~$\scrA$ for short)
+are order separating.
+To this end, we'll show that 
 for every self-adjoint element~$a\in \scrA$
-of a $C^*$-algebra~$\scrA$,
-there is a state~$f$ of~$\scrA$ with $f(a)=\|a\|$ or $f(a)=-\|a\|$.
-
+there is a state~$\omega$ of~$\scrA$ with $\omega(a)=\|a\|$ or 
+$\omega(a)=-\|a\|$.
 To obtain such a state
 we first find its kernel,
 which leads us to the following definitions.
@@ -1994,9 +2054,9 @@ or $\|a\|+a$ is not invertible.
 \end{enumerate}
 \end{point}
 \begin{point}[maximal-ideal-state]{Lemma}%
-Let~$I$ be a maximal ideal of a $C^*$-algebra.
-Then there is a state $f\colon \scrA\to \C$
-with $\ker(f)=I$.
+For every maximal ideal~$I$ of a $C^*$-algebra~$\scrA$,
+ there is a state $\omega \colon \scrA\to \C$
+with $\ker(\omega)=I$.
 \begin{point}{Proof}%
 Form the quotient vector space $\scrA/I$
 with quotient map $q\colon \scrA\to \scrA/I$.
@@ -2089,19 +2149,12 @@ Since the quotient map $q\colon \scrA\to \scrA/I\equiv \C$
 is pu, and $\ker(q)=I$, we are done.\qed
 \end{point}
 \end{point}
-\begin{point}[separation-by-states]{Exercise}%
-Let~$a$ be an element of a $C^*$-algebra~$\scrA$.
-\begin{enumerate}
-\item
-Show that if~$a$ is self-adjoint, then 
-there is a state~$f$ of~$\scrA$ with $\left|f(a)\right|=\|a\|$.
-\item
-Show that $a$ is self-adjoint iff $f(a)\in \R$ for every state~$f$ on~$\scrA$.
-\item
-Show that~$a$ is positive iff $f(a)\geq 0$ for every state~$f$ of~$\scrA$.
-\item
-Show that~$a=0$ iff $f(a)=0$ for every state~$f$ on~$\scrA$.
-\end{enumerate}
+\begin{point}[states-order-separating]{Exercise}%
+Show that given a self-adjoint element~$a$
+of a $C^*$-algebra~$\scrA$
+there is a state~$\omega$ with $\left|\omega (a)\right| = \|a\|$.
+Conclude that the set of states of a $C^*$-algebra
+is order separating (see~\sref{separating}).
 \end{point}
 \end{point}
 \end{parsec}
@@ -3263,10 +3316,12 @@ from~$\scrA$ to~$\varrho_\Omega(\scrA)$.\qed
 Every $C^*$-algebra~$\scrA$ is miu-isomorphic
 to a $C^*$-algebra of operators on a Hilbert space.
 \begin{point}{Proof}%
-	Recall (from~\sref{separation-by-states}),
-	that an element $a$ of~$\scrA$ is zero
-	iff $\omega(a)=0$ for every state $\omega\colon \scrA\to\C$.
-	It follows that the collection~$\Omega$ of all states $\scrA\to \C$
+Since the states on~$\scrA$
+are separating
+(\sref{states-order-separating}),
+an element~$a$ of~$\scrA$ is zero
+iff $\omega(a)=0$ for every state $\omega\colon \scrA\to\C$.
+It follows that the collection~$\Omega$ of all states $\scrA\to \C$
 obeys the condition of~\sref{proto-gelfand-naimark},
 and so
 the miu-map $\varrho_\Omega\colon \scrA\to\scrB(\scrH_\Omega)$
@@ -3412,7 +3467,9 @@ on a right $\scrA$-module~$X$,
 and $x,y\in X$.
 \begin{point}{Proof}%
 Let~$\omega\colon \scrA\to \C$ be a state of~$\scrA$.
-By~\sref{separation-by-states}, it suffices to show that
+Since the states on~$\scrA$
+are order separating (\sref{states-order-separating}), 
+it suffices to show that
 $\omega(\,\left<x,y\right>\,\left<y,x\right>\,)
 \,\leq\,\left\|\left<y,y\right>\right\|\,\omega(\left<x,x\right>)$.
 Noting that $(u,v)\mapsto \omega(\left<u,v\right>)$
