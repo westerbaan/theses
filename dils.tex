@@ -703,7 +703,7 @@ and$(y_\beta)_{\beta\in J}$ are \Define{equivalent},
 in symbols: $(x_\alpha)_\alpha \sim (y_\beta)_\beta$,
 when for every~$\varepsilon \in \Phi$
 there are~$\alpha_0 \in I$ and~$\beta_0 \in J$
-such that for all~$\alpha < \alpha_0$ and~$\beta < \beta_0$
+such that for all~$\alpha \leq \alpha_0$ and~$\beta \leq \beta_0$
 we have~$x_\alpha \mathrel\varepsilon x_\beta$.
 
 \item
@@ -714,13 +714,20 @@ A subset~$D \subseteq X$ is said to be \Define{dense}
 \end{enumerate}
 \end{point}
 \begin{point}{Exercise}%
-    In the same setting.
+    In the same setting as the previous definition.
     \begin{enumerate}
 \item
     Show that equivalence of Cauchy nets is an equivalence relation.
     Show that if~$(x_\alpha)_\alpha$ is a subnet of~$(y_\alpha)_\alpha$,
         that~$(x_\alpha)_\alpha$ is equivalent to~$(y_\alpha)_\alpha$.
 \item
+    Prove that if~$(x_\alpha)_\alpha$ and~$(y_\alpha)_\alpha$
+        are equivalent Cauchy nets and~$x_\alpha \to x$,
+        then also~$y_\alpha \to x$.
+\item
+    Assume~$(x_\alpha)_\alpha$ is a Cauchy net with~$x_\alpha \to x$
+        and~$x_\alpha \to y$.  Prove~$x = y$ whenever~$X$ is Hausdorff.
+\item\label{ex-continuous-preserves-lims}
     Show that if~$f\colon X \to Y$ is a continuous
     between uniform spaces
         and we have~$x_\alpha \to x$ in~$X$,
@@ -730,6 +737,17 @@ A subset~$D \subseteq X$ is said to be \Define{dense}
     Show that $f$ maps Cauchy nets to Cauchy nets
     and furthermore that~$f$ maps equivalent Cauchy nets to equivalent
         Cauchy nets.
+\item\label{ex-cauchy-from-dense-subset}
+    Suppose~$D \subseteq X$ is a dense subset.
+    Show that for each~$x \in X$
+    there is a Cauchy net~$(d_\alpha)_{\alpha \in \Phi}$
+    in~$D$ with~$d_\alpha \to x$ in~$X$.
+\item
+    Assume~$f,g\colon X \to Y$ are continuous maps between uniform spaces
+        where~$Y$ is Hausdorff.
+Conclude from \ref{ex-continuous-preserves-lims} and
+    \ref{ex-cauchy-from-dense-subset}
+    that~$f=g$ whenever they agree on a dense subset of~$X$.
     \end{enumerate}
 \end{point}
 \end{parsec}
@@ -802,7 +820,8 @@ We say a net~$(x_\alpha)_{\alpha \in \Phi}$  indexed by entourages
         we have~$x_\alpha \mathrel{\varepsilon^2} x_\beta$.
 A net~$(x_\alpha)_{\alpha \in I}$
     is called \Define{norm-bounded}
-    whenever~$(\|x_\alpha\|)_{\alpha}$ is bounded.
+    whenever~$(\|x_\alpha\|)_{\alpha}$ is bounded
+    with~$\|x\| \equiv \| [x,x]\|^{\frac{1}{2}}$.
 We will construct~$X$ using equivalence classes of
 norm-bounded fast Cauchy nets in~$V$.
 \end{point}
@@ -875,7 +894,11 @@ So~$
 \nicefrac{\varepsilon}{2}} \subseteq \widehat{\varepsilon}$,
 which is one requirement for~$\{ \hat\varepsilon; \ \varepsilon \in \Phi\}$
 to be a fundamental system of entourages for~$N$.
-The others are easy as well.
+The others are easy as well. 
+Also~$\widehat{\varepsilon_1 \cap \varepsilon_2} = \hat{\varepsilon}_1
+    \cap \hat{\varepsilon}_2$
+    and so each entourage of~$N$ has some~$\hat\varepsilon$ as subset.
+
 Unfortunately the relations~$\hat\varepsilon$ do not necessarily preserve
     equivalence of Cauchy nets:
     there might be~$(x_\alpha)_\alpha \sim (x'_\alpha)_\alpha$
@@ -893,18 +916,63 @@ for some~$\varepsilon \in \Phi$.  Instead define for~$\varepsilon \in \Phi$:
     and $(y'_\alpha)_\alpha \sim (y_\alpha)_\alpha$.}
 \end{equation*}
 By definition~$\tilde\varepsilon$
-    respects equivalence and so is a relation on~$X$.
+    respects equivalence and so is also a relation on~$X$.
 It is not hard to verify~$\{ \tilde\varepsilon ;\ \varepsilon \in \Phi\}$
-is a fundamental system of entourages for~$X$.
-
+is a fundamental system of entourages for~$X$
+and~$\widetilde{\varepsilon_1 \cap \varepsilon_2} = \tilde{\varepsilon}_1
+\cap \tilde{\varepsilon}_2$.
+By construction~$X$ is a Hausdorff uniform space.
+Write~$\tilde\Phi$ for the generated set of entourages on~$X$.
+The entourages of~$X$ are exactly those relations
+    which have some~$\tilde\varepsilon$
+    as a subset.
+Furthermore, if~$(x_\alpha)_\alpha \mathrel{\hat\varepsilon}
+(y_\alpha)_\alpha $,
+then~$(x_\alpha)_\alpha \mathrel{\tilde\varepsilon^3} (y_\alpha)_\alpha$.
 \end{point}
-\begin{point}{$N$ is bounded complete}%
-As every bounded Cauchy net is equivalent to a fast one,
-it is sufficient to show convergence of bounded fast Cauchy nets.
+\begin{point}{$\eta$ has dense range}%
+Let~$\eta\colon V \to X$
+be the map that sends~$x \in V$
+to the equivalence class of the constant Cauchy net~$(x)_{\alpha \in \Phi}$.
+To show the image of~$\eta$ is dense,
+    assume~$(x_\alpha)_\alpha$
+    is a representative for an element in~$X$
+    and~$\varepsilon \in \tilde\Phi$.
+There is some~$\delta \in \Phi$ with~$\tilde\delta \subseteq \varepsilon$.
+As~$(x_\alpha)_\alpha$ is fast,
+we have~$x_{\nicefrac{\delta}{8}} \mathrel{\nicefrac{\delta}{4}} x_\alpha$
+for all~$\alpha \geq \nicefrac{\delta}{8}$.
+Thus~$(x_{\nicefrac{\delta}{8}})_\alpha \mathrel{\widehat{\nicefrac{\delta}{4}}}
+    (x_\alpha)_\alpha$
+    and so~$(x_{\nicefrac{\delta}{8}})_\alpha \mathrel{\widetilde{\nicefrac{\delta}{4}}^3}
+    (x_\alpha)_\alpha$ hence~$\eta(x_{\nicefrac{\delta}{8}}) \mathrel{\varepsilon}
+    (x_\alpha)_\alpha$, as desired.
+\end{point}
+\begin{point}{Lifting maps along~$\eta$}%
+    First we note the map~$\eta$ is uniformly continuous.
+    Indeed: if~$\varepsilon \in \Phi$,
+    then~$x \mathrel{\nicefrac{\varepsilon}{4}} y$
+    implies~$\eta(x) \mathrel{\tilde{\varepsilon}} \eta(y)$,
+    which is sufficient to show uniform continuity.
+\end{point}
+\begin{point}{$N$ is uniformly-bounded complete}%
+The uniform space~$N$ might not be complete:
+    it is possible there are
+    Cauchy nets of norm-bounded Cauchy nets
+    which tend to a Cauchy net which is not norm bounded.
+Also Cauchy nets~$((x^\gamma_\alpha)_\alpha)_\gamma$ in~$N$ where
+$(\limsup_\alpha \|x^\gamma_\alpha\|)_\gamma$ is bounded
+        might tend to a Cauchy net in~$V$ which is not norm bounded.
+Call a Cauchy net~$((x^\gamma_\alpha)_\alpha)_\gamma$ in~$N$
+    \Define{uniformly bounded}
+    if~$(x^\gamma_\alpha)_{\gamma,\alpha}$ is norm bounded in~$V$.
+We will show uniformly-bounded Cauchy nets in~$N$ converge.
+As every uniformly-bounded Cauchy net is equivalent to a fast one,
+it is sufficient to show convergence of uniformly-bounded fast Cauchy nets.
 Thus let~$((x^\gamma_\alpha)_\alpha)_\gamma$
     be a bounded fast Cauchy net in~$N$.
 First we will show~$(x^{\hat\alpha}_\alpha)_\alpha$
-    is a bounded Cauchy net.
+    is a uniformly-bounded Cauchy net.
 It might not be fast, so
     formally~$((x^\gamma_\alpha)_\alpha)_\gamma$
     cannot converge to it,
@@ -930,6 +998,13 @@ Then we have $ x^{\hat{\alpha}}_\alpha
             \mathrel{\varepsilon^2}
             x^{\hat{\beta}}_\beta$ and so~$(x_\alpha^{\hat\alpha})_\alpha$
             is Cauchy.
+Clearly it's norm bounded.
+Let~$(y_\alpha)_\alpha$ be a norm-bounded fast Cauchy net equivalent
+to~$(x^{\hat\alpha}_\alpha)_\alpha$.
+We want to prove~$(x^\gamma_\alpha)_\alpha \to (y_\alpha)_\alpha$.
+As~$((x^\gamma_\alpha)_\alpha)_\gamma$
+is fast Cauchy,
+we know~$(x^{\widehat{\nicefrac{\varepsilon}{2}}}_\alpha)_\alpha$
 \end{point}
 \end{point}
 \end{point}
