@@ -2440,11 +2440,11 @@ The fact that $a^*a$ is positive
 for an element~$a$ of a $C^*$-algebra~$\scrA$
 has some desirable consequences
 we need later on.
-\begin{point}%
+\begin{enumerate}
+\item
 Show that $b\leq c\implies a^*ba \leq a^*ca$
 for all~$b,c\in\sa{\scrA}$ and~$a\in\scrA$.
-\end{point}
-\begin{point}%
+\item
 Show that~$a\leq b^{-1}$ 
 iff $\sqrt{b}a\sqrt{b}\leq 1$
 iff $\|\sqrt{a}\sqrt{b}\|\leq 1$
@@ -2452,16 +2452,14 @@ iff $b^{-1}\leq a$
 for positive invertible elements $a$, $b$ of~$\scrA$
 (and so $a\leq b$ entails $b^{-1}\leq a^{-1}$).
 \TODO{add relevant refs}
-\end{point}
-\begin{point}%
+\item
 Prove that $(1+a)^{-1}a\leq (1+b)^{-1}b$
 for $0\leq a\leq b$ from~$\scrA$.\\
 (Hint: add $(1+a)^{-1} + (1+b)^{-1}$
 to both sides of the inequality.)
-\end{point}
+\end{enumerate}
 \end{point}
 \end{parsec}
-
 \begin{parsec}%
 \begin{point}%
 The interaction between the multiplication and order
@@ -3623,6 +3621,45 @@ and~$T$ is adjointable.
 \qed
 \end{point}
 \end{point}
+\begin{point}[vector-states-order-separating]{Proposition}%
+The vector states
+of~$\scrB^a(X)$
+are order separating (see~\sref{separating})
+for every Hilbert $\scrA$-module~$X$.
+
+In particular,
+given $T\in\scrB^a(X)$ and
+writing~$S=\{x\in X\colon \|x\|=1\}$,
+\begin{enumerate}
+\item
+$T$ is self-adjoint iff $\left<x,Tx\right>$
+is self-adjoint for all~$x\in S$;
+\item
+$0\leq T$ iff $0\leq\left<x,Tx\right>$
+for all~$x\in S$;
+\item
+$\|T\|=\sup_{x\in S}\|\left<x,Tx\right>\|$
+when~$T$ is self-adjoint.
+\end{enumerate}
+\begin{point}{Proof}%
+Let~$T\in (\scrB^a(X))_+$ be given.
+By~\sref{order-separating-norm}
+it suffices to show
+that~$\|T\|=\sup_{x\in S} 
+\left\|\left< x,Tx\right>\right\|$.
+Since $\left\|\left<x,Tx\right>\right\|
+=\|\left<T^{\nicefrac{1}{2}}x,T^{\nicefrac{1}{2}}x\right>\|
+=\|T^{\nicefrac{1}{2}}x\|^2$
+for all~$x\in X$, 
+we have $
+\|T\| = \|T^{\nicefrac{1}{2}}\|^2
+=(\,\sup_{x\in S}\left\|T^{\nicefrac{1}{2}}x\right\|\,)^2
+=\sup_{x\in S} \left\|\left<x,Tx\right>\right\|$.\qed
+\end{point}
+\end{point}
+
+\end{parsec}
+\begin{parsec}
 \begin{point}{Exercise}%
 Let us consider matrices over a $C^*$-algebra $\scrA$.
 \begin{enumerate}
@@ -3651,6 +3688,24 @@ is a $C^*$-algebra
 with matrix multiplication (as multiplication),
 conjugate transpose as involution,
 and the operator norm (as norm, so~$\|A\|=\|\underline{A}\|$).
+\end{enumerate}
+\end{point}
+\begin{point}{Exercise}%
+Let us describe the positive  $N\times N$ matrices
+over a $C^*$-algebras~$\scrA$.
+\begin{enumerate}
+\item
+Show that an $N\times N$ matrix~$A$ over~$\scrA$
+is positive iff $0\leq \sum_{i,j} a_i^* A_{ij} a_j$
+for all~$a_1,\dotsc,a_N\in\scrA$.
+(Hint: use~\sref{vector-states-order-separating}.)
+\item
+Show that the matrix $(\,\left<x_i,x_j\right>\,)_{ij}$
+is positive for all vectors $x_1,\dotsc,x_N$
+from a pre-Hilbert $\scrA$-module~$X$.
+\item
+Show that the matrix $(a^*_ia_j)_{ij}$
+is positive for all $a_1,\dotsc,a_N\in\scrA$.
 \end{enumerate}
 \end{point}
 \begin{point}{Exercise}%
