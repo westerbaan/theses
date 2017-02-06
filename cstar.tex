@@ -1943,7 +1943,7 @@ the collection of all miu-maps $\varrho\colon \scrA\to\scrB(\scrH)$
 where~$\scrH$ is some Hilbert space (see \TODO{}).
 \end{enumerate}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[separating-self-adjoint]{Exercise}%
 Let~$\Omega$ be a separating collection of maps on a $C^*$-algebra~$\scrA$.
 \begin{enumerate}
 \item
@@ -3626,26 +3626,11 @@ The vector states
 of~$\scrB^a(X)$
 are order separating (see~\sref{separating})
 for every Hilbert $\scrA$-module~$X$.
-
-In particular,
-given $T\in\scrB^a(X)$ and
-writing~$S=\{x\in X\colon \|x\|=1\}$,
-\begin{enumerate}
-\item
-$T$ is self-adjoint iff $\left<x,Tx\right>$
-is self-adjoint for all~$x\in S$;
-\item
-$0\leq T$ iff $0\leq\left<x,Tx\right>$
-for all~$x\in S$;
-\item
-$\|T\|=\sup_{x\in S}\|\left<x,Tx\right>\|$
-when~$T$ is self-adjoint.
-\end{enumerate}
 \begin{point}{Proof}%
 Let~$T\in (\scrB^a(X))_+$ be given.
 By~\sref{order-separating-norm}
 it suffices to show
-that~$\|T\|=\sup_{x\in S} 
+that~$\|T\|=\sup_{x\in (X)_1} 
 \left\|\left< x,Tx\right>\right\|$.
 Since $\left\|\left<x,Tx\right>\right\|
 =\|\left<T^{\nicefrac{1}{2}}x,T^{\nicefrac{1}{2}}x\right>\|
@@ -3653,11 +3638,45 @@ Since $\left\|\left<x,Tx\right>\right\|
 for all~$x\in X$, 
 we have $
 \|T\| = \|T^{\nicefrac{1}{2}}\|^2
-=(\,\sup_{x\in S}\left\|T^{\nicefrac{1}{2}}x\right\|\,)^2
-=\sup_{x\in S} \left\|\left<x,Tx\right>\right\|$.\qed
+=(\,\sup_{x\in (X)_1}\left\|T^{\nicefrac{1}{2}}x\right\|\,)^2
+=\sup_{x\in (X)_1} \left\|\left<x,Tx\right>\right\|$.\qed
 \end{point}
 \end{point}
-
+\begin{point}[positive-operators]{Corollary}%
+For an adjointable operator~$T$
+on a Hilbert $\scrA$-module~$X$, we have
+\begin{enumerate}
+\item
+$T$ is self-adjoint iff $\left<x,Tx\right>$
+is self-adjoint for all~$x\in (X)_1$;
+\item
+$0\leq T$ iff $0\leq\left<x,Tx\right>$
+for all~$x\in (X)_1$;
+\item
+	$\|T\|=\sup_{x\in (X)_1}\|\left<x,Tx\right>\|$
+when~$T$ is self-adjoint.
+\end{enumerate}
+\begin{point}{Proof}%
+This follows from~\sref{separating-self-adjoint} 
+and~\sref{order-separating-norm}
+because the vector states on~$\scrB^a(X)$ 
+are order separating 
+by~\sref{vector-states-order-separating}.\qed
+\end{point}
+\end{point}
+\begin{point}{Corollary}%
+The operator
+$T^*T$ is positive
+in~$\scrB^a(X)$
+for every adjointable operator~$T\colon X\to Y$
+between Hilbert $\scrA$-modules.
+\begin{point}{Proof}%
+$\left<x,T^*Tx\right>=
+\left<Tx,Tx\right> \geq 0$
+for all~$x\in X$,
+and so~$T^*T\geq 0$ by~\sref{positive-operators}.\qed
+\end{point}
+\end{point}
 \end{parsec}
 \begin{parsec}
 \begin{point}{Exercise}%
