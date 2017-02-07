@@ -278,6 +278,12 @@ Show that the identity operator $\id\colon \scrX\to \scrX$
 is bounded by~$1$.
 \end{enumerate}
 \end{point}
+\begin{point}[operator-norm-ball]{Exercise}%
+Let $T\colon \scrX\to\scrY$
+be a bounded operator between normed vector spaces.
+Show that $\|T\|=\sup_{x\in (\scrX)_1} \|Tx\|$,
+where $\Define{(\scrX)_1}=\{x\in \scrX\colon \|x\|=1\}$.
+\end{point}
 \begin{point}[operator-norm-complete]{Lemma}%
 The operator norm on~$\scrB(\scrX,\scrY)$ is complete
 when~$\scrY$ is a complete normed vector space.
@@ -2471,10 +2477,10 @@ are order separating (see~\sref{separating})
 for every Hilbert space~$\scrH$.
 \begin{point}{Proof}%
 We must show
-that~$\|T\|=\sup_{x\in (\scrH)_1} 
+that~$\|T\|=  \sup_{x\in (\scrH)_1} 
 \left|\left< x,Tx\right>\right|$
 for given~$T\in\scrB(\scrH)_+$
-(by~\sref{order-separating-norm}).
+(see~\sref{operator-norm-ball} and~\sref{order-separating-norm}).
 Since $\left|\left<x,Tx\right>\right|
 =\left<T^{\nicefrac{1}{2}}x,T^{\nicefrac{1}{2}}x\right>
 =\|T^{\nicefrac{1}{2}}x\|^2$
