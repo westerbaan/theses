@@ -1936,7 +1936,7 @@ on the $C^*$-algebra~$\scrB(\scrH)$
 of bounded operators on some Hilbert space~$\scrH$:
 the collection of maps  $\left<x,(\,\cdot\,)x\right>
 \colon \scrB(\scrH)\to\C$ where $x\in \scrH$
-(see~\sref{vector-states-order-separating});
+(see~\sref{hilb-vector-states-order-separating});
 \item
 on a $C^*$-algebra $\scrA$:
 the collection of all miu-maps $\varrho\colon \scrA\to\scrB(\scrH)$
@@ -2458,6 +2458,49 @@ for $0\leq a\leq b$ from~$\scrA$.\\
 (Hint: add $(1+a)^{-1} + (1+b)^{-1}$
 to both sides of the inequality.)
 \end{enumerate}
+\end{point}
+\begin{point}[hilb-vector-states-order-separating]{Proposition}%
+The vector states
+of~$\scrB(\scrH)$
+are order separating (see~\sref{separating})
+for every Hilbert space~$\scrH$.
+\begin{point}{Proof}%
+We must show
+that~$\|T\|=\sup_{x\in (\scrH)_1} 
+\left|\left< x,Tx\right>\right|$
+for given~$T\in\scrB(\scrH)_+$
+(by~\sref{order-separating-norm}).
+Since $\left|\left<x,Tx\right>\right|
+=\left<T^{\nicefrac{1}{2}}x,T^{\nicefrac{1}{2}}x\right>
+=\|T^{\nicefrac{1}{2}}x\|^2$
+for all~$x\in \scrH$, 
+we have $
+\|T\| = \|T^{\nicefrac{1}{2}}\|^2
+=(\,\sup_{x\in (\scrH)_1}\left\|T^{\nicefrac{1}{2}}x\right\|\,)^2
+=\sup_{x\in (\scrH)_1} \left|\left<x,Tx\right>\right|$.\qed
+\end{point}
+\end{point}
+\begin{point}[hilb-positive-operators]{Corollary}%
+For a bounded operator~$T$
+on a Hilbert space~$\scrH$, we have
+\begin{enumerate}
+\item
+$T$ is self-adjoint iff $\left<x,Tx\right>$
+is self-adjoint for all~$x\in (\scrH)_1$;
+\item
+$0\leq T$ iff $0\leq\left<x,Tx\right>$
+for all~$x\in (\scrH)_1$;
+\item
+	$\|T\|=\sup_{x\in (\scrH)_1}\|\left<x,Tx\right>\|$
+when~$T$ is self-adjoint.
+\end{enumerate}
+\begin{point}{Proof}%
+This follows from~\sref{separating-self-adjoint} 
+and~\sref{order-separating-norm}
+because the vector states on~$\scrB(\scrH)$
+are order separating 
+by~\sref{hilb-vector-states-order-separating}.\qed
+\end{point}
 \end{point}
 \end{parsec}
 \begin{parsec}%
@@ -3253,32 +3296,37 @@ where~$\Define{\scrH_\Omega}=\bigoplus_{\omega\in\Omega}\scrH_\omega$
 (and $\varrho_\omega$ is as in~\sref{gns}).
 \end{point}
 \begin{point}[proto-gelfand-naimark]{Proposition}%
-Let~$\scrA$ be a $C^*$-algebra,
-and let~$\Omega$ be a collection of p-maps
-$\scrA\to\C$.
-Then the miu-map~$\varrho_\Omega\colon \scrA\to\scrB(\scrH_\Omega)$
-is injective iff, for all~$a\in \pos{\scrA}$,
-\begin{equation}
-	\label{gelfand-naimark-representation-injective}
-	\forall \omega\in \Omega\ 
-	\forall b\in\scrA \ 
-	[\ 
-	\omega(b^*\,a\,b)=0\ ]
-\qquad\implies\qquad
-a=0,
-\end{equation}
-and in that case, $\varrho_\Omega(\scrA)$ is a $C^*$-subalgebra
+For a collection of positive maps $\scrA\to \C$
+on a $C^*$-algebra~$\scrA$,
+the following are equivalent.
+\begin{enumerate}
+\item
+\label{proto-gelfand-naimark-1}
+$\varrho_\Omega\colon \scrA\to\scrB(\scrH_\Omega)$
+is injective;
+\item
+\label{proto-gelfand-naimark-2}
+$\Omega$ is center separating on~$\scrA$;
+\item
+\label{proto-gelfand-naimark-3}
+$\Omega'=\{\,b*\omega\colon \, b\in\scrA,\,\omega\in\Omega\,\}$
+is order separating on~$\scrA$.
+\end{enumerate}
+In that case, $\varrho_\Omega(\scrA)$ is a $C^*$-subalgebra
 of~$\scrB(\scrH_\Omega)$,
 and~$\varrho_\Omega$
 restricts to a miu-isomorphism from~$\scrA$ to~$\varrho_\Omega(\scrA)$.
 \begin{point}{Proof}%
-Suppose that~\eqref{gelfand-naimark-representation-injective}
-holds, and let~$a\in \scrA$ with $\varrho_\Omega(a)=0$ be given.
+It is clear that~\ref{proto-gelfand-naimark-3}
+entails~\ref{proto-gelfand-naimark-2}.
+\begin{point}{\ref{proto-gelfand-naimark-2}$\Longrightarrow$%
+\ref{proto-gelfand-naimark-1}}%
+Let~$a\in \scrA$ with $\varrho_\Omega(a)=0$ be given.
 We must show that~$a=0$ (in order to show that~$\varrho_\Omega$
 is injective),
 and for this it is enough to prove that~$a^*a=0$.
 Let~$b\in\scrA$ and~$\omega\in\Omega$ be given.
-By~\ref{gelfand-naimark-representation-injective},
+Since~$\Omega$ is center separating,
 it suffices to show that $0=\omega(b^*a^*ab) \equiv \|ab\|_\omega^2$.
 Since~$\varrho_\Omega(a)=0$,
 we have $\varrho_\omega(a)=0$,
@@ -3286,28 +3334,35 @@ thus $0=\varrho_\omega(a)\,\eta_\omega(b)
 =\eta_\omega(ab)$,
 and so $\|ab\|_\omega=0$.
 Hence~$\varrho_\Omega$ is injective.
-
-For the converse, suppose that~$\varrho_\Omega$ is injective,
-and let~$a\in\scrA_+$ with $\omega(b^*ab)=0$
-for all~$\omega\in\Omega$ and~$b\in\scrA$ be given.
-We must show that~$a=0$.
-It suffices to show that~$\sqrt{a}=0$,
-and since~$\varrho_\Omega$ is injective,
-proving that~$\varrho_\Omega(\sqrt{a})=0$ will do.
-Let $\omega\in\Omega$. We must show that
-$\varrho_\omega(\sqrt{a})=0$,
-and for this it suffices to show that
-for all~$b\in \scrA$ we have
-$\eta_\omega(ab)\equiv\varrho_\omega(\sqrt{a})\,\eta_\omega(b)=0$,
-that is, $\omega(b^*ab)\equiv\|\sqrt{a}b\|_\omega^2=0$,
-which is what we have assumed.
-
-Now, if~$\varrho_\Omega$ is injective,
-then as we have seen in~\sref{injective-miu-iso-on-image},
-$\varrho_\Omega(\scrA)$ is a $C^*$-subalgebra
+\end{point}
+\begin{point}{\ref{proto-gelfand-naimark-1}$\Longrightarrow$%
+\ref{proto-gelfand-naimark-3}}%
+Let~$a\in\scrA$ with $(b*\omega)(a)\geq 0$
+for all~$\omega\in\Omega$ and~$b\in\scrA$
+be given.
+We must show that~$a\geq 0$.
+Since~$\varrho_\Omega$ is injective,
+we know by~\sref{injective-miu-iso-on-image}
+that~$\varrho_\Omega(\scrA)$ is a $C^*$-subalgebra
 of~$\scrB(\scrH_\Omega)$,
 and~$\varrho_\Omega$ restricts to a miu-isomorphism
-from~$\scrA$ to~$\varrho_\Omega(\scrA)$.\qed
+from~$\scrA$ to~$\varrho_\Omega(\scrA)$.
+So in order to prove that~$a\geq 0$,
+it suffices to show that $\varrho_\Omega(a)\geq 0$,
+and for this we must prove that $\varrho_\omega(a)\geq 0$
+for given $\omega\in \Omega$.
+Since the vector states on~$\scrH_\omega$ are order separating
+by~\sref{hilb-vector-states-order-separating}, it suffices to show that 
+$\left<x,\varrho_\Omega(a)x\right>\geq 0$
+for given~$x\in \scrH_\omega$.
+Since~$\{\eta_\omega(b)\colon b\in\scrA\}$
+is dense in~$\scrH_\omega$,
+we only need to prove 
+that~$0\leq \left<\eta_\omega(b),\varrho_\omega(a)\eta_\omega(b)\right>
+\equiv \omega(b^*ab)$ for given~$b\in \scrA$,
+but this is true
+by assumption.\qed
+\end{point}
 \end{point}
 \end{point}
 \begin{point}[gelfand-naimark]{Theorem (Gelfand--Naimark)}%
@@ -3317,16 +3372,13 @@ to a $C^*$-algebra of operators on a Hilbert space.
 Since the states on~$\scrA$
 are separating
 (\sref{states-order-separating}),
-an element~$a$ of~$\scrA$ is zero
-iff $\omega(a)=0$ for every state $\omega\colon \scrA\to\C$.
-It follows that the collection~$\Omega$ of all states $\scrA\to \C$
-obeys the condition of~\sref{proto-gelfand-naimark},
-and so
+and therefore center separating,
 the miu-map $\varrho_\Omega\colon \scrA\to\scrB(\scrH_\Omega)$
 (defined in~\sref{gelfand-naimark-representation})
 restricts to a miu-isomorphism
 from~$\scrA$ onto the $C^*$-subalgebra
-$\varrho(\scrA)$ of~$\scrB(\scrH_\Omega)$.\qed
+$\varrho(\scrA)$ of~$\scrB(\scrH_\Omega)$
+by~\sref{proto-gelfand-naimark}.\qed
 \end{point}
 \end{point}
 \end{parsec}
@@ -3621,30 +3673,14 @@ and~$T$ is adjointable.
 \qed
 \end{point}
 \end{point}
-\begin{point}[vector-states-order-separating]{Proposition}%
-The vector states
+\begin{point}[chilb-vector-states-order-separating]{Exercise}%
+Let~$X$ be a Hilbert~$\scrA$-module.
+Show that 
+the vector states
 of~$\scrB^a(X)$
-are order separating (see~\sref{separating})
-for every Hilbert $\scrA$-module~$X$.
-\begin{point}{Proof}%
-Let~$T\in (\scrB^a(X))_+$ be given.
-By~\sref{order-separating-norm}
-it suffices to show
-that~$\|T\|=\sup_{x\in (X)_1} 
-\left\|\left< x,Tx\right>\right\|$.
-Since $\left\|\left<x,Tx\right>\right\|
-=\|\left<T^{\nicefrac{1}{2}}x,T^{\nicefrac{1}{2}}x\right>\|
-=\|T^{\nicefrac{1}{2}}x\|^2$
-for all~$x\in X$, 
-we have $
-\|T\| = \|T^{\nicefrac{1}{2}}\|^2
-=(\,\sup_{x\in (X)_1}\left\|T^{\nicefrac{1}{2}}x\right\|\,)^2
-=\sup_{x\in (X)_1} \left\|\left<x,Tx\right>\right\|$.\qed
-\end{point}
-\end{point}
-\begin{point}[positive-operators]{Corollary}%
-For an adjointable operator~$T$
-on a Hilbert $\scrA$-module~$X$, we have
+are order separating (see~\sref{separating}).
+Conclude that 
+for an adjointable operator~$T$ on~$X$
 \begin{enumerate}
 \item
 $T$ is self-adjoint iff $\left<x,Tx\right>$
@@ -3656,13 +3692,9 @@ for all~$x\in (X)_1$;
 	$\|T\|=\sup_{x\in (X)_1}\|\left<x,Tx\right>\|$
 when~$T$ is self-adjoint.
 \end{enumerate}
-\begin{point}{Proof}%
-This follows from~\sref{separating-self-adjoint} 
-and~\sref{order-separating-norm}
-because the vector states on~$\scrB^a(X)$ 
-are order separating 
-by~\sref{vector-states-order-separating}.\qed
-\end{point}
+(Hint:~adapt the proofs
+of~\sref{hilb-vector-states-order-separating}
+and~\sref{hilb-positive-operators}.)
 \end{point}
 \begin{point}{Corollary}%
 The operator
