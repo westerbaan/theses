@@ -1088,8 +1088,90 @@ to~$(x_\alpha b)_\alpha$. By definition~$\eta(x)b = \eta(xb)$.
 It is straight-forward to check this turns~$X$ into a right-$\scrB$-module.
 \begin{point}{$X$ is a Hilbert~$\scrB$-module}%
 For an np-map~$f\colon \scrB \to \C$
-write~$[x,y]_f \equiv f([x,y])$ for~$x,y \in V$.
+write~$[x,y]_f \equiv f([x,y])$.
 As~$f$ is positive, this defines an inner product on~$V$.
+Assume~$(x_\alpha)_\alpha$ and~$(y_\alpha)_\alpha$
+    are~$\Phi$-indexed norm-bounded Cauchy nets in~$V$.
+For any np-map $f\colon \scrB \to \C$ we have
+    by Cauchy--Schwarz
+\begin{align*}\label{eq-dils-V-inprod-cauchy}
+    \bigl|f([x_\alpha, y_\alpha] - [x_\beta,y_\beta])\bigr|
+    & \ =\  \bigl| [x_\alpha, y_\alpha - y_\beta]_f
+        + [x_\alpha - x_\beta, y_\beta]_f\bigr| \\
+    &\  \leq\  \|x_\alpha\|_f \|y_\alpha - y_\beta\|_f \numberthis
+        + \|x_\alpha - x_\beta\|_f \| y_\beta \|_f.
+\end{align*}
+As~$(x_\alpha)_\alpha$ is norm bounded and
+$\|x_\alpha\|_f^2 = f([x_\alpha,x_\alpha]) \leq \|f\| \|x_\alpha\|^2$,
+we see~$(\|x_\alpha\|_f)_\alpha$ is bounded.
+Similarly~$(\|y_\beta\|_f)_\beta$ is bounded.
+Thus from \eqref{eq-dils-V-inprod-cauchy}
+it follows~$([x_\alpha,y_\alpha])_\alpha$
+    is a Cauchy net in the ultraweak uniformity of~$\scrB$,
+    see \sref{dils-uniformity-examples}.
+As~$\|[x_\alpha,y_\alpha]\| \leq \|x_\alpha\| \|y_\alpha\|$,
+    see \TODO{}, it is also a norm-bounded net.
+By \TODO{} norm-bounded Cauchy net in the ultraweak uniformity
+    converge, so we may define
+\begin{equation*}
+    \bigl<(x_\alpha)_\alpha, (y_\beta)_\beta\bigr>
+    \ \equiv\  \uwlim_{\alpha} \,[x_\alpha,y_\alpha].
+\end{equation*}
+Assume we are given~$\Phi$-indexed
+norm-bounded Cauchy-nets~$(x')_\alpha$ and~$(y')_\alpha$
+with~$ (x'_\alpha)_\alpha \sim
+(x_\alpha)_\alpha$ and~$ (y'_\alpha)_\alpha \sim
+(y_\alpha)_\alpha$.
+Then, like \eqref{eq-dils-V-inprod-cauchy}:
+\begin{align*}
+    \bigl|f([x_\alpha, y_\alpha] - [x'_\alpha,y'_\alpha])\bigr|
+    & \ =\  \bigl| [x_\alpha, y_\alpha - y'_\alpha]_f
+        + [x_\alpha - x'_\alpha, y'_\alpha]_f\bigr| \\
+    &\  \leq\  \|x_\alpha\|_f \|y_\alpha - y'_\alpha\|_f
+        + \|x_\alpha - x'_\alpha\|_f \| y'_\alpha \|_f.
+\end{align*}
+From this it follows
+    $\left<(x_\alpha)_\alpha, (y_\beta)_\beta\right> =
+    \langle(x'_\alpha)_\alpha, (y'_\beta)_\beta\rangle$.
+Thus~$\left<\,\cdot\,,\,\cdot\,\right>$
+    is defined on~$X$.
+
+Assume~$(x_\alpha)_\alpha$,
+    $(y_\alpha)_\alpha$ and
+    $(z_\alpha)_\alpha$ are representatives of elements of~$X$.
+    Let~$(t_\alpha)_\alpha$
+    be an element of~$N$ equivalent to
+    $(y_\alpha + z_\alpha)_\alpha$,
+    that is: a representative of the sum of
+    $(y_\alpha)_\alpha$ and $(z_\alpha)_\alpha$ in~$X$.
+    Clearly
+    $[x_\alpha,y_\alpha+ z_\alpha] =
+    [x_\alpha, y_\alpha] + [x_\alpha, z_\alpha]$
+    and so by the ultraweak continuity of addition, see \TODO{},
+    we have
+    \begin{equation*}
+    \uwlim_\alpha [x_\alpha,t_\alpha]
+    =\uwlim_\alpha [x_\alpha, y_\alpha] + [x_\alpha, z_\alpha]
+    =\uwlim_\alpha [x_\alpha, y_\alpha] + \uwlim_\alpha [x_\alpha, z_\alpha].
+    \end{equation*}
+    Thus~$\left<\,\cdot\,,\,\cdot\,\right>$
+        is linear in the right argument.
+    In a similar fashion one proves the other axioms
+        for a~$\scrB$-valued inner product:
+        $\left<\tau,\sigma\right>=\left<\sigma,\tau\right>^*$
+        follows from the ultraweak continuity of~$(\,\cdot\,)^*$, see \TODO{};
+       $\scrB$-linearity in the right argument
+       follows from the ultraweak continuity
+       of~$c \mapsto cb$ in~$\scrB$,  see \TODO{} \emph{and}
+       $\left<\tau,\tau\right>\geq 0$
+       follows from ultraweak-closedness of the positive cone of~$\scrB$.
+
+    Assume~$\left<\tau,\tau\right> = 0$ for some~$\tau \in X$.
+    Let~$(x_\alpha)_\alpha$ in~$N$ be a representative of~$\tau$.
+    Then~$\uwlim_\alpha [x_\alpha,x_\alpha] = 0$.
+    Thus for each~np-map~$f\colon \scrB \to \C$ and~$\varepsilon$
+        we have~$f([x_\alpha,x_\alpha]) \leq \varepsilon$
+        for sufficiently large~$\alpha$.
 \end{point}
 \end{point}
 \begin{point}{Lifting maps along~$\eta$}%
