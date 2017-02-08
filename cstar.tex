@@ -4046,18 +4046,22 @@ by~\sref{cstar-positive-2x2matrix}.\qed
 \end{point}
 \end{point}
 \begin{point}[cp-russo-dye]{Corollary}
-We have $\|f\|= \|f(1)\|$
-for every cp-map between $C^*$-algebras.
+$\|f\|= \|f(1)\|$
+for every cp-map $f\colon \scrA\to\scrB$ between $C^*$-algebras.
 \begin{point}{Proof}%
-On the one hand $\|f(1)\|\leq \|f\|\|1\| \leq \|f\|$,
-and on the other $\|f\|\leq \|f(1)\|$,
-because
+Let~$a\in\scrA$ be given.
+It suffices to show that $\|f(a)\|\leq \|f(1)\|\,\|a\|$
+so that~$\|f\|\leq\|f(1)\|$,
+because we already know that~$\|f(1)\|\leq \|f\|\,\|1\| = \|f\|$.
+Since $\|f(a^*a)\|\leq \|f(1)\|\,\|a^*a\|$
+by~\sref{weak-russo-dye},
+we have
  $\|f(a)\|^2=\|f(a)^*f(a)\|=\|f(a^*1)f(1^*a)\|
 \leq \|f(1^*1)\|\,\|f(a^*a)\|
-\leq \|f(1)\|^2 \,\|a^*a\|
+\leq \|f(1)\|\, \|f(1)\|\|a^*a\|
 = \|f(1)\|^2 \|a\|^2$
-for all $a\in \scrA$
-by~\sref{cp-cs} and~\sref{weak-russo-dye}.\qed
+by~\sref{cp-cs},
+and so~$\|f(a)\|\leq \|f(1)\|\,\|a\|$.\qed
 \end{point}
 \end{point}
 \begin{point}[choi]{Lemma (Choi)}%
