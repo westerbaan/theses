@@ -1086,6 +1086,7 @@ to define a right~$\scrB$-action on~$X$
 by sending the equivalence class of~$(x_\alpha)_\alpha$
 to~$(x_\alpha b)_\alpha$. By definition~$\eta(x)b = \eta(xb)$.
 It is straight-forward to check this turns~$X$ into a right-$\scrB$-module.
+\end{point}
 \begin{point}{$X$ is a pre-Hilbert~$\scrB$-module}%
 For an np-map~$f\colon \scrB \to \C$
 write~$[x,y]_f \equiv f([x,y])$.
@@ -1173,6 +1174,35 @@ Assume~$(x_\alpha)_\alpha$,
     = \lim_\alpha \|x_\alpha\|^2_f$ and so~$\tau = 0$.
     We have shown~$\left<\,\cdot\,,\,\cdot\,\right>$ is definite.
 \end{point}
+\begin{point}{$X$ is self-dual}%
+    Assume~$T\colon X \to \scrB$ is a~$\scrB$-linear map.
+    We want to show there is
+        a~$\tau\in X$ such that~$T(\sigma) = \left<\tau, \sigma\right>$
+    for all~$\sigma \in X$.
+    We will construct~$\tau$ as the limit of
+    a norm-bounded Cauchy-net in~$\eta(V)$
+    indexed by
+    \begin{equation*}
+        I \ \equiv \ \{(f, S);\quad f\colon \scrB \to \C \ \text{np-map},
+        \  S \subseteq V \text{ finite linear subspace} \}.
+    \end{equation*}
+    We we say~$(f,S) \leq (g,T)$
+    whenever~$f \leq g$ and~$S \subseteq T$.
+    Our index set is directed:
+    we have~$(f,S), (g,T) \leq (f+g, S+T)$
+    for any~$(f,S),(g,T) \in I$.
+    For any~$(f,S) \in I$
+        we have an inner product~$[x,y]_f = f([x,y])$
+        on~$S$.
+    Write~$\scrH_{f,S}$ for the vector space quotient
+    of~$S$ by~$N_{f,S} \equiv \{x;\ x\in S; \ [x,x]_f = 0\}$.
+    The restriction of~$[\,\cdot\,,\,\cdot\,]_f$
+        to~$\scrH_{f,S}$ is by construction definite
+        and finite dimensional. So~$\scrH_{f,S}$ is complete and thus
+        a Hilbert space.
+    By the Riesz representation theorem
+    there exists a unique~$x_{f,S}+N_{f,S} \in \scrH_{f,S}$
+    such that~$[x_{f,S}+ N_{f,S}, y]_f = f(T(\eta(y)))$.
 \end{point}
 \begin{point}{Lifting maps along~$\eta$}%
     First we note the map~$\eta$ is uniformly continuous.
