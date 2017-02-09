@@ -1086,7 +1086,7 @@ to define a right~$\scrB$-action on~$X$
 by sending the equivalence class of~$(x_\alpha)_\alpha$
 to~$(x_\alpha b)_\alpha$. By definition~$\eta(x)b = \eta(xb)$.
 It is straight-forward to check this turns~$X$ into a right-$\scrB$-module.
-\begin{point}{$X$ is a Hilbert~$\scrB$-module}%
+\begin{point}{$X$ is a pre-Hilbert~$\scrB$-module}%
 For an np-map~$f\colon \scrB \to \C$
 write~$[x,y]_f \equiv f([x,y])$.
 As~$f$ is positive, this defines an inner product on~$V$.
@@ -1172,24 +1172,6 @@ Assume~$(x_\alpha)_\alpha$,
     we have~$0 = f(\left<(x_\alpha)_\alpha,(x_\alpha)_\alpha\right>)
     = \lim_\alpha \|x_\alpha\|^2_f$ and so~$\tau = 0$.
     We have shown~$\left<\,\cdot\,,\,\cdot\,\right>$ is definite.
-
-    Only norm completeness of~$X$ remains.
-    We first show norm convergence implies convergence in the uniformity.
-        If~$\| \tau \|^2 \leq \varepsilon$
-        for some~$\tau \in X$ with
-            representative~$(x_\alpha)_\alpha$,
-        then for any np-map~$f\colon X \to \scrB$
-        \begin{equation*}
-        \lim_\alpha \|x_\alpha \|_f
-                = f(\uwlim_\alpha [x_\alpha,x_\alpha])
-                \leq \|f\|\, \|\left<\tau,\tau\right>\|
-                \leq \|f\|\, \varepsilon.
-        \end{equation*}
-        So for any sequence~$\tau_1, \tau_2, \ldots$ in~$X$
-         we know~$\tau_n \to 0$ in the uniformity when~$\tau_n \to 0$
-         in the norm.
-    To show norm completeness,
-    assume~$\tau_1, \tau_2, \ldots$ is a norm-Cauchy sequence in~$X$.
 \end{point}
 \end{point}
 \begin{point}{Lifting maps along~$\eta$}%
