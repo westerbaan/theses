@@ -1167,11 +1167,29 @@ Assume~$(x_\alpha)_\alpha$,
        follows from ultraweak-closedness of the positive cone of~$\scrB$.
 
     Assume~$\left<\tau,\tau\right> = 0$ for some~$\tau \in X$.
-    Let~$(x_\alpha)_\alpha$ in~$N$ be a representative of~$\tau$.
-    Then~$\uwlim_\alpha [x_\alpha,x_\alpha] = 0$.
-    Thus for each~np-map~$f\colon \scrB \to \C$ and~$\varepsilon$
-        we have~$f([x_\alpha,x_\alpha]) \leq \varepsilon$
-        for sufficiently large~$\alpha$.
+    Let~$(x_\alpha)_\alpha$ be a representative for~$\tau$.
+    Then for any np-map~$f\colon \scrB \to \C$
+    we have~$0 = f(\left<(x_\alpha)_\alpha,(x_\alpha)_\alpha\right>)
+    = \lim_\alpha \|x_\alpha\|^2_f$ and so~$\tau = 0$.
+    We have shown~$\left<\,\cdot\,,\,\cdot\,\right>$ is definite.
+
+    Only norm completeness of~$X$ remains.
+    We first show norm convergence implies convergence in the uniformity.
+        If~$\| \tau \|^2 \leq \varepsilon$
+        for some~$\tau \in X$ with
+            representative~$(x_\alpha)_\alpha$,
+        then for any np-map~$f\colon X \to \scrB$
+        \begin{equation*}
+        \lim_\alpha \|x_\alpha \|_f
+                = f(\uwlim_\alpha [x_\alpha,x_\alpha])
+                \leq \|f\|\, \|\left<\tau,\tau\right>\|
+                \leq \|f\|\, \varepsilon.
+        \end{equation*}
+        So for any sequence~$\tau_1, \tau_2, \ldots$ in~$X$
+         we know~$\tau_n \to 0$ in the uniformity when~$\tau_n \to 0$
+         in the norm.
+    To show norm completeness,
+    assume~$\tau_1, \tau_2, \ldots$ is a norm-Cauchy sequence in~$X$.
 \end{point}
 \end{point}
 \begin{point}{Lifting maps along~$\eta$}%
