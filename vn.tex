@@ -823,7 +823,7 @@ So there is~$s\in [0,1]$ with $sx+s^\perp y \in H$.\qed
 \end{point}
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[ultraclosed]{Exercise}%
 We will use~\sref{hahn-banach}
 to prove that 
 an ultrastrongly closed convex subset~$K$ of a 
@@ -1296,8 +1296,70 @@ of ultracyclic projections.\\
 (Hint: first show that~$1$ is the supremum of all ultracyclic projections.)
 \end{enumerate}
 \end{point}
-\end{parsec}
+\end{parsec}%
+\begin{parsec}%
+\begin{point}[bh-bounded-uw-complete]{Proposition}%
+The von Neumann algebra~$\scrB(\scrH)$
+of bounded operators on a Hilbert space~$\scrH$
+is bounded ultraweakly complete.
+\begin{point}{Proof}%
+Let~$(T_\alpha)_\alpha$ be a norm-bounded ultraweakly-Cauchy net.
+We must show that~$(T_\alpha)_\alpha$
+converges ultraweakly
+to some bounded operator~$T$ on~$\scrH$.
 
+Note that given $x,y\in\scrH$
+the net $(\,\left<x,T_\alpha y\right>\,)_\alpha$
+is Cauchy
+(because $\left<x,(\,\cdot\,)y\right>
+\equiv \frac{1}{4}\sum_{k=0}^3 i^k\left<i^kx+y,(\,\cdot\,)(i^kx+y)\right>$
+is ultraweakly continuous),
+and so we may define $[x,y] = \lim_\alpha \left<x,T_\alpha y\right>$.
+The resulting `form'
+$[\,\cdot\,,\,\cdot\,]\colon \scrH\times\scrH\to \C$
+(see~\sref{chilb-form})
+is bounded, 
+because~$\left|[x,y]\right| \leq (\sup_\alpha \|T_\alpha\|)\|x\|\|y\|$
+for all~$x,y\in\scrH$
+and $\sup_\alpha\|T_\alpha\|<\infty$
+since $(T_\alpha)_\alpha$
+is norm bounded.
+By~\sref{chilb-form-representation},
+there is a unique bounded operator~$T$
+with $\left<x,Ty\right>=[x,y]$
+for all~$x,y\in\scrH$.
+
+By definition of~$T$ it is clear 
+that~$\lim_\alpha \left<x,(T-T_\alpha)x\right>=0$
+for any~$x\in\scrH$,
+but it is not yet clear that~$(T_\alpha)_\alpha$ converges ultraweakly to~$T$.
+For this we must show that $\lim_\alpha \omega(T-T_\alpha)=0$
+for any np-map~$\omega\colon \scrB(\scrH)\to \C$.
+By~\sref{bh-np},
+we know that such~$\omega$ is of the form
+$\omega=\sum_n \left<x_n,(\,\cdot\,)x_n\right>$
+for some $x_1,x_2,\dotsc\in\scrH$ with $\sum_n\|x_n\|^2<\infty$.
+Now, given~$N$ and~$\alpha$ we easily obtain the 
+following bound.
+\begin{equation*}
+	|\,\omega(T-T_\alpha)| \ \leq\  
+	\sum_{n=1}^{N-1} \left|\left<x_n(T-T_\alpha),x_n\right>\right|
+\ +\ \bigl(\,\sup_\alpha\|T_\alpha\|\,\bigr)\,\sum_{n=N}^\infty \|x_n\|^2 
+\end{equation*}
+Since the first term of this bound converges to~$0$ as~$\alpha\to\infty$,
+we get, for all~$N$,
+\begin{equation*}
+	\limsup_\alpha |\,\omega(T-T_\alpha)| \ \leq\ 
+	\bigl(\,\sup_\alpha\|T_\alpha\|\,\bigr)\,\sum_{n=N}^\infty \|x_n\|^2.
+\end{equation*}
+Since the tail $\sum_{n=1}^N\|x_n\|^2$
+converges to~$0$ as~$N\to \infty$,
+$\limsup_\alpha \left|\omega(T-T_\alpha)\right|=0$.
+Hence $\omega(T)=\lim_\alpha \omega(T_\alpha)$,
+and so~$(T_\alpha)_\alpha$ converges ultraweakly to~$T$.\qed
+\end{point}
+\end{point}
+\end{parsec}
 \begin{parsec}%
 \begin{point}%
 Recall that according to our definition (\sref{von-neumann-subalgebra})
@@ -1427,7 +1489,7 @@ to~$\omega_1(p^\perp)\equiv 0$.
 Now apply~\sref{sequence-separation-lemma}.\qed
 \end{point}
 \end{point}
-\begin{point}{Theorem}%
+\begin{point}[vnsa-usc]{Theorem}%
 A von Neumann subalgebra~$\scrB$ of a von Neumann algebra~$\scrA$
 is ultrastrongly closed.
 \begin{point}{Proof}%
@@ -1472,8 +1534,24 @@ are in fact equalities,
 and so~$p=\bigvee_{\omega_1}\ceil{\omega_1}_\scrB \in \scrB$.\qed
 \end{point}
 \end{point}
-\begin{point}%
-\TODO{Show that a von Neumann algebra is (bounded?) ultraweakly complete.}
+\begin{point}{Theorem}%
+A von Neumann algebra~$\scrA$ is bounded ultraweakly complete.
+\begin{point}{Proof}%
+Recall that~$\scrA$
+is nmiu-isomorphic
+to a von Neumann algebra~$\scrR$ of operators on some Hilbert space~$\scrH$
+by~\sref{ngns}.
+Since~$\scrB(\scrH)$ is bounded ultraweakly complete 
+(\sref{bh-bounded-uw-complete}),
+and the ultraweak topology on~$\scrB(\scrH)$
+coincides on~$\scrR$ with the ultraweak topology of~$\scrR$
+(by~\sref{uw-permanence}),
+and~$\scrR$ is 
+ ultrastrongly = ultraweakly closed in~$\scrB(\scrH)$
+(see~\sref{vnsa-usc} and~\sref{ultraclosed}),
+we see that $\scrR$ (and therefore~$\scrA$) is 
+bounded  ultraweakly complete.\qed
+\end{point}
 \end{point}
 \end{parsec}
 

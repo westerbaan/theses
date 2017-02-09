@@ -4247,24 +4247,24 @@ for some~$y\in X$.
 By Riesz' representation theorem (\sref{riesz-representation-theorem})
 every Hilbert space is self-dual.
 \end{point}
-\begin{point}{Definition}%
-Let us say that a \Define{form}
+\begin{point}[chilb-form]{Definition}%
+Let us say that a \Define{(bounded) form}
 on Hilbert $\scrA$-modules
 $X$ and~$Y$
 is a map $[\,\cdot\,,\,\cdot\,]\colon X\times Y\to \scrA$
 such that $[x,\,\cdot\,]\colon Y\to \scrA$
 and $[\,\cdot\,,y]^*\colon X\to \scrA$
-are bounded module maps for all~$x\in X$ and~$y\in Y$.
+are (bounded) module maps for all~$x\in X$ and~$y\in Y$.
 \end{point}
-\begin{point}{Proposition}%
-For every form  $[\,\cdot\,,\,\cdot\,]\colon X\times Y\rightarrow \scrA$
+\begin{point}[chilb-form-representation]{Proposition}%
+Every bounded form  $[\,\cdot\,,\,\cdot\,]\colon X\times Y\rightarrow \scrA$
 on self-dual Hilbert $\scrA$-modules
 $X$ and~$Y$
-there is a unique adjointable bounded module map 
-$T\colon X\to Y$
-with
-$[x,y] =\left<Tx,y\right>$
-for all~$x\in X$ and $y\in Y$.
+is of the form
+$[x,y]\equiv \left<Tx,y\right>$
+(where $x\in X$ and~$y\in Y$)
+for some unique adjointable bounded module map
+$T\colon X\to Y$.
 \begin{point}{Proof}%
 Let $x\in X$ be given.
 Since~$[x,\,\cdot\,]\colon Y\to \scrA$ is a
@@ -4565,7 +4565,7 @@ and thus under arbitrary sums}
 \TODO{Remark on the ultraweak topology.}
 \end{parsec}
 \begin{parsec}%
-\begin{point}{Theorem}%
+\begin{point}[bh-np]{Theorem}%
 Let~$\scrH$ be a Hilbert space.
 Every normal p-map $\omega\colon \scrB(\scrH)\to \C$
 is of the form $\omega = \sum_n\left<x_n,(\,\cdot\,)x_n\right>$
