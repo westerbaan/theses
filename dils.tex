@@ -1174,7 +1174,7 @@ Assume~$(x_\alpha)_\alpha$,
     = \lim_\alpha \|x_\alpha\|^2_f$ and so~$\tau = 0$.
     We have shown~$\left<\,\cdot\,,\,\cdot\,\right>$ is definite.
 \end{point}
-\begin{point}{$X$ is self-dual}%
+\begin{point}{Self duality: preparation}%
     Assume~$T\colon X \to \scrB$ is a~$\scrB$-linear map.
     We want to show there is
         a~$\tau\in X$ such that~$T(\sigma) = \left<\tau, \sigma\right>$
@@ -1196,13 +1196,46 @@ Assume~$(x_\alpha)_\alpha$,
         on~$S$.
     Write~$\scrH_{f,S}$ for the vector space quotient
     of~$S$ by~$N_{f,S} \equiv \{x;\ x\in S; \ [x,x]_f = 0\}$.
-    The restriction of~$[\,\cdot\,,\,\cdot\,]_f$
+    The lifting of~$[\,\cdot\,,\,\cdot\,]_f$
         to~$\scrH_{f,S}$ is by construction definite
-        and finite dimensional. So~$\scrH_{f,S}$ is complete and thus
-        a Hilbert space.
-    By the Riesz representation theorem
-    there exists a unique~$x_{f,S}+N_{f,S} \in \scrH_{f,S}$
-    such that~$[x_{f,S}+ N_{f,S}, y]_f = f(T(\eta(y)))$.
+        and~$\scrH$ is finite dimensional and so complete.
+    So~$\scrH_{f,S}$ is a Hilbert space.
+    We will restrict~$T$ to~$\scrH_{f,S}$.
+    For brevity, write~$\hat{x} \equiv \eta(x)$ for any~$x \in V$.
+    By \TODO{Paschke 2.9}
+    we have~$T(\sigma)^*T(\sigma) \leq \|T\|^2\left<\sigma,\sigma\right>$
+        for all~$\sigma \in X$.
+    Thus by \TODO{Choi states} we have for all~$x \in V$
+    \begin{equation*}
+        |f(T(\hat{x}))|
+        \leq f\bigl(\,T(\hat{x})^*T(\hat{x})\,\bigr)
+        \leq \|T\|^2 f(\left<\hat{x},\hat{x}\right>)
+        =\|T\|^2[x,x]_f.
+    \end{equation*}
+    Thus~$f\after T\after\eta \colon S \to \C$ restricts
+        fixes a bounded functional~$\scrH_{f,S} \to \C$.
+        By Riesz' representation theorem,
+        see \sref{riesz-representation-theorem},
+        we can choose~$x_{f,S} \in S$
+        such that~$[x_{f,S}, y]_f = f(T(\hat{y}))$ for all~$y\in S$.
+        Furthermore, if~$[x,y]_f=f(T(\hat{y}))$
+        for all~$y \in S$ for some~$x\in S$,
+        then~$\|x-x_{f,S}\|_f =0$.
+    The net~$(x_{f,S})_{(f,S) \in I}$ will turn out to be equivalent
+        to the~$\tau \in X$ we search.
+\end{point}
+\begin{point}{Self duality: $Ux_{g,S} = x_{f,S}$}%
+Assume~$(f,S) \leq (g,S) \in I$.
+By definition~$f \leq g$.
+So~$\| x \|_f \leq \| x \|_g$
+for any~$x \in S$.
+Thus there is a bounded linear
+map~$U\colon S \to S$
+    with~$U (x+N_{g,S}) = x_{f,S}$.
+
+\end{point}
+\begin{point}{Self duality: norm boundedness~$(x_{f,S})$}%
+    
 \end{point}
 \begin{point}{Lifting maps along~$\eta$}%
     First we note the map~$\eta$ is uniformly continuous.
