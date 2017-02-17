@@ -112,8 +112,11 @@ theorem \TODO{add ref.}).
 
 (Note that~$(\ketbra{n}{n})_n$ resembles a moving bump, from measure theory.)
 \item
-Show that~$(\,\ketbra{n}{0}\,)_n$ converges ultrastrongly to~$0$,
-while $(\,\ketbra{0}{n}\,)_n$ does not converge ultrastrongly at all.
+Show that~$(\,\ketbra{0}{n}\,)_n$ converges ultrastrongly 
+(and ultraweakly) to~$0$.
+
+Deduce that $(\,\ketbra{n}{0}\,)_n$ converges ultraweakly to~$0$,
+but doesn't converge ultrastrongly at all.
 
 Conclude that~$a\mapsto a^*$ is not ultrastrongly continuous 
 on~$\scrB(\ell^2)$.
@@ -121,7 +124,7 @@ on~$\scrB(\ell^2)$.
 (This has the annoying side-effect,
 that it is not immediately clear that the ultrastrong
 closure of a $C^*$-subalgebra of a von Neumann algebra
-ultrastrongly closed; we'll deal with this is~\TODO{}.)
+ultrastrongly closed; we'll deal with this in~\sref{ultraclosed}.)
 \item
 Show that $\ketbra{n}{0}+\ketbra{0}{n}$
 converges ultraweakly to~$0$ as $n\to \infty$,
@@ -183,7 +186,7 @@ are positive,
 and 
 converge ultraweakly to~$1$,
 while their squares
-$1+\ketbra{n}{n}+\ketbra{0}{0}+\ketbra{n}{0}+\ketbra{0}{n}$
+$1+\ketbra{n}{n}+\ketbra{0}{0}+2\ketbra{n}{0}+2\ketbra{0}{n}$
 converge ultraweakly to $1+\ketbra{0}{0}$
 (as $n\to\infty$).
 
@@ -213,7 +216,7 @@ converges ultrastrongly to~$0$.
 
 So a net which converges ultrastrongly need not be bounded!
 (The cure for this pathology is Kaplansky's density theorem, 
-see~\TODO{})
+see~\TODO{kaplansky})
 
 Show that $\frac{1}{n} \ketbra{f(n)}{0}$
 converges ultrastrongly to~$0$ as $D\ni(n,f)\to \infty$.
