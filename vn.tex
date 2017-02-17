@@ -139,8 +139,44 @@ Prove that~$\left|\, \ketbra{n}{0}+\ketbra{0}{n}\,\right|
 Conclude that~$a\mapsto \left|a\right|$
 is not ultraweakly continuous on~$\sa{(\scrB(\ell^2))}$.
 
-(But we'll see in~\TODO{} that $a\mapsto \left|a\right|$
-is ultrastrongly continuous.)
+(We'll see in~\sref{proto-kaplansky} that $a\mapsto \left|a\right|$
+is ultrastrongly continuous on self-adjoint elements.)
+
+\item
+Let us consider the two extensions of~$\left|\,\cdot\,\right|$
+to arbitrary elements, namely
+$a\mapsto \sqrt{a^*a}=:\Define{\left|a\right|_s}$ and 
+$a\mapsto \sqrt{aa^*}=:\Define{\left|a\right|_r}$.
+
+Prove that $\ketbra{0}{0} + \ketbra{0}{n}$
+converges ultrastrongly to~$\ketbra{0}{0}$ as $n\to \infty$.
+
+Show that $\left|\,\ketbra{0}{0}+\ketbra{0}{n}\,\right|_s
+= \ketbra{0}{0}
++\ketbra{0}{n}
++\ketbra{n}{0}
++\ketbra{n}{n}$
+converges ultraweakly to~$\left|\,\ketbra{0}{0}\,\right|_s
+\equiv \ketbra{0}{0}$
+as $n\to \infty$,
+but not ultrastrongly.
+
+Show that $\left|\,\ketbra{0}{0}+\ketbra{0}{n}\,\right|_r
+= \sqrt{2} \ketbra{0}{0}$.
+
+Conclude that $\left|\,\cdot\,\right|_s$
+and $\left|\,\cdot\,\right|_r$
+are not ultrastrongly continuous on~$\scrB(\ell^2)$.
+
+(However, we'll see in~\TODO{}
+that if a net $(b_\alpha)_\alpha$
+in a von Neumann algebra
+converges ultrastrongly, to say~$b$,
+and $(b_\alpha^*)_\alpha$
+converges ultrastrongly too,
+then $(\,\left|b_\alpha\right|_s\,)_\alpha$
+converges ultrastrongly to~$\left|b\right|_s$.)
+
 \item
 Show that $1+\ketbra{n}{0}+\ketbra{0}{n}$
 are positive,
@@ -1134,7 +1170,7 @@ is an order isomorphism on the poset of projections on~$\scrA$.)
 \end{point}
 \end{parsec}
 \begin{parsec}%
-\begin{point}{Proposition}%
+\begin{point}[proto-kaplansky]{Proposition}%
 Let~$\scrA$ be a von Neumann algebra,
 and let~$f\colon \R\to\R$ be a continuous map 
 with $f(t)=\mathcal{O}(t)$,
