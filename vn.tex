@@ -1301,44 +1301,6 @@ by~\TODO{}.\qed
 \end{point}
 \end{parsec}
 \begin{parsec}%
-\begin{point}[carrier]{Definition}%
-Let $f\colon\scrA\to\scrB$
-be an np-map between von Neumann algebras.
-The \Define{carrier} of~$f$, denoted by~$\Define{\ceil{f}}$,
-is the greatest projection~$p$
-of~$\scrA$ with~$f(p^\perp)= 0 $.
-
-\TODO{Add proof that such projection exists.}
-\end{point}
-\begin{point}[carrier-basic]{Exercise}%
-Show that $\ceil{\lambda f} = \ceil{f}$ for~$\lambda>0$,
-and~$\ceil{f+g} = \ceil{f}\cup \ceil{g}$.
-\end{point}
-\begin{point}{Definition}%
-We call a projection~$p$ of a von Neumann algebra~$\scrA$
-\Define{ultracyclic} if~$p=\ceil{\omega}$
-for some np-map $\omega\colon \scrA\to\C$.
-\end{point}
-\begin{point}[ultracyclic-basic]{Exercise}%
-Verify the following facts about ultracyclic projections.
-\begin{enumerate}
-\item
-If~$p$ and~$q$ are ultracyclic projections,
-so is~$p\cup q$.
-\item
-If~$p \leq q$ are projections,
-and~$q$ is ultracyclic,
-then~$p$ is ultracyclic.
-
-\TODO{add definition of $(\,\cdot\,)_\bullet$}
-\item
-Every projection is a directed supremum
-of ultracyclic projections.\\
-(Hint: first show that~$1$ is the supremum of all ultracyclic projections.)
-\end{enumerate}
-\end{point}
-\end{parsec}%
-\begin{parsec}%
 \begin{point}[bh-bounded-uw-complete]{Proposition}%
 The von Neumann algebra~$\scrB(\scrH)$
 of bounded operators on a Hilbert space~$\scrH$
@@ -1401,6 +1363,44 @@ and so~$(T_\alpha)_\alpha$ converges ultraweakly to~$T$.\qed
 \end{point}
 \end{point}
 \end{parsec}
+\begin{parsec}%
+\begin{point}[carrier]{Definition}%
+Let $f\colon\scrA\to\scrB$
+be an np-map between von Neumann algebras.
+The \Define{carrier} of~$f$, denoted by~$\Define{\ceil{f}}$,
+is the greatest projection~$p$
+of~$\scrA$ with~$f(p^\perp)= 0 $.
+
+\TODO{Add proof that such projection exists.}
+\end{point}
+\begin{point}[carrier-basic]{Exercise}%
+Show that $\ceil{\lambda f} = \ceil{f}$ for~$\lambda>0$,
+and~$\ceil{f+g} = \ceil{f}\cup \ceil{g}$.
+\end{point}
+\begin{point}{Definition}%
+We call a projection~$p$ of a von Neumann algebra~$\scrA$
+\Define{ultracyclic} if~$p=\ceil{\omega}$
+for some np-map $\omega\colon \scrA\to\C$.
+\end{point}
+\begin{point}[ultracyclic-basic]{Exercise}%
+Verify the following facts about ultracyclic projections.
+\begin{enumerate}
+\item
+If~$p$ and~$q$ are ultracyclic projections,
+so is~$p\cup q$.
+\item
+If~$p \leq q$ are projections,
+and~$q$ is ultracyclic,
+then~$p$ is ultracyclic.
+
+\TODO{add definition of $(\,\cdot\,)_\bullet$}
+\item
+Every projection is a directed supremum
+of ultracyclic projections.\\
+(Hint: first show that~$1$ is the supremum of all ultracyclic projections.)
+\end{enumerate}
+\end{point}
+\end{parsec}%
 \begin{parsec}%
 \begin{point}%
 Recall that according to our definition (\sref{von-neumann-subalgebra})
