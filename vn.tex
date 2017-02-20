@@ -4,6 +4,7 @@
 %
 % von Neumann algebras
 %
+\section{Definition and counterexamples}
 \begin{parsec}[vna]%
 \begin{point}{Definition}%
 A $C^*$-algebra~$\scrA$
@@ -292,6 +293,7 @@ in a von Neumann converges, in~\sref{vn-complete}.)
 \end{enumerate}
 \end{point}
 \end{parsec}
+\section{The basics}
 %
 % multiplication turns suprema into ultraweak limits
 %
@@ -593,7 +595,7 @@ of~$\scrB(\scrH_\Omega)$.\qed
 \end{point}
 \end{point}
 \end{parsec}
-
+\section{Completeness}
 \begin{parsec}%
 \begin{point}%
 	We have just seen (in~\sref{npuws})
@@ -1394,16 +1396,30 @@ converges to~$0$ as $\alpha\to 0$.
 
 Let~$\varepsilon>0$ be given,
 and pick~$\alpha_0$
-such that $\|T_\alpha-T_\beta\|_\omega \leq \frac{1}{3}\varepsilon$
+such that $\|T_\alpha-T_\beta\|_\omega \leq 
+\smash{\frac{1}{2\sqrt{2}}}\,\varepsilon$
 for all~$\alpha,\beta\geq \alpha_0$
 --- this is possible, because~$(T_\alpha)_\alpha$ is ultrastrongly Cauchy.
 We claim that $\|T-T_\alpha\|_\omega \leq \varepsilon$
 for any~$\alpha\geq \alpha_0$.
-To see this,
-note that
-$\|T-T_\alpha\|_\omega$
-is bounded by
+Since for such~$\alpha$
+the sum
 \begin{equation*}
+	\sum_{n=1}^\infty \|(T-T_\alpha)x_n\|^2 
+	\ = \ 
+	\sum_{n=1}^{N-1} \|(T-T_\alpha)x_n\|^2
+	\ +\ 
+	\sum_{n=N}^\infty
+	\|(T-T_\alpha)x_n\|^2
+\end{equation*}
+converges (to~$\|T-T_\alpha\|_\omega^2$),
+we can find~$N$ such that the second term in the bound above
+is below~$\frac{1}{2}\varepsilon^2$.
+The first term will also be below~$\frac{1}{2}\varepsilon^2$,
+because
+\begin{equation*}
+	\bigl(\sum_{n=1}^{N-1} \|(T - T_\alpha)x_n\|^2\,\bigr)^{\nicefrac{1}{2}}
+	\ \leq\ 
 \bigl(\,
 \sum_{n=1}^{N-1} \|(T-T_{\beta})x_n\|^2
 \,\bigr)^{\nicefrac{1}{2}}
@@ -1411,21 +1427,20 @@ is bounded by
 \bigl(\,
 \sum_{n=1}^{N-1} \|(T_\beta-T_\alpha)x_n\|^2
 \,\bigr)^{\nicefrac{1}{2}}
-\ +\ 
-\bigl(\,
-\sum_{n=N}^\infty \|(T-T_\alpha)x_n\|^2
-\,\bigr)^{\nicefrac{1}{2}}
 \end{equation*}
-for any~$\beta$ and~$N$.
-Now, first choose~$N$ 
-large enough that the third term is below~$\frac{1}{3}\varepsilon$,
-and then choose~$\beta\geq \alpha_0$ such that
-the first term is below~$\frac{1}{3}\varepsilon$
-(for choosen~$N$).
-Then since~$\alpha,\beta\geq \alpha_0$
-the second term will also be below~$\varepsilon$,
-and so we get~$\|T-T_\alpha\|_\omega\leq \varepsilon$.
-Hence~$(T_\alpha)_\alpha$ converges ultrastrongly to~$T$.\qed
+for any~$\beta$,
+and in particular for~$\beta$
+large enough that the first term on the right-hand side above
+is below~$\smash{\frac{1}{2\sqrt{2}}}\,\varepsilon$.
+If we choose $\beta\geq \alpha_0$
+the second term will be below~$\smash{\frac{1}{2\sqrt{2}}}\,\varepsilon$ too,
+and we get $\|T-T_\alpha\|_\omega^2 \leq \frac{1}{2}\varepsilon^2
++ (\smash{\frac{1}{2\sqrt{2}}\,\varepsilon 
++ \frac{1}{2\sqrt{2}}\,\varepsilon})^2
+\equiv \varepsilon^2$ 
+all in all.
+
+Hence~$\scrB(\scrH)$ is ultrastrongly complete.\qed
 \end{point}
 
 \TODO{Add example that the strong operator topology in not complete.}
