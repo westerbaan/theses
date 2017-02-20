@@ -247,9 +247,48 @@ while $a_{n,f}^2$ does not.
 Hence~$a\mapsto a^2$ is not ultrastrongly continuous on~$\sa{\scrB(\ell^2)}$.
 
 \item
-\TODO{ $\ketbra{0}{x_S}$ is u.w.-Cauchy, but not u.w.-convergent.}
+Let us show that~$\scrB(\ell^2)$
+is not ultraweakly complete.
 
-\TODO{ Is a von Neumann algebra ultrastrongly complete? }
+Show that there is an unbounded linear map~$f\colon \ell^2\to\C$,
+and that for each finite dimensional linear subspace~$S$ of~$\ell^2$,
+there is a unique vector~$x_S\in S$ 
+with
+$f(x)=\left<x_S,y\right>$ for all~$y\in S$
+(using~\sref{riesz-representation-theorem}).
+
+Consider the net~$(\,\ketbra{e}{x_S}\,)_S$
+where~$S$ ranges over the finite dimensional subspaces of~$\ell^2$
+ordered by inclusion,
+and~$e$ is some fixed vector in~$\ell^2$ with~$\|e\|=1$.
+
+Let~$\omega\colon \scrB(\ell^2)\to\C$
+be an np-map,
+so $\omega\equiv \sum_n \left<y_n,(\,\cdot\,)y_n\right>$
+for $y_1,y_2,\dotsc \in \ell^2$ with $\sum_n \|y_n\|^2 <\infty$,
+see~\sref{bh-np}.
+
+Show that $\omega(\,\ketbra{e}{x_S}-\ketbra{e}{x_T}\,)
+= \left<\,x_S-x_T,\,\sum_n y_n\left<y_n,e\right>\,\right> = 0$
+when $S$ and~$T$ are finite dimensional linear subspaces of~$\ell_2$
+which contain the vector $\sum_n y_n\left<y_n,e\right>$.
+
+Conclude that~$(\,\ketbra{e}{x_S}\,)_S$
+is ultraweakly Cauchy.
+
+Show that if~$(\,\ketbra{e}{x_S}\,)_S$
+converges ultraweakly to some~$A$ in~$\scrB(\ell^2)$,
+then we have~$\left<e,Ay\right>=f(y)$
+for all~$y\in\ell^2$.
+
+Conclude that~$(\,\ketbra{e}{x_S}\,)_S$
+does not converge ultraweakly,
+and that~$\scrB(\ell^2)$ is not ultraweakly complete.
+
+(Nevertheless, we'll see that every von Neumann algebra
+is ultrastrongly complete, and that
+every norm-bounded ultraweakly-Cauchy net
+in a von Neumann converges, in~\sref{vn-complete})
 \end{enumerate}
 \end{point}
 \end{parsec}
