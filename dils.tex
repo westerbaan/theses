@@ -552,7 +552,7 @@ To avoid developing Sakai's theory,
     we give a different construction.
 Instead of embedding~$X$ into a dual space,
     we will stay closer to the similar fact for Hilbert spaces
-    and use an topological completion.
+    and use a topological completion.
 A simple metric completion will not do,
     we will need to complete $X$ as a \emph{uniform space}.
 Uniformities are structures that sit between topological spaces
@@ -647,17 +647,47 @@ is a subbase and so fixes a uniformity~$\Phi$ for~$X$.
                     \alpha \in I\}$
                     is a subbase and fixes
                     a uniformity~$\Phi$ on~$X$.
-        Similarly a family of seminorms
-            fixes a uniformity.
-    \item
-An important special case of the previous is the following.
-Let~$\scrB$ be a von Neumann algebra
-    together with the family of pseudometrics
-    given by the np-functionals:
-        that is~$d_f(x,y) \equiv |f(x-y)|$
-            for a np-map ~$f\colon \scrB \to \C$.
-The corresponding uniformity is called the \Define{ultraweak uniformity}.
+    (Every uniform space is of this form \TODO{ref}.)
+\item
+Let~$V$ be a vector space with a
+    family of seminorms~$(\|\  \|_\alpha)_{\alpha \in I}$.
+    (That is: a locally convex space.)
+As a special case of the previous,
+ $V$ has a uniformity fixed by
+    pseudometrics~$d_\alpha(x,y) = \|x-y\|_\alpha$.
+
+\item
+Assume~$\scrB$ is a von Neumann algebra.
+There are several different uniformities on~$\scrB$ --- two of which
+    are of particular interest to us.
+The \Define{ultrastrong uniformity} on~$\scrB$
+    is fixed by the seminorms~$\|x\|_f = f(x^*x)$
+        where~$f\colon \scrB \to \C$ is an np-map.
+The \Define{ultraweak uniformity} on~$\scrB$
+    is given by the seminorms~$|f(x)|$
+        for np-maps~$f\colon \scrB \to \C$.
+
     \end{enumerate}
+\begin{point}%
+We are ready to define a uniformity for Hilbert $\scrB$-modules.
+\end{point}
+\end{point}
+\begin{point}{Definition}%
+Let~$\scrB$ be a von Neumann algebra.
+Assume~$X$ is a right-$\scrB$-module
+    with~$\scrB$-valued inner product~$[\,\cdot\,,\,\cdot\,]$.
+We call the uniformity on~$X$
+    given by seminorms~$\|x\|_f = f([x,x])^{\frac{1}{2}}$
+    for np-maps~$f\colon \scrB \to \C$
+    the \Define{ultranorm uniformity}.
+\begin{point}%
+The ultranorm uniformity will play a very similar r\^ole
+    to the norm for Hilbert spaces.
+If~$\scrB=\C$, then the ultranorm uniformity is
+    the same as the uniformity induced by the norm.
+If~$X=\scrB$ with~$[a,b]=a^*b$,
+    then the ultranorm uniformity coincides with the ultrastrong uniformity.
+\end{point}
 \end{point}
 \end{parsec}
 
@@ -766,6 +796,93 @@ Conclude from \ref{ex-continuous-preserves-lims} and
     \emph{and} that they make~$\Pi_{i \in I} X_i$
     into the product of~$(X_i)_{i \in I}$
     in the category of uniform spaces with uniformly continuous maps.
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}{Theorem}%
+    For a pre-Hilbert~$\scrB$-module~$X$,
+        the following are equivalent.
+        \begin{enumerate}
+            \item $X$ is \Define{self dual} ---
+                that is: for each~$\scrB$-linear~$\tau\colon X \to \scrB$
+                there is an~$t \in X$ such that~$\tau(x) = \left<t,x\right>$
+                    for all~$x \in X$.
+            \item $X$ is ultranorm complete.
+            \item Every norm-bounded ultranorm-Cauchy net in~$X$ converges.
+            \item $X$ has an \Define{orthonormal basis}
+                    --- that is: there is a set~$E \subseteq X$
+                    such that
+                \begin{enumerate}
+                    \item $\left<e,e\right>$ is a
+                            non-zero projection for each~$e \in E$;
+                    \item $\left<e,d\right>=0$ for~$e,d\in E$ with~$e\neq d$;
+                    \item for each~$x \in X$ we have
+                        \begin{equation*}
+                        x = \sum_{e \in E} e\left<x, e\right>,
+                        \end{equation*}
+                            where the sum converges in the ultranorm uniformity.
+                \end{enumerate}
+        \end{enumerate}
+\begin{point}{Proof}%
+We will prove $1 \Rightarrow 3 \Rightarrow 4 \Rightarrow 2 \Rightarrow 4 \Rightarrow 1$.
+\begin{point}{1 $\Rightarrow$ 2}%
+    Assume~$X$ is self-dual and~$(x_\alpha)_\alpha$
+        is a norm-bounded ultranorm-Cauchy net.
+     For the moment pick an~$y \in X$.
+    By \TODO{} we
+    have~$f(\left<x_\alpha,y\right>\left<y,x_\alpha\right>) \leq \|y\|^2
+        f(\left<x_\alpha,x_\alpha\right>)$ for any~np-map~$f\colon \scrB \to \C$
+        and so~$\left<y,x_\alpha\right>$ is an ultrastrong-Cauchy net in~$\scrB$.
+Von Neumann algebras are ultrastrong complete, see \TODO{}.
+Define~$\tau(y) = (\uslim_\alpha \left<y, x_\alpha\right>)^*$.
+As addition and multiplication by a fixed element
+are ultrastrongly continuous (see \TODO{})
+    $\tau$ is~$\scrB$-linear.
+We will show~$\tau$ is bounded.
+Let~$f\colon \scrB \to \C$ be an np-map.
+\TODO{$\tau$ bounded}.
+Thus~$\tau$ is bounded.
+By self-duality, there is a~$t \in X$ such that~$\tau(y) = \left<t,y\right>$
+for all~$y \in X$.
+And so for each np-map~$f\colon \scrB \to \C$ we have
+\begin{equation*}
+    \|\left<y, t-x_\alpha\right>\|_f=
+    \|\left<y, t\right>-\left<y,x_\alpha\right>\|_f=
+    \|\tau(y)^*-\left<y,x_\alpha\right>\|_f \rightarrow 0.
+\end{equation*}
+Write~$\left<x,y\right>_f=f(\left<x,y\right>)$.
+As~$f$ is positive $\left<\,\cdot\,,\,\cdot\,\right>_f$ is an inner product.
+By \TODO{Choi}
+we have
+\begin{equation*}
+    |\left<y,t-x_\alpha\right>_f|^2
+    \leq f( \left<t-x_\alpha,y\right> \left<y,t-x_\alpha\right>) f(1)
+    = \| \left<y,t-x_\alpha\right> \|_f^2 f(1).
+\end{equation*}
+Combining both, we see~$|\left<y,t-x_\alpha\right>_f| \rightarrow 0$.
+Let~$\varepsilon > 0$ be given.
+As~$\|x_\alpha\|_f$ is norm bounded
+we can find~$B > 0$ such that~$\|x_\alpha\|_f \leq B$
+for all~$\alpha$.
+As~$(x_\alpha)_\alpha$ is ultranorm Cauchy,
+we can pick~$\alpha$ such that~$\|x_\beta - x_\alpha\|_f \leq (\|t\|_f + B)^{-1}
+\frac{\varepsilon}{2}$ for all~$\beta \geq \alpha$.
+Find~$\beta$ such that~$|\left<t-x_\alpha,t-x_\beta\right>_f|
+    \leq \frac{\varepsilon}{2}$.
+Putting it all together:
+\begin{align*}
+    \left<t-x_\alpha,t-x_\alpha\right>_f
+    & \leq |\left<t-x_\alpha,t-x_\beta\right>_f|
+    + |\left<t-x_\alpha,x_\beta-x_\alpha\right>_f| \\
+    & \leq \frac{\varepsilon}{2}
+    + \| t- x_\alpha \|_f \|x_\beta - x_\alpha\|_f\\
+    & \leq \frac{\varepsilon}{2}
+    + (\| t\|_f + B) \|x_\beta - x_\alpha\|_f \leq \varepsilon.
+\end{align*}
+Thus~$x_\alpha$ converges ultranorm to~$t$.
+So~$X$ is ultranorm bounded complete.
+\end{point}
+\end{point}
 \end{point}
 \end{parsec}
 \begin{parsec}%
