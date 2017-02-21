@@ -424,30 +424,27 @@ directed~$D\subseteq\sa{\scrA}$;
 $\omega\circ f\colon \scrA\to\C$ is normal 
 for each np-map $\omega\colon \scrB\to\C$.
 \end{enumerate}
+In that case we say that~$f$ is \Define{\textbf{n}ormal}.
+
 Conclude that $b\mapsto a^*ba,\,\scrA\to\scrA$
 is ultraweakly
 continuous for every element~$a$ of a von Neumann 
 algebra~$\scrA$.
 
-Show that if such a positive linear map $f\colon \scrA\to\scrB$
-is ultrastrongly continuous, then~$f$ is ultraweakly continuous.
+Show that if a positive linear map $f\colon \scrA\to\scrB$
+between von Neumann algebras 
+is ultrastrongly continuous, then~$f$ is normal.
 (Hint: use that a bounded directed set 
 $D\subseteq \sa{\scrA}$ converges ultrastrongly to~$\bigvee D$.)
 
 The converse does not hold: give an example of a map~$f$ 
-which is ultraweakly continuous, but 
+which is normal, but 
 not be ultrastrongly continuous. (Hint: transpose.)
 \end{point}
 \begin{point}[cp-uscont]{Proposition}%
-Let $f\colon \scrA\to \scrB$
-be a
-positive linear map 
-between von Neumann algebras $\scrA$ and~$\scrB$
-with $f(a)^*f(a)\leq f(a^*a) \,\|f(1)\|$
-for all~$a\in\scrA$.
-
-If~$f$ is ultraweakly continuous,
-then~$f$ is ultrastrongly continuous.
+An ncp-map $f\colon \scrA\to\scrB$
+between von Neumann algebras is 
+ultrastrongly continuous.
 \begin{point}{Proof}%
 To show that~$f$
 is ultrastrongly continuous,
@@ -459,6 +456,7 @@ converges ultrastrongly to~$0$, c.q.~that
 $(\,f(b_\alpha)^*f(b_\alpha)\,)_\alpha$ converges ultraweakly to~$0$.
 Since
 $f(b_\alpha)^*f(b_\alpha) \leq f(b_\alpha^*b_\alpha) \|f(1)\|$
+by~\sref{cp-cs}, 
 it suffices to show that~$(\,f(b_\alpha^*b_\alpha)\,)_\alpha$
 converges ultraweakly to~$0$,
 but this follows from the
@@ -470,9 +468,7 @@ converges ultraweakly to~$0$
 \end{point}
 \begin{point}[mult-uws-cont]{Exercise}%
 Let~$\scrA$ be a von Neumann algebra.
-Show that~$b^*a^*b\,b^*ab \leq b^*a^*ab \|b^*b\|$
-for all~$a,b\in\scrA$.
-Conclude (using~\sref{cp-uscont}) 
+Conclude (using~\sref{cp-uscont} and~\sref{ad-cp})
 that the map $a\mapsto b^*ab,\,\scrA\to\scrA$
 is ultrastrongly continuous for every
  element~$b\in\scrA$.
