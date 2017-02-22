@@ -818,14 +818,14 @@ Conclude from \ref{ex-continuous-preserves-lims} and
                     \item $\left<e,d\right>=0$ for~$e,d\in E$ with~$e\neq d$;
                     \item for each~$x \in X$ we have
                         \begin{equation*}
-                        x = \sum_{e \in E} e\left<x, e\right>,
+                        x = \sum_{e \in E} e\left<e, x\right>,
                         \end{equation*}
                             where the sum converges in the ultranorm uniformity.
                 \end{enumerate}
         \end{enumerate}
 \begin{point}{Proof}%
 We will prove $1 \Rightarrow 3 \Rightarrow 4 \Rightarrow 2 \Rightarrow 4 \Rightarrow 1$.
-\begin{point}{1 $\Rightarrow$ 2}%
+\begin{point}{1 $\Rightarrow$ 3, self-dual~$X$ are bounded complete}%
     Assume~$X$ is self-dual and~$(x_\alpha)_\alpha$
         is a norm-bounded ultranorm-Cauchy net.
      For the moment pick an~$y \in X$.
@@ -833,10 +833,10 @@ We will prove $1 \Rightarrow 3 \Rightarrow 4 \Rightarrow 2 \Rightarrow 4 \Righta
     have~$f(\left<x_\alpha,y\right>\left<y,x_\alpha\right>) \leq \|y\|^2
         f(\left<x_\alpha,x_\alpha\right>)$ for any~np-map~$f\colon \scrB \to \C$
         and so~$\left<y,x_\alpha\right>$ is an ultrastrong-Cauchy net in~$\scrB$.
-Von Neumann algebras are ultrastrong complete, see \TODO{}.
-Define~$\tau(y) = (\uslim_\alpha \left<y, x_\alpha\right>)^*$.
+Von Neumann algebras are ultrastrongly complete, see \sref{vn-complete},
+so we may define~$\tau(y) = (\uslim_\alpha \left<y, x_\alpha\right>)^*$.
 As addition and multiplication by a fixed element
-are ultrastrongly continuous (see \TODO{})
+are ultrastrongly continuous (see \sref{mult-uws-cont})
     $\tau$ is~$\scrB$-linear.
 We will show~$\tau$ is bounded.
 Let~$f\colon \scrB \to \C$ be an np-map.
@@ -852,8 +852,9 @@ And so for each np-map~$f\colon \scrB \to \C$ we have
 \end{equation*}
 Write~$\left<x,y\right>_f=f(\left<x,y\right>)$.
 As~$f$ is positive $\left<\,\cdot\,,\,\cdot\,\right>_f$ is an inner product.
-By \TODO{Choi}
-we have
+From Kadison's inequality \sref{omega-norm-basic}
+it follows~$|f(a)|^2 \leq f(a^*a)f(1)$
+and so
 \begin{equation*}
     |\left<y,t-x_\alpha\right>_f|^2
     \leq f( \left<t-x_\alpha,y\right> \left<y,t-x_\alpha\right>) f(1)
@@ -881,6 +882,103 @@ Putting it all together:
 \end{align*}
 Thus~$x_\alpha$ converges ultranorm to~$t$.
 So~$X$ is ultranorm bounded complete.
+\end{point}
+\begin{point}{3 $\Rightarrow$ 4, bounded complete~$X$ has an orthonormal basis}
+    Assume norm-bounded ultranorm-Cauchy nets converge in~$X$.
+By Zorn's lemma there is a maximal subset~$E \subseteq X$
+    with the property that~$\left<e,e\right>$ is a non-zero projection
+    for all~$e\in E$
+    and~$\left<e,d\right>=0$ whenever~$e,d \in E$ with~$e \neq d$.
+Pick~$x \in X$.
+We have to show~$\sum_{e \in E} x\left<e,x\right>$
+converges in the ultranorm uniformity to~$x$.
+This requires a little preparation.
+
+For each~$e \in E$
+we have
+$\left<e-e\left<e,e\right>,e-e\left<e,e\right>\right> = 0$
+and so~$e \left<e,e\right> = e$
+and~$\left<x,e\right>\left<e,e\right> = \left<x,e\right>$.
+Thus for any finite subset~$S \subseteq E$ we have
+\begin{equation*}
+    0 \leq \Bigl< x - \sum_{e \in S} e\left<e,x\right>,
+        x - \sum_{e \in S} e\left<e,x\right> \Bigr>
+        = \left<x,x\right> - \sum_{e \in S} \left<x,e\right>\left<e,x\right>.
+\end{equation*}
+Rearranging we find Bessel's inequality:
+$ \sum_{e \in S} \left<x,e\right>\left<e,x\right>
+    \leq \left<x,x\right>$.
+As a corollary we get~$\|\sum_{e \in S} e\left<e,x\right> \| \leq \|x\|$
+and~$\sum_{e \in S}\| e\left<e,x\right>\|^2_f \leq \|x\|^2_f$
+for any np-map~$f\colon \scrB\to \C$.
+For finite~$S,T \subseteq E$ we have
+\begin{align*}
+    \bigl\| \sum_{e\in S} e \left<e,x\right> - \sum_{e\in T} e \left<e,x\right> \bigr\|_f^2
+    = \sum_{e\in S\Delta T} \| e \left<e,x\right> \|_f^2,
+\end{align*}
+which must get small as~$S\cap T$ get large.
+Thus the partial sums of~$\sum_{e \in E} e \left<e,x\right>$
+are ultranorm-Cauchy and norm bounded by~$\|x\|$.
+Thus by assumption this sum converges in the ultranorm uniformity.
+Consider~$x' = x - \sum_{e \in E} e\left<e,x\right>$.
+We are done if we can show~$x' = 0$.
+
+To see~$x'=0$, we
+first show that~$X$ has polar decomposition:
+    for each~$y \in X$ there is an~$u\in X$
+    with~$\left<u,u\right> = \ceil{\left<y,y\right>}$
+        and~$y=u\left<y,y\right>^{\frac{1}{2}}$.
+Let~$e_1, e_2, \ldots$ be orthogonal projections in~$\scrB$ \TODO{ref}
+    such that~$\sum_n e_n = \ceil{\left<y,y\right>}$
+    and~$e_n \leq n\left<y,y\right>^{\frac{1}{2}}$.
+    Clearly $e_n \left<y,y\right>^{\frac{1}{2}}$ is invertible
+        in~$e_n \scrB e_n$.
+    Thus there is an~$h_n \in \scrB$
+        such that $h_n \left<y,y\right>^{\frac{1}{2}} =
+             \left<y,y\right>^{\frac{1}{2}} h_n = e_n$.
+Then
+\begin{equation*}
+    \left<yh_n,yh_m\right> =
+        (h_n \left<y,y\right>^{\frac{1}{2}})
+        (\left<y,y\right>^{\frac{1}{2}} h_m) = e_ne_m.
+\end{equation*}
+So~$\left< \sum_{n=1}^N y h_n, \sum_{n=1}^N y h_n \right> 
+        = \sum_{n=1}^N e_n \leq \ceil{\left<y,y\right>}$.
+Thus~$( \sum_{n=1}^N y h_n)_N$ form an ultranorm-Cauchy net
+    norm bounded by~$1$.
+By assumption this bounded net converges:
+    write~$u = \sum_n yh_n$.
+We derive \TODO{computation rules and~$\left<u,u\right>$}
+\begin{equation*}
+u \left<y,y\right>^{\frac{1}{2}}
+= \sum_n yh_n \left<y,y\right>^{\frac{1}{2}}
+= \sum_n y e_n
+= \unlim_n y (e_1 + \cdots + e_n)
+= y \ceil{\left<y,y\right>}
+= y.
+\end{equation*}
+
+Recall we want to
+show~$x' \equiv x - \sum_{e \in E} e\left<e,x\right>= 0$.
+Reasoning towards contradiction, assume~$x' \neq 0$.
+By polar decomposition~$x' = u\left<x',x'\right>^{\frac{1}{2}}$
+for some~$u \in X$ with~$\left<u,u\right> = \ceil{\left<x',x'\right>}$,
+which is a non-zero projection.
+Note that by \TODO{} $\left<e,x'\right> =0$
+for all~$e \in E$.
+Thus~\TODO{} $\left<e,u\right> = 0$.
+So~$u$ contradicts the maximality of~$E$.
+Hence~$x'=0$. Thus~$x = \sum_{e \in E} e\left<e,x\right>$ as desired.
+\end{point}
+\begin{point}{4 $\Rightarrow$ 2, basis implies completeness}%
+    Assume~$X$ has an orthonormal basis~$E$.
+    Let~$(x_\alpha)_\alpha$ be an ultranorm-Cauchy net.
+    Pick~$e \in E$.
+    By \TODO{} $(\left<e, x_\alpha\right>)_\alpha$ is an ultrastrong-Cauchy net.
+    As von Neumann algebras are ultrastrongly complete
+    (see \sref{vn-complete})
+        there is an~$b_e \in \scrB$
+            to which~$\left<e,x_\alpha\right>$ converges ultrastrongly.
 \end{point}
 \end{point}
 \end{point}
