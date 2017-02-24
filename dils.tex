@@ -820,7 +820,14 @@ Conclude from \ref{ex-continuous-preserves-lims} and
                         \begin{equation*}
                         x = \sum_{e \in E} e\left<e, x\right>,
                         \end{equation*}
-                            where the sum converges in the ultranorm uniformity.
+                            where the sum converges in the ultranorm uniformity
+                                \emph{and}
+                    \item if an$E$-tuple $(b_e)_{e \in E}$ in~$\scrB$,
+                            which is `square summable'
+                            in the sense that the partial sums
+                            of~$\sum_{e \in E} b_e^*b_e$ are bounded,
+                            then the sum~$\sum_{e \in E} eb_e$
+                            converges in the ultranorm.
                 \end{enumerate}
         \end{enumerate}
 \begin{point}{Proof}%
@@ -889,17 +896,44 @@ By Zorn's lemma there is a maximal subset~$E \subseteq X$
     with the property that~$\left<e,e\right>$ is a non-zero projection
     for all~$e\in E$
     and~$\left<e,d\right>=0$ whenever~$e,d \in E$ with~$e \neq d$.
-Pick~$x \in X$.
-We have to show~$\sum_{e \in E} x\left<e,x\right>$
-converges in the ultranorm uniformity to~$x$.
-This requires a little preparation.
 
-For each~$e \in E$
+Assume~$(b_e)_{e \in E}$ is an~$E$-tuple in~$\scrB$
+such that the partials sums of~$\sum_{e \in E} b_e^*b_e$ are bounded.
+We want to show~$\sum_{e \in E} e b_e$ converges in the ultranorm
+    uniformity.
+As the summands of~$\sum_{e \in E}b_e^*b_e$ are positive,
+    the partial sums form a directed bounded net
+    that converges ultrastrongly
+    to its supremum~$\sum_{e \in E} b_e^*b_e$.
+Note that for each~$e \in E$
 we have
 $\left<e-e\left<e,e\right>,e-e\left<e,e\right>\right> = 0$
 and so~$e \left<e,e\right> = e$
-and~$\left<x,e\right>\left<e,e\right> = \left<x,e\right>$.
-Thus for any finite subset~$S \subseteq E$ we have
+and~$\left<x,e\right>\left<e,e\right> = \left<x,e\right>$
+for every~$x \in X$.
+Thus for any finite subset~$S \subseteq E$
+we have
+\begin{equation*}
+    \Bigl<\sum_{e \in S} eb_e, \sum_{e \in S} eb_e\Bigr>
+    = \sum_{e \in S} b_e^* \left<e,e\right>b_e \leq \sum_{e \in S} b_e^*b_e.
+\end{equation*}
+As~$\sum_{e \in E} b^*_eb_e$ converges ultraweakly,
+we have~$\sum_{e \in E} f(b^*_eb_e) < \infty$.
+Thus the tails~$\sum_{e \in E - S} f(b_e^*b_e)$ tend to zero, hence for finite~$S,T\subseteq E$ we know
+\begin{equation*}
+    \bigl\| \sum_{e \in S} eb_e - \sum_{e\in T} eb_e \bigr\|_f^2
+        = \bigl\| \sum_{e \in S\Delta T} eb_e  \bigr\|_f^2
+        \leq \sum_{e \in S\Delta T} f(b_e^*b_e)
+\end{equation*}
+vanishes as~$S \cap T$ grows.
+Thus the partial sums of ~$\sum_{e \in E} eb_e$ are ultranorm Cauchy
+and norm-bounded by~$\| \sum_{e \in E} b_e^*b_e \|$,
+so~$\sum_{e \in E} eb_e$ converges in the ultranorm uniformity.
+
+Pick~$x \in X$.
+We have to show~$\sum_{e \in E} x\left<e,x\right>$
+converges in the ultranorm uniformity to~$x$.
+For any finite subset~$S \subseteq E$ we have
 \begin{equation*}
     0 \leq \Bigl< x - \sum_{e \in S} e\left<e,x\right>,
         x - \sum_{e \in S} e\left<e,x\right> \Bigr>
@@ -908,18 +942,10 @@ Thus for any finite subset~$S \subseteq E$ we have
 Rearranging we find Bessel's inequality:
 $ \sum_{e \in S} \left<x,e\right>\left<e,x\right>
     \leq \left<x,x\right>$.
-As a corollary we get~$\|\sum_{e \in S} e\left<e,x\right> \| \leq \|x\|$
-and~$\sum_{e \in S}\| e\left<e,x\right>\|^2_f \leq \|x\|^2_f$
-for any np-map~$f\colon \scrB\to \C$.
-For finite~$S,T \subseteq E$ we have
-\begin{align*}
-    \bigl\| \sum_{e\in S} e \left<e,x\right> - \sum_{e\in T} e \left<e,x\right> \bigr\|_f^2
-    = \sum_{e\in S\Delta T} \| e \left<e,x\right> \|_f^2,
-\end{align*}
-which must get small as~$S\cap T$ get large.
-Thus the partial sums of~$\sum_{e \in E} e \left<e,x\right>$
-are ultranorm-Cauchy and norm bounded by~$\|x\|$.
-Thus by assumption this sum converges in the ultranorm uniformity.
+Hence the $E$-tuple~$(\left<e,x\right>)_e$
+is a `square summable'
+and so~$\sum_{e \in E} e \left<e,x\right>$
+converges in the ultranorm uniformity.
 Consider~$x' = x - \sum_{e \in E} e\left<e,x\right>$.
 We are done if we can show~$x' = 0$.
 
@@ -979,6 +1005,59 @@ Hence~$x'=0$. Thus~$x = \sum_{e \in E} e\left<e,x\right>$ as desired.
     (see \sref{vn-complete})
         there is an~$b_e \in \scrB$
             to which~$\left<e,x_\alpha\right>$ converges ultrastrongly.
+            \TODO{finish}
+\end{point}
+\begin{point}{2 $\Rightarrow$ 4, completeness implies basis}%
+    Follows from~3 $\Rightarrow$ 4.
+\end{point}
+\begin{point}{4 $\Rightarrow$ 1, basis implies self-duality}%
+    Assume~$X$ has an orthonormal basis~$E$.
+    Suppose~$\tau\colon X \to \scrB$ is a bounded $\scrB$-linear map.
+    We want to show there is some~$t \in X$
+    such that~$\tau(x) = \left<t,x\right>$ for all~$x \in X$.
+    Pick any~$x \in X$.
+    By assumption~$\sum_{e \in E} e  \left<e,x\right>$
+        converges in the ultranorm uniformity to~$x$.
+    As by \TODO{} $\tau$ is ultranorm continuous
+        we see
+        \begin{equation*}
+            \tau(x) = \sum_{e \in E} \tau(e) \left<e,x\right>
+                = \sum_{e \in E} \left<e \tau(e)^*,x\right>.
+        \end{equation*}
+    Thus if we can show~$\sum_e e \tau(e)^*$ converges in the ultranorm,
+        we are done. By assumption this is
+            the case if~$(\tau(e)^*)_{e \in E} $ is `square summable'
+            --- that is: the partial sums of~$\sum_{e \in E} \tau(e)\tau(e)^*$
+                must be bounded.
+        We will show
+        that for finite~$S \subseteq E$
+        we have
+        $\|\sum_{e \in S} e \tau(e)^* \|\leq \|\tau\|$,
+        which is sufficient as then~$ \| \sum_{e \in S}  \tau(e)\tau(e)^* \|
+        =\|\sum_{e \in S} e \tau(e)^* \|^2  \leq \|\tau\|^2$.
+For the moment pick an arbitrary~$x \in X$.
+By Bessel's inequality
+we have~$
+\| \sum_{e\in S} e \left<e,x\right>\|^2
+    = \sum_{e\in S} \|\left<x,e\right>\left<e,x\right>\|
+    \leq \|x\|^2$.
+Thus
+    \begin{equation*}
+        \bigl\|\bigl< \sum_{e \in S} e \tau(e)^*,x\bigr>\bigr\|
+        = \bigl\| \tau \bigl(\sum_{e \in S} e\left<e,x\right>\bigr) \bigr\|
+        \leq \|\tau\| \|x\|.
+    \end{equation*}
+Substituting~$x = \sum_{e \in S} e \tau(e)^*$ we find
+\begin{equation*}
+    \| \sum_{e\in S}e \tau(e)^*\|^2 =
+    \bigl\|\bigl< \sum_{e \in S} e \tau(e)^*,\sum_{e \in S} e\tau(e)^*\bigr>\bigr\|
+    \leq \|\tau\| \bigl\| \sum_{e\in S}e \tau(e)^*\bigr\|.
+\end{equation*}
+If~$ \| \sum_{e\in S}e \tau(e)^*\| = 0$,
+then we are done.
+Otherwise, divide both sides of the previous equation
+by~$ \| \sum_{e\in S}e \tau(e)^*\|$
+to find~$ \| \sum_{e\in S}e \tau(e)^*\| \leq \|\tau\|$ as desired. \qed
 \end{point}
 \end{point}
 \end{point}
