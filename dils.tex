@@ -552,7 +552,7 @@ To avoid developing Sakai's theory,
     we give a different construction.
 Instead of embedding~$X$ into a dual space,
     we will stay closer to the similar fact for Hilbert spaces
-    and use an topological completion.
+    and use a topological completion.
 A simple metric completion will not do,
     we will need to complete $X$ as a \emph{uniform space}.
 Uniformities are structures that sit between topological spaces
@@ -647,17 +647,47 @@ is a subbase and so fixes a uniformity~$\Phi$ for~$X$.
                     \alpha \in I\}$
                     is a subbase and fixes
                     a uniformity~$\Phi$ on~$X$.
-        Similarly a family of seminorms
-            fixes a uniformity.
-    \item
-An important special case of the previous is the following.
-Let~$\scrB$ be a von Neumann algebra
-    together with the family of pseudometrics
-    given by the np-functionals:
-        that is~$d_f(x,y) \equiv |f(x-y)|$
-            for a np-map ~$f\colon \scrB \to \C$.
-The corresponding uniformity is called the \Define{ultraweak uniformity}.
+    (Every uniform space is of this form \TODO{ref}.)
+\item
+Let~$V$ be a vector space with a
+    family of seminorms~$(\|\  \|_\alpha)_{\alpha \in I}$.
+    (That is: a locally convex space.)
+As a special case of the previous,
+ $V$ has a uniformity fixed by
+    pseudometrics~$d_\alpha(x,y) = \|x-y\|_\alpha$.
+
+\item
+Assume~$\scrB$ is a von Neumann algebra.
+There are several different uniformities on~$\scrB$ --- two of which
+    are of particular interest to us.
+The \Define{ultrastrong uniformity} on~$\scrB$
+    is fixed by the seminorms~$\|x\|_f = f(x^*x)$
+        where~$f\colon \scrB \to \C$ is an np-map.
+The \Define{ultraweak uniformity} on~$\scrB$
+    is given by the seminorms~$|f(x)|$
+        for np-maps~$f\colon \scrB \to \C$.
+
     \end{enumerate}
+\begin{point}%
+We are ready to define a uniformity for Hilbert $\scrB$-modules.
+\end{point}
+\end{point}
+\begin{point}{Definition}%
+Let~$\scrB$ be a von Neumann algebra.
+Assume~$X$ is a right-$\scrB$-module
+    with~$\scrB$-valued inner product~$[\,\cdot\,,\,\cdot\,]$.
+We call the uniformity on~$X$
+    given by seminorms~$\|x\|_f = f([x,x])^{\frac{1}{2}}$
+    for np-maps~$f\colon \scrB \to \C$
+    the \Define{ultranorm uniformity}.
+\begin{point}%
+The ultranorm uniformity will play a very similar r\^ole
+    to the norm for Hilbert spaces.
+If~$\scrB=\C$, then the ultranorm uniformity is
+    the same as the uniformity induced by the norm.
+If~$X=\scrB$ with~$[a,b]=a^*b$,
+    then the ultranorm uniformity coincides with the ultrastrong uniformity.
+\end{point}
 \end{point}
 \end{parsec}
 
@@ -766,6 +796,270 @@ Conclude from \ref{ex-continuous-preserves-lims} and
     \emph{and} that they make~$\Pi_{i \in I} X_i$
     into the product of~$(X_i)_{i \in I}$
     in the category of uniform spaces with uniformly continuous maps.
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}{Theorem}%
+    For a pre-Hilbert~$\scrB$-module~$X$,
+        the following are equivalent.
+        \begin{enumerate}
+            \item $X$ is \Define{self dual} ---
+                that is: for each~$\scrB$-linear~$\tau\colon X \to \scrB$
+                there is an~$t \in X$ such that~$\tau(x) = \left<t,x\right>$
+                    for all~$x \in X$.
+            \item $X$ is ultranorm complete.
+            \item Every norm-bounded ultranorm-Cauchy net in~$X$ converges.
+            \item $X$ has an \Define{orthonormal basis}
+                    --- that is: there is a set~$E \subseteq X$
+                    such that
+                \begin{enumerate}
+                    \item $\left<e,e\right>$ is a
+                            non-zero projection for each~$e \in E$;
+                    \item $\left<e,d\right>=0$ for~$e,d\in E$ with~$e\neq d$;
+                    \item for each~$x \in X$ we have
+                        \begin{equation*}
+                        x = \sum_{e \in E} e\left<e, x\right>,
+                        \end{equation*}
+                            where the sum converges in the ultranorm uniformity
+                                \emph{and}
+                    \item if an$E$-tuple $(b_e)_{e \in E}$ in~$\scrB$,
+                            which is `square summable'
+                            in the sense that the partial sums
+                            of~$\sum_{e \in E} b_e^*b_e$ are bounded,
+                            then the sum~$\sum_{e \in E} eb_e$
+                            converges in the ultranorm.
+                \end{enumerate}
+        \end{enumerate}
+\begin{point}{Proof}%
+We will prove $1 \Rightarrow 3 \Rightarrow 4 \Rightarrow 2 \Rightarrow 4 \Rightarrow 1$.
+\begin{point}{1 $\Rightarrow$ 3, self-dual~$X$ are bounded complete}%
+    Assume~$X$ is self-dual and~$(x_\alpha)_\alpha$
+        is a norm-bounded ultranorm-Cauchy net.
+     For the moment pick an~$y \in X$.
+    By \TODO{} we
+    have~$f(\left<x_\alpha,y\right>\left<y,x_\alpha\right>) \leq \|y\|^2
+        f(\left<x_\alpha,x_\alpha\right>)$ for any~np-map~$f\colon \scrB \to \C$
+        and so~$\left<y,x_\alpha\right>$ is an ultrastrong-Cauchy net in~$\scrB$.
+Von Neumann algebras are ultrastrongly complete, see \sref{vn-complete},
+so we may define~$\tau(y) = (\uslim_\alpha \left<y, x_\alpha\right>)^*$.
+As addition and multiplication by a fixed element
+are ultrastrongly continuous (see \sref{mult-uws-cont})
+    $\tau$ is~$\scrB$-linear.
+We will show~$\tau$ is bounded.
+Let~$f\colon \scrB \to \C$ be an np-map.
+\TODO{$\tau$ bounded}.
+Thus~$\tau$ is bounded.
+By self-duality, there is a~$t \in X$ such that~$\tau(y) = \left<t,y\right>$
+for all~$y \in X$.
+And so for each np-map~$f\colon \scrB \to \C$ we have
+\begin{equation*}
+    \|\left<y, t-x_\alpha\right>\|_f=
+    \|\left<y, t\right>-\left<y,x_\alpha\right>\|_f=
+    \|\tau(y)^*-\left<y,x_\alpha\right>\|_f \rightarrow 0.
+\end{equation*}
+Write~$\left<x,y\right>_f=f(\left<x,y\right>)$.
+As~$f$ is positive $\left<\,\cdot\,,\,\cdot\,\right>_f$ is an inner product.
+From Kadison's inequality \sref{omega-norm-basic}
+it follows~$|f(a)|^2 \leq f(a^*a)f(1)$
+and so
+\begin{equation*}
+    |\left<y,t-x_\alpha\right>_f|^2
+    \leq f( \left<t-x_\alpha,y\right> \left<y,t-x_\alpha\right>) f(1)
+    = \| \left<y,t-x_\alpha\right> \|_f^2 f(1).
+\end{equation*}
+Combining both, we see~$|\left<y,t-x_\alpha\right>_f| \rightarrow 0$.
+Let~$\varepsilon > 0$ be given.
+As~$\|x_\alpha\|_f$ is norm bounded
+we can find~$B > 0$ such that~$\|x_\alpha\|_f \leq B$
+for all~$\alpha$.
+As~$(x_\alpha)_\alpha$ is ultranorm Cauchy,
+we can pick~$\alpha$ such that~$\|x_\beta - x_\alpha\|_f \leq (\|t\|_f + B)^{-1}
+\frac{\varepsilon}{2}$ for all~$\beta \geq \alpha$.
+Find~$\beta$ such that~$|\left<t-x_\alpha,t-x_\beta\right>_f|
+    \leq \frac{\varepsilon}{2}$.
+Putting it all together:
+\begin{align*}
+    \left<t-x_\alpha,t-x_\alpha\right>_f
+    & \leq |\left<t-x_\alpha,t-x_\beta\right>_f|
+    + |\left<t-x_\alpha,x_\beta-x_\alpha\right>_f| \\
+    & \leq \frac{\varepsilon}{2}
+    + \| t- x_\alpha \|_f \|x_\beta - x_\alpha\|_f\\
+    & \leq \frac{\varepsilon}{2}
+    + (\| t\|_f + B) \|x_\beta - x_\alpha\|_f \leq \varepsilon.
+\end{align*}
+Thus~$x_\alpha$ converges ultranorm to~$t$.
+So~$X$ is ultranorm bounded complete.
+\end{point}
+\begin{point}{3 $\Rightarrow$ 4, bounded complete~$X$ has an orthonormal basis}
+    Assume norm-bounded ultranorm-Cauchy nets converge in~$X$.
+By Zorn's lemma there is a maximal subset~$E \subseteq X$
+    with the property that~$\left<e,e\right>$ is a non-zero projection
+    for all~$e\in E$
+    and~$\left<e,d\right>=0$ whenever~$e,d \in E$ with~$e \neq d$.
+
+Assume~$(b_e)_{e \in E}$ is an~$E$-tuple in~$\scrB$
+such that the partials sums of~$\sum_{e \in E} b_e^*b_e$ are bounded.
+We want to show~$\sum_{e \in E} e b_e$ converges in the ultranorm
+    uniformity.
+As the summands of~$\sum_{e \in E}b_e^*b_e$ are positive,
+    the partial sums form a directed bounded net
+    that converges ultrastrongly
+    to its supremum~$\sum_{e \in E} b_e^*b_e$.
+Note that for each~$e \in E$
+we have
+$\left<e-e\left<e,e\right>,e-e\left<e,e\right>\right> = 0$
+and so~$e \left<e,e\right> = e$
+and~$\left<x,e\right>\left<e,e\right> = \left<x,e\right>$
+for every~$x \in X$.
+Thus for any finite subset~$S \subseteq E$
+we have
+\begin{equation*}
+    \Bigl<\sum_{e \in S} eb_e, \sum_{e \in S} eb_e\Bigr>
+    = \sum_{e \in S} b_e^* \left<e,e\right>b_e \leq \sum_{e \in S} b_e^*b_e.
+\end{equation*}
+As~$\sum_{e \in E} b^*_eb_e$ converges ultraweakly,
+we have~$\sum_{e \in E} f(b^*_eb_e) < \infty$.
+Thus the tails~$\sum_{e \in E - S} f(b_e^*b_e)$ tend to zero, hence for finite~$S,T\subseteq E$ we know
+\begin{equation*}
+    \bigl\| \sum_{e \in S} eb_e - \sum_{e\in T} eb_e \bigr\|_f^2
+        = \bigl\| \sum_{e \in S\Delta T} eb_e  \bigr\|_f^2
+        \leq \sum_{e \in S\Delta T} f(b_e^*b_e)
+\end{equation*}
+vanishes as~$S \cap T$ grows.
+Thus the partial sums of ~$\sum_{e \in E} eb_e$ are ultranorm Cauchy
+and norm-bounded by~$\| \sum_{e \in E} b_e^*b_e \|$,
+so~$\sum_{e \in E} eb_e$ converges in the ultranorm uniformity.
+
+Pick~$x \in X$.
+We have to show~$\sum_{e \in E} x\left<e,x\right>$
+converges in the ultranorm uniformity to~$x$.
+For any finite subset~$S \subseteq E$ we have
+\begin{equation*}
+    0 \leq \Bigl< x - \sum_{e \in S} e\left<e,x\right>,
+        x - \sum_{e \in S} e\left<e,x\right> \Bigr>
+        = \left<x,x\right> - \sum_{e \in S} \left<x,e\right>\left<e,x\right>.
+\end{equation*}
+Rearranging we find Bessel's inequality:
+$ \sum_{e \in S} \left<x,e\right>\left<e,x\right>
+    \leq \left<x,x\right>$.
+Hence the $E$-tuple~$(\left<e,x\right>)_e$
+is a `square summable'
+and so~$\sum_{e \in E} e \left<e,x\right>$
+converges in the ultranorm uniformity.
+Consider~$x' = x - \sum_{e \in E} e\left<e,x\right>$.
+We are done if we can show~$x' = 0$.
+
+To see~$x'=0$, we
+first show that~$X$ has polar decomposition:
+    for each~$y \in X$ there is an~$u\in X$
+    with~$\left<u,u\right> = \ceil{\left<y,y\right>}$
+        and~$y=u\left<y,y\right>^{\frac{1}{2}}$.
+Let~$e_1, e_2, \ldots$ be orthogonal projections in~$\scrB$ \TODO{ref}
+    such that~$\sum_n e_n = \ceil{\left<y,y\right>}$
+    and~$e_n \leq n\left<y,y\right>^{\frac{1}{2}}$.
+    Clearly $e_n \left<y,y\right>^{\frac{1}{2}}$ is invertible
+        in~$e_n \scrB e_n$.
+    Thus there is an~$h_n \in \scrB$
+        such that $h_n \left<y,y\right>^{\frac{1}{2}} =
+             \left<y,y\right>^{\frac{1}{2}} h_n = e_n$.
+Then
+\begin{equation*}
+    \left<yh_n,yh_m\right> =
+        (h_n \left<y,y\right>^{\frac{1}{2}})
+        (\left<y,y\right>^{\frac{1}{2}} h_m) = e_ne_m.
+\end{equation*}
+So~$\left< \sum_{n=1}^N y h_n, \sum_{n=1}^N y h_n \right> 
+        = \sum_{n=1}^N e_n \leq \ceil{\left<y,y\right>}$.
+Thus~$( \sum_{n=1}^N y h_n)_N$ form an ultranorm-Cauchy net
+    norm bounded by~$1$.
+By assumption this bounded net converges:
+    write~$u = \sum_n yh_n$.
+We derive \TODO{computation rules and~$\left<u,u\right>$}
+\begin{equation*}
+u \left<y,y\right>^{\frac{1}{2}}
+= \sum_n yh_n \left<y,y\right>^{\frac{1}{2}}
+= \sum_n y e_n
+= \unlim_n y (e_1 + \cdots + e_n)
+= y \ceil{\left<y,y\right>}
+= y.
+\end{equation*}
+
+Recall we want to
+show~$x' \equiv x - \sum_{e \in E} e\left<e,x\right>= 0$.
+Reasoning towards contradiction, assume~$x' \neq 0$.
+By polar decomposition~$x' = u\left<x',x'\right>^{\frac{1}{2}}$
+for some~$u \in X$ with~$\left<u,u\right> = \ceil{\left<x',x'\right>}$,
+which is a non-zero projection.
+Note that by \TODO{} $\left<e,x'\right> =0$
+for all~$e \in E$.
+Thus~\TODO{} $\left<e,u\right> = 0$.
+So~$u$ contradicts the maximality of~$E$.
+Hence~$x'=0$. Thus~$x = \sum_{e \in E} e\left<e,x\right>$ as desired.
+\end{point}
+\begin{point}{4 $\Rightarrow$ 2, basis implies completeness}%
+    Assume~$X$ has an orthonormal basis~$E$.
+    Let~$(x_\alpha)_\alpha$ be an ultranorm-Cauchy net.
+    Pick~$e \in E$.
+    By \TODO{} $(\left<e, x_\alpha\right>)_\alpha$ is an ultrastrong-Cauchy net.
+    As von Neumann algebras are ultrastrongly complete
+    (see \sref{vn-complete})
+        there is an~$b_e \in \scrB$
+            to which~$\left<e,x_\alpha\right>$ converges ultrastrongly.
+            \TODO{finish}
+\end{point}
+\begin{point}{2 $\Rightarrow$ 4, completeness implies basis}%
+    Follows from~3 $\Rightarrow$ 4.
+\end{point}
+\begin{point}{4 $\Rightarrow$ 1, basis implies self-duality}%
+    Assume~$X$ has an orthonormal basis~$E$.
+    Suppose~$\tau\colon X \to \scrB$ is a bounded $\scrB$-linear map.
+    We want to show there is some~$t \in X$
+    such that~$\tau(x) = \left<t,x\right>$ for all~$x \in X$.
+    Pick any~$x \in X$.
+    By assumption~$\sum_{e \in E} e  \left<e,x\right>$
+        converges in the ultranorm uniformity to~$x$.
+    As by \TODO{} $\tau$ is ultranorm continuous
+        we see
+        \begin{equation*}
+            \tau(x) = \sum_{e \in E} \tau(e) \left<e,x\right>
+                = \sum_{e \in E} \left<e \tau(e)^*,x\right>.
+        \end{equation*}
+    Thus if we can show~$\sum_e e \tau(e)^*$ converges in the ultranorm,
+        we are done. By assumption this is
+            the case if~$(\tau(e)^*)_{e \in E} $ is `square summable'
+            --- that is: the partial sums of~$\sum_{e \in E} \tau(e)\tau(e)^*$
+                must be bounded.
+        We will show
+        that for finite~$S \subseteq E$
+        we have
+        $\|\sum_{e \in S} e \tau(e)^* \|\leq \|\tau\|$,
+        which is sufficient as then~$ \| \sum_{e \in S}  \tau(e)\tau(e)^* \|
+        =\|\sum_{e \in S} e \tau(e)^* \|^2  \leq \|\tau\|^2$.
+For the moment pick an arbitrary~$x \in X$.
+By Bessel's inequality
+we have~$
+\| \sum_{e\in S} e \left<e,x\right>\|^2
+    = \sum_{e\in S} \|\left<x,e\right>\left<e,x\right>\|
+    \leq \|x\|^2$.
+Thus
+    \begin{equation*}
+        \bigl\|\bigl< \sum_{e \in S} e \tau(e)^*,x\bigr>\bigr\|
+        = \bigl\| \tau \bigl(\sum_{e \in S} e\left<e,x\right>\bigr) \bigr\|
+        \leq \|\tau\| \|x\|.
+    \end{equation*}
+Substituting~$x = \sum_{e \in S} e \tau(e)^*$ we find
+\begin{equation*}
+    \| \sum_{e\in S}e \tau(e)^*\|^2 =
+    \bigl\|\bigl< \sum_{e \in S} e \tau(e)^*,\sum_{e \in S} e\tau(e)^*\bigr>\bigr\|
+    \leq \|\tau\| \bigl\| \sum_{e\in S}e \tau(e)^*\bigr\|.
+\end{equation*}
+If~$ \| \sum_{e\in S}e \tau(e)^*\| = 0$,
+then we are done.
+Otherwise, divide both sides of the previous equation
+by~$ \| \sum_{e\in S}e \tau(e)^*\|$
+to find~$ \| \sum_{e\in S}e \tau(e)^*\| \leq \|\tau\|$ as desired. \qed
+\end{point}
+\end{point}
 \end{point}
 \end{parsec}
 \begin{parsec}%
