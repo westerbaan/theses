@@ -1211,6 +1211,81 @@ and the fact that $p\mapsto p^\perp$
 is an order isomorphism on the poset of projections on~$\scrA$.)
 \end{point}
 \end{parsec}
+
+\begin{parsec}%
+\begin{point}%
+We now turn to a subtle matter:
+it is not immediately clear
+that the ultraweak topology on a von Neumann
+subalgebra~$\scrA$ of a von Neumann algebra~$\scrB$,
+coincides (on~$\scrA$) with the ultraweak topology on~$\scrB$.
+While it is easily seen that the former is finer
+(that is, a net in~$\scrA$ which converges ultraweakly in~$\scrA$,
+converges ultraweakly in~$\scrB$ too, because any np-map 
+$\omega\colon \scrB\to\C$ is also an np-map restricted to~$\scrA$),
+it is not obvious that an np-map $\omega\colon \scrA\to\C$
+can be extended to an np-map on~$\scrB$
+--- but it can, see~\TODO{ref}.
+I'll call this independence of the ultraweak topology
+from the surrounding space
+\emph{ultraweak permanence}
+being not unlike the independence
+of the spectrum of an operator from the surrounding space
+known as spectral permanence. \TODO{ref}
+Of course,
+we'll also have ``ultrastrong permanence''.
+
+It is tempting to think that the extension of an np-map~$\omega\colon \scrA
+\to\C$
+on a von Neumann
+subalgebra~$\scrA$ of a von Neumann algebra~$\scrB$
+to~$\scrB$ is simply a matter of applying Hahn--Banach to~$\omega$,
+and while it is true we let Hahn--Banach finish the job,
+the real work goes into showing that Hahn--Banach applies,
+c.q.~that~$\omega$ is ultraweakly continuous with respect to~$\scrB$
+(and not just ultraweakly continuous with respect to~$\scrA$).
+To this end, we'll show that~$\omega$
+is dominated by a np-map defined on~$\scrB$.
+\end{point}
+\begin{point}{Lemma}%
+For every np-map $\scrR\to\C$
+on a von Neumann subalgebra~$\scrR$
+of~$\scrB(\scrH)$,
+where~$\scrH$ is some Hilbert space,
+there are~$y_1,y_2,\dotsc\in \scrH$
+with $\sum_n \|y_n\|^2 =\omega(1)$,
+and $\omega(A)\leq \sum_n \left<y_n,Ay_n\right>$
+for all~$A\in\scrR$.
+\begin{point}{Proof}%
+(Based on the proof of Lemma~7.1.2 of~\cite{kr}.)
+
+We claim that if~$\scrR$ is not trivial
+there is a non-zero projection~$E$ in~$\scrR$
+and~$y\in E(\scrH)$ with $\|y\|^2 = \omega(E)$
+and $\omega(G)\leq \left<y,Gy\right>$
+for all projections~$G\leq E$ in~$\scrR$.
+Indeed,
+pick any~$x\in\scrH$ with $\|x\|^2=\omega(1)$.
+Either~$E=1$ does the job,
+or there is a projection~$F$ in~$\scrR$ with
+$\omega(F) > \left<x,Fx\right>$.
+Let~$(F_\alpha)_\alpha$
+be a maximal orthogonal family of such projection,
+and define~$E:=(\sum_\alpha F_\alpha)^\perp$.
+Given a projection~$G$ in~$\scrR$ below~$E$
+we can't have $\omega(G) > \left<x,G x\right>$
+because then~$G$ could be added to~$(F_\alpha)_\alpha$
+contradicting its maximality,
+and so we must conclude that $\omega(G)\leq \left<x,G x\right>
+=\left<Ex,GEx\right>$.
+In particular, 
+\TODO{}
+\end{point}
+\end{point}
+
+\end{parsec}
+
+
 \begin{parsec}%
 \begin{point}[proto-kaplansky]{Proposition}%
 Let~$\scrA$ be a von Neumann algebra,
