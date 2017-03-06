@@ -1003,9 +1003,34 @@ Hence~$x'=0$. Thus~$x = \sum_{e \in E} e\left<e,x\right>$ as desired.
     By \TODO{} $(\left<e, x_\alpha\right>)_\alpha$ is an ultrastrong-Cauchy net.
     As von Neumann algebras are ultrastrongly complete
     (see \sref{vn-complete})
-        there is an~$b_e \in \scrB$
+        there is a~$b_e \in \scrB$
             to which~$\left<e,x_\alpha\right>$ converges ultrastrongly.
-            \TODO{finish}
+    We will show~$x_\alpha$ converges in the ultranorm uniformity
+        to~$\sum_{e \in E} e b_e$.
+
+    First we will show~$\sum_{e \in E} e b_e$ converges to
+        begin with.
+    As ultraweakly-bounded nets are norm-bounded, see \TODO{},
+        it is sufficient to show~$\sum_{e\in E} f( b_e^*b_e ) $ is bounded
+        for each np-map~$f\colon \scrB \to \C$.
+    For any~$e \in E$
+    we have~$\|b_e\|_f = \lim_\alpha \|\left<e,x_\alpha\right>\|_f$
+    and so~$f(b_e^*b_e) =\lim_\alpha f(\left<x_\alpha,e\right> \left<e, x_\alpha\right>)$.
+    Pick a finite subset~$S \subseteq E$. Then we have
+ \begin{align*}
+    f\bigl(\sum_{e \in S} b_e^*b_e\bigr)
+    &= \sum_{e \in S} \lim_\alpha 
+     f(\left<x_\alpha,e\right> \left<e, x_\alpha\right>) \\
+     & = \lim_\alpha 
+            f\bigl(\sum_{e \in S}\left<x_\alpha,e\right>
+                \left<e, x_\alpha\right>\bigr) \\
+            &\leq f(\left<x_\alpha,x_\alpha\right>).
+ \end{align*}
+As~$x_\alpha$ is ultranorm Cauchy,
+the sequence~$f(\left<x_\alpha,x_\alpha\right>)$
+    must be Cauchy and so bounded.
+Hence~$\sum_{e \in E} e b_e$ converges in the ultranorm uniformity.
+
 \end{point}
 \begin{point}{2 $\Rightarrow$ 4, completeness implies basis}%
     Follows from~3 $\Rightarrow$ 4.
