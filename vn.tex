@@ -869,10 +869,45 @@ then~$f$ is automatically ultrastrongly continuous
 For the other direction,
 we'll show that if~$f$ is ultrastrongly continuous,
 then~$f$ can be written as a linear combination
-$f\equiv f_0+if_1-f_2-if_3$,
-of np-maps $f_1,\dotsc,f_4$,
+$f\equiv \sum_{k=0}^3 i^k f_k$
+of np-maps $f_0,\dotsc,f_3$,
 and must therefore be ultraweakly continuous.
 We'll need the following tool.
+\end{point}
+\begin{point}{Definition}%
+Given a von Neumann algebra~$\scrA$,
+the vector space of ultraweakly continuous 
+linear maps $f\colon \scrA\to \C$
+endowed with the operator norm
+is denoted by~$\Define{\scrA_*}$,
+and called the \Define{predual} of~$\scrA$.
+\begin{point}{Remark}%
+The reason
+that the space~$\scrA_*$ is called the \Define{predual}
+of~$\scrA$
+is the non-trivial fact due to Sakai~\cite{sakai} (which we 
+don't need and therefore won't prove),
+that the obvious 
+map $\scrA\to(\scrA_*)^*$,
+where $(\scrA_*)^*$ is the \emph{dual} of~$\scrA$ --- the
+vector space of bounded linear maps $\scrA_*\to\C$
+endowed with the operator norm ---,
+is a surjective isometry,
+and so $\scrA$ ``is'' the dual of~$\scrA_*$,
+(albeit only as normed space,
+because~$(\scrA_*)^*$ doesn't come equipped with a multiplication.)
+\end{point}
+\end{point}
+\begin{point}{Lemma}%
+The predual~$\scrA_*$ of a von Neumann algebra~$\scrA$
+is complete.
+\begin{point}{Proof}%
+\TODO{We'd like to use the fact
+that a functional $f\colon \scrA\to\C$
+is ultraweakly continuous iff 
+it is ultraweakly continuous on~$(\scrA)_1$,
+which seems non-trivial.}
+\end{point}
 \end{point}
 \begin{point}[bstaromega]{Definition}%
 Let~$\scrA$ be a von Neumann algebra.
