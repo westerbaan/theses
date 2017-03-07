@@ -822,7 +822,7 @@ Conclude from \ref{ex-continuous-preserves-lims} and
                         \end{equation*}
                             where the sum converges in the ultranorm uniformity
                                 \emph{and}
-                    \item if an$E$-tuple $(b_e)_{e \in E}$ in~$\scrB$,
+                    \item if an~$E$-tuple $(b_e)_{e \in E}$ in~$\scrB$,
                             which is `square summable'
                             in the sense that the partial sums
                             of~$\sum_{e \in E} b_e^*b_e$ are bounded,
@@ -1010,7 +1010,7 @@ Hence~$x'=0$. Thus~$x = \sum_{e \in E} e\left<e,x\right>$ as desired.
 
     First we will show~$\sum_{e \in E} e b_e$ converges to
         begin with.
-    As ultraweakly-bounded nets are norm-bounded, see \TODO{},
+    As ultraweakly-bounded nets are norm bounded, see \TODO{},
         it is sufficient to show~$\sum_{e\in E} f( b_e^*b_e ) $ is bounded
         for each np-map~$f\colon \scrB \to \C$.
     For any~$e \in E$
@@ -1031,6 +1031,57 @@ the sequence~$f(\left<x_\alpha,x_\alpha\right>)$
     must be Cauchy and so bounded.
 Hence~$\sum_{e \in E} e b_e$ converges in the ultranorm uniformity.
 
+To prove~$x_\alpha$ converges to~$\sum_{e \in E} e b_e$,
+    pick any~$\varepsilon > 0$
+        and np-map $f\colon \scrB \to \C$.
+We want to find~$\alpha_0$
+    such that~$\| x_\alpha - \sum_{e \in E} e b_e\|_f \leq \varepsilon$
+        for all~$\alpha \geq \alpha_0$.
+As~$(x_\alpha)_\alpha$ is ultranorm Cauchy,
+we can pick an~$\alpha_0$
+such that~$\| x_\alpha - x_\beta \|_f \leq \frac{1}{2\sqrt{2}} \varepsilon$
+for all~$\alpha,\beta \geq \alpha_0$.
+As~$x_\alpha = \sum_{e \in E} e \left<e,x_\alpha\right>$
+we find with Parseval's identity
+\begin{equation*}
+    \bigl\| x_\alpha - \sum_{e \in E} eb_e \bigr\|_f^2
+    = \bigl\| \sum_{e \in E} e(\left<e, x_\alpha\right> - b_e) \bigr\|_f^2
+    = \sum_{e \in E}\| \left<e, x_\alpha\right> - b_e \|_f^2.
+\end{equation*}
+Take a finite subset~$S \subseteq E$
+such that
+    $\sum_{e \in E - S}\| \left<e, x_\alpha\right> - b_e \|_f^2 \leq
+        \frac{1}{2}\varepsilon^2$.
+If we can also show
+    $\sum_{e \in  S}\| \left<e, x_\alpha\right> - b_e \|_f^2 \leq
+        \frac{1}{2}\varepsilon^2$,
+        then we are done.
+For any~$\beta \geq \alpha$
+    we have using the triangle inequality of~$\|\,\cdot\,\|_f$
+        on~$X$
+\begin{align*}
+    \Bigl(\sum_{e \in S}\| \left<e, x_\alpha\right>
+        - b_e \|_f^2\Bigr)^{\frac{1}{2}}
+        &= \bigl\|\sum_{e \in S} e\left<e, x_\alpha\right> - eb_e \bigr\|_f\\
+        &\leq \bigl\|\sum_{e \in S} e\left<e, x_\alpha-x_\beta\right> \bigr\|_f\
+        +\bigl\|\sum_{e \in S} e\left<e, x_\beta\right> - eb_e \bigr\|_f\\
+        &= \Bigl( \sum_{e \in S}\|\left<e, x_\alpha-x_\beta\right> \|_f^2 \Bigr)^{\frac{1}{2}}
+        +\Bigl(\sum_{e \in S}\| \left<e, x_\beta\right> - b_e \|_f^2
+        \Bigr)^{\frac{1}{2}}.
+\end{align*}
+We want to show the previous is bounded by~$\frac{1}{\sqrt{2}}\varepsilon$.
+We bound the two terms separately.
+For the first term using Bessel's
+inequality and our choice of~$\alpha_0$
+we have
+$\sum_{e \in S}\|\left<e, x_\alpha-x_\beta\right> \|_f^2 
+\leq \|x_\alpha - x_\beta\|^2_f \leq \bigl(\frac{1}{2\sqrt{2}}\varepsilon\bigr)^2.$
+As~$\|\left<e,x_\beta\right> - b_e\|_f$
+vanishes for each~$e \in S$ and~$S$ is finite,
+we can find sufficiently large~$\beta$
+such that the right term is also bounded by~$\frac{1}{2\sqrt{2}}\varepsilon$.
+Thus~$x_\alpha$ converges in the ultranorm uniformity
+to~$\sum_{e \in E} e b_e$, as desired.
 \end{point}
 \begin{point}{2 $\Rightarrow$ 4, completeness implies basis}%
     Follows from~3 $\Rightarrow$ 4.
