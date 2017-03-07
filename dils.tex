@@ -822,7 +822,7 @@ Conclude from \ref{ex-continuous-preserves-lims} and
                         \end{equation*}
                             where the sum converges in the ultranorm uniformity
                                 \emph{and}
-                    \item if an$E$-tuple $(b_e)_{e \in E}$ in~$\scrB$,
+                    \item if an~$E$-tuple $(b_e)_{e \in E}$ in~$\scrB$,
                             which is `square summable'
                             in the sense that the partial sums
                             of~$\sum_{e \in E} b_e^*b_e$ are bounded,
@@ -1003,9 +1003,85 @@ Hence~$x'=0$. Thus~$x = \sum_{e \in E} e\left<e,x\right>$ as desired.
     By \TODO{} $(\left<e, x_\alpha\right>)_\alpha$ is an ultrastrong-Cauchy net.
     As von Neumann algebras are ultrastrongly complete
     (see \sref{vn-complete})
-        there is an~$b_e \in \scrB$
+        there is a~$b_e \in \scrB$
             to which~$\left<e,x_\alpha\right>$ converges ultrastrongly.
-            \TODO{finish}
+    We will show~$x_\alpha$ converges in the ultranorm uniformity
+        to~$\sum_{e \in E} e b_e$.
+
+    First we will show~$\sum_{e \in E} e b_e$ converges to
+        begin with.
+    As ultraweakly-bounded nets are norm bounded, see \TODO{},
+        it is sufficient to show~$\sum_{e\in E} f( b_e^*b_e ) $ is bounded
+        for each np-map~$f\colon \scrB \to \C$.
+    For any~$e \in E$
+    we have~$\|b_e\|_f = \lim_\alpha \|\left<e,x_\alpha\right>\|_f$
+    and so~$f(b_e^*b_e) =\lim_\alpha f(\left<x_\alpha,e\right> \left<e, x_\alpha\right>)$.
+    Pick a finite subset~$S \subseteq E$. Then we have
+ \begin{align*}
+    f\bigl(\sum_{e \in S} b_e^*b_e\bigr)
+    &= \sum_{e \in S} \lim_\alpha 
+     f(\left<x_\alpha,e\right> \left<e, x_\alpha\right>) \\
+     & = \lim_\alpha 
+            f\bigl(\sum_{e \in S}\left<x_\alpha,e\right>
+                \left<e, x_\alpha\right>\bigr) \\
+            &\leq f(\left<x_\alpha,x_\alpha\right>).
+ \end{align*}
+As~$x_\alpha$ is ultranorm Cauchy,
+the sequence~$f(\left<x_\alpha,x_\alpha\right>)$
+    must be Cauchy and so bounded.
+Hence~$\sum_{e \in E} e b_e$ converges in the ultranorm uniformity.
+
+To prove~$x_\alpha$ converges to~$\sum_{e \in E} e b_e$,
+    pick any~$\varepsilon > 0$
+        and np-map $f\colon \scrB \to \C$.
+We want to find~$\alpha_0$
+    such that~$\| x_\alpha - \sum_{e \in E} e b_e\|_f \leq \varepsilon$
+        for all~$\alpha \geq \alpha_0$.
+As~$(x_\alpha)_\alpha$ is ultranorm Cauchy,
+we can pick an~$\alpha_0$
+such that~$\| x_\alpha - x_\beta \|_f \leq \frac{1}{2\sqrt{2}} \varepsilon$
+for all~$\alpha,\beta \geq \alpha_0$.
+As~$x_\alpha = \sum_{e \in E} e \left<e,x_\alpha\right>$
+we find with Parseval's identity
+\begin{equation*}
+    \bigl\| x_\alpha - \sum_{e \in E} eb_e \bigr\|_f^2
+    = \bigl\| \sum_{e \in E} e(\left<e, x_\alpha\right> - b_e) \bigr\|_f^2
+    = \sum_{e \in E}\| \left<e, x_\alpha\right> - b_e \|_f^2.
+\end{equation*}
+Take a finite subset~$S \subseteq E$
+such that
+    $\sum_{e \in E - S}\| \left<e, x_\alpha\right> - b_e \|_f^2 \leq
+        \frac{1}{2}\varepsilon^2$.
+If we can also show
+    $\sum_{e \in  S}\| \left<e, x_\alpha\right> - b_e \|_f^2 \leq
+        \frac{1}{2}\varepsilon^2$,
+        then we are done.
+For any~$\beta \geq \alpha$
+    we have using the triangle inequality of~$\|\,\cdot\,\|_f$
+        on~$X$
+\begin{align*}
+    \Bigl(\sum_{e \in S}\| \left<e, x_\alpha\right>
+        - b_e \|_f^2\Bigr)^{\frac{1}{2}}
+        &= \bigl\|\sum_{e \in S} e\left<e, x_\alpha\right> - eb_e \bigr\|_f\\
+        &\leq \bigl\|\sum_{e \in S} e\left<e, x_\alpha-x_\beta\right> \bigr\|_f\
+        +\bigl\|\sum_{e \in S} e\left<e, x_\beta\right> - eb_e \bigr\|_f\\
+        &= \Bigl( \sum_{e \in S}\|\left<e, x_\alpha-x_\beta\right> \|_f^2 \Bigr)^{\frac{1}{2}}
+        +\Bigl(\sum_{e \in S}\| \left<e, x_\beta\right> - b_e \|_f^2
+        \Bigr)^{\frac{1}{2}}.
+\end{align*}
+We want to show the previous is bounded by~$\frac{1}{\sqrt{2}}\varepsilon$.
+We bound the two terms separately.
+For the first term using Bessel's
+inequality and our choice of~$\alpha_0$
+we have
+$\sum_{e \in S}\|\left<e, x_\alpha-x_\beta\right> \|_f^2 
+\leq \|x_\alpha - x_\beta\|^2_f \leq \bigl(\frac{1}{2\sqrt{2}}\varepsilon\bigr)^2.$
+As~$\|\left<e,x_\beta\right> - b_e\|_f$
+vanishes for each~$e \in S$ and~$S$ is finite,
+we can find sufficiently large~$\beta$
+such that the right term is also bounded by~$\frac{1}{2\sqrt{2}}\varepsilon$.
+Thus~$x_\alpha$ converges in the ultranorm uniformity
+to~$\sum_{e \in E} e b_e$, as desired.
 \end{point}
 \begin{point}{2 $\Rightarrow$ 4, completeness implies basis}%
     Follows from~3 $\Rightarrow$ 4.
@@ -1064,6 +1140,77 @@ to find~$ \| \sum_{e\in S}e \tau(e)^*\| \leq \|\tau\|$ as desired. \qed
 \end{parsec}
 \begin{parsec}%
 \begin{point}%
+Let~$\scrB$ be a von Neumann algebra
+and~$V$ a right~$\scrB$-module with~$\scrB$-valued
+    inner product~$[\,\cdot\,,\,\cdot\,]$.
+We want to complete~$V$ into a self-dual Hilbert~$\scrB$-module.
+By the previous theorem
+    one would expect that
+    one can simply extend the inner product of~$V$
+    to its ultranorm completion~$\overline{V}$,
+    which will be self-dual.
+It will turn out that~$\overline{V}$
+    is indeed a self-dual Hilbert $\scrB$-module,
+    but it isn't clear at all
+    how to define an inner product on~$\overline{V}$ directly.
+We will sketch the indirect construction,
+    before delving into the details.
+As with a metric completion,
+    $\overline{V}$ consists of equivalence classes of Cauchy-nets in~$V$.
+Let~$V_0\subseteq \overline{V}$
+    denote the equivalence classes of constant Cauchy nets.
+$V_0$ is a right-$\scrB$-module with~$\scrB$-valued inner product
+    using the operations of~$V$.
+Let~$V_1\subseteq \overline{V}$ denote
+    the limits of norm-bounded Cauchy nets over~$V_0$.
+Using the norm boundedness we can extend
+    the module structure and inner product of~$V\cong V_0$ to~$V_1$.
+If all norm-bounded Cauchy-nets over~$V_1$ would
+    converge in~$V_1$,
+    then~$V_1$ would be a self-dual Hilbert~$\scrB$-module
+    and~$V_1$ would even be ultranorm complete.
+Unfortunately it's also not clear if~$V_1$ is ultranorm complete.
+Instead, we repeat: let~$V_2 \subseteq \overline{V}$
+    denote the limits of norm-bounded Cauchy nets over~$V_1$.
+We have to go further:
+    for any~$n \in \N$
+    define~$V_{n+1} = \sigma(V_n)$
+    where $\sigma(U)\subseteq \overline{V}$
+    denotes the limits of norm-bounded Cauchy over~$U$.
+\begin{equation*}
+   V \cong V_0 \ \subseteq \ V_1 \ \subseteq\  V_2\  \subseteq\  V_3 \ \subseteq \ \cdots\ \subseteq \ \bigcup_{n \in \N} V_n.
+\end{equation*}
+Will~$\bigcup_n V_n$ finally be complete?
+It's not clear.
+We have to go even further.
+Define~$V_\omega = \sigma(\bigcup_{n \in \N} V_n)$,
+$V_{\omega+1} = \sigma(V_\omega)$
+and so on:
+for any non-zero ordinal number~$\alpha$
+    define~$V_\alpha = \sigma(\bigcup_{\beta < \alpha} V_\beta)$.
+Now~$V_\alpha$
+    is an ascending sequence of subsets of~$\overline{V}$.
+    Thus~$V_{\alpha_0} = V_{{\alpha_0}+1}$
+for some~$\alpha_0 \leq |2^{\overline{V}}|$
+(for otherwise~$|2^{\overline{V}}| \leq |\overline{V}|$).
+Thus norm-bounded Cauchy nets in~$V_{\alpha_0}$
+    must converge.
+We will see that at each step we can extend the module structure
+    and inner product and with those~$V_{\alpha_0}$ is self-dual.
+    Thus~$V_{\alpha_0}$ is ultranorm complete
+    and actually~$V_{\alpha_0} = \overline{V}$.
+\begin{equation*}
+   V \cong V_0 \subseteq V_1 \subseteq \cdots \subseteq V_\omega \subseteq
+   V_{\omega+1} \subseteq \cdots \subseteq V_{2\omega} \subseteq
+       \ \cdots\ 
+       \ \cdots\  \subseteq
+   V_{\alpha_0} = \overline{V}
+\end{equation*}
+    
+
+Define~$V_\omega = \sigma(\bigcup_{n \in \N} V_n)$,
+ $V_{\omega+1} = \sigma(V_\omega)$, \ldots.
+
 It is well known that a Hausdorff uniform space~$X$ can
     be embedded in a complete uniform space~$C$,
     see e.g.~\cite[Thm.~39.12]{willard}.
