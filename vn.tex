@@ -132,7 +132,7 @@ of~$\scrB(\ell^2)$ is not ultrastrongly compact
 by proving that $(\,\ketbra{0}{n}\,)_n$
 has no ultrastrongly-convergent subnet.
 
-(But we'll see in~\sref{ball-uw-compact} that
+(But we'll see in~\sref{vn-ball-compact} that
 the unit ball of a von Neumann algebra
 is ultraweakly compact.)
 
@@ -1877,6 +1877,38 @@ and~$\scrR$ is ultraweakly closed
 (= ultrastrongly closed, see~\sref{ultraclosed})
 in~$\scrB(\scrH)$,
 we see that~$\scrR$ is bounded ultraweakly complete.\qed
+\end{point}
+\end{point}
+\begin{point}[vn-ball-compact]{Theorem}%
+The ball $(\scrA)_1$
+of a von Neumann algebra~$\scrA$ is ultraweakly compact.
+\begin{point}{Proof}%
+Writing~$\Omega$ for
+the set of npu-maps $\omega\colon \scrA\to\C$,
+the map~$\kappa\colon \scrA\to \C^\Omega$
+given by~$\kappa(a)=(\omega(a))_\omega$ for all~$a\in\scrA$
+is clearly a linear homeomorphism from~$\scrA$ with the  ultraweak topology 
+onto~$\kappa(\scrA)\,\subseteq \C^\Omega$ endowed
+with the product topology.
+Since~$\kappa$ restricts
+to a isomorphism of uniform spaces
+$(\scrA)_1\to \kappa(\,(\scrA)_1\,)$,
+and $(\scrA)_1$ is ultraweakly complete 
+(being a norm-bounded ultraweakly-closed
+subset of the bounded ultraweakly complete space~$\scrA$,
+see~\sref{vn-complete}),
+we see that $\kappa(\,(\scrA)_1\,)$
+is complete,
+and thus closed in~$\C^\Omega$.
+Now note that~$\kappa(\,(\scrA)_1\,)$ is a closed subset 
+of the (by Tychonoff's theorem) compact
+space~$((\C)_1)^\Omega$, 
+because $\left|\omega(a)\right|\leq 1$ for all~$a\in(\scrA)_1$
+and $\omega\in\Omega$.
+But then~$\kappa(\,(\scrA)_1\,)$,
+being a closed subset of a compact Hausdorff space,
+is compact,
+and so $(\scrA)_1$ is compact too.\qed
 \end{point}
 \end{point}
 \end{parsec}
