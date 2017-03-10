@@ -672,7 +672,7 @@ The \Define{ultraweak uniformity} on~$\scrB$
 We are ready to define a uniformity for Hilbert $\scrB$-modules.
 \end{point}
 \end{point}
-\begin{point}{Definition}%
+\begin{point}[dils-ultranorm]{Definition}%
 Let~$\scrB$ be a von Neumann algebra.
 Assume~$X$ is a right-$\scrB$-module
     with~$\scrB$-valued inner product~$[\,\cdot\,,\,\cdot\,]$.
@@ -799,7 +799,7 @@ Conclude from \ref{ex-continuous-preserves-lims} and
 \end{point}
 \end{parsec}
 \begin{parsec}%
-\begin{point}{Theorem}%
+\begin{point}[dils-selfdual]{Theorem}%
     For a pre-Hilbert~$\scrB$-module~$X$,
         the following are equivalent.
         \begin{enumerate}
@@ -1140,11 +1140,26 @@ to find~$ \| \sum_{e\in S}e \tau(e)^*\| \leq \|\tau\|$ as desired. \qed
 \end{parsec}
 \begin{parsec}%
 \begin{point}%
+We continue with a generalization of
+\sref{prop-complete-into-hilbert-space}
+to~Hilbert C$^*$-modules,
+
+\end{point}
+\begin{point}{Theorem}%
 Let~$\scrB$ be a von Neumann algebra
 and~$V$ a right~$\scrB$-module with~$\scrB$-valued
     inner product~$[\,\cdot\,,\,\cdot\,]$.
-We want to complete~$V$ into a self-dual Hilbert~$\scrB$-module.
-By the previous theorem
+There is a self-dual Hilbert $\scrB$-module~$X$
+    together with a bounded~$\scrB$-linear~$\eta\colon V \to X$
+    such that \begin{inparaenum}
+    \item $[v,w] = \left<\eta (v),\eta(w)\right>$
+    and \item the image of~$\eta$ is ultranorm dense in~$X$.
+    \end{inparaenum}
+\begin{point}{Proof}%
+Before we start the proof proper,
+    we give an overview.
+\begin{point}{Overview}
+By~\sref{dils-selfdual}
     one would expect that
     one can simply extend the inner product of~$V$
     to its ultranorm completion~$\overline{V}$,
@@ -1156,7 +1171,7 @@ It will turn out that~$\overline{V}$
 We will sketch the indirect construction,
     before delving into the details.
 As with a metric completion,
-    $\overline{V}$ consists of equivalence classes of Cauchy-nets in~$V$.
+    $\overline{V}$ consists of equivalence classes of Cauchy nets in~$V$.
 Let~$V_0\subseteq \overline{V}$
     denote the equivalence classes of constant Cauchy nets.
 $V_0$ is a right-$\scrB$-module with~$\scrB$-valued inner product
@@ -1164,7 +1179,7 @@ $V_0$ is a right-$\scrB$-module with~$\scrB$-valued inner product
 Let~$V_1\subseteq \overline{V}$ denote
     the limits of norm-bounded Cauchy nets over~$V_0$.
 Using the norm boundedness we can extend
-    the module structure and inner product of~$V\cong V_0$ to~$V_1$.
+    the module structure and inner product of~$V_0$ to~$V_1$.
 If all norm-bounded Cauchy-nets over~$V_1$ would
     converge in~$V_1$,
     then~$V_1$ would be a self-dual Hilbert~$\scrB$-module
@@ -1178,7 +1193,7 @@ We have to go further:
     where $\sigma(U)\subseteq \overline{V}$
     denotes the limits of norm-bounded Cauchy over~$U$.
 \begin{equation*}
-   V \cong V_0 \ \subseteq \ V_1 \ \subseteq\  V_2\  \subseteq\  V_3 \ \subseteq \ \cdots\ \subseteq \ \bigcup_{n \in \N} V_n.
+   V_0 \ \subseteq \ V_1 \ \subseteq\  V_2\  \subseteq\  V_3 \ \subseteq \ \cdots\ \subseteq \ \bigcup_{n \in \N} V_n.
 \end{equation*}
 Will~$\bigcup_n V_n$ finally be complete?
 It's not clear.
@@ -1200,80 +1215,32 @@ We will see that at each step we can extend the module structure
     Thus~$V_{\alpha_0}$ is ultranorm complete
     and actually~$V_{\alpha_0} = \overline{V}$.
 \begin{equation*}
-   V \cong V_0 \subseteq V_1 \subseteq \cdots \subseteq V_\omega \subseteq
+   V_0 \subseteq V_1 \subseteq \cdots \subseteq V_\omega \subseteq
    V_{\omega+1} \subseteq \cdots \subseteq V_{2\omega} \subseteq
        \ \cdots\ 
        \ \cdots\  \subseteq
    V_{\alpha_0} = \overline{V}
 \end{equation*}
-    
-
-Define~$V_\omega = \sigma(\bigcup_{n \in \N} V_n)$,
- $V_{\omega+1} = \sigma(V_\omega)$, \ldots.
-
-It is well known that a Hausdorff uniform space~$X$ can
-    be embedded in a complete uniform space~$C$,
-    see e.g.~\cite[Thm.~39.12]{willard}.
-Call this embedding~$\eta\colon X \to C$.
-It comes with a extension theorem:
-    every uniformly continuous~$f\colon X \to Y$
-    to some complete Hausdorff uniformity~$Y$
-    can be uniquely lifted to a continuous
-    map~$g\colon C \to X$ such that~$g\after \eta = f$.
-The similar extension theorem
-    for metric spaces allowed us to extend
-    the inner product on a complex vector space
-    to its metric completion.
-Unfortunately, we could not find a suitable uniformity on~$\scrB$
-    which is complete.
-Luckily, we do not need full completeness.
 \end{point}
-\begin{point}{Theorem}%
-    Let~$\scrB$ be a von Neumann algebra.
-    Assume~$V$ is right-$\scrB$-module
-        with $\scrB$-valued inner product~$[\,\cdot\,,\,\,\cdot\,]$.
-    The family of seminorms on~$V$ given
-        by~$\|x\|_f = f([x,x])^{\frac{1}{2}}$
-        for np-maps~$f \colon \scrB \to \C$
-        turns~$V$ into a uniform space.
-    There is a self-dual Hilbert~$\scrB$-module~$X$
-        together with a uniformly continuous
-        $\scrB$-linear map~$\eta\colon V \to X$
-        such that
-        \begin{inparaenum}
-        \item
-        $[x,y] = \left<\eta(x),\eta(y)\right>$ and
-        \item
-            the image of~$V$ is dense in~$X$ with respect
-            to the uniformity.
-        \end{inparaenum}
-\begin{point}{Proof}%
-Let~$\Phi$ denote the set of entourages
-    generated by the seminorms~$\|\cdot\|_f$ on~$V$.
-Concretely:~$E \in \Phi$
-    if and only if
-    there is an~$\varepsilon > 0$, $n \in \N$
-    and np-maps~$f_1, \ldots, f_n\colon\scrB \to \C$
-    such that~$\| x-y\|_{f_i} \leq \varepsilon $
-    for~$1 \leq i \leq n$ implies~$x \mathrel{E} y$.
-\begin{point}{Fast and norm-bounded nets}%
-    The set of entourages~$\Phi$ is a filter
-        and thus can be used as index set for a net
-        using reverse inclusion as order.
-        Thus~$\varepsilon \geq \delta
-        \ \Leftrightarrow\ \varepsilon \subseteq \delta$.
+\begin{point}{$\overline{V}$: fast nets}%
+As we need some details in its construction,
+    we will explicitly define~$\overline{V}$,
+    the completion of~$V$ in the ultranorm uniformity
+    using Cauchy nets.
+There are other ways to construct a completion of a uniform space,
+    see for instance~\cite[Thm.~39.12]{willard}.
+
+Let~$\Phi$ denote the set of entourages of the ultranorm
+    uniformity on~$V$, for its definition see~\sref{dils-ultranorm}.
+$\Phi$ is a filter and thus can be used as index set for a net
+    using reverse inclusion as order.
+    (Thus~$\varepsilon \geq \delta
+    \ \Leftrightarrow\ \varepsilon \subseteq \delta$.)
 We say a net~$(x_\alpha)_{\alpha \in \Phi}$  indexed by entourages
     is \Define{fast} if for every~$\varepsilon \in \Phi$
         and~$\alpha,\beta \geq \varepsilon$
         we have~$x_\alpha \mathrel{\varepsilon^2} x_\beta$.
-A net~$(x_\alpha)_{\alpha \in I}$
-    is called \Define{norm-bounded}
-    whenever~$(\|x_\alpha\|)_{\alpha}$ is bounded
-    with~$\|x\| \equiv \| [x,x]\|^{\frac{1}{2}}$.
-We will construct~$X$ using equivalence classes of
-norm-bounded fast Cauchy nets in~$V$.
-\end{point}
-\begin{point}{Equivalent fast nets}%
+
 Every Cauchy net is equivalent to a fast one, but this is not as
         easy as in the metric case.
 Let~$(x_\alpha)_{\alpha \in I}$
@@ -1306,9 +1273,6 @@ x_{\gamma} \mathrel{\delta} x_{\alpha_{\delta}}$
 and so as~$\delta\subseteq \nicefrac{\varepsilon}{2}$
 we get~$x_\beta \mathrel\varepsilon x_{\alpha_\delta}$.
 
-Clearly if~$(x_{\alpha})_{\alpha \in I}$
-    is norm bounded,
-    then so is~$(x_{\alpha_{\varepsilon}})_{\varepsilon \in \Phi}$.
 If fast Cauchy nets~$(x_\alpha)_{\alpha \in \Phi}$
     and~$(y_\alpha)_{\alpha \in \Phi}$ are equivalent,
     we can find for every~$\varepsilon \in \Phi$
@@ -1316,10 +1280,11 @@ If fast Cauchy nets~$(x_\alpha)_{\alpha \in \Phi}$
     such that for all~$\gamma \geq \beta$
     we have~$x_\gamma \mathrel{\varepsilon} y_\gamma$.
 \end{point}
-\begin{point}{The uniform space~$N$}%
+\begin{point}{$\overline{V}$: the uniform space~$N$}%
 Write~$N$ for the set of norm-bounded fast Cauchy nets over~$V$.
-Later we will define~$X$ as~$N$ modulo equivalence.
-Because of a subtlety with the definition of the uniformity on~$X$ later,
+Later we will define~$\overline{V}$ as~$N$ modulo equivalence.
+Because of a subtlety with the definition of the uniformity
+    on~$\overline{V}$ later,
     it is helpful to consider~$N$ separately.
 Let~$\varepsilon \in \Phi$.
 For nets~$(x_\alpha)_{\alpha}$
@@ -1352,26 +1317,13 @@ Note~$(x_\alpha)_\alpha$ and~$(y_\alpha)_\alpha$
 are equivalent if and only if~$(x_\alpha)_\alpha \mathrel{\hat\varepsilon}
     (y_\alpha)_\alpha$ for all~$\varepsilon \in \Phi$.
 \end{point}
-\begin{point}{$N$ is uniformly-bounded complete}%
-The uniform space~$N$ might not be complete:
-    it is possible there are
-    Cauchy nets of norm-bounded Cauchy nets
-    which only tend to a Cauchy net which is not norm bounded.
-Also for Cauchy nets~$((x^\gamma_\alpha)_\alpha)_\gamma$ in~$N$ where
-$(\limsup_\alpha \|x^\gamma_\alpha\|)_\gamma$ is bounded
-        it is not clear whether they tend
-        to a norm-bounded Cauchy.
-For this proof,
-call a Cauchy net~$((x^\gamma_\alpha)_\alpha)_\gamma$ in~$N$
-    \Define{uniformly bounded}
-    if~$(x^\gamma_\alpha)_{\gamma,\alpha}$ is norm bounded in~$V$.
-We will show uniformly-bounded Cauchy nets in~$N$ converge.
-As every uniformly-bounded Cauchy net is equivalent to a fast one,
-it is sufficient to show convergence of uniformly-bounded fast Cauchy nets.
+\begin{point}{$\overline{V}$: $N$ is complete}%
+As every Cauchy net is equivalent to a fast one,
+it is sufficient to show convergence of fast Cauchy nets.
 Thus let~$((x^\gamma_\alpha)_\alpha)_\gamma$
-    be a uniformly-bounded fast Cauchy net in~$N$.
+    be a fast Cauchy net in~$N$.
 First we will show~$(x^{\hat\alpha}_\alpha)_\alpha$
-    is a uniformly-bounded Cauchy net.
+    is a Cauchy net.
 It might not be fast, so
     formally~$((x^\gamma_\alpha)_\alpha)_\gamma$
     cannot converge to it,
@@ -1397,8 +1349,7 @@ Then we have $ x^{\hat{\alpha}}_\alpha
             \mathrel{\varepsilon^2}
             x^{\hat{\beta}}_\beta$ and so~$(x_\alpha^{\hat\alpha})_\alpha$
             is Cauchy.
-Clearly it's norm bounded.
-Let~$(y_\alpha)_\alpha$ be a norm-bounded fast Cauchy net equivalent
+Let~$(y_\alpha)_\alpha$ be a fast Cauchy net equivalent
 to~$(x^{\hat\alpha}_\alpha)_\alpha$.
 We want to prove~$(x^\gamma_\alpha)_\alpha \to (y_\alpha)_\alpha$.
 As~$(y_\alpha)_\alpha$ is equivalent to~$(x^{\hat\alpha}_\alpha)_\alpha$
@@ -1433,8 +1384,16 @@ Thus~$(y_\alpha)_\alpha \mathrel{\hat\varepsilon} (x^\gamma_\alpha)_\alpha$
 whenever~$\gamma \geq \widehat{\nicefrac{\varepsilon}{8}}$,
 so~$(x^\gamma_\alpha)_\alpha \to (y_\alpha)_\alpha$.
 \end{point}
-\begin{point}{The uniform space~$X$}%
-Let~$X$ be the set of norm-bounded fast Cauchy nets modulo equivalence.
+\begin{point}{$\overline{V}$: uniformity}%
+Let~$\overline{V}$ be the set of fast Cauchy nets over~$V$
+    modulo equivalence.
+Write~$\eta\colon V \to \overline{V}$
+for the map that sends~$x \in V$
+to the equivalence class of the constant Cauchy net~$(x)_{\alpha \in \Phi}$.
+For brevity, we may write~$\hat{x} = \eta(x)$.
+Define~$V_0 = \eta(V)$.
+
+What uniformity to put on~$\overline{V}$?
 Unfortunately the relations~$\hat\varepsilon$ do not necessarily preserve
     equivalence of Cauchy nets:
     there might be~$(x_\alpha)_\alpha \sim (x'_\alpha)_\alpha$
@@ -1442,7 +1401,8 @@ Unfortunately the relations~$\hat\varepsilon$ do not necessarily preserve
 such that~$(x_\alpha)_\alpha \mathrel{\hat\varepsilon} (y_\alpha)_\alpha$,
 but not~$(x'_\alpha)_\alpha \mathrel{\hat\varepsilon} (y'_\alpha)_\alpha$
 for some~$\varepsilon \in \Phi$.
-Instead define for~$\varepsilon \in \Phi$:
+Instead we define for any~$\varepsilon \in \Phi$
+the followowing entourages on~$\overline{V}$:
 \begin{equation*}
     (x_\alpha)_\alpha \mathrel{\Define{\tilde\varepsilon}}
     (y_\alpha)_\alpha \quad\Leftrightarrow\quad
@@ -1453,40 +1413,31 @@ Instead define for~$\varepsilon \in \Phi$:
     and $(y'_\alpha)_\alpha \sim (y_\alpha)_\alpha$.}
 \end{equation*}
 By definition~$\tilde\varepsilon$
-    respects equivalence and so is also a relation on~$X$.
+respects equivalence and so is also a relation on~$\overline{V}$.
 It is not hard to verify~$\{ \tilde\varepsilon ;\ \varepsilon \in \Phi\}$
-is a subbase for~$X$
+is a subbase for~$\overline{V}$
 and~$\widetilde{\varepsilon_1 \cap \varepsilon_2} = \tilde{\varepsilon}_1
 \cap \tilde{\varepsilon}_2$.
-By construction~$X$ is a Hausdorff uniform space.
-Write~$\tilde\Phi$ for the generated set of entourages on~$X$.
-The entourages of~$X$ are exactly those relations
+By construction~$\overline{V}$ is a Hausdorff uniform space.
+Write~$\tilde\Phi$ for the generated set of entourages on~$\overline{V}$.
+The entourages of~$\overline{V}$ are exactly those relations
     which have some~$\tilde\varepsilon$
     as a subset.
+
 Furthermore, if~$(x_\alpha)_\alpha \mathrel{\hat\varepsilon}
 (y_\alpha)_\alpha $,
 then~$(x_\alpha)_\alpha \mathrel{\tilde\varepsilon^3} (y_\alpha)_\alpha$.
+Thus if a net~$(x^\gamma_\alpha)_\alpha$
+converges to~$(y_\alpha)_\alpha$ in~$N$,
+then so do their equivalence classes in~$\overline{V}$.
+Hence~$\overline{V}$ is complete.
+(The inclusion~$\hat\varepsilon \subseteq \tilde\varepsilon^3 \subseteq
+        \hat\varepsilon^3$
+        implies the~$\hat\varepsilon$ and~$\tilde\varepsilon$
+        generate the same uniformity on~$N$.)
 \end{point}
-\begin{point}{$\eta$ has dense range}%
-Let~$\eta\colon V \to X$
-be the map that sends~$x \in V$
-to the equivalence class of the constant Cauchy net~$(x)_{\alpha \in \Phi}$.
-To show the image of~$\eta$ is dense,
-    assume~$(x_\alpha)_\alpha$
-    is a representative for an element in~$X$
-    and~$\varepsilon \in \tilde\Phi$.
-There is some~$\delta \in \Phi$ with~$\tilde\delta \subseteq \varepsilon$.
-As~$(x_\alpha)_\alpha$ is fast,
-we have~$x_{\nicefrac{\delta}{8}} \mathrel{\nicefrac{\delta}{4}} x_\alpha$
-for all~$\alpha \geq \nicefrac{\delta}{8}$.
-Thus~$(x_{\nicefrac{\delta}{8}})_\alpha \mathrel{\widehat{\nicefrac{\delta}{4}}}
-    (x_\alpha)_\alpha$
-    and so~$(x_{\nicefrac{\delta}{8}})_\alpha \mathrel{\widetilde{\nicefrac{\delta}{4}}^3}
-    (x_\alpha)_\alpha$ hence~$\eta(x_{\nicefrac{\delta}{8}}) \mathrel{\varepsilon}
-    (x_\alpha)_\alpha$, as desired.
-\end{point}
-\begin{point}{$X$ is a right-$\scrB$-module}%
-    First we will define an addition on~$X$.
+\begin{point}{$\overline{V}$ is a right-$\scrB$-module}%
+    First we will define an addition on~$\overline{V}$.
     The addition on~$V$ is uniformly continuous
         as the uniformity on~$V$ is given by seminorms.
     (See \sref{dils-product-uniformity} for the uniformity on~$V^2$.)
@@ -1499,9 +1450,8 @@ Thus~$(x_{\nicefrac{\delta}{8}})_\alpha \mathrel{\widehat{\nicefrac{\delta}{4}}}
     and~$(y_\alpha)_\alpha \sim (y'_\alpha)_\alpha$,
     then~$(x_\alpha+y_\alpha)_\alpha \sim
             (x'_\alpha+y'_\alpha)_\alpha$.
-    Clearly~$(x_\alpha+y_\alpha)_\alpha$
-        is uniformly bounded and thus has an element in~$N$ equivalent to it.
-    This fixes an addition on~$X$,
+    There is a net in~$N$ equivalent to $(x_\alpha+y_\alpha)_\alpha$.
+    This fixes an addition on~$\overline{V}$,
         which turns it into an abelian group.
         By construction~$\eta(x+y) = \eta(x)+\eta(y)$.
 
@@ -1515,25 +1465,66 @@ and~$\varepsilon > 0$.
 For any np-map~$f\colon \scrB \to \C$,
     the map~$b*f$ given by~$(b * f)(x) \equiv f(b^* x b)$ is also an np-map.
     \TODO{}. 
-    Clearly~$\|xb\|_f = f([xb,xb]) = f(b^* [x,x] b) = \|x\|_{b*f}$
+    Clearly~$\|xb\|_f = f([xb,xb])^{\frac{1}{2}}
+    = f(b^* [x,x] b)^{\frac{1}{2}} = \|x\|_{b*f}$
     for any~$x \in V$.
 Thus if~$\|x-y\|_{b*f_i} \leq \varepsilon$ for~$1 \leq i \leq n$,
 then~$\|xb-yb\|_{f_i} = \|x-y\|_{b*f_i} \leq \varepsilon$
 as well. Hence~$r_b$ is uniformly continuous.
-As before, this uniform continuity together
-with the fact~$r_b$ sends uniformly-bounded Cauchy nets
-to uniformly-bounded Cauchy nets allows us
-to define a right~$\scrB$-action on~$X$
+As before, this uniform continuity
+allows us to define a right~$\scrB$-action on~$\overline{V}$
 by sending the equivalence class of~$(x_\alpha)_\alpha$
 to~$(x_\alpha b)_\alpha$. By definition~$\eta(x)b = \eta(xb)$.
-It is straight-forward to check this turns~$X$ into a right-$\scrB$-module.
+It is straight-forward to check this turns~$\overline{V}$
+into a right-$\scrB$-module.
 \end{point}
-\begin{point}{$X$ is a pre-Hilbert~$\scrB$-module}%
-For an np-map~$f\colon \scrB \to \C$
-write~$[x,y]_f \equiv f([x,y])$.
-As~$f$ is positive, this defines an inner product on~$V$.
-Assume~$(x_\alpha)_\alpha$ and~$(y_\alpha)_\alpha$
-    are~$\Phi$-indexed norm-bounded Cauchy nets in~$V$.
+\begin{point}{Induction set-up}%
+The majority of the remaining work is to show
+    we can define an inner product on~$\overline{V}$.
+As sketched earlier,
+    we will extend the inner product
+    from~$V_0$ step-by-step.
+Call a subset~$W \subseteq \overline{V}$
+together with a~$\scrB$-valued inner product~$[\,\cdot\,,\,\cdot\,]$ a
+    \Define{compatible extension} if
+\begin{inparaenum}
+\item $V_0 \subseteq W$;
+\item $W$ is a submodule of~$\overline{V}$;
+\item the inner product turns~$W$ into a pre-Hilbert $\scrB$-module \emph{and}
+\item the uniformity on~$W$ induced by~$V$ is the ultranorm uniformity on~$W$.
+\end{inparaenum}
+\end{point}
+\begin{point}{Base case}%
+    The inner product of~$V$ lifts to~$V_0$.
+    Indeed, $\eta(x) = 0$ if and only if~$\| x\| = 0$.
+    So by Cauchy--Schwarz~$[x,y] = 0$ whenever~$\eta(x)=0$.
+    Thus~$[x,y] = [x',y']$
+        whenever~$\eta(x)=\eta(x')$
+        and~$\eta(y)=\eta(y')$.
+    Define~$[\eta(x),\eta(y)] = [x,y]$.
+    It's easy to see~$V_0$ is a pre-Hilbert~$\scrB$-submodule of~$\overline{V}$
+        and the uniformity on~$V_0$ induced by~$\overline{V}$ is
+        the ultranorm uniformity on~$V_0$.
+    We have shown~$V_0$ is a compatible extension.
+\end{point}
+\begin{point}{Induction step}%
+Assume~$W\subseteq \overline{V}$ with~$[\,\cdot\,,\,\,\cdot\,]$
+    is a compatible extension.
+Write~$\Define{\sigma(W)}$ for the limits of norm-bounded Cauchy nets over~$W$.
+We will define a~$\scrB$-valued inner product on~$\sigma(W)$
+    that turns it into a compatible extension.
+By assumption the induced uniformity on~$W$
+    is the ultranorm uniformity
+    and so addition and the~$\scrB$-action
+    are uniformly continuous.
+Hence~$\sigma(W)$ is again a submodule.
+
+To define the inner product,
+assume~$x,y \in \sigma(W)$.
+There are~$\Phi$-indexed norm-bounded Cauchy
+    nets~$(x_\alpha)_\alpha$ and~$(y_\alpha)_\alpha$
+    over~$W$
+    such that~$x_\alpha \to x$ and~$y_\alpha \to y$.
 For any np-map $f\colon \scrB \to \C$ we have
     by Cauchy--Schwarz
 \begin{align*}\label{eq-dils-V-inprod-cauchy}
@@ -1553,17 +1544,13 @@ it follows~$([x_\alpha,y_\alpha])_\alpha$
     see \sref{dils-uniformity-examples}.
 As~$\|[x_\alpha,y_\alpha]\| \leq \|x_\alpha\| \|y_\alpha\|$,
     see \TODO{}, it is also a norm-bounded net.
-By \TODO{} norm-bounded Cauchy net in the ultraweak uniformity
-    converge, so we may define
-\begin{equation*}
-    \bigl<(x_\alpha)_\alpha, (y_\beta)_\beta\bigr>
-    \ \equiv\  \uwlim_{\alpha} \,[x_\alpha,y_\alpha].
-\end{equation*}
-Assume we are given~$\Phi$-indexed
-norm-bounded Cauchy-nets~$(x')_\alpha$ and~$(y')_\alpha$
-with~$ (x'_\alpha)_\alpha \sim
-(x_\alpha)_\alpha$ and~$ (y'_\alpha)_\alpha \sim
-(y_\alpha)_\alpha$.
+By \sref{vn-complete} norm-bounded Cauchy net in the ultraweak uniformity
+converge, so~$\uwlim_\alpha [x_\alpha,y_\alpha]$ exists.
+
+Assume we are given other~$\Phi$-indexed
+norm-bounded Cauchy-nets~$(x')_\alpha$ and~$(y')_\alpha$ over~$W$
+with~$ (x'_\alpha)_\alpha \to x$
+and~$ (y'_\alpha)_\alpha \to y$.
 Then, like \eqref{eq-dils-V-inprod-cauchy}:
 \begin{align*}
     \bigl|f([x_\alpha, y_\alpha] - [x'_\alpha,y'_\alpha])\bigr|
@@ -1572,48 +1559,53 @@ Then, like \eqref{eq-dils-V-inprod-cauchy}:
     &\  \leq\  \|x_\alpha\|_f \|y_\alpha - y'_\alpha\|_f
         + \|x_\alpha - x'_\alpha\|_f \| y'_\alpha \|_f.
 \end{align*}
-From this it follows
-    $\left<(x_\alpha)_\alpha, (y_\beta)_\beta\right> =
-    \langle(x'_\alpha)_\alpha, (y'_\beta)_\beta\rangle$.
-Thus~$\left<\,\cdot\,,\,\cdot\,\right>$
-    is defined on~$X$.
+From this it follows~$ \uwlim_\alpha [x_\alpha,y_\alpha]=
+    \uwlim_\alpha [x'_\alpha,y'_\alpha]$.
+We are justified to define
+\begin{equation*}
+    [x,y] \ \equiv\  \uwlim_{\alpha} \,[x_\alpha,y_\alpha].
+\end{equation*}
 
-Assume~$(x_\alpha)_\alpha$,
-    $(y_\alpha)_\alpha$ and
-    $(z_\alpha)_\alpha$ are representatives of elements of~$X$.
-    Let~$(t_\alpha)_\alpha$
-    be an element of~$N$ equivalent to
-    $(y_\alpha + z_\alpha)_\alpha$,
-    that is: a representative of the sum of
-    $(y_\alpha)_\alpha$ and $(z_\alpha)_\alpha$ in~$X$.
-    Clearly
-    $[x_\alpha,y_\alpha+ z_\alpha] =
-    [x_\alpha, y_\alpha] + [x_\alpha, z_\alpha]$
-    and so by the ultraweak continuity of addition, see \TODO{},
-    we have
-    \begin{equation*}
-    \uwlim_\alpha [x_\alpha,t_\alpha]
-    =\uwlim_\alpha [x_\alpha, y_\alpha] + [x_\alpha, z_\alpha]
-    =\uwlim_\alpha [x_\alpha, y_\alpha] + \uwlim_\alpha [x_\alpha, z_\alpha].
-    \end{equation*}
-    Thus~$\left<\,\cdot\,,\,\cdot\,\right>$
-        is linear in the right argument.
-    In a similar fashion one proves the other axioms
-        for a~$\scrB$-valued inner product:
-        $\left<\tau,\sigma\right>=\left<\sigma,\tau\right>^*$
-        follows from the ultraweak continuity of~$(\,\cdot\,)^*$, see \TODO{};
-       $\scrB$-linearity in the right argument
-       follows from the ultraweak continuity
-       of~$c \mapsto cb$ in~$\scrB$,  see \TODO{} \emph{and}
-       $\left<\tau,\tau\right>\geq 0$
-       follows from ultraweak-closedness of the positive cone of~$\scrB$.
+Assume~$x,y,z \in \sigma(W)$.
+Pick $\Phi$-indexed
+norm-bounded Cauchy nets
+$(x_\alpha)_\alpha$, $(y_\alpha)_\alpha$ and $(z_\alpha)_\alpha$ over~$W$
+with~$x_\alpha \to x$, $y_\alpha \to y$ and~$z_\alpha \to z$ in~$\overline{V}$.
+So~$x_\alpha+ y_\alpha \to x + y.$
+With ultraweak continuity of addition
+\begin{equation*}
+    [x+y,z] = \uwlim_\alpha [x_\alpha +y_\alpha, z_\alpha]
+        = \uwlim_\alpha [x_\alpha, z_\alpha] +
+                \uwlim_\alpha [y_\alpha, z_\alpha]
+                = [x,z] + [y,z].
+\end{equation*}
+In a similar fashion one proves the other axioms of
+    a~$\scrB$-valued inner product:
+    $[x,y]=[y,x]^*$ follows from the ultraweak continuity of~$(\cdot)^*$,
+    see \TODO{}; $\scrB$-homogeinity follows from
+        ultraweak continuity of~$c \mapsto cb$ (see \sref{mult-uws-cont})
+        \emph{and}~$[x,x]\geq 0$ follows from ultraweak-closedness of the
+        positive cone of~$\scrB$.
 
-    Assume~$\left<\tau,\tau\right> = 0$ for some~$\tau \in X$.
-    Let~$(x_\alpha)_\alpha$ be a representative for~$\tau$.
-    Then for any np-map~$f\colon \scrB \to \C$
-    we have~$0 = f(\left<(x_\alpha)_\alpha,(x_\alpha)_\alpha\right>)
-    = \lim_\alpha \|x_\alpha\|^2_f$ and so~$\tau = 0$.
-    We have shown~$\left<\,\cdot\,,\,\cdot\,\right>$ is definite.
+To prove definiteness, assume~$[x,x]=0$.
+    Pick some $\Phi$-indexed norm-bounded
+        Cauchy net~$(x_\alpha)_\alpha$ over~$W$
+        with~$x_\alpha \to x$.
+For any np-map~$f\colon \scrB \to \C$
+we have
+\begin{equation*}
+        \lim_\alpha f([x_\alpha,x_\alpha])
+        = f(\uwlim_\alpha [x_\alpha,x_\alpha])
+        = f([x,x]) = 0.
+\end{equation*}
+Thus~$x_\alpha$ converges in the ultranorm uniformity on~$W$ to~$0$.
+Hence~$x=0$.
+
+Thus~$\sigma(W)$ is a pre-Hilbert~$\scrB$-module.
+It only remains to be shown
+    the ultranorm uniformity on~$\sigma(W)$
+    coincides with the uniformity induced by~$\overline{V}$.
+
 \end{point}
 \begin{point}{Self duality: preparation}%
     Assume~$T\colon X \to \scrB$ is a~$\scrB$-linear map.
