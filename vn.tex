@@ -1912,6 +1912,68 @@ and so $(\scrA)_1$ is compact too.\qed
 \end{point}
 \end{point}
 \end{parsec}
+\section{Normal functionals}
+\begin{parsec}%
+\begin{point}%
+To get a better handle on the normal positive functionals
+on a von Neumann algebra,
+we first analyse the the not-necessarily-positive normal functionals
+in greater detail.
+\end{point}
+\begin{point}{Lemma}%
+A linear map $f\colon \scrA\to \C$
+on a $C^*$-algebra~$\scrA$
+is positive iff $\|f\|\leq f(1)$.
+\begin{point}{Proof}%
+(Based on Theorem 4.3.2 of~\cite{kr}.)
+
+Since the statement is clearly true for the zero functional,
+we may assume that~$f\neq 0$, that is, $\|f\|\neq 0$.
+The resulting
+problem is  easily reduced
+to the case that~$f$ is unital
+(by replacing~$f$ by~$\|f\|^{-1}f $), so we'll assume that $f(1)=1$.
+
+\begin{point}{$f$ positive $\implies$ $\|f\|\leq 1$}%
+This follows
+immediately from~\sref{cp-russo-dye} and~\sref{cp-commutative},
+but here's a concrete proof:
+Let~$a\in \scrA$ be given.
+Pick~$\lambda\in \C$ with $\left|\lambda\right|=1$
+and~$\lambda f(a)\geq 0$.
+Then $\left|f(a)\right|=f(\lambda a) 
+= \Real{f(\lambda a)}
+= f(\Real{(\lambda a)})
+\leq f(\|a\|)=\|a\|$,
+because $\Real{(\lambda a)}
+\leq \|\Real{(\lambda a)}\|
+\leq \|\lambda a\|=\|a\|$,
+and $f$ is positive.
+Hence~$\|f\|\leq 1$.
+\end{point}
+\begin{point}{$\|f\|\leq 1$ $\implies$ $f$ is positive}%
+Let~$a\in [0,1]_\scrA$ be given.
+To prove that~$f$ is positive, it suffices to show that $f(a)\geq 0$.
+Since $(\Real{f(a)})^\perp
+=\Real{(f(a)^\perp)}
+\leq \left|f(a)^\perp \right|
+=\left|f(a^\perp)\right|\leq 1$,
+and therefore $\Real{f(a)}\geq 0$,
+we just need to show that~$\Imag{f(a)}=0$.
+
+The trick is to consider $b_n := (a - \Real{f(a)})+in\Imag{f(a)}$.
+Indeed, since $(n+1)^2(\Imag{f(a)})^2
+= \|f(b_n)\|^2 \leq \|b_n\|^2 = 
+\|b_n^*b_n\| \leq \|a-\Real{f(a)}\|^2 + n^2(\Imag{f(a)})^2$,
+one sees that $(2n+1)(\Imag{f(a)})^2\leq \|a-\Real{f(a)}\|^2$
+for all~$n$,
+which is impossible unless~$(\Imag{f(a)})^2=0$,
+that is, $\Imag{f(a)}=0$.\qed
+\end{point}
+\end{point}
+\end{point}
+
+\end{parsec}
 
 
 
