@@ -672,7 +672,7 @@ The \Define{ultraweak uniformity} on~$\scrB$
 We are ready to define a uniformity for Hilbert $\scrB$-modules.
 \end{point}
 \end{point}
-\begin{point}{Definition}%
+\begin{point}[dils-ultranorm]{Definition}%
 Let~$\scrB$ be a von Neumann algebra.
 Assume~$X$ is a right-$\scrB$-module
     with~$\scrB$-valued inner product~$[\,\cdot\,,\,\cdot\,]$.
@@ -799,7 +799,7 @@ Conclude from \ref{ex-continuous-preserves-lims} and
 \end{point}
 \end{parsec}
 \begin{parsec}%
-\begin{point}{Theorem}%
+\begin{point}[dils-selfdual]{Theorem}%
     For a pre-Hilbert~$\scrB$-module~$X$,
         the following are equivalent.
         \begin{enumerate}
@@ -1140,11 +1140,26 @@ to find~$ \| \sum_{e\in S}e \tau(e)^*\| \leq \|\tau\|$ as desired. \qed
 \end{parsec}
 \begin{parsec}%
 \begin{point}%
+We continue with a generalization of
+\sref{prop-complete-into-hilbert-space}
+to~Hilbert C$^*$-modules,
+
+\end{point}
+\begin{point}{Theorem}%
 Let~$\scrB$ be a von Neumann algebra
 and~$V$ a right~$\scrB$-module with~$\scrB$-valued
     inner product~$[\,\cdot\,,\,\cdot\,]$.
-We want to complete~$V$ into a self-dual Hilbert~$\scrB$-module.
-By the previous theorem
+There is a self-dual Hilbert $\scrB$-module~$X$
+    together with a bounded~$\scrB$-linear~$\eta\colon V \to X$
+    such that \begin{inparaenum}
+    \item $[v,w] = \left<\eta (v),\eta(w)\right>$
+    and \item the image of~$\eta$ is ultranorm dense in~$X$.
+    \end{inparaenum}
+\begin{point}{Proof}%
+Before we start the proof proper,
+    we give an overview.
+\begin{point}{Overview}
+By~\sref{dils-selfdual}
     one would expect that
     one can simply extend the inner product of~$V$
     to its ultranorm completion~$\overline{V}$,
@@ -1206,27 +1221,28 @@ We will see that at each step we can extend the module structure
        \ \cdots\  \subseteq
    V_{\alpha_0} = \overline{V}
 \end{equation*}
-    
+\end{point}
+\begin{point}{Uniform completion~$\overline{V}$}%
+As we need some details in its construction,
+    we will explicitly define~$\overline{V}$,
+    the completion of~$V$ in the ultranorm uniformity
+    using Cauchy nets.
+There are other ways to construct a completion of a uniform space,
+    see for instance~\cite[Thm.~39.12]{willard}.
 
-Define~$V_\omega = \sigma(\bigcup_{n \in \N} V_n)$,
- $V_{\omega+1} = \sigma(V_\omega)$, \ldots.
+Let~$\Phi$ denote the set of entourages of the ultranorm
+    uniformity on~$V$, for its definition see~\sref{dils-ultranorm}.
+$\Phi$ is a filter and thus can be used as index set for a net
+    using reverse inclusion as order.
+    (Thus~$\varepsilon \geq \delta
+    \ \Leftrightarrow\ \varepsilon \subseteq \delta$.)
+We say a net~$(x_\alpha)_{\alpha \in \Phi}$  indexed by entourages
+    is \Define{fast} if for every~$\varepsilon \in \Phi$
+        and~$\alpha,\beta \geq \varepsilon$
+        we have~$x_\alpha \mathrel{\varepsilon^2} x_\beta$.
 
-It is well known that a Hausdorff uniform space~$X$ can
-    be embedded in a complete uniform space~$C$,
-    see e.g.~\cite[Thm.~39.12]{willard}.
-Call this embedding~$\eta\colon X \to C$.
-It comes with a extension theorem:
-    every uniformly continuous~$f\colon X \to Y$
-    to some complete Hausdorff uniformity~$Y$
-    can be uniquely lifted to a continuous
-    map~$g\colon C \to X$ such that~$g\after \eta = f$.
-The similar extension theorem
-    for metric spaces allowed us to extend
-    the inner product on a complex vector space
-    to its metric completion.
-Unfortunately, we could not find a suitable uniformity on~$\scrB$
-    which is complete.
-Luckily, we do not need full completeness.
+\end{point}
+\end{point}
 \end{point}
 \begin{point}{Theorem}%
     Let~$\scrB$ be a von Neumann algebra.
@@ -1257,15 +1273,6 @@ Concretely:~$E \in \Phi$
     such that~$\| x-y\|_{f_i} \leq \varepsilon $
     for~$1 \leq i \leq n$ implies~$x \mathrel{E} y$.
 \begin{point}{Fast and norm-bounded nets}%
-    The set of entourages~$\Phi$ is a filter
-        and thus can be used as index set for a net
-        using reverse inclusion as order.
-        Thus~$\varepsilon \geq \delta
-        \ \Leftrightarrow\ \varepsilon \subseteq \delta$.
-We say a net~$(x_\alpha)_{\alpha \in \Phi}$  indexed by entourages
-    is \Define{fast} if for every~$\varepsilon \in \Phi$
-        and~$\alpha,\beta \geq \varepsilon$
-        we have~$x_\alpha \mathrel{\varepsilon^2} x_\beta$.
 A net~$(x_\alpha)_{\alpha \in I}$
     is called \Define{norm-bounded}
     whenever~$(\|x_\alpha\|)_{\alpha}$ is bounded
