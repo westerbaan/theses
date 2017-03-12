@@ -1975,7 +1975,7 @@ that is, $\Imag{f(a)}=0$.\qed
 \begin{point}{Lemma}%
 An extreme point~$u$ of the unit ball~$(\scrA)_1$
 of a von Neumann algebra~$\scrA$
-is a partial isometry with $\cceil{u}=1$.
+is a partial isometry with $\cfloor{u^*u}\cup\cfloor{uu^*}=1$.
 \begin{point}{Remark}%
 The converse (viz.~every such partial isometry
 is extreme in~$(\scrA)_1$)
@@ -2011,21 +2011,24 @@ we get $0\leq a\leq \ceil{a}=\ceil{a}\ceil{u^*u}=0$,
 which contradicts $a\neq 0$.
 Hence~$u^*u$ is a projection.
 
-To see that $\cceil{u}=1$,
-note that
-$a\mapsto (\cceil{u}a,\, \cceil{u}^\perp a)$
-gives a miu-isomorphism
-from~$\scrA$ to $\cceil{u}\scrA \,\oplus\,\cceil{u}^\perp \scrA$
-(see~\TODO{}),
-which maps $u$ to~$(u,0)$.
-Since~$(u,0)$ is therefore extreme in 
-$(\,\cceil{u}\scrA\,\oplus\,\cceil{u}^\perp\scrA\,)_1$,
-while~$(u,0)=\frac{1}{2}(u,1)+\frac{1}{2}(u,-1)$
-where  $\|(u,\pm 1)\|\leq 1$,
-we see that~$(u,-1)=(u,0)=(u,1)$,
-and so~$0=1$ in~$\cceil{u}^\perp\scrA$,
-which implies that~$\cceil{u}^\perp=0$,
-that is,  $\cceil{u}=1$.\qed
+To see that~$\cfloor{u^*u}\cup \cfloor{uu^*}=1$,
+i.e.~$\cceil{(u^*u)^\perp} \cap \cceil{(uu^*)^\perp }=0$,
+it suffices (by \TODO{})
+to show that $(uu^*)^\perp \scrA (u^*u)^\perp = (0)$.
+So let~$a\in (uu^*)^\perp \scrA (u^*u)^\perp$
+be given, and assume (without loss of generality)
+that~$\|a\|\leq 1$.
+We'll show that $\|u\pm a\|\leq 1$,
+because,
+since~$u$ is extreme in~$(\scrA)_1$,
+$u\equiv \frac{1}{2}(u+a)+(u-a)$
+implies that~$u=u+a$, and so $a=0$.
+Note that $a^*a \leq (u^*u)^\perp$ (because $a(u^*u)^\perp=a$)
+and $u^*a = 0$ (because $(uu^*)^\perp a=a$).
+Thus $(u\pm a)^*(u\pm a)
+=u^*u \pm u^* a \pm a^* u + a^*a
+= u^*u + a^*a \leq u^*u + (u^*u)^\perp = 1$,
+so $\|u\pm a\|\leq 1$. \qed
 \end{point}
 \end{point}
 \end{parsec}
