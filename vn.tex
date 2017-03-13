@@ -884,41 +884,6 @@ of np-maps $f_0,\dotsc,f_3$,
 and must therefore be ultraweakly continuous.
 We'll need the following tool.
 \end{point}
-\begin{point}{Definition}%
-Given a von Neumann algebra~$\scrA$,
-the vector space of ultraweakly continuous 
-linear maps $f\colon \scrA\to \C$
-endowed with the operator norm
-is denoted by~$\Define{\scrA_*}$,
-and called the \Define{predual} of~$\scrA$.
-\begin{point}{Remark}%
-The reason
-that the space~$\scrA_*$ is called the \Define{predual}
-of~$\scrA$
-is the non-trivial fact due to Sakai~\cite{sakai} (which we 
-don't need and therefore won't prove),
-that the obvious 
-map $\scrA\to(\scrA_*)^*$,
-where $(\scrA_*)^*$ is the \emph{dual} of~$\scrA$ --- the
-vector space of bounded linear maps $\scrA_*\to\C$
-endowed with the operator norm ---,
-is a surjective isometry,
-and so $\scrA$ ``is'' the dual of~$\scrA_*$,
-(albeit only as normed space,
-because~$(\scrA_*)^*$ doesn't come equipped with a multiplication.)
-\end{point}
-\end{point}
-\begin{point}{Lemma}%
-The predual~$\scrA_*$ of a von Neumann algebra~$\scrA$
-is complete.
-\begin{point}{Proof}%
-\TODO{We'd like to use the fact
-that a functional $f\colon \scrA\to\C$
-is ultraweakly continuous iff 
-it is ultraweakly continuous on~$(\scrA)_1$,
-which seems non-trivial.}
-\end{point}
-\end{point}
 \begin{point}[bstaromega]{Definition}%
 Let~$\scrA$ be a von Neumann algebra.
 Given an np-map $\omega\colon \scrA\to\C$,
@@ -2086,7 +2051,7 @@ By a similar reasoning we get $f(uu^*a)=f(a)$.\qed
 \end{point}
 \end{point}
 \end{point}
-\begin{point}{Corollary}%
+\begin{point}[uwcont-on-ball]{Corollary}%
 A functional $f\colon \scrA\to\C$
 on a von Neumann algebra~$\scrA$
 is normal
@@ -2108,6 +2073,72 @@ But then~$f\equiv f(uu^*(\,\cdot\,))$
 being the composition of the ultraweakly continuous maps
 $f(u(\,\cdot\,))$ and $a\mapsto u^*a$ 
 is ultraweakly continuous on~$\scrA$ too.\qed
+\end{point}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}{Definition}%
+Given a von Neumann algebra~$\scrA$,
+the vector space of ultraweakly continuous 
+linear maps $f\colon \scrA\to \C$
+endowed with the operator norm
+is denoted by~$\Define{\scrA_*}$,
+and called the \Define{predual} of~$\scrA$.
+\begin{point}{Remark}%
+The reason
+that the space~$\scrA_*$ is called the \emph{predual}
+of~$\scrA$
+is the non-trivial fact due to Sakai~\cite{sakai} (which we 
+don't need and therefore won't prove),
+that the obvious 
+map $\scrA\to(\scrA_*)^*$,
+where $(\scrA_*)^*$ is the \emph{dual} of~$\scrA$ --- the
+vector space of bounded linear maps $\scrA_*\to\C$
+endowed with the operator norm ---,
+is a surjective isometry,
+and so $\scrA$ ``is'' the dual of~$\scrA_*$,
+(albeit only as normed space,
+because~$(\scrA_*)^*$ doesn't come equipped with a multiplication.)
+\end{point}
+\end{point}
+\begin{point}[predual-complete]{Proposition}%
+The predual~$\scrA_*$ of a von Neumann algebra~$\scrA$
+is complete (with respect to the operator norm).
+\begin{point}{Proof}%
+Let $f_1,f_2,\dotsc$ be a sequence in~$\scrA_*$
+which is Cauchy with respect to the operator norm.
+We already know (from~\sref{operator-norm-complete})
+that $f_1,f_2,\dotsc$ converges to a bounded linear 
+functional~$f\colon \scrA\to\C$;
+so we only need to prove that~$f$ is ultraweakly continuous
+to see that~$\scrA_*$ is complete,
+and for this,
+we only need to show 
+(by~\sref{uwcont-on-ball})
+that~$f$
+is ultraweakly continuous
+on the unit ball~$(\scrA)_1$ of~$\scrA$.
+So let~$(b_\alpha)_\alpha$ be 
+a net in~$(\scrA)_1$
+which converges ultraweakly to~$0$;
+we must show that~$\lim_\alpha f(b_\alpha)=0$.
+Now, note that for every~$n$ and~$\alpha$
+we have the bound
+\begin{equation*}
+	\left|f(b_\alpha)\right|
+	\ \leq\ \left|(f-f_n)(b_\alpha)\right|
+	\,+\,\left|f_n(b_\alpha)\right|
+	\ \leq\ 
+	\|f-f_n\|\,+\,\left|f_n(b_\alpha)\right|.
+\end{equation*}
+From this,
+and $\lim_n\|f-f_n\|=0$,
+and $\lim_\alpha f_n(b_\alpha)=0$
+for all~$n$,
+one easily deduces that~$\lim_\alpha f(b_\alpha)=0$.
+Thus~$f$ is ultraweakly continuous,
+and so~$\scrA_*$ is complete.\qed
 \end{point}
 \end{point}
 \end{parsec}
