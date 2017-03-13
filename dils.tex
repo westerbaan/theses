@@ -680,6 +680,10 @@ We call the uniformity on~$X$
     given by seminorms~$\|x\|_f = f([x,x])^{\frac{1}{2}}$
     for np-maps~$f\colon \scrB \to \C$
     the \Define{ultranorm uniformity}.
+That is: the relations~$x \mathrel{E_{f,\varepsilon}} y
+     \Leftrightarrow 
+     \| x - y \|_f \leq \varepsilon$
+form a subbase for the uniformity.
 \begin{point}%
 The ultranorm uniformity will play a very similar r\^ole
     to the norm for Hilbert spaces.
@@ -1221,6 +1225,8 @@ We will see that at each step we can extend the module structure
        \ \cdots\  \subseteq
    V_{\alpha_0} = \overline{V}
 \end{equation*}
+To avoid requiring familiary with transfinite induction,
+    we will phrase the proof using Zorn's lemma instead.
 \end{point}
 \begin{point}{$\overline{V}$: fast nets}%
 As we need some details in its construction,
@@ -1384,7 +1390,7 @@ Thus~$(y_\alpha)_\alpha \mathrel{\hat\varepsilon} (x^\gamma_\alpha)_\alpha$
 whenever~$\gamma \geq \widehat{\nicefrac{\varepsilon}{8}}$,
 so~$(x^\gamma_\alpha)_\alpha \to (y_\alpha)_\alpha$.
 \end{point}
-\begin{point}{$\overline{V}$: uniformity}%
+\begin{point}[dils-uniformity-completion]{$\overline{V}$: uniformity}%
 Let~$\overline{V}$ be the set of fast Cauchy nets over~$V$
     modulo equivalence.
 Write~$\eta\colon V \to \overline{V}$
@@ -1478,7 +1484,7 @@ to~$(x_\alpha b)_\alpha$. By definition~$\eta(x)b = \eta(xb)$.
 It is straight-forward to check this turns~$\overline{V}$
 into a right-$\scrB$-module.
 \end{point}
-\begin{point}{Induction set-up}%
+\begin{point}[dils-completion-setup]{Induction set-up}%
 The majority of the remaining work is to show
     we can define an inner product on~$\overline{V}$.
 As sketched earlier,
@@ -1487,14 +1493,51 @@ As sketched earlier,
 Call a subset~$W \subseteq \overline{V}$
 together with a~$\scrB$-valued inner product~$[\,\cdot\,,\,\cdot\,]$ a
     \Define{compatible extension} if
-\begin{inparaenum}
+\begin{enumerate}
 \item $V_0 \subseteq W$;
 \item $W$ is a submodule of~$\overline{V}$;
 \item the inner product turns~$W$ into a pre-Hilbert $\scrB$-module \emph{and}
-\item the uniformity on~$W$ induced by~$V$ is the ultranorm uniformity on~$W$.
-\end{inparaenum}
+\item the ultranorm uniformity on~$W$
+        and the uniformity on~$W$ induced by~$\overline{V}$
+        are related by
+    $E^W_{f,\varepsilon} = \widetilde{E_{f,\varepsilon}}$
+        for~$\varepsilon \geq 0$ and np-map~$f\colon \scrB \to \C$,
+        (where~$E^W_{f,\varepsilon}$ is the subbase of the ultranorm
+    uniformity for~$W$ from~\sref{dils-ultranorm};
+         $E_{f,\varepsilon} \equiv E^V_{f,\varepsilon}$
+         and~$\widetilde{E_{f,\varepsilon}}$ is
+         the subbase for the uniformity on~$\overline{V}$
+         defined in~\sref{dils-uniformity-completion}.)
+\end{enumerate}
+The last requirement implies
+    that on a compatible extension~$W$
+    the ultranorm uniformity and
+    $\overline{V}$ induced uniformity coincide.
+
+For compatible extensions~$W_1,W_2 \subseteq \mathscr{V}$
+        we say~$W_1 \leq W_2$
+            iff~$W_1 \subseteq W_2$
+            and~$[v,w]_{W_1} = [v,w]_{W_2}$
+        for all~$v,w\in W_1$.
+Later, we will apply Zorn's lemma to the compatible extensions
+    ordered in this way.  Before we continue
+    with the extensions we need a lemma on the entourages of~$\overline{V}$.
 \end{point}
-\begin{point}{Base case}%
+\begin{point}{Lemma. $\bigcap_{n \in \N} 
+        \widetilde{E_{f,\varepsilon+\frac{1}{n}}}=
+        \widetilde{E_{f,\varepsilon}} $}%
+For the moment assume~$(x_\alpha)_\alpha
+    \mathrel{\widehat{E_{f,\varepsilon+ \frac{1}{n}}}} 0$
+    for all~$n \in \N$.
+Then~$f([x_\alpha,x_\alpha])\leq \varepsilon + \frac{1}{n}$
+    for sufficiently large~$\alpha$
+    and so
+    for each~$n \in \N$
+    we have~$\lim_\alpha f([x_\alpha,x_\alpha]) \leq \varepsilon + \frac{1}{n}$.
+    Thus~$\lim_\alpha f([x_\alpha,x_\alpha]) \leq \varepsilon$.
+
+\end{point}
+\begin{point}{Induction base case}%
     The inner product of~$V$ lifts to~$V_0$.
     Indeed, $\eta(x) = 0$ if and only if~$\| x\| = 0$.
     So by Cauchy--Schwarz~$[x,y] = 0$ whenever~$\eta(x)=0$.
@@ -1502,10 +1545,10 @@ together with a~$\scrB$-valued inner product~$[\,\cdot\,,\,\cdot\,]$ a
         whenever~$\eta(x)=\eta(x')$
         and~$\eta(y)=\eta(y')$.
     Define~$[\eta(x),\eta(y)] = [x,y]$.
-    It's easy to see~$V_0$ is a pre-Hilbert~$\scrB$-submodule of~$\overline{V}$
-        and the uniformity on~$V_0$ induced by~$\overline{V}$ is
-        the ultranorm uniformity on~$V_0$.
-    We have shown~$V_0$ is a compatible extension.
+    It's easy to see~$V_0$ is a pre-Hilbert~$\scrB$-submodule of~$\overline{V}$.
+
+    To show~$E^{V_0}_{f,\varepsilon} = \widetilde{E_{f,\varepsilon}}$
+        we need a lemma.
 \end{point}
 \begin{point}{Induction step}%
 Assume~$W\subseteq \overline{V}$ with~$[\,\cdot\,,\,\,\cdot\,]$
@@ -1513,6 +1556,7 @@ Assume~$W\subseteq \overline{V}$ with~$[\,\cdot\,,\,\,\cdot\,]$
 Write~$\Define{\sigma(W)}$ for the limits of norm-bounded Cauchy nets over~$W$.
 We will define a~$\scrB$-valued inner product on~$\sigma(W)$
     that turns it into a compatible extension.
+In fact~$W \leq \sigma(W)$.
 By assumption the induced uniformity on~$W$
     is the ultranorm uniformity
     and so addition and the~$\scrB$-action
@@ -1609,6 +1653,76 @@ By \TODO{} it suffices to show that a net
     $(x^\gamma)_\gamma$ over~$\sigma(W)$
     converges in the ultranorm uniformity to~$0$
     if and only if it converges to~$0$ in~$\overline{V}$.
+By definition, for each~$\gamma$, there exist
+    norm-bounded nets~$(x^\gamma_\alpha)_\alpha$ in~$W$
+    such that~$x^\gamma_\alpha \to x^\gamma$ in~$\overline{V}$.
+
+Suppose~$x^\gamma \to 0$ in~$\overline{V}$.
+To show it also vanishes in the~$\sigma(W)$-ultranorm,
+    pick any~$\varepsilon >0$ and np-map~$f\colon \scrB \to \C$.
+As the $W$-ultranorm uniformity
+    coincides with induced uniformity of~$\overline{V}$,
+    there is an entourage~$\delta \in \tilde\Phi$
+    such that $x \mathrel\delta 0$ implies~$f([x,x])\leq \varepsilon$
+        for any~$x \in W$.
+Find~$\gamma_0$ such that for all~$\gamma \geq \gamma_0$
+we have~$x^\gamma \mathrel{\nicefrac{\delta}{2}} 0$.
+Pick any~$\gamma \geq \gamma_0$.
+For this~$\gamma$, find~$\alpha_\gamma$
+    such that~$x^\gamma_\alpha \mathrel{\nicefrac{\delta}{2}} x^\gamma$
+    for~$\alpha \geq \alpha_\gamma$.
+So~$x^\gamma_\alpha \mathrel\delta 0$
+    and~$f([x^\gamma_\alpha, x^\gamma_\alpha]) \leq \varepsilon$
+    for~$\alpha \geq \alpha_\gamma$.
+Consequently
+\begin{equation*}
+    f([x^\gamma,x^\gamma]) = f(\uwlim_\alpha [x^\gamma_\alpha,x^\gamma_\alpha])
+            = \lim_\alpha f([x^\gamma_\alpha,x^\gamma_\alpha]) \leq \varepsilon
+\end{equation*}
+and so~$x^\gamma$ vanishes $\sigma(W)$-ultranorm.
+To prove the converse, assume~$x^\gamma \to 0$ in~$\sigma(W)$-ultranorm
+    uniformity.
+Let~$\delta \in \tilde\Phi$ be any entourage on~$\overline{V}$.
+By equivalence of the uniformities on~$W$,
+    there are np-maps~$f_1,\ldots,f_n\colon \scrB\to\C$
+    and~$\varepsilon > 0$
+    such that~$f_i ([x,x]) \leq \varepsilon$
+    for all~$1 \leq i \leq n$
+    implies~$x \mathrel{\nicefrac{\delta}{2}} 0$.
+Find~$\gamma_0$ such that
+$f_i([x^\gamma, x^\gamma]) \leq \frac{1}{2} \varepsilon$
+        for~$\gamma \geq \gamma_0$ and~$1 \leq i \leq n$.
+Pick any~$\gamma \geq \gamma_0$.
+As~$f_i([x^\gamma,x^\gamma])
+    = \lim_\alpha f_i([x^\gamma_\alpha,x^\gamma_\alpha])$,
+there is an~$\alpha_0$ such that
+    $f_i([x_\alpha^\gamma,x_\alpha^\gamma]) \leq \varepsilon$
+    and so~$x^\gamma_\alpha \mathrel{\nicefrac{\delta}{2}} 0$
+    for all~$\alpha \geq \alpha_0$.
+As~$x_\alpha^\gamma \to x^\gamma$ in~$\overline{V}$
+there is some~$\alpha_1$ with~$
+x^\gamma \mathrel{\nicefrac{\delta}{2}} x^\gamma_\alpha$
+for~$\alpha \geq \alpha_1$
+and so as there exists some~$\alpha \geq \alpha_0,\alpha_1$
+we conclude~$x^\gamma \mathrel\delta 0$.
+Thus~$x^\gamma$ vanishes in~$\overline{V}$.
+We have shown~$\sigma(W)$ is a compatible extension.
+\end{point}
+\begin{point}{Limit step}%
+    Assume~$\mathscr{V}$
+        is a chain of compatible extensions.
+        See \sref{dils-completion-setup} for the order on compatible extensions.
+    Write~$W = \bigcup \mathscr{V}$.
+    We will turn~$W$ into a compatible extension.
+    Clearly~$W$ is a submodule of~$\overline{V}$.
+    As~$\mathscr{V}$ is not empty, $V_0 \subseteq W$.
+    For any~$v,w \in W$
+    there is some~$W' \in \mathscr{V}$ with~$v,w \in W'$.
+    Define~$[v,w]_W = [v,w]_{W'}$.
+    This turns~$W$ into a pre-Hilbert~$\mathscr{B}$-module
+        as all its axioms only involve finitely many elements,
+        which are contained in some single compatbile extension far enough up
+        in the chain.
 \end{point}
 \begin{point}{Lifting maps along~$\eta$}%
 \end{point}
