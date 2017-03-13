@@ -2024,7 +2024,8 @@ Thus $(u\pm a)^*(u\pm a)
 so $\|u\pm a\|\leq 1$. \qed
 \end{point}
 \end{point}
-\begin{point}{Theorem (Polar decomposition of functionals)}%
+\begin{point}[polar-decomposition-of-functional]%
+	{Theorem (Polar decomposition of functionals)}%
 Every functional $f\colon \scrA\to \C$ on a von Neumann algebra~$\scrA$
 which is ultraweakly continuous on
 the unit ball~$(\scrA)_1$
@@ -2083,6 +2084,30 @@ and thus $f(a)+f(uu^*a)=f(a)+f(uu^*au^*u)=f(uu^*a)+f(au^*u)$,
 which yields $f(a)=f(au^*u)$.
 By a similar reasoning we get $f(uu^*a)=f(a)$.\qed
 \end{point}
+\end{point}
+\end{point}
+\begin{point}{Corollary}%
+A functional $f\colon \scrA\to\C$
+on a von Neumann algebra~$\scrA$
+is normal
+when it is ultraweakly continuous
+on the unit ball~$(\scrA)_1$.
+\begin{point}{Proof}%
+By~\sref{polar-decomposition-of-functional}
+there is a partial isometry~$u$
+such that $f(uu^*(\,\cdot\,))=f$
+and~$f(u(\,\cdot\,))$ is positive.
+Recall \TODO{} that such a positive functional~$f(u(\,\cdot\,))$
+is normal when it is ultraweakly continuous
+on~$[0,1]_{\scrA}$;
+which it is, 
+because $a\mapsto ua$ is ultraweakly continuous (see \sref{mult-uws-cont}),
+maps~$[0,1]_{\scrA}$ into~$(\scrA)_1$,
+and $f$ is ultraweakly continuous on~$(\scrA)_1$.
+But then~$f\equiv f(uu^*(\,\cdot\,))$
+being the composition of the ultraweakly continuous maps
+$f(u(\,\cdot\,))$ and $a\mapsto u^*a$ 
+is ultraweakly continuous on~$\scrA$ too.\qed
 \end{point}
 \end{point}
 \end{parsec}
