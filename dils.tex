@@ -49,7 +49,7 @@ Furthermore:
 \end{point}
 
 \begin{point}%
-(We will see a detailed proof later in \TODO{}.)
+(We will see a detailed proof later in \sref{dils-proof-stinespring}.)
 Stinespring's theorem
 is fundamental in the study
 of quantum information and quantum computing:
@@ -91,7 +91,7 @@ we avoid Sakai's characterization (in contrast to our
     and give new proofs
     of Paschke's results where required.
 One major difference is that we will use
-    a restricted completion (see \TODO{}) of a uniform space
+    a completion (see \sref{dils-completion}) of a uniform space
     instead of considering the dual space of a Hilbert C$^*$-module.
 We finish the first part of this chapter
     by constructing Paschke's dilation
@@ -263,7 +263,8 @@ Finally, $\left<\eta(v),\eta(w)\right>=[v,w]$ is direct.\qed
 \begin{parsec}[dils-stinespring]%
 \begin{point}%
 We are ready to prove Stinespring's dilation theorem.
-\begin{point}{Proof of Stinespring's theorem \sref{stinespring-theorem}}%
+\begin{point}[dils-proof-stinespring]{%
+    Proof of Stinespring's theorem \sref{stinespring-theorem}}%
 Let~$\varphi\colon \scrA \to \scrB(\scrH)$
     be a cp-map.
 Write~$\scrA \odot \scrH$ for the tensor product of~$\scrA$ and~$\scrH$
@@ -1010,7 +1011,8 @@ Hence~$x'=0$. Thus~$x = \sum_{e \in E} e\left<e,x\right>$ as desired.
 
     First we will show~$\sum_{e \in E} e b_e$ converges to
         begin with.
-    As ultraweakly-bounded nets are norm bounded, see \TODO{},
+    As ultraweakly-bounded nets are norm bounded,
+    see \sref{ultraweakly-bounded-implies-bounded},
         it is sufficient to show~$\sum_{e\in E} f( b_e^*b_e ) $ is bounded
         for each np-map~$f\colon \scrB \to \C$.
     For any~$e \in E$
@@ -1145,7 +1147,7 @@ We continue with a generalization of
 to~Hilbert C$^*$-modules,
 
 \end{point}
-\begin{point}{Theorem}%
+\begin{point}[dils-completion]{Theorem}%
 Let~$\scrB$ be a von Neumann algebra
 and~$V$ a right~$\scrB$-module with~$\scrB$-valued
     inner product~$[\,\cdot\,,\,\cdot\,]$.
@@ -1465,8 +1467,8 @@ Assume we are given an entourage in~$V$,
 that is: np-maps~$f_1,\ldots,f_n\colon \scrB \to \C$
 and~$\varepsilon > 0$.
 For any np-map~$f\colon \scrB \to \C$,
-    the map~$b*f$ given by~$(b * f)(x) \equiv f(b^* x b)$ is also an np-map.
-    \TODO{}. 
+    the map~$b*f$ given by~$(b * f)(x) \equiv f(b^* x b)$ is also an np-map,
+    see \sref{bstaromega-basic}.
     Clearly~$\|xb\|_f = f([xb,xb])^{\frac{1}{2}}
     = f(b^* [x,x] b)^{\frac{1}{2}} = \|x\|_{b*f}$
     for any~$x \in V$.
