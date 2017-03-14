@@ -2100,6 +2100,8 @@ is a surjective isometry,
 and so $\scrA$ ``is'' the dual of~$\scrA_*$,
 (albeit only as normed space,
 because~$(\scrA_*)^*$ doesn't come equipped with a multiplication.)
+
+We'll do need this:
 \end{point}
 \end{point}
 \begin{point}[predual-complete]{Proposition}%
@@ -2139,6 +2141,27 @@ for all~$n$,
 one easily deduces that~$\lim_\alpha f(b_\alpha)=0$.
 Thus~$f$ is ultraweakly continuous,
 and so~$\scrA_*$ is complete.\qed
+\end{point}
+\end{point}
+\begin{point}{Lemma}%
+We have $\|a\|=\sup_{f\in(\scrA_*)_1}\left|f(a)\right|$
+for every element~$a$ of a von Neumann algebra~$\scrA$.
+\begin{point}{Proof}%
+It's clear that $\sup_{f\in(\scrA_*)_1}\left|f(a)\right|\leq \|a\|$.
+
+For the other direction,
+write $a\equiv [a] \absl{a}$ (see \TODO{polar decompsition}),
+and recall that $\|a\|=\|\absl{a}\|=\sup_{\omega\in \Omega} 
+\left|\omega (\,\absl{a}\,)\right|$,
+where $\Omega$ is the set of  npu-maps $\scrA\to \C$
+(see~\TODO{}) .
+Let~$\omega\in \Omega$ be given.
+Since~$[a]^*a=\absl{a}$ by~\TODO{},
+we have $\omega(\,\absl{a}\,)=\omega([a]^*a)=f(a)$,
+where $f:=\omega([a]^*(\,\cdot\,))\in (\scrA_*)_1$,
+and so $\|a\|=\sup_{\omega\in\Omega} 
+\omega(\,\absl{a}\,) \leq \sup_{f\in (\scrA_*)_1}
+\left|f(a)\right|$.\qed
 \end{point}
 \end{point}
 \begin{point}{Theorem}%
