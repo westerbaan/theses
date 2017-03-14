@@ -463,6 +463,7 @@ that~$\varrho$ is normal, when~$\varphi$ is.
 \end{parsec}
 
 \begin{parsec}%
+\begin{point}{Definition}%
 Let~$\varphi\colon \scrA \to \scrB(\scrH)$
     be any ncp-map.
 A \Define{normal Stinespring dilation}
@@ -478,6 +479,7 @@ is dense in~$\scrK$
 then the Stinespring dilation $(\scrK,\varrho,V)$ is said to be \Define{minimal}.
 Every Stinespring dilation of~$\varphi$ can be restricted to a minimal one
     for~$\varphi$.
+\end{point}
 \begin{point}%
 It is a well-known fact that all minimal normal Stinespring dilations
     for a fixed~$\varphi$ are unitarily equivalent,
@@ -487,7 +489,7 @@ We will adapt its proof to show that a minimal normal Stinespring
     which we will need later on.
 This adapation is mostly straight-forward, except for the following lemma.
 \end{point}
-\begin{point}{Lemma}%
+\begin{point}[dils-univlemma]{Lemma}%
 % \TODO{}\parpic[r]{
 % $\xymatrix{\mathscr{A} \ar[r]^\varrho \ar[rd]_{\varrho'}&
 % \mathscr{B} \\
@@ -521,6 +523,79 @@ Hence~$\sigma(\varrho'(a_1)c\varrho'(a_2))
             = \varrho(a_1)\sigma(c \varrho'(a_2))
             = \varrho(a_1) \sigma(c) \varrho(a_2)$
     for all~$a_1,a_2 \in \scrA$ and~$c\in \scrC$ as desired.\qed
+\end{point}
+\end{point}
+\begin{point}{Proposition}%
+    Assume~$\varphi\colon \scrA \to \scrB(\scrH)$
+        is any ncp-map with normal
+        Stinespring dilations~$(\scrK, \varrho, V)$
+    and~$(\scrK', \varrho', V')$.
+        If~$(\scrK,\varrho,V)$ is minimal,
+        then there is a unique isometry~$S\colon \scrK \to \scrK'$
+        such that~$SV=V'$ and~$\varrho = \ad_S\after \varrho'$.
+\begin{point}{Proof}
+First we will deal with a pathalogical case.
+If~$V = 0$, then~$\varphi = 0$, $V' = 0$, $\scrK = \{0\}$
+and~$\varrho = 0$.  Thus the unique linear map~$S\colon \{0\} \to \scrK'$
+satisfies the requirements.  Assume~$V \neq 0$.
+\begin{point}{Uniqueness}%
+Let~$S_1,S_2\colon \scrK \to \scrK'$
+be any isometries with~$S_k V = V'$ and~$\ad_{S_k} \after \varrho' = \varrho$
+for~$k \in \{1,2\}$.
+We want to show~$S_1=S_2$.
+For all finite tuples~$(a_i)_i$, $(\alpha_i)_i$ from~$\scrA$;
+    $(x_i)_i$, $(y_i)_i$ from~$\scrH$ \emph{and} $c \in \scrB(\scrK')$
+    we have
+\begin{align*}
+    \bigl< \ad_{S_k}(c)
+        \sum_i \varrho(a_i) V x_i,
+        \sum_j \varrho(a_j) V x_j \bigr>
+    &\ = \ \sum_{i,j}
+        \bigl< V^* \varrho(\alpha_j^*) \ad_{S_k}(c) \varrho(a_i) V x_i, y_i
+            \bigr> \\
+            & \ \stackrel{\sref{dils-univlemma}}{=} \ \sum_{i,j}
+        \bigl< V^* \ad_{S_k} \bigl(\varrho'(\alpha_j^*) c
+            \varrho'(a_i)\bigr) V x_i, y_j\bigr> \\
+    & \ =\  \sum_{i,j}
+        \bigl< (V')^* \varrho'(\alpha_j^*) c \varrho'(a_i) V' x_i, y_j
+            \bigr>.
+\end{align*}
+As the linear span of~$\varrho(\scrA) V\scrH$ is dense in~$\scrK$
+    we see~$\ad_{S_1} = \ad_{S_2}$.
+Thus $\lambda S_1= S_2$ for some~$\lambda \in \C$ by \TODO{}.
+As~$V \neq 0$, there is an~$x \in \scrH$ with~$Vx \neq 0$.
+Then~$S_1 V x = V'x = S_2Vx = \lambda S_1 Vx$, so~$\lambda=1$.
+Hence~$S_1=S_2$, as desired.
+\end{point}
+\begin{point}{Existence}%
+For any tuple~$(a_i)_i$ in~$\scrA$ and~$(x_i)_i \in \scrH$, we have
+\begin{align*}
+\bigl\| \sum_i \varrho(a_i)Vx_i \bigr\|^2
+&\ =\  \sum_{i,j} \bigl< V^* \varrho(a_j^*a_i) Vx_i, x_j\bigr> \\
+&\ =\  \sum_{i,j} \bigl< \varphi(a_j^* a_i)x_i, x_j \bigr> \\
+&\ =\  \bigl\| \sum_i \varrho'(a_i) V'x_i \bigr\|^2.
+\end{align*}
+Thus there is a unique isometry~$S\colon \scrK \to \scrK'$
+    such that~$S\varrho(a) Vx = \varrho'(a)V' x$
+        for all~$a\in \scrA$ and~$x \in\scrH$.
+As~$SVx = S\varrho(1)Vx=\varrho'(1)V'x = V'x$ for all~$x\in \scrH$
+    we have~$SV = V'$.
+Furthermore, for all~$(x_i)_i$ in~$\scrH$;
+    $(a_i)_i$ and~$a$ in~$\scrA$
+we have
+\begin{align*}
+    S \varrho(a) \sum_i \varrho(a_i)Vx_i
+    &= \sum_i S \varrho(aa_i) Vx_i \\
+    &= \sum_i \varrho'(aa_i) V'x_i \\
+    & = \varrho'(a) \sum_i \varrho'(a_i)V'x_i\\
+    & = \varrho'(a) S \sum_i \varrho(a_i)V x_i.
+\end{align*}
+Again as the linear span of~$\varrho(\scrA)V\scrH$
+    is dense in~$\scrK$
+    we find~$S \varrho(a) = \varrho'(a)S$.
+Thus $S^* \varrho'(a) S = S^*S\varrho(a) = \varrho(a)$
+    and so~$\ad_S \after \varrho' = \varrho$. \qed
+\end{point}
 \end{point}
 \end{point}
 \end{parsec}
