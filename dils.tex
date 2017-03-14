@@ -1221,6 +1221,8 @@ We will see that at each step we can extend the module structure
        \ \cdots\  \subseteq
    V_{\alpha_0} = \overline{V}
 \end{equation*}
+To avoid requiring familiary with transfinite induction,
+    we will phrase the proof using Zorn's lemma instead.
 \end{point}
 \begin{point}{$\overline{V}$: fast nets}%
 As we need some details in its construction,
@@ -1384,7 +1386,7 @@ Thus~$(y_\alpha)_\alpha \mathrel{\hat\varepsilon} (x^\gamma_\alpha)_\alpha$
 whenever~$\gamma \geq \widehat{\nicefrac{\varepsilon}{8}}$,
 so~$(x^\gamma_\alpha)_\alpha \to (y_\alpha)_\alpha$.
 \end{point}
-\begin{point}{$\overline{V}$: uniformity}%
+\begin{point}[dils-uniformity-completion]{$\overline{V}$: uniformity}%
 Let~$\overline{V}$ be the set of fast Cauchy nets over~$V$
     modulo equivalence.
 Write~$\eta\colon V \to \overline{V}$
@@ -1478,7 +1480,55 @@ to~$(x_\alpha b)_\alpha$. By definition~$\eta(x)b = \eta(xb)$.
 It is straight-forward to check this turns~$\overline{V}$
 into a right-$\scrB$-module.
 \end{point}
-\begin{point}{Induction set-up}%
+\begin{point}[dils-extending-norm-to-overlineV]{Extending $\|\,\cdot\,\|_f$ to~$\overline{V}$}%
+Let~$(x_\alpha)_\alpha$ be a Cauchy net over~$V$
+    and~$f\colon \scrB \to \C$ be any np-map.
+From the reverse triangle inequality~$| \|x_\alpha \|_f - \|x_\beta\|_f |
+        \leq \|x_\alpha - x_\beta \|_f$,
+        it follows~$\| x_\alpha \|_f$ is Cauchy.
+Define~$\|(x_\alpha)_\alpha\|_f = \lim_\alpha \|x_\alpha\|_f$.
+Again using the reverse triangle
+    inequality~$| \|x_\alpha \|_f - \|x'_\alpha\|_f |
+        \leq \|x_\alpha - x'_\alpha \|_f$
+        we see $\|(x_\alpha)_\alpha\|_f =
+        \|(x'_\alpha)_\alpha\|_f$
+        whenever $(x_\alpha)_\alpha \sim (x'_\alpha)_\alpha$.
+Thus~$\|\,\cdot\,\|_f$ lifts to~$\overline{V}$.
+
+These extended norms~$\|\,\cdot\,\|_f$ also induce a uniformity
+    on~$\overline{V}$.  We will now show it is the same uniformity.
+    Let~$((x_\alpha^\gamma)_\alpha)_\gamma$ be a net in~$\overline{V}$.
+    It is sufficient to show that~$(x_\alpha^\gamma)_\alpha \to 0$
+    in the original uniformity
+    if and only if~$\|(x_\alpha^\gamma)_\alpha\|_f \to 0$
+        for all np-maps~$f\colon \scrB \to \C$.
+
+Assume~$(x^\gamma_\alpha)_\alpha \to 0$ in~$\overline{V}$.
+That is: for each~$f\colon \scrB \to \C$ and~$\varepsilon > 0$
+    there is a~$\gamma_0$
+    such that for each~$\gamma \geq \gamma_0$
+    there is an~$\alpha_0$
+    such that~$\|x^\gamma_\alpha\|_f \leq \varepsilon$
+    when~$\alpha \geq \alpha_0$.
+Let any~$f\colon \scrB \to \C$ and~$\varepsilon > 0$ be given.
+Find such~$\gamma_0$ for~$f$ and~$\varepsilon$.
+Then~$\|(x^\gamma_\alpha)_\alpha \|_f
+    = \lim_\alpha \|x^\gamma_\alpha\| \leq \varepsilon$
+    whenever~$\gamma \geq \gamma_0$
+    and so~$\|(x^\gamma_\alpha)_\alpha\|_f \to 0$ as desired.
+
+For the converse, assume~$\|(x^\gamma_\alpha)_\alpha\|_f \to 0$
+    for all np-maps~$f\colon \scrB \to \C$.
+Let~$\varepsilon > 0$ and np-map~$f\colon \scrB \to \C$ be given.
+There is some~$\gamma_0$ such that
+$\lim_\alpha \|x^\gamma_\alpha \|_f = \|(x^\gamma_\alpha)_\alpha\|_f
+\leq \frac{1}{2}\varepsilon$
+for~$\gamma\geq\gamma_0$.
+Hence~$\|x^\gamma_\alpha\|_f \leq \varepsilon$
+    for sufficiently large~$\alpha$,
+    which is to say~$(x^\gamma_\alpha)_\alpha \to 0$ in~$\overline{V}$.
+\end{point}
+\begin{point}[dils-completion-setup]{Induction set-up}%
 The majority of the remaining work is to show
     we can define an inner product on~$\overline{V}$.
 As sketched earlier,
@@ -1487,32 +1537,55 @@ As sketched earlier,
 Call a subset~$W \subseteq \overline{V}$
 together with a~$\scrB$-valued inner product~$[\,\cdot\,,\,\cdot\,]$ a
     \Define{compatible extension} if
-\begin{inparaenum}
+\begin{enumerate}
 \item $V_0 \subseteq W$;
 \item $W$ is a submodule of~$\overline{V}$;
 \item the inner product turns~$W$ into a pre-Hilbert $\scrB$-module \emph{and}
-\item the uniformity on~$W$ induced by~$V$ is the ultranorm uniformity on~$W$.
-\end{inparaenum}
+\item $\|x\|_f^{\overline{V}} = \|x\|_f^W$
+        for all~$x \in W$
+        and np-maps~$f\colon \scrB \to \C$,
+        where~$\|x\|_f^W = f([x,x]_W)^{\frac{1}{2}}$
+        and~$\|\,\cdot\,\|^{\overline{V}}_f$
+        is the extension of~$\|\,\cdot\,\|_f$
+        on~$V$ to~$\overline{V}$
+        as in \sref{dils-extending-norm-to-overlineV}.
+\end{enumerate}
+As~$\|\,\cdot\,\|^{\overline{V}}_f$ also
+    generate the uniformity on~$\overline{V}$,
+    the last requirements implies
+    that on a compatible extension~$W$
+    the ultranorm uniformity and
+    the uniformity induced by~$\overline{V}$
+    coincide.
+
+For compatible extensions~$W_1,W_2 \subseteq \mathscr{V}$
+        we say~$W_1 \leq W_2$
+            iff~$W_1 \subseteq W_2$
+            and~$[v,w]_{W_1} = [v,w]_{W_2}$
+        for all~$v,w\in W_1$.
+Later, we will apply Zorn's lemma to the compatible extensions
+    ordered in this way.
 \end{point}
-\begin{point}{Base case}%
+\begin{point}{Induction base case}%
     The inner product of~$V$ lifts to~$V_0$.
     Indeed, $\eta(x) = 0$ if and only if~$\| x\| = 0$.
     So by Cauchy--Schwarz~$[x,y] = 0$ whenever~$\eta(x)=0$.
     Thus~$[x,y] = [x',y']$
-        whenever~$\eta(x)=\eta(x')$
+        if~$\eta(x)=\eta(x')$
         and~$\eta(y)=\eta(y')$.
     Define~$[\eta(x),\eta(y)] = [x,y]$.
-    It's easy to see~$V_0$ is a pre-Hilbert~$\scrB$-submodule of~$\overline{V}$
-        and the uniformity on~$V_0$ induced by~$\overline{V}$ is
-        the ultranorm uniformity on~$V_0$.
-    We have shown~$V_0$ is a compatible extension.
+    It's easy to see~$V_0$ is a pre-Hilbert~$\scrB$-submodule of~$\overline{V}$.
+    Finally, for any np-map~$f\colon \scrB\to \C$
+    we have $\| \eta(x) \|_f^{\overline{V}}
+    =   \| x\|_f^{V} = \| \eta(x) \|_f^{V_0}$, as desired.
 \end{point}
 \begin{point}{Induction step}%
 Assume~$W\subseteq \overline{V}$ with~$[\,\cdot\,,\,\,\cdot\,]$
     is a compatible extension.
-Write~$\Define{\sigma(W)}$ for the limits of norm-bounded Cauchy nets over~$W$.
+Let~$\Define{\sigma(W)}$ denote the limits of norm-bounded Cauchy nets over~$W$.
 We will define a~$\scrB$-valued inner product on~$\sigma(W)$
     that turns it into a compatible extension.
+In fact~$W \leq \sigma(W)$.
 By assumption the induced uniformity on~$W$
     is the ultranorm uniformity
     and so addition and the~$\scrB$-action
@@ -1534,6 +1607,7 @@ For any np-map $f\colon \scrB \to \C$ we have
     &\  \leq\  \|x_\alpha\|_f \|y_\alpha - y_\beta\|_f \numberthis
         + \|x_\alpha - x_\beta\|_f \| y_\beta \|_f.
 \end{align*}
+(If not otherwise specified $\|\,\cdot\,\|_f = \|\,\cdot\,\|_f^W$.)
 As~$(x_\alpha)_\alpha$ is norm bounded and
 $\|x_\alpha\|_f^2 = f([x_\alpha,x_\alpha]) \leq \|f\| \|x_\alpha\|^2$,
 we see~$(\|x_\alpha\|_f)_\alpha$ is bounded.
@@ -1548,7 +1622,7 @@ By \sref{vn-complete} norm-bounded Cauchy net in the ultraweak uniformity
 converge, so~$\uwlim_\alpha [x_\alpha,y_\alpha]$ exists.
 
 Assume we are given other~$\Phi$-indexed
-norm-bounded Cauchy-nets~$(x')_\alpha$ and~$(y')_\alpha$ over~$W$
+norm-bounded Cauchy nets~$(x')_\alpha$ and~$(y')_\alpha$ over~$W$
 with~$ (x'_\alpha)_\alpha \to x$
 and~$ (y'_\alpha)_\alpha \to y$.
 Then, like \eqref{eq-dils-V-inprod-cauchy}:
@@ -1602,15 +1676,67 @@ Thus~$x_\alpha$ converges in the ultranorm uniformity on~$W$ to~$0$.
 Hence~$x=0$.
 
 Thus~$\sigma(W)$ is a pre-Hilbert~$\scrB$-module.
-It only remains to be shown
-    the ultranorm uniformity on~$\sigma(W)$
-    coincides with the uniformity induced by~$\overline{V}$.
-By \TODO{} it suffices to show that a net
-    $(x^\gamma)_\gamma$ over~$\sigma(W)$
-    converges in the ultranorm uniformity to~$0$
-    if and only if it converges to~$0$ in~$\overline{V}$.
+It remains to be shown~$\|\,\cdot\,\|_f^{\sigma(W)}$
+    and $\|\,\cdot\,\|_f^{\overline{V}}$
+    agree.
+Pick any~$x \in \sigma(X)$ and~$f\colon \scrB \to \C$.
+By definition there is a norm-bounded Cauchy net~$x_\alpha$ over~$W$
+    for which~$x_\alpha \to x$ in~$\overline{V}$.
+Then
+\begin{equation*}
+    \|x\|^{\sigma(W)}_f
+        = f(\uwlim_\alpha [x_\alpha,x_\alpha])^{\frac{1}{2}}
+        = \lim_\alpha \|x_\alpha\|_f^W
+        = \lim_\alpha \|x_\alpha\|_f^{\overline{V}}
+        = \|x\|_f^{\overline{V}},
+\end{equation*}
+as desired.
+We have shown~$\sigma(W)$ is a compatible extension.
 \end{point}
-\begin{point}{Lifting maps along~$\eta$}%
+\begin{point}{Induction limit step}%
+    Assume~$\mathscr{V}$
+        is a chain of compatible extensions.
+        See \sref{dils-completion-setup} for the order on compatible extensions.
+    Write~$W = \bigcup \mathscr{V}$.
+    We will turn~$W$ into a compatible extension.
+    Clearly~$W$ is a submodule of~$\overline{V}$.
+    As~$\mathscr{V}$ is not empty, $V_0 \subseteq W$.
+    For any~$v,w \in W$
+    there is some~$W' \in \mathscr{V}$ with~$v,w \in W'$.
+    Define~$[v,w]_W = [v,w]_{W'}$.
+    This turns~$W$ into a pre-Hilbert~$\mathscr{B}$-module
+        as all its axioms only involve finitely many elements,
+        which are contained in some single compatible extension far enough up
+        in the chain.
+    Finally, to see the norms agree,
+        pick any np-map~$f\colon \scrB \to \C$
+        and~$x \in W$.
+    Then~$x \in W'$ for some~$W' \in \mathscr{V}$.
+    Consequently
+    \begin{equation*}
+        \|x\|^{\overline{V}}_f
+        = \|x\|^{W'}_f
+        = f([x,x]_{W'})^{\frac{1}{2}}
+        = f([x,x]_{W})^{\frac{1}{2}}
+        = \|x\|^{W}_f,
+    \end{equation*}
+    as desired.  We have shown~$W$ is a compatible extension.
+\end{point}
+\begin{point}{Self-duality}
+    We have seen
+        that every chain of compatible extensions
+        has an upper bound.
+    Thus by Zorn's lemma there is a maximal compatible
+        extension~$W\subseteq \overline{V}$.
+    By maximality~$\sigma(W) = W$
+        and so in~$W$ norm-bounded ultranorm-Cauchy nets converge.
+    Thus by~\sref{dils-selfdual}
+        $W$ must be self-dual and ultranorm complete.
+    By completeness~$W = \overline{V}$.
+    Define~$X = \overline{V}$
+        and~$\left<x,y\right> = [x,y]_{W}$.
+    Clearly~$[v,w] = \left<\eta(v),\eta(w)\right>$
+        and the image of~$\eta$ is norm dense. \qed
 \end{point}
 \end{point}
 \end{point}
