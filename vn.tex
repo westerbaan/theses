@@ -2143,7 +2143,7 @@ Thus~$f$ is ultraweakly continuous,
 and so~$\scrA_*$ is complete.\qed
 \end{point}
 \end{point}
-\begin{point}{Lemma}%
+\begin{point}[norm-predual]{Lemma}%
 We have $\|a\|=\sup_{f\in(\scrA_*)_1}\left|f(a)\right|$
 for every element~$a$ of a von Neumann algebra~$\scrA$.
 \begin{point}{Proof}%
@@ -2173,7 +2173,29 @@ provided it is \Define{ultraweakly bounded}, i.e.,
 $\sup_\alpha \left|\omega(b_\alpha)\right|<\infty$
 for every npu-map $\omega\colon \scrA\to \C$.
 \begin{point}{Proof}%
-	\TODO{}
+Note that $f\mapsto f(b_\alpha)$
+gives a linear map $(\,\cdot\,)(b_\alpha)\colon \scrA_*\to\C$
+with $\|(\,\cdot\,)(b_\alpha)\|=\|b_\alpha\|$ 
+by~\sref{norm-predual}
+for each~$\alpha$.
+So to prove that~$(b_\alpha)_\alpha$
+is norm bounded, viz.~%
+$\sup_\alpha \|b_\alpha\|\equiv \sup_\alpha \|(\,\cdot\,)(b_\alpha)\|<\infty$,
+it suffices to show
+(by the principle of uniform boundedness, \sref{pub},
+using that~$\scrA_*$ is complete, \sref{predual-complete}),
+that $\sup_\alpha \left|f(b_\alpha)\right|<\infty$ for all~$f\in\scrA_*$.
+
+Since such~$f\in\scrA_*$
+can be written as $f\equiv \sum_{k=0}^3 i^k f_k$
+where $f_k\colon \scrA\to\C$ are np-maps
+(by~\sref{normal-functionals-lemma}),
+we see that $\sup_\alpha\left|f(b_\alpha)\right|
+\leq \sum_{k=0}^3\sup_\alpha \left|\omega_k(b_\alpha)\right|
+<\infty$, because~$(b_\alpha)_\alpha$
+is ultraweakly bounded.
+Thus~$(b_\alpha)_\alpha$
+is norm bounded.\qed
 \end{point}
 \end{point}
 \end{parsec}
