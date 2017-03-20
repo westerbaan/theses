@@ -21,7 +21,7 @@ We already saw a dilation theorem in disguise:
     and vector~$x \in \scrH$
     such that~$\omega = h \after \varrho$
     where~$h \colon \scrB(\scrH) \to \C$
-    is given by~$h(T) = \left<Tx,x\right>$.
+    is given by~$h(T) = \left<x,Tx\right>$.
 \end{point}
 
 \begin{point}%
@@ -560,21 +560,25 @@ It is a well-known fact that all minimal normal Stinespring dilations
     for a fixed~$\varphi$ are unitarily equivalent,
     see for instance~\cite[Proposition 4.2]{paulsen}.
 We will adapt its proof to show that a minimal normal Stinespring
-    dilation admits a universal property,
-    which we will need later on.
-The modification is mostly straight-forward, except for the following lemma.
+    dilation admits a universal property.
+Later we will use this to prove a second universal property \sref{stinespring-is-paschke}
+    that allows us to generalize Stinespring's dilation to
+    arbitrary ncp-maps.
+The modification of the familiar argument
+    is mostly straight-forward, except for the following lemma.
 \end{point}
+\parpic[r]{
+$\xymatrix{\mathscr{A} \ar[r]^\varrho \ar[rd]_{\varrho'}&
+\mathscr{B} \\
+& \mathscr{C} \ar[u]_\sigma}$}
 \begin{point}[dils-univlemma]{Lemma}%
-% \TODO{}\parpic[r]{
-% $\xymatrix{\mathscr{A} \ar[r]^\varrho \ar[rd]_{\varrho'}&
-% \mathscr{B} \\
-% & \mathscr{C} \ar[u]_\sigma}$}
 Let~$\varrho\colon \scrA \to \scrB$ and~$\varrho'\colon \scrA \to \scrC$
     be nmiu-maps between von Neumann algebras,
         and let~$\sigma \colon \scrC \to \scrB$ be a ncp-map
         such that~$\sigma \after \varrho' = \varrho$.\\
 Then~$\sigma(\varrho'(a_1)c \varrho'(a_2)) =  \varrho(a_1) \sigma(c) \varrho(a_2)$
     for all~$a_1,a_2 \in \scrA$ and~$c \in \scrC$.
+
 \begin{point}{Proof}%
 By Theorem 3.1 of \cite{choi} (see \sref{choi}),
 we know that for all~$c,d\in\scrC$:
@@ -674,7 +678,9 @@ Thus $S^* \varrho'(a) S = S^*S\varrho(a) = \varrho(a)$
 \end{point}
 \end{point}
 \begin{point}{Exercise}%
-    The statement of this universal property of Stinespring
+    The statement of the universal property
+        \sref{dils-univ-stinespring}
+        for Stinespring
         was proposed by Chris Heunen in an unpublished note.
     In this note he shows it is equivalent to the existence
         of a left-adjoint, as we will see in this exercise.
@@ -693,10 +699,10 @@ Thus $S^* \varrho'(a) S = S^*S\varrho(a) = \varrho(a)$
         consisting of objects~$\varphi\colon \scrA \to \scrB(\scrH)$
             that are nmiu.
 
-    Show using~\sref{dils-univ-stinespring}
-        that the inclusion functor~$U \colon \mathsf{Rep}
-        \to \mathsf{Rep}_{\mathrm{cp}}$
-        has a left adjoint.
+Show using~\sref{dils-univ-stinespring}
+    that the inclusion functor~$U \colon \mathsf{Rep}
+    \to \mathsf{Rep}_{\mathrm{cp}}$ has a left adjoint.
+\par % XXX wtf?
 \end{point}
 \begin{point}{Exercise (Essential uniqueness of purification)}
     Let~$\varphi \colon \scrB(\scrH) \to \scrB(\scrK)$
@@ -722,17 +728,251 @@ Thus $S^* \varrho'(a) S = S^*S\varrho(a) = \varrho(a)$
         there is a~$y' \in \scrK'$
         with~$U_0 (e \otimes y) = e \otimes y'$.
     Conclude~$U_0 = 1 \otimes U$ for some unitary~$U$ on~$\scrK'$.
+    Show the general case follows from when the dilations are minimal.
 \end{point}
 \end{parsec}
 
 \section*{Paschke dilations}
 \begin{parsec}%
 \begin{point}%
-    
+    We are ready to state the universal
+        property that Stinepspring's dilation satisfies,
+        which we will use to generalize it to arbitrary maps ncp-maps.
+\end{point}
+\parpic[r]{
+$\xymatrix@C=2.5em@R=2em{
+\mathscr{A} 
+\ar[rr]^\varphi
+\ar[rd]_{\varrho}
+\ar@/_1.5em/[rdd]_{\varrho'}
+& & \mathscr{B} 
+\\ &
+\mathscr{P}
+\ar[ru]_{h}
+& \\ &
+\mathscr{P}'
+\ar@/_1.5em/[ruu]_{h'}
+\ar@{..>}[u]_-{\sigma}
+}$}
+\begin{point}{Definition}%
+    Let~$\varphi\colon \scrA \to \scrB$
+        be any ncp-map.
+    A \Define{Paschke dilation} of~$\varphi$
+    is a triplet~$(\scrP, \varrho, h)$
+    with a von Neumann algebra~$\scrP$;
+    an nmiu-map $\varrho \colon \scrA \to \scrP$
+    and ncp-map~$h \colon \scrP \to \scrB$
+    with~$\varphi = h \after \varrho$
+    such that for every other
+    such triplet~$(\scrP', \varrho', h')$
+    with a von Neumann algebra~$\scrP'$;
+    an nmiu-map $\varrho'\colon \scrA \to \scrP'$
+    and ncp-map~$h' \colon \scrP' \to \scrB$,
+    there is a unique~$\sigma \colon \scrP' \to \scrP$
+    with~$\sigma \after \varrho' = \varrho$
+    and~$h \after \sigma = h'$.
+    \par % XXX hack to get parpic to work
+\end{point}
+\begin{point}[stinespring-is-paschke]{Theorem}%
+Let~$\varphi\colon \scrA \to \scrB(\scrH)$
+    be any ncp-map
+    together with a minimal normal Stinespring dilation~$(\scrK,\varrho,V)$.
+    Then $(\scrB(\scrK), \varrho, \ad_V)$
+        is a Paschke dilation of~$\varphi$.
+\parpic[r]{
+\xymatrix{
+\mathscr{A} \ar@/_/[rdd]_{\varrho'}\ar[rd]^\varrho \ar[rr]^\varphi
+&& \scrB(\mathscr{H}) \\
+& \scrB(\mathscr{K}) \ar[ru]^{\ad_V} \\
+& \mathscr{P}' \ar[ruu]|{h'} \ar[r]_{\tilde\varrho}
+& \scrB(\tilde{\mathscr{K}}) \ar[uu]_{\ad_{\tilde V}} \ar[lu]|{\ad_S}
+}
+}
+
+\begin{point}{Proof}%
+Let~$\scrP'$ be any von Neumann algebra
+    together with nmiu-map~$\varrho'\colon \scrA \to \scrP'$
+    and ncp-map~$h'\colon \scrP' \to \scrB(\scrH)$
+    such that~$h' \after \varrho' = \varphi$.
+We must show that there is a unique
+    ncp-map~$\sigma\colon \scrP' \to \scrB(\scrK)$
+    with~$\sigma \after \varrho' = \varrho$
+    and~$\ad_V \after \sigma = h'$.
+
+\begin{point}{Uniqueness}%
+    Let~$\sigma_1,\sigma_2\colon \scrP' \to \scrB(\scrH)$
+        be two such ncp-maps.
+    Similar to the uniqueness argument in \sref{dils-univ-stinespring}
+    we compute
+        that for all finite tuples~$(a_i)_i$, $(\alpha_i)_i$ from~$\scrA$;
+    $(x_i)_i$, $(y_i)_i$ from~$\scrH$ \emph{and} $c \in \scrP'$
+    we have
+\begin{align*}
+    \bigl< \sigma_k(c)
+        \sum_i \varrho(a_i) V x_i,
+        \sum_j \varrho(a_j) V x_j \bigr>
+    &\ = \ \sum_{i,j}
+        \bigl< V^* \varrho(\alpha_j^*) \sigma_k(c) \varrho(a_i) V x_i, y_i
+            \bigr> \\
+            & \ \stackrel{\mathclap{\sref{dils-univlemma}}}{=} \ \sum_{i,j}
+        \bigl< V^* \sigma_k \bigl(\varrho'(\alpha_j^*) c
+            \varrho'(a_i)\bigr) V x_i, y_j\bigr> \\
+    & \ =\  \sum_{i,j}
+            \bigl< h'(\varrho'(\alpha_j^*) c \varrho'(a_i) )x_i, y_j
+            \bigr>.
+\end{align*}
+By definition of minimality of a Stinespring dilation
+such $\sum_i \varrho(a_i) Vx_i$
+    are norm dense in~$\scrK$
+    and so~$\sigma_1(c)=\sigma_2(c)$ as desired.
+\end{point}
+
+\begin{point}{Existence}%
+Let~$(\tilde\scrK, \tilde\varrho, \tilde V)$
+be a minimal normal Stinespring dilation of~$h'$.
+The triplet~$(\tilde\scrK, \tilde\varrho \after \varrho', \tilde V)$
+is a normal Stinespring dilation of~$\varphi$.
+Thus by \sref{dils-univ-stinespring}
+    there is a (unique) isometry~$S \colon \scrK \to \tilde\scrK$
+    with~$SV = \tilde V$
+    and~$\ad_S \after \tilde\varrho \after \varrho' = \varrho$.
+Define~$\sigma = \ad_S \after \tilde\varrho$.
+Clearly~$\sigma \after \varrho' = \ad_S \after \tilde\varrho \after \varrho'
+    = \varrho$
+    and~$\ad_V \after \sigma =
+        \ad_V \after \ad_S \after \tilde\varrho
+        = \ad_{SV} \after \tilde\varrho
+        = \ad_{\tilde V} \after \tilde\varrho = h'$
+        as desired. \qed
+\end{point}
+\par
+\end{point}
+
+\begin{point}%
+The converse holds as well:
+    by \sref{paschke-unique-up-to-iso}
+    every Paschke dilation of a map~$\varphi \colon \scrA \to \scrB(\scrH)$
+    is up to a unique nmiu-isomorphism a minimal Stinespring dilation.
+Later we will show that
+    every ncp-map~$\varphi\colon \scrA \to \scrB$
+    has a Paschke dilation:
+    it turns out that Paschke's generalization of
+    GNS to Hilbert C$^*$-modules fits the bill.
+Before we show this,
+    we look at some other examples and basic properties
+        of Paschke dilations.
+First, Paschke dilations are unique up to a unique nmiu-isomorphism:
+\par
+\end{point}
+\end{point}
+\begin{point}[paschke-unique-up-to-iso]{Lemma}%
+If $(\scrP_1, \varrho_1, h_1)$
+and $(\scrP_2, \varrho_2, h_2)$
+    are two Paschke dilations for 
+    the same ncp-map $\varphi\colon \scrA \to \scrB$,
+    then there is a unique (nmiu)
+    isomorphism~$\vartheta \colon \scrP_1 \to \scrP_2$
+    with~$\vartheta \after \varrho_1 = \varrho_2$
+    and~$h_2 \after \vartheta = h_1$.
+\begin{point}{Proof}%
+There are unique mediating maps~$\sigma_1\colon \scrP_1 \to \scrP_2$
+and~$\sigma_2 \colon \scrP_2 \to \scrP_1$.
+It is easy to see~$\sigma_1 \after \sigma_2$
+satisfies the same defining property
+as the unique mediating map~$\id\colon \scrP_1 \to \scrP_1$
+and so~$\sigma_1 \after \sigma_2 = \id$.
+Similarly~$\sigma_2 \after \sigma_1 = \id$.
+Define~$\vartheta = \sigma_1$.
+We just saw~$\vartheta$ is an ncp-isomorphism.
+Note~$\vartheta(1) = \vartheta(\varrho_1(1)) = \varrho_2(1) = 1$
+and so~$\vartheta$ is unital.
+But then by \TODO{} $\vartheta$ is an nmiu-isomorphism. \qed
+\par
+\end{point}
+\end{point}
+\begin{point}{Exercise}%
+The following can be shown using only the defining universal property.
+\begin{enumerate}
+\item
+Show~$(\scrA,\varrho,\id)$ is a Paschke dilation of
+    an nmiu-map~$\varrho\colon \scrA \to \scrB$.
+\item
+Let~$(\scrP, \varrho, h)$ be any Paschke dilation.
+Prove~$(\scrP, \id, h)$ is a Paschke dilation for~$h$.
+(Hint: use~$\id\colon \scrP \to \scrP$
+is the unique ncp-map with~$\id \after \varrho = \varrho$
+and~$h \after \id = h$.)
+\item
+    Let~$ \left(\begin{smallmatrix} \varphi_1 \\ \varphi_2
+    \end{smallmatrix}\right) \colon \scrA \to \scrB_1 \oplus \scrB_2$
+    be an ncp-map.
+Show~$(\scrP_1 \oplus \scrP_2,
+        \left(\begin{smallmatrix} \varrho_1 \\ \varrho_2 \end{smallmatrix}\right),
+        h_1 \oplus h_2)$
+        is a Paschke dilation of~$\left(\begin{smallmatrix} \varphi_1 \\ \varphi_2 
+        \end{smallmatrix}\right)$
+    if~$(\scrP_i, \varrho_i, h_i)$
+    is a Paschke dilation of~$\varphi_i$ for~$i=1,2$.
+\item
+Let~$\varphi\colon \scrA \to \scrB$
+    be any ncp-map with Paschke dilation~$(\scrP, \varrho, h)$
+    and~$\lambda \in \R$ with $\lambda > 0$.
+Prove~$(\scrP, \varrho, \lambda h)$
+    is a Paschke dilation of~$\lambda \varphi$.
+\end{enumerate}
 \end{point}
 \end{parsec}
 
 \section*{Hilbert C$^*$-modules}
+\begin{parsec}%
+\begin{point}%
+Recall that by GNS
+    every state (pu-map)~$\omega\colon \scrA \to \C$
+    splits as~$h \after \varrho$
+    for some nmiu-map~$\varrho\colon \scrA \to \scrB(\scrH)$,
+        Hilbert space~$\scrH$
+        and vector state~$h (T) =  \left<x, T x\right>$.
+It is easy to see~$(\scrH, \varrho, h)$ is a Paschke dilation of~$\omega$.
+Paschke showed that GNS can be generalized by replacing the scalars~$\C$
+    with an arbitrary von Neumann algebra~$\scrB$:
+    every `state'~ncp-map $\varphi\colon \scrA \to \scrB$
+    splits as~$h \after \varrho$
+    for some nmiu-map~$\varrho\colon \scrA \to \scrB^a (X)$,
+    and `vector state' $h(T) = \left<x, Tx\right>$,
+    where~$X$ is a self-dual Hilbert C$^*$-module over~$\scrB$, $x \in X$
+     and~$\scrB^a(X)$ are the~$\scrB$-linear bounded operators on~$X$.
+It turns out~$(\scrB^a(X), \varrho, h)$
+    is a Paschke dilation of~$\varphi$.
+Before we will prove this
+    we first develop the theory of self-dual Hilbert C$^*$-modules.
+\end{point}
+\begin{point}{Definition}%
+    Let~$\scrB$ be a C$^*$-algebra and~$X$
+        be a right $\scrB$-module.
+        A \Define{$\scrB$-valued inner product} on~$X$
+        is a map~$\left<\,\cdot\,,\,\cdot\,\right>\colon X \times X \to \scrB$
+        such that
+        \begin{enumerate}
+            \item $\left<x, \,\cdot\,\right> \colon X \to  \scrB$
+                    is~$\scrB$-linear for all~$x \in X$;
+            \item $\left<x,y\right>^* = \left<y,x\right>$
+                for all~$x,y\in X$ \emph{and}
+            \item $\left<x,x\right> \geq 0$ for all~$x \in X$.
+        \end{enumerate}
+    A $\scrB$-valued inner product is called \Define{definite}
+        provided~$x = 0$ whenever~$\left<x,x\right>=0$.
+    A \Define{pre-Hilbert $\scrB$-module} $X$
+        is a right $\scrB$-module $X$
+        together with a definite~$\scrB$-valued inner product.
+
+It will turn out~$\Define{\| x \|} = \| \left<x,x\right> \|^{\frac{1}{2}}$
+        defines a norm on a pre-Hilbert~$\scrB$-module $X$.
+    A \Define{Hilbert $\scrB$-module}
+        (also called a Hilbert C$^*$-module over~$\scrB$)
+        is a pre-Hilbert~$\scrB$-module
+        which is complete in this norm.
+\end{point}
+\end{parsec}
 
 \begin{parsec}%
 \begin{point}%
