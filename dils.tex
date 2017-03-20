@@ -463,6 +463,81 @@ that~$\varrho$ is normal, when~$\varphi$ is.
 \end{parsec}
 
 \begin{parsec}%
+\begin{point}%
+In the following series of exercises we will develop
+    a few consequences of Stinespring's theorem
+    which are in some fields more well-known than
+    the Stinespring theorem itself.
+As preparation we study the nmiu-maps between type I von Neumann algebras.
+\end{point}
+\begin{point}[nmiu-between-type-I]{Exercise}%
+Let~$\varrho\colon \scrB(\scrH) \to \scrB(\scrK)$    
+be a non-zero nmiu-map for non-trivial Hilbert spaces~$\scrH$ and~$\scrK$.
+In this exercise we will show
+    there is a Hilbert space~$\scrK'$
+    and a unitary~$U\colon \scrK \to \scrH \otimes \scrK'$
+    such that~$\varrho(a) = U^* (a\otimes 1) U $.
+
+Show the kernel of~$\varrho$
+    is a ultraweakly-closed two-sided ideal.
+Use \sref{prop:weakly-closed-ideal}
+    to conclude~$\varrho$ is injective.
+
+Pick an orthonormal basis~$(e_i)_{i\in I}$
+    of~$\scrH$.
+Write~$p_i$ for the projection onto~$e_i$;
+i.e.~ $p_i = \ket{e_i}\!\bra{e_i}$.
+Choose any~$i_0 \in I$.
+Also pick an orthonormal basis~$(f_i)_{i \in J}$
+    for the subspace~$\varrho(p_{i_0})$ projects onto.
+
+Write~$u_i$
+    for the partial isometry fixed by~$u_i e_i = e_{i_0}$
+    and~$u_i e_j = 0$ if~$j \neq i$; viz.~$u_i = \ket{e_{i_0}}\!\bra{e_i}$.
+For~$i\in I$ and~$j \in J$,
+    define~$r_{i,j} = \varrho(u^*_i) f_j$.
+Show~$r_{i,j}$ is an orthonormal basis of~$\scrK$.
+Define~$\scrK' = \varrho(p_{i_0}) \scrK$.
+Conclude~$U^* e_i \otimes f_j = r_{i,j}$
+    fixes a unitary
+    $U\colon \scrK \to \scrH \otimes \scrK'$
+    with~$\varrho(a) = U^* (a\otimes 1) U $.
+\end{point}
+\begin{point}[physics-stinespring]{Exercise}%
+Use \sref{nmiu-between-type-I} and~\sref{stinespring-theorem} to show
+    that for every ncp-map~$\varphi\colon \scrB(\scrH) \to \scrB(\scrK)$
+    there is a Hilbert space~$\scrK'$
+    and a bounded operator~$V\colon \scrK \to \scrH \otimes \scrK'$
+    such that~$\varphi(a) = V^* (a \otimes 1)V$.
+
+Conclude using \TODO{CPTP notation}
+that~$\Phi(\varrho) = \TR_{\scrK'} [U^* \varrho \otimes \ketbra{v_0}{v_0} U]$.
+\end{point}
+\begin{point}{Exercise (Kraus' decomposition)}%
+Assume~$\varphi \colon \scrB(\scrH) \to \scrB(\scrK)$
+    is an ncp-map.
+By~\sref{physics-stinespring}
+    there is a Hilbert space~$\scrK'$
+    and bounded operator~$V\colon \scrK \to \scrH \otimes \scrK'$
+    such that~$\varphi(a) = V^* (a \otimes 1) V$.
+Choose an orthonormal basis~$(e_i)_{i \in I}$ of~$\scrK'$.
+Show~$\varphi(a) = \sum_{i \in I} V^* (a \otimes \ketbra{e_i}{e_i}) V$,
+where the sum converges ultraweakly.
+Deduce there are projectors~$P_i \colon \scrH \otimes \scrK' \to \scrH$
+with~$\varphi(a) = \sum_{i \in I} V^*P_i^* a P_iV$.
+Conclude all ncp-maps
+are of the form~$\varphi(a) = \sum_{i \in I} V_i^* a V_i$
+where~$V_i\colon \scrK \to \scrH$ are bounded operators
+such that the partial sums of~$\sum_i V_i^*V_i$ are bounded.
+These~$V_i$ are called the \Define{Kraus operators}.
+
+Now assume~$\scrH$ and~$\scrK$ are finite dimensional,
+    say~$\dim \scrH = n$ and~$\dim \scrK = m$.
+Show that in this case~$\dim \scrK' = nm$ Kraus operators suffice.
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
 \begin{point}{Definition}%
 Let~$\varphi\colon \scrA \to \scrB(\scrH)$
     be any ncp-map.
@@ -485,9 +560,9 @@ It is a well-known fact that all minimal normal Stinespring dilations
     for a fixed~$\varphi$ are unitarily equivalent,
     see for instance~\cite[Proposition 4.2]{paulsen}.
 We will adapt its proof to show that a minimal normal Stinespring
-    dilation admits a universal property \TODO{},
+    dilation admits a universal property,
     which we will need later on.
-This adapation is mostly straight-forward, except for the following lemma.
+The modification is mostly straight-forward, except for the following lemma.
 \end{point}
 \begin{point}[dils-univlemma]{Lemma}%
 % \TODO{}\parpic[r]{
@@ -525,7 +600,7 @@ Hence~$\sigma(\varrho'(a_1)c\varrho'(a_2))
     for all~$a_1,a_2 \in \scrA$ and~$c\in \scrC$ as desired.\qed
 \end{point}
 \end{point}
-\begin{point}{Proposition}%
+\begin{point}[dils-univ-stinespring]{Proposition}%
     Assume~$\varphi\colon \scrA \to \scrB(\scrH)$
         is any ncp-map with normal
         Stinespring dilations~$(\scrK, \varrho, V)$
@@ -598,10 +673,64 @@ Thus $S^* \varrho'(a) S = S^*S\varrho(a) = \varrho(a)$
 \end{point}
 \end{point}
 \end{point}
+\begin{point}{Exercise}%
+    The statement of this universal property of Stinespring
+        was proposed by Chris Heunen in an unpublished note.
+    In this note he shows it is equivalent to the existence
+        of a left-adjoint, as we will see in this exercise.
+    
+    Let~$\mathsf{Rep}_{\mathrm{cp}}$
+        denote the category with as objects
+            ncpu-maps~$\varphi\colon \scrA \to \scrB(\scrH)$
+            and as arrows between~$\varphi\colon \scrA \to \scrB(\scrH)$
+            and~$\varphi'\colon \scrA' \to \scrB(\scrH')$
+            pairs~$(m, S)$
+            where~$m\colon \scrA \to \scrA'$ is a nmiu-map
+            and~$S\colon \scrH \to \scrH'$ is an isometry
+            such that~$\varphi = \ad_S \after \varphi' \after m$.
+    Write~$\mathsf{Rep}$
+        for the full subcategory of~$\mathsf{Rep}_{\mathrm{cp}}$
+        consisting of objects~$\varphi\colon \scrA \to \scrB(\scrH)$
+            that are nmiu.
+
+    Show using~\sref{dils-univ-stinespring}
+        that the inclusion functor~$U \colon \mathsf{Rep}
+        \to \mathsf{Rep}_{\mathrm{cp}}$
+        has a left adjoint.
+\end{point}
+\begin{point}{Exercise (Essential uniqueness of purification)}
+    Let~$\varphi \colon \scrB(\scrH) \to \scrB(\scrK)$
+        be any ncp-map.
+    By~\sref{physics-stinespring}
+    here is a Hilbert~$\scrK'$
+        and bounded operators~$V\colon \scrK \to \scrH \otimes \scrK'$
+        such that~$V^* (a\otimes 1) V = \varphi(a)$.
+    Assume there is another bounded operator
+        $W\colon \scrK \to \scrH \otimes \scrK'$
+        with~$W^* (a \otimes 1) W = \varphi(a)$.
+    We will show there is a unitary~$U \colon \scrK' \to \scrK'$
+    such that~$V = (1 \otimes U) W$.
+
+    First show that in the special case the dilations are minimal
+        (i.e.~the linear span of~$\{(a \otimes 1) V x; \}$ is dense
+            in $\scrH \otimes \scrK'$),
+        that there is a (unique) unitary~$U_0$ on $\scrH \otimes \scrK'$
+        with~$V = U_0 W$ and~$(a \otimes 1) U_0 = U_0 (a \otimes 1)$
+            for all~$a \in \scrB(\scrH)$.
+    Derive from the latter
+    that for each~$y \in \scrK'$ and rank-one projector~$e \in \scrH$
+        there is a~$y' \in \scrK'$
+        with~$U_0 (e \otimes y) = e \otimes y'$.
+    Conclude~$U_0 = 1 \otimes U$ for some unitary~$U$ on~$\scrK'$.
+\end{point}
 \end{parsec}
 
-\TODO{universal property}
-\TODO{kraus}
+\section*{Paschke dilations}
+\begin{parsec}%
+\begin{point}%
+    
+\end{point}
+\end{parsec}
 
 \section*{Hilbert C$^*$-modules}
 
