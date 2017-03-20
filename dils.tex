@@ -49,7 +49,7 @@ Furthermore:
 \end{point}
 
 \begin{point}%
-(We will see a detailed proof later in \TODO{}.)
+(We will see a detailed proof later in \sref{dils-proof-stinespring}.)
 Stinespring's theorem
 is fundamental in the study
 of quantum information and quantum computing:
@@ -91,7 +91,7 @@ we avoid Sakai's characterization (in contrast to our
     and give new proofs
     of Paschke's results where required.
 One major difference is that we will use
-    a restricted completion (see \TODO{}) of a uniform space
+    a completion (see \sref{dils-completion}) of a uniform space
     instead of considering the dual space of a Hilbert C$^*$-module.
 We finish the first part of this chapter
     by constructing Paschke's dilation
@@ -263,7 +263,8 @@ Finally, $\left<\eta(v),\eta(w)\right>=[v,w]$ is direct.\qed
 \begin{parsec}[dils-stinespring]%
 \begin{point}%
 We are ready to prove Stinespring's dilation theorem.
-\begin{point}{Proof of Stinespring's theorem \sref{stinespring-theorem}}%
+\begin{point}[dils-proof-stinespring]{%
+    Proof of Stinespring's theorem \sref{stinespring-theorem}}%
 Let~$\varphi\colon \scrA \to \scrB(\scrH)$
     be a cp-map.
 Write~$\scrA \odot \scrH$ for the tensor product of~$\scrA$ and~$\scrH$
@@ -462,6 +463,82 @@ that~$\varrho$ is normal, when~$\varphi$ is.
 \end{parsec}
 
 \begin{parsec}%
+\begin{point}%
+In the following series of exercises we will develop
+    a few consequences of Stinespring's theorem
+    which are in some fields more well-known than
+    the Stinespring theorem itself.
+As preparation we study the nmiu-maps between type I von Neumann algebras.
+\end{point}
+\begin{point}[nmiu-between-type-I]{Exercise}%
+Let~$\varrho\colon \scrB(\scrH) \to \scrB(\scrK)$    
+be a non-zero nmiu-map for non-trivial Hilbert spaces~$\scrH$ and~$\scrK$.
+In this exercise we will show
+    there is a Hilbert space~$\scrK'$
+    and a unitary~$U\colon \scrK \to \scrH \otimes \scrK'$
+    such that~$\varrho(a) = U^* (a\otimes 1) U $.
+
+Show the kernel of~$\varrho$
+    is a ultraweakly-closed two-sided ideal.
+Use \sref{prop:weakly-closed-ideal}
+    to conclude~$\varrho$ is injective.
+
+Pick an orthonormal basis~$(e_i)_{i\in I}$
+    of~$\scrH$.
+Write~$p_i$ for the projection onto~$e_i$;
+i.e.~ $p_i = \ket{e_i}\!\bra{e_i}$.
+Choose any~$i_0 \in I$.
+Also pick an orthonormal basis~$(f_i)_{i \in J}$
+    for the subspace~$\varrho(p_{i_0})$ projects onto.
+
+Write~$u_i$
+    for the partial isometry fixed by~$u_i e_i = e_{i_0}$
+    and~$u_i e_j = 0$ if~$j \neq i$; viz.~$u_i = \ket{e_{i_0}}\!\bra{e_i}$.
+For~$i\in I$ and~$j \in J$,
+    define~$r_{i,j} = \varrho(u^*_i) f_j$.
+Show~$r_{i,j}$ is an orthonormal basis of~$\scrK$.
+Define~$\scrK' = \varrho(p_{i_0}) \scrK$.
+Conclude~$U^* e_i \otimes f_j = r_{i,j}$
+    fixes a unitary
+    $U\colon \scrK \to \scrH \otimes \scrK'$
+    with~$\varrho(a) = U^* (a\otimes 1) U $.
+\end{point}
+\begin{point}[physics-stinespring]{Exercise}%
+Use \sref{nmiu-between-type-I} and~\sref{stinespring-theorem} to show
+    that for every ncp-map~$\varphi\colon \scrB(\scrH) \to \scrB(\scrK)$
+    there is a Hilbert space~$\scrK'$
+    and a bounded operator~$V\colon \scrK \to \scrH \otimes \scrK'$
+    such that~$\varphi(a) = V^* (a \otimes 1)V$.
+
+Conclude using \TODO{CPTP notation}
+that~$\Phi(\varrho) = \TR_{\scrK'} [U^* \varrho \otimes \ketbra{v_0}{v_0} U]$.
+\end{point}
+\begin{point}{Exercise (Kraus' decomposition)}%
+Assume~$\varphi \colon \scrB(\scrH) \to \scrB(\scrK)$
+    is an ncp-map.
+By~\sref{physics-stinespring}
+    there is a Hilbert space~$\scrK'$
+    and bounded operator~$V\colon \scrK \to \scrH \otimes \scrK'$
+    such that~$\varphi(a) = V^* (a \otimes 1) V$.
+Choose an orthonormal basis~$(e_i)_{i \in I}$ of~$\scrK'$.
+Show~$\varphi(a) = \sum_{i \in I} V^* (a \otimes \ketbra{e_i}{e_i}) V$,
+where the sum converges ultraweakly.
+Deduce there are projectors~$P_i \colon \scrH \otimes \scrK' \to \scrH$
+with~$\varphi(a) = \sum_{i \in I} V^*P_i^* a P_iV$.
+Conclude all ncp-maps
+are of the form~$\varphi(a) = \sum_{i \in I} V_i^* a V_i$
+where~$V_i\colon \scrK \to \scrH$ are bounded operators
+such that the partial sums of~$\sum_i V_i^*V_i$ are bounded.
+These~$V_i$ are called the \Define{Kraus operators}.
+
+Now assume~$\scrH$ and~$\scrK$ are finite dimensional,
+    say~$\dim \scrH = n$ and~$\dim \scrK = m$.
+Show that in this case~$\dim \scrK' = nm$ Kraus operators suffice.
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}{Definition}%
 Let~$\varphi\colon \scrA \to \scrB(\scrH)$
     be any ncp-map.
 A \Define{normal Stinespring dilation}
@@ -477,16 +554,17 @@ is dense in~$\scrK$
 then the Stinespring dilation $(\scrK,\varrho,V)$ is said to be \Define{minimal}.
 Every Stinespring dilation of~$\varphi$ can be restricted to a minimal one
     for~$\varphi$.
+\end{point}
 \begin{point}%
 It is a well-known fact that all minimal normal Stinespring dilations
     for a fixed~$\varphi$ are unitarily equivalent,
     see for instance~\cite[Proposition 4.2]{paulsen}.
 We will adapt its proof to show that a minimal normal Stinespring
-    dilation admits a universal property \TODO{},
+    dilation admits a universal property,
     which we will need later on.
-This adapation is mostly straight-forward, except for the following lemma.
+The modification is mostly straight-forward, except for the following lemma.
 \end{point}
-\begin{point}{Lemma}%
+\begin{point}[dils-univlemma]{Lemma}%
 % \TODO{}\parpic[r]{
 % $\xymatrix{\mathscr{A} \ar[r]^\varrho \ar[rd]_{\varrho'}&
 % \mathscr{B} \\
@@ -522,10 +600,137 @@ Hence~$\sigma(\varrho'(a_1)c\varrho'(a_2))
     for all~$a_1,a_2 \in \scrA$ and~$c\in \scrC$ as desired.\qed
 \end{point}
 \end{point}
+\begin{point}[dils-univ-stinespring]{Proposition}%
+    Assume~$\varphi\colon \scrA \to \scrB(\scrH)$
+        is any ncp-map with normal
+        Stinespring dilations~$(\scrK, \varrho, V)$
+    and~$(\scrK', \varrho', V')$.
+        If~$(\scrK,\varrho,V)$ is minimal,
+        then there is a unique isometry~$S\colon \scrK \to \scrK'$
+        such that~$SV=V'$ and~$\varrho = \ad_S\after \varrho'$.
+\begin{point}{Proof}
+First we will deal with a pathalogical case.
+If~$V = 0$, then~$\varphi = 0$, $V' = 0$, $\scrK = \{0\}$
+and~$\varrho = 0$.  Thus the unique linear map~$S\colon \{0\} \to \scrK'$
+satisfies the requirements.  Assume~$V \neq 0$.
+\begin{point}{Uniqueness}%
+Let~$S_1,S_2\colon \scrK \to \scrK'$
+be any isometries with~$S_k V = V'$ and~$\ad_{S_k} \after \varrho' = \varrho$
+for~$k \in \{1,2\}$.
+We want to show~$S_1=S_2$.
+For all finite tuples~$(a_i)_i$, $(\alpha_i)_i$ from~$\scrA$;
+    $(x_i)_i$, $(y_i)_i$ from~$\scrH$ \emph{and} $c \in \scrB(\scrK')$
+    we have
+\begin{align*}
+    \bigl< \ad_{S_k}(c)
+        \sum_i \varrho(a_i) V x_i,
+        \sum_j \varrho(a_j) V x_j \bigr>
+    &\ = \ \sum_{i,j}
+        \bigl< V^* \varrho(\alpha_j^*) \ad_{S_k}(c) \varrho(a_i) V x_i, y_i
+            \bigr> \\
+            & \ \stackrel{\sref{dils-univlemma}}{=} \ \sum_{i,j}
+        \bigl< V^* \ad_{S_k} \bigl(\varrho'(\alpha_j^*) c
+            \varrho'(a_i)\bigr) V x_i, y_j\bigr> \\
+    & \ =\  \sum_{i,j}
+        \bigl< (V')^* \varrho'(\alpha_j^*) c \varrho'(a_i) V' x_i, y_j
+            \bigr>.
+\end{align*}
+As the linear span of~$\varrho(\scrA) V\scrH$ is dense in~$\scrK$
+    we see~$\ad_{S_1} = \ad_{S_2}$.
+Thus $\lambda S_1= S_2$ for some~$\lambda \in \C$ by \TODO{}.
+As~$V \neq 0$, there is an~$x \in \scrH$ with~$Vx \neq 0$.
+Then~$S_1 V x = V'x = S_2Vx = \lambda S_1 Vx$, so~$\lambda=1$.
+Hence~$S_1=S_2$, as desired.
+\end{point}
+\begin{point}{Existence}%
+For any tuple~$(a_i)_i$ in~$\scrA$ and~$(x_i)_i \in \scrH$, we have
+\begin{align*}
+\bigl\| \sum_i \varrho(a_i)Vx_i \bigr\|^2
+&\ =\  \sum_{i,j} \bigl< V^* \varrho(a_j^*a_i) Vx_i, x_j\bigr> \\
+&\ =\  \sum_{i,j} \bigl< \varphi(a_j^* a_i)x_i, x_j \bigr> \\
+&\ =\  \bigl\| \sum_i \varrho'(a_i) V'x_i \bigr\|^2.
+\end{align*}
+Thus there is a unique isometry~$S\colon \scrK \to \scrK'$
+    such that~$S\varrho(a) Vx = \varrho'(a)V' x$
+        for all~$a\in \scrA$ and~$x \in\scrH$.
+As~$SVx = S\varrho(1)Vx=\varrho'(1)V'x = V'x$ for all~$x\in \scrH$
+    we have~$SV = V'$.
+Furthermore, for all~$(x_i)_i$ in~$\scrH$;
+    $(a_i)_i$ and~$a$ in~$\scrA$
+we have
+\begin{align*}
+    S \varrho(a) \sum_i \varrho(a_i)Vx_i
+    &= \sum_i S \varrho(aa_i) Vx_i \\
+    &= \sum_i \varrho'(aa_i) V'x_i \\
+    & = \varrho'(a) \sum_i \varrho'(a_i)V'x_i\\
+    & = \varrho'(a) S \sum_i \varrho(a_i)V x_i.
+\end{align*}
+Again as the linear span of~$\varrho(\scrA)V\scrH$
+    is dense in~$\scrK$
+    we find~$S \varrho(a) = \varrho'(a)S$.
+Thus $S^* \varrho'(a) S = S^*S\varrho(a) = \varrho(a)$
+    and so~$\ad_S \after \varrho' = \varrho$. \qed
+\end{point}
+\end{point}
+\end{point}
+\begin{point}{Exercise}%
+    The statement of this universal property of Stinespring
+        was proposed by Chris Heunen in an unpublished note.
+    In this note he shows it is equivalent to the existence
+        of a left-adjoint, as we will see in this exercise.
+    
+    Let~$\mathsf{Rep}_{\mathrm{cp}}$
+        denote the category with as objects
+            ncpu-maps~$\varphi\colon \scrA \to \scrB(\scrH)$
+            and as arrows between~$\varphi\colon \scrA \to \scrB(\scrH)$
+            and~$\varphi'\colon \scrA' \to \scrB(\scrH')$
+            pairs~$(m, S)$
+            where~$m\colon \scrA \to \scrA'$ is a nmiu-map
+            and~$S\colon \scrH \to \scrH'$ is an isometry
+            such that~$\varphi = \ad_S \after \varphi' \after m$.
+    Write~$\mathsf{Rep}$
+        for the full subcategory of~$\mathsf{Rep}_{\mathrm{cp}}$
+        consisting of objects~$\varphi\colon \scrA \to \scrB(\scrH)$
+            that are nmiu.
+
+    Show using~\sref{dils-univ-stinespring}
+        that the inclusion functor~$U \colon \mathsf{Rep}
+        \to \mathsf{Rep}_{\mathrm{cp}}$
+        has a left adjoint.
+\end{point}
+\begin{point}{Exercise (Essential uniqueness of purification)}
+    Let~$\varphi \colon \scrB(\scrH) \to \scrB(\scrK)$
+        be any ncp-map.
+    By~\sref{physics-stinespring}
+    here is a Hilbert~$\scrK'$
+        and bounded operators~$V\colon \scrK \to \scrH \otimes \scrK'$
+        such that~$V^* (a\otimes 1) V = \varphi(a)$.
+    Assume there is another bounded operator
+        $W\colon \scrK \to \scrH \otimes \scrK'$
+        with~$W^* (a \otimes 1) W = \varphi(a)$.
+    We will show there is a unitary~$U \colon \scrK' \to \scrK'$
+    such that~$V = (1 \otimes U) W$.
+
+    First show that in the special case the dilations are minimal
+        (i.e.~the linear span of~$\{(a \otimes 1) V x; \}$ is dense
+            in $\scrH \otimes \scrK'$),
+        that there is a (unique) unitary~$U_0$ on $\scrH \otimes \scrK'$
+        with~$V = U_0 W$ and~$(a \otimes 1) U_0 = U_0 (a \otimes 1)$
+            for all~$a \in \scrB(\scrH)$.
+    Derive from the latter
+    that for each~$y \in \scrK'$ and rank-one projector~$e \in \scrH$
+        there is a~$y' \in \scrK'$
+        with~$U_0 (e \otimes y) = e \otimes y'$.
+    Conclude~$U_0 = 1 \otimes U$ for some unitary~$U$ on~$\scrK'$.
+\end{point}
 \end{parsec}
 
-\TODO{universal property}
-\TODO{kraus}
+\section*{Paschke dilations}
+\begin{parsec}%
+\begin{point}%
+    
+\end{point}
+\end{parsec}
 
 \section*{Hilbert C$^*$-modules}
 
@@ -1010,7 +1215,8 @@ Hence~$x'=0$. Thus~$x = \sum_{e \in E} e\left<e,x\right>$ as desired.
 
     First we will show~$\sum_{e \in E} e b_e$ converges to
         begin with.
-    As ultraweakly-bounded nets are norm bounded, see \TODO{},
+    As ultraweakly-bounded nets are norm bounded,
+    see \sref{ultraweakly-bounded-implies-bounded},
         it is sufficient to show~$\sum_{e\in E} f( b_e^*b_e ) $ is bounded
         for each np-map~$f\colon \scrB \to \C$.
     For any~$e \in E$
@@ -1145,7 +1351,7 @@ We continue with a generalization of
 to~Hilbert C$^*$-modules,
 
 \end{point}
-\begin{point}{Theorem}%
+\begin{point}[dils-completion]{Theorem}%
 Let~$\scrB$ be a von Neumann algebra
 and~$V$ a right~$\scrB$-module with~$\scrB$-valued
     inner product~$[\,\cdot\,,\,\cdot\,]$.
@@ -1465,8 +1671,8 @@ Assume we are given an entourage in~$V$,
 that is: np-maps~$f_1,\ldots,f_n\colon \scrB \to \C$
 and~$\varepsilon > 0$.
 For any np-map~$f\colon \scrB \to \C$,
-    the map~$b*f$ given by~$(b * f)(x) \equiv f(b^* x b)$ is also an np-map.
-    \TODO{}. 
+    the map~$b*f$ given by~$(b * f)(x) \equiv f(b^* x b)$ is also an np-map,
+    see \sref{bstaromega-basic}.
     Clearly~$\|xb\|_f = f([xb,xb])^{\frac{1}{2}}
     = f(b^* [x,x] b)^{\frac{1}{2}} = \|x\|_{b*f}$
     for any~$x \in V$.
