@@ -933,6 +933,8 @@ Recall that by GNS
         Hilbert space~$\scrH$
         and vector state~$h (T) =  \left<x, T x\right>$.
 It is easy to see~$(\scrH, \varrho, h)$ is a Paschke dilation of~$\omega$.
+
+
 Paschke showed that GNS can be generalized by replacing the scalars~$\C$
     with an arbitrary von Neumann algebra~$\scrB$:
     every `state'~ncp-map $\varphi\colon \scrA \to \scrB$
@@ -2183,6 +2185,96 @@ We have shown~$\sigma(W)$ is a compatible extension.
         and~$\left<x,y\right> = [x,y]_{W}$.
     Clearly~$[v,w] = \left<\eta(v),\eta(w)\right>$
         and the image of~$\eta$ is norm dense. \qed
+\end{point}
+\end{point}
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+    We are ready to show every ncp-map has a Paschke dilation.
+\end{point}
+\begin{point}{Definition}%
+    Let~$\varphi\colon \scrA \to \scrB$ be any ncp-map between
+        von Neumann algebras.
+    A complex bilinear map~$B \colon \scrA \times \scrB \to X$,
+        where~$X$ is a self-dual Hilbert~$\scrB$-module is
+        called \Define{$\varphi$-compatible}
+        if there is a~$r > 0$
+        such that for all~$n\in \N$, $a_1, \ldots, a_n \in \scrA$
+        and~$b_1, \ldots, b_n \in \scrB$ we have
+        \begin{equation*}
+            \bigl\| \sum_i B(a_i,b_i)\bigr\|^2
+                \leq r \cdot \bigl\| \sum_{i,j} b_i^* \varphi(a_i^*a_j)b_j
+                    \bigr\|
+        \end{equation*}
+        and~$B(a,b_1)b_2 = B(a,b_1b_2)$
+        for all~$a \in \scrA$ and~$b_1,b_2 \in \scrB$.
+\end{point}
+\begin{point}{Theorem}%
+    Let~$\varphi\colon \scrA \to \scrB$ be any ncp-map between
+        von Neumann algebras.
+\begin{enumerate}
+    \item There is a self-dual Hilbert~$\scrB$-module~$\scrA \otimes_\varphi
+            \scrB$ and~$\varphi$-compatible bilinear
+    \begin{equation*}
+        \otimes \colon \scrA \times \scrB \to \scrA \otimes_\varphi \scrB
+    \end{equation*}
+    such that for every~$\varphi$-compatible bilinear
+    map~$B \colon \scrA \times \scrB \to Y$
+    there is a unique bounded
+    module map~$T\colon \scrA \otimes_\varphi \scrB \to Y$
+    such that~$T(a \otimes b) = B(a,b)$ for all~$a \in \scrA$ and~$b \in \scrB$.
+\item
+    There is a unique bounded module
+        map~$\varrho(a_0)$ on~$\scrA \otimes_\varphi \scrB$
+            fixed by
+            \begin{equation*}
+                \varrho(a_0)(a\otimes b) = (a_0 a)\otimes b,
+            \end{equation*}
+        for~$a_0 \in \scrA$
+    and~$a \mapsto \varrho(a)$
+        yields a
+        nmiu-map~$\varrho\colon \scrA \to \scrB^a(\scrA\otimes_\varphi \scrB)$.
+\item
+    The map
+    $h\colon \scrB^a(\scrA\otimes_\varphi\scrB) \to \scrB$
+    given by~$h(T) =\left<1 \otimes 1, T(1 \otimes 1)\right>$
+    is ncp.
+\item
+    $(\scrB^a(\scrA \otimes_\varphi \scrB), \varrho, h)$
+    is a Paschke dilation of~$\varphi$.
+\end{enumerate}
+\begin{point}{Proof}%
+The first part of the proof follows the lines of \cite[Thm.~5.2]{pashcke}.
+\begin{point}{$\scrA \otimes_\varphi \scrB$}
+The algebraic tensor product~$\scrA \odot \scrB$
+    is a right $\scrB$-module
+with the action~$(\sum_i a_i \otimes b_i)\beta = \sum_i a_i \otimes(b_i\beta)$.
+On~$\scrA \odot \scrB$, define
+\begin{equation*}
+    \bigl[\sum_i a_i \otimes b_i, \sum_j \alpha_j \otimes \beta_j\bigr]
+    = \sum_{i,j} b_i^* \varphi(a_i^*\alpha_j)\beta_j.
+\end{equation*}
+By \TODO{} this is a~$\scrB$-valued inner product on~$\scrA \otimes \scrB$.
+By \sref{dils-completion}
+    there is a self-dual Hilbert~$\scrB$-module~$\scrA\otimes_\varphi \scrB$
+    and~$\scrB$-linear inner product-preserving
+    $\eta\colon \scrA \odot \scrB \to \scrA \otimes_\varphi \scrB$
+    with ultranorm dense range.
+Define~$\otimes \colon \scrA \times \scrB \to \scrA \otimes_\varphi \scrB$
+    by~$a \otimes b = \eta(a \otimes b)$.
+By definition we have
+\begin{equation*}
+\bigl\| \sum_i a_i \otimes b_i \bigr\|^2
+    = \bigl\|\bigl[ \sum_i a_i\otimes b_i, \sum_j a_j \otimes b_j \bigr]\bigr\|
+    = \bigl\|\sum_{i,j} b_i^* \varphi(a_i^*a_j) b_j\bigr\|
+\end{equation*}
+and so~$\otimes$ is a~$\varphi$-compatible bilinear map.
+
+Let~$B \colon \scrA \times \scrB \to Y$
+    be a~$\varphi$-compatible
+    bilinear map to some self-dual Hilbert~$\scrB$-module~$Y$.
+
 \end{point}
 \end{point}
 \end{point}
