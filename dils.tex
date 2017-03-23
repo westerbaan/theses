@@ -2190,6 +2190,63 @@ We have shown~$\sigma(W)$ is a compatible extension.
 \end{point}
 \end{parsec}
 \begin{parsec}%
+\begin{point}[selfdual-completion-univ]{Lemma}%
+Assume~$\scrB$ is a von Neumann algebra
+    and~$V$ is a right $\scrB$-module
+    with~$\scrB$-valued inner product.
+Let~$\eta\colon V \to X$ denote the
+    completion into a self-dual Hilbert~$\scrB$-module
+    from \sref{dils-completion}.
+Assume~$Y$ is self-dual Hilbert~$\scrB$-module.
+For each bounded~$\scrB$-linear
+    map~$T\colon V \to Y$,
+    there is a unique bounded~$\scrB$-linear
+    map~$\hat{T} \colon X \to Y$
+    such that~$\hat{T} \after \eta = T$.
+\begin{point}{Proof}%
+By \TODO{} bounded~$\scrB$-linear maps are ultranorm uniformly continuous.
+As~$\eta(V)$ is ultranorm dense in~$X$,
+    the extension~$\hat{T}$ is unique if it exists.
+Pick any~$x \in X$.
+There is a net~$x_\alpha$ in~$V$ such
+    that~$\eta(x_\alpha) \to x$ ultranorm.
+So~$\eta(x_\alpha)$ is ultranorm Cauchy.
+As~$\eta$ preserves inner product,
+    $x_\alpha$ is ultranorm Cauchy as well.
+As~$T$ is ultranorm uniformly continouous
+    $T(x_\alpha)$ is ultranorm Cauchy.
+With the same motions we see~$T(x_\alpha) \sim T(x'_\alpha)$
+    when~$x_\alpha \sim x'_\alpha$.
+So using this and that~$Y$ is ultranorm complete, see \sref{dils-selfdual},
+    we may define~$\hat{T} x = \unlim_\alpha x_\alpha$.
+Clearly~$\hat{T}\after\eta=T$.
+It is straight-forward to check
+    that $\scrB$-linearity
+    of~$\hat{T}$
+    follows from~$\scrB$-linearity of~$T$
+    and ultranorm continuity of addition and
+        the~$\scrB$-module action.
+
+It remains to be shown~$\hat{T}$ is bounded.
+By \TODO{}  we have
+\begin{equation*}
+\left<T x_\alpha,T x_\alpha\right>
+\leq \| T\|^2 [x_\alpha,x_\alpha]
+= \|T\|^2 \left<\eta(x_\alpha),\eta(x_\alpha)\right>
+\end{equation*}
+and so using \TODO{} we see
+\begin{equation*}
+\langle\hat{T} x, \hat{T} x\rangle =
+\uwlim_\alpha \left<T x_\alpha, T x_\alpha\right>
+            \leq \|T\|^2 \uwlim_\alpha \left<\eta(x_\alpha), \eta(x_\alpha)\right>
+            = \|T\|^2 \left<x,x\right>,
+\end{equation*}
+which implies~$\|\hat{T}\| \leq \|T\|$ as desired.
+(In fact~$\|\hat{T}\| = \|T\|$.) \qed
+\end{point}
+\end{point}
+\end{parsec}
+\begin{parsec}%
 \begin{point}%
     We are ready to show every ncp-map has a Paschke dilation.
 \end{point}
@@ -2202,11 +2259,11 @@ We have shown~$\sigma(W)$ is a compatible extension.
         if there is a~$r > 0$
         such that for all~$n\in \N$, $a_1, \ldots, a_n \in \scrA$
         and~$b_1, \ldots, b_n \in \scrB$ we have
-        \begin{equation*}
+        \begin{equation}
             \bigl\| \sum_i B(a_i,b_i)\bigr\|^2
                 \leq r \cdot \bigl\| \sum_{i,j} b_i^* \varphi(a_i^*a_j)b_j
-                    \bigr\|
-        \end{equation*}
+                \bigr\| \label{phi-compatible}
+        \end{equation}
         and~$B(a,b_1)b_2 = B(a,b_1b_2)$
         for all~$a \in \scrA$ and~$b_1,b_2 \in \scrB$.
 \end{point}
@@ -2246,7 +2303,7 @@ We have shown~$\sigma(W)$ is a compatible extension.
 \end{enumerate}
 \begin{point}{Proof}%
 The first part of the proof follows the lines of \cite[Thm.~5.2]{pashcke}.
-\begin{point}{$\scrA \otimes_\varphi \scrB$}
+\begin{point}{1: $\scrA \otimes_\varphi \scrB$}%
 The algebraic tensor product~$\scrA \odot \scrB$
     is a right $\scrB$-module
 with the action~$(\sum_i a_i \otimes b_i)\beta = \sum_i a_i \otimes(b_i\beta)$.
@@ -2274,7 +2331,71 @@ and so~$\otimes$ is a~$\varphi$-compatible bilinear map.
 Let~$B \colon \scrA \times \scrB \to Y$
     be a~$\varphi$-compatible
     bilinear map to some self-dual Hilbert~$\scrB$-module~$Y$.
-
+We must show that there is a unique bounded module
+    map~$T \colon \scrA \otimes_\varphi \scrB \to Y$
+    such that~$T(a\otimes b) = B(a,b)$.
+By the defining property of the algebraic
+    tensor product, there is a unique linear
+    map~$T_0\colon \scrA \odot \scrB \to Y$
+    such that~$T_0(a\otimes b) = B(a,b)$.
+By definition of~$\varphi$-compatible
+    and the inner product on~$\scrA\odot \scrB$,
+    the map~$T_0$ is in fact bounded and~$\scrB$-linear.
+By \sref{selfdual-completion-univ}
+    this map extents uniquely
+    to a bounded module map~$T \colon \scrA \otimes_\varphi \scrB \to Y$
+    with~$T(a\otimes b) = B(a,b)$, as desired.
+\end{point}
+\begin{point}{2: $\varrho$}%
+Assume~$a_0 \in \scrA$.
+To show the module map~$\varrho(a_0)$ exists,
+    it is sufficient to show the bilinear
+    map~$B\colon \scrA \times \scrB \to \scrA \otimes_\varphi \scrB$
+    given by~$B(a,b) = (a_0a)\otimes b$ is $\varphi$-compatible.
+Clearly~$B(a,b \beta) = B(a,b)\beta$.
+To show \eqref{phi-compatible},
+    let~$n \in \N$, $a_1, \ldots, a_n \in \scrA$
+    and~$b_1, \ldots, b_n \in \scrB$
+    be given.
+The column vector
+    $(b_1\ \cdots \ b_n)$
+    corresponds to a~$\scrB$-linear map~$b\colon \scrB^{\oplus n} \to \scrB$.
+    Similarly, write~$a$ for the~$\scrA$-linear
+    map~$a\colon \scrA^{\oplus n} \to \scrA$. \TODO{}
+\begin{align*}
+    \bigl\| \sum_i B(a_i,b_i) \bigr\|^2
+    & \ =\  \bigl\| \sum_i (a_0 a_i) \otimes b_i \bigr\|^2 \\
+    & \ =\  \bigl\| \sum_{i,j} b_i^* \varphi(a_i^* a_0^* a_0 a_j)b_j\bigr\| \\
+    & \ =\   \| b^* (M_n \varphi) (a^*a_0^*a_0a) b\| \\
+    &\  \leq\  \|a_0^*a_0\| \|b^* (M_n \varphi) (a^*a) b\| \\
+    & \ =\  \|a_0\|^2  \bigl\| \sum_{i,j} b_i^* \varphi(a_i^*a_j)b_j\bigr\|.
+\end{align*}
+Thus~$B$ is~$\varphi$-compatible
+    and so there is a unique~$\scrB$-linear bounded module
+    map~$\varrho(a_0)\colon \scrA \otimes_\varphi \scrB
+            \to \scrA \otimes_\varphi \scrB$
+            with~$\varrho(a_0) (a\otimes b) = (a_0 a) \otimes b$.
+Clearly~$\varrho$ is a unital, multiplicative and involution preserving map.
+It remains to be shown~$\varrho$ is normal.
+Let~$D \subseteq \scrA$ be a bounded directed set of self-adjoint elements.
+We need to show~$\sup_{d \in D} \varrho(d) = \varrho(\sup D)$.
+By \TODO{}
+it suffices to show~$\left<\hat{x}, \varrho(\sup D)\hat{x}\right>
+= \left<\hat{x},\sup_{d \in D} \varrho(d)\hat{x}\right>$
+for all~$x \in \scrA \odot \scrB$.
+Write~$x = \sum_i a_i \otimes b_i$
+for column vectors~$a \equiv(a_1\ \cdots\ a_n)$ from~$\scrA$
+and~$b\equiv(b_1\ \cdots\ b_n)$ from~$\scrB$.
+Then
+\begin{align*}
+    \langle \hat{x}, \varrho(\sup D) \hat{x} \rangle
+    & \ =\  \sum_{i,j} b_i^* \varphi(a_i^* (\sup D) a_j) b_j \\
+        & \ =\  b^* (M_n \varphi) (a^* (\sup D) a) b\\
+    & \ =\  \sup_{d \in D} b^* (M_n \varphi) (a^* d a) b \\
+    & \ =\ \sup_{d \in D} \langle \hat{x}, \varrho(d) \hat{x} \rangle \\
+    & \ =\ \langle \hat{x}, \sup_{d \in D} \varrho(d) \hat{x} \rangle.
+\end{align*}
+Thus~$\varrho$ is normal.
 \end{point}
 \end{point}
 \end{point}
