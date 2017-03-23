@@ -2298,6 +2298,16 @@ which implies~$\|\hat{T}\| \leq \|T\|$ as desired.
     given by~$h(T) =\left<1 \otimes 1, T(1 \otimes 1)\right>$
     is ncp.
 \item
+Let $X$ be any  self-dual Hilbert$\scrB$-module~$X$ with $e \in X$ and
+        nmiu-map~$\varrho'\colon \scrA \to \scrB^a(X)$
+        such that~$\varphi  = h' \after \varrho'$
+        with~$h'(T) = \left<e,T e\right>$.
+There is a unique
+        inner product preserving~$\scrB$-linear
+        map~$S \colon \scrA\otimes_\varphi\scrB \to X$
+        such that~$\ad_S \after \varrho' = \varrho$
+        and~$S( 1\otimes 1) = e$.
+\item
     $(\scrB^a(\scrA \otimes_\varphi \scrB), \varrho, h)$
     is a Paschke dilation of~$\varphi$.
 \end{enumerate}
@@ -2346,7 +2356,7 @@ By \sref{selfdual-completion-univ}
     to a bounded module map~$T \colon \scrA \otimes_\varphi \scrB \to Y$
     with~$T(a\otimes b) = B(a,b)$, as desired.
 \end{point}
-\begin{point}{2: $\varrho$}%
+\begin{point}{2: $\varrho \colon \scrA \to \scrB^a(\scrA \otimes_\varphi \scrB)$}%
 Assume~$a_0 \in \scrA$.
 To show the module map~$\varrho(a_0)$ exists,
     it is sufficient to show the bilinear
@@ -2357,11 +2367,14 @@ To show \eqref{phi-compatible},
     let~$n \in \N$, $a_1, \ldots, a_n \in \scrA$
     and~$b_1, \ldots, b_n \in \scrB$
     be given.
-The column vector
-    $(b_1\ \cdots \ b_n)$
-    corresponds to a~$\scrB$-linear map~$b\colon \scrB^{\oplus n} \to \scrB$.
-    Similarly, write~$a$ for the~$\scrA$-linear
-    map~$a\colon \scrA^{\oplus n} \to \scrA$. \TODO{}
+The row vector
+    $(a_1\ \cdots \ a_n)$
+    is an~$\scrA$-linear map~$a\colon \scrA^{\oplus n} \to \scrA$
+    in the usual way:~$a(\alpha_1, \ldots, \alpha_n) = a_1\alpha_1 + \cdots + a_n \alpha_n$.
+    Similarly the column vector~$b \equiv (b_1\  \ldots\ b_n)^\T$
+    is a~$\scrB$-linear map~$\scrB \to \scrB^{\oplus n}$
+    with~$b(\beta) = (b_1 \beta, \ldots, b_n \beta)$.
+    We compute
 \begin{align*}
     \bigl\| \sum_i B(a_i,b_i) \bigr\|^2
     & \ =\  \bigl\| \sum_i (a_0 a_i) \otimes b_i \bigr\|^2 \\
@@ -2383,10 +2396,11 @@ By \TODO{}
 it suffices to show~$\left<\hat{x}, \varrho(\sup D)\hat{x}\right>
 = \left<\hat{x},\sup_{d \in D} \varrho(d)\hat{x}\right>$
 for all~$x \in \scrA \odot \scrB$.
-Write~$x = \sum_i a_i \otimes b_i$
-for column vectors~$a \equiv(a_1\ \cdots\ a_n)$ from~$\scrA$
-and~$b\equiv(b_1\ \cdots\ b_n)$ from~$\scrB$.
-Then
+Find~$n \in \N$,
+row vector~$a \equiv(a_1\ \cdots\ a_n)$
+and column~$b \equiv (b_1\ \cdots\ b_n)$
+such that~$x = \sum_i a_i \otimes b_i$.
+We derive
 \begin{align*}
     \langle \hat{x}, \varrho(\sup D) \hat{x} \rangle
     & \ =\  \sum_{i,j} b_i^* \varphi(a_i^* (\sup D) a_j) b_j \\
@@ -2396,6 +2410,103 @@ Then
     & \ =\ \langle \hat{x}, \sup_{d \in D} \varrho(d) \hat{x} \rangle.
 \end{align*}
 Thus~$\varrho$ is normal.
+\end{point}
+\begin{point}{3: $h \colon \scrB^a(\scrA \otimes_\varphi \scrB) \to \scrB)$}%
+Define~$h(T) = \left<1\otimes 1, T 1\otimes 1 \right>$.
+In \TODO{} we already saw any such vector state is an ncp-map.
+\end{point}
+\begin{point}[paschke-uniqueness]{Uniqueness~$\sigma$}%
+Before we continue with 4 we will already prove the uniqueness property
+    for point 5.
+Note that~$(h \after \varrho)(a) = \left<1\otimes1, a \otimes 1\right>
+    = \varphi(a)$ for all~$a \in \scrA$
+    and so~$\varphi = h \after \varrho$.
+Assume~$\varphi = h' \after \varrho'$
+    for some nmiu-map~$\varrho'\colon \scrA \to \scrP'$,
+        ncp-map~$h\colon \scrP' \to \scrB$
+        and von Neumann algebra~$\scrP'$.
+For point 5 we must show there is a
+    unique ncp-map~$\sigma \colon \scrP' \to \scrB^a (\scrA \otimes_\varphi \scrB)$
+    such that~$h \after \sigma = h'$ and~$\sigma \after \varrho' = \varrho$.
+Let~$\sigma_1,\sigma_2\colon \scrP \to \scrB^a(\scrA\otimes_\varphi\scrB)$
+    be ncp-maps with~$h \after \sigma_k = h'$ and~$\sigma_k \after \varrho'
+        = \varrho$, $k=1,2$.
+We must show~$\sigma_1=\sigma_2$.
+Let~$c \in \scrP'$ and~$x \in \scrA \odot \scrB$ be given.
+By \TODO{} it suffices to prove
+that~$\left<\hat{x}, \sigma_1(c) \hat{x} \right>= \left<\hat{x}, \sigma_2(c) \hat{x} \right>$.
+Find~$n \in \N$, $a_1, \ldots, a_n\in \scrA$
+    and~$b_1,\ldots,b_n \in \scrB$
+    such that~$x = \sum_i a_i\otimes b_i$.
+As~$a_i \otimes b_i = \varrho(a_i) (1 \otimes 1)b_i$, we get for~$k=1,2$
+\begin{align*}\label{equation-sigma}
+    \left<\hat{x}, \sigma_k(c) \hat{x}\right>
+    &\ =\ \sum_{i,j} b_i^* h(\, \varrho(a_i^*) \sigma_k(c) \varrho(a_j)\,)b_j\\
+    &\ =\ \sum_{i,j} b_i^* h(\sigma_i(\, \varrho'(a_i^*) c \varrho'(a_j)\,))b_j \\
+    &\ =\ \sum_{i,j} b_i^* h'(\varrho'(a_i^*) c \varrho'(a_j)) b_j.\numberthis
+\end{align*}
+Thus~$\sigma_1=\sigma_2$ as desired.
+\end{point}
+\begin{point}[paschke-spatial]{4: spatial case}%
+Let~$X$ be a self-dual Hilbert~$\scrB$-module
+    together with~$e \in X$ and nmiu-map~$\scrA \to \scrB^a(X)$
+    such that~$\varphi = h' \after \varrho'$
+    with~$h'(T) = \left<e,Te\right>$.
+We must show there is a unique inner product
+    preserving~$S \colon \scrA \otimes_\varphi \scrB \to X$
+    with~$\ad_S \after \varrho' = \varrho$ and~$S (1\otimes1) = e$.
+As~$h \after \ad_S = h'$ and~$\ad_S$ is an ncp-map,
+    we already know it is unique by the previous point.
+There is a unique linear~$S_0\colon \scrA \odot \scrB \to X$
+    fixed by~$S_0(a\otimes b) = \varrho'(a) e b$.
+Clearly~$S_0$ is also~$\scrB$-linear.
+For any~$x,y \in \scrA\odot \scrB$,
+    say~$x = \sum_i a_i\otimes b_i$ and~$y = \sum_j \alpha_j \otimes \beta_j$,
+    we have
+\begin{align*}
+    \left< S_0 x, S_0 y \right>
+    & \ =\ \sum_{i,j} \left<\varrho'(a_i)e b_i, \varrho'(\alpha_j)e \beta_j \right> \\
+    & \ =\ \sum_{i,j} b_i^*\left<e,  \varrho'(a_i^*\alpha_j)e \right>\beta_j \\
+    & \ =\ \sum_{i,j} b_i^* \varphi(a_i^*\alpha_j) \beta_j \\
+    & \ =\ [x,y].
+\end{align*}
+Thus~$S_0$ preserves inner product. In particular it's bounded
+    and so there is a unique bounded~$\scrB$-linear
+    $S \colon \scrA \otimes_\varphi \scrB \to X$
+    with~$S \after \eta = S_0$.
+By \TODO{} $S$ also preserves inner product and so~$S^*S = 1$.
+By definition~$S (1\otimes1) = \varrho'(1)e 1 = e$.
+Pick any~$a \in \scrA$.
+A straight-forward computation shows~$S \varrho(a) = \varrho'(a) S$
+hence~$S^* \varrho'(a) = \varrho(a) S^*$
+and~$S^* \varrho'(a) S = S^*S \varrho(a) = \varrho(a)$.
+We have shown~$\ad_S \after \varrho' = \ad_S$.
+\end{point}
+\begin{point}{5, $\sigma$ existence}
+Assume~$\varphi = h' \after \varrho'$
+    for some nmiu-map~$\varrho'\colon \scrA \to \scrP'$,
+        ncp-map~$h\colon \scrP' \to \scrB$
+        and von Neumann algebra~$\scrP'$.
+It remains to be shown there is a ~$\sigma\colon \scrP' \to \scrB^a(\scrA\otimes_\varphi\scrB)$
+with~$\sigma\after\varrho'=\varrho$ and~$h \after \sigma = h'$.
+To apply the previous point,
+    we perform the whole construction for~$h'$ instead of~$\varphi$
+    yielding
+    $h' = h_{h'} \after \varrho_{h'}$
+    with~$\varrho_{h'} \colon \scrP' \to \scrB^a (\scrP' \otimes_{h'} \scrB)$
+    and~$h_{h'} \colon \scrB^a(\scrP' \otimes_{h'} \scrB) \to \scrB$.
+By~\sref{paschke-spatial}
+    there is a unique 
+    $\scrB$-linear map~$S\colon \scrA \otimes_{\varphi} \scrB \to
+                                \scrP' \otimes_{h'} \scrB$
+with~$S^*S = 1$, $S 1\otimes1 = 1\otimes1$ and
+$\ad_S \after \varrho_{h'}\after \varrho' = \varrho$.
+Define~$\sigma = \ad_S \after \varrho_{h'}$.
+This~$\sigma$ fits the bill:
+$\sigma \after \varrho' = \ad_S \after \varrho_{h'} \after \varrho'
+                                = \varrho$
+and~$h \after \sigma = h \after \ad_S \after \varrho_{h'}
+= h_{h'} \after \varrho_{h'} = h'$.
 \end{point}
 \end{point}
 \end{point}
