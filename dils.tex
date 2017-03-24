@@ -731,8 +731,6 @@ Show using~\sref{dils-univ-stinespring}
     Show the general case follows from when the dilations are minimal.
 \end{point}
 \end{parsec}
-
-\section*{Paschke dilations}
 \begin{parsec}%
 \begin{point}%
     We are ready to state the universal
@@ -754,7 +752,7 @@ $\xymatrix@C=2.5em@R=2em{
 \ar@/_1.5em/[ruu]_{h'}
 \ar@{..>}[u]_-{\sigma}
 }$}
-\begin{point}{Definition}%
+\begin{point}[def-paschke]{Definition}%
     Let~$\varphi\colon \scrA \to \scrB$
         be any ncp-map.
     A \Define{Paschke dilation} of~$\varphi$
@@ -2246,6 +2244,7 @@ which implies~$\|\hat{T}\| \leq \|T\|$ as desired.
 \end{point}
 \end{point}
 \end{parsec}
+\section*{Paschke dilations}
 \begin{parsec}%
 \begin{point}%
     We are ready to show every ncp-map has a Paschke dilation.
@@ -2267,7 +2266,7 @@ which implies~$\|\hat{T}\| \leq \|T\|$ as desired.
         and~$B(a,b_1)b_2 = B(a,b_1b_2)$
         for all~$a \in \scrA$ and~$b_1,b_2 \in \scrB$.
 \end{point}
-\begin{point}{Theorem}%
+\begin{point}[existence-paschke]{Theorem}%
     Let~$\varphi\colon \scrA \to \scrB$ be any ncp-map between
         von Neumann algebras.
 \begin{enumerate}
@@ -2308,11 +2307,13 @@ There is a unique
         such that~$\ad_S \after \varrho' = \varrho$
         and~$S( 1\otimes 1) = e$.
 \item
-    $(\scrB^a(\scrA \otimes_\varphi \scrB), \varrho, h)$
+$(\scrB^a(\scrA \otimes_\varphi \scrB), \varrho, h)$
     is a Paschke dilation of~$\varphi$.
 \end{enumerate}
 \begin{point}{Proof}%
-The first part of the proof follows the lines of \cite[Thm.~5.2]{pashcke}.
+The Hilbert~$\scrB$-module~$\scrA \otimes_\varphi \scrB$
+    will be isomorphic to the self-dual completion of the space~$X$
+    constructed by Paschke in~\cite[Thm.~5.2]{pashcke}.
 \begin{point}{1: $\scrA \otimes_\varphi \scrB$}%
 The algebraic tensor product~$\scrA \odot \scrB$
     is a right $\scrB$-module
@@ -2506,7 +2507,180 @@ This~$\sigma$ fits the bill:
 $\sigma \after \varrho' = \ad_S \after \varrho_{h'} \after \varrho'
                                 = \varrho$
 and~$h \after \sigma = h \after \ad_S \after \varrho_{h'}
-= h_{h'} \after \varrho_{h'} = h'$.
+= h_{h'} \after \varrho_{h'} = h'$. \qed
+\end{point}
+\end{point}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}%
+In the remainder of this section we will study various property
+    of Paschke dilations.
+The first question we will answer is
+    when the representation in a Paschke dilation is injective.
+First we need parts of the comparison theory of projections.
+\end{point}
+\begin{point}{Definition}%
+Let~$\scrA$ be a von Neumann algebra.
+Two projections~$p,q \in \scrA$ are said to be
+    \Define{Murray--von Neumann equivalent},
+    in symbols~$p \sim q$,
+    if there is an~$u \in \scrA$
+    with~$p = uu^*$ and~$q = u^*u$.
+Such~$u$ are called \Define{partial isometries}.
+E.g.~in~$M_2$ we have~$\ketbra{0}{0} \sim \ketbra{1}{1}$
+    via the partial isometry~$\ketbra{0}{1}$.
+We will write~$p \lesssim q$
+    if there is a projection~$r \leq q$
+    such that~$p \sim r$.
+\end{point}
+\begin{point}{Lemma}%
+Assume~$\scrA$ is a von Neumann algebra.
+For any projections~$p,q\in \scrA$
+    we have~$\cceil{p}\cceil{q} \neq 0$
+    if and only if there is a projection~$r\neq 0$
+    with~$r \lesssim p$ and~$r \lesssim q$.
+\begin{point}[ccarrier-equivalent-subproj]{Proof}%
+(Based on \cite[Prop.~6.1.8]{kr}.)
+Assume~$\scrA$ is a von Neumann algebra on a Hilbert space~$\scrH$.
+
+Assume~$\cceil{p}\cceil{q} = 0$,
+    and~$v^*v \leq q$ and~$vv^* \leq p$ for some partial
+    isometry~$v\in \scrA$.
+    We want to show~$v=0$, which is easy:
+\begin{equation*}
+v = vv^* v v^*v = p vv^* v v^*v q = pvq= p \cceil{p} v \cceil{q}q 
+    = pvq \cceil{p}\cceil{q}= 0.
+\end{equation*}
+
+For the converse, assume~$\cceil{p}\cceil{q} \neq 0$.\TODO{finish}
+\end{point}
+\end{point}
+\begin{point}[ccarrier-preserves-murray]{Lemma}%
+    Let~$\scrA$ be a von Neumann algebra.
+    If~$p \sim q$, then~$\cceil{p} = \cceil{q}$.
+\begin{point}{Proof}%
+    \TODO{finish}
+\end{point}
+\end{point}
+\begin{point}[central-carrier-formula]{Lemma}%
+Assume~$\scrA$ is a von Neumann algebra.
+For any~$a \in \scrA$
+we have
+\begin{equation*}
+    \cceil{a} \ =\  \sup \{p; p \text{ projection}; \ p \lesssim \ceil{a} \}
+            \ = \ \sup \{ \ceil{b^*ab} ;\ \|b\| \leq 1\}.
+\end{equation*}
+\begin{point}{Proof}%
+We will show in order~$\sup_{p \lesssim \ceil{a}} p \leq \sup_{\|b\|\leq 1} \ceil{b^*ab}
+\leq \cceil{a} \leq \sup_{p \lesssim \ceil{a}} p$.
+
+Assume~$p \lesssim \ceil{a}$.
+Pick~$u$ with~$uu^* = p$ and~$u^*u \leq \ceil{a}$.
+We have~$ p = uu^*uu^* \leq u\ceil{a}u^*$.
+So~$p = \ceil{p} \leq \ceil{u\ceil{a}u^*}
+= \ceil{u a u^*} \leq \sup_{\|b\|\leq 1} \ceil{b^* a b}$.
+
+If~$\|b\| \leq 1$
+then~$b^*b \leq 1$
+and so~$b^*ab \leq b^*\cceil{a} b = b^*b \cceil{a} \leq \cceil{a}$.
+We have shown~$\sup_{\|b\|\leq 1} \ceil{b^*ab} \leq \cceil{a}$.
+
+The final inequality is hardest.
+For brevity, write~$q = \sup_{p \lesssim \ceil{a}} p$.
+We claim~$\cceil{q} = \cceil{a}$.
+As~$\ceil{a} \leq \ceil{a}$
+    we have~$\ceil{a} \leq q$ and so~$\cceil{a} \leq \cceil{q}$.
+For the other direction, assume~$p \lesssim \ceil{a}$.
+Then~$p \leq \cceil{p} \leq \cceil{a}$
+    by \sref{ccarrier-preserves-murray}.
+Thus~$q \leq \cceil{a}$ and so~$\cceil{q} \leq \cceil{a}$.
+
+We are done if we can show~$\cceil{q}-q = 0$.
+We claim~$\cceil{q}-q$ and~$\ceil{a}$ do not have an equivalent
+    subprojection.
+Indeed, if~$p \leq \cceil{q}-q$
+    and~$p \lesssim \ceil{a}$,
+    then~$p=0$ because~$p \leq q$
+    and so~$2p \leq q + (\cceil{q} - q) = \cceil{q}$.
+Consequently~$\cceil{\cceil{q}-q}\cceil{a} = 0$
+    by \sref{ccarrier-equivalent-subproj}.
+Thus~$ \cceil{q}-q \leq
+        \cceil{\cceil{q}-q} =
+        \cceil{\cceil{q}-q} \cceil{q} =
+        \cceil{\cceil{q}-q} \cceil{a} = 0 $. \qed
+\end{point}
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+We have all the tools to characterize neatly when
+    the representation of a Paschke dilation is injective.
+This is a generalization of our answer\cite{stineinj}
+    to the same question for the Stinespring embedding.
+\end{point}
+\begin{point}{Theorem}%
+Let~$\varphi\colon \scrA \to \scrB$ be any ncp-map
+    with Paschke dilation~$(\scrP, \varrho, h)$.
+Then $\ceil{\varrho} = \cceil{\varphi}$.
+Thus~$\varrho$ is injective ($\ceil{\varrho}=1$) if and only if $\varphi$
+maps no non-zero central projection to zero ($\cceil{\varphi}=1$).
+\begin{point}{Proof}%
+By~\sref{paschke-unique-up-to-iso}
+    it is sufficient to prove the equivalence
+    for the dilation constructed in \sref{existence-paschke}.
+\begin{point}[injectivity-paschke-lemma]%
+First we will prove that~$\varrho(\alpha) = 0$
+    if and only if~$\varphi(a^*\alpha^*\alpha a) = 0$
+    for all~$a \in \scrA$.
+From left to right is easy:
+$\varphi(a^*\alpha^*\alpha a) = h(\varrho(a^*\alpha^*) \varrho(\alpha) \varrho(a)) = 0$ whenever~$\varrho(\alpha) = 0$.
+For the converse, assume~$\varphi(a^*\alpha^*\alpha a) = 0$
+    for all~$a \in \scrA$.
+By the polarization identity, see \sref{mult-polarization},
+    we also have~$\varphi(a^* \alpha^* \alpha a') = 0$
+    for all~$a,a' \in \scrA$.
+Pick any~$x \in \scrA \otimes \scrB$, say~$x = \sum_i a_i \otimes b_i$.
+Then
+    $\left<\hat{x}, \varrho(\alpha) \hat{x}\right> = 
+        \sum_{i,j} b_i^*\varphi(a_i^* \alpha^*\alpha a_j)b_j = 0$.
+Hence~$\varrho(\alpha) = 0$, as claimed.
+\end{point}
+\begin{point}%
+We will first show~$\ceil{\varrho} \leq \cceil{\varphi}$.
+For any~$a \in \scrA$
+we have
+\begin{equation*}
+    a^* (1 - \cceil{\varphi}) a = 
+    (1 - \cceil{\varphi})a^* a (1 - \cceil{\varphi}) \leq
+    \| a\|^2 (1 - \cceil{\varphi}) \leq \|a\|^2 (1 - \ceil{\varphi})
+\end{equation*}
+and so~$\varphi(a^* (1 - \cceil{\varphi}) a)
+\leq \|a\|^2 \varphi(1-\ceil{\varphi}) = 0$.
+Hence by \sref{injectivity-paschke-lemma}
+we get~$\varrho(1-\cceil{\varphi}) = 0$
+and so~$\ceil{\varrho} \leq \cceil{\varphi}$.
+\end{point}
+\begin{point}%
+Now we show~$\cceil{\varphi} \leq \ceil{\varrho}$.
+Pick any~$p \lesssim \ceil{\varphi}$.
+Pick~$v$ with~$vv^* = p$ and~$v^*v \leq \ceil{\varphi}$.
+By \sref{injectivity-paschke-lemma}
+it follows from~$\varrho(1-\ceil{\varrho}) = 0$
+that~$\varphi(v^* (1-\ceil{\varrho})v)=0$.
+And so we have~$v^* (1-\ceil{\varrho})v \leq 1-\ceil{\varphi}$.
+Consequently
+\begin{equation*}
+p (1-\ceil{\varrho}) p
+    =    vv^* (1 - \ceil{\varrho}) vv^*
+    \leq v (1- \ceil{\varphi}) v^*
+    = vv^* - v \ceil{\varphi} v^* = 0.
+\end{equation*}
+This means~$p \leq \ceil{\varrho}$.
+Thus by~\sref{central-carrier-formula}
+we get~$\cceil{a} = \sup_{p \lesssim \ceil{a}} p \leq \ceil{\varrho}$,
+as desired. \qed
 \end{point}
 \end{point}
 \end{point}
