@@ -2231,7 +2231,88 @@ is norm bounded.\qed
 \end{point}
 \end{point}
 \end{parsec}
+\begin{parsec}%
+\begin{point}[sigma-weak-lemma]{Lemma}%
+Let~$\scrA$ be a von Neumann 
+of bounded operators on some Hilbert space~$\scrH$,
+and let~$\varrho\colon \scrA\to\scrB(\scrH)$
+denote the inclusion.
+Let~$\Omega$ be the collection of all np-maps $\scrA\to\C$,
+and let $\varrho_\Omega\colon \scrA\to\scrB(\scrH_\Omega)$
+be as in~\TODO{}.
 
+There is a partial isometry $U\colon \scrH_\Omega\to\scrH$
+with
+$U\varrho_\Omega(a)= \varrho(a) U$
+for all~$a\in\scrA$,
+$U^*U \in \varrho_\Omega(\scrA)^\square$,
+and 
+$\cceil{U^*U}_{\varrho_\Omega(\scrA)^\square}=1$.
+\begin{point}{Proof}%
+	\TODO{}
+\end{point}
+\end{point}
+\begin{point}{Theorem}%
+Every np-map $\omega\colon \scrA\to\C$
+on a von Neumann subalgebra~$\scrA$
+of~$\scrB(\scrH)$,
+where~$\scrH$ is some Hilbert space,
+is of the 
+form~$\omega \equiv \sum_n \left<x_n,(\,\cdot\,)x_n\right>$
+for some $x_1,x_2,\dotsc \in\scrH$
+(with $\sum_n\|x_n\|^2<\infty$).
+\begin{point}{Proof}%
+Let~$\varrho\colon \scrA\to\scrB(\scrH)$
+denote the inclusion,
+and let~$U\colon \scrH_\omega\to\scrH$
+be as in~\sref{sigma-weak-lemma}.
+Since~$1=\cceil{U^*U}_{\varrho_\Omega(\scrA)^\square}$,
+we can 
+(by \TODO{})
+find partial isometries $(v_i)_i$ in
+$\varrho_\Omega(\scrA)^\square$
+with $1=\sum_i v_i^*v_i$
+and $v_iv_i^*\leq U^*U$
+for all~$i$.
+Since~$\omega\in\Omega$,
+there is~$y\in\scrH_\Omega$
+with $\omega = \left<y,\varrho_\Omega(\,\cdot\,)y\right>$.
+Then for every~$a\in\scrA$,
+\begin{alignat*}{3}
+	\textstyle
+\omega(a)\  &=\
+	\textstyle
+	\left<\,y, \,\varrho_\Omega(a)y\,\right> 
+	\\
+&= 
+	\textstyle
+	\ \sum_i \left<\,y,\,  v_i^*v_i\, \varrho_\Omega(a) y \,\right>
+	&&\qquad 
+	\textstyle
+	\text{since $1=\sum_i v_i^*v_i$}
+	\\
+&= 
+	\textstyle
+	\ \sum_i \left<\,y,\,  v_i^* U^*Uv_i \,\varrho_\Omega(a)y\, \right>
+	&&\qquad\text{since $v_iv_i^*\leq U^*U$}
+	\\
+	&= 
+	\textstyle
+	\ \sum_i \left<\,Uv_i y,\, U \varrho_\Omega(a)v_i y\, \right>
+	&&\qquad\text{since $v_i \in \varrho(\scrA)^\square$}
+	\\
+	&= 
+	\textstyle
+	\ \sum_i \left<\,Uv_i y,\, \varrho(a) \, Uv_i y\, \right>
+	&&\qquad\text{since $U\varrho_\Omega(a)=\varrho(a) U$}.
+\end{alignat*}
+In particular, $\omega(1)=\sum_i \|Uv_i y\|^2$,
+so at most countably many $Uv_iy$'s are non-zero;
+and denoting those by~$x_1,x_2,\dotsc$,
+we get $\omega = \sum_n \left<x_n,(\,\cdot\,)x_n\right>$.\qed
+\end{point}
+\end{point}
+\end{parsec}
 \section{[To be moved]}
 %
 %
