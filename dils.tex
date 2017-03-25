@@ -975,6 +975,40 @@ It will turn out~$\Define{\| x \|} = \| \left<x,x\right> \|^{\frac{1}{2}}$
 \end{parsec}
 
 \begin{parsec}%
+\begin{point}{Proposition}%
+Let~$\scrB$ be a von Neumann algebra,
+    $X$ be a pre-Hilbert~$\scrB$-module
+    and~$x \in X$.
+Then the map~$h\colon \scrB^a(X )\to \scrB$
+defined by~$h(T) = \left<x,Tx\right>$
+is ncp.
+\begin{point}{Proof}%
+To show~$h$ is completely positive,
+pick any~$n \in \N$, ~$T_1, \ldots, T_n \in \scrB^a(X)$
+    and~$b_1, \ldots, b_n \in \scrB$
+    and compute
+\begin{align*}
+\sum_{i,j} b_i^* h(T_i^*T_j)b_j
+&\ =\ \sum_{i,j} b_i^* \left<x,T_i^*T_j x\right> b_j\\
+&\ =\ \sum_{i,j} \left<T_i x b_i,T_j x b_j\right>  \\
+&\ =\ \bigl\langle\sum_i T_i x b_i, \sum_i T_i x b_i\bigr\rangle \ \geq\  0,
+\end{align*}
+which shows~$h$ is indeed completely positive.
+Now we show~$h$ is normal.
+Let~$D$ be any bounded directed
+subset of self-adjoint elements of~$\scrB^a(X)$.
+As~$h$ is positive
+    the set~$\{h(d)\}_{d \in D}$ is
+    again bounded and directed.
+As~$\scrB$ is a von Neumann algebra~$\sup_{d \in D} h(d)$ exists.
+Automatically~$\sup_{d \in D} h(d) \leq h(\sup D)$.
+To show~$h$ is normal, we have to this is in fact an equality.
+\TODO{finish}
+\end{point}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
 \begin{point}%
 In \sref{prop-complete-into-hilbert-space}
     we saw how to complete a complex vector space with inner product
@@ -1277,6 +1311,9 @@ Conclude from \ref{ex-continuous-preserves-lims} and
         \end{enumerate}
 \begin{point}{Proof}%
 We will prove $1 \Rightarrow 3 \Rightarrow 4 \Rightarrow 2 \Rightarrow 4 \Rightarrow 1$.
+The equivalence~$1 \Leftrightarrow 4$
+    was already shown by Paschke in \cite[Thm.~3.12]{paschke},
+    but we give a different proof. The other equivalences are new.
 \begin{point}{1 $\Rightarrow$ 3, self-dual~$X$ are bounded complete}%
     Assume~$X$ is self-dual and~$(x_\alpha)_\alpha$
         is a norm-bounded ultranorm-Cauchy net.
