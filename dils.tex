@@ -1206,12 +1206,12 @@ for~$y = (Tx)b-T(xb)$
     and so~$T(x)b=T(xb)$. \qed
 \end{point}
 \end{point}
-\begin{point}{Proposition}%
-For any~$\scrB$-linear bounded operator $T \colon X \to Y$
-    between right~$\scrB$-modules
-    with~$\scrB$-valued inner products
-    $\left<Tx,Tx\right>\leq \|T\|^2 \left<x,x\right>$
-    for all~$x \in X$.
+\begin{point}[blinear-inprod-inequality]{Proposition}%
+Let~$X$ and~$Y$ be right~$\scrB$-modules with~$\scrB$-valued
+    inner products.
+If~$T \colon X \to Y$ is a bounded~$\scrB$-linear map,
+    then $\left<Tx,Tx\right>\leq \|T\|^2 \left<x,x\right>$
+    for~$x \in X$.
 \begin{point}{Proof}
 (The proof is a slight variation on the first part
 of \cite[Thm.~2.8]{paschke}.)
@@ -1418,7 +1418,7 @@ We are ready to define a uniformity for Hilbert $\scrB$-modules.
 \end{point}
 \begin{point}[dils-ultranorm]{Definition}%
 Let~$\scrB$ be a von Neumann algebra.
-Assume~$X$ is a right-$\scrB$-module
+Assume~$X$ is a right $\scrB$-module
     with~$\scrB$-valued inner product~$[\,\cdot\,,\,\cdot\,]$.
 We call the uniformity on~$X$
     given by seminorms~$\|x\|_f = f([x,x])^{\frac{1}{2}}$
@@ -1431,6 +1431,12 @@ If~$\scrB=\C$, then the ultranorm uniformity is
     the same as the uniformity induced by the norm.
 If~$X=\scrB$ with~$[a,b]=a^*b$,
     then the ultranorm uniformity coincides with the ultrastrong uniformity.
+\end{point}
+\begin{point}{Beware}%
+    The ultranorm uniformity is (in general) not given by a single norm.
+    Furthermore the ultranorm uniformity is weaker than the norm uniformity,
+        even though on von Neumann algebras the ultraweak uniformity
+        is stronger than the weak uniformity.
 \end{point}
 \end{point}
 \end{parsec}
@@ -1542,6 +1548,41 @@ Conclude from \ref{ex-continuous-preserves-lims} and
     in the category of uniform spaces with uniformly continuous maps.
 \end{point}
 \end{parsec}
+
+\begin{parsec}%
+\begin{point}[blinear-bounded-is-ultranorm]{Proposition}%
+Let~$X$ and~$Y$ be right $\scrB$-modules
+    with~$\scrB$-valued inner products.
+A bounded $\scrB$-linear map~$T\colon X \to Y$
+    is ultranorm uniformly continuous.
+\begin{point}{Proof}%
+Let~$f\colon \scrB \to \C$ be an np-map
+    and~$\varepsilon > 0$.
+Assume~$\|x-y\|_f \leq \frac{\varepsilon}{\|T\|}$.
+By \sref{blinear-inprod-inequality}
+we have~$\left<T(x-y), T(x-y)\right> \leq \|T\|^2\left<x-y,x-y\right>$
+and so
+\begin{equation*}
+    \|Tx - Ty\|_f \  =\  f(\left<T(x-y),T(x-y)\right>)^{\frac{1}{2}}
+\ \leq\  \|T\| \|x-y\|_f \leq \varepsilon.
+\end{equation*}
+Thus~$T$ is uniformly continuous in the ultranorm uniformity. \qed
+\end{point}
+\end{point}
+\begin{point}[ultranormcontstruct]{Corollary}%
+Let~$\scrB$ be a von Neumann algebra
+    and~$X$ a right~$\scrB$-module
+    with~$\scrB$-valued inner product.
+For~$x_0 \in X$ the maps
+\begin{align*}
+    (x,y) &\mapsto x+y & x &\mapsto \left<x_0, x\right>
+    & b &\mapsto x_0 b \\
+    X\times X &\to X & X &\to X & \scrB & \to X
+\end{align*}
+are all uniformly continuous in the ultranorm uniformity.
+\end{point}
+\end{parsec}
+
 \begin{parsec}%
 \begin{point}[dils-selfdual]{Theorem}%
     For a pre-Hilbert~$\scrB$-module~$X$,
@@ -1583,7 +1624,7 @@ The equivalence~$1 \Leftrightarrow 4$
     Assume~$X$ is self-dual and~$(x_\alpha)_\alpha$
         is a norm-bounded ultranorm-Cauchy net.
      For the moment pick an~$y \in X$.
-    By \TODO{} we
+By \sref{module-CS} we
     have~$f(\left<x_\alpha,y\right>\left<y,x_\alpha\right>) \leq \|y\|^2
         f(\left<x_\alpha,x_\alpha\right>)$ for any~np-map~$f\colon \scrB \to \C$
         and so~$\left<y,x_\alpha\right>$ is an ultrastrong-Cauchy net in~$\scrB$.
@@ -1747,7 +1788,8 @@ Hence~$x'=0$. Thus~$x = \sum_{e \in E} e\left<e,x\right>$ as desired.
     Assume~$X$ has an orthonormal basis~$E$.
     Let~$(x_\alpha)_\alpha$ be an ultranorm-Cauchy net.
     Pick~$e \in E$.
-    By \TODO{} $(\left<e, x_\alpha\right>)_\alpha$ is an ultrastrong-Cauchy net.
+    By \sref{ultranormcontstruct}
+    $(\left<e, x_\alpha\right>)_\alpha$ is an ultrastrong-Cauchy net.
     As von Neumann algebras are ultrastrongly complete
     (see \sref{vn-complete})
         there is a~$b_e \in \scrB$
@@ -1842,7 +1884,7 @@ to~$\sum_{e \in E} e b_e$, as desired.
     Pick any~$x \in X$.
     By assumption~$\sum_{e \in E} e  \left<e,x\right>$
         converges in the ultranorm uniformity to~$x$.
-    As by \TODO{} $\tau$ is ultranorm continuous
+As by \sref{blinear-bounded-is-ultranorm} $\tau$ is ultranorm continuous
         we see
         \begin{equation*}
             \tau(x) = \sum_{e \in E} \tau(e) \left<e,x\right>
@@ -2365,7 +2407,7 @@ it follows~$([x_\alpha,y_\alpha])_\alpha$
     is a Cauchy net in the ultraweak uniformity of~$\scrB$,
     see \sref{dils-uniformity-examples}.
 As~$\|[x_\alpha,y_\alpha]\| \leq \|x_\alpha\| \|y_\alpha\|$,
-    see \TODO{}, it is also a norm-bounded net.
+see \sref{module-CS}, it is also a norm-bounded net.
 By \sref{vn-complete} norm-bounded Cauchy net in the ultraweak uniformity
 converge, so~$\uwlim_\alpha [x_\alpha,y_\alpha]$ exists.
 
@@ -2403,8 +2445,8 @@ With ultraweak continuity of addition
 \end{equation*}
 In a similar fashion one proves the other axioms of
     a~$\scrB$-valued inner product:
-    $[x,y]=[y,x]^*$ follows from the ultraweak continuity of~$(\cdot)^*$,
-    see \TODO{}; $\scrB$-homogeinity follows from
+    $[x,y]=[y,x]^*$ follows from the ultraweak continuity of~$(\cdot)^*$;
+    $\scrB$-homogeinity follows from
         ultraweak continuity of~$c \mapsto cb$ (see \sref{mult-uws-cont})
         \emph{and}~$[x,x]\geq 0$ follows from ultraweak-closedness of the
         positive cone of~$\scrB$.
@@ -2504,7 +2546,8 @@ For each bounded~$\scrB$-linear
     map~$\hat{T} \colon X \to Y$
     such that~$\hat{T} \after \eta = T$.
 \begin{point}{Proof}%
-By \TODO{} bounded~$\scrB$-linear maps are ultranorm uniformly continuous.
+By \sref{blinear-bounded-is-ultranorm} bounded~$\scrB$-linear
+    maps are ultranorm uniformly continuous.
 As~$\eta(V)$ is ultranorm dense in~$X$,
     the extension~$\hat{T}$ is unique if it exists.
 Pick any~$x \in X$.
@@ -2528,7 +2571,7 @@ It is straight-forward to check
         the~$\scrB$-module action.
 
 It remains to be shown~$\hat{T}$ is bounded.
-By \TODO{}  we have
+By \sref{blinear-inprod-inequality}  we have
 \begin{equation*}
 \left<T x_\alpha,T x_\alpha\right>
 \leq \| T\|^2 [x_\alpha,x_\alpha]
@@ -2625,7 +2668,8 @@ On~$\scrA \odot \scrB$, define
     \bigl[\sum_i a_i \otimes b_i, \sum_j \alpha_j \otimes \beta_j\bigr]
     = \sum_{i,j} b_i^* \varphi(a_i^*\alpha_j)\beta_j.
 \end{equation*}
-By \TODO{} this is a~$\scrB$-valued inner product on~$\scrA \otimes \scrB$.
+By complete positivity of~$\varphi$
+this is a~$\scrB$-valued inner product on~$\scrA \otimes \scrB$.
 By \sref{dils-completion}
     there is a self-dual Hilbert~$\scrB$-module~$\scrA\otimes_\varphi \scrB$
     and~$\scrB$-linear inner product-preserving
