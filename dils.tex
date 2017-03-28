@@ -1123,7 +1123,7 @@ Hence~$\|T\|^2 \leq \|T^*T\| \leq \|T^*\|\|T\| = \|T\|^2$.
     \qed
 \end{point}
 \end{point}
-\begin{point}{Proposition}%
+\begin{point}[hilbmod-cstar]{Proposition}%
 Let $X$ be a Hilbert~$\scrB$-module.
 With composition as multiplication,
     adjoint as involution
@@ -1162,7 +1162,7 @@ for any~$x \in X$ and~$y \in Y$.
 Thus~$S = T^*$ and~$T \in \scrB^a(X)$ as desired. \qed
 \end{point}
 \end{point}
-\begin{point}{Proposition}%
+\begin{point}[hilbmod-ordersep]{Proposition}%
 Let~$X$ be a Hilbert~$\scrB$-module.
 The vector states on~$\scrB^a(X)$ are order separating;
 that is: $T \geq 0$ if and only if~$\left<x,Tx\right> \geq 0$
@@ -1190,8 +1190,54 @@ By assumption~$0 \leq \left<T_-x,TT_-x\right>$
     Thus~$T_- = 0$ and so~$T \geq 0$. \qed
 \end{point}
 \end{point}
+\begin{point}{Lemma}%
+Let~$T\colon X \to Y$
+    be an adjointable linear map between pre-Hilbert $\scrB$-modules~$X,Y$.
+Then~$T$ is~$\scrB$-linear.
+\begin{point}{Proof}%
+We have
+    $\left<y, (Tx)b\right>
+    =\left<T^*y, x\right>b
+    =\left<y, T(xb)\right>$.
+for any~$x \in X$, $y \in Y$ and~$b \in \scrB$.
+In particular we
+get~$\left<(Tx)b-T(xb), (Tx)b-T(xb)\right>=0$
+for~$y = (Tx)b-T(xb)$
+    and so~$T(x)b=T(xb)$. \qed
+\end{point}
+\end{point}
+\begin{point}{Proposition}%
+For any~$\scrB$-linear bounded operator $T \colon X \to Y$
+    between right~$\scrB$-modules
+    with~$\scrB$-valued inner products
+    $\left<Tx,Tx\right>\leq \|T\|^2 \left<x,x\right>$
+    for all~$x \in X$.
+\begin{point}{Proof}
+(The proof is a slight variation on the first part
+of \cite[Thm.~2.8]{paschke}.)
+Pick~$\varepsilon > 0$.
+By \TODO{}
+    $\left<x,x\right> + \varepsilon$ is invertible.
+Define~$h = (\left<x,x\right> + \varepsilon)^{-\frac{1}{2}}$.
+Clearly
+\begin{equation*}
+0 \ \leq\  \left<xh,xh\right>
+    \ =\  h (\left<x,x\right> + \varepsilon)h - h^2 \varepsilon
+    \ =\  1 - h^2 \varepsilon \ \leq\  1.
+\end{equation*}
+Thus~$\|xh\| \leq 1$
+and so~$\|h\left<Tx, Tx\right>h\| = \|T(xh)\|^2 \leq \|T\|^2$.
+From this and~$0 \leq h\left<Tx,Tx\right>h$
+we get~$h\left<Tx,Tx\right>h \leq \|T\|^2$. Hence
+\begin{equation*}
+\left<Tx,Tx\right> \ \leq \ \|T\| h^{-2}\  =
+    \  \|T\|^2(\left<x,x\right> + \varepsilon)
+\end{equation*}
+for all~$\varepsilon > 0$
+and so~$\left<Tx,Tx\right> \leq \|T\|^2 \left<x,x\right>$ as desired. \qed
+\end{point}
+\end{point}
 \end{parsec}
-
 
 \begin{parsec}%
 \begin{point}{Proposition}%
