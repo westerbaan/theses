@@ -2232,7 +2232,41 @@ is norm bounded.\qed
 \end{point}
 \end{parsec}
 \begin{parsec}%
-\begin{point}[sigma-weak-lemma]{Lemma}%
+\begin{point}[sigma-weak-lemma-2]{Lemma}%
+Let~$\Omega$ be a collection of np-maps $\omega\colon \scrA\to\C$
+on a von Neumann algebra~$\scrA$ 
+whose central carriers,  $\cceil{\omega}$, are orthogonal to one another,
+and let~$\scrH$ and~$\scrK$ be Hilbert spaces
+on which~$\scrA$ is represented such
+that each~$\omega\in\Omega$ 
+is given by vectors $x_\omega\in\scrH$ and $y_\omega\in\scrK$,
+that is,
+$\left<x_\omega,\varrho(\,\cdot\,)x_\omega\right>
+=\omega = \left<y_\omega,\pi(\,\cdot\,)y_\omega\right>$,
+where $\varrho\colon \scrA\to\scrB(\scrH)$
+and $\pi\colon \scrA\to\scrB(\scrK)$
+are nmiu-maps.
+
+Then there is a bounded operator $U\colon \scrK\to\scrH$
+which intertwines~$\pi$ and~$\varrho$
+in the sense that $U \pi(a)=\varrho(a) U$
+for all~$a\in \scrA$
+such that~$U^*U$
+is a projection in
+$\pi(\scrA)^\square$
+with
+$\cceil{U^*U}_{\pi(\scrA)^\square}=\pi(\sum_\omega \cceil{\omega})$,
+and 
+$UU^*$
+is projection in
+$\varrho(\scrA)^\square$
+with
+$\cceil{UU^*}_{\varrho(\scrA)^\square}=\varrho(\sum_\omega \cceil{\omega})$.
+\begin{point}{Proof}%
+\TODO{...}
+\end{point}
+\end{point}
+\begin{point}[sigma-weak-lemma]{Corollary}%
 Let~$\scrA$ be a von Neumann 
 of bounded operators on some Hilbert space~$\scrH$,
 and let~$\varrho\colon \scrA\to\scrB(\scrH)$
@@ -2241,15 +2275,32 @@ Let~$\Omega$ be the collection of all np-maps $\scrA\to\C$,
 and let $\varrho_\Omega\colon \scrA\to\scrB(\scrH_\Omega)$
 be as in~\TODO{}.
 
-There is a partial isometry $U\colon \scrH_\Omega\to\scrH$
-with
+There is a bounded operator $U\colon \scrH_\Omega\to\scrH$
+such that $U^*U$ is a projection
+in~$\varrho_\Omega(\scrA)^\square$
+with 
+$\cceil{U^*U}_{\varrho_\Omega(\scrA)^\square}=1$
+and
 $U\varrho_\Omega(a)= \varrho(a) U$
-for all~$a\in\scrA$,
-$U^*U \in \varrho_\Omega(\scrA)^\square$,
-and 
-$\cceil{U^*U}_{\varrho_\Omega(\scrA)^\square}=1$.
+for all~$a\in\scrA$.
 \begin{point}{Proof}%
-	\TODO{}
+Let $\{x_i\}_i$ be a maximal set of vectors
+in~$\scrH$ 
+such that the 
+central carriers~$\cceil{\omega_i}$
+of the corresponding vector functionals
+$\omega_i :=\left<x_i,\varrho(\,\cdot\,)x_i\right>$
+on~$\scrA$
+are orthogonal;
+so that we'll 
+have $\sum_i \cceil{\omega_i}=1$.
+Now, the point of~$\scrH_\Omega$ 
+is that there are vectors $y_i\in\scrH_\Omega$
+with $\omega_i=\left<y_i,\varrho_\Omega(\,\cdot\,)y_i\right>$
+for each~$i$.
+Now apply~\sref{sigma-weak-lemma-2}
+to get a map~$U\colon \scrH_\Omega\to \scrH$
+with the desired properties.\qed
 \end{point}
 \end{point}
 \begin{point}{Theorem}%
@@ -2264,8 +2315,13 @@ for some $x_1,x_2,\dotsc \in\scrH$
 \begin{point}{Proof}%
 Let~$\varrho\colon \scrA\to\scrB(\scrH)$
 denote the inclusion,
-and let~$U\colon \scrH_\omega\to\scrH$
+and let~$U\colon \scrH_\Omega\to\scrH$
 be as in~\sref{sigma-weak-lemma}.
+Since~$\omega\in\Omega$,
+there is~$y\in\scrH_\Omega$
+with $\omega = \left<y,\varrho_\Omega(\,\cdot\,)y\right>$.
+We're going to `transfer'~$y$ from~$\scrH_\Omega$ to~$\scrH$
+using the following device.
 Since~$1=\cceil{U^*U}_{\varrho_\Omega(\scrA)^\square}$,
 we can 
 (by \TODO{})
@@ -2274,9 +2330,6 @@ $\varrho_\Omega(\scrA)^\square$
 with $1=\sum_i v_i^*v_i$
 and $v_iv_i^*\leq U^*U$
 for all~$i$.
-Since~$\omega\in\Omega$,
-there is~$y\in\scrH_\Omega$
-with $\omega = \left<y,\varrho_\Omega(\,\cdot\,)y\right>$.
 Then for every~$a\in\scrA$,
 \begin{alignat*}{3}
 	\textstyle
