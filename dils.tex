@@ -427,7 +427,7 @@ Hence~$
     is normal.  Later (\TODO{}) we will have a simpler argument.
     Define~$C_{ij} = \frac{1}{\sqrt{n}} a_j$
         and~$\Delta\colon \scrA \to M_n \scrA$
-        by~$\Delta(d)_{ij} = \delta_{ij}$.\TODO{kronecker}.
+        by~$(\Delta(d))_{ij} = \delta_{ij} d$.
     Then~$(C^*\Delta(d)C)_{ij} = a_i^* d a_j$.
     As~$C^*(\,\cdot\,)C$ is normal by~\sref{ad-normal},
         it is sufficient to show~$\Delta$ is normal.
@@ -731,8 +731,6 @@ Show using~\sref{dils-univ-stinespring}
     Show the general case follows from when the dilations are minimal.
 \end{point}
 \end{parsec}
-
-\section*{Paschke dilations}
 \begin{parsec}%
 \begin{point}%
     We are ready to state the universal
@@ -754,7 +752,7 @@ $\xymatrix@C=2.5em@R=2em{
 \ar@/_1.5em/[ruu]_{h'}
 \ar@{..>}[u]_-{\sigma}
 }$}
-\begin{point}{Definition}%
+\begin{point}[def-paschke]{Definition}%
     Let~$\varphi\colon \scrA \to \scrB$
         be any ncp-map.
     A \Define{Paschke dilation} of~$\varphi$
@@ -969,10 +967,309 @@ Before we will prove this
 
 It will turn out~$\Define{\| x \|} = \| \left<x,x\right> \|^{\frac{1}{2}}$
         defines a norm on a pre-Hilbert~$\scrB$-module $X$.
-    A \Define{Hilbert $\scrB$-module}
-        (also called a Hilbert C$^*$-module over~$\scrB$)
-        is a pre-Hilbert~$\scrB$-module
-        which is complete in this norm.
+A \Define{Hilbert $\scrB$-module}
+    (also called a Hilbert C$^*$-module over~$\scrB$)
+    is a pre-Hilbert~$\scrB$-module
+    which is complete in this norm.
+\end{point}
+\begin{point}{Examples}%
+Hilbert $\C$-modules are the same as Hilbert spaces.
+
+Any C$^*$-algebra~$\scrB$ is a Hilbert C$^*$-module over itself
+    with $\scrB$-valued inner product~$\left<a,b\right> = a^*b$.
+By the C$^*$-identity, the Hilbert~$\scrB$-module
+    norm on~$\scrB$ coincides with
+    the usual C$^*$-norm.
+
+More generally: if~$J \subseteq \scrB$
+    is any right ideal of~$\scrB$,
+    then~$J$ is a pre-Hilbert~$\scrB$-module
+    with~$\left<a,b\right> = a^*b$.
+If~$J$ is norm closed, then~$J$ is a Hilbert~$\scrB$-module.
+
+In particular, the right ideal~$e \scrB$ for projection~$e \in \scrB$
+    is a Hilbert~$\scrB$-module with~$\left<ea,eb\right> = a^*eb$.
+Later we will see that every so-called self-dual
+    Hilbert~$\scrB$-module is build up from such~$e \scrB$
+    if~$\scrB$ is a von Neumann algebra.
+    
+If~$X$ and~$Y$ are (pre-)Hilbert~$\scrB$-modules,
+    then its direct sum~$X \oplus Y$
+    is a (pre-)Hilbert~$\scrB$-module
+    with inner product~$\left<(x,y), (x',y')\right>
+                = \left<x,x'\right>+\left<y,y'\right>$.
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}{Definition}%
+Let~$X$ be a C$^*$-algebra with~$\scrB$-valued inner
+    product~$\left<\,\cdot\,,\,\cdot\,\right>$.
+For any state (pu-map)~$f\colon \scrB \to \C$
+    write~$\Define{\left<x,y\right>_f} = f(\left<x,y\right>)$
+    and~$\Define{\|x\|_f} = \left<x,x\right>^2_f$.
+This~$\left<\,\cdot\,,\,\cdot\,\right>_f$
+    is a complex-valued inner product
+    and so~$\|\,\cdot\,\|_f$ is a seminorm.
+\end{point}
+\begin{point}[module-CS]{Proposition (Cauchy--Schwarz)}%
+Let~$X$ be a right~$\scrB$-module
+    with~$\scrB$-valued inner product~$\left<\,\cdot\,,\,\cdot\,\right>$
+    for some~C$^*$-algebra~$\scrB$.
+Then~$\left<x,y\right>\left<y,x\right> \leq \|\left<y,y\right>\| \left<x,x\right>$.
+\begin{point}{Proof}%
+Let~$f\colon \scrB \to \C$ be any state (pu-map).
+Since the states on~$\scrB$ are order separating,
+see \sref{states-order-separating},
+it suffices to show~$f(\left<x,y\right>\left<y,x\right>)
+\leq \|\left<y,y\right>\| f(\left<x,x\right>)$.
+If~$f(\left<x,y\right>\left<y,x\right>) = 0$
+the inequality holds trivially,
+so assume~$f(\left<x,y\right>\left<y,x\right>) \neq 0$.
+Using Cauchy--Schwarz for~$\left<\,\cdot\,,\,\cdot\,\right>_f$,
+    we derive
+\begin{align*}
+    f(\left<x,y\right>\left<y,x\right>)^2
+        &\  =\  \left<x,y\left<y,x\right>\right>_f^2 \\
+        &\  \leq\  \|x\|_f^2 \, \|y \left<y,x\right>\|_f^2 \\
+    & \ =\  \|x\|_f^2\, f(\left<x,y\right>\left<y,y\right>\left<y,x\right>)\\
+    & \ \leq\  \|x\|_f^2 \,
+    \|\left<y,y\right>\| \,
+    f(\left<x,y\right>\left<y,x\right>),
+\end{align*}
+    which yields the inequaltiy by dividing by
+$f(\left<x,y\right>\left<y,x\right>)$. \qed
+\end{point}
+\end{point}
+\begin{point}[module-seminorm]{Exercise}
+Let~$X$ be a right $\scrB$-module
+    with~$\scrB$-valued inner product~$\left<\,\cdot\,,\,\cdot\,\right>$.
+First use Cauchy--Schwarz (\sref{module-CS})
+    to show~$\|\left<x,y\right>\| \leq \|x\|\|y\|$.
+With this, derive $\|x\| =\|\left<x,x\right>\|^{\frac{1}{2}}$ is a seminorm on~$X$ with
+    $\|x \cdot b \| \leq \|x\|\|b\|$
+    for all~$b \in \scrB$.
+\end{point}
+\begin{point}%
+From this, it follows easily that
+that the addition and the module action
+are jointly uniformly continuous
+    and that the inner product is uniformly continuous in each argument
+    separately.
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}{Definition}%
+Let~$X,Y$ be pre-Hilbert~$\scrB$-modules.
+A linear map~$T\colon X \to Y$
+    is said to be \Define{adjointable}
+    if there is a linear map~$S \colon Y \to X$
+    such that~$\left<y, Tx\right>_Y = \left<Sy, x\right>_X$
+    for all~$x \in X$ and~$y \in Y$.
+Adjoints are unique:
+    if~$S$ and~$S'$ are both adjoints of~$T$
+    an easy computation shows~$\left<(S-S')y,(S-S)'y\right>=0$
+    for all~$y \in Y$.
+We write \Define{$T^*$} for the adjoint of~$T$ (if it exists)
+    and~$\Define{\scrB^a(X)}$
+    for the subset of bounded operators on~$X$
+    which are adjointable.
+\end{point}
+\begin{point}[adjointable-cstar-identity]{Lemma}%
+For a linear map~$T \colon X \to Y$
+between pre-Hilbert~$\scrB$-modules~$X$,~$Y$ \emph{and}
+real number~$B > 0$
+the following are equivalent.
+\begin{enumerate}
+    \item $\|T x\| \leq B \|x\|$ for all~$x \in X$.
+    \item $\|\left<y,Tx\right>\| \leq B \|y\|\|x\|$
+            for all~$x \in X$ and~$y \in Y$.
+\end{enumerate}
+If~$T$ is bounded and adjointable, then 
+    ~$\|T^*\| = \|T\|$ and~$\|T^*T\|=\|T\|^2$.
+\begin{point}{Proof}%
+   Assume~$\|Tx\| \leq B \|x\|$ for~$x \in X$.
+   Then by \sref{module-seminorm}
+   we find that for all~$y \in X$ we have~$\|\left<y, Tx\right>\|
+            \leq \|y\|\|Tx\|
+            \leq B \|y\|\|x\|$, as desired.
+
+For the converse, pick~$x\in X$
+    and assume~$\|\left<y,Tx\right>\| \leq B \|y\|\|x\|$
+            for all~$y \in Y$.
+Then~$\|Tx \|^2 = \|\left<Tx,Tx\right>\|
+                \leq B\|Tx\|\|x\|$.
+So~$\|Tx\| \leq B\|Tx\|\|x\|$
+    by dividing~$\|Tx\|$ if~$\|Tx\|\neq0$
+    and trivially otherwise.
+
+Now assume~$T$ is adjointable and bounded.
+Then~$\|\left<x,T^*y\right>\| = \|\left<y, Tx\right>\| \leq \|T\|\|y\|\|x\|$
+    for all~$x \in X$, $y\in Y$
+    and so by the previous~$\| T^*\| \leq \|T\|$.
+As adjoints are unique and~$T$ is an adjoint of~$T^*$
+    we get~$T^{**}=T$
+    and so~$\|T\| = \|T^{**}\| \leq \|T^*\| \leq \|T\|$, as desired.
+
+For the final identity, note that for any~$x \in X$ we have
+\begin{equation*}
+\|Tx\|^2 = \|\left<Tx,Tx\right>\| 
+            = \| \left<x, T^*Tx\right>\|
+            \leq \|x \| \|T^*Tx \|
+            \leq \|x\|^2 \|T^*T\|
+\end{equation*}
+and so~$\|T\| \leq \|T^*T\|^{\frac{1}{2}}$.
+Hence~$\|T\|^2 \leq \|T^*T\| \leq \|T^*\|\|T\| = \|T\|^2$.
+    \qed
+\end{point}
+\end{point}
+\begin{point}[hilbmod-cstar]{Proposition}%
+Let $X$ be a Hilbert~$\scrB$-module.
+With composition as multiplication,
+    adjoint as involution
+    and operator norm,
+     $\scrB^a(X)$ is a C$^*$-algebra.
+\begin{point}{Proof}
+It is easy to see~$T^*+S^*$ is an adjoint of~$T+S$
+    for~$T,S \in \scrB^a(X)$
+    and so~$T+S$ is adjointable with~$(T+S)^* = T^*+ S^*$.
+    Similarly it is easy to see~$\scrB^a(X)$
+        is closed under scalar multiplication, composition and involution
+        with~$(\lambda T)^* = \overline{\lambda} T^* $,
+            $(TS)^* = S^*T^*$ and
+            $T^{**} =T$.
+Thus it is a~$*$-algebra.
+By \sref{adjointable-cstar-identity} 
+    the C$^*$-identity holds.
+It only remains to be shown that~$\scrB^a(X)$ is complete.
+Let~$T_1,T_2,\ldots$ be a Cauchy sequence in~$\scrB^a(X)$.
+As~$X$ is a Banach space $\scrB(X)$ is complete
+    and so~$T_n \to T$ for some~$T \in \scrB(X)$.
+We have to show~$T$ is adjointable.
+For any~$n,m \in \N$ we have~$\|T_n^* - T_m^*\|
+= \|(T_n - T_m)^*\| = \|T_n - T_m\|$
+and so~$T^*_1, T^*_2,\ldots$
+is also Cauchy
+and converges to, say, $S \in \scrB(X)$.
+So
+\begin{equation*}
+\left<S x, y\right> =
+\langle\lim_{n} T^*_n x, y\rangle = \lim_n \left<T_n^* x, y\right>
+                = \lim_n \left<x, T_n y\right>
+                =  \left<x, T y\right>,
+\end{equation*}
+for any~$x \in X$ and~$y \in Y$.
+Thus~$S = T^*$ and~$T \in \scrB^a(X)$ as desired. \qed
+\end{point}
+\end{point}
+\begin{point}[hilbmod-ordersep]{Proposition}%
+Let~$X$ be a Hilbert~$\scrB$-module.
+The vector states on~$\scrB^a(X)$ are order separating;
+that is: $T \geq 0$ if and only if~$\left<x,Tx\right> \geq 0$
+for all~$x \in X$.
+\begin{point}{Proof}%
+(Proof from \cite[Lemma 4.1]{lance}.)
+Assume~$T \in \scrB^a(X)$ with~$T \geq 0$.
+Then~$T = S^*S$ for some~$S \in \scrB^a(X)$
+    and so~$\left<x, Tx\right> = \left<Sx,Sx\right> \geq 0$
+    for all~$x \in X$.
+
+For the converse, assume~$\left<x, Tx\right> \geq 0$
+    for all~$x \in X$.
+We claim $T$ is self-adjoint.
+By the polariation identity
+$\left<x, Ty\right>
+    = \frac{1}{4} \sum^3_{k=0} i^k \left< x+i^ky, T(x+i^ky)\right>$
+    we have~$\left<x,Ty \right> = \left<Tx, y\right>$ for all~$x,y \in X$
+    and so~$T^*=T$.
+There are positive~$T_+,T_- \in \scrB^a(X)$
+with~$T = T_+ - T_-$ and~$T_+T_- = 0$, see \sref{cstar-pos-neg-part}.
+By assumption~$0 \leq \left<T_-x,TT_-x\right>$
+    from which~$-\left<x,T_-^3x\right> \geq 0$,
+    but~$T_-^3 \geq 0$ so~$T_-^3 = 0$.
+    Thus~$T_- = 0$ and so~$T \geq 0$. \qed
+\end{point}
+\end{point}
+\begin{point}{Lemma}%
+Let~$T\colon X \to Y$
+    be an adjointable linear map between pre-Hilbert $\scrB$-modules~$X,Y$.
+Then~$T$ is~$\scrB$-linear.
+\begin{point}{Proof}%
+We have
+    $\left<y, (Tx)b\right>
+    =\left<T^*y, x\right>b
+    =\left<y, T(xb)\right>$.
+for any~$x \in X$, $y \in Y$ and~$b \in \scrB$.
+In particular we
+get~$\left<(Tx)b-T(xb), (Tx)b-T(xb)\right>=0$
+for~$y = (Tx)b-T(xb)$
+    and so~$T(x)b=T(xb)$. \qed
+\end{point}
+\end{point}
+\begin{point}[blinear-inprod-inequality]{Proposition}%
+Let~$X$ and~$Y$ be right~$\scrB$-modules with~$\scrB$-valued
+    inner products.
+If~$T \colon X \to Y$ is a bounded~$\scrB$-linear map,
+    then $\left<Tx,Tx\right>\leq \|T\|^2 \left<x,x\right>$
+    for~$x \in X$.
+\begin{point}{Proof}
+(The proof is a slight variation on the first part
+of \cite[Thm.~2.8]{paschke}.)
+Pick~$\varepsilon > 0$.
+By \TODO{}
+    $\left<x,x\right> + \varepsilon$ is invertible.
+Define~$h = (\left<x,x\right> + \varepsilon)^{-\frac{1}{2}}$.
+Clearly
+\begin{equation*}
+0 \ \leq\  \left<xh,xh\right>
+    \ =\  h (\left<x,x\right> + \varepsilon)h - h^2 \varepsilon
+    \ =\  1 - h^2 \varepsilon \ \leq\  1.
+\end{equation*}
+Thus~$\|xh\| \leq 1$
+and so~$\|h\left<Tx, Tx\right>h\| = \|T(xh)\|^2 \leq \|T\|^2$.
+From this and~$0 \leq h\left<Tx,Tx\right>h$
+we get~$h\left<Tx,Tx\right>h \leq \|T\|^2$. Hence
+\begin{equation*}
+\left<Tx,Tx\right> \ \leq \ \|T\| h^{-2}\  =
+    \  \|T\|^2(\left<x,x\right> + \varepsilon)
+\end{equation*}
+for all~$\varepsilon > 0$
+and so~$\left<Tx,Tx\right> \leq \|T\|^2 \left<x,x\right>$ as desired. \qed
+\end{point}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}{Proposition}%
+Let~$\scrB$ be a von Neumann algebra,
+    $X$ be a pre-Hilbert~$\scrB$-module
+    and~$x \in X$.
+Then the map~$h\colon \scrB^a(X )\to \scrB$
+defined by~$h(T) = \left<x,Tx\right>$
+is ncp.
+\begin{point}{Proof}%
+To show~$h$ is completely positive,
+pick any~$n \in \N$, ~$T_1, \ldots, T_n \in \scrB^a(X)$
+    and~$b_1, \ldots, b_n \in \scrB$
+    and compute
+\begin{align*}
+\sum_{i,j} b_i^* h(T_i^*T_j)b_j
+&\ =\ \sum_{i,j} b_i^* \left<x,T_i^*T_j x\right> b_j\\
+&\ =\ \sum_{i,j} \left<T_i x b_i,T_j x b_j\right>  \\
+&\ =\ \bigl\langle\sum_i T_i x b_i, \sum_i T_i x b_i\bigr\rangle \ \geq\  0,
+\end{align*}
+which shows~$h$ is indeed completely positive.
+Now we show~$h$ is normal.
+Let~$D$ be any bounded directed
+subset of self-adjoint elements of~$\scrB^a(X)$.
+As~$h$ is positive
+    the set~$\{h(d)\}_{d \in D}$ is
+    again bounded and directed.
+As~$\scrB$ is a von Neumann algebra~$\sup_{d \in D} h(d)$ exists.
+Automatically~$\sup_{d \in D} h(d) \leq h(\sup D)$.
+To show~$h$ is normal, we have to this is in fact an equality.
+\TODO{finish}
+\end{point}
 \end{point}
 \end{parsec}
 
@@ -1121,7 +1418,7 @@ We are ready to define a uniformity for Hilbert $\scrB$-modules.
 \end{point}
 \begin{point}[dils-ultranorm]{Definition}%
 Let~$\scrB$ be a von Neumann algebra.
-Assume~$X$ is a right-$\scrB$-module
+Assume~$X$ is a right $\scrB$-module
     with~$\scrB$-valued inner product~$[\,\cdot\,,\,\cdot\,]$.
 We call the uniformity on~$X$
     given by seminorms~$\|x\|_f = f([x,x])^{\frac{1}{2}}$
@@ -1134,6 +1431,12 @@ If~$\scrB=\C$, then the ultranorm uniformity is
     the same as the uniformity induced by the norm.
 If~$X=\scrB$ with~$[a,b]=a^*b$,
     then the ultranorm uniformity coincides with the ultrastrong uniformity.
+\end{point}
+\begin{point}{Beware}%
+    The ultranorm uniformity is (in general) not given by a single norm.
+    Furthermore the ultranorm uniformity is weaker than the norm uniformity,
+        even though on von Neumann algebras the ultraweak uniformity
+        is stronger than the weak uniformity.
 \end{point}
 \end{point}
 \end{parsec}
@@ -1245,6 +1548,41 @@ Conclude from \ref{ex-continuous-preserves-lims} and
     in the category of uniform spaces with uniformly continuous maps.
 \end{point}
 \end{parsec}
+
+\begin{parsec}%
+\begin{point}[blinear-bounded-is-ultranorm]{Proposition}%
+Let~$X$ and~$Y$ be right $\scrB$-modules
+    with~$\scrB$-valued inner products.
+A bounded $\scrB$-linear map~$T\colon X \to Y$
+    is ultranorm uniformly continuous.
+\begin{point}{Proof}%
+Let~$f\colon \scrB \to \C$ be an np-map
+    and~$\varepsilon > 0$.
+Assume~$\|x-y\|_f \leq \frac{\varepsilon}{\|T\|}$.
+By \sref{blinear-inprod-inequality}
+we have~$\left<T(x-y), T(x-y)\right> \leq \|T\|^2\left<x-y,x-y\right>$
+and so
+\begin{equation*}
+    \|Tx - Ty\|_f \  =\  f(\left<T(x-y),T(x-y)\right>)^{\frac{1}{2}}
+\ \leq\  \|T\| \|x-y\|_f \leq \varepsilon.
+\end{equation*}
+Thus~$T$ is uniformly continuous in the ultranorm uniformity. \qed
+\end{point}
+\end{point}
+\begin{point}[ultranormcontstruct]{Corollary}%
+Let~$\scrB$ be a von Neumann algebra
+    and~$X$ a right~$\scrB$-module
+    with~$\scrB$-valued inner product.
+For~$x_0 \in X$ the maps
+\begin{align*}
+    (x,y) &\mapsto x+y & x &\mapsto \left<x_0, x\right>
+    & b &\mapsto x_0 b \\
+    X\times X &\to X & X &\to X & \scrB & \to X
+\end{align*}
+are all uniformly continuous in the ultranorm uniformity.
+\end{point}
+\end{parsec}
+
 \begin{parsec}%
 \begin{point}[dils-selfdual]{Theorem}%
     For a pre-Hilbert~$\scrB$-module~$X$,
@@ -1279,11 +1617,14 @@ Conclude from \ref{ex-continuous-preserves-lims} and
         \end{enumerate}
 \begin{point}{Proof}%
 We will prove $1 \Rightarrow 3 \Rightarrow 4 \Rightarrow 2 \Rightarrow 4 \Rightarrow 1$.
+The equivalence~$1 \Leftrightarrow 4$
+    was already shown by Paschke in \cite[Thm.~3.12]{paschke},
+    but we give a different proof. The other equivalences are new.
 \begin{point}{1 $\Rightarrow$ 3, self-dual~$X$ are bounded complete}%
     Assume~$X$ is self-dual and~$(x_\alpha)_\alpha$
         is a norm-bounded ultranorm-Cauchy net.
      For the moment pick an~$y \in X$.
-    By \TODO{} we
+By \sref{module-CS} we
     have~$f(\left<x_\alpha,y\right>\left<y,x_\alpha\right>) \leq \|y\|^2
         f(\left<x_\alpha,x_\alpha\right>)$ for any~np-map~$f\colon \scrB \to \C$
         and so~$\left<y,x_\alpha\right>$ is an ultrastrong-Cauchy net in~$\scrB$.
@@ -1447,7 +1788,8 @@ Hence~$x'=0$. Thus~$x = \sum_{e \in E} e\left<e,x\right>$ as desired.
     Assume~$X$ has an orthonormal basis~$E$.
     Let~$(x_\alpha)_\alpha$ be an ultranorm-Cauchy net.
     Pick~$e \in E$.
-    By \TODO{} $(\left<e, x_\alpha\right>)_\alpha$ is an ultrastrong-Cauchy net.
+    By \sref{ultranormcontstruct}
+    $(\left<e, x_\alpha\right>)_\alpha$ is an ultrastrong-Cauchy net.
     As von Neumann algebras are ultrastrongly complete
     (see \sref{vn-complete})
         there is a~$b_e \in \scrB$
@@ -1542,7 +1884,7 @@ to~$\sum_{e \in E} e b_e$, as desired.
     Pick any~$x \in X$.
     By assumption~$\sum_{e \in E} e  \left<e,x\right>$
         converges in the ultranorm uniformity to~$x$.
-    As by \TODO{} $\tau$ is ultranorm continuous
+As by \sref{blinear-bounded-is-ultranorm} $\tau$ is ultranorm continuous
         we see
         \begin{equation*}
             \tau(x) = \sum_{e \in E} \tau(e) \left<e,x\right>
@@ -2065,7 +2407,7 @@ it follows~$([x_\alpha,y_\alpha])_\alpha$
     is a Cauchy net in the ultraweak uniformity of~$\scrB$,
     see \sref{dils-uniformity-examples}.
 As~$\|[x_\alpha,y_\alpha]\| \leq \|x_\alpha\| \|y_\alpha\|$,
-    see \TODO{}, it is also a norm-bounded net.
+see \sref{module-CS}, it is also a norm-bounded net.
 By \sref{vn-complete} norm-bounded Cauchy net in the ultraweak uniformity
 converge, so~$\uwlim_\alpha [x_\alpha,y_\alpha]$ exists.
 
@@ -2103,8 +2445,8 @@ With ultraweak continuity of addition
 \end{equation*}
 In a similar fashion one proves the other axioms of
     a~$\scrB$-valued inner product:
-    $[x,y]=[y,x]^*$ follows from the ultraweak continuity of~$(\cdot)^*$,
-    see \TODO{}; $\scrB$-homogeinity follows from
+    $[x,y]=[y,x]^*$ follows from the ultraweak continuity of~$(\cdot)^*$;
+    $\scrB$-homogeinity follows from
         ultraweak continuity of~$c \mapsto cb$ (see \sref{mult-uws-cont})
         \emph{and}~$[x,x]\geq 0$ follows from ultraweak-closedness of the
         positive cone of~$\scrB$.
@@ -2204,7 +2546,8 @@ For each bounded~$\scrB$-linear
     map~$\hat{T} \colon X \to Y$
     such that~$\hat{T} \after \eta = T$.
 \begin{point}{Proof}%
-By \TODO{} bounded~$\scrB$-linear maps are ultranorm uniformly continuous.
+By \sref{blinear-bounded-is-ultranorm} bounded~$\scrB$-linear
+    maps are ultranorm uniformly continuous.
 As~$\eta(V)$ is ultranorm dense in~$X$,
     the extension~$\hat{T}$ is unique if it exists.
 Pick any~$x \in X$.
@@ -2228,7 +2571,7 @@ It is straight-forward to check
         the~$\scrB$-module action.
 
 It remains to be shown~$\hat{T}$ is bounded.
-By \TODO{}  we have
+By \sref{blinear-inprod-inequality}  we have
 \begin{equation*}
 \left<T x_\alpha,T x_\alpha\right>
 \leq \| T\|^2 [x_\alpha,x_\alpha]
@@ -2246,6 +2589,7 @@ which implies~$\|\hat{T}\| \leq \|T\|$ as desired.
 \end{point}
 \end{point}
 \end{parsec}
+\section*{Paschke dilations}
 \begin{parsec}%
 \begin{point}%
     We are ready to show every ncp-map has a Paschke dilation.
@@ -2267,7 +2611,7 @@ which implies~$\|\hat{T}\| \leq \|T\|$ as desired.
         and~$B(a,b_1)b_2 = B(a,b_1b_2)$
         for all~$a \in \scrA$ and~$b_1,b_2 \in \scrB$.
 \end{point}
-\begin{point}{Theorem}%
+\begin{point}[existence-paschke]{Theorem}%
     Let~$\varphi\colon \scrA \to \scrB$ be any ncp-map between
         von Neumann algebras.
 \begin{enumerate}
@@ -2308,11 +2652,13 @@ There is a unique
         such that~$\ad_S \after \varrho' = \varrho$
         and~$S( 1\otimes 1) = e$.
 \item
-    $(\scrB^a(\scrA \otimes_\varphi \scrB), \varrho, h)$
+$(\scrB^a(\scrA \otimes_\varphi \scrB), \varrho, h)$
     is a Paschke dilation of~$\varphi$.
 \end{enumerate}
 \begin{point}{Proof}%
-The first part of the proof follows the lines of \cite[Thm.~5.2]{pashcke}.
+The Hilbert~$\scrB$-module~$\scrA \otimes_\varphi \scrB$
+    will be isomorphic to the self-dual completion of the space~$X$
+    constructed by Paschke in~\cite[Thm.~5.2]{pashcke}.
 \begin{point}{1: $\scrA \otimes_\varphi \scrB$}%
 The algebraic tensor product~$\scrA \odot \scrB$
     is a right $\scrB$-module
@@ -2322,7 +2668,8 @@ On~$\scrA \odot \scrB$, define
     \bigl[\sum_i a_i \otimes b_i, \sum_j \alpha_j \otimes \beta_j\bigr]
     = \sum_{i,j} b_i^* \varphi(a_i^*\alpha_j)\beta_j.
 \end{equation*}
-By \TODO{} this is a~$\scrB$-valued inner product on~$\scrA \otimes \scrB$.
+By complete positivity of~$\varphi$
+this is a~$\scrB$-valued inner product on~$\scrA \otimes \scrB$.
 By \sref{dils-completion}
     there is a self-dual Hilbert~$\scrB$-module~$\scrA\otimes_\varphi \scrB$
     and~$\scrB$-linear inner product-preserving
@@ -2506,7 +2853,180 @@ This~$\sigma$ fits the bill:
 $\sigma \after \varrho' = \ad_S \after \varrho_{h'} \after \varrho'
                                 = \varrho$
 and~$h \after \sigma = h \after \ad_S \after \varrho_{h'}
-= h_{h'} \after \varrho_{h'} = h'$.
+= h_{h'} \after \varrho_{h'} = h'$. \qed
+\end{point}
+\end{point}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}%
+In the remainder of this section we will study various property
+    of Paschke dilations.
+The first question we will answer is
+    when the representation in a Paschke dilation is injective.
+First we need parts of the comparison theory of projections.
+\end{point}
+\begin{point}{Definition}%
+Let~$\scrA$ be a von Neumann algebra.
+Two projections~$p,q \in \scrA$ are said to be
+    \Define{Murray--von Neumann equivalent},
+    in symbols~$p \sim q$,
+    if there is an~$u \in \scrA$
+    with~$p = uu^*$ and~$q = u^*u$.
+Such~$u$ are called \Define{partial isometries}.
+E.g.~in~$M_2$ we have~$\ketbra{0}{0} \sim \ketbra{1}{1}$
+    via the partial isometry~$\ketbra{0}{1}$.
+We will write~$p \lesssim q$
+    if there is a projection~$r \leq q$
+    such that~$p \sim r$.
+\end{point}
+\begin{point}{Lemma}%
+Assume~$\scrA$ is a von Neumann algebra.
+For any projections~$p,q\in \scrA$
+    we have~$\cceil{p}\cceil{q} \neq 0$
+    if and only if there is a projection~$r\neq 0$
+    with~$r \lesssim p$ and~$r \lesssim q$.
+\begin{point}[ccarrier-equivalent-subproj]{Proof}%
+(Based on \cite[Prop.~6.1.8]{kr}.)
+Assume~$\scrA$ is a von Neumann algebra on a Hilbert space~$\scrH$.
+
+Assume~$\cceil{p}\cceil{q} = 0$,
+    and~$v^*v \leq q$ and~$vv^* \leq p$ for some partial
+    isometry~$v\in \scrA$.
+    We want to show~$v=0$, which is easy:
+\begin{equation*}
+v = vv^* v v^*v = p vv^* v v^*v q = pvq= p \cceil{p} v \cceil{q}q 
+    = pvq \cceil{p}\cceil{q}= 0.
+\end{equation*}
+
+For the converse, assume~$\cceil{p}\cceil{q} \neq 0$.\TODO{finish}
+\end{point}
+\end{point}
+\begin{point}[ccarrier-preserves-murray]{Lemma}%
+    Let~$\scrA$ be a von Neumann algebra.
+    If~$p \sim q$, then~$\cceil{p} = \cceil{q}$.
+\begin{point}{Proof}%
+    \TODO{finish}
+\end{point}
+\end{point}
+\begin{point}[central-carrier-formula]{Lemma}%
+Assume~$\scrA$ is a von Neumann algebra.
+For any~$a \in \scrA$
+we have
+\begin{equation*}
+    \cceil{a} \ =\  \sup \{p; p \text{ projection}; \ p \lesssim \ceil{a} \}
+            \ = \ \sup \{ \ceil{b^*ab} ;\ \|b\| \leq 1\}.
+\end{equation*}
+\begin{point}{Proof}%
+We will show in order~$\sup_{p \lesssim \ceil{a}} p \leq \sup_{\|b\|\leq 1} \ceil{b^*ab}
+\leq \cceil{a} \leq \sup_{p \lesssim \ceil{a}} p$.
+
+Assume~$p \lesssim \ceil{a}$.
+Pick~$u$ with~$uu^* = p$ and~$u^*u \leq \ceil{a}$.
+We have~$ p = uu^*uu^* \leq u\ceil{a}u^*$.
+So~$p = \ceil{p} \leq \ceil{u\ceil{a}u^*}
+= \ceil{u a u^*} \leq \sup_{\|b\|\leq 1} \ceil{b^* a b}$.
+
+If~$\|b\| \leq 1$
+then~$b^*b \leq 1$
+and so~$b^*ab \leq b^*\cceil{a} b = b^*b \cceil{a} \leq \cceil{a}$.
+We have shown~$\sup_{\|b\|\leq 1} \ceil{b^*ab} \leq \cceil{a}$.
+
+The final inequality is hardest.
+For brevity, write~$q = \sup_{p \lesssim \ceil{a}} p$.
+We claim~$\cceil{q} = \cceil{a}$.
+As~$\ceil{a} \leq \ceil{a}$
+    we have~$\ceil{a} \leq q$ and so~$\cceil{a} \leq \cceil{q}$.
+For the other direction, assume~$p \lesssim \ceil{a}$.
+Then~$p \leq \cceil{p} \leq \cceil{a}$
+    by \sref{ccarrier-preserves-murray}.
+Thus~$q \leq \cceil{a}$ and so~$\cceil{q} \leq \cceil{a}$.
+
+We are done if we can show~$\cceil{q}-q = 0$.
+We claim~$\cceil{q}-q$ and~$\ceil{a}$ do not have an equivalent
+    subprojection.
+Indeed, if~$p \leq \cceil{q}-q$
+    and~$p \lesssim \ceil{a}$,
+    then~$p=0$ because~$p \leq q$
+    and so~$2p \leq q + (\cceil{q} - q) = \cceil{q}$.
+Consequently~$\cceil{\cceil{q}-q}\cceil{a} = 0$
+    by \sref{ccarrier-equivalent-subproj}.
+Thus~$ \cceil{q}-q \leq
+        \cceil{\cceil{q}-q} =
+        \cceil{\cceil{q}-q} \cceil{q} =
+        \cceil{\cceil{q}-q} \cceil{a} = 0 $. \qed
+\end{point}
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+We have all the tools to characterize neatly when
+    the representation of a Paschke dilation is injective.
+This is a generalization of our answer\cite{stineinj}
+    to the same question for the Stinespring embedding.
+\end{point}
+\begin{point}{Theorem}%
+Let~$\varphi\colon \scrA \to \scrB$ be any ncp-map
+    with Paschke dilation~$(\scrP, \varrho, h)$.
+Then $\ceil{\varrho} = \cceil{\varphi}$.
+Thus~$\varrho$ is injective ($\ceil{\varrho}=1$) if and only if $\varphi$
+maps no non-zero central projection to zero ($\cceil{\varphi}=1$).
+\begin{point}{Proof}%
+By~\sref{paschke-unique-up-to-iso}
+    it is sufficient to prove the equivalence
+    for the dilation constructed in \sref{existence-paschke}.
+\begin{point}[injectivity-paschke-lemma]%
+First we will prove that~$\varrho(\alpha) = 0$
+    if and only if~$\varphi(a^*\alpha^*\alpha a) = 0$
+    for all~$a \in \scrA$.
+From left to right is easy:
+$\varphi(a^*\alpha^*\alpha a) = h(\varrho(a^*\alpha^*) \varrho(\alpha) \varrho(a)) = 0$ whenever~$\varrho(\alpha) = 0$.
+For the converse, assume~$\varphi(a^*\alpha^*\alpha a) = 0$
+    for all~$a \in \scrA$.
+By the polarization identity, see \sref{mult-polarization},
+    we also have~$\varphi(a^* \alpha^* \alpha a') = 0$
+    for all~$a,a' \in \scrA$.
+Pick any~$x \in \scrA \otimes \scrB$, say~$x = \sum_i a_i \otimes b_i$.
+Then
+    $\left<\hat{x}, \varrho(\alpha) \hat{x}\right> = 
+        \sum_{i,j} b_i^*\varphi(a_i^* \alpha^*\alpha a_j)b_j = 0$.
+Hence~$\varrho(\alpha) = 0$, as claimed.
+\end{point}
+\begin{point}%
+We will first show~$\ceil{\varrho} \leq \cceil{\varphi}$.
+For any~$a \in \scrA$
+we have
+\begin{equation*}
+    a^* (1 - \cceil{\varphi}) a = 
+    (1 - \cceil{\varphi})a^* a (1 - \cceil{\varphi}) \leq
+    \| a\|^2 (1 - \cceil{\varphi}) \leq \|a\|^2 (1 - \ceil{\varphi})
+\end{equation*}
+and so~$\varphi(a^* (1 - \cceil{\varphi}) a)
+\leq \|a\|^2 \varphi(1-\ceil{\varphi}) = 0$.
+Hence by \sref{injectivity-paschke-lemma}
+we get~$\varrho(1-\cceil{\varphi}) = 0$
+and so~$\ceil{\varrho} \leq \cceil{\varphi}$.
+\end{point}
+\begin{point}%
+Now we show~$\cceil{\varphi} \leq \ceil{\varrho}$.
+Pick any~$p \lesssim \ceil{\varphi}$.
+Pick~$v$ with~$vv^* = p$ and~$v^*v \leq \ceil{\varphi}$.
+By \sref{injectivity-paschke-lemma}
+it follows from~$\varrho(1-\ceil{\varrho}) = 0$
+that~$\varphi(v^* (1-\ceil{\varrho})v)=0$.
+And so we have~$v^* (1-\ceil{\varrho})v \leq 1-\ceil{\varphi}$.
+Consequently
+\begin{equation*}
+p (1-\ceil{\varrho}) p
+    =    vv^* (1 - \ceil{\varrho}) vv^*
+    \leq v (1- \ceil{\varphi}) v^*
+    = vv^* - v \ceil{\varphi} v^* = 0.
+\end{equation*}
+This means~$p \leq \ceil{\varrho}$.
+Thus by~\sref{central-carrier-formula}
+we get~$\cceil{a} = \sup_{p \lesssim \ceil{a}} p \leq \ceil{\varrho}$,
+as desired. \qed
 \end{point}
 \end{point}
 \end{point}
