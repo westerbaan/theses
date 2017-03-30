@@ -2232,6 +2232,61 @@ is norm bounded.\qed
 \end{point}
 \end{parsec}
 \begin{parsec}%
+\begin{point}%
+We now turn to a subtle, but suprisingly
+difficult question:
+\TODO{ultraweak permanence}.
+
+\end{point}
+\begin{point}[summing-partial-isometries]{Exercise}%
+It is not so difficult 
+to see that the (ultraweak) sum~$\sum_i u_i$
+of a collection $(u_i)_i$ 
+of partial isometries from some von Neumann algebra
+is again a partial isometry, 
+provided that the initial projections $u_i^*u_i$
+are orthogonal,
+and the final projections~$u_iu_i^*$ are orthogonal.
+In this exercise, you'll establish a similar result,
+but for partial isometries between two different Hilbert spaces,
+and avoiding using an analogue of 
+the ultraweak topology for such operators.
+
+Let~$\scrH$ and~$\scrK$ be Hilbert spaces,
+and 
+let $U_i\colon \scrH\to\scrK$
+be a bounded operator
+for every element~$i$ from some set~$I$.
+Assume that the operators~$U_i^*U_i$
+are pairwise orthogonal projections in~$\scrB(\scrK)$,
+and that~$U_iU_i^*$ are pairwise orthogonal projections in~$\scrB(\scrH)$.
+\begin{enumerate}
+\item
+Let~$x\in\scrH$ and~$y\in\scrK$ be given.
+
+Show that
+$\left|\left<x,U_iy\right>\right|
+\leq \|U_i^*\| \|U_i y \|$
+for each~$i$
+(perhaps by first proving that  $U_i = U_i U_i^* U_i$).
+
+Show that~$\sum_i \|U_i y\|^2 \leq \|y\|^2$
+and $\sum_i \|U_i^* x\|^2\leq \|x\|^2$,
+and deduce from this
+that $\sum_i \left|\left<x,U_i y\right>\right| \leq \|x\|\|y\|$.
+
+Now use~\TODO{}
+to show that there is a bounded operator~$U\colon \scrK\to\scrH$
+with $\left<x,Uy\right>
+= \sum_i \left<x,U_iy\right>$
+for all~$x\in\scrH$ and~$y\in \scrK$.
+\item
+Show that~$U_i^*U_j = 0$ when~$i\neq j$.
+Deduce from this that~$U^*U = \sum_i U_i^* U_i$.
+
+Prove that $UU^* = \sum_i U_iU_i^*$.
+\end{enumerate}
+\end{point}
 \begin{point}[sigma-weak-lemma-2]{Lemma}%
 Let~$\Omega$ be a collection of np-maps $\omega\colon \scrA\to\C$
 on a von Neumann algebra~$\scrA$ 
@@ -2263,7 +2318,80 @@ $\varrho(\scrA)^\square$
 with
 $\cceil{UU^*}_{\varrho(\scrA)^\square}=\varrho(\sum_\omega \cceil{\omega})$.
 \begin{point}{Proof}%
-\TODO{...}
+Given~$\omega\in\Omega$,
+let $\sigma_\omega\colon \varrho(\scrA)\to \C$
+and $\sigma_\omega'\colon \varrho(\scrA)^\square\to\C$
+denote the restrictions
+of the vector functional $\left<x_\omega,(\,\cdot\,)x_\omega\right>
+\colon \scrB(\scrH)\to\C$,
+and let  $\tau_\omega\colon \pi(\scrA)\to \C$
+and $\tau_\omega'\colon \pi(\scrA)^\square\to\C$
+be similar restrictions
+of $\left<y_\omega,(\,\cdot\,)y_\omega\right>$.
+We already know by~\TODO{} that
+there is
+a bounded operator $U_\omega\colon \scrK\to\scrH$
+with $U_\omega^*U_\omega = \ceil{\tau_\omega'}$,
+$U_\omega U_\omega^* = \ceil{\sigma_\omega'}$,
+and $U_\omega \pi(a) = \varrho(a) U_\omega$
+for all~$a\in\scrA$.
+
+We'll combine these $U_\omega$s into one operator~$U$
+using~\sref{summing-partial-isometries} but for this must
+verify that the projections $U_\omega^* U_\omega=\ceil{\sigma_\omega'}$
+are orthogonal,
+and that the projections $U_\omega U_\omega^*$
+are orthogonal too.
+To this end,
+note that the central elements of~$\varrho(\scrA)$
+coincide with the central elements of~$\varrho(\scrA)^\square$
+ --- indeed, $Z(\varrho(\scrA))
+= \varrho(\scrA)\cap \varrho(\scrA)^\square
+= \varrho(\scrA)^{\square\square} \cap \varrho(\scrA)^\square
+= Z(\varrho(\scrA)^\square)$ 
+by the bicommutant theorem \TODO{}  ---
+so that $\sigma_\omega$ and~$\sigma_\omega'$
+are identical on central projections,
+and so their central
+carriers must coincide,~$\cceil{\sigma_\omega}=\cceil{\sigma_\omega'}$.
+Since the projections~$\cceil{\omega}$
+are orthogonal to one another,
+and $\ceil{\sigma_\omega'}\leq \cceil{\sigma_\omega'}
+= \cceil{\sigma_\omega} =\varrho(\cceil{\omega})$,
+we see that the projections~$U^*_\omega U_\omega \equiv 
+\ceil{\sigma_\omega'}$
+are orthogonal.
+
+Since for a similar reason
+the projections $U_\omega U_\omega^*
+\equiv \ceil{\tau_\omega'}$ are orthogonal,
+there is by~\sref{summing-partial-isometries}
+a bounded operator $U\colon \scrK\to\scrH$
+with 
+$U^*U = \sum_\omega U_\omega^* U_\omega$,
+$UU^* = \sum_\omega U_\omega U_\omega^*$,
+and $\left<x,Uy\right>=\sum_\omega \left<x,U_\omega y\right>$
+for all~$x\in\scrH$ and~$y\in \scrK$.
+
+Let us check that~$U$ has the desired properties.
+To begin, since the projections
+$\cceil{U_\omega^*U_\omega}=\cceil{\sigma_\omega'}=\varrho(\cceil{\omega})$
+are orthogonal,
+we have $\cceil{U^*U}=\sum_\omega \cceil{U_\omega^* U_\omega}
+=  \varrho(\sum_\omega \cceil{\omega})$
+by~\TODO{}.
+Similarly, $\cceil{UU^*}= \pi(\sum_\omega \cceil{\omega})$.
+
+Finally,
+given~$a\in\scrA$
+we have $U\pi(a)=\varrho(a)U$,
+because $\left<x,U\pi(a)y\right>
+= \sum_\omega \left<x,U_\omega \pi(a)y\right>
+= \sum_\omega \left<x,\varrho(a) U_\omega y\right>
+= \sum_\omega \left<\varrho(a)^* x, U_\omega y\right>
+= \left<\varrho(a)^* x, U y\right>
+= \left<x, \varrho(a) U y\right>$
+for all~$x\in\scrH$ and~$y\in\scrK$.\qed
 \end{point}
 \end{point}
 \begin{point}[sigma-weak-lemma]{Corollary}%
