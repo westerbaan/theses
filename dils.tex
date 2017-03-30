@@ -1177,7 +1177,7 @@ Then~$T = S^*S$ for some~$S \in \scrB^a(X)$
 For the converse, assume~$\left<x, Tx\right> \geq 0$
     for all~$x \in X$.
 We claim $T$ is self-adjoint.
-By the polariation identity
+By the polarization identity
 $\left<x, Ty\right>
     = \frac{1}{4} \sum^3_{k=0} i^k \left< x+i^ky, T(x+i^ky)\right>$
     we have~$\left<x,Ty \right> = \left<Tx, y\right>$ for all~$x,y \in X$
@@ -2586,6 +2586,132 @@ and so using \TODO{} we see
 \end{equation*}
 which implies~$\|\hat{T}\| \leq \|T\|$ as desired.
 (In fact~$\|\hat{T}\| = \|T\|$.) \qed
+\end{point}
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+    Before we show every ncp-map has a Paschke dilation
+        we study~$\scrB^a(X)$ a bit more for self dual~$X$.
+\end{point}
+\begin{point}{Definition}%
+Let~$V$ be a right $\scrB$-module.
+A~\Define{$\scrB$-sesquilinear form} on~$V$
+    is a map~$B\colon V\times V \to \scrB$
+    such that for each~$y\in V$
+    the maps~$x \mapsto B(y, x)$
+        and~$x \mapsto B(x,y)^*$ are~$\scrB$-linear.
+If~$V$ is normed, $B$ is said to be \Define{bounded}
+    if there is an~$r \geq 0$ such that
+$\|B(x,y)\| \leq r \|x\|\|y\|$
+for all~$x,y \in V$.
+\end{point}
+\begin{point}{Example}%
+Let~$X$ be a pre-Hilbert~$\scrB$-module.
+For every~$T \in \scrB^a(X)$
+    the map~$\left<(\,\cdot\,), T (\,\cdot\,)\right>$
+    is a bounded~$\scrB$-sesquilinear form.
+\begin{point}%
+    For self dual~$X$ the converse is true.
+\end{point}
+\end{point}
+\begin{point}[hilbmod-sesquilinear-forms]{Proposition}%
+Let~$X$ be a self-dual Hilbert~$\scrB$-module.
+For every bounded $\scrB$-linear form~$B$ on~$X$,
+    there is a unique~$T \in \scrB^a(X)$
+    with~$B(x,y) = \left<x,Ty\right>$
+    for all~$x,y \in X$.
+\begin{point}{Proof}
+For each~$y \in X$
+    the map~$B(x,y)^*$ is~$\scrB$-linear and bounded.
+Thus by self duality of~$X$
+there is a unique~$t_y$
+    for each~$y \in X$
+    such that~$\left<t_y, x\right> = B(x,y)^*$
+    for all~$x \in X$.
+It is easy to see~$\left<t_{y+y'},x\right>
+                = \left<t_y + t_{y'}, x\right>$
+                and~$\left<t_{yb},x\right>
+                = \left<t_y b, x\right>$,
+    and so by uniqueness~$y \mapsto t_y$ is~$\scrB$-linear.
+Define~$Ty = t_y$.
+Clearly~$\left<x,Ty\right> = \left<t_y,x\right>^* = B(x,y)$
+    and~$T$ must be the unique such~$\scrB$-linear map.
+It remains to be shown~$T$ is bounded.
+There is an~$r \geq 0$ such that for all~$x \in X$:
+\begin{equation*}
+    \| Tx\|^2 
+    \ =\  \|\left<Tx,Tx\right>\|
+            \ =\  \| B (Tx, x) \|
+            \ \leq\  r \|Tx\|\|x\|.
+\end{equation*}
+So $T$ is bounded by~$r$ trivially if~$\|Tx\|=0$
+    and by dividing otherwise. \qed
+\end{point}
+\end{point}
+\begin{point}{Theorem}%
+Suppose~$X$ is a self dual Hilbert~$\scrB$-module
+    for a von Neumann algebra~$\scrB$.
+Then~$\scrB^a(X)$ is a von Neumann algebra.
+\begin{point}{Proof}%
+The theorem is due to Paschke \cite[Prop.~3.10]{paschke};
+    we give a new proof.
+We already know~$\scrB^a(X)$ is a C$^*$-algebra, see \sref{hilbmod-cstar}.
+\begin{point}{bounded order completeness}%
+Let~$(T_\alpha)_\alpha$ be a norm-bounded net of self adjoint elements
+    of~$\scrB^a(X)$.  We have to show it has a supremum.
+Pick~$x\in X$ and  $r\in \R$, $r\geq0 $
+such that~$\|T_\alpha\| \leq r$ for all~$\alpha$.
+By \sref{hilbmod-ordersep}~$(\left<x,T_\alpha x\right>)_\alpha$
+    is a norm-bounded net of self adjoint elements of~$\scrB$
+    and so it has a supremum to which
+    it converges ultraweakly by~\sref{vna-supremum-uwlimit}.
+In particular
+\begin{equation*}
+\frac{1}{4} \sum^3_{k=0} i^k \left< i^kx+y, T_\alpha(i^k x+y)\right>
+    \ =\  \left<x, T_\alpha y\right>
+\end{equation*}
+converges ultraweakly for all~$x,y \in X$.
+Define~$B(x,y) = \uwlim_\alpha \left<x,T_\alpha y\right>$.
+As addition and multiplication by a fixed element are
+    ultraweakly continuous (see \sref{mult-uws-cont}),
+    we see~$B$ is a~$\scrB$-sesquilinear form.
+Clearly~$\|\left<x,T_\alpha y\right>\| \leq r\|x\|\|y\|$
+and so by \TODO{norm reasonable uwlim}~$ B(x,y) \leq r \|x\|\|y\|$,
+thus~$B$ is a bounded~$\scrB$-sesquilinear form.
+Thus by \sref{hilbmod-sesquilinear-forms}
+    there is a unique~$T \in \scrB^a(X)$
+    with~$\left<x,Ty\right> = B(x,y) = \uwlim_\alpha \left<x,T_\alpha y\right>$.
+Clearly~$T$ is self adjoint.
+Using \sref{hilbmod-ordersep} again and ultraweak limits respecting the order
+    \TODO{reference?}
+    we see~$\left<x,T_\alpha\right> \leq \left<x,T x\right>$
+    for all~$x \in X$ and so~$T_\alpha \leq T$.
+Now suppose we are given a self adjoint~$S \in \scrB^a(X)$
+    with~$T_\alpha \leq S$ for all~$\alpha$.
+With a similar argument we see~$T \leq S$ and so~$S$ is
+    the supremum of~$(T_\alpha)_\alpha$.
+\end{point}
+\begin{point}[hilbmod-vecstates-normal]{separating normal states}%
+By~\sref{hilbmod-ordersep}
+    the states~$\left<x,(\,\cdot\,)x\right>$
+    are separating.
+We are done if we can show~$\left<x,(\,\cdot\,)x\right>$
+    is normal, i.e.~preserves suprema of self adjoint elements.
+To this end, pick~$x \in X$ and let~$(T_\alpha)_\alpha$
+    be a net with suprema~$T$.
+As before~$(\left<x,T_\alpha x\right>)_\alpha)$
+    is a norm bounded net which converges ultraweakly to its
+    suprema.
+Now, we just saw
+\begin{equation*}
+    \left<x,Tx\right> = \uwlim_\alpha \left<x, T_\alpha x\right>
+                = \sup_\alpha \left<x, T_\alpha x\right>
+\end{equation*}
+and so indeed~$\left<x, (\,\cdot\,)x\right>$ is normal;
+the normal states are separating
+and~$\scrB^a(X)$ is a von Neumann algebra. \qed
+\end{point}
 \end{point}
 \end{point}
 \end{parsec}
