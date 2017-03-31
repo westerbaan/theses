@@ -1380,7 +1380,7 @@ is a subbase and so fixes a uniformity~$\Phi$ for~$X$.
                     \alpha \in I\}$
                     is a subbase and fixes
                     a uniformity~$\Phi$ on~$X$.
-    (Every uniform space is of this form \TODO{ref}.)
+(Every uniform space is of this form, see e.g.~\cite[Thm.~39.11]{willard}.)
 \item
 Let~$V$ be a vector space with a
     family of seminorms~$(\|\  \|_\alpha)_{\alpha \in I}$.
@@ -3005,81 +3005,64 @@ We will write~$p \lesssim q$
     if there is a projection~$r \leq q$
     such that~$p \sim r$.
 \end{point}
-\begin{point}{Lemma}%
-Assume~$\scrA$ is a von Neumann algebra.
-For any projections~$p,q\in \scrA$
-    we have~$\cceil{p}\cceil{q} \neq 0$
-    if and only if there is a projection~$r\neq 0$
-    with~$r \lesssim p$ and~$r \lesssim q$.
-\begin{point}[ccarrier-equivalent-subproj]{Proof}%
-(Based on \cite[Prop.~6.1.8]{kr}.)
-Assume~$\scrA$ is a von Neumann algebra on a Hilbert space~$\scrH$.
-
-Assume~$\cceil{p}\cceil{q} = 0$,
-    and~$v^*v \leq q$ and~$vv^* \leq p$ for some partial
-    isometry~$v\in \scrA$.
-    We want to show~$v=0$, which is easy:
-\begin{equation*}
-v = vv^* v v^*v = p vv^* v v^*v q = pvq= p \cceil{p} v \cceil{q}q 
-    = pvq \cceil{p}\cceil{q}= 0.
-\end{equation*}
-
-For the converse, assume~$\cceil{p}\cceil{q} \neq 0$.\TODO{finish}
-\end{point}
-\end{point}
-\begin{point}[ccarrier-preserves-murray]{Lemma}%
-    Let~$\scrA$ be a von Neumann algebra.
-    If~$p \sim q$, then~$\cceil{p} = \cceil{q}$.
+\begin{point}[new-murray-lemma]{Lemma}%
+Let~$\scrA$ be a von Neumann algebra
+    and~$a,p \in \scrA$ with~$a$ self adjoint and~$p$ a projection.
+We have~$p \lesssim \ceil{a}$
+    if and only if~$p = \ceil{b^* a b}$ for some~$b \in \scrA$.
 \begin{point}{Proof}%
-    \TODO{finish}
+Assume~$p \lesssim \ceil{a}$.
+Then there is some partial isometry~$u$
+    with~$u^*u = p$ and~$uu^* \leq \ceil{a}$.
+Then~$p = u^*u= u^*uu^*u = u^*uu^*\ceil{a}u = u^*\ceil{a} u$.
+Now by \TODO{ref} we have~$p = \ceil{p} = \ceil{u^*\ceil{a}u}=\ceil{u^*au}$.
+
+For the converse, assume~$p = \ceil{b^*ab}$ for some~$b \in \scrA$.
+By polar decomposition \TODO{ref}~$ab = u \sqrt{(ab)^*ab}$
+    for some partial isometry~$u$
+    with~$uu^* = \ceil{ab(ab)^*}$ and~$u^*u = \ceil{(ab)^*ab}$.
+Now~$u^*u = \ceil{b^*a^2b} = \ceil{b^*\ceil{a^2} b} = \ceil{b^*ab}=p$
+and~$uu^* = \ceil{abb^*a} \leq \ceil{a^2} = \ceil{a}$, as desired. \qed
 \end{point}
 \end{point}
-\begin{point}[central-carrier-formula]{Lemma}%
+\begin{point}[central-carrier-formula]{Proposition}%
 Assume~$\scrA$ is a von Neumann algebra.
-For any~$a \in \scrA$
-we have
+For any self adjoint~$a \in \scrA$
 \begin{equation*}
     \cceil{a} \ =\  \sup \{p; p \text{ projection}; \ p \lesssim \ceil{a} \}
-            \ = \ \sup \{ \ceil{b^*ab} ;\ \|b\| \leq 1\}.
+            \ = \ \sup \{ \ceil{b^*ab}; \ b\in \scrB \}.
 \end{equation*}
 \begin{point}{Proof}%
-We will show in order~$\sup_{p \lesssim \ceil{a}} p \leq \sup_{\|b\|\leq 1} \ceil{b^*ab}
-\leq \cceil{a} \leq \sup_{p \lesssim \ceil{a}} p$.
+(This is a simplified proof of the result we published
+earlier \cite[Thm.~28 sub 1]{wwpaschke}.)
+Directly from \sref{new-murray-lemma}
+    we get $\sup_{p \lesssim \ceil{a}} p = \sup_{b \in \scrB} \ceil{b^*ab}$.
+For brevity we will write~$r = \sup_{p \lesssim \ceil{a}} p$.
+Let~$u$ be a partial isometry with~$u^*u \leq \ceil{a}$.
+Then~$uu^*\cceil{a} = uu^*u \cceil{a} u^*= u \ceil{a} \cceil{a} u^*
+        = u \ceil{a} u^*  = uu^*$.
+Thus~$uu^* \leq \cceil{a}$, so~$r \leq \cceil{a}$.
 
-Assume~$p \lesssim \ceil{a}$.
-Pick~$u$ with~$uu^* = p$ and~$u^*u \leq \ceil{a}$.
-We have~$ p = uu^*uu^* \leq u\ceil{a}u^*$.
-So~$p = \ceil{p} \leq \ceil{u\ceil{a}u^*}
-= \ceil{u a u^*} \leq \sup_{\|b\|\leq 1} \ceil{b^* a b}$.
-
-If~$\|b\| \leq 1$
-then~$b^*b \leq 1$
-and so~$b^*ab \leq b^*\cceil{a} b = b^*b \cceil{a} \leq \cceil{a}$.
-We have shown~$\sup_{\|b\|\leq 1} \ceil{b^*ab} \leq \cceil{a}$.
-
-The final inequality is hardest.
-For brevity, write~$q = \sup_{p \lesssim \ceil{a}} p$.
-We claim~$\cceil{q} = \cceil{a}$.
-As~$\ceil{a} \leq \ceil{a}$
-    we have~$\ceil{a} \leq q$ and so~$\cceil{a} \leq \cceil{q}$.
-For the other direction, assume~$p \lesssim \ceil{a}$.
-Then~$p \leq \cceil{p} \leq \cceil{a}$
-    by \sref{ccarrier-preserves-murray}.
-Thus~$q \leq \cceil{a}$ and so~$\cceil{q} \leq \cceil{a}$.
-
-We are done if we can show~$\cceil{q}-q = 0$.
-We claim~$\cceil{q}-q$ and~$\ceil{a}$ do not have an equivalent
-    subprojection.
-Indeed, if~$p \leq \cceil{q}-q$
-    and~$p \lesssim \ceil{a}$,
-    then~$p=0$ because~$p \leq q$
-    and so~$2p \leq q + (\cceil{q} - q) = \cceil{q}$.
-Consequently~$\cceil{\cceil{q}-q}\cceil{a} = 0$
-    by \sref{ccarrier-equivalent-subproj}.
-Thus~$ \cceil{q}-q \leq
-        \cceil{\cceil{q}-q} =
-        \cceil{\cceil{q}-q} \cceil{q} =
-        \cceil{\cceil{q}-q} \cceil{a} = 0 $. \qed
+For the converse, note~$\ceil{a} \lesssim \ceil{a}$
+    and so~$\ceil{a} \leq r$
+    thus~$\cceil{a} \leq \cceil{r}$.
+It is sufficient to show~$r$ is central, for
+        then~$\cceil{a} \leq \cceil{r} = r$.
+Pick any~$c \in \scrA$.
+Note
+\begin{equation*}
+    c^*rc
+    \ =\ c^* (\sup_{b \in \scrB} \ceil{b^*ab}) c
+    \ =\ \sup_{b \in \scrB} c^* \ceil{b^*ab} c
+\end{equation*}
+and so~$c^*rc \leq \ceil{c^* r c} = \sup_{b \in \scrB} \ceil{c^*b^*abc} \leq r$
+    by~\TODO{two refs}.
+Thus~$(1-r)c^*rc(1-r) = 0$.
+So~$rc(1-r)=0$.
+Thus~$rc = rcr$.
+As~$c$ was arbitrary, we also get~$rc^* rc^*r$.
+So~$rc = rcr = (rc^*r)^* = (rc^*)^* = cr$.
+Indeed~$r$ is central. \qed
 \end{point}
 \end{point}
 \end{parsec}
