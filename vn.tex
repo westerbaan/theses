@@ -2238,8 +2238,78 @@ difficult question:
 \TODO{ultraweak permanence}.
 
 \end{point}
+\begin{point}{Lemma}%
+Let~$\omega\colon \scrA\to\C$
+be an np-map on a von Neumann algebra~$\scrA$,
+which is represented by nmiu-maps
+$\varrho\colon \scrA\to\scrB(\scrH)$
+and $\pi\colon \scrA\to\scrB(\scrK)$
+on Hilbert spaces~$\scrH$ and~$\scrK$.
+If $\left<x,\varrho(\,\cdot\,)x\right>
+=\omega=\left<y,\pi(\,\cdot\,)y\right>$
+for some  $x\in\scrH$ and~$y\in\scrK$,
+then there is a bounded operator $U\colon \scrK\to\scrH$
+for which~$UU^*$ is the projection
+on~$\overline{\varrho(\scrA)x}$,
+$U^*U$ is the projection
+on~$\overline{\pi(\scrA)y}$,
+and~$U\pi(a)=\varrho(a)U$
+for all~$a\in\scrA$.
+\begin{point}{Proof}%
+Since $\|\varrho(a)x\|^2
+= \left<x,\varrho(a^*a)x\right>
+=\omega(a^*a)=\left<y,\pi(a^*a)y\right>
+= \|\pi(a)y\|^2$ for all~$a\in\scrA$,
+there is a unique bounded operator $V\colon \overline{\pi(\scrA)y}
+\to \overline{\varrho(\scrA)x}$
+with $V\pi(a)y = \varrho(a)x$ for all~$a\in\scrA$.
+A moment's thought reveals
+that $V$ is a unitary (and so~$V^*V=1=VV^*$).
+Now, define $U:=EVF^*$
+where $E\colon \overline{\varrho(\scrA)x}\to\scrH$
+and $F\colon \overline{\pi(\scrA)y}\to\scrK$
+are the inclusions
+(and so~$E^*E=1$ and~$F^*F=1$).
+Then $UU^*= EVF^*FV^*E^*=EVV^*E^*=EE^*$
+is the projection onto~$\overline{\varrho(\scrA)x}$,
+and $UU^*=FF^*$
+is the projection onto~$\overline{\pi(\scrA)y}$.
+
+Let~$a\in\scrA$ be given.
+It remains to be shown that
+$U\pi(a)=\varrho(a)U$.
+To this end,
+observe that
+$V F^* \pi(a) F = E^* \varrho(a) E V$
+(because 
+these two bounded linear maps
+are easily seen to
+agree on the dense subset $\pi(\scrA)y$
+of $\overline{\pi(\scrA)y}$);
+and $\varrho(a)E = EE^*\varrho(a)E$
+(because $\varrho(a)$ maps $\varrho(\scrA)x$ into~$\varrho(\scrA)x$);
+and similarly $\varrho(a^*)F=FF^*\varrho(a^*) F$,
+so that $F^*\varrho(a) = F^* \varrho(a) FF^*$
+(upon application of the~$(\,\cdot\,)^*$).
+By these observations,  $U\pi(a)=
+EVF^*\pi(a)=EVF^*\pi(a) FF^*
+= EE^*\varrho(a)EVF^*
+= \varrho(a)EVF^*
+= \varrho(a)U$.\qed
+\end{point}
+\end{point}
+\begin{point}{Lemma}%
+Let~$\scrA$ be a von Neumann
+algebra of bounded operators on some Hilbert space~$\scrH$,
+and let~$x\in \scrH$.
+Then the carrier of $\omega:= \left<x,(\,\cdot\,)x\right>|\scrA^\square$
+is the projection onto~$\overline{\scrA x}$.
+\begin{point}{Proof}%
+	\TODO{...}
+\end{point}
+\end{point}
 \begin{point}[summing-partial-isometries]{Exercise}%
-It is not so difficult 
+It is not too difficult 
 to see that the (ultraweak) sum~$\sum_i u_i$
 of a collection $(u_i)_i$ 
 of partial isometries from some von Neumann algebra
@@ -2249,9 +2319,10 @@ are orthogonal,
 and the final projections~$u_iu_i^*$ are orthogonal.
 In this exercise, you'll establish a similar result,
 but for partial isometries between two different Hilbert spaces,
-and avoiding using an analogue of 
+and avoiding the use of an analogue of 
 the ultraweak topology for such operators.
 
+\begin{point}%
 Let~$\scrH$ and~$\scrK$ be Hilbert spaces,
 and 
 let $U_i\colon \scrH\to\scrK$
@@ -2286,6 +2357,7 @@ Deduce from this that~$U^*U = \sum_i U_i^* U_i$.
 
 Prove that $UU^* = \sum_i U_iU_i^*$.
 \end{enumerate}
+\end{point}
 \end{point}
 \begin{point}[sigma-weak-lemma-2]{Lemma}%
 Let~$\Omega$ be a collection of np-maps $\omega\colon \scrA\to\C$
