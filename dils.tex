@@ -2712,6 +2712,97 @@ and~$\scrB^a(X)$ is a von Neumann algebra. \qed
 \end{point}
 \end{point}
 \end{parsec}
+
+\begin{parsec}%
+\begin{point}%
+In~$\scrB(\scrH)$ the linear span of~$\ketbra{e_i}{e_j}$
+    is ultraweakly dense for any orthonormal basis~$(e_i)_{i \in I}$
+    of~$\scrH$.
+For self dual Hilbert~$\scrB$-modules
+    we have a similar result.
+\end{point}
+\begin{point}{Definition}%
+Let~$X$ be a Hilbert~$\scrB$-module.
+For any~$x, y \in X$,
+define the bounded operator~$\ketbra{x}{y} \in \scrB^a(X)$
+by~$\Define{\ketbra{x}{y}} z = x \left<y,z\right>$.
+\begin{point}%
+The following rules are easy to check.
+For~$x,y,v,w \in X$ and~$b \in \scrB$
+    we have
+\begin{equation*}
+\ketbra{x}{y}^* = \ketbra{y}{x} \qquad
+\ketbra{xb}{y} = \ketbra{x}{yb^*} \qquad
+\ketbra{x}{y} \ketbra{v}{w} = \ketbra{x\left<y,v\right>}{w}.
+\end{equation*}
+If~$\left<e,e\right>$ is a projection,
+    then~$\ketbra{e}{e}$ is a projection.
+For any~$T \in \scrB^a(X)$
+    we have~$T \ketbra{x}{y} = \ketbra{Tx}{y}$
+    and~$\ketbra{x}{y}T^* = \ketbra{x}{Ty}$.
+\end{point}
+\end{point}
+\begin{point}{Proposition}%
+Let~$X$ be a self dual Hilbert~$\scrB$-module over a von Neumann algebra~$\scrB$.
+If~$(e_i)_{i \in I}$ is an orthonormal basis of~$X$,
+then the linear span of
+    the operators~$\{ \ketbra{e_i b}{e_j}; i,j \in I, \ b \in \scrB\}$
+    is ultraweakly dense in~$X$.
+\begin{point}{Proof}%
+We start with some preparation.
+\begin{point}[ketbra-dense-pt1]%
+For a finite subset~$S \subseteq I$,
+    write~$p_S = \sum_{i \in S} \ketbra{e_i}{e_i}$.
+The$(\ketbra{e_i}{e_i})_{i \in I}$ are pairwise orthogonal projections.
+Thus~$p_S$ is a projection.
+Also $p_S \leq p_{S'}$ when~$S \subseteq S'$.
+Pick any~$x \in X$.
+As~$p_S x = \sum_{i \in S} e_i \left<e_i, x\right>$
+and so
+\begin{equation*}
+\left<x, p_S x\right> \ =\ 
+        \left<p_S x, p_S x\right> \ =\ 
+        \sum_{i,j \in S}
+            \left<x,e_i\right> \left<e_i,e_j\right> \left<e_j,x\right>
+            \ =\ 
+        \sum_{i\in S} \left<x,e_i\right>\left<e_i,x\right>,
+\end{equation*}
+we have by Parseval~$\sup_S \left<x, p_S x\right> = \left<x,x\right>$.
+So by \sref{states-order-separating} $\sup_S p_S = 1$;
+    further by \sref{vna-supremum-uslimit}
+    $p_S$ converges ultraweakly to~$1$.
+\end{point}
+\begin{point}%
+Pick any~$T \in \scrB^a(X)$.
+For~$i,j \in I$ we have
+\begin{equation*}
+    \ketbra{e_i}{e_i} T \ketbra{e_j}{e_j}
+    \ =\  \ketbra{e_i}{e_i} \ketbra{T e_j}{e_j}
+    \ =\ \ketbra{e_i \left<e_i, T e_j\right>}{e_j}.
+\end{equation*}
+and so~$p_S T p_S$ is in the linear
+    span of~$\{ \ketbra{e_i b}{e_j} \}$.
+Thus it is sufficient to prove~$p_S T p_S$ converges ultraweakly to~$T$.
+\end{point}
+\begin{point}%
+Pick any np-map~$f\colon \scrB \to \C$.
+We want to show~$|f(T-p_S T p_S)| \to 0$. Clearly
+\begin{equation*}
+    |f(T - p_S T p_S)| \ \leq \  |f(\, (1-p_S) T | +| p_S T (1-p_S) \,)|.
+\end{equation*}
+Using Cauchy--Schwarz and \sref{ketbra-dense-pt1} we see the second term vanishes
+\begin{equation*}
+|f(p_S T (1-p_S))|^2 \ \leq \ f(T^*p_S T) f(1-p_S) \ \leq\ 
+            f(T^*T) f(1-p_S) \ \to \ 0
+\end{equation*}
+Similarly the first term vanishes and
+    so indeed~$p_S T p_S \to T$ ultraweakly. \qed
+\end{point}
+\end{point}
+\end{point}
+\end{parsec}
+
+
 \section*{Paschke dilations}
 \begin{parsec}%
 \begin{point}%
