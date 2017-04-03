@@ -2238,7 +2238,65 @@ difficult question:
 \TODO{ultraweak permanence}.
 
 \end{point}
-\begin{point}{Lemma}%
+\begin{point}{Proposition}%
+Let~$\scrA$ be a von Neumann subalgebra
+of a von Neumann algebra~$\scrB$.
+Let~$e$ be a projection in~$\scrB$.
+Then $\Define{\ceil{e}_{\scrA^\square}}= 
+\bigcup_{a\in\scrA} \ceil{a^* e a}$
+is the least projection in~$\scrA^\square$
+above~$e$.
+\begin{point}{Proof}%
+Let us first show that~$p:= \ceil{e}_{\scrA^\square}$
+is in~$\scrA^\square$.
+Let $b\in\scrA$ be given.
+Since~$b^*(\,\cdot\,)b\colon \scrB\to\scrB$
+is normal and $p=\bigcup_{a\in\scrA} \ceil{a^*ea}$,
+we have $b^*pb=\ceil{b^*pb} = 
+\bigcup_{a\in\scrA} \ceil{ b^* \ceil{a^* e a} b }
+= \bigcup_{a\in\scrA} \ceil{(ab)^* \,e\, ab} \leq p$
+by \TODO{} and \TODO{}.
+Applying $p^\perp(\,\cdot\,)p^\perp$,
+we get $p^\perp b^*pb p^\perp 
+\leq p^\perp p p^\perp = 0$,
+so that $pbp^\perp=0$,
+and thus $pbp=pb$.
+Since similarly $pb^* =pb^*p$,
+we get  $bp=pbp=pb$
+(upon applying~$(\,\cdot\,)^*$) and so~$p\in\scrA^\square$.
+
+It remains to be shown that~$p$ is the least projection in~$\scrA^\square$
+above~$e$. Let~$q$ be a projection in~$\scrA^\square$ above~$e$.
+Since for~$a\in(\scrA)_1$,
+we have~$aq^\perp a^*=  q^\perp aa^* q^\perp 
+\leq q^\perp \leq e^\perp$,
+and so $a^*ea\leq q$ by~\TODO{},
+we get~$\ceil{a^*ea}\leq q$
+for all~$a\in\scrA$,
+and thus~$p=\bigcup_{a\in\scrA}\ceil{a^*ea} \leq q$.\qed
+\end{point}
+\end{point}
+\begin{point}[carrier-vector-state]{Exercise}%
+Show that given a vector~$x$ of Hilbert space~$\scrH$
+and a von Neumann subalgebra~$\scrA$
+of~$\scrB(\scrH)$,
+the following coincide.
+\begin{enumerate}
+\item
+$\ceil{\,\ketbra{x}{x}\,}_{\scrA^\square}$,
+the least projection in~$\scrA^\square$
+above $\ceil{\,\ketbra{x}{x}\,}$;
+\item
+$\ceil{\,\left<x,(\,\cdot\,)x\right>|\scrA^\square\,}$,
+the carrier of the vector functional of~$\scrA^\square$
+given by~$x$;
+\item
+$\bigcup_{a\in \scrA} \ceil{\,\ketbra{ax}{ax}\,}$,
+the projection on
+~$\overline{\scrA x}$.
+\end{enumerate}
+\end{point}
+\begin{point}[gns-mapping-property]{Lemma}%
 Let~$\omega\colon \scrA\to\C$
 be an np-map on a von Neumann algebra~$\scrA$,
 which is represented by nmiu-maps
@@ -2296,16 +2354,6 @@ EVF^*\pi(a)=EVF^*\pi(a) FF^*
 = EE^*\varrho(a)EVF^*
 = \varrho(a)EVF^*
 = \varrho(a)U$.\qed
-\end{point}
-\end{point}
-\begin{point}{Lemma}%
-Let~$\scrA$ be a von Neumann
-algebra of bounded operators on some Hilbert space~$\scrH$,
-and let~$x\in \scrH$.
-Then the carrier of $\omega:= \left<x,(\,\cdot\,)x\right>|\scrA^\square$
-is the projection onto~$\overline{\scrA x}$.
-\begin{point}{Proof}%
-	\TODO{...}
 \end{point}
 \end{point}
 \begin{point}[summing-partial-isometries]{Exercise}%
@@ -2400,7 +2448,9 @@ and let  $\tau_\omega\colon \pi(\scrA)\to \C$
 and $\tau_\omega'\colon \pi(\scrA)^\square\to\C$
 be similar restrictions
 of $\left<y_\omega,(\,\cdot\,)y_\omega\right>$.
-We already know by~\TODO{} that
+We already know (by~\sref{gns-mapping-property}
+and~\sref{carrier-vector-state})
+that
 there is
 a bounded operator $U_\omega\colon \scrK\to\scrH$
 with $U_\omega^*U_\omega = \ceil{\tau_\omega'}$,
