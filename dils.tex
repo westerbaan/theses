@@ -1919,7 +1919,7 @@ to find~$ \| \sum_{e\in S}e \tau(e)^*\| \leq \|\tau\|$ as desired. \qed
 \end{parsec}
 
 \begin{parsec}%
-\begin{point}{Exercise}%
+\begin{point}[hilbmod-el2]{Exercise}%
 In this exercise we prove \cite[Thm.~3.12]{paschke}.
 Let~$\scrB$ be a von Neumann algebra
     and~$(p_i)_{i \in I}$
@@ -1939,8 +1939,8 @@ Prove that for any~$(b_i)_i$ and~$(c_i)_i$
     and turns it into a pre-Hilbert~$\scrB$-module.
 Conclude it is self dual
 and, in fact, that for every self dual Hilbert~$\scrB$-module~$X$
-    there is a sequence~$(p_i)_{i\in I}$ of projections
-    such that~$X \cong \ell^2((p_i)_{i \in I})$.
+    with any orthonormal basis~$(e_i)_{i \in I}$
+    we have~$X \cong \ell^2(\,(\left<e_i,e_i\right>)_{i \in I}\,)$.
 \end{point}
 \end{parsec}
 
@@ -2770,11 +2770,11 @@ For any~$T \in \scrB^a(X)$
 \end{point}
 \end{point}
 \begin{point}{Proposition}%
-Let~$X$ be a self dual Hilbert~$\scrB$-module over a von Neumann algebra~$\scrB$.
+Let~$X$ be a self-dual Hilbert~$\scrB$-module over a von Neumann algebra~$\scrB$.
 If~$(e_i)_{i \in I}$ is an orthonormal basis of~$X$,
 then the linear span of
     the operators~$\{ \ketbra{e_i b}{e_j}; i,j \in I, \ b \in \scrB\}$
-    is ultraweakly dense in~$X$.
+    is ultraweakly dense in~$\scrB^a(X)$.
 \begin{point}{Proof}%
 We start with some preparation.
 \begin{point}[ketbra-dense-pt1]%
@@ -2785,7 +2785,7 @@ Thus~$p_S$ is a projection.
 Also $p_S \leq p_{S'}$ when~$S \subseteq S'$.
 Pick any~$x \in X$.
 As~$p_S x = \sum_{i \in S} e_i \left<e_i, x\right>$
-and so
+using
 \begin{equation*}
 \left<x, p_S x\right> \ =\ 
         \left<p_S x, p_S x\right> \ =\ 
@@ -2829,6 +2829,64 @@ Similarly the first term vanishes and
 \end{point}
 \end{parsec}
 
+\begin{parsec}%
+\begin{point}{Definition}%
+    Let~$X$ be a self-dual Hilbert~$\scrA$-module
+        and~$Y$ be a self-dual Hilbert~$\scrB$-module
+        for some von Neumann algebras~$\scrA$ and~$\scrB$.
+    Pick any orthonormal basis~$(e_i)_{i \in I}$ of~$X$
+        and~$(d_j)_{j\in J}$ of~$Y$.
+    We have~$X \cong \ell^2((p_i)_{i \in I})$
+        and~$Y \cong \ell^2((q_j)_{j \in J})$
+            for~$p_i = \left<e_i,e_i\right>$
+            and~$q_j = \left<d_j,d_j\right>$,
+            see \sref{hilbmod-el2}.
+The \Define{(self-dual exterior) tensor product} of~$X$ and~$Y$
+    is the self-dual Hilbert~$\scrA \otimes \scrB$-module
+    $\Define{X\otimes Y}
+    = \ell^2((p_i\otimes q_j)_{i,j \in I\times J})$.
+\end{point}
+\begin{point}{Examples}%
+For the moment write~$\otimes_{\text{ext}}$ for the self-dual exterior
+    tensor product.
+\begin{enumerate}
+\item
+Any Hilbert space is a self-dual Hilbert~$\C$ module.
+For Hilbert spaces~$\scrH$ and~$\scrK$
+    we have~$\scrH \otimes_{\text{Hilb}} \scrK
+        \cong \scrH \otimes_{\text{ext}} \scrK$,
+    where~$\otimes_{\text{Hilb}}$ denotes the regular tensor product of
+    Hilbert spaces.
+\item
+Every von Neumann algebra is a self-dual Hilbert C$^*$-module
+    over itself.
+For any von Neumann algebras~$\scrA$ and~$\scrB$
+    we have~$\scrA\otimes_{\text{vN}} \scrB
+        \cong \scrA \otimes_{\text{ext}} \scrB$
+        as Hilbert~$\scrA\otimes_{\text{vN}} \scrB$-modules,
+        where~$\scrA\otimes_{\text{vN}}\scrB$ denotes the regular
+        tensor product of von Neumann algebras.
+\end{enumerate}
+\end{point}
+\begin{point}{Remark}%
+Usually a non-self-dual exterior tensor product
+    is defined for arbitrary Hilbert C$^*$-modules~$X$ and~$Y$,
+    say over~$\scrA$ and~$\scrB$ respectively,
+    by completing~$X \odot Y$ with respect to the
+    following~$\scrA\otimes\scrB$-valued inner product.
+\begin{equation*}
+    [x_1 \otimes y_1, x_2 \otimes y_2] = \left<x_1,x_2\right>\otimes
+                \left<y_1, y_2\right>.
+\end{equation*}
+In this general case  it is hard to show the  inner product is definite:
+    Lance discusses the difficulties in \cite[Ch.~4]{lance}.
+In our situation, where~$X$ and~$Y$ are self-dual
+    \emph{and}~$\scrA$ and~$\scrB$ are von Neumann algebras,
+    we can identify~$X \odot Y$
+    as a submodule of~$X \otimes Y$
+    \todo{finish note}
+\end{point}
+\end{parsec}
 
 \section*{Paschke dilations}
 \begin{parsec}%
