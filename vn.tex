@@ -2252,7 +2252,7 @@ is in~$\scrA^\square$.
 Let $b\in\scrA$ be given.
 Since~$b^*(\,\cdot\,)b\colon \scrB\to\scrB$
 is normal and $p=\bigcup_{a\in\scrA} \ceil{a^*ea}$,
-we have $b^*pb=\ceil{b^*pb} = 
+we have $b^*pb\leq \ceil{b^*pb} = 
 \bigcup_{a\in\scrA} \ceil{ b^* \ceil{a^* e a} b }
 = \bigcup_{a\in\scrA} \ceil{(ab)^* \,e\, ab} \leq p$
 by \TODO{} and \TODO{}.
@@ -2295,6 +2295,45 @@ $\bigcup_{a\in \scrA} \ceil{\,\ketbra{ax}{ax}\,}$,
 the projection on
 ~$\overline{\scrA x}$.
 \end{enumerate}
+Conclude that $\overline{\scrA^{\square\square}x}
+=\overline{\scrA x}$.
+(Hint: $\scrA^{\square\square\square}=\scrA^\square$.)
+\begin{point}%
+Now consider
+(instead of~$x$)
+an np-map $\omega\colon \scrB(\scrH)\to \C$,
+which we know must be of the form
+$\omega\equiv \sum_n \left<x_n,(\,\cdot\,)x_n\right>$
+(by~\TODO{}),
+and is therefore given by 
+an element $x'\equiv (x_1,x_2,\dotsc)$ of the $\omega$-fold
+product~$\scrH':=\bigoplus_n\scrH$ of~$\scrH$.
+\begin{enumerate}
+\item
+Show that  $\omega(a)=\left<x',\varrho'(a)x'\right>$,
+where $\varrho'\colon \scrA\to\scrB(\scrH')$
+is the nmiu-map given by 
+$\varrho'(a)y=(ay_n)_n$
+for all~$a\in\scrA$ and~$y\in\scrH'$.
+
+\item
+Let~$t\in\scrA^{\square\square}$ be given.
+Show that $\varrho'(t)\in \varrho'(\scrA)^{\square\square}$.
+\TODO{Check the difficulty of this}
+
+Prove that  $\varrho'(t)x\,\in\,\overline{\varrho'(\scrA)^{\square\square}x}
+\equiv \overline{\varrho'(\scrA)x}$.
+
+Deduce
+that for every~$\varepsilon>0$
+one can find~$a\in\scrA$ with $\|t-a\|_\omega \leq \varepsilon$.
+
+\item
+Conclude that $\scrA^{\square\square}$
+is in the ultrastrong closure of~$\scrA$,
+and so~$\scrA=\scrA^{\square\square}$.
+\end{enumerate}
+\end{point}
 \end{point}
 \begin{point}[gns-mapping-property]{Lemma}%
 Let~$\omega\colon \scrA\to\C$
