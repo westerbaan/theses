@@ -1769,10 +1769,14 @@ to~$\omega_1(p^\perp)\equiv 0$.
 Now apply~\sref{sequence-separation-lemma}.\qed
 \end{point}
 \end{point}
-\begin{point}[vnsa-usc]{Theorem}%
+\begin{point}[vnsac]{Theorem}%
 A von Neumann subalgebra~$\scrB$ of a von Neumann algebra~$\scrA$
-is ultrastrongly closed.
+is ultrastrongly and ultraweakly closed.
 \begin{point}{Proof}%
+It suffices to show that~$\scrB$ is ultrastrongly closed,
+because then, by~\sref{ultraclosed}, $\scrB$ will be ultraweakly closed
+as well.
+
 Let~$p$ be a projection of~$\scrA$ which is the ultrastrong limit
 of a net from~$\scrB$. It suffices to show that~$p\in\scrB$,
 because the ultrastrong closure of~$\scrB$
@@ -1829,7 +1833,7 @@ coincides on~$\scrR$ with the ultrastrong topology of~$\scrR$
 (by~\sref{us-permanence}),
 and~$\scrR$ is 
  ultrastrongly closed in~$\scrB(\scrH)$
-(see~\sref{vnsa-usc} ),
+(see~\sref{vnsac}),
 we see that $\scrR$ (and therefore~$\scrA$) is 
 ultrastrongly complete.
 
@@ -1838,9 +1842,9 @@ is bounded ultraweakly complete (\sref{bh-bounded-uw-complete}),
 the ultraweak topology on~$\scrB(\scrH)$
 coincides on~$\scrR$ with the ultraweak topology on~$\scrR$
 (\sref{uw-permanence}),
-and~$\scrR$ is ultraweakly closed 
-(= ultrastrongly closed, see~\sref{ultraclosed})
-in~$\scrB(\scrH)$,
+and~$\scrR$ is ultraweakly closed
+in~$\scrB(\scrH)$
+(by~\sref{vnsac}),
 we see that~$\scrR$ is bounded ultraweakly complete.\qed
 \end{point}
 \end{point}
@@ -2233,28 +2237,78 @@ is norm bounded.\qed
 \end{parsec}
 \begin{parsec}%
 \begin{point}%
-We now turn to a subtle, but suprisingly
-difficult question:
-\TODO{ultraweak permanence}.
+To pry out the final bits of structure of normal functionals
+we resort to the classical but nonetheless rather mysterious notion
+of commutant.
+\end{point}
+\begin{point}[commutant]{Definition}%
+Given a subset~$S$ of a von Neumann algebra~$\scrA$
+the \Define{commutant} of~$S$
+is the set, denoted by~$\Define{S^\square}$,
+of all~$a\in\scrA$ with $as=sa$ for all~$s\in S$.
+\end{point}
+\begin{point}[commutant-basic]{Exercise}%
+Let~$S$ and~$T$ be subsets of a von Neumann algebra~$\scrA$.
+\begin{enumerate}
+\item
+Show that $S \subseteq T^\square$ iff $T \subseteq S^\square$.
 
+Show that $S\subseteq T$ entails $T^\square \subseteq S^\square$.
+
+Show that $S\subseteq S^{\square\square}$,
+and  $S^{\square\square\square}=S^\square$.
+\item
+Show that $S^\square$ is closed under addition,
+(scalar) multiplication,
+contains the unit of~$\scrA$,
+and is ultraweakly closed.
+\item
+Show that the commutant $S^\square$ need not be self-adjoint.\\
+(Hint: compute 
+$\{\bigl(\begin{smallmatrix}0&1\\0&0\end{smallmatrix}\bigr)\}^\square$
+in $M_2$.)
+
+Show that if~$S$ is self-adjoint,
+then~$S^\square$ is self-adjoint,
+and conclude that in that case~$S^\square$
+is a von Neumann subalgebra of~$\scrA$.
+
+\item
+In particular,
+if~$\scrB$ is a von Neumann subalgebra of~$\scrA$,
+then~$\scrB^{\square\square}$
+is a von Neumann subalgebra of~$\scrA$
+with $\scrB\subseteq \scrB^{\square\square}$.
+
+Verify that $Z(\scrB)=\scrB\cap \scrB^{\square}$,
+where is~$Z(\scrB)$ is the centre of~$\scrB$
+(from \TODO{...}).
+
+\TODO{Example of~$\scrB^{\square\square} \neq  \scrB$}
+
+Nevertheless,
+we'll see in \sref{proto-double-commutant} that $\scrB^{\square\square}=\scrB$
+when~$\scrA$ is of the form $\scrA=\scrB(\scrH)$
+for some Hilbert space~$\scrH$.
+\end{enumerate}
 \end{point}
 \begin{point}{Proposition}%
-Let~$\scrA$ be a von Neumann subalgebra
-of a von Neumann algebra~$\scrB$.
-Let~$e$ be a projection in~$\scrB$.
-Then $\Define{\ceil{e}_{\scrA^\square}}= 
-\bigcup_{a\in\scrA} \ceil{a^* e a}$
-is the least projection in~$\scrA^\square$
+Let~$S$ be a subset of a von Neumann algebra~$\scrA$
+that is closed under multiplication, involution, and contains~$1$.
+Let~$e$ be a projection in~$\scrA$.
+Then $\Define{\ceil{e}_{S^\square}}= 
+\bigcup_{a\in S} \ceil{a^* e a}$
+is the least projection in~$S^\square$
 above~$e$.
 \begin{point}{Proof}%
-Let us first show that~$p:= \ceil{e}_{\scrA^\square}$
-is in~$\scrA^\square$.
-Let $b\in\scrA$ be given.
-Since~$b^*(\,\cdot\,)b\colon \scrB\to\scrB$
-is normal and $p=\bigcup_{a\in\scrA} \ceil{a^*ea}$,
+Let us first show that~$p:= \ceil{e}_{S^\square}$
+is in~$S^\square$.
+Let $b\in S$ be given.
+Since~$b^*(\,\cdot\,)b\colon \scrA\to\scrA$
+is normal and $p=\bigcup_{a\in S} \ceil{a^*ea}$,
 we have $b^*pb\leq \ceil{b^*pb} = 
-\bigcup_{a\in\scrA} \ceil{ b^* \ceil{a^* e a} b }
-= \bigcup_{a\in\scrA} \ceil{(ab)^* \,e\, ab} \leq p$
+\bigcup_{a\in S} \ceil{ b^* \ceil{a^* e a} b }
+= \bigcup_{a\in S} \ceil{(ab)^* \,e\, ab} \leq p$
 by \TODO{} and \TODO{}.
 Applying $p^\perp(\,\cdot\,)p^\perp$,
 we get $p^\perp b^*pb p^\perp 
@@ -2263,42 +2317,43 @@ so that $pbp^\perp=0$,
 and thus $pbp=pb$.
 Since similarly $pb^* =pb^*p$,
 we get  $bp=pbp=pb$
-(upon applying~$(\,\cdot\,)^*$) and so~$p\in\scrA^\square$.
+(upon applying~$(\,\cdot\,)^*$) and so~$p\in S^\square$.
 
-It remains to be shown that~$p$ is the least projection in~$\scrA^\square$
-above~$e$. Let~$q$ be a projection in~$\scrA^\square$ above~$e$.
-Since for~$a\in(\scrA)_1$,
+Note that~$e\leq \ceil{1^* e 1}\leq p$, because $1\in S$.
+It remains to be shown that~$p$ is the least projection in~$S^\square$
+above~$e$, so let~$q$ be a projection in~$S^\square$ above~$e$.
+Since for~$a\in S$,
 we have~$aq^\perp a^*=  q^\perp aa^* q^\perp 
-\leq q^\perp \leq e^\perp$,
-and so $a^*ea\leq q$ by~\TODO{},
+\leq \|a\|^2q^\perp \leq \|a\|^2e^\perp$,
+and so $a^*ea\leq \|a\|^2q$ by~\TODO{},
 we get~$\ceil{a^*ea}\leq q$
-for all~$a\in\scrA$,
-and thus~$p=\bigcup_{a\in\scrA}\ceil{a^*ea} \leq q$.\qed
+for all~$a\in S$,
+and thus~$p=\bigcup_{a\in S}\ceil{a^*ea} \leq q$.\qed
 \end{point}
 \end{point}
 \begin{point}[carrier-vector-state]{Exercise}%
-Show that given a vector~$x$ of Hilbert space~$\scrH$
-and a von Neumann subalgebra~$\scrA$
-of~$\scrB(\scrH)$,
+Show that given a vector~$x$ of Hilbert space~$\scrH$,
+and a collection~$S$ of bounded operators on~$\scrH$
+that is closed under addition, (scalar) multiplication,
+involution, and contains the identity operator
 the following coincide.
 \begin{enumerate}
 \item
-$\ceil{\,\ketbra{x}{x}\,}_{\scrA^\square}$,
-the least projection in~$\scrA^\square$
+$\ceil{\,\ketbra{x}{x}\,}_{S^\square}$,
+the least projection in~$S^\square$
 above $\ceil{\,\ketbra{x}{x}\,}$;
 \item
-$\ceil{\,\left<x,(\,\cdot\,)x\right>|\scrA^\square\,}$,
-the carrier of the vector functional of~$\scrA^\square$
+$\ceil{\,\left<x,(\,\cdot\,)x\right>|S^\square\,}$,
+the carrier of the vector functional of~$S^\square$
 given by~$x$;
 \item
-$\bigcup_{a\in \scrA} \ceil{\,\ketbra{ax}{ax}\,}$,
-the projection on
-~$\overline{\scrA x}$.
+$\bigcup_{a\in S} \ceil{\,\ketbra{ax}{ax}\,}$,
+the projection on~$\overline{S x}$.
 \end{enumerate}
-Conclude that $\overline{\scrA^{\square\square}x}
-=\overline{\scrA x}$.
-(Hint: $\scrA^{\square\square\square}=\scrA^\square$.)
-\begin{point}%
+Conclude that $\overline{S^{\square\square}x}
+=\overline{S x}$.
+(Hint: $S^{\square\square\square}=S^\square$.)
+\begin{point}[proto-double-commutant]%
 Now consider
 (instead of~$x$)
 an np-map $\omega\colon \scrB(\scrH)\to \C$,
@@ -2310,30 +2365,84 @@ an element $x'\equiv (x_1,x_2,\dotsc)$ of the $\omega$-fold
 product~$\scrH':=\bigoplus_n\scrH$ of~$\scrH$.
 \begin{enumerate}
 \item
-Show that  $\omega(a)=\left<x',\varrho'(a)x'\right>$,
-where $\varrho'\colon \scrA\to\scrB(\scrH')$
+Show that  $\omega(t)=\left<x',\varrho'(t)x'\right>$,
+where $\varrho'\colon \scrB(\scrH)\to\scrB(\scrH')$
 is the nmiu-map given by 
-$\varrho'(a)y=(ay_n)_n$
-for all~$a\in\scrA$ and~$y\in\scrH'$.
+$\varrho'(t)y=(ty_n)_n$
+for all~$t\in\scrB(\scrH)$ and~$y\in\scrH'$.
 
 \item
-Let~$t\in\scrA^{\square\square}$ be given.
-Show that $\varrho'(t)\in \varrho'(\scrA)^{\square\square}$.
+Let~$t\in S^{\square\square}$ be given.
+Show that $\varrho'(t)\in \varrho'(S)^{\square\square}$.
 \TODO{Check the difficulty of this}
 
-Prove that  $\varrho'(t)x\,\in\,\overline{\varrho'(\scrA)^{\square\square}x}
-\equiv \overline{\varrho'(\scrA)x}$.
+Prove that  $\varrho'(t)x\,\in\,\overline{\varrho'(S)^{\square\square}x}
+\equiv \overline{\varrho'(S)x}$.
 
 Deduce
 that for every~$\varepsilon>0$
-one can find~$a\in\scrA$ with $\|t-a\|_\omega \leq \varepsilon$.
+one can find~$a\in S$ with $\|t-a\|_\omega \leq \varepsilon$.
 
 \item
-Conclude that $\scrA^{\square\square}$
-is in the ultrastrong closure of~$\scrA$,
-and so~$\scrA=\scrA^{\square\square}$.
+Deduce that $S^{\square\square}$
+is contained in the ultrastrong closure of~$S$.
 \end{enumerate}
 \end{point}
+\end{point}
+\begin{point}[double-commutant]{Double Commutant Theorem}%
+For a collection~$S$ of bounded operators
+on a Hilbert space~$\scrH$
+that is closed under addition, (scalar) multiplication,
+involution, and contains the identity operator
+the following are the same.
+\begin{enumerate}
+\item
+$S^{\square\square}$, the ``double commutant'' of~$S$
+in~$\scrB(\scrH)$;
+\item
+$\mathrm{us}\text{-}\mathrm{cl}(S)$,
+the ultrastrong closure of~$S$ in~$\scrB(\scrH)$;
+\item
+$\mathrm{uw}\text{-}\mathrm{cl}(S)$,
+the ultraweak closure of~$S$ in~$\scrB(\scrH)$;
+\item
+$W^*(S)$,
+the least von Neumann subalgebra of~$\scrB(\scrH)$
+that contains~$S$.
+\end{enumerate}
+\begin{point}{Proof}%
+Note that: $\mathrm{us}\text{-}\mathrm{cl}(S)
+\subseteq  \mathrm{uw}\text{-}\mathrm{cl}(S)$,
+because ultrastrong convergence implies ultraweak convergence;
+and
+$\mathrm{uw}\text{-}\mathrm{cl}(S)
+\subseteq W^*(S)$,
+because~$W^*(S)$ 
+is ultraweakly closed in~$\scrB(\scrH)$ by~\sref{vnsac};
+and
+$W^*(S)\subseteq S^{\square\square}$,
+because 
+$S^{\square\square}$ is a von Neumann subalgebra
+of~$\scrB(\scrH)$ by~\sref{commutant-basic};
+and, finally, $S^{\square\square}\subseteq \mathrm{us}\text{-}\mathrm{cl}(S)$
+by~\sref{proto-double-commutant}.\qed
+\end{point}
+\end{point}
+\begin{point}[centre-commutant]{Exercise}
+Show that central elements of
+a von Neumann algebra~$\scrA$
+of bounded operators on a Hilbert space~$\scrH$
+coincide with the central elements of the commutant~$\scrA^\square$,
+that is, $Z(\scrA)=Z(\scrA^\square)$.
+(Hint: $\scrA^{\square\square}=\scrA$ by~\sref{double-commutant}.)
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+We now turn to a subtle, but suprisingly
+difficult question:
+\TODO{ultraweak permanence}.
+
 \end{point}
 \begin{point}[gns-mapping-property]{Lemma}%
 Let~$\omega\colon \scrA\to\C$
@@ -2504,13 +2613,9 @@ are orthogonal,
 and that the projections $U_\omega U_\omega^*$
 are orthogonal too.
 To this end,
-note that the central elements of~$\varrho(\scrA)$
+recall that the central elements of~$\varrho(\scrA)$
 coincide with the central elements of~$\varrho(\scrA)^\square$
- --- indeed, $Z(\varrho(\scrA))
-= \varrho(\scrA)\cap \varrho(\scrA)^\square
-= \varrho(\scrA)^{\square\square} \cap \varrho(\scrA)^\square
-= Z(\varrho(\scrA)^\square)$ 
-by the bicommutant theorem \TODO{}  ---
+by~\sref{centre-commutant}
 so that $\sigma_\omega$ and~$\sigma_\omega'$
 are identical on central projections,
 and so their central
@@ -2522,7 +2627,6 @@ and $\ceil{\sigma_\omega'}\leq \cceil{\sigma_\omega'}
 we see that the projections~$U^*_\omega U_\omega \equiv 
 \ceil{\sigma_\omega'}$
 are orthogonal.
-
 Since for a similar reason
 the projections $U_\omega U_\omega^*
 \equiv \ceil{\tau_\omega'}$ are orthogonal,
