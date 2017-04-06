@@ -2233,10 +2233,56 @@ is norm bounded.\qed
 \end{parsec}
 \begin{parsec}%
 \begin{point}%
-We now turn to a subtle, but suprisingly
-difficult question:
-\TODO{ultraweak permanence}.
+To pry out the final bits of structure of normal functionals
+we resort to the classical but nonetheless rather mysterious notion
+of commutant.
+\end{point}
+\begin{point}{Definition}%
+Given a subset~$S$ of a von Neumann algebra~$\scrA$
+the \Define{commutant} of~$S$
+is the set, denoted by~$\Define{S^\square}$,
+of all~$a\in\scrA$ with $as=sa$ for all~$s\in S$.
+\end{point}
+\begin{point}{Exercise}%
+Let~$S$ and~$T$ be subsets of a von Neumann algebra~$\scrA$.
+\begin{enumerate}
+\item
+Show that $S \subseteq T^\square$ iff $T \subseteq S^\square$.
 
+Show that $S\subseteq T$ entails $T^\square \subseteq S^\square$.
+
+Show that $S\subseteq S^{\square\square}$,
+and  $S^{\square\square\square}=S^\square$.
+\item
+Show that $S^\square$ is closed under addition,
+(scalar) multiplication,
+contains the unit of~$\scrA$,
+and is ultraweakly closed.
+\item
+Show that the commutant $S^\square$ need not be self-adjoint.\\
+(Hint: compute 
+$\{\bigl(\begin{smallmatrix}0&1\\0&0\end{smallmatrix}\bigr)\}^\square$
+in $M_2$.)
+
+Show that if~$S$ is self-adjoint,
+then~$S^\square$ is self-adjoint,
+and conclude that in that case~$S^\square$
+is a von Neumann subalgebra of~$\scrA$.
+
+\item
+In particular,
+if~$\scrB$ is a von Neumann subalgebra of~$\scrA$,
+then~$\scrB^{\square\square}$
+is a von Neumann subalgebra of~$\scrA$
+with $\scrB\subseteq \scrB^{\square\square}$.
+
+\TODO{Example of~$\scrB^{\square\square} \neq  \scrB$}
+
+Nevertheless,
+we'll see in \sref{proto-double-commutant} that $\scrB^{\square\square}=\scrB$
+when~$\scrA$ is of the form $\scrA=\scrB(\scrH)$
+for some Hilbert space~$\scrH$.
+\end{enumerate}
 \end{point}
 \begin{point}{Proposition}%
 Let~$\scrA$ be a von Neumann subalgebra
@@ -2298,7 +2344,7 @@ the projection on
 Conclude that $\overline{\scrA^{\square\square}x}
 =\overline{\scrA x}$.
 (Hint: $\scrA^{\square\square\square}=\scrA^\square$.)
-\begin{point}%
+\begin{point}[proto-double-commutant]%
 Now consider
 (instead of~$x$)
 an np-map $\omega\colon \scrB(\scrH)\to \C$,
@@ -2329,11 +2375,42 @@ that for every~$\varepsilon>0$
 one can find~$a\in\scrA$ with $\|t-a\|_\omega \leq \varepsilon$.
 
 \item
-Conclude that $\scrA^{\square\square}$
-is in the ultrastrong closure of~$\scrA$,
-and so~$\scrA=\scrA^{\square\square}$.
+Deduce that $\scrA^{\square\square}$
+is contained in the ultrastrong closure of~$\scrA$.
 \end{enumerate}
+Conclude that~$\scrA^{\square\square}=\scrA$.
+(Hint: $\scrA$ is ultrastrongly closed, by~\sref{}.)
 \end{point}
+\end{point}
+\begin{point}[double-commutant]{Double Commutant Theorem}%
+For a collection~$\scrA$ of bounded operators
+on a Hilbert space~$\scrH$
+that is closed under addition, (scalar) multiplication,
+involution, and contains the identity operator
+the following are the same.
+\begin{enumerate}
+\item
+$\scrA^{\square\square}$, the ``double commutant'' of~$\scrA$
+in~$\scrB(\scrH)$;
+\item
+the ultrastrong closure of~$\scrA$ in~$\scrB(\scrH)$;
+\item
+the ultraweak closure of~$\scrA$ in~$\scrB(\scrH)$;
+\item
+the least von Neumann subalgebra of~$\scrB(\scrH)$
+that contains~$\scrA$.
+\end{enumerate}
+\begin{point}{Proof}%
+	\TODO{...}
+\end{point}
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+We now turn to a subtle, but suprisingly
+difficult question:
+\TODO{ultraweak permanence}.
+
 \end{point}
 \begin{point}[gns-mapping-property]{Lemma}%
 Let~$\omega\colon \scrA\to\C$
