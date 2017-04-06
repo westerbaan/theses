@@ -2829,65 +2829,6 @@ Similarly the first term vanishes and
 \end{point}
 \end{parsec}
 
-\begin{parsec}%
-\begin{point}{Definition}%
-    Let~$X$ be a self-dual Hilbert~$\scrA$-module
-        and~$Y$ be a self-dual Hilbert~$\scrB$-module
-        for some von Neumann algebras~$\scrA$ and~$\scrB$.
-    Pick any orthonormal basis~$(e_i)_{i \in I}$ of~$X$
-        and~$(d_j)_{j\in J}$ of~$Y$.
-    We have~$X \cong \ell^2((p_i)_{i \in I})$
-        and~$Y \cong \ell^2((q_j)_{j \in J})$
-            for~$p_i = \left<e_i,e_i\right>$
-            and~$q_j = \left<d_j,d_j\right>$,
-            see \sref{hilbmod-el2}.
-The \Define{(self-dual exterior) tensor product} of~$X$ and~$Y$
-    is the self-dual Hilbert~$\scrA \otimes \scrB$-module
-    $\Define{X\otimes Y}
-    = \ell^2((p_i\otimes q_j)_{i,j \in I\times J})$.
-\end{point}
-\begin{point}{Examples}%
-For the moment write~$\otimes_{\text{ext}}$ for the self-dual exterior
-    tensor product.
-\begin{enumerate}
-\item
-Any Hilbert space is a self-dual Hilbert~$\C$ module.
-For Hilbert spaces~$\scrH$ and~$\scrK$
-    we have~$\scrH \otimes_{\text{Hilb}} \scrK
-        \cong \scrH \otimes_{\text{ext}} \scrK$,
-    where~$\otimes_{\text{Hilb}}$ denotes the regular tensor product of
-    Hilbert spaces.
-\item
-Every von Neumann algebra is a self-dual Hilbert C$^*$-module
-    over itself.
-For any von Neumann algebras~$\scrA$ and~$\scrB$
-    we have~$\scrA\otimes_{\text{vN}} \scrB
-        \cong \scrA \otimes_{\text{ext}} \scrB$
-        as Hilbert~$\scrA\otimes_{\text{vN}} \scrB$-modules,
-        where~$\scrA\otimes_{\text{vN}}\scrB$ denotes the regular
-        tensor product of von Neumann algebras.
-\end{enumerate}
-\end{point}
-\begin{point}{Remark}%
-Usually a non-self-dual exterior tensor product
-    is defined for arbitrary Hilbert C$^*$-modules~$X$ and~$Y$,
-    say over~$\scrA$ and~$\scrB$ respectively,
-    by completing~$X \odot Y$ with respect to the
-    following~$\scrA\otimes\scrB$-valued inner product.
-\begin{equation*}
-    [x_1 \otimes y_1, x_2 \otimes y_2] = \left<x_1,x_2\right>\otimes
-                \left<y_1, y_2\right>.
-\end{equation*}
-In this general case  it is hard to show the  inner product is definite:
-    Lance discusses the difficulties in \cite[Ch.~4]{lance}.
-In our situation, where~$X$ and~$Y$ are self-dual
-    \emph{and}~$\scrA$ and~$\scrB$ are von Neumann algebras,
-    we can identify~$X \odot Y$
-    as a submodule of~$X \otimes Y$
-    \todo{finish note}
-\end{point}
-\end{parsec}
-
 \section*{Paschke dilations}
 \begin{parsec}%
 \begin{point}%
@@ -3314,6 +3255,91 @@ as desired. \qed
 \end{point}
 \end{point}
 \end{parsec}
+
+\begin{parsec}%
+\begin{point}%
+Suppose~$X$ is a self-dual Hilbert~$\scrA$-module
+    and~$Y$ is a self-dual Hilbert~$\scrB$-module
+    for some von Neumann algebras~$\scrA$ and~$\scrB$.
+The algebraic tensor product~$X \odot Y$
+    is a right-$\scrA \otimes \scrB$-module
+    with~$(x\otimes y)\cdot (a\otimes b) = (xa) \otimes (yb)$.
+It has a~$\scrA \otimes \scrB$-valued inner
+    product fixed by~$[x\otimes y, x'\otimes y']
+        = \left<x,x'\right> \otimes \left<y,y'\right>$.
+
+This inner product on~$X \odot Y$ is definite
+    and can be extended to its norm completion.
+This is a Hilbert C$^*$ which is called the exterior tensor product
+    of~$X$ and~$Y$.
+For arbitrary  Hilbert C$^*$-modules it is actually quite difficult
+    to perform this construction:
+    Lance discusses the difficulties in \cite[Ch.~4]{lance}.
+In our situation, where~$X$ and~$Y$ are self-dual
+    \emph{and}~$\scrA$ and~$\scrB$ are von Neumann algebras
+    it is much easier.
+\end{point}
+\begin{point}{Theorem}%
+Suppose~$\scrA$ and~$\scrB$ are von Neumanna algebras.
+For any self-dual Hilbert $\scrA$-module $X$
+    and self-dual Hilbert~$\scrB$-module $Y$,
+    there is an up-to-isomorphism unique
+    self-dual Hilbert~$\scrA\otimes \scrB$-module
+    $X \otimes Y$, called the \Define{(self-dual exterior) tensor product},
+    together with a~$\scrA \otimes \scrB$-linear
+    inner product preservering map~$\otimes \colon X \odot Y \to X\otimes Y$
+    such that for every self-dual~Hilbert~$\scrA\otimes\scrB$-module
+    $Z$ with bounded~$\scrA \otimes \scrB$-linear
+        $T\colon \scrA \odot \scrB \to Z$
+    there is a unique bounded~$\scrA \otimes \scrB$-linear
+        map~$\hat{T}\colon X \otimes Y \to Z$
+    with~$\hat{T}(x \otimes y) = x \otimes y$
+    for all~$x \in X$ and~$y \in Y$.
+
+For such~$X \otimes Y$ we have the following.
+\begin{enumerate}
+    \item The image of $X \odot Y$ is ultranorm dense in~$X \otimes Y$.
+    \item If~$(e_i)_{i \in I}$ is an orthonormal basis of~$X$
+                and~$(d_j)_{j \in J}$ is an orthonormal basis of~$Y$,
+                then~$(e_i \otimes d_j)_{i,j\in I\times J}$
+                is an orthonormal basis of~$X \otimes Y$.
+\end{enumerate}
+\end{point}
+\begin{point}{Examples}%
+For the moment write~$\otimes_{\text{ext}}$ for the self-dual exterior
+    tensor product.
+\begin{enumerate}
+\item
+Any Hilbert space is a self-dual Hilbert~$\C$ module.
+For Hilbert spaces~$\scrH$ and~$\scrK$
+    we have~$\scrH \otimes_{\text{Hilb}} \scrK
+        \cong \scrH \otimes_{\text{ext}} \scrK$,
+    where~$\otimes_{\text{Hilb}}$ denotes the regular tensor product of
+    Hilbert spaces.
+\item
+Every von Neumann algebra is a self-dual Hilbert C$^*$-module
+    over itself.
+For any von Neumann algebras~$\scrA$ and~$\scrB$
+    we have~$\scrA\otimes_{\text{vN}} \scrB
+        \cong \scrA \otimes_{\text{ext}} \scrB$
+        as Hilbert~$\scrA\otimes_{\text{vN}} \scrB$-modules,
+        where~$\scrA\otimes_{\text{vN}}\scrB$ denotes the regular
+        tensor product of von Neumann algebras.
+\end{enumerate}
+\end{point}
+
+\begin{point}{Theorem}%
+Suppose~$X$ is a self-dual Hilbert~$\scrA$-module
+    and~$Y$ is a self-dual Hilbert~$\scrB$-module
+    for von Neumann algebras~$\scrA$ and~$\scrB$.
+Then there is a nmiu-isomorphism
+$\scrB^a(X) \otimes \scrB^a(Y) \cong \scrB^a(X \otimes Y)$.
+\begin{point}{Proof}%
+    
+\end{point}
+\end{point}
+\end{parsec}
+
 
 \end{document}
 
