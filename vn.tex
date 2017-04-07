@@ -1233,83 +1233,6 @@ which is impossible.
 	Conclude that $f(k)\geq f(b_0)>0 $ for all~$k\in K$.
 \end{enumerate}
 \end{point}
-\end{parsec}
-
-\begin{parsec}%
-\begin{point}%
-We now turn to a subtle matter:
-it is not immediately clear
-that the ultraweak topology on a von Neumann
-subalgebra~$\scrA$ of a von Neumann algebra~$\scrB$,
-coincides (on~$\scrA$) with the ultraweak topology on~$\scrB$.
-While it is easily seen that the former is finer
-(that is, a net in~$\scrA$ which converges ultraweakly in~$\scrA$,
-converges ultraweakly in~$\scrB$ too, because any np-map 
-$\omega\colon \scrB\to\C$ is also an np-map restricted to~$\scrA$),
-it is not obvious that an np-map $\omega\colon \scrA\to\C$
-can be extended to an np-map on~$\scrB$
---- but it can, see~\TODO{ref}.
-I'll call this independence of the ultraweak topology
-from the surrounding space
-\emph{ultraweak permanence}
-being not unlike the independence
-of the spectrum of an operator from the surrounding space
-known as spectral permanence. \TODO{ref}
-Of course,
-we'll also have ``ultrastrong permanence''.
-
-It is tempting to think that the extension of an np-map~$\omega\colon \scrA
-\to\C$
-on a von Neumann
-subalgebra~$\scrA$ of a von Neumann algebra~$\scrB$
-to~$\scrB$ is simply a matter of applying Hahn--Banach to~$\omega$,
-and while it is true we let Hahn--Banach finish the job,
-the real work goes into showing that Hahn--Banach applies,
-c.q.~that~$\omega$ is ultraweakly continuous with respect to~$\scrB$
-(and not just ultraweakly continuous with respect to~$\scrA$).
-To this end, we'll show that~$\omega$
-is dominated by a np-map defined on~$\scrB$.
-\end{point}
-\begin{point}{Lemma}%
-For every np-map $\scrR\to\C$
-on a von Neumann subalgebra~$\scrR$
-of~$\scrB(\scrH)$,
-where~$\scrH$ is some Hilbert space,
-there are~$y_1,y_2,\dotsc\in \scrH$
-with $\sum_n \|y_n\|^2 =\omega(1)$,
-and $\omega(A)\leq \sum_n \left<y_n,Ay_n\right>$
-for all~$A\in\scrR$.
-\begin{point}{Proof}%
-(Based on the proof of Lemma~7.1.2 of~\cite{kr}.)
-
-We claim that if~$\scrR$ is not trivial
-there is a non-zero projection~$E$ in~$\scrR$
-and~$y\in E(\scrH)$ with $\|y\|^2 = \omega(E)$
-and $\omega(G)\leq \left<y,Gy\right>$
-for all projections~$G\leq E$ in~$\scrR$.
-Indeed,
-pick any~$x\in\scrH$ with $\|x\|^2=\omega(1)$.
-Either~$E=1$ does the job,
-or there is a projection~$F$ in~$\scrR$ with
-$\omega(F) > \left<x,Fx\right>$.
-Let~$(F_\alpha)_\alpha$
-be a maximal orthogonal family of such projection,
-and define~$E:=(\sum_\alpha F_\alpha)^\perp$.
-Given a projection~$G$ in~$\scrR$ below~$E$
-we can't have $\omega(G) > \left<x,G x\right>$
-because then~$G$ could be added to~$(F_\alpha)_\alpha$
-contradicting its maximality,
-and so we must conclude that $\omega(G)\leq \left<x,G x\right>
-=\left<Ex,GEx\right>$.
-In particular, 
-\TODO{}
-\end{point}
-\end{point}
-
-\end{parsec}
-
-
-\begin{parsec}%
 \begin{point}[proto-kaplansky]{Proposition}%
 Let~$\scrA$ be a von Neumann algebra,
 and let~$f\colon \R\to\R$ be a continuous map 
@@ -2300,6 +2223,8 @@ Then $\Define{\ceil{e}_{S^\square}}=
 \bigcup_{a\in S} \ceil{a^* e a}$
 is the least projection in~$S^\square$
 above~$e$.
+
+(Compare this with the paragraph ``Subspaces'' of \S2.6 of~\cite{kr}.)
 \begin{point}{Proof}%
 Let us first show that~$p:= \ceil{e}_{S^\square}$
 is in~$S^\square$.
@@ -2411,6 +2336,8 @@ the least von Neumann subalgebra of~$\scrB(\scrH)$
 that contains~$S$.
 \end{enumerate}
 \begin{point}{Proof}%
+(Based on Theorem~5.3.1 of~\cite{kr}.) 
+
 Note that: $\mathrm{us}\text{-}\mathrm{cl}(S)
 \subseteq  \mathrm{uw}\text{-}\mathrm{cl}(S)$,
 because ultrastrong convergence implies ultraweak convergence;
@@ -2439,10 +2366,50 @@ that is, $Z(\scrA)=Z(\scrA^\square)$.
 \end{parsec}
 \begin{parsec}%
 \begin{point}%
-We now turn to a subtle, but suprisingly
-difficult question:
-\TODO{ultraweak permanence}.
+With the double commutant theorem at our diposal,
+we turn to a subtle, but suprisingly difficult matter:
+it is not immediately clear
+that the ultraweak topology on a von Neumann
+subalgebra~$\scrA$ of a von Neumann algebra~$\scrB$,
+coincides (on~$\scrA$) with the ultraweak topology on~$\scrB$.
+While it is easily seen that the former is finer
+(that is, a net in~$\scrA$ which converges ultraweakly in~$\scrA$,
+converges ultraweakly in~$\scrB$ too, because any np-map 
+$\omega\colon \scrB\to\C$ is also an np-map restricted to~$\scrA$),
+it is not obvious that an np-map $\omega\colon \scrA\to\C$
+can be extended to an np-map on~$\scrB$
+--- but it can, as we'll see~\sref{functional-permanence}.
+I'll call this independence of the ultraweak topology
+from the surrounding space
+\emph{ultraweak permanence}
+being not unlike the independence
+of the spectrum of an operator from the surrounding space
+known as spectral permanence (\sref{spectral-permanence}).
 
+
+It is tempting to think that the extension of an np-map~$\omega\colon \scrA
+\to\C$
+on a von Neumann
+subalgebra~$\scrA$ of a von Neumann algebra~$\scrB$
+to~$\scrB$ is simply a matter of applying Hahn--Banach to~$\omega$,
+but this approach presents two problems:
+it yields a normal but not necessarily positive extension
+of~$\omega$;
+and it not clear that~$\omega$ is ultraweakly continuous
+on~$\scrA$ (that is, whether Hahn--Banach applies).
+
+Instead of applying general techniques we feel forced
+to delve deeper
+into the particular structure 
+provided to us by von Neumann algebras
+to show that any np-map
+$\omega\colon \scrA\to\C$
+on a von Neumann algebra~$\scrA$
+of bounded operators on a Hilbert space~$\scrH$
+can be extended to an np-map on~$\scrB(\scrH)$,
+and in fact, is of the form
+$\omega\equiv \sum_n \left<x_n,(\,\cdot\,)x_n\right>$
+for some $x_1,x_2,\dotsc \in\scrH$.
 \end{point}
 \begin{point}[gns-mapping-property]{Lemma}%
 Let~$\omega\colon \scrA\to\C$
@@ -2462,6 +2429,8 @@ on~$\overline{\pi(\scrA)y}$,
 and~$U\pi(a)=\varrho(a)U$
 for all~$a\in\scrA$.
 \begin{point}{Proof}%
+(Compare this with Proposition 4.5.3 of~\cite{kr}.)
+
 Since $\|\varrho(a)x\|^2
 = \left<x,\varrho(a^*a)x\right>
 =\omega(a^*a)=\left<y,\pi(a^*a)y\right>
@@ -2706,6 +2675,8 @@ form~$\omega \equiv \sum_n \left<x_n,(\,\cdot\,)x_n\right>$
 for some $x_1,x_2,\dotsc \in\scrH$
 (with $\sum_n\|x_n\|^2<\infty$).
 \begin{point}{Proof}%
+(Based on Theorem~7.1.8 of~\cite{kr}.)
+
 Let~$\varrho\colon \scrA\to\scrB(\scrH)$
 denote the inclusion,
 and let~$U\colon \scrH_\Omega\to\scrH$
@@ -2758,7 +2729,7 @@ and denoting those by~$x_1,x_2,\dotsc$,
 we get $\omega = \sum_n \left<x_n,(\,\cdot\,)x_n\right>$.\qed
 \end{point}
 \end{point}
-\begin{point}{Corollary}%
+\begin{point}[functional-permanence]{Corollary}%
 Let~$\scrA$ be a von Neumann subalgebra
 of a von Neumann algebra~$\scrB$.
 \begin{enumerate}
