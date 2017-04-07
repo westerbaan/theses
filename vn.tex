@@ -2381,7 +2381,7 @@ which is, after all, equal to~$\scrA^\square$.
 \begin{point}{Exercise}%
 Let~$\scrA$ be a von Neumann algebra.
 Show that
-$\bigcup_{a\in\scrA}\ceil{a^*eax}$
+$\bigcup_{a\in\scrA}\ceil{a^*ea}$
 is the least central projection above any projection~$e$
 of~$\scrA$.
 \begin{point}%
@@ -2409,6 +2409,51 @@ Show that $\bigcup_{e\in E} \cceil{e}
 = \cceil{\bigcup E}$
 for any set~$E$ of projections in~$\scrA$.
 \end{enumerate}
+\end{point}
+\end{point}
+\begin{point}[cceil-sum]{Lemma}%
+Given a projection~$e$
+of a von Neumann algebra
+there is an orthogonal collection of non-zero projections
+$(e_i)_i$ with $\cceil{e}=\sum_i e_i$,
+and $p_i\vmleq e$ for all~$i$.
+
+\TODO{define $\vmleq$}
+\begin{point}{Proof}%
+Let~$(e_i)_i$
+be a maximal set of non-zero orthogonal projections
+in~$\scrA$ with
+$e_i\vmleq p$ for all~$i$.
+Our goal is to show that $\sum_i e_i \equiv \bigcup_i e_i=\cceil{a}$.
+
+Let~$u_i$ be a partial isometry
+with $u_i^*u_i=e_i$ and $u_iu_i^* \leq e$.
+Since $e_i=u_i^* u_i = u_i^* u_i u_i^* u_i
+\leq u_i^* e u_i 
+\leq \bigcup_{a\in \scrA} \ceil{a^* e a}=\cceil{a}$,
+we have
+$\bigcup_i e_i \leq \cceil{a}$.
+
+Suppose that~$\bigcup_i e_i < \cceil{a}$
+(towards a contradiction).
+Then since $p:=\cceil{a}-\bigcup_i e_i $ 
+is a non-zero projection,
+and~$p=p\cceil{e} p
+=\bigcup_{a\in\scrA} \ceil{p\ceil{a^*ea}p}
+= \bigcup_{a\in\scrA} \ceil{(ap)^*eap}$,
+there must be~$a\in\scrA$ with $(eap)^*eap\neq 0$.
+The polar decomposition of~$eap$
+(see \TODO{})
+gives us a partial isometry $u:=[eap]$
+with $uu^* = \ceil{eap(eap)^*}=\ceil{eapa^*e}\leq e$
+and $u^*u= \ceil{(eap)^*eap}\leq p$,
+so that $u^*u$ is a non-zero projection,
+orthogonal to all~$e_i$ with $u^*u \vmleq e$.
+In other words,
+$e$ could have been added to~$(e_i)_i$,
+contradicting its maximality.
+Hence $\bigcup_i e_i = \cceil{a}$.
+\qed
 \end{point}
 \end{point}
 \begin{point}{Exercise}%
@@ -2747,7 +2792,7 @@ We're going to `transfer'~$y$ from~$\scrH_\Omega$ to~$\scrH$
 using the following device.
 Since~$1=\cceil{U^*U}_{\varrho_\Omega(\scrA)^\square}$,
 we can 
-(by \TODO{})
+(by~\sref{cceil-sum})
 find partial isometries $(v_i)_i$ in
 $\varrho_\Omega(\scrA)^\square$
 with $1=\sum_i v_i^*v_i$
