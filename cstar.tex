@@ -2369,7 +2369,7 @@ with $a\leq b$, but $a^2 \nleq b^2$.
 In other words, the square $a\mapsto a^2$
 on the possitive elements of a $C^*$-algebra
 need not be monotone,
-(but $a\mapsto \sqrt{a}$ \emph{is} monotone, see~\TODO{}).
+(but $a\mapsto \sqrt{a}$ \emph{is} monotone, see~\sref{sqrt-monotone}).
 
 (Hint: take $a=(\begin{smallmatrix}1&0\\0&0\end{smallmatrix})$
 and $b=a+\frac{1}{2}(\begin{smallmatrix}1&1\\1&1\end{smallmatrix})$
@@ -2937,6 +2937,128 @@ iff $aa^*=a^*a$ iff $\Real{a}\Imag{a}=\Imag{a}\Real{a}$.
 Such~$a$ are called~\Define{normal}.
 
 \TODO{More work}
+\TODO{Functional calculus}
+\end{point}
+\begin{point}[sqrt-monotone]{Theorem}%
+We have $0\leq a\leq b \implies a^\alpha \leq b^\alpha$
+for all positive elements $a$ and~$b$
+of a $C^*$-algebra~$\scrA$,
+and $\alpha\in (0,1]$.
+\begin{point}{Proof}%
+(Based on~\cite{pedersen1972}.)
+
+Note that the result is trivial if~$a$ and~$b$ commute.
+
+Since~$b\mapsto b^\alpha$
+is norm continuous as map~$\scrA_+\to\scrA_+$,
+and~$\scrA_+$ is closed,
+it suffices to show that
+$(a+\frac{1}{n})^\alpha \leq (b+\frac{1}{n})^\alpha$
+for all~$n$.
+In other words,
+it suffices to prove $a^\alpha \leq b^\alpha$
+under the additional assumption that~$a$ and~$b$ are invertible.
+Thus, writing~$E$ for the set of all~$\alpha\in[0,1]$
+for which $b\mapsto b^\alpha$ is monotone
+on positive,
+\emph{invertible} elements of~$\scrA$,
+we must prove that~$E=[0,1]$.
+Since clearly~$0,1\in E$
+it suffices to show that~$E$ is convex,
+and we'll do this by showing that~$E$
+is closed,
+and $\alpha,\beta\in E\implies \frac{1}{2}\alpha 
++ \frac{1}{2}\beta \in E$.
+
+\begin{point}{$E$ is closed}
+Let~$b$ be a positive and invertible element of~$\scrA$.
+A moment's though reveals it suffices to 
+prove that $\alpha\mapsto b^\alpha, \,[0,1]\to\scrA$
+is continuous.
+Now, since for $\beta\geq \alpha$ from~$[0,1]$
+we have $\|b^\beta - b^\alpha\|\leq  
+\left\|b^\alpha\right\|\,\left\|b^{\beta-\alpha}-1\right\|
+\leq \left\|b^{\beta-\alpha}-1\right\|$,
+it suffices to show that $\lim_{n\to\infty} b^{\nicefrac{1}{n}}=1$.
+Note that~$\|b^{-1}\|^{-1}\leq b\leq \|b\|$,
+and so
+$(\|b^{-1}\|^{-1})^{\nicefrac{1}{n}} \leq b^{\nicefrac{1}{n}}\leq 
+\|b\|^{\nicefrac{1}{n}}$
+for all~$n$.
+Since~$\lim_n r^{\nicefrac{1}{n}}=1$ for every~$r>0$,
+and~$b^{\nicefrac{1}{n}}$
+is sandwiched between such~$r^{\nicefrac{1}{n}}$s,
+we get~$\lim_n b_n=1$.
+\end{point}
+\begin{point}{$\alpha,\beta\in E\implies \frac{1}{2}\alpha+\frac{1}{2}\beta
+	\in E$}
+Let~$\alpha,\beta\in E$. Let~$a,b\in\scrA$ be positive
+and invertible with $a\leq b$.
+We must show that $a^{\nicefrac{\alpha+\beta}{2}}\leq 
+b^{\nicefrac{\alpha+\beta}{2}}$.
+Since the map $b^{\nicefrac{\alpha+\beta}{4}}(\,\cdot\,)
+b^{\nicefrac{\alpha+\beta}{4}}$
+is positive (by~\TODO{}),
+it suffices to show that
+$b^{-\frac{\alpha+\beta}{4}}\,a^{\frac{\alpha+\beta}{2}}\,
+b^{-\frac{\alpha+\beta}{4}} \leq 1$,
+that is, 
+$\|b^{-\frac{\alpha+\beta}{4}}\,a^{\frac{\alpha+\beta}{2}}\,
+b^{-\frac{\alpha+\beta}{4}} \| \leq 1$.
+
+For this, it seems, we must take a look under the hood
+of the theory of $C^*$-algebras:
+writing $\varrho(c):=\sup_{\lambda\in \spec(c)}\left|\lambda \right|$
+for~$c\in \scrA$,
+we know that $\varrho(c)\leq \|c\|$ for any~$c$,
+and $\varrho(c)=\|c\|$ for self-adjoint~$c$ by \TODO{...}.
+Moreover, recall that by~\TODO{...}
+we know that $\spec(cd)\backslash\{0\}
+=\spec(dc)\backslash\{0\}$,
+and so~$\varrho(cd)=\varrho(dc)$
+for all $c,d\in \scrA$.
+Hence
+\begin{alignat*}{3}
+\|\,b^{-\frac{\alpha+\beta}{4}}\,a^{\frac{\alpha+\beta}{2}}\,
+b^{-\frac{\alpha+\beta}{4}}\,\| 
+\ &=\ 
+\varrho(\,b^{-\frac{\alpha+\beta}{4}}\,a^{\frac{\alpha+\beta}{2}}\,
+b^{-\frac{\alpha+\beta}{4}} \,) \\
+&=\ 
+\varrho(\,b^{-\frac{\alpha+\beta}{4}}\,a^{\frac{\alpha+\beta}{2}}\,
+b^{-\frac{\alpha+\beta}{4}} \,b^{-\frac{\alpha-\beta}{4}}
+\,b^{\frac{\alpha-\beta}{4}}\,) \\
+&=\ 
+\varrho(
+\,b^{\frac{\alpha-\beta}{4}}\,
+\,b^{-\frac{\alpha+\beta}{4}}\,a^{\frac{\alpha+\beta}{2}}\,
+b^{-\frac{\alpha+\beta}{4}} \,b^{-\frac{\alpha-\beta}{4}}\,)\\
+&=\ 
+\varrho(
+\,b^{-\nicefrac{\beta}{2}}\,a^{\nicefrac{\beta}{2}}\,
+a^{\nicefrac{\alpha}{2}}\,
+b^{-\nicefrac{\alpha}{2}} \,) \\
+&\leq\ 
+\|\,b^{-\nicefrac{\beta}{2}}\,a^{\nicefrac{\beta}{2}}\,\|
+\,\|\,
+a^{\nicefrac{\alpha}{2}}\,
+b^{-\nicefrac{\alpha}{2}} \,\|\\
+&=\ 
+\|\,b^{-\nicefrac{\beta}{2}}\,a^{\beta}\,
+b^{-\nicefrac{\beta}{2}}\,\|^{\nicefrac{1}{2}}
+\,\|\,
+b^{-\nicefrac{\alpha}{2}} \,a^\alpha\,
+b^{-\nicefrac{\alpha}{2}} \,\|^{\nicefrac{1}{2}}\\
+\ &\leq\ 
+\|\,b^{-\nicefrac{\beta}{2}}\,b^{\beta}\,
+b^{-\nicefrac{\beta}{2}}\,\|^{\nicefrac{1}{2}}
+\,\|\,
+b^{-\nicefrac{\alpha}{2}} \,b^\alpha\,
+b^{-\nicefrac{\alpha}{2}} \,\|^{\nicefrac{1}{2}} \ = \ 1,
+\end{alignat*}
+and so we're done.\qed
+\end{point}
+\end{point}
 \end{point}
 \end{parsec}
 
