@@ -815,7 +815,7 @@ $pa=p$ iff $ap=p$ iff $p\leq \floor{a}$.
 Conclude that~$\ceil{a}$
 is the least projection with $a=a\ceil{a}\equiv\ceil{a}a$,
 and that $\floor{a}$
-is the greatest projection with $a=a\floor{a}\equiv \floor{a}a$.
+is the greatest projection with $\floor{a}=a\floor{a}\equiv \floor{a}a$.
 \end{point}
 \begin{point}[ceil-floor-basic]{Exercise}%
 Let~$a,b$ be effects of a von Neumann algebra~$\scrA$,
@@ -862,6 +862,136 @@ and an infimum $\Define{\bigcap A}$
 (Hint: use~\sref{ceil-floor-basic},
 and the fact that $p\mapsto p^\perp$ 
 is an order isomorphism on the poset of projections on~$\scrA$.)
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}{Notation}%
+Let~$\scrA$ be a von Neumann algebra.
+Because it will be very convenient
+we extend the definition of~$\ceil{b}$
+to all positive~$b$ from~$\scrA$
+---
+contrary to what the notation suggests,
+$b\leq \ceil{b}$
+---
+by 
+defining $\Define{\ceil{b}}=\ceil{\|b\|^{-1} b}$
+when~$b\nleq 1$.
+
+Now, given an arbitrary element~$b$ of~$\scrA$,
+we'll call $\Define{\ceill{b}}:=\ceil{b^*b}$
+the \Define{support} of~$b$,
+and~$\Define{\ceilr{b}}:=\ceil{bb^*}$ the \Define{range} of~$b$.
+\end{point}
+\begin{point}{Exercise}%
+Let~$a$ and~$b$ be a positive elements of a von Neumann algebra~$\scrA$.
+\begin{enumerate}
+\item
+Show that $pa=a$ iff $ap=a$ iff $\ceil{a}\leq p$
+for every projection~$p$ of~$\scrA$.
+
+(In particular, $\ceil{a}$ is the least projection of~$\scrA$
+with $a\ceil{a}=a$.)
+
+\item
+Show that $\ceil{a}a=a\ceil{a}$,
+and if fact, if $b\in\scrA$ commutes with~$a$
+then~$b$ commutes with~$\ceil{a}$.
+
+\item
+Show that $\ceil{a}=\ceil{\lambda a}$
+for every~$\lambda>0$.
+
+Show that $\ceil{a+b}=\ceil{a}\cup\ceil{b}$.
+\item
+Show that $\ceil{a^2}=\ceil{a}$.
+\end{enumerate}
+\end{point}
+\begin{point}{Exercise}%
+Let~$a$ be an element of a von Neumann algebra.
+\begin{enumerate}
+\item
+Show that $\ceill{a}\equiv \ceil{a^*a}$
+is the least projection of~$\scrA$
+with $a\ceill{a}=a$.
+
+\item
+Show that $\ceilr{a}\equiv \ceil{aa^*}$
+is the least projection of~$\scrA$
+with $\ceilr{a}a=a$.
+
+\item
+Show that $\ceill{a^*}=\ceilr{a}$
+and $\ceilr{a^*}=\ceill{a}$.
+\end{enumerate}
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}[cpsu-root-square]{Exercise}%
+Let~$f\colon \scrA\to\scrB$ be a ncpsu-map
+between von Neumann algebras
+and let~$a\in \scrA$ be positive.
+\begin{enumerate}
+\item
+Show that~$f(a)^2 \leq f(a^2)$
+(perhaps using~\sref{cp-cs}).
+\item
+	Use this, and~\TODO{square-root-monotone}
+to show that~$f(a^{\nicefrac{1}{2}}) \leq f(a)^{\nicefrac{1}{2}}$.
+\item
+Go on, and show that $f(a^{\nicefrac{1}{2^n}})
+\leq f(a)^{\nicefrac{1}{2^n}}$ for each~$n$.
+\end{enumerate}
+\end{point}
+\begin{point}[ncp-ceil]{Proposition}%
+Let $f\colon \scrA\to\scrB$ be a ncp-map
+between von Neumann algebras.
+Then $\ceil{f(a)}=\ceil{f(\ceil{a})}$
+for every $a\in\scrA_+$.
+\begin{point}{Proof}%
+Note that if~$a=0$,
+then
+the stated result is clearly correct.
+In the other case, when~$\|a\| \neq 0$,
+the problem reduces to the case
+that $0\leq a\leq 1$
+by replacing $a$ by~$\frac{a}{\|a\|}$.
+So let us just assume that~$a\in [0,1]_\scrA$
+to begin with.
+For similar reasons, we may assume that $f(1)\leq 1$.
+
+Now, since~$a\leq \ceil{a}$
+we have $f(a)\leq f(\ceil{a})$,
+and so~$\ceil{f(a)}\leq \ceil{f(\ceil{a})}$.
+It remains to be shown that $\ceil{f(\ceil{a})}\leq \ceil{f(a)}$,
+that is, $f(\ceil{a})\leq \ceil{f(a)}$.
+Since  $\ceil{a}=\bigvee_n a^{\nicefrac{1}{2^n}}$ 
+(by~\sref{vna-ceil})
+and~$f$ is normal,
+we have $f(\ceil{a})=\bigvee_n f(a^{\nicefrac{1}{2^n}})$.
+Now, since $f(a^{\nicefrac{1}{2^n}})\leq f(a)^{\nicefrac{1}{2^n}}
+\leq \ceil{f(a)}$
+by~\sref{cpsu-root-square} for each~$n$,
+we have~$f(\ceil{a})\leq \ceil{f(a)}$.\qed
+\end{point}
+\end{point}
+\begin{point}[ncp-union]{Exercise}%
+Let~$f\colon \scrA\to\scrB$ be an ncp-map
+between von Neumann algebras.
+\begin{enumerate}
+\item
+Show that
+$\ceil{f(p\cup q)}
+= \ceil{f(p)}\cup\ceil{f(q)}$
+for all projections $p$ and~$q$ in~$\scrA$.
+
+(Hint: recall from~\sref{ceil-floor-basic} 
+that $p\cup q = \ceil{\frac{1}{2}p+\frac{1}{2}q}$.)
+
+\item
+Deduce from this and~\sref{ncp-ceil} that $\ceil{f(\bigcup A)}=\bigcup_{a\in A}\ceil{f(a)}$
+for every set of projections~$A$ from~$\scrA$.
+\end{enumerate}
 \end{point}
 \end{parsec}
 \section{Completeness}
@@ -2234,11 +2364,12 @@ Let us first show that~$p:= \ceil{e}_{S^\square}$
 is in~$S^\square$.
 Let $b\in S$ be given.
 Since~$b^*(\,\cdot\,)b\colon \scrA\to\scrA$
-is normal and $p=\bigcup_{a\in S} \ceil{a^*ea}$,
+is normal and completely positive,
+and $p=\bigcup_{a\in S} \ceil{a^*ea}$,
 we have $b^*pb\leq \ceil{b^*pb} = 
 \bigcup_{a\in S} \ceil{ b^* \ceil{a^* e a} b }
 = \bigcup_{a\in S} \ceil{(ab)^* \,e\, ab} \leq p$
-by \TODO{} and \TODO{}.
+by~\sref{ncp-union} and~\sref{ncp-ceil}.
 Applying $p^\perp(\,\cdot\,)p^\perp$,
 we get $p^\perp b^*pb p^\perp 
 \leq p^\perp p p^\perp = 0$,
@@ -2971,54 +3102,6 @@ f(b^*a)\,f(a^*b)\ \leq\ \|f(a^*a)\|\,f(b^*b).
 %
 %
 \begin{parsec}%
-\begin{point}{Exercise}%
-Let~$f\colon \scrA\to\scrB$ be a ncpsu-map
-between von Neumann algebras
-with~$f(1)\leq 1$,
-and let~$a\in \scrA$ be positive.
-\begin{point}[cp-kadisons-ineq]%
-Show that~$f(a)^2 \leq f(a^2)$.
-\end{point}
-\begin{point}%
-Use this, and~\sref{cstar-sqrt-monotone},
-to show that~$f(a^{\nicefrac{1}{2}}) \leq f(a)^{\nicefrac{1}{2}}$.
-\end{point}
-\begin{point}[cpsu-2nthroot]%
-Go on, and show that $f(a^{\nicefrac{1}{2^n}})
-\leq f(a)^{\nicefrac{1}{2^n}}$ for each~$n$.
-\end{point}
-\end{point}
-\end{parsec}
-
-%
-%
-%
-\begin{parsec}%
-\begin{point}{Proposition}%
-Let $f\colon \scrA\to\scrB$ be a ncpsu-map
-between von Neumann algebras.
-Then $\ceil{f(a)}=\ceil{f(\ceil{a})}$
-for every effect~$a$ from~$\scrA$.
-
-\TODO{Use Kadison's inequality instead of complete positivity?}
-\end{point}
-\begin{point}{Proof}%
-Since~$a\leq \ceil{a}$
-we have $f(a)\leq f(\ceil{a})$,
-and so~$\ceil{f(a)}\leq \ceil{f(\ceil{a})}$.
-\begin{point}%
-It remains to be shown that $\ceil{f(\ceil{a})}\leq \ceil{f(a)}$,
-that is, $f(\ceil{a})\leq \ceil{f(a)}$.
-Since  $\ceil{a}=\bigvee_n a^{\nicefrac{1}{2^n}}$ 
-(by~\sref{vna-ceil})
-and~$f$ is normal,
-we have $f(\ceil{a})=\bigvee_n f(a^{\nicefrac{1}{2^n}})$.
-Now, since $f(a^{\nicefrac{1}{2^n}})\leq f(a)^{\nicefrac{1}{2^n}}
-\leq \ceil{f(a)}$
-by~\sref{cpsu-2nthroot} for each~$n$,
-we have~$f(\ceil{a})\leq \ceil{f(a)}$.
-\end{point}
-\end{point}
 \end{parsec}
 %
 %
