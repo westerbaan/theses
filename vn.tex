@@ -925,6 +925,24 @@ Show that $\ceill{a^*}=\ceilr{a}$
 and $\ceilr{a^*}=\ceill{a}$.
 \end{enumerate}
 \end{point}
+\begin{point}{Exercise}%
+Let~$T$ be a bounded operator on a Hilbert space~$\scrH$.
+\begin{enumerate}
+\item
+Show that $\ceilr{T}$
+is the projection onto the closure
+$\overline{\Ran(T)}$ of the range of~$T$.
+\item
+Show that $\ceill{T}$
+is the projection onto the \emph{support}
+of~$T$, i.e.~the orthocomplement
+$\Ker(T)^\perp$ of the kernel of~$T$.
+\item
+Show that $\floor{T}$ is the projection
+on $\{\,x\in\scrH\colon\, Tx=x\,\}$
+when~$T$ is an effect.
+\end{enumerate}
+\end{point}
 \end{parsec}
 \begin{parsec}%
 \begin{point}[cpsu-root-square]{Exercise}%
@@ -936,7 +954,7 @@ and let~$a\in \scrA$ be positive.
 Show that~$f(a)^2 \leq f(a^2)$
 (perhaps using~\sref{cp-cs}).
 \item
-	Use this, and~\TODO{square-root-monotone}
+Use this, and~\TODO{square-root-monotone}
 to show that~$f(a^{\nicefrac{1}{2}}) \leq f(a)^{\nicefrac{1}{2}}$.
 \item
 Go on, and show that $f(a^{\nicefrac{1}{2^n}})
