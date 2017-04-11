@@ -774,6 +774,19 @@ Show that $\|a^*\| = \|a\|$. (Hint:  $\|a\|^2=\|a^*a\|\leq \|a^*\|\|a\|$.)
 
 \item
 Show that $\|\Real{a}\|\leq \|a\|$ and $\|\Imag{a}\|\leq \|a\|$.
+\item
+Show that $\|a^2\|=\|a\|^2$ when~$a$ is self-adjoint.
+
+However,
+show that $\|a^2\|\neq \|a\|^2$ might occur
+when~$a$ is not self-adjoint.
+(Hint: $\bigl(
+\begin{smallmatrix}
+	0&1\\
+	0&0
+\end{smallmatrix}
+\bigr)$.)
+
 \end{enumerate}
 \end{point}
 \end{parsec}
@@ -1078,12 +1091,20 @@ is an open subset of~$\scrA$.
 \end{enumerate}
 \end{point}
 \begin{point}[harmonic-divergence]{Exercise}%
-Let~$a$ be an element of a $C^*$-algebra $\scrA$ with $\|a\|>1$.
+Let~$a$ be a self-adjoint element of a $C^*$-algebra $\scrA$ with $\|a\|>1$.
 \begin{enumerate}
 \item
-Show that $1,\,a,\,a^2,\,a^3,\,\dotsc$ diverges.
+Show that $1,\,a,\,a^2,\,a^4,\,a^8,\,\dotsc$
+diverges
+(using $\|a^2\|=\|a\|^2$).
 \item
 Show that $\sum_n a^n$ diverges.
+\item
+Show, however, that~$\sum_n a^n$
+might converge when the assumption that~$a$ is self-adjoint is dropped.
+(Hint: $\bigl(\begin{smallmatrix}
+	0&2\\0&0
+\end{smallmatrix}\bigr)$.)
 \end{enumerate}
 \end{point}
 \begin{point}[cstar-inv-continuous]{Lemma}%
@@ -1350,6 +1371,46 @@ that is, function~$f$ of the form $f(z)\equiv a_n z^n+\dotsb+a_1 z+a_0$
 is holomorphic with $f'(z)=na_nz^{n-1}+\dotsb+2a_2z+a_1$.
 \end{enumerate}
 \end{point}
+\begin{point}{Exercise}%
+Let~$f$ be an $\scrA$-valued
+function, and let~$w\in \dom(f)$.
+
+Stretching accepted terminology, we'll say that
+a sequence $a_0,a_1,a_2,\dotsc\in\scrA$
+is a \Define{power series expansion} of~$f$ around~$w$
+when~$f(z)=\sum_n a_n (z-w)^n$ for all~$z\in \dom(f)$.
+\begin{enumerate}
+\item
+Show that if~$f$ has a power series expansion $a_0,a_1,a_2,\dotsc$
+around~$w$,
+then~$f$ is holomorphic,
+and~$f'$ has power series expansion~$a_1,\,2a_2,\,3a_3,\,\dotsc$
+around~$w$.
+\item
+Show that if $a_0,a_1,\dotsc$ is a power series expansion
+of~$f$ around~$w$,
+and $f(z)=0$ for all~$z\in\dom(f)$,
+then~$0=a_0=a_1=\dotsb$.
+
+\item
+\Define{(Unicity of the power series expansion)}\ 
+Suppose that $a_0,a_1,\dotsc$
+and $b_1,b_2,\dotsc$ are power series expansions of~$f$
+around~$w$.
+Show that~$b_n=a_n$ for all~$n$.
+
+\item
+\Define{(Rigidity of power series)}\ 
+Suppose that~$f$ has a power series expansion
+around~$w$
+and let~$U$ be a non-empty open subset of~$\dom(f)$
+that contains~$w$.
+
+Show that a power series expansion~$b_1,b_2,\dotsc$
+of~$f|U$ around~$w$
+is also a power series expansion of~$f$ around~$w$.
+\end{enumerate}
+\end{point}
 \TODO{Definition of polygonal paths}
 \TODO{Definition of integration along these}
 \begin{point}[goursat]{Goursat's Theorem}%
@@ -1551,7 +1612,7 @@ for all~$z\in \C$ with $\left|z\right|< R$.
 \TODO{add hints}
 \end{point}
 \begin{point}[norm-spectrum]{Proposition}%
-For an element~$a$ of a $C^*$-algebra~$\scrA$,
+For a self-adjoint element~$a$ of a $C^*$-algebra~$\scrA$,
 we have
 \begin{equation*}
 \|a\|\,=\,\sup\{\,\left|\lambda\right|\colon 
@@ -1600,11 +1661,16 @@ but for all~$z$ with $\|z\|\leq R$.
 However, $R$ cannot be strictly larger than~$\|a\|^{-1}$,
 because for every $z\in\C$ with $\left|z\right|>\|a\|^{-1}$
 the series $\sum_n(az)^n$ 
-and thus $\sum_n a^n{z}^{n+1}$ diverges (see~\sref{harmonic-divergence}).
+and thus $\sum_n a^n{z}^{n+1}$ diverges (see~\sref{harmonic-divergence})
+--- using here that~$a$ is self-adjoint.
 Hence~$R=\|a\|^{-1}$, and so~$r=\|a\|$.\qed
 \end{point}
 \end{point}
 \begin{point}[spectrum-non-empty]{Exercise}%
+Show that $\spec(a)\neq \varnothing$ for an element of a $C^*$-algebra
+$\scrA$.
+\end{point}
+\begin{point}
 Given an element~$a$ of a $C^*$-algebra show that
 \begin{enumerate}
 \item $\spec(a)\neq \varnothing$;
