@@ -1405,6 +1405,8 @@ when~$\left|z\right| < R$, and
 if~$\sum_n a_n z^n$ converges,
 then~$\left|z\right|\leq R$.
 \end{enumerate}
+(The number~$R$ is called the \Define{radius of convergence}
+of the series $\sum_n a_n z^n$.)
 \begin{point}{Proof}%
 Suppose that $\left|z\right|<R$.
 To show that the series 
@@ -1450,18 +1452,16 @@ giving $\left|z\right|\leq R$.\qed
 \end{point}
 \end{point}
 \begin{point}{Proposition}%
-Let~$a_1,a_2,\dotsc\in\scrA$ be given,
-and write $R:=(\,\limsup_n \|a_n\|^{\nicefrac{1}{n}}\,)^{-1}$.
-
 The $\scrA$-valued function~$f$
-defined by~$f(z)=\sum_n a_n z^n$
-and~$\dom(f)=\{z\in\C\colon \left|z\right|<R\}$
-is holomorphic,
-and $f'(z)=\sum_n (n+1) a_{n+1} z^n$
+given by a series $\sum_n a_n z^n$
+with radius of convergence~$\smash{R:=(\,\limsup_n \|a_n\|^{\nicefrac{1}{n}}\,)^{-1}}$
+is holomorphic
+when defined
+on the disk $\dom(f)=\{z\in\C\colon \left|z\right|<R\}$,
+and $f'(z)=\sum_{n=1}^\infty n a_n z^{n-1}$
 for all~$z\in \dom(f)$.
 \begin{point}{Proof}%
-	\TODO{work...}
-
+	\TODO{...}
 \end{point}
 \end{point}
 \TODO{Definition of polygonal paths}
