@@ -1044,8 +1044,10 @@ see~\sref{inverse-permanence}.
 \begin{point}[geometric]{Lemma}%
 Let~$a$ be an element of a $C^*$-algebra~$\scrA$ with~$\|a\|<1$.
 Then~$a^\perp=1-a$ has an inverse,
-namely~$(a^\perp)^{-1}= \sum_{n=0}^\infty\, a^n$
-(norm convergence).
+namely~$(a^\perp)^{-1}= \sum_{n=0}^\infty\, a^n$.
+Moreover, this series converges absolutely,
+that is,
+$\sum_{n=0}^\infty \|a^n\|<\infty$.
 \begin{point}{Proof}%
 Note that
 $(1-\|a\|)\,(1+\|a\|+\|a\|^2+\dotsb+\|a\|^N) \,=\, 1-\|a\|^{N+1}$,
@@ -1090,22 +1092,40 @@ Show that $U:=\{\ b\in\scrA\colon\ \text{$b$ is invertible}\ \}$
 is an open subset of~$\scrA$.
 \end{enumerate}
 \end{point}
-\begin{point}[harmonic-divergence]{Exercise}%
-Let~$a$ be a self-adjoint element of a $C^*$-algebra $\scrA$ with $\|a\|>1$.
-\begin{enumerate}
-\item
-Show that $1,\,a,\,a^2,\,a^4,\,a^8,\,\dotsc$
-diverges
-(using $\|a^2\|=\|a\|^2$).
-\item
-Show that $\sum_n a^n$ diverges.
-\item
-Show, however, that~$\sum_n a^n$
-might converge when the assumption that~$a$ is self-adjoint is dropped.
-(Hint: $\bigl(\begin{smallmatrix}
-	0&2\\0&0
-\end{smallmatrix}\bigr)$.)
-\end{enumerate}
+\begin{point}[geometric-convergence]{Lemma}%
+For a self-adjoint element~$a$ of~$\scrA$
+the series $\sum_n a^n$ 
+converges (absolutely) iff~$\|a\|<1$.
+\begin{point}{Proof}%
+We have already seen in~\sref{geometric}
+that~$\sum_n a^n$
+converges absolutely when~$\|a\|<1$.
+Now, if $\sum_n a^n$ converges,
+then~$\|a^{2^n}\|\equiv \|a\|^{2^n}$
+(being the norm of the difference
+between consecutive partial sums of~$\sum_n a^n$)
+converges to~$0$,
+which only happens when~$\|a\|<1$.\qed
+\end{point}
+\begin{point}{Remark}%
+For non-self-adjoint elements~$a$ of~$\scrA$,
+the convergence of~$\sum_n a^n$
+is a more delicate matter.
+Take for example
+the matrix $A:=\bigl(\begin{smallmatrix}0&2\\0&0\end{smallmatrix}\bigr)$
+for which the series $\sum_n A^n$ converges (to~$A$),
+while~$\|A\|=2$ --- the problem being that
+$\|A^2\|^{\nicefrac{1}{2}}$ differs from $\|A\|$.
+In fact,
+we'll see from~\sref{hadamard}
+(although we won't need it)
+that~$\sum_n a^n$
+converges absolutely when $1>\limsup_n \|a^n\|^{\nicefrac{1}{n}}$,
+and diverges when $1<\limsup_n \|a^n\|^{\nicefrac{1}{n}}$.
+This begs the question
+what happens when $1=\limsup_n \|a^n\|^{\nicefrac{1}{n}}$
+--- which I do not know.
+\end{point}
 \end{point}
 \begin{point}[cstar-inv-continuous]{Lemma}%
 Let~$\scrA$ be a $C^*$-algebra.
@@ -1371,7 +1391,7 @@ that is, function~$f$ of the form $f(z)\equiv a_n z^n+\dotsb+a_1 z+a_0$
 is holomorphic with $f'(z)=na_nz^{n-1}+\dotsb+2a_2z+a_1$.
 \end{enumerate}
 \end{point}
-\begin{point}{Theorem}%
+\begin{point}[hadamard]{Theorem}%
 Let~$a_1,a_2,\dotsc\in\scrA$
 be given,
 and write~$R:=(\limsup_n \|a_n\|^{\nicefrac{1}{n}})^{-1}$.
@@ -1694,7 +1714,7 @@ but for all~$z$ with $\|z\|\leq R$.
 However, $R$ cannot be strictly larger than~$\|a\|^{-1}$,
 because for every $z\in\C$ with $\left|z\right|>\|a\|^{-1}$
 the series $\sum_n(az)^n$ 
-and thus $\sum_n a^n{z}^{n+1}$ diverges (see~\sref{harmonic-divergence})
+and thus $\sum_n a^n{z}^{n+1}$ diverges (see~\sref{geometric-convergence})
 --- using here that~$a$ is self-adjoint.
 Hence~$R=\|a\|^{-1}$, and so~$r=\|a\|$.\qed
 \end{point}
