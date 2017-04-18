@@ -1063,6 +1063,7 @@ is Cauchy (in the operator norm
 on bounded linear functionals $\scrA\to\C$),
 and converges to a bounded linear map~$f\colon \scrA\to\C$.
 Show that~$f$ is an np-map.
+\TODO{non-trivial?}
 \end{enumerate}
 \end{point}
 \begin{point}{Exercise}%
@@ -1156,13 +1157,13 @@ for all~$a\in \scrA$.
 In particular, $[b_1,\,\cdot\,]_\omega,\,[b_2,\,\cdot\,]_\omega,\,\dotsc$
 converges to~$f$ (in the operator norm).
 By ``polarization'' (c.f.~\sref{mult-polarization}),
-we have $[b_n,a]_\omega = \sum_{k=0}^3 i^kf_{k,n}(a)$,
+we have $[b_n,a]_\omega = \frac{1}{4}\sum_{k=0}^3 i^kf_{k,n}(a)$,
 where $f_{k,n} := (i^kb_n+1)*\omega$ is an np-map.
-Since~$(i^kb_n+1)_n$ is Cauchy with respect to~$\|\,\cdot\|_\omega$,
+Since~$(i^kb_n+1)_n$ is Cauchy with respect to~$\|\,\cdot\,\|_\omega$,
 we see by~\sref{bstaromega-basic} that 
 $(f_{k,n})_n$ converges to an np-map $f_k\colon \scrA\to\C$
 (with respect to the operator norm).
-It follows that~$f=\sum_{k=0}^3 i^k f_k$.
+It follows that~$f=\frac{1}{4}\sum_{k=0}^3 i^k f_k$.
 
 It remains to be shown that there is~$B>0$ with $f_k(a)\leq B\omega(a)$
 for all~$k$ and~$a\in\pos{\scrA}$.
