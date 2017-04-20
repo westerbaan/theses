@@ -1325,6 +1325,7 @@ directly from~\sref{inverse-permanence}.\qed%
 \end{point}
 \end{parsec}
 \section{Positive elements}
+\subsection{Holomorphic functions}
 \begin{parsec}%
 \begin{point}%
 The next order of business
@@ -1390,6 +1391,20 @@ Any polynomial,
 that is, function~$f$ of the form $f(z)\equiv a_n z^n+\dotsb+a_1 z+a_0$
 is holomorphic with $f'(z)=na_nz^{n-1}+\dotsb+2a_2z+a_1$.
 \end{enumerate}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}%
+We now turn
+to perhaps the most important example
+of a holomorphic $\scrA$-valued function ---
+or at the very least the very source from
+which (as we'll see) all holomorphic functions
+draw their interesting and desirable
+properties:
+the holomorphic $\scrA$-valued function
+given by a power series  $\sum_n a_n z^n$.
 \end{point}
 \begin{point}[hadamard]{Theorem}%
 Let~$a_1,a_2,\dotsc\in\scrA$
@@ -1461,9 +1476,88 @@ on the disk $\dom(f)=\{z\in\C\colon \left|z\right|<R\}$,
 and $f'(z)=\sum_{n=1}^\infty n a_n z^{n-1}$
 for all~$z\in \dom(f)$.
 \begin{point}{Proof}%
-	\TODO{...}
+If~$R=0$,
+the statement is rather dull, but clearly true,
+so we assume that~$R\neq 0$,
+that is, $\smash{\limsup_n \|a_n\|^{\nicefrac{1}{n}}}<\infty$.
+
+Note
+that the radius of convergence
+of~$\sum_{n=1}^\infty na_n z^{n-1}
+\equiv \sum_{n=0}^\infty (n+1)a_{n+1}z^n$
+is also~$R$,
+because
+\begin{equation*}
+	\smash{\bigl\|\,(n+1)\, a_{n+1}\,\bigr\|^{\nicefrac{1}{n}}}
+\ =\  \smash{(n+1)^{\nicefrac{1}{n}}}
+\ \smash{\|a_{n+1}\|^{\frac{1}{n+1}}}
+\ \smash{\bigl(\|a_{n+1}\|^{\frac{1}{n+1}}\bigr)^{\nicefrac{1}{n}}},
+\end{equation*}
+and
+$R^{-1}=\limsup_n \|a_{n+1}\|^{\frac{1}{n+1}}$,
+and both 
+$(n+1)^{\nicefrac{1}{n}}$
+and  $\bigl(\|a_{n+1}\|^{\frac{1}{n+1}}\bigr)^{\nicefrac{1}{n}}$
+converge to~$1$ as~$n\to\infty$
+(using here that $\smash{\limsup_n\|a_n\|^{\nicefrac{1}{n}}}<\infty$).
+
+Hence~$\sum_{n=1}^\infty n a_n z^{n-1}$
+converges absolutely for every~$z\in\C$ with $\left|z\right|<R$.
+Let~$z\in \C$ with $\left|z\right|<R$
+be given. We must show that~$f$
+is holomorphic at~$z$ with~$f'(z)=\sum_n na_nz^{n-1}$.
+For this it suffices to show that
+the sum of the series
+\begin{equation}
+\label{power-series-derivative-0}
+\sum_{n=0}^\infty
+\|a_n\|\left|\,\frac{(z+h)^n-z^n}{h}-nz^{n-1}\,\right|
+\end{equation}
+converges to~$0$
+as $h\in\C$ (with $h\neq 0$ and $\left|z+h\right|<R$)
+tends to~$0$.
+
+Pick~$r>0$ with $\left|z\right| < r < R$.
+With the appropriate algebraic gymnastics
+(involving the identity
+$a^n-b^n=(a-b)\sum_{k=1}^n a^{n-k}b^{k-1}$
+and the inequalities $\left|z+h\right| \leq r$
+and $\left|z\right|\leq r$)
+we get, for every~$n$
+and~$h\in \C$ with
+$h\neq 0$ and~$\left|z+h\right|<r$,
+\begin{align}
+\left|\  \frac{(z+h)^n-z^n}{h}-nz^{n-1}\ \right|
+\ &= \ 
+\biggl|\ \sum_{k=1}^n \bigl(\,(z+h)^{n-k}-z^{n-k}\,\bigr)z^{k-1} \ \biggr|
+\label{power-series-derivative-1}
+\\ 
+\label{power-series-derivative-2}
+\ &\leq\ 
+2nr^{n-1}.
+\end{align}
+On the one hand,
+we see from~\eqref{power-series-derivative-1}
+that any term
+--- and thus any partial sum ---
+of the series from~\eqref{power-series-derivative-0}
+converges to~$0$ as~$h$ tends to~$0$.
+On the other hand,
+we see from~\eqref{power-series-derivative-2}
+that the series 
+from~\eqref{power-series-derivative-0}
+is dominated by~$2\sum_n \|a_n\|nr^{n-1}$
+(which converges
+because the radius of convergence of $\sum_n a_n nz^{n-1}$
+is $R>r$),
+so that the tails of the series in~\eqref{power-series-derivative-0}
+vanish uniformly in~$h$.
+All in all, the sum of the infinite series
+from~\eqref{power-series-derivative-0}
+converges to~$0$ as~$h$ tends to~$0$.\qed
 \end{point}
 \end{point}
+
 \TODO{Definition of polygonal paths}
 \TODO{Definition of integration along these}
 \begin{point}[goursat]{Goursat's Theorem}%
@@ -1664,6 +1758,9 @@ Show that~$f(z)=\sum_n a_n z^n$
 for all~$z\in \C$ with $\left|z\right|< R$.
 \TODO{add hints}
 \end{point}
+\end{parsec}
+\subsection{Spectral radius}
+\begin{parsec}%
 \begin{point}[norm-spectrum]{Proposition}%
 For a self-adjoint element~$a$ of a $C^*$-algebra~$\scrA$,
 we have
@@ -2291,6 +2388,7 @@ is order separating (see~\sref{separating}).
 \end{point}
 \end{point}
 \end{parsec}
+\subsection{The square root}
 \begin{parsec}%
 \begin{point}%
 The key that unlocks the remaining basic facts 
@@ -2674,8 +2772,8 @@ we have $c\equiv a'+b'$
 where  $0\leq a'\leq a$ and $0\leq b'\leq b$.
 \end{point}
 \end{parsec}
-\section{Two representation theorems}
-
+\section{Representation}
+\subsection{\dots by Continuous Functions}
 \begin{parsec}%
 \begin{point}%
 Now that we have have a firm grip
@@ -3314,6 +3412,7 @@ is a
 isomorphic to~$\scrA$.
 \end{point}
 \end{parsec}
+\subsection{Representation by Bounded Operators}
 \begin{parsec}%
     \begin{point}[completion-inner-product-space]%
 Let us prove that every $C^*$-algebra~$\scrA$
