@@ -1566,7 +1566,7 @@ For~$x_0 \in X$ the maps
 \begin{align*}
     (x,y) &\mapsto x+y & x &\mapsto \left<x_0, x\right>
     & b &\mapsto x_0 b \\
-    X\times X &\to X & X &\to X & \scrB & \to X
+    X\times X &\to X & X &\to \scrB & \scrB & \to X
 \end{align*}
 are all uniformly continuous in the ultranorm uniformity.
 \end{point}
@@ -3141,6 +3141,7 @@ as desired. \qed
 \end{point}
 \end{parsec}
 
+\section*{Self-dual Hilbert C$^*$-modules}
 \begin{parsec}%
 \begin{point}%
 Before we continue our study of Paschke dilations,
@@ -3334,6 +3335,44 @@ Show that if~$\left<e_1,e_1\right> + \left<e_2,e_2\right> \leq 1$,
 Conclude~$p \scrB \oplus q \scrB \cong (p+q) \scrB$
     for projections~$p,q \in \scrB$ with $p+q \leq 1$.
 \end{point}
+
+\begin{point}{Theorem}%
+Let~$\scrB$ be a von Neumann algebra that is a factor (i.e.~with center~$\C 1$).
+Suppose~$X$ is a self-dual Hilbert~$\scrB$-module.
+Either there is an infinite cardinal~$\kappa$
+    such that~$X \cong \ell^2((1)_{\alpha \in \kappa})$,
+    or there is a natural number~$n\in \N$
+    and projection~$p \in \scrB$
+    such that~$X \cong \ell^2((1, \ldots, 1, p))$,
+    where~$1$ occurs~$n$ times.
+\begin{point}{Proof}%
+By~\sref{hilbmod-el2}
+    we can find an ordinal~$\beta$
+    and projections~$(p_\alpha)_{\alpha \in \beta}$ from~$\scrB$
+    such that~$X \cong \ell^2((p_\alpha)_{\alpha \in \beta})$.
+\end{point}
+\begin{point}%
+As a warming up, assume~$\beta = n$ for some~$n \in \omega$.
+\TODO{...}
+\end{point}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}{Exercise}%
+Let~$\scrB$ be a von Neumann algebra.
+Assume~$X$ and~$Y$ are self-dual Hilbert~$\scrB$-modules
+    with orthonormal bases~$E \subseteq X$ and~$F \subseteq Y$.
+Write~$\kappa_1\colon X \to X \oplus Y$
+    and~$\kappa_2 \colon Y \to X \oplus Y$
+    for the maps~$\kappa_1(x) = (x,0)$ and~$\kappa_2(y) = (0, y)$.
+Show that~$\kappa_1(E) \cup \kappa_2(F)$
+    is an orthonormal basis of~$X \oplus Y$.
+    Conclude that~$X \oplus Y$ is self-dual.
+\end{point}
+\begin{point}{Proposition}%
+Let~$X$ be a self-dual Hilbert
+\end{point}
 \end{parsec}
 
 
@@ -3369,9 +3408,10 @@ For any self-dual Hilbert $\scrA$-module $X$
     $X \otimes Y$, called the \Define{(self-dual exterior) tensor product},
     together with a~$\scrA \otimes \scrB$-linear
     inner product preservering map~$\otimes \colon X \odot Y \to X\otimes Y$
-    such that for every self-dual~Hilbert~$\scrA\otimes\scrB$-module
+    with the following universal property:
+    for every self-dual~Hilbert~$\scrA\otimes\scrB$-module
     $Z$ with bounded~$\scrA \otimes \scrB$-linear
-        $T\colon \scrA \odot \scrB \to Z$
+        $T\colon X \odot Y \to Z$,
     there is a unique bounded~$\scrA \otimes \scrB$-linear
         map~$\hat{T}\colon X \otimes Y \to Z$
     with~$\hat{T}(x \otimes y) = x \otimes y$
@@ -3385,6 +3425,65 @@ For such~$X \otimes Y$ we have the following.
                 then~$(e_i \otimes d_j)_{i,j\in I\times J}$
                 is an orthonormal basis of~$X \otimes Y$.
 \end{enumerate}
+\begin{point}{Proof}%
+If~$X = \{ 0\}$ or~$Y = \{ 0 \}$
+    then~$X \otimes Y = \{0\}$
+    does the job trivially.
+For the remainder assume both~$X$ and~$Y$ contain non-zero vectors.
+
+First we show the image of~$X \odot Y$ is ultranorm dense in~$X \otimes Y$.
+Write~$Z$ for the ultranorm closure of the image of~$X \odot Y$
+    in~$X \otimes Y$.
+By \sref{ultranormcontstruct} $Z$ is a submodule.
+Clearly the induced uniformity of~$X \otimes Y$
+    on~$Z$ is the same as its ultranorm uniformity
+    and so~$Z$ is ultranorm complete as well
+    thus by \sref{dils-selfdual}
+    there is an orthonormal basis~$(z_i)_{i \in I}$ of~$Z$.
+Assume~$Z \neq X \otimes Y$, say~$v \in X \otimes Y$ but~$v \notin Z$.
+Considering~$v- \sum_{i \in I} z_i \left<z_i, v\right> $
+    instead of~$v$,
+    we may assume without loss of generality that~$\left<z_i,v\right>=0$.
+
+
+Write~$v' = v- \sum_{i \in I} z_i \left<z_i, v\right> \in Z$.
+Note~
+    there is an orthonormal basis~$(e_i)_{i \in I}$ of~$X$,
+
+We start with uniqueness.
+Assume there are self-dual Hilbert~$\scrA\otimes \scrB$-modules
+$X \otimes_1 Y$ and~$X \otimes_2 Y$
+with inner product preserving~$\otimes_1 \colon X \odot Y \to X \otimes_1 Y$
+    and~$\otimes_2 \colon X \odot Y \to X \otimes_2 Y$
+    that both satisfy the universal property.
+By the universal property of~$\otimes_1$ applied to~$\otimes_2$,
+    there must exist a unique~$U \colon X \otimes_1 Y \to X \otimes_2 Y$
+    with~$U x\otimes_1 y = x \otimes_2 y$.
+Similarly, there is a~$V \colon X \otimes_2 Y \to X \otimes_1 Y$
+    with~$V x\otimes_2 y = x \otimes_1 y$.
+Clearly~$\id_{X \otimes_1 Y} x \otimes_1 y = VU x \otimes_1 y$
+    and so by the uniqueness in the universal property for~$\otimes_1$
+    we get~$VU = \id$. Similarly~$UV = \id$.
+It remains to be shown~$U$ preserves the inner product.
+As
+\begin{equation*}
+    \left<x \otimes_1 y, x' \otimes_1 y'\right>=
+    [x \otimes y, x' \otimes y'] =
+    \left<x \otimes_2 y, x' \otimes_2 y'\right> 
+    = \left<U x \otimes_1 y, U x'\otimes_1 y' \right>
+\end{equation*}
+for all~$x,x' \in X$ and~$y,y' \in Y$ \TODO{inner product uwlim}
+    it is sufficient to show the image of~$X \odot Y$ under~$\otimes_2$
+    is ultraweakly dense in~$X \otimes_2 Y$.
+
+By self-duality
+    there is an orthonormal basis~$(e_i)_{i \in I}$ of~$X$,
+    see \sref{dils-selfdual}.
+Similarly there is an orthonormal basis~$(d_j)_{j \in J}$ of~$Y$.
+Define~$p_{ij} = \left<e_i,e_i\right>\otimes\left<d_j,d_j\right>$
+    and~$X \otimes Y = \ell^2((p_{ij})_{i,j\in I\times J})$,
+    see \sref{hilbmod-el2}.
+\end{point}
 \end{point}
 \begin{point}{Examples}%
 For the moment write~$\otimes_{\text{ext}}$ for the self-dual exterior
