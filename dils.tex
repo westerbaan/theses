@@ -1,5 +1,8 @@
 \documentclass[b]{subfiles}
 \begin{document}
+
+% TODO which supremum with projections (in proj or in effects)
+
 \chapter{Dilations}
 
 \begin{parsec}[dils-intro]%
@@ -1667,7 +1670,8 @@ Putting it all together:
 Thus~$x_\alpha$ converges ultranorm to~$t$.
 So~$X$ is ultranorm bounded complete.
 \end{point}
-\begin{point}{3 $\Rightarrow$ 4, bounded complete~$X$ has an orthonormal basis}
+\begin{point}[selfdual-bcompl-then-basis]{3
+    $\Rightarrow$ 4, bounded complete~$X$ has an orthonormal basis}
     Assume norm-bounded ultranorm-Cauchy nets converge in~$X$.
 By Zorn's lemma there is a maximal subset~$E \subseteq X$
     with the property that~$\left<e,e\right>$ is a non-zero projection
@@ -3359,6 +3363,14 @@ As a warming up, assume~$\beta = n$ for some~$n \in \omega$.
 \end{parsec}
 
 \begin{parsec}%
+\begin{point}%
+For a Hilbert space~$\scrH$
+    with linear subspace~$V \subseteq \scrH$
+    we have~$V \subseteq V^{\perp\perp} = \overline{V}$
+    and~$\scrH \cong V^{\perp\perp} \oplus  V^\perp$.
+We generalize this to self-dual Hilbert~$\scrB$-modules.
+Let's introduce the cast:
+\end{point}
 \begin{point}{Exercise}%
 Let~$\scrB$ be a von Neumann algebra.
 Assume~$X$ and~$Y$ are self-dual Hilbert~$\scrB$-modules
@@ -3370,11 +3382,83 @@ Show that~$\kappa_1(E) \cup \kappa_2(F)$
     is an orthonormal basis of~$X \oplus Y$.
     Conclude that~$X \oplus Y$ is self-dual.
 \end{point}
+\begin{point}{Definition}%
+Let~$X$ be a Hilbert~$\scrB$-module
+    with subset~$V \subseteq X$.
+Write~$\Define{V^\perp}$ for the \Define{orthocomplement} of~$V$, defined by
+\begin{equation*}
+    V^\perp = \{ x; \ x \in X;\ \left<x,v\right>=0\text{ for all }v\in V\}.
+\end{equation*}
+\end{point}
 \begin{point}{Proposition}%
-Let~$X$ be a self-dual Hilbert
+Assume~$X$ is a self-dual Hilbert $\scrB$-module
+    for a von Neumann algebra~$\scrB$.
+Suppose~$V \subseteq X$ is any subset. Then
+\begin{enumerate}
+\item
+$V^\perp$ is a self-dual Hilbert~$\scrB$-submodule of~$X$
+    (and so is~$V^{\perp\perp})$;
+\item
+    $V^{\perp\perp}$ is the ultranorm closure of the~$\scrB$-linear
+    span of~$V$ \emph{and}
+\item
+    $X \cong V^{\perp\perp} \oplus V^\perp$.
+\end{enumerate}
+\begin{point}{Proof}%
+It is easy to see~$V^\perp$ is a submodule of~$X$
+    and~$V \subseteq V^{\perp\perp}$.
+To show~$V^\perp$ is ultranorm closed in~$X$,
+    assume~$x_\alpha$ is a net in~$V^\perp$
+    converging ultranorm to~$x \in X$.
+For each~$v \in V$ we have
+$ \left<v, \unlim_\alpha x_\alpha\right>
+    \overset{\sref{ultranormcontstruct}}{=}
+    \uslim_\alpha \left<v, x_\alpha\right>  = 0 $
+    and so~$x \in V^\perp$ as well.
+Thus~$V^\perp$ is ultranorm complete
+    and so self-dual by \sref{dils-selfdual}.
+\begin{point}%
+Write~$W$ for the ultranorm closure of
+    the~$\scrB$-linear span of~$V$ in~$X$.
+By \sref{ultranormcontstruct} $W$ is a submodule.
+Clearly the induced uniformity of~$X$
+    on~$W$ is the same as its own ultranorm uniformity:
+    thus~$W$ is ultranorm complete
+        and~$W \subseteq V^{\perp\perp}$.
+By \sref{dils-selfdual} there
+    is an orthonormal basis~$(e_i)_{i \in I}$ of~$W$.
+Going back to the construction of~$(e_i)_{i \in I}$
+    (in \sref{selfdual-bcompl-then-basis}),
+    we see that we can extend it to an orthonormal basis of the whole of~$X$:
+    there are~$(d_j)_{j \in J} \in X$
+    such that~$\{e_i\}_{i \in I} \cup \{d_j\}_{j \in J}$
+    is an orthonormal basis of~$X$.
+\end{point}
+\begin{point}%
+By construction~$d_j \in W^\perp \subseteq V^\perp$
+    for every~$j \in J$.
+For any~$x \in X$
+    we have~$x = \sum_i e_i \left<e_i, x\right>
+                + \sum_j d_j \left<d_j,x\right>$.
+If~$x \in V^{\perp\perp}$
+    then~$x = \sum_i e_i \left<e_i, x\right>$
+    as~$\left<x, d_j\right>= 0$ for each~$j \in J$.
+Thus~$V^{\perp\perp} \subseteq W$, so~$V^{\perp\perp} = W$.
+In particular, as~$V^\perp$ is already an ultranorm closed submodule,
+    we find~$W^\perp = (V^\perp)^{\perp\perp} = V^\perp$.
+\end{point}
+\begin{point}%
+As~$(e_i)_i$ is a basis for~$W = V^{\perp\perp}$
+    and~$(d_j)_j$ is a basis for~$W^\perp = V^\perp$,
+    we see
+\begin{equation*}
+    x \mapsto \bigl(\sum_i e_i \left<e_i, x\right>, \sum_j d_j\left<d_j, x\right>\bigr)
+\end{equation*}
+is an isomorphism~$X \cong V^{\perp\perp} \oplus V^\perp$. \qed
+\end{point}
+\end{point}
 \end{point}
 \end{parsec}
-
 
 \begin{parsec}%
 \begin{point}%
@@ -3434,12 +3518,6 @@ For the remainder assume both~$X$ and~$Y$ contain non-zero vectors.
 First we show the image of~$X \odot Y$ is ultranorm dense in~$X \otimes Y$.
 Write~$Z$ for the ultranorm closure of the image of~$X \odot Y$
     in~$X \otimes Y$.
-By \sref{ultranormcontstruct} $Z$ is a submodule.
-Clearly the induced uniformity of~$X \otimes Y$
-    on~$Z$ is the same as its ultranorm uniformity
-    and so~$Z$ is ultranorm complete as well
-    thus by \sref{dils-selfdual}
-    there is an orthonormal basis~$(z_i)_{i \in I}$ of~$Z$.
 Assume~$Z \neq X \otimes Y$, say~$v \in X \otimes Y$ but~$v \notin Z$.
 Considering~$v- \sum_{i \in I} z_i \left<z_i, v\right> $
     instead of~$v$,
