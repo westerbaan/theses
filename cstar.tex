@@ -774,6 +774,19 @@ Show that $\|a^*\| = \|a\|$. (Hint:  $\|a\|^2=\|a^*a\|\leq \|a^*\|\|a\|$.)
 
 \item
 Show that $\|\Real{a}\|\leq \|a\|$ and $\|\Imag{a}\|\leq \|a\|$.
+\item
+Show that $\|a^2\|=\|a\|^2$ when~$a$ is self-adjoint.
+
+However,
+show that $\|a^2\|\neq \|a\|^2$ might occur
+when~$a$ is not self-adjoint.
+(Hint: $\bigl(
+\begin{smallmatrix}
+	0&1\\
+	0&0
+\end{smallmatrix}
+\bigr)$.)
+
 \end{enumerate}
 \end{point}
 \end{parsec}
@@ -1031,8 +1044,10 @@ see~\sref{inverse-permanence}.
 \begin{point}[geometric]{Lemma}%
 Let~$a$ be an element of a $C^*$-algebra~$\scrA$ with~$\|a\|<1$.
 Then~$a^\perp=1-a$ has an inverse,
-namely~$(a^\perp)^{-1}= \sum_{n=0}^\infty\, a^n$
-(norm convergence).
+namely~$(a^\perp)^{-1}= \sum_{n=0}^\infty\, a^n$.
+Moreover, this series converges absolutely,
+that is,
+$\sum_{n=0}^\infty \|a^n\|<\infty$.
 \begin{point}{Proof}%
 Note that
 $(1-\|a\|)\,(1+\|a\|+\|a\|^2+\dotsb+\|a\|^N) \,=\, 1-\|a\|^{N+1}$,
@@ -1077,14 +1092,40 @@ Show that $U:=\{\ b\in\scrA\colon\ \text{$b$ is invertible}\ \}$
 is an open subset of~$\scrA$.
 \end{enumerate}
 \end{point}
-\begin{point}[harmonic-divergence]{Exercise}%
-Let~$a$ be an element of a $C^*$-algebra $\scrA$ with $\|a\|>1$.
-\begin{enumerate}
-\item
-Show that $1,\,a,\,a^2,\,a^3,\,\dotsc$ diverges.
-\item
-Show that $\sum_n a^n$ diverges.
-\end{enumerate}
+\begin{point}[geometric-convergence]{Lemma}%
+For a self-adjoint element~$a$ of~$\scrA$
+the series $\sum_n a^n$ 
+converges (absolutely) iff~$\|a\|<1$.
+\begin{point}{Proof}%
+We have already seen in~\sref{geometric}
+that~$\sum_n a^n$
+converges absolutely when~$\|a\|<1$.
+Now, if $\sum_n a^n$ converges,
+then~$\|a^{2^n}\|\equiv \|a\|^{2^n}$
+(being the norm of the difference
+between consecutive partial sums of~$\sum_n a^n$)
+converges to~$0$,
+which only happens when~$\|a\|<1$.\qed
+\end{point}
+\begin{point}{Remark}%
+For non-self-adjoint elements~$a$ of~$\scrA$,
+the convergence of~$\sum_n a^n$
+is a more delicate matter.
+Take for example
+the matrix $A:=\bigl(\begin{smallmatrix}0&2\\0&0\end{smallmatrix}\bigr)$
+for which the series $\sum_n A^n$ converges (to~$A$),
+while~$\|A\|=2$ --- the problem being that
+$\|A^2\|^{\nicefrac{1}{2}}$ differs from $\|A\|$.
+In fact,
+we'll see from~\sref{hadamard}
+(although we won't need it)
+that~$\sum_n a^n$
+converges absolutely when $1>\limsup_n \|a^n\|^{\nicefrac{1}{n}}$,
+and diverges when $1<\limsup_n \|a^n\|^{\nicefrac{1}{n}}$.
+This begs the question
+what happens when $1=\limsup_n \|a^n\|^{\nicefrac{1}{n}}$
+--- which I do not know.
+\end{point}
 \end{point}
 \begin{point}[cstar-inv-continuous]{Lemma}%
 Let~$\scrA$ be a $C^*$-algebra.
@@ -1284,6 +1325,7 @@ directly from~\sref{inverse-permanence}.\qed%
 \end{point}
 \end{parsec}
 \section{Positive elements}
+\subsection{Holomorphic functions}
 \begin{parsec}%
 \begin{point}%
 The next order of business
@@ -1350,6 +1392,172 @@ that is, function~$f$ of the form $f(z)\equiv a_n z^n+\dotsb+a_1 z+a_0$
 is holomorphic with $f'(z)=na_nz^{n-1}+\dotsb+2a_2z+a_1$.
 \end{enumerate}
 \end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}%
+We now turn
+to perhaps the most important example
+of a holomorphic $\scrA$-valued function ---
+or at the very least the very source from
+which (as we'll see) all holomorphic functions
+draw their interesting and desirable
+properties:
+the holomorphic $\scrA$-valued function
+given by a power series  $\sum_n a_n z^n$.
+\end{point}
+\begin{point}[hadamard]{Theorem}%
+Let~$a_1,a_2,\dotsc\in\scrA$
+be given,
+and write~$R:=(\limsup_n \|a_n\|^{\nicefrac{1}{n}})^{-1}$.
+Then for every~$z\in\C$,
+\begin{enumerate}
+\item
+$\sum_n a_n z^n$
+converges absolutely
+when~$\left|z\right| < R$, and 
+\item
+if~$\sum_n a_n z^n$ converges,
+then~$\left|z\right|\leq R$.
+\end{enumerate}
+(The number~$R$ is called the \Define{radius of convergence}
+of the series $\sum_n a_n z^n$.)
+\begin{point}{Proof}%
+Suppose that $\left|z\right|<R$.
+To show that the series 
+$\sum_n a_nz^n$ converges absolutely,
+we must show that $\sum_n \left\|a_n\right\|\left|z\right|^n
+\equiv \sum_n (\,\left\|a_n\right\|^{\nicefrac{1}{n}}\left|z\right|\,)^n
+<\infty$.
+If~$z=0$, this is obvious,
+so we'll assume that~$\left|z\right| > 0$.
+Then, since~$\left|z\right|<R$,
+we have~$R^{-1}\left|z\right|<1$
+(and $R^{-1}<\infty$).
+Note that
+there is $\varepsilon>0$ with $(R^{-1}+\varepsilon)\left|z\right|<1$.
+The point of this~$\varepsilon$
+is that~$\limsup_n \|a_n\|^{\nicefrac{1}{n}} 
+< R^{-1}+\varepsilon$,
+so that we can find~$N$ 
+with $\|a_n\|^{\nicefrac{1}{n}} \leq R^{-1}+\varepsilon$
+for all~$n\geq N$.
+Then $\|a_n\|^{\nicefrac{1}{n}}\left|z\right|
+\leq (R^{-1}+\varepsilon)\left|z\right|<1$
+for all~$n\geq N$,
+and so
+$\sum_n \|a_n\|\left|z\right|^n 
+\leq\sum_{n=0}^{N-1} \|a_n\|\left|z\right|^n+ \sum_{n=N}^\infty 
+(\,(R^{-1}+\varepsilon)\left|z\right|\,)^n < \infty$
+by  convergence
+of the geometric series (c.f.~\sref{geometric}).
+
+Suppose now instead that $\sum_n a_n z^n$ converges.
+Then~$\|a_n\|\left|z\right|^n$
+converges to~$0$.
+In particular,
+there is~$N$ with $\|a_n\|\left|z\right|^n \leq  1$
+for all~$n\geq N$.
+Then~$\|a_n\|^{\nicefrac{1}{n}} \left|z\right| \leq 1$,
+and $\|a_n\|^{\nicefrac{1}{n}} \leq \left|z\right|^{-1}$
+for all~$n\geq N$,
+so that $R^{-1}\equiv \limsup_n \|a_n\|^{\nicefrac{1}{n}}
+\leq \left|z\right|^{-1}$,
+giving $\left|z\right|\leq R$.\qed
+\end{point}
+\end{point}
+\begin{point}{Proposition}%
+The $\scrA$-valued function~$f$
+given by a series $\sum_n a_n z^n$
+with radius of convergence~$\smash{R:=(\,\limsup_n \|a_n\|^{\nicefrac{1}{n}}\,)^{-1}}$
+is holomorphic
+when defined
+on the disk $\dom(f)=\{z\in\C\colon \left|z\right|<R\}$,
+and $f'(z)=\sum_{n=1}^\infty n a_n z^{n-1}$
+for all~$z\in \dom(f)$.
+\begin{point}{Proof}%
+If~$R=0$,
+the statement is rather dull, but clearly true,
+so we assume that~$R\neq 0$,
+that is, $\smash{\limsup_n \|a_n\|^{\nicefrac{1}{n}}}<\infty$.
+
+Note
+that the radius of convergence
+of~$\sum_{n=1}^\infty na_n z^{n-1}
+\equiv \sum_{n=0}^\infty (n+1)a_{n+1}z^n$
+is also~$R$,
+because
+\begin{equation*}
+	\smash{\bigl\|\,(n+1)\, a_{n+1}\,\bigr\|^{\nicefrac{1}{n}}}
+\ =\  \smash{(n+1)^{\nicefrac{1}{n}}}
+\ \smash{\|a_{n+1}\|^{\frac{1}{n+1}}}
+\ \smash{\bigl(\|a_{n+1}\|^{\frac{1}{n+1}}\bigr)^{\nicefrac{1}{n}}},
+\end{equation*}
+and
+$R^{-1}=\limsup_n \|a_{n+1}\|^{\frac{1}{n+1}}$,
+and both 
+$(n+1)^{\nicefrac{1}{n}}$
+and  $\bigl(\|a_{n+1}\|^{\frac{1}{n+1}}\bigr)^{\nicefrac{1}{n}}$
+converge to~$1$ as~$n\to\infty$
+(using here that $\smash{\limsup_n\|a_n\|^{\nicefrac{1}{n}}}<\infty$).
+
+Hence~$\sum_{n=1}^\infty n a_n z^{n-1}$
+converges absolutely for every~$z\in\C$ with $\left|z\right|<R$.
+Let~$z\in \C$ with $\left|z\right|<R$
+be given. We must show that~$f$
+is holomorphic at~$z$ with~$f'(z)=\sum_n na_nz^{n-1}$.
+For this it suffices to show that
+the sum of the series
+\begin{equation}
+\label{power-series-derivative-0}
+\sum_{n=0}^\infty
+\|a_n\|\left|\,\frac{(z+h)^n-z^n}{h}-nz^{n-1}\,\right|
+\end{equation}
+converges to~$0$
+as $h\in\C$ (with $h\neq 0$ and $\left|z+h\right|<R$)
+tends to~$0$.
+
+Pick~$r>0$ with $\left|z\right| < r < R$.
+With the appropriate algebraic gymnastics
+(involving the identity
+$a^n-b^n=(a-b)\sum_{k=1}^n a^{n-k}b^{k-1}$
+and the inequalities $\left|z+h\right| \leq r$
+and $\left|z\right|\leq r$)
+we get, for every~$n$
+and~$h\in \C$ with
+$h\neq 0$ and~$\left|z+h\right|<r$,
+\begin{align}
+\left|\  \frac{(z+h)^n-z^n}{h}-nz^{n-1}\ \right|
+\ &= \ 
+\biggl|\ \sum_{k=1}^n \bigl(\,(z+h)^{n-k}-z^{n-k}\,\bigr)z^{k-1} \ \biggr|
+\label{power-series-derivative-1}
+\\ 
+\label{power-series-derivative-2}
+\ &\leq\ 
+2nr^{n-1}.
+\end{align}
+On the one hand,
+we see from~\eqref{power-series-derivative-1}
+that any term
+--- and thus any partial sum ---
+of the series from~\eqref{power-series-derivative-0}
+converges to~$0$ as~$h$ tends to~$0$.
+On the other hand,
+we see from~\eqref{power-series-derivative-2}
+that the series 
+from~\eqref{power-series-derivative-0}
+is dominated by~$2\sum_n \|a_n\|nr^{n-1}$
+(which converges
+because the radius of convergence of $\sum_n a_n nz^{n-1}$
+is $R>r$),
+so that the tails of the series in~\eqref{power-series-derivative-0}
+vanish uniformly in~$h$.
+All in all, the sum of the infinite series
+from~\eqref{power-series-derivative-0}
+converges to~$0$ as~$h$ tends to~$0$.\qed
+\end{point}
+\end{point}
+
 \TODO{Definition of polygonal paths}
 \TODO{Definition of integration along these}
 \begin{point}[goursat]{Goursat's Theorem}%
@@ -1550,8 +1758,11 @@ Show that~$f(z)=\sum_n a_n z^n$
 for all~$z\in \C$ with $\left|z\right|< R$.
 \TODO{add hints}
 \end{point}
+\end{parsec}
+\subsection{Spectral radius}
+\begin{parsec}%
 \begin{point}[norm-spectrum]{Proposition}%
-For an element~$a$ of a $C^*$-algebra~$\scrA$,
+For a self-adjoint element~$a$ of a $C^*$-algebra~$\scrA$,
 we have
 \begin{equation*}
 \|a\|\,=\,\sup\{\,\left|\lambda\right|\colon 
@@ -1600,11 +1811,16 @@ but for all~$z$ with $\|z\|\leq R$.
 However, $R$ cannot be strictly larger than~$\|a\|^{-1}$,
 because for every $z\in\C$ with $\left|z\right|>\|a\|^{-1}$
 the series $\sum_n(az)^n$ 
-and thus $\sum_n a^n{z}^{n+1}$ diverges (see~\sref{harmonic-divergence}).
+and thus $\sum_n a^n{z}^{n+1}$ diverges (see~\sref{geometric-convergence})
+--- using here that~$a$ is self-adjoint.
 Hence~$R=\|a\|^{-1}$, and so~$r=\|a\|$.\qed
 \end{point}
 \end{point}
 \begin{point}[spectrum-non-empty]{Exercise}%
+Show that $\spec(a)\neq \varnothing$ for an element of a $C^*$-algebra
+$\scrA$.
+\end{point}
+\begin{point}
 Given an element~$a$ of a $C^*$-algebra show that
 \begin{enumerate}
 \item $\spec(a)\neq \varnothing$;
@@ -2172,6 +2388,7 @@ is order separating (see~\sref{separating}).
 \end{point}
 \end{point}
 \end{parsec}
+\subsection{The square root}
 \begin{parsec}%
 \begin{point}%
 The key that unlocks the remaining basic facts 
@@ -2369,7 +2586,7 @@ with $a\leq b$, but $a^2 \nleq b^2$.
 In other words, the square $a\mapsto a^2$
 on the possitive elements of a $C^*$-algebra
 need not be monotone,
-(but $a\mapsto \sqrt{a}$ \emph{is} monotone, see~\TODO{}).
+(but $a\mapsto \sqrt{a}$ \emph{is} monotone, see~\sref{sqrt-monotone}).
 
 (Hint: take $a=(\begin{smallmatrix}1&0\\0&0\end{smallmatrix})$
 and $b=a+\frac{1}{2}(\begin{smallmatrix}1&1\\1&1\end{smallmatrix})$
@@ -2555,8 +2772,8 @@ we have $c\equiv a'+b'$
 where  $0\leq a'\leq a$ and $0\leq b'\leq b$.
 \end{point}
 \end{parsec}
-\section{Two representation theorems}
-
+\section{Representation}
+\subsection{\dots by Continuous Functions}
 \begin{parsec}%
 \begin{point}%
 Now that we have have a firm grip
@@ -2937,6 +3154,128 @@ iff $aa^*=a^*a$ iff $\Real{a}\Imag{a}=\Imag{a}\Real{a}$.
 Such~$a$ are called~\Define{normal}.
 
 \TODO{More work}
+\TODO{Functional calculus}
+\end{point}
+\begin{point}[sqrt-monotone]{Theorem}%
+We have $0\leq a\leq b \implies a^\alpha \leq b^\alpha$
+for all positive elements $a$ and~$b$
+of a $C^*$-algebra~$\scrA$,
+and $\alpha\in (0,1]$.
+\begin{point}{Proof}%
+(Based on~\cite{pedersen1972}.)
+
+Note that the result is trivial if~$a$ and~$b$ commute.
+
+Since~$b\mapsto b^\alpha$
+is norm continuous as map~$\scrA_+\to\scrA_+$,
+and~$\scrA_+$ is closed,
+it suffices to show that
+$(a+\frac{1}{n})^\alpha \leq (b+\frac{1}{n})^\alpha$
+for all~$n$.
+In other words,
+it suffices to prove $a^\alpha \leq b^\alpha$
+under the additional assumption that~$a$ and~$b$ are invertible.
+Thus, writing~$E$ for the set of all~$\alpha\in[0,1]$
+for which $b\mapsto b^\alpha$ is monotone
+on positive,
+\emph{invertible} elements of~$\scrA$,
+we must prove that~$E=[0,1]$.
+Since clearly~$0,1\in E$
+it suffices to show that~$E$ is convex,
+and we'll do this by showing that~$E$
+is closed,
+and $\alpha,\beta\in E\implies \frac{1}{2}\alpha 
++ \frac{1}{2}\beta \in E$.
+
+\begin{point}{$E$ is closed}
+Let~$b$ be a positive and invertible element of~$\scrA$.
+A moment's though reveals it suffices to 
+prove that $\alpha\mapsto b^\alpha, \,[0,1]\to\scrA$
+is continuous.
+Now, since for $\beta\geq \alpha$ from~$[0,1]$
+we have $\|b^\beta - b^\alpha\|\leq  
+\left\|b^\alpha\right\|\,\left\|b^{\beta-\alpha}-1\right\|
+\leq \left\|b^{\beta-\alpha}-1\right\|$,
+it suffices to show that $\lim_{n\to\infty} b^{\nicefrac{1}{n}}=1$.
+Note that~$\|b^{-1}\|^{-1}\leq b\leq \|b\|$,
+and so
+$(\|b^{-1}\|^{-1})^{\nicefrac{1}{n}} \leq b^{\nicefrac{1}{n}}\leq 
+\|b\|^{\nicefrac{1}{n}}$
+for all~$n$.
+Since~$\lim_n r^{\nicefrac{1}{n}}=1$ for every~$r>0$,
+and~$b^{\nicefrac{1}{n}}$
+is sandwiched between such~$r^{\nicefrac{1}{n}}$s,
+we get~$\lim_n b_n=1$.
+\end{point}
+\begin{point}{$\alpha,\beta\in E\implies \frac{1}{2}\alpha+\frac{1}{2}\beta
+	\in E$}
+Let~$\alpha,\beta\in E$. Let~$a,b\in\scrA$ be positive
+and invertible with $a\leq b$.
+We must show that $a^{\nicefrac{\alpha+\beta}{2}}\leq 
+b^{\nicefrac{\alpha+\beta}{2}}$.
+Since the map $b^{\nicefrac{\alpha+\beta}{4}}(\,\cdot\,)
+b^{\nicefrac{\alpha+\beta}{4}}$
+is positive (by~\TODO{}),
+it suffices to show that
+$b^{-\frac{\alpha+\beta}{4}}\,a^{\frac{\alpha+\beta}{2}}\,
+b^{-\frac{\alpha+\beta}{4}} \leq 1$,
+that is, 
+$\|b^{-\frac{\alpha+\beta}{4}}\,a^{\frac{\alpha+\beta}{2}}\,
+b^{-\frac{\alpha+\beta}{4}} \| \leq 1$.
+
+For this, it seems, we must take a look under the hood
+of the theory of $C^*$-algebras:
+writing $\varrho(c):=\sup_{\lambda\in \spec(c)}\left|\lambda \right|$
+for~$c\in \scrA$,
+we know that $\varrho(c)\leq \|c\|$ for any~$c$,
+and $\varrho(c)=\|c\|$ for self-adjoint~$c$ by \TODO{...}.
+Moreover, recall that by~\TODO{...}
+we know that $\spec(cd)\backslash\{0\}
+=\spec(dc)\backslash\{0\}$,
+and so~$\varrho(cd)=\varrho(dc)$
+for all $c,d\in \scrA$.
+Hence
+\begin{alignat*}{3}
+\|\,b^{-\frac{\alpha+\beta}{4}}\,a^{\frac{\alpha+\beta}{2}}\,
+b^{-\frac{\alpha+\beta}{4}}\,\| 
+\ &=\ 
+\varrho(\,b^{-\frac{\alpha+\beta}{4}}\,a^{\frac{\alpha+\beta}{2}}\,
+b^{-\frac{\alpha+\beta}{4}} \,) \\
+&=\ 
+\varrho(\,b^{-\frac{\alpha+\beta}{4}}\,a^{\frac{\alpha+\beta}{2}}\,
+b^{-\frac{\alpha+\beta}{4}} \,b^{-\frac{\alpha-\beta}{4}}
+\,b^{\frac{\alpha-\beta}{4}}\,) \\
+&=\ 
+\varrho(
+\,b^{\frac{\alpha-\beta}{4}}\,
+\,b^{-\frac{\alpha+\beta}{4}}\,a^{\frac{\alpha+\beta}{2}}\,
+b^{-\frac{\alpha+\beta}{4}} \,b^{-\frac{\alpha-\beta}{4}}\,)\\
+&=\ 
+\varrho(
+\,b^{-\nicefrac{\beta}{2}}\,a^{\nicefrac{\beta}{2}}\,
+a^{\nicefrac{\alpha}{2}}\,
+b^{-\nicefrac{\alpha}{2}} \,) \\
+&\leq\ 
+\|\,b^{-\nicefrac{\beta}{2}}\,a^{\nicefrac{\beta}{2}}\,\|
+\,\|\,
+a^{\nicefrac{\alpha}{2}}\,
+b^{-\nicefrac{\alpha}{2}} \,\|\\
+&=\ 
+\|\,b^{-\nicefrac{\beta}{2}}\,a^{\beta}\,
+b^{-\nicefrac{\beta}{2}}\,\|^{\nicefrac{1}{2}}
+\,\|\,
+b^{-\nicefrac{\alpha}{2}} \,a^\alpha\,
+b^{-\nicefrac{\alpha}{2}} \,\|^{\nicefrac{1}{2}}\\
+\ &\leq\ 
+\|\,b^{-\nicefrac{\beta}{2}}\,b^{\beta}\,
+b^{-\nicefrac{\beta}{2}}\,\|^{\nicefrac{1}{2}}
+\,\|\,
+b^{-\nicefrac{\alpha}{2}} \,b^\alpha\,
+b^{-\nicefrac{\alpha}{2}} \,\|^{\nicefrac{1}{2}} \ = \ 1,
+\end{alignat*}
+and so we're done.\qed
+\end{point}
+\end{point}
 \end{point}
 \end{parsec}
 
@@ -3073,6 +3412,7 @@ is a
 isomorphic to~$\scrA$.
 \end{point}
 \end{parsec}
+\subsection{Representation by Bounded Operators}
 \begin{parsec}%
     \begin{point}[completion-inner-product-space]%
 Let us prove that every $C^*$-algebra~$\scrA$

@@ -113,6 +113,22 @@ theorem \TODO{add ref.}).
 
 (Note that~$(\ketbra{n}{n})_n$ resembles a moving bump, from measure theory.)
 \item
+Note that when a net $(a_\alpha)_\alpha$
+(in, say, $\scrB(\ell_2)$)
+converges ultrastrongly to~$a$,
+then $(\,a_\alpha^*a_\alpha\,)_\alpha$
+is norm-bounded and
+converges ultraweakly to~$a^*a$.
+
+The converse does not hold:
+show that (already in~$\C$)
+$e^{in}$
+does not converge ultraweakly 
+(nor ultrastrongly) as $n\to \infty$,
+while $1\equiv e^{-in} e^{in}$
+is norm-bounded and
+converges ultraweakly to~$1$ as~$n\to\infty$.
+\item
 Show that~$(\,\ketbra{0}{n}\,)_n$ converges ultrastrongly 
 (and ultraweakly) to~$0$.
 
@@ -815,7 +831,7 @@ $pa=p$ iff $ap=p$ iff $p\leq \floor{a}$.
 Conclude that~$\ceil{a}$
 is the least projection with $a=a\ceil{a}\equiv\ceil{a}a$,
 and that $\floor{a}$
-is the greatest projection with $a=a\floor{a}\equiv \floor{a}a$.
+is the greatest projection with $\floor{a}=a\floor{a}\equiv \floor{a}a$.
 \end{point}
 \begin{point}[ceil-floor-basic]{Exercise}%
 Let~$a,b$ be effects of a von Neumann algebra~$\scrA$,
@@ -862,6 +878,154 @@ and an infimum $\Define{\bigcap A}$
 (Hint: use~\sref{ceil-floor-basic},
 and the fact that $p\mapsto p^\perp$ 
 is an order isomorphism on the poset of projections on~$\scrA$.)
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}{Notation}%
+Let~$\scrA$ be a von Neumann algebra.
+Because it will be very convenient
+we extend the definition of~$\ceil{b}$
+to all positive~$b$ from~$\scrA$
+---
+contrary to what the notation suggests,
+$b\leq \ceil{b}$
+---
+by 
+defining $\Define{\ceil{b}}=\ceil{\|b\|^{-1} b}$
+when~$b\nleq 1$.
+
+Now, given an arbitrary element~$b$ of~$\scrA$,
+we'll call $\Define{\ceill{b}}:=\ceil{b^*b}$
+the \Define{support} of~$b$,
+and~$\Define{\ceilr{b}}:=\ceil{bb^*}$ the \Define{range} of~$b$.
+\end{point}
+\begin{point}{Exercise}%
+Let~$a$ and~$b$ be a positive elements of a von Neumann algebra~$\scrA$.
+\begin{enumerate}
+\item
+Show that $pa=a$ iff $ap=a$ iff $\ceil{a}\leq p$
+for every projection~$p$ of~$\scrA$.
+
+(In particular, $\ceil{a}$ is the least projection of~$\scrA$
+with $a\ceil{a}=a$.)
+
+\item
+Show that $\ceil{a}a=a\ceil{a}$,
+and if fact, if $b\in\scrA$ commutes with~$a$
+then~$b$ commutes with~$\ceil{a}$.
+
+\item
+Show that $\ceil{a}=\ceil{\lambda a}$
+for every~$\lambda>0$.
+
+Show that $\ceil{a+b}=\ceil{a}\cup\ceil{b}$.
+\item
+Show that $\ceil{a^2}=\ceil{a}$.
+\end{enumerate}
+\end{point}
+\begin{point}{Exercise}%
+Let~$a$ be an element of a von Neumann algebra.
+\begin{enumerate}
+\item
+Show that $\ceill{a}\equiv \ceil{a^*a}$
+is the least projection of~$\scrA$
+with $a\ceill{a}=a$.
+
+\item
+Show that $\ceilr{a}\equiv \ceil{aa^*}$
+is the least projection of~$\scrA$
+with $\ceilr{a}a=a$.
+
+\item
+Show that $\ceill{a^*}=\ceilr{a}$
+and $\ceilr{a^*}=\ceill{a}$.
+\end{enumerate}
+\end{point}
+\begin{point}{Exercise}%
+Let~$T$ be a bounded operator on a Hilbert space~$\scrH$.
+\begin{enumerate}
+\item
+Show that $\ceilr{T}$
+is the projection onto the closure
+$\overline{\Ran(T)}$ of the range of~$T$.
+\item
+Show that $\ceill{T}$
+is the projection onto the \emph{support}
+of~$T$, i.e.~the orthocomplement
+$\Ker(T)^\perp$ of the kernel of~$T$.
+\item
+Show that $\floor{T}$ is the projection
+on $\{\,x\in\scrH\colon\, Tx=x\,\}$
+when~$T$ is an effect.
+\end{enumerate}
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}[cpsu-root-square]{Exercise}%
+Let~$f\colon \scrA\to\scrB$ be a ncpsu-map
+between von Neumann algebras
+and let~$a\in \scrA$ be positive.
+\begin{enumerate}
+\item
+Show that~$f(a)^2 \leq f(a^2)$
+(perhaps using~\sref{cp-cs}).
+\item
+Use this, and~\TODO{square-root-monotone}
+to show that~$f(a^{\nicefrac{1}{2}}) \leq f(a)^{\nicefrac{1}{2}}$.
+\item
+Go on, and show that $f(a^{\nicefrac{1}{2^n}})
+\leq f(a)^{\nicefrac{1}{2^n}}$ for each~$n$.
+\end{enumerate}
+\end{point}
+\begin{point}[ncp-ceil]{Proposition}%
+Let $f\colon \scrA\to\scrB$ be a ncp-map
+between von Neumann algebras.
+Then $\ceil{f(a)}=\ceil{f(\ceil{a})}$
+for every $a\in\scrA_+$.
+\begin{point}{Proof}%
+Note that if~$a=0$,
+then
+the stated result is clearly correct.
+In the other case, when~$\|a\| \neq 0$,
+the problem reduces to the case
+that $0\leq a\leq 1$
+by replacing $a$ by~$\frac{a}{\|a\|}$.
+So let us just assume that~$a\in [0,1]_\scrA$
+to begin with.
+For similar reasons, we may assume that $f(1)\leq 1$.
+
+Now, since~$a\leq \ceil{a}$
+we have $f(a)\leq f(\ceil{a})$,
+and so~$\ceil{f(a)}\leq \ceil{f(\ceil{a})}$.
+It remains to be shown that $\ceil{f(\ceil{a})}\leq \ceil{f(a)}$,
+that is, $f(\ceil{a})\leq \ceil{f(a)}$.
+Since  $\ceil{a}=\bigvee_n a^{\nicefrac{1}{2^n}}$ 
+(by~\sref{vna-ceil})
+and~$f$ is normal,
+we have $f(\ceil{a})=\bigvee_n f(a^{\nicefrac{1}{2^n}})$.
+Now, since $f(a^{\nicefrac{1}{2^n}})\leq f(a)^{\nicefrac{1}{2^n}}
+\leq \ceil{f(a)}$
+by~\sref{cpsu-root-square} for each~$n$,
+we have~$f(\ceil{a})\leq \ceil{f(a)}$.\qed
+\end{point}
+\end{point}
+\begin{point}[ncp-union]{Exercise}%
+Let~$f\colon \scrA\to\scrB$ be an ncp-map
+between von Neumann algebras.
+\begin{enumerate}
+\item
+Show that
+$\ceil{f(p\cup q)}
+= \ceil{f(p)}\cup\ceil{f(q)}$
+for all projections $p$ and~$q$ in~$\scrA$.
+
+(Hint: recall from~\sref{ceil-floor-basic} 
+that $p\cup q = \ceil{\frac{1}{2}p+\frac{1}{2}q}$.)
+
+\item
+Deduce from this and~\sref{ncp-ceil} that $\ceil{f(\bigcup A)}=\bigcup_{a\in A}\ceil{f(a)}$
+for every set of projections~$A$ from~$\scrA$.
+\end{enumerate}
 \end{point}
 \end{parsec}
 \section{Completeness}
@@ -915,6 +1079,7 @@ is Cauchy (in the operator norm
 on bounded linear functionals $\scrA\to\C$),
 and converges to a bounded linear map~$f\colon \scrA\to\C$.
 Show that~$f$ is an np-map.
+\TODO{non-trivial?}
 \end{enumerate}
 \end{point}
 \begin{point}{Exercise}%
@@ -1008,13 +1173,13 @@ for all~$a\in \scrA$.
 In particular, $[b_1,\,\cdot\,]_\omega,\,[b_2,\,\cdot\,]_\omega,\,\dotsc$
 converges to~$f$ (in the operator norm).
 By ``polarization'' (c.f.~\sref{mult-polarization}),
-we have $[b_n,a]_\omega = \sum_{k=0}^3 i^kf_{k,n}(a)$,
+we have $[b_n,a]_\omega = \frac{1}{4}\sum_{k=0}^3 i^kf_{k,n}(a)$,
 where $f_{k,n} := (i^kb_n+1)*\omega$ is an np-map.
-Since~$(i^kb_n+1)_n$ is Cauchy with respect to~$\|\,\cdot\|_\omega$,
+Since~$(i^kb_n+1)_n$ is Cauchy with respect to~$\|\,\cdot\,\|_\omega$,
 we see by~\sref{bstaromega-basic} that 
 $(f_{k,n})_n$ converges to an np-map $f_k\colon \scrA\to\C$
 (with respect to the operator norm).
-It follows that~$f=\sum_{k=0}^3 i^k f_k$.
+It follows that~$f=\frac{1}{4}\sum_{k=0}^3 i^k f_k$.
 
 It remains to be shown that there is~$B>0$ with $f_k(a)\leq B\omega(a)$
 for all~$k$ and~$a\in\pos{\scrA}$.
@@ -1233,83 +1398,6 @@ which is impossible.
 	Conclude that $f(k)\geq f(b_0)>0 $ for all~$k\in K$.
 \end{enumerate}
 \end{point}
-\end{parsec}
-
-\begin{parsec}%
-\begin{point}%
-We now turn to a subtle matter:
-it is not immediately clear
-that the ultraweak topology on a von Neumann
-subalgebra~$\scrA$ of a von Neumann algebra~$\scrB$,
-coincides (on~$\scrA$) with the ultraweak topology on~$\scrB$.
-While it is easily seen that the former is finer
-(that is, a net in~$\scrA$ which converges ultraweakly in~$\scrA$,
-converges ultraweakly in~$\scrB$ too, because any np-map 
-$\omega\colon \scrB\to\C$ is also an np-map restricted to~$\scrA$),
-it is not obvious that an np-map $\omega\colon \scrA\to\C$
-can be extended to an np-map on~$\scrB$
---- but it can, see~\TODO{ref}.
-I'll call this independence of the ultraweak topology
-from the surrounding space
-\emph{ultraweak permanence}
-being not unlike the independence
-of the spectrum of an operator from the surrounding space
-known as spectral permanence. \TODO{ref}
-Of course,
-we'll also have ``ultrastrong permanence''.
-
-It is tempting to think that the extension of an np-map~$\omega\colon \scrA
-\to\C$
-on a von Neumann
-subalgebra~$\scrA$ of a von Neumann algebra~$\scrB$
-to~$\scrB$ is simply a matter of applying Hahn--Banach to~$\omega$,
-and while it is true we let Hahn--Banach finish the job,
-the real work goes into showing that Hahn--Banach applies,
-c.q.~that~$\omega$ is ultraweakly continuous with respect to~$\scrB$
-(and not just ultraweakly continuous with respect to~$\scrA$).
-To this end, we'll show that~$\omega$
-is dominated by a np-map defined on~$\scrB$.
-\end{point}
-\begin{point}{Lemma}%
-For every np-map $\scrR\to\C$
-on a von Neumann subalgebra~$\scrR$
-of~$\scrB(\scrH)$,
-where~$\scrH$ is some Hilbert space,
-there are~$y_1,y_2,\dotsc\in \scrH$
-with $\sum_n \|y_n\|^2 =\omega(1)$,
-and $\omega(A)\leq \sum_n \left<y_n,Ay_n\right>$
-for all~$A\in\scrR$.
-\begin{point}{Proof}%
-(Based on the proof of Lemma~7.1.2 of~\cite{kr}.)
-
-We claim that if~$\scrR$ is not trivial
-there is a non-zero projection~$E$ in~$\scrR$
-and~$y\in E(\scrH)$ with $\|y\|^2 = \omega(E)$
-and $\omega(G)\leq \left<y,Gy\right>$
-for all projections~$G\leq E$ in~$\scrR$.
-Indeed,
-pick any~$x\in\scrH$ with $\|x\|^2=\omega(1)$.
-Either~$E=1$ does the job,
-or there is a projection~$F$ in~$\scrR$ with
-$\omega(F) > \left<x,Fx\right>$.
-Let~$(F_\alpha)_\alpha$
-be a maximal orthogonal family of such projection,
-and define~$E:=(\sum_\alpha F_\alpha)^\perp$.
-Given a projection~$G$ in~$\scrR$ below~$E$
-we can't have $\omega(G) > \left<x,G x\right>$
-because then~$G$ could be added to~$(F_\alpha)_\alpha$
-contradicting its maximality,
-and so we must conclude that $\omega(G)\leq \left<x,G x\right>
-=\left<Ex,GEx\right>$.
-In particular, 
-\TODO{}
-\end{point}
-\end{point}
-
-\end{parsec}
-
-
-\begin{parsec}%
 \begin{point}[proto-kaplansky]{Proposition}%
 Let~$\scrA$ be a von Neumann algebra,
 and let~$f\colon \R\to\R$ be a continuous map 
@@ -2258,6 +2346,10 @@ Show that $S\subseteq T$ entails $T^\square \subseteq S^\square$.
 Show that $S\subseteq S^{\square\square}$,
 and  $S^{\square\square\square}=S^\square$.
 \item
+Verify that~$Z(\scrA)=\scrA^\square$,
+where~$Z(\scrA)$ is the centre of~$\scrA$ \TODO{add ref},
+and~$\scrA^\square$ is the commutant of~$\scrA$ in itself.
+\item
 Show that $S^\square$ is closed under addition,
 (scalar) multiplication,
 contains the unit of~$\scrA$,
@@ -2292,7 +2384,7 @@ when~$\scrA$ is of the form $\scrA=\scrB(\scrH)$
 for some Hilbert space~$\scrH$.
 \end{enumerate}
 \end{point}
-\begin{point}{Proposition}%
+\begin{point}[commutant-ceil]{Proposition}%
 Let~$S$ be a subset of a von Neumann algebra~$\scrA$
 that is closed under multiplication, involution, and contains~$1$.
 Let~$e$ be a projection in~$\scrA$.
@@ -2300,16 +2392,19 @@ Then $\Define{\ceil{e}_{S^\square}}=
 \bigcup_{a\in S} \ceil{a^* e a}$
 is the least projection in~$S^\square$
 above~$e$.
+
+(Compare this with the paragraph ``Subspaces'' of \S2.6 of~\cite{kr}.)
 \begin{point}{Proof}%
 Let us first show that~$p:= \ceil{e}_{S^\square}$
 is in~$S^\square$.
 Let $b\in S$ be given.
 Since~$b^*(\,\cdot\,)b\colon \scrA\to\scrA$
-is normal and $p=\bigcup_{a\in S} \ceil{a^*ea}$,
+is normal and completely positive,
+and $p=\bigcup_{a\in S} \ceil{a^*ea}$,
 we have $b^*pb\leq \ceil{b^*pb} = 
 \bigcup_{a\in S} \ceil{ b^* \ceil{a^* e a} b }
 = \bigcup_{a\in S} \ceil{(ab)^* \,e\, ab} \leq p$
-by \TODO{} and \TODO{}.
+by~\sref{ncp-union} and~\sref{ncp-ceil}.
 Applying $p^\perp(\,\cdot\,)p^\perp$,
 we get $p^\perp b^*pb p^\perp 
 \leq p^\perp p p^\perp = 0$,
@@ -2331,6 +2426,7 @@ for all~$a\in S$,
 and thus~$p=\bigcup_{a\in S}\ceil{a^*ea} \leq q$.\qed
 \end{point}
 \end{point}
+
 \begin{point}[carrier-vector-state]{Exercise}%
 Show that given a vector~$x$ of Hilbert space~$\scrH$,
 and a collection~$S$ of bounded operators on~$\scrH$
@@ -2347,7 +2443,8 @@ $\ceil{\,\left<x,(\,\cdot\,)x\right>|S^\square\,}$,
 the carrier of the vector functional of~$S^\square$
 given by~$x$;
 \item
-$\bigcup_{a\in S} \ceil{\,\ketbra{ax}{ax}\,}$,
+$\bigcup_{a\in S} \ceil{\,\ketbra{ax}{ax}\,}$; and 
+\item
 the projection on~$\overline{S x}$.
 \end{enumerate}
 Conclude that $\overline{S^{\square\square}x}
@@ -2411,6 +2508,8 @@ the least von Neumann subalgebra of~$\scrB(\scrH)$
 that contains~$S$.
 \end{enumerate}
 \begin{point}{Proof}%
+(Based on Theorem~5.3.1 of~\cite{kr}.) 
+
 Note that: $\mathrm{us}\text{-}\mathrm{cl}(S)
 \subseteq  \mathrm{uw}\text{-}\mathrm{cl}(S)$,
 because ultrastrong convergence implies ultraweak convergence;
@@ -2439,10 +2538,153 @@ that is, $Z(\scrA)=Z(\scrA^\square)$.
 \end{parsec}
 \begin{parsec}%
 \begin{point}%
-We now turn to a subtle, but suprisingly
-difficult question:
-\TODO{ultraweak permanence}.
+Using~\sref{commutant-ceil}
+we can also get a better handle on the set 
+$Z(\scrA)$ of central elements
+of a von Neumann algebra~$\scrA$,
+which is, after all, equal to~$\scrA^\square$.
+\end{point}
+\begin{point}{Exercise}%
+Let~$\scrA$ be a von Neumann algebra.
+Show that
+$\bigcup_{a\in\scrA}\ceil{a^*ea}$
+is the least central projection above any projection~$e$
+of~$\scrA$.
+\begin{point}%
+Show that given an element~$a$ of a von Neumann algebra~$\scrA$,
+the following exist and coincide.
+\begin{enumerate}
+\item
+The least central projection~$z$ with $za=a$.
+\item
+The least central projection above $\ceil{a^*a}$.
+\item
+The least central projection above $\ceil{aa^*}$.
+\end{enumerate}
+We'll denote it by~$\Define{\cceil{a}}$
+and call it the \Define{central support} of~$a$.
+\end{point}
+\begin{point}[cceil-basic]
+\begin{enumerate}
+\item
+Show that
+$\cceil{a}=\cceil{a^*a}=\cceil{aa^*}
+= \cceil{\ceil{a^*a}}=\cceil{\ceil{aa^*}}=\cceil{a^*}$.
+\item
+Show that $\bigcup_{e\in E} \cceil{e}
+= \cceil{\bigcup E}$
+for any set~$E$ of projections in~$\scrA$.
+\end{enumerate}
+\end{point}
+\end{point}
+\begin{point}[cceil-sum]{Lemma}%
+Given a projection~$e$
+of a von Neumann algebra
+there is an orthogonal collection of non-zero projections
+$(e_i)_i$ with $\cceil{e}=\sum_i e_i$,
+and $p_i\vmleq e$ for all~$i$.
 
+\TODO{define $\vmleq$}
+\begin{point}{Proof}%
+Let~$(e_i)_i$
+be a maximal set of non-zero orthogonal projections
+in~$\scrA$ with
+$e_i\vmleq p$ for all~$i$.
+Our goal is to show that $\sum_i e_i \equiv \bigcup_i e_i=\cceil{a}$.
+
+Let~$u_i$ be a partial isometry
+with $u_i^*u_i=e_i$ and $u_iu_i^* \leq e$.
+Since $e_i=u_i^* u_i = u_i^* u_i u_i^* u_i
+\leq u_i^* e u_i 
+\leq \bigcup_{a\in \scrA} \ceil{a^* e a}=\cceil{a}$,
+we have
+$\bigcup_i e_i \leq \cceil{a}$.
+
+Suppose that~$\bigcup_i e_i < \cceil{a}$
+(towards a contradiction).
+Then since $p:=\cceil{a}-\bigcup_i e_i $ 
+is a non-zero projection,
+and~$p=p\cceil{e} p
+=\bigcup_{a\in\scrA} \ceil{p\ceil{a^*ea}p}
+= \bigcup_{a\in\scrA} \ceil{(ap)^*eap}$,
+there must be~$a\in\scrA$ with $(eap)^*eap\neq 0$.
+The polar decomposition of~$eap$
+(see \TODO{})
+gives us a partial isometry $u:=[eap]$
+with $uu^* = \ceil{eap(eap)^*}=\ceil{eapa^*e}\leq e$
+and $u^*u= \ceil{(eap)^*eap}\leq p$,
+so that $u^*u$ is a non-zero projection,
+orthogonal to all~$e_i$ with $u^*u \vmleq e$.
+In other words,
+$e$ could have been added to~$(e_i)_i$,
+contradicting its maximality.
+Hence $\bigcup_i e_i = \cceil{a}$.
+\qed
+\end{point}
+\end{point}
+\begin{point}{Exercise}%
+Let~$f\colon \scrA \to \scrB$ be an np-map.
+Show that $\Define{\cceil{f}}:=\cceil{\ceil{f}}$ is least central projection~$z$
+with~$f(z^\perp)=0$
+--- it's called the 
+\Define{central carrier} of~$f$.
+\end{point}
+\begin{point}[commutant-cceil]{Exercise}%
+Let~$\scrR$ be a von Neumann subalgebra of a von Neumann algebra~$\scrA$,
+and let~$f\colon \scrA\to\scrB$ be an np-map
+to a von Neumann algebra~$\scrB$.
+
+Show that~$\cceil{f|\scrR}=\cceil{f|\scrR^\square}$
+using the fact that $Z(\scrR)=Z(\scrR^\square)$
+(see~\sref{centre-commutant}).
+\end{point}
+\end{parsec}%
+\begin{parsec}%
+\begin{point}%
+With the commutant at our disposal,
+we turn to a subtle, but suprisingly difficult matter:
+it is not immediately clear
+that the ultraweak topology on a von Neumann
+subalgebra~$\scrA$ of a von Neumann algebra~$\scrB$,
+coincides (on~$\scrA$) with the ultraweak topology on~$\scrB$.
+While it is easily seen that the former is finer
+(that is, a net in~$\scrA$ which converges ultraweakly in~$\scrA$,
+converges ultraweakly in~$\scrB$ too, because any np-map 
+$\omega\colon \scrB\to\C$ is also an np-map restricted to~$\scrA$),
+it is not obvious that an np-map $\omega\colon \scrA\to\C$
+can be extended to an np-map on~$\scrB$
+--- but it can, as we'll see~\sref{functional-permanence}.
+I'll call this independence of the ultraweak topology
+from the surrounding space
+\emph{ultraweak permanence}
+being not unlike the independence
+of the spectrum of an operator from the surrounding space
+known as spectral permanence (\sref{spectral-permanence}).
+
+
+It is tempting to think that the extension of an np-map~$\omega\colon \scrA
+\to\C$
+on a von Neumann
+subalgebra~$\scrA$ of a von Neumann algebra~$\scrB$
+to~$\scrB$ is simply a matter of applying Hahn--Banach to~$\omega$,
+but this approach presents two problems:
+it yields a normal but not necessarily positive extension
+of~$\omega$;
+and it not clear that~$\omega$ is ultraweakly continuous
+on~$\scrA$ (that is, whether Hahn--Banach applies).
+
+Instead of applying general techniques we feel forced
+to delve deeper
+into the particular structure 
+provided to us by von Neumann algebras
+to show that any np-map
+$\omega\colon \scrA\to\C$
+on a von Neumann algebra~$\scrA$
+of bounded operators on a Hilbert space~$\scrH$
+can be extended to an np-map on~$\scrB(\scrH)$,
+and in fact, is of the form
+$\omega\equiv \sum_n \left<x_n,(\,\cdot\,)x_n\right>$
+for some $x_1,x_2,\dotsc \in\scrH$.
 \end{point}
 \begin{point}[gns-mapping-property]{Lemma}%
 Let~$\omega\colon \scrA\to\C$
@@ -2462,6 +2704,8 @@ on~$\overline{\pi(\scrA)y}$,
 and~$U\pi(a)=\varrho(a)U$
 for all~$a\in\scrA$.
 \begin{point}{Proof}%
+(Compare this with Proposition 4.5.3 of~\cite{kr}.)
+
 Since $\|\varrho(a)x\|^2
 = \left<x,\varrho(a^*a)x\right>
 =\omega(a^*a)=\left<y,\pi(a^*a)y\right>
@@ -2612,24 +2856,19 @@ verify that the projections $U_\omega^* U_\omega=\ceil{\sigma_\omega'}$
 are orthogonal,
 and that the projections $U_\omega U_\omega^*$
 are orthogonal too.
-To this end,
-recall that the central elements of~$\varrho(\scrA)$
-coincide with the central elements of~$\varrho(\scrA)^\square$
-by~\sref{centre-commutant}
-so that $\sigma_\omega$ and~$\sigma_\omega'$
-are identical on central projections,
-and so their central
-carriers must coincide,~$\cceil{\sigma_\omega}=\cceil{\sigma_\omega'}$.
-Since the projections~$\cceil{\omega}$
+To this end note that
+$\cceil{\sigma_\omega}=\cceil{\sigma_\omega'}$
+by~\sref{commutant-cceil}.
+Thus, since the projections~$\cceil{\omega}$
 are orthogonal to one another,
 and $\ceil{\sigma_\omega'}\leq \cceil{\sigma_\omega'}
 = \cceil{\sigma_\omega} =\varrho(\cceil{\omega})$,
 we see that the projections~$U^*_\omega U_\omega \equiv 
 \ceil{\sigma_\omega'}$
-are orthogonal.
+are indeed orthogonal.
 Since for a similar reason
 the projections $U_\omega U_\omega^*
-\equiv \ceil{\tau_\omega'}$ are orthogonal,
+\equiv \ceil{\tau_\omega'}$ are orthogonal too,
 there is by~\sref{summing-partial-isometries}
 a bounded operator $U\colon \scrK\to\scrH$
 with 
@@ -2644,7 +2883,7 @@ $\cceil{U_\omega^*U_\omega}=\cceil{\sigma_\omega'}=\varrho(\cceil{\omega})$
 are orthogonal,
 we have $\cceil{U^*U}=\sum_\omega \cceil{U_\omega^* U_\omega}
 =  \varrho(\sum_\omega \cceil{\omega})$
-by~\TODO{}.
+by~\sref{cceil-basic} and \TODO{sum of orthogonal projections is union}.
 Similarly, $\cceil{UU^*}= \pi(\sum_\omega \cceil{\omega})$.
 
 Finally,
@@ -2696,7 +2935,7 @@ to get a map~$U\colon \scrH_\Omega\to \scrH$
 with the desired properties.\qed
 \end{point}
 \end{point}
-\begin{point}{Theorem}%
+\begin{point}[normal-functional]{Theorem}%
 Every np-map $\omega\colon \scrA\to\C$
 on a von Neumann subalgebra~$\scrA$
 of~$\scrB(\scrH)$,
@@ -2706,6 +2945,8 @@ form~$\omega \equiv \sum_n \left<x_n,(\,\cdot\,)x_n\right>$
 for some $x_1,x_2,\dotsc \in\scrH$
 (with $\sum_n\|x_n\|^2<\infty$).
 \begin{point}{Proof}%
+(Based on Theorem~7.1.8 of~\cite{kr}.)
+
 Let~$\varrho\colon \scrA\to\scrB(\scrH)$
 denote the inclusion,
 and let~$U\colon \scrH_\Omega\to\scrH$
@@ -2717,7 +2958,7 @@ We're going to `transfer'~$y$ from~$\scrH_\Omega$ to~$\scrH$
 using the following device.
 Since~$1=\cceil{U^*U}_{\varrho_\Omega(\scrA)^\square}$,
 we can 
-(by \TODO{})
+(by~\sref{cceil-sum})
 find partial isometries $(v_i)_i$ in
 $\varrho_\Omega(\scrA)^\square$
 with $1=\sum_i v_i^*v_i$
@@ -2757,6 +2998,24 @@ so at most countably many $Uv_iy$'s are non-zero;
 and denoting those by~$x_1,x_2,\dotsc$,
 we get $\omega = \sum_n \left<x_n,(\,\cdot\,)x_n\right>$.\qed
 \end{point}
+\end{point}
+\begin{point}[functional-permanence]{Corollary}%
+Let~$\scrA$ be a von Neumann subalgebra
+of a von Neumann algebra~$\scrB$.
+\begin{enumerate}
+\item
+For every np-map $\omega\colon \scrA\to\C$
+there is an np-map $\xi\colon \scrB\to\C$
+with $\xi|\scrA=\omega$.
+\item
+\Define{Ultraweak permanence:}\ 
+the restriction of the ultraweak topology on~$\scrB$
+to~$\scrA$ coincides with the ultraweak topology on~$\scrA$.
+\item
+\Define{Ultrastrong permanence:}\ 
+the restriction of the ultrastrong topology on~$\scrB$
+to~$\scrA$ coincides with the ultrastrong topology on~$\scrA$.
+\end{enumerate}
 \end{point}
 \end{parsec}
 \section{[To be moved]}
@@ -2878,54 +3137,6 @@ f(b^*a)\,f(a^*b)\ \leq\ \|f(a^*a)\|\,f(b^*b).
 %
 %
 \begin{parsec}%
-\begin{point}{Exercise}%
-Let~$f\colon \scrA\to\scrB$ be a ncpsu-map
-between von Neumann algebras
-with~$f(1)\leq 1$,
-and let~$a\in \scrA$ be positive.
-\begin{point}[cp-kadisons-ineq]%
-Show that~$f(a)^2 \leq f(a^2)$.
-\end{point}
-\begin{point}%
-Use this, and~\sref{cstar-sqrt-monotone},
-to show that~$f(a^{\nicefrac{1}{2}}) \leq f(a)^{\nicefrac{1}{2}}$.
-\end{point}
-\begin{point}[cpsu-2nthroot]%
-Go on, and show that $f(a^{\nicefrac{1}{2^n}})
-\leq f(a)^{\nicefrac{1}{2^n}}$ for each~$n$.
-\end{point}
-\end{point}
-\end{parsec}
-
-%
-%
-%
-\begin{parsec}%
-\begin{point}{Proposition}%
-Let $f\colon \scrA\to\scrB$ be a ncpsu-map
-between von Neumann algebras.
-Then $\ceil{f(a)}=\ceil{f(\ceil{a})}$
-for every effect~$a$ from~$\scrA$.
-
-\TODO{Use Kadison's inequality instead of complete positivity?}
-\end{point}
-\begin{point}{Proof}%
-Since~$a\leq \ceil{a}$
-we have $f(a)\leq f(\ceil{a})$,
-and so~$\ceil{f(a)}\leq \ceil{f(\ceil{a})}$.
-\begin{point}%
-It remains to be shown that $\ceil{f(\ceil{a})}\leq \ceil{f(a)}$,
-that is, $f(\ceil{a})\leq \ceil{f(a)}$.
-Since  $\ceil{a}=\bigvee_n a^{\nicefrac{1}{2^n}}$ 
-(by~\sref{vna-ceil})
-and~$f$ is normal,
-we have $f(\ceil{a})=\bigvee_n f(a^{\nicefrac{1}{2^n}})$.
-Now, since $f(a^{\nicefrac{1}{2^n}})\leq f(a)^{\nicefrac{1}{2^n}}
-\leq \ceil{f(a)}$
-by~\sref{cpsu-2nthroot} for each~$n$,
-we have~$f(\ceil{a})\leq \ceil{f(a)}$.
-\end{point}
-\end{point}
 \end{parsec}
 %
 %
