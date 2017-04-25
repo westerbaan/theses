@@ -1036,6 +1036,28 @@ by~\sref{cpsu-root-square} for each~$n$,
 we have~$f(\ceil{a})\leq \ceil{f(a)}$.\qed
 \end{point}
 \end{point}
+\begin{point}[ceil-fundamental]{Exercise}%
+Show that
+for elements~$a$ and~$b\geq 0$ from a von Neumann algebra,
+\begin{equation*}
+	\ceil{a^*ba}\ =\ \ceil{a^*\ceil{b}a}.
+\end{equation*}
+\end{point}
+\begin{point}[mult-cancellation]{Exercise}%
+Let~$b$ be an element of a von Neumann algebra~$\scrA$.
+\begin{enumerate}
+\item
+Show that $cb=0$ for $c\in\scrA$ iff $\ceill{c}\leq \ceilr{b}^\perp$.
+
+(Hint: if $cb=0$,
+then $\ceil{b^*c^*cb}\equiv \ceil{b^*\ceil{c^*c}b}=0$
+by~\sref{ceil-fundamental}.)
+\item
+Show that~$c_1b=c_2b \implies c_1=c_2$
+for all~$c_1,c_2\in\scrA$
+with~$\ceill{c_i}\leq \ceilr{b}$.
+\end{enumerate}
+\end{point}
 \begin{point}[ncp-union]{Exercise}%
 Let~$f\colon \scrA\to\scrB$ be an ncp-map
 between von Neumann algebras.
@@ -2059,7 +2081,7 @@ That this can also be done for an arbitrary positive element
 of a von Neumann algebra
 is what we'll see next.
 \end{point}
-\begin{point}{Proposition}%
+\begin{point}[approximate-pseudoinverse]{Proposition}%
 Every positive element~$a$ of a von Neumann algebra~$\scrA$
 has (what we'll call) an \Define{approximate pseudoinverse},
 that is, a sequence
@@ -2122,6 +2144,57 @@ and $ne_n \leq t_n \leq (n+1)e_n$
 
 Finally, $t_na=t_n\ceil{t_n}a=t_ne_na=\ceil{a}$
 and similarly, $at_n = \ceil{a}$.\qed
+\end{point}
+\end{point}
+\begin{point}{Proposition}%
+(A generalization of ``Douglas'~Lemma'' from~\cite{douglas}.)\\
+For elements~$a$ and~$b$ of a von Neumann algebra~$\scrA$,
+the following are equivalent.
+\begin{enumerate}
+\item
+$a^*a\leq \lambda \, b^*b$
+for some~$\lambda \geq 0$;
+\item
+$a=cb$ for some~$c\in\scrA$.
+\end{enumerate}
+Moreover,
+in that case there is a unique~$c$
+with $a=cb$ and~$\ceill{c}\leq \ceilr{b}$
+and for this~$c$ we have
+$\ceilr{c}\leq \ceilr{a}$.
+\begin{point}{Proof}%
+Let's get rid of the easy bits:
+there is at most one $c\in\scrA$
+with $a=cb$ 
+and $\ceill{c}\leq \ceilr{b}$
+by~\sref{mult-cancellation};
+and 
+if $a=cb$ for some~$c\in\scrA$,
+then~$a^*a=b^*c^*cb\leq \|c\|^2 \,b^*b$.
+
+For the other direction,
+suppose that~$a^*a \leq \lambda\,b^*b$
+for some~$\lambda\geq 0$;
+we must find~$c\in\scrA$ with~$a=cb$.
+Let~$t_0,t_1,\dotsc$
+be an approximate pseudoinverse of~$b^*b$
+(see~\sref{approximate-pseudoinverse}),
+and define~$c:=\sum_{n=0}^\infty at_nb^*$,
+assuming for the moment that this series converges ultraweakly.
+Then~$cb=\sum_n at_nb^*b=\sum_n a\ceil{t_n}
+=a\sum_n \ceil{t_n}= a\ceil{b^*b} =a$,
+because~$\ceil{b^*b}\leq\ceil{\lambda\,a^*a}\leq \ceil{a^*a}$,
+and, since~$at_nb^*=\ceilr{a}at_nb^*\ceill{b^*}=
+\ceilr{a}at_nb^*\ceilr{b}$,
+we also see that~$\ceilr{a}c\ceilr{b}=c$,
+and thus that~$\ceill{c}\leq \ceilr{b}$
+and~$\ceilr{c}\leq \ceilr{a}$.
+
+So the only thing that remains to be shown is that~$\sum_{n=0}^N at_nb^*$
+converges ultraweakly as~$N\to \infty$.
+\TODO{finish}
+
+
 \end{point}
 \end{point}
 \end{parsec}
