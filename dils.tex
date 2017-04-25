@@ -3182,7 +3182,7 @@ For any~$T \in \scrB^a(X)$
     and~$\ketbra{x}{y}T^* = \ketbra{x}{Ty}$.
 \end{point}
 \end{point}
-\begin{point}{Proposition}%
+\begin{point}[ketbra-ultraweakly-dense]{Proposition}%
 Let~$X$ be a self-dual Hilbert~$\scrB$-module over a von Neumann algebra~$\scrB$.
 If~$(e_i)_{i \in I}$ is an orthonormal basis of~$X$,
 then the linear span of
@@ -3650,15 +3650,49 @@ For any von Neumann algebras~$\scrA$ and~$\scrB$
         tensor product of von Neumann algebras.
 \end{enumerate}
 \end{point}
-
-\begin{point}{Theorem}%
-Suppose~$X$ is a self-dual Hilbert~$\scrA$-module
-    and~$Y$ is a self-dual Hilbert~$\scrB$-module
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+Let~$X$ be a self-dual Hilbert~$\scrA$-module
+    and~$Y$ be a self-dual Hilbert~$\scrB$-module
     for von Neumann algebras~$\scrA$ and~$\scrB$.
-Then there is a nmiu-isomorphism
-$\scrB^a(X) \otimes \scrB^a(Y) \cong \scrB^a(X \otimes Y)$.
+\end{point}
+\begin{point}{Definition}%
+Assume~$S \in \scrB^a(X)$ and~$T \in \scrB^a(Y)$.
+We write~$\Define{S \otimes T} \in \scrB^a(X\otimes Y)$
+    for the unique bounded module map
+    such that~$(S \otimes T) (x \otimes y) = (S x) \otimes (T y)$
+    for all~$x\in X$ and~$y \in Y$.
+\end{point}
+\begin{point}[hilbmod-tensor-ketbra]{Exercise}%
+    Show~$\ketbra{x_1}{x_2} \otimes \ketbra{y_1}{y_2}
+            = \ketbra{x_1\otimes x_2}{y_1\otimes y_2}$.
+\end{point}
+\begin{point}{Theorem}%
+There is an
+    nmiu-isomorphism~$\vartheta\colon \scrB^a(X) \otimes \scrB^a(Y) \cong \scrB^a(X \otimes Y)$
+    fixed by~$\vartheta(S\otimes T) = S \otimes T$.
 \begin{point}{Proof}%
-    
+    \TODO{...}    
+\begin{point}%
+It remains to be shown~$\vartheta$ is surjective.
+Pick an orthonormal bases~$(e_i)_{i \in I}$ for~$X$
+    and~$(d_j)_{j \in J}$ for~$Y$.
+Note~$(e_i \otimes d_j)_{i,j}$ is an orthonormal basis for~$X \otimes Y$.
+
+By \sref{hilbmod-tensor-ketbra},
+    we have for any~$a\in \scrA$, $b \in \scrB$,
+    $i,i' \in I$ and~$j,j' \in J$ that
+\begin{equation*}
+    \ketbra{(e_i \otimes d_j) (a\otimes b)}{e_{i'} \otimes d_{j'}}
+       \ =\ \ketbra{e_i a}{e_{i'}} \otimes\ketbra{d_j b}{d_{j'}}.
+\end{equation*}
+Thus~$\ketbra{(e_i \otimes d_j) (a\otimes b)}{e_{i'} \otimes d_{j'}}$
+    is in the image of~$\vartheta$.
+By \sref{ketbra-ultraweakly-dense} the operators of this form
+    are ultraweakly dense and thus~$\vartheta$ is surjective.
+    \TODO{fix}
+\end{point}
 \end{point}
 \end{point}
 \end{parsec}
