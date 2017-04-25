@@ -2530,9 +2530,12 @@ We have shown~$\sigma(W)$ is a compatible extension.
 Assume~$\scrB$ is a von Neumann algebra
     and~$V$ is a right $\scrB$-module
     with~$\scrB$-valued inner product.
-Let~$\eta\colon V \to X$ denote the
-    completion into a self-dual Hilbert~$\scrB$-module
-    from \sref{dils-completion}.
+Let~$X$ be any self-dual Hilbert~$\scrB$-module
+    together with inner product preserving
+    $\scrB$-linear map~$\eta\colon V \to X$
+    such that the image of~$\eta$ is ultranorm dense in~$X$.
+(E.g.~the completion into a self-dual Hilbert~$\scrB$-module
+from \sref{dils-completion}.)
 Assume~$Y$ is self-dual Hilbert~$\scrB$-module.
 For each bounded~$\scrB$-linear
     map~$T\colon V \to Y$,
@@ -3390,7 +3393,7 @@ Write~$\Define{V^\perp}$ for the \Define{orthocomplement} of~$V$, defined by
     V^\perp = \{ x; \ x \in X;\ \left<x,v\right>=0\text{ for all }v\in V\}.
 \end{equation*}
 \end{point}
-\begin{point}{Proposition}%
+\begin{point}[hilbmod-projthm]{Proposition}%
 Assume~$X$ is a self-dual Hilbert $\scrB$-module
     for a von Neumann algebra~$\scrB$.
 Suppose~$V \subseteq X$ is any subset. Then
@@ -3402,7 +3405,8 @@ $V^\perp$ is a self-dual Hilbert~$\scrB$-submodule of~$X$
     $V^{\perp\perp}$ is the ultranorm closure of the~$\scrB$-linear
     span of~$V$ \emph{and}
 \item
-    $X \cong V^{\perp\perp} \oplus V^\perp$.
+    $V^{\perp\perp} \oplus V^\perp \cong X$
+        via~$(x,y) \mapsto x+y$.
 \end{enumerate}
 \begin{point}{Proof}%
 It is easy to see~$V^\perp$ is a submodule of~$X$
@@ -3448,13 +3452,18 @@ In particular, as~$V^\perp$ is already an ultranorm closed submodule,
     we find~$W^\perp = (V^\perp)^{\perp\perp} = V^\perp$.
 \end{point}
 \begin{point}%
-As~$(e_i)_i$ is a basis for~$W = V^{\perp\perp}$
-    and~$(d_j)_j$ is a basis for~$W^\perp = V^\perp$,
-    we see
-\begin{equation*}
-    x \mapsto \bigl(\sum_i e_i \left<e_i, x\right>, \sum_j d_j\left<d_j, x\right>\bigr)
-\end{equation*}
-is an isomorphism~$X \cong V^{\perp\perp} \oplus V^\perp$. \qed
+So~$(e_i)_i$ is a basis for~$W = V^{\perp\perp}$
+    and~$(d_j)_j$ is a basis for~$W^\perp = V^\perp$.
+For brevity write~$\vartheta\colon V^{\perp\perp} \oplus V^\perp \to X$
+    for the map~$(y,y') \mapsto y+y'$.
+Clearly~$\vartheta$ is bounded~$\scrB$-linear.
+As~$\left<y,y'\right> = 0$ for~$(y,y') \in V^{\perp\perp} \oplus V^\perp$
+    we see~$\vartheta$ is inner product preserving and thus injective.
+As~$\{e_i\}_{i \in I} \cup \{d_j\}_{j \in J}$
+    is an orthonormal basis of~$X$, $\vartheta$ is surjective.
+As~$\vartheta$ is inner product preserving, its inverse is bounded
+    --- hence~$\vartheta$ is an isomorphism.
+    \qed
 \end{point}
 \end{point}
 \end{point}
@@ -3514,21 +3523,25 @@ If~$X = \{ 0\}$ or~$Y = \{ 0 \}$
     then~$X \otimes Y = \{0\}$
     does the job trivially.
 For the remainder assume both~$X$ and~$Y$ contain non-zero vectors.
-
+\begin{point}[exttensor-ultranorm-dense]{Ultranorm dense}%
 First we show the image of~$X \odot Y$ is ultranorm dense in~$X \otimes Y$.
-Write~$Z$ for the ultranorm closure of the image of~$X \odot Y$
-    in~$X \otimes Y$.
-Assume~$Z \neq X \otimes Y$, say~$v \in X \otimes Y$ but~$v \notin Z$.
-Considering~$v- \sum_{i \in I} z_i \left<z_i, v\right> $
-    instead of~$v$,
-    we may assume without loss of generality that~$\left<z_i,v\right>=0$.
-
-
-Write~$v' = v- \sum_{i \in I} z_i \left<z_i, v\right> \in Z$.
-Note~
-    there is an orthonormal basis~$(e_i)_{i \in I}$ of~$X$,
-
-We start with uniqueness.
+Write~$Z$ for the ultranorm closure of the image of~$X \odot Y$.
+By \sref{hilbmod-projthm}~$Z$ is a self-dual Hilbert submodule of~$X \otimes Y$
+    and~$Z \oplus Z^\perp \cong X \otimes Y$
+    via~$\vartheta\colon(x,y) \mapsto x+y$.
+Thus it is sufficient to show~$Z^\perp = \{0\}$.
+Reasoning towards contradiction, suppose~$z' \in Z^\perp$ and~$z' \neq 0$.
+Also pick~$z \in Z$ with~$z \neq 0$.
+Define~$T_1,T_2\colon X\otimes Y \to Z$
+by~$T_1(\vartheta(y,y')) = y$
+and~$T_2(\vartheta(y,y')) = y + z\left<z',y'\right>$.
+Then~$T_1 \neq T_2$, but for all~$x\in X$ and~$y \in Y$
+    we have~$T_1(x\otimes y) = T_2(x\otimes y)$,
+    contradicting the univeral property of~$X \otimes Y$.
+Thus~$Z = X \otimes Y$ and so the image of~$X \odot Y$
+is ultranorm dense.
+\end{point}
+\begin{point}{Uniqueness}%
 Assume there are self-dual Hilbert~$\scrA\otimes \scrB$-modules
 $X \otimes_1 Y$ and~$X \otimes_2 Y$
 with inner product preserving~$\otimes_1 \colon X \odot Y \to X \otimes_1 Y$
@@ -3550,10 +3563,12 @@ As
     \left<x \otimes_2 y, x' \otimes_2 y'\right> 
     = \left<U x \otimes_1 y, U x'\otimes_1 y' \right>
 \end{equation*}
-for all~$x,x' \in X$ and~$y,y' \in Y$ \TODO{inner product uwlim}
-    it is sufficient to show the image of~$X \odot Y$ under~$\otimes_2$
-    is ultraweakly dense in~$X \otimes_2 Y$.
-
+for all~$x,x' \in X$ and~$y,y' \in Y$.
+Thus since the images of~$\otimes_1$ is ultranorm dense
+    and \TODO{uwlim inner product}
+    we see~$U$ preserves the inner product.
+\end{point}
+\begin{point}{Existence}%
 By self-duality
     there is an orthonormal basis~$(e_i)_{i \in I}$ of~$X$,
     see \sref{dils-selfdual}.
@@ -3561,8 +3576,58 @@ Similarly there is an orthonormal basis~$(d_j)_{j \in J}$ of~$Y$.
 Define~$p_{ij} = \left<e_i,e_i\right>\otimes\left<d_j,d_j\right>$
     and~$X \otimes Y = \ell^2((p_{ij})_{i,j\in I\times J})$,
     see \sref{hilbmod-el2}.
+Write~$w_{ij} \in X \otimes Y$
+    for the basisvector corresponding to~$p_{ij}$.
+
+Pick any~$x \in X$ and~$y \in Y$.
+We are going to define~$x \otimes y$.
+Write~$x_i = \left<e_i,x\right>$
+and~$y_j = \left<d_j,y\right>$.
+Recall~$\sup_{I_0} \sum_{i \in I_0}x_i^*x_i = \left<x,x\right>$
+    where~$I_0$ ranges over the finite subsets of~$I$.
+Similarly~$\sup_{J_0} \sum_{j \in J_0}y_j^*y_j = \left<y,y\right>$.
+By \TODO{otimes normal}
+    we see~
+\begin{equation*}
+    \left<x,x\right> \otimes \left<y,y\right>
+    = 
+    \sup_{(I_0,J_0)}
+    \bigl(\sum_{i \in I_0}
+    x_i^*x_i \bigr) \otimes
+    \bigl(\sum_{j \in J_0} y_j^*y_j
+    \bigr)
+    =
+    \sup_{(I_0,J_0)}
+    \sum_{\substack{i \in I_0\\ j \in J_0}}
+    x_i^*x_i \otimes y_j^*y_j.
+\end{equation*}
+Thus~$(x_i\otimes y_j)_{(i,j) \in I\times J}$
+    is a square summable
+    and so we may define
+\begin{equation*}
+    \otimes\colon X\odot Y\to X\otimes Y \quad\text{by}\quad
+    x \otimes y \ =\  \sum_{i,j} w_{ij} (x_i \otimes y_j).
+\end{equation*}
+It is easy to see~$\otimes$ is a module map.
+Finally~$\left<x,x'\right>\otimes\left<y,y'\right>
+        = \left<x\otimes x', y\otimes y'\right>$
+    follows from~\TODO{normal otimes} % CHECK!
+    and the definition of the inner product on~$\ell^2$.
+\end{point}
+\begin{point}{Universal property}%
+By construction, the~$\scrA\otimes \scrB$-linear span
+    of~$\{w_{ij}\}_{i,j}$ is ultranorm dense in~$\ell^2$.
+As~$e_i \otimes d_j = w_{ij}$,
+    the image of~$X\odot Y$ is ultranorm dense in~$X \otimes Y$.
+Now
+\sref{selfdual-completion-univ}
+gives us the desired universal property.
+(In fact, we see~$X\otimes Y$ is isomorphic to the ultranorm completion
+of~$X \odot Y$.) \qed
 \end{point}
 \end{point}
+\end{point}
+
 \begin{point}{Examples}%
 For the moment write~$\otimes_{\text{ext}}$ for the self-dual exterior
     tensor product.
