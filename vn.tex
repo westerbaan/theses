@@ -879,6 +879,28 @@ and an infimum $\Define{\bigcap A}$
 and the fact that $p\mapsto p^\perp$ 
 is an order isomorphism on the poset of projections on~$\scrA$.)
 \end{point}
+\begin{point}[ceil-supremum]{Exercise}
+Let~$\scrA$ be a von Neumann algebra.
+\begin{enumerate}
+\item
+Show that $\ceil{\bigvee D}=\bigcup_{d\in D} \ceil{d}$
+for every directed set~$D$ of effects from~$\scrA$.
+\item
+Show that $\floor{\bigwedge D} = \bigcap_{d\in D} \floor{d}$
+for every filtered set~$D$ of effects from~$\scrA$.
+\item
+Show that $\ceil{\,\cdot\,}$
+does not preserve filtered infima,
+and~$\floor{\,\cdot\,}$
+does not preserve directed suprema.
+(Hint: $1,\frac{1}{2},\frac{1}{3},\dotsc$.)
+
+Conclude that $\ceil{\,\cdot\,}$
+and $\floor{\,\cdot\,}$
+are neither ultraweakly nor ultrastrongly continuous
+as maps from $[0,1]_\scrA$ to~$[0,1]_\scrA$.
+\end{enumerate}
+\end{point}
 \end{parsec}
 \begin{parsec}%
 \begin{point}{Notation}%
@@ -922,6 +944,11 @@ Show that $\ceil{a+b}=\ceil{a}\cup\ceil{b}$.
 \item
 Show that $\ceil{a^2}=\ceil{a}$.
 \end{enumerate}
+\end{point}
+\begin{point}[ceil-suprema]{Exercise}%
+Show that $\ceil{\bigvee D} = \bigcup_{d\in D}\ceil{d}$
+for every directed set of \emph{positive}
+elements of a von Neumann algebra~$\scrA$.
 \end{point}
 \begin{point}{Exercise}%
 Let~$a$ be an element of a von Neumann algebra.
@@ -1969,6 +1996,136 @@ and so $(\scrA)_1$ (being isomorphic to it) is compact too.\qed
 \end{point}
 \end{point}
 \end{parsec}
+\section{Projections~II}
+\begin{parsec}%
+\begin{point}{Definition}%
+We'll say that a \emph{positive} element~$a$
+of a von Neumann algebra~$\scrA$
+is \Define{pseudoinvertible}
+if it has a \Define{pseudoinverse},
+that is, an element~$t\in\scrA_+$
+with $t\leq \ceil{a}$
+and $ta=\ceil{a}=at$.
+If such~$t$ exists,
+it is unique (see~\sref{pseudoinverse-basic}),
+and so we can invent a notation for it: \Define{$t^{\sim 1}$}.
+\end{point}
+\begin{point}[pseudoinverse-basic]{Exercise}%
+Let~$a$ be a positive element of a von Neumann algebra~$\scrA$.
+\begin{enumerate}
+\item
+Show that~$a$ has at most one pseudoinverse.
+\item
+Show that~$a$ is pseudoinvertible iff~$a$
+is invertible in~$\ceil{a}\scrA\ceil{a}$.
+\item
+Show that~$a$ is pseudoinvertible iff
+there is~$\lambda>0$ with $\lambda \ceil{a}\leq a$.
+\item
+Assume that~$a$ is pseudoinvertible.
+
+Show that~$\ceil{a^{\sim1}}=\ceil{a}$.
+
+Show that if~$b\in \scrA$ commutes with~$a$,
+then $b$ commutes with~$a^{\sim 1}$.
+
+(In other words, $a^{\sim1}\in\{a\}^{\square\square}$.)
+\item
+Show that~$c^{\sim1}\leq b^{\sim1}$
+when~$b\leq c$ are pseudoinvertible positive \emph{commuting}
+elements of~$\scrA$.
+(The statement is still true without
+the requirement that~$b$ and~$c$ commute,
+but also much harder to prove.)
+
+
+\item
+Show that $(0,0,1,\frac{1}{2}, \frac{1}{3},\dotsc)$
+is not pseudoinvertible in~$\ell_\infty$.
+\end{enumerate}
+\end{point}
+\begin{point}{Remark}%
+Note that the obvious candidate
+for the pseudoinverse of~$(0,0,1,\frac{1}{2},\frac{1}{3},\dotsc)$
+being~$(0,0,1,2,3,\dotsc)$
+is not bounded,
+and therefore not an element of~$\ell^\infty$.
+We can nevertheless approximate~$(0,0,1,2,3,\dotsc)$
+by the elements~$(0,0,1,0,0,\dotsc)$,
+$(0,0,1,2,0,\dotsc)$, \dots of~$\ell^\infty$
+forming what one might call an ``approximate pseudoinverse'' for 
+$(0,0,1,\frac{1}{2},\frac{1}{3},\dotsc)$.
+That this can also be done for an arbitrary positive element
+of a von Neumann algebra
+is what we'll see next.
+\end{point}
+\begin{point}{Proposition}%
+Every positive element~$a$ of a von Neumann algebra~$\scrA$
+has (what we'll call) an \Define{approximate pseudoinverse},
+that is, a sequence
+$t_0, t_1, t_2,\dotsc$ of positive elements of~$\scrA$
+with~$\sum_n \ceil{t_n}=\ceil{a}$,
+such that
+$t_n a=\ceil{t_n}=at_n$,
+$\ceil{t_n}n\leq t_n\leq \ceil{t_n}(n+1)$,
+and $t_n\in \{a\}^{\square\square}$ for all~$n$.
+\begin{point}{Proof}%
+When~$a=0$ the sequence~$0,0,0,\dotsc$
+clearly yields an approximate pseudoinverse for~$a$,
+so let us disregard this case,
+and assume that~$\|a\|\neq 0$.
+
+Note that $a-1 \,\leq\, a-\frac{1}{2}\,\leq\, a - \frac{1}{3}\,\leq\, \dotsb$
+converges in the norm to~$a\equiv a_+$,
+and so does $(a-1)_+\,\leq\,(a-\frac{1}{2})_+\,\leq\,\dotsc$,
+so that~$a=\bigvee_n (a-\frac{1}{n})_+$ by~\TODO{...},
+and thus $\ceil{a}=\bigcup_n \ceil{(a-\frac{1}{n})_+}$
+by~\sref{ceil-supremum}.
+
+Writing $q_n=
+\ceil{\smash{(a-\frac{1}{n})_+}}$
+--- and picturing it as the places where~$a\geq \frac{1}{n}$ ---
+we have $(a-\frac{1}{n})q_n = (a-\frac{1}{n})_+\geq 0$
+by~\TODO{$a\ceil{a_+}=a_+$},
+and so $\frac{1}{n}q_n \leq  aq_n$ for all~$n>0$.
+
+Writing $e_{n}=q_{n+1}-q_n$
+for all~$n$ (taking~$q_0:=0$)
+--- and thinking of it as the places
+where $\frac{1}{n+1}\leq a\leq \frac{1}{n}$ --- 
+we get a sequence of (orthogonal) projections
+$e_1,e_2,\dotsc$ in~$\{a\}^{\square\square}$
+with $\sum_n e_n = \ceil{a}$.
+By an easy computation
+involving the facts that $\frac{1}{n+1}\leq \frac{1}{n}$
+and~$aq_n\leq aq_{n+1}$,
+we get $\frac{1}{n+1}e_n \leq ae_n \leq  \frac{1}{n}e_n$.
+
+Now, note that~$\ceil{ae_n}=\ceil{e_n}$ for any~$n$.
+Indeed, on the one hand~$ae_n=e_nae_n\leq \|a\|e_n$
+(as~$e_n\in\{a\}^{\square\square}$)
+and so~$\ceil{ae_n}\leq \ceil{\|a\|e_n}=e_n$
+(using here that $\|a\|\neq 0$),
+while on the other hand, $\frac{1}{n+1}e_n\leq ae_n$
+gives $e_n\equiv \ceil{\smash{\frac{1}{n+1}e_n}}\leq \ceil{ae_n}$.
+In particular, $\frac{1}{n+1}\ceil{ae_n}=\frac{1}{n+1}e_n \leq ae_n$,
+so that~$ae_n$ is pseudoinvertible (by~\sref{pseudoinverse-basic}).
+
+Writing~$t_n := (ae_n)^{\sim1}$,
+we clearly have (using~\sref{pseudoinverse-basic})
+$t_n\in\{a\}^{\square\square}$
+(since~$ae_n\in\{a\}^{\square\square}$)
+and~$\ceil{t_n}=e_n$
+(since~$\ceil{ae_n}=e_n)$,
+and $ne_n \leq t_n \leq (n+1)e_n$
+(since~$\frac{1}{n+1}e_n\leq ae_n \leq \frac{1}{n}e_n$).
+
+Finally, $t_na=t_n\ceil{t_n}a=t_ne_na=\ceil{a}$
+and similarly, $at_n = \ceil{a}$.\qed
+\end{point}
+\end{point}
+\end{parsec}
+
 \section{Normal functionals}
 \begin{parsec}%
 \begin{point}%
