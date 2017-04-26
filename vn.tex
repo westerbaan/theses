@@ -2146,7 +2146,7 @@ Finally, $t_na=t_n\ceil{t_n}a=t_ne_na=\ceil{a}$
 and similarly, $at_n = \ceil{a}$.\qed
 \end{point}
 \end{point}
-\begin{point}{Proposition}%
+\begin{point}[douglas]{Proposition}%
 (A generalization of ``Douglas'~Lemma'' from~\cite{douglas}.)\\
 For elements~$a$ and~$b$ of a von Neumann algebra~$\scrA$,
 the following are equivalent.
@@ -2191,11 +2191,132 @@ and thus that~$\ceill{c}\leq \ceilr{b}$
 and~$\ceilr{c}\leq \ceilr{a}$.
 
 So the only thing that remains to be shown is that~$\sum_{n=0}^N at_nb^*$
-converges ultraweakly as~$N\to \infty$.
-\TODO{finish}
-
-
+converges ultraweakly as~$N\to \infty$,
+and for this it suffices
+to show that~$(\,\sum_{n=0}^N at_nb^*\,)_N$
+is ultrastrongly Cauchy
+(because~$\scrA$ is ultrastrongly complete, by~\sref{vn-complete}).
+Note that
+\begin{alignat*}{3}
+\textstyle 
+(\, \sum_{n=M}^N at_nb^*\,)^*\ \,\sum_{n=M}^N\,at_nb^*
+\ &= \textstyle\ b \,(\sum_{n=M}^Nt_n) \,a^*a\, (\sum_{n=M}^N t_n)\, b^* 
+\\
+\ &\leq\ \textstyle 
+\lambda \, b\, (\sum_{n=M}^N t_n) \,b^*b\, (\sum_{n=M}^Nt_n)\, b^*
+\\
+\ &\leq\ \textstyle 
+\lambda \sum_{n,m=M}^N
+bt_nb^*bt_m b^*
+\\
+\ &=\ \textstyle 
+\lambda \sum_{n=M}^N
+bt_nb^*,
+\end{alignat*}
+where we've used the
+fact that $(bt_nb^*)^* bt_mb^*
+\equiv bt_n b^* b t_m b^*
+= bt_n\ceil{t_m} b^*$
+equals~$bt_nb^*$ when~$n=m$,
+and is~$0$ otherwise.
+This actually implies
+that the $bt_nb^*$ form an orthogonal set of 
+projections,
+and so the series~$\sum_{n=0}^\infty bt_nb^*$
+converges ultraweakly by~\TODO{...}.
+This, coupled with the
+inequality above,
+gives us that~$\sum_{n=0}^N at_nb^*$
+is ultrastrongly Cauchy.\qed
 \end{point}
+\end{point}
+\begin{point}{Propisition (Polar Decomposition)}%
+Any element~$a$ of a von Neumann
+algebra~$\scrA$
+can be uniquely written as~$a=\Define{[a]}\sqrt{a^*a}$,
+where~$[a]$
+is an element of~$\scrA$
+with~$\ceill{\,[a]\,}\equiv \ceil{\,[a]^*[a]\,}\leq 
+\ceil{a^*a}\equiv \ceill{a}$.
+Moreover,
+\begin{enumerate}
+\item
+$[a]$ is partial isometry
+with $[a]^*[a] = \ceil{a^*a} \equiv \ceill{a}$
+and $[a][a]^*=\ceil{aa^*} \equiv \ceilr{a}$,
+\item
+and $[a^*]=[a]^*$, so that~$\sqrt{aa^*}[a]=a=[a]\sqrt{a^*a}$.
+\end{enumerate}
+\begin{point}{Proof}%
+Since $a^*a\leq \sqrt{a^*a}\sqrt{a^*a}$,
+the existance and uniqueness
+an element~$[a]$ of~$\scrA$
+with $a=[a]\sqrt{a^*a}$
+and~$\ceill{\,[a]\,}\leq
+\ceill{a}\equiv \ceilr{\,\sqrt{a^*a}\,}$
+is provided by~\sref{douglas},
+and we get~$\ceilr{\,[a]\,}\leq \ceilr{a}$
+to boot!
+
+Note that~$[a]^*[a]=\ceil{a^*a}$,
+by~\TODO{...},
+because 
+\begin{equation*}
+	\sqrt{a^*a}\,[a]^*[a]\,\sqrt{a^*a}
+\ =\ 
+a^*a
+\ =\ 
+\sqrt{a^*a}\,\ceil{a^*a}\,\sqrt{a^*a},
+\end{equation*}
+and $\ceil{\,[a]^*[a]\,}\leq \ceill{a}=\ceil{\,\sqrt{a^*a}\,}$.
+In particular, $[a]$ is a partial isometry.
+
+Let us prove that $[a][a]^*=\ceilr{a}$.
+Note that~$[a][a]^*$
+is a projection (because $[a]$ is a partial isometry, see~\TODO{}).
+We already know that $[a][a]^* = \ceilr{\,[a]\,}\leq \ceilr{a}$.
+Concerning the other direction,
+$aa^*=[a]\sqrt{a^*a}\,\sqrt{a^*a}[a]^*=[a]\,a^*a\,[a]^*$,
+so that
+$\ceilr{a}=\ceil{aa^*}
+= \ceil{\,[a]a^*a[a]^*\,}
+\leq \ceil{\,\|a\|^2[a][a]^*\,}
+\leq [a][a]^*$.
+
+To prove that~$a=\sqrt{aa^*}[a]$,
+we'll first show that~$\sqrt{aa^*} = [a] \sqrt{a^*a} [a]^*$.
+Indeed, since~$[a]^*[a]=\ceil{\,\sqrt{a^*a}\,}$,
+we have
+$[a]\sqrt{a^*a}[a]^*[a]\sqrt{a^*a}[a]^*
+= [a] \sqrt{a^*a} \,\sqrt{a^*a} [a]^* 
+= aa^*$ --- now take the square root.
+It follows that~$\sqrt{aa^*}[a]
+= [a]\sqrt{a^*a}[a]^*[a]
+= [a]\sqrt{a^*a}=a$;
+and, upon applying~$(\,\cdot\,)^*$,
+we see that
+$a^*=[a]^*\sqrt{aa^*}$,
+and thus~$[a^*]=[a]^*$,
+by uniqueness of~$[a^*]$,
+because $\ceill{\,[a]^*\,}=\ceilr{\,[a]\,}=  \ceilr{a}
+=\ceill{a^*}$.\qed
+\end{point}
+\end{point}
+\begin{point}{Exercise}%
+Show that for positive elements~$a$ and~$b$ of a von Neumann
+algebra~$\scrA$,
+the following are equivalent.
+\begin{enumerate}
+\item
+$a\leq \lambda b$ for some~$\lambda\geq 0$;
+\item
+$a=\sqrt{b}c\sqrt{b}$
+for some positive~$c\in\scrA$,
+\end{enumerate}
+and, 
+in that case, there is a unique~$c\in\scrA_+$
+with $a=\sqrt{b}c\sqrt{b}$
+and~$\ceil{c}\leq \ceil{b}$.
 \end{point}
 \end{parsec}
 
