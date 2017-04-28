@@ -2021,25 +2021,115 @@ and so $(\scrA)_1$ (being isomorphic to it) is compact too.\qed
 \section{Division}
 \begin{parsec}%
 \begin{point}{Definition}%
-We'll say that a \emph{positive} element~$a$
-of a von Neumann algebra~$\scrA$
-is \Define{pseudoinvertible}
+Let~$a$ be an element of a von Neumann algebra~$\scrA$.
+We'll say that~$a$ is \Define{pseudoinvertible}
 if it has a \Define{pseudoinverse},
-that is, an element~$t\in\scrA_+$
-with $t\leq \ceil{a}$
-and $ta=\ceil{a}=at$.
-If such~$t$ exists,
-it is unique (see~\sref{pseudoinverse-basic}),
-and so we can invent a notation for it: \Define{$t^{\sim 1}$}.
+that is,
+an element~$t$ of~$\scrA$
+with 
+$ta=\ceill{a}=\ceilr{t}$
+and $at=\ceill{t}=\ceilr{a}$.
+When such~$t$ exists,
+it is unique (by~\sref{mult-cancellation}),
+and we'll denote it by~\Define{$a^{\sim 1}$}.
+If~$a^{\sim1}=a^*$,
+we say that~$a$ is a \Define{partial isometry}
+(see~\sref{partial-isometry-equivalents}).
+\end{point}
+\begin{point}[pseudoinverse-equivalents]{Lemma}%
+For elements $a,t$ of a von Neumann algebra
+the following are equivalent.
+\begin{enumerate}
+\item
+\label{pseudoinverse-1}
+$ta$ is a projection, and~$\ceill{t}=\ceilr{a}$.
+\item
+\label{pseudoinverse-2}
+$ata=a$, and $\ceill{t}\leq \ceilr{a}$ and~$\ceilr{t}\leq \ceill{a}$.
+\item
+\label{pseudoinverse-3}
+$at$ is a projection, and $\ceill{a}=\ceilr{t}$.
+\item
+\label{pseudoinverse-4}
+$tat=t$, and~$\ceill{a}\leq \ceilr{t}$ and~$\ceilr{a}\leq \ceill{t}$.
+\item
+\label{pseudoinverse-5}
+$t$ is a pseudoinverse of~$a$.
+\end{enumerate}
+\begin{point}{Proof}%
+We make two loops.
+\grayed{(\ref{pseudoinverse-1}$\Longrightarrow$\ref{pseudoinverse-2})}\ 
+We have $\ceill{t}\leq \ceilr{a}$ by assumption,
+and $\ceilr{t}=\ceilr{t\ceill{t}}
+=\ceilr{t\ceilr{a}}
+=\ceilr{ta}=ta=\ceill{ta}\leq\ceill{a}$.
+Further, $ata=a$
+by~\sref{mult-cancellation},
+because $tata=ta$ (since~$ta$ is a projection)
+and~$\ceilr{ata}\leq \ceilr{a}\leq\ceill{t}$.
+\grayed{(\ref{pseudoinverse-3}$\Longrightarrow$\ref{pseudoinverse-4})} 
+follows along the same lines.
+\grayed{(\ref{pseudoinverse-2}$
+	\Longrightarrow$%
+\ref{pseudoinverse-5})}\ 
+We have $ta=\ceill{a}$ by~\sref{mult-cancellation},
+because $ata=a=a\ceill{a}$
+and $\ceill{at}\leq\ceill{t}\leq\ceilr{a}$.
+Also, $at=\ceilr{a}$,
+(because~$ata=a=\ceilr{a}a$,
+and~$\ceill{at}\leq\ceill{t}\leq \ceilr{a}$).
+Further, $\ceill{t}=\ceilr{a}$,
+because $\ceill{a}=ta=\ceilr{ta}\leq \ceilr{t}\leq \ceill{a}$,
+and, similarly, $\ceill{a}=\ceilr{t}$.
+\grayed{(\ref{pseudoinverse-4}$
+	\Longrightarrow$%
+\ref{pseudoinverse-5})}
+is proven by the same principles, and
+\grayed{(\ref{pseudoinverse-5}$
+	\Longrightarrow$%
+\ref{pseudoinverse-1},\ref{pseudoinverse-3})}
+is rather obvious.\qed
+\end{point}
+\end{point}
+\begin{point}[partial-isometry-equivalents]{Exercise}%
+Show that an element~$u$ of a von Neumann algebra
+is a partial isometry iff
+$u^*u$ is a projection
+iff $uu^*u=u$
+iff $uu^*$ is a projection
+iff $u^*uu^*=u^*$
+iff~$u^*$ is the pseudoinverse of~$u$.
+(Hint: use~\sref{pseudoinverse-equivalents},
+or give a direct proof.)
 \end{point}
 \begin{point}[pseudoinverse-basic]{Exercise}%
+Let~$a$ and~$b$ be a elements of a von Neumann algebra~$\scrA$.
+\begin{enumerate}
+\item
+Show that~$a$ is pseudoinvertible
+iff~$a^*$ is pseudoinvertible,
+and, in that case, $(a^*)^{\sim1}=(a^{\sim1})^*$.
+\item
+Assuming that~$a$ and~$b$ are pseudoinvertible,
+and~$\ceilr{b}=\ceill{a}$,
+show that $ab$ is pseudoinvertible,
+and~$(ab)^{\sim1}=b^{\sim1}a^{\sim1}$.
+
+
+\item
+Show that~$a$ is pseudoinvertible
+iff~$a^*a$ is pseudoinvertible,
+and, in that case, $a^{\sim 1} = (a^*a)^{\sim1}a$
+and~$(a^*a)^{\sim1}=a^{\sim1}(a^{\sim1})^*$.
+\end{enumerate}
+\end{point}
+\begin{point}{Exercise}%
 Let~$a$ be a positive element of a von Neumann algebra~$\scrA$.
 \begin{enumerate}
 \item
-Show that~$a$ has at most one pseudoinverse.
-\item
 Show that~$a$ is pseudoinvertible iff~$a$
-is invertible in~$\ceil{a}\scrA\ceil{a}$.
+is invertible in~$\ceil{a}\scrA\ceil{a}$
+iff $at=\ceil{a}$ for some~$t\in\scrA_+$.
 \item
 Show that~$a$ is pseudoinvertible iff
 there is~$\lambda>0$ with $\lambda \ceil{a}\leq a$.
@@ -2066,6 +2156,8 @@ Show that $(0,0,1,\frac{1}{2}, \frac{1}{3},\dotsc)$
 is not pseudoinvertible in~$\ell_\infty$.
 \end{enumerate}
 \end{point}
+\end{parsec}
+\begin{parsec}%
 \begin{point}{Remark}%
 Note that the obvious candidate
 for the pseudoinverse of~$(0,0,1,\frac{1}{2},\frac{1}{3},\dotsc)$
@@ -2269,11 +2361,13 @@ a^*a
 \sqrt{a^*a}\,\ceil{a^*a}\,\sqrt{a^*a},
 \end{equation*}
 and $\ceil{\,[a]^*[a]\,}\leq \ceill{a}=\ceil{\,\sqrt{a^*a}\,}$.
-In particular, $[a]$ is a partial isometry.
+In particular, $[a]$ is a partial isometry
+(by~\sref{partial-isometry-equivalents}).
 
 Let us prove that $[a][a]^*=\ceilr{a}$.
 Note that~$[a][a]^*$
-is a projection (because $[a]$ is a partial isometry, see~\TODO{}).
+is a projection (because $[a]$ is a partial isometry, 
+by~\sref{partial-isometry-equivalents}).
 We already know that $[a][a]^* = \ceilr{\,[a]\,}\leq \ceilr{a}$.
 Concerning the other direction,
 $aa^*=[a]\sqrt{a^*a}\,\sqrt{a^*a}[a]^*=[a]\,a^*a\,[a]^*$,
@@ -2321,6 +2415,7 @@ and~$\ceil{c}\leq \ceil{b}$.
 \end{parsec}
 
 \section{Normal functionals}
+\subsection{Ultraweak boundedness}
 \begin{parsec}%
 \begin{point}%
 To get a better handle on the normal positive functionals
@@ -2674,6 +2769,7 @@ is norm bounded.\qed
 \end{point}
 \end{point}
 \end{parsec}
+\subsection{Ultraweak permanence}
 \begin{parsec}%
 \begin{point}%
 To pry out the final bits of structure of normal functionals
