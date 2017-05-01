@@ -708,10 +708,38 @@ iff $a^\perp p =0$
 iff $p\leq \sqrt{a}$.
 \end{point}
 \end{point}
+\begin{point}{Definition}%
+We say that projections~$p$ and~$q$
+from a $C^*$-algebra~$\scrA$ are \Define{orthogonal}
+when~$pq=0$,
+and we say that a subset of projections
+from~$\scrA$ is \Define{orthogonal}
+when all~$p$ and~$q$ from~$E$
+are either equal or orthogonal.
+\end{point}
+\begin{point}[orthogonal-tuple-of-projections]{Exercise}%
+Let~$\scrA$ be a $C^*$-algebra.
+\begin{enumerate}
+\item
+Show that projections~$p$ and~$q$ from~$\scrA$
+are orthogonal iff $pq=0$ iff $qp=0$ iff $pqp=0$
+iff $p+q\leq 1$ iff $p\leq q^\perp$
+iff $p+q$ is a projection.
+\item
+Show that a finite set of  projections $p_1,\dotsc,p_n$
+from~$\scrA$ is orthogonal
+iff~$\sum_i p_i \leq 1$
+iff $\sum_i p_i$ is a projection.
+
+Show that, in that case, $\sum_i p_i$ is the least projection
+above~$p_1,\dotsc,p_n$.
+\end{enumerate}
+\end{point}
 \begin{point}[projection-below-projection]{Exercise}%
 Let~$p$ and~$q$ be projections from a $C^*$-algebra
 with~$p\leq q$.\\
-Show that~$q-p$ is a projection.
+Show that~$q-p$ is a projection
+(either directly, or using~\sref{orthogonal-tuple-of-projections}).
 \end{point}
 \end{parsec}
 \begin{parsec}%
@@ -901,6 +929,17 @@ are neither ultraweakly nor ultrastrongly continuous
 as maps from $[0,1]_\scrA$ to~$[0,1]_\scrA$.
 \end{enumerate}
 \end{point}
+\begin{point}[sum-of-orthogonal-projections]{Exercise}%
+Show that for a family~$(p_i)_{i\in I}$ 
+of orthogonal projections
+(with~$I$ potentially uncountable)
+the series $\sum_i p_i$
+converges ultrastrongly to~$\bigcup_i p_i$.
+
+(Hint: 
+use the fact that $\sum_{i\in F} p_i = \bigcup_{i \in F} p_i$
+for finite subsets~$F$ of~$I$ by~\sref{orthogonal-tuple-of-projections}.)
+\end{point}
 \end{parsec}
 \begin{parsec}%
 \begin{point}{Notation}%
@@ -945,13 +984,24 @@ Show that $\ceil{a+b}=\ceil{a}\cup\ceil{b}$.
 Show that $\ceil{a^2}=\ceil{a}$.
 \end{enumerate}
 \end{point}
+\begin{point}[ceil-pos-part]{Exercise}%
+Let~$a$ be a self-adjoint element of a von Neumann algebra.
+\begin{enumerate}
+\item
+Show that~$\ceil{a_+}\ceil{a_-}= 0$.
+(Hint: recall from~\sref{cstar-pos-neg-part} that~$a_+a_-=0$.)
+\item
+	Show that~$\ceil{a_+}a = a\ceil{a_+} = a_+$
+	and~$\ceil{a_-}a=a\ceil{a_-} = -a_-$.
+\end{enumerate}
+\end{point}
 \begin{point}[ceil-suprema]{Exercise}%
 Show that $\ceil{\bigvee D} = \bigcup_{d\in D}\ceil{d}$
 for every directed set of \emph{positive}
 elements of a von Neumann algebra~$\scrA$.
 \end{point}
 \begin{point}{Exercise}%
-Let~$a$ be an element of a von Neumann algebra.
+Let~$a$ and~$b$  be elements of a von Neumann algebra.
 \begin{enumerate}
 \item
 Show that $\ceill{a}\equiv \ceil{a^*a}$
@@ -966,6 +1016,10 @@ with $\ceilr{a}a=a$.
 \item
 Show that $\ceill{a^*}=\ceilr{a}$
 and $\ceilr{a^*}=\ceill{a}$.
+
+\item
+Show that~$\ceill{ab}\leq\ceill{b}$
+and~$\ceilr{ab}\leq\ceilr{a}$.
 \end{enumerate}
 \end{point}
 \begin{point}{Exercise}%
@@ -997,7 +1051,7 @@ and let~$a\in \scrA$ be positive.
 Show that~$f(a)^2 \leq f(a^2)$
 (perhaps using~\sref{cp-cs}).
 \item
-Use this, and~\TODO{square-root-monotone}
+	Use this, and~\sref{sqrt-monotone}
 to show that~$f(a^{\nicefrac{1}{2}}) \leq f(a)^{\nicefrac{1}{2}}$.
 \item
 Go on, and show that $f(a^{\nicefrac{1}{2^n}})
@@ -1037,17 +1091,26 @@ we have~$f(\ceil{a})\leq \ceil{f(a)}$.\qed
 \end{point}
 \end{point}
 \begin{point}[ceil-fundamental]{Exercise}%
-Show that
-for elements~$a$ and~$b\geq 0$ from a von Neumann algebra,
-\begin{equation*}
-	\ceil{a^*ba}\ =\ \ceil{a^*\ceil{b}a}.
-\end{equation*}
+Let~$a$ and~$b$ be elements of a von Neumann algebra~$\scrA$.
+\begin{enumerate}
+\item
+Deduce from~\sref{ncp-ceil}
+that
+$\ceil{a^*ba} = \ceil{a^*\ceil{b}a}$
+when~$a\geq 0$.
+\item
+Conclude that~$\ceill{ab}=\ceill{\ceill{a}b}$
+and~$\ceilr{ab}=\ceilr{a\ceilr{b}}$.
+
+\end{enumerate}
 \end{point}
 \begin{point}[mult-cancellation]{Exercise}%
 Let~$b$ be an element of a von Neumann algebra~$\scrA$.
 \begin{enumerate}
 \item
-Show that $cb=0$ for $c\in\scrA$ iff $\ceill{c}\leq \ceilr{b}^\perp$.
+Show that $cb=0$ iff $\ceill{c}\ceilr{b}=0$
+iff $\ceill{c}\leq \ceilr{b}^\perp$
+for~$c\in\scrA$.
 
 (Hint: if $cb=0$,
 then $\ceil{b^*c^*cb}\equiv \ceil{b^*\ceil{c^*c}b}=0$
@@ -1056,6 +1119,10 @@ by~\sref{ceil-fundamental}.)
 Show that~$c_1b=c_2b \implies c_1=c_2$
 for all~$c_1,c_2\in\scrA$
 with~$\ceill{c_i}\leq \ceilr{b}$.
+\item
+Show that $b^*c_1b=b^*c_2b\implies c_1=c_2$
+for all~$c_1,c_2\in\scrA_+$
+with~$\ceil{c_i}\leq\ceilr{b}$.
 \end{enumerate}
 \end{point}
 \begin{point}[ncp-union]{Exercise}%
@@ -2192,7 +2259,8 @@ and assume that~$\|a\|\neq 0$.
 Note that $a-1 \,\leq\, a-\frac{1}{2}\,\leq\, a - \frac{1}{3}\,\leq\, \dotsb$
 converges in the norm to~$a\equiv a_+$,
 and so does $(a-1)_+\,\leq\,(a-\frac{1}{2})_+\,\leq\,\dotsc$,
-so that~$a=\bigvee_n (a-\frac{1}{n})_+$ by~\TODO{...},
+which converges also ultraweakly to~$\bigvee_n(a-\frac{1}{n})$,
+so that~$a=\bigvee_n (a-\frac{1}{n})_+$,
 and thus $\ceil{a}=\bigcup_n \ceil{(a-\frac{1}{n})_+}$
 by~\sref{ceil-supremum}.
 
@@ -2200,7 +2268,9 @@ Writing $q_n=
 \ceil{\smash{(a-\frac{1}{n})_+}}$
 --- and picturing it as the places where~$a\geq \frac{1}{n}$ ---
 we have $(a-\frac{1}{n})q_n = (a-\frac{1}{n})_+\geq 0$
-by~\TODO{$a\ceil{a_+}=a_+$},
+(because~$b\ceil{b_+}=b_+$
+for a positive element~$b$ of a von Neumann algebra,
+by~\sref{ceil-pos-part}),
 and so $\frac{1}{n}q_n \leq  aq_n$ for all~$n>0$.
 
 Writing $e_{n}=q_{n+1}-q_n$
@@ -2315,7 +2385,7 @@ This actually implies
 that the $bt_nb^*$ form an orthogonal set of 
 projections,
 and so the series~$\sum_{n=0}^\infty bt_nb^*$
-converges ultraweakly by~\TODO{...}.
+converges ultraweakly by~\sref{sum-of-orthogonal-projections}.
 This, coupled with the
 inequality above,
 gives us that~$\sum_{n=0}^N at_nb^*$
@@ -2349,9 +2419,8 @@ and~$\ceill{\,[a]\,}\leq
 is provided by~\sref{douglas},
 and we get~$\ceilr{\,[a]\,}\leq \ceilr{a}$
 to boot!
-
 Note that~$[a]^*[a]=\ceil{a^*a}$,
-by~\TODO{...},
+by~\sref{mult-cancellation},
 because 
 \begin{equation*}
 	\sqrt{a^*a}\,[a]^*[a]\,\sqrt{a^*a}
