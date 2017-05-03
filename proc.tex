@@ -1,6 +1,61 @@
 \documentclass[a]{subfiles}
 \begin{document}
 \chapter{Processes}
+\section{Corners and Filters}
+\begin{parsec}%
+\begin{point}{Definition}%
+A \Define{filter}
+is an ncp-map $c\colon \scrC\to\scrA$
+between von Neumann algebras
+such that every ncp-map $f\colon \scrB\to\scrA$
+with~$f(1)\leq c(1)$
+factors as $f=c\circ g$
+for some unique ncp-map $g \colon \scrB\to\scrC$.
+\end{point}
+\begin{point}{Proposition}%
+Given an element~$b$ of a von Neumann algebra~$\scrA$,
+the map $c\colon \scrA\to \ceill{b}\!\scrA\!\ceill{b}$
+given by~$c(a)=b^*ab$
+is a filter.
+\begin{point}{Proof}%
+Note that~$c(a)=b^*ab=\ceill{b}b^*ab\ceill{b}$
+is an element of~$\ceill{b}\!\scrA\!\ceill{b}$
+for each~$a\in\scrA$,
+because~$b\ceill{b}=b$
+and (so) $\ceill{b}b^*=b^*$.
+Further, $c$ is an ncp-map by~\TODO{...}.
+Thus it remains to be shown
+that given~$f\colon \scrB\to\scrA$
+with~$f(1)\leq g(1)\equiv b^*b$
+there is a unique ncp-map $g\colon \scrB\to \ceill{b}\!\scrA\!\ceill{b}$
+with~$f=c\circ g$.
+
+To establish uniqueness of such~$g$, 
+we let~$g_1,g_2\colon \scrB\to\ceill{b}\!\scrA\!\ceill{b}$
+with~$c\circ g_1=c\circ g_2$ be given,
+and shall prove that~$g_1=g_2$.
+It suffices to show that~$g_1(a)=g_2(a)$
+for every positive~$a\in\scrA$
+(because an arbitrary element of~$\scrA$ can be written
+as a linear combination of positive elements).
+But since~$b^* g_1(a) b = c(g_1(a)) = c(g_2(a))= b^* g_2(a) b$,
+this follows from~\TODO{...},
+considering that~$g_1(a)$ and~$g_2(a)$
+are positive, 
+and~$\ceil{g_i(a)} \leq \ceill{b}$
+(because $g_i(a)\in \ceill{b}\!\scrA\!\ceill{b}$).
+
+\TODO{existance}
+\end{point}
+\end{point}
+\end{parsec}
+\begin{parsec}
+\TODO{$uu^*\scrA uu^*\to\scrA, a\mapsto u^* a u$
+is a corner
+when~$u$ is a partial isometry.}
+\end{parsec}
+
+\section{To be moved}
 \begin{parsec}%
 \begin{point}[uwc-bounded]{Proposition}%
 An ultraweakly continuous linear map $f\colon \scrA\to\scrB$
