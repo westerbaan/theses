@@ -4,6 +4,152 @@
 \section{Corners and Filters}
 \begin{parsec}%
 \begin{point}{Definition}%
+Given an projection~$e$ of a von Neumann algebra~$\scrA$,
+the \Define{corner} of~$e$
+is the subset~$e\scrA e$ of~$\scrA$ 
+(consisting of the elements of~$\scrA$
+of the form~$eae$ with~$a\in\scrA$).
+In this context,
+the obvious map~$e\scrA e\to\scrA$
+is called the \Define{inclusion}
+and the map $a\mapsto eae,\ \scrA\to e\scrA e$
+is called the \Define{projection}.
+\end{point}
+\begin{point}[corner-basic]{Exercise}%
+Let~$e$ be a projection from a von Neumann algebra~$\scrA$.
+\begin{enumerate}
+\item
+Show that~$a\in\scrA$ 
+is an element of~$e\scrA e$ iff~$eae=a$
+iff $\ceilr{a}\cup\ceill{a} \leq e$.
+\item
+Show that the corner~$e\scrA e$
+is closed under addition, (scalar) multiplication,
+and involution.
+\item
+Show that~$e$ is a unit for~$e\scrA e$,
+that is, $ea=ae=a$ for all~$a\in e\scrA e$.
+\item
+Show that~$e\scrA e$ is norm and ultraweakly closed.\\
+(Hint: use the fact that $e(\,\cdot\,)e\colon \scrA\to\scrA$
+is normal and bounded.)
+\item
+Show that~$e\scrA e$ --- 
+endowed with the addition, (scalar) multiplication,
+involution and norm from~$\scrA$,
+and with~$e$ as its unit ---  is a $C^*$-algebra.
+\item
+Show that the supremum of a bounded directed
+set~$D$ of self-adjoint elements of~$e\scrA e$
+computed in~$\scrA$
+is itself in~$e\scrA e$,
+and, in fact, the supremum of~$D$ in~$e\scrA e$.
+\item
+Show that the inclusion $e\scrA e\to\scrA$
+is an ncpsu-map.
+\item
+Deduce from this that the restriction of an np-map
+$\omega\colon \scrA\to\C$ to
+a map $e\scrA e\to\C$
+is an np-map.
+
+Conclude that~$e\scrA e$ is a von Neumann algebra.
+\item
+Show that the projection $a\mapsto eae,\ \scrA\to e\scrA e$
+is an ncpu-map.
+\item
+Show that every np-map $\omega\colon e\scrA e\to\C$
+is the restriction
+of the np-map $\omega(e(\,\cdot\,)e)\colon \scrA\to\C$.
+Deduce from this that the ultraweak topology of~$e\scrA e$
+coincides (on $e\scrA e$) with the ultraweak topology on~$\scrA$.
+Show that the ultrastrong topologies on~$e\scrA e$ and~$\scrA$
+coincide in a similar fashion.
+\end{enumerate}
+\end{point}
+\begin{point}{Exercise}%
+Let~$a$ be an element of a von Neumann algebra~$\scrA$,
+and let~$p$ and~$q$ be projections
+of~$\scrA$ with $a^*pa\leq q$.
+\begin{enumerate}
+\item
+Show that $a^*ba\in q\scrA q$
+for every~$b\in p\scrA p$.
+\item
+Show that~$a^*(\,\cdot\,)a$
+gives an ncp-map $p\scrA p\to q\scrA q$.
+\end{enumerate}
+\end{point}
+\end{parsec}%
+\begin{parsec}%
+\begin{point}{Definition}%
+Let~$p$ be an effect of a von Neumann algebra~$\scrA$.
+A \Define{corner} of~$p$ is an ncp-map $\pi\colon \scrA\to\scrC$
+to a von Neumann algebra~$\scrC$
+with~$\pi(p^\perp)=0$
+which is initial among such maps 
+in the sense
+that every ncp-map $f\colon \scrA\to\scrB$
+with~$f(p^\perp)=0$
+factors as $f=g\circ\pi$
+for some unique ncp-map $g\colon \scrC\to\scrB$.
+\end{point}
+\begin{point}{Proposition}%
+Given an effect~$p$ of a von Neumann algebra~$\scrA$,
+and a partial isometry~$u$ of~$\scrA$
+with $\floor{p}=uu^*$,
+the map $\pi\colon \scrA\to u^*u \scrA u^*u$
+given by~$\pi(a)=u^*au$ is a corner of~$p$.
+\begin{point}{Proof}%
+Since~$\pi$ is the composition
+of the $u^*(\,\cdot\,)u\colon \scrA\to\scrA$
+and $u^*u(\,\cdot\,)u^*u\colon \scrA
+\to u^*u\scrA u^*u$,
+which are both known to be ncp-maps
+(by~\sref{}),
+we see that~$\pi$ is an ncp-map itself.
+
+To see that~$\pi(p^\perp)\equiv u^*p^\perp u =0$,
+note that since~$u^*u=u^*\,u u^*\,u$,
+we have $0=u^*(uu^*)^\perp u =u^*\smash{\floor{p}}^\perp u
+= u^*\ceil{\smash{p^\perp}} u$,
+and so
+$0 = \ceil{u^* \ceil{\smash{p^\perp}} u }
+=\ceil{u^* p^\perp u}$
+by~\sref{ceil-fundamental},
+giving~$u^*p^\perp u=0$
+by~\sref{ceil-basic}.
+
+
+Let~$\scrB$ be a von Neumann algebra,
+and let~$f\colon \scrA\to\scrB$ be an ncp-map
+with $f(p^\perp)=0$.
+To show that~$\pi$ is a corner,
+we must show that there is a unique ncp-map
+$g\colon u^*u \scrA u^*u\to\scrB$
+with $f=g\circ \pi$.
+Uniqueness follows
+from the observation that~$\pi$ is surjective.
+Concerning existence,
+define~$g:= f\circ \zeta$,
+where $\zeta\colon  u^*u\scrA u^*u\to \scrA$
+is the ncp-map given by~$\zeta(a)=uau^*$
+for~$a\in\scrA$ (see \TODO{...}),
+so that it is immediately clear that~$g$ is an ncp-map.
+It remains to be shown~$f=g\circ \pi$,
+that is,
+$f(a)=f(uu^*\,a\,uu^*)$ for all~$a\in\scrA$.
+This follows from~\sref{cp-comprehension}
+because~$f(\smash{(uu^*)^\perp})=0$,
+since~$\ceil{\smash{f(\,\smash{(uu^*)^\perp}\,)}}
+=\ceil{\smash{f(\smash{\floor{p}}^\perp)}}
+=\ceil{\smash{f(\ceil{\smash{p^\perp}})}}
+= \ceil{\smash{f(p^\perp)}}=\ceil{0}=0$.\qed
+\end{point}
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}{Definition}%
 A \Define{filter}
 is an ncp-map $c\colon \scrC\to\scrA$
 between von Neumann algebras
