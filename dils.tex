@@ -1573,6 +1573,42 @@ For~$x_0 \in X$ the maps
 \end{align*}
 are all uniformly continuous in the ultranorm uniformity.
 \end{point}
+\begin{point}[innerprod-ultraweak]{Proposition}%
+Let~$X$ be a right~$\scrB$-module
+    with~$\scrB$-valued inner product~$[\,\cdot\,,\,\cdot\,]$
+    for some von Neumann algebra~$\scrB$.
+If~$x_\alpha \to x$ and~$y_\alpha \to y$
+    in the ultranorm uniformity,
+    then~$[x_\alpha,y_\alpha] \to [x,y]$ ultraweakly.
+\begin{point}{Proof}%
+Let~$\varepsilon > 0$ and np-map~$f\colon \scrB \to \C$ be given.
+Note~$\|y_\alpha\|_f \to \|y\|_f$;
+    indeed by the reverse triangle inequaliy 
+    $|\|y_\alpha\|_f - \|y\|_f| \leq \| y_\alpha - y\|_f \to 0$.
+Thus we can find~$\alpha_1$ such that~$\|y_\alpha\|_f \leq \|y\|_f + 1$
+    for~$\alpha \geq \alpha_1$.
+
+We can find~$\alpha_2$
+    such that for all~$\alpha \geq \alpha_2$
+    we have $\|x-x_\alpha\|_f \leq \frac{1}{2}\varepsilon (\|y\|_f + 1)^{-1}$
+    and
+    $\|y-y_\alpha\|_f \leq \frac{1}{2}\varepsilon (\|x\|_f + 1)^{-1}$.
+Pick~$\alpha_0 \geq \alpha_1,\alpha_2$.
+Then for~$\alpha \geq \alpha_0$ we have
+\begin{align*}
+    |f([x_\alpha,y_\alpha] - [x,y])| 
+    & \ = \ |[x_\alpha - x, y_\alpha]_f + [x,y_\alpha - y]_f| \\
+    & \ \leq \ 
+         \|x_\alpha - x\|_f \| y_\alpha\|_f + \|x\|_f\|y_\alpha - y\|_f
+                && \text{ by \sref{module-CS}}\\
+    & \ \leq \ 
+         \|x_\alpha - x\|_f (\|y\|_f+1) + (\|x\|_f+1)\|y_\alpha - y\|_f \\
+    & \ \leq \ 
+         \varepsilon.
+\end{align*}
+Thus~$[x_\alpha,y_\alpha] \to [x,y]$ ultraweakly. \qed
+\end{point}
+\end{point}
 \end{parsec}
 
 \begin{parsec}%
@@ -1943,15 +1979,21 @@ There is a self-dual Hilbert $\scrB$-module~$X$
 Before we start the proof proper,
     we give an overview.
 \begin{point}{Overview}
-By~\sref{dils-selfdual}
+By~\sref{dils-selfdual} and~\sref{innerprod-ultraweak}
     one would expect that
     one can simply extend the inner product of~$V$
-    to its ultranorm completion~$\overline{V}$,
-    which will be self-dual.
+    to its ultranorm completion~$\overline{V}$
+    by
+    \begin{equation}
+        [(x_\alpha)_\alpha, (y_\alpha)_\alpha] \ =\  \uwlim_\alpha [x_\alpha,y_\alpha], \label{eq-definition-inprod-on-completion}
+    \end{equation}
+    which will turn $\overline{V}$ into a self-dual Hilbert~$\scrB$-module.
 It will turn out that~$\overline{V}$
-    is indeed a self-dual Hilbert $\scrB$-module,
-    but it isn't clear at all
-    how to define an inner product on~$\overline{V}$ directly.
+    is indeed a self-dual Hilbert $\scrB$-module
+    with this inner product,
+    but it isn't clear at all  how to show directly that the ultraweak limit
+    in \eqref{eq-definition-inprod-on-completion} converges.
+
 We will sketch the indirect construction,
     before delving into the details.
 As with a metric completion,
@@ -2574,7 +2616,7 @@ By \sref{blinear-inprod-inequality}  we have
 \leq \| T\|^2 [x_\alpha,x_\alpha]
 = \|T\|^2 \left<\eta(x_\alpha),\eta(x_\alpha)\right>
 \end{equation*}
-and so using \TODO{} we see
+and so using \sref{innerprod-ultraweak} we see
 \begin{equation*}
 \langle\hat{T} x, \hat{T} x\rangle =
 \uwlim_\alpha \left<T x_\alpha, T x_\alpha\right>
@@ -3467,6 +3509,69 @@ As~$\vartheta$ is inner product preserving, its inverse is bounded
 \end{point}
 \end{point}
 \end{point}
+\begin{point}[selfdual-orthn-basis]{Exercise}%
+Assume~$X$ is a self-dual Hilbert~$\scrB$-module for a von Neumann
+    algebra~$\scrB$.
+Suppose~$E \subseteq X$ is any subset
+    for which
+    \begin{inparaenum}
+    \item $\left<e,e\right>$ is a non-zero projection for~$e \in E$
+    and
+\item~$\left<e,d\right>=0$ whenever~$e\neq d$ for~$e,d\in E$.
+    \end{inparaenum}
+
+Show that~$E$ is an orthonormal basis of~$E^{\perp\perp}$.
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}%
+The ultranorm completion~\sref{dils-completion}
+    is fixed by its universal property.
+\end{point}
+\begin{point}[selfdual-compl-defining]{Proposition}%
+Let~$\scrB$ be a von Neumann algebra and~$V$ a right~$\scrB$-module
+    with~$\scrB$-valued inner product~$[\,\cdot\,,\,\cdot\,]$.
+There is an up-to-isomorphism unique
+    self-dual Hilbert~$\scrB$-module~$X$
+    together with inner product preserving $\scrB$-linear~$\eta \colon V \to X$
+    such that for every bounded~$\scrB$-linear map~$T\colon V \to Y$
+    to some self-dual Hilbert~$\scrB$-module~$Y$,
+    there is a unique bounded~$\scrB$-linear map~$\hat{T}\colon X \to Y$
+    with~$\hat{T} \after \eta = T$.
+Furthermore, for any such~$\eta\colon V \to X$,
+    the image of~$V$ under~$\eta$ is ultranorm dense.
+\begin{point}{Proof}%
+We already know such a~$X$ and~$\eta\colon V \to X$
+    exist by~\sref{dils-completion}
+    and~\sref{selfdual-completion-univ}.
+For this one~$\eta(V)$ is ultranorm dense in~$X$.
+Assume there is another self-dual Hilbert~$\scrB$-module~$X_2$
+    with inner product preserving~$\scrB$-linear~$\eta_2\colon V \to X_2$
+    satisfying the universal property.
+By the universal property of~$\eta$ applied to~$\eta_2$,
+    there must exist a unique~$U \colon X  \to X_2$
+    with~$U \after \eta  = \eta_2$.
+Similarly, there is a~$V \colon X_2 \to X$
+    with~$V \after \eta_2 = \eta$.
+Clearly~$\id_{X} \after \eta = V \after \eta_2 = V \after U \after \eta$
+    and so by the uniqueness~$\id = V\after U$.
+    Similarly~$U \after V = \id$.
+It remains to be shown~$U$ preserves the inner product.
+As
+\begin{equation*}
+    \left<\eta(x),\eta(y)\right>
+    = [x,y]
+    = \left<\eta_2(x), \eta_2(y)\right>
+    = \left<U \eta(x), U \eta(y)\right>
+\end{equation*}
+for all~$x,y \in X$;
+$\eta(X)$ is ultranorm dense
+and so by~\sref{innerprod-ultraweak}
+    $U$ preserves the inner product.
+\qed
+\end{point}
+\end{point}
 \end{parsec}
 
 \begin{parsec}%
@@ -3493,137 +3598,116 @@ In our situation, where~$X$ and~$Y$ are self-dual
     it is much easier.
 \end{point}
 \begin{point}{Theorem}%
-Suppose~$\scrA$ and~$\scrB$ are von Neumanna algebras.
+Suppose~$\scrA$ and~$\scrB$ are von Neumanns algebras.
 For any self-dual Hilbert $\scrA$-module $X$
     and self-dual Hilbert~$\scrB$-module $Y$,
     there is an up-to-isomorphism unique
     self-dual Hilbert~$\scrA\otimes \scrB$-module
     $X \otimes Y$, called the \Define{(self-dual exterior) tensor product},
     together with a~$\scrA \otimes \scrB$-linear
-    inner product preservering map~$\otimes \colon X \odot Y \to X\otimes Y$
+    inner product preservering map~$\eta \colon X \odot Y \to X\otimes Y$
     with the following universal property:
     for every self-dual~Hilbert~$\scrA\otimes\scrB$-module
     $Z$ with bounded~$\scrA \otimes \scrB$-linear
         $T\colon X \odot Y \to Z$,
     there is a unique bounded~$\scrA \otimes \scrB$-linear
         map~$\hat{T}\colon X \otimes Y \to Z$
-    with~$\hat{T}(x \otimes y) = x \otimes y$
-    for all~$x \in X$ and~$y \in Y$.
+    with~$\hat{T} \after \eta= T$.
+    (For brevity we write~$x \hotimes y = \eta(x\otimes y)$.)
 
-For such~$X \otimes Y$ we have the following.
+For any such~$X \otimes Y$ we have the following.
 \begin{enumerate}
     \item The image of $X \odot Y$ is ultranorm dense in~$X \otimes Y$.
     \item If~$(e_i)_{i \in I}$ is an orthonormal basis of~$X$
                 and~$(d_j)_{j \in J}$ is an orthonormal basis of~$Y$,
-                then~$(e_i \otimes d_j)_{i,j\in I\times J}$
+                then~$(e_i \hotimes d_j)_{i,j\in I\times J}$
                 is an orthonormal basis of~$X \otimes Y$.
 \end{enumerate}
 \begin{point}{Proof}%
-If~$X = \{ 0\}$ or~$Y = \{ 0 \}$
-    then~$X \otimes Y = \{0\}$
-    does the job trivially.
-For the remainder assume both~$X$ and~$Y$ contain non-zero vectors.
-\begin{point}[exttensor-ultranorm-dense]{Ultranorm dense}%
-First we show the image of~$X \odot Y$ is ultranorm dense in~$X \otimes Y$.
-Write~$Z$ for the ultranorm closure of the image of~$X \odot Y$.
-By \sref{hilbmod-projthm}~$Z$ is a self-dual Hilbert submodule of~$X \otimes Y$
-    and~$Z \oplus Z^\perp \cong X \otimes Y$
-    via~$\vartheta\colon(x,y) \mapsto x+y$.
-Thus it is sufficient to show~$Z^\perp = \{0\}$.
-Reasoning towards contradiction, suppose~$z' \in Z^\perp$ and~$z' \neq 0$.
-Also pick~$z \in Z$ with~$z \neq 0$.
-Define~$T_1,T_2\colon X\otimes Y \to Z$
-by~$T_1(\vartheta(y,y')) = y$
-and~$T_2(\vartheta(y,y')) = y + z\left<z',y'\right>$.
-Then~$T_1 \neq T_2$, but for all~$x\in X$ and~$y \in Y$
-    we have~$T_1(x\otimes y) = T_2(x\otimes y)$,
-    contradicting the univeral property of~$X \otimes Y$.
-Thus~$Z = X \otimes Y$ and so the image of~$X \odot Y$
-is ultranorm dense.
+Define~$\eta\colon X \odot Y \to X \otimes Y$
+as the ultranorm completion from \sref{dils-completion}.
+By \sref{selfdual-compl-defining}
+    it is the up-to-isomorphism unique completion
+    satisfying the desired universal property.
+Also by \sref{selfdual-compl-defining}
+    the image of~$X \odot Y$ is ultranorm dense in~$X \otimes Y$.
+Assume~$(e_i)_{i \in I}$
+ and~$(d_j)_{j \in J}$ are orthonormal
+ bases of~$X$ and~$Y$ respectively.
+ It remains to be shown~$E = \{ e_i\hotimes d_j;\ i,j \in I\times J\}$
+    is an orthonormal basis of~$X \otimes Y$.
+\begin{point}%
+Clearly for any~$i,i' \in I$ and~$j,j' \in J$
+    we have~$[e_i\otimes d_i, e_{i'}\otimes d_{j'}]=
+            \langle e_i,e_{i'}\rangle \otimes
+            \langle d_j,d_{j'}\rangle =0$
+            if~$i \neq i'$ or~$j \neq j'$.
+Also~$\langle e_i \hotimes d_j, e_i \hotimes d_j\rangle
+= [e_i \otimes d_j, e_i \otimes d_j]
+            = \langle e_i,e_i\rangle\otimes \langle d_j,d_j\rangle$
+    is a non-zero projection.
+Thus by \sref{selfdual-orthn-basis}
+    $E$ is an orthonormal basis of~$E^{\perp\perp} \subseteq X \otimes Y$.
+By \sref{hilbmod-projthm}
+    it is sufficient to show~$E^\perp = \{0\}$.
 \end{point}
-\begin{point}{Uniqueness}%
-Assume there are self-dual Hilbert~$\scrA\otimes \scrB$-modules
-$X \otimes_1 Y$ and~$X \otimes_2 Y$
-with inner product preserving~$\otimes_1 \colon X \odot Y \to X \otimes_1 Y$
-    and~$\otimes_2 \colon X \odot Y \to X \otimes_2 Y$
-    that both satisfy the universal property.
-By the universal property of~$\otimes_1$ applied to~$\otimes_2$,
-    there must exist a unique~$U \colon X \otimes_1 Y \to X \otimes_2 Y$
-    with~$U x\otimes_1 y = x \otimes_2 y$.
-Similarly, there is a~$V \colon X \otimes_2 Y \to X \otimes_1 Y$
-    with~$V x\otimes_2 y = x \otimes_1 y$.
-Clearly~$\id_{X \otimes_1 Y} x \otimes_1 y = VU x \otimes_1 y$
-    and so by the uniqueness in the universal property for~$\otimes_1$
-    we get~$VU = \id$. Similarly~$UV = \id$.
-It remains to be shown~$U$ preserves the inner product.
-As
+\begin{point}%
+Pick~$t \in E^\perp$. We want to show~$t=0$.
+For the moment, assume~$x \hotimes y \in E^{\perp\perp}$
+    for any~$x \in X$ and~$y \in Y$.
+By construction, there is a net~$t_\alpha$ in the image of~$\eta$
+    with~$t_\alpha \to t$ ultranorm.
+For each~$\alpha$, there are~$n \in \N$, ~$x_1,\ldots,x_n \in X$
+    and~$y_1,\ldots, y_n \in Y$
+    with~$t_\alpha = \sum_{k = 0}^n x_k \hotimes y_k$.
+As~$x_k \hotimes y_k \in E^{\perp\perp}$,
+    we see~$t_\alpha \in E^{\perp\perp}$ and so~$t \in E^{\perp\perp}$
+    as~$E^{\perp\perp}$ is ultranorm closed.
+Thus~$t = 0$ as~$E^{\perp\perp} \cap E^\perp = \{0\}$
+\begin{point}%
+We still have to show~$x \hotimes y \in E^{\perp\perp}$.
+Write~$x_i = \left<e_i, x\right>$
+    and~$y_j = \left<d_j, y\right>$.
+We have~$x = \sum_{i \in I} e_ix_i$
+and~$y = \sum_{j \in J} d_jy_j$.
+Note
+\begin{equation}\label{eq-basis-innerprod-ext-tensor}
+\langle e_i \hotimes d_j, x \hotimes y\rangle
+\ =\  [e_i \otimes d_j, x \otimes y]
+\ =\  \left<e_i, x\right>\otimes \left<d_j, y\right>
+\ =\  x_i \otimes y_j.
+\end{equation}
+Thus~$z \equiv \sum_{i,j} (e_i \hotimes d_j) (x_i \otimes y_j)$
+    converges ultranorm.
+As~$E^{\perp\perp}$ is the ultranorm closure of the~$\scrB$-linear span of~$E$,
+    we know~$z \in E^{\perp\perp}$ and we are done if~$z = x \hotimes y$.
+We will show
 \begin{equation*}
-    \left<x \otimes_1 y, x' \otimes_1 y'\right>=
-    [x \otimes y, x' \otimes y'] =
-    \left<x \otimes_2 y, x' \otimes_2 y'\right> 
-    = \left<U x \otimes_1 y, U x'\otimes_1 y' \right>
+\langle z - x \hotimes y, z - x \hotimes y\rangle
+\ \equiv\ 
+\langle z,z \rangle
+- \langle x \hotimes y, z \rangle
+- \langle z, x \hotimes y \rangle +
+\langle x \hotimes y, x\hotimes y \rangle
+\ = \ 0.
 \end{equation*}
-for all~$x,x' \in X$ and~$y,y' \in Y$.
-Thus since the images of~$\otimes_1$ is ultranorm dense
-    and \TODO{uwlim inner product}
-    we see~$U$ preserves the inner product.
+For the first cross-term
+\begin{equation*}
+    \langle z, x \hotimes y \rangle
+    \ \overset{\sref{innerprod-ultraweak}}{=}\  \sum_{i,j} (x_i \otimes y_j)^* \langle e_i \hotimes d_j, x \hotimes y\rangle
+    \ \overset{\eqref{eq-basis-innerprod-ext-tensor}}{=}\  \sum_{i,j} x_i^*x_i \otimes y_j^*y_j \ = \ \langle z,z\rangle.
+\end{equation*}
+Similarly~$\langle x \hotimes y, z\rangle = \langle z,z\rangle$.
+For the last term, \TODO{tensor prod ultraweak sums}
+\begin{align*}
+    \langle x \hotimes y, x \hotimes y \rangle
+    &\ =\ \left<x,x\right> \otimes \left<y,y\right> \\
+    &\ =\  \bigl(\sum_i x_i^*x_i\bigr) \otimes \bigl(\sum_j y_j^*y_j\bigr) \\
+    &\ =\  \sum_{i,j} x_i^*x_i \otimes y_j^*y_j\\
+    &\ =\ \left<z,z\right>.
+\end{align*}
+Thus indeed~$z = x\hotimes y$. \qed
 \end{point}
-\begin{point}{Existence}%
-By self-duality
-    there is an orthonormal basis~$(e_i)_{i \in I}$ of~$X$,
-    see \sref{dils-selfdual}.
-Similarly there is an orthonormal basis~$(d_j)_{j \in J}$ of~$Y$.
-Define~$p_{ij} = \left<e_i,e_i\right>\otimes\left<d_j,d_j\right>$
-    and~$X \otimes Y = \ell^2((p_{ij})_{i,j\in I\times J})$,
-    see \sref{hilbmod-el2}.
-Write~$w_{ij} \in X \otimes Y$
-    for the basisvector corresponding to~$p_{ij}$.
-
-Pick any~$x \in X$ and~$y \in Y$.
-We are going to define~$x \otimes y$.
-Write~$x_i = \left<e_i,x\right>$
-and~$y_j = \left<d_j,y\right>$.
-Recall~$\sup_{I_0} \sum_{i \in I_0}x_i^*x_i = \left<x,x\right>$
-    where~$I_0$ ranges over the finite subsets of~$I$.
-Similarly~$\sup_{J_0} \sum_{j \in J_0}y_j^*y_j = \left<y,y\right>$.
-By \TODO{otimes normal}
-    we see~
-\begin{equation*}
-    \left<x,x\right> \otimes \left<y,y\right>
-    = 
-    \sup_{(I_0,J_0)}
-    \bigl(\sum_{i \in I_0}
-    x_i^*x_i \bigr) \otimes
-    \bigl(\sum_{j \in J_0} y_j^*y_j
-    \bigr)
-    =
-    \sup_{(I_0,J_0)}
-    \sum_{\substack{i \in I_0\\ j \in J_0}}
-    x_i^*x_i \otimes y_j^*y_j.
-\end{equation*}
-Thus~$(x_i\otimes y_j)_{(i,j) \in I\times J}$
-    is a square summable
-    and so we may define
-\begin{equation*}
-    \otimes\colon X\odot Y\to X\otimes Y \quad\text{by}\quad
-    x \otimes y \ =\  \sum_{i,j} w_{ij} (x_i \otimes y_j).
-\end{equation*}
-It is easy to see~$\otimes$ is a module map.
-Finally~$\left<x,x'\right>\otimes\left<y,y'\right>
-        = \left<x\otimes x', y\otimes y'\right>$
-    follows from~\TODO{normal otimes} % CHECK!
-    and the definition of the inner product on~$\ell^2$.
-\end{point}
-\begin{point}{Universal property}%
-By construction, the~$\scrA\otimes \scrB$-linear span
-    of~$\{w_{ij}\}_{i,j}$ is ultranorm dense in~$\ell^2$.
-As~$e_i \otimes d_j = w_{ij}$,
-    the image of~$X\odot Y$ is ultranorm dense in~$X \otimes Y$.
-Now
-\sref{selfdual-completion-univ}
-gives us the desired universal property.
-(In fact, we see~$X\otimes Y$ is isomorphic to the ultranorm completion
-of~$X \odot Y$.) \qed
 \end{point}
 \end{point}
 \end{point}
