@@ -4410,6 +4410,31 @@ by~\sref{cp-cs},
 and so~$\|f(a)\|\leq \|f(1)\|\,\|a\|$.\qed
 \end{point}
 \end{point}
+\begin{point}[cp-comprehension]{Corollary}%
+Let~$f\colon \scrA\to\scrB$ be a cp-map between
+$C^*$-algebras,
+and let~$p$ be an effect of~$\scrA$ with~$f(p^\perp)=0$.
+Then $f(a)=f(pa)=f(ap)=f(pap)$
+for all~$a\in\scrA$.
+\begin{point}{Proof}%
+Since~$p^\perp \leq 1$,
+we have $(p^\perp)^2=\sqrt{p^\perp}p^\perp \sqrt{p^\perp}
+\leq p^\perp$,
+and so~$0\leq f(\,(p^\perp)^2\,) \leq f(p^\perp) = 0$,
+giving us $f(\,(p^\perp)^2\,)=0$.
+Now,
+since
+$\|f(p^\perp a)\|^2
+\leq \|f(\,(p^\perp)^2\,)\| \|f(a^*a)\| = 0$
+by~\sref{cp-cs},
+we get~$f(p^\perp a)=0$, and so~$f(pa)=f(a)$ for all~$a\in\scrA$.
+In particular,
+$f(ap)=f(pa^*)^*=f(a^*)^*=f(a)$
+for all~$a\in\scrA$,
+and so~$f(pap)=f(pa)=f(a)$
+for all~$a\in \scrA$.\qed
+\end{point}
+\end{point}
 \begin{point}[choi]{Lemma (Choi)}%
 We have
 $f(a)^*f(a) \leq f(a^* a)$ for
@@ -4418,7 +4443,7 @@ cpu-map~$f\colon \scrA\to\scrB$ between $C^*$-algebras,
 and~$a\in\scrA$.
 Moreover, if $f(a^*a)=f(a)^*f(a)$
 for some~$a\in\scrA$,
-then~$f(ba)=f(b)(a)$
+then~$f(ba)=f(b)f(a)$
 for all~$b\in \scrA$.
 \begin{point}{Proof}%
 By~\sref{cp-cs}
