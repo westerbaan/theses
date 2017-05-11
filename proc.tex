@@ -1,6 +1,66 @@
 \documentclass[a]{subfiles}
 \begin{document}
 \chapter{Processes}
+\begin{parsec}%
+\begin{point}{Definition}%
+A \Define{process} is
+an ncpsu-map between von Neumann algebras.
+\end{point}
+\end{parsec}
+\section{Limits of Processes}
+\begin{parsec}%
+\begin{point}[ncp-uwlim]{Proposition}%
+Given von Neumann algebras~$\scrA$
+and~$\scrB$
+the pointwise ultraweak limit
+$f\colon \scrA\to\scrB$
+of a net of  positive linear maps $f_\alpha\colon \scrA\to\scrB$
+is positive, and, 
+\begin{enumerate}
+\item
+$f$ is completely positive provided
+that the $f_\alpha$ are completely positive, and
+\item
+$f$ is normal provided that the $f_\alpha$ are normal
+and the ultraweak convergence of the~$f_\alpha$ to~$f$
+is uniform on~$[0,1]_\scrA$.
+\end{enumerate}
+\begin{point}{Proof}%
+Since given~$a\in \scrA$ the element~$f(a)$
+is the ultraweak limit of the positive elements~$f_\alpha(a)$,
+and therefore positive (by~\sref{vn-positive-basic}),
+we see that~$f$ is positive.
+
+Suppose that each~$f_\alpha$ is completely positive.
+To show that~$f$ is completely positive,
+we must prove, given~$a_1,\dotsc,a_n\in\scrA$
+and~$b_1,\dotsc,b_n\in\scrB$,
+that 
+the element $\sum_{i,j} b_i^* f(a_i^*a_j)b_j$
+of~$\scrB$
+is positive.
+And indeed it is,
+being the ultraweak limit of
+the positive elements $\sum_{i,j} b_i^* f_\alpha (a_i^* a_j)b_j$,
+because  $f_\alpha(a_i^* a_j)$
+converges ultraweakly to~$f(a_i^* a_j)$,
+and~$b_i^*(\,\cdot\,)b_j\colon \scrB\to\scrB$
+is ultraweakly continuous
+(\sref{mult-uws-cont})
+for any~$i$ and~$j$.
+
+If the~$f_\alpha$ 
+are normal,
+and converge uniformly on~$[0,1]_\scrA$ ultraweakly
+to~$f$,
+then~$f$ is ultraweakly continuous
+on~$[0,1]_\scrA$
+(because the uniform limit of continuous functions is continous),
+and thus normal (by~\sref{p-uwcont}).\qed
+\end{point}
+\end{point}
+\end{parsec}
+
 \section{Corners and Filters}
 \begin{parsec}%
 \begin{point}{Definition}%
@@ -152,39 +212,55 @@ factors as $f=c\circ g$
 for some unique ncp-map $g \colon \scrB\to\scrC$.
 \end{point}
 \begin{point}{Proposition}%
-Given an element~$b$ of a von Neumann algebra~$\scrA$,
-the map $c\colon \scrA\to \ceill{b}\!\scrA\!\ceill{b}$
-given by~$c(a)=b^*ab$
+Given an element~$d$ of a von Neumann algebra~$\scrA$,
+the map $c\colon \ceill{d}\!\scrA\!\ceill{d}\to\scrA$
+given by~$c(a)=d^*ad$
 is a filter.
 \begin{point}{Proof}%
-Note that~$c(a)=b^*ab=\ceill{b}b^*ab\ceill{b}$
-is an element of~$\ceill{b}\!\scrA\!\ceill{b}$
-for each~$a\in\scrA$,
-because~$b\ceill{b}=b$
-and (so) $\ceill{b}b^*=b^*$.
-Further, $c$ is an ncp-map by~\TODO{...}.
-Thus it remains to be shown
-that given~$f\colon \scrB\to\scrA$
-with~$f(1)\leq g(1)\equiv b^*b$
-there is a unique ncp-map $g\colon \scrB\to \ceill{b}\!\scrA\!\ceill{b}$
+Note that~$c$ is an ncp-map by~\sref{ad-ncp}.
+Let~$\scrB$ be a von Neumann algebra,
+and let~$f\colon \scrB\to\scrA$ be an ncp-map
+with $f(1)\leq c(1)$.
+To show that~$c$ is a filter,
+we must show that there is a unique ncp-map
+$g\colon \scrB\to
+\ceill{d}\!\scrA\!\ceill{d}$
 with~$f=c\circ g$.
+Uniqueness of~$g$ follows from the observation
+that~$c$ is injective by~\sref{mult-cancellation}.
 
-To establish uniqueness of such~$g$, 
-we let~$g_1,g_2\colon \scrB\to\ceill{b}\!\scrA\!\ceill{b}$
-with~$c\circ g_1=c\circ g_2$ be given,
-and shall prove that~$g_1=g_2$.
-It suffices to show that~$g_1(a)=g_2(a)$
-for every positive~$a\in\scrA$
-(because an arbitrary element of~$\scrA$ can be written
-as a linear combination of positive elements).
-But since~$b^* g_1(a) b = c(g_1(a)) = c(g_2(a))= b^* g_2(a) b$,
-this follows from~\TODO{...},
-considering that~$g_1(a)$ and~$g_2(a)$
-are positive, 
-and~$\ceil{g_i(a)} \leq \ceill{b}$
-(because $g_i(a)\in \ceill{b}\!\scrA\!\ceill{b}$).
+Concerning existence of~$g$,
+let~$t_1,t_2,\dotsc$ be an approximate pseudoinverse of~$d$
+(see~\sref{approximate-pseudoinverse-def},
+which exists by~\sref{approximate-pseudo-inverse}),
+and define~$g\colon \scrB\to\ceill{d}\!\scrA\!\ceill{d}$
+by~$g(b)=\sum_{m,n} t_m^* f(b) t_n$
+for all~$b\in \scrB$.
+Note that this double series converges ultraweakly,
+when~$a$ is positive
+by~\TODO{}
+(because then $0\leq f(b)\leq \|b\|f(1)\leq \|b\|c(1)=\|b\|d^*d$),
+and thus for arbitrary~$b$ too (being the linear combination of
+positive elements).
+Since $c(g(b))=
+d^* \,(\sum_{m,n} t_m^* f(b)t_n)\, d
+= \sum_{m,n} (t_m d)^* \,f(b)\, t_nd
+= \sum_{m,n} \ceilr{t_m} f(b) \ceilr{t_n}
+= (\sum_m \ceilr{t_m}) \,f(b)\, (\sum_n \ceilr{t_n})
+= \ceill{d} f(b)\ceill{d}
+= f(b)$ for every $b\in\scrB$, we see that~$c\circ g = f$.
 
-\TODO{existance}
+It remains to be shown that~$g$ is completely positive
+and normal.
+To this end
+we consider
+the maps~$g_N\colon \scrB\to\ceill{d}\!\scrA\!\ceill{d}$
+defined by~$g_N(b)= (\sum_{n=0}^Nt_n)^*\, f(b)\, (\sum_{n=0}^N t_n)$
+for~$b\in\scrB$ --- 
+which are clearly ncp by~\sref{ad-ncp},
+converge ultraweakly to~$g$,
+and in fact uniformly so on~$[0,1]_\scrB$ by~\TODO{...},
+so that~$g$ is ncp by~\sref{ncp-uwlim}.\qed
 \end{point}
 \end{point}
 \end{parsec}

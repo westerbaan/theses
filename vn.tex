@@ -320,6 +320,22 @@ in a von Neumann converges, in~\sref{vn-complete}.)
 \end{point}
 \end{parsec}
 \section{The basics}
+\begin{parsec}%
+\begin{point}[vn-positive-basic]{Exercise}%
+Let~$\scrA$ be a von Neumann algebra,
+and let~$\Omega$ be the set of np-maps $\scrA\to\C$.
+\begin{enumerate}
+\item 
+Show that~$\Omega$ is order separating (using~\TODO{...}).
+
+Conclude that~$a\in \scrA$ is positive iff~$\omega(a)\geq 0$
+for all~$\omega\in\Omega$.
+\item
+Deduce that~$\scrA_+$ and~$\sa{\scrA}$ are ultraweakly closed.
+\end{enumerate}
+\end{point}
+\end{parsec}
+
 %
 % multiplication turns suprema into ultraweak limits
 %
@@ -443,6 +459,8 @@ the following are equivalent.
 \begin{enumerate}
 \item
 $f$ is ultraweakly continuous;
+\item
+$f$ is ultraweakly continuous on~$[0,1]_\scrA$;
 \item
 $f(\bigvee D)=\bigvee_{d\in D}f(d)$ for each bounded 
 directed~$D\subseteq\sa{\scrA}$;
@@ -1108,7 +1126,7 @@ and~$\ceilr{ab}=\ceilr{a\ceilr{b}}$.
 \end{enumerate}
 \end{point}
 \begin{point}[mult-cancellation]{Exercise}%
-Let~$b$ be an element of a von Neumann algebra~$\scrA$.
+Let~$a$ and~$b$ be an element of a von Neumann algebra~$\scrA$.
 \begin{enumerate}
 \item
 Show that $cb=0$ iff $\ceill{c}\ceilr{b}=0$
@@ -1124,8 +1142,7 @@ for all~$c_1,c_2\in\scrA$
 with~$\ceill{c_i}\leq \ceilr{b}$.
 \item
 Show that $b^*c_1b=b^*c_2b\implies c_1=c_2$
-for all~$c_1,c_2\in\scrA_+$
-with~$\ceil{c_i}\leq\ceilr{b}$.
+for all~$c_1,c_2\in\ceilr{b}\scrA\ceilr{b}$
 \end{enumerate}
 \end{point}
 \begin{point}[ncp-union]{Exercise}%
@@ -2321,6 +2338,31 @@ so that $\sum_n at_n = \sum_n t_n a
 making $t_1,t_2,\dotsc$ an approximate pseudoinverse of~$a$.\qed
 \end{point}
 \end{point}
+\begin{point}[proto-douglas]{Lemma}%
+Let~$b$ be an element of a von Neumann algebra~$\scrA$,
+and let~$t_1,t_2,\dotsc$ be an approximate pseudoinverse of~$b$,
+and let~$\lambda\geq 0$.
+\begin{enumerate}
+\item
+For every~$a\in\scrA$
+with $a^*a\leq \lambda b^*b$
+there is a unique 
+element~$\Define{a/b}$
+of~$\scrA\!\ceilr{b}$
+with $a=(a/b)\,b$.
+Moreover,
+the  series $\sum_n at_n$ converges ultrastrongly
+to~$a/b$ 
+(and uniformly so)
+for $a\in \scrA$ with $a^*a\leq \lambda b^*b$.
+\item
+For every~$a\in \scrA$
+that can be written as $a\equiv \sum_{k=0}^3 i^k a_k$
+where $a_0,\dotsc,a_k\in \scrA_+$
+are such that $a_k\leq \frac{1}{4}\lambda b^*b$,
+\TODO{...}
+\end{enumerate}
+\end{point}
 \begin{point}[douglas]{Proposition}%
 (A generalization of ``Douglas'~Lemma'' from~\cite{douglas}.)\\
 For elements~$a$ and~$b$ of a von Neumann algebra~$\scrA$,
@@ -2333,7 +2375,8 @@ for some~$\lambda \geq 0$;
 $a=cb$ for some~$c\in\scrA$.
 \end{enumerate}
 Moreover,
-in that case there is a unique~$c$
+in that case 
+there is a unique~$c$
 with $a=cb$ and~$\ceill{c}\leq \ceilr{b}$,
 and if~$t_1,t_2,\dotsc$
 is an approximate pseudoinverse of~$b$,
@@ -2476,7 +2519,7 @@ because $\ceill{\,[a]^*\,}=\ceilr{\,[a]\,}=  \ceilr{a}
 =\ceill{a^*}$.\qed
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[sequential-quotient]{Exercise}%
 Show that for positive elements~$a$ and~$b$ of a von Neumann
 algebra~$\scrA$,
 the following are equivalent.
@@ -2493,7 +2536,7 @@ with $a=\sqrt{b}c\sqrt{b}$
 and~$\ceil{c}\leq \ceil{b}$,
 and if~$t_1,t_2,\dotsc$
 is an approximate pseudoinverse of~$\sqrt{b}$,
-then the series~$\sum_n t_n a t_n$
+then~$\sum_{m,n} t_m a t_n$
 converges ultraweakly to this~$c$.
 \end{point}
 \end{parsec}
