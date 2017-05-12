@@ -1167,8 +1167,8 @@ for every set of projections~$A$ from~$\scrA$.
 \section{Completeness}
 \begin{parsec}%
 \begin{point}%
-	We have just seen (in~\sref{npuws})
-	that a \emph{positive} linear functional~$f$
+We have just seen (in~\sref{npuws})
+that a \emph{positive} linear functional~$f$
 on a von Neumann algebra 
 is ultrastrongly continuous iff it is ultraweakly continuous.
 In this section, we'll show that the same result holds
@@ -2338,32 +2338,111 @@ so that $\sum_n at_n = \sum_n t_n a
 making $t_1,t_2,\dotsc$ an approximate pseudoinverse of~$a$.\qed
 \end{point}
 \end{point}
-\begin{point}[proto-douglas]{Lemma}%
-Let~$b$ be an element of a von Neumann algebra~$\scrA$,
-and let~$t_1,t_2,\dotsc$ be an approximate pseudoinverse of~$b$,
-and let~$\lambda\geq 0$.
+\end{parsec}
+\begin{parsec}%
+\begin{point}{Definition}%
+Let~$b$ be an element of a von Neumann algebra~$\scrA$.
+Given an element~$a$ of~$\scrA b$ 
+we denote by~\Define{$a/b$} 
+the (by~\sref{mult-cancellation}) unique
+element of~$\scrA\!\ceilr{b}$
+with~$a=(a/b)\, b$,
+and, dually,
+given an element~$a$ of~$b\scrA$ 
+we denote by~\Define{$b\backslash a$} 
+the unique
+element of~$\ceill{b}\!\scrA$
+with~$a=b\,(b\backslash a)$.
+\end{point}
+\begin{point}{Exercise}%
+Let~$a$ and~$b$
+be elements of a von Neumann algebra~$\scrA$.
 \begin{enumerate}
 \item
-For every~$a\in\scrA$
-with $a^*a\leq \lambda b^*b$
-there is a unique 
-element~$\Define{a/b}$
-of~$\scrA\!\ceilr{b}$
-with $a=(a/b)\,b$.
-Moreover,
-the  series $\sum_n at_n$ converges ultrastrongly
-to~$a/b$ 
-(and uniformly so)
-for $a\in \scrA$ with $a^*a\leq \lambda b^*b$.
+Show that $c/b$ is an element of~$\ceilr{c}\!\scrA\!\ceilr{b}$
+for every element~$c$ of~$b\scrA$.
 \item
-For every~$a\in \scrA$
-that can be written as $a\equiv \sum_{k=0}^3 i^k a_k$
-where $a_0,\dotsc,a_k\in \scrA_+$
-are such that $a_k\leq \frac{1}{4}\lambda b^*b$,
-\TODO{...}
+Show that $(ab)/b = a\ceilr{b}$
+and~$b\backslash (ba)=\ceill{b}a$.
+\item
+Let~$c$ be an element of $a\scrA b$.
+Show that
+$a \backslash c \,\in\, \scrA b$,
+and
+$c/b\,\in\,a\scrA$, and
+\begin{equation*}
+(a\backslash c)/b\ =\  a\backslash(c/b)
+\quad \text{ --- which we'll therefore denote by}\  \Define{a\backslash c/b}.
+\end{equation*}
+Show that~$a\backslash c/b$
+is the unique element of~$\ceill{a}\scrA\ceilr{b}$
+with~$c=a\,(a\backslash c / b)\, b$. 
+\item
+Let~$c$ be an element of~$\scrA b$.
+Show that~$c^* \,\in\, b^* \scrA$
+and $b^*\backslash c^* = (c/b)^*$.
 \end{enumerate}
 \end{point}
-\begin{point}[douglas]{Proposition}%
+\begin{point}[proto-douglas]{Lemma}%
+Given elements $a$ and~$b$ of a von Neumann algebra~$\scrA$
+with~$a^*a \leq b^*b$
+we have $a\,\in\, \scrA b$.
+Moreover,
+given an approximate pseudoinverse $t_1,t_2,\dotsc$
+of~$b$,
+the series $\sum_nat_n$ converges ultrastrongly to~$a/b$,
+and uniformly so in~$a$.
+\begin{point}{Proof}%
+To show that~$\sum_{n=0}^N at_n$
+converges ultrastrongly as~$N\to \infty$
+it suffices
+to show that~$(\,\sum_{n=0}^N at_n\,)_N$
+is ultrastrongly Cauchy
+(because~$\scrA$ is ultrastrongly complete, by~\sref{vn-complete}).
+To this end, note that
+\begin{alignat*}{3}
+\textstyle 
+(\, \sum_{n=M}^N at_n\,)^*\ \,\sum_{n=M}^N\,at_n
+\ &= \textstyle\ (\sum_{n=M}^Nt_n) \,a^*a\, (\sum_{n=M}^N t_n)
+\\
+\ &\leq\ \textstyle 
+ (\sum_{n=M}^N t_n) \,b^*b\, (\sum_{n=M}^Nt_n)
+\\
+\ &\leq\ \textstyle 
+\sum_{n,m=M}^N
+t_nb^*bt_m 
+\\
+\ &=\ \textstyle 
+\sum_{m=M}^N
+bt_m,
+\end{alignat*}
+where we've used that
+$bt_1,\ bt_2,\ \dotsc$
+are orthogonal projections
+--- but then the series~$\sum_{n=0}^\infty bt_m$
+converges ultraweakly by~\sref{sum-of-orthogonal-projections}.
+This, coupled with the
+inequality above,
+gives us that~$\sum_{n=0}^N at_n$
+is ultrastrongly Cauchy,
+and therefore converges ultrastrongly --- 
+and even uniformly so in~$a$,
+because~``$a$'' does not appear in
+the expression
+``$\sum_{m=M}^N bt_m$'' that gave the bound.
+
+Define~$c:=\sum_{n=0}^\infty at_n$.
+Since~$at_n=\ceilr{a}at_n\ceilr{b}$
+for all~$n$ (using that~$\ceill{t_n}\leq \ceilr{b}$),
+we also have~$\ceilr{a}c\ceilr{b}=c$.
+Further,
+since~$a^*a \leq b^*b$,
+we have $\ceill{a}\leq \ceill{b}$,
+and so~$a=a\ceill{b} = a\sum_n t_n b = \sum_n at_n b
+= cb$, giving $c=a/b$.\qed
+\end{point}
+\end{point}
+\begin{point}[douglas]{Corollary}%
 (A generalization of ``Douglas'~Lemma'' from~\cite{douglas}.)\\
 For elements~$a$ and~$b$ of a von Neumann algebra~$\scrA$,
 the following are equivalent.
@@ -2374,86 +2453,13 @@ for some~$\lambda \geq 0$;
 \item
 $a=cb$ for some~$c\in\scrA$.
 \end{enumerate}
-Moreover,
-in that case 
-there is a unique~$c$
-with $a=cb$ and~$\ceill{c}\leq \ceilr{b}$,
-and if~$t_1,t_2,\dotsc$
-is an approximate pseudoinverse of~$b$,
-then~$\sum_n at_n$ converges ultrastrongly
-to this~$c$,
-and $\ceilr{c}\leq \ceill{b}$.
-\begin{point}{Proof}%
-Let's get rid of the easy bits:
-there is at most one $c\in\scrA$
-with $a=cb$ 
-and $\ceill{c}\leq \ceilr{b}$
-by~\sref{mult-cancellation};
-and 
-if $a=cb$ for some~$c\in\scrA$,
-then~$a^*a=b^*c^*cb\leq \|c\|^2 \,b^*b$.
-
-For the other direction,
-suppose that~$a^*a \leq \lambda\,b^*b$
-for some~$\lambda\geq 0$;
-we must find~$c\in\scrA$ with~$a=cb$.
-Let~$t_0,t_1,\dotsc$
-be an approximate pseudoinverse of~$b$
-(see~\sref{approximate-pseudoinverse}),
-and define~$c:=\sum_{n=0}^\infty at_n$,
-assuming for the moment that this series converges ultrastrongly.
-Since~$a^*a \leq \lambda b^*b$,
-we have $\ceill{a}\leq \ceill{b}$,
-and so~$a=a\ceill{b} = a\sum_n t_n b = \sum_n at_n b
-= cb$.
-Since~$at_n=\ceilr{a}at_n\ceilr{b}$
-(as~$\ceill{t_n}\leq \ceilr{b}$)
-we also see that~$\ceilr{a}c\ceilr{b}=c$,
-giving~$\ceill{c}\leq \ceilr{b}$
-and~$\ceilr{c}\leq \ceilr{a}$.
-
-So the only thing that remains to be shown is that~$\sum_{n=0}^N at_n$
-converges ultrastrongly as~$N\to \infty$,
-and for this it suffices
-to show that~$(\,\sum_{n=0}^N at_n\,)_N$
-is ultrastrongly Cauchy
-(because~$\scrA$ is ultrastrongly complete, by~\sref{vn-complete}).
-Note that
-\begin{alignat*}{3}
-\textstyle 
-(\, \sum_{n=M}^N at_n\,)^*\ \,\sum_{n=M}^N\,at_n
-\ &= \textstyle\ (\sum_{n=M}^Nt_n) \,a^*a\, (\sum_{n=M}^N t_n)
-\\
-\ &\leq\ \textstyle 
-\lambda \, (\sum_{n=M}^N t_n) \,b^*b\, (\sum_{n=M}^Nt_n)
-\\
-\ &\leq\ \textstyle 
-\lambda \sum_{n,m=M}^N
-t_nb^*bt_m 
-\\
-\ &=\ \textstyle 
-\lambda \sum_{m=M}^N
-bt_m
-\end{alignat*}
-where we've used that
-$bt_1,\ bt_2,\ \dotsc$
-are orthogonal projections,
-so that the series~$\sum_{n=0}^\infty bt_m$
-converges ultraweakly by~\sref{sum-of-orthogonal-projections}.
-This, coupled with the
-inequality above,
-gives us that~$\sum_{n=0}^N at_n$
-is ultrastrongly Cauchy.\qed
-\end{point}
 \end{point}
 \begin{point}{Propisition (Polar Decomposition)}%
 Any element~$a$ of a von Neumann
 algebra~$\scrA$
 can be uniquely written as~$a=\Define{[a]}\sqrt{a^*a}$,
 where~$[a]$
-is an element of~$\scrA$
-with~$\ceill{\,[a]\,}\equiv \ceil{\,[a]^*[a]\,}\leq 
-\ceil{a^*a}\equiv \ceill{a}$.
+is an element of~$\scrA\!\ceill{a}$.
 Moreover,
 \begin{enumerate}
 \item
