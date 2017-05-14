@@ -2432,26 +2432,34 @@ the expression
 ``$\sum_{m=M}^N bt_m$'' that gave the bound.
 
 Define~$c:=\sum_{n=0}^\infty at_n$.
-Since~$at_n=\ceilr{a}at_n\ceilr{b}$
-for all~$n$ (using that~$\ceill{t_n}\leq \ceilr{b}$),
-we also have~$\ceilr{a}c\ceilr{b}=c$.
-Further,
-since~$a^*a \leq b^*b$,
+Since~$a^*a \leq b^*b$,
 we have $\ceill{a}\leq \ceill{b}$,
-and so~$a=a\ceill{b} = a\sum_n t_n b = \sum_n at_n b
-= cb$, giving $c=a/b$.\qed
+and so~$a=a\ceill{b} = a\sum_n t_n b = \sum_n at_n b = cb$. 
+So to get~$c=a/b$
+we only need to prove that~$\ceill{c}\leq \ceilr{b}$,
+that is, $c\ceilr{b}=c$.
+To this end,
+recall that~$\sum_n \ceill{t_n}=\ceilr{b}$,
+so that~$\ceill{t_n}\leq \ceilr{b}$,
+and~$t_n\ceilr{b}=t_n$,
+which implies
+that~$at_n\ceilr{b}=at_n$,
+and so~$c\ceilr{b}=\sum_n at_n\ceilr{b}
+= \sum_n at_n=c$.\qed
+
 \end{point}
 \end{point}
-\begin{point}[douglas]{Corollary}%
-(A generalization of ``Douglas'~Lemma'' from~\cite{douglas}.)\\
-For elements~$a$ and~$b$ of a von Neumann algebra~$\scrA$,
-the following are equivalent.
+\begin{point}[douglas]{Exercise}%
+Let~$a$ and~$b$ be elements of a von Neumann algebra~$\scrA$.
 \begin{enumerate}
 \item
-$a^*a\leq \lambda \, b^*b$
-for some~$\lambda \geq 0$;
+Show that $a$ is in $\scrA b$ iff $a^*a\leq \lambda b^*b$
+for some~$\lambda \geq 0$.
+
+(Compare this with ``Douglas'~Lemma'' from~\cite{douglas}.)
 \item
-$a=cb$ for some~$c\in\scrA$.
+Show that $a \in \scrA\!\ceilr{b}$
+need not entail that~$a\in \scrA b$.
 \end{enumerate}
 \end{point}
 \begin{point}{Propisition (Polar Decomposition)}%
