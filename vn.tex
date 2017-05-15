@@ -477,7 +477,8 @@ algebra~$\scrA$.
 
 Show that if a positive linear map $f\colon \scrA\to\scrB$
 between von Neumann algebras 
-is ultrastrongly continuous, then~$f$ is normal.
+is ultrastrongly continuous (on~$[0,1]_\scrA$), 
+then~$f$ is normal.
 (Hint: use that a bounded directed set 
 $D\subseteq \sa{\scrA}$ converges ultrastrongly to~$\bigvee D$.)
 
@@ -2378,6 +2379,12 @@ Show that~$a\backslash c/b$
 is the unique element of~$\ceill{a}\scrA\ceilr{b}$
 with~$c=a\,(a\backslash c / b)\, b$. 
 \item
+Let~$c$ be an element of~$\scrA b$
+and let~$d$ be an element of~$a\scrA$.
+
+Show that~$a\in a\scrA b$,
+and~$a\backslash (dc) / b  = (a\backslash d)\,(c/b)$.
+\item
 Let~$c$ be an element of~$\scrA b$.
 Show that~$c^* \,\in\, b^* \scrA$
 and $b^*\backslash c^* = (c/b)^*$.
@@ -2453,8 +2460,12 @@ and so~$c\ceilr{b}=\sum_n at_n\ceilr{b}
 Let~$a$ and~$b$ be elements of a von Neumann algebra~$\scrA$.
 \begin{enumerate}
 \item
-Show that $a$ is in $\scrA b$ iff $a^*a\leq \lambda b^*b$
-for some~$\lambda \geq 0$.
+Let~$\lambda\geq 0$ be given,
+and recall that $(\scrA)_\lambda 
+= \{c\in\scrA\colon \|c\|\leq\lambda\}$.
+
+Show that $a$ is in $(\scrA)_\lambda b$ iff $a^*a\leq \lambda^2 b^*b$,
+and then~$\|a/b\|\leq \lambda$.
 
 (Compare this with ``Douglas'~Lemma'' from~\cite{douglas}.)
 \item
@@ -2462,6 +2473,80 @@ Show that $a \in \scrA\!\ceilr{b}$
 need not entail that~$a\in \scrA b$.
 \end{enumerate}
 \end{point}
+\begin{point}{Exercise}%
+Let~$b$ be an element of a von Neumann algebra.
+\begin{enumerate}
+\item
+Let~$a$ be a positive element of~$\scrA$,
+and let~$\lambda\geq 0$.
+
+Show that
+ $a\in b^*(\scrA)_\lambda b$
+iff~$a\leq \lambda b^*b$,
+and then~$\|b^*\backslash a / b \| \leq\lambda$.
+\item
+Show that~$b^*\backslash a / b$ is positive
+for every positive element~$a$ of $ b^* \scrA b$.
+
+\end{enumerate}
+\end{point}
+\begin{point}{Exercise}%
+Given elements~$b$ and~$c$ of a von Neumann algebra~$\scrA$,
+an approximate pseudoinverse $t_1,t_2,\dotsc$
+of~$b$,
+and an approximate pseudoinverse of~$s_1,s_2,\dotsc$
+of~$c$,
+show that
+$(\sum_{n=1}^N s_n) \,a\, (\sum_{m=1}^Nt_m)$,
+converges ultrastrongly to~$c\backslash a /b$
+as~$N\to\infty$
+(and uniformly so) for~$a\in c(\scrA)_1 b$.
+\end{point}
+\begin{point}[div-usc]{Lemma}%
+Given elements~$b$ and~$c$  of a von Neumann algebra~$\scrA$
+the maps 
+\begin{equation*}
+	a\mapsto a/b\colon \  (\scrA)_1b \to \scrA
+\qquad\text{and}\qquad
+a\mapsto c\backslash a/b\colon\  c(\scrA)_1b\to \scrA
+\end{equation*}
+are ultrastrongly continuous
+(where $(\scrA)_1$ is the unit ball, see~\TODO{}).
+\begin{point}{Proof}%
+By~\sref{proto-douglas}
+the series~$\sum_n at_n$ converges ultraweakly to~$a/b$,
+where~$t_1,t_2,\dotsc$
+is an approximate pseudoinverse of~$b$,
+and in fact uniformly so for~$a\in(\scrA)_1 b$
+(because $a^*a\leq b^*b$ for such~$a$).
+Since~$a\mapsto \sum_{n=1}^N at_n,\ (\scrA)_1b\to\scrA$
+is ultrastrongly continuous (by~\sref{mult-uws-cont})
+--- and the uniform limit of continuous functions is continuous ---
+we see that~$a\mapsto a/b,
+\ (\scrA)_1b\to\scrA$ is ultrastrongly continuous.
+It follows that
+$(\,\cdot\,)/b\colon\,c(\scrA)_1b\to c(\scrA)_1$
+and~$c\backslash(\,\cdot\,)\colon\, c(\scrA)_1\to\scrA$
+are ultrastrongly continuous;
+as must be their composition $c\backslash\,\cdot\,/b\colon\,
+c(\scrA)_1b\to\scrA$.\qed
+\end{point}
+\begin{point}{Remark}%
+The map $a\mapsto a/b$ might not give
+an ultrastrongly
+continuous map on the larger domain~$\scrA b$,
+because, for example, 
+upon applying $(\,\cdot\,)/(1,\frac{1}{2},\frac{1}{3},\dotsc)$
+to the ultrastrongly Cauchy 
+sequence  $(1,0,0,\dotsc),\ (1,1,0,\dotsc),\ \dotsc$
+in~$\ell^\infty$
+we get the 
+sequence $(1,0,0,\dotsc),\ (1,2,0,\dotsc),\ \dotsc$,
+which is not ultrastrongly Cauchy.
+\end{point}
+\end{point}
+\end{parsec}
+\begin{parsec}%
 \begin{point}{Propisition (Polar Decomposition)}%
 Any element~$a$ of a von Neumann
 algebra~$\scrA$

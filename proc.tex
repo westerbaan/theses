@@ -229,45 +229,40 @@ with~$f=c\circ g$.
 Uniqueness of~$g$ follows from the observation
 that~$c$ is injective by~\sref{mult-cancellation}.
 
-Concerning existence of~$g$,
-let~$t_1,t_2,\dotsc$ be an approximate pseudoinverse of~$d$
-(see~\sref{approximate-pseudoinverse-def},
-which exists by~\sref{approximate-pseudo-inverse}),
-and define~$g\colon \scrB\to\ceill{d}\!\scrA\!\ceill{d}$
-by~$g(b)=\sum_{m,n} t_m^* f(b) t_n$
-for all~$b\in \scrB$.
-Note that this double series converges ultraweakly,
-when~$a$ is positive
-by~\TODO{}
-(because then $0\leq f(b)\leq \|b\|f(1)\leq \|b\|c(1)=\|b\|d^*d$),
-and thus for arbitrary~$b$ too (being the linear combination of
-positive elements).
-Since $c(g(b))=
-d^* \,(\sum_{m,n} t_m^* f(b)t_n)\, d
-= \sum_{m,n} (t_m d)^* \,f(b)\, t_nd
-= \sum_{m,n} \ceilr{t_m} f(b) \ceilr{t_n}
-= (\sum_m \ceilr{t_m}) \,f(b)\, (\sum_n \ceilr{t_n})
-= \ceill{d} f(b)\ceill{d}
-= f(b)$ for every $b\in\scrB$, we see that~$c\circ g = f$.
+To establish the existence of such~$g$,
+note that~$f(b)$ is an element of~$d^*\scrA d$,
+when~$b$ is positive
+by~\sref{sequential-douglas}
+because~$0\leq f(b)\leq \|b\|f(1)\leq \|b\| c(1)=\|b\|d^*d$,
+and thus for arbitrary~$b\in\scrB$ too
+(being a linear combination
+of positive elements).
+We can thus define $g\colon \scrB\to \ceill{d}\!\scrA\!\ceill{d}$
+by~$g(b)=d^*\backslash f(b)/d$
+for all~$b\in\scrB$.
+It is clear that~$g$ is linear and positive,
+and~$c\circ g=f$.
 
-It remains to be shown that~$g$ is completely positive
-and normal.
-To this end
-we consider
-the maps~$g_N\colon \scrB\to\ceill{d}\!\scrA\!\ceill{d}$
-defined by~$g_N(b)= (\sum_{n=0}^Nt_n)^*\, f(b)\, (\sum_{n=0}^N t_n)$
-for~$b\in\scrB$ --- 
-which are clearly ncp by~\sref{ad-ncp},
-converge ultraweakly to~$g$,
-and in fact uniformly so on~$[0,1]_\scrB$ by~\TODO{...},
-so that~$g$ is ncp by~\sref{ncp-uwlim}.\qed
+To see that~$g$ is normal,
+note that
+$d^*\backslash\,\cdot\,/d\colon
+d^*(\scrA)_1 d\to\scrA$
+is ultrastrongly continuous by~\sref{div-usc},
+as is~$f$ by~\sref{cp-uscont}
+(also) as map from~$(\scrB)_1$ to~$d^*(\scrA)_1 d$,
+so that~$g$ is ultrastrongly continuous on~$(\scrB)_1$,
+and therefore normal by~\sref{p-uwcont}.
+
+Finally, $g$ is completely positive
+by~\sref{ncp-uwlim},
+because it is
+the pointwise ultraweak limit
+of the by~\sref{ad-ncp} completely positive maps
+$(\sum_{n=1}^Nt_n)^* \,f(\,\cdot\,)\,(\sum_{n=1}^N t_n)$,
+where~$t_1,t_2,\dotsc$
+is an approximate pseudoinverse of~$d$.\qed
 \end{point}
 \end{point}
-\end{parsec}
-\begin{parsec}
-\TODO{$uu^*\scrA uu^*\to\scrA, a\mapsto u^* a u$
-is a corner
-when~$u$ is a partial isometry.}
 \end{parsec}
 
 \section{To be moved}
