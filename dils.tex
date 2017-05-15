@@ -3551,13 +3551,14 @@ Later, in \sref{selfdual-normalish-form},
 We will need a lemma first.
 \end{point}
 \end{point}
-\begin{point}{Lemma}%
+\begin{point}[selfdual-limit-basispair]{Lemma}%
     Assume~$X$ is a self dual Hilbert~$\scrB$-module.
     Let~$(E_\alpha)_{\alpha \in \beta}$ 
         and~$(D_\alpha)_{\alpha\in \beta}$
         be an ascending and descending sequence of subsets of~$X$,
         respectively.
-    If for each~$\alpha \in \beta$ we know~$E_\alpha \cup D_\alpha$ is an orthonormal basis,
+    If for each~$\alpha \in \beta$ we know
+    $E_\alpha \cap D_\alpha = \emptyset$ and $E_\alpha \cup D_\alpha$ is an orthonormal basis,
     then~$\bigl(\bigcup_{\alpha} E_\alpha\bigr) \cup\bigl( \bigcap_{\alpha}D_\alpha\bigr)$
         is also an orthonormal basis.
 \begin{point}{Proof}
@@ -3566,23 +3567,160 @@ Without loss of generality we may assume~$D = \emptyset$,
     by switching to~$D'_\alpha = D - D_\alpha$
     and~$E'_\alpha = E_\alpha \cup D$.
 Write~$E = \bigcup_\alpha E_\alpha$.
+By \sref{hilbmod-projthm} and \sref{selfdual-orthn-basis} it is sufficient
+    to show~$E^\perp = \{0\}$.
+Pick any~$x \in E^\perp$.  We want to show~$x = 0$.
+By definition~$\left<x, e\right> =0$ for~$e \in E$.
+As~$D_0 \cup E_0$ is an basis,
+    it is sufficient to show~$\left<x, d\right> = 0$
+        for~$d \in D_0$.
+Pick some~$d \in D_0$.
+As~$\bigcap_\alpha D_\alpha = \emptyset$
+    there is some~$\alpha$ such that~$d \notin D_\alpha$.
+    So~$d \in D_\alpha^\perp = E_\alpha^{\perp\perp} \subseteq E^{\perp\perp}$.
+Thus~$\left<x,d\right> = 0$, as desired. \qed
 \end{point}
 \end{point}
 
 \begin{point}[selfdual-normalish-form]{Theorem}%
 Let~$\scrB$ be a von Neumann algebra that is a factor (i.e.~with center~$\C 1$).
 Suppose~$X$ is a self-dual Hilbert~$\scrB$-module.
-Either there is an infinite cardinal~$\kappa$
+Either there is a cardinal~$\kappa$
     such that~$X \cong \ell^2((1)_{\alpha \in \kappa})$,
     or there is a natural number~$n\in \N$
     and projection~$p \in \scrB$
     such that~$X \cong \ell^2((1, \ldots, 1, p))$,
     where~$1$ occurs~$n$ times.
 \begin{point}{Proof}%
-By~\sref{hilbmod-el2}
-    we can find an ordinal~$\beta$
-    and projections~$(p_\alpha)_{\alpha \in \beta}$ from~$\scrB$
-    such that~$X \cong \ell^2((p_\alpha)_{\alpha \in \beta})$.
+The case~$X = \{0\}$ is covered by~$\kappa=0$.
+Assume~$X \neq \{0\}$.
+\begin{point}[selfdual-normalish-form1]%
+As a first step we will prove that
+either
+\begin{enumerate}
+\item $X$ has an orthonormal basis~$E$
+    such that~$\left<e,e\right>=1$ for some~$e \in E$ \emph{or}
+\item there is a single vector~$e \in X$ such that~$\{e\}$ is an orthonormal basis.
+\end{enumerate}
+Pick any basis~$E_0$ of~$X$.
+Let~$P$ denote the poset of subsets~$U \subseteq E_0 \times \scrB$
+    satisfying
+\begin{enumerate}
+    \item
+    $u$ is a partial isometry with $uu^* = \left<e,e\right>$
+        for every~$(e,u) \in U$ \emph{and}
+    \item
+    the domains of the~$u$ are orthogonal:  $\sum_{(e,u) \in U} u^*u \leq 1$.
+\end{enumerate}
+For any chain~$C \subseteq P$
+    it is easy to see~$\bigcup C \in P$
+    and so by Zorn's lemma
+    there is a maximal element~$U_0 \in P$.
+Define
+\begin{equation*}
+e_0 \ =\  \sum_{(e,u) \in U_0} eu \qquad \qquad E_1 \ = \ E_0 - \{e;\ (e,u) \in U_0\}.
+\end{equation*}
+The set $\{e_0\} \cup E_1$ is a basis for~$X$ ---
+    indeed if~$x = \sum_{e \in E_0} e \left<e,x\right>$,
+    then
+\begin{equation*}
+    x \ =\  e_0 \Bigl(\sum_{(e,u) \in U_0} u^*\left<e,x\right>\Bigr)
+            + \sum_{e \in E_1} e\left<e,x\right>.
+\end{equation*}
+If~$E_1 = \emptyset$, then~$\{e_0\}$ is an orthonormal basis of~$X$ and
+    we have shown 1. 
+
+For the other case, assume~$e_1 \in E_1$.
+Write~$p_0 = \left<e_0,e_0\right>$
+    and~$p_1 = \left<e_1,e_1\right>$.
+Suppose~$p_1 \lesssim 1 - p_0$.
+Then~$vv^* = p_1$ and~$v^*v \leq 1- p_0$ for some~$v \in \scrB$.
+    Hence~$v^*v + p_0 \leq 1$.
+    So~$U_0 \cup \{ (e_1, v) \} \in P$ contradicting maximality of~$U_0$.
+Apparently~$p_1 \not\lesssim 1-p_0$.
+
+In a factor~$\lesssim$ is total \TODO{ref},
+    so~$1-p_0 \lesssim p_1$.
+Let~$v \in \scrB$ be such that~$vv^*=1-p_0$
+    and~$v^*v \leq p_1$.
+Write~$p_0' = 1- v^*v$.
+As~$1-p_0' \leq p_1 =1-(1-p_1)$
+we have~$(1-p_0') + (1-p_1) \leq 1$.
+Define~$q = 1- ((1-p_0') + (1-p_1))$.
+Note~$q = p_0'+p_1 - 1$ and~$p_0', p_1 \leq q$.
+Define
+\begin{equation*}
+    D \ = \ \{d_0, d_1\} \qquad \text{where} \quad
+    d_0 \ =\   e_1 q \qquad
+    d_1 \ = \ e_0 + e_1v^*.
+\end{equation*}
+From~$p_1q=q$ it follows~$D$ is orthogonal.
+Clearly~$\left<d_0,d_0\right>=q$ and
+\begin{equation*}
+    \left<d_1, d_1\right>
+        \ =\ \left<e_0, e_0\right> + vp_1v^*    
+        \ =\ p_0 + vv^* \ =\ 1.
+\end{equation*}
+So~$D$ is an orthonormal set.
+Using~$vv^*p_0 = 0$ and~$q+v^*v = p_1$, we see
+that for any~$b_0 \in p_0\scrB$ and~$b_1 \in p_1 \scrB$
+\begin{align*}
+    d_0 b_1 + d_1(vb_1 + b_0)
+    &\ = \ e_1 q b_1 + e_0 vb_1 + e_1v^*vb_1 + e_0 b_0 + e_1v^* b_0 \\
+    &\ = \ e_1 q b_1 + e_0 p_0 vv^* vb_1 + e_1v^*vb_1 + e_0 b_0 + e_1v^* vv^* p_0 b_0 \\
+    &\ = \ e_1 q b_1 + e_1v^*vb_1 + e_0 b_0  \\
+    &\ = \ e_1 (q + v^*v) b_1 + e_0 b_0  \\
+    &\ = \ e_1 b_1 + e_0 b_0.
+\end{align*}
+Thus~$D$ is an orthonormal basis of~$\{e_0, e_1\}^{\perp\perp}$.
+Hence~$E \equiv D \cup (E_1 - \{e_1\})$ is an orthonormal basis of~$X$
+with~$d_1 \in E$ such that~$\left<d_1,d_1\right>=1$.
+\end{point}
+\begin{point}%
+For brevity, call~$X$ 1-dim if there is a one-element orthonormal basis of~$X$.
+In~\sref{selfdual-normalish-form1} we saw
+    how to create an orthonormal basis~$D$ of a non-1-dim~$X$
+    with an~$e_0 \in D$ such that~$\left<e_0,e_0\right>=1$.
+If~$\{e_0\}^\perp$ is not 1-dim,
+    we can apply \sref{selfdual-normalish-form1}
+    on~$\{e_0\}^\perp$ (instead of~$X$)
+    to find an orthonormal basis~$D'$ of~$\{e_0\}^\perp$
+    with~$e_1 \in D'$ such that~$\left<e_1,e_1\right>=1$.
+This procedure can be continued using Zorn's lemma.
+Let~$P$ denote the poset of subsets~$E \subseteq X$ satisfying
+\begin{inparaenum}
+\item $E$ is orthogonal \emph{and}
+    \item $\left<e,e\right> = 1$ for all~$e \in E$.
+\end{inparaenum}
+Clearly~$\emptyset\in P$
+and for any chain~$C \subseteq P$
+    we have~$\bigcup C \in P$.
+By Zorn's lemma there is a maximal~$E \in P$.
+Suppose~$E^\perp \neq \{0\}$ and~$E^\perp$ is not 1-dim.
+Then by \sref{selfdual-normalish-form1}
+    we can find an orthonormal basis~$E'$ of~$E^\perp$
+    together with~$e \in E'$ such that~$\left<e,e\right>=1$.
+Now~$E' \cup \{e\} \in P$, contradicting maximality of~$E$.
+Apparently~$E^\perp = \{0\}$ or~$E^\perp$ is 1-dim.
+If~$E^\perp = \{0\}$
+    then we are done
+    taking~$\kappa$ the cardinality of~$E$.
+For the other case, assume~$E^\perp = \{e\}^{\perp\perp}$
+    for some~$e \in X$ with~$\left<e,e\right>$ a non-zero projection.
+If~$E$ is finite, then we are done as well.
+So, assume~$E$ is infinite.
+Pick a sequence~$e_1, e_2, \ldots \in E$ of distinct elements.
+Write~$p = \left<e,e\right>$
+    and~$E_0 = \{e_n;\ n\in \N\}$.
+Define
+\begin{equation*}
+    E_1 \ =\  \{e + e_1(1-p), \ e_1p + e_2(1-p),\  e_2p  +e_3(1-p),\  \ldots \}.
+\end{equation*}
+It is easy to see~$E_1$ is an orthogonal set
+    with~$\left<d,d\right>=1$ for all~$d \in E_1$.
+Furthermore~$E_1$ is an orthonormal basis for~$E_0 \cup \{e\}$,
+    hence~$(E - E_0) \cup E_1$ is the desired orthonormal basis of~$X$. \qed
+\end{point}
 \end{point}
 \end{point}
 \end{parsec}
