@@ -106,7 +106,7 @@ In the second part of this chaper
 \end{point}
 \end{parsec}
 
-\section*{Stinespring's theorem}
+\section{Stinespring's theorem}
 \begin{parsec}[dils-completion-to-hilb]%
 \begin{point}%
 For the GNS-construction
@@ -925,7 +925,7 @@ Prove~$(\scrP, \varrho, \lambda h)$
 \end{point}
 \end{parsec}
 
-\section*{Hilbert C$^*$-modules}
+\section{Hilbert C$^*$-modules}
 \begin{parsec}%
 \begin{point}%
 Recall that by GNS
@@ -1634,6 +1634,14 @@ Then for~$\alpha \geq \alpha_0$ we have
 \end{align*}
 Thus~$[x_\alpha,y_\alpha] \to [x,y]$ ultraweakly. \qed
 \end{point}
+\end{point}
+\begin{point}[hilbmod-denseordersep]{Corollary}%
+Let~$X$ be a Hilbert~$\scrB$-module
+    together with an ultranorm dense subset~$D \subseteq X$.
+Vector states from~$D$ are order separating:
+for each~$T \in \scrB^a(X)$ we have
+$T \geq 0$ if and only if~$\left<x,Tx\right> \geq 0$
+for all~$x \in D$.
 \end{point}
 \end{parsec}
 
@@ -2797,7 +2805,7 @@ and~$\scrB^a(X)$ is a von Neumann algebra. \qed
 \end{point}
 \end{parsec}
 
-\section*{Paschke dilations}
+\section{Paschke dilations}
 \begin{parsec}%
 \begin{point}%
     We are ready to show every ncp-map has a Paschke dilation.
@@ -3224,11 +3232,113 @@ as desired. \qed
 \end{point}
 \end{parsec}
 
-\section*{Self-dual Hilbert C$^*$-modules}
+\begin{parsec}%
+\begin{point}%
+We will now prove a useful connection between
+    the ncp-maps ncp-below~$\varphi$
+    and the commutant of the image of a Paschke embedding of~$\varphi$.
+\end{point}
+\begin{point}{Definition}%
+For linear  maps~$\varphi, \psi\colon \scrA \to \scrB$,
+    we say $\varphi$ is ncp-below~$\psi$
+    (in symbols:~$\varphi \mathrel{\Define{\leq_\ncp}} \psi$)
+    whenever~$\psi - \varphi$ is an ncp-map.
+    Furthermore, write
+    \begin{equation*}
+    \Define{[0,\varphi]_\ncp} =\  
+        \{\psi; \ \psi \colon \scrA \to \scrB;
+            \ 0 \leq_\ncp\psi \leq_\ncp \varphi \}.
+    \end{equation*}
+\end{point}
+\begin{point}{Definition}%
+    Assume~$\varphi\colon \scrA \to \scrB$ is an ncp-map with Paschke
+        dilation~$(\scrP, \varrho, h)$.
+    For~$t \in \varrho(\scrA)^\square$
+    define $\Define{\varphi_t} = h(t \varrho(a))$.
+\end{point}
+\begin{point}{Theorem}%
+Assume~$\varphi\colon \scrA \to \scrB$ is an ncp-map.
+Let $(\scrB^a(\scrA \otimes_\varphi \scrB),
+    \varrho, h)$ be the Paschke dilation of~$\varphi$
+    constructed in~\sref{existence-paschke}.
+Then~$T \mapsto \varphi_T$ is an linear
+order isomorphism~$[0,1]_{\varrho(\scrA)^\square} \to [0,\varphi]_\ncp$.
+\begin{point}{Proof}
+(The proof is a slight variation on \cite[Prop.~5.4]{paschke}.)
+Clearly~$T \mapsto \varphi_T$ is linear.
+Pick~$T \in \varrho(\scrA)^\square$.
+As~$\sqrt{T} \in \varrho(\scrA)^\square$
+    we have~$\varphi_T(a) = h(\sqrt{T} \varrho(a)\sqrt{T})$.
+    Thus~$\varphi_T$ is ncp
+    and~$\varphi_T \mathrel{\leq_\ncp} \varphi_S$
+    whenever~$T\leq S$ for~$T,S \in \varrho(\scrA)^\square$.
+In particular, if~$T\leq 1$ then $\varphi_T \leq \varphi_1 = \varphi$.
+\begin{point}{Order embedding}%
+Let~$T \in \varrho(\scrA)^\square$
+    be given such that~$\varphi_T$ is ncp.
+Assume~$n \in \N$, $a_1, \ldots, a_n \in \scrA$
+and~$b_1, \ldots, b_n \in \scrB$.
+Write~$x = \sum_{i} a_i \otimes b_i$.
+Then
+\begin{equation*}
+    \left<x, T x \right>
+    \ =\  \sum_{i,j} b_i^* \left< 1\otimes 1, T \varrho(a_i^*a_j) 1 \otimes 1\right> b_j
+    \ = \ \sum_{i,j} b_i^* \varphi_T (a_i^*a_j) b_j \ \geq\  0.
+\end{equation*}
+By construction such~$x$ are ultranorm dense in~$\scrA\otimes_\varphi \scrB$
+    and so~$T \geq 0$ by \sref{hilbmod-denseordersep}.
+Thus~$T \mapsto \varphi_T$ is an order embedding
+    and in particular an injection.
+\end{point}
+\begin{point}{Surjective}%
+Only surjectivity remains.
+Pick~$\psi \in [0,\varphi]_\ncp$.
+We want to show there is a~$T \in \varrho(\scrA \otimes_\varphi \scrB)^\square$
+    with~$\varphi_T = \psi$ and~$0 \leq T \leq 1$.
+Let $(\scrB^a(\scrA \otimes_\psi \scrB),
+    \varrho_\psi, h_\psi)$ denote the Paschke dilation of~$\psi$
+    constructed in~\sref{existence-paschke}.
+Define~$B\colon \scrA \times \scrB \to \scrA \otimes_\psi \scrB$
+    by~$B(a,b) = a \otimes b$.
+This~$B$ is $\varphi$-compatible
+--- indeed, for any~$n \in \N$, $a_1, \ldots, a_n \in \scrA$
+    and~$b_1, \ldots, b_n \in \scrB$ we have
+\begin{equation*}
+    \bigl\| \sum_i B(a_i, b_i) \bigr\|^2
+     \ = \  \bigl\| \sum_{i,j}
+                b_i^* \psi(a_i^*a_j) b_j \bigr\|
+     \ \leq \  \bigl\| \sum_{i,j}
+                b_i^* \varphi(a_i^*a_j) b_j \bigr\|.
+\end{equation*}
+Thus there is a unique bounded module \TODO{existence adjoint}
+    map~$W \colon X \otimes_\varphi Y \to X \otimes_\psi Y$
+    fixed by~$W x \otimes y = x \otimes y$.
+For any~$a\in\scrA$, we have~$W \varrho(a) = \varrho_\psi(a) W$
+and so~$\varrho(a) W^* = W^* \varrho_\psi(a)$
+thus~$W^*W \varrho(a) = W^* \varrho_\psi(a) W = \varrho(a) W^*W$.
+Apperently~$W^*W \in \varrho(\scrA)^\square$.
+Define~$T = W^*W$. Clearly~$0\leq T$.
+For each~$x = \sum^n_{i=0} a_i \otimes b_i$
+    we have~$\left<x, Tx\right> = \left<Wx,Wx\right> = \left<x,x\right>$
+    and so~$T \leq 1$.
+For any~$a\in \scrA$ we have
+\begin{align*}
+    \varphi_T(a) &\ =\  \left<1\otimes 1, W^*W a \otimes 1\right> \\
+    &  \ =\  \left<W 1\otimes 1, W a\otimes1\right> \\
+    &  \ = \ \left<1\otimes1, a\otimes1\right> \\
+    &  \ = \ \psi(a),
+\end{align*}
+as desired. \qed
+\end{point}
+\end{point}
+\end{point}
+\end{parsec}
+
+\section{Self-dual Hilbert C$^*$-modules}
 \begin{parsec}%
 \begin{point}%
 Before we continue our study of Paschke dilations,
-    we will have a second look at
+    we have a second look at
     self-dual Hilbert C$^*$-modules and their orthonormal bases.
 We start with some good news.
 In~$\scrB(\scrH)$ the linear span of~$\ketbra{e_i}{e_j}$
@@ -4149,6 +4259,7 @@ By \sref{ketbra-ultraweakly-dense} the operators of this form
 \end{point}
 \end{point}
 \end{parsec}
+
 
 
 \end{document}
