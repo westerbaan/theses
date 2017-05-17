@@ -106,7 +106,7 @@ In the second part of this chaper
 \end{point}
 \end{parsec}
 
-\section*{Stinespring's theorem}
+\section{Stinespring's theorem}
 \begin{parsec}[dils-completion-to-hilb]%
 \begin{point}%
 For the GNS-construction
@@ -428,7 +428,7 @@ Hence~$
     The first is normal by~\sref{hilb-suprema}.
     \TODO{}
     At the moment it will be a bit tricky to show~$(a_i^*da_j)_{ij}$
-    is normal.  Later (\TODO{}) we will have a simpler argument.
+    is normal.  Later, in \sref{hilbmod-adj-vector-ncp}, we will have a simpler argument.
     Define~$C_{ij} = \frac{1}{\sqrt{n}} a_j$
         and~$\Delta\colon \scrA \to M_n \scrA$
         by~$(\Delta(d))_{ij} = \delta_{ij} d$.
@@ -925,7 +925,7 @@ Prove~$(\scrP, \varrho, \lambda h)$
 \end{point}
 \end{parsec}
 
-\section*{Hilbert C$^*$-modules}
+\section{Hilbert C$^*$-modules}
 \begin{parsec}%
 \begin{point}%
 Recall that by GNS
@@ -1635,6 +1635,14 @@ Then for~$\alpha \geq \alpha_0$ we have
 Thus~$[x_\alpha,y_\alpha] \to [x,y]$ ultraweakly. \qed
 \end{point}
 \end{point}
+\begin{point}[hilbmod-denseordersep]{Corollary}%
+Let~$X$ be a Hilbert~$\scrB$-module
+    together with an ultranorm dense subset~$D \subseteq X$.
+Vector states from~$D$ are order separating:
+for each~$T \in \scrB^a(X)$ we have
+$T \geq 0$ if and only if~$\left<x,Tx\right> \geq 0$
+for all~$x \in D$.
+\end{point}
 \end{parsec}
 
 \begin{parsec}%
@@ -1794,9 +1802,11 @@ For any finite subset~$S \subseteq E$ we have
         x - \sum_{e \in S} e\left<e,x\right> \Bigr>
         = \left<x,x\right> - \sum_{e \in S} \left<x,e\right>\left<e,x\right>.
 \end{equation*}
-Rearranging we find Bessel's inequality:
-$ \sum_{e \in S} \left<x,e\right>\left<e,x\right>
-    \leq \left<x,x\right>$.
+Rearranging we find \Define{Bessel's inequality}:
+\begin{equation*}
+\sum_{e \in S} \left<x,e\right>\left<e,x\right>
+    \leq \left<x,x\right>.
+\end{equation*}
 Hence the $E$-tuple~$(\left<e,x\right>)_e$
 is a $\ell^2$-summable
 and so~$\sum_{e \in E} e \left<e,x\right>$
@@ -2722,6 +2732,12 @@ So $T$ is bounded by~$r$ trivially if~$\|Tx\|=0$
     and by dividing otherwise. \qed
 \end{point}
 \end{point}
+\begin{point}[hilbmod-adjoint-exists]{Exercise}%
+Suppose~$T\colon X \to Y$ is a~$\scrB$-linear map between
+    Hilbert~$\scrB$-modules.
+Show that if~$X$ is self-dual,
+    then~$T$ is adjointable.
+\end{point}
 \begin{point}[hilmod-fixed-on-V]{Exercise}%
 Let~$V$ be a right $\scrB$-module with~$\scrB$-valued inner product;
     $\eta\colon V \to X$ be its ultranorm completion
@@ -2797,7 +2813,60 @@ and~$\scrB^a(X)$ is a von Neumann algebra. \qed
 \end{point}
 \end{parsec}
 
-\section*{Paschke dilations}
+\begin{parsec}%
+\begin{point}[hilbmod-ad-ncp]{Proposition}%
+Assume~$T \colon X \to Y$ is an adjointable bounded modulemap
+    between Hilbert~$\scrB$-modules.
+    Define $\Define{\ad_T}\colon \scrB^a(Y) \to \scrB^a(X)$
+    by~$\ad_T (B) = T^*BT$.
+The map~$\ad_T$ is completely positive.
+If~$X$ and~$Y$ are self dual,
+    then~$\ad_T$ is normal.
+\begin{point}{Proof}%
+For any~$n \in N$, $B_1,\ldots, B_n \in \scrB^a(X)$
+    and~$A_1,\ldots,A_n \in \scrB^a(Y)$
+    we have
+\begin{align*}
+    \sum_{i,j} B_j^* T^* A_j^*A_i T B_i \ = \ 
+    \bigl( \sum_i A_i T B_i \bigr)^*
+    \bigl( \sum_j A_j T B_j \bigr) \ \geq\  0
+\end{align*}
+and so~$\ad_T$ is completely positive.
+\end{point}
+\begin{point}%
+Now we show~$\ad_S$ is normal.
+Assume~$X$ and~$Y$ are self dual.
+Let~$(B_\alpha)_\alpha$ be a net of self-adjoint elements in~$\scrB^a(Y)$
+    with supremum~$B$.
+As~$\ad_S$ is positive, $(S^*B_\alpha S)_\alpha$ is again a bounded net
+    and thus has a supremum.
+Trivially~$\sup_\alpha S^*B_\alpha S \leq S^*BS$.
+It remains to be shown~$\sup_\alpha S^*B_\alpha S \geq S^*BS$.
+For any~$x \in X$ we have
+\begin{align*}
+    \langle x, \sup_\alpha S^*B_\alpha S x\rangle &\ = \ 
+    \sup_\alpha\  \langle x, S^* B_\alpha S x\rangle &\qquad&
+    \text{by \sref{hilbmod-vecstates-normal}}\\
+   &\ = \ \sup_\alpha\  \langle (Sx), B_\alpha (S x)\rangle \\
+   &\ = \ \langle(S x), \sup_\alpha B_\alpha (S x)\rangle
+    &&\text{by \sref{hilbmod-vecstates-normal}}\\
+   &\ = \ \langle x, S^* B S x\rangle.
+\end{align*}
+And so~$\sup_\alpha S^*B_\alpha S \geq S^*BS$.
+by \sref{hilbmod-ordersep}, as desired. \qed
+\end{point}
+\end{point}
+\begin{point}[hilbmod-adj-vector-ncp]{Exercise}%
+Let~$\scrA$ be a C$^*$-algebra.
+Assume~$n \in \N$ and  $a_1, \ldots, a_n \in \scrA$.
+Use \sref{hilbmod-ad-ncp}
+to show~$\varphi \colon \scrA \to M_n \scrA$
+    given by~$\varphi(d) = (a_i^*da_j)_{ij}$
+    is an ncp-map.
+\end{point}
+\end{parsec}
+
+\section{Paschke dilations}
 \begin{parsec}%
 \begin{point}%
     We are ready to show every ncp-map has a Paschke dilation.
@@ -2866,7 +2935,7 @@ $(\scrB^a(\scrA \otimes_\varphi \scrB), \varrho, h)$
 \begin{point}{Proof}%
 The Hilbert~$\scrB$-module~$\scrA \otimes_\varphi \scrB$
     will be isomorphic to the self-dual completion of the space~$X$
-    constructed by Paschke in~\cite[Thm.~5.2]{pashcke}.
+    constructed by Paschke in~\cite[Thm.~5.2]{paschke}.
 \begin{point}{1: $\scrA \otimes_\varphi \scrB$}%
 The algebraic tensor product~$\scrA \odot \scrB$
     is a right $\scrB$-module
@@ -3011,7 +3080,7 @@ Let~$X$ be a self-dual Hilbert~$\scrB$-module
 We must show there is a unique inner product
     preserving~$S \colon \scrA \otimes_\varphi \scrB \to X$
     with~$\ad_S \after \varrho' = \varrho$ and~$S (1\otimes1) = e$.
-As~$h \after \ad_S = h'$ and~$\ad_S$ is an ncp-map,
+    As~$h \after \ad_S = h'$ and~$\ad_S$ is an ncp-map (by \sref{hilbmod-ad-ncp}),
     we already know it is unique by the previous point.
 There is a unique linear~$S_0\colon \scrA \odot \scrB \to X$
     fixed by~$S_0(a\otimes b) = \varrho'(a) e b$.
@@ -3224,11 +3293,114 @@ as desired. \qed
 \end{point}
 \end{parsec}
 
-\section*{Self-dual Hilbert C$^*$-modules}
+\begin{parsec}%
+\begin{point}%
+We will now prove a useful connection between
+    the ncp-maps ncp-below~$\varphi$
+    and the commutant of the image of a Paschke embedding of~$\varphi$.
+\end{point}
+\begin{point}{Definition}%
+For linear  maps~$\varphi, \psi\colon \scrA \to \scrB$,
+    we say $\varphi$ is ncp-below~$\psi$
+    (in symbols:~$\varphi \mathrel{\Define{\leq_\ncp}} \psi$)
+    whenever~$\psi - \varphi$ is an ncp-map.
+    Furthermore, write
+    \begin{equation*}
+    \Define{[0,\varphi]_\ncp} =\  
+        \{\psi; \ \psi \colon \scrA \to \scrB;
+            \ 0 \leq_\ncp\psi \leq_\ncp \varphi \}.
+    \end{equation*}
+\end{point}
+\begin{point}{Definition}%
+    Assume~$\varphi\colon \scrA \to \scrB$ is an ncp-map with Paschke
+        dilation~$(\scrP, \varrho, h)$.
+    For~$t \in \varrho(\scrA)^\square$
+    define $\Define{\varphi_t} = h(t \varrho(a))$.
+\end{point}
+\begin{point}{Theorem}%
+Assume~$\varphi\colon \scrA \to \scrB$ is an ncp-map.
+Let $(\scrB^a(\scrA \otimes_\varphi \scrB),
+    \varrho, h)$ be the Paschke dilation of~$\varphi$
+    constructed in~\sref{existence-paschke}.
+Then~$T \mapsto \varphi_T$ is an linear
+order isomorphism~$[0,1]_{\varrho(\scrA)^\square} \to [0,\varphi]_\ncp$.
+\begin{point}{Proof}
+(The proof is a slight variation on \cite[Prop.~5.4]{paschke}.)
+Clearly~$T \mapsto \varphi_T$ is linear.
+Pick~$T \in \varrho(\scrA)^\square$.
+As~$\sqrt{T} \in \varrho(\scrA)^\square$
+    we have~$\varphi_T(a) = h(\sqrt{T} \varrho(a)\sqrt{T})$.
+    Thus~$\varphi_T$ is ncp
+    and~$\varphi_T \mathrel{\leq_\ncp} \varphi_S$
+    whenever~$T\leq S$ for~$T,S \in \varrho(\scrA)^\square$.
+In particular, if~$T\leq 1$ then $\varphi_T \leq \varphi_1 = \varphi$.
+\begin{point}{Order embedding}%
+Let~$T \in \varrho(\scrA)^\square$
+    be given such that~$\varphi_T$ is ncp.
+Assume~$n \in \N$, $a_1, \ldots, a_n \in \scrA$
+and~$b_1, \ldots, b_n \in \scrB$.
+Write~$x = \sum_{i} a_i \otimes b_i$.
+Then
+\begin{equation*}
+    \left<x, T x \right>
+    \ =\  \sum_{i,j} b_i^* \left< 1\otimes 1, T \varrho(a_i^*a_j) 1 \otimes 1\right> b_j
+    \ = \ \sum_{i,j} b_i^* \varphi_T (a_i^*a_j) b_j \ \geq\  0.
+\end{equation*}
+By construction such~$x$ are ultranorm dense in~$\scrA\otimes_\varphi \scrB$
+    and so~$T \geq 0$ by \sref{hilbmod-denseordersep}.
+Thus~$T \mapsto \varphi_T$ is an order embedding
+    and in particular an injection.
+\end{point}
+\begin{point}{Surjective}%
+Only surjectivity remains.
+Pick~$\psi \in [0,\varphi]_\ncp$.
+We want to show there is a~$T \in \varrho(\scrA \otimes_\varphi \scrB)^\square$
+    with~$\varphi_T = \psi$ and~$0 \leq T \leq 1$.
+Let $(\scrB^a(\scrA \otimes_\psi \scrB),
+    \varrho_\psi, h_\psi)$ denote the Paschke dilation of~$\psi$
+    constructed in~\sref{existence-paschke}.
+Define~$B\colon \scrA \times \scrB \to \scrA \otimes_\psi \scrB$
+    by~$B(a,b) = a \otimes b$.
+This~$B$ is $\varphi$-compatible
+--- indeed, for any~$n \in \N$, $a_1, \ldots, a_n \in \scrA$
+    and~$b_1, \ldots, b_n \in \scrB$ we have
+\begin{equation*}
+    \bigl\| \sum_i B(a_i, b_i) \bigr\|^2
+     \ = \  \bigl\| \sum_{i,j}
+                b_i^* \psi(a_i^*a_j) b_j \bigr\|
+     \ \leq \  \bigl\| \sum_{i,j}
+                b_i^* \varphi(a_i^*a_j) b_j \bigr\|.
+\end{equation*}
+Thus there is a unique bounded module
+    map~$W \colon X \otimes_\varphi Y \to X \otimes_\psi Y$
+    fixed by~$W x \otimes y = x \otimes y$.
+By \sref{hilbmod-adjoint-exists}~$W$ has an adjoint.
+For any~$a\in\scrA$, we have~$W \varrho(a) = \varrho_\psi(a) W$
+and so~$\varrho(a) W^* = W^* \varrho_\psi(a)$
+thus~$W^*W \varrho(a) = W^* \varrho_\psi(a) W = \varrho(a) W^*W$.
+Apperently~$W^*W \in \varrho(\scrA)^\square$.
+Define~$T = W^*W$. Clearly~$0\leq T$.
+For each~$x = \sum^n_{i=0} a_i \otimes b_i$
+    we have~$\left<x, Tx\right> = \left<Wx,Wx\right> = \left<x,x\right>$
+    and so~$T \leq 1$.
+For any~$a\in \scrA$ we have
+\begin{align*}
+    \varphi_T(a) &\ =\  \left<1\otimes 1, W^*W a \otimes 1\right> \\
+    &  \ =\  \left<W 1\otimes 1, W a\otimes1\right> \\
+    &  \ = \ \left<1\otimes1, a\otimes1\right> \\
+    &  \ = \ \psi(a),
+\end{align*}
+as desired. \qed
+\end{point}
+\end{point}
+\end{point}
+\end{parsec}
+
+\section{Self-dual Hilbert C$^*$-modules}
 \begin{parsec}%
 \begin{point}%
 Before we continue our study of Paschke dilations,
-    we will have a second look at
+    we have a second look at
     self-dual Hilbert C$^*$-modules and their orthonormal bases.
 We start with some good news.
 In~$\scrB(\scrH)$ the linear span of~$\ketbra{e_i}{e_j}$
@@ -3448,7 +3620,7 @@ Show that there is a finite orthonormal basis
 \begin{parsec}%
 \begin{point}%
 Every Hilbert space~$\scrH$ is isomorphic to some~$\ell^2(I)$.
-In fact, the cardinality of~$I$ is the only thing that matter
+In fact, the cardinality of~$I$ is the only thing that matters
     --- if~$\ell^2(I) \cong \ell^2(J)$, then~$I$ and~$J$
     are the same cardinality.
 What about Hilbert C$^*$-modules?
@@ -3543,44 +3715,37 @@ Show that if~$\left<e_1,e_1\right> + \left<e_2,e_2\right> \leq 1$,
 
 Conclude~$p \scrB \oplus q \scrB \cong (p+q) \scrB$
     for projections~$p,q \in \scrB$ with $p+q \leq 1$.
-\begin{point}%
-Later, in \sref{selfdual-normalish-form},
-    we will show that every self dual Hilbert~$\scrB$ over a factor
-    is isomorphic to~$\ell^2((1)_{\alpha \in \kappa})\oplus p\scrB$
-    for some projection~$p \in \scrB$ and cardinal~$\kappa$.
-We will need a lemma first.
 \end{point}
-\end{point}
-\begin{point}[selfdual-limit-basispair]{Lemma}%
-    Assume~$X$ is a self dual Hilbert~$\scrB$-module.
-    Let~$(E_\alpha)_{\alpha \in \beta}$ 
-        and~$(D_\alpha)_{\alpha\in \beta}$
-        be an ascending and descending sequence of subsets of~$X$,
-        respectively.
-    If for each~$\alpha \in \beta$ we know
-    $E_\alpha \cap D_\alpha = \emptyset$ and $E_\alpha \cup D_\alpha$ is an orthonormal basis,
-    then~$\bigl(\bigcup_{\alpha} E_\alpha\bigr) \cup\bigl( \bigcap_{\alpha}D_\alpha\bigr)$
-        is also an orthonormal basis.
-\begin{point}{Proof}
-Write~$D = \bigcap_\alpha D_\alpha$. 
-Without loss of generality we may assume~$D = \emptyset$,
-    by switching to~$D'_\alpha = D - D_\alpha$
-    and~$E'_\alpha = E_\alpha \cup D$.
-Write~$E = \bigcup_\alpha E_\alpha$.
-By \sref{hilbmod-projthm} and \sref{selfdual-orthn-basis} it is sufficient
-    to show~$E^\perp = \{0\}$.
-Pick any~$x \in E^\perp$.  We want to show~$x = 0$.
-By definition~$\left<x, e\right> =0$ for~$e \in E$.
-As~$D_0 \cup E_0$ is an basis,
-    it is sufficient to show~$\left<x, d\right> = 0$
-        for~$d \in D_0$.
-Pick some~$d \in D_0$.
-As~$\bigcap_\alpha D_\alpha = \emptyset$
-    there is some~$\alpha$ such that~$d \notin D_\alpha$.
-    So~$d \in D_\alpha^\perp = E_\alpha^{\perp\perp} \subseteq E^{\perp\perp}$.
-Thus~$\left<x,d\right> = 0$, as desired. \qed
-\end{point}
-\end{point}
+% \begin{point}[selfdual-limit-basispair]{Lemma}%
+%     Assume~$X$ is a self dual Hilbert~$\scrB$-module.
+%     Let~$(E_\alpha)_{\alpha \in \beta}$ 
+%         and~$(D_\alpha)_{\alpha\in \beta}$
+%         be an ascending and descending sequence of subsets of~$X$,
+%         respectively.
+%     If for each~$\alpha \in \beta$ we know
+%     $E_\alpha \cap D_\alpha = \emptyset$ and $E_\alpha \cup D_\alpha$ is an orthonormal basis,
+%     then~$\bigl(\bigcup_{\alpha} E_\alpha\bigr) \cup\bigl( \bigcap_{\alpha}D_\alpha\bigr)$
+%         is also an orthonormal basis.
+% \begin{point}{Proof}
+% Write~$D = \bigcap_\alpha D_\alpha$. 
+% Without loss of generality we may assume~$D = \emptyset$,
+%     by switching to~$D'_\alpha = D - D_\alpha$
+%     and~$E'_\alpha = E_\alpha \cup D$.
+% Write~$E = \bigcup_\alpha E_\alpha$.
+% By \sref{hilbmod-projthm} and \sref{selfdual-orthn-basis} it is sufficient
+%     to show~$E^\perp = \{0\}$.
+% Pick any~$x \in E^\perp$.  We want to show~$x = 0$.
+% By definition~$\left<x, e\right> =0$ for~$e \in E$.
+% As~$D_0 \cup E_0$ is an basis,
+%     it is sufficient to show~$\left<x, d\right> = 0$
+%         for~$d \in D_0$.
+% Pick some~$d \in D_0$.
+% As~$\bigcap_\alpha D_\alpha = \emptyset$
+%     there is some~$\alpha$ such that~$d \notin D_\alpha$.
+%     So~$d \in D_\alpha^\perp = E_\alpha^{\perp\perp} \subseteq E^{\perp\perp}$.
+% Thus~$\left<x,d\right> = 0$, as desired. \qed
+% \end{point}
+% \end{point}
 
 \begin{point}[selfdual-normalish-form]{Theorem}%
 Let~$\scrB$ be a von Neumann algebra that is a factor (i.e.~with center~$\C 1$).
@@ -3736,11 +3901,14 @@ Let~$\scrB$ be a von Neumann algebra and~$V$ a right~$\scrB$-module
 There is an up-to-isomorphism unique
     self-dual Hilbert~$\scrB$-module~$X$
     together with inner product preserving $\scrB$-linear~$\eta \colon V \to X$
-    such that for every bounded~$\scrB$-linear map~$T\colon V \to Y$
+    with the following universal property
+    \begin{quote}
+    for every bounded~$\scrB$-linear map~$T\colon V \to Y$
     to some self-dual Hilbert~$\scrB$-module~$Y$,
     there is a unique bounded~$\scrB$-linear map~$\hat{T}\colon X \to Y$
     with~$\hat{T} \after \eta = T$.
-Furthermore, for any such~$\eta\colon V \to X$,
+    \end{quote}
+For any such~$\eta\colon V \to X$,
     the image of~$V$ under~$\eta$ is ultranorm dense.
 \begin{point}{Proof}%
 We already know such a~$X$ and~$\eta\colon V \to X$
@@ -4149,7 +4317,6 @@ By \sref{ketbra-ultraweakly-dense} the operators of this form
 \end{point}
 \end{point}
 \end{parsec}
-
 
 \end{document}
 
