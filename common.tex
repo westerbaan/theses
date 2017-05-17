@@ -2,6 +2,7 @@
 \usepackage{xparse}
 \usepackage{xcolor}
 \usepackage{graphicx}
+\usepackage{xstring}
 \usepackage{braket}
 \usepackage{mathtools}
 \usepackage{marginnote}
@@ -267,28 +268,39 @@
 
 % Set the footer.  It contains the parsecs on this page.
 % We use "\rightmark+0", because \rightmark might be empty.
-\fancyfoot[CE]{\setcounter{firstParsecF}{\rightmark+0}}
+\fancyfoot[CE]{%
+    \IfInteger{\rightmark}{%
+        \setcounter{firstParsecF}{\rightmark+0}%
+    }{%
+        \setcounter{firstParsecF}{1337}% TODO remove
+    }%
+}
+
 \fancyfoot[CO]{%
-% firstParsecF is already set by the even page that came before
-\setcounter{firstParsec}{\value{firstParsecF}/2}%
-\setcounter{lastParsecF}{\leftmark+0}%
-\ifthenelse{\equal{\value{lastParsecF}}{0}}%
-{}% do nothing
-{%
-\setcounter{lastParsec}{\value{lastParsecF}/2}%
-\textPointNumberI{%
-\ifthenelse{\equal{\value{parsecToBeContinued}}{1}}{..}{}%
-\the\value{firstParsec}%
-\ifthenelse{\equal{\value{firstParsec}}{\value{lastParsec}}}%
-	{}{%  no footer without parsecs
-\setcounter{tmptmp}{\value{firstParsec}+1}%
-\ifthenelse{\equal{\value{tmptmp}}{\value{lastParsec}}}{, }{--}%
-\the\value{lastParsec}}%
-\setcounter{tmptmp}{\value{lastParsec}*2}%
-\ifthenelse{\equal{\value{tmptmp}}{\value{lastParsecF}}}%
-{..\setcounter{parsecToBeContinued}{1}}%
-{\setcounter{parsecToBeContinued}{0}}%
-}% \textPointNumberI{
-}% \ifthenelse{
-}% \fancyfoot[CO]{
+    % firstParsecF is already set by the even page that came before
+    \setcounter{firstParsec}{\value{firstParsecF}/2}%
+    \setcounter{lastParsecF}{\leftmark+0}%
+    \ifthenelse{\equal{\value{lastParsecF}}{0}}{%
+        % do nothing
+    }{%
+        \setcounter{lastParsec}{\value{lastParsecF}/2}%
+        \textPointNumberI{%
+            \ifthenelse{\equal{\value{parsecToBeContinued}}{1}}{..}{}%
+            \the\value{firstParsec}%
+            \ifthenelse{\equal{\value{firstParsec}}{\value{lastParsec}}}{%
+                % TODO
+            }{%  no footer without parsecs
+                \setcounter{tmptmp}{\value{firstParsec}+1}%
+                \ifthenelse{\equal{\value{tmptmp}}{\value{lastParsec}}}{, }{--}%
+                \the\value{lastParsec}%
+            }%
+            \setcounter{tmptmp}{\value{lastParsec}*2}%
+            \ifthenelse{\equal{\value{tmptmp}}{\value{lastParsecF}}}{%
+                ..\setcounter{parsecToBeContinued}{1}%
+            }{%
+                \setcounter{parsecToBeContinued}{0}%
+            }%
+        }%
+    }%
+}%
 
