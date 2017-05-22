@@ -1,8 +1,6 @@
 \documentclass[b]{subfiles}
 \begin{document}
 
-% TODO which supremum with projections (in proj or in effects)
-%      define orthonormal set
 % TODO ref polar decomposition
 
 \chapter{Dilations}
@@ -4540,9 +4538,9 @@ Concerning~$\scrA \otimes_{h_p} p \scrA p \cong \scrA p$,
 A straight-forward computation
     shows~$B$ is~$h_p$-compatible complex bilinear map
     and so there is a unique bounded module
-    map~$\varphi\colon \scrA \otimes_{h_p} p \scrA p \to \scrA p$
-   fixed by~$\varphi(\alpha \otimes pap) = B(\alpha,pap) \equiv \alpha pap $.
-   Clearly~$\varphi$ is surjective.
+    map~$U \colon \scrA \otimes_{h_p} p \scrA p \to \scrA p$
+   fixed by~$U \alpha \otimes pap = B(\alpha,pap) \equiv \alpha pap $.
+   Clearly~$U$ is surjective.
 
 Another easy computation shows~$a \otimes p\alpha p - ap\alpha p \otimes p = 0$
     for all~$a, \alpha \in \scrA$.
@@ -4551,14 +4549,16 @@ So~$\{a \otimes p;\ a\in \scrA\}$
 From this and
     $\left<\alpha \otimes p, a\otimes p\right> = 
         p \alpha^* a p
-        =\left< \varphi(\alpha \otimes p), \varphi(a \otimes p)\right> $
-        we see~$\varphi$ preserves the inner product.
-Hence~$\varphi$ is an isomorphism.
+        =\left< U \alpha \otimes p, U a \otimes p\right> $
+        we see~$U$ preserves the inner product.
+Hence~$U$ is an isomorphism with~$U^* = U^{-1}$
+    given by~$U^* a = a\otimes p$.
 \end{point}
 \begin{point}%
-We will show~$\scr$
+To show~$\scrB^a(\scrA p) \cong \cceil{p}\scrA$,
+we will first find a convenient orthonormal basis of~$\scrA p$.
 By \sref{central-carrier-is-orthogonal-sum-lemma}
-    we can find partial isometries~$(u_i)_i$
+    there are partial isometries~$(u_i)_i$
     with~$\sum_i u_iu_i^* = \cceil{p}$
     and~$u_i^*u_i \leq p$.
 Write~$E = \{u_i; \ i \in I\}$.
@@ -4572,9 +4572,43 @@ For any~$ap \in \scrA p$, we have
        \ = \ \sum_i u_i u_i^* ap
        \ = \ \sum_i u_i \left<u_i,ap\right>,
 \end{equation*}
-where the sums converge ultrastrongly in~$\scrA$
-    and so the last converges ultranorm in~$\scrA p$ as well.
-Thus~$E$ is an orthonormal basis.
+where the sums converge ultrastrongly in~$\scrA$.
+Thus the last sum converges ultranorm in~$\scrA p$ as well.
+Hence~$E$ is an orthonormal basis.
+
+Define~$\varrho_0 \colon \scrA \to \scrB^a(\scrA p)$
+    by~$\varrho_0 = \ad_{U^*} \after \varrho$.
+Note~$\varrho_0$ is an nmiu-map and~$\varrho_0(\alpha)ap = \alpha ap$.
+The map~$\varrho_0$ is surjective:
+    indeed for any~$T \in \scrB^a(\scrA p)$
+\begin{equation*}
+    T (ap) \ = \ \sum_i T( u_i ) u_i^* ap
+           \ = \ \bigl(\sum_i T( u_i ) u_i^*\bigr) ap
+           \ = \ \varrho_0 \bigl(\sum_i T( u_i ) u_i^*\bigr) ap.
+\end{equation*}
+Next we show~$\cceil{\varrho_0} = \cceil{p}$.
+It is sufficient to show that for each~$\alpha \in \scrA$ with $\alpha \geq 0$,
+    we have~$\alpha ap = 0$ for all~$a\in \scrA$ if and only if~$\alpha \cceil{p} = 0$
+    Clearly~$\alpha \cceil{p} = 0$ implies~$\alpha ap = \alpha \cceil{p} ap= 0$.
+For the converse, assume~$\alpha ap = 0$ for all~$a\in\scrA$.
+Then in particular~$\alpha u_ip = 0$,
+    hence~$\alpha \cceil{p} = \alpha \sum_i u_iu_i^*  = \sum_i \alpha u_ipu_i^*=0$.
+We can apply~\TODO{}
+    and conclude~$\varrho_0 = \varphi \after h_{\cceil{p}}$
+    for some isomorphism~$\varphi\colon
+    \cceil{p} \scrA \to \scrB^a(\scrA p)$.
+So~$h_{\cceil{p}} = (\varphi^{-1} \after \ad_{U^*}) \after \varrho$.
+We compute
+\begin{equation*}
+h_p \after h_{\cceil{p}}
+    \ =\  h \after \varrho
+    \ =\ h \after \ad_U \after \varrho_0
+    \ = \ h \after \ad_U \after \varphi \after h_{\cceil{p}}.
+\end{equation*}
+Using surjectivity of~$h_{\cceil{p}}$
+and rearranging, we find~$h_p \after (\varphi^{-1} \after \ad_{U^*}) = h$.
+Thus indeed~$(\cceil{p} \scrA, h_{\cceil{p}}, h_p)$
+a Paschke dilation of~$h_p$. \TODO{iso paschke} \qed
 \end{point}
 \end{point}
 \end{point}
