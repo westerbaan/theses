@@ -3,6 +3,7 @@
 
 % TODO which supremum with projections (in proj or in effects)
 %      define orthonormal set
+% TODO ref polar decomposition
 
 \chapter{Dilations}
 
@@ -3144,9 +3145,9 @@ In the remainder of this section we will study various property
 The first question we will answer is
     when the representation in a Paschke dilation is injective.
 First we need parts of the comparison theory of projections.
+For the balance of this point, let~$\scrA$ be a von Neumann algebra.
 \end{point}
 \begin{point}{Definition}%
-Let~$\scrA$ be a von Neumann algebra.
 Two projections~$p,q \in \scrA$ are said to be
     \Define{Murray--von Neumann equivalent},
     in symbols~$p \sim q$,
@@ -3160,8 +3161,7 @@ We will write~$p \lesssim q$
     such that~$p \sim r$.
 \end{point}
 \begin{point}[new-murray-lemma]{Lemma}%
-Let~$\scrA$ be a von Neumann algebra
-    and~$a,p \in \scrA$ with~$a$ self adjoint and~$p$ a projection.
+Suppose~$a,p \in \scrA$ with~$a$ self adjoint and~$p$ a projection.
 We have~$p \lesssim \ceil{a}$
     if and only if~$p = \ceil{b^* a b}$ for some~$b \in \scrA$.
 \begin{point}{Proof}%
@@ -3180,7 +3180,6 @@ and~$uu^* = \ceil{abb^*a} \leq \ceil{a^2} = \ceil{a}$, as desired. \qed
 \end{point}
 \end{point}
 \begin{point}[central-carrier-formula]{Proposition}%
-Assume~$\scrA$ is a von Neumann algebra.
 For any self adjoint~$a \in \scrA$
 \begin{equation*}
     \cceil{a} \ =\  \sup \{p; p \text{ projection}; \ p \lesssim \ceil{a} \}
@@ -3217,6 +3216,57 @@ Thus~$rc = rcr$.
 As~$c$ was arbitrary, we also get~$rc^* rc^*r$.
 So~$rc = rcr = (rc^*r)^* = (rc^*)^* = cr$.
 Indeed~$r$ is central. \qed
+\end{point}
+\end{point}
+\begin{point}[subprojection-and-central-carrier]{Proposition}%
+For projections~$p,q \in \scrA$
+    the following are equivalent.
+\begin{enumerate}
+    \item
+        $p$ and~$q$ have non-zero equivalent subprojections;
+    \item
+        $\cceil{p}\cceil{q} \neq 0$.
+    \item
+        $p a q \neq 0$ for some~$a \in \scrA$ \emph{and}
+\end{enumerate}
+\begin{point}{Proof}%
+   We will prove~$1 \Rightarrow 2 \Rightarrow 3 \Rightarrow 1$. 
+\begin{point}{$1 \Rightarrow 2$}%
+Assume~$r \lesssim p$ and~$r \lesssim q$ for some projection~$r\neq 0$.
+By~\sref{central-carrier-formula}
+    we know~$r \leq \cceil{p}$ and~$r \leq \cceil{q}$.
+Thus~$r \cceil{p} = r$ and~$r \cceil{q} = r$
+and so~$\cceil{p} \cceil{q} \neq 0$
+    (for otherwise~$ r = r \cceil{p} \cceil{q} = 0$).
+\end{point}
+\begin{point}{$2 \Rightarrow 3$}%
+Assume~$\cceil{p} \cceil{q} \neq 0$.
+By~$\sref{central-carrier-formula}$ we have
+\begin{equation*}
+\cceil{p} \cceil{q} \ =\  \cceil{p} \sup_{b \in \scrA} \ceil{b^* q b}
+            \ =\  \sup_{b \in \scrA} \cceil{p}\ceil{b^* q b}
+\end{equation*}
+and so~$\cceil{p} \ceil{b^*qb} \neq 0$
+    for some~$b \in \scrA$.
+In the same way, there is some~$a \in \scrA$
+    with~$ 0 \neq \ceil{a^*pa}\ceil{b^*qb}$.
+    Thus \TODO{$cd = 0 \Leftrightarrow \ceil{c^*c}\ceil{dd^*} = 0 $}
+    $p(ab^*)q \neq 0$.
+\end{point}
+\begin{point}{$3 \Rightarrow 1$}%
+Assume~$paq \neq 0$ for some~$a \in \scrA$.
+Write~$b = paq$.
+By polar decomposition,
+    there is a partial isometry~$u$
+    with~$u^*u = \ceil{b^*b}$,
+         $uu^* = \ceil{bb^*}$
+         and~$b = u \sqrt{b^*b}$.
+Clearly~$u \neq 0$
+    (as $b = paq \neq 0$),
+    $u^*u = \ceil{qa^*paq} \leq q$ 
+    and~$uu^* = \ceil{paqa^*p} \leq p$,
+    hence~$uu^* \lesssim p$ and~$uu^* \lesssim q$ \qed
+\end{point}
 \end{point}
 \end{point}
 \end{parsec}
@@ -4423,6 +4473,36 @@ A ncp-map~$c \colon \scrA \to \scrB$
 \end{parsec}
 
 \begin{parsec}%
+\begin{point}%
+To compute the Paschke dilation of a corner,
+    we need some more comparison theory.
+\end{point}
+\begin{point}[central-carrier-is-orthogonal-sum-lemma]{Lemma}%
+Assume~$\scrA$ is a von Neumann algebra with distinguished projection~$p \in \scrA$.
+There is an orthogonal family of projections~$(q_i)_{i \in I}$
+    such that~$q_i \lesssim p$ for each~$i \in I$
+    and~$\sum_{i \in I} q_i = \cceil{p}$.
+\begin{point}{Proof}%
+By Zorn's lemma there is a maximal subset $Q \subseteq \scrA$ of orthogonal
+    non-zero projections
+    such that~$q \lesssim p$ for each~$q \in Q$.
+Define~$q_0 = \sup Q$.
+By \sref{central-carrier-formula}
+    we know~$q_0 \leq \cceil{p}$.
+We want to show~$\cceil{p} - q_0 = 0$.
+
+Clearly~$\cceil{p} - q_0$ is orthogonal to~$Q$.
+There cannot be a non-zero projection~$r \leq \cceil{p} - q_0$
+    with~$r \lesssim p$,
+    for~$Q \cup \{r \}$ would contradict the maximality of~$Q$.
+Thus $\cceil{\cceil{p} - q_0} \cceil{p} = 0$
+    by \sref{subprojection-and-central-carrier}.
+As~$\cceil{p} - q_0 \leq \cceil{p}$
+    also~$\cceil{\cceil{p}-q_0} \leq \cceil{p}$
+    and so~$ \cceil{p} - q_0 \leq \cceil{\cceil{p} - q_0}
+                = \cceil{\cceil{p}-q_0}\cceil{p} = 0$, as desired. \qed
+\end{point}
+\end{point}
 \begin{point}{Theorem}%
 Let~$\scrA$ be a von Neumann algebra together with a projection~$p \in \scrA$.
 Then a Paschke dilation of the standard corner~$h_p \colon \scrA \to p\scrA p$
@@ -4431,7 +4511,7 @@ of~$p$ is given by~$(\cceil{p}\scrA\cceil{p}, h_{\cceil{p}}, h_p)$.
 Let~$(\scrA \otimes_{h_p} \scrA_p, \varrho, h)$
     denote the Paschke dilation constructed in~\sref{existence-paschke}.
 We proceed roughly in two steps:
-    first we will show~$\scrA \otimes_{h_p} \scrA_p$
+    first we will show~$\scrA \otimes_{h_p} p\scrA p$
     can be identified with~$\scrA p$
     and then we prove~$\scrB^a(\scrA p) \cong \cceil{p} \scrA$.
 \begin{point}%
@@ -4443,6 +4523,24 @@ Since by the C$^*$-identity the norm on~$\scrA p$
     $\scrA p$ is norm closed in~$\scrA$ \emph{and}~$\scrA$ is norm complete,
     we see~$\scrA p$ is a Hilbert~$p \scrA p$-module.
 
+Recall~$\scrA$ itself is a self-dual Hilbert~$\scrA$-module.
+The uniformity induced on~$\scrA p$ by the ultranorm uniformity
+    of~$\scrA$ coincides with the ultranorm uniformity of~$\scrA p$ itself.
+The module $\scrA p$ is ultranorm closed in~$\scrA$
+    as~$x_\alpha \to x$ ultranorm
+    implies~$x_\alpha p \to xp$ ultranorm.
+As self-duality is equivalent to ultranorm completeness,
+    we see~$\scrA p$ is self dual as well.
+\end{point}
+\begin{point}%
+By \sref{central-carrier-is-orthogonal-sum-lemma}
+    we can find partial isometries~$(u_i)_i$
+    with~$\sum_i u_iu_i^* = \cceil{p}$
+    and~$u_i^*u_i \leq p$.
+Write~$E = \{u_i; \ i \in I\}$.
+As~$u_i = u_i p$ and~$u_i= u_i u_i^* u_i$
+    we see~$E$ is an orthonormal subset of~$\scrA p$.
+We will prove~$E$ is an orthonormal basis.
 \end{point}
 \end{point}
 \end{point}
