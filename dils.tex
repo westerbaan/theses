@@ -1,8 +1,6 @@
 \documentclass[b]{subfiles}
 \begin{document}
 
-% TODO which supremum with projections (in proj or in effects)
-%      define orthonormal set
 % TODO ref polar decomposition
 
 \chapter{Dilations}
@@ -3182,15 +3180,15 @@ and~$uu^* = \ceil{abb^*a} \leq \ceil{a^2} = \ceil{a}$, as desired. \qed
 \begin{point}[central-carrier-formula]{Proposition}%
 For any self adjoint~$a \in \scrA$
 \begin{equation*}
-    \cceil{a} \ =\  \sup \{p; p \text{ projection}; \ p \lesssim \ceil{a} \}
-            \ = \ \sup \{ \ceil{b^*ab}; \ b\in \scrB \}.
+    \cceil{a} \ =\  \bigcup_{p \lesssim \ceil{a}} p
+\ = \ \bigcup_{b \in \scrB} \ceil{b^*ab}.
 \end{equation*}
 \begin{point}{Proof}%
 (This is a simplified proof of the result we published
 earlier \cite[Thm.~28 sub 1]{wwpaschke}.)
 Directly from \sref{new-murray-lemma}
-    we get $\sup_{p \lesssim \ceil{a}} p = \sup_{b \in \scrB} \ceil{b^*ab}$.
-For brevity we will write~$r = \sup_{p \lesssim \ceil{a}} p$.
+    we get $\bigcup_{p \lesssim \ceil{a}} p = \bigcup_{b \in \scrB} \ceil{b^*ab}$.
+For brevity we will write~$r = \bigcup_{p \lesssim \ceil{a}} p$.
 Let~$u$ be a partial isometry with~$u^*u \leq \ceil{a}$.
 Then~$uu^*\cceil{a} = uu^*u \cceil{a} u^*= u \ceil{a} \cceil{a} u^*
         = u \ceil{a} u^*  = uu^*$.
@@ -3202,19 +3200,18 @@ For the converse, note~$\ceil{a} \lesssim \ceil{a}$
 It is sufficient to show~$r$ is central, for
         then~$\cceil{a} \leq \cceil{r} = r$.
 Pick any~$c \in \scrA$.
-Note
-\begin{equation*}
-    c^*rc
-    \ =\ c^* (\sup_{b \in \scrB} \ceil{b^*ab}) c
-    \ =\ \sup_{b \in \scrB} c^* \ceil{b^*ab} c
-\end{equation*}
-and so~$c^*rc \leq \ceil{c^* r c} = \sup_{b \in \scrB} \ceil{c^*b^*abc} \leq r$
-    by~\TODO{two refs}.
+We have
+    $\ceil{c^*rc}
+    = \ceil{c^* (\bigcup_{b \in \scrB} \ceil{b^*ab}) c}
+    \overset{\sref{ncp-union}}{=}
+    \bigcup_{b \in \scrB} \ceil{c^* \ceil{b^*ab} c}
+ \overset{\sref{ceil-fundamental}}{=}\bigcup_{b \in \scrB} \ceil{(bc)^* abc}  \leq r$
+and so~$c^*rc \leq \ceil{c^* r c} = r$.
 Thus~$(1-r)c^*rc(1-r) = 0$.
 So~$rc(1-r)=0$.
 Thus~$rc = rcr$.
-As~$c$ was arbitrary, we also get~$rc^* rc^*r$.
-So~$rc = rcr = (rc^*r)^* = (rc^*)^* = cr$.
+As~$c$ was arbitrary, we also get~$rc^* =rc^*r$.
+Thus~$rc = rcr = (rc^*r)^* = (rc^*)^* = cr$.
 Indeed~$r$ is central. \qed
 \end{point}
 \end{point}
@@ -3241,17 +3238,17 @@ and so~$\cceil{p} \cceil{q} \neq 0$
 \end{point}
 \begin{point}{$2 \Rightarrow 3$}%
 Assume~$\cceil{p} \cceil{q} \neq 0$.
-By~$\sref{central-carrier-formula}$ we have
-\begin{equation*}
-\cceil{p} \cceil{q} \ =\  \cceil{p} \sup_{b \in \scrA} \ceil{b^* q b}
-            \ =\  \sup_{b \in \scrA} \cceil{p}\ceil{b^* q b}
-\end{equation*}
+We have
+$\cceil{p} \cceil{q} 
+\overset{\sref{central-carrier-formula}}{=}
+\ceil{\cceil{p} \bigl(\bigcup_{b \in \scrA} \ceil{b^* q b} \bigr) \cceil{p}}
+    \overset{\sref{ncp-union}}{=}
+\bigcup_{b \in \scrA} \ceil{\cceil{p}\ceil{b^* q b} \cceil{p}}$
 and so~$\cceil{p} \ceil{b^*qb} \neq 0$
     for some~$b \in \scrA$.
 In the same way, there is some~$a \in \scrA$
     with~$ 0 \neq \ceil{a^*pa}\ceil{b^*qb}$.
-    Thus \TODO{$cd = 0 \Leftrightarrow \ceil{c^*c}\ceil{dd^*} = 0 $}
-    $p(ab^*)q \neq 0$.
+    Thus $p(ab^*)q \neq 0$ by \sref{ceil-fundamental}.
 \end{point}
 \begin{point}{$3 \Rightarrow 1$}%
 Assume~$paq \neq 0$ for some~$a \in \scrA$.
@@ -3336,7 +3333,7 @@ p (1-\ceil{\varrho}) p
 \end{equation*}
 This means~$p \leq \ceil{\varrho}$.
 Thus by~\sref{central-carrier-formula}
-we get~$\cceil{a} = \sup_{p \lesssim \ceil{a}} p \leq \ceil{\varrho}$,
+we get~$\cceil{a} = \bigcup_{p \lesssim \ceil{a}} p \leq \ceil{\varrho}$,
 as desired. \qed
 \end{point}
 \end{point}
@@ -4474,7 +4471,7 @@ A ncp-map~$c \colon \scrA \to \scrB$
 
 \begin{parsec}%
 \begin{point}%
-To compute the Paschke dilation of a corner,
+To compute the dilation of a corner,
     we need some more comparison theory.
 \end{point}
 \begin{point}[central-carrier-is-orthogonal-sum-lemma]{Lemma}%
@@ -4506,14 +4503,16 @@ As~$\cceil{p} - q_0 \leq \cceil{p}$
 \begin{point}{Theorem}%
 Let~$\scrA$ be a von Neumann algebra together with a projection~$p \in \scrA$.
 Then a Paschke dilation of the standard corner~$h_p \colon \scrA \to p\scrA p$
-of~$p$ is given by~$(\cceil{p}\scrA\cceil{p}, h_{\cceil{p}}, h_p)$.
+of~$p$ is given by~$(\cceil{p}\scrA, h_{\cceil{p}}, h_p)$.
 \begin{point}{Proof}%
+(This is a simplified proof of the result we published earlier.
+    \cite[Thm.~28]{wwpaschke}.)
 Let~$(\scrA \otimes_{h_p} \scrA_p, \varrho, h)$
     denote the Paschke dilation constructed in~\sref{existence-paschke}.
-We proceed roughly in two steps:
-    first we will show~$\scrA \otimes_{h_p} p\scrA p$
-    can be identified with~$\scrA p$
-    and then we prove~$\scrB^a(\scrA p) \cong \cceil{p} \scrA$.
+We proceed in roughly three steps:
+    first we show~$\scrA p$ is a self dual Hilbert~$p\scrA p$-module,
+    then we prove~$\scrA \otimes_{h_p} p\scrA p \cong \scrA p$
+    and finally we show~$\scrB^a(\scrA p) \cong \cceil{p} \scrA$.
 \begin{point}%
 Note $\scrA p$ is a pre-Hilbert $p \scrA p$-module
     with scalar multiplication~$(\alpha p)\cdot (pap) = \alpha pap$
@@ -4533,14 +4532,83 @@ As self-duality is equivalent to ultranorm completeness,
     we see~$\scrA p$ is self dual as well.
 \end{point}
 \begin{point}%
+Concerning~$\scrA \otimes_{h_p} p \scrA p \cong \scrA p$,
+    define~$B\colon \scrA \times  p \scrA p \to \scrA p$
+    by~$B(\alpha, pap) = \alpha pap$.
+A straight-forward computation
+    shows~$B$ is~$h_p$-compatible complex bilinear map
+    and so there is a unique bounded module
+    map~$U \colon \scrA \otimes_{h_p} p \scrA p \to \scrA p$
+   fixed by~$U \alpha \otimes pap = B(\alpha,pap) \equiv \alpha pap $.
+   Clearly~$U$ is surjective.
+
+Another easy computation shows~$a \otimes p\alpha p - ap\alpha p \otimes p = 0$
+    for all~$a, \alpha \in \scrA$.
+So~$\{a \otimes p;\ a\in \scrA\}$
+    is ultranorm dense in~$\scrA \otimes_{h_p} p \scrA p$.
+From this and
+    $\left<\alpha \otimes p, a\otimes p\right> = 
+        p \alpha^* a p
+        =\left< U \alpha \otimes p, U a \otimes p\right> $
+        we see~$U$ preserves the inner product.
+Hence~$U$ is an isomorphism with~$U^* = U^{-1}$
+    given by~$U^* a = a\otimes p$.
+\end{point}
+\begin{point}%
+To show~$\scrB^a(\scrA p) \cong \cceil{p}\scrA$,
+we will first find a convenient orthonormal basis of~$\scrA p$.
 By \sref{central-carrier-is-orthogonal-sum-lemma}
-    we can find partial isometries~$(u_i)_i$
+    there are partial isometries~$(u_i)_i$
     with~$\sum_i u_iu_i^* = \cceil{p}$
     and~$u_i^*u_i \leq p$.
 Write~$E = \{u_i; \ i \in I\}$.
 As~$u_i = u_i p$ and~$u_i= u_i u_i^* u_i$
     we see~$E$ is an orthonormal subset of~$\scrA p$.
-We will prove~$E$ is an orthonormal basis.
+For any~$ap \in \scrA p$, we have
+\begin{equation*}
+    ap \ =\  a \cceil{p} p
+       \ =\  \cceil{p} a p
+       \ = \ \bigl(\sum_i u_i u_i^*\bigr) ap
+       \ = \ \sum_i u_i u_i^* ap
+       \ = \ \sum_i u_i \left<u_i,ap\right>,
+\end{equation*}
+where the sums converge ultrastrongly in~$\scrA$.
+Thus the last sum converges ultranorm in~$\scrA p$ as well.
+Hence~$E$ is an orthonormal basis.
+
+Define~$\varrho_0 \colon \scrA \to \scrB^a(\scrA p)$
+    by~$\varrho_0 = \ad_{U^*} \after \varrho$.
+Note~$\varrho_0$ is an nmiu-map and~$\varrho_0(\alpha)ap = \alpha ap$.
+The map~$\varrho_0$ is surjective:
+    indeed for any~$T \in \scrB^a(\scrA p)$
+\begin{equation*}
+    T (ap) \ = \ \sum_i T( u_i ) u_i^* ap
+           \ = \ \bigl(\sum_i T( u_i ) u_i^*\bigr) ap
+           \ = \ \varrho_0 \bigl(\sum_i T( u_i ) u_i^*\bigr) ap.
+\end{equation*}
+Next we show~$\cceil{\varrho_0} = \cceil{p}$.
+It is sufficient to show that for each~$\alpha \in \scrA$ with $\alpha \geq 0$,
+    we have~$\alpha ap = 0$ for all~$a\in \scrA$ if and only if~$\alpha \cceil{p} = 0$
+    Clearly~$\alpha \cceil{p} = 0$ implies~$\alpha ap = \alpha \cceil{p} ap= 0$.
+For the converse, assume~$\alpha ap = 0$ for all~$a\in\scrA$.
+Then in particular~$\alpha u_ip = 0$,
+    hence~$\alpha \cceil{p} = \alpha \sum_i u_iu_i^*  = \sum_i \alpha u_ipu_i^*=0$.
+We can apply~\TODO{}
+    and conclude~$\varrho_0 = \varphi \after h_{\cceil{p}}$
+    for some isomorphism~$\varphi\colon
+    \cceil{p} \scrA \to \scrB^a(\scrA p)$.
+So~$h_{\cceil{p}} = (\varphi^{-1} \after \ad_{U^*}) \after \varrho$.
+We compute
+\begin{equation*}
+h_p \after h_{\cceil{p}}
+    \ =\  h \after \varrho
+    \ =\ h \after \ad_U \after \varrho_0
+    \ = \ h \after \ad_U \after \varphi \after h_{\cceil{p}}.
+\end{equation*}
+Using surjectivity of~$h_{\cceil{p}}$
+and rearranging, we find~$h_p \after (\varphi^{-1} \after \ad_{U^*}) = h$.
+Thus indeed~$(\cceil{p} \scrA, h_{\cceil{p}}, h_p)$
+a Paschke dilation of~$h_p$. \TODO{iso paschke} \qed
 \end{point}
 \end{point}
 \end{point}
