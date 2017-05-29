@@ -2502,48 +2502,6 @@ for every positive element~$a$ of $ b^* \scrA b$.
 = b^*\backslash a/b$.)
 \end{enumerate}
 \end{point}
-\begin{point}{Lemma}%
-Let~$b$ be an element of a von Neumann algebra~$\scrA$,
-and let~$a$ be from~$b^*(\scrA)_+ b$.
-Then~$\ceil{a}$ is in~$b^*(\scrA)_+ b$,
-and~$\ceil{\,b^*\backslash \ceil{a}/b\,}
-=\ceil{\,b^*\backslash a/b\, }$.
-\begin{point}{Proof}%
-Since~$a$ is in~$b^*(\scrA)_+b$,
-there is positive~$c\in \scrA$ with~$a=b^*cb$,
-and so~$0\leq a\leq \|c\|b^*b$.
-It follows that~$\ceil{a}\leq \ceil{b^*b}$,
-and so~$\ceil{a}\in b^*\scrA b$
-by~\sref{sequential-douglas}.
-
-It remains to be shown that~$\ceil{b^*\backslash\ceil{a}/b}
-= \ceil{b^*\backslash a /b}$.
-By replacing~$a$ by~$a/\|a\|$ if necessary
-we may assume without loss of generality
-that~$a\leq 1$.
-Since then~$a\leq \ceil{a}$
-and~$b^*\backslash a/b \leq b^*\backslash \ceil{a} b$
-so that $\ceil{b^*\backslash a/b}
-\leq \ceil{b^*\backslash \ceil{a}b}$,
-we only need to prove that
-$\ceil{b^*\backslash \ceil{a}/b}
-\leq \ceil{b^*\backslash a/b}$,
-\TODO{finish...}
-\end{point}
-\end{point}
-\begin{point}{Proposition}%
-Given an element~$b$ of a von Neumann algebra~$\scrA$,
-and projections~$p$ and~$q$
-from~$\ceilr{b}\!\scrA\!\ceilr{b}$
-with $\ceil{b^*pb}=\ceil{b^*qb}$,
-we have $p=q$.
-\begin{point}{Proof}%
-	$p=\ceil{p}=
-\ceil{b^*\backslash (b^*pb)/b}=
-\ceil{b^*\backslash \ceil{b^*pb}/b}=
-\ceil{b^*\backslash \ceil{b^*qb}/ b}=q$.\qed
-\end{point}
-\end{point}
 \begin{point}[div-approx]{Exercise}%
 Given elements~$b$ and~$c$ of a von Neumann algebra~$\scrA$,
 an approximate pseudoinverse $t_1,t_2,\dotsc$
