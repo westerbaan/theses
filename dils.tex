@@ -2769,26 +2769,35 @@ such that~$\|T_\alpha\| \leq r$ for all~$\alpha$.
 By \sref{hilbmod-ordersep}~$(\left<x,T_\alpha x\right>)_\alpha$
     is a norm-bounded net of self adjoint elements of~$\scrB$
     and so it has a supremum to which
-    it converges ultraweakly by~\sref{vna-supremum-uwlimit}.
+    it converges ultrastrongly by~\sref{vna-supremum-uslimit}.
 In particular
 \begin{equation*}
 \frac{1}{4} \sum^3_{k=0} i^k \left< i^kx+y, T_\alpha(i^k x+y)\right>
     \ =\  \left<x, T_\alpha y\right>
 \end{equation*}
-converges ultraweakly for all~$x,y \in X$.
-Define~$B(x,y) = \uwlim_\alpha \left<x,T_\alpha y\right>$.
+converges ultrastrongly for all~$x,y \in X$.
+Define~$B(x,y) = \uslim_\alpha \left<x,T_\alpha y\right>$.
 As addition and multiplication by a fixed element are
-    ultraweakly continuous (see \sref{mult-uws-cont}),
+    ultrastrongly continuous (see \sref{mult-uws-cont}),
     we see~$B$ is a~$\scrB$-sesquilinear form.
-Clearly~$\|\left<x,T_\alpha y\right>\| \leq r\|x\|\|y\|$
-and so by \TODO{norm reasonable uwlim}~$ B(x,y) \leq r \|x\|\|y\|$,
-thus~$B$ is a bounded~$\scrB$-sesquilinear form.
-Thus by \sref{hilbmod-sesquilinear-forms}
+By~\sref{module-CS} and~\sref{blinear-inprod-inequality}
+    we have~$\left<T_\alpha y, x\right>\left<x, T_\alpha y\right>
+        \leq r^2 \|x\|^2 \left<y,y\right>$
+    for each~$\alpha$, hence
+\begin{align*}
+    \| B(x,y) \|^2 &\ \ = \ \ 
+    \| B(x,y)^* B(x,y) \| \\
+    &\ \ \overset{\mathclap{\sref{usconv}}}{=} \ \ \| \uwlim_\alpha \left<T_\alpha y, x\right>\left< x, T_\alpha y\right>\| \\
+    &\ \ \leq \ \  r^2 \|x\|^2 \|y\|^2.
+\end{align*}
+So~$B$ is a bounded~$\scrB$-sesquilinear form.
+By \sref{hilbmod-sesquilinear-forms}
     there is a unique~$T \in \scrB^a(X)$
-    with~$\left<x,Ty\right> = B(x,y) = \uwlim_\alpha \left<x,T_\alpha y\right>$.
-Clearly~$T$ is self adjoint.
+    with~$\left<x,Ty\right> = B(x,y) = \uslim_\alpha \left<x,T_\alpha y\right>$.
+Noting~$B(x,y) = \uwlim_\alpha B(x,y)$,
+    it is easy to see~$T$ is self adjoint.
 Using \sref{hilbmod-ordersep} again and ultraweak limits respecting the order
-    \TODO{reference?}
+\TODO{reference? (ook andere plekken)}
     we see~$\left<x,T_\alpha\right> \leq \left<x,T x\right>$
     for all~$x \in X$ and so~$T_\alpha \leq T$.
 Now suppose we are given a self adjoint~$S \in \scrB^a(X)$
@@ -2805,12 +2814,12 @@ We are done if we can show~$\left<x,(\,\cdot\,)x\right>$
 To this end, pick~$x \in X$ and let~$(T_\alpha)_\alpha$
     be a net with suprema~$T$.
 As before~$(\left<x,T_\alpha x\right>)_\alpha)$
-    is a norm bounded net which converges ultraweakly to its
+    is a norm bounded net which converges ultrastrongly to its
     suprema.
 Now, we just saw
 \begin{equation*}
-    \left<x,Tx\right> = \uwlim_\alpha \left<x, T_\alpha x\right>
-                = \sup_\alpha \left<x, T_\alpha x\right>
+    \left<x,Tx\right> \ =\  \uwlim_\alpha \left<x, T_\alpha x\right>
+               \  =\  \sup_\alpha \left<x, T_\alpha x\right>
 \end{equation*}
 and so indeed~$\left<x, (\,\cdot\,)x\right>$ is normal;
 the normal states are separating
