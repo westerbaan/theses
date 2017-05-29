@@ -1244,8 +1244,8 @@ If~$T \colon X \to Y$ is a bounded~$\scrB$-linear map,
 (The proof is a slight variation on the first part
 of \cite[Thm.~2.8]{paschke}.)
 Pick~$\varepsilon > 0$.
-By \TODO{}
-    $\left<x,x\right> + \varepsilon$ is invertible.
+By \sref{cstar-positive-1}
+    we know $\left<x,x\right> + \varepsilon$ is invertible.
 Define~$h = (\left<x,x\right> + \varepsilon)^{-\frac{1}{2}}$.
 Clearly
 \begin{equation*}
@@ -1695,7 +1695,8 @@ The equivalence~$1 \Leftrightarrow 4$
     but we give a different proof. The other equivalences are new.
 \begin{point}{1 $\Rightarrow$ 3, self-dual~$X$ are bounded complete}%
     Assume~$X$ is self-dual and~$(x_\alpha)_\alpha$
-        is a norm-bounded ultranorm-Cauchy net.
+        is an ultranorm-Cauchy net
+        with~$\|x_\alpha\| \leq B$ for some~$B \geq 0$.
      For the moment pick an~$y \in X$.
 By \sref{module-CS} we
     have~$f(\left<x_\alpha,y\right>\left<y,x_\alpha\right>) \leq \|y\|^2
@@ -1707,9 +1708,16 @@ As addition and multiplication by a fixed element
 are ultrastrongly continuous (see \sref{mult-uws-cont})
     $\tau$ is~$\scrB$-linear.
 We will show~$\tau$ is bounded.
-Let~$f\colon \scrB \to \C$ be an np-map.
-\TODO{$\tau$ bounded}.
-Thus~$\tau$ is bounded.
+For each~$\alpha$ we have~$\left<x_\alpha, y\right>\left<y, x_\alpha\right>
+        \leq \left<x_\alpha, x_\alpha\right> \leq \|y\|^2B^2$ and so
+\begin{equation*}
+    \tau(y)\tau(y)^*
+    \ \overset{\sref{usconv}}{=} \ 
+    \uwlim_\alpha \left<x_\alpha,y\right>\left<y,x_\alpha\right>
+    \ \leq \ B^2.
+\end{equation*}
+Thus~$\|\tau(y)\|^2 = \|\tau(y)\tau(y)^*\| \leq \|y\|^2B^2$.
+So~$\tau$ is bounded.
 By self-duality, there is a~$t \in X$ such that~$\tau(y) = \left<t,y\right>$
 for all~$y \in X$.
 And so for each np-map~$f\colon \scrB \to \C$ we have
@@ -3934,6 +3942,18 @@ Furthermore~$E_1$ is an orthonormal basis for~$E_0 \cup \{e\}$,
     hence~$(E - E_0) \cup E_1$ is the desired orthonormal basis of~$X$. \qed
 \end{point}
 \end{point}
+\end{point}
+\begin{point}%
+Does this settle the matter?  One might hope
+    that~$\ell^2((1_{\mathscr{B}})_{\alpha \in \kappa}) \cong
+        \ell^2((1_{\mathscr{B}})_{\beta\in\lambda})$
+    implies~$\kappa=\lambda$ for all cardinals~$\kappa$,$\lambda$.
+This is not the case.
+By definition, for any non-trivial type III factor~$\scrB$
+    with non-zero projection~$p$
+    it holds~$p \sim 1 -p$
+    and so~$\scrB \cong p\scrB \oplus (1-p)\scrB \cong 
+    \scrB \oplus \scrB$ as Hilbert modules.\TODO{add type III ref}
 \end{point}
 \end{parsec}
 
