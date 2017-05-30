@@ -202,7 +202,7 @@ since~$\ceil{\smash{f(\,\smash{(uu^*)^\perp}\,)}}
 \end{point}
 \end{parsec}
 \begin{parsec}%
-\begin{point}{Definition}%
+\begin{point}[filter]{Definition}%
 A \Define{filter}
 is an ncp-map $c\colon \scrC\to\scrA$
 between von Neumann algebras
@@ -211,7 +211,7 @@ with~$f(1)\leq c(1)$
 factors as $f=c\circ g$
 for some unique ncp-map $g \colon \scrB\to\scrC$.
 \end{point}
-\begin{point}{Proposition}%
+\begin{point}[canonical-filter]{Proposition}%
 Given an element~$d$ of a von Neumann algebra~$\scrA$,
 the map $c\colon \ceill{d}\!\scrA\!\ceill{d}\to\scrA$
 given by~$c(a)=d^*ad$
@@ -266,18 +266,118 @@ is an approximate pseudoinverse of~$d$.\qed
 \end{parsec}
 \section{Pure maps}
 \begin{parsec}%
+\begin{point}{Definition}%
+We declare that filters, corners,
+and their compositions are \Define{pure}.
+\end{point}
+\begin{point}{Definition}%
+Let~$f\colon \scrA\to\scrB$ be an ncp-map between
+von Neumann algebras.
+We denote by~$\Define{[f]}$
+the unique ncp-map $[f]\colon \ceil{f}\!\scrA\!\ceil{f}\to 
+\ceil{f(1)}\!\scrB\!\ceil{f(1)}$
+with
+\begin{equation*}
+f(a)\ =\ \sqrt{f(1)}\, [f](\,  \ceil{f}\,a\,\ceil{f}\,)\,\sqrt{f(1)}
+\qquad\text{for all $a\in \scrA$.}
+\end{equation*}
+We say that~$f$ is \Define{pure} when~$[f]$ is an isomorphism.
+\end{point}
+\begin{point}{Example}%
+	\TODO{connection with polar decomposition}.
+\end{point}
+\begin{point}{Proposition}%
+For an ncp-map $f\colon \scrA\to\scrB$ between von Neumann algebras
+the following are equivalent.
+\begin{enumerate}
+\item 
+	$f$ is pure, that is, $[f]$ is an isomorphism;
+\item
+	$f$ can be written as the composition of filters
+	and corners.
+\end{enumerate}
+\begin{point}{Proof}%
+	\TODO{...}
+\end{point}
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+To show that that ``square root axiom''
+holds for von Neumann algebras,
+we'll establish and exploit the following remarkable property
+of pure maps.
+\end{point}
+\begin{point}{Definition}%
+We say that a ncp-map $f\colon \scrA\to\scrB$
+between von Neumann algebras is \Define{rigid}
+when the only ncp-map $g\colon \scrA\to\scrB$
+with $g(1)=f(1)$ and $\ceil{f(p)}=\ceil{g(p)}$ for all
+projections~$p$ from~$\scrA$ is~$f$ itself.
+\end{point}
 \begin{point}{Proposition}%
 Given an element~$b$ of a von Neumann algebra~$\scrA$
-and projections~$p$ and~$q$ from~$\ceilr{b}\!\scrA\!\ceilr{b}$
-with $\ceil{b^*pb}=\ceil{b^*qb}$
-we have~$p=q$.
+the ncp-map $a\mapsto b^* a b,\ \ceill{b}\!\scrA\!\ceill{b}\to\scrA$
+is rigid.
 \begin{point}{Proof}%
-\TODO{...}
+Let~$g\colon \ceill{b}\!\scrA\!\ceill{b}\to\scrA$
+be an ncp-map with~$g(1)=b^*b$
+and $\ceil{b^*pb}=\ceil{g(p)}$ for every projection~$p$ 
+of $\ceill{b}\!\scrA\!\ceill{b}$.
+To prove that~$b^*(\,\cdot\,) b$ is rigid,
+we must show that~$g=b^*(\,\cdot\,)b$.
+Since~$b^*(\,\cdot\,)b$ is a filter
+(by~\sref{canonical-filter})
+and~$g(1)=b^*b$
+there is a unique ncp-map~$h\colon \ceill{b}\!\scrA\!\ceill{b}
+\to\ceill{b}\!\scrA\!\ceill{b}$
+with~$g(a)=b^* h(a)b$ for all~$a\in\ceill{b}\!\scrA\!\ceill{b}$.
+Our task is to show that~$h(a)=a$ for all
+$a\in\ceill{b}\!\scrA\!\ceill{b}$,
+and for this it suffices to show that,
+for all~$a\in\ceill{b}\!\scrA\!\ceill{b}$,
+\begin{equation}
+\label{filter-rigid-1}
+e_n\, g(e_n\, a\, e_n)\, e_n
+\ = \ e_n \, a\,  e_n
+\end{equation}
+for some sequence of projections $e_1,e_2,\dotsc$
+of~$\ceill{b}\!\scrA\!\ceill{b}$
+that converges ultrastrongly to~$\ceill{b}$,
+because ---as multiplication is jointly ultrastrongly continuous
+on bounded sets (by~\TODO{...})---
+the left-hand side of the equation above 
+converges ultrastrongly to~$g(a)$,
+while the right-hand side converges ultrastrongly to~$a$.
+In fact, we'll take $e_N := \sum_{n=1}^N \ceilr{t_n}$,
+where~$t_1,t_2,\dotsc$
+is an approximate pseudoinverse for~$b$,
+because $\ceill{b} = \sum_n\ceilr{t_n}$.
+
+Since the identity on~$e_n \scrA e_n$ is rigid,
+it suffices (for~\eqref{filter-rigid-1})
+to show that 
+$e_n g(e_n) e_n = e_n$
+and 
+$\ceil{e_ng(p)e_n} = p$
+for every projection $p$ from $e_n\scrA e_n$.
+Writing~$s_N:=\sum_{n=1}^N t_n$,
+we have $s_n b = bs_n = e_n$,
+and so
+$
+\ceil{e_n g(p) e_n}
+=
+\ceil{s_n^* b^* g(b)b s_n }
+
+
+
+
+
+
+
 \end{point}
 \end{point}
-\begin{point}{Corollary}%
-$c^\bullet$ is injective when~$c\colon \scrC\to\scrA$ is a filter.
-\end{point}
+
 \end{parsec}
 
 
