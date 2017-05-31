@@ -8,6 +8,9 @@ a.pdf: com.tex common.tex cstar.tex a.tex vn.tex proc.tex
 b.pdf: common.tex b.tex dils.tex
 	latexmk -pdf -use-make b.tex
 
+apropos.pdf: common.tex apropos.tex
+	latexmk -pdf -use-make apropos.tex
+
 cstar.pdf: common.tex cstar.tex
 	latexmk -pdf -use-make cstar.tex
 
