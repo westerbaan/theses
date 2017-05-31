@@ -7,7 +7,7 @@ A \Define{process} is
 an ncpsu-map between von Neumann algebras.
 \end{point}
 \end{parsec}
-\section{Limits of Processes}
+\section{The Basics}
 \begin{parsec}%
 \begin{point}[ncp-uwlim]{Proposition}%
 Given von Neumann algebras~$\scrA$
@@ -60,8 +60,90 @@ and thus normal (by~\sref{p-uwcont}).\qed
 \end{point}
 \end{point}
 \end{parsec}
+\begin{parsec}%
+\begin{point}[gardner]{Proposition}%
+For an ncpu-map $f\colon \scrA\to\scrB$
+between von Neumann algebras
+the following are equivalent.
+\begin{enumerate}
+\item
+\label{gardner-1}
+$f$ is multiplicative.
+\item
+\label{gardner-2}
+$f(a)f(b)=0$
+for all $a,b\in\scrA$ with $ab=0$.
+\item
+\label{gardner-3}
+$\ceil{f(p)}\ceil{f(q)}=0$
+for all projections $p$ and~$q$ of~$\scrA$ with $pq=0$.
+\item
+\label{gardner-4}
+$f$ maps projections to projections.
+\end{enumerate}
+\begin{point}{Proof}%
+(Based in part on the work of Gardner in~\cite{gardner}).
+\begin{point}{\sref{gardner-1}$\Longrightarrow$\sref{gardner-4}}%
+	is rather obvious.
+\end{point}
+\begin{point}{\sref{gardner-4}$\Longrightarrow$\sref{gardner-3}}%
+Let~$p$ and~$q$ be projections of~$\scrA$ with~$pq=0$.
+Then~$p\leq q^\perp$, and so~$f(p)\leq f(q^\perp)=f(q)^\perp$,
+which implies that $\ceil{f(p)}\ceil{f(q)}
+=f(p)f(q)=0$ since~$f(p)$ and~$f(q)$ are projections.
+\end{point}
+\begin{point}{\sref{gardner-3}$\Longrightarrow$\sref{gardner-2}}%
+Let~$a$ and~$b$ be positive elements of~$\scrA$ with~$ab=0$.
+We must show that~$f(a)f(b)=0$,
+and for this it suffices to show that
+$\ceil{f(a)}\ceil{f(b)}=0$,
+because $f(a)f(b)=f(a)\ceil{f(a)}\ceil{f(b)}f(b)$.
+Since~$ab=0$,
+we have~$\ceil{a}\ceil{b}=0$ by~\TODO{...},
+and so $\ceil{f(a)}\ceil{f(b)}=\ceil{f(\ceil{a})}\ceil{f(\ceil{b})}=0$.
+\end{point}
+\begin{point}{\sref{gardner-2}$\Longrightarrow$\sref{gardner-1}}%
+We must show that~$f(a)f(b)=f(ab)$
+for all~$a,b\in \scrA$.
+Since the linear span of projections is norm-dense in~$\scrA$,
+it suffices to show that $f(a)f(e)=f(ae)$
+for any $a\in\scrA$ and a projection~$e$ of~$\scrA$.
+Given such~$a$ and~$e$,
+we on the one hand have $ae^\perp\, e=0$,
+so that~$f(ae^\perp)f(e)=0$,
+that is, $f(a)f(e)=f(ae)f(e)$;
+and on the other hand
+we have $ae\,e^\perp=0$,
+so that~$f(ae)f(e^\perp)=0$,
+that is, $f(ae)=f(ae)f(e)$;
+so that we reach~$f(ae)=f(a)f(e)$ as sum total,
+and the result that~$f$ is multiplicative.\qed
+\end{point}
+\end{point}
+\end{point}
+\begin{point}{Theorem}%
+An ncpsu-isomorphism $f\colon \scrA\to\scrB$
+between von Neumann algebras 
+(so both~$f$ and~$f^{-1}$ are ncpsu-maps)
+is an nmiu-isomorphism.
+\begin{point}{Proof}%
+Since~$f^{-1}(1)\leq 1$
+and so~$1=f(f^{-1}(1))\leq f(1)\leq 1$,
+we see that~$f(1)=1$, so both $f$ and $f^{-1}$ are unital.
+It remains to be shown that~$f$ and~$f^{-1}$ are multiplicative.
+Since by~\TODO{...} a self-adjoint element~$a$ of~$\scrA$
+is a projection iff~$0$ is the infimum of~$a$ and~$a^\perp$,
+and~$f$ (as ncpsu-isomorphism) preserves all the structure 
+mentioned in this characterization of being a projection,
+we see that~$f$ maps projections to projections,
+and is thus multiplicative, by~\sref{gardner}.
+It follows automatically that~$f^{-1}$ is multiplicative too.\qed
+\end{point}
+\end{point}
+\end{parsec}
 
-\section{Corners and Filters}
+\section{Measurement}
+\subsection{Corners and Filters}
 \begin{parsec}%
 \begin{point}{Definition}%
 Given an projection~$e$ of a von Neumann algebra~$\scrA$,
@@ -213,7 +295,7 @@ for some unique ncp-map $g \colon \scrB\to\scrC$.
 \end{point}
 \begin{point}[canonical-filter]{Proposition}%
 Given an element~$d$ of a von Neumann algebra~$\scrA$,
-the map $c\colon \ceill{d}\!\scrA\!\ceill{d}\to\scrA$
+the map $c\colon \ceilr{d}\!\scrA\!\ceilr{d}\to\scrA$
 given by~$c(a)=d^*ad$
 is a filter.
 \begin{point}{Proof}%
@@ -224,7 +306,7 @@ with $f(1)\leq c(1)$.
 To show that~$c$ is a filter,
 we must show that there is a unique ncp-map
 $g\colon \scrB\to
-\ceill{d}\!\scrA\!\ceill{d}$
+\ceilr{d}\!\scrA\!\ceilr{d}$
 with~$f=c\circ g$.
 Uniqueness of~$g$ follows from the observation
 that~$c$ is injective by~\sref{mult-cancellation}.
@@ -237,7 +319,7 @@ because~$0\leq f(b)\leq \|b\|f(1)\leq \|b\| c(1)=\|b\|d^*d$,
 and thus for arbitrary~$b\in\scrB$ too
 (being a linear combination
 of positive elements).
-We can thus define $g\colon \scrB\to \ceill{d}\!\scrA\!\ceill{d}$
+We can thus define $g\colon \scrB\to \ceilr{d}\!\scrA\!\ceilr{d}$
 by~$g(b)=d^*\backslash f(b)/d$
 for all~$b\in\scrB$.
 It is clear that~$g$ is linear and positive,
@@ -264,7 +346,7 @@ is an approximate pseudoinverse of~$d$.\qed
 \end{point}
 \end{point}
 \end{parsec}
-\section{Pure maps}
+\subsection{Purity}
 \begin{parsec}%
 \begin{point}{Definition}%
 We declare that filters, corners,
@@ -301,6 +383,7 @@ the following are equivalent.
 \end{point}
 \end{point}
 \end{parsec}
+\subsection{Rigidity}
 \begin{parsec}%
 \begin{point}%
 To show that that ``square root axiom''
@@ -315,66 +398,105 @@ when the only ncp-map $g\colon \scrA\to\scrB$
 with $g(1)=f(1)$ and $\ceil{f(p)}=\ceil{g(p)}$ for all
 projections~$p$ from~$\scrA$ is~$f$ itself.
 \end{point}
-\begin{point}{Proposition}%
+\begin{point}[nmiu-rigid]{Proposition}%
+A nmiu-map $\varrho\colon \scrA\to\scrB$
+between von Neumann algebras is rigid.
+\begin{point}{Proof}%
+Let~$g\colon \scrA\to\scrB$
+be an ncpu-map
+with~$\ceil{\varrho(p)}=\ceil{g(p)}$
+for every projection~$p$ of~$\scrA$.
+To show that~$\varrho$ is rigid,
+we must show that~$g=\varrho$,
+and for this, it suffices to prove that $g(p)=\varrho(p)$
+for every projection~$p$ of~$\scrA$ (by~\TODO{...}).
+To this end, we'll show that~$g$ is multiplicative,
+because then~$g$ maps projections to projections,
+so that $g(p)=\ceil{g(p)}=\ceil{\varrho(p)}=\varrho(p)$
+for every projection~$p$ of~$\scrA$.
+We'll show that $g$ is multiplicative
+using~\sref{gardner}
+by proving that
+$\ceil{g(p)}\ceil{g(q)}=0$
+for projections $p$ and~$q$ of~$\scrA$
+with~$pq=0$.
+Indeed,
+$\ceil{g(p)}\ceil{g(q)}=\ceil{\varrho(p)}\ceil{\varrho(q)}
+=\varrho(p)\varrho(q)=\varrho(pq)=\varrho(0)=0$.\qed
+\end{point}
+\end{point}
+\begin{point}[canonical-quotient-rigid]{Proposition}%
 Given an element~$b$ of a von Neumann algebra~$\scrA$
-the ncp-map $a\mapsto b^* a b,\ \ceill{b}\!\scrA\!\ceill{b}\to\scrA$
+the ncp-map $a\mapsto b^* a b,\ \ceilr{b}\!\scrA\!\ceilr{b}\to\scrA$
 is rigid.
 \begin{point}{Proof}%
-Let~$g\colon \ceill{b}\!\scrA\!\ceill{b}\to\scrA$
+Let~$g\colon \ceilr{b}\!\scrA\!\ceilr{b}\to\scrA$
 be an ncp-map with~$g(1)=b^*b$
 and $\ceil{b^*pb}=\ceil{g(p)}$ for every projection~$p$ 
-of $\ceill{b}\!\scrA\!\ceill{b}$.
-To prove that~$b^*(\,\cdot\,) b$ is rigid,
-we must show that~$g=b^*(\,\cdot\,)b$.
-Since~$b^*(\,\cdot\,)b$ is a filter
+of $\ceilr{b}\!\scrA\!\ceilr{b}$.
+To prove that~$c:=b^*(\,\cdot\,) b
+\colon \ceilr{b}\!\scrA\!\ceilr{b}\to \scrA$ is rigid,
+we must show that~$g=c$.
+Since~$c$ is a filter
 (by~\sref{canonical-filter})
 and~$g(1)=b^*b$
-there is a unique ncp-map~$h\colon \ceill{b}\!\scrA\!\ceill{b}
-\to\ceill{b}\!\scrA\!\ceill{b}$
-with~$g(a)=b^* h(a)b$ for all~$a\in\ceill{b}\!\scrA\!\ceill{b}$.
-Our task is to show that~$h(a)=a$ for all
-$a\in\ceill{b}\!\scrA\!\ceill{b}$,
+there is a unique ncp-map~$h\colon \ceilr{b}\!\scrA\!\ceilr{b}
+\to\ceilr{b}\!\scrA\!\ceilr{b}$
+with~$g=c\circ h$.
+Our task then is to show that~$h=\id$,
 and for this it suffices to show that,
-for all~$a\in\ceill{b}\!\scrA\!\ceill{b}$,
+for all~$a\in\ceilr{b}\!\scrA\!\ceilr{b}$,
 \begin{equation}
 \label{filter-rigid-1}
-e_n\, g(e_n\, a\, e_n)\, e_n
+e_n\, h(\,e_n\, a\, e_n\,)\, e_n
 \ = \ e_n \, a\,  e_n
 \end{equation}
 for some sequence of projections $e_1,e_2,\dotsc$
-of~$\ceill{b}\!\scrA\!\ceill{b}$
-that converges ultrastrongly to~$\ceill{b}$,
-because ---as multiplication is jointly ultrastrongly continuous
-on bounded sets (by~\TODO{...})---
-the left-hand side of the equation above 
+of~$\ceilr{b}\!\scrA\!\ceilr{b}$
+that converges ultrastrongly to~$\ceilr{b}$,
+because---as multiplication is jointly ultrastrongly continuous
+on bounded sets (by~\TODO{...})---the left-hand side of the equation above 
 converges ultrastrongly to~$g(a)$,
 while the right-hand side converges ultrastrongly to~$a$.
-In fact, we'll take $e_N := \sum_{n=1}^N \ceilr{t_n}$,
+We'll take $e_N := \sum_{n=1}^N \ceill{t_n}$,
 where~$t_1,t_2,\dotsc$
 is an approximate pseudoinverse for~$b$,
-because $\ceill{b} = \sum_n\ceilr{t_n}$.
+because $\ceilr{b} = \sum_n\ceill{t_n}$.
 
-Since the identity on~$e_n \scrA e_n$ is rigid,
+Since the identity on~$e_n \scrA e_n$ is rigid
+by~\sref{nmiu-rigid},
 it suffices (for~\eqref{filter-rigid-1})
 to show that 
-$e_n g(e_n) e_n = e_n$
+$e_n h(e_n) e_n = e_n$
 and 
-$\ceil{e_ng(p)e_n} = p$
+$\ceil{e_nh(p)e_n} = p$
 for every projection $p$ from $e_n\scrA e_n$.
 Writing~$s_N:=\sum_{n=1}^N t_n$,
-we have $s_n b = bs_n = e_n$,
+we have $bs_n = e_n$,
 and so
 $
-\ceil{e_n g(p) e_n}
+\ceil{e_n h(p) e_n}
 =
-\ceil{s_n^* b^* g(b)b s_n }
-
-
-
-
-
-
-
+\ceil{s_n^* b^* h(p) b s_n}
+=
+\ceil{s_n^*g(p) s_n}
+=
+\ceil{s_n^* \ceil{g(p)} s_n}
+=
+\ceil{s_n^* \ceil{b^* p b} s_n}
+=
+\ceil{s_n^* b^* p b s_n}
+=
+\ceil{e_n p e_n }
+$
+for every 
+projection~$p$ from~$\ceilr{b}\!\scrA\!\ceilr{b}$.
+In particular, $\ceil{e_n h(p)e_n} = p$
+when~$p$ is from~$e_n \scrA e_n$;
+and we see $\ceil{e_n h(e_n^\perp) e_n}=\ceil{e_n e_n^\perp e_n}=0$
+when we take~$p=e_n^\perp$,
+so that~$e_n h(e_n^\perp) e_n =0$,
+which yields $e_nh(e_n)e_n = e_n$.\qed
 \end{point}
 \end{point}
 
