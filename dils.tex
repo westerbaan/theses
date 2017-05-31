@@ -1244,8 +1244,8 @@ If~$T \colon X \to Y$ is a bounded~$\scrB$-linear map,
 (The proof is a slight variation on the first part
 of \cite[Thm.~2.8]{paschke}.)
 Pick~$\varepsilon > 0$.
-By \TODO{}
-    $\left<x,x\right> + \varepsilon$ is invertible.
+By \sref{cstar-positive-1}
+    we know $\left<x,x\right> + \varepsilon$ is invertible.
 Define~$h = (\left<x,x\right> + \varepsilon)^{-\frac{1}{2}}$.
 Clearly
 \begin{equation*}
@@ -1695,7 +1695,8 @@ The equivalence~$1 \Leftrightarrow 4$
     but we give a different proof. The other equivalences are new.
 \begin{point}{1 $\Rightarrow$ 3, self-dual~$X$ are bounded complete}%
     Assume~$X$ is self-dual and~$(x_\alpha)_\alpha$
-        is a norm-bounded ultranorm-Cauchy net.
+        is an ultranorm-Cauchy net
+        with~$\|x_\alpha\| \leq B$ for some~$B \geq 0$.
      For the moment pick an~$y \in X$.
 By \sref{module-CS} we
     have~$f(\left<x_\alpha,y\right>\left<y,x_\alpha\right>) \leq \|y\|^2
@@ -1707,9 +1708,16 @@ As addition and multiplication by a fixed element
 are ultrastrongly continuous (see \sref{mult-uws-cont})
     $\tau$ is~$\scrB$-linear.
 We will show~$\tau$ is bounded.
-Let~$f\colon \scrB \to \C$ be an np-map.
-\TODO{$\tau$ bounded}.
-Thus~$\tau$ is bounded.
+For each~$\alpha$ we have~$\left<x_\alpha, y\right>\left<y, x_\alpha\right>
+        \leq \left<x_\alpha, x_\alpha\right> \leq \|y\|^2B^2$ and so
+\begin{equation*}
+    \tau(y)\tau(y)^*
+    \ \overset{\sref{usconv}}{=} \ 
+    \uwlim_\alpha \left<x_\alpha,y\right>\left<y,x_\alpha\right>
+    \ \leq \ B^2.
+\end{equation*}
+Thus~$\|\tau(y)\|^2 = \|\tau(y)\tau(y)^*\| \leq \|y\|^2B^2$.
+So~$\tau$ is bounded.
 By self-duality, there is a~$t \in X$ such that~$\tau(y) = \left<t,y\right>$
 for all~$y \in X$.
 And so for each np-map~$f\colon \scrB \to \C$ we have
@@ -2761,26 +2769,35 @@ such that~$\|T_\alpha\| \leq r$ for all~$\alpha$.
 By \sref{hilbmod-ordersep}~$(\left<x,T_\alpha x\right>)_\alpha$
     is a norm-bounded net of self adjoint elements of~$\scrB$
     and so it has a supremum to which
-    it converges ultraweakly by~\sref{vna-supremum-uwlimit}.
+    it converges ultrastrongly by~\sref{vna-supremum-uslimit}.
 In particular
 \begin{equation*}
 \frac{1}{4} \sum^3_{k=0} i^k \left< i^kx+y, T_\alpha(i^k x+y)\right>
     \ =\  \left<x, T_\alpha y\right>
 \end{equation*}
-converges ultraweakly for all~$x,y \in X$.
-Define~$B(x,y) = \uwlim_\alpha \left<x,T_\alpha y\right>$.
+converges ultrastrongly for all~$x,y \in X$.
+Define~$B(x,y) = \uslim_\alpha \left<x,T_\alpha y\right>$.
 As addition and multiplication by a fixed element are
-    ultraweakly continuous (see \sref{mult-uws-cont}),
+    ultrastrongly continuous (see \sref{mult-uws-cont}),
     we see~$B$ is a~$\scrB$-sesquilinear form.
-Clearly~$\|\left<x,T_\alpha y\right>\| \leq r\|x\|\|y\|$
-and so by \TODO{norm reasonable uwlim}~$ B(x,y) \leq r \|x\|\|y\|$,
-thus~$B$ is a bounded~$\scrB$-sesquilinear form.
-Thus by \sref{hilbmod-sesquilinear-forms}
+By~\sref{module-CS} and~\sref{blinear-inprod-inequality}
+    we have~$\left<T_\alpha y, x\right>\left<x, T_\alpha y\right>
+        \leq r^2 \|x\|^2 \left<y,y\right>$
+    for each~$\alpha$, hence
+\begin{align*}
+    \| B(x,y) \|^2 &\ \ = \ \ 
+    \| B(x,y)^* B(x,y) \| \\
+    &\ \ \overset{\mathclap{\sref{usconv}}}{=} \ \ \| \uwlim_\alpha \left<T_\alpha y, x\right>\left< x, T_\alpha y\right>\| \\
+    &\ \ \leq \ \  r^2 \|x\|^2 \|y\|^2.
+\end{align*}
+So~$B$ is a bounded~$\scrB$-sesquilinear form.
+By \sref{hilbmod-sesquilinear-forms}
     there is a unique~$T \in \scrB^a(X)$
-    with~$\left<x,Ty\right> = B(x,y) = \uwlim_\alpha \left<x,T_\alpha y\right>$.
-Clearly~$T$ is self adjoint.
+    with~$\left<x,Ty\right> = B(x,y) = \uslim_\alpha \left<x,T_\alpha y\right>$.
+Noting~$B(x,y) = \uwlim_\alpha B(x,y)$,
+    it is easy to see~$T$ is self adjoint.
 Using \sref{hilbmod-ordersep} again and ultraweak limits respecting the order
-    \TODO{reference?}
+\TODO{reference? (ook andere plekken)}
     we see~$\left<x,T_\alpha\right> \leq \left<x,T x\right>$
     for all~$x \in X$ and so~$T_\alpha \leq T$.
 Now suppose we are given a self adjoint~$S \in \scrB^a(X)$
@@ -2797,12 +2814,12 @@ We are done if we can show~$\left<x,(\,\cdot\,)x\right>$
 To this end, pick~$x \in X$ and let~$(T_\alpha)_\alpha$
     be a net with suprema~$T$.
 As before~$(\left<x,T_\alpha x\right>)_\alpha)$
-    is a norm bounded net which converges ultraweakly to its
+    is a norm bounded net which converges ultrastrongly to its
     suprema.
 Now, we just saw
 \begin{equation*}
-    \left<x,Tx\right> = \uwlim_\alpha \left<x, T_\alpha x\right>
-                = \sup_\alpha \left<x, T_\alpha x\right>
+    \left<x,Tx\right> \ =\  \uwlim_\alpha \left<x, T_\alpha x\right>
+               \  =\  \sup_\alpha \left<x, T_\alpha x\right>
 \end{equation*}
 and so indeed~$\left<x, (\,\cdot\,)x\right>$ is normal;
 the normal states are separating
@@ -3364,16 +3381,21 @@ For linear  maps~$\varphi, \psi\colon \scrA \to \scrB$,
     For~$t \in \varrho(\scrA)^\square$
     define $\Define{\varphi_t} = h(t \varrho(a))$.
 \end{point}
-\begin{point}{Theorem}%
-Assume~$\varphi\colon \scrA \to \scrB$ is an ncp-map.
-Let $(\scrB^a(\scrA \otimes_\varphi \scrB),
-    \varrho, h)$ be the Paschke dilation of~$\varphi$
-    constructed in~\sref{existence-paschke}.
-Then~$T \mapsto \varphi_T$ is an linear
+\begin{point}[paschke-correspondence]{Theorem}%
+Assume~$\varphi\colon \scrA \to \scrB$ is an ncp-map
+    with Paschke dilation~$(\scrP, \varrho, h)$.
+The map~$t \mapsto \varphi_t$ is an linear
 order isomorphism~$[0,1]_{\varrho(\scrA)^\square} \to [0,\varphi]_\ncp$.
 \begin{point}{Proof}
-(The proof is a slight variation on \cite[Prop.~5.4]{paschke}.)
-Clearly~$T \mapsto \varphi_T$ is linear.
+First we show the correspondence holds
+    for the Paschke dilation constructed in~\sref{existence-paschke}.
+This proof is a slight variation on \cite[Prop.~5.4]{paschke}.
+Then we show the correspondence carries over to arbitrary Paschke dilations.
+\begin{point}{Set-up}%
+Let~$(\scrB^a(\scrA \otimes_\varphi \scrB), \varrho, h)$
+    denote the Paschke dilation constructed in~\sref{existence-paschke}.
+Clearly~$T \mapsto \varphi_T$ is linear
+    for~$T \in \varrho(\scrA)^\square$.
 Pick~$T \in \varrho(\scrA)^\square$.
 As~$\sqrt{T} \in \varrho(\scrA)^\square$
     we have~$\varphi_T(a) = h(\sqrt{T} \varrho(a)\sqrt{T})$.
@@ -3381,6 +3403,7 @@ As~$\sqrt{T} \in \varrho(\scrA)^\square$
     and~$\varphi_T \mathrel{\leq_\ncp} \varphi_S$
     whenever~$T\leq S$ for~$T,S \in \varrho(\scrA)^\square$.
 In particular, if~$T\leq 1$ then $\varphi_T \leq \varphi_1 = \varphi$.
+\end{point}
 \begin{point}{Order embedding}%
 Let~$T \in \varrho(\scrA)^\square$
     be given such that~$\varphi_T$ is ncp.
@@ -3393,7 +3416,7 @@ Then
     \ =\  \sum_{i,j} b_i^* \left< 1\otimes 1, T \varrho(a_i^*a_j) 1 \otimes 1\right> b_j
     \ = \ \sum_{i,j} b_i^* \varphi_T (a_i^*a_j) b_j \ \geq\  0.
 \end{equation*}
-By construction such~$x$ are ultranorm dense in~$\scrA\otimes_\varphi \scrB$
+By construction such~$x$ are ultranorm dense in~$\scrA\otimes\scrB$
     and so~$T \geq 0$ by \sref{hilbmod-denseordersep}.
 Thus~$T \mapsto \varphi_T$ is an order embedding
     and in particular an injection.
@@ -3403,6 +3426,7 @@ Only surjectivity remains.
 Pick~$\psi \in [0,\varphi]_\ncp$.
 We want to show there is a~$T \in \varrho(\scrA \otimes_\varphi \scrB)^\square$
     with~$\varphi_T = \psi$ and~$0 \leq T \leq 1$.
+
 Let $(\scrB^a(\scrA \otimes_\psi \scrB),
     \varrho_\psi, h_\psi)$ denote the Paschke dilation of~$\psi$
     constructed in~\sref{existence-paschke}.
@@ -3410,7 +3434,7 @@ Define~$B\colon \scrA \times \scrB \to \scrA \otimes_\psi \scrB$
     by~$B(a,b) = a \otimes b$.
 This~$B$ is $\varphi$-compatible
 --- indeed, for any~$n \in \N$, $a_1, \ldots, a_n \in \scrA$
-    and~$b_1, \ldots, b_n \in \scrB$ we have
+    and~$b_1, \ldots, b_n \in \scrB$
 \begin{equation*}
     \bigl\| \sum_i B(a_i, b_i) \bigr\|^2
      \ = \  \bigl\| \sum_{i,j}
@@ -3419,7 +3443,7 @@ This~$B$ is $\varphi$-compatible
                 b_i^* \varphi(a_i^*a_j) b_j \bigr\|.
 \end{equation*}
 Thus there is a unique bounded module
-    map~$W \colon X \otimes_\varphi Y \to X \otimes_\psi Y$
+    map~$W \colon \scrA \otimes_\varphi \scrB \to \scrA \otimes_\psi \scrB$
     fixed by~$W x \otimes y = x \otimes y$.
 By \sref{hilbmod-adjoint-exists}~$W$ has an adjoint.
 For any~$a\in\scrA$, we have~$W \varrho(a) = \varrho_\psi(a) W$
@@ -3437,7 +3461,38 @@ For any~$a\in \scrA$ we have
     &  \ = \ \left<1\otimes1, a\otimes1\right> \\
     &  \ = \ \psi(a),
 \end{align*}
-as desired. \qed
+    as desired.  We have shown the correspondence holds for
+    the Paschke dilation~$(\scrB^a(\scrA \otimes_\varphi \scrB), \varrho, h)$
+                constructed in~\sref{existence-paschke}.
+\end{point}
+\begin{point}{Arbitrary dilation}%
+Assume~$(\scrP', \varrho', h')$ is an (other) Paschke dilation
+    of~$\varphi$.
+For brevity write~$\scrP \equiv \scrA \otimes_\varphi \scrB$
+    and for clarity
+    write~$\varphi_T^{\scrP}$
+        and~$\varphi_t^{\scrP'}$
+    to distinguish between~$\varphi_T$ and~$\varphi_t$
+    for~$T \in \varrho(\scrA)^\square$ and~$t \in \varrho'(\scrA)^\square$.
+By~\sref{paschke-unique-up-to-iso}
+    there is a unique nmiu-isomorphism
+    $\vartheta\colon \scrP' \to \scrP$
+    such that~$\vartheta \after \varrho' = \varrho $
+    and~$h \after \vartheta = h'$.
+It is easy to see~$\vartheta$ restricts to a linear order isomorphism
+    $[0,1]_{\varrho'(\scrA)^\square} \to [0,1]_{\varrho(\scrA)^\square}$.
+For any~$t \in \varrho'(\scrA)^\square$ and~$a\in \scrA$ we have
+\begin{equation*}
+    \varphi_t^{\scrP'} (a)
+        \ = \ h'(t \varrho'(a))
+        \ = \ h(\vartheta(t \varrho'(a)))
+        \ = \ h(\vartheta(t) \varrho(a))
+        \ = \ \varphi_{\vartheta(t)}^{\scrP_s}(a)
+\end{equation*}
+and so~$t \mapsto \varphi_t^{\scrP'}$
+    is a linear order isomorphism as it
+    is the composition of the linear order isomorphisms
+    $\vartheta^{-1}$ and~$t \mapsto \varphi_t^\scrP$. \qed
 \end{point}
 \end{point}
 \end{point}
@@ -3934,6 +3989,18 @@ Furthermore~$E_1$ is an orthonormal basis for~$E_0 \cup \{e\}$,
     hence~$(E - E_0) \cup E_1$ is the desired orthonormal basis of~$X$. \qed
 \end{point}
 \end{point}
+\end{point}
+\begin{point}%
+Does this settle the matter?  One might hope
+    that~$\ell^2((1_{\mathscr{B}})_{\alpha \in \kappa}) \cong
+        \ell^2((1_{\mathscr{B}})_{\beta\in\lambda})$
+    implies~$\kappa=\lambda$ for all cardinals~$\kappa$,$\lambda$.
+This is not the case.
+By definition, for any non-trivial type III factor~$\scrB$
+    with non-zero projection~$p$
+    it holds~$p \sim 1 -p$
+    and so~$\scrB \cong p\scrB \oplus (1-p)\scrB \cong 
+    \scrB \oplus \scrB$ as Hilbert modules.\TODO{add type III ref}
 \end{point}
 \end{parsec}
 
@@ -4507,7 +4574,7 @@ of~$p$ is given by~$(\cceil{p}\scrA, h_{\cceil{p}}, h_p)$.
 \begin{point}{Proof}%
 (This is a simplified proof of the result we published earlier.
     \cite[Thm.~28]{wwpaschke}.)
-Let~$(\scrA \otimes_{h_p} \scrA_p, \varrho, h)$
+Let~$(\scrA \otimes_{h_p} p\scrA p, \varrho, h)$
     denote the Paschke dilation constructed in~\sref{existence-paschke}.
 We proceed in roughly three steps:
     first we show~$\scrA p$ is a self dual Hilbert~$p\scrA p$-module,
@@ -4586,7 +4653,7 @@ The map~$\varrho_0$ is surjective:
            \ = \ \bigl(\sum_i T( u_i ) u_i^*\bigr) ap
            \ = \ \varrho_0 \bigl(\sum_i T( u_i ) u_i^*\bigr) ap.
 \end{equation*}
-Next we show~$\cceil{\varrho_0} = \cceil{p}$.
+Next we show~$\ceil{\varrho_0} = \cceil{p}$.
 It is sufficient to show that for each~$\alpha \in \scrA$ with $\alpha \geq 0$,
     we have~$\alpha ap = 0$ for all~$a\in \scrA$ if and only if~$\alpha \cceil{p} = 0$
     Clearly~$\alpha \cceil{p} = 0$ implies~$\alpha ap = \alpha \cceil{p} ap= 0$.
@@ -4608,7 +4675,113 @@ h_p \after h_{\cceil{p}}
 Using surjectivity of~$h_{\cceil{p}}$
 and rearranging, we find~$h_p \after (\varphi^{-1} \after \ad_{U^*}) = h$.
 Thus indeed~$(\cceil{p} \scrA, h_{\cceil{p}}, h_p)$
-a Paschke dilation of~$h_p$. \TODO{iso paschke} \qed
+is a Paschke dilation of~$h_p$. \TODO{iso paschke} \qed
+\end{point}
+\end{point}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}%
+The order correspondence \sref{paschke-correspondence}
+    has several corollaries.
+\end{point}
+\begin{point}{Definition}%
+Assume~$\varphi\colon \scrA \to \scrB$ is an ncp-map.
+We say~$\varphi$ is \Define{ncp-extreme}
+    if~$\varphi$ is an extreme point among
+    the ncp-maps with the same value on~$1$ ---
+    that is:
+    for any~$0 < \lambda < 1$, $\varphi_1,\varphi_2\colon \scrA \to \scrB$
+    ncp with~$\varphi_1(1) = \varphi_2(1) = \varphi(1)$
+    we have
+    \begin{equation*}
+    \lambda \varphi_1 + (1-\lambda)\varphi_2 \ =\  \varphi
+    \quad \implies \quad
+    \varphi_1=\varphi_2=\varphi.
+    \end{equation*}
+\end{point}
+\begin{point}{Theorem}%
+Assume~$\varphi\colon \scrA \to \scrB$ is an ncp-map
+    with Paschke dilation~$(\scrP, \varrho, h)$.
+Then the following are equivalent.
+\begin{enumerate}
+    \item The map $h$ is injective on~$\varrho(\scrA)^\square$.
+    \item The map $h$ is injective on~$[0,1]_{\varrho(\scrA)^\square}$.
+    \item The map~$\varphi$ is ncp-extreme.
+\end{enumerate}
+\begin{point}{Proof}%
+(Based on \cite[Prop.~1.4.6]{arveson}
+    and \cite[Thm.~5.4]{paschke}.)
+We prove~$1 \Rightarrow 2 \Rightarrow 3 \Rightarrow 1$.
+\begin{point}{$1 \Rightarrow 2$}%
+Trivial.
+\end{point}
+\begin{point}{$2 \Rightarrow 3$}%
+Assume~$h$ is injective on~$[0,1]_{\varrho(\scrA)^\square}$.
+Suppose~$\varphi = \lambda \psi + (1 - \lambda) \psi'$
+    for some~$0 < \lambda < 1$
+    and ncp~$\psi,\psi'\colon \scrA \to \scrB$
+    with~$\psi(1) = \psi'(1) = \varphi(1)$.
+Note~$0 \leq_\ncp \lambda\psi \leq_\ncp \varphi$
+hence~$\lambda\psi = \varphi_t$ for some~$t \in [0,1]_{\varrho(\scrA)^\square}$
+by~\sref{paschke-correspondence}.
+So
+\begin{equation*}
+    h(\lambda 1)
+    \ =\  \varphi_{\lambda1}(1) \ =\  \lambda \varphi(1) 
+    \ =\  \lambda \psi(1)
+    \ =\  \varphi_t (1)  \ =\  h(t).
+\end{equation*}
+By the injectivity of~$h$,
+    we find~$t = \lambda 1$,
+    thus~$\lambda \psi = \lambda \varphi$
+    and so~$\psi = \varphi$.
+The proof of~$\psi' = \varphi$ is the same.
+Hence~$\varphi$ is ncp-extreme.
+\end{point}
+\begin{point}{$3 \Rightarrow 1$}%
+Suppose~$\varphi$ is ncp-extreme.
+Pick any~$a \in \varrho(\scrA)^\square$ with~$h(a) = 0$.
+We want to show~$a = 0$.
+Clearly~$\Real{h(a)} = h(\Real{a}) = 0$
+and~$\Imag{h(a)} = h(\Imag{a}) = 0$,
+so it is sufficient to prove~$\Real{a} = \Imag{a}=0$.
+Thus we may assume without loss of generality that~$a$ is self-adjoint.
+
+By~\TODO{...}~$h$ is pure
+    and thus splits as~$h = c \after h_p$
+    for some filter~$c \colon p\scrP p \to \scrB$
+    and the standard corner~$h_p\colon \scrP \to p\scrP p$
+    for~$p = \ceil{h}$.
+By \TODO{...} filters are injective
+    and so from the assumption~$0 = h(a) = c(pap)$
+    it follows~$pap = 0$.
+Using \sref{cstar-positive} and some easy algebra,
+    we can find~$0 < \mu,\lambda$
+    such that~$\frac{1}{4} \leq \mu a + \lambda \leq \frac{3}{4}$.
+Define~$t = \mu a + \lambda$.
+For the moment, note~$\varphi_t$ is ncp.
+As $pap = 0$, we see~$ptp = \lambda p$ and
+so~$\frac{1}{4} p \leq  ptp = \lambda p
+    \leq \frac{3}{4} p$.
+Thus either~$0 < \lambda < 1$ or~$p = 0$.
+If~$p = 0$ then~$\varphi=0$ hence~$\scrP = \{0\}$
+    and~$a = 0$ as desired.
+For the non-trivial case, assume~$0 < \lambda <1$.
+Note~$\varphi_t(1) = h(t) = c(ptp) = \lambda c(p1p) = \lambda \varphi(1)$
+    and similarly~$\varphi_{1-t}(1) = (1-\lambda) \varphi(1)$.
+Define~$\psi_1 = \lambda^{-1} \varphi_t$
+and~$\psi_2 = (1-\lambda)^{-1}\varphi_{1-t}$.
+By the previous,~$\psi_1$ and~$\psi_2$ are ncp-maps
+    with~$\psi_1(1)=\psi_2(1)=\varphi(1)$.
+Also~$\lambda \psi_1 + \lambda \psi_2 = \varphi$.
+As~$\varphi$ is ncp-extreme,
+    we must ahve~$\psi_1 = \psi_2 = \varphi$.
+So~$\varphi_t = \lambda \varphi = \varphi_{\lambda 1}$,
+    thus~$\lambda = t \equiv \mu a + \lambda$.
+    Rearranging:~$\mu a = 0$.
+    As~$\mu > 0$, we find~$a=0$, as desired. \qed
 \end{point}
 \end{point}
 \end{point}
