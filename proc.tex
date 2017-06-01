@@ -425,7 +425,7 @@ $\ceil{g(p)}\ceil{g(q)}=\ceil{\varrho(p)}\ceil{\varrho(q)}
 =\varrho(p)\varrho(q)=\varrho(pq)=\varrho(0)=0$.\qed
 \end{point}
 \end{point}
-\begin{point}[canonical-quotient-rigid]{Proposition}%
+\begin{point}[canonical-quotient-rigid]{Lemma}%
 Given an element~$b$ of a von Neumann algebra~$\scrA$
 the ncp-map $a\mapsto b^* a b,\ \ceilr{b}\!\scrA\!\ceilr{b}\to\scrA$
 is rigid.
@@ -499,7 +499,51 @@ so that~$e_n h(e_n^\perp) e_n =0$,
 which yields $e_nh(e_n)e_n = e_n$.\qed
 \end{point}
 \end{point}
-
+\begin{point}{Theorem}%
+Every pure map between von Neumann algebras is rigid.
+\begin{point}{Proof}%
+Let~$f\colon \scrA\to\scrB$ be a pure map between von Neumann algebras,
+and let~$g\colon \scrA\to\scrB$ be an ncp-map
+with $f(1)=g(1)$
+and $f^\bullet = g^\bullet$.
+To show that~$f$
+is rigid,
+we must prove that~$f=g$.
+We know
+by~\TODO{``iso'' theorem}
+that $f$ can be written as $f\equiv c_{f(1)} \circ [f]\circ \pi_{\ceil{f}}$,
+and that~$c_{f(1)}$ is rigid,
+by~\sref{canonical-quotient-rigid},
+which we'll use shortly.
+Towards this end,
+note that since~$f^\bullet = g^\bullet$,
+we have $f_\bullet = g_\bullet$,
+and so $\ceil{f}=f_\bullet(1)=g_\bullet(1)=\ceil{g}$.
+As~$\pi_{\ceil{f}}$ is a corner of~$\ceil{f}=\ceil{g}$,
+there is a unique ncp-map $h\colon \ceil{f}\!\scrA\!\ceil{f}\to\scrB$
+with $h\circ \pi_{\ceil{f}} =g$. 
+Since then
+$h^\bullet \circ \pi_{\ceil{f}}^\bullet
+= g^\bullet = f^\bullet 
+= c_{f(1)}^\bullet
+\circ [f]^\bullet \circ \pi_{\ceil{f}}^\bullet$,
+ and $\pi_{\ceil{f}}^\bullet$ is clearly surjective,
+we get~$h^\bullet = c_{f(1)}^\bullet\circ [f]^\bullet$,
+and thus  $(h\circ [f]^{-1})^\bullet = c_{f(1)}^\bullet$,
+using here that~$[f]$ is invertible,
+because~$f$ is pure.
+Now,
+using that~$c_{f(1)}$
+is rigid,
+and $h([f]^{-1}(1))=h(1)=h(\pi_{\ceil{f}}(1))=g(1)=f(1)=c_{f(1)}(1)$,
+we get~$h\circ [f]^{-1}=c_{f(1)}$,
+which yields
+$g=h\circ \pi_{\ceil{f}} 
+=h\circ [f]^{-1}\circ [f]\circ \pi_{\ceil{f}}
+= c_{f(1)} \circ [f] \circ \pi_{\ceil{f}} = f$,
+and thus~$f$ is rigid.\qed
+\end{point}
+\end{point}
 \end{parsec}
 
 
