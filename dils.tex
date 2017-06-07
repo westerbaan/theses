@@ -891,7 +891,7 @@ But then by \TODO{} $\vartheta$ is an nmiu-isomorphism. \qed
 \par
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[paschke-basics]{Exercise}%
 The following can be shown using only the defining universal property.
 \begin{enumerate}
 \item
@@ -4503,8 +4503,13 @@ Before we continue, let's rule out generalizations
 A state~$\varphi\colon \scrA \to \C$ is called pure, if it is an extreme
     point among all states.
 It is unreasonable to define an arbitrary ncp-map to be pure
-    if it is extreme, as every nmiu-map (including measurement and discarding)
-    is extreme among the unital ncp-maps.\TODO{ref}
+    if it is extreme, as every nmiu-map (including 
+    von Neumann measurements and discarding)
+    is extreme among the unital ncp-maps,
+    as we will see in \sref{nmiu-ncp-extreme}.
+In fact, in \sref{ncp-extreme-comp}
+    we show that every ncp-map is the composition
+    of two extreme maps.
 
 \item
 Inspired by the GNS-correspondence between pure states and
@@ -4609,7 +4614,7 @@ As~$\cceil{p} - q_0 \leq \cceil{p}$
                 = \cceil{\cceil{p}-q_0}\cceil{p} = 0$, as desired. \qed
 \end{point}
 \end{point}
-\begin{point}{Theorem}%
+\begin{point}[paschke-corner]{Theorem}%
 Let~$\scrA$ be a von Neumann algebra together with a projection~$p \in \scrA$.
 Then a Paschke dilation of the standard corner~$h_p \colon \scrA \to p\scrA p$
 of~$p$ is given by~$(\cceil{p}\scrA, h_{\cceil{p}}, h_p)$.
@@ -4743,7 +4748,7 @@ We say~$\varphi$ is \Define{ncp-extreme}
     \varphi_1=\varphi_2=\varphi.
     \end{equation*}
 \end{point}
-\begin{point}{Theorem}%
+\begin{point}[ncp-extreme-paschke]{Theorem}%
 Assume~$\varphi\colon \scrA \to \scrB$ is an ncp-map
     with Paschke dilation~$(\scrP, \varrho, h)$.
 Then the following are equivalent.
@@ -4826,6 +4831,39 @@ So~$\varphi_t = \lambda \varphi = \varphi_{\lambda 1}$,
     As~$\mu > 0$, we find~$a=0$, as desired. \qed
 \end{point}
 \end{point}
+\end{point}
+\begin{point}[nmiu-ncp-extreme]{Corollary}%
+Any nmiu-map~$\varrho\colon \scrA \to \scrB$ is ncp-extreme. 
+\begin{point}{Proof}%
+Easy: $(\scrB, \varrho, \id)$ is a Paschke dilation of~$\varrho$
+and~$\id$ is injective.  \qed
+\end{point}
+\end{point}
+\begin{point}{Theorem}%
+Any pure ncp-map~$\varphi\colon \scrA \to \scrB$ is ncp-extreme.
+\begin{point}{Proof}%
+By \TODO{...} $\varphi = c \after h_p$
+    for a filter~$c\colon p\scrA p \to \scrB$
+    and projection~$p \equiv \ceil{\varphi}$.
+Combining \TODO{...} and \sref{paschke-corner}
+    we see~$(\cceil{p}\scrA, h_{\cceil{p}}, c\after h_p)$
+    is a Paschke dilation of~$\varphi$.
+Appealing to~\sref{ncp-extreme-paschke},
+    we are done if we can show~$c \after h_p$
+    is injective on~$[0,1]_{h_{\cceil{p}}(\scrA)^\square}$.
+As~$h_{\cceil{p}}$ is surjective,
+    $h_{\cceil{p}}(\scrA)^\square = Z(\cceil{p} \scrA)$.
+    Assume~$t \in [0,1]_{Z(\cceil{p} \scrA)}$ with~$c(ptp)=0$
+We want to show~$t = 0$.
+As~$c$ is injective by \TODO{filters injective} $ptp = 0$.
+By \TODO{} $p \leq 1- \ceil{t}$
+and so~$\cceil{p} \leq 1- \ceil{t}$.
+Hence~$\cceil{p} \leq \cceil{p} - \ceil{t} \leq \cceil{p}$.
+So~$t \leq \ceil{t }=0$, as desired. \qed
+\end{point}
+\end{point}
+\begin{point}[ncp-extreme-comp]{Corollary}%
+    Any~ncp-map is the composition of two ncp-extreme maps.
 \end{point}
 \end{parsec}
 
