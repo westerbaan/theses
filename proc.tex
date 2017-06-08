@@ -545,6 +545,165 @@ and thus~$f$ is rigid.\qed
 \end{point}
 \end{point}
 \end{parsec}
+\subsection{Central similarity}
+\begin{parsec}%
+\begin{point}%
+We now turn to the question
+to what extend a filter~$c$ is determined by
+its action~$c^\bullet\colon e\mapsto \ceil{c(e)}$ on projections;
+we will see in~\TODO{}
+that two filters $c_1$ and~$c_2$
+are equivalent, $c_1^\bullet = c_2^\bullet$,
+if and only if~$c_1(1)$ and~$c_2(1)$
+are equal up to some central elements,
+that is, \emph{centrally similar}.
+\end{point}
+\begin{point}{Definition}%
+We say that positive elements $p$ and~$q$ of a von Neumann algebra~$\scrA$
+are \Define{centrally similar}
+if~$cp=dq$ for some positive central elements~$c$ and~$d$ of~$\scrA$
+with~$\ceil{p}\leq \ceil{c}$
+and~$\ceil{q}\leq \ceil{d}$.
+\end{point}
+\begin{point}[centrally-similar-basic]{Exercise}%
+Let~$p$ and~$q$ be positive elements
+of a von Neumann algebra~$\scrA$.
+\begin{enumerate}
+\item
+Assuming that~$p$ and~$q$ are centrally similar,
+show that if~$a\in\scrA$ commutes with~$p$,
+then~$a$ commutes with~$q$,
+and conclude that~$p$ and~$q$ commute.
+\item
+Show that $\ceil{p}=\ceil{q}$
+when~$p$ and~$q$ are centrally similar.
+
+\item
+Assuming~$p$ and~$q$ are invertible,
+show that~$p$ and~$q$ are centrally similar
+iff $qp^{-1}$ is central iff $pq^{-1}$ is central
+iff both
+$\frac{p\wedge q}{p}$ and~$\frac{p\wedge q}{q}$
+are central.
+\item
+Assume that~$p$ and~$q$ commute and~$\ceil{p}=\ceil{q}$,
+and let~$e_1\leq e_2\leq \dotsb$
+be the sequence of projections from~\TODO{...}
+commuting with~$p$ and~$q$
+such that~$\bigcup_n e_n = \ceil{p}=\ceil{q}$
+and $e_n p$ and~$e_n q$ are invertible for all~$n$.
+
+Show that $\frac{e_np\,\wedge\, e_nq}{e_n p}$
+converges ultraweakly to~$\frac{p\wedge q}{p}$.
+
+Conclude that~$p$ and~$q$ are centrally similar
+iff~$e_np$ and~$e_nq$ are centrally similar for all~$n$.
+\end{enumerate}
+\end{point}
+\begin{point}[centrally-similar-fundamental]{Lemma}%
+Suppose that $\ceil{q \, \vartheta(e)\, q}\leq e$
+and~$\ceil{q \,\vartheta(e^\perp)\, q} \leq e^\perp$,
+where~$e$ is a projection of a von Neumann algebra~$\scrA$,
+$q$ is a positive element of~$\scrA$,
+and~$\vartheta\colon \scrA\to\scrA$ is a miu-map.
+Then~$eq=qe$ and~$\vartheta(e)=e$.
+\begin{point}{Proof}%
+We have $\vartheta(e)qe=\vartheta(e)q$,
+because~$e\geq  \ceil{q\,\vartheta(e)\,q}
+\equiv \ceill{\vartheta(e)q}$ (see~\sref{ceill-basic}).
+Similarly, $\vartheta(e^\perp)qe^\perp = \vartheta(e^\perp)q$,
+because $e^\perp \geq \ceil{q\,\vartheta(e^\perp)\,q}
+\equiv \ceill{\vartheta(e^\perp)q}$,
+and so~$\vartheta(e^\perp)qe=0$,
+which implies $\vartheta(e)qe=qe$.
+Thus~$qe=\vartheta(e)qe=\vartheta(e)q$,
+and so $q^2e=q\vartheta(e)q$ is self-adjoint,
+which gives us that $q^2e=(q^2e)^*=eq^2$.
+Since~$q^2$ commutes with~$e$,
+$q=\smash{\sqrt{q^2}}$ commutes
+with~$e$ too (see~\sref{sqrt}).
+Finally, $\vartheta(e)q=qe=eq$
+and~$\ceil{q}=1$
+imply that~$\vartheta(e)=e$ by~\sref{mult-cancellation}.\qed
+\end{point}
+\end{point}
+\begin{point}[centrally-similar-corollary]{Corollary}%
+A positive element~$q$
+of a von Neumann algebra~$\scrA$
+with~$\ceil{q}=1$
+is central provided
+there is a miu-map~$\vartheta\colon \scrA\to\scrA$
+with $\ceil{q\,\vartheta(e)\,q}\leq e$
+for every projection~$e$ from~$\scrA$;
+and in that case~$\vartheta=\id$.
+\end{point}
+\begin{point}{Proposition}%
+Positive elements~$p$ and~$q$
+of a von Neumann algebra~$\scrA$
+with~$\ceil{p}=\ceil{q}=1$
+are centrally similar 
+when there is a miu-isomorphism
+$\vartheta\colon \scrA\to\scrA$
+with~$\ceil{pep}=\ceil{q\,\vartheta(e)\,q}$
+for all projections~$e$ of~$\scrA$;
+and in that case  $\vartheta=\id$.
+\begin{point}{Proof}%
+Let~$e$ be a projection from~$\scrA$ with~$ep=pe$.
+Since~$1=\ceil{p}=\ceil{\smash{p^2}}$
+we have $e=\ceil{e\ceil{\smash{p^2}}e}
+=\ceil{e\smash{p^2} e}=\ceil{pep}=\ceil{q\,\vartheta(e)\,q}$.
+Since~$e^\perp$ commutes with~$p$ too,
+we get~$e^\perp = \ceil{\smash{q\,\vartheta(e^\perp)\,q}}$
+by the same token;
+and thus~$eq=qe$ and~$\vartheta(e)=e$ 
+by~\sref{centrally-similar-fundamental}.
+Since~$p$ is the norm limit
+of linear combinations of such projections~$e$,
+we get $pq=qp$ and~$\vartheta(p)=p$.
+
+Since~$p$ and~$q$ commute,
+we can find a sequence
+of projections~$e_1\leq e_2 \leq \dotsb$
+that commute with~$p$ and~$q$
+with~$\bigcup_n e_n =1$
+and such that $pe_n$ and~$qe_n$
+are invertible, see~\TODO{simultaneous-approximate-pseudoinverse}.
+Note that to prove that~$p$ and~$q$ are centrally similar,
+it suffices to show that $pe_n$ and~$qe_n$ are centrally similar,
+by~\TODO{...}
+because $pe_n$ converges ultrastrongly to~$p$
+and~$qe_n$ converges ultrastrongly to~$q$
+(by~\TODO{mult-uws-cont} and~\TODO{vna-supremum-uslimit}).
+Further, to prove that~$\vartheta(a)=a$
+for some~$a\in\scrA$,
+it suffices to show that~$\vartheta( e_n a e_n  ) = e_n a e_n$,
+because $e_n a e_n$ converges ultraweakly to~$a$
+by~\TODO{}.
+Note that~$\vartheta(e_n)=e_n$,
+because~$e_np=pe_n$,
+and so~$\vartheta$ maps~$e_n\scrA e_n$ into~$e_n \scrA e_n$.
+
+Thus, by considering~$e_n \scrA e_n$ 
+instead of~$\scrA$,
+and the restriction of~$\vartheta$ to~$e_n\scrA e_n$
+instead of~$\vartheta$,
+and~$pe_n$ and~$qe_n$
+instead of~$p$ and~$q$,
+we reduce the problem to the case that~$p$ and~$q$ are invertible;
+and so we may assume without loss of generality that~$p$ and~$q$
+are invertible to start with.
+Then given an arbitrary projection~$e$ from~$\scrA$
+we have $\ceil{p^{-1}q \,\vartheta(e)\, q p^{-1}}
+= \ceil{p^{-1}\ceil{q\,\vartheta(e)\,q}p^{-1}}
+= \ceil{p^{-1}\ceil{pep}p^{-1}}=e$,
+and so~$p^{-1}q$ is central and~$\vartheta=\id$ 
+by~\sref{centrally-similar-corollary} ---
+and as $q\equiv p^{-1}q \, p$,
+$p$ and~$q$ are thus centrally similar.
+\qed
+\end{point}
+\end{point}
+\end{parsec}
 
 
 \section{To be moved}
