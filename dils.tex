@@ -891,7 +891,7 @@ But then by \TODO{} $\vartheta$ is an nmiu-isomorphism. \qed
 \par
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[paschke-basics]{Exercise}%
 The following can be shown using only the defining universal property.
 \begin{enumerate}
 \item
@@ -1598,6 +1598,12 @@ For~$x_0 \in X$ the maps
 \end{align*}
 are all uniformly continuous in the ultranorm uniformity.
 \end{point}
+\begin{point}[ultranormscalar]{Exercise}%
+Let~$\scrB$ be a von Neumann algebra and~$X$ a right~$\scrB$-module
+    with~$\scrB$-valued inner product.
+Show that~$x \mapsto xb$
+    is ultranorm continuous for any~$b \in \scrB$.
+\end{point}
 \begin{point}[innerprod-ultraweak]{Proposition}%
 Let~$X$ be a right~$\scrB$-module
     with~$\scrB$-valued inner product~$[\,\cdot\,,\,\cdot\,]$
@@ -1822,51 +1828,87 @@ Consider~$x' = x - \sum_{e \in E} e\left<e,x\right>$.
 We are done if we can show~$x' = 0$.
 
 To see~$x'=0$, we
-first show that~$X$ has polar decomposition:
+first show that~$X$ has \Define{polar decomposition}:
     for each~$y \in X$ there is an~$u\in X$
     with~$\left<u,u\right> = \ceil{\left<y,y\right>}$
         and~$y=u\left<y,y\right>^{\frac{1}{2}}$.
-Let~$e_1, e_2, \ldots$ be orthogonal projections in~$\scrB$ \TODO{ref}
-    such that~$\sum_n e_n = \ceil{\left<y,y\right>}$
-    and~$e_n \leq n\left<y,y\right>^{\frac{1}{2}}$.
-    Clearly $e_n \left<y,y\right>^{\frac{1}{2}}$ is invertible
-        in~$e_n \scrB e_n$.
-    Thus there is an~$h_n \in \scrB$
-        such that $h_n \left<y,y\right>^{\frac{1}{2}} =
-             \left<y,y\right>^{\frac{1}{2}} h_n = e_n$.
-Then
+By \sref{approximate-pseudoinverse}
+    the positive element~$\left<y,y\right>^{\frac{1}{2}}$
+    has an approximate pseudoinverse~$h_1, h_2, \ldots$
+    --- that is:
+    $h_n \left<y,y\right>^{\frac{1}{2}} =
+         \left<y,y\right>^{\frac{1}{2}} h_n
+         = \ceil{h_n}$
+         and~$\sum_n h_n \left<y,y\right>^{\frac{1}{2}} = \sum_n \ceil{h_n}
+                    = \ceil{\left<y,y\right>}$. Note
 \begin{equation*}
-    \left<yh_n,yh_m\right> =
+    \left<yh_n,yh_m\right> \ =
         (h_n \left<y,y\right>^{\frac{1}{2}})
-        (\left<y,y\right>^{\frac{1}{2}} h_m) = e_ne_m.
+        (\left<y,y\right>^{\frac{1}{2}} h_m) \ = \ceil{h_n}\ceil{h_m}
 \end{equation*}
-So~$\left< \sum_{n=1}^N y h_n, \sum_{n=1}^N y h_n \right> 
-        = \sum_{n=1}^N e_n \leq \ceil{\left<y,y\right>}$.
+and so using~$\ceil{h_1}, \ceil{h_2}, \ldots$ are pairwise orthogonal
+    we see
+\begin{equation*}
+    \bigl< \sum_{n=1}^N y h_n, \sum_{n=1}^N y h_n \bigr> 
+    \ =\  \sum_{n=1}^N \sum_{m=1}^N \ceil{h_n} \ceil{h_m}
+                \ =\  \sum_{n=1}^N \ceil{h_n}
+                \ \leq\  \ceil{\left<y,y\right>}.
+\end{equation*}
 Thus~$( \sum_{n=1}^N y h_n)_N$ form an ultranorm-Cauchy net
     norm bounded by~$1$.
 By assumption this bounded net converges:
     write~$u = \sum_n yh_n$.
-We derive \TODO{computation rules and~$\left<u,u\right>$}
-\begin{equation*}
+We derive
+\begin{align*}
 u \left<y,y\right>^{\frac{1}{2}}
-= \sum_n yh_n \left<y,y\right>^{\frac{1}{2}}
-= \sum_n y e_n
-= \unlim_n y (e_1 + \cdots + e_n)
-= y \ceil{\left<y,y\right>}
-= y.
+&\ =\  \sum_n yh_n \left<y,y\right>^{\frac{1}{2}} 
+    && \text{by dfn.~$u$ and \sref{ultranormscalar}}
+\\
+&\ =\  \sum_n y \ceil{h_n} 
+    && \text{by dfn.~$h_n$}\\
+    &\ =\  y \sum_n\ceil{h_n}
+&& \text{by \sref{ultranormcontstruct}} \\
+&\ =\  y \ceil{\left<y,y\right>} && \text{by dfn.~$h_n$}\\
+&\ =\  y,
+\end{align*}
+where the last equality 
+follows from~$y (1- \ceil{\left<y,y\right>})=0$,
+    which is justified by
+\begin{equation*}
+    \bigl<
+        y (1- \ceil{\left<y,y\right>}),
+        y (1- \ceil{\left<y,y\right>}) \bigr>
+        \ = \ 
+        (1- \ceil{\left<y,y\right>}) \left<y,y\right>
+        (1- \ceil{\left<y,y\right>})
+        \ = \  0.
 \end{equation*}
+This finishes the proof of polar decomposition.
 
 Recall we want to
 show~$x' \equiv x - \sum_{e \in E} e\left<e,x\right>= 0$.
 Reasoning towards contradiction, assume~$x' \neq 0$.
 By polar decomposition~$x' = u\left<x',x'\right>^{\frac{1}{2}}$
-for some~$u \in X$ with~$\left<u,u\right> = \ceil{\left<x',x'\right>}$,
-which is a non-zero projection.
-Note that by \TODO{} $\left<e,x'\right> =0$
-for all~$e \in E$.
-Thus~\TODO{} $\left<e,u\right> = 0$.
-So~$u$ contradicts the maximality of~$E$.
-Hence~$x'=0$. Thus~$x = \sum_{e \in E} e\left<e,x\right>$ as desired.
+for some~$u \in X$ with~$\left<u,u\right> = \ceil{\left<x',x'\right>}$.
+Note~$\left<u,u\right> \neq 0$
+    for otherwise~$x' = 0$, quod non.
+For any~$e_0 \in E$, we have
+\begin{equation*}
+   \left<e_0, x'\right> \ =\ 
+   \bigl<e_0, x-\sum_{e\in E} e\left<e,x\right>\bigr> 
+   \ \overset{\sref{ultranormcontstruct}}{=} \ 
+   \left<e_0, x\right> - \sum_{e \in E}\left<e_0, e\right>\left<e,x\right> \ =\  0
+\end{equation*}
+and so~$0 = \left<e,x'\right> = \left<e, u\right>\left<x',x'\right>^{\frac{1}{2}}$ for any~$e \in E$.
+Thus
+\begin{equation*}
+        \left<e, u\right> \ =\ 
+        \left<e, u\right> \left<u,u\right> \ = \ 
+        \left<e, u\right> \ceil{\left<x',x'\right>}
+        \ \overset{\sref{mult-cancellation}}{=}\  0.
+\end{equation*}
+Thus~$E \cup \{ u \}$ contradicts the maximality of~$E$.
+Hence~$x'=0$ and so~$x = \sum_{e \in E} e\left<e,x\right>$ as desired.
 \end{point}
 \begin{point}{4 $\Rightarrow$ 2, basis implies completeness}%
     Assume~$X$ has an orthonormal basis~$E$.
@@ -4461,8 +4503,13 @@ Before we continue, let's rule out generalizations
 A state~$\varphi\colon \scrA \to \C$ is called pure, if it is an extreme
     point among all states.
 It is unreasonable to define an arbitrary ncp-map to be pure
-    if it is extreme, as every nmiu-map (including measurement and discarding)
-    is extreme among the unital ncp-maps.\TODO{ref}
+    if it is extreme, as every nmiu-map (including 
+    von Neumann measurements and discarding)
+    is extreme among the unital ncp-maps,
+    as we will see in \sref{nmiu-ncp-extreme}.
+In fact, in \sref{ncp-extreme-comp}
+    we show that every ncp-map is the composition
+    of two extreme maps.
 
 \item
 Inspired by the GNS-correspondence between pure states and
@@ -4567,7 +4614,7 @@ As~$\cceil{p} - q_0 \leq \cceil{p}$
                 = \cceil{\cceil{p}-q_0}\cceil{p} = 0$, as desired. \qed
 \end{point}
 \end{point}
-\begin{point}{Theorem}%
+\begin{point}[paschke-corner]{Theorem}%
 Let~$\scrA$ be a von Neumann algebra together with a projection~$p \in \scrA$.
 Then a Paschke dilation of the standard corner~$h_p \colon \scrA \to p\scrA p$
 of~$p$ is given by~$(\cceil{p}\scrA, h_{\cceil{p}}, h_p)$.
@@ -4701,7 +4748,7 @@ We say~$\varphi$ is \Define{ncp-extreme}
     \varphi_1=\varphi_2=\varphi.
     \end{equation*}
 \end{point}
-\begin{point}{Theorem}%
+\begin{point}[ncp-extreme-paschke]{Theorem}%
 Assume~$\varphi\colon \scrA \to \scrB$ is an ncp-map
     with Paschke dilation~$(\scrP, \varrho, h)$.
 Then the following are equivalent.
@@ -4784,6 +4831,39 @@ So~$\varphi_t = \lambda \varphi = \varphi_{\lambda 1}$,
     As~$\mu > 0$, we find~$a=0$, as desired. \qed
 \end{point}
 \end{point}
+\end{point}
+\begin{point}[nmiu-ncp-extreme]{Corollary}%
+Any nmiu-map~$\varrho\colon \scrA \to \scrB$ is ncp-extreme. 
+\begin{point}{Proof}%
+Easy: $(\scrB, \varrho, \id)$ is a Paschke dilation of~$\varrho$
+and~$\id$ is injective.  \qed
+\end{point}
+\end{point}
+\begin{point}{Theorem}%
+Any pure ncp-map~$\varphi\colon \scrA \to \scrB$ is ncp-extreme.
+\begin{point}{Proof}%
+By \TODO{...} $\varphi = c \after h_p$
+    for a filter~$c\colon p\scrA p \to \scrB$
+    and projection~$p \equiv \ceil{\varphi}$.
+Combining \TODO{...} and \sref{paschke-corner}
+    we see~$(\cceil{p}\scrA, h_{\cceil{p}}, c\after h_p)$
+    is a Paschke dilation of~$\varphi$.
+Appealing to~\sref{ncp-extreme-paschke},
+    we are done if we can show~$c \after h_p$
+    is injective on~$[0,1]_{h_{\cceil{p}}(\scrA)^\square}$.
+As~$h_{\cceil{p}}$ is surjective,
+    $h_{\cceil{p}}(\scrA)^\square = Z(\cceil{p} \scrA)$.
+    Assume~$t \in [0,1]_{Z(\cceil{p} \scrA)}$ with~$c(ptp)=0$
+We want to show~$t = 0$.
+As~$c$ is injective by \TODO{filters injective} $ptp = 0$.
+By \TODO{} $p \leq 1- \ceil{t}$
+and so~$\cceil{p} \leq 1- \ceil{t}$.
+Hence~$\cceil{p} \leq \cceil{p} - \ceil{t} \leq \cceil{p}$.
+So~$t \leq \ceil{t }=0$, as desired. \qed
+\end{point}
+\end{point}
+\begin{point}[ncp-extreme-comp]{Corollary}%
+    Any~ncp-map is the composition of two ncp-extreme maps.
 \end{point}
 \end{parsec}
 
