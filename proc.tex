@@ -606,7 +606,7 @@ with $\ceil{q\,\vartheta(e)\,q}\leq e$
 for every projection~$e$ from~$\scrA$;
 and in that case~$\vartheta=\id$.
 \end{point}
-\begin{point}{Proposition}%
+\begin{point}[positive-quotients-centrally-similar]{Proposition}%
 Positive elements~$p$ and~$q$
 of a von Neumann algebra~$\scrA$
 with~$\ceil{p}=\ceil{q}=1$
@@ -670,6 +670,72 @@ by~\sref{centrally-similar-corollary} ---
 and as $q\equiv p^{-1}q \, p$,
 $p$ and~$q$ are thus centrally similar.
 \qed
+\end{point}
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}[positive-map-uniqueness]{Theorem}%
+Given a positive element~$p$ of a von Neumann algebra~$\scrA$
+there is a unique positive map $f\colon \scrA\to\scrA$
+with~$f(1)=p$,
+namely~$f=\sqrt{p}(\,\cdot\,)\sqrt{p}$.
+\begin{point}{Proof}%
+Since we already know by~\TODO{...} that~$\sqrt{p}(\,\cdot\,)\sqrt{p}\colon
+\scrA\to\scrA$ is positive and maps~$1$ to~$p$,
+we only need to show that any positive map~$f\colon \scrA\to\scrA$
+with~$f(1)=p$ equals it.
+\begin{point}[positive-map-uniqueness-1]%
+We'll first prove this under the assumption that~$\ceil{f}=1$
+(that will be dispensed with later).
+In that case~$f$ (being pure) is a filter 
+of~$p$
+(by~\TODO{filter-iff-pure-and-faithful}),
+and thus of the form $f\equiv \sqrt{p}\,\vartheta(\,\cdot\,)\,\sqrt{p}$
+for some isomorphism~$\vartheta\colon \scrA\to\scrA$.
+Our task then is to show that~$\vartheta=\id$,
+and for this
+it suffices, by~\sref{positive-quotients-centrally-similar},
+to find some positive~$q$ in~$\scrA$ with~$\ceil{q}=1$
+and~$f^\bullet(e)\equiv\ceil{\sqrt{p}\,\vartheta(e)\,\sqrt{p}}
+= \ceil{qeq}$ for all projections~$e$ in~$\scrA$.
+
+Since~$f$ is positive,
+we have~$f\equiv \xi \xi$ for some self-adjoint
+map~$\xi\colon \scrA\to\scrA$.
+Since~$1=\ceil{f}=f_\bullet(1)=
+\xi_\bullet(\xi_\bullet(1))\leq \xi_\bullet(1)=\ceil{\xi}$
+we have~$\ceil{\xi}=1$,
+and so, $\xi$, being pure and faithful,
+is a filter (by~\TODO{filter-iff-pure-and-faithful}).
+Furthermore,
+as~$\tilde\xi:=\sqrt{\xi(1)}(\,\cdot\,)\sqrt{\xi(1)}\colon \scrA\to\scrA$
+is a filter of~$\xi(1)$ too,
+there is an isomorphism~$\alpha\colon \scrA\to\scrA$
+with $\xi=\tilde\xi\alpha$.
+Now, $ {\tilde\xi}^\bullet \alpha^\bullet
+={\xi}^\bullet={\xi}_\bullet
+=\alpha_\bullet\tilde \xi_\bullet
+= (\alpha^\bullet)^{-1}{\tilde\xi}^\bullet$
+implies~${\tilde\xi}^\bullet = \alpha^\bullet 
+{\tilde \xi}^\bullet \alpha^\bullet$,
+and 
+$f^\bullet= (\xi\xi)^\bullet
+= {\tilde \xi}^\bullet\alpha^\bullet{\tilde \xi}^\bullet\alpha^\bullet
+={\tilde \xi}^\bullet{\tilde \xi}^\bullet=(\tilde \xi\tilde \xi)^\bullet$.
+In other words,
+$\ceil{\sqrt{p}\,\vartheta(e)\,\sqrt{p}}
+=f^\bullet(e)=(\tilde\xi\tilde\xi)^\bullet(e)
+= \ceil{\xi(1)\,e\,\xi(1)}$
+for all projections~$e$ of~$\scrA$,
+which implies that~$\vartheta=\id$
+by~\sref{positive-quotients-centrally-similar},
+and hence that~$f=\sqrt{p}\,(\,\cdot\,)\,\sqrt{p}$.
+\end{point}
+\begin{point}[positive-map-uniqueness-2]%
+We'll now show that~$f=\sqrt{p}\,(\,\cdot\,)\,\sqrt{p}$
+without assuming that~$\ceil{f}=1$.
+
+\end{point}
 \end{point}
 \end{point}
 \end{parsec}
