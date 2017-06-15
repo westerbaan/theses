@@ -143,6 +143,124 @@ It follows automatically that~$f^{-1}$ is multiplicative too.\qed
 \end{parsec}
 
 \section{Measurement}
+\begin{point}%
+We now turn to the study of
+maps on a von Neumann algebra~$\scrA$
+of the form
+$a\mapsto \sqrt{p}a\sqrt{p}\colon\,\scrA\to\scrA$,
+where~$p$ is an effect of~$\scrA$,
+that represent measurement of~$p$,
+and are called \emph{assert maps} in~\TODO{cite Bart}
+--- the importance of these maps 
+to any logical description of
+quantum computation is not easily overstated.
+
+On the effects of~$\scrA$
+these maps are studied~\TODO{...} in the guise
+of the binary operation
+$p\ast q=\sqrt{p} q \sqrt{p}$
+called the \emph{sequential product}.
+The main result of this section
+is an axiomatisation of this operation
+in terms of properties
+of the underlying assert maps.
+
+Our first observation
+to this end
+is that any assert map factors as
+\begin{equation*}
+\xymatrix@C=10em{
+\scrA
+\ar[r]^-{\pi\colon a\mapsto \ceil{p}a\ceil{p}}
+&
+\ceil{p}\!\scrA\!\ceil{p}
+\ar[r]^-{c\colon a\mapsto \sqrt{p}a\sqrt{p}}
+&
+\scrA
+},
+\end{equation*}
+where both~$\pi$ and~$c$ obey a universal property:
+$c$ is a \emph{filter} of~$p$, see~\sref{filter},
+and~$\pi$ is a \emph{corner} of~$\ceil{p}$, see~\sref{corner}.
+Such maps
+that are the composition of a filter and a corner
+will be called \emph{pure}, see~\sref{pure},
+Since not only assert maps turn out to be pure, but also maps of the form
+$b^*(\,\cdot\,)b\colon \scrA\to\scrA$ for an arbitrary element~$a$
+of~$\scrA$,
+we need one more property of assert maps, namely
+that
+\begin{equation*}
+	\sqrt{p}\,e_1\,\sqrt{p}\ \leq\  e_2^\perp 
+	\qquad\iff\qquad
+	\sqrt{p}\,e_2 \,\sqrt{p}\ \leq\  e_1^\perp
+\end{equation*}
+for all projections~$e_1$ and~$e_2$ of~$\scrA$---which we'll
+describe by saying that $\sqrt{p}(\,\cdot\,)\sqrt{p}\colon \scrA\to\scrA$
+is \emph{purely self-adjoint}.
+Judging only by the name
+it may not surprise you that the map $b(\,\cdot\,)b\colon \scrA\to\scrA$
+where~$b\in \scrA$ is self-adjoint (but not necessarily positive)
+turns out to be purely self-adjoint too,
+so that as a final touch we introduce the notion
+of \emph{purely positive} maps $f\colon \scrA\to\scrA$
+that are simply maps of the form~$f\equiv gg$ for some purely self-adjoint~$g$.
+
+The main technical result, then, of this section
+is that any purely positive map $f\colon\scrA\to\scrA$
+is of the form~$f=\sqrt{p}(\,\cdot\,)\sqrt{p}$
+where~$p=f(1)$;
+and, accordingly, our axioms 
+(in~\sref{uniqueness-sequential-product})
+that uniquely
+determine the sequential product~$\ast$
+on the effects of a von Neumann algebra~$\scrA$ are:
+for every effect~$p$ of~$\scrA$,
+\begin{enumerate}
+\item
+$p\ast 1=p$,
+\item
+$p\ast q = f(q)$
+for all~$q\in [0,1]_\scrA$
+for some pure map~$f\colon \scrA\to\scrA$,
+\item
+$p=q\ast q$ for some $q$ from~$[0,1]_\scrA$,
+\item
+$p \ast (p \ast q) = (p\ast p)\ast q$
+for all~$q\in[0,1]_\scrA$,
+\item
+$p \ast e_1 \leq e_2^\perp\iff
+p \ast e_2 \leq e_1^\perp$
+for all projections $e_1,e_2$ of~$\scrA$.
+\end{enumerate}%
+While I would certainly not like
+to undersell the results mentioned above
+I suspect that the notion of purety exposed along the way
+will turn out to be of far greater significance.
+I'd like to advertise
+here that we have already discovered that purity can be described in
+wildly different terms---definitely a good omen, if any---in
+that a map~$f\colon \scrA\to\scrB$ is pure when in its 
+\emph{Paschke dilation} \TODO{add ref.}
+$\xymatrix{\scrA
+	\ar[r]|-\varrho
+&
+	\scrP\ar[r]|-c
+&
+\scrB}$
+the map $\varrho$ is surjective.
+Because of the faith I've developed for our notion of purity I've allowed myself
+to address some theoretical questions concerning it
+here that are not required for the main results of this thesis,
+but suppose a general interest in purity:
+I'll show that every pure map~$f\colon\scrA\to\scrB$
+is extreme among the ncp-maps~$g\colon \scrA\to\scrB$ with~$f(1)=g(1)$,
+and, in fact, enjoys the possibly stronger property 
+of being~\emph{rigid} (see~\sref{rigid} and~\sref{pure-is-rigid}).
+
+
+
+\end{point}
 \subsection{Corners and Filters}
 \begin{parsec}%
 \begin{point}{Definition}%
@@ -391,7 +509,7 @@ holds for von Neumann algebras,
 we'll establish and exploit the following remarkable property
 of pure maps.
 \end{point}
-\begin{point}{Definition}%
+\begin{point}[rigid]{Definition}%
 We say that a ncp-map $f\colon \scrA\to\scrB$
 between von Neumann algebras is \Define{rigid}
 when the only ncp-map $g\colon \scrA\to\scrB$
@@ -499,7 +617,7 @@ so that~$e_n h(e_n^\perp) e_n =0$,
 which yields $e_nh(e_n)e_n = e_n$.\qed
 \end{point}
 \end{point}
-\begin{point}{Theorem}%
+\begin{point}[pure-is-rigid]{Theorem}%
 Every pure map between von Neumann algebras is rigid.
 \begin{point}{Proof}%
 Let~$f\colon \scrA\to\scrB$ be a pure map between von Neumann algebras,
@@ -545,7 +663,7 @@ and thus~$f$ is rigid.\qed
 \end{point}
 \end{point}
 \end{parsec}
-\subsection{Central similarity}
+\subsection{Pure positivity}
 \begin{parsec}%
 \begin{point}%
 We now turn to the question
@@ -812,6 +930,54 @@ thereby giving~$g=\sqrt[4]{p}\,(\,\cdot\,)\,\sqrt[4]{p}$.\qed
 \end{point}
 \end{point}
 \end{parsec}
+\begin{parsec}%
+\begin{point}[uniqueness-sequential-product]{Theorem}%
+On the effects of every von Neumann algebra~$\scrA$
+there is a unique binary operation~$\ast$
+such that for all~$p$ from~$[0,1]_\scrA$,
+\begin{enumerate}
+\item \label{ax1}
+$p\ast 1 = p$,
+\item\label{ax2}
+$p\ast q = f(q)$
+for all~$q$ from~$[0,1]_\scrA$
+for some pure map~$f\colon \scrA\to\scrA$,
+\item\label{ax3}
+$p\ast (q\ast q)=(p\ast p)\ast q$
+for all~$q$ from $[0,1]_\scrA$,
+\item\label{ax4}
+$p=q\ast q$ for some~$q$ from~$[0,1]_\scrA$,
+\item\label{ax5}
+$p \ast e_1 \leq e_2^\perp
+\iff p\ast e_2 \leq e_1^\perp$
+for all projections~$e_1,e_2$ from~$\scrA$;
+\end{enumerate}
+namely, the sequantial product,
+given by
+$p\ast q = \sqrt{p}q\sqrt{p}$
+for all~$p, q$ from~$[0,1]_\scrA$.
+\begin{point}{Proof}%
+Let~$p$ be from $[0,1]_\scrA$ be given.
+Pick~$p'$ from~$[0,1]_\scrA$
+with $p = p'\ast p'$
+using~\ref{ax4},
+and find a pure map~$f\colon \scrA\to\scrA$
+with~$f(q)=p'\ast q$ for all~$q$ from $[0,1]_\scrA$
+using~\ref{ax2}.
+Then~$f$ is purely self-adjoint by~\ref{ax5},
+and so~$ff$ is purely positive.
+Since~$f(f(1))=p'\ast (p'\ast 1)
+= p'\ast p'=p$ by~\ref{ax1},
+$ff=\sqrt{p}(\,\cdot\,)\sqrt{p}$
+by~\sref{positive-map-uniqueness},
+so $p\ast q
+= (p'\ast p')\ast q
+= p'\ast (p' \ast q) = f(f(q))=\sqrt{p}q\sqrt{p}$
+for all~$q\in [0,1]_\scrA$ by~\ref{ax3}.\qed
+\end{point}
+\end{point}
+\end{parsec}
+
 
 
 \section{To be moved}
