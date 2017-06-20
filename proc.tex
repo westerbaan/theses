@@ -501,6 +501,73 @@ the following are equivalent.
 \end{point}
 \end{point}
 \end{parsec}
+\subsection{Contraposition}
+\begin{parsec}%
+\begin{point}{Definition}%
+Given an ncp-map $f\colon \scrA\to\scrB$
+between von Neumann algebras
+we define
+$\Define{f^\bullet}\colon \Proj(\scrA)\to \Proj(\scrB)$
+by~$f^\bullet(e)=\ceil{f(e)}$
+for all~$e\in\Proj(\scrA)$.
+\end{point}
+\begin{point}{Proposition}%
+Given an ncp-map $f\colon \scrA\to\scrB$
+between von Neumann algebras
+and a projection~$e$ from~$\scrB$
+there is a least projection~$\Define{f_\bullet(e)}$ from~$\scrA$ 
+with~$\ceil{f(\,f_\bullet(e)^\perp\,)}\leq e^\perp$,
+namely~$f_\bullet(e) =\ceil{\,ef(\,\cdot\,)e\,}$
+(being the carrier 
+of the ncp-map $ef(\,\cdot\,)e$ from~\TODO{...});
+giving a map $\Define{f_\bullet}\colon \Proj(\scrB)\to\Proj(\scrA)$.
+
+\TODO{refer to ITET}
+\begin{point}{Proof}%
+Since by definition $\ceil{\,ef(\,\cdot\,)e\,}$
+is the greatest projection~$s$ of~$\scrA$
+with $ef(s^\perp)e=0$ (see~\sref{carrier});
+and~$ef(s^\perp )e=0$ iff~$\ceil{f(s^\perp)}
+\leq\ceil{e(\,\cdot\,)e}^\perp\equiv
+e^\perp$;
+the projection
+$\ceil{\,ef(\,\cdot\,)e\,}$
+satisfies the description of~$f_\bullet(e)$.\qed
+\end{point}
+\end{point}
+\begin{point}{Exercise}%
+Show that for ncp-maps $f,g\colon\scrA\to\scrB$
+between von Neumann algebras $f^\bullet = g^\bullet$
+iff $f_\bullet = g_\bullet$.
+In that case we say that $f$ and~$g$ are \Define{equivalent}.
+\begin{point}%
+Show that for ncp-maps $f\colon \scrA\to\scrB$
+and~$g\colon \scrB\to\scrA$ we have
+$f^\bullet=g_\bullet$ iff $f_\bullet = g^\bullet$
+iff $\ceil{f(s)}\leq t^\perp\iff \ceil{g(t)}\leq s^\perp$
+for all projections $s$ from~$\scrA$ and~$t$ from~$\scrB$.
+
+In that case we say that~$f$ and~$g$ are \Define{contraposed}.
+\end{point}
+\end{point}
+\begin{point}{Examples}%
+\begin{enumerate}
+\item
+Given an element~$a$ of a von Neumann algebra~$\scrA$
+the maps $a^*(\,\cdot\,)a$ and~$a(\,\cdot\,)a^*$
+on~$\scrA$ are contraposed.
+\item
+An ncp-isomorphism $f\colon \scrA\to\scrB$
+between von Neumann algebras
+is contraposed to its inverse~$f^{-1}\colon \scrB\to\scrA$.
+\item
+There may be many maps equivalen to a given ncp-map $f\colon \scrA\to\scrB$
+between von Neumann algebras:
+show that~$zf$ is equivalent to~$f$
+for every positive central element~$z$ of~$\scrB$ with~$\ceil{z}=1$.
+\end{enumerate}
+\end{point}
+\end{parsec}
 \subsection{Rigidity}
 \begin{parsec}%
 \begin{point}%
@@ -943,7 +1010,7 @@ $p\ast q = f(q)$
 for all~$q$ from~$[0,1]_\scrA$
 for some pure map~$f\colon \scrA\to\scrA$,
 \item\label{ax3}
-$p\ast (q\ast q)=(p\ast p)\ast q$
+$p\ast (p\ast q)=(p\ast p)\ast q$
 for all~$q$ from $[0,1]_\scrA$,
 \item\label{ax4}
 $p=q\ast q$ for some~$q$ from~$[0,1]_\scrA$,
@@ -952,7 +1019,7 @@ $p \ast e_1 \leq e_2^\perp
 \iff p\ast e_2 \leq e_1^\perp$
 for all projections~$e_1,e_2$ from~$\scrA$;
 \end{enumerate}
-namely, the sequantial product,
+namely, the sequential product,
 given by
 $p\ast q = \sqrt{p}q\sqrt{p}$
 for all~$p, q$ from~$[0,1]_\scrA$.
@@ -975,6 +1042,53 @@ so $p\ast q
 = p'\ast (p' \ast q) = f(f(q))=\sqrt{p}q\sqrt{p}$
 for all~$q\in [0,1]_\scrA$ by~\ref{ax3}.\qed
 \end{point}
+\end{point}
+\begin{point}{Exercise}%
+We'll show  that none of the axioms
+from~\sref{uniqueness-sequential-product}
+can be omitted.
+\begin{enumerate}
+\item
+Show that
+$p\ast q := \ceil{p}q\ceil{p}$
+satisfies all axioms of~\sref{uniqueness-sequential-product}
+except~\ref{ax1}.
+\item
+Show that  $p\ast q := \floor{p}q\floor{p}\ +\ \smash{\sqrt{p-\floor{p}}\,q\,
+\sqrt{p-\floor{p}}}$
+satisfies all axioms except~\ref{ax2}.
+\item
+Show that if for every effect~$p$ of~$\scrA$
+we pick a unitary~$u_p$ from~$\ceil{p}\!\scrA\!\ceil{p}$
+then~$\ast$ given by
+$p\ast q= \sqrt{p}u_p^* \,q\, u_p\sqrt{p}$
+satisfies~\ref{ax1} and~\ref{ax2}.
+
+Show that this~$\ast$ obeys~\ref{ax3} when~$u_p^2=u_{p^2}$,
+and~\ref{ax4} when $pu_p=u_p p$,
+and~\ref{ax5} when~$u_p^*=u_p$.
+
+Conclude that when $u_p$ is defined by $u_p:=g(p)$,
+where~$g\colon [0,1]\to\{-1,1\}$
+is any Borel function with $g(\nicefrac{2}{3})=1$
+and~$g(\nicefrac{4}{9})=-1$
+the operation~$\ast$ (defined by~$u_p$ as above) satisfies
+all conditions of~\sref{uniqueness-sequential-product} except~\ref{ax3}.
+\item
+\TODO{...}
+\item
+Show that there is a Borel
+function~$g\colon[0,1]\to S^1$
+with $g(\nicefrac{1}{2})\neq 1$
+and~$g(\lambda^2)=g(\lambda)^2$ for all~$\lambda\in [0,1]$,
+and that~$\ast$ given by~$p\ast q = \sqrt{p} g(p)^* \,q \,g(p)\sqrt{p}$
+satisfies all conditions of~\sref{uniqueness-sequential-product}
+except~\ref{ax5}.
+
+
+
+
+\end{enumerate}
 \end{point}
 \end{parsec}
 
