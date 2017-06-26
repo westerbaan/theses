@@ -72,7 +72,7 @@ $f$ is multiplicative.
 \item
 \label{gardner-2}
 $f(a)f(b)=0$
-for all $a,b\in\scrA$ with $ab=0$.
+for all $a,b\in\scrA_+$ with $ab=0$.
 \item
 \label{gardner-3}
 $\ceil{f(p)}\ceil{f(q)}=0$
@@ -342,9 +342,10 @@ gives an ncp-map $p\scrA p\to q\scrA q$.
 \end{point}
 \end{parsec}%
 \begin{parsec}%
-\begin{point}{Definition}%
+\begin{point}[corner]{Definition}%
 Let~$p$ be an effect of a von Neumann algebra~$\scrA$.
-A \Define{corner} of~$p$ is an ncp-map $\pi\colon \scrA\to\scrC$
+A \Define{corner} of~$p$ is an
+ncp-map $\pi\colon \scrA\to\scrC$
 to a von Neumann algebra~$\scrC$
 with~$\pi(p^\perp)=0$
 which is initial among such maps 
@@ -353,6 +354,14 @@ that every ncp-map $f\colon \scrA\to\scrB$
 with~$f(p^\perp)=0$
 factors as $f=g\circ\pi$
 for some unique ncp-map $g\colon \scrC\to\scrB$.
+
+While most corners
+that we'll deal with are unital,
+there are also corners which are not unital
+(see~\sref{non-unital-corner}),
+so when we write ``corner'' we shall
+always mean a ``unital corner''
+unless explicitly stated otherwise.
 \end{point}
 \begin{point}{Proposition}%
 Given an effect~$p$ of a von Neumann algebra~$\scrA$,
@@ -464,40 +473,233 @@ is an approximate pseudoinverse of~$d$.\qed
 \end{point}
 \end{point}
 \end{parsec}
+\begin{parsec}%
+\begin{point}{Definition}%
+Let~$\scrA$ be a von Neumann algebra.
+\begin{enumerate}
+\item
+Given a positive element~$p$
+of~$\scrA$
+we denote
+by $\Define{c_p}\colon \ceil{p}\!\scrA\!\ceil{p}\to\scrA$
+the \Define{standard filter} for~$p$
+given by~$c_p(a)=\sqrt{p}a\sqrt{p}$
+for all~$a\in\ceil{p}\!\scrA\!\ceil{p}$.
+\item
+Given an effect~$p$ of~$\scrA$
+we denote
+by $\Define{\pi_p}\colon \scrA\to\floor{p}\!\scrA\!\floor{p}$
+the \Define{standard corner} of~$p$
+given by~$\pi_p(a)=\floor{p}\!a\!\floor{p}$.
+\end{enumerate}
+\end{point}
+\begin{point}[filter-basic]{Exercise}%
+Let~$c\colon \scrC\to\scrA$ be a filter,
+where~$\scrC$ and~$\scrA$ are von Neumann algebras.
+\begin{enumerate}
+\item
+Show that, writing~$p:=f(1)$,
+there is a unique
+ncp-map $\alpha \colon \scrC\to \ceil{p}\!\scrA\!\ceil{p}$
+with $c = c_p \circ \alpha$;
+and that this~$\alpha$ is a unital ncp-isomorphism.
+\item
+Show that~$c$ is injective
+(by proving first that~$c_p$ is injective
+using~\sref{mult-cancellation}).
+
+Conclude that~$c$
+is faithful, and that~$c$ is mono in~$\W{CP}$.
+\end{enumerate}
+\end{point}
+\begin{point}[corner-basic]{Exercise}%
+Let~$p$ be an effect of a von Neumann algebra~$\scrA$,
+and let~$\pi\colon \scrA\to\scrC$ be a corner of~$p$.
+\begin{enumerate}
+\item
+Show that there is a unique ncp-map
+$\beta \colon \floor{p}\!\scrA\!\floor{p}\to\scrC$
+with~$\pi = \beta\circ \pi_p$;
+and that this~$\beta$ is unital and an ncp-isomorphism.
+\item
+Show that~$\pi$ is surjective, and that~$\pi$ is epi in~$\W{cp}$.
+\end{enumerate}
+\end{point}
+\begin{point}{Theorem}%
+Given an ncp-map $f\colon\scrA\to\scrB$
+between von Neumann algebras,
+a projection~$e$ of~$\scrA$
+with~$\ceil{f}\leq e$,
+and a positive element~$p$
+of~$\scrB$ with~$f(1) \leq p$,
+there is a unique ncp-map
+$g \colon e\scrA e
+\to p \scrB p$
+such that
+\begin{equation*}
+\xymatrix{
+\scrA
+\ar[r]^-f
+\ar[d]_{\pi_e}
+&
+\scrB
+\\
+e\scrA e
+\ar[r]_g
+& 
+p\scrB p
+\ar[u]_{c_p}
+}
+\end{equation*}
+commutes,
+and it is given by
+$g(a)=\sqrt{p}\backslash f(a)/\!\sqrt{p}$
+for all~$a\in e\scrA e$.
+\begin{point}{Proof}%
+Uniqueness of~$g$ follows from the facts
+that~$\pi_e$ is epi and~$c_p$ is mono
+in~$\W{cp}$,
+see~\sref{corner-basic} and~\sref{filter-basic}.
+
+Concerning existence, 
+since~$\pi_e$ is a corner of~$e$,~\sref{corner},
+and~$\ceil{f}\leq e$,
+or in other words, $f(e^\perp)=0$,
+there is a unique ncp-map $h\colon e\scrA e\to \scrB$
+with $h \circ \pi_e = f$.
+Note that~$h(a)=f(a)$ for all~$a$ from~$e\scrA e$.
+
+As~$h(1)=h(\pi_e(1))=f(1)\leq p=c_p(1)$,
+and~$c_p$ is a filter,~\sref{filter},
+there is a unique ncp-map
+$g\colon e\scrA e \to p \scrB p$
+with $c_p\circ g = h$,
+which is (by the proof of \sref{canonical-filter}) given by
+$g(a)=\sqrt{p}\backslash h(a)/\sqrt{p}
+\equiv \sqrt{p}\backslash f(a)/\sqrt{p}$
+for all~$a$ from~$e\scrA e$.
+Then~$c_p\circ g\circ \pi_e = h\circ \pi_e = f$.\qed
+\end{point}
+\end{point}
+\begin{point}[square-f]{Corollary}%
+Given an ncp-map $f\colon \scrA\to\scrB$
+between von Neumann algebras
+there is a unique ncp-map $\Define{[f]}\colon 
+\ceil{f}\!\scrA\!\ceil{f}
+\to
+\ceil{f(1)}\!\scrB\!\ceil{f(1)}$
+such that 
+\begin{equation*}
+\xymatrix@C=4em{
+\scrA
+\ar[r]^-f
+\ar[d]_{\pi_{\ceil{f}}}
+&
+\scrB
+\\
+\ceil{f}\!\scrA\!\ceil{f}
+\ar[r]_-{[f]}
+& 
+\ceil{f(1)}\!\scrB\!\ceil{f(1)}
+\ar[u]_{c_{f(1)}}
+}
+\end{equation*}
+commutes;
+and it is given by~$[f](a)=\sqrt{f(1)}\backslash f(a)/\!\sqrt{f(1)}$
+for all~$a$ from $\ceil{f}\!\scrA\!\ceil{f}$.
+
+Moreover, 
+$[f]$ is unital and faithful.
+\end{point}
+\begin{point}{Example}%
+For any faithful unital ncp-map $f\colon \scrA\to \scrB$
+we have~$[f]=f$.
+Such map need not be an isomorphism;
+as one may take $f\colon (\lambda,\mu)\mapsto \lambda+\mu,
+\C^2\to\C$.
+\end{point}
+\begin{point}{Example}%
+In the concrete case
+that $f\equiv a^*(\,\cdot\,)a \colon
+s\scrA s\to t\scrA t$,
+where~$a$ is an element
+of a von Neumann algebra,
+and $s$ and~$t$ are projections of~$\scrA$
+with
+$\ceilr{a}\leq s$
+and~$\ceill{a}\leq t$,
+the map~$[f]$ 
+is closely related to the
+polar decomposition $a\equiv [a]\sqrt{a^*a}
+= \sqrt{aa^*}[a]$ of~$a$,
+where $[a]=a/\sqrt{a^*a}$
+(see~\sref{polar-decomposition}).
+
+Indeed,
+since  $\ceil{f}=\ceilr{a}$,
+$f(1)=a^*a$,
+and~$[f]\equiv \sqrt{a^*a}\backslash a^*(\,\cdot\,)a/\sqrt{a^*a}
+\equiv [a](\,\cdot\,)[a]^*$,
+the picture becomes:
+\begin{equation*}
+\xymatrix@C=10em{
+s\scrA s
+\ar[r]^-{f\,=\,a^*\,(\,\cdot\,)\,a}
+\ar[d]_{\pi_{\ceilr{a}}}
+&
+t\scrA t
+\\
+\ceilr{a}\!\scrA\!\ceilr{a}
+\ar[r]_-{[f] \,=\,  [a]\,(\,\cdot\,)\,[a]^*}
+& 
+\ceill{a}\!\scrA\!\ceill{a}
+\ar[u]_{c_{a^*a}}
+}
+\end{equation*}
+Note that in this example
+$[f]$ is an ncpu-isomorphism,
+because~$[a]$ is a partial isometry
+with initial projection~$\ceill{a}$
+and final projection~$\ceilr{a}$.
+Thus one can think of the diagram above
+as an isomorphism theorem of sorts,
+which applies only to certain  ncp-maps
+that'll be called \emph{pure} in a moment (see~\sref{pure-fundamental}).
+\end{point}
+\end{parsec}
 \subsection{Purity}
 \begin{parsec}%
 \begin{point}{Definition}%
-We declare that filters, corners,
-and their compositions are \Define{pure}.
+Filters, corners,
+and their compositions we'll call \Define{pure}.
 \end{point}
-\begin{point}{Definition}%
-Let~$f\colon \scrA\to\scrB$ be an ncp-map between
-von Neumann algebras.
-We denote by~$\Define{[f]}$
-the unique ncp-map $[f]\colon \ceil{f}\!\scrA\!\ceil{f}\to 
-\ceil{f(1)}\!\scrB\!\ceil{f(1)}$
-with
-\begin{equation*}
-f(a)\ =\ \sqrt{f(1)}\, [f](\,  \ceil{f}\,a\,\ceil{f}\,)\,\sqrt{f(1)}
-\qquad\text{for all $a\in \scrA$.}
-\end{equation*}
-We say that~$f$ is \Define{pure} when~$[f]$ is an isomorphism.
+\begin{point}{Lemma}%
+Given 
 \end{point}
-\begin{point}{Example}%
-	\TODO{connection with polar decomposition}.
-\end{point}
-\begin{point}{Proposition}%
+\begin{point}[pure-fundamental]{Proposition}%
 For an ncp-map $f\colon \scrA\to\scrB$ between von Neumann algebras
 the following are equivalent.
 \begin{enumerate}
 \item 
-	$f$ is pure, that is, $[f]$ is an isomorphism;
+\label{pure-fundamental-1}
+	$f$ is pure, i.e., $f$ is the composition
+	of (perhaps many) filters and corners.
 \item
-	$f$ can be written as the composition of filters
-	and corners.
+\label{pure-fundamental-2}
+	$f = c\circ \pi$ for a filter $c\colon \scrC\to\scrB$
+	and a corner $\pi\colon \scrA\to\scrC$.
+\item
+\label{pure-fundamental-3}
+	$[f]$ from~\sref{square-f} is an isomorphism.
 \end{enumerate}
 \begin{point}{Proof}%
-	\TODO{...}
+As \ref{pure-fundamental-3}$\Longrightarrow$\ref{pure-fundamental-2}
+and \ref{pure-fundamental-2}$\Longrightarrow$\ref{pure-fundamental-1}
+are rather obvious, we're left with:
+\begin{point}{\ref{pure-fundamental-1}$\Longrightarrow$%
+\ref{pure-fundamental-3}}%
+
+\end{point}
 \end{point}
 \end{point}
 \end{parsec}
@@ -536,6 +738,23 @@ satisfies the description of~$f_\bullet(e)$.\qed
 \end{point}
 \end{point}
 \begin{point}{Exercise}%
+Let~$f\colon \scrA\to\scrB$ be an ncp-map between von Neumann algebras.
+\begin{enumerate}
+\item
+Show that $f^\bullet(s)\leq t^\perp$
+iff $f_\bullet(t)\leq s^\perp$,
+for all~$s\in\Proj(\scrA)$ and~$t\in\Proj(\scrB)$.
+\item
+Show that $f^\bullet(\,\bigcup E\,)
+= \bigcup_{e\in E} f^\bullet(e)$
+for every set of projections~$E$ from~$\scrA$.
+
+Show that~$f_\bullet(\,\bigcap E\,)
+= \bigcap_{e\in E} f_\bullet(e)$
+for all~$E\subseteq \Proj(\scrB)$.
+\end{enumerate}
+\end{point}
+\begin{point}{Exercise}%
 Show that for ncp-maps $f,g\colon\scrA\to\scrB$
 between von Neumann algebras $f^\bullet = g^\bullet$
 iff $f_\bullet = g_\bullet$.
@@ -566,6 +785,58 @@ between von Neumann algebras:
 show that~$zf$ is equivalent to~$f$
 for every positive central element~$z$ of~$\scrB$ with~$\ceil{z}=1$.
 \end{enumerate}
+\end{point}
+\begin{point}{Exercise}%
+Let $\xymatrix{
+	\scrA\ar[r]|-{f}&
+	\scrB\ar[r]|-{g}&
+\scrC}$
+be ncp-maps between von Neumann algebras~$\scrA$,
+$\scrB$ and~$\scrC$.
+\begin{enumerate}
+\item
+Show that $(g\circ f)^\bullet = g^\bullet\circ f^\bullet$
+(using~\sref{ncp-ceil}),
+and $(g\circ f)_\bullet = f_\bullet\circ g_\bullet$.
+
+\item
+Assuming that $f$ is equivalent 
+to an ncp-map $f'\colon \scrA\to\scrB$
+and~$g$ is equivalent to
+and ncp-map~$g'\colon \scrB\to\scrC$,
+show that~$g\circ f$ is equivalent to~$g'\circ f'$.
+\item
+Assuming that $f$ is contraposed to
+an ncp-map $f'\colon \scrB\to\scrA$
+and~$g$ is contraposed to
+an ncp-map $g'\colon \scrC\to\scrB$,
+show that~$g\circ f$ is contraposed to~$f'\circ g'$.
+\end{enumerate}
+\end{point}
+\begin{point}{Proposition}%
+Given ncp-maps~$f,g\colon \scrA\to\scrB$
+between von Neumann algebras
+\begin{equation*}
+(f+g)^\bullet(s) \,=\, f^\bullet(s)\, \cup\, g^\bullet(s)
+\qquad
+\text{and}
+\qquad (f+g)_\bullet(t)\, =\, f_\bullet(t) \,\cup\, g_\bullet(t)
+\end{equation*}
+for all~$s\in \Proj(\scrA)$ and~$t\in \Proj(\scrB)$.
+\begin{point}[bullet-sum]{Proof}%
+Note that $(f+g)^\bullet(s)
+=  \ceil{(f+g)(s)}
+= \ceil{f(s)+g(s)}
+= \ceil{f(s)}\cup \ceil{g(s)}
+= f^\bullet(s) \cup g^\bullet(s)$
+by~\sref{ceil-basic}.
+Since~$(f+g)_\bullet(t)\leq s^\perp$
+iff~$f^\bullet(s)\cup g^\bullet(s)\equiv (f+g)^\bullet(s)\leq t^\perp$
+iff both $f^\bullet(s)\leq t^\perp$ and~$g^\bullet(s)\leq t^\perp$
+iff both $f_\bullet(t)\leq s^\perp$ and~$g_\bullet(t)\leq s^\perp$
+iff~$f_\bullet(t)\cup g_\bullet(t)\leq s^\perp$,
+we see that $(f+g)_\bullet(t)=f_\bullet(t)\cup g_\bullet(t)$.\qed
+\end{point}
 \end{point}
 \end{parsec}
 \subsection{Rigidity}
