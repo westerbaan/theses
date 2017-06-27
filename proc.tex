@@ -1,146 +1,6 @@
 \documentclass[a]{subfiles}
 \begin{document}
 \chapter{Processes}
-\begin{parsec}%
-\begin{point}{Definition}%
-A \Define{process} is
-an ncpsu-map between von Neumann algebras.
-\end{point}
-\end{parsec}
-\section{The Basics}
-\begin{parsec}%
-\begin{point}[ncp-uwlim]{Proposition}%
-Given von Neumann algebras~$\scrA$
-and~$\scrB$
-the pointwise ultraweak limit
-$f\colon \scrA\to\scrB$
-of a net of  positive linear maps $f_\alpha\colon \scrA\to\scrB$
-is positive, and, 
-\begin{enumerate}
-\item
-$f$ is completely positive provided
-that the $f_\alpha$ are completely positive, and
-\item
-$f$ is normal provided that the $f_\alpha$ are normal
-and the ultraweak convergence of the~$f_\alpha$ to~$f$
-is uniform on~$[0,1]_\scrA$.
-\end{enumerate}
-\begin{point}{Proof}%
-Since given~$a\in \scrA$ the element~$f(a)$
-is the ultraweak limit of the positive elements~$f_\alpha(a)$,
-and therefore positive (by~\sref{vn-positive-basic}),
-we see that~$f$ is positive.
-
-Suppose that each~$f_\alpha$ is completely positive.
-To show that~$f$ is completely positive,
-we must prove, given~$a_1,\dotsc,a_n\in\scrA$
-and~$b_1,\dotsc,b_n\in\scrB$,
-that 
-the element $\sum_{i,j} b_i^* f(a_i^*a_j)b_j$
-of~$\scrB$
-is positive.
-And indeed it is,
-being the ultraweak limit of
-the positive elements $\sum_{i,j} b_i^* f_\alpha (a_i^* a_j)b_j$,
-because  $f_\alpha(a_i^* a_j)$
-converges ultraweakly to~$f(a_i^* a_j)$,
-and~$b_i^*(\,\cdot\,)b_j\colon \scrB\to\scrB$
-is ultraweakly continuous
-(\sref{mult-uws-cont})
-for any~$i$ and~$j$.
-
-If the~$f_\alpha$ 
-are normal,
-and converge uniformly on~$[0,1]_\scrA$ ultraweakly
-to~$f$,
-then~$f$ is ultraweakly continuous
-on~$[0,1]_\scrA$
-(because the uniform limit of continuous functions is continous),
-and thus normal (by~\sref{p-uwcont}).\qed
-\end{point}
-\end{point}
-\end{parsec}
-\begin{parsec}%
-\begin{point}[gardner]{Proposition}%
-For an ncpu-map $f\colon \scrA\to\scrB$
-between von Neumann algebras
-the following are equivalent.
-\begin{enumerate}
-\item
-\label{gardner-1}
-$f$ is multiplicative.
-\item
-\label{gardner-2}
-$f(a)f(b)=0$
-for all $a,b\in\scrA_+$ with $ab=0$.
-\item
-\label{gardner-3}
-$\ceil{f(p)}\ceil{f(q)}=0$
-for all projections $p$ and~$q$ of~$\scrA$ with $pq=0$.
-\item
-\label{gardner-4}
-$f$ maps projections to projections.
-\end{enumerate}
-\begin{point}{Proof}%
-(Based in part on the work of Gardner in~\cite{gardner}).
-\begin{point}{\sref{gardner-1}$\Longrightarrow$\sref{gardner-4}}%
-	is rather obvious.
-\end{point}
-\begin{point}{\sref{gardner-4}$\Longrightarrow$\sref{gardner-3}}%
-Let~$p$ and~$q$ be projections of~$\scrA$ with~$pq=0$.
-Then~$p\leq q^\perp$, and so~$f(p)\leq f(q^\perp)=f(q)^\perp$,
-which implies that $\ceil{f(p)}\ceil{f(q)}
-=f(p)f(q)=0$ since~$f(p)$ and~$f(q)$ are projections.
-\end{point}
-\begin{point}{\sref{gardner-3}$\Longrightarrow$\sref{gardner-2}}%
-Let~$a$ and~$b$ be positive elements of~$\scrA$ with~$ab=0$.
-We must show that~$f(a)f(b)=0$,
-and for this it suffices to show that
-$\ceil{f(a)}\ceil{f(b)}=0$,
-because $f(a)f(b)=f(a)\ceil{f(a)}\ceil{f(b)}f(b)$.
-Since~$ab=0$,
-we have~$\ceil{a}\ceil{b}=0$ by~\TODO{...},
-and so $\ceil{f(a)}\ceil{f(b)}=\ceil{f(\ceil{a})}\ceil{f(\ceil{b})}=0$.
-\end{point}
-\begin{point}{\sref{gardner-2}$\Longrightarrow$\sref{gardner-1}}%
-We must show that~$f(a)f(b)=f(ab)$
-for all~$a,b\in \scrA$.
-Since the linear span of projections is norm-dense in~$\scrA$,
-it suffices to show that $f(a)f(e)=f(ae)$
-for any $a\in\scrA$ and a projection~$e$ of~$\scrA$.
-Given such~$a$ and~$e$,
-we on the one hand have $ae^\perp\, e=0$,
-so that~$f(ae^\perp)f(e)=0$,
-that is, $f(a)f(e)=f(ae)f(e)$;
-and on the other hand
-we have $ae\,e^\perp=0$,
-so that~$f(ae)f(e^\perp)=0$,
-that is, $f(ae)=f(ae)f(e)$;
-so that we reach~$f(ae)=f(a)f(e)$ as sum total,
-and the result that~$f$ is multiplicative.\qed
-\end{point}
-\end{point}
-\end{point}
-\begin{point}{Theorem}%
-An ncpsu-isomorphism $f\colon \scrA\to\scrB$
-between von Neumann algebras 
-(so both~$f$ and~$f^{-1}$ are ncpsu-maps)
-is an nmiu-isomorphism.
-\begin{point}{Proof}%
-Since~$f^{-1}(1)\leq 1$
-and so~$1=f(f^{-1}(1))\leq f(1)\leq 1$,
-we see that~$f(1)=1$, so both $f$ and $f^{-1}$ are unital.
-It remains to be shown that~$f$ and~$f^{-1}$ are multiplicative.
-Since by~\TODO{...} a self-adjoint element~$a$ of~$\scrA$
-is a projection iff~$0$ is the infimum of~$a$ and~$a^\perp$,
-and~$f$ (as ncpsu-isomorphism) preserves all the structure 
-mentioned in this characterization of being a projection,
-we see that~$f$ maps projections to projections,
-and is thus multiplicative, by~\sref{gardner}.
-It follows automatically that~$f^{-1}$ is multiplicative too.\qed
-\end{point}
-\end{point}
-\end{parsec}
 
 \section{Measurement}
 \begin{point}%
@@ -618,7 +478,7 @@ Such map need not be an isomorphism;
 as one may take $f\colon (\lambda,\mu)\mapsto \lambda+\mu,
 \C^2\to\C$.
 \end{point}
-\begin{point}{Example}%
+\begin{point}[ad-pure]{Example}%
 In the concrete case
 that $f\equiv a^*(\,\cdot\,)a \colon
 s\scrA s\to t\scrA t$,
@@ -667,14 +527,114 @@ which applies only to certain  ncp-maps
 that'll be called \emph{pure} in a moment (see~\sref{pure-fundamental}).
 \end{point}
 \end{parsec}
+\subsection{Multiplicativity}
+\begin{parsec}%
+\begin{point}%
+In case you were wondering,
+the ncpu-isomorphism
+we encounted in~\sref{ad-pure}
+is simply a nmiu-isomorphism 
+(see~\sref{iso}), which follows
+from the following characterization of multiplicativity.
+\end{point}
+\begin{point}[gardner]{Proposition}%
+For an ncpu-map $f\colon \scrA\to\scrB$
+between von Neumann algebras
+the following are equivalent.
+\begin{enumerate}
+\item
+\label{gardner-1}
+$f$ is multiplicative.
+\item
+\label{gardner-2}
+$f(a)f(b)=0$
+for all $a,b\in\scrA_+$ with $ab=0$.
+\item
+\label{gardner-3}
+$\ceil{f(p)}\ceil{f(q)}=0$
+for all projections $p$ and~$q$ of~$\scrA$ with $pq=0$.
+\item
+\label{gardner-4}
+$f$ maps projections to projections.
+\end{enumerate}
+\begin{point}{Proof}%
+(Based in part on the work of Gardner in~\cite{gardner}).
+\begin{point}{\sref{gardner-1}$\Longrightarrow$\sref{gardner-4}}%
+	is rather obvious.
+\end{point}
+\begin{point}{\sref{gardner-4}$\Longrightarrow$\sref{gardner-3}}%
+Let~$p$ and~$q$ be projections of~$\scrA$ with~$pq=0$.
+Then~$p\leq q^\perp$, and so~$f(p)\leq f(q^\perp)=f(q)^\perp$,
+which implies that $\ceil{f(p)}\ceil{f(q)}
+=f(p)f(q)=0$ since~$f(p)$ and~$f(q)$ are projections.
+\end{point}
+\begin{point}{\sref{gardner-3}$\Longrightarrow$\sref{gardner-2}}%
+Let~$a$ and~$b$ be positive elements of~$\scrA$ with~$ab=0$.
+We must show that~$f(a)f(b)=0$,
+and for this it suffices to show that
+$\ceil{f(a)}\ceil{f(b)}=0$,
+because $f(a)f(b)=f(a)\ceil{f(a)}\ceil{f(b)}f(b)$.
+Since~$ab=0$,
+we have~$\ceil{a}\ceil{b}=0$ by~\TODO{...},
+and so $\ceil{f(a)}\ceil{f(b)}=\ceil{f(\ceil{a})}\ceil{f(\ceil{b})}=0$.
+\end{point}
+\begin{point}{\sref{gardner-2}$\Longrightarrow$\sref{gardner-1}}%
+We must show that~$f(a)f(b)=f(ab)$
+for all~$a,b\in \scrA$.
+Since the linear span of projections is norm-dense in~$\scrA$,
+it suffices to show that $f(a)f(e)=f(ae)$
+for any $a\in\scrA$ and a projection~$e$ of~$\scrA$.
+Given such~$a$ and~$e$,
+we on the one hand have $ae^\perp\, e=0$,
+so that~$f(ae^\perp)f(e)=0$,
+that is, $f(a)f(e)=f(ae)f(e)$;
+and on the other hand
+we have $ae\,e^\perp=0$,
+so that~$f(ae)f(e^\perp)=0$,
+that is, $f(ae)=f(ae)f(e)$;
+so that we reach~$f(ae)=f(a)f(e)$ as sum total,
+and the result that~$f$ is multiplicative.\qed
+\end{point}
+\end{point}
+\end{point}
+\begin{point}[iso]{Theorem}%
+An ncpsu-isomorphism $f\colon \scrA\to\scrB$
+between von Neumann algebras 
+(so both~$f$ and~$f^{-1}$ are ncpsu-maps)
+is an nmiu-isomorphism.
+\begin{point}{Proof}%
+Since~$f^{-1}(1)\leq 1$
+and so~$1=f(f^{-1}(1))\leq f(1)\leq 1$,
+we see that~$f(1)=1$, so both $f$ and $f^{-1}$ are unital.
+It remains to be shown that~$f$ and~$f^{-1}$ are multiplicative.
+Since by~\TODO{...} a self-adjoint element~$a$ of~$\scrA$
+is a projection iff~$0$ is the infimum of~$a$ and~$a^\perp$,
+and~$f$ (as ncpsu-isomorphism) preserves all the structure 
+mentioned in this characterization of being a projection,
+we see that~$f$ maps projections to projections,
+and is thus multiplicative, by~\sref{gardner}.
+It follows automatically that~$f^{-1}$ is multiplicative too.\qed
+\end{point}
+\end{point}
+\end{parsec}
 \subsection{Purity}
 \begin{parsec}%
 \begin{point}{Definition}%
 Filters, corners,
 and their compositions we'll call \Define{pure}.
 \end{point}
-\begin{point}{Lemma}%
-Given 
+\begin{point}{Exercise}%
+Show that the following maps are pure.
+\begin{enumerate}%
+\item
+An ncp-isomorphism between von Neumann algebras.
+\item
+The identity map~$\id\colon \scrA\to\scrA$
+on a von Neumann algebra~$\scrA$.
+\item
+The map $a^*\,(\,\cdot\,)\,a\colon \scrA\to\scrA$
+for any element~$a$ of a von Neumann algebra~$\scrA$.
+\end{enumerate}
 \end{point}
 \begin{point}[pure-fundamental]{Proposition}%
 For an ncp-map $f\colon \scrA\to\scrB$ between von Neumann algebras
@@ -690,17 +650,71 @@ the following are equivalent.
 	and a corner $\pi\colon \scrA\to\scrC$.
 \item
 \label{pure-fundamental-3}
-	$[f]$ from~\sref{square-f} is an isomorphism.
+	$[f]$ from~\sref{square-f} is an ncpu-isomorphism.
 \end{enumerate}
 \begin{point}{Proof}%
-As \ref{pure-fundamental-3}$\Longrightarrow$\ref{pure-fundamental-2}
+Note that \ref{pure-fundamental-3}$\Longrightarrow$\ref{pure-fundamental-2}
 and \ref{pure-fundamental-2}$\Longrightarrow$\ref{pure-fundamental-1}
-are rather obvious, we're left with:
+are rather obvious.
 \begin{point}{\ref{pure-fundamental-1}$\Longrightarrow$%
+\ref{pure-fundamental-2}}%
+Calling $f$ \emph{properly pure}
+when~$f\equiv c\circ \pi$
+for some filter~$c$ and corner~$\pi$,
+we must show that every pure map is properly pure.
+For this it suffices to show that the composition of properly
+pure maps is again properly pure;
+which,
+since filters are closed under composition
+(by~\sref{}),
+and corners are closed under composition
+(by~\sref{}),
+boils down to proving that the composition
+$\pi\circ c$ of a corner~$\pi$ and a filter~$c$
+is properly pure.
+Since~$\pi\equiv \alpha\circ \pi_{\ceil{\pi}}$
+and~$c\equiv c_{c(1)}\circ \beta$
+for ncpu-isomorphisms~$\alpha$ and~$\beta$
+(see~\sref{filter-basic}
+and~\sref{corner-basic})
+it suffices to show that
+$f:=\pi_{s} c_{p}$ is properly pure
+for a positive element~$p$ and a projection~$s$
+of a von Neumann algebra~$\scrA$.
+Since such~$f$ is of the form $f=s\sqrt{p}(\,\cdot\,)\sqrt{p}s
+\colon \ceil{p}\!\scrA\!\ceil{p}\to s\scrA s$,
+we know by~\sref{ad-pure}
+that~$[f]$ is an ncpu-isomorphism,
+and thus that~$f\equiv c_{f(1)}\circ [f]\circ \pi_{\ceil{f}}$ is properly pure.
+\end{point}
+\begin{point}{\ref{pure-fundamental-2}$\Longrightarrow$%
 \ref{pure-fundamental-3}}%
-
+Recall that $[f]$
+is by definition the unique ncp-map
+with~$f = c_{f(1)} [f] \pi_{\ceil{f}}$,
+see~\sref{square-f}.
+Note that since~$f=c\circ \pi$,
+we have~$\ceil{f}=\ceil{\pi}$ (because~$\ceil{c}=1$, \TODO{...}),
+and~$f(1)=c(1)$ (because~$\pi(1)=1$).
+Since there are ncpu-isomorphisms~$\alpha$ and~$\beta$
+with $\pi= \alpha \pi_{\ceil{\pi}}$ and  $c=c_{c(1)} \beta$,
+we see that~$f=c_{c(1)} \beta\alpha \pi_{\ceil{\pi}}$,
+and so~$[f]=\beta\alpha$
+by definition of~$[f]$,
+which implies that~$[f]$ is an ncpu-isomorphism.\qed
 \end{point}
 \end{point}
+\end{point}
+\begin{point}[special-pure-maps]{Exercise}%
+Use~\sref{pure-fundamental} to show that 
+\begin{enumerate}
+\item
+a faithful pure map is a filter,
+\item
+a unital pure map is a corner, and
+\item
+a unital and faithful pure map is an ncpu-isomorphism.
+\end{enumerate}
 \end{point}
 \end{parsec}
 \subsection{Contraposition}
@@ -769,7 +783,7 @@ for all projections $s$ from~$\scrA$ and~$t$ from~$\scrB$.
 In that case we say that~$f$ and~$g$ are \Define{contraposed}.
 \end{point}
 \end{point}
-\begin{point}{Examples}%
+\begin{point}[equivalent-examples]{Examples}%
 \begin{enumerate}
 \item
 Given an element~$a$ of a von Neumann algebra~$\scrA$
@@ -780,9 +794,9 @@ An ncp-isomorphism $f\colon \scrA\to\scrB$
 between von Neumann algebras
 is contraposed to its inverse~$f^{-1}\colon \scrB\to\scrA$.
 \item
-There may be many maps equivalen to a given ncp-map $f\colon \scrA\to\scrB$
+There may be many maps equivalent to a given ncp-map $f\colon \scrA\to\scrB$
 between von Neumann algebras:
-show that~$zf$ is equivalent to~$f$
+show that~$(zf)^\bullet = f^\bullet$
 for every positive central element~$z$ of~$\scrB$ with~$\ceil{z}=1$.
 \end{enumerate}
 \end{point}
@@ -813,7 +827,7 @@ an ncp-map $g'\colon \scrC\to\scrB$,
 show that~$g\circ f$ is contraposed to~$f'\circ g'$.
 \end{enumerate}
 \end{point}
-\begin{point}{Proposition}%
+\begin{point}[bullet-sum]{Proposition}%
 Given ncp-maps~$f,g\colon \scrA\to\scrB$
 between von Neumann algebras
 \begin{equation*}
@@ -842,10 +856,8 @@ we see that $(f+g)_\bullet(t)=f_\bullet(t)\cup g_\bullet(t)$.\qed
 \subsection{Rigidity}
 \begin{parsec}%
 \begin{point}%
-To show that that ``square root axiom''
-holds for von Neumann algebras,
-we'll establish and exploit the following remarkable property
-of pure maps.
+We now turn a remarkable property shared
+by pure and nmiu-maps.
 \end{point}
 \begin{point}[rigid]{Definition}%
 We say that a ncp-map $f\colon \scrA\to\scrB$
@@ -853,6 +865,33 @@ between von Neumann algebras is \Define{rigid}
 when the only ncp-map $g\colon \scrA\to\scrB$
 with $g(1)=f(1)$ and $\ceil{f(p)}=\ceil{g(p)}$ for all
 projections~$p$ from~$\scrA$ is~$f$ itself.
+\end{point}
+\begin{point}{Proposition}%
+A rigid map $f\colon \scrA\to\scrB$
+between von Neumann algebras
+is extreme among the maps $g\colon \scrA\to\scrB$
+with $g(1)=f(1)$.
+\begin{point}{Proof}%
+Given $f\equiv \lambda g_1 + \lambda^\perp g_2$
+where~$\lambda\in(0,1)$ 
+and~$g_1,g_2\colon \scrA\to\scrB$
+are ncp-maps with $g_i(1)=f(1)$,
+we must show that~$f=g_1=g_2$.
+Note that for every projection~$s$
+of~$\scrA$
+we have~$f^\bullet(s) = (\lambda g_1+\lambda^\perp g_2)^\bullet(s)
+= g_1^\bullet(s)\cup g_2^\bullet(s)$
+by~\sref{bullet-sum} and~\sref{equivalent-examples};
+and in particular~$g_1^\bullet(s)\leq f^\bullet(s)$.
+Then for $h:=\lambda  g_1 + \lambda^\perp f$
+we have $h(1)=f(1)$
+and~$h^\bullet(s) = g_1^\bullet(s)\cup f^\bullet(s)
+= f^\bullet(s)$,
+so that~$\lambda g_1 + \lambda^\perp f \equiv 
+h=f = \lambda g_1 +\lambda^\perp g_2$ by rigidity of~$f$;
+and thus~$f=g_2$.
+Similarly, $f=g_1$.\qed%
+\end{point}
 \end{point}
 \begin{point}[nmiu-rigid]{Proposition}%
 A nmiu-map $\varrho\colon \scrA\to\scrB$
@@ -965,8 +1004,7 @@ and $f^\bullet = g^\bullet$.
 To show that~$f$
 is rigid,
 we must prove that~$f=g$.
-We know
-by~\TODO{``iso'' theorem}
+We know by~\sref{square-f}
 that $f$ can be written as $f\equiv c_{f(1)} \circ [f]\circ \pi_{\ceil{f}}$,
 and that~$c_{f(1)}$ is rigid,
 by~\sref{canonical-quotient-rigid},
@@ -1145,7 +1183,7 @@ We'll first prove this under the assumption that~$\ceil{f}=1$
 (that will be dispensed with in~\sref{positive-map-uniqueness-2}).
 In that case~$f$ (being pure) is a filter 
 of~$p$
-(by~\TODO{filter-iff-pure-and-faithful}),
+(by~\sref{special-pure-maps}),
 and thus of the form $f\equiv \sqrt{p}\,\vartheta(\,\cdot\,)\,\sqrt{p}$
 for some isomorphism~$\vartheta\colon \scrA\to\scrA$.
 Our task then is to show that~$\vartheta=\id$,
@@ -1162,7 +1200,7 @@ Since~$1=\ceil{f}=f_\bullet(1)=
 \xi_\bullet(\xi_\bullet(1))\leq \xi_\bullet(1)=\ceil{\xi}$
 we have~$\ceil{\xi}=1$,
 and so, $\xi$, being pure and faithful,
-is a filter (by~\TODO{filter-iff-pure-and-faithful}).
+is a filter (by~\sref{special-pure-maps}).
 Furthermore,
 as~$\tilde\xi:=\sqrt{\xi(1)}(\,\cdot\,)\sqrt{\xi(1)}\colon \scrA\to\scrA$
 is a filter of~$\xi(1)$ too,
@@ -1366,6 +1404,58 @@ except~\ref{ax5}.
 
 
 \section{To be moved}
+\begin{parsec}%
+\begin{point}[ncp-uwlim]{Proposition}%
+Given von Neumann algebras~$\scrA$
+and~$\scrB$
+the pointwise ultraweak limit
+$f\colon \scrA\to\scrB$
+of a net of  positive linear maps $f_\alpha\colon \scrA\to\scrB$
+is positive, and, 
+\begin{enumerate}
+\item
+$f$ is completely positive provided
+that the $f_\alpha$ are completely positive, and
+\item
+$f$ is normal provided that the $f_\alpha$ are normal
+and the ultraweak convergence of the~$f_\alpha$ to~$f$
+is uniform on~$[0,1]_\scrA$.
+\end{enumerate}
+\begin{point}{Proof}%
+Since given~$a\in \scrA$ the element~$f(a)$
+is the ultraweak limit of the positive elements~$f_\alpha(a)$,
+and therefore positive (by~\sref{vn-positive-basic}),
+we see that~$f$ is positive.
+
+Suppose that each~$f_\alpha$ is completely positive.
+To show that~$f$ is completely positive,
+we must prove, given~$a_1,\dotsc,a_n\in\scrA$
+and~$b_1,\dotsc,b_n\in\scrB$,
+that 
+the element $\sum_{i,j} b_i^* f(a_i^*a_j)b_j$
+of~$\scrB$
+is positive.
+And indeed it is,
+being the ultraweak limit of
+the positive elements $\sum_{i,j} b_i^* f_\alpha (a_i^* a_j)b_j$,
+because  $f_\alpha(a_i^* a_j)$
+converges ultraweakly to~$f(a_i^* a_j)$,
+and~$b_i^*(\,\cdot\,)b_j\colon \scrB\to\scrB$
+is ultraweakly continuous
+(\sref{mult-uws-cont})
+for any~$i$ and~$j$.
+
+If the~$f_\alpha$ 
+are normal,
+and converge uniformly on~$[0,1]_\scrA$ ultraweakly
+to~$f$,
+then~$f$ is ultraweakly continuous
+on~$[0,1]_\scrA$
+(because the uniform limit of continuous functions is continous),
+and thus normal (by~\sref{p-uwcont}).\qed
+\end{point}
+\end{point}
+\end{parsec}
 \begin{parsec}%
 \begin{point}[uwc-bounded]{Proposition}%
 An ultraweakly continuous linear map $f\colon \scrA\to\scrB$
