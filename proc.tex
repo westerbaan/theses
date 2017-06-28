@@ -1062,6 +1062,44 @@ and~$\ceil{q}\leq \ceil{d}$.
 \begin{point}[centrally-similar-basic]{Exercise}%
 Let~$p$ and~$q$ be positive elements
 of a von Neumann algebra~$\scrA$.
+\begin{enumerate}
+\item
+Show that when~$p$ and~$q$ are centrally similar,
+every element~$a$ of~$\scrA$ that commutes
+with~$p$ commutes with~$q$ too;
+and in particular, $pq=qp$.
+\item
+Show that when~$p$ and~$q$ commute,
+and both $\frac{p\wedge q}{p}$ 
+and~$\frac{p\wedge q}{q}$
+are central,
+$p$ and~$q$ are centrally similar.
+\item
+Show that when~$p$ and~$q$ are pseudoinvertible,
+$p$ and~$q$ are centrally similar iff
+$pq^{\sim 1}$ is central
+iff $qp^{\sim 1}$ is central
+iff both $(p\wedge q)p^{\sim 1}$
+and~$(p\wedge q)q^{\sim 1}$ are central.
+\item
+Assuming that $p$ and~$q$ commute
+and $e_1 \leq e_2 \leq \dotsb$
+are projections commuting with~$p$ and~$q$
+with~$\bigcup_n e_n=1$
+such that the~$e_np$ and~$e_nq$
+are pseudoinvertible,
+and centrally similar,
+show that $p$ and~$q$ are centrally similar
+on the 
+grounds that both  $\frac{p\wedge q}{p}$
+and~$\frac{p\wedge q}{q}$ are central.
+
+(Hint:
+$\smash{e_n \frac{p\wedge q}{p} = \frac{(e_np)\wedge(e_nq)}{e_np}}$
+are central,
+and
+converge ultraweakly to $\frac{p\wedge q}{p}$.)
+\end{enumerate}
 \end{point}
 \begin{point}[centrally-similar-fundamental]{Lemma}%
 Suppose that $\ceil{q \, \vartheta(e)\, q}\leq e$
@@ -1130,13 +1168,10 @@ of projections~$e_1\leq e_2 \leq \dotsb$
 that commute with~$p$ and~$q$
 with~$\bigcup_n e_n =1$
 and such that $pe_n$ and~$qe_n$
-are invertible, see~\TODO{simultaneous-approximate-pseudoinverse}.
+are pseudoinvertible, see~\TODO{simultaneous-approximate-pseudoinverse}.
 Note that to prove that~$p$ and~$q$ are centrally similar,
 it suffices to show that $pe_n$ and~$qe_n$ are centrally similar,
-by~\TODO{...}
-because $pe_n$ converges ultrastrongly to~$p$
-and~$qe_n$ converges ultrastrongly to~$q$
-(by~\TODO{mult-uws-cont} and~\TODO{vna-supremum-uslimit}).
+by~\sref{centrally-similar-basic}.
 Further, to prove that~$\vartheta(a)=a$
 for some~$a\in\scrA$,
 it suffices to show that~$\vartheta( e_n a e_n  ) = e_n a e_n$,
@@ -1155,14 +1190,18 @@ instead of~$p$ and~$q$,
 we reduce the problem to the case that~$p$ and~$q$ are invertible;
 and so we may assume without loss of generality that~$p$ and~$q$
 are invertible to start with.
-Then given an arbitrary projection~$e$ from~$\scrA$
+Given a projection~$e$ from~$\scrA$
 we have $\ceil{p^{-1}q \,\vartheta(e)\, q p^{-1}}
 = \ceil{p^{-1}\ceil{q\,\vartheta(e)\,q}p^{-1}}
-= \ceil{p^{-1}\ceil{pep}p^{-1}}=e$,
-and so~$p^{-1}q$ is central and~$\vartheta=\id$ 
-by~\sref{centrally-similar-corollary} ---
-and as $q\equiv p^{-1}q \, p$,
-$p$ and~$q$ are thus centrally similar.
+= \ceil{p^{-1}\ceil{pep}p^{-1}}=e$;
+so 
+by~\sref{centrally-similar-corollary},
+we get that
+$\vartheta=\id$
+and
+$p^{-1}q$ is central;
+and so
+$p$ and~$q$ are centrally similar (by~\sref{centrally-similar-basic}).
 \qed
 \end{point}
 \end{point}
