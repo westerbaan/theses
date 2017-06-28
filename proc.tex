@@ -121,7 +121,7 @@ of being~\emph{rigid} (see~\sref{rigid} and~\sref{pure-is-rigid}).
 
 
 \end{point}
-\subsection{Corners and Filters}
+\subsection{Corner and Filter}
 \begin{parsec}%
 \begin{point}{Definition}%
 Given an projection~$e$ of a von Neumann algebra~$\scrA$,
@@ -527,7 +527,7 @@ which applies only to certain  ncp-maps
 that'll be called \emph{pure} in a moment (see~\sref{pure-fundamental}).
 \end{point}
 \end{parsec}
-\subsection{Multiplicativity}
+\subsection{Isomorphism}
 \begin{parsec}%
 \begin{point}%
 In case you were wondering,
@@ -1480,7 +1480,110 @@ except~\ref{ax5}.
 \end{parsec}
 
 
+\section{Quantum Lambda Calculus}
+\subsection{Tensor product}
+\TODO{complete}
+\begin{parsec}%
+\begin{point}{Definition}%
+Let~$\scrA$ and~$\scrB$ be von Neumann algebras.
+\begin{enumerate}
+\item
+The \Define{ultraweak tensor product topology}
+on the algebraic tensor product~$\scrA\odot\scrB$
+is the least topology that makes
+all linear maps of the form $\sum_n \omega_n
+\colon \scrA \odot \scrB\to\C$
+continuous,
+where $\omega_1,\omega_2,\dotsc \colon \scrA\to \C$
+are linear maps which
+are \emph{simple} and \emph{positive} (see below),
+and $\sum_n \omega_n(1) <\infty$.
 
+A linear map $\omega\colon \scrA\odot \scrB\to\C$
+is 
+\begin{enumerate}
+\item
+\Define{simple}
+iff $\omega$ is of the form $\omega \equiv \sum_{n=1}^N \sigma_n\odot\tau_n$
+for some ultraweakly continuous linear maps 
+$\sigma_1,\dotsc,\sigma_N\colon \scrA\to\C$ and 
+$\tau_1,\dotsc,\tau_N\colon \scrB\to\C$;
+\item
+\Define{positive}
+iff $\sum_{i,j}\omega(\,a_i^*a_j\,\otimes\, b_i^*b_j\,)$
+is positive 
+for all $a_1,\dots,a_N\in\scrA$
+and~$b_1,\dotsc,b_N\in\scrB$.
+\end{enumerate}
+\item
+A bilinear map $\beta\colon \scrA\times \scrB\to\scrC$
+to a von Neumann algebra~$\scrC$
+is called \Define{normal}
+when the unique extension $\beta_\odot \colon \scrA\odot \scrB\to \scrC$
+is continuous with respect to the ultraweak tensor product topology 
+on~$\scrA\odot\scrB$
+and the ultraweak topology on~$\scrC$.
+\end{enumerate}
+\end{point}
+\begin{point}{Theorem}%
+Given von Neumann algebras~$\scrA$ and~$\scrB$
+there is a von Neumann algebra~$\Define{\scrA\otimes\scrB}$
+(called the \Define{tensor product} of~$\scrA$ and~$\scrB$)
+and a normal
+bilinear map $\Define{\otimes} \colon \scrA\times \scrB\to
+\scrA\otimes \scrB$
+with the property, that for every 
+normal bilinear map $\beta\colon \scrA\times \scrB\to\scrC$
+to a von Neumann algebra~$\scrC$
+there is a unique ultraweakly continuous
+map $\Define{\beta_\otimes}\colon \scrA\otimes \scrB
+\to \scrC$ with $\beta_\otimes(a\otimes b) = \beta(a,b)$
+for all~$a\in \scrA$ and $b\in\scrB$.
+Moreover,
+$\beta_\otimes$ is
+\begin{enumerate}
+\item
+multiplicative
+iff $\beta(a_1,b_1)\beta(a_2,b_2)=\beta(a_1a_2,b_1b_2)$
+for all~$a_1,a_2\in\scrA$ and $b_1,b_2\in\scrB$;
+\item
+involution preserving
+iff $\beta(a,b)^* = \beta(a^*,b^*)$ for all~$a\in\scrA$
+and $b\in\scrB$;
+\item
+unital iff $\beta(1,1)=1$;
+subunital iff $\beta(1,1)\leq 1$;
+\item
+positive iff 
+$\sum_{i,j} \beta(a_i^*a_j,b_i^*b_j) \geq 0$
+for all~$a_1,\dotsc,a_N\in\scrA$,$b_1,\dotsc,b_N\in\scrB$;
+\item
+completely positive iff 
+the matrix $(\ \beta(a_i^*a_j,b_i^*b_j)\ )_{i,j}\geq 0$
+is positive
+for all~$a_1,\dotsc,a_N\in\scrA$
+and $b_1,\dotsc,b_N\in\scrB$;
+\end{enumerate}
+Given ultraweakly continuous maps $f\colon \scrA\to\scrA'$
+and $g\colon \scrB\to\scrB'$
+to von Neumann algebras $\scrA'$ and~$\scrB'$,
+the assignment $(a,b)\mapsto f(a)\otimes g(b)$
+gives a normal bilinear map 
+$\beta\colon \scrA\times \scrB\to \scrA'\otimes \scrB'$.
+Then $\Define{f\otimes g}:=\beta_\otimes\colon \scrA\otimes \scrB
+\to\scrA'\otimes \scrB'$
+is
+\begin{enumerate}
+\item multiplicative
+when $f$ and~$g$ are multiplicative;
+\item involution preserving
+when $f$ and~$g$ are involution preserving;
+\item unital when $f$ and~$g$ are unital;
+	subunital when $f$ and~$g$ are subunital;
+\item completely positive when $f$ and~$g$ are completely positive.
+\end{enumerate}
+\end{point}
+\end{parsec}
 \section{To be moved}
 \begin{parsec}%
 \begin{point}[ncp-uwlim]{Proposition}%
@@ -1589,107 +1692,4 @@ with respect to the norm, and thus ultrastrongly too.\qed
 \end{point}
 \end{point}
 \end{parsec}%
-\section{Tensor Product}
-\TODO{complete}
-\begin{parsec}%
-\begin{point}{Definition}%
-Let~$\scrA$ and~$\scrB$ be von Neumann algebras.
-\begin{enumerate}
-\item
-The \Define{ultraweak tensor product topology}
-on the algebraic tensor product~$\scrA\odot\scrB$
-is the least topology that makes
-all linear maps of the form $\sum_n \omega_n
-\colon \scrA \odot \scrB\to\C$
-continuous,
-where $\omega_1,\omega_2,\dotsc \colon \scrA\to \C$
-are linear maps which
-are \emph{simple} and \emph{positive} (see below),
-and $\sum_n \omega_n(1) <\infty$.
-
-A linear map $\omega\colon \scrA\odot \scrB\to\C$
-is 
-\begin{enumerate}
-\item
-\Define{simple}
-iff $\omega$ is of the form $\omega \equiv \sum_{n=1}^N \sigma_n\odot\tau_n$
-for some ultraweakly continuous linear maps 
-$\sigma_1,\dotsc,\sigma_N\colon \scrA\to\C$ and 
-$\tau_1,\dotsc,\tau_N\colon \scrB\to\C$;
-\item
-\Define{positive}
-iff $\sum_{i,j}\omega(\,a_i^*a_j\,\otimes\, b_i^*b_j\,)$
-is positive 
-for all $a_1,\dots,a_N\in\scrA$
-and~$b_1,\dotsc,b_N\in\scrB$.
-\end{enumerate}
-\item
-A bilinear map $\beta\colon \scrA\times \scrB\to\scrC$
-to a von Neumann algebra~$\scrC$
-is called \Define{normal}
-when the unique extension $\beta_\odot \colon \scrA\odot \scrB\to \scrC$
-is continuous with respect to the ultraweak tensor product topology 
-on~$\scrA\odot\scrB$
-and the ultraweak topology on~$\scrC$.
-\end{enumerate}
-\end{point}
-\begin{point}{Theorem}%
-Given von Neumann algebras~$\scrA$ and~$\scrB$
-there is a von Neumann algebra~$\Define{\scrA\otimes\scrB}$
-(called the \Define{tensor product} of~$\scrA$ and~$\scrB$)
-and a normal
-bilinear map $\Define{\otimes} \colon \scrA\times \scrB\to
-\scrA\otimes \scrB$
-with the property, that for every 
-normal bilinear map $\beta\colon \scrA\times \scrB\to\scrC$
-to a von Neumann algebra~$\scrC$
-there is a unique ultraweakly continuous
-map $\Define{\beta_\otimes}\colon \scrA\otimes \scrB
-\to \scrC$ with $\beta_\otimes(a\otimes b) = \beta(a,b)$
-for all~$a\in \scrA$ and $b\in\scrB$.
-Moreover,
-$\beta_\otimes$ is
-\begin{enumerate}
-\item
-multiplicative
-iff $\beta(a_1,b_1)\beta(a_2,b_2)=\beta(a_1a_2,b_1b_2)$
-for all~$a_1,a_2\in\scrA$ and $b_1,b_2\in\scrB$;
-\item
-involution preserving
-iff $\beta(a,b)^* = \beta(a^*,b^*)$ for all~$a\in\scrA$
-and $b\in\scrB$;
-\item
-unital iff $\beta(1,1)=1$;
-subunital iff $\beta(1,1)\leq 1$;
-\item
-positive iff 
-$\sum_{i,j} \beta(a_i^*a_j,b_i^*b_j) \geq 0$
-for all~$a_1,\dotsc,a_N\in\scrA$,$b_1,\dotsc,b_N\in\scrB$;
-\item
-completely positive iff 
-the matrix $(\ \beta(a_i^*a_j,b_i^*b_j)\ )_{i,j}\geq 0$
-is positive
-for all~$a_1,\dotsc,a_N\in\scrA$
-and $b_1,\dotsc,b_N\in\scrB$;
-\end{enumerate}
-Given ultraweakly continuous maps $f\colon \scrA\to\scrA'$
-and $g\colon \scrB\to\scrB'$
-to von Neumann algebras $\scrA'$ and~$\scrB'$,
-the assignment $(a,b)\mapsto f(a)\otimes g(b)$
-gives a normal bilinear map 
-$\beta\colon \scrA\times \scrB\to \scrA'\otimes \scrB'$.
-Then $\Define{f\otimes g}:=\beta_\otimes\colon \scrA\otimes \scrB
-\to\scrA'\otimes \scrB'$
-is
-\begin{enumerate}
-\item multiplicative
-when $f$ and~$g$ are multiplicative;
-\item involution preserving
-when $f$ and~$g$ are involution preserving;
-\item unital when $f$ and~$g$ are unital;
-	subunital when $f$ and~$g$ are subunital;
-\item completely positive when $f$ and~$g$ are completely positive.
-\end{enumerate}
-\end{point}
-\end{parsec}
 \end{document}
