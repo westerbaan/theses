@@ -1041,6 +1041,37 @@ and thus~$f$ is rigid.\qed
 \end{parsec}
 \subsection{Pure positivity}
 \begin{parsec}%
+\begin{point}{Definition}%
+We'll call a map $f\colon \scrA\to\scrA$
+between von Neumann algebras
+\begin{enumerate}
+\item
+\Define{purely self-adjoint}
+if~$f$ is pure and contraposed to itself
+($f^\bullet = f_\bullet$), and
+\item
+\Define{purely positive}
+if~$f\equiv gg$
+for some purely self-adjoint map
+$g\colon \scrA\to\scrA$.
+\end{enumerate}
+\end{point}
+\begin{point}{Examples}%
+Let~$\scrA$ be a von Neumann algebra.
+\begin{enumerate}
+\item
+Given a self-adjoint element~$a$ of~$\scrA$,
+the map~$a(\,\cdot\,)a\colon \scrA\to\scrA$ is 
+purely self-adjoint.
+\item
+Given a positive element~$a$ of~$\scrA$,
+the map $a(\,\cdot\,)a\colon \scrA\to\scrA$
+is purely positive.
+
+\end{enumerate}
+\end{point}
+\end{parsec}
+\begin{parsec}%
 \begin{point}%
 We now turn to the question
 to what extend a filter~$c$ is determined by
@@ -1069,6 +1100,9 @@ every element~$a$ of~$\scrA$ that commutes
 with~$p$ commutes with~$q$ too;
 and in particular, $pq=qp$.
 \item
+Show that when~$p$ and~$q$ are centrally similar,
+$\ceil{p}=\ceil{q}$.
+\item
 Show that when~$p$ and~$q$ commute,
 and both $\frac{p\wedge q}{p}$ 
 and~$\frac{p\wedge q}{q}$
@@ -1085,7 +1119,7 @@ and~$(p\wedge q)q^{\sim 1}$ are central.
 Assuming that $p$ and~$q$ commute
 and $e_1 \leq e_2 \leq \dotsb$
 are projections commuting with~$p$ and~$q$
-with~$\bigcup_n e_n=1$
+with~$\bigcup_n e_n=\ceil{p}$
 such that the~$e_np$ and~$e_nq$
 are pseudoinvertible,
 and centrally similar,
@@ -1166,9 +1200,14 @@ Since~$p$ and~$q$ commute,
 we can find a sequence
 of projections~$e_1\leq e_2 \leq \dotsb$
 that commute with~$p$ and~$q$
-with~$\bigcup_n e_n =1$
+with~$\bigcup_n e_n =\ceil{p}$
 and such that $pe_n$ and~$qe_n$
-are pseudoinvertible, see~\TODO{simultaneous-approximate-pseudoinverse}.
+are pseudoinvertible --- one may,
+for example,
+take $e_N:=\sum_{n=1}^N \ceil{t_n}$
+where~$t_1,t_2,\dotsc$
+is an approximate pseudoinverse
+of~$p\wedge q$ (see~\sref{approximate-pseudoinverse}).
 Note that to prove that~$p$ and~$q$ are centrally similar,
 it suffices to show that $pe_n$ and~$qe_n$ are centrally similar,
 by~\sref{centrally-similar-basic}.
