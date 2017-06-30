@@ -669,7 +669,7 @@ An element~$p$ of a $C^*$-algebra
 is a \Define{projection}
 when~$p^*p=p$.
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[projection-basic]{Exercise}%
 Show that in a $C^*$-algebra:
 \begin{enumerate}
 \item
@@ -735,6 +735,24 @@ iff $pa = p$
 iff $pa^\perp =0$
 iff $a^\perp p =0$
 iff $p\leq \sqrt{a}$.
+\end{point}
+\end{point}
+\begin{point}[projection-order-sharp]{Lemma}%
+An effect~$a$ of a $C^*$-algebra~$\scrA$
+is a projection iff the only projection
+below~$a$ and~$a^\perp$ is~$0$.
+\begin{point}{Proof}%
+On the one hand,
+if~$a$ is a projection,
+and~$b$ is an effect with~$b\leq a$
+and~$b\leq a^\perp$,
+then~$a^\perp b=0$ and~$ab=0$ by~\sref{projection-above-effect},
+and so~$b=ab+a^\perp b = 0$.
+On the other hand,
+if~$0$ is the only effect below both~$a$ and~$a^\perp$,
+then~$aa^\perp\equiv \sqrt{a}a^\perp \sqrt{a}$
+being an effect below~$a$, and below~$a^\perp$,
+is zero, and so~$a$ is projection, by~\sref{projection-basic}.\qed
 \end{point}
 \end{point}
 \begin{point}{Definition}%

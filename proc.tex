@@ -370,7 +370,18 @@ using~\sref{mult-cancellation}).
 
 Conclude that~$c$
 is faithful, and that~$c$ is mono in~$\W{CP}$.
+\item
+Show that~$c$ is bipositive
+(by proving first that~$c_p$
+is positive using~\sref{sequential-douglas}).
 \end{enumerate}
+\end{point}
+\begin{point}[filters-composition]{Exercise}%
+Show that the composition~$d\circ c$
+of filters~$c\colon\scrC\to\scrD$
+and~$d\colon \scrD\to\scrA$ 
+between von Neumann algebras
+is again a filter.
 \end{point}
 \begin{point}[corner-basic]{Exercise}%
 Let~$p$ be an effect of a von Neumann algebra~$\scrA$,
@@ -385,7 +396,27 @@ and that this~$\beta$ is unital and an ncp-isomorphism.
 Show that~$\pi$ is surjective, and that~$\pi$ is epi in~$\W{cp}$.
 \end{enumerate}
 \end{point}
-\begin{point}{Theorem}%
+\begin{point}[corners-floor]{Exercise}%
+Show that an ncpu-map $\pi\colon \scrA\to\scrB$
+between von Neumann algebras
+is a corner for an effect~$p$ of~$\scrA$
+iff~$\pi$ is a corner for~$\floor{p}$;
+in which case~$\ceil{\pi}=\floor{p}$.
+
+Thus a corner~$\pi$ is a corner for~$\ceil{\pi}$.
+\end{point}
+\begin{point}[corners-composition]{Exercise}%
+Show that the composition~$\tau\circ \pi$
+of corners~$\pi\colon \scrA\to\scrB$
+and~$\tau\colon \scrB\to\scrC$
+between von Neumann algebras
+is again a corner.\\
+(Hint:
+prove
+and use the inequality
+$\ceil{\tau}\leq \ceil{\smash{\pi(\ceil{\tau\circ \pi}^\perp)}}^\perp$.)
+\end{point}
+\begin{point}[filter-corner]{Theorem}%
 Given an ncp-map $f\colon\scrA\to\scrB$
 between von Neumann algebras,
 a projection~$e$ of~$\scrA$
@@ -394,7 +425,7 @@ and a positive element~$p$
 of~$\scrB$ with~$f(1) \leq p$,
 there is a unique ncp-map
 $g \colon e\scrA e
-\to p \scrB p$
+\to \ceil{p}\!\scrB\!\ceil{p}$
 such that
 \begin{equation*}
 \xymatrix{
@@ -407,7 +438,7 @@ such that
 e\scrA e
 \ar[r]_g
 & 
-p\scrB p
+\ceil{p}\!\scrB\!\ceil{p}
 \ar[u]_{c_p}
 }
 \end{equation*}
@@ -575,7 +606,7 @@ and for this it suffices to show that
 $\ceil{f(a)}\ceil{f(b)}=0$,
 because $f(a)f(b)=f(a)\ceil{f(a)}\ceil{f(b)}f(b)$.
 Since~$ab=0$,
-we have~$\ceil{a}\ceil{b}=0$ by~\TODO{...},
+we have~$\ceil{a}\ceil{b}=0$ by~\sref{mult-cancellation}
 and so $\ceil{f(a)}\ceil{f(b)}=\ceil{f(\ceil{a})}\ceil{f(\ceil{b})}=0$.
 \end{point}
 \begin{point}{\sref{gardner-2}$\Longrightarrow$\sref{gardner-1}}%
@@ -607,9 +638,9 @@ Since~$f^{-1}(1)\leq 1$
 and so~$1=f(f^{-1}(1))\leq f(1)\leq 1$,
 we see that~$f(1)=1$, so both $f$ and $f^{-1}$ are unital.
 It remains to be shown that~$f$ and~$f^{-1}$ are multiplicative.
-Since by~\TODO{...} a self-adjoint element~$a$ of~$\scrA$
+Since by~\sref{projection-order-sharp} an effect element~$a$ of~$\scrA$
 is a projection iff~$0$ is the infimum of~$a$ and~$a^\perp$,
-and~$f$ (as ncpsu-isomorphism) preserves all the structure 
+and~$f$ (as ncpu-isomorphism) preserves all the structure 
 mentioned in this characterization of being a projection,
 we see that~$f$ maps projections to projections,
 and is thus multiplicative, by~\sref{gardner}.
@@ -666,9 +697,9 @@ For this it suffices to show that the composition of properly
 pure maps is again properly pure;
 which,
 since filters are closed under composition
-(by~\sref{}),
+(by~\sref{filters-composition}),
 and corners are closed under composition
-(by~\sref{}),
+(by~\sref{corners-composition}),
 boils down to proving that the composition
 $\pi\circ c$ of a corner~$\pi$ and a filter~$c$
 is properly pure.
@@ -789,6 +820,20 @@ In that case we say that~$f$ and~$g$ are \Define{contraposed}.
 Given an element~$a$ of a von Neumann algebra~$\scrA$
 the maps $a^*(\,\cdot\,)a$ and~$a(\,\cdot\,)a^*$
 on~$\scrA$ are contraposed.
+
+If~$p$ and~$q$ are projections of~$\scrA$
+with $a^*pa\leq q$
+(as in~\sref{ad-ncp}),
+then the maps
+$a^*(\,\cdot\,)a \colon p\scrA p\to q\scrA q$
+and~$a(\,\cdot\,)a^*\colon q\scrA q \to p\scrA p$
+are contraposed.
+
+In particular,
+the standard corner $\pi_s\colon \scrA\to s \scrA s$
+and the standard filter $c_s\colon s\scrA s\to \scrA$
+for a projection~$s$ from~$\scrA$
+are contraposed.
 \item
 An ncp-isomorphism $f\colon \scrA\to\scrB$
 between von Neumann algebras
@@ -850,6 +895,18 @@ iff both $f^\bullet(s)\leq t^\perp$ and~$g^\bullet(s)\leq t^\perp$
 iff both $f_\bullet(t)\leq s^\perp$ and~$g_\bullet(t)\leq s^\perp$
 iff~$f_\bullet(t)\cup g_\bullet(t)\leq s^\perp$,
 we see that $(f+g)_\bullet(t)=f_\bullet(t)\cup g_\bullet(t)$.\qed
+\end{point}
+\end{point}
+\begin{point}[carrier-f-dagger-f]{Lemma}%
+Given contraposed
+maps~$f\colon \scrA\to\scrB$
+and~$g\colon \scrB\to\scrA$ between von Neumann algebras,
+we have $\ceil{f}=\ceil{gf}$.
+\begin{point}{Proof}%
+$\ceil{gf}=(gf)_\bullet(1)
+= f_\bullet(g_\bullet(1))
+= g^\bullet(\ceil{g})
+= g^\bullet(1)=f_\bullet(1)=\ceil{f}$.\qed
 \end{point}
 \end{point}
 \end{parsec}
@@ -1056,7 +1113,7 @@ for some purely self-adjoint map
 $g\colon \scrA\to\scrA$.
 \end{enumerate}
 \end{point}
-\begin{point}{Examples}%
+\begin{point}[purely-positive-examples]{Examples}%
 Let~$\scrA$ be a von Neumann algebra.
 \begin{enumerate}
 \item
@@ -1067,7 +1124,23 @@ purely self-adjoint.
 Given a positive element~$a$ of~$\scrA$,
 the map $a(\,\cdot\,)a\colon \scrA\to\scrA$
 is purely positive.
-
+\end{enumerate}
+\end{point}
+\begin{point}[purely-positive-basic]{Exercise}%
+Let~$f\colon \scrA\to\scrA$
+be an ncp-map,
+where~$\scrA$ is a von Neumann algebra.
+\begin{enumerate}
+\item
+Show that~$\ceil{f}=\ceil{f(1)}$ when~$f$
+is purely self-adjoint.
+\item
+Assuming~$f$ is purely self-adjoint,
+show that~$ff$ is purely self-adjoint,
+and show that~$\ceil{ff}=\ceil{f}$ (cf.~\sref{carrier-f-dagger-f}).
+\item
+Show that~$f$ is purely self-adjoint
+when~$f$ is purely positive.
 \end{enumerate}
 \end{point}
 \end{parsec}
@@ -1244,23 +1317,15 @@ $p$ and~$q$ are centrally similar (by~\sref{centrally-similar-basic}).
 \qed
 \end{point}
 \end{point}
-\end{parsec}
-\begin{parsec}%
-\begin{point}[positive-map-uniqueness]{Theorem}%
-Given a positive element~$p$ of a von Neumann algebra~$\scrA$
-there is a unique positive map $f\colon \scrA\to\scrA$
-with~$f(1)=p$,
-namely~$f=\sqrt{p}(\,\cdot\,)\sqrt{p}$.
+\begin{point}[faithful-positive-map-uniqueness]{Proposition}%
+A faithful positive map $f\colon \scrA\to\scrA$
+on a von Neumann algebra~$\scrA$
+is of the form~$f=\sqrt{p}(\,\cdot\,)\sqrt{p}$
+where $p:=f(1)$.
 \begin{point}{Proof}%
-Since we already know by~\TODO{...} that~$\sqrt{p}(\,\cdot\,)\sqrt{p}\colon
-\scrA\to\scrA$ is positive and maps~$1$ to~$p$,
-we only need to show that any positive map~$f\colon \scrA\to\scrA$
-with~$f(1)=p$ equals it.
-\begin{point}[positive-map-uniqueness-1]%
-We'll first prove this under the assumption that~$\ceil{f}=1$
-(that will be dispensed with in~\sref{positive-map-uniqueness-2}).
-In that case~$f$ (being pure) is a filter 
-of~$p$
+Note that~$f$,
+being faithful and pure,
+is a filter
 (by~\sref{special-pure-maps}),
 and thus of the form $f\equiv \sqrt{p}\,\vartheta(\,\cdot\,)\,\sqrt{p}$
 for some isomorphism~$\vartheta\colon \scrA\to\scrA$.
@@ -1301,70 +1366,116 @@ $\ceil{\sqrt{p}\,\vartheta(e)\,\sqrt{p}}
 for all projections~$e$ of~$\scrA$,
 which implies that~$\vartheta=\id$
 by~\sref{positive-quotients-centrally-similar},
-and hence that~$f=\sqrt{p}\,(\,\cdot\,)\,\sqrt{p}$.
+and hence that~$f=\sqrt{p}\,(\,\cdot\,)\,\sqrt{p}$.\qed
 \end{point}
-\begin{point}[positive-map-uniqueness-2]%
-We'll now show that~$f=\sqrt{p}\,(\,\cdot\,)\,\sqrt{p}$
-without assuming that~$\ceil{f}=1$.
-Since~$\ceil{f(1)}=f^\bullet(1)=f_\bullet(1)=\ceil{f}$,
-we can write $f\equiv \zeta f' \pi$,
-where $\pi\colon \scrA\to\ceil{f}\scrA\ceil{f}$
-is the standard corner of~$\ceil{f}$
-mapping~$a$ to $\ceil{f}a\ceil{f}$,
-$f'\colon \ceil{f}\scrA\ceil{f}\to\ceil{f}\scrA\ceil{f}$
-is an ncp-map,
-and~$\zeta\colon \ceil{f}\scrA\ceil{f}\to\scrA$
-is the standard filter of~$\ceil{f}$,
-mapping~$a$ to itself.
-Moreover, by~\TODO{...}  $\ceil{f'}=1$;
-and since~$f$ is pure, so is~$f'$ by~\TODO{...}.
-Being pure with~$\ceil{f'}=1$, we see that~$f'$ is a filter.
-
-Of course we want to apply~\sref{positive-map-uniqueness-1}
-to~$f'$ and for this it remains to be show that~$f'$ is positive.
-Since~$f$ is positive,
-there is self-adjoint~$g\colon \scrA\to\scrA$
-with $f=gg$.
-We claim that~$\ceil{g}=\ceil{f}$.
-Indeed,
-since~$f$ and $g$ are self-adjoint,
-we have $\ceil{f}=f_\bullet(1)=f^\bullet(1)=g^\bullet(g^\bullet(1))
-= g^\bullet(g_\bullet(1))=g^\bullet(1)=g_\bullet(1)=\ceil{g}$.
-It follows that we can write
-$g\equiv \zeta g' \pi$ for some ncp-map $g'\colon
-\ceil{f}\scrA\ceil{f}\to\ceil{f}\scrA\ceil{f}$,
-which will be pure and faithful.
-Clearly having~$\pi\zeta = \id$,
-we get $\zeta f'\pi
-=f = gg = \zeta g' \pi \zeta g' \pi
-= \zeta g'g' \pi$,
-and so~$f'=g'g'$.
-Thus to prove that~$f'$ is positive,
-we only need to show that~$g'$ is self-adjoint.
-To this end, recall
-that $\pi$ and~$\zeta$ being contraposed by~\TODO{...}
-satisfy
-$\pi^\bullet = \zeta_\bullet$
-and~$\zeta^\bullet = \pi_\bullet$,
-and note that~$g'=\pi\zeta g' \pi\zeta
-= \pi g \zeta $,
-so that ${g'}^\bullet = \pi^\bullet g^\bullet \zeta^\bullet
-= \zeta_\bullet g_\bullet \pi_\bullet
-= (\pi g \zeta)_\bullet = g_\bullet'$.
-Hence $f'$ --- being of the form $f'=g'g'$ for self-adjont~$g'$ ---
-is positive.
-
-By~\sref{positive-map-uniqueness-1},
-$f'(a)=\sqrt{p}\,a\,\sqrt{p}$
-for all~$a\in\ceil{f}\!\scrA\!\ceil{f}$.
-Thus~$f(a)=\zeta(f'(\pi(a)))
-= \sqrt{p}\ceil{f}a\ceil{f}\sqrt{p}$
-for all~$a\in\scrA$.
-Finally, 
-since~$\ceil{f}=f_\bullet(1)=f^\bullet(1)=\ceil{f(1)}=\ceil{p}$,
-we get $f(a)=\sqrt{p}a\sqrt{p}$
-for all~$a\in\scrA$.\qed
 \end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+To strip 
+from~\sref{faithful-positive-map-uniqueness}
+the assumption 
+that~$f$
+is faithful 
+we employ this device:
+\end{point}
+\begin{point}[chevron-f]{Definition}%
+Given a ncp-map $f\colon \scrA\to\scrB$
+between von Neumann algebras
+we denote by
+$\Define{\left<f\right>}\colon \ceil{f}\!\scrA\!\ceil{f}
+\to \ceil{f(1)}\!\scrB\!\ceil{f(1)}$
+the unique ncp-map
+such that 
+\begin{equation*}
+\xymatrix@C=6em{
+\scrA
+\ar[r]^f
+\ar[d]_{\pi_{\ceil{f}}}
+&
+\scrB
+\\
+\ceil{f}\!\scrA\!\ceil{f}
+\ar[r]^{\left<f\right>}
+&
+\ceil{f(1)}\!\scrB\!\ceil{f(1)}
+\ar[u]_{c_{\ceil{f(1)}}}
+}
+\end{equation*}
+commutes.
+(Compare this with the definition of~$[f]$ in~\sref{square-f}.)
+\end{point}
+\begin{point}[chevron-f-basic]{Exercise}%
+Let~$f\colon \scrA\to\scrB$ be an ncp-map.
+\begin{enumerate}
+\item
+Show that~$\left<f\right>
+= \pi_{\ceil{f(1)}}\circ f \circ c_{\ceil{f}}$
+(using, perhaps, that $\pi_{\ceil{f}}\circ c_{\ceil{f}}=\id$).
+\item
+Show that
+$\left<f\right> = \pi_{\ceil{f(1)}} \circ c_{f(1)}\circ [f]$.
+
+(Thus $\left<f\right>\!(a) = 
+\sqrt{f(1)}\ [f]\!(a)\ \sqrt{f(1)}$
+for all $a$ from~$\ceil{f}\!\scrA\!\ceil{f}$.)
+\item
+Show that~$\left<f\right>$
+is faithful,
+and~$\left<f\right>\!(1)=f(1)$.
+\item
+Assuming that~$f$ is pure,
+show that~$\left<f\right>$ is pure,
+and hence a filter (by~\sref{special-pure-maps}).
+\end{enumerate}
+\end{point}
+\begin{point}[chevron-f-purely-positive]{Exercise}%
+Let~$f\colon \scrA\to\scrA$
+be an ncp-map, where~$\scrA$ is a von Neumann algebra.
+\begin{enumerate}
+\item
+Suppose that~$f$ is purely self-adjoint.
+
+Recall that~$\ceil{f}=\ceil{f(1)}$,
+and so $\left<f\right>\colon \ceil{f}\!\scrA\!\ceil{f}
+\to \ceil{f}\!\scrA\!\ceil{f}$.
+
+Prove that~$\left<f\right>$
+is purely self-adjoint.
+\item
+Suppose again that~$f$ is purely self-adjoint,
+and recall from~\sref{purely-positive-basic} that $f^2$
+is purely self-adjoint, and~$\ceil{f^2} = \ceil{f}$.
+Show that $\left<f^2\right> = \left<f\right>^2$.
+\item
+Assuming that~$f$ is purely positive,
+show that~$\left<f\right>$ is purely positive.
+\end{enumerate}
+\end{point}
+\begin{point}[positive-map-uniqueness]{Theorem}%
+Given a positive element~$p$ of a von Neumann algebra~$\scrA$
+there is a unique purely positive map $f\colon \scrA\to\scrA$
+with~$f(1)=p$,
+namely~$f=\sqrt{p}(\,\cdot\,)\sqrt{p}$.
+\begin{point}{Proof}%
+We've already seen in~\sref{purely-positive-examples}
+that $f=\sqrt{p}(\,\cdot\,)\sqrt{p}\colon \scrA\to\scrA$
+is a purely positive map with~$f(1)=p$.
+Concerning uniqueness,
+(given arbitrary~$f$)
+the map~$\left<f\right>\colon \ceil{p}\!\scrA\!\ceil{p}
+\to \ceil{p}\!\scrA\!\ceil{p}$
+from~\sref{chevron-f}
+is purely positive by~\sref{chevron-f-purely-positive},
+and faithful by~\sref{chevron-f-basic},
+and so of the form
+$\left<f\right>=\sqrt{p}(\,\cdot\,)\sqrt{p}$
+by~\sref{faithful-positive-map-uniqueness}
+(since~$\left<f\right>\!(1)=f(1)=p$);
+implying that
+$f= c_{\ceil{p}}\circ\left<f\right>\circ \pi_{\ceil{p}}
+= \sqrt{p}\ceil{p}(\,\cdot\,)\ceil{p}\sqrt{p}
+= \sqrt{p}(\,\cdot\,)\sqrt{p}$.\qed
 \end{point}
 \end{point}
 \begin{point}{Corollary (``Square Root Axiom'')}%
