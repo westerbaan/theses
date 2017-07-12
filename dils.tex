@@ -4298,7 +4298,7 @@ For any~np-map~$f\colon \scrA\otimes \scrB \to \C$
 \begin{align*}
     \|T(t_\alpha) - T(t_\beta) \|_f^2 
         &\ =\ f(\langle T(t_\alpha - t_\beta), T(t_\alpha - t_\beta) \rangle) \\
-        & \ = \ \|T\|^2 f([t_\alpha-t_\beta, t_\alpha - t_\beta]) \\
+        & \ \leq \ \|T\|^2 f([t_\alpha-t_\beta, t_\alpha - t_\beta]) \\
         & \ = \ \|T\|^2 f(\left<\eta (t_\alpha)-\eta(t_\beta), \eta(t_\alpha) - \eta(t_\beta)\right>) \ \to\  0.
 \end{align*}
 So~$(T t_\alpha)_\alpha$ is ultranorm Cauchy in~$Z$.
@@ -4330,34 +4330,33 @@ Let~$f\colon \scrA\otimes \scrB \to \C$ be any np-map.
 Write~$\Phi$ for the set of entourages for ultranorm uniformity
     on~$X \otimes Y$.
 As the image of~$\eta$ is ultranorm dense,
-there are $t^\alpha_E \in \eta(X \odot Y)$
-    such that~$t^\alpha_E \mathrel{E} t^\alpha$ for~$E \in \Phi$
-    and so~$\hat{T} t^\alpha = \unlim_E T t^\alpha_E$.
-There is some~$\alpha_0$
+there is a~$\Phi$-indexed Cauchy net~$(t^\alpha_E)_{E \in \Phi}$ in
+    $\eta (X \odot Y)$
+    with~$t^\alpha_E \mathrel{E} t^\alpha$
+    for each~$E \in \Phi$.
+Thus~$\hat{T} t^\alpha = \unlim_E T t^\alpha_E$.
+As~$t^\alpha \to 0$
+    there is some~$\alpha_0$
     such that for all~$\alpha \geq \alpha_0$
     we have~$\|t^\alpha \|_f \leq \varepsilon$.
-There is also some~$\alpha_1$
-    such that~$\|\hat{T} t^\alpha - \hat{T} t\|_f \leq \varepsilon$
-    for~$\alpha \geq \alpha_11$.
-Let~$\alpha_2$ be such that~$\alpha_2 \geq \alpha_1,\alpha_0$.
-There is some~$E_0 \geq E_{f,\varepsilon}$
+We can find~$E_0 \geq E_{f,\varepsilon}$
 such that for all~$E \geq E_0$
-we have~$\| \hat{T} t^{\alpha_2} -T t^{\alpha_2}_E \|_f \leq \varepsilon$.
+we have~$\| \hat{T} t^{\alpha_0} -T t^{\alpha_0}_E \|_f \leq \varepsilon$.
 For~$E \geq E_0$ we have~$E \geq E_{f,\varepsilon}$ and so
 \begin{equation*}
- \|T t^{\alpha_2}_{E_0}\|_f
- \  \overset{\eqref{eq:exttensorcontT}}{\leq}\  \|T\| \|t^{\alpha_2}_{E_0}\|_f
+ \|T t^{\alpha_0}_{E_0}\|_f
+ \  \overset{\eqref{eq:exttensorcontT}}{\leq}\  \|T\| \|t^{\alpha_0}_{E_0}\|_f
   \  \leq\ \|T\|
-    (\| t_{E_0} \|_f  +
-            \|t_{E_0} - t^{\alpha_2}_{E_0}\|_f)
+  ( \|t^{\alpha_0}_{E_0} - t^{\alpha_0}\|_f +
+  \| t^{\alpha_0} \|_f)
    \ \leq\  2 \|T\| \varepsilon.
 \end{equation*}
     Consequently
 \begin{equation*}
-    \|\hat{T} t^{\alpha_2} \|_f \leq 
-    \|\hat{T} t^{\alpha_2} - T t^{\alpha_2}_{E_0} \|_f
-                + \|T t^{\alpha_2}_{E_0}\|_f
-    \leq \varepsilon + 2\|T\|\varepsilon.
+    \|\hat{T} t^{\alpha_0} \|_f \ \leq  \ 
+    \|\hat{T} t^{\alpha_0} - T t^{\alpha_0}_{E_0} \|_f
+                + \|T t^{\alpha_0}_{E_0}\|_f
+    \ \leq\  \varepsilon + 2\|T\|\varepsilon.
 \end{equation*}
 So~$\hat{T}t^\alpha \to 0$ ultranorm, as desired.
 \end{point}

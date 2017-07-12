@@ -1,0 +1,258 @@
+\documentclass[b]{subfiles}
+\begin{document}
+
+\chapter{$\dagger$ and~$\diamond$ in an effectus}
+
+\begin{parsec}%
+\begin{point}%
+In the previous chapter and in \TODO{cite Bram}
+    we have studied the categorical properties of von Neumann algebras.
+In this chapter we change pace:
+    we study categories which share part of the structure
+    of the category of von Neumann algebras.
+The goal of this line of study, is to identify
+    axioms which uniquely pick out the category of von Neumann algebras.
+We do not reach this ambitious goal ---
+    instead we will build up to a characterization of
+    the existence of a unique $\dagger$-structure
+    on the pure maps of a von Neumann-like category.
+\end{point}
+\begin{point}%
+As basic axiom we will require the categories we consider to be
+    effectuses.
+For us the definition of an effectus will play a similar role
+    to that of a topological space for a geometer.
+General topological spaces on their own are usually of little interest:
+    the axioms are so weak that there are many pathological examples.
+    These weak axioms, however, are very expressive in the sense
+    that they allow for the definition of many useful notions.
+    Herein lies the strength of topological spaces ---
+    as a stepping stone:
+    many important classes of mathematical spaces
+    are just plain topological spaces with a few additional axioms.
+Similarly, there will be many pathalogical effectuses.
+Their use for us lies in their expressiveness.
+After we have studied plain effectuses,
+    we will study effectuses with various additional bits of structure.
+\TODO{More intro}
+\end{point}
+\end{parsec}
+\section{Effectus}
+An effectus comes in two guises:
+    axiomatizing either a category of total maps
+    or a category of partial maps.
+We will start of with the total form as it has the simplest axioms.
+Later we will prefer to work with the partial form.
+\begin{parsec}%
+\begin{point}{Definition}%
+A category $C$ is said to be an \Define{effectus in total form}
+    if
+\begin{enumerate}
+\item $C$ has finite coproducts and a final object~$1$;
+\item all diagrams of the following form are pullbacks
+\begin{equation*}
+\xymatrix{
+    X+Y \ar[r]^{\id+!} \ar[d]_{!+\id} & X+1\ar[d]^{!+\id} \\
+    1+Y\ar[r]_{\id+!} & 1+1
+    }
+    \qquad
+\xymatrix{
+    X \ar[r]^{!} \ar[d]_{\kappa_1} & 1 \ar[d]^{\kappa_1} \\
+    X+Y\ar[r]_{!+!} & 1+1
+    }
+\end{equation*}
+\item\label{eff-joint-monicity} and the following two arrows are jointly monic
+    \begin{equation*}
+        \xymatrix@C+2pc  {
+            1+1+1  \ar@/^/[r]^{[\kappa_1,\kappa_2,\kappa_2]}
+                    \ar@/_/[r]_{[\kappa_2,\kappa_1,\kappa_2]} & 1+1.
+        }
+    \end{equation*}
+\end{enumerate}
+An arrow~$X \to Y+1$ is called a \Define{partial map} $X \to Y$.
+\begin{point}%
+Our main example of an effectus in total form
+    is the category~$\op{\W{NCPU}}$
+    of von Neumann algebras with completely positive normal unital
+    maps in the opposite direction.
+The partial maps correspond to contractive maps.
+We list more examples later.
+Let~$C$ be an effectus in total form.
+Given two arrows~$f\colon X \to Y+1$
+and~$g \colon Y \to Z+1$ (i.e.~partial maps~$X \to Y$ and~$Y \to Z$)
+    their composition as partial maps
+    is defined as~$g \hafter f \equiv  [g, \kappa_2] \after f$.
+Write~$\Define{\Par C}$ for the \Define{category of partial maps},
+    which has the same objects
+    as~$C$, but as arrows~$X \to Y$ in~$\Par C$
+    we take arrows of the form~$X \to Y+1$ in~$C$,
+    which we compose using~$\hafter$.
+The identity on~$X$ in~$\Par C$ is given by~$\kappa_1 \colon X \to X+1$.
+The category~$\Par C$ is not an effectus in total form --- instead it
+    is an effectus \emph{in partial form}.
+\end{point}
+\end{point}
+\begin{point}{Definition}%
+A category~$C$ is called an \Define{effectus in partial form} if
+\begin{enumerate}
+\item
+    $C$ is a finPAC \TODO{cite} --- that is: if
+    \begin{enumerate}
+        \item $C$ is PCM-enriched --- that is: if
+            \begin{enumerate}
+            \item
+            every homset $C(X,Y)$ has a partial binary operation~$\ovee$
+            (we write~$\Define{f \perp g}$ if~$f \ovee g$ exists)
+                    and distinguished~$0 \in C(X,Y)$
+                    that turns~$C(X,Y)$ into a partial commutative monoid
+                    (PCM) and
+            \item
+            if $f \perp g$ then
+                $(h \after f) \perp (h \after g)$,
+                $(f \after k) \perp (g \after k)$ \emph{and}
+            \begin{equation*}
+                 h \after (f \ovee g) = 
+                (h \after f) \ovee (h \ovee g)\qquad
+                (f \ovee g) \after k = 
+                (f \after k) \ovee (g \after k)
+            \end{equation*}
+                for any~$f,g \in X \to Y$,
+                $h\colon Y \to Y'$
+                and~$k \colon X'\to X$;
+            \end{enumerate}
+        \item 
+            $C$ has finite coproducts $(+,0)$;
+        \item
+            (compatible sum)
+            for any~$b\colon X \to Y + Y$ we have
+            $\pproj_1 \after b \perp \pproj_2 \after b$,
+            where~$\Define{\pproj_i}\colon Y + Y \to Y$
+            are \Define{partial projectors} defined
+            by~$\pproj_1 \equiv [\id, 0]$
+            and~$\pproj_2 \equiv [0, \id]$ \emph{and}
+        \item
+            (untying) if~$f\perp g$,
+            then~$\kappa_1\after f \perp \kappa_2 \after g$ \emph{and}
+    \end{enumerate}
+    \item it has effects --- that is: there is a distinguished object~$I$
+            such that
+    \begin{enumerate}
+        \item for each object~$X$ the PCM~$C(X,I)$
+                is an effect algebra --- that is:
+        \begin{enumerate}
+            \item
+                for each~$f\colon X \to I$
+                    there is a unique element~$f^\perp\colon X \to I$
+                    such that~$f \ovee f^\perp = 1$,
+                    where~$1 \equiv 0^\perp$ and
+            \item
+                if~$f\colon X \to I$ with~$f \perp 1$,
+                    then~$f = 0$;
+        \end{enumerate}
+        \item if~$1 \after f \perp 1 \after g$,
+            then~$f \perp g$ \emph{and}
+        \item if~$1 \after f = 0$ then~$f = 0$.
+    \end{enumerate}
+\end{enumerate}
+A map~$f\colon X \to Y$ is called \Define{total} if~$1 \after f = 1$.
+\begin{point}%
+At first glance an effectus in partial form seems
+    to have a much richer structure than an effectus in total form.
+This is not the case ---
+    effectuses in total and partial form are two views
+    on the same thing:
+\end{point}
+\end{point}
+\begin{point}{Theorem}%
+Let~$C$ be an effectus in total form
+and~$D$ be an effectus in partial form.\TODO{cite kenta}
+\begin{enumerate}
+\item
+The category~$\Par C$ is an effectus in partial form
+        with~$I = 1$.
+\item
+The total maps of~$D$ form an effectus in total form~$\Tot D$.
+\item
+    Nothing is lost:
+    $\Par \Tot D \cong D$ and~$\Tot \Par C \cong C$.
+\end{enumerate}
+\begin{point}{Proof}%
+    \TODO{...}
+\end{point}
+\end{point}
+
+\subsection{Predicates, states and scalars}
+\begin{point}%
+For the remainder of this text,
+    we will work with effectuses in partial form.
+We will write~$1$ instead of~$I$.
+\end{point}
+\begin{point}{Definition}%
+Let~$C$ be an effectus (in partial form).
+\begin{enumerate}
+\item
+A \Define{predicate} on~$X$ is a map~$X \to 1$.
+The set of predicates $\Define{\Pred X}$ on~$X$ form an effect algebra.
+\item
+A \Define{scalar} is a predicate on~$1$, that is: a map~$1 \to 1$.
+Write~$\Define{M} \equiv \Pred 1$ for the set of scalars.
+We multiply two scalars~$\lambda,\mu \colon 1 \to 1$
+    simply by composing~$\lambda \odot \mu \equiv \lambda \after \mu$.
+As~$C$ is PCM-enriched, this turns~$M$ into an effect monoid.\TODO{ref}
+\item
+For a scalar~$\lambda\colon 1\to 1$ and a predicate~$p\colon X \to 1$
+    we write~$\lambda \cdot p \equiv \lambda \after p$.
+With this scalar multiplication,
+    $\Pred X$ turns into a~$M$-effect module.
+\item
+A \Define{substate} on~$X$ is a map~$\omega\colon 1 \to X$.
+A \Define{state} is a total substate.
+We denote the set of states on~$X$ by~$\Stat X$.
+\end{enumerate}
+\end{point}
+\end{parsec}
+
+\section{Quotient}
+\begin{parsec}%
+\begin{point}{Definition}%
+Let~$C$ be an effectus.
+We say~$C$ has quotients
+    if for each predicate~$p \colon X \to 1$,
+    there exists a map~$\xi_p \colon X \to X/_p$
+    with~$1 \after \xi_p \leq p^\perp$
+    satisfying the following universal property:
+\begin{quote}
+    for any (other) map~$f\colon X \to Y$
+        with~$1 \after f \leq p^\perp$,
+        there is a unique map~$f' \colon X/_p \to Y$
+        such that~$f' \after \xi_p = f$.
+\end{quote}
+Any  map with this universal property
+    is called a \Define{quotient} for~$p$.
+\end{point}
+\end{parsec}
+
+\section{Comprehension}
+\begin{parsec}%
+\begin{point}%
+Let~$C$ be an effectus.
+We say~$C$ has comprehension
+    if for each predicate~$p \colon X \to 1$,
+    there exists a map~$\pi_p \colon \cmpr{X}{p} \to X$
+    with~$p \after \pi_p = 1 \after \pi_p$
+    satisfying the following universal property:
+\begin{quote}
+    for any (other) map~$g\colon Z \to X$
+        with~$p \after g = 1 \after g$
+        there is a unique map~$g' \colon Z \to \cmpr{X}{p}$
+        such that~$f' \after \xi_p = f$.
+\end{quote}
+Any  map with this universal property
+    is called a \Define{quotient} for~$p$.
+
+\end{point}
+\end{parsec}
+
+\end{document}
+
+% vim: ft=tex.latex
