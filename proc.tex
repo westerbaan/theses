@@ -1593,8 +1593,73 @@ except~\ref{ax5}.
 
 \section{Quantum Lambda Calculus}
 \subsection{Tensor product}
-\TODO{complete}
 \begin{parsec}%
+\begin{point}%
+Recall that the algebraic tensor product
+of vector spaces~$V$ and~$W$
+is a vector space~$V\odot W$
+equipped
+with a bilear mapping~$\odot\colon V\times W\to V\odot W$
+which is  universal  
+in the sense that for every bilinear mapping~$\beta\colon V\times W\to Z$
+into some vector space~$Z$
+there is a unique linear map~$\beta_\odot\colon V\odot W\to Z$
+with~$\beta_\odot(v\odot w)=\beta(v,w)$
+for all~$v\in V$ and~$w\in W$.
+
+This property uniquely determines the algebraic tensor product in the sense
+that for any bilinear map~$\mathbin{\tilde\odot}\colon
+ V\times W\to V\mathbin{\tilde\odot} W$
+ into a vector space~$V\mathbin{\tilde \odot} W$
+which shares this property
+there is a unique linear isomorphism $\varphi\colon V\odot W\to V
+\mathbin{\tilde \odot} W$
+with $\varphi(v\odot w) = v\mathbin{\tilde\odot} w$
+for all~$v\in V$ and~$w\in W$.
+
+In fact, one may take this property as a neat abstract 
+definition of the algebraic
+tensor product.
+However, to  see that the damn thing actually exists,
+one still needs a concrete description
+such as this one:
+take given a basis~$B$ of~$V$ and a basis~$C$ of~$W$
+the bilinear map $\odot$ on~$V\times W$
+to the vector space $(B\times C)\cdot \C$ with basis~$B\times C$
+determined by~$b\odot c = (b,c)$
+for~$b\in B$ and~$c\in C$.
+This shows us not only that the algebraic tensor product
+exists,
+but also 
+that~$\odot$ is injective (among other things).
+
+This is all, of course, well known; the interesting thing here is that
+with a little work
+a similar description 
+can be made to work
+for the tensor product $\scrA\otimes \scrB$ of von Neumann algebras
+$\scrA$ and~$\scrB$!
+We'll see that any bilinear map $\beta\colon \scrA\times \scrB\to\scrC$
+into a von Neumann algebra~$\scrC$
+which is sufficiently ``normal''
+extends uniquely to a ultraweakly continuous
+map $\beta_\otimes \colon  \scrA\otimes \scrB\to\C$,
+where ``normal'' will mean 
+that the extension $\beta_\odot\colon \scrA\odot\scrB\to\scrC$
+to the \emph{algebraic} tensor product
+is ultraweakly continuous.
+
+To prevent a circular definition
+here
+we'll first describe the ultraweak topology
+that $\scrA\otimes \scrB$ will induce on~$\scrA\odot \scrB$
+in concrete terms,
+and will call it the \emph{tensor product topology}.
+We'll also need to introduce
+a \emph{tensor product norm} on~$\scrA\odot\scrB$
+that will turn out to be the norm on~$\scrA\odot \scrB$
+induced by~$\scrA\otimes \scrB$.
+\end{point}
 \begin{point}{Definition}%
 Let~$\scrA$ and~$\scrB$ be von Neumann algebras.
 \begin{enumerate}
