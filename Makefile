@@ -20,6 +20,9 @@ vn.pdf: common.tex vn.tex
 proc.pdf: common.tex proc.tex
 	latexmk -pdf -use-make proc.tex
 
+misc.pdf: common.tex misc.tex
+	latexmk -pdf -use-make misc.tex
+
 common.tex: main.bib
 
 clean:

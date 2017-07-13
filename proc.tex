@@ -1599,33 +1599,51 @@ except~\ref{ax5}.
 Let~$\scrA$ and~$\scrB$ be von Neumann algebras.
 \begin{enumerate}
 \item
-The \Define{ultraweak tensor product topology}
-on the algebraic tensor product~$\scrA\odot\scrB$
-is the least topology that makes
-all linear maps of the form $\sum_n \omega_n
-\colon \scrA \odot \scrB\to\C$
-continuous,
-where $\omega_1,\omega_2,\dotsc \colon \scrA\to \C$
-are linear maps which
-are \emph{simple} and \emph{positive} (see below),
-and $\sum_n \omega_n(1) <\infty$.
+We'll call a map $\omega \colon \scrA\odot\scrB\to\C$
+a \Define{product functional}
+when $\omega\equiv \sigma\odot\tau$
+for some np-maps $\sigma\colon\scrA\to\C$
+and~$\tau\colon \scrB\to\C$,
+and a \Define{simple functional}
+when
+$\omega\equiv (\sigma\odot \tau)(t^*(\,\cdot\,)t)$
+for some~$t\in \scrA\odot\scrB$
+and~$\sigma$ and~$\tau$ as before.
 
-A linear map $\omega\colon \scrA\odot \scrB\to\C$
-is 
-\begin{enumerate}
+\Define{Product states} and 
+\Define{simple states}
+are unital versions of such maps.
 \item
-\Define{simple}
-iff $\omega$ is of the form $\omega \equiv \sum_{n=1}^N \sigma_n\odot\tau_n$
-for some ultraweakly continuous linear maps 
-$\sigma_1,\dotsc,\sigma_N\colon \scrA\to\C$ and 
-$\tau_1,\dotsc,\tau_N\colon \scrB\to\C$;
+Each simple functional $\omega \colon \scrA\odot\scrB\to\C$
+gives us an operation~$\Define{[\,\cdot\,,\,\cdot\,]_\omega}$,
+that will turn out to be an inner product in~\TODO{},
+given by
+$\Define{[s,t]_\omega}:=\omega(s^*t)$
+(cf.~\sref{state-inner-product}),
+and an associated semi-norm
+denoted by~$\Define{\|t\|_\omega}:=[t,t]_\omega = \omega(t^*t)$.
+
+The \Define{tensor product norm}
+on~$\scrA\odot \scrB$
+is the semi-norm 
+given by
+\begin{equation*}
+	\textstyle
+	\Define{\|t\|}\ =\ \sup_\omega \|t\|_\omega,
+\end{equation*}
+where~$\omega$ ranges over all simple \emph{states}
+on~$\scrA\odot\scrB$.
 \item
-\Define{positive}
-iff $\sum_{i,j}\omega(\,a_i^*a_j\,\otimes\, b_i^*b_j\,)$
-is positive 
-for all $a_1,\dots,a_N\in\scrA$
-and~$b_1,\dotsc,b_N\in\scrB$.
-\end{enumerate}
+Note that having endowed~$\scrA\odot \scrB$
+with the tensor product norm
+we can speak of bounded functionals on~$\scrA\odot \scrB$,
+and the operator norm on them.
+We'll see that all simple functionals are bounded in~\TODO{...}.
+
+The \Define{ultraweak tensor product topology}
+is the least topology on~$\scrA\odot\scrB$
+that makes all operator norm limits
+of simple functionals continuous.
 \item
 A bilinear map $\beta\colon \scrA\times \scrB\to\scrC$
 to a von Neumann algebra~$\scrC$
@@ -1634,6 +1652,21 @@ when the unique extension $\beta_\odot \colon \scrA\odot \scrB\to \scrC$
 is continuous with respect to the ultraweak tensor product topology 
 on~$\scrA\odot\scrB$
 and the ultraweak topology on~$\scrC$.
+\item
+A \Define{tensor product} of~$\scrA$ and~$\scrB$
+is a von Neumann algebra~$\Define{\scrA\otimes \scrB}$
+with a normal
+bilinear map $\Define{\otimes} \colon \scrA\times \scrB\to
+\scrA\otimes \scrB$
+which is universal
+in the sense
+that for every
+normal bilinear map $\beta\colon \scrA\times \scrB\to\scrC$
+to a von Neumann algebra~$\scrC$
+there is a unique ultraweakly continuous
+map $\Define{\beta_\otimes}\colon \scrA\otimes \scrB
+\to \scrC$ with $\beta_\otimes(a\otimes b) = \beta(a,b)$
+for all~$a\in \scrA$ and $b\in\scrB$.
 \end{enumerate}
 \end{point}
 \begin{point}{Theorem}%
