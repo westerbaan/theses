@@ -216,7 +216,7 @@ We denote the set of states on~$X$ by~$\Stat X$.
 \begin{parsec}%
 \begin{point}{Definition}%
 Let~$C$ be an effectus.
-We say~$C$ has quotients
+We say~$C$ is an \Define{effectus with quotients}
     if for each predicate~$p \colon X \to 1$,
     there exists a map~$\xi_p \colon X \to X/_p$
     with~$1 \after \xi_p \leq p^\perp$
@@ -230,11 +230,109 @@ We say~$C$ has quotients
 Any  map with this universal property
     is called a \Define{quotient} for~$p$.
 \end{point}
+\begin{point}{Example}%
+In~$\op{\W{NCPsU}}$ quotients are exactly the same thing
+    as contractive filters, see \TODO{...}.
+An example of a quotient-map for~$1-a \in \scrA$ is given
+    by~$\xi\colon \ceil{a}\scrA \ceil{a} \to \scrA$
+    with~$\xi(b) = \sqrt{a} b \sqrt{a}$.
+\end{point}
+\begin{point}[quotient-basics]{Exercise}%
+Show the following basic properties of quotients.
+\begin{enumerate}
+    \item If~$\xi\colon X \to Y$ is a quotient for~$p$
+                and~$\vartheta\colon Y \to Z$ is an isomorphism,
+                then~$\vartheta \after \xi$ is a quotient for~$p$
+                as well.
+    \item Conversely, if~$\xi_1$ and~$\xi_2$
+            are both quotients for~$p$,
+            then there is unique a isomorphism~$\vartheta$
+            with~$\xi_1 = \vartheta \after \xi_2$.
+    \item Isomorphisms are quotients (for 0).
+    \item Zero-maps are quotients (for 1).
+    \item If~$\xi$ is a quotient for~$p$, then~$1\after \xi = p^\perp$
+                (Hint: apply the universal property to $p^\perp$).
+    \item Quotients are epi.
+\end{enumerate}
+\begin{point}%
+The following proposition is easy to prove,
+    but shows an important property of quotients:
+    any map~$f$ factors as a total map after a quotient
+    for~$(1\after f)^\perp$.
+\end{point}
+\end{point}
+\begin{point}[quotient-total]{Proposition}%
+Assume~$\xi_{p^\perp} \colon X \to X/_{p^\perp}$ is a quotient for~$p^\perp$.
+For any~$f\colon X \to Z$
+    with~$1 \after f = p$,
+    there is a unique \emph{total} $g\colon X/_{p^\perp} \to Z$
+    with~$f = g \after \xi_{p^\perp}$.
+\begin{point}{Proof}%
+By definition of quotient, there is a unique~$g\colon X/_{p^\perp} \to Z$
+    with~$g \after \xi_{p^\perp} = f$.
+Note~$1 \after g \after \xi_{p^\perp} = 1 \after f = p = 1 \after \xi_{p^\perp}$.
+Thus, as~$\xi_{p^\perp}$ is epi (\sref{quotient-basics}),
+    we conclude~$1 \after g = 1$.
+That is: $g$ is total. \qed
+\end{point}
+\end{point}
+\begin{point}{Proposition}%
+In an effectus with quotients,
+    quotients are closed under composition.
+\begin{point}{Proof}%
+Assume~$\xi_1\colon X \to Y$ is a quotient for~$p^\perp$
+    and~$\xi_2\colon Y \to Z$ is a quotient for~$q^\perp$.
+We will prove~$\xi_2 \after \xi_1$
+    is a quotient for~$(q \after \xi_1)^\perp$.
+As our effectus has quotients,
+    we can pick a quotient~$\xi \colon X \to X/_{(q \after \xi_1)^\perp}$
+        of~$(q \after \xi_1)^\perp$.
+First, some preparation.
+Note~$1 \after \xi = q \after \xi_1 \leq 1 \after \xi_1 = p$.
+Thus by the universal property of~$\xi_1$,
+there is a unique map~$h_1\colon Y \to X/_{(q \after \xi_1)^\perp}$
+        with~$h_1 \after \xi_1 = \xi$.
+As~$1 \after h_1 \after \xi_1 = 1 \after \xi = q \after \xi_1$
+    and~$\xi_1$ is epi, we see~$1 \after h_1 = q$.
+Thus by \sref{quotient-total},
+there is a unique total map~$h_2 \colon Z \to X/_{(q \after \xi_1)^\perp}$
+    with~$h_2 \after \xi_2 = h_1$.
+Let~$g\colon X/_{(q \after \xi_1)^\perp} \to Z$
+    be the unique map such that~$g \after \xi = \xi_2 \after \xi_1$.
+We are in the following situation.
+\begin{equation*}
+    \xymatrix@C+2pc{
+        X  \ar[r]^{\xi_1} \ar@/_/[rrd]_{\xi}
+        & Y \ar[r]^{\xi_2} \ar@{.>}[rd]_{h_1}
+        & Z \ar@{.>}@/^/[d]^{h_2} \\
+        && X/_{(q \after \xi_1)^\perp} \ar@{.>}@/^/[u]^{g}
+    }
+\end{equation*}
+We claim~$g$ is an isomorphism with inverse~$h_2$.
+Indeed: from $g \after h_2 \after \xi_2 \after \xi_1= g \after \xi = \xi_2 \after \xi_1$
+    we get~$g \after h_2 = \id$
+    and from~$h_2 \after g \after \xi = h_2 \after \xi_2 \after \xi_1 = \xi$
+    we find~$h_2 \after g = \id$.
+Thus~$\xi_2 \after \xi_1 = g \after \xi$ for an isomorphism~$g$,
+which shows~$\xi_2 \after \xi_1$ is a quotient, see \sref{quotient-basics}. \qed
+\end{point}
+\end{point}
+\begin{point}{Exercise}
+By \sref{quotient-total} we know that each
+    map~$f$ factors as~$t \after \xi$
+    for some total map~$t$ and quotient~$\xi$.
+Show that this forms an orthogonal factorization system ---
+    that is: prove that if~$t' \after \xi' = t \after \xi$
+    for some (other) quotient~$\xi'$ and total map~$t'$,
+    then there is a unique isomorphism~$\vartheta$
+    with~$\xi' = \vartheta \after \xi$
+    and~$t = t' \after \vartheta$.
+\end{point}
 \end{parsec}
 
-\section{Comprehension}
+\section{Comprehension and images}
 \begin{parsec}%
-\begin{point}%
+\begin{point}{Definition}%
 Let~$C$ be an effectus.
 We say~$C$ has comprehension
     if for each predicate~$p \colon X \to 1$,
@@ -243,13 +341,240 @@ We say~$C$ has comprehension
     satisfying the following universal property:
 \begin{quote}
     for any (other) map~$g\colon Z \to X$
-        with~$p \after g = 1 \after g$
+        with~$p \after g = 1 \after g$,
         there is a unique map~$g' \colon Z \to \cmpr{X}{p}$
-        such that~$f' \after \xi_p = f$.
+        such that~$\pi_p \after g' = g$.
 \end{quote}
 Any  map with this universal property
-    is called a \Define{quotient} for~$p$.
+    is called a \Define{comprehension} for~$p$.
+\begin{point}{Beware}%
+    In this text we do not assume comprehensions are total
+        (in contrast to \TODO{}).
+\end{point}
+\begin{point}[compr-not]{Notation}%
+Unless otherwise specified~$\pi_p$ will be some
+    comprehension of~$p$.
+\end{point}
+\end{point}
+\begin{point}{Example}%
+In~$\op{\W{NCPsU}}$ comprehensions are exactly the same thing
+as corners, see \TODO{...}.
+An example of a comprehension for~$a \in \scrA$
+    is given by~$\pi\colon \scrA \to \floor{a}\scrA\floor{a}$
+    with~$\pi(b) = \floor{a}b\floor{a}$.
+\end{point}
+\begin{point}[compr-basics]{Exercise}%
+Show the following basic properties of comprehensions.
+\begin{enumerate}
+    \item If~$\pi\colon X \to Y$ is a comprehension for~$p$
+                and~$\vartheta\colon Z \to X$ is an isomorphism,
+                then~$\pi \after \vartheta$ is a comprehension for~$p$
+                as well.
+    \item Conversely, if~$\pi_1$ and~$\pi_2$
+            are both comprehensions for~$p$,
+            then there is unique a isomorphism~$\vartheta$
+            with~$\pi_1 = \pi_2 \after \vartheta$.
+    \item Isomorphisms are comprehensions (for 1).
+    \item Zero-maps are comprehensions (for 0).
+    \item Comprehensions are mono.
+    \item $p^\perp \after \pi = 0$ if~$\pi$ is a comprehension of~$p$.
+\end{enumerate}
+\end{point}
+\end{parsec}
 
+\begin{parsec}%
+\begin{point}{Definition}%
+Let~$C$ be an effectus.
+\begin{enumerate}
+\item
+We say~$C$ has \Define{images}
+    if for each map~$f\colon X \to Y$,
+    there is a least predicate~$\Define{\IM f}$ on~$Y$
+        with the property~$(\IM f) \after f = 1 \after f$ ---
+        that is, 
+    for every (other) predicate~$p$ on~$Y$
+    with~$p \after f = 1 \after f$,
+    we must have~$\IM f \leq p$.
+For brevity, write~$\Define{\IMperp f} \equiv (\IM f)^\perp$. 
+Note~$\IMperp f$ is the greatest predicate
+with the property~$(\IMperp f) \after f = 0$.
+\item
+We say a map~$f\colon X \to Y$ is \Define{faithful}
+    if~$\IM f = 1$.
+That is: $f$ is faithful if and only if
+    $p \after f = 0$ implies~$f = 0$
+    for every predicate~$p$.
+\end{enumerate}
+\begin{point}{Notation}%
+The expression~$\IM f \after g$
+    should be read as~$\IM (f \after g)$.
+\end{point}
+\begin{point}%
+The predicate~$\IM f$ will play for comprehension the same role
+    as~$1 \after f$ plays for quotients.
+Similarly faithful is the analogue of total.
+\end{point}
+\end{point}
+\begin{point}{Example}%
+In $\op{\W{NCPsU}}$ the image of a map~$f\colon \scrA \to \scrB$
+    is given by the least projection~$e \in \scrA$
+    with the property~$f(1-e) = 0$.
+This~$e$ is the complement of the projection onto the kernel of~$f$.
+The map~$f$ is faithful if and only
+    if~$f(a^*a)=0$ implies~$a^*a = 0$
+    for all~$a\in \scrA$.
+\end{point}
+\begin{point}[im-ineq]{Exercise}%
+Show~$\IM f \after g \leq \IM f$.
+Conclude~$\IM f \after \alpha = \IM f$
+    for any iso~$\alpha$.
+\end{point}
+\begin{point}%
+In contrast to quotients,
+    it is not clear at all whether (without additional assumptions)
+    comprehensions are total;
+    they are part of a factorization system
+    or are closed under composition.
+\end{point}
+\begin{point}[compr-total]{Lemma}%
+In an effectus with quotients, comprehensions are total.
+\begin{point}{Proof}%
+Assume~$\pi$ is some comprehension for~$p$.
+Let~$\xi$ be a quotient for~$(1 \after \pi)^\perp$.
+There is a total~$\pi_t$ with~$\pi = \pi_t \after \xi$.
+As~$ 1 \after \pi_t \after \xi
+        = 1 \after \pi
+        = p \after \pi
+        = p \after \pi_t \after \xi$
+        and~$\xi$ is epi,
+        we see~$1 \after \pi_t = p \after \pi_t$.
+Thus, as~$\pi$ is a comprehension for~$p$,
+    there exists an~$f$ with~$\pi_t = \pi \after f$.
+Now~$\pi = \pi_t \after \xi = \pi \after f \after \xi$
+    and so~$\id = f \after \xi$, since~$\pi$ is mono.
+Hence~$1 = 1 \after \id =1 \after f \after \xi \leq 1 \after \xi = 1 \after \pi$
+    and so~$\pi$ is total. \qed
+\end{point}
+\end{point}
+\begin{point}{Proposition}%
+Assume~$\pi_s\colon \cmpr{X}{s} \to X$ is a comprehension for~$s$.
+For any~$f\colon Y \to X$ with~$\IM f = s$,
+    there is a unique \emph{faithful}~$g\colon Y \to \cmpr{X}{s}$
+    with~$\pi \after g = f$.
+\begin{point}{Proof}
+There is some~$g \colon Y \to \cmpr{X}{s}$ with~$\pi_s \after g = f$. \qed
+\end{point}
+\end{point}
+\end{parsec}
+\subsection{Sharp predicates}
+\begin{parsec}%
+\begin{point}{Definition}%
+Let~$C$ be an effectus with comprehension and images.
+\begin{enumerate}
+\item
+    We say a predicate~$p$ is (image) \Define{sharp}
+        if~$p = \IM f$ for some map~$f$.
+\item
+We define~$\Define{\floor{p}} = \IM \pi_p$,
+    where~$\pi_p$ is some comprehension for~$p$.
+(Comprehensions for the same predicate have the same image
+    by \sref{im-ineq}.)
+Also write~$\Define{\ceil{p}} = \floor{p^\perp}^\perp$.
+\end{enumerate}
+\begin{point}{Beware}%
+In \TODO{...} $p$ is called sharp whenever~$p \wedge p^\perp=0$.
+In general this is weaker than image-sharpness, which we use in this text.
+\end{point}
+\end{point}
+\begin{point}{Example}%
+In $\op{\W{NCPsU}}$ the sharp predicates are the projections.
+For a predicate~$a \in \scrA$,
+    the sharp predicate~$\ceil{a}$
+    is the least projection above~$a$.
+\end{point}
+\begin{point}{Lemma}%
+In an effectus with comprehension and images, we have
+\begin{multicols}{2}
+\begin{enumerate}
+\item
+    $\floor{p} \leq p$
+\item
+    $\pi_p = \pi_{\floor{p}} \after \alpha$
+        for some iso~$\alpha$;
+\item
+    $\floor{\floor{p}} = \floor{p}$;
+\item
+    $p \leq q$ $\implies$ $\floor{p} \leq \floor{q}$;
+\item
+    $\ceil{p} \after f \leq \ceil{p \after f}$ \emph{and}
+\item
+    $\ceil{p} \after f =0$ iff~$p \after f = 0$,
+\end{enumerate}
+\end{multicols}
+\noindent for any map~$f\colon X \to Y$,
+    predicates~$p,q$ on~$X$ and
+$\pi_p$ and~$\pi_{\floor{p}}$
+    comprehensions for~$p$ and~$\floor{p}$ respectively.
+\begin{point}{Proof}%
+We will prove the statements in listed order.
+\begin{point}{Ad 1}%
+    Let~$\pi$ be a comprehension for~$p$.
+    By definition~$p \after \pi = 1 \after \pi$.
+    Thus~$\floor{p} = \IM \pi \leq p$, as desired.
+\end{point}
+\begin{point}{Ad 2}%
+It is sufficient to show~$\pi_p$ is a comprehension for~$\floor{p}$.
+First, note~$\floor{p}\after \pi_p = (\IM \pi_p) \after \pi_p = 1 \after \pi_p$.
+To show the universal property,
+    assume~$g\colon Z \to X$
+    is some map with~$\floor{p} \after g = 1 \after g$.
+Then~$1 \after g = \floor{p} \after g \leq p \after g \leq 1 \after g$
+    and so~$1 \after g = p \after g$.
+As~$\pi_p$ is a comprehension for~$p$,
+    there is a unique~$g'$ with~$\pi_p \after  g' = g$
+    and so~$\pi_p$ is indeed a comprehension for~$\floor{p}$ as well.
+\end{point}
+\begin{point}{Ad 3}%
+Follows from the previous and \sref{im-ineq}.
+\end{point}
+\begin{point}{Ad 4}%
+Pick a comprehension~$\pi_p$ for~$p$ and~$\pi_q$ for~$q$.
+Note~$1 \after \pi_p = p \after \pi_p
+                \leq q \after \pi_p \leq 1 \after \pi_p $
+so~$q \after \pi_p = 1 \after \pi_p$
+and thus~$\pi_p = \pi_q \after f$ for some~$f$.
+By~\sref{im-ineq}
+    we see~$\floor{p} = \IM \pi_p = \IM \pi_q \after f \leq \IM \pi_q = \floor{q}$.
+\end{point}
+\begin{point}{Ad 5}%
+Clearly~$p \after f \after \pi_{(p \after f)^\perp} = 0$.
+(Recall our convention \sref{compr-basics} for $\pi$'s.)
+Thus there is some~$h$
+with~$f \after \pi_{(p \after f)^\perp} = \pi_{p^\perp}\after h$.
+By point 2 there is some (isomorphism)~$\alpha$
+    with~$\pi_{p^\perp} =\pi_{\floor{p^\perp}} \after \alpha$.
+    We compute
+\begin{equation*}
+    \ceil{p} \after f \after \pi_{(p \after f)^\perp}
+        = \ceil{p} \after \pi_{p^\perp}\after h
+        = \ceil{p} \after \pi_{\floor{p^\perp}}\after \alpha\after h
+    = \ceil{p} \after \pi_{\ceil{p}^\perp}\after \alpha\after h
+    = 0.
+\end{equation*}
+Thus~$\ceil{p} \after f \leq \IMperp \pi_{(p \after f)^\perp}
+= \lfloor(p \after f)^\perp\rfloor^\perp = \ceil{p \after f}$, as promised.
+\end{point}
+\begin{point}{Ad 6}%
+Assume~$\ceil{p}\after f = 0$.
+From~$p \leq \ceil{p}$
+it follows~$p \after f \leq \ceil{p} \after f = 0$.
+Thus~$p \after f = 0$.
+For the converse, assume~$p \after f = 0$.
+Then~$\ceil{p \after f} = \ceil{0} = (\IM \id)^\perp = 0$
+    as~$\id$ is a comprehension for~$1$.
+    Thus~$\ceil{p} \after f \leq \ceil{p \after f} = 0$. \qed
+\end{point}
+\end{point}
 \end{point}
 \end{parsec}
 
