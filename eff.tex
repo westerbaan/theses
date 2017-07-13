@@ -330,7 +330,7 @@ Show that this forms an orthogonal factorization system ---
 \end{point}
 \end{parsec}
 
-\section{Comprehension}
+\section{Comprehension and images}
 \begin{parsec}%
 \begin{point}{Definition}%
 Let~$C$ be an effectus.
@@ -347,6 +347,14 @@ We say~$C$ has comprehension
 \end{quote}
 Any  map with this universal property
     is called a \Define{comprehension} for~$p$.
+\begin{point}{Beware}%
+    In this text we do not assume comprehensions are total
+        (in contrast to \TODO{}).
+\end{point}
+\begin{point}[compr-not]{Notation}%
+Unless otherwise specified~$\pi_p$ will be some
+    comprehension of~$p$.
+\end{point}
 \end{point}
 \begin{point}{Example}%
 In~$\op{\W{NCPsU}}$ comprehensions are exactly the same thing
@@ -369,11 +377,203 @@ Show the following basic properties of comprehensions.
     \item Isomorphisms are comprehensions (for 1).
     \item Zero-maps are comprehensions (for 0).
     \item Comprehensions are mono.
+    \item $p^\perp \after \pi = 0$ if~$\pi$ is a comprehension of~$p$.
 \end{enumerate}
-\begin{point}%
-There does not seem to be a lot more to say about comprehensions in
-    an effectus without further assumptions.
+\end{point}
+\end{parsec}
 
+\begin{parsec}%
+\begin{point}{Definition}%
+Let~$C$ be an effectus.
+\begin{enumerate}
+\item
+We say~$C$ has \Define{images}
+    if for each map~$f\colon X \to Y$,
+    there is a least predicate~$\Define{\IM f}$ on~$Y$
+        with the property~$(\IM f) \after f = 1 \after f$ ---
+        that is, 
+    for every (other) predicate~$p$ on~$Y$
+    with~$p \after f = 1 \after f$,
+    we must have~$\IM f \leq p$.
+For brevity, write~$\Define{\IMperp f} \equiv (\IM f)^\perp$. 
+Note~$\IMperp f$ is the greatest predicate
+with the property~$(\IMperp f) \after f = 0$.
+\item
+We say a map~$f\colon X \to Y$ is \Define{faithful}
+    if~$\IM f = 1$.
+That is: $f$ is faithful if and only if
+    $p \after f = 0$ implies~$f = 0$
+    for every predicate~$p$.
+\end{enumerate}
+\begin{point}{Notation}%
+The expression~$\IM f \after g$
+    should be read as~$\IM (f \after g)$.
+\end{point}
+\begin{point}%
+The predicate~$\IM f$ will play for comprehension the same role
+    as~$1 \after f$ plays for quotients.
+Similarly faithful is the analogue of total.
+\end{point}
+\end{point}
+\begin{point}{Example}%
+In $\op{\W{NCPsU}}$ the image of a map~$f\colon \scrA \to \scrB$
+    is given by the least projection~$e \in \scrA$
+    with the property~$f(1-e) = 0$.
+This~$e$ is the complement of the projection onto the kernel of~$f$.
+The map~$f$ is faithful if and only
+    if~$f(a^*a)=0$ implies~$a^*a = 0$
+    for all~$a\in \scrA$.
+\end{point}
+\begin{point}[im-ineq]{Exercise}%
+Show~$\IM f \after g \leq \IM f$.
+Conclude~$\IM f \after \alpha = \IM f$
+    for any iso~$\alpha$.
+\end{point}
+\begin{point}%
+In contrast to quotients,
+    it is not clear at all whether (without additional assumptions)
+    comprehensions are total;
+    they are part of a factorization system
+    or are closed under composition.
+\end{point}
+\begin{point}[compr-total]{Lemma}%
+In an effectus with quotients, comprehensions are total.
+\begin{point}{Proof}%
+Assume~$\pi$ is some comprehension for~$p$.
+Let~$\xi$ be a quotient for~$(1 \after \pi)^\perp$.
+There is a total~$\pi_t$ with~$\pi = \pi_t \after \xi$.
+As~$ 1 \after \pi_t \after \xi
+        = 1 \after \pi
+        = p \after \pi
+        = p \after \pi_t \after \xi$
+        and~$\xi$ is epi,
+        we see~$1 \after \pi_t = p \after \pi_t$.
+Thus, as~$\pi$ is a comprehension for~$p$,
+    there exists an~$f$ with~$\pi_t = \pi \after f$.
+Now~$\pi = \pi_t \after \xi = \pi \after f \after \xi$
+    and so~$\id = f \after \xi$, since~$\pi$ is mono.
+Hence~$1 = 1 \after \id =1 \after f \after \xi \leq 1 \after \xi = 1 \after \pi$
+    and so~$\pi$ is total. \qed
+\end{point}
+\end{point}
+\begin{point}{Proposition}%
+Assume~$\pi_s\colon \cmpr{X}{s} \to X$ is a comprehension for~$s$.
+For any~$f\colon Y \to X$ with~$\IM f = s$,
+    there is a unique \emph{faithful}~$g\colon Y \to \cmpr{X}{s}$
+    with~$\pi \after g = f$.
+\begin{point}{Proof}
+There is some~$g \colon Y \to \cmpr{X}{s}$ with~$\pi_s \after g = f$. \qed
+\end{point}
+\end{point}
+\end{parsec}
+\subsection{Sharp predicates}
+\begin{parsec}%
+\begin{point}{Definition}%
+Let~$C$ be an effectus with comprehension and images.
+\begin{enumerate}
+\item
+    We say a predicate~$p$ is (image) \Define{sharp}
+        if~$p = \IM f$ for some map~$f$.
+\item
+We define~$\Define{\floor{p}} = \IM \pi_p$,
+    where~$\pi_p$ is some comprehension for~$p$.
+(Comprehensions for the same predicate have the same image
+    by \sref{im-ineq}.)
+Also write~$\Define{\ceil{p}} = \floor{p^\perp}^\perp$.
+\end{enumerate}
+\begin{point}{Beware}%
+In \TODO{...} $p$ is called sharp whenever~$p \wedge p^\perp=0$.
+In general this is weaker than image-sharpness, which we use in this text.
+\end{point}
+\end{point}
+\begin{point}{Example}%
+In $\op{\W{NCPsU}}$ the sharp predicates are the projections.
+For a predicate~$a \in \scrA$,
+    the sharp predicate~$\ceil{a}$
+    is the least projection above~$a$.
+\end{point}
+\begin{point}{Lemma}%
+In an effectus with comprehension and images, we have
+\begin{multicols}{2}
+\begin{enumerate}
+\item
+    $\floor{p} \leq p$
+\item
+    $\pi_p = \pi_{\floor{p}} \after \alpha$
+        for some iso~$\alpha$;
+\item
+    $\floor{\floor{p}} = \floor{p}$;
+\item
+    $p \leq q$ $\implies$ $\floor{p} \leq \floor{q}$;
+\item
+    $\ceil{p} \after f \leq \ceil{p \after f}$ \emph{and}
+\item
+    $\ceil{p} \after f =0$ iff~$p \after f = 0$,
+\end{enumerate}
+\end{multicols}
+\noindent for any map~$f\colon X \to Y$,
+    predicates~$p,q$ on~$X$ and
+$\pi_p$ and~$\pi_{\floor{p}}$
+    comprehensions for~$p$ and~$\floor{p}$ respectively.
+\begin{point}{Proof}%
+We will prove the statements in listed order.
+\begin{point}{Ad 1}%
+    Let~$\pi$ be a comprehension for~$p$.
+    By definition~$p \after \pi = 1 \after \pi$.
+    Thus~$\floor{p} = \IM \pi \leq p$, as desired.
+\end{point}
+\begin{point}{Ad 2}%
+It is sufficient to show~$\pi_p$ is a comprehension for~$\floor{p}$.
+First, note~$\floor{p}\after \pi_p = (\IM \pi_p) \after \pi_p = 1 \after \pi_p$.
+To show the universal property,
+    assume~$g\colon Z \to X$
+    is some map with~$\floor{p} \after g = 1 \after g$.
+Then~$1 \after g = \floor{p} \after g \leq p \after g \leq 1 \after g$
+    and so~$1 \after g = p \after g$.
+As~$\pi_p$ is a comprehension for~$p$,
+    there is a unique~$g'$ with~$\pi_p \after  g' = g$
+    and so~$\pi_p$ is indeed a comprehension for~$\floor{p}$ as well.
+\end{point}
+\begin{point}{Ad 3}%
+Follows from the previous and \sref{im-ineq}.
+\end{point}
+\begin{point}{Ad 4}%
+Pick a comprehension~$\pi_p$ for~$p$ and~$\pi_q$ for~$q$.
+Note~$1 \after \pi_p = p \after \pi_p
+                \leq q \after \pi_p \leq 1 \after \pi_p $
+so~$q \after \pi_p = 1 \after \pi_p$
+and thus~$\pi_p = \pi_q \after f$ for some~$f$.
+By~\sref{im-ineq}
+    we see~$\floor{p} = \IM \pi_p = \IM \pi_q \after f \leq \IM \pi_q = \floor{q}$.
+\end{point}
+\begin{point}{Ad 5}%
+Clearly~$p \after f \after \pi_{(p \after f)^\perp} = 0$.
+(Recall our convention \sref{compr-basics} for $\pi$'s.)
+Thus there is some~$h$
+with~$f \after \pi_{(p \after f)^\perp} = \pi_{p^\perp}\after h$.
+By point 2 there is some (isomorphism)~$\alpha$
+    with~$\pi_{p^\perp} =\pi_{\floor{p^\perp}} \after \alpha$.
+    We compute
+\begin{equation*}
+    \ceil{p} \after f \after \pi_{(p \after f)^\perp}
+        = \ceil{p} \after \pi_{p^\perp}\after h
+        = \ceil{p} \after \pi_{\floor{p^\perp}}\after \alpha\after h
+    = \ceil{p} \after \pi_{\ceil{p}^\perp}\after \alpha\after h
+    = 0.
+\end{equation*}
+Thus~$\ceil{p} \after f \leq \IMperp \pi_{(p \after f)^\perp}
+= \lfloor(p \after f)^\perp\rfloor^\perp = \ceil{p \after f}$, as promised.
+\end{point}
+\begin{point}{Ad 6}%
+Assume~$\ceil{p}\after f = 0$.
+From~$p \leq \ceil{p}$
+it follows~$p \after f \leq \ceil{p} \after f = 0$.
+Thus~$p \after f = 0$.
+For the converse, assume~$p \after f = 0$.
+Then~$\ceil{p \after f} = \ceil{0} = (\IM \id)^\perp = 0$
+    as~$\id$ is a comprehension for~$1$.
+    Thus~$\ceil{p} \after f \leq \ceil{p \after f} = 0$. \qed
+\end{point}
 \end{point}
 \end{point}
 \end{parsec}
