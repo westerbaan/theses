@@ -383,6 +383,28 @@ Show the following basic properties of comprehensions.
 \end{parsec}
 
 \begin{parsec}%
+\begin{point}%
+We are ready to define purity in effectuses.
+\end{point}
+\begin{point}{Definition}%
+In an effectus a map~$f$ is called \Define{pure}
+    if~$f = \pi \after \xi$
+    for some comprehension~$\pi$
+    and quotient~$\xi$.
+\end{point}
+\begin{point}{Example}%
+In $\op{\W{NCPsU}}$
+the pure maps~$\scrB(\scrH) \to \scrB(\scrK)$
+    are exactly the maps of the form~$\ad_T$
+    where~$T$ is a contractive map~$\scrK \to \scrH$. \TODO{ref}
+\end{point}
+\begin{point}%
+We do not have a good handle on the structure of pure maps in
+    an arbitrary effectus.  We will need a few additional assumptions.
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
 \begin{point}{Definition}%
 Let~$C$ be an effectus.
 \begin{enumerate}
@@ -871,7 +893,52 @@ the assignment~$X\mapsto \SPred X$, ~$f \mapsto (f_\diamond,f^\BOX)$
     as defined in~\cite{jacobs2009orthomodular}.
 \end{point}
 \end{point}
+\end{parsec}
 
+\begin{parsec}%
+\begin{point}%
+We turn to~$\diamond$-adjointness.
+\end{point}
+\begin{point}{Exercise}%
+Show the following basic properties of~$\diamond$-adjointness
+\begin{enumerate}
+    \item
+$f^\diamond = g_\diamond$
+    ($f$ is $\diamond$-adjoint to~$g$)
+    if and only if~$f_\diamond = g^\diamond$.
+    \item
+If~$f$ and~$g$ are~$\diamond$-adjoint,
+    then~$\IM f = \ceil{1 \after g}$.
+\end{enumerate}
+\end{point}
+\end{parsec}
+
+\section{Axiom P}
+\begin{parsec}%
+\begin{point}%
+In a~$\diamond$-effectus
+    quotient and comprehension are not tied together by its axioms.
+    With one additional axiom, we will see quotient and comprension
+    become tightly interwoven.
+\end{point}
+\begin{point}{Definition}%
+We say a $\diamond$-effectus
+    obeys \Define{axiom P}
+    if for each object~$X$
+    and each predicate on~$p$,
+    there is a unique $\diamond$-positive map~$\Define{\asrt_p}\colon X \to X$
+    with~$1 \after \asrt_p = p$.
+
+In an $\diamond$-effectus with axiom P,
+we define~$\Define{\andthen{p}{q}} = q \after \asrt_p$.
+\end{point}
+\begin{point}{Example}%
+The effectus $\op{\W{NCPsU}}$ obeys axiom P
+with~$\asrt_a (b) = \sqrt{a}b\sqrt{a}$. \TODO{ref}
+\end{point}
+\begin{point}{Proposition}%
+In an $\diamond$-effectus with axiom P
+\end{point}
 \end{parsec}
 
 \end{document}
