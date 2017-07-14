@@ -383,6 +383,28 @@ Show the following basic properties of comprehensions.
 \end{parsec}
 
 \begin{parsec}%
+\begin{point}%
+We are ready to define purity in effectuses.
+\end{point}
+\begin{point}{Definition}%
+In an effectus a map~$f$ is called \Define{pure}
+    if~$f = \pi \after \xi$
+    for some comprehension~$\pi$
+    and quotient~$\xi$.
+\end{point}
+\begin{point}{Example}%
+In $\op{\W{NCPsU}}$
+the pure maps~$\scrB(\scrH) \to \scrB(\scrK)$
+    are exactly the maps of the form~$\ad_T$
+    where~$T$ is a contractive map~$\scrK \to \scrH$. \TODO{ref}
+\end{point}
+\begin{point}%
+We do not have a good handle on the structure of pure maps in
+    an arbitrary effectus.  We will need a few additional assumptions.
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
 \begin{point}{Definition}%
 Let~$C$ be an effectus.
 \begin{enumerate}
@@ -474,6 +496,7 @@ Let~$C$ be an effectus with comprehension and images.
 \item
     We say a predicate~$p$ is (image) \Define{sharp}
         if~$p = \IM f$ for some map~$f$.
+    Write~$\SPred X$ for the set of all sharp predicates on~$X$.
 \item
 We define~$\Define{\floor{p}} = \IM \pi_p$,
     where~$\pi_p$ is some comprehension for~$p$.
@@ -484,6 +507,10 @@ Also write~$\Define{\ceil{p}} = \floor{p^\perp}^\perp$.
 \begin{point}{Beware}%
 In \TODO{...} $p$ is called sharp whenever~$p \wedge p^\perp=0$.
 In general this is weaker than image-sharpness, which we use in this text.
+In~\sref{floor-basics}
+    we will see~$\floor{p}$ is sharp.
+It is unclear whether~$\ceil{p}$ is sharp (without additional
+    assumptions).
 \end{point}
 \end{point}
 \begin{point}{Example}%
@@ -492,7 +519,7 @@ For a predicate~$a \in \scrA$,
     the sharp predicate~$\ceil{a}$
     is the least projection above~$a$.
 \end{point}
-\begin{point}{Lemma}%
+\begin{point}[floor-basics]{Lemma}%
 In an effectus with comprehension and images, we have
 \begin{multicols}{2}
 \begin{enumerate}
@@ -575,6 +602,342 @@ Then~$\ceil{p \after f} = \ceil{0} = (\IM \id)^\perp = 0$
     Thus~$\ceil{p} \after f \leq \ceil{p \after f} = 0$. \qed
 \end{point}
 \end{point}
+\end{point}
+\begin{point}[img-of-compr]{Exercise}%
+Let~$C$ be an effectus with comprehension and images.
+Show that~$p$ is sharp if and only if~$\floor{p}= p$.
+Conclude~$\IM \pi_s = s$ for sharp~$s$.
+\end{point}
+\begin{point}[ceiling-within-ceiling]{Exercise}%
+Show that in an effectus with comprehension and images
+    we have the equality
+    $\ceil{\ceil{p}\after f} = \ceil{p \after f}$
+    for any map~$f\colon X \to Y$ and predicate~$p$ on~$X$.
+\end{point}
+\begin{point}[compr-is-full]{Lemma}%
+In an effectus with comprehension and image
+    we have
+\begin{equation*}
+    s \leq t
+    \quad \iff \quad
+    \pi_s = \pi_t \after h
+    \quad \text{for some $h$},
+\end{equation*}
+for all sharp predicates~$s,t$ on the same object.
+\begin{point}{Proof}%
+Assume~$\pi_s = \pi_t \after h$.
+Then
+\begin{equation*}
+    s \ \overset{\sref{img-of-compr}}{=}\  \floor{s} \ =\  \IM \pi_s \  = \ \IM \pi_t \after h
+    \ \overset{\sref{im-ineq}}{\leq} \ \IM \pi_t = \floor{t} 
+            \ \overset{\sref{img-of-compr}}{=} \ t.
+\end{equation*}
+as desired.
+Conversely assume~$s \leq t$.
+Then~$t^\perp \after \pi_s \leq s^\perp \after \pi_s = 0$
+    and so~$\pi_s = \pi_t \after h$
+    for some~$h$ by the universal property of~$\pi_t$. \qed
+\end{point}
+\end{point}
+\end{parsec}
+
+\section{$\diamond$-effectus}
+\begin{parsec}%
+\begin{point}%
+In quantum physics it is not uncommon to restrict one's attention
+    to sharp predicates (i.e.~projections).
+Does this restriction hurt the expressivity?
+A partial answer is given by Gleason's famous theorem:
+    it states that every (normal) state on~$\scrB(\scrH)$
+    is determined by its values on projections
+    (if~$\dim \scrH \geq 3$).
+We take the idea of restricting oneself to projections
+    one step further: we also want to restrict to projections
+    for our outcomes.
+It is rare for quantum processes to send projections to projections
+    (see \TODO{mult}),
+    so instead we consider the least projection above the outcome.
+The simple idea of taking the restriction to sharp predicates
+    seriously, leads to a host of interesting new notions.
+We will give these right of the bat and study their relevance later on.
+\end{point}
+\begin{point}{Definition}%
+A~\Define{$\diamond$-effectus}
+    is an effectus with quotient, comprehension and images
+    such that~$s^\perp$ is sharp for every sharp predicate~$s$.
+In a~$\diamond$-effectus
+    we define for any map~$f\colon X \to Y$
+    the following restrictions to sharp predicates
+    \begin{equation*}
+        \xymatrix{
+            \SPred X  \ar@/^/[r]^{f_\diamond}
+            & \SPred Y \ar@/^/[l]^{f^\diamond}}
+            \quad \text{by} \quad
+            \Define{f^\diamond(s)} = \ceil{s \after f}
+            \quad
+            \text{and}
+            \quad
+            \Define{f_\diamond(s)} = \IM f \after \pi_s.
+    \end{equation*}
+    \begin{enumerate}
+        \item
+    We say maps~$f \colon X \leftrightarrows Y\colon g$
+        are~\Define{$\diamond$-adjoint}
+        if~$f^\diamond = g_\diamond$.
+    \item
+    An endomap~$f\colon X \to X$ is \Define{$\diamond$-self-adjoint}
+        if~$f$ is $\diamond$-adjoint to itself.
+    \item
+    Two maps~$f,g\colon X \to Y$
+        are~\Define{$\diamond$-equivalent}
+        if~$f^\diamond = g^\diamond$.
+    \item
+        A pure endomap~$f$ is~\Define{$\diamond$-positive}
+            if $f = g\after g$ for some~$\diamond$-self-adjoint~$g$.
+    \end{enumerate}
+For brevity, write $\Define{f^\BOX(s)} = f^\diamond(s^\perp)^\perp$.
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+Let's investigate the basic properties of~$(\ )^\diamond$, $(\ )_\diamond$
+    and $(\ )^\BOX$.
+\end{point}
+\begin{point}{Exercise}%
+Show that in a~$\diamond$-effectus
+    both~$f^\diamond$ and~$f^\BOX$ are order preserving maps.
+\end{point}
+\begin{point}[diamond-adjunction]{Proposition}%
+For~$f\colon X \to Y$ in a~$\diamond$-effectus we have
+\begin{equation}
+    f^\diamond(s) \ \leq\  t^\perp
+    \quad \iff
+    \quad f_\diamond(t) \ \leq\  s^\perp \label{diamond-main-lemma}
+\end{equation}
+for all sharp~$s,t$.
+In other words: $f_\diamond$ is the left order-adjoint of~$f^\BOX$.
+\begin{point}{Proof}%
+To start, let's prove the order-adjunction reformulation
+\begin{equation*}
+    f_\diamond(s) \leq t
+    \ \overset{\eqref{diamond-main-lemma}}{\iff} \ 
+    f^\diamond(t^\perp) \equiv f^\BOX(t)^\perp \leq s^\perp
+            \ \iff \
+    s \leq f^\BOX(t).
+\end{equation*}
+To prove \eqref{diamond-main-lemma},
+first assume~$f^\diamond(s) \leq t^\perp$.
+Then~$s \after f \leq \ceil{s \after f} = f^\diamond(s) \leq t^\perp
+= \IMperp \pi_t$, where the last equality is
+due to \sref{img-of-compr}.
+Thus~$s \after f \after \pi_t = 0$
+    which is to say~$s \leq \IMperp f \after \pi_t$,
+    so~$f_\diamond(t) = \IM f \after \pi_t \leq s^\perp$.
+
+For the converse, assume
+    $f_\diamond(t) \leq s^\perp$.
+Then as before (but in the other direction)
+    we find~$s \after f \after \pi_t = 0$
+    and so~$s \after f \leq t^\perp$.
+    Hence~$f^\diamond(s) =  \ceil{s \after f} \leq \lceil t^\perp\rceil
+                = \floor{t}^\perp = t^\perp$, as desired. \qed
+\end{point}
+\end{point}
+\begin{point}[order-adj-basics]{Exercise}%
+Use the fact that there is an
+order adjunction between~$f_\diamond$ and $f^\BOX$
+to show that in a~$\diamond$-effectus
+\begin{multicols}{2}
+\begin{enumerate}
+    \item $f_\diamond$ is order-preserving;
+    \item $f_\diamond$ preserves suprema;
+    \item $f^\BOX$ preserves infima;
+    \item $f^\diamond$ preserves suprema;
+    \item $f_\diamond \after f^\BOX \after f_\diamond = f_\diamond$ \emph{and}
+    \item $f^\BOX \after f_\diamond \after f^\BOX = f^\BOX$.
+\end{enumerate}
+\end{multicols}
+\end{point}
+\begin{point}{Lemma}%
+In a~$\diamond$-effectus,
+we have
+\begin{multicols}{3}
+\begin{enumerate}
+\item
+$(\id)^\diamond = \id$,
+\item
+$(f\after g)^\diamond
+            =   g^\diamond \after f^\diamond$,
+\item
+$(\id)^\BOX = \id$,
+\item
+$(f\after g)^\BOX
+            =   g^\BOX \after f^\BOX$,
+\item
+$(\id)_\diamond= \id$ and
+\item
+            $(f \after g)_\diamond = f_\diamond \after g_\diamond$.
+\end{enumerate}
+\end{multicols}
+\begin{point}{Proof}%
+We get~$(\id)^\diamond = \id$
+directly from~\sref{img-of-compr}.
+For 2 we only need a single line:
+\begin{equation*}
+(f\after g)^\diamond(s)
+    \ =\  \ceil{s \after f \after g}
+    \ \overset{\sref{ceiling-within-ceiling}}{=}\ 
+    \ceil{\ceil{s \after f} \after g}
+    \ =\  g^\diamond(f^\diamond(s)).
+\end{equation*}
+Note that we used that ceilings are sharp.
+Point 3 and 4 follow easily from~1 and 2 respectively.
+The identity~$(\id)_\diamond = \id$ is again~\sref{img-of-compr}.
+We claim~$f_\diamond \after g_\diamond$
+    is left order-adjoint to~$(f\after g)^\BOX$,
+     indeed
+\begin{equation*}
+    f_\diamond (g_\diamond(s)) \leq t
+        \ \iff\  g_\diamond(s) \leq f^\BOX (t)
+        \ \iff\  s \leq g^\BOX (f^\BOX (t)) = (f \after g)^\BOX(t).
+\end{equation*}
+Thus by uniqueness of order adjoints, we find
+$(f\after g)_\diamond = f_\diamond \after g_\diamond$. \qed
+\end{point}
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}{Theorem}%
+\TODO{attribution for this thm}
+In a~$\diamond$-effectus,
+the poset~$\SPred X$ of sharp predicates on~$X$,
+    is an orthomodular lattice.
+\begin{point}{Proof}%
+Let~$C$ be a~$\diamond$-effectus with some object~$X$.
+\begin{point}[spred-infimum]{Infima}%
+Let~$s,t$ be sharp predicates on~$X$.    
+We will show~$(\pi_s)_\diamond (\pi_s^\BOX (t))$
+is the infimum of~$s$ and~$t$.
+It is easy to see
+$(\pi_s)_\diamond (\pi_s^\BOX (t))$ is a lower bound:
+$(\pi_s)_\diamond (\pi_s^\BOX (t)) \leq t$
+and~$(\pi_s)_\diamond (\pi_s^\BOX (t)) \leq (\pi_s)_\diamond(1)
+    = \IM \pi_s = s$.
+We have to show $(\pi_s)_\diamond (\pi_s^\BOX (t))$ is the greatest lower bound.
+Let~$r$ be any sharp predicate with~$r \leq s$ and~$r \leq t$.
+By~\sref{compr-is-full}
+    we have~$\pi_r = \pi_s \after h$ for some~$h$.
+Thus
+\begin{equation*}
+    (\pi_r)_\diamond
+        \ = \  (\pi_s)_\diamond \after h_\diamond
+        \ =\  (\pi_s)_\diamond \after \pi_s^\BOX  
+            \after (\pi_s)_\diamond \after h_\diamond
+        \ =\  (\pi_s)_\diamond \after \pi_s^\BOX \after (\pi_r)_\diamond.
+\end{equation*}
+Hence~$r = (\pi_r)_\diamond(1)  
+=((\pi_s)_\diamond \after \pi_s^\BOX \after (\pi_r)_\diamond )(1)
+=  (\pi_s)_\diamond ( \pi_s^\BOX (r))
+\leq  (\pi_s)_\diamond ( \pi_s^\BOX (t))$.
+\end{point}
+\begin{point}[spred-ortholattice]{Ortholattice}%
+Thanks to the order anti-isomorphism~$(\ )^\perp$
+suprema (satisfying De Morgan's laws) come for free:
+    $s \vee t = (s^\perp \wedge t^\perp)^\perp$.
+Now note
+\begin{equation*}
+\pi_s^\BOX(s^\perp) \ =
+    \  (s \after \pi_s)^\perp 
+    \ =\  (1 \after \pi_s)^\perp 
+    \ \overset{\sref{compr-total}}{=}\ 1^\perp \ =\   0
+\end{equation*}
+and so~$s\wedge s^\perp = 0$.
+We have shown~$\SPred X$ with~$(\ )^\perp$ is an ortholattice.
+\end{point}
+\begin{point}{Orthomodular law}%
+Assume~$s \leq  t$.
+We have to show~$s \vee (s^\perp \wedge t) = t$.
+Indeed
+\begin{alignat*}{2}
+s \vee (s^\perp \wedge t) 
+&\  =\  (s \wedge t) \vee (s^\perp \wedge t) &\qquad& \text{as $s \leq t$}\\
+&\  =\ 
+        ((\pi_s)_\diamond \after \pi_s^\BOX)
+        (t) \vee
+        ((\pi_s)_\diamond \after \pi_s^\BOX)
+        (t^\perp)
+        &\qquad& \text{by \sref{spred-infimum}}\\
+&\  =\ 
+        (\pi_s)_\diamond ( \pi_s^\BOX(t) \vee 
+                            \pi_s^\BOX(t^\perp))
+                            &\qquad& \text{by \sref{order-adj-basics}} \\
+&\  =\ 
+        (\pi_s)_\diamond ( \pi_s^\diamond(t) \vee 
+                            \pi_s^\diamond(t)^\perp)
+                            &\qquad& \text{as $\pi_s$ total,~\sref{compr-total}}\\
+&\  =\ 
+                            (\pi_s)_\diamond (1)
+                            &\qquad& \text{by \sref{spred-ortholattice}} \\
+& \ =\  \IM \pi_s \ = \ s && \text{by \sref{img-of-compr}}.
+\end{alignat*}
+We have shown~$\SPred X$ is an orthomodular lattice. \qed
+\end{point}
+\end{point}
+\begin{point}{Corollary}%
+In a $\diamond$-effectus~$C$
+the assignment~$X\mapsto \SPred X$, ~$f \mapsto (f_\diamond,f^\BOX)$
+    yields a functor from~$C$
+    to~$\mathsf{OMLatGal}$,
+    the category of orthomodular lattices
+    with galois connection between them,
+    as defined in~\cite{jacobs2009orthomodular}.
+\end{point}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}%
+We turn to~$\diamond$-adjointness.
+\end{point}
+\begin{point}{Exercise}%
+Show the following basic properties of~$\diamond$-adjointness
+\begin{enumerate}
+    \item
+$f^\diamond = g_\diamond$
+    ($f$ is $\diamond$-adjoint to~$g$)
+    if and only if~$f_\diamond = g^\diamond$.
+    \item
+If~$f$ and~$g$ are~$\diamond$-adjoint,
+    then~$\IM f = \ceil{1 \after g}$.
+\end{enumerate}
+\end{point}
+\end{parsec}
+
+\section{Axiom P}
+\begin{parsec}%
+\begin{point}%
+In a~$\diamond$-effectus
+    quotient and comprehension are not tied together by its axioms.
+    With one additional axiom, we will see quotient and comprension
+    become tightly interwoven.
+\end{point}
+\begin{point}{Definition}%
+We say a $\diamond$-effectus
+    obeys \Define{axiom P}
+    if for each object~$X$
+    and each predicate on~$p$,
+    there is a unique $\diamond$-positive map~$\Define{\asrt_p}\colon X \to X$
+    with~$1 \after \asrt_p = p$.
+
+In an $\diamond$-effectus with axiom P,
+we define~$\Define{\andthen{p}{q}} = q \after \asrt_p$.
+\end{point}
+\begin{point}{Example}%
+The effectus $\op{\W{NCPsU}}$ obeys axiom P
+with~$\asrt_a (b) = \sqrt{a}b\sqrt{a}$. \TODO{ref}
+\end{point}
+\begin{point}{Proposition}%
+In an $\diamond$-effectus with axiom P
 \end{point}
 \end{parsec}
 
