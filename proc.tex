@@ -1653,57 +1653,55 @@ To prevent a circular definition
 here
 we'll first describe the ultraweak topology
 that $\scrA\otimes \scrB$ will induce on~$\scrA\odot \scrB$
-in concrete terms,
-and will call it the \emph{tensor product topology}.
-We'll also need to introduce
-a \emph{tensor product norm} on~$\scrA\odot\scrB$
-that will turn out to be the norm on~$\scrA\odot \scrB$
-induced by~$\scrA\otimes \scrB$.
+directly
+(calling it the \emph{tensor product topology}),
+and for this
+we'll also need to describe the norm
+the tensor product~$\scrA\otimes\scrB$
+will induce on~$\scrA\odot\scrB$.
 \end{point}
-\begin{point}{Definition}%
+\begin{point}[tensor-product]{Definitions}%
 Let~$\scrA$ and~$\scrB$ be von Neumann algebras.
 \begin{enumerate}
 \item
-We'll call a map $\omega \colon \scrA\odot\scrB\to\C$
-a \Define{product functional}
-when $\omega\equiv \sigma\odot\tau$
-for some np-maps $\sigma\colon\scrA\to\C$
-and~$\tau\colon \scrB\to\C$,
-and a \Define{simple functional}
-when
+A \Define{simple functional}
+is 
+a map $\omega \colon \scrA\odot\scrB\to\C$
+with
 $\omega\equiv (\sigma\odot \tau)(t^*(\,\cdot\,)t)$
-for some~$t\in \scrA\odot\scrB$
-and~$\sigma$ and~$\tau$ as before.
-
-\Define{Product states} and 
-\Define{simple states}
-are unital versions of such maps.
+for some np-maps
+$\sigma\colon \scrA\to\C$, $\tau\colon \scrB\to\C$,
+and
+$t\in \scrA\odot\scrB$.
 \item
 Each simple functional $\omega \colon \scrA\odot\scrB\to\C$
 gives us an operation~$\Define{[\,\cdot\,,\,\cdot\,]_\omega}$,
-that will turn out to be an inner product in~\TODO{},
-given by
+that will turn out to be an inner product in~\sref{simple-state-inner-product}
+ by
 $\Define{[s,t]_\omega}:=\omega(s^*t)$
 (cf.~\sref{state-inner-product}),
 and an associated semi-norm
-denoted by~$\Define{\|t\|_\omega}:=[t,t]_\omega = \omega(t^*t)$.
+denoted by~$\Define{\|t\|_\omega}:=[t,t]_\omega^{\smash{\nicefrac{1}{2}}} 
+= \omega(t^*t)^{\nicefrac{1}{2}}$.
 
 The \Define{tensor product norm}
 on~$\scrA\odot \scrB$
-is the semi-norm 
+is the norm (see~\sref{tensor-product-norm})
 given by
 \begin{equation*}
 	\textstyle
 	\Define{\|t\|}\ =\ \sup_\omega \|t\|_\omega,
 \end{equation*}
-where~$\omega$ ranges over all simple \emph{states}
-on~$\scrA\odot\scrB$.
+where~$\omega$ ranges over all simple functionals
+on~$\scrA\odot\scrB$
+with~$\omega(1)\leq 1$.
 \item
 Note that having endowed~$\scrA\odot \scrB$
 with the tensor product norm
 we can speak of bounded functionals on~$\scrA\odot \scrB$,
-and the operator norm on them.
-We'll see that all simple functionals are bounded in~\TODO{...}.
+and the operator norm on them;
+and note that
+the simple functionals are bounded.
 
 The \Define{ultraweak tensor product topology}
 is the least topology on~$\scrA\odot\scrB$
@@ -1734,22 +1732,99 @@ map $\Define{\beta_\otimes}\colon \scrA\otimes \scrB
 for all~$a\in \scrA$ and $b\in\scrB$.
 \end{enumerate}
 \end{point}
+\begin{point}[product-state-positive]{Lemma}%
+Given $C^*$-algebras~$\scrA$ and~$\scrB$
+we have~$(\sigma\odot \tau) (t^*t)\geq 0$
+for all  $t\in\scrA\odot\scrB$
+and p-maps  $\sigma\colon \scrA\to\C$
+and~$\tau\colon \scrB\to\C$.
+\begin{point}{Proof}%
+Note that writing~$t\equiv \sum_n a_n \odot b_n$,
+where~$a_1,\dotsc,a_N\in \scrA$, $b_1,\dotsc,b_N\in \scrB$,
+we have
+$(\sigma\odot\tau)(t^*t)
+= \sum_{n,m} \sigma(a_n^*a_m)\,\tau(b_n^*b_m)$.
+Since~$A:=(a_n^*a_m)$
+is a positive matrix over~$\scrA$,
+and~$\sigma\colon \scrA\to\C$
+is completely positive (by~\sref{cp-commutative}),
+the matrix~$(M_N\sigma)(A)$ is positive,
+and thus of the form~$(M_N\sigma)(A) = C^*C$
+for some $N\times N$-matrix  $C\equiv(c_{nm})$,
+giving us that~$\sigma(a_n^*a_m)=\sum_k \overline{c}_{kn} c_{km}$
+for all~$n,m$.
+Since by the same token there is an $N\times N$-matrix
+$D\equiv(d_{nm})$
+with
+$\tau(b_n^* b_m ) = \sum_\ell \overline{d}_{\ell n} d_{\ell m}$
+we get
+$(\sigma\odot\tau)(t^*t)
+= \sum_{n,m} \sigma(a_n^*a_m)\,\tau(b_n^*b_m)
+= \sum_{n,m,k,\ell } \overline{d}_{k n}
+c_{k m} \overline{d}_{\ell n} d_{\ell m}
+= \sum_{k,\ell}\,\left|\,\sum_{n} c_{k n} d_{\ell n}\,\right|^2
+\ \geq\  0$.\qed
+\end{point}
+\end{point}
+\begin{point}[simple-state-inner-product]{Exercise}%
+Use~\sref{product-state-positive} 
+to show that
+ $[\,\cdot\,,\,\cdot\,]_\omega$
+from~\sref{tensor-product}
+is an inner product.
+\end{point}
+\begin{point}{Lemma}%
+Product functionals on~$\scrA\odot\scrB$
+formed from 
+separating
+collections~$\Omega$ and~$\Xi$ 
+of linear functionals
+on $C^*$-algebras~$\scrA$ and~$\scrB$,
+respectively,
+are seperating
+in the sense that given~$t\in\scrA\odot\scrB$
+the condition that $(\sigma\odot \tau)(t)=0$
+for all~$\sigma\in \Omega$ and~$\tau\in\Xi$
+entails that~$t=0$.
+\begin{point}{Proof}%
+Write~$t\equiv \sum_n a_n\odot b_n$
+for some  $a_1,\dotsc,a_N\in\scrA$
+and~$b_1,\dotsc,b_N\in \scrB$.
+Note that by replacing them if necessary
+we may assume that the~$a_1,\dotsc,a_N$
+are linearly independent.
+Let~$\tau\in\Xi$ be given.
+Since~$0=(\sigma\odot \tau)(t)
+= \sum_n\sigma(a_n)\tau(b_n)
+= \sigma(\,\sum_n a_n\tau(b_n)\,)$
+for all $\sigma$ from the separating collection~$\Omega$,
+we have~$0=\sum_n a_n\tau(b_n)$,
+and so---$a_1,\dotsc,a_N$ being linearly independent---we get
+ $0=\tau(b_1)=\dotsb = \tau(b_N)$.
+Since this holds for any~$\tau$
+in the separating collection~$\Xi$
+we get~$0=b_1=\dotsb=b_N$,
+and thus~$t=\sum_n a_n\odot b_n=0$.\qed
+\end{point}
+\end{point}
+\begin{point}{Exercise}%
+Show that the tensor product norm
+from~\sref{tensor-product}
+is, indeed, a norm.
+\end{point}
+\end{parsec}
+\begin{parsec}%
 \begin{point}{Theorem}%
-Given von Neumann algebras~$\scrA$ and~$\scrB$
-there is a von Neumann algebra~$\Define{\scrA\otimes\scrB}$
-(called the \Define{tensor product} of~$\scrA$ and~$\scrB$)
-and a normal
-bilinear map $\Define{\otimes} \colon \scrA\times \scrB\to
-\scrA\otimes \scrB$
-with the property, that for every 
-normal bilinear map $\beta\colon \scrA\times \scrB\to\scrC$
-to a von Neumann algebra~$\scrC$
-there is a unique ultraweakly continuous
-map $\Define{\beta_\otimes}\colon \scrA\otimes \scrB
-\to \scrC$ with $\beta_\otimes(a\otimes b) = \beta(a,b)$
-for all~$a\in \scrA$ and $b\in\scrB$.
-Moreover,
-$\beta_\otimes$ is
+Let~$\scrA\otimes \scrB$
+be a tensor product of von Neumann algebras~$\scrA$
+and~$\scrB$
+with associated normal bilinear map~$\otimes\colon \scrA\times \scrB
+\to \scrA\otimes \scrB$.
+
+Given a normal bilinear map~$\beta\colon \scrA\times \scrB\to\scrC$
+to a von Neumann algebra~$\scrC$,
+the extension~$\beta_\otimes\colon \scrA\otimes\scrB\to\C$
+is
 \begin{enumerate}
 \item
 multiplicative
