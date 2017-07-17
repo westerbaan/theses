@@ -276,7 +276,7 @@ Thus, as~$\xi_{p^\perp}$ is epi (\sref{quotient-basics}),
 That is: $g$ is total. \qed
 \end{point}
 \end{point}
-\begin{point}{Proposition}%
+\begin{point}[quotients-composition]{Proposition}%
 In an effectus with quotients,
     quotients are closed under composition.
 \begin{point}{Proof}%
@@ -615,7 +615,7 @@ Show that in an effectus with comprehension and images
     for any map~$f\colon X \to Y$ and predicate~$p$ on~$X$.
 \end{point}
 \begin{point}[compr-is-full]{Lemma}%
-In an effectus with comprehension and image
+In an effectus with comprehension and images
     we have
 \begin{equation*}
     s \leq t
@@ -893,6 +893,29 @@ the assignment~$X\mapsto \SPred X$, ~$f \mapsto (f_\diamond,f^\BOX)$
     as defined in~\cite{jacobs2009orthomodular}.
 \end{point}
 \end{point}
+\begin{point}[image-sharp-is-order-sharp]{Lemma}%
+In a $\diamond$-effectus,
+sharp predicates are \Define{order sharp} ---
+    that is:
+    for any predicate~$p$
+    and sharp predicate~$s$
+    with~$p \leq s$ and~$p \leq s^\perp$,
+    we must have~$p = 0$.
+\begin{point}{Proof}%
+Note~$\ceil{p} \leq \ceil{s} = s$
+    and~$\ceil{p} \leq \lceil s^\perp\rceil = s^\perp$.
+So by~\sref{compr-is-full},
+there is an~$h$ with~$\pi_{\ceil{p}} = \pi_s \after h$.
+We compute
+\begin{equation*}
+    1 \after \pi_{\ceil{p}} \ =\  \ceil{p} \after \pi_{\ceil{p}}  \ = \
+    \ceil{p} \after \pi_s \after h \ \leq \ 
+        s^\perp \after \pi_s \after h \ = \ 0.
+\end{equation*}
+Thus~$\pi_{\ceil{p}} = 0$
+and so~$p \leq \ceil{p} = \IM\pi_{\ceil{p}} = 0$, as desired.\qed
+\end{point}
+\end{point}
 \end{parsec}
 
 \begin{parsec}%
@@ -911,34 +934,405 @@ If~$f$ and~$g$ are~$\diamond$-adjoint,
     then~$\IM f = \ceil{1 \after g}$.
 \end{enumerate}
 \end{point}
+\begin{point}[diamond-squares]{Exercise}%
+Show in order:
+\begin{enumerate}
+\item
+If~$f$ is~$\diamond$-self-adjoint,
+    then~$f \after f$ is~$\diamond$-self-adjoint.
+\item
+If~$f$ is~$\diamond$-positive,
+    then~$f$ is~$\diamond$-self-adjoint.
+\item
+If~$f$ is~$\diamond$-positive,
+    then~$f \after f$ is~$\diamond$-positive.
+\end{enumerate}
+\end{point}
 \end{parsec}
 
-\section{Axiom P}
+\section{Unique $\diamond$-positive maps}
 \begin{parsec}%
 \begin{point}%
 In a~$\diamond$-effectus
     quotient and comprehension are not tied together by its axioms.
-    With one additional axiom, we will see quotient and comprension
-    become tightly interwoven.
+    With two additional axioms, we will see quotient and comprehension
+    become tightly interwoven. \TODO{contrast old attempts}
 \end{point}
 \begin{point}{Definition}%
 We say a $\diamond$-effectus
-    obeys \Define{axiom P}
-    if for each object~$X$
+has \Define{unique $\diamond$-positive maps} (\Define{UPM}) if
+\begin{enumerate}
+\item
+    for each object~$X$
     and each predicate on~$p$,
     there is a unique $\diamond$-positive map~$\Define{\asrt_p}\colon X \to X$
-    with~$1 \after \asrt_p = p$.
-
-In an $\diamond$-effectus with axiom P,
-we define~$\Define{\andthen{p}{q}} = q \after \asrt_p$.
+    with~$1 \after \asrt_p = p$ \emph{and}
+\item
+    for every quotient~$\xi \colon X \to Y$
+    and comprehension~$\pi \colon Y \to Z$
+    the composite~$\pi \after \xi$ is pure.
+\end{enumerate}
+In an $\diamond$-effectus with UPM,
+we define~$\Define{\andthen{p}{q}} = q \after \asrt_p$
+    and~$\Define{p^2} = \andthen{p}{p}$.
 \end{point}
 \begin{point}{Example}%
-The effectus $\op{\W{NCPsU}}$ obeys axiom P
+The effectus $\op{\W{NCPsU}}$ has UPM
 with~$\asrt_a (b) = \sqrt{a}b\sqrt{a}$. \TODO{ref}
 \end{point}
-\begin{point}{Proposition}%
-In an $\diamond$-effectus with axiom P
+\begin{point}[upm-basics]{Proposition}%
+In an $\diamond$-effectus with UPM
+    the following holds.
+\begin{enumerate}
+\item
+For a predicate~$p$,
+the following are equivalent
+\begin{inparaenum}
+\item $p$ is sharp,
+\item $\andthen{p}{p}=p$ and
+\item $\asrt_p \after \asrt_p = \asrt_p$.
+\end{inparaenum}
+\item
+Let~$s$ be any sharp predicate.
+There exist comprehension~$\pi_s$ of~$s$
+        and quotient~$\zeta_s$ of~$s^\perp$
+        such that~$\zeta_s \after \pi_s = \id$
+        and~$\pi_s \after \zeta_s = \asrt_s$.
+
+In fact, for every comprehension~$\pi$ of~$s$,
+    we can find a quotient~$\xi$ of~$s^\perp$
+    with~$\xi \after \pi = \id$ and~$\pi \after \xi = \asrt_s$
+    \emph{and} conversely for every quotient~$\xi$ of~$s^\perp$
+    there exists a comprehension~$\pi$ of~$s$
+    with~$\xi \after \pi = \id$ and~$\pi \after \xi = \asrt_s$.
+\item Comprehensions are closed under composition.
+\item Pure maps are closed under composition.
+\end{enumerate}
+\begin{point}{Proof}%
+We prove the points in order.
+\begin{point}{Ad 1}%
+First we prove that~$p$ is sharp if and only if~$\andthen{p}{p}=p.$
+So, assume~$p$ is sharp.
+As $\diamond$-positive maps are~$\diamond$-self-adjoint
+    we have~$\IM \asrt_p = \ceil{1 \after \asrt_p} = \ceil{p} = p$.
+Thus~$\andthen{p}{p} = p \after \asrt_p = 1 \after \asrt_p = p$.
+For the converse, assume~$\andthen{p}{p}=p$.
+From~$\IM \asrt_p = \ceil{1 \after \asrt_p} = \ceil{p}$,
+we get~$\ceil{p} \after \asrt_p = \andthen{p}{\ceil{p}} = 1 \after \asrt_p = p$.
+By assumption~$\andthen{p}{p}=p$.
+So~$\andthen{p}{(\ceil{p} \ominus p)} = 0$.
+Hence~$\ceil{p}\ominus p \leq \IMperp \asrt_p = \ceil{p}^\perp$.
+However $\ceil{p}\ominus p \leq \ceil{p}$.
+Thus by~\sref{image-sharp-is-order-sharp}
+    get~$\ceil{p} \ominus p = 0$. So~$p$ is indeed sharp.
+
+Clearly, if~$\asrt_p \after \asrt_p = \asrt_p$,
+then~$p = 1 \after \asrt_p = 1\after\asrt_p\after\asrt_p = \andthen{p}{p}$.
+It only remains to be shown~$\asrt_p \after \asrt_p = \asrt_p$
+    whenever~$p$ is sharp.
+So assume~$p$ is sharp.
+By definition~$\asrt_p$ is pure: $\asrt_p = \pi \after \xi$
+    for some quotient~$\xi$ and comprehension~$\pi$.
+By assumption~$\xi \after \pi$ is pure as well,
+    so there is a quotient~$\xi'$ and comprehension~$\pi'$
+    with~$\xi \after \pi = \pi' \after \xi'$.
+Note~$1 \after \xi = 1 \after \asrt_p = p$
+and~$1 \after \asrt_p \after \asrt_p = \andthen{p}{p} = p = 1 \after \xi$,
+hence
+\begin{equation*}
+ 1\after \xi  
+    \ =\  1 \after \asrt_p \after \asrt_p 
+    \ =\  1 \after \pi \after \xi \after \pi \after \xi 
+    \ =\  1 \after \pi \after \pi' \after \xi' \after \xi 
+    \ =\  1 \after \xi' \after \xi,
+\end{equation*}
+so~$1 \after \xi' = 1$. Thus~$\xi'$ is an iso.
+Also~$
+    (\IM \pi') \after \xi \after \pi
+    = (\IM \pi') \after \pi' \after \xi'
+    = 1 \after \xi' = 1 $
+    from which it follows~$p = \IM \pi \leq  (\IM \pi') \after \xi 
+            \leq 1 \after \xi = p$.
+Thus~$(\IM \pi') \after \xi = p = 1\after \xi$.
+Hence~$\IM \pi' = 1$ and so~$\pi'$ is an isomorphism.
+Now we know~$\pi \after \pi'$
+    is a comprehension and~$\xi' \after \xi$ is a quotient,
+    we see~$\asrt_p\after\asrt_p$ is pure.
+As~$\asrt_p$ is $\diamond$-self-adjoint,
+    we see~$\asrt_p\after\asrt_p$ is $\diamond$-positive.
+By uniqueness of positive maps~$\asrt_p \after \asrt_p = \asrt_p$,
+    as desired.
 \end{point}
+\begin{point}{Ad 2}%
+Pick quotient~$\xi$ and comprehension~$\pi$
+    with~$\pi \after \xi = \asrt_s$.
+By point 1:
+\begin{equation*}
+   \pi \after \xi \ =\  \asrt_s \ =\  \asrt_s\after\asrt_s \ =\  \pi \after \xi \after \pi \after \xi.
+\end{equation*}
+Thus~$\xi \after \pi = \id$.
+We compute~$s = 1 \after \asrt_s = 1 \after \xi$
+and so
+\begin{alignat*}{2}
+    \IM \pi &\ = \ 
+    \IM \pi \after \xi \after \pi &\qquad& \text{as $\xi \after \pi=\id$}\\
+                  &\ = \ \IM \asrt_s \after \pi &&\text{by dfn.~$\xi$ and~$\pi$}\\
+                  &\ = \ (\asrt_s)_{\diamond}(\IM \pi)&& \text{by dfn.~$(\ )_\diamond$} \\
+                  & \ = \ (\asrt_s)^{\diamond}(\IM \pi)&&
+        \text{by $\diamond$-s.a.~$\asrt_s$}\\
+        &\ = \ \ceil{(\IM \pi) \after \pi \after \xi} && \text{by dfn.~$(\ )^\diamond$} \\
+&\ = \ \ceil{1 \after \xi} \\
+    & \ = \ s.
+\end{alignat*}
+Thus~$\pi$ is a comprehension of~$s$
+and~$\xi$ is a quotient of~$s^\perp$.
+We have proven the first part.
+
+For the second part,
+let~$\pi'$ be any (other) comprehension of~$s$.
+Then~$\pi' = \pi \after \alpha$ for some iso~$\alpha$.
+Define~$\xi' = \alpha^{-1} \after \xi$.
+It is easy to see~$\pi' \after \xi' = \asrt_s$
+and~$\xi' \after \pi' = \id$.
+The other statement is proven in a similar way.
+\end{point}
+\begin{point}{Ad 3}%
+Assume~$\pi_1 \colon X \to Y$
+    and~$\pi_2 \colon Y \to Z$
+    are comprehensions with~$s = \IM \pi_1$
+    and~$t = \IM \pi_2$.
+We will show~$\pi_2 \after \pi_1$
+    is a comprehension for~$\IM \pi_2 \after \pi_1$.
+To this end, let~$f\colon V\colon Z$ be any map
+with~$(\IM \pi_2 \after \pi_1)^\perp \after f = 0$.
+As~$\IM \pi_2 \after \pi_1 \leq \IM \pi_2 = t$
+    we get~$t^\perp \after f = 0$,
+    so~$f = \pi_2 \after g_2$ for a unique~$g_2\colon V \to Y$.
+Let~$\zeta_2$ be a quotient for~$t^\perp$
+such that~$\zeta_2 \after \pi_2$,
+which exists by the previous point.
+Then~$s \after \zeta_2 \after \pi_2 \after \pi_1
+            = s \after \pi_1 = 1$
+            so~$s \after \zeta_2 \geq \IM \pi_2 \after \pi_1$.
+Consequently
+\begin{equation*}
+    s \after g_2 \ =\  s \after \zeta_2 \after \pi_2 \after g_2
+        \ =\  s \after \zeta_2 \after f
+        \ \geq\   (\IM \pi_2 \after \pi_1) \after f \ =\  1 \after f
+                \ =\  1 \after g_2.
+\end{equation*}
+Hence there exists a unique~$g_1\colon V \to X$
+    with~$\pi_1 \after g_1 = g_2$
+    and so~$\pi_2 \after \pi_1 \after g_1 = f$.
+By monicity of~$\pi_2 \after \pi_1$,
+    this~$g_1$ is unique and so~$\pi_2 \after \pi_1$
+    is indeed a comprehension.
+\end{point}
+\begin{point}{Ad 4}%
+Assume~$g\colon X \to Y$ and~$f\colon Y \to Z$ are pure maps.
+Say~$f = \pi_1 \after \xi_1$
+    and~$g = \pi_2 \after \xi_2$
+    for some comprehensions~$\pi_1$, $\pi_2$
+        and quotients~$\xi_1$, $\xi_2$.
+By definition of $\diamond$-effectus with UPM,
+    there is a comprehension~$\pi'$ and quotient~$\xi'$
+    such that~$\xi_1 \after \pi_2$.
+By the previous point~$\pi_1 \after \pi'$
+    is a comprehension
+    and~$\xi' \after \xi_2$ is a quotient by \sref{quotients-composition}.
+Thus
+$f \after g 
+=\pi_1 \after \pi' \after \xi' \after \xi_2$
+is pure. \qed
+\end{point}
+\end{point}
+\begin{point}{Notation}%
+In a~$\diamond$-effectus with UPM
+    together with chosen comprehension~$\pi_s$ for~$s$,
+    we will write~$\zeta_s$
+    for the corresponding quotient for~$s^\perp$
+    satisfying~$\zeta_s \after \pi_s = \id$
+    and~$\pi_s \after \zeta_s = \asrt_s$.
+\end{point}
+\end{point}
+\begin{point}{Exercise}%
+Show that in a~$\diamond$-effectus with UMP,
+    we have~$\asrt_p \after \asrt_p = \asrt_{\andthen{p}{p}}$.
+\end{point}
+\begin{point}{Exercise}%
+    Show that in a~$\diamond$-effectus with UMP,
+    we have
+    \begin{align*}
+        \IM f \leq s \quad&\iff\quad  \asrt_s \after f = f \\
+        1 \after f \leq t \quad&\iff\quad  f \after \asrt_t = f
+    \end{align*}
+for any sharp predicates~$s$ and~$t$.
+\end{point}
+\begin{point}{Definition}%
+Suppose~$C$ is a~$\diamond$-effectus with UPM.
+In \sref{upm-basics} we saw pure maps are closed under composition.
+Write~$\Define{\Pure C}$ for the subcategory
+    of pure map.
+\end{point}
+\end{parsec}
+
+\section{$\dagger$-effectus}
+\begin{parsec}%
+\begin{point}{Definition}%
+A \Define{$\dagger$-category} \TODO{refs}
+is category~$C$ together with an involutive identity-on-objects
+    functor~$(\ )^\dagger \colon C \to \op{C}$;
+    that is, for all objects~$X$ and maps~$f,g$ in~$C$
+\begin{multicols}{2}
+\begin{enumerate}
+    \item $(f \after g)^\dagger = g^\dagger \after f^\dagger$
+    \item $\id^\dagger = \id$
+    \item $f^{\dagger\dagger} = f$ \emph{and}
+    \item $X^\dagger = X$.
+\end{enumerate}
+\end{multicols}
+\noindent
+In aby~$\dagger$-category we may define the following.
+\begin{enumerate}
+\item
+    An endomap~$f$ is called \Define{$\dagger$-self-adjoint}
+    if~$f^\dagger = f$.
+\item
+    An endomap~$f$ is \Define{$\dagger$-positive}
+    if~$f = g^\dagger \after g$ for some other map~$g$.
+\item
+    An isomorphism~$\alpha$ is called~\Define{unitary}
+        whenever~$\alpha^{-1} = \alpha^\dagger$.
+\end{enumerate}
+\end{point}
+\begin{point}{Example}%
+The category~$\mathsf{Hilb}$
+    of Hilbert spaces with bouned linear maps
+    is a~$\dagger$-category
+    with the familiar adjoint as~$\dagger$.
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}{Definition}%
+We call a~$\diamond$-effectus~$C$ with UPM,
+    a~\Define{$\dagger$-effectus} provided
+\begin{enumerate}
+\item
+    $\Pure C$ is a  $\dagger$-category
+     satisfying~$\asrt_p^\dagger = \asrt_p$
+        and~$f$ is $\diamond$-adjoint to~$f^\dagger$;
+\item
+    for every~$\dagger$-positive~$f$,
+        there is a unique~$\dagger$-positive~$g$
+        with~$g \after g = f$ \emph{and}
+\item
+    $\diamond$-positive maps are $\dagger$-positive.
+\end{enumerate}
+\end{point}
+\begin{point}[dagger-theorem]{Theorem}%
+    A $\diamond$-effectus~$C$ with UPM
+        is a~$\dagger$-effectus if and only if
+\begin{enumerate}
+\item
+for every predicate~$p$ there is a predicate~$q$
+    with~$\andthen{q}{q} = p$;
+\item
+    $\andthen{p}{(\andthen{q^2}{(\andthen{p}{r})})}
+    = \andthen{(\andthen{p}{q})^2}{r}
+    $ for all predicates~$p,q,r$ \emph{and}
+\item
+    $t \after \zeta$ is sharp for any sharp~$t$
+            and quotient~$\zeta$
+            with sharp~$1 \after \zeta$.
+\end{enumerate}
+\begin{point}%
+The proof will require quite some preparation and
+is postponed until \TODO{}.
+For convenience, call~$C$ a \Define{$\dagger'$-effectus}
+    if~$C$ is a~$\diamond$-effectus with UPM
+    satisfying axioms 1, 2 and 3 from the Theorem above.
+\end{point}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}[quotcompr-diamond-adjoint]{Lemma}%
+In a~$\dagger'$-effectus,
+$\pi_s$ is~$\diamond$-adjoint to~$\zeta_s$.
+\begin{point}{Proof}%
+    Pick any sharp~$t,u$.
+We have to
+    show~$t \after \zeta_s \leq u^\perp$
+    if and only if~$u \after \pi_s \leq t^\perp$.
+So assume~$t \after \zeta_s \leq u^\perp$.
+Then~$t =  t\after \zeta_s \after \pi_s  \leq  u^\perp \after \pi_s
+                 =  (u \after \pi_s)^\perp$
+    so~$u \after \pi_s \leq t^\perp$.
+For the converse, assume~$u \after \pi_s \leq t^\perp$.
+Then~$u \after \asrt_s = u \after \pi_s \after \zeta_s \leq t^\perp \after \zeta_s$.
+From this,
+    the
+    $\diamond$-self-adjointness of~$\asrt_s$
+    and the fact that~$t^\perp \after \zeta_s$ is sharp,
+    we find~$(t^\perp \after \zeta_s)^\perp \after \pi_s \after \zeta_s \leq
+        u^\perp$
+    and so
+\begin{alignat*}{2}
+    t \after \zeta_s
+    &\ =\  (t^\perp \after \id)^\perp \after \zeta_s \\
+    &\ =\  (t^\perp \after \zeta_s \after \pi_s)^\perp \after \zeta_s \\
+    &\ =\  (t^\perp \after \zeta_s)^\perp \after \pi_s \after \zeta_s \\
+    &\ \leq \ u^\perp,
+\end{alignat*}
+as desired. \qed
+\end{point}
+\end{point}
+\begin{point}{Proposition}%
+In a~$\dagger'$-effectus
+we have
+\begin{equation*}
+    \asrt_p \after \alpha
+        \ =\  \alpha \after \asrt_{p\after \alpha} \qquad
+        \text{and} \qquad
+    \asrt_p \after \zeta
+        \ =\  \zeta \after \asrt_{p\after \zeta}
+\end{equation*}
+for every isomorphism~$\alpha$
+and quotient~$\zeta$ for a sharp predicate.
+\begin{point}{Proof}%
+There is some~$q$ with~$\andthen{q}{q}=p$.
+The map~$\alpha^{-1} \after \asrt_q \after \alpha$
+    is~$\diamond$-self-adjoint:
+\begin{alignat*}{2}
+    (\alpha^{-1} \after \asrt_q \after \alpha)_\diamond
+    &\ = \ \alpha^{-1}_\diamond \after (\asrt_q)_\diamond \after \alpha_\diamond \\
+    &\ = \ \alpha^\diamond \after (\asrt_q)^\diamond \after (\alpha^{-1})^\diamond\\
+    &\ = \ (\alpha^{-1} \after \asrt_q \after \alpha)^\diamond.
+\end{alignat*}
+Thus~$
+\alpha^{-1} \after \asrt_q \after \alpha \after
+\alpha^{-1} \after \asrt_q \after \alpha
+= \alpha^{-1} \after \asrt_p \after \alpha
+$ is~$\diamond$-positive.  By UPM
+we get~$\alpha^{-1} \after \asrt_p \after \alpha
+    = \asrt_{1 \after \alpha^{-1}\after\asrt_p \after \alpha}
+    = \asrt_{p \after \alpha} $.
+Postcomposing~$\alpha$, we find~$\asrt_p\after\alpha = 
+        \alpha \after \asrt_{p \after \alpha}$, as desired.
+
+For the second part, pick comprehension~$\pi$ of~$1\after \zeta$
+    with~$\zeta \after \pi = \id$.
+Then in a similar fashion as before, using \sref{quotcompr-diamond-adjoint}
+    and~$\zeta \after \pi = \id$,
+    we see~$\pi \after\asrt_p \after \zeta$
+    is~$\diamond$-positive
+    and so with UPM
+    we find~$\pi \after \asrt_p \after \zeta =  \asrt_{p \after \zeta}$.
+    Postcomposing~$\zeta$,
+    we find~$\asrt_p \after \zeta = \zeta \after \asrt_{p \after \zeta}$.\qed
+\end{point}
+\end{point}
+    
 \end{parsec}
 
 \end{document}
