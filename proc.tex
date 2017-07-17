@@ -1814,6 +1814,75 @@ is, indeed, a norm.
 \end{point}
 \end{parsec}
 \begin{parsec}%
+\begin{point}[uwc-bounded]{Proposition}%
+An ultraweakly continuous linear map $f\colon \scrA\to\scrB$
+between von Neumann algebras is bounded.
+\begin{point}[uwc-bounded-1]{Proof}%
+The problem reduces to the case that~$f$ is involution preserving
+by writing~$f$ as
+$f\equiv \Real{f}+i\Imag{f}$,
+where~$\Real{f}(a)=\Real{f(\Real{a})}
++ i\Real{f(\Imag{a})}$
+and~$\Imag{f}(a)=\Imag{f(\Real{a})}+i\Imag{f(\Imag{a})}$
+for~$a\in\scrA$,
+since clearly~$f$ is bounded when both~$\Real{f}$ and~$\Imag{f}$
+are bounded,
+and both $\Real{f}$ and~$\Imag{f}$ 
+are ultraweakly continuous and involution preserving.
+
+Note that such an involution preserving map~$f$
+is bounded
+when its restriction $g\colon \Real{\scrA}\to\Real{\scrB}$
+to self-adjoint elements
+is bounded,
+because then $\|f(a)\|=\|g(\Real{a})+ig(\Imag{a})\|\leq
+\|g\| (\|\Real{a}\|+\|\Imag{a}\|)
+\leq 2\|g\| \|a\|$ for all~$a\in\scrA$.
+
+The point of this reduction
+to self-adjoint elements
+is that writing~$\Omega$ for the 
+set of npu-maps $\omega\colon \scrB\to\C$
+the equality
+$\|f(a)\|=\sup_{\omega\in\Omega} \left|\omega(f(a))\right|$
+holds by~\TODO{...} for all self-adjoint~$a\in\scrA$,
+but not necessarily for arbitrary~$a\in\scrA$.
+Thus, to prove that~$f$
+is bounded it suffices to show that $\omega\circ f$
+is bounded for each~$\omega\in\Omega$,
+because then $\|f(a)\|\leq (\sup_{\omega\in\Omega}\|\omega\circ f\|)\,\|a\|$
+for all~$a\in \Real{\scrA}$,
+and~$\sup_{\omega\in \Omega} \|\omega\circ f\|<\infty$
+by the principle of uniform boundedness (\sref{pub}).
+
+To see that such a functional $\sigma:=\omega\circ f$,
+where~$\omega\in\Omega$,
+is bounded,
+note that any sequence~$a_1,a_2,\dotsc$
+in~$\scrA$ that converges to~$0$
+with respect to the norm on~$\scrA$
+also converges to~$0$ ultraweakly,
+and so
+(as both~$\omega$ and~$f$ are ultraweakly continuous)
+$\sigma(a_1),\,\sigma(a_2),\,\dotsc$
+converges to~$0$ in~$\C$ ultraweakly,
+and thus with respect to the norm on~$\C$.\qed
+\end{point}
+\end{point}
+\begin{point}{Proposition}%
+Let~$\scrA$ and~$\scrB$
+be von Neumann algebras of bounded operators
+on Hilbert spaces~$\scrH$ and~$\scrK$, respectively.
+Let~$\beta\colon \scrA\times \scrB\to \scrB(\scrH\otimes \scrK)$
+be the bilinear map that sends~$(A,B)$ to~$A\otimes B$.
+Then~$\beta_\otimes\colon \scrA\otimes \scrB\to 
+\scrB(\scrH\otimes \scrK)$
+is an isometry with respect
+to the tensor product norm on~$\scrA\otimes \scrB$
+and the operator norm on~$\scrB(\scrH\otimes\scrK)$.
+\end{point}
+\end{parsec}
+\begin{parsec}%
 \begin{point}{Theorem}%
 Let~$\scrA\otimes \scrB$
 be a tensor product of von Neumann algebras~$\scrA$
@@ -1922,39 +1991,6 @@ and thus normal (by~\sref{p-uwcont}).\qed
 \end{point}
 \end{parsec}
 \begin{parsec}%
-\begin{point}[uwc-bounded]{Proposition}%
-An ultraweakly continuous linear map $f\colon \scrA\to\scrB$
-between von Neumann algebras is bounded.
-\begin{point}[uwc-bounded-1]{Proof}%
-Suppose for now that~$\scrB=\C$
-(so that the norm topology and ultraweak topology on~$\scrB$ coincide).
-Then any sequence $a_1,a_2,\dotsc$
-in~$\scrA$ which converges in the norm to~$0$,
-also converges ultraweakly to~$0$,
-and so~$f(a_1),\,f(a_2),\,\dotsc$ converges
-to~$0$ (because~$f$ is ultraweakly continuous).
-It follows that~$f$ is continuous with respect to the norm
-on~$\scrA$, and therefore bounded.
-\begin{point}%
-Let~$\scrB$ again be arbitrary.
-Writing~$\Omega$ for the set of npu-maps $\omega\colon \scrB\to\C$
-we have~\TODO{NO! this is not true}
-$\|f(a)\|=\sup_{\omega\in\Omega} \left|\omega(f(a))\right|$
-for all~$a\in\scrA$
-by \TODO{}.
-Hence it suffices to show that $\omega\circ f$
-is bounded for each~$\omega\in\Omega$,
-because then $\|f(a)\|\leq (\sup_{\omega\in\Omega}\|\omega\circ f\|)\,\|a\|$
-for all~$a\in \scrA$,
-and~$\sup_{\omega\in \Omega} \|\omega\circ f\|<\infty$
-by the Principle of Uniform Boundedness (\sref{pub}).
-Now,~$\omega\circ f$ is bounded by~\sref{uwc-bounded-1} 
-(where~$\omega\in\Omega$),
-because $\omega\circ f$ is ultraweakly continuous
-(because $\omega$ and~$f$ are ultraweakly continuous).\qed
-\end{point}
-\end{point}
-\end{point}
 \begin{point}[vn-dense-pos]{Lemma}%
 Let~$\scrS$ be an ultrastrongly dense $C^*$-subalgebra
 of a von Neumann algebra~$\scrA$.
