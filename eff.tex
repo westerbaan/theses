@@ -948,6 +948,31 @@ If~$f$ is~$\diamond$-positive,
     then~$f \after f$ is~$\diamond$-positive.
 \end{enumerate}
 \end{point}
+\begin{point}[iso-diamond-adjoint]{Lemma}%
+Let~$\alpha$ be an isomorphism in a~$\diamond$-effectus.
+Then
+\begin{enumerate}
+\item
+    $s\after\alpha$ is sharp for sharp predicates~$s$ \emph{and}
+\item
+    $\alpha^\diamond(s) = s \after \alpha$
+    and~$\alpha_\diamond(s) = s\after \alpha^{-1}$
+    (so~$\alpha$ and~$\alpha^{-1}$ are~$\diamond$-adjoint).
+\end{enumerate}
+\begin{point}{Proof}%
+Let~$s$ be a sharp predicate. Then~$s = \IM \pi_s$.
+Note~$\IM \alpha^{-1}\after \pi_s = s \after \alpha$
+    --- indeed, $s \after \alpha \after \alpha^{-1} \after \pi_s=1$
+    and when~$p \after \alpha^{-1} \after \pi_s=1$,
+    we must have~$p \after \alpha^{-1} \geq s$,
+    which gives~$p \geq s \after \alpha$ as desired.
+    So~$s \after \alpha$ is indeed sharp.
+
+So~$\alpha^\diamond(s) = \ceil{s \after \alpha} = s\after \alpha$
+    and~$\alpha_\diamond(s) = \IM \alpha \after \pi_s = s \after \alpha^{-1}$
+    as promised. \qed
+\end{point}
+\end{point}
 \end{parsec}
 
 \section{Unique $\diamond$-positive maps}
@@ -959,8 +984,9 @@ In a~$\diamond$-effectus
     become tightly interwoven. \TODO{contrast old attempts}
 \end{point}
 \begin{point}{Definition}%
-We say a $\diamond$-effectus
-has \Define{unique $\diamond$-positive maps} (\Define{UPM}) if
+A~\Define{$\&$-effectus}
+is a $\diamond$-effectus
+such that
 \begin{enumerate}
 \item
     for each object~$X$
@@ -972,16 +998,16 @@ has \Define{unique $\diamond$-positive maps} (\Define{UPM}) if
     and comprehension~$\pi \colon Y \to Z$
     the composite~$\pi \after \xi$ is pure.
 \end{enumerate}
-In an $\diamond$-effectus with UPM,
+In an $\&$-effectus,
 we define~$\Define{\andthen{p}{q}} = q \after \asrt_p$
     and~$\Define{p^2} = \andthen{p}{p}$.
 \end{point}
 \begin{point}{Example}%
-The effectus $\op{\W{NCPsU}}$ has UPM
-with~$\asrt_a (b) = \sqrt{a}b\sqrt{a}$. \TODO{ref}
+The category$\op{\W{NCPsU}}$ is a~$\&$-effectus
+    with~$\andthen{a}{b} = \sqrt{a}b\sqrt{a}$. \TODO{ref}
 \end{point}
 \begin{point}[upm-basics]{Proposition}%
-In an $\diamond$-effectus with UPM
+In an $\&$-effectus
     the following holds.
 \begin{enumerate}
 \item
@@ -1134,9 +1160,9 @@ Say~$f = \pi_1 \after \xi_1$
     and~$g = \pi_2 \after \xi_2$
     for some comprehensions~$\pi_1$, $\pi_2$
         and quotients~$\xi_1$, $\xi_2$.
-By definition of $\diamond$-effectus with UPM,
+By definition of $\&$-effectus
     there is a comprehension~$\pi'$ and quotient~$\xi'$
-    such that~$\xi_1 \after \pi_2$.
+    such that~$\xi_1 \after \pi_2 = \pi' \after \xi'$.
 By the previous point~$\pi_1 \after \pi'$
     is a comprehension
     and~$\xi' \after \xi_2$ is a quotient by \sref{quotients-composition}.
@@ -1146,8 +1172,8 @@ $f \after g
 is pure. \qed
 \end{point}
 \end{point}
-\begin{point}{Notation}%
-In a~$\diamond$-effectus with UPM
+\begin{point}[zeta-s-convention]{Notation}%
+In a~$\&$-effectus
     together with chosen comprehension~$\pi_s$ for~$s$,
     we will write~$\zeta_s$
     for the corresponding quotient for~$s^\perp$
@@ -1155,12 +1181,12 @@ In a~$\diamond$-effectus with UPM
     and~$\pi_s \after \zeta_s = \asrt_s$.
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
-Show that in a~$\diamond$-effectus with UMP,
+\begin{point}[andthen-square-rule]{Exercise}%
+Show that in a~$\&$-effectus,
     we have~$\asrt_p \after \asrt_p = \asrt_{\andthen{p}{p}}$.
 \end{point}
-\begin{point}{Exercise}%
-    Show that in a~$\diamond$-effectus with UMP,
+\begin{point}[asrt-absorp-rule]{Exercise}%
+    Show that in a~$\&$-effectus,
     we have
     \begin{align*}
         \IM f \leq s \quad&\iff\quad  \asrt_s \after f = f \\
@@ -1169,10 +1195,26 @@ Show that in a~$\diamond$-effectus with UMP,
 for any sharp predicates~$s$ and~$t$.
 \end{point}
 \begin{point}{Definition}%
-Suppose~$C$ is a~$\diamond$-effectus with UPM.
-In \sref{upm-basics} we saw pure maps are closed under composition.
+Let~$C$ be a~$\&$-effectus.
+In \sref{upm-basics} we saw pure maps are closed under composition
 Write~$\Define{\Pure C}$ for the subcategory
     of pure map.
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}[standard-form-map]{Corollary}%
+Every map~$f$
+in a~$\&$-effectus
+factors as
+    \begin{equation*}
+        f \ =\ \pi_{\IM f} \after g \after \zeta_{\ceil{1 \after f}} \after \asrt_{1 \after f}
+    \end{equation*}
+    for some total and faithful map~$g$.
+If~$f$ is pure, then~$g$ is an isomorphism.
+\begin{point}{Proof}%
+    \TODO{...}
+\end{point}
 \end{point}
 \end{parsec}
 
@@ -1214,7 +1256,7 @@ The category~$\mathsf{Hilb}$
 \end{parsec}
 \begin{parsec}%
 \begin{point}{Definition}%
-We call a~$\diamond$-effectus~$C$ with UPM,
+We call a~$\&$-effectus~$C$,
     a~\Define{$\dagger$-effectus} provided
 \begin{enumerate}
 \item
@@ -1230,29 +1272,257 @@ We call a~$\diamond$-effectus~$C$ with UPM,
 \end{enumerate}
 \end{point}
 \begin{point}[dagger-theorem]{Theorem}%
-    A $\diamond$-effectus~$C$ with UPM
+    A $\&$-effectus
         is a~$\dagger$-effectus if and only if
 \begin{enumerate}
 \item
 for every predicate~$p$ there is a predicate~$q$
     with~$\andthen{q}{q} = p$;
 \item
-    $\andthen{p}{(\andthen{q^2}{(\andthen{p}{r})})}
-    = \andthen{(\andthen{p}{q})^2}{r}
-    $ for all predicates~$p,q,r$ \emph{and}
+    $\asrt^2_{\andthen{p}{q}}
+        = \asrt_p \after \asrt^2_q \after \asrt_p$
+     for all predicates~$p,q$ \emph{and}
 \item
     $t \after \zeta$ is sharp for any sharp~$t$
             and quotient~$\zeta$
             with sharp~$1 \after \zeta$.
 \end{enumerate}
+\begin{point}{Note}%
+    In a~$\&$-effectus
+    with seperating predicates,
+    the second axiom is equivalent
+    to~$\andthen{(\andthen{p}{q})^2}{r}
+    = \andthen{p}{(\andthen{q^2}{(\andthen{p}{r})})}$
+    for all predicates~$p,q,r$.
+\end{point}
 \begin{point}%
-The proof will require quite some preparation and
-is postponed until \TODO{}.
+We will prove the necessity in \sref{dagger-thm-necessity}
+    and sufficiency in \TODO{}.
+Especially the sufficiency requires quite some preparation.
 For convenience, call~$C$ a \Define{$\dagger'$-effectus}
-    if~$C$ is a~$\diamond$-effectus with UPM
+    if~$C$ is a~$\&$-effectus
     satisfying axioms 1, 2 and 3 from the Theorem above.
 \end{point}
 \end{point}
+\end{parsec}
+
+
+\begin{parsec}%
+\begin{point}[diamond-is-dagger-positive]{Lemma}%
+In a~$\dagger$-effectus,
+    a map is~$\dagger$-positive if and only if it is~$\diamond$-positive.
+\begin{point}{Proof}%
+Assume~$f$ is~$\dagger$-positive.
+By assumption 2, there is a (unique) $\dagger$-positive
+    $g$ with~$f = g \after g$.
+By~$\dagger$-positivity of~$g$,
+    there is an~$h$ with~$g = h^\dagger \after h$.
+Using the fact~$h$ is~$\diamond$-adjoint
+    to~$h^\dagger$, we see~$g$ is~$\diamond$-self-adjoint:
+\begin{equation*}
+    g^\diamond
+    \ =\  (h^\dagger \after h)^\diamond
+    \ =\  h^\diamond \after (h^\dagger)^\diamond 
+    \ =\  (h^\dagger)_\diamond \after h_\diamond 
+    \ =\  (h^\dagger\after h)_\diamond
+    \ =\  g_\diamond.
+\end{equation*}
+Thus~$f$ is the square of the~$\diamond$-self-adjoint map $g$,
+    hence~$f$ is~$\diamond$-positive. \qed
+\end{point}
+\end{point}
+
+\begin{point}[dagger-eff-square-root]{Lemma}%
+Predicates in a~$\dagger$-effectus have a square root:
+    for every predicate~$p$,
+    there is a predicate~$q$
+    with~$\andthen{q}{q}=p$.
+\begin{point}{Proof}%
+Let~$p\colon X \to 1$ be any predicate.
+By assumption 3,
+    the~$\diamond$-positive map~$\asrt_p$
+        is also~$\dagger$-positive.
+So by assumption 2,
+    there is (a unique)~$\dagger$-positive map~$f$
+    with~$f \after f = \asrt_p$.
+Define~$q = 1 \after f$.
+By \sref{diamond-is-dagger-positive}
+    $f$ is~$\diamond$-positive
+    and so by uniqueness of~$\diamond$-positive maps,
+    we get~$f = \asrt_{1\after f} \equiv \asrt_q$.
+We compute
+\begin{equation*}
+    \andthen{q}{q}
+        \ =\    
+        q \after \asrt_q \ \equiv \ 
+        1 \after f \after \asrt_{1 \after f} \ = \ 
+        1 \after f \after f \ = \ 1 \after \asrt_p \ = \ p,
+\end{equation*}
+which shows~$p$ has as square root~$p$.  \qed
+\end{point}
+\end{point}
+\begin{point}[asrt-iso]{Proposition}%
+In a~$\&$-effectus with square roots
+    (e.g.~$\dagger$- or~$\dagger'$-effectus) we have
+\begin{equation*}
+    \asrt_p \after \alpha
+        \ =\  \alpha \after \asrt_{p\after \alpha}
+\end{equation*}
+for every isomorphism~$\alpha$.
+\begin{point}{Proof}%
+There is some~$q$ with~$\andthen{q}{q}=p$.
+The map~$\alpha^{-1} \after \asrt_q \after \alpha$
+    is~$\diamond$-self-adjoint:
+\begin{alignat*}{2}
+    (\alpha^{-1} \after \asrt_q \after \alpha)_\diamond
+    &\ = \ \alpha^{-1}_\diamond \after (\asrt_q)_\diamond \after \alpha_\diamond \\
+    &\ \overset{\mathclap{\sref{iso-diamond-adjoint}}}{=} \ \alpha^\diamond \after (\asrt_q)^\diamond \after (\alpha^{-1})^\diamond\\
+    &\ = \ (\alpha^{-1} \after \asrt_q \after \alpha)^\diamond.
+\end{alignat*}
+Thus~$
+\alpha^{-1} \after \asrt_q \after \alpha \after
+\alpha^{-1} \after \asrt_q \after \alpha
+= \alpha^{-1} \after \asrt_p \after \alpha
+$ is~$\diamond$-positive.  By uniqueness of~$\diamond$-positive maps,
+we get~$\alpha^{-1} \after \asrt_p \after \alpha
+    = \asrt_{1 \after \alpha^{-1}\after\asrt_p \after \alpha}
+    = \asrt_{p \after \alpha} $.
+Postcomposing~$\alpha$, we find~$\asrt_p\after\alpha = 
+        \alpha \after \asrt_{p \after \alpha}$, as desired. \qed
+\end{point}
+\end{point}
+\begin{point}[dagger-of-zeta]{Proposition}%
+In a $\dagger$-effectus:~$\zeta_s^\dagger = \pi_s$
+(recall convention \sref{zeta-s-convention} for~$\pi_s$ and~$\zeta_s$).
+\begin{point}{Proof}%
+As~$\pi_s$ is~$\diamond$-adjoint to~$\pi_s^\dagger$,
+we have
+\begin{equation*}
+\IM \pi_s^\dagger
+ \ = \  (\pi^\dagger_s)_\diamond(1) \ =\ 
+ (\pi_s)^\diamond(1) \ = \  \ceil{1 \after \pi_s}
+ \ =\  1
+\end{equation*}
+and similarly~$\ceil{1 \after \pi_s^\dagger} = \IM \pi_s = s$.
+As~$1 \after \pi_s^\dagger \leq \ceil{1 \after \pi_s^\dagger} = s$,
+    there is some pure~$h$ with~$\pi_s^\dagger = h \after \zeta_s$.
+There is also some pure and faithful \TODO{...}~$g$
+    with~$\zeta_s^\dagger = \pi_s \after g$.
+Using~$\zeta_s \after \pi_s = \id$ twice we find
+\begin{equation}\label{eq-dagger-zeta-pi-conn}
+    \id \ =\  \id^\dagger
+    \ = \ \pi_s^\dagger \after \zeta_s^\dagger
+    \ = \ h \after \zeta_s \after \pi_s \after g 
+    \ = \ h \after g.
+\end{equation}
+Now~$1= 1 \after h \after g \leq 1 \after g$ and so~$g$ is total.
+Clearly~$\zeta_s^\dagger\after\zeta_s$ is~$\dagger$-positive,
+    hence~$\diamond$-positive and so by uniqueness of~$\diamond$-positive maps:
+\begin{equation*}
+\zeta_s^\dagger \after \zeta_s
+    \ = \ \asrt_{1 \after \zeta_s^\dagger \after \zeta_s}
+    \ =\  \asrt_{1 \after \pi_s \after g\after \zeta_s}
+    \ =\  \asrt_s
+    \ =\  \pi_s \after \zeta_s.
+\end{equation*}
+So by epicity of~$\zeta_s$, we find~$\zeta_s^\dagger = \pi_s$, as desired.\qed
+\end{point}
+\end{point}
+
+\begin{point}[dagger-of-iso]{Corollary}%
+    In a~$\dagger$-effectus,
+        $\pi_s$ is~$\diamond$-adjoint to~$\zeta_s$.
+    Also~$\alpha^\dagger = \alpha^{-1}$
+        for any iso~$\alpha$.
+\end{point}
+
+\begin{point}{Exercise}%
+Show that in a~$\&$-effectus
+        where every predicate has a square root
+        and where~$\pi_s$ is~$\diamond$-adjoint to~$\zeta_s$
+        (e.g.~a~$\dagger$-effectus)
+        we have
+    $\asrt_p \after \zeta_s \ = \ \zeta_s \after \asrt_{p \after \zeta_s}$.
+    (Hint: mimic the proof of \sref{asrt-iso}.)
+\end{point}
+
+\begin{point}[dagger-thm-necessity]{Theorem}%
+    A~$\dagger$-effectus is a~$\dagger'$-effectus.
+\begin{point}{Proof}%
+Assume~$C$ is a~$\dagger$-effectus.
+Axiom 1 is already proven in \sref{dagger-eff-square-root}.
+\begin{point}{Ax.~2}%
+Let~$p,q$ be predicates.
+To start, note~$1 \after \asrt_q\after  \asrt_p = \andthen{p}{q}$ and
+\begin{equation*}
+    \IM \asrt_q \after \asrt_p \ =\ 
+        (\asrt_q)_\diamond(p) \ = \ 
+        (\asrt_q)^\diamond(p) \ = \ 
+        \ceil{\andthen{q}{p}}.
+\end{equation*}
+So using \sref{standard-form-map}
+    we know
+\begin{equation*}
+    \asrt_q \after \asrt_p \ =\ 
+    \pi_{\ceil{\andthen{q}{p}}}
+    \after \alpha \after \zeta_{\ceil{\andthen{p}{q}}} \after \asrt_{\andthen{p}{q}}
+\end{equation*}
+for some iso~$\alpha$.
+Applying the dagger to both sides
+we get, using \sref{dagger-of-zeta} and \sref{dagger-of-iso}:
+\begin{align*}
+    \asrt_p \after \asrt_q &\ =\ 
+    (\asrt_q \after \asrt_p)^\dagger \\
+    & \ =\  \asrt_{\andthen{p}{q}}
+    \after \zeta^\dagger_{\ceil{\andthen{p}{q}}}
+    \after \alpha^\dagger \after
+    \pi^\dagger_{\ceil{\andthen{q}{p}}} \\
+    & \ = \ 
+    \asrt_{\andthen{p}{q}}
+    \after \pi_{\ceil{\andthen{p}{q}}}
+    \after \alpha^{-1} \after
+    \zeta_{\ceil{\andthen{q}{p}}}.
+\end{align*}
+Combining both:
+\begin{align*}
+    & \asrt_p \after \asrt_q^2 \after \asrt_p \\
+    &\qquad = \ \asrt_{\andthen{p}{q}}
+    \after \pi_{\ceil{\andthen{p}{q}}}
+    \after \alpha^{-1} \after
+    \zeta_{\ceil{\andthen{q}{p}}}
+    \after \pi_{\ceil{\andthen{q}{p}}}
+    \after \alpha \after \zeta_{\ceil{\andthen{p}{q}}} \after \asrt_{\andthen{p}{q}} \\
+    &\qquad = \ \asrt_{\andthen{p}{q}}
+    \after \pi_{\ceil{\andthen{p}{q}}}
+    \after \zeta_{\ceil{\andthen{p}{q}}} \after \asrt_{\andthen{p}{q}} \\
+    &\qquad = \ \asrt_{\andthen{p}{q}}
+    \after \asrt_{\ceil{\andthen{p}{q}}}
+    \after \asrt_{\andthen{p}{q}} \\
+    &\qquad \overset{\smash{\mathclap{\sref{asrt-absorp-rule}}}}{=} \ 
+    \asrt_{\andthen{p}{q}}^2,
+\end{align*}
+as desired.
+\end{point}
+\begin{point}{Ax.~3}%
+Pick any sharp predicates~$s,t$.
+We want to show~$t \after \zeta_s$ is sharp.
+To this end, we will show~$t \after \zeta_s$
+    is the image of~$\pi_s \after \pi_t$.
+Clearly~$t \after \zeta_s \after \pi_s \after \pi_t = 1$.
+Let~$p$ be any (other) sharp predicate with~$p \after \pi_s \after \pi_t = 1$.
+Then~$p \after \pi_s \geq \IM \pi_t = t$.
+So~$  p^\perp \after \pi_s \leq t^\perp$
+and hence~$\ceil{p^\perp \after \pi_s} \leq t^\perp$.
+As~$\pi_s$ is~$\diamond$-adjoint to~$\zeta_s$ by \sref{dagger-of-iso},
+we get~$t \after \zeta_s \leq \ceil{t \after \zeta_s} \leq p$,
+    which shows~$t \after \zeta_s$
+    is the image of~$\pi_s \after \pi_t$
+    and consequently sharp. \qed
+\end{point}
+\end{point}
+\end{point}
+
+    
 \end{parsec}
 
 \begin{parsec}%
@@ -1287,52 +1557,6 @@ From this,
 as desired. \qed
 \end{point}
 \end{point}
-\begin{point}{Proposition}%
-In a~$\dagger'$-effectus
-we have
-\begin{equation*}
-    \asrt_p \after \alpha
-        \ =\  \alpha \after \asrt_{p\after \alpha} \qquad
-        \text{and} \qquad
-    \asrt_p \after \zeta
-        \ =\  \zeta \after \asrt_{p\after \zeta}
-\end{equation*}
-for every isomorphism~$\alpha$
-and quotient~$\zeta$ for a sharp predicate.
-\begin{point}{Proof}%
-There is some~$q$ with~$\andthen{q}{q}=p$.
-The map~$\alpha^{-1} \after \asrt_q \after \alpha$
-    is~$\diamond$-self-adjoint:
-\begin{alignat*}{2}
-    (\alpha^{-1} \after \asrt_q \after \alpha)_\diamond
-    &\ = \ \alpha^{-1}_\diamond \after (\asrt_q)_\diamond \after \alpha_\diamond \\
-    &\ = \ \alpha^\diamond \after (\asrt_q)^\diamond \after (\alpha^{-1})^\diamond\\
-    &\ = \ (\alpha^{-1} \after \asrt_q \after \alpha)^\diamond.
-\end{alignat*}
-Thus~$
-\alpha^{-1} \after \asrt_q \after \alpha \after
-\alpha^{-1} \after \asrt_q \after \alpha
-= \alpha^{-1} \after \asrt_p \after \alpha
-$ is~$\diamond$-positive.  By UPM
-we get~$\alpha^{-1} \after \asrt_p \after \alpha
-    = \asrt_{1 \after \alpha^{-1}\after\asrt_p \after \alpha}
-    = \asrt_{p \after \alpha} $.
-Postcomposing~$\alpha$, we find~$\asrt_p\after\alpha = 
-        \alpha \after \asrt_{p \after \alpha}$, as desired.
-
-For the second part, pick comprehension~$\pi$ of~$1\after \zeta$
-    with~$\zeta \after \pi = \id$.
-Then in a similar fashion as before, using \sref{quotcompr-diamond-adjoint}
-    and~$\zeta \after \pi = \id$,
-    we see~$\pi \after\asrt_p \after \zeta$
-    is~$\diamond$-positive
-    and so with UPM
-    we find~$\pi \after \asrt_p \after \zeta =  \asrt_{p \after \zeta}$.
-    Postcomposing~$\zeta$,
-    we find~$\asrt_p \after \zeta = \zeta \after \asrt_{p \after \zeta}$.\qed
-\end{point}
-\end{point}
-    
 \end{parsec}
 
 \end{document}
