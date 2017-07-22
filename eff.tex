@@ -1176,9 +1176,13 @@ is pure. \qed
 In a~$\&$-effectus
     together with chosen comprehension~$\pi_s$ for~$s$,
     we will write~$\zeta_s$
-    for the corresponding quotient for~$s^\perp$
+    for the unique quotient for~$s^\perp$
     satisfying~$\zeta_s \after \pi_s = \id$
     and~$\pi_s \after \zeta_s = \asrt_s$.
+We call this~$\zeta_s$
+    the \Define{corresponding quotient} of~$\pi_s$
+    and vice versa~$\pi_s$ the \Define{corresponding comprehension}
+    of~$\zeta_s$.
 \end{point}
 \end{point}
 \begin{point}[andthen-square-rule]{Exercise}%
@@ -1526,6 +1530,10 @@ we get~$t \after \zeta_s \leq \ceil{t \after \zeta_s} \leq p$,
 \end{parsec}
 
 \begin{parsec}%
+\begin{point}%
+We continue with the preparation
+    of the proof of sufficiency of \sref{dagger-theorem}.
+\end{point}
 \begin{point}[quotcompr-diamond-adjoint]{Lemma}%
 In a~$\dagger'$-effectus,
 $\pi_s$ is~$\diamond$-adjoint to~$\zeta_s$.
@@ -1557,8 +1565,100 @@ From this,
 as desired. \qed
 \end{point}
 \end{point}
+\begin{point}%
+Let~$f$ be a pure map in a~$\dagger'$-effectus.
+We will work towards the definition of~$f^\dagger$.
+By \sref{standard-form-map} we
+know there is an iso~$\alpha$ with
+\begin{equation*}
+f  \ =\   \pi_{\IM f} \after \alpha \after \zeta_{\ceil{1\after f}}
+            \after \asrt_{1 \after f}.
+\end{equation*}
+In a~$\dagger$-effectus
+    we have~$\asrt_p^\dagger = \asrt_p$,
+    $\zeta_s^\dagger = \pi_s$,
+    $\alpha^\dagger = \alpha^{-1}$
+    and~$\pi_s^\dagger = \zeta_s$ 
+    (for corresponding~$\zeta_s$ and~$\pi_s$)
+    ---
+    so we are forced to define~
+\begin{equation}\label{dagger-definition}
+    f^\dagger
+        \ =\  \asrt_{1 \after f} \after
+    \pi_{\ceil{1\after f}} \after
+    \alpha^{-1} \after
+    \zeta_{\IM f},
+\end{equation}
+    where~$\zeta_{\IM f}$
+    is the unique corresponding
+        quotient of~$\pi_{\IM f}$
+        and~$\pi_{\ceil{1 \after f}}$
+        the unique corresponding comprehension of
+        and~$\zeta_{\ceil{1 \after f}}$,
+        see \sref{zeta-s-convention}.
+Before we declare~\eqref{dagger-definition} a definition,
+ we have to check whether it is independant
+    of choice of~$\pi$ (and corresponding $\zeta$).
+    So suppose~$ f  =  \pi' \after \alpha' \after \zeta'
+        \after \asrt_{1 \after f}$
+        for some (other) iso~$\alpha'$, comprehension~$\pi'$ of~$\IM f$
+        and quotient~$\zeta'$ of~$\smash{\ceil{1 \after f}^\perp}$.
+There are isos~$\beta$ and~$\gamma$
+    such that~$\pi' = \pi_{\IM f} \after \beta$
+    and~$\zeta' = \gamma \after \zeta_{\ceil{1 \after f}}$.
+We will take a moment to relate~$\alpha$ and~$\alpha'$:
+as~$\pi_{\IM f}$ is mono
+    and~$\zeta_{1 \after f}\after\asrt_{1 \after f}$
+    is epic,
+    we have~$\beta\after\alpha'\after\gamma = \alpha$
+    and so~$(\alpha')^{-1}= \gamma \after\alpha^{-1}\after\beta$.
+To continue,
+it is easy to see~$\beta^{-1} \after \zeta_{\IM f}$
+    is the unique corresponding quotient to~$\pi'$
+    and~$\pi_{\ceil{1 \after f}}\after \gamma^{-1}$
+    is the unique corresponding comprehension to~$\zeta'$.
+So with this choice of quotient and comprehension,
+    we are forced to define
+\begin{align*}
+    f^\dagger 
+    &\ = \ \asrt_{1 \after f}\after \pi_{\ceil{1 \after f}}
+    \after \gamma^{-1} \after {\alpha'}^{-1}
+                \after \beta^{-1}\after \zeta_{\IM f} \\
+    &\ = \ \asrt_{1 \after f}\after \pi_{\ceil{1 \after f}}
+                \after \gamma^{-1} \after \gamma \after \alpha^{-1} \after \beta 
+                \after \beta^{-1}\after \zeta_{\IM f} \\
+    &\ = \ \asrt_{1 \after f}\after \pi_{\ceil{1 \after f}}
+                \after \alpha^{-1} \after \zeta_{\IM f},
+\end{align*}
+which is indeed consistent with~\eqref{dagger-definition}.
+So we are justified to declare:
+\end{point}
+\begin{point}{Definition}%
+In a~$\dagger'$-effectus, for a pure map~$f$, define
+\begin{equation*}
+    f^\dagger
+        \ =\  \asrt_{1 \after f} \after
+    \pi_{\ceil{1\after f}} \after
+    \alpha^{-1} \after
+    \zeta_{\IM f},
+\end{equation*}
+where~$\alpha$ is the unique iso such that
+$f  =  \pi_{\IM f} \after \alpha \after \zeta_{\ceil{1\after f}}
+            \after \asrt_{1 \after f}$.
+\end{point}
+\begin{point}{Exercise}%
+Show that in a~$\dagger'$-effectus,
+    we have
+\begin{align*}
+    \asrt_p^\dagger &= \asrt_p &
+    \pi_s^\dagger &= \zeta_s &
+    \zeta_s^\dagger &= \pi_s &
+    \alpha^\dagger &= \alpha^{-1}
+\end{align*}
+for a quotient~$\zeta_s$ corresponding to~$\pi_s$
+and iso~$\alpha$.
+\end{point}
 \end{parsec}
-
 \end{document}
 
 % vim: ft=tex.latex
