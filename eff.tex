@@ -1440,7 +1440,7 @@ So by epicity of~$\zeta_s$, we find~$\zeta_s^\dagger = \pi_s$, as desired.\qed
         for any iso~$\alpha$.
 \end{point}
 
-\begin{point}{Exercise}%
+\begin{point}[zeta-through-asrt]{Exercise}%
 Show that in a~$\&$-effectus
         where every predicate has a square root
         and where~$\pi_s$ is~$\diamond$-adjoint to~$\zeta_s$
@@ -1531,41 +1531,6 @@ we get~$t \after \zeta_s \leq \ceil{t \after \zeta_s} \leq p$,
 
 \begin{parsec}%
 \begin{point}%
-We continue with the preparation
-    of the proof of sufficiency of \sref{dagger-theorem}.
-\end{point}
-\begin{point}[quotcompr-diamond-adjoint]{Lemma}%
-In a~$\dagger'$-effectus,
-$\pi_s$ is~$\diamond$-adjoint to~$\zeta_s$.
-\begin{point}{Proof}%
-    Pick any sharp~$t,u$.
-We have to
-    show~$t \after \zeta_s \leq u^\perp$
-    if and only if~$u \after \pi_s \leq t^\perp$.
-So assume~$t \after \zeta_s \leq u^\perp$.
-Then~$t =  t\after \zeta_s \after \pi_s  \leq  u^\perp \after \pi_s
-                 =  (u \after \pi_s)^\perp$
-    so~$u \after \pi_s \leq t^\perp$.
-For the converse, assume~$u \after \pi_s \leq t^\perp$.
-Then~$u \after \asrt_s = u \after \pi_s \after \zeta_s \leq t^\perp \after \zeta_s$.
-From this,
-    the
-    $\diamond$-self-adjointness of~$\asrt_s$
-    and the fact that~$t^\perp \after \zeta_s$ is sharp,
-    we find~$(t^\perp \after \zeta_s)^\perp \after \pi_s \after \zeta_s \leq
-        u^\perp$
-    and so
-\begin{alignat*}{2}
-    t \after \zeta_s
-    &\ =\  (t^\perp \after \id)^\perp \after \zeta_s \\
-    &\ =\  (t^\perp \after \zeta_s \after \pi_s)^\perp \after \zeta_s \\
-    &\ =\  (t^\perp \after \zeta_s)^\perp \after \pi_s \after \zeta_s \\
-    &\ \leq \ u^\perp,
-\end{alignat*}
-as desired. \qed
-\end{point}
-\end{point}
-\begin{point}%
 Let~$f$ be a pure map in a~$\dagger'$-effectus.
 We will work towards the definition of~$f^\dagger$.
 By \sref{standard-form-map} we
@@ -1636,7 +1601,7 @@ So we are justified to declare:
 \begin{point}{Definition}%
 In a~$\dagger'$-effectus, for a pure map~$f$, define
 \begin{equation*}
-    f^\dagger
+    \Define{f^\dagger}
         \ =\  \asrt_{1 \after f} \after
     \pi_{\ceil{1\after f}} \after
     \alpha^{-1} \after
@@ -1659,6 +1624,189 @@ for a quotient~$\zeta_s$ corresponding to~$\pi_s$
 and iso~$\alpha$.
 \end{point}
 \end{parsec}
+
+\begin{parsec}%
+\begin{point}%
+To compute~$f^{\dagger\dagger}$,
+    we need to put~$f^\dagger$
+    in the standard form of~\sref{standard-form-map}.
+To do this, we need to pull~$\asrt_p$ from one side to the other.
+In this section we will work towards a general result for this.
+\end{point}
+\begin{point}[quotcompr-diamond-adjoint]{Lemma}%
+In a~$\dagger'$-effectus,
+$\pi_s$ is~$\diamond$-adjoint to~$\zeta_s$.
+\begin{point}{Proof}%
+    Pick any sharp~$t,u$.
+We have to
+    show~$t \after \zeta_s \leq u^\perp$
+    if and only if~$u \after \pi_s \leq t^\perp$.
+So assume~$t \after \zeta_s \leq u^\perp$.
+Then~$t =  t\after \zeta_s \after \pi_s  \leq  u^\perp \after \pi_s
+                 =  (u \after \pi_s)^\perp$
+    so~$u \after \pi_s \leq t^\perp$.
+For the converse, assume~$u \after \pi_s \leq t^\perp$.
+Then~$u \after \asrt_s = u \after \pi_s \after \zeta_s \leq t^\perp \after \zeta_s$.
+From this,
+    the
+    $\diamond$-self-adjointness of~$\asrt_s$
+    and the fact that~$t^\perp \after \zeta_s$ is sharp,
+    we find~$(t^\perp \after \zeta_s)^\perp \after \pi_s \after \zeta_s \leq
+        u^\perp$
+    and so
+\begin{alignat*}{2}
+    t \after \zeta_s
+    &\ =\  (t^\perp \after \id)^\perp \after \zeta_s \\
+    &\ =\  (t^\perp \after \zeta_s \after \pi_s)^\perp \after \zeta_s \\
+    &\ =\  (t^\perp \after \zeta_s)^\perp \after \pi_s \after \zeta_s \\
+    &\ \leq \ u^\perp,
+\end{alignat*}
+as desired. \qed
+\end{point}
+\end{point}
+\begin{point}{Definition}%
+In a~$\&$-effectus, a map~$f$ is \Define{pristine}
+        if it is pure and~$1\after f$ is sharp.
+\end{point}
+\begin{point}[standard-form-pristine]{Exercise}%
+Show that in a~$\&$-effectus, every pristine map~$h$ is of the form
+        \begin{equation*}
+            h \ =\ \pi_{\IM h} \after \alpha \after \zeta_{1 \after h}
+        \end{equation*}
+        for some iso~$\alpha$.
+\end{point}
+\begin{point}[pristine-asrt]{Proposition}%
+In a~$\dagger'$-effectus,
+    with pristine map~$h$, we have
+\begin{equation*}
+    \asrt_p \after h
+        \ =\  h \after \asrt_{p \after h}
+\end{equation*}
+for any predicate~$p$ with~$p \leq \IM h$.
+\begin{point}{Proof}%
+For brevity,
+write~$t = 1 \after h$
+    and~$s = \IM h$.
+By~\sref{standard-form-pristine}
+    there is some iso~$\alpha$
+    such that~$h = \pi_s \after \alpha \after \zeta_t$.
+    Note~$\IM \asrt_p = \ceil{p } \leq \ceil{s} = s$
+    and so~$\asrt_p = \asrt_{s} \after \asrt_p$
+    by the first rule of \sref{asrt-absorp-rule}.
+By the second rule of \sref{asrt-absorp-rule}
+    and~$1 \after p = p \leq s$,
+    we see~$p = p \after \asrt_{s}$.
+Thus
+\begin{alignat*}{2}
+    \asrt_p \after \pi_{s}
+    &\ =\  \asrt_{s} \after \asrt_{p \after \asrt_{s}} \after \pi_{s} \\
+    &\ =\  \pi_{s} \after \zeta_{s} \after
+    \asrt_{p \after \pi_{s} \after \zeta_{s}} \after \pi_{s} \\
+    &\ =\  \pi_{s}  \after
+    \asrt_{p \after \pi_{s}} \after \zeta_{s} \after \pi_{s} 
+    &\qquad& \text{by \sref{zeta-through-asrt}
+                    and \sref{quotcompr-diamond-adjoint} }\\
+    &\ =\  \pi_{s}  \after
+    \asrt_{p \after \pi_{s}}.
+\end{alignat*}
+Putting everything together
+\begin{alignat*}{2}
+   \asrt_p \after h
+   & \ =\  \asrt_p \after \pi_s \after \alpha \after \zeta_t \\
+   & \ =\  \pi_s \after \asrt_{p\after\pi_s} \after \alpha \after \zeta_t  \\
+   & \ =\  \pi_s \after \alpha \after \asrt_{p\after\pi_s \after \alpha} \after \zeta_t 
+   &\qquad&\text{by \sref{asrt-iso}}\\
+   & \ =\  \pi_s \after \alpha \after \zeta_t \after \asrt_{p\after\pi_s \after \alpha \after \zeta_t} 
+    &\qquad& \text{by \sref{zeta-through-asrt}
+                    and \sref{quotcompr-diamond-adjoint} }\\
+   & \ = \ h \after \asrt_{p \after h},
+\end{alignat*}
+as desired.\qed
+\end{point}
+\end{point}
+\begin{point}[asrt-pristine-reverse]{Exercise}%
+Working in a~$\dagger'$-effectus, show in order
+\begin{enumerate}
+    \item if~$h \equiv \pi_{\IM h} \after \alpha \after \zeta_{1 \after h}$
+            is some pristine map,
+            then~$h^\dagger = \pi_{1 \after h} \after \alpha^{-1} \after \zeta_{\IM h}$;
+    \item $h^{\dagger\dagger} = h$ for any pristine~$h$;
+    \item $h^\dagger \after h = \asrt_{1 \after h}$ for any pristine map~$h$;
+    \item $p \after h^\dagger \leq \IM h$ for any predicate~$p$ \emph{and}
+    \item
+        if~$p \leq 1 \after h$,
+        then~$\asrt_{p\after h^\dagger} \after h = h \after \asrt_p$.
+\end{enumerate}
+\end{point}
+\begin{point}[prist-asrt-decomp]{Proposition}%
+In a~$\dagger'$-effectus,
+        for every pure map~$f$,
+    there exists a unique pristine map~$h$
+    with~$1 \after h = \ceil{1 \after f}$
+    and~$f = h \after \asrt_{1 \after f}$.
+    Furthermore~$f^\dagger = \asrt_{1 \after f}\after h^\dagger$.
+\begin{point}{Proof}%
+        \TODO{}
+\end{point}
+\end{point}
+\begin{point}{Proposition}%
+    In a~$\dagger'$-effectus, we have~$f^{\dagger\dagger}=f$
+        for any pure map~$f$.
+\begin{point}{Proof}%
+By~\sref{prist-asrt-decomp}
+    we have~$f = h \after \asrt_{1\after f}$
+    and~$f^\dagger = \asrt_{1 \after f} \after h^\dagger$
+    for some pristine~$h$
+    with~$1 \after h = \ceil{1 \after f}$.
+Clearly~$1 \after f \leq \ceil{1 \after f} = 1 \after h = \IM h^\dagger$,
+    so by \sref{pristine-asrt}
+    we get~$f^\dagger = \asrt_{1 \after f} \after h^\dagger
+              = h^\dagger \after \asrt_{1 \after f \after h^\dagger}$.
+Consequently
+\begin{equation*}
+    f^{\dagger\dagger}
+    \ =\  \asrt_{1 \after f\after h^\dagger} \after h^{\dagger\dagger}
+    \ \overset{\sref{asrt-pristine-reverse}}{=}\  \asrt_{1 \after f\after h^\dagger} \after h
+    \ \overset{\sref{asrt-pristine-reverse}}{=}\  h\after \asrt_{1 \after f}
+    \ = \ f,
+\end{equation*}
+as desired. \qed
+\end{point}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}{Proposition}%
+In a~$\dagger'$-effectus, we have~$(f \after g)^\dagger = g^\dagger \after f^\dagger$
+    for pure~$f,g$.
+\begin{point}{Proof}%
+For brevity, write~$p = 1 \after f$, $q = 1 \after g$,
+    $s = \IM f$ and $t = \IM g$.
+Let~$\varphi$, $\psi$, $\chi$, $\alpha$, $\beta$ and $\gamma$
+    be the unique isomorphisms such that respectively
+\begin{align*}
+    f &\ =\  \pi_s \after \varphi \after \zeta_{\ceil{p}} \after \asrt_p \\
+    g &\ =\  \pi_t \after \psi \after \zeta_{\ceil{q}} \after \asrt_q \\
+    \zeta_{\ceil{p}} \after \asrt_p \after \pi_t
+        & \ = \ \pi_{\lceil t \after \asrt_p \after \pi_{\ceil{p}}\rceil} \after \chi \\
+    \pi_s \after \varphi \after \pi_{\lceil t \after \asrt_p \after \pi_{\ceil{p}} \rceil}
+    &\ = \ \pi_{\lceil t\after \asrt_p\after\pi_{\ceil{p}}\rceil \after \varphi^{-1}\after \zeta_s }
+        \after \alpha \\
+        \zeta_{\ceil{p \after \pi_t}} \after \psi \after \zeta_{\ceil{q}}
+           & \  = \ \beta \after \zeta_{\lceil p \after \pi_t \rceil \after \psi \after \zeta_{\ceil{q}}} \\
+    \asrt_{\ceil{p \after \pi_t} \after \psi \after \zeta_{\ceil{q}}} \after \asrt_q
+    & \ = \ \gamma \after \asrt_{p \after g}
+\end{align*}
+\begin{alignat*}{2}
+g^\dagger \after f^\dagger
+& = 
+    \asrt_q \after \pi_{\ceil{q}} \after \psi^{-1} \after \zeta_{t} \after 
+    \asrt_p \after \pi_{\ceil{p}} \after \varphi^{-1} \after \zeta_{s} \\
+\end{alignat*}
+\end{point}
+\end{point}
+\end{parsec}
+
 \end{document}
 
 % vim: ft=tex.latex
