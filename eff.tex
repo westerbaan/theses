@@ -1475,7 +1475,7 @@ Show that in a~$\&$-effectus
 \begin{point}{Proof}%
 Assume~$C$ is a~$\dagger$-effectus.
 Axiom 1 is already proven in \sref{dagger-eff-square-root}.
-\begin{point}{Ax.~2}%
+\begin{point}[pqqp-from-dagger]{Ax.~2}%
 Let~$p,q$ be predicates.
 To start, note~$1 \after \asrt_q\after  \asrt_p = \andthen{p}{q}$ and
 \begin{equation*}
@@ -2086,6 +2086,33 @@ we have
 \end{equation*}
 (This is the daggered version of the subdiagram
 marked~\sref{pristine-asrt}.)
+\end{point}
+\begin{point}{Lemma}%
+If in a~$\dagger'$-effectus,
+$\nu$ is the unique iso (cf.~\sref{pqqp-from-dagger}) such that
+\begin{equation*}
+    \asrt_a \after \asrt_b\  =\  \pi_{\ceil{\andthen{a}{b}}} 
+    \after \nu \after \zeta_{\ceil{\andthen{b}{a}}} \after \asrt_{\andthen{b}{a}},
+\end{equation*}
+then~$\asrt_b \after \asrt_a\  =\  \asrt_{\andthen{b}{a}}
+        \after \pi_{\ceil{\andthen{b}{a}}} 
+        \after \nu^{-1} \after \zeta_{\ceil{\andthen{a}{b}}}$.
+\begin{point}{Proof}%
+Let~$\mu$ be the unique iso with~$
+\asrt_b \after \asrt_a\  =\  \asrt_{\andthen{b}{a}}
+        \after \pi_{\ceil{\andthen{b}{a}}} 
+        \after \mu \after \zeta_{\ceil{\andthen{a}{b}}}$.
+We want to show~$\mu = \nu^{-1}$.
+By~\sref{pristine-asrt}
+we have
+\begin{align*}
+\asrt_{\andthen{b}{a}} \after \pi_{\ceil{\andthen{b}{a}}}
+&\  =\  \pi_{\ceil{\andthen{b}{a}}} \after \asrt_{\andthen{b}{a} \after \pi_{\ceil{\andthen{b}{a}}}} \\
+\asrt_{\andthen{a}{b}} \after \pi_{\ceil{\andthen{a}{b}}}
+&\  =\  \pi_{\ceil{\andthen{a}{b}}} \after \asrt_{\andthen{a}{b} \after \pi_{\ceil{\andthen{a}{b}}}}.
+\end{align*}
+Combined with the second axiom of a~$\dagger'$-effectus we get
+\end{point}
 \end{point}
 \end{parsec}
 \end{document}
