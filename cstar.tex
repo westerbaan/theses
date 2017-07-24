@@ -4936,6 +4936,28 @@ and thus under arbitrary sums}
 \TODO{Remark on the ultraweak topology.}
 \end{parsec}
 \begin{parsec}%
+\begin{point}[vector-functional-convergence]{Exercise}%
+Let~$\scrH$ be a Hilbert space,
+and let~$(x_\alpha)_\alpha$ be a net in~$\scrH$.
+\begin{enumerate}
+\item
+Show that~$\sum_\alpha \|x_\alpha\|^2<\infty$
+if and only if~$\sum_\alpha \left<x_\alpha,(\,\cdot\,)x_\alpha\right>$
+converges with respect to the operator norm
+to some bounded functional on~$\scrB(\scrH)$.
+\item
+Given some~$x\in \scrH$,
+show that~$x_\alpha$ converges to~$x$
+if and only if  $\left<x_\alpha,(\,\cdot\,)x_\alpha\right>$
+operator-norm converges to~$\left<x,(\,\cdot\,)x\right>$.
+
+(For the ``if'' part it may be convenient
+to first prove that $\left<x_\alpha,x\right>\to \left<x,x\right>$
+by considering the bounded operator
+$\ketbra{x}{x}$ on~$\scrB(\scrH)$.)
+
+\end{enumerate}
+\end{point}
 \begin{point}[bh-np]{Theorem}%
 Let~$\scrH$ be a Hilbert space.
 Every normal p-map $\omega\colon \scrB(\scrH)\to \C$

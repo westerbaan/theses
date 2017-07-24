@@ -1659,12 +1659,131 @@ and for this
 we'll also need to describe the norm
 the tensor product~$\scrA\otimes\scrB$
 will induce on~$\scrA\odot\scrB$.
+
+Our description
+of the norm and ultraweak topology on the 
+algebraic tensor product below
+is based on the simple premise that the product functionals
+$\sigma\otimes \tau\colon \scrA\otimes\scrB\to\C$
+should turn out to be center separating.
+That this determines both norm and 
+the ultraweak topology
+follows from the following general observation.
+\end{point}
+\begin{point}[order-separating-dense-subset]{Exercise}%
+Show that any operator norm dense subset~$\Omega'$
+of an order separating collection~$\Omega$
+of positive functionals
+on a $C^*$-algebra~$\scrA$
+is order separating as well.
+\end{point}
+\begin{point}[vn-center-separating-fundamental]{Proposition}%
+Given a center separating collection~$\Omega$ of np-maps
+on a von Neumann algebra~$\scrA$,
+and an ultrastrongly dense subset~$S$ of~$\scrA$
+\begin{enumerate}
+\item
+	\label{vn-center-separating-fundamental-1}
+$\Omega':= \{\,\omega(s^*(\,\cdot\,)s)\colon\,
+\omega\in\Omega,\,s\in S\,\}$
+is order separating, and
+\item
+	\label{vn-center-separating-fundamental-2}
+$\Omega'':=\{\,\sum_n\omega_n\colon\, \omega_1,\dotsc,\omega_N\in\Omega'\,\}$ is operator norm dense in $(\scrA_*)_+$.
+	\end{enumerate}
+\begin{point}[vn-center-separating-fundamental-i]{Proof}%
+We tackle~\ref{vn-center-separating-fundamental-1}
+first. We already know from~\sref{proto-gelfand-naimark}
+that the collection $\Xi:=\{\, \omega(a^*(\,\cdot\,)a)\colon\, 
+\omega\in\Omega,\, a\in\scrA\,\}$,
+which contains~$\Omega'$, is order separating;
+so to prove that~$\Omega'$ is itself order separating
+it suffices by~\sref{order-separating-dense-subset} to show that~$\Omega'$
+is norm dense in~$\Xi$.
+This is indeed the case
+since given~$a\in\scrA$
+and~$\omega\in\Omega$,
+and a net~$(s_\alpha)_\alpha$ in~$S$
+that converges ultrastrongly to~$a$,
+the functionals~$s_\alpha \ast\omega
+\equiv \omega(s_\alpha^*(\,\cdot\,)s_\alpha)$
+converge in norm to~$a\ast \omega$
+as $\alpha\to\infty$
+by~\sref{bstaromega-basic}.
+
+\begin{point}{Concerning~\ref{vn-center-separating-fundamental-2}}%
+Let~$f\colon \scrA\to\C$ be an np-map;
+we must show that~$f$ is in 
+the norm closure~$\overline{\Omega''}$ of~$\Omega''$.
+Note that since~$\Omega$ is center separating,
+the map $\varrho_\Omega\colon \scrA\to\scrB(\scrH_\Omega)$
+from~\sref{proto-gelfand-naimark}
+is injective,
+and in fact restricts
+to a nmiu-isomorphism
+from~$\scrA$ onto $\varrho_\Omega(\scrA)$
+(cf.~\sref{ngns}).
+So by~\sref{normal-functional}
+$f$ is of the form $f\equiv 
+\sum_n \left<x_n,\varrho_\Omega(\,\cdot\,)x_n\right>$
+for some $x_1,x_2,\dotsc \in\scrH_\Omega$
+with $\sum_n \|x_n\|^2<\infty$,
+so that the partial sums
+$\sum_{n=1}^N \left<x_n,\varrho_\Omega(\,\cdot\,)x_n\right>$
+converge with respect to the operator norm to~$f$
+(by~\sref{vector-functional-convergence}).
+Thus to show that~$f$ is in~$\overline{\Omega''}$
+it suffices to show that each~$\left<x_n,\varrho_\Omega(\,\cdot\,)x_n\right>$
+is in~$\overline{\Omega''}$
+(since~$\overline{\Omega''}$ is clearly closed
+under finite sums and norm limits).
+In effect
+we may assume 
+without loss of generality
+that~$f\equiv \left<x,\varrho_\Omega(\,\cdot\,)x\right>$
+for some~$x\in \scrH_\Omega$.
+We reduce the problem some more.
+By definition 
+of $\scrH_\omega\equiv \bigoplus_{\omega\in\Omega}\scrH_\omega$
+and~$\varrho_\Omega$,
+we have $f=\left<x,\varrho_\Omega(\,\cdot\,)x\right>
+= \sum_{\omega\in \Omega} 
+\left<x_\omega,\varrho_\omega(\,\cdot\,)x_\omega\right>$;
+and so we may, by the same token, assume without loss of generality
+that $f=\left<x,\varrho_\omega(\,\cdot\,)x\right>$
+for some~$\omega\in \Omega$
+and~$x\in \scrH_\omega$.
+Since such~$x$ (by definition of~$\scrH_\omega$, 
+\sref{gns})
+is the norm limit of
+a sequence $\eta_\omega(a_1),\,\eta_\omega(a_2),\,
+\dotsb$,
+where~$a_1,a_2,\dotsc\in\scrA$,
+the np-maps $a_n\ast \omega\equiv 
+\left<\eta_\omega(a_n),\varrho_\omega(\,\cdot\,)\eta_\omega(a_n)\right>$
+converge to~$\left<x,\varrho_\omega(\,\cdot\,) x\right>=f$
+in the operator norm as $n\to\infty$ by~\sref{vector-functional-convergence};
+and so we may assume without loss of generality
+that~$f=a\ast \omega$ for some~$a\in\scrA$ and~$\omega\in \Omega$.
+Since~$S$ is ultrastrongly dense in~$\scrA$
+we can find a net~$(s_\alpha)_\alpha$
+in~$S$ that converges ultrastrongly to~$a$.
+As the np-functionals~$s_\alpha \ast \omega$
+in $\Omega'\subseteq \Omega''$
+will then
+operator-norm converge
+to~$f= a\ast \omega$
+as $\alpha\to\infty$
+by~\sref{bstaromega-basic},
+we conclude that~$f\in \overline{\Omega''}$.\qed
+\end{point}
+\end{point}
 \end{point}
 \begin{point}[tensor-product]{Definitions}%
 Let~$\scrA$ and~$\scrB$ be von Neumann algebras.
 \begin{enumerate}
 \item
-A \Define{simple functional}
+A \Define{basic functional}
 is 
 a map $\omega \colon \scrA\odot\scrB\to\C$
 with
@@ -1674,9 +1793,9 @@ $\sigma\colon \scrA\to\C$, $\tau\colon \scrB\to\C$,
 and
 $t\in \scrA\odot\scrB$.
 \item
-Each simple functional $\omega \colon \scrA\odot\scrB\to\C$
+Each basic functional $\omega \colon \scrA\odot\scrB\to\C$
 gives us an operation~$\Define{[\,\cdot\,,\,\cdot\,]_\omega}$,
-that will turn out to be an inner product in~\sref{simple-state-inner-product}
+that will turn out to be an inner product in~\sref{basic-state-inner-product}
  by
 $\Define{[s,t]_\omega}:=\omega(s^*t)$
 (cf.~\sref{state-inner-product}),
@@ -1692,7 +1811,7 @@ given by
 	\textstyle
 	\Define{\|t\|}\ =\ \sup_\omega \|t\|_\omega,
 \end{equation*}
-where~$\omega$ ranges over all simple functionals
+where~$\omega$ ranges over all basic functionals
 on~$\scrA\odot\scrB$
 with~$\omega(1)\leq 1$.
 \item
@@ -1701,12 +1820,12 @@ with the tensor product norm
 we can speak of bounded functionals on~$\scrA\odot \scrB$,
 and the operator norm on them;
 and note that
-the simple functionals are bounded.
+the basic functionals are bounded.
 
 The \Define{ultraweak tensor product topology}
 is the least topology on~$\scrA\odot\scrB$
 that makes all operator norm limits
-of simple functionals continuous.
+of basic functionals continuous.
 \item
 A bilinear map $\beta\colon \scrA\times \scrB\to\scrC$
 to a von Neumann algebra~$\scrC$
@@ -1766,7 +1885,7 @@ c_{k m} \overline{d}_{\ell n} d_{\ell m}
 \ \geq\  0$.\qed
 \end{point}
 \end{point}
-\begin{point}[simple-state-inner-product]{Exercise}%
+\begin{point}[basic-state-inner-product]{Exercise}%
 Use~\sref{product-state-positive} 
 to show that
  $[\,\cdot\,,\,\cdot\,]_\omega$
@@ -1814,6 +1933,21 @@ is, indeed, a norm.
 \end{point}
 \end{parsec}
 \begin{parsec}%
+\begin{point}{Proposition}%
+When the algebraic tensor product
+$\scrA\odot \scrB$
+of von Neumann algebras~$\scrA$ and~$\scrB$ of bounded operators
+on Hilbert spaces $\scrH$ and~$\scrK$, respectively,
+is mapped into~$\scrB(\scrH\otimes \scrK)$
+via the extension of the bilinear map~$\beta(A,B)=A\otimes B$,
+this extension~$\beta_\odot\colon \scrA\odot\scrB\to \scrB(\scrH\otimes \scrK)$
+is an isometry (with respect to the tensor product norm)
+and a homeomorphism from the ultraweak tensor product topology
+to the ultraweak topology on~$\scrB(\scrH\otimes \scrK)$.
+\begin{point}{Proof}%
+
+\end{point}
+\end{point}
 \begin{point}[uwc-bounded]{Proposition}%
 An ultraweakly continuous linear map $f\colon \scrA\to\scrB$
 between von Neumann algebras is bounded.
