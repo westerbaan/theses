@@ -276,7 +276,7 @@ Thus, as~$\xi_{p^\perp}$ is epi (\sref{quotient-basics}),
 That is: $g$ is total. \qed
 \end{point}
 \end{point}
-\begin{point}{Proposition}%
+\begin{point}[quotients-composition]{Proposition}%
 In an effectus with quotients,
     quotients are closed under composition.
 \begin{point}{Proof}%
@@ -615,7 +615,7 @@ Show that in an effectus with comprehension and images
     for any map~$f\colon X \to Y$ and predicate~$p$ on~$X$.
 \end{point}
 \begin{point}[compr-is-full]{Lemma}%
-In an effectus with comprehension and image
+In an effectus with comprehension and images
     we have
 \begin{equation*}
     s \leq t
@@ -893,6 +893,29 @@ the assignment~$X\mapsto \SPred X$, ~$f \mapsto (f_\diamond,f^\BOX)$
     as defined in~\cite{jacobs2009orthomodular}.
 \end{point}
 \end{point}
+\begin{point}[image-sharp-is-order-sharp]{Lemma}%
+In a $\diamond$-effectus,
+sharp predicates are \Define{order sharp} ---
+    that is:
+    for any predicate~$p$
+    and sharp predicate~$s$
+    with~$p \leq s$ and~$p \leq s^\perp$,
+    we must have~$p = 0$.
+\begin{point}{Proof}%
+Note~$\ceil{p} \leq \ceil{s} = s$
+    and~$\ceil{p} \leq \lceil s^\perp\rceil = s^\perp$.
+So by~\sref{compr-is-full},
+there is an~$h$ with~$\pi_{\ceil{p}} = \pi_s \after h$.
+We compute
+\begin{equation*}
+    1 \after \pi_{\ceil{p}} \ =\  \ceil{p} \after \pi_{\ceil{p}}  \ = \
+    \ceil{p} \after \pi_s \after h \ \leq \ 
+        s^\perp \after \pi_s \after h \ = \ 0.
+\end{equation*}
+Thus~$\pi_{\ceil{p}} = 0$
+and so~$p \leq \ceil{p} = \IM\pi_{\ceil{p}} = 0$, as desired.\qed
+\end{point}
+\end{point}
 \end{parsec}
 
 \begin{parsec}%
@@ -911,36 +934,1160 @@ If~$f$ and~$g$ are~$\diamond$-adjoint,
     then~$\IM f = \ceil{1 \after g}$.
 \end{enumerate}
 \end{point}
+\begin{point}[diamond-squares]{Exercise}%
+Show in order:
+\begin{enumerate}
+\item
+If~$f$ is~$\diamond$-self-adjoint,
+    then~$f \after f$ is~$\diamond$-self-adjoint.
+\item
+If~$f$ is~$\diamond$-positive,
+    then~$f$ is~$\diamond$-self-adjoint.
+\item
+If~$f$ is~$\diamond$-positive,
+    then~$f \after f$ is~$\diamond$-positive.
+\end{enumerate}
+\end{point}
+\begin{point}[iso-diamond-adjoint]{Lemma}%
+Let~$\alpha$ be an isomorphism in a~$\diamond$-effectus.
+Then
+\begin{enumerate}
+\item
+    $s\after\alpha$ is sharp for sharp predicates~$s$ \emph{and}
+\item
+    $\alpha^\diamond(s) = s \after \alpha$
+    and~$\alpha_\diamond(s) = s\after \alpha^{-1}$
+    (so~$\alpha$ and~$\alpha^{-1}$ are~$\diamond$-adjoint).
+\end{enumerate}
+\begin{point}{Proof}%
+Let~$s$ be a sharp predicate. Then~$s = \IM \pi_s$.
+Note~$\IM \alpha^{-1}\after \pi_s = s \after \alpha$
+    --- indeed, $s \after \alpha \after \alpha^{-1} \after \pi_s=1$
+    and when~$p \after \alpha^{-1} \after \pi_s=1$,
+    we must have~$p \after \alpha^{-1} \geq s$,
+    which gives~$p \geq s \after \alpha$ as desired.
+    So~$s \after \alpha$ is indeed sharp.
+
+So~$\alpha^\diamond(s) = \ceil{s \after \alpha} = s\after \alpha$
+    and~$\alpha_\diamond(s) = \IM \alpha \after \pi_s = s \after \alpha^{-1}$
+    as promised. \qed
+\end{point}
+\end{point}
 \end{parsec}
 
-\section{Axiom P}
+\begin{parsec}%
+\begin{point}[sharp-map]{Definition}%
+A map~$f$ in a~$\diamond$-effectus is a~\Define{sharp map}
+    provided~$s \after f$ is sharp for all sharp predicates~$s$.
+\end{point}
+\begin{point}[sharp-ceil]{Exercise}%
+Show that the following are equivalent.
+\begin{enumerate}
+    \item $f$ is a sharp map.
+    \item $\ceil{p \after f} = \ceil{p}\after f$
+            for every predicate~$p$.
+\end{enumerate}
+\end{point}
+
+\begin{point}{Example}%
+In~$\op{\W{NCPsU}}$ the sharp maps are exactly the~MNIU-maps
+(i.e.~the normal $*$-homomorphisms). \TODO{ref}
+\end{point}
+    
+\end{parsec}
+
+\section{Unique $\diamond$-positive maps}
 \begin{parsec}%
 \begin{point}%
 In a~$\diamond$-effectus
     quotient and comprehension are not tied together by its axioms.
-    With one additional axiom, we will see quotient and comprension
-    become tightly interwoven.
+    With two additional axioms, we will see quotient and comprehension
+    become tightly interwoven. \TODO{contrast old attempts}
 \end{point}
 \begin{point}{Definition}%
-We say a $\diamond$-effectus
-    obeys \Define{axiom P}
-    if for each object~$X$
+A~\Define{$\&$-effectus}
+is a $\diamond$-effectus
+such that
+\begin{enumerate}
+\item
+    for each object~$X$
     and each predicate on~$p$,
     there is a unique $\diamond$-positive map~$\Define{\asrt_p}\colon X \to X$
-    with~$1 \after \asrt_p = p$.
-
-In an $\diamond$-effectus with axiom P,
-we define~$\Define{\andthen{p}{q}} = q \after \asrt_p$.
+    with~$1 \after \asrt_p = p$ \emph{and}
+\item
+    for every quotient~$\xi \colon X \to Y$
+    and comprehension~$\pi \colon Y \to Z$
+    the composite~$\pi \after \xi$ is pure.
+\end{enumerate}
+In an $\&$-effectus,
+we define~$\Define{\andthen{p}{q}} = q \after \asrt_p$
+    and~$\Define{p^2} = \andthen{p}{p}$.
 \end{point}
 \begin{point}{Example}%
-The effectus $\op{\W{NCPsU}}$ obeys axiom P
-with~$\asrt_a (b) = \sqrt{a}b\sqrt{a}$. \TODO{ref}
+The category$\op{\W{NCPsU}}$ is a~$\&$-effectus
+    with~$\andthen{a}{b} = \sqrt{a}b\sqrt{a}$. \TODO{ref}
 \end{point}
-\begin{point}{Proposition}%
-In an $\diamond$-effectus with axiom P
+\begin{point}[upm-basics]{Proposition}%
+In an $\&$-effectus
+    the following holds.
+\begin{enumerate}
+\item
+For a predicate~$p$,
+the following are equivalent
+\begin{inparaenum}
+\item $p$ is sharp,
+\item $\andthen{p}{p}=p$ and
+\item $\asrt_p \after \asrt_p = \asrt_p$.
+\end{inparaenum}
+\item
+Let~$s$ be any sharp predicate.
+There exist comprehension~$\pi_s$ of~$s$
+        and quotient~$\zeta_s$ of~$s^\perp$
+        such that~$\zeta_s \after \pi_s = \id$
+        and~$\pi_s \after \zeta_s = \asrt_s$.
+
+In fact, for every comprehension~$\pi$ of~$s$,
+    we can find a quotient~$\xi$ of~$s^\perp$
+    with~$\xi \after \pi = \id$ and~$\pi \after \xi = \asrt_s$
+    \emph{and} conversely for every quotient~$\xi$ of~$s^\perp$
+    there exists a comprehension~$\pi$ of~$s$
+    with~$\xi \after \pi = \id$ and~$\pi \after \xi = \asrt_s$.
+\item Comprehensions are closed under composition.
+\item Pure maps are closed under composition.
+\end{enumerate}
+\begin{point}{Proof}%
+We prove the points in order.
+\begin{point}{Ad 1}%
+First we prove that~$p$ is sharp if and only if~$\andthen{p}{p}=p.$
+So, assume~$p$ is sharp.
+As $\diamond$-positive maps are~$\diamond$-self-adjoint
+    we have~$\IM \asrt_p = \ceil{1 \after \asrt_p} = \ceil{p} = p$.
+Thus~$\andthen{p}{p} = p \after \asrt_p = 1 \after \asrt_p = p$.
+For the converse, assume~$\andthen{p}{p}=p$.
+From~$\IM \asrt_p = \ceil{1 \after \asrt_p} = \ceil{p}$,
+we get~$\ceil{p} \after \asrt_p = \andthen{p}{\ceil{p}} = 1 \after \asrt_p = p$.
+By assumption~$\andthen{p}{p}=p$.
+So~$\andthen{p}{(\ceil{p} \ominus p)} = 0$.
+Hence~$\ceil{p}\ominus p \leq \IMperp \asrt_p = \ceil{p}^\perp$.
+However $\ceil{p}\ominus p \leq \ceil{p}$.
+Thus by~\sref{image-sharp-is-order-sharp}
+    get~$\ceil{p} \ominus p = 0$. So~$p$ is indeed sharp.
+
+Clearly, if~$\asrt_p \after \asrt_p = \asrt_p$,
+then~$p = 1 \after \asrt_p = 1\after\asrt_p\after\asrt_p = \andthen{p}{p}$.
+It only remains to be shown~$\asrt_p \after \asrt_p = \asrt_p$
+    whenever~$p$ is sharp.
+So assume~$p$ is sharp.
+By definition~$\asrt_p$ is pure: $\asrt_p = \pi \after \xi$
+    for some quotient~$\xi$ and comprehension~$\pi$.
+By assumption~$\xi \after \pi$ is pure as well,
+    so there is a quotient~$\xi'$ and comprehension~$\pi'$
+    with~$\xi \after \pi = \pi' \after \xi'$.
+Note~$1 \after \xi = 1 \after \asrt_p = p$
+and~$1 \after \asrt_p \after \asrt_p = \andthen{p}{p} = p = 1 \after \xi$,
+hence
+\begin{equation*}
+ 1\after \xi  
+    \ =\  1 \after \asrt_p \after \asrt_p 
+    \ =\  1 \after \pi \after \xi \after \pi \after \xi 
+    \ =\  1 \after \pi \after \pi' \after \xi' \after \xi 
+    \ =\  1 \after \xi' \after \xi,
+\end{equation*}
+so~$1 \after \xi' = 1$. Thus~$\xi'$ is an iso.
+Also~$
+    (\IM \pi') \after \xi \after \pi
+    = (\IM \pi') \after \pi' \after \xi'
+    = 1 \after \xi' = 1 $
+    from which it follows~$p = \IM \pi \leq  (\IM \pi') \after \xi 
+            \leq 1 \after \xi = p$.
+Thus~$(\IM \pi') \after \xi = p = 1\after \xi$.
+Hence~$\IM \pi' = 1$ and so~$\pi'$ is an isomorphism.
+Now we know~$\pi \after \pi'$
+    is a comprehension and~$\xi' \after \xi$ is a quotient,
+    we see~$\asrt_p\after\asrt_p$ is pure.
+As~$\asrt_p$ is $\diamond$-self-adjoint,
+    we see~$\asrt_p\after\asrt_p$ is $\diamond$-positive.
+By uniqueness of positive maps~$\asrt_p \after \asrt_p = \asrt_p$,
+    as desired.
+\end{point}
+\begin{point}{Ad 2}%
+Pick quotient~$\xi$ and comprehension~$\pi$
+    with~$\pi \after \xi = \asrt_s$.
+By point 1:
+\begin{equation*}
+   \pi \after \xi \ =\  \asrt_s \ =\  \asrt_s\after\asrt_s \ =\  \pi \after \xi \after \pi \after \xi.
+\end{equation*}
+Thus~$\xi \after \pi = \id$.
+We compute~$s = 1 \after \asrt_s = 1 \after \xi$
+and so
+\begin{alignat*}{2}
+    \IM \pi &\ = \ 
+    \IM \pi \after \xi \after \pi &\qquad& \text{as $\xi \after \pi=\id$}\\
+                  &\ = \ \IM \asrt_s \after \pi &&\text{by dfn.~$\xi$ and~$\pi$}\\
+                  &\ = \ (\asrt_s)_{\diamond}(\IM \pi)&& \text{by dfn.~$(\ )_\diamond$} \\
+                  & \ = \ (\asrt_s)^{\diamond}(\IM \pi)&&
+        \text{by $\diamond$-s.a.~$\asrt_s$}\\
+        &\ = \ \ceil{(\IM \pi) \after \pi \after \xi} && \text{by dfn.~$(\ )^\diamond$} \\
+&\ = \ \ceil{1 \after \xi} \\
+    & \ = \ s.
+\end{alignat*}
+Thus~$\pi$ is a comprehension of~$s$
+and~$\xi$ is a quotient of~$s^\perp$.
+We have proven the first part.
+
+For the second part,
+let~$\pi'$ be any (other) comprehension of~$s$.
+Then~$\pi' = \pi \after \alpha$ for some iso~$\alpha$.
+Define~$\xi' = \alpha^{-1} \after \xi$.
+It is easy to see~$\pi' \after \xi' = \asrt_s$
+and~$\xi' \after \pi' = \id$.
+The other statement is proven in a similar way.
+\end{point}
+\begin{point}{Ad 3}%
+Assume~$\pi_1 \colon X \to Y$
+    and~$\pi_2 \colon Y \to Z$
+    are comprehensions with~$s = \IM \pi_1$
+    and~$t = \IM \pi_2$.
+We will show~$\pi_2 \after \pi_1$
+    is a comprehension for~$\IM \pi_2 \after \pi_1$.
+To this end, let~$f\colon V\colon Z$ be any map
+with~$(\IM \pi_2 \after \pi_1)^\perp \after f = 0$.
+As~$\IM \pi_2 \after \pi_1 \leq \IM \pi_2 = t$
+    we get~$t^\perp \after f = 0$,
+    so~$f = \pi_2 \after g_2$ for a unique~$g_2\colon V \to Y$.
+Let~$\zeta_2$ be a quotient for~$t^\perp$
+such that~$\zeta_2 \after \pi_2$,
+which exists by the previous point.
+Then~$s \after \zeta_2 \after \pi_2 \after \pi_1
+            = s \after \pi_1 = 1$
+            so~$s \after \zeta_2 \geq \IM \pi_2 \after \pi_1$.
+Consequently
+\begin{equation*}
+    s \after g_2 \ =\  s \after \zeta_2 \after \pi_2 \after g_2
+        \ =\  s \after \zeta_2 \after f
+        \ \geq\   (\IM \pi_2 \after \pi_1) \after f \ =\  1 \after f
+                \ =\  1 \after g_2.
+\end{equation*}
+Hence there exists a unique~$g_1\colon V \to X$
+    with~$\pi_1 \after g_1 = g_2$
+    and so~$\pi_2 \after \pi_1 \after g_1 = f$.
+By monicity of~$\pi_2 \after \pi_1$,
+    this~$g_1$ is unique and so~$\pi_2 \after \pi_1$
+    is indeed a comprehension.
+\end{point}
+\begin{point}{Ad 4}%
+Assume~$g\colon X \to Y$ and~$f\colon Y \to Z$ are pure maps.
+Say~$f = \pi_1 \after \xi_1$
+    and~$g = \pi_2 \after \xi_2$
+    for some comprehensions~$\pi_1$, $\pi_2$
+        and quotients~$\xi_1$, $\xi_2$.
+By definition of $\&$-effectus
+    there is a comprehension~$\pi'$ and quotient~$\xi'$
+    such that~$\xi_1 \after \pi_2 = \pi' \after \xi'$.
+By the previous point~$\pi_1 \after \pi'$
+    is a comprehension
+    and~$\xi' \after \xi_2$ is a quotient by \sref{quotients-composition}.
+Thus
+$f \after g 
+=\pi_1 \after \pi' \after \xi' \after \xi_2$
+is pure. \qed
+\end{point}
+\end{point}
+\begin{point}[zeta-s-convention]{Notation}%
+In a~$\&$-effectus
+    together with chosen comprehension~$\pi_s$ for~$s$,
+    we will write~$\zeta_s$
+    for the unique quotient for~$s^\perp$
+    satisfying~$\zeta_s \after \pi_s = \id$
+    and~$\pi_s \after \zeta_s = \asrt_s$.
+We call this~$\zeta_s$
+    the \Define{corresponding quotient} of~$\pi_s$
+    and vice versa~$\pi_s$ the \Define{corresponding comprehension}
+    of~$\zeta_s$.
+\end{point}
+\end{point}
+\begin{point}[andthen-square-rule]{Exercise}%
+Show that in a~$\&$-effectus,
+    we have~$\asrt_p \after \asrt_p = \asrt_{\andthen{p}{p}}$.
+\end{point}
+\begin{point}[asrt-absorp-rule]{Exercise}%
+    Show that in a~$\&$-effectus,
+    we have
+    \begin{align*}
+        \IM f \leq s \quad&\iff\quad  \asrt_s \after f = f \\
+        1 \after f \leq t \quad&\iff\quad  f \after \asrt_t = f
+    \end{align*}
+for any sharp predicates~$s$ and~$t$.
+\end{point}
+\begin{point}{Definition}%
+Let~$C$ be a~$\&$-effectus.
+In \sref{upm-basics} we saw pure maps are closed under composition
+Write~$\Define{\Pure C}$ for the subcategory
+    of pure map.
 \end{point}
 \end{parsec}
 
+\begin{parsec}%
+\begin{point}[standard-form-map]{Corollary}%
+Every map~$f$
+in a~$\&$-effectus
+factors as
+    \begin{equation*}
+        f \ =\ \pi_{\IM f} \after g \after \zeta_{\ceil{1 \after f}} \after \asrt_{1 \after f}
+    \end{equation*}
+    for some total and faithful map~$g$.
+If~$f$ is pure, then~$g$ is an isomorphism.
+\begin{point}{Proof}%
+    \TODO{...}
+\end{point}
+\end{point}
+\end{parsec}
+
+\section{$\dagger$-effectus}
+\begin{parsec}%
+\begin{point}{Definition}%
+A \Define{$\dagger$-category} \TODO{refs}
+is category~$C$ together with an involutive identity-on-objects
+    functor~$(\ )^\dagger \colon C \to \op{C}$;
+    that is, for all objects~$X$ and maps~$f,g$ in~$C$
+\begin{multicols}{2}
+\begin{enumerate}
+    \item $(f \after g)^\dagger = g^\dagger \after f^\dagger$
+    \item $\id^\dagger = \id$
+    \item $f^{\dagger\dagger} = f$ \emph{and}
+    \item $X^\dagger = X$.
+\end{enumerate}
+\end{multicols}
+\noindent
+In aby~$\dagger$-category we may define the following.
+\begin{enumerate}
+\item
+    An endomap~$f$ is called \Define{$\dagger$-self-adjoint}
+    if~$f^\dagger = f$.
+\item
+    An endomap~$f$ is \Define{$\dagger$-positive}
+    if~$f = g^\dagger \after g$ for some other map~$g$.
+\item
+    An isomorphism~$\alpha$ is called~\Define{unitary}
+        whenever~$\alpha^{-1} = \alpha^\dagger$.
+\end{enumerate}
+\end{point}
+\begin{point}{Example}%
+The category~$\mathsf{Hilb}$
+    of Hilbert spaces with bouned linear maps
+    is a~$\dagger$-category
+    with the familiar adjoint as~$\dagger$.
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}{Definition}%
+We call a~$\&$-effectus~$C$,
+    a~\Define{$\dagger$-effectus} provided
+\begin{enumerate}
+\item
+    $\Pure C$ is a  $\dagger$-category
+     satisfying~$\asrt_p^\dagger = \asrt_p$
+        and~$f$ is $\diamond$-adjoint to~$f^\dagger$;
+\item
+    for every~$\dagger$-positive~$f$,
+        there is a unique~$\dagger$-positive~$g$
+        with~$g \after g = f$ \emph{and}
+\item
+    $\diamond$-positive maps are $\dagger$-positive.
+\end{enumerate}
+\end{point}
+\begin{point}[dagger-theorem]{Theorem}%
+    A $\&$-effectus
+        is a~$\dagger$-effectus if and only if
+\begin{enumerate}
+\item
+for every predicate~$p$ there is a predicate~$q$
+    with~$\andthen{q}{q} = p$;
+\item
+    $\asrt^2_{\andthen{p}{q}}
+        = \asrt_p \after \asrt^2_q \after \asrt_p$
+     for all predicates~$p,q$ \emph{and}
+\item
+    a quotient for a sharp predicate (e.g.~$\zeta_s$)
+    is a sharp map, see \sref{sharp-map}.
+\end{enumerate}
+\begin{point}{Note}%
+    In a~$\&$-effectus
+    with seperating predicates,
+    the second axiom is equivalent
+    to~$\andthen{(\andthen{p}{q})^2}{r}
+    = \andthen{p}{(\andthen{q^2}{(\andthen{p}{r})})}$
+    for all predicates~$p,q,r$.
+\end{point}
+\begin{point}%
+We will prove the necessity in \sref{dagger-thm-necessity}
+    and sufficiency in \TODO{}.
+Especially the sufficiency requires quite some preparation.
+For convenience, call~$C$ a \Define{$\dagger'$-effectus}
+    if~$C$ is a~$\&$-effectus
+    satisfying axioms 1, 2 and 3 from the Theorem above.
+\end{point}
+\end{point}
+\end{parsec}
+
+
+\begin{parsec}%
+\begin{point}[diamond-is-dagger-positive]{Lemma}%
+In a~$\dagger$-effectus,
+    a map is~$\dagger$-positive if and only if it is~$\diamond$-positive.
+\begin{point}{Proof}%
+Assume~$f$ is~$\dagger$-positive.
+By assumption 2, there is a (unique) $\dagger$-positive
+    $g$ with~$f = g \after g$.
+By~$\dagger$-positivity of~$g$,
+    there is an~$h$ with~$g = h^\dagger \after h$.
+Using the fact~$h$ is~$\diamond$-adjoint
+    to~$h^\dagger$, we see~$g$ is~$\diamond$-self-adjoint:
+\begin{equation*}
+    g^\diamond
+    \ =\  (h^\dagger \after h)^\diamond
+    \ =\  h^\diamond \after (h^\dagger)^\diamond 
+    \ =\  (h^\dagger)_\diamond \after h_\diamond 
+    \ =\  (h^\dagger\after h)_\diamond
+    \ =\  g_\diamond.
+\end{equation*}
+Thus~$f$ is the square of the~$\diamond$-self-adjoint map $g$,
+    hence~$f$ is~$\diamond$-positive. \qed
+\end{point}
+\end{point}
+
+\begin{point}[dagger-eff-square-root]{Lemma}%
+Predicates in a~$\dagger$-effectus have a square root:
+    for every predicate~$p$,
+    there is a predicate~$q$
+    with~$\andthen{q}{q}=p$.
+\begin{point}{Proof}%
+Let~$p\colon X \to 1$ be any predicate.
+By assumption 3,
+    the~$\diamond$-positive map~$\asrt_p$
+        is also~$\dagger$-positive.
+So by assumption 2,
+    there is (a unique)~$\dagger$-positive map~$f$
+    with~$f \after f = \asrt_p$.
+Define~$q = 1 \after f$.
+By \sref{diamond-is-dagger-positive}
+    $f$ is~$\diamond$-positive
+    and so by uniqueness of~$\diamond$-positive maps,
+    we get~$f = \asrt_{1\after f} \equiv \asrt_q$.
+We compute
+\begin{equation*}
+    \andthen{q}{q}
+        \ =\    
+        q \after \asrt_q \ \equiv \ 
+        1 \after f \after \asrt_{1 \after f} \ = \ 
+        1 \after f \after f \ = \ 1 \after \asrt_p \ = \ p,
+\end{equation*}
+which shows~$p$ has as square root~$p$.  \qed
+\end{point}
+\end{point}
+\begin{point}[asrt-iso]{Proposition}%
+In a~$\&$-effectus with square roots
+    (e.g.~$\dagger$- or~$\dagger'$-effectus) we have
+\begin{equation*}
+    \asrt_p \after \alpha
+        \ =\  \alpha \after \asrt_{p\after \alpha}
+\end{equation*}
+for every isomorphism~$\alpha$.
+\begin{point}{Proof}%
+There is some~$q$ with~$\andthen{q}{q}=p$.
+The map~$\alpha^{-1} \after \asrt_q \after \alpha$
+    is~$\diamond$-self-adjoint:
+\begin{alignat*}{2}
+    (\alpha^{-1} \after \asrt_q \after \alpha)_\diamond
+    &\ = \ \alpha^{-1}_\diamond \after (\asrt_q)_\diamond \after \alpha_\diamond \\
+    &\ \overset{\mathclap{\sref{iso-diamond-adjoint}}}{=} \ \alpha^\diamond \after (\asrt_q)^\diamond \after (\alpha^{-1})^\diamond\\
+    &\ = \ (\alpha^{-1} \after \asrt_q \after \alpha)^\diamond.
+\end{alignat*}
+Thus~$
+\alpha^{-1} \after \asrt_q \after \alpha \after
+\alpha^{-1} \after \asrt_q \after \alpha
+= \alpha^{-1} \after \asrt_p \after \alpha
+$ is~$\diamond$-positive.  By uniqueness of~$\diamond$-positive maps,
+we get~$\alpha^{-1} \after \asrt_p \after \alpha
+    = \asrt_{1 \after \alpha^{-1}\after\asrt_p \after \alpha}
+    = \asrt_{p \after \alpha} $.
+Postcomposing~$\alpha$, we find~$\asrt_p\after\alpha = 
+        \alpha \after \asrt_{p \after \alpha}$, as desired. \qed
+\end{point}
+\end{point}
+\begin{point}[dagger-of-zeta]{Proposition}%
+In a $\dagger$-effectus:~$\zeta_s^\dagger = \pi_s$
+(recall convention \sref{zeta-s-convention} for~$\pi_s$ and~$\zeta_s$).
+\begin{point}{Proof}%
+As~$\pi_s$ is~$\diamond$-adjoint to~$\pi_s^\dagger$,
+we have
+\begin{equation*}
+\IM \pi_s^\dagger
+ \ = \  (\pi^\dagger_s)_\diamond(1) \ =\ 
+ (\pi_s)^\diamond(1) \ = \  \ceil{1 \after \pi_s}
+ \ =\  1
+\end{equation*}
+and similarly~$\ceil{1 \after \pi_s^\dagger} = \IM \pi_s = s$.
+As~$1 \after \pi_s^\dagger \leq \ceil{1 \after \pi_s^\dagger} = s$,
+    there is some pure~$h$ with~$\pi_s^\dagger = h \after \zeta_s$.
+There is also some pure and faithful \TODO{...}~$g$
+    with~$\zeta_s^\dagger = \pi_s \after g$.
+Using~$\zeta_s \after \pi_s = \id$ twice we find
+\begin{equation}\label{eq-dagger-zeta-pi-conn}
+    \id \ =\  \id^\dagger
+    \ = \ \pi_s^\dagger \after \zeta_s^\dagger
+    \ = \ h \after \zeta_s \after \pi_s \after g 
+    \ = \ h \after g.
+\end{equation}
+Now~$1= 1 \after h \after g \leq 1 \after g$ and so~$g$ is total.
+Clearly~$\zeta_s^\dagger\after\zeta_s$ is~$\dagger$-positive,
+    hence~$\diamond$-positive and so by uniqueness of~$\diamond$-positive maps:
+\begin{equation*}
+\zeta_s^\dagger \after \zeta_s
+    \ = \ \asrt_{1 \after \zeta_s^\dagger \after \zeta_s}
+    \ =\  \asrt_{1 \after \pi_s \after g\after \zeta_s}
+    \ =\  \asrt_s
+    \ =\  \pi_s \after \zeta_s.
+\end{equation*}
+So by epicity of~$\zeta_s$, we find~$\zeta_s^\dagger = \pi_s$, as desired.\qed
+\end{point}
+\end{point}
+
+\begin{point}[dagger-of-iso]{Corollary}%
+    In a~$\dagger$-effectus,
+        $\pi_s$ is~$\diamond$-adjoint to~$\zeta_s$.
+    Also~$\alpha^\dagger = \alpha^{-1}$
+        for any iso~$\alpha$.
+\end{point}
+
+\begin{point}[zeta-through-asrt]{Exercise}%
+Show that in a~$\&$-effectus
+        where every predicate has a square root
+        and where~$\pi_s$ is~$\diamond$-adjoint to~$\zeta_s$
+        (e.g.~a~$\dagger$-effectus)
+        we have
+    $\asrt_p \after \zeta_s \ = \ \zeta_s \after \asrt_{p \after \zeta_s}$.
+    (Hint: mimic the proof of \sref{asrt-iso}.)
+\end{point}
+
+\begin{point}[dagger-thm-necessity]{Theorem}%
+    A~$\dagger$-effectus is a~$\dagger'$-effectus.
+\begin{point}{Proof}%
+Assume~$C$ is a~$\dagger$-effectus.
+Axiom 1 is already proven in \sref{dagger-eff-square-root}.
+\begin{point}{Ax.~2}%
+Let~$p,q$ be predicates.
+To start, note~$1 \after \asrt_q\after  \asrt_p = \andthen{p}{q}$ and
+\begin{equation*}
+    \IM \asrt_q \after \asrt_p \ =\ 
+        (\asrt_q)_\diamond(p) \ = \ 
+        (\asrt_q)^\diamond(p) \ = \ 
+        \ceil{\andthen{q}{p}}.
+\end{equation*}
+So using \sref{standard-form-map}
+    we know
+\begin{equation*}
+    \asrt_q \after \asrt_p \ =\ 
+    \pi_{\ceil{\andthen{q}{p}}}
+    \after \alpha \after \zeta_{\ceil{\andthen{p}{q}}} \after \asrt_{\andthen{p}{q}}
+\end{equation*}
+for some iso~$\alpha$.
+Applying the dagger to both sides
+we get, using \sref{dagger-of-zeta} and \sref{dagger-of-iso}:
+\begin{align*}
+    \asrt_p \after \asrt_q &\ =\ 
+    (\asrt_q \after \asrt_p)^\dagger \\
+    & \ =\  \asrt_{\andthen{p}{q}}
+    \after \zeta^\dagger_{\ceil{\andthen{p}{q}}}
+    \after \alpha^\dagger \after
+    \pi^\dagger_{\ceil{\andthen{q}{p}}} \\
+    & \ = \ 
+    \asrt_{\andthen{p}{q}}
+    \after \pi_{\ceil{\andthen{p}{q}}}
+    \after \alpha^{-1} \after
+    \zeta_{\ceil{\andthen{q}{p}}}.
+\end{align*}
+Combining both:
+\begin{align*}
+    & \asrt_p \after \asrt_q^2 \after \asrt_p \\
+    &\qquad = \ \asrt_{\andthen{p}{q}}
+    \after \pi_{\ceil{\andthen{p}{q}}}
+    \after \alpha^{-1} \after
+    \zeta_{\ceil{\andthen{q}{p}}}
+    \after \pi_{\ceil{\andthen{q}{p}}}
+    \after \alpha \after \zeta_{\ceil{\andthen{p}{q}}} \after \asrt_{\andthen{p}{q}} \\
+    &\qquad = \ \asrt_{\andthen{p}{q}}
+    \after \pi_{\ceil{\andthen{p}{q}}}
+    \after \zeta_{\ceil{\andthen{p}{q}}} \after \asrt_{\andthen{p}{q}} \\
+    &\qquad = \ \asrt_{\andthen{p}{q}}
+    \after \asrt_{\ceil{\andthen{p}{q}}}
+    \after \asrt_{\andthen{p}{q}} \\
+    &\qquad \overset{\smash{\mathclap{\sref{asrt-absorp-rule}}}}{=} \ 
+    \asrt_{\andthen{p}{q}}^2,
+\end{align*}
+as desired.
+\end{point}
+\begin{point}{Ax.~3}%
+Pick any sharp predicates~$s,t$.
+We want to show~$t \after \zeta_s$ is sharp.
+To this end, we will show~$t \after \zeta_s$
+    is the image of~$\pi_s \after \pi_t$.
+Clearly~$t \after \zeta_s \after \pi_s \after \pi_t = 1$.
+Let~$p$ be any (other) sharp predicate with~$p \after \pi_s \after \pi_t = 1$.
+Then~$p \after \pi_s \geq \IM \pi_t = t$.
+So~$  p^\perp \after \pi_s \leq t^\perp$
+and hence~$\ceil{p^\perp \after \pi_s} \leq t^\perp$.
+As~$\pi_s$ is~$\diamond$-adjoint to~$\zeta_s$ by \sref{dagger-of-iso},
+we get~$t \after \zeta_s \leq \ceil{t \after \zeta_s} \leq p$,
+    which shows~$t \after \zeta_s$
+    is the image of~$\pi_s \after \pi_t$
+    and consequently sharp. \qed
+\end{point}
+\end{point}
+\end{point}
+
+    
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}%
+Let~$f$ be a pure map in a~$\dagger'$-effectus.
+We will work towards the definition of~$f^\dagger$.
+By \sref{standard-form-map} we
+know there is an iso~$\alpha$ with
+\begin{equation*}
+f  \ =\   \pi_{\IM f} \after \alpha \after \zeta_{\ceil{1\after f}}
+            \after \asrt_{1 \after f}.
+\end{equation*}
+In a~$\dagger$-effectus
+    we have~$\asrt_p^\dagger = \asrt_p$,
+    $\zeta_s^\dagger = \pi_s$,
+    $\alpha^\dagger = \alpha^{-1}$
+    and~$\pi_s^\dagger = \zeta_s$ 
+    (for corresponding~$\zeta_s$ and~$\pi_s$)
+    ---
+    so we are forced to define~
+\begin{equation}\label{dagger-definition}
+    f^\dagger
+        \ =\  \asrt_{1 \after f} \after
+    \pi_{\ceil{1\after f}} \after
+    \alpha^{-1} \after
+    \zeta_{\IM f},
+\end{equation}
+    where~$\zeta_{\IM f}$
+    is the unique corresponding
+        quotient of~$\pi_{\IM f}$
+        and~$\pi_{\ceil{1 \after f}}$
+        the unique corresponding comprehension of
+        and~$\zeta_{\ceil{1 \after f}}$,
+        see \sref{zeta-s-convention}.
+Before we declare~\eqref{dagger-definition} a definition,
+ we have to check whether it is independant
+    of choice of~$\pi$ (and corresponding $\zeta$).
+    So suppose~$ f  =  \pi' \after \alpha' \after \zeta'
+        \after \asrt_{1 \after f}$
+        for some (other) iso~$\alpha'$, comprehension~$\pi'$ of~$\IM f$
+        and quotient~$\zeta'$ of~$\smash{\ceil{1 \after f}^\perp}$.
+There are isos~$\beta$ and~$\gamma$
+    such that~$\pi' = \pi_{\IM f} \after \beta$
+    and~$\zeta' = \gamma \after \zeta_{\ceil{1 \after f}}$.
+We will take a moment to relate~$\alpha$ and~$\alpha'$:
+as~$\pi_{\IM f}$ is mono
+    and~$\zeta_{1 \after f}\after\asrt_{1 \after f}$
+    is epic,
+    we have~$\beta\after\alpha'\after\gamma = \alpha$
+    and so~$(\alpha')^{-1}= \gamma \after\alpha^{-1}\after\beta$.
+To continue,
+it is easy to see~$\beta^{-1} \after \zeta_{\IM f}$
+    is the unique corresponding quotient to~$\pi'$
+    and~$\pi_{\ceil{1 \after f}}\after \gamma^{-1}$
+    is the unique corresponding comprehension to~$\zeta'$.
+So with this choice of quotient and comprehension,
+    we are forced to define
+\begin{align*}
+    f^\dagger 
+    &\ = \ \asrt_{1 \after f}\after \pi_{\ceil{1 \after f}}
+    \after \gamma^{-1} \after {\alpha'}^{-1}
+                \after \beta^{-1}\after \zeta_{\IM f} \\
+    &\ = \ \asrt_{1 \after f}\after \pi_{\ceil{1 \after f}}
+                \after \gamma^{-1} \after \gamma \after \alpha^{-1} \after \beta 
+                \after \beta^{-1}\after \zeta_{\IM f} \\
+    &\ = \ \asrt_{1 \after f}\after \pi_{\ceil{1 \after f}}
+                \after \alpha^{-1} \after \zeta_{\IM f},
+\end{align*}
+which is indeed consistent with~\eqref{dagger-definition}.
+So we are justified to declare:
+\end{point}
+\begin{point}{Definition}%
+In a~$\dagger'$-effectus, for a pure map~$f$, define
+\begin{equation*}
+    \Define{f^\dagger}
+        \ =\  \asrt_{1 \after f} \after
+    \pi_{\ceil{1\after f}} \after
+    \alpha^{-1} \after
+    \zeta_{\IM f},
+\end{equation*}
+where~$\alpha$ is the unique iso such that
+$f  =  \pi_{\IM f} \after \alpha \after \zeta_{\ceil{1\after f}}
+            \after \asrt_{1 \after f}$.
+\end{point}
+\begin{point}{Exercise}%
+Show that in a~$\dagger'$-effectus,
+    we have
+\begin{align*}
+    \asrt_p^\dagger &= \asrt_p &
+    \pi_s^\dagger &= \zeta_s &
+    \zeta_s^\dagger &= \pi_s &
+    \alpha^\dagger &= \alpha^{-1}
+\end{align*}
+for a quotient~$\zeta_s$ corresponding to~$\pi_s$
+and iso~$\alpha$.
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}%
+To compute~$f^{\dagger\dagger}$,
+    we need to put~$f^\dagger$
+    in the standard form of~\sref{standard-form-map}.
+To do this, we need to pull~$\asrt_p$ from one side to the other.
+In this section we will work towards a general result for this.
+\end{point}
+\begin{point}[quotcompr-diamond-adjoint]{Lemma}%
+In a~$\dagger'$-effectus,
+$\pi_s$ is~$\diamond$-adjoint to~$\zeta_s$.
+\begin{point}{Proof}%
+    Pick any sharp~$t,u$.
+We have to
+    show~$t \after \zeta_s \leq u^\perp$
+    if and only if~$u \after \pi_s \leq t^\perp$.
+So assume~$t \after \zeta_s \leq u^\perp$.
+Then~$t =  t\after \zeta_s \after \pi_s  \leq  u^\perp \after \pi_s
+                 =  (u \after \pi_s)^\perp$
+    so~$u \after \pi_s \leq t^\perp$.
+For the converse, assume~$u \after \pi_s \leq t^\perp$.
+Then~$u \after \asrt_s = u \after \pi_s \after \zeta_s \leq t^\perp \after \zeta_s$.
+From this,
+    the
+    $\diamond$-self-adjointness of~$\asrt_s$
+    and the fact that~$t^\perp \after \zeta_s$ is sharp,
+    we find~$(t^\perp \after \zeta_s)^\perp \after \pi_s \after \zeta_s \leq
+        u^\perp$
+    and so
+\begin{alignat*}{2}
+    t \after \zeta_s
+    &\ =\  (t^\perp \after \id)^\perp \after \zeta_s \\
+    &\ =\  (t^\perp \after \zeta_s \after \pi_s)^\perp \after \zeta_s \\
+    &\ =\  (t^\perp \after \zeta_s)^\perp \after \pi_s \after \zeta_s \\
+    &\ \leq \ u^\perp,
+\end{alignat*}
+as desired. \qed
+\end{point}
+\end{point}
+\begin{point}{Definition}%
+In a~$\&$-effectus, a map~$f$ is \Define{pristine}
+        if it is pure and~$1\after f$ is sharp.
+\end{point}
+\begin{point}[standard-form-pristine]{Exercise}%
+Show that in a~$\&$-effectus, every pristine map~$h$ is of the form
+        \begin{equation*}
+            h \ =\ \pi_{\IM h} \after \alpha \after \zeta_{1 \after h}
+        \end{equation*}
+        for some iso~$\alpha$.
+\end{point}
+\begin{point}[pristine-asrt]{Proposition}%
+In a~$\dagger'$-effectus,
+    with pristine map~$h$, we have
+\begin{equation*}
+    \asrt_p \after h
+        \ =\  h \after \asrt_{p \after h}
+\end{equation*}
+for any predicate~$p$ with~$p \leq \IM h$.
+\begin{point}{Proof}%
+For brevity,
+write~$t = 1 \after h$
+    and~$s = \IM h$.
+By~\sref{standard-form-pristine}
+    there is some iso~$\alpha$
+    such that~$h = \pi_s \after \alpha \after \zeta_t$.
+    Note~$\IM \asrt_p = \ceil{p } \leq \ceil{s} = s$
+    and so~$\asrt_p = \asrt_{s} \after \asrt_p$
+    by the first rule of \sref{asrt-absorp-rule}.
+By the second rule of \sref{asrt-absorp-rule}
+    and~$1 \after p = p \leq s$,
+    we see~$p = p \after \asrt_{s}$.
+Thus
+\begin{alignat*}{2}
+    \asrt_p \after \pi_{s}
+    &\ =\  \asrt_{s} \after \asrt_{p \after \asrt_{s}} \after \pi_{s} \\
+    &\ =\  \pi_{s} \after \zeta_{s} \after
+    \asrt_{p \after \pi_{s} \after \zeta_{s}} \after \pi_{s} \\
+    &\ =\  \pi_{s}  \after
+    \asrt_{p \after \pi_{s}} \after \zeta_{s} \after \pi_{s} 
+    &\qquad& \text{by \sref{zeta-through-asrt}
+                    and \sref{quotcompr-diamond-adjoint} }\\
+    &\ =\  \pi_{s}  \after
+    \asrt_{p \after \pi_{s}}.
+\end{alignat*}
+Putting everything together
+\begin{alignat*}{2}
+   \asrt_p \after h
+   & \ =\  \asrt_p \after \pi_s \after \alpha \after \zeta_t \\
+   & \ =\  \pi_s \after \asrt_{p\after\pi_s} \after \alpha \after \zeta_t  \\
+   & \ =\  \pi_s \after \alpha \after \asrt_{p\after\pi_s \after \alpha} \after \zeta_t 
+   &\qquad&\text{by \sref{asrt-iso}}\\
+   & \ =\  \pi_s \after \alpha \after \zeta_t \after \asrt_{p\after\pi_s \after \alpha \after \zeta_t} 
+    &\qquad& \text{by \sref{zeta-through-asrt}
+                    and \sref{quotcompr-diamond-adjoint} }\\
+   & \ = \ h \after \asrt_{p \after h},
+\end{alignat*}
+as desired.\qed
+\end{point}
+\end{point}
+\begin{point}[asrt-pristine-reverse]{Exercise}%
+Working in a~$\dagger'$-effectus, show in order
+\begin{enumerate}
+    \item if~$h \equiv \pi_{\IM h} \after \alpha \after \zeta_{1 \after h}$
+            is some pristine map,
+            then~$h^\dagger = \pi_{1 \after h} \after \alpha^{-1} \after \zeta_{\IM h}$;
+    \item $h^{\dagger\dagger} = h$ for any pristine~$h$;
+    \item $h^\dagger \after h = \asrt_{1 \after h}$ for any pristine map~$h$;
+    \item $p \after h^\dagger \leq \IM h$ for any predicate~$p$ \emph{and}
+    \item
+        if~$p \leq 1 \after h$,
+        then~$\asrt_{p\after h^\dagger} \after h = h \after \asrt_p$.
+\end{enumerate}
+\end{point}
+\begin{point}[prist-asrt-decomp]{Proposition}%
+In a~$\dagger'$-effectus,
+        for every pure map~$f$,
+    there exists a unique pristine map~$h$
+    with~$1 \after h = \ceil{1 \after f}$
+    and~$f = h \after \asrt_{1 \after f}$.
+    Furthermore~$f^\dagger = \asrt_{1 \after f}\after h^\dagger$.
+\begin{point}{Proof}%
+        \TODO{}
+\end{point}
+\end{point}
+\begin{point}{Proposition}%
+    In a~$\dagger'$-effectus, we have~$f^{\dagger\dagger}=f$
+        for any pure map~$f$.
+\begin{point}{Proof}%
+By~\sref{prist-asrt-decomp}
+    we have~$f = h \after \asrt_{1\after f}$
+    and~$f^\dagger = \asrt_{1 \after f} \after h^\dagger$
+    for some pristine~$h$
+    with~$1 \after h = \ceil{1 \after f}$.
+Clearly~$1 \after f \leq \ceil{1 \after f} = 1 \after h = \IM h^\dagger$,
+    so by \sref{pristine-asrt}
+    we get~$f^\dagger = \asrt_{1 \after f} \after h^\dagger
+              = h^\dagger \after \asrt_{1 \after f \after h^\dagger}$.
+Consequently
+\begin{equation*}
+    f^{\dagger\dagger}
+    \ =\  \asrt_{1 \after f\after h^\dagger} \after h^{\dagger\dagger}
+    \ \overset{\sref{asrt-pristine-reverse}}{=}\  \asrt_{1 \after f\after h^\dagger} \after h
+    \ \overset{\sref{asrt-pristine-reverse}}{=}\  h\after \asrt_{1 \after f}
+    \ = \ f,
+\end{equation*}
+as desired. \qed
+\end{point}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}%
+Now we tackle the most tedious part
+    of \sref{dagger-theorem}:
+    we will show~$(f \after g)^\dagger = g^\dagger \after f^\dagger$
+    in a~$\dagger'$-effectus.
+To avoid too much repetition, let us fix the setting.
+\end{point}%
+\begin{point}[dagger-setting]{Setting}%
+Let~$f,g$ be two composable pure maps in a~$\dagger'$-effectus.
+For brevity, write~$p = 1 \after f$, $q = 1 \after g$,
+    $s = \IM f$ and $t = \IM g$.
+Let~$\varphi$ and~$\psi$
+be the unique isomorphisms (see \sref{standard-form-map}) such that
+\begin{equation*}
+    f \ =\  \pi_s \after \varphi \after \zeta_{\ceil{p}} \after \asrt_p 
+    \qquad \text{and} \qquad
+    g \ =\  \pi_t \after \psi \after \zeta_{\ceil{q}} \after \asrt_q.
+\end{equation*}
+Define~$
+    h = \pi_s \after \varphi \after \zeta_{\ceil{p}}$
+    and~$k = \pi_t \after \psi \after \zeta_{\ceil{q}}$.
+To compute~$(f\after g)^\dagger$,
+    we have to put~$f\after g$
+    in the standard form
+    of~\sref{standard-form-map}.
+We will do this step-by-step,
+    first we put~$\zeta_{\ceil{p}} \after \asrt_p \after \pi_t$
+        in standard form.
+\begin{align*}
+1 \after \zeta_{\ceil{p}} \after \asrt_p \after \pi_t
+&\ =\  \ceil{p} \after \asrt_p \after \pi_t
+    \ \overset{\sref{asrt-absorp-rule}}{=}\  p \after \pi_t\\
+    \IM \zeta_{\ceil{p}}  \after \asrt_p \after \pi_t &\ = \ 
+(\zeta_{\ceil{p}}  \after \asrt_p)_\diamond(t)
+\ \overset{\sref{quotcompr-diamond-adjoint}}{=} \ \ceil{t \after \asrt_p \after \pi_{\ceil{p}}}.
+\end{align*}
+Thus there is a unique isomorphism~$\chi$ with
+\begin{equation}\label{dagger-iso-chi}
+    \zeta_{\ceil{p}} \after \asrt_p \after \pi_t
+    \ = \ \pi_{\lceil t \after \asrt_p \after \pi_{\ceil{p}}\rceil} \after \chi \after \zeta_{\ceil{p \after \pi_t}} \after \asrt_{p \after \pi_t}.
+\end{equation}
+Next, we consider~$\asrt_{p \after k}
+                        \after \asrt_q$, clearly
+\begin{equation*}
+    1 \after \asrt_{p \after k}
+\after \asrt_q 
+\ =\ p \after k
+\after \asrt_q \ = \ p \after g.
+\end{equation*}
+Concerning the image, first
+    note~$p \after k = p \after \pi_t \after \psi \after \zeta_{\ceil{q}}
+    \leq 1 \after \zeta_{\ceil{q}} = \ceil{q}$
+        and so we must have~$\IM \asrt_{p \after k} \leq \ceil{q}$, which implies
+\begin{equation*}
+\IM \asrt_{p \after k}
+\after \asrt_q
+\ = \ (\asrt_{p \after k})_\diamond(q)
+\ =\  \ceil{\ceil{q} \after \asrt_{p \after k}}
+\ =\  \ceil{p \after k}.
+\end{equation*}
+So there is a unique isomorphism~$\omega$ such that
+\begin{equation}\label{dagger-iso-omega}
+\asrt_{p \after k} \after \asrt_q
+    \ =\   \pi_{\lceil p \after k \rceil}
+    \after \omega \after \zeta_{\ceil{p \after g}} \after \asrt_{p \after g}.
+\end{equation}
+Next, we consider~$
+\zeta_{\ceil{p \after \pi_t}} \after \psi \after
+                \zeta_{\ceil{q}}$.
+Note~$\psi \after \zeta_{\ceil{q}}$
+    is a quotient for a sharp predicate,
+    hence sharp and so~$\ceil{p \after \pi_t} \after \psi \after \zeta_{\ceil{q}}
+                =\lceil p \after \pi_t \after \psi
+                \after \zeta_{\ceil{q}}\rceil = \lceil p \after k \rceil$
+                by \sref{sharp-ceil}.
+As quotients are closed under composition
+(\sref{quotients-composition}),
+    there is an iso~$\beta$
+    with
+    \begin{equation}\label{dagger-iso-beta}
+    \zeta_{\ceil{p \after \pi_t}} \after \psi \after \zeta_{\ceil{q}}
+    \ = \ \beta \after \zeta_{\ceil{p \after k}}.
+\end{equation}
+Finally, we deal with~$
+\pi_s \after \varphi \after 
+\pi_{\lceil t \after \asrt_p \after \pi_{\ceil{p}}\rceil}
+$.
+By \sref{upm-basics} this is again a comprehension.
+We compute
+\begin{align*}
+    \IM
+\pi_s \after \varphi \after 
+\pi_{\lceil t \after \asrt_p \after \pi_{\ceil{p}}\rceil}
+& \ = \ 
+(\pi_s \after \varphi \after 
+\pi_{\lceil t \after \asrt_p \after \pi_{\ceil{p}}\rceil})_\diamond(1)
+\\
+& \ \overset{\smash{\mathclap{\sref{quotcompr-diamond-adjoint}}}}{=}\ 
+\zeta_s^\diamond ( \varphi_\diamond (
+\lceil t \after \asrt_p \after \pi_{\ceil{p}}\rceil)) \\
+& \ =\ 
+\lceil t \after \asrt_p \after \pi_{\ceil{p}} \rceil
+\after \varphi^{-1} \after \zeta_s \\
+& \ \overset{\smash{\mathclap{\sref{sharp-ceil}}}}{=}\ 
+\lceil t \after \asrt_p \after \pi_{\ceil{p}}
+\after \varphi^{-1} \after \zeta_s \rceil \\
+& \ =\ 
+\lceil t \after f^\dagger\rceil
+\end{align*}
+and so there must be a unique iso~$\alpha$ with
+\begin{equation}\label{dagger-iso-alpha}
+    \pi_s \after \varphi \after \pi_{\lceil t \after \asrt_p \after
+    \pi_{\ceil{p}} \rceil} = \pi_{\ceil{t \after f^\dagger}} \after \alpha.
+\end{equation}
+\end{point}
+\begin{point}{Lemma}%
+In setting \sref{dagger-setting}, we have
+    $f \after g  =  \pi_{\ceil{t \after f^\dagger}}
+        \after \alpha \after \chi \after \beta \after \omega
+        \after \zeta_{\ceil{p \after g}} \after
+        \asrt_{p \after g}$.
+\begin{point}{Proof}%
+It's a long, but easy verification,
+    either with a diagram
+\begin{equation*}
+    \xymatrix@C+3pc {
+        \bullet \ar[rr]^g
+        \ar[rd]|{\asrt_q}
+        \ar[ddd]_{\rotatebox{90}{$\scriptstyle\omega\after\zeta_{\ceil{p \after g}} \after \asrt_{p \after g}$}}
+        && \bullet \ar[rr]^f
+            \ar[rd]|{\zeta_{\ceil{p}}\after \asrt_p}
+        && \bullet
+            \\ \ar@{}[rd]|{\text{\eqref{dagger-iso-omega}}}
+            & \bullet
+                \ar[r]^{\psi \after \zeta_{\ceil{q}}}
+                \ar[d]|{\asrt_{p \after k}}
+                \ar@{}[rd]|{\text{\sref{pristine-asrt}}}
+ & \bullet
+            \ar[u]^{\pi_t}
+            \ar[d]|{\asrt_{p \after \pi_t}}
+            & \bullet \ar[ru]_{\pi_s\after\varphi}
+            \ar@{}[rd]|{\text{\eqref{dagger-iso-alpha}}}
+            \\& \bullet \ar[r]^{\psi \after \zeta_{\ceil{q}}}
+                        \ar[d]|{\zeta_{\ceil{p \after k}}}
+                \ar@{}[rd]|{\text{\eqref{dagger-iso-beta}}}
+            &\bullet \ar[d]|{\zeta_{\ceil{p \after \pi_t}}}
+                        \ar@{}[ru]|{\text{\eqref{dagger-iso-chi}}}
+                        &&
+            \\ \bullet \ar@{=}[r]
+            \ar[ru]^{\pi_{\ceil{p \after k}}}
+            &\bullet \ar[r]_\beta
+            &\bullet \ar[rr]_\chi
+            &&\bullet \ar[uuu]_{\rotatebox{90}{$\scriptstyle\pi_{\ceil{t \after f^\dagger}} \after \alpha$}}
+                        \ar[luu]|{\pi_{\lceil t \after \asrt_p \after \pi_{\ceil{p}} \rceil}}
+        }
+\end{equation*}
+or with equational reasoning
+\begin{align*}
+   f \after g
+    & \ = \ \pi_s \after \varphi \after \zeta_{\ceil{p}}
+        \after \asrt_p \after \pi_t \after \psi \after \zeta_{\ceil{q}}
+        \after \asrt_q \\
+    & \ \overset{\smash{\mathclap{\eqref{dagger-iso-chi}}}}{=} \ 
+        \pi_s \after \varphi \after
+        \pi_{\lceil t \after \asrt_p \after \pi_{\ceil{p}} \rceil}
+        \after \chi \after \zeta_{\ceil{p \after \pi_t}}
+        \after \asrt_{p \after \pi_t}
+    \after \psi \after 
+        \zeta_{\ceil{q}}
+        \after \asrt_q \\
+    & \ \overset{\smash{\mathclap{\sref{pristine-asrt}}}}{=} \ 
+        \pi_s \after \varphi \after
+        \pi_{\lceil t \after \asrt_p \after \pi_{\ceil{p}} \rceil}
+        \after \chi \after \zeta_{\ceil{p \after \pi_t}}
+        \after \psi \after \zeta_{\ceil{q}}
+        \after \asrt_{p \after k}
+        \after \asrt_q \\
+    & \ \overset{\smash{\mathclap{\eqref{dagger-iso-beta}}}}{=} \ 
+        \pi_s \after \varphi \after
+        \pi_{\lceil t \after \asrt_p \after \pi_{\ceil{p}} \rceil}
+        \after \chi
+        \after \beta \after \zeta_{\ceil{p \after k}}
+        \after \asrt_{p \after k}
+        \after \asrt_q \\
+    & \ \overset{\smash{\mathclap{\eqref{dagger-iso-alpha}}}}{=} \ 
+        \pi_{\ceil{t \after f^\dagger}}\after\alpha
+        \after \chi
+        \after \beta \after \zeta_{\ceil{p \after k}}
+        \after \asrt_{p \after k}
+        \after \asrt_q \\
+    & \ \overset{\smash{\mathclap{\eqref{dagger-iso-omega}}}}{=} \ 
+        \pi_{\ceil{t \after f^\dagger}}\after\alpha
+        \after \chi
+        \after \beta \after \zeta_{\ceil{p \after k}}
+        \after \pi_{\ceil{p \after k}} \after \omega
+            \after \zeta_{\ceil{p \after g}}
+            \after \asrt_{p \after g} \\
+    & \ = \ 
+        \pi_{\ceil{t \after f^\dagger}}\after\alpha
+        \after \chi
+        \after \beta \after
+        \omega
+            \after \zeta_{\ceil{p \after g}}
+            \after \asrt_{p \after g},
+\end{align*}
+whichever the Reader might prefer. \qed
+\end{point}
+\end{point}
+\begin{point}{Corollary}%
+    $(f \after g)^\dagger = \asrt_{p \after g}
+                \after \pi_{\ceil{p \after g}}
+                \after \omega^{-1}
+                \after \beta^{-1}
+                \after \chi^{-1}
+                \after \alpha^{-1}
+                \after \zeta_{\ceil{t \after f^\dagger}} $ .
+\begin{point}%
+To show~$(f \after g)^\dagger = g^\dagger \after f^\dagger$,
+    it is sufficient to proof that
+    the `daggered' version
+    of each of the subdiagrams
+        \eqref{dagger-iso-alpha},
+        \eqref{dagger-iso-beta},
+        \eqref{dagger-iso-chi},
+        \eqref{dagger-iso-omega} and
+        \sref{pristine-asrt} of the above diagram holds.
+We start with the simple ones.
+\end{point}
+\end{point}
+\begin{point}[dagger-iso-beta2]{Lemma}%
+In setting \sref{dagger-setting},
+    the daggered version of
+        \eqref{dagger-iso-beta} holds --- that is:
+    \begin{equation*}
+        \pi_{\ceil{p \after k}} \after \beta^{-1}
+            \ =\  \pi_{\ceil{q}} \after \psi^{-1} \after \pi_{\ceil{p \after \pi_t}}.
+    \end{equation*}
+\begin{point}{Proof}%
+The map~$
+\pi_{\ceil{q}} \after \psi^{-1} \after \pi_{\ceil{p \after \pi_t}} \after \beta$
+is a comprehension for~$\ceil{p \after k}$ --- indeed
+\begin{align*}
+    (\pi_{\ceil{q}} \after \psi^{-1} \after \pi_{\ceil{p \after \pi_t}}\after\beta)_\diamond(1)
+    &\ = \ 
+    (\zeta^\diamond_{\ceil{q}} \after \psi^\diamond) (\ceil{p \after \pi_t})\\
+    &\ = \ \ceil{p \after \pi_t} \after \zeta_{\ceil{q}} \after \psi \\
+    &\ = \ \ceil{p \after \pi_t \after \zeta_{\ceil{q}} \after \psi} \\
+    &\ = \ \ceil{p \after k}.
+\end{align*}
+Furthermore
+\begin{align*}
+    &\zeta_{\ceil{p \after k}} \after
+    \pi_{\ceil{q}} \after \psi^{-1} \after \pi_{\ceil{p \after \pi_t}}
+    \after \beta \\
+    & \qquad \ \overset{\mathclap{\eqref{dagger-iso-beta}}}{=}\  
+    \beta^{-1}\after \zeta_{\ceil{p \after \pi_t}}
+    \after \psi \after \zeta_{\ceil{q}}
+    \after \pi_{\ceil{q}} \after \psi^{-1} \after \pi_{\ceil{p \after \pi_t}}
+    \after \beta \\
+    & \qquad \ = \ \id.
+\end{align*}
+So~$
+\pi_{\ceil{q}} \after \psi^{-1} \after \pi_{\ceil{p \after \pi_t}}
+\after \beta
+$ is the unique comprehension corresponding to~$\zeta_{\ceil{p \after k}}$ --- that is:~$
+\pi_{\ceil{q}} \after \psi^{-1} \after \pi_{\ceil{p \after \pi_t}}
+\after \beta \ = \ \pi_{\ceil{p \after k}} $,
+as desired. \qed
+\end{point}
+\end{point}
+\begin{point}[dagger-iso-alpha2]{Exercise}%
+Show that in the setting \sref{dagger-setting},
+    the daggered version of
+        \eqref{dagger-iso-alpha} holds --- i.e.
+    \begin{equation*}
+        \alpha^{-1} \after \zeta_{\ceil{t \after f^\dagger}}
+        \ =\   \zeta_{\lceil t \after \asrt_p \after \pi_{\ceil{p}} \rceil}
+        \after \varphi^{-1} \after \zeta_s.
+    \end{equation*}
+(Hint: mimic the proof of~\sref{dagger-iso-beta2}.)
+\end{point}
+\begin{point}[dagger-iso-zeta2]{Exercise}%
+Show that in the setting \sref{dagger-setting},
+we have
+\begin{equation*}
+    \pi_{\ceil{q}} \after \psi^{-1} \after \asrt_{p \after \pi_t}
+    \ = \ \asrt_{p \after k} \after \pi_{\ceil{q}} \after \psi^{-1}.
+\end{equation*}
+(This is the daggered version of the subdiagram
+marked~\sref{pristine-asrt}.)
+\end{point}
+\end{parsec}
 \end{document}
 
 % vim: ft=tex.latex
