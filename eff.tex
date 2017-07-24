@@ -975,6 +975,27 @@ So~$\alpha^\diamond(s) = \ceil{s \after \alpha} = s\after \alpha$
 \end{point}
 \end{parsec}
 
+\begin{parsec}%
+\begin{point}[sharp-map]{Definition}%
+A map~$f$ in a~$\diamond$-effectus is a~\Define{sharp map}
+    provided~$s \after f$ is sharp for all sharp predicates~$s$.
+\end{point}
+\begin{point}[sharp-ceil]{Exercise}%
+Show that the following are equivalent.
+\begin{enumerate}
+    \item $f$ is a sharp map.
+    \item $\ceil{p \after f} = \ceil{p}\after f$
+            for every predicate~$p$.
+\end{enumerate}
+\end{point}
+
+\begin{point}{Example}%
+In~$\op{\W{NCPsU}}$ the sharp maps are exactly the~MNIU-maps
+(i.e.~the normal $*$-homomorphisms). \TODO{ref}
+\end{point}
+    
+\end{parsec}
+
 \section{Unique $\diamond$-positive maps}
 \begin{parsec}%
 \begin{point}%
@@ -1287,9 +1308,8 @@ for every predicate~$p$ there is a predicate~$q$
         = \asrt_p \after \asrt^2_q \after \asrt_p$
      for all predicates~$p,q$ \emph{and}
 \item
-    $t \after \zeta$ is sharp for any sharp~$t$
-            and quotient~$\zeta$
-            with sharp~$1 \after \zeta$.
+    a quotient for a sharp predicate (e.g.~$\zeta_s$)
+    is a sharp map, see \sref{sharp-map}.
 \end{enumerate}
 \begin{point}{Note}%
     In a~$\&$-effectus
@@ -1776,37 +1796,298 @@ as desired. \qed
 \end{parsec}
 
 \begin{parsec}%
-\begin{point}{Proposition}%
-In a~$\dagger'$-effectus, we have~$(f \after g)^\dagger = g^\dagger \after f^\dagger$
-    for pure~$f,g$.
-\begin{point}{Proof}%
+\begin{point}%
+Now we tackle the most tedious part
+    of \sref{dagger-theorem}:
+    we will show~$(f \after g)^\dagger = g^\dagger \after f^\dagger$
+    in a~$\dagger'$-effectus.
+To avoid too much repetition, let us fix the setting.
+\end{point}%
+\begin{point}[dagger-setting]{Setting}%
+Let~$f,g$ be two composable pure maps in a~$\dagger'$-effectus.
 For brevity, write~$p = 1 \after f$, $q = 1 \after g$,
     $s = \IM f$ and $t = \IM g$.
-Let~$\varphi$, $\psi$, $\chi$, $\alpha$, $\beta$ and $\gamma$
-    be the unique isomorphisms such that respectively
+Let~$\varphi$ and~$\psi$
+be the unique isomorphisms (see \sref{standard-form-map}) such that
+\begin{equation*}
+    f \ =\  \pi_s \after \varphi \after \zeta_{\ceil{p}} \after \asrt_p 
+    \qquad \text{and} \qquad
+    g \ =\  \pi_t \after \psi \after \zeta_{\ceil{q}} \after \asrt_q.
+\end{equation*}
+Define~$
+    h = \pi_s \after \varphi \after \zeta_{\ceil{p}}$
+    and~$k = \pi_t \after \psi \after \zeta_{\ceil{q}}$.
+To compute~$(f\after g)^\dagger$,
+    we have to put~$f\after g$
+    in the standard form
+    of~\sref{standard-form-map}.
+We will do this step-by-step,
+    first we put~$\zeta_{\ceil{p}} \after \asrt_p \after \pi_t$
+        in standard form.
 \begin{align*}
-    f &\ =\  \pi_s \after \varphi \after \zeta_{\ceil{p}} \after \asrt_p \\
-    g &\ =\  \pi_t \after \psi \after \zeta_{\ceil{q}} \after \asrt_q \\
-    \zeta_{\ceil{p}} \after \asrt_p \after \pi_t
-        & \ = \ \pi_{\lceil t \after \asrt_p \after \pi_{\ceil{p}}\rceil} \after \chi \\
-    \pi_s \after \varphi \after \pi_{\lceil t \after \asrt_p \after \pi_{\ceil{p}} \rceil}
-    &\ = \ \pi_{\lceil t\after \asrt_p\after\pi_{\ceil{p}}\rceil \after \varphi^{-1}\after \zeta_s }
-        \after \alpha \\
-        \zeta_{\ceil{p \after \pi_t}} \after \psi \after \zeta_{\ceil{q}}
-           & \  = \ \beta \after \zeta_{\lceil p \after \pi_t \rceil \after \psi \after \zeta_{\ceil{q}}} \\
-    \asrt_{\ceil{p \after \pi_t} \after \psi \after \zeta_{\ceil{q}}} \after \asrt_q
-    & \ = \ \gamma \after \asrt_{p \after g}
+1 \after \zeta_{\ceil{p}} \after \asrt_p \after \pi_t
+&\ =\  \ceil{p} \after \asrt_p \after \pi_t
+    \ \overset{\sref{asrt-absorp-rule}}{=}\  p \after \pi_t\\
+    \IM \zeta_{\ceil{p}}  \after \asrt_p \after \pi_t &\ = \ 
+(\zeta_{\ceil{p}}  \after \asrt_p)_\diamond(t)
+\ \overset{\sref{quotcompr-diamond-adjoint}}{=} \ \ceil{t \after \asrt_p \after \pi_{\ceil{p}}}.
 \end{align*}
-\begin{alignat*}{2}
-g^\dagger \after f^\dagger
-& = 
-    \asrt_q \after \pi_{\ceil{q}} \after \psi^{-1} \after \zeta_{t} \after 
-    \asrt_p \after \pi_{\ceil{p}} \after \varphi^{-1} \after \zeta_{s} \\
-\end{alignat*}
+Thus there is a unique isomorphism~$\chi$ with
+\begin{equation}\label{dagger-iso-chi}
+    \zeta_{\ceil{p}} \after \asrt_p \after \pi_t
+    \ = \ \pi_{\lceil t \after \asrt_p \after \pi_{\ceil{p}}\rceil} \after \chi \after \zeta_{\ceil{p \after \pi_t}} \after \asrt_{p \after \pi_t}.
+\end{equation}
+Next, we consider~$\asrt_{p \after k}
+                        \after \asrt_q$, clearly
+\begin{equation*}
+    1 \after \asrt_{p \after k}
+\after \asrt_q 
+\ =\ p \after k
+\after \asrt_q \ = \ p \after g.
+\end{equation*}
+Concerning the image, first
+    note~$p \after k = p \after \pi_t \after \psi \after \zeta_{\ceil{q}}
+    \leq 1 \after \zeta_{\ceil{q}} = \ceil{q}$
+        and so we must have~$\IM \asrt_{p \after k} \leq \ceil{q}$, which implies
+\begin{equation*}
+\IM \asrt_{p \after k}
+\after \asrt_q
+\ = \ (\asrt_{p \after k})_\diamond(q)
+\ =\  \ceil{\ceil{q} \after \asrt_{p \after k}}
+\ =\  \ceil{p \after k}.
+\end{equation*}
+So there is a unique isomorphism~$\omega$ such that
+\begin{equation}\label{dagger-iso-omega}
+\asrt_{p \after k} \after \asrt_q
+    \ =\   \pi_{\lceil p \after k \rceil}
+    \after \omega \after \zeta_{\ceil{p \after g}} \after \asrt_{p \after g}.
+\end{equation}
+Next, we consider~$
+\zeta_{\ceil{p \after \pi_t}} \after \psi \after
+                \zeta_{\ceil{q}}$.
+Note~$\psi \after \zeta_{\ceil{q}}$
+    is a quotient for a sharp predicate,
+    hence sharp and so~$\ceil{p \after \pi_t} \after \psi \after \zeta_{\ceil{q}}
+                =\lceil p \after \pi_t \after \psi
+                \after \zeta_{\ceil{q}}\rceil = \lceil p \after k \rceil$
+                by \sref{sharp-ceil}.
+As quotients are closed under composition
+(\sref{quotients-composition}),
+    there is an iso~$\beta$
+    with
+    \begin{equation}\label{dagger-iso-beta}
+    \zeta_{\ceil{p \after \pi_t}} \after \psi \after \zeta_{\ceil{q}}
+    \ = \ \beta \after \zeta_{\ceil{p \after k}}.
+\end{equation}
+Finally, we deal with~$
+\pi_s \after \varphi \after 
+\pi_{\lceil t \after \asrt_p \after \pi_{\ceil{p}}\rceil}
+$.
+By \sref{upm-basics} this is again a comprehension.
+We compute
+\begin{align*}
+    \IM
+\pi_s \after \varphi \after 
+\pi_{\lceil t \after \asrt_p \after \pi_{\ceil{p}}\rceil}
+& \ = \ 
+(\pi_s \after \varphi \after 
+\pi_{\lceil t \after \asrt_p \after \pi_{\ceil{p}}\rceil})_\diamond(1)
+\\
+& \ \overset{\smash{\mathclap{\sref{quotcompr-diamond-adjoint}}}}{=}\ 
+\zeta_s^\diamond ( \varphi_\diamond (
+\lceil t \after \asrt_p \after \pi_{\ceil{p}}\rceil)) \\
+& \ =\ 
+\lceil t \after \asrt_p \after \pi_{\ceil{p}} \rceil
+\after \varphi^{-1} \after \zeta_s \\
+& \ \overset{\smash{\mathclap{\sref{sharp-ceil}}}}{=}\ 
+\lceil t \after \asrt_p \after \pi_{\ceil{p}}
+\after \varphi^{-1} \after \zeta_s \rceil \\
+& \ =\ 
+\lceil t \after f^\dagger\rceil
+\end{align*}
+and so there must be a unique iso~$\alpha$ with
+\begin{equation}\label{dagger-iso-alpha}
+    \pi_s \after \varphi \after \pi_{\lceil t \after \asrt_p \after
+    \pi_{\ceil{p}} \rceil} = \pi_{\ceil{t \after f^\dagger}} \after \alpha.
+\end{equation}
 \end{point}
+\begin{point}{Lemma}%
+In setting \sref{dagger-setting}, we have
+    $f \after g  =  \pi_{\ceil{t \after f^\dagger}}
+        \after \alpha \after \chi \after \beta \after \omega
+        \after \zeta_{\ceil{p \after g}} \after
+        \asrt_{p \after g}$.
+\begin{point}{Proof}%
+It's a long, but easy verification,
+    either with a diagram
+\begin{equation*}
+    \xymatrix@C+3pc {
+        \bullet \ar[rr]^g
+        \ar[rd]|{\asrt_q}
+        \ar[ddd]_{\rotatebox{90}{$\scriptstyle\omega\after\zeta_{\ceil{p \after g}} \after \asrt_{p \after g}$}}
+        && \bullet \ar[rr]^f
+            \ar[rd]|{\zeta_{\ceil{p}}\after \asrt_p}
+        && \bullet
+            \\ \ar@{}[rd]|{\text{\eqref{dagger-iso-omega}}}
+            & \bullet
+                \ar[r]^{\psi \after \zeta_{\ceil{q}}}
+                \ar[d]|{\asrt_{p \after k}}
+                \ar@{}[rd]|{\text{\sref{pristine-asrt}}}
+ & \bullet
+            \ar[u]^{\pi_t}
+            \ar[d]|{\asrt_{p \after \pi_t}}
+            & \bullet \ar[ru]_{\pi_s\after\varphi}
+            \ar@{}[rd]|{\text{\eqref{dagger-iso-alpha}}}
+            \\& \bullet \ar[r]^{\psi \after \zeta_{\ceil{q}}}
+                        \ar[d]|{\zeta_{\ceil{p \after k}}}
+                \ar@{}[rd]|{\text{\eqref{dagger-iso-beta}}}
+            &\bullet \ar[d]|{\zeta_{\ceil{p \after \pi_t}}}
+                        \ar@{}[ru]|{\text{\eqref{dagger-iso-chi}}}
+                        &&
+            \\ \bullet \ar@{=}[r]
+            \ar[ru]^{\pi_{\ceil{p \after k}}}
+            &\bullet \ar[r]_\beta
+            &\bullet \ar[rr]_\chi
+            &&\bullet \ar[uuu]_{\rotatebox{90}{$\scriptstyle\pi_{\ceil{t \after f^\dagger}} \after \alpha$}}
+                        \ar[luu]|{\pi_{\lceil t \after \asrt_p \after \pi_{\ceil{p}} \rceil}}
+        }
+\end{equation*}
+or with equational reasoning
+\begin{align*}
+   f \after g
+    & \ = \ \pi_s \after \varphi \after \zeta_{\ceil{p}}
+        \after \asrt_p \after \pi_t \after \psi \after \zeta_{\ceil{q}}
+        \after \asrt_q \\
+    & \ \overset{\smash{\mathclap{\eqref{dagger-iso-chi}}}}{=} \ 
+        \pi_s \after \varphi \after
+        \pi_{\lceil t \after \asrt_p \after \pi_{\ceil{p}} \rceil}
+        \after \chi \after \zeta_{\ceil{p \after \pi_t}}
+        \after \asrt_{p \after \pi_t}
+    \after \psi \after 
+        \zeta_{\ceil{q}}
+        \after \asrt_q \\
+    & \ \overset{\smash{\mathclap{\sref{pristine-asrt}}}}{=} \ 
+        \pi_s \after \varphi \after
+        \pi_{\lceil t \after \asrt_p \after \pi_{\ceil{p}} \rceil}
+        \after \chi \after \zeta_{\ceil{p \after \pi_t}}
+        \after \psi \after \zeta_{\ceil{q}}
+        \after \asrt_{p \after k}
+        \after \asrt_q \\
+    & \ \overset{\smash{\mathclap{\eqref{dagger-iso-beta}}}}{=} \ 
+        \pi_s \after \varphi \after
+        \pi_{\lceil t \after \asrt_p \after \pi_{\ceil{p}} \rceil}
+        \after \chi
+        \after \beta \after \zeta_{\ceil{p \after k}}
+        \after \asrt_{p \after k}
+        \after \asrt_q \\
+    & \ \overset{\smash{\mathclap{\eqref{dagger-iso-alpha}}}}{=} \ 
+        \pi_{\ceil{t \after f^\dagger}}\after\alpha
+        \after \chi
+        \after \beta \after \zeta_{\ceil{p \after k}}
+        \after \asrt_{p \after k}
+        \after \asrt_q \\
+    & \ \overset{\smash{\mathclap{\eqref{dagger-iso-omega}}}}{=} \ 
+        \pi_{\ceil{t \after f^\dagger}}\after\alpha
+        \after \chi
+        \after \beta \after \zeta_{\ceil{p \after k}}
+        \after \pi_{\ceil{p \after k}} \after \omega
+            \after \zeta_{\ceil{p \after g}}
+            \after \asrt_{p \after g} \\
+    & \ = \ 
+        \pi_{\ceil{t \after f^\dagger}}\after\alpha
+        \after \chi
+        \after \beta \after
+        \omega
+            \after \zeta_{\ceil{p \after g}}
+            \after \asrt_{p \after g},
+\end{align*}
+whichever the Reader might prefer. \qed
+\end{point}
+\end{point}
+\begin{point}{Corollary}%
+    $(f \after g)^\dagger = \asrt_{p \after g}
+                \after \pi_{\ceil{p \after g}}
+                \after \omega^{-1}
+                \after \beta^{-1}
+                \after \chi^{-1}
+                \after \alpha^{-1}
+                \after \zeta_{\ceil{t \after f^\dagger}} $ .
+\begin{point}%
+To show~$(f \after g)^\dagger = g^\dagger \after f^\dagger$,
+    it is sufficient to proof that
+    the `daggered' version
+    of each of the subdiagrams
+        \eqref{dagger-iso-alpha},
+        \eqref{dagger-iso-beta},
+        \eqref{dagger-iso-chi},
+        \eqref{dagger-iso-omega} and
+        \sref{pristine-asrt} of the above diagram holds.
+We start with the simple ones.
+\end{point}
+\end{point}
+\begin{point}[dagger-iso-beta2]{Lemma}%
+In setting \sref{dagger-setting},
+    the daggered version of
+        \eqref{dagger-iso-beta} holds --- that is:
+    \begin{equation*}
+        \pi_{\ceil{p \after k}} \after \beta^{-1}
+            \ =\  \pi_{\ceil{q}} \after \psi^{-1} \after \pi_{\ceil{p \after \pi_t}}.
+    \end{equation*}
+\begin{point}{Proof}%
+The map~$
+\pi_{\ceil{q}} \after \psi^{-1} \after \pi_{\ceil{p \after \pi_t}} \after \beta$
+is a comprehension for~$\ceil{p \after k}$ --- indeed
+\begin{align*}
+    (\pi_{\ceil{q}} \after \psi^{-1} \after \pi_{\ceil{p \after \pi_t}}\after\beta)_\diamond(1)
+    &\ = \ 
+    (\zeta^\diamond_{\ceil{q}} \after \psi^\diamond) (\ceil{p \after \pi_t})\\
+    &\ = \ \ceil{p \after \pi_t} \after \zeta_{\ceil{q}} \after \psi \\
+    &\ = \ \ceil{p \after \pi_t \after \zeta_{\ceil{q}} \after \psi} \\
+    &\ = \ \ceil{p \after k}.
+\end{align*}
+Furthermore
+\begin{align*}
+    &\zeta_{\ceil{p \after k}} \after
+    \pi_{\ceil{q}} \after \psi^{-1} \after \pi_{\ceil{p \after \pi_t}}
+    \after \beta \\
+    & \qquad \ \overset{\mathclap{\eqref{dagger-iso-beta}}}{=}\  
+    \beta^{-1}\after \zeta_{\ceil{p \after \pi_t}}
+    \after \psi \after \zeta_{\ceil{q}}
+    \after \pi_{\ceil{q}} \after \psi^{-1} \after \pi_{\ceil{p \after \pi_t}}
+    \after \beta \\
+    & \qquad \ = \ \id.
+\end{align*}
+So~$
+\pi_{\ceil{q}} \after \psi^{-1} \after \pi_{\ceil{p \after \pi_t}}
+\after \beta
+$ is the unique comprehension corresponding to~$\zeta_{\ceil{p \after k}}$ --- that is:~$
+\pi_{\ceil{q}} \after \psi^{-1} \after \pi_{\ceil{p \after \pi_t}}
+\after \beta \ = \ \pi_{\ceil{p \after k}} $,
+as desired. \qed
+\end{point}
+\end{point}
+\begin{point}[dagger-iso-alpha2]{Exercise}%
+Show that in the setting \sref{dagger-setting},
+    the daggered version of
+        \eqref{dagger-iso-alpha} holds --- i.e.
+    \begin{equation*}
+        \alpha^{-1} \after \zeta_{\ceil{t \after f^\dagger}}
+        \ =\   \zeta_{\lceil t \after \asrt_p \after \pi_{\ceil{p}} \rceil}
+        \after \varphi^{-1} \after \zeta_s.
+    \end{equation*}
+(Hint: mimic the proof of~\sref{dagger-iso-beta2}.)
+\end{point}
+\begin{point}[dagger-iso-zeta2]{Exercise}%
+Show that in the setting \sref{dagger-setting},
+we have
+\begin{equation*}
+    \pi_{\ceil{q}} \after \psi^{-1} \after \asrt_{p \after \pi_t}
+    \ = \ \asrt_{p \after k} \after \pi_{\ceil{q}} \after \psi^{-1}.
+\end{equation*}
+(This is the daggered version of the subdiagram
+marked~\sref{pristine-asrt}.)
 \end{point}
 \end{parsec}
-
 \end{document}
 
 % vim: ft=tex.latex
