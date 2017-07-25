@@ -758,7 +758,7 @@ to show that in a~$\diamond$-effectus
 \end{enumerate}
 \end{multicols}
 \end{point}
-\begin{point}{Lemma}%
+\begin{point}[diamond-functor]{Lemma}%
 In a~$\diamond$-effectus,
 we have
 \begin{multicols}{3}
@@ -1475,7 +1475,7 @@ Show that in a~$\&$-effectus
 \begin{point}{Proof}%
 Assume~$C$ is a~$\dagger$-effectus.
 Axiom 1 is already proven in \sref{dagger-eff-square-root}.
-\begin{point}{Ax.~2}%
+\begin{point}[pqqp-from-dagger]{Ax.~2}%
 Let~$p,q$ be predicates.
 To start, note~$1 \after \asrt_q\after  \asrt_p = \andthen{p}{q}$ and
 \begin{equation*}
@@ -1618,7 +1618,7 @@ So with this choice of quotient and comprehension,
 which is indeed consistent with~\eqref{dagger-definition}.
 So we are justified to declare:
 \end{point}
-\begin{point}{Definition}%
+\begin{point}[dagger-definition2]{Definition}%
 In a~$\dagger'$-effectus, for a pure map~$f$, define
 \begin{equation*}
     \Define{f^\dagger}
@@ -1631,7 +1631,7 @@ where~$\alpha$ is the unique iso such that
 $f  =  \pi_{\IM f} \after \alpha \after \zeta_{\ceil{1\after f}}
             \after \asrt_{1 \after f}$.
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[dagger-prime-basics]{Exercise}%
 Show that in a~$\dagger'$-effectus,
     we have
 \begin{align*}
@@ -1769,7 +1769,7 @@ In a~$\dagger'$-effectus,
         \TODO{}
 \end{point}
 \end{point}
-\begin{point}{Proposition}%
+\begin{point}[dagger-idempotent]{Proposition}%
     In a~$\dagger'$-effectus, we have~$f^{\dagger\dagger}=f$
         for any pure map~$f$.
 \begin{point}{Proof}%
@@ -2004,7 +2004,7 @@ or with equational reasoning
 whichever the Reader might prefer. \qed
 \end{point}
 \end{point}
-\begin{point}{Corollary}%
+\begin{point}[dagger-of-fg]{Corollary}%
     $(f \after g)^\dagger = \asrt_{p \after g}
                 \after \pi_{\ceil{p \after g}}
                 \after \omega^{-1}
@@ -2086,6 +2086,514 @@ we have
 \end{equation*}
 (This is the daggered version of the subdiagram
 marked~\sref{pristine-asrt}.)
+\end{point}
+\begin{point}[dagger-iso-mu]{Proposition}%
+If in a~$\dagger'$-effectus,
+$\nu$ is the unique iso (cf.~\sref{pqqp-from-dagger}) such that
+\begin{equation*}
+    \asrt_a \after \asrt_b\  =\  \pi_{\ceil{\andthen{a}{b}}} 
+    \after \nu \after \zeta_{\ceil{\andthen{b}{a}}} \after \asrt_{\andthen{b}{a}},
+\end{equation*}
+then~$\asrt_b \after \asrt_a\  =\  \asrt_{\andthen{b}{a}}
+        \after \pi_{\ceil{\andthen{b}{a}}} 
+        \after \nu^{-1} \after \zeta_{\ceil{\andthen{a}{b}}}$.
+\begin{point}{Proof}%
+Let~$\mu$ be the unique iso with~$
+\asrt_b \after \asrt_a\  =\  
+        \pi_{\ceil{\andthen{b}{a}}} 
+        \after \mu \after \zeta_{\ceil{\andthen{a}{b}}}
+                \after \asrt_{{\andthen{a}{b}}}$.
+We will see~$\mu = \nu^{-1}$.
+For brevity, write
+\begin{align*}
+    \overline{\andthen{a}{b}} &\ = \ (\andthen{a}{b}) \after \pi_{\ceil{\andthen{a}{b}}} &
+\overline{\andthen{b}{a}} &\ = \ (\andthen{b}{a}) \after \pi_{\ceil{\andthen{b}{a}}}
+\end{align*}
+By \sref{asrt-pristine-reverse} and~\sref{asrt-absorp-rule}, we have
+\begin{equation*}
+    \pi_{\ceil{\andthen{a}{b}}} \after
+\asrt_{\overline{\andthen{a}{b}}} \after
+ \zeta_{\ceil{\andthen{a}{b}}}
+    \ = \ 
+    \pi_{\ceil{\andthen{a}{b}}} \after
+ \zeta_{\ceil{\andthen{a}{b}}} \after
+\asrt_{\andthen{a}{b}}
+    \ = \ 
+\asrt_{\andthen{a}{b}}.
+\end{equation*}
+Now the second axiom of a~$\dagger'$-effectus comes into play
+\begin{align*}
+    &\pi_{\ceil{\andthen{a}{b}}} \after
+    \asrt^2_{\overline{\andthen{a}{b}}} \after \zeta_{\ceil{\andthen{a}{b}}} \\
+    &\qquad \ = \ 
+    \pi_{\ceil{\andthen{a}{b}}} \after
+\asrt_{\overline{\andthen{a}{b}}} \after
+ \zeta_{\ceil{\andthen{a}{b}}} \after
+\pi_{\ceil{\andthen{a}{b}}} \after
+\asrt_{\overline{\andthen{a}{b}}}
+\after \zeta_{\ceil{\andthen{a}{b}}} \\
+    &\qquad \ = \ 
+\asrt_{\andthen{a}{b}}^2
+\\
+    &\qquad \ = \ 
+\asrt_{a} \after
+\asrt^2_{b}\after
+\asrt_{a}
+\\
+    &\qquad \ = \ 
+\pi_{\ceil{\andthen{a}{b}}} \after
+    \nu \after
+    \asrt_{\overline{\andthen{b}{a}}} \after
+    \zeta_{\ceil{\andthen{b}{a}}} \after
+\pi_{\ceil{\andthen{b}{a}}} \after
+    \mu \after
+    \asrt_{\overline{\andthen{a}{b}}} \after
+    \zeta_{\ceil{\andthen{a}{b}}} 
+\\
+    &\qquad \ = \ 
+\pi_{\ceil{\andthen{a}{b}}} \after
+    \nu \after
+    \asrt_{\overline{\andthen{b}{a}}} \after
+    \mu \after
+    \asrt_{\overline{\andthen{a}{b}}} \after
+    \zeta_{\ceil{\andthen{a}{b}}}.
+\end{align*}
+Thus as quotients are epis and comprehensions are monos:
+\begin{equation} \label{dagger-second-axiom-intermediate}
+\asrt^2_{\overline{\andthen{a}{b}}}
+         \ = \ \nu \after \asrt_{\overline{\andthen{b}{a}}}
+            \after \mu \after \asrt_{\overline{\andthen{a}{b}}}.
+\end{equation}
+We want to show~$\asrt_{\overline{\andthen{a}{b}}}$ is an epi.
+First note
+\begin{equation*}
+    \ceil{\overline{\andthen{a}{b}}}\after\zeta_{\ceil{\andthen{a}{b}}}
+    \ \overset{\sref{sharp-ceil}}{=} \ 
+    \ceil{\overline{\andthen{a}{b}}\after\zeta_{\ceil{\andthen{a}{b}}}}
+    \ \overset{\sref{asrt-absorp-rule}}{=} \ 
+    \ceil{\andthen{a}{b}} \ = \ 1 \after \zeta_{\ceil{\andthen{a}{b}}}
+\end{equation*}
+and so~$\IM \asrt_{\overline{\andthen{a}{b}}}
+= \ceil{\overline{\andthen{a}{b}}} = 1 $,
+    which tells us~$\asrt_{\overline{\andthen{a}{b}}}$
+    is a quotient and therefore an epi.
+    So, from \eqref{dagger-second-axiom-intermediate} we get
+    $ \asrt_{\overline{\andthen{a}{b}}}
+     =  \nu \after \asrt_{\overline{\andthen{b}{a}}} \after \mu$ and so
+\begin{equation}\label{dagger-seqprod-inversion}
+    \overline{\andthen{a}{b}}
+    \ = \ 1 \after \asrt_{\overline{\andthen{a}{b}}}
+    \ = \ 1 \after \nu \after \asrt_{\overline{\andthen{b}{a}}} \after \mu
+    \ = \ \overline{\andthen{b}{a}} \after \mu.
+\end{equation}
+Using this equation again in the previous, we find
+\begin{equation*}
+    \nu \after \mu \after \asrt_{\overline{\andthen{a}{b}}}
+            \ = \ 
+    \nu \after \mu \after \asrt_{\overline{\andthen{b}{a}}\after \mu}
+            \ = \ 
+    \nu \after \asrt_{\overline{\andthen{b}{a}}} \after \mu
+            \ = \ \asrt_{\overline{\andthen{a}{b}}}.
+\end{equation*}
+Thus~$\nu \after \mu = \id$ and so~$\mu = \nu^{-1}$.
+Write~$l = \pi_{\ceil{\andthen{b}{a}}} \after \nu^{-1}
+                        \after \zeta_{\ceil{\andthen{a}{b}}}$. Then
+\begin{alignat*}{2}
+    (\andthen{a}{b}) \after l^\dagger & \ = \ 
+    (\andthen{a}{b})
+        \after \pi_{\ceil{\andthen{a}{b}}} 
+        \after \nu
+        \after \zeta_{\ceil{\andthen{b}{a}}}  
+        &\qquad& \text{by \sref{asrt-pristine-reverse}}\\
+        & \ = \ 
+        \overline{\andthen{a}{b}}
+        \after \nu
+        \after \zeta_{\ceil{\andthen{b}{a}}}  \\
+        & \ = \ 
+        \overline{\andthen{b}{a}}
+        \after \zeta_{\ceil{\andthen{b}{a}}}  
+        &&\text{by \eqref{dagger-seqprod-inversion} and~$\mu = \nu^{-1}$}\\
+        & \ = \ 
+        \andthen{b}{a}.
+\end{alignat*}
+And so, keeping in mind~$\andthen{a}{b} \leq \ceil{\andthen{a}{b}}
+    =  1 \after l$,
+we have
+\begin{alignat*}{2}
+    \asrt_b \after \asrt_a &\ = \ 
+        l \after \asrt_{\andthen{a}{b}} \\
+        & \ = \ 
+        \asrt_{(\andthen{a}{b}) \after l^\dagger} \after l 
+    &\qquad&\text{by \sref{asrt-pristine-reverse}} \\
+        &\ = \ 
+        \asrt_{\andthen{b}{a}} \after l \\
+        &\ = \ 
+        \asrt_{\andthen{b}{a}}
+        \after \pi_{\ceil{\andthen{b}{a}}} 
+        \after \nu^{-1} \after \zeta_{\ceil{\andthen{a}{b}}},
+\end{alignat*}
+as promised. \qed
+\end{point}
+\end{point}
+\begin{point}[dagger-iso-omega2]{Corollary}
+In setting \sref{dagger-setting},
+    the daggered version of
+        \eqref{dagger-iso-omega} holds --- that is:
+    \begin{equation*}
+\asrt_q \after
+\asrt_{p \after k}
+    \ =\ 
+    \asrt_{p \after g} \after
+    \pi_{\ceil{p \after g}} \after
+    \omega^{-1} \after
+    \zeta_{\lceil p \after k \rceil}.
+    \end{equation*}
+\end{point}
+\begin{point}[dagger-iso-chi2]{Lemma}%
+In setting \sref{dagger-setting},
+    the daggered version of
+        \eqref{dagger-iso-chi} holds --- that is:
+    \begin{equation*}
+    \zeta_t \after
+    \asrt_p \after
+    \pi_{\ceil{p}}
+    \ = \ 
+    \asrt_{p \after \pi_t} \after
+    \pi_{\ceil{p \after \pi_t}} \after
+    \chi^{-1} \after
+    \zeta_{\lceil t \after \asrt_p \after \pi_{\ceil{p}}\rceil}.
+    \end{equation*}
+\begin{point}{Proof}%
+The heavy lifting has been done in \sref{dagger-iso-mu} already. To start, note
+    \begin{align*}
+\asrt_p \after \asrt_t
+& \ \overset{\mathclap{\smash{\sref{asrt-absorp-rule}}}}{=}
+    \ \asrt_{\ceil{p}} \after \asrt_p  \after \asrt_t \\
+    & \ = \ \pi_{\ceil{p}} \after \zeta_{\ceil{p}} \after \asrt_p \after
+                    \pi_t \after \zeta_t \\
+                    & \ \overset{\mathclap{\smash{\eqref{dagger-iso-chi}}}}{=} \ 
+        \pi_{\ceil{p}} \after 
+        \pi_{\lceil t \after
+        \asrt_p \after \pi_{\ceil{p}}\rceil} \after
+        \chi \after \zeta_{\ceil{p \after \pi_t}} \after
+        \asrt_{p \after \pi_t} \after
+        \zeta_t \\
+                    & \ \overset{\mathclap{\smash{\sref{pristine-asrt}}}}{=} \ 
+        \pi_{\ceil{p}} \after 
+        \pi_{\lceil t \after
+        \asrt_p \after \pi_{\ceil{p}}\rceil} \after
+        \chi \after \zeta_{\ceil{p \after \pi_t}} \after
+        \zeta_t \after
+        \asrt_{p \after \pi_t\after \zeta_t} \\
+                    & \  = \ 
+        \pi_{\ceil{p}} \after 
+        \pi_{\lceil t \after
+        \asrt_p \after \pi_{\ceil{p}}\rceil} \after
+        \chi \after
+        \zeta_{\ceil{p \after \pi_t}} \after
+        \zeta_t \after
+        \asrt_{\andthen{t}{p}} \\
+                    & \  = \ 
+        \pi_{\ceil{\andthen{p}{t}}} \after \alpha_2 \after
+        \chi \after \beta_2 \after
+        \zeta_{\ceil{\andthen{t}{p}}} \after
+        \asrt_{\andthen{t}{p}},
+    \end{align*}
+where~$\alpha_2$ and~$\beta_2$ are the unique isomorphisms such that
+\begin{align*}
+        \pi_{\ceil{p}} \after 
+        \pi_{\lceil t \after
+        \asrt_p \after \pi_{\ceil{p}}\rceil} &\ = \ 
+            \pi_{\ceil{\andthen{p}{t}}} \after \alpha_2 &
+        \zeta_{\ceil{p \after \pi_t}} \after
+        \zeta_t
+        &\ = \ 
+        \beta_2 \after \zeta_{\ceil{\andthen{t}{p}}}.
+\end{align*}
+With the same reasoning as in \sref{dagger-iso-alpha2}
+        and~\sref{dagger-iso-beta2}, we see
+\begin{align*}
+        \zeta_{\lceil t \after
+        \asrt_p \after \pi_{\ceil{p}}\rceil} \after
+        \zeta_{\ceil{p}}
+        &\ = \ 
+        \alpha_2^{-1} \after
+            \zeta_{\ceil{\andthen{p}{t}}}
+            &
+        \pi_t \after
+        \pi_{\ceil{p \after \pi_t}}
+        &\ = \ 
+        \pi_{\ceil{\andthen{t}{p}}}
+        \after \beta_2^{-1}.
+\end{align*}
+Now we can apply \sref{dagger-iso-mu}:
+\begin{align*}
+    \zeta_t \after \asrt_p \after \pi_{\ceil{p}} 
+    &\ \overset{\smash{\mathclap{\sref{asrt-absorp-rule}}}}{=} \ 
+    \zeta_t \after \asrt_t \after
+    \asrt_p \after
+    \pi_{\ceil{p}}
+    \\
+    &\ \overset{\smash{\mathclap{\sref{dagger-iso-mu}}}}{=} \ 
+    \zeta_t \after \asrt_{\andthen{t}{p}} \after
+    \pi_{\ceil{\andthen{t}{p}}} \after
+    \beta_2^{-1} \after
+    \chi^{-1} \after
+    \alpha_2^{-1} \after
+    \zeta_{\ceil{\andthen{p}{t}}} \after
+    \pi_{\ceil{p}}
+    \\
+    &\ = \ 
+    \zeta_t \after \asrt_{\andthen{t}{p}} \after
+        \pi_t \after
+        \pi_{\ceil{p \after \pi_t}} \after
+    \chi^{-1} \after
+        \zeta_{\lceil t \after
+        \asrt_p \after \pi_{\ceil{p}}\rceil} \after
+        \zeta_{\ceil{p}} \after
+    \pi_{\ceil{p}}
+    \\
+    &\ = \ 
+    \zeta_t \after \asrt_{p \after \pi_t \after \zeta_t} \after
+        \pi_t \after
+        \pi_{\ceil{p \after \pi_t}} \after
+    \chi^{-1} \after
+        \zeta_{\lceil t \after
+        \asrt_p \after \pi_{\ceil{p}}\rceil}
+    \\
+    &\ = \ 
+    \asrt_{p \after \pi_t} \after 
+        \pi_{\ceil{p \after \pi_t}} \after
+    \chi^{-1} \after
+        \zeta_{\lceil t \after
+        \asrt_p \after \pi_{\ceil{p}}\rceil},
+\end{align*}
+as desired. \qed
+\end{point}
+\end{point}
+\begin{point}[dagger-is-functor]{Proposition}%
+In a~$\dagger'$-effectus~$(f \after g)^\dagger = g^\dagger \after f^\dagger$
+    holds.
+\begin{point}{Proof}%
+We work in setting~\sref{dagger-setting}.
+The equality~$(f\after g)^\dagger = g^\dagger \after f^\dagger$
+follows from~\sref{dagger-of-fg} and the commutativity
+of the following diagram
+\begin{equation*}
+    \xymatrix@C+3pc {
+        \bullet \ar@{<-}[rr]^{g^\dagger}
+        \ar@{<-}[rd]|{\asrt_q}
+        \ar@{<-}[ddd]_{\rotatebox{90}{$\scriptstyle
+            \asrt_{p \after g}
+            \pi_{\ceil{p \after g}} \after
+            \omega^{-1}
+        $}}
+        && \bullet \ar@{<-}[rr]^{f^\dagger}
+            \ar@{<-}[rd]|{ \asrt_p \after \zeta_{\ceil{p}} }
+        && \bullet
+            \\ \ar@{}[rd]|{\text{\sref{dagger-iso-omega2}}}
+            & \bullet
+            \ar@{<-}[r]^{ \pi_{\ceil{q}} \after \psi^{-1} }
+            \ar@{<-}[d]|{\asrt_{p \after k}}
+                \ar@{}[rd]|{\text{\sref{dagger-iso-zeta2}}}
+ & \bullet
+                \ar@{<-}[u]^{\zeta_t}
+                \ar@{<-}[d]|{\asrt_{p \after \pi_t}}
+                & \bullet \ar@{<-}[ru]_{\varphi^{-1} \after \zeta_s}
+            \ar@{}[rd]|{\text{\sref{dagger-iso-alpha2}}}
+            \\& \bullet \ar@{<-}[r]^{\pi_{\ceil{q}} \after \psi^{-1}}
+            \ar@{<-}[d]|{\pi_{\ceil{p \after k}}}
+                \ar@{}[rd]|{\text{\sref{dagger-iso-beta2}}}
+                &\bullet \ar@{<-}[d]|{\pi_{\ceil{p \after \pi_t}}}
+                        \ar@{}[ru]|{\text{\sref{dagger-iso-chi2}}}
+                        &&
+            \\ \bullet \ar@{=}[r]
+            \ar@{<-}[ru]^{\zeta_{\ceil{p \after k}}}
+            &\bullet \ar@{<-}[r]_{\beta^{-1}}
+            &\bullet \ar@{<-}[rr]_{\chi^{-1}}
+            &&\bullet \ar@{<-}[uuu]_{\rotatebox{90}{$\scriptstyle
+    \alpha^{-1}\after \zeta_{\ceil{t \after f^\dagger}}$}}
+    \ar@{<-}[luu]|{ \zeta_{\lceil t \after \asrt_p \after \pi_{\ceil{p}} \rceil}} }
+\end{equation*}
+or alternatively by
+\begin{align*}
+    g^\dagger \after f^\dagger
+        & \ = \ 
+            \asrt_q \after
+            \pi_{\ceil{q}} \after
+            \psi^{-1} \after
+            \zeta_t \after
+            \asrt_p \after
+            \pi_{\ceil{p}} \after
+            \varphi^{-1} \after
+            \zeta_s
+        \\
+        & \ \overset{\smash{\mathclap{\sref{dagger-iso-chi2}}}}{=} \ 
+            \asrt_q \after
+            \pi_{\ceil{q}} \after
+            \psi^{-1} \after
+    \asrt_{p \after \pi_t} \after
+    \pi_{\ceil{p \after \pi_t}} \after
+    \chi^{-1} \after
+    \zeta_{\lceil t \after \asrt_p \after \pi_{\ceil{p}}\rceil} \after
+            \varphi^{-1} \after
+            \zeta_s
+        \\
+        & \ \overset{\smash{\mathclap{\sref{dagger-iso-zeta2}}}}{=} \ 
+            \asrt_q \after
+    \asrt_{p \after k} \after
+    \pi_{\ceil{q}} \after
+    \psi^{-1} \after
+    \pi_{\ceil{p \after \pi_t}} \after
+    \chi^{-1} \after
+    \zeta_{\lceil t \after \asrt_p \after \pi_{\ceil{p}}\rceil} \after
+            \varphi^{-1} \after
+            \zeta_s
+        \\
+        & \ \overset{\smash{\mathclap{\sref{dagger-iso-beta2}}}}{=} \ 
+            \asrt_q \after
+    \asrt_{p \after k} \after
+        \pi_{\ceil{p \after k}} \after 
+        \beta^{-1} \after
+    \chi^{-1} \after
+    \zeta_{\lceil t \after \asrt_p \after \pi_{\ceil{p}}\rceil} \after
+            \varphi^{-1} \after
+            \zeta_s
+        \\
+        & \ \overset{\smash{\mathclap{\sref{dagger-iso-alpha2}}}}{=} \ 
+            \asrt_q \after
+    \asrt_{p \after k} \after
+        \pi_{\ceil{p \after k}} \after 
+        \beta^{-1} \after
+    \chi^{-1} \after
+        \alpha^{-1} \after
+        \zeta_{\ceil{t \after f^\dagger}}
+        \\
+        & \ \overset{\smash{\mathclap{\sref{dagger-iso-omega2}}}}{=} \ 
+    \asrt_{p \after g} \after
+    \pi_{\ceil{p \after g}} \after
+    \omega^{-1} \after
+    \zeta_{\lceil p \after k \rceil} \after
+        \pi_{\ceil{p \after k}} \after 
+        \beta^{-1} \after
+    \chi^{-1} \after
+        \alpha^{-1} \after
+        \zeta_{\ceil{t \after f^\dagger}}
+        \\
+        & \ = \ 
+    \asrt_{p \after g} \after
+    \pi_{\ceil{p \after g}} \after
+    \omega^{-1} \after
+        \beta^{-1} \after
+    \chi^{-1} \after
+        \alpha^{-1} \after
+        \zeta_{\ceil{t \after f^\dagger}}
+        \\
+        & \ \overset{\smash{\mathclap{\sref{dagger-of-fg}}}}{=} \ 
+        (f \after g)^\dagger,
+\end{align*}
+whichever the Reader might prefer. \qed
+\end{point}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}%
+We are ready to finish the proof of \sref{dagger-theorem}.
+\end{point}
+\begin{point}{Theorem}%
+    A~$\dagger'$-effectus is a~$\dagger$-effectus
+        with~$\dagger$
+            as defined in \sref{dagger-definition2}.
+\begin{point}{Proof}%
+Let~$C$ be a~$\dagger'$-effectus.
+\begin{point}{Ax.~1}%
+By~\sref{dagger-is-functor}, \sref{dagger-idempotent}
+    and~\sref{dagger-prime-basics}
+    the~$\dagger$ defined in~\sref{dagger-definition2}
+    turns~$\Pure C$ into a~$\dagger$-category.
+Also by~\sref{dagger-prime-basics},
+    we have~$\asrt_p^\dagger = \asrt_p$
+    for any predicate~$p$.
+Pick any pure~$f$.
+We have to show~$f$ is~$\diamond$-adjoint to~$f^\dagger$.
+By~\sref{standard-form-map}
+    we have~$f =
+    \pi_{\IM f} \after \varphi \after \zeta_{\ceil{1 \after f}}
+        \after \asrt_{1 \after f}$
+        for some iso~$\alpha$.
+We compute
+\begin{align*}
+   f_\diamond 
+   & \ = \ 
+   (\pi_{\IM f})_\diamond \after \varphi_\diamond \after (\zeta_{\ceil{1 \after f}})_\diamond
+   \after (\asrt_{1 \after f})^\diamond \\
+   & \ \overset{\mathclap{\smash{\sref{quotcompr-diamond-adjoint}}}}{=} \ 
+   (\zeta_{\IM f})^\diamond \after \varphi_\diamond \after (\pi_{\ceil{1 \after f}})^\diamond
+   \after (\asrt_{1 \after f})^\diamond \\
+   & \ \overset{\mathclap{\smash{\sref{iso-diamond-adjoint}}}}{=} \ 
+   (\zeta_{\IM f})^\diamond \after (\varphi^{-1})^\diamond \after (\pi_{\ceil{1 \after f}})^\diamond
+   \after (\asrt_{1 \after f})^\diamond \\
+   & \ = \ 
+   (\asrt_{1 \after f} \after
+   \pi_{\ceil{1 \after f}} \after
+   {\varphi^{-1}} \after
+   \zeta_{\IM f})^\diamond
+   \\
+   & \ = \ 
+   (f^\dagger)^\diamond,
+\end{align*}
+so~$f$ is indeed~$\diamond$-adjoint to~$f^\dagger$.
+\end{point}
+\begin{point}{Ax.~2}%
+Let~$f$ be a~$\dagger$-positive map.
+That is: $f = h^\dagger \after h$ for some pure map~$h$.
+By~\sref{standard-form-map}
+    we have~$h =
+    \pi_{\IM h} \after \alpha \after \zeta_{\ceil{1 \after h}}
+                    \after \asrt_{1 \after h}
+                    $
+                    for some iso~$\alpha$.
+            We compute
+\begin{align*}
+    f &\ = \ h^\dagger \after h \\
+    &\ = \ 
+    \asrt_{1 \after h} \after \pi_{\ceil{1 \after  h}} \after \alpha^{-1} \after \zeta_{\IM h} \after
+    \pi_{\IM h} \after \alpha \after \zeta_{\ceil{1 \after h}}
+                    \after \asrt_{1 \after h}
+                    \\
+    &\ = \ 
+    \asrt_{1 \after h} \after \asrt_{\ceil{1 \after  h}}
+                    \after \asrt_{1 \after h}
+                    \\
+                    &\ \overset{\smash{\mathclap{\sref{asrt-absorp-rule}}}}{=} \ 
+    \asrt_{1 \after h} \after \asrt_{1 \after h}.
+\end{align*}
+Form this it follows that $\dagger$-positive maps are~$\diamond$-positive.
+Let~$q$ be the predicate such that~$\andthen{q}{q} = 1 \after h$.
+Then
+\begin{equation*}
+\asrt_{q}^\dagger \after \asrt_{q}  
+    \ =\  \asrt_q\after \asrt_q
+    \ \overset{\sref{andthen-square-rule}}{=}\  
+    \asrt_{\andthen{q}{q}}
+    \  =\  \asrt_{1 \after h}.
+\end{equation*}
+Thus~$\asrt_{1 \after h}$ is a~$\dagger$-positive
+    with~$\asrt_{1 \after h} \after \asrt_{1 \after h} = f$.
+We have to show~$\asrt_{1 \after h}$
+    is the unique map with this property.
+Let~$g$ be any (other)~$\dagger$-positive map with~$g \after g = f$.
+Recall both~$g$ and~$f$ are~$\diamond$-positive, hence
+\begin{equation*}
+    \asrt_{1 \after f} \ =\  f\ =\ g \after g \ = \ \asrt_{1 \after g}
+            \after \asrt_{1 \after g}
+    \ \overset{\sref{andthen-square-rule}}{=}\  
+            \asrt_{\andthen{(1 \after g)}{(1 \after g)}}.
+\end{equation*}
+So~$(1 \after g)\after (1\after g) = 1\after f$.
+\end{point}
+\end{point}
 \end{point}
 \end{parsec}
 \end{document}
