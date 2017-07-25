@@ -1641,32 +1641,26 @@ for the tensor product $\scrA\otimes \scrB$ of von Neumann algebras
 $\scrA$ and~$\scrB$!
 We'll see that any bilinear map $\beta\colon \scrA\times \scrB\to\scrC$
 into a von Neumann algebra~$\scrC$
-which is sufficiently ``normal''
+which is sufficiently regular
 extends uniquely to a ultraweakly continuous
 map $\beta_\otimes \colon  \scrA\otimes \scrB\to\C$,
-where ``normal'' will mean 
+where regular will mean 
 that the extension $\beta_\odot\colon \scrA\odot\scrB\to\scrC$
 to the \emph{algebraic} tensor product
-is ultraweakly continuous.
+is ultraweakly continuous
+and bounded.
 
 To prevent a circular definition
 here
-we'll first describe the ultraweak topology
+we'll first describe the norm and ultraweak topology
 that $\scrA\otimes \scrB$ will induce on~$\scrA\odot \scrB$
 directly
-(calling it the \emph{tensor product topology}),
-and for this
-we'll also need to describe the norm
-the tensor product~$\scrA\otimes\scrB$
-will induce on~$\scrA\odot\scrB$.
-
-Our description
-of the norm and ultraweak topology on the 
-algebraic tensor product below
+(calling it the \emph{tensor product topology}).
+This description
 is based on the simple premise that the product functionals
 $\sigma\otimes \tau\colon \scrA\otimes\scrB\to\C$
-should turn out to be center separating.
-That this determines both norm and 
+should turn out to be center separating;
+and that this determines both norm and 
 the ultraweak topology
 follows from the following general observation.
 \end{point}
@@ -1792,6 +1786,9 @@ for some np-maps
 $\sigma\colon \scrA\to\C$, $\tau\colon \scrB\to\C$,
 and
 $t\in \scrA\odot\scrB$.
+
+A \Define{simple functional}
+is a finite sum of basic functionals.
 \item
 Each basic functional $\omega \colon \scrA\odot\scrB\to\C$
 gives us an operation~$\Define{[\,\cdot\,,\,\cdot\,]_\omega}$,
@@ -1820,33 +1817,56 @@ with the tensor product norm
 we can speak of bounded functionals on~$\scrA\odot \scrB$,
 and the operator norm on them;
 and note that
-the basic functionals are bounded.
+the basic and simple  functionals are bounded.
 
 The \Define{ultraweak tensor product topology}
 is the least topology on~$\scrA\odot\scrB$
 that makes all operator norm limits
-of basic functionals continuous.
+of simple functionals continuous.
 \item
 A bilinear map $\beta\colon \scrA\times \scrB\to\scrC$
 to a von Neumann algebra~$\scrC$
-is called \Define{normal}
+is called
+\begin{enumerate}
+\item
+\Define{bounded}
 when the unique extension $\beta_\odot \colon \scrA\odot \scrB\to \scrC$
+is bounded,
+\item 
+\Define{\textbf{n}ormal}
+when~$\beta_\odot$
 is continuous with respect to the ultraweak tensor product topology 
 on~$\scrA\odot\scrB$
-and the ultraweak topology on~$\scrC$.
+and the ultraweak topology on~$\scrC$,
+\item
+\Define{\textbf{u}nital}
+when~$\beta(1,1)=1$,
+\item
+\Define{\textbf{m}ultiplicative}
+if~$\beta(ab,cd)=\beta(a,c)\beta(b,d)$
+for all~$a,b\in\scrA$, $c,d\in\scrB$,
+\item
+\Define{\textbf{i}nvolution preserving}
+if~$\beta(a,b)^*=\beta(a^*,b^*)$
+for all~$a\in\scrA$, $b\in\scrB$.
+\item
+\TODO{definitions of (completely) positive bilinear maps}
+\end{enumerate}
+We abbreviate these properties as in~\sref{maps},
+and say, for instance, that $\beta$ is \Define{nmiu-bilinear}
+when it is normal, unital, multiplicative and involution preserving.
 \item
 A \Define{tensor product} of~$\scrA$ and~$\scrB$
-is a von Neumann algebra~$\Define{\scrA\otimes \scrB}$
-with a normal
-bilinear map $\Define{\otimes} \colon \scrA\times \scrB\to
-\scrA\otimes \scrB$
+is a bounded nmiu-bilinear map 
+$\Define{\otimes} \colon \scrA\times \scrB\to
+\Define{\scrA\otimes \scrB}$
 which is universal
 in the sense
 that for every
-normal bilinear map $\beta\colon \scrA\times \scrB\to\scrC$
+normal bounded bilinear map $\beta\colon \scrA\times \scrB\to\scrC$
 to a von Neumann algebra~$\scrC$
 there is a unique ultraweakly continuous
-map $\Define{\beta_\otimes}\colon \scrA\otimes \scrB
+map  $\Define{\beta_\otimes}\colon \scrA\otimes \scrB
 \to \scrC$ with $\beta_\otimes(a\otimes b) = \beta(a,b)$
 for all~$a\in \scrA$ and $b\in\scrB$.
 \end{enumerate}
@@ -1931,21 +1951,209 @@ Show that the tensor product norm
 from~\sref{tensor-product}
 is, indeed, a norm.
 \end{point}
+\begin{point}{Lemma}%
+Given a tensor product  $\otimes \colon \scrA\times \scrB\to\scrA\otimes \scrB$
+of von Neumann algebras~$\scrA$ and~$\scrB$,
+$\otimes_\odot\colon \scrA\odot\scrB\to \scrA\otimes \scrB$
+has ultraweakly dense range.
+\begin{point}{Proof}%
+Since
+$\otimes_\odot(\scrA\odot \scrB)$,
+the range of~$\otimes_\odot$,
+is easily seen to be a $*$-subalgebra
+of~$\scrA\otimes \scrB$,
+its closure---let us denote it by~$\scrT$---is a
+von Neumann subalgebra of~$\scrA\otimes \scrB$
+by~\TODO{}.
+Our task is, of course, to show that~$\scrT=\scrA\otimes \scrB$.
+Since the restriction $\tau\colon \scrA\times\scrB\to 
+\scrT$ of~$\otimes$ is clearly bounded,
+and normal (by ultraweak permanence, \TODO{...}),
+there is by the defining property of the tensor product
+a unique ultraweakly continuous map 
+$\varrho\colon \scrA\otimes \scrB\to\scrT$
+with $\varrho(a\otimes b)= a\otimes b$ for all~$a\in\scrA$
+and~$b\in \scrB$.
+It follows that~$\varrho(t)=t$ for all~$t\in \scrT$,
+or, in other words, $\varrho\circ \iota = \id$
+where~$\iota\colon \scrT\to\scrA\otimes \scrB$
+denotes the inclusion (being a nmiu-map).
+On the other hand,
+$\iota\circ \varrho\colon \scrA\otimes \scrB\to\scrA\otimes \scrB$
+is an ultraweakly continuous bounded
+linear map with $(\iota\circ \varrho)(a\otimes b)=a\otimes b$
+for all~$a\in\scrA$ and~$b\in\scrB$,
+as is~$\id\colon \scrA\otimes \scrB\to\scrA\otimes\scrB$;
+so that we may conclude~$\iota\circ \varrho=\id$.
+Hence~$\iota\colon \scrT\to\scrA\otimes\scrB$
+is surjective, and~$\scrT=\scrA\otimes \scrB$.\qed
+\end{point}
+\end{point}
+\begin{point}{Exercise}%
+Show that the extension $\beta_\otimes\colon \scrA\otimes \scrB\to\scrC$
+of a normal bounded bilinear map $\scrA\times \scrB\to\scrC$
+between von Neumann algebras
+along a tensor product  $\otimes \colon \scrA\times \scrB\to\scrA\otimes \scrB$
+of~$\scrA$ and~$\scrB$
+is unital iff~$\beta$ is unital;
+$\beta_\otimes$ is involution preserving iff~$\beta$ is involution preserving;
+and
+$\beta_\otimes$ is multiplicative iff~$\beta$ is multiplicative.
+\end{point}
+\begin{point}{Exercise}%
+Show that the tensor product of von Neumann algebras~$\scrA$
+and~$\scrB$ is unique in
+the sense
+that when~$\otimes\colon \scrA\times \scrB\to\scrA\otimes \scrB$
+and~$\otimes'\colon \scrA\times \scrB\to\scrA\otimes'\scrB$
+are tensor products of~$\scrA$ and~$\scrB$,
+then there is a unique
+nmiu-isomorphism $\varphi\colon \scrA\otimes \scrB\to\scrA\otimes'\scrB$
+with $\varphi(a\otimes b)=a\otimes'b$
+for all~$a\in\scrA$ and~$b\in\scrB$.
+\end{point}
 \end{parsec}
 \begin{parsec}%
-\begin{point}{Proposition}%
-When the algebraic tensor product
-$\scrA\odot \scrB$
-of von Neumann algebras~$\scrA$ and~$\scrB$ of bounded operators
-on Hilbert spaces $\scrH$ and~$\scrK$, respectively,
-is mapped into~$\scrB(\scrH\otimes \scrK)$
-via the extension of the bilinear map~$\beta(A,B)=A\otimes B$,
-this extension~$\beta_\odot\colon \scrA\odot\scrB\to \scrB(\scrH\otimes \scrK)$
-is an isometry (with respect to the tensor product norm)
-and a homeomorphism from the ultraweak tensor product topology
-to the ultraweak topology on~$\scrB(\scrH\otimes \scrK)$.
+\begin{point}[tensor-fundamental-lemma]{Lemma}%
+A nmiu-bilinear map $\gamma\colon \scrA\times \scrB\to\scrT$
+is a tensor product if
+\begin{enumerate}
+\item
+\label{tensor-fundamental-lemma-1}
+$\gamma_\odot\colon \scrA\odot\scrB\to\scrT$
+has ultraweakly dense range, 
+\item
+\label{tensor-fundamental-lemma-2}
+$\gamma$ \emph{has product functionals},
+that is,
+for all np-maps
+ $\sigma\colon \scrA\to\C$,
+$\tau\colon \scrB\to\C$
+there is a np-functional 
+$\Define{\gamma(\sigma, \tau)}\colon \scrT\to\C$
+with $\gamma(\sigma,\tau)(\gamma(a, b))= \sigma(a)\tau(b)$
+for all~$a\in\scrA$ and~$b\in\scrB$,
+and
+\item
+\label{tensor-fundamental-lemma-3}
+the collection
+of all such product functionals  $\gamma(\sigma, \tau)$
+is faithful.
+
+(We'll see in~\TODO{...} that this third condition can be dropped.)
+\end{enumerate}
+Moreover, in that case~$\gamma_\odot$
+is an isometry
+and a topological embedding
+from the ultraweak tensor product topology on~$\scrA\odot \scrB$
+to the ultraweak topology on~$\scrT$.
 \begin{point}{Proof}%
 
+\end{point}
+\end{point}
+\begin{point}{Theorem}%
+Let~$\scrA$
+and~$\scrB$
+be von Neumann algebras
+of bounded operators
+on Hilbert spaces~$\scrH$ and~$\scrK$,
+respectively.
+Given $A\in\scrA$ and~$B\in\scrB$
+we can form $A\otimes B\colon \scrH\otimes \scrK\to\scrH\otimes \scrK$
+as in~\TODO{...} giving 
+a bilinear map $\otimes\colon \scrA\times \scrB\to \scrB(\scrH\otimes\scrK)$.
+Letting~$\scrT$ 
+be the von Neumann algebra
+generated by the range of~$\otimes$,
+the restriction~$\gamma\colon \scrA\times \scrB\to\scrT$
+of~$\otimes$
+is a tensor product of~$\scrA$ and~$\scrB$.
+\begin{point}{Proof}%
+We need to check that the three conditions of~\sref{tensor-fundamental-lemma} hold.
+\begin{point}{Condition~\ref{tensor-fundamental-lemma-1}}%
+Since~$\scrT$ is easily seen
+to be the ultraweak closure
+of the range of
+$\otimes_\odot\colon \scrA\odot\scrB\to\scrB(\scrH\otimes\scrK)$,
+the range of~$\gamma_\odot$ (being the same
+as the range of~$\otimes_\odot$)
+is ultraweakly dense in~$\scrT$.
+\end{point}
+\begin{point}{Condition~\ref{tensor-fundamental-lemma-2}}%
+Let~$\sigma\colon \scrA\to\C$
+and~$\tau\colon \scrB\to\C$ be np-maps.
+We must find an np-functional~$\omega$ on~$\scrT$
+with $\omega(A\otimes B)=\sigma(A)\tau(B)$
+for all~$A\in \scrA$, $B\in \scrB$.
+Note that by~\sref{normal-functional}
+$\sigma$ and~$\tau$ are of the form
+$\sigma\equiv\sum_n \left<x_n,(\,\cdot\,)x_n\right>$
+and~$\tau\equiv\sum_n \left<y_n,(\,\cdot\,)y_n\right>$
+for some~$x_1,x_2,\dotsc\in\scrH$
+and~$y_1,y_2,\dotsc\in\scrK$
+with~$\sum_n\|x_n\|^2<\infty$
+and~$\sum_m\|y_m\|^2 <\infty$.
+So as~$\sum_{n,m}\|x_n\otimes y_m\|^2\equiv\sum_n \|x_n\|^2\,
+\sum_m\|y_m\|^2 <\infty$,
+we can define
+an np-functional~$\omega$ on~$\scrT$
+by $\omega(T):= \sum_{n,m} \left<x_n\otimes y_m,
+T\,x_n\otimes y_m\right>$;
+which does the job:  $\omega(A\otimes B)
+= \sum_{n,m} \left<x_n, Ax_n\right> \left<y_m,By_m\right>
+= \sigma(A)\tau(B)$
+for all~$A\in\scrA$ and~$B\in\scrB$.
+\end{point}
+\begin{point}{Condition~\ref{tensor-fundamental-lemma-3}}%
+It remains to be shown that the
+product functionals
+on~$\scrT$ form a faithful collection.
+These are---as we've just seen---all
+of the form
+$\sum_{m,n}\left<x_n\otimes y_n,(\,\cdot\,)\,x_n\otimes y_m\right>$
+for some $x_1,x_2,\dotsc\in\scrH$
+and~$y_1,y_2,\dotsc\in\scrK$
+(and, conversely, it's easily seen
+that a functional
+of that form
+is a product functional).
+It suffices,
+then,
+to show that the subset of
+product functionals
+of the  form $\left<x\otimes y,(\,\cdot\,)x\otimes y\right>$
+where~$x\in\scrH$ and~$y\in\scrK$ is faithful.
+To this end,
+let~$T\in\scrT_+$
+with $\left< x\otimes y, Tx\otimes y\right>=0$
+for all~$x\in\scrH$ and~$y\in\scrK$ be given
+in order to show that~$T=0$.
+Note that since
+$\|\sqrt{T}\,x\otimes y\|^2=\left<x\otimes y,T\,x\otimes y\right>
+=0$, and so~$\sqrt{T}\,x\otimes y=0$
+for all~$x\in\scrH$, $y\in \scrK$,
+we have~$\sqrt{T}=0$ (since the linear
+span of the $x\otimes y$ is dense in~$\scrH\otimes\scrK$),
+and thus~$T=0$.\qed
+\end{point}
+\end{point}
+\end{point}
+\begin{point}{Theorem}%
+A nmiu-bilinear map~$\gamma\colon\scrA\times \scrB\to\scrT$
+is a tensor product iff
+\begin{enumerate}
+\item
+$\gamma_\odot\colon \scrA\odot\scrB\to\scrT$
+has ultraweakly dense range,
+\item
+$\gamma$ \emph{has product functionals},
+that is,
+for all np-maps $\sigma\colon \scrA\to\C$, $\tau\colon \scrB\to\C$
+there is an np-functional $\omega\colon \scrT\to\C$ 
+with $\omega(\gamma(a,b))=\sigma(a)\tau(b)$.
+\end{enumerate}
+\begin{point}{Proof}%
+	\TODO{...}
 \end{point}
 \end{point}
 \begin{point}[uwc-bounded]{Proposition}%
