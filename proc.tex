@@ -1941,7 +1941,7 @@ we conclude that~$f\in \overline{\Omega''}$.\qed
 \end{point}
 \end{point}
 \end{point}
-\begin{point}[tensor-product]{Definitions}%
+\begin{point}[tensor-extra]{Definitions}%
 Let~$\scrA$ and~$\scrB$ be von Neumann algebras.
 \begin{enumerate}
 \item
@@ -2051,7 +2051,7 @@ c_{k m} \overline{d}_{\ell n} d_{\ell m}
 Use~\sref{product-state-positive} 
 to show that
  $[\,\cdot\,,\,\cdot\,]_\omega$
-from~\sref{tensor-product}
+from~\sref{tensor-extra}
 is an inner product.
 \end{point}
 \begin{point}{Lemma}%
@@ -2090,21 +2090,127 @@ and thus~$t=\sum_n a_n\odot b_n=0$.\qed
 \end{point}
 \begin{point}{Exercise}%
 Show that the tensor product norm
-from~\sref{tensor-product}
+from~\sref{tensor-extra}
 is, indeed, a norm.
 \end{point}
 \begin{point}{Proposition}%
-The extension  $\tau_\odot\colon \scrA\odot\scrB\to\scrT$
-of a tensor product~$\tau\colon \scrA\times \scrB\to\scrT$
-of von Neumann algebras~$\scrA$
-and~$\scrB$
-to the algebraic tensor product
+Let~$\gamma\colon \scrA\times\scrB\to\scrT$
+be a tensor product of von Neumann algebras.
+
+The extension  $\gamma_\odot\colon \scrA\odot\scrB\to\scrT$
 is an isometry
 and a topological embedding
 (from the tensor product topology on~$\scrA\odot\scrB$
 to the ultraweak topology on~$\scrT$).
+
+Moreover,
+the assignment $f\mapsto f\circ\gamma_\odot$
+gives an isometry $\scrA_*\to(\scrA\odot\scrB)^*$
+whose range
+consists
+of all bounded ultraweakly functionals
+in~$\scrA\odot\scrB$.
 \begin{point}{Proof}%
-	\TODO{...}
+Recall that by definition of the tensor product (see~\sref{tensor})
+the product functionals on~$\scrT$
+are center separating,
+and the image $\gamma_\odot(\scrA\odot\scrB)$ 
+of the algebraic tensor product
+is ultraweakly dense in~$\scrT$.
+This entails by~\sref{vn-center-separating-funcamental}
+that the collection~$\Omega$
+of np-functionals
+on~$\scrT$ of the form 
+$\gamma(\sigma,\tau)(\gamma_\odot(s)^*(\,\cdot\,)\gamma_\odot(s))$,
+where~$\sigma\colon \scrA\to\C$,
+$\tau\colon \scrB\to\C$
+are np-functionals
+and~$s\in\scrA\odot\scrB$,
+is order separating,
+and that
+every np-functional on~$\scrT$
+is the operator norm limit of finite sums
+of functionals from~$\Omega$.
+Since $\omega/\omega(1)$ is a in~$\Omega$ for every~$\omega\in\Omega$
+with~$\omega\neq 0$,
+the subset~$\Omega_1$ of~$\Omega$
+of unital maps is order separating as well,
+and so determines the norm on~$\scrT$
+via~$\|a\|^2=\|a^*a\| = \sup_{\omega\in\Omega_1} \omega(a^*a)$
+for all~$a\in\scrT$
+by~\sref{order-separating-norm}.
+
+Taking~$a=\gamma_\odot(s)$
+where~$s\in\scrA\odot\scrB$
+yields $\|\gamma_\odot(s)\|^2 = \sup_{\omega\in\Omega_1}
+\omega(\gamma_\odot( s^*s ))=
+\sup_{\omega\in\Omega_1} \|s\|_{\omega\circ \tau_\odot}^2$,
+where we've used
+the obvious fact that~$\omega\circ \gamma_\odot$
+is a basic functional (\sref{tensor-extra})
+for every~$\omega\in\Omega_1$.
+Since every unital basic functional is of this form
+(since product functionals, and thus basic functionals too,
+can be extended uniquely from~$\scrA\odot\scrB$ to~$\scrT$),
+we see that~$\|\gamma_\odot(s)\|=\sup_{\omega\in\Omega_1}
+\|s\|_{\omega\circ \tau_\odot}=\|s\|$
+for all~$s\in\scrA\odot\scrB$
+by definition of the tensor product norm
+on~$\scrA\odot\scrB$ from~\sref{tensor-extra}.
+Hence~$\gamma_\odot$ is an isometry.
+
+Let~$f\in\scrT_*$
+be a normal functional on~$\scrT$.
+Since~$\|f(\gamma_\odot(s))\|\leq \|f\| \|s\|$
+for all~$s\in\scrA\odot\scrB$,
+we see that $f\circ \gamma_\odot$
+is bounded;
+and clearly so too is
+the linear map $(\,\cdot\,)\circ \gamma_\odot\colon 
+\scrA_*\to(\scrA\odot\scrB)^*$
+thereby obtained,
+but it requires some heavier machinery to 
+show that $(\,\cdot\,)\circ \gamma_\odot$ is an isometry.
+Indeed, as a consequence
+of the polar decomposition of normal functionals
+(\sref{polar-decomposition-of-functional})
+there is a partial isometry~$u$ in~$\scrT$
+with~$f(u)=\|f\|$ (see~\TODO{...}). 
+Now, let~$\scrA$ be the norm closure
+of~$\gamma_\odot(\scrA\odot\scrB)$,
+which is a $C^*$-subalgebra of~$\scrT$,
+which is ultraweakly 
+and thus ultrastrongly dense in~$\scrT$ by~\sref{ultraclosed}.
+Thus by Kaplansky's density theorem (\sref{kaplansky})~$u$
+is the ultrastrong limit of a net of elements from $(\scrA)_1$.
+Now, since each element~$a$ of the unit ball~$(\scrA)_1$
+of~$\scrA$
+can be obtained as a limit of a sequence $t_1,t_2,\dotsc$ of elements
+from~$\gamma_\odot(\scrA\odot\scrB)$,
+and the norms~$\|t_n\|$ will tend to~$\|a\|\leq 1$,
+one can find,
+given $\varepsilon>0$,
+a net~$(s_\alpha)_\alpha$
+in $\scrA\odot\scrB$
+such that~$\gamma_\odot(s_\alpha)$
+converges ultrastrongly to~$u$
+as~$\alpha\to\infty$
+and  $\|s_\alpha\|\leq 1+\varepsilon$ for all~$\alpha$.
+Since then
+$\left|f(\gamma_\odot(s_\alpha))|\right|\leq \|f\circ \gamma_\odot\|
+\|s_\alpha\|\leq \|f\circ\gamma_\odot\|(1+\varepsilon)$
+for all~$\alpha$,
+we have $\|f\|=f(u)=\left|f(u)\right|
+=\lim_\alpha \left|f(s_\alpha)\right|
+\leq \|f\circ \gamma_\odot\|(1+\varepsilon)$.
+As~$\varepsilon>0$ was arbitrary,
+we get~$\|f\|\leq \|f\circ \gamma_\odot\|$,
+and conclude that  $\|f\|=\|f\circ \gamma_\odot\|$.
+Hence~$f\mapsto f\circ \gamma_\odot$
+is an isometry.
+
+
+
 \end{point}
 \end{point}
 \begin{point}{Theorem}%
