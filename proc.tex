@@ -2108,8 +2108,7 @@ the assignment $f\mapsto f\circ\gamma_\odot$
 gives an isometry $\scrA_*\to(\scrA\odot\scrB)^*$
 whose range
 consists
-of all bounded ultraweakly functionals
-in~$\scrA\odot\scrB$.
+of all norm limits of simple functionals on~$\scrA\odot\scrB$.
 \begin{point}{Proof}%
 Recall that by definition of the tensor product (see~\sref{tensor})
 the product functionals on~$\scrT$
@@ -2139,7 +2138,6 @@ and so determines the norm on~$\scrT$
 via~$\|a\|^2=\|a^*a\| = \sup_{\omega\in\Omega_1} \omega(a^*a)$
 for all~$a\in\scrT$
 by~\sref{order-separating-norm}.
-
 Taking~$a=\gamma_\odot(s)$
 where~$s\in\scrA\odot\scrB$
 yields $\|\gamma_\odot(s)\|^2 = \sup_{\omega\in\Omega_1}
@@ -2209,22 +2207,49 @@ and conclude that  $\|f\|=\|f\circ \gamma_\odot\|$.
 Hence~$f\mapsto f\circ \gamma_\odot$
 is an isometry.
 
-
-
+Let us show that~$\gamma_\odot\colon \scrA\odot\scrB\to\scrT$
+is a ultraweak embedding,
+that is,
+an ultraweak homeomorphism onto its range.
+To begin, $\gamma_\odot$ is ultraweakly continuous,
+because $\omega\circ\gamma_\odot$
+is ultraweakly continuous for every np-functional $\omega$ on~$\scrT$;
+indeed, such~$\omega$
+is the norm limit of finite sums of functionals from~$\Omega$,
+and thus (as and~$f\mapsto f\circ \gamma_\odot$ is bounded),
+$\omega\circ\gamma_\odot$
+is the norm limit of simple functionals on~$\scrA\odot\scrB$,
+which is ultraweakly continuous
+by definition~\sref{tensor-extra}.
+It remains to be shown that the
+inverse of~$\gamma_\odot$
+as map $\scrA\odot\scrB\to\gamma_\odot(\scrA\odot\scrB)$
+is ultraweakly continuous,
+and for this
+it suffices to show that any norm limit of simple functionals
+on~$\scrA\odot\scrB$
+can be extended to~$\scrT$ along~$\gamma_\odot$.
+This is, of course,
+pretty obvious
+since we've already seen that basic functionals can be extended,
+and so simple functionals can be extended,
+and thus limits of simple functionals can be extended
+(using here the facts that~$f\mapsto f\circ \gamma_\odot$
+is an isometry, and the norm limit
+of an np-functional is again an np-functional, see~\TODO{...}).\qed
 \end{point}
 \end{point}
 \begin{point}{Theorem}%
-A tensor product~$\tau\colon \scrA\times\scrB\to\scrT$
+A tensor product~$\gamma\colon \scrA\times\scrB\to\scrT$
 of von Neumann algebras~$\scrA$ and~$\scrB$
 has the following universal property.
 For every normal bounded bilinear map $\beta\colon \scrA\times \scrB\to\scrC$
 to a von Neumann algebra~$\scrC$
 there is a unique ultraweakly continuous
 map  $\Define{\beta_\gamma}\colon \scrT
-\to \scrC$ with $\beta_\gamma(\gamma(a,b)) = \beta(a,b)$
-for all~$a\in \scrA$,$b\in\scrB$.
+\to \scrC$ with $\beta_\gamma\circ \gamma  = \beta$.
 \begin{point}{Proof}%
-	\TODO{...}
+\TODO{...}
 \end{point}
 \end{point}
 \begin{point}{Lemma}%
