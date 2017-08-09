@@ -46,6 +46,7 @@ Later we will prefer to work with the partial form.
 \begin{parsec}%
 \begin{point}{Definition}%
 A category $C$ is said to be an \Define{effectus in total form}
+    \cite{effintro,newdirections,statesofconvexsets}
     if
 \begin{enumerate}
 \item $C$ has finite coproducts and a final object~$1$;
@@ -86,18 +87,24 @@ Write~$\Define{\Par C}$ for the \Define{category of partial maps},
     which has the same objects
     as~$C$, but as arrows~$X \to Y$ in~$\Par C$
     we take arrows of the form~$X \to Y+1$ in~$C$,
-    which we compose using~$\hafter$.
-The identity on~$X$ in~$\Par C$ is given by~$\kappa_1 \colon X \to X+1$.
+    which we compose using~$\hafter$
+    and with identity on~$X$ in~$\Par C$
+    given by~$\kappa_1 \colon X \to X+1$.\footnote{In categorical
+            parlance: $\Par C$ is the Kleisli category of
+            the monad~$(\ )+1\colon C \to C$.}
 The category~$\Par C$ is not an effectus in total form --- instead it
     is an effectus \emph{in partial form}.
 \end{point}
 \end{point}
 \begin{point}{Definition}%
-A category~$C$ is called an \Define{effectus in partial form} if
+A category~$C$ is called an \Define{effectus in partial form}
+    \cite{effintro,kentapartial} if
 \begin{enumerate}
 \item
-    $C$ is a finPAC \TODO{cite} --- that is: if
+    $C$ is a finPAC \cite{kentapartial} (cf.~\cite{arbib}) --- that is: if
     \begin{enumerate}
+        \item 
+            $C$ has finite coproducts $(+,0)$;
         \item $C$ is PCM-enriched --- that is: if
             \begin{enumerate}
             \item
@@ -120,8 +127,6 @@ A category~$C$ is called an \Define{effectus in partial form} if
                 $h\colon Y \to Y'$
                 and~$k \colon X'\to X$;
             \end{enumerate}
-        \item 
-            $C$ has finite coproducts $(+,0)$;
         \item
             (compatible sum)
             for any~$b\colon X \to Y + Y$ we have
@@ -138,7 +143,7 @@ A category~$C$ is called an \Define{effectus in partial form} if
             such that
     \begin{enumerate}
         \item for each object~$X$ the PCM~$C(X,I)$
-                is an effect algebra --- that is:
+                is an effect algebra \cite{ea} --- that is:
         \begin{enumerate}
             \item
                 for each~$f\colon X \to I$
@@ -160,10 +165,10 @@ At first glance an effectus in partial form seems
     to have a much richer structure than an effectus in total form.
 This is not the case ---
     effectuses in total and partial form are two views
-    on the same thing:
+    on the same thing: \cite{kentapartial,introeff}
 \end{point}
 \end{point}
-\begin{point}{Theorem}%
+\begin{point}{Theorem (Cho)}%
 Let~$C$ be an effectus in total form
 and~$D$ be an effectus in partial form.\TODO{cite kenta}
 \begin{enumerate}
@@ -177,7 +182,22 @@ The total maps of~$D$ form an effectus in total form~$\Tot D$.
     $\Par \Tot D \cong D$ and~$\Tot \Par C \cong C$.
 \end{enumerate}
 \begin{point}{Proof}%
-    \TODO{...}
+Let~$C$ be an effectus in total form.
+\TODO{}
+\begin{point}%
+We will first prove that~$\Par C$ has finite coproducts.
+It is sufficient to show~$\Par C$ has an initial object~$0$
+    and binary coproducts.
+It is easy to the initial object of~$C$ is
+    also the initial object of~$\Par C$.
+Let~$\kappa_1 \colon X \to X+Y \leftarrow Y \colon \kappa_2$
+be a coproduct in~$C$.
+We will show~$X + Y$ is a
+    a coproduct in~$\Par C$ with coprojections~$\kappa_1 \colon X \to X+Y+1$
+    and~$\kappa_2 \colon Y \to X+Y+1$.
+Let~$f\colon X \to Z+1$ and~$g\colon Y \to Z+1$ be given.
+Then 
+\end{point}
 \end{point}
 \end{point}
 
@@ -862,23 +882,23 @@ Indeed
 s \vee (s^\perp \wedge t) 
 &\  =\  (s \wedge t) \vee (s^\perp \wedge t) &\qquad& \text{as $s \leq t$}\\
 &\  =\ 
-        ((\pi_s)_\diamond \after \pi_s^\BOX)
-        (t) \vee
-        ((\pi_s)_\diamond \after \pi_s^\BOX)
-        (t^\perp)
+        ((\pi_t)_\diamond \after \pi_t^\BOX)
+        (s) \vee
+        ((\pi_t)_\diamond \after \pi_t^\BOX)
+        (s^\perp)
         &\qquad& \text{by \sref{spred-infimum}}\\
 &\  =\ 
-        (\pi_s)_\diamond ( \pi_s^\BOX(t) \vee 
-                            \pi_s^\BOX(t^\perp))
+        (\pi_t)_\diamond ( \pi_t^\BOX(s) \vee 
+                            \pi_t^\BOX(s^\perp))
                             &\qquad& \text{by \sref{order-adj-basics}} \\
 &\  =\ 
-        (\pi_s)_\diamond ( \pi_s^\diamond(t) \vee 
-                            \pi_s^\diamond(t)^\perp)
-                            &\qquad& \text{as $\pi_s$ total,~\sref{compr-total}}\\
+        (\pi_t)_\diamond ( \pi_t^\diamond(s) \vee 
+                            \pi_t^\diamond(s)^\perp)
+                            &\qquad& \text{as $\pi_t$ total,~\sref{compr-total}}\\
 &\  =\ 
-                            (\pi_s)_\diamond (1)
+                            (\pi_t)_\diamond (1)
                             &\qquad& \text{by \sref{spred-ortholattice}} \\
-& \ =\  \IM \pi_s \ = \ s && \text{by \sref{img-of-compr}}.
+& \ =\  \IM \pi_t \ = \ t && \text{by \sref{img-of-compr}}.
 \end{alignat*}
 We have shown~$\SPred X$ is an orthomodular lattice. \qed
 \end{point}
@@ -1301,7 +1321,7 @@ We call a~$\&$-effectus~$C$,
         is a~$\dagger$-effectus if and only if
 \begin{enumerate}
 \item
-for every predicate~$p$ there is a predicate~$q$
+for every predicate~$p$, there is a unique predicate~$q$
     with~$\andthen{q}{q} = p$;
 \item
     $\asrt^2_{\andthen{p}{q}}
@@ -1311,6 +1331,17 @@ for every predicate~$p$ there is a predicate~$q$
     a quotient for a sharp predicate (e.g.~$\zeta_s$)
     is a sharp map, see \sref{sharp-map}.
 \end{enumerate}
+\begin{point}{Proof}%
+Necessity will be proven in
+    \sref{dagger-thm-necessity}
+        and sufficiency in \sref{dagger-thm-sufficiency}. \qed
+\end{point}
+\begin{point}%
+Especially the sufficiency requires quite some preparation.
+For convenience, call~$C$ a \Define{$\dagger'$-effectus}
+    if~$C$ is a~$\&$-effectus
+    satisfying axioms 1, 2 and 3 from the Theorem above.
+\end{point}
 \begin{point}{Note}%
     In a~$\&$-effectus
     with seperating predicates,
@@ -1318,14 +1349,6 @@ for every predicate~$p$ there is a predicate~$q$
     to~$\andthen{(\andthen{p}{q})^2}{r}
     = \andthen{p}{(\andthen{q^2}{(\andthen{p}{r})})}$
     for all predicates~$p,q,r$.
-\end{point}
-\begin{point}%
-We will prove the necessity in \sref{dagger-thm-necessity}
-    and sufficiency in \TODO{}.
-Especially the sufficiency requires quite some preparation.
-For convenience, call~$C$ a \Define{$\dagger'$-effectus}
-    if~$C$ is a~$\&$-effectus
-    satisfying axioms 1, 2 and 3 from the Theorem above.
 \end{point}
 \end{point}
 \end{parsec}
@@ -1357,9 +1380,9 @@ Thus~$f$ is the square of the~$\diamond$-self-adjoint map $g$,
 \end{point}
 
 \begin{point}[dagger-eff-square-root]{Lemma}%
-Predicates in a~$\dagger$-effectus have a square root:
+Predicates in a~$\dagger$-effectus have a unique square root:
     for every predicate~$p$,
-    there is a predicate~$q$
+    there is a unique predicate~$q$
     with~$\andthen{q}{q}=p$.
 \begin{point}{Proof}%
 Let~$p\colon X \to 1$ be any predicate.
@@ -1382,7 +1405,21 @@ We compute
         1 \after f \after \asrt_{1 \after f} \ = \ 
         1 \after f \after f \ = \ 1 \after \asrt_p \ = \ p,
 \end{equation*}
-which shows~$p$ has as square root~$p$.  \qed
+which shows~$p$ has as square root~$q$.
+
+To show uniqueness, assume~$p = \andthen{r}{r}$ for some (other)
+    predicate~$r$.
+Note
+\begin{equation*}
+    \asrt_p
+        \ = \ \asrt_{\andthen{r}{r}}
+        \ \overset{\smash{\sref{andthen-square-rule}}}{=} \ \asrt_r \after \asrt_r.
+\end{equation*}
+As~$\asrt_r$ is~$\diamond$-positive,
+    it is also~$\dagger$-positive by the third axiom.
+    So by the second axiom~$\asrt_r = \asrt_q$.
+Thus~$r = q$, which shows uniqueness of the square root.
+\qed
 \end{point}
 \end{point}
 \begin{point}[asrt-iso]{Proposition}%
@@ -2501,7 +2538,7 @@ whichever the Reader might prefer. \qed
 \begin{point}%
 We are ready to finish the proof of \sref{dagger-theorem}.
 \end{point}
-\begin{point}{Theorem}%
+\begin{point}[dagger-thm-sufficiency]{Theorem}%
     A~$\dagger'$-effectus is a~$\dagger$-effectus
         with~$\dagger$
             as defined in \sref{dagger-definition2}.
@@ -2588,10 +2625,26 @@ Recall both~$g$ and~$f$ are~$\diamond$-positive, hence
 \begin{equation*}
     \asrt_{1 \after f} \ =\  f\ =\ g \after g \ = \ \asrt_{1 \after g}
             \after \asrt_{1 \after g}
-    \ \overset{\sref{andthen-square-rule}}{=}\  
+            \ \overset{\smash{\sref{andthen-square-rule}}}{=}\  
             \asrt_{\andthen{(1 \after g)}{(1 \after g)}}.
 \end{equation*}
-So~$(1 \after g)\after (1\after g) = 1\after f$.
+So~$\andthen{(1 \after g)}{(1\after g)} = 1\after f =
+            \andthen{(1 \after h)}{(1 \after h)}$.
+Hence~$1\after g = 1 \after h$ by uniqueness of the square root.
+So~$g = \asrt_{1 \after g} = \asrt_{1 \after h} = h$, as desired.
+\end{point}
+\begin{point}{Ax.~3}%
+Let~$\asrt_p$ be any~$\diamond$-positive map.
+Write~$q$ for the unique predicate with~$\andthen{q}{q}=p$.
+Then
+\begin{equation*}
+    \asrt_p
+     \ = \ \asrt_{\andthen{q}{q}}
+            \ \overset{\smash{\sref{andthen-square-rule}}}{=}\ 
+     \asrt_q \after \asrt_q  \ =\ 
+     \asrt_q^\dagger \after \asrt_q ,
+\end{equation*}
+so~$\asrt_p$ is~$\dagger$-positive, as desired. \qed
 \end{point}
 \end{point}
 \end{point}
