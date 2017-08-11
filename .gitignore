@@ -1,6 +1,7 @@
 *.log
 *.aux
 *.make
+*.toc
 *.pdf
 *.dvi
 *.d

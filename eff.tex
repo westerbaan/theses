@@ -1,7 +1,7 @@
 \documentclass[b]{subfiles}
 \begin{document}
 
-\chapter{$\dagger$ and~$\diamond$ in an effectus}
+\chapter{Diamond, andthen, dagger}
 
 \begin{parsec}%
 \begin{point}%
@@ -37,6 +37,322 @@ After we have studied plain effectuses,
 \TODO{More intro}
 \end{point}
 \end{parsec}
+\section{Effect algebras et al}
+\begin{parsec}%
+\begin{point}%
+Before we turn to effectuses,
+    it is convenient to introcuce some lesser-known algebraic structures
+    of which the effect algebra is the most important.
+It will turn out that the set of predicates associated to an object in
+    an effectus can be arranged into an effect algebra.
+In this way, effect algebras play the same role
+    for effectuses as heyting algebras for topoi.
+    First, we will recall the definition of partial commutative monoid (PCM)
+--- later we will see \TODO{...} that the partial maps between
+    two objects in an effectus can be arranged into a PCM.
+\end{point}
+\begin{point}{Definition}%
+    A \Define{partial commutative monoid} (\Define{PCM})~$M$
+        is a set~$M$ together with distinguished element~$0 \in M$
+        and a partial binary operation~$\ovee$ such that
+        for all~$a,b,c \in M$ 
+        --- writing~$a \perp b$ whenever~$a \ovee b$ is defined
+        --- we have
+\begin{enumerate}
+    \item \emph{(partial commutativity)}
+        if $a \perp b$, then~$b \perp a$ and~$a \ovee b = b \ovee a$;
+    \item \emph{(partial associativity)}
+        if $a \perp b$ and~$a \ovee b \perp c$,
+        then~$b \perp c$, ~$a \perp b \ovee c$
+            and~$(a \ovee b) \ovee c = a \ovee (b \ovee c)$ \emph{and}
+    \item \emph{(zero)}
+        $0 \perp a$ and~$0 \ovee a = a$.
+\end{enumerate}
+We say~$a\mathrel{\Define{\leq}} b$
+    whenever~$a \ovee c = b$ for some~$c \in M$.
+\end{point}
+\begin{point}[pcm-preorder]{Exercise}%
+Show a PCM is preordered by~$\leq$.
+% \begin{point}{Proof}%
+% Reflexivity is easy:~$a \ovee 0 = 0 \ovee a = a$
+%     by the partial commutativity and zero axiom, so~$a \leq a$.
+% For transitivity, assume~$a \leq b$ and~$b \leq c$.
+% Pick~$d,e \in M$
+%     with~$a \ovee d = b$ and~$b \ovee e = c$.
+% Then by partial
+% associativity~$c = b \ovee e = (a \ovee d) \ovee e = a \ovee (d \ovee e)$
+% so~$a \leq c$.
+% \end{point}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}{Definition}%
+A PCM~$E$ together with distinguished element~$1 \in E$
+is an \Define{effect algebra} (\Define{EA}) \cite{ea}
+    provided
+\begin{enumerate}
+\item
+    \emph{(orthocomplement)}
+    for every~$a$
+    there is a unique~$a^\perp$
+   with~$a \ovee a^\perp = 1$ \emph{and}
+\item
+    \emph{(zero--one)}
+    if~$a \perp 1$, then~$a = 0$.
+\end{enumerate}
+A map~$f\colon E \to F$
+between effect algebras~$E$ and~$F$
+is called an \Define{effect algebra homomorphism}
+if
+\begin{enumerate}
+    \item \emph{(additivity)}
+    $a \perp b$ implies $f(a) \perp f(b)$ and~$f(a)\ovee f(b) = f(a\ovee b)$
+        \emph{and}
+    \item \emph{(unital)}
+    $f(1) = 1$.
+\end{enumerate}
+Write~$\Define{\textsf{EA}}$ for the category
+    of effect algebras these homomorphisms.
+\end{point}
+\begin{point}{Examples}%
+There are many examples of effect algebras
+    --- we only give a few.
+\begin{enumerate}
+\item
+The unit interval
+$[0,1]$ with partial addition is an effect algebra ---
+i.e.:~$x \perp y$
+        whenever~$x +y \leq 1$, $x \ovee y = x + y$
+        and~$a^\perp = 1-a$.
+\item
+Generalizing the previous:
+if~$G$ is an ordered group
+with distinguished element~$1$,
+then the order interval~$[0,1]_G \equiv \{x;\ x\in G;\ 0 \leq x\leq 1\}$
+is an effect algebra
+with~$x \perp y$ whenever~$x +y \leq 1$;
+$x \ovee y = x + y$ and~$x^\perp = 1-x$.
+\item
+In particular,
+    if~$\scrA$ is any von Neumann algebra,
+    then the set of \Define{effects}~$[0,1]_\scrA$
+    forms an effect algebra
+    with~$a \perp b$ whenever~$a +b \leq 1$;
+    $a \ovee b = a + b$ and~$a^\perp = 1-a$.
+The `effect' in effect algebra originates from this example.
+\item
+Any orthomodular lattice~$L$
+    is an effect algebra
+    with the same orthocomplement,
+    $x \perp y$ whenever~$x \leq y^\perp$
+    and~$x \ovee y = x \vee y$.  (See e.g.~\cite[Prop.~27]{basmsc}.)
+\item
+In particular,
+    any boolean algebra~$L$
+    is an effect algebra
+    with complement as orthocomplement,
+    ~$x \perp y$ whenever~$x \wedge y = 0$ and
+    $x \ovee y = x \vee y $.
+\end{enumerate}
+\end{point}
+
+\begin{point}{Exercise}%
+Assume~$E$ and~$F$ are effect algebras.
+First show that the cartesian products~$E \times F$
+    is an effect algebra with componentwise operations.
+Show that this is in fact the categorical product of~$E$ and~$F$
+    in \textsf{EA}.
+To finish, show that~\textsf{EA} has initial
+    object~$\{0,1\}$
+    and final object~$\{0=1\}$.
+(The category \textsf{EA} is in fact complete and cocomplete;
+    for this and more categorical properties,
+        see \cite{corefl}.)
+\end{point}
+
+\begin{point}{Exercise}%
+There is a small redundancy in our definition of effect algebra:
+show that the zero axiom ($x \ovee 0 = x$)
+follows from the remaining axioms (partial commutativity,
+partial associativity, orthocomplement and zero--one.)
+\end{point}
+
+\begin{point}{Proposition}%
+In any effect algebra~$E$, we have
+\begin{enumerate}
+    \item \emph{(involution)}
+        $a^{\perp\perp} = a$;
+    \item
+        $1^\perp= 0$ and~$0^\perp = 1$;
+    \item \emph{(positivity)}
+        if~$a\ovee b = 0$, then~$a = b= 0$;
+    \item \emph{(cancellation)}
+        if~$a\ovee c = b\ovee c$, then~$a = b$;
+    \item $\leq$ partially orders~$E$;
+    \item $a \leq b$ if and only if $b^\perp \leq a^\perp$;
+    \item if~$a \leq b$ and~$b \perp c$, then~$a \perp c$
+        and~$a \ovee c \leq b \ovee c$ \emph{and}
+    \item $a \perp b$ if and only if~$a \leq b^\perp$.
+\end{enumerate}
+\begin{point}{Proof}%
+By partial commutativity and definition
+of orthocomplement both~$a^\perp \ovee a = 1$
+and~$a^\perp \ovee  a^{\perp\perp} = 1$.
+So by uniqueness of orthocomplement,
+    we must have~$a= a^{\perp\perp}$, which is point 1.
+Clearly~$0 \ovee 1 = 1$,
+    so~$1^\perp = 0$ and~$0^\perp = 1$,
+    which is point 2.
+For point 3, assume~$a \ovee b = 0$.
+Then~$a \ovee b \perp 1$
+    and so by partial associativity~$b \perp 1$.
+    By zero--one, we get~$b = 0$.
+    Similarly~$a=0$, which shows point 3.
+For point 4, assume~$ a \ovee c = b \ovee c$.
+From partial associativity, we get
+\begin{equation*}
+    ((a \ovee b)^\perp\ovee a) \ovee c \ =\  
+    ((a \ovee b)^\perp\ovee a) \ovee b \ = \ 1
+\end{equation*}
+and so by uniqueness of
+orthocomplement~$c = ((a\ovee b)^\perp\ovee a)^\perp = b$,
+    which is point 4.
+By \sref{pcm-preorder},
+    we only need to show that~$\leq$ is antisymmetric
+    for point 5.
+So assume~$a \leq b$ and~$b \leq a$.
+Pick~$c,d \in E$ with~$a \ovee c = b$ and~$b \ovee d = a$.
+Then~$a = (a \ovee c) \ovee d = a \ovee (c \ovee d)$.
+By cancellation~$c \ovee d = 0$.
+So by positivity~$c = d= 0$.
+Hence~$a = b$.
+For point 6, assume~$a\leq b$.
+Pick~$c \in E$ with~$a \ovee c = b$.
+Clearly~$a \ovee a^\perp = 1 = b \ovee b^\perp = a \ovee c \ovee b^\perp$,
+so by cancellation~$a^\perp = c \ovee b^\perp$,
+    which is to say~$b^\perp \leq a^\perp$.
+For point 7, assume~$a \leq b$ and~$b \perp c$.
+Pick~$d$ with~$a \ovee d = b$.
+By partial associativity and commutativity
+    we have~$b \ovee c = (a \ovee d) \ovee c = (a \ovee c) \ovee d$,
+    so~$a \ovee c$ and~$a \ovee c \leq b \ovee c$.
+For point 8, first assume~$a \perp b$.
+Then~$a \ovee b \ovee (a \ovee b)^\perp = 1 = b \ovee b^\perp$.
+So by cancellation~$b^\perp = a \ovee (a \ovee b)^\perp$,
+hence~$a \leq b^\perp$.
+For the converse, assume~$a \leq b^\perp$.
+Then~$a \ovee c = b^\perp$ for some~$c$.
+Hence~$a \ovee c \perp b$
+    and so  by partial associativity and commutativity,
+        we get~$a \perp b$, as desired.
+    \qed
+\end{point}
+\end{point}
+\end{parsec}%
+
+\begin{parsec}%
+\begin{point}{Definition}%
+Suppose~$E$ is an effect algebra.
+Write~$\Define{b \ominus a}$
+for the (by cancellation) unique element (if it exists)
+such that~$a \ovee (b \ominus a) = b$.
+\end{point}
+\begin{point}{Exercise}%
+Show that for any effect algebra~$E$, we have
+\begin{enumerate}
+    \item[(D1)]~$a \ominus b$ is defined if and only if~$b \leq a$;
+    \item[(D2)]~$a \ominus b \leq a$ (if defined);
+    \item[(D3)]~$a \ominus (a \ominus b) = b$ (if defined) \emph{and}
+    \item[(D4)]~if $a \leq b \leq c $,
+                then~$c \ominus b \leq c \ominus a$
+                and~$(c \ominus a) \ominus (c \ominus b) = b \ominus a$.
+\end{enumerate}
+\begin{point}%
+Assume~$E$ is a poset with maximum element~$1$
+    and partial binary operation~$\ominus$
+    satisfying~(D1)--(D4).
+Define~$a \ovee b = c \Leftrightarrow c \ominus b = a$
+    and~$a^\perp = 1 \ominus a$.
+Show that this turns~$E$ into an effect algebra
+    with compatible order and~$\ominus$.
+\end{point}
+\begin{point}{Remark}%
+Such a structure~$(E,\ominus,1)$ is called a difference-poset
+    (D-poset) and is, as we have just seen,
+    an alternative way to axiomatize effect algebras.
+\end{point}
+\end{point}
+
+\begin{point}{Exercise}%
+Show that for an effect algebra homomorphism~$f\colon E \to F$,
+    we have
+    \begin{enumerate}
+        \item~\emph{(preserves zero)} $f(0) = 0$;
+        \item~\emph{(order-preserving)} if $a \leq b$, then~$f(a) \leq f(b)$
+                        \emph{and}
+        \item~if~$a\ominus b$ is defined,
+            then $f(a \ominus b) = f(a) \ominus f(b)$.
+    \end{enumerate}
+\end{point}
+\end{parsec}
+
+\subsection{Effect monoids}
+\begin{parsec}%
+\begin{point}%
+In \TODO{...} we will see the set of scalars of an effectus
+    can be arranged into an effect monoid.
+\end{point}
+\begin{point}{Definition}%
+An \Define{effect monoid}~$M$
+is a categorical monoid in~$\mathsf{EA}$ \cite{probdistrconv}
+    --- concretely:
+    $M$ is an effect algebra
+    together with a binary operation~$\odot$
+    such that for all~$a,b,c,d \in M$, we have
+\begin{enumerate}
+    \item \emph{(unit)}
+    $1 \odot a = a \odot 1 = a$;
+\item \emph{(associativity)}
+    $(a \odot b) \odot c 
+    =a \odot (b \odot c)$ \emph{and}
+\item \emph{(distributivity)}
+    $(a \ovee b) \odot (c \ovee d)
+            = (a \odot c) \ovee (b \odot c) \ovee
+            (a \odot d) \ovee (b \odot d)$
+            whenever~$a \perp b$ and~$c \perp d$.
+\end{enumerate}
+An effect monoid~$M$ is \Define{commutative}
+    provided~$a\odot b = b\odot a$ for all~$a,b \in M$.
+\end{point}
+\begin{point}{Examples}%
+Effect monoids are less abundant.
+\begin{enumerate}
+\item The effect algebra~$[0,1]$
+        is a commutative effect monoid with the usual product.
+        (This is the only way to turn~$[0,1]$ into an effect monoid
+                \cite[Prop.~41]{basmsc}.)
+\item We saw earlier that every boolean algebra is an effect algebra
+        with~$x \ovee y = x \vee y$ defined iff~$x \wedge y = 0$.
+    The boolean algebra is turned into an effect monoid
+        with~$x \odot y \equiv x \wedge y$.
+    Every finite (\emph{a priori} non-commutative) effect monoid
+    is of this form \cite[Prop.~40]{basmsc}.
+\item There is a non-commutative effect monoid
+        based on the lexicographically ordered vector space~$\R^5$,
+        see ~\cite[Cor.~51]{basmsc}.
+\end{enumerate}
+\end{point}
+\end{parsec}
+
+\subsection{Effect modules}
+\begin{parsec}%
+\begin{point}%
+The 
+In \TODO{...} we will 
+\end{point}
+\end{parsec}
+
 \section{Effectus}
 An effectus comes in two guises:
     axiomatizing either a category of total maps
@@ -1016,7 +1332,7 @@ In~$\op{\W{NCPsU}}$ the sharp maps are exactly the~MNIU-maps
     
 \end{parsec}
 
-\section{Unique $\diamond$-positive maps}
+\section{$\&$-effectus}
 \begin{parsec}%
 \begin{point}%
 In a~$\diamond$-effectus
