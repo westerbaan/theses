@@ -1626,6 +1626,7 @@ when it obeys the following conditions.
 \item
 \label{tensor-1}
 The range of~$\gamma$ generates~$\scrT$.
+\TODO{reformulate}
 \item
 \label{tensor-2}
 For all np-functionals
@@ -2093,30 +2094,21 @@ Show that the tensor product norm
 from~\sref{tensor-extra}
 is, indeed, a norm.
 \end{point}
-\begin{point}{Proposition}%
+\begin{point}[tensor-basic]{Exercise}%
 Let~$\gamma\colon \scrA\times\scrB\to\scrT$
-be a tensor product of von Neumann algebras.
-
-The extension  $\gamma_\odot\colon \scrA\odot\scrB\to\scrT$
+be a tensor product of von Neumann algebras;
+we're going to establish 
+the closely related and essential facts that
+$\gamma_\odot\colon\scrA\odot\scrB\to\scrT$
 is an isometry
-and a topological embedding
-(from the tensor product topology on~$\scrA\odot\scrB$
-to the ultraweak topology on~$\scrT$).
-
-Moreover,
-the assignment $f\mapsto f\circ\gamma_\odot$
-gives an isometry $\scrA_*\to(\scrA\odot\scrB)^*$
-whose range
-consists
-of all norm limits of simple functionals on~$\scrA\odot\scrB$.
-\begin{point}{Proof}%
-Recall that by definition of the tensor product (see~\sref{tensor})
-the product functionals on~$\scrT$
-are center separating,
-and the image $\gamma_\odot(\scrA\odot\scrB)$ 
-of the algebraic tensor product
-is ultraweakly dense in~$\scrT$.
-This entails by~\sref{vn-center-separating-funcamental}
+and an ultraweak embedding,
+and that certain
+functionals 
+$\omega\colon \scrA\odot\scrB\to\C$
+can be extended uniquely to~$\scrT$ along~$\gamma_\odot$.
+\begin{enumerate}
+\item
+Show using~\sref{vn-center-separating-fundamental}
 that the collection~$\Omega$
 of np-functionals
 on~$\scrT$ of the form 
@@ -2130,129 +2122,301 @@ and that
 every np-functional on~$\scrT$
 is the operator norm limit of finite sums
 of functionals from~$\Omega$.
-Since $\omega/\omega(1)$ is a in~$\Omega$ for every~$\omega\in\Omega$
-with~$\omega\neq 0$,
-the subset~$\Omega_1$ of~$\Omega$
-of unital maps is order separating as well,
+
+Show that~$\omega\circ \gamma_\odot$ is a basic functional
+(see \sref{tensor-extra})
+for every~$\omega\in\Omega$,
+and that every basic functional is of this form
+for some unique~$\omega\in\Omega$.
+
+\item
+Show that the subset~$\Omega_1$ of~$\Omega$
+of unital maps is order separating,
 and so determines the norm on~$\scrT$
 via~$\|a\|^2=\|a^*a\| = \sup_{\omega\in\Omega_1} \omega(a^*a)$
 for all~$a\in\scrT$
-by~\sref{order-separating-norm}.
-Taking~$a=\gamma_\odot(s)$
-where~$s\in\scrA\odot\scrB$
-yields $\|\gamma_\odot(s)\|^2 = \sup_{\omega\in\Omega_1}
-\omega(\gamma_\odot( s^*s ))=
-\sup_{\omega\in\Omega_1} \|s\|_{\omega\circ \tau_\odot}^2$,
-where we've used
-the obvious fact that~$\omega\circ \gamma_\odot$
-is a basic functional (\sref{tensor-extra})
-for every~$\omega\in\Omega_1$.
-Since every unital basic functional is of this form
-(since product functionals, and thus basic functionals too,
-can be extended uniquely from~$\scrA\odot\scrB$ to~$\scrT$),
-we see that~$\|\gamma_\odot(s)\|=\sup_{\omega\in\Omega_1}
+(see~\sref{order-separating-norm}).
+
+Prove that $\|\gamma_\odot(s)\|
+=\sup_{\omega\in\Omega_1} \omega(s^*s)^{\nicefrac{1}{2}}
+=\sup_{\omega\in\Omega_1}
 \|s\|_{\omega\circ \tau_\odot}=\|s\|$
-for all~$s\in\scrA\odot\scrB$
-by definition of the tensor product norm
-on~$\scrA\odot\scrB$ from~\sref{tensor-extra}.
-Hence~$\gamma_\odot$ is an isometry.
-
-Let~$f\in\scrT_*$
-be a normal functional on~$\scrT$.
-Since~$\|f(\gamma_\odot(s))\|\leq \|f\| \|s\|$
 for all~$s\in\scrA\odot\scrB$,
-we see that $f\circ \gamma_\odot$
-is bounded;
-and clearly so too is
-the linear map $(\,\cdot\,)\circ \gamma_\odot\colon 
-\scrA_*\to(\scrA\odot\scrB)^*$
-thereby obtained,
-but it requires some heavier machinery to 
-show that $(\,\cdot\,)\circ \gamma_\odot$ is an isometry.
-Indeed, as a consequence
-of the polar decomposition of normal functionals
-(\sref{polar-decomposition-of-functional})
-there is a partial isometry~$u$ in~$\scrT$
-with~$f(u)=\|f\|$ (see~\TODO{...}). 
-Now, let~$\scrA$ be the norm closure
-of~$\gamma_\odot(\scrA\odot\scrB)$,
-which is a $C^*$-subalgebra of~$\scrT$,
-which is ultraweakly 
-and thus ultrastrongly dense in~$\scrT$ by~\sref{ultraclosed}.
-Thus by Kaplansky's density theorem (\sref{kaplansky})~$u$
-is the ultrastrong limit of a net of elements from $(\scrA)_1$.
-Now, since each element~$a$ of the unit ball~$(\scrA)_1$
-of~$\scrA$
-can be obtained as a limit of a sequence $t_1,t_2,\dotsc$ of elements
-from~$\gamma_\odot(\scrA\odot\scrB)$,
-and the norms~$\|t_n\|$ will tend to~$\|a\|\leq 1$,
-one can find,
-given $\varepsilon>0$,
-a net~$(s_\alpha)_\alpha$
-in $\scrA\odot\scrB$
-such that~$\gamma_\odot(s_\alpha)$
-converges ultrastrongly to~$u$
-as~$\alpha\to\infty$
-and  $\|s_\alpha\|\leq 1+\varepsilon$ for all~$\alpha$.
-Since then
-$\left|f(\gamma_\odot(s_\alpha))|\right|\leq \|f\circ \gamma_\odot\|
-\|s_\alpha\|\leq \|f\circ\gamma_\odot\|(1+\varepsilon)$
-for all~$\alpha$,
-we have $\|f\|=f(u)=\left|f(u)\right|
-=\lim_\alpha \left|f(s_\alpha)\right|
-\leq \|f\circ \gamma_\odot\|(1+\varepsilon)$.
-As~$\varepsilon>0$ was arbitrary,
-we get~$\|f\|\leq \|f\circ \gamma_\odot\|$,
-and conclude that  $\|f\|=\|f\circ \gamma_\odot\|$.
-Hence~$f\mapsto f\circ \gamma_\odot$
-is an isometry.
+and 
+conclude
+that~$\gamma_\odot$ is an isometry.
 
-Let us show that~$\gamma_\odot\colon \scrA\odot\scrB\to\scrT$
-is a ultraweak embedding,
-that is,
-an ultraweak homeomorphism onto its range.
-To begin, $\gamma_\odot$ is ultraweakly continuous,
-because $\omega\circ\gamma_\odot$
-is ultraweakly continuous for every np-functional $\omega$ on~$\scrT$;
-indeed, such~$\omega$
-is the norm limit of finite sums of functionals from~$\Omega$,
-and thus (as and~$f\mapsto f\circ \gamma_\odot$ is bounded),
-$\omega\circ\gamma_\odot$
-is the norm limit of simple functionals on~$\scrA\odot\scrB$,
-which is ultraweakly continuous
-by definition~\sref{tensor-extra}.
-It remains to be shown that the
-inverse of~$\gamma_\odot$
-as map $\scrA\odot\scrB\to\gamma_\odot(\scrA\odot\scrB)$
-is ultraweakly continuous,
-and for this
-it suffices to show that any norm limit of simple functionals
+\item
+Show that~$\|f\circ\gamma_\odot\|\leq \|f\|$
+for every $f\in\scrT_*$,
+and deduce from this
+that when~$\omega\colon \scrT\to\C$
+is an np-functional
+its restriction $\omega\circ\gamma_\odot$
+is the operator norm limit
+of simple functionals on~$\scrA\odot\scrB$
+implying that~$\omega\circ\gamma_\odot$---and
+thus $\gamma_\odot$ itself---is ultraweakly continuous.
+
+\item
+In order to show that~$\gamma_\odot$ is an ultraweak embedding,
+we'll first need that we have
+in fact the equality $\|f\circ \gamma_\odot\|=\|f\|$
+for all~$f\in\scrT$.
+
+In order to show this,
+recall 
+(from \sref{polar-decomposition-of-functional})
+that there is a partial isometry~$u$ in~$\scrT$
+with~$f(u)=\|f\|$ (see~\TODO{...}). 
+
+Show that given~$\varepsilon>0$ 
+there is a net~$(s_\alpha)_\alpha$
+in~$\scrA\odot\scrB$
+with $\|s_\alpha\|\leq 1+\varepsilon$ for all~$\alpha$
+such that $\gamma_\odot(s_\alpha)$
+converges ultrastrongly to~$t$ as~$\alpha\to\infty$.
+
+(Hint: apply Kaplanksy's density theorem
+to the norm closure~$\scrS$ of~$\gamma_\odot(\scrA\odot\scrB)$
+being  a $C^*$-subalgebra of~$\scrT$
+that is ultraweakly and thus ultrastrongly dense in~$\scrT$
+by~\sref{ultraclosed}.)
+
+Deduce that $\|f\|=f(u)=\left|f(u)\right|
+=\lim_\alpha \left|f(\gamma_\odot(s_\alpha))\right|
+\leq \|f\circ \gamma_\odot\| (1+\varepsilon)$,
+and
+conclude that~$\|f\|=\|f\circ\gamma_\odot\|$.
+
+\item
+Show that any functional $\omega'\colon \scrA\odot\scrB\to\C$
+that is the operator norm limit of simple functionals
 on~$\scrA\odot\scrB$
-can be extended to~$\scrT$ along~$\gamma_\odot$.
-This is, of course,
-pretty obvious
-since we've already seen that basic functionals can be extended,
-and so simple functionals can be extended,
-and thus limits of simple functionals can be extended
-(using here the facts that~$f\mapsto f\circ \gamma_\odot$
-is an isometry, and the norm limit
-of an np-functional is again an np-functional, see~\TODO{...}).\qed
+can be extended uniquely along~$\gamma_\odot$
+to an np-functional on~$\scrT$
+(using the fact that the operator
+norm limit of np-functionals is an np-functional again,
+see~\TODO{...}).
+
+Deduce from this that~$\gamma_\odot$ is a ultraweak topological embedding.
+
+(We'll  in~\sref{} that any 
+bounded ultraweakly continuous functional
+on~$\scrA\odot\scrB$ can be extended uniquely
+to a normal functional on~$\scrT$.)
+\end{enumerate}
 \end{point}
+\begin{point}[tensor-bounded-dense]{Exercise}%
+To proceed we need the following strengthening of one of the results
+just established in~\sref{tensor-basic}:
+show that given a tensor product
+$\gamma\colon \scrA\times\scrB\to\scrT$
+of von Neumann algebras,
+and
+$\varepsilon>0$,
+each element~$t$ in~$\scrT$
+can be obtained
+as the ultrastrong limit
+of a net~$(s_\alpha)_\alpha$
+from $\gamma_\odot(\scrA\odot\scrB)$
+with~$\sup_\alpha\|s_\alpha\|\leq \|t\|(1+\varepsilon)$.
 \end{point}
-\begin{point}{Theorem}%
+\begin{point}[tensor-universal-property]{Theorem}%
 A tensor product~$\gamma\colon \scrA\times\scrB\to\scrT$
 of von Neumann algebras~$\scrA$ and~$\scrB$
-has the following universal property.
-For every normal bounded bilinear map $\beta\colon \scrA\times \scrB\to\scrC$
+has this universal property:
+for every normal bounded bilinear map $\beta\colon \scrA\times \scrB\to\scrC$
 to a von Neumann algebra~$\scrC$
 there is a unique ultraweakly continuous
 map  $\Define{\beta_\gamma}\colon \scrT
 \to \scrC$ with $\beta_\gamma\circ \gamma  = \beta$.
 \begin{point}{Proof}%
-\TODO{...}
+Since the uniqueness of~$\beta_\gamma$ is rather obvious,
+we only concern ourselves with its existence.
+Let~$t\in\scrT$ be given
+in order to define~$\beta_\gamma(t)$.
+Note that by~\sref{tensor-bounded-dense} 
+there is a net~$(s_\alpha)_\alpha$
+in~$\scrA\odot\scrB$
+such that~$\gamma_\odot(s_\alpha)$
+converges ultrastrongly (and so ultraweakly too)
+to~$t$,
+and~$\|\gamma_\odot(s_\alpha)\|\leq2\|t\|$
+for all~$\alpha$.
+Now,
+(using here that
+$\gamma_\odot$ is an isometry and a ultraweak
+topological embedding, \sref{tensor-basic})
+the net~$(s_\alpha)_\alpha$
+is bounded an ultraweakly Cauchy,
+and so
+the net
+$(\beta_\odot(s_\alpha))_\alpha$
+in~$\scrC$
+is bounded and ultraweakly Cauchy,
+and thus converges (by~\sref{vn-complete})
+to some element
+$\uwlim_\alpha \beta_\odot(s_\alpha)$
+of~$\scrC$.
+
+\begin{point}%
+Of course we'd like to define $\beta_\gamma(t):=\uwlim_\alpha
+\beta_\odot(s_\alpha)$,
+but must first check
+that $\uwlim_\alpha \beta_\odot(s_\alpha')
+=\uwlim_\alpha \beta_\odot(s_\alpha)$
+when~$(s_\alpha')_\alpha$ is a second net with the same properties
+as~$(s_\alpha)_\alpha$.
+Let us for simplicity's sake
+assume that $(s_\alpha')_\alpha$ and~$(s_\alpha)_\alpha$
+have the same index set,
+although matters can always be arranged this way
+without loss of generality.
+Then as the difference $\gamma_\odot(s_\alpha)-\gamma_\odot(s_\alpha')$
+converges ultraweakly to~$0$ in~$\scrT$ as~$\alpha\to\infty$,
+so will $s_\alpha-s_\alpha'$ converge to~$0$ in~$\scrA\odot\scrB$
+as~$\alpha\to\infty$
+(because~$\gamma_\odot$ is an ultraweak topological embedding),
+and thus $\beta_\odot(s_\alpha)-\beta_\odot(s_\alpha')$
+converges to~$0$ as~$\alpha\to\infty$
+in~$\scrC$,
+implying that $\uwlim_\alpha\beta_\odot(s_\alpha)
+= \uwlim_\alpha \beta_\odot(s_\alpha')$.
+\end{point}
+\begin{point}%
+In this way
+we obtain a map $\beta_\gamma\colon \scrT\to\scrC$
+--- which is clearly linear.
+We also easily get~$\beta_\gamma\circ \gamma=\beta$,
+and as a result~$\beta_\gamma\circ \gamma_\odot = \beta_\odot$.
+The map~$\beta_\gamma$ is also bounded,
+because since~$\|s_\alpha\|\equiv \|\gamma_\odot(s_\alpha)\|\leq 2\|t\|$
+for all~$\alpha$,
+where $(s_\alpha)_\alpha$ and~$t$ are as before,
+we have $\|\beta_\odot (s_\alpha)\|\leq 2\|\beta_\odot\|\|t\|$
+for all~$\alpha$,
+and so~$\|\beta_\gamma(t)\|=\|\uwlim_\alpha \beta_\odot(s_\alpha)\|
+\leq 2\|\beta_\odot\|\|t\|$.
+That, finally, $\beta_\gamma$ is ultraweakly continuous
+follows by a standard but abstract argument from the fact
+that $\beta_\odot$ is \emph{uniformly} ultraweakly continuous.
+We'll give a concrete version of this argument here.
+To begin it suffices to show that~$\omega\circ \beta_\gamma$
+is ultraweakly continuous
+at~$0$
+where~$\omega\colon \scrC\to\C$
+is an np-functional.
+Let~$\varepsilon>0$ be given.
+Since~$\beta_\odot$ 
+is ultraweakly continuous,
+and 
+thus $\omega\circ \beta_\odot$ too,
+there is~$\delta>0$ and a functional~$\nu\colon \scrA\odot\scrB\to\C$
+which is the operator-norm limit
+of simple functionals
+such that $\left|\nu(s)\right|\leq \delta \implies 
+\left|\omega(\beta_\odot(s))\right|\leq \varepsilon$
+for all~$s\in\scrA\odot\scrB$.
+We claim that $\left|\tilde \nu(t)\right|\leq \delta/2 \implies
+\left|\omega(\beta_\gamma(t))\right|\leq 2\varepsilon$
+for all~$t\in\scrT$,
+where~$\tilde\nu$ is the unique extension of~$\nu$
+to a functional on~$\scrT$ along~$\gamma_\odot$ (see~\sref{tensor-basic}) ---
+which implies, of course,
+that $\omega\circ \beta_\gamma$ is ultraweakly continuous on~$0$.
+So let~$t\in\scrT$ with $\left|\tilde\nu(t)\right|\leq \delta/2$
+be given.
+Pick (as before) a bounded net~$(s_\alpha)_\alpha$
+in~$\scrA\odot\scrB$
+such that $\gamma_\odot(s_\alpha)$
+converges to~$t$ as~$\alpha\to\infty$, and observe that,
+for all~$\alpha$,
+\begin{equation*}
+\left|\omega(\beta_\gamma(t))\right|
+\ \leq\ 
+\left|\omega(\beta_\gamma(t)-\beta_\odot(s_\alpha))\right|
+\,+\,\left|\omega(\beta_\odot(s_\alpha))\right|.
+\end{equation*}
+The first term on the right-hand side above will 
+vanish as~$\alpha\to\infty$ (since 
+$\beta_\gamma (t)=\uwlim_\alpha \beta_\odot(s_\alpha)$),
+and will thus be smaller than~$\varepsilon$ 
+for sufficiently large~$\alpha$.
+Since~$\lim_\alpha \left|\nu(s_\alpha)\right|=\left|\tilde\nu(t)\right|
+\leq \delta/2<\delta$
+we see 
+that for sufficiently large~$\alpha$
+we'll have~$\left|\nu(s_\alpha)\right|\leq \delta$ 
+and with it~$\left|\omega(\beta_\odot(s))\right|\leq \varepsilon$.
+Combined,
+we get $\left|\omega(\beta_\gamma(t))\right|\leq 2\varepsilon$,
+and so~$\beta_\gamma$ is ultraweakly continuous.\qed
 \end{point}
 \end{point}
+\end{point}
+\begin{point}{Exercise}%
+Let $\gamma\colon \scrA\times \scrB\to\scrT$
+be a tensor product
+of von Neumann algebras,
+  $\beta\colon \scrA\times \scrB\to\scrC$
+ a normal bounded bilinear map,
+ and~$\beta_\gamma\colon \scrT\to\scrC$
+ its extension along~$\gamma_\odot$
+from~\sref{tensor-universal-property}.
+Show that
+\begin{enumerate}
+\item
+$\|\beta_\gamma\|=\|\beta_\odot\|$
+--- perhaps by  adapting the proof in~\sref{tensor-universal-property-1}
+that~$\beta_\gamma$ is bounded
+by choosing $(s_\alpha)_\alpha$
+with  $\|\gamma_\odot(s_\alpha)\|\leq (1+\varepsilon)\|t\|$
+instead of $\|\gamma_\odot(s_\alpha)\|\leq 2\|t\|$;
+\item
+$\beta_\gamma$
+is multiplicative iff~$\beta$ is multiplicative
+(see~\sref{tensor-extra});
+\item
+$\beta_\gamma$ 
+is involution preserving iff~$\beta$ is involution preserving;
+\item
+$\beta_\gamma$ is unital
+iff $\beta$ is unital;
+\item
+$\beta_\gamma$ is positive
+iff
+$\sum_{i,j} \beta(a_i^*a_j,b_i^*b_j) \geq 0$
+for all tuples $a_1,\dotsc,a_N$
+from~$\scrA$ and $b_1,\dotsc,b_N$ from $\scrB$;
+\item
+$\beta_\gamma$ is completely positive iff
+the matrix $(\ \beta(a_i^*a_j,b_i^*b_j)\ )_{i,j} $
+is positive
+for all~$a_1,\dotsc,a_N\in\scrA$
+and $b_1,\dotsc,b_N\in\scrB$.
+\end{enumerate}
+\TODO{ Add lemma after Kaplansky's density theorem
+on a dense $*$-subalgebra of a von Neumann algebra. }
+\end{point}
+\begin{point}{Exercise}%
+Show that the tensor product of von Neumann algebras~$\scrA$
+and~$\scrB$ is unique in
+the sense
+that when~$\gamma\colon \scrA\times \scrB\to\scrT$
+and~$\gamma'\colon \scrA\times \scrB\to\scrT'$
+are tensor products of~$\scrA$ and~$\scrB$,
+then there is a unique
+nmiu-isomorphism $\varphi\colon \scrT\to\scrT'$
+with $\varphi(\tau(a,b))=\tau'(a,b)$
+for all~$a\in\scrA$ and~$b\in\scrB$.
+\end{point}
+
 \begin{point}{Lemma}%
+\TODO{Adapt this lemma to something of the kind:
+if $\times$ has the universal property of the tensor product
+from~\sref{tensor-universal-property},
+then~$\otimes$ is a tensor product.}
 Given a tensor product  $\otimes \colon \scrA\times \scrB\to\scrA\otimes \scrB$
 of von Neumann algebras~$\scrA$ and~$\scrB$,
 $\otimes_\odot\colon \scrA\odot\scrB\to \scrA\otimes \scrB$
@@ -2290,117 +2454,20 @@ Hence~$\iota\colon \scrT\to\scrA\otimes\scrB$
 is surjective, and~$\scrT=\scrA\otimes \scrB$.\qed
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
-Show that the extension $\beta_\otimes\colon \scrA\otimes \scrB\to\scrC$
-of a normal bounded bilinear map $\scrA\times \scrB\to\scrC$
-between von Neumann algebras
-along a tensor product  $\otimes \colon \scrA\times \scrB\to\scrA\otimes \scrB$
-of~$\scrA$ and~$\scrB$
-is unital iff~$\beta$ is unital;
-$\beta_\otimes$ is involution preserving iff~$\beta$ is involution preserving;
-and
-$\beta_\otimes$ is multiplicative iff~$\beta$ is multiplicative.
-\end{point}
-\begin{point}{Exercise}%
-Show that the tensor product of von Neumann algebras~$\scrA$
-and~$\scrB$ is unique in
-the sense
-that when~$\otimes\colon \scrA\times \scrB\to\scrA\otimes \scrB$
-and~$\otimes'\colon \scrA\times \scrB\to\scrA\otimes'\scrB$
-are tensor products of~$\scrA$ and~$\scrB$,
-then there is a unique
-nmiu-isomorphism $\varphi\colon \scrA\otimes \scrB\to\scrA\otimes'\scrB$
-with $\varphi(a\otimes b)=a\otimes'b$
-for all~$a\in\scrA$ and~$b\in\scrB$.
+\end{parsec}
+\begin{parsec}%
+\begin{point}{Notation}%
+For all von Neumann algebras~$\scrA$
+and~$\scrB$ we pick a tensor product
+$\Define{\otimes}\colon \scrA\times\scrB\to\Define{\scrA\otimes\scrB}$
+to be the canonical tensor product of~$\scrA$ and~$\scrB$.
+
+For all np-maps
+
+
 \end{point}
 \end{parsec}
 \begin{parsec}%
-\begin{point}[tensor-fundamental-lemma]{Lemma}%
-A nmiu-bilinear map $\gamma\colon \scrA\times \scrB\to\scrT$
-is a tensor product if
-\begin{enumerate}
-\item
-\label{tensor-fundamental-lemma-1}
-$\gamma_\odot\colon \scrA\odot\scrB\to\scrT$
-has ultraweakly dense range, 
-\item
-\label{tensor-fundamental-lemma-2}
-$\gamma$ \emph{has product functionals},
-that is,
-for all np-maps
- $\sigma\colon \scrA\to\C$,
-$\tau\colon \scrB\to\C$
-there is a np-functional 
-$\Define{\gamma(\sigma, \tau)}\colon \scrT\to\C$
-with $\gamma(\sigma,\tau)(\gamma(a, b))= \sigma(a)\tau(b)$
-for all~$a\in\scrA$ and~$b\in\scrB$,
-and
-\item
-\label{tensor-fundamental-lemma-3}
-the collection
-of all such product functionals  $\gamma(\sigma, \tau)$
-is faithful.
-
-(We'll see in~\TODO{...} that this third condition can be dropped.)
-\end{enumerate}
-Moreover, in that case~$\gamma_\odot$
-is an isometry
-and a topological embedding
-from the ultraweak tensor product topology on~$\scrA\odot \scrB$
-to the ultraweak topology on~$\scrT$.
-\begin{point}{Proof}%
-Let us first show that~$\gamma_\odot$
-is an isometry,
-that is, that~$\|t\|=  \|\gamma_\odot(t)\|$
-for given~$t\in\scrA\odot\scrB$.
-To see that~$\|t\| \leq \|\gamma_\odot(t)\|$
-is suffices to show that $\|t\|_\omega \leq \|\gamma_\odot(t)\|$
-for any basic~$\omega\colon \scrA\odot\scrB\to\C$
-with~$\omega(1)\leq 1$ by definition of the tensor product norm.
-Note that $\omega$ is of the form
-$\omega=(\sigma\odot\tau)(s^*(\,\cdot\,)s)$
-for some np-functionals $\sigma\colon\scrA\to\C$
-and~$\tau\colon \scrB\to\C$
-and~$s\in\scrA\odot\scrB$.
-By condition~\ref{tensor-fundamental-lemma-2}
-there is an np-map $\gamma(\sigma,\tau)\colon \scrT\to\C$
-with $\gamma(\sigma,\tau)(\gamma(a,b))=\sigma(a)\tau(b)$
-for all~$a \in \scrA$ and~$b\in \scrB$,
-or, in other words, $\gamma(\sigma,\tau)\circ \gamma_\odot = \sigma\odot\tau$.
-Then the np-functional $\omega'$ on~$\scrT$
-given by~$\omega'=
-\gamma(\sigma,\tau)(\gamma_\odot(s)^*(\,\cdot\,)\gamma_\odot(s))$
-clearly extends~$\omega$
-in the sense that $\omega'\circ \gamma_\odot = \omega$,
-so that
-$\omega'(1)=\omega(1)\leq 1$
-and
-$\|t\|^2_\omega = \omega(t^*t)
-=\omega'(\gamma_\odot(t^*t))
-\leq \omega'(1) \,\|\gamma_\odot(t^*t)\|
-\leq \|\gamma_\odot(t)\|^2$,
-and thus~$\|t\|\leq \|\gamma_\odot(t)\|$.
-
-\end{point}
-\end{point}
-\begin{point}{Theorem}%
-A nmiu-bilinear map~$\gamma\colon\scrA\times \scrB\to\scrT$
-is a tensor product iff
-\begin{enumerate}
-\item
-$\gamma_\odot\colon \scrA\odot\scrB\to\scrT$
-has ultraweakly dense range,
-\item
-$\gamma$ \emph{has product functionals},
-that is,
-for all np-maps $\sigma\colon \scrA\to\C$, $\tau\colon \scrB\to\C$
-there is an np-functional $\omega\colon \scrT\to\C$ 
-with $\omega(\gamma(a,b))=\sigma(a)\tau(b)$.
-\end{enumerate}
-\begin{point}{Proof}%
-	\TODO{...}
-\end{point}
-\end{point}
 \begin{point}[uwc-bounded]{Proposition}%
 An ultraweakly continuous linear map $f\colon \scrA\to\scrB$
 between von Neumann algebras is bounded.
