@@ -51,7 +51,7 @@ In this way, effect algebras play the same role
 --- later we will see \TODO{...} that the partial maps between
     two objects in an effectus can be arranged into a PCM.
 \end{point}
-\begin{point}{Definition}%
+\begin{point}[dfn-pcm]{Definition}%
     A \Define{partial commutative monoid} (\Define{PCM})~$M$
         is a set~$M$ together with distinguished element~$0 \in M$
         and a partial binary operation~$\ovee$ such that
@@ -87,7 +87,7 @@ Show a PCM is preordered by~$\leq$.
 \end{parsec}
 
 \begin{parsec}%
-\begin{point}{Definition}%
+\begin{point}[dfn-ea]{Definition}%
 A PCM~$E$ together with distinguished element~$1 \in E$
 is an \Define{effect algebra} (\Define{EA}) \cite{ea}
     provided
@@ -154,6 +154,11 @@ In particular,
     with complement as orthocomplement,
     ~$x \perp y$ whenever~$x \wedge y = 0$ and
     $x \ovee y = x \vee y $.
+\item
+The one-element boolean algebra~$1 \equiv \{0=1\}$
+    is the final object in \textsf{EA}
+    and the two-element boolean algebra~$2 \equiv \{0,1\}$
+    is the initial object in \textsf{EA}.
 \end{enumerate}
 \end{point}
 
@@ -304,10 +309,8 @@ In \TODO{...} we will see the set of scalars of an effectus
     can be arranged into an effect monoid.
 \end{point}
 \begin{point}{Definition}%
-An \Define{effect monoid}~$M$
-is a categorical monoid in~$\mathsf{EA}$ \cite{probdistrconv}
-    --- concretely:
-    $M$ is an effect algebra
+An \Define{effect monoid}~$M$ \cite{probdistrconv}
+    is an effect algebra
     together with a binary operation~$\odot$
     such that for all~$a,b,c,d \in M$, we have
 \begin{enumerate}
@@ -322,8 +325,11 @@ is a categorical monoid in~$\mathsf{EA}$ \cite{probdistrconv}
             (a \odot d) \ovee (b \odot d)$
             whenever~$a \perp b$ and~$c \perp d$.
 \end{enumerate}
-An effect monoid~$M$ is \Define{commutative}
-    provided~$a\odot b = b\odot a$ for all~$a,b \in M$.
+(Phrased categorically:
+    an effect monoid is a monoid in \textsf{EA}
+    with the obvious tensor product, see \cite{corefl,probdistrconv}.)
+An effect monoid~$M$ is said to be \Define{commutative}
+    if we have~$a\odot b = b\odot a$ for all~$a,b \in M$.
 \end{point}
 \begin{point}{Examples}%
 Effect monoids are less abundant.
@@ -338,6 +344,9 @@ Effect monoids are less abundant.
         with~$x \odot y \equiv x \wedge y$.
     Every finite (\emph{a priori} non-commutative) effect monoid
     is of this form \cite[Prop.~40]{basmsc}.
+\item
+In particular: the two-element boolean algebra~$2$
+    is an effect monoid.
 \item There is a non-commutative effect monoid
         based on the lexicographically ordered vector space~$\R^5$,
         see ~\cite[Cor.~51]{basmsc}.
@@ -348,8 +357,60 @@ Effect monoids are less abundant.
 \subsection{Effect modules}
 \begin{parsec}%
 \begin{point}%
-The 
-In \TODO{...} we will 
+An effect algebra of predicates in an effectus
+    will have an action of the effect monoid of the scalars,
+    turning them into a effect module:\TODO{ref}
+\end{point}
+\begin{point}{Definition}%
+Suppose~$M$ is an effect monoid.
+An \Define{effect module} $E$ over~$M$ \cite{corefl}
+    is an effect algebra together with an operation
+            $M \times E \to E$
+            denoted by~$(\lambda, a) \mapsto \lambda \cdot a$
+    such that for all~$a,b \in E$ and~$\lambda,\mu \in M$, we have
+\begin{enumerate}
+\item
+    $(\lambda \odot \mu) \cdot a = \lambda \cdot (\mu \cdot a)$;
+\item
+    if~$a \perp b$,
+     then~$\lambda \odot a \perp \lambda \odot b$
+     and~$(\lambda \odot a) \ovee (\lambda\odot b) = \lambda \odot(a \ovee b)$;
+\item
+    if~$\lambda \perp \mu$,
+     then~$\lambda \odot a \perp \mu \odot a$
+     and~$(\lambda \odot a) \ovee (\mu \odot a) = (\lambda \ovee \mu) \odot a$
+            \emph{and}
+\item
+    $1 \odot a = a$.
+\end{enumerate}
+(Categorically: an effect module over~$M$
+    is an~$M$-action.)
+An effect algebra homomorphism~$f\colon E \to F$
+    between effect modules over~$M$
+    is an $M$-\Define{effect module homomorphism}
+    provided~$\lambda \cdot f(a) = f(\lambda \cdot a)$
+    for all~$\lambda \in M$ and~$a \in E$.
+Write~$\Define{\mathsf{EMod}_M}$
+    for the category of effect modules over~$M$
+    with effect module homomorphisms between them.
+\end{point}
+\begin{point}{Examples}%
+There are many effect modules.
+\begin{enumerate}
+\item
+Every effect algebra is an effect module over
+    the two-element effect monoid $2$.
+    (In fact $\mathsf{EA} \cong \mathsf{EMod}_{2}$.)
+The only effect module over the one-element effect monoid~$1$,
+    is the one-element effect algebra~$1$ itself.
+\item
+If~$V$ is an ordered real vector space with positive order unit~$u$,
+    then~$[0,u]$ is an effect module over~$[0,1]$.
+In fact, every effect module over~$[0,1]$
+    is of this form \cite{gudder1998representation}.
+See also \cite[Thm.~3]{jacobs2016expectation}
+    for the stronger categorical equivalence.
+\end{enumerate}
 \end{point}
 \end{parsec}
 
@@ -367,7 +428,7 @@ A category $C$ is said to be an \Define{effectus in total form}
 \begin{enumerate}
 \item $C$ has finite coproducts and a final object~$1$;
 \item all diagrams of the following form are pullbacks
-\begin{equation*}
+\begin{equation}\label{pullbacks}
 \xymatrix{
     X+Y \ar[r]^{\id+!} \ar[d]_{!+\id} & X+1\ar[d]^{!+\id} \\
     1+Y\ar[r]_{\id+!} & 1+1
@@ -377,7 +438,7 @@ A category $C$ is said to be an \Define{effectus in total form}
     X \ar[r]^{!} \ar[d]_{\kappa_1} & 1 \ar[d]^{\kappa_1} \\
     X+Y\ar[r]_{!+!} & 1+1
     }
-\end{equation*}
+\end{equation}
 \item\label{eff-joint-monicity} and the following two arrows are jointly monic
     \begin{equation*}
         \xymatrix@C+2pc  {
@@ -386,17 +447,31 @@ A category $C$ is said to be an \Define{effectus in total form}
         }
     \end{equation*}
 \end{enumerate}
-An arrow~$X \to Y+1$ is called a \Define{partial map} $X \to Y$.
+An arrow~$X \to Y+1$ is called a \Define{partial map}
+$X \mathrel{\Define{\pto}} Y$.
+\begin{point}%
+One interested in physics, should think of the objects
+    of an effectus as physical systems and its arrows as
+    the physical operations between them.
+    The final object~$1$ is the physical system with a single state.
+The coproduct~$X+Y$ is the system that can be prepared as~$X$ or as~$Y$.
+
+Studying programming languages, one would do better thinking of
+    the objects of an effectus as data types and
+    its arrows as the allowed operations between them (semantics of programs).
+The final object~$1$ is the unit data type.
+The coproduct~$X + Y$ is the union data type of~$X$ and~$Y$.
+\end{point}
 \begin{point}%
 Our main example of an effectus in total form
     is the category~$\op{\W{NCPU}}$
     of von Neumann algebras with completely positive normal unital
     maps in the opposite direction.
 The partial maps correspond to contractive maps.
-We list more examples later.
+We list more examples later on.
 Let~$C$ be an effectus in total form.
 Given two arrows~$f\colon X \to Y+1$
-and~$g \colon Y \to Z+1$ (i.e.~partial maps~$X \to Y$ and~$Y \to Z$)
+and~$g \colon Y \to Z+1$ (i.e.~partial maps~$X \pto Y$ and~$Y \pto Z$)
     their composition as partial maps
     is defined as~$g \hafter f \equiv  [g, \kappa_2] \after f$.
 Write~$\Define{\Par C}$ for the \Define{category of partial maps},
@@ -417,21 +492,20 @@ A category~$C$ is called an \Define{effectus in partial form}
     \cite{effintro,kentapartial} if
 \begin{enumerate}
 \item
-    $C$ is a finPAC \cite{kentapartial} (cf.~\cite{arbib}) --- that is: if
+    $C$ is a finPAC \cite{kentapartial} (cf.~\cite{arbib}) --- that is:
     \begin{enumerate}
         \item 
             $C$ has finite coproducts $(+,0)$;
-        \item $C$ is PCM-enriched --- that is: if
+        \item $C$ is PCM-enriched --- that is:
             \begin{enumerate}
             \item
             every homset $C(X,Y)$ has a partial binary operation~$\ovee$
-            (we write~$\Define{f \perp g}$ if~$f \ovee g$ exists)
                     and distinguished~$0 \in C(X,Y)$
-                    that turns~$C(X,Y)$ into a partial commutative monoid
-                    (PCM) and
+                    that turns~$C(X,Y)$ into a partial commutative monoid,
+                    see \sref{dfn-pcm}, and
             \item
-            if $f \perp g$ then
-                $(h \after f) \perp (h \after g)$,
+            if $f \perp g$ then both
+                $(h \after f) \perp (h \after g)$ and
                 $(f \after k) \perp (g \after k)$ \emph{and}
             \begin{equation*}
                  h \after (f \ovee g) = 
@@ -458,24 +532,21 @@ A category~$C$ is called an \Define{effectus in partial form}
     \item it has effects --- that is: there is a distinguished object~$I$
             such that
     \begin{enumerate}
-        \item for each object~$X$ the PCM~$C(X,I)$
-                is an effect algebra \cite{ea} --- that is:
-        \begin{enumerate}
-            \item
-                for each~$f\colon X \to I$
-                    there is a unique element~$f^\perp\colon X \to I$
-                    such that~$f \ovee f^\perp = 1$,
-                    where~$1 \equiv 0^\perp$ and
-            \item
-                if~$f\colon X \to I$ with~$f \perp 1$,
-                    then~$f = 0$;
-        \end{enumerate}
+        \item for each object~$X$, the PCM~$C(X,I) \equiv \Define{\Pred X}$
+            is an effect algebra, see \sref{dfn-ea}
+            --- in particular~$C(X,I)$
+                has a maximum element~$1$;
         \item if~$1 \after f \perp 1 \after g$,
             then~$f \perp g$ \emph{and}
         \item if~$1 \after f = 0$ then~$f = 0$.
     \end{enumerate}
 \end{enumerate}
 A map~$f\colon X \to Y$ is called \Define{total} if~$1 \after f = 1$.
+\begin{point}{Remark}%
+The untying axiom is redundant: it follows from the others.
+We include it, as it is part
+    of the definition of a finPAC.
+\end{point}
 \begin{point}%
 At first glance an effectus in partial form seems
     to have a much richer structure than an effectus in total form.
@@ -486,7 +557,7 @@ This is not the case ---
 \end{point}
 \begin{point}{Theorem (Cho)}%
 Let~$C$ be an effectus in total form
-and~$D$ be an effectus in partial form.\TODO{cite kenta}
+and~$D$ be an effectus in partial form.
 \begin{enumerate}
 \item
 The category~$\Par C$ is an effectus in partial form
@@ -497,23 +568,295 @@ The total maps of~$D$ form an effectus in total form~$\Tot D$.
     Nothing is lost:
     $\Par \Tot D \cong D$ and~$\Tot \Par C \cong C$.
 \end{enumerate}
-\begin{point}{Proof}%
-Let~$C$ be an effectus in total form.
-\TODO{}
 \begin{point}%
-We will first prove that~$\Par C$ has finite coproducts.
-It is sufficient to show~$\Par C$ has an initial object~$0$
-    and binary coproducts.
-It is easy to the initial object of~$C$ is
-    also the initial object of~$\Par C$.
-Let~$\kappa_1 \colon X \to X+Y \leftarrow Y \colon \kappa_2$
-be a coproduct in~$C$.
-We will show~$X + Y$ is a
-    a coproduct in~$\Par C$ with coprojections~$\kappa_1 \colon X \to X+Y+1$
-    and~$\kappa_2 \colon Y \to X+Y+1$.
-Let~$f\colon X \to Z+1$ and~$g\colon Y \to Z+1$ be given.
-Then 
+We postpone the proof until \TODO{}.
 \end{point}
+\end{point}
+\end{parsec}
+\subsection{From partial to total}
+\begin{parsec}%
+\begin{point}%
+We will first show that the total maps of an effectus in partial form
+    are an effectus.
+The proof of the pullback diagrams will elucidate
+    their purpose and make the proof in the opposite direction more palatable.
+\end{point}
+\begin{point}[coproj-total]{Lemma}%
+In an effectus in partial form,
+    coprojections are total.
+\begin{point}{Proof}%
+Note
+$1 = 1 \after \id = (1 \after [\id, 0]) \after \kappa_1
+                    \leq 1 \after \kappa_1 \leq 1$.
+Indeed~$1 \after \kappa_1 = 1$. \qed
+\end{point}
+\end{point}
+\begin{point}[cotupl-pcm]{Proposition}%
+In an effectus in partial form,
+the cotupling bijection~$(f,g) \mapsto [f,g]$
+    is a PCM-isomorphism ---
+    that is:
+\begin{enumerate}
+\item
+    $[f,g] \perp [f',g']$ if and only if
+        $f \perp f'$ and~$g \perp g'$;
+\item
+    if~$[f,g] \perp [f', g']$,
+    then~$[f,g] \ovee [f',g'] = [f \ovee f', g\ovee g']$ \emph{and}
+\item
+    $[0,0] = 0$.
+\end{enumerate}
+Furthermore~$[1,1]=1$ for maps into~$I$,
+so the cotupling map is an effect algebra
+isomorphism~$\Pred (X) \times \Pred (Y) \cong \Pred (X+Y) $.
+\begin{point}{Proof}%
+First we show~$[h,l] = [h,0] \ovee [0,l]$.
+By the compatible sum axiom
+\begin{equation*}
+    [h, 0] \ = \ 
+    \pproj_1 \after (h + l)
+    \ \perp\  \pproj_2 \after (h + l)
+    \ = \ [0, l].
+\end{equation*}
+By PCM-enrichtment
+$([h, 0] \ovee [0, l]) \after \kappa_1
+         =  ([h, 0] \after \kappa_1) \ovee
+        ([0, l] \after \kappa_1)  = h$.
+Similarly~$([h, 0] \ovee [0, l]) \after \kappa_2 = l$.
+Thus indeed~$[h,l] = [h,0] \ovee [0,l]$.
+
+Assume~$[f,g] \perp [f',g']$.
+    By PCM-enrichment
+    we have~$f = [f,g] \after \kappa_1 \perp [f',g'] \after \kappa_1 = f'$.
+Similarly~$g \perp g'$.
+Conversely, assume~$f \perp f'$ and~$g \perp g'$.
+Again, by PCM-enrichment~$
+[f,0] = f  \after \pproj_1 \perp f' \after \pproj_1 = [f', 0]$
+    and~$[f\ovee f', 0 ] = [f,0] \ovee [f', 0]$.
+Similarly~$[0,g \ovee g'] = [0,g] \ovee [0,g']$.
+Putting it all together
+\begin{align*}
+[f, g] \ovee [f', g']
+&\ = \ 
+ [f, 0] \ovee [0,g] \ovee [f', 0] \ovee [0, g'] \\
+ &\ = \ 
+ [f\ovee f', 0]\ovee [0, g\ovee g'] \\
+ &\ = \ 
+ [f\ovee f', g \ovee g'].
+\end{align*}
+To show cotupling is a PCM-isomorphism,
+    it only remains to be shown~$[0,0]=0$.
+As~$0 \after \kappa_1 = 0$
+    and~$0 \after \kappa_2 = 0$,
+    we indeed have~$0 = [0,0]$.
+Similarly by \sref{coproj-total} we have~$1 \after \kappa_1 = 1$
+    and~$1 \after \kappa_2 = 1$,
+    so~$1 = [1,1]$. \qed
+\end{point}
+\end{point}
+
+\begin{point}%
+The coproduct in an effectus in partial form
+is almost a (bi)product:
+\end{point}
+
+\begin{point}[coprod-prod]{Proposition}%
+In an effectus in partial form, we have a correspondence
+\begin{prooftree}
+\AxiomC{$h\colon Z \to X+Y$}
+\doubleLine
+\UnaryInfC{$f\colon Z \to X \quad g\colon Z \to Y \quad 1 \after f \perp 1 \after g$}
+\end{prooftree}
+as follows:
+for every~$f\colon Z \to X$
+    and~$g\colon Z \to Y$
+    with~$1 \after f \perp 1 \after g$,
+    there is a unique map~$\Define{\langle f, g\rangle} \colon Z \to X +Y$
+    such that~$\pproj_1 \after \langle f, g \rangle = f$
+    and~$\pproj_2 \after \langle f, g \rangle = g$,
+    where~$\pproj_1 = [\id,0]$ and~$\pproj_2=[0,\id]$.
+In fact~$\langle f, g\rangle = (\kappa_1 \after f) \ovee (\kappa_2 \after g)$.
+Conversely~$h = \langle \pproj_1 \after h, \pproj_2 \after h \rangle$
+    for any~$h \colon Z \to X+Y$.
+\begin{point}{Proof}%
+Assume~$f\colon Z \to X$ and~$g\colon Z \to Y$ with~$1\after f \perp 1\after g$.
+By \sref{coproj-total},
+we have~$1 \after \kappa_1 \after f = 1 \after f \perp 1 \after g =
+        1 \after \kappa_2 \after g$.
+Thus~$\kappa_1 \after f \perp \kappa_2 \after g$.
+Define~$\langle f, g\rangle = (\kappa_1 \after f) \ovee (\kappa_2 \after g)$.
+By the PCM-enrichedness, we have
+\begin{align*}
+\pproj_1 \after \langle f, g\rangle 
+&\  =\  [\id, 0] \after ((\kappa_1 \after f) \ovee (\kappa_2 \after g)) \\
+ &\  =\  ([\id, 0] \after \kappa_1 \after f) \ovee 
+    ([\id, 0] \after \kappa_2 \after g) \\
+    & \ =\  f \ovee (0 \after g) \ = \ f.
+\end{align*}
+Similarly~$\pproj_2 \after \langle f, g \rangle = g$.
+To show uniqueness, assume~$f = \pproj_1 \after h$
+    and~$g = \pproj_2 \after h$ for some (other)
+    $h\colon Z \to X+Y$.
+Note~$\kappa_1 \after \pproj_1 = [\kappa_1, 0]$
+and~$\kappa_2 \after \pproj_2 = [0, \kappa_2]$,
+so by~\sref{cotupl-pcm} we have~$(\kappa_1 \after \pproj_1)
+    \ovee (\kappa_2 \after \pproj_2) = [\kappa_1, \kappa_2] = \id$,
+    hence
+\begin{align*}
+    \langle f, g\rangle & \ = \ 
+    \langle \pproj_1 \after h, \pproj_2 \after h \rangle \\
+    & \ = \ (\kappa_1 \after\pproj_1 \after h) 
+    \ovee (\kappa_2 \after\pproj_2 \after h)  \\
+    & \ = \ ((\kappa_1 \after\pproj_1 )
+    \ovee (\kappa_2 \after\pproj_2 ))  \after h \\
+    & \ = \  h,
+\end{align*}
+which demonstrates uniqueness.
+
+Finally, let~$h\colon Z\to X+Y$ be any map.
+Note~$1 \after \pproj_1 = [1,0]$
+    and~$1 \after \pproj_2 = [0,1]$.
+So by PCM-enrichment~$1 \after \pproj_1 \after h \perp 1 \after \pproj_2 \after h$ and so~$\pproj_1 \after h \perp \pproj_2 \after h$.
+By the previous
+$\langle \pproj_1 \after h, \pproj_2 \after h\rangle
+= (\kappa_1 \after \pproj_1 \after h) \ovee
+ (\kappa_2 \after \pproj_2 \after h) 
+ = h $ as desired.\qed
+\end{point}
+\end{point}
+
+\begin{point}[eff-prod-rules]{Exercise}%
+Show that in an effectus in partial form, we have
+\begin{enumerate}
+    \item~$1 \after \langle f, g\rangle = (1 \after f) \ovee(1 \after g)$;
+    \item~$(k+l) \after \langle f, g\rangle
+        = \langle k \after f, l \after g \rangle$ \emph{and}
+    \item~$\langle f, g\rangle \after k = \langle f \after k,
+                                g \after k \rangle$.
+\end{enumerate}
+\end{point}
+
+\begin{point}[eff-partial-to-total]{Theorem}%
+Let~$C$ be an effectus in partial form.
+The total maps of~$C$ are an effectus in total form.
+\begin{point}{Proof}%
+The total maps form a subcategory: $1 \after \id = 1$
+    and $1 \after f \after g = 1 \after g = 1$ for composable total~$f,g$.
+In \sref{coproj-total} we saw coprojections are total.
+By \sref{cotupl-pcm}
+    we have~$1 \after [f,g] = [1 \after f, 1 \after g] = [1,1] = 1$
+    for total~$f\colon X \to Z$ and~$g\colon Y \to Z$,
+    so~$\Tot C$ has binary coproducts.
+The unique map~$!\colon 0 \to X$ must be total
+    as~$1 \after ! = 1$ is the unique map~$0 \to I$,
+    so~$\Tot C$ has initial object~$0$, hence all finite coproducts.
+\end{point}
+\begin{point}%
+To show~$I$ is the final object of~$\Tot C$,
+    we need~$\id_I = 1$.
+As~$C(I,I)$ is an effect algebra~$1 = \id \ovee \id^\perp$
+    for some~$\id^\perp$.
+So by PCM-enrichtment~$1 = 1 \after 1 = (1 \after \id) \ovee (1 \after\id^\perp) = 
+1 \ovee (1 \after \id^\perp)$.
+By the zero--one axiom~$1 \after \id^\perp = 0$.
+So~$\id^\perp = 0$ and indeed~$\id = 1$.
+To show~$I$ is final in~$\Tot C$, pick any object~$X$ in~$\Tot C$.
+We claim~$1 \colon X \to I$ is the unique total map.
+Indeed, by the previous $1 = \id_I \after 1 = 1 \after 1$, so~$1$ is total
+and if~$h\colon X \to I$ is total, then~$1=1 \after h = \id_I \after h = h$.
+\end{point}
+\begin{point}%
+To show the square on the left of \eqref{pullbacks} is a pullback
+    in~$\Tot C$,
+assume~$f\colon Z \to X+I$ 
+and~$g\colon Z \to I+Y$
+are total maps with~$(\id+1) \after g = (1+\id) \after f$.
+By~\sref{coprod-prod}, $f = \langle \alpha, a \rangle$
+    and~$g = \langle b, \beta \rangle$
+    for some maps~$\alpha\colon Z \to X$, $\beta\colon Z \to Y$
+        and~$a,b\colon Z \to I$ in~$C$.
+\begin{equation*}
+\xymatrix@C+1pc@R-1pc{ 
+Z \ar@/^1pc/[rrd]^{\langle\alpha,a \rangle}
+    \ar@/_1pc/[rdd]_{\langle b, \beta\rangle}
+    \ar@{.>}[rd]|{\langle \alpha, \beta\rangle}
+    \\
+    &  X+Y \ar[r]^{\id+1} \ar[d]_{1+\id} & X+I\ar[d]^{1+\id} \\
+    &I+Y\ar[r]_{\id+1} & I+I
+    }
+\end{equation*}
+By~\sref{eff-prod-rules},
+    we have~$1 = 1 \after f = 1 \after \langle \alpha, a\rangle
+                = (1 \after \alpha) \ovee a$
+        and so~$a^\perp = 1\after \alpha$.
+Similarly~$b^\perp = 1 \after \beta$.
+Again, using~\sref{eff-prod-rules},
+    we see
+\begin{equation*}
+    \langle b, 1 \after \beta \rangle \ =\ 
+    (\id + 1) \after \langle b, \beta \rangle \ =\ 
+    (\id + 1) \after g \ =\ 
+    (1 + \id) \after f
+               \  = \ \langle 1 \after \alpha, a\rangle,
+\end{equation*}
+so~$1 \after \beta = a = (1 \after \alpha)^\perp$,
+hence~$1 \after \beta \perp 1 \after \alpha$,
+so~$\langle \alpha,\beta\rangle \colon Z \to X+Y$ exists
+    and is total as~$1 \after \langle \alpha,\beta\rangle = 
+        (1 \after \alpha) \ovee (1 \after \beta) = 1$.
+We compute~$(\id + 1) \after \langle\alpha, \beta\rangle = \langle \alpha,
+    1 \after \beta\rangle = \langle \alpha, a\rangle = f$.
+    Similarly~$(1 + \id) \after \langle \alpha, \beta\rangle = g$.
+    Assume~$h\colon Z \to X+Y$ is any (other) map with~$(1 +\id) \after h
+        = g$ and~$(\id+1) \after h = f$.
+Say~$h = \langle h_1, h_2 \rangle$.
+Then~$\langle \alpha, a\rangle = f= (\id + 1)\after h = \langle h_1, 1 \after h_2 \rangle$, so~$\alpha = h_1$. Similarly~$\beta=h_2$.
+Thus~$h = \langle \alpha, \beta\rangle$,
+    which shows our square is indeed a pullback.
+\end{point}
+\begin{point}%
+To show the square on the righy of \eqref{pullbacks} is a pullback
+    in~$\Tot C$,
+assume (using \sref{coprod-prod})
+$\langle \alpha, \beta \rangle\colon Z \to X+Y$
+is some total map
+with~$(1+1) \after \langle\alpha,\beta\rangle = \kappa_1 \after 1$.
+    \begin{equation*}
+\xymatrix@C+1pc@R-1pc{ 
+    Z \ar@{.>}@/^1pc/[rrd]^{1}
+    \ar@/_1pc/[rdd]_{\langle \alpha,\beta\rangle}
+    \ar@{.>}[rd]|{\alpha}\\
+    &X \ar[r]^{1} \ar[d]_{\kappa_1} & I \ar[d]^{\kappa_1} \\
+    &X+Y\ar[r]_{1+1} & I+I
+    }
+    \end{equation*}
+With \sref{eff-prod-rules},
+we see~$\langle 1 \after \alpha, 1 \after \beta \rangle
+        = (1 + 1) \after \langle \alpha, \beta \rangle
+        = \kappa_1 \after 1
+        = \langle 1, 0 \rangle$.
+So~$\alpha$ is total and~$\beta=0$.
+Hence~$\langle \alpha, \beta\rangle = \langle \alpha, 0\rangle
+        = \kappa_1 \after \alpha$ as desired.
+\end{point}
+\begin{point}%
+    Finally, to show~$m_1\equiv [\kappa_1,\kappa_2,\kappa_2], m_2 \equiv [\kappa_1,\kappa_2,\kappa_2]\colon
+    I+I+I \to I+I$ are jointly monic,
+    let~$f_1 \equiv \langle a_1,b_1,c_1\rangle,f_2\equiv \langle a_2,b_2,c_2\rangle\colon X\to I+I+I$ be any total maps
+    with~$m_1 \after f_1 = m_1 \after f_2$
+    and~$m_2 \after f_1 = m_2 \after f_2$.
+Then
+\begin{equation*}
+    a_1 \ = \ [\id, 0, 0] \after f_1
+        \ = \ \pproj_1 \after m_1 \after f_1
+        \ = \ \pproj_1 \after m_1 \after f_2
+        \ = \ a_2.
+\end{equation*}
+and similarly from the equality involving~$m_2$, we get~$b_1 = b_2$.
+As~$f_1$ is total, we have~$1 = 1 \after f_1=  a_1 \ovee b_1 \ovee c_1$,
+    so~$c_1 = (a_1 \ovee b_1)^\perp$.
+With the same reasoning~$c_2 = (a_2 \ovee b_2)^\perp$.
+Thus~$c_1 = c_2$ and so~$f_1 = f_2$, as desired. \qed
 \end{point}
 \end{point}
 
