@@ -2010,7 +2010,11 @@ is continuous with respect to the ultraweak tensor product topology
 on~$\scrA\odot\scrB$
 and the ultraweak topology on~$\scrC$,
 \item
-\TODO{definitions of (completely) positive bilinear maps}
+\Define{\textbf{c}ompletely \textbf{p}ossitive}
+when~$\sum_{i,j,k}c_k^*\,\beta(a_i^*a_j,b_i^*b_j)\,c_k\geq 0$
+for all tuples $a_1,\dotsc,a_N\in\scrA$,
+$b_1,\dotsc,b_N\in\scrB$,
+and $c_1,\dotsc,c_N\in\scrC$.
 \end{enumerate}
 \end{enumerate}
 \end{point}
@@ -2162,7 +2166,7 @@ thus $\gamma_\odot$ itself---is ultraweakly continuous.
 In order to show that~$\gamma_\odot$ is an ultraweak embedding,
 we'll first need that we have
 in fact the equality $\|f\circ \gamma_\odot\|=\|f\|$
-for all~$f\in\scrT$.
+for all~$f\in\scrT_*$.
 
 In order to show this,
 recall 
@@ -2355,7 +2359,52 @@ and so~$\beta_\gamma$ is ultraweakly continuous.\qed
 \end{point}
 \end{point}
 \end{point}
+\end{parsec}%
+\begin{parsec}%
+\begin{point}%
+Concerning completely positive
+bilinear maps.
+\end{point}
 \begin{point}{Exercise}%
+Show that a mi-bilinear
+map $\beta\colon \scrA\times\scrB\to\scrC$ between von Neumann 
+algebras is completely positive.
+\end{point}
+\begin{point}{Notation}%
+Given a bilinear map
+$\beta\colon \scrA\times\scrB\to\scrC$
+between von Neumann algebras,
+we define
+$\Define{M_N\beta}\colon M_N\scrA\times M_N\scrB\to M_N\scrC$
+by  $(M_N\beta)(A,B) = 
+(\beta(A_{ij},B_{ij}))_{ij}$
+for each~$N$.
+\end{point}
+\begin{point}[cp-bilinear]{Exercise}%
+Show that for a bilinear map $\beta\colon \scrA\times\scrB\to\scrC$
+between von Neumann algebras
+the following are equivalent.
+\begin{enumerate}
+\item
+$\beta$ is completely positive.
+\item
+$M_N\beta$ is completely positive
+for each~$N$.
+\item
+$(M_N\beta)(A,B)\geq 0$
+for all~$A\in M_N(\scrA)_+$, $B\in M_N(\scrB)_+$ and~$N$.
+\end{enumerate}
+Deduce 
+as a corollary that $h\circ \beta \circ (f\times g)$
+is completely positive
+when~$f\colon \scrA'\to\scrA$,
+$g\colon \scrB'\to\scrB$
+and~$h\colon \scrC\to\scrC'$
+are cp-maps between von Neumann algebras.
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}[tensor-universal-property-extra]{Exercise}%
 Let $\gamma\colon \scrA\times \scrB\to\scrT$
 be a tensor product
 of von Neumann algebras,
@@ -2377,7 +2426,7 @@ instead of $\|\gamma_\odot(s_\alpha)\|\leq 2\|t\|$;
 $\beta_\gamma$
 is multiplicative iff~$\beta$ is multiplicative
 (see~\sref{tensor-extra});
-\item
+\item 
 $\beta_\gamma$ 
 is involution preserving iff~$\beta$ is involution preserving;
 \item
@@ -2391,14 +2440,187 @@ for all tuples $a_1,\dotsc,a_N$
 from~$\scrA$ and $b_1,\dotsc,b_N$ from $\scrB$;
 \item
 $\beta_\gamma$ is completely positive iff
-the matrix $(\ \beta(a_i^*a_j,b_i^*b_j)\ )_{i,j} $
-is positive
-for all~$a_1,\dotsc,a_N\in\scrA$
-and $b_1,\dotsc,b_N\in\scrB$.
+$\beta$ is completely positive.
 \end{enumerate}
 \TODO{ Add lemma after Kaplansky's density theorem
 on a dense $*$-subalgebra of a von Neumann algebra. }
 \end{point}
+\begin{point}[product-functional]{Exercise}%
+Recall that given np-functionals 
+$\sigma \colon \scrA\to\C$
+and~$\tau\colon \scrB\to\C$
+on von Neumann algebras,
+the functional $\sigma\odot\tau\colon \scrA\odot\scrB\to\C$
+is ultraweakly continuous and bounded,
+almost by definition
+of the norm an ultraweak topology on~$\scrA\odot\scrB$.
+
+Show that $f\odot g$ is
+bounded and ultraweakly continuous too
+for all~$f\in\scrA_*$ and~$g\in\scrB_*$
+(perhaps using~\sref{luws}).
+\end{point}
+\begin{point}{Proposition}%
+Given ncp-maps $f\colon \scrA\to\scrC$
+and $g\colon \scrB\to\scrD$
+between von Neumann algebras
+there is a unique ncp-map
+$\Define{f\otimes g}\colon \scrA\otimes\scrB\to\scrC\otimes\scrD$
+with 
+\begin{equation*}
+	(f\otimes g)(a\otimes b) \ =\ f(a)\otimes f(b)
+\end{equation*}
+for all~$a\in\scrA$ and~$b\in\scrB$.
+Moreover,
+\begin{enumerate}
+\item
+$f\otimes g$ is multiplicative 
+when~$f$ and~$g$ are multiplicative;
+\item
+$f\otimes g$ is involution preserving
+when~$f$ and~$g$ are involution preserving; and
+\item
+$f\otimes g$ is unital 
+when~$f$ and~$g$ are unital.
+\end{enumerate}
+\begin{point}{Proof}%
+As uniqueness of~$f\otimes g$ is rather obvious,
+we leave it at that.
+To establish
+existence of~$f\otimes g$,
+it suffices to show
+that the bilinear map~$\beta\colon \scrA\times\scrB\to\scrC\otimes\scrD$
+given by~$\beta(a,b)=f(a)\otimes g(b)$,
+which is completely positive by~\sref{cp-bilinear},
+is bounded and normal;
+because then we may take $f\otimes g:=\beta_\otimes$
+as in~\sref{tensor-universal-property}
+and all
+the stated properties of~$f\otimes g$ will then  follow 
+with the very least of effort
+from~\sref{tensor-universal-property-extra}.
+
+To see that~$\beta$ is bounded,
+we'll prove that~$\|\beta_\odot(s)\| \leq \|f\|\|g\| \|s\|$
+given an element~$s$ of~$\scrA\otimes \scrB$,
+and for this
+it suffices (by the definition
+of the tensor product norm, \sref{tensor-extra}) 
+to show that
+$\omega(\beta_\odot(s)^*\beta_\odot(s))
+\leq \|f\|^2\|g\|^2\|s\|^2$
+given a basic functional~$\omega$
+on~$\scrA\odot\scrB$ with~$\omega(1)\leq 1$.
+We'll prove in a moment that
+$\|\omega\circ\beta_\odot\|\leq \|f\|\|g\|$
+and~$\beta_\odot(s)^*\beta_\odot(s)\leq
+\|f\|\|g\|\beta_\odot(s^*s)$,
+because with these two claims
+we get 
+$\omega(\beta_\odot(s)^*\beta_\odot(s))
+\leq \omega(\beta_\odot(s^*s))
+\leq \|f\|\|g\| \|\omega\circ \beta_\odot\| \|s\|^2
+\leq \|f\|^2\|g\|^2\|s\|^2$
+ --- which is the result desired.
+
+Concerning the first
+promise, that $\|\omega\circ \beta_\odot\|\leq \|f\|\|g\|$,
+note that writing
+$\omega\equiv (\sigma\odot\tau)(t^*(\,\cdot\,)t)$,
+where~$\sigma$ and~$\tau$
+are np-maps on~$\scrC$ and~$\scrD$, respectively,
+and~$t\equiv\sum_{ij} c_i \odot d_i$
+is from~$\scrC\odot\scrD$,
+we have 
+\begin{equation*}
+	\omega\circ\beta_\odot
+= \textstyle \sum_{ij} \sigma(c_i^* f(\,\cdot\,)c_j)\,\odot\,
+\tau(d_i^* g(\,\cdot\,)d_j),
+\end{equation*}
+and so~$\omega\circ \beta_\odot$
+is ultraweakly continuous and bounded
+by~\sref{product-functional},
+because the $\sigma(c_i^*f(\,\cdot\,)c_j)$
+and~$\tau(d_i^*g(\,\cdot\,)d_j)$
+are bounded ultraweakly continuous functionals.
+Although the bound for~$\omega\circ\beta_\odot$ 
+thus obtained is in all probability nowhere near~$\|f\|\|g\|$,
+it does allow
+us by~\sref{tensor-universal-property}
+to extend~$\omega\circ\beta_\odot$
+to an ultraweakly continuous 
+functional $\omega':=(\omega\circ\beta)_\otimes$ on~$\scrC\otimes \scrD$
+with the same norm, $\|\omega'\|=\|\omega\circ\beta_\odot\|$.
+Since this extension~$\omega'$
+is completely positive
+(because~$\beta$ and thus~$\omega\circ \beta$ are completely positive,
+see~\sref{cp-bilinear})
+its norm is by~\sref{cp-russo-dye} given by~$\|\omega'\|=\omega'(1)\equiv
+\omega(f(1)\otimes g(1))\leq \|f\|\|g\|$,
+where we used that~$\omega(1)\leq 1$.
+Thus $\|\omega\circ \beta_\odot\|=\|\omega'\| \leq \|f\|\|g\|$,
+as was claimed.
+
+Incidentally,
+since each~$\omega\circ \beta_\odot$
+is ultraweakly continuous,
+so is~$\beta_\odot$,
+and thus~$\beta$ is normal.
+The only thing that remains
+is to make good on our last promise,
+that~$\beta_\odot(s)^*\beta_\odot(s)\leq 
+\|f\|\|g\|\beta_\odot(s^*s)$.
+To this end,
+write $s\equiv \sum_i a_i\odot b_i$,
+and consider
+the matrices~$A$ and~$B$ given by
+\begin{equation*}
+A\ :=\  \begin{pmatrix}
+a_1 & a_2 & \dotsb & a_n \\
+0 & 0 & \dotsb & 0 \\
+\vdots & \vdots & \ddots&\vdots \\
+0 & 0 & \dotsb & 0
+\end{pmatrix}
+\qquad\qquad
+B\ :=\  \begin{pmatrix}
+b_1 & b_2 & \dotsb & b_n \\
+0 & 0 & \dotsb & 0 \\
+\vdots & \vdots & \ddots&\vdots \\
+0 & 0 & \dotsb & 0
+\end{pmatrix},
+\end{equation*}
+and the cp-map $h\colon M_n(\scrC\otimes \scrD)\to \scrC\otimes \scrD$
+(see~\TODO{vector state of Hilbert $\scrB$-modules})
+given by~$h(C)= \left<(1,\dotsc,1), C(1,\dotsc,1)\right> =\sum_{ij}C_{ij}$.
+We make these arrangements
+so that we
+may apply the inequality
+$(M_nf)(A)^*  (M_nf)(A)
+\leq \|(M_nf)(1)\| (M_nf)(A^*A)$
+easily derived from~\sref{cp-cs}.
+Indeed,
+noting also~$\|(M_nf)(1)\|=\|f(1)\|=\|f\|$,
+we have
+\begin{alignat*}{3}
+	\beta_\odot(s)^*\beta_\odot(s) 
+\ &=\ \textstyle \sum_{ij}f(a_i)^*f(a_j)\otimes g(b_i)^*g(b_j)\\
+\ &=\ h(\ 
+(M_nf)(A)^* (M_nf)(A) \ \ (M_n \otimes)\ \ 
+(M_ng)(B)^*(M_ng)(B) \ ) \\
+\ &\leq\  
+\|f\|\|g\| 
+h(\ (M_nf)(A^*A) \ \ (M_n \otimes)\ \ 
+(M_ng)(B^*B) \ ) 
+\\
+\ &=\  
+\|f\|\|g\| \,\textstyle \sum_{ij} f(a_i^*a_j)\otimes g(b_i^*b_j) \\
+\ &= \ \|f\|\|g\|\,\beta_\odot(s^*s),
+\end{alignat*}
+which concludes this proof.\qed
+\end{point}
+\end{point}
+\end{parsec}%
+\begin{parsec}%
 \begin{point}{Exercise}%
 Show that the tensor product of von Neumann algebras~$\scrA$
 and~$\scrB$ is unique in
@@ -2453,18 +2675,6 @@ so that we may conclude~$\iota\circ \varrho=\id$.
 Hence~$\iota\colon \scrT\to\scrA\otimes\scrB$
 is surjective, and~$\scrT=\scrA\otimes \scrB$.\qed
 \end{point}
-\end{point}
-\end{parsec}
-\begin{parsec}%
-\begin{point}{Notation}%
-For all von Neumann algebras~$\scrA$
-and~$\scrB$ we pick a tensor product
-$\Define{\otimes}\colon \scrA\times\scrB\to\Define{\scrA\otimes\scrB}$
-to be the canonical tensor product of~$\scrA$ and~$\scrB$.
-
-For all np-maps
-
-
 \end{point}
 \end{parsec}
 \begin{parsec}%
