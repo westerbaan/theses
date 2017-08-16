@@ -2166,7 +2166,7 @@ thus $\gamma_\odot$ itself---is ultraweakly continuous.
 In order to show that~$\gamma_\odot$ is an ultraweak embedding,
 we'll first need that we have
 in fact the equality $\|f\circ \gamma_\odot\|=\|f\|$
-for all~$f\in\scrT$.
+for all~$f\in\scrT_*$.
 
 In order to show this,
 recall 
@@ -2420,7 +2420,7 @@ instead of $\|\gamma_\odot(s_\alpha)\|\leq 2\|t\|$;
 $\beta_\gamma$
 is multiplicative iff~$\beta$ is multiplicative
 (see~\sref{tensor-extra});
-\item
+\item 
 $\beta_\gamma$ 
 is involution preserving iff~$\beta$ is involution preserving;
 \item
@@ -2457,7 +2457,7 @@ $f\otimes g$ is multiplicative
 when~$f$ and~$g$ are multiplicative;
 \item
 $f\otimes g$ is involution preserving
-when~$f$ and~$g$ are involution preserving;
+when~$f$ and~$g$ are involution preserving; and
 \item
 $f\otimes g$ is unital 
 when~$f$ and~$g$ are unital.
@@ -2478,27 +2478,130 @@ the stated properties of~$f\otimes g$ will then  follow
 with the very least of effort
 from~\sref{tensor-universal-property-extra}.
 
-Note that~$\beta$ is completely positive,
+To begin,
+note that~$\beta$ is completely positive,
 by~\TODO{...},
-because for positive $N\times N$-matrices~$A$ and~$B$
-over~$\scrA$ and~$\scrB$, respectively,
+because for each~$N$
+the bilinear map $M_N\beta = (M_N\otimes)\circ (M_Nf\,\times\,M_Ng)$
+sends a pair of positive matrices
+to a positive matrix
+(using here that~$\otimes$
+is miu-bilinear and thus compeletely positive, by~\TODO{...}).
+
+To see that~$\beta$ is bounded,
+we'll prove that~$\|\beta_\odot(s)\| \leq \|f\|\|g\| \|s\|$
+given an element~$s$ of~$\scrA\otimes \scrB$,
+and for this
+it suffices (by the definition
+of the tensor product norm, see~\sref{tensor-extra}) 
+to show that
+$\omega(\beta_\odot(s)^*\beta_\odot(s))
+\leq \|f\|^2\|g\|^2\|s\|^2$
+given a basic functional~$\omega$
+on~$\scrA\odot\scrB$ with~$\omega(1)\leq 1$.
+We'll prove in a moment that
+$\|\omega\circ\beta_\odot\|\leq \|f\|\|g\|$
+and~$\beta_\odot(s)^*\beta_\odot(s)\leq
+\|f\|\|g\|\beta_\odot(s^*s)$,
+and with these claims
+we get 
+$\omega(\beta_\odot(s)^*\beta_\odot(s))
+\leq \omega(\beta_\odot(s^*s))
+\leq \|f\|\|g\| \|\omega\circ \beta_\odot\| \|s\|^2
+\leq \|f\|^2\|g\|^2\|s\|^2$,
+the desired result.
+
+Concerning the first
+promise, that $\|\omega\circ \beta_\odot\|\leq \|f\|\|g\|$,
+note that writing
+$\omega\equiv (\sigma\odot\tau)(t^*(\,\cdot\,)t)$,
+where~$\sigma$ and~$\tau$
+are np-maps on~$\scrC$ and~$\scrD$, respectively,
+and~$t\equiv\sum_{ij} c_i \odot d_i$
+is from~$\scrC\odot\scrD$,
+we have 
+\begin{equation*}
+	\omega\circ\beta_\odot
+= \sum_{ij} \sigma(c_i^* f(\,\cdot\,)c_j)\,\odot\,
+\tau(d_i^* g(\,\cdot\,)d_j),
+\end{equation*}
+and so~$\omega\circ \beta_\odot$
+is ultraweakly continuous and bounded
+by~\TODO{...}.
+Although the bound for~$\omega\circ\beta_\odot$ 
+thus obtained is nowhere near to~$\|f\|\|g\|$,
+it does allow
+us by~\sref{tensor-universal-property}
+to extend~$\omega\circ\beta_\odot$
+to an ultraweakly continuous 
+functional $\omega':=(\omega\circ\beta)_\otimes$ on~$\scrC\otimes \scrD$
+with the same norm, $\|\omega'\|=\|\omega\circ\beta_\odot\|$.
+Since this extension~$\omega'$
+is completely positive
+(because~$\beta$ and thus~$\omega\circ \beta$ are completely positive,
+see~\TODO{...})
+its norm is by~\TODO{...} given by~$\|\omega'\|=\omega'(1)\equiv
+\omega(f(1)\otimes g(1))\leq \|f\|\|g\|$,
+where we used that~$\omega(1)\leq 1$.
+Thus $\|\omega\circ \beta_\odot\|=\|\omega'\| \leq \|f\|\|g\|$,
+as was claimed.
+
+Incidentally,
+since each~$\omega\circ \beta_\odot$
+is ultraweakly continuous,
+so is~$\beta_\odot$,
+and thus~$\beta$ is normal.
+The only thing that remains
+is to make good on our last promise,
+that~$\beta_\odot(s)^*\beta_\odot(s)\leq 
+\|f\|\|g\|\beta_\odot(s^*s)$.
+To this end,
+write $s\equiv \sum_i a_i\odot b_i$,
+and consider
+the matrices~$A$ and~$B$ given by
+\begin{equation*}
+A\ :=\  \begin{pmatrix}
+a_1 & a_2 & \dotsb & a_n \\
+0 & 0 & \dotsb & 0 \\
+\vdots & \vdots & \ddots&\vdots \\
+0 & 0 & \dotsb & 0
+\end{pmatrix}
+\qquad\qquad
+B\ :=\  \begin{pmatrix}
+b_1 & b_2 & \dotsb & b_n \\
+0 & 0 & \dotsb & 0 \\
+\vdots & \vdots & \ddots&\vdots \\
+0 & 0 & \dotsb & 0
+\end{pmatrix},
+\end{equation*}
+and the cp-map $h\colon M_n(\scrC\otimes \scrD)\to \scrC\otimes \scrD$
+(see~\TODO{vector state of Hilbert $\scrB$-modules})
+given by~$h(C)= \left<(1,\dotsc,1), C(1,\dotsc,1)\right> =\sum_{ij}C_{ij}$.
+We make these arrangements
+so that we
+may apply the inequality
+$(M_nf)(A)^*  (M_nf)(A)
+\leq \|M_nf\| (M_nf)(A^*A)$
+from~\TODO{...}.
+Indeed,
+noting also~$\|M_nf\|=\|f\|$,
 we have
-$(M_N\beta)(A,B)
-= (M_N\otimes)(\,(M_Nf)(A),\,(M_Ng)(B)\,)
-\geq 0$,
-by~\TODO{...},
-since~$\otimes$ being mi-bilinear is completely positive.
-
-\TODO{boundedness}
-
-\TODO{normality}
-
-
-
-
-
-
-
+\begin{alignat*}{3}
+	\beta_\odot(s)^*\beta_\odot(s) 
+\ &=\ \textstyle \sum_{ij}f(a_i)^*f(a_j)\otimes g(b_i)^*g(b_j)\\
+\ &=\ h(\ 
+(M_nf)(A)^* (M_nf)(A) \ \ (M_n \otimes)\ \ 
+(M_ng)(B)^*(M_ng)(B) \ ) \\
+\ &\leq\  
+\|M_nf\|\|M_ng\|\ 
+h(\ (M_nf)(A^*A) \ \ (M_n \otimes)\ \ 
+(M_ng)(B^*B) \ ) 
+\\
+\ &=\  
+\|f\|\|g\| \,\textstyle \sum_{ij} f(a_i^*a_j)\otimes g(b_i^*b_j) \\
+\ &= \ \|f\|\|g\|\,\beta_\odot(s^*s),
+\end{alignat*}
+which concludes this proof.\qed
 \end{point}
 \end{point}
 \end{parsec}%
