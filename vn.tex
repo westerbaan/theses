@@ -1563,6 +1563,8 @@ which is impossible.
 	Conclude that $f(k)\geq f(b_0)>0 $ for all~$k\in K$.
 \end{enumerate}
 \end{point}
+\end{parsec}
+\begin{parsec}%
 \begin{point}[proto-kaplansky]{Proposition}%
 Let~$\scrA$ be a von Neumann algebra,
 and let~$f\colon \R\to\R$ be a continuous map 
@@ -1672,19 +1674,95 @@ and so~$e$ is ultrastrongly continuous.\qed
 \TODO{Prove that~$a\mapsto \left|a\right|$ is ultrastrongly continuous.}
 \end{point}
 \begin{point}[kaplansky]{Kaplansky Density Theorem}%
-Let~$\scrA$ be a $C^*$-subalgebra
-of a von Neumann algebra~$\scrB$.
-Let~$b$ be an effect of~$\scrA$ which is the ultrastrong limit
-of a net in~$\scrA$.
-Then~$b$ is the ultrastrong limit of a net of effects from~$\scrA$.
+Let~$b$ be an element of a von Neumann algebra~$\scrB$
+which is the ultrastrong limit of a net
+of elements
+from a $C^*$-subalgebra $\scrA$ of~$\scrB$.
+\begin{enumerate}
+\item
+If~$b$ is an effect,
+then~$b$ is the ultrastrong limit of effects from~$\scrA$.
+\item
+If~$b$ is positive,
+then~$b$ is the ultrastrong limit of positive elements from~$\scrA$.
+\item
+$b$ is the ultrastrong limit of a net~$(a_\alpha)_\alpha$
+in~$\scrA$ with~$\|a_\alpha\|\leq\|b\|$ for all~$\alpha$.
+\end{enumerate}
 \begin{point}{Proof}%
-Let~$(b_\alpha)_\alpha$
+Let~$(a_\alpha)_\alpha$
 be a net in~$\scrA$ which converges ultrastrongly
 to~$b$.
-Then the effects  $(0\vee b_\alpha)\wedge 1$
+From~\sref{proto-kaplansky} it is clear that if~$b$ is an effect,
+then the effects  $ 0\vee a_\alpha \wedge 1$
 of~$\scrA$ 
-converge ultrastrongly to~$(0\vee b)\wedge 1 = b$
-by~\TODO{}.\qed
+converge ultrastrongly to~$ 0\vee b \wedge 1 = b$;
+and if~$b$ is positive,
+then the positive elements~$(a_\alpha)_+$
+converge ultrastrongly to~$b_+=b$;
+and if~$b$ is \emph{self-adjoint}
+then the elements $a_\alpha':=-\|b\|\vee a_\alpha \wedge \|b\|$ 
+of~$\scrA$ with $\|a_\alpha'\|\leq \|b\|$
+converge ultrastrongly to~$-\|b\|\vee b \wedge \|b\|=b$.
+
+The last point, however, requires a trick:
+since the element
+$B:=\smash{\left(\begin{smallmatrix} 0 & b \\
+b^* & 0 \end{smallmatrix}\right)}$
+of the von Neumann algebra~$M_2(\scrB)$
+is self-adjoint,
+and the ultrastrong limit
+of the net
+$\smash{\bigl(\begin{smallmatrix} 0 & a_\alpha \\
+a_\alpha^* & 0 \end{smallmatrix}\bigr)}$
+from the  $C^*$-subalgebra $M_2(\scrA)$ of~$M_2(\scrB)$,
+there is, as we've just seen, a net~$(A_\alpha)_\alpha$
+in~$M_2(\scrA)$
+that converges ultrastrongly to~$B$
+with~$\|A_\alpha\|\leq \|B\|\equiv \|b\|$ for all~$\alpha$.
+Since the upper-right entries
+$ (A_\alpha)_{12}$ will then converge ultrastrongly 
+to~$B_{12}\equiv b$ as~$\alpha\to\infty$,
+and~$\|(A_\alpha)_{12}\|\leq \|A_\alpha\|\leq \|b\|$
+for all~$\alpha$, we are done.\qed
+
+\TODO{About $M_N(\scrA)$ and ultrastrong convergence in it.}
+\end{point}
+\end{point}
+\begin{point}[dense-subalgebra]{Corollary}%
+Given~$\varepsilon>0$  and an ultraweakly dense $*$-subalgebra~$\scrS$
+of a von Neumann algebra~$\scrA$
+each element~$a$ of~$\scrA$
+is the ultrastrong limit of a net~$(s_\alpha)_\alpha$
+from~$\scrS$
+with $\|s_\alpha\|\leq \|a\|(1+\varepsilon)$
+for all~$\alpha$.
+\begin{point}{Proof}%
+As the norm closure~$\scrC$ of~$\scrS$ in~$\scrA$
+is an ultraweakly
+(and thus by~\sref{ultraclosed}
+ultrastrongly) dense $C^*$-subalgebra of~$\scrA$,
+the element $a$ of~$\scrA$ is by~\sref{kaplansky}
+the ultrastrong limit
+of net~$(c_\alpha)_{\alpha\in D}$
+in~$\scrC$ 
+with $\|c_\alpha\|\leq \|a\|$ for all~$\alpha$.
+Each element~$c_\alpha$ 
+is in its turn 
+the norm (and thus ultrastrong)
+limit of a sequence~$s_{\alpha1},\,s_{\alpha2},\,\dotsc$
+in~$\scrS$,
+and if we choose the~$s_{\alpha n}$
+such that $\|c_\alpha - s_{\alpha n}\|\leq 2^{-n}$,
+then~$s_{\alpha n}$
+converge ultrastrongly to~$b$
+as~$D\times \N\ni (\alpha,n)\to\infty$.
+Finally, since~$\lim_n\|s_{\alpha n}\| = \|c_\alpha \|\leq \|c\| 
+\leq (1+\varepsilon)\|c\|$
+we have~$\|s_{\alpha n}\|\leq (1+\varepsilon)\|c\|$
+for sufficiently large~$n$,
+and thus for all~$n$
+if we replace~$(s_{\alpha n})_n$ by the appropriate  subsequence.\qed
 \end{point}
 \end{point}
 \end{parsec}
@@ -2131,6 +2209,128 @@ But then~$\kappa(\,(\scrA)_1\,)$,
 being a closed subset of a compact Hausdorff space,
 is compact,
 and so $(\scrA)_1$ (being isomorphic to it) is compact too.\qed
+\end{point}
+\end{point}
+\begin{point}[vn-extension]{Proposition}%
+Given an ultraweakly dense $*$-subalgebra~$\scrS$
+of a von Neumann algebra~$\scrA$,
+any ultraweakly continuous and bounded linear map~$f\colon \scrS\to\scrB$
+can be extended uniquely
+to an ultraweakly continuous map~$g\colon \scrA\to\scrB$.
+
+Moreover, $g$ is bounded,
+and in fact,  $\|g\|=\|f\|$.
+\begin{point}{Proof}%
+As the uniqueness of~$g$ is rather obvious
+we concern ourselves only with its existence.
+Let~$a\in\scrA$ be given
+in order to define~$g(a)$.
+Let also~$\varepsilon>0$ be given.
+Note that by~\sref{dense-subalgebra} 
+there is a net~$(s_\alpha)_\alpha$
+in~$\scrS$
+that converges ultrastrongly (and so ultraweakly too)
+to~$a$
+with~$\|s_\alpha \|\leq(1+\varepsilon)\|a\|$
+for all~$\alpha$.
+Now,
+since the net~$(s_\alpha)_\alpha$
+is bounded an ultraweakly Cauchy,
+and~$f$ is bounded and (uniformly) ultraweakly continuous,
+the net
+$(f(s_\alpha))_\alpha$
+is bounded and ultraweakly Cauchy too,
+and thus converges (by~\sref{vn-complete})
+to some element
+$\uwlim_\alpha f(s_\alpha)$
+of~$\scrB$.
+
+\begin{point}%
+Of course we'd like to define $g(a):=\uwlim_\alpha
+f(s_\alpha)$,
+but must first check
+that $\uwlim_\alpha f(s_\alpha')
+=\uwlim_\alpha f(s_\alpha)$
+when~$(s_\alpha')_\alpha$ is a second net with the same properties
+as~$(s_\alpha)_\alpha$.
+Let us for simplicity's sake
+assume that $(s_\alpha')_\alpha$ and~$(s_\alpha)_\alpha$
+have the same index set
+--- matters can always be arranged this way.
+Then as the difference $s_\alpha-s_\alpha'$
+converges ultraweakly to~$0$ in~$\scrA$ as~$\alpha\to\infty$,
+$\uwlim_\alpha f(s_\alpha-s_\alpha')=0$,
+implying that $\uwlim_\alpha f(s_\alpha)
+= \uwlim_\alpha f(s_\alpha')$.
+\end{point}
+\begin{point}%
+In this way
+we obtain a map $g \colon \scrA\to\scrB$
+--- which is clearly linear.
+The map~$g$ is also bounded,
+because since~$\|s_\alpha\|\leq (1+\varepsilon)\|a\|$
+for all~$\alpha$,
+where $(s_\alpha)_\alpha$ and~$t$ are as before,
+we have $\|f (s_\alpha)\|\leq (1+\varepsilon) \|g\|\|a\|$
+for all~$\alpha$,
+and so~$\|g(a)\|=\|\uwlim_\alpha f(s_\alpha)\|
+\leq (1+\varepsilon) \|f \|\|a\|$.
+More precisely, $\|g\|\leq (1+\varepsilon)\|f\|$,
+and---as~$\varepsilon>0$ was arbitrary---in 
+fact~$\|g\|\leq \|f\|$, and so~$\|g\|=\|f\|$.
+
+That, finally, $g$ is ultraweakly continuous
+follows by a standard but abstract argument from the fact
+that $f$ is \emph{uniformly} ultraweakly continuous.
+We'll give a concrete version of this argument here.
+To begin note that it suffices to show that~$\omega\circ g$
+is ultraweakly continuous
+at~$0$
+where~$\omega\colon \scrB\to\C$
+is an np-functional.
+Let~$\varepsilon>0$ be given.
+Since~$f$ 
+is ultraweakly continuous,
+and 
+thus $\omega\circ f$ too,
+there is~$\delta>0$ and an np-functional~$\nu\colon \scrA\to\C$
+such that $\left|\nu(s)\right|\leq \delta \implies 
+\left|\omega(f(s))\right|\leq \varepsilon$
+for all~$s\in\scrS$.
+We claim that $\left|\nu(a)\right|\leq \delta/2 \implies
+\left|\omega(g(a))\right|\leq 2\varepsilon$
+for all~$a\in\scrA$,
+which implies, of course,
+that $\omega\circ g$ is ultraweakly continuous on~$0$.
+So let~$a\in\scrA$ with $\left|\nu(a)\right|\leq \delta/2$
+be given.
+Pick (as before) a bounded net~$(s_\alpha)_\alpha$
+in~$\scrS$
+such that $f(s_\alpha)$
+converges to~$a$ as~$\alpha\to\infty$, and observe that,
+for all~$\alpha$,
+\begin{equation*}
+\left|\omega(g (a))\right|
+\ \leq\ 
+\left|\omega(g(a)-f(s_\alpha))\right|
+\,+\,\left|\omega(f(s_\alpha))\right|.
+\end{equation*}
+The first term on the right-hand side above will 
+vanish as~$\alpha\to\infty$ (since 
+$g (a)=\uwlim_\alpha f (s_\alpha)$),
+and will thus be smaller than~$\varepsilon$ 
+for sufficiently large~$\alpha$.
+Since~$\lim_\alpha \left|\nu(s_\alpha)\right|=\left|\nu(a)\right|
+\leq \delta/2<\delta$
+we see 
+that for sufficiently large~$\alpha$
+we'll have~$\left|\nu(s_\alpha)\right|\leq \delta$ 
+and with it~$\left|\omega(f (s))\right|\leq \varepsilon$.
+Combined,
+we get $\left|\omega(g (a))\right|\leq 2\varepsilon$,
+and so~$g$ is ultraweakly continuous.\qed
+\end{point}
+
 \end{point}
 \end{point}
 \end{parsec}
@@ -3719,6 +3919,108 @@ to~$\scrA$ coincides with the ultraweak topology on~$\scrA$.
 the restriction of the ultrastrong topology on~$\scrB$
 to~$\scrA$ coincides with the ultrastrong topology on~$\scrA$.
 \end{enumerate}
+\end{point}
+\begin{point}[vn-center-separating-fundamental]{Proposition}%
+Given a center separating collection~$\Omega$ of np-maps
+on a von Neumann algebra~$\scrA$,
+and an ultrastrongly dense subset~$S$ of~$\scrA$
+\begin{enumerate}
+\item
+	\label{vn-center-separating-fundamental-1}
+$\Omega':= \{\,\omega(s^*(\,\cdot\,)s)\colon\,
+\omega\in\Omega,\,s\in S\,\}$
+is order separating, and
+\item
+	\label{vn-center-separating-fundamental-2}
+$\Omega'':=\{\,\sum_n\omega_n\colon\, \omega_1,\dotsc,\omega_N\in\Omega'\,\}$ is operator norm dense in $(\scrA_*)_+$.
+	\end{enumerate}
+\begin{point}[vn-center-separating-fundamental-i]{Proof}%
+We tackle~\ref{vn-center-separating-fundamental-1}
+first. We already know from~\sref{proto-gelfand-naimark}
+that the collection $\Xi:=\{\, \omega(a^*(\,\cdot\,)a)\colon\, 
+\omega\in\Omega,\, a\in\scrA\,\}$,
+which contains~$\Omega'$, is order separating;
+so to prove that~$\Omega'$ is itself order separating
+it suffices by~\sref{order-separating-dense-subset} to show that~$\Omega'$
+is norm dense in~$\Xi$.
+This is indeed the case
+since given~$a\in\scrA$
+and~$\omega\in\Omega$,
+and a net~$(s_\alpha)_\alpha$ in~$S$
+that converges ultrastrongly to~$a$,
+the functionals~$s_\alpha \ast\omega
+\equiv \omega(s_\alpha^*(\,\cdot\,)s_\alpha)$
+converge in norm to~$a\ast \omega$
+as $\alpha\to\infty$
+by~\sref{bstaromega-basic}.
+
+\begin{point}{Concerning~\ref{vn-center-separating-fundamental-2}}%
+Let~$f\colon \scrA\to\C$ be an np-map;
+we must show that~$f$ is in 
+the norm closure~$\overline{\Omega''}$ of~$\Omega''$.
+Note that since~$\Omega$ is center separating,
+the map $\varrho_\Omega\colon \scrA\to\scrB(\scrH_\Omega)$
+from~\sref{proto-gelfand-naimark}
+is injective,
+and in fact restricts
+to a nmiu-isomorphism
+from~$\scrA$ onto $\varrho_\Omega(\scrA)$
+(cf.~\sref{ngns}).
+So by~\sref{normal-functional}
+$f$ is of the form $f\equiv 
+\sum_n \left<x_n,\varrho_\Omega(\,\cdot\,)x_n\right>$
+for some $x_1,x_2,\dotsc \in\scrH_\Omega$
+with $\sum_n \|x_n\|^2<\infty$,
+so that the partial sums
+$\sum_{n=1}^N \left<x_n,\varrho_\Omega(\,\cdot\,)x_n\right>$
+converge with respect to the operator norm to~$f$
+(by~\sref{vector-functional-convergence}).
+Thus to show that~$f$ is in~$\overline{\Omega''}$
+it suffices to show that each~$\left<x_n,\varrho_\Omega(\,\cdot\,)x_n\right>$
+is in~$\overline{\Omega''}$
+(since~$\overline{\Omega''}$ is clearly closed
+under finite sums and norm limits).
+In effect
+we may assume 
+without loss of generality
+that~$f\equiv \left<x,\varrho_\Omega(\,\cdot\,)x\right>$
+for some~$x\in \scrH_\Omega$.
+We reduce the problem some more.
+By definition 
+of $\scrH_\omega\equiv \bigoplus_{\omega\in\Omega}\scrH_\omega$
+and~$\varrho_\Omega$,
+we have $f=\left<x,\varrho_\Omega(\,\cdot\,)x\right>
+= \sum_{\omega\in \Omega} 
+\left<x_\omega,\varrho_\omega(\,\cdot\,)x_\omega\right>$;
+and so we may, by the same token, assume without loss of generality
+that $f=\left<x,\varrho_\omega(\,\cdot\,)x\right>$
+for some~$\omega\in \Omega$
+and~$x\in \scrH_\omega$.
+Since such~$x$ (by definition of~$\scrH_\omega$, 
+\sref{gns})
+is the norm limit of
+a sequence $\eta_\omega(a_1),\,\eta_\omega(a_2),\,
+\dotsb$,
+where~$a_1,a_2,\dotsc\in\scrA$,
+the np-maps $a_n\ast \omega\equiv 
+\left<\eta_\omega(a_n),\varrho_\omega(\,\cdot\,)\eta_\omega(a_n)\right>$
+converge to~$\left<x,\varrho_\omega(\,\cdot\,) x\right>=f$
+in the operator norm as $n\to\infty$ by~\sref{vector-functional-convergence};
+and so we may assume without loss of generality
+that~$f=a\ast \omega$ for some~$a\in\scrA$ and~$\omega\in \Omega$.
+Since~$S$ is ultrastrongly dense in~$\scrA$
+we can find a net~$(s_\alpha)_\alpha$
+in~$S$ that converges ultrastrongly to~$a$.
+As the np-functionals~$s_\alpha \ast \omega$
+in $\Omega'\subseteq \Omega''$
+will then
+operator-norm converge
+to~$f= a\ast \omega$
+as $\alpha\to\infty$
+by~\sref{bstaromega-basic},
+we conclude that~$f\in \overline{\Omega''}$.\qed
+\end{point}
+\end{point}
 \end{point}
 \end{parsec}
 \section{[To be moved]}

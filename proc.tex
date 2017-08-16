@@ -1840,108 +1840,6 @@ of positive functionals
 on a $C^*$-algebra~$\scrA$
 is order separating as well.
 \end{point}
-\begin{point}[vn-center-separating-fundamental]{Proposition}%
-Given a center separating collection~$\Omega$ of np-maps
-on a von Neumann algebra~$\scrA$,
-and an ultrastrongly dense subset~$S$ of~$\scrA$
-\begin{enumerate}
-\item
-	\label{vn-center-separating-fundamental-1}
-$\Omega':= \{\,\omega(s^*(\,\cdot\,)s)\colon\,
-\omega\in\Omega,\,s\in S\,\}$
-is order separating, and
-\item
-	\label{vn-center-separating-fundamental-2}
-$\Omega'':=\{\,\sum_n\omega_n\colon\, \omega_1,\dotsc,\omega_N\in\Omega'\,\}$ is operator norm dense in $(\scrA_*)_+$.
-	\end{enumerate}
-\begin{point}[vn-center-separating-fundamental-i]{Proof}%
-We tackle~\ref{vn-center-separating-fundamental-1}
-first. We already know from~\sref{proto-gelfand-naimark}
-that the collection $\Xi:=\{\, \omega(a^*(\,\cdot\,)a)\colon\, 
-\omega\in\Omega,\, a\in\scrA\,\}$,
-which contains~$\Omega'$, is order separating;
-so to prove that~$\Omega'$ is itself order separating
-it suffices by~\sref{order-separating-dense-subset} to show that~$\Omega'$
-is norm dense in~$\Xi$.
-This is indeed the case
-since given~$a\in\scrA$
-and~$\omega\in\Omega$,
-and a net~$(s_\alpha)_\alpha$ in~$S$
-that converges ultrastrongly to~$a$,
-the functionals~$s_\alpha \ast\omega
-\equiv \omega(s_\alpha^*(\,\cdot\,)s_\alpha)$
-converge in norm to~$a\ast \omega$
-as $\alpha\to\infty$
-by~\sref{bstaromega-basic}.
-
-\begin{point}{Concerning~\ref{vn-center-separating-fundamental-2}}%
-Let~$f\colon \scrA\to\C$ be an np-map;
-we must show that~$f$ is in 
-the norm closure~$\overline{\Omega''}$ of~$\Omega''$.
-Note that since~$\Omega$ is center separating,
-the map $\varrho_\Omega\colon \scrA\to\scrB(\scrH_\Omega)$
-from~\sref{proto-gelfand-naimark}
-is injective,
-and in fact restricts
-to a nmiu-isomorphism
-from~$\scrA$ onto $\varrho_\Omega(\scrA)$
-(cf.~\sref{ngns}).
-So by~\sref{normal-functional}
-$f$ is of the form $f\equiv 
-\sum_n \left<x_n,\varrho_\Omega(\,\cdot\,)x_n\right>$
-for some $x_1,x_2,\dotsc \in\scrH_\Omega$
-with $\sum_n \|x_n\|^2<\infty$,
-so that the partial sums
-$\sum_{n=1}^N \left<x_n,\varrho_\Omega(\,\cdot\,)x_n\right>$
-converge with respect to the operator norm to~$f$
-(by~\sref{vector-functional-convergence}).
-Thus to show that~$f$ is in~$\overline{\Omega''}$
-it suffices to show that each~$\left<x_n,\varrho_\Omega(\,\cdot\,)x_n\right>$
-is in~$\overline{\Omega''}$
-(since~$\overline{\Omega''}$ is clearly closed
-under finite sums and norm limits).
-In effect
-we may assume 
-without loss of generality
-that~$f\equiv \left<x,\varrho_\Omega(\,\cdot\,)x\right>$
-for some~$x\in \scrH_\Omega$.
-We reduce the problem some more.
-By definition 
-of $\scrH_\omega\equiv \bigoplus_{\omega\in\Omega}\scrH_\omega$
-and~$\varrho_\Omega$,
-we have $f=\left<x,\varrho_\Omega(\,\cdot\,)x\right>
-= \sum_{\omega\in \Omega} 
-\left<x_\omega,\varrho_\omega(\,\cdot\,)x_\omega\right>$;
-and so we may, by the same token, assume without loss of generality
-that $f=\left<x,\varrho_\omega(\,\cdot\,)x\right>$
-for some~$\omega\in \Omega$
-and~$x\in \scrH_\omega$.
-Since such~$x$ (by definition of~$\scrH_\omega$, 
-\sref{gns})
-is the norm limit of
-a sequence $\eta_\omega(a_1),\,\eta_\omega(a_2),\,
-\dotsb$,
-where~$a_1,a_2,\dotsc\in\scrA$,
-the np-maps $a_n\ast \omega\equiv 
-\left<\eta_\omega(a_n),\varrho_\omega(\,\cdot\,)\eta_\omega(a_n)\right>$
-converge to~$\left<x,\varrho_\omega(\,\cdot\,) x\right>=f$
-in the operator norm as $n\to\infty$ by~\sref{vector-functional-convergence};
-and so we may assume without loss of generality
-that~$f=a\ast \omega$ for some~$a\in\scrA$ and~$\omega\in \Omega$.
-Since~$S$ is ultrastrongly dense in~$\scrA$
-we can find a net~$(s_\alpha)_\alpha$
-in~$S$ that converges ultrastrongly to~$a$.
-As the np-functionals~$s_\alpha \ast \omega$
-in $\Omega'\subseteq \Omega''$
-will then
-operator-norm converge
-to~$f= a\ast \omega$
-as $\alpha\to\infty$
-by~\sref{bstaromega-basic},
-we conclude that~$f\in \overline{\Omega''}$.\qed
-\end{point}
-\end{point}
-\end{point}
 \begin{point}[tensor-extra]{Definitions}%
 Let~$\scrA$ and~$\scrB$ be von Neumann algebras.
 \begin{enumerate}
@@ -2179,13 +2077,8 @@ there is a net~$(s_\alpha)_\alpha$
 in~$\scrA\odot\scrB$
 with $\|s_\alpha\|\leq 1+\varepsilon$ for all~$\alpha$
 such that $\gamma_\odot(s_\alpha)$
-converges ultrastrongly to~$t$ as~$\alpha\to\infty$.
-
-(Hint: apply Kaplanksy's density theorem
-to the norm closure~$\scrS$ of~$\gamma_\odot(\scrA\odot\scrB)$
-being  a $C^*$-subalgebra of~$\scrT$
-that is ultraweakly and thus ultrastrongly dense in~$\scrT$
-by~\sref{ultraclosed}.)
+converges ultrastrongly to~$t$ as~$\alpha\to\infty$
+(cf.~\sref{dense-subalgebra}).
 
 Deduce that $\|f\|=f(u)=\left|f(u)\right|
 =\lim_\alpha \left|f(\gamma_\odot(s_\alpha))\right|
@@ -2211,21 +2104,6 @@ on~$\scrA\odot\scrB$ can be extended uniquely
 to a normal functional on~$\scrT$.)
 \end{enumerate}
 \end{point}
-\begin{point}[tensor-bounded-dense]{Exercise}%
-To proceed we need the following strengthening of one of the results
-just established in~\sref{tensor-basic}:
-show that given a tensor product
-$\gamma\colon \scrA\times\scrB\to\scrT$
-of von Neumann algebras,
-and
-$\varepsilon>0$,
-each element~$t$ in~$\scrT$
-can be obtained
-as the ultrastrong limit
-of a net~$(s_\alpha)_\alpha$
-from $\gamma_\odot(\scrA\odot\scrB)$
-with~$\sup_\alpha\|s_\alpha\|\leq \|t\|(1+\varepsilon)$.
-\end{point}
 \begin{point}[tensor-universal-property]{Theorem}%
 A tensor product~$\gamma\colon \scrA\times\scrB\to\scrT$
 of von Neumann algebras~$\scrA$ and~$\scrB$
@@ -2238,125 +2116,8 @@ map  $\Define{\beta_\gamma}\colon \scrT
 \begin{point}{Proof}%
 Since the uniqueness of~$\beta_\gamma$ is rather obvious,
 we only concern ourselves with its existence.
+\TODO{ Fix this proof!}
 Let~$t\in\scrT$ be given
-in order to define~$\beta_\gamma(t)$.
-Note that by~\sref{tensor-bounded-dense} 
-there is a net~$(s_\alpha)_\alpha$
-in~$\scrA\odot\scrB$
-such that~$\gamma_\odot(s_\alpha)$
-converges ultrastrongly (and so ultraweakly too)
-to~$t$,
-and~$\|\gamma_\odot(s_\alpha)\|\leq2\|t\|$
-for all~$\alpha$.
-Now,
-(using here that
-$\gamma_\odot$ is an isometry and a ultraweak
-topological embedding, \sref{tensor-basic})
-the net~$(s_\alpha)_\alpha$
-is bounded an ultraweakly Cauchy,
-and so
-the net
-$(\beta_\odot(s_\alpha))_\alpha$
-in~$\scrC$
-is bounded and ultraweakly Cauchy,
-and thus converges (by~\sref{vn-complete})
-to some element
-$\uwlim_\alpha \beta_\odot(s_\alpha)$
-of~$\scrC$.
-
-\begin{point}%
-Of course we'd like to define $\beta_\gamma(t):=\uwlim_\alpha
-\beta_\odot(s_\alpha)$,
-but must first check
-that $\uwlim_\alpha \beta_\odot(s_\alpha')
-=\uwlim_\alpha \beta_\odot(s_\alpha)$
-when~$(s_\alpha')_\alpha$ is a second net with the same properties
-as~$(s_\alpha)_\alpha$.
-Let us for simplicity's sake
-assume that $(s_\alpha')_\alpha$ and~$(s_\alpha)_\alpha$
-have the same index set,
-although matters can always be arranged this way
-without loss of generality.
-Then as the difference $\gamma_\odot(s_\alpha)-\gamma_\odot(s_\alpha')$
-converges ultraweakly to~$0$ in~$\scrT$ as~$\alpha\to\infty$,
-so will $s_\alpha-s_\alpha'$ converge to~$0$ in~$\scrA\odot\scrB$
-as~$\alpha\to\infty$
-(because~$\gamma_\odot$ is an ultraweak topological embedding),
-and thus $\beta_\odot(s_\alpha)-\beta_\odot(s_\alpha')$
-converges to~$0$ as~$\alpha\to\infty$
-in~$\scrC$,
-implying that $\uwlim_\alpha\beta_\odot(s_\alpha)
-= \uwlim_\alpha \beta_\odot(s_\alpha')$.
-\end{point}
-\begin{point}%
-In this way
-we obtain a map $\beta_\gamma\colon \scrT\to\scrC$
---- which is clearly linear.
-We also easily get~$\beta_\gamma\circ \gamma=\beta$,
-and as a result~$\beta_\gamma\circ \gamma_\odot = \beta_\odot$.
-The map~$\beta_\gamma$ is also bounded,
-because since~$\|s_\alpha\|\equiv \|\gamma_\odot(s_\alpha)\|\leq 2\|t\|$
-for all~$\alpha$,
-where $(s_\alpha)_\alpha$ and~$t$ are as before,
-we have $\|\beta_\odot (s_\alpha)\|\leq 2\|\beta_\odot\|\|t\|$
-for all~$\alpha$,
-and so~$\|\beta_\gamma(t)\|=\|\uwlim_\alpha \beta_\odot(s_\alpha)\|
-\leq 2\|\beta_\odot\|\|t\|$.
-That, finally, $\beta_\gamma$ is ultraweakly continuous
-follows by a standard but abstract argument from the fact
-that $\beta_\odot$ is \emph{uniformly} ultraweakly continuous.
-We'll give a concrete version of this argument here.
-To begin it suffices to show that~$\omega\circ \beta_\gamma$
-is ultraweakly continuous
-at~$0$
-where~$\omega\colon \scrC\to\C$
-is an np-functional.
-Let~$\varepsilon>0$ be given.
-Since~$\beta_\odot$ 
-is ultraweakly continuous,
-and 
-thus $\omega\circ \beta_\odot$ too,
-there is~$\delta>0$ and a functional~$\nu\colon \scrA\odot\scrB\to\C$
-which is the operator-norm limit
-of simple functionals
-such that $\left|\nu(s)\right|\leq \delta \implies 
-\left|\omega(\beta_\odot(s))\right|\leq \varepsilon$
-for all~$s\in\scrA\odot\scrB$.
-We claim that $\left|\tilde \nu(t)\right|\leq \delta/2 \implies
-\left|\omega(\beta_\gamma(t))\right|\leq 2\varepsilon$
-for all~$t\in\scrT$,
-where~$\tilde\nu$ is the unique extension of~$\nu$
-to a functional on~$\scrT$ along~$\gamma_\odot$ (see~\sref{tensor-basic}) ---
-which implies, of course,
-that $\omega\circ \beta_\gamma$ is ultraweakly continuous on~$0$.
-So let~$t\in\scrT$ with $\left|\tilde\nu(t)\right|\leq \delta/2$
-be given.
-Pick (as before) a bounded net~$(s_\alpha)_\alpha$
-in~$\scrA\odot\scrB$
-such that $\gamma_\odot(s_\alpha)$
-converges to~$t$ as~$\alpha\to\infty$, and observe that,
-for all~$\alpha$,
-\begin{equation*}
-\left|\omega(\beta_\gamma(t))\right|
-\ \leq\ 
-\left|\omega(\beta_\gamma(t)-\beta_\odot(s_\alpha))\right|
-\,+\,\left|\omega(\beta_\odot(s_\alpha))\right|.
-\end{equation*}
-The first term on the right-hand side above will 
-vanish as~$\alpha\to\infty$ (since 
-$\beta_\gamma (t)=\uwlim_\alpha \beta_\odot(s_\alpha)$),
-and will thus be smaller than~$\varepsilon$ 
-for sufficiently large~$\alpha$.
-Since~$\lim_\alpha \left|\nu(s_\alpha)\right|=\left|\tilde\nu(t)\right|
-\leq \delta/2<\delta$
-we see 
-that for sufficiently large~$\alpha$
-we'll have~$\left|\nu(s_\alpha)\right|\leq \delta$ 
-and with it~$\left|\omega(\beta_\odot(s))\right|\leq \varepsilon$.
-Combined,
-we get $\left|\omega(\beta_\gamma(t))\right|\leq 2\varepsilon$,
-and so~$\beta_\gamma$ is ultraweakly continuous.\qed
-\end{point}
 \end{point}
 \end{point}
 \end{parsec}%
