@@ -2414,7 +2414,7 @@ so that $\|f\otimes g\|=(f\otimes g)(u\otimes v)
 = f(u)g(v)=\|f\|\|g\|$ by~\sref{functional-norm}.\qed
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[tensor-simple-facts]{Exercise}%
 There are some easily obtained facts
 concerning the tensor product~$\scrA\otimes\scrB$
 of von Neumann algebras
@@ -2460,24 +2460,127 @@ $a_1,\dotsc,a_n\in\scrA$, and~$b_1,\dotsc,b_n\in\scrB$.)
 
 \end{enumerate}
 \end{point}
-\begin{point}{Proposition}
+\begin{point}[tensor-generation]{Proposition}
 Let~$\scrA$ and~$\scrB$ 
 be von Neumann algebras.
 \begin{enumerate}
 \item
+\label{tensor-generation-1}
 If~$S$ and~$T$ are ultraweakly dense subsets of~$\scrA$
 and~$\scrB$, respectively,
 then~$\{\,s\otimes t\colon\,s\in S,\,t\in T\,\}$
 is ultraweakly dense in~$\scrA\otimes\scrB$.
 \item
+\label{tensor-generation-2}
 If~$\Omega$ and~$\Theta$ are center separating collections
 of np-functionals on~$\scrA$ and~$\scrB$, respectively,
-then~$\{\,\sigma\otimes\tau\colon\, \sigma\in\Omega,\,\tau\in\Theta\,\}$
+then~$\{\,\omega\otimes\vartheta\colon\, 
+\omega\in\Omega,\,\vartheta\in\Theta\,\}$
 is center seperating for~$\scrA\otimes\scrB$.
 \end{enumerate}
 \begin{point}{Proof}%
-	\TODO{...}
+Concerning~\ref{tensor-generation-1},
+since the elements of~$\scrA\otimes\scrB$
+of the form $a\otimes b$
+lie ultraweakly dense in~$\scrA\otimes\scrB$ 
+where~$a\in\scrA$ and~$b\in\scrB$,
+it suffices to show that such element~$a\otimes b$
+is the ultraweak limit of elements of the form~$s\otimes t$
+where~$s\in S$ and~$t\in T$.
+This is indeed the case
+as there are nets $(s_\alpha)_\alpha$
+and~$(t_\beta)_\beta$ in~$S$ and~$T$
+that converge to~$a$ and~$b$, respectively,
+and so, 
+because~$\otimes$ is ultraweakly continuous by~\sref{tensor-simple-facts},
+we see that~$s_\alpha\otimes t_\beta$
+converges ultraweakly to~$a\otimes b$
+as~$\alpha,\beta\to\infty$.
+
+Concerning~\ref{tensor-generation-2},
+let~$t$ be a positive element of~$\scrA\otimes \scrB$
+with $(\omega\otimes \vartheta)(s^*ts)=0$
+for all~$\omega\in\Omega$, $\vartheta\in\Theta$,
+and~$s\in\scrA\otimes \scrB$;
+we must show that~$t=0$.
+For this it suffices
+to show that~$(\sigma\otimes\tau)(t)=0$
+for all np-functionals  $\sigma\colon \scrA\to\C$
+and 
+$\tau\colon\scrB\to\C$
+(since the product functionals $\sigma\otimes\tau$
+form a faithful collection, by~\TODO{...}).
+Now, since~$\Omega$ is center separating
+such $\sigma$ may by~\sref{vn-center-separating-fundamental} be obtained
+as operator norm limit of finite sums
+of functionals of the
+form~$\omega(a^*(\,\cdot\,)a)$
+where~$\omega\in\Omega$ and~$a \in\scrA$.
+Since a np-functional $\tau\colon \scrB\to\C$ 
+can be obtained in a similar fashion
+from~$\Theta$,
+and~$\otimes \colon \scrA_*\otimes \scrB_*\to(\scrA\otimes\scrB)_*$
+is operator norm continuous (by~\sref{tensor-simple-facts}),
+we see that a product functional~$\sigma\otimes \tau$
+can be obtained as the operator norm limit
+of finite sums of functionals
+of the form $\omega(a^*(\,\cdot\,)a)\,\otimes\,
+\vartheta(b^*(\,\cdot\,)b)
+\,\equiv\, (\omega\otimes\vartheta)(\,(a\otimes b)^*\,(\,\cdot\,)
+\,(a\otimes b)\,)$;
+and since those functionals 
+map~$t$ to~$0$,
+by assumption,
+we conclude that~$(\sigma\otimes \tau)(t)=0$ too.\qed
 \end{point}
+\end{point}
+\end{parsec}
+\subsection{Monoidal structure}
+\begin{parsec}%
+\begin{point}%
+Up to this point
+we have only written about the tensor product~$\scrA\otimes \scrB$
+of \emph{two} von Neumann algebra
+(to save ink),
+but all of it,
+as you will no doubt have observed already,
+can be easily adapted 
+to deal with
+a tensor product
+$\otimes\colon \scrA_1\times\dotsc\scrA_n
+\to\scrA_1\otimes \dotsb\otimes \scrA_n$
+of a tuple $\scrA_1,\dotsc,\scrA_n$ of von Neumann algebras,
+which will then, of course, be a multilinear map
+instead of a bilinear map, etc..
+
+What is less obvious
+is that there should be any relation
+between 
+$(\scrA\otimes\scrB)\otimes \scrC$
+and~$\scrA\otimes\scrB\otimes\scrC$;
+but there is.
+\end{point}
+\begin{point}{Proposition}%
+Given von Neumann algebras~$\scrA$, $\scrB$ and~$\scrC$,
+the trilinear map $\gamma\colon (a,b,c)\mapsto (a\otimes b)\otimes c,\ 
+\scrA\times\scrB\times\scrC \to (\scrA\otimes \scrB)\otimes\scrC$
+is a tensor product.
+\begin{point}{Proof}%
+
+\TODO{....asdasd}
+
+\end{point}
+\end{point}
+\begin{point}{Corollary}%
+There is a unique nmiu-isomorphism
+\begin{equation*}
+		\alpha\colon \, \scrA\otimes(\scrB\otimes \scrC)
+\longrightarrow  (\scrA \otimes \scrB)\otimes\scrC,
+\end{equation*}
+with $\alpha(a\otimes(b\otimes c))=(a\otimes b)\otimes c$
+for all~$a\in\scrA$, $b\in\scrB$, $c\in\scrC$,
+for any von Neumann algebras
+$\scrA$, $\scrB$, $\scrC$.
 \end{point}
 \end{parsec}
 \section{To be moved}
