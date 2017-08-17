@@ -577,7 +577,7 @@ We postpone the proof until \TODO{}.
 \begin{parsec}%
 \begin{point}%
 We will first show that the total maps of an effectus in partial form
-    are an effectus.
+    are an effectus in total form.
 The proof of the pullback diagrams will elucidate
     their purpose and make the proof in the opposite direction more palatable.
 \end{point}
@@ -859,8 +859,23 @@ With the same reasoning~$c_2 = (a_2 \ovee b_2)^\perp$.
 Thus~$c_1 = c_2$ and so~$f_1 = f_2$, as desired. \qed
 \end{point}
 \end{point}
+\end{parsec}
+
+\subsection{From total to partial}
+\begin{parsec}%
+\begin{point}%
+In \sref{coprod-prod} we saw that the coproduct in an effectus
+    (in partial form) is almost a biproduct.
+This structure is hidden in the pullback squares 
+    \eqref{pullbacks}:
+    the left diagram corresponds to the
+        existence of~$\langle \alpha,\beta\rangle$
+        and the right diagram is required for its uniqueness.\TODO{}
+\end{point}
+\end{parsec}
 
 \subsection{Predicates, states and scalars}
+\begin{parsec}%
 \begin{point}%
 For the remainder of this text,
     we will work with effectuses in partial form.
@@ -1108,7 +1123,7 @@ That is: $f$ is faithful if and only if
 \end{enumerate}
 \begin{point}{Notation}%
 The expression~$\IM f \after g$
-    should be read as~$\IM (f \after g)$.
+    is read as~$\IM (f \after g)$.
 \end{point}
 \begin{point}%
 The predicate~$\IM f$ will play for comprehension the same role
@@ -1164,6 +1179,7 @@ For any~$f\colon Y \to X$ with~$\IM f = s$,
     with~$\pi \after g = f$.
 \begin{point}{Proof}
 There is some~$g \colon Y \to \cmpr{X}{s}$ with~$\pi_s \after g = f$. \qed
+\TODO{}
 \end{point}
 \end{point}
 \end{parsec}
