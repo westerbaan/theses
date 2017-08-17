@@ -2080,7 +2080,7 @@ In order to show this,
 recall 
 (from \sref{polar-decomposition-of-functional})
 that there is a partial isometry~$u$ in~$\scrT$
-with~$f(u)=\|f\|$ (see~\TODO{...}). 
+with~$f(u)=\|f\|$ (see~\sref{functional-norm}). 
 
 Show that given~$\varepsilon>0$ 
 there is a net~$(s_\alpha)_\alpha$
@@ -2390,6 +2390,96 @@ which concludes this proof.\qed
 \end{point}
 \end{point}
 \end{parsec}%
+\begin{parsec}%
+\begin{point}[product-functional-norm]{Lemma}%
+Given von Neumann algebras~$\scrA$ and~$\scrB$,
+we have $\|f\otimes g\|=\|f\|\|g\|$
+for all~$f\in\scrA_*$ and~$g\in\scrB_*$.
+\begin{point}{Proof}%
+The trick is to use the polar decomposition
+for normal functionals, \sref{polar-decomposition-of-functional}.
+On its account we can find partial isometries $u\in\scrA$
+and $v\in\scrB$
+such that
+$f(u(\,\cdot\,))$
+and~$g(v(\,\cdot\,))$ are positive,
+and
+$f\equiv f(uu^*(\,\cdot\,))$,  $g\equiv g(vv^*(\,\cdot\,))$.
+Then $u\otimes v$ is a partial isometry
+such that $(f\otimes g)((u\otimes v)(\,\cdot\,))$
+is positive,
+and $f\otimes g
+= (f\otimes g)(\,(u\otimes v)\, (u\otimes v)^*\,(\,\cdot\,)\,)$
+so that $\|f\otimes g\|=(f\otimes g)(u\otimes v)
+= f(u)g(v)=\|f\|\|g\|$ by~\sref{functional-norm}.\qed
+\end{point}
+\end{point}
+\begin{point}{Exercise}%
+There are some easily obtained facts
+concerning the tensor product~$\scrA\otimes\scrB$
+of von Neumann algebras
+that nevertheless deserve explicit mention.
+\begin{enumerate}
+\item
+Show that~$a\otimes b\geq 0$
+for all~$a\in\scrA_+$ and~$b\in\scrB_+$;
+and conclude that $a_1\otimes b_1 \leq a_2\otimes b_2$
+for all
+$a_1\leq a_2$ from~$\scrA$ and $b_1\leq b_2$ from~$\scrB$.
+\item
+Show that $\|a\otimes b\| = \|a\|\|b\|$
+for all~$a\in\scrA$ and~$b\in\scrB$.
+
+Conclude that $\otimes\colon \scrA\times\scrB\to\scrA\otimes \scrB$
+is norm continuous.
+
+(Warning: as~$\otimes$ is not linear
+this is not entirely trivial.)
+\item
+Show that $\otimes\colon \scrA_*\times\scrB_*\to(\scrA\otimes\scrB)_*$
+is norm continuous
+(using~\sref{product-functional-norm}).
+\item
+Show that~$\otimes\colon \scrA\times \scrB\to \scrA\otimes \scrB$
+is ultraweakly continuous.
+
+(Hint: since we
+already know that~$\otimes_\odot\colon \scrA\odot\scrB\to\scrA\otimes\scrB$
+is ultraweakly continuous, by~\sref{tensor-basic},
+an equivalent question 
+is whether~$\odot\colon \scrA\times\scrB\to\scrA\odot\scrB$
+is ultraweakly continuous,
+which may be boiled down
+to the fact
+that $(a,b)\mapsto \sum_{ij} \sigma(a_i^* a a_j)\,\tau(b_i^* b b_j)\colon
+\ \scrA\times \scrB\to\C$ is ultraweakly continuous,
+where~$\sigma$ and~$\tau$ are np-functionals
+on~$\scrA$ and~$\scrB$, respectively,
+and
+$a_1,\dotsc,a_n\in\scrA$, and~$b_1,\dotsc,b_n\in\scrB$.)
+
+\end{enumerate}
+\end{point}
+\begin{point}{Proposition}
+Let~$\scrA$ and~$\scrB$ 
+be von Neumann algebras.
+\begin{enumerate}
+\item
+If~$S$ and~$T$ are ultraweakly dense subsets of~$\scrA$
+and~$\scrB$, respectively,
+then~$\{\,s\otimes t\colon\,s\in S,\,t\in T\,\}$
+is ultraweakly dense in~$\scrA\otimes\scrB$.
+\item
+If~$\Omega$ and~$\Theta$ are center separating collections
+of np-functionals on~$\scrA$ and~$\scrB$, respectively,
+then~$\{\,\sigma\otimes\tau\colon\, \sigma\in\Omega,\,\tau\in\Theta\,\}$
+is center seperating for~$\scrA\otimes\scrB$.
+\end{enumerate}
+\begin{point}{Proof}%
+	\TODO{...}
+\end{point}
+\end{point}
+\end{parsec}
 \section{To be moved}
 \begin{parsec}%
 \begin{point}{Lemma}%
