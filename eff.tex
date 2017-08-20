@@ -576,10 +576,13 @@ We postpone the proof until \TODO{}.
 \subsection{From partial to total}
 \begin{parsec}%
 \begin{point}%
-We will first show that the total maps of an effectus in partial form
-    are an effectus in total form.
-The proof of the pullback diagrams will elucidate
-    their purpose and make the proof in the opposite direction more palatable.
+We will first show that the subcategory of
+    total maps of an effectus in partial form
+    is an effectus in total form.
+This proof and especially the demonstration
+    that the squares in \eqref{pullbacks} are pullbacks,
+    will elucidate the axioms of an effectus in total form
+    and will make the proof in the opposite direction more palatable.
 \end{point}
 \begin{point}[coproj-total]{Lemma}%
 In an effectus in partial form,
@@ -815,7 +818,7 @@ Thus~$h = \langle \alpha, \beta\rangle$,
     which shows our square is indeed a pullback.
 \end{point}
 \begin{point}%
-To show the square on the righy of \eqref{pullbacks} is a pullback
+To show the square on the right of \eqref{pullbacks} is a pullback
     in~$\Tot C$,
 assume (using \sref{coprod-prod})
 $\langle \alpha, \beta \rangle\colon Z \to X+Y$
@@ -864,13 +867,275 @@ Thus~$c_1 = c_2$ and so~$f_1 = f_2$, as desired. \qed
 \subsection{From total to partial}
 \begin{parsec}%
 \begin{point}%
+Let~$C$ be an effectus in total form.
+In this section we will show that~$\Par C$ is an effectus in partial form.
+Before we get to work, it is helpful to discuss the axioms
+    of an effectus in total form, now we have some experience
+    with an effectus in partial form.
+\begin{enumerate}
+\item
 In \sref{coprod-prod} we saw that the coproduct in an effectus
     (in partial form) is almost a biproduct.
-This structure is hidden in the pullback squares 
-    \eqref{pullbacks}:
-    the left diagram corresponds to the
-        existence of~$\langle \alpha,\beta\rangle$
-        and the right diagram is required for its uniqueness.\TODO{}
+This structure is hidden (for the most part)
+    in the left pullback square of
+    \eqref{pullbacks}, which
+    allows the formation of~$\langle \alpha, \beta \rangle$ given
+    partial maps~$\alpha,\beta$.
+\item
+The right pullback square of \eqref{pullbacks}
+    is used to extract a total map in~$C$
+    from a partial map~$f$ in~$\Par C$ that is total (i.e.~$1 \after f = 1$).
+\item
+The joint-monicity
+    of~$[\kappa_1,\kappa_2,\kappa_2]$
+    and~$[\kappa_2,\kappa_1,\kappa_2]$
+    will imply the joint monicity of~$\pproj_1$ and $\pproj_2$,
+    which is required for uniqueness of the partial sum of partial maps.
+\end{enumerate}
+To prove the theorem, we need to study pullbacks:
+    first in any category,
+    then in an effectus~$C$ in total form
+    and finally in~$\Par C$.
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}%
+    We start with two classic facts about pullbacks.
+\end{point}
+\begin{point}{Exercise}%
+Show that if we have any pullback square in some category --- say
+\begin{equation*}
+    \vcenter{\vbox{\xymatrix@R-1pc{
+        {P\ } \pullback \ar[r]^{m_1} \ar[d]_{m_2}
+        & B \ar[d]^f
+                \\ {A\ } \ar[r]_{g}
+    & X}}} \text{,}
+\end{equation*}
+then~$m_1$ and~$m_2$ are jointly-monic.
+\end{point}
+
+\begin{point}[pullback-lemma]{Exercise}%
+Show the \Define{pullback lemma} --- that is:
+    if we have a commuting diagram
+\begin{equation*}
+    \vcenter{\vbox{\xymatrix@R-1pc{
+                A \ar[r]^f \ar[d]_k
+                & B \ar[r]^g \ar[d]_l
+                & C \ar[d]^m
+                \\ X \ar[r]_{f'}
+                & Y \ar[r]_{g'}
+                & Z
+    }}} \text{,}
+\end{equation*}
+\end{point}
+then we have the following two implications.
+\begin{enumerate}
+\item
+If the left and right inner squares are pullbacks,
+    then so is the outer square.
+\item
+If the outer square is a pullback
+    and~$l$ and~$g$ are jointly monic,
+    then the left inner square is a pullback.
+\end{enumerate}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}%
+It is well-known that monos are stable under pullbacks ---
+that is:
+\begin{equation*}
+    \text{if} \quad
+    \vcenter{\vbox{\xymatrix@R-1pc{
+                {P\ } \pullback \ar[r]^n \ar[d]_g
+        & X \ar[d]^f
+                \\ {A\ } \ar@{>->}[r]_{m}
+    & B}}} ,
+    \quad \text{then} \quad
+    \vcenter{\vbox{\xymatrix@R-1pc{
+                {P\ } \pullback \ar@{>->}[r]^n \ar[d]_g
+        & X \ar[d]^f
+                \\ {A\ } \ar@{>->}[r]_{m}
+    & B}}}.
+\end{equation*}
+We will need an analogous result for jointly monic maps.
+\end{point}
+\begin{point}{Lemma}%
+If the pairs~$(m_1,m_2)$, $(n_1,g_1)$, $(n_2,g_2)$ and~$(h_1,h_2)$
+in the following commuting diagram
+are jointly-monic (for instance: if they span pullback squares),
+then~$(n_1 \after h_1, n_2 \after h_2)$ is jointly-monic as well.
+\begin{equation*}
+    \xymatrix@C+1pc{
+        P \ar[r]^{h_1} \ar[d]_{h_2}
+        &P_1\ar[r]^{n_1} \ar[d]^{g_1}
+        &X_1 \ar[d]^{f_1}
+        \\ P_2\ar[r]_{g_2} \ar[d]_{n_2}
+        & A \ar[r]_{m_1} \ar[d]^{m_2}
+        & B_1 
+        \\ X_2 \ar[r]_{f_2}
+        & B_2
+    }
+\end{equation*}
+\begin{point}{Proof}%
+To show joint monicity of~$n_1 \after h_1$ and~$n_2 \after h_2$,
+assume~$\alpha_1,\alpha_2  \colon Z \to P$
+    are maps with~$
+        n_1 \after h_1 \after \alpha_1
+        = n_1 \after h_1 \after \alpha_2$
+    and~$n_2 \after h_2 \after \alpha_1
+        = n_2 \after h_2 \after \alpha_2$.
+To start
+\begin{equation*}
+    m_1 \after g_1 \after h_1 \after \alpha_2
+    \ =\  f_1 \after n_1 \after h_1 \after \alpha_2 
+    \ =\  f_1 \after n_1 \after h_1 \after \alpha_1 
+            \ =\  m_1 \after g_1 \after h_1 \after \alpha_1.
+\end{equation*}
+Reasoning on the other side of the diagram, we find
+\begin{align*}
+    m_2 \after g_1 \after h_1 \after \alpha_2
+    &\ =\  m_2 \after g_2 \after h_2 \after \alpha_2 \\ 
+    &\ =\  f_2 \after n_2 \after h_2 \after \alpha_2 \\ 
+    &\ =\  f_2 \after n_2 \after h_2 \after \alpha_1 \\ 
+    &\ =\  m_2 \after g_2 \after h_2 \after \alpha_1 \\ 
+    &\ =\  m_2 \after g_1 \after h_1 \after \alpha_1.
+\end{align*}
+So by joint monicity of~$m_1$ and~$m_2$,
+    we conclude~$g_1 \after h_1 \after \alpha_2
+                = g_1 \after h_1 \after \alpha_1$.
+So by the joint monicity of~$n_1$ and~$g_1$
+    (and~$n_1 \after h_1 \after \alpha_2
+    = n_1 \after h_1 \after \alpha_1$ by assumption),
+    we conclude~$h_1 \after \alpha_1 = h_1 \after \alpha_2$.
+Reasoning in the same way mirrored over the diagonal,
+    we find~$h_2 \after \alpha_1 = h_2 \after \alpha_2$.
+Thus, by joint monicity of~$h_1$ and~$h_2$, we conclude~$\alpha_1 = \alpha_2$, as desired. \qed
+\end{point}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}{Proposition}%
+The following squares are pullbacks in an effectus in total form.
+\begin{equation*}
+    \xymatrix{
+        X+A \pullback \ar[r]^{\id+f} \ar[d]_{g + \id}
+        & X+B \ar[d]^{g+\id}
+        \\ Y+A \ar[r]_{\id+f}
+        & Y+B
+    } \qquad
+    \xymatrix{
+        X \pullback \ar[d]_{\kappa_1} \ar[r]^{f}
+        & Y \ar[d]^{\kappa_1}
+        \\
+        X+A \ar[r]_{f+g}
+        & Y+B
+    }
+\end{equation*}
+\begin{point}{Proof}%
+To start with the left square, consider the following commuting diagram.
+\begin{equation*}
+    \xymatrix{
+        X+A \ar@{}[rd]|{(1)} \ar[r]^{\id+f} \ar[d]_{g + \id}
+        & X+B \ar@{}[rd]|{(2)} \ar[d]^{g+\id} \ar[r]^{\id+!}
+        & X+1 \ar[d]^{g+\id}
+        \\ Y+A \ar@{}[rd]|{(3)} \ar[r]_{\id+f} \ar[d]_{!+\id}
+        & Y+B \ar@{}[rd]|{(4)} \ar[r]_{\id+!} \ar[d]^{!+\id}
+        & Y+1 \ar[d]^{!+\id}
+        \\ 1+A \ar[r]_{\id+f}
+        & 1+B \ar[r]_{\id+!}
+        & 1+1
+    }
+\end{equation*}
+We want to show (1) is a pullback.
+The inner square~(4) and right rectangle~(2,4) are pullbacks by axiom.
+Thus the inner square~(2) is also a pullback
+    by the pullback lemma, see \sref{pullback-lemma}.
+With the same reasoning, we see square (3) is a pullback.
+Thus by the pullback lemma, it is sufficient to show that
+    left rectangle (1,3) is a pullback.
+The left rectangle is indeed a pullback
+as both the outer square (1,2,3,4)
+    and the right rectangle (2,4) are pullbacks.
+
+For the right square, we consider the following diagram.
+\begin{equation*}
+    \xymatrix{
+         X \ar[r]^f \ar[d]_{\kappa_1}
+            %\ar@{}[rd]|{(1)}
+        & Y \ar[r]^{!} \ar[d]^{\kappa_1}
+            %\ar@{}[rd]|{(2)}
+        &1 \ar[d]^{\kappa_1}
+        \\ X+A \ar[r]_{f+g}
+        & Y+B \ar[r]_{!+!}
+        & 1+1
+    }
+\end{equation*}
+The inner right and outer squares are pullbacks by axiom.
+So the inner left square is also a pullback by the pullback lemma, as desired.
+    \qed
+\end{point}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}{Definition}%
+Assume~$C$ is an effectus in total form.
+For a map~$f\colon X \to Y$,
+    write~$\hat{f} = \kappa_1 \after f \colon X \to Y+1$.
+    (This is the Kleisli embedding~$C \to \Par C$.)
+\end{point}
+\begin{point}{Exercise}%
+Assume~$C$ is an effectus in total form.
+Show that if
+\begin{equation*}
+\kappa_1 \colon X \to X+Y \leftarrow Y \colon \kappa_2
+\end{equation*}
+    is a coproduct in~$C$, then~
+\begin{equation*}
+    \hat\kappa_1 \colon X \pto X+Y \pfrom Y \colon \hat\kappa_2
+\end{equation*}
+    is a coproduct in~$\Par C$.
+Show~$0$ is also the initial object of~$\Par C$.
+\begin{point}{Beware}%
+Cotupling in~$C$ and~$\Par C$ coincide:
+$[f,g]_{C} = [f,g]_{\Par C}$
+for any (properly typed) partial maps~$f,g$.
+Also, we have the following rule for the sum of maps:
+    $\widehat{f+_C g} = \hat{f} +_{\Par C} \hat{g}$.
+    However, in general
+    \begin{equation*}
+    [\kappa_1 \after f, \kappa_2 \after g] \ =\  f+_C g \ \neq\  f +_{\Par C} g
+        \ =\  [[\kappa_1,\kappa_3] \after f,
+            [\kappa_2, \kappa_3] \after g].
+    \end{equation*}
+\end{point}
+\end{point}
+\begin{point}{Proposition}%
+Assume~$C$ is an effectus in total form.
+The following squares are pullbacks in~$\Par C$.
+\begin{equation*}
+    \xymatrix{
+        X+A \pullback \ar@^{>}[r]^{\id+\hat{f}} \ar@^{>}[d]_{\hat{g} + \id}
+        & X+B \ar@^{>}[d]^{\hat{g}+\id}
+        \\ Y+A \ar@^{>}[r]_{\id+\hat{f}}
+        & Y+B
+    } \qquad
+    \xymatrix{
+        X+A \pullback \ar@^{>}[r]^{\id+\hat{f}} \ar@^{>}[d]_{\pproj_2}
+        & X+B \ar@^{>}[d]^{\pproj_2}
+        \\ A \ar@^{>}[r]_{\hat{f}}
+        & B
+    }
+\end{equation*}
+\end{point}
+\begin{point}{Proposition}%
+    Assume~$C$ is an effectus in total form.
+    The partial projectors~$\pproj_1 \equiv [\id,0]$
+        and~$\pproj_2 \equiv [0, \id]$
+        are jointly monic in~$\Par C$.
 \end{point}
 \end{parsec}
 
