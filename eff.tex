@@ -884,7 +884,7 @@ This structure is hidden (for the most part)
 \item
 The right pullback square of \eqref{pullbacks}
     is used to extract a total map in~$C$
-    from a partial map~$f$ in~$\Par C$ that is total (i.e.~$1 \after f = 1$).
+    from a partial map~$f$ in~$\Par C$ that is total (i.e.~$1 \hafter f = 1$).
 \item
 The joint-monicity
     of~$[\kappa_1,\kappa_2,\kappa_2]$
@@ -904,7 +904,7 @@ To prove the theorem, we need to study pullbacks:
     We start with two classic facts about pullbacks.
 \end{point}
 \begin{point}{Exercise}%
-Show that if we have any pullback square in some category --- say
+Show that if we have any pullback square --- say
 \begin{equation*}
     \vcenter{\vbox{\xymatrix@R-1pc{
         {P\ } \pullback \ar[r]^{m_1} \ar[d]_{m_2}
@@ -961,7 +961,7 @@ that is:
 \end{equation*}
 We will need an analogous result for jointly monic maps.
 \end{point}
-\begin{point}{Lemma}%
+\begin{point}[joint-monicity-stable]{Lemma}%
 If the pairs~$(m_1,m_2)$, $(n_1,g_1)$, $(n_2,g_2)$ and~$(h_1,h_2)$
 in the following commuting diagram
 are jointly-monic (for instance: if they span pullback squares),
@@ -1017,7 +1017,7 @@ Thus, by joint monicity of~$h_1$ and~$h_2$, we conclude~$\alpha_1 = \alpha_2$, a
 \end{parsec}
 
 \begin{parsec}%
-\begin{point}{Proposition}%
+\begin{point}[tot-pullbacks]{Proposition}%
 The following squares are pullbacks in an effectus in total form.
 \begin{equation*}
     \xymatrix{
@@ -1087,7 +1087,7 @@ For a map~$f\colon X \to Y$,
     write~$\hat{f} = \kappa_1 \after f \colon X \to Y+1$.
     (This is the Kleisli embedding~$C \to \Par C$.)
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[par-c-coprod]{Exercise}%
 Assume~$C$ is an effectus in total form.
 Show that if
 \begin{equation*}
@@ -1113,7 +1113,7 @@ Also, we have the following rule for the sum of maps:
     \end{equation*}
 \end{point}
 \end{point}
-\begin{point}{Proposition}%
+\begin{point}[par-pullbacks]{Proposition}%
 Assume~$C$ is an effectus in total form.
 The following squares are pullbacks in~$\Par C$.
 \begin{equation*}
@@ -1124,18 +1124,284 @@ The following squares are pullbacks in~$\Par C$.
         & Y+B
     } \qquad
     \xymatrix{
-        X+A \pullback \ar@^{>}[r]^{\id+\hat{f}} \ar@^{>}[d]_{\pproj_2}
-        & X+B \ar@^{>}[d]^{\pproj_2}
+        A+X \pullback \ar@^{>}[r]^{\hat{f}+\id} \ar@^{>}[d]_{\pproj_1}
+        & B+X \ar@^{>}[d]^{\pproj_1}
         \\ A \ar@^{>}[r]_{\hat{f}}
         & B
     }
 \end{equation*}
+\begin{point}{Proof}%
+It is sufficient to show that the following squares
+are pullbacks in~$C$.
+\begin{equation*}
+    \xymatrix{
+        X+(A+1) \ar[r]^{\id + (f+\id)} \ar[d]_{g+ \id}
+        & X+(B+1) \ar[d]^{g+\id}
+        \\ Y+(A+1) \ar[r]_{\id+(f +\id)}
+        & Y+(B+1)
+    } \qquad
+    \xymatrix{
+        A+(X+1) \ar[r]^{f+\id} \ar[d]_{\id+!}
+        & B+(X+1)  \ar[d]^{\id+!}
+        \\ A+1 \ar[r]_{f+\id}
+        & B+1
+    }
+\end{equation*}
+These are indeed pullbacks by~\sref{tot-pullbacks}. \qed
 \end{point}
-\begin{point}{Proposition}%
+\end{point}
+\begin{point}[zero-and-one-parc]{Definition}%
+Assume~$C$ is an effectus in total form.
+For arbitrary objects~$X,Y$ in~$C$,
+    write~$0 \equiv \kappa_2 \after !\colon X \to Y+1$
+    and~$1 \equiv \kappa_1 \after ! \equiv \hat! \colon X \to 1+1$.
+\end{point}
+\begin{point}{Exercise}%
+    Show~$0$ is a zero object in~$\Par C$
+        with unique zero map
+        as in \sref{zero-and-one-parc}.
+\end{point}
+\begin{point}[pardp]{Proposition}%
+Assume~$C$ is an effectus in total form
+    and~$f$ is a map in~$\Par C$.
+\begin{enumerate}
+\item
+If~$1 \hafter f = 1$,
+    then~$f = \hat{g}$ for some~$g$ in~$C$.
+\item
+If~$0 \hafter f = 0$, then~$f = 0$.
+\end{enumerate}
+\begin{point}{Proof}%
+Both points follow from the right pullback square of~\eqref{pullbacks}
+ as follows.
+\begin{equation*}
+    \xymatrix@R-.8pc{
+    X \ar@{.>}[rd]|g
+    \ar@/^1pc/[rrd]^{!}
+        \ar@/_1pc/[rdd]_f
+        \\& Y \pullback
+        \ar[r]_{!}
+        \ar[d]^{\kappa_1}
+    & 1
+        \ar[d]^{\kappa_1}
+    \\& Y+1
+        \ar[r]_{!+!}
+&1+1
+}
+\qquad
+    \xymatrix@R-.8pc{
+        X \ar@{.>}[rd]|{!}
+    \ar@/^1pc/[rrd]^{!}
+        \ar@/_1pc/[rdd]_f
+        \\& 1 \pullback
+        \ar[r]_{!}
+        \ar[d]^{\kappa_2}
+    & 1
+        \ar[d]^{\kappa_2}
+    \\& Y+1
+        \ar[r]_{!+!}
+&1+1
+}
+\end{equation*}
+If~$1 \hafter f = 1$, then~$(!+!)\after f = \kappa_1 \after !$
+    and so there is a unique~$g$ with~$f = \kappa_1 \after g$
+    as shown above on the left.
+For the other point, if~$1 \hafter f = 0$,
+    then~$(!+!)\after f = \kappa_2 \after !$
+    and so~$f = \kappa_2 \after !$ as shown above on the right. \qed
+\end{point}
+\end{point}
+\begin{point}[pproj-joint-monicity]{Proposition}%
     Assume~$C$ is an effectus in total form.
     The partial projectors~$\pproj_1 \equiv [\id,0]$
         and~$\pproj_2 \equiv [0, \id]$
         are jointly monic in~$\Par C$.
+\begin{point}{Proof}%
+Consider the following commuting diagram in~$\Par C$.
+\begin{equation*}
+\xymatrix {
+    X+Y \pullback
+    \ar@/^1.5pc/[rr]^{\pproj_1}
+    \ar@/_3pc/[dd]_{\pproj_2}
+        \ar@^{>}[r]^{\id+\hat!}
+        \ar@^{>}[d]_{\hat! + \id}
+& X+1 \pullback
+        \ar@^{>}[r]^{\pproj_1}
+        \ar@^{>}[d]^{\hat! + \id}
+& X
+        \ar@^{>}[d]^{\hat!}
+\\ 1+Y \pullback
+        \ar@^{>}[r]_{\id+\hat!}
+        \ar@^{>}[d]_{\pproj_2}
+& 1+1
+        \ar@^{>}[r]_{\pproj_1}
+        \ar@^{>}[d]^{\pproj_2}
+& 1
+\\ Y
+        \ar@^{>}[r]_{\hat!}
+& 1
+}
+\end{equation*}
+Each of the inner squares is a pullback by~\sref{par-pullbacks}.
+The maps~$\pproj_1,\pproj_2\colon 1 + 1 \pto 1$
+    are jointly monic,
+    which is a reformulation
+    of the joint monicity axiom of an effectus in total form.
+Thus by \sref{joint-monicity-stable}
+    the outer~$\pproj_1$ and~$\pproj_2$ are jointly monic. \qed
+\end{point}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}{Theorem}%
+If~$C$ is an effectus in total form,
+then~$\Par C$ is an effectus in partial form.
+\begin{point}{Proof}%
+In \sref{par-c-coprod}, we saw that~$\Par C$ has finite coproducts.
+\begin{point}{PCM-enrichment, I}%
+Assume~$f,g \colon X \pto Y$.
+We say~$f \perp g$
+whenever there is a \Define{bound}~$b\colon X \pto Y+Y$
+    with~$\pproj_1 \hafter b = f$
+    and~$\pproj_2 \hafter b = g$.
+    (By \sref{pproj-joint-monicity}
+    this~$b$ is unique if it exists.)
+In this case, define~$f \ovee g = \nabla \hafter b$,
+where $\Define{\nabla} \equiv [\id,\id]$.
+We will show~$\ovee$ with~$0$
+    as defined in \sref{zero-and-one-parc}
+    forms a PCM.
+Partial commutativity is obvious.
+The map~$\kappa_1 \hafter f\colon X \pto Y+Y$
+    is a bound for~$f \perp 0$ and
+    so~$f \ovee 0 = \nabla \hafter \kappa_1 \hafter f = f$,
+    which shows~$0$
+    is indeed a zero for~$\ovee$.
+Only partial associativity remains.
+Assume~$f \perp g$ via bound~$b$
+and~$f \ovee g \perp h$ via bound~$c$.
+Note~$\nabla \hafter b = f \ovee g = \pproj_1 \hafter c$
+and thus by the right pullback square of \sref{par-pullbacks} (see diagram below),
+    there is a unique~$d\colon X \pto (Y+Y)+Y$
+    with~$\pproj_1 \hafter d = b$ and~$(\nabla +\id)\hafter d = c$.
+\begin{equation*}
+    \xymatrix@R-.8pc{
+    X \ar@^{.>}[rd]|d
+        \ar@/^1pc/[rrd]^c
+        \ar@/_1pc/[rdd]_b
+        \\& (Y+Y)+Y \pullback
+        \ar@^{>}[r]_{\nabla+\id}
+        \ar@^{>}[d]^{\pproj_1}
+    & Y+Y
+        \ar@^{>}[d]^{\pproj_1}
+    \\& Y+Y
+        \ar@^{>}[r]_{\nabla}
+&Y
+}
+\end{equation*}
+The map $(\pproj_2 + \id) \hafter d$
+    is a bound for~$g \perp h$,
+    indeed:
+\begin{align*}
+    \pproj_1 \hafter (\pproj_2 + \id) \hafter d
+    & \ =\  \pproj_2 \hafter \pproj_1 \hafter d 
+    & \pproj_2 \hafter (\pproj_2 + \id) \hafter d
+    & \ =\  \pproj_2 \hafter d
+    \\
+    &\ =\  \pproj_2 \hafter b
+    && \ =\  \pproj_2 \hafter (\nabla + \id) \hafter d
+    \\
+    & \ =\  g
+    && \ = \ \pproj_2 \hafter c\\
+    &&& \ = \ h.
+\end{align*}
+We need one more ---
+    $[\id,\kappa_2]\hafter d$ is a bound for~$f \perp g \ovee h$:
+\begin{align*}
+    \pproj_1 \hafter [\id,\kappa_2] \hafter d
+        & \ = \ \pproj_1 \hafter \pproj_1 \hafter d
+    & \pproj_2 \hafter [\id,\kappa_2]\hafter d & \ =\ \nabla \hafter (\pproj_2 + \id) \hafter d \\
+        & \ = \ \pproj_1 \hafter b
+        && \ =\  g \ovee h \\
+        & \ = \ f.
+\end{align*}
+Finally,
+we compute
+\begin{equation*}
+f \ovee (g \ovee h)
+\ = \ \nabla \hafter [\id, \kappa_2] \hafter d
+\ = \ \nabla \hafter (\nabla+ \id) \hafter d
+\ = \ \nabla \hafter c
+\ = \ (f \ovee g) \ovee h,
+\end{equation*}
+which shows the partial associativity.
+Homsets of~$\Par C$ are indeed PCMs.
+\end{point}
+\begin{point}{PCM-enrichment, II}%
+Assume~$f \perp g$ with bound~$b$.
+It is easy to see~$b \hafter k$
+    is a bound for~$f \hafter k \perp g \hafter k$
+    and consequently~$(f \hafter k) \ovee (g \hafter k)
+                = \nabla \hafter b \hafter k = 
+                (f \ovee g) \hafter k$.
+For the other side:
+$(h + h) \hafter b$ is a bound for~$h \hafter f \perp h \hafter g$,
+    indeed
+\begin{align*}
+    \pproj_1 \hafter (h+h) \hafter b
+    &\ = \ 
+    h\hafter \pproj_1 \hafter b \ =\  h \hafter f \\
+    \pproj_2 \hafter (h+h) \hafter b
+    &\ = \ 
+    h\hafter \pproj_2 \hafter b\  =\  h \hafter g.
+\end{align*}
+And so~$(h \hafter f) \ovee (h \hafter g)
+            = \nabla \hafter (h+h) \hafter b
+            = h \hafter \nabla \hafter b = h \hafter (f \ovee g)$.
+\end{point}
+\begin{point}{FinPAC}%
+We just saw~$\Par C$ is PCM-enriched.
+We already know~$\Par C$ has coproducts.
+The compatible sum axiom holds by definition of~$\perp$.
+To show~$\Par C$ is a finPAC, only the untying axiom remains to be proven.
+If~$f \perp g$ with bound~$b$,
+then~$(\kappa_1 + \kappa_2) \hafter b$ is a bound for~$\kappa_1 \hafter f
+    \perp \kappa_2 \hafter g$,
+    which proves the untying axiom.
+\end{point}
+\begin{point}{Effect algebra of predicates}%
+Pick any predicate~$p \colon X \to 1+1$.
+We define~$p^\perp = [\kappa_2,\kappa_1]\after p$.
+($p^\perp$ is~$p$ with swapped outcomes.)
+We compute
+\begin{align*}
+    \pproj_1 \hafter \hat{p}
+    &\ = \ [\id,\kappa_2]\after\kappa_1 \after p
+        \  = \ p \\
+        \pproj_2 \hafter \hat{p}
+    &\ = \ [[\kappa_2, \kappa_1],\kappa_2]\after\kappa_1 \after p
+        \  = \ [\kappa_2,\kappa_1]\after p \\
+    \nabla \hafter \hat{p}
+    &\ = \ [[\kappa_1,\kappa_1],\kappa_2]\after\kappa_1 \after p
+        \  = \ \kappa_1 \after ! \ = \ 1.
+\end{align*}
+So~$\hat{p}$ is a bound for~$p \perp p^\perp$
+and~$p \ovee p^\perp = 1$.
+To show~$p^\perp$ is the unique orthocomplement,
+    assume~$p \ovee q = 1$ for some (other)~$q$ via a bound~$b$.
+Note~$1 \hafter b =\nabla \hafter b = 1$
+    and so by \sref{pardp}
+    we know~$b = \hat{c}$ for some~$c\colon X \to 1+1$.
+    And so~$p = \pproj_1 \hafter b = [\id, \kappa_2]\after \kappa_1 \after c
+                    = c$
+                    hence
+\begin{equation*}
+q \ =\  \pproj_2 \hafter b \ =\  [[\kappa_2, \kappa_1],\kappa_2] \after
+    \kappa_1\after c \ =\  [\kappa_2,\kappa_1]\after p \ =\  p^\perp.
+\end{equation*}
+\end{point}
+\end{point}
 \end{point}
 \end{parsec}
 
