@@ -2250,8 +2250,8 @@ when~$f$ and~$g$ are multiplicative;
 $f\otimes g$ is involution preserving
 when~$f$ and~$g$ are involution preserving; and
 \item
-$f\otimes g$ is unital 
-when~$f$ and~$g$ are unital.
+$f\otimes g$ is (sub)unital 
+when~$f$ and~$g$ are (sub)unital.
 \end{enumerate}
 \begin{point}{Proof}%
 As uniqueness of~$f\otimes g$ is rather obvious,
@@ -2388,6 +2388,16 @@ h(\ (M_nf)(A^*A) \ \ (M_n \otimes)\ \
 \end{alignat*}
 which concludes this proof.\qed
 \end{point}
+\end{point}
+\begin{point}{Exercise}%
+Show that the assignments
+$(\scrA,\scrB)\mapsto \scrA\otimes \scrB$,
+and~$(f,g)\mapsto f\otimes g$
+give a bifunctor~$\otimes\colon \Cat{C}\times\Cat{C}
+\to\Cat{C}$
+where~$\Cat{C}$
+can be~$\W{miu}$, $\W{cp}$, $\W{cpu}$
+and $\W{cpsu}$.
 \end{point}
 \end{parsec}%
 \begin{parsec}%
@@ -2566,9 +2576,35 @@ the trilinear map $\gamma\colon (a,b,c)\mapsto (a\otimes b)\otimes c,\
 \scrA\times\scrB\times\scrC \to (\scrA\otimes \scrB)\otimes\scrC$
 is a tensor product.
 \begin{point}{Proof}%
-
-\TODO{....asdasd}
-
+We need to verify the three conditions
+from~\sref{tensor} (adapted
+to trilinear maps).
+The first condition,
+that the elements of the form~$(a\otimes b)\otimes c$
+generate $(\scrA\otimes \scrB)\otimes \scrC$
+follows
+by~\sref{tensor-generation}
+since
+the elements of the form~$a\otimes b$
+generate~$\scrA\otimes \scrB$
+(and~$\scrC$ generates~$\scrC$).
+The second condition
+is met by defining
+$\gamma(\sigma,\tau,\upsilon):= (\sigma\otimes\tau)\otimes\upsilon$
+for all np-functionals
+$\sigma\colon \scrA\to\C$,
+$\tau\colon \scrB \to\C$
+and~$\upsilon\colon \scrC\to\C$.
+Finally,
+these product functionals
+$\gamma(\sigma,\tau,\upsilon)$
+are center separating by~\sref{tensor-generation}
+because
+the functionals on~$\scrA\otimes \scrB$
+of the form $\sigma\otimes\tau$
+are center separating (and so is
+the set of all np-functionals on~$\scrC$),
+which was the third condition.\qed
 \end{point}
 \end{point}
 \begin{point}{Corollary}%
@@ -2582,7 +2618,454 @@ for all~$a\in\scrA$, $b\in\scrB$, $c\in\scrC$,
 for any von Neumann algebras
 $\scrA$, $\scrB$, $\scrC$.
 \end{point}
+\begin{point}{Exercise}%
+Show that~$\W{miu}$, $\W{cp}$, $\W{cpu}$
+and~$\W{cpsu}$ endowed with the tensor product
+are monoidal categories with~$\C$ as unit.
+\end{point}
 \end{parsec}
+\section{Model of the Quantum Lambda Calculus}
+\begin{parsec}%
+\begin{point}%
+The quantum lambda calculus
+is a type theory
+proposed by Selinger and Valiron in~\TODO{...}
+to describe programs for quantum computers
+especially designed
+to include both 
+function types and quantum data types in a single system.
+This unification
+is a very delicate matter
+for if one were to allow
+for example
+in this system
+a variable to be used twice
+(a thing usually beyond dispute)
+it would not take much more
+to construct
+a program
+that duplicates the contents
+of a qubit,
+which should be impossible.
+Still more difficult,
+is seems,
+is to find a concrete model for the quantum lambda calculus:
+the first model (other than the term model)
+ appeared only five years later.
+
+We end this thesis by showing that
+von Neumann algebras
+form a model 
+of the quantum lambda calculus.
+For this we do not actually
+need to deal with the quantum lambda calculus itself
+or even to know what it is, because
+Selinger and Valiron have already identified the type
+of category that may serve as a model of the quantum lambda calculus,
+and so we will only 
+show that $\op{(\W{miu})}$ is such a category,\footnote{%
+If you're interested the resulting
+model is conceretely  described in~\TODO{Kenta et Bram}.}
+and for we essentially need to prove that:
+\begin{enumerate}
+\item
+The category 
+$\op{(\W{miu})}$
+is monoidal closed,
+that is,
+for every von Neumann algebra~$\scrB$,
+the functor
+$\scrB\otimes (\,\cdot\,)\colon 
+\W{miu}\to \W{miu}$
+has a left adjoint
+$(\,\cdot\,)^{*\scrB}$.
+
+\item
+We have the following adjunctions.
+\begin{equation*}
+\xymatrix@C=6em{
+	\Cat{Set}
+	\ar@/^1.0em/[r]^-{\ell^\infty}
+	\ar@{}[r]|-{\perp}
+	&
+	\op{(\W{miu})}
+	\ar@/^1.0em/[r]^-{\subseteq}
+	\ar@/^1.0em/[l]^-{\W{miu}(-,\C)}
+	\ar@{}[r]|-{\perp}
+	&
+	\op{(\W{cpsu})}
+	\ar@/^1.0em/[l]^-{\mathcal{F}}
+}
+\end{equation*}
+\item
+All functors in the diagram 
+above except~$\mathcal{F}$
+are strong monoidal,
+that is, preserve the tensor product
+up to isomorphism
+(with as tensor product on~$\Cat{Set}$
+simply the cartesian product, $\times$).
+\item
+$\op{(\W{cpsu})}$ is isomormorphic
+to the Kleisli category
+of the adjunction on the right
+in the diagram above (via the comparision functor \TODO{...}).
+\end{enumerate}
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+We'll need the following two results
+from the literature
+on von Neumann algebras---I 
+had no time to incorperate their proofs in this text.
+\end{point}
+\begin{point}[intersection-tensor]{Proposition}%
+Given Hilbert spaces~$\scrH$ and~$\scrK$,
+and von Neumann subalgebras~$\scrA_1$ and~$\scrA_2$
+of~$\scrB(\scrH)$
+and von Neumann subalgebras~$\scrB_1$ and~$\scrB_2$
+of~$\scrB(\scrK)$,
+we have 
+\begin{equation*}
+(\scrA_1 \otimes  \scrB_1)\,\cap\,
+(\scrA_2 \otimes \scrB_2)
+= (\scrA_1\cap\scrA_2)\,\otimes\,
+(\scrB_1\cap \scrB_2).
+\end{equation*}
+Here
+$\scrA_1 \otimes \scrB_1$
+denotes not just any tensor product of~$\scrA_1$ and~$\scrB_1$,
+see~\TODO{refer to notation},
+but instead
+the ``concrete'' tensor product 
+of~$\scrA_1$ and~$\scrB_1$:
+the least von Neumann subalgebra of~$\scrB(\scrH\otimes\scrK)$
+that contains all operators
+of the form $A\otimes B$ where~$A\in\scrA_1$
+and~$B\in\scrB_1$.
+\begin{point}{Proof}%
+See Corollary IV.5.10 of~\cite{Takesaki1}.\qed
+\end{point}
+\end{point}
+\begin{point}{Proposition}%
+\TODO{On commutative von Neumann algebras.}
+\begin{point}{Proof}%
+\TODO{Add reference.}
+\end{point}
+\end{point}
+\end{parsec}
+
+\subsection{Free Exponential}
+	
+\begin{parsec}%
+\begin{point}%
+We'll prove Kornell's result (from~\TODO{Quantum Collections})
+that the functor
+$\scrB\otimes(\,\cdot\,)\colon
+\W{miu}\to\W{miu}$
+has a left adjoint~$(\,\cdot\,)^{*\scrB}$
+for every von Neumann algebra~$\scrB$.
+Kornell original proof is rather complex,
+and so is ours, unfortunately,
+but we've managed
+to peel off one layer of complexity from the original 
+proof
+by way of Freyd's Adjoint Functor Theorem,
+reducing the problem
+to the facts that
+$\scrB\otimes(\,\cdot\,)\colon \W{miu}\to\W{miu}$
+preserves products,  equalizers,
+and satisfies the solution set condition.
+\TODO{preservation of products}
+\end{point}
+\begin{point}[vn-generation-bound]{Lemma}%
+If a von Neumann algebra~$\scrA$
+is generated by~$S\subseteq \scrA$,
+then
+\begin{equation*}
+\#\scrA \ \leq\  2^{2^{\#\mathbb{C}+\#S}}.
+\end{equation*}
+\begin{point}{Proof}%
+Note that the
+$*$-subalgebra of~$\scrA$
+generated by~$S$
+is dense in~$\scrA$.
+Since every element of~$S'$
+may be formed
+from the infinite set $S\cup \mathbb{C}$ using 
+the finitary operations
+of
+addition, multiplication,
+and
+involution,
+we have~$\#S'\leq \#\mathbb{C}+ \#S$.
+Since every element of~$\scrA$
+is the ultraweak limit of a filter
+(see \cite[\S12]{willard1970})
+on~$S'$
+of which there no more than~$2^{2^{\#S'}}$,
+we conclude~$\#\scrA \leq 2^{2^{\#\mathbb{C}+\#S}}$.\qed
+\end{point}
+\end{point}
+\begin{point}[vn-gns-bound]{Lemma}%
+A von Neumann algebra~$\scrA$
+can be faithfully represented
+on a Hilbert space which contains no more
+than~$2^{\#\scrA}$ vectors.
+\begin{point}{Proof}%
+If~$\scrA=\{0\}$,
+then the result is obvious,
+so let us assume that~$\scrA\neq \{0\}$.
+Then~$\scrA$ is infinite,
+and so~$\aleph_0 \cdot \#\scrA  = \#\scrA$. 
+
+Let~$\Omega$ be the set of np-functionals on~$\scrA$.
+Recall that 
+by the GNS-construction (see~\sref{ngns})
+$\mathscr{A}$
+can be faithfully represented on
+the Hilbert space
+$\scrH_\Omega\equiv \bigoplus_{\omega\in\Omega} \scrH_\omega$.
+Since every element of~$\scrH_\omega$
+is the limit of a sequence of elements from~$\scrA$,
+we have $\#\scrH_\omega \leq \aleph_0^{\#\scrA} \leq (2^{\aleph_0})^{\#\scrA} 
+= 2^{\#\scrA}$,
+because $\aleph_0\cdot \#\scrA=\#\scrA$.
+Since every normal state is a map $\omega\colon \scrA\to\C$,
+we have $\#\Omega\leq \#\C^{\#\scrA}=(2^{\aleph_0})^{\#\scrA}
+= 2^{\#\scrA}$, because $\aleph_0 \cdot \#\scrA = \#\scrA$.
+Hence $\#\scrH = \sum_{\omega\in\Omega} \#\scrH_\omega
+\leq 2^{\#\scrA}\cdot2^{\#\scrA}
+=2^{\#\scrA}$.\qed
+\end{point}
+\end{point}
+
+\begin{point}[equalizer-lemma]{Lemma}%
+Every nmiu-map $h\colon \scrD\to\scrA\otimes \scrC$,
+where~$\scrA$, $\scrC$ and~$\scrD$ are von Neumann algebras,
+factors
+as 
+$\smash{\xymatrix@C=3em{\scrD
+\ar[r]|-{\tilde{h}}
+& 
+\tilde\scrA\otimes \scrC
+\ar[r]|-{\iota\otimes\id}
+&
+\scrA \otimes \scrC
+}}$,
+where~$\smash{\tilde\scrA}$
+is a von Neumann algebra,
+and~$\iota$ and~$\tilde{h}$
+are nmiu-maps,
+such that
+for all nmiu-maps $f,g\colon \scrA\to\scrB$
+into some von Neumann algebra~$\scrB$
+with $(f\otimes\id)\circ h = (g\otimes \id)\circ h$
+we have $f\circ \iota = g\circ \iota$.
+
+Moreover,
+$\tilde\scrA$
+can be generated by
+less than~$\#\scrD\,\cdot\,2^{\#\scrC}$ elements.
+\begin{point}{Proof}%
+Assume (without loss of generality)
+that
+$\scrC$
+is a von Neumann algebra of operators on
+a Hilbert space~$\scrH$
+with no more than $2^{\#\scrC}$ vectors, see~\sref{vn-gns-bound}.
+
+For every vector~$\xi\in \scrH$
+let
+$r_\xi\colon \scrA\otimes \scrC\to\scrA$
+be the unique np-map
+given by~$r_\xi(a\otimes c) = \left<\xi,c\xi\right> a$
+for all~$a\in\scrA$ and~$c\in \scrC$
+(see~\sref{tensor-universal-property}
+and~\sref{tensor-universal-property-extra}),
+and
+let~$\tilde\scrA$
+be the least Neumann subalgebra
+of~$\scrA$
+that contains $S:=\smash{ \bigcup_{\xi \in\scrH} r_\xi(h(\scrD))}$,
+and let~$\iota\colon \tilde\scrA\to\scrA$
+be the inclusion
+(so~$\iota$ is nmiu).
+Note that~$S$ (which generates~$\tilde\scrA$)
+has no more than $\#\scrD\cdot\#\scrH\leq \#\scrD \cdot 2^{\#\scrC}$
+elements.
+
+Let~$f,g\colon \scrA\to\scrB$
+be nmiu-maps
+into a von Neumann algebra~$\scrB$
+such that $(f\otimes\id)\circ h = (g\otimes \id)\circ h$.
+We must show that~$f\circ \iota = g\circ \iota$.
+By definition of~$\tilde\scrA$
+(and the fact that~$f$ and~$g$ are nmiu),
+it suffices to show that $f\circ r_\xi\circ h=g\circ r_\xi\circ h$
+for all~$\xi\in\scrH$.
+Note that given such~$\xi$,
+we have $f\circ r_\xi = r_\xi' \circ (f\otimes\id)$,
+where~$r_\xi'\colon \scrB\otimes\scrC\to\scrB$
+is the np-map
+given by~$r_\xi'(b\otimes c)=\left<\xi,c\xi\right>b$.
+Since similarly,
+$g\circ r_\xi = r_\xi'\circ (g\otimes \id)$,
+we get~$f\circ r_\xi \circ h
+= r_\xi' \circ (f\otimes \id)\circ h
+= r_\xi' \circ (g\otimes \id)\circ h
+= g\circ r_\xi \circ h$.
+
+It remains only to 
+be shown that $h(\scrD) \subseteq \tilde\scrA\otimes \scrC$,
+because we may then simply let~$\tilde{h}$
+be the restriction of~$h$ to~$\tilde\scrA\otimes \scrC$.
+It is enough to prove that
+$h(\scrD) \subseteq \tilde\scrA 
+\otimes  \bsp(\scrH)$,
+because 
+$\tilde\scrA \otimes  \scrC
+\,=\, (\tilde\scrA\otimes \bsp(\scrH))\,\cap\,
+(\scrA\otimes \scrC)$
+(see~\sref{intersection-tensor})
+and we already know that $h(\scrD)\subseteq \scrA\otimes \scrC$.
+Let $(e_k)_k$ be orthonormal basis of $\scrH$.
+Since $1= \sum_k \ket{e_k}\!\bra{e_k}$
+in $\bsp(\scrH)$,
+we have, for all~$d\in\scrD$,
+\begin{align*}
+h(d) \ &=\ \textstyle\bigl(\sum_k 1\otimes \ket{e_k}\!\bra{e_k}\bigr)
+\ h(d)\ \bigl(\sum_\ell 1\otimes \ket{e_\ell}\!\bra{e_\ell}\bigr)\\
+\ &=\ \textstyle \sum_k\sum_\ell\ 
+ (\,1\otimes \ket{e_k}\!\bra{e_k}\,) \ h(d)\  
+ (\,1\otimes \ket{e_\ell}\!\bra{e_\ell}\,).
+\end{align*}
+We are done
+if we can prove that,
+for all~$\xi,\zeta\in\scrH$,
+\begin{equation}
+\label{eq:main-equaliser-todo}
+(\,1\otimes \ket{\xi}\!\bra{\xi}\,) \ 
+h(d)\  (\,1\otimes \ket{\zeta}\!\bra{\zeta}\,)
+\ \in\ \tilde\scrA\otimes \bsp(\scrH).
+\end{equation}
+By an easy computation, we see that,
+for all $e \,\in\,\scrA\otimes \scrC$
+	of the form $e\equiv a\otimes c$,
+\begin{equation*}
+\label{eq:polarisation-equaliser}
+(\,1\otimes \ket{\xi}\!\bra{\xi}\,) \ e
+\  (\,1\otimes \ket{\zeta}\!\bra{\zeta}\,)
+\ =\ 
+\frac{1}{4}\sum_{k=0}^3i^k \,r_{i^k\xi+\zeta}(e)\otimes \ket\xi\!\bra\zeta.
+\end{equation*}
+It follows that the equation above holds for all~$e\in \scrA\otimes \scrC$.
+Choosing $e=h(d)$
+we see that~\eqref{eq:main-equaliser-todo}
+holds,
+because
+$r_{i^k\xi+\zeta}(h(d)) \in\tilde\scrA$.\qed
+\end{point}
+\end{point}
+\TODO{equalizers of nmiu-maps}
+\begin{point}{Proposition}%
+Let $e\colon\scrE\to\scrA$ be an equaliser of
+nmiu-maps $f,g\colon\scrA\to\scrB$ 
+between von Neumann algebras.
+Then $e\otimes\id\colon\scrE\otimes\scrC\to\scrA\otimes\scrC$
+is an equaliser of 
+$f\otimes\id$ and $g\otimes\id$
+for every von Neumann algebra~$\scrC$.
+\begin{point}{Proof}%
+Let~$h\colon\scrD\to\scrA\otimes \scrC$
+be a nmiu-map 
+with $(f\otimes\id)\circ h=(g\otimes\id)\circ h$.
+We must show that there is a unique
+ nmiu-map $k\colon\scrD\to\scrE\otimes\scrC$
+such that  $h=(e\otimes\id)\circ k$.
+Note that since the equalizer map~$e$ 
+is injective,
+$e\otimes\id\colon\scrE\otimes\scrC\to\scrA\otimes\scrC$
+is injective (by \TODO{tensor of injections is injective})
+and thus uniqueness of~$k$ is clear.
+Concerning existence,
+by~\sref{equalizer-lemma},
+$h$ factors as
+$\smash{\xymatrix@C=3em{\scrD
+\ar[r]|-{\tilde{h}}
+& 
+\tilde\scrA\otimes \scrC
+\ar[r]|-{\iota\otimes\id}
+&
+\scrA \otimes \scrC
+}}$
+where~$\tilde{h}$ and~$\iota$ are nmiu-maps,
+and moreover,
+we have $f\circ \iota = g\circ \iota$.
+Since~$e$ is an equalizer of~$f$ and~$g$,
+there is a unique nmiu-map $\tilde\iota\colon \tilde\scrA\to \scrE$
+with~$e\circ \tilde\iota = \iota$.
+Now, define $k:=(\tilde \iota\otimes \id)\circ \tilde{h}\colon 
+\scrD\to \scrE\otimes \scrC$.
+Then~$(e\otimes \id)\circ k = 
+((e\circ\tilde \iota)\otimes \id)\circ \tilde{h}
+= (\iota\otimes \id)\circ \tilde{h}
+= h$.\qed
+\end{point}
+\end{point}
+
+
+\begin{point}{Theorem}%
+The functor $(-)\otimes\scrA\colon\W{miu}\to\W{miu}$
+has a left adjoint
+for every von Neumann algebra~$\scrA$.
+\begin{point}{Proof}%
+	The category $\W{miu}$ is (small-)complete,
+and
+$(-)\otimes\scrA\colon\W{miu}\to\W{miu}$
+preserves (small-)products and equalisers.
+Thus,
+by Freyd's (General)
+Adjoint Functor Theorem~\cite[Thm.~V.6.2]{maclane1978},
+it suffices to check the following Solution Set Condition
+(where we've used that $\W{miu}$
+is locally small).
+\begin{itemize}
+\item
+	For each $\scrB\in\W{miu}$, there is a small subset $\mathcal{S}$ of objects in $\W{miu}$
+such that every arrow $h\colon \scrB\to\scrC\otimes\scrA$
+can be written as a composite $h=(t\otimes\id_{\scrA})\circ f$ for some $\scrD\in \mathcal{S}$,
+$f\colon\scrB\to\scrD\otimes \scrA$, and $t\colon \scrD\to\scrC$.
+\end{itemize}
+Let $\scrB$ be an arbitrary von Neumann algebra.
+We claim that the following set $\mathcal{S}$ satisfies the required condition:
+\[
+	\mathcal{S}=
+\{\scrD\mid
+\text{$\scrD$ is a von Neumann algebra on~$\kappa$}\},
+\quad\text{where}\quad\kappa=2^{2^{\#\C\cdot\#\scrB\cdot2^{\#\scrA}}}.
+\]
+Indeed,
+suppose that $h\colon \scrB\to\scrC\otimes\scrA$ is given.
+By \sref{equalizer-lemma},
+$h$ factors
+as~$\xymatrix{\scrB\ar[r] & \tilde\scrC\otimes 
+\scrA\ar[r]|-{\iota\otimes \id} & \scrC\otimes\scrA }$
+where~$\tilde\scrC$
+is a von Neumann algebra
+generated by no more than~$\#\scrB\cdot2^{\#\scrA}$
+elements.
+It follows that~$\tilde\scrC$ has no
+more than~$\kappa$ elements (by~\sref{vn-generation-bound}).
+Thus we may assume without loss of generality
+that~$\tilde\scrC$
+is a subset of~$\kappa$,
+that is,~$\tilde\scrC\in\mathcal{S}$.\qed
+\end{point}
+\end{point}
+\end{parsec}
+
 \section{To be moved}
 \begin{parsec}%
 \begin{point}{Lemma}%
