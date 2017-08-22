@@ -48,7 +48,8 @@ It will turn out that the set of predicates associated to an object in
 In this way, effect algebras play the same role
     for effectuses as heyting algebras for topoi.
     First, we will recall the definition of partial commutative monoid (PCM)
---- later we will see \TODO{...} that the partial maps between
+    --- as later in \sref{cho-thm} 
+    we will see that the partial maps between
     two objects in an effectus can be arranged into a PCM.
 \end{point}
 \begin{point}[dfn-pcm]{Definition}%
@@ -305,10 +306,10 @@ Show that for an effect algebra homomorphism~$f\colon E \to F$,
 \subsection{Effect monoids}
 \begin{parsec}%
 \begin{point}%
-In \TODO{...} we will see the set of scalars of an effectus
-    can be arranged into an effect monoid.
+In \sref{dfn-mandso}, we will see that the scalars of an effectus
+form an effect monoid:
 \end{point}
-\begin{point}{Definition}%
+\begin{point}[dfn-effect-monoid]{Definition}%
 An \Define{effect monoid}~$M$ \cite{probdistrconv}
     is an effect algebra
     together with a binary operation~$\odot$
@@ -359,9 +360,9 @@ In particular: the two-element boolean algebra~$2$
 \begin{point}%
 An effect algebra of predicates in an effectus
     will have an action of the effect monoid of the scalars,
-    turning them into a effect module:\TODO{ref}
+    turning them into an effect module (see \sref{dfn-mandso}):
 \end{point}
-\begin{point}{Definition}%
+\begin{point}[dfn-effect-module]{Definition}%
 Suppose~$M$ is an effect monoid.
 An \Define{effect module} $E$ over~$M$ \cite{corefl}
     is an effect algebra together with an operation
@@ -464,7 +465,7 @@ The coproduct~$X + Y$ is the union data type of~$X$ and~$Y$.
 \end{point}
 \begin{point}%
 Our main example of an effectus in total form
-    is the category~$\op{\W{NCPU}}$
+    is the category~$\op{\vN}$
     of von Neumann algebras with completely positive normal unital
     maps in the opposite direction.
 The partial maps correspond to contractive maps.
@@ -555,7 +556,7 @@ This is not the case ---
     on the same thing: \cite{kentapartial,introeff}
 \end{point}
 \end{point}
-\begin{point}{Theorem (Cho)}%
+\begin{point}[cho-thm]{Theorem (Cho)}%
 Let~$C$ be an effectus in total form
 and~$D$ be an effectus in partial form.
 \begin{enumerate}
@@ -569,7 +570,7 @@ The total maps of~$D$ form an effectus in total form~$\Tot D$.
     $\Par \Tot D \cong D$ and~$\Tot \Par C \cong C$.
 \end{enumerate}
 \begin{point}%
-We postpone the proof until \TODO{}.
+We postpone the proof to \sref{proof-cho-thm}.
 \end{point}
 \end{point}
 \end{parsec}
@@ -671,6 +672,7 @@ In an effectus in partial form, we have a correspondence
 \UnaryInfC{$f\colon Z \to X \quad g\colon Z \to Y \quad 1 \after f \perp 1 \after g$}
 \end{prooftree}
 as follows:
+\begin{quote}
 for every~$f\colon Z \to X$
     and~$g\colon Z \to Y$
     with~$1 \after f \perp 1 \after g$,
@@ -679,6 +681,7 @@ for every~$f\colon Z \to X$
     and~$\pproj_2 \after \langle f, g \rangle = g$,
     where~$\pproj_1 = [\id,0]$ and~$\pproj_2=[0,\id]$.
 In fact~$\langle f, g\rangle = (\kappa_1 \after f) \ovee (\kappa_2 \after g)$.
+\end{quote}
 Conversely~$h = \langle \pproj_1 \after h, \pproj_2 \after h \rangle$
     for any~$h \colon Z \to X+Y$.
 \begin{point}{Proof}%
@@ -731,6 +734,7 @@ $\langle \pproj_1 \after h, \pproj_2 \after h\rangle
 \begin{point}[eff-prod-rules]{Exercise}%
 Show that in an effectus in partial form, we have
 \begin{enumerate}
+    \item~$[a,b] \after \langle f, g \rangle = (a \after f) \ovee (b \after g)$;
     \item~$1 \after \langle f, g\rangle = (1 \after f) \ovee(1 \after g)$;
     \item~$(k+l) \after \langle f, g\rangle
         = \langle k \after f, l \after g \rangle$ \emph{and}
@@ -754,7 +758,7 @@ The unique map~$!\colon 0 \to X$ must be total
     as~$1 \after ! = 1$ is the unique map~$0 \to I$,
     so~$\Tot C$ has initial object~$0$, hence all finite coproducts.
 \end{point}
-\begin{point}%
+\begin{point}[one-m-is-id]%
 To show~$I$ is the final object of~$\Tot C$,
     we need~$\id_I = 1$.
 As~$C(I,I)$ is an effect algebra~$1 = \id \ovee \id^\perp$
@@ -1167,7 +1171,7 @@ Assume~$C$ is an effectus in total form
 \begin{enumerate}
 \item
 If~$1 \hafter f = 1$,
-    then~$f = \hat{g}$ for some~$g$ in~$C$.
+    then~$f = \hat{g}$ for a unique~$g$ in~$C$.
 \item
 If~$0 \hafter f = 0$, then~$f = 0$.
 \end{enumerate}
@@ -1254,7 +1258,7 @@ Thus by \sref{joint-monicity-stable}
 \end{parsec}
 
 \begin{parsec}%
-\begin{point}{Theorem}%
+\begin{point}[eff-total-to-partial]{Theorem}%
 If~$C$ is an effectus in total form,
 then~$\Par C$ is an effectus in partial form.
 \begin{point}{Proof}%
@@ -1400,40 +1404,209 @@ Note~$1 \hafter b =\nabla \hafter b = 1$
 q \ =\  \pproj_2 \hafter b \ =\  [[\kappa_2, \kappa_1],\kappa_2] \after
     \kappa_1\after c \ =\  [\kappa_2,\kappa_1]\after p \ =\  p^\perp.
 \end{equation*}
+To show~$\Pred X$ is an effect algebra,
+it only remains to be proven that the zero--one axiom holds.
+So assume~$1 \perp p$ via some bound~$b$. We want to show~$p=0$.
+By the following instance of the right pullback square of~\eqref{pullbacks},
+    we see~$b = \kappa_1 \after \kappa_1 \after !$.
+\begin{equation*}
+    \xymatrix@R-.8pc{
+        X \ar@{.>}[rd]|{!}
+    \ar@/^1pc/[rrd]^{!}
+        \ar@/_1pc/[rdd]_b
+        \\& 1 \pullback
+        \ar@{=}[r]
+        \ar[d]^{\kappa_1\after\kappa_1}
+    & 1
+        \ar[d]^{\kappa_1}
+        \\& (1+1)+1
+        \ar[r]_{[\id,\kappa_2]}
+&1+1
+}
+\end{equation*}
+Hence~$p = \pproj_2 \hafter b = [[\kappa_2,\kappa_1],\kappa_1]\after
+                        \kappa_1 \after \kappa_1 \after ! = \kappa_2 \after ! = 0$.
+\end{point}
+\begin{point}{Final axioms}%
+In \sref{pardp} we proved that~$f = 0$ whenever~$f = 0$.
+It only remains to be shown that~$f \perp g$
+    provided~$1 \after f \perp 1 \after g$.
+As assume~$b$ is a bound for~$1 \after f \perp 1 \after g$.
+We apply the right pullback square of \sref{par-pullbacks}
+    twice  in succession as follows
+    (using~$\pproj_2 \hafter c
+                = \pproj_2 \hafter (\hat{!} + \id) \hafter c
+                = \pproj_2 \hafter b = 1\hafter g$ for the right one.)
+\begin{equation*}
+    \xymatrix@R-.8pc{
+        X \ar@^{.>}[rd]|{c}
+    \ar@/^1pc/[rrd]^{b}
+        \ar@/_1pc/[rdd]_f
+        \\& Y+1 \pullback
+        \ar@^{>}[r]^{\hat! + \id}
+        \ar@^{>}[d]^{\pproj_1}
+    & 1+1
+        \ar@^{>}[d]^{\pproj_1}
+        \\& Y
+        \ar@^{>}[r]_{\hat!}
+&1
+} \qquad
+    \xymatrix@R-.8pc{
+        X \ar@^{.>}[rd]|{d}
+    \ar@/^1pc/[rrd]^{c}
+        \ar@/_1pc/[rdd]_g
+        \\& Y+Y \pullback
+        \ar@^{>}[r]^{\id + \hat!}
+        \ar@^{>}[d]^{\pproj_2}
+    & Y+1
+        \ar@^{>}[d]^{\pproj_2}
+        \\& Y
+        \ar@^{>}[r]_{\hat!}
+&1
+}
+\end{equation*}
+Clearly~$\pproj_2 \hafter d = g$
+    and~$
+    \pproj_1 \hafter d
+     =  \pproj_1 \hafter (\id + \hat! )\hafter d
+     =  \pproj_1 \hafter c  =  f$, so~$d$ is a bound for~$f \perp g$,
+     as desired. \qed
+\end{point}
+\end{point}
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+We are ready to show the equivalence of effectuses in partial and total form.
+\begin{point}[proof-cho-thm]{Proof of \sref{cho-thm}}%
+The first point is shown in \sref{eff-total-to-partial}
+    and the second in \sref{eff-partial-to-total}.
+\begin{point}{$\Par \Tot D \cong D$}%
+Let~$D$ be an effectus in partial form.
+A map~$f\colon X \to Y$ in~$\Par \Tot D$
+    is by definition a map~$f\colon X \to Y+1$
+        in~$D$ with~$1 \after f= 1$.
+Let~$P \colon \Par \Tot D \to D$
+    denote the identity-on-objects map~$f \mapsto \pproj_1 \after f$.
+This is a functor: clearly~$P\hat\id = P\kappa_1 = \id $ and
+    if~$g\colon Y \to Z$ in~$\Par\Tot D$, then
+\begin{align*}
+    \pproj_1 \after (g \hafter f) & \ = \ 
+    \pproj_1 \after [g, \kappa_2] \after f \\
+    & \ = \ [\pproj_1 \after g, \pproj_1 \after \kappa_2] \after f \\
+    & \ = \ [\pproj_1 \after g,  0] \after 
+                \langle \pproj_1 \after f, \pproj_2 \after f\rangle \\
+                & \ = \ \pproj_1 \after g  \after \pproj_1 \after f.
+\end{align*}
+The functor~$P$ is an isomorphism with inverse~$P' f \equiv \langle f, (1 \after f)^\perp\rangle$.
+Indeed, we have
+    $P P' f = \pproj_1 \after \langle f, (1 \after f)^\perp \rangle = f $
+and
+\begin{equation*}
+    P' P f  \ =\  \langle \pproj_1 \after f, (1 \after \pproj_1 \after f)^\perp\rangle \ =\  (\kappa_1 \after \pproj_1 \after f) \ovee (\kappa_2 \after \pproj_1 \after f)^\perp\ =\  f.
+\end{equation*}
+\begin{point}{$\Tot \Par C \cong C$}%
+Assume~$C$ is an effectus in total form.
+Recall~$1 \hafter \hat{g} = 1$
+and~$\smash{\widehat{f \after g}} = \hat{f} \hafter \hat{g}$,
+    so~$Q\colon C \to \Tot \Par C$
+    given by~$Q g = \hat{g}$ is an identity-on-objects functor.
+It is an isomorphism by the first part of \sref{pardp}:
+    for every~$f$ in~$\Tot \Par C$,
+    there is a unqiue~$g$ in~$C$
+    with~$f = \hat{g}$. \qed
+\end{point}
 \end{point}
 \end{point}
 \end{point}
 \end{parsec}
 
-\subsection{Predicates, states and scalars}
 \begin{parsec}%
-\begin{point}%
-For the remainder of this text,
-    we will work with effectuses in partial form.
-We will write~$1$ instead of~$I$.
-\end{point}
-\begin{point}{Definition}%
-Let~$C$ be an effectus (in partial form).
+\begin{point}[distinction-part-tot-eff]{Exercise}%
+In this exercise we will
+    distinguish effectuses in total and partial form.
 \begin{enumerate}
 \item
-A \Define{predicate} on~$X$ is a map~$X \to 1$.
-The set of predicates $\Define{\Pred X}$ on~$X$ form an effect algebra.
+To start, show that the initial object of an effectus in total form is strict
+    --- that is: show that any map into~$0$ is an isomorphism.
+    (Hint: use the right pullback square of~\sref{tot-pullbacks}
+        with~$X=Y=0$.)
+\item
+Conclude that if~$C$ is both an effectus in total and partial form,
+that then every object in~$C$ is isomorphic to~$0$.
+\end{enumerate}
+\end{point}
+\begin{point}[eff-convention]{Convention}%
+For the remainder of this text, we will work with effectuses in partial form
+    and we write~$1$ instead of~$I$.
+To spare ink, a phrase like ``let $C$ be an \Define{effectus}''
+should be read as~``let $C$ be an effectus in partial form''
+and simply~``$C$ is an effectus'' means either ``$C$ is an effectus in total form''
+    or ``$C$ is an effectus in partial form''.
+(In non-trivial cases, this
+    is unambiguous, as seen in \sref{distinction-part-tot-eff}.)
+As before, when we took the effectus in partial form as base category,
+    we will denote partial maps by~$f\colon X \to Y$
+    (instead of~$f\colon X \pto Y$)
+        and their composition as~$f \after g$
+        (instead of~$f \hafter g$).
+\end{point}
+\end{parsec}
+
+\subsection{Predicates, states and scalars}
+\begin{parsec}%
+\begin{point}[dfn-mandso]{Definition}%
+Let~$C$ be an effectus.
+\begin{enumerate}
+\item
+As alluded to before,
+a \Define{predicate} on~$X$ is a map~$X \to 1$.
+The set of predicates $\Pred X$ on~$X$ is (by definition) an effect algebra.
 \item
 A \Define{scalar} is a predicate on~$1$, that is: a map~$1 \to 1$.
 Write~$\Define{M} \equiv \Pred 1$ for the set of scalars.
 We multiply two scalars~$\lambda,\mu \colon 1 \to 1$
     simply by composing~$\lambda \odot \mu \equiv \lambda \after \mu$.
-As~$C$ is PCM-enriched, this turns~$M$ into an effect monoid.\TODO{ref}
+As~$1_M = \id_M$ (see \sref{one-m-is-id}) and~$C$ is PCM-enriched,
+    the set of scalars~$M$ with~$\odot$
+    is an effect monoid,
+    see \sref{dfn-effect-monoid}.
 \item
-For a scalar~$\lambda\colon 1\to 1$ and a predicate~$p\colon X \to 1$
-    we write~$\lambda \cdot p \equiv \lambda \after p$.
-With this scalar multiplication,
-    $\Pred X$ turns into a~$M$-effect module.
+A \Define{real effectus} is an effectus
+where the set of scalars~$M$ is isomorphic (as effect monoid) to~$[0,1]$.
+\item
+For a scalar~$\lambda\colon 1\to 1$ and a predicate~$p\colon X \to 1$,
+we write~$\Define{\lambda \cdot p} \equiv \lambda \after p$.
+Again due to PCM-enrichment and~$1_M = \id_M$,
+this scalar multiplication
+turns~$\Pred X$ into a~$M$-effect module, see \sref{dfn-effect-module}.
 \item
 A \Define{substate} on~$X$ is a map~$\omega\colon 1 \to X$.
 A \Define{state} is a total substate.
-We denote the set of states on~$X$ by~$\Stat X$.
+We denote the set of states on~$X$ by~$\Define{\Stat X}$.
+\item
+An effectus~$C$ has \Define{separating predicates}
+    if~$\Pred X$ is jointly monic for every~$X$ in~$C$.
+    Similarly, an effectus has \Define{seperating states}
+    if~$\Stat X$ is jointly epic for every~$X$ in~$C$.
 \end{enumerate}
+\end{point}
+\begin{point}{Example}%
+The category~$\op\vN$ is a real effectus ($M \cong [0,1]$).
+The predicates on a von Neumann algebra~$\scrA$
+    is the set of effects~$[0,1]_\scrA$
+    and~$\Stat \scrA$ is the convex set of normal states.
+\end{point}
+\begin{point}{Definition}%
+Let~$M$ be an effect monoid
+    and~$X$ be any set.
+A \Define{formal $M$-convex combination} over~$X$
+is a finite tuple of pairs~$(\lambda_1, x_1), \ldots, (\lambda_n, x_n)$
+(often stylized as~$\Define{\lambda_1 \ket{x_1} \ovee \cdots \ovee \lambda_n \ket{x_n}}$)
+    with~$\lambda_i \in M$ and~$x_i \in X$
+    such that~$\bigovee_i \lambda_i = 1$.
+We write~$\Define{\mathcal{D}_M} X$
+    for the set of all~$M$-convex combinations over~$X$.
 \end{point}
 \end{parsec}
 
@@ -1456,7 +1629,7 @@ Any  map with this universal property
     is called a \Define{quotient} for~$p$.
 \end{point}
 \begin{point}{Example}%
-In~$\op{\W{NCPsU}}$ quotients are exactly the same thing
+In~$\op{\vN}$ quotients are exactly the same thing
     as contractive filters, see \TODO{...}.
 An example of a quotient-map for~$1-a \in \scrA$ is given
     by~$\xi\colon \ceil{a}\scrA \ceil{a} \to \scrA$
@@ -1582,7 +1755,7 @@ Unless otherwise specified~$\pi_p$ will be some
 \end{point}
 \end{point}
 \begin{point}{Example}%
-In~$\op{\W{NCPsU}}$ comprehensions are exactly the same thing
+In~$\op{\vN}$ comprehensions are exactly the same thing
 as corners, see \TODO{...}.
 An example of a comprehension for~$a \in \scrA$
     is given by~$\pi\colon \scrA \to \floor{a}\scrA\floor{a}$
@@ -1618,7 +1791,7 @@ In an effectus a map~$f$ is called \Define{pure}
     and quotient~$\xi$.
 \end{point}
 \begin{point}{Example}%
-In $\op{\W{NCPsU}}$
+In $\op{\vN}$
 the pure maps~$\scrB(\scrH) \to \scrB(\scrK)$
     are exactly the maps of the form~$\ad_T$
     where~$T$ is a contractive map~$\scrK \to \scrH$. \TODO{ref}
@@ -1663,7 +1836,7 @@ Similarly faithful is the analogue of total.
 \end{point}
 \end{point}
 \begin{point}{Example}%
-In $\op{\W{NCPsU}}$ the image of a map~$f\colon \scrA \to \scrB$
+In $\op{\vN}$ the image of a map~$f\colon \scrA \to \scrB$
     is given by the least projection~$e \in \scrA$
     with the property~$f(1-e) = 0$.
 This~$e$ is the complement of the projection onto the kernel of~$f$.
@@ -1740,7 +1913,7 @@ It is unclear whether~$\ceil{p}$ is sharp (without additional
 \end{point}
 \end{point}
 \begin{point}{Example}%
-In $\op{\W{NCPsU}}$ the sharp predicates are the projections.
+In $\op{\vN}$ the sharp predicates are the projections.
 For a predicate~$a \in \scrA$,
     the sharp predicate~$\ceil{a}$
     is the least projection above~$a$.
@@ -2216,7 +2389,7 @@ Show that the following are equivalent.
 \end{point}
 
 \begin{point}{Example}%
-In~$\op{\W{NCPsU}}$ the sharp maps are exactly the~MNIU-maps
+In~$\op{\vN}$ the sharp maps are exactly the~MNIU-maps
 (i.e.~the normal $*$-homomorphisms). \TODO{ref}
 \end{point}
     
@@ -2250,7 +2423,7 @@ we define~$\Define{\andthen{p}{q}} = q \after \asrt_p$
     and~$\Define{p^2} = \andthen{p}{p}$.
 \end{point}
 \begin{point}{Example}%
-The category$\op{\W{NCPsU}}$ is a~$\&$-effectus
+The category$\op{\vN}$ is a~$\&$-effectus
     with~$\andthen{a}{b} = \sqrt{a}b\sqrt{a}$. \TODO{ref}
 \end{point}
 \begin{point}[upm-basics]{Proposition}%
