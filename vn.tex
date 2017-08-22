@@ -1193,6 +1193,41 @@ for every set of projections~$A$ from~$\scrA$.
 \end{enumerate}
 \end{point}
 \end{parsec}
+\section{Central elements}
+\begin{parsec}%
+\begin{point}{Definition}%
+Given a von Neumann algebra~$\scrA$,
+\begin{enumerate}
+\item 
+an element~$a\in\scrA$ is~\Define{central}
+when~$ab=ba$ for all~$b\in\scrA$, and
+\item
+the \Define{center} of~$\scrA$,
+denoted by~$\Define{Z(\scrA)}$,
+is the collection of central elements.
+\end{enumerate}
+\end{point}
+\begin{point}[central-separating]{Proposition}%
+For a collection of np-functionals
+on a von Neumann algebra,
+the following are equivalent.
+\begin{enumerate}
+\item
+$\Omega$ is center separating (see~\sref{separating}).
+\item
+A central projection~$z$ of~$\scrA$ is zero
+when~$\omega(z)=0$ for all~$\omega\in\Omega$.
+\item
+The map $\varrho_\Omega\colon\scrA\to\scrB(\scrH_\Omega)$
+from~\sref{gns} 
+is injective.
+\end{enumerate}
+\begin{point}{Proof}%
+\TODO{complete---might need the bicommutant theorem,
+and in that case must be moved down}
+\end{point}
+\end{point}
+\end{parsec}
 \section{Completeness}
 \begin{parsec}%
 \begin{point}%
@@ -3939,6 +3974,21 @@ to~$\scrA$ coincides with the ultraweak topology on~$\scrA$.
 the restriction of the ultrastrong topology on~$\scrB$
 to~$\scrA$ coincides with the ultrastrong topology on~$\scrA$.
 \end{enumerate}
+\end{point}
+\begin{point}[functional-extension]{Exercise}%
+Let $\varrho\colon \scrA\to\scrB$
+be an injective nmiu-map.
+
+Show 
+using~\sref{injective-nmiu-iso-on-image}
+that any np-functional
+$\omega\colon \scrA\to\C$
+can be extended along~$\varrho$,
+that is,
+there is an np-functional
+$\omega'\colon \scrB\to\C$
+with $\varrho\circ \omega' = \omega$.
+
 \end{point}
 \begin{point}[vn-center-separating-fundamental]{Proposition}%
 Given a center separating collection~$\Omega$ of np-maps
