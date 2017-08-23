@@ -2740,13 +2740,13 @@ are monoidal categories with~$\C$ as unit.
 \begin{point}%
 In this section
 we lay the foundation
-of a model
+for a model
 of the quantum lambda calculus
-using von Neumann algebras.
+built from von Neumann algebras.
 We will not venture
 to describe the quantum lambda calculus
 in all its details here,
-nor will we describe the model we have obtained in full
+nor will we fully describe the model
 (as we did in~\TODO{Kenta and Bram}),
 but we will instead
 focus on the two key ingredients,
@@ -2755,19 +2755,32 @@ the interpretation of ``$\bang$'' and ``$\limp$''
 with them the expert
 can easily produce the model.
 
-Here are some words for those who are not familiar
+Nevertheless
+I will try to give an impression for those who are not familiar 
 with the quantum lambda calculus.
 It is a type theory
 proposed by Selinger and Valiron in~\TODO{...}
 to describe programs for quantum computers
 especially designed
-to include both 
-function types ($\limp$),
+to include 
+not only
+function types ($\limp$)
+and
 classical data types (such as~$\bit$),
-and quantum data types
-(such as $\qbit$)
-in a single system.
-This unification
+but also quantum data types
+(such as $\qbit$),
+so that there can be a term such as
+$\mathsf{new}\colon \bit\limp \qbit$
+that represents the program
+that initializes a qubit in the given state.
+There are of course also terms
+such as
+$\mathsf{0}\colon \bit$
+and~$\mathsf{1}\colon \bit$,
+so that~$\mathsf{meas}\,\mathsf{0}\colon \qbit$
+represents a qbit in state~$\ket{0}$.
+The addition of quantum data 
+to a type theory
 is a very delicate matter
 for if one were to allow
 for example
@@ -2781,33 +2794,61 @@ that duplicates the contents
 of a qubit,
 which is prohibited.
 
+Still, classical data
+such as a bit
+can be duplicated freely,
+so to accommodate this 
+the type~$\bang \bit$ is used.
+More precisely,
+the type
+$\bang A$
+represents that part of the type of~$A$ that is duplicable,
+so that~$\bang \bit$
+is the proper type for a bit,
+and $\bang\qbit$ is empty.
+For example,
+the term that represents the measurement
+of a qubit is~$\mathsf{meas}\colon \qbit\limp \bang\bit$,
+where the~$\bang$ indicates that the bit resulting from the measurement
+may be duplicated freely.
 
-Still more difficult,
-is seems,
-is to find a concrete model for the quantum lambda calculus:
-the first model (other than the term model)
- appeared only five years later.
-
-We end this thesis by showing that
-von Neumann algebras
-form a model 
-of the quantum lambda calculus.
-For this we do not actually
-need to deal with the quantum lambda calculus itself
-or even to know what it is, because
-Selinger and Valiron have already identified the type
-of category that may serve as a model of the quantum lambda calculus,
-and so we will only 
-show that $\op{(\W{miu})}$ is such a category,\footnote{%
-If you're interested the resulting
-model is conceretely  described in~\TODO{Kenta et Bram}.}
-and for we essentially need to prove that:
-\begin{enumerate}
+The model
+we alluded to
+assigns to each type~$A$ a von Neumann algebra~$\sem{A}$,
+e.g.~$\sem{\qbit}=M_2$
+and~$\sem{\bit}=\C^2$.
+A term~$t:A$
+is interpretted as an npsu-functional $\sem{t:A}\colon \sem{A}\to\C$,
+so for example $\sem{\mathsf{0}\colon \bit}\colon
+(x,y)\mapsto x\colon \C^2\to\C$.
+When~$t:A$ has free variables $x_1:B_1,\dotsc,x_N:B_N$
+the interpretation 
+becomes an ncpsu-map $\sem{t}\colon \sem{A}\to\sem{B_1}\otimes 
+\dotsb \otimes \sem{B_N}$,
+so for example,
+\begin{equation*}
+	\sem{\, x\colon \qbit \vdash \mathsf{meas} x\,}
+\colon (x,y)\mapsto
+\smash{\bigl(
+	\begin{smallmatrix}x& 0 \\ 0 & y
+	\end{smallmatrix}\bigr)}
+\colon \C^2\to M_2.
+\end{equation*}
+In short, there are no surprises here.
+As said, the difficulty lies
+in the definition
+of $\sem{!A}$ and~$\sem{A\limp B}$,
+for which we will provide the following
+three ingredients.
+\begin{itemize}
 \item
-The category 
+The fact (due to Kornell, see~\TODO{...})
+that
+the category 
 $\op{(\W{miu})}$
 is monoidal closed,
 that is,
+that
 for every von Neumann algebra~$\scrB$,
 the functor
 $\scrB\otimes (\,\cdot\,)\colon 
@@ -2816,7 +2857,7 @@ has a left adjoint
 $(\,\cdot\,)^{*\scrB}$.
 
 \item
-We have the following adjunctions.
+The following two adjunctions.
 \begin{equation*}
 \xymatrix@C=6em{
 	\Cat{Set}
@@ -2825,28 +2866,42 @@ We have the following adjunctions.
 	&
 	\op{(\W{miu})}
 	\ar@/^1.0em/[r]^-{\subseteq}
-	\ar@/^1.0em/[l]^-{\W{miu}(-,\C)}
+	\ar@/^1.0em/[l]^-{\nsp:=\W{miu}(-,\C)}
 	\ar@{}[r]|-{\perp}
 	&
 	\op{(\W{cpsu})}
 	\ar@/^1.0em/[l]^-{\mathcal{F}}
 }
 \end{equation*}
-\item
-All functors in the diagram 
-above except~$\mathcal{F}$
-are strong monoidal,
-that is, preserve the tensor product
-up to isomorphism
-(with as tensor product on~$\Cat{Set}$
-simply the cartesian product, $\times$).
-\item
-$\op{(\W{cpsu})}$ is isomormorphic
-to the Kleisli category
-of the adjunction on the right
-in the diagram above (via the comparision functor \TODO{...}).
-\end{enumerate}
+\end{itemize}
 \end{point}
+The interpretation of~$\sem{!A}$
+and~$\sem{A\limp B}$ will then be
+\begin{equation*}
+\sem{!A}\ =\ 
+\linf(\nsp(\sem{A}))
+\qquad\text{and}\qquad
+\sem{A\limp B}
+\ = \ 
+\mathcal{F}(\sem{B})^{*\sem{A}}.
+\end{equation*}
+Note that~$\sem{!A}$
+will always be a discrete von Neumann algebra
+no matter how complicated~$\sem{A}$ may be,
+so that although this does the job
+perhaps a more interpretation of~$\bang$
+may be chosen as well.
+This is not the case:
+in the next
+section we'll show that
+any von Neumann algebra
+that carries 
+a $\otimes$-monoid structure
+(such as $\sem{!A}$ must)
+is commutative and discrete,
+and that~$\linf(\nsp(\scrA))$
+is moreover the free $\otimes$-monoid
+on~$\scrA$.
 \end{parsec}
 \begin{parsec}%
 \begin{point}%
