@@ -332,7 +332,7 @@ An \Define{effect monoid}~$M$ \cite{probdistrconv}
 An effect monoid~$M$ is said to be \Define{commutative}
     if we have~$a\odot b = b\odot a$ for all~$a,b \in M$.
 \end{point}
-\begin{point}{Examples}%
+\begin{point}[eff-monoid-examples]{Examples}%
 Effect monoids are less abundant.
 \begin{enumerate}
 \item The effect algebra~$[0,1]$
@@ -351,6 +351,10 @@ In particular: the two-element boolean algebra~$2$
 \item There is a non-commutative effect monoid
         based on the lexicographically ordered vector space~$\R^5$,
         see ~\cite[Cor.~51]{basmsc}.
+\item Assume~$M$ is an effect monoid.
+    Write~$M^{\mathsf{op}}$
+        for the effect monoid~$M$ with the opposite multiplication
+            --- that is: $a \odot_M b = b \odot_{M^\mathsf{op}} a$.
 \end{enumerate}
 \end{point}
 \end{parsec}
@@ -1737,6 +1741,11 @@ So if~$C$ has separating predicates,
 \end{point}
 \end{parsec}
 \begin{parsec}%
+\begin{point}%
+We studied the structure of predicates in an effectus.  What about the states?
+They will turn out to be abstract~$M$-convex sets.
+Before we define those, we introduce a generalized distribution monad.
+\end{point}
 \begin{point}{Definition}%
 Let~$M$ be an effect monoid
     and~$X$ be any set.
@@ -1789,41 +1798,44 @@ Show that~$(\mathcal{D}_M, \eta,\mu)$
 \begin{point}{Definition}%
 Let~$X$ be a set together
     with a map~$h\colon \mathcal{D}_M X \to X$.
-We say~$(X,d)$ is an \Define{abstract $M$-convex set}
+We say~$(X,h)$ is an \Define{abstract $M$-convex set}
     provided~$h(\ket{x})=x$
     and
-\begin{equation*}
-    h \Bigl( \bigovee_{i,j} \sigma_i \odot \lambda_{i,j} \ket{x_{ij}} \Bigr)
+\begin{equation}\label{convex-mult}
+    h \Bigl( \bigovee_{i,j} \sigma_i \odot \lambda_{ij} \ket{x_{ij}} \Bigr)
     \ = \ 
     h \Bigl( \bigovee_i \sigma_i \, \ket{
         h\bigl(\, \bigovee_j \lambda_{ij} \ket{x_{ij}}\, \bigr)
     } \, \Bigr)
-\end{equation*}
+\end{equation}
 for every~$\bigovee_i \sigma_i \ket{\bigovee_j \lambda_{ij} \ket{x_{ij}}}$
     in~$\mathcal{D}_M \mathcal{D}_M X$.
-We say that a map~$f\colon X \to Y$
+A map~$f\colon X \to Y$
     between abstract~$M$-convex sets~$(X,h_X)$ and~$(Y,h_Y)$
     is \Define{$M$-affine} if
 \begin{equation*}
     f \bigl(h_X \bigl(\,\bigovee_i \lambda_i \ket{x_i}\, \bigr)\bigr)
      \ = \ 
-     h_Y\bigl(\,\bigovee_i \lambda_i \ket{f(x_i)}\,\bigr).
+     h_Y\bigl(\,\bigovee_i \lambda_i \ket{f(x_i)}\,\bigr)
 \end{equation*}
+for every~$\bigovee_i \lambda_i \ket{x_i}$ in~$\mathcal{D}_M X$.
 Write~$\Define{\AConvM}$ for the category
     of abstract~$M$-convex sets with
     $M$-affine maps between them.
 (Equivalently: $\AConvM$
     is the Eilenberg--Moore category
-    of the~$\mathcal{D}_M$.)
-We call a abstract $M$-convex set~$(X,h)$ \Define{cancellative}
-provided~$
-    h(\lambda \ket{x_1} \ovee \lambda^\perp \ket{y}) =
-    h(\lambda \ket{x_2} \ovee \lambda^\perp \ket{y})$
-    implies~$x_1=x_2$
+    of the monad~$\mathcal{D}_M$.)
+We call an abstract $M$-convex set~$(X,h)$ \Define{cancellative}
+provided
+\begin{equation*}
+    h(\lambda \ket{y} \ovee \lambda^\perp \ket{x_1})\  = \
+    h(\lambda \ket{y} \ovee \lambda^\perp \ket{x_2})
+    \quad\text{implies}\quad~x_1=x_2
+\end{equation*}
     for any~$x_1,x_2,y \in X$ and~$\lambda \in M, \lambda \neq 0$.
 \end{point}
 \begin{point}{Examples}%
-We give examples of abstract convex sets.
+We give some examples of abstract convex sets.
 \begin{enumerate}
 \item
 Every convex subset~$X \subseteq V$
@@ -1884,11 +1896,23 @@ h \Bigl(\frac{1}{2}\ket{\begin{tikzpicture}[scale=0.2]
     \draw (1,0) -- (0,0) ; 
 \end{tikzpicture}}
 \ovee
-    \frac{1}{2}\ket{\begin{tikzpicture}[scale=0.2]
+    \frac{1}{2}\ket{
+        \begin{tikzpicture}[scale=0.2]
     \filldraw( 0,.5) circle (3pt);
     \draw (0,0) -- (0,1) ; 
     \draw (1,0) -- (0,0) ; 
-\end{tikzpicture}}\Bigr).
+\end{tikzpicture}
+}\Bigr), \quad\text{but}\quad
+        \begin{tikzpicture}[scale=0.2]
+    \filldraw( 0,1) circle (3pt);
+    \draw (0,0) -- (0,1) ; 
+    \draw (1,0) -- (0,0) ; 
+\end{tikzpicture} \ \neq \ 
+        \begin{tikzpicture}[scale=0.2]
+    \filldraw( 0,.5) circle (3pt);
+    \draw (0,0) -- (0,1) ; 
+    \draw (1,0) -- (0,0) ; 
+\end{tikzpicture}.
 \end{equation*}
 \item
 Semilattices are exactly~abstract $2$-convex sets.
@@ -1896,7 +1920,7 @@ Furthermore, every semilattice~$(L, \vee)$
     is an abstract~$[0,1]$-convex set
     with
     \begin{equation*}
-    h(\lambda_1 \ket{x_1} \ovee \cdots \ovee \lambda_n \ket{x_n})
+    h\bigl(\lambda_1 \ket{x_1} \ovee \cdots \ovee \lambda_n \ket{x_n}\bigr)
         \ =\  \bigvee_{i; \lambda_i \neq 0} x_i.
     \end{equation*}
     A semilattice is cancellative as abstract $[0,1]$-convex set
@@ -1907,6 +1931,77 @@ Every cancellative~$[0,1]$-convex set
     is isomorphic to a convex subset of a real vector space.
     See e.g.~\cite[Thm.~8]{statesofconvexsets}.
 \end{enumerate}
+\begin{point}{Remarks}%
+The study of
+    convex subsets (of real vector spaces)
+    as algebraic structures goes back a long time,
+        see e.g.~\cite{stone1949postulates,neumann1970quasivariety,flood1981semiconvex,tz2009convex}.
+The more pathological abstract~$[0,1]$-convex sets have been studied before
+    under different names:
+    they are semiconvex sets in \cite{flood1981semiconvex,swirszcz1975monadic} and
+    convex spaces in \cite{tz2009convex}.
+The description of convex sets using Eilenberg--Moore algebras is probably
+    due to \'Swirszcz \cite{swirszcz1975monadic}.
+For the even more exotic abstract~$M$-convex
+    sets, see \cite{effintro} or
+        \cite{probdistrconv}.
+\end{point}
+\end{point}
+\begin{point}{Proposition}%
+Let~$C$ be an effectus with scalars~$M$.
+For any object~$X$, the set of states
+$\Stat X$ is an abstract $M^{\mathsf{op}}$-convex set
+with~$h\colon \mathcal{D}_{M^{\mathsf{op}}} \Stat X \to \Stat X$
+    defined by
+    $h\bigl( \lambda_1 \ket{\varphi_1} \ovee \cdots \ovee \lambda_n \ket{\varphi_n} \bigr)
+     =  [\varphi_1, \ldots, \varphi_n] \after \langle
+                    \lambda_1, \ldots, \lambda_n\rangle$.
+Furthermore,
+    for any total map~$f\colon X \to Y$,
+    the map~$ (\Stat f)(\varphi) \ = \ f \after \varphi$
+    is an~$M^{\mathsf{op}}$-affine map~$\Stat X \to \Stat Y$ yielding a
+    functor~$\Stat \colon \Tot C \to \mathsf{AConv}_{M^{\mathsf{op}}}$.
+\begin{point}{Proof}%
+Clearly~$h(\ket{\varphi}) = \varphi$.
+To show the other axiom~\eqref{convex-mult},
+assume we have any~$\bigovee^n_{i=1} \sigma_i \ket{\bigovee^{m_i}_{j=1} \lambda_{ij} \ket{\varphi_{ij}}}$
+in~$\mathcal{D}_{M^\mathsf{op}} \mathcal{D}_{M^{\mathsf{op}}} \Stat X$.
+Write~$\lambda_i \equiv \langle\lambda_{i1}, \ldots, \lambda_{im_i}\rangle$
+and $\varphi_i \equiv [\varphi_{i1}, \ldots, \varphi_{i{m_i}}]$.
+Then
+\begin{align*}
+    h \Bigl( \bigovee_i \sigma_i \, \ket{
+        h\bigl(\, \bigovee_j \lambda_{ij} \ket{\varphi_{ij}}\, \bigr)
+    } \, \Bigr)
+    &\ = \ 
+    [\varphi_1 \after \lambda_1, \ldots, 
+    \varphi_n \after \lambda_n] \after \langle
+    \sigma_1, \ldots, \sigma_n
+    \rangle
+    \\ & \ = \ 
+    \bigovee_{i} \varphi_i \after \lambda_i \after \sigma_i
+    \\ & \ = \ 
+    \bigovee_{i} \bigl(\bigovee_j \varphi_{ij} \after \lambda_{ij}\bigr) \after \sigma_i
+    \\ & \ = \ 
+    \bigovee_{i,j} \varphi_{ij} \after (\lambda_{ij} \after \sigma_i)
+    \\ & \ = \ 
+    \bigovee_{i,j} \varphi_{ij} \after (\sigma_i \odot_{M^{\mathsf{op}}} \lambda_{ij})
+    \\ & \ = \ 
+    h \Bigl( \bigovee_{i,j} \sigma_i \odot_{M^{\mathsf{op}}} \lambda_{ij} \ket{\varphi_{ij}} \Bigr).
+\end{align*}
+So~$\Stat X$ is indeed an abstract~$M^{\mathsf{op}}$-convex set.
+Let~$f\colon X \to Y$ be any total map.
+To show~$\Stat f$ is affine,
+it is sufficient to show that
+for every~$\bigovee_i \lambda_i \ket{\varphi_i}$
+ in~$\mathcal{D}_{M^{\mathsf{op}}}$,
+ we have
+        $f \after \bigovee_i  \varphi_i \after \lambda_i 
+         = 
+        \bigovee_i f \after  \varphi_i \after \lambda_i$,
+        which is clearly true.
+    Functoriality of~$\Stat$ is obvious. \qed
+\end{point}
 \end{point}
 \end{parsec}
 
