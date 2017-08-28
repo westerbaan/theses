@@ -1851,7 +1851,7 @@ Consider~$T \subseteq [0,1]^2$
 Say~$(x,y) \sim (x',y')$
     whenever~$x = x'$ and either $x\neq 0$ or~$y=y'$.
 This equivalence relation~$\sim$
-    is a congruence for the convex structure on~$T$
+is a congruence (see \sref{aconv-cong}) for the convex structure on~$T$
     (inherited by~$\R^2$)
     and so~$T /_\sim$ is an abstract~$[0,1]$-convex set.
 That is: we start of with a filled triangle
@@ -2001,6 +2001,130 @@ for every~$\bigovee_i \lambda_i \ket{\varphi_i}$
         \bigovee_i f \after  \varphi_i \after \lambda_i$,
         which is clearly true.
     Functoriality of~$\Stat$ is obvious. \qed
+\end{point}
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+Our next project is to show~$\AConvM$ is an effectus.
+The case~$M=[0,1]$ is easier and is shown in \cite{statesofconvexsets}. 
+The first step is to uncover the coproduct in~$\AConvM$.
+\end{point}
+\begin{point}[aconv-cong]{Exercise}%
+In this exercise we construct the quotient of an
+    abstract~$M$-convex sets by a congruence.
+Assume~$(X,h)$ is an abstract~$M$-convex set
+    and~$\sim \subseteq X^2$ is an equivalence relation.
+Write~$X/_\sim$ for the equivalence classes
+    of~$\sim$
+    and~$q\colon X \to X/_\sim$
+    for~$q(x) = [x]_\sim$.
+For~$\varphi,\psi \in \mathcal{D}_M X$,
+    we write~$\varphi \sim \psi$
+    provided~$(\mathcal{D}_M q)(\varphi) = (\mathcal{D}_M q)(\psi)$.
+We say~$\sim$ is a \Define{congruence} for~$(X,h)$
+if~$\varphi \sim \psi$ implies~$h(\varphi) \sim h(\psi)$.
+\begin{enumerate}
+\item
+Prove that~$q$, $\mathcal{D}_M q$ and~$\mathcal{D}_M \mathcal{D}_M q$
+    are all surjective.
+\item
+Show that the following are equivalent.
+\begin{enumerate}
+\item
+$\sim$ is a congruence.
+\item
+There is a map~$h_\sim \colon \mathcal{D}_M X_\sim \to X/_\sim$
+    such that~$h_\sim \after \mathcal{D}_M q = q \after h$.
+\end{enumerate}
+By the previous point $h_\sim$ is unique, if it exists.
+\item
+Assume~$\sim$ is a congruence.
+Use the previous two points to show
+\begin{equation*}
+h_\sim \after \mathcal{D}_M h_\sim \after \mathcal{D}_M \mathcal{D}_M q
+            \ =\  h_\sim \after \mu \after \mathcal{D}_M \mathcal{D}_M q.
+\end{equation*}
+Conclude~$(X/_\sim,h_\sim)$ is an abstract~$M$-convex set.
+\end{enumerate}
+\end{point}
+\begin{point}{Exercise}%
+Assume~$f\colon X \to Y$ is an affine map between abstract
+    $M$-convex sets.
+Show that the kernel~$\{(x,y);\ f(x) = f(y)\}$ of~$f$
+    is a congruence.
+\end{point}
+\begin{point}{Exercise}%
+Assume~$(X,h)$ is an abstract~$M$-convex set and~$R \subseteq X^2$
+    is some relation.
+It is easy to see there is a least congruence containing~$R$.
+We need to know a bit more than mere existence.
+Write~$R^*$ for the reflexive symmetric transitive closure of~$R$
+    (i.e.~the least equivalence relation containing~$R$).
+
+For~$\psi_1,\psi_2 \in \mathcal{D}_M X$,
+    we write~$\psi_1 \approx \psi_2$
+if there is a tuple~$\varphi_1, \ldots, \varphi_n \in \mathcal{D}_M X$
+(say~$\varphi_i \equiv \bigovee^{n_i}_{j = 1}  \lambda_{ij}\ket{x_{ij}}$)
+such that~$\varphi_1 = \psi_1$, $\varphi_n = \psi_2$ 
+    and for each~$1 \leq i<n$ one of the following two conditions holds.
+\begin{enumerate}
+\item
+    $n_i = n_{i+1}$
+    and for all~$1 \leq j \leq n_i$ we have
+    $x_{ij} \mathrel{R^*} x_{(i+1)j}$
+    and~$\lambda_{ij}  = \lambda_{(i+1)j}$.
+\item
+    $h (\varphi_i) = h(\varphi_{i+1})$.
+\end{enumerate}
+We will show that~$\sim$
+    given by~$x \sim y \iff \eta (x) \approx \eta(y)$
+    is the least congruence containing~$R$:
+\begin{enumerate}
+\item
+To start, show that~$\eta ( h(\psi)) \approx \psi $
+    and so~$\varphi \approx \psi$ implies~$h(\varphi) \sim h(\psi)$.
+\item
+Show that if~$\varphi \approx \psi$,
+    then
+    \begin{equation*}
+    \mu \Bigl(\lambda_0 \ket{\psi} \ovee \bigovee_{j=1}^n \lambda_j \ket{\chi_j}\Bigr)
+    \ \approx  \ 
+    \mu \Bigl(\lambda_0 \ket{\varphi} \ovee \bigovee_{j=1}^n \lambda_j \ket{\chi_j}\Bigr).
+    \end{equation*}
+    for any~$\bigovee_j \lambda_j=1$  in~$M$ and~$\chi_1,\ldots, \chi_n \in \mathcal{D}_M X$.
+\item
+    Use the previous point to show that~$\varphi \sim \psi$
+        implies~$\varphi \approx \psi$.
+Conclude~$\sim$ is the smallest congruence containing~$R$.
+\end{enumerate}
+\end{point}
+\begin{point}{Proposition}%
+Assume~$(X,h_X)$ and~$(Y,h_Y)$
+    are abstract~$M$-convex sets.
+Let~$\sim$ denote the least congruence on~$\mathcal{D}_M (X+Y)$
+    for which we have
+\begin{equation*}
+    (\mathcal{D}_M \kappa_1) (\varphi)
+    \ \sim \ \eta(\kappa_1 ( h_X (\varphi)))
+    \quad \text{and} \quad
+    (\mathcal{D}_M \kappa_2) (\psi)
+    \ \sim \ \eta(\kappa_2 ( h_Y (\psi)))
+\end{equation*}
+    for all~$\varphi \in \mathcal{D}_M X$
+    and~$\psi \in \mathcal{D}_M Y$.
+Write~$q\colon \mathcal{D}_M (X+Y) \to C$
+    for the quotient of~$\mathcal{D}_M(X+Y)$ by~$\sim$, see~\sref{aconv-cong}.
+    Denote the convex structure on~$C$ by~$h$.
+Define~$c_1 \colon X \to C$ and~$c_2 \colon Y \to C$
+    by~$c_1 \equiv q \after \eta \after \kappa_1$
+    and~$c_2 \equiv q \after \eta \after \kappa_2$.
+
+Then: $c_1 \colon X \to C \leftarrow Y \colon c_2$
+is a coproduct of~$X$~and~$Y$ in~$\AConvM$.
+\begin{point}{Proof}%
+Write~$h$ for the convex structure on~$\mathcal{D}_M(X+Y)$.
+    
 \end{point}
 \end{point}
 \end{parsec}
