@@ -163,7 +163,7 @@ The one-element boolean algebra~$1 \equiv \{0=1\}$
 \end{enumerate}
 \end{point}
 
-\begin{point}{Exercise}%
+\begin{point}[ea-product]{Exercise}%
 Assume~$E$ and~$F$ are effect algebras.
 First show that the cartesian products~$E \times F$
     is an effect algebra with componentwise operations.
@@ -332,7 +332,7 @@ An \Define{effect monoid}~$M$ \cite{probdistrconv}
 An effect monoid~$M$ is said to be \Define{commutative}
     if we have~$a\odot b = b\odot a$ for all~$a,b \in M$.
 \end{point}
-\begin{point}{Examples}%
+\begin{point}[eff-monoid-examples]{Examples}%
 Effect monoids are less abundant.
 \begin{enumerate}
 \item The effect algebra~$[0,1]$
@@ -351,6 +351,10 @@ In particular: the two-element boolean algebra~$2$
 \item There is a non-commutative effect monoid
         based on the lexicographically ordered vector space~$\R^5$,
         see ~\cite[Cor.~51]{basmsc}.
+\item Assume~$M$ is an effect monoid.
+    Write~$M^{\mathsf{op}}$
+        for the effect monoid~$M$ with the opposite multiplication
+            --- that is: $a \odot_M b = b \odot_{M^\mathsf{op}} a$.
 \end{enumerate}
 \end{point}
 \end{parsec}
@@ -468,6 +472,8 @@ Our main example of an effectus in total form
     is the category~$\op{\vN}$
     of von Neumann algebras with completely positive normal unital
     maps in the opposite direction.
+(To see~$\op\vN$ is an effectus in total form,
+    adapt the proof of \sref{emod-effectus}.)
 The partial maps correspond to contractive maps.
 We list more examples later on.
 Let~$C$ be an effectus in total form.
@@ -1581,6 +1587,15 @@ Again due to PCM-enrichment and~$1_M = \id_M$,
 this scalar multiplication
 turns~$\Pred X$ into a~$M$-effect module, see \sref{dfn-effect-module}.
 \item
+For~$f\colon X \to Y$ in~$C$,
+    define~$\Pred(f) \colon \Pred Y \to \Pred X$
+    by~$\Pred(f)(p) = p \after f$.
+It is easy to see
+$\Pred(f)$ is an~$M$-effect module homomorphism
+if~$f$ is total
+and that, in fact,~$\Pred\colon \Tot C \to \mathsf{EMod}^{\mathsf{op}}_M$
+is a functor.
+\item
 A \Define{substate} on~$X$ is a map~$\omega\colon 1 \to X$.
 A \Define{state} is a total substate.
 We denote the set of states on~$X$ by~$\Define{\Stat X}$.
@@ -1592,21 +1607,656 @@ An effectus~$C$ has \Define{separating predicates}
 \end{enumerate}
 \end{point}
 \begin{point}{Example}%
-The category~$\op\vN$ is a real effectus ($M \cong [0,1]$).
+The category~$\op\vN$ is a real effectus ($M \cong [0,1]$)
+    with seperating states and predicates.
 The predicates on a von Neumann algebra~$\scrA$
     is the set of effects~$[0,1]_\scrA$
     and~$\Stat \scrA$ is the convex set of normal states.
+\end{point}
+\begin{point}[emod-effectus]{Theorem}%
+    The category~$\EMod^{\mathsf{op}}_M$ is an effectus for any effect monoid~$M$.
+In fact: every effectus~$C$ (in total form)
+    with separating predicates and scalars~$M$
+    is equivalent to a subcategory of~$\EMod^{\mathsf{op}}_M$.
+\begin{point}{Proof}%
+To show~$\EMod^{\mathsf{op}}_M$ is an effectus,
+    we have to show the dual  axioms for~$\EMod_M$.
+\begin{point}{Finite products and inital object}%
+For every~$M$-effect module~$E$,
+    there is a unique modulemap~$M \to E$,
+    which is given by~$\lambda \mapsto \lambda \cdot 1$.
+So~$M$ is the initial object of~$\EMod_M$.
+The one-element $M$-effect module~$\{0=1\}$ is the final object.
+
+If~$E$ and $F$ are~$M$-effect modules,
+    then the set of pairs~$E \times F$
+    with componentwise operations
+    is again an~$M$-effect module.
+The module~$E \times F$
+    with obvious projections,
+    is the categorical product of~$E$ and~$F$
+    (as is the case with effect algebras, see \sref{ea-product}).
+\end{point}
+\begin{point}{Pushout diagrams}%
+To show the pushout diagrams corresponding to \eqref{pullbacks} hold,
+assume we are given $M$-effect modules~$E,F,G$
+    with modulemaps~$\alpha,\beta,\delta$
+    that make the  outer squares of the following diagrams commute.
+\begin{equation*}
+    \xymatrix{
+    G\\
+    & E \times F \ar@{.>}[lu]
+    & E \times M \ar[l]^{\id\times !}
+    \ar@/_1pc/[llu]_{\alpha}
+    \\& M \times F \ar[u]_{! \times \id}
+    \ar@/^1pc/[luu]^{\beta}
+    & M \times M \ar[l]^{\id\times!} \ar[u]_{! \times \id}
+    } \qquad
+    \xymatrix{
+    G\\
+    & E \ar@{.>}[lu]
+    & M \ar[l]^{!}
+    \ar@/_1pc/[llu]_{!}
+    \\& E \times F \ar[u]_{\pi_1}
+    \ar@/^1pc/[luu]^{\delta}
+    & M \times M \ar[l]^{!\times!} \ar[u]_{\pi_1}
+    }
+\end{equation*}
+We start with the left diagram.
+By assumption~$\alpha \after (! \times \id) = \beta \after (\id \times !)$,
+    so in particular~$\alpha(1,0) = \beta(1,0)$.
+    For any~$(x,y) \in E \times F$,
+        we have~$\alpha(x,0) \leq \alpha(1,0) = \beta(1,0)
+            \perp \beta(0,1) \geq \beta(0,y)$,
+            so~$\alpha(x,0) \perp \beta(0,y)$.
+Define~$f\colon E\times F \to G$
+    by~$f(x,y) = \alpha(x,0) \ovee \beta(0,y)$.
+It is easy to see~$f$ is additive
+    and~$f(1,1) = \alpha(1,0) \ovee \beta(0,1) = \beta(1,1)=1$,
+    so~$f$ is a modulemap.
+We compute
+\begin{equation*}
+\alpha(x,0) \ovee \beta(0,\lambda \cdot 1)
+\ = \ \alpha(x,0) \ovee \lambda \cdot \alpha(0, 1)
+\ = \ \alpha(x,\lambda)
+\end{equation*}
+and so~$f \after (\id \times !) = \alpha$.
+Similarly~$\beta = f \after (! \times \id)$.
+It is easy to see~$f$
+is the unique map with~$f \after (\id \times !) = \alpha$
+and~$\beta = f \after (! \times \id)$
+and so the left square of \eqref{pullbacks}
+    is a pullback in~$\EMod_M^{\mathsf{op}}$.
+
+Concerning the right diagram:
+    as~$\delta \after (!\times!) = ! \after \pi_1$,
+    we have~$\delta(\lambda \cdot 1, \mu \cdot 1) = \lambda \cdot 1$
+    and so~$\delta(0, y) \leq \delta(0,1) = 0$.
+    Hence~$\delta(x,y) = \delta(x,0)$.
+Define~$g\colon E \to G$ by~$g(x) = \delta(x,0)$.
+Clearly~$g$ is additive, $g(1) = \delta(1,0) = \delta(1,1) = 1$
+    and~$\delta = g \after \pi_1$ by definition.
+Obviously~$g$ is the unique such map.
+Thus the right square of~\eqref{pullbacks}
+    is a pullback in~$\EMod_M^{\mathsf{op}}$.
+\end{point}
+\begin{point}{Joint epicity}%
+To show~$\EMod^{\mathsf{op}}_M$ is an effectus,
+    it only remains to be shown
+    that~$
+    \langle \pi_1, \pi_2, \pi_2\rangle,
+    \langle \pi_2, \pi_1, \pi_2\rangle\colon M \times M \to M \times M \times M
+    $ are jointly epic.
+So assume~$f,g\colon M \times M \times M \to E$
+    are two $M$-effect module maps
+    with~$
+        f \after \langle \pi_1,\pi_2,\pi_2\rangle =
+        g \after \langle \pi_1,\pi_2,\pi_2\rangle$
+        and~$
+        f \after \langle \pi_2,\pi_1,\pi_2\rangle =
+        g \after \langle \pi_2,\pi_1,\pi_2\rangle$.
+From the first equality, it follows that~$f(1,0,0) = g(1,0,0)$.
+The other one implies~$f(0,1,0) = g(0,1,0)$.
+Thus~$f(0,0,1) = f(1,1,0)^\perp = g(1,1,0)^\perp = g(0,0,1)$.
+As for~$(\lambda_1,\lambda_2,\lambda_3) \in M^3$,
+we have~$(\lambda_1,\lambda_2,\lambda_3)
+            = \lambda_1 \cdot(1,0,0)
+                \ovee \lambda_2\cdot (0,1,0)
+                \ovee \lambda_3\cdot (0,0,1)$
+    we get~$f=g$.
+\end{point}
+\begin{point}{Representation}%
+Let~$C$ be an effectus in total form.
+Clearly $\Pred f = \Pred g $ (for~$f,g\colon X \to Y$ in~$C$)
+if and only if~$p \after f = (\Pred f)(p)= (\Pred g)(p) = p \after g$
+for every~$p \in \Pred X$.
+Thus the functor~$\Pred\colon C \to \EMod^{\mathsf{op}}_M$
+    is faithful if and only if~$C$ has separating predicates.
+So if~$C$ has separating predicates,
+    $C$ is equivalent to the subcategory~$\Pred C$
+    of~$\EMod_M^{\mathsf{op}}$.
+\end{point}
+    \qed
+\end{point}
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+We studied the structure of predicates in an effectus.  What about the states?
+They will turn out to be abstract~$M$-convex sets.
+Before we define those, we introduce a generalized distribution monad.
 \end{point}
 \begin{point}{Definition}%
 Let~$M$ be an effect monoid
     and~$X$ be any set.
 A \Define{formal $M$-convex combination} over~$X$
-is a finite tuple of pairs~$(\lambda_1, x_1), \ldots, (\lambda_n, x_n)$
-(often stylized as~$\Define{\lambda_1 \ket{x_1} \ovee \cdots \ovee \lambda_n \ket{x_n}}$)
-    with~$\lambda_i \in M$ and~$x_i \in X$
-    such that~$\bigovee_i \lambda_i = 1$.
-We write~$\Define{\mathcal{D}_M} X$
-    for the set of all~$M$-convex combinations over~$X$.
+    is a function~$p\colon X \to M$
+    with finite support
+    such that~$\bigovee_{x \in X} p(x) = 1$.
+We use~$\Define{\lambda_1 \ket{x_1} \ovee \cdots \ovee \lambda_n \ket{x_n}}$
+    as a shorthand for the formal $M$-convex combination~$p\colon X \to M$
+    given by~$p(x) = \bigovee_{x_i = x} \lambda_i$.
+    (So~$p(x_i) = \lambda_i$ if the~$x_i$ are distinct.)
+We write~$\Define{\mathcal{D}_M} X$.
+    for the set of all formal~$M$-convex combinations over~$X$.
+\end{point}
+\begin{point}{Exercise}%
+    In this exercise we study~$\mathcal{D}_M$ as a monad.
+    See \cite{probdistrconv,basmsc}.
+\begin{enumerate}
+\item
+For~$f\colon X \to Y$,
+    define~$\mathcal{D}_M f \colon \mathcal{D}_M X \to \mathcal{D}_M Y$
+    by
+    \begin{equation*}
+    (\mathcal{D}_M f)(p)(y) \ =\  \bigovee_{x; f(x)=y} p(x).
+    \end{equation*}
+    (That is: $(\mathcal{D}_M f) (\lambda_1 \ket{x_1} \ovee \cdots
+            \ovee \lambda_n \ket{x_n})
+            = \lambda_1 \ket{f(x_1)} \ovee \cdots
+            \ovee \lambda_n \ket{f(x_n)} $.)
+Show that this turns~$\mathcal{D}_M$ into a functor~$\mathsf{Set} \to \mathsf{Set}$.
+\item
+Define~$\eta \colon X \to \mathcal{D}_M X$
+    by~$\eta(x) = \ket{x}$
+    and~$\mu\colon \mathcal{D}_M \mathcal{D}_M X \to \mathcal{D}_M X$ by
+    \begin{equation*}
+        \mu(\Phi)(x) \ = \ 
+        \bigovee_{\varphi}
+        \Phi(\varphi) \odot \varphi(x).
+    \end{equation*}
+Show that~$(\mathcal{D}_M, \eta,\mu)$
+    is a monad.
+\item
+    Show that~$\Kl \mathcal{D}_M$,
+    the Kleisli category of~$\mathcal{D}_M$
+    (See e.g.~\cite[\S 2.6]{basmsc}.),
+    is an effectus
+    with~$M$ as scalars.
+\end{enumerate}
+\end{point}
+\begin{point}{Definition}%
+Let~$X$ be a set together
+    with a map~$h\colon \mathcal{D}_M X \to X$.
+We say~$(X,h)$ is an \Define{abstract $M$-convex set}
+    provided~$h(\ket{x})=x$
+    and
+\begin{equation}\label{convex-mult}
+    h \Bigl( \bigovee_{i,j} \sigma_i \odot \lambda_{ij} \ket{x_{ij}} \Bigr)
+    \ = \ 
+    h \Bigl( \bigovee_i \sigma_i \, \ket{
+        h\bigl(\, \bigovee_j \lambda_{ij} \ket{x_{ij}}\, \bigr)
+    } \, \Bigr)
+\end{equation}
+for every~$\bigovee_i \sigma_i \ket{\bigovee_j \lambda_{ij} \ket{x_{ij}}}$
+    in~$\mathcal{D}_M \mathcal{D}_M X$.
+(Equivalently: $h \after \mu = h \after \mathcal{D}_M h$
+and~$h \after \eta = \id$.)
+    We call~$h$ the convex structure on~$X$.
+A map~$f\colon X \to Y$
+    between abstract~$M$-convex sets
+    is \Define{$M$-affine} if
+\begin{equation*}
+    f \bigl(h_X \bigl(\,\bigovee_i \lambda_i \ket{x_i}\, \bigr)\bigr)
+     \ = \ 
+     h_Y\bigl(\,\bigovee_i \lambda_i \ket{f(x_i)}\,\bigr)
+\end{equation*}
+for every~$\bigovee_i \lambda_i \ket{x_i}$ in~$\mathcal{D}_M X$.
+(Equivalently: $h_X \after \mathcal{D}_M f = f \after h_Y$.)
+Write~$\Define{\AConvM}$ for the category
+    of abstract~$M$-convex sets with
+    $M$-affine maps between them.
+(Equivalently: $\AConvM$
+    is the Eilenberg--Moore category
+    of the monad~$\mathcal{D}_M$.)
+We call an abstract $M$-convex set~$(X,h)$ \Define{cancellative}
+provided
+\begin{equation*}
+    h(\lambda \ket{y} \ovee \lambda^\perp \ket{x_1})\  = \
+    h(\lambda \ket{y} \ovee \lambda^\perp \ket{x_2})
+    \quad\text{implies}\quad~x_1=x_2
+\end{equation*}
+    for any~$x_1,x_2,y \in X$ and~$\lambda \in M, \lambda \neq 0$.
+\end{point}
+\begin{point}{Examples}%
+We give some examples of abstract convex sets.
+\begin{enumerate}
+\item
+Every convex subset~$X \subseteq V$
+    of some real vector space~$V$
+    is a cancellative abstract~$[0,1]$-convex set
+    with~$h(\lambda_1 \ket{x_1} \ovee \cdots \ovee \lambda_n \ket{x_n})
+            = \lambda_1 x_1 + \cdots + \lambda_n x_n$.
+\item
+Not every abstract~$[0,1]$-convex set is
+    a convex subset of a real vector space.
+Consider~$T \subseteq [0,1]^2$
+    defined by~$T \equiv \{ (x,y);\ x+y \leq 1\}$.
+Say~$(x,y) \sim (x',y')$
+    whenever~$x = x'$ and either $x\neq 0$ or~$y=y'$.
+This equivalence relation~$\sim$
+is a congruence (see \sref{aconv-cong}) for the convex structure on~$T$
+    (inherited by~$\R^2$)
+    and so~$T /_\sim$ is an abstract~$[0,1]$-convex set.
+That is: we start of with a filled triangle
+$T \equiv \begin{tikzpicture}[scale=0.2]
+    \draw (0,0) -- (0,1) ; 
+    \draw (1,0) -- (0,0) ; 
+    \draw (1,0) -- (0,1) ; 
+\end{tikzpicture}$,
+identify all vertical lines
+except for the y-axis
+and are left with
+$T/_\sim \equiv
+\begin{tikzpicture}[scale=0.2]
+    \draw (0,0) -- (0,1) ; 
+    \draw (1,0) -- (0,0) ; 
+\end{tikzpicture}$.
+The abstract~$[0,1]$-convex set~$T/_\sim$
+    is not cancellative:
+\begin{equation*}
+    h\Bigl( 
+    \frac{1}{2}\ket{\begin{tikzpicture}[scale=0.2]
+    \filldraw( 1,0) circle (3pt);
+    \draw (0,0) -- (0,1) ; 
+    \draw (1,0) -- (0,0) ; 
+\end{tikzpicture}}
+\ovee
+    \frac{1}{2}\ket{\begin{tikzpicture}[scale=0.2]
+    \filldraw( 0,1) circle (3pt);
+    \draw (0,0) -- (0,1) ; 
+    \draw (1,0) -- (0,0) ; 
+\end{tikzpicture}} \Bigr)
+\ = \
+    \begin{tikzpicture}[scale=0.2]
+    \filldraw( .5,0) circle (3pt);
+    \draw (0,0) -- (0,1) ; 
+    \draw (1,0) -- (0,0) ; 
+\end{tikzpicture}
+\ = \ 
+h \Bigl(\frac{1}{2}\ket{\begin{tikzpicture}[scale=0.2]
+    \filldraw( 1,0) circle (3pt);
+    \draw (0,0) -- (0,1) ; 
+    \draw (1,0) -- (0,0) ; 
+\end{tikzpicture}}
+\ovee
+    \frac{1}{2}\ket{
+        \begin{tikzpicture}[scale=0.2]
+    \filldraw( 0,.5) circle (3pt);
+    \draw (0,0) -- (0,1) ; 
+    \draw (1,0) -- (0,0) ; 
+\end{tikzpicture}
+}\Bigr), \quad\text{but}\quad
+        \begin{tikzpicture}[scale=0.2]
+    \filldraw( 0,1) circle (3pt);
+    \draw (0,0) -- (0,1) ; 
+    \draw (1,0) -- (0,0) ; 
+\end{tikzpicture} \ \neq \ 
+        \begin{tikzpicture}[scale=0.2]
+    \filldraw( 0,.5) circle (3pt);
+    \draw (0,0) -- (0,1) ; 
+    \draw (1,0) -- (0,0) ; 
+\end{tikzpicture}.
+\end{equation*}
+\item
+Semilattices are exactly~abstract $2$-convex sets.
+Furthermore, every semilattice~$(L, \vee)$
+    is an abstract~$[0,1]$-convex set
+    with
+    \begin{equation*}
+    h\bigl(\lambda_1 \ket{x_1} \ovee \cdots \ovee \lambda_n \ket{x_n}\bigr)
+        \ =\  \bigvee_{i; \lambda_i \neq 0} x_i.
+    \end{equation*}
+    A semilattice is cancellative as abstract $[0,1]$-convex set
+    if and only if~$x=y$ for all~$x,y\in L$.
+    See \sref{neumann1970quasivariety}.
+\item
+Every cancellative~$[0,1]$-convex set
+    is isomorphic to a convex subset of a real vector space.
+    See e.g.~\cite[Thm.~8]{statesofconvexsets}.
+\end{enumerate}
+\begin{point}{Remarks}%
+The study of
+    convex subsets (of real vector spaces)
+    as algebraic structures goes back a long time,
+        see e.g.~\cite{stone1949postulates,neumann1970quasivariety,flood1981semiconvex,tz2009convex}.
+The more pathological abstract~$[0,1]$-convex sets have been studied before
+    under different names:
+    they are semiconvex sets in \cite{flood1981semiconvex,swirszcz1975monadic} and
+    convex spaces in \cite{tz2009convex}.
+The description of convex sets using Eilenberg--Moore algebras is probably
+    due to \'Swirszcz \cite{swirszcz1975monadic}.
+For the even more exotic abstract~$M$-convex
+    sets, see \cite{effintro} or
+        \cite{probdistrconv}.
+\end{point}
+\end{point}
+\begin{point}{Proposition}%
+Let~$C$ be an effectus with scalars~$M$.
+For any object~$X$, the set of states
+$\Stat X$ is an abstract $M^{\mathsf{op}}$-convex set
+with~$h\colon \mathcal{D}_{M^{\mathsf{op}}} \Stat X \to \Stat X$
+    defined by
+    $h\bigl( \lambda_1 \ket{\varphi_1} \ovee \cdots \ovee \lambda_n \ket{\varphi_n} \bigr)
+     =  [\varphi_1, \ldots, \varphi_n] \after \langle
+                    \lambda_1, \ldots, \lambda_n\rangle$.
+Furthermore,
+    for any total map~$f\colon X \to Y$,
+    the map~$ (\Stat f)(\varphi) \ = \ f \after \varphi$
+    is an~$M^{\mathsf{op}}$-affine map~$\Stat X \to \Stat Y$ yielding a
+    functor~$\Stat \colon \Tot C \to \mathsf{AConv}_{M^{\mathsf{op}}}$.
+\begin{point}{Proof}%
+Clearly~$h(\ket{\varphi}) = \varphi$.
+To show the other axiom~\eqref{convex-mult},
+assume we have any~$\bigovee^n_{i=1} \sigma_i \ket{\bigovee^{m_i}_{j=1} \lambda_{ij} \ket{\varphi_{ij}}}$
+in~$\mathcal{D}_{M^\mathsf{op}} \mathcal{D}_{M^{\mathsf{op}}} \Stat X$.
+Write~$\lambda_i \equiv \langle\lambda_{i1}, \ldots, \lambda_{im_i}\rangle$
+and $\varphi_i \equiv [\varphi_{i1}, \ldots, \varphi_{i{m_i}}]$.
+Then
+\begin{align*}
+    h \Bigl( \bigovee_i \sigma_i \, \ket{
+        h\bigl(\, \bigovee_j \lambda_{ij} \ket{\varphi_{ij}}\, \bigr)
+    } \, \Bigr)
+    &\ = \ 
+    [\varphi_1 \after \lambda_1, \ldots, 
+    \varphi_n \after \lambda_n] \after \langle
+    \sigma_1, \ldots, \sigma_n
+    \rangle
+    \\ & \ = \ 
+    \bigovee_{i} \varphi_i \after \lambda_i \after \sigma_i
+    \\ & \ = \ 
+    \bigovee_{i} \bigl(\bigovee_j \varphi_{ij} \after \lambda_{ij}\bigr) \after \sigma_i
+    \\ & \ = \ 
+    \bigovee_{i,j} \varphi_{ij} \after (\lambda_{ij} \after \sigma_i)
+    \\ & \ = \ 
+    \bigovee_{i,j} \varphi_{ij} \after (\sigma_i \odot_{M^{\mathsf{op}}} \lambda_{ij})
+    \\ & \ = \ 
+    h \Bigl( \bigovee_{i,j} \sigma_i \odot_{M^{\mathsf{op}}} \lambda_{ij} \ket{\varphi_{ij}} \Bigr).
+\end{align*}
+So~$\Stat X$ is indeed an abstract~$M^{\mathsf{op}}$-convex set.
+Let~$f\colon X \to Y$ be any total map.
+To show~$\Stat f$ is affine,
+it is sufficient to show that
+for every~$\bigovee_i \lambda_i \ket{\varphi_i}$
+ in~$\mathcal{D}_{M^{\mathsf{op}}}$,
+ we have
+        $f \after \bigovee_i  \varphi_i \after \lambda_i 
+         = 
+        \bigovee_i f \after  \varphi_i \after \lambda_i$,
+        which is clearly true.
+    Functoriality of~$\Stat$ is obvious. \qed
+\end{point}
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+Our next project is to show~$\AConvM$ is an effectus.
+The case~$M=[0,1]$ is easier and is shown in \cite{statesofconvexsets}. 
+The first step is to uncover the coproduct in~$\AConvM$.
+\end{point}
+\begin{point}[aconv-cong]{Exercise}%
+In this exercise we construct the quotient of an
+    abstract~$M$-convex sets by a congruence.
+Assume~$(X,h)$ is an abstract~$M$-convex set
+    and~$\sim \subseteq X^2$ is an equivalence relation.
+Write~$X/_\sim$ for the equivalence classes
+    of~$\sim$
+    and~$q\colon X \to X/_\sim$
+    for~$q(x) = [x]_\sim$.
+For~$\varphi,\psi \in \mathcal{D}_M X$,
+    we write~$\varphi \sim \psi$
+    provided~$(\mathcal{D}_M q)(\varphi) = (\mathcal{D}_M q)(\psi)$.
+We say~$\sim$ is a \Define{congruence} for~$(X,h)$
+if~$\varphi \sim \psi$ implies~$h(\varphi) \sim h(\psi)$.
+\begin{enumerate}
+\item
+Prove that~$q$, $\mathcal{D}_M q$ and~$\mathcal{D}_M \mathcal{D}_M q$
+    are all surjective.
+\item
+Show that the following are equivalent.
+\begin{enumerate}
+\item
+$\sim$ is a congruence.
+\item
+There is a map~$h_\sim \colon \mathcal{D}_M X_\sim \to X/_\sim$
+    such that~$h_\sim \after \mathcal{D}_M q = q \after h$.
+\end{enumerate}
+By the previous point $h_\sim$ is unique, if it exists.
+\item
+Assume~$\sim$ is a congruence.
+Use the previous two points to show
+\begin{equation*}
+h_\sim \after \mathcal{D}_M h_\sim \after \mathcal{D}_M \mathcal{D}_M q
+            \ =\  h_\sim \after \mu \after \mathcal{D}_M \mathcal{D}_M q.
+\end{equation*}
+Conclude~$(X/_\sim,h_\sim)$ is an abstract~$M$-convex set.
+\end{enumerate}
+\end{point}
+\begin{point}[affine-kernel-cong]{Exercise}%
+Assume~$f\colon X \to Y$ is an affine map between abstract
+    $M$-convex sets.
+Show that the kernel~$\{(x,y);\ f(x) = f(y)\}$ of~$f$
+    is a congruence.
+\end{point}
+\begin{point}{Exercise}%
+Assume~$(X,h)$ is an abstract~$M$-convex set and~$R \subseteq X^2$
+    is some relation.
+It is easy to see there is a least congruence containing~$R$.
+We need to know a bit more than mere existence.
+Write~$R^*$ for the reflexive symmetric transitive closure of~$R$
+    (i.e.~the least equivalence relation containing~$R$).
+
+For~$\psi_1,\psi_2 \in \mathcal{D}_M X$,
+    we write~$\psi_1 \approx \psi_2$
+if there is a tuple~$\varphi_1, \ldots, \varphi_n \in \mathcal{D}_M X$
+(say~$\varphi_i \equiv \bigovee^{n_i}_{j = 1}  \lambda_{ij}\ket{x_{ij}}$)
+such that~$\varphi_1 = \psi_1$, $\varphi_n = \psi_2$ 
+    and for each~$1 \leq i<n$ one of the following two conditions holds.
+\begin{enumerate}
+\item
+    $n_i = n_{i+1}$
+    and for all~$1 \leq j \leq n_i$ we have
+    $x_{ij} \mathrel{R^*} x_{(i+1)j}$
+    and~$\lambda_{ij}  = \lambda_{(i+1)j}$.
+\item
+    $h (\varphi_i) = h(\varphi_{i+1})$.
+\end{enumerate}
+We will show that~$\sim$
+    given by~$x \sim y \iff \eta (x) \approx \eta(y)$
+    is the least congruence containing~$R$:
+\begin{enumerate}
+\item
+To start, show that~$\eta ( h(\psi)) \approx \psi $
+    and so~$\varphi \approx \psi$ implies~$h(\varphi) \sim h(\psi)$.
+\item
+Show that if~$\varphi \approx \psi$,
+    then
+    \begin{equation*}
+    \mu \Bigl(\lambda_0 \ket{\psi} \ovee \bigovee_{j=1}^n \lambda_j \ket{\chi_j}\Bigr)
+    \ \approx  \ 
+    \mu \Bigl(\lambda_0 \ket{\varphi} \ovee \bigovee_{j=1}^n \lambda_j \ket{\chi_j}\Bigr).
+    \end{equation*}
+    for any~$\bigovee_j \lambda_j=1$  in~$M$ and~$\chi_1,\ldots, \chi_n \in \mathcal{D}_M X$.
+\item
+    Use the previous point to show that~$\varphi \sim \psi$
+        implies~$\varphi \approx \psi$.
+Conclude~$\sim$ is the smallest congruence containing~$R$.
+\end{enumerate}
+\end{point}
+\begin{point}[aconv-coprod]{Proposition}%
+Assume~$(X,h_X)$ and~$(Y,h_Y)$
+    are abstract~$M$-convex sets.
+    We will construct their coproduct.
+Note that~$\mu$ turns~$\mathcal{D}_M (X+Y)$
+    into an abstract~$M$-convex set.
+Let~$\sim$ denote the least congruence on~$\mathcal{D}_M (X+Y)$
+with
+\begin{equation*}
+    (\mathcal{D}_M \kappa_1) (\varphi)
+    \ \sim \ \eta(\kappa_1 ( h_X (\varphi)))
+    \quad \text{and} \quad
+    (\mathcal{D}_M \kappa_2) (\psi)
+    \ \sim \ \eta(\kappa_2 ( h_Y (\psi)))
+\end{equation*}
+    for all~$\varphi \in \mathcal{D}_M X$
+    and~$\psi \in \mathcal{D}_M Y$.
+Write~$q\colon \mathcal{D}_M (X+Y) \to C$
+    for the quotient of~$\mathcal{D}_M(X+Y)$ by~$\sim$, see~\sref{aconv-cong}.
+    Denote the convex structure on~$C$ by~$h$.
+Define~$c_1 \colon X \to C$ and~$c_2 \colon Y \to C$
+    by~$c_1 \equiv q \after \eta \after \kappa_1$
+    and~$c_2 \equiv q \after \eta \after \kappa_2$.
+
+Then: $c_1 \colon X \to C \leftarrow Y \colon c_2$
+is a coproduct of~$X$~and~$Y$ in~$\AConvM$.
+\begin{point}{Proof}%
+We start with the affinity of the coprojections:
+\begin{alignat*}{2}
+    c_1 \after h_X & \ = \ 
+    q \after \eta \after \kappa_1 \after h_X \\
+    &\ =\  q \after \mathcal{D}_M \kappa_1
+        &\qquad& \text{by dfn.~of~$\sim$}
+    \\
+    & \ =\  q \after \mu \after \mathcal{D}_M \eta \after \mathcal{D}_M \kappa_1. \\
+    & \ =\  \mu \after \mathcal{D}_Mq \after \mathcal{D}_M \eta \after \mathcal{D}_M \kappa_1. \\
+    & \ =\  \mu \after \mathcal{D}_M c_1,
+\end{alignat*}
+so~$c_1$ is affine. With the same reasoning, we see~$c_2$ is affine.
+\begin{point}%
+Assume~$f\colon X \to Z$ and~$g\colon Y \to Z$
+    are two affine maps to some abstract~$M$-convex set~$(Z,h_Z)$.
+We want to show~$h_Z \after \mathcal{D}_M [f,g]$
+    lifts to~$C$.
+With an easy calculation,
+    one sees~$h_Z \after \mathcal{D_M} [f,g]$ is affine.
+We compute
+\begin{align*}
+    h_Z \after \mathcal{D}_M [f,g] \after \mathcal{D}_M \kappa_1
+     & \ = \ 
+    h_Z \after \mathcal{D}_M f \\
+     & \ = \ f \after h_X \\
+     & \ = \ h_Z \after \eta \after [f,g] \after \kappa_1 \after h_X \\
+     & \ = \ h_Z \after \mathcal{D}_M [f,g] \after \eta \after \kappa_1 \after h_X.
+\end{align*}
+So~$
+(\,(\mathcal{D}_M \kappa_1) (\varphi), \,
+\ \eta(\kappa_1 ( h_X (\varphi)))\,)$
+is in the kernel (see \sref{affine-kernel-cong})
+of~$h_Z \after \mathcal{D}_M [f,g]$
+for~$\varphi \in \mathcal{D}_M$.
+Similarly~$(\,(\mathcal{D}_M \kappa_2) (\psi), \,
+\ \eta(\kappa_2 ( h_Y (\psi)))\,)$
+is also in the kernel of~$h_Z \after \mathcal{D}_M [f,g]$
+for all~$\psi \in \mathcal{D}_M$.
+
+As kernels of affine maps are congruences
+    and~$\sim$ is the least congruence that contains these pairs,
+    we conclude~$\sim$ is a subset of the kernel
+    of~$h_Z \after \mathcal{D}_M [f,g]$.
+Thus there is a unique affine~$k\colon C \to Z$
+    fixed by~$k \after q = h_Z \after \mathcal{D}_M [f,g]$.
+Now
+\begin{align*}
+    k \after c_1 
+    &\ = \ k \after q \after \eta \after \kappa_1 \\
+    &\ = \ h_Z \after \mathcal{D}_M [f,g]
+                            \after \eta\after \kappa_1 \\
+    &\ = \ h_Z \after \eta \after  [f,g]
+                            \after \kappa_1 \\
+    &\ = \  f
+\end{align*}
+and similarly~$k \after c_2 = g$.
+\end{point}
+\begin{point}%
+Only uniqueness of~$k$ remains to be shown.
+So assume~$k'\colon C \to Z$ is an affine map
+    such that~$k' \after c_1 = f$
+    and~$k' \after c_2 = g$.
+We turn the wheel:
+\begin{align*}
+    k' \after q
+    & \ = \ k' \after q \after \mu \after \mathcal{D}_M \eta \\
+    & \ = \ k' \after h \after \mathcal{D}_M (q \after \eta) \\
+    & \ = \ h_Z \after \mathcal{D}_M (k' \after q \after \eta) \\
+    & \ = \ h_Z \after \mathcal{D}_M 
+    [ k' \after q \after \eta \after \kappa_1,
+    k' \after q \after \eta \after \kappa_2]  \\
+    & \ = \ h_Z \after \mathcal{D}_M 
+    [ k' \after c_1,
+    k' \after c_2]  \\
+    & \ = \ h_Z \after \mathcal{D}_M [ f, g] \\
+    & \ = \ k \after q.
+\end{align*}
+So~$k = k'$ by surjectivity of~$q$. \qed
+\end{point}
+\end{point}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}{Theorem}%
+    The category~$\AConvM$ is an effectus (in total form).
+\begin{point}{Proof}%
+In \sref{aconv-coprod} we proved~$\AConvM$ has binary coproducts.
+Trivially, the one-element set~$1$ is an abstract~$M$-convex set
+    and the final object in~$\AConvM$.
+As~$\mathcal{D}_M \emptyset = \emptyset$,
+    the empty set is also an abstract~$M$-convex set
+    and in fact the initial object of~$\AConvM$.
+\end{point}
+\begin{point}%
+We continue with the hardest part:
+    the proof that the square on the left of \eqref{pullbacks}
+    is a pullback in~$\AConvM$.
+\begin{equation*}
+\xymatrix{
+    Z \ar@/^1pc/[rrd]^\beta
+        \ar@/_1pc/[rdd]_\alpha
+        \ar@{.>}[rd]|\gamma\\
+        &X+Y \ar[r]^{\id+!} \ar[d]^{!+\id} & X+1\ar[d]^{!+\id} \\
+        &1+Y\ar[r]_{\id+!} & 1+1
+    }
+\end{equation*}
+To this end, assume~$\alpha\colon Z \to X+1$
+and~$\beta\colon Z \to Y+1$
+are maps in~$\AConvM$
+with~$(! + \id) \after \beta = (\id+!)\after \alpha$.
+We have to show there is a unique~$\gamma\colon Z \to X+Y$ in~$\AConvM$
+with~$(\id+!)\after \gamma =\beta$
+and~$(!+\id) \after \gamma =\alpha$.
+Pick any~$z \in Z$.
+Write~$\cdot$ for the unique element of~$1$.
+By construction of the coproduct, see \sref{aconv-coprod},
+we have
+\begin{equation*}
+    \alpha(z) = \lambda_0 \ket{\kappa_1(\cdot)}
+        \ovee \bigovee_i \lambda_i \ket{\kappa_2(y_i)}
+        \qquad
+    \beta(z) = \sigma_0 \ket{\kappa_2(\cdot)}
+        \ovee \bigovee_i \sigma_i \ket{\kappa_1(x_i)}
+\end{equation*}
+
+\end{point}
 \end{point}
 \end{parsec}
 

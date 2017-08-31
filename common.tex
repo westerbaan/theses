@@ -23,6 +23,7 @@
 \usepackage{stmaryrd}
 \usepackage{sectsty}
 \usepackage{xr}
+\usepackage{tikz}
 \usepackage[all]{xypic}
 \usepackage{hyperref} % <- should be last because it redefined \ref, etc..
 
@@ -164,10 +165,13 @@
 \newcommand\pfrom{\leftharpoonup}
 \newcommand{\pullback}[1][dr]{\save*!/#1-1.2pc/#1:(-1,1)@^{|-}\restore}
 \newcommand\vN{\mathsf{vN}}
+\newcommand\AConvM{\mathsf{AConv}_M}
+\newcommand\EMod{\mathsf{EMod}}
 \newcommand{\bigovee}{\mathop{\vphantom{\sum}\mathchoice%
         {\vcenter{\hbox{\huge $\ovee$}}}%
         {\vcenter{\hbox{\Large $\ovee$}}}%
         {\ovee}{\ovee}}\displaylimits}
+\DeclareMathOperator{\Kl}{\mathcal{K}\!\ell}
 
 % number a single equation in an align*
 % http://tex.stackexchange.com/questions/42726/
