@@ -1587,32 +1587,134 @@ is integration of $\scrA$-valued
 holomorphic functions along
 line segments.
 \end{point}
-\begin{point}{Definition}%
-In this section a \Define{triangle}~$T$
-consists of a tuple of three complex numbers~$w_0,w_1,w_2$
-called the
-\Define{vertices} of~$T$---the order
-of the vertices will be important
-in a moment.
-The \Define{boundary} of
-such a triangle~$T$,
-written~$\Define{\partial T}$,
-is the union of the three line segment
-between~$w_0$, $w_1$ and~$w_2$,
-and the \Define{closure} of~$T$,
-written $\Define{\mathrm{cl}(T)}$,
-is the convex hull of~$w_0,w_1,w_2$.
-The \Define{interior} of~$T$
-is then  simply given by
-$\Define{\mathrm{in}(T)}=\mathrm{cl}(T)\backslash \partial T$,
-and the \Define{length}
-of~$T$ is given by
+\begin{point}{Exercise}%
+We're going to define as quickly as possible
+an integral~$\int f $
+for every continuous map $f\colon [0,1]\to\scrA$.
+Recall that an interval~$I$
+in~$[0,1]$
+is of one of the following forms
 \begin{equation*}
-\Define{\mathrm{length}(T)}:=
+	[s,t]\qquad[s,t)\qquad(s,t]\qquad(s,t)
+\end{equation*}
+where~$0\leq s\leq t\leq 1$;
+we'll denote the length of an interval~$I$---being~$t-s$ 
+in the four cases above---by $\Define{\left|I\right|}$.
+An \Define{$\scrA$-valued step function}
+is a function $f\colon [0,1]\to\scrA$
+of the form
+$f\equiv \sum_n a_n \mathbf{1}_{I_n}$
+for some~$a_1,\dotsc,a_N\in\scrA$
+and intervals $I_1,\dotsc,I_N$;
+and the set of $\scrA$-valued step functions
+is denoted by~$\Define{S_\scrA}$,
+which is a subset
+of the space of all bounded functions
+$f\colon [0,1]\to\scrA$
+which we'll denote by~$\Define{B_\scrA}$.
+\begin{enumerate}
+\item
+Show that there is a unique
+linear map $\int\colon S_\scrA\to \scrA$
+with~$\int a \mathbf{1}_{I}=\left| I \right|a$
+for every interval~$I$ in~$[0,1]$
+and~$a\in\scrA$.
+
+(Hint:  the difficulty
+here is to show that no contradiction
+arises in the sense that 
+$\sum_n a_n\left|I_n\right| = \sum_m a_m' \left|I_m'\right|$
+when 
+$\sum_n a_n \mathbf{1}_{I_n}=\sum_m a_m' \mathbf{1}_{I_n'}$
+for intervals $I_1,\dotsc,I_N,I_1',\dotsc,I_M'$ in~$[0,1]$
+and $a_1,\dotsc,a_N,a_1',\dotsc,a_M'\in\scrA$.)
+
+\item
+We endow~$B_\scrA$
+with the supremum norm
+so that $\|f\|=\sup_{t\in[0,1]} \|f(t)\|$
+for all~$f\in B_\scrA$.
+
+Show that every $\scrA$-valued step function~$f$
+may be written as
+$f\equiv \sum_n a_n \mathbf{1}_{I_n}$
+where $I_1,\dotsc,I_N$
+are \emph{disjoint and non-empty}
+intervals in~$[0,1]$.
+
+Show that 
+for such a representation
+$\|f\|=\sup_n \|a_n\|$, and
+$\sum_n \left|I_n\right|\leq 1$.
+Deduce that
+$\|\int f\| \leq \sum_n \|a_n\|\left|I_n\right|
+\leq \|f\|$.
+
+Conclude that~$\int\colon S_\scrA\to\scrA$
+is a bounded linear map
+and can therefore
+be uniquely extended to a bounded linear map
+$\int\colon \overline{S}_\scrA\to\scrA$
+on the closure~$\overline{S}_\scrA$
+of~$S_\scrA$.
+
+\item
+Show that every continuous function $f\colon [0,1]\to\scrA$
+is the supremum norm limit
+of a sequence $g_1,g_2,\dotsc$
+of $\scrA$-valued step functions
+ (i.e.~$f\in\overline{S}_\scrA$).
+
+\item
+show that~$\int af = a\int f$
+when~$f\colon [0,1]\to\C$
+is continuous and~$a\in \scrA$.
+\end{enumerate}
+\end{point}
+\begin{point}{Definition}%
+The integral of
+a holomorphic $\scrA$-valued function~$f$
+along a line segment $[w,w']\subseteq\dom(f)$
+is now defined as.
+\begin{equation*}
+\Define{\int_{w}^{w'}f}
+\ = \ 
+(w'-w)\int_0^1f(\,w+t(w'-w)\,)\,dt
+\end{equation*}
+We'll also need integration along a triangle~$T$,
+which is for this  purpose a tuple of three 
+complex numbers~$w_0,w_1,w_2$
+(of which the order does matter)
+called the
+\Define{vertices} of~$T$.
+The \Define{boundary} of
+such a triangle~$T$
+is $\Define{\partial T}
+:=[w_1,w_2]\cup [w_2,w_3]\cup [w_3,w_1]$,
+and given any $\scrA$-valued
+holomorphic function~$f$
+with $\partial T\subseteq \dom(f)$
+we define
+\begin{equation*}
+	\Define{\int_T f}\ = \ \int_{z_0}^{z_1} f
+\,+\, \int_{z_1}^{z_2} f
+\,+\, \int_{z_2}^{z_3} f.
+\end{equation*}
+We'll need some more terminology
+relating to our triangle~$T$.
+Its \Define{closure}
+written $\Define{\mathrm{cl}(T)}$
+is the convex hull of~$w_0,w_1,w_2$,
+and its \Define{interior}
+is simply
+$\Define{\mathrm{in}(T)}=\mathrm{cl}(T)\backslash \partial T$.
+The length
+of~$T$ is given by
+$\Define{\mathrm{length}(T)}:=
 \left|z_1-z_0\right|\,+\,
 \left|z_2-z_1\right|\,+\,
-\left|z_3-z_1\right|.
-\end{equation*}
+\left|z_3-z_1\right|$.
+
 The number of times the triangle~$T$ winds
 around a point $z\in \C\backslash \partial T$
 in the counterclockwise direction
@@ -1630,18 +1732,14 @@ It is defined formally by
 2\pi \wn_T(z)\ = \ 
 \measuredangle(w_0,z,w_1)
 \,+\,\measuredangle(w_1,z,w_2)
-\,+\, \measuredangle(w_2,z,w_0).
+\,+\, \measuredangle(w_2,z,w_0),
 \end{equation*}
-Given an $\scrA$-valued
-holomorphic function~$f$
-with $\mathrm{cl}(T)\subseteq \dom(f)$
-the integral of~$f$ along~$T$
-is defined by
-\begin{equation*}
-	\Define{\int_T f}\ = \ \int_{z_0}^{z_1} f
-\,+\, \int_{z_1}^{z_2} f
-\,+\, \int_{z_2}^{z_3} f.
-\end{equation*}
+and pops
+up in the value of the integral $\int_T (z-z_0)^{-1}dz$
+later on,
+see~\sref{invint}.
+
+
 \end{point}
 \begin{point}[goursat]{Goursat's Theorem}%
 Let~$f$ be a holomorphic function,
