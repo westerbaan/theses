@@ -3,8 +3,7 @@
 \chapter{$C^*$-algebras}
 \begin{parsec}%
 \begin{point}%
-As an appetizer
-we redevelop the essentials of the theory of (unital) $C^*$-algebras
+We redevelop the essentials of the theory of (unital) $C^*$-algebras
 in this chapter.
 Since we are ultimately interested
 in von Neumann algebras
@@ -14,8 +13,7 @@ delicate
 topics such as tensor products (of $C^*$-algebras), 
 quotients, approximate identities,
 and $C^*$-algebras without a unit.
-Our end goal
-for this chapter
+The summit of this chapter
 is \emph{Gelfand's representation theorem} (see~\sref{gelfand}),
 the fact that every commutative $C^*$-algebra
 is isomorphic
@@ -1013,9 +1011,9 @@ and that every completely positive map is positive (in~\sref{}).
 \end{point}
 \begin{point}%
 The miu-maps between $C^*$-algebras
-form a category which we denote by~$\Cstar{miu}$.
+form a category which we denote by~$\Define{\Cstar{miu}}$.
 The full subcategory of commutative $C^*$-algebras
-is denoted by~$\cCstar{miu}$.
+is denoted by~$\Define{\cCstar{miu}}$.
 \end{point}
 \begin{point}[cstar-categorical-product]{Exercise}%
 Show that the direct product of $C^*$-algebras
@@ -1560,19 +1558,103 @@ from~\eqref{power-series-derivative-0}
 converges to~$0$ as~$h$ tends to~$0$.\qed
 \end{point}
 \end{point}
-
-\TODO{Definition of polygonal paths}
-\TODO{Definition of integration along these}
+\end{parsec}%
+\begin{parsec}%
+\begin{point}%
+All holomorphic functions
+are power series
+in the sense
+that any $\scrA$-valued holomorphic
+function~$f$ defined on~$0$
+is given by some power series $\sum_n a_n z^n$
+on the largest disk around~$0$
+that fits in~$\dom(f)$.
+This fact,
+which follows from~\sref{taylor}
+and~\sref{rigid-expansion} below,
+is all the more remarkable,
+because here the pointwise (``local'') property
+of being holomorphic
+entails
+the uniform (``global'') property
+of being equal to a power
+series (on some disk).
+The device
+that bridges
+this
+gap
+is integration of $\scrA$-valued
+holomorphic functions along
+line segments.
+\end{point}
+\begin{point}{Definition}%
+In this section a \Define{triangle}~$T$
+consists of a tuple of three complex numbers~$w_0,w_1,w_2$
+called the
+\Define{vertices} of~$T$---the order
+of the vertices will be important
+in a moment.
+The \Define{boundary} of
+such a triangle~$T$,
+written~$\Define{\partial T}$,
+is the union of the three line segment
+between~$w_0$, $w_1$ and~$w_2$,
+and the \Define{closure} of~$T$,
+written $\Define{\mathrm{cl}(T)}$,
+is the convex hull of~$w_0,w_1,w_2$.
+The \Define{interior} of~$T$
+is then  simply given by
+$\Define{\mathrm{in}(T)}=\mathrm{cl}(T)\backslash \partial T$,
+and the \Define{length}
+of~$T$ is given by
+\begin{equation*}
+\Define{\mathrm{length}(T)}:=
+\left|z_1-z_0\right|\,+\,
+\left|z_2-z_1\right|\,+\,
+\left|z_3-z_1\right|.
+\end{equation*}
+The number of times the triangle~$T$ winds
+around a point $z\in \C\backslash \partial T$
+in the counterclockwise direction
+is
+called the 
+\Define{winding number},
+is
+written $\Define{\mathrm{wn_T}(z)}$,
+is either $1$ or~$-1$ when~$z\in\mathrm{in}(T)$
+(depending on the order of the vertices),
+and is~$0$ when~$z\notin\mathrm{in}(T)$.
+It is defined formally by
+\begin{equation*}
+	\textstyle
+2\pi \wn_T(z)\ = \ 
+\measuredangle(w_0,z,w_1)
+\,+\,\measuredangle(w_1,z,w_2)
+\,+\, \measuredangle(w_2,z,w_0).
+\end{equation*}
+Given an $\scrA$-valued
+holomorphic function~$f$
+with $\mathrm{cl}(T)\subseteq \dom(f)$
+the integral of~$f$ along~$T$
+is defined by
+\begin{equation*}
+	\Define{\int_T f}\ = \ \int_{z_0}^{z_1} f
+\,+\, \int_{z_1}^{z_2} f
+\,+\, \int_{z_2}^{z_3} f.
+\end{equation*}
+\end{point}
 \begin{point}[goursat]{Goursat's Theorem}%
 Let~$f$ be a holomorphic function,
-and let~$T$ be a triangle whose interior
+and let~$T$ be a triangle whose closure
 is entirely contained in~$\dom(f)$.
 Then~$\int_T f = 0$.
 \begin{point}[goursat-1]{Proof}%
+(Based on~\cite{moore1900}.)
+
 Note that if~$f$ has a primitive,
 that is, $f\equiv g'$ for some holomorphic function~$g$,
-then it is clear that~$\int_T f=0$
-by \TODO{the fundamental theorem of calculus}.
+then one can show that~$\int_T f=0$
+(after deriving the fundamental theorem of calculus).
 Although it is true that every holomorphic function
 with simply connected domain has a primitive,
 this result is not yet available 
@@ -1588,7 +1670,27 @@ we first need to zoom in.
 If we split~$T$ into four similar triangles
 $T^\text{i}$, $T^\text{ii}$,
 $T^\text{iii}$, $T^\text{iv}$
-(see picture~\TODO{})
+\TODO{improve picture}
+\begin{equation*}
+\begin{tikzpicture}
+\coordinate (A) at (0,0){};
+\coordinate (B) at (4,0){};
+\coordinate (C) at (3,2){};
+\coordinate (AB) at ($(A)!0.5!(B)$) {};
+\coordinate (BC) at ($(B)!0.5!(C)$) {};
+\coordinate (CA) at ($(C)!0.5!(A)$) {};
+\draw
+	(A) -- (AB) 
+	(AB) -- (B)
+	(B)  -- (BC)
+	(BC) -- (C) 
+	(C) -- (CA)
+	(CA) -- (A)
+	(CA) -- (BC)
+	(BC) -- (AB)
+	(AB) -- (CA);
+\end{tikzpicture}
+\end{equation*}
 we have $\smash{\int_Tf = \sum_{n={\text{i}}}^{\text{iv}} \int_{T^n}f}$.
 There is $T'$ among
 $T^\text{i}$, $T^\text{ii}$,
@@ -1604,10 +1706,11 @@ with $\|\int_Tf\|\leq 4^n \|\int_{T_n} f\|$,
 and $\length(T)=2^n\length(T_n)$.
 \end{point}
 \begin{point}%
-If we pick a point on each triangle~$T_n$ 
+If we pick a point on the closure $\mathrm{cl}(T_n)$
+of each triangle~$T_n$ 
 we get a Cauchy sequence
 that converges to some point~$z_0\in\C$
-which lies in (or on) each of the triangles~$T_1,T_2,\dotsc$.
+which lies in~$\bigcap_n \mathrm{cl}(T_n)$.
 We can approximate $f$ by an affine
 function at~$z_0$ as follows.
 For $z\in \dom(f)$,
@@ -1656,90 +1759,202 @@ Since~$\varepsilon>0$ was arbitrary,
 we see that~$\int_T f=0$.\qed
 \end{point}
 \end{point}
-
-
-(Proof is based on~\cite{moore1900}.)
 \end{point}%
-\begin{point}[cauchy-formula]{Theorem (Cauchy's Integral Formula)}%
-Let~$f$ be a holomorphic $\scrA$-valued function.
-Let~$p$ be a simple positively oriented 
-polygon with $\interior(p)\subseteq\dom(f)$.
-Then for $z_0\in \interior(p)$,
+\begin{point}[invint]{Exercise}%
+	The assumption in Goursat's Theorem (\sref{goursat})
+that the holomorphic function~$f$
+is defined not only on the boundary~$\partial T$
+of the triangle~$T$
+but also on the interior $\mathrm{in}(T)$
+is essential,
+for if only a single hole in~$\dom(f)$ is allowed within $\mathrm{in}(T)$
+the integral~$\int_T f$ can become non-zero---which we will demonstrate
+here by computing
+$\int_T (z-z_0)^{-1}dz$.
+\begin{enumerate}%
+\item
+Show that for a non-zero
+complex number~$z$ we have
 \begin{equation*}
-f(z_0)\ = \ \frac{1}{2\pi i}\,\int_p \frac{f(z)}{z-z_0}\,dz
+	z^{-1}\ =\  \frac{\Real{z}-i\Imag{z}}{\Real{z}^2+\Imag{z}^2}.
+\end{equation*}
+\item
+Given real numbers~$a\neq 0$ and~$b$,
+show that
+\begin{alignat*}{3}
+	\int_{a}^{a+ib}\ 
+	z^{-1}\,dz
+	\ &=\ 
+	i\int_0^b \frac{a}{a^2+t^2}\,dt 
+	\ +\ 
+	\int_0^b \frac{t}{a^2+t^2}\,dt\\
+	\ &=\ 
+	\textstyle
+	i\,\arctan(\,b/a\,)
+	\,+\, \log\left|a+ib\right| - \log\left|ia\right|,
+\end{alignat*}
+and similarly, show that for real numbers~$a$ and $b\neq 0$
+\begin{equation*}
+	\int_{a+ib}^{ib} z^{-1}\,dz
+	\ = \ 
+	i\arctan(\,a/b\,) \ +\ 
+	\log\left|ib\right| \,-\,
+	\log\left|a+ib\right|.
+\end{equation*}
+	\item
+Show that for complex numbers~$w$, $w'$ and~$z_0$
+with~$z_0\notin [w,w']$
+\begin{equation*}
+	\int_{w}^{w'}\,(z-z_0)^{-1}\,dz
+\ = \ 
+i\, \measuredangle(w,z_0,w')\ +\ 
+\log\,\frac{\left|w'-z_0\right|}{\left|w-z_0\right|},
+\end{equation*}
+where~$\measuredangle(w,z_0,w')$
+denotes
+the number of radians
+in~$(-\pi,\pi)$
+needed
+to rotate the line through~$z_0$ and~$w$
+counterclockwise around~$z_0$ to hit~$w'$.
+
+(Hint: 
+using Goursat's Theorem, \sref{goursat},
+one may reduce the problem
+to integration along horizontal and vertical line segments.)
+\item
+Given a triangle~$T$ and~$z_0\in\C\backslash \partial T$,
+show that
+\begin{equation*}
+	\frac{1}{2\pi i}\int_T (z-z_0)^{-1}\,dz
+	\ =  \mathrm{wn}_T(z_0).
+\end{equation*}
+\end{enumerate}
+\end{point}
+\begin{point}%
+Thus integration of 
+$z\mapsto (z-z_0)^{-1}$
+along a triangle~$T$ detects
+the number of times~$T$ winds
+around~$z_0$.
+There is nothing special about triangle:
+a similar result---not needed here---holds
+for a broad class of curves
+(c.f.~Thm~2.9 of~\cite{conway}).
+
+Integration along a curve can also be used
+to probe the value of a holomorphic function at a point~$z_0$.
+On this occasion
+we restrict ourselves
+to regular $N$-gons.
+\end{point}
+\end{parsec}%
+\begin{parsec}%
+\begin{point}[cauchy-formula]{Theorem (Cauchy's Integral Formula)}%
+Let~$f$ be a holomorphic $\scrA$-valued function
+which is defined on the interior and boundary
+of some regular $N$-gon 
+with center~$c\in\C$,
+circumradius~$r$
+and vertices $w_n := c+r\cos(2\pi/n)+ir\sin(2\pi/n)$.
+Then for any complex number~$z_0$ in
+the interior of the~$N$-gon
+we have
+\begin{equation*}
+	f(z_0)\ = \ \frac{1}{2\pi i}\,\sum_{n=0}^{N-1}\int_{w_n}^{w_{n+1}}
+	\frac{f(z)}{z-z_0}\,dz
 \end{equation*}
 \begin{point}{Proof}%
-Since~$\int_p \frac{f(z_0)}{z-z_0}\,dz
-= 2\pi i f(z_0)$ by~\TODO{reason},
+	Since~$\sum_{n=0}^{N-1} \int_{w_n}^{w_{n+1}} \frac{f(z_0)}{z-z_0}\,dz
+	= 2\pi i f(z_0)$ by~\sref{invint}
 it suffices to show that
 \begin{equation}
 \label{eq:cauchy-formula-1}
-\int_p \frac{f(z)-f(z_0)}{z-z_0}\,dz \ = \ 0.
+\sum_{n=0}^{N-1}\int_{w_n}^{w_{n+1}} \frac{f(z)-f(z_0)}{z-z_0}\,dz \ = \ 0.
 \end{equation}
 \begin{point}[cauchy-formula-1]%
 Let~$\varepsilon>0$ be given.
 Since~$f$ is holomorphic at~$z_0$
 we can find $\delta>0$ with
-$\|f(z)-f(z_0)\|\leq \|z-z_0\|$
-for all~$z\in\dom(f)$ with $\|z-z_0\|\leq \delta$. 
+$\|f(z)-f(z_0)\|\leq \left|z-z_0\right|$
+for all~$z\in\dom(f)$ with $\left|z-z_0\right|\leq \delta$. 
 \end{point}
 \begin{point}%
 To use~\sref{cauchy-formula-1},
 we must restrict our attention to a smaller polygon.
-Let~$q$ be a simple positively oriented polygon 
-with $z_0\in \interior(q)$,  $\overline{q}\subseteq \interior(p)$,
-$\length(q)\leq \varepsilon$,
-and $\|z_0-z\|\leq \delta$ for all~$z\in \partial q$.
-By~\sref{goursat}, we have
+Let~$T$ be a triangle 
+that is entirely inside the~$N$-gon
+such that  $\mathrm{wn}_T(z_0)=-1$,
+$\length(T)\leq \varepsilon$,
+and $\|z_0-z\|\leq \delta$ for all~$z\in \partial T$.
+By partitioning the area
+between~$T$ and the~$N$-gon
+in the obvious manner
+into triangles~$T_1,\dotsc,T_M$
+(for which~$\int_{T_m}f=0$ for all~$m$ by~\sref{goursat})
+we see that
 \begin{equation}
 \label{eq:cauchy-formula-2}
-\int_p \frac{f(z)-f(z_0)}{z-z_0}
+\sum_{n=0}^{N-1}\int_{w_n}^{w_{n+1}} \frac{f(z)-f(z_0)}{z-z_0}
 \ = \ 
-\int_q \frac{f(z)-f(z_0)}{z-z_0}.
+\int_T \frac{f(z)-f(z_0)}{z-z_0}.
 \end{equation}
-By~\sref{cauchy-formula-1}
+Hence by~\sref{cauchy-formula-1}
 we have
 \begin{equation*}
-\left\|\,\int_q \frac{f(z)-f(z_0)}{z-z_0}\,dz\,\right\|
-\ \leq \ \length(q)\,\cdot\,
-\sup_{z\in\partial q} \,\left\|\,\frac{f(z)-f(z_0)}{z-z_0}\,\right\|
+	\left\|\,\sum_{n=0}^{N-1} 
+	\int_{w_n}^{w_{n+1}} \frac{f(z)-f(z_0)}{z-z_0}\,dz\,\right\|
+\ \leq \ \length(T)\,\cdot\,
+\sup_{z\in\partial T} \,\left\|\,\frac{f(z)-f(z_0)}{z-z_0}\,\right\|
 \ \leq \ \varepsilon.
 \end{equation*}
 Since~$\varepsilon>0$ was arbitrary,
-we get Eq.~\eqref{eq:cauchy-formula-1}
-from Eq.~\eqref{eq:cauchy-formula-2}.\qed
+ \eqref{eq:cauchy-formula-1}
+follows from \eqref{eq:cauchy-formula-2}.\qed
 \end{point}
 \end{point}
 \end{point}
 \begin{point}[taylor]{Proposition}%
-Let~$f$ be a holomorphic $\scrA$-valued function.
-Let~$p$ be a simple positively oriented polygon 
-with $\interior(p) \subseteq \dom(f)$.
-Then for all~$w,z\in \interior(p)$
-with $\|z-w\|<\inf_{u\in \partial p} \left| u-w \right|$,
-we have:
+Let~$f$ be a holomorphic $\scrA$-valued function
+defined on the boundary an interior
+of a regular $K$-gon
+with vertices $w_0,\dotsc,w_{K-1},w_K=w_0$
+as in~\sref{cauchy-formula}.
+Then for every element~$z$ of an open disk in interior of the $K$-gon
+with center~$w$,
 \begin{equation*}
 f(z)\ = \ 
-\sum_{n=0}^\infty \ \frac{1}{2\pi i}\int_p \frac{f(u)}{(u-w)^{n+1}}\,du
+\sum_{n=0}^\infty \ \frac{1}{2\pi i}\sum_{k=0}^{K-1}\int_{w_k}^{w_{k+1}} 
+\frac{f(u)}{(u-w)^{n+1}}\,du
 \ (z-w)^n.
 \end{equation*} 
 \begin{point}{Proof}%
 By~\sref{cauchy-formula} we have
 \begin{alignat*}{3}
-2\pi if(z)\ &=\  \int_p \frac{f(u)}{u-z}\,du
+2\pi if(z)\ &=\  
+	\sum_{k=0}^{K-1}\int_{w_k}^{w_{k+1}}
+	\frac{f(u)}{u-z}\,du
 \ =\ 
-  \int_p  \frac{f(u)}{u-w}\,\frac{1}{1-\frac{z-w}{u-w}}\,du
+\sum_{k=0}^{K-1}\int_{w_k}^{w_{k+1}}
+   \frac{f(u)}{u-w}\,\frac{1}{1-\frac{z-w}{u-w}}\,du
 \end{alignat*}
-Since~$\left|z-w\right|<\left|u-w\right|$
-for~$u\in \partial p$,
-we get, by~\sref{geometric},
-\begin{equation*}
-2\pi if(z) \ = \ 
-  \int_p \frac{f(u)}{u-w}\, \sum_{n=0}^\infty 
+Note that~$\left|z-w\right|<\left|u-w\right|$
+for all~$u\in [w_k,w_{k+1}]$ and~$k$,
+because the open disk with center~$w$
+from which~$z$ came lies entirely in the~$K$-gon.
+Hence,
+by~\sref{geometric},
+\begin{alignat*}{3}
+	2\pi if(z) \ &= \ 
+\sum_{k=0}^{K-1}\int_{w_k}^{w_{k+1}}
+   \frac{f(u)}{u-w}\, \sum_{n=0}^\infty 
 \frac{(z-w)^n}{(u-w)^n}
- \,du\ = \ 
-  \sum_{n=0}^\infty \ \int_p   \frac{f(u)}{(u-w)^{n+1}}du \ (z-w)^n,
-\end{equation*}
+ \,du\\
+ \ &= \ 
+  \sum_{n=0}^\infty \ 
+\sum_{k=0}^{K-1}\int_{w_k}^{w_{k+1}}
+  \frac{f(u)}{(u-w)^{n+1}}du \ (z-w)^n,
+\end{alignat*}
 where the interchange of ``$\sum$'' and ``$\int$''
 was allowed by~\TODO{to add}.\qed
 \end{point}
