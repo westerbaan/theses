@@ -1810,8 +1810,11 @@ We say~$(X,h)$ is an \Define{abstract $M$-convex set}
 \end{equation}
 for every~$\bigovee_i \sigma_i \ket{\bigovee_j \lambda_{ij} \ket{x_{ij}}}$
     in~$\mathcal{D}_M \mathcal{D}_M X$.
+(Equivalently: $h \after \mu = h \after \mathcal{D}_M h$
+and~$h \after \eta = \id$.)
+    We call~$h$ the convex structure on~$X$.
 A map~$f\colon X \to Y$
-    between abstract~$M$-convex sets~$(X,h_X)$ and~$(Y,h_Y)$
+    between abstract~$M$-convex sets
     is \Define{$M$-affine} if
 \begin{equation*}
     f \bigl(h_X \bigl(\,\bigovee_i \lambda_i \ket{x_i}\, \bigr)\bigr)
@@ -1819,6 +1822,7 @@ A map~$f\colon X \to Y$
      h_Y\bigl(\,\bigovee_i \lambda_i \ket{f(x_i)}\,\bigr)
 \end{equation*}
 for every~$\bigovee_i \lambda_i \ket{x_i}$ in~$\mathcal{D}_M X$.
+(Equivalently: $h_X \after \mathcal{D}_M f = f \after h_Y$.)
 Write~$\Define{\AConvM}$ for the category
     of abstract~$M$-convex sets with
     $M$-affine maps between them.
@@ -2048,7 +2052,7 @@ h_\sim \after \mathcal{D}_M h_\sim \after \mathcal{D}_M \mathcal{D}_M q
 Conclude~$(X/_\sim,h_\sim)$ is an abstract~$M$-convex set.
 \end{enumerate}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[affine-kernel-cong]{Exercise}%
 Assume~$f\colon X \to Y$ is an affine map between abstract
     $M$-convex sets.
 Show that the kernel~$\{(x,y);\ f(x) = f(y)\}$ of~$f$
@@ -2099,11 +2103,14 @@ Show that if~$\varphi \approx \psi$,
 Conclude~$\sim$ is the smallest congruence containing~$R$.
 \end{enumerate}
 \end{point}
-\begin{point}{Proposition}%
+\begin{point}[aconv-coprod]{Proposition}%
 Assume~$(X,h_X)$ and~$(Y,h_Y)$
     are abstract~$M$-convex sets.
+    We will construct their coproduct.
+Note that~$\mu$ turns~$\mathcal{D}_M (X+Y)$
+    into an abstract~$M$-convex set.
 Let~$\sim$ denote the least congruence on~$\mathcal{D}_M (X+Y)$
-    for which we have
+with
 \begin{equation*}
     (\mathcal{D}_M \kappa_1) (\varphi)
     \ \sim \ \eta(\kappa_1 ( h_X (\varphi)))
@@ -2123,8 +2130,132 @@ Define~$c_1 \colon X \to C$ and~$c_2 \colon Y \to C$
 Then: $c_1 \colon X \to C \leftarrow Y \colon c_2$
 is a coproduct of~$X$~and~$Y$ in~$\AConvM$.
 \begin{point}{Proof}%
-Write~$h$ for the convex structure on~$\mathcal{D}_M(X+Y)$.
-    
+We start with the affinity of the coprojections:
+\begin{alignat*}{2}
+    c_1 \after h_X & \ = \ 
+    q \after \eta \after \kappa_1 \after h_X \\
+    &\ =\  q \after \mathcal{D}_M \kappa_1
+        &\qquad& \text{by dfn.~of~$\sim$}
+    \\
+    & \ =\  q \after \mu \after \mathcal{D}_M \eta \after \mathcal{D}_M \kappa_1. \\
+    & \ =\  \mu \after \mathcal{D}_Mq \after \mathcal{D}_M \eta \after \mathcal{D}_M \kappa_1. \\
+    & \ =\  \mu \after \mathcal{D}_M c_1,
+\end{alignat*}
+so~$c_1$ is affine. With the same reasoning, we see~$c_2$ is affine.
+\begin{point}%
+Assume~$f\colon X \to Z$ and~$g\colon Y \to Z$
+    are two affine maps to some abstract~$M$-convex set~$(Z,h_Z)$.
+We want to show~$h_Z \after \mathcal{D}_M [f,g]$
+    lifts to~$C$.
+With an easy calculation,
+    one sees~$h_Z \after \mathcal{D_M} [f,g]$ is affine.
+We compute
+\begin{align*}
+    h_Z \after \mathcal{D}_M [f,g] \after \mathcal{D}_M \kappa_1
+     & \ = \ 
+    h_Z \after \mathcal{D}_M f \\
+     & \ = \ f \after h_X \\
+     & \ = \ h_Z \after \eta \after [f,g] \after \kappa_1 \after h_X \\
+     & \ = \ h_Z \after \mathcal{D}_M [f,g] \after \eta \after \kappa_1 \after h_X.
+\end{align*}
+So~$
+(\,(\mathcal{D}_M \kappa_1) (\varphi), \,
+\ \eta(\kappa_1 ( h_X (\varphi)))\,)$
+is in the kernel (see \sref{affine-kernel-cong})
+of~$h_Z \after \mathcal{D}_M [f,g]$
+for~$\varphi \in \mathcal{D}_M$.
+Similarly~$(\,(\mathcal{D}_M \kappa_2) (\psi), \,
+\ \eta(\kappa_2 ( h_Y (\psi)))\,)$
+is also in the kernel of~$h_Z \after \mathcal{D}_M [f,g]$
+for all~$\psi \in \mathcal{D}_M$.
+
+As kernels of affine maps are congruences
+    and~$\sim$ is the least congruence that contains these pairs,
+    we conclude~$\sim$ is a subset of the kernel
+    of~$h_Z \after \mathcal{D}_M [f,g]$.
+Thus there is a unique affine~$k\colon C \to Z$
+    fixed by~$k \after q = h_Z \after \mathcal{D}_M [f,g]$.
+Now
+\begin{align*}
+    k \after c_1 
+    &\ = \ k \after q \after \eta \after \kappa_1 \\
+    &\ = \ h_Z \after \mathcal{D}_M [f,g]
+                            \after \eta\after \kappa_1 \\
+    &\ = \ h_Z \after \eta \after  [f,g]
+                            \after \kappa_1 \\
+    &\ = \  f
+\end{align*}
+and similarly~$k \after c_2 = g$.
+\end{point}
+\begin{point}%
+Only uniqueness of~$k$ remains to be shown.
+So assume~$k'\colon C \to Z$ is an affine map
+    such that~$k' \after c_1 = f$
+    and~$k' \after c_2 = g$.
+We turn the wheel:
+\begin{align*}
+    k' \after q
+    & \ = \ k' \after q \after \mu \after \mathcal{D}_M \eta \\
+    & \ = \ k' \after h \after \mathcal{D}_M (q \after \eta) \\
+    & \ = \ h_Z \after \mathcal{D}_M (k' \after q \after \eta) \\
+    & \ = \ h_Z \after \mathcal{D}_M 
+    [ k' \after q \after \eta \after \kappa_1,
+    k' \after q \after \eta \after \kappa_2]  \\
+    & \ = \ h_Z \after \mathcal{D}_M 
+    [ k' \after c_1,
+    k' \after c_2]  \\
+    & \ = \ h_Z \after \mathcal{D}_M [ f, g] \\
+    & \ = \ k \after q.
+\end{align*}
+So~$k = k'$ by surjectivity of~$q$. \qed
+\end{point}
+\end{point}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}{Theorem}%
+    The category~$\AConvM$ is an effectus (in total form).
+\begin{point}{Proof}%
+In \sref{aconv-coprod} we proved~$\AConvM$ has binary coproducts.
+Trivially, the one-element set~$1$ is an abstract~$M$-convex set
+    and the final object in~$\AConvM$.
+As~$\mathcal{D}_M \emptyset = \emptyset$,
+    the empty set is also an abstract~$M$-convex set
+    and in fact the initial object of~$\AConvM$.
+\end{point}
+\begin{point}%
+We continue with the hardest part:
+    the proof that the square on the left of \eqref{pullbacks}
+    is a pullback in~$\AConvM$.
+\begin{equation*}
+\xymatrix{
+    Z \ar@/^1pc/[rrd]^\beta
+        \ar@/_1pc/[rdd]_\alpha
+        \ar@{.>}[rd]|\gamma\\
+        &X+Y \ar[r]^{\id+!} \ar[d]^{!+\id} & X+1\ar[d]^{!+\id} \\
+        &1+Y\ar[r]_{\id+!} & 1+1
+    }
+\end{equation*}
+To this end, assume~$\alpha\colon Z \to X+1$
+and~$\beta\colon Z \to Y+1$
+are maps in~$\AConvM$
+with~$(! + \id) \after \beta = (\id+!)\after \alpha$.
+We have to show there is a unique~$\gamma\colon Z \to X+Y$ in~$\AConvM$
+with~$(\id+!)\after \gamma =\beta$
+and~$(!+\id) \after \gamma =\alpha$.
+Pick any~$z \in Z$.
+Write~$\cdot$ for the unique element of~$1$.
+By construction of the coproduct, see \sref{aconv-coprod},
+we have
+\begin{equation*}
+    \alpha(z) = \lambda_0 \ket{\kappa_1(\cdot)}
+        \ovee \bigovee_i \lambda_i \ket{\kappa_2(y_i)}
+        \qquad
+    \beta(z) = \sigma_0 \ket{\kappa_2(\cdot)}
+        \ovee \bigovee_i \sigma_i \ket{\kappa_1(x_i)}
+\end{equation*}
+
 \end{point}
 \end{point}
 \end{parsec}
