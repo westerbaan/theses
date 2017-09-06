@@ -65,11 +65,22 @@ such as the more general theory of Banach algebras
 This forces us
 to take a slightly different path than is usual in the literature 
 (see e.g.~\sref{gelfand-mazur-predicament}).
+
+After Gelfand's representation theorem
+we deal with two smaller topics:
+that a $C^*$-algebra
+may be represented as a concrete $C^*$-algebra
+of bounded operators on a Hilbert space (see~\sref{gns}),
+and that the $N\times N$-matrices with entries drawn from a 
+$C^*$-algebra~$\scrA$
+form a $C^*$-algebra~$M_N(\scrA)$
+(see~\sref{cstar-matrices}).
+We end
+with allusions to von Neumann algebras---which are the
+topic of the next chapter.
 \end{point}%
 \end{parsec}
 \section{Definition and examples}
-Let us begin with the definition
-and examples.
 \begin{parsec}%
 \begin{point}{Definition}%
 A \Define{$C^*$-algebra}
@@ -138,7 +149,7 @@ of~$\scrA$.
 \end{point}
 \begin{point}[cstar-product]{Example}%
 One can form products (in the categorical sense,
-see~\sref{cstar-categorical-product}) of $C^*$-algebras as follows.
+see~\sref{cstar-product-2}) of $C^*$-algebras as follows.
 Let~$\scrA_i$ be a $C^*$-algebra
 for every element~$i$ of some index set~$I$.
 The \Define{direct product}
@@ -223,6 +234,7 @@ for all~$v,w\in\C^n$.
 $CP^*$, and the Artin--Wedderburn theorem.}
 \end{point}
 \end{parsec}
+\subsection{Operators}
 \begin{parsec}[hilb]%
 \begin{point}[example-hilb]{Example}%
 Let us now turn to perhaps the most important
@@ -547,14 +559,6 @@ But then $\|T\|^2\leq \|T^*T\|\leq \|T^*\|\|T\|=\|T\|^2$,
 and so $\|T\|^2=\|T^*T\|$.\qed
 \end{point}
 \end{point}
-\begin{point}[hilb-examples]{Exercise}%
-Verify the following examples of Hilbert spaces.
-\begin{enumerate}
-\item
-	Given a set~$X$,
-	\TODO{define $\ell^2(X)$ and $\bigoplus_i \scrH_i$.}
-\end{enumerate}
-\end{point}
 \end{parsec}
 \begin{parsec}[hilb-adjoint]%
 \begin{point}[adjointables-cstar-algebra]%
@@ -719,7 +723,111 @@ is isomorphic to a $C^*$-subalgebra of
 a $\scrB(\scrH)$.
 \end{point}
 \end{parsec}
+\begin{parsec}%
+\begin{point}%
+Here is a non-trivial
+example of a Hilbert space
+that will be used later on.
+\end{point}
+\begin{point}[hilb-sum]{Proposition}%
+Given a family  $(\scrH_i)_{i\in I}$ 
+of Hilbert spaces
+the vector space
+\begin{equation*}
+	\textstyle
+	\Define{\bigoplus_i \scrH_i} \ =\ \{\ 
+		x\in \prod_i \scrH_i\colon\ 
+	\sum_i \|x_i\|^2 <\infty \ \}.
+\end{equation*}
+is a Hilbert space
+when endowed with the inner product
+$\left<x,y\right>=\sum_i \left<x_i,y_i\right>$.
+\begin{point}{Proof}%
+We must show that~$\sum_i \left<x_i,y_i\right>$
+converges for~$x,y\in\bigoplus_i \scrH_i$ to begin with.
+Given~$\varepsilon>0$
+we must
+find a finite subset~$G$ of~$I$
+such that~$ \left|\sum_{i \in F} \left<x_i,y_i\right>\right|
+\leq \varepsilon$ for all finite $F\subseteq I\backslash G$.
+Since an obvious application
+of the Cauchy--Schwarz inequality
+gives
+us that for every finite subset~$F$ of~$I$
+\begin{equation*}
+	\Bigl|\sum_{i\in F}
+	\left<x_i,y_i\right>\Bigr|^2
+	\ \leq\ 
+	\sum_{i\in F}\|x_i\|^2
+	\, \sum_{i\in F}\|y_i\|^2,
+\end{equation*}
+we 
+see that any~$G\subseteq I$
+with $\sum_{i\in I\backslash G} \|x_i\|^2 \leq \varepsilon$
+and~$\sum_{i\in I\backslash G} \|y_i\|^2 \leq \varepsilon$
+will do.
 
+It is easily seen that
+$\left<x,y\right>:=\sum_i \left<x_i,y_i\right>$
+gives an inner product on~$\bigoplus_i \scrH_i$; the
+remaining difficulty
+lies in showing that resulting norm is complete.
+To this end, let $x_1,x_2,\dotsc$ be a Cauchy sequence 
+in~$\bigoplus_{i\in I}\scrH_i$;
+we must show that it converges to some~$x_\infty\in \bigoplus_i \scrH_i$.
+We do the obvious thing:
+since for every~$i\in I$
+the sequence $(x_1)_i, (x_2)_i,\dotsc$
+is Cauchy in~$\scrH_i$
+we may define $(x_\infty)_i:=\lim_n (x_n)_i$,
+and thereby get an element $x_\infty$ of~$\prod_i \scrH_i$.
+Since for each finite subset~$F$ of~$I$
+we have $\sum_{i\in F} \|(x_\infty)_i\|^2
+=\lim_n \sum_{i\in F} \|(x_n)_i\|^2
+\leq \lim_n \|x_n\|^2$,
+we have $\sum_{i\in I} \|(x_\infty)_i\|^2 
+\leq \lim_n \|x_n\|^2 <\infty$,
+and so~$x_\infty\in\bigoplus_i \scrH_i$.
+
+It remains to be shown that~$x_1,x_2,\dotsc$
+converges to~$x_\infty$
+with respect to the inner product on~$\bigoplus_i \scrH_i$.
+Given~$\varepsilon >0$
+pick $N$ such that $\|x_n - x_m\|\leq \frac{1}{2\sqrt{2}}\varepsilon$
+for all~$n,m\geq N$.
+Note that since for such~$n$ the sum
+\begin{equation*}
+\sum_i \|(x_\infty)_i - (x_n)_i \|^2
+\ \equiv\ 
+\sum_{i\in F} \|(x_\infty)_i - (x_n)_i \|^2
+\ +\ 
+\sum_{i\in I\backslash F} \|(x_\infty)_i - (x_n)_i \|^2
+\end{equation*}
+converges (to $\|x_\infty - x_n\|^2$),
+we can find
+a finite subset~$F$ such that second term in the right-hand side above
+is smaller than~$\frac{1}{2}\varepsilon^2$.
+To see that the first term is also below~$\frac{1}{2}\varepsilon^2$,
+note that for every~$m$,
+\begin{equation*}
+\Bigl(\,\sum_{i\in F} \|(x_\infty)_i - (x_n)_i \|^2\,\Bigr)^{\nicefrac{1}{2}}
+\ \leq \ 
+\Bigl(\,\sum_{i\in F} \|(x_\infty)_i - (x_m)_i \|^2\,\Bigr)^{\nicefrac{1}{2}}
+\ +\ 
+\Bigl(\,\sum_{i\in F} \|(x_m)_i - (x_n)_i \|^2\,\Bigr)^{\nicefrac{1}{2}}.
+\end{equation*}
+Since~$F$ is finite,
+we can find an~$m$ large enough
+that the first term on the right-hand side above
+is below~$\smash{\frac{1}{2\sqrt{2}}\varepsilon}$.
+If we choose~$m\geq N$
+we see that the second term is below $\smash{\frac{1}{2\sqrt{2}}\varepsilon}$
+as well,
+and we conclude that~$\|x_\infty-x_n\|\leq \varepsilon$.\qed
+\end{point}
+\end{point}
+
+\end{parsec}
 \section{The basics}
 
 \begin{parsec}%
@@ -1015,14 +1123,50 @@ form a category which we denote by~$\Define{\Cstar{miu}}$.
 The full subcategory of commutative $C^*$-algebras
 is denoted by~$\Define{\cCstar{miu}}$.
 \end{point}
-\begin{point}[cstar-categorical-product]{Exercise}%
-Show that the direct product of $C^*$-algebras
+\begin{point}[cstar-product-2]{Exercise}%
+Show that
+the product~$\bigoplus_{i\in I}\scrA_i$
+of
+a family $(\scrA_i)_{j\in I}$
+of $C^*$-algebras
 defined in~\sref{cstar-product}
-provides products in the categories~$\Cstar{miu}$
-and~$\cCstar{miu}$.
-\end{point}
+is also the categorical product 
+of these $C^*$-algebras
+in~$\Cstar{miu}$
+with as projections
+the maps~$\Define{\pi_j}\colon \bigoplus_{i \in I}\scrA_i\to\scrA_j$
+given by~$\pi_j(a)=a(j)$.
 
-\TODO{equalizers}
+Show that the same description applies to~$\cCstar{miu}$.
+
+Of course,
+$\bigoplus_i\scrA_i$
+also gives the product in~$\Cstar{pu}$,
+but we must postpone the proof
+to~\sref{cstar-product-3}
+when we're able to prove
+that an element~$a$ of $\bigoplus_i \scrA_i$
+is positive provided that each~$a(i)$ is positive.
+\end{point}
+\begin{point}{Exercise}%
+Show that given miu-maps $f,g\colon \scrA\to\scrB$
+between $C^*$-algebras
+the collection $\scrE:=\{a\in\scrA\colon f(a)=g(a)\}$
+is a $C^*$-subalgebra
+of~$\scrA$,
+and that the inclusion $e\colon \scrE\to\scrA$
+is a positive miu-map
+that is in fact the equalizer of~$f$ and~$g$
+in~$\Cstar{miu}$ and~$\Cstar{pu}$.
+Show that the same description applies
+to~$\cCstar{miu}$ and~$\cCstar{pu}$.
+\begin{point}{Remark}%
+The assumption here that~$f$ and~$g$ are miu-maps
+might be essential:
+it is not clear whether arbitrary pu-maps $f,g\colon \scrA\to\scrB$
+have an equalizer in~$\Cstar{pu}$.
+\end{point}
+\end{point}
 \end{parsec}
 
 %
@@ -1558,6 +1702,19 @@ from~\eqref{power-series-derivative-0}
 converges to~$0$ as~$h$ tends to~$0$.\qed
 \end{point}
 \end{point}
+\begin{point}[powerseries-uniqueness-coeffients]{Exercise}%
+Let~$\sum_n a_n z^n$
+be a power series over~$\scrA$
+with radius of convergence~$R$
+such that~$\sum_n a_n z^n=0$
+for all~$z$ from
+some disk around~$0$ with radius~$r<R$.
+Show that~$0=a_0=a_1=a_2=\dotsb$.
+
+(Hint: clearly~$a_0=0$.  Show that the derivative
+of the power series also vanishes on the disk around~$0$
+with radius~$r$.)
+\end{point}
 \end{parsec}%
 \begin{parsec}%
 \begin{point}%
@@ -1738,8 +1895,6 @@ and pops
 up in the value of the integral $\int_T (z-z_0)^{-1}dz$
 later on,
 see~\sref{invint}.
-
-
 \end{point}
 \begin{point}[goursat]{Goursat's Theorem}%
 Let~$f$ be a holomorphic function,
@@ -2054,29 +2209,64 @@ by~\sref{geometric},
   \frac{f(u)}{(u-w)^{n+1}}du \ (z-w)^n,
 \end{alignat*}
 where the interchange of ``$\sum$'' and ``$\int$''
-was allowed by~\TODO{to add}.\qed
+is allowed
+because the partial sum 
+$\sum_{n=0}^Nf(u)\frac{(z-w)^n}{(u-w)^{n+1}}$
+converges uniformly in~$u$ as~$N\to\infty$.\qed
 \end{point}
 \end{point}
-\begin{point}[rigid-expansion]{Exercise}%
-Let~$f$ be a holomorphic function with domain~$G$.
-We will show that if~$f$ has a power series expansion on a disk around~$0$,
-then this power series expansion is also valid on any larger disk
-that still fits in~$G$, the domain of~$f$.
+\begin{point}[rigid-expansion]{Proposition}%
+Let~$f$ be an $\scrA$-valued holomorphic
+function
+that 
+can be written as a power
+series $f(z)=\sum_n a_n (z-w)^n$
+where~$a_1,a_2,\dotsc\in\scrA$
+for all~$z$ from some disk in~$\dom(f)$ around~$w$
+with radius~$r>0$.
 
-Let $S>0$ and $a_1,a_2,\dotsc \in\scrA$ be
-such that $z\in G$ and  $f(z)\equiv \sum_n a_nz^n$
-for all~$z\in \C$ with $\left|z\right|< S$.
-Let~$R\in [0,\infty]$ be the distance of~$0$ to the border of~$G$,
-that is,
-$R:=\inf\{\left|z\right|\in \C\colon z\notin G\}$.
+Then the formula $f(z)=\sum_n a_n (z-w)^n$
+holds also for any $z$ from a larger disk 
+with radius~$R>r$
+around~$w$ that still fits in~$\dom(f)$.
+\begin{point}{Proof}%
+Let~$z$ with $\left|z-w\right|<R$ be given.
+By chosing~$K$ large enough
+we can fit the boundary of a regular $K$-gon
+centered around~$w$
+with vertices $w_0,\dotsc,w_{K-1},w_{K}\equiv w_0$
+inside the difference between the two disks,
+and we can moreover, by~\sref{taylor},
+choose the polygon
+in such a way that
+$f(z')=\sum_n b_n (z'-w)^n$
+for all~$z'\in\C$
+with $\left|z'-w\right|\leq \left|z-w\right|$
+where $b_n = \sum_{k=0}^{K-1}
+\int_{w_k}^{w_{k+1}}
+\frac{f(u)}{(u-w)^{n+1}}\,du$.
 
-Show that~$f(z)=\sum_n a_n z^n$
-for all~$z\in \C$ with $\left|z\right|< R$.
-\TODO{add hints}
+Thus to show that $f(z)=\sum_n a_n (z-w)^n$
+it suffices to show that~$a_n=b_n$ for all~$n$.
+This in turn
+follows by~\sref{powerseries-uniqueness-coeffients} from the fact
+that $\sum_n a_n (z'-w)^n
+= \sum_n b_n (z'-w)^n$
+for all~$z'\in \C$ with $\left|z'-w\right|<r$.\qed
+\end{point}
 \end{point}
 \end{parsec}
 \subsection{Spectral radius}
 \begin{parsec}%
+\begin{point}%
+Our analysis of $\scrA$-valued
+holomorphic functions
+allows us to expose
+the following connection
+between the norm
+and the invertible elements
+in a $C^*$-algebra.
+\end{point}
 \begin{point}[norm-spectrum]{Proposition}%
 For a self-adjoint element~$a$ of a $C^*$-algebra~$\scrA$,
 we have
@@ -2123,7 +2313,6 @@ By~\sref{rigid-expansion}
 we know that~$f(z)=\sum_n a^nz^{n+1}$
 is valid not only for~$z\in \C$ with $\|z\|\leq \|a\|^{-1}$,
 but for all~$z$ with $\|z\|\leq R$.
-
 However, $R$ cannot be strictly larger than~$\|a\|^{-1}$,
 because for every $z\in\C$ with $\left|z\right|>\|a\|^{-1}$
 the series $\sum_n(az)^n$ 
@@ -2136,7 +2325,7 @@ Hence~$R=\|a\|^{-1}$, and so~$r=\|a\|$.\qed
 Show that $\spec(a)\neq \varnothing$ for an element of a $C^*$-algebra
 $\scrA$.
 \end{point}
-\begin{point}
+\begin{point}%
 Given an element~$a$ of a $C^*$-algebra show that
 \begin{enumerate}
 \item $\spec(a)\neq \varnothing$;
@@ -2147,7 +2336,7 @@ Given an element~$a$ of a $C^*$-algebra show that
 Prove that if every non-zero element of a $C^*$-algebra~$\scrA$
 is invertible, then~$\scrA=\C$ or~$\scrA=\{0\}$.
 \end{point}
-\begin{point}[gelfand-mazur-predicament]%
+\begin{point}[gelfand-mazur-predicament]{Remark}%
 A logical next step
 towards Gelfand's representation theorem
 is to show that if~$\lambda\in\spec(a)$
@@ -2280,6 +2469,45 @@ Show that a positive element~$a$ of~$\scrA$ is invertible
 iff $a\geq \frac{1}{n}$ for some~$n\in \N$.
 \end{enumerate}
 \end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}[cstar-product-3]{Exercise}%
+With our new-found
+knowledge about positive elements
+verify that
+the product~$\bigoplus_i \scrA_i$
+of $C^*$-algebras~$\scrA_i$
+from~\sref{cstar-product}
+is indeed the product of these $C^*$-algebras $\scrA_i$
+in the category~$\Cstar{pu}$.
+\begin{enumerate}
+\item
+Show
+that an element~$a$ of~$\bigoplus_{i\in I} \scrA_i$
+is positive iff~$a(i)\geq 0$ for all~$i$.
+\item
+Show that the projections $\pi_j\colon \bigoplus_{i \in I}
+\scrA_i \to\scrA_j$
+(defined in~\sref{cstar-product-2})
+are positive.
+\item
+Show that for any $C^*$-algebra~$\scrB$
+and collection
+of pu-maps $f_i\colon \scrB\to\scrA_i$
+there is a unique pu-map
+$\Define{\left<f_i\right>_i}\colon
+\scrB\to\bigoplus_{i}\scrA_i$
+with $\pi_j\circ \left<f_i\right>_i = f_j$
+for all~$j$.
+\item
+Conclude that~$\bigoplus_i \scrA_i$
+is
+the product of the $\scrA_i$s
+in $\Cstar{pu}$.
+\end{enumerate}
+\end{point}
+\end{parsec}
+\begin{parsec}
 \begin{point}[prod-spec]{Lemma}%
 For elements $a$ and $b$ from a $C^*$-algebra,
 we have
@@ -2521,7 +2749,7 @@ by~$\scrB_\omega$
 apply~\sref{cstar-isometry}
 to the pu-map $\left<\omega\right>_{\omega\in\Omega}\colon 
 \scrA\to\bigoplus_{\omega\in\Omega}
-\scrB_\omega$.~\TODO{tupling of pu-maps}\qed
+\scrB_\omega$ (see~\sref{cstar-product-3}).\qed
 \end{point}
 \begin{point}{Warning}%
 The formula
@@ -3772,7 +4000,8 @@ which restricts to an isomorphism
 from~$\scrA$
 to the $C^*$-algebra~$\varrho(\scrA)$
 of bounded operators
-on $\bigoplus_{\omega\in \Omega} \scrH_\omega$.
+on $\bigoplus_{\omega\in \Omega} \scrH_\omega$,
+see~\sref{hilb-sum}.
 
 The creation of~$\varrho_\omega$ from~$\omega$
 is known as the \emph{Gelfand--Naimark--Segal construction},
@@ -3892,7 +4121,6 @@ complex vector spaces with an inner product.)
 \end{point}
 \begin{point}[gns]{Definition (Gelfand--Naimark--Segal construction)}%
 	\\
-\TODO{Do we really not need the fact that $\omega$ is unital?}
 Let $\omega\colon \scrA\to\C$ be a p-map on a $C^*$-algebra~$\scrA$.
 
 Let~$\Define{\scrH_\omega}$ denote the completion
@@ -4084,6 +4312,8 @@ as \emph{adjointable module maps} on
 the \emph{Hilbert $\scrA$-module} $\scrA^n$,
 see~\sref{chilb-basic} and~\sref{bax-cstar}.
 \end{point}
+\end{parsec}
+\begin{parsec}%
 \begin{point}[chilb-basic]{Definition}%
 An \Define{inner product} on a right $\scrA$-module
 ($\scrA$ being a $C^*$-algebra) is a map
@@ -4391,7 +4621,7 @@ and so~$T^*T\geq 0$ by~\sref{positive-operators}.\qed
 \end{point}
 \end{parsec}
 \begin{parsec}
-\begin{point}{Exercise}%
+	\begin{point}[cstar-matrices]{Exercise}%
 Let us consider matrices over a $C^*$-algebra $\scrA$.
 \begin{enumerate}
 \item
@@ -5131,7 +5361,7 @@ for all~$x\in \scrH$.
 \begin{point}{Proof}%
 Let~$x\in \scrH$.
 Since $\left<x,(\,\cdot\,)x\right>\colon \scrB(\scrH)\to \C$
-is positive (by~\TODO{}),
+is positive
 we see that
 $(\left<x,Tx\right>)_{T\in\scrD}$
 is an increasing net in~$\R$, 
@@ -5162,7 +5392,7 @@ Since $\left<x,Tx\right>\leq \left<x,Sx\right>$
 for each~$T\in \scrD$ (because $T\leq S$),
 we have $\left<x,T'x\right>\equiv \sup_{T\in\scrD} \left<x,Tx\right>
 \leq \left<x,Sx\right>$,
-and therefore $T'\leq S$ by~\TODO{}.\qed
+and therefore $T'\leq S$ by~\sref{hilb-positive-operators}.\qed
 \end{point}
 \end{point}
 \begin{point}{Definition}%
@@ -5207,7 +5437,7 @@ then $\omega\equiv \sum_{n=1}^\infty \left<x_n,(\,\cdot\,)x_n\right>$
 for some $x_1,x_2,\dotsc$ in~$\scrH$
 with $\sum_n \|x_n\|^2 <\infty$.
 \end{point}
-\begin{point}{Lemma}%
+\begin{point}[bh-functional-lemma]{Lemma}%
 Every sequence $x_1,x_2,\dotsc $ in a Hilbert space~$\scrH$
 with $\sum_n \|x_n\|^2 < \infty$
 gives a normal p-map $\omega\colon\scrB(\scrH)\to\C$
@@ -5250,18 +5480,13 @@ interchanging suprema,
 \end{alignat*}
 where we used that~$\sum_{n=1}^N \left<x_n,(\,\cdot\,)x_n\right>$
 is normal.\qed
-
-\TODO{Perhaps a better way to present this is:
-np-maps are closed under suprema and finite sums,
-and thus under arbitrary sums}
 \end{point}
 \end{point}
-\TODO{Remark on the ultraweak topology.}
-\end{parsec}
-\begin{parsec}%
 \begin{point}[vector-functional-convergence]{Exercise}%
-Let~$\scrH$ be a Hilbert space,
-and let~$(x_\alpha)_\alpha$ be a net in~$\scrH$.
+The following observations
+regarding
+a net~$(x_\alpha)_\alpha$ in a Hilbert space~$\scrH$
+will be useful later on.
 \begin{enumerate}
 \item
 Show that~$\sum_\alpha \|x_\alpha\|^2<\infty$
@@ -5281,6 +5506,14 @@ $\ketbra{x}{x}$ on~$\scrB(\scrH)$.)
 
 \end{enumerate}
 \end{point}
+\TODO{Remark on the ultraweak topology.}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+The final project of this chapter
+is to show that each normal positive functional
+$\omega$ is of the form described in~\sref{bh-functional-lemma}.
+\end{point}
 \begin{point}[bh-np]{Theorem}%
 Let~$\scrH$ be a Hilbert space.
 Every normal p-map $\omega\colon \scrB(\scrH)\to \C$
@@ -5288,8 +5521,58 @@ is of the form $\omega = \sum_n\left<x_n,(\,\cdot\,)x_n\right>$
 where $x_1,x_2,\dotsc\in \scrH$
 with~$\sum_n \|x_n\|^2=\|\omega\|$.
 \begin{point}{Proof}%
-	\TODO{}
+There is a unique bounded operator
+$\varrho\colon \scrH\to\scrH$
+with $\omega(\ketbra{y}{x})=\left<x,\varrho y\right>$
+for all~$x,y\in\scrH$
+by~\sref{chilb-form-representation}
+because
+$(x,y)\mapsto \omega(\ketbra{y}{x}),\,
+\scrH\times\scrH\to\C$
+is a bounded form in the sense of~\sref{chilb-form}.
+Note that~$\varrho$ 
+is positive by~\sref{hilb-positive-operators}
+because $\left<x,\varrho x\right>
+=\omega(\ketbra{x}{x})\geq 0$
+for all~$x\in\scrH$.
+Now, let~$\scrE$ be an orthonormal basis for~$\scrH$.
+Since~$1=\sum_{e\in\scrE} \ketbra{e}{e}$
+and~$\omega$ is normal
+we have $\omega(1)=\sum_{e\in\scrE} \omega(\ketbra{e}{e})
+= \sum_{e\in\scrE} \left<e,\varrho e\right>
+= \sum_{e\in \scrE} \|\sqrt{\varrho} e\|^2$,
+so that $\omega':=\sum_{e\in\scrE} \left<\sqrt{\varrho}e,(\,\cdot\,)
+\sqrt{\varrho}e\right>$
+defines a normal positive functional on~$\scrB(\scrH)$
+by~\sref{vector-functional-convergence}.
+Thus,
+we are done if
+can show that~$\omega'=\omega$,
+(because $\sqrt{\varrho}e$
+is non-zero for at most countably many~$e\in\scrE$).
+Note that for each~$x\in\scrH$
+we have $\omega(\ketbra{x}{x})
+= \left<\sqrt{\varrho}x,\sqrt{\varrho}x\right>
+= \sum_{e\in \scrE}
+\left<\sqrt{\varrho}x,e\right>
+\left<e,\sqrt{\varrho}x\right>
+= \left< \sqrt{\varrho}e,
+\ketbra{x}{x} \sqrt{\varrho}e \right>
+=\omega'(\ketbra{x}{x})$.
+Thus~$\omega(P)=\omega'(P)$
+for every projection~$P$ in~$\scrB(\scrH)$
+because $P=\sum_{f\in\scrF}\ketbra{f}{f}$
+for any orthonormal basis~$\scrF$ 
+of~$\Ran(P)$.
+Since the linear span
+of projections is norm dense in~$\scrB(\scrH)$
+by~\TODO{...}
+we get~$\omega=\omega'$.\qed
 \end{point}
 \end{point}
+
+\TODO{Definition of $\ketbra{x}{x}$.}
+
+\TODO{Projections dense in~$\scrB(\scrH)$}
 \end{parsec}
 \end{document}
