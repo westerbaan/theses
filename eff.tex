@@ -1,3 +1,4 @@
+% coproduct supremum
 \documentclass[b]{subfiles}
 \begin{document}
 
@@ -2058,7 +2059,7 @@ Assume~$f\colon X \to Y$ is an affine map between abstract
 Show that the kernel~$\{(x,y);\ f(x) = f(y)\}$ of~$f$
     is a congruence.
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[least-conv-cong]{Exercise}%
 Assume~$(X,h)$ is an abstract~$M$-convex set and~$R \subseteq X^2$
     is some relation.
 It is easy to see there is a least congruence containing~$R$.
@@ -2068,7 +2069,7 @@ Write~$R^*$ for the reflexive symmetric transitive closure of~$R$
 
 For~$\psi_1,\psi_2 \in \mathcal{D}_M X$,
     we write~$\psi_1 \approx \psi_2$
-if there is a tuple~$\varphi_1, \ldots, \varphi_n \in \mathcal{D}_M X$
+    if there is a \emph{derivation}: a tuple~$\varphi_1, \ldots, \varphi_n \in \mathcal{D}_M X$
 (say~$\varphi_i \equiv \bigovee^{n_i}_{j = 1}  \lambda_{ij}\ket{x_{ij}}$)
 such that~$\varphi_1 = \psi_1$, $\varphi_n = \psi_2$ 
     and for each~$1 \leq i<n$ one of the following two conditions holds.
@@ -2111,13 +2112,13 @@ Note that~$\mu$ turns~$\mathcal{D}_M (X+Y)$
     into an abstract~$M$-convex set.
 Let~$\sim$ denote the least congruence on~$\mathcal{D}_M (X+Y)$
 with
-\begin{equation*}
+\begin{equation}
     (\mathcal{D}_M \kappa_1) (\varphi)
     \ \sim \ \eta(\kappa_1 ( h_X (\varphi)))
     \quad \text{and} \quad
     (\mathcal{D}_M \kappa_2) (\psi)
-    \ \sim \ \eta(\kappa_2 ( h_Y (\psi)))
-\end{equation*}
+    \ \sim \ \eta(\kappa_2 ( h_Y (\psi))) \label{congruence-coprod-conv}
+\end{equation}
     for all~$\varphi \in \mathcal{D}_M X$
     and~$\psi \in \mathcal{D}_M Y$.
 Write~$q\colon \mathcal{D}_M (X+Y) \to C$
@@ -2211,17 +2212,26 @@ So~$k = k'$ by surjectivity of~$q$. \qed
 \end{point}
 \end{point}
 \end{point}
+\begin{point}[n-times-one-aconvm]{Exercise}%
+Show that the one-element set is an abstract~$M$-convex set
+    and, in fact, the final object of~$\AConvM$.
+To continue, show that in~$\AConvM$
+\begin{equation*}
+    n \cdot 1 \ \equiv \ \underbrace{1 + \cdots + 1}_{\text{$n$ times}}
+    \ \cong \ \mathcal{D}_M \{1, \ldots, n\}.
+\end{equation*}
+\end{point}
 \end{parsec}
 
 \begin{parsec}%
 \begin{point}{Theorem}%
     The category~$\AConvM$ is an effectus (in total form).
 \begin{point}{Proof}%
-In \sref{aconv-coprod} we proved~$\AConvM$ has binary coproducts.
-Trivially, the one-element set~$1$ is an abstract~$M$-convex set
-    and the final object in~$\AConvM$.
+In \sref{aconv-coprod} we proved~$\AConvM$ has binary coproducts
+    and in \sref{n-times-one-aconvm}
+    that the one-element set~$1$ is its final object.
 As~$\mathcal{D}_M \emptyset = \emptyset$,
-    the empty set is also an abstract~$M$-convex set
+    the empty set trivially also an abstract~$M$-convex set
     and in fact the initial object of~$\AConvM$.
 \end{point}
 \begin{point}%
@@ -2248,14 +2258,125 @@ Pick any~$z \in Z$.
 Write~$\cdot$ for the unique element of~$1$.
 By construction of the coproduct, see \sref{aconv-coprod},
 we have
+\begin{align*}
+    \alpha(z) &\ =\  h_1\Bigl(\lambda_0 \ket{\kappa_1(\cdot)}
+    \ovee \bigovee^n_{i=1} \lambda_i \ket{\kappa_2(y_i)}\Bigr) \\
+        \beta(z) &\ =\  h_2 \Bigl(\sigma_0 \ket{\kappa_2(\cdot)}
+        \ovee \bigovee^m_{i=1} \sigma_i \ket{\kappa_1(x_i)}\Bigr)
+\end{align*}
+for some~$\lambda_i, \sigma_i \in M$,
+    $x_i \in X$ and $y_i \in Y$,
+    where~$h_1$ and~$h_2$ are the convex structures
+    on~$1+Y$ and~$X+1$, respectively.
+Unfolding definitions
+    (and identifying~$1+1 \cong M$ with~$\kappa_1 (\cdot) = 1$),
+    it is easy to
+    see that by assumption
+\begin{equation}\label{aconv-epb-ass}
+    \bigovee^m_{i=1} \sigma_i \ = \ 
+    (!+\id)(\beta(z))  \ = \ 
+    (\id + !)(\alpha(z)) \ =\  \lambda_0
+    \ = \ \Bigl(\bigovee^n_{i=1} \lambda_i\Bigr)^\perp.
+\end{equation}
+So we are tempted to define
 \begin{equation*}
-    \alpha(z) = \lambda_0 \ket{\kappa_1(\cdot)}
-        \ovee \bigovee_i \lambda_i \ket{\kappa_2(y_i)}
-        \qquad
-    \beta(z) = \sigma_0 \ket{\kappa_2(\cdot)}
-        \ovee \bigovee_i \sigma_i \ket{\kappa_1(x_i)}
+    \gamma(z) \ = \  h_3 \Bigl(
+    \bigovee^n_{i=1} \lambda_i \ket{\kappa_2(y_i)}
+        \ovee \bigovee^m_{i=1} \sigma_i \ket{\kappa_1(x_i)}\Bigr),
 \end{equation*}
-
+where~$h_2$ is the convex structure on~$X+Y$.
+To show this a proper definition,
+let~$n',m'\in \N$, $\lambda'_i, \sigma'_i \in M$,
+$x'_i \in X$ and $y'_i \in Y$ be (other) elements such that
+\begin{align*}
+    \alpha(z) &\ =\ 
+    h_1\Bigl(\lambda'_0 \ket{\kappa_1(\cdot)}
+    \ovee \bigovee^{n'}_{i=1} \lambda'_i \ket{\kappa_2(y'_i)}\Bigr) \\
+        \beta(z) &\ =\  h_2 \Bigl(\sigma'_0 \ket{\kappa_2(\cdot)}
+    \ovee \bigovee^{m'}_{i=1} \sigma'_i \ket{\kappa_1(x'_i)}\Bigr).
+\end{align*}
+We have to show
+\begin{equation*}
+    h_3 \Bigl(
+    \bigovee^{n'}_{i=1} \lambda'_i \ket{\kappa_2(y'_i)}
+    \ovee \bigovee^{m'}_{i=1} \sigma'_i \ket{\kappa_1(x'_i)}\Bigr)
+     \ = \ 
+    h_3 \Bigl(
+    \bigovee^n_{i=1} \lambda_i \ket{\kappa_2(y_i)}
+        \ovee \bigovee^m_{i=1} \sigma_i \ket{\kappa_1(x_i)}\Bigr).
+\end{equation*}
+By \eqref{aconv-epb-ass},
+ it is clear~$\lambda_0 = \lambda_0'$ and~$\sigma_0=\sigma_0'$.
+By construction
+    of the coproduct \sref{aconv-coprod} as quotient
+    and \sref{least-conv-cong},
+    we know there
+    are derivations~$\Phi_1, \ldots, \Phi_l \in \mathcal{D}_M^2 (1+Y)$
+    and~$\Psi_1, \ldots, \Psi_k \in \mathcal{D}_M^2 (X+1)$,
+    say~$\Phi_i \equiv \bigovee_j \zeta_{ij} \ket{\varphi_{ij}}$,
+    $\Psi_i \equiv \bigovee_j \xi_{ij} \ket{\psi_{ij}}$, with
+\begin{align*}
+    \Phi_1 &\ = \ \ket{\,
+    \lambda_0 \ket{\kappa_1(\cdot)}
+\ovee \bigovee^{n}_{i=1} \lambda_i \ket{\kappa_2(y_i)} \,} &
+    \Phi_l &\ = \ \ket{\,
+    \lambda_0 \ket{\kappa_1(\cdot)}
+\ovee \bigovee^{n'}_{i=1} \lambda'_i \ket{\kappa_2(y'_i)} \,} \\
+    \Psi_1 &\ = \ \ket{\,
+    \sigma_0 \ket{\kappa_2(\cdot)}
+\ovee \bigovee^{m}_{i=1} \sigma_i \ket{\kappa_1(x_i)} \,} &
+    \Psi_k &\ = \ \ket{\,
+    \sigma_0 \ket{\kappa_2(\cdot)}
+\ovee \bigovee^{m'}_{i=1} \sigma'_i \ket{\kappa_1(x'_i)} \,}
+\end{align*}
+and for each~$1 \leq i < l$
+either
+\begin{enumerate}
+\item
+$\mu(\Phi_i) = \mu(\Phi_{i+1})$ or
+\item
+for each~$1 \leq j < l$
+we have
+$\zeta_{ij} = \zeta_{(i+1)j}$
+and either
+\begin{enumerate}
+\item
+    $\varphi_{ij} = \varphi_{(i+1)j}$ or
+\item
+    there are~$\chi_1,\chi_2 \in \mathcal{D}_M Y$
+with~$h_{Y} (\chi_1) = h_{Y} (\chi_2)$,
+$\varphi_{ij} = (\mathcal{D}_M \kappa_2) (\chi_1)$ and
+$\varphi_{(i+1)j} = (\mathcal{D}_M \kappa_2) (\chi_2)$;
+\end{enumerate}
+\end{enumerate}
+\emph{and} the analogous condition for the~$\Psi_i$.
+Define~$\Omega_1, \ldots, \Omega_{l+k} \in \mathcal{D}_M^2 (X+Y)$ by
+\begin{align*}
+    \Omega_i  &\ = \ \bigovee_j\zeta_{ij} \ket{\omega_{ij}}
+        &&\text{for $1 \leq i \leq l$}
+    \\
+    \Omega_{i+l}  &\ = \ \bigovee_j \xi_{ij} \ket{\omega_{(i+l)j}}
+        &&\text{for $1 \leq i \leq k$,}
+\end{align*}
+where~$\omega_{ij} \in \mathcal{D}_M(X+Y)$ are defined as follows.
+\begin{align*}
+    \omega_{ij} (\kappa_2 (y)) &\ =\ \varphi_{ij}(\kappa_2(y))  &
+    \omega_{ij} (\kappa_1(x)) &\ =\ \psi_{11}(\kappa_1(x)) 
+&& \text{for $1 \leq i \leq l$}
+    \\
+    \omega_{(i+l)j} (\kappa_2 (y)) &\ =\ \varphi_{l1}(\kappa_2(y))  &
+    \omega_{(i+l)j} (\kappa_1(x)) &\ =\ \psi_{ij}(\kappa_1(x))
+&& \text{for $1 \leq i \leq k$}
+\end{align*}
+We want to show~$\Omega_i$
+    is a derivation in the sense of \sref{least-conv-cong}.
+It is easy to see that if~$\mu(\Phi_i) = \mu(\Phi_{i+1})$,
+    then~$\mu(\Omega_i) = \mu(\Omega_{i+1})$
+    (and the analogous statement for~$\Psi_i$).
+For the other case,
+    assume~$\zeta_{ij} = \zeta_{(i+1)j}$
+    and~$\varphi_{ij} \mathrel{R} \varphi_{(i+1)j}$
+    for all~$j$.
 \end{point}
 \end{point}
 \end{parsec}
