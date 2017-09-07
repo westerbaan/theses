@@ -2011,9 +2011,14 @@ for every~$\bigovee_i \lambda_i \ket{\varphi_i}$
 \end{parsec}
 \begin{parsec}%
 \begin{point}%
-Our next project is to show~$\AConvM$ is an effectus.
-The case~$M=[0,1]$ is easier and is shown in \cite{statesofconvexsets}. 
+Our next project is to investigate whether~$\AConvM$ is an effectus.
+We can show~$\AConvM$ is an effectus, if~$M$ has a certain partial division.
+Unfortunately it is unknown whether~$\AConvM$ is an effectus in general.
+The case~$M=[0,1]$ is much easier and has already been shown in
+        in \cite{statesofconvexsets}. 
 The first step is to uncover the coproduct in~$\AConvM$.
+To construct the coproduct, we will need to know
+    about quotients of abstract~$M$-convex sets.
 \end{point}
 \begin{point}[aconv-cong]{Exercise}%
 In this exercise we construct the quotient of an
@@ -2211,6 +2216,65 @@ We turn the wheel:
 So~$k = k'$ by surjectivity of~$q$. \qed
 \end{point}
 \end{point}
+\begin{point}[elements-coprod-conv]{Remark}%
+By construction,
+    every~$z \in X+Y$
+    is of the
+    form
+\begin{equation*}
+    z \ =\  h 
+    \Bigl( \bigovee^n_{i=1} \lambda_i \ket{c_1(x_i)}
+    \ovee \bigovee^m_{i=1} \sigma_i \ket{c_2(y_i)} \Bigr)
+\end{equation*}
+for some~$\lambda_i,\sigma_i \in M $, 
+$x_i \in X$ and~$y_i \in Y$.
+In general these are not unique.
+Indeed
+using \sref{least-conv-cong}, we see that
+\begin{equation*}
+     h 
+     \Bigl( \bigovee^n_{i=1} \lambda_i \ket{c_1(x_i)}
+     \ovee \bigovee^m_{i=1} \sigma_i \ket{c_2(y_i)} \Bigr) 
+     \ = \ 
+     h 
+     \Bigl( \bigovee^{n'}_{i=1} \lambda'_i \ket{c_1(x'_i)}
+     \ovee \bigovee^{m'}_{i=1} \sigma'_i \ket{c_2(y'_i)} \Bigr)
+\end{equation*}
+iff there is a \emph{derivation}~$\Phi_1, \ldots, \Phi_l \in \mathcal{D}^2_M(X+Y)$,
+say $\Phi_i \equiv \bigovee_j \zeta_{ij} \ket{\varphi_{ij}}$,
+with
+\begin{equation*}
+\Phi_1 \ =\  
+\ket {\bigovee^n_{i=1} \lambda_i \ket{\kappa_1(x_i)}
+\ovee \bigovee^m_{i=1} \sigma_i \ket{\kappa_2(y_i)}}
+, \quad
+ \Phi_l \ =\  
+ \ket {\bigovee^{n'}_{i=1} \lambda'_i \ket{\kappa_1(x_i)}
+ \ovee \bigovee^{m'}_{i=1} \sigma'_i \ket{\kappa_2(y_i)}}
+\end{equation*}
+and for each~$1 \leq i < l$ either
+\begin{enumerate}
+    \item $\mu(\Phi_i) = \mu(\Phi_{i+1})$
+        or
+    \item
+        for each~$j$ we have~$\zeta_{ij} = \zeta_{(i+1)j}$
+        and one of the following.
+        \begin{enumerate}
+        \item
+    $\varphi_{ij} = \varphi_{(i+1)j}$.
+\item
+    $\varphi_{ij} = (\mathcal{D}_M\kappa_1) (\chi)$
+and~$\varphi_{(i+1)j} = (\mathcal{D}_M\kappa_1) (\chi')$
+        for some~$\chi,\chi' \in \mathcal{D}_M X$
+        with~$h_X( \chi) = h_X(\chi')$.
+\item
+    $\varphi_{ij} = (\mathcal{D}_M\kappa_2) (\chi)$
+and~$\varphi_{(i+1)j} = (\mathcal{D}_M\kappa_2) (\chi')$
+        for some~$\chi,\chi' \in \mathcal{D}_M Y$
+        with~$h_Y( \chi) = h_Y(\chi')$.
+        \end{enumerate}
+\end{enumerate}
+\end{point}
 \end{point}
 \begin{point}[n-times-one-aconvm]{Exercise}%
 Show that the one-element set is an abstract~$M$-convex set
@@ -2225,7 +2289,8 @@ To continue, show that in~$\AConvM$
 
 \begin{parsec}%
 \begin{point}{Theorem}%
-    The category~$\AConvM$ is an effectus (in total form).
+The category~$\AConvM$ obeys all the axioms of an effectus in total
+form except for the left pullback-square of~\eqref{pullbacks}.
 \begin{point}{Proof}%
 In \sref{aconv-coprod} we proved~$\AConvM$ has binary coproducts
     and in \sref{n-times-one-aconvm}
@@ -2233,6 +2298,96 @@ In \sref{aconv-coprod} we proved~$\AConvM$ has binary coproducts
 As~$\mathcal{D}_M \emptyset = \emptyset$,
     the empty set trivially also an abstract~$M$-convex set
     and in fact the initial object of~$\AConvM$.
+\end{point}
+\begin{point}%
+We continue with joint-monicity
+    of~$[\kappa_1,\kappa_2,\kappa_2],
+    [\kappa_2,\kappa_1,\kappa_2]\colon 1+1+1 \to 1+1$.
+We can represent the convex set~$1+1+1$
+    as the set of triplets~$(a,b,c) \in M^3$
+    with~$a\ovee b \ovee c = 1$
+    with the obvious convex structure,
+    cf.~\sref{n-times-one-aconvm}.
+Similarly, we identify~$1+1$
+    with pairs~$(a,a^\perp) \in M^2$.
+    The maps at hand are given by
+\begin{equation}\label{conv-jointly-monic}
+    (a,b,c) \ \mapsto\  (a , b\ovee c)\quad \text{and} \quad
+    (a,b,c) \ \mapsto\  (b, a\ovee c).
+\end{equation}
+Assume~$
+(a, b \ovee c) = 
+(a', b' \ovee c') $
+and
+$(b, a \ovee c) = 
+(b', a' \ovee c') $
+for~$a,a',b,b',c,c' \in M$ with~$a \ovee b \ovee c= 1$
+and~$a' \ovee b' \ovee c'= 1$.
+Then clearly~$a=a'$,~$b=b'$
+    and so~$c = (a\ovee b)^\perp = (a' \ovee b')^\perp = c'$.
+Thus the maps~\eqref{conv-jointly-monic} are jointly injective,
+    hence jointly monic.
+\end{point}
+\begin{point}%
+Finally, we prove that the square on the right of \eqref{pullbacks}
+    is a pullback in~$\AConvM$.
+\begin{equation*}
+\xymatrix{
+    Z \ar@/^1pc/[rrd]^{!}
+        \ar@/_1pc/[rdd]_\alpha
+        \ar@{.>}[rd]|\gamma\\
+        &X \ar[r]^{!} \ar[d]^{\kappa_1}
+        & 1\ar[d]^{\kappa_1} \\
+        &X+Y\ar[r]_{!+!} & 1+1
+    }
+\end{equation*}
+So assume~$\alpha \colon Z \to X+Y$
+    is a map in~$\AConvM$
+    with~$(!+!) \after \alpha = \kappa_1 \after !$.
+We have to show~$\alpha = \kappa_1 \after \gamma$,
+    for a unique~$\gamma\colon Z \to X+Y$ in~$\AConvM$.
+For the moment, assume~$\kappa_1$ is injective.
+Then~$\gamma$, if it exists, is unique.
+Pick~$z \in Z$.
+We know
+\begin{equation*}
+    \alpha(z) \ =\  h 
+    \Bigl( \bigovee^n_{i=1} \lambda_i \ket{\kappa_1(x_i)}
+    \ovee \bigovee^m_{i=1} \sigma_i \ket{\kappa_2(y_i)} \Bigr)
+\end{equation*}
+for some~$\lambda_i,\sigma_i \in M $, 
+$x_i \in X$ and~$y_i \in Y$,
+where~$h$ is the convex structure on~$X+Y$.
+As~$(!+!) \after \alpha = ! \after \kappa_1$,
+    we must have~$\bigovee_i \sigma_i = 0$
+    and so~$\alpha(z) = \kappa_1(x_z)$
+    for some~$x_z \in X$.
+This~$x_z$ is unique by injectivity of~$\kappa_1$.
+    Define~$\gamma(z) = x_z$.
+By definition~$\kappa_1 \after \gamma = \alpha$.
+To see~$\gamma$ is affine, pick any~$\varphi \in \mathcal{D}_M (Z)$.
+We have
+$
+\kappa_1 ( \gamma ( h_Z (\varphi )))
+    = \alpha(h_Z (\varphi))
+    = h(\mathcal{D}_M\alpha(\varphi))
+    = h(\mathcal{D}_M\kappa_1 ( \mathcal{D}_M \gamma(\varphi)))
+    = \kappa_1  (h_X( \mathcal{D}_M \gamma(\varphi)))
+$ and
+so indeed~$\gamma(h_Z(\varphi)) = h_X(\mathcal{D}_M \gamma (\varphi))$
+    --- i.e.~$\gamma$ is affine.
+\end{point}
+\begin{point}%
+Finally, we will show that~$\kappa_1$ is indeed injective.
+Assume~$\kappa_1(x) = \kappa_1(x')$
+    for some~$x,x' \in X$.
+    Let~$\Phi_1, \ldots, \Phi_l \in \mathcal{D}_M^2{(X+Y)}$
+    be a derivation
+    of~$\kappa_1(x) = \kappa_1(x')$
+    as in \sref{elements-coprod-conv}.
+By induction, we see that for each~$1 \leq i < l$,
+    we have~$\mu(\Phi_i) \in (\mathcal{D}_M \kappa_1)(X)$
+    and~$h_X (\mu(\Phi_i)) = x$.
 \end{point}
 \begin{point}%
 We continue with the hardest part:
