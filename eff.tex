@@ -358,6 +358,13 @@ In particular: the two-element boolean algebra~$2$
             --- that is: $a \odot_M b = b \odot_{M^\mathsf{op}} a$.
 \end{enumerate}
 \end{point}
+\begin{point}[emond-lemma-for-conv]{Exercise}%
+Assume~$M$ is an effect monoid
+with~$a_1, \ldots, a_n, b_1, \ldots, b_n \in M$
+such that~$\bigovee_i a_i = 1$
+and~$\bigovee_i a_i \odot b_i = 1$.
+Prove~$a_i \odot b_i = a_i$ for every~$1 \leq i \leq n$.
+\end{point}
 \end{parsec}
 
 \subsection{Effect modules}
@@ -2009,11 +2016,19 @@ for every~$\bigovee_i \lambda_i \ket{\varphi_i}$
 \end{point}
 \end{point}
 \end{parsec}
+
+\subsection{More on abstract $M$-convex sets}
 \begin{parsec}%
 \begin{point}%
-Our next project is to show~$\AConvM$ is an effectus.
-The case~$M=[0,1]$ is easier and is shown in \cite{statesofconvexsets}. 
+Our next project is a tangent:
+    we investigate whether~$\AConvM$ is an effectus.
+We can show~$\AConvM$ is an effectus, if~$M$ has a certain partial division.
+Unfortunately it is unknown whether~$\AConvM$ is an effectus in general.
+The case~$M=[0,1]$ is much easier and has already been shown in
+        in \cite{statesofconvexsets}. 
 The first step is to uncover the coproduct in~$\AConvM$.
+To construct the coproduct, we will need to know
+    about quotients of abstract~$M$-convex sets.
 \end{point}
 \begin{point}[aconv-cong]{Exercise}%
 In this exercise we construct the quotient of an
@@ -2211,6 +2226,65 @@ We turn the wheel:
 So~$k = k'$ by surjectivity of~$q$. \qed
 \end{point}
 \end{point}
+\begin{point}[elements-coprod-conv]{Remark}%
+By construction,
+    every~$z \in X+Y$
+    is of the
+    form
+\begin{equation*}
+    z \ =\  h 
+    \Bigl( \bigovee^n_{i=1} \lambda_i \ket{c_1(x_i)}
+    \ovee \bigovee^m_{i=1} \sigma_i \ket{c_2(y_i)} \Bigr)
+\end{equation*}
+for some~$\lambda_i,\sigma_i \in M $, 
+$x_i \in X$ and~$y_i \in Y$.
+In general these are not unique.
+Indeed
+using \sref{least-conv-cong}, we see that
+\begin{equation*}
+     h 
+     \Bigl( \bigovee^n_{i=1} \lambda_i \ket{c_1(x_i)}
+     \ovee \bigovee^m_{i=1} \sigma_i \ket{c_2(y_i)} \Bigr) 
+     \ = \ 
+     h 
+     \Bigl( \bigovee^{n'}_{i=1} \lambda'_i \ket{c_1(x'_i)}
+     \ovee \bigovee^{m'}_{i=1} \sigma'_i \ket{c_2(y'_i)} \Bigr)
+\end{equation*}
+iff there is a \emph{derivation}~$\Phi_1, \ldots, \Phi_l \in \mathcal{D}^2_M(X+Y)$,
+say $\Phi_i \equiv \bigovee_j \zeta_{ij} \ket{\varphi_{ij}}$,
+with
+\begin{equation*}
+\Phi_1 \ =\  
+\ket {\bigovee^n_{i=1} \lambda_i \ket{\kappa_1(x_i)}
+\ovee \bigovee^m_{i=1} \sigma_i \ket{\kappa_2(y_i)}}
+, \quad
+ \Phi_l \ =\  
+ \ket {\bigovee^{n'}_{i=1} \lambda'_i \ket{\kappa_1(x_i)}
+ \ovee \bigovee^{m'}_{i=1} \sigma'_i \ket{\kappa_2(y_i)}}
+\end{equation*}
+and for each~$1 \leq i < l$ either
+\begin{enumerate}
+    \item $\mu(\Phi_i) = \mu(\Phi_{i+1})$
+        or
+    \item
+        for each~$j$ we have~$\zeta_{ij} = \zeta_{(i+1)j}$
+        and one of the following.
+        \begin{enumerate}
+        \item
+    $\varphi_{ij} = \varphi_{(i+1)j}$.
+\item
+    $\varphi_{ij} = (\mathcal{D}_M\kappa_1) (\chi)$
+and~$\varphi_{(i+1)j} = (\mathcal{D}_M\kappa_1) (\chi')$
+        for some~$\chi,\chi' \in \mathcal{D}_M X$
+        with~$h_X( \chi) = h_X(\chi')$.
+\item
+    $\varphi_{ij} = (\mathcal{D}_M\kappa_2) (\chi)$
+and~$\varphi_{(i+1)j} = (\mathcal{D}_M\kappa_2) (\chi')$
+        for some~$\chi,\chi' \in \mathcal{D}_M Y$
+        with~$h_Y( \chi) = h_Y(\chi')$.
+        \end{enumerate}
+\end{enumerate}
+\end{point}
 \end{point}
 \begin{point}[n-times-one-aconvm]{Exercise}%
 Show that the one-element set is an abstract~$M$-convex set
@@ -2224,8 +2298,9 @@ To continue, show that in~$\AConvM$
 \end{parsec}
 
 \begin{parsec}%
-\begin{point}{Theorem}%
-    The category~$\AConvM$ is an effectus (in total form).
+\begin{point}[aconvalmosteffectus]{Proposition}%
+The category~$\AConvM$ obeys all the axioms of an effectus in total
+form except for the left pullback-square of~\eqref{pullbacks}.
 \begin{point}{Proof}%
 In \sref{aconv-coprod} we proved~$\AConvM$ has binary coproducts
     and in \sref{n-times-one-aconvm}
@@ -2235,9 +2310,272 @@ As~$\mathcal{D}_M \emptyset = \emptyset$,
     and in fact the initial object of~$\AConvM$.
 \end{point}
 \begin{point}%
-We continue with the hardest part:
-    the proof that the square on the left of \eqref{pullbacks}
+We continue with joint-monicity
+    of~$[\kappa_1,\kappa_2,\kappa_2],
+    [\kappa_2,\kappa_1,\kappa_2]\colon 1+1+1 \to 1+1$.
+We can represent the convex set~$1+1+1$
+    as the set of triplets~$(a,b,c) \in M^3$
+    with~$a\ovee b \ovee c = 1$
+    with the obvious convex structure,
+    cf.~\sref{n-times-one-aconvm}.
+Similarly, we identify~$1+1$
+    with pairs~$(a,a^\perp) \in M^2$.
+    The maps at hand are given by
+\begin{equation}\label{conv-jointly-monic}
+    (a,b,c) \ \mapsto\  (a , b\ovee c)\quad \text{and} \quad
+    (a,b,c) \ \mapsto\  (b, a\ovee c).
+\end{equation}
+Assume~$
+(a, b \ovee c) = 
+(a', b' \ovee c') $
+and
+$(b, a \ovee c) = 
+(b', a' \ovee c') $
+for~$a,a',b,b',c,c' \in M$ with~$a \ovee b \ovee c= 1$
+and~$a' \ovee b' \ovee c'= 1$.
+Then clearly~$a=a'$,~$b=b'$
+    and so~$c = (a\ovee b)^\perp = (a' \ovee b')^\perp = c'$.
+Thus the maps~\eqref{conv-jointly-monic} are jointly injective,
+    hence jointly monic.
+\end{point}
+\begin{point}%
+Finally, we prove that the square on the right of \eqref{pullbacks}
     is a pullback in~$\AConvM$.
+\begin{equation*}
+\xymatrix{
+    Z \ar@/^1pc/[rrd]^{!}
+        \ar@/_1pc/[rdd]_\alpha
+        \ar@{.>}[rd]|\gamma\\
+        &X \ar[r]^{!} \ar[d]^{\kappa_1}
+        & 1\ar[d]^{\kappa_1} \\
+        &X+Y\ar[r]_{!+!} & 1+1
+    }
+\end{equation*}
+So assume~$\alpha \colon Z \to X+Y$
+    is a map in~$\AConvM$
+    with~$(!+!) \after \alpha = \kappa_1 \after !$.
+We have to show~$\alpha = \kappa_1 \after \gamma$,
+    for a unique~$\gamma\colon Z \to X+Y$ in~$\AConvM$.
+For the moment, assume~$\kappa_1$ is injective.
+Then~$\gamma$, if it exists, is unique.
+Pick~$z \in Z$.
+We know
+\begin{equation*}
+    \alpha(z) \ =\  h 
+    \Bigl( \bigovee^n_{i=1} \lambda_i \ket{\kappa_1(x_i)}
+    \ovee \bigovee^m_{i=1} \sigma_i \ket{\kappa_2(y_i)} \Bigr)
+\end{equation*}
+for some~$\lambda_i,\sigma_i \in M $, 
+$x_i \in X$ and~$y_i \in Y$,
+where~$h$ is the convex structure on~$X+Y$.
+As~$(!+!) \after \alpha = ! \after \kappa_1$,
+    we must have~$\bigovee_i \sigma_i = 0$
+    and so~$\alpha(z) = \kappa_1(x_z)$
+    for some~$x_z \in X$.
+This~$x_z$ is unique by injectivity of~$\kappa_1$.
+    Define~$\gamma(z) = x_z$.
+By definition~$\kappa_1 \after \gamma = \alpha$.
+To see~$\gamma$ is affine, pick any~$\varphi \in \mathcal{D}_M (Z)$.
+We have
+$
+\kappa_1 ( \gamma ( h_Z (\varphi )))
+    = \alpha(h_Z (\varphi))
+    = h(\mathcal{D}_M\alpha(\varphi))
+    = h(\mathcal{D}_M\kappa_1 ( \mathcal{D}_M \gamma(\varphi)))
+    = \kappa_1  (h_X( \mathcal{D}_M \gamma(\varphi)))
+$ and
+so indeed~$\gamma(h_Z(\varphi)) = h_X(\mathcal{D}_M \gamma (\varphi))$
+    --- i.e.~$\gamma$ is affine.
+\end{point}
+\begin{point}%
+Finally, we will show that~$\kappa_1$ is indeed injective.
+Assume~$\kappa_1(x_0) = \kappa_1(x'_0)$
+for some~$x_0,x'_0 \in X$.
+    Let~$\Phi_1, \ldots, \Phi_l \in \mathcal{D}_M^2{(X+Y)}$
+    be a derivation
+    of~$\kappa_1(x_0) = \kappa_1(x'_0)$
+    as in \sref{elements-coprod-conv}.
+The remainder of the proof is, in essence, a simple induction
+    over~$1 \leq i < l$, which has been complicated
+    by a technicality.
+Define
+\begin{equation*}
+    \mathrm{IH}(i) \ \equiv \ \text{``}
+    \bigovee_y \mu(\Phi_i)(\kappa_2 (y)) = 0
+        \text{ and }
+        h_X\Bigl(\bigovee_{x} \mu(\Phi_i)(\kappa_1(x)) \ket{x}\Bigr)
+        =    x_0 \text{''}.
+\end{equation*}
+Clearly~$\mathrm{IH}(1)$ holds
+    and if~$\mathrm{IH}(l)$ should hold,
+    then~$x_0 = x_0'$ as desired.
+So, to prove the inductive step, assume~$\mathrm{IH}(i)$ holds.
+There are two possible derivation steps, see \sref{elements-coprod-conv}.
+In the first case (i.e.~$\mu(\Phi_i) = \mu(\Phi_{i+1})$)
+    it is obvious~$\mathrm{IH}(i+1)$ holds.
+So we continue with the other case,
+where (among others) we have~$\zeta_{ij} = \zeta_{(i+1)j}$.
+Without loss of generality, we may assume~$\zeta_{ij} \neq 0$.
+For each~$j$ there are three possibilities, see \sref{elements-coprod-conv}.
+The third does not occur:
+if~$\varphi_{ij_0} = (\mathcal{D}_M \kappa_2) (\chi)$
+    for some~$\chi \in \mathcal{D}_M Y$ and~$j_0$,
+    then we reach a contradiction:
+\begin{equation*}
+    0\ = \ 
+    \bigovee_y \mu(\Phi_i)(\kappa_2(y))
+    \ = \ \bigovee_{y,j} \zeta_{ij} \odot \varphi(\kappa_2(y))
+    \ \geq \ \bigovee_y \zeta_{ij_0} \odot \chi(y)\  \neq\  0.
+\end{equation*}
+We are left with two possibilities ---
+    to distinguish those,
+    write~$j \in J$ if~$\varphi_{ij} = \varphi_{(i+1)j}$
+    and~$j \notin J$
+    if~$\varphi_{ij} = (\mathcal{D}_M \kappa_1)(\chi)$
+    and~$\varphi_{(i+1)j} = (\mathcal{D}_M \kappa_1)(\chi')$
+    for some~$\chi,\chi' \in \mathcal{D}_M X$
+    with~$h_X (\chi) = h_X(\chi')$.
+
+    We will show the first part of~$\mathrm{IH}(i+1)$.
+Pick any~$y \in Y$.
+If~$j \in J$, then~$\zeta_{(i+1)j}\odot \varphi_{(i+1)j}(\kappa_2(y))
+= \zeta_{(i+1)j} \odot \varphi_{(i+1)j}(\kappa_2(y)) = 0$.
+In the other case, if~$j \notin J$,
+then clearly~$\zeta_{(i+1)j}\odot \varphi_{(i+1)j}(\kappa_2(y)) = 0$
+    as~$\varphi_{(i+1)j} = \mathcal{D}_M(\chi')$.
+So, we have~$\bigovee_y \mu(\Phi_{i+1})(\kappa_2(y))
+= \bigovee_{y,j} \zeta_{(i+1)j} \odot \varphi_{(i+1)j} (\kappa_2(y)) = 0 $.
+
+Write~$r_{ij} = (\bigovee_x \varphi_{ij}(\kappa_1(x)))^\perp$.
+The remainder of the proof is complicated
+    by the fact that in general~$r_{ij} \neq 0$.
+    We do have~$\bigovee_j \zeta_{ij} \odot r^\perp_{ij} = 1$
+        and~$\bigovee_j \zeta_{ij} = 1$
+        so by \sref{emond-lemma-for-conv}
+        we see~$\zeta_{ij} \odot r^\perp_{ij} = \zeta_{ij}$,
+        which  forces~$\zeta_{ij} \odot r_{ij} = 0$.
+We compute
+\begin{align*}
+    h_X\Bigl(\bigovee_x \mu(\Phi_i) (\kappa_1(x)) \ket{x}\Bigr) 
+    &\ = \ 
+    h_X \Bigl( \bigovee_{x,j} \zeta_{ij} \odot \varphi_{ij}
+        (\kappa_1(x)) \ket{x} \Bigr) \\
+        &\ = \ 
+    h_X \Bigl(
+    \bigovee_{j} \zeta_{ij} \odot r_{ij} \ket{x_0} \ovee \bigovee_x
+    \zeta_{ij} \odot \varphi_{ij}
+        (\kappa_1(x)) \ket{x} \Bigr) \\
+        & \ = \ h_X \Bigl(
+    \mu\Bigl( \bigovee_j \zeta_{ij} \ket{
+        r_{ij} \ket{x_0} \ovee \bigovee_x \varphi_{ij} (\kappa_1 (x)) \ket{x}
+    }
+    \Bigr)
+    \Bigr) \\
+        & \ = \ h_X \Bigl(
+    \bigovee_j \zeta_{ij} \ket{
+        h_X\Bigl(
+        r_{ij} \ket{x_0} \ovee \bigovee_x \varphi_{ij} (\kappa_1 (x)) \ket{x}
+    \Bigr)
+}
+    \Bigr).
+\end{align*}
+So, if we show that for each~$j$,
+    we have
+\begin{multline}\label{eqkappainj}
+        h_X\Bigl(
+        r_{ij} \ket{x_0} \, \ovee \,\bigovee_x \varphi_{ij} (\kappa_1 (x)) \ket{x}
+    \Bigr) \\
+    \  = \  
+        h_X\Bigl(
+        r_{(i+1)j} \ket{x_0} \,\ovee \,\bigovee_x \varphi_{(i+1)j} (\kappa_1 (x)) \ket{x}
+    \Bigr),
+\end{multline}
+then
+\begin{equation*}
+    x_0 \ = \ h_X\Bigl(\bigovee_x \mu(\Phi_i) (\kappa_1(x)) \ket{x}\Bigr) 
+    \ =\  h_X\Bigl(\bigovee_x \mu(\Phi_{i+1}) (\kappa_1(x)) \ket{x}\Bigr),
+\end{equation*}
+as desired.
+If~$j \in J$,
+then~$\varphi_{ij} = \varphi_{(i+1)j}$
+and so~$r_{ij} = r_{(i+1)j}$
+and obviously~\eqref{eqkappainj}.
+So assume~$j \notin J$.
+Then clearly~$r_{ij} = 0 = r_{(i+1)j}$
+as~$\varphi_{ij} = (\mathcal{D}_M \kappa_1)(\chi))$
+    and~$\varphi_{(i+1)j} = (\mathcal{D}_M \kappa_1) (\chi')$.
+Now~\eqref{eqkappainj} follows from~$h_X(\chi) = h_X(\chi')$. \qed
+\end{point}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}{Definition}%
+An \Define{effect divisoid}
+    is an effect monoid~$M$
+    with partial binary operation~$(a,b) \mapsto \rfrac{a}{b}$
+    that is defined iff~$a \leq b$ and
+        satisfies the following axioms.
+\begin{enumerate}
+\item~$\rfrac{a}{b}$
+        is the unique element of~$M$
+        with~$\rfrac{a}{b} \leq \rfrac{b}{b}$
+        and~$b\odot \rfrac{a}{b} \ =\  a$
+\item~$a \ \leq \ \rfrac{a}{a}$
+\item~$\rfrac{(\rfrac{a}{a})}{(\rfrac{a}{a})} \ =\  \rfrac{a}{a}$
+\end{enumerate}
+\begin{point}{Remark}%
+The element~$\rfrac{a}{a}$ behaves like a support-projection for~$a$.
+\end{point}
+\end{point}
+\begin{point}{Examples}%
+The effect monoid~$[0,1]$
+    is an effect divisoid with~$\rfrac{a}{b} = \frac{a}{b}$
+        if~$b \neq 0$ and~$\rfrac{0}{0}=0$.
+More interestingly,
+    if~$M_1$ and~$M_2$
+    are effect divisoids,
+    then~$M_1 \times M_2$
+    is an effect divisoid
+    with~$\rfrac{(a_1,a_2)}{(b_1,b_2)} =
+    (\rfrac{a_1}{b_1}, \rfrac{a_2}{b_2})$.
+Later, \TODO{...}
+    we will see that if~$C$ is a~$\&$-effectus,
+then~$(\Scal C)^{\mathrm{op}}$
+    is an effect divisoid.
+If~$M$ is a division effect monoid as in \cite[Dfn.~6.3]{kentapartial},
+then~$M^{\textrm{op}}$ is an effect divisoid.
+\end{point}
+\begin{point}{Exercise}%
+Show that for an effect divisoid~$M$, the following holds.
+\begin{enumerate}
+\item
+    $\rfrac{0}{0}=0$, $\rfrac{1}{1}=1$, $\rfrac{a}{1}=a$, $\rfrac{a}{a} \odot \rfrac{a}{a} = \rfrac{a}{a}$ and
+    $\rfrac{a \odot b}{a} = \rfrac{a}{a }\odot b$.
+\item
+    For any~$a \leq b \leq c$,
+    we have~$\rfrac{b}{c} \odot \rfrac{a}{b} = \rfrac{a}{c}$.
+\end{enumerate}
+\end{point}
+\begin{point}{Proposition}%
+If $a \perp b$ and~$a \ovee b \leq c$ in an effect divisoid,
+then~$\rfrac{a \ovee b}{c } = \rfrac{a}{c} \ovee \rfrac{b}{c}$.
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}%
+The following is a generalization
+of~\cite[Prop.~C.3]{kentapartial}.
+See also~\cite[Prop.~15]{statesofconvexsets}.
+\end{point}
+\begin{point}{Theorem}%
+If~$M$ is an effect divisoid,
+    then~$\AConvM$ is an effectus.
+\begin{point}{Proof}%
+It only remains to be shown that the square on the left
+    of \eqref{pullbacks} is a pullback in~$\AConvM$
+    --- the other axioms are proven in \sref{aconvalmosteffectus}.
 \begin{equation*}
 \xymatrix{
     Z \ar@/^1pc/[rrd]^\beta
@@ -2279,12 +2617,12 @@ Unfolding definitions
     \ = \ \Bigl(\bigovee^n_{i=1} \lambda_i\Bigr)^\perp.
 \end{equation}
 So we are tempted to define
-\begin{equation*}
+\begin{equation}\label{aconvmexpuldefgamma}
     \gamma(z) \ = \  h_3 \Bigl(
     \bigovee^n_{i=1} \lambda_i \ket{\kappa_2(y_i)}
         \ovee \bigovee^m_{i=1} \sigma_i \ket{\kappa_1(x_i)}\Bigr),
-\end{equation*}
-where~$h_2$ is the convex structure on~$X+Y$.
+\end{equation}
+where~$h_3$ is the convex structure on~$X+Y$.
 To show this a proper definition,
 let~$n',m'\in \N$, $\lambda'_i, \sigma'_i \in M$,
 $x'_i \in X$ and $y'_i \in Y$ be (other) elements such that
@@ -2295,26 +2633,29 @@ $x'_i \in X$ and $y'_i \in Y$ be (other) elements such that
         \beta(z) &\ =\  h_2 \Bigl(\sigma'_0 \ket{\kappa_2(\cdot)}
     \ovee \bigovee^{m'}_{i=1} \sigma'_i \ket{\kappa_1(x'_i)}\Bigr).
 \end{align*}
+\begin{point}%
 We have to show
-\begin{equation*}
+\begin{multline}\label{convexpulgoal}
     h_3 \Bigl(
     \bigovee^{n'}_{i=1} \lambda'_i \ket{\kappa_2(y'_i)}
-    \ovee \bigovee^{m'}_{i=1} \sigma'_i \ket{\kappa_1(x'_i)}\Bigr)
-     \ = \ 
+    \,\ovee\, \bigovee^{m'}_{i=1} \sigma'_i \ket{\kappa_1(x'_i)}\Bigr) \\
+    \ = \ 
     h_3 \Bigl(
     \bigovee^n_{i=1} \lambda_i \ket{\kappa_2(y_i)}
-        \ovee \bigovee^m_{i=1} \sigma_i \ket{\kappa_1(x_i)}\Bigr).
-\end{equation*}
-By \eqref{aconv-epb-ass},
+        \,\ovee\, \bigovee^m_{i=1} \sigma_i \ket{\kappa_1(x_i)}\Bigr).
+\end{multline}
+Without loss of generality,
+    we may assume~$n,n',m,m' \geq 1$
+    (as we allow, for instance,~$\lambda_1=0$).
+Due to \eqref{aconv-epb-ass},
  it is clear~$\lambda_0 = \lambda_0'$ and~$\sigma_0=\sigma_0'$.
-By construction
-    of the coproduct \sref{aconv-coprod} as quotient
-    and \sref{least-conv-cong},
+By \sref{elements-coprod-conv}
     we know there
     are derivations~$\Phi_1, \ldots, \Phi_l \in \mathcal{D}_M^2 (1+Y)$
     and~$\Psi_1, \ldots, \Psi_k \in \mathcal{D}_M^2 (X+1)$,
     say~$\Phi_i \equiv \bigovee_j \zeta_{ij} \ket{\varphi_{ij}}$,
-    $\Psi_i \equiv \bigovee_j \xi_{ij} \ket{\psi_{ij}}$, with
+    $\Psi_i \equiv \bigovee_j \xi_{ij} \ket{\psi_{ij}}$
+    with
 \begin{align*}
     \Phi_1 &\ = \ \ket{\,
     \lambda_0 \ket{\kappa_1(\cdot)}
@@ -2327,29 +2668,12 @@ By construction
 \ovee \bigovee^{m}_{i=1} \sigma_i \ket{\kappa_1(x_i)} \,} &
     \Psi_k &\ = \ \ket{\,
     \sigma_0 \ket{\kappa_2(\cdot)}
-\ovee \bigovee^{m'}_{i=1} \sigma'_i \ket{\kappa_1(x'_i)} \,}
+\ovee \bigovee^{m'}_{i=1} \sigma'_i \ket{\kappa_1(x'_i)} \,}.
 \end{align*}
-and for each~$1 \leq i < l$
-either
-\begin{enumerate}
-\item
-$\mu(\Phi_i) = \mu(\Phi_{i+1})$ or
-\item
-for each~$1 \leq j < l$
-we have
-$\zeta_{ij} = \zeta_{(i+1)j}$
-and either
-\begin{enumerate}
-\item
-    $\varphi_{ij} = \varphi_{(i+1)j}$ or
-\item
-    there are~$\chi_1,\chi_2 \in \mathcal{D}_M Y$
-with~$h_{Y} (\chi_1) = h_{Y} (\chi_2)$,
-$\varphi_{ij} = (\mathcal{D}_M \kappa_2) (\chi_1)$ and
-$\varphi_{(i+1)j} = (\mathcal{D}_M \kappa_2) (\chi_2)$;
-\end{enumerate}
-\end{enumerate}
-\emph{and} the analogous condition for the~$\Psi_i$.
+We are going to combine the~$\Phi_i$ and~$\Psi_i$
+into a single derivation of~\eqref{convexpulgoal}
+    by first `applying' the $\Phi_i$ and then
+    the~$\Psi_i$.
 Define~$\Omega_1, \ldots, \Omega_{l+k} \in \mathcal{D}_M^2 (X+Y)$ by
 \begin{align*}
     \Omega_i  &\ = \ \bigovee_j\zeta_{ij} \ket{\omega_{ij}}
@@ -2358,25 +2682,108 @@ Define~$\Omega_1, \ldots, \Omega_{l+k} \in \mathcal{D}_M^2 (X+Y)$ by
     \Omega_{i+l}  &\ = \ \bigovee_j \xi_{ij} \ket{\omega_{(i+l)j}}
         &&\text{for $1 \leq i \leq k$,}
 \end{align*}
-where~$\omega_{ij} \in \mathcal{D}_M(X+Y)$ are defined as follows.
+where~$\omega_{ij} \in \mathcal{D}_M(X+Y)$
+are given by
 \begin{align*}
-    \omega_{ij} (\kappa_2 (y)) &\ =\ \varphi_{ij}(\kappa_2(y))  &
-    \omega_{ij} (\kappa_1(x)) &\ =\ \psi_{11}(\kappa_1(x)) 
-&& \text{for $1 \leq i \leq l$}
+    \omega_{ij} (\kappa_2 (y)) &\ =\ \varphi_{ij}(\kappa_2(y))  \\
+    \omega_{ij} (\kappa_1(x)) &\ = \ 
+    \varphi_{ij}(\kappa_1(\cdot))\odot
+    ( \rfrac{\psi_{11}(\kappa_1(x))}{\lambda_0}
+    \ovee r(\kappa_1(x)))
     \\
-    \omega_{(i+l)j} (\kappa_2 (y)) &\ =\ \varphi_{l1}(\kappa_2(y))  &
-    \omega_{(i+l)j} (\kappa_1(x)) &\ =\ \psi_{ij}(\kappa_1(x))
-&& \text{for $1 \leq i \leq k$}
+    \omega_{(i+l)j} (\kappa_1(x)) &\ =\ \psi_{ij}(\kappa_1(x)) \\
+    \omega_{(i+l)j} (\kappa_2 (y)) &\ =\ 
+    \psi_{ij}(\kappa_2(\cdot)) \odot (
+    \rfrac{\varphi_{l1}(\kappa_2(y))}{\sigma_0}
+    \ovee r(\kappa_2(y))) \\
+    r(z) & \ = \ 
+    \begin{cases}
+        (\rfrac{\lambda_0}{\lambda_0})^\perp & z = \kappa_1(x_1) \\
+        (\rfrac{\sigma_0}{\sigma_0})^\perp & z = \kappa_2(y_1) \\
+        0 & \text{otherwise},
+    \end{cases}
 \end{align*}
-We want to show~$\Omega_i$
-    is a derivation in the sense of \sref{least-conv-cong}.
-It is easy to see that if~$\mu(\Phi_i) = \mu(\Phi_{i+1})$,
+    where on the first two lines~$1 \leq i \leq l$
+    and on the second two~$1 \leq i \leq k$.
+Before we continue, we check whether the~$\omega_{ij}$
+    are distributions, as claimed.
+For~$1 \leq i \leq l$
+    this amounts to $\bigovee_x \omega_{ij}(\kappa_1(x))
+= \varphi_{ij}(\kappa_1(\cdot))$.
+Indeed
+\begin{align*}
+\bigovee_x
+    \omega_{ij}(\kappa_1(x))
+    & \  =\  \varphi_{ij}(\kappa_1(\cdot)) \odot r(\kappa_1(x_1))
+            \,\ovee\, \bigovee_x 
+        \varphi_{ij}(\kappa_1(\cdot)) \odot
+        \rfrac{\psi_{11}(\kappa_1(x))}{\lambda_0} \\
+        & \  =\  \varphi_{ij}(\kappa_1(\cdot)) \odot (\rfrac{\lambda_0}{\lambda_0})^\perp
+            \,\ovee \,
+        \varphi_{ij}(\kappa_1(\cdot)) \odot
+        \rfrac{\bigovee_x \psi_{11}(\kappa_1(x))}{\lambda_0} \\
+        & \  =\  \varphi_{ij}(\kappa_1(\cdot)) \odot (\rfrac{\lambda_0}{\lambda_0})^\perp
+            \,\ovee \,
+        \varphi_{ij}(\kappa_1(\cdot)) \odot
+        \rfrac{\lambda_0}{\lambda_0} \\
+        & \  =\  \varphi_{ij}(\kappa_1(\cdot)).
+\end{align*}
+With an analogous argument, one checks~$\omega_{(i+l)j}$
+    is a distribution for~$1 \leq i \leq k$.
+
+To show~$\Omega_i$ is
+    a derivation (in the sense of \sref{elements-coprod-conv}),
+    first pick any~$1 \leq i < l$.
+We distinguish between the two allowable derivation steps.
+If~$ \mu(\Phi_i) = \mu(\Phi_{i+1}) $,
     then~$\mu(\Omega_i) = \mu(\Omega_{i+1})$
-    (and the analogous statement for~$\Psi_i$).
-For the other case,
-    assume~$\zeta_{ij} = \zeta_{(i+1)j}$
-    and~$\varphi_{ij} \mathrel{R} \varphi_{(i+1)j}$
-    for all~$j$.
+    by a straight-forward computation
+    and so~$\Omega_i$ has a valid step.
+In the other case, we have~$\zeta_{ij} = \zeta_{(i+1)j}$ and
+    for each~$j$ we have three possibilities.
+In the first case, if~$\varphi_{ij} = \varphi_{(i+1)j}$,
+    then clearly~$\omega_{ij} = \omega_{(i+1)j}$ as well.
+    For the second case, assume~$\varphi_{ij} = (\mathcal{D}_M \kappa_2) (\chi)$
+    and~$\varphi_{(i+1)j} = (\mathcal{D}_M \kappa_2) (\chi')$
+    for some~$\chi,\chi' \in \mathcal{D}_M Y$
+    with~$h_Y(\chi) = h_Y(\chi')$.
+    Clearly~$\varphi_{ij}(\kappa_1(\cdot)) = 0$
+    and so~$\omega_{ij} = (\mathcal{D}_M \kappa_2)(\chi)$.
+    Similarly~$\omega_{(i+1)j} = (\mathcal{D}_M \kappa_2)(\chi')$.
+    The third case is trivial.
+    So~$\Omega_i$ also makes a valid step of the second kind.
+
+With the same kind of argument, we cover
+    $\Omega_{i+l}$ for~$1 \leq i < k$.
+The only step left to check is the one
+    from~$\Omega_l$ to~$\Omega_{l+1}$.
+Note~$\zeta_{l1}=1$,~$\varphi_{l1}(\kappa_1(\cdot)) = \lambda_0$
+and~$\lambda_0 \odot  (\rfrac{\lambda_0}{\lambda_0})^\perp = 0$,
+so with some easy manipulation, we find
+\begin{equation*}
+    \Omega_l \ = \  \ket{
+        \bigovee^{n'}_{i=1} \lambda'_i \ket{\kappa_2(y'_i)}
+\, \ovee\,  \bigovee^m_{i=1} \sigma_i \ket{\kappa_1(x_i)} }.
+\end{equation*}
+and in a similar fashion
+\begin{align*}
+    \Omega_{l+1} & \ = \  \ket{
+        \bigovee^{n'}_{i=1} \lambda'_i \ket{\kappa_2(y'_i)}
+    \, \ovee\,  \bigovee^m_{i=1} \sigma_i \ket{\kappa_1(x_i)} } \\
+    \Omega_{1} & \ = \  \ket{
+        \bigovee^{n}_{i=1} \lambda_i \ket{\kappa_2(y_i)}
+\,\ovee\, \bigovee^m_{i=1} \sigma_i \ket{\kappa_1(x_i)} } \\
+    \Omega_{l+k} & \ = \  \ket{
+        \bigovee^{n'}_{i=1} \lambda'_i \ket{\kappa_2(y'_i)}
+    \,\ovee\, \bigovee^{m'}_{i=1} \sigma'_i \ket{\kappa_1(x'_i)} }.
+\end{align*}
+So~$\Omega_i$ is a valid derivation of \eqref{convexpulgoal}.
+\end{point}
+\begin{point}%
+We are in the home stretch now.
+Define~$\gamma(z)$ as in \eqref{aconvmexpuldefgamma}.
+    
+\end{point}
 \end{point}
 \end{point}
 \end{parsec}
