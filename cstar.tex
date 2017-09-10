@@ -189,7 +189,7 @@ We'll see that every commutative $C^*$-algebra
 is isomorphic to a~$C(X)$
 in~\sref{gelfand}.
 \end{point}
-\begin{point}{Example}%
+\begin{point}[cstar-matrices-example]{Example}%
 An example of a non-commutative
 $C^*$-algebra
 is
@@ -226,12 +226,28 @@ with~$\left<v,w\right>=\sum_i \overline{v}_iw_i$
 as inner product,
 each matrix gives a (bounded) linear map $v\mapsto Av,\C^n\to \C^n$,
 and the conjugate transpose $A^*$ is \emph{adjoint} to~$A$
-in the sense that $\left<v,Aw\right> = \left<vA^*,w\right>$
+in the sense that $\left<v,Aw\right> = \left<A^*v,w\right>$
 for all~$v,w\in\C^n$.
 \end{point}
-\begin{point}{Example}%
-\TODO{Write about finite dimensional $C^*$-algebras,
-$CP^*$, and the Artin--Wedderburn theorem.}
+\begin{point}{Remark}%
+Combining~\sref{cstar-product}
+and~\sref{cstar-matrices-example}
+we see that
+$\bigoplus_k M_{n_k}$
+is a finite-dimensional
+$C^*$-algebra
+for any tuple $n_1,\dotsc,n_K$
+of natural numbers.
+In fact,
+any finite-dimensional $C^*$-algebra
+is of this form
+as we'll see in due course.\footnote{Although
+clearly related to the 
+Wedderburn--Artin theorem,
+see e.g.~\cite{nicholson1993},
+this description of finite-dimensional
+$C^*$-algebras
+does not seem to be an immediate consequence of it.}
 \end{point}
 \end{parsec}
 \subsection{Operators}
@@ -250,14 +266,10 @@ and unit by the identity operator.
 A \Define{concrete $C^*$-algebra} or
 a \Define{$C^*$-algebra of bounded operators} 
 refers to a $C^*$-subalgebra of~$\scrB(\scrH)$.
-We will see that every $C^*$-algebra is isomorphic to a $C^*$-algebra
+We will eventually see that every $C^*$-algebra is isomorphic to a $C^*$-algebra
 of bounded operators in~\sref{gelfand-naimark}.
 \end{point}
 \begin{point}[bounded-linear-maps]{Definition}%
-	\TODO{Treat bounded operators between \emph{semi-}normed spaces
-		because we'll encounter them in the context
-	of the ultrastrong topology.}
-
 Let~$\scrX$ and~$\scrY$ be normed
 vector spaces.
 We say that~$r\in [0,\infty)$
@@ -398,10 +410,28 @@ given by
 $\left<x,y\right>=\sum_i \overline{x}_iy_i$,
 making it a Hilbert space.
 
-(We'll shortly see infinite dimensional examples of Hilbert spaces,
-in~\sref{}.)
-\end{point}
+The space~$\Define{c_{00}}$
+of sequences $x_1,x_2,\dotsc$
+for which only finitely many~$x_n$s are non-zero
+when  endowed with $\left<x,y\right>=\sum_{n=0}^\infty \overline{x}_ny_n$
+as inner product
+is an example of a 
+pre-Hilbert space which is not complete.
 
+For an example
+of a infinite-dimensional Hilbert
+space,
+we'll have to wait until~\sref{hilb-sum}
+where 
+we'll show
+that the sequences $x_1,x_2,\dotsc$
+with $\sum_n \left|x_n\right|^2<\infty$
+for a Hilbert space~$\Define{\ell_\infty}$
+with $\left<x,y\right>=\sum_{n=0}^\infty \overline{x}_ny_n$
+as its inner product,
+because at this point it is not
+even clear that this sum converges.
+\end{point}
 \begin{point}[uniqueness-adjoint]{Exercise}%
 Let~$x$ and~$x'$ be elements of a pre-Hilbert space~$\scrH$
 with $\left<y,x\right>=\left<y,x'\right>$
@@ -409,16 +439,22 @@ for all~$y\in\scrH$.
 Show that~$x=x'$ (by taking $y=x-x'$).
 Conclude that every operator between pre-Hilbert spaces
 has at most one adjoint.
-\end{point}
-\begin{point}%
+\begin{point}{Remark}%
 Note that we did not require that
 an adjointable operator $T\colon \scrH\to\scrK$
 between pre-Hilbert spaces is bounded,
 and in fact, it might not be.
-
-\TODO{Is the adjoint of a bounded operator bounded?}
-
-
+Take for example
+the operator
+$T\colon c_{00}\to c_{00}$
+given by~$(T x)_n = nx_n$,
+which is adjoint to itself,
+and not bounded.
+On the other hand,
+if either~$\scrH$ or~$\scrK$ is complete,
+then both~$T$ and~$T^*$ are automatically bounded
+as we'll see in~\sref{hellinger-toeplitz}.
+\end{point}
 \end{point}
 \begin{point}{Exercise}%
 Let~$S$ and~$T$ be adjointable operators on a pre-Hilbert space.
@@ -559,6 +595,20 @@ But then $\|T\|^2\leq \|T^*T\|\leq \|T^*\|\|T\|=\|T\|^2$,
 and so $\|T\|^2=\|T^*T\|$.\qed
 \end{point}
 \end{point}
+\begin{point}[ketbra]{Exercise}%
+Let~$x$ and~$y$ be vectors from a Hilbert space~$\scrH$.
+\begin{enumerate}
+\item
+Show that $\Define{\ketbra{x}{y}}\colon\, z\mapsto\left<y,z\right>x,\,
+\scrH\to\scrH$
+defines a bounded operator,
+and, moreover, that~$\|\,\ketbra{x}{y}\,\|=\|x\|\|y\|$.
+\item
+Show that~$\ketbra{x}{y}$
+is adjointable,
+and~$(\ketbra{x}{y})^*=\ketbra{y}{x}$.
+\end{enumerate}
+\end{point}
 \end{parsec}
 \begin{parsec}[hilb-adjoint]%
 \begin{point}[adjointables-cstar-algebra]%
@@ -574,7 +624,7 @@ has an adjoint, see~\sref{riesz-representation-theorem},
 for which we need the (existence and) properties of ``projections''
 on (closed) linear subspaces:
 \end{point}
-\begin{point}{Definition}
+\begin{point}[projection-on-closed-linear-subspace]{Definition}
 Let~$x$ be an element of a pre-Hilbert space~$\scrH$.
 We say that an element~$y$ of a linear subspace~$C$
 of~$\scrH$ is a \Define{projection of~$x$ on~$C$}
@@ -955,8 +1005,6 @@ $f\equiv g^2$ for some $g\in \sa{C(X)}$;
 $f\equiv g^* g$ for some~$g\in C(X)$;
 \item
 $\|f-t\|\leq t$ for some $t\geq \frac{1}{2}\|f\|$.
-
-\TODO{add picture?}
 \end{enumerate}
 \begin{point}{Exercise}%
 To see how condition~\ref{cx-positive-1}
@@ -1081,8 +1129,20 @@ so for instance,
 $f$ is \Define{pu} if it is positive and unital,
 and a \Define{miu-map}
 is a multiplicative, involution preserving,
-unital linear map between $C^*$-algebras,
-(which is usually called a \Define{unital $*$-homomorphism}.)
+unital linear map between $C^*$-algebras
+(which is usually called a \Define{unital $*$-homomorphism}).
+
+We'll denote the category of $C^*$-algebras
+and miu-maps by~$\Define{\Cstar{miu}}$,
+and
+the subcategory of commutative $C^*$-algebras
+by~$\Define{\cCstar{miu}}$.
+We'll use similar notation
+for the other classes of maps,
+but
+will,
+naturally, only mention $\Cstar{cpu}$
+after having establised that cp-maps are closed under composition.
 \end{point}
 \end{point}
 \begin{point}[cstar-p-implies-i]{Lemma (``p$\Rightarrow$i'')}
@@ -1112,16 +1172,11 @@ Hence $f(a^*)\equiv f(\Real{a}-i\Imag{a})
 Other important relations between these types of morphisms
 can only be established later on
 once we have a firmer grasp on the positive elements.
-We will then see
-that every mi-map is positive (in~\sref{}),
-and in fact completely positive (in~\sref{}),
-and that every completely positive map is positive (in~\sref{}).
-\end{point}
-\begin{point}%
-The miu-maps between $C^*$-algebras
-form a category which we denote by~$\Define{\Cstar{miu}}$.
-The full subcategory of commutative $C^*$-algebras
-is denoted by~$\Define{\cCstar{miu}}$.
+We will then see asdasd
+that every mi-map 
+is completely positive (in~\sref{cp}),
+and that every completely positive map is positive 
+(in~\sref{astara-pos-basic-consequences}).
 \end{point}
 \begin{point}[cstar-product-2]{Exercise}%
 Show that
@@ -1203,7 +1258,14 @@ and so
 for every~$N$.
 Thus,
 since $\|a\|^N$ converges to~$0$
-(by~\TODO{} because $\|a\|<1$),
+(because\footnote{
+In case you've never seen the argument:
+the limit $b:=\lim_N \|a\|^N$
+exists, because $\|a\|\geq \|a\|^2\geq \dotsb\geq 0$,
+and is zero
+because $\|a\|b=\lim_N \|a\|^{N+1}=b$
+and~$\|a\|\neq 1$.}
+ $\|a\|<1$),
 we  get $\sum_{n=0}^\infty \|a\|^n = (1-\|a\|)^{-1}$.
 
 \begin{point}%
@@ -1414,8 +1476,10 @@ Let~$a$ be an element of a $C^*$-algebra $\scrA$.
 Prove that $\spec(a)\subseteq \R$ when $a$ is self-adjoint
 (see~\sref{spectrum-self-adjoint-real}).
 
-The reverse implication also holds,
-as we'll see later on in \TODO{}.
+The reverse implication does not hold:
+show that~$\spec(\bigl(
+\begin{smallmatrix}0&2\\0&0\end{smallmatrix}\bigr))=\{0\}$.
+
 \item
 Show that $\spec(a^2)\subseteq [0,\infty)$ when $a$ is self-adjoint
 (see~\sref{spectrum-self-adjoint-real}).
@@ -1923,7 +1987,8 @@ we first need to zoom in.
 If we split~$T$ into four similar triangles
 $T^\text{i}$, $T^\text{ii}$,
 $T^\text{iii}$, $T^\text{iv}$
-\TODO{improve picture}
+
+\REMARK{Picture will be improved}
 \begin{equation*}
 \begin{tikzpicture}
 \coordinate (A) at (0,0){};
@@ -2093,7 +2158,7 @@ around~$z_0$.
 There is nothing special about triangle:
 a similar result---not needed here---holds
 for a broad class of curves
-(c.f.~Thm~2.9 of~\cite{conway}).
+(c.f.~Thm~2.9 of~\cite{conway2000}).
 
 Integration along a curve can also be used
 to probe the value of a holomorphic function at a point~$z_0$.
@@ -2322,14 +2387,10 @@ Hence~$R=\|a\|^{-1}$, and so~$r=\|a\|$.\qed
 \end{point}
 \end{point}
 \begin{point}[spectrum-non-empty]{Exercise}%
-Show that $\spec(a)\neq \varnothing$ for an element of a $C^*$-algebra
-$\scrA$.
-\end{point}
-\begin{point}%
-Given an element~$a$ of a $C^*$-algebra show that
+Given a self-adjoint element~$a$ of a $C^*$-algebra show that
 \begin{enumerate}
 \item $\spec(a)\neq \varnothing$;
-\item $\spec(a) =\{\lambda\}$ iff $a=\lambda$ for every $\lambda \in\C$.
+\item $\spec(a) =\{\lambda\}$ iff $a=\lambda$ for every $\lambda \in\R$.
 \end{enumerate}
 \end{point}
 \begin{point}{Exercise (Gelfand--Mazur's Theorem for $C^*$-algebras)}%
@@ -2357,7 +2418,7 @@ The problem here is that while $\scrA/I$
 will turn out to be a $C^*$-algebra (indeed, be $\C$)
 the formation of the $C^*$-algebra quotient
 is non-trivial and depends on Gelfand's representation theorem
-(see e.g.~\TODO{conway})
+(see e.g. \S{}VIII.4 of~\cite{conway2013}) 
 which is the very theorem we are working towards.
 The way out of this predicament
 is to avoid ideals and quotients of $C^*$- and Banach algebras
@@ -2442,8 +2503,12 @@ iff $\|a\|\leq \lambda$,
 for $\lambda\in [0,\infty)$.
 Conclude that $\|a\| = \inf\{ \lambda \in \R\colon 
 -\lambda \leq a\leq \lambda\}$.
-(Thus $\sa{\scrA}$ is a \emph{complete Archimedean order unit space},
-see \TODO{}.)
+
+(In other words
+$\sa{\scrA}$ is a \emph{complete Archimedean order unit space},
+see Definition~1.12 of~\cite{alfsen2012}---a 
+type of structure first studied in~\cite{kadison1951}.)
+
 
 Show that $0\leq a \leq b$ entails $\|a\|\leq \|b\|$
 for $a,b\in\sa{\scrA}$.
@@ -2505,6 +2570,8 @@ is
 the product of the $\scrA_i$s
 in $\Cstar{pu}$.
 \end{enumerate}
+(We'll return to the product of $C^*$-algebras
+a final time in~\sref{cstar-product-4}.)
 \end{point}
 \end{parsec}
 \begin{parsec}
@@ -2592,6 +2659,11 @@ this improved bound
 for completely positive maps
 for which it's much easier to obtain (see~\sref{cp-russo-dye}).
 \end{point}
+\begin{point}[norm-mi-map]{Exercise}%
+Show that~$\|\varrho\|=\varrho(1)$
+for every mi-map
+(using the $C^*$-identity).
+\end{point}
 \end{point}
 \begin{point}[cstar-isometry]{Lemma}%
 Show that for a pu-map $f\colon \scrA\to\scrB$
@@ -2665,9 +2737,9 @@ but
 \,+\,\left(\begin{matrix}0 & 0\\ \nicefrac{1}{2} & 0
 \end{matrix}\right)\,\right\|.
 \end{equation*}
-We'll see later in~\TODO{}
-even if~$f$ is completely positive (see~\sref{cp})
-$f$ might still only preserve the norm of self-adjoint elements.
+(Even if~$f$ is completely positive, \sref{cp},
+it might still only preserve the norm of self-adjoint elements
+cf.~\sref{warning-norm-states}.)
 \end{point}
 \end{point}
 \end{parsec}
@@ -2678,25 +2750,23 @@ A collection~$\Omega$ of maps on a $C^*$-algebra~$\scrA$
 will be called
 \begin{enumerate}
 \item
+\Define{order separating} if an element~$a$ of~$\scrA$
+is positive iff $0\leq \omega(a)$
+for all~$\omega\in \Omega$;
+\item
 \Define{separating} if an element~$a$ of~$\scrA$
 is zero iff $\omega(a)=0$ for all~$\omega\in\Omega$;
 \item
-\Define{order separating} if an element~$a$ of~$\scrA$
-is positive iff $0\leq \omega(a)$
-for all~$\omega\in \Omega$.
+\Define{faithful} if an element~$a$ of~$\scrA_+$
+is zero iff~$\omega(a)=0$ for all~$\omega\in\Omega$; and
 \item
 \Define{center separating} if $a\in\scrA_+$
 is zero iff $\omega(b^*ab)=0$ for all~$\omega\in\Omega$.
 \end{enumerate}
+\REMARK{Examples that show these notions
+are all different will be included.}
 \end{point}
 \begin{point}{Remark}%
-It is clear that an order-separating collection
-is separating as well,
-and that order separation is the more desirable property.
-We'll see an example
-of a separating but not order-separating collection
-in~\TODO{}.
-
 Examples of order-separating
 collections will include
 \begin{enumerate}
@@ -2707,27 +2777,21 @@ the set of all pu-maps $\omega\colon \scrA\to\C$
 \item
 on a commutative $C^*$-algebra~$\scrA$:
 the set of all miu-maps $\omega\colon \scrA\to\C$
-(see \TODO{});
+(see~\sref{gelfand-representation-isometry}); and
 \item
 on the $C^*$-algebra~$\scrB(\scrH)$
 of bounded operators on some Hilbert space~$\scrH$:
-the collection of maps  $\left<x,(\,\cdot\,)x\right>
+the collection of maps  $\left<x,(\,\cdot\,)x\right>.
 \colon \scrB(\scrH)\to\C$ where $x\in \scrH$
-(see~\sref{hilb-vector-states-order-separating});
-\item
-on a $C^*$-algebra $\scrA$:
-the collection of all miu-maps $\varrho\colon \scrA\to\scrB(\scrH)$
-where~$\scrH$ is some Hilbert space (see \TODO{}).
+(see~\sref{hilb-vector-states-order-separating}).
 \end{enumerate}
 \end{point}
 \begin{point}[separating-self-adjoint]{Exercise}%
-Let~$\Omega$ be a separating collection of maps on a $C^*$-algebra~$\scrA$.
-\begin{enumerate}
-\item
-Assuming that each~$\omega\in\Omega$ is involution preserving,
+Given a separating collection~$\Omega$
+of involution preserving maps
+on a $C^*$-algebra~$\scrA$
 show that $a\in\scrA$ is self-adjoint
 iff $\omega(a)$ is self-adjoint for all~$\omega\in\Omega$.
-\end{enumerate}
 \end{point}
 \begin{point}[order-separating-norm]{Proposition}%
 For a collection~$\Omega$ of pu-maps on a $C^*$-algebra~$\scrA$
@@ -2751,7 +2815,7 @@ to the pu-map $\left<\omega\right>_{\omega\in\Omega}\colon
 \scrA\to\bigoplus_{\omega\in\Omega}
 \scrB_\omega$ (see~\sref{cstar-product-3}).\qed
 \end{point}
-\begin{point}{Warning}%
+\begin{point}[warning-norm-states]{Warning}%
 The formula
 $\|a\|=\sup_{\omega\in\Omega} \|\omega(a)\|$
 need not be correct
@@ -2884,13 +2948,14 @@ Define~$\alpha := \inf\{\,\lambda\in\R\colon\, q(a)\leq \lambda\,\}$.
 Note that $-\|a\| \leq \alpha\leq \|a\|$.
 We will prove that~$q(a)=\alpha$
 by considering the order ideal
-\TODO{Double check this proof,
-because it is simpler than the one given by Kadison---he first 
-shows that $\scrA/I$ is total and Archimedean.}
 \begin{equation*}
 J\ := \ \{\,b\in \scrA\colon\, \exists m,n\in \Z\,[\ 
 m(\alpha-q(a)) \,\leq\, q(\Real{b}),q(\Imag{b})\,\leq\, n(\alpha-q(a))\ ]\,\}.
 \end{equation*}
+\REMARK{Be warned:
+this proof being much simpler than one given by Kadison 
+might contain an error---he shows
+shows that $\scrA/I$ is total and Archimedean first.}
 We claim that $1\notin I$.
 Indeed, suppose not---towards a contradiction.
 Then there is~$n\in \Z$
@@ -3104,7 +3169,6 @@ which entails $(b'-b)^2=0$, and so $\|(b'-b)^2\|=\|b'-b\|^2=0$,
 yielding $b=b'$.\qed
 \end{point}
 \end{point}
-\TODO{Thank Sander}
 \end{point}
 \end{point}
 \begin{point}[sqrt]{Exercise}%
@@ -3220,7 +3284,7 @@ $a\equiv c^* c$ for some $c\in\scrA$;
 $\spec(a)\subseteq [0,\infty)$.
 \end{enumerate}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[astara-pos-basic-consequences]{Exercise}%
 The fact that $a^*a$ is positive
 for an element~$a$ of a $C^*$-algebra~$\scrA$
 has some desirable consequences
@@ -3230,13 +3294,14 @@ we need later on.
 Show that $b\leq c\implies a^*ba \leq a^*ca$
 for all~$b,c\in\sa{\scrA}$ and~$a\in\scrA$.
 \item
+Show that every mi-map and cp-map is positive.
+\item
 Show that~$a\leq b^{-1}$ 
 iff $\sqrt{b}a\sqrt{b}\leq 1$
 iff $\|\sqrt{a}\sqrt{b}\|\leq 1$
 iff $b^{-1}\leq a$
 for positive invertible elements $a$, $b$ of~$\scrA$
 (and so $a\leq b$ entails $b^{-1}\leq a^{-1}$).
-\TODO{add relevant refs}
 \item
 Prove that $(1+a)^{-1}a\leq (1+b)^{-1}b$
 for $0\leq a\leq b$ from~$\scrA$.\\
@@ -3291,17 +3356,18 @@ by~\sref{hilb-vector-states-order-separating}.\qed
 \begin{parsec}%
 \begin{point}%
 The interaction between the multiplication and order
-on a $C^*$-algebra can be subtle
-as we have seen in~\TODO{}.  However,
+on a $C^*$-algebra can be subtle,
+but
 when the $C^*$-algebra is commutative
 almost all peculiarities disappear,
 as we see in this paragraph.
 This is to be expected
 as we will see that any commutative $C^*$-algebra
 is isomorphic to a $C^*$-algebra
-of functions on a compact Hausdorff space.
+of functions on a compact Hausdorff space
+in~\sref{gelfand}.
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[commutative-cstar-basic]{Exercise}%
 Let~$\scrA$ be a \emph{commutative} $C^*$-algebra.
 Let~$a,b,c\in\sa{\scrA}$.
 \begin{enumerate}
@@ -3316,6 +3382,10 @@ Show that~$\sa{\scrA}$ is a \Define{Riesz space},
 that is,  a lattice ordered vector space.\\
 (Hint: prove that $\frac{1}{2}(a+b+\left|a-b\right|)$
 is the supremum of~$a$ and~$b$ in~$\sa{\scrA}$.)
+\item
+Show that a miu-map $f\colon \scrA\to\scrB$
+between commutative $C^*$-algebras
+preserves finite suprema and infima.
 \end{enumerate}
 \end{point}
 \begin{point}[riesz-decomposition-lemma]{Exercise}%
@@ -3337,8 +3407,6 @@ fact about commutative $C^*$-algebras:
 that they are isomorphic to $C^*$-algebras
 of continous functions on a compact Hausdorff space,
 via the \emph{Gelfand representation}.
-
-\TODO{Show that $\spec(\scrA)$ is a compact Hausdorff space.}
 \end{point}
 \begin{point}{Setting}%
 In this paragraph,
@@ -3385,9 +3453,6 @@ such that $a\in I\cap\sa{\scrA}\implies \left|a\right|\in I$.
 A \Define{maximal Riesz ideal}
 is a proper Riesz ideal which is maximal among
 proper Riesz ideals.
-\begin{point}{Remark}%
-\TODO{Make remark on why Riesz ideals instead of $*$-ring ideals.}
-\end{point}
 \end{point}
 \begin{point}[riesz-ideal-ring-ideal]{Lemma}%
 Let~$I$ be a Riesz ideal of~$\scrA$.
@@ -3489,37 +3554,26 @@ Then~$a$ is not invertible
 iff there is $f\in\spec(\scrA)$ 
 with~$f(a)=0$.
 \begin{point}{Proof}%
-\TODO{Move the proof below here.}
-\end{point}
-\end{point}
-\begin{point}[spectrum-miu]{Lemma}%
-For each self-adjoint~$a\in\scrA$ 
-we have $\spec(a)=\{f(a)\colon f\in\spec(\scrA)\}$.
-\begin{point}{Proof}%
-Let~$f\in \spec(\scrA)$,
-and~$a\in\sa{\scrA}$.
-If~$a-f(a)$ would have had an inverse~$b$ in~$\scrA$,
-then~$f(b)$ would be an inverse
-of~$f(\,a-f(a)\,)=0$ in~$\C$,
-which does not exist. Thus~$a-f(a)$ is not invertible,
-that is, $f(a)\in \spec(a)$.
-
-Let~$\lambda\in\spec(a)$.
-We must find~$f\in \spec(\scrA)$ with~$f(a)=\lambda$.
-Since~$a-\lambda$ is not invertible
-and self-adjoint	,
-the Riesz ideal $(a-\lambda)_m$ is proper
-and so there is a maximal Riesz ideal~$I$ that contains~$a-\lambda$
-(see~\sref{riesz-ideal-basic}).
+Note that if~$a$ is invertible,
+then~$f(a^{-1})$ is the inverse of~$f(a)$---and so~$f(a)\neq 0$---for 
+every~$f\in\spec(\scrA)$.
+For the other, non-trivial, direction,
+assume that~$a$ is not invertible.
+Then 
+by~\sref{riesz-ideal-basic}
+the least Riesz ideal $(a)_m$
+that contains~$a$ is proper,
+and can be extended to a maximal Riesz ideal~$I$.
 By~\sref{riesz-ideal-miu-map}
-there is a miu-map $f\in \spec(\scrA)$ with~$\ker(f)=I$.
-For this~$f$,
-we have, $f(\lambda-a)=0$
-(since $\lambda-a\in I$),
-and so~$f(a)=\lambda$.\qed
-
-\TODO{What about non-self-adjoint~$a$?}
+there is a miu-map $f\colon \scrA\to\C$
+with~$\ker(f)=I$.
+Then~$f\in\spec(\scrA)$
+and~$f(a)=0$.\qed
 \end{point}
+\end{point}
+\begin{point}[spectrum-miu]{Exercise}%
+Show that $\spec(a)=\{f(a)\colon f\in\spec(\scrA)\}$
+for each self-adjoint $a\in\scrA$.
 \end{point}
 \begin{point}[gelfand-representation-isometry]{Exercise}%
 Prove that $\|\gamma(a)\|=\|a\|$
@@ -3628,7 +3682,7 @@ The spectrum $\spec(\scrA)$ of~$\scrA$ is a compact Hausdorff space.
 Since for each~$a\in \scrA$
 and~$f\in \spec(\scrA)$
 we have  $\|f(a)\|\leq \|a\|$ 
-by~\TODO{},
+by~\sref{norm-mi-map}
 we see that~$f(a)$ is an element of the compact set
 $\{\,z\in \C\colon\, \left|z\right|\leq\|a\|\,\}$,
 and so~$\spec(\scrA)$ is a subset of
@@ -3637,7 +3691,7 @@ and so~$\spec(\scrA)$ is a subset of
 \prod_{a\in \scrA}\, \{\,z\in \C\colon\, \left|z\right|\leq \|a\|\,\},
 \end{equation*}
 which is a compact Hausdorff space
-(by Tychonoff's theorem \TODO{ref}, under the product topology
+(by Tychonoff's theorem, under the product topology
 it inherits
 from the space of all functions $\scrA\to \C$).
 So to prove that~$\spec(\scrA)$
@@ -3693,22 +3747,90 @@ it tells us a lot about non-commutative $C^*$-algebras too,
 via their commutative $C^*$-subalgebras.
 \end{point}
 \begin{point}{Exercise}%
-Let~$a$ be an element of a $C^*$-algebra~$\scrA$.
+Let~$a$ be an element of a (not necessarily commutative)
+$C^*$-algebra~$\scrA$.
+We are going to use Gelfand's representation
+theorem to define~$f(a)$
+for every continous map $f\colon \spec(a)\to\C$
+whenever~$a$ is contained in some commutative $C^*$-algebra.
+This idea is referred to as the \Define{continuous functional calculus}.
+\begin{enumerate}
+\item
+Show that there is a least $C^*$-subalgebra
+$\Define{C^*(a)}$ of~$\scrA$
+that contains~$a$.
 
-Show that there is a least $C^*$-subalgebra of~$\scrA$
---- which we denote by \Define{$C^*(a)$} --- 
-that contains~$a$,
-and it is the closure of $\{p(a,a^*)\colon p(x,y)\in \C[x,y]\}$,
-where~$\C\left[x,y\right]$ is the
-ring of polynomials over two non-commuting
-variables~$x$ and~$y$.
+\item
+We call~$a\in\scrA$ \Define{normal}
+when~$C^*(a)$ is commutative.
 
-Show that~$C^*(a)$ is commutative
-iff $aa^*=a^*a$ iff $\Real{a}\Imag{a}=\Imag{a}\Real{a}$.
-Such~$a$ are called~\Define{normal}.
+Show that~$a$ is normal iff
+$aa^*=a^*a$
+iff~$\Real{a}\Imag{a}=\Imag{a}\Real{a}$.
+\item
+From now on assume~$a$ is normal
+so that~$C^*(a)$ is commutative.
 
-\TODO{More work}
-\TODO{Functional calculus}
+Show that~$j\colon\, \varrho\mapsto \varrho(a),\, \spec(C^*(a))\to \spec(a)$
+is a continuous map.
+
+Denoting the composition of
+the miu-maps
+\begin{equation*}
+\xymatrix@C=4em{
+	C(\spec(a))
+	\ar[r]^-{f\mapsto f\circ j}
+	&
+	C(\spec(C^*(A)))
+	\ar[r]^-{\cong,\, \text{\sref{gelfand}}}
+	&
+	C^*(a)
+	\ar[r]^-{\text{inclusion}}
+	&
+	\scrA.
+}
+\end{equation*}
+by~$\Phi$,
+we write $\Define{f(a)}:=\Phi(f)$
+for all~$f\in C(\spec(a))$.
+
+We have hereby defined, for example, $a^\alpha$ when $a>0$
+and~$\alpha\in (0,\infty)$.
+
+From the fact that~$\Phi$ is miu some properties
+of~$f(a)$ can be derived.
+Show, for example,
+that~$a^\alpha a^\beta = a^{\alpha+\beta}$
+for all~$\alpha,\beta\in(0,\infty)$
+when~$a>0$.
+\item
+Given $f\in C(\spec(a))$,
+show that~$f(a)$ is the unique element of~$C^*(a)$
+with 
+\begin{equation*}
+	\varphi(f(a))
+	 \ =\ f(\varphi(a))
+\end{equation*}
+for all~$\varphi\in\spec(C^*(a))$.
+\item
+(\Define{Spectral mapping thm.})
+Show that~$\spec(f(a))=f(\spec(a))$
+for~$f\in C(\spec(a))$.
+\item
+Show that~$\spec(\varrho(a))\subseteq
+\spec(a)$
+and $\varrho(f(a))=f(\varrho(a))$
+for every $f\in C(\spec(a))$ and  miu-map
+$\varrho\colon \scrA\to\scrB$
+into a $C^*$-algebra~$\scrB$.
+\item
+Given~$f\in C(\spec(a))$ and~$g\in C(f(\spec(a)))$
+show that $g(f(a))=(g\circ f)(a)$.
+
+Show that $(a^\alpha)^\beta = a^{\alpha\beta}$
+for~$\alpha,\beta\in (0,\infty)$
+and~$a\in\scrA_+$ with~$a\neq 0$.
+\end{enumerate}
 \end{point}
 \begin{point}[sqrt-monotone]{Theorem}%
 We have $0\leq a\leq b \implies a^\alpha \leq b^\alpha$
@@ -3717,7 +3839,6 @@ of a $C^*$-algebra~$\scrA$,
 and $\alpha\in (0,1]$.
 \begin{point}{Proof}%
 (Based on~\cite{pedersen1972}.)
-
 Note that the result is trivial if~$a$ and~$b$ commute.
 
 Since~$b\mapsto b^\alpha$
@@ -3769,7 +3890,7 @@ We must show that $a^{\nicefrac{\alpha+\beta}{2}}\leq
 b^{\nicefrac{\alpha+\beta}{2}}$.
 Since the map $b^{\nicefrac{\alpha+\beta}{4}}(\,\cdot\,)
 b^{\nicefrac{\alpha+\beta}{4}}$
-is positive (by~\TODO{}),
+is positive (by~\sref{astara-pos-basic-consequences}),
 it suffices to show that
 $b^{-\frac{\alpha+\beta}{4}}\,a^{\frac{\alpha+\beta}{2}}\,
 b^{-\frac{\alpha+\beta}{4}} \leq 1$,
@@ -3782,9 +3903,9 @@ of the theory of $C^*$-algebras:
 writing $\varrho(c):=\sup_{\lambda\in \spec(c)}\left|\lambda \right|$
 for~$c\in \scrA$,
 we know that $\varrho(c)\leq \|c\|$ for any~$c$,
-and $\varrho(c)=\|c\|$ for self-adjoint~$c$ by \TODO{...}.
-Moreover, recall that by~\TODO{...}
-we know that $\spec(cd)\backslash\{0\}
+and $\varrho(c)=\|c\|$ for self-adjoint~$c$ by \sref{norm-spectrum}
+Moreover, recall from~\sref{prod-spec}
+that $\spec(cd)\backslash\{0\}
 =\spec(dc)\backslash\{0\}$,
 and so~$\varrho(cd)=\varrho(dc)$
 for all $c,d\in \scrA$.
@@ -3903,7 +4024,8 @@ such that for every~$x\in X$
 there is~$n$ with $g(x)<f_n(x)$.
 Then writing $g:=g_1\vee \dotsb \vee g_N$,
 we have $0\leq f\leq g$ and~$\tau(g)=0$
-(by~\TODO{miu-map preserves infima}).
+(because by~\sref{commutative-cstar-basic}
+$\tau$ preserves finite infima).
 It follows that~$\tau(f)=0$.
 \end{point}
 \begin{point}%
@@ -4008,7 +4130,10 @@ is known as the \emph{Gelfand--Naimark--Segal construction},
 and will make a reappearance in the theory of von Neumann algebras
 (in~\sref{normal-functionals-lemma}).
 
-\TODO{Mention Paschke as generalization of GNS}.
+\REMARK{Will refer here
+to Paschke's dilation 
+(in Bas' thesis)
+as generalization of the GNS-construction.}
 \end{point}
 \begin{point}[state-inner-product]{Lemma}%
 For every p-map~$\omega\colon \scrA\to \C$ on a
@@ -4021,7 +4146,7 @@ Note that $[a,a]_\omega\equiv \omega(a^*a)\geq 0$ for each~$a\in\scrA$,
 because $a^*a\geq 0$ (by~\sref{astara-positive});
 and  $\smash{\overline{[a,b]}_\omega}=[b,a]_\omega$
 for $a,b\in\scrA$,
-because $\omega$ is involution preserving (by~\sref{p-implies-i}).
+because $\omega$ is involution preserving (by~\sref{cstar-p-implies-i}).
 Finally, it is clear that $[a,\,\cdot\,]_\omega\equiv\omega(a^*\,\cdot\,)$
 is linear for each~$a\in\scrA$.\qed
 \end{point}
@@ -4293,8 +4418,6 @@ by~\sref{proto-gelfand-naimark}.\qed
 \section{Matrices over $C^*$-algebras}
 \begin{parsec}%
 \begin{point}%
-\TODO{see if this material can be moved up}
-
 We have seen (in~\sref{hilb}) that the $N\times N$-matrices
 ($N$ being a natural number) over the complex numbers~$\C$
 form a $C^*$-algebra (denoted by~$M_N$) by interpreting
@@ -4413,9 +4536,8 @@ giving us the \emph{self-dual} Hilbert $\scrA$-modules,
 but we'd like to keep Riesz'~representation theorem as a theorem,
 and instead assume the Hilbert $\scrA$-module
 is complete with respect to a suitable uniformity,
-but more on that in~\sref{}.
-
-\TODO{add reference, and, of course, the theorem itself}
+but more on that in~\REMARK{Reference
+to Bas' thesis will be added here}
 \end{point}
 \end{point}
 \begin{point}[chilb-cs]{Proposition (Cauchy--Schwarz)}%
@@ -4425,6 +4547,20 @@ $\left<x,y\right>\,\left<y,x\right>
 for every inner product $\left<\,\cdot\,,\,\cdot\,\right>$
 on a right $\scrA$-module~$X$,
 and $x,y\in X$.
+\begin{point}{Remark}%
+The symmetry-breaking norm symbols ``$\|$'' cannot simply 
+be removed from this version of Cauchy--Schwarz,
+because 
+$0\leq \left<x,y\right>\,\left<y,x\right>
+\leq \left<y,y\right>\left<x,x\right>$
+would
+imply
+that $\left<y,y\right>\left<x,x\right>$
+is positive, and self-adjoint,
+and thus that $\left<y,y\right>$
+and~$\left<x,x\right>$ commute,
+which is generally not the case.
+\end{point}
 \begin{point}{Proof}%
 Let~$\omega\colon \scrA\to \C$ be a state of~$\scrA$.
 Since the states on~$\scrA$
@@ -4464,10 +4600,6 @@ that $\omega(\,\left<x,y\right>\,\left<y,x\right>\,)\leq
 \omega(\left<x,x\right>)$,
 and so we're done.\qed
 \end{point}
-\end{point}
-\begin{point}{Remark}%
-\TODO{that the ``$\|$'' in this version of Cauchy--Schwarz
-cannot be dropped}
 \end{point}
 \begin{point}[chilb-norm-basic]{Exercise}%
 Let~$X$ be a pre-Hilbert $\scrA$-module.
@@ -4616,7 +4748,7 @@ between Hilbert $\scrA$-modules.
 $\left<x,T^*Tx\right>=
 \left<Tx,Tx\right> \geq 0$
 for all~$x\in X$,
-and so~$T^*T\geq 0$ by~\sref{positive-operators}.\qed
+and so~$T^*T\geq 0$ by~\sref{hilb-positive-operators}.\qed
 \end{point}
 \end{point}
 \end{parsec}
@@ -4659,7 +4791,7 @@ over a $C^*$-algebras~$\scrA$.
 Show that an $N\times N$ matrix~$A$ over~$\scrA$
 is positive iff $0\leq \sum_{i,j} a_i^* A_{ij} a_j$
 for all~$a_1,\dotsc,a_N\in\scrA$.
-(Hint: use~\sref{vector-states-order-separating}.)
+(Hint: use~\sref{hilb-vector-states-order-separating}.)
 \item
 Show that the matrix $(\,\left<x_i,x_j\right>\,)_{ij}$
 is positive for all vectors $x_1,\dotsc,x_N$
@@ -4686,8 +4818,6 @@ if~$f$ is involution preserving, then so is~$M_Nf$.
 However,
 show that $M_nf$ need not be positive when~$f$ is positive,
 and that~$M_nf$ need not be bounded, when~$f$ is.
-\TODO{give concrete example of a non-completely-positive positive map}
-\TODO{give concrete example of a  non-completely-bounded bounded maps}
 \end{enumerate}
 \end{point}
 \end{parsec}
@@ -4790,6 +4920,21 @@ $T\mapsto \left<x,Tx\right>,\scrB^a(X)\to \scrA$
 for every element~$x$ of a Hilbert $\scrA$-module~$X$.
 \end{enumerate}
 \end{point}
+\begin{point}[cstar-product-4]{Exercise}%
+Show that the product 
+of a family of $C^*$-algebras $(\scrA_i)_i$
+in the category~$\Cstar{cpsu}$
+is given by~$\bigoplus_i \scrA_i$
+with the same projections as in~\sref{cstar-product-3}.
+
+Show that the equalizer
+of miu-maps $f,g\colon\scrA\to\scrB$
+in~$\Cstar{cpsu}$
+is the inclusion of
+the $C^*$-subalgebra
+$\{\,a\in\scrA\colon\, f(a)=g(a)\,\}$
+of~$\scrA$ into~$\scrA$.
+\end{point}
 \begin{point}[ccstar-pos-mat]{Lemma}%
 Let~$\scrA$ be a commutative $C^*$-algebra,
 and let~$N$ be a natural number.
@@ -4797,9 +4942,6 @@ The set of  matrices of the form $\sum_k a_k B_k$,
 where $a_1,\dotsc,a_K\in \scrA$
 and $B_1,\dotsc,B_K\in M_N(\C)$,
 is norm dense in~$(M_N\scrA)_+$.
-
-\TODO{Compare this with that $a\otimes b$ where $a\in\scrA_+$
-and $b\in \scrB_+$ do not generate $(\scrA\otimes\scrB)_+$.}
 \begin{point}{Proof}%
 Since~$\scrA$ is isomorphic to~$C(X)$ for some compact
 Hausdorff space~$X$ (by~$\sref{gelfand})$),
@@ -5042,19 +5184,31 @@ $f(a^*b)-f(a)^*f(b)=0$.\qed
 \begin{point}%
 Let us work towards
 the subject of the next chapter, von Neumann algebras,
-by pointing out some special properties
+by pointing two special properties
 of~$\scrB(\scrH)$
-on which the theory of von Neumann algebra is based.
-We will show that any bounded directed net
-of self-adjoint bounded operators on~$\scrH$
-has a supremum (in~$\Real{\scrB(\scrH)}$),
-and that the \emph{vector states}
-$\left<x,(\,\cdot\,)x\right>\colon \scrB(\scrH)\to\C$
+on which the definition of a von Neumann algebra is based,
+namely that
+\begin{enumerate}
+\item
+any norm-bounded directed subset of
+self-adjoint operators on~$\scrH$
+has a supremum (in~$\Real{\scrB(\scrH)}$), and
+\item
+all vector functionals
+$\left<x,(\,\cdot\,)x\right>\colon \scrB(\scrH)\to\C$ 
 preserve these suprema.
-To this end, 
-we'll show that~$\scrB(\scrH)$ is complete
-with respect to the topology induced by these vector states.
+\end{enumerate}
+We'll end
+the chapter
+by showing
+in~\sref{bh-np}
+ that every  functional on~$\scrB(\scrH)$
+that  preserves aforementioned
+suprema
+is a (potentially infinite) sum of vector functionals.
 \end{point}
+
+\subsection{Directed suprema}
 \begin{point}[pub]{Theorem (Uniform Boundedness)}%
 A set~$\scrF$ of bounded linear maps 
 from a complete normed vector space~$\scrX$
@@ -5295,6 +5449,14 @@ with respect to which $T\mapsto \|Tx\|\equiv \smash{\left<x,T^*Tx\right>^{%
 \nicefrac{1}{2}}}$
 is continuous for every~$x\in\scrH$.
 \end{enumerate}
+\begin{point}{Remark}%
+Although we'll only make use of the weak operator
+topology we have nonetheless included
+the definition of the strong operator topology here
+for comparison
+with the \emph{ultrastrong
+topology} that appears in the next chapter.
+\end{point}
 \end{point}
 \begin{point}[bh-wot-bounded-complete]{Lemma}%
 Let~$(T_\alpha)_\alpha$ be a net of bounded operators
@@ -5397,45 +5559,33 @@ and therefore $T'\leq S$ by~\sref{hilb-positive-operators}.\qed
 \end{point}
 \begin{point}{Definition}%
 Let~$\scrH$ be a Hilbert space.
-\begin{enumerate}
-\item
 The supremum of a (norm) bounded directed subset~$\scrD$ 
 in~$\Real{(\scrB(\scrH))}$
+(which exists by~\sref{hilb-suprema})
 is denoted by~$\Define{\bigvee\scrD}$.
-\item
-A p-map $\omega\colon \scrB(\scrH)\to\C$
-is called \Define{normal} when
+\end{point}
+\end{parsec}
+\subsection{Normal functionals}
+\begin{parsec}%
+\begin{point}{Definition}%
+Given a Hilbert space~$\scrH$
+a p-map $\omega\colon \scrB(\scrH)\to\C$
+is called \Define{\textbf{n}ormal} when
 $\omega(\bigvee \scrD)=\bigvee_{T\in\scrD} \omega(T)$
 for every bounded directed subset $\scrD$ of~$\Real{\scrB(\scrH)}$.
-\end{enumerate}
+\end{point}
+\begin{point}{Example}%
+All vector functionals
+$\left<x,(\,\cdot\,)x\right>$ are normal by~\sref{hilb-suprema}.
 \end{point}
 \begin{point}[bh-normal-effects]{Exercise}%
-To show that a map is normal, it suffices to show 
-that it preserves directed suprema of \emph{effects}:
-
-Show that given a Hilbert space~$\scrH$
+To show that a linear map is normal, it suffices to show 
+that it preserves directed suprema of \emph{effects}: 
+show that given a Hilbert space~$\scrH$
 a  positive map $\omega\colon \scrB(\scrH)\to\C$
 is normal 
 provided that $\omega(\bigvee \scrD) = \bigvee_{T\in\scrD} \omega(T)$
 for every directed subset $\scrD$ of $[0,1]_{\scrB(\scrH)}$.
-\end{point}
-\end{parsec}
-\begin{parsec}%
-\begin{point}%
-Let~$\scrH$ be a Hilbert space.
-In~\sref{hilb-suprema}
-we saw that maps of the form $a\mapsto \left<x,ax\right>$
-are normal 
-(i.e.~preserve
-suprema of bounded operators on~$\scrH$).
-As it turns out,
-not every p-map
-is normal,
-and in fact,
-we'll show that if a p-map $\omega$ is normal,
-then $\omega\equiv \sum_{n=1}^\infty \left<x_n,(\,\cdot\,)x_n\right>$
-for some $x_1,x_2,\dotsc$ in~$\scrH$
-with $\sum_n \|x_n\|^2 <\infty$.
 \end{point}
 \begin{point}[bh-functional-lemma]{Lemma}%
 Every sequence $x_1,x_2,\dotsc $ in a Hilbert space~$\scrH$
@@ -5506,13 +5656,170 @@ $\ketbra{x}{x}$ on~$\scrB(\scrH)$.)
 
 \end{enumerate}
 \end{point}
-\TODO{Remark on the ultraweak topology.}
 \end{parsec}
 \begin{parsec}%
 \begin{point}%
 The final project of this chapter
 is to show that each normal positive functional
-$\omega$ is of the form described in~\sref{bh-functional-lemma}.
+$\omega$ is of the form described in~\sref{bh-functional-lemma},
+and for this we'll need some more nuggets
+from the theory of Hilbert spaces.
+\end{point}
+\begin{point}{Definition}%
+A subset~$\scrE$ of a Hilbert space
+is called \Define{orthonormal}
+if $\left<e,e'\right>=0$
+for all~$e,e'\in\scrE$ with~$e\neq e'$,
+and~$\left<e,e\right>=1$
+for all~$e\in\scrE$.
+We say that~$\scrE$ is \Define{maximal}
+when~$\scrE$ is maximal
+among all orthonormal  subsets of~$\scrH$
+ordered by inclusion,
+and in that case
+we call~$\scrE$ an \Define{orthonormal basis}
+for~$\scrH$
+for reasons that will be become clear in~\sref{orthonormal}
+below.
+\begin{point}{Remark}%
+Clearly, by Zorn's lemma,
+each Hilbert space has an orthonormal basis.
+\end{point}
+\end{point}
+\begin{point}[orthonormal]{Proposition}%
+Given an orthonormal subset~$\scrE$
+of a Hilbert space~$\scrH$,
+and~$x\in \scrH$,
+\begin{enumerate}
+\item
+\label{orthonormal-1}
+\Define{(Bessel's inequality)}\ 
+ $\sum_{e\in \scrE}\left|\left<e,x\right>\right|^2
+\leq \|x\|^2$;
+\item
+\label{orthonormal-2}
+$\sum_{e\in \scrE} \left<e,x\right>e$
+converges in~$\scrH$,
+\item
+\label{orthonormal-3}
+$\sum_{e\in \scrE} \left<e,x\right>e=x$
+if~$\scrE$ is maximal, and
+\item
+\label{orthonormal-4}
+\Define{(Parseval's identity)}
+$\sum_{e\in\scrE}\left|\left<e,x\right>\right|^2 = \|x\|^2$
+if~$\scrE$ is maximal.
+\end{enumerate}
+\begin{point}{Proof}%
+\ref{orthonormal-1}\ 
+Since for finite subset $\scrF$ of $\scrE$
+we have $0\leq \|x-\sum_{e\in \scrF} \left<e,x\right>e\|^2
+= \|x\|^2-2\sum_{e\in \scrF} \left<e,x\right>\left<x,e\right>
++ \sum_{e,e'\in\scrF} \left<x,e'\right>\left<e',e\right>\left<e,x\right>
+= \|x\|^2-\sum_{e\in\scrF}\left|\left<e,x\right>\right|^2$,
+and so~$\sum_{e\in\scrF} \left|\left<e,x\right>\right|^2\leq \|x\|^2$,
+we get~$\sum_{e\in\scrE}\left|\left<e,x\right>\right|^2\leq \|x\|^2$.
+
+\ref{orthonormal-2}\ 
+From the observation
+that~$\|\sum_{e\in\scrF} \left<e,x\right>e\|^2
+= \sum_{e\in \scrF} \left|\left<e,x\right>\right|^2$
+for any finite~$\scrF\subseteq \scrE$,
+and the fact that~$\sum_{e\in \scrE} \left|\left<e,x\right>\right|^2$
+converges (by the previous point),
+one deduces that~$(\sum_{e\in\scrF} \left<e,x\right>e)_\scrF$
+is Cauchy,
+and so~$\sum_{e\in\scrE} \left<e,x\right>e$
+converges.
+
+\ref{orthonormal-3}\
+Writing~$y:=\sum_{e\in\scrE} \left<e,x\right>e$ we must show that~$x=y$.
+If it were not so,
+if~$x\neq y$,
+then~$e':=\|x-y\|^{-1}(x-y)$
+satisfies
+$\left<e',e'\right>=1$
+and
+$\left<e',e\right>=0$
+for all~$e\in\scrE$,
+and so may be added to~$\scrE$
+to yield an orthonormal basis~$\scrE\cup\{e'\}$
+extending~$\scrE$
+contradicting~$\scrE$s  maximality.
+
+\ref{orthonormal-4}\ 
+Finally,
+$\|x\|^2=\left<x,x\right>
+= \sum_{e,e'\in\scrE}
+\left<x,e'\right>\left<e',e\right>\left<e,x\right>
+= \sum_{e\in \scrE} \left|\left<e,x\right>\right|^2$.\qed
+\end{point}
+\end{point}
+\begin{point}[sum-ketbras]{Exercise}%
+Let~$\scrE$ be an orthonormal basis of a Hilbert space~$\scrH$.
+\begin{enumerate}
+\item
+Show that~$\sum_{e\in\scrE} \ketbra{e}{e}$
+converges to~$1$
+in the weak operator topology.
+\item
+Show that $\sum_{e\in\scrE}\ketbra{e}{e}=1$
+also in the sense
+that the directed
+set of partial sums
+$\sum_{e\in \scrF} \ketbra{e}{e}$,
+where~$\scrF$ is a finite subset of~$\scrE$,
+has~$1$ as its supremum.
+\item
+Conclude that~$\omega(1)=\sum_{e\in\scrE} \omega(\ketbra{e}{e})$
+for every np-map $\omega\colon \scrB(\scrH)\to\C$.
+\end{enumerate}
+\end{point}
+\begin{point}[bh-np-lemma]{Lemma}%
+Given a Hilbert space~$\scrH$
+with orthonormal basis~$\scrE$,
+we have
+\begin{equation*}
+	\omega(A)\ = \ 
+	\sum_{e,e'\in\scrE} \left<e,Ae'\right>\ \omega(\,\ketbra{e}{e'}\,).
+\end{equation*}
+for every normal p-map $\omega\colon \scrB(\scrH)\to\C$
+and~$A\in\scrB(\scrH)$.
+\begin{point}{Proof}%
+Let~$\scrF$ be a finite subset of~$\scrE$,
+and write $P=\sum_{e\in \scrF} \ketbra{e}{e}$.
+Since $PAP
+= \sum_{e,e'}\left<e,Ae'\right>\,\omega(\ketbra{e}{e'})$
+it suffices
+to show that~$\omega(A-PAP)$
+vanishes as~$\scrF$ increases.
+Note that~$P^*P=P$ and
+$(P^\perp)^*P^\perp=P^\perp$.
+Further,
+since
+$\|P\|\leq 1$,
+and~$A-PAP=P^\perp A + PAP^\perp$,
+we have,
+by Kadison's inequality, \sref{omega-norm-basic},
+\begin{alignat*}{3}
+\left|\omega(A-PAP)\right|
+\ &\leq\  \left|\omega(P^\perp A)\right| \,+\,\left|\omega(PAP^\perp)\right| \\
+\ &\leq\  
+\omega(P^\perp)^{\nicefrac{1}{2}}\,
+\omega(A^*A)^{\nicefrac{1}{2}}
+\ +\ 
+\omega(PAA^*P)^{\nicefrac{1}{2}}\,
+\omega(P^\perp)^{\nicefrac{1}{2}}\\
+\ &\leq\  
+2\|A\| 
+\omega(1)^{\nicefrac{1}{2}}\ 
+\omega(P^\perp)^{\nicefrac{1}{2}}.
+\end{alignat*}
+But since~$\sum_{e\in\scrE} \omega(\ketbra{e}{e})=\omega(1)$
+by~\sref{sum-ketbras}
+we see that~$\omega(P^\perp)\to0$
+as~$\scrF\to\infty$.\qed
+\end{point}
 \end{point}
 \begin{point}[bh-np]{Theorem}%
 Let~$\scrH$ be a Hilbert space.
@@ -5521,11 +5828,12 @@ is of the form $\omega = \sum_n\left<x_n,(\,\cdot\,)x_n\right>$
 where $x_1,x_2,\dotsc\in \scrH$
 with~$\sum_n \|x_n\|^2=\|\omega\|$.
 \begin{point}{Proof}%
-There is a unique bounded operator
-$\varrho\colon \scrH\to\scrH$
+By~\sref{chilb-form-representation}
+there is a
+unique
+$\varrho\in\scrB(\scrH)$
 with $\omega(\ketbra{y}{x})=\left<x,\varrho y\right>$
-for all~$x,y\in\scrH$
-by~\sref{chilb-form-representation}
+for all~$x,y\in\scrH$,
 because
 $(x,y)\mapsto \omega(\ketbra{y}{x}),\,
 \scrH\times\scrH\to\C$
@@ -5536,9 +5844,9 @@ because $\left<x,\varrho x\right>
 =\omega(\ketbra{x}{x})\geq 0$
 for all~$x\in\scrH$.
 Now, let~$\scrE$ be an orthonormal basis for~$\scrH$.
-Since~$1=\sum_{e\in\scrE} \ketbra{e}{e}$
-and~$\omega$ is normal
-we have $\omega(1)=\sum_{e\in\scrE} \omega(\ketbra{e}{e})
+Since~$\omega$ is normal,
+\sref{sum-ketbras} gives us
+$\omega(1)=\sum_{e\in\scrE} \omega(\ketbra{e}{e})
 = \sum_{e\in\scrE} \left<e,\varrho e\right>
 = \sum_{e\in \scrE} \|\sqrt{\varrho} e\|^2$,
 so that $\omega':=\sum_{e\in\scrE} \left<\sqrt{\varrho}e,(\,\cdot\,)
@@ -5550,29 +5858,23 @@ we are done if
 can show that~$\omega'=\omega$,
 (because $\sqrt{\varrho}e$
 is non-zero for at most countably many~$e\in\scrE$).
-Note that for each~$x\in\scrH$
-we have $\omega(\ketbra{x}{x})
+To this end,
+note that
+$\omega(\ketbra{x}{x})
 = \left<\sqrt{\varrho}x,\sqrt{\varrho}x\right>
 = \sum_{e\in \scrE}
 \left<\sqrt{\varrho}x,e\right>
 \left<e,\sqrt{\varrho}x\right>
-= \left< \sqrt{\varrho}e,
+= \sum_{e\in \scrE} \left< \sqrt{\varrho}e,
 \ketbra{x}{x} \sqrt{\varrho}e \right>
-=\omega'(\ketbra{x}{x})$.
-Thus~$\omega(P)=\omega'(P)$
-for every projection~$P$ in~$\scrB(\scrH)$
-because $P=\sum_{f\in\scrF}\ketbra{f}{f}$
-for any orthonormal basis~$\scrF$ 
-of~$\Ran(P)$.
-Since the linear span
-of projections is norm dense in~$\scrB(\scrH)$
-by~\TODO{...}
-we get~$\omega=\omega'$.\qed
+=\omega'(\ketbra{x}{x})$
+for each~$x\in\scrH$,
+and so $\omega(\ketbra{x}{y})=\omega'(\ketbra{x}{y})$
+for all~$x,y\in\scrH$
+by polarization,
+and thus~$\omega=\omega'$
+by~\sref{bh-np-lemma}.\qed
 \end{point}
 \end{point}
-
-\TODO{Definition of $\ketbra{x}{x}$.}
-
-\TODO{Projections dense in~$\scrB(\scrH)$}
 \end{parsec}
 \end{document}
