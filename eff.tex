@@ -2617,11 +2617,11 @@ Unfolding definitions
     \ = \ \Bigl(\bigovee^n_{i=1} \lambda_i\Bigr)^\perp.
 \end{equation}
 So we are tempted to define
-\begin{equation*}
+\begin{equation}\label{aconvmexpuldefgamma}
     \gamma(z) \ = \  h_3 \Bigl(
     \bigovee^n_{i=1} \lambda_i \ket{\kappa_2(y_i)}
         \ovee \bigovee^m_{i=1} \sigma_i \ket{\kappa_1(x_i)}\Bigr),
-\end{equation*}
+\end{equation}
 where~$h_3$ is the convex structure on~$X+Y$.
 To show this a proper definition,
 let~$n',m'\in \N$, $\lambda'_i, \sigma'_i \in M$,
@@ -2633,19 +2633,23 @@ $x'_i \in X$ and $y'_i \in Y$ be (other) elements such that
         \beta(z) &\ =\  h_2 \Bigl(\sigma'_0 \ket{\kappa_2(\cdot)}
     \ovee \bigovee^{m'}_{i=1} \sigma'_i \ket{\kappa_1(x'_i)}\Bigr).
 \end{align*}
+\begin{point}%
 We have to show
-\begin{equation*}
+\begin{multline}\label{convexpulgoal}
     h_3 \Bigl(
     \bigovee^{n'}_{i=1} \lambda'_i \ket{\kappa_2(y'_i)}
-    \ovee \bigovee^{m'}_{i=1} \sigma'_i \ket{\kappa_1(x'_i)}\Bigr)
-     \ = \ 
+    \,\ovee\, \bigovee^{m'}_{i=1} \sigma'_i \ket{\kappa_1(x'_i)}\Bigr) \\
+    \ = \ 
     h_3 \Bigl(
     \bigovee^n_{i=1} \lambda_i \ket{\kappa_2(y_i)}
-        \ovee \bigovee^m_{i=1} \sigma_i \ket{\kappa_1(x_i)}\Bigr).
-\end{equation*}
+        \,\ovee\, \bigovee^m_{i=1} \sigma_i \ket{\kappa_1(x_i)}\Bigr).
+\end{multline}
+Without loss of generality,
+    we may assume~$n,n',m,m' \geq 1$
+    (as we allow, for instance,~$\lambda_1=0$).
 Due to \eqref{aconv-epb-ass},
  it is clear~$\lambda_0 = \lambda_0'$ and~$\sigma_0=\sigma_0'$.
-By \eqref{elements-coprod-conv}
+By \sref{elements-coprod-conv}
     we know there
     are derivations~$\Phi_1, \ldots, \Phi_l \in \mathcal{D}_M^2 (1+Y)$
     and~$\Psi_1, \ldots, \Psi_k \in \mathcal{D}_M^2 (X+1)$,
@@ -2666,6 +2670,10 @@ By \eqref{elements-coprod-conv}
     \sigma_0 \ket{\kappa_2(\cdot)}
 \ovee \bigovee^{m'}_{i=1} \sigma'_i \ket{\kappa_1(x'_i)} \,}.
 \end{align*}
+We are going to combine the~$\Phi_i$ and~$\Psi_i$
+into a single derivation of~\eqref{convexpulgoal}
+    by first `applying' the $\Phi_i$ and then
+    the~$\Psi_i$.
 Define~$\Omega_1, \ldots, \Omega_{l+k} \in \mathcal{D}_M^2 (X+Y)$ by
 \begin{align*}
     \Omega_i  &\ = \ \bigovee_j\zeta_{ij} \ket{\omega_{ij}}
@@ -2674,25 +2682,108 @@ Define~$\Omega_1, \ldots, \Omega_{l+k} \in \mathcal{D}_M^2 (X+Y)$ by
     \Omega_{i+l}  &\ = \ \bigovee_j \xi_{ij} \ket{\omega_{(i+l)j}}
         &&\text{for $1 \leq i \leq k$,}
 \end{align*}
-where~$\omega_{ij} \in \mathcal{D}_M(X+Y)$ are defined as follows.
+where~$\omega_{ij} \in \mathcal{D}_M(X+Y)$
+are given by
 \begin{align*}
-    \omega_{ij} (\kappa_2 (y)) &\ =\ \varphi_{ij}(\kappa_2(y))  &
-    \omega_{ij} (\kappa_1(x)) &\ =\ \rfrac{\psi_{11}(\kappa_1(x))}{\zeta_{ij}}
-&& \text{for $1 \leq i \leq l$}
+    \omega_{ij} (\kappa_2 (y)) &\ =\ \varphi_{ij}(\kappa_2(y))  \\
+    \omega_{ij} (\kappa_1(x)) &\ = \ 
+    \varphi_{ij}(\kappa_1(\cdot))\odot
+    ( \rfrac{\psi_{11}(\kappa_1(x))}{\lambda_0}
+    \ovee r(\kappa_1(x)))
     \\
-    \omega_{(i+l)j} (\kappa_2 (y)) &\ =\ \varphi_{l1}(\kappa_2(y))  &
-    \omega_{(i+l)j} (\kappa_1(x)) &\ =\ \psi_{ij}(\kappa_1(x))
-&& \text{for $1 \leq i \leq k$}
+    \omega_{(i+l)j} (\kappa_1(x)) &\ =\ \psi_{ij}(\kappa_1(x)) \\
+    \omega_{(i+l)j} (\kappa_2 (y)) &\ =\ 
+    \psi_{ij}(\kappa_2(\cdot)) \odot (
+    \rfrac{\varphi_{l1}(\kappa_2(y))}{\sigma_0}
+    \ovee r(\kappa_2(y))) \\
+    r(z) & \ = \ 
+    \begin{cases}
+        (\rfrac{\lambda_0}{\lambda_0})^\perp & z = \kappa_1(x_1) \\
+        (\rfrac{\sigma_0}{\sigma_0})^\perp & z = \kappa_2(y_1) \\
+        0 & \text{otherwise},
+    \end{cases}
 \end{align*}
-We want to show~$\Omega_i$
-    is a derivation in the sense of \sref{least-conv-cong}.
-It is easy to see that if~$\mu(\Phi_i) = \mu(\Phi_{i+1})$,
+    where on the first two lines~$1 \leq i \leq l$
+    and on the second two~$1 \leq i \leq k$.
+Before we continue, we check whether the~$\omega_{ij}$
+    are distributions, as claimed.
+For~$1 \leq i \leq l$
+    this amounts to $\bigovee_x \omega_{ij}(\kappa_1(x))
+= \varphi_{ij}(\kappa_1(\cdot))$.
+Indeed
+\begin{align*}
+\bigovee_x
+    \omega_{ij}(\kappa_1(x))
+    & \  =\  \varphi_{ij}(\kappa_1(\cdot)) \odot r(\kappa_1(x_1))
+            \,\ovee\, \bigovee_x 
+        \varphi_{ij}(\kappa_1(\cdot)) \odot
+        \rfrac{\psi_{11}(\kappa_1(x))}{\lambda_0} \\
+        & \  =\  \varphi_{ij}(\kappa_1(\cdot)) \odot (\rfrac{\lambda_0}{\lambda_0})^\perp
+            \,\ovee \,
+        \varphi_{ij}(\kappa_1(\cdot)) \odot
+        \rfrac{\bigovee_x \psi_{11}(\kappa_1(x))}{\lambda_0} \\
+        & \  =\  \varphi_{ij}(\kappa_1(\cdot)) \odot (\rfrac{\lambda_0}{\lambda_0})^\perp
+            \,\ovee \,
+        \varphi_{ij}(\kappa_1(\cdot)) \odot
+        \rfrac{\lambda_0}{\lambda_0} \\
+        & \  =\  \varphi_{ij}(\kappa_1(\cdot)).
+\end{align*}
+With an analogous argument, one checks~$\omega_{(i+l)j}$
+    is a distribution for~$1 \leq i \leq k$.
+
+To show~$\Omega_i$ is
+    a derivation (in the sense of \sref{elements-coprod-conv}),
+    first pick any~$1 \leq i < l$.
+We distinguish between the two allowable derivation steps.
+If~$ \mu(\Phi_i) = \mu(\Phi_{i+1}) $,
     then~$\mu(\Omega_i) = \mu(\Omega_{i+1})$
-    (and the analogous statement for~$\Psi_i$).
-For the other case,
-    assume~$\zeta_{ij} = \zeta_{(i+1)j}$
-    and~$\varphi_{ij} \mathrel{R} \varphi_{(i+1)j}$
-    for all~$j$.
+    by a straight-forward computation
+    and so~$\Omega_i$ has a valid step.
+In the other case, we have~$\zeta_{ij} = \zeta_{(i+1)j}$ and
+    for each~$j$ we have three possibilities.
+In the first case, if~$\varphi_{ij} = \varphi_{(i+1)j}$,
+    then clearly~$\omega_{ij} = \omega_{(i+1)j}$ as well.
+    For the second case, assume~$\varphi_{ij} = (\mathcal{D}_M \kappa_2) (\chi)$
+    and~$\varphi_{(i+1)j} = (\mathcal{D}_M \kappa_2) (\chi')$
+    for some~$\chi,\chi' \in \mathcal{D}_M Y$
+    with~$h_Y(\chi) = h_Y(\chi')$.
+    Clearly~$\varphi_{ij}(\kappa_1(\cdot)) = 0$
+    and so~$\omega_{ij} = (\mathcal{D}_M \kappa_2)(\chi)$.
+    Similarly~$\omega_{(i+1)j} = (\mathcal{D}_M \kappa_2)(\chi')$.
+    The third case is trivial.
+    So~$\Omega_i$ also makes a valid step of the second kind.
+
+With the same kind of argument, we cover
+    $\Omega_{i+l}$ for~$1 \leq i < k$.
+The only step left to check is the one
+    from~$\Omega_l$ to~$\Omega_{l+1}$.
+Note~$\zeta_{l1}=1$,~$\varphi_{l1}(\kappa_1(\cdot)) = \lambda_0$
+and~$\lambda_0 \odot  (\rfrac{\lambda_0}{\lambda_0})^\perp = 0$,
+so with some easy manipulation, we find
+\begin{equation*}
+    \Omega_l \ = \  \ket{
+        \bigovee^{n'}_{i=1} \lambda'_i \ket{\kappa_2(y'_i)}
+\, \ovee\,  \bigovee^m_{i=1} \sigma_i \ket{\kappa_1(x_i)} }.
+\end{equation*}
+and in a similar fashion
+\begin{align*}
+    \Omega_{l+1} & \ = \  \ket{
+        \bigovee^{n'}_{i=1} \lambda'_i \ket{\kappa_2(y'_i)}
+    \, \ovee\,  \bigovee^m_{i=1} \sigma_i \ket{\kappa_1(x_i)} } \\
+    \Omega_{1} & \ = \  \ket{
+        \bigovee^{n}_{i=1} \lambda_i \ket{\kappa_2(y_i)}
+\,\ovee\, \bigovee^m_{i=1} \sigma_i \ket{\kappa_1(x_i)} } \\
+    \Omega_{l+k} & \ = \  \ket{
+        \bigovee^{n'}_{i=1} \lambda'_i \ket{\kappa_2(y'_i)}
+    \,\ovee\, \bigovee^{m'}_{i=1} \sigma'_i \ket{\kappa_1(x'_i)} }.
+\end{align*}
+So~$\Omega_i$ is a valid derivation of \eqref{convexpulgoal}.
+\end{point}
+\begin{point}%
+We are in the home stretch now.
+Define~$\gamma(z)$ as in \eqref{aconvmexpuldefgamma}.
+    
+\end{point}
 \end{point}
 \end{point}
 \end{parsec}
