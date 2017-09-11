@@ -2020,11 +2020,12 @@ for every~$\bigovee_i \lambda_i \ket{\varphi_i}$
 \subsection{More on abstract $M$-convex sets}
 \begin{parsec}%
 \begin{point}%
-Our next project is a tangent:
-    we investigate whether~$\AConvM$ is an effectus.
+For our next project,
+    we indulge ourselves in a tangent:
+    we investigate whether the category~$\AConvM$ is an effectus.
 We can show~$\AConvM$ is an effectus, if~$M$ has a certain partial division.
-Unfortunately it is unknown whether~$\AConvM$ is an effectus in general.
-The case~$M=[0,1]$ is much easier and has already been shown in
+Unfortunately it will remain unclear if~$\AConvM$ is an effectus in general.
+The case~$M=[0,1]$ is much easier and has already been delt with
         in \cite{statesofconvexsets}. 
 The first step is to uncover the coproduct in~$\AConvM$.
 To construct the coproduct, we will need to know
@@ -2560,6 +2561,47 @@ Show that for an effect divisoid~$M$, the following holds.
 \begin{point}{Proposition}%
 If $a \perp b$ and~$a \ovee b \leq c$ in an effect divisoid,
 then~$\rfrac{a \ovee b}{c } = \rfrac{a}{c} \ovee \rfrac{b}{c}$.
+\begin{point}{Proof}%
+We will first show that if~$c \odot a \perp c \odot b$,
+    then~$\rfrac{c}{c} \odot a \perp \rfrac{c}{c}\odot b$.
+To start,
+    note~$c \odot b^\perp \leq c \odot b^\perp \ovee c^\perp
+        = (c \odot b)^\perp \leq c \odot a$
+        and so
+\begin{equation*}
+     \rfrac{c \odot a}{c} 
+     \ = \ 
+            \rfrac{c \odot b^\perp}{c} \odot
+            \rfrac{c \odot a}{c \odot b^\perp}
+     \ = \ 
+            \rfrac{c}{c} \odot b^\perp \odot
+            \rfrac{c \odot a}{c \odot b^\perp}
+    \ \leq \ \rfrac{c}{c} \odot b^\perp.
+\end{equation*}
+Hence~$(\rfrac{c}{c}\odot b)^\perp
+            \geq \rfrac{c}{c} \odot b^\perp
+            \geq \rfrac{c}{c \odot a}
+            = \rfrac{c}{c} \odot a $.
+    Indeed:~$\rfrac{c}{c}\odot a \perp \rfrac{c}{c} \odot b$.
+\begin{point}%
+Assume~$a\perp b$ and~$a\ovee b \leq c$. 
+Clearly~$c \odot \rfrac{a}{c}  = a \perp b = c \odot \rfrac{b}{c}$.
+By our initial lemma, we get
+    $\rfrac{a}{c } =
+    \rfrac{c}{c} \odot \rfrac{a}{c} \perp
+    \rfrac{c}{c} \odot \rfrac{b}{c} =
+    \rfrac{b}{c }
+$.
+Clearly~$c \odot (\rfrac{a}{c} \ovee \rfrac{b}{c}) = a \ovee b$, so
+\begin{equation*}
+    \rfrac{a \ovee b}{c} \ = \  
+    \rfrac{c \odot (\rfrac{a}{c} \ovee \rfrac{b}{c})}{c} \ = \ 
+\rfrac{c}{c} \odot (\rfrac{a}{c} \ovee \rfrac{b}{c}) \ = \ 
+\rfrac{c}{a} \ovee \rfrac{c}{b},
+\end{equation*}
+as desired. \qed
+\end{point}
+\end{point}
 \end{point}
 \end{parsec}
 
@@ -2782,7 +2824,69 @@ So~$\Omega_i$ is a valid derivation of \eqref{convexpulgoal}.
 \begin{point}%
 We are in the home stretch now.
 Define~$\gamma(z)$ as in \eqref{aconvmexpuldefgamma}.
-    
+It is easy to see~$\gamma$
+    is the unique map with~$(\id+!) \after \gamma = \beta$
+    and~$(!+\id)\after \gamma = \alpha$.
+It remains to be shown~$\gamma$ is affine.
+Write
+\begin{equation*}
+q_1\colon \mathcal{D}_M(X+Y) \to X+Y \quad
+q_2\colon \mathcal{D}_M(1+Y) \to 1+Y \quad
+q_3\colon \mathcal{D}_M(X+1) \to X+1
+\end{equation*}
+for the quotient-maps used in the construction of the coproducts.
+We worked hard to show
+that
+for all~$z \in Z$, $\varphi \in \mathcal{D}_M Y$,
+$\psi \in \mathcal{D}_M X$, 
+and~$\chi \in \mathcal{D}_M (X+Y)$
+with~$\chi(\kappa_1 (y)) = \varphi(\kappa_1(y))$
+and~$\chi(\kappa_2 (x)) = \psi(\kappa_2(x))$,
+we have
+\begin{equation*}
+    \left.\begin{array}{ll}
+    \alpha(z)\ =\ q_1(\varphi) \\
+    \beta(z)\ =\ q_2(\psi)
+    \end{array}\right] \quad \implies \quad
+    \gamma(z) = q_3(\chi).
+\end{equation*}
+Assume~$z = h_Z(\bigovee_i \lambda_i \ket{z_i})$.
+We want to show~$\gamma(z) = h_3(\bigovee_i \lambda_i \ket{\gamma(z_i)})$.
+To this end, pick~$\varphi_i$, $\psi_i$, $\chi_i$
+with~$\alpha(z_i) = q_1(\varphi_i)$,
+$\beta(z_i) = q_2(\psi_i)$,
+$\chi_i(\kappa_1(y)) = \varphi_i(\kappa_1(y))$
+and $\chi_i(\kappa_2(x)) = \psi_i(\kappa_2(x))$.
+So $\gamma(z_i) = q_3(\chi_i)$.
+Define~$\varphi,\psi,\chi$ as follows.
+\begin{align*}
+\varphi &\ \equiv\  \mu\bigl(\bigovee_i \lambda_i \ket{\varphi_i}\bigr)&
+\psi &\ \equiv\  \mu\bigl(\bigovee_i \lambda_i \ket{\psi_i}\bigr) &
+\chi &\ \equiv\  \mu\bigl(\bigovee_i \lambda_i \ket{\chi_i}\bigr)
+\end{align*}
+Note
+$q_1(\varphi)
+    = h_1(\bigovee_i \lambda_i \ket{q_1(\varphi_i)})
+    = h_1(\bigovee_i \lambda_i \ket{\alpha(z_i)})
+    = \alpha(\bigovee_i \lambda_i \ket{z_i})
+    = \alpha(z)$.
+Similarly~$q_2(\psi) = \beta(z)$.
+For any~$y \in Y$,
+    we have
+    $
+    \chi(\kappa_1(y))
+    = \bigovee_i \lambda_i \odot \chi_i(\kappa_1(y))
+    = \bigovee_i \lambda_i \odot \varphi_i(\kappa_1(y))
+    = \varphi(\kappa_1(y))
+    $.
+Similarly~$\chi(\kappa_2(x)) = \psi(\kappa_2(x))$ for any~$x \in X$.
+So~$\gamma(z) = q_3(\chi)$ and consequently
+\begin{equation*}
+    \gamma(z) \ = \ q_3(\chi)
+    \ = \ h_3\bigl(\bigovee_i \lambda_i\ket{q_3(\chi_i)} \bigr)
+    \ = \ h_3\bigl(\bigovee_i \lambda_i\ket{\gamma(z_i)} \bigr),
+\end{equation*}
+as desired. \qed
 \end{point}
 \end{point}
 \end{point}
