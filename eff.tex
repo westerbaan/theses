@@ -1,4 +1,8 @@
 % coproduct supremum
+% grandis
+% monoidal
+% bart dagger kernel category
+%
 \documentclass[b]{subfiles}
 \begin{document}
 
@@ -4034,7 +4038,7 @@ we must have~$\lambda' = \sigma'$, whence~$\rfrac{\lambda}{\mu}=\sigma$. \qed
 \section{$\dagger$-effectus}
 \begin{parsec}%
 \begin{point}{Definition}%
-A \Define{$\dagger$-category} \TODO{refs}
+A \Define{$\dagger$-category} (pronounced: dagger category)
 is category~$C$ together with an involutive identity-on-objects
     functor~$(\ )^\dagger \colon C \to \op{C}$;
     that is, for all objects~$X$ and maps~$f,g$ in~$C$
@@ -4047,7 +4051,8 @@ is category~$C$ together with an involutive identity-on-objects
 \end{enumerate}
 \end{multicols}
 \noindent
-In aby~$\dagger$-category we may define the following.
+Cf.~\cite{burgin1970categories,selinger2007dagger,heunenphd}.
+In any~$\dagger$-category we may define the following.
 \begin{enumerate}
 \item
     An endomap~$f$ is called \Define{$\dagger$-self-adjoint}
@@ -4489,7 +4494,7 @@ From this,
 as desired. \qed
 \end{point}
 \end{point}
-\begin{point}{Definition}%
+\begin{point}[dfn-pristine]{Definition}%
 In a~$\&$-effectus, a map~$f$ is \Define{pristine}
         if it is pure and~$1\after f$ is sharp.
 \end{point}
@@ -5415,6 +5420,100 @@ Then
 so~$\asrt_p$ is~$\dagger$-positive, as desired. \qed
 \end{point}
 \end{point}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}%
+To finish, we relate the structures in a~$\dagger$-effectus
+    with other structures in the literature.
+We start with the~$\dagger$-structures of~$\Pure C$.
+\end{point}
+\begin{point}{Definition}%
+Let~$C$ be a~$\dagger$-category.
+We say that an arrow~$f$
+    is \Define{$\dagger$-mono}
+    iff~$f^\dagger \after f = f$
+    and dually~$f$ is \Define{$\dagger$-epi}
+    iff~$f\after f^\dagger = f$.
+An arrow~$f$ is a \Define{$\dagger$-partial isometry}
+    if~$f = m \after e$
+    for some~$\dagger$-mono~$m$
+    and~$\dagger$-epi~$e$.
+
+A~\Define{$\dagger$-kernel} of~$f$
+is a~$\dagger$-mono equalizer of~$f$ with~$0$.
+A~\Define{$\dagger$-kernel category} is a~$\dagger$-category
+    with zero object and where each arrow has a~$\dagger$-kernel.
+\cite[3.2.20]{heunenphd}
+\end{point}
+\begin{point}{Proposition}%
+In~$\Pure(C)$ for some~$\dagger$-effectus~$C$,
+    the following holds.
+\begin{enumerate}
+\item
+    $f$ is $\dagger$-mono iff $f$ is a comprehension. \\
+    Dually:
+    $f$ is $\dagger$-epi iff $f$ is a quotient of a sharp predicate.
+\item
+    The $\dagger$-partial isometries are exactly the pristine maps, see \sref{dfn-pristine}.
+\end{enumerate}
+Furthermore: $\Pure C$ is a $\dagger$-kernel category:
+    the~$\dagger$-kernel of~$f$ is given by~$\pi_{(1 \after f)^\perp}$.
+\begin{point}{Proof}%
+Let~$f$ be any~$\dagger$-mono
+pure map, say~$f \equiv \pi_s \after \alpha \after \zeta_{\ceil{p}}
+        \after \asrt_p$
+        for some iso~$\alpha$, $s \equiv \IM f$ and~$p \equiv 1 \after f$.
+As we saw before (using \sref{asrt-absorp-rule}),
+    we see~$\id = f^\dagger \after f = \asrt_{p^2}$.
+Thus~$\andthen{p}{p} = p^2 =  1 = \andthen{1}{1}$
+    and so by uniqueness of the square root
+    we get~$p = 1$.
+Hence~$f$ is a comprehension.
+
+Duallizing, we see~$\dagger$-epis are exactly quotients of sharp predicates.
+Now it is clear that the~$\dagger$-partial isometries
+are exactly the pristine maps.
+\begin{point}%
+By the previous~$\pi_{(1 \after f)^\perp}$ is~$\dagger$-mono.
+To see it is the~$\dagger$-kernel of~$f$,
+we have to show it is the equalizer of~$f$ with~$0$.
+Clearly~$(1 \after f )^\perp \after \pi_{(1 \after f)^\perp} = 1$
+and so~$1 \after f \after \pi_{(1 \after f)^\perp} = 0$,
+whence~$f \after \pi_{(1 \after f)^\perp} = 0$.
+Assume~$f \after g = 0$ for some (other) pure map~$g$.
+Then~$1 \after f \after g = 0$,
+    so~$1 \after f \leq \IMperp g$,
+    hence~$(1 \after f)^\perp \geq \IM g$,
+    so~$g = \pi_{(1 \after f)^\perp} \after g'$
+    for a unique~$g'$. \qed
+\end{point}
+\end{point}
+\end{point}
+\begin{point}{Exercise}%
+Let~$C$ be a~$\dagger$-effectus.
+In this exercise, we will show that
+    in general $\Pure C$
+    does not have finite coproducts.
+In particular, $\Pure C$ does not have~$\dagger$-biproducts,
+    see~\cite[3.2.15]{heunenphd}.
+Consider~$C \equiv \op\vN$.
+Reasoning towards contradiction,
+    assume~$(\Pure \op\vN)^{\mathrm{op}}$
+    has a product~$\ \C \xleftarrow{\pi_1} \scrA \xrightarrow{\pi_2} \C$
+    of~$\C $ and~$\C$.
+Use \TODO{}
+    to prove there is an
+    isomorphism~$\varphi\colon  \scrB(\scrH) \oplus \scrC \cong \scrA$
+    with~$\pi_1 \after \varphi = \left<x,\,(\cdot\,)x\right>$
+    and~$\pi_2 \after \varphi = \left<y,(\,\cdot\,)y\right>$
+    for some von Neumann algebra~$\scrC$,
+    Hilbert space~$\scrH$ and $x,y \in \scrH$.
+    First show~$\scrC$ is trivial.
+    Then prove~$\dim \scrH \leq 2$.
+    Almost there: show~$\dim \scrH \geq 2$.
+    Derive a contradiction.
 \end{point}
 \end{parsec}
 \end{document}
