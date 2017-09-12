@@ -222,6 +222,44 @@ so when we write ``corner'' we shall
 always mean a ``unital corner''
 unless explicitly stated otherwise.
 \end{point}
+\begin{point}[cp-comprehension]{Lemma}%
+Let~$f\colon \scrA\to\scrB$ be a p-map between
+$C^*$-algebras,
+and let~$p$ be an effect of~$\scrA$ with~$f(p^\perp)=0$.
+Then $f(a)=f(pa)=f(ap)=f(pap)$
+for all~$a\in\scrA$.
+\begin{point}{Proof}%
+Assume~$\scrB=\C$ for now.
+Since~$p^\perp \leq 1$,
+we have $(p^\perp)^2=\sqrt{p^\perp}p^\perp \sqrt{p^\perp}
+\leq p^\perp$,
+and so~$0\leq f(\,(p^\perp)^2\,) \leq f(p^\perp) = 0$,
+giving us $f(\,(p^\perp)^2\,)=0$.
+Since
+$\left|\smash{f(p^\perp a)}\right|^2
+\leq f(\,(p^\perp)^2\,)\  f(a^*a)\,=\, 0$
+by Kadison's inequality, \sref{omega-norm-basic}, 
+we get~$f(p^\perp a)=0$, and so~$f(pa)=f(a)$ for all~$a\in\scrA$.
+In particular,
+$f(ap)=f(pa^*)^*=f(a^*)^*=f(a)$
+for all~$a\in\scrA$,
+and so~$f(pap)=f(pa)=f(a)$
+for all~$a\in \scrA$.
+
+Letting~$\scrB$ be again arbitrary,
+and given~$a\in\scrA$,
+note that
+since the states on~$\scrB$ 
+are separating (by~\sref{states-order-separating})
+it suffices 
+to show that $\omega(f(a))=\omega(f(ap))=\omega(f(pa))=
+\omega(f(pap))$ for all
+states $\omega \colon \scrB\to\C$.
+But this follows from the previous paragraph
+since~$\omega\circ f$
+is a p-map into~$\C$.\qed
+\end{point}
+\end{point}
 \begin{point}{Proposition}%
 Given an effect~$p$ of a von Neumann algebra~$\scrA$,
 and a partial isometry~$u$ of~$\scrA$
