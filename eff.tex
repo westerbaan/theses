@@ -1578,7 +1578,7 @@ a \Define{predicate} on~$X$ is a map~$X \to 1$.
 The set of predicates $\Pred X$ on~$X$ is (by definition) an effect algebra.
 \item
 A \Define{scalar} is a predicate on~$1$, that is: a map~$1 \to 1$.
-Write~$\Define{M} \equiv \Pred 1$ for the set of scalars.
+Write~$\Define{\Scal C} \equiv \Define{M} \equiv \Pred 1$ for the set of scalars.
 We multiply two scalars~$\lambda,\mu \colon 1 \to 1$
     simply by composing~$\lambda \odot \mu \equiv \lambda \after \mu$.
 As~$1_M = \id_M$ (see \sref{one-m-is-id}) and~$C$ is PCM-enriched,
@@ -2511,7 +2511,7 @@ Now~\eqref{eqkappainj} follows from~$h_X(\chi) = h_X(\chi')$. \qed
 \end{parsec}
 
 \begin{parsec}%
-\begin{point}{Definition}%
+\begin{point}[dfn-effect-divisoid]{Definition}%
 An \Define{effect divisoid}
     is an effect monoid~$M$
     with partial binary operation~$(a,b) \mapsto \rfrac{a}{b}$
@@ -2540,7 +2540,7 @@ More interestingly,
     is an effect divisoid
     with~$\rfrac{(a_1,a_2)}{(b_1,b_2)} =
     (\rfrac{a_1}{b_1}, \rfrac{a_2}{b_2})$.
-Later, \TODO{...}
+Later, in \sref{andthen-effect-divisoid},
     we will see that if~$C$ is a~$\&$-effectus,
 then~$(\Scal C)^{\mathrm{op}}$
     is an effect divisoid.
@@ -3131,6 +3131,9 @@ Show~$\IM f \after g \leq \IM f$.
 Conclude~$\IM f \after \alpha = \IM f$
     for any iso~$\alpha$.
 \end{point}
+\begin{point}{Exercise}%
+Show that in an effectus, any quotient is faithful.
+\end{point}
 \begin{point}%
 In contrast to quotients,
     it is not clear at all whether (without additional assumptions)
@@ -3158,7 +3161,7 @@ Hence~$1 = 1 \after \id =1 \after f \after \xi \leq 1 \after \xi = 1 \after \pi$
     and so~$\pi$ is total. \qed
 \end{point}
 \end{point}
-\begin{point}{Proposition}%
+\begin{point}[factor-compr]{Proposition}%
 Assume~$\pi_s\colon \cmpr{X}{s} \to X$ is a comprehension for~$s$.
 For any~$f\colon Y \to X$ with~$\IM f = s$,
     there is a unique \emph{faithful}~$g\colon Y \to \cmpr{X}{s}$
@@ -3708,37 +3711,14 @@ we define~$\Define{\andthen{p}{q}} = q \after \asrt_p$
 The category$\op{\vN}$ is a~$\&$-effectus
     with~$\andthen{a}{b} = \sqrt{a}b\sqrt{a}$. \TODO{ref}
 \end{point}
-\begin{point}[upm-basics]{Proposition}%
-In an $\&$-effectus
-    the following holds.
+\begin{point}{Proposition}%
+For a predicate~$p$ in an $\&$-effectus the following are equivalent.
 \begin{enumerate}
-\item
-For a predicate~$p$,
-the following are equivalent
-\begin{inparaenum}
 \item $p$ is sharp,
 \item $\andthen{p}{p}=p$ and
 \item $\asrt_p \after \asrt_p = \asrt_p$.
-\end{inparaenum}
-\item
-Let~$s$ be any sharp predicate.
-There exist comprehension~$\pi_s$ of~$s$
-        and quotient~$\zeta_s$ of~$s^\perp$
-        such that~$\zeta_s \after \pi_s = \id$
-        and~$\pi_s \after \zeta_s = \asrt_s$.
-
-In fact, for every comprehension~$\pi$ of~$s$,
-    we can find a quotient~$\xi$ of~$s^\perp$
-    with~$\xi \after \pi = \id$ and~$\pi \after \xi = \asrt_s$
-    \emph{and} conversely for every quotient~$\xi$ of~$s^\perp$
-    there exists a comprehension~$\pi$ of~$s$
-    with~$\xi \after \pi = \id$ and~$\pi \after \xi = \asrt_s$.
-\item Comprehensions are closed under composition.
-\item Pure maps are closed under composition.
 \end{enumerate}
 \begin{point}{Proof}%
-We prove the points in order.
-\begin{point}{Ad 1}%
 First we prove that~$p$ is sharp if and only if~$\andthen{p}{p}=p.$
 So, assume~$p$ is sharp.
 As $\diamond$-positive maps are~$\diamond$-self-adjoint
@@ -3789,9 +3769,25 @@ Now we know~$\pi \after \pi'$
 As~$\asrt_p$ is $\diamond$-self-adjoint,
     we see~$\asrt_p\after\asrt_p$ is $\diamond$-positive.
 By uniqueness of positive maps~$\asrt_p \after \asrt_p = \asrt_p$,
-    as desired.
+    as desired. \qed
+\end{point}    
 \end{point}
-\begin{point}{Ad 2}%
+\begin{point}[prop-corr-zeta-pi]{Proposition}%
+Let~$C$ be an~$\&$-effectus and~$s$
+     be any sharp predicate.
+There exist comprehension~$\pi_s$ of~$s$
+        and quotient~$\zeta_s$ of~$s^\perp$ such that
+\begin{equation*}
+    \zeta_s \after \pi_s = \id \quad \text{and} \quad
+        \pi_s \after \zeta_s = \asrt_s.
+\end{equation*}
+In fact, for every comprehension~$\pi$ of~$s$,
+    there is a quotient~$\xi$ of~$s^\perp$
+    with~$\xi \after \pi = \id$ and~$\pi \after \xi = \asrt_s$
+    \emph{and} conversely for every quotient~$\xi$ of~$s^\perp$
+    there exists a comprehension~$\pi$ of~$s$
+    with~$\xi \after \pi = \id$ and~$\pi \after \xi = \asrt_s$.
+\begin{point}{Proof}%
 Pick quotient~$\xi$ and comprehension~$\pi$
     with~$\pi \after \xi = \asrt_s$.
 By point 1:
@@ -3822,23 +3818,40 @@ Then~$\pi' = \pi \after \alpha$ for some iso~$\alpha$.
 Define~$\xi' = \alpha^{-1} \after \xi$.
 It is easy to see~$\pi' \after \xi' = \asrt_s$
 and~$\xi' \after \pi' = \id$.
-The other statement is proven in a similar way.
+The other statement is proven in a similar way. \qed
 \end{point}
-\begin{point}{Ad 3}%
+\begin{point}[zeta-s-convention]{Notation}%
+In a~$\&$-effectus
+    together with chosen comprehension~$\pi_s$ for~$s$,
+    we will write~$\zeta_s$
+    for the unique quotient for~$s^\perp$
+    satisfying~$\zeta_s \after \pi_s = \id$
+    and~$\pi_s \after \zeta_s = \asrt_s$.
+We call this~$\zeta_s$
+    the \Define{corresponding quotient} of~$\pi_s$
+    and vice versa~$\pi_s$ the \Define{corresponding comprehension}
+    of~$\zeta_s$.
+\end{point}
+\end{point}
+\begin{point}[upm-closed]{Proposition}%
+In an $\&$-effectus
+    both comprehensions and pure maps are closed under composition.
+\begin{point}{Proof}%
+We will first prove that comprehensions are closed under composition.
 Assume~$\pi_1 \colon X \to Y$
     and~$\pi_2 \colon Y \to Z$
     are comprehensions with~$s = \IM \pi_1$
     and~$t = \IM \pi_2$.
 We will show~$\pi_2 \after \pi_1$
     is a comprehension for~$\IM \pi_2 \after \pi_1$.
-To this end, let~$f\colon V\colon Z$ be any map
+To this end, let~$f\colon V\to Z$ be any map
 with~$(\IM \pi_2 \after \pi_1)^\perp \after f = 0$.
 As~$\IM \pi_2 \after \pi_1 \leq \IM \pi_2 = t$
     we get~$t^\perp \after f = 0$,
     so~$f = \pi_2 \after g_2$ for a unique~$g_2\colon V \to Y$.
 Let~$\zeta_2$ be a quotient for~$t^\perp$
 such that~$\zeta_2 \after \pi_2$,
-which exists by the previous point.
+which exists by \sref{prop-corr-zeta-pi}.
 Then~$s \after \zeta_2 \after \pi_2 \after \pi_1
             = s \after \pi_1 = 1$
             so~$s \after \zeta_2 \geq \IM \pi_2 \after \pi_1$.
@@ -3855,8 +3868,8 @@ Hence there exists a unique~$g_1\colon V \to X$
 By monicity of~$\pi_2 \after \pi_1$,
     this~$g_1$ is unique and so~$\pi_2 \after \pi_1$
     is indeed a comprehension.
-\end{point}
-\begin{point}{Ad 4}%
+\begin{point}%
+Now we will prove that pure maps are closed under composition.
 Assume~$g\colon X \to Y$ and~$f\colon Y \to Z$ are pure maps.
 Say~$f = \pi_1 \after \xi_1$
     and~$g = \pi_2 \after \xi_2$
@@ -3874,18 +3887,6 @@ $f \after g
 is pure. \qed
 \end{point}
 \end{point}
-\begin{point}[zeta-s-convention]{Notation}%
-In a~$\&$-effectus
-    together with chosen comprehension~$\pi_s$ for~$s$,
-    we will write~$\zeta_s$
-    for the unique quotient for~$s^\perp$
-    satisfying~$\zeta_s \after \pi_s = \id$
-    and~$\pi_s \after \zeta_s = \asrt_s$.
-We call this~$\zeta_s$
-    the \Define{corresponding quotient} of~$\pi_s$
-    and vice versa~$\pi_s$ the \Define{corresponding comprehension}
-    of~$\zeta_s$.
-\end{point}
 \end{point}
 \begin{point}[andthen-square-rule]{Exercise}%
 Show that in a~$\&$-effectus,
@@ -3902,24 +3903,130 @@ for any sharp predicates~$s$ and~$t$.
 \end{point}
 \begin{point}{Definition}%
 Let~$C$ be a~$\&$-effectus.
-In \sref{upm-basics} we saw pure maps are closed under composition
+In \sref{upm-closed} we saw pure maps are closed under composition
 Write~$\Define{\Pure C}$ for the subcategory
     of pure map.
 \end{point}
 \end{parsec}
 
 \begin{parsec}%
-\begin{point}[standard-form-map]{Corollary}%
+\begin{point}[zeta-asrt-quot]{Lemma}%
+    In a~$\&$-effectus,
+    $\zeta_{\ceil{p}} \after \asrt_p$
+    is a quotient for~$p^\perp$.
+\begin{point}{Proof}%
+Recall~$\IM \asrt_p = \ceil{1 \after \asrt_p} = \ceil{p}$ and so
+\begin{equation*}
+\IM \zeta_{\ceil{p}} \after \asrt_p
+\ =\  (\zeta_{\ceil{p}})_\diamond( \ceil{p})
+\ =\  \IM \zeta_{\ceil{p}} \after \pi_{\ceil{p}}
+\ =\  \IM \id \ =\  1,
+\end{equation*}
+where~$\pi_{\ceil{p}}$ is the comprehension corresponding to~$\zeta_{\ceil{p}}$.
+By~\sref{upm-closed}~$\zeta_{\ceil{p}} \after \asrt_p = \pi \after \xi$
+    for some comprehension~$\pi$ and quotient~$\xi$.
+Putting it together:
+$1 = \IM \zeta_{\ceil{p}} \after \asrt_p = \IM \pi \after \xi \leq \IM \pi$,
+so~$\IM \pi = 1$ and thus~$\pi$ is an isomorphism,
+hence~$\zeta_{\ceil{p}}\after \asrt_p$
+is a quotient for the orthocomplement of~$\ceil{p} \after \asrt_p = p$. \qed
+\end{point}
+\end{point}
+\begin{point}[standard-form-map]{Proposition}%
 Every map~$f$
 in a~$\&$-effectus
 factors as
-    \begin{equation*}
-        f \ =\ \pi_{\IM f} \after g \after \zeta_{\ceil{1 \after f}} \after \asrt_{1 \after f}
-    \end{equation*}
-    for some total and faithful map~$g$.
+\begin{equation}\label{eq-standard-form-map}
+        f \ =\ \pi_{\IM f} \after g \after \zeta_{\ceil{1 \after f}} \after \asrt_{1 \after f} 
+    \end{equation}
+    for a unique total and faithful map~$g$.
+Furthermore the following holds.
+\begin{enumerate}
+\item
 If~$f$ is pure, then~$g$ is an isomorphism.
+\item
+If~$f$ is pure and~$\IM f = 1$, then~$f$ is a quotient.
+\item
+If~$f$ is pure and~$1 \after f = 1$, then~$f$ is a comprehension.
+\end{enumerate}
 \begin{point}{Proof}%
-    \TODO{...}
+By \sref{factor-compr}
+we know~$f = \pi_{\IM f} \after g'$
+for some faithful~$g'$.
+Note~$1 \after g' = 1 \after \pi_{\IM f} \after g' = 1 \after f$.
+By~\sref{quotient-total} and~\sref{zeta-asrt-quot}
+we find~$g' = g \after \zeta_{\ceil{1 \after f}} \after \asrt_{1 \after f}$
+for a unique total~$g$.
+Clearly~\eqref{eq-standard-form-map} holds
+and~$g$ is the unique map
+    for which \eqref{eq-standard-form-map} holds
+    as  comprehensions are mono and quotients are epi.
+    As~$1 = \IM g' = \IM g \after \zeta_{\ceil{1 \after f}}
+            \after \asrt_{1 \after f} \leq \IM g$,
+            we see~$\IM g = 1$ and so~$g$ is faithful.
+
+To prove point 1, assume~$f$ is pure.
+That is: $f = \pi \after \xi$ for some comprehension~$\pi$
+        and quotient~$\xi$.
+As~$1 \after \pi=1$ and~$\IM \xi = 1$,
+    we see~$\IM \pi = \IM f$ and~$1 \after \xi = 1\after f$.
+Thus~$\pi = \pi_{\IM f} \after \alpha$
+    and~$\xi = \beta \after \zeta_{\ceil{1 \after f}}
+                \after \asrt_{1 \after f}$
+        for some isomorphisms~$\alpha$ and~$\beta$.
+Thus~$f = \pi_{\IM f} \after \alpha \after \beta
+                \after \zeta_{\ceil{1 \after f}}
+                \after \asrt_{1 \after f}$
+        and so by uniqueness of~$g$,
+        we see~$g = \alpha \after \beta$ is an isomorphism.
+
+To prove point 2, additionally assume~$\IM f= 1$.
+Then~$\pi_{\IM f}$ is an iso and so
+using the previous, we see~$f$ is indeed a quotient.
+Point 3 is just as easy. \qed
+\end{point}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}[andthen-effect-divisoid]{Proposition}%
+If~$C$ is an~$\&$-effectus,
+    then~$(\Scal C)^{\mathrm{op}}$ is an effect divisoid,
+    see~\sref{dfn-effect-divisoid}.
+\begin{point}{Proof}%
+Let~$\lambda,\mu$ be scalars with~$\lambda \leq \mu$.
+Recall that the scalar~$1=\id$
+    and so~$\mu = 1 \after \asrt_\mu = \asrt_\mu$.
+By~\sref{zeta-asrt-quot},
+    there is a unique~$\lambda'$
+    with~$\lambda' \after \zeta_{\ceil{\mu}} \after \mu = \lambda$.
+Define~$\rfrac{\lambda}{\mu} = \lambda'  \after \zeta_{\ceil{\mu}}$.
+
+For the moment, assume~$\lambda = \mu$.
+Then~$\lambda' \after \zeta_{\ceil{\mu}} \after \mu
+            = \mu = 1 \after \zeta_{\ceil{\mu}} \after \mu$
+            as~$\IM \mu = \IM \asrt_{\mu} = \ceil{\mu}$.
+        By epicity of~$\zeta_{\ceil{\mu}} \after \mu$,
+            we see~$\lambda' = 1$, hence~$\rfrac{\mu}{\mu}=\ceil{\mu}$.
+As we have~$\mu \leq \ceil{\mu}$ and~$\ceil{\ceil{\mu}} = \ceil{\mu}$,
+    we see axioms 2 and 3 hold.
+
+We return to the general case to prove axiom 1.
+Clearly~$\rfrac{\lambda}{\mu} = \lambda' \after \zeta_{\ceil{\mu}}
+            \leq 1 \after \zeta_{\ceil{\mu}} = \ceil{\mu} 
+            = \rfrac{\mu}{\mu}$
+    and~$\mu \odot_{\mathrm{op}} \rfrac{\lambda}{\mu}
+= \lambda'  \after \zeta_{\ceil{\mu}} \after \mu = \lambda$
+as required.
+Assume~$\sigma$ is any
+    (other) scalar with~$\mu \odot_{\mathrm{op}} \sigma = \lambda$
+    and~$\sigma \leq \rfrac{\mu}{\mu} \equiv \ceil{\mu}$.
+Then~$\sigma = \sigma' \after \zeta_{\ceil{\mu}}$
+    for a unique~$\sigma'$.
+As~$
+\lambda'  \after \zeta_{\ceil{\mu}} \after \mu = \lambda
+= \sigma' \after \zeta_{\ceil{\mu}} \after \mu$
+we must have~$\lambda' = \sigma'$, whence~$\rfrac{\lambda}{\mu}=\sigma$. \qed
 \end{point}
 \end{point}
 \end{parsec}
@@ -4581,7 +4688,7 @@ Finally, we deal with~$
 \pi_s \after \varphi \after 
 \pi_{\lceil t \after \asrt_p \after \pi_{\ceil{p}}\rceil}
 $.
-By \sref{upm-basics} this is again a comprehension.
+By \sref{upm-closed} this is again a comprehension.
 We compute
 \begin{align*}
     \IM
