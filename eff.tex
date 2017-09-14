@@ -2534,9 +2534,16 @@ The element~$\rfrac{a}{a}$ behaves like a support-projection for~$a$.
 \end{point}
 \end{point}
 \begin{point}{Examples}%
+Almost all effect monoids we encountered
+    are effect divisoids.
+\begin{enumerate}
+\item
 The effect monoid~$[0,1]$
     is an effect divisoid with~$\rfrac{a}{b} = \frac{a}{b}$
         if~$b \neq 0$ and~$\rfrac{0}{0}=0$.
+With the same partial division, we see the two-element effect monoid~$2$
+    is also an effect divisoid.
+\item
 More interestingly,
     if~$M_1$ and~$M_2$
     are effect divisoids,
@@ -2544,12 +2551,67 @@ More interestingly,
     is an effect divisoid
     with~$\rfrac{(a_1,a_2)}{(b_1,b_2)} =
     (\rfrac{a_1}{b_1}, \rfrac{a_2}{b_2})$.
+In particular~$[0,1]^n$ is an effect divisoid
+    with component-wise partial division.
+\item
 Later, in \sref{andthen-effect-divisoid},
     we will see that if~$C$ is a~$\&$-effectus,
-then~$(\Scal C)^{\mathrm{op}}$
+then~$(\Scal C)^{\mathrm{op}}$ (the scalars with multiplication in the
+    opposite direction)
     is an effect divisoid.
+\item
 If~$M$ is a division effect monoid as in \cite[Dfn.~6.3]{kentapartial},
-then~$M^{\textrm{op}}$ is an effect divisoid.
+then~$M^{\textrm{op}}$ is an effect divisoid in the obvious way.
+\item
+The effect monoid on the unit interval of~$C[0,1]$
+    is \emph{not} an effect divisoid,
+    but the effect monoid on the unit interval of~$L^\infty[0,1]$
+    is, see \sref{basic-divisoid-equiv}.
+\end{enumerate}
+\end{point}
+\begin{point}[basic-divisoid-equiv]{Exercise}%
+Let~$X$ be a compact Hausdorff space.
+In this exercise we will show
+    that the unit interval of~$C(X)$
+    is an effect divisoid
+    if and only if~$X$
+    is \Define{basically disconnected}
+    \cite[1H]{gillman2013rings}
+    --- that is: if~$\overline{\supp f}$ is open
+    for every~$f \in C(X)$.
+Equivalently:
+$C(X)$ is~$\sigma$-Dedekind complete
+    \cite[3N.5]{gillman2013rings}
+(i.e.~$C(X)$ has countable infima and suprema).
+\begin{enumerate}
+\item
+    Let~$C(X)$ is an effect divisoid
+        together with some~$f \in C(X), 0 \leq f \leq 1$.
+    Pick any~$y \notin \overline{\supp f}$.
+    Show, using Urysohn's lemma,
+    that there is a~$g \in C(X), 0\leq g \leq \rfrac{f}{f}$
+    with~$g(y) = 0$ and $g(x) = 1$ for all~$x \in \overline{\supp f}$.
+    Show that this implies~$(\rfrac{f}{f})(y) = 0$
+        and so~$\rfrac{f}{f}$ is the characteristic function
+    of~$\overline{\supp f}$.  Conclude~$X$ is basically disconnected.
+\item
+Assume~$X$ is basically disconnected.
+Let~$f,g\in C(X)$ with~$0 \leq f \leq g \leq 1$.
+For~$n > 0$,
+show that~$U_n \equiv \{ x;\ g(x) > \frac{1}{n} \}$
+has open closure and so
+\begin{equation*}
+    h_n \ \equiv \  \begin{cases}
+        \frac{f(x)}{g(x)} & x \in \overline{U_n}\\
+        0 & \text{otherwise}.
+    \end{cases}
+\end{equation*}
+is continuous.
+Note~$h_1 \leq h_2 \leq \ldots $
+    and define~$\rfrac{f}{g} = \sup_n h_n$.
+Prove that this turns the unit interval of~$C(X)$ into an effect divisoid.
+\end{enumerate}
+
 \end{point}
 \begin{point}{Exercise}%
 Show that for an effect divisoid~$M$, the following holds.
