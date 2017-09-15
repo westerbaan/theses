@@ -37,9 +37,123 @@ General topological spaces on their own are usually of little interest:
     are just plain topological spaces with a few additional axioms.
 Similarly, there will be many pathalogical effectuses.
 Their use for us lies in their expressiveness.
-After we have studied plain effectuses,
-    we will study effectuses with various additional bits of structure.
-\TODO{More intro}
+\end{point}
+\begin{point}%
+Before we can dive into effectuses,
+    we need to learn about effect algebras (and related structures),
+    which were introduced by mathematical physicists as
+    a generalization of boolean algebra to study unsharp predicates
+    in quantum mechanics.
+    In a sense, effectuses are the categorical counterpart of effect algebras.
+Then we continue with a brief, but thorough development
+    of the basic theory of effectuses.
+There is a lot more to say about effectuses
+    (see \cite{effintro}), which has been omitted
+    to avoid straining the Reader.
+    However, we will indulge in one tangent:
+    the study of abstract convex sets in
+    \S\ref{more-aconvm}, which can be skipped.
+For the moment, think of an effectus as a generalization
+    of the opposite category of von Neumann algebras:
+    the objects represent the physical systems
+    (or data types, if you like)
+    and the maps represent the physical processes
+    (or properly typed maps).
+\end{point}
+\begin{point}%
+The first two axioms we add on top of an effectus
+    are the existence of quotients and comprehension.
+It's helpful to discuss the origin of these axioms.
+It started with the desire to axiomatize categorically
+    the sequential product on a von Neumann algebra~$\scrA$,
+    the operation~$\andthen{a}{b} \equiv  \sqrt{a} b \sqrt{a}$,
+    which represents sequential measurement
+    of first~$a$ \emph{andthen} $b$.
+The sequential product is the quantum mechanical counterpart
+    of conjunction (logical `and').
+In  contrast to the tame~$\wedge$ in a boolean algebras,
+    the sequential product does not obey a lot of insightful
+    formulas.
+Instead, we take a step back and
+    consider the map~$\asrt_a(b) \equiv  \andthen{a}{b}$
+        for fixed~$a$, which factors into two part:
+\begin{equation*}
+    \xymatrix@C+2pc@R-2pc{
+        \scrA \ar[r]^\pi & \ceil{a} \scrA \ceil{a} \ar[r]^\xi
+        & \scrA \\
+        b \ar@{|->}[r] & \ceil{a}b\ceil{a}
+            \ar@{|->}[r] & \sqrt{a}b\sqrt{a}.
+    }
+\end{equation*}
+It turns out that both~$\pi$ and~$\xi$ have
+    nice and dual (in a sense) defining universal properties
+    which can be expressed in an effectus:
+    $\pi$ is a comprehension and~$\xi$ is a quotient.\footnote{%
+            Beware: an effectus quotient is not the same thing
+        as a von Neumann-algebra quotient.}
+\end{point}
+\begin{point}%
+The existence of quotients and comprehension in some effectus~$C$
+    is interesting on its own, but with
+    two additional axioms (the existence of images and
+    preservation of images under orthocomplement),
+    we get a surprisingly firm handle
+    on the possibilistic side of~$C$,
+    by means of the existence
+    of a certain functor~$(\ )_\diamond\colon C \to \mathsf{OMLat}$.
+In the guiding example of von Neumann algebras,
+    we have~$f_\diamond = g_\diamond$
+        if and only
+    there is no post-measurement~$a$ and initial state~$\omega$
+    that can distinguish with certainty
+    between whether~$f$ or~$g$ has been performed.\footnote{%
+    In symbols: $
+    f_\diamond = g_\diamond \iff 
+\bigl(\forall a,\omega.\  \omega(f(a))  =  0 \ \Leftrightarrow\ \omega(g(a))  =  0\bigr).$}
+With this functor we can introduce several
+    possibilistic notions of which~$\diamond$-adjoint
+    and~$\diamond$-positive are the most important.
+Because of the central role of~$\diamond$,
+    we call an effectus with these axioms 
+    a~$\diamond$-effectus.
+\end{point}
+\begin{point}%
+The axioms of a~$\diamond$-effectus do not force
+    any coherence between the quotients and comprehension.
+This has been a roadblock in the axiomatization
+    of the sequential product for quite a while.
+The key insight was the following:
+    the map~$\asrt_a$ (i.e.~$b\mapsto \andthen{a}{b}$)
+    is the unique~$\diamond$-positive map on~$\scrA$
+    with~$\asrt_a(1) = a$.
+We turn this Theorem into an axiom:
+    a~$\&$-effectus is
+    a~$\diamond$-effectus
+    where there are such unique~$\diamond$-positive maps~$\asrt_a$
+    and an additional polar decomposition axiom holds.
+In an~$\&$-effectus, the predicates on an object carry a canonical~$\&$
+    which is the intended sequential product in
+    the case of von Neumann algebras.
+\end{point}
+\begin{point}%
+In an effectus, we call a map pure if it can be written
+    as the composition of quotients and comprehensions.
+In \TODO{} we saw that in the case of von Neumann algebras,
+    a map is pure (in this sense) if and only if the corresponding Paschke
+    embedding is surjective.
+In particular, the pure maps~$\scrB(\scrH) \to \scrB(\scrK)$
+    are exactly of the form~$\ad_v$,
+    which carry a~$\dagger$-structure,
+    namely~$(\ad_v)^\dagger = \ad_{v^*}$.
+This begs the question: can we define a~$\dagger$ on all pure maps
+    in a~$\&$-effectus?
+The main result of this chapter
+    is Theorem \sref{dagger-theorem}
+    which gives  necessary and sufficient conditions
+    for a~$\&$-effectus
+    to have a well-behaved~$\dagger$-structure on its pure maps.
+After this highpoint, we reflect and discuss how these
+    structures compare to those already known in the literature.
 \end{point}
 \end{parsec}
 \section{Effect algebras et al}
@@ -2021,7 +2135,7 @@ for every~$\bigovee_i \lambda_i \ket{\varphi_i}$
 \end{point}
 \end{parsec}
 
-\subsection{More on abstract $M$-convex sets}
+\subsection{More on abstract $M$-convex sets}\label{more-aconvm}
 \begin{parsec}%
 \begin{point}%
 For our next project,
@@ -2534,9 +2648,16 @@ The element~$\rfrac{a}{a}$ behaves like a support-projection for~$a$.
 \end{point}
 \end{point}
 \begin{point}{Examples}%
+Almost all effect monoids we encountered
+    are effect divisoids.
+\begin{enumerate}
+\item
 The effect monoid~$[0,1]$
     is an effect divisoid with~$\rfrac{a}{b} = \frac{a}{b}$
         if~$b \neq 0$ and~$\rfrac{0}{0}=0$.
+With the same partial division, we see the two-element effect monoid~$2$
+    is also an effect divisoid.
+\item
 More interestingly,
     if~$M_1$ and~$M_2$
     are effect divisoids,
@@ -2544,12 +2665,71 @@ More interestingly,
     is an effect divisoid
     with~$\rfrac{(a_1,a_2)}{(b_1,b_2)} =
     (\rfrac{a_1}{b_1}, \rfrac{a_2}{b_2})$.
+In particular~$[0,1]^n$ is an effect divisoid
+    with component-wise partial division.
+\item
 Later, in \sref{andthen-effect-divisoid},
     we will see that if~$C$ is a~$\&$-effectus,
-then~$(\Scal C)^{\mathrm{op}}$
+then~$(\Scal C)^{\mathrm{op}}$ (the scalars with multiplication in the
+    opposite direction)
     is an effect divisoid.
+\item
 If~$M$ is a division effect monoid as in \cite[Dfn.~6.3]{kentapartial},
-then~$M^{\textrm{op}}$ is an effect divisoid.
+then~$M^{\textrm{op}}$ is an effect divisoid in the obvious way.
+\item
+The effect monoid on the unit interval of~$C[0,1]$
+    is \emph{not} an effect divisoid,
+    but the effect monoid on the unit interval of~$L^\infty[0,1]$
+    is, see \sref{basic-divisoid-equiv}.
+\end{enumerate}
+\end{point}
+\begin{point}[basic-divisoid-equiv]{Exercise}%
+Let~$X$ be a compact Hausdorff space.
+In this exercise we will show
+    that the unit interval of~$C(X)$
+    is an effect divisoid
+    if and only if~$X$
+    is \Define{basically disconnected}
+    \cite[1H]{gillman2013rings}
+    --- that is: if~$\overline{\supp f}$ is open
+    for every~$f \in C(X)$.
+Equivalently:
+$C(X)$ is~$\sigma$-Dedekind complete
+    \cite[3N.5]{gillman2013rings}
+(i.e.~$C(X)$ has countable infima and suprema).
+\begin{enumerate}
+\item
+    Let~$C(X)$ is an effect divisoid
+        together with some~$f \in C(X), 0 \leq f \leq 1$.
+    Pick any~$y \notin \overline{\supp f}$.
+    Show, using Urysohn's lemma,
+    that there is a~$g \in C(X), 0\leq g \leq \rfrac{f}{f}$
+    with~$g(y) = 0$ and $g(x) = 1$ for all~$x \in \overline{\supp f}$.
+    Show that this implies~$(\rfrac{f}{f})(y) = 0$
+        and so~$\rfrac{f}{f}$ is the characteristic function
+    of~$\overline{\supp f}$.  Conclude~$X$ is basically disconnected.
+\item
+Assume~$X$ is basically disconnected.
+Let~$f,g\in C(X)$ with~$0 \leq f \leq g \leq 1$.
+For~$n > 0$,
+show that~$U_n \equiv \{ x;\ g(x) > \frac{1}{n} \}$
+has open closure and so
+\begin{equation*}
+    h_n \ \equiv \  \begin{cases}
+        \frac{f(x)}{g(x)} & x \in \overline{U_n}\\
+        0 & \text{otherwise}.
+    \end{cases}
+\end{equation*}
+is continuous.
+Note~$h_1 \leq h_2 \leq \ldots $
+    and define~$\rfrac{f}{g} = \sup_n h_n$.
+Show~$\rfrac{f}{f}$ is the characteristic function
+    of~$\overline{\supp f}$ and
+    $\rfrac{f}{g} \leq \rfrac{g}{g}$.
+Prove that this partial division turns the unit interval of~$C(X)$
+    into an effect divisoid.
+\end{enumerate}
+
 \end{point}
 \begin{point}{Exercise}%
 Show that for an effect divisoid~$M$, the following holds.
