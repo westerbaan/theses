@@ -5606,8 +5606,19 @@ so~$\asrt_p$ is~$\dagger$-positive, as desired. \qed
 \begin{parsec}%
 \begin{point}%
 To finish, we relate the structures in a~$\dagger$-effectus
-    with other structures in the literature.
-We start with the~$\dagger$-structures of~$\Pure C$.
+    with existing structures in the literature.
+Just like we try to axiomatize~$\op\vN$,
+    Heunen in the third chapter of his Ph.D-thesis attempted
+    to axiomatize~$\mathsf{Hilb}$,
+    the category of Hilbert spaces with bounded operators.
+Heunen came very close:
+    he proves that a~$\dagger$-category obeying
+    certain additional axioms must embed into~$\mathsf{Hilb}$.
+    \cite[3.7.18]{heunenphd}
+We will discover that some of his axioms for~$\mathsf{Hilb}$
+    hold in~$\Pure(C)$ for a~$\dagger$-effectus~$C$
+    and other do not in general.
+(We do not cover all his axioms.)
 \end{point}
 \begin{point}{Definition}%
 Let~$C$ be a~$\dagger$-category.
@@ -5694,6 +5705,68 @@ Use \TODO{}
     Then prove~$\dim \scrH \leq 2$.
     Almost there: show~$\dim \scrH \geq 2$.
     Derive a contradiction.
+\end{point}
+\begin{point}{Exercise}%
+In this exercise we will show that~$\Pure(\op\vN)$ does not have
+    all coequalizers.  It is helpful to first consider
+    two concrete coequalizers in~$\mathsf{Hilb}$ and~$\op\vN$.
+(These coequalizers capture unordered pairs of qubits.)
+
+Write~$\sigma\colon \C^2 \otimes \C^2 \to \C^2 \otimes \C^2$
+    for the unitary
+    fixed by~$\sigma \ket{ij} = \ket{ji}$.
+The equalizer of~$\sigma$ with~$\id$ exists in~$\mathsf{Hilb}$
+    and is given by~$e_{\mathscr{S}}$, the inclusion
+    of the subspace~$\mathscr{S}$
+    spanned by~$\{\ket{00}, \ket{11}, \ket{01}+\ket{10}\}$
+    into~$\C^2\otimes \C^2$.
+    ($\mathscr{S}$ is called the symmetric tensor of~$\C^2$ with itself.)
+    The coequalizer of~$\sigma$ with~$\id$ is simply~$e_{\mathscr{S}}^\dagger$.
+    There is also an equalizer of~$\ad_{\sigma}\colon M_4 \to M_4$ with~$\id$
+    in~$\vN$, but curiously enough, it is given
+    by~$e \colon M_3 \oplus \C \to M_4$,
+    where~$e(a,\lambda) =
+            \ad_{e^\dagger_{\mathscr{S}}}(a) +
+            \ad_{e^\dagger_{\mathscr{A}}}(\lambda)$
+     and~$\scrA$ is the subspace spanned by~$\ket{01} - \ket{10}$.
+     For the proof and similar results, see \cite{bags}.
+
+Assume~$\xi \colon \scrC \to M_4$
+    is some filter (i.e.~quotient in the opposite category)
+    with~$\ad_\sigma \after \xi = \xi$.
+Show that for each~$x \in \ceil{\xi(1)} \C^4$
+    we must have~$x \in \scrA$ or~$x \in \scrS$.
+    (First show it for~$x \in \xi(1) \C^4$
+    and then apply a pseudoinverse, see \sref{dfn-pseudoinverse}.)
+Prove from this, that either~$\ceil{\xi(1)} \leq e_{\scrA}e^\dagger_{\scrA} $
+    or~$\ceil{\xi(1)} \leq e_{\scrS}e^\dagger_{\scrS} $
+        and that
+        consequently~$\xi$ cannot be an equalizer of~$\ad_\sigma$ and~$\id$
+    in~$\op{\Pure(\op\vN)}$.
+Conclude~$\Pure(\op\vN)$ does not have all coequalizers.
+\end{point}
+\begin{point}%
+To summarize:
+    the category~$\Pure(C)$
+    of a~$\dagger$-effectus~$C$
+    is a~$\dagger$-category,
+    has~$\dagger$-kernels
+    and each~$\dagger$-mono is a~$\dagger$-kernel,
+    but in general it does not have~$\dagger$-biproducts or
+        $\dagger$-equalizers,
+        which shows it is not, in general,
+        a pre-Hilbert category as in \cite[3.7.1]{heunenphd}.
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}%
+Next we compare our effectuses to Grandis' homological categories \cite{grandis},
+    which generalize abelian categories
+    used in homological algebra.
+\end{point}
+\begin{point}%
+    
 \end{point}
 \end{parsec}
 \end{document}
