@@ -2,8 +2,82 @@
 \begin{document}
 \chapter{Von Neumann Algebras}
 \begin{parsec}%
-We have arrived at the central
-objects of this thesis
+We have arrived at the main subject of this thesis,
+the special class of $C^*$-algebras
+called von Neumann algebras (see definition~\sref{vna} below)
+that are characterized by the existence
+of certain directed suprema 
+and an abundance  of functionals that preserve
+these suprema.
+While all $C^*$-algebras
+and the cpsu-maps
+may perhaps serve as model of
+quantum datatypes and the processes
+between them, respectively,
+we focus our attention on
+the subcategory~$\W{cpsu}$ of von Neumann algebras
+and the cpsu-maps between them that preserve aforementioned suprema
+(and are therefore called \emph{normal}, see~\sref{}),
+because we'll see that~$\W{cpsu}$
+is a model of the quantum lambda calculus
+(while~$\Cstar{cpsu}$ is not, \TODO{...}),
+and we were able to axiomatise
+the sequential product ($b\mapsto \sqrt{a}b\sqrt{a}$)
+in~$\W{cpsu}$ (but not in~$\Cstar{cpsu}$).
+
+The archetypal von Neumann algebra
+is the $C^*$-algebra~$\scrB(\scrH)$
+of bounded operators on a Hilbert space~$\scrH$,
+and in fact the canonical and original
+definition of a von Neumann algebra
+is a $C^*$-subalgebra
+of a~$\scrB(\scrH)$
+that is closed in the weak operator topology
+(see~\sref{wot}).
+Partly because it seems difficult
+to explain 
+to a computer scientist
+picturing a quantum data type
+the meaning of the weak operator topology
+and the Hilbert space~$\scrH$,
+we'll use Kadison's characterization
+of von Neumann algebras
+as $C^*$-algebras
+with a certain dcpo-structure to them
+and sufficiently many Scott-continuous functionals
+as our definition instead.
+But we also used Kadison's definition
+just to see to what extend
+when errecting the basic theory of von Neumann algebras
+we could reduce the recourse to the representation
+of a von Neumann algebras as a rings of operators
+(so liberally employed in the literature),
+and  instead put the directed suprema and normal functionals
+on center stage,
+giving the theory more of an axiomatic
+and less of a descriptive nature.
+
+Nevertheless, the resulting development
+although abridged stays close
+to the traditional ones;
+but  while many arguments we use
+are borrowed from
+the standard texts (see~\TODO{Kadison and Sakai})
+most of them required some tweaking, and
+some of them demanded a complete overhaul.
+There is however one seemingly novel result,
+that I'd like to flaunt,
+and will be used extensively in the next chapter
+and in \TODO{Bas'} thesis,
+namely
+that von Neumann algebras
+are complete in the ultrastrong topology
+and \emph{bounded} complete (see~\TODO{}) in the ultraweak topology.
+
+
+
+
+
 \end{parsec}
 \section{Definition and counterexamples}
 \begin{parsec}[vna]%
@@ -1208,7 +1282,37 @@ denoted by~$\Define{Z(\scrA)}$,
 is the collection of central elements.
 \end{enumerate}
 \end{point}
-\begin{point}{Proposition}%
+\begin{point}{Exercise}%
+Given a von Neumann algebra~$\scrA$
+show that~$Z(\scrA)$ is a von Neumann subalgebra of~$\scrA$.
+\end{point}
+\begin{point}{Examples}%
+\begin{enumerate}
+\item
+In a commutative von Neumann algebra
+every element central.
+\item
+An element~$a$ of a direct sum~$\bigoplus_i \scrA_i$
+of von Neumann algebras
+is central iff~$a_i$ is central for each~$i$.
+\item
+In~$\scrB(\scrH)$,
+where~$\scrH$ is a Hilbert space,
+only the scalars are central.
+
+Indeed,
+given a positive central element~$A$ 
+of~$\scrB(\scrH)$,
+we have $\left<x, A\|y\|^2 x\right>
+= \left<x,A \ketbra{x}{y} y\right>
+= \left<x,\ketbra{x}{y}A y\right>
+= \left<x,\smash{\|\sqrt{A}y\|^2 }x\right>$
+for all~$x,y\in\scrH$,
+and so~$A\|y\|^2= \|\sqrt{A}y\|^2$
+for all~$y\in\scrH$.
+\end{enumerate}
+\end{point}
+\begin{point}[cceil-fundamental]{Proposition}%
 Given a projection~$e$ of a von Neumann algebra~$\scrA$
 \begin{equation*}
 	\Define{\cceil{e}}\ :=\ 
@@ -1258,6 +1362,35 @@ with~$\cceil{a}a=a$,
 which we'll call the
 \Define{central support} of~$a$.
 \end{point}
+\begin{point}[cceil-basic]{Exercise}%
+Let~$\scrA$ be a von Neumann algebra.
+\begin{enumerate}
+\item
+Show that $\cceil{a}=\cceil{a^*}
+=\cceil{a^*a}=\cceil{aa^*}$
+for all~$a\in\scrA$.
+\item
+Show that~$\cceil{ \bigvee D } = \bigcup_{d\in D} \cceil{d}$
+for any bounded directed subset of~$\scrA$.
+
+Show that~$\cceil{\bigcup E} = \bigcup_{e\in E} \cceil{e}$
+for any collection of projections from~$\scrA$.
+
+Show that~$\cceil{a+b}=\cceil{\ceil{a}\cup \ceil{b}}
+=\cceil{a}\cup\cceil{b}$
+for all~$a,b\in \scrA$.
+\item
+Given~$a\in\scrA$
+and a central projection~$c$ of~$\scrA$
+show that~$\cceil{a}c=\cceil{ac}$.
+
+Conclude that~$\cceil{ab}=\cceil{a}\cceil{b}
+=\cceil{a}\cap\cceil{b}$
+for all~$a,b\in\scrA$.
+\end{enumerate}
+\end{point}
+\end{parsec}
+\begin{parsec}%
 \begin{point}{Definition}%
 Let $f\colon \scrA\to\scrB$
 be an ncp-map
@@ -1346,16 +1479,14 @@ Since similarly $c\leq c'$, we get~$c=c'$.\qed
 \end{point}
 \end{point}
 \begin{point}{Corollary}%
-The carrier~$\ceil{f}$
-of a nmiu-map $f\colon \scrA\to\scrB$
+Given a nmiu-map $f\colon \scrA\to\scrB$
 between von Neumann algebras
-is central,
-and $\ker(f)=\ceil{f}\!\scrA$.
+we have~$\ceil{f}=\cceil{f}$
+and $\ker(f)=\cceil{f}\!\scrA$.
 \end{point}
 \begin{point}[proto-gns-ceil]{Lemma}%
 We have~$\cceil{\omega}=
-\ceil{\varrho_\omega}
-= \bigcup_{a\in \scrA}\ceil{a^*\ceil{\omega}a}$
+\ceil{\varrho_\omega}$
 for every np-functional $\omega\colon \scrA\to\C$
 on a von Neumann algebra~$\scrA$,
 where~$\varrho_\omega$
@@ -1375,56 +1506,12 @@ Hence $\ceil{\varrho_\omega}=
 \bigcup_{a\in\scrA}
 \ceil{a\ceil{\omega}a^*} \equiv
 \bigcup_{a\in\scrA}
-\ceil{a^*\ceil{\omega}a}$.
-
-Note that $\cceil{a^*\ceil{\omega} a}
-= \cceil{a}\cceil{\omega}\leq\cceil{\omega}$ by~\TODO{...},
-and so
-$\cceil{\varrho_\omega}
-= \cceil{\ceil{\varrho_\omega}}
-= \bigcup_{a\in\scrA} \cceil{ a^* \ceil{\omega} a} 
-\leq \cceil{\omega}$.
-Since also~$\ceil{\omega}\leq \bigcup_{a\in \scrA}\ceil{a^*\ceil{\omega}a}
-=\ceil{\varrho_\Omega}$,
-and thus~$\cceil{\omega}\leq \cceil{\ceil{\varrho_\omega}}
-=\ceil{\varrho_\omega}$,
-we get~$\ceil{\varrho_\omega} = \cceil{\omega}$.\qed
+\ceil{a^*\ceil{\omega}a}
+=\cceil{\ceil{\omega}}
+=\cceil{\omega}$
+by~\sref{cceil-fundamental}.\qed
 \end{point}
 \end{point}
-\begin{point}{Corollary}%
-The central support of projection~$e$ from a von Neumann algebra~$\scrA$
-can be obtained as~$\cceil{e}=\bigcup_{a\in\scrA} \ceil{a^*ea}$.
-\begin{point}{Proof}%
-Writing~$\Omega$ for the set of np-functionals with
-$\omega(e^\perp)=0$,
-we have~$\bigcup_{\omega\in\Omega}\ceil{\omega}=e$ by~\TODO{...},
-and so
-\TODO{add reasons}
-\begin{alignat*}{3}
-\cceil{e}
-\ &=\ 
-\textstyle
-\bigcup_{\omega\in\Omega}\cceil{\omega}
-\\
-\ &=\ 
-\textstyle
-\bigcup_{\omega\in\Omega}\bigcup_{a\in \scrA}
-\ceil{a^* \ceil{\omega} a}
-\\
-\ &=\
-\textstyle
-\bigcup_{a\in \scrA} \bigcup_{\omega\in\Omega}
-\ceil{a^*\ceil{\omega} a}
-\\
-\ &=\ 
-\textstyle
-\bigcup_{a\in \scrA} \ceil{a^* e a},
-\end{alignat*}
-as desired.
-\qed
-\end{point}
-\end{point}
-
 \begin{point}[gns-ceil]{Proposition}%
 Given a collection of np-functionals~$\Omega$
 on a von Neumann algebra~$\scrA$
@@ -1433,7 +1520,19 @@ we have $\ceil{\varrho_\Omega}
 for~$\varrho_\Omega$
 from~\sref{gns}.
 \begin{point}{Proof}%
-\TODO{...}
+Let~$e$ be a projection of~$\scrA$.
+Since
+$\varrho_\Omega(e)(x)
+= \sum_{\omega\in\Omega} \varrho_\omega(x_\omega)$
+by~\sref{gns}
+for all~$x\in\scrH_\Omega\equiv\bigoplus_{\omega\in\Omega}\scrH_\omega$,
+we have~$\varrho_\Omega(e)=0$
+iff~$\varrho_\omega(e)=0$ for all~$\omega\in\Omega$
+iff~$e\leq \smash{\ceil{\varrho_\omega}^\perp \equiv 
+\smash{\cceil{\omega}}^\perp}$
+iff~$e\leq \bigcap_{\omega\in\Omega}\smash{\cceil{\omega}}^\perp 
+\equiv (\bigcup_{\omega\in\Omega} \cceil{\omega})^\perp$.
+Hence~$\ceil{\varrho_\Omega}=\bigcup_{\omega\in\Omega}\cceil{\omega}$.\qed
 \end{point}
 \end{point}
 \begin{point}[vn-center-separating]{Corollary}%
@@ -1471,13 +1570,15 @@ with
 $\ceil{\varrho_\Omega}^\perp
 =\smash{\bigl(\bigcup_{\omega\in\Omega} \smash{\cceil{\omega}\bigr)}}^\perp
 =\bigcap_{\omega\in \Omega} \cceil{\omega}^\perp
-\leq \smash{\cceil{\omega}}^\perp$
+\leq \smash{\cceil{\omega}}^\perp
+\leq \smash{\ceil{\omega}}^\perp$
 and thus
 $\omega(\smash{\ceil{\varrho_\Omega}}^\perp)
 \leq \omega(\ceil{\omega}^\perp)=0$
 for all~$\omega\in\Omega$
-we get~$\ceil{\varrho_\Omega}=0$,
-which implies that~$\varrho_\Omega$ is injective.\qed
+we get~$\ceil{\varrho_\Omega}^\perp =0$,
+and so~$\varrho_\Omega$ is injective
+by~\TODO{...}.\qed
 \end{point}
 \end{point}
 \end{parsec}
