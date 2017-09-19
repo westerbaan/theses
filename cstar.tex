@@ -121,7 +121,7 @@ if $ab=ba$ for all~$a,b\in\scrA$.
 \begin{point}{Warning}%
 In the literature it is usually not
 required that a $C^*$-algebra
-possesses a unit; but when it does it is called
+possess a unit; but when it does it is called
 a \Define{unital $C^*$-algebra}.
 \end{point}
 \end{point}
@@ -222,7 +222,7 @@ holds
 and that $M_n$ is complete.
 We will prove these facts in the more general setting
 of bounded operators between Hilbert spaces, 
-see~\sref{adjointables-cstar-algebra}.
+see~\sref{adjoinables-cstar-algebra}.
 Suffice it to say, $\C^n$ is a Hilbert space
 with~$\left<v,w\right>=\sum_i \overline{v}_iw_i$
 as inner product,
@@ -399,9 +399,9 @@ when
 \left<Tx,y\right> \ = \ \left<x,Sy\right>
 \qquad\text{for all $x\in \scrH$ and $y\in \scrK$.}
 \end{equation*}
-In that case, we call~$T$ \Define{adjointable}.
+In that case, we call~$T$ \Define{adjoinable}.
 We'll see (in~\sref{uniqueness-adjoint})
-that such adjointable~$T$ is adjoint to exactly one~$S$,
+that such adjoinable~$T$ is adjoint to exactly one~$S$,
 which we denote by~\Define{$T^*$}.
 \end{point}
 \begin{point}[hilb-basic-examples]{Example}%
@@ -414,11 +414,13 @@ making it a Hilbert space.
 
 The space~$\Define{c_{00}}$
 of sequences $x_1,x_2,\dotsc$
-for which only finitely many~$x_n$'s are non-zero
-when  endowed with $\left<x,y\right>=\sum_{n=0}^\infty \overline{x}_ny_n$
-as inner product
+for which~$x_n$ is non-zero
+for finitely many~$n$'s
 is an example of a 
-pre-Hilbert space which is not complete.
+pre-Hilbert
+which is not complete
+when  endowed with $\left<x,y\right>=\sum_{n=0}^\infty \overline{x}_ny_n$
+as inner product.
 
 For an example
 of an infinite-dimensional Hilbert
@@ -443,8 +445,8 @@ Conclude that every operator between pre-Hilbert spaces
 has at most one adjoint.
 \begin{point}{Remark}%
 Note that we did not require that
-an adjointable operator $T\colon \scrH\to\scrK$
-between pre-Hilbert spaces is bounded,
+an adjoinable operator $T\colon \scrH\to\scrK$
+between pre-Hilbert spaces be bounded,
 and in fact, it might not be.
 Take for example
 the operator
@@ -459,7 +461,7 @@ as we'll see in~\sref{hellinger-toeplitz}.
 \end{point}
 \end{point}
 \begin{point}{Exercise}%
-Let~$S$ and~$T$ be adjointable operators on a pre-Hilbert space.
+Let~$S$ and~$T$ be adjoinable operators on a pre-Hilbert space.
 \begin{enumerate}
 \item
 Show that~$T^*$ is adjoint to~$T$ (and so $T^{**}=T$).
@@ -471,8 +473,8 @@ for every~$\lambda\in \C$.
 Show that~$ST$ is adjoint to $T^*S^*$ (and so $(ST)^*=T^*S^*$).
 \end{enumerate}
 We will, of course, show
-that every bounded operator on a Hilbert space is adjointable,
-see~\sref{bounded-operator-adjointable}.
+that every bounded operator on a Hilbert space is adjoinable,
+see~\sref{bounded-operator-adjoinable}.
 But let us first show that~$\|\,\cdot\,\|$
 defined in~\sref{hilb-def} is a norm,
 which boils down to the following fact
@@ -575,7 +577,7 @@ using the inequalities~$\left<x,y\right>+\left<y,x\right>
 \leq 2\left|\left<x,y\right>\right| \leq 2\|x\|\|y\|$.)
 \end{point}
 \begin{point}[operators-cstar-identity]{Lemma}%
-For an adjointable operator~$T$ on a pre-Hilbert space~$\scrH$
+For an adjoinable operator~$T$ on a pre-Hilbert space~$\scrH$
 \begin{equation*}
 \|T^*T\|\ =\ \|T\|^2\qquad\text{and}\qquad\|T^*\|\ =\ \|T\|.
 \end{equation*}
@@ -599,7 +601,7 @@ and so $\|T\|^2=\|T^*T\|$.\qed
 \end{point}
 \begin{point}{Exercise}%
 Given a Hilbert space~$\scrH$
-show that the adjointable operators
+show that the adjoinable operators
 form a closed subspace of~$\scrB(\scrH)$.
 \end{point}
 \begin{point}[ketbra]{Exercise}%
@@ -612,20 +614,20 @@ defines a bounded operator,
 and, moreover, that~$\|\,\ketbra{x}{y}\,\|=\|x\|\|y\|$.
 \item
 Show that~$\ketbra{x}{y}$
-is adjointable,
+is adjoinable,
 and~$(\ketbra{x}{y})^*=\ketbra{y}{x}$.
 \end{enumerate}
 \end{point}
 \end{parsec}
 \begin{parsec}[hilb-adjoint]%
-\begin{point}[adjointables-cstar-algebra]%
+\begin{point}[adjoinables-cstar-algebra]%
 At this point
-it is clear that the vector space of adjointable operators
+it is clear that the vector space of adjoinable operators
 on a Hilbert space forms a $C^*$-algebra.
 So to prove that $\scrB(\scrH)$
 is a $C^*$-algebra,
 it remains to be shown that every bounded operator
-is adjointable (which we'll do in~\sref{bounded-operator-adjointable}).
+is adjoinable (which we'll do in~\sref{bounded-operator-adjoinable}).
 We first show that each bounded functional $f\colon \scrH\to \C$
 has an adjoint, see~\sref{riesz-representation-theorem},
 for which we need the (existence and) properties of ``projections''
@@ -768,9 +770,9 @@ for all~$z\in \scrH$.
 Finally, uniqueness of~$x$ follows from~\sref{uniqueness-adjoint}.\qed
 \end{point}
 \end{point}
-\begin{point}[bounded-operator-adjointable]{Exercise}%
+\begin{point}[bounded-operator-adjoinable]{Exercise}%
 Prove that every bounded operator~$T$ on a Hilbert space~$\scrH$
-is adjointable, as follows.
+is adjoinable, as follows.
 Let~$x\in \scrH$ be given.
 Prove that~$\left<x,T(\,\cdot\,)\right>\colon \scrH\to \C$
 is a bounded linear map.
@@ -925,7 +927,7 @@ The set of self-adjoint elements of~$\scrA$
 is denoted by~\Define{$\sa{\scrA}$}.
 \end{point}
 \begin{point}[cstar-involution-basic]{Exercise}%
-Let~$a$ be an element of a $C^*$-algebra.
+Let~$a$ be an element of a $C^*$-algebra~$\scrA$.
 \begin{enumerate}
 \item 
 Show that $\Real{a}$ and $\Imag{a}$ are self-adjoint,
@@ -949,7 +951,7 @@ and  $a^*a=\Real{a}^2+\Imag{a}^2+i(\Real{a}\Imag{a}-\Imag{a}\Real{a})$.
 Give an example of~$\scrA$ and~$a$ 
 with  $\Real{a}\Imag{a} \neq \Imag{a}\Real{a}$.
 
-(This simple observation is the source of many technical difficulties.)
+(This is a source of many technical difficulties.)
 \item
 Show that $a^*a+aa^* = 2(\Real{a}^2+\Imag{a}^2)$.
 \item
@@ -1291,7 +1293,7 @@ see~\sref{inverse-permanence}.
 \end{point}
 \begin{point}[geometric]{Lemma}%
 Let~$a$ be an element of a $C^*$-algebra~$\scrA$ with~$\|a\|<1$.
-Then~$a^\perp=1-a$ has an inverse,
+Then~$a^\perp\equiv 1-a$ has an inverse,
 namely~$(a^\perp)^{-1}= \sum_{n=0}^\infty\, a^n$.
 Moreover, this series converges absolutely,
 that is,
@@ -1435,9 +1437,9 @@ write~$a-i\equiv (a+ni)\,-\,(n+1)i$
 for sufficiently large~$n$,
 because  
 then
+by~\sref{spectrum-bounded}
 $a-i$
-is invertible provided that~$n+1 > \|a+ni\|$
-by~\sref{spectrum-bounded}.
+is invertible provided that~$n+1 > \|a+ni\|$.
 Indeed, for~$n$ such that~$\|a\|<2n+1$,
 we have $\|a+ni\|^2 = \|(a+ni)^*(a+ni)\|
 = \|a^2+n^2\|
@@ -1493,7 +1495,7 @@ we see that~$a^{-1}$ is in~$\scrA$.\qed
 \begin{point}{Exercise}%
 	Show that the assumption in~\sref{inverse-permanence} 
 	that~$a$ is self-adjoint
-can be dropped. 
+may be dropped. 
 
 (Hint: consider $a^*a$; c.f.~Conway Proposition VIII.1.14.)
 \end{point}
@@ -1597,7 +1599,7 @@ and prove that  $\|a\|=\left|\lambda\right|$
 for some~$\lambda\in\spec(a)$
 (provided that~$a$ is self-adjoint).
 Somewhat bafflingly,
-the canonical and seemingly
+the canonical and apparently
 easiest way to derive this fact is by considering the power series
 expansion of a cleverly chosen $\scrA$-valued function
 (see~\sref{norm-spectrum}).
@@ -1662,7 +1664,7 @@ to perhaps the most important example
 of a holomorphic $\scrA$-valued function ---
 or at the very least the very source from
 which (as we'll see) all holomorphic functions
-draw their interesting and desirable
+draw their interesting and pleasant
 properties:
 the holomorphic $\scrA$-valued function
 given by a power series  $\sum_n a_n z^n$.
@@ -1939,7 +1941,7 @@ of $\scrA$-valued step functions
  (i.e.~$f\in\overline{S}_\scrA$).
 
 \item
-show that~$\int af = a\int f$
+Show that~$\int af = a\int f$
 when~$f\colon [0,1]\to\C$
 is continuous and~$a\in \scrA$.
 \end{enumerate}
@@ -1957,7 +1959,7 @@ is now defined as.
 We'll also need integration along a triangle~$T$,
 which is for this  purpose a tuple of three 
 complex numbers~$w_0,w_1,w_2$
-(of which the order does matter)
+(of which the order \emph{does} matter)
 called the
 \Define{vertices} of~$T$.
 The \Define{boundary} of
@@ -1969,9 +1971,9 @@ holomorphic function~$f$
 with $\partial T\subseteq \dom(f)$
 we define
 \begin{equation*}
-	\Define{\int_T f}\ = \ \int_{z_0}^{z_1} f
-\,+\, \int_{z_1}^{z_2} f
-\,+\, \int_{z_2}^{z_3} f.
+	\Define{\int_T f}\ = \ \int_{w_0}^{w_1} f
+\,+\, \int_{w_1}^{w_2} f
+\,+\, \int_{w_2}^{w_3} f.
 \end{equation*}
 We'll need some more terminology
 relating to our triangle~$T$.
@@ -2020,17 +2022,17 @@ Then~$\int_T f = 0$.
 \begin{point}[goursat-1]{Proof}%
 (Based on~\cite{moore1900}.)
 
-Note that if~$f$ has a primitive,
+Note that if~$f$ has an antiderivative,
 that is, $f\equiv g'$ for some holomorphic function~$g$,
 then one can show that~$\int_T f=0$
 (after deriving the fundamental theorem of calculus).
 Although it is true that every holomorphic function
-with simply connected domain has a primitive,
+with simply connected domain has a antiderivative,
 this result is not yet available 
 (and in fact depends on this very theorem).
 Instead we will approximate~$f$
 by an affine function
-(which does have a primitive)
+(which does have an antiderivative)
 using the derivative of~$f$.
 But since such an approximation only
 concerns a single point,
@@ -2395,7 +2397,9 @@ we have
 is called the \Define{spectral radius} of~$a$.)
 \begin{point}{Proof}%
 Write~$r=
-\sup\{\left|\,\lambda\right|\colon\, \lambda\in \spec(a)\backslash\{0\}\,\}$.
+\sup\{\left|\,\lambda\right|\colon\, \lambda\in \spec(a)\backslash\{0\}\,\}$
+where the supremum is computed
+in~$[0,\infty]$ so that~$\sup\varnothing=0$.
 Since~$\left|\lambda\right| \leq \|a\|$
 for all~$\lambda\in\spec(a)$
 (\sref{spectrum-bounded})
@@ -2412,7 +2416,9 @@ by  $f(z)=z(1-az)^{-1}$.
 More specifically,
 we are interested in the distance~$R$
 of~$0$ to the complement of~$G$,
-viz.~$R= \inf\{\left|\lambda\right|\in \C\colon \lambda\notin G\}$,
+viz.~$R= \inf\{\left|\lambda\right|\colon \lambda\in \C\backslash G\}$
+(where the infimum is computed in~$[0,\infty]$
+so that~$\inf\varnothing=\infty$)
 because since $0\in G$
 and $z\notin G\iff z^{-1}\in \spec(a)$,
 we have~$R=r^{-1}$
@@ -2428,8 +2434,8 @@ and thus~$f(z)=z(1-az)^{-1}=z\sum_n (az)^n = \sum_n a^nz^{n+1}$.
 
 By~\sref{rigid-expansion}
 we know that~$f(z)=\sum_n a^nz^{n+1}$
-is valid not only for~$z\in \C$ with $\|z\|\leq \|a\|^{-1}$,
-but for all~$z$ with $\|z\|\leq R$.
+is valid not only for~$z\in \C$ with $\left|z\right|< \|a\|^{-1}$,
+but for all~$z$ with $\left|z\right|< R$.
 However, $R$ cannot be strictly larger than~$\|a\|^{-1}$,
 because for every $z\in\C$ with $\left|z\right|>\|a\|^{-1}$
 the series $\sum_n(az)^n$ 
@@ -2477,7 +2483,7 @@ is to show that if~$\lambda\in\spec(a)$
 for some element~$a$ of a \emph{commutative} $C^*$-algebra~$\scrA$,
 then there is a miu-map $f\colon \scrA\to \C$
 with~$f(a)=\lambda$.
-Here we have moved ourselves in a tight spot
+Here we have moved ourselves into a tight spot
 by evading Banach algebras,
 because the mentioned result is usually obtained
 by finding a maximal ideal~$I$ of~$\scrA$
@@ -2503,7 +2509,7 @@ To this end,
 we develop the theory
 of the positive elements of a $C^*$-algebra
 farther than is usually done
-before Gelfand's representation theorem.
+for Gelfand's representation theorem.
 \end{point}
 \end{parsec}
 
@@ -2669,7 +2675,7 @@ we see that $\lambda^{-1}(1+b(\lambda-ab)a)$
 is the inverse of~$\lambda-ba$.\qed
 \end{point}
 \end{point}
-\begin{point}[astara-non-neggative]{Lemma}%
+\begin{point}[astara-non-negative]{Lemma}%
 We have $a^*a  \leq 0\implies a=0$
 for every element~$a$ of a $C^*$-algebra.
 \begin{point}{Proof}%
@@ -2730,7 +2736,7 @@ that the factor ``2'' in the statement above
 can be dropped, i.e.~$\|f\|=\|f(1)\|$
 (c.f.~Corollary~1 of~\cite{russodye}).
 Fortunately for us,
-we only use
+we only need
 this improved bound
 for completely positive maps
 for which it's much easier to obtain (see~\sref{cp-russo-dye}).
@@ -2861,7 +2867,7 @@ the set of all miu-maps $\omega\colon \scrA\to\C$
 \item
 on the $C^*$-algebra~$\scrB(\scrH)$
 of bounded operators on some Hilbert space~$\scrH$:
-the collection of maps  $\left<x,(\,\cdot\,)x\right>.
+the collection of maps  $\left<x,(\,\cdot\,)x\right>
 \colon \scrB(\scrH)\to\C$ where $x\in \scrH$
 (see~\sref{hilb-vector-states-order-separating}).
 \end{enumerate}
@@ -2960,12 +2966,15 @@ order ideal~$J$ of~$\scrA$ with $I\subseteq J$.
 (Hint: Zorn's Lemma may be useful.)
 \item
 Let~$a\in \sa{\scrA}$.
-Show that 
-\begin{equation*}
-(a)\ := \ \{\, b\in \scrA\colon\, \exists n,m\in \Z\,
-[\ na \,\leq\, \Real{b},\Imag{b}\,\leq\, ma\ ]\,\}
-\end{equation*}
-is the least order ideal that contains~$a$.
+Show that there is a least order ideal~\Define{$(a)$}
+that contains~$a$,
+and that given~$b\in\Real{\scrA}$
+we have $b\in (a)$
+iff there are $\lambda,\mu\in \R$
+with~$\lambda a\leq b\leq \mu a$.
+
+Show that~$(a)=\C a$
+when~$0\nleq a\nleq 0$.
 
 Show that~$1\in (a)$ if and only if $a$ is invertible
 and either $0\leq a$ or $a\leq 0$.
@@ -2984,7 +2993,7 @@ or $\|a\|+a$ is not invertible.
 \end{enumerate}
 \end{point}
 \begin{point}[maximal-ideal-state]{Lemma}%
-For every maximal ideal~$I$ of a $C^*$-algebra~$\scrA$,
+For every maximal order ideal~$I$ of a $C^*$-algebra~$\scrA$,
  there is a state $\omega \colon \scrA\to \C$
 with $\ker(\omega)=I$.
 \begin{point}{Proof}%
@@ -3010,7 +3019,7 @@ We leave it to the reader to verify
 that~$\scrA/I$ becomes a partially ordered vector space
 with the order defined above.
 There is, however,
-one detail to which I want to draw your attention,
+one detail we'd like to draw attention to,
 namely that a scalar $\lambda$ is positive in~$\scrA/I$
 iff $\lambda$ is positive in~$\C$.
 Indeed, if~$\lambda\geq 0$ in~$\C$,
@@ -3020,7 +3029,7 @@ if~$\lambda\geq 0$ in~$\scrA/I$, but~$\lambda\leq 0$ in~$\C$,
 then $\lambda\leq 0$ in~$\scrA/I$,
 and so $\lambda=0$.
 This detail
-has the desirable consequence
+has the pleasant consequence
 that once we have shown that~$\scrA/I=\C$,
 we automatically get that~$q\colon \scrA\to\C$ is positive.
 
@@ -3030,35 +3039,34 @@ Define~$\alpha := \inf\{\,\lambda\in\R\colon\, q(a)\leq \lambda\,\}$.
 Note that $-\|a\| \leq \alpha\leq \|a\|$.
 We will prove that~$q(a)=\alpha$
 by considering the order ideal
-\begin{equation*}
-J\ := \ \{\,b\in \scrA\colon\, \exists m,n\in \Z\,[\ 
-m(\alpha-q(a)) \,\leq\, q(\Real{b}),q(\Imag{b})\,\leq\, n(\alpha-q(a))\ ]\,\}.
-\end{equation*}
-\REMARK{Be warned:
-this proof being much simpler than one given by Kadison 
-might contain an error---he shows
-shows that $\scrA/I$ is total and Archimedean first.}
+\begin{alignat*}{3}
+	J\ := \ \{\,b\in \scrA\colon\, 
+		& \exists\lambda,\mu\in\R\,[\ 
+	\lambda (\alpha-q(a))\,\leq\, \Real{b}\,\leq\, \mu 
+(\alpha-q(a))\ ]\,\wedge\,
+		\\
+		&\exists\lambda,\mu\in \R\,[\ 
+\lambda (\alpha-q(a))\,\le\, \Imag{b}\,\leq\, \mu (\alpha-q(a)) \ ] \,\}.
+\end{alignat*}
 We claim that $1\notin J$.
 Indeed, suppose not---towards a contradiction.
-Then there is~$n\in \Z$
-with $1\leq n(\alpha-q(a))$.
-What can we say about~$n$?
-If~$n<0$,
-then $0\geq \frac{1}{n}\geq \alpha-q(a)$,
-so~$\alpha-\frac{1}{n} \leq q(a)$,
+Then there is~$\mu\in \R$
+with $1\leq \mu (\alpha-q(a))$.
+What can we say about~$\mu$?
+If~$\mu <0$,
+then $0\geq \nicefrac{1}{\mu}\geq \alpha-q(a)$,
+so~$\alpha-\nicefrac{1}{\mu} \leq q(a)$,
 but $q(a)\leq \alpha+\varepsilon$
 for every~$\varepsilon>0$,
-and so~$\alpha-\frac{1}{n}\leq q(a)\leq \alpha-\frac{1}{2n}
-\leq \alpha-\frac{1}{n}$,
-which implies $\frac{1}{2n}=0$,
+and so~$\alpha-\nicefrac{1}{\mu}\leq q(a)\leq \alpha-\nicefrac{1}{2\mu}$,
 which is absurd.
-If $n=0$,
-then we get $1\leq n(\alpha-q(a))\equiv 0$, which is absurd.
-If $n> 0$,
-then $\frac{1}{n}\leq \alpha-q(a)$,
+If $\mu=0$,
+then we get $1\leq \mu (\alpha-q(a))\equiv 0$, which is absurd.
+If $\mu> 0$,
+then $\nicefrac{1}{\mu}\leq \alpha-q(a)$,
 or in other words,
- $q(a) \leq \alpha - \nicefrac{1}{n}$,
-giving $\alpha \leq \alpha-\nicefrac{1}{n}$
+ $q(a) \leq \alpha - \nicefrac{1}{\mu}$,
+ giving $\alpha \leq \alpha-\nicefrac{1}{\mu}$
 by definition of~$\alpha$,
 which is absurd.
 Hence~$1\notin J$.
@@ -3184,7 +3192,7 @@ giving us  $(1-b)^2 = 1-2b+b^2 = 1-a$.
 
 Let us prove that~$b\leq 1$.
 To begin, note that~$\|b_n\|\leq 1$ for all~$n$, by induction,
-because, $0\equiv \|b_0\|\leq 1$,
+because $0\equiv \|b_0\|\leq 1$,
 and if $\|b_n\|\leq 1$, then $\|b_{n+1}\|\leq \frac{1}{2}(\|a\|+\|b_n\|^2)
 \leq 1$, since $\|a\|\leq 1$.
 Since~$b_n\geq 0$, we get $-1\leq b_n\leq 1$ for all~$n$,
@@ -3230,13 +3238,12 @@ where we have used that $b_n^2 \leq (1-c)^2$,
 because $b_n\leq 1-c$
 by~\sref{square-commuting-monotone}.
 \begin{point}%
-We can now show that~$b$ is unique.
-Let~$b'\in \scrA$ with $0\leq b'\leq 1$,
- $b'a=ab'$ and $(1-b')^2=1-a$ be given;
-we must prove that $b'=b$.
+We'll now show that~$b$ is unique
+in the sense that $b=b'$
+for any~$b'\in \scrA$ with $0\leq b'\leq 1$,
+ $b'a=ab'$ and $(1-b')^2=1-a$.
 Note that $b'\leq 1$,
 because $\|1-b'\|^2=\|1-a\|\leq 1$,
-
 From $a=1-(1-b')^2$,
 we immediately get $b \leq 1-(1-b')=b'$ by~\sref{ineq-square-root}.
 For the other direction,
@@ -3257,13 +3264,15 @@ yielding $b=b'$.\qed
 Let~$a$ be a positive element of a $C^*$-algebra~$\scrA$.
 Show that there is a unique 
 positive element of~$\scrA$
-denoted by $\Define{\sqrt{a}}$ with $\smash{\sqrt{a}^2}=a$
+denoted by $\Define{\sqrt{a}}$ 
+(and by~$\Define{a^{\nicefrac{1}{2}}}$)
+with $\smash{\sqrt{a}^2}=a$
 and $a\sqrt{a}=\sqrt{a}a$.
 Show that if~$c\in\scrA$ commutes with~$a$,
 then $c\sqrt{a}=\sqrt{a}c$,
 and if in addition $c^*=c$ and $c^2\leq a$,
 then $c\leq \sqrt{a}$.
-Using this, verify the following facts.
+Using this, verify:
 \begin{enumerate}
 \item
 If~$a,b\in \scrA$ are positive,
@@ -3341,9 +3350,16 @@ Given an element $a$ of a $C^*$-algebra $\scrA$,
 we have $a^*a\geq 0$.
 \begin{point}{Proof}%
 Writing $b:=a((a^*a)_-)^{\nicefrac{1}{2}}$,
-we have $b^*b=-((a^*a)_-)^2\leq 0$,
-and so $b=0$ by~\sref{astara-non-negative}.
-Hence~$a^*a_-=0$ giving us $a^*a=(a^*a)_+\geq 0$.\qed
+we have $b^*b=
+((a^*a)_-)^{\nicefrac{1}{2}} a^*a
+((a^*a)_-)^{\nicefrac{1}{2}}
+= (a^*a)_- \,a^*a
+=
+-((a^*a)_-)^2\leq 0$,
+and so
+$b=0$
+by~\sref{astara-non-negative}.
+Hence~$(a^*a)_-=0$ giving us $a^*a=(a^*a)_+\geq 0$.\qed
 \end{point}
 \end{point}
 \begin{point}[cstar-positive-final]{Exercise}%
@@ -3369,7 +3385,7 @@ $\spec(a)\subseteq [0,\infty)$.
 \begin{point}[astara-pos-basic-consequences]{Exercise}%
 The fact that $a^*a$ is positive
 for an element~$a$ of a $C^*$-algebra~$\scrA$
-has some desirable consequences
+has some pleasant consequences
 of its own needed later on.
 \begin{enumerate}
 \item
@@ -3418,12 +3434,12 @@ on a Hilbert space~$\scrH$, we have
 \begin{enumerate}
 \item
 $T$ is self-adjoint iff $\left<x,Tx\right>$
-is self-adjoint for all~$x\in (\scrH)_1$;
+is real for all~$x\in (\scrH)_1$;
 \item
 $0\leq T$ iff $0\leq\left<x,Tx\right>$
 for all~$x\in (\scrH)_1$;
 \item
-	$\|T\|=\sup_{x\in (\scrH)_1}\|\left<x,Tx\right>\|$
+	$\|T\|=\sup_{x\in (\scrH)_1}\left|\left<x,Tx\right>\right|$
 when~$T$ is self-adjoint.
 \end{enumerate}
 \begin{point}{Proof}%
@@ -3444,10 +3460,10 @@ when the $C^*$-algebra is commutative
 almost all peculiarities disappear,
 as we see in this paragraph.
 This is to be expected
-as we will see that any commutative $C^*$-algebra
-is isomorphic to a $C^*$-algebra
-of functions on a compact Hausdorff space
-in~\sref{gelfand}.
+as any commutative $C^*$-algebra
+is to be isomorphic to a $C^*$-algebra
+of continuous functions on a compact Hausdorff space
+(see~\sref{gelfand}).
 \end{point}
 \begin{point}[commutative-cstar-basic]{Exercise}%
 Let~$\scrA$ be a \emph{commutative} $C^*$-algebra.
@@ -3524,9 +3540,8 @@ The first hurdle we take is the injectivity of~$\gamma$
 --- that there are sufficiently many
 points in the spectrum of a commutative $C^*$-algebra,
 so to speak ---,
-and involves Zorn's Lemma,
-naturally,
-but also the following special type of order ideal.
+and involves
+the following special type of order ideal.
 \end{point}
 \begin{point}{Definition}%
 A \Define{Riesz ideal} of~$\scrA$
@@ -3878,7 +3893,7 @@ by~$\Phi$,
 we write $\Define{f(a)}:=\Phi(f)$
 for all~$f\in C(\spec(a))$.
 
-We have hereby defined, for example, $a^\alpha$ when $a>0$
+We have hereby defined, for example, $a^\alpha$ when $a\geq 0$
 and~$\alpha\in (0,\infty)$.
 
 From the fact that~$\Phi$ is miu some properties
@@ -3886,7 +3901,7 @@ of~$f(a)$ can be derived.
 Show, for example,
 that~$a^\alpha a^\beta = a^{\alpha+\beta}$
 for all~$\alpha,\beta\in(0,\infty)$
-when~$a>0$.
+when~$a\geq 0$.
 \item
 Given $f\in C(\spec(a))$,
 show that~$f(a)$ is the unique element of~$C^*(a)$
@@ -3913,7 +3928,7 @@ show that $g(f(a))=(g\circ f)(a)$.
 
 Show that $(a^\alpha)^\beta = a^{\alpha\beta}$
 for~$\alpha,\beta\in (0,\infty)$
-and~$a\in\scrA_+$ with~$a\neq 0$.
+and~$a\in\scrA_+$.
 \end{enumerate}
 \end{point}
 \begin{point}[sqrt-monotone]{Theorem}%
@@ -4517,7 +4532,7 @@ and more general
 result that the 
 $N\times N$-matrices \emph{over a $C^*$-algebra~$\scrA$}
 form a $C^*$-algebra by interpreting them
-as \emph{adjointable module maps} on
+as \emph{adjoinable module maps} on
 the \emph{Hilbert $\scrA$-module} $\scrA^n$,
 see~\sref{chilb-basic} and~\sref{bax-cstar}.
 \end{point}
@@ -4551,7 +4566,7 @@ when
 \left<Tx,y\right>\ =\ \left<x,Sy\right>
 \qquad \text{for all $x\in X$ and $y\in Y$}.
 \end{equation*}
-In that case, we call~$T$ \Define{adjointable}.
+In that case, we call~$T$ \Define{adjoinable}.
 It is not difficult to see that~$T$
 must be linear, and a module map, and 
 adjoint to exactly one~$S$, which we denote by~$\Define{T^*}$.
@@ -4564,7 +4579,7 @@ see~\sref{chilb-form-bounded},
 and if either~$X$ or~$Y$ is complete,
 then~$T$ is automatically bounded, see~\sref{hellinger-toeplitz}.)
 
-The vector space of adjointable bounded module maps~$T\colon X\to Y$ 
+The vector space of adjoinable bounded module maps~$T\colon X\to Y$ 
 is denoted
 by~$\Define{\scrB_a(X,Y)}$,
 and we write $\Define{\scrB_a(X)}=\scrB_a(X,X)$.
@@ -4576,7 +4591,7 @@ with the inner product $\left<x,y\right>=\sum_n x_n^*y_n$,
 making it a Hilbert $C^*$-module.
 \end{point}
 \begin{point}{Exercise}%
-Let~$S$ and~$T$ be adjointable operators on a 
+Let~$S$ and~$T$ be adjoinable operators on a 
 pre-Hilbert $\scrA$-module.
 \begin{enumerate}
 \item
@@ -4591,7 +4606,7 @@ Show that $ST$ is adjoint to $T^*S^*$
 \end{point}
 \begin{point}{Exercise}%
 Although a bounded linear map between Hilbert spaces
-is always adjointable (see~\sref{hilb-adjoint}),
+is always adjoinable (see~\sref{hilb-adjoint}),
 a bounded module map
 between Hilbert $\scrA$-modules
 might have no adjoint
@@ -4717,7 +4732,7 @@ $\left\|\left<y,Tx\right>\right\|\leq B\,\|y\|\|x\|$
 for all~$x\in X$, $y\in Y$.
 \end{enumerate}
 Moreover,
-if~$T$ is adjointable,
+if~$T$ is adjoinable,
 and bounded, then $\|T^*\|=\|T\|$.
 \begin{point}{Proof}%
 If~$\|Tx\|\leq B\|x\|$ for all~$x\in X$,
@@ -4734,7 +4749,7 @@ then we have $\|Tx\|^2=\left\|\left<Tx,Tx\right>\right\|
 entailing $\|Tx\|\leq B\|x\|$
 (also when~$\|Tx\|=0$).
 
-If~$T$ is adjointable, and bounded,
+If~$T$ is adjoinable, and bounded,
 then~$\left\|\left<x,T^*y\right>\right\|=\left\|\left<y,Tx\right>\right\|
 \leq \|T\|\|y\|\|x\|$ for all~$x\in X$, $y\in Y$,
 so~$\|T^*\|\leq \|T\|$,
@@ -4745,11 +4760,11 @@ we get $\|T\|=\|T^*\|$.\qed
 \end{point}
 \begin{point}[module-maps-cstar-identity]{Exercise}%
 Show that $\|T^*T\|=\|T\|^2$
-for every adjointable bounded map~$T$ on a pre-Hilbert $\scrA$-module.
+for every adjoinable bounded map~$T$ on a pre-Hilbert $\scrA$-module.
 (Hint: adapt the proof of~\sref{operators-cstar-identity}.)
 \end{point}
 \begin{point}[bax-cstar]{Proposition}%
-The adjointable bounded module maps~$\scrB_a(X)$
+The adjoinable bounded module maps~$\scrB_a(X)$
 on a Hilbert $\scrA$-module
 form a $C^*$-algebra
 with composition as multiplication,
@@ -4763,7 +4778,7 @@ is closed (with respect to the operator norm)
 in the set of all bounded \emph{linear} maps $\scrB(X)$.
 So let~$T\colon X\to X$ be a bounded linear map
 which is the limit of a sequence $T_1,T_2,\dotsc$
-of adjointable bounded module maps.
+of adjoinable bounded module maps.
 
 Since given $x\in X$, and $b\in\scrA$, we have, for all~$n$,
 using~\sref{chilb-norm-basic}
@@ -4797,7 +4812,7 @@ Since for~$x,y\in X$ and~$n$,
 \end{alignat*}
 we see that $\left<Sx,y\right>=\left<x,Ty\right>$,
 so~$S$ is the adjoint of~$T$,
-and~$T$ is adjointable.
+and~$T$ is adjoinable.
 \qed
 \end{point}
 \end{point}
@@ -4808,7 +4823,7 @@ the vector states
 of~$\scrB^a(X)$
 are order separating (see~\sref{separating}).
 Conclude that 
-for an adjointable operator~$T$ on~$X$
+for an adjoinable operator~$T$ on~$X$
 \begin{enumerate}
 \item
 $T$ is self-adjoint iff $\left<x,Tx\right>$
@@ -4828,7 +4843,7 @@ and~\sref{hilb-positive-operators}.)
 The operator
 $T^*T$ is positive
 in~$\scrB^a(X)$
-for every adjointable operator~$T\colon X\to Y$
+for every adjoinable operator~$T\colon X\to Y$
 between Hilbert $\scrA$-modules.
 \begin{point}{Proof}%
 $\left<x,T^*Tx\right>=
@@ -4853,7 +4868,7 @@ which is adjoint to~$\underline{A^*}$
 Show that $A\mapsto \underline{A}$
 gives a linear bijection between the vector 
 space of $N\times M$-matrices 
-over~$\scrA$ and the vector space of adjointable bounded
+over~$\scrA$ and the vector space of adjoinable bounded
 module maps~$\scrB^a(\scrA^N,\scrA^M)$.
 
 \item
@@ -4999,7 +5014,7 @@ for every~$a\in\scrA$;
 \item
 $T\mapsto S^* T S\colon \scrB^a(X)
 \to\scrB^a(Y)$
-for every adjointable operator $S\colon Y\to X$
+for every adjoinable operator $S\colon Y\to X$
 between Hilbert $\scrA$-modules;
 \item
 $T\mapsto \left<x,Tx\right>,\scrB^a(X)\to \scrA$
@@ -5325,7 +5340,7 @@ the assumption that $\sup_{T\in \scrF} \|Tx\| <\infty$.\qed
 \end{point}
 \end{point}
 \begin{point}[hellinger-toeplitz]{Theorem}%
-Let~$T\colon X\to Y$ be an adjointable map
+Let~$T\colon X\to Y$ be an adjoinable map
 between pre-Hilbert $\scrA$-modules.
 If either~$X$ or~$Y$ is complete,
 then~$T$ and~$T^*$ are bounded.
@@ -5403,7 +5418,7 @@ $X$ and~$Y$
 is of the form
 $[x,y]\equiv \left<Tx,y\right>$
 (where $x\in X$ and~$y\in Y$)
-for some unique adjointable bounded module map
+for some unique adjoinable bounded module map
 $T\colon X\to Y$.
 \begin{point}{Proof}%
 Let $x\in X$ be given.
