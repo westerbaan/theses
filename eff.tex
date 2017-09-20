@@ -422,6 +422,57 @@ Show that for an effect algebra homomorphism~$f\colon E \to F$,
 \end{point}
 \end{parsec}
 
+\begin{parsec}%
+\begin{point}[ea-modularity-prop]{Proposition}%
+Suppose~$E$ is an effect algebra.
+If the infimum~$a \wedge b$
+    exists for some~$a,b \in E$ with~$a \perp b$,
+    then their supremum~$a \vee b$ exists as well and
+\begin{equation*}
+    a \ovee b \ = \ (a \wedge b) \,\ovee\, (a \vee b).
+\end{equation*}
+\begin{point}{Proof}%
+The result follows from this lemma:
+    if~$(x \ominus c) \wedge (x \ominus d)$ exists,
+    then~$c \vee d$ exists as well
+    and~$(x \ominus c) \wedge (x \ominus d)
+        = x \ominus (c \vee d)$.
+Indeed:
+\begin{equation*}
+    a \wedge b \ = \ 
+        ((a \ovee b) \ominus a) \wedge ((a \ovee b) \ominus b) \ = \ 
+        (a \ovee b) \ominus (a \vee b)
+\end{equation*}
+    and so~$(a \wedge b) \ovee (a \vee b) = a \ovee b$, as desired.
+\begin{point}%
+Now we show the lemma.
+Assume~$(x \ominus c) \wedge (x \ominus d)$ exists.
+Note~$x \ominus c = (x^\perp \ovee c)^\perp$.
+As~$z \mapsto z^\perp$ is an order anti-isomorphism,
+    we see~$(x^\perp \ovee c) \vee (x^\perp \ovee d)$
+        exists and~$(x^\perp \ovee c) \vee (x^\perp \ovee d)
+                                    = ((x \ominus c)\wedge (x \ominus d))^\perp$.
+Clearly~$ (x^\perp \ovee c) \vee
+        (x^\perp \ovee d) \geq x^\perp$.
+    Write~$r := ((x^\perp \ovee c) \vee
+        (x^\perp \ovee d)) \ominus x^\perp$.
+We will show~$r = c \vee d$.
+It is easy to see~$r \geq c$ and~$r \geq d$.
+Assume~$s$ is another element with~$s \geq c$ and~$s \geq d$.
+Note~$x^\perp \ovee s \geq x^\perp \ovee c$
+and~$x^\perp \ovee s \geq x^\perp \ovee d$,
+    hence~$x^\perp \ovee s \geq (x^\perp \ovee c) \vee (x^\perp \ovee d)$
+    and so~$ s \geq  r$.
+We have shown~$r = c \vee d$.
+Consequently~$ (x \ominus c)\wedge (x \ominus d)
+        = ((x^\perp \ovee c) \vee (x^\perp \ovee d))^\perp
+        = (r \ovee x^\perp)^\perp = 
+            x \ominus (c \vee d) $, as promised. \qed
+\end{point}    
+\end{point}
+\end{point}
+\end{parsec}
+
 \subsection{Effect monoids}
 \begin{parsec}%
 \begin{point}%
@@ -3248,6 +3299,44 @@ Show the following basic properties of comprehensions.
 
 \begin{parsec}%
 \begin{point}%
+Comprehensions and kernels are very similar.
+\end{point}
+\begin{point}{Definition}%
+Let~$C$ be a category with a zero object.
+A \Define{kernel}~of an arrow~$f$
+    (in symbols: $\Define{\ker f}$)
+    is an equalizer of~$f$ with the zero-map.
+(That is: $f \after (\ker f) = 0$
+    and for every~$g$ with~$f \after g = 0$,
+    there exists a unique~$g'$ with~$(\ker f) \after g' = g$.)
+We will use \Define{$\cok f$}
+    to denote a cokernel of~$f$
+    --- that is: a kernel of~$f$ in~$\op{C}$.
+\end{point}
+\begin{point}[effectus-kernels]{Proposition}%
+An effectus with comprehension has all kernels.
+    The kernel of a map~$f$ is given by
+        a comprehension~$\pi_{(1 \after f)^\perp}$
+        of~$(1 \after f)^\perp$.
+\begin{point}{Proof}%
+Clearly~$1 \after f \after \pi_{(1 \after f)^\perp} = 0$
+    and so~$f \after \pi_{(1 \after f)^\perp} = 0$.
+Assume~$g$ is some other map with~$f \after g = 0$.
+Then~$1 \after f \after g = 0$
+    and so~$(1 \after f)^\perp \after g = 1 \after g$.
+Thus there exists a unique~$g'$
+    with~$\pi_{(1 \after f)^\perp} \after g' = g$. \qed
+\end{point}
+\end{point}
+\begin{point}[compr-is-kernel]{Exercise}%
+Show that in an effectus,
+    a map~$f$ is a comprehension for~$p$
+    if and only if it is a kernel of~$p^\perp$.
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}%
 We are ready to define purity in effectuses.
 \end{point}
 \begin{point}{Definition}%
@@ -3506,6 +3595,65 @@ Then~$t^\perp \after \pi_s \leq s^\perp \after \pi_s = 0$
     and so~$\pi_s = \pi_t \after h$
     for some~$h$ by the universal property of~$\pi_t$. \qed
 \end{point}
+\end{point}
+\begin{point}{Lemma}%
+In an effectus with images,
+    we have~$\IM [f,g] = (\IM f) \vee (\IM g)$.
+\begin{point}{Proof}%
+We get~$\IM[f,g] \geq \IM f$ and~$\IM[f,g] \geq \IM  g$
+    from
+\begin{align*}
+    [1 \after f, 1 \after g] 
+        &\ =\  1 \after [f,g]  \\ 
+        &\ =\ (\IM [f,g]) \after [f,g] \\
+        & \ = \  [(\IM [f,g]) \after f, (\IM [f,g]) \after g].
+\end{align*}
+To show~$\IM [f,g]$ is the least upper-bound,
+assume~$p \geq \IM f$ and~$p \geq \IM g$.
+Then
+\begin{equation*}
+    1 \after [f,g] \ \geq\ p \after [f,g] \ =\  [p \after f, p \after g]
+                    \ \geq\  [(\IM f) \after f, (\IM g)\after g]
+                    \ = \ 1 \after [f,g],
+\end{equation*}
+    hence~$1 \after [f,g] = p \after [f,g]$
+    and so~$p \geq \IM [f,g]$, as desired. \qed
+\end{point}
+\begin{point}[lattice-compr]{Corollary}%
+In an effectus with comprehension and images,
+we have for any sharp~$s,t$
+    a supremum (among all predicates)
+    given by~$s \vee t = \IM[\pi_s, \pi_t]$.
+    In particular:~$s \vee t$ is sharp.
+\end{point}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}%
+In \sref{compr-is-kernel} we saw that comprehensions
+    are precisely kernels of predicates.
+What about cokernels and quotients?
+\end{point}
+\begin{point}[effectus-cokernels]{Proposition}%
+An effectus with quotient and images has all cokernels.
+A cokernel of a map~$f$
+    is given by a quotient~$\xi_{\IM f}$ of~$\IM f$.
+\begin{point}{Proof}%
+As~$0 = (\IMperp f) \after f = 1 \after \xi_{\IM f} \after f$,
+        we have~$\xi_{\IM f} \after f = 0$.
+    Assume~$g$ is any (other) map with~$g \after f = 0$.
+Then~$1 \after g \leq \IMperp f$
+    and so~$g = g' \after \xi_{\IM f}$
+    for a unique~$g'$.
+Thus indeed, $\xi_{\IM f}$ is a cokernel of~$f$. \qed
+\end{point}
+\end{point}
+\begin{point}{Exercise}%
+Show that in an effectus with comprehension and images,
+    a map~$f$ is a quotient of sharp~$s$
+    if and only if~$f$ is a cokernel
+    of a comprehension~$\pi_s$ of~$s$.
 \end{point}
 \end{parsec}
 
@@ -3895,7 +4043,7 @@ we define~$\Define{\andthen{p}{q}} = q \after \asrt_p$
 The category$\op{\vN}$ is a~$\&$-effectus
     with~$\andthen{a}{b} = \sqrt{a}b\sqrt{a}$. \TODO{ref}
 \end{point}
-\begin{point}{Proposition}%
+\begin{point}[sharp-prop]{Proposition}%
 For a predicate~$p$ in an $\&$-effectus the following are equivalent.
 \begin{enumerate}
 \item $p$ is sharp,
@@ -4211,6 +4359,41 @@ As~$
 \lambda'  \after \zeta_{\ceil{\mu}} \after \mu = \lambda
 = \sigma' \after \zeta_{\ceil{\mu}} \after \mu$
 we must have~$\lambda' = \sigma'$, whence~$\rfrac{\lambda}{\mu}=\sigma$. \qed
+\end{point}
+\end{point}
+\begin{point}[perp-sharp-is-orth]{Lemma}%
+In a~$\&$-effectus, if~$s \perp t$
+    for sharp~$s,t$, then~$\andthen{s}{t} = 0 = \andthen{t}{s}$.
+\begin{point}{Proof}%
+Write~$r \equiv (s \ovee t)^\perp$.
+    As~$1 = s \ovee t \ovee r$ and~$\andthen{s}{s}=s$, we have
+\begin{equation*}
+    s \ = \ 
+    \andthen{s}{1} \ = \ 
+    \andthen{s}{s} \ovee \andthen{s}{t} \ovee \andthen{s}{r} \ = \ 
+    s \ovee \andthen{s}{t} \ovee \andthen{s}{r}
+\end{equation*}
+and so~$\andthen{s}{t} \leq \andthen{s}{t} \ovee \andthen{s}{r} = 0$. \qed
+\end{point}
+\end{point}
+\begin{point}[simple-andthen-absorption]{Exercise}%
+Show that in an~$\&$-effectus, we have
+\begin{equation*}
+p \ \leq\  s \quad \iff \quad \andthen{s}{p} \ =\  p
+\end{equation*}
+for sharp~$s$ and any predicate~$p$.
+\end{point}
+\begin{point}[sum-sharp-sharp]{Proposition}%
+In a~$\&$-effectus, $s \ovee t$
+    is sharp, if~$s$ and~$t$ are sharp.
+\begin{point}{Proof}%
+We will first prove that $s \wedge t = 0$.
+Pick any~$p$ with~$p \leq s,t$.
+Then by \sref{simple-andthen-absorption}
+    and \sref{perp-sharp-is-orth},
+     we see~$ p = \andthen{s}{p} \leq \andthen{s}{t} = 0$.
+Hence~$s \vee t = s \ovee t$ by~\sref{ea-modularity-prop},
+    but~$s \vee t$ is sharp by \sref{lattice-compr}. \qed
 \end{point}
 \end{point}
 \end{parsec}
@@ -5761,12 +5944,138 @@ To summarize:
 
 \begin{parsec}%
 \begin{point}%
-Next we compare our effectuses to Grandis' homological categories \cite{grandis},
+Next we compare our effectuses
+    to Grandis' homological categories \cite{grandis},
     which generalize abelian categories
     used in homological algebra.
+First, we need a lemma.
 \end{point}
-\begin{point}%
-    
+\begin{point}[homology-lemma]{Lemma}%
+Suppose~$s,t$ are any sharp predicates on the same object in a~$\dagger$-effectus.
+    If~$s^\perp \leq t$,
+    then~$\andthen{s}{t}$ is sharp.
+\begin{point}{Proof}%
+By \sref{sum-sharp-sharp},
+it is sufficient to show
+    $\andthen{s}{t^\perp}$ is sharp
+as~$(\andthen{s}{t})^\perp = \andthen{s}{t^\perp} \ovee s^\perp$.
+Note~$s^\perp \perp t^\perp$,
+so by \sref{perp-sharp-is-orth},
+    we find~$\andthen{t^\perp}{s^\perp} = 0$,
+    hence~$\andthen{t^\perp}{s} = t^\perp$ is sharp.
+By the same reasoning as in the final
+    part of the proof of \sref{dagger-iso-mu},
+    there exists a (unique) pristine map~$l$
+    with~$\asrt_s \after \asrt_{t^\perp}
+        = l\after \asrt_{\andthen{t^\perp}{s}}$,
+        $l \after l^\dagger = \asrt_{\ceil{\andthen{t^\perp}{s}}}$
+        and $l^\dagger \after l = \asrt_{\ceil{\andthen{s}{t^\perp}}}$.
+It follows~$l \after \asrt_{\andthen{t^\perp}{s}} \after l^\dagger
+    = \asrt_{\andthen{s}{t^\perp}}$ and so
+\begin{align*}
+    \asrt_{\andthen{s}{t^\perp}}^2
+    & \ = \ l \after \asrt_{\andthen{t^\perp}{s}} \after
+            l^\dagger \after l \after 
+            \asrt_{\andthen{t^\perp}{s}} \after l^\dagger \\
+    & \ = \ 
+    l \after \asrt_{\andthen{t^\perp}{s}} \after
+            \asrt_{\ceil{\andthen{s}{t^\perp}}} \after
+            \asrt_{\andthen{t^\perp}{s}} \after l^\dagger \\
+    & \ \overset{\mathclap{\sref{asrt-absorp-rule}}}{=} \ 
+    l \after \asrt_{\andthen{t^\perp}{s}} \after
+            \asrt_{\andthen{t^\perp}{s}} \after l^\dagger \\
+    & \ \overset{\mathclap{\sref{sharp-prop}}}{=} \ 
+    l \after \asrt_{\andthen{t^\perp}{s}} \after
+            l^\dagger \\
+    & \ = \ 
+     \asrt_{\andthen{s}{t^\perp}},
+\end{align*}
+    which shows~$\andthen{s}{t^\perp}$ is sharp. \qed
+\end{point}
+\end{point}
+\begin{point}{Definition}%
+A category~$C$ is a \Define{pointed semiexact category} \cite[\S1.1]{grandis}
+    if~$C$ has a zero object and all kernels and cokernels.
+In a pointed semiexact category:
+\begin{enumerate}
+\item
+We put a partial order on kernels in the usual way:
+we write~$\Define{n \leq m}$
+for kernels~$n\colon A \to X$ and~$m \colon B \to X$,
+    if there is an~$f\colon A \to B$
+    with~$n = m \after f$.
+\item
+For every map~$f$
+    there is a unique map~$g$
+        with~$f = (\ker \cok f ) \after g \after (\cok \ker f)$.
+    If this~$g$ is an iso, then~$f$ is called \Define{exact}.
+\end{enumerate}
+A pointed semiexact category~$C$
+    is a \Define{pointed homological category} if
+\begin{enumerate}
+    \item kernels are closed under composition;
+    \item cokernels are closed under composition \emph{and}
+    \item \emph{(homology axiom)}
+        for any kernel~$m\colon M \to A$
+        and cokernel~$q\colon A \to Q$
+        with~$\ker q \leq m$,
+        the composition~$q \after m$ is exact.
+\end{enumerate}
+\end{point}
+\begin{point}{Theorem}%
+Any~$\dagger$-effectus (in partial form) is a (pointed) homological category:
+\begin{enumerate}
+    \item 
+        a map is a kernel iff it is a comprehension;
+    \item
+        a map is a cokernel iff it is a quotient of a sharp predicate \emph{and}
+    \item
+        a map is exact iff it is pristine.
+\end{enumerate}
+\begin{point}{Proof}%
+Let~$C$ be a~$\dagger$-effectus.
+By~\sref{effectus-kernels} and \sref{effectus-cokernels},
+    we know~$C$ has all kernels and cokernels:
+    a kernel of~$f$ is exactly a comprehension of~$(1 \after f)^\perp$
+    and a cokernel of~$f$ is exactly a quotient of~$\IM f$.
+By~\sref{upm-closed},
+    comprehensions are closed under composition,
+    and so kernels are closed under composition as well.
+As for the cokernels,
+    assume~$\zeta_1, \zeta_2$ are two composable cokernels.
+Both~$\zeta_1$ and~$\zeta_2$ are quotients of a sharp predicate.
+By \sref{quotients-composition} the composition  $\zeta_1 \after \zeta_2$
+    is a quotient as well.
+The map~$\zeta_2$ is sharp by \sref{quotients-composition}
+    and so the predicate~$1 \after \zeta_1 \after \zeta_2$ is sharp.
+Hence~$\zeta_1 \after \zeta_2$ is a cokernel too.
+Unfolding definitions, it is easy to see exact maps correspond precisely
+    to pristine maps.
+\begin{point}{Homology axiom}%
+We have to show~$q \after m$
+    is exact for any cokernel~$q$ and kernel~$m$ with~$\ker q \leq m$.
+As~$q \after m$ is pure,
+    it is sufficient to show~$1 \after q \after m$ is sharp.
+By \sref{compr-is-full},
+the assumption~$\ker q \leq m$
+    is equivalent to~$(1 \after q)^\perp \equiv \IM \ker q \leq \IM m$
+    and so~$\IMperp m \leq 1 \after q$.
+Our lemma \sref{homology-lemma}
+    shows~$\andthen{(\IM m)}{(1 \after q)}
+    \equiv 1 \after q \after m \after m^\dagger$ is sharp
+    and so
+\begin{align*}
+    \ceil{1 \after q \after m}
+    &\ = \ \ceil{1 \after q \after m} \after m^\dagger \after m 
+        &\quad&\text{as comprehensions are~$\dagger$-mono}\\
+    &\ = \ \ceil{1 \after q \after m \after m^\dagger} \after m 
+        &&\text{as $m^\dagger$ is sharp} \\
+    &\ = \ 1 \after q  \after  m \after m^\dagger \after m  \\
+    &\ = \ 1 \after q  \after  m,
+\end{align*}
+which show~$q \after m$ is sharp, as desired. \qed
+\end{point}
+\end{point}
 \end{point}
 \end{parsec}
 \end{document}
