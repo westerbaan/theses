@@ -1265,9 +1265,33 @@ that $p\cup q = \ceil{\frac{1}{2}p+\frac{1}{2}q}$.)
 \item
 Deduce from this and~\sref{ncp-ceil} that $\ceil{f(\bigcup A)}=\bigcup_{a\in A}\ceil{f(a)}$
 for every set of projections~$A$ from~$\scrA$.
+
+\item
+Show that there is a greatest projection~$e$
+in~$\scrA$ with~$f(e)=0$.
+
+\item
+Show that there is a least projection~$\Define{\ceil{f}}$
+in~$\scrA$
+with~$f(\ceil{f}^\perp)=0$.
+
+We'll call~$\ceil{f}$ the \Define{carrier} of~$f$.
 \end{enumerate}
 \end{point}
 \end{parsec}
+\begin{parsec}%
+\begin{point}[carrier]{Definition}%
+Let $f\colon\scrA\to\scrB$
+be an np-map between von Neumann algebras.
+The \Define{carrier} of~$f$, denoted by~$\Define{\ceil{f}}$,
+is the least projection~$e$
+of~$\scrA$ with~$f(e^\perp)= 0 $.
+\end{point}
+\end{parsec}
+\begin{point}[carrier-basic]{Exercise}%
+Show that $\ceil{\lambda f} = \ceil{f}$ for~$\lambda>0$,
+and~$\ceil{f+g} = \ceil{f}\cup \ceil{g}$.
+\end{point}
 \section{Central elements}
 \begin{parsec}%
 \begin{point}{Definition}%
@@ -2324,19 +2348,6 @@ and so~$(T_\alpha)_\alpha$ converges ultraweakly to~$T$.\qed
 \end{point}
 \end{parsec}
 \begin{parsec}%
-\begin{point}[carrier]{Definition}%
-Let $f\colon\scrA\to\scrB$
-be an np-map between von Neumann algebras.
-The \Define{carrier} of~$f$, denoted by~$\Define{\ceil{f}}$,
-is the greatest projection~$p$
-of~$\scrA$ with~$f(p^\perp)= 0 $.
-
-\TODO{Add proof that such projection exists.}
-\end{point}
-\begin{point}[carrier-basic]{Exercise}%
-Show that $\ceil{\lambda f} = \ceil{f}$ for~$\lambda>0$,
-and~$\ceil{f+g} = \ceil{f}\cup \ceil{g}$.
-\end{point}
 \begin{point}{Definition}%
 We call a projection~$p$ of a von Neumann algebra~$\scrA$
 \Define{ultracyclic} if~$p=\ceil{\omega}$
@@ -3259,6 +3270,99 @@ then~$\sum_{m,n} t_m a t_n$
 converges ultraweakly to this~$c$.
 \end{point}
 \end{parsec}
+\begin{parsec}%
+\begin{point}%
+Recall from~\sref{cceil-fundamental}
+that the least central projection~$\cceil{e}$
+above a projection~$e$ of a von Neumann algebra~$\scrA$
+is given by~$\cceil{e}=\bigcup_{a\in \scrA}\ceil{a^* e a}$.
+Using the polar decomposition
+we can give a more economical
+description of~$\cceil{e}$,
+see~\sref{cceil-sum}.
+\end{point}
+\begin{point}[vmleq]{Proposition}%
+Given projections $e'$ and~$e$
+of a von Neumann algebra~$\scrA$,
+the following are equivalent.
+\begin{enumerate}
+\item
+\label{vmleq-1}
+$e'= \ceil{a^*e a}$ for some~$a\in\scrA$;
+\item
+\label{vmleq-2}
+$e' = \ceill{a}$ and~$\ceilr{a}\leq e$
+for some~$a\in\scrA$;
+\item
+\label{vmleq-3}
+$e' = u^*u$ and~$uu^*\leq e$
+for some partial isometry~$u$.
+\end{enumerate}
+In that case
+we write~$\Define{e'\vmleq e}$
+(and say~$e'$ is \Define{von Neumann--Murray below}~$e$).
+\begin{point}{Proof}%
+That~\ref{vmleq-3}
+implies~\ref{vmleq-2} is clear.
+(\ref{vmleq-2}$\Rightarrow$\ref{vmleq-1})\ 
+Since~$\ceilr{a}\leq e$,
+we have $ea=a$,
+and so~$\ceil{a^*ea}=\ceil{a^*a}=\ceill{a}=e'$.
+(\ref{vmleq-1}$\Rightarrow$\ref{vmleq-3})\ 
+By the polar decomposition (see~\sref{polar-decomposition})
+we get a partial isometry~$u:=[ea]$
+for which $u^*u = [ea]^*[ea]=\ceil{(ea)^*ea}=e'$
+and~$uu^*=\ceil{eaa^*e}\leq e$.\qed
+\end{point}
+\end{point}
+\begin{point}{Exercise}%
+Show that~$\vmleq$ gives a preorder
+on the set of projections of a von Neumann algebra.
+\end{point}
+\begin{point}[cceil-sum]{Lemma}%
+Given a projection~$e$
+of a von Neumann algebra~$\scrA$
+there is a family
+$(e_i)_i$ of non-zero projections with $\cceil{e}=\sum_i e_i$,
+and $e_i\vmleq e$ for all~$i$.
+\begin{point}{Proof}%
+Let~$(e_i)_i$
+be a maximal set of non-zero orthogonal projections
+in~$\scrA$ with
+$e_i\vmleq e$ for all~$i$.
+Our goal is to show that $\sum_i e_i \equiv \bigcup_i e_i=\cceil{e}$.
+
+Let~$u_i$ be a partial isometry
+with $u_i^*u_i=e_i$ and $u_iu_i^* \leq e$.
+Since $e_i=u_i^* u_i = u_i^* u_i u_i^* u_i
+\leq u_i^* e u_i 
+\leq \bigcup_{a\in \scrA} \ceil{a^* e a}=\cceil{e}$,
+we have
+$\bigcup_i e_i \leq \cceil{e}$.
+
+Suppose that~$\bigcup_i e_i < \cceil{e}$
+(towards a contradiction).
+Then since $p:=\cceil{e}-\bigcup_i e_i $ 
+is a non-zero projection,
+and~$p=p\cceil{e} p
+=\bigcup_{a\in\scrA} \ceil{p\ceil{a^*ea}p}
+= \bigcup_{a\in\scrA} \ceil{(ap)^*eap}$,
+there must be~$a\in\scrA$ with $(eap)^*eap\neq 0$.
+The polar decomposition (see~\sref{polar-decomposition})
+of~$eap$
+gives us a partial isometry $u:=[eap]$
+with $uu^* = \ceil{eap(eap)^*}=\ceil{eapa^*e}\leq e$
+and $u^*u= \ceil{(eap)^*eap}\leq p$,
+so that $u^*u$ is a non-zero projection,
+orthogonal to all~$e_i$ with $u^*u \vmleq e$.
+In other words,
+$e$ could have been added to~$(e_i)_i$,
+contradicting its maximality.
+Hence $\bigcup_i e_i = \cceil{e}$.
+\qed
+\end{point}
+\end{point}
+\end{parsec}
 
 \section{Normal functionals}
 \subsection{Ultraweak boundedness}
@@ -3847,109 +3951,11 @@ of bounded operators on a Hilbert space~$\scrH$
 coincide with the central elements of the commutant~$\scrA^\square$,
 that is, $Z(\scrA)=Z(\scrA^\square)$.
 (Hint: $\scrA^{\square\square}=\scrA$ by~\sref{double-commutant}.)
+\begin{point}[commutant-cceil]%
+Deduce that~$\cceil{f|\scrA}=\cceil{f|\scrA^\square}$
+for every np-map~$f\colon \scrB(\scrH)\to\scrB$ 
+into a von Neumann algebra~$\scrB$.
 \end{point}
-\end{parsec}
-\begin{parsec}%
-\begin{point}%
-Using~\sref{commutant-ceil}
-we can also get a better handle on the set 
-$Z(\scrA)$ of central elements
-of a von Neumann algebra~$\scrA$,
-which is, after all, equal to~$\scrA^\square$.
-\end{point}
-\begin{point}{Exercise}%
-Let~$\scrA$ be a von Neumann algebra.
-Show that
-$\bigcup_{a\in\scrA}\ceil{a^*ea}$
-is the least central projection above any projection~$e$
-of~$\scrA$.
-\begin{point}%
-Show that given an element~$a$ of a von Neumann algebra~$\scrA$,
-the following exist and coincide.
-\begin{enumerate}
-\item
-The least central projection~$z$ with $za=a$.
-\item
-The least central projection above $\ceil{a^*a}$.
-\item
-The least central projection above $\ceil{aa^*}$.
-\end{enumerate}
-We'll denote it by~$\Define{\cceil{a}}$
-and call it the \Define{central support} of~$a$.
-\end{point}
-\begin{point}[cceil-basic]
-\begin{enumerate}
-\item
-Show that
-$\cceil{a}=\cceil{a^*a}=\cceil{aa^*}
-= \cceil{\ceil{a^*a}}=\cceil{\ceil{aa^*}}=\cceil{a^*}$.
-\item
-Show that $\bigcup_{e\in E} \cceil{e}
-= \cceil{\bigcup E}$
-for any set~$E$ of projections in~$\scrA$.
-\end{enumerate}
-\end{point}
-\end{point}
-\begin{point}[cceil-sum]{Lemma}%
-Given a projection~$e$
-of a von Neumann algebra
-there is an orthogonal collection of non-zero projections
-$(e_i)_i$ with $\cceil{e}=\sum_i e_i$,
-and $p_i\vmleq e$ for all~$i$.
-
-\TODO{define $\vmleq$}
-\begin{point}{Proof}%
-Let~$(e_i)_i$
-be a maximal set of non-zero orthogonal projections
-in~$\scrA$ with
-$e_i\vmleq p$ for all~$i$.
-Our goal is to show that $\sum_i e_i \equiv \bigcup_i e_i=\cceil{a}$.
-
-Let~$u_i$ be a partial isometry
-with $u_i^*u_i=e_i$ and $u_iu_i^* \leq e$.
-Since $e_i=u_i^* u_i = u_i^* u_i u_i^* u_i
-\leq u_i^* e u_i 
-\leq \bigcup_{a\in \scrA} \ceil{a^* e a}=\cceil{a}$,
-we have
-$\bigcup_i e_i \leq \cceil{a}$.
-
-Suppose that~$\bigcup_i e_i < \cceil{a}$
-(towards a contradiction).
-Then since $p:=\cceil{a}-\bigcup_i e_i $ 
-is a non-zero projection,
-and~$p=p\cceil{e} p
-=\bigcup_{a\in\scrA} \ceil{p\ceil{a^*ea}p}
-= \bigcup_{a\in\scrA} \ceil{(ap)^*eap}$,
-there must be~$a\in\scrA$ with $(eap)^*eap\neq 0$.
-The polar decomposition of~$eap$
-(see \TODO{})
-gives us a partial isometry $u:=[eap]$
-with $uu^* = \ceil{eap(eap)^*}=\ceil{eapa^*e}\leq e$
-and $u^*u= \ceil{(eap)^*eap}\leq p$,
-so that $u^*u$ is a non-zero projection,
-orthogonal to all~$e_i$ with $u^*u \vmleq e$.
-In other words,
-$e$ could have been added to~$(e_i)_i$,
-contradicting its maximality.
-Hence $\bigcup_i e_i = \cceil{a}$.
-\qed
-\end{point}
-\end{point}
-\begin{point}{Exercise}%
-Let~$f\colon \scrA \to \scrB$ be an np-map.
-Show that $\Define{\cceil{f}}:=\cceil{\ceil{f}}$ is least central projection~$z$
-with~$f(z^\perp)=0$
---- it's called the 
-\Define{central carrier} of~$f$.
-\end{point}
-\begin{point}[commutant-cceil]{Exercise}%
-Let~$\scrR$ be a von Neumann subalgebra of a von Neumann algebra~$\scrA$,
-and let~$f\colon \scrA\to\scrB$ be an np-map
-to a von Neumann algebra~$\scrB$.
-
-Show that~$\cceil{f|\scrR}=\cceil{f|\scrR^\square}$
-using the fact that $Z(\scrR)=Z(\scrR^\square)$
-(see~\sref{centre-commutant}).
 \end{point}
 \end{parsec}%
 \begin{parsec}%
