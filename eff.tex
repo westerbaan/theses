@@ -100,7 +100,7 @@ The existence of quotients and comprehension in some effectus~$C$
     we get a surprisingly firm handle
     on the possibilistic side of~$C$,
     by means of the existence
-    of a certain functor~$(\ )_\diamond\colon C \to \mathsf{OMLat}$.
+    of a certain functor~$(\ )_\diamond\colon C \to \mathsf{OLat}$.
 In the guiding example of von Neumann algebras,
     we have~$f_\diamond = g_\diamond$
         if and only
@@ -3823,11 +3823,10 @@ $(f\after g)_\diamond = f_\diamond \after g_\diamond$. \qed
 \end{point}
 \end{parsec}
 \begin{parsec}%
-\begin{point}{Theorem}%
-\TODO{attribution for this thm}
+\begin{point}[diamond-ortholattice]{Proposition}%
 In a~$\diamond$-effectus,
-the poset~$\SPred X$ of sharp predicates on~$X$,
-    is an orthomodular lattice.
+the poset~$\SPred X$ of sharp predicates on any object~$X$,
+    is an ortholattice.
 \begin{point}{Proof}%
 Let~$C$ be a~$\diamond$-effectus with some object~$X$.
 \begin{point}[spred-infimum]{Infima}%
@@ -3863,50 +3862,13 @@ suprema (satisfying De Morgan's laws) come for free:
 Now note
 \begin{equation*}
 \pi_s^\BOX(s^\perp) \ =
-    \  (s \after \pi_s)^\perp 
-    \ =\  (1 \after \pi_s)^\perp 
-    \ \overset{\sref{compr-total}}{=}\ 1^\perp \ =\   0
+    \  \ceil{s \after \pi_s}^\perp 
+    \ =\  \ceil{1 \after \pi_s}^\perp 
+    \ \overset{\sref{compr-total}}{=}\ \ceil{1}^\perp \ =\   0
 \end{equation*}
 and so~$s\wedge s^\perp = 0$.
-We have shown~$\SPred X$ with~$(\ )^\perp$ is an ortholattice.
+We have shown~$\SPred X$ with~$(\ )^\perp$ is an ortholattice. \qed
 \end{point}
-\begin{point}{Orthomodular law}%
-Assume~$s \leq  t$.
-We have to show~$s \vee (s^\perp \wedge t) = t$.
-Indeed
-\begin{alignat*}{2}
-s \vee (s^\perp \wedge t) 
-&\  =\  (s \wedge t) \vee (s^\perp \wedge t) &\qquad& \text{as $s \leq t$}\\
-&\  =\ 
-        ((\pi_t)_\diamond \after \pi_t^\BOX)
-        (s) \vee
-        ((\pi_t)_\diamond \after \pi_t^\BOX)
-        (s^\perp)
-        &\qquad& \text{by \sref{spred-infimum}}\\
-&\  =\ 
-        (\pi_t)_\diamond ( \pi_t^\BOX(s) \vee 
-                            \pi_t^\BOX(s^\perp))
-                            &\qquad& \text{by \sref{order-adj-basics}} \\
-&\  =\ 
-        (\pi_t)_\diamond ( \pi_t^\diamond(s) \vee 
-                            \pi_t^\diamond(s)^\perp)
-                            &\qquad& \text{as $\pi_t$ total,~\sref{compr-total}}\\
-&\  =\ 
-                            (\pi_t)_\diamond (1)
-                            &\qquad& \text{by \sref{spred-ortholattice}} \\
-& \ =\  \IM \pi_t \ = \ t && \text{by \sref{img-of-compr}}.
-\end{alignat*}
-We have shown~$\SPred X$ is an orthomodular lattice. \qed
-\end{point}
-\end{point}
-\begin{point}{Corollary}%
-In a $\diamond$-effectus~$C$
-the assignment~$X\mapsto \SPred X$, ~$f \mapsto (f_\diamond,f^\BOX)$
-    yields a functor from~$C$
-    to~$\mathsf{OMLatGal}$,
-    the category of orthomodular lattices
-    with galois connection between them,
-    as defined in~\cite{jacobs2009orthomodular}.
 \end{point}
 \end{point}
 \begin{point}[image-sharp-is-order-sharp]{Lemma}%
@@ -4395,6 +4357,81 @@ Then by \sref{simple-andthen-absorption}
 Hence~$s \vee t = s \ovee t$ by~\sref{ea-modularity-prop},
     but~$s \vee t$ is sharp by \sref{lattice-compr}. \qed
 \end{point}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}%
+We will show that the sharp predicates on an object in an~$\&$-effectus
+    form an orthomodular lattice.
+\end{point}
+\begin{point}{Lemma}%
+In a~$\&$-effectus,
+    if~$s\leq t$ for sharp~$s,t$,
+    then~$s \after \pi_t$ is sharp.
+\begin{point}{Proof}%
+By~\sref{simple-andthen-absorption}
+    we have~$\andthen{t}{s} = s$.
+Hence~$s \after \pi_t \after \zeta_t \after \pi_s
+                = (\andthen{t}{s}) \after \pi_s
+                = s \after \pi_s = 1$.
+Thus~$\zeta_t \after \pi_s$ is total.
+To prove~$s \after \pi_t$ is sharp,
+    we will show~$\IM \zeta_t \after \pi_s = s \after \pi_t$.
+We just saw~$s \after \pi_t \after \zeta_t \after \pi_s = 1$.
+Assume~$r \after \zeta_t \after \pi_s = 1$.
+Then~$r \after \zeta_t \geq s$
+and so~$r = r \after \zeta_t \after \pi_t \geq s \after \pi_t$,
+as desired. \qed
+\end{point}
+\end{point}
+\begin{point}[box-diamond-compr-andthen]{Corollary}%
+In a~$\&$-effectus: $s \after \pi_t = (\pi_t)^\BOX(s) = (\pi_t)^\diamond(s)$
+    for sharp~$s,t$ with~$s \leq t$.
+\end{point}
+\begin{point}{Theorem}%
+In a~$\&$-effectus,
+    the poset~$\SPred X$ of sharp predicates on~$X$,
+    is an orthomodular lattice.
+\begin{point}{Proof}%
+In \sref{diamond-ortholattice} we saw
+    that~$\SPred X$ is an ortholattice.
+Assume~$s \leq  t$ for some~$s,t \in \SPred X$.
+We have to show~$s \vee (s^\perp \wedge t) = t$.
+Indeed
+\begin{alignat*}{2}
+s \vee (s^\perp \wedge t) 
+&\  =\  (s \wedge t) \vee (s^\perp \wedge t) &\qquad& \text{as $s \leq t$}\\
+&\  =\ 
+        ((\pi_t)_\diamond \after \pi_t^\BOX)
+        (s) \vee
+        ((\pi_t)_\diamond \after \pi_t^\BOX)
+        (s^\perp)
+        &\qquad& \text{by \sref{spred-infimum}}\\
+&\  =\ 
+        (\pi_t)_\diamond ( \pi_t^\BOX(s) \vee 
+                            \pi_t^\BOX(s^\perp))
+                            &\qquad& \text{by \sref{order-adj-basics}} \\
+&\  =\ 
+        (\pi_t)_\diamond ( \pi_t^\diamond(s) \vee 
+                            \pi_t^\diamond(s)^\perp)
+                            &\qquad& \text{by \sref{box-diamond-compr-andthen}}\\
+&\  =\ 
+                            (\pi_t)_\diamond (1)
+                            &\qquad& \text{by \sref{spred-ortholattice}} \\
+& \ =\  \IM \pi_t \ = \ t && \text{by \sref{img-of-compr}}.
+\end{alignat*}
+We have shown~$\SPred X$ is an orthomodular lattice. \qed
+\end{point}
+\end{point}
+\begin{point}{Corollary}%
+In a $\&$-effectus~$C$
+the assignment~$X\mapsto \SPred X$, ~$f \mapsto (f_\diamond,f^\BOX)$
+    yields a functor from~$C$
+    to~$\mathsf{OMLatGal}$,
+    the category of orthomodular lattices
+    with galois connection between them,
+    as defined in~\cite{jacobs2009orthomodular}.
 \end{point}
 \end{parsec}
 
