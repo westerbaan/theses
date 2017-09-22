@@ -3696,7 +3696,7 @@ the Stone--Weierstra\ss{} theorem.
 Let~$X$ be a compact Hausdorff space,
 and let~$\scrS$ be a $C^*$-subalgebra of~$C(X)$
 which `separates the points of~$X$',
-that is, for all~$x,y\in X$
+that is, for all~$x,y\in X$ with~$x\neq y$
 there is~$f\in \scrS$ with $f(x)\neq f(y)$.
 Then~$\scrS=C(X)$.
 \begin{point}{Proof}%
@@ -3845,7 +3845,7 @@ is a result about commutative $C^*$-algebras,
 it tells us a lot about non-commutative $C^*$-algebras too,
 via their commutative $C^*$-subalgebras.
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[functional-calculus]{Exercise}%
 Let~$a$ be an element of a (not necessarily commutative)
 $C^*$-algebra~$\scrA$.
 We are going to use Gelfand's representation
@@ -3859,6 +3859,9 @@ Show that there is a least $C^*$-subalgebra
 $\Define{C^*(a)}$ of~$\scrA$
 that contains~$a$.
 
+Given~$b\in C^*(a)$
+show that~$bc=cb$ for all~$c\in\scrA$
+with~$ac=ca$.
 \item
 We call~$a\in\scrA$ \Define{normal}
 when~$C^*(a)$ is commutative.

@@ -872,10 +872,6 @@ called the \Define{ceiling} of~$b$,
  given by $\ceil{b}=\bigvee_{n=0}^\infty b^{\nicefrac{1}{2^n}}$.\\
 Moreover, if $a\in \scrA$ commutes with $b$,
 then~$a$ commutes with~$\ceil{b}$.
-
-\TODO{Remark that $\ceil{\,\cdot\,}$ is not continuous in any sense
-because $\nicefrac{1}{n}\to 0$
-in any topology, while $\ceil{\nicefrac{1}{n}}\equiv1 \to 1\neq  0$.}
 \begin{point}{Proof}
 Let~$p$ denote the supremum of~$0\leq b\leq b^{\nicefrac{1}{2}}\leq
 b^{\nicefrac{1}{4}}\leq\dotsb\leq 1$.
@@ -1167,32 +1163,15 @@ when~$T$ is an effect.
 \end{point}
 \end{parsec}
 \begin{parsec}%
-\begin{point}[cpsu-root-square]{Exercise}%
-Let~$f\colon \scrA\to\scrB$ be a ncpsu-map
-between von Neumann algebras
-and let~$a\in \scrA$ be positive.
-\begin{enumerate}
-\item
-Show that~$f(a)^2 \leq f(a^2)$
-(perhaps using~\sref{cp-cs}).
-\item
-	Use this, and~\sref{sqrt-monotone}
-to show that~$f(a^{\nicefrac{1}{2}}) \leq f(a)^{\nicefrac{1}{2}}$.
-\item
-Go on, and show that $f(a^{\nicefrac{1}{2^n}})
-\leq f(a)^{\nicefrac{1}{2^n}}$ for each~$n$.
-\end{enumerate}
-\end{point}
-\begin{point}[ncp-ceil]{Proposition}%
-Let $f\colon \scrA\to\scrB$ be a ncp-map
-between von Neumann algebras.
-Then $\ceil{f(a)}=\ceil{f(\ceil{a})}$
-for every $a\in\scrA_+$.
+\begin{point}[ceil-functionals-lemma]{Lemma}%
+Given a positive element~$a$
+of a von Neumann algebra~$\scrA$ and an
+np-functional~$\omega\colon \scrA\to\C$
+we have~$\omega(a)=0$ iff~$\omega(\ceil{a})=0$.
 \begin{point}{Proof}%
 Note that if~$a=0$,
-then
-the stated result is clearly correct.
-In the other case, when~$\|a\| \neq 0$,
+the stated result is clearly correct,
+and the other case, when~$\|a\| \neq 0$,
 the problem reduces to the case
 that $0\leq a\leq 1$
 by replacing $a$ by~$\frac{a}{\|a\|}$.
@@ -1201,18 +1180,76 @@ to begin with.
 For similar reasons, we may assume that $f(1)\leq 1$.
 
 Now, since~$a\leq \ceil{a}$
-we have $f(a)\leq f(\ceil{a})$,
-and so~$\ceil{f(a)}\leq \ceil{f(\ceil{a})}$.
-It remains to be shown that $\ceil{f(\ceil{a})}\leq \ceil{f(a)}$,
-that is, $f(\ceil{a})\leq \ceil{f(a)}$.
+we have $\omega(a)\leq \omega(\ceil{a})$,
+so~$\omega(\ceil{a})=0\implies \omega(a)=0$
+is obvious.
+It remains to be shown that $\omega(\ceil{a})=0$
+given~$\omega(a)=0$.
 Since  $\ceil{a}=\bigvee_n a^{\nicefrac{1}{2^n}}$ 
 (by~\sref{vna-ceil})
-and~$f$ is normal,
-we have $f(\ceil{a})=\bigvee_n f(a^{\nicefrac{1}{2^n}})$.
-Now, since $f(a^{\nicefrac{1}{2^n}})\leq f(a)^{\nicefrac{1}{2^n}}
-\leq \ceil{f(a)}$
-by~\sref{cpsu-root-square} for each~$n$,
-we have~$f(\ceil{a})\leq \ceil{f(a)}$.\qed
+and~$\omega$ is normal,
+we have $\omega(\ceil{a})=\bigvee_n \omega(a^{\nicefrac{1}{2^n}})$,
+and so it suffices to show that~$\omega(a^{\nicefrac{1}{2^n}})$
+for each~$n$.
+As a result of Kadison's inequality
+(see~\sref{omega-norm-basic})
+we have~$\omega(\sqrt{a})^2\leq \omega(a)=0$,
+and so~$\omega(\sqrt{a})=0$.
+Since then~$\omega(\smash{\sqrt{\sqrt{a}}})=0$
+by the same token, and so on,
+we get $\omega(a^{\nicefrac{1}{2^n}})=0$
+for all~$n$ by induction.\qed
+\end{point}
+\end{point}
+\begin{point}[ceil-functionals]{Proposition}%
+For positive elements~$a$ and~$b$ of a von Neumann algebra~$\scrA$,
+\begin{equation*}
+\ceil{a}\leq \ceil{b}
+\qquad\iff\qquad
+\forall \omega\,[\quad\omega(b)=0\  \implies  \ \omega(a)=0\quad ],
+\end{equation*}
+where~$\omega$ ranges over all np-functionals~$\omega\colon \scrA\to\C$.
+\begin{point}{Proof}%
+When~$\ceil{a}\leq\ceil{b}$
+and~$\omega$ is an np-functional on~$\scrA$
+with~$\omega(b)=0$,
+then~$0\leq \omega(\ceil{a})\leq \omega(\ceil{b})=0$
+(by~\sref{ceil-functionals-lemma}),
+and so~$\omega(\ceil{a})=0$,
+so that~$\omega(a)=0$
+(again
+by~\sref{ceil-functionals-lemma}).
+
+For the other direction,
+assume that~$\omega(b)=0\implies \omega(a)=0$
+for every np-functional~$\omega$ on~$\scrA$;
+we must show that~$\ceil{a}\leq \ceil{b}$,
+or in other words, $\smash{\ceil{b}}^\perp \ceil{a}\smash{\ceil{b}}^\perp =0$.
+Let~$\omega\colon \scrA\to\C$ be an arbitrary np-functional;
+it suffices to show that 
+$\omega(\,\smash{\ceil{b}}^\perp \ceil{a}\smash{\ceil{b}}^\perp \,)=0$.
+Since~$\smash{\ceil{b}}^\perp b \smash{\ceil{b}}^\perp =0$
+we have~$\omega(\smash{\ceil{b}}^\perp b\smash{\ceil{b}}^\perp)=0$
+and so~$\omega(\smash{\ceil{b}}^\perp a \smash{\ceil{b}}^\perp)=0$
+(by assumption, because
+$\omega(\smash{\ceil{b}}^\perp(\,\cdot\,)\smash{\ceil{b}}^\perp)$
+is an np-functional on~$\scrA$ as well),
+which implies that
+$\omega(\smash{\ceil{b}}^\perp\ceil{a}\smash{\ceil{b}}^\perp)=0$
+by~\sref{ceil-functionals-lemma}.\qed
+\end{point}
+\end{point}
+\begin{point}[ncp-ceil]{Proposition}%
+Let $f\colon \scrA\to\scrB$ be a np-map
+between von Neumann algebras.
+Then $\ceil{f(a)}=\ceil{f(\ceil{a})}$
+for every $a\in\scrA_+$.
+\begin{point}{Proof}%
+By~\sref{ceil-functionals}
+it suffices to show that
+$\omega(f(a))=0$ iff $\omega(f(\ceil{a}))=0$
+for every np-functional $\omega\colon \scrB\to\C$,
+and this is indeed the case by~\sref{ceil-functionals-lemma}.\qed
 \end{point}
 \end{point}
 \begin{point}[ceil-fundamental]{Exercise}%
@@ -1250,7 +1287,7 @@ for all~$c_1,c_2\in\ceilr{b}\scrA\ceilr{b}$
 \end{enumerate}
 \end{point}
 \begin{point}[ncp-union]{Exercise}%
-Let~$f\colon \scrA\to\scrB$ be an ncp-map
+Let~$f\colon \scrA\to\scrB$ be an np-map
 between von Neumann algebras.
 \begin{enumerate}
 \item
@@ -1269,29 +1306,188 @@ for every set of projections~$A$ from~$\scrA$.
 \item
 Show that there is a greatest projection~$e$
 in~$\scrA$ with~$f(e)=0$.
-
-\item
-Show that there is a least projection~$\Define{\ceil{f}}$
-in~$\scrA$
-with~$f(\ceil{f}^\perp)=0$.
-
-We'll call~$\ceil{f}$ the \Define{carrier} of~$f$.
 \end{enumerate}
 \end{point}
 \end{parsec}
 \begin{parsec}%
 \begin{point}[carrier]{Definition}%
-Let $f\colon\scrA\to\scrB$
-be an np-map between von Neumann algebras.
-The \Define{carrier} of~$f$, denoted by~$\Define{\ceil{f}}$,
-is the least projection~$e$
-of~$\scrA$ with~$f(e^\perp)= 0 $.
+The \Define{carrier}
+of an np-map $f\colon \scrA\to\scrB$
+between von Neumann algebras
+is the least projection~$\Define{\ceil{f}}$ in~$\scrA$
+with~$f(\smash{\ceil{f}}^\perp)=0$
+(which exists by~\sref{ncp-union}).
+\end{point}
+\begin{point}[carrier-basic]{Exercise}%
+Let~$f,g\colon \scrA\to\scrB$
+be np-maps between von Neumann algebras.
+\begin{enumerate}
+\item
+Show that $\ceil{\lambda f}=\ceil{f}$
+for all~$\lambda>0$.
+\item
+Show that~$\ceil{f+g}=\ceil{f}\cup\ceil{g}$.
+\item
+Show that~$\ceil{f}=1$ iff~$f$ is faithful.
+\item
+Assuming~$f$ is multiplicative
+show that~$\ceil{f}=1$ iff~$f$ is injective.
+
+(There is more to say about
+the carrier of a miu-map, see~\sref{carrier-miu}.)
+\end{enumerate}
+\end{point}
+\begin{point}{Exercise}%
+\begin{enumerate}
+\item
+Given an element~$a$ of a von Neumann algebra~$\scrA$
+show that 
+\begin{equation*}
+\ceil{a^*(\,\cdot\,)a}\ =\ \ceil{aa^*}\equiv \ceilr{a}
+\end{equation*}
+where~$a^*(\,\cdot\,)a$
+is interpretted as an np-map~$\scrA\to\scrA$.
+\item
+Given a bounded operator~$T\colon \scrH\to\scrK$
+between Hilbert spaces
+show that~$\ceil{T^*(\,\cdot\,)T}$
+is the projection onto~$\overline{\Ran(T)}$
+when~$T^*(\,\cdot\,)T$
+is interpretted 
+as a map
+$\scrB(\scrK)\to\scrB(\scrH)$.
+\item
+Show that~$\ceil{\left<x,(\,\cdot\,)x\right>}=\ketbra{x}{x}$
+for any unit vector~$x$ from a Hilbert space~$\scrH$
+when~$\left<x,(\,\cdot\,)x\right>$
+is interpretted as a map~$\scrB(\scrH)\to\C$.
+
+(But be warned: when~$\scrA$ is a von Neumann subalgebra of~$\scrB(\scrH)$
+the carrier of the restriction 
+$\left<x,(\,\cdot\,)x\right>\colon \scrA\to\C$
+might differ from~$\ketbra{x}{x}$ because the former is in~$\scrA$
+while the latter may not be, see~\sref{carrier-vector-state}.)
+\end{enumerate}
 \end{point}
 \end{parsec}
-\begin{point}[carrier-basic]{Exercise}%
-Show that $\ceil{\lambda f} = \ceil{f}$ for~$\lambda>0$,
-and~$\ceil{f+g} = \ceil{f}\cup \ceil{g}$.
+\begin{parsec}%
+\begin{point}[ngelfand]{Exercise}%
+Let~$\scrA$ be a commutative von Neumann algebra.
+Using the fact that
+the Gelfand representation~$\gamma_\scrA\colon \scrA\to C(\spec(\scrA))$
+from~\sref{gelfand-representation}
+is a miu-isomorphism 
+by~\sref{gelfand}
+and thus an order isomorphism,
+show that~$C(\spec(\scrA))$
+is a commutative von Neumann algebra
+that is nmiu-isomorphic
+to~$\scrA$ via~$\gamma_\scrA$.
 \end{point}
+\begin{point}[vn-spectrum-extremally-disconnected]{Proposition}%
+The spectrum~$\spec(\scrA)$
+of a commutative von Neumann algebra~$\scrA$
+is \Define{extremally disconnected}:
+the closure~$\overline{U}$
+of an open subset~$U$ of~$\spec(\scrA)$
+is open.
+\begin{point}{Proof}%
+(Based on \S6.1 of~\cite{riesz}.)
+
+Let~$U$ be an open subset of~$\spec(\scrA)$,
+and let~$\mathbf{1}_U$ be the indicator function
+of~$U$.
+The set $D=\{\,f\in C(\spec(\scrA))\colon\, f\leq \mathbf{1}_U\,\}$
+is directed and bounded 
+and so has a supremum~$\bigvee D$
+in~$C(\spec(\scrA))$
+(since~$C(\spec(\scrA))$ is a von Neumann algebra by~\sref{ngelfand}).
+Note that~$0\leq \bigvee D\leq 1$.
+We'll prove that~$\bigvee D = \mathbf{1}_{\overline{U}}$,
+because this entails
+that~$\mathbf{1}_{\overline{U}}$
+is continuous,  so that~$\overline{U}$ is both open and closed.
+
+Let~$x\in U$ be given.
+By Urysohn's lemma (see~15.6 of~\cite{willard},
+using here that~$\spec(\scrA)$ being a compact Hausdorff
+space, \sref{spectrum-calg-compact-hausdorff}, 
+is normal by~17.10 of~\cite{willard})
+there is $f\in [0,1]_{C(\spec(\scrA))}$
+with~$f(x)=1$ and~$f(y)=0$ for all~$y\in \spec(X)\backslash U$.
+It follows that~$f\in D$,
+and~$f\leq \bigvee D\leq 1$,
+so that $1=f(x)\leq (\bigvee D)(x)\leq 1$,
+and~$(\bigvee D)(x)=1$.
+By continuity of~$\bigvee D$,
+we get $(\bigvee D)(x)=1$ for all~$x\in \overline{U}$.
+
+Let~$y\in \spec(\scrA)\backslash U$ be given.
+Again by Urysohn's lemma
+there is $f\in [0,1]_{C(\spec(\scrA))}$
+with~$f(y)=0$ and~$f(x)=1$ for all~$x\in \overline{U}$.
+Since $g\leq \mathbf{1}_U \leq f$
+for every~$g\in D$,
+we get $\bigvee D\leq f$,
+and so~$0\leq (\bigvee D)(y)\leq f(y) =0$,
+which implies that~$(\bigvee D)(y)=0$.
+Hence~$(\bigvee D)(y)=0$ for all~$y\in \spec(\scrA)\backslash U$.
+
+All in all we have $\bigvee D = \mathbf{1}_{\overline{U}}$,
+and so~$\overline{U}$ is open.\qed
+\end{point}
+\end{point}
+\begin{point}{Proposition}%
+Every element~$a$ of a commutative von Neumann algebra~$\scrA$
+is the norm limit
+of linear combinations of projections.
+\begin{point}{Proof}%
+By~\sref{ngelfand}
+it suffices to show that the linear span
+of projections is norm dense
+in~$C(\spec(\scrA))$.
+For this, in turn, it suffices 
+by Stone--Weierstra\ss{}' theorem
+(see~\sref{stone-weierstrass})
+to show that the projections in~$C(\spec(\scrA))$
+separate the points of~$\spec(\scrA)$
+in the sense
+that given $x,y\in\spec(\scrA)$
+with~$x\neq y$
+there is a projection~$f$ in~$C(\spec(\scrA))$
+with~$f(x)\neq f(y)$.
+Since~$\spec(\scrA)$
+is Hausdorff
+there are for such~$x$ and~$y$
+disjoint open subsets $U$ and~$V$
+of~$\spec(\scrA)$
+with~$x\in U$ and~$y\in V$.
+
+Then
+$f:=\mathbf{1}_{\overline{U}}$
+is a projection in~$C(\spec(\scrA))$
+(continuous
+because~$\overline{U}$
+is clopen by~\sref{vn-spectrum-extremally-disconnected})
+with~$f(x)=0\neq 1=f(y)$
+since $x\in \overline{U}\subseteq \spec(\scrA)\backslash V$,
+and so~$y\notin \overline{U}$.\qed
+\end{point}
+\end{point}
+\begin{point}{Corollary}%
+Every self-adjoint element~$a$ of a von Neumann algebra~$\scrA$
+is the norm limit
+of linear combinations
+of projections.
+Moreover,
+these projections may be taken such
+that they commute with all elements of~$\scrA$
+that commute with~$a$.
+\begin{point}{Proof}%
+	\TODO{asdasd
+\end{point}
+\end{point}
+\end{parsec}
 \section{Central elements}
 \begin{parsec}%
 \begin{point}{Definition}%
@@ -1417,7 +1613,7 @@ for all~$a,b\in\scrA$.
 \begin{parsec}%
 \begin{point}{Definition}%
 Let $f\colon \scrA\to\scrB$
-be an ncp-map
+be an np-map
 between von Neumann algebras.
 Show that given a central effect~$c$
 of~$\scrA$ we have
@@ -1502,7 +1698,7 @@ and so~$c'\leq c$.
 Since similarly $c\leq c'$, we get~$c=c'$.\qed
 \end{point}
 \end{point}
-\begin{point}{Corollary}%
+\begin{point}[carrier-miu]{Corollary}%
 Given a nmiu-map $f\colon \scrA\to\scrB$
 between von Neumann algebras
 we have~$\ceil{f}=\cceil{f}$
@@ -1602,7 +1798,7 @@ $\omega(\smash{\ceil{\varrho_\Omega}}^\perp)
 for all~$\omega\in\Omega$
 we get~$\ceil{\varrho_\Omega}^\perp =0$,
 and so~$\varrho_\Omega$ is injective
-by~\TODO{...}.\qed
+by~\sref{carrier-basic}.\qed
 \end{point}
 \end{point}
 \end{parsec}
