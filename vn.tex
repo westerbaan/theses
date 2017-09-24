@@ -131,9 +131,29 @@ and semi-norm $\|a\|_\omega = \|[a,a]_\omega\|^{\nicefrac{1}{2}}
 = \omega(a^*a)^{\nicefrac{1}{2}}$.
 \TODO{finish}
 \end{point}
-\end{parsec}
-\begin{parsec}%
-\begin{point}[von-neumann-subalgebra]{Example}%
+\begin{point}[von-neumann-examples]{Examples}%
+\begin{enumerate}
+\item
+$\C$ and~$\{0\}$ are clearly von Neumann algebras.
+\item
+The $C^*$-algebra $\scrB(\scrH)$
+of bounded operators on a Hilbert space~$\scrH$
+is a von Neumann algebra:
+$\scrB(\scrH)$ has bounded directed suprema
+of self-adjoint elements
+by~\sref{hilb-suprema},
+and the vector states
+(and thus all normal functionals)
+are order separating
+(and thus faithful)
+by~\sref{hilb-vector-states-order-separating}.
+\item
+The direct product $\bigoplus_i \scrA_i$
+(see~\sref{cstar-product})
+of a family $(\scrA_i)_i$
+of von Neumann algebras
+is itself a von Neumann algebra.
+\item
 A $C^*$-subalgebra~$\scrB$
 of a von Neumann algebra~$\scrA$
 is called a \Define{von Neumann subalgebra}
@@ -142,9 +162,15 @@ if for every bounded directed subset~$D$
 of self-adjoint elements from~$\scrB$
 we have $\bigvee D\in\scrB$
 (where the supremum is taken in~$\sa{\scrA}$).
+\item
+We'll see in~\sref{commutant-basic}
+that given a subset~$S$ of a von Neumann algebra~$\scrA$
+that is closed under involution
+the set~$S^\square = \{\,a\in\scrA\colon\, \forall s\in S\,[\ as=sa\ ]\,\}$,
+called the \emph{commutant} of~$S$,
+is a von Neumann subalgebra of~$\scrA$.
+\end{enumerate}
 \end{point}
-
-\TODO{add more examples}
 \end{parsec}
 \begin{parsec}%
 \begin{point}{Exercise}%
@@ -627,11 +653,17 @@ the following are equivalent
 \end{parsec}
 \begin{parsec}%
 \begin{point}%
-Before we deepen our understanding
-of the ultraweak and ultrastrong topologies,
-let us quickly prove that every von Neumann algebra
+Let us quickly prove that every von Neumann algebra
 is isomorphic to a von Neumann algebra of operators on a 
 Hilbert space (see~\sref{ngns}).
+\end{point}
+\begin{point}[normal-faithful]{Exercise}%
+Let~$\Omega$ be a collection of np-functionals
+on a von Neumann algebra~$\scrB$
+that is faithful (see~\sref{separating}).
+Show that a positive linear map $f\colon \scrA\to\scrB$
+is normal iff~$\omega\circ f$
+is normal for all~$\omega\in\Omega$.
 \end{point}
 \begin{point}{Proposition}%
 Given an np-map~$\omega\colon \scrA \to \C$
@@ -639,35 +671,19 @@ on a von Neumann algebra~$\scrA$,
 the map $\varrho_\omega\colon \scrA\to\scrB(\scrH_\omega)$
 from~\sref{gns} is normal.
 \begin{point}{Proof}%
-Let~$D$ be a bounded directed subset of~$\Real{\scrA}$.
-Given $a\in \scrA$, we have
-\begin{alignat*}{3}
-	\textstyle
-	\left<\,\eta_\omega(a),\, 
-	\bigvee_{d\in D}\varrho_\omega(d)
-	\,\eta_\omega(a)\,\right>
-\ &=\ 
-	\textstyle
-	\bigvee_{d\in D}\ \left<\,\eta_\omega(a),\, 
-	\varrho_\omega(d)
-	\,\eta_\omega(a)\,\right>\\
-\ &=\
-	\textstyle
-	\bigvee_{d\in D}\ \omega(a^*d a) \\
-\ &=\ 
-	\textstyle
-	\omega(a^*\,\bigvee D\, a) \\
-\ &=\
-	\textstyle
-	\left<\,\eta_\omega(a),\, 
-	\varrho_\omega(\bigvee D)
-	\,\eta_\omega(a)\,\right>.
-\end{alignat*}
-Since~$\{\,\eta_\omega(a)\colon \,a\in\scrA\,\}$
-is dense in~$\scrH_\omega$,
-we conclude \TODO{} that~$\bigvee_{d\in D} \varrho_\omega(d)
-= \varrho_\omega(\bigvee D)$,
-and so~$\varrho_\omega$ is normal.\qed
+Since by definition of~$\scrH_\omega$
+the vectors of the form~$\eta_\omega(a)$
+where~$a\in\scrA$
+are dense in~$\scrH_\omega$,
+the vector functionals
+$\left<\eta_\omega(a),(\,\cdot\,)\eta_\omega(a)\right>$
+form a faithful collection
+of np-functionals on~$\scrB(\scrH_\omega)$.
+Thus by~\sref{normal-faithful}
+it suffices to show given~$a\in\scrA$
+that $\left<\eta_\omega(a),\varrho_\omega(\,\cdot\,)
+\eta_\omega(a)\right>\equiv \omega(a^*(\,\cdot\,)a)$ is normal,
+which it is, by~\sref{ad-normal}.\qed
 \end{point}
 \end{point}
 \begin{point}[varrho-Omega-normal]{Exercise}%
@@ -720,6 +736,110 @@ from~$\scrA$ to the von Neumann subalgebra~$\varrho_\Omega(\scrA)$
 of~$\scrB(\scrH_\Omega)$.\qed
 \end{point}
 \end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+We end the section
+by showing that the $C^*$-algebra
+of $N\times N$-matrices~$M_N(\scrA)$
+over a von Neumann algebra~$\scrA$
+is itself a von Neumann algebra.
+\end{point}
+\begin{point}{Theorem}%
+Given a von Neumann algebra~$\scrA$,
+the~$C^*$-algebra $\scrB_a(X)$ (\sref{bax-cstar})
+of bounded adjoinable module maps on
+a self-dual (\sref{self-dual}) Hilbert $\scrA$-module~$X$
+is a  von Neumann algebra,
+and
+$\left<x,(\,\cdot\,)x\right>\colon \scrB_a(X)\to\scrA$
+is normal for every~$x\in X$.
+\begin{point}{Proof}%
+We'll first show that
+a  bounded directed subset~$\scrD$ of~$\Real{\scrB_a(X)}$
+has a supremum (in~$\Real{\scrB_a(X)}$).
+To obtain a candidate for this supremum,
+we first define
+a bounded form~$[\,\cdot\,,\,\cdot\,]\colon X\times X\to\scrA$
+in the sense of~\sref{chilb-form}
+and apply~\sref{chilb-form-representation}.
+To this end note that given~$x\in X$
+the subset~$\{\,\left<x,Tx\right>\colon \, T\in\scrD\,\}$
+of~$\Real{\scrA}$
+is bounded and directed,
+and so 
+(since~$\scrA$ is a von Neumann algebra)
+has a supremum.
+Since the 
+the net $(\,\left<x,Tx\right>\,)_{T\in \scrD}$
+converges ultraweakly to this supremum
+by~\sref{vna-supremum-uwlimit},
+we see that
+$\left<y,Tz\right>\,= \,\frac{1}{4}
+\sum_{k=0}^3
+i^k\left<y+i^kz,\smash{T(y+i^kz)}\right>$
+converges ultraweakly to 
+some element~$[y,z]$ of~$\scrA$
+as~$T\to\infty$ for all~$y,z\in X$,
+giving us a form~$[\,\cdot\,,\,\cdot\,]$ on~$X$.
+Since~$\left\|\left<y,T z \right>\right\|
+\leq \sup_{T'\in \scrD} \|T'\| \|y\|\|z\|$
+for all~$T\in\scrD$
+by~\sref{chilb-form-bounded},
+and thus~$\|[y,z]\|\leq \sup_{T'\in\scrD} \|T'\|\|y\|\|z\|$
+for all~$y,z\in X$,
+we see that the form~$[\,\cdot\,,\,\cdot\,]$
+is bounded.
+Since~$X$ is self dual,
+there is
+by~\sref{chilb-form-representation}
+$S\in \scrB_a(X)$
+with
+$[y,z]=\left<y,Sz\right>$
+for all~$y,z\in X$;
+we'll show that~$S$ is the supremum of~$\scrD$.
+
+To begin,
+given~$T\in\scrD$
+we have~$\left<x,Tx\right>\leq\bigvee_{T'\in\scrD} \left<x,T'x\right>
+=[x,x]=\left<x,Sx\right>$
+for all~$x\in X$,
+and so~$T\leq S$
+by~\sref{chilb-vector-states-order-separating},
+that is, $S$ is an upper bound for~$\scrD$.
+Given another upper bound~$S'\in\Real{\scrB_a(X)}$
+of~$\scrD$
+(so  $T\leq S'$ for all~$T\in\scrD$)
+we have~$\left<x,Tx\right>\leq \left<x,S'x\right>$
+and so~$\left<x,Sx\right>
+=[x,x]=\bigvee_{T\in \scrD}\left<x,Tx\right>\leq \left<x,S'x\right>$
+for all~$x\in X$
+implying that~$S\leq S'$.
+Hence~$S$ is the supremum of~$\scrD$
+in $\Real{\scrB_a(X)}$.
+Note that since~$\left<x,Sx\right>=\bigvee_{T\in\scrD} \left<x,Tx\right>$
+we immediately see
+that $\left<x,(\,\cdot\,)x\right>\colon \scrB_a(X)\to\scrA$
+preserves bounded directed suprema
+for every~$x\in X$.
+
+It remains to be shown that
+there are sufficiently many np-functionals on $\scrB_a(X)$
+in the sense that~$T\in(\scrB_a(X))_+$ is zero
+when~$\omega(T)=0$ for every np-functional $\omega\colon \scrB_a(X)\to\C$.
+This is indeed
+the case for such an operator~$T$,
+because~$\xi(\left<x,(\,\cdot\,)x\right>)$
+is an np-functional on~$\scrB_a(X)$
+for every~$x\in X$
+and an np-functional $\xi\colon \scrA\to\C$,
+implying that~$\xi(\left<x,Tx\right>)=0$,
+and~$\left<x,Tx\right>=0$,
+and so~$T=0$.\qed
+\end{point}
+\end{point}
+
+\TODO{$M_Nf$ is normal}
 \end{parsec}
 \section{Projections}
 \begin{parsec}%
@@ -1371,6 +1491,18 @@ while the latter may not be, see~\sref{carrier-vector-state}.)
 \end{point}
 \end{parsec}
 \begin{parsec}%
+\begin{point}%
+We end our exposition on projections
+by showing that every element in a von Neumann 
+algebra is the norm limit of linear combinations
+of projections in~\sref{projections-norm-dense}.
+We'll deal with commutative case first
+(see~\sref{abelian-projections-norm-dense}),
+and for this
+need an interesting 
+property of the spectrum of a commutative von Neumann algebra,
+see~\sref{vn-spectrum-extremally-disconnected}.
+\end{point}
 \begin{point}[ngelfand]{Exercise}%
 Let~$\scrA$ be a commutative von Neumann algebra.
 Using the fact that
@@ -1437,7 +1569,7 @@ All in all we have $\bigvee D = \mathbf{1}_{\overline{U}}$,
 and so~$\overline{U}$ is open.\qed
 \end{point}
 \end{point}
-\begin{point}{Proposition}%
+\begin{point}[abelian-projections-norm-dense]{Proposition}%
 Every element~$a$ of a commutative von Neumann algebra~$\scrA$
 is the norm limit
 of linear combinations of projections.
@@ -1474,37 +1606,97 @@ since $x\in \overline{U}\subseteq \spec(\scrA)\backslash V$,
 and so~$y\notin \overline{U}$.\qed
 \end{point}
 \end{point}
-\begin{point}{Corollary}%
+\end{parsec}
+\begin{parsec}%
+\begin{point}[commutant]{Definition}%
+Given a subset~$S$ of a von Neumann algebra~$\scrA$
+the \Define{commutant} of~$S$
+is the set, denoted by~$\Define{\smash{S^\square}}$,
+of all~$a\in\scrA$ with $as=sa$ for all~$s\in S$.
+
+The commutant of~$\scrA$ itself
+is denoted by~$\Define{Z(\scrA)}:=\scrA^\square$
+and is called the \Define{centre} of~$\scrA$.
+(Its elements, called \emph{central}, are the subject of the next section.)
+\end{point}
+\begin{point}[commutant-basic]{Exercise}%
+Let~$S$ and~$T$ be subsets of a von Neumann algebra~$\scrA$.
+\begin{enumerate}
+\item
+Show that $S \subseteq T^\square$ iff $T \subseteq S^\square$.
+
+Show that $S\subseteq T$ entails $T^\square \subseteq S^\square$.
+
+Show that $S\subseteq S^{\square\square}$,
+and  $S^{\square\square\square}=S^\square$.
+\item
+Show that $S^\square$ is closed under addition,
+(scalar) multiplication,
+contains the unit of~$\scrA$,
+and is ultraweakly closed.
+\item
+Show that the commutant $S^\square$ need not be closed under involution.\\
+(Hint: compute 
+$\{\bigl(\begin{smallmatrix}0&1\\0&0\end{smallmatrix}\bigr)\}^\square$
+in $M_2$.)
+
+Suppose~$S$ is closed under involution.
+
+Show~$S^\square$ is closed under involution as well,
+and conclude that in that case~$S^\square$
+is a von Neumann subalgebra of~$\scrA$.
+
+Show that~$Z(\scrA)$ is a von Neumann subalgebra of~$\scrA$.
+
+Show that~$S^{\square\square}$
+is a von Neumann subalgebra of~$\scrA$
+with~$S\subseteq S^{\square\square}$.
+
+Show that if~$S$ is commutative (i.e.~$S\subseteq S^\square$), 
+then so is~$S^{\square\square}$.
+\item
+In particular,
+if~$\scrB$ is a von Neumann subalgebra of~$\scrA$,
+then~$\scrB^{\square\square}$
+is a von Neumann subalgebra of~$\scrA$
+with $\scrB\subseteq \scrB^{\square\square}$.
+
+Show that~$(\,\scrA\cap \C\,)^\square=\scrA$,
+and so~$(\,\scrA\cap\C\,)^{\square\square} = Z(\scrA)$.
+
+Nevertheless,
+we'll see in \sref{proto-double-commutant} that $\scrB^{\square\square}=\scrB$
+when~$\scrA$ is of the form $\scrA=\scrB(\scrH)$
+for some Hilbert space~$\scrH$.
+\item
+Given a von Neumann subalgebra~$\scrB$
+of~$\scrA$
+verify that $Z(\scrB)=\scrB\cap \scrB^{\square}$.
+\end{enumerate}
+\end{point}
+\begin{point}[projections-norm-dense]{Proposition}%
 Every self-adjoint element~$a$ of a von Neumann algebra~$\scrA$
 is the norm limit
 of linear combinations
-of projections.
-Moreover,
-these projections may be taken such
-that they commute with all elements of~$\scrA$
-that commute with~$a$.
+of projections from~$\smash{\{a\}}^{\square\square}$.
 \begin{point}{Proof}%
-	\TODO{asdasd
+Since~$a$ is an element
+of the by~\sref{commutant-basic}
+commutative von Neumann subalgebra~$\smash{\{a\}}^{\square\square}$
+of~$\scrA$,
+$a$ is the norm limit of linear combinations
+of projections from~$\smash{\{a\}}^{\square\square}$
+by~\sref{abelian-projections-norm-dense}.\qed
 \end{point}
 \end{point}
 \end{parsec}
 \section{Central elements}
 \begin{parsec}%
 \begin{point}{Definition}%
-Given a von Neumann algebra~$\scrA$,
-\begin{enumerate}
-\item 
-an element~$a\in\scrA$ is~\Define{central}
-when~$ab=ba$ for all~$b\in\scrA$, and
-\item
-the \Define{center} of~$\scrA$,
-denoted by~$\Define{Z(\scrA)}$,
-is the collection of central elements.
-\end{enumerate}
-\end{point}
-\begin{point}{Exercise}%
-Given a von Neumann algebra~$\scrA$
-show that~$Z(\scrA)$ is a von Neumann subalgebra of~$\scrA$.
+An element~$a$ of a von Neumann algebra~$\scrA$
+is called~\Define{central}
+when~$ab=ba$ for all~$b\in\scrA$
+(that is, when~$a\in Z(\scrA)$, see~\sref{commutant-basic}).
 \end{point}
 \begin{point}{Examples}%
 \begin{enumerate}
@@ -2570,7 +2762,7 @@ of ultracyclic projections.\\
 \end{parsec}%
 \begin{parsec}%
 \begin{point}%
-Recall that according to our definition (\sref{von-neumann-subalgebra})
+Recall that according to our definition (\sref{von-neumann-examples})
 a von Neumann subalgebra~$\scrB$ 
 of a von Neumann algebra~$\scrA$
 is a $C^*$-subalgebra of~$\scrA$
@@ -3940,62 +4132,7 @@ is norm bounded.\qed
 \begin{point}%
 To pry out the final bits of structure of normal functionals
 we resort to the classical but nonetheless rather mysterious notion
-of commutant.
-\end{point}
-\begin{point}[commutant]{Definition}%
-Given a subset~$S$ of a von Neumann algebra~$\scrA$
-the \Define{commutant} of~$S$
-is the set, denoted by~$\Define{S^\square}$,
-of all~$a\in\scrA$ with $as=sa$ for all~$s\in S$.
-\end{point}
-\begin{point}[commutant-basic]{Exercise}%
-Let~$S$ and~$T$ be subsets of a von Neumann algebra~$\scrA$.
-\begin{enumerate}
-\item
-Show that $S \subseteq T^\square$ iff $T \subseteq S^\square$.
-
-Show that $S\subseteq T$ entails $T^\square \subseteq S^\square$.
-
-Show that $S\subseteq S^{\square\square}$,
-and  $S^{\square\square\square}=S^\square$.
-\item
-Verify that~$Z(\scrA)=\scrA^\square$,
-where~$Z(\scrA)$ is the centre of~$\scrA$ \TODO{add ref},
-and~$\scrA^\square$ is the commutant of~$\scrA$ in itself.
-\item
-Show that $S^\square$ is closed under addition,
-(scalar) multiplication,
-contains the unit of~$\scrA$,
-and is ultraweakly closed.
-\item
-Show that the commutant $S^\square$ need not be self-adjoint.\\
-(Hint: compute 
-$\{\bigl(\begin{smallmatrix}0&1\\0&0\end{smallmatrix}\bigr)\}^\square$
-in $M_2$.)
-
-Show that if~$S$ is self-adjoint,
-then~$S^\square$ is self-adjoint,
-and conclude that in that case~$S^\square$
-is a von Neumann subalgebra of~$\scrA$.
-
-\item
-In particular,
-if~$\scrB$ is a von Neumann subalgebra of~$\scrA$,
-then~$\scrB^{\square\square}$
-is a von Neumann subalgebra of~$\scrA$
-with $\scrB\subseteq \scrB^{\square\square}$.
-
-Verify that $Z(\scrB)=\scrB\cap \scrB^{\square}$,
-where is~$Z(\scrB)$ is the centre of~$\scrB$
-(from \TODO{...}).
-
-\TODO{Example of~$\scrB^{\square\square} \neq  \scrB$}
-
-Nevertheless,
-we'll see in \sref{proto-double-commutant} that $\scrB^{\square\square}=\scrB$
-when~$\scrA$ is of the form $\scrA=\scrB(\scrH)$
-for some Hilbert space~$\scrH$.
-\end{enumerate}
+of commutant, see~\sref{commutant}.
 \end{point}
 \begin{point}[commutant-ceil]{Proposition}%
 Let~$S$ be a subset of a von Neumann algebra~$\scrA$
@@ -4156,7 +4293,7 @@ into a von Neumann algebra~$\scrB$.
 \end{parsec}%
 \begin{parsec}%
 \begin{point}%
-With the commutant at our disposal,
+With the double commutant theorem at our disposal,
 we turn to a subtle, but suprisingly difficult matter:
 it is not immediately clear
 that the ultraweak topology on a von Neumann
