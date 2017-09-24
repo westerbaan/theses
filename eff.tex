@@ -1,3 +1,4 @@
+% https://link.springer.com/article/10.1007/s10992-013-9275-5 
 % coproduct supremum
 % grandis
 % monoidal
@@ -6112,6 +6113,136 @@ Our lemma \sref{homology-lemma}
 \end{align*}
 which show~$q \after m$ is sharp, as desired. \qed
 \end{point}
+\end{point}
+\begin{point}%
+In any homological category,
+    a generalization of the famous \emph{Snake Lemma} holds.
+    \cite[\S3.4]{grandis}.
+The following is a translation of Grandis' Snake Lemma
+    into~$\dagger$-effectus jargon.
+\end{point}
+\end{point}
+\begin{point}{Theorem}%
+Assume we are given the following commuting
+    diagram in a~$\dagger$-effectus.
+\begin{equation*}
+    \xymatrix{
+        &A \ar[d]^{a} \ar[r]^f
+    &B \ar[d]^{b} \ar[r]^g
+    &C \ar[d]^{c} \ar[r]^0
+    &0
+    \\0 \ar[r]^{0}
+    &A' \ar[r]^{h}
+    &B' \ar[r]^{k}
+    &C'
+}
+\end{equation*}
+Furthermore, assume
+    $b$ is left-modular over~$\IM f$;
+    $b$ is right-modular over~$\IM h$
+    and the diagram has exact rows
+    --- that is:
+    \begin{multicols}{2}
+    \begin{enumerate}
+        \item
+        $b^\BOX \after b_\diamond (\IM f) = \ceil{1 \after b}^\perp \vee \IM f$,
+    \item
+        $b_\diamond \after b^\BOX (\IM h)
+                = (\IM h) \wedge \IM b$,
+    \item
+        $\IMperp f = \ceil{1\after g}$,
+    \item
+        $\IMperp h = \ceil{1\after k}$,
+    \item
+        $g$ is a sharp quotient \emph{and}
+    \item
+        $h$ is a comprehension.
+    \end{enumerate}
+\end{multicols}\noindent
+\emph{Completing the diagram},
+write~$a_\pi, b_\pi, c_\pi$ for kernels of~$a$, $b$ and~$c$, respectively;
+$a_\zeta$, $b_\zeta$, $c_\zeta$ for the cokernels
+    \emph{and}~$\overline{f},\overline{g},\overline{h}, \overline{k}$
+    for the induced maps between the kernels and cokernels.
+It is easy to see
+\begin{align*}
+   \overline{f} &= b_\pi^\dagger \after f \after a_\pi
+     &   \overline{g} &= c_\pi^\dagger \after g \after b_\pi
+     &   \overline{h} &= b_\zeta \after h \after a_\zeta^\dagger
+     &   \overline{k} &= c_\zeta \after k \after b_\zeta^\dagger.
+\end{align*}
+Then: the map~$d \equiv a_\zeta \after h^\dagger \after b
+                    \after g^\dagger \after c_\pi$
+        turns
+\begin{equation*}
+    \xymatrix{
+        \ker a \ar[r]^{\overline{f}}
+        &\ker b \ar[r]^{\overline{g}}
+        &\ker c \ar[r]^{d}
+        &\cok a \ar[r]^{\overline{h}}
+        &\cok b \ar[r]^{\overline{k}}
+        &\cok c 
+    }
+\end{equation*}
+into a (long) exact sequence. This reveals the snake:
+\begin{equation*}
+\begin{tikzpicture}[
+        every edge/.append style={font=\scriptsize}
+        ]
+    \matrix[matrix of math nodes,
+            column sep={45pt,between origins},
+            row sep={45pt,between origins},
+            nodes={asymmetrical rectangle}] (s) {
+        & |[name=ka]| \ker a
+        & |[name=kb]| \ker b
+        & |[name=kc]| \ker c \\
+        & |[name=A]| A
+        & |[name=B]| B
+        & |[name=C]| C 
+        & |[name=01]| 0\\
+         |[name=02]| 0
+        & |[name=A']| A'
+        & |[name=B']| B'
+        & |[name=C']| C' \\
+        & |[name=ca]| \cok a
+        & |[name=cb]| \cok b
+        & |[name=cc]| \cok c \\
+    };
+\draw[->]
+    (ka) edge node[auto] {$a_\pi$} (A)
+    (kb) edge node[auto] {$b_\pi$} (B)
+    (kc) edge node[auto] {$c_\pi$} (C)
+    (A') edge node[auto] {$a_\zeta$} (ca)
+    (B') edge node[auto] {$b_\zeta$} (cb)
+    (C') edge node[auto] {$c_\zeta$} (cc)
+    (C) edge node[auto] {$0$} (01)
+    (02) edge node[auto] {$0$} (A')
+    (A) edge node[auto] {$f$} (B)
+    (B) edge node[auto] {$g$} (C)
+    (A') edge node[auto] {$h$} (B')
+    (B') edge node[auto] {$k$} (C')
+    (A) edge node[auto] {$a$} (A')
+    (B) edge node[auto] {$b$} (B')
+    (C) edge node[auto] {$c$} (C')
+;
+\draw[->,darkgreen] 
+    (ka) edge node[auto,text=black] {$\overline{f}$} (kb)
+    (kb) edge node[auto,text=black] {$\overline{g}$} (kc)
+    (ca) edge node[auto,below,text=black] {$\overline{h}$} (cb)
+    (cb) edge node[auto,below,text=black] {$\overline{k}$} (cc)
+;
+\draw[->,darkgreen,rounded corners]
+    (kc) 
+        -| node[auto,text=black,pos=.7,font=\scriptsize]{$d$}
+            ($(01.east)+(.5,0)$)
+        |- ($(B)!.35!(B')$)
+        -| ($(02.west)+(-.5,0)$)
+        |- (ca);
+;
+\end{tikzpicture}
+\end{equation*}
+\begin{point}{Proof}%
+    
 \end{point}
 \end{point}
 \end{parsec}
