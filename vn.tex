@@ -17,52 +17,64 @@ between them, respectively,
 we focus our attention on
 the subcategory~$\W{cpsu}$ of von Neumann algebras
 and the cpsu-maps between them that preserve aforementioned suprema
-(and are therefore called \emph{normal}, see~\sref{}),
-because we'll see that~$\W{cpsu}$
+(and are therefore called \emph{normal}, see~\sref{p-uwcont}),
+because 
+\begin{enumerate}
+\item
+we'll see that~$\W{cpsu}$
 is a model of the quantum lambda calculus
-(while~$\Cstar{cpsu}$ is not, \TODO{...}),
-and we were able to axiomatise
+(while~$\Cstar{cpsu}$ is not, \TODO{...}), and
+\item
+we were able to axiomatise
 the sequential product ($b\mapsto \sqrt{a}b\sqrt{a}$)
 in~$\W{cpsu}$ (but not in~$\Cstar{cpsu}$).
+\end{enumerate}
 
 The archetypal von Neumann algebra
 is the $C^*$-algebra~$\scrB(\scrH)$
 of bounded operators on a Hilbert space~$\scrH$,
-and in fact the canonical and original
+and in fact 
+the
+original~\cite{vn1930,mvn1936}
+and a common~\cite{kr,conway2000} 
 definition of a von Neumann algebra
-is a $C^*$-subalgebra
+is a $C^*$-subalgebra~$\scrA$
 of a~$\scrB(\scrH)$
-that is closed in the weak operator topology
-(see~\sref{wot}).
+that is closed in a ``suitable topology''
+such as the strong or weak operator topology
+(see~\sref{swot}).
+Most authors make the distinction
+between such rings of operators
+(called von Neumann algebras)
+and the $C^*$-algebras
+miu-isomorphic to them
+(called \emph{$W^*$-algebras}),
+but we won't bother and call them all von Neumann algebras.
 Partly because it seems difficult
 to explain 
 to a computer scientist
 picturing a quantum data type
 the meaning of the weak operator topology
 and the Hilbert space~$\scrH$,
-we'll use Kadison's characterization
+we'll use Kadison's characterization~\cite{kadison1956}
 of von Neumann algebras
 as $C^*$-algebras
 with a certain dcpo-structure to them
 and sufficiently many Scott-continuous functionals
 as our definition instead.
-But we also used Kadison's definition
+But we also use Kadison's definition
 just to see to what extend
 when errecting the basic theory of von Neumann algebras
 we could reduce the recourse to the representation
 of a von Neumann algebras as a rings of operators
-(so liberally employed in the literature),
+(\sref{ngns}, so liberally employed in the literature),
 and  instead put the directed suprema and normal functionals
-on center stage,
-giving the theory more of an axiomatic
-and less of a descriptive nature.
+on center stage.
 
 Nevertheless, the resulting development
 although abridged stays close
-to the traditional ones;
-but  while many arguments we use
-are borrowed from
-the standard texts (see~\TODO{Kadison and Sakai})
+the standard texts~\cite{sakai,kr},
+and while many arguments are borrowed from these
 most of them required some tweaking, and
 some of them demanded a complete overhaul.
 There is however one seemingly novel result,
@@ -72,12 +84,8 @@ and in \TODO{Bas'} thesis,
 namely
 that von Neumann algebras
 are complete in the ultrastrong topology
-and \emph{bounded} complete (see~\TODO{}) in the ultraweak topology.
-
-
-
-
-
+and \emph{bounded} complete in the ultraweak topology,
+see~\sref{vn-complete}.
 \end{parsec}
 \section{Definition and counterexamples}
 \begin{parsec}[vna]%
@@ -162,6 +170,10 @@ if for every bounded directed subset~$D$
 of self-adjoint elements from~$\scrB$
 we have $\bigvee D\in\scrB$
 (where the supremum is taken in~$\sa{\scrA}$).
+\item
+We'll see in~\sref{mn-vna}
+that the $N\times N$-matrices over a von Neumann algebra~$\scrA$
+form a von Neumann algebra.
 \item
 We'll see in~\sref{commutant-basic}
 that given a subset~$S$ of a von Neumann algebra~$\scrA$
@@ -745,7 +757,7 @@ of $N\times N$-matrices~$M_N(\scrA)$
 over a von Neumann algebra~$\scrA$
 is itself a von Neumann algebra.
 \end{point}
-\begin{point}{Theorem}%
+\begin{point}[bah-vn]{Theorem}%
 Given a von Neumann algebra~$\scrA$,
 the~$C^*$-algebra $\scrB_a(X)$ (\sref{bax-cstar})
 of bounded adjoinable module maps on
@@ -838,8 +850,41 @@ and~$\left<x,Tx\right>=0$,
 and so~$T=0$.\qed
 \end{point}
 \end{point}
+\begin{point}[mn-vna]{Exercise}%
+Let~$\scrA$ be a von Neumann algebra,
+and let~$N$ be a natural number.
+\begin{enumerate}
+\item
+Show 
+that the $C^*$-algebra
+$M_N(\scrA)$ of $N\times N$-matrices over~$\scrA$ (see~\sref{cstar-matrices})
+is a von Neumann algebra.
+\item
+Show that
+the map $A\mapsto \sum_{ij} a_i^* A_{ij} a_j\colon\, M_N\scrA\to \scrA$
+is normal and completely positive,
+and that
+the map $A\mapsto \sum_{ij} a_i^* A_{ij} b_j\colon\, M_N\scrA\to\scrA$
+is ultrastrongly and ultraweakly continuous
+for all~$a_1,\dotsc,a_N,b_1,\dotsc,b_N\in\scrA$.
 
-\TODO{$M_Nf$ is normal}
+In particular, $A\mapsto A_{ij}\colon\,M_N\scrA\to\scrA$
+is ultraweakly and ultrastrongly continuous
+for all~$i,j$.
+
+Show that a net~$(A_\alpha)_\alpha$
+in~$M_N\scrA$
+converges ultraweakly (ultrastrongly)
+to $B\in M_N\scrA$
+iff $A_{ij}$ converges ultraweakly (ultrastrongly)
+to~$B_{ij}$ for all~$i,j$.
+\item
+Given an ncp-map $f\colon \scrA\to\scrB$
+between von Neumann algebras,
+show that the cp-map $M_N f\colon M_N\scrA\to M_N\scrB$
+from~\sref{mnf} is normal.
+\end{enumerate}
+\end{point}
 \end{parsec}
 \section{Projections}
 \begin{parsec}%
