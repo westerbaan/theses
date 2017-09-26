@@ -122,22 +122,24 @@ that makes $a\mapsto \omega(a^*a)$ continuous
 for every np-map~$\omega\colon \scrA\to \C$.
 \end{point}
 \end{point}
-\begin{point}%
+\begin{point}{Remark}%
 We work with the ultraweak and ultrastrong topology in tandem,
 because neither is ideal, and they tend to be complementary:
 for example, $a\mapsto a^*$ is ultraweakly continuous
-but not ultrastrongly (see~\TODO{}), 
+but not ultrastrongly (see~\sref{vn-counterexamples},
+point~\ref{vn-counterexamples-4}), 
 while $a\mapsto \left|a\right|$
-is ultrastrongly continuous (see~\TODO{}) but not ultraweakly
-(\TODO{}).
+is ultrastrongly continuous (see~\sref{abs-us-cont})
+but not ultraweakly (\sref{vn-counterexamples}, 
+point~\ref{vn-counterexamples-6}).
 
 When dealing with the ultrastrong topology
 it is useful to recall that
 every np-map gives rise
 to an inner-product $[a,b]_\omega = \omega(a^*b)$
 and semi-norm $\|a\|_\omega = \|[a,a]_\omega\|^{\nicefrac{1}{2}}
-= \omega(a^*a)^{\nicefrac{1}{2}}$.
-\TODO{finish}
+= \omega(a^*a)^{\nicefrac{1}{2}}$
+(see~\sref{state-inner-product} and~\sref{omega-norm-basic}).
 \end{point}
 \begin{point}[von-neumann-examples]{Examples}%
 \begin{enumerate}
@@ -186,7 +188,24 @@ is a von Neumann subalgebra of~$\scrA$.
 \end{parsec}
 \begin{parsec}%
 \begin{point}{Exercise}%
-We start with some counterexamples in $\scrB(\ell^2)$
+Let~$\scrA$ be a von Neumann algebra.
+\begin{enumerate}
+\item
+Show that 
+$\left|\omega(a)\right|\leq \|a\|_\omega \|\omega\|^{\nicefrac{1}{2}}$
+for every np-map $\omega\colon \scrA\to\C$
+and~$a\in\scrA$.
+\item
+Show that when a net $(a_\alpha)_\alpha$
+in~$\scrA$ converges ultrastrongly to~$a\in \scrA$
+it does so too ultraweakly.
+\item
+Show that an ultraweakly closed subset~$C$ of~$\scrA$
+is also ultrastrongly closed.
+\end{enumerate}
+\end{point}
+\begin{point}[vn-counterexamples]{Exercise}%
+We give some counterexamples in $\scrB(\ell^2)$
 to sharpen your understanding of the ultrastrong and ultraweak topologies,
 and so that you may better appreciate
 the strange maneuvers we'll need to pull off later on.
@@ -242,6 +261,7 @@ while $1\equiv e^{-in} e^{in}$
 is norm-bounded and
 converges ultraweakly to~$1$ as~$n\to\infty$.
 \item
+\label{vn-counterexamples-4}
 Show that~$(\,\ketbra{0}{n}\,)_n$ converges ultrastrongly 
 (and ultraweakly) to~$0$.
 
@@ -266,6 +286,7 @@ the unit ball of a von Neumann algebra
 is ultraweakly compact.)
 
 \item
+\label{vn-counterexamples-6}
 Show that $\ketbra{n}{0}+\ketbra{0}{n}$
 converges ultraweakly to~$0$ as $n\to \infty$,
 while $(\ketbra{n}{0}+\ketbra{0}{n})^2\equiv \ketbra{0}{0}+\ketbra{n}{n}$
@@ -311,15 +332,6 @@ Conclude that $\left|\,\cdot\,\right|_s$
 and $\left|\,\cdot\,\right|_r$
 are not ultrastrongly continuous on~$\scrB(\ell^2)$.
 
-(However, we'll see in~\TODO{}
-that if a net $(b_\alpha)_\alpha$
-in a von Neumann algebra
-converges ultrastrongly, to say~$b$,
-and $(b_\alpha^*)_\alpha$
-converges ultrastrongly too,
-then $(\,\left|b_\alpha\right|_s\,)_\alpha$
-converges ultrastrongly to~$\left|b\right|_s$.)
-
 \item
 Show that $1+\ketbra{n}{0}+\ketbra{0}{n}$
 are positive,
@@ -356,7 +368,7 @@ converges ultrastrongly to~$0$.
 
 So a net which converges ultrastrongly need not be bounded!
 (The cure for this pathology is Kaplansky's density theorem, 
-see~\TODO{kaplansky})
+see~\sref{kaplansky}.)
 
 Show that $\frac{1}{n} \ketbra{f(n)}{0}$
 converges ultrastrongly to~$0$ as $D\ni(n,f)\to \infty$.
@@ -433,22 +445,6 @@ in a von Neumann converges, in~\sref{vn-complete}.)
 \end{point}
 \end{parsec}
 \section{The basics}
-\begin{parsec}%
-\begin{point}[vn-positive-basic]{Exercise}%
-Let~$\scrA$ be a von Neumann algebra,
-and let~$\Omega$ be the set of np-maps $\scrA\to\C$.
-\begin{enumerate}
-\item 
-Show that~$\Omega$ is order separating (using~\TODO{...}).
-
-Conclude that~$a\in \scrA$ is positive iff~$\omega(a)\geq 0$
-for all~$\omega\in\Omega$.
-\item
-Deduce that~$\scrA_+$ and~$\sa{\scrA}$ are ultraweakly closed.
-\end{enumerate}
-\end{point}
-\end{parsec}
-
 %
 % multiplication turns suprema into ultraweak limits
 %
@@ -463,7 +459,7 @@ in each coordinate.
 Quite surprisingly,
 the problem reduces to the ultraweak continuity
 of $b\mapsto a^*ba$ by the following identity
-(cf.~\TODO{refer to polarization identity}).
+(cf.~\sref{inner-product-basic}).
 \end{point}
 \begin{point}[mult-polarization]{Exercise}%
 Show that for elements~$a,b,c$ of a $C^*$-algebra,
@@ -490,13 +486,13 @@ We have, for each~$\alpha$,
 \qquad&&\text{since $x_\alpha\geq 0$}\\
 \ &\leq\ 
 \omega(x_\alpha)\  \omega(\,b_\alpha^* x_\alpha b_\alpha\,) 
-\qquad&&\text{by \sref{cstar-cs}}\\
+\qquad&&\text{by Kadison's inequality, \sref{omega-norm-basic}}\\
 \ &\leq\ 
 \omega(x_\alpha)\ \omega(b_\alpha^* b_\alpha)
 \qquad&&\text{since $x_\alpha\leq 1$}\\
 \ &\leq\ 
 \omega(x_\alpha)\ \omega(1)
-\qquad&&\text{since $b_\alpha^*b_\alpha\leq 1$ by \TODO{}}.
+\qquad&&\text{since $b_\alpha^*b_\alpha\leq 1$}.
 \end{alignat*}
 Thus,
 since $(\omega(x_\alpha))_\alpha$
@@ -539,7 +535,7 @@ for every bounded directed subset~$D$ of self-adjoint
 elements of~$\scrA$.
 \begin{point}[ad-normal-1]{Proof}%
 If~$a$ is invertible,
-then the (by~\sref{ad-monotone}) order preserving map $b\mapsto a^*ba$
+then the (by~\sref{astara-pos-basic-consequences}) order preserving map $b\mapsto a^*ba$
 has an order preserving inverse (namely $b\mapsto (a^{-1})^* b a^{-1}$),
 and therefor preserves all suprema.
 \begin{point}%
@@ -587,7 +583,15 @@ Conclude that $b\mapsto a^*ba,\,\scrA\to\scrA$
 is ultraweakly
 continuous for every element~$a$ of a von Neumann 
 algebra~$\scrA$.
-
+\end{point}
+\begin{point}[vn-positive-basic]{Exercise}%
+Show that the set of np-functionals
+on a von Neumann algebra~$\scrA$
+is order separating
+(using~\sref{proto-gelfand-naimark}).
+Deduce that~$\scrA_+$ and~$\sa{\scrA}$ are ultraweakly closed.
+\end{point}
+\begin{point}{Exercise}%
 Show that if a positive linear map $f\colon \scrA\to\scrB$
 between von Neumann algebras 
 is ultrastrongly continuous (on~$[0,1]_\scrA$), 
@@ -933,7 +937,7 @@ iff  $aqa^*\leq p^\perp$.
 \begin{point}{Proof}%
 Suppose that~$a^*pa\leq q^\perp$.
 Then we have $q a^*pa q \leq qq^\perp q = 0$
-(see \sref{ad-monotone})
+(see \sref{astara-pos-basic-consequences})
 and so $paq=0$,
 because $\|paq\|^2=\|(paq)^*paq\|=0$
 by the $C^*$-identity.
@@ -1046,7 +1050,7 @@ note that if~$a\in \scrA$
 commutes with~$b$,
 then~$a$ commutes with~$p$.
 Indeed, for such~$a$ we have~$a\sqrt{b}=\sqrt{b}a$
-by~\sref{cstar-square-commutes},
+by~\sref{sqrt},
 and so $a b^{\nicefrac{1}{2^n}} = b^{\nicefrac{1}{2^n}} a$
 for each~$n$
 by induction.
@@ -1055,14 +1059,14 @@ Thus~$ap=pa$ by~\sref{vna-supremum-commutes}.
 \begin{point}%
 Let us prove that~$p$ is a projection, c.q.~$p^2=p$. 
 Since~$p\leq 1$, we already have $p^2\equiv \sqrt{p}p\sqrt{p}\leq p$
-by~\sref{ad-monotone},
+by~\sref{astara-pos-basic-consequences},
 and so we only need to show that $p\leq p^2$. We have:
 \begin{alignat*}{3}
  p^2 \ &=\  \textstyle \bigvee_m \sqrt{p} \,b^{\nicefrac{1}{2^m}} \,\sqrt{p}
 \qquad&&\text{by \sref{ad-normal}} \\
 &=\ \textstyle\bigvee_m b^{\nicefrac{1}{2^{m+1}}}\, p\,
 b^{\nicefrac{1}{2^{m+1}}} 
-\qquad&&\text{by \sref{vna-ceil-point-1} and \sref{cstar-square-commutes}} \\
+\qquad&&\text{by \sref{vna-ceil-point-1} and \sref{sqrt}} \\
 &=\ \textstyle \bigvee_m \bigvee_n \, 
 b^{\nicefrac{1}{2^{m+1}}}\, b^{\nicefrac{1}{2^n}}\,
 b^{\nicefrac{1}{2^{m+1}}} \qquad && \text{by \sref{ad-normal}}
@@ -1105,13 +1109,13 @@ Thus~$a$ commutes with~$p\equiv\bigwedge_n b^{2^n}$
 To see that~$p$ is a projection, c.q.~$p^2=p$,
 we only need to show that~$p\leq p^2$,
 because we get $p^2\equiv \sqrt{p}\,p\,\sqrt{p}\leq p$
-from $p\leq 1$ (using~\sref{ad-monotone}.)
+from $p\leq 1$ (using~\sref{astara-pos-basic-consequences}.)
 Now, since
 \begin{alignat*}{3}
 p^2 \ &=\ \textstyle \bigwedge_m\  \sqrt{p}\, b^{2^m} \sqrt{p}\qquad
 &&\text{by a variation on~\sref{ad-normal}}\\
 &=\ \textstyle \bigwedge_m \ b^{2^{m-1}} p\, b^{2^{m-1}}\qquad
-&&\text{by~\sref{vna-floor-point-1} and~\sref{cstar-square-commutes}}\\
+&&\text{by~\sref{vna-floor-point-1} and~\sref{sqrt}}\\
 &=\ \textstyle \bigwedge_m \bigwedge_n \ 
 b^{2^{m-1}}\, b^{2^n}\, b^{2^{m-1}}\qquad
 &&\text{by~\sref{ad-normal},}
@@ -2042,7 +2046,7 @@ by~\sref{carrier-basic}.\qed
 \section{Completeness}
 \begin{parsec}%
 \begin{point}%
-We have just seen (in~\sref{npuws})
+We saw in~\sref{npuws}
 that a \emph{positive} linear functional~$f$
 on a von Neumann algebra 
 is ultrastrongly continuous iff it is ultraweakly continuous.
@@ -2070,10 +2074,9 @@ $(b*\omega)(a)=\omega(b^*ab)$ for all~$a\in \scrA$.
 Let~$\omega\colon \scrA\to \C$ be an np-map on a von Neumann algebra~$\scrA$.
 \begin{enumerate}
 \item
-Show that $b*\omega\colon \scrA\to\C$
-is an np-map for all~$b\in \scrA$
-(using \TODO{}).
-\item
+Note that $b*\omega\colon \scrA\to\C$
+is an np-map for all~$b\in \scrA$.
+
 Show that $\left|\omega(a^*bc)\right| 
 \,\leq\, \|\omega\|\,\|a\|_\omega\, \|b\|\, \|c\|_\omega$
 for all~$a,b,c\in\scrA$.
@@ -2090,7 +2093,6 @@ is Cauchy (in the operator norm
 on bounded linear functionals $\scrA\to\C$),
 and converges to a bounded linear map~$f\colon \scrA\to\C$.
 Show that~$f$ is an np-map.
-\TODO{non-trivial?}
 \end{enumerate}
 \end{point}
 \begin{point}{Exercise}%
@@ -2161,7 +2163,7 @@ B\delta^{-1}\|a\|_\omega$.
 Since~$\left|f(a)\right|\leq B\|a\|_\omega$ for all~$a\in\scrA$,
 the map~$f$ can be extended to a bounded linear map 
 $\tilde{f}\colon \scrH_\omega\to \C$.
-Then by Riesz' representation theorem (\TODO{}),
+Then by Riesz' representation theorem, \sref{riesz-representation-theorem},
 there is~$b\in \scrH_\omega$ with $\tilde{f}(x)=[b,x]_\omega$
 for all~$x\in \scrH_\omega$.  
 In particular,
@@ -2256,7 +2258,9 @@ by a fixed vector~$a\in V$ are continuous.
 Show that $\{(0,0)\}\cup B_1(-1)\cup B_1(1)\cup B_2(-2)^c\cup B_2(2)^c$
 is a radially open subset of~$\R^2$, 
 which is not open
-in the usual topology.\TODO{picture}
+in the usual topology.
+
+\REMARK{A picture of this will be added here.}
 
 \item
 Show that addition on~$\R^2$ is not jointly radially continuous.
@@ -2420,8 +2424,9 @@ there are~$n\in \N$ and~$b\in [0,\infty)$
 such that $\left|f(t)\right|\leq b\left|t\right|$
 for all~$t\in \R$ with~$\left|t\right| \geq n$.
 
-Then~$a\mapsto f(a),\,\sa{\scrA}\to\sa{\scrA}$ is ultrastrongly continuous
-(see \TODO{reference to the continuous functional calculus}).
+Then the map~$a\mapsto f(a),\,\sa{\scrA}\to\sa{\scrA}$,
+see~\sref{functional-calculus},
+is ultrastrongly continuous.
 \begin{point}{Proof}%
 (An adaptation of Lemma~44.2 from~\cite{conway2000}.)
 
@@ -2503,8 +2508,6 @@ Since $\|s(b_\alpha)\|\leq 1$,
 we have $\|s(b_\alpha)(b_\alpha-a)s(a)\|_\omega 
 \leq  \,\|(b_\alpha-b)s(a)\|_\omega
 \equiv \|b_\alpha-b\|_{s(a)*\omega}$.
-\TODO{Add Lemma for $\|ab\|_\omega\leq \|a\|\|b\|_\omega$
-and definition of $a*\omega$.}
 Since similarly~$\|e(b_\alpha)\|\leq 1$,
 we get
 \begin{alignat*}{3}
@@ -2516,8 +2519,10 @@ and so~$e$ is ultrastrongly continuous.\qed
 \end{point}
 \end{point}
 
-\begin{point}[mult-us-cont]%
-\TODO{Prove that~$a\mapsto \left|a\right|$ is ultrastrongly continuous.}
+\begin{point}[abs-us-cont]{Corollary}%
+Given a von Neumann algebra~$\scrA$
+the map $a\mapsto\left|a\right|\colon\,\Real{\scrA}\to\Real{\scrA}$
+is ultrastrongly continuous.
 \end{point}
 \begin{point}[kaplansky]{Kaplansky Density Theorem}%
 Let~$b$ be an element of a von Neumann algebra~$\scrB$
@@ -2571,8 +2576,6 @@ $ (A_\alpha)_{12}$ will then converge ultrastrongly
 to~$B_{12}\equiv b$ as~$\alpha\to\infty$,
 and~$\|(A_\alpha)_{12}\|\leq \|A_\alpha\|\leq \|b\|$
 for all~$\alpha$, we are done.\qed
-
-\TODO{About $M_N(\scrA)$ and ultrastrong convergence in it.}
 \end{point}
 \end{point}
 \begin{point}[dense-subalgebra]{Corollary}%
@@ -2643,7 +2646,7 @@ with $\|x_n\|^2\leq 2^{-n}$
 and $\|Tx_n\|^2\geq 1$ for all~$n$.
 Since~$\omega:=\sum_n \left<x_n,(\,\cdot\,)x_n\right>\colon 
 \scrB(\scrH)\to\C$
-is an np-map by~\TODO{}, 
+is an np-map by~\sref{bh-functional-lemma}, 
 it follows that~$\|T_\alpha\|_\omega^2\equiv \sum_{n=1}^\infty 
 \|T_\alpha x_n\|^2$
 converges to some positive number~$R$.
@@ -2714,8 +2717,6 @@ all in all.
 
 Hence~$\scrB(\scrH)$ is ultrastrongly complete.\qed
 \end{point}
-
-\TODO{Add example that the strong operator topology in not complete.}
 \end{point}
 \begin{point}[bh-bounded-uw-complete]{Proposition}%
 The von Neumann algebra~$\scrB(\scrH)$
@@ -2796,8 +2797,6 @@ so is~$p\cup q$.
 If~$p \leq q$ are projections,
 and~$q$ is ultracyclic,
 then~$p$ is ultracyclic.
-
-\TODO{add definition of $(\,\cdot\,)_\bullet$}
 \item
 Every projection is a directed supremum
 of ultracyclic projections.\\
@@ -2846,7 +2845,7 @@ For~$n < m$, define
 \textstyle
 a_{nm}\ = \ (1+\sum_{k=n}^m kb_k)^{-1} \,\sum_{k=n}^m kb_k.
 \end{equation*}
-Since we have seen in~\sref{}
+Since we have seen in~\sref{astara-pos-basic-consequences}
 that the map~$d\mapsto (1+d)^{-1}d$ is order preserving
 (on~$\pos{\scrB}$),
 we have $0\leq a_{nm}\leq \frac{1}{2}$
@@ -2995,7 +2994,7 @@ Since~$\scrB(\scrH)$ is ultrastrongly complete
 (\sref{bh-us-complete}),
 and the ultrastrong topology on~$\scrB(\scrH)$
 coincides on~$\scrR$ with the ultrastrong topology of~$\scrR$
-(by~\sref{us-permanence}),
+(by~\sref{functional-permanence}),
 and~$\scrR$ is 
  ultrastrongly closed in~$\scrB(\scrH)$
 (see~\sref{vnsac}),
@@ -3006,7 +3005,7 @@ Since similarly~$\scrB(\scrH)$
 is bounded ultraweakly complete (\sref{bh-bounded-uw-complete}),
 the ultraweak topology on~$\scrB(\scrH)$
 coincides on~$\scrR$ with the ultraweak topology on~$\scrR$
-(\sref{uw-permanence}),
+(\sref{functional-permanence}),
 and~$\scrR$ is ultraweakly closed
 in~$\scrB(\scrH)$
 (by~\sref{vnsac}),
@@ -3575,7 +3574,7 @@ the maps
 a\mapsto c\backslash a/b\colon\  c(\scrA)_1b\to \scrA
 \end{equation*}
 are ultrastrongly continuous
-(where $(\scrA)_1$ is the unit ball, see~\TODO{}).
+(where $(\scrA)_1$ is the unit ball).
 \begin{point}{Proof}%
 By~\sref{proto-douglas}
 the series~$\sum_n at_n$ converges ultraweakly to~$a/b$,
@@ -3907,7 +3906,7 @@ it suffices to prove that~$u^*u$ is a projection.
 Suppose towards a contradiction that~$u^*u$ is not a projection.
 Then $u^*u$,
 represented
-as continuous function (on~$\spec(a)$, see~\TODO{}),
+as continuous function (on~$\spec(a)$ cf.~\sref{functional-calculus}),
 takes neither the value~$0$ nor~$1$ on a neighbourhood
 of some point,
 and so by considering a
@@ -4015,7 +4014,7 @@ By~\sref{polar-decomposition-of-functional}
 there is a partial isometry~$u$
 such that $f(uu^*(\,\cdot\,))=f$
 and~$f(u(\,\cdot\,))$ is positive.
-Recall \TODO{} that such a positive functional~$f(u(\,\cdot\,))$
+Recall from~\sref{p-uwcont} that such a positive functional~$f(u(\,\cdot\,))$
 is normal when it is ultraweakly continuous
 on~$[0,1]_{\scrA}$;
 which it is, 
@@ -4123,17 +4122,17 @@ for every element~$a$ of a von Neumann algebra~$\scrA$.
 It's clear that $\sup_{f\in(\scrA_*)_1}\left|f(a)\right|\leq \|a\|$.
 
 For the other direction,
-write $a\equiv [a] \absl{a}$ (see \TODO{polar decompsition}),
-and recall that $\|a\|=\|\absl{a}\|=\sup_{\omega\in \Omega} 
-\left|\omega (\,\absl{a}\,)\right|$,
+write $a\equiv [a] \sqrt{a^*a}$ (see~\sref{polar-decomposition})
+and note that $\|a\|=\|\sqrt{a^*a}\|=\sup_{\omega\in \Omega} 
+\left|\omega (\,\sqrt{a^*a}\,)\right|$,
 where $\Omega$ is the set of  npu-maps $\scrA\to \C$
-(see~\TODO{}) .
+(which is order separating).
 Let~$\omega\in \Omega$ be given.
-Since~$[a]^*a=\absl{a}$ by~\TODO{},
-we have $\omega(\,\absl{a}\,)=\omega([a]^*a)=f(a)$,
+Since~$[a]^*a=\sqrt{a^*a}$ 
+we have $\omega(\,\sqrt{a^*a}\,)=\omega([a]^*a)=f(a)$,
 where $f:=\omega([a]^*(\,\cdot\,))\in (\scrA_*)_1$,
 and so $\|a\|=\sup_{\omega\in\Omega} 
-\omega(\,\absl{a}\,) \leq \sup_{f\in (\scrA_*)_1}
+\omega(\,\sqrt{a^*a}\,) \leq \sup_{f\in (\scrA_*)_1}
 \left|f(a)\right|$.\qed
 \end{point}
 \end{point}
@@ -4215,7 +4214,7 @@ above~$e$, so let~$q$ be a projection in~$S^\square$ above~$e$.
 Since for~$a\in S$,
 we have~$aq^\perp a^*=  q^\perp aa^* q^\perp 
 \leq \|a\|^2q^\perp \leq \|a\|^2e^\perp$,
-and so $a^*ea\leq \|a\|^2q$ by~\TODO{},
+and so $a^*ea\leq \|a\|^2q$ 
 we get~$\ceil{a^*ea}\leq q$
 for all~$a\in S$,
 and thus~$p=\bigcup_{a\in S}\ceil{a^*ea} \leq q$.\qed
@@ -4251,7 +4250,7 @@ Now consider
 an np-map $\omega\colon \scrB(\scrH)\to \C$,
 which we know must be of the form
 $\omega\equiv \sum_n \left<x_n,(\,\cdot\,)x_n\right>$
-(by~\TODO{}),
+(by~\sref{bh-np})
 and is therefore given by 
 an element $x'\equiv (x_1,x_2,\dotsc)$ of the $\omega$-fold
 product~$\scrH':=\bigoplus_n\scrH$ of~$\scrH$.
@@ -4483,7 +4482,7 @@ and $\sum_i \|U_i^* x\|^2\leq \|x\|^2$,
 and deduce from this
 that $\sum_i \left|\left<x,U_i y\right>\right| \leq \|x\|\|y\|$.
 
-Now use~\TODO{}
+Now use~\sref{chilb-form-representation}
 to show that there is a bounded operator~$U\colon \scrK\to\scrH$
 with $\left<x,Uy\right>
 = \sum_i \left<x,U_iy\right>$
@@ -4580,7 +4579,8 @@ $\cceil{U_\omega^*U_\omega}=\cceil{\sigma_\omega'}=\varrho(\cceil{\omega})$
 are orthogonal,
 we have $\cceil{U^*U}=\sum_\omega \cceil{U_\omega^* U_\omega}
 =  \varrho(\sum_\omega \cceil{\omega})$
-by~\sref{cceil-basic} and \TODO{sum of orthogonal projections is union}.
+by~\sref{cceil-basic} and
+\sref{sum-of-orthogonal-projections}.
 Similarly, $\cceil{UU^*}= \pi(\sum_\omega \cceil{\omega})$.
 
 Finally,
@@ -4602,7 +4602,7 @@ and let~$\varrho\colon \scrA\to\scrB(\scrH)$
 denote the inclusion.
 Let~$\Omega$ be the collection of all np-maps $\scrA\to\C$,
 and let $\varrho_\Omega\colon \scrA\to\scrB(\scrH_\Omega)$
-be as in~\TODO{}.
+be as in~\sref{gelfand-naimark-representation}.
 
 There is a bounded operator $U\colon \scrH_\Omega\to\scrH$
 such that $U^*U$ is a projection
@@ -4973,7 +4973,7 @@ We have
 \floor{f(a)}
 \ \stackrel{\sref{ceil-floor-basic}}{=}\ 
 \floor{f(a)^2}
-\ \stackrel{\sref{cp-kadisons-ineq}}{\leq}\  
+\ \stackrel{\sref{inner-product-basic}}{\leq}\  
 \floor{f(a^2)} \ \leq\ \floor{f(a)},
 \end{equation*}
 and so~$\floor{f(a)}=\floor{f(a^2)}$.
