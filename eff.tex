@@ -1,3 +1,4 @@
+% https://link.springer.com/article/10.1007/s10992-013-9275-5 
 % coproduct supremum
 % grandis
 % monoidal
@@ -100,7 +101,7 @@ The existence of quotients and comprehension in some effectus~$C$
     we get a surprisingly firm handle
     on the possibilistic side of~$C$,
     by means of the existence
-    of a certain functor~$(\ )_\diamond\colon C \to \mathsf{OMLat}$.
+    of a certain functor~$(\ )_\diamond\colon C \to \mathsf{OLat}$.
 In the guiding example of von Neumann algebras,
     we have~$f_\diamond = g_\diamond$
         if and only
@@ -3837,11 +3838,10 @@ $(f\after g)_\diamond = f_\diamond \after g_\diamond$. \qed
 \end{point}
 \end{parsec}
 \begin{parsec}%
-\begin{point}{Theorem}%
-\TODO{attribution for this thm}
+\begin{point}[diamond-ortholattice]{Proposition}%
 In a~$\diamond$-effectus,
-the poset~$\SPred X$ of sharp predicates on~$X$,
-    is an orthomodular lattice.
+the poset~$\SPred X$ of sharp predicates on any object~$X$,
+    is an ortholattice.
 \begin{point}{Proof}%
 Let~$C$ be a~$\diamond$-effectus with some object~$X$.
 \begin{point}[spred-infimum]{Infima}%
@@ -3877,50 +3877,13 @@ suprema (satisfying De Morgan's laws) come for free:
 Now note
 \begin{equation*}
 \pi_s^\BOX(s^\perp) \ =
-    \  (s \after \pi_s)^\perp 
-    \ =\  (1 \after \pi_s)^\perp 
-    \ \overset{\sref{compr-total}}{=}\ 1^\perp \ =\   0
+    \  \ceil{s \after \pi_s}^\perp 
+    \ =\  \ceil{1 \after \pi_s}^\perp 
+    \ \overset{\sref{compr-total}}{=}\ \ceil{1}^\perp \ =\   0
 \end{equation*}
 and so~$s\wedge s^\perp = 0$.
-We have shown~$\SPred X$ with~$(\ )^\perp$ is an ortholattice.
+We have shown~$\SPred X$ with~$(\ )^\perp$ is an ortholattice. \qed
 \end{point}
-\begin{point}{Orthomodular law}%
-Assume~$s \leq  t$.
-We have to show~$s \vee (s^\perp \wedge t) = t$.
-Indeed
-\begin{alignat*}{2}
-s \vee (s^\perp \wedge t) 
-&\  =\  (s \wedge t) \vee (s^\perp \wedge t) &\qquad& \text{as $s \leq t$}\\
-&\  =\ 
-        ((\pi_t)_\diamond \after \pi_t^\BOX)
-        (s) \vee
-        ((\pi_t)_\diamond \after \pi_t^\BOX)
-        (s^\perp)
-        &\qquad& \text{by \sref{spred-infimum}}\\
-&\  =\ 
-        (\pi_t)_\diamond ( \pi_t^\BOX(s) \vee 
-                            \pi_t^\BOX(s^\perp))
-                            &\qquad& \text{by \sref{order-adj-basics}} \\
-&\  =\ 
-        (\pi_t)_\diamond ( \pi_t^\diamond(s) \vee 
-                            \pi_t^\diamond(s)^\perp)
-                            &\qquad& \text{as $\pi_t$ total,~\sref{compr-total}}\\
-&\  =\ 
-                            (\pi_t)_\diamond (1)
-                            &\qquad& \text{by \sref{spred-ortholattice}} \\
-& \ =\  \IM \pi_t \ = \ t && \text{by \sref{img-of-compr}}.
-\end{alignat*}
-We have shown~$\SPred X$ is an orthomodular lattice. \qed
-\end{point}
-\end{point}
-\begin{point}{Corollary}%
-In a $\diamond$-effectus~$C$
-the assignment~$X\mapsto \SPred X$, ~$f \mapsto (f_\diamond,f^\BOX)$
-    yields a functor from~$C$
-    to~$\mathsf{OMLatGal}$,
-    the category of orthomodular lattices
-    with galois connection between them,
-    as defined in~\cite{jacobs2009orthomodular}.
 \end{point}
 \end{point}
 \begin{point}[image-sharp-is-order-sharp]{Lemma}%
@@ -4409,6 +4372,81 @@ Then by \sref{simple-andthen-absorption}
 Hence~$s \vee t = s \ovee t$ by~\sref{ea-modularity-prop},
     but~$s \vee t$ is sharp by \sref{lattice-compr}. \qed
 \end{point}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}%
+We will show that the sharp predicates on an object in an~$\&$-effectus
+    form an orthomodular lattice.
+\end{point}
+\begin{point}{Lemma}%
+In a~$\&$-effectus,
+    if~$s\leq t$ for sharp~$s,t$,
+    then~$s \after \pi_t$ is sharp.
+\begin{point}{Proof}%
+By~\sref{simple-andthen-absorption}
+    we have~$\andthen{t}{s} = s$.
+Hence~$s \after \pi_t \after \zeta_t \after \pi_s
+                = (\andthen{t}{s}) \after \pi_s
+                = s \after \pi_s = 1$.
+Thus~$\zeta_t \after \pi_s$ is total.
+To prove~$s \after \pi_t$ is sharp,
+    we will show~$\IM \zeta_t \after \pi_s = s \after \pi_t$.
+We just saw~$s \after \pi_t \after \zeta_t \after \pi_s = 1$.
+Assume~$r \after \zeta_t \after \pi_s = 1$.
+Then~$r \after \zeta_t \geq s$
+and so~$r = r \after \zeta_t \after \pi_t \geq s \after \pi_t$,
+as desired. \qed
+\end{point}
+\end{point}
+\begin{point}[box-diamond-compr-andthen]{Corollary}%
+In a~$\&$-effectus: $s \after \pi_t = (\pi_t)^\BOX(s) = (\pi_t)^\diamond(s)$
+    for sharp~$s,t$ with~$s \leq t$.
+\end{point}
+\begin{point}{Theorem}%
+In a~$\&$-effectus,
+    the poset~$\SPred X$ of sharp predicates on~$X$,
+    is an orthomodular lattice.
+\begin{point}{Proof}%
+In \sref{diamond-ortholattice} we saw
+    that~$\SPred X$ is an ortholattice.
+Assume~$s \leq  t$ for some~$s,t \in \SPred X$.
+We have to show~$s \vee (s^\perp \wedge t) = t$.
+Indeed
+\begin{alignat*}{2}
+s \vee (s^\perp \wedge t) 
+&\  =\  (s \wedge t) \vee (s^\perp \wedge t) &\qquad& \text{as $s \leq t$}\\
+&\  =\ 
+        ((\pi_t)_\diamond \after \pi_t^\BOX)
+        (s) \vee
+        ((\pi_t)_\diamond \after \pi_t^\BOX)
+        (s^\perp)
+        &\qquad& \text{by \sref{spred-infimum}}\\
+&\  =\ 
+        (\pi_t)_\diamond ( \pi_t^\BOX(s) \vee 
+                            \pi_t^\BOX(s^\perp))
+                            &\qquad& \text{by \sref{order-adj-basics}} \\
+&\  =\ 
+        (\pi_t)_\diamond ( \pi_t^\diamond(s) \vee 
+                            \pi_t^\diamond(s)^\perp)
+                            &\qquad& \text{by \sref{box-diamond-compr-andthen}}\\
+&\  =\ 
+                            (\pi_t)_\diamond (1)
+                            &\qquad& \text{by \sref{spred-ortholattice}} \\
+& \ =\  \IM \pi_t \ = \ t && \text{by \sref{img-of-compr}}.
+\end{alignat*}
+We have shown~$\SPred X$ is an orthomodular lattice. \qed
+\end{point}
+\end{point}
+\begin{point}{Corollary}%
+In a $\&$-effectus~$C$
+the assignment~$X\mapsto \SPred X$, ~$f \mapsto (f_\diamond,f^\BOX)$
+    yields a functor from~$C$
+    to~$\mathsf{OMLatGal}$,
+    the category of orthomodular lattices
+    with galois connection between them,
+    as defined in~\cite{jacobs2009orthomodular}.
 \end{point}
 \end{parsec}
 
@@ -6018,6 +6056,11 @@ we write~$\Define{n \leq m}$
 for kernels~$n\colon A \to X$ and~$m \colon B \to X$,
     if there is an~$f\colon A \to B$
     with~$n = m \after f$.
+If both~$n \leq m$ and~$m \leq n$,
+    then we write~$n \approx m$.
+We denote the poset of kernels on~$A$ modulo~$\approx$
+        by~$\Define{\Nsb A}$. (\textbf{N}ormal \textbf{s}ubo\textbf{b}jects,
+            \cite[\S1.5]{grandis}.)
 \item
 For every map~$f$
     there is a unique map~$g$
@@ -6089,6 +6132,219 @@ Our lemma \sref{homology-lemma}
 \end{align*}
 which show~$q \after m$ is sharp, as desired. \qed
 \end{point}
+\end{point}
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+In any homological category, a generalization
+    of the famous \emph{Snake Lemma} holds.
+Before we can discuss it, we need some more homological category theory.
+\end{point}
+\begin{point}{Definition}%
+Let a (pointed) semiexact category be given.
+\begin{enumerate}
+\item
+    We say the diagram~$A \xrightarrow{f} B \xrightarrow{g} C$
+        is \Define{exact at} $B$,
+        if~$\ker \cok (f) \approx \ker (g)$.
+We say~$A_1 \xrightarrow{f_1} A_2 \to \cdots
+            \to A_{n}$
+            is a \Define{(long) exact sequence}
+            if it is exact at~$A_2, \ldots, A_{n-1}$.
+\item
+The poset~$\Nsb A$ of kernels modulo~$\approx$
+        is a bounded lattice with minimum~$0$ and maximum~$1\equiv \id$.
+        \cite[\S1.5]{grandis}
+\item
+For any~$f\colon A \to B$,
+    define~$f_*\colon \Nsb A \leftrightarrows \Nsb B \colon f^*$
+        by~$\Define{f_*} (k) = \ker \cok (f \after k)$
+        and~$\Define{f^*}(k) = \ker ((\cok k) \after f)$.
+\item
+We say~$f$ is \Define{left-modular at} $k$
+    if~$f^* (f_* (k)) = k \vee f^*(0)$
+        and $f$ is \Define{right-modular at} $k$
+        if~$f_*(f^* (k)) = k \wedge f_*(1)$.
+We call~$f$ simply \Define{left-modular} (resp.~right-modular)
+    if it is left-modular (resp.~left-modular) at every~$k$.
+We say~$f$ is \Define{modular}
+    if it is both left- and right-modular.
+\end{enumerate}
+\end{point}
+\begin{point}{Example}%
+In a~$\dagger$-effectus, the previous concepts are related
+to our familiar notions as follows.
+\begin{enumerate}
+\item
+    A diagram~$A \xrightarrow{f} B \xrightarrow{g} C$
+        is exact at $B$
+        if and only if~$\IMperp f = \ceil{1 \after f}$.
+\item
+    The lattice~$\Nsb A$ is isomorphic to the lattice~$\SPred A$
+        via~$k \mapsto \IM k$.
+\item
+    For any~$f$, we
+        have~$\IM f_*(k) = f_\diamond (\IM k)$
+        and~$\IM f^*(k) = f^\BOX (\IM k)$.
+\item
+    A map~$f$ is left-modular at~$k$
+            iff~$f^\BOX (f_\diamond ( \IM k)) = 
+                (\IM k) \vee \ceil{1 \after f}$
+        and right-modular at~$k$
+            iff~$f_\diamond (f^\BOX ( \IM k)) = 
+                (\IM k) \wedge \IM f$.
+\end{enumerate}
+\begin{point}{Notation}%
+As~$\Nsb A$ and~$\SPred A$ are isomorphic,
+    we will abbriavte~``$f$ is left-modular at~$\pi_s$''
+    by~``$f$ is left-modular at~$s$''
+    and similarly for right-modularity.
+\end{point}
+\end{point}
+\begin{point}%
+In any homological category,
+    a generalization of the famous \emph{Snake Lemma} holds.
+    \cite[\S3.4]{grandis}.
+The following is a translation of (a part of) Grandis' Snake Lemma
+    into~$\dagger$-effectus jargon.
+\end{point}
+\begin{point}{Snake Lemma}%
+Suppose we have a commuting
+    diagram in~$\dagger$-effectus as follows.
+\begin{equation*}
+    \xymatrix{
+        &A \ar[d]^{a} \ar[r]^f
+    &B \ar[d]^{b} \ar[r]^g
+    &C \ar[d]^{c} \ar[r]^0
+    &0
+    \\0 \ar[r]^{0}
+    &A' \ar[r]^{h}
+    &B' \ar[r]^{k}
+    &C'
+}
+\end{equation*}
+Furthermore, assume
+\begin{enumerate}
+    \item the diagram has exact rows;
+    \item  $b$ is left-modular over~$\IM f$;
+    \item $b$ is right-modular over~$\IM h$;
+    \item $f$ is right-modular over~$\ceil{1 \after b}^\perp$ \emph{and}
+    \item $k$ is left-modular over~$\IM b$.
+\end{enumerate}
+These additional assumptions are equivalent to the following conditions.
+    \begin{multicols}{2}
+    \begin{enumerate}
+    \item
+        $b^\BOX \after b_\diamond (\IM f) = \ceil{1 \after b}^\perp \vee \IM f$,
+    \item
+        $b_\diamond \after b^\BOX (\IM h)
+                = (\IM h) \wedge \IM b$,
+    \item
+        $k^\BOX \after k_\diamond (\IM f) = (\IM h) \vee \IM b$,
+    \item
+        $f_\diamond \after f^\BOX (\IM h)
+                = \ceil{1 \after b}^\perp \wedge \IM f$,
+    \item
+        $\IMperp f = \ceil{1\after g}$,
+    \item
+        $\IMperp h = \ceil{1\after k}$,
+    \item
+        $g$ is a sharp quotient \emph{and}
+    \item
+        $h$ is a comprehension.
+    \end{enumerate}
+\end{multicols}\noindent
+\emph{Completing the diagram},
+write~$a_\pi, b_\pi, c_\pi$ for kernels of~$a$, $b$ and~$c$, respectively;
+$a_\zeta$, $b_\zeta$, $c_\zeta$ for the cokernels
+    \emph{and}~$\overline{f},\overline{g},\overline{h}, \overline{k}$
+    for the induced maps between the kernels and cokernels.
+It is easy to see
+\begin{align*}
+   \overline{f} &= b_\pi^\dagger \after f \after a_\pi
+     &   \overline{g} &= c_\pi^\dagger \after g \after b_\pi
+     &   \overline{h} &= b_\zeta \after h \after a_\zeta^\dagger
+     &   \overline{k} &= c_\zeta \after k \after b_\zeta^\dagger.
+\end{align*}
+Then: the map~$d \equiv a_\zeta \after h^\dagger \after b
+                    \after g^\dagger \after c_\pi$
+        turns\footnote{%
+            Beware: we use~$\ker a$ (and~$\cok$) inconsistently ---
+         earlier in the text~$\ker f$ refers
+            to a kernel map --- here it
+            refers to a kernel object instead.}
+\begin{equation}\label{thesnake}
+    \xymatrix{
+        \ker a \ar[r]^{\overline{f}}
+        &\ker b \ar[r]^{\overline{g}}
+        &\ker c \ar[r]^{d}
+        &\cok a \ar[r]^{\overline{h}}
+        &\cok b \ar[r]^{\overline{k}}
+        &\cok c 
+    }
+\end{equation}
+into a (long) exact sequence. This reveals the snake:
+\begin{equation*}
+\begin{tikzpicture}[
+        every edge/.append style={font=\scriptsize}
+        ]
+    \matrix[matrix of math nodes,
+            column sep={45pt,between origins},
+            row sep={45pt,between origins},
+            nodes={asymmetrical rectangle}] (s) {
+        & |[name=ka]| \ker a
+        & |[name=kb]| \ker b
+        & |[name=kc]| \ker c \\
+        & |[name=A]| A
+        & |[name=B]| B
+        & |[name=C]| C 
+        & |[name=01]| 0\\
+         |[name=02]| 0
+        & |[name=A']| A'
+        & |[name=B']| B'
+        & |[name=C']| C' \\
+        & |[name=ca]| \cok a
+        & |[name=cb]| \cok b
+        & |[name=cc]| \cok c \\
+    };
+\draw[->]
+    (ka) edge node[auto] {$a_\pi$} (A)
+    (kb) edge node[auto] {$b_\pi$} (B)
+    (kc) edge node[auto] {$c_\pi$} (C)
+    (A') edge node[auto] {$a_\zeta$} (ca)
+    (B') edge node[auto] {$b_\zeta$} (cb)
+    (C') edge node[auto] {$c_\zeta$} (cc)
+    (C) edge node[auto] {$0$} (01)
+    (02) edge node[auto] {$0$} (A')
+    (A) edge node[auto] {$f$} (B)
+    (B) edge node[auto] {$g$} (C)
+    (A') edge node[auto] {$h$} (B')
+    (B') edge node[auto] {$k$} (C')
+    (A) edge node[auto] {$a$} (A')
+    (B) edge node[auto] {$b$} (B')
+    (C) edge node[auto] {$c$} (C')
+;
+\draw[->,darkgreen] 
+    (ka) edge node[auto,text=black] {$\overline{f}$} (kb)
+    (kb) edge node[auto,text=black] {$\overline{g}$} (kc)
+    (ca) edge node[auto,below,text=black] {$\overline{h}$} (cb)
+    (cb) edge node[auto,below,text=black] {$\overline{k}$} (cc)
+;
+\draw[->,darkgreen,rounded corners]
+    (kc) 
+        -| node[auto,text=black,pos=.7,font=\scriptsize]{$d$}
+            ($(01.east)+(.5,0)$)
+        |- ($(B)!.35!(B')$)
+        -| ($(02.west)+(-.5,0)$)
+        |- (ca);
+;
+\end{tikzpicture}
+\end{equation*}
+\begin{point}{Proof}%
+To start, we will prove~\eqref{thesnake}
+    is exact in~$\ker c$.
+    
 \end{point}
 \end{point}
 \end{parsec}

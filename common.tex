@@ -14,7 +14,8 @@
 \usepackage{paralist}
 \usepackage{calc}
 \usepackage{tikz}
-\usetikzlibrary{calc}
+\usepackage{tikz-cd}
+\usetikzlibrary{calc,arrows,matrix}
 \usepackage{picins}
 \usepackage{amssymb}
 \usepackage{amsmath}
@@ -30,6 +31,7 @@
 \newcommand{\IGNORE}[1]{}
 
 % macros concerning textstyle
+\colorlet{darkgreen}{green!50!black}
 \colorlet{darkblue}{blue!75!black}
 \colorlet{lightblue}{blue!50!white}
 \colorlet{lightgray}{gray!50!white}
@@ -154,6 +156,7 @@
 \DeclareMathOperator{\supp}{supp}
 \DeclareMathOperator{\Ker}{Ker}
 \DeclareMathOperator{\Ran}{Ran}
+\DeclareMathOperator{\Nsb}{Nsb}
 
 \newcommand\after{\mathop{\circ}}
 \newcommand\hafter{\mathop{\hat\circ}}

@@ -17,52 +17,64 @@ between them, respectively,
 we focus our attention on
 the subcategory~$\W{cpsu}$ of von Neumann algebras
 and the cpsu-maps between them that preserve aforementioned suprema
-(and are therefore called \emph{normal}, see~\sref{}),
-because we'll see that~$\W{cpsu}$
+(and are therefore called \emph{normal}, see~\sref{p-uwcont}),
+because 
+\begin{enumerate}
+\item
+we'll see that~$\W{cpsu}$
 is a model of the quantum lambda calculus
-(while~$\Cstar{cpsu}$ is not, \TODO{...}),
-and we were able to axiomatise
+(while~$\Cstar{cpsu}$ is not, \TODO{...}), and
+\item
+we were able to axiomatise
 the sequential product ($b\mapsto \sqrt{a}b\sqrt{a}$)
 in~$\W{cpsu}$ (but not in~$\Cstar{cpsu}$).
+\end{enumerate}
 
 The archetypal von Neumann algebra
 is the $C^*$-algebra~$\scrB(\scrH)$
 of bounded operators on a Hilbert space~$\scrH$,
-and in fact the canonical and original
+and in fact 
+the
+original~\cite{vn1930,mvn1936}
+and a common~\cite{kr,conway2000} 
 definition of a von Neumann algebra
-is a $C^*$-subalgebra
+is a $C^*$-subalgebra~$\scrA$
 of a~$\scrB(\scrH)$
-that is closed in the weak operator topology
-(see~\sref{wot}).
+that is closed in a ``suitable topology''
+such as the strong or weak operator topology
+(see~\sref{swot}).
+Most authors make the distinction
+between such rings of operators
+(called von Neumann algebras)
+and the $C^*$-algebras
+miu-isomorphic to them
+(called \emph{$W^*$-algebras}),
+but we won't bother and call them all von Neumann algebras.
 Partly because it seems difficult
 to explain 
 to a computer scientist
 picturing a quantum data type
 the meaning of the weak operator topology
 and the Hilbert space~$\scrH$,
-we'll use Kadison's characterization
+we'll use Kadison's characterization~\cite{kadison1956}
 of von Neumann algebras
 as $C^*$-algebras
 with a certain dcpo-structure to them
 and sufficiently many Scott-continuous functionals
 as our definition instead.
-But we also used Kadison's definition
+But we also use Kadison's definition
 just to see to what extend
 when errecting the basic theory of von Neumann algebras
 we could reduce the recourse to the representation
 of a von Neumann algebras as a rings of operators
-(so liberally employed in the literature),
+(\sref{ngns}, so liberally employed in the literature),
 and  instead put the directed suprema and normal functionals
-on center stage,
-giving the theory more of an axiomatic
-and less of a descriptive nature.
+on center stage.
 
 Nevertheless, the resulting development
 although abridged stays close
-to the traditional ones;
-but  while many arguments we use
-are borrowed from
-the standard texts (see~\TODO{Kadison and Sakai})
+the standard texts~\cite{sakai,kr},
+and while many arguments are borrowed from these
 most of them required some tweaking, and
 some of them demanded a complete overhaul.
 There is however one seemingly novel result,
@@ -72,12 +84,8 @@ and in \TODO{Bas'} thesis,
 namely
 that von Neumann algebras
 are complete in the ultrastrong topology
-and \emph{bounded} complete (see~\TODO{}) in the ultraweak topology.
-
-
-
-
-
+and \emph{bounded} complete in the ultraweak topology,
+see~\sref{vn-complete}.
 \end{parsec}
 \section{Definition and counterexamples}
 \begin{parsec}[vna]%
@@ -114,26 +122,48 @@ that makes $a\mapsto \omega(a^*a)$ continuous
 for every np-map~$\omega\colon \scrA\to \C$.
 \end{point}
 \end{point}
-\begin{point}%
+\begin{point}{Remark}%
 We work with the ultraweak and ultrastrong topology in tandem,
 because neither is ideal, and they tend to be complementary:
 for example, $a\mapsto a^*$ is ultraweakly continuous
-but not ultrastrongly (see~\TODO{}), 
+but not ultrastrongly (see~\sref{vn-counterexamples},
+point~\ref{vn-counterexamples-4}), 
 while $a\mapsto \left|a\right|$
-is ultrastrongly continuous (see~\TODO{}) but not ultraweakly
-(\TODO{}).
+is ultrastrongly continuous (see~\sref{abs-us-cont})
+but not ultraweakly (\sref{vn-counterexamples}, 
+point~\ref{vn-counterexamples-6}).
 
 When dealing with the ultrastrong topology
 it is useful to recall that
 every np-map gives rise
 to an inner-product $[a,b]_\omega = \omega(a^*b)$
 and semi-norm $\|a\|_\omega = \|[a,a]_\omega\|^{\nicefrac{1}{2}}
-= \omega(a^*a)^{\nicefrac{1}{2}}$.
-\TODO{finish}
+= \omega(a^*a)^{\nicefrac{1}{2}}$
+(see~\sref{state-inner-product} and~\sref{omega-norm-basic}).
 \end{point}
-\end{parsec}
-\begin{parsec}%
-\begin{point}[von-neumann-subalgebra]{Example}%
+\begin{point}[von-neumann-examples]{Examples}%
+\begin{enumerate}
+\item
+$\C$ and~$\{0\}$ are clearly von Neumann algebras.
+\item
+The $C^*$-algebra $\scrB(\scrH)$
+of bounded operators on a Hilbert space~$\scrH$
+is a von Neumann algebra:
+$\scrB(\scrH)$ has bounded directed suprema
+of self-adjoint elements
+by~\sref{hilb-suprema},
+and the vector states
+(and thus all normal functionals)
+are order separating
+(and thus faithful)
+by~\sref{hilb-vector-states-order-separating}.
+\item
+The direct product $\bigoplus_i \scrA_i$
+(see~\sref{cstar-product})
+of a family $(\scrA_i)_i$
+of von Neumann algebras
+is itself a von Neumann algebra.
+\item
 A $C^*$-subalgebra~$\scrB$
 of a von Neumann algebra~$\scrA$
 is called a \Define{von Neumann subalgebra}
@@ -142,13 +172,40 @@ if for every bounded directed subset~$D$
 of self-adjoint elements from~$\scrB$
 we have $\bigvee D\in\scrB$
 (where the supremum is taken in~$\sa{\scrA}$).
+\item
+We'll see in~\sref{mn-vna}
+that the $N\times N$-matrices over a von Neumann algebra~$\scrA$
+form a von Neumann algebra.
+\item
+We'll see in~\sref{commutant-basic}
+that given a subset~$S$ of a von Neumann algebra~$\scrA$
+that is closed under involution
+the set~$S^\square = \{\,a\in\scrA\colon\, \forall s\in S\,[\ as=sa\ ]\,\}$,
+called the \emph{commutant} of~$S$,
+is a von Neumann subalgebra of~$\scrA$.
+\end{enumerate}
 \end{point}
-
-\TODO{add more examples}
 \end{parsec}
 \begin{parsec}%
 \begin{point}{Exercise}%
-We start with some counterexamples in $\scrB(\ell^2)$
+Let~$\scrA$ be a von Neumann algebra.
+\begin{enumerate}
+\item
+Show that 
+$\left|\omega(a)\right|\leq \|a\|_\omega \|\omega\|^{\nicefrac{1}{2}}$
+for every np-map $\omega\colon \scrA\to\C$
+and~$a\in\scrA$.
+\item
+Show that when a net $(a_\alpha)_\alpha$
+in~$\scrA$ converges ultrastrongly to~$a\in \scrA$
+it does so too ultraweakly.
+\item
+Show that an ultraweakly closed subset~$C$ of~$\scrA$
+is also ultrastrongly closed.
+\end{enumerate}
+\end{point}
+\begin{point}[vn-counterexamples]{Exercise}%
+We give some counterexamples in $\scrB(\ell^2)$
 to sharpen your understanding of the ultrastrong and ultraweak topologies,
 and so that you may better appreciate
 the strange maneuvers we'll need to pull off later on.
@@ -184,7 +241,7 @@ But we also see that if a sequence~$(b_n)_n$ converges ultrastrongly
 (or ultraweakly) to some~$b$,
 then $(\|b_n\|)_n$ doesn't even have to converge to~$\|b\|$
 (compare this with Lebesgue's dominated convergence
-theorem \TODO{add ref.}).
+theorem, see~123C of~\cite{fremlin}).
 
 (Note that~$(\ketbra{n}{n})_n$ resembles a moving bump, from measure theory.)
 \item
@@ -204,6 +261,7 @@ while $1\equiv e^{-in} e^{in}$
 is norm-bounded and
 converges ultraweakly to~$1$ as~$n\to\infty$.
 \item
+\label{vn-counterexamples-4}
 Show that~$(\,\ketbra{0}{n}\,)_n$ converges ultrastrongly 
 (and ultraweakly) to~$0$.
 
@@ -228,6 +286,7 @@ the unit ball of a von Neumann algebra
 is ultraweakly compact.)
 
 \item
+\label{vn-counterexamples-6}
 Show that $\ketbra{n}{0}+\ketbra{0}{n}$
 converges ultraweakly to~$0$ as $n\to \infty$,
 while $(\ketbra{n}{0}+\ketbra{0}{n})^2\equiv \ketbra{0}{0}+\ketbra{n}{n}$
@@ -273,15 +332,6 @@ Conclude that $\left|\,\cdot\,\right|_s$
 and $\left|\,\cdot\,\right|_r$
 are not ultrastrongly continuous on~$\scrB(\ell^2)$.
 
-(However, we'll see in~\TODO{}
-that if a net $(b_\alpha)_\alpha$
-in a von Neumann algebra
-converges ultrastrongly, to say~$b$,
-and $(b_\alpha^*)_\alpha$
-converges ultrastrongly too,
-then $(\,\left|b_\alpha\right|_s\,)_\alpha$
-converges ultrastrongly to~$\left|b\right|_s$.)
-
 \item
 Show that $1+\ketbra{n}{0}+\ketbra{0}{n}$
 are positive,
@@ -318,7 +368,7 @@ converges ultrastrongly to~$0$.
 
 So a net which converges ultrastrongly need not be bounded!
 (The cure for this pathology is Kaplansky's density theorem, 
-see~\TODO{kaplansky})
+see~\sref{kaplansky}.)
 
 Show that $\frac{1}{n} \ketbra{f(n)}{0}$
 converges ultrastrongly to~$0$ as $D\ni(n,f)\to \infty$.
@@ -395,22 +445,6 @@ in a von Neumann converges, in~\sref{vn-complete}.)
 \end{point}
 \end{parsec}
 \section{The basics}
-\begin{parsec}%
-\begin{point}[vn-positive-basic]{Exercise}%
-Let~$\scrA$ be a von Neumann algebra,
-and let~$\Omega$ be the set of np-maps $\scrA\to\C$.
-\begin{enumerate}
-\item 
-Show that~$\Omega$ is order separating (using~\TODO{...}).
-
-Conclude that~$a\in \scrA$ is positive iff~$\omega(a)\geq 0$
-for all~$\omega\in\Omega$.
-\item
-Deduce that~$\scrA_+$ and~$\sa{\scrA}$ are ultraweakly closed.
-\end{enumerate}
-\end{point}
-\end{parsec}
-
 %
 % multiplication turns suprema into ultraweak limits
 %
@@ -425,7 +459,7 @@ in each coordinate.
 Quite surprisingly,
 the problem reduces to the ultraweak continuity
 of $b\mapsto a^*ba$ by the following identity
-(cf.~\TODO{refer to polarization identity}).
+(cf.~\sref{inner-product-basic}).
 \end{point}
 \begin{point}[mult-polarization]{Exercise}%
 Show that for elements~$a,b,c$ of a $C^*$-algebra,
@@ -452,13 +486,13 @@ We have, for each~$\alpha$,
 \qquad&&\text{since $x_\alpha\geq 0$}\\
 \ &\leq\ 
 \omega(x_\alpha)\  \omega(\,b_\alpha^* x_\alpha b_\alpha\,) 
-\qquad&&\text{by \sref{cstar-cs}}\\
+\qquad&&\text{by Kadison's inequality, \sref{omega-norm-basic}}\\
 \ &\leq\ 
 \omega(x_\alpha)\ \omega(b_\alpha^* b_\alpha)
 \qquad&&\text{since $x_\alpha\leq 1$}\\
 \ &\leq\ 
 \omega(x_\alpha)\ \omega(1)
-\qquad&&\text{since $b_\alpha^*b_\alpha\leq 1$ by \TODO{}}.
+\qquad&&\text{since $b_\alpha^*b_\alpha\leq 1$}.
 \end{alignat*}
 Thus,
 since $(\omega(x_\alpha))_\alpha$
@@ -501,7 +535,7 @@ for every bounded directed subset~$D$ of self-adjoint
 elements of~$\scrA$.
 \begin{point}[ad-normal-1]{Proof}%
 If~$a$ is invertible,
-then the (by~\sref{ad-monotone}) order preserving map $b\mapsto a^*ba$
+then the (by~\sref{astara-pos-basic-consequences}) order preserving map $b\mapsto a^*ba$
 has an order preserving inverse (namely $b\mapsto (a^{-1})^* b a^{-1}$),
 and therefor preserves all suprema.
 \begin{point}%
@@ -549,7 +583,17 @@ Conclude that $b\mapsto a^*ba,\,\scrA\to\scrA$
 is ultraweakly
 continuous for every element~$a$ of a von Neumann 
 algebra~$\scrA$.
-
+\end{point}
+\begin{point}[vn-positive-basic]{Exercise}%
+Show that the set of np-functionals
+on a von Neumann algebra~$\scrA$
+is order separating
+(using~\sref{proto-gelfand-naimark}).
+Deduce that~$\scrA_+$ and~$\sa{\scrA}$ are ultraweakly closed.
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}{Exercise}%
 Show that if a positive linear map $f\colon \scrA\to\scrB$
 between von Neumann algebras 
 is ultrastrongly continuous (on~$[0,1]_\scrA$), 
@@ -626,12 +670,60 @@ the following are equivalent
 \end{point}
 \end{parsec}
 \begin{parsec}%
+\begin{point}{Definition}%
+We denote 
+the category of
+\emph{normal} cpsu-maps
+by~$\Define{\W{cpsu}}$,
+and its subcategory of nmiu-maps
+by~$\Define{\W{cpsu}}$.
 \begin{point}%
-Before we deepen our understanding
-of the ultraweak and ultrastrong topologies,
-let us quickly prove that every von Neumann algebra
+This pair of categories plays a major role in the next
+chapter, but for now we content ourselves
+by only describing products and certain equalizers.
+\end{point}
+\end{point}
+\begin{point}{Exercise}%
+Show that
+given a family $(\scrA_i)_i$
+of von Neumann algebras
+the direct product
+$\bigoplus_i \scrA_i$
+from~\sref{cstar-product}
+is a von Neumann algebra
+and  the projections
+$\pi_j \colon \bigoplus_i \scrA_i\to\scrA_j$
+are normal.
+Moreover, show
+that this makes~$\bigoplus_i \scrA_i$
+into the  product of the~$\scrA_i$
+in the categies~$\W{miu}$ and~$\W{cpsu}$
+(see~\sref{cstar-product-2} and~\sref{cstar-product-4}).
+\end{point}
+\begin{point}{Exercise}%
+Show that given nmiu-maps $f,g\colon \scrA\to\scrB$
+between von Neumann algebras
+the set~$\scrE:=\{\,a\in\scrA\colon\, f(a)=g(a)\,\}$
+is a von Neumann subalgebra of~$\scrA$,
+and the inclusion~$e\colon \scrE\to\scrA$
+is the equalizer of~$f$ and~$g$ in the 
+categories~$\W{miu}$ and~$\W{cpsu}$
+(see~\sref{cstar-equalizer-1} and~\sref{cstar-product-4}).
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+Let us quickly prove that every von Neumann algebra
 is isomorphic to a von Neumann algebra of operators on a 
 Hilbert space (see~\sref{ngns}).
+\end{point}
+\begin{point}[normal-faithful]{Exercise}%
+Let~$\Omega$ be a collection of np-functionals
+on a von Neumann algebra~$\scrB$
+that is faithful (see~\sref{separating}).
+Show that a positive linear map $f\colon \scrA\to\scrB$
+is normal iff~$\omega\circ f$
+is normal for all~$\omega\in\Omega$.
 \end{point}
 \begin{point}{Proposition}%
 Given an np-map~$\omega\colon \scrA \to \C$
@@ -639,35 +731,19 @@ on a von Neumann algebra~$\scrA$,
 the map $\varrho_\omega\colon \scrA\to\scrB(\scrH_\omega)$
 from~\sref{gns} is normal.
 \begin{point}{Proof}%
-Let~$D$ be a bounded directed subset of~$\Real{\scrA}$.
-Given $a\in \scrA$, we have
-\begin{alignat*}{3}
-	\textstyle
-	\left<\,\eta_\omega(a),\, 
-	\bigvee_{d\in D}\varrho_\omega(d)
-	\,\eta_\omega(a)\,\right>
-\ &=\ 
-	\textstyle
-	\bigvee_{d\in D}\ \left<\,\eta_\omega(a),\, 
-	\varrho_\omega(d)
-	\,\eta_\omega(a)\,\right>\\
-\ &=\
-	\textstyle
-	\bigvee_{d\in D}\ \omega(a^*d a) \\
-\ &=\ 
-	\textstyle
-	\omega(a^*\,\bigvee D\, a) \\
-\ &=\
-	\textstyle
-	\left<\,\eta_\omega(a),\, 
-	\varrho_\omega(\bigvee D)
-	\,\eta_\omega(a)\,\right>.
-\end{alignat*}
-Since~$\{\,\eta_\omega(a)\colon \,a\in\scrA\,\}$
-is dense in~$\scrH_\omega$,
-we conclude \TODO{} that~$\bigvee_{d\in D} \varrho_\omega(d)
-= \varrho_\omega(\bigvee D)$,
-and so~$\varrho_\omega$ is normal.\qed
+Since by definition of~$\scrH_\omega$
+the vectors of the form~$\eta_\omega(a)$
+where~$a\in\scrA$
+are dense in~$\scrH_\omega$,
+the vector functionals
+$\left<\eta_\omega(a),(\,\cdot\,)\eta_\omega(a)\right>$
+form a faithful collection
+of np-functionals on~$\scrB(\scrH_\omega)$.
+Thus by~\sref{normal-faithful}
+it suffices to show given~$a\in\scrA$
+that $\left<\eta_\omega(a),\varrho_\omega(\,\cdot\,)
+\eta_\omega(a)\right>\equiv \omega(a^*(\,\cdot\,)a)$ is normal,
+which it is, by~\sref{ad-normal}.\qed
 \end{point}
 \end{point}
 \begin{point}[varrho-Omega-normal]{Exercise}%
@@ -703,7 +779,7 @@ and so $f(\scrA)$ is a von Neumann subalgebra of~$\scrB$.\qed
 \begin{point}[ngns]{Theorem (normal Gelfand--Naimark)}%
 Every von Neumann algebra~$\scrA$ is nmiu-isomorphic
 to von Neumann algebra of operators on a Hilbert space.
-\begin{point}{Proof}%
+\begin{point}[ngns-proof]{Proof}%
 Recall that an element $a\in \scrA$ is zero iff $\omega(a)=0$
 for all np-maps $\omega\colon \scrA\to\C$.
 It follows that the collection~$\Omega$
@@ -719,6 +795,143 @@ restricts to a nmiu-isomorphism
 from~$\scrA$ to the von Neumann subalgebra~$\varrho_\Omega(\scrA)$
 of~$\scrB(\scrH_\Omega)$.\qed
 \end{point}
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+We end the section
+by showing that the $C^*$-algebra
+of $N\times N$-matrices~$M_N(\scrA)$
+over a von Neumann algebra~$\scrA$
+is itself a von Neumann algebra.
+\end{point}
+\begin{point}[bah-vn]{Theorem}%
+Given a von Neumann algebra~$\scrA$,
+the~$C^*$-algebra $\scrB_a(X)$ (\sref{bax-cstar})
+of bounded adjoinable module maps on
+a self-dual (\sref{self-dual}) Hilbert $\scrA$-module~$X$
+is a  von Neumann algebra,
+and
+$\left<x,(\,\cdot\,)x\right>\colon \scrB_a(X)\to\scrA$
+is normal for every~$x\in X$.
+\begin{point}{Proof}%
+We'll first show that
+a  bounded directed subset~$\scrD$ of~$\Real{\scrB_a(X)}$
+has a supremum (in~$\Real{\scrB_a(X)}$).
+To obtain a candidate for this supremum,
+we first define
+a bounded form~$[\,\cdot\,,\,\cdot\,]\colon X\times X\to\scrA$
+in the sense of~\sref{chilb-form}
+and apply~\sref{chilb-form-representation}.
+To this end note that given~$x\in X$
+the subset~$\{\,\left<x,Tx\right>\colon \, T\in\scrD\,\}$
+of~$\Real{\scrA}$
+is bounded and directed,
+and so 
+(since~$\scrA$ is a von Neumann algebra)
+has a supremum.
+Since the 
+the net $(\,\left<x,Tx\right>\,)_{T\in \scrD}$
+converges ultraweakly to this supremum
+by~\sref{vna-supremum-uwlimit},
+we see that
+$\left<y,Tz\right>\,= \,\frac{1}{4}
+\sum_{k=0}^3
+i^k\left<y+i^kz,\smash{T(y+i^kz)}\right>$
+converges ultraweakly to 
+some element~$[y,z]$ of~$\scrA$
+as~$T\to\infty$ for all~$y,z\in X$,
+giving us a form~$[\,\cdot\,,\,\cdot\,]$ on~$X$.
+Since~$\left\|\left<y,T z \right>\right\|
+\leq \sup_{T'\in \scrD} \|T'\| \|y\|\|z\|$
+for all~$T\in\scrD$
+by~\sref{chilb-form-bounded},
+and thus~$\|[y,z]\|\leq \sup_{T'\in\scrD} \|T'\|\|y\|\|z\|$
+for all~$y,z\in X$,
+we see that the form~$[\,\cdot\,,\,\cdot\,]$
+is bounded.
+Since~$X$ is self dual,
+there is
+by~\sref{chilb-form-representation}
+$S\in \scrB_a(X)$
+with
+$[y,z]=\left<y,Sz\right>$
+for all~$y,z\in X$;
+we'll show that~$S$ is the supremum of~$\scrD$.
+
+To begin,
+given~$T\in\scrD$
+we have~$\left<x,Tx\right>\leq\bigvee_{T'\in\scrD} \left<x,T'x\right>
+=[x,x]=\left<x,Sx\right>$
+for all~$x\in X$,
+and so~$T\leq S$
+by~\sref{chilb-vector-states-order-separating},
+that is, $S$ is an upper bound for~$\scrD$.
+Given another upper bound~$S'\in\Real{\scrB_a(X)}$
+of~$\scrD$
+(so  $T\leq S'$ for all~$T\in\scrD$)
+we have~$\left<x,Tx\right>\leq \left<x,S'x\right>$
+and so~$\left<x,Sx\right>
+=[x,x]=\bigvee_{T\in \scrD}\left<x,Tx\right>\leq \left<x,S'x\right>$
+for all~$x\in X$
+implying that~$S\leq S'$.
+Hence~$S$ is the supremum of~$\scrD$
+in $\Real{\scrB_a(X)}$.
+Note that since~$\left<x,Sx\right>=\bigvee_{T\in\scrD} \left<x,Tx\right>$
+we immediately see
+that $\left<x,(\,\cdot\,)x\right>\colon \scrB_a(X)\to\scrA$
+preserves bounded directed suprema
+for every~$x\in X$.
+
+It remains to be shown that
+there are sufficiently many np-functionals on $\scrB_a(X)$
+in the sense that~$T\in(\scrB_a(X))_+$ is zero
+when~$\omega(T)=0$ for every np-functional $\omega\colon \scrB_a(X)\to\C$.
+This is indeed
+the case for such an operator~$T$,
+because~$\xi(\left<x,(\,\cdot\,)x\right>)$
+is an np-functional on~$\scrB_a(X)$
+for every~$x\in X$
+and an np-functional $\xi\colon \scrA\to\C$,
+implying that~$\xi(\left<x,Tx\right>)=0$,
+and~$\left<x,Tx\right>=0$,
+and so~$T=0$.\qed
+\end{point}
+\end{point}
+\begin{point}[mn-vna]{Exercise}%
+Let~$\scrA$ be a von Neumann algebra,
+and let~$N$ be a natural number.
+\begin{enumerate}
+\item
+Show 
+that the $C^*$-algebra
+$M_N(\scrA)$ of $N\times N$-matrices over~$\scrA$ (see~\sref{cstar-matrices})
+is a von Neumann algebra.
+\item
+Show that
+the map $A\mapsto \sum_{ij} a_i^* A_{ij} a_j\colon\, M_N\scrA\to \scrA$
+is normal and completely positive,
+and that
+the map $A\mapsto \sum_{ij} a_i^* A_{ij} b_j\colon\, M_N\scrA\to\scrA$
+is ultrastrongly and ultraweakly continuous
+for all~$a_1,\dotsc,a_N,b_1,\dotsc,b_N\in\scrA$.
+
+In particular, $A\mapsto A_{ij}\colon\,M_N\scrA\to\scrA$
+is ultraweakly and ultrastrongly continuous
+for all~$i,j$.
+
+Show that a net~$(A_\alpha)_\alpha$
+in~$M_N\scrA$
+converges ultraweakly (ultrastrongly)
+to $B\in M_N\scrA$
+iff $A_{ij}$ converges ultraweakly (ultrastrongly)
+to~$B_{ij}$ for all~$i,j$.
+\item
+Given an ncp-map $f\colon \scrA\to\scrB$
+between von Neumann algebras,
+show that the cp-map $M_N f\colon M_N\scrA\to M_N\scrB$
+from~\sref{mnf} is normal.
+\end{enumerate}
 \end{point}
 \end{parsec}
 \section{Projections}
@@ -768,7 +981,7 @@ iff  $aqa^*\leq p^\perp$.
 \begin{point}{Proof}%
 Suppose that~$a^*pa\leq q^\perp$.
 Then we have $q a^*pa q \leq qq^\perp q = 0$
-(see \sref{ad-monotone})
+(see \sref{astara-pos-basic-consequences})
 and so $paq=0$,
 because $\|paq\|^2=\|(paq)^*paq\|=0$
 by the $C^*$-identity.
@@ -864,6 +1077,7 @@ Show that~$q-p$ is a projection
 (either directly, or using~\sref{orthogonal-tuple-of-projections}).
 \end{point}
 \end{parsec}
+\subsection{Ceiling and floor}
 \begin{parsec}%
 \begin{point}[vna-ceil]{Proposition}%
 Above every effect~$b$ of a von Neumann algebra~$\scrA$,
@@ -872,10 +1086,6 @@ called the \Define{ceiling} of~$b$,
  given by $\ceil{b}=\bigvee_{n=0}^\infty b^{\nicefrac{1}{2^n}}$.\\
 Moreover, if $a\in \scrA$ commutes with $b$,
 then~$a$ commutes with~$\ceil{b}$.
-
-\TODO{Remark that $\ceil{\,\cdot\,}$ is not continuous in any sense
-because $\nicefrac{1}{n}\to 0$
-in any topology, while $\ceil{\nicefrac{1}{n}}\equiv1 \to 1\neq  0$.}
 \begin{point}{Proof}
 Let~$p$ denote the supremum of~$0\leq b\leq b^{\nicefrac{1}{2}}\leq
 b^{\nicefrac{1}{4}}\leq\dotsb\leq 1$.
@@ -885,7 +1095,7 @@ note that if~$a\in \scrA$
 commutes with~$b$,
 then~$a$ commutes with~$p$.
 Indeed, for such~$a$ we have~$a\sqrt{b}=\sqrt{b}a$
-by~\sref{cstar-square-commutes},
+by~\sref{sqrt},
 and so $a b^{\nicefrac{1}{2^n}} = b^{\nicefrac{1}{2^n}} a$
 for each~$n$
 by induction.
@@ -894,14 +1104,14 @@ Thus~$ap=pa$ by~\sref{vna-supremum-commutes}.
 \begin{point}%
 Let us prove that~$p$ is a projection, c.q.~$p^2=p$. 
 Since~$p\leq 1$, we already have $p^2\equiv \sqrt{p}p\sqrt{p}\leq p$
-by~\sref{ad-monotone},
+by~\sref{astara-pos-basic-consequences},
 and so we only need to show that $p\leq p^2$. We have:
 \begin{alignat*}{3}
  p^2 \ &=\  \textstyle \bigvee_m \sqrt{p} \,b^{\nicefrac{1}{2^m}} \,\sqrt{p}
 \qquad&&\text{by \sref{ad-normal}} \\
 &=\ \textstyle\bigvee_m b^{\nicefrac{1}{2^{m+1}}}\, p\,
 b^{\nicefrac{1}{2^{m+1}}} 
-\qquad&&\text{by \sref{vna-ceil-point-1} and \sref{cstar-square-commutes}} \\
+\qquad&&\text{by \sref{vna-ceil-point-1} and \sref{sqrt}} \\
 &=\ \textstyle \bigvee_m \bigvee_n \, 
 b^{\nicefrac{1}{2^{m+1}}}\, b^{\nicefrac{1}{2^n}}\,
 b^{\nicefrac{1}{2^{m+1}}} \qquad && \text{by \sref{ad-normal}}
@@ -944,13 +1154,13 @@ Thus~$a$ commutes with~$p\equiv\bigwedge_n b^{2^n}$
 To see that~$p$ is a projection, c.q.~$p^2=p$,
 we only need to show that~$p\leq p^2$,
 because we get $p^2\equiv \sqrt{p}\,p\,\sqrt{p}\leq p$
-from $p\leq 1$ (using~\sref{ad-monotone}.)
+from $p\leq 1$ (using~\sref{astara-pos-basic-consequences}.)
 Now, since
 \begin{alignat*}{3}
 p^2 \ &=\ \textstyle \bigwedge_m\  \sqrt{p}\, b^{2^m} \sqrt{p}\qquad
 &&\text{by a variation on~\sref{ad-normal}}\\
 &=\ \textstyle \bigwedge_m \ b^{2^{m-1}} p\, b^{2^{m-1}}\qquad
-&&\text{by~\sref{vna-floor-point-1} and~\sref{cstar-square-commutes}}\\
+&&\text{by~\sref{vna-floor-point-1} and~\sref{sqrt}}\\
 &=\ \textstyle \bigwedge_m \bigwedge_n \ 
 b^{2^{m-1}}\, b^{2^n}\, b^{2^{m-1}}\qquad
 &&\text{by~\sref{ad-normal},}
@@ -1063,6 +1273,100 @@ use the fact that $\sum_{i\in F} p_i = \bigcup_{i \in F} p_i$
 for finite subsets~$F$ of~$I$ by~\sref{orthogonal-tuple-of-projections}.)
 \end{point}
 \end{parsec}
+\begin{parsec}[floor-sequential-product]%
+\begin{point}{Lemma}%
+Let~$a,b$ be effects of a von Neumann algebra~$\scrA$.
+Then~$\floor{\sqrt{a}b\sqrt{a}}$ is the greatest projection
+below~$a$ and~$b$, that is, 
+$\floor{\sqrt{a}b\sqrt{a}}=\floor{a}\cap \floor{b}$.
+\begin{point}{Proof}%
+Surely, $\floor{\sqrt{a}b\sqrt{a}}\leq \sqrt{a}b\sqrt{a} \leq a$.
+Let us prove that~$\floor{\sqrt{a}b\sqrt{a}}\leq b$.
+To this end,
+recall
+that (by~\sref{projection-below-effect})
+a projection~$e$ is below an effect~$c$
+iff $ec=e$ iff $e\sqrt{c}=e$.
+In particular,
+since~$\floor{\sqrt{a}b\sqrt{a}}\leq \sqrt{a}b\sqrt{a}$ and 
+$\floor{\sqrt{a}b\sqrt{a}}\leq a$,
+we get
+\begin{equation*}
+\floor{\sqrt{a}b\sqrt{a}}
+\ =\ \floor{\sqrt{a}b\sqrt{a}}\sqrt{a}b\sqrt{a}\floor{\sqrt{a}b\sqrt{a}} \ =\ 
+\floor{\sqrt{a}b\sqrt{a}}b\floor{\sqrt{a}b\sqrt{a}},
+\end{equation*}
+and so $\floor{\sqrt{a}b\sqrt{a}}b^\perp\floor{\sqrt{a}b\sqrt{a}}=0$,
+which implies that
+$\floor{\sqrt{a}b\sqrt{a}}\leq b$ by~\sref{ad-contraposed}.
+\begin{point}%
+Now,
+let~$e$ be a projection below~$a$ and~$b$,
+that is, $e\sqrt{a}=e$ and~$eb=e$.
+We must show that~$e\leq \floor{\sqrt{a}b\sqrt{a}}$,
+or equivalently, $e\leq \sqrt{a}b\sqrt{a}$,
+or put yet differently, $e\sqrt{a}b\sqrt{a}=e$.
+But this is obvious: $e=e\sqrt{a}=eb\sqrt{a}=e\sqrt{a}b\sqrt{a}$.\qed
+\end{point}
+\end{point}
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+Having seen that~$\floor{\sqrt{a}b\sqrt{a}} = \floor{a}\cap\floor{b}$
+in~\sref{floor-sequential-product}
+one might wonder whether
+there is a similar expression for $\ceil{\sqrt{a}b\sqrt{a}}$,
+but this doesn't seem to exist.
+However,
+for projections
+$p$ and~$q$
+we have
+$\ceil{pqp}= p\cap (p^\perp \cup q)$
+as we'll show below.
+\end{point}
+\begin{point}[floor-difference]{Lemma}%
+Let~$p$ be a projection,
+and let~$a$ be an effect of a von Neumann algebra
+with $a\leq p$.
+We have $p-\ceil{a}=\floor{p-a}$.
+\begin{point}{Proof}%
+We must show that $p-\ceil{a}$ is the greatest projection below $p-a$.
+To begin, $p-\ceil{a}\leq p-a$,
+because $a\leq \ceil{a}$.
+Further, since~$a\leq p$, we have $\ceil{a}\leq p$,
+and so~$p-\ceil{a}$ is a projection
+(by~\sref{projection-below-projection}).
+
+Let~$q$ be a projection below~$p-a$.
+We must show that~$q\leq p-\ceil{a}$.
+The trick is to note that~$a\leq p-q$.
+Since~$p-q$ is a projection (by~\sref{projection-below-projection}
+because $q\leq p-a\leq p$),
+we have $\ceil{a}\leq p-q$,
+and so $q\leq p-\ceil{a}$.\qed
+\end{point}
+\end{point}
+\begin{point}[ceil-sequential-product]{Proposition}%
+We have $\ceil{pqp}=p\cap (p^\perp \cup q)$
+for all projections~$p$ and~$q$ from a von Neumann algebra.
+\begin{point}[ceil-sequential-product-1]{Proof}%
+Observe that $(\ p\cap (p^\perp \cup q)\ )^\perp 
+= p^\perp \cup(p\cap q^\perp)$.
+Since~$p^\perp$ and $p\cap q^\perp$ are disjoint,
+we have $p^\perp \cup (p\cap q^\perp) = p^\perp + p\cap q^\perp$,
+and so $p\cap (p^\perp \cup q) = p-p\cap q^\perp$.
+
+By point~\sref{ceil-sequential-product-1}, 
+it suffices to show that~$\ceil{pqp}=p- p\cap q^\perp$,
+that is, $p-\ceil{pqp}=p\cap q^\perp$.
+Since $p-\ceil{pqp} = \floor{p-pqp}$
+by~\sref{floor-difference} and $\floor{pq^\perp p}=p\cap q^\perp$
+by~\sref{floor-sequential-product} we are done.\qed
+\end{point}
+\end{point}
+\end{parsec}
+\subsection{Range and support}
 \begin{parsec}%
 \begin{point}{Notation}%
 Let~$\scrA$ be a von Neumann algebra.
@@ -1167,32 +1471,15 @@ when~$T$ is an effect.
 \end{point}
 \end{parsec}
 \begin{parsec}%
-\begin{point}[cpsu-root-square]{Exercise}%
-Let~$f\colon \scrA\to\scrB$ be a ncpsu-map
-between von Neumann algebras
-and let~$a\in \scrA$ be positive.
-\begin{enumerate}
-\item
-Show that~$f(a)^2 \leq f(a^2)$
-(perhaps using~\sref{cp-cs}).
-\item
-	Use this, and~\sref{sqrt-monotone}
-to show that~$f(a^{\nicefrac{1}{2}}) \leq f(a)^{\nicefrac{1}{2}}$.
-\item
-Go on, and show that $f(a^{\nicefrac{1}{2^n}})
-\leq f(a)^{\nicefrac{1}{2^n}}$ for each~$n$.
-\end{enumerate}
-\end{point}
-\begin{point}[ncp-ceil]{Proposition}%
-Let $f\colon \scrA\to\scrB$ be a ncp-map
-between von Neumann algebras.
-Then $\ceil{f(a)}=\ceil{f(\ceil{a})}$
-for every $a\in\scrA_+$.
+\begin{point}[ceil-functionals-lemma]{Lemma}%
+Given a positive element~$a$
+of a von Neumann algebra~$\scrA$ and an
+np-functional~$\omega\colon \scrA\to\C$
+we have~$\omega(a)=0$ iff~$\omega(\ceil{a})=0$.
 \begin{point}{Proof}%
 Note that if~$a=0$,
-then
-the stated result is clearly correct.
-In the other case, when~$\|a\| \neq 0$,
+the stated result is clearly correct,
+and the other case, when~$\|a\| \neq 0$,
 the problem reduces to the case
 that $0\leq a\leq 1$
 by replacing $a$ by~$\frac{a}{\|a\|}$.
@@ -1201,18 +1488,76 @@ to begin with.
 For similar reasons, we may assume that $f(1)\leq 1$.
 
 Now, since~$a\leq \ceil{a}$
-we have $f(a)\leq f(\ceil{a})$,
-and so~$\ceil{f(a)}\leq \ceil{f(\ceil{a})}$.
-It remains to be shown that $\ceil{f(\ceil{a})}\leq \ceil{f(a)}$,
-that is, $f(\ceil{a})\leq \ceil{f(a)}$.
+we have $\omega(a)\leq \omega(\ceil{a})$,
+so~$\omega(\ceil{a})=0\implies \omega(a)=0$
+is obvious.
+It remains to be shown that $\omega(\ceil{a})=0$
+given~$\omega(a)=0$.
 Since  $\ceil{a}=\bigvee_n a^{\nicefrac{1}{2^n}}$ 
 (by~\sref{vna-ceil})
-and~$f$ is normal,
-we have $f(\ceil{a})=\bigvee_n f(a^{\nicefrac{1}{2^n}})$.
-Now, since $f(a^{\nicefrac{1}{2^n}})\leq f(a)^{\nicefrac{1}{2^n}}
-\leq \ceil{f(a)}$
-by~\sref{cpsu-root-square} for each~$n$,
-we have~$f(\ceil{a})\leq \ceil{f(a)}$.\qed
+and~$\omega$ is normal,
+we have $\omega(\ceil{a})=\bigvee_n \omega(a^{\nicefrac{1}{2^n}})$,
+and so it suffices to show that~$\omega(a^{\nicefrac{1}{2^n}})$
+for each~$n$.
+As a result of Kadison's inequality
+(see~\sref{omega-norm-basic})
+we have~$\omega(\sqrt{a})^2\leq \omega(a)=0$,
+and so~$\omega(\sqrt{a})=0$.
+Since then~$\omega(\smash{\sqrt{\sqrt{a}}})=0$
+by the same token, and so on,
+we get $\omega(a^{\nicefrac{1}{2^n}})=0$
+for all~$n$ by induction.\qed
+\end{point}
+\end{point}
+\begin{point}[ceil-functionals]{Proposition}%
+For positive elements~$a$ and~$b$ of a von Neumann algebra~$\scrA$,
+\begin{equation*}
+\ceil{a}\leq \ceil{b}
+\qquad\iff\qquad
+\forall \omega\,[\quad\omega(b)=0\  \implies  \ \omega(a)=0\quad ],
+\end{equation*}
+where~$\omega$ ranges over all np-functionals~$\omega\colon \scrA\to\C$.
+\begin{point}{Proof}%
+When~$\ceil{a}\leq\ceil{b}$
+and~$\omega$ is an np-functional on~$\scrA$
+with~$\omega(b)=0$,
+then~$0\leq \omega(\ceil{a})\leq \omega(\ceil{b})=0$
+(by~\sref{ceil-functionals-lemma}),
+and so~$\omega(\ceil{a})=0$,
+so that~$\omega(a)=0$
+(again
+by~\sref{ceil-functionals-lemma}).
+
+For the other direction,
+assume that~$\omega(b)=0\implies \omega(a)=0$
+for every np-functional~$\omega$ on~$\scrA$;
+we must show that~$\ceil{a}\leq \ceil{b}$,
+or in other words, $\smash{\ceil{b}}^\perp \ceil{a}\smash{\ceil{b}}^\perp =0$.
+Let~$\omega\colon \scrA\to\C$ be an arbitrary np-functional;
+it suffices to show that 
+$\omega(\,\smash{\ceil{b}}^\perp \ceil{a}\smash{\ceil{b}}^\perp \,)=0$.
+Since~$\smash{\ceil{b}}^\perp b \smash{\ceil{b}}^\perp =0$
+we have~$\omega(\smash{\ceil{b}}^\perp b\smash{\ceil{b}}^\perp)=0$
+and so~$\omega(\smash{\ceil{b}}^\perp a \smash{\ceil{b}}^\perp)=0$
+(by assumption, because
+$\omega(\smash{\ceil{b}}^\perp(\,\cdot\,)\smash{\ceil{b}}^\perp)$
+is an np-functional on~$\scrA$ as well),
+which implies that
+$\omega(\smash{\ceil{b}}^\perp\ceil{a}\smash{\ceil{b}}^\perp)=0$
+by~\sref{ceil-functionals-lemma}.\qed
+\end{point}
+\end{point}
+\begin{point}[ncp-ceil]{Proposition}%
+Let $f\colon \scrA\to\scrB$ be a np-map
+between von Neumann algebras.
+Then $\ceil{f(a)}=\ceil{f(\ceil{a})}$
+for every $a\in\scrA_+$.
+\begin{point}{Proof}%
+By~\sref{ceil-functionals}
+it suffices to show that
+$\omega(f(a))=0$ iff $\omega(f(\ceil{a}))=0$
+for every np-functional $\omega\colon \scrB\to\C$,
+and this is indeed the case by~\sref{ceil-functionals-lemma}.\qed
 \end{point}
 \end{point}
 \begin{point}[ceil-fundamental]{Exercise}%
@@ -1250,7 +1595,7 @@ for all~$c_1,c_2\in\ceilr{b}\scrA\ceilr{b}$
 \end{enumerate}
 \end{point}
 \begin{point}[ncp-union]{Exercise}%
-Let~$f\colon \scrA\to\scrB$ be an ncp-map
+Let~$f\colon \scrA\to\scrB$ be an np-map
 between von Neumann algebras.
 \begin{enumerate}
 \item
@@ -1265,26 +1610,358 @@ that $p\cup q = \ceil{\frac{1}{2}p+\frac{1}{2}q}$.)
 \item
 Deduce from this and~\sref{ncp-ceil} that $\ceil{f(\bigcup A)}=\bigcup_{a\in A}\ceil{f(a)}$
 for every set of projections~$A$ from~$\scrA$.
+
+\item
+Show that there is a greatest projection~$e$
+in~$\scrA$ with~$f(e)=0$.
 \end{enumerate}
 \end{point}
 \end{parsec}
-\section{Central elements}
 \begin{parsec}%
-\begin{point}{Definition}%
-Given a von Neumann algebra~$\scrA$,
+\begin{point}{Proposition}%
+Let~$f\colon \scrA\to\scrB$ be a ncpsu-map
+between von Neumann algebras.
+Then~$\floor{f(a)}=\floor{f(\floor{a})}$
+for every effect~$a$ from~$\scrA$.
+\begin{point}{Proof}%
+Since~$\floor{a}\leq a$,
+we have~$\floor{f(\floor{a})}\leq \floor{f(a)}$.
+Thus we only need to show that~$\floor{f(a)}\leq \floor{f(\floor{a})}$,
+or equivalently, $\floor{f(a)}\leq f(\floor{a})$.
+We have
+\begin{equation*}
+\floor{f(a)}
+\ \stackrel{\sref{ceil-floor-basic}}{=}\ 
+\floor{f(a)^2}
+\ \stackrel{\sref{inner-product-basic}}{\leq}\  
+\floor{f(a^2)} \ \leq\ \floor{f(a)},
+\end{equation*}
+and so~$\floor{f(a)}=\floor{f(a^2)}$.
+By induction,
+and similar reasoning,
+we get~$\floor{f(a)}=\floor{f(a^{2^n})}\leq f(a^{2^n})$
+for every~$n$,
+and so
+$\floor{f(a)}\leq \bigwedge_n f(a^{2^n})
+= f(\bigwedge_n a^{2^n})=f(\floor{a})$,
+where we used that~$f$ is normal,
+and~$\floor{a}=\bigwedge_n a^{2^n}$ (see~\sref{vna-floor}).\qed
+\end{point}
+\end{point}
+\end{parsec}
+\subsection{Carrier and commutant}
+\begin{parsec}%
+\begin{point}[carrier]{Definition}%
+The \Define{carrier}
+of an np-map $f\colon \scrA\to\scrB$
+between von Neumann algebras
+is the least projection~$\Define{\ceil{f}}$ in~$\scrA$
+with~$f(\smash{\ceil{f}}^\perp)=0$
+(which exists by~\sref{ncp-union}).
+\end{point}
+\begin{point}[carrier-basic]{Exercise}%
+Let~$f,g\colon \scrA\to\scrB$
+be np-maps between von Neumann algebras.
 \begin{enumerate}
-\item 
-an element~$a\in\scrA$ is~\Define{central}
-when~$ab=ba$ for all~$b\in\scrA$, and
 \item
-the \Define{center} of~$\scrA$,
-denoted by~$\Define{Z(\scrA)}$,
-is the collection of central elements.
+Show that $\ceil{\lambda f}=\ceil{f}$
+for all~$\lambda>0$.
+\item
+Show that~$\ceil{f+g}=\ceil{f}\cup\ceil{g}$.
+\item
+Show that~$\ceil{f}=1$ iff~$f$ is faithful.
+\item
+Assuming~$f$ is multiplicative
+show that~$\ceil{f}=1$ iff~$f$ is injective.
+
+(There is more to say about
+the carrier of a miu-map, see~\sref{carrier-miu}.)
 \end{enumerate}
 \end{point}
 \begin{point}{Exercise}%
-Given a von Neumann algebra~$\scrA$
-show that~$Z(\scrA)$ is a von Neumann subalgebra of~$\scrA$.
+\begin{enumerate}
+\item
+Given an element~$a$ of a von Neumann algebra~$\scrA$
+show that 
+\begin{equation*}
+\ceil{a^*(\,\cdot\,)a}\ =\ \ceil{aa^*}\equiv \ceilr{a}
+\end{equation*}
+where~$a^*(\,\cdot\,)a$
+is interpretted as an np-map~$\scrA\to\scrA$.
+\item
+Given a bounded operator~$T\colon \scrH\to\scrK$
+between Hilbert spaces
+show that~$\ceil{T^*(\,\cdot\,)T}$
+is the projection onto~$\overline{\Ran(T)}$
+when~$T^*(\,\cdot\,)T$
+is interpretted 
+as a map
+$\scrB(\scrK)\to\scrB(\scrH)$.
+\item
+Show that~$\ceil{\left<x,(\,\cdot\,)x\right>}=\ketbra{x}{x}$
+for any unit vector~$x$ from a Hilbert space~$\scrH$
+when~$\left<x,(\,\cdot\,)x\right>$
+is interpretted as a map~$\scrB(\scrH)\to\C$.
+
+(But be warned: when~$\scrA$ is a von Neumann subalgebra of~$\scrB(\scrH)$
+the carrier of the restriction 
+$\left<x,(\,\cdot\,)x\right>\colon \scrA\to\C$
+might differ from~$\ketbra{x}{x}$ because the former is in~$\scrA$
+while the latter may not be, see~\sref{carrier-vector-state}.)
+\end{enumerate}
+\end{point}
+\begin{point}[cp-comprehension]{Lemma}%
+Let~$f\colon \scrA\to\scrB$ be a p-map between
+$C^*$-algebras,
+and let~$p$ be an effect of~$\scrA$ with~$f(p^\perp)=0$.
+Then $f(a)=f(pa)=f(ap)=f(pap)$
+for all~$a\in\scrA$.
+\begin{point}{Proof}%
+Assume~$\scrB=\C$ for now.
+Since~$p^\perp \leq 1$,
+we have $(p^\perp)^2=\sqrt{p^\perp}p^\perp \sqrt{p^\perp}
+\leq p^\perp$,
+and so~$0\leq f(\,(p^\perp)^2\,) \leq f(p^\perp) = 0$,
+giving us $f(\,(p^\perp)^2\,)=0$.
+Since
+$\left|\smash{f(p^\perp a)}\right|^2
+\leq f(\,(p^\perp)^2\,)\  f(a^*a)\,=\, 0$
+by Kadison's inequality, \sref{omega-norm-basic}, 
+we get~$f(p^\perp a)=0$, and so~$f(pa)=f(a)$ for all~$a\in\scrA$.
+In particular,
+$f(ap)=f(pa^*)^*=f(a^*)^*=f(a)$
+for all~$a\in\scrA$,
+and so~$f(pap)=f(pa)=f(a)$
+for all~$a\in \scrA$.
+
+Letting~$\scrB$ be again arbitrary,
+and given~$a\in\scrA$,
+note that
+since the states on~$\scrB$ 
+are separating (by~\sref{states-order-separating})
+it suffices 
+to show that $\omega(f(a))=\omega(f(ap))=\omega(f(pa))=
+\omega(f(pap))$ for all
+states $\omega \colon \scrB\to\C$.
+But this follows from the previous paragraph
+since~$\omega\circ f$
+is a p-map into~$\C$.\qed
+\end{point}
+\end{point}
+\begin{point}[carrier-fundamental]{Corollary}%
+Given an np-map $f\colon \scrA\to\scrB$
+between von Neumann algebras
+we have $f(a)=f(\ceil{f}a) = f(a\ceil{f})=f(\ceil{f}a\ceil{f})$
+for all~$a\in\scrA$.
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+We end our exposition on projections
+by showing that every element in a von Neumann 
+algebra is the norm limit of linear combinations
+of projections in~\sref{projections-norm-dense}.
+We'll deal with commutative case first
+(see~\sref{abelian-projections-norm-dense}),
+and for this
+need an interesting 
+property of the spectrum of a commutative von Neumann algebra,
+see~\sref{vn-spectrum-extremally-disconnected}.
+\end{point}
+\begin{point}[ngelfand]{Exercise}%
+Let~$\scrA$ be a commutative von Neumann algebra.
+Using the fact that
+the Gelfand representation~$\gamma_\scrA\colon \scrA\to C(\spec(\scrA))$
+from~\sref{gelfand-representation}
+is a miu-isomorphism 
+by~\sref{gelfand}
+and thus an order isomorphism,
+show that~$C(\spec(\scrA))$
+is a commutative von Neumann algebra
+that is nmiu-isomorphic
+to~$\scrA$ via~$\gamma_\scrA$.
+\end{point}
+\begin{point}[vn-spectrum-extremally-disconnected]{Proposition}%
+The spectrum~$\spec(\scrA)$
+of a commutative von Neumann algebra~$\scrA$
+is \Define{extremally disconnected}:
+the closure~$\overline{U}$
+of an open subset~$U$ of~$\spec(\scrA)$
+is open.
+\begin{point}{Proof}%
+(Based on \S6.1 of~\cite{riesz}.)
+
+Let~$U$ be an open subset of~$\spec(\scrA)$,
+and let~$\mathbf{1}_U$ be the indicator function
+of~$U$.
+The set $D=\{\,f\in C(\spec(\scrA))\colon\, f\leq \mathbf{1}_U\,\}$
+is directed and bounded 
+and so has a supremum~$\bigvee D$
+in~$C(\spec(\scrA))$
+(since~$C(\spec(\scrA))$ is a von Neumann algebra by~\sref{ngelfand}).
+Note that~$0\leq \bigvee D\leq 1$.
+We'll prove that~$\bigvee D = \mathbf{1}_{\overline{U}}$,
+because this entails
+that~$\mathbf{1}_{\overline{U}}$
+is continuous,  so that~$\overline{U}$ is both open and closed.
+
+Let~$x\in U$ be given.
+By Urysohn's lemma (see~15.6 of~\cite{willard},
+using here that~$\spec(\scrA)$ being a compact Hausdorff
+space, \sref{spectrum-calg-compact-hausdorff}, 
+is normal by~17.10 of~\cite{willard})
+there is $f\in [0,1]_{C(\spec(\scrA))}$
+with~$f(x)=1$ and~$f(y)=0$ for all~$y\in \spec(X)\backslash U$.
+It follows that~$f\in D$,
+and~$f\leq \bigvee D\leq 1$,
+so that $1=f(x)\leq (\bigvee D)(x)\leq 1$,
+and~$(\bigvee D)(x)=1$.
+By continuity of~$\bigvee D$,
+we get $(\bigvee D)(x)=1$ for all~$x\in \overline{U}$.
+
+Let~$y\in \spec(\scrA)\backslash U$ be given.
+Again by Urysohn's lemma
+there is $f\in [0,1]_{C(\spec(\scrA))}$
+with~$f(y)=0$ and~$f(x)=1$ for all~$x\in \overline{U}$.
+Since $g\leq \mathbf{1}_U \leq f$
+for every~$g\in D$,
+we get $\bigvee D\leq f$,
+and so~$0\leq (\bigvee D)(y)\leq f(y) =0$,
+which implies that~$(\bigvee D)(y)=0$.
+Hence~$(\bigvee D)(y)=0$ for all~$y\in \spec(\scrA)\backslash U$.
+
+All in all we have $\bigvee D = \mathbf{1}_{\overline{U}}$,
+and so~$\overline{U}$ is open.\qed
+\end{point}
+\end{point}
+\begin{point}[abelian-projections-norm-dense]{Proposition}%
+Every element~$a$ of a commutative von Neumann algebra~$\scrA$
+is the norm limit
+of linear combinations of projections.
+\begin{point}{Proof}%
+By~\sref{ngelfand}
+it suffices to show that the linear span
+of projections is norm dense
+in~$C(\spec(\scrA))$.
+For this, in turn, it suffices 
+by Stone--Weierstra\ss{}' theorem
+(see~\sref{stone-weierstrass})
+to show that the projections in~$C(\spec(\scrA))$
+separate the points of~$\spec(\scrA)$
+in the sense
+that given $x,y\in\spec(\scrA)$
+with~$x\neq y$
+there is a projection~$f$ in~$C(\spec(\scrA))$
+with~$f(x)\neq f(y)$.
+Since~$\spec(\scrA)$
+is Hausdorff
+there are for such~$x$ and~$y$
+disjoint open subsets $U$ and~$V$
+of~$\spec(\scrA)$
+with~$x\in U$ and~$y\in V$.
+
+Then
+$f:=\mathbf{1}_{\overline{U}}$
+is a projection in~$C(\spec(\scrA))$
+(continuous
+because~$\overline{U}$
+is clopen by~\sref{vn-spectrum-extremally-disconnected})
+with~$f(x)=0\neq 1=f(y)$
+since $x\in \overline{U}\subseteq \spec(\scrA)\backslash V$,
+and so~$y\notin \overline{U}$.\qed
+\end{point}
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}[commutant]{Definition}%
+Given a subset~$S$ of a von Neumann algebra~$\scrA$
+the \Define{commutant} of~$S$
+is the set, denoted by~$\Define{\smash{S^\square}}$,
+of all~$a\in\scrA$ with $as=sa$ for all~$s\in S$.
+
+The commutant of~$\scrA$ itself
+is denoted by~$\Define{Z(\scrA)}:=\scrA^\square$
+and is called the \Define{centre} of~$\scrA$.
+(Its elements, called \emph{central}, are the subject of the next section.)
+\end{point}
+\begin{point}[commutant-basic]{Exercise}%
+Let~$S$ and~$T$ be subsets of a von Neumann algebra~$\scrA$.
+\begin{enumerate}
+\item
+Show that $S \subseteq T^\square$ iff $T \subseteq S^\square$.
+
+Show that $S\subseteq T$ entails $T^\square \subseteq S^\square$.
+
+Show that $S\subseteq S^{\square\square}$,
+and  $S^{\square\square\square}=S^\square$.
+\item
+Show that $S^\square$ is closed under addition,
+(scalar) multiplication,
+contains the unit of~$\scrA$,
+and is ultraweakly closed.
+\item
+Show that the commutant $S^\square$ need not be closed under involution.\\
+(Hint: compute 
+$\{\bigl(\begin{smallmatrix}0&1\\0&0\end{smallmatrix}\bigr)\}^\square$
+in $M_2$.)
+
+Suppose~$S$ is closed under involution.
+
+Show~$S^\square$ is closed under involution as well,
+and conclude that in that case~$S^\square$
+is a von Neumann subalgebra of~$\scrA$.
+
+Show that~$Z(\scrA)$ is a von Neumann subalgebra of~$\scrA$.
+
+Show that~$S^{\square\square}$
+is a von Neumann subalgebra of~$\scrA$
+with~$S\subseteq S^{\square\square}$.
+
+Show that if~$S$ is commutative (i.e.~$S\subseteq S^\square$), 
+then so is~$S^{\square\square}$.
+\item
+In particular,
+if~$\scrB$ is a von Neumann subalgebra of~$\scrA$,
+then~$\scrB^{\square\square}$
+is a von Neumann subalgebra of~$\scrA$
+with $\scrB\subseteq \scrB^{\square\square}$.
+
+Show that~$(\,\scrA\cap \C\,)^\square=\scrA$,
+and so~$(\,\scrA\cap\C\,)^{\square\square} = Z(\scrA)$.
+
+Nevertheless,
+we'll see in \sref{proto-double-commutant} that $\scrB^{\square\square}=\scrB$
+when~$\scrA$ is of the form $\scrA=\scrB(\scrH)$
+for some Hilbert space~$\scrH$.
+\item
+Given a von Neumann subalgebra~$\scrB$
+of~$\scrA$
+verify that $Z(\scrB)=\scrB\cap \scrB^{\square}$.
+\end{enumerate}
+\end{point}
+\begin{point}[projections-norm-dense]{Proposition}%
+Every self-adjoint element~$a$ of a von Neumann algebra~$\scrA$
+is the norm limit
+of linear combinations
+of projections from~$\smash{\{a\}}^{\square\square}$.
+\begin{point}{Proof}%
+Since~$a$ is an element
+of the by~\sref{commutant-basic}
+commutative von Neumann subalgebra~$\smash{\{a\}}^{\square\square}$
+of~$\scrA$,
+$a$ is the norm limit of linear combinations
+of projections from~$\smash{\{a\}}^{\square\square}$
+by~\sref{abelian-projections-norm-dense}.\qed
+\end{point}
+\end{point}
+\end{parsec}
+\subsection{Central support and carrier}
+\begin{parsec}%
+\begin{point}{Definition}%
+An element~$a$ of a von Neumann algebra~$\scrA$
+is called~\Define{central}
+when~$ab=ba$ for all~$b\in\scrA$
+(that is, when~$a\in Z(\scrA)$, see~\sref{commutant-basic}).
 \end{point}
 \begin{point}{Examples}%
 \begin{enumerate}
@@ -1393,7 +2070,7 @@ for all~$a,b\in\scrA$.
 \begin{parsec}%
 \begin{point}{Definition}%
 Let $f\colon \scrA\to\scrB$
-be an ncp-map
+be an np-map
 between von Neumann algebras.
 Show that given a central effect~$c$
 of~$\scrA$ we have
@@ -1478,7 +2155,7 @@ and so~$c'\leq c$.
 Since similarly $c\leq c'$, we get~$c=c'$.\qed
 \end{point}
 \end{point}
-\begin{point}{Corollary}%
+\begin{point}[carrier-miu]{Corollary}%
 Given a nmiu-map $f\colon \scrA\to\scrB$
 between von Neumann algebras
 we have~$\ceil{f}=\cceil{f}$
@@ -1578,14 +2255,15 @@ $\omega(\smash{\ceil{\varrho_\Omega}}^\perp)
 for all~$\omega\in\Omega$
 we get~$\ceil{\varrho_\Omega}^\perp =0$,
 and so~$\varrho_\Omega$ is injective
-by~\TODO{...}.\qed
+by~\sref{carrier-basic}.\qed
 \end{point}
 \end{point}
 \end{parsec}
 \section{Completeness}
+\subsection{Closure of a convex subset}
 \begin{parsec}%
 \begin{point}%
-We have just seen (in~\sref{npuws})
+We saw in~\sref{npuws}
 that a \emph{positive} linear functional~$f$
 on a von Neumann algebra 
 is ultrastrongly continuous iff it is ultraweakly continuous.
@@ -1613,10 +2291,9 @@ $(b*\omega)(a)=\omega(b^*ab)$ for all~$a\in \scrA$.
 Let~$\omega\colon \scrA\to \C$ be an np-map on a von Neumann algebra~$\scrA$.
 \begin{enumerate}
 \item
-Show that $b*\omega\colon \scrA\to\C$
-is an np-map for all~$b\in \scrA$
-(using \TODO{}).
-\item
+Note that $b*\omega\colon \scrA\to\C$
+is an np-map for all~$b\in \scrA$.
+
 Show that $\left|\omega(a^*bc)\right| 
 \,\leq\, \|\omega\|\,\|a\|_\omega\, \|b\|\, \|c\|_\omega$
 for all~$a,b,c\in\scrA$.
@@ -1633,7 +2310,6 @@ is Cauchy (in the operator norm
 on bounded linear functionals $\scrA\to\C$),
 and converges to a bounded linear map~$f\colon \scrA\to\C$.
 Show that~$f$ is an np-map.
-\TODO{non-trivial?}
 \end{enumerate}
 \end{point}
 \begin{point}{Exercise}%
@@ -1704,7 +2380,7 @@ B\delta^{-1}\|a\|_\omega$.
 Since~$\left|f(a)\right|\leq B\|a\|_\omega$ for all~$a\in\scrA$,
 the map~$f$ can be extended to a bounded linear map 
 $\tilde{f}\colon \scrH_\omega\to \C$.
-Then by Riesz' representation theorem (\TODO{}),
+Then by Riesz' representation theorem, \sref{riesz-representation-theorem},
 there is~$b\in \scrH_\omega$ with $\tilde{f}(x)=[b,x]_\omega$
 for all~$x\in \scrH_\omega$.  
 In particular,
@@ -1799,7 +2475,9 @@ by a fixed vector~$a\in V$ are continuous.
 Show that $\{(0,0)\}\cup B_1(-1)\cup B_1(1)\cup B_2(-2)^c\cup B_2(2)^c$
 is a radially open subset of~$\R^2$, 
 which is not open
-in the usual topology.\TODO{picture}
+in the usual topology.
+
+\REMARK{A picture of this will be added here.}
 
 \item
 Show that addition on~$\R^2$ is not jointly radially continuous.
@@ -1953,6 +2631,7 @@ which is impossible.
 \end{enumerate}
 \end{point}
 \end{parsec}
+\subsection{Kaplansky's density theorem}
 \begin{parsec}%
 \begin{point}[proto-kaplansky]{Proposition}%
 Let~$\scrA$ be a von Neumann algebra,
@@ -1963,8 +2642,9 @@ there are~$n\in \N$ and~$b\in [0,\infty)$
 such that $\left|f(t)\right|\leq b\left|t\right|$
 for all~$t\in \R$ with~$\left|t\right| \geq n$.
 
-Then~$a\mapsto f(a),\,\sa{\scrA}\to\sa{\scrA}$ is ultrastrongly continuous
-(see \TODO{reference to the continuous functional calculus}).
+Then the map~$a\mapsto f(a),\,\sa{\scrA}\to\sa{\scrA}$,
+see~\sref{functional-calculus},
+is ultrastrongly continuous.
 \begin{point}{Proof}%
 (An adaptation of Lemma~44.2 from~\cite{conway2000}.)
 
@@ -2046,8 +2726,6 @@ Since $\|s(b_\alpha)\|\leq 1$,
 we have $\|s(b_\alpha)(b_\alpha-a)s(a)\|_\omega 
 \leq  \,\|(b_\alpha-b)s(a)\|_\omega
 \equiv \|b_\alpha-b\|_{s(a)*\omega}$.
-\TODO{Add Lemma for $\|ab\|_\omega\leq \|a\|\|b\|_\omega$
-and definition of $a*\omega$.}
 Since similarly~$\|e(b_\alpha)\|\leq 1$,
 we get
 \begin{alignat*}{3}
@@ -2059,8 +2737,10 @@ and so~$e$ is ultrastrongly continuous.\qed
 \end{point}
 \end{point}
 
-\begin{point}[mult-us-cont]%
-\TODO{Prove that~$a\mapsto \left|a\right|$ is ultrastrongly continuous.}
+\begin{point}[abs-us-cont]{Corollary}%
+Given a von Neumann algebra~$\scrA$
+the map $a\mapsto\left|a\right|\colon\,\Real{\scrA}\to\Real{\scrA}$
+is ultrastrongly continuous.
 \end{point}
 \begin{point}[kaplansky]{Kaplansky Density Theorem}%
 Let~$b$ be an element of a von Neumann algebra~$\scrB$
@@ -2114,8 +2794,6 @@ $ (A_\alpha)_{12}$ will then converge ultrastrongly
 to~$B_{12}\equiv b$ as~$\alpha\to\infty$,
 and~$\|(A_\alpha)_{12}\|\leq \|A_\alpha\|\leq \|b\|$
 for all~$\alpha$, we are done.\qed
-
-\TODO{About $M_N(\scrA)$ and ultrastrong convergence in it.}
 \end{point}
 \end{point}
 \begin{point}[dense-subalgebra]{Corollary}%
@@ -2155,215 +2833,10 @@ if we replace~$(s_{\alpha n})_n$ by the appropriate  subsequence.\qed
 \end{point}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}[bh-us-complete]{Proposition}%
-The von Neumann algebra~$\scrB(\scrH)$
-of bounded operators on a Hilbert space~$\scrH$
-is ultrastrongly complete.
-\begin{point}{Proof}
-Let~$(T_\alpha)_\alpha$ be an ultrastrongly-Cauchy net
-in~$\scrB(\scrH)$
-(which must be shown to converge ultrastrongly to
-some operator~$T$ in~$\scrB(\scrH)$).
-
-Note that given~$x\in \scrH$,
-the net~$(T_\alpha x)_\alpha$ in~$\scrH$
-is norm Cauchy,
-because $\|(T_\alpha-T_\beta) x\|
-= \| T_\alpha-T_\beta \|_{\left<x,(\,\cdot\,)x\right>}$
-vanishes for sufficiently large~$\alpha,\beta$,
-and so we may define~$Tx :=\lim_\alpha T_\alpha x$,
-giving a map~$T\colon \scrH\to\scrH$.
-
-It is clear that~$T$ will be linear,
-but the question is whether~$T$ is bounded,
-and whether in that 
-case~$(T_\alpha)_\alpha$ converges ultrastrongly to~$T$.
-
-Suppose towards a contradiction that~$T$ is not bounded.
-Then we can find~$x_1,x_2,\dotsc\in\scrH$
-with $\|x_n\|^2\leq 2^{-n}$
-and $\|Tx_n\|^2\geq 1$ for all~$n$.
-Since~$\omega:=\sum_n \left<x_n,(\,\cdot\,)x_n\right>\colon 
-\scrB(\scrH)\to\C$
-is an np-map by~\TODO{}, 
-it follows that~$\|T_\alpha\|_\omega^2\equiv \sum_{n=1}^\infty 
-\|T_\alpha x_n\|^2$
-converges to some positive number~$R$.
-Since any partial sum $\sum_{n=1}^N \|T_\alpha x_n\|^2
-\leq \|T_\alpha\|_\omega^2$
-converges to~$\sum_{n=1}^N \|T x_n\|^2\geq N$,
-we must conclude that~$R\geq N$,
-for all natural numbers~$N$,
-which is absurd.
-Hence~$T$ is bounded.
-
-It remains to be shown that~$(T_\alpha)_\alpha$
-converges ultrastrongly to~$T$.
-So let $\omega\colon \scrB(\scrH)\to\C$ be an arbitrary
-np-map,
-being of the form~$\omega\equiv \sum_n\left<x_n,(\,\cdot\,)x_n\right>$
-for some $x_1,x_2,\dotsc\in\scrH$ with $\sum_n \|x_n\|^2 <\infty$.
-We must show that~$\|T-T_\alpha\|_\omega
-\equiv (\sum_n \|(T-T_\alpha)x_n\|^2)^{\nicefrac{1}{2}}$ 
-converges to~$0$ as $\alpha\to 0$.
-
-Let~$\varepsilon>0$ be given,
-and pick~$\alpha_0$
-such that $\|T_\alpha-T_\beta\|_\omega \leq 
-\smash{\frac{1}{2\sqrt{2}}}\,\varepsilon$
-for all~$\alpha,\beta\geq \alpha_0$
---- this is possible, because~$(T_\alpha)_\alpha$ is ultrastrongly Cauchy.
-We claim that $\|T-T_\alpha\|_\omega \leq \varepsilon$
-for any~$\alpha\geq \alpha_0$.
-Since for such~$\alpha$
-the sum
-\begin{equation*}
-	\sum_{n=1}^\infty \|(T-T_\alpha)x_n\|^2 
-	\ = \ 
-	\sum_{n=1}^{N-1} \|(T-T_\alpha)x_n\|^2
-	\ +\ 
-	\sum_{n=N}^\infty
-	\|(T-T_\alpha)x_n\|^2
-\end{equation*}
-converges (to~$\|T-T_\alpha\|_\omega^2$),
-we can find~$N$ such that the second term in the bound above
-is below~$\frac{1}{2}\varepsilon^2$.
-The first term will also be below~$\frac{1}{2}\varepsilon^2$,
-because
-\begin{equation*}
-	\bigl(\sum_{n=1}^{N-1} \|(T - T_\alpha)x_n\|^2\,\bigr)^{\nicefrac{1}{2}}
-	\ \leq\ 
-\bigl(\,
-\sum_{n=1}^{N-1} \|(T-T_{\beta})x_n\|^2
-\,\bigr)^{\nicefrac{1}{2}}
-\ +\ 
-\bigl(\,
-\sum_{n=1}^{N-1} \|(T_\beta-T_\alpha)x_n\|^2
-\,\bigr)^{\nicefrac{1}{2}}
-\end{equation*}
-for any~$\beta$,
-and in particular for~$\beta$
-large enough that the first term on the right-hand side above
-is below~$\smash{\frac{1}{2\sqrt{2}}}\,\varepsilon$.
-If we choose $\beta\geq \alpha_0$
-the second term will be below~$\smash{\frac{1}{2\sqrt{2}}}\,\varepsilon$ too,
-and we get $\|T-T_\alpha\|_\omega^2 \leq \frac{1}{2}\varepsilon^2
-+ (\smash{\frac{1}{2\sqrt{2}}\,\varepsilon 
-+ \frac{1}{2\sqrt{2}}\,\varepsilon})^2
-\equiv \varepsilon^2$ 
-all in all.
-(This reasoning is very similar to that in~\sref{hilb-sum}.)
-
-Hence~$\scrB(\scrH)$ is ultrastrongly complete.\qed
-\end{point}
-
-\TODO{Add example that the strong operator topology in not complete.}
-\end{point}
-\begin{point}[bh-bounded-uw-complete]{Proposition}%
-The von Neumann algebra~$\scrB(\scrH)$
-of bounded operators on a Hilbert space~$\scrH$
-is bounded ultraweakly complete.
-\begin{point}{Proof}%
-Let~$(T_\alpha)_\alpha$ be a norm-bounded ultraweakly-Cauchy net
-in~$\scrB(\scrH)$.
-We must show that~$(T_\alpha)_\alpha$
-converges ultraweakly
-to some bounded operator~$T$ on~$\scrH$.
-
-Note that given $x,y\in\scrH$
-the net $(\,\left<x,T_\alpha y\right>\,)_\alpha$
-is Cauchy
-(because $\left<x,(\,\cdot\,)y\right>
-\equiv \frac{1}{4}\sum_{k=0}^3 i^k\left<i^kx+y,(\,\cdot\,)(i^kx+y)\right>$
-is ultraweakly continuous),
-and so we may define $[x,y] = \lim_\alpha \left<x,T_\alpha y\right>$.
-The resulting `form'
-$[\,\cdot\,,\,\cdot\,]\colon \scrH\times\scrH\to \C$
-(see~\sref{chilb-form})
-is bounded, 
-because~$\left|[x,y]\right| \leq (\sup_\alpha \|T_\alpha\|)\|x\|\|y\|$
-for all~$x,y\in\scrH$
-and $\sup_\alpha\|T_\alpha\|<\infty$
-since $(T_\alpha)_\alpha$
-is norm bounded.
-By~\sref{chilb-form-representation},
-there is a unique bounded operator~$T$
-with $\left<x,Ty\right>=[x,y]$
-for all~$x,y\in\scrH$.
-
-By definition of~$T$ it is clear 
-that~$\lim_\alpha \left<x,(T-T_\alpha)x\right>=0$
-for any~$x\in\scrH$,
-but it is not yet clear that~$(T_\alpha)_\alpha$ converges ultraweakly to~$T$.
-For this we must show that $\lim_\alpha \omega(T-T_\alpha)=0$
-for any np-map~$\omega\colon \scrB(\scrH)\to \C$.
-By~\sref{bh-np},
-we know that such~$\omega$ is of the form
-$\omega=\sum_n \left<x_n,(\,\cdot\,)x_n\right>$
-for some $x_1,x_2,\dotsc\in\scrH$ with $\sum_n\|x_n\|^2<\infty$.
-Now, given~$N$ and~$\alpha$ we easily obtain the 
-following bound.
-\begin{equation*}
-	|\,\omega(T-T_\alpha)| \ \leq\  
-	\sum_{n=1}^{N-1} \left|\left<x_n(T-T_\alpha),x_n\right>\right|
-\ +\ \bigl(\,\|T\|+\sup_\alpha\|T_\alpha\|\,\bigr)\,\sum_{n=N}^\infty \|x_n\|^2 
-\end{equation*}
-Since the first term of this bound converges to~$0$ as~$\alpha\to\infty$,
-we get, for all~$N$,
-\begin{equation*}
-	\limsup_\alpha |\,\omega(T-T_\alpha)| \ \leq\ 
-	\bigl(\,\|T\|+\sup_\alpha\|T_\alpha\|\,\bigr)\,\sum_{n=N}^\infty \|x_n\|^2.
-\end{equation*}
-Since the tail $\sum_{n=N}^\infty\|x_n\|^2$
-converges to~$0$ as~$N\to \infty$,
-$\limsup_\alpha \left|\omega(T-T_\alpha)\right|=0$.
-Hence $\omega(T)=\lim_\alpha \omega(T_\alpha)$,
-and so~$(T_\alpha)_\alpha$ converges ultraweakly to~$T$.\qed
-\end{point}
-\end{point}
-\end{parsec}
-\begin{parsec}%
-\begin{point}[carrier]{Definition}%
-Let $f\colon\scrA\to\scrB$
-be an np-map between von Neumann algebras.
-The \Define{carrier} of~$f$, denoted by~$\Define{\ceil{f}}$,
-is the greatest projection~$p$
-of~$\scrA$ with~$f(p^\perp)= 0 $.
-
-\TODO{Add proof that such projection exists.}
-\end{point}
-\begin{point}[carrier-basic]{Exercise}%
-Show that $\ceil{\lambda f} = \ceil{f}$ for~$\lambda>0$,
-and~$\ceil{f+g} = \ceil{f}\cup \ceil{g}$.
-\end{point}
-\begin{point}{Definition}%
-We call a projection~$p$ of a von Neumann algebra~$\scrA$
-\Define{ultracyclic} if~$p=\ceil{\omega}$
-for some np-map $\omega\colon \scrA\to\C$.
-\end{point}
-\begin{point}[ultracyclic-basic]{Exercise}%
-Verify the following facts about ultracyclic projections.
-\begin{enumerate}
-\item
-If~$p$ and~$q$ are ultracyclic projections,
-so is~$p\cup q$.
-\item
-If~$p \leq q$ are projections,
-and~$q$ is ultracyclic,
-then~$p$ is ultracyclic.
-
-\TODO{add definition of $(\,\cdot\,)_\bullet$}
-\item
-Every projection is a directed supremum
-of ultracyclic projections.\\
-(Hint: first show that~$1$ is the supremum of all ultracyclic projections.)
-\end{enumerate}
-\end{point}
-\end{parsec}%
+\subsection{Closedness of subalgebras}
 \begin{parsec}%
 \begin{point}%
-Recall that according to our definition (\sref{von-neumann-subalgebra})
+Recall that according to our definition (\sref{von-neumann-examples})
 a von Neumann subalgebra~$\scrB$ 
 of a von Neumann algebra~$\scrA$
 is a $C^*$-subalgebra of~$\scrA$
@@ -2390,7 +2863,8 @@ in the sense that~$\omega_0(q)= 0 = \omega_1(q^\perp)$.
 Note that it suffices to find an effect~$a$ in~$\scrB$
 with $\omega_0(a) = 0 = \omega_1(a^\perp)$,
 because then~$\omega_0(\ceil{a}) = 0 = \omega_1(\ceil{a}^\perp)$
-and~$\ceil{a}\in\scrB$ by~\TODO{}.
+by~\sref{ceil-functionals-lemma}
+and~$\ceil{a}\in\scrB$.
 
 Note that we may find a subsequence~$(b_n)_n$ of~$(b_\alpha)_\alpha$
 such that $\omega_0( b_n ) 
@@ -2402,7 +2876,7 @@ For~$n < m$, define
 \textstyle
 a_{nm}\ = \ (1+\sum_{k=n}^m kb_k)^{-1} \,\sum_{k=n}^m kb_k.
 \end{equation*}
-Since we have seen in~\sref{}
+Since we have seen in~\sref{astara-pos-basic-consequences}
 that the map~$d\mapsto (1+d)^{-1}d$ is order preserving
 (on~$\pos{\scrB}$),
 we have $0\leq a_{nm}\leq \frac{1}{2}$
@@ -2490,6 +2964,27 @@ to~$\omega_1(p^\perp)\equiv 0$.
 Now apply~\sref{sequence-separation-lemma}.\qed
 \end{point}
 \end{point}
+\begin{point}{Definition}%
+We call a projection~$p$ of a von Neumann algebra~$\scrA$
+\Define{ultracyclic} if~$p=\ceil{\omega}$
+for some np-map $\omega\colon \scrA\to\C$.
+\end{point}
+\begin{point}[ultracyclic-basic]{Exercise}%
+Verify the following facts about ultracyclic projections.
+\begin{enumerate}
+\item
+If~$p$ and~$q$ are ultracyclic projections,
+so is~$p\cup q$.
+\item
+If~$p \leq q$ are projections,
+and~$q$ is ultracyclic,
+then~$p$ is ultracyclic.
+\item
+Every projection is a directed supremum
+of ultracyclic projections.\\
+(Hint: first show that~$1$ is the supremum of all ultracyclic projections.)
+\end{enumerate}
+\end{point}
 \begin{point}[vnsac]{Theorem}%
 A von Neumann subalgebra~$\scrB$ of a von Neumann algebra~$\scrA$
 is ultrastrongly and ultraweakly closed.
@@ -2501,8 +2996,8 @@ as well.
 Let~$p$ be a projection of~$\scrA$ which is the ultrastrong limit
 of a net from~$\scrB$. It suffices to show that~$p\in\scrB$,
 because the ultrastrong closure of~$\scrB$
-being a von Neumann algebra (\TODO{add ref.})
-is generated by its projections (\TODO{add ref.}).
+being a von Neumann subalgebra of~$\scrA$
+is generated by its projections, see~\sref{projections-norm-dense}.
 Note that given an np-map $\omega\colon \scrA\to\C$,
 the carrier~$\ceil{\omega}$ of~$\omega$
 need not be equal to the carrier
@@ -2539,32 +3034,207 @@ are in fact equalities,
 and so~$p=\bigvee_{\omega_1}\ceil{\omega_1}_\scrB \in \scrB$.\qed
 \end{point}
 \end{point}
+\end{parsec}
+\subsection{Completeness}
+\begin{parsec}%
+\begin{point}[bh-us-complete]{Proposition}%
+The von Neumann algebra~$\scrB(\scrH)$
+of bounded operators on a Hilbert space~$\scrH$
+is ultrastrongly complete.
+\begin{point}{Proof}
+Let~$(T_\alpha)_\alpha$ be an ultrastrongly-Cauchy net
+in~$\scrB(\scrH)$
+(which must be shown to converge ultrastrongly to
+some operator~$T$ in~$\scrB(\scrH)$).
+
+Note that given~$x\in \scrH$,
+the net~$(T_\alpha x)_\alpha$ in~$\scrH$
+is norm Cauchy,
+because $\|(T_\alpha-T_\beta) x\|
+= \| T_\alpha-T_\beta \|_{\left<x,(\,\cdot\,)x\right>}$
+vanishes for sufficiently large~$\alpha,\beta$,
+and so we may define~$Tx :=\lim_\alpha T_\alpha x$,
+giving a map~$T\colon \scrH\to\scrH$.
+
+It is clear that~$T$ will be linear,
+but the question is whether~$T$ is bounded,
+and whether in that 
+case~$(T_\alpha)_\alpha$ converges ultrastrongly to~$T$.
+
+Suppose towards a contradiction that~$T$ is not bounded.
+Then we can find~$x_1,x_2,\dotsc\in\scrH$
+with $\|x_n\|^2\leq 2^{-n}$
+and $\|Tx_n\|^2\geq 1$ for all~$n$.
+Since~$\omega:=\sum_n \left<x_n,(\,\cdot\,)x_n\right>\colon 
+\scrB(\scrH)\to\C$
+is an np-map by~\sref{bh-functional-lemma}, 
+it follows that~$\|T_\alpha\|_\omega^2\equiv \sum_{n=1}^\infty 
+\|T_\alpha x_n\|^2$
+converges to some positive number~$R$.
+Since any partial sum $\sum_{n=1}^N \|T_\alpha x_n\|^2
+\leq \|T_\alpha\|_\omega^2$
+converges to~$\sum_{n=1}^N \|T x_n\|^2\geq N$,
+we must conclude that~$R\geq N$,
+for all natural numbers~$N$,
+which is absurd.
+Hence~$T$ is bounded.
+
+It remains to be shown that~$(T_\alpha)_\alpha$
+converges ultrastrongly to~$T$.
+So let $\omega\colon \scrB(\scrH)\to\C$ be an arbitrary
+np-map,
+being of the form~$\omega\equiv \sum_n\left<x_n,(\,\cdot\,)x_n\right>$
+for some $x_1,x_2,\dotsc\in\scrH$ with $\sum_n \|x_n\|^2 <\infty$.
+We must show that~$\|T-T_\alpha\|_\omega
+\equiv (\sum_n \|(T-T_\alpha)x_n\|^2)^{\nicefrac{1}{2}}$ 
+converges to~$0$ as $\alpha\to 0$.
+
+Let~$\varepsilon>0$ be given,
+and pick~$\alpha_0$
+such that $\|T_\alpha-T_\beta\|_\omega \leq 
+\smash{\frac{1}{2\sqrt{2}}}\,\varepsilon$
+for all~$\alpha,\beta\geq \alpha_0$
+--- this is possible, because~$(T_\alpha)_\alpha$ is ultrastrongly Cauchy.
+We claim that $\|T-T_\alpha\|_\omega \leq \varepsilon$
+for any~$\alpha\geq \alpha_0$.
+Since for such~$\alpha$
+the sum
+\begin{equation*}
+	\sum_{n=1}^\infty \|(T-T_\alpha)x_n\|^2 
+	\ = \ 
+	\sum_{n=1}^{N-1} \|(T-T_\alpha)x_n\|^2
+	\ +\ 
+	\sum_{n=N}^\infty
+	\|(T-T_\alpha)x_n\|^2
+\end{equation*}
+converges (to~$\|T-T_\alpha\|_\omega^2$),
+we can find~$N$ such that the second term in the bound above
+is below~$\frac{1}{2}\varepsilon^2$.
+The first term will also be below~$\frac{1}{2}\varepsilon^2$,
+because
+\begin{equation*}
+	\bigl(\sum_{n=1}^{N-1} \|(T - T_\alpha)x_n\|^2\,\bigr)^{\nicefrac{1}{2}}
+	\ \leq\ 
+\bigl(\,
+\sum_{n=1}^{N-1} \|(T-T_{\beta})x_n\|^2
+\,\bigr)^{\nicefrac{1}{2}}
+\ +\ 
+\bigl(\,
+\sum_{n=1}^{N-1} \|(T_\beta-T_\alpha)x_n\|^2
+\,\bigr)^{\nicefrac{1}{2}}
+\end{equation*}
+for any~$\beta$,
+and in particular for~$\beta$
+large enough that the first term on the right-hand side above
+is below~$\smash{\frac{1}{2\sqrt{2}}}\,\varepsilon$.
+If we choose $\beta\geq \alpha_0$
+the second term will be below~$\smash{\frac{1}{2\sqrt{2}}}\,\varepsilon$ too,
+and we get $\|T-T_\alpha\|_\omega^2 \leq \frac{1}{2}\varepsilon^2
++ (\smash{\frac{1}{2\sqrt{2}}\,\varepsilon 
++ \frac{1}{2\sqrt{2}}\,\varepsilon})^2
+\equiv \varepsilon^2$ 
+all in all.
+(This reasoning is very similar to that in~\sref{hilb-sum}.)
+
+Hence~$\scrB(\scrH)$ is ultrastrongly complete.\qed
+\end{point}
+\end{point}
+\begin{point}[bh-bounded-uw-complete]{Proposition}%
+The von Neumann algebra~$\scrB(\scrH)$
+of bounded operators on a Hilbert space~$\scrH$
+is bounded ultraweakly complete.
+\begin{point}{Proof}%
+Let~$(T_\alpha)_\alpha$ be a norm-bounded ultraweakly-Cauchy net
+in~$\scrB(\scrH)$.
+We must show that~$(T_\alpha)_\alpha$
+converges ultraweakly
+to some bounded operator~$T$ on~$\scrH$.
+
+Note that given $x,y\in\scrH$
+the net $(\,\left<x,T_\alpha y\right>\,)_\alpha$
+is Cauchy
+(because $\left<x,(\,\cdot\,)y\right>
+\equiv \frac{1}{4}\sum_{k=0}^3 i^k\left<i^kx+y,(\,\cdot\,)(i^kx+y)\right>$
+is ultraweakly continuous),
+and so we may define $[x,y] = \lim_\alpha \left<x,T_\alpha y\right>$.
+The resulting `form'
+$[\,\cdot\,,\,\cdot\,]\colon \scrH\times\scrH\to \C$
+(see~\sref{chilb-form})
+is bounded, 
+because~$\left|[x,y]\right| \leq (\sup_\alpha \|T_\alpha\|)\|x\|\|y\|$
+for all~$x,y\in\scrH$
+and $\sup_\alpha\|T_\alpha\|<\infty$
+since $(T_\alpha)_\alpha$
+is norm bounded.
+By~\sref{chilb-form-representation},
+there is a unique bounded operator~$T$
+with $\left<x,Ty\right>=[x,y]$
+for all~$x,y\in\scrH$.
+
+By definition of~$T$ it is clear 
+that~$\lim_\alpha \left<x,(T-T_\alpha)x\right>=0$
+for any~$x\in\scrH$,
+but it is not yet clear that~$(T_\alpha)_\alpha$ converges ultraweakly to~$T$.
+For this we must show that $\lim_\alpha \omega(T-T_\alpha)=0$
+for any np-map~$\omega\colon \scrB(\scrH)\to \C$.
+By~\sref{bh-np},
+we know that such~$\omega$ is of the form
+$\omega=\sum_n \left<x_n,(\,\cdot\,)x_n\right>$
+for some $x_1,x_2,\dotsc\in\scrH$ with $\sum_n\|x_n\|^2<\infty$.
+Now, given~$N$ and~$\alpha$ we easily obtain the 
+following bound.
+\begin{equation*}
+	|\,\omega(T-T_\alpha)| \ \leq\  
+	\sum_{n=1}^{N-1} \left|\left<x_n(T-T_\alpha),x_n\right>\right|
+\ +\ \bigl(\,\|T\|+\sup_\alpha\|T_\alpha\|\,\bigr)\,\sum_{n=N}^\infty \|x_n\|^2 
+\end{equation*}
+Since the first term of this bound converges to~$0$ as~$\alpha\to\infty$,
+we get, for all~$N$,
+\begin{equation*}
+	\limsup_\alpha |\,\omega(T-T_\alpha)| \ \leq\ 
+	\bigl(\,\|T\|+\sup_\alpha\|T_\alpha\|\,\bigr)\,\sum_{n=N}^\infty \|x_n\|^2.
+\end{equation*}
+Since the tail $\sum_{n=N}^\infty\|x_n\|^2$
+converges to~$0$ as~$N\to \infty$,
+$\limsup_\alpha \left|\omega(T-T_\alpha)\right|=0$.
+Hence $\omega(T)=\lim_\alpha \omega(T_\alpha)$,
+and so~$(T_\alpha)_\alpha$ converges ultraweakly to~$T$.\qed
+\end{point}
+\end{point}
+\end{parsec}
+\begin{parsec}%
 \begin{point}[vn-complete]{Theorem}%
 A von Neumann algebra~$\scrA$ is ultrastrongly complete
 and bounded ultraweakly complete.
 \begin{point}{Proof}%
-Recall that~$\scrA$
-is nmiu-isomorphic
-to a von Neumann algebra~$\scrR$ of operators on some Hilbert space~$\scrH$
-by~\sref{ngns}.
-Since~$\scrB(\scrH)$ is ultrastrongly complete
+Let~$\Omega$ be the set of all np-functionals
+on~$\scrA$.
+Recall from~\sref{ngns-proof}
+that $\varrho_\Omega$
+gives a nmiu-isomorphism
+onto the 
+von Neumann algebra~$\scrR:=\varrho_\Omega(\scrA)$ of operators
+on the Hilbert space~$\scrH_\Omega$.
+Since~$\scrB(\scrH_\Omega)$ is ultrastrongly complete
 (\sref{bh-us-complete}),
-and the ultrastrong topology on~$\scrB(\scrH)$
-coincides on~$\scrR$ with the ultrastrong topology of~$\scrR$
-(by~\sref{us-permanence}),
-and~$\scrR$ is 
- ultrastrongly closed in~$\scrB(\scrH)$
+and~$\scrR$ is  ultrastrongly closed in~$\scrB(\scrH_\Omega)$
 (see~\sref{vnsac}),
-we see that $\scrR$ (and therefore~$\scrA$) is 
-ultrastrongly complete.
-
-Since similarly~$\scrB(\scrH)$
+we see that $\scrR$
+complete with respect to the ultrastrong
+topology of~$\scrB(\scrH_\Omega)$,
+but since any np-functional~$\omega\colon \scrR\to\C$
+is of the form~$\omega\equiv \left<x,(\,\cdot\,)x\right>$
+for some~$x\in\scrH_\Omega$,
+and therefore  the ultrastrong topology on~$\scrB(\scrH_\Omega)$
+coincides on~$\scrR$ with the ultrastrong topology of~$\scrR$,
+we see that~$\scrR$ (and therefore~$\scrA$)
+is complete with respect to its own ultrastrong topology.
+Since similarly~$\scrB(\scrH_\Omega)$
 is bounded ultraweakly complete (\sref{bh-bounded-uw-complete}),
-the ultraweak topology on~$\scrB(\scrH)$
-coincides on~$\scrR$ with the ultraweak topology on~$\scrR$
-(\sref{uw-permanence}),
+the ultraweak topology on~$\scrB(\scrH_\Omega)$
+coincides on~$\scrR$ with the ultraweak topology on~$\scrR$,
 and~$\scrR$ is ultraweakly closed
-in~$\scrB(\scrH)$
+in~$\scrB(\scrH_\Omega)$
 (by~\sref{vnsac}),
 we see that~$\scrR$ is bounded ultraweakly complete.\qed
 \end{point}
@@ -2725,6 +3395,7 @@ and so~$g$ is ultraweakly continuous.\qed
 \end{point}
 \end{parsec}
 \section{Division}
+\subsection{(Approximate) pseudoinverses}
 \begin{parsec}%
 \begin{point}[dfn-pseudoinverse]{Definition}%
 Let~$a$ be an element of a von Neumann algebra~$\scrA$.
@@ -2958,6 +3629,7 @@ making $t_1,t_2,\dotsc$ an approximate pseudoinverse of~$a$.\qed
 \end{point}
 \end{point}
 \end{parsec}
+\subsection{Division}
 \begin{parsec}%
 \begin{point}{Definition}%
 Let~$b$ be an element of a von Neumann algebra~$\scrA$.
@@ -3131,7 +3803,7 @@ the maps
 a\mapsto c\backslash a/b\colon\  c(\scrA)_1b\to \scrA
 \end{equation*}
 are ultrastrongly continuous
-(where $(\scrA)_1$ is the unit ball, see~\TODO{}).
+(where $(\scrA)_1$ is the unit ball).
 \begin{point}{Proof}%
 By~\sref{proto-douglas}
 the series~$\sum_n at_n$ converges ultraweakly to~$a/b$,
@@ -3166,6 +3838,7 @@ which is not ultrastrongly Cauchy.
 \end{point}
 \end{point}
 \end{parsec}
+\subsection{Polar decomposition}
 \begin{parsec}%
 \begin{point}[polar-decomposition]{Propisition (Polar Decomposition)}%
 Any element~$a$ of a von Neumann
@@ -3257,6 +3930,99 @@ and if~$t_1,t_2,\dotsc$
 is an approximate pseudoinverse of~$\sqrt{b}$,
 then~$\sum_{m,n} t_m a t_n$
 converges ultraweakly to this~$c$.
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+Recall from~\sref{cceil-fundamental}
+that the least central projection~$\cceil{e}$
+above a projection~$e$ of a von Neumann algebra~$\scrA$
+is given by~$\cceil{e}=\bigcup_{a\in \scrA}\ceil{a^* e a}$.
+Using the polar decomposition
+we can give a more economical
+description of~$\cceil{e}$,
+see~\sref{cceil-sum}.
+\end{point}
+\begin{point}[vmleq]{Proposition}%
+Given projections $e'$ and~$e$
+of a von Neumann algebra~$\scrA$,
+the following are equivalent.
+\begin{enumerate}
+\item
+\label{vmleq-1}
+$e'= \ceil{a^*e a}$ for some~$a\in\scrA$;
+\item
+\label{vmleq-2}
+$e' = \ceill{a}$ and~$\ceilr{a}\leq e$
+for some~$a\in\scrA$;
+\item
+\label{vmleq-3}
+$e' = u^*u$ and~$uu^*\leq e$
+for some partial isometry~$u$.
+\end{enumerate}
+In that case
+we write~$\Define{e'\vmleq e}$
+(and say~$e'$ is \Define{von Neumann--Murray below}~$e$).
+\begin{point}{Proof}%
+That~\ref{vmleq-3}
+implies~\ref{vmleq-2} is clear.
+(\ref{vmleq-2}$\Rightarrow$\ref{vmleq-1})\ 
+Since~$\ceilr{a}\leq e$,
+we have $ea=a$,
+and so~$\ceil{a^*ea}=\ceil{a^*a}=\ceill{a}=e'$.
+(\ref{vmleq-1}$\Rightarrow$\ref{vmleq-3})\ 
+By the polar decomposition (see~\sref{polar-decomposition})
+we get a partial isometry~$u:=[ea]$
+for which $u^*u = [ea]^*[ea]=\ceil{(ea)^*ea}=e'$
+and~$uu^*=\ceil{eaa^*e}\leq e$.\qed
+\end{point}
+\end{point}
+\begin{point}{Exercise}%
+Show that~$\vmleq$ gives a preorder
+on the set of projections of a von Neumann algebra.
+\end{point}
+\begin{point}[cceil-sum]{Lemma}%
+Given a projection~$e$
+of a von Neumann algebra~$\scrA$
+there is a family
+$(e_i)_i$ of non-zero projections with $\cceil{e}=\sum_i e_i$,
+and $e_i\vmleq e$ for all~$i$.
+\begin{point}{Proof}%
+Let~$(e_i)_i$
+be a maximal set of non-zero orthogonal projections
+in~$\scrA$ with
+$e_i\vmleq e$ for all~$i$.
+Our goal is to show that $\sum_i e_i \equiv \bigcup_i e_i=\cceil{e}$.
+
+Let~$u_i$ be a partial isometry
+with $u_i^*u_i=e_i$ and $u_iu_i^* \leq e$.
+Since $e_i=u_i^* u_i = u_i^* u_i u_i^* u_i
+\leq u_i^* e u_i 
+\leq \bigcup_{a\in \scrA} \ceil{a^* e a}=\cceil{e}$,
+we have
+$\bigcup_i e_i \leq \cceil{e}$.
+
+Suppose that~$\bigcup_i e_i < \cceil{e}$
+(towards a contradiction).
+Then since $p:=\cceil{e}-\bigcup_i e_i $ 
+is a non-zero projection,
+and~$p=p\cceil{e} p
+=\bigcup_{a\in\scrA} \ceil{p\ceil{a^*ea}p}
+= \bigcup_{a\in\scrA} \ceil{(ap)^*eap}$,
+there must be~$a\in\scrA$ with $(eap)^*eap\neq 0$.
+The polar decomposition (see~\sref{polar-decomposition})
+of~$eap$
+gives us a partial isometry $u:=[eap]$
+with $uu^* = \ceil{eap(eap)^*}=\ceil{eapa^*e}\leq e$
+and $u^*u= \ceil{(eap)^*eap}\leq p$,
+so that $u^*u$ is a non-zero projection,
+orthogonal to all~$e_i$ with $u^*u \vmleq e$.
+In other words,
+$e$ could have been added to~$(e_i)_i$,
+contradicting its maximality.
+Hence $\bigcup_i e_i = \cceil{e}$.
+\qed
+\end{point}
 \end{point}
 \end{parsec}
 
@@ -3370,7 +4136,7 @@ it suffices to prove that~$u^*u$ is a projection.
 Suppose towards a contradiction that~$u^*u$ is not a projection.
 Then $u^*u$,
 represented
-as continuous function (on~$\spec(a)$, see~\TODO{}),
+as continuous function (on~$\spec(a)$ cf.~\sref{functional-calculus}),
 takes neither the value~$0$ nor~$1$ on a neighbourhood
 of some point,
 and so by considering a
@@ -3433,7 +4199,8 @@ is non-empty.
 Since~$F$ is ultraweakly compact (being an ultraweakly closed
 subset of the ultraweakly compact~$(\scrA)_1$),
 $F$ has at least one extreme point
-by~\TODO{Krein--Milman}, say~$u$.
+by the Krein--Milman Theorem
+(see e.g.~Theorem~V7.4 of~\cite{conway2013}), say~$u$.
 Note that~$F$ is a face of~$(\scrA)_1$:
 if~$\frac{1}{2}a+\frac{1}{2}b\in F$ for some~$a,b\in(\scrA)_1$,
 then $\frac{1}{2}f(a)+\frac{1}{2}f(b) = \|f\|$,
@@ -3457,7 +4224,7 @@ First note that  $u(u^*u)^\perp = 0$ (since~$u$ is an isometry)
 and so $f(u(u^*u)^\perp)=0$,
 that is,  $u^*u\geq \ceil{f(u(\,\cdot\,))}$.
 This entails that $f(ubu^*u)=f(ub)$ for all~$b\in\scrA$
-by~\TODO{}, and in particular $f(uu^*au^*u)=f(uu^*a)$.
+by~\sref{carrier-fundamental}, and in particular $f(uu^*au^*u)=f(uu^*a)$.
 
 Now, since~$(uu^*)^\perp\scrA(u^*u)^\perp = \{0\}$,
 we have $uu^* a u^*u + a = uu^*a + au^*u$,
@@ -3478,7 +4245,7 @@ By~\sref{polar-decomposition-of-functional}
 there is a partial isometry~$u$
 such that $f(uu^*(\,\cdot\,))=f$
 and~$f(u(\,\cdot\,))$ is positive.
-Recall \TODO{} that such a positive functional~$f(u(\,\cdot\,))$
+Recall from~\sref{p-uwcont} that such a positive functional~$f(u(\,\cdot\,))$
 is normal when it is ultraweakly continuous
 on~$[0,1]_{\scrA}$;
 which it is, 
@@ -3586,17 +4353,17 @@ for every element~$a$ of a von Neumann algebra~$\scrA$.
 It's clear that $\sup_{f\in(\scrA_*)_1}\left|f(a)\right|\leq \|a\|$.
 
 For the other direction,
-write $a\equiv [a] \absl{a}$ (see \TODO{polar decompsition}),
-and recall that $\|a\|=\|\absl{a}\|=\sup_{\omega\in \Omega} 
-\left|\omega (\,\absl{a}\,)\right|$,
+write $a\equiv [a] \sqrt{a^*a}$ (see~\sref{polar-decomposition})
+and note that $\|a\|=\|\sqrt{a^*a}\|=\sup_{\omega\in \Omega} 
+\left|\omega (\,\sqrt{a^*a}\,)\right|$,
 where $\Omega$ is the set of  npu-maps $\scrA\to \C$
-(see~\TODO{}) .
+(which is order separating).
 Let~$\omega\in \Omega$ be given.
-Since~$[a]^*a=\absl{a}$ by~\TODO{},
-we have $\omega(\,\absl{a}\,)=\omega([a]^*a)=f(a)$,
+Since~$[a]^*a=\sqrt{a^*a}$ 
+we have $\omega(\,\sqrt{a^*a}\,)=\omega([a]^*a)=f(a)$,
 where $f:=\omega([a]^*(\,\cdot\,))\in (\scrA_*)_1$,
 and so $\|a\|=\sup_{\omega\in\Omega} 
-\omega(\,\absl{a}\,) \leq \sup_{f\in (\scrA_*)_1}
+\omega(\,\sqrt{a^*a}\,) \leq \sup_{f\in (\scrA_*)_1}
 \left|f(a)\right|$.\qed
 \end{point}
 \end{point}
@@ -3640,62 +4407,7 @@ is norm bounded.\qed
 \begin{point}%
 To pry out the final bits of structure of normal functionals
 we resort to the classical but nonetheless rather mysterious notion
-of commutant.
-\end{point}
-\begin{point}[commutant]{Definition}%
-Given a subset~$S$ of a von Neumann algebra~$\scrA$
-the \Define{commutant} of~$S$
-is the set, denoted by~$\Define{S^\square}$,
-of all~$a\in\scrA$ with $as=sa$ for all~$s\in S$.
-\end{point}
-\begin{point}[commutant-basic]{Exercise}%
-Let~$S$ and~$T$ be subsets of a von Neumann algebra~$\scrA$.
-\begin{enumerate}
-\item
-Show that $S \subseteq T^\square$ iff $T \subseteq S^\square$.
-
-Show that $S\subseteq T$ entails $T^\square \subseteq S^\square$.
-
-Show that $S\subseteq S^{\square\square}$,
-and  $S^{\square\square\square}=S^\square$.
-\item
-Verify that~$Z(\scrA)=\scrA^\square$,
-where~$Z(\scrA)$ is the centre of~$\scrA$ \TODO{add ref},
-and~$\scrA^\square$ is the commutant of~$\scrA$ in itself.
-\item
-Show that $S^\square$ is closed under addition,
-(scalar) multiplication,
-contains the unit of~$\scrA$,
-and is ultraweakly closed.
-\item
-Show that the commutant $S^\square$ need not be self-adjoint.\\
-(Hint: compute 
-$\{\bigl(\begin{smallmatrix}0&1\\0&0\end{smallmatrix}\bigr)\}^\square$
-in $M_2$.)
-
-Show that if~$S$ is self-adjoint,
-then~$S^\square$ is self-adjoint,
-and conclude that in that case~$S^\square$
-is a von Neumann subalgebra of~$\scrA$.
-
-\item
-In particular,
-if~$\scrB$ is a von Neumann subalgebra of~$\scrA$,
-then~$\scrB^{\square\square}$
-is a von Neumann subalgebra of~$\scrA$
-with $\scrB\subseteq \scrB^{\square\square}$.
-
-Verify that $Z(\scrB)=\scrB\cap \scrB^{\square}$,
-where is~$Z(\scrB)$ is the centre of~$\scrB$
-(from \TODO{...}).
-
-\TODO{Example of~$\scrB^{\square\square} \neq  \scrB$}
-
-Nevertheless,
-we'll see in \sref{proto-double-commutant} that $\scrB^{\square\square}=\scrB$
-when~$\scrA$ is of the form $\scrA=\scrB(\scrH)$
-for some Hilbert space~$\scrH$.
-\end{enumerate}
+of commutant, see~\sref{commutant}.
 \end{point}
 \begin{point}[commutant-ceil]{Proposition}%
 Let~$S$ be a subset of a von Neumann algebra~$\scrA$
@@ -3733,7 +4445,7 @@ above~$e$, so let~$q$ be a projection in~$S^\square$ above~$e$.
 Since for~$a\in S$,
 we have~$aq^\perp a^*=  q^\perp aa^* q^\perp 
 \leq \|a\|^2q^\perp \leq \|a\|^2e^\perp$,
-and so $a^*ea\leq \|a\|^2q$ by~\TODO{},
+and so $a^*ea\leq \|a\|^2q$ 
 we get~$\ceil{a^*ea}\leq q$
 for all~$a\in S$,
 and thus~$p=\bigcup_{a\in S}\ceil{a^*ea} \leq q$.\qed
@@ -3769,7 +4481,7 @@ Now consider
 an np-map $\omega\colon \scrB(\scrH)\to \C$,
 which we know must be of the form
 $\omega\equiv \sum_n \left<x_n,(\,\cdot\,)x_n\right>$
-(by~\TODO{}),
+(by~\sref{bh-np})
 and is therefore given by 
 an element $x'\equiv (x_1,x_2,\dotsc)$ of the $\omega$-fold
 product~$\scrH':=\bigoplus_n\scrH$ of~$\scrH$.
@@ -3847,114 +4559,16 @@ of bounded operators on a Hilbert space~$\scrH$
 coincide with the central elements of the commutant~$\scrA^\square$,
 that is, $Z(\scrA)=Z(\scrA^\square)$.
 (Hint: $\scrA^{\square\square}=\scrA$ by~\sref{double-commutant}.)
+\begin{point}[commutant-cceil]%
+Deduce that~$\cceil{f|\scrA}=\cceil{f|\scrA^\square}$
+for every np-map~$f\colon \scrB(\scrH)\to\scrB$ 
+into a von Neumann algebra~$\scrB$.
 \end{point}
-\end{parsec}
-\begin{parsec}%
-\begin{point}%
-Using~\sref{commutant-ceil}
-we can also get a better handle on the set 
-$Z(\scrA)$ of central elements
-of a von Neumann algebra~$\scrA$,
-which is, after all, equal to~$\scrA^\square$.
-\end{point}
-\begin{point}{Exercise}%
-Let~$\scrA$ be a von Neumann algebra.
-Show that
-$\bigcup_{a\in\scrA}\ceil{a^*ea}$
-is the least central projection above any projection~$e$
-of~$\scrA$.
-\begin{point}%
-Show that given an element~$a$ of a von Neumann algebra~$\scrA$,
-the following exist and coincide.
-\begin{enumerate}
-\item
-The least central projection~$z$ with $za=a$.
-\item
-The least central projection above $\ceil{a^*a}$.
-\item
-The least central projection above $\ceil{aa^*}$.
-\end{enumerate}
-We'll denote it by~$\Define{\cceil{a}}$
-and call it the \Define{central support} of~$a$.
-\end{point}
-\begin{point}[cceil-basic]
-\begin{enumerate}
-\item
-Show that
-$\cceil{a}=\cceil{a^*a}=\cceil{aa^*}
-= \cceil{\ceil{a^*a}}=\cceil{\ceil{aa^*}}=\cceil{a^*}$.
-\item
-Show that $\bigcup_{e\in E} \cceil{e}
-= \cceil{\bigcup E}$
-for any set~$E$ of projections in~$\scrA$.
-\end{enumerate}
-\end{point}
-\end{point}
-\begin{point}[cceil-sum]{Lemma}%
-Given a projection~$e$
-of a von Neumann algebra
-there is an orthogonal collection of non-zero projections
-$(e_i)_i$ with $\cceil{e}=\sum_i e_i$,
-and $p_i\vmleq e$ for all~$i$.
-
-\TODO{define $\vmleq$}
-\begin{point}{Proof}%
-Let~$(e_i)_i$
-be a maximal set of non-zero orthogonal projections
-in~$\scrA$ with
-$e_i\vmleq p$ for all~$i$.
-Our goal is to show that $\sum_i e_i \equiv \bigcup_i e_i=\cceil{a}$.
-
-Let~$u_i$ be a partial isometry
-with $u_i^*u_i=e_i$ and $u_iu_i^* \leq e$.
-Since $e_i=u_i^* u_i = u_i^* u_i u_i^* u_i
-\leq u_i^* e u_i 
-\leq \bigcup_{a\in \scrA} \ceil{a^* e a}=\cceil{a}$,
-we have
-$\bigcup_i e_i \leq \cceil{a}$.
-
-Suppose that~$\bigcup_i e_i < \cceil{a}$
-(towards a contradiction).
-Then since $p:=\cceil{a}-\bigcup_i e_i $ 
-is a non-zero projection,
-and~$p=p\cceil{e} p
-=\bigcup_{a\in\scrA} \ceil{p\ceil{a^*ea}p}
-= \bigcup_{a\in\scrA} \ceil{(ap)^*eap}$,
-there must be~$a\in\scrA$ with $(eap)^*eap\neq 0$.
-The polar decomposition of~$eap$
-(see \TODO{})
-gives us a partial isometry $u:=[eap]$
-with $uu^* = \ceil{eap(eap)^*}=\ceil{eapa^*e}\leq e$
-and $u^*u= \ceil{(eap)^*eap}\leq p$,
-so that $u^*u$ is a non-zero projection,
-orthogonal to all~$e_i$ with $u^*u \vmleq e$.
-In other words,
-$e$ could have been added to~$(e_i)_i$,
-contradicting its maximality.
-Hence $\bigcup_i e_i = \cceil{a}$.
-\qed
-\end{point}
-\end{point}
-\begin{point}{Exercise}%
-Let~$f\colon \scrA \to \scrB$ be an np-map.
-Show that $\Define{\cceil{f}}:=\cceil{\ceil{f}}$ is least central projection~$z$
-with~$f(z^\perp)=0$
---- it's called the 
-\Define{central carrier} of~$f$.
-\end{point}
-\begin{point}[commutant-cceil]{Exercise}%
-Let~$\scrR$ be a von Neumann subalgebra of a von Neumann algebra~$\scrA$,
-and let~$f\colon \scrA\to\scrB$ be an np-map
-to a von Neumann algebra~$\scrB$.
-
-Show that~$\cceil{f|\scrR}=\cceil{f|\scrR^\square}$
-using the fact that $Z(\scrR)=Z(\scrR^\square)$
-(see~\sref{centre-commutant}).
 \end{point}
 \end{parsec}%
 \begin{parsec}%
 \begin{point}%
-With the commutant at our disposal,
+With the double commutant theorem at our disposal,
 we turn to a subtle, but suprisingly difficult matter:
 it is not immediately clear
 that the ultraweak topology on a von Neumann
@@ -4099,7 +4713,7 @@ and $\sum_i \|U_i^* x\|^2\leq \|x\|^2$,
 and deduce from this
 that $\sum_i \left|\left<x,U_i y\right>\right| \leq \|x\|\|y\|$.
 
-Now use~\TODO{}
+Now use~\sref{chilb-form-representation}
 to show that there is a bounded operator~$U\colon \scrK\to\scrH$
 with $\left<x,Uy\right>
 = \sum_i \left<x,U_iy\right>$
@@ -4196,7 +4810,8 @@ $\cceil{U_\omega^*U_\omega}=\cceil{\sigma_\omega'}=\varrho(\cceil{\omega})$
 are orthogonal,
 we have $\cceil{U^*U}=\sum_\omega \cceil{U_\omega^* U_\omega}
 =  \varrho(\sum_\omega \cceil{\omega})$
-by~\sref{cceil-basic} and \TODO{sum of orthogonal projections is union}.
+by~\sref{cceil-basic} and
+\sref{sum-of-orthogonal-projections}.
 Similarly, $\cceil{UU^*}= \pi(\sum_\omega \cceil{\omega})$.
 
 Finally,
@@ -4218,7 +4833,7 @@ and let~$\varrho\colon \scrA\to\scrB(\scrH)$
 denote the inclusion.
 Let~$\Omega$ be the collection of all np-maps $\scrA\to\C$,
 and let $\varrho_\Omega\colon \scrA\to\scrB(\scrH_\Omega)$
-be as in~\TODO{}.
+be as in~\sref{gelfand-naimark-representation}.
 
 There is a bounded operator $U\colon \scrH_\Omega\to\scrH$
 such that $U^*U$ is a projection
@@ -4445,319 +5060,6 @@ as $\alpha\to\infty$
 by~\sref{bstaromega-basic},
 we conclude that~$f\in \overline{\Omega''}$.\qed
 \end{point}
-\end{point}
-\end{point}
-
-\end{parsec}
-\section{[To be moved]}
-%
-%
-%
-\begin{parsec}[floor-sequential-product]%
-\begin{point}{Lemma}%
-Let~$a,b$ be effects of a von Neumann algebra~$\scrA$.
-Then~$\floor{\sqrt{a}b\sqrt{a}}$ is the greatest projection
-below~$a$ and~$b$, that is, in symbols, 
-$\floor{\sqrt{a}b\sqrt{a}}=\floor{a}\cap \floor{b}$.
-\end{point}
-\begin{point}{Proof}%
-Surely, $\floor{\sqrt{a}b\sqrt{a}}\leq \sqrt{a}b\sqrt{a} \leq a$.
-Let us prove that~$\floor{\sqrt{a}b\sqrt{a}}\leq b$.
-To this end,
-recall
-that (by~\sref{projection-below-effect})
-a projection~$e$ is below an effect~$c$
-iff $ec=e$ iff $e\sqrt{c}=e$.
-In particular,
-since~$\floor{\sqrt{a}b\sqrt{a}}\leq \sqrt{a}b\sqrt{a}$ and 
-$\floor{\sqrt{a}b\sqrt{a}}\leq a$,
-we get
-\begin{equation*}
-\floor{\sqrt{a}b\sqrt{a}}
-\ =\ \floor{\sqrt{a}b\sqrt{a}}\sqrt{a}b\sqrt{a}\floor{\sqrt{a}b\sqrt{a}} \ =\ 
-\floor{\sqrt{a}b\sqrt{a}}b\floor{\sqrt{a}b\sqrt{a}},
-\end{equation*}
-and so $\floor{\sqrt{a}b\sqrt{a}}b^\perp\floor{\sqrt{a}b\sqrt{a}}=0$,
-which implies that
-$\floor{\sqrt{a}b\sqrt{a}}\leq b$ by~\sref{ad-contraposed}.
-\begin{point}%
-Now,
-let~$e$ be a projection below~$a$ and~$b$,
-that is, $e\sqrt{a}=e$ and~$eb=e$.
-We must show that~$e\leq \floor{\sqrt{a}b\sqrt{a}}$,
-or equivalently, $e\leq \sqrt{a}b\sqrt{a}$,
-or put yet differently, $e\sqrt{a}b\sqrt{a}=e$.
-But this is obvious: $e=e\sqrt{a}=eb\sqrt{a}=e\sqrt{a}b\sqrt{a}$.
-\end{point}
-\end{point}
-\end{parsec}
-\begin{parsec}%
-\begin{point}%
-Having seen that~$\floor{\sqrt{a}b\sqrt{a}} = \floor{a}\cap\floor{b}$
-in~\sref{floor-sequential-product}
-one might wonder whether
-there is a similar expression for $\ceil{\sqrt{a}b\sqrt{a}}$.
-If~$a$ and~$b$ are projection,
-$\ceil{aba}$ turns out to coincide with the \Define{Sasaki product},
-$a\cap (a^\perp \cup b)$,
-as we will show below.
-\TODO{Reference for the Sasaki product.}
-\TODO{Thank Kenta}
-\end{point}
-\begin{point}[floor-difference]{Lemma}%
-Let~$p$ be a projection,
-and let~$a$ be an effect of a von Neumann algebra
-with $a\leq p$.
-We have $p-\ceil{a}=\floor{p-a}$.
-\end{point}
-\begin{point}{Proof}%
-We must show that $p-\ceil{a}$ is the greatest projection below $p-a$.
-To begin, $p-\ceil{a}\leq p-a$,
-because $a\leq \ceil{a}$.
-Further, since~$a\leq p$, we have $\ceil{a}\leq p$,
-and so~$p-\ceil{a}$ is a projection
-(by~\sref{projection-below-projection}).
-\begin{point}%
-Let~$q$ be a projection below~$p-a$.
-We must show that~$q\leq p-\ceil{a}$.
-The trick is to note that~$a\leq p-q$.
-Since~$p-q$ is a projection (by~\sref{projection-below-projection}
-because $q\leq p-a\leq p$),
-we have $\ceil{a}\leq p-q$,
-and so $q\leq p-\ceil{a}$.
-\begin{point}[ceil-sequential-product]{Lemma}%
-For projections $p,q$ from a von Neumann algebra,
-$\ceil{pqp}=p\cap (p^\perp \cup q)$.
-\end{point}
-\end{point}
-\end{point}
-\begin{point}[ceil-sequential-product-1]{Proof}%
-Observe that $(\ p\cap (p^\perp \cup q)\ )^\perp 
-= p^\perp \cup(p\cap q^\perp)$.
-Since~$p^\perp$ and $p\cap q^\perp$ are disjoint,
-we have $p^\perp \cup (p\cap q^\perp) = p^\perp + p\cap q^\perp$,
-and so $p\cap (p^\perp \cup q) = p-p\cap q^\perp$.
-\begin{point}%
-By point~\sref{ceil-sequential-product-1}, 
-it suffices to show that~$\ceil{pqp}=p- p\cap q^\perp$,
-that is, $p-\ceil{pqp}=p\cap q^\perp$.
-Since $p-\ceil{pqp} = \floor{p-pqp}$
-by~\sref{floor-difference} and $\floor{pq^\perp p}=p\cap q^\perp$
-by~\sref{floor-sequential-product} we are done.
-\end{point}
-\end{point}
-\end{parsec}
-
-%
-% About maps between von Neumann algebras
-%
-
-\begin{parsec}%
-\begin{point}{Proposition}%
-For a cp-map~$f\colon \scrA\to\scrB$
- between $C^*$-algebras, and $a,b\in\scrA$, 
-\begin{equation*}
-f(b^*a)\,f(a^*b)\ \leq\ \|f(a^*a)\|\,f(b^*b).
-\end{equation*}
-\end{point}%
-\begin{point}{Proof}%
-\TODO{add}
-\end{point}
-\end{parsec}
-%
-%
-%
-\begin{parsec}%
-\end{parsec}
-%
-%
-%
-\begin{parsec}%
-\begin{point}{Proposition}%
-Let~$f\colon \scrA\to\scrB$ be a ncpsu-map
-between von Neumann algebras.
-Then~$\floor{f(a)}=\floor{f(\floor{a})}$
-for every effect~$a$ from~$\scrA$.
-\end{point}
-\begin{point}{Proof}%
-Since~$\floor{a}\leq a$,
-we have~$\floor{f(\floor{a})}\leq \floor{f(a)}$.
-Thus we only need to show that~$\floor{f(a)}\leq \floor{f(\floor{a})}$,
-or equivalently, $\floor{f(a)}\leq f(\floor{a})$.
-We have
-\begin{equation*}
-\floor{f(a)}
-\ \stackrel{\sref{ceil-floor-basic}}{=}\ 
-\floor{f(a)^2}
-\ \stackrel{\sref{cp-kadisons-ineq}}{\leq}\  
-\floor{f(a^2)} \ \leq\ \floor{f(a)},
-\end{equation*}
-and so~$\floor{f(a)}=\floor{f(a^2)}$.
-By induction,
-and similar reasoning,
-we get~$\floor{f(a)}=\floor{f(a^{2^n})}\leq f(a^{2^n})$
-for every~$n$,
-and so
-$\floor{f(a)}\leq \bigwedge_n f(a^{2^n})
-= f(\bigwedge_n a^{2^n})=f(\floor{a})$,
-where we used that~$f$ is normal,
-and~$\floor{a}=\bigwedge_n a^{2^n}$ (see~\sref{vna-floor}).
-\end{point}
-\end{parsec}
-
-\begin{parsec}%
-\begin{point}%
-Parsec about commutative $C^*$-algebras:
-\end{point}
-\begin{point}[ccstar-proj]{Theorem}%
-The projections~$\Proj(\scrA)$ of a commutative $C^*$-algebra~$\scrA$
-form a Boolean algebra.
-If~$\scrA$ is monotone complete,
-then~$\Proj(\scrA)$ is a complete Boolean algebra.
-\end{point}
-\end{parsec}
-
-\begin{parsec}%
-\begin{point}%
-Let us now turn to quotients of von Neumann algebras.
-Recall that given a norm closed two-sided ideal~$\scrD$
-of a $C^*$-algebra $\scrA$
-we can form the quotient $\scrA/\scrD$,
-(which is again a $C^*$-algebra),
-and the quotient map $q\colon \scrA\to \scrA/\scrD$
-which is a \textsc{miu}-map.
-If~$\scrA$ is a von Neumann algebra,
-then~$\scrA/\scrD$ might not be a von Neumann algebra,
-either because~$\scrA/\scrD$ is not be monotone complete 
-(see~\sref{vn-quotient-not-monotone-complete}),
-or because~$\scrA/\scrD$ does not have a separating set of normal states
-(see~\TODO{}).
-However, if~$\scrD$ is ultraweakly closed,
-then~$\scrA/\scrD$ is a von Neumann algebra,
-as one might have suspected.
-To prove this,
-we need the somewhat surprising
-fact that every ultraweakly closed
-ideal~$\scrD$ is of the form $\scrD\equiv c\scrA$,
-where~$c$ is a central projection~$c$ of~$\scrA$.
-(The quotient~$\scrA/c\scrA$ is then simply~$c^\perp\scrA$.)
-\TODO{connection between uw-closed ideals and central projections}
-\TODO{universal property for \textsc{n(c)p(s)(u)}-maps}
-\end{point}
-\begin{point}[vn-quotient-not-monotone-complete]{Example}%
-The quotient of a von Neumann algebra
-by an closed ideal
-need not be a von Neumann algebra:
-we will show that $\ell^\infty/c_0$
-is not monotone complete,
-where~$\ell^\infty$ is the von Neumann algebra
-of bounded sequences,
-and~$c_0\subseteq \ell^\infty$
-is the norm closed ideal of
-sequences which converge to~$0$.
-By~\sref{ccstar-proj}
-it suffices to show that the Boolean algebra~$\Proj(\ell^\infty/c_0)$
-of projections of~$\ell^\infty/c_0$ is not complete.
-\begin{point}%
-We claim that $\Proj(\ell^\infty/c_0)$
-is isomorphic to the Boolean algebra
- $\wp(\N)/\wp_{fin}(\N)$
-of subsets of~$\N$ modulo 
-the filter~$\wp_{fin}(\N)$ of finite subsets.
-
-It is easy to see that the assignment $A\mapsto [\mathbf{1}_A]_{c_0}$
-(where $\mathbf{1}_A$ is the indicator function of~$A$)
-gives a Boolean algebra homomorphism 
-$f\colon \wp(\N)\to \Proj(\ell^\infty/c_0)$,
-that the kernel of~$f$
-is $\wp_{fin}(\N)$
-(because for $A\subseteq \N$
-we have $\mathbf{1}_A\in c_0$ iff $A$ is finite).
-It remains to be shown that~$f$ is surjective,
-which requires some fiddling.
-
-Let~$\alpha\in \ell^\infty$
-be
-such that $[\alpha]_{c_0}$ is a projection in $\ell^\infty/c_0$.
-We claim that
-$\mathbf{1}_A - \alpha \in c_0$ (and so $\alpha=f(A)$)
-for some~$A\subseteq \N$.
-Note that since $[\alpha]_{c_0}$ is self-adjoint,
-we have $[\alpha]_{c_0}=(\,[\alpha]_{c_0}\,)_\R = [\,\alpha_\R\,]_{c_0}$,
-and so we may assume without loss of generality
-that~$\alpha$ is self-adjoint
-(replacing $\alpha$ by $\alpha_\R$ is necessary).
-Define $A=\{n\in\N\colon \left|1-\alpha(n)\right|<\frac{1}{2}\}$.
-
-Let~$\varepsilon>0$ with $\varepsilon<\nicefrac{1}{2}$ be given.
-We must find~$N\in\N$ with 
-$\left| \mathbf{1}_A(n)-\alpha(n)\right|\leq \varepsilon$
-for all~$n\geq N$.
-Since~$[\alpha]_{c_0}$ is a projection,
-$\alpha-\alpha^2\in c_0$,
-and so
-there is~$N\in \N$
-with $\left|\alpha(n)\right| \,\left| 1-\alpha(n)\right|
-\,\equiv\, \left| \alpha(n) - \alpha(n)^2 \right| \leq 
-\nicefrac{1}{2}\,\varepsilon < \nicefrac{1}{4}$
-for all~$n\geq N$.
-
-Let~$n\geq N$ be given.
-Note that either 
-$\left|1-\alpha(n)\right|\geq \nicefrac{1}{2}$
-or 
-$\left|\alpha(n)\right|\geq \nicefrac{1}{2}$.
-If~$\left|1-\alpha(n)\right|\geq\nicefrac{1}{2}$,
-then $\mathbf{1}_A(n)=0$
-(by definition of~$A$),
-and so $\left|\mathbf{1}_A(n)-\alpha(n)\right|\equiv \left|\alpha(n)\right| 
-\leq 2 \,\left|\alpha(n)\right|\,\left| 1-\alpha(n)\right|
-\leq \varepsilon$.
-On the other hand,
-if  $\left|\alpha(n)\right| \geq \nicefrac{1}{2}$,
-then $\left|1-\alpha(n)\right| < \nicefrac{1}{2}$
-(because otherwise $\left|\alpha(n)\right|\left|1-\alpha(n)\right|
-\geq \nicefrac{1}{4}$),
-so $\mathbf{1}_A(n)=1$,
-and thus
-$\left|\mathbf{1}_A(n)-\alpha(n)\right|
-\equiv \left|1-\alpha(n)\right|
-\leq 2 \left|\alpha(n)\right|\left|1-\alpha(n)\right|
-\leq \varepsilon$.
-
-Hence $\mathbf{1}_A - \alpha \in c_0$,
-and so~$f$ is surjective.
-It follows that $\Proj(\ell^\infty/c_0)$
-is isomorphic to $\wp(\N)/\wp_{fin}(\N)$.
-\end{point}
-\begin{point}%
-We claim that the Boolean algebra~$\wp(\N)/\wp_{fin}(\N)$
-is not complete.
-To see this,
-find a partition of~$\N$ into infinite subsets
-$A_1,A_2,\dotsc$.
-We claim that~$A_1,A_2,\dotsc$ has no supremum in~$\wp(\N)/\wp_{fin}(\N)$
-because there is no minimal upper bound.
-Indeed,
-let~$A$ be an upper bound of~$A_1,A_2,\dotsc$ in~$\wp(\N)/\wp_{fin}(\N)$,
-that is, $A_n\backslash A$ is finite for every~$n$;
-we will define an upper bound~$A'$ of $A_1,A_2,\dotsc$
-which is strictly below~$A$ in~$\wp(\N)/\wp_{fin}(\N)$.
-Since~$A_n$ is infinite,
-and~$A_n\backslash A$ is finite,
-we can pick $a_n\in A_n\cap A$ for each~$n$.
-Then~$A':=A \backslash \{a_1,a_2,a_3,\dotsc\}$
-is an upper bound for~$A_1,A_2,\dotsc$,
-because $A_n\backslash A' = (A_n\backslash A)\cup\{a_n\}$ is finite
-for each~$n$,
-and~$A'$ is strictly below~$A$ in~$\wp(\N)/\wp_{fin}(\N)$,
-because $A'\backslash A$ is infinite.
-Hence~$\wp(\N)/\wp_{fin}(\N)$
-is not complete.
-\end{point}
-\begin{point}%
-\TODO{connection with $\beta\N\backslash\N$
-being non-Stonean.}
 \end{point}
 \end{point}
 \end{parsec}
