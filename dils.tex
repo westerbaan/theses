@@ -4563,7 +4563,7 @@ We call~$h_a$ the \Define{standard corner} of~$a$.
 \end{parsec}
 
 \begin{parsec}%
-\begin{point}{Definition}%
+\begin{point}[dils-def-filter]{Definition}%
 A ncp-map~$c \colon \scrA \to \scrB$
     is a \Define{filter} for~$b \in\scrB$, $b \geq 0$ if~$c(1)\leq b$
     and
@@ -4573,6 +4573,13 @@ A ncp-map~$c \colon \scrA \to \scrB$
             there is a unique ncp-map~$f'\colon \scrC \to \scrB$
             with~$f = c \after f'$.
     \end{quote}
+\begin{point}{Remark}%
+The predicate~$1 \after f$
+    for a map~$f$ plays
+    the role of a fuzzy domain of definition.
+(Recall~$1 \after f = 0$ iff~$f = 0$
+    and~$1 \after f = 1$ iff~$f$ is total.)
+\end{point}
 \end{point}
 \begin{point}{Example}%
     The map~$c_b\colon \ceil{b} \scrB \ceil{b}$

@@ -10,7 +10,7 @@
 
 \begin{parsec}%
 \begin{point}%
-In the previous chapter and in \TODO{cite Bram}
+In the previous chapter and in \cite{bram}
     we have studied the categorical properties of von Neumann algebras.
 In this chapter we change pace:
     we study categories which share part of the structure
@@ -1790,10 +1790,18 @@ The predicates on a von Neumann algebra~$\scrA$
     is the set of effects~$[0,1]_\scrA$
     and~$\Stat \scrA$ is the convex set of normal states.
 \end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+Does every effect monoid~$M$ occur as the effect monoid of scalars of some
+    effectus?  Does every $M$-effect module occur as
+        effect module of predicates?
+\end{point}
 \begin{point}[emod-effectus]{Theorem}%
-    The category~$\EMod^{\mathsf{op}}_M$ is an effectus for any effect monoid~$M$.
+    The category~$\EMod^{\mathsf{op}}_M$ is an effectus 
+        (with scalars~$M$) for any effect monoid~$M$.
 In fact: every effectus~$C$ (in total form)
-    with separating predicates and scalars~$M$
+    with scalars~$M$ and separating predicates
     is equivalent to a subcategory of~$\EMod^{\mathsf{op}}_M$.
 \begin{point}{Proof}%
 To show~$\EMod^{\mathsf{op}}_M$ is an effectus,
@@ -3129,6 +3137,10 @@ as desired. \qed
 
 \section{Quotient}
 \begin{parsec}%
+\begin{point}%
+We are ready to introduce our first additional axiom:
+    the existence of quotients.
+\end{point}
 \begin{point}{Definition}%
 Let~$C$ be an effectus.
 We say~$C$ is an \Define{effectus with quotients}
@@ -3147,7 +3159,9 @@ Any  map with this universal property
 \end{point}
 \begin{point}{Example}%
 In~$\op{\vN}$ quotients are exactly the same thing
-    as contractive filters, see \TODO{...}.
+    as contractive filters,
+    see~\sref{dils-def-filter}, \sref{filter}
+    and~\sref{canonical-filter}.
 An example of a quotient-map for~$1-a \in \scrA$ is given
     by~$\xi\colon \ceil{a}\scrA \ceil{a} \to \scrA$
     with~$\xi(b) = \sqrt{a} b \sqrt{a}$.
