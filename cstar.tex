@@ -4200,6 +4200,7 @@ to a $C^*$-algebra
 of bounded operators on some Hilbert space.
 We proceed as follows.
 To each p-map $\omega\colon \scrA\to\C$
+(see~\sref{maps})
 we assign a inner product $[\,\cdot\,,\,\cdot\,]_\omega$ on~$\scrA$,
 which can be ``completed'' to a Hilbert space $\scrH_\omega$.
 Every element~$a\in \scrA$ gives an bounded operator on~$\scrH_\omega$
@@ -4432,7 +4433,7 @@ where~$\Define{\scrH_\Omega}=\bigoplus_{\omega\in\Omega}\scrH_\omega$
 (and $\varrho_\omega$ is as in~\sref{gns}).
 \end{point}
 \begin{point}[proto-gelfand-naimark]{Proposition}%
-For a collection of positive maps $\scrA\to \C$
+For a collection~$\Omega$ of positive maps $\scrA\to \C$
 on a $C^*$-algebra~$\scrA$,
 the following are equivalent.
 \begin{enumerate}
@@ -4584,8 +4585,8 @@ then~$T$ is automatically bounded, see~\sref{hellinger-toeplitz}.)
 
 The vector space of adjoinable bounded module maps~$T\colon X\to Y$ 
 is denoted
-by~$\Define{\scrB_a(X,Y)}$,
-and we write $\Define{\scrB_a(X)}=\scrB_a(X,X)$.
+by~$\Define{\scrB^a(X,Y)}$,
+and we write $\Define{\scrB^a(X)}=\scrB^a(X,X)$.
 \end{point}
 \begin{point}{Example}%
 We endow $\scrA^N$
@@ -4631,7 +4632,7 @@ for all~$a\in J$).
 
 \begin{point}{Remark}%
 Note that part of the problem here is the lack 
-of the obvious analog to
+of the obvious analogue to
 Riesz'~representation theorem (\sref{riesz-representation-theorem})  
 for Hilbert $\scrA$-modules.
 One solution (taken in the literature) is to simply 
@@ -4767,16 +4768,17 @@ for every adjoinable bounded map~$T$ on a pre-Hilbert $\scrA$-module.
 (Hint: adapt the proof of~\sref{operators-cstar-identity}.)
 \end{point}
 \begin{point}[bax-cstar]{Proposition}%
-The adjoinable bounded module maps~$\scrB_a(X)$
+The adjoinable bounded module maps
 on a Hilbert $\scrA$-module
 form a $C^*$-algebra
+$\scrB^a(X)$
 with composition as multiplication,
 adjoint as involution,
 and the operator norm as norm.
 \begin{point}{Proof}%
 Considering~\sref{bounded-operators-banach-algebra}
 and~\sref{module-maps-cstar-identity},
-the only thing that remains to be shown is that~$\scrB_a(X)$
+the only thing that remains to be shown is that~$\scrB^a(X)$
 is closed (with respect to the operator norm)
 in the set of all bounded \emph{linear} maps $\scrB(X)$.
 So let~$T\colon X\to X$ be a bounded linear map
@@ -4944,7 +4946,7 @@ and the second one concerns
 the points at which a cpu-map is multiplicative (\sref{choi}).
 
 Completely positive maps are often touted as 
-a good model for quantum processes
+a good models for quantum processes
 (over plain positive maps)
 with an argument involving the tensor product,
 and while we agree,
@@ -5044,17 +5046,17 @@ of~$\scrA$ into~$\scrA$.
 Let~$\scrA$ be a commutative $C^*$-algebra,
 and let~$N$ be a natural number.
 The set of  matrices of the form $\sum_k a_k B_k$,
-where $a_1,\dotsc,a_K\in \scrA$
-and $B_1,\dotsc,B_K\in M_N(\C)$,
+where $a_1,\dotsc,a_K\in \scrA_+$
+and $B_1,\dotsc,B_K\in M_N(\C)_+$,
 is norm dense in~$(M_N\scrA)_+$.
 \begin{point}{Proof}%
 Since~$\scrA$ is isomorphic to~$C(X)$ for some compact
 Hausdorff space~$X$ (by~$\sref{gelfand})$),
 we may as well assume that~$\scrA\equiv C(X)$.
 
-Let~$A\in (M_NC(X))_+$ and~$\varepsilon>0$ be given.
-We're looking for $g_1,\dotsc,g_K\in C(X)$
-and $B_1,\dotsc,B_K\in M_N$
+Let~$A\in M_N(C(X))_+$ and~$\varepsilon>0$ be given.
+We're looking for $g_1,\dotsc,g_K\in C(X)_+$
+and $B_1,\dotsc,B_K\in (M_N)_+$
 with $\|A-\sum_k g_k B_k\|\leq \varepsilon$.
 Since $A(x):=(A_{ij}(x))_{ij}$
 gives a continuous map $X\to M_N$,
@@ -5228,7 +5230,7 @@ where we used that~$f$ is unital, viz.~$f(1)=1$.
 
 Let~$a,b\in \scrA$ be given,
 and assume that $f(a^*a)=f(a)^*f(a)$.
-Instead of~$f(ba)=f(b)f(a)$,
+Instead of~$f(ba)=f(b)f(a)$
 we'll prove that $f(a^*b)=f(a)^*f(b)$
 (but this is nothing more than  a reformulation).
 Since~$M_2f$ is cp,
@@ -5252,9 +5254,8 @@ f(b^*a)-f(b)^*f(a) & f(b^*b)-f(b)^*f(b)
 \end{matrix}\,\right)
 \end{equation*}
 But then
-the corners must vanish
-(by~\sref{cstar-positive-2x2matrix}),
-and so
+by~\sref{cstar-positive-2x2matrix}
+we have
 $f(a^*b)-f(a)^*f(b)=0$.\qed
 \end{point}
 \end{point}
@@ -5283,9 +5284,9 @@ the chapter
 by showing
 in~\sref{bh-np}
  that every  functional on~$\scrB(\scrH)$
-that  preserves aforementioned
+that  preserves the aforementioned
 suprema
-is a (potentially infinite) sum of vector functionals.
+is a (possibly infinite) sum of vector functionals.
 \end{point}
 
 \subsection{Directed suprema}
@@ -5349,7 +5350,7 @@ If either~$X$ or~$Y$ is complete,
 then~$T$ and~$T^*$ are bounded.
 \begin{point}{Proof}%
 We may assume without loss of generality
-that~$X$ is complete (by swapping~$T$ with~$T^*$
+that~$X$ is complete (by swapping~$T$ for~$T^*$
 and~$X$ with~$Y$ if necessary).
 
 Note that for every~$y\in Y$,
@@ -5381,7 +5382,7 @@ that every symmetric
 operator on a Hilbert space is bounded.
 \end{point}
 \begin{point}[hellinger-toeplitz-needs-complete]{Example}%
-The condition that either~$X$ or~$Y$ is complete cannot be dropped:
+The condition that either~$X$ or~$Y$ be complete may not be dropped:
 the linear map $T\colon c_{00}\to c_{00}$
 given by $T\alpha = (n\alpha_n)_n$ for $\alpha\in c_{00}$
 is self-adjoint,
@@ -5420,14 +5421,14 @@ and $[\,\cdot\,,y]^*\colon X\to \scrA$
 are (bounded) module maps for all~$x\in X$ and~$y\in Y$.
 \end{point}
 \begin{point}[chilb-form-representation]{Proposition}%
-Every bounded form  $[\,\cdot\,,\,\cdot\,]\colon X\times Y\rightarrow \scrA$
+For every bounded form  $[\,\cdot\,,\,\cdot\,]\colon X\times Y\rightarrow \scrA$
 on self-dual Hilbert $\scrA$-modules
 $X$ and~$Y$
-is of the form
-$[x,y]\equiv \left<Tx,y\right>$
-(where $x\in X$ and~$y\in Y$)
-for some unique adjoinable bounded module map
+there is a unique adjoinable bounded module map
 $T\colon X\to Y$.
+with
+$[x,y]\equiv \left<Tx,y\right>$
+for all $x\in X$ and~$y\in Y$.
 \begin{point}{Proof}%
 Let $x\in X$ be given.
 Since~$[x,\,\cdot\,]\colon Y\to \scrA$ is a
@@ -5483,7 +5484,7 @@ and so we're done.\qed
 \begin{point}{Remark}%
 The condition in~\sref{hilb-weakly-bounded-complete} 
 that the net~$(\,\left<y_\alpha,x\right>\,)_\alpha$
-is bounded for every~$x$ cannot be omitted
+be bounded for every~$x$ may not be omitted
 (even though $(\,\left<y_\alpha,x\right>\,)_\alpha$
 being Cauchy is eventually bounded).
 
@@ -5687,7 +5688,7 @@ which means that~$\sum_n \left<x_n,Tx_n\right>$
 converges, 
 and so we may define~$\omega$ as above.
 
-It is easy that~$\omega$ is linear and positive,
+It is easy to see that~$\omega$ is linear and positive,
 so we'll only show that~$\omega$ is normal.
 We must prove that $\omega(\bigvee \scrD)=\bigvee_{T\in\scrD} \omega(T)$
 for every bounded directed subset of~$\Real{(\scrB(\scrH))}$.
