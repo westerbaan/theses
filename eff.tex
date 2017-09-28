@@ -11,7 +11,7 @@
 
 \begin{parsec}%
 \begin{point}%
-In the previous chapter and in \TODO{cite Bram}
+In the previous chapter and in \cite{bram}
     we have studied the categorical properties of von Neumann algebras.
 In this chapter we change pace:
     we study categories which share part of the structure
@@ -1791,10 +1791,18 @@ The predicates on a von Neumann algebra~$\scrA$
     is the set of effects~$[0,1]_\scrA$
     and~$\Stat \scrA$ is the convex set of normal states.
 \end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+Does every effect monoid~$M$ occur as the effect monoid of scalars of some
+    effectus?  Does every $M$-effect module occur as
+        effect module of predicates?
+\end{point}
 \begin{point}[emod-effectus]{Theorem}%
-    The category~$\EMod^{\mathsf{op}}_M$ is an effectus for any effect monoid~$M$.
+    The category~$\EMod^{\mathsf{op}}_M$ is an effectus 
+        (with scalars~$M$) for any effect monoid~$M$.
 In fact: every effectus~$C$ (in total form)
-    with separating predicates and scalars~$M$
+    with scalars~$M$ and separating predicates
     is equivalent to a subcategory of~$\EMod^{\mathsf{op}}_M$.
 \begin{point}{Proof}%
 To show~$\EMod^{\mathsf{op}}_M$ is an effectus,
@@ -3130,6 +3138,10 @@ as desired. \qed
 
 \section{Quotient}
 \begin{parsec}%
+\begin{point}%
+We are ready to introduce our first additional axiom:
+    the existence of quotients.
+\end{point}
 \begin{point}{Definition}%
 Let~$C$ be an effectus.
 We say~$C$ is an \Define{effectus with quotients}
@@ -3148,7 +3160,9 @@ Any  map with this universal property
 \end{point}
 \begin{point}{Example}%
 In~$\op{\vN}$ quotients are exactly the same thing
-    as contractive filters, see \TODO{...}.
+    as contractive filters,
+    see~\sref{dils-def-filter}, \sref{filter}
+    and~\sref{canonical-filter}.
 An example of a quotient-map for~$1-a \in \scrA$ is given
     by~$\xi\colon \ceil{a}\scrA \ceil{a} \to \scrA$
     with~$\xi(b) = \sqrt{a} b \sqrt{a}$.
@@ -6042,6 +6056,11 @@ we write~$\Define{n \leq m}$
 for kernels~$n\colon A \to X$ and~$m \colon B \to X$,
     if there is an~$f\colon A \to B$
     with~$n = m \after f$.
+If both~$n \leq m$ and~$m \leq n$,
+    then we write~$n \approx m$.
+We denote the poset of kernels on~$A$ modulo~$\approx$
+        by~$\Define{\Nsb A}$. (\textbf{N}ormal \textbf{s}ubo\textbf{b}jects,
+            \cite[\S1.5]{grandis}.)
 \item
 For every map~$f$
     there is a unique map~$g$
@@ -6114,17 +6133,85 @@ Our lemma \sref{homology-lemma}
 which show~$q \after m$ is sharp, as desired. \qed
 \end{point}
 \end{point}
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+In any homological category, a generalization
+    of the famous \emph{Snake Lemma} holds.
+Before we can discuss it, we need some more homological category theory.
+\end{point}
+\begin{point}{Definition}%
+Let a (pointed) semiexact category be given.
+\begin{enumerate}
+\item
+    We say the diagram~$A \xrightarrow{f} B \xrightarrow{g} C$
+        is \Define{exact at} $B$,
+        if~$\ker \cok (f) \approx \ker (g)$.
+We say~$A_1 \xrightarrow{f_1} A_2 \to \cdots
+            \to A_{n}$
+            is a \Define{(long) exact sequence}
+            if it is exact at~$A_2, \ldots, A_{n-1}$.
+\item
+The poset~$\Nsb A$ of kernels modulo~$\approx$
+        is a bounded lattice with minimum~$0$ and maximum~$1\equiv \id$.
+        \cite[\S1.5]{grandis}
+\item
+For any~$f\colon A \to B$,
+    define~$f_*\colon \Nsb A \leftrightarrows \Nsb B \colon f^*$
+        by~$\Define{f_*} (k) = \ker \cok (f \after k)$
+        and~$\Define{f^*}(k) = \ker ((\cok k) \after f)$.
+\item
+We say~$f$ is \Define{left-modular at} $k$
+    if~$f^* (f_* (k)) = k \vee f^*(0)$
+        and $f$ is \Define{right-modular at} $k$
+        if~$f_*(f^* (k)) = k \wedge f_*(1)$.
+We call~$f$ simply \Define{left-modular} (resp.~right-modular)
+    if it is left-modular (resp.~left-modular) at every~$k$.
+We say~$f$ is \Define{modular}
+    if it is both left- and right-modular.
+\end{enumerate}
+\end{point}
+\begin{point}{Example}%
+In a~$\dagger$-effectus, the previous concepts are related
+to our familiar notions as follows.
+\begin{enumerate}
+\item
+    A diagram~$A \xrightarrow{f} B \xrightarrow{g} C$
+        is exact at $B$
+        if and only if~$\IMperp f = \ceil{1 \after f}$.
+\item
+    The lattice~$\Nsb A$ is isomorphic to the lattice~$\SPred A$
+        via~$k \mapsto \IM k$.
+\item
+    For any~$f$, we
+        have~$\IM f_*(k) = f_\diamond (\IM k)$
+        and~$\IM f^*(k) = f^\BOX (\IM k)$.
+\item
+    A map~$f$ is left-modular at~$k$
+            iff~$f^\BOX (f_\diamond ( \IM k)) = 
+                (\IM k) \vee \ceil{1 \after f}$
+        and right-modular at~$k$
+            iff~$f_\diamond (f^\BOX ( \IM k)) = 
+                (\IM k) \wedge \IM f$.
+\end{enumerate}
+\begin{point}{Notation}%
+As~$\Nsb A$ and~$\SPred A$ are isomorphic,
+    we will abbriavte~``$f$ is left-modular at~$\pi_s$''
+    by~``$f$ is left-modular at~$s$''
+    and similarly for right-modularity.
+\end{point}
+\end{point}
 \begin{point}%
 In any homological category,
     a generalization of the famous \emph{Snake Lemma} holds.
     \cite[\S3.4]{grandis}.
-The following is a translation of Grandis' Snake Lemma
+The following is a translation of (a part of) Grandis' Snake Lemma
     into~$\dagger$-effectus jargon.
 \end{point}
-\end{point}
-\begin{point}{Theorem}%
-Assume we are given the following commuting
-    diagram in a~$\dagger$-effectus.
+\begin{point}{Snake Lemma}%
+Suppose we have a commuting
+    diagram in~$\dagger$-effectus as follows.
 \begin{equation*}
     \xymatrix{
         &A \ar[d]^{a} \ar[r]^f
@@ -6138,17 +6225,26 @@ Assume we are given the following commuting
 }
 \end{equation*}
 Furthermore, assume
-    $b$ is left-modular over~$\IM f$;
-    $b$ is right-modular over~$\IM h$
-    and the diagram has exact rows
-    --- that is:
+\begin{enumerate}
+    \item the diagram has exact rows;
+    \item  $b$ is left-modular over~$\IM f$;
+    \item $b$ is right-modular over~$\IM h$;
+    \item $f$ is right-modular over~$\ceil{1 \after b}^\perp$ \emph{and}
+    \item $k$ is left-modular over~$\IM b$.
+\end{enumerate}
+These additional assumptions are equivalent to the following conditions.
     \begin{multicols}{2}
     \begin{enumerate}
-        \item
+    \item
         $b^\BOX \after b_\diamond (\IM f) = \ceil{1 \after b}^\perp \vee \IM f$,
     \item
         $b_\diamond \after b^\BOX (\IM h)
                 = (\IM h) \wedge \IM b$,
+    \item
+        $k^\BOX \after k_\diamond (\IM f) = (\IM h) \vee \IM b$,
+    \item
+        $f_\diamond \after f^\BOX (\IM h)
+                = \ceil{1 \after b}^\perp \wedge \IM f$,
     \item
         $\IMperp f = \ceil{1\after g}$,
     \item
@@ -6173,8 +6269,12 @@ It is easy to see
 \end{align*}
 Then: the map~$d \equiv a_\zeta \after h^\dagger \after b
                     \after g^\dagger \after c_\pi$
-        turns
-\begin{equation*}
+        turns\footnote{%
+            Beware: we use~$\ker a$ (and~$\cok$) inconsistently ---
+         earlier in the text~$\ker f$ refers
+            to a kernel map --- here it
+            refers to a kernel object instead.}
+\begin{equation}\label{thesnake}
     \xymatrix{
         \ker a \ar[r]^{\overline{f}}
         &\ker b \ar[r]^{\overline{g}}
@@ -6183,7 +6283,7 @@ Then: the map~$d \equiv a_\zeta \after h^\dagger \after b
         &\cok b \ar[r]^{\overline{k}}
         &\cok c 
     }
-\end{equation*}
+\end{equation}
 into a (long) exact sequence. This reveals the snake:
 \begin{equation*}
 \begin{tikzpicture}[
@@ -6242,6 +6342,8 @@ into a (long) exact sequence. This reveals the snake:
 \end{tikzpicture}
 \end{equation*}
 \begin{point}{Proof}%
+To start, we will prove~\eqref{thesnake}
+    is exact in~$\ker c$.
     
 \end{point}
 \end{point}
