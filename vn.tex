@@ -14,7 +14,8 @@ and the cpsu-maps
 may perhaps serve as model of
 quantum datatypes and the processes
 between them, respectively,
-we focus our attention on
+for the purposes of this thesis
+we focus our attention
 the subcategory~$\W{cpsu}$ of von Neumann algebras
 and the cpsu-maps between them that preserve aforementioned suprema
 (and are therefore called \emph{normal}, see~\sref{p-uwcont}),
@@ -62,30 +63,88 @@ as $C^*$-algebras
 with a certain dcpo-structure to them
 and sufficiently many Scott-continuous functionals
 as our definition instead.
+
 But we also use Kadison's definition
 just to see to what extend
 when errecting the basic theory of von Neumann algebras
 we could reduce the recourse to the representation
 of a von Neumann algebras as a rings of operators
 (\sref{ngns}, so liberally employed in the literature),
-and  instead put the directed suprema and normal functionals
+and  instead put the directed suprema and normal 
+positive functionals
 on center stage.
-
-Nevertheless, the resulting development
-although abridged stays close
-the standard texts~\cite{sakai,kr},
-and while many arguments are borrowed from these
-most of them required some tweaking, and
+Nevertheless our treatment doesn't stray too far
+from the beaten path,
+and borrows
+many arguments
+from
+the standard texts~\cite{sakai,kr};
+but most of them had to be tweaked in places, and
 some of them demanded a complete overhaul.
-There is however one seemingly novel result,
-that I'd like to flaunt,
-and will be used extensively in the next chapter
-and in \TODO{Bas'} thesis,
-namely
-that von Neumann algebras
-are complete in the ultrastrong topology
-and \emph{bounded} complete in the ultraweak topology,
-see~\sref{vn-complete}.
+
+
+One technical advantage of von Neumann algebras
+over $C^*$-algebras
+is a greater availability of projections 
+(elements~$p$ with~$p^*p=p$).
+For example,
+the existence of norm bounded directed suprema
+in a von Neumann algebra~$\scrA$
+allows us to show
+that
+there is a least projection~$\ceil{a}$
+above any effect~$a$ from~$\scrA$
+given by~$\ceil{a}=\bigvee_n a^{\nicefrac{1}{2}^n}$
+(see~\sref{vna-ceil}).
+We'll also see that any element of a von Neumann algebra
+can be written as a norm limit
+of linear combinations of projections (in~\sref{projections-norm-dense}),
+so one can imagine that several theorems concerning elements
+of a von Neumann algebra
+are proven by first reducing the problem
+to projections (see e.g.~\sref{vnsac}).
+
+For more delicate constructions
+in a von Neumann algebra~$\scrA$
+two topologies
+are instrumental to us:
+the \emph{ultraweak topology}
+induced by the normal positive functionals~$\omega\colon\scrA\to\C$,
+and the \emph{ultrastrong topology}
+induced by the associated seminorms~$\|\,\cdot\,\|_\omega$
+(see~\sref{vna}).
+Our first project of this chapter
+is to show that a von Neumann algebra
+is complete in the ultrastrong topology
+and \emph{bounded} complete in the ultraweak topology
+(see~\sref{vn-complete}), which are perhaps novel observations).
+This allows us to
+define,
+for example,
+for any pair~$a$, $b$ of elements
+from a von Neumann algebra~$\scrA$
+with~$a^*a\leq b^*b$
+an element $a/b$
+with~$a=(a/b) \, b $
+(see~\sref{division}).
+Taking~$b=\sqrt{a^*a}$ we
+obtain
+the famous
+polar decomposition~$a = (a/\sqrt{a^*a}) \, \sqrt{a^*a}$
+(see~\sref{polar-decomposition},
+which is usually proven 
+for a bounded operator on a Hilbert space first).
+
+We end the chapter by a detailed
+study of the normal functionals
+and show 
+in~\sref{vn-center-separating-fundamental}
+that any center separating collection (\sref{separating})
+of normal positive functionals~$\Omega$
+on a von Neumann algebra completely
+determines the normal positive functionals,
+which will be important for the definition of the tensor
+product of von Neumann algebras in the next chapter.
 \end{parsec}
 \section{Definition and counterexamples}
 \begin{parsec}[vna]%
@@ -683,7 +742,7 @@ chapter, but for now we content ourselves
 by only describing products and certain equalizers.
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[vn-products]{Exercise}%
 Show that
 given a family $(\scrA_i)_i$
 of von Neumann algebras
@@ -700,7 +759,7 @@ into the  product of the~$\scrA_i$
 in the categies~$\W{miu}$ and~$\W{cpsu}$
 (see~\sref{cstar-product-2} and~\sref{cstar-product-4}).
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[vn-equalizers]{Exercise}%
 Show that given nmiu-maps $f,g\colon \scrA\to\scrB$
 between von Neumann algebras
 the set~$\scrE:=\{\,a\in\scrA\colon\, f(a)=g(a)\,\}$
@@ -807,17 +866,17 @@ is itself a von Neumann algebra.
 \end{point}
 \begin{point}[bah-vn]{Theorem}%
 Given a von Neumann algebra~$\scrA$,
-the~$C^*$-algebra $\scrB_a(X)$ (\sref{bax-cstar})
+the~$C^*$-algebra $\scrB^a(X)$ (\sref{bax-cstar})
 of bounded adjoinable module maps on
 a self-dual (\sref{self-dual}) Hilbert $\scrA$-module~$X$
 is a  von Neumann algebra,
 and
-$\left<x,(\,\cdot\,)x\right>\colon \scrB_a(X)\to\scrA$
+$\left<x,(\,\cdot\,)x\right>\colon \scrB^a(X)\to\scrA$
 is normal for every~$x\in X$.
 \begin{point}{Proof}%
 We'll first show that
-a  bounded directed subset~$\scrD$ of~$\Real{\scrB_a(X)}$
-has a supremum (in~$\Real{\scrB_a(X)}$).
+a  bounded directed subset~$\scrD$ of~$\Real{\scrB^a(X)}$
+has a supremum (in~$\Real{\scrB^a(X)}$).
 To obtain a candidate for this supremum,
 we first define
 a bounded form~$[\,\cdot\,,\,\cdot\,]\colon X\times X\to\scrA$
@@ -853,7 +912,7 @@ is bounded.
 Since~$X$ is self dual,
 there is
 by~\sref{chilb-form-representation}
-$S\in \scrB_a(X)$
+$S\in \scrB^a(X)$
 with
 $[y,z]=\left<y,Sz\right>$
 for all~$y,z\in X$;
@@ -867,7 +926,7 @@ for all~$x\in X$,
 and so~$T\leq S$
 by~\sref{chilb-vector-states-order-separating},
 that is, $S$ is an upper bound for~$\scrD$.
-Given another upper bound~$S'\in\Real{\scrB_a(X)}$
+Given another upper bound~$S'\in\Real{\scrB^a(X)}$
 of~$\scrD$
 (so  $T\leq S'$ for all~$T\in\scrD$)
 we have~$\left<x,Tx\right>\leq \left<x,S'x\right>$
@@ -876,21 +935,21 @@ and so~$\left<x,Sx\right>
 for all~$x\in X$
 implying that~$S\leq S'$.
 Hence~$S$ is the supremum of~$\scrD$
-in $\Real{\scrB_a(X)}$.
+in $\Real{\scrB^a(X)}$.
 Note that since~$\left<x,Sx\right>=\bigvee_{T\in\scrD} \left<x,Tx\right>$
 we immediately see
-that $\left<x,(\,\cdot\,)x\right>\colon \scrB_a(X)\to\scrA$
+that $\left<x,(\,\cdot\,)x\right>\colon \scrB^a(X)\to\scrA$
 preserves bounded directed suprema
 for every~$x\in X$.
 
 It remains to be shown that
-there are sufficiently many np-functionals on $\scrB_a(X)$
-in the sense that~$T\in(\scrB_a(X))_+$ is zero
-when~$\omega(T)=0$ for every np-functional $\omega\colon \scrB_a(X)\to\C$.
+there are sufficiently many np-functionals on $\scrB^a(X)$
+in the sense that~$T\in(\scrB^a(X))_+$ is zero
+when~$\omega(T)=0$ for every np-functional $\omega\colon \scrB^a(X)\to\C$.
 This is indeed
 the case for such an operator~$T$,
 because~$\xi(\left<x,(\,\cdot\,)x\right>)$
-is an np-functional on~$\scrB_a(X)$
+is an np-functional on~$\scrB^a(X)$
 for every~$x\in X$
 and an np-functional $\xi\colon \scrA\to\C$,
 implying that~$\xi(\left<x,Tx\right>)=0$,
@@ -942,15 +1001,19 @@ of von Neumann algebras
 is an abundance of projections:
 above each effect~$a$ 
 there is a least projection~$\ceil{a}$
-called the ceiling of~$a$;
+called the ceiling of~$a$ (\sref{vna-ceil});
 for every np-map $\omega\colon \scrA\to \scrB$
 between von Neumann algebras
 there is a least projection~$p$ with~$\omega(p^\perp)$
-called the carrier of~$\omega$;
-the directed supremum of projections is again a projection;
-the partial order of projections forms a complete lattice;
-and each element is the norm limit
-of linear combinations of projections.
+called the carrier of~$\omega$ (see~\sref{carrier});
+the directed supremum of projections is again a projection
+and
+the partial order of projections forms a complete lattice
+(see~\sref{ceil-floor-basic});
+and each element of a von Neumann algebra is the norm limit
+of linear combinations of projections
+(see~\sref{projections-norm-dense}).
+We'll prove all this and more in this section.
 \end{point}
 \begin{point}{Definition}%
 An element~$p$ of a $C^*$-algebra
@@ -2260,6 +2323,43 @@ by~\sref{carrier-basic}.\qed
 \end{point}
 \end{parsec}
 \section{Completeness}
+\begin{parsec}%
+\begin{point}%
+We set to work on the ultrastrong and bounded ultraweak completeness
+of von Neumann algebras (see~\sref{vn-complete}) and its precursors:
+\begin{enumerate}
+\item
+A linear (not necessarily positive)
+functional on a von Neumann algebra
+is ultraweakly continuous iff it is ultrastrongly continuous
+(see~\sref{luws}).
+\item
+A convex subset of a von Neumann algebra
+is ultraweakly closed iff it is ultrastrongly closed
+(see~\sref{ultraclosed}).
+\item
+\emph{(Kaplansky's density theorem)}\ 
+The unit ball $(\scrA)_1$
+of a $C^*$-subalgebra~$\scrA$
+of a von Neumann algebra~$\scrB$
+is ultrastrongly dense in~$(\scrB)_1$
+(see~\sref{kaplansky}).
+\item
+Any von Neumann subalgebra~$\scrA$
+of~$\scrB$ is ultraweakly and ultrastrongly
+closed in~$\scrB$
+(see~\sref{vnsac}).
+\item
+The von Neumann algebra~$\scrB(\scrH)$ 
+of bounded operators on a Hilbert space~$\scrH$
+is ultrastrongly 
+(\sref{bh-us-complete})
+and bounded ultraweakly complete
+(\sref{bh-bounded-uw-complete}).
+\end{enumerate}
+
+\end{point}
+\end{parsec}
 \subsection{Closure of a convex subset}
 \begin{parsec}%
 \begin{point}%
@@ -3631,7 +3731,7 @@ making $t_1,t_2,\dotsc$ an approximate pseudoinverse of~$a$.\qed
 \end{parsec}
 \subsection{Division}
 \begin{parsec}%
-\begin{point}{Definition}%
+\begin{point}[division]{Definition}%
 Let~$b$ be an element of a von Neumann algebra~$\scrA$.
 Given an element~$a$ of~$\scrA b$ 
 we denote by~\Define{$a/b$} 
@@ -4034,38 +4134,6 @@ To get a better handle on the normal positive functionals
 on a von Neumann algebra,
 we first analyse the the not-necessarily-positive normal functionals
 in greater detail.
-\end{point}
-\begin{point}{Definition}%
-Given a functional $f\colon \scrA\to \C$
-on a $C^*$-algerbra~$\scrA$,
-we define
-\begin{enumerate}
-\item
-$\Define{\Real{f}}\colon \scrA\to\C$,
-the \Define{real part} of~$f$,
-by~$\Real{f}(a)=\Real{f(\Real{a})}
-+i\Real{f(\Imag{a})}$, and
-\item
-$\Define{\Imag{f}}\colon \scrA\to\C$,
-the \Define{imaginary part} of~$f$,
-by~$\Imag{f}(a)=\Imag{f(\Real{a})}
-+i\Imag{f(\Imag{a})}$.
-\end{enumerate}
-\end{point}
-\begin{point}{Exercise}%
-Show that,
-given a functional~$f\colon \scrA\to \C$
-on a $C^*$-algebra~$\scrA$,
-\begin{enumerate}
-\item
-	$f=\Real{f}+i\Imag{f}$, and 
-	$\Real{f}$ and $\Imag{f}$
-	are i-maps (linear and involution preserving);
-\item
-	if $f=g+ih$ for some i-maps
-	$g,h\colon \scrA\to\C$,
-	then $\Real{f}=g$ and $\Imag{f}=h$.
-\end{enumerate}
 \end{point}
 \begin{point}[positive-functional-criterion]{Lemma}%
 A linear map $f\colon \scrA\to \C$
