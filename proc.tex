@@ -752,20 +752,20 @@ a unital and faithful pure map is an ncpu-isomorphism.
 Given an ncp-map $f\colon \scrA\to\scrB$
 between von Neumann algebras
 we define
-$\Define{f^\bullet}\colon \Proj(\scrA)\to \Proj(\scrB)$
-by~$f^\bullet(e)=\ceil{f(e)}$
+$\Define{f^\diamond}\colon \Proj(\scrA)\to \Proj(\scrB)$
+by~$f^\diamond(e)=\ceil{f(e)}$
 for all~$e\in\Proj(\scrA)$.
 \end{point}
 \begin{point}{Proposition}%
 Given an ncp-map $f\colon \scrA\to\scrB$
 between von Neumann algebras
 and a projection~$e$ from~$\scrB$
-there is a least projection~$\Define{f_\bullet(e)}$ from~$\scrA$ 
-with~$\ceil{f(\,f_\bullet(e)^\perp\,)}\leq e^\perp$,
-namely~$f_\bullet(e) =\ceil{\,ef(\,\cdot\,)e\,}$
+there is a least projection~$\Define{f_\diamond(e)}$ from~$\scrA$ 
+with~$\ceil{f(\,f_\diamond(e)^\perp\,)}\leq e^\perp$,
+namely~$f_\diamond(e) =\ceil{\,ef(\,\cdot\,)e\,}$
 (being the carrier 
 of the ncp-map $ef(\,\cdot\,)e$ from~\TODO{...});
-giving a map $\Define{f_\bullet}\colon \Proj(\scrB)\to\Proj(\scrA)$.
+giving a map $\Define{f_\diamond}\colon \Proj(\scrB)\to\Proj(\scrA)$.
 
 \TODO{refer to ITET}
 \begin{point}{Proof}%
@@ -777,35 +777,35 @@ and~$ef(s^\perp )e=0$ iff~$\ceil{f(s^\perp)}
 e^\perp$;
 the projection
 $\ceil{\,ef(\,\cdot\,)e\,}$
-satisfies the description of~$f_\bullet(e)$.\qed
+satisfies the description of~$f_\diamond(e)$.\qed
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[diamond-suprema]{Exercise}%
 Let~$f\colon \scrA\to\scrB$ be an ncp-map between von Neumann algebras.
 \begin{enumerate}
 \item
-Show that $f^\bullet(s)\leq t^\perp$
-iff $f_\bullet(t)\leq s^\perp$,
+Show that $f^\diamond(s)\leq t^\perp$
+iff $f_\diamond(t)\leq s^\perp$,
 for all~$s\in\Proj(\scrA)$ and~$t\in\Proj(\scrB)$.
 \item
-Show that $f^\bullet(\,\bigcup E\,)
-= \bigcup_{e\in E} f^\bullet(e)$
+Show that $f^\diamond(\,\bigcup E\,)
+= \bigcup_{e\in E} f^\diamond(e)$
 for every set of projections~$E$ from~$\scrA$.
 
-Show that~$f_\bullet(\,\bigcap E\,)
-= \bigcap_{e\in E} f_\bullet(e)$
+Show that~$f_\diamond(\,\bigcap E\,)
+= \bigcap_{e\in E} f_\diamond(e)$
 for all~$E\subseteq \Proj(\scrB)$.
 \end{enumerate}
 \end{point}
 \begin{point}{Exercise}%
 Show that for ncp-maps $f,g\colon\scrA\to\scrB$
-between von Neumann algebras $f^\bullet = g^\bullet$
-iff $f_\bullet = g_\bullet$.
+between von Neumann algebras $f^\diamond = g^\diamond$
+iff $f_\diamond = g_\diamond$.
 In that case we say that $f$ and~$g$ are \Define{equivalent}.
 \begin{point}%
 Show that for ncp-maps $f\colon \scrA\to\scrB$
 and~$g\colon \scrB\to\scrA$ we have
-$f^\bullet=g_\bullet$ iff $f_\bullet = g^\bullet$
+$f^\diamond=g_\diamond$ iff $f_\diamond = g^\diamond$
 iff $\ceil{f(s)}\leq t^\perp\iff \ceil{g(t)}\leq s^\perp$
 for all projections $s$ from~$\scrA$ and~$t$ from~$\scrB$.
 
@@ -839,11 +839,11 @@ is contraposed to its inverse~$f^{-1}\colon \scrB\to\scrA$.
 \item
 There may be many maps equivalent to a given ncp-map $f\colon \scrA\to\scrB$
 between von Neumann algebras:
-show that~$(zf)^\bullet = f^\bullet$
+show that~$(zf)^\diamond = f^\diamond$
 for every positive central element~$z$ of~$\scrB$ with~$\ceil{z}=1$.
 \end{enumerate}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[diamond-composition]{Exercise}%
 Let $\xymatrix{
 	\scrA\ar[r]|-{f}&
 	\scrB\ar[r]|-{g}&
@@ -852,9 +852,9 @@ be ncp-maps between von Neumann algebras~$\scrA$,
 $\scrB$ and~$\scrC$.
 \begin{enumerate}
 \item
-Show that $(g\circ f)^\bullet = g^\bullet\circ f^\bullet$
+Show that $(g\circ f)^\diamond = g^\diamond\circ f^\diamond$
 (using~\sref{ncp-ceil}),
-and $(g\circ f)_\bullet = f_\bullet\circ g_\bullet$.
+and $(g\circ f)_\diamond = f_\diamond\circ g_\diamond$.
 
 \item
 Assuming that $f$ is equivalent 
@@ -870,29 +870,29 @@ an ncp-map $g'\colon \scrC\to\scrB$,
 show that~$g\circ f$ is contraposed to~$f'\circ g'$.
 \end{enumerate}
 \end{point}
-\begin{point}[bullet-sum]{Proposition}%
+\begin{point}[diamond-sum]{Proposition}%
 Given ncp-maps~$f,g\colon \scrA\to\scrB$
 between von Neumann algebras
 \begin{equation*}
-(f+g)^\bullet(s) \,=\, f^\bullet(s)\, \cup\, g^\bullet(s)
+(f+g)^\diamond(s) \,=\, f^\diamond(s)\, \cup\, g^\diamond(s)
 \qquad
 \text{and}
-\qquad (f+g)_\bullet(t)\, =\, f_\bullet(t) \,\cup\, g_\bullet(t)
+\qquad (f+g)_\diamond(t)\, =\, f_\diamond(t) \,\cup\, g_\diamond(t)
 \end{equation*}
 for all~$s\in \Proj(\scrA)$ and~$t\in \Proj(\scrB)$.
-\begin{point}[bullet-sum]{Proof}%
-Note that $(f+g)^\bullet(s)
+\begin{point}[diamond-sum]{Proof}%
+Note that $(f+g)^\diamond(s)
 =  \ceil{(f+g)(s)}
 = \ceil{f(s)+g(s)}
 = \ceil{f(s)}\cup \ceil{g(s)}
-= f^\bullet(s) \cup g^\bullet(s)$
+= f^\diamond(s) \cup g^\diamond(s)$
 by~\sref{ceil-basic}.
-Since~$(f+g)_\bullet(t)\leq s^\perp$
-iff~$f^\bullet(s)\cup g^\bullet(s)\equiv (f+g)^\bullet(s)\leq t^\perp$
-iff both $f^\bullet(s)\leq t^\perp$ and~$g^\bullet(s)\leq t^\perp$
-iff both $f_\bullet(t)\leq s^\perp$ and~$g_\bullet(t)\leq s^\perp$
-iff~$f_\bullet(t)\cup g_\bullet(t)\leq s^\perp$,
-we see that $(f+g)_\bullet(t)=f_\bullet(t)\cup g_\bullet(t)$.\qed
+Since~$(f+g)_\diamond(t)\leq s^\perp$
+iff~$f^\diamond(s)\cup g^\diamond(s)\equiv (f+g)^\diamond(s)\leq t^\perp$
+iff both $f^\diamond(s)\leq t^\perp$ and~$g^\diamond(s)\leq t^\perp$
+iff both $f_\diamond(t)\leq s^\perp$ and~$g_\diamond(t)\leq s^\perp$
+iff~$f_\diamond(t)\cup g_\diamond(t)\leq s^\perp$,
+we see that $(f+g)_\diamond(t)=f_\diamond(t)\cup g_\diamond(t)$.\qed
 \end{point}
 \end{point}
 \begin{point}[carrier-f-dagger-f]{Lemma}%
@@ -901,10 +901,10 @@ maps~$f\colon \scrA\to\scrB$
 and~$g\colon \scrB\to\scrA$ between von Neumann algebras,
 we have $\ceil{f}=\ceil{gf}$.
 \begin{point}{Proof}%
-$\ceil{gf}=(gf)_\bullet(1)
-= f_\bullet(g_\bullet(1))
-= g^\bullet(\ceil{g})
-= g^\bullet(1)=f_\bullet(1)=\ceil{f}$.\qed
+$\ceil{gf}=(gf)_\diamond(1)
+= f_\diamond(g_\diamond(1))
+= g^\diamond(\ceil{g})
+= g^\diamond(1)=f_\diamond(1)=\ceil{f}$.\qed
 \end{point}
 \end{point}
 \end{parsec}
@@ -934,14 +934,14 @@ are ncp-maps with $g_i(1)=f(1)$,
 we must show that~$f=g_1=g_2$.
 Note that for every projection~$s$
 of~$\scrA$
-we have~$f^\bullet(s) = (\lambda g_1+\lambda^\perp g_2)^\bullet(s)
-= g_1^\bullet(s)\cup g_2^\bullet(s)$
-by~\sref{bullet-sum} and~\sref{equivalent-examples};
-and in particular~$g_1^\bullet(s)\leq f^\bullet(s)$.
+we have~$f^\diamond(s) = (\lambda g_1+\lambda^\perp g_2)^\diamond(s)
+= g_1^\diamond(s)\cup g_2^\diamond(s)$
+by~\sref{diamond-sum} and~\sref{equivalent-examples};
+and in particular~$g_1^\diamond(s)\leq f^\diamond(s)$.
 Then for $h:=\lambda  g_1 + \lambda^\perp f$
 we have $h(1)=f(1)$
-and~$h^\bullet(s) = g_1^\bullet(s)\cup f^\bullet(s)
-= f^\bullet(s)$,
+and~$h^\diamond(s) = g_1^\diamond(s)\cup f^\diamond(s)
+= f^\diamond(s)$,
 so that~$\lambda g_1 + \lambda^\perp f \equiv 
 h=f = \lambda g_1 +\lambda^\perp g_2$ by rigidity of~$f$;
 and thus~$f=g_2$.
@@ -1055,7 +1055,7 @@ Every pure map between von Neumann algebras is rigid.
 Let~$f\colon \scrA\to\scrB$ be a pure map between von Neumann algebras,
 and let~$g\colon \scrA\to\scrB$ be an ncp-map
 with $f(1)=g(1)$
-and $f^\bullet = g^\bullet$.
+and $f^\diamond = g^\diamond$.
 To show that~$f$
 is rigid,
 we must prove that~$f=g$.
@@ -1065,20 +1065,20 @@ and that~$c_{f(1)}$ is rigid,
 by~\sref{canonical-quotient-rigid},
 which we'll use shortly.
 Towards this end,
-note that since~$f^\bullet = g^\bullet$,
-we have $f_\bullet = g_\bullet$,
-and so $\ceil{f}=f_\bullet(1)=g_\bullet(1)=\ceil{g}$.
+note that since~$f^\diamond = g^\diamond$,
+we have $f_\diamond = g_\diamond$,
+and so $\ceil{f}=f_\diamond(1)=g_\diamond(1)=\ceil{g}$.
 As~$\pi_{\ceil{f}}$ is a corner of~$\ceil{f}=\ceil{g}$,
 there is a unique ncp-map $h\colon \ceil{f}\!\scrA\!\ceil{f}\to\scrB$
 with $h\circ \pi_{\ceil{f}} =g$. 
 Since then
-$h^\bullet \circ \pi_{\ceil{f}}^\bullet
-= g^\bullet = f^\bullet 
-= c_{f(1)}^\bullet
-\circ [f]^\bullet \circ \pi_{\ceil{f}}^\bullet$,
- and $\pi_{\ceil{f}}^\bullet$ is clearly surjective,
-we get~$h^\bullet = c_{f(1)}^\bullet\circ [f]^\bullet$,
-and thus  $(h\circ [f]^{-1})^\bullet = c_{f(1)}^\bullet$,
+$h^\diamond \circ \pi_{\ceil{f}}^\diamond
+= g^\diamond = f^\diamond 
+= c_{f(1)}^\diamond
+\circ [f]^\diamond \circ \pi_{\ceil{f}}^\diamond$,
+ and $\pi_{\ceil{f}}^\diamond$ is clearly surjective,
+we get~$h^\diamond = c_{f(1)}^\diamond\circ [f]^\diamond$,
+and thus  $(h\circ [f]^{-1})^\diamond = c_{f(1)}^\diamond$,
 using here that~$[f]$ is invertible,
 because~$f$ is pure.
 Now,
@@ -1103,7 +1103,7 @@ between von Neumann algebras
 \item
 \Define{purely self-adjoint}
 if~$f$ is pure and contraposed to itself
-($f^\bullet = f_\bullet$), and
+($f^\diamond = f_\diamond$), and
 \item
 \Define{purely positive}
 if~$f\equiv gg$
@@ -1146,10 +1146,10 @@ when~$f$ is purely positive.
 \begin{point}%
 We now turn to the question
 to what extend a filter~$c$ is determined by
-its action~$c^\bullet\colon e\mapsto \ceil{c(e)}$ on projections;
+its action~$c^\diamond\colon e\mapsto \ceil{c(e)}$ on projections;
 we will see in~\TODO{}
 that two filters $c_1$ and~$c_2$
-are equivalent, $c_1^\bullet = c_2^\bullet$,
+are equivalent, $c_1^\diamond = c_2^\diamond$,
 if and only if~$c_1(1)$ and~$c_2(1)$
 are equal up to some central elements,
 that is, \emph{centrally similar}.
@@ -1331,14 +1331,14 @@ Our task then is to show that~$\vartheta=\id$,
 and for this
 it suffices, by~\sref{positive-quotients-centrally-similar},
 to find some positive~$q$ in~$\scrA$ with~$\ceil{q}=1$
-and~$f^\bullet(e)\equiv\ceil{\sqrt{p}\,\vartheta(e)\,\sqrt{p}}
+and~$f^\diamond(e)\equiv\ceil{\sqrt{p}\,\vartheta(e)\,\sqrt{p}}
 = \ceil{qeq}$ for all projections~$e$ in~$\scrA$.
 
 Since~$f$ is positive,
 we have~$f\equiv \xi \xi$ for some self-adjoint
 map~$\xi\colon \scrA\to\scrA$.
-Since~$1=\ceil{f}=f_\bullet(1)=
-\xi_\bullet(\xi_\bullet(1))\leq \xi_\bullet(1)=\ceil{\xi}$
+Since~$1=\ceil{f}=f_\diamond(1)=
+\xi_\diamond(\xi_\diamond(1))\leq \xi_\diamond(1)=\ceil{\xi}$
 we have~$\ceil{\xi}=1$,
 and so, $\xi$, being pure and faithful,
 is a filter (by~\sref{special-pure-maps}).
@@ -1347,19 +1347,19 @@ as~$\tilde\xi:=\sqrt{\xi(1)}(\,\cdot\,)\sqrt{\xi(1)}\colon \scrA\to\scrA$
 is a filter of~$\xi(1)$ too,
 there is an isomorphism~$\alpha\colon \scrA\to\scrA$
 with $\xi=\tilde\xi\alpha$.
-Now, $ {\tilde\xi}^\bullet \alpha^\bullet
-={\xi}^\bullet={\xi}_\bullet
-=\alpha_\bullet\tilde \xi_\bullet
-= (\alpha^\bullet)^{-1}{\tilde\xi}^\bullet$
-implies~${\tilde\xi}^\bullet = \alpha^\bullet 
-{\tilde \xi}^\bullet \alpha^\bullet$,
+Now, $ {\tilde\xi}^\diamond \alpha^\diamond
+={\xi}^\diamond={\xi}_\diamond
+=\alpha_\diamond\tilde \xi_\diamond
+= (\alpha^\diamond)^{-1}{\tilde\xi}^\diamond$
+implies~${\tilde\xi}^\diamond = \alpha^\diamond 
+{\tilde \xi}^\diamond \alpha^\diamond$,
 and 
-$f^\bullet= (\xi\xi)^\bullet
-= {\tilde \xi}^\bullet\alpha^\bullet{\tilde \xi}^\bullet\alpha^\bullet
-={\tilde \xi}^\bullet{\tilde \xi}^\bullet=(\tilde \xi\tilde \xi)^\bullet$.
+$f^\diamond= (\xi\xi)^\diamond
+= {\tilde \xi}^\diamond\alpha^\diamond{\tilde \xi}^\diamond\alpha^\diamond
+={\tilde \xi}^\diamond{\tilde \xi}^\diamond=(\tilde \xi\tilde \xi)^\diamond$.
 In other words,
 $\ceil{\sqrt{p}\,\vartheta(e)\,\sqrt{p}}
-=f^\bullet(e)=(\tilde\xi\tilde\xi)^\bullet(e)
+=f^\diamond(e)=(\tilde\xi\tilde\xi)^\diamond(e)
 = \ceil{\xi(1)\,e\,\xi(1)}$
 for all projections~$e$ of~$\scrA$,
 which implies that~$\vartheta=\id$
@@ -2654,6 +2654,156 @@ by assumption,
 we conclude that~$(\sigma\otimes \tau)(t)=0$ too.\qed
 \end{point}
 \end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+The tensor interacts
+with projections as expected.
+\end{point}
+\begin{point}{Lemma}%
+Let~$\scrA$ and~$\scrB$ be von Neumann algeberas.
+\begin{enumerate}
+\item
+We have $\ceil{a\otimes b} = \ceil{a}\otimes \ceil{b}$
+for all~$a\in\scrA_+$ and~$b\in\scrB_+$.
+\item
+We have~$\cceil{a\otimes b} = \cceil{a}\otimes \cceil{b}$
+for all~$a\in\scrA$ and~$b\in\scrB$.
+\end{enumerate}
+\begin{point}{Proof}%
+Let~$a\in\scrA_+$ and~$b\in\scrB_+$ be given.
+Since the map~$(\,\cdot\,)\otimes b\colon \scrA\to \scrA\otimes \scrB$
+is np,
+$\ceil{a\otimes b}
+\smash{\overset{\sref{ncp-ceil}}{=\joinrel=\joinrel=}}
+\ceil{\ceil{a}\otimes b}$.
+Since similarly~$\ceil{\ceil{a}\otimes b}
+=\ceil{\,\ceil{a}\otimes \ceil{b}\,}
+\equiv \ceil{a}\otimes\ceil{b}$
+using here that~$\ceil{a}\otimes\ceil{b}$
+is already a projection,
+we get~$\ceil{a}\otimes \ceil{b}=\ceil{a\otimes b}$.
+
+Let~$a\in\scrA$ and~$b\in\scrB$ be given.
+It suffices to show that~$\cceil{a}\otimes 1 = \cceil{a\otimes 1}$
+(and~$1\otimes \cceil{b}=\cceil{1\otimes b}$),
+because then
+\begin{equation*}
+	\cceil{a\otimes b}
+	=\cceil{\,(a\otimes 1)\, (1\otimes b)\,}
+\smash{\overset{\sref{cceil-basic}}{=\joinrel=\joinrel=}} 
+\cceil{a\otimes 1 } \cceil{1\otimes b}
+= \cceil{a}\otimes \cceil{b}.
+\end{equation*}
+Since~$\cceil{a}\otimes 1$ 
+commutes with all elements of~$\scrA\otimes \scrB$
+of the form~$a'\otimes b'$,
+and thus with all elements of~$\scrA\otimes \scrB$,
+we see that~$\cceil{a}\otimes 1$ is central.
+Since, moreover, $(a\otimes 1)(\cceil{a} \otimes 1)= a\otimes 1$,
+we get~$\cceil{a\otimes 1}\leq \cceil{a}\otimes 1$
+(by definition see~\sref{central-support}).
+
+Recall that~$\cceil{a}= \bigcup_{\tilde{a}\in\scrA}
+\ceil{\tilde{a}^* \ceil{a}\tilde{a}}$
+by~\sref{cceil-fundamental},
+so to prove
+$\cceil{a}\otimes 1 \leq \cceil{a\otimes 1}$
+it suffices to show that
+$\ceil{\tilde{a}^* \ceil{a}\tilde{a}}\otimes 1
+\equiv \ceil{(\tilde{a}\otimes 1)^*\, (a\otimes 1)
+\,(\tilde{a}\otimes 1)}
+\leq  \cceil{a\otimes 1}$
+for all~$\tilde{a}\in\scrA$,
+which is indeed the case (by~\sref{cceil-fundamental}, again).\qed
+\end{point}
+\end{point}
+\begin{point}{Exercise}%
+Let~$f\colon \scrA\to\scrB$
+and~$g\colon \scrC\to\scrD$ be np-maps
+between von Neumann algebras.
+We're going to prove that~$\ceil{f\otimes g}
+=\ceil{f}\otimes \ceil{g}$.
+\begin{enumerate}
+\item
+Show that~$(f\otimes g)(\ceil{f}\otimes\ceil{g})=1\otimes 1$,
+and conclude that~$\ceil{f\otimes g} \leq\ceil{f}\otimes\ceil{g}$.
+\item
+Assume for the moment that~$\scrA$
+and~$\scrC$ are von Neumann algebras
+of bounded operators on Hilbert spaces~$\scrH$
+and~$\scrK$, respectively,
+and that~$f$ and~$g$ are vector functionals,
+that is, $\scrB=\scrD=\C$,
+and~$f=\left<x,(\,\cdot\,)x\right>$
+for some~$x\in\scrH$,
+and
+$g=\left<y,(\,\cdot\,)y\right>$
+for some
+$y\in \scrK$.
+
+Show that~$\ceil{f}=\bigcup_{a\in\scrA^\square}
+\ceil{\,a^* \ketbra{x}{x} a\,}$
+using~\sref{carrier-vector-state}
+and~\sref{double-commutant}.
+
+\item
+With the same assumptions as in the previous
+point,
+suppose, furthermore, without loss of generality
+that~$\scrA\otimes \scrB$
+is
+given as the von Neumann subalgebra of~$\scrB(\scrH\otimes \scrK)$
+generated by the operators~$A\otimes B$
+where~$A\in\scrA$ and~$B\in\scrB$
+(cf.~\sref{special-tensor}).
+
+Show that~$f\otimes g = \left<x\otimes y,(\,\cdot\,)x\otimes y\right>$.
+
+Given~$a\in\scrA^\square$ and~$b\in\scrB^\square$
+show that $a\otimes b \in (\scrA\otimes \scrB)^\square$,
+and thus
+\begin{equation*}
+	\ceil{a^* \ketbra{x}{x}a}\otimes
+\ceil{b^* \ketbra{y}{y}b} \,\leq\, \ceil{f\otimes g}.
+\end{equation*}
+
+Deduce from this that~$\ceil{f}\otimes \ceil{g}\leq \ceil{f\otimes g}$,
+so~$\ceil{f}\otimes \ceil{g}= \ceil{f\otimes g}$.
+\item
+Let~$f$ and~$g$ be arbitrary again,
+and assume now that~$f$ and~$g$ are functionals,
+that is, $\scrB=\scrD=\C$.
+Show that~$\ceil{f\otimes g}=\ceil{f}\otimes \ceil{g}$.
+\item
+Let~$f$ and~$g$ be arbitrary again,
+and recall
+from~\sref{ultracyclic-basic}
+that~$1=\bigcup_{\sigma}\ceil{\sigma}$
+when~$\sigma$ ranges over the np-functionals
+$\sigma$ on~$\scrB$.
+
+Show that~$1\otimes 1 
+= \bigcup_{\sigma,\tau}\ceil{\sigma \otimes \tau}$
+where~$\sigma$ and~$\tau$
+range over the np-functionals
+on~$\scrB$ and~$\scrD$, respectively.
+
+Show using~\sref{diamond-suprema}
+and~\sref{diamond-composition}
+that
+$\ceil{f\otimes g} \equiv
+(f\otimes g)_\diamond(1\otimes 1)
+= \ceil{f}\otimes \ceil{g}$.
+\item
+Show that $(f\otimes g)_\diamond (s\otimes t)
+= f_\diamond(s)\otimes g_\diamond(t)$
+for projections
+$s\in \scrB$
+and~$t\in \scrD$.
+\end{enumerate}
+\end{point}
+
 \end{parsec}
 \subsection{Monoidal structure}
 \begin{parsec}%
