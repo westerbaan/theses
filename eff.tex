@@ -6267,9 +6267,8 @@ It is easy to see
      &   \overline{h} &= b_\zeta \after h \after a_\zeta^\dagger
      &   \overline{k} &= c_\zeta \after k \after b_\zeta^\dagger.
 \end{align*}
-Then: the map~$d \equiv a_\zeta \after h^\dagger \after b
-                    \after g^\dagger \after c_\pi$
-        turns\footnote{%
+Then: there is a map~$d \colon \ker c \to \cok a$
+        that turns\footnote{%
             Beware: we use~$\ker a$ (and~$\cok$) inconsistently ---
          earlier in the text~$\ker f$ refers
             to a kernel map --- here it
@@ -6342,9 +6341,35 @@ into a (long) exact sequence. This reveals the snake:
 \end{tikzpicture}
 \end{equation*}
 \begin{point}{Proof}%
-To start, we will prove~\eqref{thesnake}
-    is exact in~$\ker c$.
-    
+We will show
+    there are comprehensions~$m,h'$
+        and sharp quotients~$g',v$
+        such that the sides of the following diagram commute.
+\begin{equation*}
+\xymatrix{
+    & B \ar[rr]^b \ar@{->>}[dd]^g
+    && B' \ar@{->>}[dd]^v
+    \\ Z \ar@{^{(}->}[ru]^m \ar@{->>}[dd]_{g'}
+    && A' \ar@{^{(}->}[ru]^h \ar@{->>}[dd]_{a_\zeta}
+\\& C
+&& Q
+    \\ \ker c \ar@{^{(}->}[ru]_{c_\pi} \ar[rr]_{d}
+    && \cok a \ar@{^{(}->}[ru]_{h'}
+}
+\end{equation*}
+Define~$v \equiv \xi_{h_\diamond(\IM a)}$. 
+As~$(v \after h)^\diamond(1) = h^\diamond ( h_\diamond(\IM a)) = \IM a
+        = 1\after a_\zeta$,
+        there must be a total pure map~$h'$
+        such that~$v \after h = h' \after a_\zeta$.
+Note~$\ceil{1 \after v}^\perp = h_\diamond(\IM a) \leq h_\diamond(1) = \IM h$.
+So by the homology axiom, we know~$v \after h$ is pristine
+    and so~$h'$ must be a comprehension.
+Moving to the other side,
+    define~$m \equiv \pi_{g^\BOX(\ceil{1\after c}^\perp)}$.
+Reasoning in a similar way,
+    we see there is a unique sharp quotient~$g'$
+    with~$g \after m = c_\pi \after g'$.
 \end{point}
 \end{point}
 \end{parsec}
