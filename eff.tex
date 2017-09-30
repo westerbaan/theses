@@ -3909,6 +3909,14 @@ Thus~$\pi_{\ceil{p}} = 0$
 and so~$p \leq \ceil{p} = \IM\pi_{\ceil{p}} = 0$, as desired.\qed
 \end{point}
 \end{point}
+\begin{point}[spred-sup]{Exercise}%
+Show that in a~$\diamond$-effectus,
+we have
+        $\xi^\BOX \after \xi_\diamond (t) = s \vee t$
+    for sharp~$s,t$ and  quotient~$\xi$ of~$s$,
+    where~$s \vee t$ denotes the supremum
+    of~$s$ and~$t$ in~$\SPred X$.
+\end{point}
 \end{parsec}
 
 \begin{parsec}%
@@ -6202,6 +6210,29 @@ As~$\Nsb A$ and~$\SPred A$ are isomorphic,
     and similarly for right-modularity.
 \end{point}
 \end{point}
+\begin{point}[diamondboxlemma]{Lemma}%
+In a~$\dagger$-effectus,
+    we have~$\pi^\BOX \after \pi_\diamond = \id$
+    and~$\zeta_\diamond \after \zeta^\BOX = \id$
+    for any comprehension~$\pi$
+    and sharp quotient~$\zeta$.
+\begin{point}{Proof}%
+We start with~$\pi$.  The trick is to use~$\pi^\dagger$ is sharp:
+    $\pi^\BOX \after \pi_\diamond (s) =
+    \pi^\BOX \after (\pi^\dagger)^\diamond (s) =
+    \lceil \lceil s \after \pi^\dagger \rceil^\perp \after \pi\rceil^\perp =
+    \lceil(s \after \pi^\dagger)^\perp \after \pi\rceil^\perp =
+    \lceil(s \after \pi^\dagger \after \pi)^\perp\rceil^\perp =
+    \lceil s ^\perp\rceil^\perp = s $.
+As for the other equality:
+    $\zeta_\diamond \after \zeta^\BOX (s)
+        = (\zeta^\dagger)^\diamond \after \zeta^\BOX (s)
+        = \lceil\lceil s^\perp \after  \zeta \rceil^\perp \after \zeta^\dagger\rceil
+        = \lceil(\lceil s^\perp \after  \zeta \rceil \after \zeta^\dagger)^\perp\rceil
+        = \lceil(\lceil s^\perp\rceil \after \zeta \after \zeta^\dagger)^\perp\rceil
+        = \lceil \lceil s^\perp\rceil^\perp \rceil = s $. \qed
+\end{point}
+\end{point}
 \begin{point}%
 In any homological category,
     a generalization of the famous \emph{Snake Lemma} holds.
@@ -6341,10 +6372,11 @@ into a (long) exact sequence. This reveals the snake:
 \end{tikzpicture}
 \end{equation*}
 \begin{point}{Proof}%
-We will show
+Before we start, we give an overview of the proof.
+We will first show
     there are comprehensions~$m,h'$
         and sharp quotients~$g',v$
-        such that the sides of the following diagram commute.
+        such that the left and right faces of the following cube commute.
 \begin{equation*}
 \xymatrix{
     & B \ar[rr]^b \ar@{->>}[dd]^g
@@ -6357,6 +6389,18 @@ We will show
     && \cok a \ar@{^{(}->}[ru]_{h'}
 }
 \end{equation*}
+(These two faces are, what Grandis calls, subquotients.)
+Then we will prove using exactness of the rows
+    that there is a unique lifting of~$b$
+    to~$b'\colon Z \to A'$ along the comprehensions~$m,h$.
+In turn, $d$ is defined as the unique lifting of~$b'$
+    along the sharp quotients~$h', a_\zeta$.
+($d$ is the map regularly induced by~$b$ along the two subquotients.)
+Before demonstrating the exactness of the snake,
+    we need some non-trivial identities for~$d_\diamond$ and~$d^\BOX$.
+(These also follow from Grandis' calculus of direct and inverse images
+    along an induced morphism.)
+\begin{point}%
 Define~$v \equiv \xi_{h_\diamond(\IM a)}$. 
 As~$(v \after h)^\diamond(1) = h^\diamond ( h_\diamond(\IM a)) = \IM a
         = 1\after a_\zeta$,
@@ -6370,6 +6414,172 @@ Moving to the other side,
 Reasoning in a similar way,
     we see there is a unique sharp quotient~$g'$
     with~$g \after m = c_\pi \after g'$.
+\end{point}
+\begin{point}%
+To show~$b$ lifts along~$m$ and~$h$,
+    it suffices (by the universal property of comprehension)
+    to show~$(b \after m)_\diamond(1)
+        \equiv \IM b\after m \leq \IM h
+                    \equiv h_\diamond(1)$.
+\begin{alignat*}{2}
+b_\diamond \after m_\diamond (1)
+    &\ =\  b_\diamond \after g^\BOX \after c^\BOX (0) &\qquad& \text{by dfn.~$m$}\\
+    &\ = \ b_\diamond \after b^\BOX \after k^\BOX (0) \\
+    &\ = \ b_\diamond \after b^\BOX \after h_\diamond (1) && \text{by exactness at~$B'$} \\
+    &\ \leq \  h_\diamond (1) && \text{as $b_\diamond \dashv b^\BOX$}.
+\end{alignat*}
+So there is a unique~$b'\colon Z \to A'$ with~$h \after b' = b \after m$.
+Before we continue,
+    we note~$b' = h^\dagger \after b \after m$
+    (as ~$h^\dagger \after h= \id$)
+    and so surprisingly:
+\begin{equation}\label{snakeceilbprime}
+    m^\BOX \after b^\BOX \after h_\BOX \ = \ 
+    b'^\BOX \ \overset{\mathclap{\sref{diamondboxlemma}}}{=} \   b'^\BOX \after h^\BOX \after h_\diamond
+            \ =\    m^\BOX \after b^\BOX \after h_\diamond.
+\end{equation}
+Next, to show~$b'$ lifts along~$g'$ and~$a_\zeta$,
+    it is sufficient to prove~$b'^\BOX \after a_\zeta^\BOX(0)
+        = \ceil{1\after b' \after a_\zeta}^\perp
+                \geq \ceil{1 \after g'}^\perp
+                = g'^\BOX (0)$.
+\begin{alignat*}{2}
+    b'^\BOX \after a_\zeta^\BOX(0)
+        & \ = \ b'^\BOX \after a_\diamond (1)
+                &\qquad& \text{by dfn.~$a_\zeta$} \\
+        & \ = \ m^\BOX \after b^\BOX \after h_\diamond \after a_\diamond (1)
+                && \text{by \eqref{snakeceilbprime}} \\
+        & \ = \ m^\BOX \after b^\BOX \after b_\diamond \after f_\diamond (1) \\
+        & \ \geq \ m^\BOX \after f_\diamond (1) 
+                && \text{as $b_\diamond \dashv b^\BOX$}\\
+        & \ =\ m^\BOX \after g_\BOX (0) 
+                && \text{by exactness at $B$}\\
+        & \ = \ g'^\BOX \after {c_\pi}_\BOX (0) 
+                && \text{by dfn.~$g'$}\\
+        & \ \geq \ g'^\BOX (0).
+\end{alignat*}
+Thus there is a unique~$d\colon \ker c \to \cok a$
+    with~$d \after g' = a_\zeta \after b'$.
+More concretely, using~$g' \after g'^\dagger = \id$,
+    we see
+    $ d  =  a_\zeta \after h^\dagger \after b \after m \after 
+                g'^\dagger$.
+\end{point}
+\begin{point}%
+Our next goal is to show
+\begin{align*}
+    d_\diamond &\ =\ 
+            (a_\zeta)_\diamond \after h^\BOX \after
+                b_\diamond \after m_\diamond \after g'^\BOX
+            \ = \ h'^\BOX \after v_\diamond \after
+                b_\diamond \after m_\diamond \after g'^\BOX 
+                \numberthis\label{snakedidents}
+                \\
+            &\ = \ (a_\zeta)_\diamond \after h^\BOX \after
+                b_\diamond\after g^\BOX \after (c_\pi)_\diamond
+            \ = \ h'^\BOX \after v_\diamond \after
+                b_\diamond\after g^\BOX \after (c_\pi)_\diamond.
+\end{align*}
+As a first step,
+    note~$\IM m = g^\BOX \after c_\diamond (1) \geq
+        g^\BOX\after (c_\pi)_\diamond(s)$
+    and so
+\begin{alignat*}{2}
+    g^\BOX\after (c_\pi)_\diamond(s)
+       & \ =\ 
+    g^\BOX\after (c_\pi)_\diamond(s) \wedge  (\IM m) \\
+    &\ = \ m_\diamond \after m^\BOX \after 
+    g^\BOX\after (c_\pi)_\diamond(s)
+    &\qquad&\text{by \sref{spred-infimum}} \\
+    &\ = \ m_\diamond \after g'^\BOX \after
+    c_\pi^\BOX\after (c_\pi)_\diamond(s) &&\text{by dfn.~$g'$}\\
+    &\ = \ m_\diamond \after g'^\BOX(s)
+    &&\text{by \sref{diamondboxlemma}}.
+\end{alignat*}
+and so we only have to show the first two equalities of \eqref{snakedidents}.
+The first is easy:
+\begin{alignat*}{2}
+    d_\diamond
+    &\ = \ d_\diamond \after g'_\diamond \after g'^\BOX 
+    &\qquad&\text{by \sref{diamondboxlemma}}\\
+    & \ = \ (a_\zeta)_\diamond \after b'_\diamond \after g'^\BOX 
+                &&\text{by dfn.~$d$}\\
+    & \ = \ (a_\zeta)_\diamond \after
+                    h^\BOX \after h_\diamond \after 
+    b'_\diamond \after g'^\BOX
+    &&\text{by \sref{diamondboxlemma}}\\
+    &\ = \ (a_\zeta)_\diamond \after
+                    h^\BOX \after b_\diamond \after
+    m_\diamond \after g'^\BOX &&\text{by dfn.~$b'$}.
+\end{alignat*}
+The second is trickier.  We need some preparation.
+    Recall~$v^\BOX(0) \leq h_\diamond(1)$
+    and so
+\begin{equation}\label{snakehdiamondone}
+    h_\diamond(1) \ = \ 
+    v^\BOX(0)  \vee h_\diamond(1) \ \overset{\mathclap{\sref{spred-sup}}}{=} \ 
+    v^\BOX \after v_\diamond \after h_\diamond(1) \ = \ 
+    v^\BOX \after h'_\diamond (1).
+\end{equation}
+As~$h_\diamond \after a^\BOX_\zeta$ is injective,
+    the last equality follows from
+\begin{alignat*}{2}
+    &h_\diamond \after a_\zeta^\BOX \after (a_\zeta)_\diamond \after
+                    h^\BOX \after b_\diamond \after
+    m_\diamond \after g'^\BOX  (s)\\
+    &\qquad \ =\ 
+    h_\diamond ( h^\BOX \after b_\diamond \after
+    m_\diamond \after g'^\BOX  (s) \vee a_\zeta^\BOX(0)) 
+        &\qquad&\text{by \sref{spred-sup}}\\
+    &\qquad \ =\ 
+    h_\diamond \after  h^\BOX \after b_\diamond \after
+    m_\diamond \after g'^\BOX  (s) \vee h_\diamond \after a_\zeta^\BOX(0)
+        &\qquad&\text{as~$h_\diamond \dashv h^\BOX$}\\
+    &\qquad \ =\ 
+    h_\diamond \after  h^\BOX \after b_\diamond \after
+    m_\diamond \after g'^\BOX  (s) \vee v^\BOX(0)
+        &\qquad&\text{by dfns.~$v$,$a_\zeta$}\\
+    &\qquad \ =\ 
+    ( b_\diamond \after
+    m_\diamond \after g'^\BOX  (s) \wedge h_\diamond(1)) \vee v^\BOX(0)
+        &\qquad&\text{by \sref{spred-infimum}}\\
+    &\qquad \ =\ 
+    b_\diamond \after
+    m_\diamond \after g'^\BOX  (s)  \vee v^\BOX(0)
+        &\qquad&\text{as $b_\diamond \after m_\diamond (1) \leq h_\diamond(1)$}\\
+    &\qquad \ =\ 
+    (b_\diamond \after
+    m_\diamond \after g'^\BOX  (s)  \vee v^\BOX(0)
+    ) \wedge h_\diamond(1)
+        &\qquad&\text{as $v^\BOX(0) \leq h_\diamond(1)$}\\
+    &\qquad \ =\ 
+    v^\BOX \after v_\diamond \after  b_\diamond \after
+    m_\diamond \after g'^\BOX  (s)  \wedge h_\diamond(1)
+        &\qquad&\text{by \sref{spred-sup}} \\
+    &\qquad \ =\ 
+    v^\BOX \after v_\diamond \after  b_\diamond \after
+    m_\diamond \after g'^\BOX  (s)  \wedge v^\BOX \after h'_\diamond(1)
+        &\qquad&\text{by \eqref{snakehdiamondone} } \\
+    &\qquad \ =\ 
+    v^\BOX (v_\diamond \after  b_\diamond \after
+    m_\diamond \after g'^\BOX  (s)  \wedge  h'_\diamond(1))
+        &\qquad&\text{as~$v^\BOX \vdash v_\diamond$} \\
+    &\qquad \ =\ 
+    v^\BOX \after h'_\diamond
+    \after h'^\BOX \after  v_\diamond \after  b_\diamond \after
+    m_\diamond \after g'^\BOX  (s)
+        &\qquad&\text{by \sref{spred-infimum}}\\
+    &\qquad \ =\ 
+    h_\diamond \after a_\zeta^\BOX \after
+    h'^\BOX \after  v_\diamond \after  b_\diamond \after
+    m_\diamond \after g'^\BOX  (s),
+\end{alignat*}
+where~$
+    h_\diamond \after a_\zeta^\BOX \after =
+    v^\BOX \after h'_\diamond$
+    is proven in the same way as $g^\BOX \after (c_\pi)_\diamond =
+                                    m_\diamond \after g'^\BOX$.
+\end{point}
 \end{point}
 \end{point}
 \end{parsec}
