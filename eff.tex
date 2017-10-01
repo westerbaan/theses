@@ -5846,6 +5846,8 @@ so~$\asrt_p$ is~$\dagger$-positive, as desired. \qed
 \end{point}
 \end{parsec}
 
+\section{Comparisons}
+\subsection{Dagger kernel categories}
 \begin{parsec}%
 \begin{point}%
 To finish, we relate the structures in a~$\dagger$-effectus
@@ -6002,6 +6004,7 @@ To summarize:
 \end{point}
 \end{parsec}
 
+\subsection{Homological categories}
 \begin{parsec}%
 \begin{point}%
 Next we compare our effectuses
@@ -6233,6 +6236,8 @@ As for the other equality:
         = \lceil \lceil s^\perp\rceil^\perp \rceil = s $. \qed
 \end{point}
 \end{point}
+\end{parsec}
+\begin{parsec}%
 \begin{point}%
 In any homological category,
     a generalization of the famous \emph{Snake Lemma} holds.
@@ -6272,9 +6277,10 @@ These additional assumptions are equivalent to the following conditions.
         $b_\diamond \after b^\BOX (\IM h)
                 = (\IM h) \wedge \IM b$,
     \item
-        $k^\BOX \after k_\diamond (\IM f) = (\IM h) \vee \IM b$,
+        $k^\BOX \after k_\diamond (\IM b) = (\IM h) \vee \IM b$,
     \item
-        $f_\diamond \after f^\BOX (\IM h)
+        %$f_\diamond \after f^\BOX (\ceil{1 \after b}^\perp)
+        $f_\diamond \after f^\BOX \after b^\BOX(0)
                 = \ceil{1 \after b}^\perp \wedge \IM f$,
     \item
         $\IMperp f = \ceil{1\after g}$,
@@ -6579,6 +6585,90 @@ where~$
     v^\BOX \after h'_\diamond$
     is proven in the same way as $g^\BOX \after (c_\pi)_\diamond =
                                     m_\diamond \after g'^\BOX$.
+\end{point}
+\begin{point}%
+We are ready to show exactness of \eqref{thesnake}.
+We will first derive exactness in~$\cok a$
+    from the right-modularity of~$b$ over~$\IM h$.
+\begin{alignat*}{2}%
+    d_\diamond(1) &
+    \ = \  (a_\zeta)_\diamond \after h^\BOX \after b_\diamond
+            \after g^\BOX \after (c_\pi)_\diamond(1)
+            &\qquad&\text{by \eqref{snakedidents}} \\
+    & \ = \ (a_\zeta)_\diamond \after h^\BOX \after 
+                b_\diamond \after g^\BOX \after c^\BOX(0) 
+                &&\text{by dfn.~$c_\pi$}\\
+    & \ = \ (a_\zeta)_\diamond \after h^\BOX \after 
+    b_\diamond \after b^\BOX \after k^\BOX(0) \\
+    & \ = \ (a_\zeta)_\diamond \after h^\BOX \after 
+    b_\diamond \after b^\BOX \after h_\diamond(1) 
+    &\qquad&\text{by exactness in~$B'$}\\
+    & \ = \ (a_\zeta)_\diamond \after h^\BOX (
+    b_\diamond(1) \wedge h_\diamond(1))
+        &&\text{by right-modularity}\\
+    & \ = \ (a_\zeta)_\diamond \after h^\BOX \after 
+    h_\diamond \after h^\BOX \after b_\diamond(1)
+    &&\text{by \sref{spred-infimum}} \\
+    & \ = \ (a_\zeta)_\diamond \after h^\BOX
+    \after b_\diamond(1)
+    &&\text{as $h^\BOX \vdash h_\diamond$}\\
+    & \ = \ (a_\zeta)_\diamond \after h^\BOX
+    \after b_\zeta^\BOX(0)
+    &&\text{by dfn.~$b_\zeta$} \\
+    & \ = \ (a_\zeta)_\diamond \after a_\zeta^\BOX
+    \after \smash{\overline{h}^\BOX} (0)
+    &&\text{by dfn.~$\overline{h}$}\\
+    & \ = \ \smash{\overline{h}^\BOX} (0)
+    &&\text{by \sref{diamondboxlemma}.}
+\end{alignat*}
+    By a dual argument
+    one derives exactness of~$\eqref{thesnake}$
+        in~$\ker c$ from the left-modularity
+        of~$b$ over~$\IM f$.
+\end{point}
+\begin{point}%
+    To show exactness of
+    $\eqref{thesnake}$ in~$\cok b$,
+    we will use left-modularity of~$k$ in~$\IM b$:
+\begin{alignat*}{2}
+    \overline{h}_\diamond(1) 
+        & \ = \ \overline{h}_\diamond \after (a_\zeta)_\diamond
+                \after a_\zeta^\BOX(1)
+                &\qquad&\text{by \sref{diamondboxlemma}} \\
+        & \ = \ \overline{h}_\diamond \after (a_\zeta)_\diamond(1)
+                &&\text{as $a_\zeta^\BOX \dashv (a_\zeta)_\diamond$}\\
+        & \ = \ (b_\zeta)_\diamond \after h_\diamond(1)
+                &&\text{by dfn.~$\overline{h}$}\\
+        & \ = \ (b_\zeta)_\diamond \after
+                b^\BOX_\zeta \after (b_\zeta)_\diamond \after
+        h_\diamond(1)
+                &&\text{as~$(b_\zeta)_\diamond \dashv b^\BOX_\zeta$}\\
+        & \ = \ (b_\zeta)_\diamond (
+                    h_\diamond(1) \vee b_\diamond(1))
+                &&\text{by left-modularity}\\
+        & \ = \ (b_\zeta)_\diamond (
+                    k^\BOX(0) \vee b_\diamond(1))
+                &&\text{exactness in~$B'$}\\
+        & \ = \ (b_\zeta)_\diamond \after
+                    k^\BOX \after k_\diamond \after b_\diamond(1)
+                &&\text{by \sref{spred-sup}}\\
+        & \ = \ (b_\zeta)_\diamond \after
+                    k^\BOX \after c_\diamond \after g_\diamond(1) \\
+        & \ = \ (b_\zeta)_\diamond \after
+                    k^\BOX \after c_\diamond (1) 
+                    && \text{as quotients are faithful}\\
+        & \ = \ (b_\zeta)_\diamond \after
+                    k^\BOX \after c_\zeta^\BOX  (0) 
+                    && \text{by dfn.~$c_\zeta$}\\
+        & \ = \ (b_\zeta)_\diamond \after
+                    b_\zeta^\BOX \after \smash{\overline{k}^\BOX}  (0) 
+                    && \text{by dfn.~$\overline{k}$}\\
+        & \ = \ \smash{\overline{k}^\BOX}  (0) 
+                    && \text{by \sref{diamondboxlemma}}.
+\end{alignat*}
+    Finally, the exactness of~\eqref{thesnake}
+        in~$\ker b$ is shown with a dual argument
+        using the right-modularity of~$f$ over~$\ceil{1\after b}^\perp$. \qed
 \end{point}
 \end{point}
 \end{point}
