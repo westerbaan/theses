@@ -6244,6 +6244,9 @@ In any homological category,
     \cite[\S3.4]{grandis}.
 The following is a translation of (a part of) Grandis' Snake Lemma
     into~$\dagger$-effectus jargon.
+We include a proof as it highlights how
+    the reasoning in a homological category is subtly different:
+    maps~$l^\BOX$ appear, where we would have expected~$l^\diamond$.
 \end{point}
 \begin{point}{Snake Lemma}%
 Suppose we have a commuting
@@ -6644,14 +6647,17 @@ We will first derive exactness in~$\cok a$
         h_\diamond(1)
                 &&\text{as~$(b_\zeta)_\diamond \dashv b^\BOX_\zeta$}\\
         & \ = \ (b_\zeta)_\diamond (
+                    h_\diamond(1) \vee b_\zeta^\BOX(0))
+                &&\text{by \sref{spred-sup}}\\
+        & \ = \ (b_\zeta)_\diamond (
                     h_\diamond(1) \vee b_\diamond(1))
-                &&\text{by left-modularity}\\
+                &&\text{by dfn.~$b_\zeta$}\\
         & \ = \ (b_\zeta)_\diamond (
                     k^\BOX(0) \vee b_\diamond(1))
                 &&\text{exactness in~$B'$}\\
         & \ = \ (b_\zeta)_\diamond \after
                     k^\BOX \after k_\diamond \after b_\diamond(1)
-                &&\text{by \sref{spred-sup}}\\
+                &&\text{by left-modularity}\\
         & \ = \ (b_\zeta)_\diamond \after
                     k^\BOX \after c_\diamond \after g_\diamond(1) \\
         & \ = \ (b_\zeta)_\diamond \after
