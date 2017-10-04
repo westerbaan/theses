@@ -57,6 +57,11 @@
 \newcommand{\Define}[1]{\textDefine{#1}}
 \newcommand{\grayed}[1]{\textcolor{darkgray}{#1}}
 
+\renewcommand{\leq}{\leqslant}
+\renewcommand{\geq}{\geqslant}
+\renewcommand{\nleq}{\not\leqslant}
+\renewcommand{\ngeq}{\not\geqslant}
+
 \newcommand{\Cat}[1]{\mathbf{#1}}
 \newcommand{\cW}[1]{\Cat{cW}^*_{\text{\textsc{#1}}}}
 \newcommand{\W}[1]{\Cat{W}^*_{\text{\textsc{#1}}}}
@@ -263,7 +268,7 @@
 				\par\penalty-25\vskip.2em\noindent%
 			}%
 		}%
-		\marginnote{\makebox[2em][c]{%
+		\marginnote{\makebox[2em][c]{\small%
 			\ifthenelse{\equal{\value{pointdepth}}{1}}{%
 				\textPointNumberI{\Roman{point}}%
 			}{%

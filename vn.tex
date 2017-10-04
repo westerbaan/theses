@@ -11,14 +11,14 @@ and an abundance  of functionals that preserve
 these suprema.
 While all $C^*$-algebras
 and the cpsu-maps
-may perhaps serve as model of
-quantum datatypes and the processes
-between them, respectively,
+between them
+may perhaps serve as models for
+quantum datatypes and processes, respectively,
 for the purposes of this thesis
 we focus our attention
 the subcategory~$\W{cpsu}$ of von Neumann algebras
 and the cpsu-maps between them that preserve aforementioned suprema
-(and are therefore called \emph{normal}, see~\sref{p-uwcont}),
+(which are called \emph{normal}, see~\sref{p-uwcont}),
 because 
 \begin{enumerate}
 \item
@@ -60,26 +60,27 @@ and the Hilbert space~$\scrH$,
 we'll use Kadison's characterization~\cite{kadison1956}
 of von Neumann algebras
 as $C^*$-algebras
-with a certain dcpo-structure to them
+with a certain dcpo-structure 
 and sufficiently many Scott-continuous functionals
 as our definition instead.
 
 But we also use Kadison's definition
-just to see to what extend
+just to see to what extent
 when errecting the basic theory of von Neumann algebras
-we could reduce the recourse to the representation
+we can do without representation
 of a von Neumann algebras as a rings of operators
-(\sref{ngns}, so liberally employed in the literature),
-and  instead put the directed suprema and normal 
+(\sref{ngns}, so liberally employed in the literature).
+Instead we'll put the directed suprema and normal 
 positive functionals
 on center stage.
-Nevertheless our treatment doesn't stray too far
+All the while
+our treatment doesn't stray too far
 from the beaten path,
 and borrows
 many arguments
 from
 the standard texts~\cite{sakai,kr};
-but most of them had to be tweaked in places, and
+nevertheless most of them had to be tweaked in places, and
 some of them demanded a complete overhaul.
 
 
@@ -117,7 +118,7 @@ Our first project of this chapter
 is to show that a von Neumann algebra
 is complete in the ultrastrong topology
 and \emph{bounded} complete in the ultraweak topology
-(see~\sref{vn-complete}), which are perhaps novel observations).
+(see~\sref{vn-complete}).
 This allows us to
 define,
 for example,
@@ -238,10 +239,10 @@ form a von Neumann algebra.
 \item
 We'll see in~\sref{commutant-basic}
 that given a subset~$S$ of a von Neumann algebra~$\scrA$
-that is closed under involution
-the set~$S^\square = \{\,a\in\scrA\colon\, \forall s\in S\,[\ as=sa\ ]\,\}$,
-called the \emph{commutant} of~$S$,
-is a von Neumann subalgebra of~$\scrA$.
+the set~$S^\square = \{\,a\in\scrA\colon\, \forall s\in S\,[\ as=sa\ ]\,\}$
+called the \emph{commutant} of~$S$
+is a von Neumann subalgebra of~$\scrA$
+when~$S$ is closed under involution.
 \end{enumerate}
 \end{point}
 \end{parsec}
@@ -284,7 +285,7 @@ where $k,\ell,m,n\in \N$.
 \qquad
 \ketbra{n}{m}\ketbra{\ell}{k}\ =\ 
 \begin{cases}
-\ \ \ketbra{n}{k} & \text{if $m=k$} \\
+\ \ \ketbra{n}{k} & \text{if $m=\ell$} \\
 \ \ 0 & \text{otherwise}
 \end{cases}
 \end{equation*}
@@ -332,8 +333,10 @@ on~$\scrB(\ell^2)$.
 
 (This has the annoying side-effect,
 that it is not immediately clear that the ultrastrong
-closure of a $C^*$-subalgebra of a von Neumann algebra
-ultrastrongly closed; we'll deal with this in~\sref{ultraclosed}.)
+closure of a $C^*$-subalgebra of a von Neumann algebra 
+is a von Neumann subalgebra; we'll deal with this
+by showing that the ultrastrong closure coincides
+with the ultraweak closure in~\sref{ultraclosed}.)
 \item
 Show that the unit ball~$(\,\scrB(\ell^2)\,)_1$
 of~$\scrB(\ell^2)$ is not ultrastrongly compact
@@ -369,7 +372,9 @@ is ultrastrongly continuous on self-adjoint elements.)
 Let us consider the two extensions of~$\left|\,\cdot\,\right|$
 to arbitrary elements, namely
 $a\mapsto \sqrt{a^*a}=:\Define{\left|a\right|_s}$ and 
-$a\mapsto \sqrt{aa^*}=:\Define{\left|a\right|_r}$.
+$a\mapsto \sqrt{aa^*}=:\Define{\left|a\right|_r}$
+(for \textbf{s}upport and \textbf{r}ange,
+c.f.~\sref{hilb-ceil}).
 
 Prove that $\ketbra{0}{0} + \ketbra{0}{n}$
 converges ultrastrongly to~$\ketbra{0}{0}$ as $n\to \infty$.
@@ -573,16 +578,6 @@ Use~\sref{vanishing-effects}
 to show that $(da)_d$ converges ultraweakly to~$(\bigvee D)a$,
 and that~$(a^*d)_d$ converges ultraweakly to~$a^* (\bigvee D)$.
 \end{point}
-\begin{point}[vna-supremum-commutes]%
-Show that if~$ad=da$ for all~$d\in D$,
-then $a(\bigvee D) = (\bigvee D)a $.
-\end{point}
-\begin{point}[vna-supremum-uslimit]%
-Use~\sref{vanishing-effects}
-to show that $(\bigvee D-d)^2$ converges ultraweakly to~$0$.
-
-Conclude that~$(d)_{d\in D}$ converges ultrastrongly to~$\bigvee D$.
-\end{point}
 \end{point}
 %
 %  ad is normal
@@ -596,7 +591,7 @@ elements of~$\scrA$.
 If~$a$ is invertible,
 then the (by~\sref{astara-pos-basic-consequences}) order preserving map $b\mapsto a^*ba$
 has an order preserving inverse (namely $b\mapsto (a^{-1})^* b a^{-1}$),
-and therefor preserves all suprema.
+and therefore preserves all suprema.
 \begin{point}%
 The general case reduces to the case that~$a$ 
 is invertible
@@ -616,8 +611,63 @@ by~\sref{ad-normal-1} and~\sref{vna-supremum-uwlimit},
 and $(a^*d+da)_d$ converges ultraweakly to $a^*(\bigvee D)+(\bigvee D)a$
 by~\sref{vna-supremum-mult}.
 Since~$(a^*da)_d$ converges to~$\bigvee_{d\in D} a^*d a$ too,
-we conclude that~$\bigvee_{d\in D} a^* \,d\, a = a^*\,(\bigvee D)\,a$.\qed
+we could conclude that
+$\bigvee_{d\in D} a^* \,d\, a = a^*\,(\bigvee D)\,a$
+if we would already know that the ultraweak topology is Hausdorff.
+At the moment, however,
+we must content ourselves with
+the conclusion that
+$\omega(\,a^*\bigvee D a\,-\, \bigvee_{d\in D} a^* d a\,)=0$
+for every np-functional~$\omega$ on~$\scrA$.
+But since
+$a^*\bigvee D a - 
+\bigvee_{d\in D} a^* d$
+happens to be positive,
+we conclude that
+$a^*\bigvee D a  
+- \bigvee_{d\in D} a^* d a =0$
+nonetheless.\qed
 \end{point}
+\end{point}
+\end{point}
+\begin{point}[vn-positive-basic]{Exercise}%
+Show that the set of np-functionals
+on a von Neumann algebra~$\scrA$
+is not only faithful 
+but also order separating
+using~\sref{proto-gelfand-naimark}.
+Deduce
+\begin{enumerate}%
+\item
+that the ultraweak and ultrastrong topologies
+are Hausdorff,
+\item
+that~$\scrA_+$, 
+$\sa{\scrA}$ and~$[0,1]_\scrA$  are ultraweakly 
+(and ultrastrongly) closed, 
+\item
+and that the unit ball
+$(\scrA)_1$
+is ultrastrongly closed.
+
+(We'll see only later on, in~\sref{ultraclosed},
+that~$(\scrA)_1$
+is ultraweakly closed as well.)
+\end{enumerate}
+\end{point}
+\begin{point}{Exercise}%
+Let~$D$ be a directed subset of self-adjoint elements
+of a von Neumann algebra~$\scrA$,
+and let~$a\in\scrA$.
+\begin{point}[vna-supremum-commutes]%
+Show that if~$ad=da$ for all~$d\in D$,
+then $a(\bigvee D) = (\bigvee D)a $.
+\end{point}
+\begin{point}[vna-supremum-uslimit]%
+Use~\sref{vanishing-effects}
+to show that $(\bigvee D-d)^2$ converges ultraweakly to~$0$.
+
+Conclude that~$(d)_{d\in D}$ converges ultrastrongly to~$\bigvee D$.
 \end{point}
 \end{point}
 \begin{point}[p-uwcont]{Exercise}%
@@ -642,13 +692,6 @@ Conclude that $b\mapsto a^*ba,\,\scrA\to\scrA$
 is ultraweakly
 continuous for every element~$a$ of a von Neumann 
 algebra~$\scrA$.
-\end{point}
-\begin{point}[vn-positive-basic]{Exercise}%
-Show that the set of np-functionals
-on a von Neumann algebra~$\scrA$
-is order separating
-(using~\sref{proto-gelfand-naimark}).
-Deduce that~$\scrA_+$ and~$\sa{\scrA}$ are ultraweakly closed.
 \end{point}
 \end{parsec}
 \begin{parsec}%
@@ -735,7 +778,7 @@ the category of
 \emph{normal} cpsu-maps
 by~$\Define{\W{cpsu}}$,
 and its subcategory of nmiu-maps
-by~$\Define{\W{cpsu}}$.
+by~$\Define{\W{miu}}$.
 \begin{point}%
 This pair of categories plays a major role in the next
 chapter, but for now we content ourselves
@@ -826,7 +869,7 @@ is a von Neumann subalgebra of~$\scrB$,
 because a miu-isomorphism between von Neumann algebras
 (being an order isomorphism)
 will automatically be a nmiu-isomorphism.
-Let~$D$ be a bounded directed subset of~$f(D)$.
+Let~$D$ be a bounded directed subset of~$f(\scrA)$.
 Note that~$S:=(f')^{-1}(D)$ is a bounded
 directed subset of~$\scrA$,
 and so~$\bigvee D\equiv  \bigvee f(\,S\,)
@@ -1004,7 +1047,7 @@ there is a least projection~$\ceil{a}$
 called the ceiling of~$a$ (\sref{vna-ceil});
 for every np-map $\omega\colon \scrA\to \scrB$
 between von Neumann algebras
-there is a least projection~$p$ with~$\omega(p^\perp)$
+there is a least projection~$p$ with~$\omega(p^\perp)=0$
 called the carrier of~$\omega$ (see~\sref{carrier});
 the directed supremum of projections is again a projection
 and
@@ -1090,7 +1133,7 @@ iff $p\leq \sqrt{a}$.
 \end{point}
 \begin{point}[projection-order-sharp]{Lemma}%
 An effect~$a$ of a $C^*$-algebra~$\scrA$
-is a projection iff the only projection
+is a projection iff the only effect
 below~$a$ and~$a^\perp$ is~$0$.
 \begin{point}{Proof}%
 On the one hand,
@@ -1232,9 +1275,9 @@ and $p\leq b^{2^{m-1}}\, b^{2^n}\,b^{2^{m-1}}$
 for all~$n,m$, we get~$p\leq p^2$.
 \end{point}
 \begin{point}%
-It remains to be shown that~$p$ is the greatest projection above~$b$.
-Let~$q$ be a projection in~$\scrA$ with~$q\leq b$
-we must show that~$q\leq p$.
+It remains to be shown that~$p$ is the greatest projection below~$b$.
+Let~$q$ be a projection in~$\scrA$ with~$q\leq b$.
+We must show that~$q\leq p$.
 Since~$q\leq b$,
 we have~$q\leq b^2$ (by~\sref{projection-below-effect}),
 and so~$q\leq b^{2^n}$ for each~$n$ by induction.
@@ -1300,7 +1343,7 @@ and an infimum $\Define{\bigcap A}$
 \emph{in the poset of projections from~$\scrA$}.\\
 (Hint: use~\sref{ceil-floor-basic},
 and the fact that $p\mapsto p^\perp$ 
-is an order isomorphism on the poset of projections on~$\scrA$.)
+is an order anti-isomorphism on the poset of projections on~$\scrA$.)
 \end{point}
 \begin{point}[ceil-supremum]{Exercise}
 Let~$\scrA$ be a von Neumann algebra.
@@ -1320,7 +1363,7 @@ does not preserve directed suprema.
 
 Conclude that $\ceil{\,\cdot\,}$
 and $\floor{\,\cdot\,}$
-are neither ultraweakly nor ultrastrongly continuous
+are neither ultraweakly, ultrastrongly nor norm  continuous
 as maps from $[0,1]_\scrA$ to~$[0,1]_\scrA$.
 \end{enumerate}
 \end{point}
@@ -1449,8 +1492,30 @@ we'll call $\Define{\ceill{b}}:=\ceil{b^*b}$
 the \Define{support} of~$b$,
 and~$\Define{\ceilr{b}}:=\ceil{bb^*}$ the \Define{range} of~$b$.
 \end{point}
+\begin{point}{Remark}%
+Some explaination is in order here.
+We did not just introduce
+the range
+and support notation for its own sake,
+but will use it extensively in~\S\ref{S:division}
+thanks to calculus rules
+such as $ab=0\iff \ceill{a}\ceilr{b}=0$
+(see~\sref{mult-cancellation}).
+The notation was chosen such 
+that $\ceilr{b} b=b= b\ceill{b}$
+(see~\sref{ceill-basic}).
+Good examples are 
+\begin{equation*}
+	\ceill{\,\ketbra{x}{y}\,}
+\,= \,\ketbra{y}{y}
+\qquad\text{and}\qquad
+\ceilr{\,\ketbra{x}{y}\,}
+\,=\, \ketbra{x}{x}
+\end{equation*}
+for unit vectors~$x$ and~$y$ from a Hilbert space~$\scrH$.
+\end{point}
 \begin{point}[ceil-basic]{Exercise}%
-Let~$a$ and~$b$ be a positive elements of a von Neumann algebra~$\scrA$.
+Let~$a$ and~$b$ be positive elements of a von Neumann algebra~$\scrA$.
 \begin{enumerate}
 \item
 Show that $pa=a$ iff $ap=a$ iff $\ceil{a}\leq p$
@@ -1489,7 +1554,7 @@ Show that~$\ceil{a_+}\ceil{a_-}= 0$.
 \end{point}
 \begin{point}[ceil-suprema]{Exercise}%
 Show that $\ceil{\bigvee D} = \bigcup_{d\in D}\ceil{d}$
-for every directed set of \emph{positive}
+for every bounded directed set of \emph{positive}
 elements of a von Neumann algebra~$\scrA$.
 \end{point}
 \begin{point}[ceill-basic]{Exercise}%
@@ -1514,7 +1579,7 @@ Show that~$\ceill{ab}\leq\ceill{b}$
 and~$\ceilr{ab}\leq\ceilr{a}$.
 \end{enumerate}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[hilb-ceil]{Exercise}%
 Let~$T$ be a bounded operator on a Hilbert space~$\scrH$.
 \begin{enumerate}
 \item
@@ -1548,10 +1613,10 @@ that $0\leq a\leq 1$
 by replacing $a$ by~$\frac{a}{\|a\|}$.
 So let us just assume that~$a\in [0,1]_\scrA$
 to begin with.
-For similar reasons, we may assume that $f(1)\leq 1$.
+For similar reasons, we may assume that $\omega (1)\leq 1$.
 
-Now, since~$a\leq \ceil{a}$
-we have $\omega(a)\leq \omega(\ceil{a})$,
+Now, since~$0\leq a\leq \ceil{a}$
+we have $0\leq \omega(a)\leq \omega(\ceil{a})$,
 so~$\omega(\ceil{a})=0\implies \omega(a)=0$
 is obvious.
 It remains to be shown that $\omega(\ceil{a})=0$
@@ -1560,7 +1625,7 @@ Since  $\ceil{a}=\bigvee_n a^{\nicefrac{1}{2^n}}$
 (by~\sref{vna-ceil})
 and~$\omega$ is normal,
 we have $\omega(\ceil{a})=\bigvee_n \omega(a^{\nicefrac{1}{2^n}})$,
-and so it suffices to show that~$\omega(a^{\nicefrac{1}{2^n}})$
+and so it suffices to show that~$\omega(a^{\nicefrac{1}{2^n}})=0$
 for each~$n$.
 As a result of Kadison's inequality
 (see~\sref{omega-norm-basic})
@@ -1630,7 +1695,7 @@ Let~$a$ and~$b$ be elements of a von Neumann algebra~$\scrA$.
 Deduce from~\sref{ncp-ceil}
 that
 $\ceil{a^*ba} = \ceil{a^*\ceil{b}a}$
-when~$a\geq 0$.
+when~$b\geq 0$.
 \item
 Conclude that~$\ceill{ab}=\ceill{\ceill{a}b}$
 and~$\ceilr{ab}=\ceilr{a\ceilr{b}}$.
@@ -1638,7 +1703,7 @@ and~$\ceilr{ab}=\ceilr{a\ceilr{b}}$.
 \end{enumerate}
 \end{point}
 \begin{point}[mult-cancellation]{Exercise}%
-Let~$a$ and~$b$ be an element of a von Neumann algebra~$\scrA$.
+Let~$a$ and~$b$ be elements of a von Neumann algebra~$\scrA$.
 \begin{enumerate}
 \item
 Show that $cb=0$ iff $\ceill{c}\ceilr{b}=0$
@@ -1694,7 +1759,7 @@ or equivalently, $\floor{f(a)}\leq f(\floor{a})$.
 We have
 \begin{equation*}
 \floor{f(a)}
-\ \stackrel{\sref{ceil-floor-basic}}{=}\ 
+\ \overset{\sref{ceil-floor-basic}}{=\joinrel=\joinrel=}\ 
 \floor{f(a)^2}
 \ \stackrel{\sref{inner-product-basic}}{\leq}\  
 \floor{f(a^2)} \ \leq\ \floor{f(a)},
@@ -1750,21 +1815,21 @@ show that
 \ceil{a^*(\,\cdot\,)a}\ =\ \ceil{aa^*}\equiv \ceilr{a}
 \end{equation*}
 where~$a^*(\,\cdot\,)a$
-is interpretted as an np-map~$\scrA\to\scrA$.
+is interpreted as an np-map~$\scrA\to\scrA$.
 \item
 Given a bounded operator~$T\colon \scrH\to\scrK$
 between Hilbert spaces
 show that~$\ceil{T^*(\,\cdot\,)T}$
 is the projection onto~$\overline{\Ran(T)}$
 when~$T^*(\,\cdot\,)T$
-is interpretted 
+is interpreted 
 as a map
 $\scrB(\scrK)\to\scrB(\scrH)$.
 \item
 Show that~$\ceil{\left<x,(\,\cdot\,)x\right>}=\ketbra{x}{x}$
 for any unit vector~$x$ from a Hilbert space~$\scrH$
 when~$\left<x,(\,\cdot\,)x\right>$
-is interpretted as a map~$\scrB(\scrH)\to\C$.
+is interpreted as a map~$\scrB(\scrH)\to\C$.
 
 (But be warned: when~$\scrA$ is a von Neumann subalgebra of~$\scrB(\scrH)$
 the carrier of the restriction 
@@ -1824,9 +1889,9 @@ We end our exposition on projections
 by showing that every element in a von Neumann 
 algebra is the norm limit of linear combinations
 of projections in~\sref{projections-norm-dense}.
-We'll deal with commutative case first
+We'll deal with the  commutative case first
 (see~\sref{abelian-projections-norm-dense}),
-and for this
+and for this we
 need an interesting 
 property of the spectrum of a commutative von Neumann algebra,
 see~\sref{vn-spectrum-extremally-disconnected}.
@@ -2030,7 +2095,7 @@ when~$ab=ba$ for all~$b\in\scrA$
 \begin{enumerate}
 \item
 In a commutative von Neumann algebra
-every element central.
+every element is central.
 \item
 An element~$a$ of a direct sum~$\bigoplus_i \scrA_i$
 of von Neumann algebras
@@ -2050,6 +2115,7 @@ we have $\left<x, A\|y\|^2 x\right>
 for all~$x,y\in\scrH$,
 and so~$A\|y\|^2= \|\sqrt{A}y\|^2$
 for all~$y\in\scrH$.
+Hence~$A$ is (zero or) a scalar.
 \end{enumerate}
 \end{point}
 \begin{point}[cceil-fundamental]{Proposition}%
@@ -2148,11 +2214,13 @@ which we'll call the \Define{central carrier} of~$f$.
 \end{point}
 \begin{point}{Proposition}%
 \label{prop:weakly-closed-ideal}
-Every von Neumann subalgebra~$\scrD$
-of a von Neumann algebra~$\scrA$
-that is also a two-sided ideal of~$\scrA$
+Every two-sided ideal~$\scrD$ of a von Neumann
+algebra~$\scrA$
+that is closed under bounded directed suprema of self-adjoint 
+elements
 is of the form~$c\scrA$
 for some unique central projection~$c$ of~$\scrA$.
+
 Moreover, $c$ is the greatest projection in~$\mathscr{D}$.
 \begin{point}{Proof}%
 We'll obtain~$c$ as the supremum over all effects in~$\scrD$,
@@ -2342,7 +2410,9 @@ is ultraweakly closed iff it is ultrastrongly closed
 The unit ball $(\scrA)_1$
 of a $C^*$-subalgebra~$\scrA$
 of a von Neumann algebra~$\scrB$
-is ultrastrongly dense in~$(\scrB)_1$
+is ultrastrongly dense in~$(\bar{\scrA})_1$
+where~$\bar{\scrA}$ is the ultrastrong (=ultraweak,
+\sref{ultraclosed}) closure of~$\scrA$
 (see~\sref{kaplansky}).
 \item
 Any von Neumann subalgebra~$\scrA$
@@ -2413,7 +2483,7 @@ Show that~$f$ is an np-map.
 \end{enumerate}
 \end{point}
 \begin{point}{Exercise}%
-Let~$f\colon \scrA\to \C$ be a ultrastrongly continuous linear
+Let~$f\colon \scrA\to \C$ be an ultrastrongly continuous linear
 functional on a von Neumann algebra~$\scrA$.
 Show that there is an np-map
 $\omega\colon \scrA\to \C$
@@ -2553,7 +2623,7 @@ for all~$a\in \scrA$, for some np-map $\omega\colon \scrA\to\C$.
 We'll show that the ultrastrong and ultraweak closure
 of a convex set agree. 
 For this we need the following proto-Hahn--Banach separation theorem,
-which concerns the following notion of openess.
+which concerns the following notion of openness.
 \end{point}
 \begin{point}{Definition}%
 A subset~$A$ of a real vector space~$V$ 
@@ -2665,9 +2735,16 @@ The trick is to consider the sets
 and~$S_1 = \{s\in [0,1]\colon sx+s^\perp y \in K\}$,
 which are open (because~$K$ and~$-K$ are radially open),
 non-empty (because $0\in S_0$ and~$1\in S_1$),
-and therefore not disjoint
+and therefore cannot cover~$[0,1]$
 (because~$[0,1]$ is connected).
-So there is~$s\in [0,1]$ with $sx+s^\perp y \in H$.\qed
+So there must be~$s\in (0,1)$ 
+such that
+$sx+s^\perp y $ 
+is neither in~$K$
+nor in~$-K$,
+and thus $sx+s^\perp y \in H$ (by definition of~$H$).
+Whence~$x$ and~$y$ are linearly dependent in~$V/H$
+(since~$s\neq 0$).\qed
 \end{point}
 \end{point}
 \end{point}
@@ -2725,9 +2802,9 @@ which is impossible.
 	It remains to be shown that
 	there is $\delta>0$ with $f(k)\equiv \Real{g(k)}\geq \delta$
 	for all~$k\in K$.
-	Show that there is $b_0\in B$
-	with $f(b_0) >0$.
-	Conclude that $f(k)\geq f(b_0)>0 $ for all~$k\in K$.
+	Show that in fact there is $b_0\in B$
+	with $f(b_0) >0$,
+	and  that $f(k)\geq f(b_0)>0 $ for all~$k\in K$.
 \end{enumerate}
 \end{point}
 \end{parsec}
@@ -2793,7 +2870,7 @@ of~$C(\R\cup\{\infty\})$
 generated by these extended~$e_{a,b}$'s 
 separates the points of~$\R\cup\{\infty\}$,
 and is thus~$C(\R\cup\{\infty\})$ itself
-by Stone--Weierstra\ss' theorem (see~\sref{stone-weierstrass}).
+by the Stone--Weierstra\ss theorem (see~\sref{stone-weierstrass}).
 Since~$f$ vanishes at infinity,
 $f$ can be extended to an element of $C(\R\cup\{\infty\})$,
  and can thus be obtained
@@ -2817,16 +2894,19 @@ To see that~$e$ is ultrastrongly continuous,
 let $(b_\alpha)_\alpha$ be a net of self-adjoint elements of~$\scrA$
 which converges ultrastrongly to $a\in\sa{\scrA}$,
 and let~$\omega\colon \scrA\to \C$
-be an npu-map. A simple computation yields
+be an npu-map. 
+Unfolding the definitions
+of~$e$ and~$s$ yields
+the following equality.
 \begin{equation*}
-e(b_\alpha)-e(a) \ =\ s(b_\alpha)\,(b_\alpha-b)\,s(a)
-\,-\, e(b_\alpha)\,(b_\alpha-b)\,e(a).
+e(b_\alpha)-e(a) \ =\ s(b_\alpha)\,(b_\alpha-a)\,s(a)
+\,-\, e(b_\alpha)\,(b_\alpha-a)\,e(a).
 \end{equation*}
 Since $\|s(b_\alpha)\|\leq 1$,
 we have $\|s(b_\alpha)(b_\alpha-a)s(a)\|_\omega 
-\leq  \,\|(b_\alpha-b)s(a)\|_\omega
-\equiv \|b_\alpha-b\|_{s(a)*\omega}$.
-Since similarly~$\|e(b_\alpha)\|\leq 1$,
+\leq  \,\|(b_\alpha-a)s(a)\|_\omega
+\equiv \|b_\alpha-a\|_{s(a)*\omega}$.
+Similarly, since~$\|e(b_\alpha)\|\leq 1$,
 we get
 \begin{alignat*}{3}
 \|e(b_\alpha)-e(a)\|_\omega
@@ -3495,6 +3575,7 @@ and so~$g$ is ultraweakly continuous.\qed
 \end{point}
 \end{parsec}
 \section{Division}
+\label{S:division}
 \subsection{(Approximate) pseudoinverses}
 \begin{parsec}%
 \begin{point}[dfn-pseudoinverse]{Definition}%
