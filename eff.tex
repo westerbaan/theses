@@ -1,8 +1,6 @@
 % https://link.springer.com/article/10.1007/s10992-013-9275-5 
 % coproduct supremum
-% grandis
 % monoidal
-% bart dagger kernel category
 %
 \documentclass[b]{subfiles}
 \begin{document}
@@ -2125,7 +2123,7 @@ Every cancellative~$[0,1]$-convex set
 The study of
     convex subsets (of real vector spaces)
     as algebraic structures goes back a long time,
-        see e.g.~\cite{stone1949postulates,neumann1970quasivariety,flood1981semiconvex,tz2009convex}.
+        see e.g.~\cite{stone1949postulates,neumann1970quasivariety,flood1981semiconvex,tz2009convex,gudder1979general}.
 The more pathological abstract~$[0,1]$-convex sets have been studied before
     under different names:
     they are semiconvex sets in \cite{flood1981semiconvex,swirszcz1975monadic} and
@@ -3678,7 +3676,7 @@ Show that in an effectus with comprehension and images,
 In quantum physics it is not uncommon to restrict one's attention
     to sharp predicates (i.e.~projections).
 Does this restriction hurt the expressivity?
-A partial answer is given by Gleason's famous theorem:
+A partial answer is given by Gleason's famous theorem \cite{gleason1957measures}:
     it states that every (normal) state on~$\scrB(\scrH)$
     is determined by its values on projections
     (if~$\dim \scrH \geq 3$).
@@ -4024,7 +4022,7 @@ In an $\&$-effectus,
 we define~$\Define{\andthen{p}{q}} = q \after \asrt_p$
     and~$\Define{p^2} = \andthen{p}{p}$.
 \end{point}
-\begin{point}{Example}%
+\begin{point}[vn-is-andthen-eff]{Example}%
 The category$\op{\vN}$ is a~$\&$-effectus
     with~$\andthen{a}{b} = \sqrt{a}b\sqrt{a}$. \TODO{ref}
 \end{point}
@@ -6004,6 +6002,44 @@ To summarize:
 \end{point}
 \end{parsec}
 
+\subsection{Sequential effect algebras}
+\begin{parsec}%
+\begin{point}%
+The operation~$\andthen{a}{b} \equiv \sqrt{a}b\sqrt{a}$
+    on the von Neumann algebra~$\scrB (\scrH)$
+    has been studied before.
+In \cite{gudder2001sequential,gheondea2004sequential}
+Gudder and coauthors establish some basic algebraic properties of~$\&$,
+    which are surprisingly hard to prove.
+    Then, in \cite{gudder2008characterization},
+    Gudder and Latr\'emoli\`ere (G\&L)
+    characterize~$\&$ as the unique operation satisfying
+\begin{multicols}{2}
+\begin{enumerate}
+    \item $\TR [ (\andthen{a}{\varrho}) b] = \TR [\varrho
+                    (\andthen{a}{b})]$
+    \item $\andthen{a}{1} = \andthen{1}{a} = a$
+    \item $ \andthen{a}{(\andthen{a}{b})} =
+            \andthen{(\andthen{a}{a})}{b} =
+            \andthen{a^2}{b}$
+        \item $a \mapsto \andthen{a}{b}$ is strongly continuous
+\end{enumerate}    
+\end{multicols}
+Recall that we characterized~$\asrt_a \colon b \mapsto \andthen{a}{b}$
+    as the unique~$\diamond$-positive map with~$\andthen{a}{1} = a$.
+How do these characterization relate?
+G\&L's first axiom plays a very similar role
+        as the~$\diamond$-self adjointness of~$\diamond$-positive maps for us.
+Their third axiom is somewhat related to~$\diamond$-positivity.
+Their fourth axiom seems unrelated to our characterization
+    and conversely the purity of our~$\diamond$-positive maps
+    has no counterpart in their axioms.
+\begin{point}%
+    \cite{li2011sequential}
+\end{point}
+\end{point}
+\end{parsec}
+
 \subsection{Homological categories}
 \begin{parsec}%
 \begin{point}%
@@ -6679,6 +6715,16 @@ We will first derive exactness in~$\cok a$
 \end{point}
 \end{point}
 \end{parsec}
+
+
+    %  operational, wilce: \cite{barnum2013symmetry}
+    % vicary frob cstar: \cite{vicary2011categorical}
+    % meas without sums \cite{coecke2006quantum}
+    % cpstar \cite{coecke2016categories}
+    % dagger compact closed \cite{selinger2007dagger}
+    % dagger split sel \cite{heunen2013completely}
+
+    % bohrification \cite{heunen2012bohrification}
 \end{document}
 
 % vim: ft=tex.latex
