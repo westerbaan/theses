@@ -3084,16 +3084,16 @@ a_{34} \ar@{}|-{\leq}[r]  \ar@{}[u]|-{\uleq} &
 where~$a_n:= \bigvee_{m\geq n} a_{nm}$
 and~$a := \bigwedge_n a_n$.
 We'll prove that~$\omega_0(a)=0=\omega_1(a^\perp)$.
-\begin{point}{$\omega_0(a^\perp)=0$}%
-Since~$\omega_0(b_n)\leq n2^n$ 
+\begin{point}{$\omega_0(a)=0$}%
+	Since~$\omega_0(b_n)\leq n2^{-n}$ 
 and $a_{nm}\leq \sum_{k=n}^m k b_k$,
-we get~$\omega_0(a_{nm})=\sum_{k=n}^m k\omega_0(b_k) \leq 2^{n-1}$,
+we get~$\omega_0(a_{nm})=\sum_{k=n}^m k\omega_0(b_k) \leq 2^{1-n}$,
 and so $\omega_0(a)=\bigwedge_n\bigvee_{m\geq n} \omega_0(a_{nm})
-\leq \bigwedge_n 2^{n-1} = 0$.
+\leq \bigwedge_n 2^{1-n} = 0$.
 \end{point}
-\begin{point}{$\omega_1(a)=0$}%
+\begin{point}{$\omega_1(a^\perp )=0$}%
 Let~$m> n$ be given.
-Since~$\sum_{k=n}^m b_k \geq mb_k$
+Since~$\sum_{k=n}^m kb_k \geq mb_m$
 and $d\mapsto (1+d)^{-1}d$
 is monotone on~$\pos{\scrB}$
 we get~$a_{nm} \geq (1+mb_m)^{-1} mb_m$,
