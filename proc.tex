@@ -1,6 +1,8 @@
 \documentclass[a]{subfiles}
 \begin{document}
-\chapter{Processes}
+\chapter{Assorted structure in~$\W{cpsu}$}
+\TODO{Add introduction}
+
 \section{Measurement}
 \begin{parsec}
 \begin{point}%
@@ -2886,28 +2888,28 @@ are monoidal categories with~$\C$ as unit.
 \section{Quantum Lambda Calculus}
 \begin{parsec}%
 \begin{point}%
-In this section
-we lay the foundation
-for a model
+In this section we provide
+the parts needed
+to built a model
 of the quantum lambda calculus
-built from von Neumann algebras.
+using von Neumann algebras.
 We will not venture
 to describe the quantum lambda calculus
 in all its details here,
-nor will we fully describe the model
-(as we did in~\TODO{Kenta and Bram}),
-but we will instead
-focus on the two key ingredients,
+nor will we describe how to built the model
+from these parts
+(as we did in~\cite{model});
+we'll just touch upon
+the two key ingredients:
 the interpretation of ``$\bang$'' and ``$\limp$''
 ---
 with them the expert
 can easily produce the model.
 
-Nevertheless
-I will try to give an impression for those who are not familiar 
+Let us, nevertheless, try to give some impression to those who are not familiar 
 with the quantum lambda calculus.
-It is a type theory
-proposed by Selinger and Valiron in~\TODO{...}
+The quantum lambda calculus is a type theory
+proposed by Selinger and Valiron in~\cite{selinger2005,selinger2006}
 to describe programs for quantum computers
 especially designed
 to include 
@@ -2925,7 +2927,7 @@ There are of course also terms
 such as
 $\mathsf{0}\colon \bit$
 and~$\mathsf{1}\colon \bit$,
-so that~$\mathsf{meas}\,\mathsf{0}\colon \qbit$
+so that~$\mathsf{new}\,\mathsf{0}\colon \qbit$
 represents a qbit in state~$\ket{0}$.
 The addition of quantum data 
 to a type theory
@@ -2990,7 +2992,7 @@ for which we will provide the following
 three ingredients.
 \begin{itemize}
 \item
-The fact (due to Kornell, see~\TODO{...})
+The fact (due to Kornell, \cite{kornell2012})
 that
 the category 
 $\op{(\W{miu})}$
@@ -3033,6 +3035,10 @@ and~$\sem{A\limp B}$ will then be
 \ = \ 
 \mathcal{F}(\sem{B})^{*\sem{A}}.
 \end{equation*}
+
+\TODO{add more parts?}
+
+
 Note that~$\sem{!A}$
 will always be a discrete von Neumann algebra
 no matter how complicated~$\sem{A}$ may be,
@@ -3094,6 +3100,148 @@ See Corollary IV.5.10 of~\cite{Takesaki1}.\qed
 \end{point}
 \end{parsec}
 \subsection{First Adjunction}
+\begin{parsec}%
+\begin{point}{Definition}%
+We write $\Define{\nsp}:=\W{miu}(\,\cdot\,,\C)$
+for the functor $\op{(\W{miu})}\to \Cat{Set}$
+which maps a von Neumann algebra~$\scrA$
+to its set
+of nmiu-functionals,
+$\nsp(\scrA)$,
+and sends a nmiu-map $f\colon \scrA\to\scrB$
+to the map~$\nsp(f)\colon \nsp(\scrB)\to\nsp(\scrA)$
+given by~$\nsp(f)(\varphi)=\varphi \circ f$
+for~$\varphi \in \nsp(\scrB)$.
+\end{point}
+\begin{point}[first-adjunction]{Proposition}%
+Given a set~$X$
+the map
+\begin{equation*}
+\eta\colon X\to\nsp(\linf(X))
+\qquad\text{given by}\qquad
+	\eta(x)(h)\ =\ h(x)
+\end{equation*}
+is universal
+in the sense that for every 
+map $f\colon X\to\nsp(\scrA)$,
+where~$\scrA$ is a von Neumann algebra,
+there is a unique
+nmiu-map $g\colon \scrA\to\linf(X)$
+such that
+\begin{equation*}%
+\xymatrix{%
+X
+\ar[r]^-\eta
+\ar[rd]_-f
+&
+\nsp(\linf(X))
+\ar[d]^-{\nsp(g)}
+&
+\linf(X)
+\\
+&
+\nsp(\scrA)
+&
+\scrA
+\ar@{.>}[u]_-g
+}
+\end{equation*}
+commutes.
+Moreover, and as a result, the assignment
+$X\mapsto \linf(X)$
+extends to a functor
+$\linf\colon \Cat{Set}\to\op{(\W{miu})}$
+that is left adjoint
+to~$\nsp$,
+and is given by $\linf(f)(h) = h\circ f$
+for any map $f\colon X\to Y$
+and~$h\in \linf(Y)$.
+\begin{point}{Proof}%
+Note that if we identify~$\linf(X)$
+with the $X$-fold product of~$\C$,
+we see that~$\eta(x)\colon \linf(X)\equiv \bigoplus_{x\in X}\C\to \C$
+is simply the $x$-th projection,
+and thus a nmiu-map (see~\sref{vn-products}).
+Hence we do indeed get a map $\eta\colon X\to\nsp(\linf(X))$.
+
+To see that~$\eta$ has the desired universal property,
+let~$f\colon X\to\nsp(\scrA)$ be given,
+and define~$g\colon \scrA\to \linf(X)$
+by~$g(a)(x)=f(x)(a)$.
+One can now either prove directly that~$g$ is nmiu,
+or reduce this in a slightly roundabout way
+from the known fact that~$\linf(X)$ is the 
+$X$-fold product of~$\C$ with the $\eta(x)$ as projections;
+indeed~$g$ is simply the  unique nmiu-map with $\eta(x)\circ g = f(x)$
+for all~$x\in X$, that is,  $g=\left<f(x)\right>_{x\in X}$.
+In any case,
+we see that $\nsp(g)(\eta(x)) \equiv \eta(x)\circ g = f(x)$
+for all~$x\in X$, and so~$\nsp(g) \circ \eta = f$.
+Concerning uniqueness of such~$g$,
+note that given a nmiu-map $g'\colon \scrA\to\linf(X)$
+with~$\nsp(g')\circ \eta = f$
+we have~$\eta(x)\circ  g'= \nsp(g')(\eta(x))
+= f(x)$ for all~$x\in X$,
+and so~$g'=\left<f(x)\right>_{x\in X}=g$.
+
+Hence~$\eta$ is a universal arrow from~$X$
+to~$\nsp$ in the sense of~\TODO{...}.
+That as a result the assignment $X\mapsto \linf(X)$
+extends to a functor
+$\Cat{Set}\to\op{(\W{miu})}$
+by sending~$f\colon X\to Y$
+to the unique nmiu-map $\linf(f)\colon \linf(Y)\to\linf(X)$
+with $\nsp(\linf(f))\circ \eta_X = \eta_Y\circ f$
+is a known and easily checked fact
+(where~$\eta_X:= \eta$ and~$\eta_Y\colon Y\to\nsp(\linf(Y))$ 
+is what you'd expect).
+Finally, plugin applying~$x\in X$ and~$h\in \linf(Y)$
+we get
+$ \linf(f)(h)(x)
+= \eta_X(x)(\linf(f)(h)))
+=\nsp(\linf(x))(\eta_X(x))(h)
+=\eta_Y(f(x))(h)
+=h(f(x))$.\qed
+\end{point}
+\end{point}
+\begin{point}[nmiu-functional-product]{Lemma}%
+A nmiu-functional $\varphi$
+on a direct product $\bigoplus_i \scrA_i$
+of von Neumann algebras
+is of the form~$\varphi\equiv \varphi'\circ \pi_i$
+for some~$i$ and nmiu-functional~$\varphi'$ on~$\scrA_i$.
+\begin{point}{Proof}%
+Let~$e_j$ denote the element of~$\bigoplus_i \scrA_i$
+given by $e_j(j)=1$ and~$e_j(i)=0$ for all~$i\neq j$.
+Note that given~$i$ and~$j$ with $i\neq j$
+we have~$e_ie_j=0$
+and so~$0=\varphi(e_i e_j)=\varphi(e_i)\varphi(e_j)$;
+from this we see that
+there is at most one~$i$ with~$\varphi(e_i)\neq 0$.
+Since for this~$i$
+we have $e_i^\perp = \sum_{j\neq i} e_j$
+and so~$\varphi(e_i^\perp)=\sum_{j\neq i} \varphi(e_j)=0$,
+we see that $\varphi(a)=\varphi(e_i a )$
+for all~$a\in \bigoplus_i \scrA_i$.
+Letting  $\kappa_i\colon \scrA_i\to\bigoplus_j \scrA_j$
+be the nmisu-map given by~$\kappa_i(a)(i)=a$
+and~$\kappa_i(a)(j)=0$ for~$j\neq i$
+we have~$\varphi = \varphi \circ \kappa_i \circ \pi_i$.
+Hence taking~$\varphi':=\varphi\circ \kappa_i$
+does the job.\qed
+\end{point}
+\end{point}
+\begin{point}{Exercise}%
+Deduce from~\sref{nmiu-functional-product}
+that the functor $\nsp\colon \op{(\W{miu})}\to \Cat{Set}$
+preserves coproducts,
+and that the 
+map $\eta\colon X\to \nsp(\linf(X))$
+from~\sref{first-adjunction} is a bijection.
+\end{point}
+
+\TODO{$\nsp$ and $\linf$ are monoidal}
+\end{parsec}
 \subsection{Second Adjunction}
 \begin{parsec}%
 \begin{point}[vn-generation-bound]{Lemma}%
