@@ -1,8 +1,6 @@
 % https://link.springer.com/article/10.1007/s10992-013-9275-5 
 % coproduct supremum
-% grandis
 % monoidal
-% bart dagger kernel category
 %
 \documentclass[b]{subfiles}
 \begin{document}
@@ -43,7 +41,7 @@ Their use for us lies in their expressiveness.
 Before we can dive into effectuses,
     we need to learn about effect algebras (and related structures),
     which were introduced by mathematical physicists as
-    a generalization of boolean algebra to study unsharp predicates
+    a generalization of Boolean algebra to study unsharp predicates
     in quantum mechanics.
     In a sense, effectuses are the categorical counterpart of effect algebras.
 Then we continue with a brief, but thorough development
@@ -72,7 +70,7 @@ It started with the desire to axiomatize categorically
     of first~$a$ \emph{andthen} $b$.
 The sequential product is the quantum mechanical counterpart
     of conjunction (logical `and').
-In  contrast to the tame~$\wedge$ in a boolean algebras,
+In  contrast to the tame~$\wedge$ in a Boolean algebras,
     the sequential product does not obey a lot of insightful
     formulas.
 Instead, we take a step back and
@@ -270,15 +268,15 @@ Any orthomodular lattice~$L$
     and~$x \ovee y = x \vee y$.  (See e.g.~\cite[Prop.~27]{basmsc}.)
 \item
 In particular,
-    any boolean algebra~$L$
+    any Boolean algebra~$L$
     is an effect algebra
     with complement as orthocomplement,
     ~$x \perp y$ whenever~$x \wedge y = 0$ and
     $x \ovee y = x \vee y $.
 \item
-The one-element boolean algebra~$1 \equiv \{0=1\}$
+The one-element Boolean algebra~$1 \equiv \{0=1\}$
     is the final object in \textsf{EA}
-    and the two-element boolean algebra~$2 \equiv \{0,1\}$
+    and the two-element Boolean algebra~$2 \equiv \{0,1\}$
     is the initial object in \textsf{EA}.
 \end{enumerate}
 \end{point}
@@ -510,14 +508,14 @@ Effect monoids are less abundant.
         is a commutative effect monoid with the usual product.
         (This is the only way to turn~$[0,1]$ into an effect monoid
                 \cite[Prop.~41]{basmsc}.)
-\item We saw earlier that every boolean algebra is an effect algebra
+\item We saw earlier that every Boolean algebra is an effect algebra
         with~$x \ovee y = x \vee y$ defined iff~$x \wedge y = 0$.
-    The boolean algebra is turned into an effect monoid
+    The Boolean algebra is turned into an effect monoid
         with~$x \odot y \equiv x \wedge y$.
     Every finite (\emph{a priori} non-commutative) effect monoid
     is of this form \cite[Prop.~40]{basmsc}.
 \item
-In particular: the two-element boolean algebra~$2$
+In particular: the two-element Boolean algebra~$2$
     is an effect monoid.
 \item There is a non-commutative effect monoid
         based on the lexicographically ordered vector space~$\R^5$,
@@ -2125,7 +2123,7 @@ Every cancellative~$[0,1]$-convex set
 The study of
     convex subsets (of real vector spaces)
     as algebraic structures goes back a long time,
-        see e.g.~\cite{stone1949postulates,neumann1970quasivariety,flood1981semiconvex,tz2009convex}.
+        see e.g.~\cite{stone1949postulates,neumann1970quasivariety,flood1981semiconvex,tz2009convex,gudder1979general}.
 The more pathological abstract~$[0,1]$-convex sets have been studied before
     under different names:
     they are semiconvex sets in \cite{flood1981semiconvex,swirszcz1975monadic} and
@@ -3678,7 +3676,7 @@ Show that in an effectus with comprehension and images,
 In quantum physics it is not uncommon to restrict one's attention
     to sharp predicates (i.e.~projections).
 Does this restriction hurt the expressivity?
-A partial answer is given by Gleason's famous theorem:
+A partial answer is given by Gleason's famous theorem \cite{gleason1957measures}:
     it states that every (normal) state on~$\scrB(\scrH)$
     is determined by its values on projections
     (if~$\dim \scrH \geq 3$).
@@ -4024,7 +4022,7 @@ In an $\&$-effectus,
 we define~$\Define{\andthen{p}{q}} = q \after \asrt_p$
     and~$\Define{p^2} = \andthen{p}{p}$.
 \end{point}
-\begin{point}{Example}%
+\begin{point}[vn-is-andthen-eff]{Example}%
 The category$\op{\vN}$ is a~$\&$-effectus
     with~$\andthen{a}{b} = \sqrt{a}b\sqrt{a}$. \TODO{ref}
 \end{point}
@@ -6004,6 +6002,109 @@ To summarize:
 \end{point}
 \end{parsec}
 
+\subsection{Sequential product}
+\begin{parsec}%
+\begin{point}%
+The sequential product --- the
+    operation~$\andthen{a}{b} \equiv \sqrt{a}b\sqrt{a}$
+    on the effects of a von Neumann algebra
+    --- has been studied before.
+In \cite{gudder2001sequential,gheondea2004sequential}
+    Gudder and coauthors establish some basic algebraic properties of~$\&$
+    on~$\scrB(\scrH)$.
+Most of them are surprisingly hard to prove ---
+    for instance, the proof that~$\andthen{a}{b}=\andthen{b}{a}$
+    implies~$ab = ba$, requires
+    the Fuglede--Rosenblum--Putnam Theorem.
+\begin{point}%
+Then, in \cite{gudder2008characterization},
+    Gudder and Latr\'emoli\`ere (G\&L)
+    characterize~$\&$ on~$\scrB(\scrH)$ as the unique operation satisfying
+\begin{multicols}{2}
+\begin{enumerate}
+    \item $\TR [ (\andthen{a}{\varrho}) b] = \TR [\varrho
+                    (\andthen{a}{b})]$
+    \item $\andthen{a}{1} = \andthen{1}{a} = a$
+    \item $ \andthen{a}{(\andthen{a}{b})} =
+            \andthen{(\andthen{a}{a})}{b} =
+            \andthen{a^2}{b}$
+        \item $a \mapsto \andthen{a}{b}$ is strongly continuous
+\end{enumerate}    
+\end{multicols}
+\noindent
+Recall that we characterized~$\asrt_a \colon b \mapsto \andthen{a}{b}$
+    as the unique~$\diamond$-positive map with~$\andthen{a}{1} = a$.
+How do these characterization compare?
+G\&L's first axiom plays a very similar role
+        as the~$\diamond$-self adjointness of~$\diamond$-positive maps for us.
+Their third axiom is somewhat related to~$\diamond$-positivity.
+Their fourth axiom seems unrelated to our characterization
+    and conversely the purity of our~$\diamond$-positive maps
+    has no counterpart in their axioms.
+\end{point}
+\begin{point}%
+A few years earlier, Gudder and Greechie started
+    \cite{gudder2001sequential}
+    the abstract study of some of the algebraic properties of the
+    sequential product on arbitrary effect algebras,
+    which has been picked up by several other authors.
+    \cite{li2011sequential,gudder2005open,shen2009not,gudder2005uniqueness,jun2009remarks,weihua2009uniqueness,tkadlec2008atomic,jia2010entropy,arias2004almost}
+\end{point}
+\end{point}
+\begin{point}{Definition}%
+A \Define{sequential effect algebra} (SEA)
+    is an effect algebra~$E$ together
+    with a binary operation~$\&$
+    satisfying
+\begin{enumerate}
+    \item[(S1)] if~$a \perp b$,
+        then~$\andthen{c}{a} \perp \andthen{c}{b}$
+        and~$(\andthen{c}{a}) \ovee (\andthen{c}{b})
+                = \andthen{c}{(a \ovee b)}$;
+    \item[(S2)] $\andthen{1}{a} =a$;
+    \item[(S3)] if~$\andthen{a}{b} = 0$,
+            then~$\andthen{a}{b} = \andthen{b}{a}$;
+    \item[(S4)]
+        if~$\andthen{a}{b} = \andthen{b}{a}$,
+        then~$\andthen{a}{b^\perp} = \andthen{b^\perp}{a}$
+        and~$\andthen{(\andthen{a}{b})}{c}
+            = \andthen{a}{(\andthen{b}{c})} $ \emph{and}
+    \item[(S5)]
+        if~$\andthen{c}{a} = \andthen{a}{c}$,
+        $\andthen{c}{b} = \andthen{b}{c}$ and~$a \perp b$,\\
+        then~$\andthen{c}{(\andthen{a}{b})}
+                = \andthen{(\andthen{a}{b})}{c}$
+                and~$\andthen{c}{(a \ovee b)} = \andthen{(a \ovee b)}{c}$.
+\end{enumerate}
+\end{point}
+\begin{point}{Examples}%
+The effect algebra~$[0,1]_\scrA$
+    of effects on a von Neumann algebra~$\scrA$
+    is a sequential effect algebra with~$\andthen{a}{b} = \sqrt{a}b\sqrt{a}$.
+Any commutative effect monoid is a sequential effect algebra
+    with~$\andthen{a}{b} = a \odot b$.
+\begin{point}%
+\end{point}
+\end{point}
+\begin{point}{Proposition}%
+In a~$\dagger$-effectus,
+    the set of predicates~$\Pred X$ on any object~$X$
+    with~$\andthen{p}{q} = q \after \asrt_p$
+    satisfies axioms (S1), (S2) and (S3) of a SEA.
+\begin{point}{Proof}%
+The proofs of (S1) and (S2) are obvious.
+To show~(S3), assume~$\andthen{p}{q} = 0$
+    for some predicates~$p,q$.
+    Then~$1 \after \asrt_q \after \asrt_p  = \andthen{p}{q}= 0$
+and so~$\asrt_q \after \asrt_p = 0 = \asrt_0$.
+Applying the dagger, we find
+$0 = \asrt_0^\dagger = \asrt_p^\dagger \after \asrt_q^\dagger
+                = \asrt_p \after \asrt_q$.
+    Thus~$\andthen{q}{p} = 0 = \andthen{p}{q}$, as desired. \qed
+\end{point}
+\end{point}
+\end{parsec}
+
 \subsection{Homological categories}
 \begin{parsec}%
 \begin{point}%
@@ -6679,6 +6780,16 @@ We will first derive exactness in~$\cok a$
 \end{point}
 \end{point}
 \end{parsec}
+
+
+    %  operational, wilce: \cite{barnum2013symmetry}
+    % vicary frob cstar: \cite{vicary2011categorical}
+    % meas without sums \cite{coecke2006quantum}
+    % cpstar \cite{coecke2016categories}
+    % dagger compact closed \cite{selinger2007dagger}
+    % dagger split sel \cite{heunen2013completely}
+
+    % bohrification \cite{heunen2012bohrification}
 \end{document}
 
 % vim: ft=tex.latex
