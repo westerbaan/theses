@@ -2927,34 +2927,63 @@ Let~$b$ be an element of a von Neumann algebra~$\scrB$
 which is the ultrastrong limit of a net
 of elements
 from a $C^*$-subalgebra $\scrA$ of~$\scrB$.
-\begin{enumerate}
-\item
-If~$b$ is an effect,
-then~$b$ is the ultrastrong limit of effects from~$\scrA$.
-\item
-If~$b$ is positive,
-then~$b$ is the ultrastrong limit of positive elements from~$\scrA$.
-\item
+Then
 $b$ is the ultrastrong limit of a net~$(a_\alpha)_\alpha$
 in~$\scrA$ with~$\|a_\alpha\|\leq\|b\|$ for all~$\alpha$.
+Moverover,
+\begin{enumerate}
+\item
+if~$b$ is self-adjoint,
+then the~$a_\alpha$ can be chosen to be self-adjoint as well;
+\item
+if~$b$ is positive,
+then the~$a_\alpha$ can be chosen to be positive as well, and
+\item
+if~$b$ is an effect,
+then the~$a_\alpha$ can be chosen to be effects as well.
 \end{enumerate}
 \begin{point}{Proof}%
 Let~$(a_\alpha)_\alpha$
-be a net in~$\scrA$ which converges ultrastrongly
+be a net in~$\scrA$ that converges ultrastrongly
 to~$b$.
-From~\sref{proto-kaplansky} it is clear that if~$b$ is an effect,
-then the effects  $ 0\vee a_\alpha \wedge 1$
-of~$\scrA$ 
-converge ultrastrongly to~$ 0\vee b \wedge 1 = b$;
-and if~$b$ is positive,
-then the positive elements~$(a_\alpha)_+$
-converge ultrastrongly to~$b_+=b$;
-and if~$b$ is \emph{self-adjoint}
-then the elements $a_\alpha':=-\|b\|\vee a_\alpha \wedge \|b\|$ 
-of~$\scrA$ with $\|a_\alpha'\|\leq \|b\|$
-converge ultrastrongly to~$-\|b\|\vee b \wedge \|b\|=b$.
 
-The last point, however, requires a trick:
+Assume for the moment that~$b$ is self-adjoint.
+Then~$\Real{(a_\alpha)}$
+converges ultraweakly (but perhaps not ultrastrongly)
+to~$\Real{b}=b$
+as~$\alpha\to\infty$,
+and so~$b$ is in the ultraweak
+closure of the convex set~$\Real{\scrA}$.
+Since the ultraweak and ultrastrong closure
+of convex subsets of~$\scrA$
+coincide (by~\sref{ultraclosed}),
+we see that~$b$ is also the ultrastrong limit
+of some net $(a_\alpha')_\alpha$ in~$\Real{\scrA}$.
+Since the map~$-\|b\|\vee(\,\cdot\,)\wedge \|b\|\colon
+\Real{\scrB}\to\Real{\scrB}$
+is ultrastrongly continous by~\sref{proto-kaplansky}
+we see that 
+$a_\alpha'' := -\|b\|\vee a_\alpha'\wedge \|b\|$
+gives a net $(a_\alpha'')_\alpha$
+in~$[-\|b\|,\|b\|]_\scrA$
+that
+converges ultrastrongly
+to~$b$.
+
+If we assume in addition
+that~$b$ is positive,
+then~$a_\alpha''' := (a_\alpha'')_+$
+gives a net~$(a_\alpha''')_\alpha$
+in~$[0,\|b\|]_\scrA$
+that converges ultrastrongly to $b_+=b$,
+because the map $(\,\cdot\,)_+\colon \Real{\scrB}\to\Real{\scrB}$
+is ultrastrongly continuous by~\sref{proto-kaplansky}.
+Note that if~$b$ is an effect,
+then so are the $a_\alpha'''$.
+
+This takes care of all the special cases.
+The general case
+in which~$b$ is an arbitrary element of~$\scrB$ requires a trick:
 since the element
 $B:=\smash{\left(\begin{smallmatrix} 0 & b \\
 b^* & 0 \end{smallmatrix}\right)}$
@@ -3150,20 +3179,34 @@ We call a projection~$p$ of a von Neumann algebra~$\scrA$
 for some np-map $\omega\colon \scrA\to\C$.
 \end{point}
 \begin{point}[ultracyclic-basic]{Exercise}%
-Verify the following facts about ultracyclic projections.
+Let~$\scrA$ be a von Neumann algebra.
+Verify the following facts.
 \begin{enumerate}
 \item
-If~$p$ and~$q$ are ultracyclic projections,
-so is~$p\cup q$.
+If~$p$ and~$q$ are ultracyclic projections in~$\scrA$,
+then~$p\cup q$ is ultracyclic.
 \item
-If~$p \leq q$ are projections,
+If~$p \leq q$ are projections in~$\scrA$,
 and~$q$ is ultracyclic,
 then~$p$ is ultracyclic.
 \item
-Every projection is a directed supremum
-of ultracyclic projections.\\
-(Hint: first show that~$1$ is the supremum of all ultracyclic projections.)
+Every projection~$p$ in~$\scrA$ is a directed supremum
+of ultracyclic projections.
+In fact, $p=\bigvee_\omega \ceil{\omega}$
+where~$\omega$ ranges over the np-functionals on~$\scrA$
+with $\omega(p^\perp)=0$.
+(Hint: first consider~$p=1$.)
 \end{enumerate}
+\end{point}
+\begin{point}{Remark}%
+A projection~$E$ in a von Neumann algebra~$\scrR$
+of bounded operators on a Hilbert space~$\scrH$
+is called \Define{cyclic} when it is the projection
+onto $\overline{\scrR^\square x}$
+for some vector~$x\in\scrH$,
+which turns out to be the carrier
+of the vector functional $\left<x,(\,\cdot\,)x\right>$
+restricted to~$\scrR$.
 \end{point}
 \begin{point}[vnsac]{Theorem}%
 A von Neumann subalgebra~$\scrB$ of a von Neumann algebra~$\scrA$

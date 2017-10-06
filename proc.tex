@@ -587,11 +587,23 @@ for all projections $p$ and~$q$ of~$\scrA$ with $pq=0$.
 \item
 \label{gardner-4}
 $f$ maps projections to projections.
+\item
+\label{gardner-5}
+$\ceil{f(a)}=f(\ceil{a})$
+for all~$a\in\scrA_+$.
 \end{enumerate}
 \begin{point}{Proof}%
 (Based in part on the work of Gardner in~\cite{gardner}).
-\begin{point}{\sref{gardner-1}$\Longrightarrow$\sref{gardner-4}}%
-	is rather obvious.
+\begin{point}{\sref{gardner-1}$\Longrightarrow$\sref{gardner-4}
+ and \sref{gardner-5}$\Longrightarrow$\sref{gardner-4}}
+	are rather obvious.
+\end{point}
+\begin{point}{\sref{gardner-4}$\Longrightarrow$\sref{gardner-5}}%
+ $\ceil{f(a)}
+\smash{\overset{\sref{ncp-ceil}}{=\joinrel=\joinrel=}}
+\ceil{f(\ceil{a})}
+=f(\ceil{a})$
+since~$f(\ceil{a})$ is a projection.
 \end{point}
 \begin{point}{\sref{gardner-4}$\Longrightarrow$\sref{gardner-3}}%
 Let~$p$ and~$q$ be projections of~$\scrA$ with~$pq=0$.
@@ -646,6 +658,30 @@ we see that~$f$ maps projections to projections,
 and is thus multiplicative, by~\sref{gardner}.
 It follows automatically that~$f^{-1}$ is multiplicative too.\qed
 \end{point}
+\end{point}
+\begin{point}{Exercise}%
+Show that any filter of a projection is multiplicative.
+(Hint: the filter is
+ncpu-isomorphic, \sref{filter-basic},
+and thus nmiu-isomorphic, \sref{iso}, to
+a standard filter.)
+\end{point}
+\begin{point}[sharp-multiplicative]{Exercise}%
+Show that for an ncp-map $f\colon \scrA\to\scrB$
+between von Neumann algebras
+the following are equivalent.
+\begin{enumerate}
+\item
+$f$ is multiplicative.
+\item
+$f$ sends projections to projections.
+\item
+$\ceil{f(a)}=f(\ceil{a})$
+for all~$a \in\scrA_+$.
+\end{enumerate}
+(Hint: factor~$f=\zeta \circ h$
+where~$\zeta$ is a filter for~$f(1)$
+and~$h$ is an ncp-map.)
 \end{point}
 \end{parsec}
 \subsection{Purity}
