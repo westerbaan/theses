@@ -126,7 +126,7 @@ The key insight was the following:
     is the unique~$\diamond$-positive map on~$\scrA$
     with~$\asrt_a(1) = a$.
 We turn this Theorem into an axiom:
-    a~$\&$-effectus is
+    an~$\&$-effectus is
     a~$\diamond$-effectus
     where there are such unique~$\diamond$-positive maps~$\asrt_a$
     and an additional polar decomposition axiom holds.
@@ -145,11 +145,11 @@ In particular, the pure maps~$\scrB(\scrH) \to \scrB(\scrK)$
     which carry a~$\dagger$-structure,
     namely~$(\ad_v)^\dagger = \ad_{v^*}$.
 This begs the question: can we define a~$\dagger$ on all pure maps
-    in a~$\&$-effectus?
+    in an~$\&$-effectus?
 The main result of this chapter
     is Theorem \sref{dagger-theorem}
     which gives  necessary and sufficient conditions
-    for a~$\&$-effectus
+    for an~$\&$-effectus
     to have a well-behaved~$\dagger$-structure on its pure maps.
 After this highpoint, we reflect and discuss how these
     structures compare to those already known in the literature.
@@ -159,7 +159,7 @@ After this highpoint, we reflect and discuss how these
 \begin{parsec}%
 \begin{point}%
 Before we turn to effectuses,
-    it is convenient to introcuce some lesser-known algebraic structures
+    it is convenient to introcuce some lesser-known algebraic structures first
     of which the effect algebra is the most important.
 It will turn out that the set of predicates associated to an object in
     an effectus can be arranged into an effect algebra.
@@ -735,7 +735,7 @@ At first glance an effectus in partial form seems
     to have a much richer structure than an effectus in total form.
 This is not the case ---
     effectuses in total and partial form are two views
-    on the same thing: \cite{kentapartial,introeff}
+    on the same thing: \cite{kentapartial,effintro}
 \end{point}
 \end{point}
 \begin{point}[cho-thm]{Theorem (Cho)}%
@@ -3286,10 +3286,11 @@ Unless otherwise specified~$\pi_p$ will be some
 \end{point}
 \begin{point}{Example}%
 In~$\op{\vN}$ comprehensions are exactly the same thing
-as corners, see \TODO{...}.
+    as corners, see \sref{dils-corner} or \sref{corner}.
 An example of a comprehension for~$a \in \scrA$
     is given by~$\pi\colon \scrA \to \floor{a}\scrA\floor{a}$
-    with~$\pi(b) = \floor{a}b\floor{a}$.
+    with~$\pi(b) = \floor{a}b\floor{a}$
+    as proven in \sref{prop-corner}.
 \end{point}
 \begin{point}[compr-basics]{Exercise}%
 Show the following basic properties of comprehensions.
@@ -3447,16 +3448,6 @@ Hence~$1 = 1 \after \id =1 \after f \after \xi \leq 1 \after \xi = 1 \after \pi$
     and so~$\pi$ is total. \qed
 \end{point}
 \end{point}
-\begin{point}[factor-compr]{Proposition}%
-Assume~$\pi_s\colon \cmpr{X}{s} \to X$ is a comprehension for~$s$.
-For any~$f\colon Y \to X$ with~$\IM f = s$,
-    there is a unique \emph{faithful}~$g\colon Y \to \cmpr{X}{s}$
-    with~$\pi \after g = f$.
-\begin{point}{Proof}
-There is some~$g \colon Y \to \cmpr{X}{s}$ with~$\pi_s \after g = f$. \qed
-\TODO{}
-\end{point}
-\end{point}
 \end{parsec}
 \subsection{Sharp predicates}
 \begin{parsec}%
@@ -3475,7 +3466,7 @@ We define~$\Define{\floor{p}} = \IM \pi_p$,
 Also write~$\Define{\ceil{p}} = \floor{p^\perp}^\perp$.
 \end{enumerate}
 \begin{point}{Beware}%
-In \TODO{...} $p$ is called sharp whenever~$p \wedge p^\perp=0$.
+In \cite{effintro} $p$ is called sharp whenever~$p \wedge p^\perp=0$.
 In general this is weaker than image-sharpness, which we use in this text.
 In~\sref{floor-basics}
     we will see~$\floor{p}$ is sharp.
@@ -3684,7 +3675,7 @@ We take the idea of restricting oneself to projections
     one step further: we also want to restrict to projections
     for our outcomes.
 It is rare for quantum processes to send projections to projections
-    (see \TODO{mult}),
+    (see \sref{exa-sharp-vn}),
     so instead we consider the least projection above the outcome.
 The simple idea of taking the restriction to sharp predicates
     seriously, leads to a host of interesting new notions.
@@ -3988,8 +3979,8 @@ Show that the following are equivalent.
 \end{enumerate}
 \end{point}
 
-\begin{point}{Example}%
-In~$\op{\vN}$ the sharp maps are exactly the~MNIU-maps
+\begin{point}[exa-sharp-vn]{Example}%
+In~$\op{\vN}$ the sharp maps are exactly the~mniu-maps
 (i.e.~the normal $*$-homomorphisms). \TODO{ref}
 \end{point}
     
@@ -4001,10 +3992,10 @@ In~$\op{\vN}$ the sharp maps are exactly the~MNIU-maps
 In a~$\diamond$-effectus
     quotient and comprehension are not tied together by its axioms.
     With two additional axioms, we will see quotient and comprehension
-    become tightly interwoven. \TODO{contrast old attempts}
+    become tightly interwoven.
 \end{point}
 \begin{point}{Definition}%
-A~\Define{$\&$-effectus}
+An~\Define{$\&$-effectus} (``andthen effectus'')
 is a $\diamond$-effectus
 such that
 \begin{enumerate}
@@ -4023,8 +4014,10 @@ we define~$\Define{\andthen{p}{q}} = q \after \asrt_p$
     and~$\Define{p^2} = \andthen{p}{p}$.
 \end{point}
 \begin{point}[vn-is-andthen-eff]{Example}%
-The category$\op{\vN}$ is a~$\&$-effectus
-    with~$\andthen{a}{b} = \sqrt{a}b\sqrt{a}$. \TODO{ref}
+The category~$\op{\vN}$ is an~$\&$-effectus
+    with~$\asrt_a\colon b \mapsto \sqrt{a}b\sqrt{a}$.
+The first axiom is proven in \sref{positive-map-uniqueness}
+    and the second in \sref{pure-fundamental}.
 \end{point}
 \begin{point}[sharp-prop]{Proposition}%
 For a predicate~$p$ in an $\&$-effectus the following are equivalent.
@@ -4265,13 +4258,20 @@ If~$f$ is pure and~$\IM f = 1$, then~$f$ is a quotient.
 If~$f$ is pure and~$1 \after f = 1$, then~$f$ is a comprehension.
 \end{enumerate}
 \begin{point}{Proof}%
-By \sref{factor-compr}
-we know~$f = \pi_{\IM f} \after g'$
-for some faithful~$g'$.
+By the universal property of~$\pi_{\IM f}$,
+    there is a unique~$g'$ with~$f = \pi_{\IM f} \after g'$.
+To show~$g'$ is faithful, assume~$p\after g' = 0$
+    for some predicate~$p$.
+Then~$0 = p \after g' = p \after \zeta_{\IM f} \after \pi_{\IM f} \after g'
+                = p \after \zeta_{\IM f} \after f$
+    and so~$p \after \zeta_{\IM f} \leq \IMperp f$,
+    hence~$p = p \after \zeta_{\IM f} \after \pi_{\IM f}
+                \leq (\IMperp f )\after \pi_{\IM f} = 0$, which
+                shows~$g'$ is indeed faithful.
+
 Note~$1 \after g' = 1 \after \pi_{\IM f} \after g' = 1 \after f$.
 By~\sref{quotient-total} and~\sref{zeta-asrt-quot}
-we find~$g' = g \after \zeta_{\ceil{1 \after f}} \after \asrt_{1 \after f}$
-for a unique total~$g$.
+    there is a unique total~$g$ with~$g' = g \after \zeta_{\ceil{1 \after f}} \after \asrt_{1 \after f}$.
 Clearly~\eqref{eq-standard-form-map} holds
 and~$g$ is the unique map
     for which \eqref{eq-standard-form-map} holds
@@ -4537,12 +4537,19 @@ For convenience, call~$C$ a \Define{$\dagger'$-effectus}
     satisfying axioms 1, 2 and 3 from the Theorem above.
 \end{point}
 \begin{point}{Note}%
-    In a~$\&$-effectus
-    with seperating predicates,
-    the second axiom is equivalent
-    to~$\andthen{(\andthen{p}{q})^2}{r}
-    = \andthen{p}{(\andthen{q^2}{(\andthen{p}{r})})}$
+    In an~$\&$-effectus
+    with separating predicates
+    (see \sref{dfn-mandso}),
+    the second axiom of a~$\dagger'$-effectus is equivalent
+    to
+\begin{equation*}
+    \andthen{(\andthen{p}{q})^2}{r}
+    \ =\  \andthen{p}{(\andthen{q^2}{(\andthen{p}{r})})}
+\end{equation*}
     for all predicates~$p,q,r$.
+This is essentially the \emph{fundamental formula
+    of quadratic Jordan algebras} \cite[\S 4.2]{mccrimmon2006taste}
+    (with~$U_x y \equiv \andthen{x^2}{y}$).
 \end{point}
 \end{point}
 \end{parsec}
@@ -4661,7 +4668,8 @@ we have
 and similarly~$\ceil{1 \after \pi_s^\dagger} = \IM \pi_s = s$.
 As~$1 \after \pi_s^\dagger \leq \ceil{1 \after \pi_s^\dagger} = s$,
     there is some pure~$h$ with~$\pi_s^\dagger = h \after \zeta_s$.
-There is also some pure and faithful \TODO{...}~$g$
+By \sref{standard-form-map},
+    there is also some pure and faithful~$g$
     with~$\zeta_s^\dagger = \pi_s \after g$.
 Using~$\zeta_s \after \pi_s = \id$ twice we find
 \begin{equation}\label{eq-dagger-zeta-pi-conn}
@@ -4997,7 +5005,44 @@ In a~$\dagger'$-effectus,
     and~$f = h \after \asrt_{1 \after f}$.
     Furthermore~$f^\dagger = \asrt_{1 \after f}\after h^\dagger$.
 \begin{point}{Proof}%
-        \TODO{}
+By~\sref{standard-form-map}
+ we know~$f = \pi_{\IM f} \after \alpha \after \zeta_{\ceil{1 \after f}}
+        \after \asrt_{1 \after f}$
+        for some iso~$\alpha$.
+Define~$h = \pi_{\IM f} \after \alpha \after \zeta_{\ceil{1 \after f}}$.
+Clearly~$1 \after h = \ceil{1 \after f}$
+    and $f = h \after \asrt_{1 \after f}$.
+    Also
+    \begin{alignat*}{2}
+        f^\dagger &\ \equiv\ 
+        \asrt_{1 \after f}
+            \after \pi_{\ceil{1 \after f}}
+            \after \alpha^{-1}
+            \after \zeta_{\IM f} \\
+        &\ = \ 
+        \asrt_{1 \after f}
+        \after \asrt_{\ceil{1 \after f}}
+            \after \pi_{\ceil{1 \after f}}
+            \after \alpha^{-1} 
+            \after \zeta_{\IM f} 
+            &\qquad&\text{by \sref{asrt-absorp-rule}}
+            \\
+        &\ \equiv \ 
+        \asrt_{1 \after f}
+        \after h^\dagger.
+\end{alignat*}
+Only uniqueness remains.
+Assume~$f = h' \after \asrt_{1 \after f}$
+    for some (other) pristine
+    map~$h'$ with~$\ceil{1 \after h'} = \ceil{1 \after f}$.
+By \sref{standard-form-map} and \sref{asrt-absorp-rule},
+    there is an iso~$\alpha'$
+    with~$h' = \pi_{\IM h} \after \alpha' \after \zeta_{\ceil{1 \after f}}$.
+As~$\zeta_{\ceil{1 \after f}} \after \asrt_{1 \after f}$
+    is a quotient (by \sref{zeta-asrt-quot}),
+    quotients are faithful and~$f = h' \after \asrt_{1 \after f}$,
+    we see~$\IM h' = \IM f$
+    and so~$\alpha = \alpha'$ by \sref{standard-form-map}.\qed
 \end{point}
 \end{point}
 \begin{point}[dagger-idempotent]{Proposition}%
@@ -6083,8 +6128,6 @@ The effect algebra~$[0,1]_\scrA$
     is a sequential effect algebra with~$\andthen{a}{b} = \sqrt{a}b\sqrt{a}$.
 Any commutative effect monoid is a sequential effect algebra
     with~$\andthen{a}{b} = a \odot b$.
-\begin{point}%
-\end{point}
 \end{point}
 \begin{point}{Proposition}%
 In a~$\dagger$-effectus,
