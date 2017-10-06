@@ -3177,6 +3177,31 @@ Now apply~\sref{sequence-separation-lemma}.\qed
 We call a projection~$p$ of a von Neumann algebra~$\scrA$
 \Define{ultracyclic} if~$p=\ceil{\omega}$
 for some np-map $\omega\colon \scrA\to\C$.
+\begin{point}{Remark}%
+Some explanation of this terminology
+is in order.
+A projection~$E$
+in a von Neumann subalgebra~$\scrR$
+of~$\scrB(\scrH)$
+is usually defined to be \Define{cyclic}
+when~$E$ is the projection 
+onto~$\smash{\overline{\scrR^\square x}}$
+for some~$x\in \scrH$
+(see Definition~5.5.8~\cite{kr}),
+but with~\sref{carrier-vector-state} and~\sref{double-commutant}
+we'll be able to see that
+this amount to requiring that~$E$
+be
+the carrier of the vector functional
+$\left<x,(\,\cdot\,)x\right>\colon \scrR\to\C$.
+So, loosely speaking,
+a cyclic projection
+is the carrier of a vector functional
+with respect to some fixed Hilbert space,
+while an ultracyclic projection
+is the carrier of a vector functional
+with respect to some arbitrary Hilbert space.
+\end{point}
 \end{point}
 \begin{point}[ultracyclic-basic]{Exercise}%
 Let~$\scrA$ be a von Neumann algebra.
@@ -3197,16 +3222,6 @@ where~$\omega$ ranges over the np-functionals on~$\scrA$
 with $\omega(p^\perp)=0$.
 (Hint: first consider~$p=1$.)
 \end{enumerate}
-\end{point}
-\begin{point}{Remark}%
-A projection~$E$ in a von Neumann algebra~$\scrR$
-of bounded operators on a Hilbert space~$\scrH$
-is called \Define{cyclic} when it is the projection
-onto $\overline{\scrR^\square x}$
-for some vector~$x\in\scrH$,
-which turns out to be the carrier
-of the vector functional $\left<x,(\,\cdot\,)x\right>$
-restricted to~$\scrR$.
 \end{point}
 \begin{point}[vnsac]{Theorem}%
 A von Neumann subalgebra~$\scrB$ of a von Neumann algebra~$\scrA$
@@ -3248,10 +3263,11 @@ by~\sref{kadisons-lemma}
 a projection~$q$ in~$\scrB$
 with $\omega_0(q)=0=\omega_1(q^\perp)$,
 we get 
-$\ceil{\omega_1}_\scrB \geq q \geq 
+$\ceil{\omega_1}_\scrB \leq q \leq 
 \ceil{\omega_0}_\scrB^\perp$,
-and so~$\bigwedge_{\omega_0} \ceil{\omega_0}_\scrB^\perp 
-\geq \bigvee_{\omega_1} \ceil{\omega_1}_\scrB$.
+and so~$\bigvee_{\omega_1} \ceil{\omega_1}_\scrB
+\leq 
+\bigwedge_{\omega_0} \ceil{\omega_0}_\scrB^\perp$.
 It follows that the inequalities in~\eqref{ultracyclic-proof}
 are in fact equalities,
 and so~$p=\bigvee_{\omega_1}\ceil{\omega_1}_\scrB \in \scrB$.\qed
@@ -3307,7 +3323,8 @@ converges ultrastrongly to~$T$.
 So let $\omega\colon \scrB(\scrH)\to\C$ be an arbitrary
 np-map,
 being of the form~$\omega\equiv \sum_n\left<x_n,(\,\cdot\,)x_n\right>$
-for some $x_1,x_2,\dotsc\in\scrH$ with $\sum_n \|x_n\|^2 <\infty$.
+for some $x_1,x_2,\dotsc\in\scrH$ with $\sum_n \|x_n\|^2 <\infty$
+by~\sref{bh-np}.
 We must show that~$\|T-T_\alpha\|_\omega
 \equiv (\sum_n \|(T-T_\alpha)x_n\|^2)^{\nicefrac{1}{2}}$ 
 converges to~$0$ as $\alpha\to 0$.
@@ -3384,7 +3401,7 @@ The resulting `form'
 $[\,\cdot\,,\,\cdot\,]\colon \scrH\times\scrH\to \C$
 (see~\sref{chilb-form})
 is bounded, 
-because~$\left|[x,y]\right| \leq (\sup_\alpha \|T_\alpha\|)\|x\|\|y\|$
+because~$\left\|[x,y]\right\| \leq (\sup_\alpha \|T_\alpha\|)\|x\|\|y\|$
 for all~$x,y\in\scrH$
 and $\sup_\alpha\|T_\alpha\|<\infty$
 since $(T_\alpha)_\alpha$
@@ -3443,7 +3460,7 @@ Since~$\scrB(\scrH_\Omega)$ is ultrastrongly complete
 and~$\scrR$ is  ultrastrongly closed in~$\scrB(\scrH_\Omega)$
 (see~\sref{vnsac}),
 we see that $\scrR$
-complete with respect to the ultrastrong
+is complete with respect to the ultrastrong
 topology of~$\scrB(\scrH_\Omega)$,
 but since any np-functional~$\omega\colon \scrR\to\C$
 is of the form~$\omega\equiv \left<x,(\,\cdot\,)x\right>$
@@ -3474,7 +3491,7 @@ is clearly a linear homeomorphism from~$\scrA$ with the  ultraweak topology
 onto~$\kappa(\scrA)\,\subseteq \C^\Omega$ endowed
 with the product topology.
 Since~$\kappa$ restricts
-to a isomorphism of uniform spaces
+to an isomorphism of uniform spaces
 $(\scrA)_1\to \kappa(\,(\scrA)_1\,)$,
 and $(\scrA)_1$ is ultraweakly complete 
 (being a norm-bounded ultraweakly-closed
@@ -3554,7 +3571,7 @@ The map~$g$ is also bounded,
 because since~$\|s_\alpha\|\leq (1+\varepsilon)\|a\|$
 for all~$\alpha$,
 where $(s_\alpha)_\alpha$ and~$t$ are as before,
-we have $\|f (s_\alpha)\|\leq (1+\varepsilon) \|g\|\|a\|$
+we have $\|f (s_\alpha)\|\leq (1+\varepsilon) \|f\|\|a\|$
 for all~$\alpha$,
 and so~$\|g(a)\|=\|\uwlim_\alpha f(s_\alpha)\|
 \leq (1+\varepsilon) \|f \|\|a\|$.
@@ -3566,7 +3583,7 @@ That, finally, $g$ is ultraweakly continuous
 follows by a standard but abstract argument from the fact
 that $f$ is \emph{uniformly} ultraweakly continuous.
 We'll give a concrete version of this argument here.
-To begin note that it suffices to show that~$\omega\circ g$
+To begin, note that it suffices to show that~$\omega\circ g$
 is ultraweakly continuous
 at~$0$
 where~$\omega\colon \scrB\to\C$
@@ -3575,7 +3592,7 @@ Let~$\varepsilon>0$ be given.
 Since~$f$ 
 is ultraweakly continuous,
 and 
-thus $\omega\circ f$ too,
+thus $\omega\circ f$ is too,
 there is~$\delta>0$ and an np-functional~$\nu\colon \scrA\to\C$
 such that $\left|\nu(s)\right|\leq \delta \implies 
 \left|\omega(f(s))\right|\leq \varepsilon$
@@ -3656,9 +3673,15 @@ $tat=t$, and~$\ceill{a}\leq \ceilr{t}$ and~$\ceilr{a}\leq \ceill{t}$.
 \item
 \label{pseudoinverse-5}
 $t$ is a pseudoinverse of~$a$.
+\item
+\label{pseudoinverse-6}
+$a$ is a pseudoinverse of~$t$.
 \end{enumerate}
 \begin{point}{Proof}%
-We make two loops.
+\grayed{(\ref{pseudoinverse-5}$\iff$%
+\ref{pseudoinverse-6})}\ 
+is clear.
+For the remainder we  make two loops.
 \grayed{(\ref{pseudoinverse-1}$\Longrightarrow$\ref{pseudoinverse-2})}\ 
 We have $\ceill{t}\leq \ceilr{a}$ by assumption,
 and $\ceilr{t}=\ceilr{t\ceill{t}}
@@ -3729,8 +3752,9 @@ Let~$a$ be a positive element of a von Neumann algebra~$\scrA$.
 \begin{enumerate}
 \item
 Show that~$a$ is pseudoinvertible iff~$a$
-is invertible in~$\ceil{a}\scrA\ceil{a}$
+is invertible in~$\ceil{a}\!\scrA\!\ceil{a}$
 iff $at=\ceil{a}$ for some~$t\in\scrA_+$.
+Show, moreover, that $at=ta$ for such~$t$.
 \item
 Show that~$a$ is pseudoinvertible iff
 there is~$\lambda>0$ with $\lambda \ceil{a}\leq a$.
@@ -3791,7 +3815,7 @@ of~$b^*b$.
 Show that $t_1b^*,\ t_2b^*,\ \dotsc$
 is an approximate pseudoinverse of~$b$.
 \end{point}
-\begin{point}[approximate-pseudoinverse]{Proposition}%
+\begin{point}[approximate-pseudoinverse]{Theorem}%
 Every element~$a$ of a von Neumann algebra~$\scrA$
 has an approximate pseudoinverse.
 \begin{point}{Proof}%
@@ -3854,11 +3878,13 @@ making $t_1,t_2,\dotsc$ an approximate pseudoinverse of~$a$.\qed
 \end{point}
 \end{parsec}
 \subsection{Division}
+\TODO{add narative}
 \begin{parsec}%
 \begin{point}[division]{Definition}%
-Let~$b$ be an element of a von Neumann algebra~$\scrA$.
-Given an element~$a$ of~$\scrA b$ 
-we denote by~\Define{$a/b$} 
+Let~$b$ be an element of a von Neumann algebra~$\scrA$,
+and let~$a$ be an element of~$\scrA b$
+--- so~$a\equiv cb$ for some~$c\in\scrA$.
+We denote by~\Define{$a/b$} 
 the (by~\sref{mult-cancellation}) unique
 element of~$\scrA\!\ceilr{b}$
 with~$a=(a/b)\, b$,
@@ -3929,7 +3955,7 @@ To this end, note that
 \ &\leq\ \textstyle 
  (\sum_{n=M}^N t_n) \,b^*b\, (\sum_{n=M}^Nt_n)
 \\
-\ &\leq\ \textstyle 
+\ &= \ \textstyle 
 \sum_{n,m=M}^N
 t_nb^*bt_m 
 \\
@@ -4064,7 +4090,7 @@ which is not ultrastrongly Cauchy.
 \end{parsec}
 \subsection{Polar decomposition}
 \begin{parsec}%
-\begin{point}[polar-decomposition]{Propisition (Polar Decomposition)}%
+\begin{point}[polar-decomposition]{Proposition (Polar Decomposition)}%
 Any element~$a$ of a von Neumann
 algebra~$\scrA$
 can be uniquely written as~$a=\Define{[a]}\sqrt{a^*a}$,
@@ -4081,8 +4107,8 @@ and $[a^*]=[a]^*$, so that~$\sqrt{aa^*}[a]=a=[a]\sqrt{a^*a}$.
 \end{enumerate}
 \begin{point}{Proof}%
 Since $a^*a\leq \sqrt{a^*a}\sqrt{a^*a}$,
-the existance and uniqueness
-an element~$[a]$ of~$\scrA$
+the existence and uniqueness
+of an element~$[a]$ of~$\scrA$
 with $a=[a]\sqrt{a^*a}$
 and~$\ceill{\,[a]\,}\leq
 \ceill{a}\equiv \ceilr{\,\sqrt{a^*a}\,}$
@@ -4266,12 +4292,15 @@ is positive iff $\|f\|\leq f(1)$.
 \begin{point}{Proof}%
 (Based on Theorem 4.3.2 of~\cite{kr}.)
 
-Since the statement is clearly true for the zero functional,
-we may assume that~$f\neq 0$, that is, $\|f\|\neq 0$.
-The resulting
-problem is  easily reduced
-to the case that~$f$ is unital
-(by replacing~$f$ by~$\|f\|^{-1}f $), so we'll assume that $f(1)=1$.
+If~$f(1)=0$, then~$f=0$ in both cases 
+(viz.~$f$ is positive, and~$\|f\|\leq f(1)$),
+so
+we may assume that~$f(1)\neq 0$.
+The problem is easily reduced farther to the case 
+that~$f(1)=1$
+by replacing~$f$ by~$f(1)^{-1}f$
+(noting that~$f(1)\geq 0$ in both cases),
+so we'll assume that~$f(1)=1$.
 
 \begin{point}{$f$ positive $\implies$ $\|f\|\leq 1$}%
 This follows
@@ -4328,7 +4357,7 @@ it suffices to prove that~$u^*u$ is a projection.
 Suppose towards a contradiction that~$u^*u$ is not a projection.
 Then $u^*u$,
 represented
-as continuous function (on~$\spec(a)$ cf.~\sref{functional-calculus}),
+as continuous function (on~$\spec(u^*u)$ cf.~\sref{functional-calculus}),
 takes neither the value~$0$ nor~$1$ on a neighbourhood
 of some point,
 and so by considering a
@@ -4379,9 +4408,8 @@ are positive.
 We'll first show that~$f$ takes the value~$\|f\|$
 on some extreme point~$u$ of~$(\scrA)_1$.
 To begin, since~$(\scrA)_1$ is ultraweakly compact (\sref{vn-ball-compact}),
-and~$a\mapsto \left|f(a)\right|,\,(\scrA)_1\to\C$ 
-is ultraweakly continuous,
-the subset $\{\,\left|f(a)\right|\colon\,a\in(\scrA)_1\,\}$
+and~$f$ is ultraweakly continuous
+the subset $\{\,f(a)\colon\,a\in(\scrA)_1\,\}$
 of~$\R$ is compact,
 and therefore has a largest element, 
 which must be~$\|f\|$.
@@ -4396,8 +4424,7 @@ by the Krein--Milman Theorem
 Note that~$F$ is a face of~$(\scrA)_1$:
 if~$\frac{1}{2}a+\frac{1}{2}b\in F$ for some~$a,b\in(\scrA)_1$,
 then $\frac{1}{2}f(a)+\frac{1}{2}f(b) = \|f\|$,
-and $\left|f(a)\right|,\,\left|f(b)\right|\leq \|f\|$,
-so~$\left|f(a)\right|=\left|f(b)\right|=\|f\|$
+so~$f(a)=f(b)=\|f\|$
 (since~$\|f\|$ is extreme in $(\C)_{\|f\|}$)
 and thus~$a,b\in F$.
 It follows that~$u$ is not only extreme in~$F$, but also in~$(\scrA)_1$,
@@ -4429,7 +4456,7 @@ By a similar reasoning we get $f(uu^*a)=f(a)$.\qed
 \begin{point}[uwcont-on-ball]{Corollary}%
 A functional $f\colon \scrA\to\C$
 on a von Neumann algebra~$\scrA$
-is normal
+is ultraweakly continuous
 when it is ultraweakly continuous
 on the unit ball~$(\scrA)_1$.
 \begin{point}{Proof}%
@@ -4488,7 +4515,7 @@ is the non-trivial fact due to Sakai~\cite{sakai} (which we
 don't need and therefore won't prove),
 that the obvious 
 map $\scrA\to(\scrA_*)^*$,
-where $(\scrA_*)^*$ is the \emph{dual} of~$\scrA$ --- the
+where $(\scrA_*)^*$ is the \emph{dual} of~$\scrA_*$ --- the
 vector space of bounded linear maps $\scrA_*\to\C$
 endowed with the operator norm ---,
 is a surjective isometry,
@@ -4597,9 +4624,51 @@ is norm bounded.\qed
 \subsection{Ultraweak permanence}
 \begin{parsec}%
 \begin{point}%
-To pry out the final bits of structure of normal functionals
-we resort to the classical but nonetheless rather mysterious notion
-of commutant, see~\sref{commutant}.
+We turn to 
+subtle, but suprisingly difficult matter:
+it is not immediately clear
+that the ultraweak topology on a von Neumann
+subalgebra~$\scrA$ of a von Neumann algebra~$\scrB$,
+coincides (on~$\scrA$) with the ultraweak topology on~$\scrB$.
+While it is easily seen that the former is finer
+(that is, a net in~$\scrA$ which converges ultraweakly in~$\scrA$,
+converges ultraweakly in~$\scrB$ too, because any np-map 
+$\omega\colon \scrB\to\C$ is also an np-map restricted to~$\scrA$),
+it is not obvious that an np-map $\omega\colon \scrA\to\C$
+can be extended to an np-map on~$\scrB$
+--- but it can, as we'll see~\sref{functional-permanence}.
+I'll call this independence of the ultraweak topology
+from the surrounding space
+\emph{ultraweak permanence}
+being not unlike the independence
+of the spectrum of an operator from the surrounding space
+known as spectral permanence (\sref{spectral-permanence}).
+
+
+It is tempting to think that the extension of an np-map~$\omega\colon \scrA
+\to\C$
+on a von Neumann
+subalgebra~$\scrA$ of a von Neumann algebra~$\scrB$
+to~$\scrB$ is simply a matter of applying Hahn--Banach to~$\omega$,
+but this approach presents two problems:
+it yields a normal but not necessarily positive extension
+of~$\omega$;
+and it not clear that~$\omega$ is ultraweakly continuous
+on~$\scrA$ (that is, whether Hahn--Banach applies).
+
+Instead of applying general techniques we feel forced
+to delve deeper
+into the particular structure 
+provided to us by von Neumann algebras
+(namely the commutant, \sref{commutant})
+to show that any np-map
+$\omega\colon \scrA\to\C$
+on a von Neumann algebra~$\scrA$
+of bounded operators on a Hilbert space~$\scrH$
+can be extended to an np-map on~$\scrB(\scrH)$,
+and in fact, is of the form
+$\omega\equiv \sum_n \left<x_n,(\,\cdot\,)x_n\right>$
+for some $x_1,x_2,\dotsc \in\scrH$, see~\sref{normal-functional}.
 \end{point}
 \begin{point}[commutant-ceil]{Proposition}%
 Let~$S$ be a subset of a von Neumann algebra~$\scrA$
@@ -4675,7 +4744,7 @@ which we know must be of the form
 $\omega\equiv \sum_n \left<x_n,(\,\cdot\,)x_n\right>$
 (by~\sref{bh-np})
 and is therefore given by 
-an element $x'\equiv (x_1,x_2,\dotsc)$ of the $\omega$-fold
+an element $x'\equiv (x_1,x_2,\dotsc)$ of the $\N$-fold
 product~$\scrH':=\bigoplus_n\scrH$ of~$\scrH$.
 \begin{enumerate}
 \item
@@ -4759,52 +4828,6 @@ into a von Neumann algebra~$\scrB$.
 \end{point}
 \end{parsec}%
 \begin{parsec}%
-\begin{point}%
-With the double commutant theorem at our disposal,
-we turn to a subtle, but suprisingly difficult matter:
-it is not immediately clear
-that the ultraweak topology on a von Neumann
-subalgebra~$\scrA$ of a von Neumann algebra~$\scrB$,
-coincides (on~$\scrA$) with the ultraweak topology on~$\scrB$.
-While it is easily seen that the former is finer
-(that is, a net in~$\scrA$ which converges ultraweakly in~$\scrA$,
-converges ultraweakly in~$\scrB$ too, because any np-map 
-$\omega\colon \scrB\to\C$ is also an np-map restricted to~$\scrA$),
-it is not obvious that an np-map $\omega\colon \scrA\to\C$
-can be extended to an np-map on~$\scrB$
---- but it can, as we'll see~\sref{functional-permanence}.
-I'll call this independence of the ultraweak topology
-from the surrounding space
-\emph{ultraweak permanence}
-being not unlike the independence
-of the spectrum of an operator from the surrounding space
-known as spectral permanence (\sref{spectral-permanence}).
-
-
-It is tempting to think that the extension of an np-map~$\omega\colon \scrA
-\to\C$
-on a von Neumann
-subalgebra~$\scrA$ of a von Neumann algebra~$\scrB$
-to~$\scrB$ is simply a matter of applying Hahn--Banach to~$\omega$,
-but this approach presents two problems:
-it yields a normal but not necessarily positive extension
-of~$\omega$;
-and it not clear that~$\omega$ is ultraweakly continuous
-on~$\scrA$ (that is, whether Hahn--Banach applies).
-
-Instead of applying general techniques we feel forced
-to delve deeper
-into the particular structure 
-provided to us by von Neumann algebras
-to show that any np-map
-$\omega\colon \scrA\to\C$
-on a von Neumann algebra~$\scrA$
-of bounded operators on a Hilbert space~$\scrH$
-can be extended to an np-map on~$\scrB(\scrH)$,
-and in fact, is of the form
-$\omega\equiv \sum_n \left<x_n,(\,\cdot\,)x_n\right>$
-for some $x_1,x_2,\dotsc \in\scrH$.
-\end{point}
 \begin{point}[gns-mapping-property]{Lemma}%
 Let~$\omega\colon \scrA\to\C$
 be an np-map on a von Neumann algebra~$\scrA$,
@@ -4896,7 +4919,7 @@ Let~$x\in\scrH$ and~$y\in\scrK$ be given.
 
 Show that
 $\left|\left<x,U_iy\right>\right|
-\leq \|U_i^*\| \|U_i y \|$
+\leq \|U_i^*x\| \|U_i y \|$
 for each~$i$
 (perhaps by first proving that  $U_i = U_i U_i^* U_i$).
 
@@ -5151,6 +5174,23 @@ there is an np-functional
 $\omega'\colon \scrB\to\C$
 with $\varrho\circ \omega' = \omega$.
 
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+We end the chapter 
+with another corollary to~\sref{normal-functional}:
+ that  the np-functionals
+on a von Neumann algebra
+are generated (in a certain sense)
+by any centre separating collection
+of functionals. This fact plays
+an important role
+in the next chapter
+for our definition of the tensor product
+of von Neumann algebras
+(on which the product functionals are to be centre separating,
+\sref{tensor}).
 \end{point}
 \begin{point}[vn-center-separating-fundamental]{Proposition}%
 Given a center separating collection~$\Omega$ of np-maps
