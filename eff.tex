@@ -1737,8 +1737,11 @@ As before, when we took the effectus in partial form as base category,
 
 \subsection{Predicates, states and scalars}
 \begin{parsec}%
+\begin{point}%
+We turn to the internal structures of an effectus.
+\end{point}
 \begin{point}[dfn-mandso]{Definition}%
-Let~$C$ be an effectus.
+Let~$C$ be an effectus (in partial form).
 \begin{enumerate}
 \item
 As alluded to before,
@@ -3155,6 +3158,10 @@ We say~$C$ is an \Define{effectus with quotients}
 \end{quote}
 Any  map with this universal property
     is called a \Define{quotient} for~$p$.
+\begin{point}[quot-not]{Notation}%
+Unless otherwise specified~$\xi_p$ will be some
+    quotient for~$p$.
+\end{point}
 \end{point}
 \begin{point}{Example}%
 In~$\op{\vN}$ quotients are exactly the same thing
@@ -3245,7 +3252,7 @@ Thus~$\xi_2 \after \xi_1 = g \after \xi$ for an isomorphism~$g$,
 which shows~$\xi_2 \after \xi_1$ is a quotient, see \sref{quotient-basics}. \qed
 \end{point}
 \end{point}
-\begin{point}{Exercise}
+\begin{point}[quot-fact-system]{Exercise}
 By \sref{quotient-total} we know that each
     map~$f$ factors as~$t \after \xi$
     for some total map~$t$ and quotient~$\xi$.
@@ -3255,6 +3262,75 @@ Show that this forms an orthogonal factorization system ---
     then there is a unique isomorphism~$\vartheta$
     with~$\xi' = \vartheta \after \xi$
     and~$t = t' \after \vartheta$.
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}%
+In \sref{quot-fact-system} we saw
+    that every partial map~$f$
+    factors uniquely via a quotient for~$(1 \after f)^\perp$.
+In this sense quotients are the universal way to restrict to the
+    support on the domain --- so why do we call them quotients
+    instead of, say, initial-support-maps?
+\end{point}
+\begin{point}[dfn-eff-grothendieck]{Definition}%
+For an effectus~$C$,
+    write~$\Define{\int \Pred_\square}$
+    for the category with
+\begin{enumerate}
+\item as objects pairs~$(X,p)$,
+        where~$X$ is an object of~$C$
+        and~$p \in \Pred X$ and
+\item
+    an between~$(X,p)$ and~$(Y,q)$
+    corresponds to a partial map~$f\colon X \to Y$ in~$C$
+       for which we have~$p \leq (q^\perp \after f)^\perp$.
+\end{enumerate}
+Write~$U\colon \int \Pred_\square \to C$
+for the forgetful functor --- that is:~$U(X,p) = X$
+and~$Uf = f$ for arrows~$f$.
+The functor~$U$ has left- and right-adjoint
+    $0 \dashv U \dashv 1$
+    given by
+    $0,1 \colon C \to \int \Pred_\square$
+    with~$0X = (X,0)$, $1X = (X,1)$
+    and~$0f=1f=f$.
+\end{point}
+\begin{point}{Exercise}%
+Show that for an effectus~$C$, the following are equivalent.
+\begin{enumerate}
+\item $C$ has quotients.
+\item The functor~$0\colon C \to \int \Pred_\square$,
+            see \sref{dfn-eff-grothendieck},
+        has a left-adjoint~$Q \colon \int\Pred_\square \to C$.
+\end{enumerate}
+\end{point}
+\begin{point}%
+If the existence of a left-adjoint~$Q$ to~$0$
+    gives quotients,
+    what does the existence of a right-adjoint~$K$ to~$1$ amount to?
+    It will turn out (\sref{compr-grothendieck})
+    this is equivalent to the existence of
+        so-called \emph{comprehensions},
+        the topic of the next section.
+With both quotients and comprehension, we have a chain of four adjunctions:
+\begin{equation*}
+   \vcenter{\xymatrix{
+\int \Pred_\square \ar[d]_{\dashv\;}^{\;\dashv}
+   \ar@/_6ex/[d]^{\;\dashv}_{Q} 
+   \ar@/^6ex/[d]_{\dashv\;}^{K} \\
+   C\ar@/^3ex/[u]^(0.4){0\!}\ar@/_3ex/[u]_(0.4){\!1}
+}} 
+\end{equation*}
+There are numerous other examples
+    of categories which also
+    have such a chain of four adjunctions
+    between it and a natural category of object-with-predicates.
+    See \cite{cho2015quotient} for several examples.
+    In most of these examples, the predicates correspond to subspaces
+        and the left-most functor to quotienting by this subspace.
+    This is the reason for the name `effectus with quotients'.
 \end{point}
 \end{parsec}
 
@@ -3291,6 +3367,12 @@ An example of a comprehension for~$a \in \scrA$
     is given by~$\pi\colon \scrA \to \floor{a}\scrA\floor{a}$
     with~$\pi(b) = \floor{a}b\floor{a}$
     as proven in \sref{prop-corner}.
+\end{point}
+\begin{point}[compr-grothendieck]{Exercise}%
+    Show that an effectus~$C$ has comprehension if and only
+        if the functor~$1 \colon C \to \int \Pred_\square$
+        from \sref{dfn-eff-grothendieck}
+        has a right-adjoint~$K$.
 \end{point}
 \begin{point}[compr-basics]{Exercise}%
 Show the following basic properties of comprehensions.
