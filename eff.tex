@@ -636,12 +636,30 @@ One interested in physics, should think of the objects
     the physical operations between them.
     The final object~$1$ is the physical system with a single state.
 The coproduct~$X+Y$ is the system that can be prepared as~$X$ or as~$Y$.
-
+An arrow~$1 \to X$ corresponds to a physical preparation of the system~$X$
+    and an arrow~$X \to 1+1$ is a yes--no measurement.
+\end{point}
+\begin{point}%
+In this sense an effectus can be seen as a generalized
+        probabilistic theory
+        --- not unlike the operational-probabilistic theories (OPT)
+        of Chiribella et al \cite{chiribella2010probabilistic}.
+There are differences:
+for instance, OPTs are equipped with a parallel composition of systems,
+     effectuses are not and OPTs always have the unit interval as scalars,
+     effectuses might not.
+In \cite{tull2016operational} Tull compares effectuses and OPTs.
+There are other approaches to categorical probabilistic theories;
+ see, for instance~\cite{wilceshortcut,gogioso2017categorical}.
+\end{point}
+\begin{point}%
 Studying programming languages, one would do better thinking of
     the objects of an effectus as data types and
     its arrows as the allowed operations between them (semantics of programs).
 The final object~$1$ is the unit data type.
 The coproduct~$X + Y$ is the union data type of~$X$ and~$Y$.
+An arrow~$1 \to X$ is a value of~$X$
+    and an arrow~$X \to 1+1$ is a predicate on~$X$.
 \end{point}
 \begin{point}%
 Our main example of an effectus in total form
