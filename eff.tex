@@ -2730,7 +2730,7 @@ In particular~$[0,1]^n$ is an effect divisoid
     with component-wise partial division.
 \item
 Later, in \sref{andthen-effect-divisoid},
-    we will see that if~$C$ is a~$\&$-effectus,
+    we will see that if~$C$ is an~$\&$-effectus,
 then~$(\Scal C)^{\mathrm{op}}$ (the scalars with multiplication in the
     opposite direction)
     is an effect divisoid.
@@ -3336,6 +3336,9 @@ There are numerous other examples
 
 \section{Comprehension and images}
 \begin{parsec}%
+\begin{point}%
+We continue with our second axiom.
+\end{point}
 \begin{point}{Definition}%
 Let~$C$ be an effectus.
 We say~$C$ \Define{has comprehension}
@@ -3539,7 +3542,7 @@ Let~$C$ be an effectus with comprehension and images.
 \item
     We say a predicate~$p$ is (image) \Define{sharp}
         if~$p = \IM f$ for some map~$f$.
-    Write~$\SPred X$ for the set of all sharp predicates on~$X$.
+        Write~$\Define{\SPred X}$ for the set of all sharp predicates on~$X$.
 \item
 We define~$\Define{\floor{p}} = \IM \pi_p$,
     where~$\pi_p$ is some comprehension for~$p$.
@@ -3764,12 +3767,12 @@ The simple idea of taking the restriction to sharp predicates
 We will give these right of the bat and study their relevance later on.
 \end{point}
 \begin{point}{Definition}%
-A~\Define{$\diamond$-effectus}
+    A~\Define{$\diamond$-effectus} (``diamond effectus'')
     is an effectus with quotient, comprehension and images
     such that~$s^\perp$ is sharp for every sharp predicate~$s$.
-In a~$\diamond$-effectus
-    we define for any map~$f\colon X \to Y$
-    the following restrictions to sharp predicates
+In a~$\diamond$-effectus,
+    define for~$f\colon X \to Y$
+    the following restrictions to sharp predicates.
     \begin{equation*}
         \xymatrix{
             \SPred X  \ar@/^/[r]^{f_\diamond}
@@ -3779,7 +3782,7 @@ In a~$\diamond$-effectus
             \quad
             \text{and}
             \quad
-            \Define{f_\diamond(s)} = \IM f \after \pi_s.
+            \Define{f_\diamond(s)} = \IM f \after \pi_s
     \end{equation*}
     \begin{enumerate}
         \item
@@ -4086,6 +4089,7 @@ such that
     for each object~$X$
     and each predicate on~$p$,
     there is a unique $\diamond$-positive map~$\Define{\asrt_p}\colon X \to X$
+        (``assert p'')
     with~$1 \after \asrt_p = p$ \emph{and}
 \item
     for every quotient~$\xi \colon X \to Y$
@@ -4094,7 +4098,37 @@ such that
 \end{enumerate}
 In an $\&$-effectus,
 we define~$\Define{\andthen{p}{q}} = q \after \asrt_p$
+``$p$ andthen~$q$'' 
     and~$\Define{p^2} = \andthen{p}{p}$.
+\begin{point}{Remarks}%
+The $\asrt_p$ maps are named after the \texttt{assert} statement
+    found in many programming languages.
+The \texttt{assert} statement checks whether
+    the provided Boolean expression (i.e.~predicate)
+    is true --- if it is, it will continue the program
+    without further action; if it isn't, it will halt execution
+    immediately.
+Our~$\asrt_p$ maps can be thought of in the same way.
+Alternatively, $\asrt_p$ can be viewed as a filter
+    that blocks states for which~$p^\perp$ holds.
+With this intuition,
+    the predicate~$\andthen{p}{q}$
+    corresponds to whether~$p$ and~$q$ are true,
+    by first checking~$p$ and then checking~$q$.
+
+The~$\asrt_p$ maps can be used to construct more complicated measurements.
+For instance, let~$p, q, r$ be three predicates (measurement outcomes)
+    on an object~$X$
+    with~$p \ovee q \ovee r = 1$.
+Then~$\left<\asrt_p,\asrt_q,\asrt_r\right>\colon X \to X + X + X $
+    models measuring whether~$p,q,r$ hold
+    without discarding the state of the (possibly affected) system
+    after measurement
+    (in contrast to~$\left<p,q,r\right>\colon X \to 1+1+1$).
+If we discard the measurement outcome,
+    we find the map~$\asrt_p \ovee \asrt_q \ovee \asrt_r \colon X \to X$,
+    which is the side-effect of measuring $p,q,r$.
+\end{point}
 \end{point}
 \begin{point}[vn-is-andthen-eff]{Example}%
 The category~$\op{\vN}$ is an~$\&$-effectus
@@ -4169,8 +4203,8 @@ Let~$C$ be an~$\&$-effectus and~$s$
 There exist comprehension~$\pi_s$ of~$s$
         and quotient~$\zeta_s$ of~$s^\perp$ such that
 \begin{equation*}
-    \zeta_s \after \pi_s = \id \quad \text{and} \quad
-        \pi_s \after \zeta_s = \asrt_s.
+    \zeta_s \after \pi_s \ = \ \id \quad \text{and} \quad
+        \pi_s \after \zeta_s \ = \ \asrt_s.
 \end{equation*}
 In fact, for every comprehension~$\pi$ of~$s$,
     there is a quotient~$\xi$ of~$s^\perp$
@@ -4212,7 +4246,7 @@ and~$\xi' \after \pi' = \id$.
 The other statement is proven in a similar way. \qed
 \end{point}
 \begin{point}[zeta-s-convention]{Notation}%
-In a~$\&$-effectus
+In an~$\&$-effectus
     together with chosen comprehension~$\pi_s$ for~$s$,
     we will write~$\zeta_s$
     for the unique quotient for~$s^\perp$
@@ -4280,11 +4314,11 @@ is pure. \qed
 \end{point}
 \end{point}
 \begin{point}[andthen-square-rule]{Exercise}%
-Show that in a~$\&$-effectus,
+Show that in an~$\&$-effectus,
     we have~$\asrt_p \after \asrt_p = \asrt_{\andthen{p}{p}}$.
 \end{point}
 \begin{point}[asrt-absorp-rule]{Exercise}%
-    Show that in a~$\&$-effectus,
+    Show that in an~$\&$-effectus,
     we have
     \begin{align*}
         \IM f \leq s \quad&\iff\quad  \asrt_s \after f = f \\
@@ -4293,8 +4327,8 @@ Show that in a~$\&$-effectus,
 for any sharp predicates~$s$ and~$t$.
 \end{point}
 \begin{point}{Definition}%
-Let~$C$ be a~$\&$-effectus.
-In \sref{upm-closed} we saw pure maps are closed under composition
+Let~$C$ be an~$\&$-effectus.
+In \sref{upm-closed} we saw pure maps are closed under composition.
 Write~$\Define{\Pure C}$ for the subcategory
     of pure map.
 \end{point}
@@ -4302,7 +4336,7 @@ Write~$\Define{\Pure C}$ for the subcategory
 
 \begin{parsec}%
 \begin{point}[zeta-asrt-quot]{Lemma}%
-    In a~$\&$-effectus,
+    In an~$\&$-effectus,
     $\zeta_{\ceil{p}} \after \asrt_p$
     is a quotient for~$p^\perp$.
 \begin{point}{Proof}%
@@ -4325,7 +4359,7 @@ is a quotient for the orthocomplement of~$\ceil{p} \after \asrt_p = p$. \qed
 \end{point}
 \begin{point}[standard-form-map]{Proposition}%
 Every map~$f$
-in a~$\&$-effectus
+in an~$\&$-effectus
 factors as
 \begin{equation}\label{eq-standard-form-map}
         f \ =\ \pi_{\IM f} \after g \after \zeta_{\ceil{1 \after f}} \after \asrt_{1 \after f} 
@@ -4428,7 +4462,7 @@ we must have~$\lambda' = \sigma'$, whence~$\rfrac{\lambda}{\mu}=\sigma$. \qed
 \end{point}
 \end{point}
 \begin{point}[perp-sharp-is-orth]{Lemma}%
-In a~$\&$-effectus, if~$s \perp t$
+In an~$\&$-effectus, if~$s \perp t$
     for sharp~$s,t$, then~$\andthen{s}{t} = 0 = \andthen{t}{s}$.
 \begin{point}{Proof}%
 Write~$r \equiv (s \ovee t)^\perp$.
@@ -4450,7 +4484,7 @@ p \ \leq\  s \quad \iff \quad \andthen{s}{p} \ =\  p
 for sharp~$s$ and any predicate~$p$.
 \end{point}
 \begin{point}[sum-sharp-sharp]{Proposition}%
-In a~$\&$-effectus, $s \ovee t$
+In an~$\&$-effectus, $s \ovee t$
     is sharp, if~$s$ and~$t$ are sharp.
 \begin{point}{Proof}%
 We will first prove that $s \wedge t = 0$.
@@ -4470,7 +4504,7 @@ We will show that the sharp predicates on an object in an~$\&$-effectus
     form an orthomodular lattice.
 \end{point}
 \begin{point}{Lemma}%
-In a~$\&$-effectus,
+In an~$\&$-effectus,
     if~$s\leq t$ for sharp~$s,t$,
     then~$s \after \pi_t$ is sharp.
 \begin{point}{Proof}%
@@ -4490,11 +4524,11 @@ as desired. \qed
 \end{point}
 \end{point}
 \begin{point}[box-diamond-compr-andthen]{Corollary}%
-In a~$\&$-effectus: $s \after \pi_t = (\pi_t)^\BOX(s) = (\pi_t)^\diamond(s)$
+In an~$\&$-effectus: $s \after \pi_t = (\pi_t)^\BOX(s) = (\pi_t)^\diamond(s)$
     for sharp~$s,t$ with~$s \leq t$.
 \end{point}
 \begin{point}{Theorem}%
-In a~$\&$-effectus,
+In an~$\&$-effectus,
     the poset~$\SPred X$ of sharp predicates on~$X$,
     is an orthomodular lattice.
 \begin{point}{Proof}%
@@ -4529,7 +4563,7 @@ We have shown~$\SPred X$ is an orthomodular lattice. \qed
 \end{point}
 \end{point}
 \begin{point}{Corollary}%
-In a $\&$-effectus~$C$
+In an $\&$-effectus~$C$
 the assignment~$X\mapsto \SPred X$, ~$f \mapsto (f_\diamond,f^\BOX)$
     yields a functor from~$C$
     to~$\mathsf{OMLatGal}$,
@@ -4542,10 +4576,11 @@ the assignment~$X\mapsto \SPred X$, ~$f \mapsto (f_\diamond,f^\BOX)$
 \section{$\dagger$-effectus}
 \begin{parsec}%
 \begin{point}{Definition}%
-A \Define{$\dagger$-category} (pronounced: dagger category)
+A \Define{$\dagger$-category} (``dagger category'')
 is category~$C$ together with an involutive identity-on-objects
-    functor~$(\ )^\dagger \colon C \to \op{C}$;
-    that is, for all objects~$X$ and maps~$f,g$ in~$C$
+    functor~$(\ )^\dagger \colon C \to \op{C}$
+    ---
+    that is, for all objects~$X$ and maps~$f,g$ in~$C$, we have
 \begin{multicols}{2}
 \begin{enumerate}
     \item $(f \after g)^\dagger = g^\dagger \after f^\dagger$
@@ -4578,8 +4613,8 @@ The category~$\mathsf{Hilb}$
 \end{parsec}
 \begin{parsec}%
 \begin{point}{Definition}%
-We call a~$\&$-effectus~$C$,
-    a~\Define{$\dagger$-effectus} provided
+We call an~$\&$-effectus~$C$,
+    a~\Define{$\dagger$-effectus} (``dagger effectus'') provided
 \begin{enumerate}
 \item
     $\Pure C$ is a  $\dagger$-category
@@ -4593,8 +4628,12 @@ We call a~$\&$-effectus~$C$,
     $\diamond$-positive maps are $\dagger$-positive.
 \end{enumerate}
 \end{point}
+\begin{point}{Example}%
+By \sref{vn-is-dagger-category},
+the category~$\op\vN$ is a~$\dagger$-effectus.
+\end{point}
 \begin{point}[dagger-theorem]{Theorem}%
-    A $\&$-effectus
+    An $\&$-effectus
         is a~$\dagger$-effectus if and only if
 \begin{enumerate}
 \item
@@ -4616,8 +4655,11 @@ Necessity will be proven in
 \begin{point}%
 Especially the sufficiency requires quite some preparation.
 For convenience, call~$C$ a \Define{$\dagger'$-effectus}
-    if~$C$ is a~$\&$-effectus
+    if~$C$ is an~$\&$-effectus
     satisfying axioms 1, 2 and 3 from the Theorem above.
+\end{point}
+\begin{point}[vn-is-dagger-category]{Corollary}%
+The category~$\op\vN$ is a~$\dagger$-category.
 \end{point}
 \begin{point}{Note}%
     In an~$\&$-effectus
@@ -4707,7 +4749,7 @@ Thus~$r = q$, which shows uniqueness of the square root.
 \end{point}
 \end{point}
 \begin{point}[asrt-iso]{Proposition}%
-In a~$\&$-effectus with square roots
+In an~$\&$-effectus with square roots
     (e.g.~$\dagger$- or~$\dagger'$-effectus) we have
 \begin{equation*}
     \asrt_p \after \alpha
@@ -4783,7 +4825,7 @@ So by epicity of~$\zeta_s$, we find~$\zeta_s^\dagger = \pi_s$, as desired.\qed
 \end{point}
 
 \begin{point}[zeta-through-asrt]{Exercise}%
-Show that in a~$\&$-effectus
+Show that in an~$\&$-effectus
         where every predicate has a square root
         and where~$\pi_s$ is~$\diamond$-adjoint to~$\zeta_s$
         (e.g.~a~$\dagger$-effectus)
@@ -5007,11 +5049,11 @@ as desired. \qed
 \end{point}
 \end{point}
 \begin{point}[dfn-pristine]{Definition}%
-In a~$\&$-effectus, a map~$f$ is \Define{pristine}
+In an~$\&$-effectus, a map~$f$ is \Define{pristine}
         if it is pure and~$1\after f$ is sharp.
 \end{point}
 \begin{point}[standard-form-pristine]{Exercise}%
-Show that in a~$\&$-effectus, every pristine map~$h$ is of the form
+Show that in an~$\&$-effectus, every pristine map~$h$ is of the form
         \begin{equation*}
             h \ =\ \pi_{\IM h} \after \alpha \after \zeta_{1 \after h}
         \end{equation*}
@@ -6910,6 +6952,24 @@ We will first derive exactness in~$\cok a$
         in~$\ker b$ is shown with a dual argument
         using the right-modularity of~$f$ over~$\ceil{1\after b}^\perp$. \qed
 \end{point}
+\end{point}
+\begin{point}{Remark}%
+As~$\op\vN$ is a~$\dagger$-effectus,
+    Grandis' Snake Lemma also holds for von Neumann algebras.
+This is somewhat puzzling for the following reason.
+To study spaces,
+    one associates in algebraic geometry,
+    to each space
+    an object
+    (or even a diagram of objects) of
+    an abelian category representing some algebraic invariant.
+The key point is that it is easier to compute and understand
+    these algebraic invariants, then it is to work with the spaces
+    themselves.
+One normally thinks of a category of spaces as being quite different
+    from a category of algebraic invariants, hence it's surprising
+    that~$\op\vN$, which is a category of (non-commutative) spaces,
+    behaves in this way, similar to an abelian category.
 \end{point}
 \end{point}
 \end{parsec}
