@@ -432,7 +432,7 @@ If the infimum~$a \wedge b$
 \begin{equation*}
     a \ovee b \ = \ (a \wedge b) \,\ovee\, (a \vee b).
 \end{equation*}
-\begin{point}{Proof}%
+\begin{point}[modularity-lemma-proof]{Proof}%
 The result follows from this lemma:
     if~$(x \ominus c) \wedge (x \ominus d)$ exists,
     then~$c \vee d$ exists as well
@@ -470,6 +470,59 @@ Consequently~$ (x \ominus c)\wedge (x \ominus d)
         = (r \ovee x^\perp)^\perp = 
             x \ominus (c \vee d) $, as promised. \qed
 \end{point}    
+\end{point}
+\end{point}
+\begin{point}{Definition}%
+An \Define{ortholattice}~$L$
+    is a bounded lattice with orthocomplement
+    --- that is: it has a minimum~$0$,
+    a maximum~$1$
+    and a unary operation~$(\ )^\perp$
+    satisfying
+\begin{multicols}{2}
+\begin{enumerate}
+\item $a \wedge a^\perp = 0$;
+\item $a \vee a^\perp = 1$;
+\item $a \leq b  \ \Rightarrow\ b^\perp \leq a^\perp$ and
+\item $a^{\perp\perp} = a$.
+\end{enumerate}    
+\end{multicols}
+An ortholattice is \Define{orthomodular}
+ provided
+\begin{equation*}
+    a \ \leq \ b \quad \implies \quad a \vee (a^\perp \wedge b) \ =\  b.
+\end{equation*}
+\end{point}
+\begin{point}{Example}%
+The lattice of projections in a von Neumann algebra
+    is an orthomodular lattice with
+    orthocomplement~$p^\perp \equiv 1 - p$.
+\end{point}
+\begin{point}[orth-ea-is-orthomodular]{Proposition}%
+An effect algebra~$E$
+    that is an ortholattice
+    is also orthomodular.
+\begin{point}{Proof}%
+(For a different proof, see \cite[Prop.~1.5.8]{dvurecenskij2013new}.)
+Assume~$a \leq b$.
+We have to show~$a \vee (a^\perp \wedge b) = b$.
+Note~$a \wedge (a^\perp \wedge b) \leq a \wedge a^\perp = 0$
+and so by \sref{ea-modularity-prop}
+we have~$a \vee (a^\perp \wedge b) = a \ovee (a^\perp \wedge b)$.
+Thus it is sufficient to prove~$a^\perp \wedge b = b \ominus a$.
+Note~$a^\perp = (b \ominus a) \ovee b^\perp$
+    and~$b = (b \ominus a) \ovee a$.
+Similar to~\sref{modularity-lemma-proof}
+    one can show that
+\begin{equation*}
+    (b \ominus a) \ovee (b^\perp \wedge a)
+    \ = \
+        ((b \ominus a) \ovee b^\perp) \wedge 
+        ((b \ominus a) \ovee a) \ \equiv \ a^\perp \ovee b,
+\end{equation*}
+but~$b^\perp \wedge a \leq b^\perp \wedge b = 0$
+    and so~$a^\perp \ovee b = b\ominus a$, as desired.
+\qed
 \end{point}
 \end{point}
 \end{parsec}
@@ -3964,7 +4017,7 @@ $(f\after g)_\diamond = f_\diamond \after g_\diamond$. \qed
 \begin{point}[diamond-ortholattice]{Proposition}%
 In a~$\diamond$-effectus,
 the poset~$\SPred X$ of sharp predicates on any object~$X$,
-    is an ortholattice.
+is an orthomodular lattice.\TODO{}
 \begin{point}{Proof}%
 Let~$C$ be a~$\diamond$-effectus with some object~$X$.
 \begin{point}[spred-infimum]{Infima}%
