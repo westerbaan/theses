@@ -99,7 +99,7 @@ The existence of quotients and comprehension in some effectus~$C$
     we get a surprisingly firm handle
     on the possibilistic side of~$C$,
     by means of the existence
-    of a certain functor~$(\ )_\diamond\colon C \to \mathsf{OLat}$.
+    of a certain functor~$(\ )_\diamond\colon C \to \mathsf{OMLat}$.
 In the guiding example of von Neumann algebras,
     we have~$f_\diamond = g_\diamond$
         if and only
@@ -151,7 +151,9 @@ The main result of this chapter
     which gives  necessary and sufficient conditions
     for an~$\&$-effectus
     to have a well-behaved~$\dagger$-structure on its pure maps.
-After this highpoint, we reflect and discuss how these
+After this highpoint,
+    we tie up some lose ends,
+    reflect and discuss how these
     structures compare to those already known in the literature.
 \end{point}
 \end{parsec}
@@ -232,7 +234,11 @@ if
     $f(1) = 1$.
 \end{enumerate}
 Write~$\Define{\textsf{EA}}$ for the category
-    of effect algebras these homomorphisms.
+    of effect algebras with these homomorphisms.
+A subset~$D \subseteq E$ is a \Define{sub-effect algebra} of~$E$
+    if~$0,1 \in D$ and for any~$a,b \in D$
+    with~$a\perp b$, we have~$a \ovee b \in D$
+    and~$a^\perp \in D$.
 \end{point}
 \begin{point}{Examples}%
 There are many examples of effect algebras
@@ -261,7 +267,7 @@ In particular,
     $a \ovee b = a + b$ and~$a^\perp = 1-a$.
 The `effect' in effect algebra originates from this example.
 \item
-Any orthomodular lattice~$L$
+Any orthomodular lattice~$L$ (defined in \sref{dfn-orthomodular-lattice})
     is an effect algebra
     with the same orthocomplement,
     $x \perp y$ whenever~$x \leq y^\perp$
@@ -430,7 +436,7 @@ If the infimum~$a \wedge b$
 \begin{equation*}
     a \ovee b \ = \ (a \wedge b) \,\ovee\, (a \vee b).
 \end{equation*}
-\begin{point}{Proof}%
+\begin{point}[modularity-lemma-proof]{Proof}%
 The result follows from this lemma:
     if~$(x \ominus c) \wedge (x \ominus d)$ exists,
     then~$c \vee d$ exists as well
@@ -468,6 +474,59 @@ Consequently~$ (x \ominus c)\wedge (x \ominus d)
         = (r \ovee x^\perp)^\perp = 
             x \ominus (c \vee d) $, as promised. \qed
 \end{point}    
+\end{point}
+\end{point}
+\begin{point}[dfn-orthomodular-lattice]{Definition}%
+An \Define{ortholattice}~$L$
+    is a bounded lattice with orthocomplement
+    --- that is: it has a minimum~$0$,
+    a maximum~$1$
+    and a unary operation~$(\ )^\perp$
+    satisfying
+\begin{multicols}{2}
+\begin{enumerate}
+\item $a \wedge a^\perp = 0$;
+\item $a \vee a^\perp = 1$;
+\item $a \leq b  \ \Rightarrow\ b^\perp \leq a^\perp$ and
+\item $a^{\perp\perp} = a$.
+\end{enumerate}    
+\end{multicols}
+An ortholattice is \Define{orthomodular}
+ provided
+\begin{equation*}
+    a \ \leq \ b \quad \implies \quad a \vee (a^\perp \wedge b) \ =\  b.
+\end{equation*}
+\end{point}
+\begin{point}{Example}%
+The lattice of projections in a von Neumann algebra
+    is an orthomodular lattice with
+    orthocomplement~$p^\perp \equiv 1 - p$.
+\end{point}
+\begin{point}[orth-ea-is-orthomodular]{Proposition}%
+An effect algebra~$E$
+    that is an ortholattice
+    is also orthomodular.
+\begin{point}{Proof}%
+(For a different proof, see \cite[Prop.~1.5.8]{dvurecenskij2013new}.)
+Assume~$a \leq b$.
+We have to show~$a \vee (a^\perp \wedge b) = b$.
+Note~$a \wedge (a^\perp \wedge b) \leq a \wedge a^\perp = 0$
+and so by \sref{ea-modularity-prop}
+we have~$a \vee (a^\perp \wedge b) = a \ovee (a^\perp \wedge b)$.
+Thus it is sufficient to prove~$a^\perp \wedge b = b \ominus a$.
+Note~$a^\perp = (b \ominus a) \ovee b^\perp$
+    and~$b = (b \ominus a) \ovee a$.
+Similar to~\sref{modularity-lemma-proof}
+    one can show that
+\begin{equation*}
+    (b \ominus a) \ovee (b^\perp \wedge a)
+    \ = \
+        ((b \ominus a) \ovee b^\perp) \wedge 
+        ((b \ominus a) \ovee a) \ \equiv \ a^\perp \ovee b,
+\end{equation*}
+but~$b^\perp \wedge a \leq b^\perp \wedge b = 0$
+    and so~$a^\perp \ovee b = b\ominus a$, as desired.
+\qed
 \end{point}
 \end{point}
 \end{parsec}
@@ -636,12 +695,30 @@ One interested in physics, should think of the objects
     the physical operations between them.
     The final object~$1$ is the physical system with a single state.
 The coproduct~$X+Y$ is the system that can be prepared as~$X$ or as~$Y$.
-
+An arrow~$1 \to X$ corresponds to a physical preparation of the system~$X$
+    and an arrow~$X \to 1+1$ is a yes--no measurement.
+\end{point}
+\begin{point}%
+In this sense an effectus can be seen as a generalized
+        probabilistic theory
+        --- not unlike the operational-probabilistic theories (OPT)
+        of Chiribella et al \cite{chiribella2010probabilistic}.
+There are differences:
+for instance, OPTs are equipped with a parallel composition of systems,
+     effectuses are not and OPTs always have the unit interval as scalars,
+     effectuses might not.
+In \cite{tull2016operational} Tull compares effectuses and OPTs.
+There are other approaches to categorical probabilistic theories;
+ see, for instance~\cite{wilceshortcut,gogioso2017categorical}.
+\end{point}
+\begin{point}%
 Studying programming languages, one would do better thinking of
     the objects of an effectus as data types and
     its arrows as the allowed operations between them (semantics of programs).
 The final object~$1$ is the unit data type.
 The coproduct~$X + Y$ is the union data type of~$X$ and~$Y$.
+An arrow~$1 \to X$ is a value of~$X$
+    and an arrow~$X \to 1+1$ is a predicate on~$X$.
 \end{point}
 \begin{point}%
 Our main example of an effectus in total form
@@ -1737,8 +1814,11 @@ As before, when we took the effectus in partial form as base category,
 
 \subsection{Predicates, states and scalars}
 \begin{parsec}%
+\begin{point}%
+We turn to the internal structures of an effectus.
+\end{point}
 \begin{point}[dfn-mandso]{Definition}%
-Let~$C$ be an effectus.
+Let~$C$ be an effectus (in partial form).
 \begin{enumerate}
 \item
 As alluded to before,
@@ -2727,7 +2807,7 @@ In particular~$[0,1]^n$ is an effect divisoid
     with component-wise partial division.
 \item
 Later, in \sref{andthen-effect-divisoid},
-    we will see that if~$C$ is a~$\&$-effectus,
+    we will see that if~$C$ is an~$\&$-effectus,
 then~$(\Scal C)^{\mathrm{op}}$ (the scalars with multiplication in the
     opposite direction)
     is an effect divisoid.
@@ -3155,6 +3235,10 @@ We say~$C$ is an \Define{effectus with quotients}
 \end{quote}
 Any  map with this universal property
     is called a \Define{quotient} for~$p$.
+\begin{point}[quot-not]{Notation}%
+Unless otherwise specified~$\xi_p$ will be some
+    quotient for~$p$.
+\end{point}
 \end{point}
 \begin{point}{Example}%
 In~$\op{\vN}$ quotients are exactly the same thing
@@ -3245,7 +3329,7 @@ Thus~$\xi_2 \after \xi_1 = g \after \xi$ for an isomorphism~$g$,
 which shows~$\xi_2 \after \xi_1$ is a quotient, see \sref{quotient-basics}. \qed
 \end{point}
 \end{point}
-\begin{point}{Exercise}
+\begin{point}[quot-fact-system]{Exercise}
 By \sref{quotient-total} we know that each
     map~$f$ factors as~$t \after \xi$
     for some total map~$t$ and quotient~$\xi$.
@@ -3258,8 +3342,80 @@ Show that this forms an orthogonal factorization system ---
 \end{point}
 \end{parsec}
 
+\begin{parsec}%
+\begin{point}%
+In \sref{quot-fact-system} we saw
+    that every partial map~$f$
+    factors uniquely via a quotient for~$(1 \after f)^\perp$.
+In this sense quotients are the universal way to restrict to the
+    support on the domain --- so why do we call them quotients
+    instead of, say, initial-support-maps?
+\end{point}
+\begin{point}[dfn-eff-grothendieck]{Definition}%
+For an effectus~$C$,
+    write~$\Define{\int \Pred_\square}$
+    for the category with
+\begin{enumerate}
+\item as objects pairs~$(X,p)$,
+        where~$X$ is an object of~$C$
+        and~$p \in \Pred X$ and
+\item
+    an between~$(X,p)$ and~$(Y,q)$
+    corresponds to a partial map~$f\colon X \to Y$ in~$C$
+       for which we have~$p \leq (q^\perp \after f)^\perp$.
+\end{enumerate}
+Write~$U\colon \int \Pred_\square \to C$
+for the forgetful functor --- that is:~$U(X,p) = X$
+and~$Uf = f$ for arrows~$f$.
+The functor~$U$ has left- and right-adjoint
+    $0 \dashv U \dashv 1$
+    given by
+    $0,1 \colon C \to \int \Pred_\square$
+    with~$0X = (X,0)$, $1X = (X,1)$
+    and~$0f=1f=f$.
+\end{point}
+\begin{point}{Exercise}%
+Show that for an effectus~$C$, the following are equivalent.
+\begin{enumerate}
+\item $C$ has quotients.
+\item The functor~$0\colon C \to \int \Pred_\square$,
+            see \sref{dfn-eff-grothendieck},
+        has a left-adjoint~$Q \colon \int\Pred_\square \to C$.
+\end{enumerate}
+\end{point}
+\begin{point}%
+If the existence of a left-adjoint~$Q$ to~$0$
+    gives quotients,
+    what does the existence of a right-adjoint~$K$ to~$1$ amount to?
+    It will turn out (\sref{compr-grothendieck})
+    this is equivalent to the existence of
+        so-called \emph{comprehensions},
+        the topic of the next section.
+With both quotients and comprehension, we have a chain of four adjunctions:
+\begin{equation*}
+   \vcenter{\xymatrix{
+\int \Pred_\square \ar[d]_{\dashv\;}^{\;\dashv}
+   \ar@/_6ex/[d]^{\;\dashv}_{Q} 
+   \ar@/^6ex/[d]_{\dashv\;}^{K} \\
+   C\ar@/^3ex/[u]^(0.4){0\!}\ar@/_3ex/[u]_(0.4){\!1}
+}} 
+\end{equation*}
+There are numerous other examples
+    of categories which also
+    have such a chain of four adjunctions
+    between it and a natural category of object-with-predicates.
+    See \cite{cho2015quotient} for several examples.
+    In most of these examples, the predicates correspond to subspaces
+        and the left-most functor to quotienting by this subspace.
+    This is the reason for the name `effectus with quotients'.
+\end{point}
+\end{parsec}
+
 \section{Comprehension and images}
 \begin{parsec}%
+\begin{point}%
+We continue with our second axiom.
+\end{point}
 \begin{point}{Definition}%
 Let~$C$ be an effectus.
 We say~$C$ \Define{has comprehension}
@@ -3291,6 +3447,12 @@ An example of a comprehension for~$a \in \scrA$
     is given by~$\pi\colon \scrA \to \floor{a}\scrA\floor{a}$
     with~$\pi(b) = \floor{a}b\floor{a}$
     as proven in \sref{prop-corner}.
+\end{point}
+\begin{point}[compr-grothendieck]{Exercise}%
+    Show that an effectus~$C$ has comprehension if and only
+        if the functor~$1 \colon C \to \int \Pred_\square$
+        from \sref{dfn-eff-grothendieck}
+        has a right-adjoint~$K$.
 \end{point}
 \begin{point}[compr-basics]{Exercise}%
 Show the following basic properties of comprehensions.
@@ -3364,6 +3526,26 @@ In $\op{\vN}$
 the pure maps~$\scrB(\scrH) \to \scrB(\scrK)$
     are exactly the maps of the form~$\ad_T$
     where~$T$ is a contractive map~$\scrK \to \scrH$. \TODO{ref}
+\end{point}
+\begin{point}{Remark}%
+In the previous chapter
+    we discussed (in \sref{dils-pure-discussion})
+    why some more familiar notions of purity for states,
+    like extremality,
+    do not generalize properly to arbitrary maps.
+Recently, three other definitions of purity
+        have been proposed in different contexts.
+        \cite{cunningham2017purity,chiribella2014distinguishability,selby2017leaks}
+All three are inspired by the essential uniqueness
+    of purification (see \sref{ess-uniq-pur})
+    and require a monoidal structure to state.
+The identity map might not be pure
+    in the sense of~\cite{chiribella2014distinguishability},
+    which is too restrictive for our taste.
+The relation between
+ our definition of pure
+    and \cite{cunningham2017purity,selby2017leaks}
+    is left open.
 \end{point}
 \begin{point}%
 We do not have a good handle on the structure of pure maps in
@@ -3457,7 +3639,7 @@ Let~$C$ be an effectus with comprehension and images.
 \item
     We say a predicate~$p$ is (image) \Define{sharp}
         if~$p = \IM f$ for some map~$f$.
-    Write~$\SPred X$ for the set of all sharp predicates on~$X$.
+        Write~$\Define{\SPred X}$ for the set of all sharp predicates on~$X$.
 \item
 We define~$\Define{\floor{p}} = \IM \pi_p$,
     where~$\pi_p$ is some comprehension for~$p$.
@@ -3575,6 +3757,15 @@ Show that in an effectus with comprehension and images
     $\ceil{\ceil{p}\after f} = \ceil{p \after f}$
     for any map~$f\colon X \to Y$ and predicate~$p$ on~$X$.
 \end{point}
+\begin{point}[img-tupling]{Exercise}%
+Show that in an effectus with
+images~$\IM \left<f,g \right> = [\IM f, \IM g]$.
+Conclude that a predicate~$[p,q]$ is sharp
+    if and only if~$p$ and~$q$ are sharp.
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
 \begin{point}[compr-is-full]{Lemma}%
 In an effectus with comprehension and images
     we have
@@ -3682,12 +3873,12 @@ The simple idea of taking the restriction to sharp predicates
 We will give these right of the bat and study their relevance later on.
 \end{point}
 \begin{point}{Definition}%
-A~\Define{$\diamond$-effectus}
+    A~\Define{$\diamond$-effectus} (``diamond effectus'')
     is an effectus with quotient, comprehension and images
     such that~$s^\perp$ is sharp for every sharp predicate~$s$.
-In a~$\diamond$-effectus
-    we define for any map~$f\colon X \to Y$
-    the following restrictions to sharp predicates
+In a~$\diamond$-effectus,
+    define for~$f\colon X \to Y$
+    the following restrictions to sharp predicates.
     \begin{equation*}
         \xymatrix{
             \SPred X  \ar@/^/[r]^{f_\diamond}
@@ -3697,7 +3888,7 @@ In a~$\diamond$-effectus
             \quad
             \text{and}
             \quad
-            \Define{f_\diamond(s)} = \IM f \after \pi_s.
+            \Define{f_\diamond(s)} = \IM f \after \pi_s
     \end{equation*}
     \begin{enumerate}
         \item
@@ -3827,54 +4018,6 @@ $(f\after g)_\diamond = f_\diamond \after g_\diamond$. \qed
 \end{point}
 \end{parsec}
 \begin{parsec}%
-\begin{point}[diamond-ortholattice]{Proposition}%
-In a~$\diamond$-effectus,
-the poset~$\SPred X$ of sharp predicates on any object~$X$,
-    is an ortholattice.
-\begin{point}{Proof}%
-Let~$C$ be a~$\diamond$-effectus with some object~$X$.
-\begin{point}[spred-infimum]{Infima}%
-Let~$s,t$ be sharp predicates on~$X$.    
-We will show~$(\pi_s)_\diamond (\pi_s^\BOX (t))$
-is the infimum of~$s$ and~$t$.
-It is easy to see
-$(\pi_s)_\diamond (\pi_s^\BOX (t))$ is a lower bound:
-$(\pi_s)_\diamond (\pi_s^\BOX (t)) \leq t$
-and~$(\pi_s)_\diamond (\pi_s^\BOX (t)) \leq (\pi_s)_\diamond(1)
-    = \IM \pi_s = s$.
-We have to show $(\pi_s)_\diamond (\pi_s^\BOX (t))$ is the greatest lower bound.
-Let~$r$ be any sharp predicate with~$r \leq s$ and~$r \leq t$.
-By~\sref{compr-is-full}
-    we have~$\pi_r = \pi_s \after h$ for some~$h$.
-Thus
-\begin{equation*}
-    (\pi_r)_\diamond
-        \ = \  (\pi_s)_\diamond \after h_\diamond
-        \ =\  (\pi_s)_\diamond \after \pi_s^\BOX  
-            \after (\pi_s)_\diamond \after h_\diamond
-        \ =\  (\pi_s)_\diamond \after \pi_s^\BOX \after (\pi_r)_\diamond.
-\end{equation*}
-Hence~$r = (\pi_r)_\diamond(1)  
-=((\pi_s)_\diamond \after \pi_s^\BOX \after (\pi_r)_\diamond )(1)
-=  (\pi_s)_\diamond ( \pi_s^\BOX (r))
-\leq  (\pi_s)_\diamond ( \pi_s^\BOX (t))$.
-\end{point}
-\begin{point}[spred-ortholattice]{Ortholattice}%
-Thanks to the order anti-isomorphism~$(\ )^\perp$
-suprema (satisfying De Morgan's laws) come for free:
-    $s \vee t = (s^\perp \wedge t^\perp)^\perp$.
-Now note
-\begin{equation*}
-\pi_s^\BOX(s^\perp) \ =
-    \  \ceil{s \after \pi_s}^\perp 
-    \ =\  \ceil{1 \after \pi_s}^\perp 
-    \ \overset{\sref{compr-total}}{=}\ \ceil{1}^\perp \ =\   0
-\end{equation*}
-and so~$s\wedge s^\perp = 0$.
-We have shown~$\SPred X$ with~$(\ )^\perp$ is an ortholattice. \qed
-\end{point}
-\end{point}
-\end{point}
 \begin{point}[image-sharp-is-order-sharp]{Lemma}%
 In a $\diamond$-effectus,
 sharp predicates are \Define{order sharp} ---
@@ -3898,13 +4041,91 @@ Thus~$\pi_{\ceil{p}} = 0$
 and so~$p \leq \ceil{p} = \IM\pi_{\ceil{p}} = 0$, as desired.\qed
 \end{point}
 \end{point}
+\begin{point}[diamond-oml]{Proposition (Cho)}%
+In a~$\diamond$-effectus,
+the poset~$\SPred X$ of sharp predicates on any object~$X$,
+is a sub-effect algebra of~$\Pred X$
+and an orthomodular lattice.
+\begin{point}{Proof}%
+Let~$C$ be a~$\diamond$-effectus with some object~$X$.
+We will show~$\SPred X$ is a sub-effect algebra of~$\Pred X$,
+    which is additionally an ortholattice.
+    By \sref{orth-ea-is-orthomodular} this is sufficient to show
+    $\SPred X$ is orthomodular.
+\begin{point}{Ortholattice}%
+In \sref{lattice-compr}
+    we already saw that sharp~$s,t$ have a sharp supremum
+    $s\vee t = \IM [\pi_s,\pi_t]$ 
+    in~$\Pred X$.
+So~$s\vee t$ is also the supremum of~$s$ and~$t$ in~$\SPred X$.
+As~$(\ )^\perp$ is an order anti-automorphism of both~$\Pred X$ and~$\SPred X$,
+    we know~$(s^\perp \vee t^\perp)^\perp$
+    is the infimum of~$s$ and~$t$ in~$\Pred X$ and~$\SPred X$.
+As any sharp predicate~$s$ is order sharp by \sref{image-sharp-is-order-sharp},
+    we find~$s \wedge s^\perp = 0$ (and consequently~$s^\perp \vee s = 1$).
+    We have shown~$\SPred X$ is an ortholattice.
+\end{point}
+\begin{point}{Sub-EA}%
+Clearly~$0,1$ are sharp and~$s^\perp$ is sharp for sharp~$s$
+        by definition of~$\diamond$-effectus.
+To prove~$\SPred X$ is a sub-effect algebra of~$\Pred X$,
+    it only remains to be shown~$s \ovee t$ is sharp
+        for sharp and summable~$s,t$.
+So, assume~$s,t$ are sharp and~$s \perp t$.
+Note~$s \wedge t \leq s \wedge s^\perp =0$ as~$\SPred X$ is an ortholattice
+    and so by \sref{ea-modularity-prop}
+    we find~$s \ovee t = s \vee t$, which is indeed sharp. \qed
+\end{point}
+\end{point}
+\begin{point}{Corollary}%
+In an $\diamond$-effectus~$C$
+the assignment~$X\mapsto \SPred X$, ~$f \mapsto (f_\diamond,f^\BOX)$
+    yields a functor from~$C$
+    to~$\mathsf{OMLatGal}$,
+    the category of orthomodular lattices
+    with galois connection between them,
+    as defined in~\cite{jacobs2009orthomodular}.
+\end{point}
+\begin{point}%
+    There is a rather different
+    formula for the infima of sharp predicates,
+    which will be useful later on.
+\end{point}
+\end{point}
+\begin{point}[spred-infimum]{Lemma}%
+In a~$\diamond$-effectus, we have
+$s \wedge t = (\pi_s)_\diamond (\pi_s^\BOX (t))$
+    for sharp predicates~$s,t$.
+\begin{point}{Proof}%
+It is easy to see
+$(\pi_s)_\diamond (\pi_s^\BOX (t))$ is a lower bound:
+indeed
+$(\pi_s)_\diamond (\pi_s^\BOX (t)) \leq t$
+and~$(\pi_s)_\diamond (\pi_s^\BOX (t)) \leq (\pi_s)_\diamond(1)
+    = \IM \pi_s = s$.
+We have to show $(\pi_s)_\diamond (\pi_s^\BOX (t))$ is the greatest lower bound.
+Let~$r$ be any sharp predicate with~$r \leq s$ and~$r \leq t$.
+By~\sref{compr-is-full}
+    we have~$\pi_r = \pi_s \after h$ for some~$h$.
+Thus
+\begin{equation*}
+    (\pi_r)_\diamond
+        \ = \  (\pi_s)_\diamond \after h_\diamond
+        \ =\  (\pi_s)_\diamond \after \pi_s^\BOX  
+            \after (\pi_s)_\diamond \after h_\diamond
+        \ =\  (\pi_s)_\diamond \after \pi_s^\BOX \after (\pi_r)_\diamond.
+\end{equation*}
+Hence~$r = (\pi_r)_\diamond(1)  
+=((\pi_s)_\diamond \after \pi_s^\BOX \after (\pi_r)_\diamond )(1)
+=  (\pi_s)_\diamond ( \pi_s^\BOX (r))
+\leq  (\pi_s)_\diamond ( \pi_s^\BOX (t))$. \qed
+\end{point}
+\end{point}
 \begin{point}[spred-sup]{Exercise}%
 Show that in a~$\diamond$-effectus,
 we have
         $\xi^\BOX \after \xi_\diamond (t) = s \vee t$
-    for sharp~$s,t$ and  quotient~$\xi$ of~$s$,
-    where~$s \vee t$ denotes the supremum
-    of~$s$ and~$t$ in~$\SPred X$.
+    for sharp~$s,t$ and  quotient~$\xi$ of~$s^\perp$.
 \end{point}
 \end{parsec}
 
@@ -4004,6 +4225,7 @@ such that
     for each object~$X$
     and each predicate on~$p$,
     there is a unique $\diamond$-positive map~$\Define{\asrt_p}\colon X \to X$
+        (``assert p'')
     with~$1 \after \asrt_p = p$ \emph{and}
 \item
     for every quotient~$\xi \colon X \to Y$
@@ -4012,7 +4234,37 @@ such that
 \end{enumerate}
 In an $\&$-effectus,
 we define~$\Define{\andthen{p}{q}} = q \after \asrt_p$
+``$p$ andthen~$q$'' 
     and~$\Define{p^2} = \andthen{p}{p}$.
+\begin{point}{Remarks}%
+The $\asrt_p$ maps are named after the \texttt{assert} statement
+    found in many programming languages.
+The \texttt{assert} statement checks whether
+    the provided Boolean expression (i.e.~predicate)
+    is true --- if it is, it will continue the program
+    without further action; if it isn't, it will halt execution
+    immediately.
+Our~$\asrt_p$ maps can be thought of in the same way.
+Alternatively, $\asrt_p$ can be viewed as a filter
+    that blocks states for which~$p^\perp$ holds.
+With this intuition,
+    the predicate~$\andthen{p}{q}$
+    corresponds to whether~$p$ and~$q$ are true,
+    by first checking~$p$ and then checking~$q$.
+
+The~$\asrt_p$ maps can be used to construct more complicated measurements.
+For instance, let~$p, q, r$ be three predicates (measurement outcomes)
+    on an object~$X$
+    with~$p \ovee q \ovee r = 1$.
+Then~$\left<\asrt_p,\asrt_q,\asrt_r\right>\colon X \to X + X + X $
+    models measuring whether~$p,q,r$ hold
+    without discarding the state of the (possibly affected) system
+    after measurement
+    (in contrast to~$\left<p,q,r\right>\colon X \to 1+1+1$).
+If we discard the measurement outcome,
+    we find the map~$\asrt_p \ovee \asrt_q \ovee \asrt_r \colon X \to X$,
+    which is the side-effect of measuring $p,q,r$.
+\end{point}
 \end{point}
 \begin{point}[vn-is-andthen-eff]{Example}%
 The category~$\op{\vN}$ is an~$\&$-effectus
@@ -4087,8 +4339,8 @@ Let~$C$ be an~$\&$-effectus and~$s$
 There exist comprehension~$\pi_s$ of~$s$
         and quotient~$\zeta_s$ of~$s^\perp$ such that
 \begin{equation*}
-    \zeta_s \after \pi_s = \id \quad \text{and} \quad
-        \pi_s \after \zeta_s = \asrt_s.
+    \zeta_s \after \pi_s \ = \ \id \quad \text{and} \quad
+        \pi_s \after \zeta_s \ = \ \asrt_s.
 \end{equation*}
 In fact, for every comprehension~$\pi$ of~$s$,
     there is a quotient~$\xi$ of~$s^\perp$
@@ -4130,7 +4382,7 @@ and~$\xi' \after \pi' = \id$.
 The other statement is proven in a similar way. \qed
 \end{point}
 \begin{point}[zeta-s-convention]{Notation}%
-In a~$\&$-effectus
+In an~$\&$-effectus
     together with chosen comprehension~$\pi_s$ for~$s$,
     we will write~$\zeta_s$
     for the unique quotient for~$s^\perp$
@@ -4198,11 +4450,11 @@ is pure. \qed
 \end{point}
 \end{point}
 \begin{point}[andthen-square-rule]{Exercise}%
-Show that in a~$\&$-effectus,
+Show that in an~$\&$-effectus,
     we have~$\asrt_p \after \asrt_p = \asrt_{\andthen{p}{p}}$.
 \end{point}
 \begin{point}[asrt-absorp-rule]{Exercise}%
-    Show that in a~$\&$-effectus,
+    Show that in an~$\&$-effectus,
     we have
     \begin{align*}
         \IM f \leq s \quad&\iff\quad  \asrt_s \after f = f \\
@@ -4211,8 +4463,8 @@ Show that in a~$\&$-effectus,
 for any sharp predicates~$s$ and~$t$.
 \end{point}
 \begin{point}{Definition}%
-Let~$C$ be a~$\&$-effectus.
-In \sref{upm-closed} we saw pure maps are closed under composition
+Let~$C$ be an~$\&$-effectus.
+In \sref{upm-closed} we saw pure maps are closed under composition.
 Write~$\Define{\Pure C}$ for the subcategory
     of pure map.
 \end{point}
@@ -4220,7 +4472,7 @@ Write~$\Define{\Pure C}$ for the subcategory
 
 \begin{parsec}%
 \begin{point}[zeta-asrt-quot]{Lemma}%
-    In a~$\&$-effectus,
+    In an~$\&$-effectus,
     $\zeta_{\ceil{p}} \after \asrt_p$
     is a quotient for~$p^\perp$.
 \begin{point}{Proof}%
@@ -4243,7 +4495,7 @@ is a quotient for the orthocomplement of~$\ceil{p} \after \asrt_p = p$. \qed
 \end{point}
 \begin{point}[standard-form-map]{Proposition}%
 Every map~$f$
-in a~$\&$-effectus
+in an~$\&$-effectus
 factors as
 \begin{equation}\label{eq-standard-form-map}
         f \ =\ \pi_{\IM f} \after g \after \zeta_{\ceil{1 \after f}} \after \asrt_{1 \after f} 
@@ -4346,7 +4598,7 @@ we must have~$\lambda' = \sigma'$, whence~$\rfrac{\lambda}{\mu}=\sigma$. \qed
 \end{point}
 \end{point}
 \begin{point}[perp-sharp-is-orth]{Lemma}%
-In a~$\&$-effectus, if~$s \perp t$
+In an~$\&$-effectus, if~$s \perp t$
     for sharp~$s,t$, then~$\andthen{s}{t} = 0 = \andthen{t}{s}$.
 \begin{point}{Proof}%
 Write~$r \equiv (s \ovee t)^\perp$.
@@ -4368,7 +4620,7 @@ p \ \leq\  s \quad \iff \quad \andthen{s}{p} \ =\  p
 for sharp~$s$ and any predicate~$p$.
 \end{point}
 \begin{point}[sum-sharp-sharp]{Proposition}%
-In a~$\&$-effectus, $s \ovee t$
+In an~$\&$-effectus, $s \ovee t$
     is sharp, if~$s$ and~$t$ are sharp.
 \begin{point}{Proof}%
 We will first prove that $s \wedge t = 0$.
@@ -4380,90 +4632,22 @@ Hence~$s \vee t = s \ovee t$ by~\sref{ea-modularity-prop},
     but~$s \vee t$ is sharp by \sref{lattice-compr}. \qed
 \end{point}
 \end{point}
-\end{parsec}
-
-\begin{parsec}%
-\begin{point}%
-We will show that the sharp predicates on an object in an~$\&$-effectus
-    form an orthomodular lattice.
-\end{point}
-\begin{point}{Lemma}%
-In a~$\&$-effectus,
-    if~$s\leq t$ for sharp~$s,t$,
-    then~$s \after \pi_t$ is sharp.
-\begin{point}{Proof}%
-By~\sref{simple-andthen-absorption}
-    we have~$\andthen{t}{s} = s$.
-Hence~$s \after \pi_t \after \zeta_t \after \pi_s
-                = (\andthen{t}{s}) \after \pi_s
-                = s \after \pi_s = 1$.
-Thus~$\zeta_t \after \pi_s$ is total.
-To prove~$s \after \pi_t$ is sharp,
-    we will show~$\IM \zeta_t \after \pi_s = s \after \pi_t$.
-We just saw~$s \after \pi_t \after \zeta_t \after \pi_s = 1$.
-Assume~$r \after \zeta_t \after \pi_s = 1$.
-Then~$r \after \zeta_t \geq s$
-and so~$r = r \after \zeta_t \after \pi_t \geq s \after \pi_t$,
-as desired. \qed
-\end{point}
-\end{point}
-\begin{point}[box-diamond-compr-andthen]{Corollary}%
-In a~$\&$-effectus: $s \after \pi_t = (\pi_t)^\BOX(s) = (\pi_t)^\diamond(s)$
-    for sharp~$s,t$ with~$s \leq t$.
-\end{point}
-\begin{point}{Theorem}%
-In a~$\&$-effectus,
-    the poset~$\SPred X$ of sharp predicates on~$X$,
-    is an orthomodular lattice.
-\begin{point}{Proof}%
-In \sref{diamond-ortholattice} we saw
-    that~$\SPred X$ is an ortholattice.
-Assume~$s \leq  t$ for some~$s,t \in \SPred X$.
-We have to show~$s \vee (s^\perp \wedge t) = t$.
-Indeed
-\begin{alignat*}{2}
-s \vee (s^\perp \wedge t) 
-&\  =\  (s \wedge t) \vee (s^\perp \wedge t) &\qquad& \text{as $s \leq t$}\\
-&\  =\ 
-        ((\pi_t)_\diamond \after \pi_t^\BOX)
-        (s) \vee
-        ((\pi_t)_\diamond \after \pi_t^\BOX)
-        (s^\perp)
-        &\qquad& \text{by \sref{spred-infimum}}\\
-&\  =\ 
-        (\pi_t)_\diamond ( \pi_t^\BOX(s) \vee 
-                            \pi_t^\BOX(s^\perp))
-                            &\qquad& \text{by \sref{order-adj-basics}} \\
-&\  =\ 
-        (\pi_t)_\diamond ( \pi_t^\diamond(s) \vee 
-                            \pi_t^\diamond(s)^\perp)
-                            &\qquad& \text{by \sref{box-diamond-compr-andthen}}\\
-&\  =\ 
-                            (\pi_t)_\diamond (1)
-                            &\qquad& \text{by \sref{spred-ortholattice}} \\
-& \ =\  \IM \pi_t \ = \ t && \text{by \sref{img-of-compr}}.
-\end{alignat*}
-We have shown~$\SPred X$ is an orthomodular lattice. \qed
-\end{point}
-\end{point}
-\begin{point}{Corollary}%
-In a $\&$-effectus~$C$
-the assignment~$X\mapsto \SPred X$, ~$f \mapsto (f_\diamond,f^\BOX)$
-    yields a functor from~$C$
-    to~$\mathsf{OMLatGal}$,
-    the category of orthomodular lattices
-    with galois connection between them,
-    as defined in~\cite{jacobs2009orthomodular}.
+\begin{point}{Exercise}%
+Show that in a~$\&$-effectus,
+    a map~$\left<f,g\right>$
+    is sharp if and only if both~$f$ and~$g$ are sharp.
+    (Hint: use \sref{sum-sharp-sharp} and \sref{img-tupling}.)
 \end{point}
 \end{parsec}
 
 \section{$\dagger$-effectus}
 \begin{parsec}%
 \begin{point}{Definition}%
-A \Define{$\dagger$-category} (pronounced: dagger category)
+A \Define{$\dagger$-category} (``dagger category'')
 is category~$C$ together with an involutive identity-on-objects
-    functor~$(\ )^\dagger \colon C \to \op{C}$;
-    that is, for all objects~$X$ and maps~$f,g$ in~$C$
+    functor~$(\ )^\dagger \colon C \to \op{C}$
+    ---
+    that is, for all objects~$X$ and maps~$f,g$ in~$C$, we have
 \begin{multicols}{2}
 \begin{enumerate}
     \item $(f \after g)^\dagger = g^\dagger \after f^\dagger$
@@ -4496,8 +4680,8 @@ The category~$\mathsf{Hilb}$
 \end{parsec}
 \begin{parsec}%
 \begin{point}{Definition}%
-We call a~$\&$-effectus~$C$,
-    a~\Define{$\dagger$-effectus} provided
+We call an~$\&$-effectus~$C$,
+    a~\Define{$\dagger$-effectus} (``dagger effectus'') provided
 \begin{enumerate}
 \item
     $\Pure C$ is a  $\dagger$-category
@@ -4511,8 +4695,12 @@ We call a~$\&$-effectus~$C$,
     $\diamond$-positive maps are $\dagger$-positive.
 \end{enumerate}
 \end{point}
+\begin{point}{Example}%
+By \sref{vn-is-dagger-category},
+the category~$\op\vN$ is a~$\dagger$-effectus.
+\end{point}
 \begin{point}[dagger-theorem]{Theorem}%
-    A $\&$-effectus
+    An $\&$-effectus
         is a~$\dagger$-effectus if and only if
 \begin{enumerate}
 \item
@@ -4534,10 +4722,13 @@ Necessity will be proven in
 \begin{point}%
 Especially the sufficiency requires quite some preparation.
 For convenience, call~$C$ a \Define{$\dagger'$-effectus}
-    if~$C$ is a~$\&$-effectus
+    if~$C$ is an~$\&$-effectus
     satisfying axioms 1, 2 and 3 from the Theorem above.
 \end{point}
-\begin{point}{Note}%
+\begin{point}[vn-is-dagger-category]{Corollary}%
+The category~$\op\vN$ is a~$\dagger$-category.
+\end{point}
+\begin{point}{Remarks}%
     In an~$\&$-effectus
     with separating predicates
     (see \sref{dfn-mandso}),
@@ -4551,6 +4742,11 @@ For convenience, call~$C$ a \Define{$\dagger'$-effectus}
 This is essentially the \emph{fundamental formula
     of quadratic Jordan algebras} \cite[\S 4.2]{mccrimmon2006taste}
     (with~$U_x y \equiv \andthen{x^2}{y}$).
+
+The second axiom of a~$\dagger$-effectus
+    has been considered before in~$\dagger$-categories
+    by Selinger \cite{selinger2008idempotents}
+    who calls it the \emph{unique square root axiom}.
 \end{point}
 \end{point}
 \end{parsec}
@@ -4625,7 +4821,7 @@ Thus~$r = q$, which shows uniqueness of the square root.
 \end{point}
 \end{point}
 \begin{point}[asrt-iso]{Proposition}%
-In a~$\&$-effectus with square roots
+In an~$\&$-effectus with square roots
     (e.g.~$\dagger$- or~$\dagger'$-effectus) we have
 \begin{equation*}
     \asrt_p \after \alpha
@@ -4701,7 +4897,7 @@ So by epicity of~$\zeta_s$, we find~$\zeta_s^\dagger = \pi_s$, as desired.\qed
 \end{point}
 
 \begin{point}[zeta-through-asrt]{Exercise}%
-Show that in a~$\&$-effectus
+Show that in an~$\&$-effectus
         where every predicate has a square root
         and where~$\pi_s$ is~$\diamond$-adjoint to~$\zeta_s$
         (e.g.~a~$\dagger$-effectus)
@@ -4925,11 +5121,24 @@ as desired. \qed
 \end{point}
 \end{point}
 \begin{point}[dfn-pristine]{Definition}%
-In a~$\&$-effectus, a map~$f$ is \Define{pristine}
+In an~$\&$-effectus, a map~$f$ is \Define{pristine}
         if it is pure and~$1\after f$ is sharp.
+\begin{point}{Remarks}%
+    In general, pristine maps are not closed under composition:
+    in~$\op\vN$, the maps~$\asrt_{\ketbra{0}{0}}$
+            and~$\asrt_{\ketbra{+}{+}}$ on~$M_2$
+            are both pristine,
+            but their composite is not.
+However, with a non-standard composition
+    of pristine maps
+    (namely~$f \cdot g \equiv \asrt_{\floor{1 \after f \after g}}
+    \after f \after g$),
+    the pristine maps are closed under composition and even
+    form a~$\dagger$-category. \cite{effintro}
+\end{point}
 \end{point}
 \begin{point}[standard-form-pristine]{Exercise}%
-Show that in a~$\&$-effectus, every pristine map~$h$ is of the form
+Show that in an~$\&$-effectus, every pristine map~$h$ is of the form
         \begin{equation*}
             h \ =\ \pi_{\IM h} \after \alpha \after \zeta_{1 \after h}
         \end{equation*}
@@ -5890,6 +6099,312 @@ so~$\asrt_p$ is~$\dagger$-positive, as desired. \qed
 \end{point}
 \end{parsec}
 
+\subsection{Dilations}
+\begin{parsec}%
+\begin{point}%
+As they are the the main topic of the first part of this thesis,
+    we cannot finish our discussion of~$\dagger$-effectuses
+    without mentioning dilations.
+The presented abstract theory of dilations in a~$\dagger$-effectus
+    is prelimanary and as of yet rather unimpressive.
+\end{point}
+\begin{point}{Definition}%
+Let~$f\colon X \to Y$ be any map in an effectus.
+A \Define{dilation} of~$f$
+    is a triplet~$(P, \varrho, h)$
+    of a sharp total map~$\varrho \colon P \to Y$
+    and a pure map~$h \colon X \to P$
+    with~$\varrho \after h = f$,
+    such that
+\begin{quote}
+    for every other triplet~$(P', \varrho', h')$
+    with~$\varrho'\colon P' \to Y$ total sharp,
+    $h'\colon X \to P$ arbitrary and~$f = \varrho'\after h'$,
+    there is a unique~$\sigma \colon P \to P'$
+    with~$\sigma \after h = h'$
+    and~$\varrho' \after \sigma = \varrho$.
+\end{quote}
+We say an effectus \Define{has dilations} if
+    there exists a dilation for every map.
+\end{point}
+\begin{point}{Example}%
+The effectus $\op\vN$ has dilations,
+    as shown in \sref{existence-paschke},
+    but the full subcategory of commutative von Neumann algebras
+    does not.
+\end{point}
+\begin{point}{Proposition}%
+Let~$C$ be an effectus with dilations.
+\begin{enumerate}
+\item
+    If~$(P_1,\varrho_1,h_1)$
+    and~$(P_2,\varrho_2,h_2)$
+        are both dilations of~$f$,
+    then there is a unique isomorphism~$\alpha\colon P_1 \to P_2$
+        with~$\alpha \after h_1 = h_2$ and~$\varrho_2 \after \alpha = \varrho_1$.
+\item
+    Conversely,
+    if~$(P,\varrho,h)$
+        is a dilation of~$f$ and~$\alpha\colon P \to P'$ is some isomorphism,
+        then~$(P', \varrho \after \alpha^{-1}, \alpha \after h)$
+        is also a dilation of~$f$.
+
+\item
+    $(X, \varrho, \id)$ is the dilation
+        of a sharp total map~$\varrho$.
+
+\item
+    If~$(P, \varrho, h)$ is some dilation,
+        then~$(P, \id, h)$ is the dilation of~$h$.
+
+\item
+    For any quotient~$\xi \colon X \to Q$
+            and map~$f\colon Q \to Y$
+            with dilation~$(P, \varrho, h)$,
+            the triplet~$(P, \varrho, h \after \xi)$
+            is a dilation of~$f \after \xi$.
+
+\item
+    Conversely, if~$(P, \varrho, h)$
+            is a dilation of~$f \after \xi$
+            for a map~$f\colon Q \to Y$
+            and quotient~$\xi \colon X \to Q$,
+        then~$(P, \varrho, h'')$ is a dilation of~$f$,
+        where~$h''\colon Q \to P$ is the unique map with~$h'' \after \xi = h$.
+
+\item
+    If for~$i=1,2$ the triplet~$(P_i, \varrho_i, h_i)$
+            is a dilation of~$f_i \colon X_i \to Y$,
+    then~$(P_1 + P_2, [\varrho_1,\varrho_2], h_1 + h_2)$
+        is a dilation of~$[f_1, f_2] \colon X_1 + X_2 \to Y$.
+\end{enumerate}
+\begin{point}{Proof}%
+Point 1 has been proven in \sref{paschke-unique-up-to-iso}.
+Point 2 is easily verified.
+To prove point 3, assume~$\varrho$ is a sharp total map.
+Assume~$\varrho = \varrho' \after h'$ for some~$h'$ and sharp total~$\varrho'$.
+Then~$h'$ is clearly the unique map
+    satisfying~$h' = h' \after \id$ (and~$\varrho = \varrho' \after h'$),
+    which demonstrates point 3.
+
+For point 4, assume~$(P, \varrho, h)$ is some dilation.
+Assume~$h = \varrho' \after h'$ for some~$h'$ and sharp total~$\varrho'$.
+There is a unique~$\sigma$ with~$h' = \sigma \after h$
+    and~$\varrho\after \varrho' \after \sigma = \varrho$.
+Now~$\varrho' \after \sigma \after h = \varrho' \after h' = h$.
+    So~$\varrho' \after \sigma$
+        satisfies the properties of the unique mediating map~$\id\colon P \to P$,
+        hence~$\varrho' \after \sigma = \id$.
+Only uniqueness of~$\sigma$ remains,
+    so assume~$\sigma'$ is any (other) map with~$h'  = \sigma' \after h$
+    and~$\varrho' \after \sigma' = \id$.
+Then~$\varrho \after \varrho' \after \sigma' = \varrho$
+    and so~$\sigma = \sigma'$.
+
+To demonstrate point 5, assume~$\varrho' \after h' = f \after \xi$
+    for some~$h'$ and total sharp~$\varrho'$.
+    Then~$1 \after h' = 1 \after \varrho' \after h'
+                    = 1 \after f \after \xi \leq 1 \after \xi$,
+                    so there is a unique~$h''$
+                    with~$h'' \after \xi = h'$.
+By epicity of~$\xi$,
+    we get~$\varrho'\after h'' = f$
+    from~$\varrho' \after h'' \after \xi = \varrho' \after h' = f \after \xi$.
+Thus there is a unique~$\sigma$
+    with~$\sigma \after h = h''$ and~$\varrho' \after \sigma = \varrho$
+    and so~$\sigma \after h \after \xi = h'' \after \xi = h'$.
+Only uniqueness of~$\sigma$ remains,
+    so suppose~$\sigma'$ is a map with~$\sigma'\after h \after \xi = h'$
+            and~$\varrho' \after \sigma = \varrho$.
+    Then~$\sigma' \after h = h''$ by epicity of~$\xi$,
+    hence~$\sigma'=\sigma$ as desired.
+
+For point 6, assume~$f  = \varrho' \after h'$
+    for some~$h'$ and sharp total~$\varrho'$.
+    Then~$f \after \xi = \varrho' \after h' \after \xi $
+    and so there is a unique~$\sigma$
+    with~$\varrho \after \sigma = \varrho'$
+    and~$\sigma \after h' \after \xi = h \equiv h'' \after \xi$.
+    Thus~$\sigma \after h' = h''$ by epicity of~$\xi$.
+To show uniqueness,
+    assume~$\sigma'$ is such that~$\sigma' \after h' = h''$
+    and~$\varrho \after \sigma' = \varrho'$.
+    Then~$\sigma' \after h' \after \xi = h'' \after xi = h$
+    and indeed~$\sigma' = \sigma$.
+
+To show point 7, assume~$[f_1,f_2] = \varrho'\after h'$
+    for some~$h'$ and total sharp~$\varrho'$.
+For any~$i=1,2$
+    we have~$\varrho' \after h' \after \kappa_i = f_i$,
+    so there is a unique~$\sigma_i$
+    with~$\sigma_i \after h_i = h' \after \kappa_i$
+    and~$\varrho_i = \varrho' \after \sigma_i$.
+Define~$\sigma = [\sigma_1, \sigma_2]$.
+Clearly~$\sigma \after (h_1 + h_2)
+    = [\sigma_1 \after h_1,\sigma_2 \after h_2]
+    = [ h' \after \kappa_1,  h'\after \kappa_2] = h'$
+    and~$\varrho' \after \sigma
+            = [\varrho' \after \sigma_1, \varrho' \after \sigma_2]
+            = [\varrho_1, \varrho_2]$.
+Assume~$\sigma'$ is some (other) map with~$\sigma' \after (h_1 + h_2) = h'$
+    and~$\varrho' \after \sigma' = [\varrho_1, \varrho_2]$.
+For~$i=1,2$
+    we have~$\varrho' \after \sigma' \after \kappa_i = \varrho_i$
+    and~$h' \after \kappa_i = \sigma' \after (h_1 + h_2) \after \kappa_i
+                =  \sigma' \after h_i$,
+                so~$\sigma' \after \kappa_i = \sigma_i$.
+    Hence~$\sigma' = [\sigma' \after \kappa_1, 
+                \sigma' \after \kappa_2] = [\sigma_1,\sigma_2] = \sigma$.
+                \qed
+\end{point}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}%
+With some additional assumptions,
+    the existence of dilations
+    forces the existence of some
+    familiar quantum gates.
+Assume~$C$ is a~$\dagger$-effectus with dilation
+    with a scalar~$\lambda$ such that~$\lambda^\perp = \lambda$.
+    (For instance: $\lambda = \frac{1}{2}$ in~$\op\vN$.)
+Let~$(P, \langle s,s^\perp \rangle, h)$ be a dilation
+    of the map~$\left<h,h^\perp\right>\colon 1 \to 1+1$.
+We think of~$P$ as an abstract qubit
+    --- indeed in $\op\vN$ any
+    dilation of~$\left<\frac{1}{2},\frac{1}{2}\right>$
+    is of the form~$(M_2, \langle e,e^\perp \rangle, h)$
+    where~$h$ is the vector state for some~$v \in \C^2$
+    and~$e$ is a projector on~$w\C$,
+    with~$\left<v,w\right> = \frac{1}{\sqrt{2}}$
+    (for instance~$v = \ket{0}$ and~$w = \ket{+}$).
+\begin{point}%
+By assumption~$\langle s,s^\perp \rangle \after h = \langle\lambda, \lambda\rangle$,
+    so~$s \after h = s^\perp \after h = \lambda$.
+and~$\langle s^\perp,s \rangle \after h = \langle\lambda, \lambda\rangle$.
+Hence by the definition of dilation,
+    there is a unique map~$X \colon P \to P$
+    with~$X \after h = h$
+    and~$\langle s^\perp, s\rangle\after X = \langle s, s^\perp\rangle $,
+    whence~$s \after X = s^\perp \after X$
+    and~$s^\perp \after X = s \after X$.
+Clearly~$X \after X \after h = h$
+    and~$\langle s, s^\perp \rangle  \after X \after X 
+            = \langle s, s^\perp \rangle$,
+    so by uniqueness of the mediating map~$\id \colon P \to P$,
+    we must have~$X \after X = \id$.
+Thus the isomorphism~$X$ behaves like the~$X$-gate
+    --- indeed, in~$\op\vN$, we have~$X = \ad_X$
+        if~$e = \ketbra{0}{0}$.
+\end{point}
+\begin{point}%
+For the next gate,
+    assume~$s$ is pure and~$\IM s = 1$.
+Note~$s^\dagger$ is total.
+As~$\asrt_\lambda = \lambda$,
+    we have~$h^\dagger \after s^\dagger = \lambda^\dagger = \lambda$
+    and so~$(h^\dagger)^\perp \after s^\dagger = \lambda^\perp = \lambda$.
+Combined:~$\langle h^\dagger, (h^\dagger)^\perp \rangle \after s^\dagger
+            = \langle \lambda,\lambda \rangle$.
+Thus using the univeral property of the dilation,
+    there is a unique map~$H\colon P \to P$
+    with~$H \after h = s^\dagger$
+    and~$\langle h^\dagger, (h^\dagger)^\perp \rangle \after H =
+            \langle s, s^\perp \rangle$.
+So~$h^\dagger \after H = s$.
+In general, we do not know a lot more about~$H$.
+Assume~$H$ is an comprehension (as it is in~$\op\vN$ in this situation).
+    Then~$s^\dagger = H^\dagger \after h$ and
+        $s = h^\dagger \after H^\dagger$,
+        so $s^\perp = (h^\dagger)^\perp \after H^\dagger$,
+        whence~$\langle s,s^\perp \rangle = \langle
+                h^\dagger, (h^\dagger)^\perp \rangle \after H^\dagger$.
+Thus, by uniqueness of~$H$, we must have~$H^\dagger = H$.
+Thus both~$H^\dagger$ and $H$ are total,
+    which forces~$H\after H^\dagger = H^\dagger \after H = \asrt_{1} = \id$,
+    by uniqueness of~$\diamond$-positive maps.
+Hence~$H \after H = \id$,
+    $s \after H = h^\dagger$
+    and~$h^\dagger \after H = s$.
+    So~$H$ is similar to the Hadamard-gate
+        --- indeed, in~$\op\vN$, we have~$H = \ad_H$ if~$e = \ketbra{0}{0}$.
+\end{point}
+\begin{point}%
+Do our additional assumptions (purity of~$s$, $\IM s = 1$, etc.)
+follow from more general principles.  Can we define the other gates, like
+    the CNOT? Do these gates interact in the usual way?
+    Unfortunately, we do not have an answer to any of these questions.
+\end{point}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}%
+    To finish the discussion of dilations,
+        we mention how to state \sref{paschke-correspondence}
+    in an~$\&$-effectus.
+\end{point}
+\begin{point}{Definition}%
+In an~$\&$-effectus,
+for any predicate~$p$,
+    define~$\Define{\sef_p} \equiv \asrt_p \ovee \asrt_{p^\perp}$.
+This map models the side-effect of measuring~$p$.
+    For any map~$f\colon X \to Y$, define
+    \begin{equation*}
+        \Define{\Inv f} \ \equiv \ \{p; \ p \in \Pred X;\ f \after \sef_p = f\}.
+    \end{equation*}
+This is the set of predicates whose measurement does not disturb~$f$.
+\end{point}
+\begin{point}{Lemma}%
+    In~$\op\vN$, for any nmiu-map~$\varrho\colon \scrA \to \scrB$,
+        we have~$\Inv \varrho = [0,1]_{\varrho(\scrA)^\square}$ ---
+        that is:~$\Inv \varrho$
+is the set of effects of the commutator of the image of~$\varrho$.
+\begin{point}{Proof}%
+Assume~$a \in [0,1]_{f(\scrA)^\square}$.
+Simply unfolding definitions, we find~$\sef_a(\varrho(b)) = \sqrt{a} \varrho(b) \sqrt{a}
+                        + \sqrt{1-a} \varrho(b) \sqrt{1-a}
+                        = \varrho(b) $ for any~$b \in \scrA$, so~$a \in \Inv \varrho$.
+For the converse, assume~$a \in \Inv \varrho$.
+    Recall~$(\scrA, \varrho, \id)$ is a Paschke dilation of~$\varrho$.
+    As
+\begin{equation*}
+    \varrho  \ =\ \sef_a \after \varrho
+            \ = \  (\asrt_a \after \varrho)\ovee (\asrt_{1-a} \after \varrho )
+            \ \geq_{\ncp} \ \asrt_{a} \after \varrho,
+\end{equation*}
+    we know by \sref{paschke-correspondence}
+    that there is a~$t \in [0,1]_{\varrho(\scrA)^\square}$
+    with~$\asrt_a(\varrho(b)) \equiv \sqrt{a} \varrho(b) \sqrt{a}
+                =t  \varrho(b)$ for all~$b \in \scrA$,
+        but then clearly~$a = \sqrt{a} \varrho(1) \sqrt{a} = t \varrho(1) = t$. \qed
+\end{point}
+\end{point}
+\begin{point}{Definition}%
+Let~$C$ be an $\&$-effectus.
+For a map~$f\colon X \to Y$,
+    write
+\begin{equation*}
+    \Define{\downarrow\!f} \ \equiv \ 
+    \{ g; \ g\colon X \to Y; \ g \leq f \}.
+\end{equation*}
+    We say a dilation~$(P, \varrho, h)$ of~$f$
+        has \Define{the order correspondence} if
+        there is an order isomorphism~$\Theta\colon \downarrow\!f \to \Inv \varrho$
+        such that for every~$g \in \downarrow\!f$,
+        we have
+\begin{equation*}
+g \ =\  \varrho \after \asrt_{\Theta(g)} \after h.
+\end{equation*}
+\end{point}
+\begin{point}{Example}%
+By \sref{paschke-correspondence}
+    every dilation in~$\op\vN$
+    has the order correspondence.
+\end{point}
+\end{parsec}
+
 \section{Comparisons}
 \subsection{Dagger kernel categories}
 \begin{parsec}%
@@ -6145,6 +6660,13 @@ Applying the dagger, we find
 $0 = \asrt_0^\dagger = \asrt_p^\dagger \after \asrt_q^\dagger
                 = \asrt_p \after \asrt_q$.
     Thus~$\andthen{q}{p} = 0 = \andthen{p}{q}$, as desired. \qed
+\end{point}
+\begin{point}{Remark}%
+It's unclear whether the set of predicates in a~$\dagger$-effectus
+    forms a sequential effect algebra.
+A seemingly related open problem
+    is whether~$\andthen{p}{q} = \andthen{q}{p}$
+    implies that~$\asrt_p \after \asrt_q = \asrt_q \after \asrt_p$.
 \end{point}
 \end{point}
 \end{parsec}
@@ -6821,6 +7343,24 @@ We will first derive exactness in~$\cok a$
         in~$\ker b$ is shown with a dual argument
         using the right-modularity of~$f$ over~$\ceil{1\after b}^\perp$. \qed
 \end{point}
+\end{point}
+\begin{point}{Remark}%
+As~$\op\vN$ is a~$\dagger$-effectus,
+    Grandis' Snake Lemma also holds for von Neumann algebras.
+This is somewhat puzzling for the following reason.
+To study spaces,
+    one associates in algebraic geometry,
+    to each space
+    an object
+    (or even a diagram of objects) of
+    an abelian category representing some algebraic invariant.
+The key point is that it is easier to compute and understand
+    these algebraic invariants, then it is to work with the spaces
+    themselves.
+One normally thinks of a category of spaces as being quite different
+    from a category of algebraic invariants, hence it's surprising
+    that~$\op\vN$, which is a category of (non-commutative) spaces,
+    behaves in this way, similar to an abelian category.
 \end{point}
 \end{point}
 \end{parsec}
