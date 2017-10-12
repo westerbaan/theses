@@ -1536,10 +1536,11 @@ thereby giving~$g=\sqrt[4]{p}\,(\,\cdot\,)\,\sqrt[4]{p}$.\qed
 On the effects of every von Neumann algebra~$\scrA$
 there is a unique binary operation~$\ast$
 such that for all~$p$ from~$[0,1]_\scrA$,
-\begin{enumerate}
+\begin{enumerate}[A.]
 \item \label{ax1}
 $p\ast 1 = p$,
-\item\label{ax2}
+\item
+	\label{ax2}
 $p\ast q = f(q)$
 for all~$q$ from~$[0,1]_\scrA$
 for some pure map~$f\colon \scrA\to\scrA$,
@@ -1578,9 +1579,10 @@ for all~$q\in [0,1]_\scrA$ by~\ref{ax3}.\qed
 \end{point}
 \end{point}
 \begin{point}{Exercise}%
-We'll show  that none of the axioms
+None of the axioms
 from~\sref{uniqueness-sequential-product}
-can be omitted.
+can be omitted (except perhaps~\ref{ax4},
+see~\sref{fourth-axiom}):
 \begin{enumerate}
 \item
 Show that
@@ -1609,8 +1611,6 @@ and~$g(\nicefrac{4}{9})=-1$
 the operation~$\ast$ (defined by~$u_p$ as above) satisfies
 all conditions of~\sref{uniqueness-sequential-product} except~\ref{ax3}.
 \item
-\TODO{...}
-\item
 Show that there is a Borel
 function~$g\colon[0,1]\to S^1$
 with $g(\nicefrac{1}{2})\neq 1$
@@ -1618,11 +1618,17 @@ and~$g(\lambda^2)=g(\lambda)^2$ for all~$\lambda\in [0,1]$,
 and that~$\ast$ given by~$p\ast q = \sqrt{p} g(p)^* \,q \,g(p)\sqrt{p}$
 satisfies all conditions of~\sref{uniqueness-sequential-product}
 except~\ref{ax5}.
-
-
-
-
 \end{enumerate}
+\end{point}
+\begin{point}[fourth-axiom]{Problem}%
+Is there a binary operation~$\ast$
+on the effects~$[0,1]_\scrA$
+of a von Neumann algebra~$\scrA$
+that satisfies all axioms of~\sref{uniqueness-sequential-product}
+except~\sref{ax4}?
+\end{point}
+\begin{point}{Remark}%
+	\TODO{Compare with our previous publication.}
 \end{point}
 \end{parsec}
 

@@ -621,7 +621,7 @@ $\omega(\,a^*\bigvee D a\,-\, \bigvee_{d\in D} a^* d a\,)=0$
 for every np-functional~$\omega$ on~$\scrA$.
 But since
 $a^*\bigvee D a - 
-\bigvee_{d\in D} a^* d$
+\bigvee_{d\in D} a^* da$
 happens to be positive,
 we conclude that
 $a^*\bigvee D a  
@@ -1034,6 +1034,273 @@ between von Neumann algebras,
 show that the cp-map $M_N f\colon M_N\scrA\to M_N\scrB$
 from~\sref{mnf} is normal.
 \end{enumerate}
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+Another important source of examples of von 
+Neumann algebras is measure theory:
+we'll show that the bounded measurable
+functions on a 
+finite complete
+measure space~$X$
+form a commutative von Neumann algebra~$L^\infty(X)$
+when functions that are equal almost everywhere are identified
+(see~\TODO{...}).
+In fact, 
+we'll see in~\TODO{...}
+that
+every commutative von Neumann algebra is nmiu-isomorphic
+to a direct sum of~$L^\infty(X)$s.
+This is not only interesting in its own right,
+but will also
+be used in the next chapter
+to show that the only von Neumann algebras
+that can be endowed with a `duplicator'
+are of the form~$\ell^\infty(X)$
+for some set~$X$ (see~\TODO{...}).
+We refer the reader to volumes~1 and~2 of~\cite{fremlin}
+for the basics of measure theory.
+\end{point}
+\begin{point}%
+Let~$X$ be a finite and complete measure space.
+We'll denote the $\sigma$-algebra
+of measurable subsets of~$X$ by~$\Define{\Sigma_X}$,
+and the measure by~$\Define{\mu_X}\colon \Sigma_X\to[0,\infty]$ (or~$\mu$
+when no confusion is expected).
+That~$X$ is \Define{finite} means that~$\mu(X)<\infty$
+(which doesn't mean that the set~$X$ is finite),
+and that~$X$ is \Define{complete}
+means that every subset~$A$
+of a negligible subset~$B$ of~$X$
+is itself negligible.
+(Recall that~$N\subseteq X$
+is \Define{negligible}
+when~$N\in \Sigma_X$ and~$\mu(N)=0$.)
+A function $f\colon X\to\C$ is \Define{measurable}
+when the inverse image~$f^{-1}(U)$
+of any open subset~$U$ of~$\C$
+is measurable
+(which happens precisely
+when~$x\mapsto \Real{f(x)},\,x\mapsto\Imag{f(x)}\colon\,
+X\to\R$
+are measurable in the sense of~121C of~\cite{fremlin}).
+
+The bounded measurable functions $f\colon X\to\C$
+form a $C^*$-subalgebra of~$\C^X$ 
+that we'll denote by~$\Define{\mathcal{L}^\infty(X)}$.
+that is closed under 
+The space$\mathcal{L}^\infty(X)$
+is not only closed with respect to the (supremum) norm
+on~$\C^X$,
+but also with respect to coordinatewise limits
+of \emph{sequences}
+(c.f.~121F of~\cite{fremlin}).
+Nevertheless,
+$\mathcal{L}^\infty(X)$
+might still not be a von Neumann algebra.
+Indeed, take for example~$X=[0,1]$,
+and let~$f\colon X\to[0,\infty)$
+be any non-measurable function (see~\TODO{...}).
+Then there is no least measurable function $g\in \Real{\mathcal{L}(X)}$
+above~$f$.
+
+Indeed, if for example all the points of~$X$
+are negligithere is a non-empty negligible subset~$A$
+in~$X$
+and a non-measurable function~$f\colon X\to\R_+$,
+then there is no least measurable function $g \in \mathcal{L}_R(X)$
+
+Indeed, given ~$A\subseteq X$
+there is no least measurable subset~$B$
+above~$A$,
+and so the bounded directed subset~$D:=\{\,f\in \mathcal{L}^\infty(X)\colon\,
+f\leq \mathbf{1}_A\,\}$
+has no supremum on~$\Real{\mathcal{L}^\infty(X)}$,
+where~$\Define{\mathbf{1}_A}$
+denotes the \Define{indicator function} of~$A$
+(which is~$1$ on~$A$ and~$0$ elsewhere).
+
+
+
+
+
+
+
+Let~$X$ be a complete finite measure space.
+A function $f\colon X\to\C$ is \Define{measurable}
+when the inverse image~$f^{-1}(U)$
+of every open subset~$U$ of~$\C$
+is measurable
+(cf.~121B of~\cite{fremlin}).
+An important example of such a measurable
+function is
+the indicator function~$\Define{\mathbf{1}_A}\colon X\to\C$
+of a measurable subset~$A\subseteq X$,
+which equals~$1$ on~$A$ and is~$0$ elsewhere.
+The bounded measurable functions $f\colon X\to\C$
+endowed with the supremum norm and
+coordinatewise operations
+form a $C^*$-algebra
+we'll denote by~$\Define{\mathcal{L}^\infty(X)}$
+when endowed with coordinatewise operations and order,
+which is complete in the following sense.
+
+When~$f_1,f_2,\dotsc$ is a uniformly bounded
+sequence in~$\mathcal{L}^\infty(X)$
+such that~$f_n(x)$ converges for all~$x\in X$,
+then~$x\mapsto \lim_n f_n(x)\colon X\to\C$
+is again in~$\mathcal{L}^\infty(X)$
+(c.~121F of~\sref{fremlin}).
+In particular,
+if~$f_1\leq f_2\leq \dotsb$
+is a bounded ascending sequence in~$\mathcal{L}^\infty(X)$,
+then the pointwise supremum $\bigvee_n f_n\colon
+x\mapsto \bigvee_n f_n(x)\colon X\to \C$
+is in~$\mathcal{L}^\infty(X)$,
+and is, in fact, the
+supremum of the~$f_n$ in~$\mathcal{L}^\infty(X)$.
+
+A bounded directed subset of~$\mathcal{L}^\infty(X)$
+need not have a supremum;
+
+
+
+
+
+
+
+
+
+
+
+\end{point}
+\begin{point}{Definition}%
+Let~$X$ be a finite measure space.
+We'll denote the set of
+bounded measurable
+functions $f\colon X\to\C$
+by~$\Define{\mathcal{L}^\infty(X)}$.
+We say that $f,g\in \mathcal{L}^\infty(X)$
+are \Define{equal almost everywhere}
+and write $\Define{f\approx g}$
+when~$f(x)=g(x)$ for almost all~$x\in X$
+(that is, $\{\,x\in X\colon\, f(x)\neq g(x)\,\}$
+is negligible).
+It is easily seen that~$\approx$ is an equivalence relation;
+we denote the equivalence class
+of an function~$f\in \mathcal{L}^\infty(X)$
+by $\Define{f^\circ}$,
+and
+the set of equivalence classes by~$\Define{L^\infty(X)}
+:= \{\, f^\circ\colon\, f\in \mathcal{L}^\infty(X)\,\}$.
+\end{point}
+\begin{point}%
+We'll need the following facts
+concerning a finite measure space~$X$.
+\begin{enumerate}
+\item
+Every function in~$\mathcal{L}^\infty(X)$
+is integrable (in the sense of 122M of~\cite{fremlin})
+and
+	
+\end{enumerate}
+\end{point}
+\begin{point}[Linfty-basic]{Exercise}%
+Let~$X$ be a finite measure space.
+\begin{enumerate}
+\item
+Show that~$\approx$ is a congruence for coordinatewise
+addition on~$\mathcal{L}^\infty(X)$,
+that is, given $f\approx f'$ and~$g\approx g'$
+in~$\mathcal{L}^\infty(X)$ we have~$f+g\approx f'+g'$.
+
+Show that~$\approx$ is a congruence for coordinatewise
+(scalar) multiplication and involution.
+Show that in this way~$L^\infty(X)$
+becomes vector space.
+
+
+\item
+Given~$f\in \mathcal{L}^\infty(X)$
+show that the minimum
+\begin{equation*}
+	\|f\| \ :=\ \min\{\ 
+		\lambda\geq 0\colon\,
+		\left|f(x)\right|\,\leq\,\lambda
+	\text{ for almost all~$x\in X$}\ \}
+\end{equation*}
+exists, and $f\mapsto \|f\|$
+gives a seminorm on~$\mathcal{L}^\infty(X)$
+with $\|f\|=0$ iff~$f\approx 0$.
+
+Deduce that $\|f\|=\|f'\|$ for $f,f'\in \mathcal{L}^\infty(X)$
+with $f\approx f'$,
+and conclude that $f\mapsto \|f\|$ gives
+a norm on~$L^\infty(X)$
+(called the \Define{essential supremum norm}).
+
+\item
+Given a bounded
+sequence~$f_1,f_2,\dotsc$ 
+in~$\mathcal{L}^\infty(X)$
+such that~$f_n(x)$ converges for almost all~$x\in X$,
+show that there is~$f\in \mathcal{L}^\infty(X)$
+such that~$f_n(x)$ converges to~$f(x)$
+for almost all~$x\in X$.
+
+Show that if in addition~$f_1^\circ,f_2^\circ,\dotsc$
+is norm Cauchy,
+then~$f_1^\circ,f_2^\circ ,\dotsc$ 
+norm converges to~$f^\circ$.
+Deduce that~$L^\infty(X)$ is norm complete.
+
+Show that~$L^\infty(X)$ is a $C^*$-algebra
+when endowed 
+with
+essential supremum norm,
+and coordinatewise operations.
+\end{enumerate}
+\end{point}
+\begin{point}[Linfty-vn]{Proposition}%
+Given a finite measure space~$X$ 
+the $C^*$-algebra $L^\infty(X)$
+is a commutative von Neumann algebra.
+\begin{point}{Proof}%
+Our first objective is to show that a bounded
+directed subset~$D$ of $\Real{L^\infty(X)}$
+has a supremum.
+The trick here is to reduce the problem
+to a sequence in~$\mathcal{L}^\infty(X)$.
+To begin,
+note
+that since~$D$ is bounded,
+the supremum~$\bigvee_{d\in D}\|d\|$
+exists (in~$\R$),
+and so we can
+find~$d_1\leq d_2 \leq \dotsb$ in~$D$
+with $\bigvee_n \|d_n\| = \bigvee_{d\in D} \|d\|$. 
+Pick $f_1,f_2,\dotsc$ in~$\mathcal{L}^\infty(X)$
+with~$f_n^\circ=d_n$
+for all~$n$.
+Since $f_1^\circ \leq f_2^\circ\leq \dots$
+we have
+$f_1(x)\leq f_2(x)\leq \dotsb$
+for \emph{almost} all~$x\in X$,
+and since further~$f_1^\circ \leq f_2^\circ\leq \dots$
+is bounded,
+we see that
+$f_1(x)\leq f_2(x)\leq \dotsb$
+is bounded---and hence converges---for almost all~$x\in X$.
+Thus by~\sref{Linfty-basic} there is~$f\in \mathcal{L}^\infty(X)$
+such that~$f_1(x),\,f_2(x),\,\dotsc$
+converges to~$f(x)$ for almost all~$x\in X$.
+We'll show that~$f^\circ=\bigvee D$.
+
+
+
+
+\end{point}
 \end{point}
 \end{parsec}
 \section{Projections}
