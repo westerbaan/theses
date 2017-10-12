@@ -6106,7 +6106,7 @@ As they are the the main topic of the first part of this thesis,
     we cannot finish our discussion of~$\dagger$-effectuses
     without mentioning dilations.
 The presented abstract theory of dilations in a~$\dagger$-effectus
-    is prelimanary and rather unimpressive.
+    is prelimanary and as of yet rather unimpressive.
 \end{point}
 \begin{point}{Definition}%
 Let~$f\colon X \to Y$ be any map in an effectus.
@@ -6136,9 +6136,272 @@ The effectus $\op\vN$ has dilations,
 \begin{point}{Proposition}%
 Let~$C$ be an effectus with dilations.
 \begin{enumerate}
-    \item
-        $(Y, \varrho$
+\item
+    If~$(P_1,\varrho_1,h_1)$
+    and~$(P_2,\varrho_2,h_2)$
+        are both dilations of~$f$,
+    then there is a unique isomorphism~$\alpha\colon P_1 \to P_2$
+        with~$\alpha \after h_1 = h_2$ and~$\varrho_2 \after \alpha = \varrho_1$.
+\item
+    Conversely,
+    if~$(P,\varrho,h)$
+        is a dilation of~$f$ and~$\alpha\colon P \to P'$ is some isomorphism,
+        then~$(P', \varrho \after \alpha^{-1}, \alpha \after h)$
+        is also a dilation of~$f$.
+
+\item
+    $(X, \varrho, \id)$ is the dilation
+        of a sharp total map~$\varrho$.
+
+\item
+    If~$(P, \varrho, h)$ is some dilation,
+        then~$(P, \id, h)$ is the dilation of~$h$.
+
+\item
+    For any quotient~$\xi \colon X \to Q$
+            and map~$f\colon Q \to Y$
+            with dilation~$(P, \varrho, h)$,
+            the triplet~$(P, \varrho, h \after \xi)$
+            is a dilation of~$f \after \xi$.
+
+\item
+    Conversely, if~$(P, \varrho, h)$
+            is a dilation of~$f \after \xi$
+            for a map~$f\colon Q \to Y$
+            and quotient~$\xi \colon X \to Q$,
+        then~$(P, \varrho, h'')$ is a dilation of~$f$,
+        where~$h''\colon Q \to P$ is the unique map with~$h'' \after \xi = h$.
+
+\item
+    If for~$i=1,2$ the triplet~$(P_i, \varrho_i, h_i)$
+            is a dilation of~$f_i \colon X_i \to Y$,
+    then~$(P_1 + P_2, [\varrho_1,\varrho_2], h_1 + h_2)$
+        is a dilation of~$[f_1, f_2] \colon X_1 + X_2 \to Y$.
 \end{enumerate}
+\begin{point}{Proof}%
+Point 1 has been proven in \sref{paschke-unique-up-to-iso}.
+Point 2 is easily verified.
+To prove point 3, assume~$\varrho$ is a sharp total map.
+Assume~$\varrho = \varrho' \after h'$ for some~$h'$ and sharp total~$\varrho'$.
+Then~$h'$ is clearly the unique map
+    satisfying~$h' = h' \after \id$ (and~$\varrho = \varrho' \after h'$),
+    which demonstrates point 3.
+
+For point 4, assume~$(P, \varrho, h)$ is some dilation.
+Assume~$h = \varrho' \after h'$ for some~$h'$ and sharp total~$\varrho'$.
+There is a unique~$\sigma$ with~$h' = \sigma \after h$
+    and~$\varrho\after \varrho' \after \sigma = \varrho$.
+Now~$\varrho' \after \sigma \after h = \varrho' \after h' = h$.
+    So~$\varrho' \after \sigma$
+        satisfies the properties of the unique mediating map~$\id\colon P \to P$,
+        hence~$\varrho' \after \sigma = \id$.
+Only uniqueness of~$\sigma$ remains,
+    so assume~$\sigma'$ is any (other) map with~$h'  = \sigma' \after h$
+    and~$\varrho' \after \sigma' = \id$.
+Then~$\varrho \after \varrho' \after \sigma' = \varrho$
+    and so~$\sigma = \sigma'$.
+
+To demonstrate point 5, assume~$\varrho' \after h' = f \after \xi$
+    for some~$h'$ and total sharp~$\varrho'$.
+    Then~$1 \after h' = 1 \after \varrho' \after h'
+                    = 1 \after f \after \xi \leq 1 \after \xi$,
+                    so there is a unique~$h''$
+                    with~$h'' \after \xi = h'$.
+By epicity of~$\xi$,
+    we get~$\varrho'\after h'' = f$
+    from~$\varrho' \after h'' \after \xi = \varrho' \after h' = f \after \xi$.
+Thus there is a unique~$\sigma$
+    with~$\sigma \after h = h''$ and~$\varrho' \after \sigma = \varrho$
+    and so~$\sigma \after h \after \xi = h'' \after \xi = h'$.
+Only uniqueness of~$\sigma$ remains,
+    so suppose~$\sigma'$ is a map with~$\sigma'\after h \after \xi = h'$
+            and~$\varrho' \after \sigma = \varrho$.
+    Then~$\sigma' \after h = h''$ by epicity of~$\xi$,
+    hence~$\sigma'=\sigma$ as desired.
+
+For point 6, assume~$f  = \varrho' \after h'$
+    for some~$h'$ and sharp total~$\varrho'$.
+    Then~$f \after \xi = \varrho' \after h' \after \xi $
+    and so there is a unique~$\sigma$
+    with~$\varrho \after \sigma = \varrho'$
+    and~$\sigma \after h' \after \xi = h \equiv h'' \after \xi$.
+    Thus~$\sigma \after h' = h''$ by epicity of~$\xi$.
+To show uniqueness,
+    assume~$\sigma'$ is such that~$\sigma' \after h' = h''$
+    and~$\varrho \after \sigma' = \varrho'$.
+    Then~$\sigma' \after h' \after \xi = h'' \after xi = h$
+    and indeed~$\sigma' = \sigma$.
+
+To show point 7, assume~$[f_1,f_2] = \varrho'\after h'$
+    for some~$h'$ and total sharp~$\varrho'$.
+For any~$i=1,2$
+    we have~$\varrho' \after h' \after \kappa_i = f_i$,
+    so there is a unique~$\sigma_i$
+    with~$\sigma_i \after h_i = h' \after \kappa_i$
+    and~$\varrho_i = \varrho' \after \sigma_i$.
+Define~$\sigma = [\sigma_1, \sigma_2]$.
+Clearly~$\sigma \after (h_1 + h_2)
+    = [\sigma_1 \after h_1,\sigma_2 \after h_2]
+    = [ h' \after \kappa_1,  h'\after \kappa_2] = h'$
+    and~$\varrho' \after \sigma
+            = [\varrho' \after \sigma_1, \varrho' \after \sigma_2]
+            = [\varrho_1, \varrho_2]$.
+Assume~$\sigma'$ is some (other) map with~$\sigma' \after (h_1 + h_2) = h'$
+    and~$\varrho' \after \sigma' = [\varrho_1, \varrho_2]$.
+For~$i=1,2$
+    we have~$\varrho' \after \sigma' \after \kappa_i = \varrho_i$
+    and~$h' \after \kappa_i = \sigma' \after (h_1 + h_2) \after \kappa_i
+                =  \sigma' \after h_i$,
+                so~$\sigma' \after \kappa_i = \sigma_i$.
+    Hence~$\sigma' = [\sigma' \after \kappa_1, 
+                \sigma' \after \kappa_2] = [\sigma_1,\sigma_2] = \sigma$.
+                \qed
+\end{point}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}%
+With some additional assumptions,
+    the existence of dilations
+    forces the existence of some
+    familiar quantum gates.
+Assume~$C$ is a~$\dagger$-effectus with dilation
+    with a scalar~$\lambda$ such that~$\lambda^\perp = \lambda$.
+    (For instance: $\lambda = \frac{1}{2}$ in~$\op\vN$.)
+Let~$(P, \langle s,s^\perp \rangle, h)$ be a dilation
+    of the map~$\left<h,h^\perp\right>\colon 1 \to 1+1$.
+We think of~$P$ as an abstract qubit
+    --- indeed in $\op\vN$ any
+    dilation of~$\left<\frac{1}{2},\frac{1}{2}\right>$
+    is of the form~$(M_2, \langle e,e^\perp \rangle, h)$
+    where~$h$ is the vector state for some~$v \in \C^2$
+    and~$e$ is a projector on~$w\C$,
+    with~$\left<v,w\right> = \frac{1}{\sqrt{2}}$
+    (for instance~$v = \ket{0}$ and~$w = \ket{+}$).
+\begin{point}%
+By assumption~$\langle s,s^\perp \rangle \after h = \langle\lambda, \lambda\rangle$,
+    so~$s \after h = s^\perp \after h = \lambda$.
+and~$\langle s^\perp,s \rangle \after h = \langle\lambda, \lambda\rangle$.
+Hence by the definition of dilation,
+    there is a unique map~$X \colon P \to P$
+    with~$X \after h = h$
+    and~$\langle s^\perp, s\rangle\after X = \langle s, s^\perp\rangle $,
+    whence~$s \after X = s^\perp \after X$
+    and~$s^\perp \after X = s \after X$.
+Clearly~$X \after X \after h = h$
+    and~$\langle s, s^\perp \rangle  \after X \after X 
+            = \langle s, s^\perp \rangle$,
+    so by uniqueness of the mediating map~$\id \colon P \to P$,
+    we must have~$X \after X = \id$.
+Thus the isomorphism~$X$ behaves like the~$X$-gate
+    --- indeed, in~$\op\vN$, we have~$X = \ad_X$
+        if~$e = \ketbra{0}{0}$.
+\end{point}
+\begin{point}%
+For the next gate,
+    assume~$s$ is pure and~$\IM s = 1$.
+Note~$s^\dagger$ is total.
+As~$\asrt_\lambda = \lambda$,
+    we have~$h^\dagger \after s^\dagger = \lambda^\dagger = \lambda$
+    and so~$(h^\dagger)^\perp \after s^\dagger = \lambda^\perp = \lambda$.
+Combined:~$\langle h^\dagger, (h^\dagger)^\perp \rangle \after s^\dagger
+            = \langle \lambda,\lambda \rangle$.
+Thus using the univeral property of the dilation,
+    there is a unique map~$H\colon P \to P$
+    with~$H \after h = s^\dagger$
+    and~$\langle h^\dagger, (h^\dagger)^\perp \rangle \after H =
+            \langle s, s^\perp \rangle$.
+So~$h^\dagger \after H = s$.
+In general, we do not know a lot more about~$H$.
+Assume~$H$ is an comprehension (as it is in~$\op\vN$ in this situation).
+    Then~$s^\dagger = H^\dagger \after h$ and
+        $s = h^\dagger \after H^\dagger$,
+        so $s^\perp = (h^\dagger)^\perp \after H^\dagger$,
+        whence~$\langle s,s^\perp \rangle = \langle
+                h^\dagger, (h^\dagger)^\perp \rangle \after H^\dagger$.
+Thus, by uniqueness of~$H$, we must have~$H^\dagger = H$.
+Thus both~$H^\dagger$ and $H$ are total,
+    which forces~$H\after H^\dagger = H^\dagger \after H = \asrt_{1} = \id$,
+    by uniqueness of~$\diamond$-positive maps.
+Hence~$H \after H = \id$,
+    $s \after H = h^\dagger$
+    and~$h^\dagger \after H = s$.
+    So~$H$ is similar to the Hadamard-gate
+        --- indeed, in~$\op\vN$, we have~$H = \ad_H$ if~$e = \ketbra{0}{0}$.
+\end{point}
+\begin{point}%
+Do our additional assumptions (purity of~$s$, $\IM s = 1$, etc.)
+follow from more general principles.  Can we define the other gates, like
+    the CNOT? Do these gates interact in the usual way?
+    Unfortunately, we do not have an answer to any of these questions.
+\end{point}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}%
+    To finish the discussion of dilations,
+        we mention how to state \sref{paschke-correspondence}
+    in an~$\&$-effectus.
+\end{point}
+\begin{point}{Definition}%
+In an~$\&$-effectus,
+for any predicate~$p$,
+    define~$\Define{\sef_p} \equiv \asrt_p \ovee \asrt_{p^\perp}$.
+This map models the side-effect of measuring~$p$.
+    For any map~$f\colon X \to Y$, define
+    \begin{equation*}
+        \Define{\Inv f} \ \equiv \ \{p; \ p \in \Pred X;\ f \after \sef_p = f\}.
+    \end{equation*}
+This is the set of predicates whose measurement does not disturb~$f$.
+\end{point}
+\begin{point}{Lemma}%
+    In~$\op\vN$, for any nmiu-map~$\varrho\colon \scrA \to \scrB$,
+        we have~$\Inv \varrho = [0,1]_{\varrho(\scrA)^\square}$ ---
+        that is:~$\Inv \varrho$
+is the set of effects of the commutator of the image of~$\varrho$.
+\begin{point}{Proof}%
+Assume~$a \in [0,1]_{f(\scrA)^\square}$.
+Simply unfolding definitions, we find~$\sef_a(\varrho(b)) = \sqrt{a} \varrho(b) \sqrt{a}
+                        + \sqrt{1-a} \varrho(b) \sqrt{1-a}
+                        = \varrho(b) $ for any~$b \in \scrA$, so~$a \in \Inv \varrho$.
+For the converse, assume~$a \in \Inv \varrho$.
+    Recall~$(\scrA, \varrho, \id)$ is a Paschke dilation of~$\varrho$.
+    As
+\begin{equation*}
+    \varrho  \ =\ \sef_a \after \varrho
+            \ = \  (\asrt_a \after \varrho)\ovee (\asrt_{1-a} \after \varrho )
+            \ \geq_{\ncp} \ \asrt_{a} \after \varrho,
+\end{equation*}
+    we know by \sref{paschke-correspondence}
+    that there is a~$t \in [0,1]_{\varrho(\scrA)^\square}$
+    with~$\asrt_a(\varrho(b)) \equiv \sqrt{a} \varrho(b) \sqrt{a}
+                =t  \varrho(b)$ for all~$b \in \scrA$,
+        but then clearly~$a = \sqrt{a} \varrho(1) \sqrt{a} = t \varrho(1) = t$. \qed
+\end{point}
+\end{point}
+\begin{point}{Definition}%
+Let~$C$ be an $\&$-effectus.
+For a map~$f\colon X \to Y$,
+    write
+\begin{equation*}
+    \Define{\downarrow\!f} \ \equiv \ 
+    \{ g; \ g\colon X \to Y; \ g \leq f \}.
+\end{equation*}
+    We say a dilation~$(P, \varrho, h)$ of~$f$
+        has \Define{the order correspondence} if
+        there is an order isomorphism~$\Theta\colon \downarrow\!f \to \Inv \varrho$
+        such that for every~$g \in \downarrow\!f$,
+        we have
+\begin{equation*}
+g \ =\  \varrho \after \asrt_{\Theta(g)} \after h.
+\end{equation*}
+\end{point}
+\begin{point}{Example}%
+By \sref{paschke-correspondence}
+    every dilation in~$\op\vN$
+    has the order correspondence.
 \end{point}
 \end{parsec}
 
