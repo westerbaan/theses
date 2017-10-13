@@ -1059,8 +1059,36 @@ to show that the only von Neumann algebras
 that can be endowed with a `duplicator'
 are of the form~$\ell^\infty(X)$
 for some set~$X$ (see~\TODO{...}).
-We refer the reader to volumes~1 and~2 of~\cite{fremlin}
-for the basics of measure theory.
+
+We should probably mention that~$L^\infty(X)$
+can be defined for any measure space~$X$,
+and is precisely a von Neumann algebra
+when~$X$ is \emph{localizable} (i.e.~isomorphic
+to a sum of finite measure spaces).
+This has the advantage that any commutative von Neumann algebra
+is nmiu-isomorphic
+to a single~$L^\infty(X)$
+for some localizable measure space~$X$,
+but since it has no other advantages relevant
+to this text
+we restrict ourselves to complete finite measure spaces.
+
+We'll assume the reader is reasonably familiar with 
+the basics of measure theory,
+and we'll only show a selection of results
+that we deemed important.
+For the other details,
+we refer to volumes~1 and~2 of~\cite{fremlin}.
+Nevertheless,
+we'll  recall
+some basic definitions
+to fix terminology,
+which is sometimes simpler than in~\cite{fremlin}
+(because we're dealing with finite complete measure spaces),
+and sometimes modified to the complex-valued case;
+the reader will have no problem adapting
+the results from~\cite{fremlin} 
+to our setting.
 \end{point}
 \begin{point}%
 Let~$X$ be a finite and complete measure space.
@@ -1085,102 +1113,77 @@ is measurable
 when~$x\mapsto \Real{f(x)},\,x\mapsto\Imag{f(x)}\colon\,
 X\to\R$
 are measurable in the sense of~121C of~\cite{fremlin}).
-
+An important example of a measurable function on~$X$
+is the indicator function~$\mathbf{1}_A$
+of a measurable subset~$A$ of~$X$
+(which is equal to~$1$ on~$A$ and~$0$ elsewhere.)
+\end{point}
+\begin{point}%
 The bounded measurable functions $f\colon X\to\C$
 form a $C^*$-subalgebra of~$\C^X$ 
-that we'll denote by~$\Define{\mathcal{L}^\infty(X)}$.
+that we'll denote by~$\Define{\mathcal{L}^\infty(X)}$
 that is closed under 
-The space$\mathcal{L}^\infty(X)$
+The space $\mathcal{L}^\infty(X)$
 is not only closed with respect to the (supremum) norm
 on~$\C^X$,
 but also with respect to coordinatewise limits
 of \emph{sequences}
 (c.f.~121F of~\cite{fremlin}).
-Nevertheless,
-$\mathcal{L}^\infty(X)$
-might still not be a von Neumann algebra.
-Indeed, take for example~$X=[0,1]$,
-and let~$f\colon X\to[0,\infty)$
-be any non-measurable function (see~\TODO{...}).
-Then there is no least measurable function $g\in \Real{\mathcal{L}(X)}$
-above~$f$.
-
-Indeed, if for example all the points of~$X$
-are negligithere is a non-empty negligible subset~$A$
-in~$X$
-and a non-measurable function~$f\colon X\to\R_+$,
-then there is no least measurable function $g \in \mathcal{L}_R(X)$
-
-Indeed, given ~$A\subseteq X$
-there is no least measurable subset~$B$
-above~$A$,
-and so the bounded directed subset~$D:=\{\,f\in \mathcal{L}^\infty(X)\colon\,
-f\leq \mathbf{1}_A\,\}$
-has no supremum on~$\Real{\mathcal{L}^\infty(X)}$,
-where~$\Define{\mathbf{1}_A}$
-denotes the \Define{indicator function} of~$A$
-(which is~$1$ on~$A$ and~$0$ elsewhere).
-
-
-
-
-
-
-
-Let~$X$ be a complete finite measure space.
-A function $f\colon X\to\C$ is \Define{measurable}
-when the inverse image~$f^{-1}(U)$
-of every open subset~$U$ of~$\C$
-is measurable
-(cf.~121B of~\cite{fremlin}).
-An important example of such a measurable
-function is
-the indicator function~$\Define{\mathbf{1}_A}\colon X\to\C$
-of a measurable subset~$A\subseteq X$,
-which equals~$1$ on~$A$ and is~$0$ elsewhere.
-The bounded measurable functions $f\colon X\to\C$
-endowed with the supremum norm and
-coordinatewise operations
-form a $C^*$-algebra
-we'll denote by~$\Define{\mathcal{L}^\infty(X)}$
-when endowed with coordinatewise operations and order,
-which is complete in the following sense.
-
-When~$f_1,f_2,\dotsc$ is a uniformly bounded
-sequence in~$\mathcal{L}^\infty(X)$
-such that~$f_n(x)$ converges for all~$x\in X$,
-then~$x\mapsto \lim_n f_n(x)\colon X\to\C$
-is again in~$\mathcal{L}^\infty(X)$
-(c.~121F of~\sref{fremlin}).
-In particular,
-if~$f_1\leq f_2\leq \dotsb$
-is a bounded ascending sequence in~$\mathcal{L}^\infty(X)$,
-then the pointwise supremum $\bigvee_n f_n\colon
-x\mapsto \bigvee_n f_n(x)\colon X\to \C$
-is in~$\mathcal{L}^\infty(X)$,
-and is, in fact, the
-supremum of the~$f_n$ in~$\mathcal{L}^\infty(X)$.
-
-A bounded directed subset of~$\mathcal{L}^\infty(X)$
-need not have a supremum;
-
-
-
-
-
-
-
-
-
-
+As a result,
+the coordinatewise
+supremum~$\bigvee_n f_n$
+of a bounded ascending sequence $f_1\leq f_2\leq \dotsb$
+in~$\Real{\mathcal{L}^\infty(X)}$
+is again in~$\mathcal{L}^\infty(X)$,
+and is fact the supremum of~$(f_n)_n$ in~$\mathcal{L}^\infty(X)$.
+Still $\mathcal{L}^\infty(X)$
+might still not be a von Neumann algebra
+because not every bounded directed subset of~$\Real{\mathcal{L}^\infty(X)}$
+might have a supremum
+as we'll show presently; \TODO{show this}
+this is why we'll move from~$\mathcal{L}^\infty(X)$
+to~$L^\infty(X)$ in a moment.
 
 \end{point}
-\begin{point}{Definition}%
-Let~$X$ be a finite measure space.
-We'll denote the set of
-bounded measurable
-functions $f\colon X\to\C$
-by~$\Define{\mathcal{L}^\infty(X)}$.
+\begin{point}%
+To deal with~$L^\infty(X)$
+we need to know a bit more about~$\mathcal{L}^\infty(X)$,
+namely that the measure on~$X$ can be extended to a
+an integral $\int\colon \mathcal{L}^\infty(X)\to \C$
+(see~122M of~\cite{fremlin})%
+\footnote{Note that every element of~$\mathcal{L}^\infty(X)$
+being bounded is integrable by~122P of~\cite{fremlin}.}
+with the following properties.
+\begin{enumerate}
+\item
+$\int(\mathbf{1}_A) = \mu(A)$
+for every measurable subset~$A$ of~$X$.
+\item
+$\int\colon \mathcal{L}^\infty(X)\to \C$
+is a positive linear map
+(see 122O of~\cite{fremlin}).
+\item
+$\int \bigvee_n f_n = \bigvee_n \int f_n$
+for every bounded sequence
+$f_1\leq f_2\leq \dotsb$
+in~$\Real{\mathcal{L}^\infty(X)}$.
+(This is a special case
+of Levi's theorem, see 123A of~\cite{fremlin}.)
+\end{enumerate}
+Unsurprisingly the integral
+interacts poorly
+with the directed suprema
+that do exist in~$\mathcal{L}^\infty(X)$:
+for example, the set~$D:=\{\,f\in [0,1]_{\mathcal{L}^\infty(X)}\colon \,
+\int f = 0\,\}$
+is directed, bounded, and has supremum~$1$,
+but~$\bigvee_{f\in D} \int f=0 < 1=\int \bigvee D$.
+What \emph{is} suprising
+is that the lifting of~$\int$
+to~$L^\infty(X)$ will be normal.
+\end{point}
+\begin{point}%
+But let us first define~$L^\infty(X)$.
 We say that $f,g\in \mathcal{L}^\infty(X)$
 are \Define{equal almost everywhere}
 and write $\Define{f\approx g}$
@@ -1193,114 +1196,137 @@ of an function~$f\in \mathcal{L}^\infty(X)$
 by $\Define{f^\circ}$,
 and
 the set of equivalence classes by~$\Define{L^\infty(X)}
-:= \{\, f^\circ\colon\, f\in \mathcal{L}^\infty(X)\,\}$.
-\end{point}
-\begin{point}%
-We'll need the following facts
-concerning a finite measure space~$X$.
-\begin{enumerate}
-\item
-Every function in~$\mathcal{L}^\infty(X)$
-is integrable (in the sense of 122M of~\cite{fremlin})
-and
-	
-\end{enumerate}
-\end{point}
-\begin{point}[Linfty-basic]{Exercise}%
-Let~$X$ be a finite measure space.
-\begin{enumerate}
-\item
-Show that~$\approx$ is a congruence for coordinatewise
-addition on~$\mathcal{L}^\infty(X)$,
-that is, given $f\approx f'$ and~$g\approx g'$
-in~$\mathcal{L}^\infty(X)$ we have~$f+g\approx f'+g'$.
-
-Show that~$\approx$ is a congruence for coordinatewise
-(scalar) multiplication and involution.
-Show that in this way~$L^\infty(X)$
-becomes vector space.
-
-
-\item
-Given~$f\in \mathcal{L}^\infty(X)$
-show that the minimum
-\begin{equation*}
-	\|f\| \ :=\ \min\{\ 
-		\lambda\geq 0\colon\,
+:= \{\, f^\circ\colon\, f\in \mathcal{L}^\infty(X)\,\}$,
+which
+becomes a commutative $C^*$-algebra
+when
+endowed with the same operations
+as~$\mathcal{L}^\infty(X)$, but with
+a slightly modified norm given by,
+for~$\mathfrak{f}\equiv f^\circ \in L^\infty(X)$,
+\begin{alignat*}{3}
+	\|\mathfrak{f}\| \ &= \ 
+\min\{\, \|g\|\colon \, g\in\mathcal{L}^\infty(X)\text{ and }
+g^\circ = \mathfrak{f}\,\} \\
+&=\ \min\{\ \lambda\geq 0\colon\,
 		\left|f(x)\right|\,\leq\,\lambda
-	\text{ for almost all~$x\in X$}\ \}
-\end{equation*}
-exists, and $f\mapsto \|f\|$
-gives a seminorm on~$\mathcal{L}^\infty(X)$
-with $\|f\|=0$ iff~$f\approx 0$.
-
-Deduce that $\|f\|=\|f'\|$ for $f,f'\in \mathcal{L}^\infty(X)$
-with $f\approx f'$,
-and conclude that $f\mapsto \|f\|$ gives
-a norm on~$L^\infty(X)$
-(called the \Define{essential supremum norm}).
-
-\item
-Given a bounded
-sequence~$f_1,f_2,\dotsc$ 
+	\text{ for almost all~$x\in X$}\ \},
+\end{alignat*}
+which  is called the \Define{essential supremum norm}.
+To see that~$L^\infty(X)$ is complete
+one can use the fact that~$\mathcal{L}^\infty(X)$
+is complete in a slightly more sense than discussed before:
+when a bounded sequence $f_1,f_2,\dotsc$
 in~$\mathcal{L}^\infty(X)$
-such that~$f_n(x)$ converges for almost all~$x\in X$,
-show that there is~$f\in \mathcal{L}^\infty(X)$
-such that~$f_n(x)$ converges to~$f(x)$
+converges coordinatewise for almost all~$x\in X$
+to some bounded function~$f\colon X\to\C$,
+this function~$f$ is itself measurable (and so~$f\in\mathcal{L}^\infty(X)$,
+c.f.~121F of~\cite{fremlin}).
+
+Another consequence of this
+is that a bounded ascending sequence
+$f_1^\circ \leq f_2^\circ \leq \dotsb$
+in~$L^\infty(X)$
+(so~$f_1,f_2,\dotsc\in\mathcal{L}^\infty(X)$,
+and $f_1(x)\leq f_2(x)\leq\dotsb$ for almost all~$x\in X$)
+has a supremum~$\bigvee_n f_n^\circ$ in~$\mathcal{L}^\infty(X)$.
+Indeed, we'll have
+$\bigvee_n f_n^\circ = g^\circ$
+for any bounded map~$g\colon X\to\C$
+with $g(x)=\bigvee_n f_n(x)$
 for almost all~$x\in X$.
-
-Show that if in addition~$f_1^\circ,f_2^\circ,\dotsc$
-is norm Cauchy,
-then~$f_1^\circ,f_2^\circ ,\dotsc$ 
-norm converges to~$f^\circ$.
-Deduce that~$L^\infty(X)$ is norm complete.
-
-Show that~$L^\infty(X)$ is a $C^*$-algebra
-when endowed 
-with
-essential supremum norm,
-and coordinatewise operations.
-\end{enumerate}
+\end{point}%
+\begin{point}%
+Now, let us return to the integral.
+Since~$\int f = \int g$
+for all~$f,g\in \mathcal{L}^\infty(X)$
+with $f\approx g$
+we get a map
+$\int \colon L^\infty(X)\to \C$
+given
+by~$\int  f^\circ = \int f$.
+Clearly, $\int$ is positive and linear,
+and by (a slightly less special case
+of) Levi's theorem (123A of~\cite{fremlin})
+we see that $\int \bigvee_n \mathfrak{f}_n
+= \bigvee_n \int \mathfrak{f}_n$
+for any bounded ascending sequence
+$\mathfrak{f}_1\leq \mathfrak{f}_2\leq\dotsb$
+in~$\Real{L^\infty(X)}$.
+Note that~$\int\colon L^\infty(X)\to\C$
+is also faithful,
+because if~$\int f^\circ=\int f = 0$
+for some $f\in \mathcal{L}^\infty(X)$,
+then~$f(x)=0$ for almost all~$x\in X$,
+and so~$f^\circ=0$.
+Now,
+the fact that~$L^\infty(X)$
+is a von Neumann algebra follows from
+the following general and rather surprising observation.
 \end{point}
-\begin{point}[Linfty-vn]{Proposition}%
-Given a finite measure space~$X$ 
-the $C^*$-algebra $L^\infty(X)$
-is a commutative von Neumann algebra.
+\begin{point}{Proposition}%
+Let~$\scrA$ be a $C^*$-algebra,
+and let~$\tau\colon \scrA\to\C$
+be a faithful positive map.
+If every bounded ascending sequence~$a_1\leq a_2\leq \dotsb$
+of self-ajoint elements from~$\scrA$ has a supremum~$\bigvee_n a_n$
+(in~$\Real{\scrA}$)
+and
+$\tau(\bigvee_n a_n)=\bigvee_n \tau (a_n)$,
+then~$\scrA$ is a von Neumann algebra,
+and~$\tau$ is normal.
 \begin{point}{Proof}%
-Our first objective is to show that a bounded
-directed subset~$D$ of $\Real{L^\infty(X)}$
-has a supremum.
-The trick here is to reduce the problem
-to a sequence in~$\mathcal{L}^\infty(X)$.
-To begin,
-note
-that since~$D$ is bounded,
-the supremum~$\bigvee_{d\in D}\|d\|$
-exists (in~$\R$),
-and so we can
-find~$d_1\leq d_2 \leq \dotsb$ in~$D$
-with $\bigvee_n \|d_n\| = \bigvee_{d\in D} \|d\|$. 
-Pick $f_1,f_2,\dotsc$ in~$\mathcal{L}^\infty(X)$
-with~$f_n^\circ=d_n$
-for all~$n$.
-Since $f_1^\circ \leq f_2^\circ\leq \dots$
-we have
-$f_1(x)\leq f_2(x)\leq \dotsb$
-for \emph{almost} all~$x\in X$,
-and since further~$f_1^\circ \leq f_2^\circ\leq \dots$
-is bounded,
-we see that
-$f_1(x)\leq f_2(x)\leq \dotsb$
-is bounded---and hence converges---for almost all~$x\in X$.
-Thus by~\sref{Linfty-basic} there is~$f\in \mathcal{L}^\infty(X)$
-such that~$f_1(x),\,f_2(x),\,\dotsc$
-converges to~$f(x)$ for almost all~$x\in X$.
-We'll show that~$f^\circ=\bigvee D$.
-
-
-
-
+Our first task is to show that a bounded
+directed subset~$D$ of self-adjoint elements of~$\scrA$
+has a supremum~$\bigvee D$ in~$\Real{\scrA}$.
+Since~$\bigvee_{d\in D} \tau(d)$
+is a supremum in~$\R$
+we can find~$a_1\leq a_2\leq \dotsb$ in~$D$
+with~$\bigvee_n \tau(a_n) = \bigvee_{d\in D} \tau(d)$.
+We'll show that~$\bigvee_n a_n$
+is the supremum of~$D$.
+Surely, any upper bound of~$D$ being also an upper bound 
+for~$a_1\leq a_2\leq\dotsb$
+is above~$\bigvee_n a_n$,
+so the only thing that we need to show is that
+$\bigvee_n a_n$ is an upper bound of~$D$.
+So let~$b\in D$ be given.
+The trick is to pick a sequence
+$b_1\leq b_2\leq \dotsb$ in~$D$
+with $b\leq b_1$ and~$a_n\leq b_n$ for all~$n$
+(which exists on account that~$D$ is directed).
+Then~$\bigvee_n a_n \leq \bigvee_n b_n$,
+and~$\bigvee_{d\in D} \tau(d) =\bigvee_n \tau(a_n)
+=\tau(\,\bigvee_n a_n\,)
+\leq \tau(\,\bigvee_n b_n\,)
+= \bigvee_n \tau(b_n) \leq \bigvee_{d\in D} \tau(d)$,
+so~$\tau(\,\bigvee_n a_n\,) = \tau(\,\bigvee_n b_n\,)$,
+which implies that~$\bigvee_n a_n = \bigvee_n b_n$
+as~$\tau$ is faithful.
+Since then $b\leq b_1\leq \bigvee_n b_n = \bigvee_n a_n$
+we see that~$\bigvee_n a_n$ is an upper bound
+(and thus the supremum) of~$D$.
+Moreover,
+since
+$\bigvee_{d\in D} \tau(d) \leq
+\tau(\bigvee D)
+=\tau(\bigvee_n a_n)
+=\bigvee_n\tau(a_n)
+\leq \bigvee_{d\in D} \tau(d)$,
+we see that~$\bigvee_{d\in D} \tau(d)
+= \tau(\bigvee D)$,
+and so~$\tau$ is normal.
+Since~$\tau$ is faithful
+and normal, $\scrA$ is a von Neumann algebra.\qed
 \end{point}
+\end{point}
+\begin{point}[Linfty-vn]{Corollary}%
+Given a finite complete measure space~$X$ 
+the $C^*$-algebra $L^\infty(X)$
+is a commutative von Neumann algebra,
+and the assignment $f\mapsto \int f$
+gives a faithful normal positive
+map~$\int\colon L^\infty(X)\to\C$.
 \end{point}
 \end{parsec}
 \section{Projections}
