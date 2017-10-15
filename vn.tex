@@ -1036,6 +1036,7 @@ from~\sref{mnf} is normal.
 \end{enumerate}
 \end{point}
 \end{parsec}
+\section{Commutative von Neumann algebras}
 \begin{parsec}%
 \begin{point}%
 Another important source of examples of von 
@@ -1090,6 +1091,8 @@ the reader will have no problem adapting
 the results from~\cite{fremlin} 
 to our setting.
 \end{point}
+\end{parsec}%
+\begin{parsec}%
 \begin{point}%
 Let~$X$ be a finite and complete measure space.
 We'll denote the $\sigma$-algebra
@@ -1329,6 +1332,177 @@ gives a faithful normal positive
 map~$\int\colon L^\infty(X)\to\C$.
 \end{point}
 \end{parsec}
+\begin{parsec}%
+\begin{point}%
+We'll show that any commutative von Neumann algebra~$\scrA$
+that admits a faithful np-functional $\omega\colon \scrA\to \C$
+is nmiu-isomorphic  to~$L^\infty(X)$
+for some finite complete measure space~$X$.
+It makes sense to regard this result
+as a von Neumann algebra analogue
+of Gelfand's theorem for commutative $C^*$-algebras,
+(see~\sref{gelfand}---that any commutative $C^*$-algebra
+is miu-isomorphic to~$C(Y)$ for some compact Hausdorff space~$Y$.)
+But one should not take the
+comparison too far too lightly:
+while Gelfand's theorem readily
+yields a clean equivalence 
+between commutative $C^*$-algebras
+and compact Hausdorff spaces
+(see~\sref{gelfand-equivalence}),
+the fact that  $L^\infty(X_1)\cong L^\infty(X_2)$
+for finite complete measure spaces~$X_1$
+and~$X_2$ does not even imply that~$X_1$ and~$X_2$ are 
+isomorphic \TODO{Can this be made more dramatic?}
+(in the category of measurable maps between finite complete
+measure spaces).
+Obtaining an equivalence is nonetheless
+possible after a suitable non-trivial modification
+of the category of measure spaces,
+which would have appeared in~\TODO{cite robert}.
+
+We obtain our finite complete measure space~$X$
+from the commutative von Neumann algebra~$\scrA$
+by putting a $\sigma$-algebra
+on the ($C^*$-algebraic) spectrum~$\spec(\scrA)$
+(a compact Hausdorff space
+consisting of all miu-functionals on~$\scrA$)
+by declaring that a subset~$A$ of~$\spec(X)$ 
+is measurable when~$A$ is open up to
+a \emph{meagre} (defined below) subset.
+It takes some effort to show
+that this yields a $\sigma$-algebra,
+and that the faithful np-functional $\omega\colon\scrA\to \C$
+gives a finite complete measure on~$\spec(X)$,
+but once this is achieved
+it's easily seen that
+$\scrA\cong C(\spec(\scrA))\cong L^\infty(\spec(\scrA))$.
+The first technical step in this project
+involves a special topological property of~$\spec(\scrA)$,
+see~\sref{vn-spectrum-extremally-disconnected},
+but let us first show that~$C(\spec(\scrA))$ is a von Neumann algebra
+to begin with.
+\end{point}
+\begin{point}[ngelfand]{Exercise}%
+Let~$\scrA$ be a commutative von Neumann algebra.
+Using the fact that
+the Gelfand representation~$\gamma_\scrA\colon \scrA\to C(\spec(\scrA))$
+from~\sref{gelfand-representation}
+is a miu-isomorphism 
+by~\sref{gelfand}
+and thus an order isomorphism,
+show that~$C(\spec(\scrA))$
+is a commutative von Neumann algebra
+that is nmiu-isomorphic
+to~$\scrA$ via~$\gamma_\scrA$.
+\end{point}
+\begin{point}[vn-spectrum-extremally-disconnected]{Proposition}%
+The spectrum~$\spec(\scrA)$
+of a commutative von Neumann algebra~$\scrA$
+is \Define{extremally disconnected}:
+the closure~$\overline{U}$
+of an open subset~$U$ of~$\spec(\scrA)$
+is open.
+\begin{point}{Proof}%
+(Based on \S6.1 of~\cite{riesz}.)
+
+Let~$U$ be an open subset of~$\spec(\scrA)$,
+and let~$\mathbf{1}_U$ be the indicator function
+of~$U$.
+The set $D=\{\,f\in C(\spec(\scrA))\colon\, f\leq \mathbf{1}_U\,\}$
+is directed and bounded 
+and so has a supremum~$\bigvee D$
+in~$C(\spec(\scrA))$
+(since~$C(\spec(\scrA))$ is a von Neumann algebra by~\sref{ngelfand}).
+Note that~$0\leq \bigvee D\leq 1$.
+We'll prove that~$\bigvee D = \mathbf{1}_{\overline{U}}$,
+because this entails
+that~$\mathbf{1}_{\overline{U}}$
+is continuous,  so that~$\overline{U}$ is both open and closed.
+
+Let~$x\in U$ be given.
+By Urysohn's lemma (see~15.6 of~\cite{willard},
+using here that~$\spec(\scrA)$ being a compact Hausdorff
+space, \sref{spectrum-calg-compact-hausdorff}, 
+is normal by~17.10 of~\cite{willard})
+there is $f\in [0,1]_{C(\spec(\scrA))}$
+with~$f(x)=1$ and~$f(y)=0$ for all~$y\in \spec(X)\backslash U$.
+It follows that~$f\in D$,
+and~$f\leq \bigvee D\leq 1$,
+so that $1=f(x)\leq (\bigvee D)(x)\leq 1$,
+and~$(\bigvee D)(x)=1$.
+By continuity of~$\bigvee D$,
+we get $(\bigvee D)(x)=1$ for all~$x\in \overline{U}$.
+
+Let~$y\in \spec(\scrA)\backslash U$ be given.
+Again by Urysohn's lemma
+there is $f\in [0,1]_{C(\spec(\scrA))}$
+with~$f(y)=0$ and~$f(x)=1$ for all~$x\in \overline{U}$.
+Since $g\leq \mathbf{1}_U \leq f$
+for every~$g\in D$,
+we get $\bigvee D\leq f$,
+and so~$0\leq (\bigvee D)(y)\leq f(y) =0$,
+which implies that~$(\bigvee D)(y)=0$.
+Hence~$(\bigvee D)(y)=0$ for all~$y\in \spec(\scrA)\backslash U$.
+
+All in all we have $\bigvee D = \mathbf{1}_{\overline{U}}$,
+and so~$\overline{U}$ is open.\qed
+\end{point}
+\end{point}
+\begin{point}{Definition}%
+A subset~$A$ of a topological space~$X$
+is \Define{meagre} when~$A\subseteq \bigcup_n B_n$
+for some closed subsets $B_1\subseteq B_2\subseteq \dotsb$
+of~$X$ with empty interior (that is,  $B_n^\circ=\varnothing$.)
+\end{point}
+\begin{point}{Baire category theorem}%
+A meagre subset of a compact Hausdorff space
+has empty interior.
+\begin{point}{Proof}%
+Let~$A$ be a meagre subset of a compact Hausdorff space~$X$.
+So there are closed $B_1\subseteq B_2\subseteq \dotsc$
+with~$A\subseteq \bigcup_n B_n$
+and~$B_n^\circ=\varnothing$ for all~$n$.
+Then~$U_n:= X\backslash B_n$
+is an open dense subset of~$X$
+for each~$n$.
+Since~$A^\circ \subseteq (\bigcup_n B_n)^\circ  =
+X\backslash (\,\smash{\overline{\bigcap_n U_n}}\,)$
+it suffices to show that
+$\bigcap_n U_n$ is dense in~$X$.
+That is, given a non-empty open subset~$V$
+of~$X$ we must show that~$V\cap\bigcap_n U_n\neq \varnothing$.
+
+Write~$V_1:=V$.
+Since~$U_1$ is open and dense, and~$V_1$ is open and not empty,
+we have $U_1\cap V_1\neq \varnothing$.
+Since~$X$ is regular~\TODO{reference}
+we can find an open and non-empty subset $V_2$ of~$X$
+with~$\overline{V}_2\subseteq U_1\cap V_1$.
+Continuing this process
+we obtain non-empty open subsets $V\equiv V_1 \supseteq V_2\supseteq \dotsb$
+of~$X$ with $\overline{V}_n \subseteq U_n\cap V_n$
+for all~$n$,
+and so~$
+\overline{V}_1 \supseteq V_1 
+\supseteq \overline{V}_2 \supseteq V_2 
+\supseteq \dotsb$.
+Since~$X$ is compact,
+$\bigcap_n \overline{V}_n$
+can not be empty,
+and neither will be~$V\cap \bigcap_n U_n
+\supseteq \bigcap_n \overline{V}_n$.\qed
+
+
+
+
+
+
+
+\end{point}
+\end{point}
+
+\end{parsec}%
 \section{Projections}
 \begin{parsec}%
 \begin{point}%
@@ -2188,72 +2362,7 @@ and for this we
 need an interesting 
 property of the spectrum of a commutative von Neumann algebra,
 see~\sref{vn-spectrum-extremally-disconnected}.
-\end{point}
-\begin{point}[ngelfand]{Exercise}%
-Let~$\scrA$ be a commutative von Neumann algebra.
-Using the fact that
-the Gelfand representation~$\gamma_\scrA\colon \scrA\to C(\spec(\scrA))$
-from~\sref{gelfand-representation}
-is a miu-isomorphism 
-by~\sref{gelfand}
-and thus an order isomorphism,
-show that~$C(\spec(\scrA))$
-is a commutative von Neumann algebra
-that is nmiu-isomorphic
-to~$\scrA$ via~$\gamma_\scrA$.
-\end{point}
-\begin{point}[vn-spectrum-extremally-disconnected]{Proposition}%
-The spectrum~$\spec(\scrA)$
-of a commutative von Neumann algebra~$\scrA$
-is \Define{extremally disconnected}:
-the closure~$\overline{U}$
-of an open subset~$U$ of~$\spec(\scrA)$
-is open.
-\begin{point}{Proof}%
-(Based on \S6.1 of~\cite{riesz}.)
-
-Let~$U$ be an open subset of~$\spec(\scrA)$,
-and let~$\mathbf{1}_U$ be the indicator function
-of~$U$.
-The set $D=\{\,f\in C(\spec(\scrA))\colon\, f\leq \mathbf{1}_U\,\}$
-is directed and bounded 
-and so has a supremum~$\bigvee D$
-in~$C(\spec(\scrA))$
-(since~$C(\spec(\scrA))$ is a von Neumann algebra by~\sref{ngelfand}).
-Note that~$0\leq \bigvee D\leq 1$.
-We'll prove that~$\bigvee D = \mathbf{1}_{\overline{U}}$,
-because this entails
-that~$\mathbf{1}_{\overline{U}}$
-is continuous,  so that~$\overline{U}$ is both open and closed.
-
-Let~$x\in U$ be given.
-By Urysohn's lemma (see~15.6 of~\cite{willard},
-using here that~$\spec(\scrA)$ being a compact Hausdorff
-space, \sref{spectrum-calg-compact-hausdorff}, 
-is normal by~17.10 of~\cite{willard})
-there is $f\in [0,1]_{C(\spec(\scrA))}$
-with~$f(x)=1$ and~$f(y)=0$ for all~$y\in \spec(X)\backslash U$.
-It follows that~$f\in D$,
-and~$f\leq \bigvee D\leq 1$,
-so that $1=f(x)\leq (\bigvee D)(x)\leq 1$,
-and~$(\bigvee D)(x)=1$.
-By continuity of~$\bigvee D$,
-we get $(\bigvee D)(x)=1$ for all~$x\in \overline{U}$.
-
-Let~$y\in \spec(\scrA)\backslash U$ be given.
-Again by Urysohn's lemma
-there is $f\in [0,1]_{C(\spec(\scrA))}$
-with~$f(y)=0$ and~$f(x)=1$ for all~$x\in \overline{U}$.
-Since $g\leq \mathbf{1}_U \leq f$
-for every~$g\in D$,
-we get $\bigvee D\leq f$,
-and so~$0\leq (\bigvee D)(y)\leq f(y) =0$,
-which implies that~$(\bigvee D)(y)=0$.
-Hence~$(\bigvee D)(y)=0$ for all~$y\in \spec(\scrA)\backslash U$.
-
-All in all we have $\bigvee D = \mathbf{1}_{\overline{U}}$,
-and so~$\overline{U}$ is open.\qed
-\end{point}
+\TODO{rewrite!!}
 \end{point}
 \begin{point}[abelian-projections-norm-dense]{Proposition}%
 Every element~$a$ of a commutative von Neumann algebra~$\scrA$
