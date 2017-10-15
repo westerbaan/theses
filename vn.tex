@@ -1492,13 +1492,60 @@ $\bigcap_n \overline{V}_n$
 can not be empty,
 and neither will be~$V\cap \bigcap_n U_n
 \supseteq \bigcap_n \overline{V}_n$.\qed
+\end{point}
+\end{point}
+\begin{point}{Proposition}%
+Let~$\omega\colon \scrA\to \C$
+be a faithful np-functional
+on a commutative von Neumann algebra~$\scrA$.
+Recall from~\sref{ngelfand} that
+the Gelfand representation $\gamma_\scrA\colon 
+\scrA\to C(\spec(\scrA))$
+is a nmiu-isomorphism,
+and~$C(\spec(\scrA))$ is a von Neumann algebra.
 
+Writing~$\Define{A\approx B}$
+for~$A,B\subseteq \spec(\scrA)$
+when~$A\backslash B\cup B\backslash A$
+is meagre,
+there is for every subset~$A$ of~$\spec(\scrA)$
+at most one clopen subset~$U$ of~$\spec(\scrA)$
+with~$A\approx U$.
+Calling such~$A$ measurable,
+and setting~$\mu(A)=\omega(\gamma_\scrA^{-1} (\mathbf{1}_U))$
+turns~$\spec(\scrA)$ into a finite complete measure space.
 
+With respect to this measure a function~$f\colon \spec(\scrA)\to\C$
+is measurable iff~$f$ is continuous almost everywhere.
+Moreover, 
+$f\mapsto f^\circ\colon C(\spec(\scrA))\to L^\infty(\spec(\scrA))$
+is a nmiu-isomorphism,
+and~$\int f^\circ = \omega(\gamma_\scrA^{-1}(f))$ for all~$f\in C(X)$.
 
+All in all,
+we get the following commuting diagram.
+\begin{equation*}
+\xymatrix@C=3em@R=3em{
+\scrA
+\ar[r]^-{\gamma_\scrA}_-\cong
+\ar[rd]_\omega
+&
+C(\spec(\scrA))
+\ar[r]^-{f\mapsto f^\circ}_-\cong
+&
+L^\infty(\spec(\scrA))
+\ar[ld]^\int
+\\
+&
+\C
+}
+\end{equation*}
+\begin{point}{Proof}%
 
-
-
-
+\end{point}
+\begin{point}{Remark}%
+	\TODO{make remarks on the spectal theorem
+	and direct sums}
 \end{point}
 \end{point}
 
