@@ -3632,6 +3632,63 @@ Similarly the first term vanishes and
 \end{point}
 \end{point}
 \end{point}
+\begin{point}{Proposition}%
+Let~$X$ be a self-dual Hilbert~$\scrB$-module for a von Neumann algebra~$\scrB$.
+If~$x_\alpha \to x$ ultranorm for a norm-bounded net~$x_\alpha$ in~$X$,
+    then~$\ketbra{x_\alpha}{y} \to \ketbra{x}{y}$ ultraweakly
+    for any~$y \in Y$.
+\begin{point}{Proof}%
+We need some preparation.
+Define
+\begin{equation*}
+    \Omega \ \equiv \  \{ f(\langle x, (\,\cdot\,) x \rangle); \ 
+    f \colon \scrB \to \C \text{ np-map},\ x \in X\}.
+\end{equation*}
+From~\sref{hilbmod-ordersep}
+    it follows~$\Omega$ is order-separating.
+We will use this fact twice.
+First we will prove~$\| \ketbra{z}{y} \| \leq \| z\| \|y\|$.
+For any~$\omega \in \Omega$,
+    say~$\omega \equiv f(\langle x,(\,\cdot\,) x \rangle$, we have
+\begin{equation*}
+    \omega(\ketbra{y}{y})
+     \ = \ f(\langle x,y \rangle\langle y, x \rangle) 
+     \ \leq \ f(\langle x, x\rangle) \| y\|^2 
+     \ = \ \| \omega \| \| y\|^2
+\end{equation*}
+and so from \sref{order-separating-norm} it follows~$\| \ketbra{y}{y} \| \leq \|y\|^2$
+    and so
+\begin{align*}
+    \| \ketbra{z}{y} \|^2
+        & \ = \ \| \ketbra{y}{z} \ketbra{z}{y} \| \\
+        & \ = \ \| \ketbra{\smash{y \langle z,z\rangle^{\frac{1}{2}}}}{
+\smash{y \langle z,z\rangle^{\frac{1}{2}}}} \| \\
+        & \ \leq \ \| y \langle z,z \rangle^{\frac{1}{2}} \|^2,
+\end{align*}
+hence~$\| \ketbra{z}{y} \| \leq \|y \langle z,z\rangle^{\frac{1}{2}} \|
+                            \leq \|y\|  \|z\|$, as promised.
+\begin{point}%
+Now we start the proof proper.
+As~$\ketbra{\,\cdot\,}{y}$ is linear
+    and~$x_\alpha - x$ is still norm-bounded,
+    we may assume without loss of generality
+    that~$x_\alpha \to 0$ ultranorm.
+Let~$g\colon \scrB^a(X) \to \C$ be an arbitrary np-map.
+Using the order separation of~$\Omega$ a second time,
+    we see that the linear span of~$\Omega$
+    is operator norm dense among  all np-maps~$\scrB^a(X) \to \C$
+    by \sref{vn-center-separating-fundamental}.
+So there are~$n \in \N$, np-maps~$f_1, \ldots, f_n \colon \scrB\to \C$,
+    $x_1, \ldots, x_n \in X$
+    such that~$\| g - g' \| \leq \varepsilon$,
+    where~$g'(T) \equiv \sum_{i=1}^n f_i(\langle x_i,T x_i\rangle)$.
+Clearly~$g'$ is ultranorm continuous,
+    so there is an~$\alpha_0$ such that for all~$\alpha \geq \alpha_0$
+    we have~$|g'(\ketbra{x_\alpha}{y})| \leq \varepsilon$
+    and so~$g(\ketbra{x_\alpha}{y}) $. \TODO{finish}
+\end{point}
+\end{point}
+\end{point}
 \end{parsec}
 
 \begin{parsec}%
