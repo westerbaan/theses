@@ -1368,20 +1368,77 @@ on the ($C^*$-algebraic) spectrum~$\spec(\scrA)$
 (a compact Hausdorff space
 consisting of all miu-functionals on~$\scrA$)
 by declaring that a subset~$A$ of~$\spec(X)$ 
-is measurable when~$A$ is open up to
-a \emph{meagre} (defined below) subset.
+is measurable when~$A$ is clopen up to
+a \emph{meagre} subset
+(defined below,~\sref{meagre}).
 It takes some effort to show
-that this yields a $\sigma$-algebra,
+that this yields a $\sigma$-algebra
+in~$\spec(X)$,
 and that the faithful np-functional $\omega\colon\scrA\to \C$
 gives a finite complete measure on~$\spec(X)$,
 but once this is achieved
 it's easily seen that
 $\scrA\cong C(\spec(\scrA))\cong L^\infty(\spec(\scrA))$.
-The first technical step in this project
-involves a special topological property of~$\spec(\scrA)$,
-see~\sref{vn-spectrum-extremally-disconnected},
-but let us first show that~$C(\spec(\scrA))$ is a von Neumann algebra
-to begin with.
+\end{point}
+\begin{point}[meagre]{Definition}%
+Let~$X$ be a topological space.
+\begin{enumerate}
+\item
+A subset~$A$ of~$X$
+is called \Define{meagre} when~$A\subseteq \bigcup_n B_n$
+for some closed subsets $B_1\subseteq B_2\subseteq \dotsb$
+of~$X$ with empty interior (so  $B_n^\circ=\varnothing$
+for all~$n$.)
+\item
+Given $A,B\subseteq X$ 
+we write $\Define{A\approx B}$ when
+$A\cup B\,\backslash\,A\cap B$
+is meagre.
+\item
+We say that~$A\subseteq B$
+is \Define{almost clopen}
+when~$A\approx C$
+for some clopen~$C\subseteq X$.
+\end{enumerate}
+\end{point}
+\begin{point}[meagre-basic]{Exercise}%
+Given a topological space~$X$,
+verify the following facts.
+\begin{enumerate}
+\item
+A countable union~$\bigcup_n A_n$
+of meagre subsets $A_1,A_2,\dotsc\subseteq X $ is meagre.
+\item
+A subset of a meagre set is meagre.
+\item
+$\overline{U}\approx U$
+for every open subset~$U$ of~$X$.
+
+(Hint: show that $\overline{U}\backslash U$
+is closed with empty interior.)
+\item
+$\bigcup_n A_n\approx \bigcup_n B_n$
+for all~$A_1,A_2,\dotsc, B_1,B_2,\dotsc\subseteq X$
+with $A_n\approx B_n$.
+\item
+$A\backslash B \approx A'\backslash B'$
+for all $A,A',B,B'\subseteq X$
+with~$A\approx A'$ and~$B\approx B'$.
+\item
+If~$A,B\subseteq X$ are almost clopen,
+then~$A\cup B$ and~$A\backslash B$ 
+are almost clopen.
+\end{enumerate}
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+The fact that the almost clopen subsets
+of the spectrum~$\spec(\scrA)$
+of a commutative von Neumann algebra~$\scrA$
+are closed under countable unions
+(and thus form a $\sigma$-algebra)
+relies on the following special topological property of~$\spec(\scrA)$.
 \end{point}
 \begin{point}[ngelfand]{Exercise}%
 Let~$\scrA$ be a commutative von Neumann algebra.
@@ -1449,52 +1506,38 @@ All in all we have $\bigvee D = \mathbf{1}_{\overline{U}}$,
 and so~$\overline{U}$ is open.\qed
 \end{point}
 \end{point}
-\begin{point}{Definition}%
-Let~$X$ be a topological space.
-\begin{enumerate}
-\item
-A subset~$A$ of~$X$
-is called \Define{meagre} when~$A\subseteq \bigcup_n B_n$
-for some closed subsets $B_1\subseteq B_2\subseteq \dotsb$
-of~$X$ with empty interior (so  $B_n^\circ=\varnothing$
-for all~$n$.)
-\item
-Given $A,B\subseteq X$ 
-we write $\Define{A\approx B}$ when
-$A\cup B\,\backslash\,A\cap B$
-is meagre.
-\item
-We say that~$A\subseteq B$
-is \Define{almost clopen}
-when~$A\approx C$
-for some clopen~$C\subseteq X$.
-\end{enumerate}
+\begin{point}{Corollary}%
+The almost clopen subsets
+of an extremally disconnected topological
+space~$X$ form a $\sigma$-algebra.
+\begin{point}[almost-clopen-sigma-algebra-proof]{Proof}%
+In light of~\sref{meagre-basic}
+it remains only to be shown that
+the union~$\bigcup_n A_n$
+of almost clopen subsets~$A_1,A_2,\dotsc$
+is almost clopen.
+Let~$C_1,C_2,\dotsc\subseteq X$
+be clopen with $A_n\approx C_n$ for each~$n$.
+Then $\bigcup_n A_n \approx \bigcup_n C_n$,
+and~$C:=\bigcup_n C_n$ is open
+(but not necessarily closed).
+Since~$C\approx \overline{C}$
+(by~\sref{meagre-basic}),
+and~$\overline{C}$ is clopen (as $X$ is extremally disconnected)
+we get~$\bigcup_n A_n \approx \overline{C}$,
+so~$\bigcup_n A_n$ is almost clopen.\qed
 \end{point}
-\begin{point}{Exercise}%
-Verify the following facts.
-\begin{enumerate}
-\item
-A countable union~$\bigcup_n A_n$
-of meagre subsets $A_1,A_2,\dotsc\subseteq X $ is meagre.
-\item
-A subset of a meagre set is meagre.
-\item
-The boundary, $\overline{U}\backslash U$,
-of an open subset~$U$ of~$X$
-is meagre.
-
-(Hint: show that $\overline{U}\backslash U$
-is closed with empty interior.)
-\item
-$\bigcup_n A_n\approx \bigcup_n B_n$
-for all~$A_1,A_2,\dotsc, B_1,B_2,\dotsc\subseteq X$
-with $A_n\approx B_n$.
-\item
-$A\approx B$ entails $X\backslash A\approx X\backslash B$
-for all~$A,B\subseteq X$.
-\item
-The almost clopen subsets of~$X$ form a $\sigma$-algebra.
-\end{enumerate}
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+The final ingredient
+we need to prove the main result, \sref{cvn-faithful},
+of this section
+is the observation
+that an almost clopen subset of a compact Hausdorff space
+is equivalent to precisely one clopen,
+which follows from the following famous theorem.
 \end{point}
 \begin{point}[baire-category-theorem]{Baire category theorem}%
 A meagre subset of a compact Hausdorff space
@@ -1535,32 +1578,97 @@ and neither will be~$V\cap \bigcap_n U_n
 \supseteq \bigcap_n \overline{V}_n$.\qed
 \end{point}
 \end{point}
-\begin{point}{Proposition}%
-Let~$\omega\colon \scrA\to \C$
-be a faithful np-functional
-on a commutative von Neumann algebra~$\scrA$.
-Recall from~\sref{ngelfand} that
+\begin{point}[approx-closure]{Lemma}%
+For open subsets~$U$ and~$V$ of a compact Hausdorff
+space~$X$,
+\begin{equation*}
+U\approx V\quad\iff\quad
+\overline{U}\approx \overline{V}
+\quad\iff\quad
+\overline{U}=\overline{V}.
+\end{equation*}
+\begin{point}{Proof}%
+As~$U\approx \overline{U}$ by~\sref{meagre-basic}
+the only thing that is not obvious
+is that~$\overline{U}\approx \overline{V} \implies \overline{U}=\overline{V}$.
+So suppose that~$\overline{U}\approx \overline{V}$.
+Then~$U\backslash \overline{V}$
+is empty, because it is an open subset of the
+meagre set~$\overline{U}\cup\overline{V}\,\backslash\,
+\overline{U}\cap\overline{V}$
+(which has empty interior by~\sref{baire-category-theorem}.) In other words,
+we have~$U\subseteq \overline{V}$, 
+and thus~$\overline{U}\subseteq \overline{V}$.
+Simlarly, $\overline{V}\subseteq\overline{U}$,
+and so~$\overline{V}=\overline{U}$.\qed
+\end{point}
+\end{point}
+\begin{point}{Corollary}%
+Given an almost clopen subset~$A$ of a compact Hausdorff
+space~$X$ there is precisely one clopen~$C$ with~$A\approx C$.
+\begin{point}[almost-meagre-fundamental]{Proof}%
+When~$C\approx A \approx C'$
+for clopen subsets~$C,C'\subseteq X$,
+we have~$C\approx C'$,
+and so~$C=C'$ by~\sref{approx-closure}.\qed
+\end{point}
+\end{point}
+\begin{point}%
+Interestingly,
+a compact Hausdorff space is extremally disconnected
+iff each of its open subsets is ``measurable''
+in the sense of being almost clopen:
+\end{point}
+\begin{point}[open-almost-clopen]{Proposition}%
+A compact Hausdorff space~$X$
+is extremally disconnected
+iff every open subset of~$X$
+is almost clopen.
+\begin{point}{Proof}%
+If~$X$ is extremally disconnected,
+and~$U$ is open subset of~$X$,
+then~$\overline{U}$ is clopen,
+and~$\overline{U}\approx U$ by~\sref{meagre-basic}
+giving us that~$U$ is almost clopen.
+
+Conversely,
+suppose that each open subset of~$X$ is almost clopen.
+To show that~$X$ is extremally disconnected
+we must show that~$\overline{U}$ is open given
+an open subset~$U$ of~$X$.
+Pick a clopen~$C$ with~$U\approx C$.
+Then~$\overline{U}\approx U\approx C$
+(by~\sref{meagre-basic}),
+and so~$\overline{U}=C$ by~\sref{approx-closure}.
+
+
+\end{point}
+\end{point}
+\begin{point}[cvn-faithful]{Theorem}%
+Let~$\scrA$ be a commutative von Neumann algebra~$\scrA$.
+Recall that
 the Gelfand representation $\gamma_\scrA\colon 
 \scrA\to C(\spec(\scrA))$
-is a nmiu-isomorphism,
-and~$C(\spec(\scrA))$ is a von Neumann algebra.
+is a nmiu-isomorphism (by~\sref{ngelfand}),
+$C(\spec(\scrA))$ is a von Neumann algebra,
+and that the almost clopen subsets (see~\sref{meagre}) of~$\spec(\scrA)$
+form a $\sigma$-algebra.
 
-For every almost clopen (see~\sref{meagre})
-subset~$A$ of~$X$
-there is a unique clopen~$C_A\subseteq X$
-with~$A\approx C_A$.
-Setting~$\mu(A)=\omega(\gamma_\scrA^{-1} (\mathbf{1}_{C_A}))$
-for every almost clopen~$A\subseteq C$
-turns~$\spec(\scrA)$ into a finite complete measure space
-(with the almost clopen subsets as measurable subsets.)
+Given a faithful np-functional $\omega\colon \scrA\to\C$
+there is a (unique) measure
+$\mu$ on the almost clopen subsets of~$\spec(\scrA)$
+such that~$\mu(A)=0$ iff $A$ is meagre,
+and~$\mu(C)=\omega(\gamma_\scrA^{-1} (\mathbf{1}_{C}))$
+for every clopen subset~$C$ of~$\spec(\scrA)$;
+and this turns~$\spec(\scrA)$
+into a finite complete measure space.
 
-With respect to this measure a function~$f\colon \spec(\scrA)\to\C$
+With respect to this measure space a function~$f\colon \spec(\scrA)\to\C$
 is measurable iff~$f$ is continuous almost everywhere.
 Moreover, 
 $f\mapsto f^\circ\colon C(\spec(\scrA))\to L^\infty(\spec(\scrA))$
 is a nmiu-isomorphism,
 and~$\int f^\circ = \omega(\gamma_\scrA^{-1}(f))$ for all~$f\in C(X)$.
-
 All in all,
 we get the following commuting diagram.
 \begin{equation*}
@@ -1580,27 +1688,75 @@ L^\infty(\spec(\scrA))
 }
 \end{equation*}
 \begin{point}{Proof}%
-Since a meagre subset has empty interior
-(by Baire's category theorem, \sref{baire-category-theorem},)
-an open subset~$V$ of~$\spec(\scrA)$ is meagre
-iff~$V=\varnothing$.
-In particular,
-given clopens~$U,U'$ of~$\spec(\scrA)$
-the set $U\cup U'\,\backslash\,U\cap U'$ is open,
-and so~$U\approx U'$ iff~$U\cup U'\backslash U\cap U'=\varnothing$
-iff~$U=U'$.
-Therefore 
-there is at most one clopen~$U$ of~$\spec(\scrA)$
-with~$A\approx U$
-for every subset~$A$ of~$\spec(\scrA)$:
- if~$U,U'$ are clopens of~$\spec(\scrA)$
-with~$U\approx A\approx U'$, then~$U\approx U'$
-(since~$\approx$ is easily seen to be transitive),
-and so~$U=U'$.
+By~\sref{almost-meagre-fundamental}
+we know that given an almost meagre subset~$A$
+of~$\spec(\scrA)$
+there is a unique clopen~$C_A$
+with~$A\approx C_A$,
+and 
+so we may define
+$\mu(A):=\omega(\gamma_\scrA^{-1}(\mathbf{1}_{C_A}))$.
+It is easily seen that~$\mu$
+is finitely additive.
+Further $\mu(A)=0$ for every meagre~$A\subseteq X$,
+and so $\mu(A)=\mu(B)$ when~$A\approx B$.
+Conversely, 
+an almost clopen subset~$A$
+of~$\scrA$
+with~$\mu(A)=0$
+is meagre,
+because for the unique clopen~$C$ with~$A\approx C$,
+we have~$\omega(\gamma_\scrA^{-1}(\mathbf{1}_C))=\mu(A)=0$,
+so that~$\mathbf{1}_C=0$ and thus~$C=\varnothing$---using here
+that~$\omega$ is faithful.
 
+To show that~$\mu$
+is a measure,
+it suffices to prove
+that~$\bigwedge_n \mu(A_n)=0$
+given~$A_1\supseteq A_2\supseteq \dotsb$
+with~$\bigcap_n A_n=\varnothing$.
+To do this, pick clopen subsets~$C_1,C_2,\dotsc$
+of~$\spec(\scrA)$
+with~$A_n\approx C_n$ for all~$n$.
+Then~$\bigwedge_n \mu(A_n)
+=\bigwedge_n \mu(C_n)
+= \omega(\gamma_\scrA^{-1}(\bigwedge_n \mathbf{1}_{C_n}))$---using 
+here that~$\omega$ is normal.
+So to prove that~$\bigwedge_n \mu(A_n)=0$
+it suffices to show that~$\bigwedge_n \mathbf{1}_{C_n}=0$,
+that is,
+given a lower bound~$f$ of the~$\mathbf{1}_{C_n}$
+in~$\Real{C(\spec(\scrA))}$
+we must show that~$f\leq 0$.
+Note that for such~$f$
+we have~$f(x)\leq 0$
+for all~$x\in X\backslash\bigcap_n C_n$.
+Then~$f(x)\leq 0$ for all~$x\in X$
+if we can show that~$X\backslash \bigcap_n C_n$ is dense in~$X$.
+But this indeed the case
+since~$\bigcap_n C_n\approx \bigcap_n A_n=\varnothing$
+is meagre, and therefore has empty interior
+(by~\sref{baire-category-theorem}).
+Whence~$\mu$ is a measure.
+Note that~$\mu$ is finite,
+because~$\mu(\spec(\scrA))
+= \omega(1)<\infty$,
+and complete,
+because a subset of a meagre set is meagre.
 
-
-
+Let~$h\colon \spec(\scrA)\to\C$ be a function.
+We'll show that~$h$ is continuous almost everywhere
+iff~$h$ is measurable.
+Surely,
+if~$h$ is continuous (everywhere),
+then~$h$ is measurable
+(since every open subset~$U$ of~$\spec(\scrA)$
+is almost clopen, \sref{open-almost-clopen}).
+So if~$h$ is continuous almost everywhere,
+then~$h$ is measurable too.
+Conversely,
+\TODO{finish---why is $f\mapsto f^\circ$ surjective?}
 \end{point}
 \begin{point}{Remark}%
 	\TODO{make remarks on the spectal theorem
