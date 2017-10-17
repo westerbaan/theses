@@ -3632,7 +3632,7 @@ Similarly the first term vanishes and
 \end{point}
 \end{point}
 \end{point}
-\begin{point}{Proposition}%
+\begin{point}[ketbra-ultranorm-continuous]{Proposition}%
 Let~$X$ be a self-dual Hilbert~$\scrB$-module for a von Neumann algebra~$\scrB$.
 If~$x_\alpha \to x$ ultranorm for a norm-bounded net~$x_\alpha$ in~$X$,
     then~$\ketbra{x_\alpha}{y} \to \ketbra{x}{y}$ ultraweakly
@@ -3673,19 +3673,30 @@ As~$\ketbra{\,\cdot\,}{y}$ is linear
     and~$x_\alpha - x$ is still norm-bounded,
     we may assume without loss of generality
     that~$x_\alpha \to 0$ ultranorm.
+    We have to prove~$\ketbra{x_\alpha}{y} \to 0$ ultraweakly.
 Let~$g\colon \scrB^a(X) \to \C$ be an arbitrary np-map.
 Using the order separation of~$\Omega$ a second time,
     we see that the linear span of~$\Omega$
     is operator norm dense among  all np-maps~$\scrB^a(X) \to \C$
     by \sref{vn-center-separating-fundamental}.
-So there are~$n \in \N$, np-maps~$f_1, \ldots, f_n \colon \scrB\to \C$,
-    $x_1, \ldots, x_n \in X$
-    such that~$\| g - g' \| \leq \varepsilon$,
-    where~$g'(T) \equiv \sum_{i=1}^n f_i(\langle x_i,T x_i\rangle)$.
-Clearly~$g'$ is ultranorm continuous,
-    so there is an~$\alpha_0$ such that for all~$\alpha \geq \alpha_0$
-    we have~$|g'(\ketbra{x_\alpha}{y})| \leq \varepsilon$
-    and so~$g(\ketbra{x_\alpha}{y}) $. \TODO{finish}
+So there are~$n \in \N$ and~$\omega_1, \ldots, \omega_n \in \Omega$
+    with~$\| g - g' \| \leq \varepsilon$,
+    where~$g' \equiv \sum^n_{i=1} \omega_i$.
+From \sref{innerprod-ultraweak} it follows easily that
+    each~$\omega_i$ is ultranorm continuous
+        and so~$g'$ is ultranorm continuous as well.
+So there is an~$\alpha_0$ such that for all~$\alpha \geq \alpha_0$
+    we have~$|g'(\ketbra{x_\alpha}{y})| \leq \varepsilon$.
+    Hence
+\begin{align*}
+        | g(\ketbra{x_\alpha}{y}) |
+            &\ \leq\  | (g-g')(\ketbra{x_\alpha}{y})  +
+                    | g'(\ketbra{x_\alpha}{y}) | \\
+            &\ \leq\  \|g - g'\| \cdot \| \ketbra{x_\alpha}{y} \|  + \varepsilon\\
+            &\ \leq\  \varepsilon (\| x_\alpha\| \cdot \|y\| + 1).
+\end{align*}
+    As~$x_\alpha$ is norm-bounded, we conclude~$g(\ketbra{x_\alpha}{y}) \to 0$
+    as desired. \qed
 \end{point}
 \end{point}
 \end{point}
@@ -4206,8 +4217,24 @@ For any such~$X \otimes Y$ we have the following.
     \item The image of $X \odot Y$ is ultranorm dense in~$X \otimes Y$.
     \item If~$(e_i)_{i \in I}$ is an orthonormal basis of~$X$
                 and~$(d_j)_{j \in J}$ is an orthonormal basis of~$Y$,
-                then~$(e_i \hotimes d_j)_{i,j\in I\times J}$
-                is an orthonormal basis of~$X \otimes Y$.
+                then
+        \begin{enumerate}
+            \item $(e_i \hotimes d_j)_{i,j\in I\times J}$
+                is an orthonormal basis of~$X \otimes Y$ \emph{and}
+            \item
+                the linear span of
+                \begin{equation*}
+                    \{ \ketbra{(e_i a) \hotimes (d_j b)}{
+                        e_{k}\otimes d_{l} }; \ 
+                        a \in \scrA, \ 
+                        b \in \scrB,\ 
+                        i,k \in I,\ 
+                        j,l \in J
+                    \} 
+                \end{equation*}
+                is ultraweakly dense in~$\scrB^a(X \otimes Y)$.
+        \end{enumerate}
+                
 \end{enumerate}
 \begin{point}{Proof}%
 Pick orthonormal bases~$(e_i)_{i \in I}$ and~$(d_j)_{j \in J}$ of~$X$
@@ -4440,8 +4467,7 @@ As we just have shown any exterior tensor is unique up to unique isomorphism,
     of the theorem follows immediately.
 Assume~$(e'_i)_{i \in I'}$ is a basis of~$X$
     and~$(d'_j)_{j \in J'}$ is a basis of~$Y$.
-Using the unique isomorphism, it is sufficient to show
-$E_2 =\{ e'_i \hotimes d'_j; \ i,j \in I'\times J'\}$
+We will show $E_2 =\{ e'_i \hotimes d'_j; \ i,j \in I'\times J'\}$
 is a basis of~$X \hotimes Y$.
 Clearly~$E_2$ is orthonormal.
 By \sref{selfdual-orthn-basis} and \sref{hilbmod-projthm}
@@ -4456,7 +4482,36 @@ it is sufficient to show the right equality in
     \langle e_{i_0}\hotimes d_{j_0}, e_{i_0}\hotimes d_{j_0}\rangle
     \ =\  \sum_{i,j} a_i^*a_i \otimes b_j^*b_j,
     \end{equation*}
-    which indeed holds by~\TODO{prod states sep}. \qed
+    which indeed holds by~\TODO{prod states sep}.
+\end{point}
+\begin{point}%
+    Finally we prove that the liner span of
+                \begin{equation*}
+                    D \ \equiv \ \{ \ketbra{(e'_i a) \hotimes (d'_j b)}{
+                        e_{k}\otimes d_{l} }; \ 
+                        a \in \scrA, \ 
+                        b \in \scrB,\ 
+                        i,k \in I',\ 
+                        j,l \in J'
+                    \} 
+                \end{equation*}
+            is ultraweakly dense in~$\scrB^a(X \otimes Y)$.
+By \sref{ketbra-ultraweakly-dense},
+    the linear span
+    of (the set of operators of
+    the form)~$\ketbra{(e'_i \hotimes d'_j)t}{e'_k \hotimes d'_l}$
+    with~$t \in \scrA \otimes \scrB$
+    is ultraweakly dense in~$\scrB^a(X \otimes Y)$.
+We will show that~$t \in \scrA \odot \scrB$ suffices.
+By~\TODO{ref}
+    each~$t \in \scrA \otimes \scrB$
+    is the ultrastrong limit
+    of a norm bounded net~$t_\alpha$ in~$\scrA \odot \scrB$.
+    So by \sref{ketbra-ultranorm-continuous} (and \sref{ultranormcontstruct}),
+we see~$\ketbra{(e'_i \hotimes d'_j)t_\alpha}{e'_k \hotimes d'_l}$
+converges ultraweakly to~$\ketbra{(e'_i \hotimes d'_j)t}{e'_k \hotimes d'_l}$.
+So indeed, the linear span of~$D$
+    is ultraweakly dense in~$\scrB^a(X \otimes Y)$. \qed
 \end{point}
 \end{point}
 \end{point}
@@ -4610,6 +4665,66 @@ that there is a
     with~$\vartheta(S\otimes T) = \Theta(S , T) = S \otimes T$, as promised.
 \begin{point}%
 From \sref{hilbmod-tensor-ketbra}, it follows~$\Theta$ is a miu-bilinear map.
+By~\sref{univprop-ext-tensor}
+    the linear span of operators of the form~$
+        \ketbra{e_i a}{e_k} \otimes \ketbra{d_j b }{d_l}
+        = \ketbra{(e_i a) \otimes (d_j b)}{e_k \otimes d_l} $
+        is ultraweakly dense in~$\scrB^a(X \otimes Y)$
+        for a basis~$e_i \otimes d_j$ of~$X \otimes Y$.
+        So the image of~$\Theta$ generates~$\scrB^a(X\otimes Y)$.
+\begin{point}%
+    It remains to be shown that there are sufficiently many product states.
+    Write
+    \begin{align*}
+        \Omega_X &\ \equiv \ 
+                    \{ f(\langle x, (\,\cdot\,) x \rangle);
+                    \ f \colon \scrA \to \C \text{ np-map}, x\in X \} \\
+        \Omega_Y& \  \equiv\ 
+                    \{ g(\langle y, (\,\cdot\,) y \rangle);
+                    \ g \colon \scrB \to \C \text{ np-map}, y\in Y \}.
+    \end{align*}
+From~\sref{hilbmod-ordersep}
+    it follows~$\Omega_X$  and~$\Omega_Y$ are order-separating.
+For~$\sigma \in \Omega_X$ and~$\tau \in \Omega_Y$
+ --- say~$\sigma \equiv f(\langle x, (\,\cdot\,) x\rangle)$,
+    $\tau \equiv g(\langle y, (\,\cdot\,) y\rangle)$ ---
+    define~$\sigma \otimes \tau \equiv
+        (f \otimes g) (x \otimes y, (\,\cdot\,) x\otimes y) $
+        and~$\Omega \equiv \{\sigma \otimes \tau; \sigma \in \Omega_X,
+                    \ \tau \in \Omega_Y\}$.
+We will show
+    that~$\Omega$ is separating
+    and that~$(\sigma \otimes \tau)(\Theta(S,T)) = \sigma(S) \tau(T)$
+    for all~$S \in \scrB^a(X)$ and~$T \in \scrB^a(Y)$,
+    which is sufficient to show~$\Theta$ is a tensor product.
+Indeed for any~$S \in \scrB^a(X)$ and $T \in \scrB^a(Y)$, we have
+\begin{align*}
+    (\sigma \otimes \tau)(\Theta(S, T))
+        &\ = \ (f \otimes g) (\, \langle x \otimes y, 
+                (S \otimes T) (x \otimes y) \rangle\,)\\
+        &\ = \ (f \otimes g) (\,\langle x \otimes y, 
+                (S x) \otimes (T y)\rangle\,)\\
+        &\ = \ (f \otimes g) (\,
+            \langle x, Sx\rangle \otimes
+            \langle y, Ty\rangle \rangle\,)\\
+        &\ = \ 
+            f(\langle x, Sx\rangle ) \cdot
+            g(\langle y, Ty\rangle \rangle)\\
+        &\ = \ 
+            \sigma(S) \tau(T).
+\end{align*}
+\end{point}
+\begin{point}%
+Finally, to show that~$\Omega$ is separating,
+        assume~$A \in \scrB^a(X \otimes Y)$ and $(\sigma \otimes \tau)(A) = 0$
+        for all~$\sigma \otimes \tau \in \Omega$.
+Then by~\TODO{}
+    we know~$\langle x\otimes y, A (x\otimes y)\rangle = 0$
+    for all~$x \in X$ and~$y \in Y$.
+By polarization (see \sref{hilbmod-polarization}),
+    we also have~$\langle x\otimes y, A (x'\otimes y')\rangle = 0$.
+    So~$A =0 $ as there is a basis of elements of the form $e \otimes d$. \qed
+\end{point}
 \end{point}
 \end{point}
 \end{point}
