@@ -4216,7 +4216,7 @@ For any such~$X \otimes Y$ we have the following.
 \begin{enumerate}
     \item The image of $X \odot Y$ is ultranorm dense in~$X \otimes Y$.
     \item If~$(e_i)_{i \in I}$ is an orthonormal basis of~$X$
-                and~$(d_j)_{j \in J}$ is an orthonormal basis of~$Y$,
+                and~$(d_j)_{j \in J}$ of~$Y$,
                 then
         \begin{enumerate}
             \item $(e_i \hotimes d_j)_{i,j\in I\times J}$
@@ -4737,6 +4737,46 @@ By polarization (see \sref{hilbmod-polarization}),
     we also have~$\langle x\otimes y, A (x'\otimes y')\rangle = 0$.
     So~$A =0 $ as there is a basis of elements of the form $e \otimes d$. \qed
 \end{point}
+\end{point}
+\end{point}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
+\begin{point}{Theorem}%
+Suppose~$\varphi_i \colon \scrA_i \to \scrB_i$
+    is an ncp-map between von Neumann algebras
+    with Paschke dilation~$(\scrP_i, \varrho_i, h_i)$
+    for~$i=1,2$.
+Then~$(\scrP_1 \otimes \scrP_2, \varrho_1 \otimes \varrho_2, h_1\otimes h_2)$
+    is a Paschke dilation of~$\varphi_1 \otimes \varphi_2$.
+    Furthermore
+\begin{equation}\label{tensor-of-paschke-dilation-spaces}
+(\scrA_1 \otimes_{\varphi_1} \scrB_1)
+\otimes (\scrA_2 \otimes_{\varphi_2} \scrB_2)
+\ \cong \ 
+(\scrA_1 \otimes \scrA_2) \otimes_{\varphi_1\otimes \varphi_2} (\scrB_1 \otimes \scrB_2).
+\end{equation}
+\begin{point}{Proof}%
+We will prove \eqref{tensor-of-paschke-dilation-spaces} first.
+We proceed as follows.
+To start, we prove that~$
+(\scrA_1 \odot \scrB_1) \odot (\scrA_2 \odot \scrB_2)$
+    (with the obvious inclusion)
+    is ultranorm dense in~$(\scrA_1 \otimes_{\varphi_1} \scrB_1)
+\otimes (\scrA_2 \otimes_{\varphi_2} \scrB_2)$.
+Then we show that~$
+(\scrA_1 \odot \scrA_2) \odot (\scrB_1 \odot \scrB_2) $
+is ultranorm dense in~$
+(\scrA_1 \otimes \scrA_2) \otimes_{\varphi_1\otimes \varphi_2} (\scrB_1 \otimes \scrB_2)$.
+Finally, we show that the natural bijection
+$(\scrA_1 \odot \scrB_1) \odot (\scrA_2 \odot \scrB_2) \cong
+(\scrA_1 \odot \scrA_2) \odot (\scrB_1 \odot \scrB_2) $
+preserves the induced inner products and
+    so extends uniquely to an
+    isomorphism \eqref{tensor-of-paschke-dilation-spaces}.
+\begin{point}{Density LHS}%
+    
 \end{point}
 \end{point}
 \end{point}
