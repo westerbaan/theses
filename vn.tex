@@ -17,14 +17,15 @@ quantum datatypes and processes, respectively,
 for the purposes of this thesis
 we focus our attention
 the subcategory~$\W{cpsu}$ of von Neumann algebras
-and the cpsu-maps between them that preserve aforementioned suprema
+and the cpsu-maps between them that preserve these suprema
 (which are called \emph{normal}, see~\sref{p-uwcont}),
 because 
 \begin{enumerate}
 \item
 we'll see that~$\W{cpsu}$
 is a model of the quantum lambda calculus
-(while~$\Cstar{cpsu}$ is not, \TODO{...}), and
+(while~$\Cstar{cpsu}$ is in all probability not,
+see~\sref{cstar-no-model}), and
 \item
 we were able to axiomatise
 the sequential product ($b\mapsto \sqrt{a}b\sqrt{a}$)
@@ -1663,7 +1664,8 @@ for every clopen subset~$C$ of~$\spec(\scrA)$;
 and this turns~$\spec(\scrA)$
 into a finite complete measure space.
 
-With respect to this measure space a function~$f\colon \spec(\scrA)\to\C$
+With respect to this measure space a
+bounded function $f\colon \spec(\scrA)\to\C$
 is measurable iff~$f$ is continuous almost everywhere.
 Moreover, 
 $f\mapsto f^\circ\colon C(\spec(\scrA))\to L^\infty(\spec(\scrA))$
@@ -1745,7 +1747,7 @@ because~$\mu(\spec(\scrA))
 and complete,
 because a subset of a meagre set is meagre.
 
-Let~$h\colon \spec(\scrA)\to\C$ be a function.
+Let~$h\colon \spec(\scrA)\to\C$ be a bounded function.
 We'll show that~$h$ is continuous almost everywhere
 iff~$h$ is measurable.
 Surely,
@@ -1755,15 +1757,62 @@ then~$h$ is measurable
 is almost clopen, \sref{open-almost-clopen}).
 So if~$h$ is continuous almost everywhere,
 then~$h$ is measurable too.
-Conversely,
-\TODO{finish---why is $f\mapsto f^\circ$ surjective?}
-\end{point}
-\begin{point}{Remark}%
-	\TODO{make remarks on the spectal theorem
-	and direct sums}
-\end{point}
-\end{point}
+For the converse,
+it suffices to show
+that $\varrho \colon h\mapsto h^\circ\colon C(\spec(\scrA))\to
+L^\infty(\spec(\scrA))$ is surjective.
+To this end, note first that~$\varrho$ is injective,
+because a continuous function on~$\spec(\scrA)$
+that is zero almost everywhere,
+is non-zero on a meagre set,
+and by~\sref{baire-category-theorem} zero on a dense
+subset, and so is zero everywhere.
+Since the image of the injective miu-map $\varrho$ is norm closed
+in order to show that~$\varrho$ is surjective
+it suffices to show that image of~$\varrho$ is 
+norm dense in~$L^\infty(X)$.
+This is indeed the case
+since the elements of~$L^\infty(\spec(\scrA))$
+of the form~$\sum_{n} \lambda_n \mathbf{1}_{A_n}^\circ$
+where~$\lambda_1,\dotsc,\lambda_N\in\C$
+and~$A_1,\dotsc,A_N$ are measurable (i.e.~almost clopen)
+subsets of~$\spec(\scrA)$
+are easily seen to be norm dense in~$L^\infty(\spec(\scrA))$
+(c.f.~243I of~\cite{fremlin}),
+and are in the range of~$\varrho$,
+because given an almost clopen~$A\subseteq \spec(\scrA)$
+and a clopen~$C$ with $A\approx C$
+we have~$\mathbf{1}_A^\circ = \mathbf{1}_C^\circ$
+and~$\mathbf{1}_{C}\in C(\spec(\scrA))$.
+Hence~$\varrho$ is surjective.
 
+It remains to be show that
+$\int f^\circ = \omega(\gamma_\scrA^{-1}(f))$
+for all~$f\in C(\spec(\scrA))$,
+that is, $\int = \omega\circ \gamma_\scrA^{-1}\circ \varrho^{-1}$.
+By the previous discussion the linear span
+of the elements of~$L^\infty(\spec(\scrA))$
+of the form~$\mathbf{1}_C^\circ$,
+where~$C$ is (not just measurable but) clopen,
+is norm dense in $L^\infty(\spec(\scrA))$.
+Since~$\int \mathbf{1}_C
+= \mu(C)=\omega(\gamma_\scrA^{-1} (\varrho^{-1}(\mathbf{1}_C^\circ ))$
+for all clopen~$C$,
+and both~$\int$ and~$\omega\circ\gamma_\scrA^{-1}\circ \varrho^{-1}$
+are linear and bounded,
+we conclude that~$\int = \omega\circ \gamma_\scrA^{-1} \circ \varrho^{-1}$,
+and so we are done.\qed
+\end{point}
+\begin{point}%
+To deduce from this that all commutive von Neumann algebras
+(and not just the ones admitting a faithful np-functional)
+are nmiu-isomorphic
+to direct sums of the form  $\bigoplus_i L^\infty(X_i)$
+where the~$X_i$ are finite complete measure spaces
+we first need some basic facts concerning the
+\emph{projections} of a commutative von Neumann algebra.
+\end{point}
+\end{point}
 \end{parsec}%
 \section{Projections}
 \begin{parsec}%
@@ -1792,6 +1841,27 @@ An element~$p$ of a $C^*$-algebra
 is a \Define{projection}
 when~$p^*p=p$.
 \end{point}
+\begin{point}{Examples}%
+\begin{enumerate}
+\item
+The only projections in~$\C$ are~$0$ and~$1$.
+\item
+Given a measurable
+subset~$A$ of a finite complete measure space~$X$
+the indicator function~$\mathbf{1}_A$
+is a projection in~$L^\infty(X)$,
+and every projection in~$L^\infty(X)$
+is of this form.
+\item
+Given a closed linear subspace~$C$ of a Hilbert space~$\scrH$
+the inclusion $E\colon C\to \scrH$
+is a bounded linear map,
+and  $\Define{P_C}:=EE^*\colon \scrH\to\scrH$
+is a projection in~$\scrB(\scrH)$,
+and
+every projection in~$\scrB(\scrH)$ is of this form.
+\end{enumerate}
+\end{point}
 \begin{point}[projection-basic]{Exercise}%
 Show that in a $C^*$-algebra:
 \begin{enumerate}
@@ -1801,6 +1871,9 @@ $0$ and~$1$ are projections.
 A projection~$p$ is an effect,
 that is, $p^*=p$
 and $0\leq p\leq 1$.
+\item
+The orthocomplement $p^\perp \equiv 1-p$ of a projection~$p$
+is a projection.
 \item
 An effect~$a$ is a projection iff $aa^\perp=0$.
 \end{enumerate}
