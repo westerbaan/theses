@@ -1607,7 +1607,7 @@ Show that~$x \mapsto xb$
 \begin{point}[innerprod-ultraweak]{Proposition}%
 Let~$X$ be a right~$\scrB$-module
     with~$\scrB$-valued inner product~$[\,\cdot\,,\,\cdot\,]$
-    for some von Neumann algebra~$\scrB$.
+    for some C$^*$-algebra~$\scrB$.
 If~$x_\alpha \to x$ and~$y_\alpha \to y$
     in the ultranorm uniformity,
     then~$[x_\alpha,y_\alpha] \to [x,y]$ ultraweakly.
@@ -3540,11 +3540,132 @@ and so~$t \mapsto \varphi_t^{\scrP'}$
 \end{point}
 \end{parsec}
 
-\section{Self-dual Hilbert C$^*$-modules}
+\section{Kaplansky density theorem for Hilbert C$^*$-modules}
 \begin{parsec}%
 \begin{point}%
 Before we continue our study of Paschke dilations,
-    we have a second look at
+    we develop some more theory on (self dual) Hilbert C$^*$-modules.
+First we will prove a variant of the Kaplansky density
+    theorem for Hilbert C$^*$-modules,
+    which we will need to compute the tensor product of Paschke dilations.
+\end{point}
+\begin{point}{Theorem}%
+Let~$X$ be a Hilbert~$\scrB$-module for a C$^*$-algebra~$\scrB$.
+Assume~$D \subseteq X$ is an ultranorm dense submodule.
+Then: for every~$x \in X$,
+    there is a net~$x_\alpha$ in~$D$
+    with~$x_\alpha \to x$
+    and~$\|x_\alpha\| \leq \|x\|$.
+\begin{point}{Proof}%
+This proof is based on the
+    proof for the regular Kaplanski density theorem
+    given in \cite[Thm.~1.2.2]{arveson2012invitation}.
+Pick any~$x \in X$.
+Without loss of generality, we may assume~$\| x \| \leq 1$.
+For this~$x$ and any~$y \in X$, define
+\begin{align*}
+    h(y) &\ \equiv \ y \cdot\frac{2}{1+ \langle y, y \rangle}
+    &
+    g(x) &\ \equiv \ x \cdot\frac{1}{1+ \sqrt{1- \langle x, x\rangle}}.
+\end{align*}
+We claim~$h$ is ultranorm continuous,
+$h(g(x)) = x$ and $\| h(y) \| \leq 1$ for all~$y \in X$.
+From these claims the Theorem follows.
+Indeed, let~$x_\alpha$ be a net in~$D$
+    that converges ultranorm to~$g(x)$.
+Then~$h(x_\alpha)$ is
+    still a net in~$D$
+    and furthermore~$h(x_\alpha) \to h(g(x)) = x$ ultranorm
+    and~$\| h(x_\alpha) \| \leq 1 = \| x \|$, as desired.
+\begin{point}%
+The last two claims are easy to prove.
+We start with the second.
+The real map~$h_r\colon \lambda \mapsto 4 \lambda (1+\lambda)^{-2}$
+    is bounded by~$1$ and so by the functional calculus
+    we see~$\| h(y) \|^2 = \| 4 \langle y,y\rangle (1+ \langle y,y\rangle)^{-2} \|
+                = \| h_r(\langle y,y\rangle) \|  \leq 1$.
+For the last claim, note~$\langle g(x), g(x) \rangle
+= (1 + \sqrt{1 - \langle x,x \rangle })^{-2} \langle x,x\rangle$
+and so with basic algebra
+\begin{alignat*}{2}
+    h(g(x)) &\ = \ x \cdot
+\frac{1}{ 1 + \sqrt{1 - \langle x,x\rangle }}
+\frac{2}{1 + \bigl(1 + \sqrt{1 - \langle x,x \rangle }\bigr)^{-2} \langle x,x\rangle} \\
+& \ =\  x \cdot 2 \left( \frac{
+    \bigl(1 + \sqrt{1-\langle x, x\rangle}\bigr)^2 + \langle x,x \rangle
+}{1 + \sqrt{1 + \langle x,x \rangle}} \right)^{-1} \\
+& \ = \ x.
+\end{alignat*}
+\end{point}
+\begin{point}{Ultranorm continuity~$h$}%
+Suppose~$y_\alpha \to y$ ultranorm. Define
+\begin{align*}
+    A_1 & \ \equiv \ \frac{\langle y,y\rangle}{(1 + \langle y,y \rangle)^2} 
+            - \frac{1}{1+\langle y_\alpha,y_\alpha \rangle} \frac{\langle y,y \rangle}{1+\langle y,y \rangle} \\
+    A_1' & \ \equiv \ 
+    \frac{\langle y_\alpha,y_\alpha\rangle}{(1 + \langle y_\alpha,y_\alpha \rangle)^2}  
+    - \frac{1}{1+\langle y,y \rangle}
+    \frac{\langle y_\alpha,y_\alpha\rangle}{1+\langle y_\alpha,y_\alpha \rangle} \\
+    A_2 & \ \equiv \ 
+    \frac{1}{1+ \langle y,y \rangle}
+       \langle y_\alpha- y, y_\alpha\rangle
+     \frac{1}{1+ \langle y_\alpha,y_\alpha \rangle} \\
+    A_2' & \ \equiv \  \frac{1}{1+ \langle y_\alpha,y_\alpha \rangle}
+       \langle y- y_\alpha, y\rangle
+     \frac{1}{1+ \langle y,y \rangle}.
+\end{align*}
+A straight-forward computations shows
+\begin{equation}\label{kaplansky-splitting}
+    \langle h(y) - h(y_\alpha) ,
+         h(y) - h(y_\alpha) \rangle  \ = \ A_1 + A_1' + A_2 + A_2'.
+\end{equation}
+We will show that each of these terms converges ultraweakly to~$0$.
+We start with~$A_1$.
+We need two facts.
+First, for any positive~$b \in \scrB$, we have~$0 \leq \frac{1}{1+b} \leq 1$
+and~$0 \leq \frac{b}{1+b} \leq 1$.
+Secondly
+\begin{align*}
+    \frac{1}{1+\langle y,y\rangle }
+        -
+    \frac{1}{1+\langle y_\alpha,y_\alpha\rangle }
+    & \ = \ 
+    \frac{1}{1+\langle y,y\rangle }
+    \bigl((1+\langle y_\alpha,y_\alpha \rangle) - (1+\langle y,y \rangle)\bigr) 
+    \frac{1}{1+\langle y_\alpha,y_\alpha\rangle }\\
+    & \ = \ 
+    \frac{1}{1+\langle y,y\rangle }
+   \bigl(\langle y_\alpha,y_\alpha \rangle - \langle y,y \rangle\bigr) 
+    \frac{1}{1+\langle y_\alpha,y_\alpha\rangle }.
+\end{align*}
+Putting everything together, we find
+\begin{align*}
+     A_1 
+    &\ = \ 
+    \left(
+    \frac{1}{1+\langle y,y\rangle } -
+    \frac{1}{1+\langle y_\alpha,y_\alpha\rangle }\right)
+            \frac{\langle y,y \rangle}{1+\langle y,y \rangle} \\
+    &\ = \ 
+    \frac{1}{1+\langle y,y\rangle }
+   \bigl(\langle y_\alpha,y_\alpha \rangle - \langle y,y \rangle\bigr) 
+    \frac{1}{1+\langle y_\alpha,y_\alpha\rangle }
+            \frac{\langle y,y \rangle}{1+\langle y,y \rangle},
+\end{align*}
+which vanishes ultraweakly by \sref{innerprod-ultraweak}
+    and \TODO{ultraweak prod bounded}.
+In a similar way one sees~$A_1' \to 0$ ultraweakly.
+Using \sref{innerprod-ultraweak} and \TODO{} directly,
+    one sees~$A_2$ and~$A_2'$ converge ultraweakly to~$0$. \qed
+\end{point}
+\end{point}
+\end{point}
+\end{parsec}
+
+\section{More on self-dual Hilbert C$^*$-modules}
+\begin{parsec}%
+\begin{point}%
+We have a second look at
     self-dual Hilbert C$^*$-modules and their orthonormal bases.
 We start with some good news.
 In~$\scrB(\scrH)$ the linear span of~$\ketbra{e_i}{e_j}$
@@ -4167,6 +4288,7 @@ and so by~\sref{innerprod-ultraweak}
 \end{point}
 \end{parsec}
 
+\subsection{Exterior tensor product}
 \begin{parsec}%
 \begin{point}%
 Suppose~$X$ is a Hilbert~$\scrA$-module
