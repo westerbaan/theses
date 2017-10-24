@@ -3555,19 +3555,21 @@ Before we continue our study of Paschke dilations,
 First we will prove a variant of the Kaplansky density
     theorem for Hilbert C$^*$-modules,
     which we will need to compute the tensor product of Paschke dilations.
-\end{point}
-\begin{point}[kaplansky-hilbmod]{Theorem}%
-Let~$X$ be a Hilbert~$\scrB$-module for a C$^*$-algebra~$\scrB$.
-Assume~$D \subseteq X$ is an ultranorm dense submodule.
-Then: for every~$x \in X$,
-    there is a net~$x_\alpha$ in~$D$
-    with~$x_\alpha \to x$ ultranorm
-    and~$\|x_\alpha\| \leq \|x\|$.
-\begin{point}{Proof}%
-This proof is based on a
-    proof of the regular Kaplansky density theorem
+The proof is inspired by the proof of the regular Kaplansky density theorem
     given in \cite[Thm.~1.2.2]{arveson2012invitation}.
 See also \sref{kaplansky}.
+\end{point}
+\begin{point}[kaplansky-hilbmod]{Theorem}%
+Let~$X$ be a Hilbert~$\scrB$-module for a von Neumann algebra~$\scrB$.
+Assume~$D \subseteq X$ is an ultranorm dense $\scrA$-submodule,
+    where~$\scrA \subseteq \scrB$ is some norm-closed subalgebra
+    with~$\langle y,y \rangle \in \scrA$ for all~$y \in D$.
+
+Then: for every element~$x \in X$,
+    there is a net~$x_\alpha$ in~$D$
+    with~$x_\alpha \to x$ ultranorm
+    and~$\|x_\alpha\| \leq \|x\|$ for all~$\alpha$.
+\begin{point}{Proof}%
 Pick any~$x \in X$.
 Without loss of generality, we may assume~$\| x \| \leq 1$.
 For this~$x$ and any~$y \in X$, define
@@ -3582,12 +3584,12 @@ From these claims the Theorem follows.
 Indeed, let~$x_\alpha$ be a net in~$D$
     that converges ultranorm to~$g(x)$.
 Then~$h(x_\alpha)$ is
-    still a net in~$D$
+    still in~$D$
     and furthermore~$h(x_\alpha) \to h(g(x)) = x$ ultranorm
     and~$\| h(x_\alpha) \| \leq 1 = \| x \|$, as desired.
 \begin{point}%
 The last two claims are easy to prove.
-We start with the second.
+We start with~$\| h(y) \| \leq 1$.
 The real map~$h_r\colon \lambda \mapsto 4 \lambda (1+\lambda)^{-2}$
     is bounded by~$1$ and so by the functional calculus
     we see~$\| h(y) \|^2 = \| 4 \langle y,y\rangle (1+ \langle y,y\rangle)^{-2} \|
@@ -3646,7 +3648,7 @@ Secondly
    \bigl(\langle y_\alpha,y_\alpha \rangle - \langle y,y \rangle\bigr) 
     \frac{1}{1+\langle y_\alpha,y_\alpha\rangle }.
 \end{align*}
-Putting everything together, we find
+Putting these facts together with the definition of~$A_1$, we get
 \begin{align*}
      A_1 
     &\ = \ 
@@ -3658,13 +3660,40 @@ Putting everything together, we find
     \frac{1}{1+\langle y,y\rangle }
    \bigl(\langle y_\alpha,y_\alpha \rangle - \langle y,y \rangle\bigr) 
     \frac{1}{1+\langle y_\alpha,y_\alpha\rangle }
-            \frac{\langle y,y \rangle}{1+\langle y,y \rangle},
+            \frac{\langle y,y \rangle}{1+\langle y,y \rangle} \\
+    &\ = \ 
+    \frac{1}{1+\langle y,y\rangle }
+   \bigl(\langle y_\alpha -y,y_\alpha \rangle + \langle y,y_\alpha - y \rangle\bigr) 
+    \frac{1}{1+\langle y_\alpha,y_\alpha\rangle }
+            \frac{\langle y,y \rangle}{1+\langle y,y \rangle}.
 \end{align*}
-which vanishes ultraweakly by \sref{innerprod-ultraweak}
-    and \TODO{ultraweak prod bounded}.
+As multiplying with
+constants is ultraweakly continuous (see \sref{mult-uws-cont}),
+    it is sufficient to show that in the ultraweak uniformity
+\begin{align}\label{kaplanskytodo2}
+    \langle y_\alpha - y, y_\alpha \rangle \frac{1}{1 + \langle y_\alpha, y_\alpha\rangle} & \ \to\  0 &
+    \langle y, y_\alpha  -y\rangle \frac{1}{1 + \langle y_\alpha, y_\alpha\rangle} & \ \to \ 0.
+\end{align}
+For any np-map~$f\colon \scrB \to \C$, we have
+\begin{align*}
+   \Bigl| f\Bigl(\left\langle y_\alpha - y, y_\alpha \right\rangle \frac{1}{1+\langle y_\alpha, y_\alpha\rangle}\Bigr)\Bigr|^2
+    & \ = \ 
+    |\langle y_\alpha - y, y_\alpha (1 + \langle y_\alpha, y_\alpha  \rangle)^{-1}
+    \rangle_f|^2 \\
+    & \ \leq \ 
+    \| y_\alpha - y \|_f \cdot \| y_\alpha (1 + \langle y_\alpha, y_\alpha  \rangle)^{-1} \|_f \\
+    & \ \leq \  \|
+    y_\alpha - y \|_f \cdot \| y_\alpha (1 + \langle y_\alpha, y_\alpha  \rangle)^{-1} \| \cdot
+    \|f\|^{\frac{1}{2}}
+    \\
+    & \ \leq \ 
+    \| y_\alpha - y \|_f \cdot \|f\|^{\frac{1}{2}} \ \rightarrow \ 0.
+\end{align*}
+We have shown the LHS of \eqref{kaplanskytodo2}.
+The proof for the RHS is different, but simpler.
+So~$A_1$ vanishes ultraweakly.
 In a similar way one sees~$A_1' \to 0$ ultraweakly.
-Using \sref{innerprod-ultraweak} and \TODO{} directly,
-    one sees~$A_2$ and~$A_2'$ converge ultraweakly to~$0$. \qed
+The proofs for~$A_2, A_2' \to 0$ are very similar. \qed
 \end{point}
 \end{point}
 \end{point}
@@ -4921,7 +4950,7 @@ With a similar argument
 \begin{point}[exttensor-dense-subsets]{Lemma}%
 Assume~$\scrA$ and~$\scrB$ are von Neumann algebras.
 Let~$X$ be a self-dual Hilbert~$\scrA$-module
-    and~$Y$ be a self-dual Hilbert$\scrB$-module.
+    and~$Y$ be a self-dual Hilbert~$\scrB$-module.
 Assume~$U \subseteq X$ and~$V \subseteq Y$
     are ultranorm dense submodules.
 Then the linear span of
@@ -4944,16 +4973,52 @@ So by \sref{ultranorm-continuity-ext-tensor},
     we see~$x_\alpha \otimes y_\alpha \to x \otimes y$. \qed
 \end{point}
 \end{point}
-\begin{point}[dilationspace-dense-subset]{Exercise}%
+\begin{point}[dilationspace-dense-subset]{Lemma}%
 Let~$\varphi \colon \scrA \to \scrB$ be an ncp-map between von Neumann algebras.
-Assume~$U \subseteq \scrA$ and~$V \subseteq \scrB$
-    are ultrastrongly dense subalgebras.
-Show that the linear span of
-$ U \otimes V  =  \{ u \otimes v;\ u \in U, \ v\in V\}$
-is ultranorm dense in~$\scrA \otimes_\varphi \scrB$.
-    (Hint: reason in a similar fashion to \sref{exttensor-dense-subsets}
-        and \sref{ultranorm-continuity-ext-tensor}
-        using \sref{kaplansky}.) \TODO{}
+Assume~$\scrA' \subseteq \scrA$ and~$\scrB' \subseteq \scrB$
+are ultrastrongly dense $*$-subalgebras.
+Then: the linear span of
+$ \scrA' \otimes \scrB'  \equiv \{ a \otimes b;\ a \in \scrA', \ b\in \scrB'\}$
+is ultranorm dense in~$\scrA \otimes_\varphi \scrB$,
+which was defined in  \sref{existence-paschke}.
+\begin{point}{Proof}%
+It is sufficient to show that any~$a\otimes b \in \scrA \otimes_\varphi \scrB$
+    is the ultranorm limit of elements from~$\scrA' \otimes \scrB'$.
+    Pick any~$a\otimes b\in \scrA \otimes_\varphi \scrB$.
+By the Kaplansky density theorem, \TODO{ref}
+    there are norm-bounded nets~$a_\alpha$ in~$\scrA$ and
+    $b_\alpha$ in~$\scrB$
+    with~$a_\alpha \to a$ and~$b_\alpha \to b$ ultrastrongly.
+Say~$\|b_\alpha \|, \|a_\alpha\| \leq B$ for some~$B > 0$.
+We will show~$a_\alpha \otimes b_\alpha - a\otimes b \to 0$ ultranorm.
+As usual, we split it into two:
+\begin{equation*}
+a_\alpha \otimes b_\alpha - a \otimes b
+\ = \ a_\alpha \otimes(b_\alpha -b )\  +\  (a_\alpha - a) \otimes b.
+\end{equation*}
+For the first term, note
+\begin{align*}
+    \langle a_\alpha \otimes (b_\alpha  - b),
+    a_\alpha \otimes (b_\alpha  - b) \rangle
+    & \ = \ 
+    (b_\alpha - b)^* \,\varphi (a_\alpha^* a_\alpha) \,(b_\alpha - b) \\
+    & \ \leq \ 
+    B (b_\alpha - b)^*  (b_\alpha - b),
+\end{align*}
+which converges to~$0$ ultraweakly as~$b_\alpha \to b$ ultrastrongly.
+The second
+\begin{align*}
+    \langle
+        (a_\alpha - a) \otimes b
+        (a_\alpha - a) \otimes b \rangle
+        & \ = \ 
+        b^* \,\varphi((a_\alpha - a)^* (a_\alpha - a)) \, b,
+\end{align*}
+converges ultraweakly to~$0$
+as and~$ b^* \varphi(\,\cdot\,) b$ is normal
+and~$(a_\alpha - a)^*(a_\alpha - a)$ converges ultraweakly to~$0$
+as~$a_\alpha \to a$ ultrastrongly. \qed
+\end{point}
 \end{point}
 \end{parsec}
 
