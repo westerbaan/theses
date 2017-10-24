@@ -2679,12 +2679,15 @@ Let~$X$ be any self-dual Hilbert~$\scrB$-module
     such that the image of~$\eta$ is ultranorm dense in~$X$.
 (E.g.~the completion into a self-dual Hilbert~$\scrB$-module
 from \sref{dils-completion}.)
+Then~$\eta$ has the following universal property.
+\begin{quote}
 Assume~$Y$ is self-dual Hilbert~$\scrB$-module.
 For each bounded~$\scrB$-linear
     map~$T\colon V \to Y$,
     there is a unique bounded~$\scrB$-linear
     map~$\hat{T} \colon X \to Y$
     such that~$\hat{T} \after \eta = T$.
+\end{quote}
 \begin{point}{Proof}%
 By \sref{blinear-bounded-is-ultranorm} bounded~$\scrB$-linear
     maps are ultranorm uniformly continuous.
@@ -4787,7 +4790,7 @@ operation~$\otimes$ defined in \sref{dfn-tensor-of-hilbmod-maps}, we have
 
 \end{enumerate}
 \end{point}
-\begin{point}{Theorem}%
+\begin{point}[ba-ext-tensor-pres]{Theorem}%
 There is an
     nmiu-isomorphism~$\vartheta\colon \scrB^a(X) \otimes \scrB^a(Y) \cong \scrB^a(X \otimes Y)$
     fixed by~$\vartheta(S\otimes T) = S \otimes T$.
@@ -4870,6 +4873,91 @@ By polarization (see \sref{hilbmod-polarization}),
 \end{parsec}
 
 \begin{parsec}%
+\begin{point}%
+To compute the tensor product of Paschke dilations,
+    we will need to know a bit more about
+    the ultranorm continuity of the exterior tensor product.
+\end{point}
+\begin{point}[ultranorm-continuity-ext-tensor]{Lemma}%
+Assume~$\scrA$ and~$\scrB$ are von Neumann algebras.
+Let~$X$ be a self-dual Hilbert~$\scrA$-module
+    and~$Y$ be a self-dual Hilbert$\scrB$-module.
+If~$x_\alpha \to x$ and~$y_\alpha \to y$ ultranorm
+    for norm-bounded nets~$x_\alpha$ in~$X$ and~$y_\alpha$ in $Y$,
+    then~$x_\alpha \otimes y_\alpha \to x \otimes y$
+    ultranorm in~$X \otimes Y$.
+\begin{point}{Proof}%
+As~$x_\alpha \otimes y_\alpha - x \otimes y
+            = (x_\alpha -x )\otimes y_\alpha + x\otimes (y_\alpha - y)$,
+            it is sufficient
+    to show that both~$(x_\alpha -x) \otimes y_\alpha \to 0$
+    and~$x\otimes (y_\alpha - y) \to 0$ ultranorm.
+Clearly
+\begin{align*}
+    \langle (x_\alpha - x) \otimes y_\alpha,
+        (x_\alpha - x) \otimes y_\alpha \rangle
+    & \ = \ 
+    \langle x_\alpha - x , x_\alpha - x \rangle\otimes 
+    \langle y_\alpha ,y_\alpha \rangle \\
+    & \ = \ 
+    (\langle x_\alpha - x , x_\alpha - x \rangle\otimes 1) \cdot (1 \otimes 
+    \langle y_\alpha ,y_\alpha \rangle ).
+\end{align*}
+The maps~$b \mapsto 1 \otimes b$ and~$a \mapsto a \otimes 1$
+    are ncp by \TODO{},
+    so both~$1 \otimes \langle y_\alpha, y_\alpha \rangle$
+    and~$\langle x_\alpha - x , x_\alpha - x \rangle\otimes 1$
+    are bounded nets of positive elements.
+    Also~$\langle x_\alpha - x , x_\alpha - x \rangle\otimes 1 \to 0$
+        as~$x_\alpha \to x$ ultranorm.
+Thus \sref{vanishing-effects} applies and we see
+    $(\langle x_\alpha - x , x_\alpha - x \rangle\otimes 1) \cdot (1 \otimes 
+    \langle y_\alpha ,y_\alpha \rangle ) \to 0$ ultraweakly,
+    hence~$(x_\alpha - x) \otimes y_\alpha \to 0$ ultranorm.
+With a similar argument
+    one can show~$x\otimes (y_\alpha - y) \to 0$ ultranorm. \qed
+\end{point}
+\end{point}
+\begin{point}[exttensor-dense-subsets]{Lemma}%
+Assume~$\scrA$ and~$\scrB$ are von Neumann algebras.
+Let~$X$ be a self-dual Hilbert~$\scrA$-module
+    and~$Y$ be a self-dual Hilbert$\scrB$-module.
+Assume~$U \subseteq X$ and~$V \subseteq Y$
+    are ultranorm dense submodules.
+Then the linear span of
+\begin{equation*}
+    U \otimes V \ \equiv\  \{ u \otimes v;\  u \in U,\ v \in V\}
+\end{equation*}
+is ultranorm dense in~$X \otimes Y$.
+\begin{point}{Proof}%
+It is sufficient to show that every~$x \otimes y \in X \otimes Y$
+    is the ultranorm limit of elements from~$U \otimes V$
+    as the linear span of elements of the form~$x \otimes y$
+    is ultranorm dense in~$X \otimes Y$.
+So pick any element of the form~$x \otimes y \in X \otimes Y$.
+By the Kaplansky density theorem for Hilbert C$^*$-modules,
+ see \sref{kaplansky-hilbmod},
+    there are norm-bounded nets~$x_\alpha$ in~$U$
+    and~$y_\alpha$ in~$V$
+    with~$x_\alpha \to x$ and~$y_\alpha \to y$ ultranorm.
+So by \sref{ultranorm-continuity-ext-tensor},
+    we see~$x_\alpha \otimes y_\alpha \to x \otimes y$. \qed
+\end{point}
+\end{point}
+\begin{point}[dilationspace-dense-subset]{Exercise}%
+Let~$\varphi \colon \scrA \to \scrB$ be an ncp-map between von Neumann algebras.
+Assume~$U \subseteq \scrA$ and~$V \subseteq \scrB$
+    are ultrastrongly dense subalgebras.
+Show that the linear span of
+$ U \otimes V  =  \{ u \otimes v;\ u \in U, \ v\in V\}$
+is ultranorm dense in~$\scrA \otimes_\varphi \scrB$.
+    (Hint: reason in a similar fashion to \sref{exttensor-dense-subsets}
+        and \sref{ultranorm-continuity-ext-tensor}
+        using \sref{kaplansky}.) \TODO{}
+\end{point}
+\end{parsec}
+
+\begin{parsec}%
 \begin{point}{Theorem}%
 Suppose~$\varphi_i \colon \scrA_i \to \scrB_i$
     is an ncp-map between von Neumann algebras
@@ -4902,8 +4990,83 @@ $(\scrA_1 \odot \scrB_1) \odot (\scrA_2 \odot \scrB_2) \cong
 preserves the induced inner products and
     so extends uniquely to an
     isomorphism \eqref{tensor-of-paschke-dilation-spaces}.
-\begin{point}{Density LHS}%
-    
+\begin{point}{Density}%
+By construction~$\scrA_1 \odot \scrB_1$ is an ultranorm dense submodule
+    of~$\scrA_1 \otimes_{\varphi_1} \scrB_1$.
+Similarly~$\scrA_2 \odot \scrB_2 $ is ultranorm dense
+    in~$\scrA_2 \otimes_{\varphi_2} \scrB_2$.
+Thus by \sref{exttensor-dense-subsets}
+    $(\scrA_1 \odot \scrB_1) \odot(
+    \scrA_2 \odot \scrB_2) $ is ultranorm dense in~$(\scrA_1 \otimes_{\varphi_1} \scrB_1)
+\otimes (\scrA_2 \otimes_{\varphi_2} \scrB_2)$.
+As~$\scrA_1 \odot \scrA_2$
+    is an ultrastrongly dense subalgebra
+    of~$\scrA_1 \otimes \scrA_2$ by \TODO{}
+    and similarly~$\scrB_1 \odot \scrB_2$
+    is ultrastrongly dense in~$\scrB_1 \otimes \scrB_2$,
+    we can apply~\sref{dilationspace-dense-subset}
+    to find~$
+    (\scrA_1 \odot \scrA_2) \odot 
+    (\scrB_1 \odot \scrB_2)$ is ultranorm dense
+    in
+    $(\scrA_1 \otimes \scrA_2) \otimes 
+    (\scrB_1 \otimes \scrB_2)$.
+\end{point}
+\begin{point}{Inner product preservation}%
+Clearly
+\begin{alignat*}{2}
+    &
+    \bigl\langle\,
+    (a_1 \otimes b_1)\otimes (a_2 \otimes b_2)\,,\,
+    (\alpha_1 \otimes \beta_1 )\otimes( \alpha_2 \otimes \beta_2)
+    \,\bigr\rangle \\
+    & \qquad\ = \ 
+    \langle a_1 \otimes b_1 , \alpha_1 \otimes \beta_1 \rangle \,\otimes\,
+    \langle a_2 \otimes b_2 , \alpha_2 \otimes \beta_2 \rangle \\
+    & \qquad\ = \ 
+    (b_1^* \varphi_1( a_1^* \alpha_1) \beta_2)
+    \,\otimes \,
+    (b_2^* \varphi_2( a_2^* \alpha_2) \beta_2) \\
+    & \qquad \ = \ 
+    (b_1 \otimes b_2)^* \,(\varphi_1 \otimes \varphi_2)
+    \bigl((a_1 \otimes a_2)^* (\alpha_1 \otimes \alpha_2)\bigr)
+    \,(\beta_1 \otimes \beta_2) \\
+    & \qquad \ = \ 
+    \bigl\langle\,
+    (a_1\otimes a_2)\otimes (b_1 \otimes b_2) \,,\,
+    (\alpha_1\otimes \alpha_2)\otimes (\beta_1 \otimes \beta_2)
+    \,\bigr\rangle
+\end{alignat*}
+so $U_0 \colon (\scrA_1 \odot \scrB_1) \odot (\scrA_2 \odot \scrB_2) \cong
+(\scrA_1 \odot \scrA_2) \odot (\scrB_1 \odot \scrB_2) $
+preserves the inner product by linearity.
+\end{point}
+\begin{point}%
+As~$U_0$ preserves the inner product,
+    it is also bounded.
+Thus by \sref{selfdual-completion-univ}
+    there is a unique bounded~$\scrB_1\otimes \scrB_2$-linear
+    extension
+\begin{equation*}
+    U\colon (\scrA_1 \otimes_{\varphi_1} \scrB_1) \otimes (\scrA_2 \otimes_{\varphi_2} \scrB_2) \to
+        (\scrA_1 \otimes \scrA_2) \otimes_{\varphi_1 \otimes \varphi_2} (\scrB_1 \otimes \scrB_2).
+\end{equation*}
+    By the ultranorm density and \sref{innerprod-ultraweak}
+    we know~$U$ also preserves the inner product.
+There is also a unique bounded linear extension of~$U_0^{-1}$,
+    which is easily seen to be the inverse of~$U$.
+    So~$U$ is an isomorphism and~$U^* = U^{-1}$.
+By \sref{ba-ext-tensor-pres}
+there is a unique nmiu-isomorphism
+\begin{equation*}
+    \vartheta\colon
+    \scrB^a (\scrA_1 \otimes_{\varphi_1} \scrB_1) \otimes
+     \scrB^a(\scrA_2 \otimes_{\varphi_2} \scrB_2) \to
+    \scrB^a
+     ((\scrA_1 \otimes_{\varphi_1} \scrB_1) \otimes
+     (\scrA_2 \otimes_{\varphi_2} \scrB_2))
+\end{equation*}
+    fixed by~$\vartheta(S \otimes T) = S \otimes T$.
 \end{point}
 \end{point}
 \end{point}
