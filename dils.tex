@@ -5345,6 +5345,10 @@ It turns out that~$\varphi$ is pure in this sense
 \end{parsec}
 
 \begin{parsec}%
+\begin{point}%
+We recall the definition of corner
+        from \cite[Dfn.~2]{westerbaan2016universal} and \sref{corner}.
+\end{point}
 \begin{point}[dils-corner]{Definition}%
 A ncp-map~$h \colon \scrA \to \scrB$
 is a \Define{corner} for~$a \in [0,1]_\scrA$ if~$h(a)=h(1)$
@@ -5355,19 +5359,52 @@ is a \Define{corner} for~$a \in [0,1]_\scrA$ if~$h(a)=h(1)$
             there is a unique ncp-map~$f'\colon \scrA \to \scrC$
             with~$f = f' \after h$.
     \end{quote}
+\begin{point}{Remark}%
+In the next chapter we will study maps with a similar universal property
+    as corners in a more general setting,
+    but with all arrows in the reverse direction.
+To help alleviate some confusion caused by the change of direction,
+    we call these maps \emph{comprehensions},
+    see \sref{dfn-comprehension}.  See also \sref{effintro}.
+\end{point}
 \end{point}
 \begin{point}{Example}%
     The map~$h_a \colon \scrA \to \floor{a} \scrA \floor{a}$ given
     by~$b \mapsto \floor{a} b \floor{a}$
     is a corner of~$a \in [0,1]_\scrA$.
-We call~$h_a$ the \Define{standard corner} of~$a$.    
-\TODO{ref}
+We call~$h_a$ the \Define{standard corner} of~$a$.
+    See \sref{dfn-standard-corner-and-filter}, \sref{prop-corner}
+        or \cite[Prop.~5]{westerbaan2016universal}.
 \end{point}
-\end{parsec}
-
-\begin{parsec}%
+\begin{point}[h-is-corner-for-unital-map]{Lemma}%
+If~$(\scrP, \varrho, h)$ is a Paschke dilation of a unital ncp-map,
+    then~$h$ is a corner.
+\begin{point}{Proof}%
+Let~$\varphi \colon \scrA \to \scrB$ be any unital ncp-map.
+It is sufficient to prove~$h$
+    is a corner for the
+    standard dilation~$(\scrP , \varrho, h)$
+    constructed in \sref{existence-paschke},
+    so~$\scrP \equiv \scrB^a(\scrA \otimes_\varphi \scrB)$
+    and~$h(T) = \langle e, T e\rangle$, where~$e \equiv 1\otimes 1$.
+    Write~$p \equiv \ketbra{e}{e}$.
+From~$\langle e,e\rangle = \varphi(1) = 1$
+    it follows~$p$ is a projection.
+Define~$\vartheta\colon \scrB \to p \scrP p$
+    by~$\vartheta(b) = \ketbra{e \cdot b}{e}$.
+Some straight-forward computations
+    show~$\vartheta$ is a miu-map
+    with inverse~$pTp \mapsto h(pTp)$.
+So~$\vartheta$ is an miu-isomorphism and thus also normal.
+    Furthermore~$h = \vartheta^{-1}(p (\,\cdot\,) p)$
+     and so~$h$ is indeed a corner (of~$p$). \qed
+\end{point}
+\end{point}
+\begin{point}%
+We recall the definition of filter, see \sref{filter}. 
+\end{point}
 \begin{point}[dils-def-filter]{Definition}%
-A ncp-map~$c \colon \scrA \to \scrB$
+An ncp-map~$c \colon \scrA \to \scrB$
     is a \Define{filter} for~$b \in\scrB$, $b \geq 0$ if~$c(1)\leq b$
     and
     \begin{quote}
@@ -5377,11 +5414,14 @@ A ncp-map~$c \colon \scrA \to \scrB$
             with~$f = c \after f'$.
     \end{quote}
 \begin{point}{Remark}%
-The predicate~$1 \after f$
-    for a map~$f$ plays
-    the role of a fuzzy domain of definition.
-(Recall~$1 \after f = 0$ iff~$f = 0$
-    and~$1 \after f = 1$ iff~$f$ is total.)
+The direction-reversed counterpart
+    of filters are called \emph{quotients},
+    see~\sref{dfn-quotient} and~\cite{effintro} .
+Filters were introduced by us in \cite[Dfn.~2]{westerbaan2016universal}
+    under the name \emph{compressions}.
+To avoid confusion with \cite{alfsen2012}
+    and be closer to e.g.~\cite{wilce2016royal},
+    we changed the name from compression to filter.
 \end{point}
 \end{point}
 \begin{point}{Example}%
@@ -5389,13 +5429,68 @@ The predicate~$1 \after f$
         given by~$a \mapsto \sqrt{b} a \sqrt{b}$ is a filter
         of~$b\in \scrB$, $b\geq 0$.
     We call~$c_b$ the \Define{standard filter} of~$b$.
+    See \sref{canonical-filter}, \sref{dfn-standard-corner-and-filter}
+        or \cite[Prop.~6]{westerbaan2016universal}.
+\end{point}
+\begin{point}[dils-filter-basics-exercise]{Exercise}%
+Assume~$\varphi\colon \scrA \to \scrB$ is an ncp-map.
+\begin{enumerate}
+\item
+    Let~$c \colon \scrB \to \scrC$ be any filter.
+    Show that if~$(\scrP, \varrho, h)$ is a Paschke dilation
+            of~$\varphi$,
+    that then~$(\scrP, \varrho, c \after h)$ is a Paschke dilation
+        of~$c \after \varphi$.
+\item
+    Assume~$c'\colon \scrC' \to \scrB$ is a filter of~$\varphi(1)$.
+    Prove that there is a unique unital ncp-map~$\varphi'$
+        with~$\varphi = c \after \varphi'$.
+    Conclude that if~$(\scrP, \varrho, h)$ is a Paschke dilation
+            of~$\varphi'$,
+            that then~$(\scrP, \varrho, c' \after h)$
+            is a Paschke dilation of~$\varphi$.
+\end{enumerate}
+(See \sref{dils-abstract-basics} and \sref{quotient-total} for the proofs
+        in the more general case.)
+\end{point}
+\begin{point}{Definition}%
+Filters, corners and their compositions are called \Define{pure}.
+\end{point}
+\begin{point}[dils-examples-pure]{Examples}%
+Isomorphisms are pure.  Less trivial examples follow.
+\begin{enumerate}
+\item
+The pure maps~$\scrB(\scrH) \to \scrB(\scrK)$
+    are precisely of the form~$\ad_T$
+    for some bounded operator~$T\colon \scrK \to \scrH$.
+\item
+Assume~$(\scrP, \varrho, h)$ is a Paschke dilation of some ncp-map~$\varphi$.
+In \sref{h-is-corner-for-unital-map} we saw that if~$\varphi$ is unital,
+        that then~$h$ is a corner (and thus pure).
+In general, $h = c \after h'$ for some filter~$c$ and corner~$h'$
+    by \sref{dils-filter-basics-exercise},
+        and so~$h$ is pure.
+\end{enumerate}
+\end{point}
+\begin{point}{Remark}%
+By definition, pure maps are closed under composition.
+In the next chapter we will see (\sref{dagger-theorem}) that
+    there is a unique~$\dagger$
+    which turns the subcategory of von Neumann
+    algebras with pure maps into a~$\dagger$-category
+    such that~$f^\dagger$ is contraposed to~$f$;
+            purely positive maps are~$\dagger$-positive
+            and~$\dagger$-positive maps have unique roots.
+For this unique~$\dagger$, we have~$(\ad_V)^\dagger = \ad_{V^*}$.
 \end{point}
 \end{parsec}
 
 \begin{parsec}%
 \begin{point}%
-To compute the dilation of a corner,
-    we need some more comparison theory.
+We will prove that a map is pure if and only if
+    the left-hand side map of its Paschke dilation
+    is surjective.  To prove this, we need to compute the dilation of a corner.
+For this, we need some more comparison theory.
 \end{point}
 \begin{point}[central-carrier-is-orthogonal-sum-lemma]{Lemma}%
 Assume~$\scrA$ is a von Neumann algebra with distinguished projection~$p \in \scrA$.
@@ -5531,8 +5626,41 @@ h_p \after h_{\cceil{p}}
 Using surjectivity of~$h_{\cceil{p}}$
 and rearranging, we find~$h_p \after (\varphi^{-1} \after \ad_{U^*}) = h$.
 Thus indeed~$(\cceil{p} \scrA, h_{\cceil{p}}, h_p)$
-is a Paschke dilation of~$h_p$. \TODO{iso paschke} \qed
+is a Paschke dilation of~$h_p$.  \qed
 \end{point}
+\end{point}
+\end{point}
+\begin{point}{Theorem}%
+    Let~$\varphi\colon \scrA \to \scrB$ be an ncp-map
+    between von Neumann algebras with
+    Paschke dilation~$(\scrP, \varrho, h)$.
+The map~$\varphi$ is pure if and only if~$\varrho$ is surjective.
+\begin{point}{Proof}%
+Assume~$\varrho$ is surjective.
+The kernel of~$\varrho$ is~$z \scrA$ for some central projection~$z$.  \TODO{}
+The standard corner~$h_{z^\perp} \colon \scrA \to z^\perp \scrA$
+    is the quotient-map of~$z \scrA$
+    and so by the isomorphism theorem $\varrho$ is a corner as well.
+In \sref{dils-examples-pure} we saw~$h$ is pure.
+So~$\varphi$ is the composition of pure maps, hence pure itself.
+
+For the converse, assume~$\varphi$ is pure.
+For brevity, write~$p \equiv \ceil{\varphi}$.
+There is a unique ncp-map~$c$ with~$\varphi = c \after h_p$,
+    where~$h_{\ceil{\varphi}}$ it the standard corner of~$p$.
+The map~$c$ is a compression,
+    see \sref{square-f}.
+By \sref{paschke-corner},
+    the triplet~$(\cceil{p}\scrA, h_{\cceil{p}}, h_p)$
+    is a Paschke dilation of~$h_p$.
+So by \sref{dils-filter-basics-exercise}
+    we see~$(\cceil{p}\scrA, h_{\cceil{p}}, c\after h_p)$
+    is a Paschke dilation of~$ \varphi$.
+Clearly~$h_{\cceil{p}}$ is surjective.
+If~$(\scrP', \varrho', h')$ is any other Paschke dilation of~$\varphi$,
+    then~$\varrho' = \vartheta \after h_{\cceil{p}}$
+    for some isomorphism~$\vartheta$
+    and so~$\varrho'$ is surjective as well. \qed
 \end{point}
 \end{point}
 \end{parsec}
