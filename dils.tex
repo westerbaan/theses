@@ -72,25 +72,25 @@ to maps of the form~$\scrA \to \scrB(\scrH)$
     and so do most of its usefull consequences.
 One wonders:
     is there an extension of Stinespring's theorem
-    to arbitrary np-maps~$\scrA \to \scrB$?
+    to arbitrary ncp-maps~$\scrA \to \scrB$?
 A different and less common question might be:
-    is Stinespring's dilation categorical in some way.
+    is Stinespring's dilation categorical in some way?
 That is: does it have a defining universal property?
-Both questions turn out to be true:
+Both questions turn out to have an affirmative answer:
 Paschke's generalization of GNS for Hilbert C$^*$-modules\cite{paschke}
     turns out to have the same universal property
         as Stinespring's dilation and so it extends Stinespring
-        to arbitrary np-maps.
+        to arbitrary ncp-maps.
 
 We start of this chapter with a detailed proof of Stinespring's theorem.
 We continue to show it obeys a universal property.
-Before we move on to Paschke's GNS
+Before we move on to Paschke's GNS,
     we need to develop Paschke's theory of self-dual Hilbert C$^*$-modules.
 Paschke's work builds on Sakai's characterization of von Neumann algebras,
     which would take considerable effort to develop in detail.
-Thus to be as complete as possible
-we avoid Sakai's characterization (in contrast to our
-    article \cite{wwpaschke})
+Thus to be as self-contained as possible,
+    we avoid Sakai's characterization (in contrast to our
+        article \cite{wwpaschke})
     and give new proofs
     of Paschke's results where required.
 One major difference is that we will use
@@ -99,9 +99,43 @@ One major difference is that we will use
 We finish the first part of this chapter
     by constructing Paschke's dilation
     and establishing it indeed extends Stinespring's dilation.
-In the second part of this chaper
-    we prove several results about Paschke's dilations.
-\TODO{more intro}
+We start the second part of this chapter
+    by characterizing when the representation in the Paschke dilation
+    of an ncp-map is injective (see \sref{paschke-injective}),
+    which is a generalization of our answer \cite{stineinj}
+    to the same question about the Stinespring representation.
+Then we allow for an intermezzo
+    to prove several new results on (self-dual) Hilbert C$^*$-modules,
+    notably:
+\begin{enumerate}
+    \item
+    we generalize the Kaplansky density theorem
+    to Hilbert C$^*$-modules, see \sref{kaplansky-hilbmod};
+    \item
+   we prove that every self-dual Hilbert~C$^*$-modules over
+            a factor von Neumann algebra
+            is of a particularly nice shape,
+            see \sref{selfdual-normalish-form} and
+    \item
+    we greatly simplify the construction of the exterior tensor product
+        for Hilbert~C$^*$-modules over von Neumann algebras
+        in \sref{univprop-ext-tensor}
+        and show that its self-dual completion
+        is particularly well-behaved, see e.g.~\sref{ba-ext-tensor-pres}.
+\end{enumerate}
+We use this new insight into the exterior tensor product,
+    to compute the tensor product
+    of dilations, see \sref{paschke-tensor}.
+In the final part of this chapter we turn our attention to the maps
+    that occur on the right-hand side of the Paschke dilation.
+The main result of the last part of this chapter
+    is an equivalence between two seemingly unrelated notions of purity:
+    we show that an ncp-map~$\varphi$ is pure in the sense of \TODO{}
+    if and only if the map on the left-hand side of
+    the Paschke dilation of~$\varphi$ is surjective.
+This is a bridge to the final part of the next chapter,
+    in which we prove that these pure maps have a~$\dagger$-structure,
+    see \sref{dagger-theorem}.
 \end{point}
 \end{parsec}
 
@@ -2063,12 +2097,12 @@ to find~$ \| \sum_{e\in S}e \tau(e)^*\| \leq \|\tau\|$ as desired. \qed
 \end{point}
 \end{parsec}
 
+\subsection{Self-dual completion}
 \begin{parsec}%
 \begin{point}%
 We continue with a generalization of
 \sref{prop-complete-into-hilbert-space}
-to~Hilbert C$^*$-modules,
-
+to~Hilbert C$^*$-modules.
 \end{point}
 \begin{point}[dils-completion]{Theorem}%
 Let~$\scrB$ be a von Neumann algebra
@@ -3348,7 +3382,7 @@ We have all the tools to characterize neatly when
 This is a generalization of our answer\cite{stineinj}
     to the same question for the Stinespring embedding.
 \end{point}
-\begin{point}{Theorem}%
+\begin{point}[paschke-injective]{Theorem}%
 Let~$\varphi\colon \scrA \to \scrB$ be any ncp-map
     with Paschke dilation~$(\scrP, \varrho, h)$.
 Then $\ceil{\varrho} = \cceil{\varphi}$.
