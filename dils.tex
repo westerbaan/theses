@@ -922,6 +922,14 @@ Prove~$(\scrP, \varrho, \lambda h)$
     is a Paschke dilation of~$\lambda \varphi$.
 \end{enumerate}
 \end{point}
+\begin{point}{Example}%
+Later, in \sref{paschke-tensor}, we will see
+    that if~$(\scrP_i, \varrho_i, h_i)$
+    is a Paschke dilation of an ncp-map~$\varphi_i \colon \scrA_i \to \scrB_i$
+    for~$i=1,2$,
+    then~$(\scrP_1 \otimes \scrP_2, \varrho_1\otimes \varrho_2, h_1\otimes h_2)$
+    is a Paschke dilation of~$\varphi_1 \otimes \varphi_2$.
+\end{point}
 \end{parsec}
 
 \section{Hilbert C$^*$-modules}
@@ -5023,7 +5031,7 @@ as~$a_\alpha \to a$ ultrastrongly. \qed
 \end{parsec}
 
 \begin{parsec}%
-\begin{point}{Theorem}%
+\begin{point}[paschke-tensor]{Theorem}%
 Suppose~$\varphi_i \colon \scrA_i \to \scrB_i$
     is an ncp-map between von Neumann algebras
     with Paschke dilation~$(\scrP_i, \varrho_i, h_i)$
@@ -5049,12 +5057,16 @@ Then we show that~$
 (\scrA_1 \odot \scrA_2) \odot (\scrB_1 \odot \scrB_2) $
 is ultranorm dense in~$
 (\scrA_1 \otimes \scrA_2) \otimes_{\varphi_1\otimes \varphi_2} (\scrB_1 \otimes \scrB_2)$.
-Finally, we show that the natural bijection
+We continue and show that the natural bijection
 $(\scrA_1 \odot \scrB_1) \odot (\scrA_2 \odot \scrB_2) \cong
 (\scrA_1 \odot \scrA_2) \odot (\scrB_1 \odot \scrB_2) $
 preserves the induced inner products and
     so extends uniquely to an
-    isomorphism \eqref{tensor-of-paschke-dilation-spaces}.
+    isomorphism~\eqref{tensor-of-paschke-dilation-spaces}.
+Using this isomorphism,
+    we prove that the tensor product of the standard Paschke dilations
+    is a dilation of the tensor product.
+    From this, we finally derive the stated result.
 \begin{point}{Density}%
 By construction~$\scrA_1 \odot \scrB_1$ is an ultranorm dense submodule
     of~$\scrA_1 \otimes_{\varphi_1} \scrB_1$.
@@ -5133,6 +5145,98 @@ there is a unique nmiu-isomorphism
      (\scrA_2 \otimes_{\varphi_2} \scrB_2))
 \end{equation*}
     fixed by~$\vartheta(S \otimes T) = S \otimes T$.
+Let~$(\scrB^a((\scrA_1 \otimes \scrA_2) \otimes_{\varphi_1 \otimes \varphi_2} 
+        (\scrB_1 \otimes \scrB_2)), \varrho, h)$
+        and 
+    $(\scrB^a(\scrA_i \otimes_{\varphi_i} \scrB_i), \varrho_i, h_i)$
+    (for~$i=1,2$)
+    denote the Paschke dilations
+    of~$\varphi_1 \otimes \varphi_2$  and~$\varphi_i$
+    constructed in~\sref{existence-paschke}.
+\end{point}%
+\begin{point}%
+    Our next goal is to show
+    \begin{align}\label{tensorpaschkesecondgoal}
+    \ad_{U^*} \after \vartheta
+                \after (\varrho_1 \otimes \varrho_2) &= \varrho
+                & h \after \ad_{U^*} \after \vartheta 
+                       & = h_1 \otimes h_2,
+    \end{align}
+    which proves~$(
+        \scrB^a(\scrA_1 \otimes_{\varphi_1} \scrB_1)
+        \otimes \scrB^a(\scrA_2 \otimes_{\varphi_2} \scrB_2),
+        \varrho_1 \otimes \varrho_2,
+        h_1 \otimes h_2)$
+    is a Paschke dilation of~$\varphi_1 \otimes \varphi_2$.
+    We start with the equation on the left:
+\begin{align*}
+    &\bigl(\ad_{U^*} \after \vartheta \after  (\varrho_1 \otimes \varrho_2) (\alpha_1 \otimes \alpha_2)\bigr)
+    \, (a_1 \otimes a_2) \otimes (b_1 \otimes b_2) \\
+    &\qquad \ = \ 
+    \bigl(\ad_{U^*} \after \vartheta (\varrho_1 (\alpha_1)\otimes \varrho_2(\alpha_2)) \bigr)
+    \, (a_1 \otimes a_2) \otimes (b_1 \otimes b_2) \\
+    &\qquad \ = \ 
+    U \,(\varrho_1 (\alpha_1)\otimes \varrho_2(\alpha_2)) \, U^*
+    \, (a_1 \otimes a_2) \otimes (b_1 \otimes b_2) \\
+    &\qquad \ = \ 
+    U \,(\varrho_1 (\alpha_1)\otimes \varrho_2(\alpha_2)) 
+    \, (a_1 \otimes b_1) \otimes (a_2 \otimes b_2) \\
+    &\qquad \ = \ 
+    U \,  ((\alpha_1 a_1) \otimes b_1) \otimes ((\alpha_2 a_2) \otimes b_2) \\
+    &\qquad \ = \ 
+     ((\alpha_1 \otimes \alpha_2)\cdot (a_1 \otimes a_2)) \otimes (b_1 \otimes b_2) \\
+    &\qquad \ = \ 
+    \varrho(\alpha_1 \otimes\alpha_2) \,(a_1 \otimes a_2) \otimes (b_1 \otimes b_2).
+\end{align*}
+As the linear span of
+    elements of the form~$(a_1 \otimes a_2) \otimes (b_1 \otimes b_2)$
+    is ultranorm dense in~$(\scrA_1 \otimes \scrA_2)
+                            \otimes_{\varphi_1 \otimes \varphi_2}
+                            (\scrB_1 \otimes \scrB_2) $
+                (and bounded module maps are ultranorm continuous),
+    we see~$(\ad_{U^*} \after \vartheta \after (\varrho_1 \otimes \varrho_2))
+            (\alpha_1 \otimes \alpha_2)
+            = \varrho(\alpha_1 \otimes \alpha_2)$.
+In turn, as the linear span of elements of the form~$\alpha_1 \otimes \alpha_2$
+    is ultrastrongly dense in~$\scrA_1 \otimes \scrA_2$
+    and ncp-maps are ultrastrongly continuous,
+    we see~$\ad_{U^*} \after \vartheta \after (\varrho_1 \otimes \varrho_2) =
+        \varrho$.
+        We continue with the equation on the right
+        of~\eqref{tensorpaschkesecondgoal}.
+\begin{align*}
+    (h \after \ad_{U^*} \after \vartheta) (T \otimes S)
+        & \ = \ \langle (1 \otimes 1) \otimes (1 \otimes 1),
+                        \ U\, (T \otimes S)\, U^*(1 \otimes 1) \otimes (1 \otimes 1)
+                        \rangle \\
+        & \ = \ \langle U^* \,(1 \otimes 1) \otimes (1 \otimes 1),
+                        \  (T \otimes S)\, U^*(1 \otimes 1) \otimes (1 \otimes 1)
+                        \rangle \\
+        & \ = \ \langle (1 \otimes 1) \otimes (1 \otimes 1),
+                        \  (T \otimes S)\, (1 \otimes 1) \otimes (1 \otimes 1)
+                        \rangle \\
+        & \ = \
+        \langle 1 \otimes 1, \,T\, 1\otimes 1\rangle \,\otimes\,
+        \langle 1 \otimes 1, \,S\, 1\otimes 1\rangle \\
+        & \ = \
+        h_1(T) \otimes h_2(S) \\
+        & \ = \
+        (h_1\otimes h_2)(T \otimes S)
+\end{align*}
+Again, by ultrastrong denseness this
+is sufficient to show~$h \after \ad_{U^*} \after \vartheta = h_1 \otimes h_2$.
+\end{point}
+\begin{point}%
+Assume that~$(\scrP_i, \varrho_i', h_i')$
+    is any (other) Paschke dilation of~$\varphi_i$ (for~$i=1,2$).
+Then there are isomorphisms~$\beta_1,\beta_2$
+    with~$\beta_i \after \varrho_i = \varrho_i'$
+    and~$h_i' \after \beta_i = h_i$.
+So~$\varrho'_1 \otimes \varrho'_2
+        = (\beta_1 \otimes \beta_2) \after (\varrho_1 \otimes \varrho_2)$
+        and~$(h_1' \otimes h_2') \after (\beta_1 \otimes \beta_2) = h_1 \otimes h_2$.
+As~$\beta_1 \otimes \beta_2$ is an isomorphism,
+    the previous shows that~$(\scrP_1 \otimes \scrP_2, \varrho_1' \otimes \varrho_2', h_1' \otimes h_2')$ is also a Paschke dilation of~$\varphi_1 \otimes \varphi_2$. \qed
 \end{point}
 \end{point}
 \end{point}
