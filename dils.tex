@@ -7,24 +7,24 @@
 
 \begin{parsec}[dils-intro]%
 \begin{point}%
-In this chapter we will study various dilation theorems.
+In this chapter we will study dilations.
 The common theme is that a complicated map
     is actually the composition of a simpler map
     after a representation into a larger algebra.
 We already saw a dilation theorem in disguise:
     using the Gel'fand--Naimark--Segal construction (see \sref{gns})
-    one shows every state is a vector state on a larger algebra:
+    one shows that every state is a vector state on a larger algebra:
 \end{point}
 \begin{point}[dils-gns]{Exercise (GNS')}%
     Show that
     for each pu-map~$\omega\colon \scrA \to \C$
-        from a~C$^*$-algebra~$\scrA$
+        from a~C$^*$-algebra~$\scrA$,
     there is a Hilbert space~$\scrH$,
     a miu-map~$\varrho\colon \scrA \to \scrB(\scrH)$
-    and vector~$x \in \scrH$
+    and a vector~$x \in \scrH$
     such that~$\omega = h \after \varrho$
     where~$h \colon \scrB(\scrH) \to \C$
-    is given by~$h(T) = \left<x,Tx\right>$.
+    is given by~$h(T) \equiv \left<x,Tx\right>$.
 \end{point}
 
 \begin{point}%
@@ -33,7 +33,7 @@ of Stinespring\cite[Thm.~1]{stinespring}.
 \end{point}
 
 \begin{point}[stinespring-theorem]{Theorem (Stinespring)}
-    For every cp-map~$\varphi\colon \scrA \to \scrB (\scrH)$
+    For every cp-map~$\varphi\colon \scrA \to \scrB (\scrH)$,
     there is a Hilbert space~$\scrK$,
         miu-map~$\varrho\colon \scrA \to \scrB(\scrK)$
         and bounded operator~$V\colon \scrH \to \scrK$
@@ -47,12 +47,12 @@ Furthermore:
     if~$\varphi$ is normal, then~$\varrho$ is also normal \emph{and}
 \item
     if~$\varphi$ is unital, then~$V$ is an isometry
-        (or equivalently~$\ad_V$ is unital).
+        (or equivalently:~$\ad_V$ is unital).
 \end{inparaenum}
 \end{point}
 
 \begin{point}%
-(We will see a detailed proof later in \sref{dils-proof-stinespring}.)
+(We will see a detailed proof later, in \sref{dils-proof-stinespring}.)
 Stinespring's theorem
 is fundamental in the study
 of quantum information and quantum computing:
@@ -60,7 +60,7 @@ it is used to prove entropy inequalities (e.g.~\cite{lindblad}),
 bounds on optimal cloners (e.g.~\cite{werner}),
 full completeness of quantum programming languages (e.g.~\cite{staton}),
 security of quantum key distribution (e.g.~\cite{werner2,kissinger2017picture}),
-analyze quantum alternation (e.g.~\cite{prakash}),
+to analyze quantum alternation (e.g.~\cite{prakash}),
 to categorify quantum processes (e.g.~\cite{selinger}) \emph{and}
 as an axiom to single out
 quantum theory among information processing theories.\cite{chiribella}
@@ -69,11 +69,11 @@ is a formidable task out of scope of this text.
 
 Stinespring's theorem only applies
 to maps of the form~$\scrA \to \scrB(\scrH)$
-    and so do most of its usefull consequences.
+    and so do most of its useful consequences.
 One wonders:
     is there an extension of Stinespring's theorem
     to arbitrary ncp-maps~$\scrA \to \scrB$?
-A different and less common question might be:
+A different and perhaps less frequently asked question is:
     is Stinespring's dilation categorical in some way?
 That is: does it have a defining universal property?
 Both questions turn out to have an affirmative answer:
@@ -82,8 +82,8 @@ Paschke's generalization of GNS for Hilbert C$^*$-modules\cite{paschke}
         as Stinespring's dilation and so it extends Stinespring
         to arbitrary ncp-maps.
 
-We start of this chapter with a detailed proof of Stinespring's theorem.
-We continue to show it obeys a universal property.
+We start this chapter with a detailed proof of Stinespring's theorem.
+Then we show it obeys a universal property.
 Before we move on to Paschke's GNS,
     we need to develop Paschke's theory of self-dual Hilbert C$^*$-modules.
 Paschke's work builds on Sakai's characterization of von Neumann algebras,
@@ -103,7 +103,7 @@ We start the second part of this chapter
     by characterizing when the representation in the Paschke dilation
     of an ncp-map is injective (see \sref{paschke-injective}),
     which is a generalization of our answer \cite{stineinj}
-    to the same question about the Stinespring representation.
+    to the same question about the Stinespring dilation.
 Then we allow for an intermezzo
     to prove several new results on (self-dual) Hilbert C$^*$-modules,
     notably:
@@ -130,11 +130,12 @@ In the final part of this chapter we turn our attention to the maps
     that occur on the right-hand side of the Paschke dilation.
 The main result of the last part of this chapter
     is an equivalence between two seemingly unrelated notions of purity:
-    we show that an ncp-map~$\varphi$ is pure in the sense of \TODO{}
+    we show that an ncp-map~$\varphi$ is pure in the sense of \sref{pure}
     if and only if the map on the left-hand side of
     the Paschke dilation of~$\varphi$ is surjective.
-This is a bridge to the final part of the next chapter,
-    in which we prove that these pure maps have a~$\dagger$-structure,
+This is a bridge to the next chapter,
+    in which we prove in greater generality,
+    that these pure maps have a~$\dagger$-structure,
     see \sref{dagger-theorem}.
 \end{point}
 \end{parsec}
@@ -199,13 +200,14 @@ The set~$\scrH$ is a metric space with the standard
 To show it's complete, assume
 $v^1, v^2, \ldots$
 is a fast Cauchy sequence of fast Cauchy sequences.
-Assume~$n,m,k \geq N$.  We have
+We will show~$(v_n^n)_n$ is a Cauchy sequence.
+Assume~$n,m,k \geq N$ for some~$N$.  We have
 \begin{equation*}
     \| v^n_n - v^m_m \|
-        \leq
-    \| v^n_n - v^n_k \| +
-    \| v^n_k - v^m_k \| +
-    \| v^m_k - v^m_m \| \leq
+       \  \leq \ 
+    \| v^n_n - v^n_k \| \,+\,
+    \| v^n_k - v^m_k \| \,+\,
+    \| v^m_k - v^m_m \|\  \leq \ 
     \| v^n_k - v^m_k \|+ \frac{2}{2^N}.
 \end{equation*}
 Because~$\lim_{k\to\infty} \|v_k^n-v_k^m \| =d(v^n,v^m) \leq 2^{-N}$
@@ -309,7 +311,7 @@ Write~$\scrA \odot \scrH$ for the tensor product of~$\scrA$ and~$\scrH$
 By linear extension,
 the following fixes a sesquilinear form on~$\scrA \odot \scrH$:
 \begin{equation*}
-    [a\otimes x, b \otimes y] = \left<x, \varphi(a^*b)y\right>_{\scrH}.
+    [a\otimes x,\, b \otimes y] \ \equiv\  \left<x, \,\varphi(a^*b)\, y\right>_{\scrH}.
 \end{equation*}
 As~$\varphi$ preserves involution as a positive map,
 see \sref{cstar-p-implies-i}, this is also a symmetric form, i.e.: $[t,s]=\overline{[s,t]}$.
@@ -318,22 +320,21 @@ is an arbitrary element of~$A \odot \scrH$.
 To see $[\,\cdot\,,\,\cdot\,]$ is positive,
 we need to show
 \begin{equation*}
-    0 \leq \bigl[\sum_i a_i\otimes x_i, \sum_j a_j\otimes x_j\bigr]
-        = \sum_{i,j} [a_i\otimes x_i, a_j\otimes x_j]
-        = \sum_{i,j} \left< x_i, \varphi(a_i^*a_j) x_j \right>.
+    0 \ \leq\  \bigl[\sum_i a_i\otimes x_i, \sum_j a_j\otimes x_j\bigr]
+        \ \equiv\  \sum_{i,j} \left< x_i, \varphi(a_i^*a_j) x_j \right>.
 \end{equation*}
-The matrix algebra~$M_n\scrB(\scrH)$
-acts on~$\scrH^{\oplus n}$
-as~$(A (x_1,\ldots,x_n)^\T)_i = \sum_j A_{ij} x_j$.
-(In fact, this gives an
+The trick is to consider the matrix algebra~$M_n\scrB(\scrH)$
+acting on~$\scrH^{\oplus n}$ in the obvious way:
+$(A (x_1,\ldots,x_n)^\T)_i \equiv \sum_j A_{ij} x_j$.
+(In fact, this yields an
     isomorphism~$M_n\scrB(\scrH) \cong \scrB(\scrH^{\oplus n})$.)
-Writing~$x$ for the vector~$(x_1,\ldots,x_n)^\T$ in~$\scrH^{\oplus n}$,
+Writing~$x$ for~$(x_1,\ldots,x_n)^\T$ in~$\scrH^{\oplus n}$,
     we get
 \begin{equation}\label{eq-stinespring-norm-tensor}
-    \sum_{i,j} \left< x_i, \varphi(a_i^*a_j) x_j \right>
-    = \bigl<
+    \sum_{i,j} \left< x_i, \,\varphi(a_i^*a_j)\, x_j \right>
+    \ =\  \bigl<
     x,
-    (M_n\varphi) \bigl(\, (a_i^*a_j)_{ij} \, \bigr)\,
+    (M_n\varphi) \,\bigl(\, (a_i^*a_j)_{ij} \, \bigr)\,
     x \bigr>_{\scrH^{\oplus n}}.
 \end{equation}
 The matrix~$(a_i^*a_j)_{ij}$
@@ -342,14 +343,16 @@ is positive as~$(C^*C)_{ij} = a_i^*a_j$
     By complete positivity~$M_n\varphi(\,(a_i^*a_j)_{ij}\,)$ is positive
     and so is~\eqref{eq-stinespring-norm-tensor},
     hence~$[\,\cdot\,,\,\cdot\,]$ is an inner product.
-Write~$\eta\colon A\odot \scrH \to \scrK$ for the Hilbert space completion
+Write~$\eta\colon \scrA\odot \scrH \to \scrK$ for the Hilbert space completion
+    of~$\scrA \odot \scrH$ with the inner product
     described in~\sref{prop-complete-into-hilbert-space}.
 \begin{point}[stinespring-extend-operator]%
+We need a lemma before we continue.
 Let~$T\colon A \odot \scrH \to A \odot \scrH$
 be a bouned linear map.
 We show there is an extension~$\hat{T} \colon \scrK \to \scrK$.
-The operator $T$
-uniformly continuous and so is~$\eta\after T \colon A\odot\scrH \to\scrK$.
+The operator~$T$ is
+uniformly continuous and so is~$\eta\after T \colon \scrA\odot\scrH \to\scrK$.
 Thus by \sref{prop-hilbert-space-completion-extension}
 there is a unique continuous extension~$\hat{T} \colon \scrK \to \scrK$
 with~$\hat{T}(\eta(t)) = \eta(T(t))$
@@ -369,7 +372,10 @@ indeed~$\hat{T}\hat{S} \eta(t)
 \begin{point}%
     Assume~$b\in \scrA$.
     Let~$\varrho_0(b)$ be the operator on~$\scrA \otimes \scrH$
-    fixed by~$\varrho_0(b) a\otimes x = (b a) \otimes x$.
+    fixed by
+\begin{equation*}
+    \varrho_0(b)\, a\otimes x\, \  \equiv\  (b a) \otimes x.
+\end{equation*}
 Clearly $\varrho_0$ is linear, unital and multiplicative.
 We want to show~$\varrho_0(b)$ is bounded for fixed~$b \in \scrA$.
 To show this, we claim that in~$M_n\scrB(\scrH)$
@@ -383,9 +389,9 @@ and get the claimed inequality with which
 \begin{equation*}
     \begin{split}
     \bigl\| \sum_i (ba_i) \otimes x_i \bigr\|^2
-    & = \bigl< x, (M_n\varphi)(\, (a_i^* b^*b a_j)_{ij}\,)x\bigr> \\
-    &\leq \|b\|^2 \bigl< x, (M_n\varphi)(\, (a_i^* a_j)_{ij}\,)x\bigr>
-    = \|b\|^2 \bigl\| \sum_i a_i \otimes x_i \bigr\|^2
+    & \ =\  \bigl< x, (M_n\varphi)(\, (a_i^* b^*b a_j)_{ij}\,)\,x\bigr> \\
+    &\ \leq\  \|b\|^2 \bigl< x, (M_n\varphi)(\, (a_i^* a_j)_{ij}\,) \, x\bigr>
+    \ =\  \|b\|^2 \bigl\| \sum_i a_i \otimes x_i \bigr\|^2
     \end{split}
 \end{equation*}
 and so~$\varrho_0(b)$ is bounded.
@@ -400,9 +406,9 @@ Indeed, for every~$a,b \in \scrA$ and~$x,y \in \scrH$
     we have
     \begin{equation*}
         [\varrho_0(c^*) \, a\otimes x,b \otimes y]
-        = [(c^* a)\otimes x,b \otimes y]
-        = \left<x, \varphi(a^*cb) y \right>
-        = [a\otimes x,\varrho_0(c)\, b \otimes y].
+        \ =\  [(c^* a)\otimes x,b \otimes y]
+        \ =\  \left<x, \varphi(a^*cb) y \right>
+        \ =\  [a\otimes x,\varrho_0(c)\, b \otimes y].
     \end{equation*}
 Hence~$
     \left<\varrho(c^*) \eta(a\otimes x), \eta(b\otimes y)\right>=
@@ -413,21 +419,28 @@ Hence~$
 \begin{point}%
     Let~$V_0 \colon \scrH \to \scrA \odot \scrH$
         be given by~$V_0 x = 1 \otimes x$.
-        It's bounded: $\| V_0 x\| = \left<x, \varphi(1^*1) x\right>^{\frac{1}{2}}
-        = \|\sqrt{\varphi(1)} x\| \leq \|\sqrt{\varphi(1)}\| \|x\|$.
+        This operator~$V_0$ bounded:
+\begin{equation*}
+        \| V_0 x\|\  =\  \left<x, \varphi(1^*1) x\right>^{\frac{1}{2}}
+        \ =\  \|\sqrt{\varphi(1)} x\| \ \leq \ \|\sqrt{\varphi(1)}\| \|x\|.
+\end{equation*}
     Define~$V \equiv \eta \after V_0$.
-    For all~$a \in \scrA$ and~$x,y \in \scrH$ we have
-            $[a \otimes x, V_0 y]
-            = \left<x, \varphi(a^*)y\right>
-            = \left<x, \varphi(a)^*y\right>
-            = \left<\varphi(a) x, y\right>$.
-    Thus~$V^*$ satisfies~$V^* \eta(a \otimes x) = \varphi(a)x$.
-    Hence for all~$a \in \scrA$ and~$x \in \scrH$:
-    $V^* \varrho(a) V x = V^* \varrho(a) \eta(1 \otimes x)
-        = V^* \eta(a\otimes x)
-        = \varphi(a)x$.
-        So~$\ad_V \after \varrho = \varphi$.
-
+    For all~$a \in \scrA$ and~$x,y \in \scrH$, we have
+\begin{equation*}
+            [a \otimes x, V_0 y]
+          \  =\ \left<x, \varphi(a^*)y\right>
+          \  =\ \left<x, \varphi(a)^*y\right>
+          \  =\ \left<\varphi(a) x, y\right>
+\end{equation*}
+    and so~$V^*$ satisfies~$V^* \eta(a \otimes x) = \varphi(a)x$.
+    Hence for all~$a \in \scrA$ and~$x \in \scrH$
+\begin{equation*}
+    V^* \varrho(a) V x
+        \ =\  V^* \varrho(a) \eta(1 \otimes x)
+        \ =\  V^* \eta(a\otimes x)
+        \ =\  \varphi(a)x.
+\end{equation*}
+We have shown~$\ad_V \after \varrho = \varphi$.
     If~$\varphi$ is unital,
     then~$V^*Vx = V^* (1\otimes x) = \varphi(1)x=x$
         for all~$x \in \scrH$ and so~$V$ is an isometry.
@@ -436,12 +449,14 @@ Hence~$
 \begin{point}%
     It remains to be shown that~$\varrho$
         is normal when~$\varphi$ is.
-    Assume~$D \subseteq \scrA$ is a bounded directed
+        So assume~$\varphi $ is normal
+        and~$D \subseteq \scrA$ is a bounded directed
     set of self adjoint elements.
     We need to show~$\sup_{d \in D} \varrho (d) = \varrho(\sup D)$.
     Let~$t$ be in the image of~$\eta$.
-    It is sufficient to show~$\left<t, \varrho(\sup D) t\right>
-        = \left<t, \sup_{d \in D} \varrho(d)t\right>$.
+    By density of the image of~$\eta$,
+    it  is sufficient to show~$\left<t, \varrho(\sup D) t\,\right>
+        = \left<t, \sup_{d \in D} \varrho(d)\,t\right>$.
     We have~$t = \sum_{i=1}^n a_i \otimes x_i$
         for some~$n \in \N$, $a_1, \ldots, a_n \in \scrA$
             and~$x_1,\ldots, x_n \in \scrH$.
@@ -450,16 +465,16 @@ Hence~$
     Then
     \begin{align*}
         \left<t, \varrho(\sup D) t\right>
-        &= \bigl< x, (M_n\varphi)\bigl(\, ( a_i^* (\sup D) a_j)_{ij} \,\bigr) x \bigr>_{\scrH^{\oplus n}} \\
-        &= \sup_{d\in D} \bigl< x, (M_n\varphi)\bigl(\, ( a_i^* d a_j)_{ij} \,\bigr) x \bigr>_{\scrH^{\oplus n}}\\
-        & = \sup_{d\in D} \left<t, \varrho(d)t\right>
-            = \bigl<t, \sup_{d \in D} \varrho(d) t\bigr>.
+        &\ =\  \bigl< x, (M_n\varphi)\bigl(\, ( a_i^* (\sup D) a_j)_{ij} \,\bigr) x \bigr>_{\scrH^{\oplus n}} \\
+        &\ =\  \sup_{d\in D} \bigl< x, (M_n\varphi)\bigl(\, ( a_i^* d a_j)_{ij} \,\bigr) x \bigr>_{\scrH^{\oplus n}}\\
+        & \ =\  \sup_{d\in D} \left<t, \varrho(d)t\right>
+            \ =\  \bigl<t, \sup_{d \in D} \varrho(d) t\bigr>.
     \end{align*}
     Here we used that~$\left<x, (\,\cdot\,)x\right>$,
         $M_n\varphi$ and 
-    $d \mapsto (a_i^*da_j)_{ij}$ are normal.
-    The first is normal by~\sref{hilb-suprema}.
-    \TODO{}
+    $d \mapsto (a_i^*da_j)_{ij}$ are all normal.
+    The first is normal by~\sref{hilb-suprema}
+        and the second by~\sref{mn-vna}.
     At the moment it will be a bit tricky to show~$(a_i^*da_j)_{ij}$
     is normal.  Later, in \sref{hilbmod-adj-vector-ncp}, we will have a simpler argument.
     Define~$C_{ij} = \frac{1}{\sqrt{n}} a_j$
@@ -490,7 +505,7 @@ Hence~$
         and so~$\Delta$ is normal.\qed
 \end{point}
 \end{point}
-\begin{point}%
+\begin{point}{Remark}%
 Stinespring's theorem generalizes GNS.
 It seems tempting to directly prove Stinespring instead of GNS ---
 however, we used GNS in the proof of Stinespring theorem to show
@@ -509,14 +524,14 @@ As preparation we study the nmiu-maps between type I von Neumann algebras.
 \end{point}
 \begin{point}[nmiu-between-type-I]{Exercise}%
 Let~$\varrho\colon \scrB(\scrH) \to \scrB(\scrK)$    
-be a non-zero nmiu-map for non-trivial Hilbert spaces~$\scrH$ and~$\scrK$.
+be a non-zero nmiu-map for Hilbert spaces~$\scrH$ and~$\scrK$.
 In this exercise we will show
     there is a Hilbert space~$\scrK'$
     and a unitary~$U\colon \scrK \to \scrH \otimes \scrK'$
     such that~$\varrho(a) = U^* (a\otimes 1) U $.
 
-Show the kernel of~$\varrho$
-    is a ultraweakly-closed two-sided ideal.
+Show that the kernel of~$\varrho$
+    is an ultraweakly-closed two-sided ideal.
 Use \sref{prop:weakly-closed-ideal}
     to conclude~$\varrho$ is injective.
 
@@ -539,6 +554,11 @@ Conclude~$U^* e_i \otimes f_j = r_{i,j}$
     fixes a unitary
     $U\colon \scrK \to \scrH \otimes \scrK'$
     with~$\varrho(a) = U^* (a\otimes 1) U $.
+\begin{point}[typei-inner-auto]{Corollary}%
+The nmiu-isomorphisms~$\scrB(\scrH) \to \scrB(\scrK)$
+    are precisely of the form~$\ad_U$
+    for some unitary~$U\colon \scrK \to \scrH$.
+\end{point}
 \end{point}
 \begin{point}[physics-stinespring]{Exercise}%
 Use \sref{nmiu-between-type-I} and~\sref{stinespring-theorem} to show
@@ -547,8 +567,10 @@ Use \sref{nmiu-between-type-I} and~\sref{stinespring-theorem} to show
     and a bounded operator~$V\colon \scrK \to \scrH \otimes \scrK'$
     such that~$\varphi(a) = V^* (a \otimes 1)V$.
 
-Conclude using \TODO{CPTP notation}
-that~$\Phi(\varrho) = \TR_{\scrK'} [U^* \varrho \otimes \ketbra{v_0}{v_0} U]$.
+    Conclude that any CPTP superoperator \TODO{ref}~$
+        \Phi \colon \scrB(\scrK) \to \scrB(\scrH)$
+        is of the
+        form~$\Phi(\varrho) = \TR_{\scrK'} [U^* \varrho \otimes \ketbra{v_0}{v_0} U]$.
 \end{point}
 \begin{point}{Exercise (Kraus' decomposition)}%
 Assume~$\varphi \colon \scrB(\scrH) \to \scrB(\scrK)$
@@ -562,15 +584,15 @@ Show~$\varphi(a) = \sum_{i \in I} V^* (a \otimes \ketbra{e_i}{e_i}) V$,
 where the sum converges ultraweakly.
 Deduce there are projectors~$P_i \colon \scrH \otimes \scrK' \to \scrH$
 with~$\varphi(a) = \sum_{i \in I} V^*P_i^* a P_iV$.
-Conclude all ncp-maps
+Conclude all ncp-maps~$\varphi\colon \scrB(\scrH) \to \scrB(\scrK)$
 are of the form~$\varphi(a) = \sum_{i \in I} V_i^* a V_i$
-where~$V_i\colon \scrK \to \scrH$ are bounded operators
-such that the partial sums of~$\sum_i V_i^*V_i$ are bounded.
+for some bounded operators~$V_i\colon \scrK \to \scrH$,
+for which the partial sums of~$\sum_i V_i^*V_i$ are bounded.
 These~$V_i$ are called \Define{Kraus operators} for~$\varphi$.
 
 Now assume~$\scrH$ and~$\scrK$ are finite dimensional,
     say~$\dim \scrH = n$ and~$\dim \scrK = m$.
-Show that in this case~$\dim \scrK' = nm$ Kraus operators suffice.
+Show that in this case~$\dim \scrK' = n\cdot m$ Kraus operators suffice.
 \end{point}
 \end{parsec}
 
@@ -583,12 +605,13 @@ A \Define{normal Stinespring dilation}
     with~$\scrK$ a Hilbert space,
     $\varrho\colon \scrA \to \scrB(\scrK)$ a nmiu-map
         (i.e.~normal representation)
-        and~$V\colon \scrH \to \scrK$ a bounded linear map
-        with~$\varphi = \ad_V \after \varrho$.
+        and~$V\colon \scrH \to \scrK$ a bounded operator
+        such that~$\varphi$ decomposes as~$\varphi = \ad_V \after \varrho$.
 We just saw every~$\varphi$ has a normal Stinespring dilation.
-If the linear span of~$\{ \varrho(a) Vx; \ a \in \scrA,\ x\in \scrH\}$
-is dense in~$\scrK$
-then the Stinespring dilation $(\scrK,\varrho,V)$ is said to be \Define{minimal}.
+A Stinespring dilation
+$(\scrK,\varrho,V)$ is said to be \Define{minimal}
+if the linear span of~$\{ \,\varrho(a) Vx; \ a \in \scrA,\ x\in \scrH\,\}$
+is dense in~$\scrK$.
 Every Stinespring dilation of~$\varphi$ can be restricted to a minimal one
     for~$\varphi$.
 \end{point}
@@ -611,11 +634,12 @@ $\xymatrix{\mathscr{A} \ar[r]^\varrho \ar[rd]_{\varrho'}&
 \begin{point}[dils-univlemma]{Lemma}%
 Let~$\varrho\colon \scrA \to \scrB$ and~$\varrho'\colon \scrA \to \scrC$
     be nmiu-maps between von Neumann algebras,
-        and let~$\sigma \colon \scrC \to \scrB$ be a ncp-map
-        such that~$\sigma \after \varrho' = \varrho$.\\
-Then~$\sigma(\varrho'(a_1)c \varrho'(a_2)) =  \varrho(a_1) \sigma(c) \varrho(a_2)$
+        and let~$\sigma \colon \scrC \to \scrB$ be an ncp-map
+        such that~$\sigma \after \varrho' = \varrho$. Then
+\begin{equation*}
+\sigma(\varrho'(a_1)\,c\, \varrho'(a_2)) \ =\   \varrho(a_1) \,\sigma(c) \,\varrho(a_2)
+\end{equation*}
     for all~$a_1,a_2 \in \scrA$ and~$c \in \scrC$.
-
 \begin{point}{Proof}%
 By Theorem 3.1 of \cite{choi} (see \sref{choi}),
 we know that for all~$c,d\in\scrC$:
@@ -623,21 +647,27 @@ we know that for all~$c,d\in\scrC$:
     \sigma(d^*d) = \sigma(d)^*\sigma(d) \quad \implies \quad
     \sigma(cd) = \sigma(c)\sigma(d).\label{dils-eq-choi}
 \end{equation}
-Let~$a \in \scrA$.
-We have~$\sigma(\varrho'(a)^* \varrho'(a))
-    = \sigma(\varrho'(a^*a))
-    = \varrho(a^*a)
-    = \varrho(a)^*\varrho(a)
-    = \sigma(\varrho'(a))^*\sigma(\varrho'(a))$.
-By \eqref{dils-eq-choi},
+We can apply this on~$\varrho'(a)^*\varrho'(a)$
+with~$a \in \scrA$ --- indeed we have
+\begin{equation*}
+\sigma(\varrho'(a)^* \varrho'(a))
+  \   =\ \sigma(\varrho'(a^*a))
+  \  =\ \varrho(a^*a)
+  \  =\ \varrho(a)^*\varrho(a)
+  \  =\ \sigma(\varrho'(a))^*\sigma(\varrho'(a))
+\end{equation*}
+and so by~\eqref{dils-eq-choi},
     we have~$\sigma(c\varrho'(a)))
         = \sigma(c)\sigma(\varrho'(a)) = \sigma(c)\varrho(a)$
         for all~$c \in \scrC$.
 Thus also (taking adjoints):
 $\sigma(\varrho'(a)c) = \varrho(a)\sigma(c)$ for all~$c \in \scrC$.
-Hence~$\sigma(\varrho'(a_1)c\varrho'(a_2))
-            = \varrho(a_1)\sigma(c \varrho'(a_2))
-            = \varrho(a_1) \sigma(c) \varrho(a_2)$
+Hence
+\begin{equation*}
+\sigma(\varrho'(a_1)c\varrho'(a_2))
+            \ =\  \varrho(a_1)\sigma(c \varrho'(a_2))
+            \ =\  \varrho(a_1) \sigma(c) \varrho(a_2)
+\end{equation*}
     for all~$a_1,a_2 \in \scrA$ and~$c\in \scrC$ as desired.\qed
 \end{point}
 \end{point}
@@ -656,11 +686,11 @@ and~$\varrho = 0$.  Thus the unique linear map~$S\colon \{0\} \to \scrK'$
 satisfies the requirements.  Assume~$V \neq 0$.
 \begin{point}{Uniqueness}%
 Let~$S_1,S_2\colon \scrK \to \scrK'$
-be any isometries with~$S_k V = V'$ and~$\ad_{S_k} \after \varrho' = \varrho$
-for~$k \in \{1,2\}$.
+be any isometries for which~$S_k V = V'$ and~$\ad_{S_k} \after \varrho' = \varrho$
+for~$k =1,2$.
 We want to show~$S_1=S_2$.
 For all finite tuples~$(a_i)_i$, $(\alpha_i)_i$ from~$\scrA$;
-    $(x_i)_i$, $(y_i)_i$ from~$\scrH$ \emph{and} $c \in \scrB(\scrK')$
+    $(x_i)_i$, $(y_i)_i$ from~$\scrH$ \emph{and} $c \in \scrB(\scrK')$,
     we have
 \begin{align*}
     \bigl< \ad_{S_k}(c)
@@ -678,10 +708,11 @@ For all finite tuples~$(a_i)_i$, $(\alpha_i)_i$ from~$\scrA$;
 \end{align*}
 As the linear span of~$\varrho(\scrA) V\scrH$ is dense in~$\scrK$
     we see~$\ad_{S_1} = \ad_{S_2}$.
-Thus $\lambda S_1= S_2$ for some~$\lambda \in \C$ by \TODO{}.
+Thus $\lambda S_1= S_2$ for some~$\lambda \in \C$,
+cf.~\cite[Lemma 9]{westerbaan2016universal}.
 As~$V \neq 0$, there is an~$x \in \scrH$ with~$Vx \neq 0$.
 Then~$S_1 V x = V'x = S_2Vx = \lambda S_1 Vx$, so~$\lambda=1$.
-Hence~$S_1=S_2$, as desired.
+Hence~$S_1=S_2$.
 \end{point}
 \begin{point}{Existence}%
 For any tuple~$(a_i)_i$ in~$\scrA$ and~$(x_i)_i \in \scrH$, we have
@@ -694,20 +725,20 @@ For any tuple~$(a_i)_i$ in~$\scrA$ and~$(x_i)_i \in \scrH$, we have
 Thus there is a unique isometry~$S\colon \scrK \to \scrK'$
     such that~$S\varrho(a) Vx = \varrho'(a)V' x$
         for all~$a\in \scrA$ and~$x \in\scrH$.
-As~$SVx = S\varrho(1)Vx=\varrho'(1)V'x = V'x$ for all~$x\in \scrH$
+As~$SVx = S\varrho(1)Vx=\varrho'(1)V'x = V'x$ for all~$x\in \scrH$,
     we have~$SV = V'$.
 Furthermore, for all~$(x_i)_i$ in~$\scrH$;
     $(a_i)_i$ and~$a$ in~$\scrA$
 we have
 \begin{align*}
     S \varrho(a) \sum_i \varrho(a_i)Vx_i
-    &= \sum_i S \varrho(aa_i) Vx_i \\
-    &= \sum_i \varrho'(aa_i) V'x_i \\
-    & = \varrho'(a) \sum_i \varrho'(a_i)V'x_i\\
-    & = \varrho'(a) S \sum_i \varrho(a_i)V x_i.
+    &\ =\  \sum_i S \varrho(aa_i) Vx_i \\
+    &\ =\  \sum_i \varrho'(aa_i) V'x_i \\
+    &\  =\ \varrho'(a) \sum_i \varrho'(a_i)V'x_i\\
+    &\ =\ \varrho'(a) S \sum_i \varrho(a_i)V x_i.
 \end{align*}
 Again as the linear span of~$\varrho(\scrA)V\scrH$
-    is dense in~$\scrK$
+    is dense in~$\scrK$,
     we find~$S \varrho(a) = \varrho'(a)S$.
 Thus $S^* \varrho'(a) S = S^*S\varrho(a) = \varrho(a)$
     and so~$\ad_S \after \varrho' = \varrho$. \qed
@@ -745,8 +776,8 @@ Show using~\sref{dils-univ-stinespring}
     Let~$\varphi \colon \scrB(\scrH) \to \scrB(\scrK)$
         be any ncp-map.
     By~\sref{physics-stinespring}
-    here is a Hilbert~$\scrK'$
-        and bounded operators~$V\colon \scrK \to \scrH \otimes \scrK'$
+    here is a Hilbert space~$\scrK'$
+        and bounded operator~$V\colon \scrK \to \scrH \otimes \scrK'$
         such that~$V^* (a\otimes 1) V = \varphi(a)$.
     Assume there is another bounded operator
         $W\colon \scrK \to \scrH \otimes \scrK'$
@@ -761,18 +792,18 @@ Show using~\sref{dils-univ-stinespring}
         with~$V = U_0 W$ and~$(a \otimes 1) U_0 = U_0 (a \otimes 1)$
             for all~$a \in \scrB(\scrH)$.
     Derive from the latter
-    that for each~$y \in \scrK'$ and rank-one projector~$e \in \scrH$
+    that for each~$y \in \scrK'$ and rank-one projector~$e \in \scrH$,
         there is a~$y' \in \scrK'$
         with~$U_0 (e \otimes y) = e \otimes y'$.
     Conclude~$U_0 = 1 \otimes U$ for some unitary~$U$ on~$\scrK'$.
-    Show the general case follows from when the dilations are minimal.
+    Show  that the general case follows from the special case that the dilations are minimal.
 \end{point}
 \end{parsec}
 \begin{parsec}%
 \begin{point}%
     We are ready to state the universal
         property that Stinepspring's dilation satisfies,
-        which we will use to generalize it to arbitrary maps ncp-maps.
+        which we will use to generalize it to arbitrary ncp-maps.
 \end{point}
 \parpic[r]{
 $\xymatrix@C=2.5em@R=2em{
@@ -828,7 +859,7 @@ Let~$\varphi\colon \scrA \to \scrB(\scrH)$
 Let~$\scrP'$ be any von Neumann algebra
     together with nmiu-map~$\varrho'\colon \scrA \to \scrP'$
     and ncp-map~$h'\colon \scrP' \to \scrB(\scrH)$
-    such that~$h' \after \varrho' = \varphi$.
+    for which it holds that~$h' \after \varrho' = \varphi$.
 We must show that there is a unique
     ncp-map~$\sigma\colon \scrP' \to \scrB(\scrK)$
     with~$\sigma \after \varrho' = \varrho$
@@ -837,7 +868,7 @@ We must show that there is a unique
 \begin{point}{Uniqueness}%
     Let~$\sigma_1,\sigma_2\colon \scrP' \to \scrB(\scrH)$
         be two such ncp-maps.
-    Similar to the uniqueness argument in \sref{dils-univ-stinespring}
+    Similar to the uniqueness argument in \sref{dils-univ-stinespring},
     we compute
         that for all finite tuples~$(a_i)_i$, $(\alpha_i)_i$ from~$\scrA$;
     $(x_i)_i$, $(y_i)_i$ from~$\scrH$ \emph{and} $c \in \scrP'$
@@ -856,7 +887,7 @@ We must show that there is a unique
             \bigl< h'(\varrho'(\alpha_j^*) c \varrho'(a_i) )x_i, y_j
             \bigr>.
 \end{align*}
-By definition of minimality of a Stinespring dilation
+By definition of minimality of a Stinespring dilation,
 such $\sum_i \varrho(a_i) Vx_i$
     are norm dense in~$\scrK$
     and so~$\sigma_1(c)=\sigma_2(c)$ as desired.
@@ -921,7 +952,9 @@ Define~$\vartheta = \sigma_1$.
 We just saw~$\vartheta$ is an ncp-isomorphism.
 Note~$\vartheta(1) = \vartheta(\varrho_1(1)) = \varrho_2(1) = 1$
 and so~$\vartheta$ is unital.
-But then by \TODO{} $\vartheta$ is an nmiu-isomorphism. \qed
+But then
+    $\vartheta$ is an nmiu-isomorphism
+    by \sref{iso}. \qed
 \par
 \end{point}
 \end{point}
@@ -988,7 +1021,7 @@ Paschke showed that GNS can be generalized by replacing the scalars~$\C$
      and~$\scrB^a(X)$ are the~$\scrB$-linear bounded operators on~$X$.
 It turns out~$(\scrB^a(X), \varrho, h)$
     is a Paschke dilation of~$\varphi$.
-Before we will prove this
+Before we will prove this,
     we first develop the theory of self-dual Hilbert C$^*$-modules.
 \end{point}
 \begin{point}{Definition}%
@@ -1039,12 +1072,13 @@ Later we will see that every so-called self-dual
     if~$\scrB$ is a von Neumann algebra.
     
 If~$X$ and~$Y$ are (pre-)Hilbert~$\scrB$-modules,
-    then its direct sum~$X \oplus Y$
+    then their direct sum~$X \oplus Y$
     is a (pre-)Hilbert~$\scrB$-module
     with inner product~$\left<(x,y), (x',y')\right>
                 = \left<x,x'\right>+\left<y,y'\right>$.
 \end{point}
 \end{parsec}
+\subsection{The basics}
 \begin{parsec}%
 \begin{point}{Definition}%
 Let~$X$ be a right~$\scrB$-module with~$\scrB$-valued inner
@@ -1101,9 +1135,6 @@ are jointly uniformly continuous
     separately.
 \end{point}
 \end{point}
-\end{parsec}
-
-\begin{parsec}%
 \begin{point}{Definition}%
 Let~$V$ be a right $\scrB$-module.
 A~\Define{$\scrB$-sesquilinear form} on~$V$
@@ -1117,6 +1148,11 @@ Let~$X$ be a pre-Hilbert~$\scrB$-module.
 For every~$\scrB$-linear~$T\colon X \to X$
     the map~$\left<(\,\cdot\,), T (\,\cdot\,)\right>$
     is a~$\scrB$-sesquilinear form.
+In \sref{hilbmod-sesquilinear-forms}
+    we will see that on a self-dual Hilbert~C$^*$-module
+    all \emph{bounded}
+    $\scrB$-sesquilinear forms
+    are of this form.
 \end{point}
 \begin{point}[hilbmod-polarization]{Exercise}
 Let~$B$ be a sesquilinear form.
@@ -1182,10 +1218,10 @@ As adjoints are unique and~$T$ is an adjoint of~$T^*$
 
 For the final identity, note that for any~$x \in X$ we have
 \begin{equation*}
-\|Tx\|^2 = \|\left<Tx,Tx\right>\| 
-            = \| \left<x, T^*Tx\right>\|
-            \leq \|x \| \|T^*Tx \|
-            \leq \|x\|^2 \|T^*T\|
+\|Tx\|^2 \ =\  \|\left<Tx,Tx\right>\| 
+            \ =\  \| \left<x, T^*Tx\right>\|
+            \ \leq\  \|x \| \|T^*Tx \|
+            \ \leq\  \|x\|^2 \|T^*T\|
 \end{equation*}
 and so~$\|T\| \leq \|T^*T\|^{\frac{1}{2}}$.
 Hence~$\|T\|^2 \leq \|T^*T\| \leq \|T^*\|\|T\| = \|T\|^2$.
@@ -1231,6 +1267,8 @@ for any~$x \in X$ and~$y \in Y$.
 Thus~$S = T^*$ and~$T \in \scrB^a(X)$ as desired. \qed
 \end{point}
 \end{point}
+\end{parsec}
+\begin{parsec}%
 \begin{point}[hilbmod-ordersep]{Proposition}%
 Let~$X$ be a Hilbert~$\scrB$-module.
 The vector states on~$\scrB^a(X)$ are order separating;
@@ -1332,6 +1370,7 @@ which shows~$h$ is indeed completely positive. \qed
 \end{point}
 \end{parsec}
 
+\subsection{Ultranorm uniformity}
 \begin{parsec}%
 \begin{point}%
 In \sref{prop-complete-into-hilbert-space}
@@ -1398,7 +1437,7 @@ and metric spaces.
     A uniform space is \Define{Hausdorff}
         whenever~$x \mathrel\varepsilon y$
             for all~$\varepsilon \in \Phi$
-            imlies~$x=y$.
+            implies~$x=y$.
 \begin{point}%
 The elements of~$X$ are the points of the uniform space.
 The entourages~$\varepsilon \in \Phi$
@@ -1414,7 +1453,7 @@ There might be several~$\nicefrac{\varepsilon}{2}$
 Whenever we write~$\nicefrac{\varepsilon}{2}$
     we implicitly pick some entourage that
     satisfies~$(\nicefrac{\varepsilon}{2})^2 \subseteq \varepsilon$.
-Also we will use the obvious shorthand~$\nicefrac{\varepsilon}{2}
+Also we will use the obvious shorthand~$\nicefrac{\varepsilon}{4}
 =   \nicefrac{(\nicefrac{\varepsilon}{2})}{2}$.
 \end{point}
 \end{point}
@@ -1770,9 +1809,9 @@ By self-duality, there is a~$t \in X$ such that~$\tau(y) = \left<t,y\right>$
 for all~$y \in X$.
 And so for each np-map~$f\colon \scrB \to \C$ we have
 \begin{equation*}
-    \|\left<y, t-x_\alpha\right>\|_f=
-    \|\left<y, t\right>-\left<y,x_\alpha\right>\|_f=
-    \|\tau(y)^*-\left<y,x_\alpha\right>\|_f \rightarrow 0.
+    \|\left<y, t-x_\alpha\right>\|_f \ =\ 
+    \|\left<y, t\right>-\left<y,x_\alpha\right>\|_f \ =\ 
+    \|\tau(y)^*-\left<y,x_\alpha\right>\|_f\  \rightarrow \  0.
 \end{equation*}
 Write~$\left<x,y\right>_f=f(\left<x,y\right>)$.
 As~$f$ is positive $\left<\,\cdot\,,\,\cdot\,\right>_f$ is an inner product.
@@ -1781,8 +1820,8 @@ it follows~$|f(a)|^2 \leq f(a^*a)f(1)$
 and so
 \begin{equation*}
     |\left<y,t-x_\alpha\right>_f|^2
-    \leq f( \left<t-x_\alpha,y\right> \left<y,t-x_\alpha\right>) f(1)
-    = \| \left<y,t-x_\alpha\right> \|_f^2 f(1).
+    \ \leq \ f( \left<t-x_\alpha,y\right> \left<y,t-x_\alpha\right>) f(1)
+    \ =\  \| \left<y,t-x_\alpha\right> \|_f^2 f(1).
 \end{equation*}
 Combining both, we see~$|\left<y,t-x_\alpha\right>_f| \rightarrow 0$.
 Let~$\varepsilon > 0$ be given.
@@ -1797,12 +1836,12 @@ Find~$\beta$ such that~$|\left<t-x_\alpha,t-x_\beta\right>_f|
 Putting it all together:
 \begin{align*}
     \left<t-x_\alpha,t-x_\alpha\right>_f
-    & \leq |\left<t-x_\alpha,t-x_\beta\right>_f|
-    + |\left<t-x_\alpha,x_\beta-x_\alpha\right>_f| \\
-    & \leq \frac{\varepsilon}{2}
+    & \ \leq\  |\left<t-x_\alpha,t-x_\beta\right>_f| \,
+    +\, |\left<t-x_\alpha,x_\beta-x_\alpha\right>_f| \\
+    & \ \leq\  \frac{\varepsilon}{2}
     + \| t- x_\alpha \|_f \|x_\beta - x_\alpha\|_f\\
-    & \leq \frac{\varepsilon}{2}
-    + (\| t\|_f + B) \|x_\beta - x_\alpha\|_f \leq \varepsilon.
+    & \ \leq\  \frac{\varepsilon}{2}
+    + (\| t\|_f + B) \,\|x_\beta - x_\alpha\|_f \ \leq\  \varepsilon.
 \end{align*}
 Thus~$x_\alpha$ converges ultranorm to~$t$.
 So~$X$ is ultranorm bounded complete.
@@ -1833,15 +1872,15 @@ Thus for any finite subset~$S \subseteq E$
 we have
 \begin{equation*}
     \Bigl<\sum_{e \in S} eb_e, \sum_{e \in S} eb_e\Bigr>
-    = \sum_{e \in S} b_e^* \left<e,e\right>b_e \leq \sum_{e \in S} b_e^*b_e.
+    \ =\  \sum_{e \in S} b_e^* \left<e,e\right>b_e \leq \sum_{e \in S} b_e^*b_e.
 \end{equation*}
 As~$\sum_{e \in E} b^*_eb_e$ converges ultraweakly,
 we have~$\sum_{e \in E} f(b^*_eb_e) < \infty$.
 Thus the tails~$\sum_{e \in E - S} f(b_e^*b_e)$ tend to zero, hence for finite~$S,T\subseteq E$ we know
 \begin{equation*}
     \bigl\| \sum_{e \in S} eb_e - \sum_{e\in T} eb_e \bigr\|_f^2
-        = \bigl\| \sum_{e \in S\Delta T} eb_e  \bigr\|_f^2
-        \leq \sum_{e \in S\Delta T} f(b_e^*b_e)
+        \ =\  \bigl\| \sum_{e \in S\Delta T} eb_e  \bigr\|_f^2
+        \ \leq \ \sum_{e \in S\Delta T} f(b_e^*b_e)
 \end{equation*}
 vanishes as~$S \cap T$ grows.
 Thus the partial sums of ~$\sum_{e \in E} eb_e$ are ultranorm Cauchy
@@ -1853,14 +1892,14 @@ We have to show~$\sum_{e \in E} x\left<e,x\right>$
 converges in the ultranorm uniformity to~$x$.
 For any finite subset~$S \subseteq E$ we have
 \begin{equation*}
-    0 \leq \Bigl< x - \sum_{e \in S} e\left<e,x\right>,
+    0\  \leq\  \Bigl< x - \sum_{e \in S} e\left<e,x\right>,
         x - \sum_{e \in S} e\left<e,x\right> \Bigr>
-        = \left<x,x\right> - \sum_{e \in S} \left<x,e\right>\left<e,x\right>.
+       \  =\  \left<x,x\right> - \sum_{e \in S} \left<x,e\right>\left<e,x\right>.
 \end{equation*}
 Rearranging we find \Define{Bessel's inequality}:
 \begin{equation*}
 \sum_{e \in S} \left<x,e\right>\left<e,x\right>
-    \leq \left<x,x\right>.
+   \  \leq \ \left<x,x\right>.
 \end{equation*}
 Hence the $E$-tuple~$(\left<e,x\right>)_e$
 is a $\ell^2$-summable
@@ -1884,11 +1923,11 @@ By \sref{approximate-pseudoinverse}
          and~$\sum_n h_n \left<y,y\right>^{\frac{1}{2}} = \sum_n \ceil{h_n}
                     = \ceil{\left<y,y\right>}$. Note
 \begin{equation*}
-    \left<yh_n,yh_m\right> \ =
+    \left<yh_n,yh_m\right> \ = \ 
         (h_n \left<y,y\right>^{\frac{1}{2}})
-        (\left<y,y\right>^{\frac{1}{2}} h_m) \ = \ceil{h_n}\ceil{h_m}
+        (\left<y,y\right>^{\frac{1}{2}} h_m) \ =\  \ceil{h_n}\ceil{h_m}
 \end{equation*}
-and so using~$\ceil{h_1}, \ceil{h_2}, \ldots$ are pairwise orthogonal
+and so using~$\ceil{h_1}, \ceil{h_2}, \ldots$ are pairwise orthogonal,
     we see
 \begin{equation*}
     \bigl< \sum_{n=1}^N y h_n, \sum_{n=1}^N y h_n \bigr> 
@@ -1977,12 +2016,12 @@ Hence~$x'=0$ and so~$x = \sum_{e \in E} e\left<e,x\right>$ as desired.
     Pick a finite subset~$S \subseteq E$. Then we have
  \begin{align*}
     f\bigl(\sum_{e \in S} b_e^*b_e\bigr)
-    &= \sum_{e \in S} \lim_\alpha 
+    &\ =\  \sum_{e \in S} \lim_\alpha 
      f(\left<x_\alpha,e\right> \left<e, x_\alpha\right>) \\
-     & = \lim_\alpha 
+     &\  = \ \lim_\alpha 
             f\bigl(\sum_{e \in S}\left<x_\alpha,e\right>
                 \left<e, x_\alpha\right>\bigr) \\
-            &\leq f(\left<x_\alpha,x_\alpha\right>).
+            &\ \leq\  f(\left<x_\alpha,x_\alpha\right>).
  \end{align*}
 As~$x_\alpha$ is ultranorm Cauchy,
 the sequence~$f(\left<x_\alpha,x_\alpha\right>)$
@@ -2003,8 +2042,8 @@ As~$x_\alpha = \sum_{e \in E} e \left<e,x_\alpha\right>$
 we find with Parseval's identity
 \begin{equation*}
     \bigl\| x_\alpha - \sum_{e \in E} eb_e \bigr\|_f^2
-    = \bigl\| \sum_{e \in E} e(\left<e, x_\alpha\right> - b_e) \bigr\|_f^2
-    = \sum_{e \in E}\| \left<e, x_\alpha\right> - b_e \|_f^2.
+    \ =\  \bigl\| \sum_{e \in E} e(\left<e, x_\alpha\right> - b_e) \bigr\|_f^2
+    \ =\  \sum_{e \in E}\| \left<e, x_\alpha\right> - b_e \|_f^2.
 \end{equation*}
 Take a finite subset~$S \subseteq E$
 such that
@@ -2020,10 +2059,10 @@ For any~$\beta \geq \alpha$
 \begin{align*}
     \Bigl(\sum_{e \in S}\| \left<e, x_\alpha\right>
         - b_e \|_f^2\Bigr)^{\frac{1}{2}}
-        &= \bigl\|\sum_{e \in S} e\left<e, x_\alpha\right> - eb_e \bigr\|_f\\
-        &\leq \bigl\|\sum_{e \in S} e\left<e, x_\alpha-x_\beta\right> \bigr\|_f\
+        &\ =\  \bigl\|\sum_{e \in S} e\left<e, x_\alpha\right> - eb_e \bigr\|_f\\
+        &\ \leq\  \bigl\|\sum_{e \in S} e\left<e, x_\alpha-x_\beta\right> \bigr\|_f\
         +\bigl\|\sum_{e \in S} e\left<e, x_\beta\right> - eb_e \bigr\|_f\\
-        &= \Bigl( \sum_{e \in S}\|\left<e, x_\alpha-x_\beta\right> \|_f^2 \Bigr)^{\frac{1}{2}}
+        &\ =\  \Bigl( \sum_{e \in S}\|\left<e, x_\alpha-x_\beta\right> \|_f^2 \Bigr)^{\frac{1}{2}}
         +\Bigl(\sum_{e \in S}\| \left<e, x_\beta\right> - b_e \|_f^2
         \Bigr)^{\frac{1}{2}}.
 \end{align*}
@@ -2055,8 +2094,8 @@ to~$\sum_{e \in E} e b_e$, as desired.
 As by \sref{blinear-bounded-is-ultranorm} $\tau$ is ultranorm continuous
         we see
         \begin{equation*}
-            \tau(x) = \sum_{e \in E} \tau(e) \left<e,x\right>
-                = \sum_{e \in E} \left<e \tau(e)^*,x\right>.
+            \tau(x) \ =\  \sum_{e \in E} \tau(e) \left<e,x\right>
+                \ =\  \sum_{e \in E} \left<e \tau(e)^*,x\right>.
         \end{equation*}
     Thus if we can show~$\sum_e e \tau(e)^*$ converges in the ultranorm,
         we are done. By assumption this is
@@ -2078,14 +2117,14 @@ we have~$
 Thus
     \begin{equation*}
         \bigl\|\bigl< \sum_{e \in S} e \tau(e)^*,x\bigr>\bigr\|
-        = \bigl\| \tau \bigl(\sum_{e \in S} e\left<e,x\right>\bigr) \bigr\|
+        \ =\  \bigl\| \tau \bigl(\sum_{e \in S} e\left<e,x\right>\bigr) \bigr\|
         \leq \|\tau\| \|x\|.
     \end{equation*}
 Substituting~$x = \sum_{e \in S} e \tau(e)^*$ we find
 \begin{equation*}
-    \| \sum_{e\in S}e \tau(e)^*\|^2 =
+    \| \sum_{e\in S}e \tau(e)^*\|^2 \ =\ 
     \bigl\|\bigl< \sum_{e \in S} e \tau(e)^*,\sum_{e \in S} e\tau(e)^*\bigr>\bigr\|
-    \leq \|\tau\| \bigl\| \sum_{e\in S}e \tau(e)^*\bigr\|.
+    \ \leq \ \|\tau\| \bigl\| \sum_{e\in S}e \tau(e)^*\bigr\|.
 \end{equation*}
 If~$ \| \sum_{e\in S}e \tau(e)^*\| = 0$,
 then we are done.
@@ -2190,7 +2229,7 @@ We will see that at each step we can extend the module structure
        \ \cdots\  \subseteq
    V_{\alpha_0} = \overline{V}
 \end{equation*}
-To avoid requiring familiary with transfinite induction,
+To avoid requiring familiarity with transfinite induction,
     we will phrase the proof using Zorn's lemma instead.
 \end{point}
 \begin{point}{$\overline{V}$: fast nets}%
@@ -2638,8 +2677,8 @@ For any np-map~$f\colon \scrB \to \C$
 we have
 \begin{equation*}
         \lim_\alpha f([x_\alpha,x_\alpha])
-        = f(\uwlim_\alpha [x_\alpha,x_\alpha])
-        = f([x,x]) = 0.
+        \ =\ f(\uwlim_\alpha [x_\alpha,x_\alpha])
+        \ =\ f([x,x]) \ =\  0.
 \end{equation*}
 Thus~$x_\alpha$ converges in the ultranorm uniformity on~$W$ to~$0$.
 Hence~$x=0$.
@@ -2654,10 +2693,10 @@ By definition there is a norm-bounded Cauchy net~$x_\alpha$ over~$W$
 Then
 \begin{equation*}
     \|x\|^{\sigma(W)}_f
-        = f(\uwlim_\alpha [x_\alpha,x_\alpha])^{\frac{1}{2}}
-        = \lim_\alpha \|x_\alpha\|_f^W
-        = \lim_\alpha \|x_\alpha\|_f^{\overline{V}}
-        = \|x\|_f^{\overline{V}},
+       \ =\ f(\uwlim_\alpha [x_\alpha,x_\alpha])^{\frac{1}{2}}
+       \ =\ \lim_\alpha \|x_\alpha\|_f^W
+       \ =\ \lim_\alpha \|x_\alpha\|_f^{\overline{V}}
+       \ =\ \|x\|_f^{\overline{V}},
 \end{equation*}
 as desired.
 We have shown~$\sigma(W)$ is a compatible extension.
@@ -2684,10 +2723,10 @@ We have shown~$\sigma(W)$ is a compatible extension.
     Consequently
     \begin{equation*}
         \|x\|^{\overline{V}}_f
-        = \|x\|^{W'}_f
-        = f([x,x]_{W'})^{\frac{1}{2}}
-        = f([x,x]_{W})^{\frac{1}{2}}
-        = \|x\|^{W}_f,
+        \ =\ \|x\|^{W'}_f
+        \ =\ f([x,x]_{W'})^{\frac{1}{2}}
+        \ =\ f([x,x]_{W})^{\frac{1}{2}}
+        \ =\  \|x\|^{W}_f,
     \end{equation*}
     as desired.  We have shown~$W$ is a compatible extension.
 \end{point}
@@ -2759,15 +2798,15 @@ It remains to be shown~$\hat{T}$ is bounded.
 By \sref{blinear-inprod-inequality}  we have
 \begin{equation*}
 \left<T x_\alpha,T x_\alpha\right>
-\leq \| T\|^2 [x_\alpha,x_\alpha]
-= \|T\|^2 \left<\eta(x_\alpha),\eta(x_\alpha)\right>
+\ \leq\  \| T\|^2 [x_\alpha,x_\alpha]
+\ =\  \|T\|^2 \left<\eta(x_\alpha),\eta(x_\alpha)\right>
 \end{equation*}
 and so using \sref{innerprod-ultraweak} we see
 \begin{equation*}
-\langle\hat{T} x, \hat{T} x\rangle =
+\langle\hat{T} x, \hat{T} x\rangle \ =\ 
 \uwlim_\alpha \left<T x_\alpha, T x_\alpha\right>
-            \leq \|T\|^2 \uwlim_\alpha \left<\eta(x_\alpha), \eta(x_\alpha)\right>
-            = \|T\|^2 \left<x,x\right>,
+            \ \leq \ \|T\|^2 \uwlim_\alpha \left<\eta(x_\alpha), \eta(x_\alpha)\right>
+            \ =\  \|T\|^2 \left<x,x\right>,
 \end{equation*}
 which implies~$\|\hat{T}\| \leq \|T\|$ as desired.
 (In fact~$\|\hat{T}\| = \|T\|$.) \qed
@@ -2776,7 +2815,7 @@ which implies~$\|\hat{T}\| \leq \|T\|$ as desired.
 \end{parsec}
 \begin{parsec}%
 \begin{point}%
-    Before we show every ncp-map has a Paschke dilation
+    Before we show every ncp-map has a Paschke dilation,
         we study~$\scrB^a(X)$ a bit more for self dual~$X$.
 \end{point}
 \begin{point}{Definition}%
@@ -2887,8 +2926,8 @@ By \sref{hilbmod-sesquilinear-forms}
     with~$\left<x,Ty\right> = B(x,y) = \uslim_\alpha \left<x,T_\alpha y\right>$.
 Noting~$B(x,y) = \uwlim_\alpha B(x,y)$,
     it is easy to see~$T$ is self adjoint.
-Using \sref{hilbmod-ordersep} again and ultraweak limits respecting the order
-\TODO{reference? (ook andere plekken)}
+Using \sref{hilbmod-ordersep} again 
+the fact that ultraweak limits respect the order (\sref{vn-positive-basic}),
     we see~$\left<x,T_\alpha\right> \leq \left<x,T x\right>$
     for all~$x \in X$ and so~$T_\alpha \leq T$.
 Now suppose we are given a self adjoint~$S \in \scrB^a(X)$
@@ -2897,7 +2936,7 @@ With a similar argument we see~$T \leq S$ and so~$S$ is
     the supremum of~$(T_\alpha)_\alpha$.
 \end{point}
 \begin{point}[hilbmod-vecstates-normal]{separating normal states}%
-By~\sref{hilbmod-ordersep}
+By~\sref{hilbmod-ordersep},
     the states~$\left<x,(\,\cdot\,)x\right>$
     are separating.
 We are done if we can show~$\left<x,(\,\cdot\,)x\right>$
@@ -3026,7 +3065,7 @@ to show~$\varphi \colon \scrA \to M_n \scrA$
     given by~$h(T) =\left<1 \otimes 1, T(1 \otimes 1)\right>$
     is ncp.
 \item
-Let $X$ be any  self-dual Hilbert$\scrB$-module~$X$ with $e \in X$ and
+Let $X$ be any other self-dual Hilbert$\scrB$-module with $e \in X$ and
         nmiu-map~$\varrho'\colon \scrA \to \scrB^a(X)$
         such that~$\varphi  = h' \after \varrho'$
         with~$h'(T) = \left<e,T e\right>$.
@@ -3050,22 +3089,22 @@ with the action~$(\sum_i a_i \otimes b_i)\beta = \sum_i a_i \otimes(b_i\beta)$.
 On~$\scrA \odot \scrB$, define
 \begin{equation*}
     \bigl[\sum_i a_i \otimes b_i, \sum_j \alpha_j \otimes \beta_j\bigr]
-    = \sum_{i,j} b_i^* \varphi(a_i^*\alpha_j)\beta_j.
+    \ \equiv\  \sum_{i,j} b_i^* \varphi(a_i^*\alpha_j)\beta_j.
 \end{equation*}
 By complete positivity of~$\varphi$
-this is a~$\scrB$-valued inner product on~$\scrA \otimes \scrB$.
-By \sref{dils-completion}
+this is a~$\scrB$-valued inner product on~$\scrA \odot \scrB$.
+By \sref{dils-completion},
     there is a self-dual Hilbert~$\scrB$-module~$\scrA\otimes_\varphi \scrB$
     and~$\scrB$-linear inner product-preserving
     $\eta\colon \scrA \odot \scrB \to \scrA \otimes_\varphi \scrB$
     with ultranorm dense range.
-Define~$\otimes \colon \scrA \times \scrB \to \scrA \otimes_\varphi \scrB$
+Define the bilinear map~$\otimes \colon \scrA \times \scrB \to \scrA \otimes_\varphi \scrB$
     by~$a \otimes b = \eta(a \otimes b)$.
 By definition we have
 \begin{equation*}
 \bigl\| \sum_i a_i \otimes b_i \bigr\|^2
-    = \bigl\|\bigl[ \sum_i a_i\otimes b_i, \sum_j a_j \otimes b_j \bigr]\bigr\|
-    = \bigl\|\sum_{i,j} b_i^* \varphi(a_i^*a_j) b_j\bigr\|
+    \ =\  \bigl\|\bigl[ \sum_i a_i\otimes b_i, \sum_j a_j \otimes b_j \bigr]\bigr\|
+    \ =\  \bigl\|\sum_{i,j} b_i^* \varphi(a_i^*a_j) b_j\bigr\|
 \end{equation*}
 and so~$\otimes$ is a~$\varphi$-compatible bilinear map.
 
@@ -5637,7 +5676,9 @@ is a Paschke dilation of~$h_p$.  \qed
 The map~$\varphi$ is pure if and only if~$\varrho$ is surjective.
 \begin{point}{Proof}%
 Assume~$\varrho$ is surjective.
-The kernel of~$\varrho$ is~$z \scrA$ for some central projection~$z$.  \TODO{}
+The kernel of~$\varrho$ is an ultraweakly closed
+two-sided ideal and so~$\ker\varrho = z \scrA$ for some central projection~$z$,
+see \sref{prop:weakly-closed-ideal}.
 The standard corner~$h_{z^\perp} \colon \scrA \to z^\perp \scrA$
     is the quotient-map of~$z \scrA$
     and so by the isomorphism theorem $\varrho$ is a corner as well.
