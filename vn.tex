@@ -177,7 +177,18 @@ has a supremum $\bigvee D$ in $\sa{\scrA}$, and
 if $a$ is a positive element of~$\scrA$
 with $\omega(a)=0$ for every \emph{normal} (see below) positive 
 linear map $\omega\colon \scrA\to \C$,
-then~$a=0$.
+then~$a=0$.\footnote{In other words,
+the collection of normal positive functionals should be faithful
+(see~\sref{separating}).
+Interestingly,
+it's already enough for the normal positive 
+functionals to be centre separating,
+but since we have encountered no example
+of a von Neumann algebra
+where it wasn't already clear that the normal positive 
+functionals are faithful
+instead of just centre separating
+we did not use this weaker albeit more complex condition.}
 \end{enumerate}
 \begin{point}%
 A positive linear map $\omega\colon \scrA\to \C$
@@ -287,7 +298,7 @@ and~$a\in\scrA$.
 \item
 Show that when a net $(a_\alpha)_\alpha$
 in~$\scrA$ converges ultrastrongly to~$a\in \scrA$
-it does so too ultraweakly.
+it does so ultraweakly, too.
 \item
 Show that an ultraweakly closed subset~$C$ of~$\scrA$
 is also ultrastrongly closed.
@@ -295,13 +306,14 @@ is also ultrastrongly closed.
 \end{point}
 \begin{point}[vn-counterexamples]{Exercise}%
 We give some counterexamples in $\scrB(\ell^2)$
+to plausible propositions
 to sharpen your understanding of the ultrastrong and ultraweak topologies,
 and so that you may better appreciate
-the strange maneuvers we'll need to pull off later on.
+the strange manoeuvers we'll need to pull off later on.
 \begin{enumerate}
 \item
-Given~$n,m\in \N$,
-we denote by $\ketbra{n}{m}$
+First some notation: given~$n,m\in \N$,
+we denote by $\Define{\ketbra{n}{m}}$
 the bounded operator on~$\ell^2$
 given by $(\ketbra{n}{m})(f)(n)=f(m)$
 and~$(\ketbra{n}{m})(f)(k)=0$ for $k\neq n$
@@ -328,14 +340,11 @@ Thus ultrastrong (and ultraweak) convergence does not imply norm convergence,
 as one might have expected.
 But we also see that if a sequence~$(b_n)_n$ converges ultrastrongly
 (or ultraweakly) to some~$b$,
-then $(\|b_n\|)_n$ doesn't even have to converge to~$\|b\|$
-(compare this with Lebesgue's dominated convergence
-theorem, see~123C of~\cite{fremlin}).
+then $(\|b_n\|)_n$ doesn't even have to converge to~$\|b\|$.
 
 (Note that~$(\ketbra{n}{n})_n$ resembles a moving bump, from measure theory.)
 \item
 Note that when a net $(a_\alpha)_\alpha$
-(in, say, $\scrB(\ell_2)$)
 converges ultrastrongly to~$a$,
 then $(\,a_\alpha^*a_\alpha\,)_\alpha$
 is norm-bounded and
@@ -360,7 +369,7 @@ but doesn't converge ultrastrongly at all.
 Conclude that~$a\mapsto a^*$ is not ultrastrongly continuous 
 on~$\scrB(\ell^2)$.
 
-(This has the annoying side-effect,
+(This has the annoying side-effect
 that it is not immediately clear that the ultrastrong
 closure of a $C^*$-subalgebra of a von Neumann algebra 
 is a von Neumann subalgebra; we'll deal with this
@@ -370,7 +379,7 @@ with the ultraweak closure in~\sref{ultraclosed}.)
 Show that the unit ball~$(\,\scrB(\ell^2)\,)_1$
 of~$\scrB(\ell^2)$ is not ultrastrongly compact
 by proving that $(\,\ketbra{0}{n}\,)_n$
-has no ultrastrongly-convergent subnet.
+has no ultrastrongly convergent subnet.
 
 (But we'll see in~\sref{vn-ball-compact} that
 the unit ball of a von Neumann algebra
@@ -427,10 +436,10 @@ are not ultrastrongly continuous on~$\scrB(\ell^2)$.
 
 \item
 Show that $1+\ketbra{n}{0}+\ketbra{0}{n}$
-are positive,
+is positive,
 and 
-converge ultraweakly to~$1$,
-while their squares
+converges ultraweakly to~$1$ as~$n\to\infty$,
+while the squares
 $1+\ketbra{n}{n}+\ketbra{0}{0}+2\ketbra{n}{0}+2\ketbra{0}{n}$
 converge ultraweakly to $1+\ketbra{0}{0}$
 (as $n\to\infty$).
@@ -449,7 +458,7 @@ Show that $n\ketbra{n}{n}$ does not converge ultraweakly as~$n\to\infty$.
 
 Show that $n \ketbra{f(n)}{f(n)}$ does not converge ultraweakly
 as $n\to\infty$
-for every strictly monotone map~$f\colon \N\to\N$.
+for every strictly monotone (increasing) map~$f\colon \N\to\N$.
 
 So we'll resort to a net.
 Let~$D$ be the directed set which consists of pairs $(n,f)$,
@@ -477,9 +486,7 @@ is not jointly ultrastrongly continuous on~$\scrB(\ell^2)$,
 even when~$b$ is restricted to a bounded set.
 
 (Nevertheless we'll see that multiplication is ultrastrongly continuous
-when~$a$ is restricted to a bounded set,
-and that multiplication is ultrastrongly continuous
-separately in both arguments.)
+when~$a$ is restricted to a bounded set.)
 
 \item
 Show that
@@ -495,8 +502,10 @@ Hence~$a\mapsto a^2$ is not ultrastrongly continuous on~$\sa{\scrB(\ell^2)}$.
 Let us show that~$\scrB(\ell^2)$
 is not ultraweakly complete.
 
-Show that there is an unbounded linear map~$f\colon \ell^2\to\C$,
-and that for each finite dimensional linear subspace~$S$ of~$\ell^2$,
+Show that there is an unbounded linear map~$f\colon \ell^2\to\C$
+(perhaps using the fact that every vector space
+has a basis by the axiom of choice),
+and that for each finite dimensional linear subspace~$S$ of~$\ell^2$
 there is a unique vector~$x_S\in S$ 
 with
 $f(x)=\left<x_S,y\right>$ for all~$y\in S$
@@ -532,7 +541,7 @@ and that~$\scrB(\ell^2)$ is not ultraweakly complete.
 
 (Nevertheless, we'll see that every von Neumann algebra
 is ultrastrongly complete, and that
-every norm-bounded ultraweakly-Cauchy net
+every norm-bounded ultraweakly Cauchy net
 in a von Neumann converges, in~\sref{vn-complete}.)
 \end{enumerate}
 \end{point}
@@ -543,14 +552,22 @@ in a von Neumann converges, in~\sref{vn-complete}.)
 %
 \begin{parsec}%
 \begin{point}%
-It is clear that translation and scaling
+The basic facts concerning von Neumann algebras
+we'll deal with first mostly involve the
+relationship
+between
+multiplication
+and the order structure.
+For example,
+while it is clear that translation and scaling
 on a von Neumann algebra
-are ultraweakly (and ultrastrongly) continuous.
-We will see in this paragraph that multiplication
-is also ultraweakly (and ultrastrongly) continuous
-in each coordinate.
+are ultraweakly (and ultrastrongly) continuous,
+the fact
+that multiplication is ultraweakly (and ultrastrongly)
+continuous in each coordinate is
+less obvious (see~\sref{mult-uws-cont}).
 Quite surprisingly,
-the problem reduces to the ultraweak continuity
+this problem reduces to the ultraweak continuity
 of $b\mapsto a^*ba$ by the following identity
 (cf.~\sref{inner-product-basic}).
 \end{point}
@@ -613,7 +630,11 @@ and that~$(a^*d)_d$ converges ultraweakly to~$a^* (\bigvee D)$.
 %
 \begin{point}[ad-normal]{Proposition}%
 Let~$a$ be an element of a von Neumann algebra~$\scrA$.
-Then~$\bigvee_{d\in D} a^*\,d\,a = a^*\,(\bigvee D)\, a$
+Then
+\begin{equation*}
+	\textstyle
+	\bigvee_{d\in D} a^*\,d\,a \ =\  a^*\,(\bigvee D)\, a
+\end{equation*}
 for every bounded directed subset~$D$ of self-adjoint
 elements of~$\scrA$.
 \begin{point}[ad-normal-1]{Proof}%
@@ -734,7 +755,7 @@ $D\subseteq \sa{\scrA}$ converges ultrastrongly to~$\bigvee D$.)
 
 The converse does not hold: give an example of a map~$f$ 
 which is normal, but 
-not be ultrastrongly continuous. (Hint: transpose.)
+not ultrastrongly continuous. (Hint: transpose.)
 \end{point}
 \begin{point}[cp-uscont]{Proposition}%
 An ncp-map $f\colon \scrA\to\scrB$
@@ -742,7 +763,7 @@ between von Neumann algebras is
 ultrastrongly continuous.
 \begin{point}{Proof}%
 To show that~$f$
-is ultrastrongly continuous,
+is ultrastrongly continuous
 it suffices to show that~$f$ is ultrastrongly continuous at~$0$.
 So let~$(b_\alpha)_\alpha$ be a net in~$\scrA$
 which converges ultrastrongly to~$0$;
@@ -755,7 +776,7 @@ by~\sref{cp-cs},
 it suffices to show that~$(\,f(b_\alpha^*b_\alpha)\,)_\alpha$
 converges ultraweakly to~$0$,
 but this follows from the
-fact that~$f$ is ultraweakly continuous,
+facts that~$f$ is ultraweakly continuous
 and~$(b_\alpha^*b_\alpha)_\alpha$
 converges ultraweakly to~$0$
 (since~$(b_\alpha)_\alpha$ converges ultrastrongly to~$0$).\qed
@@ -774,6 +795,12 @@ to
 show that $b\mapsto ab,\,ba\colon\ \scrA\to\scrA$
 are ultraweakly and ultrastrongly continuous
 for every element~$a$ of a von Neumann algebra~$\scrA$.
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+We can now prove a bit more 
+about the ultrastrong and ultraweak topologies.
 \end{point}
 \begin{point}[usconv]{Exercise}%
 Show that a net $(b_\alpha)_\alpha$ 
@@ -932,11 +959,12 @@ of~$\scrB(\scrH_\Omega)$.\qed
 \subsubsection{Matrices over von Neumann algebras} 
 \begin{parsec}%
 \begin{point}%
-We end the section
-by showing that the $C^*$-algebra
+We'll show that the $C^*$-algebra
 of $N\times N$-matrices~$M_N(\scrA)$
 over a von Neumann algebra~$\scrA$
-is itself a von Neumann algebra.
+is itself a von Neumann algebra,
+and to this end,
+we prove something a bit more more general.
 \end{point}
 \begin{point}[bah-vn]{Theorem}%
 Given a von Neumann algebra~$\scrA$,
@@ -1057,8 +1085,8 @@ Show that a net~$(A_\alpha)_\alpha$
 in~$M_N\scrA$
 converges ultraweakly (ultrastrongly)
 to $B\in M_N\scrA$
-iff $A_{ij}$ converges ultraweakly (ultrastrongly)
-to~$B_{ij}$ for all~$i,j$.
+iff $(A_\alpha)_{ij}$ converges ultraweakly (ultrastrongly)
+to~$B_{ij}$ as~$\alpha\to\infty$ for all~$i,j$.
 \item
 Given an ncp-map $f\colon \scrA\to\scrB$
 between von Neumann algebras,
@@ -1078,9 +1106,9 @@ finite complete
 measure space~$X$
 form a commutative von Neumann algebra~$L^\infty(X)$
 when functions that are equal almost everywhere are identified
-(see~\TODO{...}).
+(see~\sref{Linfty-vn}).
 In fact, 
-we'll see in~\TODO{...}
+we'll see in~\sref{cvn}
 that
 every commutative von Neumann algebra is nmiu-isomorphic
 to a direct sum of~$L^\infty(X)$s.
@@ -1090,7 +1118,7 @@ be used in the next chapter
 to show that the only von Neumann algebras
 that can be endowed with a `duplicator'
 are of the form~$\ell^\infty(X)$
-for some set~$X$ (see~\TODO{...}).
+for some set~$X$ (see~\sref{duplicable}).
 
 We should probably mention that~$L^\infty(X)$
 can be defined for any measure space~$X$,
@@ -1117,8 +1145,9 @@ some basic definitions
 to fix terminology,
 which is sometimes simpler than in~\cite{fremlin}
 (because we're dealing with finite complete measure spaces),
-and sometimes modified to the complex-valued case;
-the reader will have no problem adapting
+and sometimes modified to the complex-valued case
+(c.f.~133C of~\cite{fremlin}).
+The reader will have no problem adapting
 the results from~\cite{fremlin} 
 to our setting.
 \end{point}
@@ -1174,9 +1203,36 @@ Still $\mathcal{L}^\infty(X)$
 might still not be a von Neumann algebra
 because not every bounded directed subset of~$\Real{\mathcal{L}^\infty(X)}$
 might have a supremum
-as we'll show presently; \TODO{show this}
+as we'll show presently; 
 this is why we'll move from~$\mathcal{L}^\infty(X)$
 to~$L^\infty(X)$ in a moment.
+\end{point}
+\begin{point}%
+For a counterexample
+to~$\mathcal{L}^\infty(X)$ being always
+a von Neumann algebra
+we take~$X$ to be the unit inverval~$[0,1]$
+with the Lebesgue measure.
+Let~$A$ be a non-measurable
+subset of~$[0,1]$ (see 134B of~\cite{fremlin}).
+The indicator functions~$\mathbf{1}_F$
+where~$F$ is a finite subset of~$A$
+form a bounded directed subset~$D$ of~$\Real{\mathcal{L}^\infty([0,1])}$
+that---so we claim---has no supremum.
+Indeed, note that
+since $f\in \Real{\mathcal{L}^\infty([0,1])}$
+is an upper bound for~$D$ iff~$\mathbf{1}_A\leq f$,
+the least upper bound~$h$ for~$D$
+would be the least bounded measurable function above~$\mathbf{1}_A$.
+Surely, $h\neq \mathbf{1}_A$
+for such~$h$
+(because otherwise~$A$ would be measurable),
+so~$h(x)>\mathbf{1}_A(x)$ for some~$x\in [0,1]$.
+But then $h - (h(x)-\mathbf{1}_A(x))\mathbf{1}_{\{x\}}<h$
+is an upper bound for~$D$ too
+contradicting the minimality of~$h$.
+Whence~$\mathcal{L}^\infty([0,1])$
+is not a von Neumann algebra.
 
 \end{point}
 \begin{point}%
@@ -1363,7 +1419,7 @@ gives a faithful normal positive
 map~$\int\colon L^\infty(X)\to\C$.
 \end{point}
 \end{parsec}
-\begin{parsec}%
+\begin{parsec}[classification-cvn]%
 \begin{point}%
 We'll show that any commutative von Neumann algebra~$\scrA$
 that admits a faithful np-functional $\omega\colon \scrA\to \C$
@@ -1384,7 +1440,7 @@ and compact Hausdorff spaces
 the fact that  $L^\infty(X_1)\cong L^\infty(X_2)$
 for finite complete measure spaces~$X_1$
 and~$X_2$ does not even imply that~$X_1$ and~$X_2$ are 
-isomorphic \TODO{Can this be made more dramatic?}
+isomorphic \TODO{Is this true?}
 (in the category of measurable maps between finite complete
 measure spaces).
 Obtaining an equivalence is nonetheless
@@ -1847,7 +1903,7 @@ we first need some basic facts concerning the
 \section{Projections}
 \begin{parsec}%
 \begin{point}%
-One pertinant feature
+One pertinent feature
 of von Neumann algebras
 is an abundance of projections:
 above each effect~$a$ 
@@ -1857,9 +1913,8 @@ for every np-map $\omega\colon \scrA\to \scrB$
 between von Neumann algebras
 there is a least projection~$p$ with~$\omega(p^\perp)=0$
 called the carrier of~$\omega$ (see~\sref{carrier});
-the directed supremum of projections is again a projection
-and
-the partial order of projections forms a complete lattice
+the directed supremum of projections is again a projection;
+the partial order of projections is complete
 (see~\sref{ceil-floor-basic});
 and each element of a von Neumann algebra is the norm limit
 of linear combinations of projections
@@ -1987,6 +2042,7 @@ from a $C^*$-algebra~$\scrA$ are \Define{orthogonal}
 when~$pq=0$,
 and we say that a subset of projections
 from~$\scrA$ is \Define{orthogonal}
+(and its elements are \Define{pairwise orthogonal})
 when all~$p$ and~$q$ from~$E$
 are either equal or orthogonal.
 \end{point}
@@ -2127,9 +2183,15 @@ $pa=a$ iff $ap=a$ iff $\ceil{a}\leq p$, and
 $pa=p$ iff $ap=p$ iff $p\leq \floor{a}$.
 \end{enumerate}
 Conclude that~$\ceil{a}$
-is the least projection with $a=a\ceil{a}\equiv\ceil{a}a$,
+is the least projection~$p$ with $a=a p$
+(or, equivalently, $a=pa$),
 and that $\floor{a}$
-is the greatest projection with $\floor{a}=a\floor{a}\equiv \floor{a}a$.
+is the greatest projection~$p$ with $p=a p$
+(or, equivalently, $p=pa$.)
+
+In particular,
+$a=a\ceil{a}=\ceil{a}a$
+and $\floor{a}=a\floor{a}=\floor{a}a$.
 \end{point}
 \begin{point}[ceil-floor-basic]{Exercise}%
 Let~$a,b$ be effects of a von Neumann algebra~$\scrA$,
@@ -2201,7 +2263,7 @@ as maps from $[0,1]_\scrA$ to~$[0,1]_\scrA$.
 \end{point}
 \begin{point}[sum-of-orthogonal-projections]{Exercise}%
 Show that for a family~$(p_i)_{i\in I}$ 
-of orthogonal projections
+of pairwise orthogonal projections
 (with~$I$ potentially uncountable)
 the series $\sum_i p_i$
 converges ultrastrongly to~$\bigcup_i p_i$.
@@ -2306,7 +2368,7 @@ by~\sref{floor-sequential-product} we are done.\qed
 \end{parsec}
 \subsection{Range and support}
 \begin{parsec}%
-\begin{point}{Notation}%
+\begin{point}[ceill]{Notation}%
 Let~$\scrA$ be a von Neumann algebra.
 Because it will be very convenient
 we extend the definition of~$\ceil{b}$
@@ -2350,11 +2412,11 @@ for unit vectors~$x$ and~$y$ from a Hilbert space~$\scrH$.
 Let~$a$ and~$b$ be positive elements of a von Neumann algebra~$\scrA$.
 \begin{enumerate}
 \item
-Show that $pa=a$ iff $ap=a$ iff $\ceil{a}\leq p$
-for every projection~$p$ of~$\scrA$.
+Given a projection~$p$ in~$\scrA$
+show that $pa=a$ iff $ap=a$ iff $\ceil{a}\leq p$.
 
-(In particular, $\ceil{a}$ is the least projection of~$\scrA$
-with $a\ceil{a}=a$.)
+(In particular, $\ceil{a}$ is the least projection~$p$ of~$\scrA$
+with $a p=a$.)
 
 \item
 Show that $\ceil{a}a=a\ceil{a}$,
@@ -2394,13 +2456,13 @@ Let~$a$ and~$b$  be elements of a von Neumann algebra.
 \begin{enumerate}
 \item
 Show that $\ceill{a}\equiv \ceil{a^*a}$
-is the least projection of~$\scrA$
-with $a\ceill{a}=a$.
+is the least projection~$p$ of~$\scrA$
+with $ap =a$.
 
 \item
 Show that $\ceilr{a}\equiv \ceil{aa^*}$
-is the least projection of~$\scrA$
-with $\ceilr{a}a=a$.
+is the least projection~$p$ of~$\scrA$
+with $pa=a$.
 
 \item
 Show that $\ceill{a^*}=\ceilr{a}$
@@ -2476,7 +2538,7 @@ For positive elements~$a$ and~$b$ of a von Neumann algebra~$\scrA$,
 \qquad\iff\qquad
 \forall \omega\,[\quad\omega(b)=0\  \implies  \ \omega(a)=0\quad ],
 \end{equation*}
-where~$\omega$ ranges over all np-functionals~$\omega\colon \scrA\to\C$.
+where~$\omega$ ranges over all np-functionals~$\scrA\to\C$.
 \begin{point}{Proof}%
 When~$\ceil{a}\leq\ceil{b}$
 and~$\omega$ is an np-functional on~$\scrA$
@@ -2530,7 +2592,8 @@ $\ceil{a^*ba} = \ceil{a^*\ceil{b}a}$
 when~$b\geq 0$.
 \item
 Conclude that~$\ceill{ab}=\ceill{\ceill{a}b}$
-and~$\ceilr{ab}=\ceilr{a\ceilr{b}}$.
+and~$\ceilr{ab}=\ceilr{a\ceilr{b}}$
+(see~\sref{ceill}).
 
 \end{enumerate}
 \end{point}
@@ -2615,9 +2678,10 @@ and~$\floor{a}=\bigwedge_n a^{2^n}$ (see~\sref{vna-floor}).\qed
 The \Define{carrier}
 of an np-map $f\colon \scrA\to\scrB$
 between von Neumann algebras
-is the least projection~$\Define{\ceil{f}}$ in~$\scrA$
-with~$f(\smash{\ceil{f}}^\perp)=0$
-(which exists by~\sref{ncp-union}).
+(written $\Define{\ceil{f}}$)
+is the least projection~$p$
+with~$f(p^\perp)=0$
+(which exists by~\sref{ncp-union}.)
 \end{point}
 \begin{point}[carrier-basic]{Exercise}%
 Let~$f,g\colon \scrA\to\scrB$
@@ -2634,7 +2698,7 @@ Show that~$\ceil{f}=1$ iff~$f$ is faithful.
 Assuming~$f$ is multiplicative
 show that~$\ceil{f}=1$ iff~$f$ is injective.
 
-(There is more to say about
+(There is more to be said about
 the carrier of a miu-map, see~\sref{carrier-miu}.)
 \end{enumerate}
 \end{point}
@@ -2717,17 +2781,13 @@ for all~$a\in\scrA$.
 \end{parsec}
 \begin{parsec}%
 \begin{point}%
-We end our exposition on projections
-by showing that every element in a von Neumann 
+We turn
+to task of showing that every element
+of a von Neumann
 algebra is the norm limit of linear combinations
 of projections in~\sref{projections-norm-dense}.
 We'll deal with the  commutative case first
-(see~\sref{abelian-projections-norm-dense}),
-and for this we
-need an interesting 
-property of the spectrum of a commutative von Neumann algebra,
-see~\sref{vn-spectrum-extremally-disconnected}.
-\TODO{rewrite!!}
+(see~\sref{abelian-projections-norm-dense}).
 \end{point}
 \begin{point}[abelian-projections-norm-dense]{Proposition}%
 Every element~$a$ of a commutative von Neumann algebra~$\scrA$
@@ -2768,6 +2828,13 @@ and so~$y\notin \overline{U}$.\qed
 \end{point}
 \end{parsec}
 \begin{parsec}%
+\begin{point}%
+To reduce the general case
+to the commutative case
+we need the following tool
+(that will be useful 
+later on too for different reasons).
+\end{point}
 \begin{point}[commutant]{Definition}%
 Given a subset~$S$ of a von Neumann algebra~$\scrA$
 the \Define{commutant} of~$S$
@@ -2777,7 +2844,7 @@ of all~$a\in\scrA$ with $as=sa$ for all~$s\in S$.
 The commutant of~$\scrA$ itself
 is denoted by~$\Define{Z(\scrA)}:=\scrA^\square$
 and is called the \Define{centre} of~$\scrA$.
-(Its elements, called \emph{central}, are the subject of the next section.)
+(Its elements, called \emph{central}, are the subjects of the next section.)
 \end{point}
 \begin{point}[commutant-basic]{Exercise}%
 Let~$S$ and~$T$ be subsets of a von Neumann algebra~$\scrA$.
@@ -2850,7 +2917,69 @@ by~\sref{abelian-projections-norm-dense}.\qed
 \end{point}
 \end{point}
 \end{parsec}
-\subsection{Central support and carrier}
+\begin{parsec}%
+\begin{point}%
+The carriers of np-functionals
+play such an important role in the theory
+that we decided to give them a name:
+\end{point}
+\begin{point}{Definition}%
+We call a projection~$p$ of a von Neumann algebra~$\scrA$
+\Define{ultracyclic} if~$p=\ceil{\omega}$
+for some np-map $\omega\colon \scrA\to\C$.
+\begin{point}{Remark}%
+Some explanation of this terminology
+is in order.
+A projection~$E$
+in a von Neumann subalgebra~$\scrR$
+of~$\scrB(\scrH)$
+is usually defined to be \Define{cyclic}
+when~$E$ is the projection 
+onto~$\smash{\overline{\scrR^\square x}}$
+for some~$x\in \scrH$
+(see Definition~5.5.8~\cite{kr}),
+but with~\sref{carrier-vector-state} and~\sref{double-commutant}
+we'll be able to see that
+this amount to requiring that~$E$
+be
+the carrier of the vector functional
+$\left<x,(\,\cdot\,)x\right>\colon \scrR\to\C$.
+So, loosely speaking,
+a cyclic projection
+is the carrier of a vector functional
+with respect to some fixed Hilbert space,
+while an ultracyclic projection
+is the carrier of a vector functional
+with respect to some arbitrary Hilbert space.
+\end{point}
+\end{point}
+\begin{point}[ultracyclic-basic]{Exercise}%
+Let~$\scrA$ be a von Neumann algebra.
+Verify the following facts.
+\begin{enumerate}
+\item
+If~$p$ and~$q$ are ultracyclic projections in~$\scrA$,
+then~$p\cup q$ is ultracyclic.
+\item
+If~$p \leq q$ are projections in~$\scrA$,
+and~$q$ is ultracyclic,
+then~$p$ is ultracyclic.
+\item
+Every projection~$p$ in~$\scrA$ is a directed supremum
+of ultracyclic projections.
+In fact, $p=\bigvee_\omega \ceil{\omega}$
+where~$\omega$ ranges over the np-functionals on~$\scrA$
+with $\omega(p^\perp)=0$.
+(Hint: first consider~$p=1$.)
+\item
+Every projection~$p$ in~$\scrA$ is the 
+sum of ultracyclic projections:
+there are np-functionals $(\omega_i)_i$
+on~$\scrA$ with $p=\sum_i \ceil{\omega_i}$.
+\end{enumerate}
+\end{point}
+\end{parsec}
+\subsection{Central support and central carrier}
 \begin{parsec}%
 \begin{point}{Definition}%
 An element~$a$ of a von Neumann algebra~$\scrA$
@@ -2883,8 +3012,47 @@ for all~$x,y\in\scrH$,
 and so~$A\|y\|^2= \|\sqrt{A}y\|^2$
 for all~$y\in\scrH$.
 Hence~$A$ is (zero or) a scalar.
+
 \end{enumerate}
 \end{point}
+\begin{point}{Remark}%
+A von Neumann algebra
+in which only the scalars are central
+--- of which the~$\scrB(\scrH)$ are but the simplest examples ---
+is called a \Define{factor}.
+The classification of these factors
+is an important part
+of the theory of von Neumann algebras
+that we did not need for to this thesis.
+\end{point}
+\begin{point}[central-projections-sums]{Exercise}%
+Note that if a von Neumann algebra
+$\scrA$ can be written as
+a direct sum $\scrA\cong \scrB_1\oplus \scrB_2$,
+then~$(1,0)\in\scrB_1\oplus\scrB_2$ gives
+a central projection in~$\scrA$.
+The converse also holds:
+\begin{enumerate}
+\item
+Given a central projection~$c$ in~$\scrA$,
+show that~$c\scrA \equiv \{\,ca\colon\, a\in\scrA\,\}$ 
+is a von Neumann subalgebra of~$\scrA$
+for all but the fact that $1$ need not be in~$c\scrA$.
+
+Show~$c\scrA$
+is a von Neumann algebra with~$c$ as unit,
+and that $a\mapsto (ca,c^\perp a)$
+gives a nmiu-isomorphism
+$\scrA\to c\scrA\oplus c^\perp \scrA$.
+\item
+Given a family of central projections $(c_i)_i$ in~$\scrA$
+with $\sum_i c_i=1$
+show that $a\mapsto (c_ia)_i$
+gives a nmiu-isomorphism $\scrA\to\bigoplus_i c_i \scrA$.
+\end{enumerate}
+\end{point}
+\end{parsec}
+\begin{parsec}%
 \begin{point}[cceil-fundamental]{Proposition}%
 Given a projection~$e$ of a von Neumann algebra~$\scrA$
 \begin{equation*}
@@ -2930,8 +3098,8 @@ iff
 $ca=a$ iff $\cceil{\ceilr{a}}\leq c$,
 we see that~$\Define{\cceil{a}}:=
 \cceil{\ceill{a}}=\cceil{\ceilr{a}}$
-is the smallest central projection
-with~$\cceil{a}a=a$,
+is the smallest central projection~$p$
+with~$p a=a$,
 which we'll call the
 \Define{central support} of~$a$.
 \end{point}
@@ -2975,8 +3143,8 @@ iff $\ceil{f}\leq c$
 iff $\cceil{\ceil{f}}\leq c$,
 and so~$\Define{\cceil{f}}:=\cceil{\ceil{f}}$
 is the least central effect
-(and projection)
-with~$f(\cceil{f}^\perp)=0$,
+(and central projection) $p$
+with~$f(p^\perp)=0$,
 which we'll call the \Define{central carrier} of~$f$.
 \end{point}
 \begin{point}{Proposition}%
@@ -3057,7 +3225,7 @@ Since similarly $c\leq c'$, we get~$c=c'$.\qed
 Given a nmiu-map $f\colon \scrA\to\scrB$
 between von Neumann algebras
 we have~$\ceil{f}=\cceil{f}$
-and $\ker(f)=\cceil{f}\!\scrA$.
+and $\ker(f)=\cceil{f}^\perp\!\scrA$.
 \end{point}
 \begin{point}[proto-gns-ceil]{Lemma}%
 We have~$\cceil{\omega}=
@@ -3136,7 +3304,8 @@ and~\ref{vn-center-separating-1}$\Rightarrow$\ref{vn-center-separating-2}
 is trivial,
 which leaves us with 
 \ref{vn-center-separating-2}$\Rightarrow$\ref{vn-center-separating-3}.
-So assume that~$\omega(z)=0$ for every central projection~$z$
+So assume that~$\forall \omega\in\Omega\,[\,\omega(z)=0\,]\implies z=0$ 
+for every central projection~$z$
 of~$\scrA$.
 Then since~$\ceil{\varrho_\Omega}^\perp$
 is a central projection
@@ -3157,11 +3326,46 @@ by~\sref{carrier-basic}.\qed
 \end{point}
 \end{point}
 \end{parsec}
+\begin{parsec}%
+\begin{point}%
+With our new-found knowledge on central elements
+we can complete the classification
+of commutative von Neumann algebras
+we started in~\sref{classification-cvn}.
+\end{point}
+\begin{point}[central-projection-central-carrier]{Exercise}%
+Show that every central projection~$c$
+of a von Neumann algebra is of
+the form~$c\equiv \sum_i \cceil{\omega_i}$
+for some family of np-functionals $(\omega_i)_i$ on~$\scrA$.
+\end{point}
+\begin{point}[cvn]{Theorem}%
+Every commutative von Neumann algebra
+is nmiu-isomorphic
+to a direct sum of the form  $\bigoplus_i L^\infty(X_i)$
+where~$X_i$ are finite complete measure spaces.
+\begin{point}{Proof}%
+By~\sref{central-projection-central-carrier}
+we have $1\equiv \sum_i \cceil{\omega_i} $
+for some np-functionals $\omega_i\colon \scrA\to\C$,
+and so~$\scrA\cong \bigoplus_i \cceil{\omega_i}\!\scrA$
+by~\sref{central-projections-sums}.
+Since~$\scrA$ is commutative,
+and so~$\cceil{\omega_i}=\ceil{\omega_i}$,
+we see that restricting~$\omega_i$
+gives a faithful functional on~$\cceil{\omega_i}\!\scrA$,
+which is therefore by~\sref{cvn-faithful} nmiu-isomorphic to~$L^\infty(X_i)$
+for some finite complete measure space~$X_i$.
+From this the stated result follows.\qed
+\end{point}
+\end{point}
+\end{parsec}
+
 \section{Completeness}
 \begin{parsec}%
 \begin{point}%
 We set to work on the ultrastrong and bounded ultraweak completeness
-of von Neumann algebras (see~\sref{vn-complete}) and its precursors:
+of von Neumann algebras (see~\sref{vn-complete}) and their precursors:
 \begin{enumerate}
 \item
 A linear (not necessarily positive)
@@ -3240,7 +3444,7 @@ Deduce that $\| b*\omega - b'*\omega\|
 for all~$b,b'\in\scrA$.
 
 \item
-Let~$b_1,b_2,\dotsc$  a sequence in~$\scrA$,
+Let~$b_1,b_2,\dotsc$ be a sequence in~$\scrA$
 which is Cauchy with respect to~$\|\,\cdot\,\|_\omega$.
 Show that the sequence~$b_1*\omega,\,b_2*\omega,\,\dotsc$ 
 is Cauchy (in the operator norm
@@ -3252,7 +3456,7 @@ Show that~$f$ is an np-map.
 \begin{point}{Exercise}%
 Let~$f\colon \scrA\to \C$ be an ultrastrongly continuous linear
 functional on a von Neumann algebra~$\scrA$.
-Show that there is an np-map
+Show that there are an np-map
 $\omega\colon \scrA\to \C$
 and $\delta>0$
 with $\left|f(a)\right|\leq 1$
@@ -3294,7 +3498,11 @@ $\left|f_k(a)\right|^2 \leq
 f_k(1)\,f_k(a^*a) \leq f_k(1)B \,\omega(a^*a)$,
 giving~$\left|f_k(a)\right| \leq (f_k(1)B)^{\nicefrac{1}{2}} \|a\|_\omega$,
 and so~$\left|f(a)\right|\leq \tilde{B} \|a\|_\omega$,
-where $\tilde{B} = B^{\nicefrac{1}{2}}\sum_{k=0}^3f_k(1)^{\nicefrac{1}{2}}$.
+where 
+\begin{equation*}
+	\textstyle
+	\tilde{B} \,=\, B^{\nicefrac{1}{2}}\sum_{k=0}^3f_k(1)^{\nicefrac{1}{2}}.
+\end{equation*}
 Hence~$\left|f(a)\right|\leq \tilde{B}$
 for all~$a\in\scrA$ with $\|a\|_\omega\leq 1$.
 \end{point}
@@ -3419,7 +3627,7 @@ in the usual topology.
 \item
 Show that addition on~$\R^2$ is not jointly radially continuous.
 \item
-Show that nevertheless $\{s\in \R \colon sx+s^\perp y\in A\}$
+	Show that nevertheless $\{s\in \R \colon sx+(1-s) y\in A\}$
 is open for every radially open~$A\subseteq V$, and $x,y\in V$.
 \item
 Show that $A+B$ is radially open when~$A,B\subseteq V$ are radially open.
@@ -3842,7 +4050,7 @@ because then~$\omega_0(\ceil{a}) = 0 = \omega_1(\ceil{a}^\perp)$
 by~\sref{ceil-functionals-lemma}
 and~$\ceil{a}\in\scrB$.
 
-Note that we may find a subsequence~$(b_n)_n$ of~$(b_\alpha)_\alpha$
+Note that we can find a subsequence~$(b_n)_n$ of~$(b_\alpha)_\alpha$
 such that $\omega_0( b_n ) 
 \leq n2^{-n}$
 and $\omega_1(b_n^\perp)\leq n^{-1}$
@@ -3940,56 +4148,6 @@ to~$\omega_1(p^\perp)\equiv 0$.
 Now apply~\sref{sequence-separation-lemma}.\qed
 \end{point}
 \end{point}
-\begin{point}{Definition}%
-We call a projection~$p$ of a von Neumann algebra~$\scrA$
-\Define{ultracyclic} if~$p=\ceil{\omega}$
-for some np-map $\omega\colon \scrA\to\C$.
-\begin{point}{Remark}%
-Some explanation of this terminology
-is in order.
-A projection~$E$
-in a von Neumann subalgebra~$\scrR$
-of~$\scrB(\scrH)$
-is usually defined to be \Define{cyclic}
-when~$E$ is the projection 
-onto~$\smash{\overline{\scrR^\square x}}$
-for some~$x\in \scrH$
-(see Definition~5.5.8~\cite{kr}),
-but with~\sref{carrier-vector-state} and~\sref{double-commutant}
-we'll be able to see that
-this amount to requiring that~$E$
-be
-the carrier of the vector functional
-$\left<x,(\,\cdot\,)x\right>\colon \scrR\to\C$.
-So, loosely speaking,
-a cyclic projection
-is the carrier of a vector functional
-with respect to some fixed Hilbert space,
-while an ultracyclic projection
-is the carrier of a vector functional
-with respect to some arbitrary Hilbert space.
-\end{point}
-\end{point}
-\begin{point}[ultracyclic-basic]{Exercise}%
-Let~$\scrA$ be a von Neumann algebra.
-Verify the following facts.
-\begin{enumerate}
-\item
-If~$p$ and~$q$ are ultracyclic projections in~$\scrA$,
-then~$p\cup q$ is ultracyclic.
-\item
-If~$p \leq q$ are projections in~$\scrA$,
-and~$q$ is ultracyclic,
-then~$p$ is ultracyclic.
-\item
-Every projection~$p$ in~$\scrA$ is a directed supremum
-of ultracyclic projections.
-In fact, $p=\bigvee_\omega \ceil{\omega}$
-where~$\omega$ ranges over the np-functionals on~$\scrA$
-with $\omega(p^\perp)=0$.
-(Hint: first consider~$p=1$.)
-\end{enumerate}
-\end{point}
 \begin{point}[vnsac]{Theorem}%
 A von Neumann subalgebra~$\scrB$ of a von Neumann algebra~$\scrA$
 is ultrastrongly and ultraweakly closed.
@@ -4048,7 +4206,7 @@ The von Neumann algebra~$\scrB(\scrH)$
 of bounded operators on a Hilbert space~$\scrH$
 is ultrastrongly complete.
 \begin{point}{Proof}
-Let~$(T_\alpha)_\alpha$ be an ultrastrongly-Cauchy net
+Let~$(T_\alpha)_\alpha$ be an ultrastrongly Cauchy net
 in~$\scrB(\scrH)$
 (which must be shown to converge ultrastrongly to
 some operator~$T$ in~$\scrB(\scrH)$).
@@ -4101,7 +4259,7 @@ and pick~$\alpha_0$
 such that $\|T_\alpha-T_\beta\|_\omega \leq 
 \smash{\frac{1}{2\sqrt{2}}}\,\varepsilon$
 for all~$\alpha,\beta\geq \alpha_0$
---- this is possible, because~$(T_\alpha)_\alpha$ is ultrastrongly Cauchy.
+--- this is possible  because~$(T_\alpha)_\alpha$ is ultrastrongly Cauchy.
 We claim that $\|T-T_\alpha\|_\omega \leq \varepsilon$
 for any~$\alpha\geq \alpha_0$.
 Since for such~$\alpha$
@@ -4151,7 +4309,7 @@ The von Neumann algebra~$\scrB(\scrH)$
 of bounded operators on a Hilbert space~$\scrH$
 is bounded ultraweakly complete.
 \begin{point}{Proof}%
-Let~$(T_\alpha)_\alpha$ be a norm-bounded ultraweakly-Cauchy net
+Let~$(T_\alpha)_\alpha$ be a norm-bounded ultraweakly Cauchy net
 in~$\scrB(\scrH)$.
 We must show that~$(T_\alpha)_\alpha$
 converges ultraweakly
@@ -4261,7 +4419,7 @@ Since~$\kappa$ restricts
 to an isomorphism of uniform spaces
 $(\scrA)_1\to \kappa(\,(\scrA)_1\,)$,
 and $(\scrA)_1$ is ultraweakly complete 
-(being a norm-bounded ultraweakly-closed
+(being a norm-bounded ultraweakly closed
 subset of the bounded ultraweakly complete space~$\scrA$,
 see~\sref{vn-complete}),
 we see that $\kappa(\,(\scrA)_1\,)$
@@ -4275,7 +4433,7 @@ and $\omega\in\Omega$.
 But then~$\kappa(\,(\scrA)_1\,)$,
 being a closed subset of a compact Hausdorff space,
 is compact,
-and so $(\scrA)_1$ (being isomorphic to it) is compact too.\qed
+and so $(\scrA)_1$ (being homeomorphic to it) is compact too.\qed
 \end{point}
 \end{point}
 \begin{point}[vn-extension]{Proposition}%
@@ -4403,6 +4561,11 @@ and so~$g$ is ultraweakly continuous.\qed
 \end{parsec}
 \section{Division}
 \label{S:division}
+\begin{parsec}%
+\begin{point}%
+\TODO{intro}
+\end{point}
+\end{parsec}
 \subsection{(Approximate) pseudoinverses}
 \begin{parsec}%
 \begin{point}[dfn-pseudoinverse]{Definition}%
@@ -4614,7 +4777,7 @@ Writing $e_{n}=q_{n+1}-q_n$
 for all~$n$ (taking~$q_0:=0$)
 --- and thinking of it as the places
 where $\frac{1}{n+1}\leq a\leq \frac{1}{n}$ --- 
-we get a sequence of (orthogonal) projections
+we get a sequence of (pairwise orthogonal) projections
 $e_1,e_2,\dotsc$ in~$\{a\}^{\square\square}$
 with $\sum_n e_n = \ceil{a}$.
 By an easy computation
@@ -4732,7 +4895,7 @@ bt_m,
 \end{alignat*}
 where we've used that
 $bt_1,\ bt_2,\ \dotsc$
-are orthogonal projections
+are pairwise orthogonal projections
 --- but then the series~$\sum_{n=0}^\infty bt_m$
 converges ultraweakly by~\sref{sum-of-orthogonal-projections}.
 This, coupled with the
@@ -5006,7 +5169,7 @@ $(e_i)_i$ of non-zero projections with $\cceil{e}=\sum_i e_i$,
 and $e_i\vmleq e$ for all~$i$.
 \begin{point}{Proof}%
 Let~$(e_i)_i$
-be a maximal set of non-zero orthogonal projections
+be a maximal set of non-zero pairwise orthogonal projections
 in~$\scrA$ with
 $e_i\vmleq e$ for all~$i$.
 Our goal is to show that $\sum_i e_i \equiv \bigcup_i e_i=\cceil{e}$.
@@ -5664,8 +5827,8 @@ of a collection $(u_i)_i$
 of partial isometries from some von Neumann algebra
 is again a partial isometry, 
 provided that the initial projections $u_i^*u_i$
-are orthogonal,
-and the final projections~$u_iu_i^*$ are orthogonal.
+are pairwise orthogonal,
+and the final projections~$u_iu_i^*$ are pairwise orthogonal.
 In this exercise, you'll establish a similar result,
 but for partial isometries between two different Hilbert spaces,
 and avoiding the use of an analogue of 
@@ -5711,7 +5874,7 @@ Prove that $UU^* = \sum_i U_iU_i^*$.
 \begin{point}[sigma-weak-lemma-2]{Lemma}%
 Let~$\Omega$ be a collection of np-maps $\omega\colon \scrA\to\C$
 on a von Neumann algebra~$\scrA$ 
-whose central carriers,  $\cceil{\omega}$, are orthogonal to one another,
+whose central carriers,  $\cceil{\omega}$, are pairwise orthogonal to one another,
 and let~$\scrH$ and~$\scrK$ be Hilbert spaces
 on which~$\scrA$ is represented such
 that each~$\omega\in\Omega$ 
@@ -5762,9 +5925,9 @@ for all~$a\in\scrA$.
 We'll combine these $U_\omega$s into one operator~$U$
 using~\sref{summing-partial-isometries} but for this must
 verify that the projections $U_\omega^* U_\omega=\ceil{\sigma_\omega'}$
-are orthogonal,
+are pairwise orthogonal,
 and that the projections $U_\omega U_\omega^*$
-are orthogonal too.
+are pairwise orthogonal too.
 To this end note that
 $\cceil{\sigma_\omega}=\cceil{\sigma_\omega'}$
 by~\sref{commutant-cceil}.
@@ -5774,10 +5937,10 @@ and $\ceil{\sigma_\omega'}\leq \cceil{\sigma_\omega'}
 = \cceil{\sigma_\omega} =\varrho(\cceil{\omega})$,
 we see that the projections~$U^*_\omega U_\omega \equiv 
 \ceil{\sigma_\omega'}$
-are indeed orthogonal.
+are indeed pairwise orthogonal.
 Since for a similar reason
 the projections $U_\omega U_\omega^*
-\equiv \ceil{\tau_\omega'}$ are orthogonal too,
+\equiv \ceil{\tau_\omega'}$ are pairwise orthogonal too,
 there is by~\sref{summing-partial-isometries}
 a bounded operator $U\colon \scrK\to\scrH$
 with 
@@ -5789,7 +5952,7 @@ for all~$x\in\scrH$ and~$y\in \scrK$.
 Let us check that~$U$ has the desired properties.
 To begin, since the projections
 $\cceil{U_\omega^*U_\omega}=\cceil{\sigma_\omega'}=\varrho(\cceil{\omega})$
-are orthogonal,
+are pairwise orthogonal,
 we have $\cceil{U^*U}=\sum_\omega \cceil{U_\omega^* U_\omega}
 =  \varrho(\sum_\omega \cceil{\omega})$
 by~\sref{cceil-basic} and
@@ -5833,7 +5996,7 @@ central carriers~$\cceil{\omega_i}$
 of the corresponding vector functionals
 $\omega_i :=\left<x_i,\varrho(\,\cdot\,)x_i\right>$
 on~$\scrA$
-are orthogonal;
+are pairwise orthogonal;
 so that we'll 
 have $\sum_i \cceil{\omega_i}=1$.
 Now, the point of~$\scrH_\Omega$ 
