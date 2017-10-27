@@ -4562,7 +4562,88 @@ and so~$g$ is ultraweakly continuous.\qed
 \label{S:division}
 \begin{parsec}%
 \begin{point}%
-\TODO{intro}
+Using the ultrastrong completeness of von Neumann algebras
+(see~\sref{vn-complete})
+we'll address
+the question of division:
+given elements~$a$ and~$b$ of a von Neumann algebra~$\scrA$,
+when is there an element~$c\in\scrA$
+with $a=cb$?
+Surely, 
+such~$c$ can not always exist,
+because
+its presence
+implies
+\begin{equation}
+	\label{douglas-ineq}
+	a^*a \ \leq \ B\, b^*b,
+\end{equation}
+where~$B=\|c\|^2$;
+but this turns out to be the only restriction:
+we'll see in~\sref{douglas} that if~\eqref{douglas-ineq}
+holds for some~$B\in [0,\infty)$,
+then~$a=cb$ for some
+unique~$c\in\scrA$
+with~$\ceill{c}\leq \ceilr{b}$,
+which we'll denote by~$a/b$.
+
+The main application of this division in our work
+is a universal property
+for the map $b\mapsto \sqrt{a}b\sqrt{a}\colon
+\scrA\to\ceil{a}\!\scrA\!\ceil{a}$
+where~$a$ is a positive element of a von Neumann algebra~$\scrA$.
+Indeed,
+we'll show that
+for every np-map $f\colon \scrB\to \scrA$
+with $f(1)\leq a$
+there is a (unique) np-map $g\colon\scrB\to\ceil{a}\!\scrA\!\ceil{a}$
+with~$f(b)=\sqrt{a}g(b)\sqrt{a}$ for all~$b\in\scrB$
+---
+by taking $g(b)=\sqrt{a}\backslash  (f(b) / \sqrt{a})$,
+see~\sref{canonical-filter}.
+This does not give a complete description
+of the map~$b\mapsto \sqrt{a}b\sqrt{a}$,
+though,
+since it shares its universal property
+with all the maps
+$b\mapsto c^*bc,\,\scrA\to\ceil{a}\!\scrA\!\ceil{a}$
+where~$c\in\scrA$ with $c^*c = a$,
+but that
+is a  challenge for the next chapter.
+
+Returning to division again,
+another
+application
+is the polar decomposition
+of an element~$a$ of a von Neumann algebra~$\scrA$,
+see~\sref{polar-decomposition},
+which is simply
+\begin{equation*}
+	a \,=\, (a/ \sqrt{a^*a})\, \sqrt{a^*a}.
+\end{equation*}
+
+Before we get down to business,
+let us indicate the difficulty
+in defining~$a/b$
+for~$a$ and~$b$ that obey~\eqref{douglas-ineq}.
+Surely, if~$b$ is invertible,
+then we could simply put $a/b:=ab^{-1}$;
+and also if~$b$ is just \emph{pseudoinvertible}
+in the sense that $b^{\sim 1 }b=\ceill{b}$
+and $bb^{\sim 1}=\ceilr{b}$
+for some~$b^{\sim 1}$
+the formula $a/b:=ab^{\sim 1}$ would work.
+But,
+of course,
+$b$ need not be pseudoinvertible.
+The  ideal of~$b^{\sim 1}$
+can however be approximated
+in an appropriate sense by a formal series $\sum_n t_n$ 
+(which we call an \emph{approximate pseudoinverse})
+so that we can take
+$a/b:= \sum_n a t_n$
+(using ultrastrong completeness to see that
+the series converges.)
 \end{point}
 \end{parsec}
 \subsection{(Approximate) pseudoinverses}
