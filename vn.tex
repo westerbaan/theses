@@ -4888,7 +4888,6 @@ making $t_1,t_2,\dotsc$ an approximate pseudoinverse of~$a$.\qed
 \end{point}
 \end{parsec}
 \subsection{Division}
-\TODO{add narative}
 \begin{parsec}%
 \begin{point}[division]{Definition}%
 Let~$b$ be an element of a von Neumann algebra~$\scrA$,
@@ -4896,14 +4895,14 @@ and let~$a$ be an element of~$\scrA b$
 --- so~$a\equiv cb$ for some~$c\in\scrA$.
 We denote by~\Define{$a/b$} 
 the (by~\sref{mult-cancellation}) unique
-element of~$\scrA\!\ceilr{b}$
-with~$a=(a/b)\, b$,
+element~$c$ of~$\scrA\!\ceilr{b}$
+with~$a=cb$,
 and, dually,
 given an element~$a$ of~$b\scrA$ 
 we denote by~\Define{$b\backslash a$} 
 the unique
-element of~$\ceill{b}\!\scrA$
-with~$a=b\,(b\backslash a)$.
+element~$c$ of~$\ceill{b}\!\scrA$
+with~$a=bc$.
 \end{point}
 \begin{point}{Exercise}%
 Let~$a$ and~$b$
@@ -4923,11 +4922,11 @@ and
 $c/b\,\in\,a\scrA$, and
 \begin{equation*}
 (a\backslash c)/b\ =\  a\backslash(c/b)
-\quad \text{ --- which we'll therefore denote by}\  \Define{a\backslash c/b}.
+\quad =:\  \Define{a\backslash c/b}.
 \end{equation*}
 Show that~$a\backslash c/b$
-is the unique element of~$\ceill{a}\scrA\ceilr{b}$
-with~$c=a\,(a\backslash c / b)\, b$. 
+is the unique element~$d$ of~$\ceill{a}\scrA\ceilr{b}$
+with~$c=adb$. 
 \item
 Let~$c$ be an element of~$\scrA b$
 and let~$d$ be an element of~$a\scrA$.
@@ -5024,7 +5023,7 @@ need not entail that~$a\in \scrA b$.
 \end{enumerate}
 \end{point}
 \begin{point}[sequential-douglas]{Exercise}%
-Let~$b$ be an element of a von Neumann algebra.
+Let~$b$ be an element of a von Neumann algebra~$\scrA$.
 \begin{enumerate}
 \item
 Let~$a$ be a positive element of~$\scrA$,
@@ -5180,16 +5179,16 @@ the following are equivalent.
 $a\leq \lambda b$ for some~$\lambda\geq 0$;
 \item
 $a=\sqrt{b}c\sqrt{b}$
-for some positive~$c\in\scrA$,
+for some positive~$c\in\scrA$.
 \end{enumerate}
-and, 
-in that case, there is a unique~$c\in\scrA_+$
+In that case, there is a unique~$c\in\scrA_+$
 with $a=\sqrt{b}c\sqrt{b}$
-and~$\ceil{c}\leq \ceil{b}$,
-and if~$t_1,t_2,\dotsc$
+and~$\ceil{c}\leq \ceil{b}$.
+Moreover,
+if~$t_1,t_2,\dotsc$
 is an approximate pseudoinverse of~$\sqrt{b}$,
 then~$\sum_{m,n} t_m a t_n$
-converges ultraweakly to this~$c$.
+converges ultraweakly to such~$c$.
 \end{point}
 \end{parsec}
 \begin{parsec}%
@@ -5222,7 +5221,7 @@ for some partial isometry~$u$.
 \end{enumerate}
 In that case
 we write~$\Define{e'\vmleq e}$
-(and say~$e'$ is \Define{von Neumann--Murray below}~$e$).
+(and say~$e'$ is \Define{Murray--von Neumann below}~$e$).
 \begin{point}{Proof}%
 That~\ref{vmleq-3}
 implies~\ref{vmleq-2} is clear.
@@ -5287,6 +5286,31 @@ Hence $\bigcup_i e_i = \cceil{e}$.
 \end{parsec}
 
 \section{Normal functionals}
+\begin{parsec}%
+\begin{point}%
+For our study of the category of von Neumann algebras
+we need two more technical results
+concerning the normal functionals
+on a von Neumann algebra.
+
+The first one,
+that a net $(b_\alpha)_\alpha$
+in a von Neumann algebra~$\scrA$ is (norm) bounded
+provided that $(\omega(b_\alpha))_\alpha$
+is bounded for each np-functionals $\omega\colon \scrA\to\C$
+(see~\sref{ultraweakly-bounded-implies-bounded}),
+ultimately
+follows from a type of polar decompisition for 
+ultraweakly linear functionals (see~\sref{polar-decomposition-of-functional}).
+
+The second one,
+that the ultraweak topology of a von Neumann subalgebra
+coincides with the ultraweak topology of the surrounding space
+(see~\sref{functional-permanence}),
+is proven using the double commutant theorem (\sref{double-commutant})
+and a lot of hard work.
+\end{point}
+\end{parsec}
 \subsection{Ultraweak boundedness}
 \begin{parsec}%
 \begin{point}%
@@ -5392,7 +5416,7 @@ that~$\|a\|\leq 1$.
 We'll show that $\|u\pm a\|\leq 1$,
 because,
 since~$u$ is extreme in~$(\scrA)_1$,
-$u\equiv \frac{1}{2}(u+a)+(u-a)$
+$u\equiv \frac{1}{2}(u+a)+\frac{1}{2}(u-a)$
 implies that~$u=u+a$, and so $a=0$.
 Note that $a^*a \leq (u^*u)^\perp$ (because $a(u^*u)^\perp=a$)
 and $u^*a = 0$ (because $(uu^*)^\perp a=a$).
@@ -5416,7 +5440,7 @@ are positive.
 (Based on Theorem~7.3.2 of~\cite{kr}.) 
 \begin{point}%
 We'll first show that~$f$ takes the value~$\|f\|$
-on some extreme point~$u$ of~$(\scrA)_1$.
+at some extreme point~$u$ of~$(\scrA)_1$.
 To begin, since~$(\scrA)_1$ is ultraweakly compact (\sref{vn-ball-compact}),
 and~$f$ is ultraweakly continuous
 the subset $\{\,f(a)\colon\,a\in(\scrA)_1\,\}$
@@ -5533,7 +5557,7 @@ and so $\scrA$ ``is'' the dual of~$\scrA_*$,
 (albeit only as normed space,
 because~$(\scrA_*)^*$ doesn't come equipped with a multiplication.)
 
-We'll do need this:
+We will need this:
 \end{point}
 \end{point}
 \begin{point}[predual-complete]{Proposition}%
@@ -5574,6 +5598,21 @@ one easily deduces that~$\lim_\alpha f(b_\alpha)=0$.
 Thus~$f$ is ultraweakly continuous,
 and so~$\scrA_*$ is complete.\qed
 \end{point}
+\end{point}
+\begin{point}%
+Note
+that for a self-adjoint
+element~$a$ of a von Neumann algebra~$\scrA$
+we have $\|a\|=\sup_\omega \left|\omega(a)\right|$
+where~$\omega$ ranges
+over the npsu-functionals,
+but that the same identity does not need to hold
+for arbitrary (not necessarily self-adjoint) $a\in \scrA$.
+The following lemma shows
+that this restriction to self-adjoint elements
+can be lifted 
+by letting~$\omega$
+range over all of~$\scrA_*$.
 \end{point}
 \begin{point}[norm-predual]{Lemma}%
 We have $\|a\|=\sup_{f\in(\scrA_*)_1}\left|f(a)\right|$
@@ -5765,9 +5804,11 @@ $\varrho'(t)y=(ty_n)_n$
 for all~$t\in\scrB(\scrH)$ and~$y\in\scrH'$.
 
 \item
-Let~$t\in S^{\square\square}$ be given.
+Let~$t\in S^{\square\square}$ be given
+(with~$S$ as above).
 Show that $\varrho'(t)\in \varrho'(S)^{\square\square}$.
-\TODO{Check the difficulty of this}
+
+\TODO{check the difficulty of this.}
 
 Prove that  $\varrho'(t)x\,\in\,\overline{\varrho'(S)^{\square\square}x}
 \equiv \overline{\varrho'(S)x}$.
