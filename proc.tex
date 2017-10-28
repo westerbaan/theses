@@ -3723,36 +3723,6 @@ in the same way~$\W{cpsu}$ that does.
 \end{parsec}
 
 \section{Duplicators and Monoids}
-\begin{parsec}%
-\begin{point}%
-In this section we'll need the following two results from the theory
-on $C^*$-algebras---I had no time
-to incorporate their proofs in this text.
-\end{point}
-\begin{point}[tomiyama]{Theorem (Tomiyama)}%
-Given a $C^*$-subalgebra~$\scrB$
-of a $C^*$-algebra~$\scrA$,
-any linear map $f\colon \scrA\to\scrB$
-with~$f(f(a))=f(a)$ and~$\|f(a)\|\leq\|a\|$ 
-for all~$a\in \scrA$
-must be positive
-and obey~$bf(a)b'=f(bab')$
-for all~$a\in\scrA$ and~$b,b'\in\scrB$.
-\begin{point}{Proof}%
-See~\cite{tomiyama}
-or~10.5.86 of~\cite{kr}.\qed
-\end{point}
-\end{point}
-\begin{point}[russo-dye]{Theorem (Russo--Dye)}%
-We have $\|f\|\leq 1$
-for any pu-map $f\colon \scrA\to\scrB$
-between $C^*$-algebras~$\scrA$
-and~$\scrB$.
-\begin{point}{Proof}%
-See Corollary~1 of~\sref{russodye}.\qed
-\end{point}
-\end{point}
-\end{parsec}
 \subsection{Duplicators}
 \TODO{intro}
 \begin{parsec}%
@@ -3786,8 +3756,7 @@ $\mathscr{A}$ is nmiu-isomorphic to $\linf(X)$ for some set~$X$.
 In that case, the duplicator $(\delta,u)$
 is unique, given by
 $\delta(a\otimes b) = a\cdot b$ and $u=1$.
-\end{point}
-\begin{point}{Remark}%
+\begin{point}%
 Thus, to interpret duplicable types,
 we can really only use von Neumann algebras of the form $\linf(X)$.
 It also follows that a von Neumann algebra
@@ -3795,43 +3764,36 @@ is duplicable precisely when it is a (commutative) monoid
 in $\W{miu}$, or in the 
 symmetric monoidal category $\W{cpsu}$ of von Neumann algebras
 and normal completely positive subunital (CPsU) maps.
-
-\label{sec:characterisation-dup-vna}
-We will prove~\sref{duplicable} in this section.
-Let us give
-a rough sketch of the proof.
-To show that every duplicable von Neumann algebra
-is nmiu-isomorphic to~$\linf(X)$ for some set~$X$,
-we first prove that~$\mathscr{A}$
-is commutative (in~\sref{lem:uniqueness-duplicator}).
-This reduces the situation
-to a measure theoretic problem,
-because~$\mathscr{A} \cong L^\infty(X)$
-for some appropriate (i.e.~localisable) measure space~$X$.
-For simplicity,
-we only consider
-measure spaces with~$\mu(X)<\infty$
-(which are localisable).
-This restriction turns out to be harmless
-(in the proof of~\sref{duplicable}).
-The measure space~$X$ splits
-in a discrete~$D$ and a continuous part~$C$,
-so~$X\cong D\oplus C$
-(see~\sref{lem:measure-space-continuous-discrete}).
-Since~$L^\infty(D)\cong \linf(D')$
-for some set~$D'$,
-and $L^\infty(X)\cong \linf(D')\oplus L^\infty(C)$,
-our task will be  to show that~$L^\infty(C)=\{0\}$.
-Since~$L^\infty(X)$ is duplicable,
-we will see that~$L^\infty(C)$ is duplicable as well
-(see~\sref{cor:duplicable-product}).
-Thus the crux of the proof is that~$L^\infty(C)$
-cannot be duplicable unless~$\mu(C)=0$
-(see~\sref{lem:continuous-measure-space},
-where~$\mu$ is the measure on~$C$).
 \end{point}
-\begin{point}{Lemma}%
-\label{lem:unit-duplicator}
+\begin{point}[sec:characterisation-dup-vna]%
+To prove~\sref{duplicable}
+we proceed as follows.
+First we prove 
+in~\sref{lem:uniqueness-duplicator}
+every duplicable von Neumann algebra~$\scrA$
+is commutative (and that the duplicator is given by multiplication).
+This reduces the problem
+to a measure theoretic one,
+because~$\mathscr{A} \cong \bigoplus_i L^\infty(X_i)$
+for some finite complete measure spaces~$X_i$
+(by~\sref{cvn}).
+Since each of the~$L^\infty(X_i)$s will be duplicable
+(see~\sref{cor:duplicable-product})
+we may assume without loss of generality
+that~$\scrA\cong L^\infty(X)$ for some finite complete measure space~$X$.
+Since~$X$ splits into a discrete and a continuous
+part (see~\sref{lem:measure-space-continuous-discrete}),
+and the result is obviously true for discrete spaces,
+we only need to show that~$L^\infty(C)=\{0\}$
+for any continuous complete finite measure space~$C$
+for which~$L^\infty(C)$ is duplicable.
+In fact,
+we'll show that~$\mu(C)=0$
+for such~$C$
+(see~\sref{lem:continuous-measure-space}).
+\end{point}
+\end{point}
+\begin{point}[lem:unit-duplicator]{Lemma}%
 Let~$\delta$
 be a duplicator 
 with unit~$u$
@@ -3847,26 +3809,58 @@ Hence~$u=1$.
 Thus~$1=\delta(1\otimes u)=\delta(1\otimes 1)$.\qed
 \end{point}
 \end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+To prove that a duplicable von Neumann 
+algebra is commutative we'll need the following two results from the theory
+on $C^*$-algebras.
+There was no time to incorporate their proofs in this text.
+\end{point}
+\begin{point}[tomiyama]{Theorem (Tomiyama)}%
+Given a $C^*$-subalgebra~$\scrB$
+of a $C^*$-algebra~$\scrA$,
+any linear map $f\colon \scrA\to\scrB$
+with~$f(f(a))=f(a)$ and~$\|f(a)\|\leq\|a\|$ 
+for all~$a\in \scrA$
+must be positive
+and obey~$bf(a)b'=f(bab')$
+for all~$a\in\scrA$ and~$b,b'\in\scrB$.
+\begin{point}{Proof}%
+See~\cite{tomiyama}
+or~10.5.86 of~\cite{kr}.\qed
+\end{point}
+\end{point}
+\begin{point}[russo-dye]{Theorem (Russo--Dye)}%
+We have $\|f\|\leq 1$
+for any pu-map $f\colon \scrA\to\scrB$
+between $C^*$-algebras~$\scrA$
+and~$\scrB$.
+\begin{point}{Proof}%
+See Corollary~1 of~\sref{russodye}.\qed
+\end{point}
+\end{point}
 \begin{point}[lem:sef-instrument]{Lemma}%
-Let~$\mathscr{A}$ be a unital $C^*$-algebra,
+Let~$\mathscr{A}$ be a $C^*$-algebra,
 and let~$f\colon \mathscr{A}\oplus\mathscr{A}\to \mathscr{A}$
-be a positive unital map 
+be a pu-map 
 with $f(a,a)=a$ for all~$a\in \mathscr{A}$.
 Then $p:=f(1,0)$ is central,
 and
-for all~$a,b\in\mathscr{A}$
-	we have
-$f(a,b) \,=\, ap\,+\, bp^\perp$.
+\begin{equation*}
+	f(a,b) \,=\, ap\,+\, bp^\perp
+\end{equation*}
+for all~$a,b\in\mathscr{A}$.
 \begin{point}{Proof}%
 (Based on Lemma~8.3 of~\cite{ndlmcs}.)
 
 Note that $(c,d)\mapsto (\,f(c,d),\,f(c,d)\,)$
-gives a positive unital map~$f'$ from~$\scrA\oplus \scrA$
+gives a pu-map~$f'$ from~$\scrA\oplus \scrA$
 onto its $C^*$-subalgebra~$\{\,(a,a)\colon\,a\in\scrA\,\}$
 with~$f'(f'(c,d))=f'(c,d)$ for all~$c,d\in\scrA$.
-Since~$\|f'\|\leq 1$ by Russo--Dye's theorem (\sref{russo-dye}),
+Since~$\|f'\|\leq 1$ (by Russo--Dye's theorem (\sref{russo-dye}),
 Tomiyama's theorem (\sref{tomiyama}) 
-implies 
+implies that 
 for all~$a,b,c,d\in\mathscr{A}$,
 \begin{equation*}
 	(a,a)\,f'(c,d)\,(b,b)
@@ -3994,71 +3988,59 @@ is duplicable.\qed
 \begin{point}%
 We will now work towards
 the proof that
-if~$C$ is a finite measure space,
+if~$C$ is a continuous complete finite measure space,
 then
 $L^\infty(C)$
 cannot be duplicable 
 unless~$\mu(C)=0$,
 see~\sref{lem:continuous-finite-measure-space-not-duplicable}.
-Let us first fix some terminology
-from measure theory (see~\cite{fremlin}).
+Let us first fix some more terminology
+from measure theory (see~\sref{measure-theory-recap} and~\cite{fremlin}).
 \end{point}
 \begin{point}{Definition}
 \label{def:measure-space}
-Let~$X$ be a measure space.
+Let~$X$ be a finite complete measure space.
 \begin{enumerate}
-\item
-The measurable subsets of~$X$
-are denoted by~$\Define{\Sigma_X}$.
 \item
 A measurable subset~$A$ of~$X$
 is \Define{atomic}
-if $0<\mu(A)<\infty$,
+if $0<\mu(A)$
 and $\mu(A')=\mu(A)$ for all~$A'\in\Sigma_X$
 with~$A'\subseteq A$ and~$\mu(A')>0$.
 
 \item
 $X$ is \Define{discrete} if $X$ is covered by atomic measurable subsets.
 
+(This coincides with being ``purely atomic''
+from 211K of~\cite{fremlin}.)
 \item
 $X$ is \Define{continuous}
+(or ``atomless'')
 if~$X$ contains no atomic subsets.
 \end{enumerate}
 \end{point}
-\begin{point}{Definition}%
-Given a measure space~$X$
-with~$\mu(X)<\infty$, 
-let
-$\Define{L^\infty(X)}$
-denote the von Neumann algebra
-of bounded functions $f\colon X\to\mathbb{C}$.
-Two such functions $f$ and~$g$ are identified in $L^\infty(X)$
-when $f(x)=g(x)$ for almost all~$x\in X$.
-Multiplication, addition, involution in~$L^\infty(X)$
-are all computer coordinatewise,
-and the norm~$\|f\|$ of~$f\in L^\infty(X)$
-is the least number $r>0$ such that $|f(x)|\leq r$
-for almost all~$x\in X$.
-(For more details,
-see e.g.~Example~IX7.2 of~\cite{conway2007}.)
-\end{point}
-
+\begin{point}%
 The following lemma,
 which will be very useful,
 is a variation on
 Zorn's Lemma
-that does not require the axiom of choice.
+(that does not require the axiom of choice).
+\end{point}
 \begin{point}[lem:measure-zorn]{Lemma}
-Let~$X$ be a measure space with $\mu(X)<\infty$.
 Let~$\mathcal{S}$
-be a collection of measurable subsets of~$X$
-such that~$\bigcup_n A_n\in\mathcal{S}$
-for all $A_1\subseteq A_2 \subseteq \dotsb$
-in~$\mathcal{S}$.
-Then for all~$A\in\mathcal{S}$,
-there is~$B\in\mathcal{S}$
-with $A\subseteq B$
-which is maximal in the sense
+be a collection of measurable subsets of
+a finite complete measure space~$X$ 
+such that 
+for 
+every ascending countable sequence
+$A_1\subseteq A_2 \subseteq \dotsb$
+in~$\mathcal{S}$
+there is~$A\in\mathcal{S}$
+with $A_1\subseteq A_2\subseteq\dotsb \subseteq A$.
+
+Then each element~$A\in\mathcal{S}$
+is contained in some~$B\in\mathcal{S}$
+that is maximal in~$\mathcal{S}$ in the sense
 that $\mu(B')=\mu(B)$
 for all~$B'\in\mathcal{S}$ with $B\subseteq B'$.
 \begin{point}{Proof}
@@ -4086,10 +4068,10 @@ Proceeding in this fashion,
 we get a sequence $B\equiv B_1\subseteq B_2 \subseteq \dotsb$
 in~$\mathcal{S}$
 with $\beta_{B_{n}}-\mu(B_{n+1})\leq \nicefrac{1}{n}$
-for all~$n\in\mathbb{N}$.
-Define~$B:=\bigcup_n B_n$.
-Then~$B\in \mathcal{S}$.
-Moreover,
+for all~$n$.
+By assumption there is a~$B\in\mathcal{S}$
+with $B_1\subseteq B_2\subseteq \dotsb \subseteq B$.
+Note that
 \begin{equation*}
 \mu(B_1)\,\leq\, \mu(B_2)\,\leq\,
 \dotsb \,\leq\,\mu(B)\,\leq\, \beta_B \,\leq\, \dotsb
@@ -4104,8 +4086,8 @@ and so~$\beta_B = \mu(B)$.\qed
 \end{point}
 
 \begin{point}[lem:measure-space-continuous-discrete]{Lemma}%
-In each measure space~$X$ with~$\mu(X)<\infty$
-there is a measurable discrete subset~$D\subseteq X$
+Each finite complete  measure space~$X$ 
+contains a  discrete measurable  subset~$D$
 such that~$X\backslash D$ is continuous.
 \begin{point}{Proof}%
 Since clearly the countable union
@@ -4130,10 +4112,9 @@ Thus~$X\backslash D$ is continuous.\qed
 \end{point}
 \end{point}
 \begin{point}[lem:continuous-measure-space]{Lemma}%
-Let~$X$ be a continuous measure space
-with~$\mu(X)<\infty$.
-Then for every~$r\in [0,\mu(X)]$
-there is a measurable subset~$A$ of~$X$ with $\mu(X)=r$.
+Given a continuous finite complete measure space~$X$,
+and~$r\in [0,\mu(X)]$,
+there is a measurable subset~$A$ of~$X$ with $\mu(A)=r$.
 \begin{point}{Proof}%
 Let us quickly get rid of the case that~$\mu(X)=0$.
 Indeed, then~$r=0$, and so~$A=\varnothing$ will do.
@@ -4189,10 +4170,9 @@ which contradicts the maximality of~$A$.\qed
 \end{point}
 \end{point}
 \begin{point}[lem:continuous-finite-measure-space-not-duplicable]{Lemma}%
-Let~$X$ be a continuous measure space
-with~$\mu(X)<\infty$.
-If~$L^\infty(X)$ is duplicable,
-then~$\mu(X)=0$.
+Let~$X$ be a continuous finite complete measure space
+for which~$L^\infty(X)$ is duplicable.
+Then~$\mu(X)=0$.
 \begin{point}{Proof}%
 Suppose that~$L^\infty(X)$ is duplicable
 and~$\mu(X)>0$
@@ -4201,23 +4181,23 @@ Let~$\delta$
 be a duplicator
 on~$L^\infty(X)$.
 By~\sref{lem:uniqueness-duplicator}
-$\delta(f\otimes g)=f\cdot g$ for all~$f,g\in L^\infty(X)$.
+$\delta(\mathfrak{f}\otimes \mathfrak{g})=
+\mathfrak{f}\cdot \mathfrak{g}$ for 
+all~$\mathfrak{f},\mathfrak{g}\in L^\infty(X)$.
 
 Let~$\omega\colon L^\infty(X)\to \mathbb{C}$
-be given by~$\omega(f)=\frac{1}{\mu(X)}\int f \,d\mu$
-for all~$f\in L^\infty(X)$.
-Then~$\omega$ is normal, positive and unital.
-Also, $\omega$ is faithful,
-or in other words,
-for all~$f\in L^\infty(X)$
-with $f\geq 0$ and $\omega(f)=0$
-we have $f=0$.
+be given by~$\omega(f^\circ)=\frac{1}{\mu(X)}\int f \,d\mu$
+for all~$f\in \mathcal{L}^\infty(X)$.
+Then~$\omega$ is normal, positive, unital and faithful
+(cf.~\sref{Linfty-vn}).
 We'll use
+the product
+functional 
 $\omega\otimes \omega\colon L^\infty(X)\otimes L^\infty(X)\to \mathbb{C}$,
 (which is also faithful,
 by~\sref{carrier-tensor})
 to tease out a contradiction,
-but first we will need a second ingredient.
+but first we  need a second ingredient.
 
 Since~$X$ is continuous,
 we may partition~$X$ into two measurable
@@ -4241,12 +4221,9 @@ and $\mu(X_{w1})=\mu(X_{w2})=\frac{1}{2}\mu(X_w)$.
 It follows that~$\mu(X_w)=\frac{1}{2^{\#w}}\mu(X)$,
 where~$\#w$ is the length of the word~$w$.
 
-Now, let~$p_w = \mathbf{1}_{X_w}$ 
-be the indicator function of~$X_w$
-for every~$w\in \{1,2\}^*$.
-Let~$w\in \{1,2\}^*$ be given.
-Then~$p_w$ is a projection in~$L^\infty(X)$,
-and~$\omega(p_w)=2^{-\#w}$.
+Now, $p_w := \mathbf{1}_{X_w}^\circ$ is a projection in~$L^\infty(X)$,
+and~$\omega(p_w)=2^{-\#w}$
+for every~$w\in\{1,2\}^*$.
 Moreover, $p_w = p_{w1}+p_{w2}$,
 and so
 \begin{alignat*}{3}
@@ -4296,11 +4273,16 @@ Thus, $q=0$ and $q\neq 0$, which is impossible.\qed
 \end{point}
 \end{parsec}
 \begin{parsec}%
+\begin{point}%
+This takes care of the continuous case.
+To deal with the discrete case we first need some
+simple observations.
+\end{point}
 \begin{point}[lem:atomic-measure-space]{Lemma}%
 Let~$A$ be an atomic measure space.
 Then~$L^\infty(A)\cong \mathbb{C}$.
 \begin{point}{Proof}
-Let~$f\in L^\infty(A)$ be given.
+Let~$f\in \mathcal{L}^\infty(A)$ be given.
 It suffices to show that
 there is~$z\in \mathbb{C}$
 such that
@@ -4369,18 +4351,18 @@ Further, we have $\mu(X\backslash A_0) =
 and thus~$\mu(A_0)=0$.
 
 Let~$A\in \mathcal{A}$
-and~$f \in L^\infty(X)$ be given.
+and~$f \in \mathcal{L}^\infty(X)$ be given.
 Then the restriction $f|A\colon A\to \mathbb{C}$
-is an element of~$L^\infty(A)$.
+is an element of~$\mathcal{L}^\infty(A)$.
 It is not hard to see that $f\mapsto f|_A$
 gives a miu-map
 $R_A\colon L^\infty(X)\to L^\infty(A)$.
 Let~$R\colon L^\infty(X)\to \bigoplus_{A\in \mathcal{A}} L^\infty(A)$
-be given by $R(f) = (R_A(f))_{A\in \mathcal{A}}$.
+be given by $R(\mathfrak{f}) = (R_A(\mathfrak{f}))_{A\in \mathcal{A}}$.
 We claim that~$R$ is bijective (and thus a nmiu-isomorphism).
 
 To show that~$R$ is injective,
-let $f\in L^\infty(X)$ with~$R(f)=0$ be given.
+let $f\in \mathcal{L}^\infty(X)$ with~$R(f^\circ)=0$ be given.
 Then for every~$A\in \mathcal{A}$
 there is a negligible subset~$N_A$ of~$A$ with $f(x)=0$
 for all~$x\in A\backslash N_A$.
@@ -4389,17 +4371,20 @@ Since~$N := \bigcup_{A\in\mathcal{A}} N_A
 \subseteq A_0 \cup \bigcup_{A\in\mathcal{A}'} N_A$,
 we see that~$N$ is negligible,
 and so~$f(x)=0$ for almost all~$x\in X$.
-Thus $f=0$ in~$L^\infty(X)$,
+Thus $f^\circ =0$,
 and thus~$R$ is injective.
 
 To show that~$R$ is surjective,
-let $f\in \bigoplus_{A\in \mathcal{A}} L^\infty(A)$
+let $\mathfrak{f}\in \bigoplus_{A\in \mathcal{A}} L^\infty(A)$
 be given,
+pick~$f_A\in\mathcal{L}^\infty(A)$
+with~$\mathfrak{f}_A=f_A^\circ$
+for each~$A\in\mathcal{A}$,
 and define~$g\colon X\to \mathbb{C}$
 by $g(x)=f_A(x)$
 for all~$A\in\mathcal{A}$ and~$x\in A$.
-We claim that~$g\in L^\infty(X)$,
-and then clearly $R(g)=f$.
+We claim that~$g\in \mathcal{L}^\infty(X)$---and then 
+clearly $R(g^\circ )=\mathfrak{f}$.
 To begin, we show that $g$ is measurable.
 Let~$U$ be a measurable subset of~$\mathbb{C}$.
 We must show that~$g^{-1}(U)$ is measurable.
@@ -4434,7 +4419,8 @@ Since~$N:=\bigcup_{A\in\mathcal{A}}N_A\,\subseteq\,
 A_0\cup\bigcup_{A\in\mathcal{A}'}A$,
 we see that~$N$ is negligible,
 and thus that~$g$ is essentially bounded.
-Of course, $R(g)=f$, and thus~$R$ is surjective.\qed
+Of course, $R(g^\circ)=\mathfrak{f}$, 
+and thus~$R$ is surjective.\qed
 \end{point}
 \end{point}
 
@@ -4445,7 +4431,11 @@ there is a  set~$Y$ with $L^\infty(X)\cong \linf(Y)$.
 \end{point}
 \end{parsec}
 \begin{parsec}%
-\begin{point}{Proof of~\ref{duplicable}}%
+\begin{point}%
+We are now ready to prove
+the main result of this section.
+\end{point}
+\begin{point}[duplicable-proof]{Proof of~\ref{duplicable}}%
 We have already seen that $\linf(X)$
 can be  equipped with a commutative monoid
 structure in~$\W{miu}$
@@ -4463,35 +4453,22 @@ for all~$a,b\in \mathscr{A}$.
 Thus, the only thing that remains to be shown
 is that~$\mathscr{A}$ is miu-isomorphic to $\linf(Y)$
 for some set~$Y$.
-
-It is known that 
-any commutative von Neumann algebra must be of the form $L^\infty(X)$,
-where~$X$ is a  measure space.
-Moreover, $X$ can be taken to be a \emph{localisable} measure space,
-but we will not need the general theory of localisable measure spaces here.
-Instead,
-we can get away with using the fact
-(obtained 
-by inspecting the proof of Proposition~1.18.1
-of~\cite{sakai}),
-that there is a family of measure spaces $(X_i)_{i\in I}$
-with $\mathscr{A}\cong \bigoplus_{i\in I} L^\infty(X_i)$
-and $\mu(X_i)<\infty$ for all~$i\in I$.
-To prove that~$\mathscr{A}\cong \ell^\infty(Y)$
-for some set~$Y$ it suffices
-to show that there is for every~$i\in I$
+By~\sref{cvn}
+$\scrA\cong \bigoplus_i L^\infty)(X_i)$
+for some finite complete measure spaces~$X_i$.
+So to prove that~$\mathscr{A}\cong \ell^\infty(Y)$
+for some set~$Y$ it 
+suffices
+to find
  a set~$Y_i$
-with $L^\infty(X_i)\cong \ell^\infty(Y_i)$,
+with $L^\infty(X_i)\cong \ell^\infty(Y_i)$
+for each~$i$,
 because then 
-\begin{equation*}
-\textstyle \mathscr{A}\ \cong \ 
+$\textstyle \mathscr{A}\ \cong \ 
 \bigoplus_{i\in I} \ell^\infty(Y_i)\ \cong\ 
-\ell^\infty\bigl(\,\bigcup_{i\in I} Y_i\,\bigr).
-\end{equation*}
+\ell^\infty\bigl(\,\bigcup_{i\in I} Y_i\,\bigr)$.
 
 Let~$i\in I$ be given.
-We must find a set~$Y$ 
-such that~$L^\infty(X_i)\cong \ell^\infty(Y)$.
 Since~$\mathscr{A}\cong L^\infty(X_i)\,\oplus\,\bigoplus_{j\neq i} 
 L^\infty(X_j)$ is duplicable,
 $L^\infty(X_i)$ is duplicable
@@ -4505,7 +4482,6 @@ and
 so $L^\infty(D)$ and~$L^\infty(C)$
 are duplicable
 (again by~\sref{cor:duplicable-product}).
-
 By~\sref{lem:continuous-finite-measure-space-not-duplicable},
 $L^\infty(C)$
 can only be duplicable if~$\mu(C)=0$,
@@ -4515,15 +4491,7 @@ since~$D$ is discrete,
 we have~$L^\infty(D)\cong \ell^\infty(Y)$
 for some set~$Y$
 (by~\sref{cor:discrete-ell-x}).
-Thus we have
-\begin{equation*}
-L^\infty(X_i)
-\ \cong\  L^\infty(D)\,\oplus\, L^\infty(C)
-\ \cong\  \ell^\infty(Y)\,\oplus\, \{0\}
-\ \cong\  \ell^\infty(Y).
-\end{equation*}
-Hence~$\mathscr{A}\cong \ell^\infty(Z)$
-for some set~$Z$.\qed
+All in all, we have $L^\infty(X_i)\cong \ell^\infty(Y)$.\qed
 \end{point}
 \end{parsec}
 \subsection{Monoids}
