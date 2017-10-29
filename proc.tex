@@ -2921,10 +2921,10 @@ for all~$a\in\scrA$, $b\in\scrB$, $c\in\scrC$,
 for any von Neumann algebras
 $\scrA$, $\scrB$, $\scrC$.
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[vn-smc]{Exercise}%
 Show that~$\W{miu}$, $\W{cp}$, $\W{cpu}$
 and~$\W{cpsu}$ endowed with the tensor product
-are monoidal categories with~$\C$ as unit.
+are symmetric monoidal categories with~$\C$ as unit.
 \end{point}
 \end{parsec}
 \section{Quantum Lambda Calculus}
@@ -3102,9 +3102,9 @@ on~$\scrA$.
 \begin{parsec}%
 \begin{point}%
 In this section,
-we'll need the following two results
+we'll need the following result
 from the literature on von Neumann algebras---I 
-had no time to incorperate their proofs in this text.
+had no time to incorperate its proof in this text.
 \end{point}
 \begin{point}[intersection-tensor]{Proposition}%
 Given Hilbert spaces~$\scrH$ and~$\scrK$,
@@ -3132,12 +3132,6 @@ of the form $A\otimes B$ where~$A\in\scrA_1$
 and~$B\in\scrB_1$.
 \begin{point}{Proof}%
 See Corollary IV.5.10 of~\cite{Takesaki1}.\qed
-\end{point}
-\end{point}
-\begin{point}{Proposition}%
-\TODO{On commutative von Neumann algebras.}
-\begin{point}{Proof}%
-\TODO{Add reference.}
 \end{point}
 \end{point}
 \end{parsec}
@@ -3273,13 +3267,16 @@ Hence taking~$\varphi':=\varphi\circ \kappa_i$
 does the job.\qed
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[cor:linf-ff]{Exercise}%
 Deduce from~\sref{nmiu-functional-product}
 that the functor $\nsp\colon \op{(\W{miu})}\to \Cat{Set}$
 preserves coproducts,
 and that the 
 map $\eta\colon X\to \nsp(\linf(X))$
 from~\sref{first-adjunction} is a bijection.
+
+Show that~$\linf\colon\Cat{Set}\to \op{(\W{miu})}$
+is full and faithful.
 \end{point}
 
 \TODO{$\nsp$ and $\linf$ are monoidal}
@@ -3316,7 +3313,7 @@ of which there no more than~$2^{2^{\#S'}}$,
 we conclude~$\#\scrA \leq 2^{2^{\#\mathbb{C}+\#S}}$.\qed
 \end{point}
 \end{point}
-\begin{point}{Theorem}%
+\begin{point}[second-adjunction]{Theorem}%
 The inclusion $\W{miu}\to\W{cpsu}$
 has a left adjoint $\Define{\mathcal{F}}\colon \W{cpsu}\to\W{miu}$.
 \begin{point}{Proof}%
@@ -3723,8 +3720,44 @@ in the same way~$\W{cpsu}$ that does.
 \end{parsec}
 
 \section{Duplicators and Monoids}
+\begin{parsec}%
+\begin{point}%
+When asked for an
+interpretation of the type $!A$
+as a von Neumann algebra
+\begin{equation}
+\label{fock}
+\sem{!A}
+\ = \ 
+\bigoplus_n \sem{A}^{\otimes n}
+\end{equation}
+definitely seems
+like a suitable answer
+given
+the cue that~$!A$ should represent
+as many instances of~$A$ as needed,
+which makes the interpretation
+we actually use in our model of the quantum lambda calculus
+(namely $\sem{!A}=\ell^\infty(\nsp(\sem{A}))$)
+rather
+suspect.
+To address such concerns
+we'll show that any von Neumann algebra
+that carries a $\otimes$-monoid structure
+(in~$\W{miu}$ as~$\sem{!A}$ should)
+must be nmiu-isomorphic
+to $\ell^\infty(X)$ for some set~$X$
+(see \sref{duplicable})
+ruling out the interpretation~\eqref{fock}
+for all but the most trivial cases.
+We'll show in fact that~$\ell^\infty(\nsp(\scrA))$
+is the free $\otimes$-monoid
+over~$\scrA$
+in~$\W{miu}$ (see \sref{thm:free-monoid-in-vNAMIU})
+exonerating it in our minds from all doubts.
+\end{point}
+\end{parsec}
 \subsection{Duplicators}
-\TODO{intro}
 \begin{parsec}%
 \begin{point}{Definition}%
 A von Neumann algebra~$\mathscr{A}$
@@ -4404,9 +4437,14 @@ is negligible
 Thus~$g^{-1}(U)$ is measurable.
 Hence~$g$ is measurable.
 It remains to be shown
-that $g$ is essentially bounded,
-that is, that there is $r>0$ such that $|f(x)|\leq r$
+that $g$ is bounded,
+but we'll only be able
+to prove that $g$ is \emph{essentially bounded},
+that is, there is $r>0$ such that $|f(x)|\leq r$
 for almost all~$r\in X$.
+But then an obvious modification
+of~$g$ will be bounded
+and does the job.
 For every~$A\in\mathcal{A}$
 there is a negligible
 subset~$N_A$ of~$A$
@@ -4419,8 +4457,11 @@ Since~$N:=\bigcup_{A\in\mathcal{A}}N_A\,\subseteq\,
 A_0\cup\bigcup_{A\in\mathcal{A}'}A$,
 we see that~$N$ is negligible,
 and thus that~$g$ is essentially bounded.
-Of course, $R(g^\circ)=\mathfrak{f}$, 
-and thus~$R$ is surjective.\qed
+Pick a function~$\tilde{g}\colon X\to \C$
+that is bounded and equal to~$g$ almost everywhere.
+Then~$g\in\mathcal{L}^\infty(X)$,
+and $R(\tilde{g}^\circ)=\mathfrak{f}$.
+Whence $R$ is surjective.\qed
 \end{point}
 \end{point}
 
@@ -4497,6 +4538,7 @@ All in all, we have $L^\infty(X_i)\cong \ell^\infty(Y)$.\qed
 \subsection{Monoids}
 \label{sec:monoids-in-vna}
 \begin{parsec}%
+\begin{point}%
 We further justify our choice,
 $\sem{!A} = \linf(\nsp(\sem{A}))$,
 by proving that $\linf(\nsp(\mathscr{A}))$
@@ -4504,15 +4546,19 @@ is the free (commutative) monoid on~$\mathscr{A}$ in~$\W{miu}$.
 As a corollary, we also obtain that $\linf(\W{cpsu}(\mathscr{A},\mathbb{C}))$
 is the free (commutative) monoid on~$\mathscr{A}$
 in~$\W{cpsu}$.
-
-
-Let $(\Cat{C},\otimes,I)$ be a symmetric monoidal category (SMC).
-A \textbf{monoid} in $\Cat{C}$ is an object $A\in\Cat{C}$ with
-a `multiplication' map
+\end{point}
+\begin{point}%
+Let us first recall some terminology.
+Given a symmetric monoidal
+category (\Define{SMC})
+$\Cat{C}$, 
+a \Define{monoid} in $\Cat{C}$ is an object $A$ from~$\Cat{C}$ endowed
+with
+a \Define{multiplication} map
 $m\colon A\otimes A\to A$
-and a `unit' map $u\colon I\to A$
+and a \Define{unit} map $u\colon I\to A$
 satisfying the associativity and the unit law,
-i.e.\ making the following diagrams commute.
+i.e.~making the following diagrams commute.
 \[
 \xymatrix@R-.5pc{
 (A\otimes A)\otimes A
@@ -4551,128 +4597,102 @@ A
 Here $\alpha,\lambda,\rho$ respectively
 denote the associativity isomorphism, and
 the left and the right unit isomorphism.
-A monoid $(A,m,u)$ is \textbf{commutative} if
+A monoid $A$ is \Define{commutative} if
 $m\circ \gamma=m$,
 where $\gamma\colon A\otimes A\to A\otimes A$ is the symmetry isomorphism.
-A \textbf{monoid morphism} between monoids $(A_1,m_1,u_1)$
-and $(A_2,m_2,u_2)$ is an arrow $f\colon A_1\to A_2$
-that satisfies $m_2\circ (f\otimes f)=f \circ m_1$
-and $u_2=f \circ u_1$.
+A \Define{monoid morphism} between monoids $A_1$
+and $A_2$ is an arrow $f\colon A_1\to A_2$
+that satisfies $m_{A_2}\circ (f\otimes f)=f \circ m_{A_1}$
+and $u_{A_2}=f \circ u_{A_1}$.
 We denote the category of monoids
 and monoid morphisms in $\Cat{C}$
-by $\Mon(\Cat{C},\otimes,I)$ or simply by $\Mon(\Cat{C})$.
-We write $\CMon(\Cat{C})\subseteq\Mon(\Cat{C})$ for
-the full subcategory of commutative monoids.
-
-% The notion of \emph{(commutative) comonoids} in an SMC
-% is defined in the dual manner.
-
-First we characterise duplicable von Neumann algebras
-in terms of monoids.
-
-\begin{point}{Proposition}
-\label{prop:dup-vna-is-monoid}
-Let $\scrA$ be a von Neumann algebra.
-The following are equivalent.
+by $\Define{\Mon(\Cat{C})}$.
+The full subcategory of commutative
+monoids is denoted by~$\Define{\CMon(\Cat{C})}$.
+Recall that~$\W{miu}$ and~$\W{cpsu}$
+are symmetric monoidal categories
+with~$\C$ as tensor unit (see~\sref{vn-smc}),
+and so we may speak about monoids
+in~$\W{miu}$ and~$\W{cpsu}$.
+\end{point}
+\begin{point}[prop:dup-vna-is-monoid]{Exercise}%
+Let~$\scrA$ be a von Neumann algebra.
 \begin{enumerate}
 \item
-$\scrA$ is duplicable.
+Show that any monoid structure on~$\scrA$
+in~$\W{cpsu}$
+is a duplicator on~$\scrA$.
 \item
-$\scrA$ carries a monoid structure in $(\W{miu},\otimes,\C)$.
+Deduce
+from this and~\sref{duplicable}
+that there is a monoid structure
+on~$\scrA$ in~$\W{miu}$ or in~$\W{cpsu}$
+iff~$\scrA$ is duplicable
+iff~$\scrA\cong \ell^\infty(X)$ for some set~$X$;
+and that,
+in that case
+the multiplication $m\colon \scrA\otimes\scrA\to\scrA$
+of the monoid
+is commutative
+and uniquely being fixed by~$m(a\otimes b)=a\cdot b$.
 \item
-$\scrA$ carries a monoid structure in $(\W{cpsu},\otimes,\C)$.
-\end{enumerate}
-In that case, $\scrA$ is a commutative monoid
-(both in $\W{miu}$ and $\W{cpsu}$),
-and the monoid structure $(m\colon\scrA\otimes\scrA\to\scrA,u\colon\C\to\scrA)$
-is a duplicator on $\scrA$
-(when $u$ is identified with $u(1)\in\scrA$).
-By Theorem~\ref{duplicable}, a monoid structure on $\scrA$ is unique.
-\end{point}
-\begin{point}{Proof}
-(1 $\Rightarrow$ 2)
-By Theorem~\ref{duplicable},
-$\scrA$ is MIU-isomorphic to $\linf(X)$ for some set $X$.
-By Corollary~\ref{cor:linfX-cmon},
-$\linf(X)$ carries a commutative monoid structure in $\W{miu}$.
-Thus we can equip $\scrA$ with a commutative monoid structure in $\W{miu}$
-via the isomorphism $\scrA\cong\linf(X)$.
-
-(2 $\Rightarrow$ 3) Trivial.
-
-(3 $\Rightarrow$ 1)
-Let $m\colon\scrA\otimes\scrA\to\scrA$ and $u\colon\C\to\scrA$ be a monoid structure
-on $\scrA$ in $\W{cpsu}$.
-Then $m(u(1)\otimes a)=
-(m\circ (u\otimes \id))(1\otimes a)=
-\lambda(1\otimes a)=1\cdot a=a$.
-and similarly $m(a\otimes u(1))=a$.
-Thus $\scrA$ is duplicable via $m$ and $u(1)$.
-\end{point}
-
-It follows that there is no distinction
-between (commutative) monoids in $\W{miu}$ and in $\W{cpsu}$.
-
-\begin{point}{Proposition}
-\label{prop:cmon-mon-vNA}
+Show that the monoid morphisms
+in~$\W{miu}$ and in~$\W{cpsu}$
+are precisely
+the nmiu-maps.
+\item
+Conclude that
 $\CMon(\W{miu})
 =\Mon(\W{miu})
 =\CMon(\W{cpsu})
 =\Mon(\W{cpsu})$.
-\end{point}
-\begin{point}{Proof}
-By Proposition~\ref{prop:dup-vna-is-monoid},
-$\Mon(\W{miu})$ and $\Mon(\W{cpsu})$ have the same objects,
-and $\CMon(\W{miu})=\Mon(\W{miu})$ and $\CMon(\W{cpsu})=\Mon(\W{cpsu})$.
-Let $f\colon (\scrA_1,m_1,u_1)\to (\scrA_2,m_2,u_2)$
-be a morphism in $\Mon(\W{cpsu})$.
-Then $f(1)=(f\circ u_1)(1)=u_2(1)=1$
-and $f(ab)=(f\circ m_1)(a\otimes b)=(m_2\circ (f\otimes f))(a\otimes b)=f(a)f(b)$,
-using the fact that the monoid structure is a unique duplicator.
-Thus $f$ is a normal MIU-map, and
-we are done since $\Mon(\W{miu})\subseteq \Mon(\W{cpsu})$.
-\end{point}
+\item
+Show  that $\Mon(\W{miu})\cong\dW{miu}\simeq\op{\Cat{Set}}$,
+where $\Define{\dW{miu}}$ denotes the full subcategory
+of~$\W{miu}$
+consisting of duplicable von Neumann algebras.
 
-It turns out that $\linf(\nsp(\mathscr{A}))$,
-our interpretation of the $\bang$ operator in the quantum lambda calculus,
-is exactly the free (commutative) monoid on $\scrA$ in $\W{miu}$.
-
-\begin{point}{Theorem}
+(Hint: $\linf\colon \Cat{Set}\to \op{(\W{miu})}$ is full and faithful
+by~\sref{cor:linf-ff}.)
+\end{enumerate}
+\end{point}
+\begin{point}[thm:free-monoid-in-vNAMIU]{Theorem}%
 \label{thm:free-monoid-in-vNAMIU}
 Let~$\mathscr{A}$
 be a von Neumann algebra,
 and let~$\eta\colon \mathscr{A}\to\linf(\nsp(\mathscr{A}))$
-be the normal MIU-map
+be the nmiu-map
 given by~$\eta(a)(\varphi)= \varphi(a)$.
 Then $\linf(\nsp(\mathscr{A}))$
 is the free (commutative) monoid
 on~$\mathscr{A}$
 in~$\W{miu}$ via~$\eta$.
-\end{point}
-\begin{point}{Proof}
+\begin{point}{Proof}%
 Let~$\mathscr{B}$
 be a monoid 
 on~$\W{miu}$,
 and let~$f\colon \mathscr{A}\to\mathscr{B}$
-be a normal MIU-map
+be a nmiu-map
 We must show that
 there is a unique
 monoid morphism
 $g\colon \linf(\nsp(\mathscr{A}))
 \rightarrow \mathscr{B}$
 such that~$g\circ \eta = f$.
-
-By Theorem~\ref{duplicable},
-we may assume that~$\mathscr{B}=\linf(Y)$
+Since the monoid structure on~$\scrB$
+is a duplicator on~$\scrB$
+we may assume,
+by~\sref{duplicable},
+that~$\mathscr{B}=\linf(Y)$
 for some set~$Y$.
 Since~$\nsp\colon \op{(\W{miu})}\to \Cat{Set}$
 is left adjoint
 to~$\linf\colon \Cat{Set} \to \op{(\W{miu})}$
-with unit~$\eta$ (Lemma~\ref{lem:nsp-linf-ssm}),
+with unit~$\eta$ (see~\sref{first-adjunction}),
 there is a unique map $h\colon Y\to \nsp(\mathscr{A})$
 with $\linf(h)\circ \eta = f$.
 Since~$\linf$ is full and faithful
-by Corollary~\ref{cor:linf-ff},
+by~\sref{cor:linf-ff},
 the only thing that remains to be shown is that~$\linf(h)$
 is a monoid morphism.
 Indeed it is,
@@ -4680,8 +4700,8 @@ since the monoid multiplication
 on~$\linf(\nsp(\mathscr{A}))$
 and~$\linf(Y)$
 is given by ordinary multiplication,
-which is preserved by~$\linf(h)$,
-being a MIU-map.
+which is preserved by~$\linf(h)$ being a miu-map.\qed
+\end{point}
 \end{point}
 
 \begin{point}{Corollary}
@@ -4690,242 +4710,41 @@ be a von Neumann algebra.
 Then $\linf(\W{cpsu}(\mathscr{A},\C))$
 is the free (commutative) monoid
 on~$\mathscr{A}$ in~$\W{cpsu}$.
-\end{point}
 \begin{point}{Proof}
-Theorem~\ref{thm:free-monoid-in-vNAMIU} asserts that
+By~\sref{thm:free-monoid-in-vNAMIU}
 $\linf\circ\nsp$ is a left adjoint to
 the forgetful functor $\Mon(\W{miu})\to\W{miu}$.
-By Prop.~\ref{prop:cmon-mon-vNA},
+Note that
+by~\sref{prop:dup-vna-is-monoid},
 the forgetful functor $\Mon(\W{cpsu})\to\W{cpsu}$
 factors through $\W{miu}$ as:
 \[
-	\text{todo: correct}
-%\xymatrix{
-%\Mon(\W{cpsu})
-%\ar@{=}[r]
-%&
-%\Mon(\W{miu})
-%\ar[r]^-{\bot}&
-%\ar@/_3ex/[l]_{\linf\circ\nsp}
-%\W{miu}
-%\ar@{^{ (}->}[r]^-{\bot}&
-%\ar@/_3ex/[l]_{\mathcal{F}}
-%\W{cpsu}
-%}
+\xymatrix{
+\Mon(\W{cpsu})
+\ar@{=}[r]
+&
+\Mon(\W{miu})
+\ar[r]^-{\bot}&
+\ar@/_3ex/[l]_{\linf\circ\nsp}
+\W{miu}
+\ar@{->}[r]^-{\bot}&
+\ar@/_3ex/[l]_{\mathcal{F}}
+\W{cpsu}
+}
 \]
-where $\mathcal{F}$ is the adjoint functor of Lemma~\ref{lem:adjoint-to-incl}.
+where~$\mathcal{F}$ is from~\sref{second-adjunction}.
 Thus the free monoid on $\scrA$ in $\W{cpsu}$ is given by:
 \[
 (\linf\circ\nsp\circ\mathcal{F})(\scrA)
-=
+\ =\ 
 \linf(\W{miu}(\mathcal{F}\scrA,\C))
-\cong
+\ \cong\ 
 \linf(\W{cpsu}(\scrA,\C))
-\enspace.
 \]
-\end{point}
-
-Finally we observe that duplicable von Neumann algebras and
-monoids in $\W{miu}$ (or in $\W{cpsu}$) are simply identified with sets.
-Let $\dW{miu}\subseteq\W{miu}$ denote the full subcategory
-consisting of duplicable von Neumann algebras.
-
-\begin{point}{Proposition}
-	$\Mon(\W{miu})\cong\dW{miu}\simeq\op{\Cat{Set}}$.
-\end{point}
-\begin{point}{Proof}
-($\Mon(\W{miu})\cong\dW{miu}$)
-By Proposition~\ref{prop:dup-vna-is-monoid},
-we have the forgetful functor $U\colon\Mon(\W{miu})\to\dW{miu}$
-that is bijective on objects.
-We need to prove that the functor is full,
-namely that any normal miu-map between monoids
-is a monoid morphism.
-The monoid structure is preserved by normal miu-maps
-since the monoid structure is a duplicator
-by Proposition~\ref{prop:dup-vna-is-monoid},
-and the duplicator is given by the multiplication and unit
-of the von Neumann algebra by Theorem~\ref{duplicable}.
-
-($\dW{miu}\simeq\op{\Cat{Set}}$)
-We have a functor $\linf\colon\op{\Cat{Set}}\to\dW{miu}$,
-which is full and faithful by Corollary~\ref{cor:linf-ff},
-and also essentially surjective
-by Theorem~\ref{duplicable}.
-\end{point}
-\end{parsec}
-\section{To be moved}
-\begin{parsec}%
-\begin{point}{Lemma}%
-\TODO{Adapt this lemma to something of the kind:
-if $\times$ has the universal property of the tensor product
-from~\sref{tensor-universal-property},
-then~$\otimes$ is a tensor product.}
-Given a tensor product  $\otimes \colon \scrA\times \scrB\to\scrA\otimes \scrB$
-of von Neumann algebras~$\scrA$ and~$\scrB$,
-$\otimes_\odot\colon \scrA\odot\scrB\to \scrA\otimes \scrB$
-has ultraweakly dense range.
-\begin{point}{Proof}%
-Since
-$\otimes_\odot(\scrA\odot \scrB)$,
-the range of~$\otimes_\odot$,
-is easily seen to be a $*$-subalgebra
-of~$\scrA\otimes \scrB$,
-its closure---let us denote it by~$\scrT$---is a
-von Neumann subalgebra of~$\scrA\otimes \scrB$
-by~\TODO{}.
-Our task is, of course, to show that~$\scrT=\scrA\otimes \scrB$.
-Since the restriction $\tau\colon \scrA\times\scrB\to 
-\scrT$ of~$\otimes$ is clearly bounded,
-and normal (by ultraweak permanence, \TODO{...}),
-there is by the defining property of the tensor product
-a unique ultraweakly continuous map 
-$\varrho\colon \scrA\otimes \scrB\to\scrT$
-with $\varrho(a\otimes b)= a\otimes b$ for all~$a\in\scrA$
-and~$b\in \scrB$.
-It follows that~$\varrho(t)=t$ for all~$t\in \scrT$,
-or, in other words, $\varrho\circ \iota = \id$
-where~$\iota\colon \scrT\to\scrA\otimes \scrB$
-denotes the inclusion (being a nmiu-map).
-On the other hand,
-$\iota\circ \varrho\colon \scrA\otimes \scrB\to\scrA\otimes \scrB$
-is an ultraweakly continuous bounded
-linear map with $(\iota\circ \varrho)(a\otimes b)=a\otimes b$
-for all~$a\in\scrA$ and~$b\in\scrB$,
-as is~$\id\colon \scrA\otimes \scrB\to\scrA\otimes\scrB$;
-so that we may conclude~$\iota\circ \varrho=\id$.
-Hence~$\iota\colon \scrT\to\scrA\otimes\scrB$
-is surjective, and~$\scrT=\scrA\otimes \scrB$.\qed
-\end{point}
-\end{point}
-\begin{point}[uwc-bounded]{Proposition}%
-An ultraweakly continuous linear map $f\colon \scrA\to\scrB$
-between von Neumann algebras is bounded.
-\begin{point}[uwc-bounded-1]{Proof}%
-The problem reduces to the case that~$f$ is involution preserving
-by writing~$f$ as
-$f\equiv \Real{f}+i\Imag{f}$,
-where~$\Real{f}(a)=\Real{f(\Real{a})}
-+ i\Real{f(\Imag{a})}$
-and~$\Imag{f}(a)=\Imag{f(\Real{a})}+i\Imag{f(\Imag{a})}$
-for~$a\in\scrA$,
-since clearly~$f$ is bounded when both~$\Real{f}$ and~$\Imag{f}$
-are bounded,
-and both $\Real{f}$ and~$\Imag{f}$ 
-are ultraweakly continuous and involution preserving.
-
-Note that such an involution preserving map~$f$
-is bounded
-when its restriction $g\colon \Real{\scrA}\to\Real{\scrB}$
-to self-adjoint elements
-is bounded,
-because then $\|f(a)\|=\|g(\Real{a})+ig(\Imag{a})\|\leq
-\|g\| (\|\Real{a}\|+\|\Imag{a}\|)
-\leq 2\|g\| \|a\|$ for all~$a\in\scrA$.
-
-The point of this reduction
-to self-adjoint elements
-is that writing~$\Omega$ for the 
-set of npu-maps $\omega\colon \scrB\to\C$
-the equality
-$\|f(a)\|=\sup_{\omega\in\Omega} \left|\omega(f(a))\right|$
-holds by~\TODO{...} for all self-adjoint~$a\in\scrA$,
-but not necessarily for arbitrary~$a\in\scrA$.
-Thus, to prove that~$f$
-is bounded it suffices to show that $\omega\circ f$
-is bounded for each~$\omega\in\Omega$,
-because then $\|f(a)\|\leq (\sup_{\omega\in\Omega}\|\omega\circ f\|)\,\|a\|$
-for all~$a\in \Real{\scrA}$,
-and~$\sup_{\omega\in \Omega} \|\omega\circ f\|<\infty$
-by the principle of uniform boundedness (\sref{pub}).
-
-To see that such a functional $\sigma:=\omega\circ f$,
-where~$\omega\in\Omega$,
-is bounded,
-note that any sequence~$a_1,a_2,\dotsc$
-in~$\scrA$ that converges to~$0$
-with respect to the norm on~$\scrA$
-also converges to~$0$ ultraweakly,
-and so
-(as both~$\omega$ and~$f$ are ultraweakly continuous)
-$\sigma(a_1),\,\sigma(a_2),\,\dotsc$
-converges to~$0$ in~$\C$ ultraweakly,
-and thus with respect to the norm on~$\C$.\qed
-\end{point}
-\end{point}
-\begin{point}[ncp-uwlim]{Proposition}%
-Given von Neumann algebras~$\scrA$
-and~$\scrB$
-the pointwise ultraweak limit
-$f\colon \scrA\to\scrB$
-of a net of  positive linear maps $f_\alpha\colon \scrA\to\scrB$
-is positive, and, 
-\begin{enumerate}
-\item
-$f$ is completely positive provided
-that the $f_\alpha$ are completely positive, and
-\item
-$f$ is normal provided that the $f_\alpha$ are normal
-and the ultraweak convergence of the~$f_\alpha$ to~$f$
-is uniform on~$[0,1]_\scrA$.
-\end{enumerate}
-\begin{point}{Proof}%
-Since given~$a\in \scrA$ the element~$f(a)$
-is the ultraweak limit of the positive elements~$f_\alpha(a)$,
-and therefore positive (by~\sref{vn-positive-basic}),
-we see that~$f$ is positive.
-
-Suppose that each~$f_\alpha$ is completely positive.
-To show that~$f$ is completely positive,
-we must prove, given~$a_1,\dotsc,a_n\in\scrA$
-and~$b_1,\dotsc,b_n\in\scrB$,
-that 
-the element $\sum_{i,j} b_i^* f(a_i^*a_j)b_j$
-of~$\scrB$
-is positive.
-And indeed it is,
-being the ultraweak limit of
-the positive elements $\sum_{i,j} b_i^* f_\alpha (a_i^* a_j)b_j$,
-because  $f_\alpha(a_i^* a_j)$
-converges ultraweakly to~$f(a_i^* a_j)$,
-and~$b_i^*(\,\cdot\,)b_j\colon \scrB\to\scrB$
-is ultraweakly continuous
-(\sref{mult-uws-cont})
-for any~$i$ and~$j$.
-
-If the~$f_\alpha$ 
-are normal,
-and converge uniformly on~$[0,1]_\scrA$ ultraweakly
-to~$f$,
-then~$f$ is ultraweakly continuous
-on~$[0,1]_\scrA$
-(because the uniform limit of continuous functions is continous),
-and thus normal (by~\sref{p-uwcont}).\qed
+as was claimed.\qed
 \end{point}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}[vn-dense-pos]{Lemma}%
-Let~$\scrS$ be an ultrastrongly dense $C^*$-subalgebra
-of a von Neumann algebra~$\scrA$.
-Let~$D$ be a norm dense subset of~$\scrS$.
-Then~$\{\,d^*d\colon\,d\in D\,\}$
-is ultrastrongly dense in~$\pos{\scrA}$.
-\begin{point}{Proof}%
-By Kaplansky's Density Theorem (\sref{kaplansky})
-$\pos{\scrS}$ 
-is ultrastrongly dense in~$\pos{\scrA}$,
-so it suffices to show that $\{\, d^*d\,\colon d\in D\}$
-is ultrastrongly dense in~$\pos{\scrS}$.
-Given~$a\in \pos{\scrS}$,
-there is a sequence $d_1,d_2,\dotsc \in D$
-that norm converges to~$\sqrt{a}$,
-so that~$d_1^*d_1,\,d_2^*d_2,\,\dotsc$
-converges to~$\sqrt{a}^*\sqrt{a}\equiv a$
-with respect to the norm, and thus ultrastrongly too.\qed
-\end{point}
-\end{point}
-\end{parsec}%
 \end{document}
 
 % vim: ft=tex.latex
