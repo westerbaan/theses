@@ -1663,27 +1663,39 @@ A miu-bilinear map $\gamma\colon \scrA\times\scrB\to\scrT$
 between von Neumann algebras
 is a \Define{tensor product} 
 of~$\scrA$ and~$\scrB$
-when it obeys the following conditions.
+when it obeys the following two conditions.
 \begin{enumerate}
 \item
 \label{tensor-1}
-The range of~$\gamma$ generates~$\scrT$.
-\TODO{reformulate}
+The range of~$\gamma$ generates~$\scrT$
+(which 
+in this case means that the linear span
+of the range of~$\gamma$ is ultraweakly dense in~$\scrT$.)
+
+This implies
+that for all np-functionals $\sigma\colon \scrA\to\C$
+and $\tau\colon\scrB\to\C$
+there is at most one np-functional $\omega\colon\scrT\to\C$
+with, for all~$a\in\scrA$ and $b\in\scrB$,
+\begin{equation*}
+	\omega(\gamma(a,b))\ =\  \sigma(a)\,\tau(b),
+\end{equation*}
+which we'll call a \Define{product functional}
+for~$\sigma$ and~$\tau$.
 \item
 \label{tensor-2}
-For all np-functionals
-$\sigma\colon \scrA\to\C$ and~$\tau\colon \scrB\to\C$
-there is a (due to~\ref{tensor-1} unique)
-np-functional $\Define{\gamma(\sigma,\tau)}\colon \scrT\to\C$
-with, for all~$a\in\scrA$, $b\in\scrB$,
-\begin{equation*}
-	\gamma(\sigma,\tau)(\,\gamma(a,b)\,)\ =\ \sigma(a)\,\tau(b).
-\end{equation*}
+There are centre separating collections~$\Sigma$
+of~$\scrA$ and $\Gamma$ of~$\scrB$
+of np-functionals
+such that there is a product functional
+$\gamma(\sigma,\tau)$ for
+all $\sigma\in\Sigma$
+and~$\tau\in\Gamma$.
 \item
 \label{tensor-3}
-These $\gamma(\sigma,\tau)$,
-called \Define{product functionals},
-are center separating.
+These product functionals 
+$\{\,\gamma(\sigma,\tau)\colon\,\sigma\in\Sigma,\,
+\tau\in\Gamma\,\}$ are centre separating.
 \end{enumerate}
 \end{point}
 \begin{point}{Remark}%
@@ -1693,7 +1705,25 @@ whether such a tensor product of two von Neumann algebras
 always exists,
 whether it has some  universal property,
 and whether it is unique in some way.
-We'll presently address all three questions.
+We'll shortly address all three questions.
+\end{point}
+\begin{point}%
+But first we'll show there 
+are plenty of product functionals.
+\end{point}
+\begin{point}{Proposition}%
+Given a tensor product $\gamma\colon \scrA\times \scrB\to\scrT$
+of von Neumann algebras~$\scrA$ and~$\scrB$
+any pair of np-functionals
+$\sigma\colon\scrA\to\C$
+and
+$\tau\colon \scrB\to\C$
+has a product functional~$\gamma(\sigma,\tau)$
+in the sense of~\sref{tensor}.
+\begin{point}{Proof}%
+
+	\TODO{...}
+\end{point}
 \end{point}
 \end{parsec}
 \begin{parsec}%
