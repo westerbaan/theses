@@ -472,62 +472,25 @@ We have shown~$\ad_V \after \varrho = \varphi$.
 \end{point}
 \begin{point}%
 Assume~$\scrA$ is a von Neumann algebra.
-    It remains to be shown that~$\varrho$
-        is normal when~$\varphi$ is.
-        So assume~$\varphi $ is normal
-        and~$D \subseteq \scrA$ is a bounded directed
-    set of self adjoint elements.
-    We need to show~$\sup_{d \in D} \varrho (d) = \varrho(\sup D)$.
-    Let~$t$ be in the image of~$\eta$.
-    By density of the image of~$\eta$,
-    it  is sufficient to show~$\left<t, \varrho(\sup D) t\,\right>
-        = \left<t, \sup_{d \in D} \varrho(d)\,t\right>$.
-    We have~$t = \sum_{i=1}^n a_i \otimes x_i$
-        for some~$n \in \N$, $a_1, \ldots, a_n \in \scrA$
-            and~$x_1,\ldots, x_n \in \scrH$.
-    Write~$x$ for the vector~$(x_1, \ldots, x_n)^\T$
-        in~$\scrH^{\oplus n}$.
-    Then
-    \begin{align*}
-        \left<t, \varrho(\sup D) t\right>
-        &\ =\  \bigl< x, (M_n\varphi)\bigl(\, ( a_i^* (\sup D) a_j)_{ij} \,\bigr) x \bigr>_{\scrH^{\oplus n}} \\
-        &\ =\  \sup_{d\in D} \bigl< x, (M_n\varphi)\bigl(\, ( a_i^* d a_j)_{ij} \,\bigr) x \bigr>_{\scrH^{\oplus n}}\\
-        & \ =\  \sup_{d\in D} \left<t, \varrho(d)t\right>
-            \ =\  \bigl<t, \sup_{d \in D} \varrho(d) t\bigr>.
-    \end{align*}
-    Here we used that~$\left<x, (\,\cdot\,)x\right>$,
-        $M_n\varphi$ and 
-    $d \mapsto (a_i^*da_j)_{ij}$ are all normal.
-    The first is normal by~\sref{hilb-suprema}
-        and the second by~\sref{mn-vna}.
-    At the moment it will be a bit tricky to show~$(a_i^*da_j)_{ij}$
-    is normal.  Later, in \sref{hilbmod-adj-vector-ncp}, we will have a simpler argument.
-    Define~$C_{ij} = \frac{1}{\sqrt{n}} a_j$
-        and~$\Delta\colon \scrA \to M_n \scrA$
-        by~$(\Delta(d))_{ij} = \delta_{ij} d$.
-    Then~$(C^*\Delta(d)C)_{ij} = a_i^* d a_j$.
-    As~$C^*(\,\cdot\,)C$ is normal by~\sref{ad-normal},
-        it is sufficient to show~$\Delta$ is normal.
-    Without loss of generality, we may assume~$\scrA$
-        is an algebra of operators on a Hilbert spaces~$\scrL$.
-        By~\sref{vna-supremum-uslimit}
-        $(d)_{d \in D}$ converges ultrastrongly to~$\sup D$.
-    In particular it converges in the WOT.
-    Similarly
-    $(\Delta(d))_{d \in D}$
-        converges in the WOT
-        to~$\sup_{d \in D} \Delta(d)$.
-        Let~$x \equiv (x_1, \ldots, x_n)^\T$ be a vector in~$\scrL^{\oplus n}$.
-        Then~$
-        (\left<x,  \Delta(d)x\right>)_{d \in D}
-        = (\sum_i \left<x_i,  dx_i \right>)_{d \in D}$
-        converges to
-        $ \sum_i \left<x_i,  (\sup D )x_i \right>
-            = \left<x,  \Delta(\sup D )x \right>$
-    and so~$(\Delta(d))_{d \in D}$
-    also converges in the WOT to $\Delta(\sup D)$.
-    Hence~$\Delta(\sup D) = \sup_{d \in D} \Delta(D)$
-        and so~$\Delta$ is normal.\qed
+It remains to be shown that~$\varrho$
+    is normal when~$\varphi$ is.
+So assume~$\varphi$ is normal.
+To start, note that
+    the vector functionals~$\left< a\otimes x, (\,\cdot\,) a\otimes x\right>$
+    are together a faithful set of np-functionals.
+Thus, by~\sref{normal-faithful},
+    it is sufficient
+    to show that
+\begin{equation*}
+    b \ \mapsto \ \left<a \otimes x, \varrho(b) \, a \otimes x \right>
+    \ \equiv \ \left<x, \varphi(a^* b a) \,x \right>
+\end{equation*}
+    is normal for every~$a\in \scrA$ and~$x \in \scrH$.
+    This is indeed the case, as normal
+    maps are closed under composition and~$\left<x, (\,\cdot\,) x\right>$
+    is normal by \sref{hilb-suprema},~$a^* (\,\cdot\,) a$ by \sref{ad-normal}
+    and~$\varphi$ by assumption.
+        \qed
 \end{point}
 \end{point}
 \begin{point}{Remark}%
