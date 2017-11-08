@@ -496,8 +496,9 @@ Thus, by~\sref{normal-faithful},
 \begin{point}{Remark}%
 Stinespring's theorem generalizes GNS.
 It seems tempting to directly prove Stinespring instead of GNS ---
-however, we used GNS in the proof of Stinespring theorem to show
-that~$\varrho$ is normal, when~$\varphi$ is.
+however, for our version with ncp-maps,
+we used GNS itself in the proof of Stinespring's theorem to show
+that~$\varrho$ is normal.
 \end{point}
 \end{point}
 \end{parsec}
@@ -516,7 +517,8 @@ be a non-zero nmiu-map for Hilbert spaces~$\scrH$ and~$\scrK$.
 In this exercise we will show
     there is a Hilbert space~$\scrK'$
     and a unitary~$U\colon \scrK \to \scrH \otimes \scrK'$
-    such that~$\varrho(a) = U^* (a\otimes 1) U $.
+    such that~$\varrho(a) = U^* (a\otimes 1) U $
+    for all~$a \in \scrB(\scrH)$.
 
 Show that the kernel of~$\varrho$
     is an ultraweakly-closed two-sided ideal.
@@ -526,22 +528,25 @@ Use \sref{prop:weakly-closed-ideal}
 Pick an orthonormal basis~$(e_i)_{i\in I}$
     of~$\scrH$.
 Write~$p_i$ for the projection onto~$e_i$;
-i.e.~ $p_i = \ket{e_i}\!\bra{e_i}$.
+i.e.~$p_i = \ket{e_i}\!\bra{e_i}$.
 Choose any~$i_0 \in I$.
-Also pick an orthonormal basis~$(f_i)_{i \in J}$
-    for the subspace~$\varrho(p_{i_0})$ projects onto.
-
+Define~$\scrK' = \varrho(p_{i_0}) \scrK$.
+Pick an orthonormal basis~$(f_i)_{i \in J}$ of~$\scrK'$.
 Write~$u_i$
     for the partial isometry fixed by~$u_i e_i = e_{i_0}$
     and~$u_i e_j = 0$ if~$j \neq i$; viz.~$u_i = \ket{e_{i_0}}\!\bra{e_i}$.
-For~$i\in I$ and~$j \in J$,
+For~$i\in I$, $j \in J$,
     define~$r_{i,j} = \varrho(u^*_i) f_j$.
+
 Show~$r_{i,j}$ is an orthonormal basis of~$\scrK$.
-Define~$\scrK' = \varrho(p_{i_0}) \scrK$.
-Conclude~$U^* e_i \otimes f_j = r_{i,j}$
+Conclude~$ Ur_{i,j} = e_i \otimes f_j $
     fixes a unitary
     $U\colon \scrK \to \scrH \otimes \scrK'$
     with~$\varrho(a) = U^* (a\otimes 1) U $.
+
+Show that if~$\varrho$ is an isomorphism,
+    then~$\varrho(p_{i_0})$ is rank-one
+    and so~$\scrK' \cong \C$.
 \begin{point}[typei-inner-auto]{Corollary}%
 The nmiu-isomorphisms~$\scrB(\scrH) \to \scrB(\scrK)$
     are precisely of the form~$\ad_U$
