@@ -1651,52 +1651,58 @@ for all~$a,b\in\scrA$, $c,d\in\scrB$,
 \Define{\textbf{i}nvolution preserving}
 if~$\beta(a,b)^*=\beta(a^*,b^*)$
 for all~$a\in\scrA$, $b\in\scrB$.
+\item
+(This list is extended in~\sref{tensor-extra}.)
 \end{enumerate}
 We abbreviate these properties as in~\sref{maps},
 and say, for instance, that $\beta$ is \Define{miu-bilinear}
 when it is unital, multiplicative and involution preserving.
 
-This list is extended in~\TODO{add ref.}.
 \end{point}
 \begin{point}[tensor]{Definition}%
 A miu-bilinear map $\gamma\colon \scrA\times\scrB\to\scrT$
 between von Neumann algebras
 is a \Define{tensor product} 
 of~$\scrA$ and~$\scrB$
-when it obeys the following two conditions.
+when it obeys the following three conditions.
 \begin{enumerate}
 \item
 \label{tensor-1}
 The range of~$\gamma$ generates~$\scrT$
-(which 
-in this case means that the linear span
+(which  means in this case that the linear span
 of the range of~$\gamma$ is ultraweakly dense in~$\scrT$.)
 
 This implies
-that for all np-functionals $\sigma\colon \scrA\to\C$
-and $\tau\colon\scrB\to\C$
-there is at most one np-functional $\omega\colon\scrT\to\C$
+that for all $f \in \scrA_*$
+and $g\in \scrB_*$
+there is at most one $h\in \scrT_*$
 with, for all~$a\in\scrA$ and $b\in\scrB$,
 \begin{equation*}
-	\omega(\gamma(a,b))\ =\  \sigma(a)\,\tau(b),
+	h(\gamma(a,b))\ =\  f(a)\,g(b),
 \end{equation*}
-which we'll call a \Define{product functional}
-for~$\sigma$ and~$\tau$.
+which we'll call the \Define{product functional}
+for~$f$ and~$g$,
+and denote by~$\Define{\gamma(f,g)}$
+(when it exists).
 \item
 \label{tensor-2}
-There are centre separating collections~$\Sigma$
-of~$\scrA$ and $\Gamma$ of~$\scrB$
-of np-functionals
-such that there is a product functional
-$\gamma(\sigma,\tau)$ for
-all $\sigma\in\Sigma$
-and~$\tau\in\Gamma$.
+For all np-functionals
+$\sigma\colon \scrA\to\C$
+and $\tau\colon \scrB\to\C$
+the product functional $\gamma(\sigma,\tau)\colon \scrT\to\C$
+exists and is positive.
 \item
 \label{tensor-3}
-These product functionals 
-$\{\,\gamma(\sigma,\tau)\colon\,\sigma\in\Sigma,\,
-\tau\in\Gamma\,\}$ are centre separating.
+The product functionals 
+$\gamma(\sigma,\tau)$
+of np-functionals~$\sigma$ and~$\tau$ form a faithful collection
+of np-functionals on~$\scrT$.
 \end{enumerate}
+(We'll see a slightly different characterization
+of the tensor
+in which not all product functionals of np-functionals
+are required to exists upfront 
+in~\TODO{...}.)
 \end{point}
 \begin{point}{Remark}%
 This compact definition of the tensor product
@@ -2726,6 +2732,154 @@ and since those functionals
 map~$t$ to~$0$,
 by assumption,
 we conclude that~$(\sigma\otimes \tau)(t)=0$ too.\qed
+\end{point}
+\end{point}
+\begin{point}%
+To obtain certain examples
+the following charatization of
+the tensor product of von Neumann algebras
+proves useful.
+\end{point}
+\begin{point}{Theorem}%
+Given centre separating collections~$\Sigma$ and~$\Gamma$
+of np-functionals
+on von Neumann algebras~$\scrA$ and~$\scrB$,
+respectively,
+a miu-bilinear map
+$\gamma\colon \scrA\times\scrB\to\scrT$
+is a tensor product iff all of the following conditions hold.
+\begin{enumerate}
+\item
+The range of~$\gamma$ generates~$\scrT$.
+\item
+For all~$\sigma\in \Sigma$ and $\tau\in\Gamma$
+the product functional $\gamma(\sigma,\tau)\colon \scrT\to\C$
+exists
+(see~\sref{tensor})
+ and is positive.
+\item
+The set
+$\{\,\gamma(\sigma,\tau)\colon\,\sigma\in\Sigma,\,\tau\in \Gamma\,\}$
+is centre separating for~$\scrT$.
+\end{enumerate}
+\begin{point}{Proof}%
+A tensor product~$\gamma$
+obeys these conditions
+by definition and by~\sref{tensor-generation},
+so we only need to show that
+a~$\gamma$ that obeys these conditions is a tensor product,
+and for this it
+suffices to show that~$\gamma$ can be extended
+to a nmiu-isomorphism $\gamma_\otimes \colon \scrA\otimes\scrB\to \scrT$.
+To extend~$\gamma$ to just a miu-map~$\gamma_\otimes$
+(to begin with)
+it suffices by~\sref{tensor-universal-property}
+and~\sref{tensor-universal-property-extra} 
+to show that~$\gamma_\odot\colon \scrA\odot\scrB\to\scrT$
+is bounded with respect to the tensor product norm
+on~$\scrA\odot\scrB$
+and continuous with respect to the tensor product
+topology on~$\scrA\odot \scrB$ and the ultraweak topology on~$\scrT$.
+
+To see that~$\gamma_\odot$
+is bounded, 
+let~$t\in \scrA\odot\scrB$ be given;
+we'll show
+that~$\|\gamma_\odot(t)\|^2
+\equiv \|\gamma_\odot(t^*t)\|\leq \|t\|^2$
+where~$\|t\|$ is the tensor product norm of~$t$.
+Since by~\sref{vn-center-separating-fundamental}
+the np-functionals on~$\scrT$
+of the form
+\begin{equation}
+	\label{tensor-characterization-1}	
+	\gamma(\sigma,\tau)(\,\gamma_\odot(s)^*\,
+(\,\cdot\,)\,\gamma_\odot(s)\,)
+\end{equation}
+where~$\sigma\in\Sigma$, $\tau\in\Gamma$
+and~$s\in\scrA\odot\scrB$,
+are order separating,
+also with  the restriction
+that~$1=\gamma(\sigma,\tau)(\gamma_\odot(s^*s))\equiv
+(\sigma\odot\tau)(s^*s)$,
+and therefore determine the norm of~$t^*t$ as in~\sref{order-separating-norm},
+it suffices to show that
+$\gamma(\sigma,\tau)(\gamma_\odot(s)^* \gamma_\odot(t^*t)
+\gamma_\odot(s)) \leq \|t\|^2$
+given such~$\sigma$, $\tau$, and~$s$
+(with $(\sigma\odot \tau)(s^*s)=1$).
+But since $
+\gamma(\sigma,\tau)(\gamma_\odot(s)^* \gamma_\odot(t^*t)\gamma_\odot(s)) =
+(\sigma\odot\tau)(s^* t^*t s)
+= \|t\|_{(\sigma\odot\tau)(s^*(\,\cdot\,)s)}^2
+\leq \|t\|^2$
+by the definition of the tensor product norm
+(see~\sref{tensor-extra}),
+this is indeed the case.
+
+To see that $\gamma_\odot\colon \scrA\odot\scrB\to\scrT$
+is ultraweakly continuous
+it suffices to show that  $\omega\circ \gamma_\odot$
+is the operator norm limit of finite sums of basic functionals
+on~$\scrA\odot\scrB$
+(see~\sref{tensor-extra})
+given any np-functional $\omega\colon \scrT\to\C$.
+Since by~\sref{vn-center-separating-fundamental} such~$\omega$
+is the norm limit
+of finite sums of
+functionals on~$\scrT$
+of the form displayed in~\eqref{tensor-characterization-1},
+and~$\gamma_\odot$
+is bounded,
+we may assume without loss of generality
+that~$\omega$
+itself is as shown in~\eqref{tensor-characterization-1}.
+Since $\omega\circ \gamma_\odot 
+\equiv (\sigma\odot\tau)(s^*(\,\cdot\,)s)$
+is then a basic functional $\gamma_\odot$
+is ultraweakly continuous.
+
+Having established boundedness and continuity
+of~$\gamma_\odot$
+we obtain our  nmiu-map $\gamma_\otimes\colon \scrA\otimes\scrB
+\to\scrT$
+with~$\gamma_\otimes(a\otimes b)=\gamma(a,b)$
+for all~$a\in\scrA$ and~$b\in \scrB$.
+To show that~$\gamma$ is a tensor product,
+it suffices
+to show that~$\gamma_\otimes$
+is a nmiu-isomorphism,
+and for this,
+it suffices
+to show that~$\gamma_\otimes$ is a bijection.
+In fact, 
+we only need to show that~$\gamma_\otimes$ is injective,
+because since the elements
+of~$\scrT$ of the form~$\gamma(a,b)\equiv\gamma_\otimes(a\otimes b)$
+generate~$\scrT$ (by assumption),
+and are in the range of~$\gamma_\otimes$
+(which is a von Neumann subalgebra of~$\scrT$
+by~\sref{injective-nmiu-iso-on-image}),
+$\gamma_\otimes$ will be surjective.
+
+To show that~$\gamma_\otimes$ is injective,
+it suffices to show that~$\ceil{\gamma_\otimes}\equiv\cceil{\gamma_\otimes}
+=1$
+(see~\sref{carrier-miu}).
+Since the product functionals on $\scrA\otimes\scrB$
+of the form $\sigma\otimes \tau$
+where~$\sigma\in\Sigma$ and~$\tau\in\Gamma$
+are centre separating (by~\sref{tensor-generation}),
+and~$\cceil{\gamma_\otimes}$ is central,
+it suffices to show that
+$(\sigma\otimes\tau)(\,\cceil{\gamma_\otimes}^\perp\,)=0$
+given~$\sigma\in\Sigma$ and~$\tau\in\Gamma$.
+But this is easy ---
+$(\sigma\otimes \tau)(\,\cceil{\gamma_\otimes}^\perp \,)
+=
+\gamma(\sigma, \tau)(\gamma_\otimes(\,\cceil{\gamma_\otimes}^\perp \,))
+= 0$.
+Whence~$\gamma$ is a tensor product.\qed
 \end{point}
 \end{point}
 \end{parsec}
