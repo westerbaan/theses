@@ -44,10 +44,10 @@ of Stinespring\cite[Thm.~1]{stinespring}.
 Furthermore:
 \begin{inparaenum}
 \item
-    if~$\varphi$ is normal, then~$\varrho$ is also normal \emph{and}
+    if~$\scrA$ is a von Neumann algebra
+    and~$\varphi$ is normal, then~$\varrho$ is normal as well \emph{and}
 \item
-    if~$\varphi$ is unital, then~$V$ is an isometry
-        (or equivalently:~$\ad_V$ is unital).
+    if~$\varphi$ is unital, then~$V$ is an isometry.
 \end{inparaenum}
 \end{point}
 
@@ -149,7 +149,7 @@ it was necessary to ``complete''\footnote{Note that
     The inner product on a Hilbert space \emph{is} definite.
     Thus the completion will quotient out those vectors with
         zero norm with respect to the inner product.}
-    a complex vector space with inner product into a Hilbert space.
+        a (complex) vector space with inner product into a Hilbert space.
 This completion was only sketched in \sref{completion-inner-product-space}.
 Here we will work through the details
     as the corresponding completion required
@@ -159,7 +159,7 @@ Here we will work through the details
 \end{point}
 
 \begin{point}[prop-complete-into-hilbert-space]{Proposition}%
-    Let~$V$ be a complex vector space with inner
+    Let~$V$ be a (complex) vector space with inner
         product~$[\,\cdot\,,\,\cdot\,]$.
     There is a Hilbert space~$\scrH$
         together with bounded linear map~$\eta\colon V \to \scrH$
@@ -172,22 +172,22 @@ Here we will work through the details
         the image of~$\eta$ is dense in~$\scrH$.
         \end{inparaenum}
 \begin{point}{Proof}%
-We will form~$\scrH$ from the set of Cauchy sequences in~$V$
+We will form~$\scrH$ from the set of Cauchy sequences from~$V$
     with a little twist.
-Recall two Cauchy
+Recall that two Cauchy
     sequences~$(v_n)_n$ and~$(w_n)_n$ in~$V$
     are said to be equivalent
     if for every~$\varepsilon > 0$
     there is a~$n_0$
     such that~$\| v_n - w_n \| \leq \varepsilon$
     for all~$n \geq n_0$,
-    where $\|v\| \equiv \sqrt{[v,v]}$.
+    where as usual $\|v\| \equiv \sqrt{[v,v]}$.
 Call a Cauchy sequence~$(v_n)_n$ \Define{fast}
     if for each~$n_0$
     we have~$\| v_n - v_m\| \leq \frac{1}{2^{n_0}}$
     for all~$n,m \geq n_0$.
 Clearly every Cauchy sequence has a fast subsequence
-    which is (as are all subsequences) equivalent with it.
+    which is (as all subsequences are) equivalent with it.
 \begin{point}%
     Define~$\scrH$ to be the set of fast Cauchy sequences modulo
         equivalence.
@@ -195,12 +195,24 @@ For brevity we will denote an element of~$\scrH$,
     which is an equivalence class of Cauchy sequences, simply by
     a single representative.
 Also, we often tersely write~$v$ for the Cauchy sequence~$(v_n)_n$.
-The set~$\scrH$ is a metric space with the standard
+The set~$\scrH$ is a metric space
+    with the standard
     distance~$d(v, w) \equiv \lim_{n\to\infty} \| v_n - w_n\|$.
-To show it's complete, assume
+It is independant of representatives
+    as by the reverse and regular triangle inequality combined,
+     we get
+\begin{equation*}
+    \bigl| \| v_n - w_n \| \,-\, \| v_n' - w_n' \| \bigr|
+        \ \leq \ 
+    \| v_n - v_n' \| \,+\, \|w_n - w_n'\| \ \rightarrow \ 0
+\end{equation*}
+for~$v,w$ equivalent with a Cauchy sequence~$v'$, respectively $w'$.
+To show~$\scrH$ is a complete metric space, assume
 $v^1, v^2, \ldots$
 is a fast Cauchy sequence of fast Cauchy sequences.
 We will show~$(v_n^n)_n$ is a Cauchy sequence.
+Here the restriction to fast sequences bears fruit:
+without it, the limit sequence is (notationally) harder to construct.
 Assume~$n,m,k \geq N$ for some~$N$.  We have
 \begin{equation*}
     \| v^n_n - v^m_m \|
@@ -216,14 +228,14 @@ Because~$\lim_{k\to\infty} \|v_k^n-v_k^m \| =d(v^n,v^m) \leq 2^{-N}$
     and so~$\|v^n_n - v^m_m\| \leq \frac{4}{2^N}$.
     Thus~$(v^n_n)_n$ is a Cauchy sequence.
 It's easily checked~$v^1, v^2, \ldots$
-converges to~$(v^n_n)_n$ with respect to~$d$.
-The sequence~$(v^n_n)_n$ might not be fast
-    and so, might not be in~$\scrH$,
-    but like any other Cauchy sequence,
-    it has a fast subsequence.
+converges to~$(v^n_n)_n$ with respect to~$d$,
+with one caveat: the sequence~$(v^n_n)_n$ might not be fast
+    and so, might not be in~$\scrH$.
+Like any other Cauchy sequence, $(v^n_n)_n$
+    has a fast subsequence.
 The equivalence class
-of this subsequence is the limit of~$v^1, v^2, \ldots$ in~$\scrH$.
-We have shown~$\scrH$ is complete.
+    of this subsequence is the limit of~$v^1, v^2, \ldots$ in~$\scrH$.
+We have shown~$\scrH$ is a complete metric space.
 \end{point}
 \begin{point}[prop-hilbert-space-completion-extension]%
 Define~$\eta\colon V \to \scrH$
@@ -247,17 +259,17 @@ Finally, $g$ is unique as it's fixed on the image of~$\eta$, which is dense.
 \begin{point}[completion-to-hilb-vect]%
 Thus we directly get a scalar multiplication
     on~$\scrH$ by extending~$\eta \after r_z \colon V \to \scrH$
-    where~$r_z(v) = zv$ is scalar multiplication by~$z \in C$,
+    where~$r_z(v) = zv$ is scalar multiplication by~$z \in \C$,
     which is uniformly continuous.
 In fact~$z (v_n)_n \equiv (z v_n)_n$.
-Extending addition is less direct, but straight-forward:
+Extending addition is more involved, but straight-forward:
     given representatives~$v,w \in \scrH$
     we know~$(v_n+w_n)_n$ is Cauchy in~$V$
     by uniform continuity of addition and so
     picking a fast subsequence~$v+w$ of $(v_n+w_n)_n$
         fixes an addition on~$\scrH$.
-With this expression for addition and the similar one for
-    scalar multiplication it is easy to see
+With this expression for addition, and the similar one for
+    scalar multiplication, it is easy to see
     they turn~$\scrH$ into a complex vector space with zero~$\eta(0)$
     for which~$\eta$ is linear.
 Extending the inner product is bit trickier.
@@ -288,9 +300,9 @@ we easily see this is an inner product~$\scrH$.
 The metric induced by the inner product coincides with~$d$:
 \begin{equation*}
     \left<v-w,v-w\right>
-   =\lim_{n}[v_n-w_n,v_n-w_n]
-    =\lim_{n}\|v_n-w_n\|^2
-    = d(v,w)^2.
+   \ =\ \lim_{n}[v_n-w_n,v_n-w_n]
+    \ =\ \lim_{n}\|v_n-w_n\|^2
+    \ =\  d(v,w)^2.
 \end{equation*}
 And so~$\scrH$ is a Hilbert space.
 Finally, $\left<\eta(v),\eta(w)\right>=[v,w]$ is direct.\qed
@@ -303,18 +315,20 @@ Finally, $\left<\eta(v),\eta(w)\right>=[v,w]$ is direct.\qed
 \begin{point}%
 We are ready to prove Stinespring's dilation theorem.
 \begin{point}[dils-proof-stinespring]{%
-    Proof of Stinespring's theorem \sref{stinespring-theorem}}%
+    Proof of Stinespring's theorem, \sref{stinespring-theorem}}%
 Let~$\varphi\colon \scrA \to \scrB(\scrH)$
     be a cp-map.
 Write~$\scrA \odot \scrH$ for the tensor product of~$\scrA$ and~$\scrH$
     as vector spaces.
 By linear extension,
 the following fixes a sesquilinear form on~$\scrA \odot \scrH$:
-\begin{equation*}
+\begin{equation}\label{eq-stinespring-innerprod}
     [a\otimes x,\, b \otimes y] \ \equiv\  \left<x, \,\varphi(a^*b)\, y\right>_{\scrH}.
-\end{equation*}
+\end{equation}
 As~$\varphi$ preserves involution as a positive map,
-see \sref{cstar-p-implies-i}, this is also a symmetric form, i.e.: $[t,s]=\overline{[s,t]}$.
+see \sref{cstar-p-implies-i},
+the sesquilinear form~\eqref{eq-stinespring-innerprod}
+is also symmetric, i.e.: $[t,s]=\overline{[s,t]}$.
     Assume~$\sum^n_{i=1} a_i\otimes x_i$
 is an arbitrary element of~$A \odot \scrH$.
 To see $[\,\cdot\,,\,\cdot\,]$ is positive,
@@ -349,7 +363,7 @@ Write~$\eta\colon \scrA\odot \scrH \to \scrK$ for the Hilbert space completion
 \begin{point}[stinespring-extend-operator]%
 We need a lemma before we continue.
 Let~$T\colon A \odot \scrH \to A \odot \scrH$
-be a bouned linear map.
+be a bounded linear map.
 We show there is an extension~$\hat{T} \colon \scrK \to \scrK$.
 The operator~$T$ is
 uniformly continuous and so is~$\eta\after T \colon \scrA\odot\scrH \to\scrK$.
@@ -359,7 +373,8 @@ with~$\hat{T}(\eta(t)) = \eta(T(t))$
     for all~$t \in \scrA\odot\scrH$.
 Clearly~$\hat{T}$ is linear on the image of~$\eta$,
     which is dense and so~$\hat{T}$ is linear everwhere.
-Hence~$\hat{T}$ is bounded, so~$\hat{T} \in \scrB(\scrK)$.
+As~$\hat{T}$ is linear and continuous, it must be
+    bounded, so~$\hat{T} \in \scrB(\scrK)$.
 It is easy to see~$\widehat{T+S}=\hat{T}+\hat{S}$ and
     $\widehat{\lambda T} = \lambda \hat{T}$
     for operators~$S,T$ on~$\scrA \odot \scrH$ and~$\lambda \in \C$.
@@ -371,31 +386,38 @@ indeed~$\hat{T}\hat{S} \eta(t)
 \end{point}
 \begin{point}%
     Assume~$b\in \scrA$.
-    Let~$\varrho_0(b)$ be the operator on~$\scrA \otimes \scrH$
+    Let~$\varrho_0(b)$ be the operator on~$\scrA \odot \scrH$
     fixed by
 \begin{equation*}
     \varrho_0(b)\, a\otimes x\, \  \equiv\  (b a) \otimes x.
 \end{equation*}
 Clearly $\varrho_0$ is linear, unital and multiplicative.
-We want to show~$\varrho_0(b)$ is bounded for fixed~$b \in \scrA$.
-To show this, we claim that in~$M_n\scrB(\scrH)$
-we have~$(a_i^*b^*ba_j)_{ij} \leq \|b\|^2 (a_i^*a_j)_{ij}$.
+We want to show~$\varrho_0(b)$ is bounded for fixed~$b \in \scrA$,
+    so that we can define~$\varrho(b) \equiv \widehat{\varrho_0(b)}
+            \in \scrB(\scrK)$ using \sref{stinespring-extend-operator}.
+    To show~$\varrho_0(b)$ is bounded, we claim that in~$M_n\scrB(\scrH)$
+we have
+\begin{equation}\label{stinespring-rho-bound-lemma}
+(a_i^*b^*ba_j)_{ij} \ \leq\  \|b\|^2 (a_i^*a_j)_{ij}.
+\end{equation}
 Indeed, as~$b^*b \leq \|b\|^2$,
     there is some~$c$ with~$c^*c = \|b\|^2 - b^*b$.
 Define~$C_{ij} \equiv \frac{1}{\sqrt{n}} ca_j$.
 We compute:
 $ (C^*C)_{ij} = a_i^*c^*ca_j = a_i^* (\|b\|^2 - b^*b) a_j$
-and get the claimed inequality with which
-\begin{equation*}
-    \begin{split}
-    \bigl\| \sum_i (ba_i) \otimes x_i \bigr\|^2
+and so~\eqref{stinespring-rho-bound-lemma} holds.
+Hence
+\begin{alignat*}{2}
+    \bigl\| \varrho_0(b) \,\sum_i a_i \otimes x_i \bigr\|^2
+    & \ = \ \bigl\| \sum_i (ba_i) \otimes x_i \bigr\|^2 \\
     & \ =\  \bigl< x, (M_n\varphi)(\, (a_i^* b^*b a_j)_{ij}\,)\,x\bigr> \\
-    &\ \leq\  \|b\|^2 \bigl< x, (M_n\varphi)(\, (a_i^* a_j)_{ij}\,) \, x\bigr>
-    \ =\  \|b\|^2 \bigl\| \sum_i a_i \otimes x_i \bigr\|^2
-    \end{split}
-\end{equation*}
+    &\ \leq\  \|b\|^2 \, \bigl< x, (M_n\varphi)(\, (a_i^* a_j)_{ij}\,) \, x\bigr>
+    &\qquad& \text{by \eqref{stinespring-rho-bound-lemma}}\\
+    &\ =\  \|b\|^2\, \bigl\| \sum_i a_i \otimes x_i \bigr\|^2
+\end{alignat*}
 and so~$\varrho_0(b)$ is bounded.
-Now define~$\varrho(b) \colon \scrA \to \scrB(\scrH)$
+Define~$\varrho(b) \colon \scrA \to \scrB(\scrH)$
+    using~\sref{stinespring-extend-operator}
     by~$\varrho(b) \equiv \widehat{\varrho_0(b)}$.
 \end{point}
 \begin{point}%
@@ -413,8 +435,10 @@ Indeed, for every~$a,b \in \scrA$ and~$x,y \in \scrH$
 Hence~$
     \left<\varrho(c^*) \eta(a\otimes x), \eta(b\otimes y)\right>=
     \left< \eta(a\otimes x), \varrho(c)\eta(b\otimes y)\right>$.
-    As the linear span of~$\eta(a\otimes x)$ is dense in~$\scrK$,
-        we find~$\varrho(c^*) = \varrho(c)^*$, as desired.
+    As the linear span of vectors of the form~$\eta(a \otimes x)$
+        is dense in~$\scrK$,
+        we see~$\varrho(c^*)$ is adjoint to~$\varrho(c)$
+        and so~$\varrho(c^*) = \varrho(c)^*$, as desired.
 \end{point}
 \begin{point}%
     Let~$V_0 \colon \scrH \to \scrA \odot \scrH$
@@ -447,6 +471,7 @@ We have shown~$\ad_V \after \varrho = \varphi$.
     (Or equivalently~$\ad_V$ is unital.)
 \end{point}
 \begin{point}%
+Assume~$\scrA$ is a von Neumann algebra.
     It remains to be shown that~$\varrho$
         is normal when~$\varphi$ is.
         So assume~$\varphi $ is normal
@@ -2868,6 +2893,9 @@ There is an~$r \geq 0$ such that for all~$x \in X$:
 So $T$ is bounded by~$r$ trivially if~$\|Tx\|=0$
     and by dividing otherwise. \qed
 \end{point}
+\begin{point}{Remark}%
+In \sref{chilb-form-representation} a more general result was shown.
+\end{point}
 \end{point}
 \begin{point}[hilbmod-adjoint-exists]{Exercise}%
 Suppose~$T\colon X \to Y$ is a~$\scrB$-linear map between
@@ -3217,6 +3245,11 @@ As~$a_i \otimes b_i = \varrho(a_i) (1 \otimes 1)b_i$, we get for~$k=1,2$
     &\ =\ \sum_{i,j} b_i^* h'(\varrho'(a_i^*) c \varrho'(a_j)) b_j.\numberthis
 \end{align*}
 Thus~$\sigma_1=\sigma_2$ as desired.
+One can show such~$\sigma$ exists by using~\eqref{equation-sigma}
+    as defining formula.
+We will use, however, an indirect but shorter approach
+    by first considering the `spatial case',
+    which was suggested by Michael Skeide.
 \end{point}
 \begin{point}[paschke-spatial]{4: spatial case}%
 Let~$X$ be a self-dual Hilbert~$\scrB$-module
