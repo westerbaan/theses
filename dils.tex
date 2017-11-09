@@ -566,8 +566,8 @@ Use \sref{nmiu-between-type-I} and~\sref{stinespring-theorem} to show
         form~$\Phi(\varrho) = \TR_{\scrK'} [U^* \varrho \otimes \ketbra{v_0}{v_0} U]$.
 \end{point}
 \begin{point}{Exercise (Kraus' decomposition)}%
-Assume~$\varphi \colon \scrB(\scrH) \to \scrB(\scrK)$
-    is an ncp-map.
+Let~$\varphi \colon \scrB(\scrH) \to \scrB(\scrK)$
+    be any ncp-map.
 By~\sref{physics-stinespring}
     there is a Hilbert space~$\scrK'$
     and bounded operator~$V\colon \scrK \to \scrH \otimes \scrK'$
@@ -575,7 +575,7 @@ By~\sref{physics-stinespring}
 Choose an orthonormal basis~$(e_i)_{i \in I}$ of~$\scrK'$.
 Show~$\varphi(a) = \sum_{i \in I} V^* (a \otimes \ketbra{e_i}{e_i}) V$,
 where the sum converges ultraweakly.
-Deduce there are projectors~$P_i \colon \scrH \otimes \scrK' \to \scrH$
+Deduce there are projections~$P_i \colon \scrH \otimes \scrK' \to \scrH$
 with~$\varphi(a) = \sum_{i \in I} V^*P_i^* a P_iV$.
 Conclude all ncp-maps~$\varphi\colon \scrB(\scrH) \to \scrB(\scrK)$
 are of the form~$\varphi(a) = \sum_{i \in I} V_i^* a V_i$
@@ -585,14 +585,17 @@ These~$V_i$ are called \Define{Kraus operators} for~$\varphi$.
 
 Now assume~$\scrH$ and~$\scrK$ are finite dimensional,
     say~$\dim \scrH = n$ and~$\dim \scrK = m$.
-Show that in this case~$\dim \scrK' = n\cdot m$ Kraus operators suffice.
+Show that in this case
+    the total number of Kraus operators can be chosen
+    to be less than or equal~$\dim \scrK' = n \cdot m$.
 \end{point}
 \end{parsec}
 
 \begin{parsec}%
 \begin{point}{Definition}%
 Let~$\varphi\colon \scrA \to \scrB(\scrH)$
-    be any ncp-map.
+    be any ncp-map
+    for some Hilbert space~$\scrH$ and von Neumann algebra~$\scrA$.
 A \Define{normal Stinespring dilation}
     is a triplet~$(\scrK,\varrho, V)$
     with~$\scrK$ a Hilbert space,
@@ -640,7 +643,7 @@ we know that for all~$c,d\in\scrC$:
     \sigma(d^*d) = \sigma(d)^*\sigma(d) \quad \implies \quad
     \sigma(cd) = \sigma(c)\sigma(d).\label{dils-eq-choi}
 \end{equation}
-We can apply this on~$\varrho'(a)^*\varrho'(a)$
+We can apply this to~$\varrho'(a)^*\varrho'(a)$
 with~$a \in \scrA$ --- indeed we have
 \begin{equation*}
 \sigma(\varrho'(a)^* \varrho'(a))
@@ -682,46 +685,51 @@ Let~$S_1,S_2\colon \scrK \to \scrK'$
 be any isometries for which~$S_k V = V'$ and~$\ad_{S_k} \after \varrho' = \varrho$
 for~$k =1,2$.
 We want to show~$S_1=S_2$.
-For all finite tuples~$(a_i)_i$, $(\alpha_i)_i$ from~$\scrA$;
-    $(x_i)_i$, $(y_i)_i$ from~$\scrH$ \emph{and} $c \in \scrB(\scrK')$,
+First we will prove that~$\ad_{S_1} = \ad_{S_2}$.
+For~$k=1,2$, $n, m\in \N$, $a_1, \ldots, a_n,\alpha_1, \ldots, \alpha_m \in \scrA$,
+$x_1, \ldots, x_n, y_1, \ldots, y_m \in \scrH$ \emph{and}
+    $c \in \scrB(\scrK')$,
     we have
 \begin{align*}
     \bigl< \ad_{S_k}(c)
         \sum_i \varrho(a_i) V x_i,
-        \sum_j \varrho(a_j) V x_j \bigr>
+        \sum_j \varrho(\alpha_j) V y_j \bigr>
     &\ = \ \sum_{i,j}
-        \bigl< V^* \varrho(\alpha_j^*) \ad_{S_k}(c) \varrho(a_i) V x_i, y_i
+        \bigl< V^* \varrho(\alpha_j^*) \,\ad_{S_k}(c)\, \varrho(a_i) V x_i, y_i
             \bigr> \\
             & \ \stackrel{\sref{dils-univlemma}}{=} \ \sum_{i,j}
-        \bigl< V^* \ad_{S_k} \bigl(\varrho'(\alpha_j^*) c
+        \bigl< V^* \ad_{S_k} \bigl(\varrho'(\alpha_j^*) \,c\,
             \varrho'(a_i)\bigr) V x_i, y_j\bigr> \\
     & \ =\  \sum_{i,j}
-        \bigl< (V')^* \varrho'(\alpha_j^*) c \varrho'(a_i) V' x_i, y_j
+        \bigl< (V')^* \varrho'(\alpha_j^*) \,c\, \varrho'(a_i) V' x_i, y_j
             \bigr>.
 \end{align*}
-As the linear span of~$\varrho(\scrA) V\scrH$ is dense in~$\scrK$
-    we see~$\ad_{S_1} = \ad_{S_2}$.
-Thus $\lambda S_1= S_2$ for some~$\lambda \in \C$,
+As the linear span of~$\varrho(\scrA) V\scrH$ is dense in~$\scrK$,
+we see~$\ad_{S_1}(c) = \ad_{S_2}(c)$ for all~$c \in \scrB(\scrK')$.
+So~$\ad_{S_1} = \ad_{S_2}$
+    and thus $\lambda S_1= S_2$ for some~$\lambda \in \C$,
 cf.~\cite[Lemma 9]{westerbaan2016universal}.
 As~$V \neq 0$, there is an~$x \in \scrH$ with~$Vx \neq 0$.
-Then~$S_1 V x = V'x = S_2Vx = \lambda S_1 Vx$, so~$\lambda=1$.
+Also~$S_1 V x \neq 0$ as~$S_1$ is an isometry and thus injective.
+From this and~$S_1 V x = V'x = S_2Vx = \lambda S_1 Vx$, we get~$\lambda=1$.
 Hence~$S_1=S_2$.
 \end{point}
 \begin{point}{Existence}%
-For any tuple~$(a_i)_i$ in~$\scrA$ and~$(x_i)_i \in \scrH$, we have
+For any~$n \in \N$, $a_1, \ldots, a_n \in \scrA$
+    and~$x_1, \ldots, x_n \in \scrH$, we have
 \begin{align*}
 \bigl\| \sum_i \varrho(a_i)Vx_i \bigr\|^2
 &\ =\  \sum_{i,j} \bigl< V^* \varrho(a_j^*a_i) Vx_i, x_j\bigr> \\
 &\ =\  \sum_{i,j} \bigl< \varphi(a_j^* a_i)x_i, x_j \bigr> \\
 &\ =\  \bigl\| \sum_i \varrho'(a_i) V'x_i \bigr\|^2.
 \end{align*}
-Thus there is a unique isometry~$S\colon \scrK \to \scrK'$
+It follows (again
+    using denseness of the linear span of~$\varrho(\scrA) V \scrH$),
+that there is a unique isometry~$S\colon \scrK \to \scrK'$
     such that~$S\varrho(a) Vx = \varrho'(a)V' x$
         for all~$a\in \scrA$ and~$x \in\scrH$.
 As~$SVx = S\varrho(1)Vx=\varrho'(1)V'x = V'x$ for all~$x\in \scrH$,
-    we have~$SV = V'$.
-Furthermore, for all~$(x_i)_i$ in~$\scrH$;
-    $(a_i)_i$ and~$a$ in~$\scrA$
+    we have~$SV = V'$. Furthermore
 we have
 \begin{align*}
     S \varrho(a) \sum_i \varrho(a_i)Vx_i
@@ -730,11 +738,11 @@ we have
     &\  =\ \varrho'(a) \sum_i \varrho'(a_i)V'x_i\\
     &\ =\ \varrho'(a) S \sum_i \varrho(a_i)V x_i.
 \end{align*}
-Again as the linear span of~$\varrho(\scrA)V\scrH$
-    is dense in~$\scrK$,
-    we find~$S \varrho(a) = \varrho'(a)S$.
-Thus $S^* \varrho'(a) S = S^*S\varrho(a) = \varrho(a)$
-    and so~$\ad_S \after \varrho' = \varrho$. \qed
+for all~$n \in \N$, $a, a_1, \ldots, a_n \in \scrA$ and
+    $x_1, \ldots, x_n \in \scrH$.
+So~$S \varrho(a) = \varrho'(a)S$.
+Thus $S^* \varrho'(a) S = S^*S\varrho(a) = \varrho(a)$ for all~$a\in \scrA$,
+whence~$\ad_S \after \varrho' = \varrho$. \qed
 \end{point}
 \end{point}
 \end{point}
@@ -764,6 +772,16 @@ Show using~\sref{dils-univ-stinespring}
     that the inclusion functor~$U \colon \mathsf{Rep}
     \to \mathsf{Rep}_{\mathrm{cp}}$ has a left adjoint.
 \par % XXX wtf?
+\begin{point}%
+In the special case of ncp-maps
+    of the form~$\varphi \colon \scrB(\scrH) \to \scrB(\scrK)$,
+    there is a different and noteworthy  property
+    concerning dilations `of the same dimension',
+    called \emph{essential uniqueness of purification}.
+This property is the cornerstone of several publications,
+    notably \cite{chiribella}, which popularized it.
+\par % XXX wtf?
+\end{point}
 \end{point}
 \begin{point}[ess-uniq-pur]{Exercise (Essential uniqueness of purification)}
     Let~$\varphi \colon \scrB(\scrH) \to \scrB(\scrK)$
@@ -772,7 +790,7 @@ Show using~\sref{dils-univ-stinespring}
     here is a Hilbert space~$\scrK'$
         and bounded operator~$V\colon \scrK \to \scrH \otimes \scrK'$
         such that~$V^* (a\otimes 1) V = \varphi(a)$.
-    Assume there is another bounded operator
+        Assume there is any (other) bounded operator
         $W\colon \scrK \to \scrH \otimes \scrK'$
         with~$W^* (a \otimes 1) W = \varphi(a)$.
     We will show there is a unitary~$U \colon \scrK' \to \scrK'$
@@ -794,9 +812,9 @@ Show using~\sref{dils-univ-stinespring}
 \end{parsec}
 \begin{parsec}%
 \begin{point}%
-    We are ready to state the universal
-        property that Stinepspring's dilation satisfies,
-        which we will use to generalize it to arbitrary ncp-maps.
+    We are ready to state the more general universal property
+        that Stinepspring's dilation satisfies,
+        which we will allow use to generalize it to arbitrary ncp-maps.
 \end{point}
 \parpic[r]{
 $\xymatrix@C=2.5em@R=2em{
@@ -822,12 +840,13 @@ $\xymatrix@C=2.5em@R=2em{
     an nmiu-map $\varrho \colon \scrA \to \scrP$
     and ncp-map~$h \colon \scrP \to \scrB$
     with~$\varphi = h \after \varrho$
-    such that for every other
+    such that for every (other)
     such triplet~$(\scrP', \varrho', h')$
     with a von Neumann algebra~$\scrP'$;
     an nmiu-map $\varrho'\colon \scrA \to \scrP'$
     and ncp-map~$h' \colon \scrP' \to \scrB$,
-    there is a unique~$\sigma \colon \scrP' \to \scrP$
+    there is a unique ncp-map~$\sigma \colon \scrP' \to \scrP$
+    (the ``mediating map'')
     with~$\sigma \after \varrho' = \varrho$
     and~$h \after \sigma = h'$.
     \par % XXX hack to get parpic to work
@@ -861,11 +880,12 @@ We must show that there is a unique
 \begin{point}{Uniqueness}%
     Let~$\sigma_1,\sigma_2\colon \scrP' \to \scrB(\scrH)$
         be two such ncp-maps.
-    Similar to the uniqueness argument in \sref{dils-univ-stinespring},
+    Similar to the uniqueness proof in \sref{dils-univ-stinespring},
     we compute
-        that for all finite tuples~$(a_i)_i$, $(\alpha_i)_i$ from~$\scrA$;
-    $(x_i)_i$, $(y_i)_i$ from~$\scrH$ \emph{and} $c \in \scrP'$
-    we have
+        that for all~$n,m \in \N$,
+        $a_1, \ldots, a_n,\alpha_1, \ldots, \alpha_m \in \scrA$,
+        $x_1, \ldots, x_n,y_1 \ldots, y_m \in \scrH$
+        and~$c \in \scrP'$, we have
 \begin{align*}
     \bigl< \sigma_k(c)
         \sum_i \varrho(a_i) V x_i,
@@ -881,8 +901,8 @@ We must show that there is a unique
             \bigr>.
 \end{align*}
 By definition of minimality of a Stinespring dilation,
-such $\sum_i \varrho(a_i) Vx_i$
-    are norm dense in~$\scrK$
+the set of vectors of the form~$\sum_i \varrho(a_i) Vx_i$
+    is norm dense in~$\scrK$
     and so~$\sigma_1(c)=\sigma_2(c)$ as desired.
 \end{point}
 
@@ -938,7 +958,7 @@ There are unique mediating maps~$\sigma_1\colon \scrP_1 \to \scrP_2$
 and~$\sigma_2 \colon \scrP_2 \to \scrP_1$.
 It is easy to see~$\sigma_1 \after \sigma_2$
 satisfies the same defining property
-as the unique mediating map~$\id\colon \scrP_1 \to \scrP_1$
+as the unique mediating map~$\id\colon \scrP_2 \to \scrP_2$
 and so~$\sigma_1 \after \sigma_2 = \id$.
 Similarly~$\sigma_2 \after \sigma_1 = \id$.
 Define~$\vartheta = \sigma_1$.
@@ -982,13 +1002,33 @@ Prove~$(\scrP, \varrho, \lambda h)$
     is a Paschke dilation of~$\lambda \varphi$.
 \end{enumerate}
 \end{point}
-\begin{point}{Example}%
-Later, in \sref{paschke-tensor}, we will see
+\begin{point}{Examples}%
+Later we will be able to compute more dilations.
+\begin{enumerate}
+\item
+In \sref{paschke-tensor}, we will see
     that if~$(\scrP_i, \varrho_i, h_i)$
     is a Paschke dilation of an ncp-map~$\varphi_i \colon \scrA_i \to \scrB_i$
     for~$i=1,2$,
     then~$(\scrP_1 \otimes \scrP_2, \varrho_1\otimes \varrho_2, h_1\otimes h_2)$
     is a Paschke dilation of~$\varphi_1 \otimes \varphi_2$.
+\item
+In \sref{paschke-corner}, we will
+    show that~$(\cceil{p}\scrA, h_{\cceil{p}}, h_p)$
+    is a Paschke dilation of the
+    ncp-map~$h\colon \scrA \to p \scrA p$
+    given by~$h(a) = pap$ for some projection~$p\in \scrA$.
+\item
+In \sref{paschke-pure}, it's proven
+    that a map~$\varphi$
+    with Paschke dilation~$(\scrP, \varrho, h)$
+    is pure (in the sense of \sref{pure})
+    if and only if~$\varrho$ is surjective.
+\item
+In \sref{dils-filter-basics-exercise}
+    the Paschke dilations of~$\varphi$
+    and~$c \after \varphi$ for a filter~$c$ are related.
+\end{enumerate}
 \end{point}
 \end{parsec}
 
@@ -997,10 +1037,12 @@ Later, in \sref{paschke-tensor}, we will see
 \begin{point}%
 Recall that by GNS
     every state (pu-map)~$\omega\colon \scrA \to \C$
+    on a von Neumann algebra~$\scrA$
     splits as~$h \after \varrho$
     for some nmiu-map~$\varrho\colon \scrA \to \scrB(\scrH)$,
         Hilbert space~$\scrH$
-        and vector state~$h (T) =  \left<x, T x\right>$.
+        and vector state~$h (T) =  \left<x, T x\right>$
+         for some~$x \in \scrH$.
 It is easy to see~$(\scrH, \varrho, h)$ is a Paschke dilation of~$\omega$.
 
 
@@ -1015,7 +1057,14 @@ Paschke showed that GNS can be generalized by replacing the scalars~$\C$
 It turns out~$(\scrB^a(X), \varrho, h)$
     is a Paschke dilation of~$\varphi$.
 Before we will prove this,
-    we first develop the theory of self-dual Hilbert C$^*$-modules.
+    we first develop the theory of (self-dual) Hilbert C$^*$-modules.
+
+We already encountered Hilbert C$^*$-modules
+    in the development of the basics of completely positive maps
+    in my twin's thesis. (They appear in \sref{chilb-basic}.)
+As Hilbert C$^*$-modules are central to the present topic,
+    we will proof some basic results again, which were already present
+    in my twin's thesis.
 \end{point}
 \begin{point}{Definition}%
     Let~$\scrB$ be a C$^*$-algebra and~$X$
@@ -1050,7 +1099,7 @@ Any C$^*$-algebra~$\scrB$ is a Hilbert C$^*$-module over itself
     with $\scrB$-valued inner product~$\left<a,b\right> = a^*b$.
 By the C$^*$-identity, the Hilbert~$\scrB$-module
     norm on~$\scrB$ coincides with
-    the usual C$^*$-norm.
+    the norm of the C$^*$-algebra.
 
 More generally: if~$J \subseteq \scrB$
     is any right ideal of~$\scrB$,
@@ -1076,18 +1125,19 @@ If~$X$ and~$Y$ are (pre-)Hilbert~$\scrB$-modules,
 \begin{point}{Definition}%
 Let~$X$ be a right~$\scrB$-module with~$\scrB$-valued inner
     product~$\left<\,\cdot\,,\,\cdot\,\right>$.
-For any state (pu-map)~$f\colon \scrB \to \C$
+For any positive functional~$f\colon \scrB \to \C$,
     write~$\Define{\left<x,y\right>_f} = f(\left<x,y\right>)$
-    and~$\Define{\|x\|_f} = \left<x,x\right>^{\frac{1}{2}}_f$.
+    and~$\Define{\|x\|_f} = \smash{ \langle x,x\rangle^{\nicefrac{1}{2}}_f}$.
 This~$\left<\,\cdot\,,\,\cdot\,\right>_f$
-    is a complex-valued inner product
-    and so~$\|\,\cdot\,\|_f$ is a seminorm.
+    is a complex-valued inner product on~$X$.
+Hence, by~\sref{inner-product-basic},
+    we know that~$\|\,\cdot\,\|_f$ is a seminorm.
 \end{point}
 \begin{point}[module-CS]{Proposition (Cauchy--Schwarz)}%
 Let~$X$ be a right~$\scrB$-module
     with~$\scrB$-valued inner product~$\left<\,\cdot\,,\,\cdot\,\right>$
     for some~C$^*$-algebra~$\scrB$.
-Then~$\left<x,y\right>\left<y,x\right> \leq \|\left<y,y\right>\| \left<x,x\right>$.
+Then~$\left<x,y\right>\left<y,x\right> \ \leq\  \|\left<y,y\right>\| \left<x,x\right>$.
 \begin{point}{Proof}%
 Let~$f\colon \scrB \to \C$ be any state (pu-map).
 Since the states on~$\scrB$ are order separating,
@@ -1126,6 +1176,8 @@ that the addition and the module action
 are jointly uniformly continuous
     and that the inner product is uniformly continuous in each argument
     separately.
+(The inner product is also jointly continuous,
+    but not uniformly.)
 \end{point}
 \end{point}
 \begin{point}{Definition}%
@@ -5670,7 +5722,7 @@ is a Paschke dilation of~$h_p$.  \qed
 \end{point}
 \end{point}
 \end{point}
-\begin{point}{Theorem}%
+\begin{point}[paschke-pure]{Theorem}%
     Let~$\varphi\colon \scrA \to \scrB$ be an ncp-map
     between von Neumann algebras with
     Paschke dilation~$(\scrP, \varrho, h)$.
