@@ -30,7 +30,7 @@ General topological spaces on their own are usually of little interest:
     as a stepping stone:
     many important classes of mathematical spaces
     are just plain topological spaces with a few additional axioms.
-Similarly, there will be many pathalogical effectuses.
+Similarly, there will be many pathological effectuses.
 Their use for us lies in their expressiveness.
 \end{point}
 \begin{point}%
@@ -157,12 +157,12 @@ After this highpoint,
 \begin{parsec}%
 \begin{point}%
 Before we turn to effectuses,
-    it is convenient to introcuce some lesser-known algebraic structures first
+    it is convenient to introduce some lesser-known algebraic structures first
     of which the effect algebra is the most important.
 It will turn out that the set of predicates associated to an object in
     an effectus can be arranged into an effect algebra.
 In this way, effect algebras play the same role
-    for effectuses as heyting algebras for topoi.
+    for effectuses as Heyting algebras for topoi.
     First, we will recall the definition of partial commutative monoid (PCM)
     --- as later in \sref{cho-thm} 
     we will see that the partial maps between
@@ -877,7 +877,7 @@ By the compatible sum axiom
     \ \perp\  \pproj_2 \after (h + l)
     \ = \ [0, l].
 \end{equation*}
-By PCM-enrichtment
+By PCM-enrichment
 $([h, 0] \ovee [0, l]) \after \kappa_1
          =  ([h, 0] \after \kappa_1) \ovee
         ([0, l] \after \kappa_1)  = h$.
@@ -1018,7 +1018,7 @@ To show~$I$ is the final object of~$\Tot C$,
     we need~$\id_I = 1$.
 As~$C(I,I)$ is an effect algebra~$1 = \id \ovee \id^\perp$
     for some~$\id^\perp$.
-So by PCM-enrichtment~$1 = 1 \after 1 = (1 \after \id) \ovee (1 \after\id^\perp) = 
+So by PCM-enrichment~$1 = 1 \after 1 = (1 \after \id) \ovee (1 \after\id^\perp) = 
 1 \ovee (1 \after \id^\perp)$.
 By the zero--one axiom~$1 \after \id^\perp = 0$.
 So~$\id^\perp = 0$ and indeed~$\id = 1$.
@@ -1768,7 +1768,7 @@ and~$\smash{\widehat{f \after g}} = \hat{f} \hafter \hat{g}$,
     given by~$Q g = \hat{g}$ is an identity-on-objects functor.
 It is an isomorphism by the first part of \sref{pardp}:
     for every~$f$ in~$\Tot \Par C$,
-    there is a unqiue~$g$ in~$C$
+    there is a unique~$g$ in~$C$
     with~$f = \hat{g}$. \qed
 \end{point}
 \end{point}
@@ -1854,13 +1854,13 @@ We denote the set of states on~$X$ by~$\Define{\Stat X}$.
 \item
 An effectus~$C$ has \Define{separating predicates}
     if~$\Pred X$ is jointly monic for every~$X$ in~$C$.
-    Similarly, an effectus has \Define{seperating states}
+    Similarly, an effectus has \Define{separating states}
     if~$\Stat X$ is jointly epic for every~$X$ in~$C$.
 \end{enumerate}
 \end{point}
 \begin{point}{Example}%
 The category~$\op\vN$ is a real effectus ($M \cong [0,1]$)
-    with seperating states and predicates.
+    with separating states and predicates.
 The predicates on a von Neumann algebra~$\scrA$
     is the set of effects~$[0,1]_\scrA$
     and~$\Stat \scrA$ is the convex set of normal states.
@@ -1881,7 +1881,7 @@ In fact: every effectus~$C$ (in total form)
 \begin{point}{Proof}%
 To show~$\EMod^{\mathsf{op}}_M$ is an effectus,
     we have to show the dual  axioms for~$\EMod_M$.
-\begin{point}{Finite products and inital object}%
+\begin{point}{Finite products and initial object}%
 For every~$M$-effect module~$E$,
     there is a unique modulemap~$M \to E$,
     which is given by~$\lambda \mapsto \lambda \cdot 1$.
@@ -2277,7 +2277,7 @@ For our next project,
     we investigate whether the category~$\AConvM$ is an effectus.
 We can show~$\AConvM$ is an effectus, if~$M$ has a certain partial division.
 Unfortunately it will remain unclear if~$\AConvM$ is an effectus in general.
-The case~$M=[0,1]$ is much easier and has already been delt with
+The case~$M=[0,1]$ is much easier and has already been dealt with
         in \cite{statesofconvexsets}. 
 The first step is to uncover the coproduct in~$\AConvM$.
 To construct the coproduct, we will need to know
@@ -4673,7 +4673,7 @@ In any~$\dagger$-category we may define the following.
 \end{point}
 \begin{point}{Example}%
 The category~$\mathsf{Hilb}$
-    of Hilbert spaces with bouned linear maps
+    of Hilbert spaces with bounded linear maps
     is a~$\dagger$-category
     with the familiar adjoint as~$\dagger$.
 \end{point}
@@ -5018,7 +5018,7 @@ In a~$\dagger$-effectus
         and~$\zeta_{\ceil{1 \after f}}$,
         see \sref{zeta-s-convention}.
 Before we declare~\eqref{dagger-definition} a definition,
- we have to check whether it is independant
+ we have to check whether it is independent
     of choice of~$\pi$ (and corresponding $\zeta$).
     So suppose~$ f  =  \pi' \after \alpha' \after \zeta'
         \after \asrt_{1 \after f}$
@@ -6106,7 +6106,7 @@ As they are the the main topic of the first part of this thesis,
     we cannot finish our discussion of~$\dagger$-effectuses
     without mentioning dilations.
 The presented abstract theory of dilations in a~$\dagger$-effectus
-    is prelimanary and as of yet rather unimpressive.
+    is preliminary and as of yet rather unimpressive.
 \end{point}
 \begin{point}{Definition}%
 Let~$f\colon X \to Y$ be any map in an effectus.
@@ -6307,7 +6307,7 @@ As~$\asrt_\lambda = \lambda$,
     and so~$(h^\dagger)^\perp \after s^\dagger = \lambda^\perp = \lambda$.
 Combined:~$\langle h^\dagger, (h^\dagger)^\perp \rangle \after s^\dagger
             = \langle \lambda,\lambda \rangle$.
-Thus using the univeral property of the dilation,
+Thus using the universal property of the dilation,
     there is a unique map~$H\colon P \to P$
     with~$H \after h = s^\dagger$
     and~$\langle h^\dagger, (h^\dagger)^\perp \rangle \after H =
@@ -6467,7 +6467,7 @@ Thus~$\andthen{p}{p} = p^2 =  1 = \andthen{1}{1}$
     we get~$p = 1$.
 Hence~$f$ is a comprehension.
 
-Duallizing, we see~$\dagger$-epis are exactly quotients of sharp predicates.
+Dualizing, we see~$\dagger$-epis are exactly quotients of sharp predicates.
 Now it is clear that the~$\dagger$-partial isometries
 are exactly the pristine maps.
 \begin{point}%
@@ -6875,7 +6875,7 @@ to our familiar notions as follows.
 \end{enumerate}
 \begin{point}{Notation}%
 As~$\Nsb A$ and~$\SPred A$ are isomorphic,
-    we will abbriavte~``$f$ is left-modular at~$\pi_s$''
+    we will abbreviate~``$f$ is left-modular at~$\pi_s$''
     by~``$f$ is left-modular at~$s$''
     and similarly for right-modularity.
 \end{point}
