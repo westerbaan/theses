@@ -1434,17 +1434,18 @@ which shows~$h$ is indeed completely positive. \qed
 In \sref{prop-complete-into-hilbert-space}
     we saw how to complete a complex vector space with inner product
     to a Hilbert space.
-Now we will see how to complete a right-$\scrB$-module
+Now we will see how to complete a right $\scrB$-module
     with $\scrB$-valued inner product
-    to a self-dual Hilbert~$\scrB$-module
+    to a \emph{self-dual} Hilbert~$\scrB$-module
     under the assumption~$\scrB$ is a von Neumann algebra.
-We will use a different construction than Paschke.
-He shows that for a pre-Hilbert $\scrB$-module~$X$
+    (We will define \emph{self-dual} in \sref{dils-selfdual}.)
+We will use a different construction than Paschke used.
+Paschke showed that for a pre-Hilbert $\scrB$-module~$X$
     the set of functionals~$X'$
         (i.e.~$\scrB$-module homomorphisms into~$\scrB$)
     turns out to  be a self-dual Hilbert~$\scrB$-module,
     which he uses as the completion of~$X$.
-A considerable part of his paper \cite{paschke}
+A considerable part of his paper~\cite{paschke}
     is devoted to this construction.
 It requires Sakai's characterization of von Neumann algebras,
     which we have not covered.
@@ -1456,7 +1457,9 @@ Instead of embedding~$X$ into a dual space,
 A simple metric completion will not do,
     we will need to complete $X$ as a \emph{uniform space}.
 Uniformities are structures that sit between topological spaces
-and metric spaces.
+    and metric spaces.
+We will refresh the basics of uniformities ---
+for a thorough treatment, see for instance \cite[Ch.~9]{willard}.
 \end{point}
 \begin{point}[dils-dfn-uniformity]{Definition}%
     A \Define{uniform space} is a set~$X$
@@ -1474,7 +1477,7 @@ and metric spaces.
         \emph{and}
         \item
         if~$\varepsilon \subseteq \delta$ and~$\varepsilon \in \Phi$,
-            then~$\varepsilon \in \Phi$.
+            then~$\delta \in \Phi$.
         \end{inparaenum}
     \item
         For every~$\varepsilon \in \Phi$
@@ -1495,13 +1498,13 @@ and metric spaces.
     A uniform space is \Define{Hausdorff}
         whenever~$x \mathrel\varepsilon y$
             for all~$\varepsilon \in \Phi$
-            implies~$x=y$.
+            implies that~$x=y$.
 \begin{point}%
 The elements of~$X$ are the points of the uniform space.
 The entourages~$\varepsilon \in \Phi$
     are generalized distances:
 one reads~$x \mathrel\varepsilon y$ as
-    `the point $x$ is~$\varepsilon$-close to~$y$'.
+    `the point $x$ is at most~$\varepsilon$ far from to~$y$'.
 With this in mind, the second axiom states every point is arbitrarily close
     to itself.
 The third axiom requires that for every entourage~$\varepsilon$
@@ -1536,7 +1539,7 @@ to describe the entourages of some common uniformities.
 Define~$\hat\varepsilon \equiv \{(x,y);\ d(x,y) \leq \varepsilon\}$
 for any $\varepsilon > 0$.
 The set~$B \equiv \{ \hat\varepsilon; \ \varepsilon > 0\}$
-is a subbase and so fixes a uniformity~$\Phi$ for~$X$.
+is a subbase and so fixes a uniformity~$\Phi$ on~$X$.
         \item
     Let~$X$ be a set together with a (infinite)
             family~$(d_{\alpha})_{\alpha\in I}$
@@ -1550,26 +1553,28 @@ is a subbase and so fixes a uniformity~$\Phi$ for~$X$.
 (Every uniform space is of this form, see e.g.~\cite[Thm.~39.11]{willard}.)
 \item
 Let~$V$ be a vector space with a
-    family of seminorms~$(\|\  \|_\alpha)_{\alpha \in I}$.
-    (That is: a locally convex space.)
+family of seminorms~$(\|\  \|_\alpha)_{\alpha \in I}$.
 As a special case of the previous,
  $V$ has a uniformity fixed by
     pseudometrics~$d_\alpha(x,y) = \|x-y\|_\alpha$.
+    (If additionally~$x =0$ provided~$\|x\|_\alpha = 0$ for all~$\alpha$,
+    then~$V$ is called a locally convex space.)
 
 \item
 Assume~$\scrB$ is a von Neumann algebra.
 There are several uniformities on~$\scrB$ --- two of which
     are of particular interest to us.
 The \Define{ultrastrong uniformity} on~$\scrB$
-    is fixed by the seminorms~$\|x\|_f = f(x^*x)$
+is fixed by the seminorms~$\|b\|_f = f(b^*b)^{\frac{1}{2}}$
         where~$f\colon \scrB \to \C$ is an np-map.
 The \Define{ultraweak uniformity} on~$\scrB$
-    is given by the seminorms~$|f(x)|$
+    is given by the seminorms~$|f(b)|$
         for np-maps~$f\colon \scrB \to \C$.
 
     \end{enumerate}
 \begin{point}%
 We are ready to define a uniformity for Hilbert $\scrB$-modules.
+Later, we will complete~$X$ with respect to this uniformity.
 \end{point}
 \end{point}
 \begin{point}[dils-ultranorm]{Definition}%
@@ -1623,7 +1628,7 @@ Indeed, this is the case if we start of with a pseudometric
 The uniform space $X$ is \Define{complete}
     when every Cauchy net converges.
 \item
-Let~$(Y,\Psi)$ be another uniform space.
+Let~$(Y,\Psi)$ be any (other) uniform space.
 A map~$f\colon X \to X'$
 is said to be \Define{uniformly continuous}
 if for each~$\varepsilon \in \Psi$
@@ -1668,7 +1673,7 @@ A subset~$D \subseteq X$ is said to be \Define{dense}
     Assume~$(x_\alpha)_\alpha$ is a Cauchy net with~$x_\alpha \to x$
         and~$x_\alpha \to y$.  Prove~$x = y$ whenever~$X$ is Hausdorff.
 \item\label{ex-continuous-preserves-lims}
-    Show that if~$f\colon X \to Y$ is a continuous
+    Show that if~$f\colon X \to Y$ is a continuous map
     between uniform spaces
         and we have~$x_\alpha \to x$ in~$X$,
         then~$f(x_\alpha) \to f(x)$ in~$Y$.
@@ -1714,7 +1719,7 @@ Conclude from \ref{ex-continuous-preserves-lims} and
 Let~$X$ and~$Y$ be right $\scrB$-modules
     with~$\scrB$-valued inner products.
 A bounded $\scrB$-linear map~$T\colon X \to Y$
-    is ultranorm uniformly continuous.
+    is uniformly ultranorm continuous.
 \begin{point}{Proof}%
 Let~$f\colon \scrB \to \C$ be an np-map
     and~$\varepsilon > 0$.
@@ -1726,7 +1731,7 @@ and so
     \|Tx - Ty\|_f \  =\  f(\left<T(x-y),T(x-y)\right>)^{\frac{1}{2}}
 \ \leq\  \|T\| \|x-y\|_f \leq \varepsilon.
 \end{equation*}
-Thus~$T$ is uniformly continuous in the ultranorm uniformity. \qed
+Thus~$T$ is uniformly continuous w.r.t.~the ultranorm uniformity. \qed
 \end{point}
 \end{point}
 \begin{point}[ultranormcontstruct]{Corollary}%
@@ -1739,7 +1744,7 @@ For~$x_0 \in X$ the maps
     & b &\mapsto x_0 b \\
     X\times X &\to X & X &\to \scrB & \scrB & \to X
 \end{align*}
-are all uniformly continuous in the ultranorm uniformity.
+are all uniformly continuous w.r.t.~the ultranorm uniformity.
 \end{point}
 \begin{point}[ultranormscalar]{Exercise}%
 Let~$\scrB$ be a von Neumann algebra and~$X$ a right~$\scrB$-module
@@ -1753,10 +1758,11 @@ Let~$X$ be a right~$\scrB$-module
     for some C$^*$-algebra~$\scrB$.
 If~$x_\alpha \to x$ and~$y_\alpha \to y$
     in the ultranorm uniformity,
+    for some nets~$(x_\alpha)_{\alpha\in I}$, $(y_\alpha)_{\alpha \in I}$,
     then~$[x_\alpha,y_\alpha] \to [x,y]$ ultraweakly.
 \begin{point}{Proof}%
 Let~$\varepsilon > 0$ and np-map~$f\colon \scrB \to \C$ be given.
-Note~$\|y_\alpha\|_f \to \|y\|_f$;
+Note that~$\|y_\alpha\|_f \to \|y\|_f$;
     indeed by the reverse triangle inequality 
     $|\|y_\alpha\|_f - \|y\|_f| \leq \| y_\alpha - y\|_f \to 0$.
 Thus we can find~$\alpha_1$ such that~$\|y_\alpha\|_f \leq \|y\|_f + 1$
@@ -1829,7 +1835,7 @@ for all~$x \in D$.
     For any pre-Hilbert~$\scrB$-module~$X$,
         the following conditions are equivalent.
         \begin{enumerate}
-            \item $X$ is \Define{self dual} ---
+            \item $X$ is \Define{self-dual} ---
                 that is: for each~$\scrB$-linear~$\tau\colon X \to \scrB$
                 there is an~$t \in X$ such that~$\tau(x) = \left<t,x\right>$
                     for all~$x \in X$.
@@ -1841,10 +1847,12 @@ for all~$x \in D$.
 We will prove $1 \Rightarrow 3 \Rightarrow 4 \Rightarrow 2 \Rightarrow 4 \Rightarrow 1$.
 The equivalence~$1 \Leftrightarrow 4$
     was already shown by Paschke in \cite[Thm.~3.12]{paschke},
-    but we give a different proof. The other equivalences are new.
+    but we give a different proof. The other equivalences are new,
+    as far as we know.
 \begin{point}{1 $\Rightarrow$ 3, self-dual~$X$ are bounded complete}%
-    Assume~$X$ is self-dual and~$(x_\alpha)_\alpha$
-        is an ultranorm-Cauchy net
+    Let~$X$ be a self-dual pre-Hilbert~$\scrB$-module.
+    To show norm-bounded ultranorm completeness,
+     assume~$(x_\alpha)_\alpha$ is an ultranorm-Cauchy net in~$X$
         with~$\|x_\alpha\| \leq B$ for some~$B \geq 0$.
      For the moment pick an~$y \in X$.
 By \sref{module-CS} we
@@ -1852,40 +1860,41 @@ By \sref{module-CS} we
         f(\left<x_\alpha,x_\alpha\right>)$ for any~np-map~$f\colon \scrB \to \C$
         and so~$\left<y,x_\alpha\right>$ is an ultrastrong-Cauchy net in~$\scrB$.
 Von Neumann algebras are ultrastrongly complete, see \sref{vn-complete},
-so we may define~$\tau(y) = (\uslim_\alpha \left<y, x_\alpha\right>)^*$.
+so we can define~$\tau(y) = (\uslim_\alpha \left<y, x_\alpha\right>)^*$.
 As addition and multiplication by a fixed element
 are ultrastrongly continuous (see \sref{mult-uws-cont})
     $\tau$ is~$\scrB$-linear.
 We will show~$\tau$ is bounded.
 For each~$\alpha$ we have~$\left<x_\alpha, y\right>\left<y, x_\alpha\right>
-        \leq \left<x_\alpha, x_\alpha\right> \leq \|y\|^2B^2$ and so
+        \leq \|y\|^2\left<x_\alpha, x_\alpha\right> \leq \|y\|^2B^2$ and so
 \begin{equation*}
     \tau(y)\tau(y)^*
     \ \overset{\sref{usconv}}{=} \ 
     \uwlim_\alpha \left<x_\alpha,y\right>\left<y,x_\alpha\right>
-    \ \leq \ B^2.
+    \ \leq \ \|y\|^2B^2.
 \end{equation*}
 Thus~$\|\tau(y)\|^2 = \|\tau(y)\tau(y)^*\| \leq \|y\|^2B^2$.
 So~$\tau$ is bounded.
 By self-duality, there is a~$t \in X$ such that~$\tau(y) = \left<t,y\right>$
 for all~$y \in X$.
 And so for each np-map~$f\colon \scrB \to \C$ we have
-\begin{equation*}
+\begin{equation}\label{selfdual-bramA}
     \|\left<y, t-x_\alpha\right>\|_f \ =\ 
     \|\left<y, t\right>-\left<y,x_\alpha\right>\|_f \ =\ 
     \|\tau(y)^*-\left<y,x_\alpha\right>\|_f\  \rightarrow \  0.
-\end{equation*}
+\end{equation}
 Write~$\left<x,y\right>_f=f(\left<x,y\right>)$.
 As~$f$ is positive $\left<\,\cdot\,,\,\cdot\,\right>_f$ is an inner product.
 From Kadison's inequality \sref{omega-norm-basic}
 it follows~$|f(a)|^2 \leq f(a^*a)f(1)$
 and so
-\begin{equation*}
+\begin{equation}\label{selfdual-bramB}
     |\left<y,t-x_\alpha\right>_f|^2
     \ \leq \ f( \left<t-x_\alpha,y\right> \left<y,t-x_\alpha\right>) f(1)
     \ =\  \| \left<y,t-x_\alpha\right> \|_f^2 f(1).
-\end{equation*}
-Combining both, we see~$|\left<y,t-x_\alpha\right>_f| \rightarrow 0$.
+\end{equation}
+Combining~\eqref{selfdual-bramA} and~\eqref{selfdual-bramB},
+    we see~$|\left<y,t-x_\alpha\right>_f| \rightarrow 0$.
 Let~$\varepsilon > 0$ be given.
 As~$\|x_\alpha\|_f$ is norm bounded
 we can find~$B > 0$ such that~$\|x_\alpha\|_f \leq B$
@@ -2878,7 +2887,7 @@ which implies~$\|\hat{T}\| \leq \|T\|$ as desired.
 \begin{parsec}%
 \begin{point}%
     Before we show every ncp-map has a Paschke dilation,
-        we study~$\scrB^a(X)$ a bit more for self dual~$X$.
+        we study~$\scrB^a(X)$ a bit more for self-dual~$X$.
 \end{point}
 \begin{point}{Definition}%
 Let~$V$ be a normed right $\scrB$-module.
@@ -2894,7 +2903,7 @@ For every~$T \in \scrB^a(X)$
     the map~$\left<(\,\cdot\,), T (\,\cdot\,)\right>$
     is a bounded~$\scrB$-sesquilinear form.
 \begin{point}%
-    For self dual~$X$ the converse is true.
+    For self-dual~$X$ the converse is true.
 \end{point}
 \end{point}
 \begin{point}[hilbmod-sesquilinear-forms]{Proposition}%
@@ -2906,7 +2915,7 @@ For every bounded $\scrB$-linear form~$B$ on~$X$,
 \begin{point}{Proof}
 For each~$y \in X$
     the map~$B(x,y)^*$ is~$\scrB$-linear and bounded.
-Thus by self duality of~$X$
+Thus by self-duality of~$X$
 there is a unique~$t_y$
     for each~$y \in X$
     such that~$\left<t_y, x\right> = B(x,y)^*$
@@ -2949,7 +2958,7 @@ have~$\left<\eta(x), T\eta(x)\right> = \left<\eta(x), S\eta(x)\right>$,
     then~$S=T$.
 \end{point}
 \begin{point}{Theorem}%
-Suppose~$X$ is a self dual Hilbert~$\scrB$-module
+Suppose~$X$ is a self-dual Hilbert~$\scrB$-module
     for a von Neumann algebra~$\scrB$.
 Then~$\scrB^a(X)$ is a von Neumann algebra.
 \begin{point}{Proof}%
@@ -3031,7 +3040,7 @@ Assume~$T \colon X \to Y$ is an adjointable bounded modulemap
     Define $\Define{\ad_T}\colon \scrB^a(Y) \to \scrB^a(X)$
     by~$\ad_T (B) = T^*BT$.
 The map~$\ad_T$ is completely positive.
-If~$X$ and~$Y$ are self dual,
+If~$X$ and~$Y$ are self-dual,
     then~$\ad_T$ is normal.
 \begin{point}{Proof}%
 For any~$n \in N$, $B_1,\ldots, B_n \in \scrB^a(X)$
@@ -3046,7 +3055,7 @@ and so~$\ad_T$ is completely positive.
 \end{point}
 \begin{point}%
 Now we show~$\ad_S$ is normal.
-Assume~$X$ and~$Y$ are self dual.
+Assume~$X$ and~$Y$ are self-dual.
 Let~$(B_\alpha)_\alpha$ be a net of self-adjoint elements in~$\scrB^a(Y)$
     with supremum~$B$.
 As~$\ad_S$ is positive, $(S^*B_\alpha S)_\alpha$ is again a bounded net
@@ -3702,7 +3711,7 @@ and so~$t \mapsto \varphi_t^{\scrP'}$
 \begin{parsec}%
 \begin{point}%
 Before we continue our study of Paschke dilations,
-    we develop some more theory on (self dual) Hilbert C$^*$-modules.
+    we develop some more theory on (self-dual) Hilbert C$^*$-modules.
 First we will prove a variant of the Kaplansky density
     theorem for Hilbert C$^*$-modules,
     which we will need to compute the tensor product of Paschke dilations.
@@ -3859,7 +3868,7 @@ We start with some good news.
 In~$\scrB(\scrH)$ the linear span of~$\ketbra{e_i}{e_j}$
     is ultraweakly dense for any orthonormal basis~$(e_i)_{i \in I}$
     of~$\scrH$.
-For self dual Hilbert~$\scrB$-modules
+For self-dual Hilbert~$\scrB$-modules
     we have a similar result.
 \end{point}
 \begin{point}{Definition}%
@@ -4163,8 +4172,8 @@ Prove that for any~$(b_i)_i$ and~$(c_i)_i$
     the sum~$\sum_{i \in I} b_i^* c_i =: \left<(b_i)_i, (c_i)_i\right>$
     converges ultraweakly
     and turns it into a pre-Hilbert~$\scrB$-module.
-Conclude it is self dual
-and, in fact, that for every self dual Hilbert~$\scrB$-module~$X$
+Conclude it is self-dual
+and, in fact, that for every self-dual Hilbert~$\scrB$-module~$X$
     with any orthonormal basis~$(e_i)_{i \in I}$
     we have~$X \cong \ell^2(\,(\left<e_i,e_i\right>)_{i \in I}\,)$.
 \end{point}
@@ -4238,7 +4247,7 @@ Conclude~$p \scrB \oplus q \scrB \cong (p+q) \scrB$
     for projections~$p,q \in \scrB$ with $p+q \leq 1$.
 \end{point}
 % \begin{point}[selfdual-limit-basispair]{Lemma}%
-%     Assume~$X$ is a self dual Hilbert~$\scrB$-module.
+%     Assume~$X$ is a self-dual Hilbert~$\scrB$-module.
 %     Let~$(E_\alpha)_{\alpha \in \beta}$ 
 %         and~$(D_\alpha)_{\alpha\in \beta}$
 %         be an ascending and descending sequence of subsets of~$X$,
@@ -5637,7 +5646,7 @@ of~$p$ is given by~$(\cceil{p}\scrA, h_{\cceil{p}}, h_p)$.
 Let~$(\scrA \otimes_{h_p} p\scrA p, \varrho, h)$
     denote the Paschke dilation constructed in~\sref{existence-paschke}.
 We proceed in roughly three steps:
-    first we show~$\scrA p$ is a self dual Hilbert~$p\scrA p$-module,
+    first we show~$\scrA p$ is a self-dual Hilbert~$p\scrA p$-module,
     then we prove~$\scrA \otimes_{h_p} p\scrA p \cong \scrA p$
     and finally we show~$\scrB^a(\scrA p) \cong \cceil{p} \scrA$.
 \begin{point}%
@@ -5656,7 +5665,7 @@ The module $\scrA p$ is ultranorm closed in~$\scrA$
     as~$x_\alpha \to x$ ultranorm
     implies~$x_\alpha p \to xp$ ultranorm.
 As self-duality is equivalent to ultranorm completeness,
-    we see~$\scrA p$ is self dual as well.
+    we see~$\scrA p$ is self-dual as well.
 \end{point}
 \begin{point}%
 Concerning~$\scrA \otimes_{h_p} p \scrA p \cong \scrA p$,
