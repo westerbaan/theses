@@ -2740,7 +2740,7 @@ the following charatization of
 the tensor product of von Neumann algebras
 proves useful.
 \end{point}
-\begin{point}{Theorem}%
+\begin{point}[tensor-characterization]{Theorem}%
 Given centre separating collections~$\Sigma$ and~$\Gamma$
 of np-functionals
 on von Neumann algebras~$\scrA$ and~$\scrB$,
@@ -2880,6 +2880,80 @@ $(\sigma\otimes \tau)(\,\cceil{\gamma_\otimes}^\perp \,)
 \gamma(\sigma, \tau)(\gamma_\otimes(\,\cceil{\gamma_\otimes}^\perp \,))
 = 0$.
 Whence~$\gamma$ is a tensor product.\qed
+\end{point}
+\end{point}
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+Using the characterization from~\sref{tensor-characterization}
+it is pretty 
+easy to see that the tensor product distributes
+over (infinite) direct sums
+(see~\sref{tensor-distributes-over-sums})
+after some unsurprising
+observations regarding direct sums
+(in~\sref{sum-generation}).
+\end{point}
+\begin{point}[sum-generation]{Exercise}%
+Let~$(\scrA_i)_{i\in I}$
+be a collection of von Neumann algebras.
+\begin{enumerate}
+\item
+Show that
+given a generating subset~$A_i$ 
+for each von Neumann algebra~$\scrA_i$
+the set $\bigcup_{i\in I} \kappa_i(A_i)$ 
+generates~$\bigoplus_{i\in I} \scrA_i$,
+where~$\kappa_i\colon \scrA_i\to\bigoplus_{i\in I} \scrA_i$
+denotes
+the np-map given by~$(\kappa_i(a))_i=a$ and~$(\kappa_i(a))_j=0$
+when~$j\neq i$.
+\item
+Show that
+given a centre separating collection~$\Omega_i$
+of np-functionals on~$\scrA_i$
+for each~$i\in I$
+the collection $\{\,\omega\circ \pi_i\colon \,
+\omega\in\Omega_i,\,i\in I\,\}$
+is centre separating for~$\bigoplus_{i\in I}\scrA_i$.
+\end{enumerate}
+\end{point}
+\begin{point}[tensor-distributes-over-sums]{Proposition}%
+Given von Neumann algebras
+$\scrA$ and~$(\scrB_i)_{i\in I}$
+the bilinear map
+\begin{equation*}
+	\textstyle
+	\gamma\colon 
+	\ 
+	\scrA \times \bigoplus_i \scrB_i
+	\longrightarrow \bigoplus_i \scrA\otimes \scrB_i,\ 
+	(a,b)\mapsto (a_i\otimes b)_i
+\end{equation*}
+is a tensor product.
+(Whence~$\scrA\otimes \bigoplus_i \scrB_i
+\cong \bigoplus_i\scrA\otimes \scrB_i$.)
+\begin{point}{Proof}%
+We use~\sref{tensor-characterization}
+to show that~$\gamma$ is a tensor product.
+Note that
+$\gamma$ is clearly miu-bilinear,
+and that
+the elements of the form $\gamma(a,\kappa_i(b))
+= \kappa(a\otimes b)$
+from the range of~$\gamma$
+where~$a\in \scrA$, $i\in I$, and~$b\in\scrB_i$ 
+generate~$\bigoplus_i\scrA \otimes\scrB_i$ by~\sref{sum-generation}.
+Since further 
+given $i\in I$ and np-functionals
+$\sigma\colon \scrA\to\C$ and
+$\tau\colon \scrB_i\to\C$
+the product functional $\gamma(\sigma,\tau\circ \pi_i)$
+exists being simply~$(\sigma\otimes \tau)\circ\pi_i
+\colon \bigoplus_i \scrA\otimes \scrB_i\to\C$,
+and such product functionals form  a centre separating collection 
+by~\sref{sum-generation},
+we see that~$\gamma$ is indeed a tensor product.\qed
 \end{point}
 \end{point}
 \end{parsec}
