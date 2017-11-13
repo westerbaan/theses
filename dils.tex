@@ -254,7 +254,9 @@ Together with the completeness of ~$X$
     there is a unique~$g\colon \scrH \to X$
     fixed by~$g((v_n)_n) = \lim_{n\to\infty}f(v_n)$.
 Clearly~$g \after \eta = f$.
-Finally, $g$ is unique as it's fixed on the image of~$\eta$, which is dense.
+Finally, uniqueness of~$g$ follows readily from
+    the fact~$g$ is fixed on the image of~$\eta$,
+    which is dense in~$\scrH$.
 \end{point}
 \begin{point}[completion-to-hilb-vect]%
 Thus we directly get a scalar multiplication
@@ -262,7 +264,7 @@ Thus we directly get a scalar multiplication
     where~$r_z(v) = zv$ is scalar multiplication by~$z \in \C$,
     which is uniformly continuous.
 In fact~$z (v_n)_n \equiv (z v_n)_n$.
-Extending addition is more involved, but straight-forward:
+Extending addition is more involved, but straightforward:
     given representatives~$v,w \in \scrH$
     we know~$(v_n+w_n)_n$ is Cauchy in~$V$
     by uniform continuity of addition and so
@@ -443,7 +445,7 @@ Hence~$
 \begin{point}%
     Let~$V_0 \colon \scrH \to \scrA \odot \scrH$
         be given by~$V_0 x = 1 \otimes x$.
-        This operator~$V_0$ bounded:
+        This operator~$V_0$ is bounded:
 \begin{equation*}
         \| V_0 x\|\  =\  \left<x, \varphi(1^*1) x\right>^{\frac{1}{2}}
         \ =\  \|\sqrt{\varphi(1)} x\| \ \leq \ \|\sqrt{\varphi(1)}\| \|x\|.
@@ -515,7 +517,7 @@ As preparation we study the nmiu-maps between type I von Neumann algebras.
 Let~$\varrho\colon \scrB(\scrH) \to \scrB(\scrK)$    
 be a non-zero nmiu-map for Hilbert spaces~$\scrH$ and~$\scrK$.
 In this exercise we will show
-    there is a Hilbert space~$\scrK'$
+    there are a Hilbert space~$\scrK'$
     and a unitary~$U\colon \scrK \to \scrH \otimes \scrK'$
     such that~$\varrho(a) = U^* (a\otimes 1) U $
     for all~$a \in \scrB(\scrH)$.
@@ -556,7 +558,7 @@ The nmiu-isomorphisms~$\scrB(\scrH) \to \scrB(\scrK)$
 \begin{point}[physics-stinespring]{Exercise}%
 Use \sref{nmiu-between-type-I} and~\sref{stinespring-theorem} to show
     that for every ncp-map~$\varphi\colon \scrB(\scrH) \to \scrB(\scrK)$
-    there is a Hilbert space~$\scrK'$
+    there are a Hilbert space~$\scrK'$
     and a bounded operator~$V\colon \scrK \to \scrH \otimes \scrK'$
     such that~$\varphi(a) = V^* (a \otimes 1)V$.
 
@@ -621,7 +623,7 @@ Later we will use this to prove a second universal property \sref{stinespring-is
     that allows us to generalize Stinespring's dilation to
     arbitrary ncp-maps.
 The modification of the familiar argument
-    is mostly straight-forward, except for the following lemma.
+    is mostly straightforward, except for the following lemma.
 \end{point}
 \parpic[r]{
 $\xymatrix{\mathscr{A} \ar[r]^\varrho \ar[rd]_{\varrho'}&
@@ -799,7 +801,7 @@ This property is the cornerstone of several publications,
     First show that in the special case the dilations are minimal
     (i.e.~the linear span of~$\{(a \otimes 1) V x;\  a \in \scrB(\scrH), x \in \scrK\}$ is dense
             in $\scrH \otimes \scrK'$),
-        that there is a (unique) unitary~$U_0$ on $\scrH \otimes \scrK'$
+        there is a (unique) unitary~$U_0$ on $\scrH \otimes \scrK'$
         with~$V = U_0 W$ and~$(a \otimes 1) U_0 = U_0 (a \otimes 1)$
             for all~$a \in \scrB(\scrH)$.
     Derive from the latter
@@ -807,14 +809,15 @@ This property is the cornerstone of several publications,
         there is a~$y' \in \scrK'$
         with~$U_0 (e \otimes y) = e \otimes y'$.
     Conclude~$U_0 = 1 \otimes U$ for some unitary~$U$ on~$\scrK'$.
-    Show  that the general case follows from the special case that the dilations are minimal.
+    Show  that the general case follows from the special case
+        in which the dilations are minimal.
 \end{point}
 \end{parsec}
 \begin{parsec}%
 \begin{point}%
     We are ready to state the more general universal property
-        that Stinespring's dilation satisfies,
-        which we will allow use to generalize it to arbitrary ncp-maps.
+        that Stinespring's dilation admits,
+        which will allow us to generalize it to arbitrary ncp-maps.
 \end{point}
 \parpic[r]{
 $\xymatrix@C=2.5em@R=2em{
@@ -838,13 +841,13 @@ $\xymatrix@C=2.5em@R=2em{
     is a triplet~$(\scrP, \varrho, h)$
     with a von Neumann algebra~$\scrP$;
     an nmiu-map $\varrho \colon \scrA \to \scrP$
-    and ncp-map~$h \colon \scrP \to \scrB$
+    and an ncp-map~$h \colon \scrP \to \scrB$
     with~$\varphi = h \after \varrho$
     such that for every (other)
     such triplet~$(\scrP', \varrho', h')$
     with a von Neumann algebra~$\scrP'$;
     an nmiu-map $\varrho'\colon \scrA \to \scrP'$
-    and ncp-map~$h' \colon \scrP' \to \scrB$,
+    and an ncp-map~$h' \colon \scrP' \to \scrB$,
     there is a unique ncp-map~$\sigma \colon \scrP' \to \scrP$
     (the ``mediating map'')
     with~$\sigma \after \varrho' = \varrho$
@@ -880,7 +883,7 @@ We must show that there is a unique
 \begin{point}{Uniqueness}%
     Let~$\sigma_1,\sigma_2\colon \scrP' \to \scrB(\scrH)$
         be two such ncp-maps.
-    Similar to the uniqueness proof in \sref{dils-univ-stinespring},
+    Similarly to the uniqueness proof in \sref{dils-univ-stinespring},
     we compute
         that for all~$n,m \in \N$,
         $a_1, \ldots, a_n,\alpha_1, \ldots, \alpha_m \in \scrA$,
@@ -1110,7 +1113,7 @@ If~$J$ is norm closed, then~$J$ is a Hilbert~$\scrB$-module.
 In particular, the right ideal~$e \scrB$ for projection~$e \in \scrB$
     is a Hilbert~$\scrB$-module with~$\left<ea,eb\right> = a^*eb$.
 Later we will see that every so-called self-dual
-    Hilbert~$\scrB$-module is build up from such~$e \scrB$
+    Hilbert~$\scrB$-module is built up from such~$e \scrB$
     if~$\scrB$ is a von Neumann algebra.
     
 If~$X$ and~$Y$ are (pre-)Hilbert~$\scrB$-modules,
@@ -1122,6 +1125,14 @@ If~$X$ and~$Y$ are (pre-)Hilbert~$\scrB$-modules,
 \end{parsec}
 \subsection{The basics}
 \begin{parsec}%
+\begin{point}%
+    Perhaps the most important stones in the foundation
+        of the theory of operator algebras,
+        are the Cauchy--Schwarz inequality
+        and the polarization identity.
+    Also in the development of Hilbert C$^*$-modules,
+        their generalizations support the bulk of the structure.
+\end{point}
 \begin{point}{Definition}%
 Let~$X$ be a right~$\scrB$-module with~$\scrB$-valued inner
     product~$\left<\,\cdot\,,\,\cdot\,\right>$.
@@ -1199,9 +1210,9 @@ In \sref{hilbmod-sesquilinear-forms}
     $\scrB$-sesquilinear forms
     are of this form.
 \end{point}
-\begin{point}[hilbmod-polarization]{Exercise}
-Let~$B$ be a sesquilinear form.
-Show the \Define{polarization identity} holds:
+\begin{point}[hilbmod-polarization]{Exercise}%
+Let~$B$ be a $\scrB$-sesquilinear form.
+Prove the \Define{polarization identity}:
 \begin{equation*}
     B(x,y) \ =\  \frac{1}{4} \sum_{k=0}^3 i^k B(i^k x + y, i^k x + y).
 \end{equation*}
@@ -1210,7 +1221,7 @@ Show the \Define{polarization identity} holds:
 
 \begin{parsec}%
 \begin{point}{Definition}%
-Let~$X,Y$ be pre-Hilbert~$\scrB$-modules.
+Let~$X$, $Y$ be pre-Hilbert~$\scrB$-modules.
 A linear map~$T\colon X \to Y$
     is said to be \Define{adjointable}
     if there is a linear map~$S \colon Y \to X$
@@ -1228,7 +1239,7 @@ We write \Define{$T^*$} for the adjoint of~$T$ (if it exists)
 \begin{point}[adjointable-cstar-identity]{Lemma}%
 For a linear map~$T \colon X \to Y$
 between pre-Hilbert~$\scrB$-modules~$X$,~$Y$ \emph{and}
-real number~$B > 0$
+real number~$B > 0$,
 the following are equivalent.
 \begin{enumerate}
     \item $\|T x\| \leq B \|x\|$ for all~$x \in X$.
@@ -1238,7 +1249,7 @@ the following are equivalent.
 If~$T$ is bounded and adjointable, then 
     ~$\|T^*\| = \|T\|$ and~$\|T^*T\|=\|T\|^2$.
 \begin{point}{Proof}%
-   Assume~$\|Tx\| \leq B \|x\|$ for~$x \in X$.
+   Assume~$\|Tx\| \leq B \|x\|$ for all~$x \in X$.
    Then by \sref{module-seminorm}
    we find that for all~$y \in X$ we have~$\|\left<y, Tx\right>\|
             \leq \|y\|\|Tx\|
@@ -1249,7 +1260,7 @@ For the converse, pick~$x\in X$
             for all~$y \in Y$.
 Then~$\|Tx \|^2 = \|\left<Tx,Tx\right>\|
                 \leq B\|Tx\|\|x\|$.
-So~$\|Tx\| \leq B\|Tx\|\|x\|$
+So~$\|Tx\| \leq B\|x\|$
     by dividing~$\|Tx\|$ if~$\|Tx\|\neq0$
     and trivially otherwise.
 
@@ -1288,7 +1299,8 @@ It is easy to see~$T^*+S^*$ is an adjoint of~$T+S$
         with~$(\lambda T)^* = \overline{\lambda} T^* $,
             $(TS)^* = S^*T^*$ and
             $T^{**} =T$.
-Thus it is a~$*$-algebra.
+Also the idenity~$1$ is clearly bounded and self-adjoint.
+So~$\scrB^a(X)$ is a unital~$*$-algebra.
 By \sref{adjointable-cstar-identity} 
     the C$^*$-identity holds.
 It only remains to be shown that~$\scrB^a(X)$ is complete.
@@ -1351,11 +1363,11 @@ Then~$T$ is~$\scrB$-linear.
 We have
     $\left<y, (Tx)b\right>
     =\left<T^*y, x\right>b
-    =\left<y, T(xb)\right>$.
+    =\left<y, T(xb)\right>$
 for any~$x \in X$, $y \in Y$ and~$b \in \scrB$.
 In particular we
 get~$\left<(Tx)b-T(xb), (Tx)b-T(xb)\right>=0$
-for~$y = (Tx)b-T(xb)$
+taking~$y = (Tx)b-T(xb)$
     and so~$T(x)b=T(xb)$. \qed
 \end{point}
 \end{point}
@@ -1381,7 +1393,8 @@ Clearly
 Thus~$\|xh\| \leq 1$
 and so~$\|h\left<Tx, Tx\right>h\| = \|T(xh)\|^2 \leq \|T\|^2$.
 From this and~$0 \leq h\left<Tx,Tx\right>h$
-we get~$h\left<Tx,Tx\right>h \leq \|T\|^2$. Hence
+we get~$h\left<Tx,Tx\right>h \leq \|T\|^2$. Hence, by dividing by~$h$
+    on both sides,
 \begin{equation*}
 \left<Tx,Tx\right> \ \leq \ \|T\| h^{-2}\  =
     \  \|T\|^2(\left<x,x\right> + \varepsilon)
@@ -1395,7 +1408,7 @@ and so~$\left<Tx,Tx\right> \leq \|T\|^2 \left<x,x\right>$ as desired. \qed
 \begin{parsec}%
 \begin{point}[hilbmod-vectstates-cp]{Proposition}%
 Let~$\scrB$ be a von Neumann algebra,
-    $X$ be a pre-Hilbert~$\scrB$-module
+    $X$ be a Hilbert~$\scrB$-module
     and~$x \in X$.
 Then the map~$h\colon \scrB^a(X )\to \scrB$
 defined by~$h(T) = \left<x,Tx\right>$
@@ -1470,13 +1483,13 @@ and metric spaces.
         For each~$\varepsilon \in \Phi$,
             there is a~$\delta \in \Phi$
             such that~$\delta^2 \subseteq \varepsilon$.
-        Thus, if~$x \mathrel\delta y$ and~$y \mathrel\delta z$
+        So, if~$x \mathrel\delta y$ and~$y \mathrel\delta z$
             then~$x \mathrel\varepsilon z$ for any $x,y,z \in X$.
     \item
         For every~$\varepsilon \in \Phi$,
             there is a~$\delta \in \Phi$
                 with~$\delta^{-1}\subseteq \varepsilon$.
-        Thus, if~$x \mathrel\delta y$ then~$y \mathrel\varepsilon x$
+        So, if~$x \mathrel\delta y$ then~$y \mathrel\varepsilon x$
             for any~$x,y \in X$.
     \end{enumerate}
     A uniform space is \Define{Hausdorff}
@@ -1545,7 +1558,7 @@ As a special case of the previous,
 
 \item
 Assume~$\scrB$ is a von Neumann algebra.
-There are several different uniformities on~$\scrB$ --- two of which
+There are several uniformities on~$\scrB$ --- two of which
     are of particular interest to us.
 The \Define{ultrastrong uniformity} on~$\scrB$
     is fixed by the seminorms~$\|x\|_f = f(x^*x)$
@@ -1577,8 +1590,11 @@ If~$X=\scrB$ with~$[a,b]=a^*b$,
 \end{point}
 \begin{point}{Beware}%
     The ultranorm uniformity is (in general) not given by a single norm.
-    Furthermore the ultranorm uniformity is weaker than the norm uniformity,
-        even though on von Neumann algebras the ultraweak uniformity
+    Furthermore the ultranorm uniformity is weaker than the norm uniformity
+        (that is: norm convergence implies ultranorm convergence,
+            but not necessarily the other way around),
+        even though on von Neumann algebras the
+        ultraweak uniformity
         is stronger than the weak uniformity.
 \end{point}
 \end{point}
@@ -1597,8 +1613,8 @@ It is easy to translate the familiar notions for
             such that for all~$\alpha > \alpha_0$
                 we have~$x \mathrel\varepsilon x_\alpha$.
 Note that a net can converge to two different points.
-Indeed, if we start of with a non-trivial pseudometric,
-this will be the case.
+Indeed, this is the case if we start of with a pseudometric
+    that is not a metric.
 \item A net~$(x_\alpha)_\alpha$ is called \Define{Cauchy}
         if for each~$\varepsilon \in \Phi$
             there is an~$\alpha_0$
@@ -1626,7 +1642,7 @@ and$(y_\beta)_{\beta\in J}$ are \Define{equivalent},
 in symbols: $(x_\alpha)_\alpha \sim (y_\beta)_\beta$,
 when for every~$\varepsilon \in \Phi$
 there are~$\alpha_0 \in I$ and~$\beta_0 \in J$
-such that for all~$\alpha \leq \alpha_0$ and~$\beta \leq \beta_0$
+such that for all~$\alpha \geq \alpha_0$ and~$\beta \geq \beta_0$
 we have~$x_\alpha \mathrel\varepsilon x_\beta$.
 
 \item
@@ -1641,8 +1657,9 @@ A subset~$D \subseteq X$ is said to be \Define{dense}
     \begin{enumerate}
 \item
     Show that equivalence of Cauchy nets is an equivalence relation.
-    Show that if~$(x_\alpha)_\alpha$ is a subnet of~$(y_\alpha)_\alpha$,
-        that~$(x_\alpha)_\alpha$ is equivalent to~$(y_\alpha)_\alpha$.
+    Show that if~$(x_\alpha)_\alpha$ is a subnet of
+    a Cauchy net~$(y_\alpha)_\alpha$,
+        that then~$(x_\alpha)_\alpha$ is equivalent to~$(y_\alpha)_\alpha$.
 \item
     Prove that if~$(x_\alpha)_\alpha$ and~$(y_\alpha)_\alpha$
         are equivalent Cauchy nets and~$x_\alpha \to x$,
@@ -1769,7 +1786,7 @@ Thus~$[x_\alpha,y_\alpha] \to [x,y]$ ultraweakly. \qed
 \begin{point}[hilbmod-denseordersep]{Corollary}%
 Let~$X$ be a Hilbert~$\scrB$-module
     together with an ultranorm dense subset~$D \subseteq X$.
-Vector states from~$D$ are order separating:
+The cector states from~$D$ are order separating:
 for each~$T \in \scrB^a(X)$ we have
 $T \geq 0$ if and only if~$\left<x,Tx\right> \geq 0$
 for all~$x \in D$.
@@ -2530,7 +2547,7 @@ As before, this uniform continuity
 allows us to define a right~$\scrB$-action on~$\overline{V}$
 by sending the equivalence class of~$(x_\alpha)_\alpha$
 to~$(x_\alpha b)_\alpha$. By definition~$\eta(x)b = \eta(xb)$.
-It is straight-forward to check this turns~$\overline{V}$
+It is straightforward to check this turns~$\overline{V}$
 into a right-$\scrB$-module.
 \end{point}
 \begin{point}[dils-extending-norm-to-overlineV]{Extending $\|\,\cdot\,\|_f$ to~$\overline{V}$}%
@@ -2832,7 +2849,7 @@ With the same motions we see~$T(x_\alpha) \sim T(x'_\alpha)$
 So using this and that~$Y$ is ultranorm complete, see \sref{dils-selfdual},
     we may define~$\hat{T} x = \unlim_\alpha x_\alpha$.
 Clearly~$\hat{T}\after\eta=T$.
-It is straight-forward to check
+It is straightforward to check
     that $\scrB$-linearity
     of~$\hat{T}$
     follows from~$\scrB$-linearity of~$T$
@@ -3301,7 +3318,7 @@ Thus~$S_0$ preserves inner product. In particular it's bounded
 By \sref{hilmod-fixed-on-V} $S$ also preserves inner product and so~$S^*S = 1$.
 By definition~$S (1\otimes1) = \varrho'(1)e 1 = e$.
 Pick any~$a \in \scrA$.
-A straight-forward computation shows~$S \varrho(a) = \varrho'(a) S$
+A straightforward computation shows~$S \varrho(a) = \varrho'(a) S$
 hence~$S^* \varrho'(a) = \varrho(a) S^*$
 and~$S^* \varrho'(a) S = S^*S \varrho(a) = \varrho(a)$.
 We have shown~$\ad_S \after \varrho' = \ad_S$.
@@ -3758,7 +3775,7 @@ Suppose~$y_\alpha \to y$ ultranorm. Define
        \langle y- y_\alpha, y\rangle
      \frac{1}{1+ \langle y,y \rangle}.
 \end{align*}
-A straight-forward computations shows
+A straightforward computations shows
 \begin{equation}\label{kaplansky-splitting}
     \langle h(y) - h(y_\alpha) ,
          h(y) - h(y_\alpha) \rangle  \ = \ A_1 + A_1' + A_2 + A_2'.
@@ -5484,7 +5501,7 @@ From~$\langle e,e\rangle = \varphi(1) = 1$
     it follows~$p$ is a projection.
 Define~$\vartheta\colon \scrB \to p \scrP p$
     by~$\vartheta(b) = \ketbra{e \cdot b}{e}$.
-Some straight-forward computations
+Some straightforward computations
     show~$\vartheta$ is a miu-map
     with inverse~$pTp \mapsto h(pTp)$.
 So~$\vartheta$ is an miu-isomorphism and thus also normal.
@@ -5645,7 +5662,7 @@ As self-duality is equivalent to ultranorm completeness,
 Concerning~$\scrA \otimes_{h_p} p \scrA p \cong \scrA p$,
     define~$B\colon \scrA \times  p \scrA p \to \scrA p$
     by~$B(\alpha, pap) = \alpha pap$.
-A straight-forward computation
+A straightforward computation
     shows~$B$ is~$h_p$-compatible complex bilinear map
     and so there is a unique bounded module
     map~$U \colon \scrA \otimes_{h_p} p \scrA p \to \scrA p$
