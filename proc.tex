@@ -1702,7 +1702,7 @@ of np-functionals on~$\scrT$.
 of the tensor
 in which not all product functionals of np-functionals
 are required to exists upfront 
-in~\TODO{...}.)
+in~\sref{tensor-characterization}.)
 \end{point}
 \begin{point}{Remark}%
 This compact definition of the tensor product
@@ -1713,29 +1713,106 @@ whether it has some  universal property,
 and whether it is unique in some way.
 We'll shortly address all three questions.
 \end{point}
-\begin{point}%
-But first we'll show there 
-are plenty of product functionals.
-\end{point}
-\begin{point}{Proposition}%
-Given a tensor product $\gamma\colon \scrA\times \scrB\to\scrT$
-of von Neumann algebras~$\scrA$ and~$\scrB$
-any pair of np-functionals
-$\sigma\colon\scrA\to\C$
-and
-$\tau\colon \scrB\to\C$
-has a product functional~$\gamma(\sigma,\tau)$
-in the sense of~\sref{tensor}.
-\begin{point}{Proof}%
-
-	\TODO{...}
-\end{point}
-\end{point}
 \end{parsec}
 \begin{parsec}%
 \begin{point}%
 We'll start with the existence
-of a tensor product of von Neumann algebras.
+of a tensor product of von Neumann algebras
+for which we'll first need the tensor product
+of Hilbert spaces.
+\end{point}
+\begin{point}{Definition}%
+We'll call a bilinear map $\gamma\colon \scrH\times\scrK\to\scrT$
+between Hilbert spaces
+a \Define{tensor product}
+when it obeys the following two conditions.
+\begin{enumerate}
+\item
+The linear span of the range of~$\gamma$ is dense in~$\scrT$.
+\item
+$\left<\gamma(x,y),\gamma(x',y')\right>
+= \left<x,x'\right> \left<y,y'\right>$
+for all~$x,x'\in\scrH$ and~$y,y'\in\scrK$.
+\end{enumerate}
+\end{point}
+\begin{point}{Exercise}%
+We're going to prove that a tensor product of Hilbert spaces
+exists.
+\begin{enumerate}
+\item
+Given sets~$X$ and~$Y$
+show that  $\gamma\colon\ell^2(X)\times \ell^2(Y)\to \ell^2(X\times Y)$
+given by
+\begin{equation*}
+	\gamma(f,g)\ = \ (\,f(x)\,g(y)\,)_{x\in X,y\in Y}
+\end{equation*}
+is a tensor product of~$\ell^2(X)$ and~$\ell^2(Y)$.
+\item
+Show that a subset~$\scrE$ of a Hilbert space~$\scrH$
+is an orthonormal basis (see~\sref{orthonormal}) iff
+the map $T\colon \ell^2(\scrE)\to\scrH$
+given by~$T(x)=\sum_{e\in\scrE} x_e e$
+is an isometric isomorphism.
+\item
+Show that any pair~$\scrH$ and~$\scrK$
+of Hilbert spaces has a tensor product
+(using the fact that every Hilbert space
+has an orthonormal basis).
+\end{enumerate}
+\end{point}
+\begin{point}[hilb-tensor-basic]{Proposition}%
+Let~$\gamma\colon \scrH\times\scrK\to\scrT$
+be a tensor product
+of Hilbert spaces.
+\begin{enumerate}
+\item
+\label{hilb-tensor-basic-1}
+We have $\|\gamma(x,y)\|=\|x\|\|y\|$
+for all~$x\in\scrH$ and~$y\in\scrK$.
+\item
+\label{hilb-tensor-basic-2}
+Given orthonormal bases~$\scrE$ and~$\scrF$
+of~$\scrH$ and~$\scrK$, respectively,
+the set
+\begin{equation*}
+	\scrG\,:=\,\{\,\gamma(e,f)\colon \,e\in \scrE,\,f\in\scrF\,\}
+\end{equation*}
+is an orthonormal basis for~$\scrT$.
+\item
+\end{enumerate}
+\begin{point}{Proof}%
+\ref{hilb-tensor-basic-1}\ 
+We have $\|\gamma(x,y)\|^2
+= \left<\gamma(x,y),\gamma(x,y)\right>
+=\left<x,x\right>\left<y,y\right>
+= \|x\|^2\|y\|^2$.
+
+\ref{hilb-tensor-basic-2}\ 
+Since $\left<\gamma(e,e'),\gamma(f,f')\right>
+=\left<e,e'\right>\left<f,f'\right>$
+where~$e,e'\in \scrE$
+and~$f,f'\in\scrF$,
+the set~$\scrG$ is clearly orthonormal.
+To see that~$\scrG$ is maximal (and thus a basis)
+it suffices
+to show that the span of~$\scrG$ 
+is dense in~$\scrT$,
+and for this it suffices
+to show that each~$\gamma(x,y)$
+where~$x\in\scrH$ and~$y\in\scrK$
+is in the closure of the span of~$\scrG$.
+Now,
+since~$y=\sum_{f\in\scrF}\left<f,y\right> f$,
+by~\sref{orthonormal}
+and~$\left<x,(\,\cdot\,)\right>$
+is bounded by~\ref{hilb-tensor-basic-1}
+we have~$\gamma(x,y)= \sum_{f\in\scrF}
+\left<y,f\right>\gamma(x,f)$.
+Since similarly $\gamma(x,f)=\sum_{e\in\scrE} \left<e,x\right>\gamma(e,f)$ 
+for all~$f\in\scrF$,
+we see that~$\gamma(x,y)$
+is indeed in the closure of the span of~$\scrG$.\qed
+\end{point}
 \end{point}
 \begin{point}[special-tensor]{Theorem}%
 Let~$\scrA$
