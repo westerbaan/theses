@@ -1,7 +1,13 @@
 \documentclass[a]{subfiles}
 \begin{document}
 \chapter{Assorted structure in~$\W{cpsu}$}
-\TODO{Add introduction}
+In the previous two chapters
+we have concisely collected and redeveloped
+the basic theory of $C^*$-algebras
+and von Neumann algebras
+with some small variations of our own
+so that we can properly break new ground in this chapter.
+We'll 
 
 \section{Measurement}
 \begin{parsec}
@@ -3063,38 +3069,57 @@ using here that~$\ceil{a}\otimes\ceil{b}$
 is already a projection,
 we get~$\ceil{a}\otimes \ceil{b}=\ceil{a\otimes b}$.
 
-Let~$a\in\scrA$ and~$b\in\scrB$ be given.
-It suffices to show that~$\cceil{a}\otimes 1 = \cceil{a\otimes 1}$
-(and~$1\otimes \cceil{b}=\cceil{1\otimes b}$),
-because then
-\begin{equation*}
-	\cceil{a\otimes b}
-	=\cceil{\,(a\otimes 1)\, (1\otimes b)\,}
-\smash{\overset{\sref{cceil-basic}}{=\joinrel=\joinrel=}} 
-\cceil{a\otimes 1 } \cceil{1\otimes b}
-= \cceil{a}\otimes \cceil{b}.
-\end{equation*}
+Let~$a\in\scrA$ and~$b\in\scrB$ be given
+in order to prove that~$\cceil{a\otimes b}
+=\cceil{a}\otimes\cceil{b}$.
 Since~$\cceil{a}\otimes 1$ 
 commutes with all elements of~$\scrA\otimes \scrB$
 of the form~$a'\otimes b'$,
 and thus with all elements of~$\scrA\otimes \scrB$,
 we see that~$\cceil{a}\otimes 1$ is central.
-Since, moreover, $(a\otimes 1)(\cceil{a} \otimes 1)= a\otimes 1$,
-we get~$\cceil{a\otimes 1}\leq \cceil{a}\otimes 1$
-(by definition see~\sref{central-support}).
+Since simlarly $1\otimes\cceil{b}$ is central,
+we see that~$\cceil{a}\otimes \cceil{b}
+= (\cceil{a}\otimes 1)\otimes(1\otimes \cceil{b})$
+is central too.
+Since
+in addition 
+$\cceil{a}\otimes\cceil{b}$
+is a projection,
+and $(\cceil{a}\otimes\cceil{b})\,(a\otimes b)
+= (\cceil{a}a)\otimes (\cceil{b}b)
+= a\otimes b$
+we see that~$\cceil{a\otimes b}\leq \cceil{a}\otimes \cceil{b}$
+(by definition, see~\sref{central support}).
 
+So all that remains is to show that~$\cceil{a}\otimes\cceil{b}
+\leq \cceil{a\otimes b}$.
 Recall that~$\cceil{a}= \bigcup_{\tilde{a}\in\scrA}
-\ceil{\tilde{a}^* \ceil{a}\tilde{a}}$
-by~\sref{cceil-fundamental},
-so to prove
-$\cceil{a}\otimes 1 \leq \cceil{a\otimes 1}$
-it suffices to show that
-$\ceil{\tilde{a}^* \ceil{a}\tilde{a}}\otimes 1
-\equiv \ceil{(\tilde{a}\otimes 1)^*\, (a\otimes 1)
-\,(\tilde{a}\otimes 1)}
-\leq  \cceil{a\otimes 1}$
-for all~$\tilde{a}\in\scrA$,
-which is indeed the case (by~\sref{cceil-fundamental}, again).\qed
+\ceil{\tilde{a}^* a^*a\tilde{a}}$
+by~\sref{cceil-fundamental}.
+Using this,  a similar
+expression for~$\cceil{b}$,
+and~\sref{ncp-union},
+we see that~$\cceil{a}\otimes \cceil{b}
+=\bigcup_{\tilde{a}\in\scrA}
+\bigcup_{\tilde{b}\in\scrB}
+\ceil{ \smash{(\tilde{a}^*a^*a\tilde{a})
+\otimes (\tilde{b}^*b^*b\tilde{b})} }$,
+and so it suffices to show that 
+$\ceil{\smash{(\tilde{a}^*a^*a\tilde{a})
+\otimes (\tilde{b}^*b^*b \tilde{b})}}
+\leq \cceil{a\otimes b}$
+given~$\tilde{a}\in\scrA$
+and~$\tilde{b}\in\scrB$.
+This is indeed the case
+since
+$\ceil{\smash{(\tilde{a}^*a^*a\tilde{a})
+\otimes (\tilde{b}^*b^*b \tilde{b})}} 
+=
+\ceil{\smash{(\tilde{a}\otimes\tilde{b})^*\,
+	(a \otimes b)^*(a\otimes b) \,
+(\tilde{a}\otimes \tilde{b})}}
+\leq \cceil{a\otimes b}$
+(by~\sref{cceil-fundamental}, again.)\qed
 \end{point}
 \end{point}
 \begin{point}[carrier-tensor]{Exercise}%
