@@ -3275,7 +3275,7 @@ So~$ d \ \mapsto \ \langle \hat{x}, \varrho(d) \hat{x}\rangle$
     is normal by~\sref{hilbmod-ad-ncp} and~\sref{mn-vna},
     whence~$\varrho$ is normal.
 \end{point}
-\begin{point}{3: $h \colon \scrB^a(\scrA \otimes_\varphi \scrB) \to \scrB)$}%
+\begin{point}{3: $h \colon \scrB^a(\scrA \otimes_\varphi \scrB) \to \scrB$}%
 Define~$h(T) \equiv \left<1\otimes 1, T\, 1\otimes 1 \right>$.
 It is completely positive by~\sref{hilbmod-vectstates-cp}
     and normal by~\sref{hilbmod-vecstates-normal}.
@@ -3323,11 +3323,25 @@ Let~$X$ be a self-dual Hilbert~$\scrB$-module
     together with~$e \in X$ and nmiu-map~$\scrA \to \scrB^a(X)$
     such that~$\varphi = h' \after \varrho'$
     with~$h'(T) = \left<e,Te\right>$.
-We must show there is a unique inner product
-    preserving~$S \colon \scrA \otimes_\varphi \scrB \to X$
-    with~$\ad_S \after \varrho' = \varrho$ and~$S (1\otimes1) = e$.
-    As~$h \after \ad_S = h'$ and~$\ad_S$ is an ncp-map (by \sref{hilbmod-ad-ncp}),
-    we already know it is unique by the previous point.
+To prove uniqueness,
+    assume that for~$k=1,2$,
+    we have~$\scrB$-linear
+    inner product preserving~$S_k \colon \scrA \otimes_\varphi \scrB \to X$
+    with~$\ad_{S_k} \after \varrho' = \varrho$
+    and~$S_k \, 1\otimes 1 = e$.
+Then~$h \after \ad_{S_k} = h'$
+    and so (as~$\ad_{S_k}$ is an ncp-map by \sref{hilbmod-ad-ncp}),
+    we know~$\ad_{S_1} = \ad_{S_2}$ by~\sref{paschke-uniqueness}.
+Hence there is a~$\lambda\in\C,\lambda\neq 0$
+    with~$S_1 = \lambda S_2$, cf.~\cite[Lemma 9]{westerbaan2016universal}.
+If~$e \neq 0$,
+    then from~$e = S_1\, 1\otimes 1 = \lambda S_2 \,1\otimes 1 = \lambda e$
+    it follows~$\lambda = 1$ and so~$S_1 = S_2$.
+In the other case, if~$e \neq 0$,
+then~$h' = 0$ and so~$\varphi=0$,
+    whence~$\scrA \otimes_\varphi \scrB = \{0\}$
+    and indeed~$S_1=S_2=0$ trivially.
+We continue with existence.
 There is a unique linear~$S_0\colon \scrA \odot \scrB \to X$
     fixed by~$S_0(a\otimes b) = \varrho'(a) e b$.
 Clearly~$S_0$ is also~$\scrB$-linear.
@@ -3341,16 +3355,20 @@ For any~$x,y \in \scrA\odot \scrB$,
     & \ =\ \sum_{i,j} b_i^* \varphi(a_i^*\alpha_j) \beta_j \\
     & \ =\ [x,y].
 \end{align*}
-Thus~$S_0$ preserves inner product. In particular it's bounded
+Thus~$S_0$ preserves the inner product. In particular~$S_0$ is bounded
     and so there is a unique bounded~$\scrB$-linear
     $S \colon \scrA \otimes_\varphi \scrB \to X$
     with~$S \after \eta = S_0$.
-By \sref{hilmod-fixed-on-V} $S$ also preserves inner product and so~$S^*S = 1$.
+    For all~$x \in \scrA \odot \scrB$
+        we have~$\langle \hat{x}, S^*S \hat{x}\rangle = \langle \hat{x}, \hat{x} \rangle$
+    and so~$S^*S=1$
+    by~\sref{hilmod-fixed-on-V}.
+Thus~$S$ preserves the inner product.
 By definition~$S (1\otimes1) = \varrho'(1)e 1 = e$.
 Pick any~$a \in \scrA$.
 A straightforward computation shows~$S \varrho(a) = \varrho'(a) S$
 hence~$S^* \varrho'(a) = \varrho(a) S^*$
-and~$S^* \varrho'(a) S = S^*S \varrho(a) = \varrho(a)$.
+and~$S^* \varrho'(a) S =  \varrho(a) S^*S= \varrho(a)$.
 We have shown~$\ad_S \after \varrho' = \ad_S$.
 \end{point}
 \begin{point}{5, $\sigma$ existence}
@@ -3385,139 +3403,9 @@ and~$h \after \sigma = h \after \ad_S \after \varrho_{h'}
 
 \begin{parsec}%
 \begin{point}%
-In the remainder of this section we will study various property
-    of Paschke dilations.
-The first question we will answer is
-    when the representation in a Paschke dilation is injective.
-First we need parts of the comparison theory of projections.
-For the balance of this point, let~$\scrA$ be a von Neumann algebra.
-\end{point}
-\begin{point}{Definition}%
-Two projections~$p,q \in \scrA$ are said to be
-    \Define{Murray--von Neumann equivalent},
-    in symbols~$p \sim q$,
-    if there is an~$u \in \scrA$
-    with~$p = uu^*$ and~$q = u^*u$.
-Such~$u$ are called \Define{partial isometries}.
-E.g.~in~$M_2$ we have~$\ketbra{0}{0} \sim \ketbra{1}{1}$
-    via the partial isometry~$\ketbra{0}{1}$.
-We will write~$p \lesssim q$
-    if there is a projection~$r \leq q$
-    such that~$p \sim r$.
-\end{point}
-\begin{point}[new-murray-lemma]{Lemma}%
-Suppose~$a,p \in \scrA$ with~$a$ self-adjoint and~$p$ a projection.
-We have~$p \lesssim \ceil{a}$
-    if and only if~$p = \ceil{b^* a b}$ for some~$b \in \scrA$.
-\begin{point}{Proof}%
-Assume~$p \lesssim \ceil{a}$.
-Then there is some partial isometry~$u$
-    with~$u^*u = p$ and~$uu^* \leq \ceil{a}$.
-Then~$p = u^*u= u^*uu^*u = u^*uu^*\ceil{a}u = u^*\ceil{a} u$.
-Now by \TODO{ref} we have~$p = \ceil{p} = \ceil{u^*\ceil{a}u}=\ceil{u^*au}$.
-
-For the converse, assume~$p = \ceil{b^*ab}$ for some~$b \in \scrA$.
-By polar decomposition \TODO{ref}~$ab = u \sqrt{(ab)^*ab}$
-    for some partial isometry~$u$
-    with~$uu^* = \ceil{ab(ab)^*}$ and~$u^*u = \ceil{(ab)^*ab}$.
-Now~$u^*u = \ceil{b^*a^2b} = \ceil{b^*\ceil{a^2} b} = \ceil{b^*ab}=p$
-and~$uu^* = \ceil{abb^*a} \leq \ceil{a^2} = \ceil{a}$, as desired. \qed
-\end{point}
-\end{point}
-\begin{point}[central-carrier-formula]{Proposition}%
-For any self-adjoint~$a \in \scrA$
-\begin{equation*}
-    \cceil{a} \ =\  \bigcup_{p \lesssim \ceil{a}} p
-\ = \ \bigcup_{b \in \scrB} \ceil{b^*ab}.
-\end{equation*}
-\begin{point}{Proof}%
-(This is a simplified proof of the result we published
-earlier \cite[Thm.~28 sub 1]{wwpaschke}.)
-Directly from \sref{new-murray-lemma}
-    we get $\bigcup_{p \lesssim \ceil{a}} p = \bigcup_{b \in \scrB} \ceil{b^*ab}$.
-For brevity we will write~$r = \bigcup_{p \lesssim \ceil{a}} p$.
-Let~$u$ be a partial isometry with~$u^*u \leq \ceil{a}$.
-Then~$uu^*\cceil{a} = uu^*u \cceil{a} u^*= u \ceil{a} \cceil{a} u^*
-        = u \ceil{a} u^*  = uu^*$.
-Thus~$uu^* \leq \cceil{a}$, so~$r \leq \cceil{a}$.
-
-For the converse, note~$\ceil{a} \lesssim \ceil{a}$
-    and so~$\ceil{a} \leq r$
-    thus~$\cceil{a} \leq \cceil{r}$.
-It is sufficient to show~$r$ is central, for
-        then~$\cceil{a} \leq \cceil{r} = r$.
-Pick any~$c \in \scrA$.
-We have
-    $\ceil{c^*rc}
-    = \ceil{c^* (\bigcup_{b \in \scrB} \ceil{b^*ab}) c}
-    \overset{\sref{ncp-union}}{=}
-    \bigcup_{b \in \scrB} \ceil{c^* \ceil{b^*ab} c}
- \overset{\sref{ceil-fundamental}}{=}\bigcup_{b \in \scrB} \ceil{(bc)^* abc}  \leq r$
-and so~$c^*rc \leq \ceil{c^* r c} = r$.
-Thus~$(1-r)c^*rc(1-r) = 0$.
-So~$rc(1-r)=0$.
-Thus~$rc = rcr$.
-As~$c$ was arbitrary, we also get~$rc^* =rc^*r$.
-Thus~$rc = rcr = (rc^*r)^* = (rc^*)^* = cr$.
-Indeed~$r$ is central. \qed
-\end{point}
-\end{point}
-\begin{point}[subprojection-and-central-carrier]{Proposition}%
-For projections~$p,q \in \scrA$
-    the following are equivalent.
-\begin{enumerate}
-    \item
-        $p$ and~$q$ have non-zero equivalent subprojections;
-    \item
-        $\cceil{p}\cceil{q} \neq 0$.
-    \item
-        $p a q \neq 0$ for some~$a \in \scrA$ \emph{and}
-\end{enumerate}
-\begin{point}{Proof}%
-   We will prove~$1 \Rightarrow 2 \Rightarrow 3 \Rightarrow 1$. 
-\begin{point}{$1 \Rightarrow 2$}%
-Assume~$r \lesssim p$ and~$r \lesssim q$ for some projection~$r\neq 0$.
-By~\sref{central-carrier-formula}
-    we know~$r \leq \cceil{p}$ and~$r \leq \cceil{q}$.
-Thus~$r \cceil{p} = r$ and~$r \cceil{q} = r$
-and so~$\cceil{p} \cceil{q} \neq 0$
-    (for otherwise~$ r = r \cceil{p} \cceil{q} = 0$).
-\end{point}
-\begin{point}{$2 \Rightarrow 3$}%
-Assume~$\cceil{p} \cceil{q} \neq 0$.
-We have
-$\cceil{p} \cceil{q} 
-\overset{\sref{central-carrier-formula}}{=}
-\ceil{\cceil{p} \bigl(\bigcup_{b \in \scrA} \ceil{b^* q b} \bigr) \cceil{p}}
-    \overset{\sref{ncp-union}}{=}
-\bigcup_{b \in \scrA} \ceil{\cceil{p}\ceil{b^* q b} \cceil{p}}$
-and so~$\cceil{p} \ceil{b^*qb} \neq 0$
-    for some~$b \in \scrA$.
-In the same way, there is some~$a \in \scrA$
-    with~$ 0 \neq \ceil{a^*pa}\ceil{b^*qb}$.
-    Thus $p(ab^*)q \neq 0$ by \sref{ceil-fundamental}.
-\end{point}
-\begin{point}{$3 \Rightarrow 1$}%
-Assume~$paq \neq 0$ for some~$a \in \scrA$.
-Write~$b = paq$.
-By polar decomposition,
-    there is a partial isometry~$u$
-    with~$u^*u = \ceil{b^*b}$,
-         $uu^* = \ceil{bb^*}$
-         and~$b = u \sqrt{b^*b}$.
-Clearly~$u \neq 0$
-    (as $b = paq \neq 0$),
-    $u^*u = \ceil{qa^*paq} \leq q$ 
-    and~$uu^* = \ceil{paqa^*p} \leq p$,
-    hence~$uu^* \lesssim p$ and~$uu^* \lesssim q$ \qed
-\end{point}
-\end{point}
-\end{point}
-\end{parsec}
-\begin{parsec}%
-\begin{point}%
-We have all the tools to characterize neatly when
-    the representation of a Paschke dilation is injective.
+We have all the tools to characterize
+    the ncp-maps~$\varphi$
+    for which the Paschke representation is injective.
 This is a generalization of our answer\cite{stineinj}
     to the same question for the Stinespring embedding.
 \end{point}
@@ -3525,64 +3413,19 @@ This is a generalization of our answer\cite{stineinj}
 Let~$\varphi\colon \scrA \to \scrB$ be any ncp-map
     with Paschke dilation~$(\scrP, \varrho, h)$.
 Then $\ceil{\varrho} = \cceil{\varphi}$.
+($\cceil{\varphi}$ is the central carrier of~$\varphi$, see~\sref{cceil-map-def}.)
 Thus~$\varrho$ is injective ($\ceil{\varrho}=1$) if and only if $\varphi$
 maps no non-zero central projection to zero ($\cceil{\varphi}=1$).
 \begin{point}{Proof}%
-By~\sref{paschke-unique-up-to-iso}
+By~\sref{paschke-unique-up-to-iso},
     it is sufficient to prove the equivalence
     for the dilation constructed in \sref{existence-paschke}.
-\begin{point}[injectivity-paschke-lemma]%
-First we will prove that~$\varrho(\alpha) = 0$
-    if and only if~$\varphi(a^*\alpha^*\alpha a) = 0$
-    for all~$a \in \scrA$.
-From left to right is easy:
-$\varphi(a^*\alpha^*\alpha a) = h(\varrho(a^*\alpha^*) \varrho(\alpha) \varrho(a)) = 0$ whenever~$\varrho(\alpha) = 0$.
-For the converse, assume~$\varphi(a^*\alpha^*\alpha a) = 0$
-    for all~$a \in \scrA$.
-By the polarization identity, see \sref{mult-polarization},
-    we also have~$\varphi(a^* \alpha^* \alpha a') = 0$
-    for all~$a,a' \in \scrA$.
-Pick any~$x \in \scrA \otimes \scrB$, say~$x = \sum_i a_i \otimes b_i$.
-Then
-    $\left<\hat{x}, \varrho(\alpha) \hat{x}\right> = 
-        \sum_{i,j} b_i^*\varphi(a_i^* \alpha^*\alpha a_j)b_j = 0$.
-Hence~$\varrho(\alpha) = 0$, as claimed.
-\end{point}
-\begin{point}%
-We will first show~$\ceil{\varrho} \leq \cceil{\varphi}$.
-For any~$a \in \scrA$
-we have
-\begin{equation*}
-    a^* (1 - \cceil{\varphi}) a = 
-    (1 - \cceil{\varphi})a^* a (1 - \cceil{\varphi}) \leq
-    \| a\|^2 (1 - \cceil{\varphi}) \leq \|a\|^2 (1 - \ceil{\varphi})
-\end{equation*}
-and so~$\varphi(a^* (1 - \cceil{\varphi}) a)
-\leq \|a\|^2 \varphi(1-\ceil{\varphi}) = 0$.
-Hence by \sref{injectivity-paschke-lemma}
-we get~$\varrho(1-\cceil{\varphi}) = 0$
-and so~$\ceil{\varrho} \leq \cceil{\varphi}$.
-\end{point}
-\begin{point}%
-Now we show~$\cceil{\varphi} \leq \ceil{\varrho}$.
-Pick any~$p \lesssim \ceil{\varphi}$.
-Pick~$v$ with~$vv^* = p$ and~$v^*v \leq \ceil{\varphi}$.
-By \sref{injectivity-paschke-lemma}
-it follows from~$\varrho(1-\ceil{\varrho}) = 0$
-that~$\varphi(v^* (1-\ceil{\varrho})v)=0$.
-And so we have~$v^* (1-\ceil{\varrho})v \leq 1-\ceil{\varphi}$.
-Consequently
-\begin{equation*}
-p (1-\ceil{\varrho}) p
-    =    vv^* (1 - \ceil{\varrho}) vv^*
-    \leq v (1- \ceil{\varphi}) v^*
-    = vv^* - v \ceil{\varphi} v^* = 0.
-\end{equation*}
-This means~$p \leq \ceil{\varrho}$.
-Thus by~\sref{central-carrier-formula}
-we get~$\cceil{a} = \bigcup_{p \lesssim \ceil{a}} p \leq \ceil{\varrho}$,
-as desired. \qed
-\end{point}
+Let~$p \in \scrA$ be any projection.
+We will show~$p \leq 1-\ceil{\varrho}$ iff~$p \leq 1-\cceil{\varrho}$.
+Assume~$p \leq \ceil{\varrho}$.
+Then~$\varrho(p) = 0$.
+
+\qed
 \end{point}
 \end{point}
 \end{parsec}
@@ -3717,7 +3560,7 @@ For any~$t \in \varrho'(\scrA)^\square$ and~$a\in \scrA$ we have
         \ = \ h'(t \varrho'(a))
         \ = \ h(\vartheta(t \varrho'(a)))
         \ = \ h(\vartheta(t) \varrho(a))
-        \ = \ \varphi_{\vartheta(t)}^{\scrP_s}(a)
+        \ = \ \varphi_{\vartheta(t)}^{\scrP}(a)
 \end{equation*}
 and so~$t \mapsto \varphi_t^{\scrP'}$
     is a linear order isomorphism as it
@@ -3769,13 +3612,13 @@ Then~$h(x_\alpha)$ is
     and furthermore~$h(x_\alpha) \to h(g(x)) = x$ ultranorm
     and~$\| h(x_\alpha) \| \leq 1 = \| x \|$, as desired.
 \begin{point}%
-The last two claims are easy to prove.
 We start with~$\| h(y) \| \leq 1$.
 The real map~$h_r\colon \lambda \mapsto 4 \lambda (1+\lambda)^{-2}$
     is bounded by~$1$ and so by the functional calculus
     we see~$\| h(y) \|^2 = \| 4 \langle y,y\rangle (1+ \langle y,y\rangle)^{-2} \|
                 = \| h_r(\langle y,y\rangle) \|  \leq 1$.
-For the last claim, note~$\langle g(x), g(x) \rangle
+We continue with the proof of~$h(g(x)) = x$.
+Note~$\langle g(x), g(x) \rangle
 = (1 + \sqrt{1 - \langle x,x \rangle })^{-2} \langle x,x\rangle$
 and so with basic algebra
 \begin{alignat*}{2}
@@ -3789,6 +3632,7 @@ and so with basic algebra
 \end{alignat*}
 \end{point}
 \begin{point}{Ultranorm continuity~$h$}%
+The real work is in the proof of the ultranorm continuity of~$h$.
 Suppose~$y_\alpha \to y$ ultranorm. Define
 \begin{align*}
     A_1 & \ \equiv \ \frac{\langle y,y\rangle}{(1 + \langle y,y \rangle)^2} 
@@ -5628,34 +5472,7 @@ For this unique~$\dagger$, we have~$(\ad_V)^\dagger = \ad_{V^*}$.
 \begin{point}%
 We will prove that a map is pure if and only if
     the left-hand side map of its Paschke dilation
-    is surjective.  To prove this, we need to compute the dilation of a corner.
-For this, we need some more comparison theory.
-\end{point}
-\begin{point}[central-carrier-is-orthogonal-sum-lemma]{Lemma}%
-Assume~$\scrA$ is a von Neumann algebra with distinguished projection~$p \in \scrA$.
-There is an orthogonal family of projections~$(q_i)_{i \in I}$
-    such that~$q_i \lesssim p$ for each~$i \in I$
-    and~$\sum_{i \in I} q_i = \cceil{p}$.
-\begin{point}{Proof}%
-By Zorn's lemma there is a maximal subset $Q \subseteq \scrA$ of orthogonal
-    non-zero projections
-    such that~$q \lesssim p$ for each~$q \in Q$.
-Define~$q_0 = \sup Q$.
-By \sref{central-carrier-formula}
-    we know~$q_0 \leq \cceil{p}$.
-We want to show~$\cceil{p} - q_0 = 0$.
-
-Clearly~$\cceil{p} - q_0$ is orthogonal to~$Q$.
-There cannot be a non-zero projection~$r \leq \cceil{p} - q_0$
-    with~$r \lesssim p$,
-    for~$Q \cup \{r \}$ would contradict the maximality of~$Q$.
-Thus $\cceil{\cceil{p} - q_0} \cceil{p} = 0$
-    by \sref{subprojection-and-central-carrier}.
-As~$\cceil{p} - q_0 \leq \cceil{p}$
-    also~$\cceil{\cceil{p}-q_0} \leq \cceil{p}$
-    and so~$ \cceil{p} - q_0 \leq \cceil{\cceil{p} - q_0}
-                = \cceil{\cceil{p}-q_0}\cceil{p} = 0$, as desired. \qed
-\end{point}
+    is surjective.
 \end{point}
 \begin{point}[paschke-corner]{Theorem}%
 Let~$\scrA$ be a von Neumann algebra together with a projection~$p \in \scrA$.
@@ -5714,7 +5531,7 @@ Hence~$U$ is an isomorphism with~$U^* = U^{-1}$
 \begin{point}%
 To show~$\scrB^a(\scrA p) \cong \cceil{p}\scrA$,
 we will first find a convenient orthonormal basis of~$\scrA p$.
-By \sref{central-carrier-is-orthogonal-sum-lemma}
+By \sref{cceil-sum},
     there are partial isometries~$(u_i)_i$
     with~$\sum_i u_iu_i^* = \cceil{p}$
     and~$u_i^*u_i \leq p$.
