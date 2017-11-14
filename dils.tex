@@ -3109,7 +3109,7 @@ to show~$\varphi \colon \scrA \to M_n \scrA$
 \section{Paschke dilations}
 \begin{parsec}%
 \begin{point}%
-    We are ready to show that every ncp-map has a Paschke dilation, see \sref{def-paschke}.
+    We are ready to show that every ncp-map has a Paschke dilation.
 \end{point}
 \begin{point}{Definition}%
     Let~$\varphi\colon \scrA \to \scrB$ be any ncp-map between
@@ -3148,6 +3148,7 @@ to show~$\varphi \colon \scrA \to M_n \scrA$
             fixed by
             \begin{equation*}
                 \varrho(a_0)(a\otimes b) = (a_0 a)\otimes b.
+                    \text{\qquad ($a\in \scrA$, $b \in \scrB$)}
             \end{equation*}
     Furthermore~$a \mapsto \varrho(a)$
         yields a
@@ -3158,7 +3159,7 @@ to show~$\varphi \colon \scrA \to M_n \scrA$
     given by~$h(T) =\left<1 \otimes 1, T(1 \otimes 1)\right>$
     is ncp.
 \item
-Let $X$ be any other self-dual Hilbert$\scrB$-module with $e \in X$ and
+Let $X$ be any (other) self-dual Hilbert~$\scrB$-module with $e \in X$ and
         nmiu-map~$\varrho'\colon \scrA \to \scrB^a(X)$
         such that~$\varphi  = h' \after \varrho'$
         with~$h'(T) = \left<e,T e\right>$.
@@ -3169,12 +3170,15 @@ There is a unique
         and~$S( 1\otimes 1) = e$.
 \item
 $(\scrB^a(\scrA \otimes_\varphi \scrB), \varrho, h)$
-    is a Paschke dilation of~$\varphi$.
+        is a Paschke dilation of~$\varphi$, see \sref{def-paschke}.
 \end{enumerate}
 \begin{point}{Proof}%
-The Hilbert~$\scrB$-module~$\scrA \otimes_\varphi \scrB$
-    will be isomorphic to the self-dual completion of the space~$X$
-    constructed by Paschke in~\cite[Thm.~5.2]{paschke}.
+(This is a simplified version of the proof
+    we published earlier in~\cite{wwpaschke}.
+The construction of~$\scrA \otimes_\varphi \scrB$
+    is essentially due to Paschke \cite[Thm.~5.2]{paschke}:
+    the self-dual completion of~$X$ in \cite[Thm.~5.2]{paschke}
+    is isomorphic to~$\scrA \otimes_\varphi \scrB$.)
 \begin{point}{1: $\scrA \otimes_\varphi \scrB$}%
 The algebraic tensor product~$\scrA \odot \scrB$
     is a right $\scrB$-module
@@ -3191,7 +3195,7 @@ By \sref{dils-completion},
     and~$\scrB$-linear inner product-preserving
     $\eta\colon \scrA \odot \scrB \to \scrA \otimes_\varphi \scrB$
     with ultranorm dense range.
-Define the bilinear map~$\otimes \colon \scrA \times \scrB \to \scrA \otimes_\varphi \scrB$
+Define a bilinear map~$\otimes \colon \scrA \times \scrB \to \scrA \otimes_\varphi \scrB$
     by~$a \otimes b = \eta(a \otimes b)$.
 By definition we have
 \begin{equation*}
@@ -3206,27 +3210,27 @@ Let~$B \colon \scrA \times \scrB \to Y$
     bilinear map to some self-dual Hilbert~$\scrB$-module~$Y$.
 We must show that there is a unique bounded module
     map~$T \colon \scrA \otimes_\varphi \scrB \to Y$
-    such that~$T(a\otimes b) = B(a,b)$.
+    such that~$T(a\otimes b) = B(a,b)$ for all~$a \in \scrA$ and $b \in \scrB$.
 By the defining property of the algebraic
     tensor product, there is a unique linear
     map~$T_0\colon \scrA \odot \scrB \to Y$
-    such that~$T_0(a\otimes b) = B(a,b)$.
-By definition of~$\varphi$-compatible
+    such that~$T_0(a\otimes b) = B(a,b)$ for all~$a\in \scrA$ and~$b\in \scrB$.
+By definition of~$\varphi$-compatibility
     and the inner product on~$\scrA\odot \scrB$,
     the map~$T_0$ is in fact bounded and~$\scrB$-linear.
 By \sref{selfdual-completion-univ}
-    this map extents uniquely
+    this map extends uniquely
     to a bounded module map~$T \colon \scrA \otimes_\varphi \scrB \to Y$
     with~$T(a\otimes b) = B(a,b)$, as desired.
 \end{point}
 \begin{point}{2: $\varrho \colon \scrA \to \scrB^a(\scrA \otimes_\varphi \scrB)$}%
-Assume~$a_0 \in \scrA$.
+Let~$a_0 \in \scrA$ be given.
 To show the module map~$\varrho(a_0)$ exists,
-    it is sufficient to show the bilinear
+    it suffices to show that the bilinear
     map~$B\colon \scrA \times \scrB \to \scrA \otimes_\varphi \scrB$
     given by~$B(a,b) = (a_0a)\otimes b$ is $\varphi$-compatible.
 Clearly~$B(a,b \beta) = B(a,b)\beta$.
-To show \eqref{phi-compatible},
+To prove~\eqref{phi-compatible},
     let~$n \in \N$, $a_1, \ldots, a_n \in \scrA$
     and~$b_1, \ldots, b_n \in \scrB$
     be given.
@@ -3234,8 +3238,8 @@ The row vector
     $(a_1\ \cdots \ a_n)$
     is an~$\scrA$-linear map~$a\colon \scrA^{\oplus n} \to \scrA$
     in the usual way:~$a(\alpha_1, \ldots, \alpha_n) = a_1\alpha_1 + \cdots + a_n \alpha_n$.
-    Similarly the column vector~$b \equiv (b_1\  \ldots\ b_n)^\T$
-    is a~$\scrB$-linear map~$\scrB \to \scrB^{\oplus n}$
+    Similarly the column vector~$(b_1\  \ldots\ b_n)^\T$
+    is a~$\scrB$-linear map~$b\colon \scrB \to \scrB^{\oplus n}$
     with~$b(\beta) = (b_1 \beta, \ldots, b_n \beta)$.
     We compute
 \begin{align*}
@@ -3253,34 +3257,31 @@ Thus~$B$ is~$\varphi$-compatible
             with~$\varrho(a_0) (a\otimes b) = (a_0 a) \otimes b$.
 Clearly~$\varrho$ is a unital, multiplicative and involution preserving map.
 It remains to be shown~$\varrho$ is normal.
-Let~$D \subseteq \scrA$ be a bounded directed set of self-adjoint elements.
-We need to show~$\sup_{d \in D} \varrho(d) = \varrho(\sup D)$.
-By \sref{hilmod-fixed-on-V}
-it suffices to show~$\left<\hat{x}, \varrho(\sup D)\hat{x}\right>
-= \left<\hat{x},\sup_{d \in D} \varrho(d)\hat{x}\right>$
-for all~$x \in \scrA \odot \scrB$.
+By~\sref{normal-faithful} and~\sref{hilmod-fixed-on-V},
+    it suffices to show
+    that~$ d \ \mapsto \ \langle \hat{x}, \varrho(d) \hat{x}\rangle$
+    is normal for every~$x \in \scrA \odot \scrB$.
 Find~$n \in \N$,
-row vector~$a \equiv(a_1\ \cdots\ a_n)$
-and column~$b \equiv (b_1\ \cdots\ b_n)$
-such that~$x = \sum_i a_i \otimes b_i$.
-We derive
-\begin{align*}
-    \langle \hat{x}, \varrho(\sup D) \hat{x} \rangle
-    & \ =\  \sum_{i,j} b_i^* \varphi(a_i^* (\sup D) a_j) b_j \\
-        & \ =\  b^* (M_n \varphi) (a^* (\sup D) a) b\\
-    & \ =\  \sup_{d \in D} b^* (M_n \varphi) (a^* d a) b \\
-    & \ =\ \sup_{d \in D} \langle \hat{x}, \varrho(d) \hat{x} \rangle \\
-    & \ =\ \langle \hat{x}, \sup_{d \in D} \varrho(d) \hat{x} \rangle.
-\end{align*}
-Thus~$\varrho$ is normal.
+    row vector~$a \equiv(a_1\ \cdots\ a_n)$
+    and column vector~$b \equiv (b_1\ \cdots\ b_n)$
+    such that~$x = \sum^n_{i=1} a_i \otimes b_i$.
+We compute
+\begin{equation*}
+    \langle \hat{x}, \varrho(d) \hat{x} \rangle
+     \ =\  \sum_{i,j} b_i^* \varphi(a_i^* (d) a_j) b_j \\
+         \ =\  b^* (M_n \varphi) (a^* \,d\, a) b.
+\end{equation*}
+So~$ d \ \mapsto \ \langle \hat{x}, \varrho(d) \hat{x}\rangle$
+    is normal by~\sref{hilbmod-ad-ncp} and~\sref{mn-vna},
+    whence~$\varrho$ is normal.
 \end{point}
 \begin{point}{3: $h \colon \scrB^a(\scrA \otimes_\varphi \scrB) \to \scrB)$}%
-Define~$h(T) = \left<1\otimes 1, T 1\otimes 1 \right>$.
-By \sref{hilbmod-vectstates-cp} it is completely positive
-    and by \sref{hilbmod-vecstates-normal} it is normal.
+Define~$h(T) \equiv \left<1\otimes 1, T\, 1\otimes 1 \right>$.
+It is completely positive by~\sref{hilbmod-vectstates-cp}
+    and normal by~\sref{hilbmod-vecstates-normal}.
 \end{point}
 \begin{point}[paschke-uniqueness]{Uniqueness~$\sigma$}%
-Before we continue with 4 we will already prove the uniqueness property
+Before we continue with 4, we will already prove the uniqueness property
     for point 5.
 Note that~$(h \after \varrho)(a) = \left<1\otimes1, a \otimes 1\right>
     = \varphi(a)$ for all~$a \in \scrA$
@@ -3302,13 +3303,14 @@ that~$\left<\hat{x}, \sigma_1(c) \hat{x} \right>= \left<\hat{x}, \sigma_2(c) \ha
 Find~$n \in \N$, $a_1, \ldots, a_n\in \scrA$
     and~$b_1,\ldots,b_n \in \scrB$
     such that~$x = \sum_i a_i\otimes b_i$.
-As~$a_i \otimes b_i = \varrho(a_i) (1 \otimes 1)b_i$, we get for~$k=1,2$
-\begin{align*}\label{equation-sigma}
+Note~$a_i \otimes b_i = \varrho(a_i) (1 \otimes 1)b_i$.
+    So for any~$k=1,2$, we find
+\begin{alignat*}{3}\label{equation-sigma}
     \left<\hat{x}, \sigma_k(c) \hat{x}\right>
     &\ =\ \sum_{i,j} b_i^* h(\, \varrho(a_i^*) \sigma_k(c) \varrho(a_j)\,)b_j\\
-    &\ =\ \sum_{i,j} b_i^* h(\sigma_i(\, \varrho'(a_i^*) c \varrho'(a_j)\,))b_j \\
+    &\ =\ \sum_{i,j} b_i^* h(\sigma_k(\, \varrho'(a_i^*) c \varrho'(a_j)\,))b_j &\qquad&\text{by \sref{dils-univlemma}}\\
     &\ =\ \sum_{i,j} b_i^* h'(\varrho'(a_i^*) c \varrho'(a_j)) b_j.\numberthis
-\end{align*}
+\end{alignat*}
 Thus~$\sigma_1=\sigma_2$ as desired.
 One can show such~$\sigma$ exists by using~\eqref{equation-sigma}
     as defining formula.
