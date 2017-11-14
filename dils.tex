@@ -3275,7 +3275,7 @@ So~$ d \ \mapsto \ \langle \hat{x}, \varrho(d) \hat{x}\rangle$
     is normal by~\sref{hilbmod-ad-ncp} and~\sref{mn-vna},
     whence~$\varrho$ is normal.
 \end{point}
-\begin{point}{3: $h \colon \scrB^a(\scrA \otimes_\varphi \scrB) \to \scrB)$}%
+\begin{point}{3: $h \colon \scrB^a(\scrA \otimes_\varphi \scrB) \to \scrB$}%
 Define~$h(T) \equiv \left<1\otimes 1, T\, 1\otimes 1 \right>$.
 It is completely positive by~\sref{hilbmod-vectstates-cp}
     and normal by~\sref{hilbmod-vecstates-normal}.
@@ -3323,11 +3323,25 @@ Let~$X$ be a self-dual Hilbert~$\scrB$-module
     together with~$e \in X$ and nmiu-map~$\scrA \to \scrB^a(X)$
     such that~$\varphi = h' \after \varrho'$
     with~$h'(T) = \left<e,Te\right>$.
-We must show there is a unique inner product
-    preserving~$S \colon \scrA \otimes_\varphi \scrB \to X$
-    with~$\ad_S \after \varrho' = \varrho$ and~$S (1\otimes1) = e$.
-    As~$h \after \ad_S = h'$ and~$\ad_S$ is an ncp-map (by \sref{hilbmod-ad-ncp}),
-    we already know it is unique by the previous point.
+To prove uniqueness,
+    assume that for~$k=1,2$,
+    we have~$\scrB$-linear
+    inner product preserving~$S_k \colon \scrA \otimes_\varphi \scrB \to X$
+    with~$\ad_{S_k} \after \varrho' = \varrho$
+    and~$S_k \, 1\otimes 1 = e$.
+Then~$h \after \ad_{S_k} = h'$
+    and so (as~$\ad_{S_k}$ is an ncp-map by \sref{hilbmod-ad-ncp}),
+    we know~$\ad_{S_1} = \ad_{S_2}$ by~\sref{paschke-uniqueness}.
+Hence there is a~$\lambda\in\C,\lambda\neq 0$
+    with~$S_1 = \lambda S_2$, cf.~\cite[Lemma 9]{westerbaan2016universal}.
+If~$e \neq 0$,
+    then from~$e = S_1\, 1\otimes 1 = \lambda S_2 \,1\otimes 1 = \lambda e$
+    it follows~$\lambda = 1$ and so~$S_1 = S_2$.
+In the other case, if~$e \neq 0$,
+then~$h' = 0$ and so~$\varphi=0$,
+    whence~$\scrA \otimes_\varphi \scrB = \{0\}$
+    and indeed~$S_1=S_2=0$ trivially.
+We continue with existence.
 There is a unique linear~$S_0\colon \scrA \odot \scrB \to X$
     fixed by~$S_0(a\otimes b) = \varrho'(a) e b$.
 Clearly~$S_0$ is also~$\scrB$-linear.
@@ -3341,16 +3355,20 @@ For any~$x,y \in \scrA\odot \scrB$,
     & \ =\ \sum_{i,j} b_i^* \varphi(a_i^*\alpha_j) \beta_j \\
     & \ =\ [x,y].
 \end{align*}
-Thus~$S_0$ preserves inner product. In particular it's bounded
+Thus~$S_0$ preserves the inner product. In particular~$S_0$ is bounded
     and so there is a unique bounded~$\scrB$-linear
     $S \colon \scrA \otimes_\varphi \scrB \to X$
     with~$S \after \eta = S_0$.
-By \sref{hilmod-fixed-on-V} $S$ also preserves inner product and so~$S^*S = 1$.
+    For all~$x \in \scrA \odot \scrB$
+        we have~$\langle \hat{x}, S^*S \hat{x}\rangle = \langle \hat{x}, \hat{x} \rangle$
+    and so~$S^*S=1$
+    by~\sref{hilmod-fixed-on-V}.
+Thus~$S$ preserves the inner product.
 By definition~$S (1\otimes1) = \varrho'(1)e 1 = e$.
 Pick any~$a \in \scrA$.
 A straightforward computation shows~$S \varrho(a) = \varrho'(a) S$
 hence~$S^* \varrho'(a) = \varrho(a) S^*$
-and~$S^* \varrho'(a) S = S^*S \varrho(a) = \varrho(a)$.
+and~$S^* \varrho'(a) S =  \varrho(a) S^*S= \varrho(a)$.
 We have shown~$\ad_S \after \varrho' = \ad_S$.
 \end{point}
 \begin{point}{5, $\sigma$ existence}
@@ -3516,8 +3534,9 @@ Clearly~$u \neq 0$
 \end{parsec}
 \begin{parsec}%
 \begin{point}%
-We have all the tools to characterize neatly when
-    the representation of a Paschke dilation is injective.
+We have all the tools to characterize
+    the ncp-maps~$\varphi$
+    for which the Paschke representation is injective.
 This is a generalization of our answer\cite{stineinj}
     to the same question for the Stinespring embedding.
 \end{point}
@@ -3717,7 +3736,7 @@ For any~$t \in \varrho'(\scrA)^\square$ and~$a\in \scrA$ we have
         \ = \ h'(t \varrho'(a))
         \ = \ h(\vartheta(t \varrho'(a)))
         \ = \ h(\vartheta(t) \varrho(a))
-        \ = \ \varphi_{\vartheta(t)}^{\scrP_s}(a)
+        \ = \ \varphi_{\vartheta(t)}^{\scrP}(a)
 \end{equation*}
 and so~$t \mapsto \varphi_t^{\scrP'}$
     is a linear order isomorphism as it
@@ -3769,13 +3788,13 @@ Then~$h(x_\alpha)$ is
     and furthermore~$h(x_\alpha) \to h(g(x)) = x$ ultranorm
     and~$\| h(x_\alpha) \| \leq 1 = \| x \|$, as desired.
 \begin{point}%
-The last two claims are easy to prove.
 We start with~$\| h(y) \| \leq 1$.
 The real map~$h_r\colon \lambda \mapsto 4 \lambda (1+\lambda)^{-2}$
     is bounded by~$1$ and so by the functional calculus
     we see~$\| h(y) \|^2 = \| 4 \langle y,y\rangle (1+ \langle y,y\rangle)^{-2} \|
                 = \| h_r(\langle y,y\rangle) \|  \leq 1$.
-For the last claim, note~$\langle g(x), g(x) \rangle
+We continue with the proof of~$h(g(x)) = x$.
+Note~$\langle g(x), g(x) \rangle
 = (1 + \sqrt{1 - \langle x,x \rangle })^{-2} \langle x,x\rangle$
 and so with basic algebra
 \begin{alignat*}{2}
@@ -3789,6 +3808,7 @@ and so with basic algebra
 \end{alignat*}
 \end{point}
 \begin{point}{Ultranorm continuity~$h$}%
+The real work is in the proof of the ultranorm continuity of~$h$.
 Suppose~$y_\alpha \to y$ ultranorm. Define
 \begin{align*}
     A_1 & \ \equiv \ \frac{\langle y,y\rangle}{(1 + \langle y,y \rangle)^2} 
