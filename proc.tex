@@ -2,35 +2,73 @@
 \begin{document}
 \chapter{Assorted structure in~$\W{cpsu}$}
 In the previous two chapters
-we have concisely collected and redeveloped
-the basic theory of $C^*$-algebras
+we have travelled through
+charted territory
+when developing the theory of $C^*$-algebras
 and von Neumann algebras
-with some small variations of our own
-so that we can properly break new ground in this chapter.
-We'll 
+adding some new landmarks and shortcuts
+of our own along the way.
+In this chapter
+we properly break new ground
+by revealing
+two entirely new features
+of the category~$\W{cpsu}$
+of von Neumann algebras
+and the normal completely positive sub-unital
+linear maps between them,
+namely, 
+\begin{enumerate}
+\item 
+that the binary operation~$\ast$
+on the effects of a von Neumann algebra~$\scrA$
+given by~$p\ast q = \sqrt{p}q\sqrt{p}$
+can be axiomatized,
+and 
+\item 
+	that~$\W{cpsu}$
+has all the bits and pieces
+needed to be a model of Selinger and Valiron's quantum lambda calculus.
+\end{enumerate}
+We'll deal with the first matter directly after this introduction
+in Section~\ref{S:measurement}.
+The second matter is treated in Section~\ref{S:model},
+but only
+we have given the tensor product of von Neumann 
+algebras a complete overhaul
+in Section~\ref{S:tensor}.
+Finally, as an offshoot of our model
+of the quantum lambda calculus
+we'll study all
+ von Neumann algebras
+that admit a `duplicator'
+in Section~\ref{S:duplicable}
+---
+surprisingly, they're
+all of the form $\ell^\infty(X)$.
 
 \section{Measurement}
-\begin{parsec}
+\label{S:measurement}
+\begin{parsec}%
 \begin{point}%
-We now turn to the study of
-maps on a von Neumann algebra~$\scrA$
+The maps on a von Neumann algebra~$\scrA$
 of the form
 $a\mapsto \sqrt{p}a\sqrt{p}\colon\,\scrA\to\scrA$,
 where~$p$ is an effect of~$\scrA$,
-that represent measurement of~$p$,
-and are called \emph{assert maps} in~\TODO{cite Bart}
+represent measurement of~$p$,
+and are called \emph{assert maps} in~\cite{newdirections}
 --- the importance of these maps 
 to any logical description of
 quantum computation is not easily overstated.
-
 On the effects of~$\scrA$
-these maps are studied~\TODO{...} in the guise
+these maps are also  studied 
+in the guise
 of the binary operation
 $p\ast q=\sqrt{p} q \sqrt{p}$
-called the \emph{sequential product}.
-The main result of this section
-is an axiomatisation of this operation
-in terms of properties
+called the \emph{sequential product}
+(see e.g.~\cite{gudder2002sequential}).
+We'll axiomatize this operation
+in this section
+in terms of the properties 
 of the underlying assert maps.
 
 Our first observation
@@ -1640,6 +1678,7 @@ except~\sref{ax4}?
 
 
 \section{Tensor product}
+\label{S:tensor}
 \subsection{Definition and existence}
 \begin{parsec}%
 \begin{point}{Definition}%
@@ -3288,6 +3327,7 @@ are symmetric monoidal categories with~$\C$ as unit.
 \end{point}
 \end{parsec}
 \section{Quantum Lambda Calculus}
+\label{S:model}
 \begin{parsec}%
 \begin{point}%
 In this section we provide
@@ -4080,6 +4120,7 @@ in the same way~$\W{cpsu}$ that does.
 \end{parsec}
 
 \section{Duplicators and Monoids}
+\label{S:duplicable}
 \begin{parsec}%
 \begin{point}%
 When asked for an
