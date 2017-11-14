@@ -1792,7 +1792,7 @@ Thus~$[x_\alpha,y_\alpha] \to [x,y]$ ultraweakly. \qed
 \begin{point}[hilbmod-denseordersep]{Corollary}%
 Let~$X$ be a Hilbert~$\scrB$-module
     together with an ultranorm dense subset~$D \subseteq X$.
-The cector states from~$D$ are order separating:
+The vector states from~$D$ are order separating:
 for each~$T \in \scrB^a(X)$ we have
 $T \geq 0$ if and only if~$\left<x,Tx\right> \geq 0$
 for all~$x \in D$.
@@ -3087,25 +3087,13 @@ and so~$\ad_T$ is completely positive.
 \end{point}
 \begin{point}%
 Now we show~$\ad_S$ is normal.
-Assume~$X$ and~$Y$ are self-dual.
-Let~$(B_\alpha)_\alpha$ be a net of self-adjoint elements in~$\scrB^a(Y)$
-    with supremum~$B$.
-As~$\ad_S$ is positive, $(S^*B_\alpha S)_\alpha$ is again a bounded net
-    and thus has a supremum.
-Trivially~$\sup_\alpha S^*B_\alpha S \leq S^*BS$.
-It remains to be shown~$\sup_\alpha S^*B_\alpha S \geq S^*BS$.
-For any~$x \in X$ we have
-\begin{align*}
-    \langle x, \sup_\alpha S^*B_\alpha S x\rangle &\ = \ 
-    \sup_\alpha\  \langle x, S^* B_\alpha S x\rangle &\qquad&
-    \text{by \sref{hilbmod-vecstates-normal}}\\
-   &\ = \ \sup_\alpha\  \langle (Sx), B_\alpha (S x)\rangle \\
-   &\ = \ \langle(S x), \sup_\alpha B_\alpha (S x)\rangle
-    &&\text{by \sref{hilbmod-vecstates-normal}}\\
-   &\ = \ \langle x, S^* B S x\rangle.
-\end{align*}
-And so~$\sup_\alpha S^*B_\alpha S \geq S^*BS$.
-by \sref{hilbmod-ordersep}, as desired. \qed
+By \sref{normal-faithful} and \sref{hilbmod-ordersep},
+    it suffices to show that
+    for every~$x\in X$, the
+    map~$T \mapsto \langle x, \ad_S (T) x\rangle
+                = \langle S x, T \, S x\rangle$
+    is normal,
+    which it indeed is by \sref{hilbmod-vecstates-normal}. \qed
 \end{point}
 \end{point}
 \begin{point}[hilbmod-adj-vector-ncp]{Exercise}%
@@ -3121,7 +3109,7 @@ to show~$\varphi \colon \scrA \to M_n \scrA$
 \section{Paschke dilations}
 \begin{parsec}%
 \begin{point}%
-    We are ready to show every ncp-map has a Paschke dilation.
+    We are ready to show that every ncp-map has a Paschke dilation, see \sref{def-paschke}.
 \end{point}
 \begin{point}{Definition}%
     Let~$\varphi\colon \scrA \to \scrB$ be any ncp-map between
@@ -3155,14 +3143,13 @@ to show~$\varphi \colon \scrA \to M_n \scrA$
     module map~$T\colon \scrA \otimes_\varphi \scrB \to Y$
     such that~$T(a \otimes b) = B(a,b)$ for all~$a \in \scrA$ and~$b \in \scrB$.
 \item
-    There is a unique bounded module
-        map~$\varrho(a_0)$ on~$\scrA \otimes_\varphi \scrB$
+    For~$a_0 \in \scrA$,
+    there is a unique~$\varrho(a_0) \in \scrB^a(\scrA \otimes_\varphi \scrB)$
             fixed by
             \begin{equation*}
-                \varrho(a_0)(a\otimes b) = (a_0 a)\otimes b,
+                \varrho(a_0)(a\otimes b) = (a_0 a)\otimes b.
             \end{equation*}
-        for~$a_0 \in \scrA$
-    and~$a \mapsto \varrho(a)$
+    Furthermore~$a \mapsto \varrho(a)$
         yields a
         nmiu-map~$\varrho\colon \scrA \to \scrB^a(\scrA\otimes_\varphi \scrB)$.
 \item
