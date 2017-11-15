@@ -2983,10 +2983,16 @@ Show that if~$X$ is self-dual,
 \begin{point}[hilmod-fixed-on-V]{Exercise}%
 Let~$V$ be a right $\scrB$-module with~$\scrB$-valued inner product;
     $\eta\colon V \to X$ be its ultranorm completion
-    from~\sref{dils-completion} and~$S,T \in \scrB^a(X)$ arbitrary.
-Show that if for all~$x\in V$ we
-have~$\left<\eta(x), T\eta(x)\right> = \left<\eta(x), S\eta(x)\right>$,
-    then~$S=T$.
+    from~\sref{dils-completion}.
+Show that
+\begin{equation*}
+    \{\ \langle \hat{x}, (\,\cdot\,)\, \hat{x}\rangle \colon X \to \scrB \ ;\ x \in V\  \} \qquad \text{(where $\hat{x} \equiv \eta(x)$)}
+\end{equation*}
+is an order seperating set of ncp-maps, see \sref{separating}.
+    (That is:~$T \geq 0$ iff~$\langle \hat{x}, T \hat{x}\rangle \geq 0$
+    for all~$x \in V$.
+    Consequently~$S = T$ iff~$\langle \hat{x}, T \hat{x} \rangle 
+    = \langle \hat{x}, S \hat{x} \rangle$ for all~$x \in V$.)
 \end{point}
 \begin{point}{Theorem}%
 Suppose~$X$ is a self-dual Hilbert~$\scrB$-module
@@ -3417,14 +3423,35 @@ Then $\ceil{\varrho} = \cceil{\varphi}$.
 Thus~$\varrho$ is injective ($\ceil{\varrho}=1$) if and only if $\varphi$
 maps no non-zero central projection to zero ($\cceil{\varphi}=1$).
 \begin{point}{Proof}%
+(This is a simplified version of the proof we published earlier
+    in~\cite[Thm.~30]{paschke}.)
 By~\sref{paschke-unique-up-to-iso},
     it is sufficient to prove the equivalence
     for the dilation constructed in \sref{existence-paschke}.
 Let~$p \in \scrA$ be any projection.
-We will show~$p \leq 1-\ceil{\varrho}$ iff~$p \leq 1-\cceil{\varrho}$.
-Assume~$p \leq \ceil{\varrho}$.
-Then~$\varrho(p) = 0$.
-
+We will show~$p \leq \ceil{\varrho}^\perp$ iff~$p \leq \cceil{\varphi}^\perp$.
+Assume~$p \leq \ceil{\varrho}$,
+    viz.~$\varrho(p) = 0$.
+Pick any~$a \in \scrA$ and~$b\in \scrB$.
+Then~$\varrho(p)\, a\otimes b = 0$.
+By definition of~$\varrho$ and the inner product,
+    this is the case iff~$b^* \varphi(a^*p^* pa) b = 0$.
+In particular~$\varphi(a^* p a) = 0$.
+In other words~$a^* p a \leq \ceil{\varphi}^\perp$.
+This is happends if and only if~$a \ceil{\varphi} a^* \leq p^\perp$
+    by~\sref{ad-contraposed}.
+Equivalently~$\ceil{a \ceil{\varphi} a^*} \leq p^\perp$.
+As~$a$ was arbitrary,
+    we see (using \sref{cceil-fundamental}),
+    that~$\cceil{\varphi} = \bigcup_{a \in \scrA} \ceil{a \ceil{\varphi} a^*}
+            \leq p^\perp$, as desired.
+For the converse, note that
+    the two implications we just used are, in fact, equivalences:
+        if~$\varphi(a^* p a) =0$,
+        then~$b^*\varphi(a^* pa) b = 0$ for any~$b \in \scrB$
+        \emph{and} if~$\varrho(p)\, a \otimes b = 0$
+        for all~$a \in \scrA$ and~$b\in \scrB$,
+        then~$\varrho(p) = 0$, by~\sref{hilmod-fixed-on-V}.
 \qed
 \end{point}
 \end{point}
@@ -3433,13 +3460,17 @@ Then~$\varrho(p) = 0$.
 \begin{parsec}%
 \begin{point}%
 We will now prove a useful connection between
-    the ncp-maps ncp-below~$\varphi$
-    and the commutant of the image of a Paschke embedding of~$\varphi$.
+    the ncp-maps \emph{ncp-below}~$\varphi$ (as defined in a moment)
+    and the commutant of the image
+    of a Paschke representation (``$\varrho$'') of~$\varphi$.
+We will use it to give an alternative proof
+    of the fact that pure maps and nmiu-maps
+    are extreme among all ncpu-maps.
 \end{point}
 \begin{point}{Definition}%
 For linear  maps~$\varphi, \psi\colon \scrA \to \scrB$,
     we say $\varphi$ is ncp-below~$\psi$
-    (in symbols:~$\varphi \mathrel{\Define{\leq_\ncp}} \psi$)
+    (in symbols:~$\Define{\varphi \mathrel{\leq_\ncp} \psi}$)
     whenever~$\psi - \varphi$ is an ncp-map.
     Furthermore, write
     \begin{equation*}
@@ -3449,9 +3480,9 @@ For linear  maps~$\varphi, \psi\colon \scrA \to \scrB$,
     \end{equation*}
 \end{point}
 \begin{point}{Definition}%
-    Assume~$\varphi\colon \scrA \to \scrB$ is an ncp-map with Paschke
+    Let~$\varphi\colon \scrA \to \scrB$ be any ncp-map with Paschke
         dilation~$(\scrP, \varrho, h)$.
-    For~$t \in \varrho(\scrA)^\square$
+        For~$t \in \varrho(\scrA)^\square$, the commutant of~$\varrho(\scrA)$,
     define $\Define{\varphi_t} = h(t \varrho(a))$.
 \end{point}
 \begin{point}[paschke-correspondence]{Theorem}%
@@ -3472,34 +3503,35 @@ Clearly~$T \mapsto \varphi_T$ is linear
 Pick~$T \in \varrho(\scrA)^\square$.
 As~$\sqrt{T} \in \varrho(\scrA)^\square$
     we have~$\varphi_T(a) = h(\sqrt{T} \varrho(a)\sqrt{T})$.
-    Thus~$\varphi_T$ is ncp
-    and~$\varphi_T \mathrel{\leq_\ncp} \varphi_S$
-    whenever~$T\leq S$ for~$T,S \in \varrho(\scrA)^\square$.
-In particular, if~$T\leq 1$ then $\varphi_T \leq \varphi_1 = \varphi$.
+    Thus~$\varphi_T$ is ncp.
+In particular, if~$T \leq S$
+    for some~$S \in \varrho(\scrA)^\square$,
+    then~$\varphi_{S-T} = \varphi_S - \varphi_T$ is ncp
+    and so~$\varphi_T \mathrel{\leq_\ncp} \varphi_S$.
+Consequently, if~$T\leq 1$, then $\varphi_T \leq \varphi_1 = \varphi$.
 \end{point}
 \begin{point}{Order embedding}%
 Let~$T \in \varrho(\scrA)^\square$
     be given such that~$\varphi_T$ is ncp.
-Assume~$n \in \N$, $a_1, \ldots, a_n \in \scrA$
-and~$b_1, \ldots, b_n \in \scrB$.
-Write~$x = \sum_{i} a_i \otimes b_i$.
+We must show~$T \geq 0$.
+Pick any~$x \in \scrA \odot \scrB$.
+By~\sref{hilmod-fixed-on-V} and
+    the construction of~$\scrA \otimes_\varphi \scrB$,
+    it is sufficient to show~$\langle \hat{x}, T \hat{x}\rangle \geq 0$.
+Say~$\hat{x} \equiv \sum_i a_i \otimes b_i$.
 Then
 \begin{equation*}
-    \left<x, T x \right>
+    \langle\hat{x}, T \hat{x} \rangle
     \ =\  \sum_{i,j} b_i^* \left< 1\otimes 1, T \varrho(a_i^*a_j) 1 \otimes 1\right> b_j
     \ = \ \sum_{i,j} b_i^* \varphi_T (a_i^*a_j) b_j \ \geq\  0.
 \end{equation*}
-By construction such~$x$ are ultranorm dense in~$\scrA\otimes\scrB$
-    and so~$T \geq 0$ by \sref{hilbmod-denseordersep}.
 Thus~$T \mapsto \varphi_T$ is an order embedding
     and in particular an injection.
 \end{point}
-\begin{point}{Surjective}%
-Only surjectivity remains.
-Pick~$\psi \in [0,\varphi]_\ncp$.
-We want to show there is a~$T \in \varrho(\scrA \otimes_\varphi \scrB)^\square$
+\begin{point}{Surjectivity}%
+Pick any~$\psi \in [0,\varphi]_\ncp$.
+We will show there is a~$T \in \varrho(\scrA)^\square$
     with~$\varphi_T = \psi$ and~$0 \leq T \leq 1$.
-
 Let $(\scrB^a(\scrA \otimes_\psi \scrB),
     \varrho_\psi, h_\psi)$ denote the Paschke dilation of~$\psi$
     constructed in~\sref{existence-paschke}.
@@ -3507,7 +3539,8 @@ Define~$B\colon \scrA \times \scrB \to \scrA \otimes_\psi \scrB$
     by~$B(a,b) = a \otimes b$.
 This~$B$ is $\varphi$-compatible
 --- indeed, for any~$n \in \N$, $a_1, \ldots, a_n \in \scrA$
-    and~$b_1, \ldots, b_n \in \scrB$
+    and~$b_1, \ldots, b_n \in \scrB$,
+    it follows from~$\psi \mathrel{\leq_\ncp} \varphi$ that
 \begin{equation*}
     \bigl\| \sum_i B(a_i, b_i) \bigr\|^2
      \ = \  \bigl\| \sum_{i,j}
@@ -3515,23 +3548,31 @@ This~$B$ is $\varphi$-compatible
      \ \leq \  \bigl\| \sum_{i,j}
                 b_i^* \varphi(a_i^*a_j) b_j \bigr\|.
 \end{equation*}
-Thus there is a unique bounded module
+So by \sref{existence-paschke},
+    there is a unique bounded module
     map~$W \colon \scrA \otimes_\varphi \scrB \to \scrA \otimes_\psi \scrB$
-    fixed by~$W x \otimes y = x \otimes y$.
-By \sref{hilbmod-adjoint-exists}~$W$ has an adjoint.
+    fixed by~$W a \otimes b = a \otimes b$.
+As~$\scrA \otimes_\psi \scrB$ is self-dual,
+    the map~$W$ has an adjoint~$W^*$ by \sref{hilbmod-adjoint-exists}.
 For any~$a\in\scrA$, we have~$W \varrho(a) = \varrho_\psi(a) W$
-and so~$\varrho(a) W^* = W^* \varrho_\psi(a)$
-thus~$W^*W \varrho(a) = W^* \varrho_\psi(a) W = \varrho(a) W^*W$.
+and so~$\varrho(a) W^* = W^* \varrho_\psi(a)$.
+Thus~$W^*W \varrho(a) = W^* \varrho_\psi(a) W = \varrho(a) W^*W$.
 Apparently~$W^*W \in \varrho(\scrA)^\square$.
-Define~$T = W^*W$. Clearly~$0\leq T$.
-For each~$x = \sum^n_{i=0} a_i \otimes b_i$
-    we have~$\left<x, Tx\right> = \left<Wx,Wx\right> = \left<x,x\right>$
-    and so~$T \leq 1$.
+Define~$T \equiv W^*W$. Clearly~$0\leq T$.
+As~$\psi \mathrel{\leq_\ncp} \varphi$,
+    we have for each~$x \equiv \sum_i a_i \otimes b_i$,
+    the inequality~$\langle x,x\rangle_\psi \leq \langle x,x\rangle_\varphi$
+    and so
+\begin{equation*}
+    \left<x, Tx\right>_\varphi \ =\  \left<Wx,Wx\right>_\psi
+    \ =\  \left<x,x\right>_\psi \ \leq\  \langle x,x \rangle_\varphi.
+\end{equation*}
+    Thus~$T \leq 1$ by~\sref{hilmod-fixed-on-V}.
 For any~$a\in \scrA$ we have
 \begin{align*}
-    \varphi_T(a) &\ =\  \left<1\otimes 1, W^*W a \otimes 1\right> \\
-    &  \ =\  \left<W 1\otimes 1, W a\otimes1\right> \\
-    &  \ = \ \left<1\otimes1, a\otimes1\right> \\
+    \varphi_T(a) &\ =\  \left<1\otimes 1, W^*W\, a \otimes 1\right>_\varphi \\
+    &  \ =\  \left<W\, 1\otimes 1, W\, a\otimes1\right>_\psi \\
+    &  \ = \ \left<1\otimes1, a\otimes1\right>_\psi \\
     &  \ = \ \psi(a),
 \end{align*}
     as desired.  We have shown the correspondence holds for
@@ -3539,7 +3580,7 @@ For any~$a\in \scrA$ we have
                 constructed in~\sref{existence-paschke}.
 \end{point}
 \begin{point}{Arbitrary dilation}%
-Assume~$(\scrP', \varrho', h')$ is an (other) Paschke dilation
+Let~$(\scrP', \varrho', h')$ be any (other) Paschke dilation
     of~$\varphi$.
 For brevity write~$\scrP \equiv \scrA \otimes_\varphi \scrB$
     and for clarity
@@ -3575,8 +3616,8 @@ and so~$t \mapsto \varphi_t^{\scrP'}$
 \begin{parsec}%
 \begin{point}%
 Before we continue our study of Paschke dilations,
-    we develop some more theory on (self-dual) Hilbert C$^*$-modules.
-First we will prove a variant of the Kaplansky density
+    we need to develop some more theory on (self-dual) Hilbert C$^*$-modules.
+First we will prove a generalization of the Kaplansky density
     theorem for Hilbert C$^*$-modules,
     which we will need to compute the tensor product of Paschke dilations.
 The proof is inspired by the proof of the regular Kaplansky density theorem
@@ -3584,9 +3625,9 @@ The proof is inspired by the proof of the regular Kaplansky density theorem
 See also \sref{kaplansky}.
 \end{point}
 \begin{point}[kaplansky-hilbmod]{Theorem}%
-Let~$X$ be a Hilbert~$\scrB$-module for a von Neumann algebra~$\scrB$.
-Assume~$D \subseteq X$ is an ultranorm dense $\scrA$-submodule,
-    where~$\scrA \subseteq \scrB$ is some norm-closed subalgebra
+Let~$X$ be a Hilbert~$\scrB$-module for a von Neumann algebra~$\scrB$
+    with an ultranorm dense $\scrA$-submodule $D \subseteq X$,
+    where~$\scrA \subseteq \scrB$ is some C$^*$-subalgebra
     with~$\langle y,y \rangle \in \scrA$ for all~$y \in D$.
 
 Then: for every element~$x \in X$,
@@ -3594,7 +3635,7 @@ Then: for every element~$x \in X$,
     with~$x_\alpha \to x$ ultranorm
     and~$\|x_\alpha\| \leq \|x\|$ for all~$\alpha$.
 \begin{point}{Proof}%
-Pick any~$x \in X$.
+Let~$x \in X$ be given.
 Without loss of generality, we may assume~$\| x \| \leq 1$.
 For this~$x$ and any~$y \in X$, define
 \begin{align*}
@@ -3604,7 +3645,7 @@ For this~$x$ and any~$y \in X$, define
 \end{align*}
 We claim~$h$ is ultranorm continuous,
 $h(g(x)) = x$ and $\| h(y) \| \leq 1$ for all~$y \in X$.
-From these claims the Theorem follows.
+From the promised result follows.
 Indeed, let~$x_\alpha$ be a net in~$D$
     that converges ultranorm to~$g(x)$.
 Then~$h(x_\alpha)$ is
@@ -3627,13 +3668,13 @@ and so with basic algebra
 \frac{2}{1 + \bigl(1 + \sqrt{1 - \langle x,x \rangle }\bigr)^{-2} \langle x,x\rangle} \\
 & \ =\  x \cdot 2 \left( \frac{
     \bigl(1 + \sqrt{1-\langle x, x\rangle}\bigr)^2 + \langle x,x \rangle
-}{1 + \sqrt{1 + \langle x,x \rangle}} \right)^{-1} \\
+}{1 + \sqrt{1 - \langle x,x \rangle}} \right)^{-1} \\
 & \ = \ x.
 \end{alignat*}
 \end{point}
 \begin{point}{Ultranorm continuity~$h$}%
 The real work is in the proof of the ultranorm continuity of~$h$.
-Suppose~$y_\alpha \to y$ ultranorm. Define
+Suppose~$y_\alpha \to y$ ultranorm in~$X$. Define
 \begin{align*}
     A_1 & \ \equiv \ \frac{\langle y,y\rangle}{(1 + \langle y,y \rangle)^2} 
             - \frac{1}{1+\langle y_\alpha,y_\alpha \rangle} \frac{\langle y,y \rangle}{1+\langle y,y \rangle} \\
@@ -3654,7 +3695,8 @@ A straightforward computations shows
     \langle h(y) - h(y_\alpha) ,
          h(y) - h(y_\alpha) \rangle  \ = \ A_1 + A_1' + A_2 + A_2'.
 \end{equation}
-We will show that each of these terms converges ultraweakly to~$0$.
+We will show that each of these terms converges ultraweakly to~$0$
+ as~$\alpha \to \infty$.
 We start with~$A_1$.
 We need two facts.
 First, for any positive~$b \in \scrB$, we have~$0 \leq \frac{1}{1+b} \leq 1$
@@ -3673,7 +3715,7 @@ Secondly
    \bigl(\langle y_\alpha,y_\alpha \rangle - \langle y,y \rangle\bigr) 
     \frac{1}{1+\langle y_\alpha,y_\alpha\rangle }.
 \end{align*}
-Putting these facts together with the definition of~$A_1$, we get
+Putting these facts and the definition of~$A_1$ together, we get
 \begin{align*}
      A_1 
     &\ = \ 
@@ -3694,7 +3736,7 @@ Putting these facts together with the definition of~$A_1$, we get
 \end{align*}
 As multiplying with
 constants is ultraweakly continuous (see \sref{mult-uws-cont}),
-    it is sufficient to show that in the ultraweak uniformity
+    it is sufficient to show that ultraweakly, as~$\alpha \to \infty$, we have
 \begin{align}\label{kaplanskytodo2}
     \langle y_\alpha - y, y_\alpha \rangle \frac{1}{1 + \langle y_\alpha, y_\alpha\rangle} & \ \to\  0 &
     \langle y, y_\alpha  -y\rangle \frac{1}{1 + \langle y_\alpha, y_\alpha\rangle} & \ \to \ 0.
@@ -3706,13 +3748,13 @@ For any np-map~$f\colon \scrB \to \C$, we have
     |\langle y_\alpha - y, y_\alpha (1 + \langle y_\alpha, y_\alpha  \rangle)^{-1}
     \rangle_f|^2 \\
     & \ \leq \ 
-    \| y_\alpha - y \|_f \cdot \| y_\alpha (1 + \langle y_\alpha, y_\alpha  \rangle)^{-1} \|_f \\
+    \| y_\alpha - y \|^2_f \cdot \| y_\alpha (1 + \langle y_\alpha, y_\alpha  \rangle)^{-1} \|^2_f \\
     & \ \leq \  \|
-    y_\alpha - y \|_f \cdot \| y_\alpha (1 + \langle y_\alpha, y_\alpha  \rangle)^{-1} \| \cdot
-    \|f\|^{\frac{1}{2}}
+    y_\alpha - y \|^2_f \cdot \| y_\alpha (1 + \langle y_\alpha, y_\alpha  \rangle)^{-1} \|^2 \cdot
+    \|f\|
     \\
     & \ \leq \ 
-    \| y_\alpha - y \|_f \cdot \|f\|^{\frac{1}{2}} \ \rightarrow \ 0.
+    \| y_\alpha - y \|^2_f \cdot \|f\| \ \rightarrow \ 0.
 \end{align*}
 We have shown the LHS of \eqref{kaplanskytodo2}.
 The proof for the RHS is different, but simpler.
@@ -3839,8 +3881,7 @@ For any~$\omega \in \Omega$,
      \ \leq \ f(\langle x, x\rangle) \| y\|^2 
      \ = \ \| \omega \| \| y\|^2
 \end{equation*}
-and so from \sref{order-separating-norm} it follows~$\| \ketbra{y}{y} \| \leq \|y\|^2$
-    and so
+and so from \sref{order-separating-norm} it follows~$\| \ketbra{y}{y} \| \leq \|y\|^2$, whence
 \begin{align*}
     \| \ketbra{z}{y} \|^2
         & \ = \ \| \ketbra{y}{z} \ketbra{z}{y} \| \\
@@ -4027,19 +4068,19 @@ Let~$\scrB$ be a von Neumann algebra
     a sequence of projections from~$\scrB$.
 Write~$\Define{\ell^2((p_i)_{i \in I})}$
     for the set of~$I$-tuples~$(b_i)_{i \in I}$
-        from~$\scrB$
-        that are~$\ell^2$-summable, see \sref{dfn-selfdual-basis}.
-Show~$\ell^2((p_i)_{i \in I})$
+    from~$\scrB$ that are~$\ell^2$-summable (\sref{dfn-selfdual-basis})
+    and furthermore~$\ceil{b_i^*b_i} \leq p_i$ for every~$i \in I$.
+Show that~$\ell^2((p_i)_{i \in I})$
     is a right $\scrB$-module
     with coordinatewise operations.
 Prove that for any~$(b_i)_i$ and~$(c_i)_i$
     in~$\ell^2((p_i)_{i \in I})$
     the sum~$\sum_{i \in I} b_i^* c_i =: \left<(b_i)_i, (c_i)_i\right>$
     converges ultraweakly
-    and turns it into a pre-Hilbert~$\scrB$-module.
-Conclude it is self-dual
+    and turns~$\ell^2((p_i)_{i\in I})$ into a pre-Hilbert~$\scrB$-module.
+    Conclude~$\ell^2((p_i)_{i \in I})$ is self-dual
 and, in fact, that for every self-dual Hilbert~$\scrB$-module~$X$
-    with any orthonormal basis~$(e_i)_{i \in I}$
+    with any orthonormal basis~$(e_i)_{i \in I}$,
     we have~$X \cong \ell^2(\,(\left<e_i,e_i\right>)_{i \in I}\,)$.
 \end{point}
 
@@ -4048,8 +4089,9 @@ and, in fact, that for every self-dual Hilbert~$\scrB$-module~$X$
         and~$(p_i)_{i \in I}$, $(q_j)_{j \in J}$
         sequences of projections from~$\scrB$.
     What can we say if~$\ell^2((p_i)_{i \in I}) 
-            \cong \ell^2((q_i)_{j \in J})$?
-    Let's start with some counter examples.
+    \cong \ell^2((q_i)_{j \in J})$?
+    ($\ell^2$ as defined in \sref{hilbmod-el2}.)
+    Let's start with some counterexamples.
 \begin{enumerate}
 \item
 Do all orthonormal bases have the same cardinality?
@@ -4065,7 +4107,7 @@ However, for every projection~$p \in \scrB$
 is an orthonormal basis.
 
 \item
-Perhaps orthonormal bases have a common refinement?
+Perhaps any two orthonormal bases have a common refinement?
 Take~$\scrB = M_3$.
 It might not be immediately obvious, but both
 \begin{equation*}
@@ -4077,7 +4119,7 @@ are orthonormal bases of~$M_3$ over itself.
 (Combine \sref{onb1} with~\sref{onb2}.)
 
 \item
-Maybe~$\sum_{i\in I} \left<e_i,e_i\right> = \sum_{j\in J} \left<d_i,d_i\right>$
+Maybe~$\sum_{i\in I} \left<e_i,e_i\right> = \sum_{j\in J} \left<d_j,d_j\right>$
     for finite orthonormal bases~$(e_i)_{i \in I}$ and~$(d_j)_{j \in J}$?
 For commutative~$\scrB$ this indeed holds using Parseval's identity.
 However, in general it fails:
@@ -4105,50 +4147,56 @@ with~$p_i \sim q_i$ for~$i \in I$.
 Let~$(e_i)_{ i \in I}$ be some orthonormal basis of a Hilbert~$\scrB$-module~$X$
     with distinguished~$1,2 \in I$.
 Show that if~$\left<e_1,e_1\right> + \left<e_2,e_2\right> \leq 1$,
-    then we can make a new orthonormal basis of~$X$ by  replacing~$e_1$ and~$e_2$
-        by~$e_1 + e_2$.
+    then we can make a new orthonormal basis of~$X$ by  removing~$e_1$ and~$e_2$
+        and inserting~$e_1 + e_2$.
 
 Conclude~$p \scrB \oplus q \scrB \cong (p+q) \scrB$
     for projections~$p,q \in \scrB$ with $p+q \leq 1$.
 \end{point}
-% \begin{point}[selfdual-limit-basispair]{Lemma}%
-%     Assume~$X$ is a self-dual Hilbert~$\scrB$-module.
-%     Let~$(E_\alpha)_{\alpha \in \beta}$ 
-%         and~$(D_\alpha)_{\alpha\in \beta}$
-%         be an ascending and descending sequence of subsets of~$X$,
-%         respectively.
-%     If for each~$\alpha \in \beta$ we know
-%     $E_\alpha \cap D_\alpha = \emptyset$ and $E_\alpha \cup D_\alpha$ is an orthonormal basis,
-%     then~$\bigl(\bigcup_{\alpha} E_\alpha\bigr) \cup\bigl( \bigcap_{\alpha}D_\alpha\bigr)$
-%         is also an orthonormal basis.
-% \begin{point}{Proof}
-% Write~$D = \bigcap_\alpha D_\alpha$. 
-% Without loss of generality we may assume~$D = \emptyset$,
-%     by switching to~$D'_\alpha = D - D_\alpha$
-%     and~$E'_\alpha = E_\alpha \cup D$.
-% Write~$E = \bigcup_\alpha E_\alpha$.
-% By \sref{hilbmod-projthm} and \sref{selfdual-orthn-basis} it is sufficient
-%     to show~$E^\perp = \{0\}$.
-% Pick any~$x \in E^\perp$.  We want to show~$x = 0$.
-% By definition~$\left<x, e\right> =0$ for~$e \in E$.
-% As~$D_0 \cup E_0$ is an basis,
-%     it is sufficient to show~$\left<x, d\right> = 0$
-%         for~$d \in D_0$.
-% Pick some~$d \in D_0$.
-% As~$\bigcap_\alpha D_\alpha = \emptyset$
-%     there is some~$\alpha$ such that~$d \notin D_\alpha$.
-%     So~$d \in D_\alpha^\perp = E_\alpha^{\perp\perp} \subseteq E^{\perp\perp}$.
-% Thus~$\left<x,d\right> = 0$, as desired. \qed
-% \end{point}
-% \end{point}
-
+\end{parsec}
+\begin{parsec}%
+\begin{point}%
+Before we can prove our normal form (in \sref{selfdual-normalish-form}),
+    we need some more \emph{comparison theory of projections}.
+\end{point}
+\begin{point}[total-mv-order]{Proposition}%
+Let~$\scrB$ be a von Neumann algebra that is a factor (i.e.~with center~$\C 1$).
+For any two projections~$p,q \in \scrB$,
+    either~$p \lesssim q$ or~$q \lesssim p$.
+\begin{point}{Proof}%
+(For a more traditional proof, see e.g.~\cite[Prop.~6.2.4]{kr}.)
+Let~$p,q \in \scrB$ be any projections.
+By Zorn's lemma, there is a maximal
+    set~$U\subseteq \scrB$ of partial isometries
+    with~$\sum_{u\in U} u^*u \leq p$
+    and~$\sum_{u\in U} uu^* \leq q$.
+Define~$p_0 \equiv p - \sum_{u\in U} u^*u$
+    and~$q_0 \equiv q - \sum_{u \in U} uu^*$.
+Note that if~$p_0 = 0$, then~$p \lesssim q$
+    via~$\sum_{u \in U} u$, c.f.~\sref{summing-partial-isometries}.
+Similarly, if~$q_0 = 0$, then~$q \lesssim p$.
+So, reasoning towards contradiction,
+    assume~$p_0 \neq 0$ and~$q_0 \neq 0$.
+As~$\scrB$ is a factor~$\cceil{q_0} = 1$
+    and so~$0 < p_0 = p_0\cceil{q_0} p_0 = p_0 (\bigcup_{a \in \scrB} \ceil{a^* q_0 a }) p_0
+                = \bigcup_{a \in \scrB} \ceil{p_0a^*q_0ap_0}$
+            by~\sref{cceil-fundamental} and~\sref{ncp-union}.
+Pick an~$a \in \scrB$ with~$\ceil{p_0a^*q_0ap_0} \neq 0$.
+Then~$u_0 \equiv [q_0ap_0]$, see \sref{polar-decomposition},
+    is a non-zero partial isometry
+    satisfying~$u_0^*u_0 = \ceil{p_0a^*q_0ap_0} \leq p_0$
+    and~$u_0 u_0^* = \ceil{q_0ap_0a^*q_0} \leq q_0$,
+    contradicting maximality of~$U$. \qed
+\end{point}
+\end{point}
 \begin{point}[selfdual-normalish-form]{Theorem}%
 Let~$\scrB$ be a von Neumann algebra that is a factor (i.e.~with center~$\C 1$).
 Suppose~$X$ is a self-dual Hilbert~$\scrB$-module.
 Either there is a cardinal~$\kappa$
     such that~$X \cong \ell^2((1)_{\alpha \in \kappa})$,
+    with~$\ell^2$ as in~\sref{hilbmod-el2},
     or there is a natural number~$n\in \N$
-    and projection~$p \in \scrB$
+    and a projection~$p \in \scrB$
     such that~$X \cong \ell^2((1, \ldots, 1, p))$,
     where~$1$ occurs~$n$ times.
 \begin{point}{Proof}%
@@ -4170,7 +4218,7 @@ Let~$P$ denote the poset of subsets~$U \subseteq E_0 \times \scrB$
     $u$ is a partial isometry with $uu^* = \left<e,e\right>$
         for every~$(e,u) \in U$ \emph{and}
     \item
-    the domains of the~$u$ are orthogonal:  $\sum_{(e,u) \in U} u^*u \leq 1$.
+    the domains of these~$u$ are orthogonal:  $\sum_{(e,u) \in U} u^*u \leq 1$.
 \end{enumerate}
 For any chain~$C \subseteq P$
     it is easy to see~$\bigcup C \in P$
@@ -4199,8 +4247,7 @@ Then~$vv^* = p_1$ and~$v^*v \leq 1- p_0$ for some~$v \in \scrB$.
     So~$U_0 \cup \{ (e_1, v) \} \in P$ contradicting maximality of~$U_0$.
 Apparently~$p_1 \not\lesssim 1-p_0$.
 
-In a factor~$\lesssim$ is total \TODO{ref},
-    so~$1-p_0 \lesssim p_1$.
+So by \sref{total-mv-order}, we must have~$1-p_0 \lesssim p_1$.
 Let~$v \in \scrB$ be such that~$vv^*=1-p_0$
     and~$v^*v \leq p_1$.
 Write~$p_0' = 1- v^*v$.
@@ -4264,7 +4311,7 @@ Now~$E' \cup \{e\} \in P$, contradicting maximality of~$E$.
 Apparently~$E^\perp = \{0\}$ or~$E^\perp$ is 1-dim.
 If~$E^\perp = \{0\}$
     then we are done
-    taking~$\kappa$ the cardinality of~$E$.
+    taking for~$\kappa$ the cardinality of~$E$.
 For the other case, assume~$E^\perp = \{e\}^{\perp\perp}$
     for some~$e \in X$ with~$\left<e,e\right>$ a non-zero projection.
 If~$E$ is finite, then we are done as well.
@@ -4289,11 +4336,13 @@ Does this settle the matter?  One might hope
         \ell^2((1_{\mathscr{B}})_{\beta\in\lambda})$
     implies~$\kappa=\lambda$ for all cardinals~$\kappa$,$\lambda$.
 This is not the case.
-By definition, for any non-trivial type III factor~$\scrB$
-    with non-zero projection~$p$
-    it holds~$p \sim 1 -p$
+Indeed, if~$\scrB$ is a type III factor
+    of operators on a separable Hilbert space,
+    then for any non-zero projection~$p$,
+    we have~$p \sim 1 -p$ (by combining~\cite[Dfn.~6.5.1]{kr}
+        and~\cite[Cor.~6.3.5]{kr})
     and so~$\scrB \cong p\scrB \oplus (1-p)\scrB \cong 
-    \scrB \oplus \scrB$ as Hilbert modules.\TODO{add type III ref}
+    \scrB \oplus \scrB$ as Hilbert modules.
 \end{point}
 \end{parsec}
 
