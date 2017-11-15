@@ -1679,7 +1679,7 @@ except~\sref{ax4}?
 
 \section{Tensor product}
 \label{S:tensor}
-\subsection{Definition and existence}
+\subsection{Definition}
 \begin{parsec}%
 \begin{point}{Definition}%
 A bilinear map $\beta\colon \scrA\times \scrB\to\scrC$
@@ -1759,12 +1759,62 @@ and whether it is unique in some way.
 We'll shortly address all three questions.
 \end{point}
 \end{parsec}
+\subsection{Existence}
 \begin{parsec}%
 \begin{point}%
 We'll start with the existence
 of a tensor product of von Neumann algebras
 for which we'll first need the tensor product
 of Hilbert spaces.
+\begin{point}%
+But before this
+we quickly review
+the (algebraic)
+tensor product of plain vector spaces~$V$ and~$W$ first ---
+it is a vector space~$V\odot W$
+equipped
+with a bilear mapping~$\odot\colon V\times W\to V\odot W$
+which is  universal  
+in the sense that for every bilinear mapping~$\beta\colon V\times W\to Z$
+into some vector space~$Z$
+there is a unique linear map~$\beta_\odot\colon V\odot W\to Z$
+with~$\beta_\odot(v\odot w)=\beta(v,w)$
+for all~$v\in V$ and~$w\in W$.
+This property uniquely determines the algebraic tensor product in the sense
+that for any bilinear map~$\mathbin{\tilde\odot}\colon
+ V\times W\to V\mathbin{\tilde\odot} W$
+ into a vector space~$V\mathbin{\tilde \odot} W$
+which shares this property
+there is a unique linear isomorphism $\varphi\colon V\odot W\to V
+\mathbin{\tilde \odot} W$
+with $\varphi(v\odot w) = v\mathbin{\tilde\odot} w$
+for all~$v\in V$ and~$w\in W$.
+
+In fact, one may take this property as a neat abstract 
+definition of the algebraic
+tensor product.
+However, to  see that the darn thing actually exists,
+one still needs a concrete description
+such as this one:
+take given a basis~$B$ of~$V$ and a basis~$C$ of~$W$
+the bilinear map $\odot$ on~$V\times W$
+to the vector space $(B\times C)\cdot \C$ with basis~$B\times C$
+determined by~$b\odot c = (b,c)$
+for~$b\in B$ and~$c\in C$.
+This shows us not only that the algebraic tensor product
+exists,
+but also 
+that~$\odot$ is injective (among other things).
+
+This is all, of course, well known; the interesting thing here is that
+the tensor product
+of Hilbert spaces 
+(and also the tensor product of von Neumann algebras
+as we'll see a bit later)
+can be defined using a similar universal property!
+The tensor product of Hilbert spaces
+can however also be described directly:
+\end{point}
 \end{point}
 \begin{point}{Definition}%
 We'll call a bilinear map $\gamma\colon \scrH\times\scrK\to\scrT$
@@ -1823,7 +1873,6 @@ the set
 	\scrG\,:=\,\{\,\gamma(e,f)\colon \,e\in \scrE,\,f\in\scrF\,\}
 \end{equation*}
 is an orthonormal basis for~$\scrT$.
-\item
 \end{enumerate}
 \begin{point}{Proof}%
 \ref{hilb-tensor-basic-1}\ 
@@ -1857,6 +1906,183 @@ Since similarly $\gamma(x,f)=\sum_{e\in\scrE} \left<e,x\right>\gamma(e,f)$
 for all~$f\in\scrF$,
 we see that~$\gamma(x,y)$
 is indeed in the closure of the span of~$\scrG$.\qed
+\end{point}
+\end{point}
+\begin{point}{Definition}%
+We'll say that a bilinear map $\eta\colon\scrH\times\scrK\to\scrL$
+between Hilbert spaces
+is \Define{$\ell^2$-bounded}
+by~$B\in [0,\infty)$
+when
+\begin{equation*}
+	\|\sum_{i}\beta(x_i,y_i)\|^2
+\leq B^2 \sum_{i,j}\left<x_i,x_j\right>\left<y_i,y_j\right>
+\end{equation*}
+for all~$x_1,\dotsc,x_n\in \scrH$
+and~$y_1,\dotsc,y_n\in\scrK$.
+\begin{point}{Remark}%
+We added the prefix ``$\ell^2$-''
+to clearly distinguish
+it from the boundedness
+of (sesquilinear) forms from~\sref{chilb-form},
+which one might call ``$\ell^\infty$-boundedness.''
+
+This distinction is needed
+since for example given a Hilbert space~$\scrH$ the
+bilinear map $(f,x)\mapsto f(x)\colon \scrH^*\times \scrH\to\C$
+is always $\ell^\infty$-bounded in the 
+sense that~$\left|f(x)\right|\leq \|f\|\|x\|$
+for all~$f\in\scrH^*$ and~$x\in\scrH$,
+but it is not~$\ell^2$-bounded
+when~$\scrH$ is infinite dimensional
+\end{point}
+\end{point}
+\begin{point}[hilb-tensor-universal-property]{Theorem}%
+A tensor product $\gamma\colon \scrH\times\scrK\to\scrT$
+of Hilbert spaces
+is $\ell^2$-bounded,
+and initial as such 
+in the sense
+that for any by $B\in [0,\infty)$ 
+$\ell^2$-bounded bilinear map $\beta\colon \scrH\times\scrK \to\scrL$
+into a Hilbert space~$\scrL$
+there is a unique bounded linear map $\beta_\gamma\colon\scrT
+\to\scrL$
+with $\beta_\gamma(\gamma(x,y))=\beta(x,y)$
+for all~$x\in\scrH$ and~$y\in\scrK$.
+Moreover, $\|\beta_\gamma\|\leq B$
+for such~$\beta$.
+\begin{point}{Proof}%
+Note that $\gamma$ is $\ell^2$-bounded,
+since
+for all~$x_1,\dotsc,x_n\in\scrH$,
+$y_1,\dotsc,y_n\in\scrK$,
+we have
+$\|\sum_i\gamma(x_i,y_i)\|^2
+= \sum_{i,j}\left<\gamma(x_i,y_i),
+\gamma(x_j,y_j)\right>
+= \sum_{i,j} \left<x_i,x_j\right>\left<y_i,y_j\right>$.
+
+Let~$\scrE$ and~$\scrF$
+be orthonormal bases
+for~$\scrH$ and~$\scrK$, respectively.
+Then since~$\{\,\gamma(e,f)\colon\,e\in\scrE,\,f\in\scrF\,\}$
+is an orthonormal basis for~$\scrT$
+by~\sref{hilb-tensor-basic},
+and~$\beta_\gamma$
+is fixed on it by~$\beta_\gamma(\gamma(e,f))=\beta(e,f)$,
+uniqueness of~$\beta_\gamma$ is clear.
+
+Concerning existence of~$\beta_\gamma$,
+note that
+since $t=\sum_{e\in\scrE,f\in\scrF} \left<\gamma(e,f),t\right>\gamma(e,f)$
+for all~$t\in\scrT$
+by~\sref{orthonormal},
+ we'd like to define~$\beta_\gamma$ by
+\begin{equation}
+	\label{tensor-universal-property-1}
+	\beta_\gamma(t) \ =\  
+	\hspace{-1em}
+	\sum_{e\in\scrE,\,f\in\scrF}
+	\hspace{-.5em}
+	\left<\gamma(e,f),t\right>\,\gamma(e,f);
+\end{equation}
+but before we can do this
+we must first check that this series converges.
+To this end,
+note that since~$\beta$ is $\ell^2$-bounded by~$B$
+we have, given~$t\in \scrT$,
+\begin{alignat*}{3}
+	\bigl\|\hspace{-.75em}\sum_{e\in E,\,f\in F}
+	\hspace{-.5em}
+\left< \gamma(e,f),t\right>\beta(e,f)
+\,\bigr\|^2
+\ &=\  
+\bigl\|\hspace{-.75em}
+\sum_{e\in E,\,f\in F}
+\hspace{-.5em}
+\beta(e,\,\left<\gamma(e,f),t\right>f\,)
+\,\bigr\|^2
+\\
+\ &\leq \  
+B^2\hspace{-1.5em}\sum_{e'\!\!,e\in E,\ f'\!\!,f\in F}
+\hspace{-1em}
+\left<e',e\right>\,
+\,\left<t,\gamma(e',f')\right>\,
+\left<f',f\right>\,\left<\gamma(e,f),t\right>
+\\
+\ &=\ 
+B^2\hspace{-.75em}\sum_{e\in E,\,f\in F}
+\hspace{-.5em}
+\left|\left<\gamma(e,f),t\right>\right|^2
+\end{alignat*}
+for all finite subsets $E\subseteq\scrE$
+and~$F\subseteq \scrF$.
+Since $\|t\|^2=\sum_{e\in \scrE,\,f\in\scrF}
+\left|\left<\gamma(e,f),t\right>\right|^2$
+by Parseval's identity (\sref{orthonormal}),
+we see
+that the series
+from~\eqref{tensor-universal-property-1}
+converges defining~$\beta_\gamma(t)$,
+and, moreover,
+that~$\|\beta_\gamma(t)\|^2\leq B^2\|t\|^2$.
+
+The resulting map $\beta_\gamma\colon \scrT\to\scrL$
+is clearly linear,
+and
+bounded by~$B$.
+Further,
+$\beta_\gamma(\gamma(e,f))=\beta(e,f)$
+for all~$e\in\scrE$ and~$f\in\scrF$
+implies
+that $\beta_\gamma(\gamma(x,y))=\beta(x,y)$
+for all~$x\in \scrH$ and~$y\in\scrK$,
+and so we're done.\qed
+\end{point}
+\end{point}
+\begin{point}{Exercise}%
+Show that the tensor product of Hilbert spaces~$\scrH$
+and~$\scrK$ is unique in the sense
+that given tensor products $\gamma\colon \scrH\times\scrK\to\scrT$
+and $\gamma'\colon\scrH\times\scrK\to\scrT'$
+there is a unique isometric linear isomorphism
+$\varphi\colon \scrT\to\scrT'$
+with $\gamma'(x,y) = \varphi(\gamma(x,y))$
+for all~$x\in\scrH$
+and~$y\in\scrK$.
+\end{point}
+\begin{point}{Notation}%
+Now that we've established
+that that the tensor product
+of Hilbert spaces~$\scrH$ and~$\scrK$
+exists and is unique (up to unique isomorphism)
+we just pick one and denote it by $\Define{\otimes}\colon
+\scrH\times\scrK\to\Define{\scrH\otimes\scrK}$.
+\end{point}
+\begin{point}{Proposition}%
+Given bounded linear maps
+$A\colon \scrH\to\scrH'$
+and~$B\colon \scrK\to\scrK'$
+between Hilbert spaces
+there is a unique bounded linear
+map 
+\begin{equation*}
+	\Define{A\otimes B}\colon \scrH\otimes\scrK\to\scrH'\otimes\scrK'
+\end{equation*}
+with $(A\otimes B)(x\otimes y)=(Ax)\otimes (By)$
+for all~$x\in\scrH$
+and~$y\in\scrK$.
+\begin{point}{Proof}%
+	\TODO{We use here that the Schur product
+		of positive matrices
+		is positive again.
+		We should relate with with the proofs of 
+\sref{product-states-are-positive}
+and~\sref{cp-bilinear}
+	}
+
+
 \end{point}
 \end{point}
 \begin{point}[special-tensor]{Theorem}%
@@ -1954,46 +2180,6 @@ using~\sref{ngns} and~\sref{spacial-tensor}.
 \subsection{Universal property}
 \begin{parsec}%
 \begin{point}%
-Before we bring our categorical faculties to bear
-upon the tensor product of von Neumann algebras
-it is perhaps appropriate
-to briefly recall the algebraic tensor product
-of vector spaces~$V$ and~$W$ first ---
-it is a vector space~$V\odot W$
-equipped
-with a bilear mapping~$\odot\colon V\times W\to V\odot W$
-which is  universal  
-in the sense that for every bilinear mapping~$\beta\colon V\times W\to Z$
-into some vector space~$Z$
-there is a unique linear map~$\beta_\odot\colon V\odot W\to Z$
-with~$\beta_\odot(v\odot w)=\beta(v,w)$
-for all~$v\in V$ and~$w\in W$.
-This property uniquely determines the algebraic tensor product in the sense
-that for any bilinear map~$\mathbin{\tilde\odot}\colon
- V\times W\to V\mathbin{\tilde\odot} W$
- into a vector space~$V\mathbin{\tilde \odot} W$
-which shares this property
-there is a unique linear isomorphism $\varphi\colon V\odot W\to V
-\mathbin{\tilde \odot} W$
-with $\varphi(v\odot w) = v\mathbin{\tilde\odot} w$
-for all~$v\in V$ and~$w\in W$.
-
-In fact, one may take this property as a neat abstract 
-definition of the algebraic
-tensor product.
-However, to  see that the darn thing actually exists,
-one still needs a concrete description
-such as this one:
-take given a basis~$B$ of~$V$ and a basis~$C$ of~$W$
-the bilinear map $\odot$ on~$V\times W$
-to the vector space $(B\times C)\cdot \C$ with basis~$B\times C$
-determined by~$b\odot c = (b,c)$
-for~$b\in B$ and~$c\in C$.
-This shows us not only that the algebraic tensor product
-exists,
-but also 
-that~$\odot$ is injective (among other things).
-
 This is all, of course, well known; the interesting thing here is that
 with some work one can see that
 a tensor product
