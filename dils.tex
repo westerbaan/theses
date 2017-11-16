@@ -4472,14 +4472,17 @@ For any such~$X \otimes Y$ we have the following.
 \begin{point}{Proof}%
 Pick orthonormal bases~$(e_i)_{i \in I}$ and~$(d_j)_{j \in J}$ of~$X$
     and~$Y$ respectively.
-Write~$p_{ij} = \left<e_i, e_i\right>\otimes \left<d_j,d_j\right>
+Write~$p_{ij} \equiv \left<e_i, e_i\right>\otimes \left<d_j,d_j\right>
     \in \scrA \otimes \scrB$.
-Define~$X \otimes Y = \ell^2((p_{ij})_{i,j \in I\times J})$,
-    see \sref{hilbmod-el2}.
+Define~$X \otimes Y \equiv \ell^2((p_{ij})_{i,j \in I\times J})$,
+    with~$\ell^2$ as in~\sref{hilbmod-el2}.
+This definition of~$X \otimes Y$ seems to depend
+    on the choice of bases~$(e_i)_i$ and~$(d_j)_h$.
+    We show it does not, in \sref{ext-tensor-uniqueness}.
 \begin{point}[ext-tensor-dfn-eta]{Definition~$\eta$}%
 Pick~$x \in X$ and~$y \in Y$.
-Write~$x_i = \left<e_i, x\right>$
-and~$y_j = \left<d_j, y\right>$.
+Write~$x_i \equiv \left<e_i, x\right>$
+and~$y_j \equiv \left<d_j, y\right>$.
 Then
 \begin{align*}
     \left<x,x\right> \otimes \left<y,y\right>
@@ -4489,8 +4492,8 @@ Then
             &\ = \ \sum_{i,j}  (x_i \otimes y_j)^* (x_i  \otimes y_j).
 \end{align*}
 Hence~$(x_i \otimes y_j)_{i,j}$ is~$\ell^2$-summable,
-    and so there is a unique~$\scrA \odot\scrB$-linear map
-    $\eta\colon X \odot Y \to X \otimes Y$ fixed
+    and so there is a unique~$\scrA \odot\scrB$-linear
+    map~$\eta\colon X \odot Y \to X \otimes Y$ fixed
     by~$\eta(x \otimes y) = (x_i \otimes y_j)_{i,j}$.
 \end{point}
 \begin{point}[ext-tensor-preserves-inner-prod]{$\eta$ preserves inner product}%
@@ -4510,9 +4513,10 @@ and
     \ = \ \left<x\otimes y,x' \otimes y'\right> .
 \end{equation*}
 Thus it is sufficient to show
-$\sum_{i,j} x_i^*x_i' \otimes y_j^* y_j'
+    $\sum_{i,j} x_i^*x_i' \otimes y_j^* y_j'
     = \bigl(\sum_i x_i^*x_i'\bigr) \otimes \bigl( \sum_j y_j^* y_j' \bigr)$,
-    which holds by \TODO{}.
+    which holds as the product np-functionals
+    are separating by definition, see \sref{tensor}.
 Thus indeed~$\eta$ preserves the inner product.
 \end{point}
 \begin{point}{$\eta$ is injective}%
@@ -4546,7 +4550,7 @@ which shows~$\eta$ is injective
     (and that the inner product on~$X \odot Y$ is definite).
 \end{point}
 \begin{point}[ultranorm-dense-tensor-base]{Image $\eta$ ultranorm dense}%
-For brevity, write~$E = \{ e_i \hotimes d_j; \ i,j \in I\times J\}$.
+For brevity, write~$E \equiv \{ e_i \hotimes d_j; \ i,j \in I\times J\}$.
 By~\TODO{} $\scrA \odot \scrB$ is ultrastrongly dense in~$\scrA \otimes \scrB$.
 So~$E (\scrA \odot \scrB)$
     is ultranorm dense in~$E (\scrA \otimes \scrB)$.
@@ -4560,7 +4564,7 @@ Hence the image of~$\eta$,
 \end{point}
 \begin{point}{Universal property}%
 Let~$Z$ be a self-dual~Hilbert $\scrA \otimes \scrB$-module
- with bounded~$\scrA \odot \scrB$-linear $T\colon X \odot Y \to Z$.
+ with some bounded~$\scrA \odot \scrB$-linear $T\colon X \odot Y \to Z$.
 If~$X \odot Y$ were an~$\scrA \otimes \scrB$-module
     \emph{and} both~$\eta$ and $T$ were~$\scrA \otimes \scrB$-linear,
     we could simply apply~\sref{selfdual-completion-univ}
@@ -4571,12 +4575,11 @@ Uniqueness of~$\hat{T}$ is the same:
     $\hat{T}$ is fixed by the ultranorm dense image of~$\eta$
     as it is bounded~$\scrA\otimes\scrB$-linear
     and so ultranorm continuous by \sref{blinear-bounded-is-ultranorm}.
-
 The argument for existence of~$\hat{T}$ is more subtle.
 We will show
 \begin{equation}\label{eq:exttensorcontT}
     \left<T t, T t\right> \leq \|T\|^2 [t,t]
-        \qquad \text{for all~$t \in X \odot Y$}.
+        \qquad \text{for all~$t \in X \odot Y$}
 \end{equation}
 as a replacement for the ultranorm continuity of~$T$.
 We cannot apply~\sref{blinear-inprod-inequality} directly:
@@ -4606,7 +4609,7 @@ Now we can apply the proof of~\sref{blinear-inprod-inequality}
     \|\overline{T}\|^2\left<s,s\right>$
     for~$s \in \overline{X \odot Y}$.
 Substituting~$s = \eta(t)$,
-    we get \eqref{eq:exttensorcontT} as desired.
+    we get \eqref{eq:exttensorcontT}.
 
 To define~$\hat{T}$, pick any~$t \in X \otimes Y$.
 As the image of~$\eta$ is ultranorm dense,
@@ -4677,7 +4680,7 @@ For~$E \geq E_0$ we have~$E \geq E_{f,\varepsilon}$ and so
 \end{equation*}
 So~$\hat{T}t^\alpha \to 0$ ultranorm, as desired.
 \end{point}
-\begin{point}{Uniqueness}%
+\begin{point}[ext-tensor-uniqueness]{Uniqueness}%
 Assume there is a self-dual Hilbert~$\scrA\otimes\scrB$-module~$X \otimes_2 Y$
     together with a injective
     inner product-preserving~$\scrA\odot\scrB$-linear
@@ -4715,7 +4718,8 @@ it is sufficient to show the right equality in
     \langle e_{i_0}\hotimes d_{j_0}, e_{i_0}\hotimes d_{j_0}\rangle
     \ =\  \sum_{i,j} a_i^*a_i \otimes b_j^*b_j,
     \end{equation*}
-    which indeed holds by~\TODO{prod states sep}.
+    which holds as product np-functionals are seperating
+    by definition, see~\sref{tensor}.
 \end{point}
 \begin{point}%
     Finally we prove that the liner span of
@@ -4866,7 +4870,7 @@ Thus by \sref{univprop-ext-tensor},
     there exists a unique map~$S \otimes T \colon X\otimes Y \to X\otimes Y$
     with~$(S \otimes T) (x \otimes y) = \Theta(x \otimes y)
         \equiv (S x) \otimes (Ty)$,
-        which is what we desired to proof. \qed
+        which is what we desired to prove. \qed
 \end{point}
 \end{point}
 \begin{point}[hilbmod-tensor-ketbra]{Exercise}%
@@ -4889,7 +4893,7 @@ operation~$\otimes$ defined in \sref{dfn-tensor-of-hilbmod-maps}, we have
                     \times E \times D\}
     \end{equation*}
         is ultranorm dense in~$X \otimes Y$
-        for some bases~$E$ of~$X$ and~$D$ of~$Y$.)
+        for any bases~$E$ of~$X$ and~$D$ of~$Y$.)
 
 \end{enumerate}
 \end{point}
@@ -4903,10 +4907,15 @@ We will show that
             \scrB^a(X) \times \scrB^a(Y) \to
     \scrB^a(X \otimes Y)$
     given by~$\Theta(S,T) = S \otimes T$
-    is a tensor product in the sense of \sref{tensor}.
-From this it follows by~\sref{tensor-uniqueness},
-that there is a
-    nmiu-isomorphism~$\vartheta\colon \scrB^a(X) \otimes \scrB^a(Y) \cong \scrB^a(X \otimes Y)$
+    is a tensor product in the sense of \sref{tensor}
+    using~\sref{tensor-characterization}.
+From this it follows
+    by~\sref{tensor-uniqueness},
+    that there is a
+    nmiu-isomorphism
+    \begin{equation*}
+    \vartheta\colon \scrB^a(X) \otimes \scrB^a(Y) \ \cong\  \scrB^a(X \otimes Y)
+    \end{equation*}
     with~$\vartheta(S\otimes T) = \Theta(S , T) = S \otimes T$, as promised.
 \begin{point}%
 From \sref{hilbmod-tensor-ketbra}, it follows~$\Theta$ is a miu-bilinear map.
@@ -4918,7 +4927,8 @@ By~\sref{univprop-ext-tensor}
         for a basis~$e_i \otimes d_j$ of~$X \otimes Y$.
         So the image of~$\Theta$ generates~$\scrB^a(X\otimes Y)$.
 \begin{point}%
-    It remains to be shown that there are sufficiently many product states.
+    It remains to be shown that there are sufficiently many product functionals
+    (see~\sref{tensor} for the definition of product functional).
     Write
     \begin{align*}
         \Omega_X &\ \equiv \ 
@@ -4984,7 +4994,7 @@ To compute the tensor product of Paschke dilations,
 \begin{point}[ultranorm-continuity-ext-tensor]{Lemma}%
 Assume~$\scrA$ and~$\scrB$ are von Neumann algebras.
 Let~$X$ be a self-dual Hilbert~$\scrA$-module
-    and~$Y$ be a self-dual Hilbert$\scrB$-module.
+    and~$Y$ be a self-dual Hilbert~$\scrB$-module.
 If~$x_\alpha \to x$ and~$y_\alpha \to y$ ultranorm
     for norm-bounded nets~$x_\alpha$ in~$X$ and~$y_\alpha$ in $Y$,
     then~$x_\alpha \otimes y_\alpha \to x \otimes y$
@@ -5388,7 +5398,7 @@ is a \Define{corner} for~$a \in [0,1]_\scrA$ if~$h(a)=h(1)$
     \begin{quote}
         for every (other) ncp-map $f\colon \scrA \to \scrC$
             with~$f(1)=f(a)$,
-            there is a unique ncp-map~$f'\colon \scrA \to \scrC$
+            there is a unique ncp-map~$f'\colon \scrB \to \scrC$
             with~$f = f' \after h$.
     \end{quote}
 \begin{point}{Remark}%
@@ -5442,7 +5452,7 @@ An ncp-map~$c \colon \scrA \to \scrB$
     \begin{quote}
         for every (other) ncp-map $f\colon \scrC \to \scrB$
             with~$f(1) \leq b$,
-            there is a unique ncp-map~$f'\colon \scrC \to \scrB$
+            there is a unique ncp-map~$f'\colon \scrC \to \scrA$
             with~$f = c \after f'$.
     \end{quote}
 \begin{point}{Remark}%
@@ -5457,7 +5467,7 @@ To avoid confusion with \cite{alfsen2012}
 \end{point}
 \end{point}
 \begin{point}{Example}%
-    The map~$c_b\colon \ceil{b} \scrB \ceil{b}$
+    The map~$c_b\colon \scrB \to \ceil{b} \scrB \ceil{b}$
         given by~$a \mapsto \sqrt{b} a \sqrt{b}$ is a filter
         of~$b\in \scrB$, $b\geq 0$.
     We call~$c_b$ the \Define{standard filter} of~$b$.
@@ -5505,9 +5515,9 @@ In general, $h = c \after h'$ for some filter~$c$ and corner~$h'$
 \end{enumerate}
 \end{point}
 \begin{point}{Remark}%
-By definition, pure maps are closed under composition.
+By definition, the set of pure maps is closed under composition.
 In the next chapter we will see (\sref{dagger-theorem}) that
-    there is a unique~$\dagger$
+    there is a unique dagger~$\dagger$
     which turns the subcategory of von Neumann
     algebras with pure maps into a~$\dagger$-category
     such that~$f^\dagger$ is contraposed to~$f$;
@@ -5526,13 +5536,13 @@ We will prove that a map is pure if and only if
 \begin{point}[paschke-corner]{Theorem}%
 Let~$\scrA$ be a von Neumann algebra together with a projection~$p \in \scrA$.
 Then a Paschke dilation of the standard corner~$h_p \colon \scrA \to p\scrA p$
-of~$p$ is given by~$(\cceil{p}\scrA, h_{\cceil{p}}, h_p)$.
+for~$p$ is given by~$(\cceil{p}\scrA, h_{\cceil{p}}, h_p)$.
 \begin{point}{Proof}%
 (This is a simplified proof of the result we published earlier.
     \cite[Thm.~28]{wwpaschke}.)
 Let~$(\scrA \otimes_{h_p} p\scrA p, \varrho, h)$
     denote the Paschke dilation constructed in~\sref{existence-paschke}.
-We proceed in roughly three steps:
+We proceed in three steps:
     first we show~$\scrA p$ is a self-dual Hilbert~$p\scrA p$-module,
     then we prove~$\scrA \otimes_{h_p} p\scrA p \cong \scrA p$
     and finally we show~$\scrB^a(\scrA p) \cong \cceil{p} \scrA$.
@@ -5559,7 +5569,7 @@ Concerning~$\scrA \otimes_{h_p} p \scrA p \cong \scrA p$,
     define~$B\colon \scrA \times  p \scrA p \to \scrA p$
     by~$B(\alpha, pap) = \alpha pap$.
 A straightforward computation
-    shows~$B$ is~$h_p$-compatible complex bilinear map
+    shows~$B$ is a~$h_p$-compatible complex bilinear map
     and so there is a unique bounded module
     map~$U \colon \scrA \otimes_{h_p} p \scrA p \to \scrA p$
    fixed by~$U \alpha \otimes pap = B(\alpha,pap) \equiv \alpha pap $.
@@ -5611,8 +5621,9 @@ The map~$\varrho_0$ is surjective:
 \end{equation*}
 Next we show~$\ceil{\varrho_0} = \cceil{p}$.
 It is sufficient to show that for each~$\alpha \in \scrA$ with $\alpha \geq 0$,
-    we have~$\alpha ap = 0$ for all~$a\in \scrA$ if and only if~$\alpha \cceil{p} = 0$
-    Clearly~$\alpha \cceil{p} = 0$ implies~$\alpha ap = \alpha \cceil{p} ap= 0$.
+    we have~$\alpha ap = 0$ for all~$a\in \scrA$ if and only if~$\alpha \cceil{p} = 0$.
+    Clearly,
+    $\alpha \cceil{p} = 0$ implies~$\alpha ap = \alpha \cceil{p} ap= 0$.
 For the converse, assume~$\alpha ap = 0$ for all~$a\in\scrA$.
 Then in particular~$\alpha u_ip = 0$,
     hence~$\alpha \cceil{p} = \alpha \sum_i u_iu_i^*  = \sum_i \alpha u_ipu_i^*=0$.
@@ -5655,7 +5666,7 @@ For the converse, assume~$\varphi$ is pure.
 For brevity, write~$p \equiv \ceil{\varphi}$.
 There is a unique ncp-map~$c$ with~$\varphi = c \after h_p$,
     where~$h_{\ceil{\varphi}}$ it the standard corner of~$p$.
-The map~$c$ is a compression,
+The map~$c$ is a filter,
     see \sref{square-f}.
 By \sref{paschke-corner},
     the triplet~$(\cceil{p}\scrA, h_{\cceil{p}}, h_p)$
