@@ -38,7 +38,7 @@ of Stinespring\cite[Thm.~1]{stinespring}.
         miu-map~$\varrho\colon \scrA \to \scrB(\scrK)$
         and bounded operator~$V\colon \scrH \to \scrK$
         such that~$\varphi = \ad_V \after \varrho$,
-        where~$\Define{\ad_V}\index{$\ad_V$} \colon \scrB(\scrK) \to \scrB(\scrH)$
+        where~$\Define{\ad_V}\index{$\ad_V$!Hilbert spaces} \colon \scrB(\scrK) \to \scrB(\scrH)$
         is given by~$\ad_V(T)\equiv V^*TV$.
 
 Furthermore:
@@ -182,7 +182,7 @@ Recall that two Cauchy
     such that~$\| v_n - w_n \| \leq \varepsilon$
     for all~$n \geq n_0$,
     where as usual $\|v\| \equiv \sqrt{[v,v]}$.
-Call a Cauchy sequence~$(v_n)_n$ \Define{fast}
+Call a Cauchy sequence~$(v_n)_n$ \Define{fast}\index{Cauchy sequence!fast}
     if for each~$n_0$
     we have~$\| v_n - v_m\| \leq \frac{1}{2^{n_0}}$
     for all~$n,m \geq n_0$.
@@ -583,7 +583,7 @@ Conclude all ncp-maps~$\varphi\colon \scrB(\scrH) \to \scrB(\scrK)$
 are of the form~$\varphi(a) = \sum_{i \in I} V_i^* a V_i$
 for some bounded operators~$V_i\colon \scrK \to \scrH$,
 for which the partial sums of~$\sum_i V_i^*V_i$ are bounded.
-These~$V_i$ are called \Define{Kraus operators} for~$\varphi$.
+These~$V_i$ are called \Define{Kraus operators}\index{Kraus operators} for~$\varphi$.
 
 Now assume~$\scrH$ and~$\scrK$ are finite dimensional,
     say~$\dim \scrH = n$ and~$\dim \scrK = m$.
@@ -598,7 +598,7 @@ Show that in this case
 Let~$\varphi\colon \scrA \to \scrB(\scrH)$
     be any ncp-map
     for some Hilbert space~$\scrH$ and von Neumann algebra~$\scrA$.
-A \Define{normal Stinespring dilation}
+    A \Define{normal Stinespring dilation}\index{Stinespring dilation}
     is a triplet~$(\scrK,\varrho, V)$
     with~$\scrK$ a Hilbert space,
     $\varrho\colon \scrA \to \scrB(\scrK)$ a nmiu-map
@@ -607,7 +607,7 @@ A \Define{normal Stinespring dilation}
         such that~$\varphi$ decomposes as~$\varphi = \ad_V \after \varrho$.
 We just saw every~$\varphi$ has a normal Stinespring dilation.
 A Stinespring dilation
-$(\scrK,\varrho,V)$ is said to be \Define{minimal}
+$(\scrK,\varrho,V)$ is said to be \Define{minimal}\index{Stinespring dilation!minimal}
 if the linear span of~$\{ \,\varrho(a) Vx; \ a \in \scrA,\ x\in \scrH\,\}$
 is dense in~$\scrK$.
 Every Stinespring dilation of~$\varphi$ can be restricted to a minimal one
@@ -837,7 +837,7 @@ $\xymatrix@C=2.5em@R=2em{
 \begin{point}[def-paschke]{Definition}%
     Let~$\varphi\colon \scrA \to \scrB$
         be any ncp-map.
-    A \Define{Paschke dilation} of~$\varphi$
+    A \Define{Paschke dilation}\index{Paschke dilation} of~$\varphi$
     is a triplet~$(\scrP, \varrho, h)$
     with a von Neumann algebra~$\scrP$;
     an nmiu-map $\varrho \colon \scrA \to \scrP$
@@ -1072,7 +1072,7 @@ As Hilbert C$^*$-modules are central to the present topic,
 \begin{point}{Definition}%
     Let~$\scrB$ be a C$^*$-algebra and~$X$
         be a right $\scrB$-module.
-        A \Define{$\scrB$-valued inner product} on~$X$
+        A \Define{$\scrB$-valued inner product}\index{$\scrB$-valued!inner product} on~$X$
         is a map~$\left<\,\cdot\,,\,\cdot\,\right>\colon X \times X \to \scrB$
         such that
         \begin{enumerate}
@@ -1082,15 +1082,15 @@ As Hilbert C$^*$-modules are central to the present topic,
                 for all~$x,y\in X$ \emph{and}
             \item $\left<x,x\right> \geq 0$ for all~$x \in X$.
         \end{enumerate}
-    A $\scrB$-valued inner product is called \Define{definite}
+        A $\scrB$-valued inner product is called \Define{definite}\index{$\scrB$-valued!inner product!definite}
         provided~$x = 0$ whenever~$\left<x,x\right>=0$.
-    A \Define{pre-Hilbert $\scrB$-module} $X$
+        A \Define{pre-Hilbert $\scrB$-module}\index{Hilbert $\scrB$-module!pre-} $X$
         is a right $\scrB$-module $X$
         together with a definite~$\scrB$-valued inner product.
 
-It will turn out~$\Define{\| x \|} = \| \left<x,x\right> \|^{\frac{1}{2}}$
+It will turn out~$\Define{\| x \|} = \| \left<x,x\right> \|^{\frac{1}{2}}$\index{$\|\ \|$!Hilbert module}
         defines a norm on a pre-Hilbert~$\scrB$-module $X$.
-A \Define{Hilbert $\scrB$-module}
+A \Define{Hilbert $\scrB$-module}\index{Hilbert $\scrB$-module}
     (also called a Hilbert C$^*$-module over~$\scrB$)
     is a pre-Hilbert~$\scrB$-module
     which is complete in this norm.
@@ -1137,8 +1137,8 @@ If~$X$ and~$Y$ are (pre-)Hilbert~$\scrB$-modules,
 Let~$X$ be a right~$\scrB$-module with~$\scrB$-valued inner
     product~$\left<\,\cdot\,,\,\cdot\,\right>$.
 For any positive functional~$f\colon \scrB \to \C$,
-    write~$\Define{\left<x,y\right>_f} = f(\left<x,y\right>)$
-    and~$\Define{\|x\|_f} = \smash{ \langle x,x\rangle^{\nicefrac{1}{2}}_f}$.
+write~$\Define{\left<x,y\right>_f} = f(\left<x,y\right>)$\index{$\langle \,\cdot\,,\,\cdot\,\rangle_f$!$\scrB$-module}
+and~$\Define{\|x\|_f} = \smash{ \langle x,x\rangle^{\nicefrac{1}{2}}_f}$\index{$\|\ \|_f$!$\scrB$-module}.
 This~$\left<\,\cdot\,,\,\cdot\,\right>_f$
     is a complex-valued inner product on~$X$.
 Hence, by~\sref{inner-product-basic},
@@ -1193,7 +1193,7 @@ are jointly uniformly continuous
 \end{point}
 \begin{point}{Definition}%
 Let~$V$ be a right $\scrB$-module.
-A~\Define{$\scrB$-sesquilinear form} on~$V$
+A~\Define{$\scrB$-sesquilinear form}\index{$\scrB$-valued!sesquilinear form} on~$V$
     is a map~$B\colon V\times V \to \scrB$
     such that for each~$y\in V$
     the maps~$x \mapsto B(y, x)$
@@ -1212,7 +1212,7 @@ In \sref{hilbmod-sesquilinear-forms}
 \end{point}
 \begin{point}[hilbmod-polarization]{Exercise}%
 Let~$B$ be a $\scrB$-sesquilinear form.
-Prove the \Define{polarization identity}:
+Prove the \Define{polarization identity}\index{polarization identity}:
 \begin{equation*}
     B(x,y) \ =\  \frac{1}{4} \sum_{k=0}^3 i^k B(i^k x + y, i^k x + y).
 \end{equation*}
@@ -1223,7 +1223,7 @@ Prove the \Define{polarization identity}:
 \begin{point}{Definition}%
 Let~$X$, $Y$ be pre-Hilbert~$\scrB$-modules.
 A linear map~$T\colon X \to Y$
-    is said to be \Define{adjointable}
+    is said to be \Define{adjointable}\index{adjointable}
     if there is a linear map~$S \colon Y \to X$
     such that~$\left<y, Tx\right>_Y = \left<Sy, x\right>_X$
     for all~$x \in X$ and~$y \in Y$.
@@ -1232,7 +1232,7 @@ Adjoints are unique:
     an easy computation shows~$\left<(S-S')y,(S-S)'y\right>=0$
     for all~$y \in Y$.
 We write \Define{$T^*$} for the adjoint of~$T$ (if it exists)
-    and~$\Define{\scrB^a(X)}$
+and~$\Define{\scrB^a(X)}$\index{$\scrB^a(X)$}
     for the subset of bounded operators on~$X$
     which are adjointable.
 \end{point}
@@ -1462,9 +1462,9 @@ We will refresh the basics of uniformities ---
 for a thorough treatment, see for instance \cite[Ch.~9]{willard}.
 \end{point}
 \begin{point}[dils-dfn-uniformity]{Definition}%
-    A \Define{uniform space} is a set~$X$
+    A \Define{uniform space}\index{uniform space} is a set~$X$
     together with a family of relations
-    $\Phi \subseteq \wp (X\times X)$ called \Define{entourages}
+    $\Phi \subseteq \wp (X\times X)$ called \Define{entourages}\index{entourages}
         satisfying the following conditions.
     \begin{enumerate}
     \item
@@ -1495,7 +1495,7 @@ for a thorough treatment, see for instance \cite[Ch.~9]{willard}.
         So, if~$x \mathrel\delta y$ then~$y \mathrel\varepsilon x$
             for any~$x,y \in X$.
     \end{enumerate}
-    A uniform space is \Define{Hausdorff}
+    A uniform space is \Define{Hausdorff}\index{uniform space!Hausdorff}
         whenever~$x \mathrel\varepsilon y$
             for all~$\varepsilon \in \Phi$
             implies that~$x=y$.
@@ -1528,7 +1528,7 @@ Write~$\Phi$ for the filter generated by~$B$
         iff~$\varepsilon_1 \cap \ldots \cap \varepsilon_n \subseteq \delta$
             for some~$\varepsilon_1, \ldots, \varepsilon_n \in B$).
 Show~$(X,\Phi)$ is a uniform space.
-We call~$B$ a \Define{subbase} for~$X$.
+We call~$B$ a \Define{subbase}\index{uniform space!subbase} for~$X$.
 \end{point}
 \begin{point}[dils-uniformity-examples]{Examples}%
 Using the previous exercise, it's easy
@@ -1564,10 +1564,10 @@ As a special case of the previous,
 Assume~$\scrB$ is a von Neumann algebra.
 There are several uniformities on~$\scrB$ --- two of which
     are of particular interest to us.
-The \Define{ultrastrong uniformity} on~$\scrB$
+    The \Define{ultrastrong uniformity}\index{uniformity!ultrastrong} on~$\scrB$
 is fixed by the seminorms~$\|b\|_f = f(b^*b)^{\frac{1}{2}}$
         where~$f\colon \scrB \to \C$ is an np-map.
-The \Define{ultraweak uniformity} on~$\scrB$
+        The \Define{ultraweak uniformity}\index{uniformity!ultraweak} on~$\scrB$
     is given by the seminorms~$|f(b)|$
         for np-maps~$f\colon \scrB \to \C$.
 
@@ -1584,7 +1584,7 @@ Assume~$X$ is a right $\scrB$-module
 We call the uniformity on~$X$
     given by seminorms~$\|x\|_f = f([x,x])^{\frac{1}{2}}$
     for np-maps~$f\colon \scrB \to \C$
-    the \Define{ultranorm uniformity}.
+    the \Define{ultranorm uniformity}\index{uniformity!ultranorm}.
 \begin{point}%
 The ultranorm uniformity will play a very similar r\^ole
     to the norm for Hilbert spaces.
@@ -1612,7 +1612,7 @@ It is easy to translate the familiar notions for
     metric spaces to uniform spaces.
 \begin{enumerate}
     \item A net~$(x_\alpha)_\alpha$ is said to
-            \Define{converge} to~$x$
+        \Define{converge}\index{uniform space!convergence} to~$x$
             if for each~$\varepsilon \in \Phi$
             there is an~$\alpha_0$
             such that for all~$\alpha > \alpha_0$
@@ -1620,22 +1620,22 @@ It is easy to translate the familiar notions for
 Note that a net can converge to two different points.
 Indeed, this is the case if we start of with a pseudometric
     that is not a metric.
-\item A net~$(x_\alpha)_\alpha$ is called \Define{Cauchy}
+\item A net~$(x_\alpha)_\alpha$ is called \Define{Cauchy}\index{Cauchy net}
         if for each~$\varepsilon \in \Phi$
             there is an~$\alpha_0$
             such that for all~$\alpha,\beta > \alpha_0$
             we have~$x_\alpha \mathrel\varepsilon x_\beta$.
-The uniform space $X$ is \Define{complete}
+            The uniform space $X$ is \Define{complete}\index{uniform space!complete}
     when every Cauchy net converges.
 \item
 Let~$(Y,\Psi)$ be any (other) uniform space.
 A map~$f\colon X \to X'$
-is said to be \Define{uniformly continuous}
+is said to be \Define{uniformly continuous}\index{uniform space!uniformly continuous}
 if for each~$\varepsilon \in \Psi$
 there is a~$\delta \in \Phi$
 such that for all~$x \mathrel\delta y$
 we have~$f(x) \mathrel\varepsilon f(y)$.
-The map~$f$ is merely \Define{continuous}
+The map~$f$ is merely \Define{continuous}\index{uniform space!continuous}
 if for each~$x$ and~$\varepsilon\in\Psi$,
 there is a~$\delta \in \Phi$
 such that for all~$x \mathrel{\delta} y$
@@ -1643,7 +1643,7 @@ we know~$f(x) \mathrel\varepsilon f(y)$.
 \item
 We say two Cauchy nets
 $(x_\alpha)_{\alpha\in I}$
-and$(y_\beta)_{\beta\in J}$ are \Define{equivalent},
+and$(y_\beta)_{\beta\in J}$ are \Define{equivalent}\index{Cauchy net!equivalent},
 in symbols: $(x_\alpha)_\alpha \sim (y_\beta)_\beta$,
 when for every~$\varepsilon \in \Phi$
 there are~$\alpha_0 \in I$ and~$\beta_0 \in J$
@@ -1651,7 +1651,7 @@ such that for all~$\alpha \geq \alpha_0$ and~$\beta \geq \beta_0$
 we have~$x_\alpha \mathrel\varepsilon x_\beta$.
 
 \item
-A subset~$D \subseteq X$ is said to be \Define{dense}
+    A subset~$D \subseteq X$ is said to be \Define{dense}\index{uniform space!dense}
     if for each~$\varepsilon \in \Phi$ and~$x \in X$,
     there is a~$y \in D$
     with~$x \mathrel\varepsilon y$.
@@ -1805,16 +1805,16 @@ for all~$x \in D$.
         for a von Neumann algebra~$\scrB$.
     Let~$E \subseteq X$ be some subset.
     \begin{enumerate}
-        \item $E$ is \Define{orthogonal} if~$\left<e,d\right> = 0$
+        \item $E$ is \Define{orthogonal}\index{orthogonal} if~$\left<e,d\right> = 0$
             for~$e,d \in E$ with~$e \neq d$.
-        \item $E$ is \Define{orthonormal} if additionally
+        \item $E$ is \Define{orthonormal}\index{orthonormal} if additionally
                     $\left<e,e\right>$ is a non-zero projection
                     for~$e \in E$.
         \item We say a sequence $(b)_{e \in E}$ in~$\scrB$
                 is \Define{$\ell^2$-summable}
                 if the partial sums of~$\sum_{e \in E} b_e^*b_e$
                 are bounded.
-        \item $E$ is an \Define{(orthonormal) basis} if
+        \item $E$ is an \Define{(orthonormal) basis}\index{(orthonormal) basis} if
                 it is orthonormal and additionally
             \begin{enumerate}
                 \item for each~$x \in X$ we have
@@ -1833,7 +1833,7 @@ for all~$x \in D$.
 \begin{point}[mod-parseval]{Exercise}
 Let~$X$ be a pre-Hilbert~$\scrB$-module for a von Neumann algebra~$\scrB$
     with an orthonormal basis~$E \subseteq X$.
-Show \Define{Parseval's identity} holds, that is:
+    Show \Define{Parseval's identity}\index{Parseval's identity} holds, that is:
 \begin{equation*}
     \langle x, x \rangle \ =\ 
     \sum_{e \in E} \langle x, e\rangle \langle e, x\rangle,
@@ -1847,7 +1847,7 @@ where the sum converges ultraweakly.
     For any pre-Hilbert~$\scrB$-module~$X$,
         the following conditions are equivalent.
         \begin{enumerate}
-            \item $X$ is \Define{self-dual} ---
+            \item $X$ is \Define{self-dual}\index{self-dual} ---
                 that is: for each~$\scrB$-linear~$\tau\colon X \to \scrB$
                 there is an~$t \in X$ such that~$\tau(x) = \left<t,x\right>$
                     for all~$x \in X$.
@@ -1980,7 +1980,7 @@ For any finite subset~$S \subseteq E$ we have
         x - \sum_{e \in S} e\left<e,x\right> \Bigr>
        \  =\  \left<x,x\right> - \sum_{e \in S} \left<x,e\right>\left<e,x\right>.
 \end{equation*}
-Rearranging we find \Define{Bessel's inequality}:
+Rearranging we find \Define{Bessel's inequality}\index{Bessel's inequality}:
 \begin{equation*}
 \sum_{e \in S} \left<x,e\right>\left<e,x\right>
    \  \leq \ \left<x,x\right>.
@@ -1993,7 +1993,7 @@ Consider~$x' = x - \sum_{e \in E} e\left<e,x\right>$.
 We are done if we can show~$x' = 0$.
 
 To see~$x'=0$, we
-first show that~$X$ has \Define{polar decomposition}:
+first show that~$X$ has \Define{polar decomposition}\index{polar decomposition}:
     for each~$y \in X$, there is an~$u\in X$
     with~$\left<u,u\right> = \ceil{\left<y,y\right>}$
         and~$y=u\left<y,y\right>^{\frac{1}{2}}$.
@@ -2337,7 +2337,7 @@ $\Phi$ is a filter and thus can be used as index set for a net
     (Thus~$\varepsilon \geq \delta
     \ \Leftrightarrow\ \varepsilon \subseteq \delta$.)
 We say a net~$(x_\alpha)_{\alpha \in \Phi}$  indexed by entourages
-    is \Define{fast} if for every~$\varepsilon \in \Phi$
+is \Define{fast}\index{Cauchy net!fast} if for every~$\varepsilon \in \Phi$
         and~$\alpha,\beta \geq \varepsilon$
         we have~$x_\alpha \mathrel{\varepsilon^2} x_\beta$.
 
@@ -2393,7 +2393,7 @@ For nets~$(x_\alpha)_{\alpha}$
     and~$(y_\alpha)_{\alpha}$ in~$N$,
     define
     \begin{equation*}
-        (x_\alpha)_\alpha \mathrel{\Define{\hat\varepsilon}}
+        (x_\alpha)_\alpha \mathrel{\Define{\hat\varepsilon}\index{epsi@$\hat\varepsilon$}}
             (y_\alpha)_\alpha
             \quad\Leftrightarrow\quad
         \exists \beta \in \Phi \, \forall \gamma \geq \beta. \ 
@@ -2509,7 +2509,7 @@ for some~$\varepsilon \in \Phi$.
 Instead we define for any~$\varepsilon \in \Phi$
 the following entourages on~$\overline{V}$:
 \begin{equation*}
-    (x_\alpha)_\alpha \mathrel{\Define{\tilde\varepsilon}}
+    (x_\alpha)_\alpha \mathrel{\Define{\tilde\varepsilon}\index{epsi@$\tilde\varepsilon$}}
     (y_\alpha)_\alpha \quad\Leftrightarrow\quad
     (x'_\alpha)_\alpha \mathrel{\hat\varepsilon}
     (y'_\alpha)_\alpha \quad
@@ -2639,7 +2639,7 @@ As sketched earlier,
     from~$V_0$ step-by-step.
 Call a subset~$W \subseteq \overline{V}$
 together with a~$\scrB$-valued inner product~$[\,\cdot\,,\,\cdot\,]$ a
-    \Define{compatible extension} if
+\Define{compatible extension} if
 \begin{enumerate}
 \item $V_0 \subseteq W$;
 \item $W$ is a $\scrB$-submodule of~$\overline{V}$;
@@ -2915,7 +2915,7 @@ which implies that~$\|\hat{T}\| \leq \|T\|$ as desired.
 \begin{point}{Definition}%
 Let~$V$ be a normed right $\scrB$-module.
 A sesquilinear form~$B\colon V\times V \to \scrB$
-    is said to be \Define{bounded}
+is said to be \Define{bounded}\index{$\scrB$-valued!sesquilinear form!bounded}
     if there is an~$r \geq 0$ such that
 $\|B(x,y)\| \leq r \|x\|\|y\|$
 for all~$x,y \in V$.
@@ -3075,7 +3075,7 @@ and consequently~$\scrB^a(X)$ is a von Neumann algebra. \qed
 \begin{point}[hilbmod-ad-ncp]{Proposition}%
 Assume~$T \colon X \to Y$ is an adjointable bounded module map
     between Hilbert~$\scrB$-modules.
-    Define $\Define{\ad_T}\colon \scrB^a(Y) \to \scrB^a(X)$
+    Define $\Define{\ad_T}\colon \scrB^a(Y) \to \scrB^a(X)$\index{$\ad_V$!Hilbert $\scrB$-modules}
     by~$\ad_T (B) = T^*BT$.
 The map~$\ad_T$ is completely positive.
 If~$X$ and~$Y$ are self-dual,
@@ -3122,7 +3122,7 @@ to show~$\varphi \colon \scrA \to M_n \scrA$
         von Neumann algebras.
     A complex bilinear map~$B \colon \scrA \times \scrB \to X$,
         where~$X$ is a self-dual Hilbert~$\scrB$-module is
-        called \Define{$\varphi$-compatible}
+        called \Define{$\varphi$-compatible}\index{$\varphi$-compatible}
         if there is a~$r > 0$
         such that for all~$n\in \N$, $a_1, \ldots, a_n \in \scrA$
         and~$b_1, \ldots, b_n \in \scrB$ we have
@@ -3470,11 +3470,11 @@ We will use it to give an alternative proof
 \begin{point}{Definition}%
 For linear  maps~$\varphi, \psi\colon \scrA \to \scrB$,
     we say $\varphi$ is ncp-below~$\psi$
-    (in symbols:~$\Define{\varphi \mathrel{\leq_\ncp} \psi}$)
+    (in symbols:~$\Define{\varphi \mathrel{\leq_\ncp} \psi}$\index{$\leq_\ncp$})
     whenever~$\psi - \varphi$ is an ncp-map.
     Furthermore, write
     \begin{equation*}
-    \Define{[0,\varphi]_\ncp} =\  
+        \Define{[0,\varphi]_\ncp}\index{$[0,\varphi]_\ncp$} =\  
         \{\psi; \ \psi \colon \scrA \to \scrB;
             \ 0 \leq_\ncp\psi \leq_\ncp \varphi \}.
     \end{equation*}
@@ -3483,7 +3483,7 @@ For linear  maps~$\varphi, \psi\colon \scrA \to \scrB$,
     Let~$\varphi\colon \scrA \to \scrB$ be any ncp-map with Paschke
         dilation~$(\scrP, \varrho, h)$.
         For~$t \in \varrho(\scrA)^\square$, the commutant of~$\varrho(\scrA)$,
-    define $\Define{\varphi_t} = h(t \varrho(a))$.
+        define $\Define{\varphi_t}\index{$\varphi_t$} = h(t \varrho(a))$.
 \end{point}
 \begin{point}[paschke-correspondence]{Theorem}%
 Assume~$\varphi\colon \scrA \to \scrB$ is an ncp-map
@@ -3782,7 +3782,7 @@ For self-dual Hilbert~$\scrB$-modules
 Let~$X$ be a Hilbert~$\scrB$-module.
 For any~$x, y \in X$,
 define the bounded operator~$\ketbra{x}{y} \in \scrB^a(X)$
-by~$\Define{\ketbra{x}{y}} z = x \left<y,z\right>$.
+by~$\Define{\ketbra{x}{y}}\index{$\ketbra{x}{y}$} z = x \left<y,z\right>$.
 \begin{point}%
 The following rules are easy to check.
 For~$x,y,v,w \in X$ and~$b \in \scrB$
@@ -3949,7 +3949,7 @@ Show that~$\kappa_1(E) \cup \kappa_2(F)$
 \begin{point}{Definition}%
 Let~$X$ be a Hilbert~$\scrB$-module
     with subset~$V \subseteq X$.
-Write~$\Define{V^\perp}$ for the \Define{orthocomplement} of~$V$, defined by
+    Write~$\Define{V^\perp}$ for the \Define{orthocomplement}\index{orthocomplement} of~$V$, defined by
 \begin{equation*}
     V^\perp = \{ x; \ x \in X;\ \left<x,v\right>=0\text{ for all }v\in V\}.
 \end{equation*}
@@ -4066,7 +4066,7 @@ In this exercise we prove \cite[Thm.~3.12]{paschke}.
 Let~$\scrB$ be a von Neumann algebra
     and~$(p_i)_{i \in I}$
     a sequence of projections from~$\scrB$.
-Write~$\Define{\ell^2((p_i)_{i \in I})}$
+    Write~$\Define{\ell^2((p_i)_{i \in I})}$\index{$\ell^2((p_i)_{i \in I})$}
     for the set of~$I$-tuples~$(b_i)_{i \in I}$
     from~$\scrB$ that are~$\ell^2$-summable (\sref{dfn-selfdual-basis})
     and furthermore~$\ceil{b_i^*b_i} \leq p_i$ for every~$i \in I$.
@@ -4431,7 +4431,7 @@ For any self-dual Hilbert $\scrA$-module $X$
     and self-dual Hilbert~$\scrB$-module $Y$,
     there is an up-to-isomorphism unique
     self-dual Hilbert~$\scrA\otimes \scrB$-module
-    $X \otimes Y$, called the \Define{(self-dual exterior) tensor product},
+    $X \otimes Y$, called the \Define{(self-dual exterior) tensor product}\index{tensor product!Hilbert $\scrB$-modules},
     together with a~$\scrA \odot \scrB$-linear injective
     inner product preserving map~$\eta \colon X \odot Y \to X\otimes Y$
     with the following universal property:
@@ -4796,7 +4796,7 @@ Let~$X$ be a self-dual Hilbert~$\scrA$-module
 \end{point}
 \begin{point}[dfn-tensor-of-hilbmod-maps]{Proposition}%
 For any operators~$S \in \scrB^a(X)$ and~$T \in \scrB^a(Y)$,
-    there is a unique operator~$\Define{S \otimes T} \in \scrB^a(X\otimes Y)$
+there is a unique operator~$\Define{S \otimes T} \in \scrB^a(X\otimes Y)$\index{$S \otimes T$}
     fixed by~$(S \otimes T) (x \otimes y) = (S x) \otimes (T y)$
     for any~$x\in X$ and~$y \in Y$.
 \begin{point}{Proof}%
@@ -5393,7 +5393,7 @@ We recall the definition of corner
 \end{point}
 \begin{point}[dils-corner]{Definition}%
 A ncp-map~$h \colon \scrA \to \scrB$
-is a \Define{corner} for~$a \in [0,1]_\scrA$ if~$h(a)=h(1)$
+is a \Define{corner}\index{corner} for~$a \in [0,1]_\scrA$ if~$h(a)=h(1)$
     and
     \begin{quote}
         for every (other) ncp-map $f\colon \scrA \to \scrC$
@@ -5414,7 +5414,7 @@ To help alleviate some confusion caused by the change of direction,
     The map~$h_a \colon \scrA \to \floor{a} \scrA \floor{a}$ given
     by~$b \mapsto \floor{a} b \floor{a}$
     is a corner of~$a \in [0,1]_\scrA$.
-We call~$h_a$ the \Define{standard corner} of~$a$.
+    We call~$h_a$ the \Define{standard corner}\index{corner!standard} of~$a$.
     See \sref{dfn-standard-corner-and-filter}, \sref{prop-corner}
         or \cite[Prop.~5]{westerbaan2016universal}.
 \end{point}
@@ -5447,7 +5447,7 @@ We recall the definition of filter, see \sref{filter}.
 \end{point}
 \begin{point}[dils-def-filter]{Definition}%
 An ncp-map~$c \colon \scrA \to \scrB$
-    is a \Define{filter} for~$b \in\scrB$, $b \geq 0$ if~$c(1)\leq b$
+is a \Define{filter}\index{filter} for~$b \in\scrB$, $b \geq 0$ if~$c(1)\leq b$
     and
     \begin{quote}
         for every (other) ncp-map $f\colon \scrC \to \scrB$
@@ -5470,7 +5470,7 @@ To avoid confusion with \cite{alfsen2012}
     The map~$c_b\colon \scrB \to \ceil{b} \scrB \ceil{b}$
         given by~$a \mapsto \sqrt{b} a \sqrt{b}$ is a filter
         of~$b\in \scrB$, $b\geq 0$.
-    We call~$c_b$ the \Define{standard filter} of~$b$.
+        We call~$c_b$ the \Define{standard filter}\index{filter!standard} of~$b$.
     See \sref{canonical-filter}, \sref{dfn-standard-corner-and-filter}
         or \cite[Prop.~6]{westerbaan2016universal}.
 \end{point}
@@ -5496,7 +5496,7 @@ Assume~$\varphi\colon \scrA \to \scrB$ is an ncp-map.
         in the more general case.)
 \end{point}
 \begin{point}{Definition}%
-Filters, corners and their compositions are called \Define{pure}.
+    Filters, corners and their compositions are called \Define{pure}\index{pure}.
 \end{point}
 \begin{point}[dils-examples-pure]{Examples}%
 Isomorphisms are pure.  Less trivial examples follow.
@@ -5690,7 +5690,7 @@ The order correspondence \sref{paschke-correspondence}
 \end{point}
 \begin{point}{Definition}%
 Assume~$\varphi\colon \scrA \to \scrB$ is an ncp-map.
-We say~$\varphi$ is \Define{ncp-extreme}
+We say~$\varphi$ is \Define{ncp-extreme}\index{ncp-extreme}
     if~$\varphi$ is an extreme point among
     the ncp-maps with the same value on~$1$ ---
     that is:
