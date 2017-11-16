@@ -1,8 +1,10 @@
 \documentclass[b5paper]{book}
 \input{common}
-\setcounter{parsec}{99} % TODO
+\setcounter{parsec}{129} % TODO
 \externaldocument{a}
 \usepackage{subfiles}
+
+\makeindex
 
 \title{Thesis}
 \author{B.E.}
@@ -13,6 +15,12 @@
 
 \subfile{dils}
 \subfile{eff}
+
+\backmatter
+\fancyfoot[CE]{}
+\fancyfoot[CO]{}
+
+\printindex
 
 \bibliography{main}{}
 \bibliographystyle{plain}

@@ -1,4 +1,5 @@
 \usepackage{cite}
+\usepackage{makeidx}
 \usepackage{xparse}
 \usepackage{relsize}
 \usepackage{bussproofs}
@@ -11,6 +12,7 @@
 \usepackage{multicol}
 \usepackage{marginnote}
 \usepackage{ifthen}
+\usepackage{xifthen}
 \usepackage{paralist}
 \usepackage{calc}
 \usepackage{tikz}
@@ -58,6 +60,7 @@
 \newcommand{\TODO}[1]{\textTodo{\textbf{TODO}:\ #1}}
 \newcommand{\REMARK}[1]{\textRemark{\textbf{[} #1 \textbf{]}}}
 \newcommand{\Define}[1]{\textDefine{#1}}
+
 \newcommand{\grayed}[1]{\textcolor{darkgray}{#1}}
 
 \renewcommand{\leq}{\leqslant}
@@ -267,6 +270,10 @@
 		\refstepcounter{point}%
 		\label{#1}%
 	}%
+    \renewcommand{\thepoint}{\theparsec\,\Roman{point}}%
+    \setcounter{point}{\value{point}-1}%
+    \refstepcounter{point}%
+    \label{parsec-\the\value{parsec}.\the\value{point}}%
 	\ifthenelse{\equal{\value{point}}{1}}{}{%
 		\ifthenelse{\equal{\value{pointdepth}}{1}}{%
 			\par\penalty-100\vskip.5em\noindent%
@@ -374,3 +381,12 @@
     }%
 }%
 
+% Index support for parsecs
+\def\parsechyperlink#1{\sref{parsec-#1}}
+\makeatletter
+\def\@wrindex#1{%
+   \protected@write\@indexfile{}%
+   {\string\indexentry{#1|parsechyperlink{\the\value{parsec}.\the\value{point}}}{\the\value{parsec}.\the\value{point}}}%
+ \endgroup
+ \@esphack}%
+\makeatother
