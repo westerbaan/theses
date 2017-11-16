@@ -1,0 +1,4 @@
+(define-attributes (("default" "textbf" "textit" "parsechyperlink")))
+(define-crossref-class "parsechyperlink")
+(markup-crossref-list :class "parsechyperlink" :sep ",\,")
+(markup-crossref-layer :open "\parsechyperlink{" :close "}" :class "parsechyperlink")
