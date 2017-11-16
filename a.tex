@@ -3,6 +3,9 @@
 \usepackage{subfiles}
 \externaldocument{a}
 \externaldocument{b}
+
+\makeindex
+
 \begin{document}
 \title{%
 \sffamily\color{darkblue}%
@@ -14,8 +17,12 @@ The Category of Von Neumann Algebras}
 \subfile{vn}
 \subfile{proc}
 
+\backmatter
+
 \fancyfoot[CE]{}
 \fancyfoot[CO]{}
+
+\printindex
 
 \bibliography{main}{}
 \bibliographystyle{plain}
