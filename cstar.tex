@@ -93,15 +93,15 @@ called \Define{multiplication}
 (and denoted as such),
 which is associative, and linear in both coordinates;
 \item
-an element~$1$, called%
+an element~$1$, called 
 \Define{unit}\index{unit!of a {$C^*$-algebra}},
 such that $1\cdot a = a = a\cdot 1$
 for all~$a\in \scrA$;
 \item
 a unary operation $\Define{(\,\cdot\,)^*}$,
-called \Define{involution}%
+called \Define{involution} %
 \index{$(\,\cdot\,)^*$ !involution on a $C^*$-algebra}%
-\index{involution!on a $C^*$-algebra}%
+\index{involution!on a $C^*$-algebra}
 such that $(a^*)^*=a$,
 $(ab)^*=b^*a^*$,
 $(\lambda a)^* = \bar\lambda a^*$,
@@ -305,7 +305,7 @@ We say that~$r\in [0,\infty)$
 is a \Define{bound}%
 \index{bound!for a linear map}
 for a linear map (=\Define{operator}%
-\index{operator (=linear map)}) 
+\index{operator}) 
 $T\colon \scrX\to\scrY$
 when  $\|Tx\|\leq r\|x\|$ for all~$x\in \scrX$,
 and we say that~$T$ is \Define{bounded}%
@@ -1225,40 +1225,52 @@ between $C^*$-algebras
 is called
 \begin{enumerate}
 \item
-\Define{\textbf{m}ultiplicative}
+\Define{\textbf{m}ultiplicative}%
+\index{multiplicative!map between $C^*$-algebras}
 if $f(ab)=f(a)f(b)$ for all $a,b\in\scrA$;
 \item
-\Define{\textbf{i}nvolution preserving}
+\Define{\textbf{i}nvolution preserving}%
+\index{involution preserving!map between $C^*$-algebras}
 if $f(a^*)=f(a)^*$ for all~$a\in\scrA$;
 \item
-\Define{\textbf{u}nital}
+\Define{\textbf{u}nital}%
+\index{unital!map between $C^*$-algebras}
 if $f(1)=1$;
 \item
-\Define{\textbf{s}ub\textbf{u}nital}
+\Define{\textbf{s}ub\textbf{u}nital}%
+\index{subunital map between $C^*$-algebras}
 if $f(1)\leq 1$;
 \item
-\Define{\textbf{p}ositive}
+\Define{\textbf{p}ositive}%
+\index{positive!map between $C^*$-algebras}
 if $f(a)$ is positive
 for every positive $a\in\scrA$, and
 \item
-\Define{\textbf{c}ompletely \textbf{p}ositive}
+\Define{\textbf{c}ompletely \textbf{p}ositive}%
+\index{completely positive!map between $C^*$-algebras}%
+\index{positive!completely $\sim$ map between $C^*$-algebras}
 if $\sum_{i,j} b_i^*\,f(\,a_i^*a_j\,)\,b_j$ is positive
 for all~$a_1,\dotsc,a_n\in \scrA$, and $b_1,\dotsc,b_n\in\scrB$.
 \end{enumerate}
 \begin{point}%
 We use the bold letters as abbreviations,
 so for instance,
-$f$ is \Define{pu} if it is positive and unital,
-and a \Define{miu-map}
+$f$ is \Define{pu}%
+\index{pu-map} if it is positive and unital,
+and a \Define{miu-map}%
+\index{miu-map}
 is a multiplicative, involution preserving,
 unital linear map between $C^*$-algebras
-(which is usually called a \Define{unital $*$-homomorphism}).
+(which is usually called a \Define{unital $*$-homomorphism}%
+\index{homomorphism@$*$-homomorphism}).
 
 We'll denote the category of $C^*$-algebras
-and miu-maps by~$\Define{\Cstar{miu}}$,
+and miu-maps by~$\Define{\Cstar{miu}}$,%
+\index{Cstar@$\Cstar{}$: $\Cstar{miu}$, $\Cstar{cpu}$, \dots}
 and
 the subcategory of commutative $C^*$-algebras
-by~$\Define{\cCstar{miu}}$.
+by~$\Define{\cCstar{miu}}$.%
+\index{cCstar@$\cCstar{}$: $\cCstar{miu}$, $\cCstar{pu}$,\dots}
 We'll use similar notation
 for the other classes of maps,
 but
@@ -1301,6 +1313,7 @@ and that every completely positive map is positive
 (in~\sref{astara-pos-basic-consequences}).
 \end{point}
 \begin{point}[cstar-product-2]{Exercise}%
+\index{product!in $\Cstar{miu}$ and $\cCstar{miu}$}
 Show that
 the product~$\bigoplus_{i\in I}\scrA_i$
 of
@@ -1326,6 +1339,7 @@ that an element~$a$ of $\bigoplus_i \scrA_i$
 is positive provided that each~$a(i)$ is positive.
 \end{point}
 \begin{point}[cstar-equalizer-1]{Exercise}%
+\index{equalizer!in~$\Cstar{pu}$ and $\cCstar{pu}$}
 Show that given miu-maps $f,g\colon \scrA\to\scrB$
 between $C^*$-algebras
 the collection $\scrE:=\{a\in\scrA\colon f(a)=g(a)\}$
@@ -1365,6 +1379,7 @@ then~$a$ is already invertible in~$\scrB$,
 see~\sref{inverse-permanence}.
 \end{point}
 \begin{point}[geometric]{Lemma}%
+\index{geometric series}%
 Let~$a$ be an element of a $C^*$-algebra~$\scrA$ with~$\|a\|<1$.
 Then~$a^\perp\equiv 1-a$ has an inverse,
 namely~$(a^\perp)^{-1}= \sum_{n=0}^\infty\, a^n$.
@@ -1408,7 +1423,8 @@ we see that $\sum_n a^n$ is the inverse of~$1-a$.\qed
 \end{point}
 \end{point}
 \end{point}
-\begin{point}[spectrum-bounded]{Exercise}
+\begin{point}[spectrum-bounded]{Exercise}%
+\index{invertible!element of a $C^*$-algebra}%
 Let~$a$ be an element of a $C^*$-algebra~$\scrA$.
 \begin{enumerate}
 \item
@@ -1423,6 +1439,7 @@ is an open subset of~$\scrA$.
 \end{enumerate}
 \end{point}
 \begin{point}[geometric-convergence]{Lemma}%
+\index{geometric series}%
 For a self-adjoint element~$a$ of~$\scrA$
 the series $\sum_n a^n$ 
 converges iff~$\|a\|<1$;
@@ -1573,9 +1590,11 @@ may be dropped.
 (Hint: consider $a^*a$; c.f.~Conway Proposition VIII.1.14.)
 \end{point}
 \begin{point}{Definition}%
-The \Define{spectrum} of an element $a$
+The \Define{spectrum}%
+of an element $a$
 of a $C^*$-algebra
-is the set \Define{$\spec(a)$}
+is the set \Define{$\spec(a)$}%
+\index{sp@$\spec$, spectrum!$\spec(a)$, of an element of a $C^*$-algebra}
 of complex numbers~$\lambda$
 for which~$a-\lambda$ is not invertible.
 \end{point}
@@ -1640,6 +1659,7 @@ be unnecessary
 by the following result.
 \end{point}
 \begin{point}[spectral-permanence]{Theorem (Spectral Permanence)}%
+\index{Spectral Permanence}%
 Let~$\scrB$ be a $C^*$-subalgebra of a $C^*$-algebra $\scrA$.
 Then~$\spec_{\scrA}(a)=\spec_\scrB(a)$
 for every element~$a$ of~$\scrB$.
@@ -1685,10 +1705,15 @@ which will only be needed to prove this fact.
 \begin{point}{Setting}%
 Fix a $C^*$-algebra~$\scrA$ for the remainder of this paragraph.
 For brevity,
-we'll say that a \Define{function}
+we'll say that a \Define{function}%
+\index{function!$\scrA$-valued \& partial}
 is a partially defined map $f\colon \C\to \mathscr{A}$
-whose domain of definition $\dom(f)$ is an open subset of~$\C$.
-Such a function is called \Define{holomorphic} at a point~$z\in \C$
+whose domain of definition $\dom(f)$%
+\index{dom@$\dom(f)$, domain of an $\scrA$-valued partial function}
+is an open subset of~$\C$.
+Such a function is called \Define{holomorphic} at a point~$z\in \C$%
+\index{function!holomorphic (at~$z$)}%
+\index{holomorphic function}
 if $f$ is defined on~$z$,
 and 
 \begin{equation*}
@@ -1703,7 +1728,9 @@ We say that~$f$ is \Define{holomorphic}
 if~$f$ is holomorphic at~$x$ for all~$x\in \dom(f)$,
 and the function $z\mapsto f'(z)$
 with $\dom(f')=\dom(f)$
-is called its \Define{derivative}.
+is called its \Define{derivative}.%
+\index{derivative of a holomorphic function}%
+\index{$(\,\cdot\,)'$!$f'$, derivative of a holomorphic function}
 \end{point}
 \begin{point}{Exercise}%
 Verify the following examples of holomorphic functions.
@@ -1743,6 +1770,7 @@ the holomorphic $\scrA$-valued function
 given by a power series  $\sum_n a_n z^n$.
 \end{point}
 \begin{point}[hadamard]{Theorem}%
+\index{power series}%
 Let~$a_1,a_2,\dotsc\in\scrA$
 be given,
 and write~$R:=(\limsup_n \|a_n\|^{\nicefrac{1}{n}})^{-1}$.
@@ -1756,7 +1784,8 @@ when~$\left|z\right| < R$, and
 if~$\sum_n a_n z^n$ converges,
 then~$\left|z\right|\leq R$.
 \end{enumerate}
-(The number~$R\in[0,\infty]$ is called the \Define{radius of convergence}
+(The number~$R\in[0,\infty]$ is called the \Define{radius of convergence}%
+\index{radius of convergence}
 of the series $\sum_n a_n z^n$.)
 \begin{point}{Proof}%
 Suppose that $\left|z\right|<R$.
@@ -1938,7 +1967,8 @@ line segments.
 \begin{point}{Exercise}%
 We're going to define as quickly as possible
 an integral~$\int f $
-for every continuous map $f\colon [0,1]\to\scrA$.
+for every continuous map $f\colon [0,1]\to\scrA$.%
+\index{S@$\int$, integral!$\int f$, of continuous $f\colon [0,1]\to \scrA$}%
 Recall that an interval~$I$
 in~$[0,1]$
 is of one of the following forms
@@ -2029,12 +2059,14 @@ is now defined as.
 \ = \ 
 (w'-w)\int_0^1f(\,w+t(w'-w)\,)\,dt
 \end{equation*}
-We'll also need integration along a triangle~$T$,
+\index{S@$\int$, integral!of continuous $f\colon \C\to\scrA$!$\int_w^{w'} f$, over an interval}%
+We'll also need integration along a triangle~$T$,%
+\index{triangle, for our purposes}
 which is for this  purpose a tuple of three 
 complex numbers~$w_0,w_1,w_2$
 (of which the order \emph{does} matter)
 called the
-\Define{vertices} of~$T$.
+\Define{vertices} of~$T$.%
 The \Define{boundary} of
 such a triangle~$T$
 is $\Define{\partial T}
@@ -2048,6 +2080,7 @@ we define
 \,+\, \int_{w_1}^{w_2} f
 \,+\, \int_{w_2}^{w_3} f.
 \end{equation*}
+\index{S@$\int$, integral!of continuous $f\colon \C\to\scrA$!$\int_T f$, over a triangle}%
 We'll need some more terminology
 relating to our triangle~$T$.
 Its \Define{closure},
@@ -2068,9 +2101,10 @@ around a point $z\in \C\backslash \partial T$
 in the counterclockwise direction
 is
 called the 
-\Define{winding number},
+\Define{winding number}%
 is
-written $\Define{\mathrm{wn_T}(z)}$,
+written $\Define{\mathrm{wn_T}(z)}$,%
+\index{wn@$\mathrm{wn_T}$, winding number}
 is either $1$ or~$-1$ when~$z\in\mathrm{in}(T)$
 (depending on the order of the vertices),
 and is~$0$ when~$z\notin\mathrm{in}(T)$.
@@ -2088,6 +2122,7 @@ later on,
 see~\sref{invint}.
 \end{point}
 \begin{point}[goursat]{Goursat's Theorem}%
+\index{Goursat's Theorem}%
 Let~$f$ be a holomorphic function,
 and let~$T$ be a triangle whose closure
 is entirely contained in~$\dom(f)$.
@@ -2296,6 +2331,7 @@ to regular $N$-gons.
 \end{parsec}%
 \begin{parsec}%
 \begin{point}[cauchy-formula]{Theorem (Cauchy's Integral Formula)}%
+\index{Cauchy's Integral Formula}%
 Let~$f$ be a holomorphic $\scrA$-valued function
 which is defined on the interior and boundary
 of some regular $N$-gon 
@@ -2467,7 +2503,8 @@ we have
 \,\lambda\in \spec(a)\,\}.
 \end{equation*}
 (The quantity on the right hand-side above
-is called the \Define{spectral radius} of~$a$.)
+is called the \Define{spectral radius} of~$a$.)%
+\index{spectral radius}
 \begin{point}{Proof}%
 Write~$r=
 \sup\{\left|\,\lambda\right|\colon\, \lambda\in \spec(a)\backslash\{0\}\,\}$
@@ -2546,6 +2583,7 @@ Given a self-adjoint element~$a$ of a $C^*$-algebra~$\scrA$
 show that $\spec(a) =\{\lambda\}$ iff $a=\lambda$ for every $\lambda \in\R$.
 \end{point}
 \begin{point}{Exercise (Gelfand--Mazur's Theorem for $C^*$-algebras)}%
+\index{Gelfand--Mazur's Theorem}%
 Prove that if every non-zero element of a $C^*$-algebra~$\scrA$
 is invertible, then~$\scrA=\C$ or~$\scrA=\{0\}$.
 \end{point}
@@ -2619,6 +2657,7 @@ iff $\left|\lambda-t\right|\leq t$ for all~$\lambda\in\spec(a)$
 iff $\spec(a)\subseteq [0,2t]$ (by \sref{real-pos-ineq}).\qed
 \end{point}
 \begin{point}[cstar-positive-1]{Exercise}%
+\index{positive!element of a $C^*$-algebra}%
 Show
 (using~\sref{pos-spectrum} and~\sref{spectrum-basic})
 that
