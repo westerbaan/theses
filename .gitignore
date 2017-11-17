@@ -1,4 +1,5 @@
 *.log
+*.ilg
 *.aux
 *.make
 *.toc

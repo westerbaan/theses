@@ -83,7 +83,7 @@ topic of the next chapter.
 \section{Definition and examples}
 \begin{parsec}%
 \begin{point}{Definition}%
-A \Define{$C^*$-algebra}
+A \Define{$C^*$-algebra}\index{Cstar-algebra@$C^*$-algebra}
 is a complex vector space~$\scrA$
 endowed with
 \begin{enumerate}
@@ -93,19 +93,24 @@ called \Define{multiplication}
 (and denoted as such),
 which is associative, and linear in both coordinates;
 \item
-	an element~$1$, called \Define{unit},
+an element~$1$, called%
+\Define{unit}\index{unit!of a {$C^*$-algebra}},
 such that $1\cdot a = a = a\cdot 1$
 for all~$a\in \scrA$;
 \item
-a unary operation $(\,\cdot\,)^*$,
-called \Define{involution},
+a unary operation $\Define{(\,\cdot\,)^*}$,
+called \Define{involution}%
+\index{$(\,\cdot\,)^*$ !involution on a $C^*$-algebra}%
+\index{involution!on a $C^*$-algebra}%
 such that $(a^*)^*=a$,
 $(ab)^*=b^*a^*$,
 $(\lambda a)^* = \bar\lambda a^*$,
 and $(a+b)^* = a^*+b^*$
 for all~$a,b\in\scrA$ and~$\lambda\in \C$;
 \item
-a complete \Define{norm} $\|\,\cdot\,\|$
+a complete \Define{norm}%
+\index{$"\"|\,\cdot\,"\"|$, norm!on a $C^*$-algebra}
+$\Define{\|\,\cdot\,\|}$
 such that
 $\|ab\|\leq\|a\|\|b\|$
 for all~$a,b\in\scrA$,
@@ -114,19 +119,23 @@ and
 \label{eq:Cstar-identity}
 \|a^*a\|\ =\ \|a\|^2
 \end{equation*}
-holds; this equality is called the \Define{$C^*$-identity}.
+holds; this equality is called the \Define{$C^*$-identity}.%
+\index{Cstar-identity@$C^*$-identity}
 \end{enumerate}
-The $C^*$-algebra $\scrA$ is called \Define{commutative}
+The $C^*$-algebra $\scrA$ is called \Define{commutative}%
+\index{commutative $C^*$-algebra}
 if $ab=ba$ for all~$a,b\in\scrA$.
 \begin{point}{Warning}%
 In the literature it is usually not
 required that a $C^*$-algebra
 possess a unit; but when it does it is called
-a \Define{unital $C^*$-algebra}.
+a \Define{unital $C^*$-algebra}.%
+\index{unital!$C^*$-algebra}
 \end{point}
 \end{point}
 \begin{point}{Example}%
-The vector space~$\C$ of \Define{complex numbers}
+The vector space~$\C$ of \Define{complex numbers}%
+\index{C@$\C$, the complex numbers!as a $C^*$-algebra}
 forms a commutative  $C^*$-algebra
 in which
 multiplication and~$1$
@@ -135,7 +144,8 @@ Involution is given by conjugation ($z^*=\bar{z}$),
 and norm by modulus ($\|z\|=|z|$).
 \end{point}
 \begin{point}{Example}%
-A \Define{$C^*$-subalgebra}
+A \Define{$C^*$-subalgebra}%
+\index{Cstar-subalgebra@$C^*$-subalgebra}
 of a $C^*$-algebra~$\scrA$
 is a subset~$\scrB$ of~$\scrA$,
 which is a linear subspace of~$\scrA$,
@@ -152,7 +162,9 @@ One can form products (in the categorical sense,
 see~\sref{cstar-product-2}) of $C^*$-algebras as follows.
 Let~$\scrA_i$ be a $C^*$-algebra
 for every element~$i$ of some index set~$I$.
-The \Define{direct product}
+The \Define{direct sum}%
+\index{direct sum!of $C^*$-algebras}
+\index{$\bigoplus$, direct sum!$\bigoplus_i \scrA_i$, of $C^*$-algebras}
 of the family $(\scrA_i)_i$
 is the $C^*$-algebra
 denoted by \Define{$\bigoplus_{i\in I}\scrA_i$} on the set
@@ -163,7 +175,10 @@ a\in \prod_{i\in I}\scrA_i\colon\  \sup_{i \in I} \|a(i)\|< \infty \
 \bigr\}
 \end{equation*}
 whose operations are defined coordinatewise,
-and whose norm is a \Define{sup-norm} given by $\|a\|=\sup_{i}\|a(i)\|$.
+and whose norm is a \Define{supremum norm}%
+\index{supremum norm}%
+\index{$"\"|\,\cdot\,"\"|$, norm!supremum $\sim$}
+given by $\|a\|=\sup_{i}\|a(i)\|$.
 If each~$\scrA_i$ is commutative,
 then~$\bigoplus_{i\in I}\scrA_i$
 is commutative.
@@ -171,21 +186,27 @@ is commutative.
 In particular,
 taking~$\scrA_i\equiv \C$,
 we see that
-the vector space~\Define{$\ell^\infty(X)$} of bounded complex-valued functions
+the vector space~\Define{$\ell^\infty(X)$}%
+\index{linfty@$\ell^\infty(X)$}%
+\index{linfty@$\ell^\infty(X)$!as a $C^*$-algebra}
+of bounded complex-valued functions
 on a set~$X$ forms a commutative $C^*$-algebra
-with pointwise operations and sup-norm.
+with pointwise operations and supremum norm.
 \end{point}
 \begin{point}{Example}%
 The \Define{bounded continuous functions
 on a topological space}~$X$
-form a commutative $C^*$-subalgebra~\Define{$BC(X)$}
+form a commutative $C^*$-subalgebra~\Define{$BC(X)$}%
+\index{$BC(X)$! as a $C^*$-algebra}
 of~$\ell^\infty(X)$ (see above).
 In particular,
 since a continuous function on a compact Hausdorff space is 
 automatically bounded,
 we see that the \Define{continuous functions
 on a compact Hausdorff space} $X$
-form a commutative $C^*$-algebra~\Define{$C(X)$}
+form a commutative $C^*$-algebra~\Define{$C(X)$}%
+\index{$C(X)$}%
+\index{$C(X)$!as a $C^*$-algebra}
 with pointwise operations and sup-norm.
 We'll see that every commutative $C^*$-algebra
 is isomorphic to a~$C(X)$
@@ -195,7 +216,8 @@ in~\sref{gelfand}.
 An example of a non-commutative
 $C^*$-algebra
 is
-the vector space~\Define{$M_n$}
+the vector space~\Define{$M_n$}%
+\index{$M_n$, the $n\times n$-matrices!as a $C^*$-algebra}
 of \Define{$n\times n$-matrices} ($n>1$) over~$\C$
 with the usual (matrix) multiplication,
 the identity matrix as unit,
@@ -232,6 +254,7 @@ in the sense that $\left<v,Aw\right> = \left<A^*v,w\right>$
 for all~$v,w\in\C^n$.
 \end{point}
 \begin{point}{Remark}%
+\index{Cstar-algebra@$C^*$-algebra!finite dimensional}
 Combining~\sref{cstar-product}
 and~\sref{cstar-matrices-example}
 we see that
@@ -257,7 +280,8 @@ does not seem to be an immediate consequence of it.}
 \begin{point}[example-hilb]{Example}%
 Let us now turn to perhaps the most important
 and difficult example:
-we'll show that the vector space~\Define{$\scrB(\scrH)$} 
+we'll show that the vector space~\Define{$\scrB(\scrH)$}%
+\index{BH@$\scrB(\scrH)$!as a $C^*$-algebra}
 of \Define{bounded operators
 on a Hilbert space}~$\scrH$ forms a $C^*$-algebra
 when endowed with the operator 
@@ -265,8 +289,11 @@ norm.
 Multiplication is given by composition,
 involution by taking the \emph{adjoint} (see~\sref{hilb-def}),
 and unit by the identity operator.
-A \Define{concrete $C^*$-algebra} or
-a \Define{$C^*$-algebra of bounded operators} 
+A \Define{concrete $C^*$-algebra}%
+\index{Cstar-algebra@$C^*$-algebra!concrete}
+or
+a \Define{$C^*$-algebra of bounded operators}%
+\index{Cstar-algebra@$C^*$-algebra!of bounded operators}
 refers to a $C^*$-subalgebra of~$\scrB(\scrH)$.
 We will eventually see that every $C^*$-algebra is isomorphic to a $C^*$-algebra
 of bounded operators in~\sref{gelfand-naimark}.
@@ -275,19 +302,27 @@ of bounded operators in~\sref{gelfand-naimark}.
 Let~$\scrX$ and~$\scrY$ be normed
 vector spaces.
 We say that~$r\in [0,\infty)$
-is a \Define{bound} for a linear map (=\Define{operator}) 
+is a \Define{bound}%
+\index{bound!for a linear map}
+for a linear map (=\Define{operator}%
+\index{operator (=linear map)}) 
 $T\colon \scrX\to\scrY$
 when  $\|Tx\|\leq r\|x\|$ for all~$x\in \scrX$,
-and we say that~$T$ is \Define{bounded}
+and we say that~$T$ is \Define{bounded}%
+\index{bounded!operator}
 when there is such a bound.
 In that case~$T$ has a least bound,
-which is called the \Define{operator norm} of~$T$,
+which is called the \Define{operator norm}%
+\index{operator norm}%
+\index{$"\"|\,\cdot\,"\"|$, norm!of an operator} of~$T$,
 and is denoted by~$\Define{\|T\|}$.
 The vector space of bounded operators
 from~$\scrX$ to~$\scrY$
-is denoted by~$\scrB(\scrX,\scrY)$,
+is denoted by~$\Define{\scrB(\scrX,\scrY)}$,%
+\index{BXY@$\scrB(\scrX,\scrY)$}
 and the vector space of bounded operators
-from~$\scrX$ to itself is denoted by~$\scrB(\scrX)$.
+from~$\scrX$ to itself is denoted by~$\scrB(\scrX)$.%
+\index{BX@$\scrB(\scrX)$}
 \end{point}
 \begin{point}[bounded-operators-basic]{Exercise}%
 Let~$\scrX$, $\scrY$ and~$\scrZ$ be normed complex vector spaces.
@@ -369,29 +404,35 @@ we need the additional structure
 provided by a Hilbert space as follows.
 \end{point}
 \begin{point}[hilb-def]{Definition}%
-An \Define{inner product}
+An \Define{inner product}%
+\index{inner product!$\C$-valued}
 on a complex vector space~$V$ 
-is a map $\left<\,\cdot\,,\,\cdot\,\right>\colon V\times V\to \C$
+is a map $\left<\,\cdot\,,\,\cdot\,\right>\colon V\times V\to \C$%
+\index{$\left<\,\cdot\,,\,\cdot\,\right>$, inner product!$\C$-valued}
 such that,
 for all~$x,y\in V$,
 $\left<x,\,\cdot\,\right>\colon V\to V$ is linear;
 $\left<x,x\right>\geq 0$;
 and
 $\left<x,y\right>=\overline{\left<y,x\right>}$.
-We say that the inner product is \Define{definite}
+We say that the inner product is \Define{definite}%
+\index{inner product!$\C$-valued!definite}
 when~$\left<x,x\right>=0\implies x=0$ for~$x\in V$.
-A \Define{pre-Hilbert space}~$\scrH$
+A \Define{pre-Hilbert space}~$\scrH$%
+\index{pre-Hilbert space}
 is a complex vector space endowed with a definite inner product.
 We'll shortly see that every such~$\scrH$
 carries a norm
 given by
  $\|x\|:= \left<x,x\right>^{\nicefrac{1}{2}}$;
 if~$\scrH$ is complete with respect to this norm,
-we say that~$\scrH$ is a \Define{Hilbert space}.
+we say that~$\scrH$ is a \Define{Hilbert space}.%
+\index{Hilbert space}
 
 Let~$\scrH$ and~$\scrK$ be pre-Hilbert spaces.
 We say that a operator~$T\colon \scrH\to \scrK$
-is \Define{adjoint}
+is \Define{adjoint}%
+\index{adjoint of an operator}
 to a operator
 $S\colon \scrK\to \scrH$ 
 when
@@ -399,20 +440,25 @@ when
 \left<Tx,y\right> \ = \ \left<x,Sy\right>
 \qquad\text{for all $x\in \scrH$ and $y\in \scrK$.}
 \end{equation*}
-In that case, we call~$T$ \Define{adjoinable}.
+In that case, we call~$T$ \Define{adjoinable}.%
+\index{adjointable!operator}%
+\index{operator!adjointable}
 We'll see (in~\sref{uniqueness-adjoint})
 that such adjoinable~$T$ is adjoint to exactly one~$S$,
-which we denote by~\Define{$T^*$}.
+which we denote by~\Define{$T^*$}.%
+\index{$(\,\cdot\,)^*$!adjoint of an operator}
 \end{point}
 \begin{point}[hilb-basic-examples]{Example}%
-We endow $\C^N$
+We endow $\C^N$%
+\index{C@$\C$, the complex numbers!as a Hilbert space}
 (where~$N$ is a natural number)
 with the inner product
 given by
 $\left<x,y\right>=\sum_i \overline{x}_iy_i$,
 making it a Hilbert space.
 
-The space~$\Define{c_{00}}$
+The space~$\Define{c_{00}}$%
+\index{c00@$c_{00}$!as a pre-Hilbert space}
 of sequences $x_1,x_2,\dotsc$
 for which~$x_n$ is non-zero
 for finitely many~$n$'s
@@ -430,7 +476,8 @@ where
 we'll show
 that the sequences $x_1,x_2,\dotsc$
 with $\sum_n \left|x_n\right|^2<\infty$
-form a Hilbert space~$\Define{\ell_2}$
+form a Hilbert space~$\Define{\ell^2}$%
+\index{l2@$\ell^2$!as a Hilbert space}
 with $\left<x,y\right>=\sum_{n=0}^\infty \overline{x}_ny_n$
 as its inner product,
 because at this point it is not
@@ -548,20 +595,24 @@ is definite;
 and for~$x,y\in V$:
 \begin{enumerate}
 \item
-The \Define{Cauchy--Schwarz inequality}:
+The \Define{Cauchy--Schwarz inequality}:%
+\index{Cauchy--Schwarz inequality}
 $\left|\left<x,y\right>\right|^2\,\leq\, \left<x,x\right>
 \,\left<y,y\right>$;
 \item
-\Define{Pythagoras' theorem}:
+\Define{Pythagoras' theorem}:%
+\index{Pythagoras' theorem}
 $\|x\|^2+\|y\|^2\,=\,\|x+y\|^2$ when~$\left<x,y\right>=0$;
 \item
-The \Define{parallelogram law}:
+The \Define{parallelogram law}:%
+\index{parallelogram law}
 $\|x\|^2\,+\,
 \|y\|^2
 \,= \,
 \frac{1}{2}(\,\|x+y\|^2\,+\,\|x-y\|^2\,)$;
 \item
-The \Define{polarization identity}:
+The \Define{polarization identity}:%
+\index{polarization identity!for an inner product}
 $\left<x,y\right> \,=\, \frac{1}{4}\sum_{n=0}^3i^n\|i^nx+y\|^2$.
 \end{enumerate}
 
@@ -609,7 +660,8 @@ Let~$x$ and~$y$ be vectors from a Hilbert space~$\scrH$.
 \begin{enumerate}
 \item
 Show that $\Define{\ketbra{x}{y}}\colon\, z\mapsto\left<y,z\right>x,\,
-\scrH\to\scrH$
+\scrH\to\scrH$%
+\index{*ketbra@$\ketbra{x}{y}$}
 defines a bounded operator,
 and, moreover, that~$\|\,\ketbra{x}{y}\,\|=\|x\|\|y\|$.
 \item
@@ -636,7 +688,8 @@ on (closed) linear subspaces:
 \begin{point}[projection-on-closed-linear-subspace]{Definition}
 Let~$x$ be an element of a pre-Hilbert space~$\scrH$.
 We say that an element~$y$ of a linear subspace~$C$
-of~$\scrH$ is a \Define{projection of~$x$ on~$C$}
+of~$\scrH$ is a \Define{projection of~$x$ on~$C$}%
+\index{projection!of~$x$ on~$C$}
 if
 \begin{equation*}
 \|x-y\|\,=\,\min\{\,\|x-y'\|\colon \,y'\in C\,\}.
@@ -697,6 +750,7 @@ Conclude that~$\left<y',x-y\right>\equiv\left<y',(x+y'-y)-y'\right>=0$
 for every~$y'\in C$.
 \end{point}
 \begin{point}[projection-theorem]{Projection Theorem}%
+\index{Projection Theorem}%
 Let~$C$ be a closed linear subspace
 of a Hilbert space~$\scrH$.
 Each~$x\in \scrH$
@@ -741,6 +795,7 @@ and thus~$y$ is the projection of~$x$ on~$C$.\qed
 \end{point}
 \end{point}
 \begin{point}[riesz-representation-theorem]{Riesz'~Representation Theorem}%
+\index{Riesz' Representation Theorem}%
 Let~$\scrH$ be a Hilbert space.
 For every bounded linear map~$f\colon \scrH\to\C$
 there is a unique vector~$x\in \scrH$
@@ -785,7 +840,8 @@ gives a bounded linear map $S$, which is adjoint to~$T$.
 \begin{point}%
 Thus the bounded operators
 on a Hilbert space~$\scrH$
-form a $C^*$-algebra~$\scrB(\scrH)$
+form a $C^*$-algebra~$\scrB(\scrH)$%
+\index{BH@$\scrB(\scrH)$!as a $C^*$-algebra}
 as described in~\sref{example-hilb}.
 We will return to Hilbert spaces
 in~\sref{gelfand-naimark},
@@ -809,7 +865,9 @@ the vector space
 	\Define{\bigoplus_i \scrH_i} \ =\ \{\ 
 		x\in \prod_i \scrH_i\colon\ 
 	\sum_i \|x_i\|^2 <\infty \ \}.
-\end{equation*}
+\end{equation*}%
+\index{direct sum!of Hilbert spaces}%
+\index{$\bigoplus$, direct sum!$\bigoplus_i\scrH_i$, of Hilbert spaces}
 is a Hilbert space
 when endowed with the inner product
 $\left<x,y\right>=\sum_i \left<x_i,y_i\right>$.
@@ -917,14 +975,20 @@ We'll start easy with the self-adjoint elements:
 \begin{point}{Definition}%
 Given an element $a$ of a $C^*$-algebra $\scrA$, 
 \begin{enumerate}
-\item we say that $a$ is \Define{self-adjoint} if $a^* =a$, and
+\item we say that $a$ is \Define{self-adjoint}%
+\index{self adjoint} if $a^* =a$, and
 \item we write $\Define{\Real{a}}:= \frac{1}{2}(a+a^*)$
 and $\Define{\Imag{a}}:=\frac{1}{2i}(a-a^*)$
-for the \Define{real} and \Define{imaginary part}
+for the \Define{real} and \Define{imaginary part}%
+\index{real part!of an element of a $C^*$-algebra}%
+\index{$\Real{(\,\cdot\,)}$, real part!operation on a $C^*$-algebra}%
+\index{imaginary part!of an element of a $C^*$-algebra}%
+\index{$\Imag{(\,\cdot\,)}$, imaginary part!operation on a $C^*$-algebra}
 of~$a$, respectively.
 \end{enumerate}
 The set of self-adjoint elements of~$\scrA$
-is denoted by~\Define{$\sa{\scrA}$}.
+is denoted by~\Define{$\sa{\scrA}$}.%
+\index{$\Real{(\,\cdot\,)}$, real part!$\Real{\scrA}$, of a $C^*$-algebra}
 \end{point}
 \begin{point}[cstar-involution-basic]{Exercise}%
 Let~$a$ be an element of a $C^*$-algebra~$\scrA$.
@@ -1044,11 +1108,17 @@ is not invertible.
 \end{point}
 \begin{point}[cstar-positive-def]{Definition}%
 A self-adjoint element~$a$ of a $C^*$-algebra~$\scrA$ is called
-\Define{positive} if $\|a-t\|\leq t$
+\Define{positive}%
+\index{positive!element of a $C^*$-algebra}
+if $\|a-t\|\leq t$
 for some~$t\geq \frac{1}{2}\|a\|$.
-We write $a\leq b$ for $a,b\in\scrA$ when $b-a$ is positive,
+We write $\Define{a\leq b}$%
+\index{*leq@$\leq$, order!on a $C^*$-algebra}
+for $a,b\in\scrA$ when $b-a$ is positive,
 and we denote the set of positive elements of~$\scrA$
-by~$\pos{\scrA}$.
+by~$\Define{\pos{\scrA}}$.%
+\index{$(\,\cdot\,)_+$, positive part!$\scrA_+$,
+of a $C^*$-algebra}
 \begin{point}{Remark}%
 One advantage of this
 definition
@@ -1064,7 +1134,7 @@ iff~$b$ is positive in~$\scrA$---that is,
 \begin{point}{Example}%
 We'll see in~\sref{hilb-positive-operators},
 that a bounded operator~$T$ on a Hilbert space~$\scrH$
-is positive when~$\left<x,Tx\right>\geq 0$ for all~$x\in\scrH$.
+is positive iff~$\left<x,Tx\right>\geq 0$ for all~$x\in\scrH$.
 \end{point}
 \begin{point}{Lemma}%
 Let~$a,b$ be positive elements of a $C^*$-algebra.
@@ -1083,9 +1153,12 @@ so~$a+b\geq 0$.\qed
 Given an element~$a$
 of a $C^*$-algebra~$\scrA$
 with~$0\leq a\leq 1$
-(which is called an \Define{effect})
+(which is called an \Define{effect})%
+\index{effect!in a $C^*$-algebra}
 show that 
-the \Define{orthosupplement} $\Define{a^\perp} :=1-a$
+the \Define{orthosupplement} $\Define{a^\perp} :=1-a$%
+\index{orthosupplement!operation in a $C^*$-algebra}%
+\index{$(\,\cdot\,)^\perp$, orthosupplement}
 is an effect too.
 \end{point}
 \begin{point}[cstar-positive]{Exercise}%
