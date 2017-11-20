@@ -1772,7 +1772,7 @@ given by a power series  $\sum_n a_n z^n$.
 \end{point}
 \begin{point}[hadamard]{Theorem}%
 \index{power series}%
-Let~$a_1,a_2,\dotsc\in\scrA$
+Let~$a_0,a_1,a_2,\dotsc\in\scrA$
 be given,
 and write~$R:=(\limsup_n \|a_n\|^{\nicefrac{1}{n}})^{-1}$.
 Then for every~$z\in\C$,
@@ -1873,7 +1873,6 @@ Let~$z\in \C$ with $\left|z\right|<R$
 be given. We must show that~$f$
 is holomorphic at~$z$ with~$f'(z)=\sum_n na_nz^{n-1}$.
 For this it suffices to show that
-the sum of the series
 \begin{equation}
 \label{power-series-derivative-0}
 \sum_{n=0}^\infty
@@ -1926,7 +1925,7 @@ converges to~$0$ as~$h$ tends to~$0$.\qed
 \begin{point}[powerseries-uniqueness-coeffients]{Exercise}%
 Let~$\sum_n a_n z^n$
 be a power series over~$\scrA$
-with radius of convergence~$R$
+with radius of convergence~$R>0$
 such that~$\sum_n a_n z^n=0$
 for all~$z$ from
 some disk around~$0$ with radius~$r<R$.
@@ -1970,21 +1969,27 @@ We're going to define as quickly as possible
 an integral~$\int f $
 for every continuous map $f\colon [0,1]\to\scrA$.%
 \index{S@$\int$, integral!$\int f$, of continuous $f\colon [0,1]\to \scrA$}%
-Recall that an interval~$I$
+Any interval~$I$
 in~$[0,1]$
 is of one of the following forms
 \begin{equation*}
 	[s,t]\qquad[s,t)\qquad(s,t]\qquad(s,t)
 \end{equation*}
 where~$0\leq s\leq t\leq 1$;
-we'll denote the length of an interval~$I$---being~$t-s$ 
-in the four cases above---by $\Define{\left|I\right|}$.
+we'll denote the length of an interval~$I$ --- being~$t-s$ 
+in the four cases above --- by $\Define{\left|I\right|}$.
 An \Define{$\scrA$-valued step function}
 is a function $f\colon [0,1]\to\scrA$
 of the form
 $f\equiv \sum_n a_n \mathbf{1}_{I_n}$
 for some~$a_1,\dotsc,a_N\in\scrA$
-and intervals $I_1,\dotsc,I_N$;
+and intervals $I_1,\dotsc,I_N$
+(where~$\mathbf{1}_{I_n}$ is~$1$ is the 
+\emph{indicator function}%
+\index{$\mathbf{1}_A$, indicator function!on $[0,1]$} of~$I_n$
+which is~$1$
+on~$I_n$
+and~$0$ elsewhere);
 and the set of $\scrA$-valued step functions
 is denoted by~$\Define{S_\scrA}$,
 which is a subset
@@ -2010,8 +2015,8 @@ and $a_1,\dotsc,a_N,a_1',\dotsc,a_M'\in\scrA$.)
 
 \item
 We endow~$B_\scrA$
-with the supremum norm
-so that $\|f\|=\sup_{t\in[0,1]} \|f(t)\|$
+with the supremum norm,
+viz.~$\|f\|=\sup_{t\in[0,1]} \|f(t)\|$
 for all~$f\in B_\scrA$.
 
 Show that every $\scrA$-valued step function~$f$
@@ -2063,15 +2068,15 @@ is now defined as.
 \index{S@$\int$, integral!of continuous $f\colon \C\to\scrA$!$\int_w^{w'} f$, over an interval}%
 We'll also need integration along a triangle~$T$,%
 \index{triangle, for our purposes}
-which is for this  purpose a tuple of three 
+which is for this  purpose a triple of 
 complex numbers~$w_0,w_1,w_2$
 (of which the order \emph{does} matter)
 called the
-\Define{vertices} of~$T$.%
+\Define{vertices} of~$T$.
 The \Define{boundary} of
 such a triangle~$T$
 is $\Define{\partial T}
-:=[w_1,w_2]\cup [w_2,w_3]\cup [w_3,w_1]$,
+:=[w_0,w_1]\cup [w_1,w_2]\cup [w_2,w_0]$,
 and given any $\scrA$-valued
 holomorphic function~$f$
 with $\partial T\subseteq \dom(f)$
@@ -2079,7 +2084,7 @@ we define
 \begin{equation*}
 	\Define{\int_T f}\ = \ \int_{w_0}^{w_1} f
 \,+\, \int_{w_1}^{w_2} f
-\,+\, \int_{w_2}^{w_3} f.
+\,+\, \int_{w_2}^{w_0} f.
 \end{equation*}
 \index{S@$\int$, integral!of continuous $f\colon \C\to\scrA$!$\int_T f$, over a triangle}%
 We'll need some more terminology
@@ -2093,9 +2098,9 @@ $\Define{\mathrm{in}(T)}=\mathrm{cl}(T)\backslash \partial T$.
 The length
 of~$T$ is given by
 $\Define{\mathrm{length}(T)}:=
-\left|z_1-z_0\right|\,+\,
-\left|z_2-z_1\right|\,+\,
-\left|z_3-z_1\right|$.
+\left|w_1-w_0\right|\,+\,
+\left|w_2-w_1\right|\,+\,
+\left|w_0-w_2\right|$.
 
 The number of times the triangle~$T$ winds
 around a point $z\in \C\backslash \partial T$
@@ -2108,8 +2113,9 @@ written $\Define{\mathrm{wn_T}(z)}$,%
 \index{wn@$\mathrm{wn_T}$, winding number}
 is either $1$ or~$-1$ when~$z\in\mathrm{in}(T)$
 (depending on the order of the vertices),
-and is~$0$ when~$z\notin\mathrm{in}(T)$.
-It is defined formally by
+is~$0$ when~$z\notin\mathrm{cl}(T)$,
+and undefined on~$\partial T$.
+It is defined formally for $z\in \C\backslash \partial T$ by
 \begin{equation*}
 	\textstyle
 2\pi \wn_T(z)\ = \ 
@@ -2121,6 +2127,14 @@ and pops
 up in the value of the integral $\int_T (z-z_0)^{-1}dz$
 later on,
 see~\sref{invint}.
+
+(Here~$\Define{\measuredangle(w_0,z,w_1)}$%
+\index{$\measuredangle(w_0,z,w_1)$, angle between complex numbers}%
+denotes the number of radians in~$(-\pi,\pi)$
+needed to rotate the line through~$z$ and~$w_0$ counterclockwise
+around~$z$ to hit~$w_1$,
+that is, the angle of the corner on the right when travelling
+from~$w_0$ to~$w_1$ via~$z$.)
 \end{point}
 \begin{point}[goursat]{Goursat's Theorem}%
 \index{Goursat's Theorem}%
@@ -2130,6 +2144,10 @@ is entirely contained in~$\dom(f)$.
 Then~$\int_T f = 0$.
 \begin{point}[goursat-1]{Proof}%
 (Based on~\cite{moore1900}.)
+If two vertices of~$T$ coincide
+the result is obviously true,
+so we may assume that they're all distinct,
+that is, $\mathrm{in}(T)\neq \varnothing$.
 
 Note that if~$f$ has an antiderivative,
 that is, $f\equiv g'$ for some holomorphic function~$g$,
@@ -2138,7 +2156,7 @@ then one can show that~$\int_T f=0$
 Although it is true that every holomorphic function
 with simply connected domain has a antiderivative,
 this result is not yet available 
-(and in fact depends on this very theorem).
+(and in fact usually depends on this very theorem).
 Instead we will approximate~$f$
 by an affine function
 (which does have an antiderivative)
@@ -2150,8 +2168,6 @@ we first need to zoom in.
 If we split~$T$ into four similar triangles
 $T^\text{i}$, $T^\text{ii}$,
 $T^\text{iii}$, $T^\text{iv}$
-
-\REMARK{Picture will be improved}
 \begin{equation*}
 \begin{tikzpicture}
 \coordinate (A) at (0,0){};
@@ -2160,6 +2176,10 @@ $T^\text{iii}$, $T^\text{iv}$
 \coordinate (AB) at ($(A)!0.5!(B)$) {};
 \coordinate (BC) at ($(B)!0.5!(C)$) {};
 \coordinate (CA) at ($(C)!0.5!(A)$) {};
+\node  at ($(AB)!0.5!(BC)!0.33!(CA)$) {$\circlearrowright$};
+\node  at ($(A)!0.5!(AB)!0.33!(CA)$) {$\circlearrowleft$};
+\node  at ($(B)!0.5!(BC)!0.33!(AB)$) {$\circlearrowleft$};
+\node  at ($(C)!0.5!(BC)!0.33!(CA)$) {$\circlearrowleft$};
 \draw
 	(A) -- (AB) 
 	(AB) -- (B)
