@@ -5287,23 +5287,242 @@ Hence $\bigcup_i e_i = \cceil{e}$.
 \end{parsec}
 \begin{parsec}%
 \begin{point}%
-Using~\sref{} we can classify
+Using~\sref{vmleq} we can classify
 all finite-dimensional $C^*$-algebras.
 \end{point}
 \begin{point}[cceil-sum]{Theorem}%
+\index{$C^*$-algebra!finite-dimensional}%
+\index{Von Neumann algebra!finite-dimensional}%
 Any finite-dimensional $C^*$-algebra~$\scrA$
-is miu-isomorphic to
+is
 a direct sum
 of full matrix algebras,
 that is,
 $\scrA\cong \bigoplus_m M_{N_m}$
 for some  $N_1,\dotsc,N_M\in\N$.
-
-	\TODO{...}
 \begin{point}{Proof}%
+Let~$e_1,\dotsc,e_N$ be a basis for~$\scrA$.
+We'll first show that~$\scrA$ is a von Neumann algebra,
+and for this we'll 
+need the fact that the unit ball $(\scrA)_1$
+is compact with respect to the \emph{norm} on~$\scrA$.
+For this it suffices
+to show that~$\|\,\cdot\,\|$
+is equivalent to the norm~$\|\,\cdot\,\|'$ on~$\scrA$
+given by~$\|a\|'=\sum_n\left|z_n\right|$
+for all $a\equiv \sum_n z_n e_n$
+where~$z_1,\dotsc,z_N\in\C$,
+(because the unit $\|\,\cdot\,\|'$-ball is clearly compact
+being homeomorphic to the unit ball of~$\C^N$.)
+Since for such~$a\equiv \sum_n z_n e_n$
+we have
+\begin{equation*}
+	\textstyle
+\|a\|\,\leq\, \sum_n\left|z_n\right| \left\|e_n\right\|
+\,\leq\,\sum_n\left|z_n\right| \,\sup_n\left\|e_n\right\|
+	\,=\, \|a\|'\,\sup_n\left\|e_n\right\|
+\end{equation*}
+we see that~$a\mapsto a\colon \scrA\to\scrA$
+is continuous from~$\|\,\cdot\,\|'$
+to~$\|\,\cdot\,\|$.
+For the converse
+it suffices to show that
+$f_m\colon\, a\equiv \sum_n z_n \mapsto z_m,\, 
+\scrA\to\C$
+is bounded with respect to~$\|\,\cdot\,\|$,
+because then
+\begin{equation*}
+	\textstyle
+	\|a\|'\,\equiv\, \|\sum_n f_n (a)e_n\|'
+	\,\leq\, \sum_n\left|f_n(a)\right| 
+	\,\leq\, (\sum_n \|f_n\|)\,\|a\|.
+\end{equation*}
+In fact,
+we'll show that any linear functional on~$\scrA$
+is bounded.
+Since the bounded linear functionals
+form a linear subspace~$\scrA^*$
+of $N$-dimensional vector space of all linear functionals 
+on~$\scrA$
+it suffices to show that~$\scrA^*$ has dimension~$N$.
+So let~$f_1,\dotsc,f_M$ be a basis for~$\scrA^*$;
+we must show that~$N\leq M$.
+Since the states of~$\scrA$
+(see~\sref{states-order-separating})
+and thus all linear functionals on~$\scrA$
+form a separating collection,
+the functionals $f_1,\dotsc,f_N$
+form a separating set too;
+since therefore
+\begin{equation*}
+a\mapsto (f_1(a),\,\dotsc,\,f_M(a))\colon\,
+\scrA\to\C^M
+\end{equation*}
+is a linear injection
+from the~$N$-dimensional
+space~$\scrA$ to the $M$-dimensional space~$\C^M$
+we get~$N\leq M$.
+Whence all linear functionals on~$\scrA$
+are bounded, the norms $\|\,\cdot\,\|$ and~$\|\,\cdot\,\|'$
+are equivalent,
+and $(\scrA)_1$
+is norm compact.
+\begin{point}{$\scrA$ is a von Neumann algebra}%
+First we need to show that every bounded directed
+set~$D$ of self-adjoint elements
+of~$\scrA$ has a supremum (in $\Real{\scrA}$).
+We may assume without loss of generality that~$\|d\|\leq 1$
+for all~$d\in D$, and so~$D\subseteq (\scrA)_1$.
+Since~$(\scrA)_1$
+is norm compact
+there is a cofinal subset~$D'$ of~$D$
+that norm converges to some~$a\in\scrA$,
+and thus~$D$ norm converges to~$a$ itself.
+It's easily seen that~$a$ is the supremum of~$D$.
+Indeed, given $d_0\in D$
+we have~$d_0\leq d$ for all~$d\geq d_0$,
+and so~$d_0\leq \lim_{d\geq d_0} d=a$.
+Hence~$a$ is an upper bound for~$D$;
+and if~$b$ is an upper bound for~$D$,
+then~$d\leq b$ for all~$d\in D$, and so $a=\lim_d d \leq  b$.
 
+Since in this finite-dimensional setting~$\bigvee D$
+is apparently the norm limit of~$(d)_{d\in D}$,
+any positive functional $f$ on~$\scrA$
+will map~$\bigvee D$ to the limit of
+$(f(d))_{d\in D}$,
+which is~$\bigvee_{d\in D} f(d)$,
+and so~$f(\bigvee D)=\bigvee_{d\in D} f(d)$.
+Whence every positive functional on~$\scrA$
+is normal; and since the positive functionals on~$\scrA$
+form a separating collection,
+$\scrA$ is a von Neumann algebra.
+\end{point}
+\begin{point}{Reduction to a factor}%
+Since pairwise orthogonal non-zero projections
+are easily seen to be linearly independent,
+and~$\scrA$ is finite dimensional,
+every orthogonal set of projections in~$\scrA$ is finite.
+In particular,
+any descending sequence of non-zero projections must eventually become
+constant.
+It follows that below every (central) projection~$p$ in~$\scrA$
+there is a minimal (central) projection,
+and even that~$p$ is the finite sum of minimal (central) projections.
+In particular,
+the unit~$1$ of~$\scrA$ can be written
+as $1=\sum_n z_n$ where~$z_1,\dotsc,z_M$ are minimal central projections
+of~$\scrA$.
+By~\sref{central-projections-sums}
+we know that~$z_m\scrA$ is a von Neumann algebra for each~$m$,
+and that~$\scrA$ is nmiu-isomorphic
+to the direct sum $\bigoplus_m z_m \scrA$
+of these von Neumann algebras
+via~$a\mapsto (z_ma)_m$.
+Since~$z_m$ is a minimal central projection,
+the von Neumann algebra~$z_n \scrA$
+has no non-trivial central projections.
+\end{point}
+\begin{point}{When~$\scrA$ is a factor}%
+Let~$e$ be a minimal
+projection of~$\scrA$
+(which exists by the previous discussion).
+Since~$e\neq 0$,
+and~$\scrA$ has no non-trivial central projections,
+we have~$\cceil{e}=1$.
+By~\sref{cceil-sum}
+we have $1\equiv \cceil{e}=\sum_k e_k$
+for some non-zero projections $e_1,\dotsc,e_K$
+in~$\scrA$
+with~$e_k\vmleq e$.
+So there are partial isometries
+$u_1,\dotsc,u_K\in\scrA$
+with $u_k^* u_k = e_k$
+and~$u_ku_k^*\leq e$ for all~$k$.
+In fact,
+since~$e$ is minimal,
+we have~$u_ku_k^* = e$.
+Thinking of~$u_k$
+as~$\ketbra{0}{k}$
+define~$u_{k\ell } = u_k ^* u_\ell$;
+we'll show that
+$\varrho\colon A\mapsto \sum_{k\ell} A_{k\ell}  u_{ k \ell}
+\colon M_K\to\scrA$
+is a miu-isomorphism.
+It's easy to see that~$\varrho$
+is linear, involution preserving and unital.
+To see that~$\varrho$ is multiplicative,
+first note that $u_j u_k^*$ equals~$e$ when~$j=k$
+and is zero otherwise.
+It follows
+that~$u_{ij} u_{k\ell}$
+equals $u_{i\ell}$
+when~$k=j$ and is zero otherwise.
+Whence
+\begin{equation*}
+	\textstyle
+\varrho(A)\varrho(B)
+\ =\  
+	\sum_{ijk\ell}
+	A_{ij}u_{ij} B_{k\ell}u_{k\ell}
+\ = \ 
+	\sum_{i\ell} ( \sum_k A_{ik} B_{k\ell}) u_{i\ell}
+	\ = \ \varrho( AB)
+\end{equation*}
+for all matrices $A,B\in M_K$,
+and so~$\varrho$ is multiplicative.
 
+It remains to be shown that~$\varrho$ is a bijection.
+To see that~$\varrho$ is injective,
+first note that~$\varrho$
+is normal,
+because using the fact that~$\varrho$ is positive
+and thus bounded,
+we can show that~$\varrho$ preserves suprema of bounded directed
+sets in much the same way we showed
+that all np-functionals on~$\scrA$ are bounded.
+We can thus speak of the central carrier~$\cceil{\varrho}$
+of~$\varrho$,
+and thus to show that~$\varrho$ is injective
+it suffices to show that~$\cceil{\varrho}=1$.
+Since~$M_K$ is a factor
+(see \sref{asdasd})
+the only alternative
+is~$\cceil{\varrho}=0$
+i.e.~$\varrho=0$,
+which is clearly absurd
+unless~$\scrA=\{0\}$
+in which case
+we'd already be done.
+Hence~$\varrho$ is injective.
 
+To see that~$\varrho$ is surjective
+let~$a\in\scrA$ with $a\neq 0$ be given.
+Since~$a\equiv \sum_{k,\ell} e_k a e_\ell
+= \sum_{k,\ell}u_{k1} u_{1k}au_{\ell 1} u_{1\ell}$,
+and~$u_{k1}$ and~$u_{1\ell}$ are in the range of~$\varrho$
+it suffices
+to show that $u_{1k}a u_{\ell 1}$
+is in the range of~$\varrho$
+for all~$k$ and~$\ell$.
+In other words,
+we may assume without loss of generality
+that~$e a e = a$,
+where~$e$ is the minimal projection in~$\scrA$ we started with.
+Since~$e(\Real{a})_+e= (\Real{a})_+$, and so on,
+we may assume that~$a$ is positive.
+By scaling,
+we may also assume that~$\|a\|\leq 1$.
+Since $\ceil{\|a\|e -a}\leq e$,
+and~$e$ is minimal,
+we either have~$\ceil{\|a\|e-a}=e$
+or~$\ceil{\|a\|e-a}=0$.
+The former case is impossible,
+because~\TODO{finish...!!}
+Hence~$\ceil{\|a\|e-a}=0$,
+and so~$a=\|a\|e$.
+In particular, $a$ is in the range of~$\varrho$.\qed
+\end{point}
 \end{point}
 \end{point}
 \end{parsec}
