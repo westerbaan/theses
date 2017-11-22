@@ -1692,7 +1692,7 @@ we have~$x_\alpha \mathrel\varepsilon x_\beta$.
         where~$Y$ is Hausdorff.
 Conclude from \ref{ex-continuous-preserves-lims} and
     \ref{ex-cauchy-from-dense-subset}
-    that~$f=g$ whenever they agree on a dense subset of~$X$.
+    that~$f$ and~$g$ are equal whenever they agree on a dense subset of~$X$.
     \end{enumerate}
 \end{point}
 \begin{point}[dils-product-uniformity]{Exercise}%
@@ -1810,8 +1810,8 @@ for all~$x \in D$.
         \item $E$ is \Define{orthonormal}\index{orthonormal} if additionally
                     $\left<e,e\right>$ is a non-zero projection
                     for~$e \in E$.
-        \item We say a sequence $(b)_{e \in E}$ in~$\scrB$
-                is \Define{$\ell^2$-summable}
+        \item A sequence $(b_e)_{e \in E}$ in~$\scrB$
+                is said to be \Define{$\ell^2$-summable}
                 if the partial sums of~$\sum_{e \in E} b_e^*b_e$
                 are bounded.
         \item $E$ is an \Define{(orthonormal) basis}\index{(orthonormal) basis} if
@@ -4036,6 +4036,8 @@ Suppose~$E \subseteq X$ is an orthonormal set. Show
 \item
     $E$ is a basis of~$E^{\perp\perp}$ \emph{and}
 \item
+    for any~$x \in X$,
+        we have
     $x \in E^{\perp\perp}$
     if and only if~$\left<x,x\right> = \sum_{e \in E} \left<x,e\right>
                 \left<e,x\right>$.
@@ -4056,8 +4058,9 @@ Show that there is a finite orthonormal basis
 \begin{parsec}%
 \begin{point}%
 Every Hilbert space~$\scrH$ is isomorphic to some~$\ell^2(I)$.
-In fact, the cardinality of~$I$ is the only thing that matters
-    --- if~$\ell^2(I) \cong \ell^2(J)$, then~$I$ and~$J$
+In fact, the cardinality of~$I$ is the only thing that matters,
+    in the following sense:
+    if~$\ell^2(I) \cong \ell^2(J)$, then~$I$ and~$J$
     are the same cardinality.
 What about Hilbert C$^*$-modules?
 \end{point}

@@ -18,12 +18,14 @@ We do not reach this ambitious goal ---
     on the pure maps of a von Neumann-like category.
 \end{point}
 \begin{point}%
-As basic axiom we will require the categories we consider to be
+As a basic axiom we will require the categories we consider to be
     effectuses.
 For us the definition of an effectus will play a similar role
     to that of a topological space for a geometer.
-General topological spaces on their own are usually of little interest:
-    the axioms are so weak that there are many pathological examples.
+In many applications,
+    general topological spaces on their own are of little interest:
+    the axioms are so weak that there are
+    many (for the application) pathological examples.
     These weak axioms, however, are very expressive in the sense
     that they allow for the definition of many useful notions.
     Herein lies the strength of topological spaces ---
@@ -44,10 +46,11 @@ Then we continue with a brief, but thorough development
     of the basic theory of effectuses.
 There is a lot more to say about effectuses
     (see \cite{effintro}), which has been omitted
-    to avoid straining the Reader.
-    However, we will indulge in one tangent:
+    to avoid straining the reader.
+    However, we will indulge in one tangent,
+    which can be skipped:
     the study of abstract convex sets in
-    \S\ref{more-aconvm}, which can be skipped.
+    \S\ref{more-aconvm}.
 For the moment, think of an effectus as a generalization
     of the opposite category of von Neumann algebras:
     the objects represent the physical systems
@@ -56,7 +59,7 @@ For the moment, think of an effectus as a generalization
     (or properly typed maps).
 \end{point}
 \begin{point}%
-The first two axioms we add on top of an effectus
+The first two axioms we add on top of those of an effectus
     are the existence of quotients and comprehension.
 It's helpful to discuss the origin of these axioms.
 It started with the desire to axiomatize categorically
@@ -71,7 +74,7 @@ In  contrast to the tame~$\wedge$ in a Boolean algebras,
     formulas.
 Instead, we take a step back and
     consider the map~$\asrt_a(b) \equiv  \andthen{a}{b}$
-        for fixed~$a$, which factors into two part:
+        for fixed~$a$, which factors into two parts:
 \begin{equation*}
     \xymatrix@C+2pc@R-2pc{
         \scrA \ar[r]^\pi & \ceil{a} \scrA \ceil{a} \ar[r]^\xi
@@ -91,7 +94,7 @@ It turns out that both~$\pi$ and~$\xi$ have
 The existence of quotients and comprehension in some effectus~$C$
     is interesting on its own, but with
     two additional axioms (the existence of images and
-    preservation of images under orthocomplement),
+    preservation of images under orthocomplementation),
     we get a surprisingly firm handle
     on the possibilistic side of~$C$,
     by means of the existence
@@ -99,7 +102,7 @@ The existence of quotients and comprehension in some effectus~$C$
 In the guiding example of von Neumann algebras,
     we have~$f_\diamond = g_\diamond$
         if and only
-    there is no post-measurement~$a$ and initial state~$\omega$
+    there are no post-measurement~$a$ and initial state~$\omega$
     that can distinguish with certainty
     between whether~$f$ or~$g$ has been performed.\footnote{%
     In symbols: $
@@ -133,7 +136,7 @@ In an~$\&$-effectus, the predicates on an object carry a canonical~$\&$
 \begin{point}%
 In an effectus, we call a map pure if it can be written
     as the composition of quotients and comprehensions.
-In \TODO{} we saw that in the case of von Neumann algebras,
+In~\sref{paschke-pure} we saw that in the case of von Neumann algebras,
     a map is pure (in this sense) if and only if the corresponding Paschke
     embedding is surjective.
 In particular, the pure maps~$\scrB(\scrH) \to \scrB(\scrK)$
@@ -157,7 +160,7 @@ After this highpoint,
 \begin{parsec}%
 \begin{point}%
 Before we turn to effectuses,
-    it is convenient to introduce some lesser-known algebraic structures first
+    it is convenient to introduce some lesser-known algebraic structures
     of which the effect algebra is the most important.
 It will turn out that the set of predicates associated to an object in
     an effectus can be arranged into an effect algebra.
@@ -446,7 +449,7 @@ Indeed:
 \end{equation*}
     and so~$(a \wedge b) \ovee (a \vee b) = a \ovee b$, as desired.
 \begin{point}%
-Now we show the lemma.
+We turn to the main result.
 Assume~$(x \ominus c) \wedge (x \ominus d)$ exists.
 Note~$x \ominus c = (x^\perp \ovee c)^\perp$.
 As~$z \mapsto z^\perp$ is an order anti-isomorphism,
@@ -557,7 +560,7 @@ An effect monoid~$M$ is said to be \Define{commutative}
     if we have~$a\odot b = b\odot a$ for all~$a,b \in M$.
 \end{point}
 \begin{point}[eff-monoid-examples]{Examples}%
-Effect monoids are less abundant.
+Effect monoids are less abundant than effect algebras.
 \begin{enumerate}
 \item The effect algebra~$[0,1]$
         is a commutative effect monoid with the usual product.
@@ -2017,7 +2020,7 @@ We use~$\Define{\lambda_1 \ket{x_1} \ovee \cdots \ovee \lambda_n \ket{x_n}}$
     as a shorthand for the formal $M$-convex combination~$p\colon X \to M$
     given by~$p(x) = \bigovee_{x_i = x} \lambda_i$.
     (So~$p(x_i) = \lambda_i$ if the~$x_i$ are distinct.)
-We write~$\Define{\mathcal{D}_M} X$.
+We write~$\Define{\mathcal{D}_M} X$
     for the set of all formal~$M$-convex combinations over~$X$.
 \end{point}
 \begin{point}{Exercise}%
@@ -2275,7 +2278,7 @@ for every~$\bigovee_i \lambda_i \ket{\varphi_i}$
 For our next project,
     we indulge ourselves in a tangent:
     we investigate whether the category~$\AConvM$ is an effectus.
-We can show~$\AConvM$ is an effectus, if~$M$ has a certain partial division.
+We can show it is, if~$M$ has a certain partial division.
 Unfortunately it will remain unclear if~$\AConvM$ is an effectus in general.
 The case~$M=[0,1]$ is much easier and has already been dealt with
         in \cite{statesofconvexsets}. 
@@ -2285,7 +2288,7 @@ To construct the coproduct, we will need to know
 \end{point}
 \begin{point}[aconv-cong]{Exercise}%
 In this exercise we construct the quotient of an
-    abstract~$M$-convex sets by a congruence.
+    abstract~$M$-convex set by a congruence.
 Assume~$(X,h)$ is an abstract~$M$-convex set
     and~$\sim \subseteq X^2$ is an equivalence relation.
 Write~$X/_\sim$ for the equivalence classes
@@ -4644,7 +4647,7 @@ Show that in a~$\&$-effectus,
 \begin{parsec}%
 \begin{point}{Definition}%
 A \Define{$\dagger$-category} (``dagger category'')
-is category~$C$ together with an involutive identity-on-objects
+is a category~$C$ together with an involutive identity-on-objects
     functor~$(\ )^\dagger \colon C \to \op{C}$
     ---
     that is, for all objects~$X$ and maps~$f,g$ in~$C$, we have
