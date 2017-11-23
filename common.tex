@@ -242,7 +242,9 @@
 	\IfValueT{#1}{\label{#1}}%
 	% Display the parsec number in the margin.
 	\marginnote{\makebox[3em][c]{\textParsecNumber{\the\value{parsec}}}}%
+	\ignorespaces%
 }{%
+	\unskip%
 	\setcounter{tmptmp}{2*\value{parsec}+1}%
 	\markboth{\the\value{tmptmp}}{\the\value{tmptmp}}%
 }
@@ -305,7 +307,9 @@
 				\textPointHeaderIII{(#2)}%
 			}}%
 	\ \ }%	
+\ignorespaces%
 }{%
+\unskip%
 \setcounter{pointdepth}{\value{pointdepth}-1}%
 }
 
