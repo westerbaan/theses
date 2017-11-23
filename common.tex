@@ -215,6 +215,7 @@
 % The first argument is the label this parsec will have--use \sref 
 % 	to refer to a parsec.
 \NewDocumentEnvironment{parsec}{o}{%
+	\leavevmode\unskip%
 	\par\penalty-200\vskip1em\noindent%
 	\refstepcounter{parsec}%
 	%%\setcounter{point}{0}% - point is set to 0 by \numberwithin
@@ -244,9 +245,10 @@
 	\marginnote{\makebox[3em][c]{\textParsecNumber{\the\value{parsec}}}}%
 	\ignorespaces%
 }{%
-	\unskip%
+	\leavevmode\unskip%
 	\setcounter{tmptmp}{2*\value{parsec}+1}%
 	\markboth{\the\value{tmptmp}}{\the\value{tmptmp}}%
+	\ignorespaces%
 }
 
 \newcounter{point} % keeps track of the current point
@@ -256,6 +258,7 @@
 
 
 \NewDocumentEnvironment{point}{o g}{%
+	\leavevmode\unskip%
 	\setcounter{pointdepth}{\value{pointdepth}+1}%
 	\refstepcounter{point}%
 	\IfValueT{#1}{%
@@ -309,8 +312,9 @@
 	\ \ }%	
 \ignorespaces%
 }{%
-\unskip%
+\leavevmode\unskip%
 \setcounter{pointdepth}{\value{pointdepth}-1}%
+\ignorespaces%
 }
 
 % Refer to a parsec.
