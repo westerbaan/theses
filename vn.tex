@@ -2987,7 +2987,7 @@ is called~\Define{central}
 when~$ab=ba$ for all~$b\in\scrA$
 (that is, when~$a\in Z(\scrA)$, see~\sref{commutant-basic}).
 \end{point}
-\begin{point}{Examples}%
+\begin{point}[central-examples]{Examples}%
 \begin{enumerate}
 \item
 In a commutative von Neumann algebra
@@ -5290,9 +5290,9 @@ Hence $\bigcup_i e_i = \cceil{e}$.
 Using~\sref{vmleq} we can classify
 all finite-dimensional $C^*$-algebras.
 \end{point}
-\begin{point}[cceil-sum]{Theorem}%
-\index{$C^*$-algebra!finite-dimensional}%
-\index{Von Neumann algebra!finite-dimensional}%
+\begin{point}[fdcstar]{Theorem}%
+\index{Cstar-algebra@$C^*$-algebra!finite dimensional}%
+\index{von Neumann algebra!finite dimensional}%
 Any finite-dimensional $C^*$-algebra~$\scrA$
 is
 a direct sum
@@ -5367,7 +5367,7 @@ are bounded, the norms $\|\,\cdot\,\|$ and~$\|\,\cdot\,\|'$
 are equivalent,
 and $(\scrA)_1$
 is norm compact.
-\begin{point}{$\scrA$ is a von Neumann algebra}%
+\begin{point}[suprema-in-fdvna]{$\scrA$ is a von Neumann algebra}%
 First we need to show that every bounded directed
 set~$D$ of self-adjoint elements
 of~$\scrA$ has a supremum (in $\Real{\scrA}$).
@@ -5486,7 +5486,7 @@ of~$\varrho$,
 and thus to show that~$\varrho$ is injective
 it suffices to show that~$\cceil{\varrho}=1$.
 Since~$M_K$ is a factor
-(see \sref{asdasd})
+(see \sref{central-examples})
 the only alternative
 is~$\cceil{\varrho}=0$
 i.e.~$\varrho=0$,
@@ -5512,16 +5512,30 @@ where~$e$ is the minimal projection in~$\scrA$ we started with.
 Since~$e(\Real{a})_+e= (\Real{a})_+$, and so on,
 we may assume that~$a$ is positive.
 By scaling,
-we may also assume that~$\|a\|\leq 1$.
+we may also assume that~$\|a\|\leq \nicefrac{1}{3}$.
 Since $\ceil{\|a\|e -a}\leq e$,
 and~$e$ is minimal,
 we either have~$\ceil{\|a\|e-a}=e$
 or~$\ceil{\|a\|e-a}=0$.
-The former case is impossible,
-because~\TODO{finish...!!}
+
+The former case is impossible:
+indeed,
+if $e=\ceil{\|a\|e-a}\equiv \bigvee_n (\|a\|e-a)^{\nicefrac{1}{2^n}}$
+(see~\sref{vna-ceil}),
+then~$(\|a\|e-a)^{\nicefrac{1}{2^n}}$
+norm converges to~$\ceil{\|a\|e-a}=e$
+(cf.~\sref{suprema-in-fdvna}),
+and so $\|\|a\|e-a\|^{\nicefrac{1}{2^n}}$
+converges to $\|e\|=1$.
+Then~$\|\|a\|e-a\|=1$,
+while~$\|\|a\|e-a\|\leq \|a\|\|e\|+\|a\|\leq  \frac{2}{3}$,
+which is absurd.
+
 Hence~$\ceil{\|a\|e-a}=0$,
 and so~$a=\|a\|e$.
-In particular, $a$ is in the range of~$\varrho$.\qed
+In particular, $a$ is in the range of~$\varrho$.
+Whence~$\varrho$ is surjective,
+and thus a miu-isomorphism $M_N\to\scrA$.\qed
 \end{point}
 \end{point}
 \end{point}
