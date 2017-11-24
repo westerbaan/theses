@@ -2216,7 +2216,7 @@ We can approximate $f$ by an affine
 function at~$z_0$ as follows.
 For $z\in \dom(f)$,
 \begin{equation*}
-f(z)\ = \ f(z_0)\,+\,f'(z_0)\,(z-z_0)\,+\,r(z)\,(z-z_0),
+f(z)\ = \ f(z_0)\,+\,f'(z_0)\,(z-z_0)\,-\,r(z)\,(z-z_0),
 \end{equation*}
 where~$r\colon \dom(f)\to \C$
 is given by $r(z)=f'(z_0)-(f(z)-f(z_0))(z-z_0)^{-1}$ for $z\neq z_0$
@@ -2236,11 +2236,11 @@ the integrated function is affine.
 Thus
 \begin{equation*}
 \textstyle
-\int_{T_n} f \  = \ \int_{T_n}r(z)\,(z-z_0)\,dz.
+\int_{T_n} f \  = \ -\int_{T_n}r(z)\,(z-z_0)\,dz.
 \end{equation*}
 Note that for $z\in T_n$,
 we have  $\|z-z_0\|\leq \length(T_n)$,
-and $\|r(z)\|\leq \varepsilon$ (because $\|z-z_0\|\leq \delta$),
+and $\|r(z)\|\leq \varepsilon$ (because $\|z-z_0\|< \delta$),
 and so $\|r(z)(z-z_0)\|\leq \varepsilon\,\length(T_n)$.
 Thus:
 \begin{equation*}
@@ -2285,6 +2285,9 @@ show that
 \begin{alignat*}{3}
 	\int_{a}^{a+ib}\ 
 	z^{-1}\,dz
+	\ &=\ 
+	i\int_{0}^t \frac{a-it}{a^2+t^2}dt
+	\\
 	\ &=\ 
 	i\int_0^b \frac{a}{a^2+t^2}\,dt 
 	\ +\ 
@@ -2378,7 +2381,10 @@ it suffices to show that
 Let~$\varepsilon>0$ be given.
 Since~$f$ is holomorphic at~$z_0$
 we can find $\delta>0$ with
-$\|f(z)-f(z_0)\|\leq \left|z-z_0\right|$
+\begin{equation*}
+\left\|\frac{f(z)-f(z_0)}{z-z_0}\right\|
+\ \leq \ \,\|f'(z_0)\|\,+\,37
+\end{equation*}
 for all~$z\in\dom(f)$ with $\left|z-z_0\right|\leq \delta$. 
 \end{point}
 \begin{point}%
@@ -2397,19 +2403,20 @@ into triangles~$T_1,\dotsc,T_M$
 we see that
 \begin{equation}
 \label{eq:cauchy-formula-2}
-\sum_{n=0}^{N-1}\int_{w_n}^{w_{n+1}} \frac{f(z)-f(z_0)}{z-z_0}
+\sum_{n=0}^{N-1}\int_{w_n}^{w_{n+1}} \frac{f(z)-f(z_0)}{z-z_0}\,dz
 \ = \ 
-\int_T \frac{f(z)-f(z_0)}{z-z_0}.
+\int_T \frac{f(z)-f(z_0)}{z-z_0}\,dz.
 \end{equation}
 Hence by~\sref{cauchy-formula-1}
 we have
-\begin{equation*}
+\begin{alignat*}{3}
 	\left\|\,\sum_{n=0}^{N-1} 
 	\int_{w_n}^{w_{n+1}} \frac{f(z)-f(z_0)}{z-z_0}\,dz\,\right\|
-\ \leq \ \length(T)\,\cdot\,
+	\ &\leq \ \length(T)\,\cdot\,
 \sup_{z\in\partial T} \,\left\|\,\frac{f(z)-f(z_0)}{z-z_0}\,\right\|
-\ \leq \ \varepsilon.
-\end{equation*}
+\\
+	\ &\leq \ \|f'(z_0)\|\varepsilon\,+\,37\varepsilon.
+\end{alignat*}
 Since~$\varepsilon>0$ was arbitrary,
  \eqref{eq:cauchy-formula-1}
 follows from \eqref{eq:cauchy-formula-2}.\qed
@@ -2426,12 +2433,13 @@ Then for every element~$z$ of an open disk in the interior of the $K$-gon
 with center~$w$,
 \begin{equation*}
 f(z)\ = \ 
-\sum_{n=0}^\infty \ \frac{1}{2\pi i}\sum_{k=0}^{K-1}\int_{w_k}^{w_{k+1}} 
-\frac{f(u)}{(u-w)^{n+1}}\,du
+	\sum_{n=0}^\infty \ 
+	\left(\frac{1}{2\pi i}\sum_{k=0}^{K-1}\int_{w_k}^{w_{k+1}} 
+	\frac{f(u)}{(u-w)^{n+1}}\,du\right)
 \ (z-w)^n.
 \end{equation*} 
 \begin{point}{Proof}%
-By~\sref{cauchy-formula} we have
+By~\sref{cauchy-formula} and some easy algebra we have
 \begin{alignat*}{3}
 2\pi if(z)\ &=\  
 	\sum_{k=0}^{K-1}\int_{w_k}^{w_{k+1}}
@@ -2470,7 +2478,7 @@ function
 that 
 can be written as a power
 series $f(z)=\sum_n a_n (z-w)^n$
-where~$a_1,a_2,\dotsc\in\scrA$
+where~$a_0,a_1,\dotsc\in\scrA$
 for all~$z$ from some disk in~$\dom(f)$ around~$w$
 with radius~$r>0$.
 
@@ -2593,15 +2601,17 @@ For such~$a$
 the formula
 $\sup\{\,\left|\lambda\right|\colon\, \lambda\in \spec(a)\,\}
 \,=\, \limsup_n \|a^n\|^{\nicefrac{1}{n}}$
-can be derived---which we won't need here.
+	can be derived (see e.g.~Theorem~3.3.3 of~\cite{kr}) --- 
+	which we won't need here.
 \end{point}
 \begin{point}[spectrum-non-empty]{Exercise}%
 Given a self-adjoint element~$a$ of a $C^*$-algebra show that
 $\spec(a)\neq \varnothing$.
 \end{point}
 \begin{point}{Exercise}%
-Given a self-adjoint element~$a$ of a $C^*$-algebra~$\scrA$
-show that $\spec(a) =\{\lambda\}$ iff $a=\lambda$ for every $\lambda \in\R$.
+Given a self-adjoint element~$a$ of a $C^*$-algebra
+and~$\lambda\in\R$
+show that $\spec(a) =\{\lambda\}$ iff $a=\lambda$.
 \end{point}
 \begin{point}{Exercise (Gelfand--Mazur's Theorem for $C^*$-algebras)}%
 \index{Gelfand--Mazur's Theorem}%
@@ -2644,8 +2654,6 @@ farther than is usually done
 for Gelfand's representation theorem.
 \end{point}
 \end{parsec}
-
-
 \begin{parsec}[cstar-positive-2]%
 \begin{point}%
 We return to the positive elements 
@@ -2677,6 +2685,7 @@ Hence $\|a-t\|\leq t$
 iff $\left|\lambda-t\right|\leq t$ for all~$\lambda\in\spec(a)$
 iff $\spec(a)\subseteq [0,2t]$ (by \sref{real-pos-ineq}).\qed
 \end{point}
+\end{point}
 \begin{point}[cstar-positive-1]{Exercise}%
 \index{positive!element of a $C^*$-algebra}%
 Show
@@ -2700,7 +2709,6 @@ $\spec(a)\subseteq[0,\infty)$;
 $a$ is positive.
 \end{enumerate}
 We will complete this list in~\sref{cstar-positive-final}.
-\end{point}
 \end{point}
 \begin{point}[positive-basic-2]{Exercise}%
 Let~$\scrA$ be a $C^*$-algebra.
@@ -2746,7 +2754,9 @@ Show that $a\geq 0$ iff $a^{-1}\geq 0$.
 
 \item
 Show that a positive element~$a$ of~$\scrA$ is invertible
-iff $a\geq \frac{1}{n}$ for some~$n\in \N$.
+iff $a\geq \frac{1}{n}$ for some~$n>0$.
+(Hint: show that $\spec(a)\subseteq [\frac{1}{n},\infty)$
+		when~$a\geq \frac{1}{n}$.)
 \end{enumerate}
 \end{point}
 \end{parsec}
@@ -2876,11 +2886,11 @@ this improved bound
 for completely positive maps
 for which it's much easier to obtain (see~\sref{cp-russo-dye}).
 \end{point}
+\end{point}
 \begin{point}[norm-mi-map]{Exercise}%
 Show that~$\|\varrho\|=\varrho(1)$
-for every mi-map
+for every mi-map~$\varrho$
 (using the $C^*$-identity).
-\end{point}
 \end{point}
 \begin{point}[cstar-isometry]{Lemma}%
 Show that for a pu-map $f\colon \scrA\to\scrB$
@@ -2964,6 +2974,27 @@ cf.~\sref{warning-norm-states}.)
 \end{parsec}
 
 \begin{parsec}%
+\begin{point}%
+We just saw in~\sref{cstar-isometry} that a
+map on a $C^*$-algebra~$\scrA$
+that preserves and reflects the order
+determines the norm of the self-adjoint
+--- but not all --- elements of~$\scrA$.
+This theme, to what extend a linear map
+(or a collection of linear maps)
+on a $C^*$-algebra
+determines its structure,
+while tangential at the moment,
+will
+grow ever more important 
+until it is essential for the theory 
+of von Neumann algebras.
+That's why we introduce
+the four levels
+of discernment
+that a collection of maps on a $C^*$-algebra
+might have already here.
+\end{point}
 \begin{point}[separating]{Definition}%
 A collection~$\Omega$ of maps on a $C^*$-algebra~$\scrA$
 will be called
@@ -2993,28 +3024,69 @@ and~$b\in \scrA$.
 (The ``centre'' in ``centre separating''
 will be explained in~\sref{center-separating}.)
 \end{enumerate}
-\REMARK{Examples that show these notions
-are all different will be included.}
 \end{point}
-\begin{point}{Remark}%
-Examples of order-separating
-collections will include
+\begin{point}{Examples}%
+We'll see later on that the following
+collections
+are order separating.
 \begin{enumerate}
 \item
-on a $C^*$-algebra~$\scrA$:
-the set of all pu-maps $\omega\colon \scrA\to\C$
-(see~\sref{states-order-separating});
+The set of all pu-maps $\omega\colon \scrA\to\C$
+on a $C^*$-algebra
+(see~\sref{states-order-separating}).
 \item
-on a commutative $C^*$-algebra~$\scrA$:
-the set of all miu-maps $\omega\colon \scrA\to\C$
-(see~\sref{gelfand-representation-isometry}); and
+The set of all miu-maps $\omega\colon \scrA\to\C$
+on a commutative $C^*$-algebra
+(see~\sref{gelfand-representation-isometry}).
 \item
-on the $C^*$-algebra~$\scrB(\scrH)$
-of bounded operators on some Hilbert space~$\scrH$:
-the collection of maps  $\left<x,(\,\cdot\,)x\right>
+The set of functionals on~$\scrB(\scrH)$,
+where~$\scrH$ is a Hilbert space,
+of the form 
+$\left<x,(\,\cdot\,)x\right>
 \colon \scrB(\scrH)\to\C$ where $x\in \scrH$
 (see~\sref{hilb-vector-states-order-separating}).
+
+These functionals $\left<x,(\,\cdot\,)x\right>$ 
+		are called \Define{vector functionals}%
+\index{vector functional}%
+\index{functional!vector}.
 \end{enumerate}
+\begin{point}
+We'll also see
+that
+none of the four notions
+of separation coincides.
+\begin{enumerate}
+\item
+A single non-zero vector from a Hilbert space~$\scrH$
+gives a vector functional $\left<x,(\,\cdot\,)x\right>$
+on~$\scrB(\scrH)$ that is centre separating
+on its own, but is not faithful when~$\scrH$ has dimension~$\geq 2$.
+\item
+Given an orthonormal basis~$\scrE$
+of a Hilbert space~$\scrH$
+		the collection 
+\begin{equation*}
+	\{\,\left<e,(\,\cdot\,)e\right>\colon\,e\in\scrE\,\}
+\end{equation*}
+		of vector functionals on~$\scrB(\scrH)$
+		is faithful, but not separating when~$\scrE$
+		has more than one element.
+\item
+Given Hilbert spaces~$\scrH$
+and~$\scrK$
+the set of vector functionals
+\begin{equation*}
+	\{\,\left<\,x\otimes y,\,(\,\cdot\,)\,x\otimes y\,\right>\colon\,
+x\in\scrH,\,y\in\scrK\,\}
+\end{equation*}
+on~$\scrB(\scrH\otimes\scrK)$
+is separating,
+but not order separating
+when both~$\scrH$ and~$\scrK$
+are at least two dimensional.
+\end{enumerate}
+\end{point}
 \end{point}
 \begin{point}[separating-self-adjoint]{Exercise}%
 Given a separating collection~$\Omega$
