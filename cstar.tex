@@ -310,7 +310,7 @@ for a linear map (=\Define{operator}%
 $T\colon \scrX\to\scrY$
 when  $\|Tx\|\leq r\|x\|$ for all~$x\in \scrX$,
 and we say that~$T$ is \Define{bounded}%
-\index{bounded!operator}
+\index{operator!bounded}
 when there is such a bound.
 In that case~$T$ has a least bound,
 which is called the \Define{operator norm}%
@@ -1342,7 +1342,7 @@ that an element~$a$ of $\bigoplus_i \scrA_i$
 is positive provided that each~$a(i)$ is positive.
 \end{point}
 \begin{point}[cstar-equalizer-1]{Exercise}%
-\index{equalizer!in~$\Cstar{pu}$ and $\cCstar{pu}$}
+\index{equalizer!in~$\Cstar{miu}$ and $\Cstar{pu}$}
 Show that given miu-maps $f,g\colon \scrA\to\scrB$
 between $C^*$-algebras
 the collection $\scrE:=\{a\in\scrA\colon f(a)=g(a)\}$
@@ -5307,18 +5307,24 @@ the following maps are completely positive:
 \begin{enumerate}
 \item
 $b\mapsto a^*ba\colon \scrA\to\scrA$
-for every~$a\in\scrA$;
+for every~$a\in\scrA$;%
+\index{$a^*(\,\cdot\,)a\colon \scrA\to\scrA$!is completely positive}
 \item
 $T\mapsto S^* T S\colon \scrB^a(X)
 \to\scrB^a(Y)$
+\index{$A^*(\,\cdot\,) A\colon \scrB^a(X)
+\to\scrB^a(Y)$!is completely positive}
 for every adjoinable operator $S\colon Y\to X$
 between Hilbert $\scrA$-modules;
 \item
-$T\mapsto \left<x,Tx\right>,\scrB^a(X)\to \scrA$
+$T\mapsto \left<x,Tx\right>,\scrB^a(X)\to \scrA$%
+		\index{vector functional!is completely positive}
 for every element~$x$ of a Hilbert $\scrA$-module~$X$.
 \end{enumerate}
 \end{point}
 \begin{point}[cstar-product-4]{Exercise}%
+\index{product!in $\Cstar{cpsu}$}%
+\index{equalizer!in $\Cstar{cpsu}$}%
 Show that the product 
 of a family of $C^*$-algebras $(\scrA_i)_i$
 in the category~$\Cstar{cpsu}$
@@ -5616,7 +5622,7 @@ $2\|T\xi\| = \|T(x+\xi)-T(x-\xi)\|
 \leq \|T(x+\xi)\|+\|T(x-\xi)\|<2\|T\xi\|$.
 Hence
 $r\|T\|=\sup_{\xi\in B_r(0)} \|T\xi\|\leq  
-\sup_{y\in B_r(x)} \|Ty\|$.
+\sup_{\xi \in B_r(x)} \|T\xi \|$.
 \end{point}
 \begin{point}%
 Suppose towards a contradiction
@@ -5673,7 +5679,8 @@ and thus~$T$ and~$T^*$ are bounded, by~\sref{chilb-form-bounded}.\qed
 \begin{point}{Remark}%
 As a special case of the preceding theorem
 we get the fact,
-known as the \Define{Hellinger--Toeplitz theorem},
+known as the \Define{Hellinger--Toeplitz theorem},%
+\index{Hellinger--Toeplitz's Theorem}
 that every symmetric
 operator on a Hilbert space is bounded.
 \end{point}
@@ -5693,7 +5700,8 @@ which has $2$-norm equal to~$\sqrt{n}$.
 
 \begin{parsec}%
 \begin{point}[self-dual]{Definition}%
-A Hilbert $\scrA$-module~$X$ is \Define{self-dual}
+A Hilbert $\scrA$-module~$X$ is \Define{self-dual}%
+\index{Hilbert $\scrA$-module!self dual}
 when every bounded module map $r\colon X\to \scrA$
 is of the form $r\equiv \left<y,(\,\cdot\,)\right>$
 for some~$y\in X$.
@@ -5708,7 +5716,9 @@ the Hilbert $\scrA$-module $\scrA^{N}$
 of $N$-tuples is self dual.
 \end{point}
 \begin{point}[chilb-form]{Definition}%
-Let us say that a \Define{(bounded) form}
+Let us say that a \Define{(bounded) form}%
+\index{form, between Hilbert $\scrA$-modules}%
+\index{form, between Hilbert $\scrA$-modules!bounded}
 on Hilbert $\scrA$-modules
 $X$ and~$Y$
 is a map $[\,\cdot\,,\,\cdot\,]\colon X\times Y\to \scrA$
@@ -5820,16 +5830,31 @@ with $\{x\}\subseteq F$).
 Let~$\scrH$ be a Hilbert space.
 \begin{enumerate}
 \item
-	The \Define{weak operator topology (WOT)}
+	The \Define{weak operator topology (WOT)}%
+\index{WOT, weak operator topology}
 on~$\scrB(\scrH)$ is the least topology
 with respect to which $T\mapsto \left<x,Tx\right>,\,\scrB(\scrH)\to\C$
 is continuous for every~$x\in\scrH$.
+
+So a net $(T_\alpha)_\alpha$
+		converges to~$T$ in $\scrB(\scrH)$
+		with respect to the weak operator topology
+		iff $\left<x,T_\alpha x\right>\to \left<x,Tx\right>$
+		as~$\alpha\to\infty$ for all~$x\in \scrH$.
 \item
-	The \Define{strong operator topology (SOT)}
+	The \Define{strong operator topology (SOT)}%
+\index{SOT, strong operator topology}
 on~$\scrB(\scrH)$ is the least topology
 with respect to which $T\mapsto \|Tx\|\equiv \smash{\left<x,T^*Tx\right>^{%
 \nicefrac{1}{2}}}$
 is continuous for every~$x\in\scrH$.
+
+		So a net $(T_\alpha)_\alpha$
+		converges to~$T$
+		in $\scrB(\scrH)$
+		with respect to the strong operator topology iff
+		$\|T_\alpha x -Tx \| \to 0$ as $\alpha\to\infty$
+		for all~$x\in\scrH$.
 \end{enumerate}
 \begin{point}{Remark}%
 Although we'll only make use of the weak operator
@@ -5913,10 +5938,10 @@ bounded from above (by assumption),
 and therefore converges to~$\sup_{T\in\scrD}\left<x,Tx\right>$.
 In particular,~$(T)_{T\in\scrD}$
 is WOT-Cauchy,
-and WOT-bounded,
+and ``WOT-bounded'',
 and thus
 (by~\sref{bh-wot-bounded-complete})
-WOT-converges to some~$T'$ from~$\scrB(\scrH)$.
+WOT-converges to some self-adjoint~$T'$ from~$\scrB(\scrH)$.
 
 Since $(\,\left<x,Tx\right>\,)_{T\in\scrD}$
 converges both to~$\left<x,T'x\right>$,
@@ -5944,7 +5969,8 @@ Let~$\scrH$ be a Hilbert space.
 The supremum of a (norm) bounded directed subset~$\scrD$ 
 in~$\Real{(\scrB(\scrH))}$
 (which exists by~\sref{hilb-suprema})
-is denoted by~$\Define{\bigvee\scrD}$.
+is denoted by~$\Define{\bigvee\scrD}$.%
+\index{*sup@$\bigvee D$, supremum of~$D$!in $\scrB(\scrH)$}
 \end{point}
 \end{parsec}
 \subsection{Normal functionals}
@@ -5952,16 +5978,19 @@ is denoted by~$\Define{\bigvee\scrD}$.
 \begin{point}{Definition}%
 Given a Hilbert space~$\scrH$
 a p-map $\omega\colon \scrB(\scrH)\to\C$
-is called \Define{\textbf{n}ormal} when
+is called \Define{\textbf{n}ormal}%
+\index{normal!functional!on $\scrB(\scrH)$}
+when
 $\omega(\bigvee \scrD)=\bigvee_{T\in\scrD} \omega(T)$
 for every bounded directed subset $\scrD$ of~$\Real{\scrB(\scrH)}$.
 \end{point}
 \begin{point}{Example}%
-All vector functionals
+All vector functionals%
+\index{vector functional!for a Hilbert space!is normal}
 $\left<x,(\,\cdot\,)x\right>$ are normal by~\sref{hilb-suprema}.
 \end{point}
 \begin{point}[bh-normal-effects]{Exercise}%
-To show that a linear map is normal, it suffices to show 
+To show that a positive linear functional is normal, it suffices to show 
 that it preserves directed suprema of \emph{effects}: 
 show that given a Hilbert space~$\scrH$
 a  positive map $\omega\colon \scrB(\scrH)\to\C$
@@ -5972,7 +6001,7 @@ for every directed subset $\scrD$ of $[0,1]_{\scrB(\scrH)}$.
 \begin{point}[bh-functional-lemma]{Lemma}%
 Every sequence $x_1,x_2,\dotsc $ in a Hilbert space~$\scrH$
 with $\sum_n \|x_n\|^2 < \infty$
-gives a normal p-map $\omega\colon\scrB(\scrH)\to\C$
+gives a np-map $\omega\colon\scrB(\scrH)\to\C$
 defined by~$\omega(T)=\sum_n \left<x_n,Tx_n\right>$.
 \begin{point}{Proof}%
 Given $T\in\scrB(\scrH)$ 
@@ -6042,24 +6071,31 @@ $\ketbra{x}{x}$ on~$\scrB(\scrH)$.)
 \begin{parsec}%
 \begin{point}%
 The final project of this chapter
-is to show that each normal positive functional
-$\omega$ is of the form described in~\sref{bh-functional-lemma},
-and for this we'll need some more nuggets
+is to show that each normal positive functional~$\omega$ 
+on a~$\scrB(\scrH)$
+	is of the form 
+	$\omega\equiv \sum_{n=0}^\infty\left<x_n,(\,\cdot\,)x_n\right>$
+	for some~$x_1,x_2,\dotsc$
+	with~$\sum_n\|x_n\|^2<\infty$.
+For this we'll need some more nuggets
 from the theory of Hilbert spaces.
 \end{point}
 \begin{point}{Definition}%
 A subset~$\scrE$ of a Hilbert space
-is called \Define{orthonormal}
+is called \Define{orthonormal}%
+\index{orthonormal, subset of a Hilbert space}
 if $\left<e,e'\right>=0$
 for all~$e,e'\in\scrE$ with~$e\neq e'$,
 and~$\left<e,e\right>=1$
 for all~$e\in\scrE$.
 We say that~$\scrE$ is \Define{maximal}
+\index{orthonormal, subset of a Hilbert space!maximal}
 when~$\scrE$ is maximal
 among all orthonormal  subsets of~$\scrH$
 ordered by inclusion,
 and in that case
-we call~$\scrE$ an \Define{orthonormal basis}
+we call~$\scrE$ an \Define{orthonormal basis}%
+\index{orthonormal basis, for a Hilbert space}
 for~$\scrH$
 for reasons that will be become clear in~\sref{orthonormal}
 below.
@@ -6075,7 +6111,9 @@ and~$x\in \scrH$,
 \begin{enumerate}
 \item
 \label{orthonormal-1}
-\Define{(Bessel's inequality)}\ 
+\Define{(Bessel's inequality)}%
+\index{Bessel's inequality}
+\ 
  $\sum_{e\in \scrE}\left|\left<e,x\right>\right|^2
 \leq \|x\|^2$;
 \item
@@ -6088,7 +6126,8 @@ $\sum_{e\in \scrE} \left<e,x\right>e=x$
 if~$\scrE$ is maximal, and
 \item
 \label{orthonormal-4}
-\Define{(Parseval's identity)}
+\Define{(Parseval's identity)}%
+\index{Parseval's identity}
 $\sum_{e\in\scrE}\left|\left<e,x\right>\right|^2 = \|x\|^2$
 if~$\scrE$ is maximal.
 \end{enumerate}
@@ -6171,7 +6210,7 @@ and~$A\in\scrB(\scrH)$.
 Let~$\scrF$ be a finite subset of~$\scrE$,
 and write $P=\sum_{e\in \scrF} \ketbra{e}{e}$.
 Since $PAP
-= \sum_{e,e'}\left<e,Ae'\right>\,\omega(\ketbra{e}{e'})$
+= \sum_{e,e'\in\scrF}\left<e,Ae'\right>\,\ketbra{e}{e'}$
 it suffices
 to show that~$\omega(A-PAP)$
 vanishes as~$\scrF$ increases.
@@ -6182,7 +6221,7 @@ since
 $\|P\|\leq 1$,
 and~$A-PAP=P^\perp A + PAP^\perp$,
 we have,
-by Kadison's inequality, \sref{omega-norm-basic},
+by Kadison's inequality,
 \begin{alignat*}{3}
 \left|\omega(A-PAP)\right|
 \ &\leq\  \left|\omega(P^\perp A)\right| \,+\,\left|\omega(PAP^\perp)\right| \\
@@ -6204,6 +6243,7 @@ as~$\scrF\to\infty$.\qed
 \end{point}
 \end{point}
 \begin{point}[bh-np]{Theorem}%
+\index{normal!functional!on~$\scrB(\scrH)$}%
 Let~$\scrH$ be a Hilbert space.
 Every normal p-map $\omega\colon \scrB(\scrH)\to \C$
 is of the form $\omega = \sum_n\left<x_n,(\,\cdot\,)x_n\right>$
