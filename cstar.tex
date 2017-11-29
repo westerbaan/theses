@@ -343,9 +343,19 @@ is bounded by~$1$.
 \end{point}
 \begin{point}[operator-norm-ball]{Exercise}%
 Let $T\colon \scrX\to\scrY$
-be a bounded operator between normed vector spaces.
-Show that $\|T\|=\sup_{x\in (\scrX)_1} \|Tx\|$,
-where $\Define{(\scrX)_1}=\{x\in \scrX\colon \|x\|=1\}$.
+be a bounded operator between normed vector spaces,
+	and let~$r\in[0,\infty)$.
+Show that 
+	\begin{equation*}
+		\textstyle
+		r\|T\|\ =\ \sup_{x\in (\scrX)_r} \|Tx\|,
+	\end{equation*}
+where $\Define{(\scrX)_r}=\{x\in \scrX\colon \|x\|\leq r\}$.%
+\index{*ballr@$(\scrX)_r$, $r$-ball}%
+\index{*ball@$(\scrX)_1$, unit ball}
+	(The set~$(\scrX)_1$
+	is called the \Define{unit ball} of~$\scrX$.)%
+\index{unit ball}
 \end{point}
 \begin{point}[operator-norm-complete]{Lemma}%
 The operator norm on~$\scrB(\scrX,\scrY)$ is complete

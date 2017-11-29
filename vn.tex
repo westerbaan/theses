@@ -4832,13 +4832,14 @@ follows along the same lines.
 	\Longrightarrow$%
 \ref{pseudoinverse-5})}\ 
 We have $ta=\ceill{a}$ by~\sref{mult-cancellation},
-because $ata=a=a\ceill{a}$
-and $\ceill{at}\leq\ceill{t}\leq\ceilr{a}$.
+because $ata=a=a\ceill{a}$,
+	and $\ceilr{ta}\leq\ceilr{t}\leq\ceill{a}$.
 Also, $at=\ceilr{a}$,
 (because~$ata=a=\ceilr{a}a$,
 and~$\ceill{at}\leq\ceill{t}\leq \ceilr{a}$).
 Further, $\ceill{t}=\ceilr{a}$,
-because $\ceill{a}=ta=\ceilr{ta}\leq \ceilr{t}\leq \ceill{a}$,
+because 
+	$\ceilr{a}=at=\ceill{at}\leq \ceill{t}\leq\ceilr{a}$;
 and, similarly, $\ceill{a}=\ceilr{t}$.
 \grayed{(\ref{pseudoinverse-4}$
 	\Longrightarrow$%
@@ -4878,11 +4879,11 @@ and~$(ab)^{\sim1}=b^{\sim1}a^{\sim1}$.
 \item
 Show that~$a$ is pseudoinvertible
 iff~$a^*a$ is pseudoinvertible,
-and, in that case, $a^{\sim 1} = (a^*a)^{\sim1}a$
+and, in that case, $a^{\sim 1} = (a^*a)^{\sim1}a^*$
 and~$(a^*a)^{\sim1}=a^{\sim1}(a^{\sim1})^*$.
 \end{enumerate}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[pseudoinverse-basic-2]{Exercise}%
 Let~$a$ be a positive element of a von Neumann algebra~$\scrA$.
 \begin{enumerate}
 \item
@@ -4921,6 +4922,7 @@ is not pseudoinvertible in~$\ell_\infty$.
 \begin{point}{Remark}%
 Note that the obvious candidate
 for the pseudoinverse of~$(0,0,1,\frac{1}{2},\frac{1}{3},\dotsc)$
+from~$\ell^\infty$
 being~$(0,0,1,2,3,\dotsc)$
 is not bounded,
 and therefore not an element of~$\ell^\infty$.
@@ -4934,7 +4936,9 @@ of a von Neumann algebra
 is what we'll see next.
 \end{point}
 \begin{point}[approximate-pseudoinverse-def]{Definition}%
-An \Define{approximate pseudoinverse}
+An \Define{approximate pseudoinverse}%
+\index{approximate pseudoinverse}%
+\index{pseudoinverse!approximate}
 of an element~$a$ a von Neumann algebra~$\scrA$
 is a sequence~$t_1,t_2,\dotsc$
 of elements of~$\scrA$
@@ -4981,7 +4985,7 @@ and so $\frac{1}{n}q_n \leq  aq_n$ for all~$n>0$.
 Writing $e_{n}=q_{n+1}-q_n$
 for all~$n$ (taking~$q_0:=0$)
 --- and thinking of it as the places
-where $\frac{1}{n+1}\leq a\leq \frac{1}{n}$ --- 
+where $\frac{1}{n+1}\leq a < \frac{1}{n}$ --- 
 we get a sequence of (pairwise orthogonal) projections
 $e_1,e_2,\dotsc$ in~$\{a\}^{\square\square}$
 with $\sum_n e_n = \ceil{a}$.
@@ -4990,7 +4994,7 @@ involving the facts that $\frac{1}{n+1}\leq \frac{1}{n}$
 and~$aq_n\leq aq_{n+1}$,
 we get $\frac{1}{n+1}e_n \leq ae_n \leq  \frac{1}{n}e_n$.
 
-Now, note that~$\ceil{ae_n}=\ceil{e_n}$ for any~$n$.
+We claim that~$\ceil{ae_n}=\ceil{e_n}$ for any~$n$.
 Indeed, on the one hand~$ae_n=e_nae_n\leq \|a\|e_n$
 (as~$e_n\in\{a\}^{\square\square}$)
 and so~$\ceil{ae_n}\leq \ceil{\|a\|e_n}=e_n$
@@ -4998,7 +5002,7 @@ and so~$\ceil{ae_n}\leq \ceil{\|a\|e_n}=e_n$
 while on the other hand, $\frac{1}{n+1}e_n\leq ae_n$
 gives $e_n\equiv \ceil{\smash{\frac{1}{n+1}e_n}}\leq \ceil{ae_n}$.
 In particular, $\frac{1}{n+1}\ceil{ae_n}=\frac{1}{n+1}e_n \leq ae_n$,
-so that~$ae_n$ is pseudoinvertible (by~\sref{pseudoinverse-basic}).
+	so that~$ae_n$ is pseudoinvertible (by~\sref{pseudoinverse-basic-2}).
 
 Writing~$t_n := (ae_n)^{\sim1}$,
 we have~$\ceil{t_n}=e_n$
@@ -5018,7 +5022,8 @@ making $t_1,t_2,\dotsc$ an approximate pseudoinverse of~$a$.\qed
 Let~$b$ be an element of a von Neumann algebra~$\scrA$,
 and let~$a$ be an element of~$\scrA b$
 --- so~$a\equiv cb$ for some~$c\in\scrA$.
-We denote by~\Define{$a/b$} 
+We denote by~\Define{$a/b$}%
+\index{*slash@$a/b$!in a von Neumann algebra}
 the (by~\sref{mult-cancellation}) unique
 element~$c$ of~$\scrA\!\ceilr{b}$
 with~$a=cb$,
@@ -5049,6 +5054,7 @@ $c/b\,\in\,a\scrA$, and
 (a\backslash c)/b\ =\  a\backslash(c/b)
 \quad =:\  \Define{a\backslash c/b}.
 \end{equation*}
+\index{*slashslash@$a\backslash c/b$!in a von Neumann algebra}
 Show that~$a\backslash c/b$
 is the unique element~$d$ of~$\ceill{a}\scrA\ceilr{b}$
 with~$c=adb$. 
@@ -5056,7 +5062,7 @@ with~$c=adb$.
 Let~$c$ be an element of~$\scrA b$
 and let~$d$ be an element of~$a\scrA$.
 
-Show that~$a\in a\scrA b$,
+Show that~$dc\in a\scrA b$,
 and~$a\backslash (dc) / b  = (a\backslash d)\,(c/b)$.
 \item
 Let~$c$ be an element of~$\scrA b$.
@@ -5071,7 +5077,8 @@ we have $a\,\in\, \scrA b$.
 Moreover,
 given an approximate pseudoinverse $t_1,t_2,\dotsc$
 of~$b$,
-the series $\sum_nat_n$ converges ultrastrongly to~$a/b$,
+the series $\sum_nat_n$ converges ultrastrongly to~$a/b$,%
+\index{*slash@$a/b$!in a von Neumann algebra}
 and uniformly so in~$a$.
 \begin{point}{Proof}%
 To show that~$\sum_{n=0}^N at_n$
@@ -5084,14 +5091,14 @@ To this end, note that
 \begin{alignat*}{3}
 \textstyle 
 (\, \sum_{n=M}^N at_n\,)^*\ \,\sum_{n=M}^N\,at_n
-\ &= \textstyle\ (\sum_{n=M}^Nt_n) \,a^*a\, (\sum_{n=M}^N t_n)
+\ &= \textstyle\ (\sum_{n=M}^Nt_n^*) \,a^*a\, (\sum_{n=M}^N t_n)
 \\
 \ &\leq\ \textstyle 
- (\sum_{n=M}^N t_n) \,b^*b\, (\sum_{n=M}^Nt_n)
+ (\sum_{n=M}^N t_n^*) \,b^*b\, (\sum_{n=M}^Nt_n)
 \\
 \ &= \ \textstyle 
 \sum_{n,m=M}^N
-t_nb^*bt_m 
+t_n^*b^*bt_m 
 \\
 \ &=\ \textstyle 
 \sum_{m=M}^N
@@ -5131,6 +5138,7 @@ and so~$c\ceilr{b}=\sum_n at_n\ceilr{b}
 \end{point}
 \end{point}
 \begin{point}[douglas]{Exercise}%
+\index{Douglas' Lemma}
 Let~$a$ and~$b$ be elements of a von Neumann algebra~$\scrA$.
 \begin{enumerate}
 \item
@@ -5174,9 +5182,30 @@ and an approximate pseudoinverse of~$s_1,s_2,\dotsc$
 of~$c$,
 show that
 $(\sum_{n=1}^N s_n) \,a\, (\sum_{m=1}^Nt_m)$,
-converges ultrastrongly to~$c\backslash a /b$
+converges ultrastrongly to~$c\backslash a /b$%
+\index{*slashslash@$a\backslash c/b$!in a von Neumann algebra}
 as~$N\to\infty$
 (and uniformly so) for~$a\in c(\scrA)_1 b$.
+\end{point}
+\begin{point}[sequential-quotient]{Exercise}%
+Show that for positive elements~$a$ and~$b$ of a von Neumann
+algebra~$\scrA$,
+the following are equivalent.
+\begin{enumerate}
+\item
+$a\leq \lambda b$ for some~$\lambda\geq 0$;
+\item
+$a=\sqrt{b}c\sqrt{b}$
+for some positive~$c\in\scrA$.
+\end{enumerate}
+In that case, there is a unique~$c\in\scrA_+$
+with $a=\sqrt{b}c\sqrt{b}$
+and~$\ceil{c}\leq \ceil{b}$.
+Moreover,
+if~$t_1,t_2,\dotsc$
+is an approximate pseudoinverse of~$\sqrt{b}$,
+then~$\sum_{m,n} t_m a t_n$
+converges ultraweakly to such~$c$.
 \end{point}
 \begin{point}[div-usc]{Lemma}%
 Given elements~$b$ and~$c$  of a von Neumann algebra~$\scrA$
@@ -5225,9 +5254,11 @@ which is not ultrastrongly Cauchy.
 \subsection{Polar decomposition}
 \begin{parsec}%
 \begin{point}[polar-decomposition]{Proposition (Polar Decomposition)}%
+\index{polar decomposition!of an element of a von Neumann algebra}%
 Any element~$a$ of a von Neumann
 algebra~$\scrA$
-can be uniquely written as~$a=\Define{[a]}\sqrt{a^*a}$,
+can be uniquely written as~$a=\Define{[a]}\sqrt{a^*a}$,%
+\index{*brackets@$[a]$, from the polar decomposition of~$a$}
 where~$[a]$
 is an element of~$\scrA\!\ceill{a}$.
 Moreover,
@@ -5274,6 +5305,7 @@ so that
 $\ceilr{a}=\ceil{aa^*}
 = \ceil{\,[a]a^*a[a]^*\,}
 \leq \ceil{\,\|a\|^2[a][a]^*\,}
+	=\ceil{[a][a]^*}
 \leq [a][a]^*$.
 
 To prove that~$a=\sqrt{aa^*}[a]$,
@@ -5285,8 +5317,8 @@ $[a]\sqrt{a^*a}[a]^*[a]\sqrt{a^*a}[a]^*
 = aa^*$ --- now take the square root.
 It follows that~$\sqrt{aa^*}[a]
 = [a]\sqrt{a^*a}[a]^*[a]
-= [a]\sqrt{a^*a}=a$;
-and, upon applying~$(\,\cdot\,)^*$,
+= [a]\sqrt{a^*a}=a$.
+Finally, upon applying~$(\,\cdot\,)^*$,
 we see that
 $a^*=[a]^*\sqrt{aa^*}$,
 and thus~$[a^*]=[a]^*$,
@@ -5294,26 +5326,6 @@ by uniqueness of~$[a^*]$,
 because $\ceill{\,[a]^*\,}=\ceilr{\,[a]\,}=  \ceilr{a}
 =\ceill{a^*}$.\qed
 \end{point}
-\end{point}
-\begin{point}[sequential-quotient]{Exercise}%
-Show that for positive elements~$a$ and~$b$ of a von Neumann
-algebra~$\scrA$,
-the following are equivalent.
-\begin{enumerate}
-\item
-$a\leq \lambda b$ for some~$\lambda\geq 0$;
-\item
-$a=\sqrt{b}c\sqrt{b}$
-for some positive~$c\in\scrA$.
-\end{enumerate}
-In that case, there is a unique~$c\in\scrA_+$
-with $a=\sqrt{b}c\sqrt{b}$
-and~$\ceil{c}\leq \ceil{b}$.
-Moreover,
-if~$t_1,t_2,\dotsc$
-is an approximate pseudoinverse of~$\sqrt{b}$,
-then~$\sum_{m,n} t_m a t_n$
-converges ultraweakly to such~$c$.
 \end{point}
 \end{parsec}
 \begin{parsec}%
@@ -5345,8 +5357,10 @@ $e' = u^*u$ and~$uu^*\leq e$
 for some partial isometry~$u$.
 \end{enumerate}
 In that case
-we write~$\Define{e'\vmleq e}$
-(and say~$e'$ is \Define{Murray--von Neumann below}~$e$).
+we write~$\Define{e'\vmleq e}$%
+\index{*vmleq@$\vmleq$, Murray--von Neumann preorder}
+(and say~$e'$ is \Define{Murray--von Neumann below}~$e$).%
+\index{Murray--von Neumann preorder}
 \begin{point}{Proof}%
 That~\ref{vmleq-3}
 implies~\ref{vmleq-2} is clear.
@@ -5362,10 +5376,11 @@ and~$uu^*=\ceil{eaa^*e}\leq e$.\qed
 \end{point}
 \end{point}
 \begin{point}{Exercise}%
-Show that~$\vmleq$ gives a preorder
-on the set of projections of a von Neumann algebra.
+Show that~$\vmleq$  preorders
+the projections of a von Neumann algebra.
 \end{point}
 \begin{point}[cceil-sum]{Lemma}%
+\index{*cceil@$\cceil{\,\cdot\,}$!$\cceil{a}$, central support}%
 Given a projection~$e$
 of a von Neumann algebra~$\scrA$
 there is a family
@@ -5392,7 +5407,7 @@ Then since $p:=\cceil{e}-\bigcup_i e_i $
 is a non-zero projection,
 and~$p=p\cceil{e} p
 =\bigcup_{a\in\scrA} \ceil{p\ceil{a^*ea}p}
-= \bigcup_{a\in\scrA} \ceil{(ap)^*eap}$,
+= \bigcup_{a\in\scrA} \ceil{(eap)^*eap}$,
 there must be~$a\in\scrA$ with $(eap)^*eap\neq 0$.
 The polar decomposition (see~\sref{polar-decomposition})
 of~$eap$
@@ -5700,6 +5715,7 @@ we first analyse the the not-necessarily-positive normal functionals
 in greater detail.
 \end{point}
 \begin{point}[positive-functional-criterion]{Lemma}%
+\index{functional!positive}
 A linear map $f\colon \scrA\to \C$
 on a $C^*$-algebra~$\scrA$
 is positive iff $\|f\|\leq f(1)$.
@@ -5743,9 +5759,9 @@ Since $(\Real{f(a)})^\perp
 and therefore $\Real{f(a)}\geq 0$,
 we just need to show that~$\Imag{f(a)}=0$.
 
-The trick is to consider $b_n := (a - \Real{f(a)})+in\Imag{f(a)}$.
+The trick is to consider $b_n := (a - \Real{f(a)})+ni\Imag{f(a)}$.
 Indeed, since $(n+1)^2(\Imag{f(a)})^2
-= \|f(b_n)\|^2 \leq \|b_n\|^2 = 
+= \left|f(b_n)\right|^2 \leq \|b_n\|^2 = 
 \|b_n^*b_n\| \leq \|a-\Real{f(a)}\|^2 + n^2(\Imag{f(a)})^2$,
 one sees that $(2n+1)(\Imag{f(a)})^2\leq \|a-\Real{f(a)}\|^2$
 for all~$n$,
@@ -5755,6 +5771,7 @@ that is, $\Imag{f(a)}=0$.\qed
 \end{point}
 \end{point}
 \begin{point}[vn-ball-extreme-point]{Lemma}%
+\index{unit ball!of a $C^*$-algebra!extreme points}%
 An extreme point~$u$ of the unit ball~$(\scrA)_1$
 of a $C^*$-algebra~$\scrA$
 is a partial isometry with $(uu^*)^\perp\scrA(u^*u)^\perp = \{0\}$.
@@ -5808,6 +5825,7 @@ so $\|u\pm a\|\leq 1$. \qed
 \end{point}
 \begin{point}[polar-decomposition-of-functional]%
 	{Theorem (Polar decomposition of functionals)}%
+\index{polar decomposition!of a functional}
 Every functional $f\colon \scrA\to \C$ on a von Neumann algebra~$\scrA$
 which is ultraweakly continuous on
 the unit ball~$(\scrA)_1$
@@ -5847,12 +5865,12 @@ by~\sref{vn-ball-extreme-point}.
 
 Note that $f(u(\,\cdot\,))$
 is positive by~\sref{positive-functional-criterion}, because
-$\|f(u(\,\cdot\,))\||\leq\|f\|\|u\|\leq\|f\|=f(u)=f(u(1))$,
-and by a similar argument~$f((\,\cdot\,)u)$
+$\|f(u(\,\cdot\,))\||\leq\|f\|\|u\|\leq\|f\|=f(u)=f(u(1))$.
+By a similar argument~$f((\,\cdot\,)u)$
 is positive.
 
 Let~$a\in\scrA$ be given.
-It remains to be shown that $f=f(uu^*a)=f(au^*u)$.
+It remains to be shown that $f(a)=f(uu^*a)=f(au^*u)$.
 First note that  $u(u^*u)^\perp = 0$ (since~$u$ is an isometry)
 and so $f(u(u^*u)^\perp)=0$,
 that is,  $u^*u\geq \ceil{f(u(\,\cdot\,))}$.
@@ -5868,6 +5886,7 @@ By a similar reasoning we get $f(uu^*a)=f(a)$.\qed
 \end{point}
 \end{point}
 \begin{point}[uwcont-on-ball]{Corollary}%
+\index{functional!ultraweakly continuous}
 A functional $f\colon \scrA\to\C$
 on a von Neumann algebra~$\scrA$
 is ultraweakly continuous
@@ -5919,8 +5938,11 @@ Given a von Neumann algebra~$\scrA$,
 the vector space of ultraweakly continuous 
 linear maps $f\colon \scrA\to \C$
 endowed with the operator norm
-is denoted by~$\Define{\scrA_*}$,
-and called the \Define{predual} of~$\scrA$.
+is denoted by~$\Define{\scrA_*}$,%
+\index{*understar@$\scrA_*$, predual of~$\scrA$}
+and called the \Define{predual}%
+\index{predual}
+of~$\scrA$.
 \begin{point}{Remark}%
 The reason
 that the space~$\scrA_*$ is called the \emph{predual}
@@ -6020,9 +6042,10 @@ A net  $(b_\alpha)_\alpha$
  in a von Neumann algebra~$\scrA$
 is norm bounded
 (that is,~$\sup_\alpha \|b_\alpha\|<\infty$)
-provided it is \Define{ultraweakly bounded}, i.e.,
+provided it is \Define{ultraweakly bounded}, i.e.,%
+\index{ultraweakly bounded net}
 $\sup_\alpha \left|\omega(b_\alpha)\right|<\infty$
-for every npu-map $\omega\colon \scrA\to \C$.
+	for every np(u)-map $\omega\colon \scrA\to \C$.
 \begin{point}{Proof}%
 Note that $f\mapsto f(b_\alpha)$
 gives a linear map $(\,\cdot\,)(b_\alpha)\colon \scrA_*\to\C$
@@ -6038,8 +6061,8 @@ using that~$\scrA_*$ is complete, \sref{predual-complete}),
 that $\sup_\alpha \left|f(b_\alpha)\right|<\infty$ for all~$f\in\scrA_*$.
 
 Since such~$f\in\scrA_*$
-can be written as $f\equiv \sum_{k=0}^3 i^k f_k$
-where $f_k\colon \scrA\to\C$ are np-maps
+can be written as $f\equiv \sum_{k=0}^3 i^k \omega_k$
+where $\omega_k\colon \scrA\to\C$ are np-maps
 (by~\sref{normal-functionals-lemma}),
 we see that $\sup_\alpha\left|f(b_\alpha)\right|
 \leq \sum_{k=0}^3\sup_\alpha \left|\omega_k(b_\alpha)\right|
@@ -6054,7 +6077,7 @@ is norm bounded.\qed
 \begin{parsec}%
 \begin{point}%
 We turn to 
-subtle, but suprisingly difficult matter:
+a subtle, and suprisingly difficult matter:
 it is not immediately clear
 that the ultraweak topology on a von Neumann
 subalgebra~$\scrA$ of a von Neumann algebra~$\scrB$,
@@ -6066,7 +6089,7 @@ $\omega\colon \scrB\to\C$ is also an np-map restricted to~$\scrA$),
 it is not obvious that an np-map $\omega\colon \scrA\to\C$
 can be extended to an np-map on~$\scrB$
 --- but it can, as we'll see~\sref{functional-permanence}.
-I'll call this independence of the ultraweak topology
+We'll call this independence of the ultraweak topology
 from the surrounding space
 \emph{ultraweak permanence}
 being not unlike the independence
@@ -6104,7 +6127,8 @@ Let~$S$ be a subset of a von Neumann algebra~$\scrA$
 that is closed under multiplication, involution, and contains~$1$.
 Let~$e$ be a projection in~$\scrA$.
 Then $\Define{\ceil{e}_{S^\square}}= 
-\bigcup_{a\in S} \ceil{a^* e a}$
+\bigcup_{a\in S} \ceil{a^* e a}$%
+\index{*ceils@$\ceil{e}_S$}
 is the least projection in~$S^\square$
 above~$e$.
 
@@ -6112,7 +6136,9 @@ above~$e$.
 \begin{point}{Proof}%
 Let us first show that~$p:= \ceil{e}_{S^\square}$
 is in~$S^\square$.
-Let $b\in S$ be given.
+Let $b\in S$ be given;
+we must show that $pb=bp$.
+We may may assume without loss of generality that~$\|b\|\leq 1$.
 Since~$b^*(\,\cdot\,)b\colon \scrA\to\scrA$
 is normal and completely positive,
 and $p=\bigcup_{a\in S} \ceil{a^*ea}$,
@@ -6146,7 +6172,7 @@ and thus~$p=\bigcup_{a\in S}\ceil{a^*ea} \leq q$.\qed
 Show that given a vector~$x$ of Hilbert space~$\scrH$,
 and a collection~$S$ of bounded operators on~$\scrH$
 that is closed under addition, (scalar) multiplication,
-involution, and contains the identity operator
+involution, and contains the identity operator,
 the following coincide.
 \begin{enumerate}
 \item
@@ -6155,7 +6181,7 @@ the least projection in~$S^\square$
 above $\ceil{\,\ketbra{x}{x}\,}$;
 \item
 $\ceil{\,\left<x,(\,\cdot\,)x\right>|S^\square\,}$,
-the carrier of the vector functional of~$S^\square$
+the carrier of the vector functional on~$S^\square$
 given by~$x$;
 \item
 $\bigcup_{a\in S} \ceil{\,\ketbra{ax}{ax}\,}$; and 
@@ -6183,18 +6209,23 @@ is the nmiu-map given by
 $\varrho'(t)y=(ty_n)_n$
 for all~$t\in\scrB(\scrH)$ and~$y\in\scrH'$.
 
+Prove that $\varrho'(t)=\sum_n P_n^* t P_n$,
+where $P_n:=\pi_n\colon \scrH'\equiv \bigoplus_n\scrH\to\scrH$
+is the $n$-th projection.
 \item
+
 Let~$t\in S^{\square\square}$ be given
 (with~$S$ as above).
 Show that $\varrho'(t)\in \varrho'(S)^{\square\square}$.
 
-\TODO{check the difficulty of this.}
+(Hint: first show 
+	$P_n aP_m^*\in S^\square$ for all~$m$, $n$, and
+		$a\in \varrho'(S)^\square$.)
 
-Prove that  $\varrho'(t)x\,\in\,\overline{\varrho'(S)^{\square\square}x}
-\equiv \overline{\varrho'(S)x}$.
+Conclude that  $\varrho'(t)x'\,\in\,\overline{\varrho'(S)^{\square\square}x'}
+\equiv \overline{\varrho'(S)x'}$.
 
-Deduce
-that for every~$\varepsilon>0$
+Whence for every~$\varepsilon>0$
 one can find~$a\in S$ with $\|t-a\|_\omega \leq \varepsilon$.
 
 \item
@@ -6204,6 +6235,8 @@ is contained in the ultrastrong closure of~$S$.
 \end{point}
 \end{point}
 \begin{point}[double-commutant]{Double Commutant Theorem}%
+\index{Double Commutant Theorem}%
+\index{Bicommutant Theorem}
 For a collection~$S$ of bounded operators
 on a Hilbert space~$\scrH$
 that is closed under addition, (scalar) multiplication,
@@ -6287,7 +6320,7 @@ there is a unique bounded operator $V\colon \overline{\pi(\scrA)y}
 \to \overline{\varrho(\scrA)x}$
 with $V\pi(a)y = \varrho(a)x$ for all~$a\in\scrA$.
 A moment's thought reveals
-that $V$ is a unitary (and so~$V^*V=1=VV^*$).
+	that $V$ is a unitary (and so~$V^*V=1$ and $VV^*=1$.)
 Now, define $U:=EVF^*$
 where $E\colon \overline{\varrho(\scrA)x}\to\scrH$
 and $F\colon \overline{\pi(\scrA)y}\to\scrK$
@@ -6424,10 +6457,10 @@ and $U_\omega \pi(a) = \varrho(a) U_\omega$
 for all~$a\in\scrA$.
 
 We'll combine these $U_\omega$s into one operator~$U$
-using~\sref{summing-partial-isometries} but for this must
-verify that the projections $U_\omega^* U_\omega=\ceil{\sigma_\omega'}$
+using~\sref{summing-partial-isometries}, but for this we must
+verify that the projections $U_\omega U_\omega^*=\ceil{\sigma_\omega'}$
 are pairwise orthogonal,
-and that the projections $U_\omega U_\omega^*$
+and that the projections $U_\omega^* U_\omega$
 are pairwise orthogonal too.
 To this end note that
 $\cceil{\sigma_\omega}=\cceil{\sigma_\omega'}$
@@ -6436,11 +6469,11 @@ Thus, since the projections~$\cceil{\omega}$
 are orthogonal to one another,
 and $\ceil{\sigma_\omega'}\leq \cceil{\sigma_\omega'}
 = \cceil{\sigma_\omega} =\varrho(\cceil{\omega})$,
-we see that the projections~$U^*_\omega U_\omega \equiv 
+we see that the projections~$U_\omega U^*_\omega \equiv 
 \ceil{\sigma_\omega'}$
 are indeed pairwise orthogonal.
 Since for a similar reason
-the projections $U_\omega U_\omega^*
+the projections $U^*_\omega U_\omega
 \equiv \ceil{\tau_\omega'}$ are pairwise orthogonal too,
 there is by~\sref{summing-partial-isometries}
 a bounded operator $U\colon \scrK\to\scrH$
@@ -6452,13 +6485,13 @@ for all~$x\in\scrH$ and~$y\in \scrK$.
 
 Let us check that~$U$ has the desired properties.
 To begin, since the projections
-$\cceil{U_\omega^*U_\omega}=\cceil{\sigma_\omega'}=\varrho(\cceil{\omega})$
+$\cceil{U_\omega U^*_\omega}=\cceil{\sigma_\omega'}=\varrho(\cceil{\omega})$
 are pairwise orthogonal,
-we have $\cceil{U^*U}=\sum_\omega \cceil{U_\omega^* U_\omega}
+we have $\cceil{U U^*}=\sum_\omega \cceil{U_\omega U^*_\omega}
 =  \varrho(\sum_\omega \cceil{\omega})$
 by~\sref{cceil-basic} and
 \sref{sum-of-orthogonal-projections}.
-Similarly, $\cceil{UU^*}= \pi(\sum_\omega \cceil{\omega})$.
+Similarly, $\cceil{U^*U}= \pi(\sum_\omega \cceil{\omega})$.
 
 Finally,
 given~$a\in\scrA$
@@ -6510,6 +6543,8 @@ with the desired properties.\qed
 \end{point}
 \end{point}
 \begin{point}[normal-functional]{Theorem}%
+\index{functional!positive!normal}%
+\index{normal!positive functional}%
 Every np-map $\omega\colon \scrA\to\C$
 on a von Neumann subalgebra~$\scrA$
 of~$\scrB(\scrH)$,
@@ -6581,7 +6616,8 @@ of a von Neumann algebra~$\scrB$.
 For every np-map $\omega\colon \scrA\to\C$
 there is an np-map $\xi\colon \scrB\to\C$
 with $\xi|\scrA=\omega$.
-\item
+\item%
+\index{ultraweak and ultrastrong!permanence}
 \Define{Ultraweak permanence:}\ 
 the restriction of the ultraweak topology on~$\scrB$
 to~$\scrA$ coincides with the ultraweak topology on~$\scrA$.
@@ -6624,7 +6660,8 @@ of von Neumann algebras
 \sref{tensor}).
 \end{point}
 \begin{point}[vn-center-separating-fundamental]{Proposition}%
-Given a center separating collection~$\Omega$ of np-maps
+\index{centre separating collection!of np-functionals}
+Given a center separating collection~$\Omega$ of np-functionals
 on a von Neumann algebra~$\scrA$,
 and an ultrastrongly dense subset~$S$ of~$\scrA$
 \begin{enumerate}
