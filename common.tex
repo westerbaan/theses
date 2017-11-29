@@ -403,26 +403,26 @@
 % TOC support for parsecs
 \let\oldchapter\chapter%
 \renewcommand\chapter[1]{%
-    \setcounter{firstParsec}{\value{firstParsecF}/2+1}%
-    \addtocontents{parsectoc}{\protect\contentsline{chapter}{#1}{\sref{parsec-\the\value{firstParsec}.1}}{}}%
     \oldchapter{#1}%
+    \setcounter{firstParsec}{\value{firstParsecF}/2+1}%
+    \addtocontents{parsectoc}{\protect\contentsline{chapter}{\numberline{\thechapter} #1}{\sref{parsec-\the\value{firstParsec}.1}}{chapter.\thechapter}}%
 }
 \let\oldsection\section%
 \renewcommand\section[1]{%
-    \setcounter{firstParsec}{\value{firstParsecF}/2+1}%
-    \addtocontents{parsectoc}{\protect\contentsline{section}{#1}{\sref{parsec-\the\value{firstParsec}.1}}{}}%
     \oldsection{#1}%
+    \setcounter{firstParsec}{\value{firstParsecF}/2+1}%
+    \addtocontents{parsectoc}{\protect\contentsline{section}{\numberline{\thesection} #1}{\sref{parsec-\the\value{firstParsec}.1}}{section.\thesection}}%
 }
 \let\oldsubsection\subsection%
 \renewcommand\subsection[1]{%
-    \setcounter{firstParsec}{\value{firstParsecF}/2+1}%
-    \addtocontents{parsectoc}{\protect\contentsline{subsection}{#1}{\sref{parsec-\the\value{firstParsec}.1}}{}}%
     \oldsubsection{#1}%
+    \setcounter{firstParsec}{\value{firstParsecF}/2+1}%
+    \addtocontents{parsectoc}{\protect\contentsline{subsection}{\numberline{\thesubsection} #1}{\sref{parsec-\the\value{firstParsec}.1}}{subsection.\thesubsection}}%
 }
 \let\oldsubsubsection\subsubsection%
 \renewcommand\subsubsection[1]{%
-    \setcounter{firstParsec}{\value{firstParsecF}/2+1}%
-    \addtocontents{parsectoc}{\protect\contentsline{subsubsection}{#1}{\sref{parsec-\the\value{firstParsec}.1}}{}}%
     \oldsubsubsection{#1}%
+    \setcounter{firstParsec}{\value{firstParsecF}/2+1}%
+    \addtocontents{parsectoc}{\protect\contentsline{subsubsection}{\numberline{\thesubsubsection} #1}{\sref{parsec-\the\value{firstParsec}.1}}{subsubsection.\thesubsubsection}}%
 }
 
