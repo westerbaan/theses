@@ -462,6 +462,7 @@ and $a\mapsto \sqrt{a}$
 are not ultraweakly continuous on $\pos{\scrB(\ell^2)}$.
 
 \item
+\label{vn-counterexamples-9}
 For the next counterexample,
 we need a growing moving bump,
 which still converges ultraweakly.
@@ -499,7 +500,7 @@ is not jointly ultrastrongly continuous on~$\scrB(\ell^2)$,
 even when~$b$ is restricted to a bounded set.
 
 (Nevertheless we'll see that multiplication is ultrastrongly continuous
-when~$a$ is restricted to a bounded set.)
+when~$a$ is restricted to a bounded set in~\sref{mult-jus-cont}.)
 
 \item
 Show that
@@ -813,6 +814,47 @@ to
 show that $b\mapsto ab,\,ba\colon\ \scrA\to\scrA$
 are ultraweakly and ultrastrongly continuous
 for every element~$a$ of a von Neumann algebra~$\scrA$.
+\end{point}
+\begin{point}%
+We saw in~\sref{vn-counterexamples}
+that the multiplication on a von Neumann algebra 
+is not jointly ultraweakly continuous,
+even on a bounded set.
+Neither is $a,b\mapsto ab$ jointly ultrastrongly continuous,
+even when~$b$ is restricted to a bounded set;
+but it \emph{is} jointly 
+ultrastrongly continuous when~$a$ is restricted to a bounded set:
+\end{point}
+\begin{point}[mult-jus-cont]{Proposition}%
+Given nets $(a_\alpha)_\alpha$
+and~$(b_\alpha)_\alpha$
+in a von Neumann algebra~$\scrA$
+with the same index set
+that converge ultrastrongly to~$a,b\in\scrA$, respectively,
+the net~$(a_\alpha b_\alpha)_\alpha$
+converges ultrastrongly to~$ab$
+provided that~$(a_\alpha)_\alpha$
+is bounded.
+\begin{point}{Proof}%
+Let $\omega\colon \scrA\to\C$
+be an np-functional.
+Since
+\begin{alignat*}{3}
+\|ab-a_\alpha b_\alpha\|_\omega
+\ &\leq\ 
+	\|(a -a_\alpha)b\|_\omega
+	\,+\, 
+	\|a_\alpha(b-b_\alpha)\|_\omega
+	\\
+\ &\leq\ 
+	\|a -a_\alpha\|_{\omega(b^*(\,\cdot\,)b)}
+	\,+\, 
+	\|a_\alpha\|\|b-b_\alpha\|_\omega
+\end{alignat*}
+vanishes as~$\alpha\to\infty$,
+	we see that~$(a_\alpha b_\alpha)_\alpha$
+converges ultrastrongly to~$ab$.\qed
+\end{point}
 \end{point}
 \end{parsec}
 \begin{parsec}%

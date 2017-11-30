@@ -103,17 +103,17 @@ that
 \end{equation*}
 for all projections~$e_1$ and~$e_2$ of~$\scrA$---which we'll
 describe by saying that $\sqrt{p}(\,\cdot\,)\sqrt{p}\colon \scrA\to\scrA$
-is \emph{purely self-adjoint}.
+is \emph{$\diamond$-self-adjoint}.
 Judging only by the name
 it may not surprise you that the map $b(\,\cdot\,)b\colon \scrA\to\scrA$
 where~$b\in \scrA$ is self-adjoint (but not necessarily positive)
-turns out to be purely self-adjoint too,
+turns out to be $\diamond$-self-adjoint too,
 so that as a final touch we introduce the notion
-of \emph{purely positive} maps $f\colon \scrA\to\scrA$
-that are simply maps of the form~$f\equiv gg$ for some purely self-adjoint~$g$.
+of \emph{$\diamond$-positive} maps $f\colon \scrA\to\scrA$
+that are simply maps of the form~$f\equiv gg$ for some $\diamond$-self-adjoint~$g$.
 
 The main technical result, then, of this section
-is that any purely positive map $f\colon\scrA\to\scrA$
+is that any $\diamond$-positive map $f\colon\scrA\to\scrA$
 is of the form~$f=\sqrt{p}(\,\cdot\,)\sqrt{p}$
 where~$p=f(1)$;
 and, accordingly, our axioms 
@@ -455,7 +455,7 @@ Given a positive element~$p$
 of~$\scrA$
 we denote
 by $\Define{c_p}\colon \ceil{p}\!\scrA\!\ceil{p}\to\scrA$%
-\index{*cp@$c_p$, standard filter for~$p$}
+\index{cp@$c_p$, standard filter for~$p$}
 the \Define{standard filter}%
 \index{filter!standard}
 for~$p$
@@ -465,7 +465,7 @@ for all~$a\in\ceil{p}\!\scrA\!\ceil{p}$.
 Given an effect~$p$ of~$\scrA$
 we denote
 by $\Define{\pi_p}\colon \scrA\to\floor{p}\!\scrA\!\floor{p}$%
-		\index{*pip@$\pi_p$, standard corner of~$p$}
+		\index{pip@$\pi_p$, standard corner of~$p$}
 the \Define{standard corner}%
 \index{corner (map)!standard}
 		of~$p$
@@ -821,7 +821,7 @@ and~$h$ is an ncp-map.)
 \begin{point}[pure]{Definition}%
 Filters, corners,
 and their compositions we'll call \Define{pure}.%
-\index{pure maps}
+\index{pure map}
 \end{point}
 \begin{point}{Exercise}%
 Show that the following maps are pure.
@@ -1175,8 +1175,7 @@ e_n\, h(\,e_n\, a\, e_n\,)\, e_n
 for some sequence of projections $e_1,e_2,\dotsc$
 of~$\ceilr{b}\!\scrA\!\ceilr{b}$
 that converges ultrastrongly to~$\ceilr{b}$,
-because---as multiplication is jointly ultrastrongly continuous
-on bounded sets (by~\TODO{...})---the left-hand side of the equation above 
+because by~\sref{mult-jus-cont} the left-hand side of the equation above 
 converges ultrastrongly to~$g(a)$,
 while the right-hand side converges ultrastrongly to~$a$.
 We'll take $e_N := \sum_{n=1}^N \ceill{t_n}$,
@@ -1221,6 +1220,7 @@ which yields $e_nh(e_n)e_n = e_n$.\qed
 \end{point}
 \end{point}
 \begin{point}[pure-is-rigid]{Theorem}%
+\index{pure map!is rigid}
 Every pure map between von Neumann algebras is rigid.
 \begin{point}{Proof}%
 Let~$f\colon \scrA\to\scrB$ be a pure map between von Neumann algebras,
@@ -1265,34 +1265,41 @@ and thus~$f$ is rigid.\qed
 \end{point}
 \end{point}
 \end{parsec}
-\subsection{Pure positivity}
+\subsection{\texorpdfstring{$\diamond$-P}{Diamond p}ositivity}
 \begin{parsec}%
 \begin{point}{Definition}%
-We'll call a map $f\colon \scrA\to\scrA$
+We'll call an ncp-map $f\colon \scrA\to\scrA$
 between von Neumann algebras
 \begin{enumerate}
 \item
-\Define{purely self-adjoint}
+\Define{$\diamond$-self-adjoint}%
+\index{$\diamond$-self-adjoint}%
 if~$f$ is pure and contraposed to itself
 ($f^\diamond = f_\diamond$), and
 \item
-\Define{purely positive}
+\Define{$\diamond$-positive}%
+\index{$\diamond$-positive}%
 if~$f\equiv gg$
-for some purely self-adjoint map
+for some $\diamond$-self-adjoint map
 $g\colon \scrA\to\scrA$.
 \end{enumerate}
+We added ``$\diamond$-'' to ``positive''
+not only to distinguish it from 
+the pre-existing notion of positivity for maps between $C^*$-algebras,
+but also to contrast it with
+	the notion of ``$\dagger$-positivity''
+	that appears in the next thesis.\TODO{add ref.}
 \end{point}
 \begin{point}[purely-positive-examples]{Examples}%
 Let~$\scrA$ be a von Neumann algebra.
 \begin{enumerate}
 \item
-Given a self-adjoint element~$a$ of~$\scrA$,
-the map~$a(\,\cdot\,)a\colon \scrA\to\scrA$ is 
-purely self-adjoint.
+Given~$a\in\Real{\scrA}$ the map~$a(\,\cdot\,)a\colon \scrA\to\scrA$ is 
+$\diamond$-self-adjoint.
 \item
-Given a positive element~$a$ of~$\scrA$,
+Given~$a\in\scrA_+$
 the map $a(\,\cdot\,)a\colon \scrA\to\scrA$
-is purely positive.
+is $\diamond$-positive.
 \end{enumerate}
 \end{point}
 \begin{point}[purely-positive-basic]{Exercise}%
@@ -1302,23 +1309,25 @@ where~$\scrA$ is a von Neumann algebra.
 \begin{enumerate}
 \item
 Show that~$\ceil{f}=\ceil{f(1)}$ when~$f$
-is purely self-adjoint.
+is  $\diamond$-self-adjoint.
 \item
-Assuming~$f$ is purely self-adjoint,
-show that~$ff$ is purely self-adjoint,
+Assuming~$f$ is $\diamond$-self-adjoint,
+show that~$ff$ is $\diamond$-self-adjoint,
 and show that~$\ceil{ff}=\ceil{f}$ (cf.~\sref{carrier-f-dagger-f}).
 \item
-Show that~$f$ is purely self-adjoint
-when~$f$ is purely positive.
+Show that~$f$ is $\diamond$-self-adjoint
+when~$f$ is $\diamond$-positive.
 \end{enumerate}
 \end{point}
 \end{parsec}
 \begin{parsec}%
 \begin{point}%
-We now turn to the question
+We now turn 
+	to the question
+	roughly speaking 
 to what extend a filter~$c$ is determined by
 its action~$c^\diamond\colon e\mapsto \ceil{c(e)}$ on projections;
-we will see in~\TODO{}
+we will see (essentially in~\sref{positive-quotients-centrally-similar})
 that two filters $c_1$ and~$c_2$
 are equivalent, $c_1^\diamond = c_2^\diamond$,
 if and only if~$c_1(1)$ and~$c_2(1)$
@@ -1456,8 +1465,8 @@ by~\sref{centrally-similar-basic}.
 Further, to prove that~$\vartheta(a)=a$
 for some~$a\in\scrA$,
 it suffices to show that~$\vartheta( e_n a e_n  ) = e_n a e_n$,
-because $e_n a e_n$ converges ultraweakly to~$a$
-by~\TODO{}.
+because $e_n a e_n$ converges ultrastrongly to~$a$
+	by~\sref{mult-jus-cont}.
 Note that~$\vartheta(e_n)=e_n$,
 because~$e_np=pe_n$,
 and so~$\vartheta$ maps~$e_n\scrA e_n$ into~$e_n \scrA e_n$.
@@ -1487,7 +1496,7 @@ $p$ and~$q$ are centrally similar (by~\sref{centrally-similar-basic}).
 \end{point}
 \end{point}
 \begin{point}[faithful-positive-map-uniqueness]{Proposition}%
-A faithful positive map $f\colon \scrA\to\scrA$
+A faithful $\diamond$-positive map $f\colon \scrA\to\scrA$
 on a von Neumann algebra~$\scrA$
 is of the form~$f=\sqrt{p}(\,\cdot\,)\sqrt{p}$
 where $p:=f(1)$.
@@ -1505,8 +1514,8 @@ to find some positive~$q$ in~$\scrA$ with~$\ceil{q}=1$
 and~$f^\diamond(e)\equiv\ceil{\sqrt{p}\,\vartheta(e)\,\sqrt{p}}
 = \ceil{qeq}$ for all projections~$e$ in~$\scrA$.
 
-Since~$f$ is positive,
-we have~$f\equiv \xi \xi$ for some self-adjoint
+Since~$f$ is $\diamond$-positive,
+we have~$f\equiv \xi \xi$ for some $\diamond$-self-adjoint
 map~$\xi\colon \scrA\to\scrA$.
 Since~$1=\ceil{f}=f_\diamond(1)=
 \xi_\diamond(\xi_\diamond(1))\leq \xi_\diamond(1)=\ceil{\xi}$
@@ -1553,7 +1562,8 @@ Given a ncp-map $f\colon \scrA\to\scrB$
 between von Neumann algebras
 we denote by
 $\Define{\left<f\right>}\colon \ceil{f}\!\scrA\!\ceil{f}
-\to \ceil{f(1)}\!\scrB\!\ceil{f(1)}$
+\to \ceil{f(1)}\!\scrB\!\ceil{f(1)}$%
+\index{*diamondf@$\left<f\right>$}
 the unique ncp-map
 such that 
 \begin{equation*}
@@ -1603,39 +1613,39 @@ Let~$f\colon \scrA\to\scrA$
 be an ncp-map, where~$\scrA$ is a von Neumann algebra.
 \begin{enumerate}
 \item
-Suppose that~$f$ is purely self-adjoint.
+Suppose that~$f$ is $\diamond$-self-adjoint.
 
 Recall that~$\ceil{f}=\ceil{f(1)}$,
 and so $\left<f\right>\colon \ceil{f}\!\scrA\!\ceil{f}
 \to \ceil{f}\!\scrA\!\ceil{f}$.
 
 Prove that~$\left<f\right>$
-is purely self-adjoint.
+is $\diamond$-self-adjoint.
 \item
-Suppose again that~$f$ is purely self-adjoint,
+Suppose again that~$f$ is $\diamond$-self-adjoint,
 and recall from~\sref{purely-positive-basic} that $f^2$
-is purely self-adjoint, and~$\ceil{f^2} = \ceil{f}$.
+is $\diamond$-self-adjoint, and~$\ceil{f^2} = \ceil{f}$.
 Show that $\left<f^2\right> = \left<f\right>^2$.
 \item
-Assuming that~$f$ is purely positive,
-show that~$\left<f\right>$ is purely positive.
+Assuming that~$f$ is $\diamond$-positive,
+show that~$\left<f\right>$ is $\diamond$-positive.
 \end{enumerate}
 \end{point}
 \begin{point}[positive-map-uniqueness]{Theorem}%
 Given a positive element~$p$ of a von Neumann algebra~$\scrA$
-there is a unique purely positive map $f\colon \scrA\to\scrA$
+there is a unique $\diamond$-positive map $f\colon \scrA\to\scrA$
 with~$f(1)=p$,
 namely~$f=\sqrt{p}(\,\cdot\,)\sqrt{p}$.
 \begin{point}{Proof}%
 We've already seen in~\sref{purely-positive-examples}
 that $f=\sqrt{p}(\,\cdot\,)\sqrt{p}\colon \scrA\to\scrA$
-is a purely positive map with~$f(1)=p$.
+is a $\diamond$-positive map with~$f(1)=p$.
 Concerning uniqueness,
 (given arbitrary~$f$)
 the map~$\left<f\right>\colon \ceil{p}\!\scrA\!\ceil{p}
 \to \ceil{p}\!\scrA\!\ceil{p}$
 from~\sref{chevron-f}
-is purely positive by~\sref{chevron-f-purely-positive},
+is $\diamond$-positive by~\sref{chevron-f-purely-positive},
 and faithful by~\sref{chevron-f-basic},
 and so of the form
 $\left<f\right>=\sqrt{p}(\,\cdot\,)\sqrt{p}$
@@ -1648,6 +1658,7 @@ $f= c_{\ceil{p}}\circ\left<f\right>\circ \pi_{\ceil{p}}
 \end{point}
 \end{point}
 \begin{point}{Corollary (``Square Root Axiom'')}%
+\index{square root axiom}
 Given a positive element~$p$ of a von Neumann algebra~$\scrA$
 there is a unique positive map~$g\colon \scrA\to\scrA$
 with~$g(g(1))=p$, namely
@@ -1666,6 +1677,7 @@ thereby giving~$g=\sqrt[4]{p}\,(\,\cdot\,)\,\sqrt[4]{p}$.\qed
 \end{parsec}
 \begin{parsec}%
 \begin{point}[uniqueness-sequential-product]{Theorem}%
+\index{sequential product}
 On the effects of every von Neumann algebra~$\scrA$
 there is a unique binary operation~$\ast$
 such that for all~$p$ from~$[0,1]_\scrA$,
@@ -1699,8 +1711,8 @@ using~\ref{ax4},
 and find a pure map~$f\colon \scrA\to\scrA$
 with~$f(q)=p'\ast q$ for all~$q$ from $[0,1]_\scrA$
 using~\ref{ax2}.
-Then~$f$ is purely self-adjoint by~\ref{ax5},
-and so~$ff$ is purely positive.
+Then~$f$ is $\diamond$-self-adjoint by~\ref{ax5},
+and so~$ff$ is $\diamond$-positive.
 Since~$f(f(1))=p'\ast (p'\ast 1)
 = p'\ast p'=p$ by~\ref{ax1},
 $ff=\sqrt{p}(\,\cdot\,)\sqrt{p}$
