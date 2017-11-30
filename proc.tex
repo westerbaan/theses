@@ -94,7 +94,7 @@ will be called \emph{pure}, see~\sref{pure},
 Since not only assert maps turn out to be pure, but also maps of the form
 $b^*(\,\cdot\,)b\colon \scrA\to\scrA$ for an arbitrary element~$a$
 of~$\scrA$,
-we need one more property of assert maps, namely
+we need another property of assert maps, namely
 that
 \begin{equation*}
 	\sqrt{p}\,e_1\,\sqrt{p}\ \leq\  e_2^\perp 
@@ -140,8 +140,8 @@ p \ast e_2 \leq e_1^\perp$
 for all projections $e_1,e_2$ of~$\scrA$.
 \end{enumerate}%
 While I would certainly not like
-to undersell the results mentioned above
-I suspect that the notion of purety exposed along the way
+to undersell the results mentioned above,
+I suspect that the notion of purity exposed along the way
 will turn out to be of far greater significance.
 I'd like to advertise
 here that we have already discovered that purity can be described in
@@ -169,15 +169,21 @@ of being~\emph{rigid} (see~\sref{rigid} and~\sref{pure-is-rigid}).
 \begin{parsec}%
 \begin{point}{Definition}%
 Given an projection~$e$ of a von Neumann algebra~$\scrA$,
-the \Define{corner} of~$e$
-is the subset~$e\scrA e$ of~$\scrA$ 
+the \Define{corner}%
+	\index{corner (von Neumann algebra)}
+of~$e$
+is the subset~$e\scrA e$%
+\index{*eAe@$e\scrA e$, corner}
+of~$\scrA$ 
 (consisting of the elements of~$\scrA$
 of the form~$eae$ with~$a\in\scrA$).
 In this context,
 the obvious map~$e\scrA e\to\scrA$
-is called the \Define{inclusion}
+is called the \Define{inclusion}%
+\index{inclusion!of a corner}
 and the map $a\mapsto eae,\ \scrA\to e\scrA e$
-is called the \Define{projection}.
+is called the \Define{projection}.%
+\index{projection!onto a corner}
 \end{point}
 \begin{point}[corner-basic]{Exercise}%
 Let~$e$ be a projection from a von Neumann algebra~$\scrA$.
@@ -248,10 +254,12 @@ gives an ncp-map $p\scrA p\to q\scrA q$.
 \begin{parsec}%
 \begin{point}[corner]{Definition}%
 Let~$p$ be an effect of a von Neumann algebra~$\scrA$.
-A \Define{corner} of~$p$ is an
+A \Define{corner}%
+	\index{corner (map)}
+of~$p$ is an
 ncp-map $\pi\colon \scrA\to\scrC$
 to a von Neumann algebra~$\scrC$
-with~$\pi(p^\perp)=0$
+with~$\pi(p^\perp)=0$,
 which is initial among such maps 
 in the sense
 that every ncp-map $f\colon \scrA\to\scrB$
@@ -262,9 +270,11 @@ for some unique ncp-map $g\colon \scrC\to\scrB$.
 While most corners
 that we'll deal with are unital,
 there are also corners which are not unital
-(see~\sref{non-unital-corner}),
+(because there are non-unital
+ncp-isomorphisms),
 so when we write ``corner'' we shall
-always mean a ``unital corner''
+always mean a ``unital corner''%
+\index{corner (map)!unital}
 unless explicitly stated otherwise.
 \end{point}
 \begin{point}[prop-corner]{Proposition}%
@@ -295,7 +305,7 @@ we must show that there is a unique ncp-map
 $g\colon u^*u \scrA u^*u\to\scrB$
 with $f=g\circ \pi$.
 Uniqueness follows
-from the observation that~$\pi$ is surjective.
+from surjectivity of~$\pi$.
 Concerning existence,
 define~$g:= f\circ \zeta$,
 where $\zeta\colon  u^*u\scrA u^*u\to \scrA$
@@ -316,13 +326,16 @@ since~$\ceil{\smash{f(\,\smash{(uu^*)^\perp}\,)}}
 \end{parsec}
 \begin{parsec}%
 \begin{point}[filter]{Definition}%
-A \Define{filter}
+A \Define{filter}%
+\index{filter}
 is an ncp-map $c\colon \scrC\to\scrA$
 between von Neumann algebras
 such that every ncp-map $f\colon \scrB\to\scrA$
 with~$f(1)\leq c(1)$
 factors as $f=c\circ g$
 for some unique ncp-map $g \colon \scrB\to\scrC$.
+We'll say that~$c$ is a \Define{filter for}~$c(1)$.
+\index{filter!for~$p$}
 \end{point}
 \begin{point}[canonical-filter]{Proposition}%
 Given an element~$d$ of a von Neumann algebra~$\scrA$,
