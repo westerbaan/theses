@@ -337,6 +337,62 @@ for some unique ncp-map $g \colon \scrB\to\scrC$.
 We'll say that~$c$ is a \Define{filter for}~$c(1)$.
 \index{filter!for~$p$}
 \end{point}
+\begin{point}%
+To show that there is a filter
+for every positive element of a von Neumann algebra
+we need to the following result
+concerning ultraweak limits of ncp-maps.
+\end{point}
+\begin{point}[ncp-uwlim]{Lemma}%
+Given von Neumann algebras~$\scrA$
+and~$\scrB$
+the pointwise ultraweak limit
+$f\colon \scrA\to\scrB$
+of a net of  positive linear maps $f_\alpha\colon \scrA\to\scrB$
+is positive, and, 
+\begin{enumerate}
+\item
+$f$ is completely positive provided
+that the $f_\alpha$ are completely positive, and
+\item
+$f$ is normal provided that the $f_\alpha$ are normal
+and the ultraweak convergence of the~$f_\alpha$ to~$f$
+is uniform on~$[0,1]_\scrA$.
+\end{enumerate}
+\begin{point}{Proof}%
+Since given~$a\in \scrA$ the element~$f(a)$
+is the ultraweak limit of the positive elements~$f_\alpha(a)$,
+and therefore positive (by~\sref{vn-positive-basic}),
+we see that~$f$ is positive.
+
+Suppose that each~$f_\alpha$ is completely positive.
+To show that~$f$ is completely positive,
+we must prove, given~$a_1,\dotsc,a_n\in\scrA$
+and~$b_1,\dotsc,b_n\in\scrB$,
+that 
+the element $\sum_{i,j} b_i^* f(a_i^*a_j)b_j$
+of~$\scrB$
+is positive.
+And indeed it is,
+being the ultraweak limit of
+the positive elements $\sum_{i,j} b_i^* f_\alpha (a_i^* a_j)b_j$,
+because  $f_\alpha(a_i^* a_j)$
+converges ultraweakly to~$f(a_i^* a_j)$,
+and~$b_i^*(\,\cdot\,)b_j\colon \scrB\to\scrB$
+is ultraweakly continuous
+(\sref{mult-uws-cont})
+for any~$i$ and~$j$.
+
+If the~$f_\alpha$ 
+are normal,
+and converge uniformly on~$[0,1]_\scrA$ ultraweakly
+to~$f$,
+then~$f$ is ultraweakly continuous
+on~$[0,1]_\scrA$
+(because the uniform limit of continuous functions is continous),
+and thus normal (by~\sref{p-uwcont}).\qed
+\end{point}
+\end{point}
 \begin{point}[canonical-filter]{Proposition}%
 Given an element~$d$ of a von Neumann algebra~$\scrA$,
 the map $c\colon \ceilr{d}\!\scrA\!\ceilr{d}\to\scrA$
@@ -382,7 +438,7 @@ and therefore normal by~\sref{p-uwcont}.
 Finally, $g$ is completely positive
 by~\sref{ncp-uwlim},
 because it is by~\sref{div-approx}
-the pointwise ultrastrong limit
+the uniform ultrastrong limit
 of the by~\sref{ad-ncp} completely positive maps
 $(\sum_{n=1}^Nt_n)^* \,f(\,\cdot\,)\,(\sum_{n=1}^N t_n)$,
 where~$t_1,t_2,\dotsc$
@@ -398,15 +454,21 @@ Let~$\scrA$ be a von Neumann algebra.
 Given a positive element~$p$
 of~$\scrA$
 we denote
-by $\Define{c_p}\colon \ceil{p}\!\scrA\!\ceil{p}\to\scrA$
-the \Define{standard filter} for~$p$
+by $\Define{c_p}\colon \ceil{p}\!\scrA\!\ceil{p}\to\scrA$%
+\index{*cp@$c_p$, standard filter for~$p$}
+the \Define{standard filter}%
+\index{filter!standard}
+for~$p$
 given by~$c_p(a)=\sqrt{p}a\sqrt{p}$
 for all~$a\in\ceil{p}\!\scrA\!\ceil{p}$.
 \item
 Given an effect~$p$ of~$\scrA$
 we denote
-by $\Define{\pi_p}\colon \scrA\to\floor{p}\!\scrA\!\floor{p}$
-the \Define{standard corner} of~$p$
+by $\Define{\pi_p}\colon \scrA\to\floor{p}\!\scrA\!\floor{p}$%
+		\index{*pip@$\pi_p$, standard corner of~$p$}
+the \Define{standard corner}%
+\index{corner (map)!standard}
+		of~$p$
 given by~$\pi_p(a)=\floor{p}\!a\!\floor{p}$.
 \end{enumerate}
 \end{point}
@@ -426,11 +488,11 @@ Show that~$c$ is injective
 using~\sref{mult-cancellation}).
 
 Conclude that~$c$
-is faithful, and that~$c$ is mono in~$\W{CP}$.
+is faithful (so $\ceil{f}=1$), and that~$c$ is mono in~$\W{CP}$.
 \item
 Show that~$c$ is bipositive
 (by proving first that~$c_p$
-is positive using~\sref{sequential-douglas}).
+is bipositive using~\sref{sequential-douglas}).
 \end{enumerate}
 \end{point}
 \begin{point}[filters-composition]{Exercise}%
@@ -531,11 +593,12 @@ Then~$c_p\circ g\circ \pi_e = h\circ \pi_e = f$.\qed
 \end{point}
 \begin{point}[square-f]{Corollary}%
 Given an ncp-map $f\colon \scrA\to\scrB$
-between von Neumann algebras
+between von Neumann algebras,
 there is a unique ncp-map $\Define{[f]}\colon 
 \ceil{f}\!\scrA\!\ceil{f}
 \to
-\ceil{f(1)}\!\scrB\!\ceil{f(1)}$
+\ceil{f(1)}\!\scrB\!\ceil{f(1)}$%
+\index{*bracketsf@$[f]$, for an ncp-map}
 such that 
 \begin{equation*}
 \xymatrix@C=4em{
@@ -626,6 +689,7 @@ is simply a nmiu-isomorphism
 from the following characterization of multiplicativity.
 \end{point}
 \begin{point}[gardner]{Proposition}%
+\index{multiplicative!ncpsu-map}
 For an ncpu-map $f\colon \scrA\to\scrB$
 between von Neumann algebras
 the following are equivalent.
@@ -636,7 +700,7 @@ $f$ is multiplicative.
 \item
 \label{gardner-2}
 $f(a)f(b)=0$
-for all $a,b\in\scrA_+$ with $ab=0$.
+for all $a,b\in\scrA$ with $ab=0$.
 \item
 \label{gardner-3}
 $\ceil{f(p)}\ceil{f(q)}=0$
@@ -669,14 +733,23 @@ which implies that $\ceil{f(p)}\ceil{f(q)}
 =f(p)f(q)=0$ since~$f(p)$ and~$f(q)$ are projections.
 \end{point}
 \begin{point}{\sref{gardner-3}$\Longrightarrow$\sref{gardner-2}}%
-Let~$a$ and~$b$ be positive elements of~$\scrA$ with~$ab=0$.
+Let~$a,b\in\scrA$ with~$ab=0$ be given.
 We must show that~$f(a)f(b)=0$,
 and for this it suffices to show that
-$\ceil{f(a)}\ceil{f(b)}=0$,
-because $f(a)f(b)=f(a)\ceil{f(a)}\ceil{f(b)}f(b)$.
+$\ceill{f(a)}\ceilr{f(b)}=0$,
+because $f(a)f(b)=f(a)\ceill{f(a)}\ceilr{f(b)}f(b)$.
 Since~$ab=0$,
-we have~$\ceil{a}\ceil{b}=0$ by~\sref{mult-cancellation}
-and so $\ceil{f(a)}\ceil{f(b)}=\ceil{f(\ceil{a})}\ceil{f(\ceil{b})}=0$.
+we have~$\ceill{a}\ceilr{b}=0$ by~\sref{mult-cancellation},
+and so~$\ceil{f(\ceill{a})}\ceil{f(\ceilr{a})}=0$.
+Now,
+since $\ceil{f(\ceill{a})}\leq \ceill{f(a)}$
+	and $\ceil{f(\ceilr{a}}\leq \ceilr{f(a)}$
+	by~\sref{ncp-ceill},
+we get $\ceill{f(a)}\ceilr{f(b)}
+	= \ceill{f(a)} \ceil{f(\ceill{a})}
+	\ceil{f(\ceilr{a})}
+	\ceilr{f(a)}
+	=0$.
 \end{point}
 \begin{point}{\sref{gardner-2}$\Longrightarrow$\sref{gardner-1}}%
 We must show that~$f(a)f(b)=f(ab)$
@@ -707,23 +780,25 @@ Since~$f^{-1}(1)\leq 1$
 and so~$1=f(f^{-1}(1))\leq f(1)\leq 1$,
 we see that~$f(1)=1$, so both $f$ and $f^{-1}$ are unital.
 It remains to be shown that~$f$ and~$f^{-1}$ are multiplicative.
-Since by~\sref{projection-order-sharp} an effect element~$a$ of~$\scrA$
+Since by~\sref{projection-order-sharp} an effect~$a$ of~$\scrA$
 is a projection iff~$0$ is the infimum of~$a$ and~$a^\perp$,
-and~$f$ (as ncpu-isomorphism) preserves all the structure 
-mentioned in this characterization of being a projection,
+	and~$f$ (as ncpu-isomorphism) preserves $(\,\cdot\,)^\perp$
+	and order,
 we see that~$f$ maps projections to projections,
 and is thus multiplicative, by~\sref{gardner}.
 It follows automatically that~$f^{-1}$ is multiplicative too.\qed
 \end{point}
 \end{point}
 \begin{point}{Exercise}%
-Show that any filter of a projection is multiplicative.
+Show that any filter of a projection is multiplicative.\\
 (Hint: the filter is
-ncpu-isomorphic, \sref{filter-basic},
-and thus nmiu-isomorphic, \sref{iso}, to
-a standard filter.)
+a standard filter
+up to an
+ncpu-isomorphism, \sref{filter-basic},
+which is a nmiu-isomorphism by~\sref{iso}.)
 \end{point}
 \begin{point}[sharp-multiplicative]{Exercise}%
+\index{multiplicative!ncp-map}
 Show that for an ncp-map $f\colon \scrA\to\scrB$
 between von Neumann algebras
 the following are equivalent.
@@ -745,7 +820,8 @@ and~$h$ is an ncp-map.)
 \begin{parsec}%
 \begin{point}[pure]{Definition}%
 Filters, corners,
-and their compositions we'll call \Define{pure}.
+and their compositions we'll call \Define{pure}.%
+\index{pure maps}
 \end{point}
 \begin{point}{Exercise}%
 Show that the following maps are pure.
@@ -777,7 +853,7 @@ the following are equivalent.
 	$[f]$ from~\sref{square-f} is an ncpu-isomorphism.
 \end{enumerate}
 \begin{point}{Proof}%
-Note that \ref{pure-fundamental-3}$\Longrightarrow$\ref{pure-fundamental-2}
+\ref{pure-fundamental-3}$\Longrightarrow$\ref{pure-fundamental-2}
 and \ref{pure-fundamental-2}$\Longrightarrow$\ref{pure-fundamental-1}
 are rather obvious.
 \begin{point}{\ref{pure-fundamental-1}$\Longrightarrow$%
@@ -818,14 +894,15 @@ is by definition the unique ncp-map
 with~$f = c_{f(1)} [f] \pi_{\ceil{f}}$,
 see~\sref{square-f}.
 Note that since~$f=c\circ \pi$,
-we have~$\ceil{f}=\ceil{\pi}$ (because~$\ceil{c}=1$, \TODO{...}),
+	we have~$\ceil{f}=\ceil{\pi}$ (because~$\ceil{c}=1$ 
+	by~\sref{filter-basic}),
 and~$f(1)=c(1)$ (because~$\pi(1)=1$).
 Since there are ncpu-isomorphisms~$\alpha$ and~$\beta$
 with $\pi= \alpha \pi_{\ceil{\pi}}$ and  $c=c_{c(1)} \beta$,
 we see that~$f=c_{c(1)} \beta\alpha \pi_{\ceil{\pi}}$,
 and so~$[f]=\beta\alpha$
 by definition of~$[f]$,
-which implies that~$[f]$ is an ncpu-isomorphism.\qed
+so~$[f]$ is an ncpu-isomorphism.\qed
 \end{point}
 \end{point}
 \end{point}
@@ -847,7 +924,8 @@ a unital and faithful pure map is an ncpu-isomorphism.
 Given an ncp-map $f\colon \scrA\to\scrB$
 between von Neumann algebras
 we define
-$\Define{f^\diamond}\colon \Proj(\scrA)\to \Proj(\scrB)$
+$\Define{f^\diamond}\colon \Proj(\scrA)\to \Proj(\scrB)$%
+\index{*diamond@$f^\diamond$}
 by~$f^\diamond(e)=\ceil{f(e)}$
 for all~$e\in\Proj(\scrA)$.
 \end{point}
@@ -855,14 +933,13 @@ for all~$e\in\Proj(\scrA)$.
 Given an ncp-map $f\colon \scrA\to\scrB$
 between von Neumann algebras
 and a projection~$e$ from~$\scrB$
-there is a least projection~$\Define{f_\diamond(e)}$ from~$\scrA$ 
+there is a least projection~$\Define{f_\diamond(e)}$ from~$\scrA$%
+\index{*diamondsub@$f_\diamond$}
 with~$\ceil{f(\,f_\diamond(e)^\perp\,)}\leq e^\perp$,
 namely~$f_\diamond(e) =\ceil{\,ef(\,\cdot\,)e\,}$
 (being the carrier 
-of the ncp-map $ef(\,\cdot\,)e$ from~\TODO{...});
+	of the ncp-map $ef(\,\cdot\,)e$ from~\sref{carrier});
 giving a map $\Define{f_\diamond}\colon \Proj(\scrB)\to\Proj(\scrA)$.
-
-\TODO{refer to ITET}
 \begin{point}{Proof}%
 Since by definition $\ceil{\,ef(\,\cdot\,)e\,}$
 is the greatest projection~$s$ of~$\scrA$
@@ -886,17 +963,14 @@ for all~$s\in\Proj(\scrA)$ and~$t\in\Proj(\scrB)$.
 Show that $f^\diamond(\,\bigcup E\,)
 = \bigcup_{e\in E} f^\diamond(e)$
 for every set of projections~$E$ from~$\scrA$.
-
-Show that~$f_\diamond(\,\bigcap E\,)
-= \bigcap_{e\in E} f_\diamond(e)$
-for all~$E\subseteq \Proj(\scrB)$.
 \end{enumerate}
 \end{point}
 \begin{point}{Exercise}%
 Show that for ncp-maps $f,g\colon\scrA\to\scrB$
 between von Neumann algebras $f^\diamond = g^\diamond$
 iff $f_\diamond = g_\diamond$.
-In that case we say that $f$ and~$g$ are \Define{equivalent}.
+In that case we say that $f$ and~$g$ are \Define{equivalent}.%
+	\index{equivalent ncp-maps}
 \begin{point}%
 Show that for ncp-maps $f\colon \scrA\to\scrB$
 and~$g\colon \scrB\to\scrA$ we have
@@ -904,13 +978,14 @@ $f^\diamond=g_\diamond$ iff $f_\diamond = g^\diamond$
 iff $\ceil{f(s)}\leq t^\perp\iff \ceil{g(t)}\leq s^\perp$
 for all projections $s$ from~$\scrA$ and~$t$ from~$\scrB$.
 
-In that case we say that~$f$ and~$g$ are \Define{contraposed}.
+In that case we say that~$f$ and~$g$ are \Define{contraposed}.%
+	\index{contraposed}
 \end{point}
 \end{point}
 \begin{point}[equivalent-examples]{Examples}%
 \begin{enumerate}
 \item
-Given an element~$a$ of a von Neumann algebra~$\scrA$
+Given an element~$a$ of a von Neumann algebra~$\scrA$,
 the maps $a^*(\,\cdot\,)a$ and~$a(\,\cdot\,)a^*$
 on~$\scrA$ are contraposed.
 
@@ -1011,7 +1086,8 @@ by pure and nmiu-maps.
 \end{point}
 \begin{point}[rigid]{Definition}%
 We say that a ncp-map $f\colon \scrA\to\scrB$
-between von Neumann algebras is \Define{rigid}
+between von Neumann algebras is \Define{rigid}%
+\index{rigid ncp-map}
 when the only ncp-map $g\colon \scrA\to\scrB$
 with $g(1)=f(1)$ and $\ceil{f(p)}=\ceil{g(p)}$ for all
 projections~$p$ from~$\scrA$ is~$f$ itself.
@@ -1019,7 +1095,7 @@ projections~$p$ from~$\scrA$ is~$f$ itself.
 \begin{point}{Proposition}%
 A rigid map $f\colon \scrA\to\scrB$
 between von Neumann algebras
-is extreme among the maps $g\colon \scrA\to\scrB$
+is extreme among the ncp-maps $g\colon \scrA\to\scrB$
 with $g(1)=f(1)$.
 \begin{point}{Proof}%
 Given $f\equiv \lambda g_1 + \lambda^\perp g_2$
@@ -1054,7 +1130,7 @@ for every projection~$p$ of~$\scrA$.
 To show that~$\varrho$ is rigid,
 we must show that~$g=\varrho$,
 and for this, it suffices to prove that $g(p)=\varrho(p)$
-for every projection~$p$ of~$\scrA$ (by~\TODO{...}).
+for every projection~$p$ of~$\scrA$.
 To this end, we'll show that~$g$ is multiplicative,
 because then~$g$ maps projections to projections,
 so that $g(p)=\ceil{g(p)}=\ceil{\varrho(p)}=\varrho(p)$

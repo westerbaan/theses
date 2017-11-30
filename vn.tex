@@ -2739,6 +2739,48 @@ in~$\scrA$ with~$f(e)=0$.
 \end{point}
 \end{parsec}
 \begin{parsec}%
+\begin{point}%
+Given the rule $\ceil{f(\ceil{a})}=\ceil{f(a)}$
+for an np-map~$f$ and self-adjoint~$a$
+one might surmise that
+the equation $\ceil{f(\ceill{a})}=\ceill{f(a)}$
+holds 
+for arbitrary~$a$;
+but
+one would be mistaken to do so.
+We can, however,
+recover an inequality
+by assuming that~$f$ is completely positive, see~\sref{ncp-ceill}.
+One of its corollaries is
+that ncpsu-isomorphisms
+are in fact nmiu-isomorphisms (see~\sref{iso}).
+\end{point}
+\begin{point}[ncp-ceill]{Proposition}%
+Given an ncp-map $f\colon \scrA\to\scrB$
+between von Neumann algebras
+we have,
+for all
+$a\in\scrA$,
+\begin{equation*}
+	\ceil{f(\,\ceill{a}\,)}\,\leq\, \ceill{f(a)\,}
+	\qquad\text{and}\qquad
+	\ceil{f(\,\ceilr{a}\,)}\,\leq\, \ceilr{\,f(a)}.
+\end{equation*}
+\begin{point}{Proof}
+Since~$f(a)^*f(a)\leq \|f(1)\|^2\,f(a^*a)$
+ by~\sref{cp-cs},
+we get~$\ceill{f(a)\,}\equiv \ceil{f(a)^*f(a)}
+	\leq \ceil{\,\smash{\|f(1)\|^2f(a^*a)}\,}
+	\leq \ceil{f(a^*a)}
+	=\ceil{f(\ceil{a^*a})}
+	\equiv \ceil{f(\ceill{a})}$.
+
+One obtains $\ceil{f(\,\ceilr{a}\,)}\leq \ceilr{\,f(a)}$
+along similar lines.\qed
+\end{point}
+\end{point}
+\end{parsec}%
+\begin{parsec}%
 \begin{point}{Proposition}%
 Let~$f\colon \scrA\to\scrB$ be a ncpsu-map
 between von Neumann algebras.
