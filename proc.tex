@@ -1870,7 +1870,7 @@ but more of that later.
 \end{parsec}
 \subsection{Definition}
 \begin{parsec}%
-\begin{point}{Definition}%
+	\begin{point}[bilinear-basic]{Definition}%
 A bilinear map
 	$\beta\colon \scrA\times \scrB\to\scrC$
 between von Neumann algebras is
@@ -2218,6 +2218,7 @@ exists and is unique (up to unique isomorphism)
 we just pick one and denote it by $\Define{\otimes}\colon
 \scrH\times\scrK\to\Define{\scrH\otimes\scrK}$.%
 \index{*tensor@$\otimes$, tensor product!$\scrH\otimes \scrK$, of Hilbert spaces}
+\index{*tensor@$\otimes$, tensor product!$x \otimes y$, of elements of Hilbert spaces}
 \end{point}
 \end{parsec}
 \begin{parsec}%
@@ -2352,7 +2353,6 @@ $(\,\left<By_i,B y_j\right>\,)\leq
 \end{point}
 \end{point}
 \begin{point}[special-tensor]{Theorem}%
-\index{tensor product!of von Neumann algebras!exists}%
 \index{spacial tensor product}
 Let~$\scrA$
 and~$\scrB$
@@ -2445,7 +2445,9 @@ and thus~$T=0$.\qed
 \end{point}
 \end{point}
 \begin{point}{Exercise}%
+\index{tensor product!of von Neumann algebras!exists}%
 Given von Neumann algebras~$\scrA$ and~$\scrB$
+(which are not a priori represented on Hilbert spaces)
 construct a tensor product~$\gamma\colon \scrA\times \scrB\to\scrT$
 of~$\scrA$ and~$\scrB$
 using~\sref{ngns} and~\sref{special-tensor}.
@@ -2459,13 +2461,16 @@ to bear upon the tensor product for von Neumann algebras
 we quickly review
 the (algebraic)
 tensor product of plain vector spaces~$V$ and~$W$ first ---
-it is a vector space~$V\odot W$
+it is a vector space~$V\odot W$%
+\index{*tensora@$\odot$, algebraic tensor product}%
+\index{tensor product!algebraic = of vector spaces}
 equipped
 with a bilinear mapping~$\odot\colon V\times W\to V\odot W$
 which is  universal  
 in the sense that for every bilinear mapping~$\beta\colon V\times W\to Z$
 into some vector space~$Z$
-there is a unique linear map~$\beta_\odot\colon V\odot W\to Z$
+there is a unique linear map~$\beta_\odot\colon V\odot W\to Z$%
+\index{*tensorasup@$\beta_\odot$}
 with~$\beta_\odot(v\odot w)=\beta(v,w)$
 for all~$v\in V$ and~$w\in W$.
 This property
@@ -2521,7 +2526,7 @@ induced on~$\scrA\odot\scrB$ by~$\scrT$
 via~$\gamma$.
 
 To prevent a circular description
-here
+here,
 we'll first describe the norm and ultraweak topology
 that the tensor product induces on~$\scrA\odot \scrB$
 directly,
@@ -2541,7 +2546,8 @@ center separating sets, as we saw in~\sref{vn-center-separating-fundamental}.
 Let~$\scrA$ and~$\scrB$ be von Neumann algebras.
 \begin{enumerate}
 \item
-A \Define{basic functional}
+A \Define{basic functional}%
+\index{functional!basic, on~$\scrA\odot\scrB$}
 is 
 a map $\omega \colon \scrA\odot\scrB\to\C$
 with
@@ -2551,7 +2557,8 @@ $\sigma\colon \scrA\to\C$, $\tau\colon \scrB\to\C$,
 and
 $t\in \scrA\odot\scrB$.
 
-A \Define{simple functional}
+A \Define{simple functional}%
+\index{functional!simple, on~$\scrA\odot\scrB$}
 is a finite sum of basic functionals.
 \item
 Each basic functional $\omega \colon \scrA\odot\scrB\to\C$
@@ -2583,7 +2590,8 @@ and the operator norm on them;
 and note that
 the basic and simple  functionals are bounded.
 
-The \Define{ultraweak tensor product topology}
+The \Define{ultraweak tensor product topology}%
+\index{ultraweak tensor product topology}
 is the least topology on~$\scrA\odot\scrB$
 that makes all operator norm limits
 of simple functionals continuous.
@@ -2593,19 +2601,25 @@ to a von Neumann algebra~$\scrC$
 is called
 \begin{enumerate}
 \item
-(continues the list from~\TODO{...})
+(continues the list from~\sref{bilinear-basic})
 \item
-\Define{bounded}
+\Define{bounded}%
+\index{bilinear map!bounded}
 when the unique extension $\beta_\odot \colon \scrA\odot \scrB\to \scrC$
 is bounded,
 \item 
-\Define{\textbf{n}ormal}
+\Define{\textbf{n}ormal}%
+\index{bilinear map!normal}%
+\index{normal!bilinear map}
 when~$\beta_\odot$
 is continuous with respect to the ultraweak tensor product topology 
 on~$\scrA\odot\scrB$
 and the ultraweak topology on~$\scrC$,
 \item
-\Define{\textbf{c}ompletely \textbf{p}ossitive}
+\Define{\textbf{c}ompletely \textbf{p}ossitive}%
+\index{bilinear map!completely positive}%
+\index{completely positive!bilinear map}%
+\index{positive!completely $\sim$ bilinear map}
 when~$\sum_{i,j,k}c_k^*\,\beta(a_i^*a_j,b_i^*b_j)\,c_k\geq 0$
 for all tuples $a_1,\dotsc,a_N\in\scrA$,
 $b_1,\dotsc,b_N\in\scrB$,
@@ -2681,7 +2695,7 @@ we get~$0=b_1=\dotsb=b_N$,
 and thus~$t=\sum_n a_n\odot b_n=0$.\qed
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}[tensor-product-norm]{Exercise}%
 Show that the tensor product norm
 from~\sref{tensor-extra}
 is, indeed, a norm.
@@ -2802,7 +2816,7 @@ can be extended uniquely along~$\gamma_\odot$
 to an np-functional on~$\scrT$
 (using the fact that the operator
 norm limit of np-functionals is an np-functional again,
-see~\TODO{...}).
+see~\sref{predual-complete}).
 
 Deduce from this that~$\gamma_\odot$ is a ultraweak topological embedding.
 
@@ -2813,6 +2827,7 @@ to a normal functional on~$\scrT$.)
 \end{enumerate}
 \end{point}
 \begin{point}[tensor-universal-property]{Theorem}%
+\index{tensor product!of von Neumann algebras!universal property}
 A tensor product~$\gamma\colon \scrA\times\scrB\to\scrT$
 of von Neumann algebras~$\scrA$ and~$\scrB$
 has this universal property:
@@ -2820,7 +2835,9 @@ for every normal bounded bilinear map $\beta\colon \scrA\times \scrB\to\scrC$
 to a von Neumann algebra~$\scrC$
 there is a unique ultraweakly continuous
 map  $\Define{\beta_\gamma}\colon \scrT
-\to \scrC$ with $\beta_\gamma\circ \gamma  = \beta$.
+\to \scrC$%
+\index{*tensorsup@$\beta_\gamma$}
+with $\beta_\gamma\circ \gamma  = \beta$.
 Moreover, $\|\beta_\gamma\|=\|\beta_\odot\|$.
 \begin{point}{Proof}%
 Since $\beta_\odot\colon \scrA\odot\scrB\to\scrC$
@@ -2836,11 +2853,13 @@ except for some trivial details.\qed
 \end{point}
 \end{parsec}%
 \begin{parsec}%
+\index{comletely positive!bilinear map}
 \begin{point}%
 We'll need some observations
 concerning completely positive bilinear maps.
 \end{point}
 \begin{point}{Exercise}%
+\index{Schur's Product Theorem}
 Show that a mi-bilinear
 map $\beta\colon \scrA\times\scrB\to\scrC$ between von Neumann 
 algebras is completely positive.
@@ -2852,7 +2871,8 @@ between von Neumann algebras,
 we define
 $\Define{M_N\beta}\colon M_N\scrA\times M_N\scrB\to M_N\scrC$
 by  $(M_N\beta)(A,B) = 
-(\beta(A_{ij},B_{ij}))_{ij}$
+(\beta(A_{ij},B_{ij}))_{ij}$%
+\index{Mnbeta@$M_n\beta$, for bilinear~$\beta$}
 for each~$N$.
 \end{point}
 \begin{point}[cp-bilinear]{Exercise}%
@@ -2880,6 +2900,7 @@ are cp-maps between von Neumann algebras.
 \end{parsec}
 \begin{parsec}%
 \begin{point}[tensor-universal-property-extra]{Exercise}%
+\index{tensor product!of von Neumann algebras!universal property}
 Let $\gamma\colon \scrA\times \scrB\to\scrT$
 be a tensor product
 of von Neumann algebras,
@@ -2910,10 +2931,9 @@ from~$\scrA$ and $b_1,\dotsc,b_N$ from $\scrB$;
 $\beta_\gamma$ is completely positive iff
 $\beta$ is completely positive.
 \end{enumerate}
-\TODO{Check if some hints need to be added}
-
 \end{point}
 \begin{point}[tensor-uniqueness]{Exercise}%
+\index{tensor product!of von Neumann algebras!uniqueness}
 Show that the tensor product of von Neumann algebras~$\scrA$
 and~$\scrB$ is unique in
 the sense
@@ -2922,7 +2942,7 @@ and~$\gamma'\colon \scrA\times \scrB\to\scrT'$
 are tensor products of~$\scrA$ and~$\scrB$,
 then there is a unique
 nmiu-isomorphism $\varphi\colon \scrT\to\scrT'$
-with $\varphi(\tau(a,b))=\tau'(a,b)$
+with $\varphi(\gamma(a,b))=\gamma'(a,b)$
 for all~$a\in\scrA$ and~$b\in\scrB$.
 \end{point}
 \end{parsec}
@@ -2934,7 +2954,10 @@ that that the tensor product
 of von Neumann algebras~$\scrA$ and~$\scrB$
 exists and is unique (up to unique nmiu-isomorphism)
 we just pick one and denote it by $\Define{\otimes}\colon
-\scrA\times\scrB\to\Define{\scrA\otimes\scrB}$.
+\scrA\times\scrB\to\Define{\scrA\otimes\scrB}$.%
+\index{*tensor@$\otimes$, tensor product!$\scrA\otimes\scrB$, of von Neumann algebras}%
+\index{*tensor@$\otimes$, tensor product!$a\otimes b$,
+of elements of von Neumann algebras}
 \end{point}
 \begin{point}{Proposition}%
 Given ncp-maps $f\colon \scrA\to\scrC$
@@ -2945,7 +2968,8 @@ $\Define{f\otimes g}\colon \scrA\otimes\scrB\to\scrC\otimes\scrD$
 with 
 \begin{equation*}
 	(f\otimes g)(a\otimes b) \ =\ f(a)\otimes f(b)
-\end{equation*}
+\end{equation*}%
+\index{*tensor@$\otimes$, tensor product!$f\otimes g$, of np-maps}
 for all~$a\in\scrA$ and~$b\in\scrB$.
 Moreover,
 \begin{enumerate}
@@ -2969,7 +2993,8 @@ that the bilinear map~$\beta\colon \scrA\times\scrB\to\scrC\otimes\scrD$
 given by~$\beta(a,b)=f(a)\otimes g(b)$,
 which is completely positive by~\sref{cp-bilinear},
 is bounded and normal;
-because then we may take $f\otimes g:=\beta_\otimes$
+because then we may take $f\otimes g:=\beta_\otimes$%
+\index{*tensorsupexact@$\beta_\otimes$}
 as in~\sref{tensor-universal-property}
 and all
 the stated properties of~$f\otimes g$ will then  follow 
@@ -2994,7 +3019,7 @@ and~$\beta_\odot(s)^*\beta_\odot(s)\leq
 because with these two claims
 we get 
 $\omega(\beta_\odot(s)^*\beta_\odot(s))
-\leq \omega(\beta_\odot(s^*s))
+\leq \|f\|\|g\|\omega(\beta_\odot(s^*s))
 \leq \|f\|\|g\| \|\omega\circ \beta_\odot\| \|s\|^2
 \leq \|f\|^2\|g\|^2\|s\|^2$
  --- which is the result desired.
@@ -3066,7 +3091,6 @@ b_1 & b_2 & \dotsb & b_n \\
 \end{pmatrix},
 \end{equation*}
 and the cp-map $h\colon M_n(\scrC\otimes \scrD)\to \scrC\otimes \scrD$
-(see~\TODO{vector state of Hilbert $\scrB$-modules})
 given by~$h(C)= \left<(1,\dotsc,1), C(1,\dotsc,1)\right> =\sum_{ij}C_{ij}$.
 We make these arrangements
 so that we
@@ -3101,6 +3125,9 @@ $(\scrA,\scrB)\mapsto \scrA\otimes \scrB$,
 and~$(f,g)\mapsto f\otimes g$
 give a bifunctor~$\otimes\colon \Cat{C}\times\Cat{C}
 \to\Cat{C}$
+\index{*tensor@$\otimes$, tensor product!bifunctor 
+on~$\W{nmiu},\dotsc$}%
+\index{tensor product!of von Neumann algebras!functorial}
 where~$\Cat{C}$
 can be~$\W{miu}$, $\W{cp}$, $\W{cpu}$
 and $\W{cpsu}$.
@@ -3223,7 +3250,8 @@ $\gamma(\tilde\sigma,\tilde\tau)
 \begin{point}[product-functional-norm]{Lemma}%
 Given von Neumann algebras~$\scrA$ and~$\scrB$,
 we have $\|f\otimes g\|=\|f\|\|g\|$
-for all~$f\in\scrA_*$ and~$g\in\scrB_*$.
+for all~$f\in\scrA_*$ and~$g\in\scrB_*$.%
+\index{*tensor@$\otimes$!$f\otimes g$, of normal functionals}
 \begin{point}{Proof}%
 The trick is to use the polar decomposition
 for normal functionals, \sref{polar-decomposition-of-functional}.
@@ -3338,7 +3366,7 @@ for all np-functionals  $\sigma\colon \scrA\to\C$
 and 
 $\tau\colon\scrB\to\C$
 (since the product functionals $\sigma\otimes\tau$
-form a faithful collection, by~\TODO{...}).
+	form a faithful collection.)
 Now, since~$\Omega$ is center separating
 such $\sigma$ may by~\sref{vn-center-separating-fundamental} be obtained
 as operator norm limit of finite sums
@@ -3766,7 +3794,7 @@ as you will no doubt have observed already,
 can be easily adapted 
 to deal with
 a tensor product
-$\otimes\colon \scrA_1\times\dotsc\scrA_n
+$\otimes\colon \scrA_1\times\dotsc\times \scrA_n
 \to\scrA_1\otimes \dotsb\otimes \scrA_n$
 of a tuple $\scrA_1,\dotsc,\scrA_n$ of von Neumann algebras,
 which will then, of course, be a multilinear map
