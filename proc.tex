@@ -147,7 +147,8 @@ I'd like to advertise
 here that we have already discovered that purity can be described in
 wildly different terms---definitely a good omen, if any---in
 that a map~$f\colon \scrA\to\scrB$ is pure when in its 
-\emph{Paschke dilation} \TODO{add ref.}
+\emph{Paschke dilation}\cite{wwpaschke}\REMARK{a reference to
+Bas' thesis will be added here}
 $\xymatrix{\scrA
 	\ar[r]|-\varrho
 &
@@ -168,7 +169,7 @@ of being~\emph{rigid} (see~\sref{rigid} and~\sref{pure-is-rigid}).
 \subsection{Corner and Filter}
 \begin{parsec}%
 \begin{point}{Definition}%
-Given an projection~$e$ of a von Neumann algebra~$\scrA$,
+Given a projection~$e$ of a von Neumann algebra~$\scrA$,
 the \Define{corner}%
 	\index{corner (von Neumann algebra)}
 of~$e$
@@ -477,7 +478,7 @@ Let~$c\colon \scrC\to\scrA$ be a filter,
 where~$\scrC$ and~$\scrA$ are von Neumann algebras.
 \begin{enumerate}
 \item
-Show that, writing~$p:=f(1)$,
+Show that, writing~$p:=c(1)$,
 there is a unique
 ncp-map $\alpha \colon \scrC\to \ceil{p}\!\scrA\!\ceil{p}$
 with $c = c_p \circ \alpha$;
@@ -626,7 +627,7 @@ $[f]$ is unital and faithful.
 For any faithful unital ncp-map $f\colon \scrA\to \scrB$
 we have~$[f]=f$.
 Such map need not be an isomorphism;
-as one may take $f\colon (\lambda,\mu)\mapsto \lambda+\mu,
+	as one may take $f\colon (\lambda,\mu)\mapsto \frac{1}{2}(\lambda+\mu),
 \C^2\to\C$.
 \end{point}
 \begin{point}[ad-pure]{Example}%
@@ -1030,7 +1031,7 @@ and $(g\circ f)_\diamond = f_\diamond\circ g_\diamond$.
 Assuming that $f$ is equivalent 
 to an ncp-map $f'\colon \scrA\to\scrB$
 and~$g$ is equivalent to
-and ncp-map~$g'\colon \scrB\to\scrC$,
+an ncp-map~$g'\colon \scrB\to\scrC$,
 show that~$g\circ f$ is equivalent to~$g'\circ f'$.
 \item
 Assuming that $f$ is contraposed to
@@ -1081,11 +1082,11 @@ $\ceil{gf}=(gf)_\diamond(1)
 \subsection{Rigidity}
 \begin{parsec}%
 \begin{point}%
-We now turn a remarkable property shared
+We now turn to  a remarkable property shared
 by pure and nmiu-maps.
 \end{point}
 \begin{point}[rigid]{Definition}%
-We say that a ncp-map $f\colon \scrA\to\scrB$
+We say that an ncp-map $f\colon \scrA\to\scrB$
 between von Neumann algebras is \Define{rigid}%
 \index{rigid ncp-map}
 when the only ncp-map $g\colon \scrA\to\scrB$
@@ -1273,12 +1274,12 @@ between von Neumann algebras
 \begin{enumerate}
 \item
 \Define{$\diamond$-self-adjoint}%
-\index{$\diamond$-self-adjoint}%
+\index{$\diamond$-self-adjoint}
 if~$f$ is pure and contraposed to itself
 ($f^\diamond = f_\diamond$), and
 \item
 \Define{$\diamond$-positive}%
-\index{$\diamond$-positive}%
+\index{$\diamond$-positive}
 if~$f\equiv gg$
 for some $\diamond$-self-adjoint map
 $g\colon \scrA\to\scrA$.
@@ -1288,7 +1289,7 @@ not only to distinguish it from
 the pre-existing notion of positivity for maps between $C^*$-algebras,
 but also to contrast it with
 	the notion of ``$\dagger$-positivity''
-	that appears in the next thesis.\TODO{add ref.}
+	that appears in the next thesis.\REMARK{add ref.}
 \end{point}
 \begin{point}[purely-positive-examples]{Examples}%
 Let~$\scrA$ be a von Neumann algebra.
@@ -1325,7 +1326,7 @@ when~$f$ is $\diamond$-positive.
 We now turn 
 	to the question
 	roughly speaking 
-to what extend a filter~$c$ is determined by
+to what extent a filter~$c$ is determined by
 its action~$c^\diamond\colon e\mapsto \ceil{c(e)}$ on projections;
 we will see (essentially in~\sref{positive-quotients-centrally-similar})
 that two filters $c_1$ and~$c_2$
@@ -1558,7 +1559,7 @@ is faithful
 we employ this device:
 \end{point}
 \begin{point}[chevron-f]{Definition}%
-Given a ncp-map $f\colon \scrA\to\scrB$
+Given an ncp-map $f\colon \scrA\to\scrB$
 between von Neumann algebras
 we denote by
 $\Define{\left<f\right>}\colon \ceil{f}\!\scrA\!\ceil{f}
@@ -1660,11 +1661,11 @@ $f= c_{\ceil{p}}\circ\left<f\right>\circ \pi_{\ceil{p}}
 \begin{point}{Corollary (``Square Root Axiom'')}%
 \index{square root axiom}
 Given a positive element~$p$ of a von Neumann algebra~$\scrA$
-there is a unique positive map~$g\colon \scrA\to\scrA$
+there is a unique $\diamond$-positive map~$g\colon \scrA\to\scrA$
 with~$g(g(1))=p$, namely
 $g=\sqrt[4]{p}\,(\,\cdot\,)\,\sqrt[4]{p}$.
 \begin{point}{Proof}%
-Any such positive map~$g\colon \scrA\to\scrA$ with~$g(g(1))=p$
+Any such $\diamond$-positive map~$g\colon \scrA\to\scrA$ with~$g(g(1))=p$
 will be of the form
 $g=\smash{\sqrt{g(1)}\,(\,\cdot\,)\,\sqrt{g(1)}}$
 by~\sref{positive-map-uniqueness};
@@ -1704,7 +1705,7 @@ given by
 $p\ast q = \sqrt{p}q\sqrt{p}$
 for all~$p, q$ from~$[0,1]_\scrA$.
 \begin{point}{Proof}%
-Let~$p$ be from $[0,1]_\scrA$ be given.
+Let~$p$  from $[0,1]_\scrA$ be given.
 Pick~$p'$ from~$[0,1]_\scrA$
 with $p = p'\ast p'$
 using~\ref{ax4},
@@ -3868,7 +3869,7 @@ are symmetric monoidal categories with~$\C$ as unit.
 In this section we provide
 the parts needed
 to built a model
-of the quantum lambda calculus
+	of the quantum lambda calculus\index{quantum lambda calculus}
 using von Neumann algebras.
 We will not venture
 to describe the quantum lambda calculus
@@ -3878,7 +3879,8 @@ from these parts
 (as we did in~\cite{model});
 we'll just touch upon
 the two key ingredients:
-the interpretation of ``$\bang$'' and ``$\limp$''
+the interpretation of ``$\bang$'' and ``$\limp$''%
+ \index{*bang@$\bang$}\index{*lollypop@$\limp$}
 ---
 with them the expert
 can easily produce the model.
@@ -3919,7 +3921,7 @@ to construct
 a program
 that duplicates the contents
 of a qubit,
-which is prohibited.
+which is unphysical.
 
 Still, classical data
 such as a bit
@@ -3941,10 +3943,11 @@ may be duplicated freely.
 
 The model
 we alluded to
-assigns to each type~$A$ a von Neumann algebra~$\sem{A}$,
+assigns to each type~$A$ a von Neumann algebra~$\sem{A}$,%
+\index{*sem@$\sem{\,\cdot\,}$}
 e.g.~$\sem{\qbit}=M_2$
 and~$\sem{\bit}=\C^2$.
-A term~$t:A$
+A (closed) term~$t:A$
 is interpretted as an npsu-functional $\sem{t:A}\colon \sem{A}\to\C$,
 so for example $\sem{\mathsf{0}\colon \bit}\colon
 (x,y)\mapsto x\colon \C^2\to\C$.
@@ -4013,14 +4016,11 @@ and~$\sem{A\limp B}$ will then be
 \mathcal{F}(\sem{B})^{*\sem{A}}.
 \end{equation*}
 
-\TODO{add more parts?}
-
-
 Note that~$\sem{!A}$
 will always be a discrete von Neumann algebra
 no matter how complicated~$\sem{A}$ may be,
 so that although this does the job
-perhaps a more interpretation of~$\bang$
+perhaps a more interesting interpretation of~$\bang$
 may be chosen as well.
 This is not the case:
 in the next
@@ -4057,7 +4057,6 @@ we have
 Here
 $\scrA_1 \otimes \scrB_1$
 denotes not just any tensor product of~$\scrA_1$ and~$\scrB_1$,
-see~\TODO{refer to notation},
 but instead
 the ``concrete'' tensor product 
 of~$\scrA_1$ and~$\scrB_1$:
@@ -4074,6 +4073,7 @@ See Corollary IV.5.10 of~\cite{Takesaki1}.\qed
 \begin{parsec}%
 \begin{point}{Definition}%
 We write $\Define{\nsp}:=\W{miu}(\,\cdot\,,\C)$
+	\index{nsp@$\nsp\colon \op{(\W{miu})}\to \Cat{Set}$}
 for the functor $\op{(\W{miu})}\to \Cat{Set}$
 which maps a von Neumann algebra~$\scrA$
 to its set
@@ -4121,7 +4121,8 @@ commutes.
 Moreover, and as a result, the assignment
 $X\mapsto \linf(X)$
 extends to a functor
-$\linf\colon \Cat{Set}\to\op{(\W{miu})}$
+$\linf\colon \Cat{Set}\to\op{(\W{miu})}$%
+	\index{linfunctor@$\linf\colon \Cat{Set}\to\op{(\W{miu})}$}
 that is left adjoint
 to~$\nsp$,
 and is given by $\linf(f)(h) = h\circ f$
@@ -4156,7 +4157,7 @@ we have~$\eta(x)\circ  g'= \nsp(g')(\eta(x))
 and so~$g'=\left<f(x)\right>_{x\in X}=g$.
 
 Hence~$\eta$ is a universal arrow from~$X$
-to~$\nsp$ in the sense of~\TODO{...}.
+to~$\nsp$.
 That as a result the assignment $X\mapsto \linf(X)$
 extends to a functor
 $\Cat{Set}\to\op{(\W{miu})}$
@@ -4166,7 +4167,7 @@ with $\nsp(\linf(f))\circ \eta_X = \eta_Y\circ f$
 is a known and easily checked fact
 (where~$\eta_X:= \eta$ and~$\eta_Y\colon Y\to\nsp(\linf(Y))$ 
 is what you'd expect).
-Finally, plugin applying~$x\in X$ and~$h\in \linf(Y)$
+Finally, applying~$x\in X$ and~$h\in \linf(Y)$
 we get
 $ \linf(f)(h)(x)
 = \eta_X(x)(\linf(f)(h)))
@@ -4213,8 +4214,63 @@ from~\sref{first-adjunction} is a bijection.
 Show that~$\linf\colon\Cat{Set}\to \op{(\W{miu})}$
 is full and faithful.
 \end{point}
+\end{parsec}
+\begin{parsec}
+\begin{point}{Exercise}%
+	We're going to prove that
+	$\ell^\infty(X\times Y)\cong \ell^\infty(X)\otimes \ell^\infty(Y)$.
+\begin{enumerate}%
+\item
+Given an element~$x$ of a set~$X$
+let~$\hat{x}$ denote
+the element of~$\ell^\infty(X)$
+that equals~$1$ on~$x$ and is zero elsewhere.
 
-\TODO{$\nsp$ and $\linf$ are monoidal}
+Show that~$\{\,\hat{x}\colon\, x\in X\,\}$
+generates~$\ell^\infty(X)$.
+\item
+Show that the  projections $\pi_x\colon \ell^\infty(X)\equiv
+\bigoplus_{y\in X}\C\to\C$
+form an order separating collection of
+		nmiu-functionals on~$\ell^\infty(X)$.
+\item
+Using this, and~\sref{tensor-characterization},
+prove that given sets~$X$ and~$Y$
+the map
+\begin{equation*}
+	\otimes\colon \ell^\infty(X)\times \ell^\infty(Y)
+\to\ell^\infty(X\times Y)
+\end{equation*}
+given by~$(f\otimes g)(x,y)=f(x)g(y)$
+is a tensor product.
+
+Conclude that 
+	$\ell^\infty(X\times Y)\cong \ell^\infty(X)\otimes \ell^\infty(Y)$.
+
+		(In fact, it follows that~$\ell^\infty$ is strong monoidal.)
+\end{enumerate}
+\end{point}
+\begin{point}{Exercise}%
+Let~$\scrA$ and~$\scrB$
+be von Neumann algebras.
+We're going to show that~$\nsp(\scrA\otimes\scrB)\cong \nsp(\scrA)\times
+	\nsp(\scrB)$.
+\begin{enumerate}
+\item
+Given a nmiu-functional $\varphi\colon \scrA\otimes \scrB\to\C$
+show that~$\sigma:= \varphi((\,\cdot\,)\otimes 1)$
+and~$\tau:=\varphi(1\otimes (\,\cdot\,))$
+are nmiu-functionals on~$\scrA$ and~$\scrB$, respectively;
+		and show that~$\varphi=\sigma\otimes \tau$
+		(by proving that $\varphi(a\otimes b)=\sigma(a)\tau(b)$.)
+\item
+Show that~$\sigma,\tau\mapsto \sigma\otimes \tau$
+		gives a bijection $\nsp(\scrA)\times\nsp(\scrB)
+		\to\nsp(\scrA\otimes\scrB)$.
+
+		(This  makes~$\nsp$  strong monoidal.)
+\end{enumerate}
+\end{point}
 \end{parsec}
 \subsection{Second Adjunction}
 \begin{parsec}%
@@ -4250,7 +4306,8 @@ we conclude~$\#\scrA \leq 2^{2^{\#\mathbb{C}+\#S}}$.\qed
 \end{point}
 \begin{point}[second-adjunction]{Theorem}%
 The inclusion $\W{miu}\to\W{cpsu}$
-has a left adjoint $\Define{\mathcal{F}}\colon \W{cpsu}\to\W{miu}$.
+has a left adjoint $\Define{\mathcal{F}}\colon \W{cpsu}\to\W{miu}$.%
+	\index{F@$\mathcal{F}\colon \W{cpsu}\to\W{miu}$}
 \begin{point}{Proof}%
 Note that since the category~$\W{miu}$
 has all products (\sref{vn-products}),
@@ -4323,15 +4380,16 @@ in a certain natural way
 \end{point}
 \end{parsec}
 \subsection{Free Exponential}
-	
 \begin{parsec}%
 \begin{point}%
-We'll prove Kornell's result (from~\TODO{Quantum Collections})
+	We'll prove Kornell's result (from~\cite{kornell2012})
 that the functor
 $\scrB\otimes(\,\cdot\,)\colon
 \W{miu}\to\W{miu}$
 has a left adjoint~$(\,\cdot\,)^{*\scrB}$
-for every von Neumann algebra~$\scrB$.
+for every von Neumann algebra~$\scrB$.%
+	\index{free exponential}%
+	\index{*AstarB@$\scrA^{*\scrB}$, free exponential}
 Kornell original proof is rather complex,
 and so is ours, unfortunately,
 but we've managed
@@ -4343,7 +4401,6 @@ to the facts that
 $\scrB\otimes(\,\cdot\,)\colon \W{miu}\to\W{miu}$
 preserves products,  equalizers,
 and satisfies the solution set condition.
-\TODO{preservation of products}
 \end{point}
 \begin{point}[vn-gns-bound]{Lemma}%
 A von Neumann algebra~$\scrA$
@@ -4504,7 +4561,6 @@ because
 $r_{i^k\xi+\zeta}(h(d)) \in\tilde\scrA$.\qed
 \end{point}
 \end{point}
-\TODO{equalizers of nmiu-maps}
 \begin{point}{Proposition}%
 Let $e\colon\scrE\to\scrA$ be an equaliser of
 nmiu-maps $f,g\colon\scrA\to\scrB$ 
@@ -4697,8 +4753,10 @@ exonerating it in our minds from all doubts.
 \begin{parsec}%
 \begin{point}{Definition}%
 A von Neumann algebra~$\mathscr{A}$
-is \Define{duplicable}
-if there is a \Define{duplicator} on~$\mathscr{A}$,
+is \Define{duplicable}%
+	\index{duplicable von Neumann algebra}
+if there is a \Define{duplicator} on~$\mathscr{A}$,%
+	\index{duplicator}
 that is,
 an npsu-map
 $\delta\colon \mathscr{A}\otimes \mathscr{A}\to\mathscr{A}$
@@ -4770,12 +4828,12 @@ on a von Neumann algebra~$\mathscr{A}$.
 Then~$u=1$ and~$\delta(1\otimes 1)=1$.
 \begin{point}{Proof}%
 Since~$1=\delta(u\otimes 1)\leq \delta(1\otimes 1) \leq 1$,
-we have $\delta(u^\perp\otimes 1)=0$.
-But then~$u^\perp=0$, and thus~$u=1$,
+	we have $\delta(1\otimes 1)=1$, and so $\delta(u^\perp\otimes 1)=0$.
+But,
 because  $u^\perp = \delta(u^\perp \otimes u)
-\leq \delta(u^\perp \otimes 1) = 0$.
-Hence~$u=1$.
-Thus~$1=\delta(1\otimes u)=\delta(1\otimes 1)$.\qed
+\leq \delta(u^\perp \otimes 1) = 0$,
+we have~$u^\perp=0$, and thus~$u=1$.
+Hence~$1=\delta(1\otimes u)=\delta(1\otimes 1)$.\qed
 \end{point}
 \end{point}
 \end{parsec}
@@ -4787,6 +4845,7 @@ on $C^*$-algebras.
 There was no time to incorporate their proofs in this text.
 \end{point}
 \begin{point}[tomiyama]{Theorem (Tomiyama)}%
+\index{Tomiyama's Theorem}
 Given a $C^*$-subalgebra~$\scrB$
 of a $C^*$-algebra~$\scrA$,
 any linear map $f\colon \scrA\to\scrB$
@@ -4801,12 +4860,13 @@ or~10.5.86 of~\cite{kr}.\qed
 \end{point}
 \end{point}
 \begin{point}[russo-dye]{Theorem (Russo--Dye)}%
+\index{Russo-Dye's Theorem}
 We have $\|f\|\leq 1$
 for any pu-map $f\colon \scrA\to\scrB$
 between $C^*$-algebras~$\scrA$
 and~$\scrB$.
 \begin{point}{Proof}%
-See Corollary~1 of~\sref{russodye}.\qed
+See Corollary~1 of~\cite{russodye}.\qed
 \end{point}
 \end{point}
 \begin{point}[lem:sef-instrument]{Lemma}%
@@ -4827,7 +4887,7 @@ Note that $(c,d)\mapsto (\,f(c,d),\,f(c,d)\,)$
 gives a pu-map~$f'$ from~$\scrA\oplus \scrA$
 onto its $C^*$-subalgebra~$\{\,(a,a)\colon\,a\in\scrA\,\}$
 with~$f'(f'(c,d))=f'(c,d)$ for all~$c,d\in\scrA$.
-Since~$\|f'\|\leq 1$ (by Russo--Dye's theorem (\sref{russo-dye}),
+Since~$\|f'\|\leq 1$ by Russo--Dye's theorem (\sref{russo-dye}),
 Tomiyama's theorem (\sref{tomiyama}) 
 implies that 
 for all~$a,b,c,d\in\mathscr{A}$,
@@ -4838,7 +4898,7 @@ for all~$a,b,c,d\in\mathscr{A}$,
 a \,f(c,d)\, b \ = \ f(\,acb\,,\,adb\,).
 \end{equation*}
 In particular,
- $ap=af(1,0)=f(a,0)=f(1,0)a=pa$
+ $ap\equiv af(1,0)=f(a,0)=f(1,0)a\equiv pa$
  for all~$a\in\scrA$,
 and so~$p$ is central.
 Similarly, $f(0,b)=bp^\perp$
@@ -4851,7 +4911,9 @@ for all~$a,b\in\mathscr{A}$.\qed
 Let $\delta\colon\mathscr{A}\otimes \mathscr{A}\to\mathscr{A}$
 be a duplicator on a von Neumann algebra~$\mathscr{A}$.
 Then~$\mathscr{A}$ is commutative and~$\delta(a\otimes b)=a\cdot b$
-for all~$a,b\in\mathscr{A}$.
+for all~$a,b\in\mathscr{A}$.%
+	\index{duplicator!is multiplication}%
+	\index{duplicable von Neumann algebra!is commutative}
 \begin{point}{Proof}%
 To prove~$\scrA$ is commutative
 we must show that all~$a\in\mathscr{A}$ are central,
@@ -4895,7 +4957,7 @@ is duplicable
 iff there is
 an np-map $\delta\colon\mathscr{A}\otimes\mathscr{A}
 \to \mathscr{A}$
-with $\mu(a\otimes b)=a\cdot b$ 
+with $\delta(a\otimes b)=a\cdot b$ 
 for all~$a,b\in\mathscr{A}$,
 (and in that case~$\scrA$ is commutative.)
 \begin{point}{Remark}%
@@ -4973,17 +5035,20 @@ Let~$X$ be a finite complete measure space.
 \item
 A measurable subset~$A$ of~$X$
 is \Define{atomic}
+\index{atomic subset of a measure space}
 if $0<\mu(A)$
 and $\mu(A')=\mu(A)$ for all~$A'\in\Sigma_X$
 with~$A'\subseteq A$ and~$\mu(A')>0$.
 
 \item
-$X$ is \Define{discrete} if $X$ is covered by atomic measurable subsets.
+$X$ is \Define{discrete} if $X$ is covered by atomic measurable subsets.%
+\index{measure space!discrete}
 
 (This coincides with being ``purely atomic''
 from 211K of~\cite{fremlin}.)
 \item
-$X$ is \Define{continuous}
+$X$ is \Define{continuous}%
+\index{measure space!continuous}
 (or ``atomless'')
 if~$X$ contains no atomic subsets.
 \end{enumerate}
@@ -5431,7 +5496,7 @@ Thus, the only thing that remains to be shown
 is that~$\mathscr{A}$ is miu-isomorphic to $\linf(Y)$
 for some set~$Y$.
 By~\sref{cvn}
-$\scrA\cong \bigoplus_i L^\infty)(X_i)$
+$\scrA\cong \bigoplus_i L^\infty(X_i)$
 for some finite complete measure spaces~$X_i$.
 So to prove that~$\mathscr{A}\cong \ell^\infty(Y)$
 for some set~$Y$ it 
@@ -5486,9 +5551,11 @@ in~$\W{cpsu}$.
 \begin{point}%
 Let us first recall some terminology.
 Given a symmetric monoidal
-category (\Define{SMC})
+	category (\Define{SMC})%
+\index{symmetric monoidal category (SMC)}
 $\Cat{C}$, 
-a \Define{monoid} in $\Cat{C}$ is an object $A$ from~$\Cat{C}$ endowed
+	a \Define{monoid} \index{monoid!in an SMC}
+	in $\Cat{C}$ is an object $A$ from~$\Cat{C}$ endowed
 with
 a \Define{multiplication} map
 $m\colon A\otimes A\to A$
@@ -5593,7 +5660,7 @@ by~\sref{cor:linf-ff}.)
 \end{enumerate}
 \end{point}
 \begin{point}[thm:free-monoid-in-vNAMIU]{Theorem}%
-\label{thm:free-monoid-in-vNAMIU}
+\index{free monoid!in~$\W{miu}$}
 Let~$\mathscr{A}$
 be a von Neumann algebra,
 and let~$\eta\colon \mathscr{A}\to\linf(\nsp(\mathscr{A}))$
@@ -5645,7 +5712,8 @@ Let~$\mathscr{A}$
 be a von Neumann algebra.
 Then $\linf(\W{cpsu}(\mathscr{A},\C))$
 is the free (commutative) monoid
-on~$\mathscr{A}$ in~$\W{cpsu}$.
+on~$\mathscr{A}$ in~$\W{cpsu}$.%
+\index{free monoid!in~$\W{cpsu}$}
 \begin{point}{Proof}
 By~\sref{thm:free-monoid-in-vNAMIU}
 $\linf\circ\nsp$ is a left adjoint to
