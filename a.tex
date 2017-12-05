@@ -19,7 +19,7 @@ The Category of Von Neumann Algebras}
 
 \begin{parsec}
 \begin{point}
-What doesthis thesis offer?
+What does this thesis offer?
 Proof, perhaps,
 to the manuscript committee
 of passable academic work;
@@ -58,8 +58,11 @@ because it models (the predicates on) a qubit;
 but all~$N\times N$-complex matrices form a von Neumann algebra~$M_N$ as well.
 Using von Neumann algebras
 (and their little cousins, $C^*$-algebras) 
-to describe quantum data types
-has two distinct features.
+to describe quantum data types 
+seems to be quite a recent idea
+(see e.g.~\cite{jacobs2013block,rennela2015operator,furber2013kleisli}, 
+	and~\cite{cho2016semantics} for an overiew)
+and has two distinct features.
 Firstly, classical data types
 are neatly incorporated:
 $\C^2 \equiv \C\oplus \C$
@@ -72,8 +75,11 @@ allow for infinite data types as well
 	such as~$\scrB(\ell^2(\Z))$,
 which represents a ``quantum integer.''\footnote{Though
 	other methods of modeling infinite dimensional
-	quantum computing have been proposed as well, e.g. \TODO{non-standard}
-	\TODO{sam and mathys}, \TODO{models of qlc}.}
+	quantum computing have been proposed as well
+	e.g.~using non-standard analysis\cite{Gogioso2017},
+	presheaves\cite{malherbe2013categorical},
+	the geometry of interaction\cite{hasuo2017semantics},
+	and quantitive semantics\cite{pagani2014applying}.}
 It should be said that this last feature
 is both a boon and a bane:
 it brings with it all the inherent
@@ -83,8 +89,9 @@ most authors choose
 to restrict themselves
 to finite dimensions,
 especially since
-this seems to be enough to describe quantum algorithms.
-
+this seems to be enough to describe quantum algorithms.\cite{nielsen2002quantum}
+\end{point}
+\begin{point}%
 In this thesis, however,
 we do face infinite dimensions,
 because the two main results demand it:
@@ -93,7 +100,7 @@ because the two main results demand it:
 For the first result,
 that von Neumann algebras
 form  a model of Selinger and Valirons quantum lambda calculus,
-as Cho and I explained in~\TODO{...},
+		as Cho and I explained in~\cite{model}
 and for which I'll provide the foundation here,
 we need to interpret function types,
 some of which are essentially infinite dimensional.
@@ -115,7 +122,7 @@ that may also be cut from other categories
 modelling computation---ideally in order to arrive at categorical axioms
 for computation in general.
 When I joined the fray
-the notion of \emph{effectus} had already
+the notion of \emph{effectus}\cite{nd} had already
 been established by Jacobs,
 and the two results
 above offer potential additional axioms.
@@ -139,7 +146,8 @@ and the axiomatization of $a\mapsto \sqrt{p}a\sqrt{p}$
 appear in this thesis,
 while the work on dilations,
 and effectus theory appear in my bother's thesis.
-
+\end{point}
+\begin{point}
 The results mentioned above only
 make up 
 about a third of this thesis;
@@ -149,7 +157,7 @@ needed to understand these results.
 My aim is that anyone 
 with, say, a bachelor's degree in mathematics
 (c.q.~basic knowledge of linear algebra,
-analysis, topology and set theory)
+analysis, topology\cite{willard} and set theory\cite{devlin2012joy})
 should at least be able to follow the lines of reasoning
 with only minimal recourse to external sources.
 But I hope that they will gain some deeper understanding
@@ -172,28 +180,72 @@ the added concepts
 (and pages) would have brought.
 For the same reasons
 I've refrained from putting
-everything in its proper abstract (categorical) context
+everything in its proper abstract (categorical\cite{maclane}) context
 trusting that it'll shine through of its own accord.
 I've however not been able to restrain
 myself in making perhaps frivolous variations on the existing
 theory whenever not strictly necessary,
-taking for example Kadison's characterization
+taking for example Kadison's characterization\cite{kadison1956}
 of von Neumann algebras
 as my definition,
 and developing the elementary theory for it;
 in my defense I'll just say this adds to
 the original element that is expected of a thesis.
 \end{point}
-\begin{point}[on-writing-style]
-Finally, some words on the writing style.
+\begin{point}{Advertisements}%
+Due to space--time constraints
+this thesis is based only on a selection
+\cite{model,cho2015quotient,cho2016duplicable,qpakm,westerbaan2016universal}
+of the works
+I produced under supervision of Jacobs,
+and while~\cite{wwpaschke,effintro,statesofconvexsets}
+are incorporated in by brother's thesis,
+this means~\cite{jacobs2015effect,jacobs2017distances} 
+are unfortunately left out.
+If you like this thesis,
+then
+you might also want to take a look
+at these~\cite{rennela2017infinite,
+rennela2015complete,
+furber2013kleisli,
+kornell2012,
+heunen2015domains,
+Maassen2010} recent works on von Neumann algebras,
+and $C^*$-algebras.
+If you're curious
+about effectus theory
+and related matters,
+please have a look at~\cite{jacobs2017quantum,
+cho2017disintegration,
+jacobs2016hyper,
+jacobs2017channel,
+jacobs2017formal,
+cho2017efprob,
+jacobs2017probability,
+jacobs2017recipe,
+jacobs2016effectuses,
+jacobs2016affine,
+jacobs2016relating,
+effintro,
+statesofconvexsets,
+cho2015quotient,
+jacobs2017distances,
+jacobs2015effect,
+jacobs2016expectation,
+jacobs2016predicate,
+newdirections}.
+But if you'd like more pictures instead,
+I'd suggest~\cite{coecke2017picturing}.
+\end{point}
+\begin{point}[on-writing-style]{Writing style}
 I've replaced page numbers by
 paragraph numbers
 such as~\sref{on-writing-style}
 for this paragraph.
 The numbers after~\sref{conclusion} refer to paragraphs
-	in my twin brother's thesis\TODO{citation}.
+	in my twin brother's thesis\cite{bas}.
 \Define{Definitions}\index{definitions} are set like that
-(i.e..~in blue),
+(i.e.~in blue),
 and can be found in the index.
 Proofs of certain facts
 that are easily obtained on the back of an envelope,
@@ -202,8 +254,43 @@ have been left out.
 Instead these facts have been phrased as excercises
 as a challenge to the reader.
 \end{point}
-	\begin{point}{Acknowledgements} \TODO{write}
-	\end{point}
+\begin{point}{Acknowledgements}
+The work in this thesis
+has benefited greatly from
+discussions
+with John van de Wetering,
+Robert Furber,
+Kenta Cho,
+and Bas Westerbaan,
+but I've also had the pleasure
+of discussing a variety
+of other topics 
+with Sebastiaan Joosten,
+Sam Staton, Robin Adams, Robin Kaarsgaard,
+Sander Uijlen,
+Robbert Krebbers,
+Hans Maassen,
+Bert Lindenhovius,
+Frank Roumen, Joshua Moerman,
+and others.
+I'm especially honored to have been received
+in Edinburgh by Chris Heunen \& Martti Karvonen,
+and at the Mathematisches Forschungsinstitut Oberwolfach
+by Jianchao Wu.
+I'm very grateful to
+Arnoud van Rooij,
+John van de Wetering,
+and
+Bas Westerbaan
+for proofreading large parts of
+this manuscript,
+whithout whose efforts
+even more shameful errors would have remained.
+I should of course not forget to mention
+friends and family.
+
+
+\end{point}
 \end{parsec}
 
 %\subfile{apropos}
@@ -211,6 +298,7 @@ as a challenge to the reader.
 \subfile{vn}
 \subfile{proc}
 
+\chapter{Conclusion}
 \begin{parsec}
 	\begin{point}[conclusion]
 \TODO{Add conclusion?}.
