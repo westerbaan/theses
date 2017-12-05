@@ -15,64 +15,207 @@ The Category of Von Neumann Algebras}
 
 \makeatletter\@starttoc{parsectoc}\makeatother
 
-\chapter{Foreword}
+\chapter{Introduction}
 
 \begin{parsec}
-	\begin{point}
-What offers this thesis?
+\begin{point}
+What doesthis thesis offer?
 Proof, perhaps,
 to the manuscript committee
 of passable academic work;
 an advertisement, as it may be,
-of my schools perspective
+of my school's perspective
 to colleagues;
 a display, even,
 of intellectual achievement
 to friends and family.
 But I believe such narrow and selfish goals \emph{alone}
-barely serve to keep a writers spirits 
-energized---and are definitely detrimental to the readers'.
-That's why I've foolheartedly
+barely serve to keep a writer's spirits 
+energized---and are definitely detrimental to that of the readers.
+That is why I have foolheartedly
 challenged
 myself
 not just 
 to dryly list contributions,
-but to write this thesis
+but to write this thesis 
 as the introduction
-to the  area of research
 that I would have liked to read
-when I entered it back in May~2013.
-Since at that time
-I knew next to nothing 
-about operator algebras---the mathematical basis
-of my work---the preliminaries,
-two chapters,
-span two-thirds
-of this thesis
-and introduce you
-to the theory  $C^*$-algebras
-and von Neumann algebras,
-respectively,
-while the last chapter
-contains proper original research.
-For the first
-two chapters I have not just mixed
-and matched
-relevant results from the literature,
-but I have retailored the 
-whole theory
-from the shoes up
-including proofs\footnote{Except for two results needed
-at the very end.}in the best fashion
-I could manage.
+when I started
+research for this thesis
+back in May~2014.
 
+The topic is von Neumann algebras,
+the category they form,
+and how they may be used
+to model aspects of quantum computation.
+Let us just say for now that a von Neumann algebra
+is a special type of complex vector
+space endowed with
+a multiplication operation among some other additional structure.
+An important example is the complex vector space~$M_2$
+of~$2\times 2$ complex matrices,
+because it models (the predicates on) a qubit;
+but all~$N\times N$-complex matrices form a von Neumann algebra~$M_N$ as well.
+Using von Neumann algebras
+(and their little cousins, $C^*$-algebras) 
+to describe quantum data types
+has two distinct features.
+Firstly, classical data types
+are neatly incorporated:
+$\C^2 \equiv \C\oplus \C$
+models a bit,
+and the direct sum $M_2\oplus M_3$
+models the union type of a qubit and a qutrit.
+Secondly,
+von Neumann algebras
+allow for infinite data types as well
+	such as~$\scrB(\ell^2(\Z))$,
+which represents a ``quantum integer.''\footnote{Though
+	other methods of modeling infinite dimensional
+	quantum computing have been proposed as well, e.g. \TODO{non-standard}
+	\TODO{sam and mathys}, \TODO{models of qlc}.}
+It should be said that this last feature
+is both a boon and a bane:
+it brings with it all the inherent
+intricacies of dealing with infinite dimensions;
+and it is no wonder that
+most authors choose 
+to restrict themselves
+to finite dimensions,
+especially since
+this seems to be enough to describe quantum algorithms.
+
+In this thesis, however,
+we do face infinite dimensions,
+because the two main results demand it:
+\begin{enumerate}
+\item
+For the first result,
+that von Neumann algebras
+form  a model of Selinger and Valirons quantum lambda calculus,
+as Cho and I explained in~\TODO{...},
+and for which I'll provide the foundation here,
+we need to interpret function types,
+some of which are essentially infinite dimensional.
+\item
+The second result,
+an axiomatization
+of the map $a\mapsto \sqrt{p}a\sqrt{p}\colon \scrA\to\scrA$
+representing measurement
+of an element $p\in[0,1]_\scrA$
+of a von Neumann algebra~$\scrA$
+was tailored by B.E.~Westerbaan (my twin brother) and myself to work for
+both finite and infinite dimensional~$\scrA$.
+\end{enumerate}
+These results
+are part of a line of research that
+tries to find patterns
+in the category of von Neumann algebras,
+that may also be cut from other categories
+modelling computation---ideally in order to arrive at categorical axioms
+for computation in general.
+When I joined the fray
+the notion of \emph{effectus} had already
+been established by Jacobs,
+and the two results
+above offer potential additional axioms.
+The work in this area has largely been a collaborative effort,
+primarily between Jacobs, Cho, my twin brother, and myself,
+and many of their insights have ended up in this thesis.
+
+Of this I'd say no more
+than that my work appears conversely, and proportionally,
+in their writings too, except that the close cooperation
+with my brother begs further explanation.
+Our efforts on certain topics have been like interleaving 
+of the pages of two phone books:
+separating them  would be nigh impossible,
+especially the work on the axiomatization
+of~$a\mapsto \sqrt{p}a\sqrt{p}$ and Paschke dilations.
+So that's why we decided to write our theses
+as two volumes of the same work;
+preliminaries on von Neumann algebras,
+and the axiomatization of $a\mapsto \sqrt{p}a\sqrt{p}$
+appear in this thesis,
+while the work on dilations,
+and effectus theory appear in my bother's thesis.
+
+The results mentioned above only
+make up 
+about a third of this thesis;
+the rest of it is devoted to 
+the introduction to the theory of von Neumann algebras
+needed to understand these results.
+My aim is that anyone 
+with, say, a bachelor's degree in mathematics
+(c.q.~basic knowledge of linear algebra,
+analysis, topology and set theory)
+should at least be able to follow the lines of reasoning
+with only minimal recourse to external sources.
+But I hope that they will gain some deeper understanding
+of the material as well.
+To this end, and because I wanted to gain some of this insight
+for myself too,
+I've not just mixed
+and matched
+results from the literature,
+but I tailored a thorough treatise
+of everything that's needed,
+including proofs.
+Whenever possible,
+I've taken shortcuts
+(e.g.~avoiding for example
+the theory of Banach algebras
+and locally convex spaces entirely)
+to  prevent the mental tax
+the added concepts
+(and pages) would have brought.
+For the same reasons
+I've refrained from putting
+everything in its proper abstract (categorical) context
+trusting that it'll shine through of its own accord.
+I've however not been able to restrain
+myself in making perhaps frivolous variations on the existing
+theory whenever not strictly necessary,
+taking for example Kadison's characterization
+of von Neumann algebras
+as my definition,
+and developing the elementary theory for it;
+in my defense I'll just say this adds to
+the original element that is expected of a thesis.
+\end{point}
+\begin{point}[on-writing-style]
+Finally, some words on the writing style.
+I've replaced page numbers by
+paragraph numbers
+such as~\sref{on-writing-style}
+for this paragraph.
+The numbers after~\sref{conclusion} refer to paragraphs
+	in my twin brother's thesis\TODO{citation}.
+\Define{Definitions}\index{definitions} are set like that
+(i.e..~in blue),
+and can be found in the index.
+Proofs of certain facts
+that are easily obtained on the back of an envelope,
+and would clutter this manuscript,
+have been left out.
+Instead these facts have been phrased as excercises
+as a challenge to the reader.
+\end{point}
+	\begin{point}{Acknowledgements} \TODO{write}
 	\end{point}
 \end{parsec}
 
-% \subfile{apropos}
+%\subfile{apropos}
 \subfile{cstar}
 \subfile{vn}
 \subfile{proc}
+
+\begin{parsec}
+	\begin{point}[conclusion]
+\TODO{Add conclusion?}.
+\end{point}
+\end{parsec}
 
 \backmatter
 
