@@ -6,20 +6,20 @@
 \begin{parsec}%
 \begin{point}%
 In the previous chapter and in \cite{bram}
-    we have studied the categorical properties of von Neumann algebras.
+    we have studied categorical properties of von Neumann algebras.
 In this chapter we change pace:
-    we study categories which share part of the structure
-    of the category of von Neumann algebras.
+    we study categories that resemble the
+    category of von Neumann algebras.
 The goal of this line of study, is to identify
     axioms which uniquely pick out the category of von Neumann algebras.
 We do not reach this ambitious goal ---
     instead we will build up to a characterization of
     the existence of a unique $\dagger$-structure
-    on the pure maps of a von Neumann-like category.
+    on the pure maps of a von Neumann algebras-like category.
 \end{point}
 \begin{point}%
 As a basic axiom we will require the categories we consider to be
-    effectuses.
+    effectuses (which will be defined in \sref{dfn-effectus}).
 For us the definition of an effectus will play a similar role
     to that of a topological space for a geometer.
 In many applications,
@@ -36,13 +36,16 @@ Similarly, there will be many pathological effectuses.
 Their use for us lies in their expressiveness.
 \end{point}
 \begin{point}%
-Before we can dive into effectuses,
+Before we dive into effectuses,
     we need to learn about effect algebras (and related structures),
     which were introduced by mathematical physicists as
-    a generalization of Boolean algebra to study unsharp predicates
+    a generalization of Boolean algebra to study fuzzy predicates
     in quantum mechanics.
-    In a sense, effectuses are the categorical counterpart of effect algebras.
-Then we continue with a brief, but thorough development
+For us, effectuses are the
+    categorical counterpart of effect algebras.\footnote{Effect
+    algebroids~\cite{roumen,roumen2016cohomology} are a different
+    categorification with applications in cohomology.}
+After this, we continue with a brief, but thorough development
     of the basic theory of effectuses.
 There is a lot more to say about effectuses
     (see \cite{effintro}), which has been omitted
@@ -72,9 +75,13 @@ The sequential product is the quantum mechanical counterpart
 In  contrast to the tame~$\wedge$ in a Boolean algebras,
     the sequential product does not obey a lot of insightful
     formulas.
-Instead, we take a step back and
+The sequential product as a binary operation
+        has received quite some attention.\cite{gudder2008characterization,gheondea2004sequential,gudder2001sequential,li2011sequential,gudder2005open,shen2009not,gudder2005uniqueness,jun2009remarks,weihua2009uniqueness,tkadlec2008atomic,jia2010entropy,arias2004almost}
+We approach the sequential product in a rather different way:
+    we take a step back and
     consider the map~$\asrt_a(b) \equiv  \andthen{a}{b}$
-        for fixed~$a$, which factors into two parts:
+        for fixed~$a$.
+    This map~$\asrt_a$ factors in two:
 \begin{equation*}
     \xymatrix@C+2pc@R-2pc{
         \scrA \ar[r]^\pi & \ceil{a} \scrA \ceil{a} \ar[r]^\xi
@@ -96,7 +103,7 @@ The existence of quotients and comprehension in some effectus~$C$
     two additional axioms (the existence of images and
     preservation of images under orthocomplementation),
     we get a surprisingly firm handle
-    on the possibilistic side of~$C$,
+    on the \emph{possibilistic} side of~$C$,
     by means of the existence
     of a certain functor~$(\ )_\diamond\colon C \to \mathsf{OMLat}$.
 In the guiding example of von Neumann algebras,
@@ -118,7 +125,7 @@ Because of the central role of~$\diamond$,
 \begin{point}%
 The axioms of a~$\diamond$-effectus do not force
     any coherence between the quotients and comprehension.
-This has been a roadblock in the axiomatization
+This has been a roadblock to the axiomatization
     of the sequential product for quite a while.
 The key insight was the following:
     the map~$\asrt_a$ (i.e.~$b\mapsto \andthen{a}{b}$)
@@ -129,7 +136,8 @@ We turn this Theorem into an axiom:
     a~$\diamond$-effectus
     where there are such unique~$\diamond$-positive maps~$\asrt_a$
     and an additional polar decomposition axiom holds.
-In an~$\&$-effectus, the predicates on an object carry a canonical~$\&$
+In an~$\&$-effectus, the predicates on an object carry a canonical
+    binary operation~$\&$
     which is the intended sequential product in
     the case of von Neumann algebras.
 \end{point}
@@ -140,13 +148,14 @@ In~\sref{paschke-pure} we saw that in the case of von Neumann algebras,
     a map is pure (in this sense) if and only if the corresponding Paschke
     embedding is surjective.
 In particular, the pure maps~$\scrB(\scrH) \to \scrB(\scrK)$
-    are exactly of the form~$\ad_v$,
+    are exactly of the form~$\ad_v$
+        (for bounded operators~$v\colon \scrK \to \scrH$)
     which carry a~$\dagger$-structure,
     namely~$(\ad_v)^\dagger = \ad_{v^*}$.
 This begs the question: can we define a~$\dagger$ on all pure maps
     in an~$\&$-effectus?
 The main result of this chapter
-    is Theorem \sref{dagger-theorem}
+    is Theorem~\sref{dagger-theorem},
     which gives  necessary and sufficient conditions
     for an~$\&$-effectus
     to have a well-behaved~$\dagger$-structure on its pure maps.
@@ -188,7 +197,7 @@ In this way, effect algebras play the same role
     \item \emph{(zero)}
         $0 \perp a$ and~$0 \ovee a = a$.
 \end{enumerate}
-We say~$a\mathrel{\Define{\leq}} b$
+    We say~$\Define{a \leq b}$
     whenever~$a \ovee c = b$ for some~$c \in M$.
 \end{point}
 \begin{point}[pcm-preorder]{Exercise}%
@@ -209,8 +218,8 @@ Show a PCM is preordered by~$\leq$.
 \begin{parsec}%
 \begin{point}[dfn-ea]{Definition}%
 A PCM~$E$ together with distinguished element~$1 \in E$
-is an \Define{effect algebra} (\Define{EA}) \cite{ea}
-    provided
+    is called an \Define{effect algebra} (\Define{EA}) \cite{ea}
+    provided that
 \begin{enumerate}
 \item
     \emph{(orthocomplement)}
@@ -224,9 +233,9 @@ is an \Define{effect algebra} (\Define{EA}) \cite{ea}
 A map~$f\colon E \to F$
 between effect algebras~$E$ and~$F$
 is called an \Define{effect algebra homomorphism}
-if
+if for all~$a, b \in E$, we have
 \begin{enumerate}
-    \item \emph{(additivity)}
+    \item \emph{(additive)}
     $a \perp b$ implies $f(a) \perp f(b)$ and~$f(a)\ovee f(b) = f(a\ovee b)$
         \emph{and}
     \item \emph{(unital)}
@@ -247,8 +256,8 @@ There are many examples of effect algebras
 The unit interval
 $[0,1]$ with partial addition is an effect algebra ---
 i.e.:~$x \perp y$
-        whenever~$x +y \leq 1$, $x \ovee y = x + y$
-        and~$a^\perp = 1-a$.
+        whenever~$x +y \leq 1$ and then $x \ovee y = x + y$,
+        $x^\perp = 1-x$.
 \item
 Generalizing the previous:
 if~$G$ is an ordered group
@@ -287,12 +296,12 @@ The one-element Boolean algebra~$1 \equiv \{0=1\}$
 \end{point}
 
 \begin{point}[ea-product]{Exercise}%
-Assume~$E$ and~$F$ are effect algebras.
+Let~$E$ and~$F$ be effect algebras.
 First show that the cartesian products~$E \times F$
     is an effect algebra with componentwise operations.
 Show that this is in fact the categorical product of~$E$ and~$F$
     in \textsf{EA}.
-To finish, show that~\textsf{EA} has initial
+Finally, show that~\textsf{EA} has initial
     object~$\{0,1\}$
     and final object~$\{0=1\}$.
 (The category \textsf{EA} is in fact complete and cocomplete;
@@ -308,7 +317,7 @@ partial associativity, orthocomplement and zero--one.)
 \end{point}
 
 \begin{point}{Proposition}%
-In any effect algebra~$E$, we have
+In any effect algebra~$E$ with~$a,b,c\in E$, we have
 \begin{enumerate}
     \item \emph{(involution)}
         $a^{\perp\perp} = a$;
@@ -660,7 +669,7 @@ An effectus comes in two guises:
 We will start of with the total form as it has the simplest axioms.
 Later we will prefer to work with the partial form.
 \begin{parsec}%
-\begin{point}{Definition}%
+\begin{point}[dfn-effectus]{Definition}%
 A category $C$ is said to be an \Define{effectus in total form}
     \cite{effintro,newdirections,statesofconvexsets}
     if
