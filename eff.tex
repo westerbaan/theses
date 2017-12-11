@@ -197,8 +197,19 @@ In this way, effect algebras play the same role
     \item \emph{(zero)}
         $0 \perp a$ and~$0 \ovee a = a$.
 \end{enumerate}
-    We say~$\Define{a \leq b}$
-    whenever~$a \ovee c = b$ for some~$c \in M$.
+A map~$f\colon M \to N$
+    between PCMs~$M$ and~$N$
+    is called an \Define{PCM homomorphism}
+    if for all~$a, b \in E$
+    with~$a \perp b$,
+    we have~$f(a) \perp f(b)$
+    and~$f(a) \ovee f(b) = f(a \ovee b)$.
+Write~$\Define{\textsf{PCM}}$ for the category
+    of PCMs with these homomorphisms.
+
+For~$a,b$ in a PCM~$M$,
+    we say~$\Define{a \leq b}$
+    iff~$a \ovee c = b$ for some~$c \in M$.
 \end{point}
 \begin{point}[pcm-preorder]{Exercise}%
 Show a PCM is preordered by~$\leq$.
@@ -327,7 +338,7 @@ In any effect algebra~$E$ with~$a,b,c\in E$, we have
         if~$a\ovee b = 0$, then~$a = b= 0$;
     \item \emph{(cancellation)}
         if~$a\ovee c = b\ovee c$, then~$a = b$;
-    \item $\leq$ partially orders~$E$;
+    \item the relation  $\leq$ (from \sref{dfn-pcm}) partially orders~$E$;
     \item $a \leq b$ if and only if $b^\perp \leq a^\perp$;
     \item if~$a \leq b$ and~$b \perp c$, then~$a \perp c$
         and~$a \ovee c \leq b \ovee c$ \emph{and}
@@ -348,18 +359,17 @@ Then~$a \ovee b \perp 1$
     By zero--one, we get~$b = 0$.
     Similarly~$a=0$, which shows point 3.
 For point 4, assume~$ a \ovee c = b \ovee c$.
-From partial associativity, we get
-\begin{equation*}
-    ((a \ovee b)^\perp\ovee a) \ovee c \ =\  
-    ((a \ovee b)^\perp\ovee a) \ovee b \ = \ 1
-\end{equation*}
+From partial associativity and commutativity, we get
+$ ((a \ovee b)^\perp\ovee a) \ovee c = 
+    ((a \ovee b)^\perp\ovee a) \ovee b  =  1$
 and so by uniqueness of
 orthocomplement~$c = ((a\ovee b)^\perp\ovee a)^\perp = b$,
-    which is point 4.
+    which is point~4.
 By \sref{pcm-preorder},
     we only need to show that~$\leq$ is antisymmetric
-    for point 5.
-So assume~$a \leq b$ and~$b \leq a$.
+    for point~5.
+So assume~$a \leq b$ and~$b \leq a$
+    for some~$a,b\in E$.
 Pick~$c,d \in E$ with~$a \ovee c = b$ and~$b \ovee d = a$.
 Then~$a = (a \ovee c) \ovee d = a \ovee (c \ovee d)$.
 By cancellation~$c \ovee d = 0$.
@@ -374,7 +384,7 @@ For point 7, assume~$a \leq b$ and~$b \perp c$.
 Pick~$d$ with~$a \ovee d = b$.
 By partial associativity and commutativity
     we have~$b \ovee c = (a \ovee d) \ovee c = (a \ovee c) \ovee d$,
-    so~$a \ovee c$ and~$a \ovee c \leq b \ovee c$.
+    so~$a \perp c$ and~$a \ovee c \leq b \ovee c$.
 For point 8, first assume~$a \perp b$.
 Then~$a \ovee b \ovee (a \ovee b)^\perp = 1 = b \ovee b^\perp$.
 So by cancellation~$b^\perp = a \ovee (a \ovee b)^\perp$,
@@ -394,7 +404,7 @@ Hence~$a \ovee c \perp b$
 Suppose~$E$ is an effect algebra.
 Write~$\Define{b \ominus a}$
 for the (by cancellation) unique element (if it exists)
-such that~$a \ovee (b \ominus a) = b$.
+with~$a \ovee (b \ominus a) = b$.
 \end{point}
 \begin{point}{Exercise}%
 Show that for any effect algebra~$E$, we have
@@ -407,7 +417,7 @@ Show that for any effect algebra~$E$, we have
                 and~$(c \ominus a) \ominus (c \ominus b) = b \ominus a$.
 \end{enumerate}
 \begin{point}%
-Assume~$E$ is a poset with maximum element~$1$
+Let~$E$ be a poset with maximum element~$1$
     and partial binary operation~$\ominus$
     satisfying~(D1)--(D4).
 Define~$a \ovee b = c \Leftrightarrow c \ominus b = a$
@@ -416,8 +426,8 @@ Show that this turns~$E$ into an effect algebra
     with compatible order and~$\ominus$.
 \end{point}
 \begin{point}{Remark}%
-Such a structure~$(E,\ominus,1)$ is called a difference-poset
-    (D-poset) and is, as we have just seen,
+    Such a structure~$(E,\ominus,1)$ is called a \Define{difference-poset}
+    (\Define{D-poset}) \cite{kopka1994d} and is, as we have just seen,
     an alternative way to axiomatize effect algebras.
 \end{point}
 \end{point}
@@ -427,7 +437,7 @@ Show that for an effect algebra homomorphism~$f\colon E \to F$,
     we have
     \begin{enumerate}
         \item~\emph{(preserves zero)} $f(0) = 0$;
-        \item~\emph{(order-preserving)} if $a \leq b$, then~$f(a) \leq f(b)$
+        \item~\emph{(order preserving)} if $a \leq b$, then~$f(a) \leq f(b)$
                         \emph{and}
         \item~if~$a\ominus b$ is defined,
             then $f(a \ominus b) = f(a) \ominus f(b)$.
@@ -542,7 +552,7 @@ but~$b^\perp \wedge a \leq b^\perp \wedge b = 0$
 \subsection{Effect monoids}
 \begin{parsec}%
 \begin{point}%
-In \sref{dfn-mandso}, we will see that the scalars of an effectus
+In \sref{dfn-mandso} we will see that the scalars of an effectus
 form an effect monoid:
 \end{point}
 \begin{point}[dfn-effect-monoid]{Definition}%
@@ -564,7 +574,7 @@ An \Define{effect monoid}~$M$ \cite{probdistrconv}
 \end{enumerate}
 (Phrased categorically:
     an effect monoid is a monoid in \textsf{EA}
-    with the obvious tensor product, see \cite{corefl,probdistrconv}.)
+    with the obvious monoidal tensor product, see \cite{corefl,probdistrconv}.)
 An effect monoid~$M$ is said to be \Define{commutative}
     if we have~$a\odot b = b\odot a$ for all~$a,b \in M$.
 \end{point}
@@ -587,11 +597,15 @@ In particular: the two-element Boolean algebra~$2$
 \item There is a non-commutative effect monoid
         based on the lexicographically ordered vector space~$\R^5$,
         see ~\cite[Cor.~51]{basmsc}.
-\item Assume~$M$ is an effect monoid.
+\item Let~$M$ be an effect monoid.
     Write~$M^{\mathsf{op}}$
         for the effect monoid~$M$ with the opposite multiplication
             --- that is: $a \odot_M b = b \odot_{M^\mathsf{op}} a$.
 \end{enumerate}
+\begin{point}%
+Later, in a tangent,
+    we will need the following specific fact about effect monoids.
+\end{point}
 \end{point}
 \begin{point}[emond-lemma-for-conv]{Exercise}%
 Assume~$M$ is an effect monoid
@@ -605,9 +619,10 @@ Prove~$a_i \odot b_i = a_i$ for every~$1 \leq i \leq n$.
 \subsection{Effect modules}
 \begin{parsec}%
 \begin{point}%
-An effect algebra of predicates in an effectus
-    will have an action of the effect monoid of the scalars,
-    turning them into an effect module (see \sref{dfn-mandso}):
+We will see that in an effectus,
+    the effect monoid of scalars will act on
+    every effect algebra of predicates,
+    turning them into effect modules (see \sref{dfn-mandso}):
 \end{point}
 \begin{point}[dfn-effect-module]{Definition}%
 Suppose~$M$ is an effect monoid.
@@ -647,12 +662,12 @@ There are many effect modules.
 \begin{enumerate}
 \item
 Every effect algebra is an effect module over
-    the two-element effect monoid $2$.
+    the two-element effect monoid~$2$.
     (In fact $\mathsf{EA} \cong \mathsf{EMod}_{2}$.)
-The only effect module over the one-element effect monoid~$1$,
+The only effect module up-to-isomorphism over the one-element effect monoid~$1$,
     is the one-element effect algebra~$1$ itself.
 \item
-If~$V$ is an ordered real vector space with positive order unit~$u$,
+If~$V$ is an ordered real vector space with order unit~$u$,
     then~$[0,u]$ is an effect module over~$[0,1]$.
 In fact, every effect module over~$[0,1]$
     is of this form \cite{gudder1998representation}.
@@ -674,35 +689,42 @@ A category $C$ is said to be an \Define{effectus in total form}
     \cite{effintro,newdirections,statesofconvexsets}
     if
 \begin{enumerate}
-\item $C$ has finite coproducts and a final object~$1$;
-\item all diagrams of the following form are pullbacks
+\item $C$ has finite coproducts (hence an initial object~$0$)
+        and a final object~$1$;
+    \item all diagrams of the following form\footnote{%
+    As usual,
+        we write~$\kappa_i$ for coproduct coprojections;
+            square brackets~$[f,g]$ for coproduct cotupling;
+            $h+k = [\kappa_1 \after h, \kappa_2 \after k]$
+            and~$!$ for the unique maps associated to
+            either the final object~$1$ or initial object~$0$.} are pullbacks
 \begin{equation}\label{pullbacks}
-\xymatrix{
+    \vcenter{\xymatrix{
     X+Y \ar[r]^{\id+!} \ar[d]_{!+\id} & X+1\ar[d]^{!+\id} \\
     1+Y\ar[r]_{\id+!} & 1+1
-    }
-    \qquad
-\xymatrix{
+}}
+    \qquad\qquad
+    \vcenter{\xymatrix{
     X \ar[r]^{!} \ar[d]_{\kappa_1} & 1 \ar[d]^{\kappa_1} \\
     X+Y\ar[r]_{!+!} & 1+1
-    }
+}}
 \end{equation}
-\item\label{eff-joint-monicity} and the following two arrows are jointly monic
+\item\label{eff-joint-monicity} and the following two arrows are jointly monic.
     \begin{equation*}
         \xymatrix@C+2pc  {
             1+1+1  \ar@/^/[r]^{[\kappa_1,\kappa_2,\kappa_2]}
-                    \ar@/_/[r]_{[\kappa_2,\kappa_1,\kappa_2]} & 1+1.
+                    \ar@/_/[r]_{[\kappa_2,\kappa_1,\kappa_2]} & 1+1
         }
     \end{equation*}
 \end{enumerate}
-An arrow~$X \to Y+1$ is called a \Define{partial map}
-$X \mathrel{\Define{\pto}} Y$.
+An arrow~$X \to Y+1$ is called a \Define{partial map} and written
+    $\Define{X \pto Y}$.
 \begin{point}%
-One interested in physics, should think of the objects
+One interested in physics, might think of the objects
     of an effectus as physical systems and its arrows as
     the physical operations between them.
     The final object~$1$ is the physical system with a single state.
-The coproduct~$X+Y$ is the system that can be prepared as~$X$ or as~$Y$.
+The coproduct~$X+Y$ is the system that can be prepared as either~$X$ or as~$Y$.
 An arrow~$1 \to X$ corresponds to a physical preparation of the system~$X$
     and an arrow~$X \to 1+1$ is a yes--no measurement.
 \end{point}
@@ -735,8 +757,12 @@ Our main example of an effectus in total form
     maps in the opposite direction.
 (To see~$\op\vN$ is an effectus in total form,
     adapt the proof of \sref{emod-effectus}.)
-The partial maps correspond to contractive maps.
+The partial maps correspond to
+    ncp-maps~$f$ with~$f(1) \leq 1$.
+(Equivalently: contractive ncp-maps.)
 We list more examples later on.
+\end{point}
+\begin{point}%
 Let~$C$ be an effectus in total form.
 Given two arrows~$f\colon X \to Y+1$
 and~$g \colon Y \to Z+1$ (i.e.~partial maps~$X \pto Y$ and~$Y \pto Z$)
@@ -764,11 +790,11 @@ A category~$C$ is called an \Define{effectus in partial form}
     \begin{enumerate}
         \item 
             $C$ has finite coproducts $(+,0)$;
-        \item $C$ is PCM-enriched --- that is:
+        \item $C$ is $\mathsf{PCM}$-enriched --- that is:
             \begin{enumerate}
             \item
             every homset $C(X,Y)$ has a partial binary operation~$\ovee$
-                    and distinguished~$0 \in C(X,Y)$
+                    and distinguished element~$0 \in C(X,Y)$
                     that turns~$C(X,Y)$ into a partial commutative monoid,
                     see \sref{dfn-pcm}, and
             \item
@@ -781,12 +807,12 @@ A category~$C$ is called an \Define{effectus in partial form}
                 (f \ovee g) \after k = 
                 (f \after k) \ovee (g \after k)
             \end{equation*}
-                for any~$f,g \in X \to Y$,
+                for any~$f,g \colon X \to Y$,
                 $h\colon Y \to Y'$
                 and~$k \colon X'\to X$;
             \end{enumerate}
         \item
-            (compatible sum)
+            \emph{(compatible sum)}
             for any~$b\colon X \to Y + Y$ we have
             $\pproj_1 \after b \perp \pproj_2 \after b$,
             where~$\Define{\pproj_i}\colon Y + Y \to Y$
@@ -794,8 +820,11 @@ A category~$C$ is called an \Define{effectus in partial form}
             by~$\pproj_1 \equiv [\id, 0]$
             and~$\pproj_2 \equiv [0, \id]$ \emph{and}
         \item
-            (untying) if~$f\perp g$,
-            then~$\kappa_1\after f \perp \kappa_2 \after g$ \emph{and}
+            \emph{(untying)} if~$f\perp g$,
+            then~$\kappa_1\after f \perp \kappa_2 \after g$,
+            where~$\kappa_1$ and~$\kappa_2$ are coprojections
+            on the same coproduct
+            \emph{and}
     \end{enumerate}
     \item it has effects --- that is: there is a distinguished object~$I$
             such that
@@ -806,10 +835,11 @@ A category~$C$ is called an \Define{effectus in partial form}
                 has a maximum element~$1$;
         \item if~$1 \after f \perp 1 \after g$,
             then~$f \perp g$ \emph{and}
-        \item if~$1 \after f = 0$ then~$f = 0$.
+        \item if~$1 \after f = 0$, then~$f = 0$.
     \end{enumerate}
 \end{enumerate}
-A map~$f\colon X \to Y$ is called \Define{total} if~$1 \after f = 1$.
+In this setting,
+a map~$f\colon X \to Y$ is called \Define{total} if~$1 \after f = 1$.
 \begin{point}{Remark}%
 The untying axiom is redundant: it follows from the others.
 We include it, as it is part
@@ -834,10 +864,12 @@ The category~$\Par C$ is an effectus in partial form
 The total maps of~$D$ form an effectus in total form~$\Tot D$.
 \item
     Nothing is lost:
-    $\Par \Tot D \cong D$ and~$\Tot \Par C \cong C$.
+        $\Par (\Tot D) \cong D$ and~$\Tot (\Par C )\cong C$.
 \end{enumerate}
 \begin{point}%
-We postpone the proof to \sref{proof-cho-thm}.
+To prove the Theorem
+    (in \sref{proof-cho-thm}),
+    we need some preparation.
 \end{point}
 \end{point}
 \end{parsec}
@@ -856,9 +888,12 @@ This proof and especially the demonstration
 In an effectus in partial form,
     coprojections are total.
 \begin{point}{Proof}%
-Note
-$1 = 1 \after \id = (1 \after [\id, 0]) \after \kappa_1
-                    \leq 1 \after \kappa_1 \leq 1$.
+Let~$\kappa_1 \colon X \to X+Y$ be any coprojection.
+We have to show~$1 \after \kappa_1 = 1$.
+Note that the first~$1$ denotes the maximum of~$\Pred X+Y$
+    and the second the maximum of~$X$.
+    Hence~$1_X = 1_X \after \id_X = (1_X \after [\id_X, 0]) \after \kappa_1
+                    \leq 1_{X+Y} \after \kappa_1 \leq 1_X$.
 Indeed~$1 \after \kappa_1 = 1$. \qed
 \end{point}
 \end{point}
