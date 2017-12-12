@@ -577,6 +577,11 @@ An \Define{effect monoid}~$M$ \cite{probdistrconv}
     with the obvious monoidal tensor product, see \cite{corefl,probdistrconv}.)
 An effect monoid~$M$ is said to be \Define{commutative}
     if we have~$a\odot b = b\odot a$ for all~$a,b \in M$.
+A map~$f\colon M \to N$ between effect monoids
+    is called an \Define{effect monoid homomorphism}
+    if it is an effect algebra homomorphism
+    and furthermore~$f(a \odot b) = f(a) \odot f(b)$
+    for all~$a,b \in M$.
 \end{point}
 \begin{point}[eff-monoid-examples]{Examples}%
 Effect monoids are less abundant than effect algebras.
@@ -924,7 +929,7 @@ By the compatible sum axiom
     \ \perp\  \pproj_2 \after (h + l)
     \ = \ [0, l].
 \end{equation*}
-By PCM-enrichment
+By $\mathsf{PCM}$-enrichment
 $([h, 0] \ovee [0, l]) \after \kappa_1
          =  ([h, 0] \after \kappa_1) \ovee
         ([0, l] \after \kappa_1)  = h$.
@@ -932,15 +937,15 @@ Similarly~$([h, 0] \ovee [0, l]) \after \kappa_2 = l$.
 Thus indeed~$[h,l] = [h,0] \ovee [0,l]$.
 
 Assume~$[f,g] \perp [f',g']$.
-    By PCM-enrichment
+    By $\mathsf{PCM}$-enrichment
     we have~$f = [f,g] \after \kappa_1 \perp [f',g'] \after \kappa_1 = f'$.
 Similarly~$g \perp g'$.
 Conversely, assume~$f \perp f'$ and~$g \perp g'$.
-Again, by PCM-enrichment~$
+Again, by $\mathsf{PCM}$-enrichment~$
 [f,0] = f  \after \pproj_1 \perp f' \after \pproj_1 = [f', 0]$
     and~$[f\ovee f', 0 ] = [f,0] \ovee [f', 0]$.
 Similarly~$[0,g \ovee g'] = [0,g] \ovee [0,g']$.
-Putting it all together
+Putting it all together:
 \begin{align*}
 [f, g] \ovee [f', g']
 &\ = \ 
@@ -951,7 +956,7 @@ Putting it all together
  [f\ovee f', g \ovee g'].
 \end{align*}
 To show cotupling is a PCM-isomorphism,
-    it only remains to be shown~$[0,0]=0$.
+    it only remains to be shown that~$[0,0]=0$.
 As~$0 \after \kappa_1 = 0$
     and~$0 \after \kappa_2 = 0$,
     we indeed have~$0 = [0,0]$.
@@ -959,15 +964,13 @@ Similarly by \sref{coproj-total} we have~$1 \after \kappa_1 = 1$
     and~$1 \after \kappa_2 = 1$,
     so~$1 = [1,1]$. \qed
 \end{point}
-\end{point}
-
 \begin{point}%
 The coproduct in an effectus in partial form
 is almost a (bi)product:
 \end{point}
-
+\end{point}
 \begin{point}[coprod-prod]{Proposition}%
-In an effectus in partial form, we have a correspondence
+In an effectus in partial form, we have a bijective correspondence
 \begin{prooftree}
 \AxiomC{$h\colon Z \to X+Y$}
 \doubleLine
@@ -985,15 +988,17 @@ for every~$f\colon Z \to X$
 In fact~$\langle f, g\rangle = (\kappa_1 \after f) \ovee (\kappa_2 \after g)$.
 \end{quote}
 Conversely~$h = \langle \pproj_1 \after h, \pproj_2 \after h \rangle$
-    for any~$h \colon Z \to X+Y$.
+    with~$1 \after \pproj_1 \after h \perp 1 \after \pproj_2 \after h$
+    for~$h \colon Z \to X+Y$.
 \begin{point}{Proof}%
-Assume~$f\colon Z \to X$ and~$g\colon Z \to Y$ with~$1\after f \perp 1\after g$.
+Let~$f\colon Z \to X$ and~$g\colon Z \to Y$ be given
+        such that~$1\after f \perp 1\after g$.
 By \sref{coproj-total},
 we have~$1 \after \kappa_1 \after f = 1 \after f \perp 1 \after g =
         1 \after \kappa_2 \after g$.
 Thus~$\kappa_1 \after f \perp \kappa_2 \after g$.
 Define~$\langle f, g\rangle = (\kappa_1 \after f) \ovee (\kappa_2 \after g)$.
-By the PCM-enrichedness, we have
+    By the $\mathsf{PCM}$-enrichedness, we have
 \begin{align*}
 \pproj_1 \after \langle f, g\rangle 
 &\  =\  [\id, 0] \after ((\kappa_1 \after f) \ovee (\kappa_2 \after g)) \\
@@ -1017,14 +1022,15 @@ so by~\sref{cotupl-pcm} we have~$(\kappa_1 \after \pproj_1)
     \ovee (\kappa_2 \after\pproj_2 \after h)  \\
     & \ = \ ((\kappa_1 \after\pproj_1 )
     \ovee (\kappa_2 \after\pproj_2 ))  \after h \\
-    & \ = \  h,
+    & \ = \   \id \after h \ = \  h,
 \end{align*}
 which demonstrates uniqueness.
 
 Finally, let~$h\colon Z\to X+Y$ be any map.
+We must show that~$h = \langle \pproj_1 \after h, \pproj_2 \after h\rangle$.
 Note~$1 \after \pproj_1 = [1,0]$
     and~$1 \after \pproj_2 = [0,1]$.
-So by PCM-enrichment~$1 \after \pproj_1 \after h \perp 1 \after \pproj_2 \after h$ and so~$\pproj_1 \after h \perp \pproj_2 \after h$.
+    So by $\mathsf{PCM}$-enrichment~$1 \after \pproj_1 \after h \perp 1 \after \pproj_2 \after h$ and so~$\pproj_1 \after h \perp \pproj_2 \after h$.
 By the previous
 $\langle \pproj_1 \after h, \pproj_2 \after h\rangle
 = (\kappa_1 \after \pproj_1 \after h) \ovee
@@ -1043,13 +1049,28 @@ Show that in an effectus in partial form, we have
     \item~$\langle f, g\rangle \after k = \langle f \after k,
                                 g \after k \rangle$.
 \end{enumerate}
+\begin{point}{Remark}%
+In an effectus in partial form,
+    there is a straight-forward generalization
+    of the bijective correspondence~\sref{coprod-prod} to
+\begin{prooftree}
+\AxiomC{$h\colon Z \to  X_1 + \cdots + X_n$}
+\doubleLine
+\UnaryInfC{$f_1\colon Z \to X_1 \ \cdots \  f_n\colon Z \to X_n \quad \bigperp_n  1 \after f_n$},
+\end{prooftree}
+with~$f_i = \pproj_i \after h$
+    and~$h = \langle f_1, \ldots, f_n\rangle \equiv
+    (\kappa_1 \after f_1 )\ovee \cdots \ovee (\kappa_n \after f_n)$,
+    where~$\pproj_i$ is defined in the obvious way.
+The expected generalizations  of the rules in \sref{eff-prod-rules} also hold.
+\end{point}
 \end{point}
 
 \begin{point}[eff-partial-to-total]{Theorem}%
 Let~$C$ be an effectus in partial form.
-The total maps of~$C$ are an effectus in total form.
+The category of total maps of~$C$ is an effectus in total form.
 \begin{point}{Proof}%
-The total maps form a subcategory: $1 \after \id = 1$
+The total maps form indeed a subcategory: $1 \after \id = 1$
     and $1 \after f \after g = 1 \after g = 1$ for composable total~$f,g$.
 In \sref{coproj-total} we saw coprojections are total.
 By \sref{cotupl-pcm}
@@ -1065,7 +1086,7 @@ To show~$I$ is the final object of~$\Tot C$,
     we need~$\id_I = 1$.
 As~$C(I,I)$ is an effect algebra~$1 = \id \ovee \id^\perp$
     for some~$\id^\perp$.
-So by PCM-enrichment~$1 = 1 \after 1 = (1 \after \id) \ovee (1 \after\id^\perp) = 
+    So by $\mathsf{PCM}$-enrichment~$1 = 1 \after 1 = (1 \after \id) \ovee (1 \after\id^\perp) = 
 1 \ovee (1 \after \id^\perp)$.
 By the zero--one axiom~$1 \after \id^\perp = 0$.
 So~$\id^\perp = 0$ and indeed~$\id = 1$.
@@ -1077,17 +1098,17 @@ and if~$h\colon X \to I$ is total, then~$1=1 \after h = \id_I \after h = h$.
 \begin{point}%
 To show the square on the left of \eqref{pullbacks} is a pullback
     in~$\Tot C$,
-assume~$f\colon Z \to X+I$ 
-and~$g\colon Z \to I+Y$
-are total maps with~$(\id+1) \after g = (1+\id) \after f$.
+let~$f\colon Z \to X+I$ 
+and~$g\colon Z \to I+Y$ be total maps
+    with~$(\id+1) \after g = (1+\id) \after f$.
 By~\sref{coprod-prod}, $f = \langle \alpha, a \rangle$
     and~$g = \langle b, \beta \rangle$
     for some maps~$\alpha\colon Z \to X$, $\beta\colon Z \to Y$
-        and~$a,b\colon Z \to I$ in~$C$.
+        and~$a,b\colon Z \to I$.
 \begin{equation*}
 \xymatrix@C+1pc@R-1pc{ 
-Z \ar@/^1pc/[rrd]^{\langle\alpha,a \rangle}
-    \ar@/_1pc/[rdd]_{\langle b, \beta\rangle}
+Z \ar@/^1pc/[rrd]^{\langle\alpha,a \rangle \equiv f}
+    \ar@/_1pc/[rdd]_{g \equiv \langle b, \beta\rangle}
     \ar@{.>}[rd]|{\langle \alpha, \beta\rangle}
     \\
     &  X+Y \ar[r]^{\id+1} \ar[d]_{1+\id} & X+I\ar[d]^{1+\id} \\
@@ -1100,7 +1121,7 @@ By~\sref{eff-prod-rules},
         and so~$a^\perp = 1\after \alpha$.
 Similarly~$b^\perp = 1 \after \beta$.
 Again, using~\sref{eff-prod-rules},
-    we see
+    we see that
 \begin{equation*}
     \langle b, 1 \after \beta \rangle \ =\ 
     (\id + 1) \after \langle b, \beta \rangle \ =\ 
@@ -1149,7 +1170,8 @@ Hence~$\langle \alpha, \beta\rangle = \langle \alpha, 0\rangle
         = \kappa_1 \after \alpha$ as desired.
 \end{point}
 \begin{point}%
-    Finally, to show~$m_1\equiv [\kappa_1,\kappa_2,\kappa_2], m_2 \equiv [\kappa_1,\kappa_2,\kappa_2]\colon
+    Finally, to show~$m_1\equiv [\kappa_1,\kappa_2,\kappa_2],
+        m_2 \equiv [\kappa_2,\kappa_1,\kappa_2]\colon
     I+I+I \to I+I$ are jointly monic,
     let~$f_1 \equiv \langle a_1,b_1,c_1\rangle,f_2\equiv \langle a_2,b_2,c_2\rangle\colon X\to I+I+I$ be any total maps
     with~$m_1 \after f_1 = m_1 \after f_2$
@@ -1191,12 +1213,14 @@ This structure is hidden (for the most part)
 The right pullback square of \eqref{pullbacks}
     is used to extract a total map in~$C$
     from a partial map~$f$ in~$\Par C$ that is total (i.e.~$1 \hafter f = 1$).
+        See~\sref{pardp}.
 \item
 The joint-monicity
     of~$[\kappa_1,\kappa_2,\kappa_2]$
     and~$[\kappa_2,\kappa_1,\kappa_2]$
     will imply the joint monicity of~$\pproj_1$ and $\pproj_2$,
     which is required for uniqueness of the partial sum of partial maps.
+        See~\sref{pproj-joint-monicity}.
 \end{enumerate}
 To prove the theorem, we need to study pullbacks:
     first in any category,
@@ -1218,11 +1242,11 @@ Show that if we have any pullback square --- say
                 \\ {A\ } \ar[r]_{g}
     & X}}} \text{,}
 \end{equation*}
-then~$m_1$ and~$m_2$ are jointly-monic.
+then~$m_1$ and~$m_2$ are jointly monic.
 \end{point}
 
 \begin{point}[pullback-lemma]{Exercise}%
-Show the \Define{pullback lemma} --- that is:
+Prove the \Define{pullback lemma} --- that is:
     if we have a commuting diagram
 \begin{equation*}
     \vcenter{\vbox{\xymatrix@R-1pc{
@@ -1234,7 +1258,6 @@ Show the \Define{pullback lemma} --- that is:
                 & Z
     }}} \text{,}
 \end{equation*}
-\end{point}
 then we have the following two implications.
 \begin{enumerate}
 \item
@@ -1245,6 +1268,12 @@ If the outer square is a pullback
     and~$l$ and~$g$ are jointly monic,
     then the left inner square is a pullback.
 \end{enumerate}
+\begin{point}{Remark}%
+In the literature (e.g.~\cite[III.5 exc.~8]{maclane}),
+    one often finds a weaker second implication,
+    which assumes that the right square is a pullback.
+\end{point}
+\end{point}
 \end{parsec}
 
 \begin{parsec}%
@@ -1263,15 +1292,16 @@ that is:
                 {P\ } \pullback \ar@{>->}[r]^n \ar[d]_g
         & X \ar[d]^f
                 \\ {A\ } \ar@{>->}[r]_{m}
-    & B}}}.
+    & B}}},
 \end{equation*}
+    where we used~$\xymatrix@C-1pc{\ar@{>->}[r]&}$ to denote a monic map.
 We will need an analogous result for jointly monic maps.
 \end{point}
 \begin{point}[joint-monicity-stable]{Lemma}%
 If the pairs~$(m_1,m_2)$, $(n_1,g_1)$, $(n_2,g_2)$ and~$(h_1,h_2)$
 in the following commuting diagram
-are jointly-monic (for instance: if they span pullback squares),
-then~$(n_1 \after h_1, n_2 \after h_2)$ is jointly-monic as well.
+are jointly monic (for instance: if they span pullback squares),
+then~$(n_1 \after h_1, n_2 \after h_2)$ is jointly monic as well.
 \begin{equation*}
     \xymatrix@C+1pc{
         P \ar[r]^{h_1} \ar[d]_{h_2}
@@ -1312,19 +1342,20 @@ So by joint monicity of~$m_1$ and~$m_2$,
     we conclude~$g_1 \after h_1 \after \alpha_2
                 = g_1 \after h_1 \after \alpha_1$.
 So by the joint monicity of~$n_1$ and~$g_1$
-    (and~$n_1 \after h_1 \after \alpha_2
-    = n_1 \after h_1 \after \alpha_1$ by assumption),
+    (and by assumption~$n_1 \after h_1 \after \alpha_2
+    = n_1 \after h_1 \after \alpha_1$),
     we conclude~$h_1 \after \alpha_1 = h_1 \after \alpha_2$.
 Reasoning in the same way mirrored over the diagonal,
     we find~$h_2 \after \alpha_1 = h_2 \after \alpha_2$.
-Thus, by joint monicity of~$h_1$ and~$h_2$, we conclude~$\alpha_1 = \alpha_2$, as desired. \qed
+Thus, by joint monicity of~$h_1$ and~$h_2$, we conclude that~$\alpha_1 = \alpha_2$, as desired. \qed
 \end{point}
 \end{point}
 \end{parsec}
 
 \begin{parsec}%
 \begin{point}[tot-pullbacks]{Proposition}%
-The following squares are pullbacks in an effectus in total form.
+In an effectus in total form,
+    any square of one of the two following forms is a pullback.
 \begin{equation*}
     \xymatrix{
         X+A \pullback \ar[r]^{\id+f} \ar[d]_{g + \id}
@@ -1379,7 +1410,7 @@ For the right square, we consider the following diagram.
         & 1+1
     }
 \end{equation*}
-The inner right and outer squares are pullbacks by axiom.
+The inner right and outer square are pullbacks by axiom.
 So the inner left square is also a pullback by the pullback lemma, as desired.
     \qed
 \end{point}
@@ -1390,7 +1421,7 @@ So the inner left square is also a pullback by the pullback lemma, as desired.
 \begin{point}{Definition}%
 Assume~$C$ is an effectus in total form.
 For a map~$f\colon X \to Y$,
-    write~$\hat{f} = \kappa_1 \after f \colon X \to Y+1$.
+    write~$\Define{\hat{f}} = \kappa_1 \after f \colon X \to Y+1$.
     (This is the Kleisli embedding~$C \to \Par C$.)
 \end{point}
 \begin{point}[par-c-coprod]{Exercise}%
@@ -1406,12 +1437,11 @@ Show that if
     is a coproduct in~$\Par C$.
 Show~$0$ is also the initial object of~$\Par C$.
 \begin{point}{Beware}%
-Cotupling in~$C$ and~$\Par C$ coincide:
+While cotupling in~$C$ and~$\Par C$ coincide:
 $[f,g]_{C} = [f,g]_{\Par C}$
-for any (properly typed) partial maps~$f,g$.
-Also, we have the following rule for the sum of maps:
-    $\widehat{f+_C g} = \hat{f} +_{\Par C} \hat{g}$.
-    However, in general
+for any (properly typed) partial maps~$f,g$
+and $\widehat{f+_C g} = \hat{f} +_{\Par C} \hat{g}$,
+    however, in general
     \begin{equation*}
     [\kappa_1 \after f, \kappa_2 \after g] \ =\  f+_C g \ \neq\  f +_{\Par C} g
         \ =\  [[\kappa_1,\kappa_3] \after f,
@@ -1420,8 +1450,8 @@ Also, we have the following rule for the sum of maps:
 \end{point}
 \end{point}
 \begin{point}[par-pullbacks]{Proposition}%
-Assume~$C$ is an effectus in total form.
-The following squares are pullbacks in~$\Par C$.
+Let~$C$ be an effectus in total form.
+Squares of the following form are pullbacks in~$\Par C$.
 \begin{equation*}
     \xymatrix{
         X+A \pullback \ar@^{>}[r]^{\id+\hat{f}} \ar@^{>}[d]_{\hat{g} + \id}
@@ -1459,7 +1489,7 @@ These are indeed pullbacks by~\sref{tot-pullbacks}. \qed
 \begin{point}[zero-and-one-parc]{Definition}%
 Assume~$C$ is an effectus in total form.
 For arbitrary objects~$X,Y$ in~$C$,
-    write~$0 \equiv \kappa_2 \after !\colon X \to Y+1$
+    write~$\Define{0} \equiv \kappa_2 \after !\colon X \to Y+1$
     and~$1 \equiv \kappa_1 \after ! \equiv \hat! \colon X \to 1+1$.
 \end{point}
 \begin{point}{Exercise}%
@@ -1475,7 +1505,7 @@ Assume~$C$ is an effectus in total form
 If~$1 \hafter f = 1$,
     then~$f = \hat{g}$ for a unique~$g$ in~$C$.
 \item
-If~$0 \hafter f = 0$, then~$f = 0$.
+If~$1 \hafter f = 0$, then~$f = 0$.
 \end{enumerate}
 \begin{point}{Proof}%
 Both points follow from the right pullback square of~\eqref{pullbacks}
@@ -1565,10 +1595,10 @@ If~$C$ is an effectus in total form,
 then~$\Par C$ is an effectus in partial form.
 \begin{point}{Proof}%
 In \sref{par-c-coprod}, we saw that~$\Par C$ has finite coproducts.
-\begin{point}{PCM-enrichment, I}%
+\begin{point}{$\mathsf{PCM}$-enrichment, I}%
 Assume~$f,g \colon X \pto Y$.
-We say~$f \perp g$
-whenever there is a \Define{bound}~$b\colon X \pto Y+Y$
+We define that~$f \perp g$
+    iff there is a \Define{bound}~$b\colon X \pto Y+Y$
     with~$\pproj_1 \hafter b = f$
     and~$\pproj_2 \hafter b = g$.
     (By \sref{pproj-joint-monicity}
@@ -1622,8 +1652,8 @@ The map $(\pproj_2 + \id) \hafter d$
     && \ = \ \pproj_2 \hafter c\\
     &&& \ = \ h.
 \end{align*}
-We need one more ---
-    $[\id,\kappa_2]\hafter d$ is a bound for~$f \perp g \ovee h$:
+We need one more:
+    $[\id,\kappa_2]\hafter d$ is a bound for~$f \perp g \ovee h$, indeed
 \begin{align*}
     \pproj_1 \hafter [\id,\kappa_2] \hafter d
         & \ = \ \pproj_1 \hafter \pproj_1 \hafter d
@@ -1644,7 +1674,7 @@ f \ovee (g \ovee h)
 which shows the partial associativity.
 Homsets of~$\Par C$ are indeed PCMs.
 \end{point}
-\begin{point}{PCM-enrichment, II}%
+\begin{point}{$\mathsf{PCM}$-enrichment, II}%
 Assume~$f \perp g$ with bound~$b$.
 It is easy to see~$b \hafter k$
     is a bound for~$f \hafter k \perp g \hafter k$
@@ -1667,7 +1697,7 @@ And so~$(h \hafter f) \ovee (h \hafter g)
             = h \hafter \nabla \hafter b = h \hafter (f \ovee g)$.
 \end{point}
 \begin{point}{FinPAC}%
-We just saw~$\Par C$ is PCM-enriched.
+We just saw~$\Par C$ is $\mathsf{PCM}$-enriched.
 We already know~$\Par C$ has coproducts.
 The compatible sum axiom holds by definition of~$\perp$.
 To show~$\Par C$ is a finPAC, only the untying axiom remains to be proven.
@@ -1695,20 +1725,20 @@ We compute
 So~$\hat{p}$ is a bound for~$p \perp p^\perp$
 and~$p \ovee p^\perp = 1$.
 To show~$p^\perp$ is the unique orthocomplement,
-    assume~$p \ovee q = 1$ for some (other)~$q$ via a bound~$b$.
+    assume~$p \ovee q = 1$ for some (other)~$q$ via a bound~$b\colon
+        X \pto 1+1$.
 Note~$1 \hafter b =\nabla \hafter b = 1$
     and so by \sref{pardp}
     we know~$b = \hat{c}$ for some~$c\colon X \to 1+1$.
     And so~$p = \pproj_1 \hafter b = [\id, \kappa_2]\after \kappa_1 \after c
-                    = c$
-                    hence
+                    = c$. Hence
 \begin{equation*}
 q \ =\  \pproj_2 \hafter b \ =\  [[\kappa_2, \kappa_1],\kappa_2] \after
     \kappa_1\after c \ =\  [\kappa_2,\kappa_1]\after p \ =\  p^\perp.
 \end{equation*}
 To show~$\Pred X$ is an effect algebra,
 it only remains to be proven that the zero--one axiom holds.
-So assume~$1 \perp p$ via some bound~$b$. We want to show~$p=0$.
+So assume~$1 \perp p$ via some bound~$b$. We must show~$p=0$.
 By the following instance of the right pullback square of~\eqref{pullbacks},
     we see~$b = \kappa_1 \after \kappa_1 \after !$.
 \begin{equation*}
@@ -1730,10 +1760,10 @@ Hence~$p = \pproj_2 \hafter b = [[\kappa_2,\kappa_1],\kappa_1]\after
                         \kappa_1 \after \kappa_1 \after ! = \kappa_2 \after ! = 0$.
 \end{point}
 \begin{point}{Final axioms}%
-In \sref{pardp} we proved that~$f = 0$ whenever~$f = 0$.
+In \sref{pardp} we proved that~$f = 0$ whenever~$1 \hafter f = 0$.
 It only remains to be shown that~$f \perp g$
-    provided~$1 \after f \perp 1 \after g$.
-As assume~$b$ is a bound for~$1 \after f \perp 1 \after g$.
+    provided~$1 \hafter f \perp 1 \hafter g$.
+Let~$b$ be a bound for~$1 \hafter f \perp 1 \hafter g$.
 We apply the right pullback square of \sref{par-pullbacks}
     twice  in succession as follows
     (using~$\pproj_2 \hafter c
@@ -1781,8 +1811,12 @@ Clearly~$\pproj_2 \hafter d = g$
 \begin{point}%
 We are ready to show the equivalence of effectuses in partial and total form.
 \begin{point}[proof-cho-thm]{Proof of \sref{cho-thm}}%
-The first point is shown in \sref{eff-total-to-partial}
-    and the second in \sref{eff-partial-to-total}.
+Let~$C$ and~$D$ be effectuses in total and respectively partial form.
+The first point, that~$\Par C$ is an effectus in partial form,
+    is shown in \sref{eff-total-to-partial}.
+The second point, that~$\Tot D$ is an effectus in total form,
+    is shown in \sref{eff-partial-to-total}.
+It remains to be shown that nothing is lost.
 \begin{point}{$\Par \Tot D \cong D$}%
 Let~$D$ be an effectus in partial form.
 A map~$f\colon X \to Y$ in~$\Par \Tot D$
@@ -1835,12 +1869,12 @@ To start, show that the initial object of an effectus in total form is strict
         with~$X=Y=0$.)
 \item
 Conclude that if~$C$ is both an effectus in total and partial form,
-that then every object in~$C$ is isomorphic to~$0$.
+then every object in~$C$ is isomorphic to~$0$.
 \end{enumerate}
 \end{point}
 \begin{point}[eff-convention]{Convention}%
 For the remainder of this text, we will work with effectuses in partial form
-    and we write~$1$ instead of~$I$.
+    and write~$1$ instead of~$I$.
 To spare ink, a phrase like ``let $C$ be an \Define{effectus}''
 should be read as~``let $C$ be an effectus in partial form''
 and simply~``$C$ is an effectus'' means either ``$C$ is an effectus in total form''
@@ -1864,15 +1898,16 @@ We turn to the internal structures of an effectus.
 Let~$C$ be an effectus (in partial form).
 \begin{enumerate}
 \item
-As alluded to before,
+As alluded to in the definition of an effectus in partial form,
 a \Define{predicate} on~$X$ is a map~$X \to 1$.
-The set of predicates $\Pred X$ on~$X$ is (by definition) an effect algebra.
+The set of predicates~$\Pred X$ on~$X$ is (by definition of an effectus
+    in partial form) an effect algebra.
 \item
 A \Define{scalar} is a predicate on~$1$, that is: a map~$1 \to 1$.
 Write~$\Define{\Scal C} \equiv \Define{M} \equiv \Pred 1$ for the set of scalars.
 We multiply two scalars~$\lambda,\mu \colon 1 \to 1$
     simply by composing~$\lambda \odot \mu \equiv \lambda \after \mu$.
-As~$1_M = \id_M$ (see \sref{one-m-is-id}) and~$C$ is PCM-enriched,
+As~$1_M = \id_M$ (see \sref{one-m-is-id}) and~$C$ is $\mathsf{PCM}$-enriched,
     the set of scalars~$M$ with~$\odot$
     is an effect monoid,
     see \sref{dfn-effect-monoid}.
@@ -1882,12 +1917,12 @@ where the set of scalars~$M$ is isomorphic (as effect monoid) to~$[0,1]$.
 \item
 For a scalar~$\lambda\colon 1\to 1$ and a predicate~$p\colon X \to 1$,
 we write~$\Define{\lambda \cdot p} \equiv \lambda \after p$.
-Again due to PCM-enrichment and~$1_M = \id_M$,
+Again due to $\mathsf{PCM}$-enrichment and~$1_M = \id_M$,
 this scalar multiplication
 turns~$\Pred X$ into a~$M$-effect module, see \sref{dfn-effect-module}.
 \item
 For~$f\colon X \to Y$ in~$C$,
-    define~$\Pred(f) \colon \Pred Y \to \Pred X$
+        define~$\Define{\Pred(f)} \colon \Pred Y \to \Pred X$
     by~$\Pred(f)(p) = p \after f$.
 It is easy to see
 $\Pred(f)$ is an~$M$-effect module homomorphism
@@ -1920,9 +1955,9 @@ Does every effect monoid~$M$ occur as the effect monoid of scalars of some
         effect module of predicates?
 \end{point}
 \begin{point}[emod-effectus]{Theorem}%
-    The category~$\EMod^{\mathsf{op}}_M$ is an effectus 
+    The category~$\EMod^{\mathsf{op}}_M$ is an effectus in total form
         (with scalars~$M$) for any effect monoid~$M$.
-In fact: every effectus~$C$ (in total form)
+In fact: every effectus~$C$ in total form
     with scalars~$M$ and separating predicates
     is equivalent to a subcategory of~$\EMod^{\mathsf{op}}_M$.
 \begin{point}{Proof}%
@@ -1930,7 +1965,7 @@ To show~$\EMod^{\mathsf{op}}_M$ is an effectus,
     we have to show the dual  axioms for~$\EMod_M$.
 \begin{point}{Finite products and initial object}%
 For every~$M$-effect module~$E$,
-    there is a unique modulemap~$M \to E$,
+    there is a unique $M$-effect modulemap~$M \to E$,
     which is given by~$\lambda \mapsto \lambda \cdot 1$.
 So~$M$ is the initial object of~$\EMod_M$.
 The one-element $M$-effect module~$\{0=1\}$ is the final object.
@@ -1939,9 +1974,9 @@ If~$E$ and $F$ are~$M$-effect modules,
     then the set of pairs~$E \times F$
     with componentwise operations
     is again an~$M$-effect module.
-The module~$E \times F$
-    with obvious projections,
-    is the categorical product of~$E$ and~$F$
+The effect module~$E \times F$
+    with obvious projections~$E \xleftarrow{\pi_1} E \times F \xrightarrow{\pi_2} F$
+    is the categorical product of~$E$ and~$F$ in~$\EMod_M$
     (as is the case with effect algebras, see \sref{ea-product}).
 \end{point}
 \begin{point}{Pushout diagrams}%

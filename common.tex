@@ -198,6 +198,19 @@
 \DeclareMathOperator{\Kl}{\mathcal{K}\!\ell}
 \newcommand\rfrac[2]{\reflectbox{\nicefrac{\reflectbox{\ensuremath{#1}}}{\reflectbox{\ensuremath{#2}}}}}
 
+\makeatletter
+\newcommand{\bigperp}{%
+  \mathop{\mathpalette\bigp@rp\relax}%
+  \displaylimits
+}
+
+\newcommand{\bigp@rp}[2]{%
+  \vcenter{
+    \m@th\hbox{\scalebox{\ifx#1\displaystyle2.1\else1.5\fi}{$#1\perp$}}
+  }%
+}
+\makeatother
+
 % number a single equation in an align*
 % http://tex.stackexchange.com/questions/42726/
 \newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
