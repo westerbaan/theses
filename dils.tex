@@ -1829,6 +1829,11 @@ for all~$x \in D$.
                         in~$\scrB$.
             \end{enumerate}
     \end{enumerate}
+\begin{point}{Notation}%
+As with Hilbert spaces, it will sometimes be more convenient
+    to view an orthonormal basis as a sequence~$(e_i)_{i \in I}$,
+    instead of a subset. This should cause no confusion.
+\end{point}
 \end{point}
 \begin{point}[mod-projelabs]{Exercise}%
 Let~$X$ be a pre-Hilbert $\scrB$-module for a C$^*$-algebra~$\scrB$.
@@ -3856,10 +3861,11 @@ We want to show~$|f(T-p_S T p_S)| \to 0$. Clearly
 \begin{equation*}
     |f(T - p_S T p_S)| \ \leq \  |f(\, (1-p_S) T | +| p_S T (1-p_S) \,)|.
 \end{equation*}
-Using Cauchy--Schwarz and \sref{ketbra-dense-pt1} we see the second term vanishes
+Using Cauchy--Schwarz and \sref{ketbra-dense-pt1} we see the second term
+    vanishes
 \begin{equation*}
-|f(p_S T (1-p_S))|^2 \ \leq \ f(T^*p_S T) f(1-p_S) \ \leq\ 
-            f(T^*T) f(1-p_S) \ \to \ 0
+|f(p_S T (1-p_S))|^2 \ \leq \ f(p_S T T^* p_S) f(1-p_S) \ \leq\ 
+            \| T \|^2 f(1) f(1-p_S) \ \to \ 0.
 \end{equation*}
 Similarly the first term vanishes and
     so indeed~$p_S T p_S \to T$ ultraweakly. \qed
@@ -3879,57 +3885,65 @@ Define
     f \colon \scrB \to \C \text{ np-map},\ x \in X\}.
 \end{equation*}
 From~\sref{hilbmod-ordersep}
-    it follows~$\Omega$ is order-separating.
+    it follows~$\Omega$ is order separating.
 We will use this fact twice.
 First we will prove~$\| \ketbra{z}{y} \| \leq \| z\| \|y\|$.
 For any~$\omega \in \Omega$,
-    say~$\omega \equiv f(\langle x,(\,\cdot\,) x \rangle$, we have
+    say~$\omega \equiv f(\langle x,(\,\cdot\,) x \rangle)$, we have
 \begin{equation*}
     \omega(\ketbra{y}{y})
      \ = \ f(\langle x,y \rangle\langle y, x \rangle) 
      \ \leq \ f(\langle x, x\rangle) \| y\|^2 
      \ = \ \| \omega \| \| y\|^2
 \end{equation*}
-and so from \sref{order-separating-norm} it follows~$\| \ketbra{y}{y} \| \leq \|y\|^2$, whence
+and so from \sref{order-separating-norm} it follows~$\| \ketbra{y}{y} \| \leq \|y\|^2$. Whence
 \begin{align*}
     \| \ketbra{z}{y} \|^2
         & \ = \ \| \ketbra{y}{z} \ketbra{z}{y} \| \\
         & \ = \ \| \ketbra{\smash{y \langle z,z\rangle^{\frac{1}{2}}}}{
 \smash{y \langle z,z\rangle^{\frac{1}{2}}}} \| \\
-        & \ \leq \ \| y \langle z,z \rangle^{\frac{1}{2}} \|^2,
+        & \ \leq \ \| y \langle z,z \rangle^{\frac{1}{2}} \|^2.
 \end{align*}
-hence~$\| \ketbra{z}{y} \| \leq \|y \langle z,z\rangle^{\frac{1}{2}} \|
+Hence~$\| \ketbra{z}{y} \| \leq \|y \langle z,z\rangle^{\frac{1}{2}} \|
                             \leq \|y\|  \|z\|$, as promised.
 \begin{point}%
 Now we start the proof proper.
 As~$\ketbra{\,\cdot\,}{y}$ is linear
-    and~$x_\alpha - x$ is still norm-bounded,
+    and~$x_\alpha - x$ is norm-bounded,
     we may assume without loss of generality
     that~$x_\alpha \to 0$ ultranorm.
     We have to prove~$\ketbra{x_\alpha}{y} \to 0$ ultraweakly.
 Let~$g\colon \scrB^a(X) \to \C$ be an arbitrary np-map.
-Using the order separation of~$\Omega$ a second time,
-    we see that the linear span of~$\Omega$
+Using the order separation of~$\Omega$ a second time
+        and the fact that~$\omega(T^* (\,\cdot\,)T) \in \Omega$
+        for all~$T \in \scrB^a(X)$ and~$\omega \in \Omega$,
+        we see that the linear span of~$\Omega$
     is operator norm dense among  all np-maps~$\scrB^a(X) \to \C$
     by \sref{vn-center-separating-fundamental}.
 So there are~$n \in \N$ and~$\omega_1, \ldots, \omega_n \in \Omega$
     with~$\| g - g' \| \leq \varepsilon$,
     where~$g' \equiv \sum^n_{i=1} \omega_i$.
-From \sref{innerprod-ultraweak} it follows easily that
-    each~$\omega_i$ is ultranorm continuous
-        and so~$g'$ is ultranorm continuous as well.
-So there is an~$\alpha_0$ such that for all~$\alpha \geq \alpha_0$
-    we have~$|g'(\ketbra{x_\alpha}{y})| \leq \varepsilon$.
-    Hence
+By unfolding definitions and~\sref{innerprod-ultraweak},
+    it follows easily that~$\omega_i(\ketbra{\,\cdot\,}{y})$
+    is ultranorm continuous.
+    So~$g'(\ketbra{\,\cdot\,}{y})$ is ultranorm continuous as well.
+Pick any~$\varepsilon > 0$.
+By the previous,
+    there is an~$\alpha_0$ such that for all~$\alpha \geq \alpha_0$
+    we have~$|g'(\ketbra{x_\alpha}{y})| \leq \varepsilon$,
+    hence
 \begin{align*}
         | g(\ketbra{x_\alpha}{y}) |
-            &\ \leq\  | (g-g')(\ketbra{x_\alpha}{y})  +
+            &\ \leq\  | (g-g')(\ketbra{x_\alpha}{y})|  +
                     | g'(\ketbra{x_\alpha}{y}) | \\
             &\ \leq\  \|g - g'\| \cdot \| \ketbra{x_\alpha}{y} \|  + \varepsilon\\
-            &\ \leq\  \varepsilon (\| x_\alpha\| \cdot \|y\| + 1).
+            &\ \leq\  \varepsilon \,(\| x_\alpha\| \cdot \|y\| + 1).
 \end{align*}
-    As~$x_\alpha$ is norm-bounded, we conclude~$g(\ketbra{x_\alpha}{y}) \to 0$
-    as desired. \qed
+As~$x_\alpha$ is norm-bounded
+    and~$\varepsilon$ was arbitrary,
+        we conclude~$g(\ketbra{x_\alpha}{y}) \to 0$.
+    Thus~$\ketbra{x_\alpha}{y} \to 0$ ultraweakly, as desired.
+    \qed
 \end{point}
 \end{point}
 \end{point}
@@ -3941,7 +3955,8 @@ For a Hilbert space~$\scrH$
     with linear subspace~$V \subseteq \scrH$
     we have~$V \subseteq V^{\perp\perp} = \overline{V}$
     and~$\scrH \cong V^{\perp\perp} \oplus  V^\perp$.
-We generalize this to self-dual Hilbert~$\scrB$-modules.
+We generalize this to self-dual Hilbert~C$^*$-modules
+    over von Neumann algebras.
 Let's introduce the cast:
 \end{point}
 \begin{point}{Exercise}%
@@ -3956,7 +3971,7 @@ Show that~$\kappa_1(E) \cup \kappa_2(F)$
     Conclude that~$X \oplus Y$ is self-dual.
 \end{point}
 \begin{point}{Definition}%
-Let~$X$ be a Hilbert~$\scrB$-module
+Let~$X$ be a Hilbert~C$^*$-module
     with subset~$V \subseteq X$.
     Write~$\Define{V^\perp}$ for the \Define{orthocomplement}\index{orthocomplement} of~$V$, defined by
 \begin{equation*}
@@ -3966,16 +3981,16 @@ Let~$X$ be a Hilbert~$\scrB$-module
 \begin{point}[hilbmod-projthm]{Proposition}%
 Assume~$X$ is a self-dual Hilbert $\scrB$-module
     for a von Neumann algebra~$\scrB$.
-Suppose~$V \subseteq X$ is any subset. Then
+Let~$V \subseteq X$ be any subset. Then
 \begin{enumerate}
 \item
-$V^\perp$ is a self-dual Hilbert~$\scrB$-submodule of~$X$
+$V^\perp$ is a ultranorm-closed Hilbert~$\scrB$-submodule of~$X$
     (and so is~$V^{\perp\perp})$;
 \item
     $V^{\perp\perp}$ is the ultranorm closure of the~$\scrB$-linear
     span of~$V$ \emph{and}
 \item
-    $V^{\perp\perp} \oplus V^\perp \cong X$
+    $V^{\perp\perp} \oplus V^\perp \cong X$ as Hilbert~C$^*$-modules
         via~$(x,y) \mapsto x+y$.
 \end{enumerate}
 \begin{point}{Proof}%
@@ -3990,11 +4005,11 @@ $ \left<v, \unlim_\alpha x_\alpha\right>
     \uslim_\alpha \left<v, x_\alpha\right>  = 0 $
     and so~$x \in V^\perp$ as well.
 Thus~$V^\perp$ is ultranorm complete
-    and so self-dual by \sref{dils-selfdual}.
+    (and so self dual by \sref{dils-selfdual}).
 \begin{point}%
 Write~$W$ for the ultranorm closure of
     the~$\scrB$-linear span of~$V$ in~$X$.
-By \sref{ultranormcontstruct} $W$ is a submodule.
+It follows from \sref{ultranormcontstruct}, that $W$ is a submodule.
 Clearly the induced uniformity of~$X$
     on~$W$ is the same as its own ultranorm uniformity:
     thus~$W$ is ultranorm complete
@@ -4003,8 +4018,9 @@ By \sref{dils-selfdual} there
     is an orthonormal basis~$(e_i)_{i \in I}$ of~$W$.
 Going back to the construction of~$(e_i)_{i \in I}$
     (in \sref{selfdual-bcompl-then-basis}),
-    we see that we can extend it to an orthonormal basis of the whole of~$X$:
-    there are~$(d_j)_{j \in J} \in X$
+    we see that we can extend it to a maximal orthonormal subset of~$X$,
+    which must be a basis for the whole of~$X$.
+Pick any~$(d_j)_{j \in J} $ in~$X$
     such that~$\{e_i\}_{i \in I} \cup \{d_j\}_{j \in J}$
     is an orthonormal basis of~$X$.
 \end{point}
@@ -4024,15 +4040,16 @@ In particular, as~$V^\perp$ is already an ultranorm closed submodule,
 \begin{point}%
 So~$(e_i)_i$ is a basis for~$W = V^{\perp\perp}$
     and~$(d_j)_j$ is a basis for~$W^\perp = V^\perp$.
-For brevity write~$\vartheta\colon V^{\perp\perp} \oplus V^\perp \to X$
-    for the map~$(y,y') \mapsto y+y'$.
+For brevity, let~$\vartheta\colon V^{\perp\perp} \oplus V^\perp \to X$
+    denote the map~$(y,y') \mapsto y+y'$.
 Clearly~$\vartheta$ is bounded~$\scrB$-linear.
 As~$\left<y,y'\right> = 0$ for~$(y,y') \in V^{\perp\perp} \oplus V^\perp$
-    we see~$\vartheta$ is inner product preserving and thus injective.
+    we easily see~$\vartheta$ is inner product preserving and thus injective.
 As~$\{e_i\}_{i \in I} \cup \{d_j\}_{j \in J}$
     is an orthonormal basis of~$X$, $\vartheta$ is surjective.
 As~$\vartheta$ is inner product preserving, its inverse is bounded
-    --- hence~$\vartheta$ is an isomorphism.
+    --- hence~$\vartheta$ is an isomorphism of~Hilbert C$^*$-modules,
+    as promised.
     \qed
 \end{point}
 \end{point}
@@ -4054,10 +4071,10 @@ Suppose~$E \subseteq X$ is an orthonormal set. Show
 
 \end{point}
 \begin{point}[selfdual-gramschmidt]{Exercise}%
-Assume~$X$ is a self-dual Hilbert~$\scrB$-module for a von Neumann
+Let~$X$ be a self-dual Hilbert~$\scrB$-module for some von Neumann
     algebra~$\scrB$.
-Suppose~$x_1, \ldots, x_n \in X$.
-Show that there is a finite orthonormal basis
+Show that for any~$x_1, \ldots, x_n \in X$,
+    there is a finite orthonormal basis
     of~$\{x_1, \ldots, x_n\}^{\perp\perp}$.
 (Use the orthonormalization in the last part of \sref{selfdual-bcompl-then-basis}.)
 \end{point}
@@ -4070,7 +4087,7 @@ Every Hilbert space~$\scrH$ is isomorphic to some~$\ell^2(I)$.
 In fact, the cardinality of~$I$ is the only thing that matters,
     in the following sense:
     if~$\ell^2(I) \cong \ell^2(J)$, then~$I$ and~$J$
-    are the same cardinality.
+    have the same cardinality.
 What about Hilbert C$^*$-modules?
 \end{point}
 \begin{point}[hilbmod-el2]{Exercise}%
@@ -4081,7 +4098,7 @@ Let~$\scrB$ be a von Neumann algebra
     Write~$\Define{\ell^2((p_i)_{i \in I})}$\index{$\ell^2((p_i)_{i \in I})$}
     for the set of~$I$-tuples~$(b_i)_{i \in I}$
     from~$\scrB$ that are~$\ell^2$-summable (\sref{dfn-selfdual-basis})
-    and furthermore~$\ceil{b_i^*b_i} \leq p_i$ for every~$i \in I$.
+    and furthermore~$\ceil{b_ib_i^*} \leq p_i$ for every~$i \in I$.
 Show that~$\ell^2((p_i)_{i \in I})$
     is a right $\scrB$-module
     with coordinatewise operations.
@@ -4110,22 +4127,22 @@ Do all orthonormal bases have the same cardinality?
 $\scrB$ is a self-dual Hilbert~$\scrB$-module over itself.
 Clearly, the element~$1$ by itself is an orthonormal basis of~$\scrB$.
 However, for every projection~$p \in \scrB$
-    the pair~$(p,1-p)$ is also an orthonormal basis.
-    Even worse, for~$\scrB \equiv \scrB(\ell^2(\N))$,
+        the pair~$\{ p,1-p \}$ is also an orthonormal basis.
+    Worse still, for~$\scrB \equiv \scrB(\ell^2(\N))$,
         the set
 \begin{equation*}
-(\ketbra{0}{0}, \ \ketbra{1}{1},\  \ketbra{2}{2},\  \ldots ).
+    \{\ketbra{0}{0}, \ \ketbra{1}{1},\  \ketbra{2}{2},\  \ldots \}.
 \end{equation*}
 is an orthonormal basis.
 
 \item
-Perhaps any two orthonormal bases have a common refinement?
+Perhaps any two orthonormal bases have a common coarsening?
 Take~$\scrB = M_3$.
-It might not be immediately obvious, but both
+It might not be obvious at this moment, but both
 \begin{equation*}
-    (\,\ketbra{0}{0} + \ketbra{2}{2}, \ketbra{+}{+}\,)
+    \{\,\ketbra{0}{0} + \ketbra{2}{2}, \ketbra{1}{+}\,\}
     \quad \text{and} \quad
-    (\,\ketbra{0}{0}, \ketbra{2}{2}+ \ketbra{+}{+}\,)
+    \{\,\ketbra{0}{0}, \ketbra{2}{2}+ \ketbra{1}{+}\,\}
 \end{equation*}
 are orthonormal bases of~$M_3$ over itself.
 (Combine \sref{onb1} with~\sref{onb2}.)
@@ -4135,24 +4152,33 @@ Maybe~$\sum_{i\in I} \left<e_i,e_i\right> = \sum_{j\in J} \left<d_j,d_j\right>$
     for finite orthonormal bases~$(e_i)_{i \in I}$ and~$(d_j)_{j \in J}$?
 For commutative~$\scrB$ this indeed holds using Parseval's identity.
 However, in general it fails:
-both~$(\ketbra{0}{0}, \ketbra{1}{1})$ and
-    $(\ketbra{0}{0}, \ketbra{1}{0})$ are orthonormal bases of~$M_2$ over itself,
+        both~$\{\ketbra{0}{0}, \ketbra{1}{1}\}$ and
+        $\{\ketbra{0}{0}, \ketbra{1}{0} \}$
+        are orthonormal bases of~$M_2$ over itself,
     but~$\ketbra{0}{0}+ \ketbra{1}{1} \neq 2 \ketbra{0}{0}$.
 \end{enumerate}
 \end{point}
 \begin{point}[onb1]{Exercise}%
 Let~$(e_i)_{ i \in I}$ be some orthonormal basis of a Hilbert~$\scrB$-module~$X$.
 Show that if~$(u_i)_{i \in I}$
-    is a sequence of partial isometries from~$\scrB$
+    is a sequence of partial isometries
+    from~$\scrB$
+    (see \sref{partial-isometry-equivalents})
     such that~$u_iu_i^* = \left<e_i,e_i\right>$
     for all~$i \in I$,
     then~$(e_iu_i)_{i \in I}$
-    is another basis of~$X$.
+    is an orthonormal basis of~$X$.
 
-Conclude~$\ell^2((p_i)_{i \in I}) \cong \ell^2((q_i)_{i \in I})$
-for any projections~$(p_i)_{i\in I}, (q_i)_{i\in I} $
-from~$\scrB$
-with~$p_i \sim q_i$ for~$i \in I$.
+Use this and~\sref{hilbmod-el2} to conclude
+    that~$\ell^2((p_i)_{i \in I}) \cong \ell^2((q_i)_{i \in I})$
+    for any projections~$(p_i)_{i\in I}, (q_i)_{i\in I} $
+    from~$\scrB$
+    with~$p_i \sim q_i$ for~$i \in I$.
+    (Here, $\sim$ denotes the \Define{Murray--von Neumann equivalence}.
+    That is: \Define{$ p \sim q$} iff there is a partial isometry~$u$
+    with~$u^*u = p$ and~$uu^*=q$.
+    Eg.~$\ketbra{0}{0} \sim \ketbra{+}{+}$
+        via~$\ketbra{0}{+}$.)
 \end{point}
 
 \begin{point}[onb2]{Exercise}%
@@ -4174,7 +4200,7 @@ Before we can prove our normal form (in \sref{selfdual-normalish-form}),
 \begin{point}[total-mv-order]{Proposition}%
 Let~$\scrB$ be a von Neumann algebra that is a factor (i.e.~with center~$\C 1$).
 For any two projections~$p,q \in \scrB$,
-    either~$p \lesssim q$ or~$q \lesssim p$.
+    either~$p \lesssim q$ or~$q \lesssim p$ (see \sref{vmleq}).
 \begin{point}{Proof}%
 (For a more traditional proof, see e.g.~\cite[Prop.~6.2.4]{kr}.)
 Let~$p,q \in \scrB$ be any projections.
@@ -4188,7 +4214,7 @@ Note that if~$p_0 = 0$, then~$p \lesssim q$
     via~$\sum_{u \in U} u$, c.f.~\sref{summing-partial-isometries}.
 Similarly, if~$q_0 = 0$, then~$q \lesssim p$.
 So, reasoning towards contradiction,
-    assume~$p_0 \neq 0$ and~$q_0 \neq 0$.
+    suppose~$p_0 \neq 0$ and~$q_0 \neq 0$.
 As~$\scrB$ is a factor~$\cceil{q_0} = 1$
     and so~$0 < p_0 = p_0\cceil{q_0} p_0 = p_0 (\bigcup_{a \in \scrB} \ceil{a^* q_0 a }) p_0
                 = \bigcup_{a \in \scrB} \ceil{p_0a^*q_0ap_0}$
@@ -4204,7 +4230,7 @@ Then~$u_0 \equiv [q_0ap_0]$, see \sref{polar-decomposition},
 \begin{point}[selfdual-normalish-form]{Theorem}%
 Let~$\scrB$ be a von Neumann algebra that is a factor (i.e.~with center~$\C 1$).
 Suppose~$X$ is a self-dual Hilbert~$\scrB$-module.
-Either there is a cardinal~$\kappa$
+Either there is an infinite cardinal~$\kappa$
     such that~$X \cong \ell^2((1)_{\alpha \in \kappa})$,
     with~$\ell^2$ as in~\sref{hilbmod-el2},
     or there is a natural number~$n\in \N$
@@ -4212,7 +4238,7 @@ Either there is a cardinal~$\kappa$
     such that~$X \cong \ell^2((1, \ldots, 1, p))$,
     where~$1$ occurs~$n$ times.
 \begin{point}{Proof}%
-The case~$X = \{0\}$ is covered by~$\kappa=0$.
+The case~$X = \{0\}$ is covered by~$n=0$ and~$p=0$.
 Assume~$X \neq \{0\}$.
 \begin{point}[selfdual-normalish-form1]%
 As a first step we will prove that
@@ -4222,7 +4248,7 @@ either
     such that~$\left<e,e\right>=1$ for some~$e \in E$ \emph{or}
 \item there is a single vector~$e \in X$ such that~$\{e\}$ is an orthonormal basis.
 \end{enumerate}
-Pick any basis~$E_0$ of~$X$.
+Pick any orthonormal basis~$E_0$ of~$X$.
 Let~$P$ denote the poset of subsets~$U \subseteq E_0 \times \scrB$
     satisfying
 \begin{enumerate}
@@ -4232,16 +4258,18 @@ Let~$P$ denote the poset of subsets~$U \subseteq E_0 \times \scrB$
     \item
     the domains of these~$u$ are orthogonal:  $\sum_{(e,u) \in U} u^*u \leq 1$.
 \end{enumerate}
-For any chain~$C \subseteq P$
+For any non-empty chain~$C \subseteq P$
     it is easy to see~$\bigcup C \in P$
-    and so by Zorn's lemma
+    and so by Zorn's lemma,
     there is a maximal element~$U_0 \in P$.
 Define
 \begin{equation*}
-e_0 \ =\  \sum_{(e,u) \in U_0} eu \qquad \qquad E_1 \ = \ E_0 - \{e;\ (e,u) \in U_0\}.
+e_0 \ =\  \sum_{(e,u) \in U_0} eu
+    \qquad \qquad E_1 \ = \ E_0 \backslash \{e;\ (e,u) \in U_0\}.
 \end{equation*}
-The set $\{e_0\} \cup E_1$ is a basis for~$X$ ---
-    indeed if~$x = \sum_{e \in E_0} e \left<e,x\right>$,
+The set $\{e_0\} \cup E_1$ is an orthonormal basis of~$X$
+    --- indeed, it is clearly orthonormal and
+    if $x = \sum_{e \in E_0} e \left<e,x\right>$,
     then
 \begin{equation*}
     x \ =\  e_0 \Bigl(\sum_{(e,u) \in U_0} u^*\left<e,x\right>\Bigr)
