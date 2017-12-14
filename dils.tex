@@ -4276,9 +4276,10 @@ The set $\{e_0\} \cup E_1$ is an orthonormal basis of~$X$
             + \sum_{e \in E_1} e\left<e,x\right>.
 \end{equation*}
 If~$E_1 = \emptyset$, then~$\{e_0\}$ is an orthonormal basis of~$X$ and
-    we have shown 1. 
+    we have shown point 2.
 
-For the other case, assume~$e_1 \in E_1$.
+For the other case, assume~$E_1 \neq \emptyset$.
+Pick~$e_1 \in E_1$.
 Write~$p_0 = \left<e_0,e_0\right>$
     and~$p_1 = \left<e_1,e_1\right>$.
 Suppose~$p_1 \lesssim 1 - p_0$.
@@ -4286,7 +4287,6 @@ Then~$vv^* = p_1$ and~$v^*v \leq 1- p_0$ for some~$v \in \scrB$.
     Hence~$v^*v + p_0 \leq 1$.
     So~$U_0 \cup \{ (e_1, v) \} \in P$ contradicting maximality of~$U_0$.
 Apparently~$p_1 \not\lesssim 1-p_0$.
-
 So by \sref{total-mv-order}, we must have~$1-p_0 \lesssim p_1$.
 Let~$v \in \scrB$ be such that~$vv^*=1-p_0$
     and~$v^*v \leq p_1$.
@@ -4294,7 +4294,26 @@ Write~$p_0' = 1- v^*v$.
 As~$1-p_0' \leq p_1 =1-(1-p_1)$
 we have~$(1-p_0') + (1-p_1) \leq 1$.
 Define~$q = 1- ((1-p_0') + (1-p_1))$.
-Note~$q = p_0'+p_1 - 1$ and~$p_0', p_1 \leq q$.
+We now have the following splittings of~$1$.
+\begin{center}
+\begin{tikzpicture}
+    \draw
+            (0,0) rectangle (1.2,.5)
+            (0,0) node[anchor=south west] {$1-p_1$}
+            (1.2,0) rectangle (2,.5)
+            (1.35,0) node[anchor=south west] {$q$} 
+            (2,0) rectangle (2.8,.5)
+            (2,0) node[anchor=south west] {$v^*v$} ;
+    \draw [decorate,thick,decoration={brace}](2.8,-.05) -- (1.2,-.05) node[midway,anchor=north] {$p_1$};
+    \draw [decorate,thick,decoration={brace}](0,.55) -- (2,.55) node[midway,anchor=south] {$p_0'$};
+    \draw
+            (4,0) rectangle (6,.5)
+            (4.65,0) node[anchor=south west] {$p_0$} 
+            (6,0) rectangle (6.8,.5)
+            (6,0) node[anchor=south west] {$vv^*$} ;
+\end{tikzpicture}
+\end{center}
+Note~$q = p_0'+p_1 - 1$ and~$p_0', p_1 \geq q$.
 Define
 \begin{equation*}
     D \ = \ \{d_0, d_1\} \qquad \text{where} \quad
@@ -4309,22 +4328,24 @@ Clearly~$\left<d_0,d_0\right>=q$ and
         \ =\ p_0 + vv^* \ =\ 1.
 \end{equation*}
 So~$D$ is an orthonormal set.
-Using~$vv^*p_0 = 0$ and~$q+v^*v = p_1$, we see
-that for any~$b_0 \in p_0\scrB$ and~$b_1 \in p_1 \scrB$
+Using~$0 = (1-p_0)p_0 = vv^*p_0 $ and~$q+v^*v = p_1$, we see
+that for any~$x \equiv e_0 b_0 + e_1 b_1$
+with~$b_0 \in p_0\scrB$ and~$b_1 \in p_1 \scrB$, we have
 \begin{align*}
-    d_0 b_1 + d_1(vb_1 + b_0)
+    d_0 \langle d_0, x \rangle + d_1 \langle d_1 , x \rangle
+    &\ = \ d_0 b_1 + d_1(vb_1 + b_0) \\
     &\ = \ e_1 q b_1 + e_0 vb_1 + e_1v^*vb_1 + e_0 b_0 + e_1v^* b_0 \\
     &\ = \ e_1 q b_1 + e_0 p_0 vv^* vb_1 + e_1v^*vb_1 + e_0 b_0 + e_1v^* vv^* p_0 b_0 \\
     &\ = \ e_1 q b_1 + e_1v^*vb_1 + e_0 b_0  \\
     &\ = \ e_1 (q + v^*v) b_1 + e_0 b_0  \\
-    &\ = \ e_1 b_1 + e_0 b_0.
+    &\ = \ e_1 b_1 + e_0 b_0 \ = \ x.
 \end{align*}
 Thus~$D$ is an orthonormal basis of~$\{e_0, e_1\}^{\perp\perp}$.
 Hence~$E \equiv D \cup (E_1 - \{e_1\})$ is an orthonormal basis of~$X$
 with~$d_1 \in E$ such that~$\left<d_1,d_1\right>=1$.
 \end{point}
 \begin{point}%
-For brevity, call~$X$ 1-dim if there is a one-element orthonormal basis of~$X$.
+For brevity, call~$X$ \Define{1-dim} if there is a one-element orthonormal basis of~$X$.
 In~\sref{selfdual-normalish-form1} we saw
     how to create an orthonormal basis~$D$ of a non-1-dim~$X$
     with an~$e_0 \in D$ such that~$\left<e_0,e_0\right>=1$.
@@ -4333,14 +4354,11 @@ If~$\{e_0\}^\perp$ is not 1-dim,
     on~$\{e_0\}^\perp$ (instead of~$X$)
     to find an orthonormal basis~$D'$ of~$\{e_0\}^\perp$
     with~$e_1 \in D'$ such that~$\left<e_1,e_1\right>=1$.
-This procedure can be continued using Zorn's lemma.
-Let~$P$ denote the poset of subsets~$E \subseteq X$ satisfying
-\begin{inparaenum}
-\item $E$ is orthogonal \emph{and}
-    \item $\left<e,e\right> = 1$ for all~$e \in E$.
-\end{inparaenum}
+This procedure can be continued using Zorn's lemma as follows.
+Let~$P$ denote the poset of orthogonal subsets~$E \subseteq X$
+    satisfying~$\langle e,e\rangle = 1$ for all~$e\in E$.
 Clearly~$\emptyset\in P$
-and for any chain~$C \subseteq P$
+and for any non-empty chain~$C \subseteq P$
     we have~$\bigcup C \in P$.
 By Zorn's lemma there is a maximal~$E \in P$.
 Suppose~$E^\perp \neq \{0\}$ and~$E^\perp$ is not 1-dim.
@@ -4371,7 +4389,8 @@ Furthermore~$E_1$ is an orthonormal basis for~$E_0 \cup \{e\}$,
 \end{point}
 \end{point}
 \begin{point}%
-Does this settle the matter?  One might hope
+Does this settle the matter?
+      One might hope
     that~$\ell^2((1_{\mathscr{B}})_{\alpha \in \kappa}) \cong
         \ell^2((1_{\mathscr{B}})_{\beta\in\lambda})$
     implies~$\kappa=\lambda$ for all cardinals~$\kappa$,$\lambda$.
@@ -4382,14 +4401,14 @@ Indeed, if~$\scrB$ is a type III factor
     we have~$p \sim 1 -p$ (by combining~\cite[Dfn.~6.5.1]{kr}
         and~\cite[Cor.~6.3.5]{kr})
     and so~$\scrB \cong p\scrB \oplus (1-p)\scrB \cong 
-    \scrB \oplus \scrB$ as Hilbert modules.
+    \scrB \oplus \scrB$ as Hilbert C$^*$-modules.
 \end{point}
 \end{parsec}
 
 \begin{parsec}%
 \begin{point}%
 The ultranorm completion~\sref{dils-completion}
-    is fixed by its universal property.
+    is determined by its universal property.
 \end{point}
 \begin{point}[selfdual-compl-defining]{Proposition}%
 Let~$\scrB$ be a von Neumann algebra and~$V$ a right~$\scrB$-module
@@ -4397,14 +4416,14 @@ Let~$\scrB$ be a von Neumann algebra and~$V$ a right~$\scrB$-module
 There is an up-to-isomorphism unique
     self-dual Hilbert~$\scrB$-module~$X$
     together with inner product preserving $\scrB$-linear~$\eta \colon V \to X$
-    with the following universal property
+    with the following universal property.
     \begin{quote}
-    for every bounded~$\scrB$-linear map~$T\colon V \to Y$
+    For every bounded~$\scrB$-linear map~$T\colon V \to Y$
     to some self-dual Hilbert~$\scrB$-module~$Y$,
     there is a unique bounded~$\scrB$-linear map~$\hat{T}\colon X \to Y$
     with~$\hat{T} \after \eta = T$.
     \end{quote}
-For any such~$\eta\colon V \to X$,
+Moreover, for such~$\eta\colon V \to X$,
     the image of~$V$ under~$\eta$ is ultranorm dense.
 \begin{point}{Proof}%
 We already know such a~$X$ and~$\eta\colon V \to X$
@@ -4426,14 +4445,15 @@ It remains to be shown~$U$ preserves the inner product.
 As
 \begin{equation*}
     \left<\eta(x),\eta(y)\right>
-    = [x,y]
-    = \left<\eta_2(x), \eta_2(y)\right>
-    = \left<U \eta(x), U \eta(y)\right>
+    \ =\  [x,y]
+    \ =\  \left<\eta_2(x), \eta_2(y)\right>
+    \ =\  \left<U \eta(x), U \eta(y)\right>
 \end{equation*}
-for all~$x,y \in X$;
-$\eta(X)$ is ultranorm dense
-and so by~\sref{innerprod-ultraweak}
-    $U$ preserves the inner product.
+for all~$x,y \in X$, we know
+$\eta(X)$ is ultranorm dense.
+So by ultranorm continuity and bijectivity of~$U$,
+    we know~$U(\eta(X)) = \eta_2(X)$ is ultranorm dense in~$X_2$.
+Hence~$U$ preserves the inner product by~\sref{innerprod-ultraweak}
 \qed
 \end{point}
 \end{point}
@@ -4447,23 +4467,36 @@ Suppose~$X$ is a Hilbert~$\scrA$-module
     for some C$^*$-algebras~$\scrA$ and~$\scrB$.
 The algebraic tensor product~$X \odot Y$
     is a right-$\scrA \odot \scrB$-module
-    with~$(x\otimes y)\cdot (a\otimes b) = (xa) \otimes (yb)$.
-It has an~$\scrA \odot \scrB$-valued inner
+    via~$(x\otimes y)\cdot (a\otimes b) = (xa) \otimes (yb)$
+    and has an~$\scrA \odot \scrB$-valued inner
     product fixed by~$[x\otimes y, x'\otimes y']
         = \left<x,x'\right> \otimes \left<y,y'\right>$.
-Write~$\scrA \otimes_\sigma \scrB$ for the minimal
-    C$^*$-tensor product of~$\scrA$ and~$\scrB$.
+Write~$\scrA \otimes_\sigma \scrB$ for the spatial
+    C$^*$-tensor product~\cite[\S11.3]{kr} of~$\scrA$ and~$\scrB$.
 The inner product on~$X \odot Y$ can be extended
     to an~$\scrA \otimes_\sigma \scrB$-valued inner product
     on the norm completion of~$X \odot Y$
-    on which it is definite.
+    on which it is definite. \cite{lance}
 This is a Hilbert C$^*$-module,
     which is called the \emph{exterior tensor product} of~$X$ and~$Y$.
 It is quite difficult to perform this construction:
     Lance discusses the difficulties in \cite[Ch.~4]{lance}.
-If we assume~$\scrA$ and~$\scrB$ are von Neumann algebras
+But if we assume~$\scrA$ and~$\scrB$ are von Neumann algebras
     \emph{and} that $X$ and~$Y$ are self-dual,
     it is rather easier.
+In fact, we will directly construct the ultranorm completion
+    of the exterior tensor product,
+    which is a self-dual Hilbert $\scrA \otimes \scrB$-module,
+    which we call the \emph{self-dual exterior tensor product}.
+This self-dual exterior tensor product
+    behaves much better than the plain exterior tensor product.
+    As a first example, we will see (in \sref{ba-ext-tensor-pres})
+    that~$\scrB^a(X) \otimes \scrB^a(Y) \cong \scrB^a(X\otimes Y)$
+        for the self-dual exterior tensor product,
+        which is false in general for the plain exterior tensor product.
+The self-dual exterior tensor product also appears naturally
+    when computing the Paschke dilation
+    of a tensor product~$\varphi \otimes \psi$, see \sref{paschke-tensor}.
 \end{point}
 \begin{point}[univprop-ext-tensor]{Theorem}%
 Suppose~$\scrA$ and~$\scrB$ are von Neumann algebras.
@@ -4471,12 +4504,12 @@ For any self-dual Hilbert $\scrA$-module $X$
     and self-dual Hilbert~$\scrB$-module $Y$,
     there is an up-to-isomorphism unique
     self-dual Hilbert~$\scrA\otimes \scrB$-module
-    $X \otimes Y$, called the \Define{(self-dual exterior) tensor product}\index{tensor product!Hilbert $\scrB$-modules},
+    $\Define{X \otimes Y}$, called the \Define{(self-dual exterior) tensor product}\index{tensor product!Hilbert $\scrB$-modules},
     together with a~$\scrA \odot \scrB$-linear injective
     inner product preserving map~$\eta \colon X \odot Y \to X\otimes Y$
-    with the following universal property:
+    with the following universal property.
     \begin{quote}
-    for every self-dual~Hilbert~$\scrA\otimes\scrB$-module
+    For every self-dual~Hilbert~$\scrA\otimes\scrB$-module
     $Z$ with bounded~$\scrA \odot \scrB$-linear
         $T\colon X \odot Y \to Z$,
     there is a unique bounded~$\scrA \otimes \scrB$-linear
@@ -4487,7 +4520,7 @@ where we norm~$X \odot Y$ with~$\|t \| = \|[t,t]\|^{\frac{1}{2}}_{\scrA\otimes \
 Write~$x \hotimes y = \eta(x\otimes y)$.
 For any such~$X \otimes Y$ we have the following.
 \begin{enumerate}
-    \item The image of $X \odot Y$ is ultranorm dense in~$X \otimes Y$.
+    \item The image of $X \odot Y$ under~$\eta$ is ultranorm dense in~$X \otimes Y$.
     \item If~$(e_i)_{i \in I}$ is an orthonormal basis of~$X$
                 and~$(d_j)_{j \in J}$ of~$Y$,
                 then
@@ -4497,12 +4530,12 @@ For any such~$X \otimes Y$ we have the following.
             \item
                 the linear span of
                 \begin{equation*}
-                    \{ \ketbra{(e_i a) \hotimes (d_j b)}{
-                        e_{k}\otimes d_{l} }; \ 
+                    \{\, \ketbra{\,(e_i a) \hotimes (d_j b) \,}{\,
+                        e_{k}\otimes d_{l} \,}; \ 
                         a \in \scrA, \ 
                         b \in \scrB,\ 
                         i,k \in I,\ 
-                        j,l \in J
+                        j,l \in J \,
                     \} 
                 \end{equation*}
                 is ultraweakly dense in~$\scrB^a(X \otimes Y)$.
@@ -4518,7 +4551,7 @@ Define~$X \otimes Y \equiv \ell^2((p_{ij})_{i,j \in I\times J})$,
     with~$\ell^2$ as in~\sref{hilbmod-el2}.
 This definition of~$X \otimes Y$ seems to depend
     on the choice of bases~$(e_i)_i$ and~$(d_j)_h$.
-    We show it does not, in \sref{ext-tensor-uniqueness}.
+    We show it does not (up-to-isomorphism), in \sref{ext-tensor-uniqueness}.
 \begin{point}[ext-tensor-dfn-eta]{Definition~$\eta$}%
 Pick~$x \in X$ and~$y \in Y$.
 Write~$x_i \equiv \left<e_i, x\right>$
@@ -4591,9 +4624,11 @@ which shows~$\eta$ is injective
 \end{point}
 \begin{point}[ultranorm-dense-tensor-base]{Image $\eta$ ultranorm dense}%
 For brevity, write~$E \equiv \{ e_i \hotimes d_j; \ i,j \in I\times J\}$.
-By~\TODO{} $\scrA \odot \scrB$ is ultrastrongly dense in~$\scrA \otimes \scrB$.
+By~\sref{tensor} (and \sref{ultraclosed})
+    $\scrA \odot \scrB$ is ultrastrongly dense in~$\scrA \otimes \scrB$.
 So~$E (\scrA \odot \scrB)$
-    is ultranorm dense in~$E (\scrA \otimes \scrB)$.
+    is ultranorm dense in~$E (\scrA \otimes \scrB)$,
+    see~\sref{ultranormcontstruct}.
 In turn the linear span of~$E (\scrA \otimes \scrB)$
     is (by construction) ultranorm dense in~$X \otimes Y$.
 Thus the linear span of~$E (\scrA \odot \scrB)$
@@ -4637,9 +4672,9 @@ Write~$\overline{X \odot Y}$
 By norm continuity
     (see \sref{module-seminorm})
     the operations of~$X \otimes Y$
-    restrict to turn~$X \odot Y$ into a
+    restrict to turn~$\overline{X \odot Y}$ into a
     Hilbert~$\overline{\scrA \odot \scrB}$-module.
-As~$T$ uniformly continuous,
+As~$T$ is uniformly continuous,
     there is a unique bounded~$\overline{\scrA\odot\scrB}$-linear
     $\overline{T}\colon \overline{X\odot Y} \to Z$
     with~$\overline{T} \after \eta = T$ and~$\|T\| = \|\overline{T}\|$.
@@ -4662,14 +4697,16 @@ For any~np-map~$f\colon \scrA\otimes \scrB \to \C$
         & \ = \ \|T\|^2 f(\left<\eta (t_\alpha)-\eta(t_\beta), \eta(t_\alpha) - \eta(t_\beta)\right>) \ \to\  0.
 \end{align*}
 So~$(T t_\alpha)_\alpha$ is ultranorm Cauchy in~$Z$.
-With a similar argument we see~$(Tt_\alpha)_\alpha \sim (T t'_\alpha)_\alpha$
-whenever~$(\eta t_\alpha)_\alpha \sim (\eta t'_\alpha)_\alpha$.
+With a similar argument we see~$(Tt_\alpha)_\alpha $
+    is equivalent to~$ (T t'_\alpha)_\alpha$
+whenever~$(\eta t_\alpha)_\alpha $ is equivalent
+    to~$ (\eta t'_\alpha)_\alpha$.
 So we may define
 \begin{equation*}
 \hat{T} t \ = \ \unlim_\alpha T t_\alpha.
 \end{equation*}
 Clearly~$\hat{T} \after \eta = T$.
-With the same argument as in \sref{selfdual-completion-univ}
+With the same argument as for \sref{selfdual-completion-univ},
     we see~$\hat{T}$ is bounded and additive.
 To show~$\hat{T}$ is~$\scrA\otimes \scrB$-linear,
     pick any~$b \in \scrA \otimes \scrB$.
@@ -4738,21 +4775,21 @@ As we saw the linear span of~$E (\scrA\odot\scrB)$
     we see~$U$ must preserve the inner product by \sref{innerprod-ultraweak}.
 \end{point}
 \begin{point}%
-As we just have shown any exterior tensor is unique up to unique isomorphism,
-    which respects the embeddings, property 1 from the statement
-    of the theorem follows immediately.
-Assume~$(e'_i)_{i \in I'}$ is a basis of~$X$
-    and~$(d'_j)_{j \in J'}$ is a basis of~$Y$.
+Property 1 from the statement of the Theorem follows immediately
+    from the fact that the exterior tensor product is unique
+    up to an isomorphism which respects the embeddings.
+Assume~$(e'_i)_{i \in I'}$ is an orthonormal basis of~$X$
+    and~$(d'_j)_{j \in J'}$ is an orthonormal basis of~$Y$.
 We will show $E_2 =\{ e'_i \hotimes d'_j; \ i,j \in I'\times J'\}$
-is a basis of~$X \hotimes Y$.
+is an orthonormal basis of~$X \hotimes Y$.
 Clearly~$E_2$ is orthonormal.
 By \sref{selfdual-orthn-basis} and \sref{hilbmod-projthm}
     it is sufficient to show~$e_{i_0} \hotimes d_{j_0} \in E_2^{\perp\perp}$
-    for~$i_0 \in I$ and $j_0 \in J$.
+    for all~$i_0 \in I$ and $j_0 \in J$.
 Write~$a_i = \left<e_i',e_{i_0}\right>$
     and~$b_j = \left<d_j',d_{j_0}\right>$.
 By \sref{selfdual-orthn-basis} and \sref{ext-tensor-preserves-inner-prod}
-it is sufficient to show the right equality in
+    it suffices to show the latter equality in
     \begin{equation*}
         \bigl(\sum_i a_i^*a_i\bigr) \otimes \bigl(\sum_j b_j^*b_j\bigr) \ = \ 
     \langle e_{i_0}\hotimes d_{j_0}, e_{i_0}\hotimes d_{j_0}\rangle
@@ -4780,7 +4817,7 @@ By \sref{ketbra-ultraweakly-dense},
     with~$t \in \scrA \otimes \scrB$
     is ultraweakly dense in~$\scrB^a(X \otimes Y)$.
 We will show that~$t \in \scrA \odot \scrB$ suffices.
-By~\TODO{ref}
+    By~\sref{tensor}, \sref{ultraclosed} and~\sref{kaplansky},
     each~$t \in \scrA \otimes \scrB$
     is the ultrastrong limit
     of a norm bounded net~$t_\alpha$ in~$\scrA \odot \scrB$.
@@ -4811,8 +4848,28 @@ For any von Neumann algebras~$\scrA$ and~$\scrB$
     we have~$\scrA\otimes_{\text{vN}} \scrB
         \cong \scrA \otimes_{\text{ext}} \scrB$
         as Hilbert~$\scrA\otimes_{\text{vN}} \scrB$-modules,
-        where~$\scrA\otimes_{\text{vN}}\scrB$ denotes the regular
+        where~$\scrA\otimes_{\text{vN}}\scrB$ denotes the (spatial)
         tensor product of von Neumann algebras.
+\item
+Let~$X$ be a self-dual Hilbert~$\scrA$-module
+    and~$Y$ be a self-dual Hilbert~$\scrB$-module
+        for von Neumann algebras~$\scrA,\scrB$.
+The norm closure of~$X\odot Y$
+    in~$X \otimes_{\text{ext}} Y$
+        is the plain exterior tensor product of~$X$ and~$Y$.
+In turn, the ultranorm completion of the exterior tensor product
+    of~$X$ and~$Y$ is isomorphic to~$X \otimes_{\text{ext}} Y$,
+        the self-dual exterior tensor product.
+\item
+In~\sref{paschke-tensor} it will be shown that
+\begin{equation*}
+(\scrA_1 \otimes_{\varphi_1} \scrB_1)
+    \otimes_{\text{ext}} (\scrA_2 \otimes_{\varphi_2} \scrB_2)
+\ \cong \ 
+(\scrA_1 \otimes \scrA_2) \otimes_{\varphi_1\otimes \varphi_2} (\scrB_1 \otimes \scrB_2)
+\end{equation*}
+        for all~ncp-maps $\varphi_i\colon \scrA_i \to \scrB_i$ ($i=1,2$)
+    between von Neumann algebras.
 \end{enumerate}
 \end{point}
 \end{parsec}
@@ -4830,6 +4887,8 @@ However, if~$X$ and~$Y$ are self-dual Hilbert modules over von Neumann
     algebras, then we do have the familiar formula
     for the self-dual exterior tensor product.
 We need some preparation.
+\end{point}
+\begin{point}{Setting}%
 Let~$X$ be a self-dual Hilbert~$\scrA$-module
     and~$Y$ be a self-dual Hilbert~$\scrB$-module
     for von Neumann algebras~$\scrA$ and~$\scrB$.
@@ -4857,13 +4916,12 @@ To start, note~$(\left<Sx_i, Sx_j\right>)_{ij}$ is positive in $M_n \scrA$ ---
 By reasoning in the same way for~$\sqrt{\|S\|^2 - S^*S}$
 instead of~$S$,
 it follows~$(\left<Sx_i, Sy_i \right>)_{ij} \leq (\|S\|^2 \left<x_i,x_j\right>)_{ij}$.
-With the same reasoning we
-get~$0 \leq (\left<Ty_i, Ty_j\right>)_{ij} \leq (\|T\|^2 \left<y_i, y_j\right>)_{ij}$ in~$M_n \scrB$.
+Similarly~$0 \leq (\left<Ty_i, Ty_j\right>)_{ij} \leq (\|T\|^2 \left<y_i, y_j\right>)_{ij}$ in~$M_n \scrB$.
 Write~$s\colon (\scrA \otimes \scrB)^{\oplus n} \to \scrA \otimes \scrB$
     for the~$\scrA \otimes \scrB$-linear map
     given by~$s(t_1, \ldots, t_n) = t_1 + \cdots + t_n$.
     ($s$ is the \emph{row vector} filled with~$1$s).
-It is easy to see~$s A s^* = \sum_{i,j} A_{ij}$
+It is easy to see~$s A s^* 1= \sum_{i,j} A_{ij}$
     for any matrix~$A$ over~$\scrA \otimes \scrB$.
 As a final ingredient,
     recall that the
@@ -4887,21 +4945,21 @@ As a final ingredient,
     \langle Sx_i, S x_j \rangle
     \otimes \langle Ty_i, T y_j \rangle
 \right)_{ij}  \,
-     s^* \\
+     s^*1 \\
     & \ = \ 
      s \,
 M_n(\otimes) \bigl(\,
     \left( 
     \langle Sx_i, S x_j \rangle \right)_{ij},
 \left( \langle Ty_i, T y_j \rangle \right)_{ij} \,\bigr) 
-\, s^* \\
+\, s^*1 \\
     & \ \leq \ 
 s \,
 M_n(\otimes) \bigl(\,
     ( 
     \|S\|^2 \langle x_i,  x_j \rangle )_{ij},
 (\|T\|^2 \langle y_i,  y_j \rangle )_{ij} \,\bigr) 
-\, s^* \\
+\, s^*1 \\
         & \ = \
     \|S\|^2\|T\|^2 \left<t,t\right>.
 \end{alignat*}
@@ -4918,7 +4976,7 @@ Prove that for the
 operation~$\otimes$ defined in \sref{dfn-tensor-of-hilbmod-maps}, we have
 \begin{enumerate}
     \item $\ketbra{x_1}{x_2} \otimes \ketbra{y_1}{y_2}
-            = \ketbra{x_1\otimes x_2}{y_1\otimes y_2}$,
+            = \ketbra{x_1\otimes y_1}{x_2\otimes y_2}$,
         \item $1 \otimes 1 = 1$;
     \item $(S \otimes T) (S' \otimes T') = (SS' ) \otimes (TT')$
                 \emph{and}
@@ -4964,11 +5022,12 @@ By~\sref{univprop-ext-tensor}
         \ketbra{e_i a}{e_k} \otimes \ketbra{d_j b }{d_l}
         = \ketbra{(e_i a) \otimes (d_j b)}{e_k \otimes d_l} $
         is ultraweakly dense in~$\scrB^a(X \otimes Y)$
-        for a basis~$e_i \otimes d_j$ of~$X \otimes Y$.
+        for an orthonormal basis~$e_i \otimes d_j$ of~$X \otimes Y$.
         So the image of~$\Theta$ generates~$\scrB^a(X\otimes Y)$.
 \begin{point}%
     It remains to be shown that there are sufficiently many product functionals
-    (see~\sref{tensor} for the definition of product functional).
+    (see~\sref{tensor} for the definition of product functional
+    and their sufficiency).
     Write
     \begin{align*}
         \Omega_X &\ \equiv \ 
@@ -4979,7 +5038,7 @@ By~\sref{univprop-ext-tensor}
                     \ g \colon \scrB \to \C \text{ np-map}, y\in Y \}.
     \end{align*}
 From~\sref{hilbmod-ordersep}
-    it follows~$\Omega_X$  and~$\Omega_Y$ are order-separating.
+    it follows~$\Omega_X$  and~$\Omega_Y$ are order separating.
 For~$\sigma \in \Omega_X$ and~$\tau \in \Omega_Y$
  --- say~$\sigma \equiv f(\langle x, (\,\cdot\,) x\rangle)$,
     $\tau \equiv g(\langle y, (\,\cdot\,) y\rangle)$ ---
@@ -4988,7 +5047,7 @@ For~$\sigma \in \Omega_X$ and~$\tau \in \Omega_Y$
         and~$\Omega \equiv \{\sigma \otimes \tau; \sigma \in \Omega_X,
                     \ \tau \in \Omega_Y\}$.
 We will show
-    that~$\Omega$ is separating
+    that~$\Omega$ is faithful
     and that~$(\sigma \otimes \tau)(\Theta(S,T)) = \sigma(S) \tau(T)$
     for all~$S \in \scrB^a(X)$ and~$T \in \scrB^a(Y)$,
     which is sufficient to show~$\Theta$ is a tensor product.
@@ -5010,15 +5069,18 @@ Indeed for any~$S \in \scrB^a(X)$ and $T \in \scrB^a(Y)$, we have
 \end{align*}
 \end{point}
 \begin{point}%
-Finally, to show that~$\Omega$ is separating,
-        assume~$A \in \scrB^a(X \otimes Y)$ and $(\sigma \otimes \tau)(A) = 0$
+Finally, to show that~$\Omega$ is faithful,
+        assume~$A \in \scrB^a(X \otimes Y)$, $A \geq 0$
+        and $(\sigma \otimes \tau)(A) = 0$
         for all~$\sigma \otimes \tau \in \Omega$.
-Then by~\TODO{}
-    we know~$\langle x\otimes y, A (x\otimes y)\rangle = 0$
-    for all~$x \in X$ and~$y \in Y$.
-By polarization (see \sref{hilbmod-polarization}),
-    we also have~$\langle x\otimes y, A (x'\otimes y')\rangle = 0$.
-    So~$A =0 $ as there is a basis of elements of the form $e \otimes d$. \qed
+Then for all~$x \in X$ and~$y \in Y$,
+    we have~$\langle x\otimes y, A (x\otimes y)\rangle = 0$,
+        thus~$\| \sqrt{A} (x \otimes y) \|^2 = 0$,
+        hence~$\sqrt{A} (x \otimes y) = 0$.
+So~$\sqrt{A}$ vanishes on~$X \odot Y$,
+    which is ultranorm dense in~$X \otimes Y$,
+    whence~$\sqrt{A} = 0$. So~$A = 0$.
+\qed
 \end{point}
 \end{point}
 \end{point}
@@ -5032,13 +5094,12 @@ To compute the tensor product of Paschke dilations,
     the ultranorm continuity of the exterior tensor product.
 \end{point}
 \begin{point}[ultranorm-continuity-ext-tensor]{Lemma}%
-Assume~$\scrA$ and~$\scrB$ are von Neumann algebras.
 Let~$X$ be a self-dual Hilbert~$\scrA$-module
-    and~$Y$ be a self-dual Hilbert~$\scrB$-module.
+    and~$Y$ be a self-dual Hilbert~$\scrB$-module
+    for von Neumann algebras~$\scrA$ and~$\scrB$.
 If~$x_\alpha \to x$ and~$y_\alpha \to y$ ultranorm
     for norm-bounded nets~$x_\alpha$ in~$X$ and~$y_\alpha$ in $Y$,
-    then~$x_\alpha \otimes y_\alpha \to x \otimes y$
-    ultranorm in~$X \otimes Y$.
+    then~$x_\alpha \otimes y_\alpha \to x \otimes y$ ultranorm.
 \begin{point}{Proof}%
 As~$x_\alpha \otimes y_\alpha - x \otimes y
             = (x_\alpha -x )\otimes y_\alpha + x\otimes (y_\alpha - y)$,
@@ -5068,14 +5129,14 @@ Thus \sref{vanishing-effects} applies and we see
     \langle y_\alpha ,y_\alpha \rangle ) \to 0$ ultraweakly,
     hence~$(x_\alpha - x) \otimes y_\alpha \to 0$ ultranorm.
 With a similar argument
-    one can show~$x\otimes (y_\alpha - y) \to 0$ ultranorm. \qed
+    one shows~$x\otimes (y_\alpha - y) \to 0$ ultranorm. \qed
 \end{point}
 \end{point}
 \begin{point}[exttensor-dense-subsets]{Lemma}%
-Assume~$\scrA$ and~$\scrB$ are von Neumann algebras.
 Let~$X$ be a self-dual Hilbert~$\scrA$-module
-    and~$Y$ be a self-dual Hilbert~$\scrB$-module.
-Assume~$U \subseteq X$ and~$V \subseteq Y$
+    and~$Y$ be a self-dual Hilbert~$\scrB$-module
+    for von Neumann algebras~$\scrA$ and~$\scrB$.
+Suppose~$U \subseteq X$ and~$V \subseteq Y$
     are ultranorm dense submodules.
 Then the linear span of
 \begin{equation*}
