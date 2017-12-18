@@ -3125,7 +3125,7 @@ to show~$\varphi \colon \scrA \to M_n \scrA$
 \begin{point}%
     We are ready to show that every ncp-map has a Paschke dilation.
 \end{point}
-\begin{point}{Definition}%
+\begin{point}[phi-compatible-paschke]{Definition}%
     Let~$\varphi\colon \scrA \to \scrB$ be any ncp-map between
         von Neumann algebras.
     A complex bilinear map~$B \colon \scrA \times \scrB \to X$,
@@ -5662,8 +5662,14 @@ We will prove that a map is pure if and only if
 \end{point}
 \begin{point}[paschke-corner]{Theorem}%
 Let~$\scrA$ be a von Neumann algebra together with a projection~$p \in \scrA$.
-Then a Paschke dilation of the standard corner~$h_p \colon \scrA \to p\scrA p$
-for~$p$ is given by~$(\cceil{p}\scrA, h_{\cceil{p}}, h_p)$.
+Then a Paschke dilation of the standard corner~$h_p \colon \scrA \to p\scrA p$,
+$a \mapsto pap$
+is given by~$(\cceil{p}\scrA, h_{\cceil{p}}, h'_p)$,
+    where~$\cceil{p}$ is the central  carrier of~$p$,
+    see \sref{cceil-fundamental};
+    $h_{\cceil{p}}$ is the standard corner for~$\cceil{p}$
+        and~$h'_p \colon \cceil{p} \scrA \to p\scrA p$
+        is the restriction of~$h_p$.
 \begin{point}{Proof}%
 (This is a simplified proof of the result we published earlier.
     \cite[Thm.~28]{wwpaschke}.)
@@ -5689,7 +5695,7 @@ The module $\scrA p$ is ultranorm closed in~$\scrA$
     as~$x_\alpha \to x$ ultranorm
     implies~$x_\alpha p \to xp$ ultranorm.
 As self-duality is equivalent to ultranorm completeness,
-    we see~$\scrA p$ is self-dual as well.
+    we see~$\scrA p$ is self dual as well.
 \end{point}
 \begin{point}%
 Concerning~$\scrA \otimes_{h_p} p \scrA p \cong \scrA p$,
@@ -5697,14 +5703,16 @@ Concerning~$\scrA \otimes_{h_p} p \scrA p \cong \scrA p$,
     by~$B(\alpha, pap) = \alpha pap$.
 A straightforward computation
     shows~$B$ is a~$h_p$-compatible complex bilinear map
-    and so there is a unique bounded module
+    (see \sref{phi-compatible-paschke})
+    and so by \sref{existence-paschke},  there is a unique bounded module
     map~$U \colon \scrA \otimes_{h_p} p \scrA p \to \scrA p$
-   fixed by~$U \alpha \otimes pap = B(\alpha,pap) \equiv \alpha pap $.
+    fixed by~$U (\alpha \otimes pap) = B(\alpha,pap) \equiv \alpha pap $.
+We will show~$U$ is an isomorphism.
    Clearly~$U$ is surjective.
 
-Another easy computation shows~$a \otimes p\alpha p - ap\alpha p \otimes p = 0$
+An easy computation shows~$a \otimes p\alpha p - ap\alpha p \otimes p = 0$
     for all~$a, \alpha \in \scrA$.
-So~$\{a \otimes p;\ a\in \scrA\}$
+So the set~$\{a \otimes p;\ a\in \scrA\}$
     is ultranorm dense in~$\scrA \otimes_{h_p} p \scrA p$.
 From this and
     $\left<\alpha \otimes p, a\otimes p\right> = 
@@ -5734,7 +5742,7 @@ For any~$ap \in \scrA p$, we have
 \end{equation*}
 where the sums converge ultrastrongly in~$\scrA$.
 Thus the last sum converges ultranorm in~$\scrA p$ as well.
-Hence~$E$ is an orthonormal basis.
+Hence~$E$ is an orthonormal basis of~$\scrA p$.
 
 Define~$\varrho_0 \colon \scrA \to \scrB^a(\scrA p)$
     by~$\varrho_0 = \ad_{U^*} \after \varrho$.
@@ -5746,29 +5754,36 @@ The map~$\varrho_0$ is surjective:
            \ = \ \bigl(\sum_i T( u_i ) u_i^*\bigr) ap
            \ = \ \varrho_0 \bigl(\sum_i T( u_i ) u_i^*\bigr) ap.
 \end{equation*}
-Next we show~$\ceil{\varrho_0} = \cceil{p}$.
-It is sufficient to show that for each~$\alpha \in \scrA$ with $\alpha \geq 0$,
-    we have~$\alpha ap = 0$ for all~$a\in \scrA$ if and only if~$\alpha \cceil{p} = 0$.
+Next, we show~$\ceil{\varrho_0} = \cceil{p}$.
+It suffices to prove for all~$\alpha \in \scrA$,$\alpha \geq 0$, that
+\begin{equation*}
+    \alpha ap = 0 \text{ \ for all\  } a\in \scrA
+    \quad\iff \quad
+    \alpha \cceil{p} = 0.
+\end{equation*}
     Clearly,
     $\alpha \cceil{p} = 0$ implies~$\alpha ap = \alpha \cceil{p} ap= 0$.
-For the converse, assume~$\alpha ap = 0$ for all~$a\in\scrA$.
+For the converse, assume that we have~$\alpha ap = 0$ for all~$a\in\scrA$.
 Then in particular~$\alpha u_ip = 0$,
     hence~$\alpha \cceil{p} = \alpha \sum_i u_iu_i^*  = \sum_i \alpha u_ipu_i^*=0$.
-We can apply~\TODO{}
-    and conclude~$\varrho_0 = \varphi \after h_{\cceil{p}}$
-    for some isomorphism~$\varphi\colon
-    \cceil{p} \scrA \to \scrB^a(\scrA p)$.
-So~$h_{\cceil{p}} = (\varphi^{-1} \after \ad_{U^*}) \after \varrho$.
+    Indeed~$\ceil{\varrho_0} = \cceil{p}$.
+
+By~\TODO{}
+there is an nmiu-isomorphism~$\varphi\colon
+    \cceil{p} \scrA \to \scrB^a(\scrA p)$
+    with~$\varrho_0 = \varphi \after h_{\cceil{p}}$.
+Hence~$h_{\cceil{p}} = (\varphi^{-1} \after \ad_{U^*}) \after \varrho$.
 We compute
 \begin{equation*}
-h_p \after h_{\cceil{p}}
+h'_p \after h_{\cceil{p}}
+    \ = \ h_p
     \ =\  h \after \varrho
     \ =\ h \after \ad_U \after \varrho_0
     \ = \ h \after \ad_U \after \varphi \after h_{\cceil{p}}.
 \end{equation*}
 Using surjectivity of~$h_{\cceil{p}}$
-and rearranging, we find~$h_p \after (\varphi^{-1} \after \ad_{U^*}) = h$.
-Thus indeed~$(\cceil{p} \scrA, h_{\cceil{p}}, h_p)$
+and rearranging, we find~$h'_p \after (\varphi^{-1} \after \ad_{U^*}) = h$.
+Thus indeed~$(\cceil{p} \scrA, h_{\cceil{p}}, h'_p)$
 is a Paschke dilation of~$h_p$.  \qed
 \end{point}
 \end{point}
@@ -5796,10 +5811,11 @@ There is a unique ncp-map~$c$ with~$\varphi = c \after h_p$,
 The map~$c$ is a filter,
     see \sref{square-f}.
 By \sref{paschke-corner},
-    the triplet~$(\cceil{p}\scrA, h_{\cceil{p}}, h_p)$
-    is a Paschke dilation of~$h_p$.
+    the triplet~$(\cceil{p}\scrA, h_{\cceil{p}}, h'_p)$
+    is a Paschke dilation of~$h_p$,
+    where~$h'_p$ denotes the restriction of~$h_p$ to~$\cceil{p} \scrA$.
 So by \sref{dils-filter-basics-exercise}
-    we see~$(\cceil{p}\scrA, h_{\cceil{p}}, c\after h_p)$
+    we see~$(\cceil{p}\scrA, h_{\cceil{p}}, c\after h'_p)$
     is a Paschke dilation of~$ \varphi$.
 Clearly~$h_{\cceil{p}}$ is surjective.
 If~$(\scrP', \varrho', h')$ is any other Paschke dilation of~$\varphi$,
@@ -5816,7 +5832,8 @@ The order correspondence \sref{paschke-correspondence}
     has several corollaries.
 \end{point}
 \begin{point}{Definition}%
-Assume~$\varphi\colon \scrA \to \scrB$ is an ncp-map.
+Assume~$\varphi\colon \scrA \to \scrB$ is an ncp-map between von Neumann
+    algebras.
 We say~$\varphi$ is \Define{ncp-extreme}\index{ncp-extreme}
     if~$\varphi$ is an extreme point among
     the ncp-maps with the same value on~$1$ ---
@@ -5835,7 +5852,8 @@ Assume~$\varphi\colon \scrA \to \scrB$ is an ncp-map
     with Paschke dilation~$(\scrP, \varrho, h)$.
 Then the following are equivalent.
 \begin{enumerate}
-    \item The map $h$ is injective on~$\varrho(\scrA)^\square$.
+    \item The map $h$ is injective on~$\varrho(\scrA)^\square$,
+                the commutant of~$\varrho(\scrA)$.
     \item The map $h$ is injective on~$[0,1]_{\varrho(\scrA)^\square}$.
     \item The map~$\varphi$ is ncp-extreme.
 \end{enumerate}
@@ -5876,7 +5894,7 @@ We want to show~$a = 0$.
 Clearly~$\Real{h(a)} = h(\Real{a}) = 0$
 and~$\Imag{h(a)} = h(\Imag{a}) = 0$,
 so it is sufficient to prove~$\Real{a} = \Imag{a}=0$.
-Thus we may assume without loss of generality that~$a$ is self-adjoint.
+Thus we may assume without loss of generality that~$a$ is self adjoint.
 
 By~\TODO{...}~$h$ is pure
     and thus splits as~$h = c \after h_p$
