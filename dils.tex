@@ -5159,20 +5159,21 @@ So by \sref{ultranorm-continuity-ext-tensor},
 \end{point}
 \end{point}
 \begin{point}[dilationspace-dense-subset]{Lemma}%
-Let~$\varphi \colon \scrA \to \scrB$ be an ncp-map between von Neumann algebras.
-Assume~$\scrA' \subseteq \scrA$ and~$\scrB' \subseteq \scrB$
-are ultrastrongly dense $*$-subalgebras.
-Then: the linear span of
-$ \scrA' \otimes \scrB'  \equiv \{ a \otimes b;\ a \in \scrA', \ b\in \scrB'\}$
+Let~$\varphi \colon \scrA \to \scrB$ be an ncp-map between von Neumann algebras
+    together with ultrastrongly
+    dense~$*$-subalgebras~$\scrA' \subseteq \scrA$
+        and~$\scrB' \subseteq \scrB$.
+Then: the linear span
+    of~$ \scrT  \equiv \{ a \otimes b;\ a \in \scrA', \ b\in \scrB'\}$
 is ultranorm dense in~$\scrA \otimes_\varphi \scrB$,
 which was defined in  \sref{existence-paschke}.
 \begin{point}{Proof}%
 It is sufficient to show that any~$a\otimes b \in \scrA \otimes_\varphi \scrB$
-    is the ultranorm limit of elements from~$\scrA' \otimes \scrB'$.
+    is the ultranorm limit of elements from~$\scrT$.
     Pick any~$a\otimes b\in \scrA \otimes_\varphi \scrB$.
-By the Kaplansky density theorem, \TODO{ref}
-    there are norm-bounded nets~$a_\alpha$ in~$\scrA$ and
-    $b_\alpha$ in~$\scrB$
+By \sref{dense-subalgebra}
+    there are norm-bounded nets~$a_\alpha$ in~$\scrA'$ and
+    $b_\alpha$ in~$\scrB'$
     with~$a_\alpha \to a$ and~$b_\alpha \to b$ ultrastrongly.
 Say~$\|b_\alpha \|, \|a_\alpha\| \leq B$ for some~$B > 0$.
 We will show~$a_\alpha \otimes b_\alpha - a\otimes b \to 0$ ultranorm.
@@ -5188,7 +5189,7 @@ For the first term, note
     & \ = \ 
     (b_\alpha - b)^* \,\varphi (a_\alpha^* a_\alpha) \,(b_\alpha - b) \\
     & \ \leq \ 
-    B (b_\alpha - b)^*  (b_\alpha - b),
+    B^2 \|\varphi\| \,(b_\alpha - b)^*  (b_\alpha - b),
 \end{align*}
 which converges to~$0$ ultraweakly as~$b_\alpha \to b$ ultrastrongly.
 The second
@@ -5235,7 +5236,7 @@ Then we show that~$
 is ultranorm dense in~$
 (\scrA_1 \otimes \scrA_2) \otimes_{\varphi_1\otimes \varphi_2} (\scrB_1 \otimes \scrB_2)$.
 We continue and show that the natural bijection
-$(\scrA_1 \odot \scrB_1) \odot (\scrA_2 \odot \scrB_2) \cong
+$U_0\colon (\scrA_1 \odot \scrB_1) \odot (\scrA_2 \odot \scrB_2) \cong
 (\scrA_1 \odot \scrA_2) \odot (\scrB_1 \odot \scrB_2) $
 preserves the induced inner products and
     so extends uniquely to an
@@ -5244,8 +5245,9 @@ Using this isomorphism,
     we prove that the tensor product of the standard Paschke dilations
     is a dilation of the tensor product.
     From this, we finally derive the stated result.
-\begin{point}{Density}%
-By construction~$\scrA_1 \odot \scrB_1$ is an ultranorm dense submodule
+\begin{point}[paschke-iso-tensor-density]{Density}%
+By construction, $\scrA_1 \odot \scrB_1$ is an ultranorm dense
+        $\scrB_1$-submodule
     of~$\scrA_1 \otimes_{\varphi_1} \scrB_1$.
 Similarly~$\scrA_2 \odot \scrB_2 $ is ultranorm dense
     in~$\scrA_2 \otimes_{\varphi_2} \scrB_2$.
@@ -5253,18 +5255,19 @@ Thus by \sref{exttensor-dense-subsets}
     $(\scrA_1 \odot \scrB_1) \odot(
     \scrA_2 \odot \scrB_2) $ is ultranorm dense in~$(\scrA_1 \otimes_{\varphi_1} \scrB_1)
 \otimes (\scrA_2 \otimes_{\varphi_2} \scrB_2)$.
-As~$\scrA_1 \odot \scrA_2$
+By \sref{tensor}
+        (with~\sref{ultraclosed} and \sref{dense-subalgebra}),
+    we know~$\scrA_1 \odot \scrA_2$
     is an ultrastrongly dense subalgebra
-    of~$\scrA_1 \otimes \scrA_2$ by \TODO{}
-    and similarly~$\scrB_1 \odot \scrB_2$
-    is ultrastrongly dense in~$\scrB_1 \otimes \scrB_2$,
-    we can apply~\sref{dilationspace-dense-subset}
-    to find~$
-    (\scrA_1 \odot \scrA_2) \odot 
+    of~$\scrA_1 \otimes \scrA_2$.
+Similarly~$\scrB_1 \odot \scrB_2$
+    is ultrastrongly dense in~$\scrB_1 \otimes \scrB_2$.
+Hence~$(\scrA_1 \odot \scrA_2) \odot 
     (\scrB_1 \odot \scrB_2)$ is ultranorm dense
     in
-    $(\scrA_1 \otimes \scrA_2) \otimes 
-    (\scrB_1 \otimes \scrB_2)$.
+    $(\scrA_1 \otimes \scrA_2) \otimes_{\varphi_1 \otimes \varphi_2}
+    (\scrB_1 \otimes \scrB_2)$
+        by~\sref{dilationspace-dense-subset},
 \end{point}
 \begin{point}{Inner product preservation}%
 Clearly
@@ -5278,7 +5281,7 @@ Clearly
     \langle a_1 \otimes b_1 , \alpha_1 \otimes \beta_1 \rangle \,\otimes\,
     \langle a_2 \otimes b_2 , \alpha_2 \otimes \beta_2 \rangle \\
     & \qquad\ = \ 
-    (b_1^* \varphi_1( a_1^* \alpha_1) \beta_2)
+    (b_1^* \varphi_1( a_1^* \alpha_1) \beta_1)
     \,\otimes \,
     (b_2^* \varphi_2( a_2^* \alpha_2) \beta_2) \\
     & \qquad \ = \ 
@@ -5289,7 +5292,7 @@ Clearly
     \bigl\langle\,
     (a_1\otimes a_2)\otimes (b_1 \otimes b_2) \,,\,
     (\alpha_1\otimes \alpha_2)\otimes (\beta_1 \otimes \beta_2)
-    \,\bigr\rangle
+    \,\bigr\rangle;
 \end{alignat*}
 so $U_0 \colon (\scrA_1 \odot \scrB_1) \odot (\scrA_2 \odot \scrB_2) \cong
 (\scrA_1 \odot \scrA_2) \odot (\scrB_1 \odot \scrB_2) $
@@ -5297,26 +5300,33 @@ preserves the inner product by linearity.
 \end{point}
 \begin{point}%
 As~$U_0$ preserves the inner product,
-    it is also bounded.
-Thus by \sref{selfdual-completion-univ}
-    there is a unique bounded~$\scrB_1\otimes \scrB_2$-linear
-    extension
+    it is ultranorm continuous.
+So with the usual reasoning, there is a unique bounded
+    $\scrB_1 \odot \scrB_2$-linear extension
 \begin{equation*}
-    U\colon (\scrA_1 \otimes_{\varphi_1} \scrB_1) \otimes (\scrA_2 \otimes_{\varphi_2} \scrB_2) \to
+    U_1\colon (\scrA_1 \otimes_{\varphi_1} \scrB_1) \odot (\scrA_2 \otimes_{\varphi_2} \scrB_2) \ \to \ 
         (\scrA_1 \otimes \scrA_2) \otimes_{\varphi_1 \otimes \varphi_2} (\scrB_1 \otimes \scrB_2).
 \end{equation*}
-    By the ultranorm density and \sref{innerprod-ultraweak}
+In turn, by the universal property of the self-dual exterior tensor product,
+    there exists a unique
+    bounded~$\scrB_1\otimes \scrB_2$-linear extension
+\begin{equation*}
+    U\colon (\scrA_1 \otimes_{\varphi_1} \scrB_1) \otimes (\scrA_2 \otimes_{\varphi_2} \scrB_2) \ \to\ 
+        (\scrA_1 \otimes \scrA_2) \otimes_{\varphi_1 \otimes \varphi_2} (\scrB_1 \otimes \scrB_2).
+\end{equation*}
+    By the ultranorm density~\sref{paschke-iso-tensor-density}
+    and \sref{innerprod-ultraweak}
     we know~$U$ also preserves the inner product.
-There is also a unique bounded linear extension of~$U_0^{-1}$,
-    which is easily seen to be the inverse of~$U$.
-    So~$U$ is an isomorphism and~$U^* = U^{-1}$.
+    Also from~\sref{paschke-iso-tensor-density},
+        it follows that~$U$ is surjective.
+Thus~$U$ is an isomorphism with~$U^{-1} = U^*$.
     We have shown~\eqref{tensor-of-paschke-dilation-spaces}.
 By \sref{ba-ext-tensor-pres}
 there is a unique nmiu-isomorphism
 \begin{equation*}
     \vartheta\colon
     \scrB^a (\scrA_1 \otimes_{\varphi_1} \scrB_1) \otimes
-     \scrB^a(\scrA_2 \otimes_{\varphi_2} \scrB_2) \to
+     \scrB^a(\scrA_2 \otimes_{\varphi_2} \scrB_2) \ \to\ 
     \scrB^a
      ((\scrA_1 \otimes_{\varphi_1} \scrB_1) \otimes
      (\scrA_2 \otimes_{\varphi_2} \scrB_2))
@@ -5324,33 +5334,32 @@ there is a unique nmiu-isomorphism
     fixed by~$\vartheta(S \otimes T) = S \otimes T$.
 Let~$(\scrB^a((\scrA_1 \otimes \scrA_2) \otimes_{\varphi_1 \otimes \varphi_2} 
         (\scrB_1 \otimes \scrB_2)), \varrho, h)$
-        and 
-    $(\scrB^a(\scrA_i \otimes_{\varphi_i} \scrB_i), \varrho_i, h_i)$
+        and~$(\scrB^a(\scrA_i \otimes_{\varphi_i} \scrB_i), \varrho_i, h_i)$
     (for~$i=1,2$)
     denote the Paschke dilations
-    of~$\varphi_1 \otimes \varphi_2$  and~$\varphi_i$
+    of~$\varphi_1 \otimes \varphi_2$  and~$\varphi_i$, respectively,
     constructed in~\sref{existence-paschke}.
 \end{point}%
 \begin{point}%
     Our next goal is to show
     \begin{align}\label{tensorpaschkesecondgoal}
     \ad_{U^*} \after \vartheta
-                \after (\varrho_1 \otimes \varrho_2) &= \varrho
+                \after (\varrho_1 \otimes \varrho_2) &\ =\  \varrho
                 & h \after \ad_{U^*} \after \vartheta 
-                       & = h_1 \otimes h_2,
+                       & \ =\  h_1 \otimes h_2,
     \end{align}
-    which proves~$(
+    which is sufficient to show that~$(
         \scrB^a(\scrA_1 \otimes_{\varphi_1} \scrB_1)
         \otimes \scrB^a(\scrA_2 \otimes_{\varphi_2} \scrB_2),
         \varrho_1 \otimes \varrho_2,
         h_1 \otimes h_2)$
     is a Paschke dilation of~$\varphi_1 \otimes \varphi_2$.
-    We start with the equation on the left:
+    We start with the equation on the left.
 \begin{align*}
-    &\bigl(\ad_{U^*} \after \vartheta \after  (\varrho_1 \otimes \varrho_2) (\alpha_1 \otimes \alpha_2)\bigr)
+    &\bigl((\ad_{U^*} \after \vartheta \after  (\varrho_1 \otimes \varrho_2)) (\alpha_1 \otimes \alpha_2)\bigr)
     \, (a_1 \otimes a_2) \otimes (b_1 \otimes b_2) \\
     &\qquad \ = \ 
-    \bigl(\ad_{U^*} \after \vartheta (\varrho_1 (\alpha_1)\otimes \varrho_2(\alpha_2)) \bigr)
+    \bigl((\ad_{U^*} \after \vartheta) (\varrho_1 (\alpha_1)\otimes \varrho_2(\alpha_2)) \bigr)
     \, (a_1 \otimes a_2) \otimes (b_1 \otimes b_2) \\
     &\qquad \ = \ 
     U \,(\varrho_1 (\alpha_1)\otimes \varrho_2(\alpha_2)) \, U^*
@@ -5369,11 +5378,11 @@ As the linear span of
     elements of the form~$(a_1 \otimes a_2) \otimes (b_1 \otimes b_2)$
     is ultranorm dense in~$(\scrA_1 \otimes \scrA_2)
                             \otimes_{\varphi_1 \otimes \varphi_2}
-                            (\scrB_1 \otimes \scrB_2) $
-                (and bounded module maps are ultranorm continuous),
+                            (\scrB_1 \otimes \scrB_2) $,
     we see~$(\ad_{U^*} \after \vartheta \after (\varrho_1 \otimes \varrho_2))
             (\alpha_1 \otimes \alpha_2)
-            = \varrho(\alpha_1 \otimes \alpha_2)$.
+            = \varrho(\alpha_1 \otimes \alpha_2)$
+            for all~$\alpha_1\in\scrA_1$ and~$\alpha_2\in\scrA_2$.
 In turn, as the linear span of elements of the form~$\alpha_1 \otimes \alpha_2$
     is ultrastrongly dense in~$\scrA_1 \otimes \scrA_2$
     and ncp-maps are ultrastrongly continuous,
@@ -5400,21 +5409,21 @@ In turn, as the linear span of elements of the form~$\alpha_1 \otimes \alpha_2$
         & \ = \
         (h_1\otimes h_2)(T \otimes S)
 \end{align*}
-Again, by ultrastrong denseness this
-is sufficient to show~$h \after \ad_{U^*} \after \vartheta = h_1 \otimes h_2$.
+From ultrastrong density, again, it
+    follows~$h \after \ad_{U^*} \after \vartheta = h_1 \otimes h_2$. \qed
 \end{point}
-\begin{point}%
-Assume that~$(\scrP_i, \varrho_i', h_i')$
-    is any (other) Paschke dilation of~$\varphi_i$ (for~$i=1,2$).
-Then there are isomorphisms~$\beta_1,\beta_2$
-    with~$\beta_i \after \varrho_i = \varrho_i'$
-    and~$h_i' \after \beta_i = h_i$.
-So~$\varrho'_1 \otimes \varrho'_2
-        = (\beta_1 \otimes \beta_2) \after (\varrho_1 \otimes \varrho_2)$
-        and~$(h_1' \otimes h_2') \after (\beta_1 \otimes \beta_2) = h_1 \otimes h_2$.
-As~$\beta_1 \otimes \beta_2$ is an isomorphism,
-    the previous shows that~$(\scrP_1 \otimes \scrP_2, \varrho_1' \otimes \varrho_2', h_1' \otimes h_2')$ is also a Paschke dilation of~$\varphi_1 \otimes \varphi_2$. \qed
-\end{point}
+% \begin{point}%
+% Assume that~$(\scrP_i, \varrho_i', h_i')$
+%     is any (other) Paschke dilation of~$\varphi_i$ (for~$i=1,2$).
+% Then there are isomorphisms~$\beta_1,\beta_2$
+%     with~$\beta_i \after \varrho_i = \varrho_i'$
+%     and~$h_i' \after \beta_i = h_i$.
+% So~$\varrho'_1 \otimes \varrho'_2
+%         = (\beta_1 \otimes \beta_2) \after (\varrho_1 \otimes \varrho_2)$
+%         and~$(h_1' \otimes h_2') \after (\beta_1 \otimes \beta_2) = h_1 \otimes h_2$.
+% As~$\beta_1 \otimes \beta_2$ is an isomorphism,
+%     the previous shows that~$(\scrP_1 \otimes \scrP_2, \varrho_1' \otimes \varrho_2', h_1' \otimes h_2')$ is also a Paschke dilation of~$\varphi_1 \otimes \varphi_2$. \qed
+% \end{point}
 \end{point}
 \end{point}
 \end{parsec}
@@ -5425,19 +5434,32 @@ As~$\beta_1 \otimes \beta_2$ is an isomorphism,
 Schr\"odinger's equation is invariant under the reversal of time
     and so the isolated quantum mechanical processes (ncp-maps) described by
     it are invertible.
-In stark contract, the ncp-maps corresponding to measurement and discarding
+In stark contrast, the ncp-maps corresponding to measurement and discarding
     are rarely invertible.
 There are, however, many  processes in between
     which might not be invertible, but are still pure enough to be `reversed',
     for instance~$(\ad_V)^\dagger = \ad_{V^*}$.
-Stinespring's theorem implies that every ncp-map into~$\scrB(\scrH)$
+    Stinespring's theorem (\sref{stinespring-theorem}) implies that every ncp-map into~$\scrB(\scrH)$
     splits as a reversible~$\ad_V$ after a (possibly) non-reversible
     nmiu-map~$\varrho$.
+Using Paschke's dilation,
+    we see that every ncp-map factors
+    as an nmiu-map~$\varrho$ before some particular~ncp-map~$h$.
+Is this~ncp-map~$h$ reversible in some sense?
+In~\sref{paschke-pure} we will see that these~$h$
+    are pure (in the sense of \sref{pure})
+    and in~\sref{dagger-theorem}
+    we will see that these pure maps are (in a sense) reversible.
 \begin{point}%
-We will discuss two seemingly unrelated notions of purity first ncp-maps:
-    first one based on Paschke's dilation
-    and secondly a generalization of~$\ad_V$.
-In \TODO{} we show these two notions are in fact equivalent.
+The reversibility of pure maps (in a much more general setting)
+    is the the main result of the next chapter.
+In the remainder of this chapter, we study purity of ncp-maps a bit more.
+We consider a seemingly unrelated  alternative notion of purity,
+    which is based on Paschke's dilation,
+    and show (in \sref{paschke-pure})
+    that this alternative notion is in fact equivalent to the original.
+We end this chapter by giving a different proof
+    of the ncp-extremeness of pure and nmiu-maps.
 \end{point}
 \begin{point}[dils-pure-discussion]%
 Before we continue, let's rule out generalizations
@@ -5450,8 +5472,9 @@ A state~$\varphi\colon \scrA \to \C$ is called pure, if it is an extreme
 It is unreasonable to define an arbitrary ncp-map to be pure
     if it is extreme, as every nmiu-map (including 
     von Neumann measurements and discarding)
-    is extreme among the unital ncp-maps,
-    as we will see in \sref{nmiu-ncp-extreme}.
+    is extreme among the unital ncp-maps.
+This follows from~\sref{rigid-ncp-extreme} and~\sref{nmiu-rigid},
+    but will be proven again in~\sref{nmiu-ncp-extreme}.
 In fact, in \sref{ncp-extreme-comp}
     we show that every ncp-map is the composition
     of two extreme maps.
@@ -5465,20 +5488,22 @@ St\o rmer defines a map~$\varphi\colon \scrA \to \scrB(\scrH)$ to be pure
 For every central element~$z$ of~$\scrA$,
     the map~$a \mapsto za$ is below~$\id_\scrA$
     and so the identity on non-factors is not pure in the sense
-        of St\o rmer.
+        of St\o rmer,
+        even though the identity map is clearly reversible.
 \end{enumerate}
 \end{point}
 \begin{point}%
-Let's start with the notion of purity by generalizing~$\ad_V$.
+Let's recall how we came to the notion of purity in \sref{pure},
+    by generalizing~$\ad_V$.
 Pick~$V \colon \scrH \to \scrK$.
-By polar decomposition~$V = U A$
-    for~$A = \sqrt{V^*V} \colon \scrH \to \ceil{A} \scrH$
+    By polar decomposition, see~\sref{polar-decomposition}, we know that~$V = U A$
+    for~$A \equiv \sqrt{V^*V} \colon \scrH \to \ceil{A} \scrH$
     and some isometry~$U \colon \ceil{A} \scrH \to \scrK$.
-So~$\ad_V = \ad_A \after \ad_U$.
-We will see they admit dual universal properties:
+Thus we have~$\ad_V = \ad_A \after \ad_U$.
+These two maps admit dual universal properties:
     $\ad_U$ is a \emph{corner}
     and~$\ad_A$ is a \emph{filter}.
-We will define an ncp-map~$\varphi$ to be pure,
+An ncp-map~$\varphi$ is pure,
     if it is the composition of a filter after a corner.
 It turns out that~$\varphi$ is pure in this sense
     if and only if the map on the left-hand side of
@@ -5493,7 +5518,7 @@ We recall the definition of corner
         from \cite[Dfn.~2]{westerbaan2016universal} and \sref{corner}.
 \end{point}
 \begin{point}[dils-corner]{Definition}%
-A ncp-map~$h \colon \scrA \to \scrB$
+An ncp-map~$h \colon \scrA \to \scrB$
 is a \Define{corner}\index{corner} for~$a \in [0,1]_\scrA$ if~$h(a)=h(1)$
     and
     \begin{quote}
@@ -5576,7 +5601,8 @@ To avoid confusion with \cite{alfsen2012}
         or \cite[Prop.~6]{westerbaan2016universal}.
 \end{point}
 \begin{point}[dils-filter-basics-exercise]{Exercise}%
-Assume~$\varphi\colon \scrA \to \scrB$ is an ncp-map.
+Let~$\varphi\colon \scrA \to \scrB$ be any ncp-map
+    between von Neumann algebras.
 \begin{enumerate}
 \item
     Let~$c \colon \scrB \to \scrC$ be any filter.
@@ -5607,7 +5633,7 @@ The pure maps~$\scrB(\scrH) \to \scrB(\scrK)$
     are precisely of the form~$\ad_T$
     for some bounded operator~$T\colon \scrK \to \scrH$.
 \item
-Assume~$(\scrP, \varrho, h)$ is a Paschke dilation of some ncp-map~$\varphi$.
+Let~$(\scrP, \varrho, h)$ be a Paschke dilation of some ncp-map~$\varphi$.
 In \sref{h-is-corner-for-unital-map} we saw that if~$\varphi$ is unital,
         that then~$h$ is a corner (and thus pure).
 In general, $h = c \after h'$ for some filter~$c$ and corner~$h'$
@@ -5622,7 +5648,7 @@ In the next chapter we will see (\sref{dagger-theorem}) that
     which turns the subcategory of von Neumann
     algebras with pure maps into a~$\dagger$-category
     such that~$f^\dagger$ is contraposed to~$f$;
-            purely positive maps are~$\dagger$-positive
+            $\diamond$-positive maps are~$\dagger$-positive
             and~$\dagger$-positive maps have unique roots.
 For this unique~$\dagger$, we have~$(\ad_V)^\dagger = \ad_{V^*}$.
 \end{point}
@@ -5632,7 +5658,7 @@ For this unique~$\dagger$, we have~$(\ad_V)^\dagger = \ad_{V^*}$.
 \begin{point}%
 We will prove that a map is pure if and only if
     the left-hand side map of its Paschke dilation
-    is surjective.
+    is surjective.  We need the following result.
 \end{point}
 \begin{point}[paschke-corner]{Theorem}%
 Let~$\scrA$ be a von Neumann algebra together with a projection~$p \in \scrA$.
