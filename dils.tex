@@ -62,8 +62,8 @@ security of quantum key distribution (e.g.~\cite{werner2,kissinger2017picture}),
 to analyze quantum alternation (e.g.~\cite{prakash}),
 to categorify quantum processes (e.g.~\cite{selinger}) \emph{and}
 as an axiom to single out
-quantum theory among information processing theories.\cite{chiribella}
-A fair overview of all uses of Stinespring's theorem and its consequences
+quantum theory among information processing theories \cite{chiribella}.
+A complete overview of all uses of Stinespring's theorem and its consequences
 is a formidable task out of scope of this text.
 
 Stinespring's theorem only applies
@@ -82,7 +82,7 @@ Paschke's generalization of GNS for Hilbert C$^*$-modules\cite{paschke}
         to arbitrary ncp-maps.
 
 We start this chapter with a detailed proof of Stinespring's theorem.
-Then we show it obeys a universal property.
+Then we show that it obeys a universal property.
 Before we move on to Paschke's GNS,
     we need to develop Paschke's theory of self-dual Hilbert C$^*$-modules.
 Paschke's work builds on Sakai's characterization of von Neumann algebras,
@@ -97,7 +97,7 @@ One major difference is that we will use
     instead of considering the dual space of a Hilbert C$^*$-module.
 We finish the first part of this chapter
     by constructing Paschke's dilation
-    and establishing it indeed extends Stinespring's dilation.
+    and establishing that it indeed extends Stinespring's dilation.
 We start the second part of this chapter
     by characterizing when the representation in the Paschke dilation
     of an ncp-map is injective (see \sref{paschke-injective}),
@@ -114,7 +114,7 @@ Then we allow for an intermezzo
    we prove that every self-dual Hilbert~C$^*$-modules over
             a factor von Neumann algebra
             is of a particularly nice shape,
-            see \sref{selfdual-normalish-form} and
+            see \sref{selfdual-normalish-form}, and
     \item
     we greatly simplify the construction of the exterior tensor product
         for Hilbert~C$^*$-modules over von Neumann algebras
@@ -127,8 +127,12 @@ We use this new insight into the exterior tensor product,
     of dilations, see \sref{paschke-tensor}.
 In the final part of this chapter we turn our attention to the maps
     that occur on the right-hand side of the Paschke dilation.
+For Stinespring's dilation these maps are always of the form~$\ad_V$,
+    but for Paschke's dilation different maps may appear ---
+    in any case, they are pure in the sense of~\sref{pure}.
 The main result of the last part of this chapter
-    is an equivalence between two seemingly unrelated notions of purity:
+    is an equivalence between this and another
+    seemingly unrelated notion of purity:
     we show that an ncp-map~$\varphi$ is pure in the sense of \sref{pure}
     if and only if the map on the left-hand side of
     the Paschke dilation of~$\varphi$ is surjective.
@@ -142,7 +146,7 @@ This is a bridge to the next chapter,
 \section{Stinespring's theorem}
 \begin{parsec}[dils-completion-to-hilb]%
 \begin{point}%
-For the GNS-construction
+For the GNS-construction (\sref{gns})
 it was necessary to ``complete''\footnote{Note that
         we do not require an inner product to be definite.
     The inner product on a Hilbert space \emph{is} definite.
@@ -161,7 +165,7 @@ Here we will work through the details
     Let~$V$ be a (complex) vector space with inner
         product~$[\,\cdot\,,\,\cdot\,]$.
     There is a Hilbert space~$\scrH$
-        together with bounded linear map~$\eta\colon V \to \scrH$
+        together with a bounded linear map~$\eta\colon V \to \scrH$
             such that
         \begin{inparaenum}
         \item
@@ -318,7 +322,7 @@ We are ready to prove Stinespring's dilation theorem.
 \begin{point}[dils-proof-stinespring]{%
     Proof of Stinespring's theorem, \sref{stinespring-theorem}}%
 Let~$\varphi\colon \scrA \to \scrB(\scrH)$
-    be a cp-map.
+    be any cp-map.
 Write~$\scrA \odot \scrH$ for the tensor product of~$\scrA$ and~$\scrH$
     as vector spaces.
 By linear extension,
@@ -506,10 +510,10 @@ that~$\varrho$ is normal.
 
 \begin{parsec}%
 \begin{point}%
-In the following series of exercises we will develop
+In the following series of exercises, the reader will develop
     a few consequences of Stinespring's theorem
     which are in some fields more well-known than
-    the Stinespring theorem itself.
+    Stinespring theorem itself.
 As preparation we study the nmiu-maps between type I von Neumann algebras.
 \end{point}
 \begin{point}[nmiu-between-type-I]{Exercise}%
@@ -588,7 +592,7 @@ Now assume~$\scrH$ and~$\scrK$ are finite dimensional,
     say~$\dim \scrH = n$ and~$\dim \scrK = m$.
 Show that in this case
     the total number of Kraus operators can be chosen
-    to be less than or equal~$\dim \scrK' = n \cdot m$.
+    to be less than or equal to~$\dim \scrK' = n \cdot m$.
 \end{point}
 \end{parsec}
 
@@ -604,7 +608,8 @@ Let~$\varphi\colon \scrA \to \scrB(\scrH)$
         (i.e.~normal representation)
         and~$V\colon \scrH \to \scrK$ a bounded operator
         such that~$\varphi$ decomposes as~$\varphi = \ad_V \after \varrho$.
-We just saw every~$\varphi$ has a normal Stinespring dilation.
+    We just saw every~$\varphi$ has (at least one)
+        normal Stinespring dilation.
 A Stinespring dilation
 $(\scrK,\varrho,V)$ is said to be \Define{minimal}\index{Stinespring dilation!minimal}
 if the linear span of~$\{ \,\varrho(a) Vx; \ a \in \scrA,\ x\in \scrH\,\}$
@@ -634,7 +639,7 @@ Let~$\varrho\colon \scrA \to \scrB$ and~$\varrho'\colon \scrA \to \scrC$
         and let~$\sigma \colon \scrC \to \scrB$ be an ncp-map
         such that~$\sigma \after \varrho' = \varrho$. Then
 \begin{equation*}
-\sigma(\varrho'(a_1)\,c\, \varrho'(a_2)) \ =\   \varrho(a_1) \,\sigma(c) \,\varrho(a_2)
+\sigma\bigl(\varrho'(a_1)\,c\, \varrho'(a_2)\bigr) \ =\   \varrho(a_1) \,\sigma(c) \,\varrho(a_2)
 \end{equation*}
     for all~$a_1,a_2 \in \scrA$ and~$c \in \scrC$.
 \begin{point}{Proof}%
@@ -4799,7 +4804,7 @@ By \sref{selfdual-orthn-basis} and \sref{ext-tensor-preserves-inner-prod}
     by definition, see~\sref{tensor}.
 \end{point}
 \begin{point}%
-    Finally we prove that the liner span of
+    Finally we prove that the linear span of
                 \begin{equation*}
                     D \ \equiv \ \{ \ketbra{(e'_i a) \hotimes (d'_j b)}{
                         e_{k}\otimes d_{l} }; \ 
