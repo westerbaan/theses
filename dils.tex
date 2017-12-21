@@ -516,42 +516,109 @@ In the following series of exercises, the reader will develop
     Stinespring theorem itself.
 As preparation we study the nmiu-maps between type I von Neumann algebras.
 \end{point}
-\begin{point}[nmiu-between-type-I]{Exercise}%
+\begin{point}[nmiu-between-type-I]{Proposition}%
 Let~$\varrho\colon \scrB(\scrH) \to \scrB(\scrK)$    
-be a non-zero nmiu-map for Hilbert spaces~$\scrH$ and~$\scrK$.
-In this exercise we will show
-    there are a Hilbert space~$\scrK'$
+be any non-zero nmiu-map for Hilbert spaces~$\scrH$ and~$\scrK$.
+There is a Hilbert space~$\scrK'$
     and a unitary~$U\colon \scrK \to \scrH \otimes \scrK'$
     such that~$\varrho(a) = U^* (a\otimes 1) U $
     for all~$a \in \scrB(\scrH)$.
-
-Show that the kernel of~$\varrho$
-    is an ultraweakly-closed two-sided ideal.
-Use \sref{prop:weakly-closed-ideal}
-    to conclude~$\varrho$ is injective.
-
-Pick an orthonormal basis~$(e_i)_{i\in I}$
-    of~$\scrH$.
-Write~$p_i$ for the projection onto~$e_i$;
-i.e.~$p_i = \ket{e_i}\!\bra{e_i}$.
-Choose any~$i_0 \in I$.
-Define~$\scrK' = \varrho(p_{i_0}) \scrK$.
-Pick an orthonormal basis~$(f_i)_{i \in J}$ of~$\scrK'$.
-Write~$u_i$
-    for the partial isometry fixed by~$u_i e_i = e_{i_0}$
-    and~$u_i e_j = 0$ if~$j \neq i$; viz.~$u_i = \ket{e_{i_0}}\!\bra{e_i}$.
-For~$i\in I$, $j \in J$,
-    define~$r_{i,j} = \varrho(u^*_i) f_j$.
-
-Show~$r_{i,j}$ is an orthonormal basis of~$\scrK$.
-Conclude~$ Ur_{i,j} = e_i \otimes f_j $
-    fixes a unitary
-    $U\colon \scrK \to \scrH \otimes \scrK'$
-    with~$\varrho(a) = U^* (a\otimes 1) U $.
-
-Show that if~$\varrho$ is an isomorphism,
-    then~$\varrho(p_{i_0})$ is rank-one
-    and so~$\scrK' \cong \C$.
+\begin{point}{Proof}%
+To start, we will show that~$\varrho$ is injective
+    by proving~$\ker\varrho = \{0\}$.
+Clearly~$\ker \varrho$ is a two-sided ideal
+    --- indeed, if~$\varrho(a) = 0$ for some~$a\in \scrB(\scrH)$,
+    then~$\varrho(ab) = \varrho(a)\varrho(b) = 0$
+        and~$\varrho(ba) = 0$
+        for any (other)~$b \in \scrB(\scrH)$.
+As~$\varrho$ is normal,
+    we have~$\varrho(\sup D) = \sup_{d \in D} \varrho(d) = 0$
+    for any bounded directed~$D\subseteq \ker \varrho$
+    of self-adjoint elements.
+So by~\sref{prop:weakly-closed-ideal},
+    we know~$\ker \varrho = z \scrB(\scrH)$
+    for some central projection~$z \in \scrB(\scrH)$.
+Either~$z=0$ or~$z=1$.
+Clearly~$z\neq 1$, for otherwise~$0=\varrho\neq 0$, which is absurd.
+    So~$z=0$ and~$\ker \varrho = \{0\}$, thus~$\varrho $ is injective.
+\begin{point}%
+Pick an orthonormal basis~$(e_i)_{i \in I}$ of~$\scrH$.
+Write~$p_i$ for the projection onto~$\C e_i$,
+    i.e.~$p_i \equiv \ketbra{e_i}{e_i}$.
+Choose any~$i_0 \in I$
+    and write~$\scrK' \equiv \varrho(p_{i_0}) \scrK$.
+Pick any orthonormal basis~$(d_j)_{j \in J}$ of~$\scrK'$
+    and write~$q_j$ for the projection onto~$\C d_j$,
+    i.e.~$q_j \equiv \ketbra{d_j}{d_j}$.
+Let~$u_i$ denote the unique partial
+        isometry fixed by~$u_i e_i = e_{i_0}$ and
+                $u_i e_j = 0$ for~$j\neq i$ ---
+                viz.~$u_i \equiv \ketbra{e_{i_0}}{e_i}$.
+    Define~$r_{ij} \equiv \varrho(u_i^*) d_j$.
+We will show~$(r_{ij})_{(i,j) \in I\times J}$ is an orthonormal
+    basis of~$\scrK$.
+For this, it is sufficient to
+    show~$r_{ij}$ are unit vectors
+    and~$\sum_{i,j} \ketbra{r_{ij}}{r_{ij}} = 1$
+    (where the sum is defined as supremum over the partial sums),
+    using that then~$\ketbra{r_{ij}}{r_{ij}}$
+        are pairwise orthogonal projections
+        by \sref{orthogonal-tuple-of-projections}.
+Clearly these~$r_{ij}$ are unit vectors,
+     as by~$u_i^*u_i = p_{i_0}$
+        and~$p_{i_0} d_j = d_j$,
+        we have~$\|r_{ij}\|^2 = \langle \varrho(u_i u_i^*) d_j,d_j\rangle = 1$.
+To show~$1 = \sum_{i,j} \ketbra{r_{ij}}{r_{ij}}$, we compute
+    \begin{alignat*}{2}
+    1 
+    & \ = \  \varrho(1)
+            &\qquad&\text{as $\varrho$ is unital} \\
+    & \ = \  \varrho\bigl( \,\sum_i p_i \,\bigr)
+            &&\text{as $e_i$ is an orthn.~basis}\\
+        & \ = \  \sum_i \varrho(p_i) &&\text{as $\varrho$ is normal}\\
+        & \ = \  \sum_i \varrho(u_i^* p_{i_0} u_i) && \text{by dfn.~$u_i$}\\
+    & \ = \  \sum_i \varrho(u_i)^* \varrho(p_{i_0}) \varrho(u_i) 
+            && \text{as~$\varrho$ is mi-map}\\
+    & \ = \  \sum_i \varrho(u_i)^* \,\bigl( \sum_j q_j \bigr) \, \varrho(u_i)
+            && \text{as $d_j$ is an orthn.~basis of~$\scrK'$}
+        \\
+    & \ = \  \sum_{i,j} \varrho(u_i)^*  \,q_j\, \varrho(u_i) 
+            && \text{by \sref{ad-normal}}\\
+        & \ = \  \sum_{i,j} \ketbra{r_{ij}}{r_{ij}}.
+\end{alignat*}
+\end{point}
+\begin{point}%
+Let~$U \colon \scrK \to \scrH \otimes \scrK'$
+    denote the unitary fixed by~$U r_{ij} = e_i \otimes d_j$.
+For any~$i\in I$, $j \in J$ and~$a\in\scrB(\scrH)$,
+    it is straightforward to show that~$\ketbra{a e_i}{e_{i_0}}
+                    = \sum_k \langle e_k, ae_i \rangle \ketbra{e_k}{e_{i_0}}$,
+        where the sum converges ultrastrongly
+        and consequently
+\begin{align*}
+    \varrho(a)\, r_{ij}
+        & \ = \ \varrho(a) \varrho(\ketbra{e_i}{e_{i_0}}) \,d_j 
+            &\qquad&\text{by dfn.~$r_{ij}$ and~$u_i$}\\
+        & \ = \ \varrho(\ketbra{a e_i}{e_{i_0}}) \,d_j \\
+        & \ = \ \varrho\bigl(\, \sum_k \langle e_k, ae_i \rangle
+                    \ketbra{e_k}{e_{i_0}} \, \bigr)\,d_j  \\
+        & \ = \ \bigl( \sum_k  \langle e_k, ae_i \rangle
+                    \, \varrho(\ketbra{e_k}{e_{i_0}})\bigr)\,d_j 
+                    &&\text{as $\varrho$ is us-cont.~by~\sref{p-uwcont}} \\
+        & \ = \  \sum_k  \langle e_k, ae_i \rangle
+                    \, \varrho(\ketbra{e_k}{e_{i_0}})\,d_j \\
+        & \ = \ \sum_k  \langle e_k, ae_i \rangle
+                    \, U^*\, e_k\otimes d_j 
+                    && \text{by dfn.~$U$ and~$u_k$}\\
+        & \ = \  U^*\,  \bigl(\, \sum_k e_k \langle e_k, ae_i \rangle 
+                   \, \bigr)  \otimes d_j\\
+        & \ = \  U^*\,  (ae_i) \otimes d_j 
+                   && \text{as $e_k$ is an orthn.~basis}\\
+        & \ = \  U^*\,  (a \otimes 1) \, U \, r_{ij} && \text{by dfn.~$r_{ij}$.}
+\end{align*}
+We have shown~$\varrho(a) = U^* (a \otimes 1) U$. \qed
+\end{point}
+\end{point}
 \begin{point}[typei-inner-auto]{Corollary}%
 The nmiu-isomorphisms~$\scrB(\scrH) \to \scrB(\scrK)$
     are precisely of the form~$\ad_U$
