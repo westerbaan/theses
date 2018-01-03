@@ -2874,6 +2874,17 @@ An \Define{effect divisoid}
 The element~$\rfrac{a}{a}$ behaves like a support-projection for~$a$.
 \end{point}
 \end{point}
+\begin{point}{Exercise}%
+Show that for an effect divisoid~$M$, the following holds.
+\begin{enumerate}
+\item
+    $\rfrac{0}{0}=0$, $\rfrac{1}{1}=1$, $\rfrac{a}{1}=a$, $\rfrac{a}{a} \odot \rfrac{a}{a} = \rfrac{a}{a}$ and
+    $\rfrac{a \odot b}{a} = \rfrac{a}{a }\odot b$.
+\item
+    For any~$a \leq b \leq c$,
+    we have~$\rfrac{b}{c} \odot \rfrac{a}{b} = \rfrac{a}{c}$.
+\end{enumerate}
+\end{point}
 \begin{point}{Examples}%
 Almost all effect monoids we encountered
     are effect divisoids.
@@ -2959,17 +2970,6 @@ Prove that this partial division turns the unit interval of~$C(X)$
     into an effect divisoid.
 \end{enumerate}
 
-\end{point}
-\begin{point}{Exercise}%
-Show that for an effect divisoid~$M$, the following holds.
-\begin{enumerate}
-\item
-    $\rfrac{0}{0}=0$, $\rfrac{1}{1}=1$, $\rfrac{a}{1}=a$, $\rfrac{a}{a} \odot \rfrac{a}{a} = \rfrac{a}{a}$ and
-    $\rfrac{a \odot b}{a} = \rfrac{a}{a }\odot b$.
-\item
-    For any~$a \leq b \leq c$,
-    we have~$\rfrac{b}{c} \odot \rfrac{a}{b} = \rfrac{a}{c}$.
-\end{enumerate}
 \end{point}
 \begin{point}{Proposition}%
 If $a \perp b$ and~$a \ovee b \leq c$ in an effect divisoid,
@@ -3305,7 +3305,7 @@ as desired. \qed
 \end{point}
 \end{parsec}
 
-\section{Quotient}
+\section{Effectus with quotients}
 \begin{parsec}%
 \begin{point}%
 We are ready to introduce our first additional axiom:
@@ -3355,7 +3355,7 @@ Show the following basic properties of quotients.
     \item Zero-maps are quotients (for 1).
     \item If~$\xi$ is a quotient for~$p$, then~$1\after \xi = p^\perp$
                 (Hint: apply the universal property to $p^\perp$).
-    \item Quotients are epi.
+    \item Quotients are epic.
 \end{enumerate}
 \begin{point}%
 The following proposition is easy to prove,
@@ -3424,7 +3424,7 @@ which shows~$\xi_2 \after \xi_1$ is a quotient, see \sref{quotient-basics}. \qed
 By \sref{quotient-total} we know that each
     map~$f$ factors as~$t \after \xi$
     for some total map~$t$ and quotient~$\xi$.
-Show that this forms an orthogonal factorization system ---
+Show that this forms an orthogonal factorization system (cf.~\cite{korostenski1993factorization}) ---
     that is: prove that if~$t' \after \xi' = t \after \xi$
     for some (other) quotient~$\xi'$ and total map~$t'$,
     then there is a unique isomorphism~$\vartheta$
@@ -3502,7 +3502,7 @@ There are numerous other examples
 \end{point}
 \end{parsec}
 
-\section{Comprehension and images}
+\section{Effectus with comprehension and images}
 \begin{parsec}%
 \begin{point}%
 We continue with our second axiom.
@@ -3524,7 +3524,9 @@ Any  map with this universal property
     is called a \Define{comprehension} for~$p$.
 \begin{point}{Beware}%
     We do not assume comprehensions are total
-    (in contrast to \cite{effintro}).
+    (in contrast to~\cite{effintro}).
+    In~\sref{compr-total} we will see that
+    in an effectus with quotients, comprehensions must be total.
 \end{point}
 \begin{point}[compr-not]{Notation}%
 Unless otherwise specified~$\pi_p$ will be some
@@ -4065,8 +4067,11 @@ to show that in a~$\diamond$-effectus
 \end{multicols}
 \end{point}
 \begin{point}[diamond-functor]{Lemma}%
-In a~$\diamond$-effectus,
-we have
+    In a~$\diamond$-effectus
+        $(\ )^\diamond$,
+        $(\ )^\BOX$ and
+        $(\ )_\diamond$
+        are functorial --- that is
 \begin{multicols}{3}
 \begin{enumerate}
 \item
