@@ -1955,6 +1955,7 @@ The predicates on a von Neumann algebra~$\scrA$
 Does every effect monoid~$M$ occur as the effect monoid of scalars of some
     effectus?  Does every $M$-effect module occur as
         effect module of predicates?
+We will show they do, in the following strong sense.
 \end{point}
 \begin{point}[emod-effectus]{Theorem}%
     The category~$\EMod^{\mathsf{op}}_M$ is an effectus in total form
@@ -2105,7 +2106,7 @@ We write~$\Define{\mathcal{D}_M} X$
     for the set of all formal~$M$-convex combinations over~$X$.
 \end{point}
 \begin{point}{Exercise}%
-    In this exercise we study~$\mathcal{D}_M$ as a monad.
+    In this exercise you study~$\mathcal{D}_M$ as a monad.
     See \cite{probdistrconv,basmsc}.
 \begin{enumerate}
 \item
@@ -2122,7 +2123,7 @@ For~$f\colon X \to Y$,
 Show that this turns~$\mathcal{D}_M$ into a functor~$\mathsf{Set} \to \mathsf{Set}$.
 \item
 Define~$\eta \colon X \to \mathcal{D}_M X$
-    by~$\eta(x) = \ket{x}$
+    by~$\eta(x) = 1\ket{x}$
     and~$\mu\colon \mathcal{D}_M \mathcal{D}_M X \to \mathcal{D}_M X$ by
     \begin{equation*}
         \mu(\Phi)(x) \ = \ 
@@ -2368,7 +2369,7 @@ To construct the coproduct, we will need to know
     about quotients of abstract~$M$-convex sets.
 \end{point}
 \begin{point}[aconv-cong]{Exercise}%
-In this exercise we construct the quotient of an
+In this exercise you construct the quotient of an
     abstract~$M$-convex set by a congruence.
 Assume~$(X,h)$ is an abstract~$M$-convex set
     and~$\sim \subseteq X^2$ is an equivalence relation.
@@ -2564,7 +2565,13 @@ So~$k = k'$ by surjectivity of~$q$. \qed
 \end{point}
 \end{point}
 \begin{point}[elements-coprod-conv]{Remark}%
-By construction,
+The existence of coproducts of abstract~$M$-convex sets already
+    follows from the more general theorem of Linton \cite{linton}.
+    (Cf.~\cite{barr}.)
+However, for the results in the remainder of this section we need to know
+    more about the coproduct, than Linton's construction provides.
+
+By our construction, we know that
     every~$z \in X+Y$
     is of the
     form
@@ -2631,6 +2638,8 @@ To continue, show that in~$\AConvM$
     n \cdot 1 \ \equiv \ \underbrace{1 + \cdots + 1}_{\text{$n$ times}}
     \ \cong \ \mathcal{D}_M \{1, \ldots, n\}.
 \end{equation*}
+(You might want to use that~$\mathcal{D}_M$, as a left-adjoint,
+    preserves coproducts.)
 \end{point}
 \end{parsec}
 
@@ -2903,7 +2912,7 @@ The effect monoid on the unit interval of~$C[0,1]$
 \end{point}
 \begin{point}[basic-divisoid-equiv]{Exercise}%
 Let~$X$ be a compact Hausdorff space.
-In this exercise we will show
+In this exercise you will show
     that the unit interval of~$C(X)$
     is an effect divisoid
     if and only if~$X$
@@ -2913,8 +2922,10 @@ In this exercise we will show
     for every~$f \in C(X)$.
 Equivalently:
 $C(X)$ is~$\sigma$-Dedekind complete
-    \cite[3N.5]{gillman2013rings}
-(i.e.~$C(X)$ has countable infima and suprema).
+    \cite[3N.5]{gillman2013rings},
+    which is in turn equivalent to bounded~$\omega$-completeness
+    (i.e.~$C(X)$ has suprema, resp.~infima, of
+            bounded ascending, resp.~descending, sequences).
 \begin{enumerate}
 \item
     Let~$C(X)$ is an effect divisoid
