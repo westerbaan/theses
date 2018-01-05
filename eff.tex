@@ -3969,7 +3969,7 @@ The simple idea of taking the restriction to sharp predicates
     seriously, leads to a host of interesting new notions.
 We will give these right of the bat and study their relevance later on.
 \end{point}
-\begin{point}{Definition}%
+\begin{point}[diamond-basics]{Definition}%
     A~\Define{$\diamond$-effectus} (``diamond effectus'')
     is an effectus with quotient, comprehension and images
     such that~$s^\perp$ is sharp for every sharp predicate~$s$.
@@ -4323,25 +4323,27 @@ such that
 \begin{enumerate}
 \item
     for each object~$X$
-    and each predicate on~$p$,
-    there is a unique $\diamond$-positive map~$\Define{\asrt_p}\colon X \to X$
+    and each predicate~$p$ on~$X$,
+        there is a unique $\diamond$-positive
+        map $\Define{\asrt_p}\colon X \to X$
         (``assert p'')
-    with~$1 \after \asrt_p = p$ \emph{and}
+        with~$1 \after \asrt_p = p$ (see \sref{diamond-basics})
+        \emph{and}
 \item
     for every quotient~$\xi \colon X \to Y$
     and comprehension~$\pi \colon Y \to Z$
     the composite~$\pi \after \xi$ is pure.
 \end{enumerate}
 In an $\&$-effectus,
-we define~$\Define{\andthen{p}{q}} = q \after \asrt_p$
-``$p$ andthen~$q$'' 
-    and~$\Define{p^2} = \andthen{p}{p}$.
+we define~$\Define{\andthen{p}{q}} \equiv q \after \asrt_p$,
+    pronounced ``$p$ andthen~$q$''.
+For brevity, we will write~$\Define{p^2} \equiv \andthen{p}{p}$.
 \begin{point}{Remarks}%
 The $\asrt_p$ maps are named after the \texttt{assert} statement
     found in many programming languages.
 The \texttt{assert} statement checks whether
     the provided Boolean expression (i.e.~predicate)
-    is true --- if it is, it will continue the program
+    is true (at the time of execution) --- and if it is, it will continue the program
     without further action; if it isn't, it will halt execution
     immediately.
 Our~$\asrt_p$ maps can be thought of in the same way.
@@ -4449,11 +4451,14 @@ In fact, for every comprehension~$\pi$ of~$s$,
     there exists a comprehension~$\pi$ of~$s$
     with~$\xi \after \pi = \id$ and~$\pi \after \xi = \asrt_s$.
 \begin{point}{Proof}%
-Pick quotient~$\xi$ and comprehension~$\pi$
+Let~$s$ be any sharp predicate.
+By definition~$\diamond$-positive maps are pure and so
+    there is a quotient~$\xi$ and comprehension~$\pi$
     with~$\pi \after \xi = \asrt_s$.
-By point 1:
+    So
 \begin{equation*}
-   \pi \after \xi \ =\  \asrt_s \ =\  \asrt_s\after\asrt_s \ =\  \pi \after \xi \after \pi \after \xi.
+   \pi \after \xi \ =\  \asrt_s 
+    \ \stackrel{\mathclap{\sref{sharp-prop}}}{=}\  \asrt_s\after\asrt_s \ =\  \pi \after \xi \after \pi \after \xi.
 \end{equation*}
 Thus~$\xi \after \pi = \id$.
 We compute~$s = 1 \after \asrt_s = 1 \after \xi$
@@ -6217,7 +6222,7 @@ A \Define{dilation} of~$f$
     with~$\varrho \after h = f$,
     such that
 \begin{quote}
-    for every other triplet~$(P', \varrho', h')$
+    for every (other) triplet~$(P', \varrho', h')$
     with~$\varrho'\colon P' \to Y$ total sharp,
     $h'\colon X \to P$ arbitrary and~$f = \varrho'\after h'$,
     there is a unique~$\sigma \colon P \to P'$
@@ -6509,7 +6514,7 @@ By \sref{paschke-correspondence}
 \subsection{Dagger kernel categories}
 \begin{parsec}%
 \begin{point}%
-To finish, we relate the structures in a~$\dagger$-effectus
+To finish this chapter, we relate the structures in a~$\dagger$-effectus
     with existing structures in the literature.
 Just like we try to axiomatize~$\op\vN$,
     Heunen in the third chapter of his Ph.D-thesis attempted
@@ -6588,7 +6593,7 @@ Then~$1 \after f \after g = 0$,
 \end{point}
 \begin{point}{Exercise}%
 Let~$C$ be a~$\dagger$-effectus.
-In this exercise, we will show that
+In this exercise, you will show that
     in general $\Pure C$
     does not have finite coproducts.
 In particular, $\Pure C$ does not have~$\dagger$-biproducts,
@@ -6611,7 +6616,7 @@ Use \TODO{}
     Derive a contradiction.
 \end{point}
 \begin{point}{Exercise}%
-In this exercise we will show that~$\Pure(\op\vN)$ does not have
+In this exercise you will show that~$\Pure(\op\vN)$ does not have
     all coequalizers.  It is helpful to first consider
     two concrete coequalizers in~$\mathsf{Hilb}$ and~$\op\vN$.
 (These coequalizers capture unordered pairs of qubits.)
@@ -6681,6 +6686,7 @@ Most of them are surprisingly hard to prove ---
 Then, in \cite{gudder2008characterization},
     Gudder and Latr\'emoli\`ere (G\&L)
     characterize~$\&$ on~$\scrB(\scrH)$ as the unique operation satisfying
+    (for effects~$a,b$ and density matrix~$\varrho$)
 \begin{multicols}{2}
 \begin{enumerate}
     \item $\TR [ (\andthen{a}{\varrho}) b] = \TR [\varrho
@@ -6693,7 +6699,7 @@ Then, in \cite{gudder2008characterization},
 \end{enumerate}    
 \end{multicols}
 \noindent
-Recall that we characterized~$\asrt_a \colon b \mapsto \andthen{a}{b}$
+In \sref{positive-map-uniqueness} we characterized~$\asrt_a \colon b \mapsto \andthen{a}{b}$
     as the unique~$\diamond$-positive map with~$\andthen{a}{1} = a$.
 How do these characterization compare?
 G\&L's first axiom plays a very similar role
@@ -6708,8 +6714,8 @@ A few years earlier, Gudder and Greechie started
     \cite{gudder2001sequential}
     the abstract study of some of the algebraic properties of the
     sequential product on arbitrary effect algebras,
-    which has been picked up by several other authors.
-    \cite{li2011sequential,gudder2005open,shen2009not,gudder2005uniqueness,jun2009remarks,weihua2009uniqueness,tkadlec2008atomic,jia2010entropy,arias2004almost}
+    which has been picked up by several other authors
+    \cite{li2011sequential,gudder2005open,shen2009not,gudder2005uniqueness,jun2009remarks,weihua2009uniqueness,tkadlec2008atomic,jia2010entropy,arias2004almost}.
 \end{point}
 \end{point}
 \begin{point}{Definition}%
@@ -7012,7 +7018,8 @@ In any homological category,
 The following is a translation of (a part of) Grandis' Snake Lemma
     into~$\dagger$-effectus jargon.
 We include a proof as it highlights how
-    the reasoning in a homological category is subtly different:
+    the reasoning in a homological category is subtly different
+    from the reasoning we already saw in a~$\dagger$-effectus:
     maps~$l^\BOX$ appear, where we would have expected~$l^\diamond$.
 \end{point}
 \begin{point}{Snake Lemma}%
@@ -7455,11 +7462,12 @@ To study spaces,
     (or even a diagram of objects) of
     an abelian category representing some algebraic invariant.
 The key point is that it is easier to compute and understand
-    these algebraic invariants, then it is to work with the spaces
+    these algebraic invariants, than it is to work with the spaces
     themselves.
 One normally thinks of a category of spaces as being quite different
     from a category of algebraic invariants, hence it's surprising
-    that~$\op\vN$, which is a category of (non-commutative) spaces,
+    that~$\op\vN$, which is a rather complicated
+    category of (non-commutative) spaces,
     behaves in this way, similar to an abelian category.
 \end{point}
 \end{point}
