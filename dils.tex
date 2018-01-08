@@ -92,6 +92,8 @@ Paschke's generalization of GNS for Hilbert C$^*$-modules\cite{paschke}
     $\scrA \xrightarrow{\varphi} \C$&
     $\scrA \xrightarrow{\varrho} \scrB(\scrK)$ &
     $\scrB(\scrK) \xrightarrow{\langle x, (\ )x\rangle} \C$ \\
+         & \multicolumn{3}{l}{\small (Hilbert space~$\scrK$;
+                        von Neumann algebra~$\scrA$; $x \in \scrK$)} \\
      \arrayrulecolor{gray}\hline
         (normal) Stinespring
    & (n)cp-maps
@@ -100,7 +102,10 @@ Paschke's generalization of GNS for Hilbert C$^*$-modules\cite{paschke}
         \cite{stinespring},
         \sref{stinespring-theorem}&$\scrA \xrightarrow{\varphi} \scrB(\scrH)$
     &$\scrA \xrightarrow{\varrho} \scrB(\scrK)$ 
-   &$\scrB(\scrK) \xrightarrow{\ad_{V}} \scrB(\scrH)$  \\
+   &$\scrB(\scrK) \xrightarrow{\ad_{V}} \scrB(\scrH)$ \\
+         & \multicolumn{3}{l}{\small (Hilbert spaces~$\scrH$, $\scrK$;
+                        vN alg.~$\scrA$;
+                        b.opp.~$V\colon \scrH \to \scrK$)} \\
      \arrayrulecolor{gray}\hline
         Paschke
    & ncp-maps
@@ -110,16 +115,29 @@ Paschke's generalization of GNS for Hilbert C$^*$-modules\cite{paschke}
         &$\scrA \xrightarrow{\varphi} \scrB$
     &$\scrA \xrightarrow{\varrho} \scrP$
    &$\scrP \xrightarrow{h} \scrB$  \\
+         & \multicolumn{3}{l}{\small (Von Neumann algebras~$\scrA$, $\scrB$,
+                $\scrP$)} \\
      \arrayrulecolor{gray}\hline
-        Naimark
-    & (n)p-maps
-    & (n)miu
-        & pure ncp-map\\
-        \cite{naimark1943representation}
-        &$C(X)\xrightarrow{\varphi} \scrB(\scrH)$
-    &$C(X) \xrightarrow{\varrho} \scrB(\scrK)$
-    &$\scrB(\scrK) \xrightarrow{\ad_T} \scrB(\scrH)$  \\
+        KSGNS
+    & cp-maps
+    & miu
+        & cp-map\\
+        \cite{ksgns}, cf.~\cite{lance}
+        &$\scrA\xrightarrow{\varphi} \scrB^a(E)$
+    &$\scrA \xrightarrow{\varrho} \scrB^a(F)$
+    &$\scrB^a(F) \xrightarrow{\ad_T} \scrB^a(E)$  \\
+         & \multicolumn{3}{l}{
+             \small (C$^*$-algs~$\scrA$, $\scrB$;
+                    Hilb.~$\scrB$-modules~$E$, $F$;
+                    $T \in \scrB^a (F,  E)$)}
 \end{tabular}}
+    \captionof{table}{Various dilation theorems.
+    Maps~$\varphi$ of the given type
+        split as~$\varphi = h \after \varrho$,
+        where~$\varrho$ is as in LHS
+        and~$h$ is as in RHS.
+    The first three appear prominently in this thesis;
+        the last, KSGNS, is only briefly touched upon in \sref{ksgns}.}
 \end{center}
 
 We start this chapter with a detailed proof of Stinespring's theorem.
@@ -3529,6 +3547,33 @@ and~$h \after \sigma = h \after \ad_S \after \varrho_{h'}
 \end{point}
 \end{parsec}
 
+\begin{parsec}[ksgns]%
+\begin{point}%
+We have shown that any ncp-map~$\varphi\colon \scrA \to \scrB$
+    admits a dilation using Paschke's generalization of GNS
+    to Hilbert~C$^*$-modules.
+There is also a generalization of Stinespring's theorem
+    to Hilbert~C$^*$-modules
+    due to Kasparov \cite{ksgns}:
+\end{point}
+\begin{point}{Theorem (KSGNS)}%
+Let~$\varphi\colon \scrA \to \scrB^a(X)$
+    be a cp-map
+    for some~C$^*$-algebras~$\scrA$, $\scrB$
+    and Hilbert~$\scrB$-module~$X$.
+There exists a Hilbert~$\scrB$-module~$Y$,
+    miu-map~$\varrho\colon \scrA \to \scrB^a(Y)$
+    and adjointable~$\scrB$-linear~$T\colon Y\to X$
+    with~$\varphi = \ad_T \after \varrho$.
+\end{point}
+\begin{point}%
+For our purposes (the dilation arbitrary ncp-maps~$\scrA \to \scrB$),
+    Paschke's GNS construction sufficed.
+We leave open whether
+    KSGNS admits a universal property like \sref{dils-univ-stinespring}
+    and whether it is a Paschke dilation.
+\end{point}
+\end{parsec}
 \begin{parsec}%
 \begin{point}%
 We have all the tools to characterize
