@@ -5751,7 +5751,7 @@ To avoid confusion with \cite{alfsen2012}
     we changed the name from compression to filter.
 \end{point}
 \end{point}
-\begin{point}{Example}%
+\begin{point}[dils-stand-filter]{Example}%
     The map~$c_b\colon \scrB \to \ceil{b} \scrB \ceil{b}$
         given by~$a \mapsto \sqrt{b} a \sqrt{b}$ is a filter
         of~$b\in \scrB$, $b\geq 0$.
@@ -5781,6 +5781,12 @@ Let~$\varphi\colon \scrA \to \scrB$ be any ncp-map
 (See \sref{dils-abstract-basics} and \sref{quotient-total} for the proofs
         in the more general case.)
 \end{point}
+\begin{point}[dils-filters-injective]{Exercise}%
+Derive (perhaps from~\sref{dils-stand-filter} and~\sref{mult-cancellation}),
+    that filters are injective.
+\end{point}
+\end{parsec}
+\begin{parsec}%
 \begin{point}{Definition}%
     Filters, corners and their compositions are called \Define{pure}\index{pure}.
 \end{point}
@@ -5810,6 +5816,12 @@ In the next chapter we will see (\sref{dagger-theorem}) that
             $\diamond$-positive maps are~$\dagger$-positive
             and~$\dagger$-positive maps have unique roots.
 For this unique~$\dagger$, we have~$(\ad_V)^\dagger = \ad_{V^*}$.
+\end{point}
+\begin{point}[surjective-nmiu]{Exercise}%
+Show that any surjective nmiu-map between von Neumann algebras
+        is a corner of a central projection, hence pure
+        --- and conversely,
+        that any corner of a central projection is a surjective nmiu-map.
 \end{point}
 \end{parsec}
 
@@ -5927,8 +5939,8 @@ Then in particular~$\alpha u_ip = 0$,
     hence~$\alpha \cceil{p} = \alpha \sum_i u_iu_i^*  = \sum_i \alpha u_ipu_i^*=0$.
     Indeed~$\ceil{\varrho_0} = \cceil{p}$.
 
-By~\TODO{}
-there is an nmiu-isomorphism~$\varphi\colon
+    By~\sref{surjective-nmiu}
+    there is an nmiu-isomorphism~$\varphi\colon
     \cceil{p} \scrA \to \scrB^a(\scrA p)$
     with~$\varrho_0 = \varphi \after h_{\cceil{p}}$.
 Hence~$h_{\cceil{p}} = (\varphi^{-1} \after \ad_{U^*}) \after \varrho$.
@@ -6055,12 +6067,12 @@ and~$\Imag{h(a)} = h(\Imag{a}) = 0$,
 so it is sufficient to prove~$\Real{a} = \Imag{a}=0$.
 Thus we may assume without loss of generality that~$a$ is self adjoint.
 
-By~\TODO{...}~$h$ is pure
+By~\sref{dils-examples-pure}~$h$ is pure
     and thus splits as~$h = c \after h_p$
     for some filter~$c \colon p\scrP p \to \scrB$
     and the standard corner~$h_p\colon \scrP \to p\scrP p$
     for~$p = \ceil{h}$.
-By \TODO{...} filters are injective
+By \sref{dils-filters-injective} filters are injective
     and so from the assumption~$0 = h(a) = c(pap)$
     it follows~$pap = 0$.
 Using \sref{cstar-positive} and some easy algebra,
@@ -6081,7 +6093,7 @@ Define~$\psi_1 = \lambda^{-1} \varphi_t$
 and~$\psi_2 = (1-\lambda)^{-1}\varphi_{1-t}$.
 By the previous,~$\psi_1$ and~$\psi_2$ are ncp-maps
     with~$\psi_1(1)=\psi_2(1)=\varphi(1)$.
-Also~$\lambda \psi_1 + \lambda \psi_2 = \varphi$.
+    Also~$\lambda \psi_1 + (1-\lambda) \psi_2 = \varphi$.
 As~$\varphi$ is ncp-extreme,
     we must have~$\psi_1 = \psi_2 = \varphi$.
 So~$\varphi_t = \lambda \varphi = \varphi_{\lambda 1}$,
@@ -6114,7 +6126,7 @@ As~$h_{\cceil{p}}$ is surjective,
     $h_{\cceil{p}}(\scrA)^\square = Z(\cceil{p} \scrA)$.
     Assume~$t \in [0,1]_{Z(\cceil{p} \scrA)}$ with~$c(ptp)=0$
 We want to show~$t = 0$.
-As~$c$ is injective by \TODO{filters injective} $ptp = 0$.
+As~$c$ is injective by~\sref{dils-filters-injective} $ptp = 0$.
 By \TODO{} $p \leq 1- \ceil{t}$
 and so~$\cceil{p} \leq 1- \ceil{t}$.
 Hence~$\cceil{p} \leq \cceil{p} - \ceil{t} \leq \cceil{p}$.
