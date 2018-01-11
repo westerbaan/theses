@@ -32,7 +32,7 @@ needed to be a model of Selinger and Valiron's quantum lambda calculus.
 We'll deal with the first matter directly after this introduction
 in Section~\ref{S:measurement}.
 The second matter is treated in Section~\ref{S:model},
-but only
+but only after
 we have given the tensor product of von Neumann 
 algebras a complete overhaul
 in Section~\ref{S:tensor}.
@@ -272,8 +272,8 @@ While most corners
 that we'll deal with are unital,
 there are also corners which are not unital
 (because there are non-unital
-ncp-isomorphisms),
-so when we write ``corner'' we shall
+ncp-isomorphisms).
+When we write ``corner'' we shall
 always mean a ``unital corner''%
 \index{corner (map)!unital}
 unless explicitly stated otherwise.
@@ -1236,7 +1236,7 @@ that $f$ can be written as $f\equiv c_{f(1)} \circ [f]\circ \pi_{\ceil{f}}$,
 and that~$c_{f(1)}$ is rigid,
 by~\sref{canonical-quotient-rigid},
 which we'll use shortly.
-Towards this end,
+To this end,
 note that since~$f^\diamond = g^\diamond$,
 we have $f_\diamond = g_\diamond$,
 and so $\ceil{f}=f_\diamond(1)=g_\diamond(1)=\ceil{g}$.
@@ -1289,7 +1289,7 @@ not only to distinguish it from
 the pre-existing notion of positivity for maps between $C^*$-algebras,
 but also to contrast it with
 	the notion of ``$\dagger$-positivity''
-	that appears in the next thesis.\REMARK{add ref.}
+	that appears in the following thesis.\REMARK{add ref.}
 \end{point}
 \begin{point}[purely-positive-examples]{Examples}%
 Let~$\scrA$ be a von Neumann algebra.
@@ -1362,6 +1362,7 @@ are central,
 $p$ and~$q$ are centrally similar.
 \item
 Show that when~$p$ and~$q$ are pseudoinvertible,
+then:
 $p$ and~$q$ are centrally similar iff
 $pq^{\sim 1}$ is central
 iff $qp^{\sim 1}$ is central
@@ -1555,7 +1556,7 @@ To strip
 from~\sref{faithful-positive-map-uniqueness}
 the assumption 
 that~$f$
-is faithful 
+be faithful 
 we employ this device:
 \end{point}
 \begin{point}[chevron-f]{Definition}%
@@ -1665,7 +1666,7 @@ there is a unique $\diamond$-positive map~$g\colon \scrA\to\scrA$
 with~$g(g(1))=p$, namely
 $g=\sqrt[4]{p}\,(\,\cdot\,)\,\sqrt[4]{p}$.
 \begin{point}{Proof}%
-Any such $\diamond$-positive map~$g\colon \scrA\to\scrA$ with~$g(g(1))=p$
+Any $\diamond$-positive map~$g\colon \scrA\to\scrA$ with~$g(g(1))=p$
 will be of the form
 $g=\smash{\sqrt{g(1)}\,(\,\cdot\,)\,\sqrt{g(1)}}$
 by~\sref{positive-map-uniqueness};
@@ -1727,7 +1728,7 @@ for all~$q\in [0,1]_\scrA$ by~\ref{ax3}.\qed
 \begin{point}{Exercise}%
 None of the axioms
 from~\sref{uniqueness-sequential-product}
-can be omitted (except perhaps~\ref{ax4},
+may be omitted (except perhaps~\ref{ax4},
 see~\sref{fourth-axiom}):
 \begin{enumerate}
 \item
@@ -1843,7 +1844,7 @@ and~$B\in\scrB$.
 In line with the representation-avoiding
 treatment of von Neumann algebras
 from the previous chapter
-we'll take a entirely different
+we'll take an entirely different
 approach
 by defining the tensor product of von Neumann
 algebras $\scrA$ and~$\scrB$ abstractly 
@@ -2617,7 +2618,7 @@ is continuous with respect to the ultraweak tensor product topology
 on~$\scrA\odot\scrB$
 and the ultraweak topology on~$\scrC$,
 \item
-\Define{\textbf{c}ompletely \textbf{p}ossitive}%
+\Define{\textbf{c}ompletely \textbf{p}ositive}%
 \index{bilinear map!completely positive}%
 \index{completely positive!bilinear map}%
 \index{positive!completely $\sim$ bilinear map}
@@ -2679,7 +2680,7 @@ entails that~$t=0$.
 Write~$t\equiv \sum_n a_n\odot b_n$
 for some  $a_1,\dotsc,a_N\in\scrA$
 and~$b_1,\dotsc,b_N\in \scrB$.
-Note that by replacing them if necessary
+	Note that (by replacing them if necessary)
 we may assume that the~$a_1,\dotsc,a_N$
 are linearly independent.
 Let~$\tau\in\Xi$ be given.
@@ -2785,11 +2786,10 @@ thus $\gamma_\odot$ itself---is ultraweakly continuous.
 
 \item
 In order to show that~$\gamma_\odot$ is an ultraweak embedding,
-we'll first need that we have
-in fact the equality $\|f\circ \gamma_\odot\|=\|f\|$
+we'll need the equality $\|f\circ \gamma_\odot\|=\|f\|$
 for all~$f\in\scrT_*$.
 
-In order to show this,
+In order to show this in turn,
 recall 
 (from \sref{polar-decomposition-of-functional})
 that there is a partial isometry~$u$ in~$\scrT$
@@ -2998,7 +2998,7 @@ because then we may take $f\otimes g:=\beta_\otimes$%
 \index{*tensorsupexact@$\beta_\otimes$}
 as in~\sref{tensor-universal-property}
 and all
-the stated properties of~$f\otimes g$ will then  follow 
+the properties claimed for~$f\otimes g$ will then  follow 
 with the very least of effort
 from~\sref{tensor-universal-property-extra}.
 
@@ -3131,7 +3131,7 @@ on~$\W{nmiu},\dotsc$}%
 \index{tensor product!of von Neumann algebras!functorial}
 where~$\Cat{C}$
 can be~$\W{miu}$, $\W{cp}$, $\W{cpu}$
-and $\W{cpsu}$.
+or $\W{cpsu}$.
 \end{point}
 \begin{point}[tensor-injective]{Proposition}%
 Given injective nmiu-maps
@@ -3602,7 +3602,7 @@ the elements of the form $\gamma(a,\kappa_i(b))
 from the range of~$\gamma$
 where~$a\in \scrA$, $i\in I$, and~$b\in\scrB_i$ 
 generate~$\bigoplus_i\scrA \otimes\scrB_i$ by~\sref{sum-generation}.
-Since further 
+Further, since
 given $i\in I$ and np-functionals
 $\sigma\colon \scrA\to\C$ and
 $\tau\colon \scrB_i\to\C$
@@ -3788,7 +3788,7 @@ and~$t\in \scrD$.
 \begin{point}%
 Up to this point
 we have only written about the tensor product~$\scrA\otimes \scrB$
-of \emph{two} von Neumann algebra
+of \emph{two} von Neumann algebras
 (to save ink),
 but all of it,
 as you will no doubt have observed already,
@@ -3972,7 +3972,7 @@ for which we will provide the following
 three ingredients.
 \begin{itemize}
 \item
-The fact (due to Kornell, \cite{kornell2012})
+The observation (by to Kornell, \cite{kornell2012})
 that
 the category 
 $\op{(\W{miu})}$
@@ -5078,20 +5078,20 @@ that is maximal in~$\mathcal{S}$ in the sense
 that $\mu(B')=\mu(B)$
 for all~$B'\in\mathcal{S}$ with $B\subseteq B'$.
 \begin{point}{Proof}
-The trick is to consider for every $C\in\Sigma_X$
+	The trick is to consider for every $C\in\mathcal{S}$
 the quantity
 \begin{equation*}
 	\beta_C \ = \ \sup\{\,\mu(D)\colon\, C\subseteq D
 \text{ and }D\in \mathcal{S}\,\}.
 \end{equation*}
 Note that $\mu(C)\leq \beta_C \leq \mu(X)$
-for all~$C\in\Sigma_X$,
+	for all~$C\in\mathcal{S}$,
 	and $\beta_{C_2}\leq \beta_{C_1}$
-	for all~$C_1,C_2\in\Sigma_X$ with $C_1 \subseteq C_2$.
-To prove this lemma, it suffices to find~$B\in\Sigma_X$
+	for all~$C_1,C_2\in\mathcal{S}$ with $C_1 \subseteq C_2$.
+	To prove this lemma, it suffices to find~$B\in\mathcal{S}$
 with $A\subseteq B$ and~$\mu(B)=\beta_B$.
 
-Define~$B_1:= B$.
+Define~$B_1:= A$.
 Pick~$B_2\in\mathcal{S}$
 such that $B_1 \subseteq B_2$
 and~$\beta_{B_1}-\mu(B_2)\leq \nicefrac{1}{2}$.
@@ -5208,8 +5208,7 @@ Let~$X$ be a continuous finite complete measure space
 for which~$L^\infty(X)$ is duplicable.
 Then~$\mu(X)=0$.
 \begin{point}{Proof}%
-Suppose that~$L^\infty(X)$ is duplicable
-and~$\mu(X)>0$
+Suppose that~$\mu(X)>0$
 towards a contradiction.
 Let~$\delta$
 be a duplicator
@@ -5361,111 +5360,13 @@ and so~$\mu(A)=f^{-1}(\{\lambda\})$.
 Hence~$f(x)=\lambda$ for almost all~$x\in A$.\qed
 \end{point}
 \end{point}
-\begin{point}[lem:measure-space-partition]{Lemma}%
+\begin{point}[lem:measure-space-partition]{Exercise}%
 Let~$X$ be a measure space with~$\mu(X)<\infty$.
-Then for every partition~$\mathcal{A}$
+Show that~$L^\infty(X)\cong \bigoplus_{A\in\mathcal{A}} L^\infty(A)$
+for every countable partition~$\mathcal{A}$
 of~$X$
-consisting of measurable subsets,
-we have~$L^\infty(X)\cong \bigoplus_{A\in\mathcal{A}} L^\infty(A)$.
-\begin{point}{Proof}%
-Since~$\sum_{A\in\mathcal{A}} \mu(A)=\mu(X)$,
-the set $\mathcal{A}' = \{A\in \mathcal{A}\mid \mu(A)>0\}$
-is countable.
-We will also
-need the fact that~$A_0 = \bigcup\{ A\in\mathcal{A}\mid \mu(A)=0\}$
-is negligible.
-To see this,
-note that
-$X\backslash A_0$ is 
-the union of~$\mathcal{A}'$
-and thus measurable.
-Further, we have $\mu(X\backslash A_0) = 
-\sum_{A\in \mathcal{A}'} \mu(A)
-= \sum_{A\in\mathcal{A}} \mu(A)=\mu(X)$,
-and thus~$\mu(A_0)=0$.
-
-Let~$A\in \mathcal{A}$
-and~$f \in \mathcal{L}^\infty(X)$ be given.
-Then the restriction $f|A\colon A\to \mathbb{C}$
-is an element of~$\mathcal{L}^\infty(A)$.
-It is not hard to see that $f\mapsto f|_A$
-gives a miu-map
-$R_A\colon L^\infty(X)\to L^\infty(A)$.
-Let~$R\colon L^\infty(X)\to \bigoplus_{A\in \mathcal{A}} L^\infty(A)$
-be given by $R(\mathfrak{f}) = (R_A(\mathfrak{f}))_{A\in \mathcal{A}}$.
-We claim that~$R$ is bijective (and thus a nmiu-isomorphism).
-
-To show that~$R$ is injective,
-let $f\in \mathcal{L}^\infty(X)$ with~$R(f^\circ)=0$ be given.
-Then for every~$A\in \mathcal{A}$
-there is a negligible subset~$N_A$ of~$A$ with $f(x)=0$
-for all~$x\in A\backslash N_A$.
-Thus~$f(x)=0$ for all~$x\in X\backslash\bigcup_{A\in \mathcal{A}} N_A$.
-Since~$N := \bigcup_{A\in\mathcal{A}} N_A 
-\subseteq A_0 \cup \bigcup_{A\in\mathcal{A}'} N_A$,
-we see that~$N$ is negligible,
-and so~$f(x)=0$ for almost all~$x\in X$.
-Thus $f^\circ =0$,
-and thus~$R$ is injective.
-
-To show that~$R$ is surjective,
-let $\mathfrak{f}\in \bigoplus_{A\in \mathcal{A}} L^\infty(A)$
-be given,
-pick~$f_A\in\mathcal{L}^\infty(A)$
-with~$\mathfrak{f}_A=f_A^\circ$
-for each~$A\in\mathcal{A}$,
-and define~$g\colon X\to \mathbb{C}$
-by $g(x)=f_A(x)$
-for all~$A\in\mathcal{A}$ and~$x\in A$.
-We claim that~$g\in \mathcal{L}^\infty(X)$---and then 
-clearly $R(g^\circ )=\mathfrak{f}$.
-To begin, we show that $g$ is measurable.
-Let~$U$ be a measurable subset of~$\mathbb{C}$.
-We must show that~$g^{-1}(U)$ is measurable.
-We have
-\begin{equation*}
-\textstyle 
-g^{-1}(U)\ = \ \bigcup_{A\in \mathcal{A}} f^{-1}_A(U)
-\ = \ \bigcup_{A\in \mathcal{A}'} \, f^{-1}_A(U)
-\ \,\cup\ \,\bigcup_{A\in \mathcal{A}\backslash \mathcal{A}'}\, f^{-1}_A(U).
-\end{equation*}
-Note that~$\bigcup_{A\in\mathcal{A}'}f_A^{-1}(A)$
-is measurable
-(being a countable union of measurable sets),
-and that $\bigcup_{A\in\mathcal{A}\backslash\mathcal{A}'} f_A^{-1}(A)$
-is negligible
-(being a subset of the negligible set~$A_0$).
-Thus~$g^{-1}(U)$ is measurable.
-Hence~$g$ is measurable.
-It remains to be shown
-that $g$ is bounded,
-but we'll only be able
-to prove that $g$ is \emph{essentially bounded},
-that is, there is $r>0$ such that $|f(x)|\leq r$
-for almost all~$r\in X$.
-But then an obvious modification
-of~$g$ will be bounded
-and does the job.
-For every~$A\in\mathcal{A}$
-there is a negligible
-subset~$N_A$ of~$A$
-such that $|f_A(x)|\leq \|f_A\|$
-for all~$x\in A\backslash N_A$.
-Since~$\|f\|=\sup_{A\in\mathcal{A}}\|f_A\|$,
-we have $|g|\leq \|f\|$
-for all~$x\in X\backslash (\bigcup_{A\in\mathcal{A}}N_A)$.
-Since~$N:=\bigcup_{A\in\mathcal{A}}N_A\,\subseteq\,
-A_0\cup\bigcup_{A\in\mathcal{A}'}A$,
-we see that~$N$ is negligible,
-and thus that~$g$ is essentially bounded.
-Pick a function~$\tilde{g}\colon X\to \C$
-that is bounded and equal to~$g$ almost everywhere.
-Then~$g\in\mathcal{L}^\infty(X)$,
-and $R(\tilde{g}^\circ)=\mathfrak{f}$.
-Whence $R$ is surjective.\qed
+consisting of measurable subsets.
 \end{point}
-\end{point}
-
 \begin{point}[cor:discrete-ell-x]{Corollary}%
 For every discrete 
 measure space~$X$ with~$\mu(X)<\infty$
