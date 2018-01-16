@@ -1,0 +1,104 @@
+\documentclass[b]{subfiles}
+\begin{document}
+
+\chapter{Introduction}
+\begin{parsec}%
+\begin{point}%
+This thesis is a foundational study of quantum computing consisting
+    of two related, but independant parts:
+    chapter~\ref{chapter1} on \emph{dilations} and~\ref{chapter2}
+    ``diamond, andthen, dagger'' on \emph{effectus theory}.
+Both parts can be read separetely
+    and feature a comprehensive introduction of their own.
+For now, we focus on what they have in common.
+\begin{point}%
+Both parts study the category of von Neumann algebras
+    (with ncpsu-maps\footnote{%
+        An abbreviation for contractive normal completely
+        positive linear maps.} between them).
+A von Neumann algebra models a (possibly infinite-dimensional)
+    quantum datatype, for instance:
+\begin{center}
+    \begin{tabular}{llll}
+        $M_2$ & a qubit & $M_3 \otimes M_3$ & an (ordered) pair of qutrits \\
+        $M_3$ & a qutrit & $\C^2$ & a bit \\
+        $M_2 \oplus M_3$ & a qubit or a qutrit
+        & $\scrB(\ell^2)$ & quantum integers
+\end{tabular}
+\end{center}
+The ncpsu-maps between them represent physical
+    (but not necessarily computable) operations
+        in the opposite direction:
+\begin{enumerate}
+\item
+    \emph{Measure a qubit in the computational basis} \quad
+            ($\mathrm{qubit} \to \mathrm{bit}$)\\
+        $\C_2 \rightarrow M_2,$ \quad 
+        $(\lambda,\mu) \ \mapsto\ \lambda \ketbra{0}{0} + \mu \ketbra{1}{1}$
+\item
+    \emph{Discard the second qubit} \quad
+            ($\mathrm{qubit} \times \mathrm{qubit}\to \mathrm{qubit}$) \\
+        $M_2 \rightarrow M_2 \otimes M_2$, \quad
+        $a \ \mapsto \ a \otimes 1$
+\item
+    \emph{Apply a Hadamard-gate to a qubit} \quad
+            ($\mathrm{qubit} \to \mathrm{qubit}$) \\
+        $M_2 \rightarrow M_2$, \quad
+        $a \ \mapsto \ H^*a H \otimes 1$, \quad where~$H = \frac{1}{\sqrt{2}}\begin{spmatrix}
+            1 & 1 \\ 1 & -1
+        \end{spmatrix}$
+\item
+    \emph{Initialize a qutrit as 0} \quad
+            ($\mathrm{empty} \to \mathrm{qutrit}$) \\
+        $M_3 \rightarrow \C$, \quad
+        $a \ \mapsto \ \bra{0}a\ket{0}$
+\end{enumerate}
+\end{point}
+\begin{point}%
+The first part of this thesis starts with a concrete question:
+    does every ncpsu-map between von Neumann algebras
+    admit a Stinespring-like dilation?
+We will see that indeed it does.
+The insights attained pondering this question lead naturally,
+        as it so often does in mathematics, to other new results:
+    for instance, we learn more about  the tensor product of
+    dilations~\sref{paschke-tensor}
+        and the pure maps associated to them~\sref{paschke-pure}.
+But perhaps the most interesting by-catch
+    are the contributions to the theory
+    of self-dual Hilbert C$^*$-modules over a von Neumann algebras,
+    which underly these dilation.
+\end{point}
+\begin{point}%
+In contrast, the second part of this thesis starts
+    with the abstract (or rather: vague) question:
+    what is unique about the category of von Neumann algebras?
+The goal is to find a set of reasonable axioms,
+    which picks out the category of von Neumann algebras
+    among all other categories.
+In other words: a reconstruction of quantum theory with categorical axioms.
+    Unfortunately, we do not reach this goal.\footnote{%
+        Building on this thesis,
+            van de Wetering recently found a reconstruction
+            of finite-dimensional quantum theory.\cite{wetering}}
+However, by studying von Neumann algebras
+    in this dogmatic straitjacket
+    we are forced, as again is often the case in mathematics,
+    upon several new notions and results,
+    which are of independant interest,
+    such as, for instance,~$\diamond$-adjointness,
+    pure maps and the existence of their dagger.
+\end{point}
+\begin{point}%
+On the topics of this thesis,
+    I collaborated 
+\end{point}
+\end{point}
+\begin{point}{Acknowledgements}%
+    
+\end{point}
+\end{parsec}
+
+\end{document}
+
+% vim: ft=tex.latex
