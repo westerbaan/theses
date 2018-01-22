@@ -2,9 +2,9 @@
 \begin{document}
 
 \chapter{Introduction}
-\begin{parsec}%
+\begin{parsec}[bas-first-parsec]%
 \begin{point}%
-This thesis is a foundational study of quantum computing consisting
+This thesis is a mathematical study of quantum computing consisting
     of two related, but independant parts:
     chapter~\ref{chapter1} on \emph{dilations} and~\ref{chapter2}
     ``diamond, andthen, dagger'' on \emph{effectus theory}.
@@ -121,7 +121,56 @@ The result is impressive:
     theory of von Neumann algebras in less than 200 pages.
 For a traditional treatment,
     I can wholeheartedly recommend the books of Kadison and Ringrose \cite{kr}.
-Only b
+For the second part,
+    we will only require knowledge of category theory
+        that is covered in any introductory text, like \cite{awodey}.
+\end{point}
+\begin{point}[bintr-example]{Writing style}%
+Page numbers have been replaced by paragraph numbers:
+    for instance, \sref{bintr-example} points to this paragraph.
+Numbers below~\sref{bas-first-parsec}
+    refer to paragraphs in my twin brother's thesis~\cite{bram}.
+Quite unconventionally, this thesis includes exercises.
+Most exercises replace straight-forward, but repetitive, proofs.
+Other exercises, marked with an asterix *,
+    are harder and explore tangents.
+In both cases, these exercises aim to aid the reader;
+    not in the least by reducing clutter.
+\end{point}
+\begin{point}{Advertisements}%
+This thesis is based on the publications~\cite{wwpaschke,westerbaan2016universal,cho2015quotient,statesofconvexsets}.
+During my doctoral research,
+    I also published the following papers,
+    which although somewhat related,
+    would've made this thesis too broad in scope if included.
+\begin{enumerate}
+    \item In \emph{A Kochen--Specker System has at least 22 Vectors} \cite{uijlen2016kochen},
+        Uijlen and I justify the title building upon the work
+        of Arends, Ouaknine and Wampler.
+\item 
+    In \emph{Unordered Tuples in Quantum Computation} \cite{bags}
+        Furber and I argue that~$M_3 \oplus \C$ is the right algebra
+        modelling an unordered pair of qubits.  Then we compute
+        the algebra for an unordered~$n$-tuple of~$d$-level sytems.
+\item
+    In \emph{Picture-perfect QKD} \cite{kissinger2017picture}
+        Kissinger, Tull and I show how to graphically derive a security
+        bound on quantum key distribution using the continuity of Stinespring's dilation.
+\item
+    In \cite{schwabe2016solving}, Schwabe and I
+            work out the details of a quantum circuit
+            to break binary~$\mathcal{MQ}$ using Grover's algorithm.
+\end{enumerate}
+Next, I would like to mention some other approaches
+        to study quantum theory mathematically,
+        which are related in spirit and of which I am aware.
+% In the last decade, the category of Hilbert spaces
+%     with bounded operators has been studied extensively by dozens
+%     of authors, which has led to (several) rich graphical
+%     calculi. \cite{abramsky2004categorical}
+% Instead
+% 
+%         \cite{dvurecenskij2013new}
 \end{point}
 \begin{point}{Acknowledgements}%
     
