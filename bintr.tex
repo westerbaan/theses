@@ -4,29 +4,30 @@
 \chapter{Introduction}
 \begin{parsec}[bas-first-parsec]%
 \begin{point}%
-This thesis is a mathematical study of quantum computing consisting
-    of two related, but independant parts:
-    chapter~\ref{chapter1} on \emph{dilations} and~\ref{chapter2}
-    ``diamond, andthen, dagger'' on \emph{effectus theory}.
-Both parts can be read separetely
+This thesis is a mathematical study of quantum computing concentrating
+    on two related, but independent topics.
+First up are \emph{dilations}, covered in chapter~\ref{chapter1}.
+    In chapter \ref{chapter2}
+    ``diamond, andthen, dagger''
+    we turn to the second topic: \emph{effectus theory}.
+Both chapters, or rather parts, can be read separetely
     and feature a comprehensive introduction of their own.
 For now, we focus on what they have in common.
 \begin{point}%
 Both parts study the category of von Neumann algebras
     (with ncpsu-maps\footnote{%
-        An abbreviation for contractive normal completely
-        positive linear maps.} between them).
-A von Neumann algebra models a (possibly infinite-dimensional)
+        An abbreviation for \Define{n}ormal \Define{c}ompletely \Define{p}ositive contractive (ie.~\Define{s}ub\Define{u}nital) linear maps.} between them).
+A von Neumann algebra is a model for a (possibly infinite-dimensional)
     quantum datatype, for instance:
 \begin{center}
-    \begin{tabular}{llll}
-        $M_2$ & a qubit & $M_3 \otimes M_3$ & an (ordered) pair of qutrits \\
-        $M_3$ & a qutrit & $\C^2$ & a bit \\
-        $M_2 \oplus M_3$ & a qubit or a qutrit
+    \begin{tabular}{lllll}
+        $M_2$ & a qubit &\quad\qquad& $M_3 \otimes M_3$ & an (ordered) pair of qutrits \\
+        $M_3$ & a qutrit && $\C^2$ & a bit \\
+        $M_2 \oplus M_3$ & a qubit or a qutrit &
         & $\scrB(\ell^2)$ & quantum integers
 \end{tabular}
 \end{center}
-The ncpsu-maps between them represent physical
+The ncpsu-maps between these algebras represent physical
     (but not necessarily computable) operations
         in the opposite direction:
 \begin{enumerate}
@@ -34,7 +35,15 @@ The ncpsu-maps between them represent physical
     \emph{Measure a qubit in the computational basis} \quad
             ($\mathrm{qubit} \to \mathrm{bit}$)\\
         $\C_2 \rightarrow M_2,$ \quad 
-        $(\lambda,\mu) \ \mapsto\ \lambda \ketbra{0}{0} + \mu \ketbra{1}{1}$
+        $(\lambda,\mu) \ \mapsto\ \lambda \ketbra{0}{0} + \mu \ketbra{1}{1}$,
+        \quad using braket notation\footnote{%
+            See eg.~\cite[fig.~2.1]{nielsen2002quantum},
+            so here
+            $\ket{0}\equiv\begin{spmatrix}1 \\ 0 \end{spmatrix}$,
+            $\bra{0}\equiv\begin{spmatrix}1 & 0 \end{spmatrix}$,
+            $\ket{1}\equiv\begin{spmatrix}0 \\ 1 \end{spmatrix}$ and
+                $\ketbra{0}{0} = \begin{spmatrix} 1 & 0
+                \\ 0 & 0 \end{spmatrix}$.}
 \item
     \emph{Discard the second qubit} \quad
             ($\mathrm{qubit} \times \mathrm{qubit}\to \mathrm{qubit}$) \\
@@ -56,31 +65,36 @@ The ncpsu-maps between them represent physical
 \end{point}
 \begin{point}%
 The first part of this thesis starts with a concrete question:
-    does every ncpsu-map between von Neumann algebras
-    admit a Stinespring-like dilation?
+    does the famous  Stinespring dilation theorem~\cite{stinespring},
+    a cornerstone in quantum theory,
+    extend to every ncpsu-map between von Neumann algebras?
+Roughly, this means that every ncpsu-map  splits
+    in two maps of a particularly nice form.
 We will see that indeed it does.
 The insights attained pondering this question lead naturally,
         as it so often does in mathematics, to other new results:
     for instance, we learn more about  the tensor product of
-    dilations~\sref{paschke-tensor}
-        and the pure maps associated to them~\sref{paschke-pure}.
-But perhaps the most interesting by-catch
-    are the contributions to the theory
+    dilations (\sref{paschke-tensor})
+        and the pure maps associated to them (\sref{paschke-pure}).
+But perhaps the most interesting by-catch of pondering the question,
+    are the contributions (see \sref{overview-dils}) to the theory
     of self-dual Hilbert C$^*$-modules over a von Neumann algebra,
     which underly these dilation.
 \end{point}
 \begin{point}%
-In contrast, the second part of this thesis starts
+In contrast to the first part of this thesis,
+    the second part starts
     with the abstract (or rather: vague) question:
     what is unique about the category of von Neumann algebras?
 The goal is to find a set of reasonable axioms,
     which picks out the category of von Neumann algebras
     among all other categories.
-In other words: a reconstruction of quantum theory with categorical axioms.
+In other words: a reconstruction of quantum theory with categorical axioms
+    (presupposing von Neumann algebras are the right model of quantum theory).
     Unfortunately, we do not reach this goal here.\footnote{%
         Building on this thesis,
             van de Wetering recently found a reconstruction
-            of finite-dimensional quantum theory.\cite{wetering}}
+            of finite-dimensional quantum theory \cite{wetering}.}
 However, by studying von Neumann algebras
     in this dogmatic straitjacket
     we are forced, as again is often the case in mathematics,
@@ -214,12 +228,16 @@ I've also had the immense pleasure of discussing research with
     Bas Joosten,
     Martti Karvonen,
     Aleks Kissinger,
+    Mike Koeman,
     Hans Maassen,
     Joshua Moerman,
     Teun van Nuland,
     Dusko Pavlovic,
     Arnoud van Rooij,
+    Marc Scholderman,
     Peter Schwabe,
+    Peter Selinger,
+    Michael Skeide,
     Pawel Sobocinski,
     Sean Tull,
     Sander Uijlen,
