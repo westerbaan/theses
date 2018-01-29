@@ -265,6 +265,10 @@
 	\setcounter{tmptmp}{2*\value{parsec}}%
 	\markboth{\the\value{tmptmp}}{\the\value{tmptmp}}%
 	\IfValueT{#1}{\label{#1}}%
+    \renewcommand{\thepoint}{\the\value{parsec}}%
+    \setcounter{point}{\value{point}-1}%
+    \refstepcounter{point}%
+    \label{parsec-\the\value{parsec}}%
 	% Display the parsec number in the margin.
 	\marginnote{\makebox[3em][c]{\textParsecNumber{\the\value{parsec}}}}%
 	\ignorespaces%
@@ -429,24 +433,24 @@
 \renewcommand\chapter[1]{%
     \oldchapter{#1}%
     \setcounter{firstParsec}{\value{firstParsecF}/2+1}%
-    \addtocontents{parsectoc}{\protect\contentsline{chapter}{\numberline{\thechapter} #1}{\sref{parsec-\the\value{firstParsec}.1}}{chapter.\thechapter}}%
+    \addtocontents{parsectoc}{\protect\contentsline{chapter}{\numberline{\thechapter} #1}{\sref{parsec-\the\value{firstParsec}}}{chapter.\thechapter}}%
 }
 \let\oldsection\section%
 \renewcommand\section[1]{%
     \oldsection{#1}%
     \setcounter{firstParsec}{\value{firstParsecF}/2+1}%
-    \addtocontents{parsectoc}{\protect\contentsline{section}{\numberline{\thesection} #1}{\sref{parsec-\the\value{firstParsec}.1}}{section.\thesection}}%
+    \addtocontents{parsectoc}{\protect\contentsline{section}{\numberline{\thesection} #1}{\sref{parsec-\the\value{firstParsec}}}{section.\thesection}}%
 }
 \let\oldsubsection\subsection%
 \renewcommand\subsection[1]{%
     \oldsubsection{#1}%
     \setcounter{firstParsec}{\value{firstParsecF}/2+1}%
-    \addtocontents{parsectoc}{\protect\contentsline{subsection}{\numberline{\thesubsection} #1}{\sref{parsec-\the\value{firstParsec}.1}}{subsection.\thesubsection}}%
+    \addtocontents{parsectoc}{\protect\contentsline{subsection}{\numberline{\thesubsection} #1}{\sref{parsec-\the\value{firstParsec}}}{subsection.\thesubsection}}%
 }
 \let\oldsubsubsection\subsubsection%
 \renewcommand\subsubsection[1]{%
     \oldsubsubsection{#1}%
     \setcounter{firstParsec}{\value{firstParsecF}/2+1}%
-    \addtocontents{parsectoc}{\protect\contentsline{subsubsection}{\numberline{\thesubsubsection} #1}{\sref{parsec-\the\value{firstParsec}.1}}{subsubsection.\thesubsubsection}}%
+    \addtocontents{parsectoc}{\protect\contentsline{subsubsection}{\numberline{\thesubsubsection} #1}{\sref{parsec-\the\value{firstParsec}}}{subsubsection.\thesubsubsection}}%
 }
 
