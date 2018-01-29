@@ -1,8 +1,6 @@
 \documentclass[b]{subfiles}
 \begin{document}
 
-% TODO ref polar decomposition
-
 \chapter{Dilations}\label{chapter1}
 
 \begin{parsec}[dils-intro]%
@@ -692,7 +690,7 @@ Use \sref{nmiu-between-type-I} and~\sref{stinespring-theorem} to show
     and a bounded operator~$V\colon \scrK \to \scrH \otimes \scrK'$
     such that~$\varphi(a) = V^* (a \otimes 1)V$.
 
-    Conclude that any CPTP superoperator \TODO{ref}~$
+    Conclude that any CPTP superoperator~$ 
         \Phi \colon \scrB(\scrK) \to \scrB(\scrH)$
         is of the
         form~$\Phi(\varrho) = \TR_{\scrK'} [U^* \varrho \otimes \ketbra{v_0}{v_0} U]$.
@@ -6114,10 +6112,10 @@ and~$\id$ is injective.  \qed
 \begin{point}{Theorem}%
 Any pure ncp-map~$\varphi\colon \scrA \to \scrB$ is ncp-extreme.
 \begin{point}{Proof}%
-By \TODO{...} $\varphi = c \after h_p$
+By \sref{pure-fundamental} $\varphi = c \after h_p$
     for a filter~$c\colon p\scrA p \to \scrB$
     and projection~$p \equiv \ceil{\varphi}$.
-Combining \TODO{...} and \sref{paschke-corner}
+    Combining \sref{dils-filter-basics-exercise} and \sref{paschke-corner}
     we see~$(\cceil{p}\scrA, h_{\cceil{p}}, c\after h_p)$
     is a Paschke dilation of~$\varphi$.
 Appealing to~\sref{ncp-extreme-paschke},
@@ -6127,9 +6125,10 @@ As~$h_{\cceil{p}}$ is surjective,
     $h_{\cceil{p}}(\scrA)^\square = Z(\cceil{p} \scrA)$.
     Assume~$t \in [0,1]_{Z(\cceil{p} \scrA)}$ with~$c(ptp)=0$
 We want to show~$t = 0$.
-As~$c$ is injective by~\sref{dils-filters-injective} $ptp = 0$.
-By \TODO{} $p \leq 1- \ceil{t}$
-and so~$\cceil{p} \leq 1- \ceil{t}$.
+As~$c$ is injective by~\sref{dils-filters-injective},
+        we must have~$ptp = 0$.
+So~$p \leq 1- \ceil{t}$
+and~$\cceil{p} \leq 1- \ceil{t}$.
 Hence~$\cceil{p} \leq \cceil{p} - \ceil{t} \leq \cceil{p}$.
 So~$t \leq \ceil{t }=0$, as desired. \qed
 \end{point}
