@@ -213,6 +213,14 @@
 }
 \makeatother
 
+
+\makeatletter
+\def\ourrawref#1{%
+    \expandafter\expandafter\expandafter
+    \@car\csname r@#1\endcsname\@nil
+}
+\makeatother
+
 % number a single equation in an align*
 % http://tex.stackexchange.com/questions/42726/
 \newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
@@ -336,11 +344,11 @@
 % Refer to a parsec.
 \NewDocumentCommand{\sref}{m}{\textSref{%
 	\ifthenelse{%
-		\equal{\value{parsec}}{\ref{#1::parsec}}%
+		\equal{\value{parsec}}{\ourrawref{#1::parsec}}%
 	}{%
 		\ref{#1::point}%
 	}{%
-		\ref{#1}%
+        \ref{#1}
 	}%
 }}
 
