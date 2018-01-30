@@ -748,7 +748,7 @@ A category $C$ is said to be an \Define{effectus in total form}
     \end{equation*}
 \end{enumerate}
 An arrow~$X \to Y+1$ is called a \Define{partial map} and written
-    \index{partial map (in an effectus)}
+    \index{partial map}
     $\Define{X \pto Y}$.
     \index{*pto@$X\pto Y$}
 \begin{point}%
@@ -801,7 +801,7 @@ and~$g \colon Y \to Z+1$ (i.e.~partial maps~$X \pto Y$ and~$Y \pto Z$)
     their composition as partial maps
     is defined as~$g \hafter f \equiv  [g, \kappa_2] \after f$.
 Write~$\Define{\Par C}$ for the \Define{category of partial maps},
-    \index{$\Par C$}
+    \index{ParC@$\Par C$}
     which has the same objects
     as~$C$, but as arrows~$X \to Y$ in~$\Par C$
     we take arrows of the form~$X \to Y+1$ in~$C$,
@@ -866,7 +866,7 @@ A category~$C$ is called an \Define{effectus in partial form}
             such that
     \begin{enumerate}
         \item for each object~$X$, the PCM~$C(X,I) \equiv \Define{\Pred X}$
-            \index{$\Pred X$}
+            \index{predX@$\Pred X$}
             is an effect algebra, see \sref{dfn-ea}
             --- in particular~$C(X,I)$
                 has a maximum element~$1$;
@@ -1947,7 +1947,7 @@ A \Define{scalar} is a predicate on~$1$, that is: a map~$1 \to 1$.
         \index{scalar}
 Write~$\Define{\Scal C} \equiv \Define{M} \equiv \Pred 1$ for the set of scalars.
         \index{$M$}
-        \index{$\Scal C$}
+        \index{ScalC@$\Scal C$}
 We multiply two scalars~$\lambda,\mu \colon 1 \to 1$
     simply by composing~$\lambda \odot \mu \equiv \lambda \after \mu$.
 As~$1_M = \id_M$ (see \sref{one-m-is-id}) and~$C$ is $\mathsf{PCM}$-enriched,
@@ -1968,7 +1968,7 @@ turns~$\Pred X$ into a~$M$-effect module, see \sref{dfn-effect-module}.
 \item
 For~$f\colon X \to Y$ in~$C$,
         define~$\Define{\Pred(f)} \colon \Pred Y \to \Pred X$
-        \index{$\Pred(f)$}
+        \index{Pred@$\Pred(f)$}
     by~$\Pred(f)(p) = p \after f$.
 It is easy to see
 $\Pred(f)$ is an~$M$-effect module homomorphism
@@ -2146,7 +2146,7 @@ Before we define those, we introduce a generalized distribution monad.
 Let~$M$ be an effect monoid
     and~$X$ be any set.
 A \Define{formal $M$-convex combination} over~$X$
-    \index{convex@(formal) $M$-convex combination}
+    \index{formalconvexcombination@(formal) $M$-convex combination}
     is a function~$p\colon X \to M$
     with finite support
     such that~$\bigovee_{x \in X} p(x) = 1$.
@@ -3640,7 +3640,7 @@ Let~$C$ be a category with a zero object.
 A \Define{kernel}~of an arrow~$f$
     \index{kernel!category theoretic}
     (in symbols: $\Define{\ker f}$)
-    \index{$\ker f$}
+    \index{kerf@$\ker f$}
     is an equalizer of~$f$ with the zero-map.
 (That is: $f \after (\ker f) = 0$
     and for every~$g$ with~$f \after g = 0$,
@@ -3808,14 +3808,14 @@ Let~$C$ be an effectus with comprehension and images.
     We say a predicate~$p$ is (image) \Define{sharp} \index{sharp}
         if~$p = \IM f$ for some map~$f$.
         Write~$\Define{\SPred X}$ for the set of all sharp predicates on~$X$.
-        \index{SPred@$\SPred$}
+        \index{SPred@$\SPred X$}
 \item
-    We define~$\Define{\floor{p}} = \IM \pi_p$, \index{*floor@$\floor{\ }$}
+    We define~$\Define{\floor{p}} = \IM \pi_p$, \index{*floor@$\floor{\ }$, floor}
     where~$\pi_p$ is some comprehension for~$p$.
 (Comprehensions for the same predicate have the same image
     by \sref{im-ineq}.)
 Also write~$\Define{\ceil{p}} = \floor{p^\perp}^\perp$.
-    \index{*ceil@$\ceil{\ }$}
+    \index{*floorc@$\ceil{\ }$, ceiling}
 \end{enumerate}
 \begin{point}{Beware}%
 In \cite{effintro} $p$ is called sharp whenever~$p \wedge p^\perp=0$.
@@ -4046,7 +4046,7 @@ We will give these right of the bat and study their relevance later on.
 \begin{point}[diamond-basics]{Definition}%
     A~\Define{$\diamond$-effectus} (``diamond effectus'')
     \index{effectus!$\diamond$-}
-    \index{*dia@$\diamond$-!effectus}
+    \index{*dia@$\diamond$, diamond!-effectus}
     is an effectus with quotient, comprehension and images
     such that~$s^\perp$ is sharp for every sharp predicate~$s$.
 In a~$\diamond$-effectus,
@@ -4058,32 +4058,31 @@ In a~$\diamond$-effectus,
             & \SPred Y \ar@/^/[l]^{f^\diamond}}
             \quad \text{by} \quad
             \Define{f^\diamond(s)} = \ceil{s \after f}
-            \index{$(\ )^\diamond$}
+            \index{*diamond1@$(\ )^\diamond$, $(\ )_\diamond$}
             \quad
             \text{and}
             \quad
             \Define{f_\diamond(s)} = \IM f \after \pi_s
-            \index{$(\ )_\diamond$}
     \end{equation*}
     \begin{enumerate}
         \item
     We say maps~$f \colon X \leftrightarrows Y\colon g$
         are~\Define{$\diamond$-adjoint}
         if~$f^\diamond = g_\diamond$.
-    \index{*dia@$\diamond$-!adjoint}
+    \index{*dia@$\diamond$, diamond!-adjoint}
     \item
     An endomap~$f\colon X \to X$ is \Define{$\diamond$-self-adjoint}
         if~$f$ is $\diamond$-adjoint to itself.
-    \index{*dia@$\diamond$-!self-adjoint}
+    \index{*dia@$\diamond$, diamond!-self-adjoint}
     \item
     Two maps~$f,g\colon X \to Y$
         are~\Define{$\diamond$-equivalent}
         if~$f^\diamond = g^\diamond$.
-            \index{*dia@$\diamond$-!equivalent}
+            \index{*dia@$\diamond$, diamond!-equivalent}
     \item
         A pure endomap~$f$ is~\Define{$\diamond$-positive}
             if $f = g\after g$ for some~$\diamond$-self-adjoint~$g$.
-            \index{*dia@$\diamond$-!positive}
+            \index{*dia@$\diamond$, diamond!-positive}
     \end{enumerate}
 For brevity, write $\Define{f^\BOX(s)} = f^\diamond(s^\perp)^\perp$.
     \index{$(\ )^\BOX$}
@@ -4427,7 +4426,7 @@ such that
 \end{enumerate}
 In an $\&$-effectus,
 we define~$\Define{\andthen{p}{q}} \equiv q \after \asrt_p$,
-    \index{$\&$}
+    \index{$\&$, andthen}
     pronounced ``$p$ andthen~$q$''.
 For brevity, we will write~$\Define{p^2} \equiv \andthen{p}{p}$.
 \begin{point}{Remarks}%
@@ -4665,7 +4664,7 @@ for any sharp predicates~$s$ and~$t$.
 Let~$C$ be an~$\&$-effectus.
 In \sref{upm-closed} we saw pure maps are closed under composition.
 Write~$\Define{\Pure C}$ for the subcategory
-    \index{$\Pure C$}
+    \index{PureC@$\Pure C$}
     of pure map.
 \end{point}
 \end{parsec}
@@ -4845,7 +4844,7 @@ Show that in a~$\&$-effectus,
 \begin{parsec}%
 \begin{point}{Definition}%
 A \Define{$\dagger$-category} (``dagger category'')
-    \index{*dagg@$\dagger$!-category}
+    \index{*dagg@$\dagger$, dagger!-category}
 is a category~$C$ together with an involutive identity-on-objects
     functor~$(\ )^\dagger \colon C \to \op{C}$
     ---
@@ -4864,15 +4863,15 @@ In any~$\dagger$-category we may define the following.
 \begin{enumerate}
 \item
     An endomap~$f$ is called \Define{$\dagger$-self-adjoint}
-    \index{*dagg@$\dagger$!-self-adjoint}
+    \index{*dagg@$\dagger$, dagger!-self-adjoint}
     if~$f^\dagger = f$.
 \item
     An endomap~$f$ is \Define{$\dagger$-positive}
-    \index{*dagg@$\dagger$!-positive}
+    \index{*dagg@$\dagger$, dagger!-positive}
     if~$f = g^\dagger \after g$ for some other map~$g$.
 \item
     An isomorphism~$\alpha$ is called~\Define{$\dagger$-unitary}
-        \index{*dagg@$\dagger$!-unitary}
+        \index{*dagg@$\dagger$, dagger!-unitary}
         whenever~$\alpha^{-1} = \alpha^\dagger$.
 \end{enumerate}
 \end{point}
@@ -4888,7 +4887,7 @@ The category~$\mathsf{Hilb}$
 We call an~$\&$-effectus~$C$,
     a~\Define{$\dagger$-effectus} (``dagger effectus'') provided
     \index{effectus!$\dagger$-}
-    \index{*dagg@$\dagger$!-effectus}
+    \index{*dagg@$\dagger$, dagger!-effectus}
 \begin{enumerate}
 \item
     $\Pure C$ is a  $\dagger$-category
@@ -5264,7 +5263,7 @@ So we are justified to declare:
 \end{point}
 \begin{point}[dagger-definition2]{Definition}%
 In a~$\dagger'$-effectus, for a pure map~$f$, define
-    \index{*dagg@$\dagger$!in a $\dagger'$-effectus}
+    \index{*dagg@$\dagger$, dagger!in a $\dagger'$-effectus}
 \begin{equation*}
     \Define{f^\dagger}
         \ =\  \asrt_{1 \after f} \after
@@ -6558,12 +6557,12 @@ follow from more general principles.  Can we define the other gates, like
 In an~$\&$-effectus,
 for any predicate~$p$,
     define~$\Define{\sef_p} \equiv \asrt_p \ovee \asrt_{p^\perp}$.
-    \index{$\sef_p$}
+    \index{sefp@$\sef_p$}
 This map models the side-effect of measuring~$p$.
     For any map~$f\colon X \to Y$, define
     \begin{equation*}
         \Define{\Inv f} \ \equiv \ \{p; \ p \in \Pred X;\ f \after \sef_p = f\}.
-        \index{$\Inv f$}
+        \index{Inv@$\Inv f$}
     \end{equation*}
 This is the set of predicates whose measurement does not disturb~$f$.
 \end{point}
@@ -6640,23 +6639,23 @@ We will discover that some of his axioms for~$\mathsf{Hilb}$
 Let~$C$ be a~$\dagger$-category.
 We say that an arrow~$f$
     is \Define{$\dagger$-mono}
-    \index{*dagg@$\dagger$!-mono}
+    \index{*dagg@$\dagger$, dagger!-mono}
     iff~$f^\dagger \after f = f$
     and dually~$f$ is \Define{$\dagger$-epi}
-    \index{*dagg@$\dagger$!-epi}
+    \index{*dagg@$\dagger$, dagger!-epi}
     iff~$f\after f^\dagger = f$.
 An arrow~$f$ is a \Define{$\dagger$-partial isometry}
-    \index{*dagg@$\dagger$!-partial isometry}
+    \index{*dagg@$\dagger$, dagger!-partial isometry}
     if~$f = m \after e$
     for some~$\dagger$-mono~$m$
     and~$\dagger$-epi~$e$.
 
 A~\Define{$\dagger$-kernel} of~$f$
     \index{kernel!$\dagger-$}
-    \index{*dagg@$\dagger$!-kernel}
+    \index{*dagg@$\dagger$, dagger!-kernel}
 is a~$\dagger$-mono equalizer of~$f$ with~$0$.
 A~\Define{$\dagger$-kernel category} is a~$\dagger$-category
-    \index{*dagg@$\dagger$!-kernel!category}
+    \index{*dagg@$\dagger$, dagger!-kernel!category}
     with zero object and where each arrow has a~$\dagger$-kernel.
 \cite[3.2.20]{heunenphd}
 \end{point}
@@ -7066,8 +7065,7 @@ For any~$f\colon A \to B$,
     define~$f_*\colon \Nsb A \leftrightarrows \Nsb B \colon f^*$
         by~$\Define{f_*} (k) = \ker \cok (f \after k)$
         and~$\Define{f^*}(k) = \ker ((\cok k) \after f)$.
-        \index{$(\ )_*$}
-        \index{$(\ )^*$}
+        \index{$(\ )_*$, $(\ )^*$}
 \item
 We say~$f$ is \Define{left-modular at} $k$
         \index{modular}
