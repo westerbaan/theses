@@ -1,6 +1,5 @@
 \usepackage{cite}
 \usepackage{caption}
-\usepackage{makeidx}
 \usepackage{xfrac}
 \usepackage{xparse}
 \usepackage{relsize}
@@ -379,43 +378,46 @@
 \newcounter{parsecToBeContinued}  
 \setcounter{parsecToBeContinued}{0}
 
-% Set the footer.  It contains the parsecs on this page.
-% We use "\rightmark+0", because \rightmark might be empty.
-\fancyfoot[CE]{%
-    \IfInteger{\rightmark}{%
-        \setcounter{firstParsecF}{\rightmark+0}%
-    }{%
-        \setcounter{firstParsecF}{1337}% TODO remove
+\newcommand\ourfancyfooters{%
+    % Set the footer.  It contains the parsecs on this page.
+    % We use "\rightmark+0", because \rightmark might be empty.
+    \fancyfoot[CE]{%
+        \IfInteger{\rightmark}{%
+            \setcounter{firstParsecF}{\rightmark+0}%
+        }{%
+        }%
     }%
-}
-
-\fancyfoot[CO]{%
-    % firstParsecF is already set by the even page that came before
-    \setcounter{firstParsec}{\value{firstParsecF}/2}%
-    \setcounter{lastParsecF}{\leftmark+0}%
-    \ifthenelse{\equal{\value{lastParsecF}}{0}}{%
-        % do nothing
-    }{%
-        \setcounter{lastParsec}{\value{lastParsecF}/2}%
-        \textPointNumberI{%
-            \ifthenelse{\equal{\value{parsecToBeContinued}}{1}}{..}{}%
-            \the\value{firstParsec}%
-            \ifthenelse{\equal{\value{firstParsec}}{\value{lastParsec}}}{%
-                % TODO
-            }{%  no footer without parsecs
-                \setcounter{tmptmp}{\value{firstParsec}+1}%
-                \ifthenelse{\equal{\value{tmptmp}}{\value{lastParsec}}}{, }{--}%
-                \the\value{lastParsec}%
-            }%
-            \setcounter{tmptmp}{\value{lastParsec}*2}%
-            \ifthenelse{\equal{\value{tmptmp}}{\value{lastParsecF}}}{%
-                ..\setcounter{parsecToBeContinued}{1}%
-            }{%
-                \setcounter{parsecToBeContinued}{0}%
+    \fancyfoot[CO]{%
+        % firstParsecF is already set by the even page that came before
+        \setcounter{firstParsec}{\value{firstParsecF}/2}%
+        \setcounter{lastParsecF}{\leftmark+0}%
+        \ifthenelse{\equal{\value{lastParsecF}}{0}}{%
+            % do nothing
+        }{%
+            \setcounter{lastParsec}{\value{lastParsecF}/2}%
+            \textPointNumberI{%
+                \ifthenelse{\equal{\value{parsecToBeContinued}}{1}}{..}{}%
+                \the\value{firstParsec}%
+                \ifthenelse{\equal{\value{firstParsec}}{\value{lastParsec}}}{%
+                    % TODO
+                }{%  no footer without parsecs
+                    \setcounter{tmptmp}{\value{firstParsec}+1}%
+                    \ifthenelse{\equal{\value{tmptmp}}{\value{lastParsec}}}{, }{--}%
+                    \the\value{lastParsec}%
+                }%
+                \setcounter{tmptmp}{\value{lastParsec}*2}%
+                \ifthenelse{\equal{\value{tmptmp}}{\value{lastParsecF}}}{%
+                    ..\setcounter{parsecToBeContinued}{1}%
+                }{%
+                    \setcounter{parsecToBeContinued}{0}%
+                }%
             }%
         }%
     }%
-}%
+}
+
+\ourfancyfooters
+\fancypagestyle{plain}{\ourfancyfooters}
 
 % Index support for parsecs
 \def\parsechyperlink#1{\sref{parsec-#1}}

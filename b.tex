@@ -1,6 +1,7 @@
 \documentclass[b5paper]{book}
 \input{common}
 \setcounter{parsec}{129} % TODO
+\setcounter{firstParsecF}{259}
 \externaldocument{a}
 \usepackage{subfiles}
 
@@ -25,6 +26,10 @@
 \backmatter
 \fancyfoot[CE]{}
 \fancyfoot[CO]{}
+\fancypagestyle{plain}{
+    \fancyfoot[CE]{}
+    \fancyfoot[CO]{}
+}
 
 \printindex
 
