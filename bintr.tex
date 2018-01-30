@@ -10,7 +10,7 @@ First up are \emph{dilations}, covered in chapter~\ref{chapter1}.
     In chapter \ref{chapter2}
     ``diamond, andthen, dagger''
     we turn to the second topic: \emph{effectus theory}.
-Both chapters, or rather parts, can be read separetely
+Both chapters, or rather parts, can be read separately
     and feature a comprehensive introduction of their own.
 For now, we focus on what they have in common.
 \begin{point}%
@@ -29,7 +29,8 @@ A von Neumann algebra is a model for a (possibly infinite-dimensional)
 \end{center}
 The ncpsu-maps between these algebras represent physical
     (but not necessarily computable) operations
-        in the opposite direction:
+        in the opposite direction
+        (as in the `Heisenberg picture'):
 \begin{enumerate}
 \item
     \emph{Measure a qubit in the computational basis} \quad
@@ -53,7 +54,7 @@ The ncpsu-maps between these algebras represent physical
     \emph{Apply a Hadamard-gate to a qubit} \quad
             ($\mathrm{qubit} \to \mathrm{qubit}$) \\
         $M_2 \rightarrow M_2$, \quad
-        $a \ \mapsto \ H^*a H \otimes 1$, \quad where~$H = \frac{1}{\sqrt{2}}\begin{spmatrix}
+        $a \ \mapsto \ H^*a H $, \quad where~$H = \frac{1}{\sqrt{2}}\begin{spmatrix}
             1 & 1 \\ 1 & -1
         \end{spmatrix}$
 \item
@@ -66,7 +67,7 @@ The ncpsu-maps between these algebras represent physical
 \begin{point}%
 The first part of this thesis starts with a concrete question:
     does the famous  Stinespring dilation theorem~\cite{stinespring},
-    a cornerstone in quantum theory,
+    a cornerstone of quantum theory,
     extend to every ncpsu-map between von Neumann algebras?
 Roughly, this means that every ncpsu-map  splits
     in two maps of a particularly nice form.
@@ -79,15 +80,15 @@ The insights attained pondering this question lead naturally,
 But perhaps the most interesting by-catch of pondering the question,
     are the contributions (see \sref{overview-dils}) to the theory
     of self-dual Hilbert C$^*$-modules over a von Neumann algebra,
-    which underly these dilation.
+    which underly these dilations.
 \end{point}
 \begin{point}%
 In contrast to the first part of this thesis,
     the second part starts
     with the abstract (or rather: vague) question:
     what is unique about the category of von Neumann algebras?
-The goal is to find a set of reasonable axioms,
-    which picks out the category of von Neumann algebras
+The goal is to find a set of reasonable axioms
+    which pick out the category of von Neumann algebras
     among all other categories.
 In other words: a reconstruction of quantum theory with categorical axioms
     (presupposing von Neumann algebras are the right model of quantum theory).
@@ -105,13 +106,13 @@ However, by studying von Neumann algebras
 \end{point}
 \end{point}
 \begin{point}{Twin theses}%
-A substantial part of the research presented here,
+A substantial part of the research presented here
     has been performed in close collaboration with
     my twin brother Abraham Westerbaan.
 Our results are interwoven to such a degree,
-    that seperating them is difficult
+    that separating them is difficult
     and, more importantly, detrimental to the clarity of presentation.
-Thus we decided to write our theses as two consecutive volumes
+Therefore we decided to write our theses as two consecutive volumes
     (with consecutive numbering, more on that later.)
     Abraham's thesis~\cite{bram} is the first volume
     and covers the preliminaries on von Neumann
@@ -124,7 +125,7 @@ Because of this clear division,
     a significant amount of Abraham's original work appears in my thesis
         and, vice versa, my work in his.
 Of course, the large majority of the
-        new results in each of our thesis is our own.
+        new results in each of our theses is our own.
 \end{point}
 \begin{point}{Preliminaries}%
 For the first part of this thesis,
@@ -145,7 +146,7 @@ The result is impressive:
     theory of von Neumann algebras in less than 200 pages.
 For a traditional treatment,
     I can wholeheartedly recommend the books of Kadison and Ringrose \cite{kr}.
-For the second part
+For the second part of this thesis,
     only elementary category theory is required
     as covered in any introductory text, like eg.~\cite{awodey}.
 \end{point}
@@ -229,13 +230,13 @@ Spearheaded by Coecke and Abramsky \cite{abramsky2004categorical},
     have developed insightful graphical calculi
     by studying the category of Hilbert spaces
     categorically \cite{coecke2017picturing}.
-Not explicitly caterogically (but certainly in spirit)
+Not explicitly categorically (but certainly in spirit)
     is the work around operational probabilistic theories,
     see eg.~\cite{DAriano2016}.
 Besides these approaches (and that of effectus theory),
     there are many other varied categorical forages
     into quantum theory, eg.~\cite{kornell2012,rennela2017infinite,staton,furber2013kleisli}.
-Then there are authors, who pick out different structures from quantum theory
+Then there are authors who pick out different structures from quantum theory
     to study.
 Most impressive is the work of Alfsen and Shultz,
     who studied and axiomatized the state
@@ -251,18 +252,20 @@ Finally,
 \end{point}
 \end{point}
 \begin{point}{Acknowledgements}%
-Progress in theoratical fields
+Progress in theoretical fields
     is often dramatised
-    as the fruit of personal struggles of  einzelg\"angers,
+    as the fruit of personal struggles of  einzelg\"angers
     grown in deep focus and isolation.
 But what is missing in this depiction, is that
     often times  the seeds were sown
     in casual conversation among colleagues.
 I would like to acknowledge two seeds I'm aware of.
 First, it was Sam Staton who suggested looking at a universal property
-    for instruments, which led to quotient and comprehensions.
-Secondly, Chris Heunen insisted Stinespring's dilation must have a
-    universal property against my initial skepticism.
+    for instruments, which led to quotients and comprehension.
+Secondly, Chris Heunen insisted,
+    against my initial skepticism,
+    that Stinespring's dilation must have a
+    universal property.
 I've also had the immense pleasure of discussing research with
     Robin Adams,
     Guillaume Allais,
@@ -297,7 +300,8 @@ I'm honoured to have been received by Dusko
     for a two-month research visit,
     on which he, Jason, Jon, Mariam, Liang-Ting, Marine, Muzamil, Pawel
     and Peter-Michael made me feel at home on the other side of the planet.
-On this side, I'm thankful for such friendly collegues.
+On this side of the planet,
+    it is hard to imagine a friendlier group of collegues.
 I'm much obliged to Marko van Eekelen,
     Wouter Geraedts,
     Engelbert Hubbers,
@@ -316,7 +320,7 @@ Last, but not least, I would like to share my deep appreciation
     I've been fortunate enough to receive at the Radboud Universiteit.
 Only now, a few years later,
     I can see how rare it is,
-    not only for its uncompromised treatment of the topic at hand
+    not only for its uncompromised treatment of the topics at hand
     but also for the personal attention to each student.
 Of all the great professors,
 Henk Barendregt,

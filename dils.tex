@@ -9,9 +9,9 @@ In this chapter we will study dilations.
 The common theme is that a complicated map
     is actually the composition of a simpler map
     after a representation into a larger algebra.
-We already saw a dilation theorem in disguise:
-    using the Gel'fand--Naimark--Segal construction (see \sref{gns})
-    one shows that every state is a vector state on a larger algebra:
+    The famous Gel'fand--Naimark--Segal construction (see \sref{gns})
+    is a dilation theorem in disguise:
+    it show that every state is a vector state on a larger algebra:
 \end{point}
 \begin{point}[dils-gns]{Theorem (GNS')}%
     For each pu-map~$\omega\colon \scrA \to \C$
@@ -26,7 +26,8 @@ We already saw a dilation theorem in disguise:
 
 \begin{point}%
 Probably the most famous dilation theorem is that
-of Stinespring\cite[Thm.~1]{stinespring}.
+of Stinespring~\cite[Thm.~1]{stinespring}.
+(We will see a detailed proof later, in \sref{dils-proof-stinespring}.)
 \end{point}
 
 \begin{point}[stinespring-theorem]{Theorem (Stinespring)}
@@ -49,7 +50,6 @@ Furthermore:
 \end{point}
 
 \begin{point}%
-(We will see a detailed proof later, in \sref{dils-proof-stinespring}.)
 Stinespring's theorem
 is fundamental in the study
 of quantum information and quantum computing:
@@ -70,11 +70,11 @@ to maps of the form~$\scrA \to \scrB(\scrH)$
 One wonders:
     is there an extension of Stinespring's theorem
     to arbitrary ncp-maps~$\scrA \to \scrB$?
-A different and perhaps less frequently asked question is:
-    is Stinespring's dilation categorical in some way?
+A different and perhaps less frequently asked question is whether
+     Stinespring's dilation is categorical in some way?
 That is: does it have a defining universal property?
 Both questions turn out to have an affirmative answer:
-Paschke's generalization of GNS for Hilbert C$^*$-modules\cite{paschke}
+Paschke's generalization of GNS for Hilbert C$^*$-modules~\cite{paschke}
     turns out to have the same universal property
         as Stinespring's dilation and so it extends Stinespring
         to arbitrary ncp-maps.
@@ -103,7 +103,7 @@ Paschke's generalization of GNS for Hilbert C$^*$-modules\cite{paschke}
    &$\scrB(\scrK) \xrightarrow{\ad_{V}} \scrB(\scrH)$ \\
          & \multicolumn{3}{l}{\small (Hilbert spaces~$\scrH$, $\scrK$;
                         vN alg.~$\scrA$;
-                        b.opp.~$V\colon \scrH \to \scrK$)} \\
+                    $V \in \scrB(\scrH,\scrK)$)} \\
      \arrayrulecolor{gray}\hline
         Paschke
    & ncp-maps
@@ -146,7 +146,7 @@ Paschke's work builds on Sakai's characterization of von Neumann algebras,
     which would take considerable effort to develop in detail.
 Thus to be as self-contained as possible,
     we avoid Sakai's characterization (in contrast to our
-        article \cite{wwpaschke})
+        article~\cite{wwpaschke})
     and give new proofs
     of Paschke's results where required.
 One major difference is that we will use
@@ -169,8 +169,8 @@ Then we allow for an intermezzo
     to Hilbert C$^*$-modules, see \sref{kaplansky-hilbmod};
     \item
    we prove that every self-dual Hilbert~C$^*$-modules over
-            a factor von Neumann algebra
-            is of a particularly nice shape,
+            a von Neumann algebra factor
+            is of a particularly nice form,
             see \sref{selfdual-normalish-form}, and
     \item
     we greatly simplify the construction of the exterior tensor product
@@ -179,24 +179,24 @@ Then we allow for an intermezzo
         and show that its self-dual completion
         is particularly well-behaved, see e.g.~\sref{ba-ext-tensor-pres}.
 \end{enumerate}
-We use this new insight into the exterior tensor product,
+We use this new insight into the exterior tensor product
     to compute the tensor product
-    of dilations, see \sref{paschke-tensor}.
-In the final part of this chapter we turn our attention to the maps
+    of dilations, see~\sref{paschke-tensor}.
+In the final sections of this chapter we turn our attention to the maps
     that occur on the right-hand side of the Paschke dilation.
-For Stinespring's dilation these maps are always of the form~$\ad_V$,
-    but for Paschke's dilation different maps may appear ---
+In Stinespring's dilation these maps are always of the form~$\ad_V$,
+    but in Paschke's dilation different maps may appear ---
     in any case, they are pure in the sense of~\sref{pure}.
-The main result of the last part of this chapter
+The main result of these last sections
     is an equivalence between this and another
     seemingly unrelated notion of purity:
-    we show that an ncp-map~$\varphi$ is pure in the sense of \sref{pure}
+    we show that an ncp-map~$\varphi$ is pure in the sense of~\sref{pure}
     if and only if the map on the left-hand side of
     the Paschke dilation of~$\varphi$ is surjective.
-This is a bridge to the next chapter,
-    in which we prove in greater generality,
+This is a bridge to the next chapter
+    in which we prove in greater generality
     that these pure maps have a~$\dagger$-structure,
-    see \sref{dagger-theorem}.
+    see~\sref{dagger-theorem}.
 \end{point}
 \end{point}
 \end{parsec}
