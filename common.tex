@@ -439,6 +439,7 @@
 \let\oldchapter\chapter%
 \renewcommand\chapter[1]{%
     \oldchapter{#1}%
+    \setcounter{parsecFootersShown}{0}% XXX why is this necessary?
     \setcounter{firstParsec}{\value{firstParsecF}/2+1}%
     \addtocontents{parsectoc}{\protect\contentsline{chapter}{\numberline{\thechapter} #1}{\sref{parsec-\the\value{firstParsec}}}{chapter.\thechapter}}%
 }
