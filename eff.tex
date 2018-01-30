@@ -182,6 +182,7 @@ In this way, effect algebras play the same role
 \end{point}
 \begin{point}[dfn-pcm]{Definition}%
     A \Define{partial commutative monoid} (\Define{PCM})~$M$
+        \index{PCM}
         is a set~$M$ together with distinguished element~$0 \in M$
         and a partial binary operation~$\ovee$ such that
         for all~$a,b,c \in M$ 
@@ -200,15 +201,18 @@ In this way, effect algebras play the same role
 A map~$f\colon M \to N$
     between PCMs~$M$ and~$N$
     is called an \Define{PCM homomorphism}
+    \index{PCM!homomorphism}
     if for all~$a, b \in E$
     with~$a \perp b$,
     we have~$f(a) \perp f(b)$
     and~$f(a) \ovee f(b) = f(a \ovee b)$.
 Write~$\Define{\textsf{PCM}}$ for the category
+    \index{\textsf{PCM}}
     of PCMs with these homomorphisms.
 
 For~$a,b$ in a PCM~$M$,
     we say~$\Define{a \leq b}$
+    \index{*leq@$\leq$!in PCM/EA}
     iff~$a \ovee c = b$ for some~$c \in M$.
 \end{point}
 \begin{point}[pcm-preorder]{Exercise}%
@@ -230,12 +234,16 @@ Show a PCM is preordered by~$\leq$.
 \begin{point}[dfn-ea]{Definition}%
 A PCM~$E$ together with distinguished element~$1 \in E$
     is called an \Define{effect algebra} (\Define{EA}) \cite{ea}
+    \index{EA}
+    \index{effect algebra}
     provided that
 \begin{enumerate}
 \item
     \emph{(orthocomplement)}
     for every~$a$
-    there is a unique~$a^\perp$
+    there is a unique~$\Define{a^\perp}$
+        \index{orthocomplement!in an effect algebra}
+        \index{*perp@$(\ )^\perp$!element effect algebra}
    with~$a \ovee a^\perp = 1$ \emph{and}
 \item
     \emph{(zero--one)}
@@ -244,6 +252,7 @@ A PCM~$E$ together with distinguished element~$1 \in E$
 A map~$f\colon E \to F$
 between effect algebras~$E$ and~$F$
 is called an \Define{effect algebra homomorphism}
+    \index{effect algebra!homomorphism}
 if for all~$a, b \in E$, we have
 \begin{enumerate}
     \item \emph{(additive)}
@@ -252,9 +261,12 @@ if for all~$a, b \in E$, we have
     \item \emph{(unital)}
     $f(1) = 1$.
 \end{enumerate}
-Write~$\Define{\textsf{EA}}$ for the category
+Write~$\Define{\textsf{EA}}$
+    \index{\textsf{EA}}
+    for the category
     of effect algebras with these homomorphisms.
-A subset~$D \subseteq E$ is a \Define{sub-effect algebra} of~$E$
+A subset~$D \subseteq E$ is a \Define{sub-effect algebra}
+    \index{effect algebra!sub-} of~$E$
     if~$0,1 \in D$ and for any~$a,b \in D$
     with~$a\perp b$, we have~$a \ovee b \in D$
     and~$a^\perp \in D$.
@@ -281,6 +293,8 @@ $x \ovee y = x + y$ and~$x^\perp = 1-x$.
 In particular,
     if~$\scrA$ is any von Neumann algebra,
     then the set of \Define{effects}~$[0,1]_\scrA$
+        \index{effects}
+        \index{*01@$[0,1]_\scrA$}
     forms an effect algebra
     with~$a \perp b$ whenever~$a +b \leq 1$;
     $a \ovee b = a + b$ and~$a^\perp = 1-a$.
@@ -403,6 +417,7 @@ Hence~$a \ovee c \perp b$
 \begin{point}{Definition}%
 Suppose~$E$ is an effect algebra.
 Write~$\Define{b \ominus a}$
+        \index{*ominus@$\ominus$}
 for the (by cancellation) unique element (if it exists)
 with~$a \ovee (b \ominus a) = b$.
 \end{point}
@@ -427,6 +442,7 @@ Show that this turns~$E$ into an effect algebra
 \end{point}
 \begin{point}{Remark}%
     Such a structure~$(E,\ominus,1)$ is called a \Define{difference-poset}
+    \index{D-poset}
     (\Define{D-poset}) \cite{kopka1994d} and is, as we have just seen,
     an alternative way to axiomatize effect algebras.
 \end{point}
@@ -496,6 +512,7 @@ Consequently~$ (x \ominus c)\wedge (x \ominus d)
 \end{point}
 \begin{point}[dfn-orthomodular-lattice]{Definition}%
 An \Define{ortholattice}~$L$
+    \index{ortholattice}
     is a bounded lattice with orthocomplement
     --- that is: it has a minimum~$0$,
     a maximum~$1$
@@ -509,7 +526,7 @@ An \Define{ortholattice}~$L$
 \item $a^{\perp\perp} = a$.
 \end{enumerate}    
 \end{multicols}
-An ortholattice is \Define{orthomodular}
+    An ortholattice is \Define{orthomodular}\index{orthomodular!lattice}
  provided
 \begin{equation*}
     a \ \leq \ b \quad \implies \quad a \vee (a^\perp \wedge b) \ =\  b.
@@ -557,6 +574,7 @@ form an effect monoid:
 \end{point}
 \begin{point}[dfn-effect-monoid]{Definition}%
 An \Define{effect monoid}~$M$ \cite{probdistrconv}
+    \index{effect monoid}
     is an effect algebra
     together with a binary operation~$\odot$
     such that for all~$a,b,c,d \in M$, we have
@@ -576,9 +594,11 @@ An \Define{effect monoid}~$M$ \cite{probdistrconv}
     an effect monoid is a monoid in \textsf{EA}
     with the obvious monoidal tensor product, see \cite{corefl,probdistrconv}.)
 An effect monoid~$M$ is said to be \Define{commutative}
+    \index{effect monoid!commutative}
     if we have~$a\odot b = b\odot a$ for all~$a,b \in M$.
 A map~$f\colon M \to N$ between effect monoids
     is called an \Define{effect monoid homomorphism}
+    \index{effect monoid!homomorphism}
     if it is an effect algebra homomorphism
     and furthermore~$f(a \odot b) = f(a) \odot f(b)$
     for all~$a,b \in M$.
@@ -632,6 +652,7 @@ We will see that in an effectus,
 \begin{point}[dfn-effect-module]{Definition}%
 Suppose~$M$ is an effect monoid.
 An \Define{effect module} $E$ over~$M$ \cite{corefl}
+    \index{effect module}
     is an effect algebra together with an operation
             $M \times E \to E$
             denoted by~$(\lambda, a) \mapsto \lambda \cdot a$
@@ -656,9 +677,11 @@ An \Define{effect module} $E$ over~$M$ \cite{corefl}
 An effect algebra homomorphism~$f\colon E \to F$
     between effect modules over~$M$
     is an $M$-\Define{effect module homomorphism}
+    \index{effect module!homomorphism}
     provided~$\lambda \cdot f(a) = f(\lambda \cdot a)$
     for all~$\lambda \in M$ and~$a \in E$.
 Write~$\Define{\mathsf{EMod}_M}$
+    \index{$\mathsf{EMod}_M$}
     for the category of effect modules over~$M$
     with effect module homomorphisms between them.
 \end{point}
@@ -691,6 +714,7 @@ Later we will prefer to work with the partial form.
 \begin{parsec}%
 \begin{point}[dfn-effectus]{Definition}%
 A category $C$ is said to be an \Define{effectus in total form}
+    \index{effectus!in total form}
     \cite{effintro,newdirections,statesofconvexsets}
     if
 \begin{enumerate}
@@ -723,7 +747,9 @@ A category $C$ is said to be an \Define{effectus in total form}
     \end{equation*}
 \end{enumerate}
 An arrow~$X \to Y+1$ is called a \Define{partial map} and written
+    \index{partial map (in an effectus)}
     $\Define{X \pto Y}$.
+    \index{*pto@$X\pto Y$}
 \begin{point}%
 One with an interest in physics, might think of the objects
     of an effectus as physical systems and its arrows as
@@ -774,6 +800,7 @@ and~$g \colon Y \to Z+1$ (i.e.~partial maps~$X \pto Y$ and~$Y \pto Z$)
     their composition as partial maps
     is defined as~$g \hafter f \equiv  [g, \kappa_2] \after f$.
 Write~$\Define{\Par C}$ for the \Define{category of partial maps},
+    \index{$\Par C$}
     which has the same objects
     as~$C$, but as arrows~$X \to Y$ in~$\Par C$
     we take arrows of the form~$X \to Y+1$ in~$C$,
@@ -788,6 +815,7 @@ The category~$\Par C$ is not an effectus in total form --- instead it
 \end{point}
 \begin{point}{Definition}%
 A category~$C$ is called an \Define{effectus in partial form}
+    \index{effectus!in partial form}
     \cite{effintro,kentapartial} if
 \begin{enumerate}
 \item
@@ -821,7 +849,9 @@ A category~$C$ is called an \Define{effectus in partial form}
             for any~$b\colon X \to Y + Y$ we have
             $\pproj_1 \after b \perp \pproj_2 \after b$,
             where~$\Define{\pproj_i}\colon Y + Y \to Y$
+            \index{*pproj@$\pproj_i$}
             are \Define{partial projectors} defined
+            \index{partial projectors}
             by~$\pproj_1 \equiv [\id, 0]$
             and~$\pproj_2 \equiv [0, \id]$ \emph{and}
         \item
@@ -835,6 +865,7 @@ A category~$C$ is called an \Define{effectus in partial form}
             such that
     \begin{enumerate}
         \item for each object~$X$, the PCM~$C(X,I) \equiv \Define{\Pred X}$
+            \index{$\Pred X$}
             is an effect algebra, see \sref{dfn-ea}
             --- in particular~$C(X,I)$
                 has a maximum element~$1$;
@@ -845,6 +876,7 @@ A category~$C$ is called an \Define{effectus in partial form}
 \end{enumerate}
 In this setting,
 a map~$f\colon X \to Y$ is called \Define{total} if~$1 \after f = 1$.
+    \index{total map}
 \begin{point}{Remark}%
 The untying axiom is redundant: it follows from the others.
 We include it, as it is part
@@ -982,6 +1014,7 @@ for every~$f\colon Z \to X$
     and~$g\colon Z \to Y$
     with~$1 \after f \perp 1 \after g$,
     there is a unique map~$\Define{\langle f, g\rangle} \colon Z \to X +Y$
+    \index{*langle@$\langle\,\cdot\,,\cdot\,\rangle$!in an effectus}
     such that~$\pproj_1 \after \langle f, g \rangle = f$
     and~$\pproj_2 \after \langle f, g \rangle = g$,
     where~$\pproj_1 = [\id,0]$ and~$\pproj_2=[0,\id]$.
@@ -1247,6 +1280,7 @@ then~$m_1$ and~$m_2$ are jointly monic.
 
 \begin{point}[pullback-lemma]{Exercise}%
 Prove the \Define{pullback lemma} --- that is:
+    \index{pullback lemma}
     if we have a commuting diagram
 \begin{equation*}
     \vcenter{\vbox{\xymatrix@R-1pc{
@@ -1422,6 +1456,7 @@ So the inner left square is also a pullback by the pullback lemma, as desired.
 Assume~$C$ is an effectus in total form.
 For a map~$f\colon X \to Y$,
     write~$\Define{\hat{f}} = \kappa_1 \after f \colon X \to Y+1$.
+    \index{*hat@$\hat{f}$!in an effectus}
     (This is the Kleisli embedding~$C \to \Par C$.)
 \end{point}
 \begin{point}[par-c-coprod]{Exercise}%
@@ -1490,7 +1525,7 @@ These are indeed pullbacks by~\sref{tot-pullbacks}. \qed
 Assume~$C$ is an effectus in total form.
 For arbitrary objects~$X,Y$ in~$C$,
     write~$\Define{0} \equiv \kappa_2 \after !\colon X \to Y+1$
-    and~$1 \equiv \kappa_1 \after ! \equiv \hat! \colon X \to 1+1$.
+    and~$\Define{1} \equiv \kappa_1 \after ! \equiv \hat! \colon X \to 1+1$.
 \end{point}
 \begin{point}{Exercise}%
     Show~$0$ is a zero object in~$\Par C$
@@ -1599,12 +1634,14 @@ In \sref{par-c-coprod}, we saw that~$\Par C$ has finite coproducts.
 Assume~$f,g \colon X \pto Y$.
 We define that~$f \perp g$
     iff there is a \Define{bound}~$b\colon X \pto Y+Y$
+    \index{bound}
     with~$\pproj_1 \hafter b = f$
     and~$\pproj_2 \hafter b = g$.
     (By \sref{pproj-joint-monicity}
     this~$b$ is unique if it exists.)
 In this case, define~$f \ovee g = \nabla \hafter b$,
 where $\Define{\nabla} \equiv [\id,\id]$.
+    \index{*nabla@$\nabla$}
 We will show~$\ovee$ with~$0$
     as defined in \sref{zero-and-one-parc}
     forms a PCM.
@@ -1876,6 +1913,7 @@ then every object in~$C$ is isomorphic to~$0$.
 For the remainder of this text, we will work with effectuses in partial form
     and write~$1$ instead of~$I$.
 To spare ink, a phrase like ``let $C$ be an \Define{effectus}''
+    \index{effectus}
 should be read as~``let $C$ be an effectus in partial form''
 and simply~``$C$ is an effectus'' means either ``$C$ is an effectus in total form''
     or ``$C$ is an effectus in partial form''.
@@ -1900,11 +1938,15 @@ Let~$C$ be an effectus (in partial form).
 \item
 As alluded to in the definition of an effectus in partial form,
 a \Define{predicate} on~$X$ is a map~$X \to 1$.
+        \index{predicate}
 The set of predicates~$\Pred X$ on~$X$ is (by definition of an effectus
     in partial form) an effect algebra.
 \item
 A \Define{scalar} is a predicate on~$1$, that is: a map~$1 \to 1$.
+        \index{scalar}
 Write~$\Define{\Scal C} \equiv \Define{M} \equiv \Pred 1$ for the set of scalars.
+        \index{$M$}
+        \index{$\Scal C$}
 We multiply two scalars~$\lambda,\mu \colon 1 \to 1$
     simply by composing~$\lambda \odot \mu \equiv \lambda \after \mu$.
 As~$1_M = \id_M$ (see \sref{one-m-is-id}) and~$C$ is $\mathsf{PCM}$-enriched,
@@ -1913,16 +1955,19 @@ As~$1_M = \id_M$ (see \sref{one-m-is-id}) and~$C$ is $\mathsf{PCM}$-enriched,
     see \sref{dfn-effect-monoid}.
 \item
 A \Define{real effectus} is an effectus
+        \index{effectus!real}
 where the set of scalars~$M$ is isomorphic (as effect monoid) to~$[0,1]$.
 \item
 For a scalar~$\lambda\colon 1\to 1$ and a predicate~$p\colon X \to 1$,
 we write~$\Define{\lambda \cdot p} \equiv \lambda \after p$.
+        \index{*lambdacdot@$\lambda \cdot p$}
 Again due to $\mathsf{PCM}$-enrichment and~$1_M = \id_M$,
 this scalar multiplication
 turns~$\Pred X$ into a~$M$-effect module, see \sref{dfn-effect-module}.
 \item
 For~$f\colon X \to Y$ in~$C$,
         define~$\Define{\Pred(f)} \colon \Pred Y \to \Pred X$
+        \index{$\Pred(f)$}
     by~$\Pred(f)(p) = p \after f$.
 It is easy to see
 $\Pred(f)$ is an~$M$-effect module homomorphism
@@ -1932,12 +1977,17 @@ is a functor.
 \item
 A \Define{substate} on~$X$ is a map~$\omega\colon 1 \to X$.
 A \Define{state} is a total substate.
+        \index{state}
+        \index{state!sub-}
 We denote the set of states on~$X$ by~$\Define{\Stat X}$.
+        \index{$\Stat X$}
 \item
 An effectus~$C$ has \Define{separating predicates}
+    \index{separating!predicates}
         if~$\Pred X$ (as a set of maps~$X \to 1$)
         is jointly monic for every~$X$ in~$C$.
     Similarly, an effectus has \Define{separating states}
+        \index{seperating!states}
         if~$\Stat X$ (as a set of maps~$1 \to X$)
         is jointly epic for every~$X$ in~$C$.
 \end{enumerate}
@@ -2095,6 +2145,7 @@ Before we define those, we introduce a generalized distribution monad.
 Let~$M$ be an effect monoid
     and~$X$ be any set.
 A \Define{formal $M$-convex combination} over~$X$
+    \index{convex@(formal) $M$-convex combination}
     is a function~$p\colon X \to M$
     with finite support
     such that~$\bigovee_{x \in X} p(x) = 1$.
@@ -2103,6 +2154,7 @@ We use~$\Define{\lambda_1 \ket{x_1} \ovee \cdots \ovee \lambda_n \ket{x_n}}$
     given by~$p(x) = \bigovee_{x_i = x} \lambda_i$.
     (So~$p(x_i) = \lambda_i$ if the~$x_i$ are distinct.)
 We write~$\Define{\mathcal{D}_M} X$
+    \index{$\mathcal{D}_M$}
     for the set of all formal~$M$-convex combinations over~$X$.
 \end{point}
 \begin{point}{Exercise*}%
@@ -2144,6 +2196,7 @@ Show that~$(\mathcal{D}_M, \eta,\mu)$
 Let~$X$ be a set together
     with a map~$h\colon \mathcal{D}_M X \to X$.
 We say~$(X,h)$ is an \Define{abstract $M$-convex set}
+    \index{convex@(abstract) $M$-convex set}
     provided~$h(\ket{x})=x$
     and
 \begin{equation}\label{convex-mult}
@@ -2161,6 +2214,7 @@ and~$h \after \eta = \id$.)
 A map~$f\colon X \to Y$
     between abstract~$M$-convex sets
     is \Define{$M$-affine} if
+    \index{affine@$M$-affine}
 \begin{equation*}
     f \bigl(h_X \bigl(\,\bigovee_i \lambda_i \ket{x_i}\, \bigr)\bigr)
      \ = \ 
@@ -2169,12 +2223,14 @@ A map~$f\colon X \to Y$
 for every~$\bigovee_i \lambda_i \ket{x_i}$ in~$\mathcal{D}_M X$.
 (Equivalently: $h_X \after \mathcal{D}_M f = f \after h_Y$.)
 Write~$\Define{\AConvM}$ for the category
+    \index{AConvM@$\AConvM$}
     of abstract~$M$-convex sets with
     $M$-affine maps between them.
 (Equivalently: $\AConvM$
     is the Eilenberg--Moore category
     of the monad~$\mathcal{D}_M$.)
 We call an abstract $M$-convex set~$(X,h)$ \Define{cancellative}
+    \index{cancellative!$M$-convex set}
 provided
 \begin{equation*}
     h(\lambda \ket{y} \ovee \lambda^\perp \ket{x_1})\  = \
@@ -2381,6 +2437,7 @@ For~$\varphi,\psi \in \mathcal{D}_M X$,
     we write~$\varphi \sim \psi$
     provided~$(\mathcal{D}_M q)(\varphi) = (\mathcal{D}_M q)(\psi)$.
 We say~$\sim$ is a \Define{congruence} for~$(X,h)$
+    \index{congruence!$M$-convex set}
 if~$\varphi \sim \psi$ implies~$h(\varphi) \sim h(\psi)$.
 \begin{enumerate}
 \item
@@ -2858,6 +2915,7 @@ Now~\eqref{eqkappainj} follows from~$h_X(\chi) = h_X(\chi')$. \qed
 \begin{parsec}%
 \begin{point}[dfn-effect-divisoid]{Definition}%
 An \Define{effect divisoid}
+    \index{effect divisoid}
     is an effect monoid~$M$
     with partial binary operation~$(a,b) \mapsto \rfrac{a}{b}$
     that is defined iff~$a \leq b$ and
@@ -2928,6 +2986,7 @@ In this exercise you will show
     is an effect divisoid
     if and only if~$X$
     is \Define{basically disconnected}
+    \index{basically disconnected}
     \cite[1H]{gillman2013rings}
     --- that is: if~$\overline{\supp f}$ is open
     for every~$f \in C(X)$.
@@ -3314,6 +3373,7 @@ We are ready to introduce our first additional axiom:
 \begin{point}[dfn-quotient]{Definition}%
 Let~$C$ be an effectus.
 We say~$C$ is an \Define{effectus with quotients}
+    \index{effectus!with quotients}
     if for each predicate~$p \colon X \to 1$,
     there exists a map~$\xi_p \colon X \to X/_p$
     with~$1 \after \xi_p \leq p^\perp$
@@ -3326,6 +3386,7 @@ We say~$C$ is an \Define{effectus with quotients}
 \end{quote}
 Any  map with this universal property
     is called a \Define{quotient} for~$p$.
+    \index{quotient}
 \begin{point}[quot-not]{Notation}%
 Unless otherwise specified~$\xi_p$ will be some
     quotient for~$p$.
@@ -3445,6 +3506,7 @@ In this sense quotients are the universal way to restrict to the
 \begin{point}[dfn-eff-grothendieck]{Definition}%
 For an effectus~$C$,
     write~$\Define{\int \Pred_\square}$
+    \index{$\int \Pred_\square$}
     for the category with
 \begin{enumerate}
 \item as objects pairs~$(X,p)$,
@@ -3510,6 +3572,7 @@ We continue with our second axiom.
 \begin{point}[dfn-comprehension]{Definition}%
 Let~$C$ be an effectus.
 We say~$C$ \Define{has comprehension}
+    \index{effectus!with comprehension}
     if for each predicate~$p \colon X \to 1$,
     there exists a map~$\pi_p \colon \cmpr{X}{p} \to X$
     with~$p \after \pi_p = 1 \after \pi_p$
@@ -3522,6 +3585,7 @@ We say~$C$ \Define{has comprehension}
 \end{quote}
 Any  map with this universal property
     is called a \Define{comprehension} for~$p$.
+    \index{comprehension}
 \begin{point}{Beware}%
     We do not assume comprehensions are total
     (in contrast to~\cite{effintro}).
@@ -3573,12 +3637,15 @@ Comprehensions and kernels are very similar.
 \begin{point}{Definition}%
 Let~$C$ be a category with a zero object.
 A \Define{kernel}~of an arrow~$f$
+    \index{kernel!category theoretic}
     (in symbols: $\Define{\ker f}$)
+    \index{$\ker f$}
     is an equalizer of~$f$ with the zero-map.
 (That is: $f \after (\ker f) = 0$
     and for every~$g$ with~$f \after g = 0$,
     there exists a unique~$g'$ with~$(\ker f) \after g' = g$.)
 We will use \Define{$\cok f$}
+    \index{$\cok f$}
     to denote a cokernel of~$f$
     --- that is: a kernel of~$f$ in~$\op{C}$.
 \end{point}
@@ -3610,6 +3677,7 @@ We are ready to define purity in effectuses.
 \end{point}
 \begin{point}{Definition}%
 In an effectus a map~$f$ is called \Define{pure}
+    \index{pure!in an effectus}
     if~$f = \pi \after \xi$
     for some comprehension~$\pi$
     and quotient~$\xi$.
@@ -3655,19 +3723,22 @@ We do not have a good handle on the structure of pure maps in
 Let~$C$ be an effectus.
 \begin{enumerate}
 \item
-We say~$C$ has \Define{images}
+    We say~$C$ has \Define{images}\index{effectus!with images}
     if for each map~$f\colon X \to Y$,
     there is a least predicate~$\Define{\IM f}$ on~$Y$
+        \index{im@$\IM $}
         with the property~$(\IM f) \after f = 1 \after f$ ---
         that is, 
     for every (other) predicate~$p$ on~$Y$
     with~$p \after f = 1 \after f$,
     we must have~$\IM f \leq p$.
 For brevity, write~$\Define{\IMperp f} \equiv (\IM f)^\perp$. 
+        \index{imperp@$\IMperp $}
 Note~$\IMperp f$ is the greatest predicate
 with the property~$(\IMperp f) \after f = 0$.
 \item
 We say a map~$f\colon X \to Y$ is \Define{faithful}
+    \index{faithful}
     if~$\IM f = 1$.
 That is: $f$ is faithful if and only if
     $p \after f = 0$ implies~$f = 0$
@@ -3734,15 +3805,17 @@ Hence~$1 = 1 \after \id =1 \after f \after \xi \leq 1 \after \xi = 1 \after \pi$
 Let~$C$ be an effectus with comprehension and images.
 \begin{enumerate}
 \item
-    We say a predicate~$p$ is (image) \Define{sharp}
+    We say a predicate~$p$ is (image) \Define{sharp} \index{sharp}
         if~$p = \IM f$ for some map~$f$.
         Write~$\Define{\SPred X}$ for the set of all sharp predicates on~$X$.
+        \index{SPred@$\SPred$}
 \item
-We define~$\Define{\floor{p}} = \IM \pi_p$,
+    We define~$\Define{\floor{p}} = \IM \pi_p$, \index{*floor@$\floor{\ }$}
     where~$\pi_p$ is some comprehension for~$p$.
 (Comprehensions for the same predicate have the same image
     by \sref{im-ineq}.)
 Also write~$\Define{\ceil{p}} = \floor{p^\perp}^\perp$.
+    \index{*ceil@$\ceil{\ }$}
 \end{enumerate}
 \begin{point}{Beware}%
 In \cite{effintro} $p$ is called sharp whenever~$p \wedge p^\perp=0$.
@@ -3972,6 +4045,8 @@ We will give these right of the bat and study their relevance later on.
 \end{point}
 \begin{point}[diamond-basics]{Definition}%
     A~\Define{$\diamond$-effectus} (``diamond effectus'')
+    \index{effectus!$\diamond$-}
+    \index{*dia@$\diamond$-!effectus}
     is an effectus with quotient, comprehension and images
     such that~$s^\perp$ is sharp for every sharp predicate~$s$.
 In a~$\diamond$-effectus,
@@ -3983,28 +4058,35 @@ In a~$\diamond$-effectus,
             & \SPred Y \ar@/^/[l]^{f^\diamond}}
             \quad \text{by} \quad
             \Define{f^\diamond(s)} = \ceil{s \after f}
+            \index{$(\ )^\diamond$}
             \quad
             \text{and}
             \quad
             \Define{f_\diamond(s)} = \IM f \after \pi_s
+            \index{$(\ )_\diamond$}
     \end{equation*}
     \begin{enumerate}
         \item
     We say maps~$f \colon X \leftrightarrows Y\colon g$
         are~\Define{$\diamond$-adjoint}
         if~$f^\diamond = g_\diamond$.
+    \index{*dia@$\diamond$-!adjoint}
     \item
     An endomap~$f\colon X \to X$ is \Define{$\diamond$-self-adjoint}
         if~$f$ is $\diamond$-adjoint to itself.
+    \index{*dia@$\diamond$-!self-adjoint}
     \item
     Two maps~$f,g\colon X \to Y$
         are~\Define{$\diamond$-equivalent}
         if~$f^\diamond = g^\diamond$.
+            \index{*dia@$\diamond$-!equivalent}
     \item
         A pure endomap~$f$ is~\Define{$\diamond$-positive}
             if $f = g\after g$ for some~$\diamond$-self-adjoint~$g$.
+            \index{*dia@$\diamond$-!positive}
     \end{enumerate}
 For brevity, write $\Define{f^\BOX(s)} = f^\diamond(s^\perp)^\perp$.
+    \index{$(\ )^\BOX$}
 \end{point}
 \end{parsec}
 \begin{parsec}%
@@ -4122,6 +4204,7 @@ $(f\after g)_\diamond = f_\diamond \after g_\diamond$. \qed
 \begin{point}[image-sharp-is-order-sharp]{Lemma}%
 In a $\diamond$-effectus,
 sharp predicates are \Define{order sharp} ---
+    \index{sharp!order-}
     that is:
     for any predicate~$p$
     and sharp predicate~$s$
@@ -4290,6 +4373,7 @@ So~$\alpha^\diamond(s) = \ceil{s \after \alpha} = s\after \alpha$
 \begin{parsec}%
 \begin{point}[sharp-map]{Definition}%
 A map~$f$ in a~$\diamond$-effectus is a~\Define{sharp map}
+    \index{sharp!map}
     provided~$s \after f$ is sharp for all sharp predicates~$s$.
 \end{point}
 \begin{point}[sharp-ceil]{Exercise}%
@@ -4319,6 +4403,7 @@ In a~$\diamond$-effectus
 \end{point}
 \begin{point}{Definition}%
 An~\Define{$\&$-effectus} (``andthen effectus'')
+    \index{effectus!$\&$-}
 is a $\diamond$-effectus
 such that
 \begin{enumerate}
@@ -4327,6 +4412,7 @@ such that
     and each predicate~$p$ on~$X$,
         there is a unique $\diamond$-positive
         map $\Define{\asrt_p}\colon X \to X$
+        \index{$\asrt_p$}
         (``assert p'')
         with~$1 \after \asrt_p = p$ (see \sref{diamond-basics})
         \emph{and}
@@ -4337,6 +4423,7 @@ such that
 \end{enumerate}
 In an $\&$-effectus,
 we define~$\Define{\andthen{p}{q}} \equiv q \after \asrt_p$,
+    \index{$\&$}
     pronounced ``$p$ andthen~$q$''.
 For brevity, we will write~$\Define{p^2} \equiv \andthen{p}{p}$.
 \begin{point}{Remarks}%
@@ -4495,6 +4582,8 @@ In an~$\&$-effectus
     satisfying~$\zeta_s \after \pi_s = \id$
     and~$\pi_s \after \zeta_s = \asrt_s$.
 We call this~$\zeta_s$
+    \index{quotient!corresponding}
+    \index{comprehension!corresponding}
     the \Define{corresponding quotient} of~$\pi_s$
     and vice versa~$\pi_s$ the \Define{corresponding comprehension}
     of~$\zeta_s$.
@@ -4572,6 +4661,7 @@ for any sharp predicates~$s$ and~$t$.
 Let~$C$ be an~$\&$-effectus.
 In \sref{upm-closed} we saw pure maps are closed under composition.
 Write~$\Define{\Pure C}$ for the subcategory
+    \index{$\Pure C$}
     of pure map.
 \end{point}
 \end{parsec}
@@ -4751,6 +4841,7 @@ Show that in a~$\&$-effectus,
 \begin{parsec}%
 \begin{point}{Definition}%
 A \Define{$\dagger$-category} (``dagger category'')
+    \index{*dagg@$\dagger$!-category}
 is a category~$C$ together with an involutive identity-on-objects
     functor~$(\ )^\dagger \colon C \to \op{C}$
     ---
@@ -4769,12 +4860,15 @@ In any~$\dagger$-category we may define the following.
 \begin{enumerate}
 \item
     An endomap~$f$ is called \Define{$\dagger$-self-adjoint}
+    \index{*dagg@$\dagger$!-self-adjoint}
     if~$f^\dagger = f$.
 \item
     An endomap~$f$ is \Define{$\dagger$-positive}
+    \index{*dagg@$\dagger$!-positive}
     if~$f = g^\dagger \after g$ for some other map~$g$.
 \item
-    An isomorphism~$\alpha$ is called~\Define{unitary}
+    An isomorphism~$\alpha$ is called~\Define{$\dagger$-unitary}
+        \index{*dagg@$\dagger$!-unitary}
         whenever~$\alpha^{-1} = \alpha^\dagger$.
 \end{enumerate}
 \end{point}
@@ -4789,6 +4883,8 @@ The category~$\mathsf{Hilb}$
 \begin{point}{Definition}%
 We call an~$\&$-effectus~$C$,
     a~\Define{$\dagger$-effectus} (``dagger effectus'') provided
+    \index{effectus!$\dagger$-}
+    \index{*dagg@$\dagger$!-effectus}
 \begin{enumerate}
 \item
     $\Pure C$ is a  $\dagger$-category
@@ -4829,6 +4925,7 @@ Necessity will be proven in
 \begin{point}%
 Especially the sufficiency requires quite some preparation.
 For convenience, call~$C$ a \Define{$\dagger'$-effectus}
+    \index{effectus!$\dagger'$-}
     if~$C$ is an~$\&$-effectus
     satisfying axioms 1, 2 and 3 from the Theorem above.
 \end{point}
@@ -5163,6 +5260,7 @@ So we are justified to declare:
 \end{point}
 \begin{point}[dagger-definition2]{Definition}%
 In a~$\dagger'$-effectus, for a pure map~$f$, define
+    \index{*dagg@$\dagger$!in a $\dagger'$-effectus}
 \begin{equation*}
     \Define{f^\dagger}
         \ =\  \asrt_{1 \after f} \after
@@ -5228,7 +5326,7 @@ as desired. \qed
 \end{point}
 \end{point}
 \begin{point}[dfn-pristine]{Definition}%
-In an~$\&$-effectus, a map~$f$ is \Define{pristine}
+    In an~$\&$-effectus, a map~$f$ is \Define{pristine}\index{pristine}
         if it is pure and~$1\after f$ is sharp.
 \begin{point}{Remarks}%
     In general, pristine maps are not closed under composition:
@@ -6217,7 +6315,7 @@ The presented abstract theory of dilations in a~$\dagger$-effectus
 \end{point}
 \begin{point}{Definition}%
 Let~$f\colon X \to Y$ be any map in an effectus.
-A \Define{dilation} of~$f$
+    A \Define{dilation} of~$f$ \index{dilation!in an effectus}
     is a triplet~$(P, \varrho, h)$
     of a sharp total map~$\varrho \colon P \to Y$
     and a pure map~$h \colon X \to P$
@@ -6231,7 +6329,7 @@ A \Define{dilation} of~$f$
     with~$\sigma \after h = h'$
     and~$\varrho' \after \sigma = \varrho$.
 \end{quote}
-We say an effectus \Define{has dilations} if
+    We say an effectus \Define{has dilations} if \index{effectus!with dilations}
     there exists a dilation for every map.
 \end{point}
 \begin{point}{Example}%
@@ -6456,10 +6554,12 @@ follow from more general principles.  Can we define the other gates, like
 In an~$\&$-effectus,
 for any predicate~$p$,
     define~$\Define{\sef_p} \equiv \asrt_p \ovee \asrt_{p^\perp}$.
+    \index{$\sef_p$}
 This map models the side-effect of measuring~$p$.
     For any map~$f\colon X \to Y$, define
     \begin{equation*}
         \Define{\Inv f} \ \equiv \ \{p; \ p \in \Pred X;\ f \after \sef_p = f\}.
+        \index{$\Inv f$}
     \end{equation*}
 This is the set of predicates whose measurement does not disturb~$f$.
 \end{point}
@@ -6498,6 +6598,7 @@ For a map~$f\colon X \to Y$,
 \end{equation*}
     We say a dilation~$(P, \varrho, h)$ of~$f$
         has \Define{the order correspondence} if
+        \index{effectus!with dilations!and order correspondence}
         there is an order isomorphism~$\Theta\colon \downarrow\!f \to \Inv \varrho$
         such that for every~$g \in \downarrow\!f$,
         we have
@@ -6535,17 +6636,23 @@ We will discover that some of his axioms for~$\mathsf{Hilb}$
 Let~$C$ be a~$\dagger$-category.
 We say that an arrow~$f$
     is \Define{$\dagger$-mono}
+    \index{*dagg@$\dagger$!-mono}
     iff~$f^\dagger \after f = f$
     and dually~$f$ is \Define{$\dagger$-epi}
+    \index{*dagg@$\dagger$!-epi}
     iff~$f\after f^\dagger = f$.
 An arrow~$f$ is a \Define{$\dagger$-partial isometry}
+    \index{*dagg@$\dagger$!-partial isometry}
     if~$f = m \after e$
     for some~$\dagger$-mono~$m$
     and~$\dagger$-epi~$e$.
 
 A~\Define{$\dagger$-kernel} of~$f$
+    \index{kernel!$\dagger-$}
+    \index{*dagg@$\dagger$!-kernel}
 is a~$\dagger$-mono equalizer of~$f$ with~$0$.
 A~\Define{$\dagger$-kernel category} is a~$\dagger$-category
+    \index{*dagg@$\dagger$!-kernel!category}
     with zero object and where each arrow has a~$\dagger$-kernel.
 \cite[3.2.20]{heunenphd}
 \end{point}
@@ -6722,6 +6829,8 @@ A few years earlier, Gudder and Greechie started
 \end{point}
 \begin{point}{Definition}%
 A \Define{sequential effect algebra} (SEA)
+    \index{SEA}
+    \index{effect algebra!sequential-}
     is an effect algebra~$E$ together
     with a binary operation~$\&$
     satisfying
@@ -6833,12 +6942,14 @@ It follows~$l \after \asrt_{\andthen{t^\perp}{s}} \after l^\dagger
 \end{point}
 \begin{point}{Definition}%
 A category~$C$ is a \Define{pointed semiexact category} \cite[\S1.1]{grandis}
+    \index{semiexact category!pointed}
     if~$C$ has a zero object and all kernels and cokernels.
 In a pointed semiexact category:
 \begin{enumerate}
 \item
 We put a partial order on kernels in the usual way:
 we write~$\Define{n \leq m}$
+        \index{*leq@$\leq$!among kernels}
 for kernels~$n\colon A \to X$ and~$m \colon B \to X$,
     if there is an~$f\colon A \to B$
     with~$n = m \after f$.
@@ -6846,15 +6957,18 @@ If both~$n \leq m$ and~$m \leq n$,
     then we write~$n \approx m$.
 We denote the poset of kernels on~$A$ modulo~$\approx$
         by~$\Define{\Nsb A}$. (\textbf{N}ormal \textbf{s}ubo\textbf{b}jects,
+        \index{$\Nsb A$}
             \cite[\S1.5]{grandis}.)
 \item
 For every map~$f$
     there is a unique map~$g$
         with~$f = (\ker \cok f ) \after g \after (\cok \ker f)$.
     If this~$g$ is an iso, then~$f$ is called \Define{exact}.
+        \index{exact}
 \end{enumerate}
 A pointed semiexact category~$C$
     is a \Define{pointed homological category} if
+    \index{homological category!pointed}
 \begin{enumerate}
     \item kernels are closed under composition;
     \item cokernels are closed under composition \emph{and}
@@ -6933,10 +7047,12 @@ Let a (pointed) semiexact category be given.
 \item
     We say the diagram~$A \xrightarrow{f} B \xrightarrow{g} C$
         is \Define{exact at} $B$,
+        \index{exact!at}
         if~$\ker \cok (f) \approx \ker (g)$.
 We say~$A_1 \xrightarrow{f_1} A_2 \to \cdots
             \to A_{n}$
             is a \Define{(long) exact sequence}
+            \index{exact!sequence}
             if it is exact at~$A_2, \ldots, A_{n-1}$.
 \item
 The poset~$\Nsb A$ of kernels modulo~$\approx$
@@ -6947,8 +7063,11 @@ For any~$f\colon A \to B$,
     define~$f_*\colon \Nsb A \leftrightarrows \Nsb B \colon f^*$
         by~$\Define{f_*} (k) = \ker \cok (f \after k)$
         and~$\Define{f^*}(k) = \ker ((\cok k) \after f)$.
+        \index{$(\ )_*$}
+        \index{$(\ )^*$}
 \item
 We say~$f$ is \Define{left-modular at} $k$
+        \index{modular}
     if~$f^* (f_* (k)) = k \vee f^*(0)$
         and $f$ is \Define{right-modular at} $k$
         if~$f_*(f^* (k)) = k \wedge f_*(1)$.
