@@ -234,6 +234,7 @@
 % which are called "parsecs" (for paragraph--section),
 % and these parsecs contain several points.
 \newcounter{parsec} % keeps track of the current parsec number
+\newcounter{parsecFootersShown}
 
 % The first argument is the label this parsec will have--use \sref 
 % 	to refer to a parsec.
@@ -394,6 +395,10 @@
         \ifthenelse{\equal{\value{lastParsecF}}{0}}{%
             % do nothing
         }{%
+            \stepcounter{parsecFootersShown}%
+            \ifthenelse{\equal{\value{parsecFootersShown}}{1}}{%
+                \setcounter{firstParsec}{\value{firstParsec}+1}%
+            }{}
             \setcounter{lastParsec}{\value{lastParsecF}/2}%
             \textPointNumberI{%
                 \ifthenelse{\equal{\value{parsecToBeContinued}}{1}}{..}{}%
