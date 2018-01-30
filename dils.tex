@@ -9,12 +9,18 @@ In this chapter we will study dilations.
 The common theme is that a complicated map
     is actually the composition of a simpler map
     after a representation into a larger algebra.
-    The famous Gel'fand--Naimark--Segal construction (see \sref{gns})
+    The famous Gel'fand--Naimark--Segal construction (see \sref{gns}
+        in \cite{bram})
     is a dilation theorem in disguise:
     it show that every state is a vector state on a larger algebra:
 \end{point}
 \begin{point}[dils-gns]{Theorem (GNS')}%
-    For each pu-map~$\omega\colon \scrA \to \C$
+    For each pu-map\footnote{%
+        pu-map is an abbreviation for positive unital map.
+        See~\sref{maps} and~\sref{p-uwcont}
+            for other abbreviations, like nmiu-map
+            and ncpsu-map.
+        }~$\omega\colon \scrA \to \C$
         from a~C$^*$-algebra~$\scrA$,
     there is a Hilbert space~$\scrH$,
     a miu-map~$\varrho\colon \scrA \to \scrB(\scrH)$
@@ -627,6 +633,7 @@ Clearly these~$r_{ij}$ are unit vectors,
         and~$p_{i_0} d_j = d_j$,
         we have~$\|r_{ij}\|^2 = \langle \varrho(u_i u_i^*) d_j,d_j\rangle = 1$.
 To show~$1 = \sum_{i,j} \ketbra{r_{ij}}{r_{ij}}$, we compute
+\begingroup\allowdisplaybreaks
     \begin{alignat*}{2}
     1 
     & \ = \  \varrho(1)
@@ -644,6 +651,7 @@ To show~$1 = \sum_{i,j} \ketbra{r_{ij}}{r_{ij}}$, we compute
             && \text{by \sref{ad-normal}}\\
         & \ = \  \sum_{i,j} \ketbra{r_{ij}}{r_{ij}}.
 \end{alignat*}
+\endgroup
 \end{point}
 \begin{point}%
 Let~$U \colon \scrK \to \scrH \otimes \scrK'$
