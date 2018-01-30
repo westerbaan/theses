@@ -351,10 +351,18 @@ brought to you by my twin brother.
 
 \fancyfoot[CE]{}
 \fancyfoot[CO]{}
+\fancypagestyle{plain}{
+    \fancyfoot[CE]{}
+    \fancyfoot[CO]{}
+}
 
 \printindex
 
+\begingroup
+\renewcommand\chapter[2]{\backmattertitle{Bibliography}}
 \bibliography{main}{}
+\endgroup
+
 \bibliographystyle{plain}
 
 \end{document}

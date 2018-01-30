@@ -456,6 +456,9 @@
     \addtocontents{parsectoc}{\protect\contentsline{subsubsection}{\numberline{\thesubsubsection} #1}{\sref{parsec-\the\value{firstParsec}}}{subsubsection.\thesubsubsection}}%
 }
 
+\newcommand\backmattertitle[1]{{%
+    \sffamily\color{darkblue}\Huge\bfseries #1\vspace{1em}}}
+
 % customize title of index
 \makeatletter
 \renewenvironment{theindex}
@@ -464,7 +467,7 @@
                 \else
                   \@restonecoltrue
                 \fi
-                \twocolumn[{\sffamily\color{darkblue}\Huge\bfseries Index\vspace{1em}}]%
+                \twocolumn[\backmattertitle{Index}]%
                 \thispagestyle{plain}\parindent\z@
                 \parskip\z@ \@plus .3\p@\relax
                 \columnseprule \z@

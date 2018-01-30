@@ -33,7 +33,11 @@
 
 \printindex
 
+\begingroup
+\renewcommand\chapter[2]{\backmattertitle{Bibliography}}
 \bibliography{main}{}
+\endgroup
+
 \bibliographystyle{plain}
 
 %\printindex
