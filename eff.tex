@@ -7331,15 +7331,15 @@ Reasoning in a similar way,
 \end{point}
 \begin{point}%
 To show~$b$ lifts along~$m$ and~$h$,
-    it suffices (by the universal property of comprehension)
+    it suffices (by the universal property of comprehensions)
     to show~$(b \after m)_\diamond(1)
         \equiv \IM b\after m \leq \IM h
                     \equiv h_\diamond(1)$.
 \begin{alignat*}{2}
-b_\diamond \after m_\diamond (1)
-    &\ =\  b_\diamond \after g^\BOX \after c^\BOX (0) &\qquad& \text{by dfn.~$m$}\\
-    &\ = \ b_\diamond \after b^\BOX \after k^\BOX (0) \\
-    &\ = \ b_\diamond \after b^\BOX \after h_\diamond (1) && \text{by exactness at~$B'$} \\
+    (b_\diamond \after m_\diamond) (1)
+    &\ =\  (b_\diamond \after g^\BOX \after c^\BOX )(0) &\qquad& \text{by dfn.~$m$}\\
+    &\ = \ (b_\diamond \after b^\BOX \after k^\BOX )(0) \\
+    &\ = \ (b_\diamond \after b^\BOX \after h_\diamond )(1) && \text{by exactness at~$B'$} \\
     &\ \leq \  h_\diamond (1) && \text{as $b_\diamond \dashv b^\BOX$}.
 \end{alignat*}
 So there is a unique~$b'\colon Z \to A'$ with~$h \after b' = b \after m$.
@@ -7353,22 +7353,22 @@ Before we continue,
             \ =\    m^\BOX \after b^\BOX \after h_\diamond.
 \end{equation}
 Next, to show~$b'$ lifts along~$g'$ and~$a_\zeta$,
-    it is sufficient to prove~$b'^\BOX \after a_\zeta^\BOX(0)
+    it is sufficient to prove~$(b'^\BOX \after a_\zeta^\BOX)(0)
         = \ceil{1\after b' \after a_\zeta}^\perp
                 \geq \ceil{1 \after g'}^\perp
                 = g'^\BOX (0)$.
 \begin{alignat*}{2}
-    b'^\BOX \after a_\zeta^\BOX(0)
-        & \ = \ b'^\BOX \after a_\diamond (1)
+    (b'^\BOX \after a_\zeta^\BOX)(0)
+        & \ = \ (b'^\BOX \after a_\diamond)(1)
                 &\qquad& \text{by dfn.~$a_\zeta$} \\
-        & \ = \ m^\BOX \after b^\BOX \after h_\diamond \after a_\diamond (1)
+        & \ = \ (m^\BOX \after b^\BOX \after h_\diamond \after a_\diamond)(1)
                 && \text{by \eqref{snakeceilbprime}} \\
-        & \ = \ m^\BOX \after b^\BOX \after b_\diamond \after f_\diamond (1) \\
-        & \ \geq \ m^\BOX \after f_\diamond (1) 
+        & \ = \ (m^\BOX \after b^\BOX \after b_\diamond \after f_\diamond)(1) \\
+        & \ \geq \ (m^\BOX \after f_\diamond )(1) 
                 && \text{as $b_\diamond \dashv b^\BOX$}\\
-        & \ =\ m^\BOX \after g_\BOX (0) 
+        & \ =\ (m^\BOX \after g_\BOX )(0) 
                 && \text{by exactness at $B$}\\
-        & \ = \ g'^\BOX \after {c_\pi}_\BOX (0) 
+        & \ = \ (g'^\BOX \after (c_\pi)_\BOX )(0) 
                 && \text{by dfn.~$g'$}\\
         & \ \geq \ g'^\BOX (0).
 \end{alignat*}
@@ -7395,19 +7395,19 @@ Our next goal is to show
                 b_\diamond\after g^\BOX \after (c_\pi)_\diamond.
 \end{align*}
 As a first step,
-    note~$\IM m = g^\BOX \after c_\diamond (1) \geq
-        g^\BOX\after (c_\pi)_\diamond(s)$
+    note~$\IM m = (g^\BOX \after c_\diamond )(1) \geq
+        (g^\BOX\after (c_\pi)_\diamond)(s)$
     and so
 \begin{alignat*}{2}
-    g^\BOX\after (c_\pi)_\diamond(s)
+    (g^\BOX\after (c_\pi)_\diamond)(s)
        & \ =\ 
-    g^\BOX\after (c_\pi)_\diamond(s) \wedge  (\IM m) \\
-    &\ = \ m_\diamond \after m^\BOX \after 
-    g^\BOX\after (c_\pi)_\diamond(s)
+    (g^\BOX\after (c_\pi)_\diamond(s)) \wedge  (\IM m) \\
+    &\ = \ (m_\diamond \after m^\BOX \after 
+    g^\BOX\after (c_\pi)_\diamond)(s)
     &\qquad&\text{by \sref{spred-infimum}} \\
-    &\ = \ m_\diamond \after g'^\BOX \after
-    c_\pi^\BOX\after (c_\pi)_\diamond(s) &&\text{by dfn.~$g'$}\\
-    &\ = \ m_\diamond \after g'^\BOX(s)
+    &\ = \ (m_\diamond \after g'^\BOX \after
+    c_\pi^\BOX\after (c_\pi)_\diamond)(s) &&\text{by dfn.~$g'$}\\
+    &\ = \ (m_\diamond \after g'^\BOX)(s)
     &&\text{by \sref{diamondboxlemma}}.
 \end{alignat*}
 and so we only have to show the first two equalities of \eqref{snakedidents}.
@@ -7432,61 +7432,61 @@ The second is trickier.  We need some preparation.
 \begin{equation}\label{snakehdiamondone}
     h_\diamond(1) \ = \ 
     v^\BOX(0)  \vee h_\diamond(1) \ \overset{\mathclap{\sref{spred-sup}}}{=} \ 
-    v^\BOX \after v_\diamond \after h_\diamond(1) \ = \ 
-    v^\BOX \after h'_\diamond (1).
+    (v^\BOX \after v_\diamond \after h_\diamond)(1) \ = \ 
+    (v^\BOX \after h'_\diamond)(1).
 \end{equation}
 As~$h_\diamond \after a^\BOX_\zeta$ is injective,
     the last equality follows from
 \begin{alignat*}{2}
-    &h_\diamond \after a_\zeta^\BOX \after (a_\zeta)_\diamond \after
+    &(h_\diamond \after a_\zeta^\BOX \after (a_\zeta)_\diamond \after
                     h^\BOX \after b_\diamond \after
-    m_\diamond \after g'^\BOX  (s)\\
+    m_\diamond \after g'^\BOX )(s)\\
     &\qquad \ =\ 
-    h_\diamond ( h^\BOX \after b_\diamond \after
-    m_\diamond \after g'^\BOX  (s) \vee a_\zeta^\BOX(0)) 
+    (h_\diamond ( h^\BOX \after b_\diamond \after
+    m_\diamond \after g'^\BOX  )(s) \vee a_\zeta^\BOX(0)) 
         &\qquad&\text{by \sref{spred-sup}}\\
     &\qquad \ =\ 
-    h_\diamond \after  h^\BOX \after b_\diamond \after
-    m_\diamond \after g'^\BOX  (s) \vee h_\diamond \after a_\zeta^\BOX(0)
+    (h_\diamond \after  h^\BOX \after b_\diamond \after
+    m_\diamond \after g'^\BOX )(s) \vee (h_\diamond \after a_\zeta^\BOX)(0)
         &\qquad&\text{as~$h_\diamond \dashv h^\BOX$}\\
     &\qquad \ =\ 
-    h_\diamond \after  h^\BOX \after b_\diamond \after
-    m_\diamond \after g'^\BOX  (s) \vee v^\BOX(0)
+    (h_\diamond \after  h^\BOX \after b_\diamond \after
+    m_\diamond \after g'^\BOX )(s) \vee v^\BOX(0)
         &\qquad&\text{by dfns.~$v$,$a_\zeta$}\\
     &\qquad \ =\ 
-    ( b_\diamond \after
-    m_\diamond \after g'^\BOX  (s) \wedge h_\diamond(1)) \vee v^\BOX(0)
+    (\,( b_\diamond \after
+    m_\diamond \after g'^\BOX ) (s) \wedge h_\diamond(1)\,) \vee v^\BOX(0)
         &\qquad&\text{by \sref{spred-infimum}}\\
     &\qquad \ =\ 
-    b_\diamond \after
-    m_\diamond \after g'^\BOX  (s)  \vee v^\BOX(0)
+    (b_\diamond \after
+    m_\diamond \after g'^\BOX  )(s)  \vee v^\BOX(0)
         &\qquad&\text{as $b_\diamond \after m_\diamond (1) \leq h_\diamond(1)$}\\
     &\qquad \ =\ 
-    (b_\diamond \after
-    m_\diamond \after g'^\BOX  (s)  \vee v^\BOX(0)
+    (\, (b_\diamond \after
+    m_\diamond \after g'^\BOX ) (s)  \vee v^\BOX(0)\,
     ) \wedge h_\diamond(1)
         &\qquad&\text{as $v^\BOX(0) \leq h_\diamond(1)$}\\
     &\qquad \ =\ 
-    v^\BOX \after v_\diamond \after  b_\diamond \after
-    m_\diamond \after g'^\BOX  (s)  \wedge h_\diamond(1)
+    (v^\BOX \after v_\diamond \after  b_\diamond \after
+    m_\diamond \after g'^\BOX  )(s)  \wedge h_\diamond(1)
         &\qquad&\text{by \sref{spred-sup}} \\
     &\qquad \ =\ 
     v^\BOX \after v_\diamond \after  b_\diamond \after
     m_\diamond \after g'^\BOX  (s)  \wedge v^\BOX \after h'_\diamond(1)
         &\qquad&\text{by \eqref{snakehdiamondone} } \\
     &\qquad \ =\ 
-    v^\BOX (v_\diamond \after  b_\diamond \after
-    m_\diamond \after g'^\BOX  (s)  \wedge  h'_\diamond(1))
+    v^\BOX (\,(v_\diamond \after  b_\diamond \after
+    m_\diamond \after g'^\BOX ) (s)  \wedge  h'_\diamond(1)\,)
         &\qquad&\text{as~$v^\BOX \vdash v_\diamond$} \\
     &\qquad \ =\ 
-    v^\BOX \after h'_\diamond
+    (v^\BOX \after h'_\diamond
     \after h'^\BOX \after  v_\diamond \after  b_\diamond \after
-    m_\diamond \after g'^\BOX  (s)
+    m_\diamond \after g'^\BOX  )(s)
         &\qquad&\text{by \sref{spred-infimum}}\\
     &\qquad \ =\ 
-    h_\diamond \after a_\zeta^\BOX \after
+    (h_\diamond \after a_\zeta^\BOX \after
     h'^\BOX \after  v_\diamond \after  b_\diamond \after
-    m_\diamond \after g'^\BOX  (s),
+    m_\diamond \after g'^\BOX )(s),
 \end{alignat*}
 where~$
     h_\diamond \after a_\zeta^\BOX \after =
@@ -7500,31 +7500,31 @@ We will first derive exactness in~$\cok a$
     from the right-modularity of~$b$ over~$\IM h$.
 \begin{alignat*}{2}%
     d_\diamond(1) &
-    \ = \  (a_\zeta)_\diamond \after h^\BOX \after b_\diamond
-            \after g^\BOX \after (c_\pi)_\diamond(1)
+    \ = \  ((a_\zeta)_\diamond \after h^\BOX \after b_\diamond
+            \after g^\BOX \after (c_\pi)_\diamond)(1)
             &\qquad&\text{by \eqref{snakedidents}} \\
-    & \ = \ (a_\zeta)_\diamond \after h^\BOX \after 
-                b_\diamond \after g^\BOX \after c^\BOX(0) 
+    & \ = \ ((a_\zeta)_\diamond \after h^\BOX \after 
+                b_\diamond \after g^\BOX \after c^\BOX)(0) 
                 &&\text{by dfn.~$c_\pi$}\\
-    & \ = \ (a_\zeta)_\diamond \after h^\BOX \after 
-    b_\diamond \after b^\BOX \after k^\BOX(0) \\
-    & \ = \ (a_\zeta)_\diamond \after h^\BOX \after 
-    b_\diamond \after b^\BOX \after h_\diamond(1) 
+    & \ = \ ((a_\zeta)_\diamond \after h^\BOX \after 
+    b_\diamond \after b^\BOX \after k^\BOX)(0) \\
+    & \ = \ ((a_\zeta)_\diamond \after h^\BOX \after 
+    b_\diamond \after b^\BOX \after h_\diamond)(1) 
     &\qquad&\text{by exactness in~$B'$}\\
-    & \ = \ (a_\zeta)_\diamond \after h^\BOX (
+    & \ = \ ((a_\zeta)_\diamond \after h^\BOX) (
     b_\diamond(1) \wedge h_\diamond(1))
         &&\text{by right-modularity}\\
-    & \ = \ (a_\zeta)_\diamond \after h^\BOX \after 
-    h_\diamond \after h^\BOX \after b_\diamond(1)
+    & \ = \ ((a_\zeta)_\diamond \after h^\BOX \after 
+    h_\diamond \after h^\BOX \after b_\diamond)(1)
     &&\text{by \sref{spred-infimum}} \\
-    & \ = \ (a_\zeta)_\diamond \after h^\BOX
-    \after b_\diamond(1)
+    & \ = \ ((a_\zeta)_\diamond \after h^\BOX
+    \after b_\diamond)(1)
     &&\text{as $h^\BOX \vdash h_\diamond$}\\
-    & \ = \ (a_\zeta)_\diamond \after h^\BOX
-    \after b_\zeta^\BOX(0)
+    & \ = \ ((a_\zeta)_\diamond \after h^\BOX
+    \after b_\zeta^\BOX)(0)
     &&\text{by dfn.~$b_\zeta$} \\
-    & \ = \ (a_\zeta)_\diamond \after a_\zeta^\BOX
-    \after \smash{\overline{h}^\BOX} (0)
+    & \ = \ ((a_\zeta)_\diamond \after a_\zeta^\BOX
+    \after \smash{\overline{h}^\BOX} )(0)
     &&\text{by dfn.~$\overline{h}$}\\
     & \ = \ \smash{\overline{h}^\BOX} (0)
     &&\text{by \sref{diamondboxlemma}.}
@@ -7540,16 +7540,16 @@ We will first derive exactness in~$\cok a$
     we will use left-modularity of~$k$ in~$\IM b$:
 \begin{alignat*}{2}
     \overline{h}_\diamond(1) 
-        & \ = \ \overline{h}_\diamond \after (a_\zeta)_\diamond
-                \after a_\zeta^\BOX(1)
+        & \ = \ (\overline{h}_\diamond \after (a_\zeta)_\diamond
+                \after a_\zeta^\BOX)(1)
                 &\qquad&\text{by \sref{diamondboxlemma}} \\
-        & \ = \ \overline{h}_\diamond \after (a_\zeta)_\diamond(1)
+        & \ = \ (\overline{h}_\diamond \after (a_\zeta)_\diamond)(1)
                 &&\text{as $a_\zeta^\BOX \dashv (a_\zeta)_\diamond$}\\
-        & \ = \ (b_\zeta)_\diamond \after h_\diamond(1)
+        & \ = \ ((b_\zeta)_\diamond \after h_\diamond)(1)
                 &&\text{by dfn.~$\overline{h}$}\\
-        & \ = \ (b_\zeta)_\diamond \after
+        & \ = \ ((b_\zeta)_\diamond \after
                 b^\BOX_\zeta \after (b_\zeta)_\diamond \after
-        h_\diamond(1)
+        h_\diamond)(1)
                 &&\text{as~$(b_\zeta)_\diamond \dashv b^\BOX_\zeta$}\\
         & \ = \ (b_\zeta)_\diamond (
                     h_\diamond(1) \vee b_\zeta^\BOX(0))
@@ -7560,19 +7560,19 @@ We will first derive exactness in~$\cok a$
         & \ = \ (b_\zeta)_\diamond (
                     k^\BOX(0) \vee b_\diamond(1))
                 &&\text{exactness in~$B'$}\\
-        & \ = \ (b_\zeta)_\diamond \after
-                    k^\BOX \after k_\diamond \after b_\diamond(1)
+        & \ = \ ((b_\zeta)_\diamond \after
+                    k^\BOX \after k_\diamond \after b_\diamond)(1)
                 &&\text{by left-modularity}\\
-        & \ = \ (b_\zeta)_\diamond \after
-                    k^\BOX \after c_\diamond \after g_\diamond(1) \\
-        & \ = \ (b_\zeta)_\diamond \after
-                    k^\BOX \after c_\diamond (1) 
+        & \ = \ ((b_\zeta)_\diamond \after
+                    k^\BOX \after c_\diamond \after g_\diamond)(1) \\
+        & \ = \ ((b_\zeta)_\diamond \after
+                    k^\BOX \after c_\diamond )(1) 
                     && \text{as quotients are faithful}\\
-        & \ = \ (b_\zeta)_\diamond \after
-                    k^\BOX \after c_\zeta^\BOX  (0) 
+        & \ = \ ((b_\zeta)_\diamond \after
+                    k^\BOX \after c_\zeta^\BOX)  (0) 
                     && \text{by dfn.~$c_\zeta$}\\
-        & \ = \ (b_\zeta)_\diamond \after
-                    b_\zeta^\BOX \after \smash{\overline{k}^\BOX}  (0) 
+        & \ = \ ((b_\zeta)_\diamond \after
+                    b_\zeta^\BOX \after \smash{\overline{k}^\BOX} ) (0) 
                     && \text{by dfn.~$\overline{k}$}\\
         & \ = \ \smash{\overline{k}^\BOX}  (0) 
                     && \text{by \sref{diamondboxlemma}}.
@@ -7604,15 +7604,6 @@ One normally thinks of a category of spaces as being quite different
 \end{point}
 \end{parsec}
 
-
-    %  operational, wilce: \cite{barnum2013symmetry}
-    % vicary frob cstar: \cite{vicary2011categorical}
-    % meas without sums \cite{coecke2006quantum}
-    % cpstar \cite{coecke2016categories}
-    % dagger compact closed \cite{selinger2007dagger}
-    % dagger split sel \cite{heunen2013completely}
-
-    % bohrification \cite{heunen2012bohrification}
 \end{document}
 
 % vim: ft=tex.latex
