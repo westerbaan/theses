@@ -782,7 +782,7 @@ The coproduct~$X + Y$ is the union data type of~$X$ and~$Y$.
 An arrow~$1 \to X$ is a value of~$X$
     and an arrow~$X \to 1+1$ is a predicate on~$X$.
 \end{point}
-\begin{point}%
+\begin{point}[effectus-vn]%
 Our main example of an effectus in total form
     is the category~$\op{\vN}$
     of von Neumann algebras with completely positive normal unital
@@ -1943,9 +1943,9 @@ a \Define{predicate} on~$X$ is a map~$X \to 1$.
 The set of predicates~$\Pred X$ on~$X$ is (by definition of an effectus
     in partial form) an effect algebra.
 \item
-A \Define{scalar} is a predicate on~$1$, that is: a map~$1 \to 1$.
+A \Define{scalar} is a predicate on~$1$; that is, a map~$1 \to 1$.
         \index{scalar}
-Write~$\Define{\Scal C} \equiv \Define{M} \equiv \Pred 1$ for the set of scalars.
+We write~$\Define{\Scal C} \equiv \Define{M} \equiv \Pred 1$ for the set of scalars.
         \index{$M$}
         \index{ScalC@$\Scal C$}
 We multiply two scalars~$\lambda,\mu \colon 1 \to 1$
@@ -1964,7 +1964,7 @@ we write~$\Define{\lambda \cdot p} \equiv \lambda \after p$.
         \index{*lambdacdot@$\lambda \cdot p$}
 Again due to $\mathsf{PCM}$-enrichment and~$1_M = \id_M$,
 this scalar multiplication
-turns~$\Pred X$ into a~$M$-effect module, see \sref{dfn-effect-module}.
+turns~$\Pred X$ into an~$M$-effect module, see \sref{dfn-effect-module}.
 \item
 For~$f\colon X \to Y$ in~$C$,
         define~$\Define{\Pred(f)} \colon \Pred Y \to \Pred X$
@@ -1994,11 +1994,12 @@ An effectus~$C$ has \Define{separating predicates}
 \end{enumerate}
 \end{point}
 \begin{point}{Example}%
-The category~$\op\vN$ is a real effectus ($M \cong [0,1]$)
+    The category~$\op\vN$ (see \sref{effectus-vn})
+    is a real effectus ($M \cong [0,1]$)
     with separating states and predicates.
 The predicates on a von Neumann algebra~$\scrA$
-    is the set of effects~$[0,1]_\scrA$
-    and~$\Stat \scrA$ is the convex set of normal states.
+    correspond to the the set of effects~$[0,1]_\scrA$
+    and~$\Stat \scrA$ can be identified with the convex set of normal states.
 \end{point}
 \end{parsec}
 \begin{parsec}%
@@ -2009,17 +2010,18 @@ Does every effect monoid~$M$ occur as the effect monoid of scalars of some
 We will show they do, in the following strong sense.
 \end{point}
 \begin{point}[emod-effectus]{Theorem}%
+    Let~$M$ be any effect monoid.
     The category~$\EMod^{\mathsf{op}}_M$ is an effectus in total form
-        (with scalars~$M$) for any effect monoid~$M$.
+        with scalars~$M$.
 In fact: every effectus~$C$ in total form
     with scalars~$M$ and separating predicates
     is equivalent to a subcategory of~$\EMod^{\mathsf{op}}_M$.
 \begin{point}{Proof}%
 To show~$\EMod^{\mathsf{op}}_M$ is an effectus,
     we have to show the dual  axioms for~$\EMod_M$.
-\begin{point}{Finite products and initial object}%
+\begin{point}{Finite products}%
 For every~$M$-effect module~$E$,
-    there is a unique $M$-effect modulemap~$M \to E$,
+    there is a unique $M$-effect module map~$!\colon M \to E$,
     which is given by~$\lambda \mapsto \lambda \cdot 1$.
 So~$M$ is the initial object of~$\EMod_M$.
 The one-element $M$-effect module~$\{0=1\}$ is the final object.
@@ -2036,7 +2038,7 @@ The effect module~$E \times F$
 \begin{point}{Pushout diagrams}%
 To show the pushout diagrams corresponding to \eqref{pullbacks} hold,
 assume we are given $M$-effect modules~$E,F,G$
-    with modulemaps~$\alpha,\beta,\delta$
+    with module maps~$\alpha,\beta,\delta$
     that make the  outer squares of the following diagrams commute.
 \begin{equation*}
     \xymatrix{
@@ -2058,6 +2060,8 @@ assume we are given $M$-effect modules~$E,F,G$
     & M \times M \ar[l]^{!\times!} \ar[u]_{\pi_1}
     }
 \end{equation*}
+    We have to show that there are unique dashed arrows (as shown)
+    that make these diagrams commute.
 We start with the left diagram.
 By assumption~$\alpha \after (! \times \id) = \beta \after (\id \times !)$,
     so in particular~$\alpha(1,0) = \beta(1,0)$.
@@ -2067,12 +2071,13 @@ By assumption~$\alpha \after (! \times \id) = \beta \after (\id \times !)$,
             so~$\alpha(x,0) \perp \beta(0,y)$.
 Define~$f\colon E\times F \to G$
     by~$f(x,y) = \alpha(x,0) \ovee \beta(0,y)$.
-It is easy to see~$f$ is additive
+    It is easy to see~$f$ is (partially) additive
     and~$f(1,1) = \alpha(1,0) \ovee \beta(0,1) = \beta(1,1)=1$,
-    so~$f$ is a modulemap.
+    so~$f$ is a module map.
 We compute
 \begin{equation*}
-\alpha(x,0) \ovee \beta(0,\lambda \cdot 1)
+    f(x, \lambda \cdot 1)
+\ = \ \alpha(x,0) \ovee \beta(0,\lambda \cdot 1)
 \ = \ \alpha(x,0) \ovee \lambda \cdot \alpha(0, 1)
 \ = \ \alpha(x,\lambda)
 \end{equation*}
@@ -2139,8 +2144,8 @@ So if~$C$ has separating predicates,
 \begin{parsec}%
 \begin{point}%
 We studied the structure of predicates in an effectus.  What about the states?
-They will turn out to be abstract~$M$-convex sets.
-Before we define those, we introduce a generalized distribution monad.
+They will turn out to form an abstract~$M$-convex set.
+Before we define these, we introduce a generalized distribution monad.
 \end{point}
 \begin{point}{Definition}%
 Let~$M$ be an effect monoid
@@ -2183,12 +2188,15 @@ Define~$\eta \colon X \to \mathcal{D}_M X$
         \bigovee_{\varphi}
         \Phi(\varphi) \odot \varphi(x).
     \end{equation*}
+(That is: 
+        $\mu (\bigovee_i \sigma_i \ket{\bigovee_j \lambda_{ij} \ket{x_{ij}}})
+            = \bigovee_{i,j} (\sigma_i \odot \lambda_{ij})\ket{x_{ij}}$.)\\
 Show that~$(\mathcal{D}_M, \eta,\mu)$
     is a monad.
 \item
     Show that~$\Kl \mathcal{D}_M$,
     the Kleisli category of~$\mathcal{D}_M$
-    (See e.g.~\cite[\S 2.6]{basmsc}.),
+    (see eg.~\cite[\S 2.6]{basmsc}.),
     is an effectus
     with~$M$ as scalars.
 \end{enumerate}
@@ -2238,7 +2246,7 @@ provided
     h(\lambda \ket{y} \ovee \lambda^\perp \ket{x_2})
     \quad\text{implies}\quad~x_1=x_2
 \end{equation*}
-    for any~$x_1,x_2,y \in X$ and~$\lambda \in M, \lambda \neq 0$.
+    for any~$x_1,x_2,y \in X$ and~$\lambda \in M, \lambda \neq 1$.
 \end{point}
 \begin{point}{Examples}%
 We give some examples of abstract convex sets.
@@ -2257,7 +2265,8 @@ Consider~$T \subseteq [0,1]^2$
 Say~$(x,y) \sim (x',y')$
     whenever~$x = x'$ and either $x\neq 0$ or~$y=y'$.
 This equivalence relation~$\sim$
-is a congruence (see \sref{aconv-cong}) for the convex structure on~$T$
+is a congruence (we will cover these in \sref{aconv-cong})
+        for the convex structure on~$T$
     (inherited by~$\R^2$)
     and so~$T /_\sim$ is an abstract~$[0,1]$-convex set.
 That is: we start of with a filled triangle
@@ -2329,7 +2338,7 @@ Furthermore, every semilattice~$(L, \vee)$
     h\bigl(\lambda_1 \ket{x_1} \ovee \cdots \ovee \lambda_n \ket{x_n}\bigr)
         \ =\  \bigvee_{i; \lambda_i \neq 0} x_i.
     \end{equation*}
-    A semilattice is cancellative as abstract $[0,1]$-convex set
+    A semilattice~$L$ is cancellative as abstract $[0,1]$-convex set
     if and only if~$x=y$ for all~$x,y\in L$.
     See~\cite{neumann1970quasivariety}.
 \item
@@ -2421,7 +2430,7 @@ We can show it is, if~$M$ has a certain partial division.
 Unfortunately it will remain unclear if~$\AConvM$ is an effectus in general.
 The case~$M=[0,1]$ is much easier and has already been dealt with
         in \cite{statesofconvexsets}. 
-The first step is to uncover the coproduct in~$\AConvM$.
+The first step is to study the coproduct in~$\AConvM$.
 To construct the coproduct, we will need to know
     about quotients of abstract~$M$-convex sets.
 \end{point}
@@ -2429,11 +2438,11 @@ To construct the coproduct, we will need to know
 In this exercise you construct the quotient of an
     abstract~$M$-convex set by a congruence.
 Assume~$(X,h)$ is an abstract~$M$-convex set
-    and~$\sim \subseteq X^2$ is an equivalence relation.
-Write~$X/_\sim$ for the equivalence classes
+    and~${\sim} \subseteq X^2$ is an equivalence relation.
+Write~$X/_\sim$ for the set of equivalence classes
     of~$\sim$
     and~$q\colon X \to X/_\sim$
-    for~$q(x) = [x]_\sim$.
+    for~$q(x) = [x]_\sim$, where~$[x]_\sim$ is the equivalence class of~$x$.
 For~$\varphi,\psi \in \mathcal{D}_M X$,
     we write~$\varphi \sim \psi$
     provided~$(\mathcal{D}_M q)(\varphi) = (\mathcal{D}_M q)(\psi)$.
@@ -2450,7 +2459,7 @@ Show that the following are equivalent.
 \item
 $\sim$ is a congruence.
 \item
-There is a map~$h_\sim \colon \mathcal{D}_M X_\sim \to X/_\sim$
+There is a map~$h_\sim \colon \mathcal{D}_M X/_\sim \to X/_\sim$
     such that~$h_\sim \after \mathcal{D}_M q = q \after h$.
 \end{enumerate}
 By the previous point $h_\sim$ is unique, if it exists.
@@ -2461,7 +2470,8 @@ Use the previous two points to show
 h_\sim \after \mathcal{D}_M h_\sim \after \mathcal{D}_M \mathcal{D}_M q
             \ =\  h_\sim \after \mu \after \mathcal{D}_M \mathcal{D}_M q.
 \end{equation*}
-Conclude~$(X/_\sim,h_\sim)$ is an abstract~$M$-convex set.
+Conclude that~$(X/_\sim,h_\sim)$ is an abstract~$M$-convex set
+    and that the qoutient map~$q\colon X \to X/_\sim$ is~$M$-affine.
 \end{enumerate}
 \end{point}
 \begin{point}[affine-kernel-cong]{Exercise}%
@@ -2483,7 +2493,7 @@ For~$\psi_1,\psi_2 \in \mathcal{D}_M X$,
     if there is a \emph{derivation}: a tuple~$\varphi_1, \ldots, \varphi_n \in \mathcal{D}_M X$
 (say~$\varphi_i \equiv \bigovee^{n_i}_{j = 1}  \lambda_{ij}\ket{x_{ij}}$)
 such that~$\varphi_1 = \psi_1$, $\varphi_n = \psi_2$ 
-    and for each~$1 \leq i<n$ one of the following two conditions holds.
+    and for each~$1 \leq i<n$ \emph{one} of the following two conditions holds.
 \begin{enumerate}
 \item
     $n_i = n_{i+1}$
@@ -2532,6 +2542,8 @@ with
 \end{equation}
     for all~$\varphi \in \mathcal{D}_M X$
     and~$\psi \in \mathcal{D}_M Y$.
+(Alternatively: $\sim$ is the least congruence
+    that makes~$\eta \after \kappa_1$ and~$\eta\after\kappa_2$ affine.)
 Write~$q\colon \mathcal{D}_M (X+Y) \to C$
     for the quotient of~$\mathcal{D}_M(X+Y)$ by~$\sim$, see~\sref{aconv-cong}.
     Denote the convex structure on~$C$ by~$h$.
@@ -2553,7 +2565,7 @@ We start with the affinity of the coprojections:
     & \ =\  \mu \after \mathcal{D}_Mq \after \mathcal{D}_M \eta \after \mathcal{D}_M \kappa_1. \\
     & \ =\  \mu \after \mathcal{D}_M c_1,
 \end{alignat*}
-so~$c_1$ is affine. With the same reasoning, we see~$c_2$ is affine.
+so~$c_1$ is affine. With similar reasoning, we see~$c_2$ is affine.
 \begin{point}%
 Assume~$f\colon X \to Z$ and~$g\colon Y \to Z$
     are two affine maps to some abstract~$M$-convex set~$(Z,h_Z)$.
@@ -2600,7 +2612,7 @@ Now
 and similarly~$k \after c_2 = g$.
 \end{point}
 \begin{point}%
-Only uniqueness of~$k$ remains to be shown.
+Only uniqueness of~$k$ remains.
 So assume~$k'\colon C \to Z$ is an affine map
     such that~$k' \after c_1 = f$
     and~$k' \after c_2 = g$.
@@ -2704,7 +2716,7 @@ To continue, show that in~$\AConvM$
 \begin{parsec}%
 \begin{point}[aconvalmosteffectus]{Proposition}%
 The category~$\AConvM$ obeys all the axioms of an effectus in total
-form except for the left pullback-square of~\eqref{pullbacks}.
+form except for the left pullback square of~\eqref{pullbacks}.
 \begin{point}{Proof}%
 In \sref{aconv-coprod} we proved~$\AConvM$ has binary coproducts
     and in \sref{n-times-one-aconvm}
@@ -2714,7 +2726,7 @@ As~$\mathcal{D}_M \emptyset = \emptyset$,
     and in fact the initial object of~$\AConvM$.
 \end{point}
 \begin{point}%
-We continue with joint-monicity
+We continue with joint monicity
     of~$[\kappa_1,\kappa_2,\kappa_2],
     [\kappa_2,\kappa_1,\kappa_2]\colon 1+1+1 \to 1+1$.
 We can represent the convex set~$1+1+1$
@@ -2776,7 +2788,7 @@ As~$(!+!) \after \alpha = ! \after \kappa_1$,
     we must have~$\bigovee_i \sigma_i = 0$
     and so~$\alpha(z) = \kappa_1(x_z)$
     for some~$x_z \in X$.
-This~$x_z$ is unique by injectivity of~$\kappa_1$.
+This~$x_z$ is unique by supposed injectivity of~$\kappa_1$.
     Define~$\gamma(z) = x_z$.
 By definition~$\kappa_1 \after \gamma = \alpha$.
 To see~$\gamma$ is affine, pick any~$\varphi \in \mathcal{D}_M (Z)$.
@@ -2818,7 +2830,8 @@ There are two possible derivation steps, see \sref{elements-coprod-conv}.
 In the first case (i.e.~$\mu(\Phi_i) = \mu(\Phi_{i+1})$)
     it is obvious~$\mathrm{IH}(i+1)$ holds.
 So we continue with the other case,
-where (among others) we have~$\zeta_{ij} = \zeta_{(i+1)j}$.
+where (among others) we have~$\zeta_{ij} = \zeta_{(i+1)j}$,
+    where~$\Phi_i \equiv \bigovee_j \zeta_{ij} \ket{\varphi_{ij}}$.
 Without loss of generality, we may assume~$\zeta_{ij} \neq 0$.
 For each~$j$ there are three possibilities, see \sref{elements-coprod-conv}.
 The third does not occur:
@@ -2828,7 +2841,7 @@ if~$\varphi_{ij_0} = (\mathcal{D}_M \kappa_2) (\chi)$
 \begin{equation*}
     0\ = \ 
     \bigovee_y \mu(\Phi_i)(\kappa_2(y))
-    \ = \ \bigovee_{y,j} \zeta_{ij} \odot \varphi(\kappa_2(y))
+    \ = \ \bigovee_{y,j} \zeta_{ij} \odot \varphi_{ij}(\kappa_2(y))
     \ \geq \ \bigovee_y \zeta_{ij_0} \odot \chi(y)\  \neq\  0.
 \end{equation*}
 We are left with two possibilities ---
@@ -2843,10 +2856,10 @@ We are left with two possibilities ---
     We will show the first part of~$\mathrm{IH}(i+1)$.
 Pick any~$y \in Y$.
 If~$j \in J$, then~$\zeta_{(i+1)j}\odot \varphi_{(i+1)j}(\kappa_2(y))
-= \zeta_{(i+1)j} \odot \varphi_{(i+1)j}(\kappa_2(y)) = 0$.
+= \zeta_{ij} \odot \varphi_{ij}(\kappa_2(y)) = 0$.
 In the other case, if~$j \notin J$,
 then clearly~$\zeta_{(i+1)j}\odot \varphi_{(i+1)j}(\kappa_2(y)) = 0$
-    as~$\varphi_{(i+1)j} = \mathcal{D}_M(\chi')$.
+    as~$\varphi_{(i+1)j} = (\mathcal{D}_M \kappa_1)(\chi')$.
 So, we have~$\bigovee_y \mu(\Phi_{i+1})(\kappa_2(y))
 = \bigovee_{y,j} \zeta_{(i+1)j} \odot \varphi_{(i+1)j} (\kappa_2(y)) = 0 $.
 
@@ -2914,6 +2927,12 @@ Now~\eqref{eqkappainj} follows from~$h_X(\chi) = h_X(\chi')$. \qed
 \end{parsec}
 
 \begin{parsec}%
+\begin{point}%
+It is unclear whether the left square of~\eqref{pullbacks}
+    is a pullback in~$\AConvM$.
+We will see that it is, if we assume that~$M$ has
+        a partial division in the following sense.
+\end{point}
 \begin{point}[dfn-effect-divisoid]{Definition}%
 An \Define{effect divisoid}
     \index{effect divisoid}
@@ -2999,8 +3018,8 @@ $C(X)$ is~$\sigma$-Dedekind complete
             bounded ascending, resp.~descending, sequences).
 \begin{enumerate}
 \item
-    Let~$C(X)$ is an effect divisoid
-        together with some~$f \in C(X), 0 \leq f \leq 1$.
+    Suppose the unit interval of~$C(X)$ is an effect divisoid.
+        Let~$f \in C(X)$ with~$0 \leq f \leq 1$.
     Pick any~$y \notin \overline{\supp f}$.
     Show, using Urysohn's lemma,
     that there is a~$g \in C(X), 0\leq g \leq \rfrac{f}{f}$
@@ -3021,7 +3040,7 @@ has open closure and so
     \end{cases}
 \end{equation*}
 is continuous.
-Note~$h_1 \leq h_2 \leq \ldots $
+Note~$h_1 \leq h_2 \leq \ldots \leq 1$
     and define~$\rfrac{f}{g} = \sup_n h_n$.
 Show~$\rfrac{f}{f}$ is the characteristic function
     of~$\overline{\supp f}$ and
@@ -3088,9 +3107,9 @@ See also~\cite[Prop.~15]{statesofconvexsets}.
 If~$M$ is an effect divisoid,
     then~$\AConvM$ is an effectus.
 \begin{point}{Proof}%
-It only remains to be shown that the square on the left
+We only have to show that the square on the left
     of \eqref{pullbacks} is a pullback in~$\AConvM$
-    --- the other axioms are proven in \sref{aconvalmosteffectus}.
+    --- the other axioms were proven in \sref{aconvalmosteffectus}.
 \begin{equation*}
 \xymatrix{
     Z \ar@/^1pc/[rrd]^\beta
@@ -3122,7 +3141,7 @@ for some~$\lambda_i, \sigma_i \in M$,
     where~$h_1$ and~$h_2$ are the convex structures
     on~$1+Y$ and~$X+1$, respectively.
 Unfolding definitions
-    (and identifying~$1+1 \cong M$ with~$\kappa_1 (\cdot) = 1$),
+    (and identifying~$1+1 \cong M$ via~$\kappa_1 (\cdot) = 1$),
     it is easy to
     see that by assumption
 \begin{equation}\label{aconv-epb-ass}
@@ -3131,7 +3150,7 @@ Unfolding definitions
     (\id + !)(\alpha(z)) \ =\  \lambda_0
     \ = \ \Bigl(\bigovee^n_{i=1} \lambda_i\Bigr)^\perp.
 \end{equation}
-So we are tempted to define
+This suggests the following definition
 \begin{equation}\label{aconvmexpuldefgamma}
     \gamma(z) \ = \  h_3 \Bigl(
     \bigovee^n_{i=1} \lambda_i \ket{\kappa_2(y_i)}
@@ -3307,7 +3326,7 @@ q_1\colon \mathcal{D}_M(X+Y) \to X+Y \quad
 q_2\colon \mathcal{D}_M(1+Y) \to 1+Y \quad
 q_3\colon \mathcal{D}_M(X+1) \to X+1
 \end{equation*}
-for the quotient-maps used in the construction of the coproducts.
+for the quotient maps used in the construction of the coproducts.
 We worked hard to show
 that
 for all~$z \in Z$, $\varphi \in \mathcal{D}_M Y$,
@@ -3398,12 +3417,12 @@ In~$\op{\vN}$ quotients are exactly the same thing
     as contractive filters,
     see~\sref{dils-def-filter}, \sref{filter}
     and~\sref{canonical-filter}.
-An example of a quotient-map for~$1-a \in \scrA$ is given
+An example of a quotient map for~$1-a \in \scrA$ is given
     by~$\xi\colon \ceil{a}\scrA \ceil{a} \to \scrA$
     with~$\xi(b) = \sqrt{a} b \sqrt{a}$.
 \end{point}
 \begin{point}[quotient-basics]{Exercise}%
-Show the following basic properties of quotients.
+Verify the following basic properties of quotients.
 \begin{enumerate}
     \item If~$\xi\colon X \to Y$ is a quotient for~$p$
                 and~$\vartheta\colon Y \to Z$ is an isomorphism,
@@ -3473,7 +3492,7 @@ We are in the following situation.
         && X/_{(q \after \xi_1)^\perp} \ar@{.>}@/^/[u]^{g}
     }
 \end{equation*}
-We claim~$g$ is an isomorphism with inverse~$h_2$.
+We claim~$g$ and~$h_2$ are eachothers inverse.
 Indeed: from $g \after h_2 \after \xi_2 \after \xi_1= g \after \xi = \xi_2 \after \xi_1$
     we get~$g \after h_2 = \id$
     and from~$h_2 \after g \after \xi = h_2 \after \xi_2 \after \xi_1 = \xi$
@@ -3484,7 +3503,7 @@ which shows~$\xi_2 \after \xi_1$ is a quotient, see \sref{quotient-basics}. \qed
 \end{point}
 \begin{point}[quot-fact-system]{Exercise}
 By \sref{quotient-total} we know that each
-    map~$f$ factors as~$t \after \xi$
+    map~$f$ in an effectus with quotients factors as~$t \after \xi$
     for some total map~$t$ and quotient~$\xi$.
 Show that this forms an orthogonal factorization system (cf.~\cite{korostenski1993factorization}) ---
     that is: prove that if~$t' \after \xi' = t \after \xi$
@@ -3498,7 +3517,7 @@ Show that this forms an orthogonal factorization system (cf.~\cite{korostenski19
 \begin{parsec}%
 \begin{point}%
 In \sref{quot-fact-system} we saw
-    that every partial map~$f$
+    that every  map~$f$
     factors uniquely via a quotient for~$(1 \after f)^\perp$.
 In this sense quotients are the universal way to restrict to the
     support on the domain --- so why do we call them quotients
@@ -3514,7 +3533,7 @@ For an effectus~$C$,
         where~$X$ is an object of~$C$
         and~$p \in \Pred X$ and
 \item
-    an between~$(X,p)$ and~$(Y,q)$
+    an morphism between~$(X,p)$ and~$(Y,q)$
     corresponds to a partial map~$f\colon X \to Y$ in~$C$
        for which we have~$p \leq (q^\perp \after f)^\perp$.
 \end{enumerate}
@@ -3523,9 +3542,9 @@ for the forgetful functor --- that is:~$U(X,p) = X$
 and~$Uf = f$ for arrows~$f$.
 The functor~$U$ has left- and right-adjoint
     $0 \dashv U \dashv 1$
-    given by
+    with
     $0,1 \colon C \to \int \Pred_\square$
-    with~$0X = (X,0)$, $1X = (X,1)$
+    given by~$0X = (X,0)$, $1X = (X,1)$
     and~$0f=1f=f$.
 \end{point}
 \begin{point}{Exercise*}%
@@ -3533,14 +3552,13 @@ Show that for an effectus~$C$, the following are equivalent.
 \begin{enumerate}
 \item $C$ has quotients.
 \item The functor~$0\colon C \to \int \Pred_\square$,
-            see \sref{dfn-eff-grothendieck},
         has a left-adjoint~$Q \colon \int\Pred_\square \to C$.
 \end{enumerate}
 \end{point}
 \begin{point}%
-If the existence of a left-adjoint~$Q$ to~$0$
+If the existence of a left adjoint~$Q$ to~$0$
     gives quotients,
-    what does the existence of a right-adjoint~$K$ to~$1$ amount to?
+    what does the existence of a right adjoint~$K$ to~$1$ amount to?
     It will turn out (\sref{compr-grothendieck})
     this is equivalent to the existence of
         so-called \emph{comprehensions},
@@ -3610,7 +3628,7 @@ An example of a comprehension for~$a \in \scrA$
     Show that an effectus~$C$ has comprehension if and only
         if the functor~$1 \colon C \to \int \Pred_\square$
         from \sref{dfn-eff-grothendieck}
-        has a right-adjoint~$K$.
+        has a right adjoint~$K$.
 \end{point}
 \begin{point}[compr-basics]{Exercise}%
 Show the following basic properties of comprehensions.
@@ -3624,9 +3642,9 @@ Show the following basic properties of comprehensions.
             then there is unique a isomorphism~$\vartheta$
             with~$\pi_1 = \pi_2 \after \vartheta$.
     \item Isomorphisms are comprehensions (for 1).
-    \item Zero-maps are comprehensions (for 0).
-    \item Comprehensions are mono.
-    \item $p^\perp \after \pi = 0$ if~$\pi$ is a comprehension of~$p$.
+    \item Zero maps are comprehensions (for 0).
+    \item Comprehensions are monic.
+    \item $p^\perp \after \pi = 0$ if~$\pi$ is a comprehension for~$p$.
 \end{enumerate}
 \end{point}
 \end{parsec}
@@ -3641,7 +3659,7 @@ A \Define{kernel}~of an arrow~$f$
     \index{kernel!category theoretic}
     (in symbols: $\Define{\ker f}$)
     \index{kerf@$\ker f$}
-    is an equalizer of~$f$ with the zero-map.
+    is an equalizer of~$f$ with the parallel zero map.
 (That is: $f \after (\ker f) = 0$
     and for every~$g$ with~$f \after g = 0$,
     there exists a unique~$g'$ with~$(\ker f) \after g' = g$.)
@@ -3654,7 +3672,7 @@ We will use \Define{$\cok f$}
 An effectus with comprehension has all kernels.
     The kernel of a map~$f$ is given by
         a comprehension~$\pi_{(1 \after f)^\perp}$
-        of~$(1 \after f)^\perp$.
+        for~$(1 \after f)^\perp$.
 \begin{point}{Proof}%
 Clearly~$1 \after f \after \pi_{(1 \after f)^\perp} = 0$
     and so~$f \after \pi_{(1 \after f)^\perp} = 0$.
@@ -3741,7 +3759,7 @@ We say a map~$f\colon X \to Y$ is \Define{faithful}
     \index{faithful}
     if~$\IM f = 1$.
 That is: $f$ is faithful if and only if
-    $p \after f = 0$ implies~$f = 0$
+    $p \after f = 0$ implies~$p = 0$
     for every predicate~$p$.
 \end{enumerate}
 \begin{point}{Notation}%
@@ -3758,7 +3776,6 @@ Similarly faithful is the analogue of total.
 In $\op{\vN}$ the image of a map~$f\colon \scrA \to \scrB$
     is given by the least projection~$e \in \scrA$
     with the property~$f(1-e) = 0$.
-This~$e$ is the complement of the projection onto the kernel of~$f$.
 The map~$f$ is faithful if and only
     if~$f(a^*a)=0$ implies~$a^*a = 0$
     for all~$a\in \scrA$.
@@ -3875,7 +3892,7 @@ As~$\pi_p$ is a comprehension for~$p$,
     and so~$\pi_p$ is indeed a comprehension for~$\floor{p}$ as well.
 \end{point}
 \begin{point}{Ad 3}%
-Follows from the previous and \sref{im-ineq}.
+Follows from the previous point and \sref{im-ineq}.
 \end{point}
 \begin{point}{Ad 4}%
 Pick a comprehension~$\pi_p$ for~$p$ and~$\pi_q$ for~$q$.
@@ -3888,7 +3905,7 @@ By~\sref{im-ineq}
 \end{point}
 \begin{point}{Ad 5}%
 Clearly~$p \after f \after \pi_{(p \after f)^\perp} = 0$.
-(Recall our convention \sref{compr-basics} for $\pi$'s.)
+(Recall our convention \sref{compr-not} for $\pi$'s.)
 Thus there is some~$h$
 with~$f \after \pi_{(p \after f)^\perp} = \pi_{p^\perp}\after h$.
 By point 2 there is some (isomorphism)~$\alpha$
@@ -4001,7 +4018,7 @@ In \sref{compr-is-kernel} we saw that comprehensions
 What about cokernels and quotients?
 \end{point}
 \begin{point}[effectus-cokernels]{Proposition}%
-An effectus with quotient and images has all cokernels.
+An effectus with quotients and images has all cokernels.
 A cokernel of a map~$f$
     is given by a quotient~$\xi_{\IM f}$ of~$\IM f$.
 \begin{point}{Proof}%
@@ -4029,10 +4046,11 @@ Show that in an effectus with comprehension and images,
 In quantum physics it is not uncommon to restrict one's attention
     to sharp predicates (i.e.~projections).
 Does this restriction hurt the expressivity?
-A partial answer is given by Gleason's famous theorem \cite{gleason1957measures}:
-    it states that every (normal) state on~$\scrB(\scrH)$
-    is determined by its values on projections
-    (if~$\dim \scrH \geq 3$).
+It does not: every (normal) state on a von Neumann algebra
+        is determined by its values on projections.
+In fact, on~$\scrB(\scrH)$ with~$\dim \scrH \geq 3$,
+    Gleason's famous theorem states that every
+    measure on the projections extends uniquely to a state.
 We take the idea of restricting oneself to projections
     one step further: we also want to restrict to projections
     for our outcomes.
@@ -4139,7 +4157,7 @@ order adjunction between~$f_\diamond$ and $f^\BOX$
 to show that in a~$\diamond$-effectus
 \begin{multicols}{2}
 \begin{enumerate}
-    \item $f_\diamond$ is order-preserving;
+    \item $f_\diamond$ is order preserving;
     \item $f_\diamond$ preserves suprema;
     \item $f^\BOX$ preserves infima;
     \item $f^\diamond$ preserves suprema;
@@ -4311,8 +4329,9 @@ In \cite{effintro} there appears a similar result due to Jacobs,
 \begin{point}[spred-sup]{Exercise}%
 Show that in a~$\diamond$-effectus,
 we have
-        $\xi^\BOX \after \xi_\diamond (t) = s \vee t$
-    for sharp~$s,t$ and  quotient~$\xi$ of~$s^\perp$.
+        $(\xi^\BOX \after \xi_\diamond )(t) = s \vee t$
+    for sharp~$s,t$ and  quotient~$\xi$ of~$s$.
+    (Hint: mimic \sref{spred-infimum}.)
 \end{point}
 \end{parsec}
 
@@ -4342,7 +4361,7 @@ If~$f$ is~$\diamond$-self-adjoint,
 If~$f$ is~$\diamond$-positive,
     then~$f$ is~$\diamond$-self-adjoint.
 \item
-If~$f$ is~$\diamond$-positive,
+If~$f$ is~$\diamond$-positive and~$f\after f$ is pure,
     then~$f \after f$ is~$\diamond$-positive.
 \end{enumerate}
 \end{point}
@@ -4420,9 +4439,9 @@ such that
         with~$1 \after \asrt_p = p$ (see \sref{diamond-basics})
         \emph{and}
 \item
-    for every quotient~$\xi \colon X \to Y$
-    and comprehension~$\pi \colon Y \to Z$
-    the composite~$\pi \after \xi$ is pure.
+    for every quotient~$\xi \colon Y \to Z$
+    and comprehension~$\pi \colon X \to Y$
+    the composite~$\xi \after \pi$ is pure.
 \end{enumerate}
 In an $\&$-effectus,
 we define~$\Define{\andthen{p}{q}} \equiv q \after \asrt_p$,
@@ -4591,6 +4610,9 @@ We call this~$\zeta_s$
     and vice versa~$\pi_s$ the \Define{corresponding comprehension}
     of~$\zeta_s$.
 \end{point}
+\begin{point}{Warning}%
+    $\xi_{s^\perp} = \zeta_s$!
+\end{point}
 \end{point}
 \begin{point}[upm-closed]{Proposition}%
 In an $\&$-effectus
@@ -4609,7 +4631,7 @@ As~$\IM \pi_2 \after \pi_1 \leq \IM \pi_2 = t$
     we get~$t^\perp \after f = 0$,
     so~$f = \pi_2 \after g_2$ for a unique~$g_2\colon V \to Y$.
 Let~$\zeta_2$ be a quotient for~$t^\perp$
-such that~$\zeta_2 \after \pi_2$,
+such that~$\zeta_2 \after \pi_2 = \id$,
 which exists by \sref{prop-corr-zeta-pi}.
 Then~$s \after \zeta_2 \after \pi_2 \after \pi_1
             = s \after \pi_1 = 1$
@@ -4818,24 +4840,11 @@ p \ \leq\  s \quad \iff \quad \andthen{s}{p} \ =\  p
 \end{equation*}
 for sharp~$s$ and any predicate~$p$.
 \end{point}
-\begin{point}[sum-sharp-sharp]{Proposition}%
-In an~$\&$-effectus, $s \ovee t$
-    is sharp, if~$s$ and~$t$ are sharp.
-\begin{point}{Proof}%
-We will first prove that $s \wedge t = 0$.
-Pick any~$p$ with~$p \leq s,t$.
-Then by \sref{simple-andthen-absorption}
-    and \sref{perp-sharp-is-orth},
-     we see~$ p = \andthen{s}{p} \leq \andthen{s}{t} = 0$.
-Hence~$s \vee t = s \ovee t$ by~\sref{ea-modularity-prop},
-    but~$s \vee t$ is sharp by \sref{lattice-compr}. \qed
-\end{point}
-\end{point}
 \begin{point}{Exercise}%
 Show that in a~$\&$-effectus,
     a map~$\left<f,g\right>$
     is sharp if and only if both~$f$ and~$g$ are sharp.
-    (Hint: use \sref{sum-sharp-sharp} and \sref{img-tupling}.)
+    (Hint: use \sref{diamond-oml} and \sref{img-tupling}.)
 \end{point}
 \end{parsec}
 
@@ -4902,8 +4911,8 @@ We call an~$\&$-effectus~$C$,
 \end{enumerate}
 \end{point}
 \begin{point}{Example}%
-By \sref{vn-is-dagger-category},
-the category~$\op\vN$ is a~$\dagger$-effectus.
+In \sref{vn-is-dagger-category}
+we will see that the category~$\op\vN$ is a~$\dagger$-effectus.
 \end{point}
 \begin{point}[dagger-theorem]{Theorem}%
     An $\&$-effectus
@@ -5034,7 +5043,7 @@ In an~$\&$-effectus with square roots
     \asrt_p \after \alpha
         \ =\  \alpha \after \asrt_{p\after \alpha}
 \end{equation*}
-for every isomorphism~$\alpha$.
+for every isomorphism~$\alpha$ and predicate~$p$.
 \begin{point}{Proof}%
 There is some~$q$ with~$\andthen{q}{q}=p$.
 The map~$\alpha^{-1} \after \asrt_q \after \alpha$
@@ -6310,7 +6319,7 @@ so~$\asrt_p$ is~$\dagger$-positive, as desired. \qed
 \subsection{Dilations}
 \begin{parsec}%
 \begin{point}%
-As they are the the main topic of the first part of this thesis,
+Being the main topic of the first part of this thesis,
     we cannot finish our discussion of~$\dagger$-effectuses
     without mentioning dilations.
 The presented abstract theory of dilations in a~$\dagger$-effectus
@@ -6640,10 +6649,10 @@ Let~$C$ be a~$\dagger$-category.
 We say that an arrow~$f$
     is \Define{$\dagger$-mono}
     \index{*dagg@$\dagger$, dagger!-mono}
-    iff~$f^\dagger \after f = f$
+    iff~$f^\dagger \after f = \id$
     and dually~$f$ is \Define{$\dagger$-epi}
     \index{*dagg@$\dagger$, dagger!-epi}
-    iff~$f\after f^\dagger = f$.
+    iff~$f\after f^\dagger = \id$.
 An arrow~$f$ is a \Define{$\dagger$-partial isometry}
     \index{*dagg@$\dagger$, dagger!-partial isometry}
     if~$f = m \after e$
@@ -6653,7 +6662,7 @@ An arrow~$f$ is a \Define{$\dagger$-partial isometry}
 A~\Define{$\dagger$-kernel} of~$f$
     \index{kernel!$\dagger-$}
     \index{*dagg@$\dagger$, dagger!-kernel}
-is a~$\dagger$-mono equalizer of~$f$ with~$0$.
+is an  equalizer of~$f$ with~$0$, which is~$\dagger$-mono.
 A~\Define{$\dagger$-kernel category} is a~$\dagger$-category
     \index{*dagg@$\dagger$, dagger!-kernel!category}
     with zero object and where each arrow has a~$\dagger$-kernel.
@@ -6904,7 +6913,7 @@ Suppose~$s,t$ are any sharp predicates on the same object in a~$\dagger$-effectu
     If~$s^\perp \leq t$,
     then~$\andthen{s}{t}$ is sharp.
 \begin{point}{Proof}%
-By \sref{sum-sharp-sharp},
+By \sref{diamond-oml},
 it is sufficient to show
     $\andthen{s}{t^\perp}$ is sharp
 as~$(\andthen{s}{t})^\perp = \andthen{s}{t^\perp} \ovee s^\perp$.
