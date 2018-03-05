@@ -6724,13 +6724,19 @@ Reasoning towards contradiction,
     assume~$(\Pure \op\vN)^{\mathrm{op}}$
     has a product~$\ \C \xleftarrow{\pi_1} \scrA \xrightarrow{\pi_2} \C$
     of~$\C $ and~$\C$.
-Prove that there is an
+First show that for any non-zero pure map~$f\colon \scrA \to \C$,
+    there exists a Hilbert space~$\scrH$, an element~$x \in X$,
+    a von Neumann algebra~$\scrC$ and
+    isomorphism~$\varphi\colon \scrB(\scrH)\oplus \scrC \to \scrA$
+    with~$f \after \varphi = \langle x, (\,\cdot\,) x\rangle $.
+Use this on~$\pi_1$, $\pi_2$ and~$\langle\id_\C,\id_\C\rangle $
+    to show there is an
     isomorphism~$\varphi\colon  \scrB(\scrH) \oplus \scrC \cong \scrA$
     with~$\pi_1 \after \varphi = \left<x,\,(\cdot\,)x\right>$
     and~$\pi_2 \after \varphi = \left<y,(\,\cdot\,)y\right>$
     for some von Neumann algebra~$\scrC$,
     Hilbert space~$\scrH$ and $x,y \in \scrH$.
-    First show~$\scrC$ is trivial.
+Press on: show~$\scrC$ is trivial.
     Then prove~$\dim \scrH \leq 2$.
     Almost there: show~$\dim \scrH \geq 2$.
     Derive a contradiction.
@@ -6763,15 +6769,15 @@ The equalizer of~$\sigma$ with~$\id$ exists in~$\mathsf{Hilb}$
 Assume~$\xi \colon \scrC \to M_4$
     is some filter (i.e.~quotient in the opposite category)
     with~$\ad_\sigma \after \xi = \xi$.
-Show that for each~$x \in \ceil{\xi(1)} \C^4$
-    we must have~$x \in \scrA$ or~$x \in \scrS$.
-    (First show it for~$x \in \xi(1) \C^4$
-    and then apply a pseudoinverse, see \sref{dfn-pseudoinverse}.)
-Prove from this, that either~$\ceil{\xi(1)} \leq e_{\scrA}e^\dagger_{\scrA} $
-    or~$\ceil{\xi(1)} \leq e_{\scrS}e^\dagger_{\scrS} $
-        and that
-        consequently~$\xi$ cannot be an equalizer of~$\ad_\sigma$ and~$\id$
-    in~$\op{\Pure(\op\vN)}$.
+Show that for each~$b \in \scrC$,
+        we have~$\xi(b) \sigma = \sigma \xi(b)$.
+    From this, derive (perhaps in the same way as \cite{bags}),
+    that~$\xi(b) = p_\scrA \xi(b) p_\scrA+ p_\scrS \xi(b) p_\scrS$
+        for all~$b\in \scrC$,
+        where~$p_\scrA = e_\scrA e_\scrA^\dagger$
+        and~$p_\scrS = e_\scrS e_\scrS^\dagger$.
+Prove that either~$\xi(b) \leq p_\scrA$ for all~$b\in \scrC$
+    or~$\xi(b) \leq p_\scrS$ for all~$b \in \scrC$.
 Conclude~$\Pure(\op\vN)$ does not have all coequalizers.
 \end{point}
 \begin{point}%
