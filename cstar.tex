@@ -671,10 +671,10 @@ form a closed subspace of~$\scrB(\scrH)$.
 Let~$x$ and~$y$ be vectors from a Hilbert space~$\scrH$.
 \begin{enumerate}
 \item
-Show that $\Define{\ketbra{x}{y}}\colon\, z\mapsto\left<y,z\right>x,\,
-\scrH\to\scrH$%
+Show that $\Define{\ketbra{x}{y}}\colon\, z\mapsto\left<y,z\right>x$
 \index{*ketbra@$\ketbra{x}{y}$, with $x,y\in\scrH$}
-defines a bounded operator,
+defines a bounded operator
+$\scrH\to\scrH$,
 and, moreover, that~$\|\,\ketbra{x}{y}\,\|=\|x\|\|y\|$.
 \item
 Show that~$\ketbra{x}{y}$
@@ -870,7 +870,7 @@ that will be used later on.
 \end{point}
 \begin{point}[hilb-sum]{Proposition}%
 Given a family  $(\scrH_i)_{i\in I}$ 
-of Hilbert spaces
+of Hilbert spaces,
 the vector space
 \begin{equation*}
 	\textstyle
@@ -1027,7 +1027,7 @@ and  $a^*a=\Real{a}^2+\Imag{a}^2+i(\Real{a}\Imag{a}-\Imag{a}\Real{a})$.
 Give an example of~$\scrA$ and~$a$ 
 with  $\Real{a}\Imag{a} \neq \Imag{a}\Real{a}$.
 
-(This is a source of many technical difficulties.)
+(This inequality is a source of many technical difficulties.)
 \item
 Show that $a^*a+aa^* = 2(\Real{a}^2+\Imag{a}^2)$.
 \item
@@ -1067,15 +1067,17 @@ may be interpreted in several ways,
 the result is always the same.
 \end{point}
 \begin{point}{Exercise}%
-There is, however, one subtle point regarding
-the interpretation
-of the norm~$\|\lambda\|$ of a
-scalar~$\lambda\in \C$ inside a $C^*$-algebra~$\scrA$.
+There is a subtle point regarding
+the norm~$\|\lambda\|$ of a
+scalar~$\lambda\in \C$ inside a $C^*$-algebra~$\scrA$:
+	we do not always have~$\|\lambda\|=\left|\lambda\right|$
+	on the nose.
 \begin{enumerate}
+\item
+Indeed, show 
+that $\|1\|=0\neq 1$ when~$\scrA=\{0\}$ is the trivial $C^*$-algebra.
 \item 
 Show that $\|\lambda\|\leq \left| \lambda\right|$ (in~$\C$).
-\item
-Show that $\|1\|=0\neq 1$ when~$\scrA=\{0\}$ is the trivial $C^*$-algebra.
 \item
 Show that~$\|\lambda\|=\left|\lambda\right|$
 when~$\|\lambda\|$ and~$\left|\lambda\right|$
@@ -1141,6 +1143,10 @@ that an element~$b$ of a $C^*$-subalgebra~$\scrB$
 of a $C^*$-algebra~$\scrA$ is positive in~$\scrB$
 iff~$b$ is positive in~$\scrA$---that is,
 `positive permanence' comes for free (cf.~\sref{spectral-permanence}).
+Another advantage is
+that it's also pretty easy to see 
+that the sum of such positive elements
+is again positive, see~\sref{cstar-positive-sum}.
 \end{point}
 \end{point}
 \begin{point}{Example}%
@@ -1148,7 +1154,7 @@ We'll see in~\sref{hilb-positive-operators},
 that a bounded operator~$T$ on a Hilbert space~$\scrH$
 is positive iff~$\left<x,Tx\right>\geq 0$ for all~$x\in\scrH$.
 \end{point}
-\begin{point}{Lemma}%
+\begin{point}[cstar-positive-sum]{Lemma}%
 Let~$a,b$ be positive elements of a $C^*$-algebra.
 Then $a+b$ is positive.
 \begin{point}{Proof}
@@ -1262,7 +1268,8 @@ for every positive $a\in\scrA$, and
 \index{completely positive!map between $C^*$-algebras}%
 \index{positive!completely~$\sim$ map between $C^*$-algebras}
 if $\sum_{i,j} b_i^*\,f(\,a_i^*a_j\,)\,b_j$ is positive
-for all~$a_1,\dotsc,a_n\in \scrA$, and $b_1,\dotsc,b_n\in\scrB$.
+for all~$a_1,\dotsc,a_n\in \scrA$, and $b_1,\dotsc,b_n\in\scrB$
+(see Remark~5.1 of~\cite{paschke}).
 \end{enumerate}
 \begin{point}%
 We use the bold letters as abbreviations,
@@ -1289,6 +1296,12 @@ but
 will,
 naturally, only mention $\Cstar{cpu}$
 after having established that cp-maps are closed under composition.
+
+The advantages of completely positive maps
+become apparent
+only later on 
+when we start dealing with matrices (see~\sref{n-pos})
+and the tensor product (see~\sref{tensor-functorial}).
 \end{point}
 \end{point}
 \begin{point}[cstar-p-implies-i]{Lemma (``p$\Rightarrow$i'')}
@@ -1340,7 +1353,7 @@ the maps~$\Define{\pi_j}\colon \bigoplus_{i \in I}\scrA_i\to\scrA_j$%
 \index{pi@$\pi_j$, projection!in $\Cstar{miu}$}
 given by~$\pi_j(a)=a(j)$.
 
-Show that a similar description applies to~$\cCstar{miu}$.
+Show that the same description applies to~$\cCstar{miu}$.
 
 Of course,
 $\bigoplus_i\scrA_i$
@@ -1362,7 +1375,7 @@ and that the inclusion $e\colon \scrE\to\scrA$
 is a positive miu-map
 that is in fact the equalizer of~$f$ and~$g$
 in~$\Cstar{miu}$ and~$\Cstar{pu}$.
-Show that a similar description applies
+Show that the same description applies
 to~$\cCstar{miu}$ and~$\cCstar{pu}$.
 \begin{point}{Remark}%
 The assumption here that~$f$ and~$g$ are miu-maps
@@ -1378,7 +1391,8 @@ have an equalizer in~$\Cstar{pu}$.
 %
 \begin{parsec}%
 \begin{point}%
-Let us explore our second landmark,
+After having visited the positive elements,
+let us explore our second landmark,
 the  invertible elements
 of a $C^*$-algebra,
 whose role 
@@ -1492,7 +1506,7 @@ what happens when $1=\limsup_n \|a^n\|^{\nicefrac{1}{n}}$
 Let~$\scrA$ be a $C^*$-algebra.
 The assignment $a\mapsto a^{-1}$
 gives a  continuous map
-(from $\{\,b\in \scrA\colon\, \text{$b$ is invertible}\,\}$
+(from the set $\{\,b\in \scrA\colon\, \text{$b$ is invertible}\,\}$
 to~$\scrA$.)
 \begin{point}[cstar-inv-continuous-1]{Proof}
 (Based on Proposition 3.1.6 of~\cite{kr}.)
@@ -1600,14 +1614,15 @@ we see that~$a^{-1}$ is in~$\scrA$.\qed
 	that~$a$ is self-adjoint
 may be dropped. 
 
-(Hint: consider $a^*a$; c.f.~Conway Proposition VIII.1.14.)
+(Hint: consider $a^*a$, see Proposition VIII.1.14 of~\cite{conway2013}.)
 \end{point}
-\begin{point}{Definition}%
-The \Define{spectrum}%
+\begin{point}[spectrum-of-element]{Definition}%
+The \Define{spectrum},
+\Define{$\spec(a)$},%
+\index{sp@$\spec$, spectrum!$\spec(a)$, of an element of a $C^*$-algebra}
 of an element $a$
 of a $C^*$-algebra
-is the set \Define{$\spec(a)$}%
-\index{sp@$\spec$, spectrum!$\spec(a)$, of an element of a $C^*$-algebra}
+is the set 
 of complex numbers~$\lambda$
 for which~$a-\lambda$ is not invertible.
 \end{point}
@@ -1697,7 +1712,7 @@ directly from~\sref{inverse-permanence}.\qed%
 The next order of business
 is to show that the spectrum~$\spec(a)$ of an element~$a$
 of a $C^*$-algebra contains enough points, so to speak.
-One incarnation of this idea that you might have heard
+One incarnation of this idea 
 is that~$\spec(a)$ is non-empty
 (see~\sref{spectrum-non-empty}), but
 we will need more,
@@ -1980,7 +1995,7 @@ line segments.
 We're going to define as quickly as possible
 an integral~$\int f $
 for every continuous map $f\colon [0,1]\to\scrA$.%
-\index{S@$\int$, integral!$\int f$, of continuous $f\colon [0,1]\to \scrA$}%
+\index{S@$\int$, integral!$\int f$, of continuous $f\colon [0,1]\to \scrA$}
 Any interval~$I$
 in~$[0,1]$
 is of one of the following forms
@@ -2071,11 +2086,12 @@ is continuous and~$a\in \scrA$.
 The integral of
 a holomorphic $\scrA$-valued function~$f$
 along a line segment $[w,w']\subseteq\dom(f)$
-is now defined as.
+	(where~$w$ and~$w'$ are thus \emph{complex numbers})
+is now defined as
 \begin{equation*}
 \Define{\int_{w}^{w'}f}
 \ = \ 
-(w'-w)\int_0^1f(\,w+t(w'-w)\,)\,dt
+(w'-w)\int_0^1f(\,w+t(w'-w)\,)\,dt.
 \end{equation*}
 \index{S@$\int$, integral!of continuous $f\colon \C\to\scrA$!$\int_w^{w'} f$, over an interval}%
 We'll also need integration along a triangle~$T$,%
@@ -2805,7 +2821,7 @@ for all~$j$.
 \item
 Conclude that~$\bigoplus_i \scrA_i$
 is
-the product of the $\scrA_i$s
+the (categorical) product of the $\scrA_i$s
 in $\Cstar{pu}$.
 \end{enumerate}
 (We'll return to the product of $C^*$-algebras
@@ -3676,11 +3692,11 @@ of~$\scrB(\scrH)$
 are order separating (see~\sref{separating})
 for every Hilbert space~$\scrH$.
 \begin{point}{Proof}%
-It suffices to show
+By\sref{order-separating-norm}
+tt suffices to show
 that~$\|T\|=  \sup_{x\in (\scrH)_1} 
 \left|\left< x,Tx\right>\right|$
-for given~$T\in\scrB(\scrH)_+$
-(see~\sref{operator-norm-ball} and~\sref{order-separating-norm}).
+for given~$T\in\scrB(\scrH)_+$.
 Since $\left|\left<x,Tx\right>\right|
 =\left<T^{\nicefrac{1}{2}}x,T^{\nicefrac{1}{2}}x\right>
 =\|T^{\nicefrac{1}{2}}x\|^2$
@@ -3736,7 +3752,7 @@ Show that $\left| a\right|$ is the supremum of~$a$ and~$-a$
 in~$\sa{\scrA}$.
 \item
 Show that if~$a$ and $b$ have a supremum, $a\vee b$, in $\sa{\scrA}$,
-then~$c+a\vee b$ is the supremum of~$a+c$ and $b+c$.
+then~$c\,+\,a\vee b$ is the supremum of~$a+c$ and $b+c$.
 \item
 Show that~$\sa{\scrA}$ is a \Define{Riesz space},
 that is,  a lattice ordered vector space.\\
@@ -3780,7 +3796,7 @@ is the set of all miu-maps $f\colon \scrA\to \C$.
 We endow~$\spec(\scrA)$
 with the topology of pointwise convergence.
 
-The \Define{Gelfand representation}%
+The \Define{Gelfand representation}
 of~$\scrA$
 is the miu-map~$\gamma\colon \scrA\to C(\spec(\scrA))$%
 \index{Gelfand representation@$\gamma$, Gelfand representation}
@@ -3791,6 +3807,16 @@ Verify that
  the map $\spec(\scrA)\to \C,\ f\mapsto f(a)$ is indeed
 continuous for every~$a\in\scrA$,
 and that~$\gamma$ is miu.
+\end{point}
+\begin{point}{Remark}
+One might wonder if there is any connection between
+the spectrum~$\spec(\scrA)$
+of a commutative $C^*$-algebra,
+and the spectrum~$\spec(a)$
+of one of~$\scrA$'s elements (from~\sref{spectrum-of-element});
+and indeed there is
+as we'll see in~\sref{spectrum-miu}
+(and~\sref{functional-calculus}).
 \end{point}
 \begin{point}%
 Our program for this paragraph is to show that
@@ -4131,7 +4157,7 @@ This idea is referred to as the \Define{continuous functional calculus}.%
 \item
 Show that there is a least $C^*$-subalgebra
 $\Define{C^*(a)}$%
-\index{Cstara@$C^*(a)$, $C^*$-subalgebra genererated by~$a$}%
+\index{Cstara@$C^*(a)$, $C^*$-subalgebra genererated by~$a$}
 of~$\scrA$
 that contains~$a$.
 
@@ -4484,7 +4510,7 @@ To each p-map $\omega\colon \scrA\to\C$
 (see~\sref{maps})
 we assign a inner product $[\,\cdot\,,\,\cdot\,]_\omega$ on~$\scrA$,
 which can be ``completed'' to a Hilbert space $\scrH_\omega$.
-Every element~$a\in \scrA$ gives an bounded operator on~$\scrH_\omega$
+Every element~$a\in \scrA$ gives a bounded operator on~$\scrH_\omega$
 via the action $b\mapsto ab$, which in turn gives a 
 miu-map $\varrho_\omega\colon \scrA\to \scrB (\scrH_\omega)$.
 In general $\varrho_\omega$ is not injective,
@@ -4511,14 +4537,17 @@ on $\bigoplus_{\omega\in \Omega} \scrH_\omega$,
 see~\sref{hilb-sum}.
 
 The creation of~$\varrho_\omega$ from~$\omega$
-is known as the \emph{Gelfand--Naimark--Segal (GNS) construction}%
+is known as the \emph{Gelfand--Naimark--Segal (GNS) construction}
 and will make a reappearance in the theory of von Neumann algebras
 (in~\sref{normal-functionals-lemma}).
 
-\REMARK{Will refer here
-to Paschke's dilation 
-(in Bas' thesis)
-as generalization of the GNS-construction.}
+We take a somewhat utilitarian stance towards the GNS construction here,
+but there is much more that can be said about it:
+in the first chapter of my twin brother's thesis, \cite{bas},
+you'll see that the GNS construction has a certain universal property,
+and that it can be generalized to apply
+not only to maps of the form $\omega\colon \scrA\to\C$,
+but also to maps of the form $\varphi\colon \scrA\to\scrB$.
 \end{point}
 \begin{point}[state-inner-product]{Lemma}%
 For every p-map~$\omega\colon \scrA\to \C$ on a
@@ -4557,7 +4586,7 @@ and all throughout the next chapter.
 Use Cauchy--Schwarz
 (\sref{inner-product-basic})
 to prove \Define{Kadison's inequality}%
-\index{Kadison's inequality}%: 
+\index{Kadison's inequality}: 
 for all~$a,b\in\scrA$,
 \begin{equation*}
 \left|\omega(a^*b)\right|^2\ \leq\ \omega(a^*a)\ \omega(b^*b).
@@ -4833,7 +4862,7 @@ result that the
 $N\times N$-matrices \emph{over a $C^*$-algebra~$\scrA$}
 form a $C^*$-algebra by interpreting them
 as \emph{adjoinable module maps} on
-the \emph{Hilbert $\scrA$-module} $\scrA^n$,
+the \emph{Hilbert $\scrA$-module} $\scrA^N$,
 see~\sref{chilb-basic} and~\sref{bax-cstar}.
 \end{point}
 \end{parsec}
@@ -4944,12 +4973,13 @@ Riesz'~representation theorem (\sref{riesz-representation-theorem})
 for Hilbert $\scrA$-modules.
 One solution (taken in the literature) is to simply 
 add Riesz'~representation theorem as axiom
-giving us the \emph{self-dual} Hilbert $\scrA$-modules,
-but we'd like to keep Riesz'~representation theorem as a theorem,
-and instead assume the Hilbert $\scrA$-module
+giving us the \emph{self-dual} Hilbert $\scrA$-modules.
+For those
+who like to keep Riesz'~representation theorem a theorem,
+I'd like to mention that 
+it is also possible to assume instead that the Hilbert $\scrA$-module
 is complete with respect to a suitable uniformity,
-but more on that in~\REMARK{Reference
-to Bas' thesis will be added here}
+as in done in my twin brother's thesis, \cite{bas}, see~\sref{dils-selfdual}.
 \end{point}
 \end{point}
 \begin{point}[chilb-cs]{Proposition (Cauchy--Schwarz)}%
@@ -5008,9 +5038,12 @@ we compute
 \end{alignat*}
 It follows
 (also when~$\omega(\,\left<x,y\right>\,\left<y,x\right>\,)=0$),
-that $\omega(\,\left<x,y\right>\,\left<y,x\right>\,)\leq
+that 
+\begin{equation*}
+\omega(\,\left<x,y\right>\,\left<y,x\right>\,)\ \leq\ 
 \left\|\left<y,y\right>\right\|\,
-\omega(\left<x,x\right>)$,
+\omega(\left<x,x\right>),
+\end{equation*}
 and so we're done.\qed
 \end{point}
 \end{point}
@@ -5165,7 +5198,7 @@ Let us consider matrices over a $C^*$-algebra $\scrA$.
 \item
 	Show that every $N\times M$-matrix~$A$ (over~$\scrA$)
 gives a bounded module map~$\underline{A}\colon \scrA^N\to\scrA^M$ 
-via $\underline{A}(a_1,\dotsc,a_N)= A(a_1,\dotsc,a_M)$,
+via $\underline{A}(a_1,\dotsc,a_N)= A(a_1,\dotsc,a_N)$,
 which is adjoint to~$\underline{A^*}$
 (where $\Define{A^*}= (A_{ji}^*)_{ij}$ is conjugate transpose).
 
@@ -5522,7 +5555,7 @@ by~\sref{cp-cs},
 and so~$\|f(a)\|\leq \|f(1)\|\,\|a\|$.\qed
 \end{point}
 \end{point}
-\begin{point}[choi]{Lemma (Choi)}%
+\begin{point}[choi]{Lemma (Choi\cite{choi})}%
 \index{Choi's Theorem}%
 We have
 $f(a)^*f(a) \leq f(a^* a)$ for
