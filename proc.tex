@@ -5337,39 +5337,37 @@ that~$f$ takes its values in~$\mathbb{R}$
 (because we may split~$f$ in its real and imaginary parts,
 and in turn split these in positive and negative parts).
 
-Since,
-writing  $I_n = (n,n+1]$,
-we have $\mu(A) = \sum_{n\in\mathbb{Z}} f^{-1}(I_n)$,
-and~$A$ is atomic,
-there a (unique)~$n\in \mathbb{N}$
-with  $\mu(A)=\mu(f^{-1}(I_n))$.
-Similarly,
-writing 
-$J_{1} = (n,\frac{2n+1}{2}]$
-and $J_{2}=(\frac{2n+1}{2},n+1]$,
-we have
-$\mu(A) = \mu(J_{1}) + \mu(J_{2})$,
-and so there is a (unique)  $m\in \{1,2\}$
-with $\mu(A)=\mu(f^{-1}(J_{m}))$.
+Let~$S$ be some measurable subset of~$A$.
+Note that either~$\mu(S)=0$ or~$\mu(A\backslash S)$.
+Indeed, if not~$\mu(S)=0$,
+then~$\mu(S)>0$,
+and so~$\mu(S)=\mu(A)$
+(by atomicity of~$A$),
+which entails that~$\mu(A\backslash S)=0$.
 
-Continuing in this way,
-we can find real numbers $s_1 \leq s_2 \leq \dotsb \leq t_2 \leq t_1$
-with $t_n-s_n \leq 2^{-n}$
-and $\mu(A)=\mu( f^{-1}(\ (s_n,t_n]\ ))$
-for all~$n\in \mathbb{N}$.
-Of course,
-we also have~$\mu(A)=\mu(f^{-1}(\ [s_n,t_n]\ ))$,
-and so
+In particular,
+for every real number~$t\in\R$
+one of the sets
 \begin{equation*}
-\textstyle
-\mu(A) \ =\  \bigwedge_n \mu(f^{-1}(\ [s_n,t_n]\ ))
-\ =\  \mu(f^{-1}(\ \bigcap_n [s_n,t_n]\ )).
+\{\,x\in A\colon\, t\leq f(x) \,\}
+\qquad
+\{\,x\in A\colon\, f(x)<t \,\}
 \end{equation*}
-Since~$t_n-s_n \to 0$ as~$n\to \infty$,
-there is a real number~$\lambda\in \mathbb{R}$
-with $\{\lambda \} = \bigcap_n[s_n,t_n]$,
-and so~$\mu(A)=f^{-1}(\{\lambda\})$.
-Hence~$f(x)=\lambda$ for almost all~$x\in A$.\qed
+must be negligible.  Whence
+either~$t\leq f^\circ$ or~$f^\circ\leq t$.
+It follows that
+the two closed sets $L:=\{t\in\R\colon t\leq f^\circ\}$
+and $U:=\{t\in \R\colon f^\circ\leq t\}$
+cover~$\R$.
+Since clearly~$-\|f\| \in L$
+and~$\|f\|\in  U$,
+the sets~$L$ and~$U$
+can't be disjoint,
+because they would partition~$\R$ into two clopen non-empty sets.
+For an element~$t\in L\cap U$
+in the intersection
+we have~$ t\leq f^\circ \leq t$,
+	and so~$t=f^\circ$. Hence~$L^\infty(X)\cong \C$. \qed
 \end{point}
 \end{point}
 \begin{point}[lem:measure-space-partition]{Exercise}%
