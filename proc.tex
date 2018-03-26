@@ -22,10 +22,11 @@ namely,
 that the binary operation~$\ast$
 on the effects of a von Neumann algebra~$\scrA$
 given by~$p\ast q = \sqrt{p}q\sqrt{p}$
+(representing measurement of~$p$)
 can be axiomatised,
 and 
 \item 
-	that~$\W{cpsu}$
+	that the category~$\W{cpsu}$
 has all the bits and pieces
 needed to be a model of Selinger and Valiron's quantum lambda calculus.
 \end{enumerate}
@@ -55,8 +56,8 @@ of the form
 $a\mapsto \sqrt{p}a\sqrt{p}\colon\,\scrA\to\scrA$,
 where~$p$ is an effect of~$\scrA$,
 represent measurement of~$p$,
-and are called \emph{assert maps} in~\cite{newdirections}
---- the importance of these maps 
+and are called \emph{assert maps} in~\cite{newdirections}.
+The importance of these maps 
 to any logical description of
 quantum computation is not easily overstated.
 On the effects of~$\scrA$
@@ -92,7 +93,7 @@ Such maps
 that are the composition of a filter and a corner
 will be called \emph{pure}, see~\sref{pure},
 Since not only assert maps turn out to be pure, but also maps of the form
-$b^*(\,\cdot\,)b\colon \scrA\to\scrA$ for an arbitrary element~$a$
+$b^*(\,\cdot\,)b\colon \scrA\to\scrA$ for an arbitrary element~$b$
 of~$\scrA$,
 we need another property of assert maps, namely
 that
@@ -102,7 +103,9 @@ that
 	\sqrt{p}\,e_2 \,\sqrt{p}\ \leq\  e_1^\perp
 \end{equation*}
 for all projections~$e_1$ and~$e_2$ of~$\scrA$---which we'll
-describe by saying that $\sqrt{p}(\,\cdot\,)\sqrt{p}\colon \scrA\to\scrA$
+describe by saying that 
+	\begin{equation*} \sqrt{p}(\,\cdot\,)\sqrt{p}\colon \scrA\to\scrA
+	\end{equation*}
 is \emph{$\diamond$-self-adjoint}.
 Judging only by the name
 it may not surprise you that the map $b(\,\cdot\,)b\colon \scrA\to\scrA$
@@ -142,21 +145,21 @@ for all projections $e_1,e_2$ of~$\scrA$.
 While I would certainly not like
 to undersell the results mentioned above,
 I suspect that the notion of purity exposed along the way
-will turn out to be of far greater significance.
-I'd like to advertise
-here that we have already discovered that purity can be described in
-wildly different terms---definitely a good omen, if any---in
-that a map~$f\colon \scrA\to\scrB$ is pure when in its 
-\emph{Paschke dilation}\cite{wwpaschke}\REMARK{a reference to
-Bas' thesis will be added here}
+might turn out to be of far greater significance
+for the following reason.
+Our notion of purity can be described in
+wildly different terms:
+a map~$f\colon \scrA\to\scrB$ is pure when given its
+\emph{Paschke dilation}
 $\xymatrix{\scrA
 	\ar[r]|-\varrho
 &
 	\scrP\ar[r]|-c
 &
 \scrB}$
-the map $\varrho$ is surjective.
-Because of the faith I've developed for our notion of purity I've allowed myself
+the map $\varrho$ is surjective
+(see~\sref{paschke-pure} and~\cite{wwpaschke}).
+Because of my faith in our notion of purity I've allowed myself
 to address some theoretical questions concerning it
 here that are not required for the main results of this thesis,
 but suppose a general interest in purity:
@@ -548,7 +551,7 @@ $g \colon e\scrA e
 \to \ceil{p}\!\scrB\!\ceil{p}$
 such that
 \begin{equation*}
-\xymatrix{
+\xymatrix@C=4em{
 \scrA
 \ar[r]^-f
 \ar[d]_{\pi_e}
@@ -556,7 +559,7 @@ such that
 \scrB
 \\
 e\scrA e
-\ar[r]_g
+\ar[r]_-g
 & 
 \ceil{p}\!\scrB\!\ceil{p}
 \ar[u]_{c_p}
@@ -1866,7 +1869,7 @@ we'll see that~$\W{miu}$ is even
 monoidal closed (see~\sref{tensor-closed}).
 This fact is one ingredient of our model for the quantum lambda calculus
 from~\cite{model}
-build of von Neumann algebras,
+built of von Neumann algebras,
 but more of that later.
 \end{point}
 \end{parsec}
@@ -3185,7 +3188,7 @@ the composition of the isomorphism~$\varphi$
 with the inclusion $\scrT\subseteq \scrC\otimes\scrD$,
 injective.
 
-It remains to be show that~$\gamma$
+It remains to be shown that~$\gamma$
 is a tensor product,
 that is, obeys the conditions from~\sref{tensor}.
 Condition~\ref{tensor-1}
@@ -3808,7 +3811,9 @@ instead of a bilinear map, etc..
 What is less obvious
 is that there should be any relation
 between 
-$(\scrA\otimes\scrB)\otimes \scrC$
+$(\scrA\otimes\scrB)\otimes \scrC$,
+and 
+$\scrA\otimes (\scrB\otimes \scrC)$
 and~$\scrA\otimes\scrB\otimes\scrC$;
 but there is.
 \end{point}
@@ -4032,7 +4037,7 @@ section we'll show that
 any von Neumann algebra
 that carries 
 a $\otimes$-monoid structure
-(such as $\sem{!A}$ must)
+(such as $\sem{!A}$)
 is commutative and discrete,
 and that~$\linf(\nsp(\scrA))$
 is moreover the free $\otimes$-monoid
@@ -4042,8 +4047,7 @@ on~$\scrA$.
 \begin{point}%
 In this section,
 we'll need the following result
-from the literature on von Neumann algebras---I 
-had no time to incorporate its proof in this text.
+from the literature on von Neumann algebras.
 \end{point}
 \begin{point}[intersection-tensor]{Proposition}%
 Given Hilbert spaces~$\scrH$ and~$\scrK$,
@@ -4217,6 +4221,9 @@ from~\sref{first-adjunction} is a bijection.
 
 Show that~$\linf\colon\Cat{Set}\to \op{(\W{miu})}$
 is full and faithful.
+	Whence~$\Cat{Set}$ is (isomorphic to)  
+a coreflective subcategory of~$\op{(\W{miu})}$ 
+	via~$\linf\colon \Cat{Set} \to \op{(\W{miu})}$.
 \end{point}
 \end{parsec}
 \begin{parsec}
@@ -4770,16 +4777,18 @@ satisfying
 \delta(a\otimes u)\ =\ a\ = \ \delta(u\otimes a)
 \quad\text{for all~$a\in\mathscr{A}$.}
 \end{equation*}
+(Note that we require of~$\delta$ neither associativity
+nor commutativity.)
 \end{point}
-
-\noindent
+\begin{point}{Remark}
 The unit $u$ can be identified with
 a positive subunital map $\tilde{u}\colon \C\to \scrA$ via $\tilde{u}(\lambda)=\lambda u$.
 The definition is motivated by the fact that the interpretation of $\bang A$
 must carry a commutative monoid structure in $\W{miu}$.
 The condition is weaker, requiring the maps to be only positive subunital,
 and dropping associativity and commutativity.
-Nevertheless this is sufficient to prove:
+Nevertheless this is sufficient to prove the following.
+\end{point}
 \begin{point}[duplicable]{Theorem}%
 A von Neumann algebra~$\mathscr{A}$
 is duplicable if and only if
@@ -4846,7 +4855,6 @@ Hence~$1=\delta(1\otimes u)=\delta(1\otimes 1)$.\qed
 To prove that a duplicable von Neumann 
 algebra is commutative we'll need the following two results from the theory
 on $C^*$-algebras.
-There was no time to incorporate their proofs in this text.
 \end{point}
 \begin{point}[tomiyama]{Theorem (Tomiyama)}%
 \index{Tomiyama's Theorem}

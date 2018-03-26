@@ -35,17 +35,17 @@ in~$\W{cpsu}$
 (but not in~$\Cstar{cpsu}$)
 see~\sref{uniqueness-sequential-product}.
 \end{enumerate}
-But these are topics for the next chapter;
+Both these are reserved for the next chapter;
 in this chapter we'll (re)develop the theory
 we needed to prove them.
 
 The archetypal von Neumann algebra
 is the $C^*$-algebra~$\scrB(\scrH)$
-of bounded operators on a Hilbert space~$\scrH$,
-and in fact 
+of bounded operators on a Hilbert space~$\scrH$.
+In fact,
 the
 original~\cite{vn1930,mvn1936}
-and a common~\cite{kr,conway2000} 
+and common~\cite{kr,conway2000} 
 definition of a von Neumann algebra
 is a $C^*$-subalgebra~$\scrA$
 of a~$\scrB(\scrH)$
@@ -68,12 +68,12 @@ and the Hilbert space~$\scrH$,
 we'll use Kadison's characterisation~\cite{kadison1956}
 of von Neumann algebras
 as $C^*$-algebras
-with a certain dcpo-structure 
-and sufficiently many Scott-continuous functionals
-as our definition instead.
+with a certain dcpo-structure (c.f.~\sref{hilb-suprema})
+and sufficiently many Scott-continuous functionals (c.f.~\sref{bh-normal})
+as our definition instead, see~\sref{vna}.
 
 But we also use Kadison's definition
-just to see to see
+just to see
 to what extent the representation
 of von Neumann algebras
 as rings of operators (see~\sref{ngns}) can be avoided
@@ -95,7 +95,7 @@ The material on von Neumann algebras
 is less tightly knit as the theory of $C^*$-algebras,
 and so after the basics
 we deal with four topics
-more or less in order
+more or less in linear order
 (instead of intertwined.)
 
 The great abundance of projections
@@ -139,8 +139,7 @@ from a von Neumann algebra~$\scrA$
 with~$a^*a\leq b^*b$
 an element $a/b$
 with~$a=(a/b) \, b $
-(see~\sref{division}),
-which is the third topic.
+(see~\sref{division})---this is the third topic.
 Taking~$b=\sqrt{a^*a}$ we
 obtain
 the famous
@@ -202,7 +201,7 @@ for every bounded directed subset of self-adjoint elements of~$D$
 which has a supremum $\bigvee D$ in $\sa{\scrA}$.
 \end{point}%
 \begin{point}%
-The \Define{ultraweak topology}%
+The \Define{ultraweak topology}
 on $\scrA$
 is the least topology on~$\scrA$
 that makes all normal positive linear maps $\omega\colon \scrA\to \C$
@@ -267,6 +266,13 @@ The direct sum $\bigoplus_i \scrA_i$
 of a family $(\scrA_i)_i$
 of von Neumann algebras
 is itself a von Neumann algebra.
+
+(While we're not quite ready to define morphisms
+between von Neumann algebras,
+we can already spoil that the direct sum
+gives the categorical product of von Neumann algebras
+once we do,
+see~\sref{vn-products}.)
 \item
 A $C^*$-subalgebra~$\scrB$
 of a von Neumann algebra~$\scrA$
@@ -355,7 +361,7 @@ But we also see that if a sequence~$(b_n)_n$ converges ultrastrongly
 (or ultraweakly) to some~$b$,
 then $(\|b_n\|)_n$ doesn't even have to converge to~$\|b\|$.
 
-(Note that~$(\ketbra{n}{n})_n$ resembles a moving bump, from measure theory.)
+(Note that~$(\ketbra{n}{n})_n$ resembles a `moving bump'.)
 \item
 Note that when a net $(a_\alpha)_\alpha$
 converges ultrastrongly to~$a$,
@@ -567,7 +573,8 @@ in a von Neumann converges, in~\sref{vn-complete}.)
 \begin{parsec}%
 \begin{point}%
 The basic facts concerning von Neumann algebras
-we'll deal with first mostly involve the
+cccchdgnvuvucvlvnujgbferfthndivnkgbkjveven
+
 relationship
 between
 multiplication
@@ -582,8 +589,7 @@ continuous in each coordinate is
 less obvious (see~\sref{mult-uws-cont}).
 Quite surprisingly,
 this problem reduces to the ultraweak continuity
-of $b\mapsto a^*ba$ by the following identity
-(cf.~\sref{inner-product-basic}).
+of $b\mapsto a^*ba$ by the following identity.
 \end{point}
 \begin{point}[mult-polarization]{Exercise}%
 \index{polarisation identity!in a von Neumann algebra}
@@ -592,6 +598,9 @@ Show that for elements~$a,b,c$ of a $C^*$-algebra,
 \textstyle
 a^*\,c\,b\ =\ \frac{1}{4}\,\sum_{k=0}^3\ i^k\  (i^ka+b)^*\,c\,(i^ka+b).
 \end{equation*}
+(Note that this identity is a variation on the polarization
+identity for inner products,
+see~\sref{inner-product-basic}.)
 \end{point}
 \begin{point}[vanishing-effects]{Lemma}%
 Let~$(x_\alpha)_{\alpha\in D}$ be 
@@ -826,12 +835,13 @@ but it \emph{is} jointly
 ultrastrongly continuous when~$a$ is restricted to a bounded set:
 \end{point}
 \begin{point}[mult-jus-cont]{Proposition}%
-Given nets $(a_\alpha)_\alpha$
+Let $(a_\alpha)_\alpha$
 and~$(b_\alpha)_\alpha$
+be nets
 in a von Neumann algebra~$\scrA$
 with the same index set
-that converge ultrastrongly to~$a,b\in\scrA$, respectively,
-the net~$(a_\alpha b_\alpha)_\alpha$
+that converge ultrastrongly to~$a,b\in\scrA$, respectively.
+Then the net~$(a_\alpha b_\alpha)_\alpha$
 converges ultrastrongly to~$ab$
 provided that~$(a_\alpha)_\alpha$
 is bounded.
@@ -981,7 +991,7 @@ on a von Neumann algebra $\scrA$.
 \begin{point}[injective-nmiu-iso-on-image]{Lemma}%
 Let~$f\colon \scrA\to\scrB$ be an injective nmiu-map
 between von Neumann algebras.
-Then~$f(\scrA)$ is a von Neumann subalgebra of~$\scrB$,
+Then the image~$f(\scrA)$ is a von Neumann subalgebra of~$\scrB$,
 and~$f$ restricts to a nmiu-isomorphism from~$\scrA$
 to~$f(\scrA)$.
 \begin{point}{Proof}%
@@ -1220,7 +1230,7 @@ which is sometimes simpler than in~\cite{fremlin}
 (because we're dealing with finite complete measure spaces),
 and sometimes modified to the complex-valued case
 (c.f.~133C of~\cite{fremlin}).
-The reader will have no problem adapting
+A motivated reader will have no problem adapting
 the results from~\cite{fremlin} 
 to our setting.
 \end{point}
@@ -1253,7 +1263,7 @@ when the inverse image~$f^{-1}(U)$
 of any open subset~$U$ of~$\C$
 is measurable
 (which happens precisely
-when~$x\mapsto \Real{f(x)},\,x\mapsto\Imag{f(x)}\colon\,
+when both~$x\mapsto \Real{f(x)},\,x\mapsto\Imag{f(x)}\colon\,
 X\to\R$
 are measurable in the sense of~121C of~\cite{fremlin}).
 An important example of a measurable function on~$X$
@@ -1274,6 +1284,7 @@ of \emph{sequences}
 (c.f.~121F of~\cite{fremlin}).
 As a result,
 the coordinatewise
+(countable)
 supremum~$\bigvee_n f_n$
 of a bounded ascending sequence $f_1\leq f_2\leq \dotsb$
 in~$\Real{\mathcal{L}^\infty(X)}$
@@ -1340,9 +1351,9 @@ in~$\Real{\mathcal{L}^\infty(X)}$.
 (This is a special case
 of Levi's theorem, see 123A of~\cite{fremlin}.)
 \end{enumerate}
-Unsurprisingly the integral
+Unsurprisingly, the integral
 interacts poorly
-with the directed suprema
+with the uncountable directed suprema
 that do exist in~$\mathcal{L}^\infty(X)$:
 for example, the set~$D:=\{\,f\in [0,1]_{\mathcal{L}^\infty(X)}\colon \,
 \int f = 0\,\}$
@@ -1383,9 +1394,9 @@ for~$\mathfrak{f}\equiv f^\circ \in L^\infty(X)$,
 g^\circ = \mathfrak{f}\,\} \\
 &=\ \min\{\ \lambda\geq 0\colon\,
 		\left|f(x)\right|\,\leq\,\lambda
-	\text{ for almost all~$x\in X$}\ \},
+	\text{ for almost all~$x\in X$}\ \}.
 \end{alignat*}
-which  is called the \Define{essential supremum norm}.%
+This is called the \Define{essential supremum norm}.%
 \index{essential supremum norm}
 To see that~$L^\infty(X)$ is complete
 one can use the fact that~$\mathcal{L}^\infty(X)$
@@ -1552,20 +1563,18 @@ in as of yet unpublished work.)
 
 We obtain our finite complete measure space~$X$
 from the commutative von Neumann algebra~$\scrA$
-by putting a $\sigma$-algebra
-on the ($C^*$-algebraic) spectrum~$\spec(\scrA)$
-(a compact Hausdorff space
-consisting of all miu-functionals on~$\scrA$)
-by declaring that a subset~$A$ of~$\spec(X)$ 
+by taking for~$X$ the compact Hausdorff space~$\spec(\scrA)$
+of all miu-functionals on~$\scrA$,
+and declaring that a subset~$A$ of~$X\equiv \spec(\scrA)$ 
 is measurable when~$A$ is clopen up to
-a \emph{meagre}%
+a \emph{meagre}
 subset
 (defined below,~\sref{meagre}).
 It takes some effort to show
 that this yields a $\sigma$-algebra
-in~$\spec(X)$,
+in~$\spec(\scrA)$,
 and that the faithful np-functional $\omega\colon\scrA\to \C$
-gives a finite complete measure on~$\spec(X)$,
+gives a finite complete measure on~$\spec(\scrA)$,
 but once this is achieved
 it's easily seen that
 $\scrA\cong C(\spec(\scrA))\cong L^\infty(\spec(\scrA))$.
@@ -2318,7 +2327,7 @@ Given a finite complete measure space~$X$
 we have
 \begin{equation*}
 \ceil{f^\circ}
-	\,=\,\mathbf{1}_{\{x\in X\colon f(x)>1\}}^\circ
+	\,=\,\mathbf{1}_{\{x\in X\colon f(x)>0\}}^\circ
 	\qquad
 	\text{and}\qquad
 	\floor{f^\circ}
@@ -3109,7 +3118,7 @@ by~\sref{abelian-projections-norm-dense}.\qed
 \begin{point}%
 The carriers of np-functionals
 play such an important role in the theory
-that we decided to give them a name:
+that we decided to give them a name.
 \end{point}
 \begin{point}{Definition}%
 We call a projection~$p$ of a von Neumann algebra~$\scrA$
@@ -3128,8 +3137,8 @@ is usually defined to be \Define{cyclic}%
 when~$E$ is the projection 
 onto~$\smash{\overline{\scrR^\square x}}$
 for some~$x\in \scrH$
-(see Definition~5.5.8~\cite{kr}),
-but with~\sref{carrier-vector-state} and~\sref{double-commutant}
+(see Definition~5.5.8~\cite{kr}).
+With~\sref{carrier-vector-state} and~\sref{double-commutant}
 we'll be able to see that
 this amount to requiring that~$E$
 be
@@ -3457,7 +3466,7 @@ Given a collection of np-functionals~$\Omega$
 on a von Neumann algebra~$\scrA$
 we have $\ceil{\varrho_\Omega}
 =\bigcup_{\omega\in\Omega} \cceil{\omega}$
-for~$\varrho_\Omega$
+for~$\varrho_\Omega\colon \scrA\to\scrB(\scrH_\Omega)$
 from~\sref{gns}.
 \begin{point}{Proof}%
 Let~$e$ be a projection of~$\scrA$.
@@ -5012,8 +5021,12 @@ being~$(0,0,1,2,3,\dotsc)$
 is not bounded,
 and therefore not an element of~$\ell^\infty$.
 We can nevertheless approximate~$(0,0,1,2,3,\dotsc)$
-by the elements~$(0,0,1,0,0,\dotsc)$,
-$(0,0,1,2,0,\dotsc)$, \dots of~$\ell^\infty$
+by the elements
+\begin{equation*}
+(0,0,1,0,0,\dotsc),\ 
+(0,0,1,2,0,\dotsc),\  \dots 
+\end{equation*}
+of~$\ell^\infty$
 forming what we will call ``approximate pseudoinverse'' for 
 $(0,0,1,\frac{1}{2},\frac{1}{3},\dotsc)$.
 That this can also be done for an arbitrary element
@@ -5024,7 +5037,7 @@ is what we'll see next.
 An \Define{approximate pseudoinverse}%
 \index{approximate pseudoinverse}%
 \index{pseudoinverse!approximate}
-of an element~$a$ a von Neumann algebra~$\scrA$
+of an element~$a$ of a von Neumann algebra~$\scrA$
 is a sequence~$t_1,t_2,\dotsc$
 of elements of~$\scrA$
 such that~$t_1a,\ t_2a,\ \dotsc, at_1,\ at_2,\ \dotsc$
@@ -5788,7 +5801,7 @@ that the ultraweak topology of a von Neumann subalgebra
 coincides with the ultraweak topology of the surrounding space
 (see~\sref{functional-permanence}),
 is proven using the double commutant theorem (\sref{double-commutant})
-and a lot of hard work.
+and requires a lot of hard work.
 \end{point}
 \end{parsec}
 \subsection{Ultraweak Boundedness}
@@ -5796,7 +5809,7 @@ and a lot of hard work.
 \begin{point}%
 To get a better handle on the normal positive functionals
 on a von Neumann algebra,
-we first analyse the the not-necessarily-positive normal functionals
+we first analyse  the not-necessarily-positive normal functionals
 in greater detail.
 \end{point}
 \begin{point}[positive-functional-criterion]{Lemma}%
@@ -6846,6 +6859,28 @@ by~\sref{bstaromega-basic},
 we conclude that~$f\in \overline{\Omega''}$.\qed
 \end{point}
 \end{point}
+\end{point}
+\end{parsec}
+\begin{parsec}
+\begin{point}
+With this chapter
+ends perhaps the most hairy part of this thesis:
+we've developed the theory of von Neumann algebras
+starting from Kadison's characterization (see~\sref{vna})
+to the point that we have a sufficiently firm hold on the normal functionals
+(see e.g.~\sref{polar-decomposition-of-functional}, \sref{normal-functional}),
+the ultraweak and ultrastrong topologies 
+(e.g.~\sref{kaplansky}, \sref{functional-permanence}, 
+	\sref{vn-center-separating-fundamental}),
+the projections (\sref{vna-ceil}, \sref{ceill}, 
+\sref{projections-norm-dense}), 
+and the division structure 
+(\sref{douglas}, \sref{polar-decomposition})
+on a von Neumann algebra.
+In the next chapter we reap the benefits of our labour
+when we study an assortment of structures
+in the category~$\W{cpsu}$ of von Neumann algebras
+and ncpsu-maps.
 \end{point}
 \end{parsec}
 \end{document}
