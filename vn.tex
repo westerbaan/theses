@@ -899,6 +899,9 @@ the following are equivalent
 \end{point}
 \end{parsec}
 \begin{parsec}%
+\begin{point}%
+Enter the eponymous hero(s) of this thesis.
+\end{point}
 \begin{point}{Definition}%
 We denote 
 the category of
@@ -906,12 +909,25 @@ the category of
 by~$\Define{\W{cpsu}}$,
 and its subcategory of nmiu-maps
 by~$\Define{\W{miu}}$.
-\index{$\W{miu}$, $\W{cpsu}$, \dots}%
+\index{Wmiu@$\W{miu}$, $\W{cpsu}$, \dots}%
 (We omit the ``N'' for the sake of brevity.)
 \begin{point}%
-This pair of categories plays a major role in the next
-chapter, but for now we content ourselves
-by only describing products and certain equalisers.
+Though arguably~$\W{miu}$
+is a good candidate
+for being called \emph{the} category of von Neumann algebra,
+the title of this thesis refers to~$\W{cpsu}$.%
+\index{category of von Neumann algebras}%
+\index{von Neumann algebra!category of}
+Indeed, it's the ncpsu-maps between von Neumann algebras
+that stand to model the arbitrary quantum processes,
+and it's the category of these quantum processes
+we want to mine for abstract structure.
+This is mostly a task for the next chapter,
+though.
+For now we'll just establish that~$\W{cpsu}$
+has all products, \sref{vn-products}, certain equalizers,
+\sref{vn-equalizers},
+and that $\op{(\W{cpsu})}$ is an \emph{effectus}, see~\sref{vn-effectus}.
 \end{point}
 \end{point}
 \begin{point}[vn-products]{Exercise}%
@@ -943,6 +959,65 @@ is the equaliser of~$f$ and~$g$ in the
 categories~$\W{miu}$ and~$\W{cpsu}$
 (see~\sref{cstar-equalizer-1} and~\sref{cstar-product-4}).
 \end{point}
+\begin{point}[vn-effectus]
+Let us briefly indicate what makes~$\op{(\W{cpsu})}$ an effectus;
+for a precise formulation and proof of this fact
+we refer to~\cite{effintro,kentapartial}
+(or~\sref{effectus-vn}, 
+\sref{effectus-in-partial-form}, and \sref{cho-thm} ahead).
+Note that the sum $f+g$ of two ncpsu-maps
+$f,g\colon \scrA\to\scrB$ between von Neumann algebras
+is again an ncpsu-map
+iff~$f(1)+g(1)\leq 1$.
+The partial addition on ncpsu-maps
+thereby defined
+has, aside from some fairly obvious properties
+(summarized by the
+fact that the category~$\W{cpsu}$
+is $\Cat{PCM}$-enriched),
+the following special trait:
+given ncpsu-maps $f\colon \scrA\to\scrD$
+and $g\colon \scrB\to\scrD$
+with $f(1)+g(1)\leq 1$
+we may form an ncpsu-map $[f,g]\colon \scrA\times \scrB\to \scrD$
+by $[f,g](a,b)=f(a)+g(b)$,
+and, moreover,
+every ncpsu-map $\scrA\times\scrB\to\scrD$ is of this form.
+This observation, which gives the product of~$\W{cpsu}$ a coproduct-like quality
+without forcing it to be a biproduct (which it's not),
+	makes $\op{(\W{cpsu})}$ a \emph{FinPAC}\index{FinPAC} 
+	(see~\sref{effectus-in-partial-form}).
+
+	For~$\op{(\W{cpsu})}$ to be an effectus,\index{effectus}
+we need a second ingredient:
+ the complex number~$\C$.
+Since the ncpsu-maps $p\colon \C\to \scrA$
+are all of the form $\lambda \mapsto \lambda a$
+for some effect $a\in [0,1]_\scrA$,
+the ncpsu-maps $p\colon \C\to\scrA$
+(called \emph{predicates} in this context)
+are not only endowed with a partial addition,
+but even form an \emph{effect algebra}.
+This,
+combined with the observation that
+an ncpsu-map $f\colon \scrA\to\scrB$
+is constant zero iff~$f(1)=0$,
+makes~$\op{(\W{cpsu})}$
+an \emph{effectus in partial form} (see~\sref{effectus-in-partial-form}).
+
+As you can see, there's nothing deep underlying~$\op{(\W{cpsu})}$
+being an effectus.
+In that respect effectus theory resembles topology:
+just as a topology 
+provides a basis for  
+notions such as compactness, connectedness, meagreness, and homotopy,
+so does an
+effectus provide a framework to study
+ aspects of  computation
+such as side effects (\sref{sefp}) and purity
+(\sref{pure-effectus}).
+\end{point}
+
 \end{parsec}
 \begin{parsec}%
 \begin{point}%
