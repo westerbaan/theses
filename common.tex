@@ -438,26 +438,26 @@
 \renewcommand\chapter[1]{%
     \oldchapter{#1}%
     \setcounter{parsecFootersShown}{0}% XXX why is this necessary?
-    \setcounter{firstParsec}{\value{firstParsecF}/2+1}%
-    \addtocontents{parsectoc}{\protect\contentsline{chapter}{\numberline{\thechapter} #1}{\sref{parsec-\the\value{firstParsec}}}{chapter.\thechapter}}%
+    \setcounter{tmptmp}{\value{parsec}+1}
+    \addtocontents{parsectoc}{\protect\contentsline{chapter}{\numberline{\thechapter} #1}{\sref{parsec-\the\value{tmptmp}}}{chapter.\thechapter}}%
 }
 \let\oldsection\section%
 \renewcommand\section[1]{%
     \oldsection{#1}%
-    \setcounter{firstParsec}{\value{firstParsecF}/2+1}%
-    \addtocontents{parsectoc}{\protect\contentsline{section}{\numberline{\thesection} #1}{\sref{parsec-\the\value{firstParsec}}}{section.\thesection}}%
+    \setcounter{tmptmp}{\value{parsec}+1}
+    \addtocontents{parsectoc}{\protect\contentsline{section}{\numberline{\thesection} #1}{\sref{parsec-\the\value{tmptmp}}}{section.\thesection}}%
 }
 \let\oldsubsection\subsection%
 \renewcommand\subsection[1]{%
     \oldsubsection{#1}%
-    \setcounter{firstParsec}{\value{firstParsecF}/2+1}%
-    \addtocontents{parsectoc}{\protect\contentsline{subsection}{\numberline{\thesubsection} #1}{\sref{parsec-\the\value{firstParsec}}}{subsection.\thesubsection}}%
+    \setcounter{tmptmp}{\value{parsec}+1}
+    \addtocontents{parsectoc}{\protect\contentsline{subsection}{\numberline{\thesubsection} #1}{\sref{parsec-\the\value{tmptmp}}}{subsection.\thesubsection}}%
 }
 \let\oldsubsubsection\subsubsection%
 \renewcommand\subsubsection[1]{%
     \oldsubsubsection{#1}%
-    \setcounter{firstParsec}{\value{firstParsecF}/2+1}%
-    \addtocontents{parsectoc}{\protect\contentsline{subsubsection}{\numberline{\thesubsubsection} #1}{\sref{parsec-\the\value{firstParsec}}}{subsubsection.\thesubsubsection}}%
+    \setcounter{tmptmp}{\value{parsec}+1}
+    \addtocontents{parsectoc}{\protect\contentsline{subsubsection}{\numberline{\thesubsubsection} #1}{\sref{parsec-\the\value{tmptmp}}}{subsubsection.\thesubsubsection}}%
 }
 
 \newcommand\backmattertitle[1]{{%
