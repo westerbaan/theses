@@ -1,6 +1,8 @@
 \documentclass[a]{subfiles}
 \begin{document}
 \chapter{Assorted Structure in~$\W{cpsu}$}
+\begin{parsec}
+\begin{point}
 In the previous two chapters
 we have travelled through
 charted territory
@@ -46,6 +48,8 @@ in Section~\ref{S:duplicable}
 ---
 surprisingly, they're
 all of the form $\ell^\infty(X)$.
+\end{point}
+\end{parsec}
 
 \section{Measurement}
 \label{S:measurement}
@@ -448,6 +452,89 @@ $(\sum_{n=1}^Nt_n)^* \,f(\,\cdot\,)\,(\sum_{n=1}^N t_n)$,
 where~$t_1,t_2,\dotsc$
 is an approximate pseudoinverse of~$d$.\qed
 \end{point}
+\end{point}
+\end{parsec}
+\begin{parsec}
+\begin{point}
+Before exploring their more technical aspects,
+we'll explain how
+corners and filters can be made to appear at opposite ends
+of a chain of adjunctions:
+\begin{equation*} 
+\xymatrix@R=5em{ 
+	\Cat{Eff}\ar[d]
+	\ar@/_3ex/@{{}{ }{}}[d]|\dashv
+	\ar@/^3ex/@{{}{ }{}}[d]|\dashv
+	\ar@/_11.5ex/@{{}{ }{}}[d]|\dashv
+	\ar@/^11.5ex/@{{}{ }{}}[d]|\dashv
+	\ar@/_15ex/[d]_{\text{Filter}}
+	\ar@/^15ex/[d]^{\text{Corner}}
+	\\ 
+	\op{(\W{cpsu})}\ar@/^8ex/[u]_{\mathbf{0}}\ar@/_8ex/[u]^{\mathbf{1}} 
+}  
+\end{equation*} 
+The category $\Define{\Cat{Eff}}$%
+\index{Eff@$\Cat{Eff}$}%
+\index{quotient--comprehension chain}
+has as objects pairs $(\scrA, p)$,
+where~$\scrA$ is a von Neumann algebra, and~$p\in[0,1]_\scrA$
+is an effect from~$\scrA$.
+A morphism  $(\scrA,p)\longrightarrow (\scrB,q)$
+in~$\Cat{Eff}$
+is an ncpsu-map $f\colon \scrB\to \scrA$ with $p\leq f(q)+f(1)^\perp$
+--- that is,
+\begin{equation*}
+	\omega(p)\ \leq\ \omega(f(q))\,+\,\omega(f(1))^\perp
+	\qquad\text{for every normal state } \omega\colon \scrA\to \C.
+\end{equation*}
+The functor $\Cat{Eff}\longrightarrow \op{(\W{cpsu})}$
+in the middle of the diagram above 
+	maps a morphism $f\colon (\scrA,p)\to(\scrB,q)$
+to the underlying map $f\colon \scrB\to\scrA$.
+The functors~$\mathbf{0}$ and~$\mathbf{1}$
+on its sides map a von Neumann algebra~$\scrA$ to
+$(\scrA,0)$ and~$(\scrA,1)$, respectively,
+and send an ncpsu-map $f\colon \scrA\to\scrB$ to itself; 
+this is possible since
+\begin{equation*}
+0\,\leq\,  f(0) + f(1)^\perp
+	\qquad\text{and}\qquad
+1\,\leq\, f(1)+f(1)^\perp.
+\end{equation*}
+That~$\mathbf{1}$
+is right adjoint to the functor $\Cat{Eff}\longrightarrow \op{(\W{cpsu})}$
+follows from the observation that
+an ncpsu-map $f\colon \scrB\to\scrA$
+is always a morphism $(\scrA,p)\to(\scrB,1)$,
+whatever $p\in[0,1]_\scrA$ may be,
+because  $p \leq f(1)+f(1)^\perp$.
+For a similar reason  $\mathbf{0}$ is left adjoint to
+$\Cat{Eff}\longrightarrow \op{(\W{cpsu})}$.
+
+On the other hand,
+a morphism $(\scrA,1)\to(\scrB,q)$ where $q\in[0,1]_\scrB$
+is not just any ncpsu-map $f\colon \scrB\to\scrA$,
+but one
+with $1\leq f(q)+f(1)^\perp$,
+that is, $f(q^\perp)=0$.
+It's no surprise then that
+a corner $\pi\colon \scrB\to \scrC$ for~$q\in[0,1]_\scrB$
+considered as morphism $(\scrC,1)\to(\scrB,q)$
+is a universal arrow from~$\mathbf{1}$ to~$(\scrB,q)$.
+
+On the other side there's a twist:
+a morphism $(\scrA,p)\to(\scrB,0)$ where~$p\in[0,1]_\scrA$
+is an ncpsu-map $f\colon \scrA\to\scrB$
+with $p\leq f(0)+f(1)^\perp$,
+that is, $f(1)\leq p^\perp$.
+It follows that any filter $c\colon \scrC\to \scrA$ for~$p^\perp$,
+when considered as morphism $(\scrA,p)\to (\scrC,0)$,
+is a universal arrow from~$(\scrA,p)$ to~$\mathbf{0}$.
+
+This chain of adjunctions not only exposes
+a hidden symmetry between filters and corners,
+but such chains appear
+in many other categories as well, see~\cite{cho2015quotient}.
 \end{point}
 \end{parsec}
 \begin{parsec}%
@@ -1292,7 +1379,7 @@ not only to distinguish it from
 the pre-existing notion of positivity for maps between $C^*$-algebras,
 but also to contrast it with
 	the notion of ``$\dagger$-positivity''
-	that appears in the following thesis.\REMARK{add ref.}
+	that appears in the following thesis (see~\sref{dagger-effectus}).
 \end{point}
 \begin{point}[purely-positive-examples]{Examples}%
 Let~$\scrA$ be a von Neumann algebra.
@@ -4322,11 +4409,11 @@ has a left adjoint $\Define{\mathcal{F}}\colon \W{cpsu}\to\W{miu}$.%
 \begin{point}{Proof}%
 Note that since the category~$\W{miu}$
 has all products (\sref{vn-products}),
-and equalisers (\sref{vn-equalizers}),
+and equalisers (\sref{vn-equalisers}),
 $\W{miu}$ has all limits 
 (by Theorem~V2.1 and Exercise V4.2 of~\cite{maclane}).
 Moreover, the inclusion~$U\colon \W{miu}\to\W{cpsu}$
-preserves these limits (see~\sref{vn-products} and~\sref{vn-equalizers}).
+preserves these limits (see~\sref{vn-products} and~\sref{vn-equalisers}).
 So by Freyd's adjoint functor theorem (Theorem~V6.1 of~\cite{maclane})
 it suffices to check the \emph{solution set condition},
 that is,
@@ -4446,7 +4533,7 @@ Hence $\#\scrH = \sum_{\omega\in\Omega} \#\scrH_\omega
 \end{point}
 \end{point}
 
-\begin{point}[equalizer-lemma]{Lemma}%
+\begin{point}[equaliser-lemma]{Lemma}%
 Every nmiu-map $h\colon \scrD\to\scrA\otimes \scrC$,
 where~$\scrA$, $\scrC$ and~$\scrD$ are von Neumann algebras,
 factors as 
@@ -4593,7 +4680,7 @@ $e\otimes\id\colon\scrE\otimes\scrC\to\scrA\otimes\scrC$
 is injective (by~\sref{tensor-injective})
 and thus uniqueness of~$k$ is clear.
 Concerning existence,
-by~\sref{equalizer-lemma},
+by~\sref{equaliser-lemma},
 $h$ factors as
 $\smash{\xymatrix@C=3em{\scrD
 \ar[r]|-{\tilde{h}}
@@ -4651,7 +4738,7 @@ We claim that the following set $\mathcal{S}$ satisfies the required condition:
 \]
 Indeed,
 suppose that $h\colon \scrB\to\scrC\otimes\scrA$ is given.
-By \sref{equalizer-lemma},
+By \sref{equaliser-lemma},
 $h$ factors
 as
 \begin{equation*}
