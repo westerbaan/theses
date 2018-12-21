@@ -208,16 +208,20 @@ This is a bridge to the next chapter
 \section{Stinespring's theorem}
 \begin{parsec}[dils-completion-to-hilb]%
 \begin{point}%
-For the GNS-construction (\sref{gns})
-it was necessary to ``complete''\footnote{Note that
+In the proof of Stinespring's theorem
+    (\sref{dils-proof-stinespring}),
+    it will be necessary to
+    ``complete''\footnote{Note that
         we do not require an inner product to be definite.
     The inner product on a Hilbert space \emph{is} definite.
     Thus the completion will quotient out those vectors with
         zero norm with respect to the inner product.}
         a (complex) vector space with inner product into a Hilbert space.
-This completion was only sketched in \sref{completion-inner-product-space}.
+The details of this completion were only sketched
+    \sref{completion-inner-product-space},
+    where it's used in the GNS-construction~(\sref{gns}).
 Here we will work through the details
-    as the corresponding completion required
+    as the corresponding completion (\sref{dils-completion}) required
     in Paschke's dilation
     is more complex and its exposition will benefit
     from this familiar analog.
@@ -387,14 +391,20 @@ Let~$\varphi\colon \scrA \to \scrB(\scrH)$
     be any cp-map.
 Write~$\scrA \odot \scrH$ for the tensor product of~$\scrA$ and~$\scrH$
     as vector spaces.
-By linear extension,
-the following fixes a sesquilinear form on~$\scrA \odot \scrH$:
+We will define~$\scrK$ as the Hilbert space completion
+    of~$\scrA \odot \scrH$ with respect to the inner
+    product~$[\,\cdot\,,\,\cdot\,]$
+    fixed by
 \begin{equation}\label{eq-stinespring-innerprod}
     [a\otimes x,\, b \otimes y] \ \equiv\  \left<x, \,\varphi(a^*b)\, y\right>_{\scrH}.
 \end{equation}
+To proceed, we have to show that~$[\,\cdot\,,\,\cdot\,]$
+    is indeed an inner product.
+By linear extension, \eqref{eq-stinespring-innerprod}
+    fixes a sesquilinear form~$[\,\cdot\,,\,\cdot\,]$.
 As~$\varphi$ preserves involution as a positive map,
 see \sref{cstar-p-implies-i},
-the sesquilinear form~\eqref{eq-stinespring-innerprod}
+    the sesquilinear form~$[\,\cdot\,,\,\cdot\,]$
 is also symmetric, i.e.: $[t,s]=\overline{[s,t]}$.
     Assume~$\sum^n_{i=1} a_i\otimes x_i$
 is an arbitrary element of~$A \odot \scrH$.
