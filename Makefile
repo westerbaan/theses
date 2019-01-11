@@ -27,3 +27,4 @@ common.tex: main.bib
 
 clean:
 	latexmk -CA
+	-rm *.{bbl,parsectoc,log}
