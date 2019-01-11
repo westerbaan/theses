@@ -966,6 +966,9 @@ This property is the cornerstone of several publications,
         that Stinespring's dilation admits,
         which will allow us to generalize it to arbitrary ncp-maps.
 \end{point}
+\begin{point}{20}[def-paschke]{Definition}%
+    Let~$\varphi\colon \scrA \to \scrB$
+        be any ncp-map.
 \parpic[r]{
 $\xymatrix@C=2.5em@R=2em{
 \mathscr{A} 
@@ -980,17 +983,14 @@ $\xymatrix@C=2.5em@R=2em{
 \mathscr{P}'
 \ar@/_1.5em/[ruu]_{h'}
 \ar@{..>}[u]_-{\sigma}
-}$}
-\begin{point}{20}[def-paschke]{Definition}%
-    Let~$\varphi\colon \scrA \to \scrB$
-        be any ncp-map.
+}$}%
     A \Define{Paschke dilation}\index{Paschke dilation} of~$\varphi$
     is a triplet~$(\scrP, \varrho, h)$
     with a von Neumann algebra~$\scrP$;
     an nmiu-map $\varrho \colon \scrA \to \scrP$
     and an ncp-map~$h \colon \scrP \to \scrB$
     with~$\varphi = h \after \varrho$
-    such that for every (other)
+    such that for every (other\footnote{Other choice of possibly the same such triplet. See \sref{other-remark}.})
     such triplet~$(\scrP', \varrho', h')$
     with a von Neumann algebra~$\scrP'$;
     an nmiu-map $\varrho'\colon \scrA \to \scrP'$
@@ -1000,6 +1000,19 @@ $\xymatrix@C=2.5em@R=2em{
     with~$\sigma \after \varrho' = \varrho$
     and~$h \after \sigma = h'$.
     \par % XXX hack to get parpic to work
+\begin{point}{21}[other-remark]{Remark on ``(other)''}%
+This unique mediating map~$\sigma$ should exist for every
+    such triplet~$(\scrP',\varrho',h')$,
+    in particular for~$(\scrP, \varrho, h)$ itself (in which case it is~$\id$).
+Thus it is more correct to leave out ``(other) such'' (and add~$\varphi=h' \after \varrho'$).
+I feel, however, that this would be harder to follow for a reader
+    unfamiliar with universal properties:
+        the new triplet would be introduced without being directly related
+            to the previous triplet and the reader has to
+            notice that the assumptions on both triplets are the same.
+In this case and for other universal properties
+    ``(other)'' should be understood as ``other choice of possibly the same''.
+\end{point}
 \end{point}
 \begin{point}{30}[stinespring-is-paschke]{Theorem}%
 Let~$\varphi\colon \scrA \to \scrB(\scrH)$
@@ -1247,31 +1260,40 @@ A \Define{Hilbert $\scrB$-module}\index{Hilbert $\scrB$-module}
     which is complete in this norm.
 \end{point}
 \begin{point}{30}{Examples}%
+Several examples of (pre-)Hilbert C$^*$-modules follow,
+    to each of which we will return in the remainder.
+\begin{itemize}
+\item
 Hilbert $\C$-modules are the same as Hilbert spaces.
 
+\item
 Any C$^*$-algebra~$\scrB$ is a Hilbert C$^*$-module over itself
     with $\scrB$-valued inner product~$\left<a,b\right> = a^*b$.
 By the C$^*$-identity, the Hilbert~$\scrB$-module
     norm on~$\scrB$ coincides with
     the norm of the C$^*$-algebra.
 
+\item
 More generally: if~$J \subseteq \scrB$
     is any right ideal of~$\scrB$,
     then~$J$ is a pre-Hilbert~$\scrB$-module
     with~$\left<a,b\right> = a^*b$.
-If~$J$ is norm closed, then~$J$ is a Hilbert~$\scrB$-module.
+If~$J$ is closed with respect to the norm, then~$J$ is a Hilbert~$\scrB$-module.
 
-In particular, the right ideal~$e \scrB$ for projection~$e \in \scrB$
+\item
+In particular, the right ideal~$e \scrB$ for a projection~$e \in \scrB$
     is a Hilbert~$\scrB$-module with~$\left<ea,eb\right> = a^*eb$.
 Later we will see that every so-called self-dual
-    Hilbert~$\scrB$-module is built up from such~$e \scrB$
-    if~$\scrB$ is a von Neumann algebra.
+    Hilbert~$\scrB$-module is built up from such~$e \scrB$,
+            where these~$\scrB$ are von Neumann algebras.
     
+\item
 If~$X$ and~$Y$ are (pre-)Hilbert~$\scrB$-modules,
-    then their direct sum~$X \oplus Y$
+        then their direct sum~$X \oplus Y$ (as right~$\scrB$-modules)
     is a (pre-)Hilbert~$\scrB$-module
-    with inner product~$\left<(x,y), (x',y')\right>
+    with the familiar inner product~$\left<(x,y), (x',y')\right>
                 = \left<x,x'\right>+\left<y,y'\right>$.
+\end{itemize}
 \end{point}
 \end{parsec}
 \subsection{The basics of Hilbert~C$^*$ modules}
@@ -1280,7 +1302,10 @@ If~$X$ and~$Y$ are (pre-)Hilbert~$\scrB$-modules,
     Perhaps the most important stones in the foundation
         of the theory of operator algebras,
         are the Cauchy--Schwarz inequality
-        and the polarization identity.
+        $| \langle x,y\rangle|^2 \leq \|x\|^2\|y\|^2$
+        and the polarization
+        identity~$\langle x,y\rangle = \frac{1}{4} \sum_{k=0}^3 i^k \|i^k x+ y\|^2$,
+        see \sref{inner-product-basic}.
     Also in the development of Hilbert C$^*$-modules,
         their generalizations support the bulk of the structure.
 \end{point}
@@ -1293,7 +1318,8 @@ and~$\Define{\|x\|_f} = \smash{ \langle x,x\rangle^{\nicefrac{1}{2}}_f}$\index{$
 This~$\left<\,\cdot\,,\,\cdot\,\right>_f$
     is a complex-valued inner product on~$X$.
 Hence, by~\sref{inner-product-basic},
-    we know that~$\|\,\cdot\,\|_f$ is a seminorm.
+    we know that~$\|\,\cdot\,\|_f$ is a seminorm
+        (ie.~a non-positive-definite norm).
 \end{point}
 \begin{point}{30}[module-CS]{Proposition (Cauchy--Schwarz)}%
 Let~$X$ be a right~$\scrB$-module
@@ -1670,20 +1696,23 @@ Also we will use the obvious shorthand~$\nicefrac{\varepsilon}{4}
 =   \nicefrac{(\nicefrac{\varepsilon}{2})}{2}$.
 \end{point}
 \end{point}
-\begin{point}{40}{Exercise}%
+\begin{point}{31}{Definition}%
 Let~$X$ be a set together with
-    a family of relations~$B \subseteq \wp (X \times X)$
-    such that it satisfies axioms 2, 3 and 4
+    a family of relations~$B \subseteq \wp (X \times X)$.
+The set~$B$ is said to be a \Define{subbase (for a uniformity on~$X$)}
+    if it satisfies axioms 2, 3 and 4
     of \sref{dils-dfn-uniformity}.
+\end{point}
+\begin{point}{40}{Exercise}%
+Let~$X$ be a set together with a subbase~$B$.
 Write~$\Phi$ for the filter generated by~$B$
     (that is: $\delta \in \Phi$
         iff~$\varepsilon_1 \cap \ldots \cap \varepsilon_n \subseteq \delta$
             for some~$\varepsilon_1, \ldots, \varepsilon_n \in B$).
-Show~$(X,\Phi)$ is a uniform space.
-We call~$B$ a \Define{subbase}\index{uniform space!subbase} for~$X$.
+Show that~$(X,\Phi)$ is a uniform space.
 \end{point}
 \begin{point}{50}[dils-uniformity-examples]{Examples}%
-Using the previous exercise, it's easy
+Using the definition of a subbase, it is easy
 to describe the entourages of some common uniformities.
     \begin{enumerate}
         \item
@@ -1695,7 +1724,12 @@ is a subbase and so fixes a uniformity~$\Phi$ on~$X$.
         \item
     Let~$X$ be a set together with a (infinite)
             family~$(d_{\alpha})_{\alpha\in I}$
-        of pseudometrics.
+            of pseudometrics.\footnote{Like a metric,
+                a pseudometric~$d$ is symmetric,
+                obeys the triangle inequality
+                    and~$d(x,x)=0$,
+                    but unlike a metric~$d(x,y)=0$
+                    is not required to entail~$x=y$.}
     Define~$E_{\alpha,\varepsilon} = \{ (x,y); \ d_\alpha(x,y)
             \leq \varepsilon\}$.
             Then~$B \equiv \{ E_{\alpha,\varepsilon}; \ \varepsilon > 0, \ 
@@ -2388,9 +2422,10 @@ to find~$ \| \sum_{e\in S}e \tau(e)^*\| \leq \|\tau\|$ as desired. \qed
 \subsection{Self-dual completion}
 \begin{parsec}{1500}%
 \begin{point}{10}%
-We continue with a generalization of
-\sref{prop-complete-into-hilbert-space}
-to~Hilbert C$^*$-modules.
+In~\sref{prop-complete-into-hilbert-space}
+    we saw that every vector space with inner product
+    can be completed into a Hilbert space.
+We continue with the generalization to~Hilbert C$^*$-modules.
 \end{point}
 \begin{point}{20}[dils-completion]{Theorem}%
 Let~$\scrB$ be a von Neumann algebra
@@ -2701,7 +2736,7 @@ Hence~$\overline{V}$ is complete.
         implies that the~$\hat\varepsilon$ and~$\tilde\varepsilon$
         generate the same uniformity on~$N$.)
 \end{point}
-\begin{point}{90}{$\overline{V}$ is a right-$\scrB$-module}%
+\begin{point}{90}{$\overline{V}$ is a right $\scrB$-module}%
     First we will define an addition on~$\overline{V}$.
     The addition on~$V$ is uniformly continuous
     (as the uniformity on~$V$ is given by seminorms,
@@ -2741,7 +2776,7 @@ allows us to define a right~$\scrB$-action on~$\overline{V}$
 by sending the equivalence class of~$(x_\alpha)_\alpha$
 to~$(x_\alpha b)_\alpha$. By definition~$\eta(x)b = \eta(xb)$.
 It is straightforward to check this turns~$\overline{V}$
-into a right-$\scrB$-module.
+into a right $\scrB$-module.
 \end{point}
 \begin{point}{100}[dils-extending-norm-to-overlineV]{Extending $\|\,\cdot\,\|_f$ to~$\overline{V}$}%
 Let~$(x_\alpha)_\alpha$ be a Cauchy net over~$V$
@@ -3275,7 +3310,16 @@ to show~$\varphi \colon \scrA \to M_n \scrA$
 \section{Paschke dilations}
 \begin{parsec}{1540}%
 \begin{point}{10}%
-    We are ready to show that every ncp-map has a Paschke dilation.
+We are ready to show that every ncp-map has a Paschke dilation.
+    That is: for every ncp-map~$\varphi$
+        there is a triplet~$(\scrP, \varrho, h)$
+        with~$\varphi = h \after \varrho$ via~$\scrP$
+            for some ncp-map~$h$, nmiu-map~$\varrho$ and von Neumann algebra~$\scrP$,
+            which is minimal in the sense
+            that for any (other) such triplet~$(\scrP', \varrho', h')$
+            there is a unique ncp-map~$\sigma\colon \scrP' \to \scrP$
+            with~$h' =h \after \sigma$ and~$\varrho=\sigma\after\varrho'$.
+    See \sref{def-paschke}.
 \end{point}
 \begin{point}{20}[phi-compatible-paschke]{Definition}%
     Let~$\varphi\colon \scrA \to \scrB$ be any ncp-map between
@@ -3587,7 +3631,7 @@ There exists a Hilbert~$\scrB$-module~$Y$,
     with~$\varphi = \ad_T \after \varrho$.
 \end{point}
 \begin{point}{30}%
-For our purposes (the dilation arbitrary ncp-maps~$\scrA \to \scrB$),
+For our purposes (the dilation of arbitrary ncp-maps~$\scrA \to \scrB$),
     Paschke's GNS construction sufficed.
 We leave open whether
     KSGNS admits a universal property like \sref{dils-univ-stinespring}
@@ -4648,7 +4692,7 @@ Suppose~$X$ is a Hilbert~$\scrA$-module
     and~$Y$ is a Hilbert~$\scrB$-module
     for some C$^*$-algebras~$\scrA$ and~$\scrB$.
 The algebraic tensor product~$X \odot Y$
-    is a right-$\scrA \odot \scrB$-module
+    is a right $\scrA \odot \scrB$-module
     via~$(x\otimes y)\cdot (a\otimes b) = (xa) \otimes (yb)$
     and has an~$\scrA \odot \scrB$-valued inner
     product fixed by~$[x\otimes y, x'\otimes y']
