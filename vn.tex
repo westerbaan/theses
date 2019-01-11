@@ -1,6 +1,6 @@
 \chapter{Von Neumann Algebras}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{410}%
+\begin{point}{10}%
 We have arrived at the main subject of this thesis,
 the special class of $C^*$-algebras
 called von Neumann algebras (see definition~\sref{vna} below)
@@ -162,8 +162,8 @@ see~\sref{tensor}.
 \end{parsec}
 \section{The Basics}
 \subsection{Definition and Counterexamples}
-\begin{parsec}[vna]%
-\begin{point}{Definition}%
+\begin{parsec}{420}[vna]%
+\begin{point}{10}{Definition}%
 A $C^*$-algebra~$\scrA$
 is a \Define{von Neumann algebra}%
 \index{von Neumann algebra}
@@ -190,7 +190,7 @@ functionals are faithful
 instead of just centre separating
 we did not use this weaker albeit more complex condition.}
 \end{enumerate}
-\begin{point}%
+\begin{point}{20}%
 A positive linear map $\omega\colon \scrA\to \C$
 is called \Define{normal}%
 \index{normal!functional}
@@ -198,7 +198,7 @@ if $\omega(\bigvee D) = \bigvee_{d\in D} \omega(d)$
 for every bounded directed subset of self-adjoint elements of~$D$
 which has a supremum $\bigvee D$ in $\sa{\scrA}$.
 \end{point}%
-\begin{point}%
+\begin{point}{30}%
 The \Define{ultraweak topology}
 on $\scrA$
 is the least topology on~$\scrA$
@@ -212,7 +212,7 @@ that makes $a\mapsto \omega(a^*a)$ continuous
 for every np-map~$\omega\colon \scrA\to \C$.
 \end{point}
 \end{point}
-\begin{point}{Remark}%
+\begin{point}{40}{Remark}%
 We work with the ultraweak and ultrastrong topology in tandem,
 because neither is ideal, and they tend to be complementary:
 for example, $a\mapsto a^*$ is ultraweakly continuous
@@ -238,7 +238,7 @@ and seminorm $\|a\|_\omega = [a,a]_\omega^{\nicefrac{1}{2}}
 = \omega(a^*a)^{\nicefrac{1}{2}}$
 (as in~\sref{state-inner-product} and~\sref{omega-norm-basic}).
 \end{point}
-\begin{point}[von-neumann-examples]{Examples}%
+\begin{point}{50}[von-neumann-examples]{Examples}%
 \begin{enumerate}
 \item
 \index{C@$\C$, the complex numbers!as a von Neumann algebra}%
@@ -302,8 +302,8 @@ a commutative von Neumann algebra~$L^\infty(X)$.
 \end{enumerate}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}[uwweaker]{Exercise}%
+\begin{parsec}{430}%
+\begin{point}{10}[uwweaker]{Exercise}%
 Let~$\scrA$ be a von Neumann algebra.
 \begin{enumerate}
 \item
@@ -320,7 +320,7 @@ Show that an ultraweakly closed subset~$C$ of~$\scrA$
 is also ultrastrongly closed.
 \end{enumerate}
 \end{point}
-\begin{point}[vn-counterexamples]{Exercise}%
+\begin{point}{20}[vn-counterexamples]{Exercise}%
 We give some counterexamples in $\scrB(\ell^2)$
 to plausible propositions
 to sharpen your understanding of the ultrastrong and ultraweak topologies,
@@ -568,8 +568,8 @@ in a von Neumann converges, in~\sref{vn-complete}.)
 %
 % multiplication turns suprema into ultraweak limits
 %
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{440}%
+\begin{point}{10}%
 The basic facts concerning von Neumann algebras
 we'll deal with first mostly involve the
 relationship
@@ -588,7 +588,7 @@ Quite surprisingly,
 this problem reduces to the ultraweak continuity
 of $b\mapsto a^*ba$ by the following identity.
 \end{point}
-\begin{point}[mult-polarization]{Exercise}%
+\begin{point}{20}[mult-polarization]{Exercise}%
 \index{polarisation identity!in a von Neumann algebra}
 Show that for elements~$a,b,c$ of a $C^*$-algebra,
 \begin{equation*}
@@ -599,7 +599,7 @@ a^*\,c\,b\ =\ \frac{1}{4}\,\sum_{k=0}^3\ i^k\  (i^ka+b)^*\,c\,(i^ka+b).
 identity for inner products,
 see~\sref{inner-product-basic}.)
 \end{point}
-\begin{point}[vanishing-effects]{Lemma}%
+\begin{point}{30}[vanishing-effects]{Lemma}%
 Let~$(x_\alpha)_{\alpha\in D}$ be 
 a net of effects of a von Neumann algebra~$\scrA$,
 which converges ultraweakly to~$0$.
@@ -607,7 +607,7 @@ Let~$(b_\alpha)_{\alpha\in D}$ be a
 net of elements with~$\|b_\alpha\| \leq 1$ for all~$\alpha$.
 Then $(x_\alpha b_\alpha)_\alpha$ converges ultraweakly
 to~$0$.
-\begin{point}{Proof}%
+\begin{point}{40}{Proof}%
 Let~$\omega\colon \scrA\to \C$ be an np-map.
 We have, for each~$\alpha$,
 \begin{alignat*}{3}
@@ -633,14 +633,14 @@ converges to~$0$,
 and so $(x_\alpha b_\alpha)_\alpha$ converges ultraweakly to~$0$.\qed
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{50}{Exercise}%
 Let~$D$ be a bounded directed set of self-adjoint
 elements of a von Neumann algebra~$\scrA$,
 and let~$a\in \scrA$.
-\begin{point}[vna-supremum-uwlimit]%
+\begin{point}{60}[vna-supremum-uwlimit]%
 Show that the net~$(d)_{d\in D}$ converges ultraweakly to~$\bigvee D$.
 \end{point}
-\begin{point}[vna-supremum-mult]%
+\begin{point}{70}[vna-supremum-mult]%
 Use~\sref{vanishing-effects}
 to show that $(da)_d$ converges ultraweakly to~$(\bigvee D)a$,
 and that~$(a^*d)_d$ converges ultraweakly to~$a^* (\bigvee D)$.
@@ -649,7 +649,7 @@ and that~$(a^*d)_d$ converges ultraweakly to~$a^* (\bigvee D)$.
 %
 %  ad is normal
 %
-\begin{point}[ad-normal]{Proposition}%
+\begin{point}{80}[ad-normal]{Proposition}%
 Let~$a$ be an element of a von Neumann algebra~$\scrA$.
 Then
 \begin{equation*}
@@ -658,12 +658,12 @@ Then
 \end{equation*}
 for every bounded directed subset~$D$ of self-adjoint
 elements of~$\scrA$.
-\begin{point}[ad-normal-1]{Proof}%
+\begin{point}{90}[ad-normal-1]{Proof}%
 If~$a$ is invertible,
 then the (by~\sref{astara-pos-basic-consequences}) order preserving map $b\mapsto a^*ba$
 has an order preserving inverse (namely $b\mapsto (a^{-1})^* b a^{-1}$),
 and therefore preserves all suprema.
-\begin{point}%
+\begin{point}{100}%
 The general case reduces to the case that~$a$ 
 is invertible
 in the following way.
@@ -701,7 +701,7 @@ nonetheless.\qed
 \end{point}
 \end{point}
 \end{point}
-\begin{point}[vn-positive-basic]{Exercise}%
+\begin{point}{110}[vn-positive-basic]{Exercise}%
 Show that the set of np-functionals
 on a von Neumann algebra~$\scrA$
 is not only faithful 
@@ -727,15 +727,15 @@ that~$(\scrA)_1$
 is ultraweakly closed as well.)
 \end{enumerate}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{120}{Exercise}%
 Let~$D$ be a directed subset of self-adjoint elements
 of a von Neumann algebra~$\scrA$,
 and let~$a\in\scrA$.
-\begin{point}[vna-supremum-commutes]%
+\begin{point}{130}[vna-supremum-commutes]%
 Show that if~$ad=da$ for all~$d\in D$,
 then $a(\bigvee D) = (\bigvee D)a $.
 \end{point}
-\begin{point}[vna-supremum-uslimit]%
+\begin{point}{140}[vna-supremum-uslimit]%
 Use~\sref{vanishing-effects}
 to show that $(\bigvee D-d)^2$ converges ultraweakly to~$0$
 as $D\ni d\to\infty$.
@@ -743,7 +743,7 @@ as $D\ni d\to\infty$.
 Conclude that~$(d)_{d\in D}$ converges ultrastrongly to~$\bigvee D$.
 \end{point}
 \end{point}
-\begin{point}[p-uwcont]{Exercise}%
+\begin{point}{150}[p-uwcont]{Exercise}%
 Show that for a positive linear map $f\colon \scrA\to\scrB$
 between von Neumann algebras,
 the following are equivalent.
@@ -769,8 +769,8 @@ continuous for every element~$a$ of a von Neumann
 algebra~$\scrA$.
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}{Exercise}%
+\begin{parsec}{450}%
+\begin{point}{10}{Exercise}%
 Show that if a positive linear map $f\colon \scrA\to\scrB$
 between von Neumann algebras 
 is ultrastrongly continuous (on~$[0,1]_\scrA$), 
@@ -782,11 +782,11 @@ The converse does not hold: give an example of a map~$f$
 which is normal, but 
 not ultrastrongly continuous. (Hint: transpose.)
 \end{point}
-\begin{point}[cp-uscont]{Proposition}%
+\begin{point}{20}[cp-uscont]{Proposition}%
 An ncp-map $f\colon \scrA\to\scrB$
 between von Neumann algebras is 
 ultrastrongly continuous.
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 To show that~$f$
 is ultrastrongly continuous
 it suffices to show that~$f$ is ultrastrongly continuous at~$0$.
@@ -807,7 +807,7 @@ converges ultraweakly to~$0$
 (since~$(b_\alpha)_\alpha$ converges ultrastrongly to~$0$).\qed
 \end{point}
 \end{point}
-\begin{point}[mult-uws-cont]{Exercise}%
+\begin{point}{40}[mult-uws-cont]{Exercise}%
 Let~$\scrA$ be a von Neumann algebra.
 Conclude (using~\sref{cp-uscont} and~\sref{ad-cp})
 that the map $a\mapsto b^*ab,\,\scrA\to\scrA$
@@ -821,7 +821,7 @@ show that $b\mapsto ab,\,ba\colon\ \scrA\to\scrA$
 are ultraweakly and ultrastrongly continuous
 for every element~$a$ of a von Neumann algebra~$\scrA$.
 \end{point}
-\begin{point}%
+\begin{point}{50}%
 We saw in~\sref{vn-counterexamples}
 that the multiplication on a von Neumann algebra 
 is not jointly ultraweakly continuous,
@@ -831,7 +831,7 @@ even when~$b$ is restricted to a bounded set;
 but it \emph{is} jointly 
 ultrastrongly continuous when~$a$ is restricted to a bounded set:
 \end{point}
-\begin{point}[mult-jus-cont]{Proposition}%
+\begin{point}{60}[mult-jus-cont]{Proposition}%
 Let $(a_\alpha)_\alpha$
 and~$(b_\alpha)_\alpha$
 be nets
@@ -842,7 +842,7 @@ Then the net~$(a_\alpha b_\alpha)_\alpha$
 converges ultrastrongly to~$ab$
 provided that~$(a_\alpha)_\alpha$
 is bounded.
-\begin{point}{Proof}%
+\begin{point}{70}{Proof}%
 Let $\omega\colon \scrA\to\C$
 be an np-functional.
 Since
@@ -864,12 +864,12 @@ converges ultrastrongly to~$ab$.\qed
 \end{point}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{460}%
+\begin{point}{10}%
 We can now prove a bit more 
 about the ultrastrong and ultraweak topologies.
 \end{point}
-\begin{point}[usconv]{Exercise}%
+\begin{point}{20}[usconv]{Exercise}%
 Show that a net $(b_\alpha)_\alpha$ 
 in a von Neumann algebra~$\scrA$
 converges ultrastrongly to an element~$b$
@@ -879,7 +879,7 @@ both $b_\alpha^*b_\alpha\longrightarrow b^*b$
 and~$b_\alpha\longrightarrow b$
 ultraweakly as~$\alpha\to\infty$.
 \end{point}
-\begin{point}[npuws]{Exercise}%
+\begin{point}{30}[npuws]{Exercise}%
 \index{normal!positive functional}%
 Show that for a positive linear map $\omega \colon \scrA\to\C$
 on a von Neumann algebra~$\scrA$
@@ -895,11 +895,11 @@ the following are equivalent
 (Hint: combine~\sref{p-uwcont} and \sref{cp-uscont}.)
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{470}%
+\begin{point}{10}%
 Enter the eponymous hero(s) of this thesis.
 \end{point}
-\begin{point}{Definition}%
+\begin{point}{20}{Definition}%
 We denote 
 the category of
 \emph{normal} cpsu-maps
@@ -908,7 +908,7 @@ and its subcategory of nmiu-maps
 by~$\Define{\W{miu}}$.
 \index{Wmiu@$\W{miu}$, $\W{cpsu}$, \dots}%
 (We omit the ``N'' for the sake of brevity.)
-\begin{point}%
+\begin{point}{30}%
 Though arguably~$\W{miu}$
 is a good candidate
 for being called \emph{the} category of von Neumann algebra,
@@ -927,7 +927,7 @@ has all products, \sref{vn-products}, certain equalisers,
 and that $\op{(\W{cpsu})}$ is an \emph{effectus}, see~\sref{vn-effectus}.
 \end{point}
 \end{point}
-\begin{point}[vn-products]{Exercise}%
+\begin{point}{40}[vn-products]{Exercise}%
 \index{product!in $\W{miu}$ and $\W{cpsu}$}
 Show that
 given a family $(\scrA_i)_i$
@@ -945,7 +945,7 @@ into the  product of the~$\scrA_i$
 in the categories~$\W{miu}$ and~$\W{cpsu}$
 (see~\sref{cstar-product-2} and~\sref{cstar-product-4}).
 \end{point}
-\begin{point}[vn-equalisers]{Exercise}%
+\begin{point}{50}[vn-equalisers]{Exercise}%
 \index{equaliser!in $\W{miu}$ and $\W{cpsu}$}
 Show that given nmiu-maps $f,g\colon \scrA\to\scrB$
 between von Neumann algebras
@@ -956,7 +956,7 @@ is the equaliser of~$f$ and~$g$ in the
 categories~$\W{miu}$ and~$\W{cpsu}$
 (see~\sref{cstar-equaliser-1} and~\sref{cstar-product-4}).
 \end{point}
-\begin{point}[vn-effectus]
+\begin{point}{60}[vn-effectus]
 Let us briefly indicate what makes~$\op{(\W{cpsu})}$ an effectus;
 for a precise formulation and proof of this fact
 we refer to~\cite{effintro,kentapartial}
@@ -1015,13 +1015,13 @@ such as side effects (\sref{sefp}) and purity
 (\sref{pure-effectus}).
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{480}%
+\begin{point}{10}%
 Let us quickly prove that every von Neumann algebra
 is isomorphic to a von Neumann algebra of operators on a 
 Hilbert space (see~\sref{ngns}).
 \end{point}
-\begin{point}[normal-faithful]{Exercise}%
+\begin{point}{20}[normal-faithful]{Exercise}%
 \index{normal!positive map between von Neumann algebras}
 Let~$\Omega$ be a collection of np-functionals
 on a von Neumann algebra~$\scrB$
@@ -1030,13 +1030,13 @@ Show that a positive linear map $f\colon \scrA\to\scrB$
 is normal iff~$\omega\circ f$
 is normal for all~$\omega\in\Omega$.
 \end{point}
-\begin{point}{Proposition}%
+\begin{point}{30}{Proposition}%
 \index{rhoomega@$\varrho_\omega$!is normal}
 Given an np-map~$\omega\colon \scrA \to \C$
 on a von Neumann algebra~$\scrA$,
 the map $\varrho_\omega\colon \scrA\to\scrB(\scrH_\omega)$
 from~\sref{gns} is normal.
-\begin{point}{Proof}%
+\begin{point}{40}{Proof}%
 Since by definition of~$\scrH_\omega$
 the vectors of the form~$\eta_\omega(a)$
 where~$a\in\scrA$
@@ -1052,20 +1052,20 @@ that $\left<\eta_\omega(a),\varrho_\omega(\,\cdot\,)
 which it is, by~\sref{ad-normal}.\qed
 \end{point}
 \end{point}
-\begin{point}[varrho-Omega-normal]{Exercise}%
+\begin{point}{50}[varrho-Omega-normal]{Exercise}%
 \index{rhoOmega@$\varrho_\Omega$!is normal}
 Show that the map $\varrho_\Omega$ 
 from~\sref{gelfand-naimark-representation}
 is normal for every collection~$\Omega$ of np-maps $\scrA\to\C$
 on a von Neumann algebra $\scrA$.
 \end{point}
-\begin{point}[injective-nmiu-iso-on-image]{Lemma}%
+\begin{point}{60}[injective-nmiu-iso-on-image]{Lemma}%
 Let~$f\colon \scrA\to\scrB$ be an injective nmiu-map
 between von Neumann algebras.
 Then the image~$f(\scrA)$ is a von Neumann subalgebra of~$\scrB$,
 and~$f$ restricts to a nmiu-isomorphism from~$\scrA$
 to~$f(\scrA)$.
-\begin{point}{Proof}%
+\begin{point}{70}{Proof}%
 We already know by~\sref{injective-miu-iso-on-image}
 that~$f(\scrA)$ is a $C^*$-subalgebra of~$\scrA$,
 and that~$f$ restricts to a miu-isomorphism~$f'\colon \scrA\to f(\scrA)$.
@@ -1083,11 +1083,11 @@ Thus~$\bigvee f(D)\in f(\scrA)$,
 and so $f(\scrA)$ is a von Neumann subalgebra of~$\scrB$.\qed
 \end{point}
 \end{point}
-\begin{point}[ngns]{Theorem (normal Gelfand--Naimark)}%
+\begin{point}{80}[ngns]{Theorem (normal Gelfand--Naimark)}%
 \index{Gelfand--Naimark's Theorem!for von Neumann algebras}%
 Every von Neumann algebra~$\scrA$ is nmiu-isomorphic
 to von Neumann algebra of operators on a Hilbert space.
-\begin{point}[ngns-proof]{Proof}%
+\begin{point}{90}[ngns-proof]{Proof}%
 Recall that an element $a\in \scrA$ is zero iff $\omega(a)=0$
 for all np-maps $\omega\colon \scrA\to\C$.
 It follows that the collection~$\Omega$
@@ -1107,8 +1107,8 @@ of~$\scrB(\scrH_\Omega)$.\qed
 \end{parsec}
 \subsection{Examples}
 \subsubsection{Matrices over von Neumann algebras} 
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{490}%
+\begin{point}{10}%
 We'll show that the $C^*$-algebra
 of $N\times N$-matrices~$M_N(\scrA)$
 over a von Neumann algebra~$\scrA$
@@ -1116,7 +1116,7 @@ is itself a von Neumann algebra,
 and to this end,
 we prove something a bit more more general.
 \end{point}
-\begin{point}[bah-vn]{Theorem}%
+\begin{point}{20}[bah-vn]{Theorem}%
 Given a von Neumann algebra~$\scrA$,
 the~$C^*$-algebra $\scrB^a(X)$ (\sref{bax-cstar})%
 \index{BaX@$\scrB^a(X)$!as a von Neumann algebra}
@@ -1127,7 +1127,7 @@ and
 $\left<x,(\,\cdot\,)x\right>\colon \scrB^a(X)\to\scrA$
 is normal for every~$x\in X$.%
 \index{vector functional!is normal}
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 We'll first show that
 a  bounded directed subset~$\scrD$ of~$\Real{\scrB^a(X)}$
 has a supremum (in~$\Real{\scrB^a(X)}$).
@@ -1211,7 +1211,7 @@ and~$\left<x,Tx\right>=0$,
 and so~$T=0$.\qed
 \end{point}
 \end{point}
-\begin{point}[mn-vna]{Exercise}%
+\begin{point}{40}[mn-vna]{Exercise}%
 \index{$M_n\scrA$, the $n\times n$-matrices over~$\scrA$!as a von Neumann algebra}%
 Let~$\scrA$ be a von Neumann algebra,
 and let~$N$ be a natural number.
@@ -1250,8 +1250,8 @@ from~\sref{mnf} is normal.%
 \end{point}
 \end{parsec}
 \subsubsection{Commutative von Neumann algebras}
-\begin{parsec}%
-\begin{point}[linfty-example]%
+\begin{parsec}{500}%
+\begin{point}{10}[linfty-example]%
 Another important source of examples of von 
 Neumann algebras is measure theory:
 we'll show that the bounded measurable
@@ -1306,8 +1306,8 @@ the results from~\cite{fremlin}
 to our setting.
 \end{point}
 \end{parsec}%
-\begin{parsec}[measure-theory-recap]%
-\begin{point}%
+\begin{parsec}{510}[measure-theory-recap]%
+\begin{point}{10}%
 Let~$X$ be a finite and complete measure space.
 We'll denote the $\sigma$-algebra
 of measurable subsets of~$X$ by~$\Define{\Sigma_X}$,%
@@ -1342,7 +1342,7 @@ is the indicator function~$\mathbf{1}_A$
 of a measurable subset~$A$ of~$X$
 (which is equal to~$1$ on~$A$ and~$0$ elsewhere.)
 \end{point}
-\begin{point}%
+\begin{point}{20}%
 The bounded measurable functions $f\colon X\to\C$
 form a $C^*$-subalgebra of~$\C^X$ 
 that we'll denote by~$\Define{\mathcal{L}^\infty(X)}$.%
@@ -1369,7 +1369,7 @@ as we'll show presently;
 this is why we'll move from~$\mathcal{L}^\infty(X)$
 to~$L^\infty(X)$ in a moment.
 \end{point}
-\begin{point}%
+\begin{point}{30}%
 For a counterexample
 to~$\mathcal{L}^\infty(X)$ being always
 a von Neumann algebra
@@ -1397,7 +1397,7 @@ Whence~$\mathcal{L}^\infty([0,1])$
 is not a von Neumann algebra.
 
 \end{point}
-\begin{point}%
+\begin{point}{40}%
 To deal with~$L^\infty(X)$
 we need to know a bit more about~$\mathcal{L}^\infty(X)$,
 namely that the measure on~$X$ can be extended to a
@@ -1434,7 +1434,7 @@ What \emph{is} surprising
 is that the lifting of~$\int$
 to~$L^\infty(X)$ will be normal.
 \end{point}
-\begin{point}%
+\begin{point}{50}%
 But let us first define~$L^\infty(X)$.
 We say that $f,g\in \mathcal{L}^\infty(X)$
 are \Define{equal almost everywhere}
@@ -1492,7 +1492,7 @@ for any bounded map~$g\colon X\to\C$
 with $g(x)=\bigvee_n f_n(x)$
 for almost all~$x\in X$.
 \end{point}%
-\begin{point}%
+\begin{point}{60}%
 Now, let us return to the integral.
 Since~$\int f = \int g$
 for all~$f,g\in \mathcal{L}^\infty(X)$
@@ -1520,7 +1520,7 @@ the fact that~$L^\infty(X)$
 is a von Neumann algebra follows from
 the following general and rather surprising observation.
 \end{point}
-\begin{point}{Proposition}%
+\begin{point}{70}{Proposition}%
 \index{von Neumann algebra!with a faithful np-functional}
 Let~$\scrA$ be a $C^*$-algebra,
 and let~$\tau\colon \scrA\to\C$
@@ -1532,7 +1532,7 @@ and
 $\tau(\bigvee_n a_n)=\bigvee_n \tau (a_n)$,
 then~$\scrA$ is a von Neumann algebra,
 and~$\tau$ is normal.
-\begin{point}{Proof}%
+\begin{point}{80}{Proof}%
 Our first task is to show that a bounded
 directed subset~$D$ of self-adjoint elements of~$\scrA$
 has a supremum~$\bigvee D$ in~$\Real{\scrA}$.
@@ -1577,7 +1577,7 @@ Since~$\tau$ is faithful
 and normal, $\scrA$ is a von Neumann algebra.\qed
 \end{point}
 \end{point}
-\begin{point}[Linfty-vn]{Corollary}%
+\begin{point}{90}[Linfty-vn]{Corollary}%
 Given a finite complete measure space~$X$ 
 the $C^*$-algebra $L^\infty(X)$
 is a commutative von Neumann algebra,
@@ -1586,8 +1586,8 @@ gives a faithful normal positive
 map~$\int\colon L^\infty(X)\to\C$.
 \end{point}
 \end{parsec}
-\begin{parsec}[classification-cvn]%
-\begin{point}%
+\begin{parsec}{520}[classification-cvn]%
+\begin{point}{10}%
 We'll show that any commutative von Neumann algebra~$\scrA$
 that admits a faithful np-functional $\omega\colon \scrA\to \C$
 is nmiu-isomorphic  to~$L^\infty(X)$
@@ -1650,7 +1650,7 @@ but once this is achieved
 it's easily seen that
 $\scrA\cong C(\spec(\scrA))\cong L^\infty(\spec(\scrA))$.
 \end{point}
-\begin{point}[meagre]{Definition}%
+\begin{point}{20}[meagre]{Definition}%
 Let~$X$ be a topological space.
 \begin{enumerate}
 \item
@@ -1675,7 +1675,7 @@ when~$A\approx C$
 for some clopen~$C\subseteq X$.
 \end{enumerate}
 \end{point}
-\begin{point}[meagre-basic]{Exercise}%
+\begin{point}{30}[meagre-basic]{Exercise}%
 Given a topological space~$X$,
 verify the following facts.
 \begin{enumerate}
@@ -1705,8 +1705,8 @@ are almost clopen.
 \end{enumerate}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{530}%
+\begin{point}{10}%
 The fact that the almost clopen subsets
 of the spectrum~$\spec(\scrA)$
 of a commutative von Neumann algebra~$\scrA$
@@ -1715,7 +1715,7 @@ are closed under countable unions
 relies on a special topological property of~$\spec(\scrA)$
 that is described in~\sref{vn-spectrum-extremally-disconnected} below.
 \end{point}
-\begin{point}[ngelfand]{Exercise}%
+\begin{point}{20}[ngelfand]{Exercise}%
 \index{Gelfand's Representation Theorem!for von Neumann algebras}
 Let~$\scrA$ be a commutative von Neumann algebra.
 Using the fact that
@@ -1729,7 +1729,7 @@ is a commutative von Neumann algebra
 that is nmiu-isomorphic
 to~$\scrA$ via~$\gamma_\scrA$.
 \end{point}
-\begin{point}[vn-spectrum-extremally-disconnected]{Proposition}%
+\begin{point}{30}[vn-spectrum-extremally-disconnected]{Proposition}%
 	\index{sp@$\spec$, spectrum!$\spec(\scrA)$, of a $C^*$-algebra!is extremally disconnected for a von Neumann algebra}
 The spectrum~$\spec(\scrA)$
 of a commutative von Neumann algebra~$\scrA$
@@ -1738,7 +1738,7 @@ is \Define{extremally disconnected}:%
 the closure~$\overline{U}$
 of an open subset~$U$ of~$\spec(\scrA)$
 is open.
-\begin{point}{Proof}%
+\begin{point}{40}{Proof}%
 (Based on \S6.1 of~\cite{riesz}.)
 
 Let~$U$ be an open subset of~$\spec(\scrA)$,
@@ -1784,11 +1784,11 @@ All in all we have $\bigvee D = \mathbf{1}_{\overline{U}}$,
 and so~$\overline{U}$ is open.\qed
 \end{point}
 \end{point}
-\begin{point}{Corollary}%
+\begin{point}{50}{Corollary}%
 The almost clopen subsets
 of an extremally disconnected topological
 space~$X$ form a $\sigma$-algebra.
-\begin{point}[almost-clopen-sigma-algebra-proof]{Proof}%
+\begin{point}{60}[almost-clopen-sigma-algebra-proof]{Proof}%
 In light of~\sref{meagre-basic}
 it remains only to be shown that
 the union~$\bigcup_n A_n$
@@ -1807,8 +1807,8 @@ so~$\bigcup_n A_n$ is almost clopen.\qed
 \end{point}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{540}%
+\begin{point}{10}%
 The final ingredient
 we need to prove the main result, \sref{cvn-faithful},
 of this section
@@ -1817,11 +1817,11 @@ that an almost clopen subset of a compact Hausdorff space
 is equivalent to precisely one clopen,
 which follows from the following famous theorem.
 \end{point}
-\begin{point}[baire-category-theorem]{Baire category theorem}%
+\begin{point}{20}[baire-category-theorem]{Baire category theorem}%
 \index{Baire's Category Theorem}
 A meagre subset of a compact Hausdorff space
 has empty interior.
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 Let~$A$ be a meagre subset of a compact Hausdorff space~$X$.
 So there are closed $B_1\subseteq B_2\subseteq \dotsc$
 with~$A\subseteq \bigcup_n B_n$
@@ -1857,7 +1857,7 @@ and neither will be~$V\cap \bigcap_n U_n
 \supseteq \bigcap_n \overline{V}_n$.\qed
 \end{point}
 \end{point}
-\begin{point}[approx-closure]{Lemma}%
+\begin{point}{40}[approx-closure]{Lemma}%
 For open subsets~$U$ and~$V$ of a compact Hausdorff
 space~$X$,
 \begin{equation*}
@@ -1866,7 +1866,7 @@ U\approx V\quad\iff\quad
 \quad\iff\quad
 \overline{U}=\overline{V}.
 \end{equation*}
-\begin{point}{Proof}%
+\begin{point}{50}{Proof}%
 As~$U\approx \overline{U}$ by~\sref{meagre-basic}
 the only thing that is not obvious
 is that~$\overline{U}\approx \overline{V} \implies \overline{U}=\overline{V}$.
@@ -1882,28 +1882,28 @@ Similarly, $\overline{V}\subseteq\overline{U}$,
 and so~$\overline{V}=\overline{U}$.\qed
 \end{point}
 \end{point}
-\begin{point}{Corollary}%
+\begin{point}{60}{Corollary}%
 Given an almost clopen subset~$A$ of a compact Hausdorff
 space~$X$ there is precisely one clopen~$C$ with~$A\approx C$.
-\begin{point}[almost-meagre-fundamental]{Proof}%
+\begin{point}{70}[almost-meagre-fundamental]{Proof}%
 When~$C\approx A \approx C'$
 for clopen subsets~$C,C'\subseteq X$,
 we have~$C\approx C'$,
 and so~$C=C'$ by~\sref{approx-closure}.\qed
 \end{point}
 \end{point}
-\begin{point}%
+\begin{point}{80}%
 Interestingly,
 a compact Hausdorff space is extremally disconnected
 iff each of its open subsets is ``measurable''
 in the sense of being almost clopen:
 \end{point}
-\begin{point}[open-almost-clopen]{Proposition}%
+\begin{point}{90}[open-almost-clopen]{Proposition}%
 A compact Hausdorff space~$X$
 is extremally disconnected
 iff every open subset of~$X$
 is almost clopen.
-\begin{point}{Proof}%
+\begin{point}{100}{Proof}%
 If~$X$ is extremally disconnected,
 and~$U$ is open subset of~$X$,
 then~$\overline{U}$ is clopen,
@@ -1923,7 +1923,7 @@ and so~$\overline{U}=C$ by~\sref{approx-closure}.
 
 \end{point}
 \end{point}
-\begin{point}[cvn-faithful]{Theorem}%
+\begin{point}{110}[cvn-faithful]{Theorem}%
 Let~$\scrA$ be a commutative von Neumann algebra~$\scrA$.
 Recall that
 the Gelfand representation $\gamma_\scrA\colon 
@@ -1967,7 +1967,7 @@ L^\infty(\spec(\scrA))
 \C
 }
 \end{equation*}
-\begin{point}{Proof}%
+\begin{point}{120}{Proof}%
 By~\sref{almost-meagre-fundamental}
 we know that given an almost clopen subset~$A$
 of~$\spec(\scrA)$
@@ -2081,7 +2081,7 @@ are linear and bounded,
 we conclude that~$\int = \omega\circ \gamma_\scrA^{-1} \circ \varrho^{-1}$,
 and so we are done.\qed
 \end{point}
-\begin{point}%
+\begin{point}{130}%
 To deduce from this that all commutative von Neumann algebras
 (and not just the ones admitting a faithful np-functional)
 are nmiu-isomorphic
@@ -2093,8 +2093,8 @@ we first need some basic facts concerning the
 \end{point}
 \end{parsec}%
 \section{Projections}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{550}%
+\begin{point}{10}%
 One pertinent feature
 of von Neumann algebras
 is an abundance of projections:
@@ -2113,13 +2113,13 @@ of linear combinations of projections
 (see~\sref{projections-norm-dense}).
 We'll prove all this and more in this section.
 \end{point}
-\begin{point}{Definition}%
+\begin{point}{20}{Definition}%
 An element~$p$ of a $C^*$-algebra
 is a \Define{projection}%
 \index{projection!in a $C^*$-algebra}
 when~$p^*p=p$.
 \end{point}
-\begin{point}{Examples}%
+\begin{point}{30}{Examples}%
 \begin{enumerate}
 \item
 The only projections in~$\C$ are~$0$ and~$1$.
@@ -2140,7 +2140,7 @@ and
 every projection in~$\scrB(\scrH)$ is of this form.
 \end{enumerate}
 \end{point}
-\begin{point}[projection-basic]{Exercise}%
+\begin{point}{40}[projection-basic]{Exercise}%
 Show that in a $C^*$-algebra:
 \begin{enumerate}
 \item
@@ -2156,7 +2156,7 @@ is a projection.
 An effect~$a$ is a projection iff $aa^\perp=0$.
 \end{enumerate}
 \end{point}
-\begin{point}[ad-contraposed]{Lemma}%
+\begin{point}{50}[ad-contraposed]{Lemma}%
 Let~$a$ be an element of a $C^*$-algebra~$\scrA$
 with $\|a\|\leq 1$,
 and let~$p$ and~$q$ be projections on~$\scrA$.
@@ -2164,7 +2164,7 @@ Then
 $a^* p a \leq q^\perp$
 iff $paq=0$
 iff  $aqa^*\leq p^\perp$.
-\begin{point}{Proof}%
+\begin{point}{60}{Proof}%
 Suppose that~$a^*pa\leq q^\perp$.
 Then we have $q a^*pa q \leq qq^\perp q = 0$
 (see \sref{astara-pos-basic-consequences})
@@ -2181,10 +2181,10 @@ By a similar reasoning,
 we get $aqa^*\leq p^\perp \implies paq=0\implies a^*pa\leq q^\perp$.\qed
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{70}{Exercise}%
 Let~$a$ be an effect of a $C^*$-algebra~$\scrA$,
 and~$p$ be a projection from~$\scrA$.
-\begin{point}[projection-above-effect]%
+\begin{point}{80}[projection-above-effect]%
 Show that $a\leq p$
 iff $p\sqrt{a} = \sqrt{a}$
 iff $\sqrt{a}p = \sqrt{a}$
@@ -2197,7 +2197,7 @@ iff $p^\perp a  = 0$
 iff $ap^\perp = 0$
 iff $\sqrt{a}\leq p$.
 \end{point}
-\begin{point}[projection-below-effect]%
+\begin{point}{90}[projection-below-effect]%
 Show that $p\leq a$
 iff $p \sqrt{a} = p$
 iff $\sqrt{a} p = p$
@@ -2211,11 +2211,11 @@ iff $a^\perp p =0$
 iff $p\leq \sqrt{a}$.
 \end{point}
 \end{point}
-\begin{point}[projection-order-sharp]{Lemma}%
+\begin{point}{100}[projection-order-sharp]{Lemma}%
 An effect~$a$ of a $C^*$-algebra~$\scrA$
 is a projection iff the only effect
 below~$a$ and~$a^\perp$ is~$0$.
-\begin{point}{Proof}%
+\begin{point}{110}{Proof}%
 On the one hand,
 if~$a$ is a projection,
 and~$b$ is an effect with~$b\leq a$
@@ -2229,7 +2229,7 @@ being an effect below~$a$, and below~$a^\perp$,
 is zero, and so~$a$ is projection, by~\sref{projection-basic}.\qed
 \end{point}
 \end{point}
-\begin{point}{Definition}%
+\begin{point}{120}{Definition}%
 We say that projections~$p$ and~$q$
 from a $C^*$-algebra~$\scrA$ are \Define{orthogonal}%
 \index{orthogonal projections}
@@ -2240,7 +2240,7 @@ from~$\scrA$ is \Define{orthogonal}
 when all~$p$ and~$q$ from~$E$
 are either equal or orthogonal.
 \end{point}
-\begin{point}[orthogonal-tuple-of-projections]{Exercise}%
+\begin{point}{130}[orthogonal-tuple-of-projections]{Exercise}%
 Let~$\scrA$ be a $C^*$-algebra.
 \begin{enumerate}
 \item
@@ -2258,7 +2258,7 @@ Show that, in that case, $\sum_i p_i$ is the least projection
 above~$p_1,\dotsc,p_n$.
 \end{enumerate}
 \end{point}
-\begin{point}[projection-below-projection]{Exercise}%
+\begin{point}{140}[projection-below-projection]{Exercise}%
 Let~$p$ and~$q$ be projections from a $C^*$-algebra
 with~$p\leq q$.\\
 Show that~$q-p$ is a projection
@@ -2266,8 +2266,8 @@ Show that~$q-p$ is a projection
 \end{point}
 \end{parsec}
 \subsection{Ceiling and Floor}
-\begin{parsec}%
-\begin{point}[vna-ceil]{Proposition}%
+\begin{parsec}{560}%
+\begin{point}{10}[vna-ceil]{Proposition}%
 Above every effect~$b$ of a von Neumann algebra~$\scrA$,
 there is a smallest projection, \Define{$\ceil{b}$},%
 \index{*ceil@$\ceil{\,\cdot\,}$!$\ceil{a}$, ceiling}
@@ -2277,10 +2277,10 @@ of~$b$,
  given by $\ceil{b}=\bigvee_{n=0}^\infty b^{\nicefrac{1}{2^n}}$.\\
 Moreover, if $a\in \scrA$ commutes with $b$,
 then~$a$ commutes with~$\ceil{b}$.
-\begin{point}{Proof}
+\begin{point}{20}{Proof}
 Let~$p$ denote the supremum of~$0\leq b\leq b^{\nicefrac{1}{2}}\leq
 b^{\nicefrac{1}{4}}\leq\dotsb\leq 1$.
-\begin{point}[vna-ceil-point-1]%
+\begin{point}{30}[vna-ceil-point-1]%
 To begin,
 note that if~$a\in \scrA$
 commutes with~$b$,
@@ -2292,7 +2292,7 @@ for each~$n$
 by induction.
 Thus~$ap=pa$ by~\sref{vna-supremum-commutes}.
 \end{point}
-\begin{point}%
+\begin{point}{40}%
 Let us prove that~$p$ is a projection, i.e.~$p^2=p$. 
 Since~$p\leq 1$, we already have $p^2\equiv \sqrt{p}p\sqrt{p}\leq p$
 by~\sref{astara-pos-basic-consequences},
@@ -2311,7 +2311,7 @@ Thus $p^2 \geq b^{\nicefrac{1}{2^k}}$
 for each~$k$ (taking $n=m=k+1$,)
 and so~$p^2 \geq p$.
 \end{point}
-\begin{point}%
+\begin{point}{50}%
 It remains to be shown that~$p$ is the \emph{least} projection
 above~$b$.
 Let~$q$ be a projection in~$\scrA$ with $b\leq q$;
@@ -2323,7 +2323,7 @@ Hence $p\leq q$.\qed
 \end{point}
 \end{point}
 \end{point}
-\begin{point}[vna-floor]{Proposition}%
+\begin{point}{60}[vna-floor]{Proposition}%
 Below every effect~$b$ of a von Neumann algebra~$\scrA$,
 there is greatest projection, \Define{$\floor{b}$},%
 \index{*floor@$\floor{\,\cdot\,}$!$\floor{a}$, of an effect}
@@ -2333,9 +2333,9 @@ of~$b$,
 given by~$\floor{b} = \bigwedge_{n=0}^\infty b^{2^{n}}$.\\
 Moreover, if~$a\in \scrA$ commutes with~$b$,
 then~$b$ commutes with~$\floor{b}$.
-\begin{point}{Proof}%
+\begin{point}{70}{Proof}%
 Let~$p$ denote the infimum of $1\geq b\geq b^2 \geq b^4 \geq  \dotsb \geq 0$.
-\begin{point}[vna-floor-point-1]%
+\begin{point}{80}[vna-floor-point-1]%
 If~$a\in \scrA$ commutes with~$b$,
 then~$a$ commutes with~$p$.
 Indeed, such~$a$ commutes with~$b^2$ (because
@@ -2344,7 +2344,7 @@ and so~$a$ commutes with~$b^{2^n}$ for each~$n$ by induction.
 Thus~$a$ commutes with~$p\equiv\bigwedge_n b^{2^n}$ 
 (by a variation on~\sref{vna-supremum-commutes}.)
 \end{point}
-\begin{point}%
+\begin{point}{90}%
 To see that~$p$ is a projection, c.q.~$p^2=p$,
 we only need to show that~$p\leq p^2$,
 because we get $p^2\equiv \sqrt{p}\,p\,\sqrt{p}\leq p$
@@ -2362,7 +2362,7 @@ b^{2^{m-1}}\, b^{2^n}\, b^{2^{m-1}}\qquad
 and $p\leq b^{2^{m-1}}\, b^{2^n}\,b^{2^{m-1}}$
 for all~$n,m$, we get~$p\leq p^2$.
 \end{point}
-\begin{point}%
+\begin{point}{100}%
 It remains to be shown that~$p$ is the greatest projection below~$b$.
 Let~$q$ be a projection in~$\scrA$ with~$q\leq b$.
 We must show that~$q\leq p$.
@@ -2373,7 +2373,7 @@ Thus~$q\leq p\equiv\bigwedge_n b^{2^n}$.\qed
 \end{point}
 \end{point}
 \end{point}
-\begin{point}[ceil-floor-second-property]{Exercise}%
+\begin{point}{110}[ceil-floor-second-property]{Exercise}%
 Show that given an effect~$a$ and a projection~$p$
 in a von Neumann algebra~$\scrA$ we have
 \begin{enumerate}
@@ -2393,7 +2393,7 @@ In particular,
 $a=a\ceil{a}=\ceil{a}a$
 and $\floor{a}=a\floor{a}=\floor{a}a$.
 \end{point}
-\begin{point}{Example}%
+\begin{point}{120}{Example}%
 Given a finite complete measure space~$X$
 we have
 \begin{equation*}
@@ -2407,7 +2407,7 @@ we have
 for every~$f\in\mathcal{L}^\infty(X)$
 with~$0\leq f^\circ \leq 1$.
 \end{point}
-\begin{point}[ceil-floor-basic]{Exercise}%
+\begin{point}{130}[ceil-floor-basic]{Exercise}%
 Let~$a,b$ be effects of a von Neumann algebra~$\scrA$,
 and let~$\lambda\in [0,1]$.
 \begin{enumerate}
@@ -2427,10 +2427,10 @@ Show that $\floor{a}=\floor{a^2}$
 and $\ceil{a}=\ceil{a^2}$.
 \end{enumerate}
 \end{point}
-\begin{point}[vna-directed-supremum-projections]{Lemma}%
+\begin{point}{140}[vna-directed-supremum-projections]{Lemma}%
 The supremum of a directed set~$D$ of projections
 from a von Neumann algebra~$\scrA$ is a projection.
-\begin{point}{Proof}%
+\begin{point}{150}{Proof}%
 Writing $p=\bigvee D$,
 we must show that $p^2=p$.
 Note that $dp=d$ for all~$d\in D$
@@ -2443,7 +2443,7 @@ converges ultraweakly to~$p^2$ by~\sref{vna-supremum-mult}.
 Hence~$p=p^2$ by uniqueness of ultraweak limits.
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{160}{Exercise}%
 Deduce from this result
  that every set~$A$ of projections from~$\scrA$
 has a supremum $\Define{\bigcup A}$%
@@ -2455,7 +2455,7 @@ and an infimum $\Define{\bigcap A}$%
 and the fact that $p\mapsto p^\perp$ 
 is an order anti-isomorphism on the poset of projections on~$\scrA$.)
 \end{point}
-\begin{point}[ceil-supremum]{Exercise}
+\begin{point}{170}[ceil-supremum]{Exercise}
 Let~$\scrA$ be a von Neumann algebra.
 \begin{enumerate}
 \item
@@ -2477,7 +2477,7 @@ are neither ultraweakly, ultrastrongly nor norm  continuous
 as maps from $[0,1]_\scrA$ to~$[0,1]_\scrA$.
 \end{enumerate}
 \end{point}
-\begin{point}[sum-of-orthogonal-projections]{Exercise}%
+\begin{point}{180}[sum-of-orthogonal-projections]{Exercise}%
 Show that for a family~$(p_i)_{i\in I}$ 
 of pairwise orthogonal projections
 (with~$I$ potentially uncountable)
@@ -2489,13 +2489,13 @@ use the fact that $\sum_{i\in F} p_i = \bigcup_{i \in F} p_i$
 for finite subsets~$F$ of~$I$ by~\sref{orthogonal-tuple-of-projections}.)
 \end{point}
 \end{parsec}
-\begin{parsec}[floor-sequential-product]%
-\begin{point}{Lemma}%
+\begin{parsec}{570}[floor-sequential-product]%
+\begin{point}{10}{Lemma}%
 Let~$a,b$ be effects of a von Neumann algebra~$\scrA$.
 Then~$\floor{\sqrt{a}b\sqrt{a}}$ is the greatest projection
 below~$a$ and~$b$, that is, 
 $\floor{\sqrt{a}b\sqrt{a}}=\floor{a}\cap \floor{b}$.
-\begin{point}{Proof}%
+\begin{point}{20}{Proof}%
 Surely, $\floor{\sqrt{a}b\sqrt{a}}\leq \sqrt{a}b\sqrt{a} \leq a$.
 Let us prove that~$\floor{\sqrt{a}b\sqrt{a}}\leq b$.
 To this end,
@@ -2515,7 +2515,7 @@ we get
 and so $\floor{\sqrt{a}b\sqrt{a}}b^\perp\floor{\sqrt{a}b\sqrt{a}}=0$,
 which implies that
 $\floor{\sqrt{a}b\sqrt{a}}\leq b$ by~\sref{ad-contraposed}.
-\begin{point}%
+\begin{point}{30}%
 Now,
 let~$e$ be a projection below~$a$ and~$b$,
 that is, $e\sqrt{a}=e$ and~$eb=e$.
@@ -2527,8 +2527,8 @@ But this is obvious: $e=e\sqrt{a}=eb\sqrt{a}=e\sqrt{a}b\sqrt{a}$.\qed
 \end{point}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{580}%
+\begin{point}{10}%
 Having seen that~$\floor{\sqrt{a}b\sqrt{a}} = \floor{a}\cap\floor{b}$
 in~\sref{floor-sequential-product}
 one might wonder whether
@@ -2541,12 +2541,12 @@ we have
 $\ceil{pqp}= p\cap (p^\perp \cup q)$
 as we'll show below.
 \end{point}
-\begin{point}[floor-difference]{Lemma}%
+\begin{point}{20}[floor-difference]{Lemma}%
 Let~$p$ be a projection,
 and let~$a$ be an effect of a von Neumann algebra
 with $a\leq p$.
 We have $p-\ceil{a}=\floor{p-a}$.
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 We must show that $p-\ceil{a}$ is the greatest projection below $p-a$.
 To begin, $p-\ceil{a}\leq p-a$,
 because $a\leq \ceil{a}$.
@@ -2563,10 +2563,10 @@ we have $\ceil{a}\leq p-q$,
 and so $q\leq p-\ceil{a}$.\qed
 \end{point}
 \end{point}
-\begin{point}[ceil-sequential-product]{Proposition}%
+\begin{point}{40}[ceil-sequential-product]{Proposition}%
 We have $\ceil{pqp}=p\cap (p^\perp \cup q)$
 for all projections~$p$ and~$q$ from a von Neumann algebra.
-\begin{point}[ceil-sequential-product-1]{Proof}%
+\begin{point}{50}[ceil-sequential-product-1]{Proof}%
 Observe that $(\ p\cap (p^\perp \cup q)\ )^\perp 
 = p^\perp \cup(p\cap q^\perp)$.
 Since~$p^\perp$ and $p\cap q^\perp$ are disjoint,
@@ -2583,8 +2583,8 @@ by~\sref{floor-sequential-product} we are done.\qed
 \end{point}
 \end{parsec}
 \subsection{Range and Support}
-\begin{parsec}%
-\begin{point}[ceill]{Notation}%
+\begin{parsec}{590}%
+\begin{point}{10}[ceill]{Notation}%
 Let~$\scrA$ be a von Neumann algebra.
 Because it will be very convenient
 we extend the definition of~$\ceil{b}$
@@ -2607,7 +2607,7 @@ the \Define{support (projection)} of~$b$,%
 \index{*ceilr@$\ceilr{a}$, range}
 the \Define{range (projection)} of~$b$.
 \end{point}
-\begin{point}{Remark}%
+\begin{point}{20}{Remark}%
 Some explanation is in order here.
 We did not just introduce
 the range
@@ -2629,7 +2629,7 @@ Good examples are
 \end{equation*}
 for unit vectors~$x$ and~$y$ from a Hilbert space~$\scrH$.
 \end{point}
-\begin{point}[ceil-basic]{Exercise}%
+\begin{point}{30}[ceil-basic]{Exercise}%
 Let~$a$ and~$b$ be positive elements of a von Neumann algebra~$\scrA$.
 \begin{enumerate}
 \item
@@ -2656,7 +2656,7 @@ Show that $\ceil{a+b}=\ceil{a}\cup\ceil{b}$.
 Show that $\ceil{a^2}=\ceil{a}$.
 \end{enumerate}
 \end{point}
-\begin{point}[ceil-pos-part]{Exercise}%
+\begin{point}{40}[ceil-pos-part]{Exercise}%
 Let~$a$ be a self-adjoint element of a von Neumann algebra.
 \begin{enumerate}
 \item
@@ -2667,12 +2667,12 @@ Show that~$\ceil{a_+}\ceil{a_-}= 0$.
 	and~$\ceil{a_-}a=a\ceil{a_-} = -a_-$.
 \end{enumerate}
 \end{point}
-\begin{point}[ceil-suprema]{Exercise}%
+\begin{point}{50}[ceil-suprema]{Exercise}%
 Show that $\ceil{\bigvee D} = \bigcup_{d\in D}\ceil{d}$
 for every bounded directed set of \emph{positive}
 elements of a von Neumann algebra~$\scrA$.
 \end{point}
-\begin{point}[ceill-basic]{Exercise}%
+\begin{point}{60}[ceill-basic]{Exercise}%
 Let~$a$ and~$b$  be elements of a von Neumann algebra.
 \begin{enumerate}
 \item
@@ -2694,7 +2694,7 @@ Show that~$\ceill{ab}\leq\ceill{b}$
 and~$\ceilr{ab}\leq\ceilr{a}$.
 \end{enumerate}
 \end{point}
-\begin{point}[hilb-ceil]{Exercise}%
+\begin{point}{70}[hilb-ceil]{Exercise}%
 Let~$T$ be a bounded operator on a Hilbert space~$\scrH$.
 \begin{enumerate}
 \item
@@ -2713,13 +2713,13 @@ when~$T$ is an effect.
 \end{enumerate}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}[ceil-functionals-lemma]{Lemma}%
+\begin{parsec}{600}%
+\begin{point}{10}[ceil-functionals-lemma]{Lemma}%
 Given a positive element~$a$
 of a von Neumann algebra~$\scrA$ and an
 np-functional~$\omega\colon \scrA\to\C$
 we have~$\omega(a)=0$ iff~$\omega(\ceil{a})=0$.
-\begin{point}{Proof}%
+\begin{point}{20}{Proof}%
 Note that if~$a=0$,
 the stated result is clearly correct,
 and the other case, when~$\|a\| \neq 0$,
@@ -2752,7 +2752,7 @@ we get $\omega(a^{\nicefrac{1}{2^n}})=0$
 for all~$n$ by induction.\qed
 \end{point}
 \end{point}
-\begin{point}[ceil-functionals]{Proposition}%
+\begin{point}{30}[ceil-functionals]{Proposition}%
 For positive elements~$a$ and~$b$ of a von Neumann algebra~$\scrA$,
 \begin{equation*}
 \ceil{a}\leq \ceil{b}
@@ -2760,7 +2760,7 @@ For positive elements~$a$ and~$b$ of a von Neumann algebra~$\scrA$,
 \forall \omega\,[\quad\omega(b)=0\  \implies  \ \omega(a)=0\quad ],
 \end{equation*}
 where~$\omega$ ranges over all np-functionals~$\scrA\to\C$.
-\begin{point}{Proof}%
+\begin{point}{40}{Proof}%
 When~$\ceil{a}\leq\ceil{b}$
 and~$\omega$ is an np-functional on~$\scrA$
 with~$\omega(b)=0$,
@@ -2790,12 +2790,12 @@ $\omega(\smash{\ceil{b}}^\perp\ceil{a}\smash{\ceil{b}}^\perp)=0$
 by~\sref{ceil-functionals-lemma}.\qed
 \end{point}
 \end{point}
-\begin{point}[ncp-ceil]{Proposition}%
+\begin{point}{50}[ncp-ceil]{Proposition}%
 Let $f\colon \scrA\to\scrB$ be an np-map
 between von Neumann algebras.
 Then $\ceil{f(a)}=\ceil{f(\ceil{a})}$
 for every $a\in\scrA_+$.
-\begin{point}{Proof}%
+\begin{point}{60}{Proof}%
 By~\sref{ceil-functionals}
 it suffices to show that
 $\omega(f(a))=0$ iff $\omega(f(\ceil{a}))=0$
@@ -2803,7 +2803,7 @@ for every np-functional $\omega\colon \scrB\to\C$,
 and this is indeed the case by~\sref{ceil-functionals-lemma}.\qed
 \end{point}
 \end{point}
-\begin{point}[ceil-fundamental]{Exercise}%
+\begin{point}{70}[ceil-fundamental]{Exercise}%
 Let~$a$ and~$b$ be elements of a von Neumann algebra~$\scrA$.
 \begin{enumerate}
 \item
@@ -2818,7 +2818,7 @@ and~$\ceilr{ab}=\ceilr{a\ceilr{b}}$
 
 \end{enumerate}
 \end{point}
-\begin{point}[mult-cancellation]{Exercise}%
+\begin{point}{80}[mult-cancellation]{Exercise}%
 Let~$a$ and~$b$ be elements of a von Neumann algebra~$\scrA$.
 \begin{enumerate}
 \item
@@ -2838,7 +2838,7 @@ Show that $b^*c_1b=b^*c_2b\implies c_1=c_2$
 for all~$c_1,c_2\in\ceilr{b}\scrA\ceilr{b}$
 \end{enumerate}
 \end{point}
-\begin{point}[ncp-union]{Exercise}%
+\begin{point}{90}[ncp-union]{Exercise}%
 Let~$f\colon \scrA\to\scrB$ be an np-map
 between von Neumann algebras.
 \begin{enumerate}
@@ -2861,8 +2861,8 @@ in~$\scrA$ with~$f(e)=0$.
 \end{enumerate}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{610}%
+\begin{point}{10}%
 Given the rule $\ceil{f(\ceil{a})}=\ceil{f(a)}$
 for an np-map~$f$ and self-adjoint~$a$
 one might surmise that
@@ -2878,7 +2878,7 @@ One of its corollaries is
 that ncpsu-isomorphisms
 are in fact nmiu-isomorphisms (see~\sref{iso}).
 \end{point}
-\begin{point}[ncp-ceill]{Proposition}%
+\begin{point}{20}[ncp-ceill]{Proposition}%
 Given an ncp-map $f\colon \scrA\to\scrB$
 between von Neumann algebras
 we have,
@@ -2889,7 +2889,7 @@ $a\in\scrA$,
 	\qquad\text{and}\qquad
 	\ceil{f(\,\ceilr{a}\,)}\,\leq\, \ceilr{\,f(a)}.
 \end{equation*}
-\begin{point}{Proof}
+\begin{point}{30}{Proof}
 Since~$f(a)^*f(a)\leq \|f(1)\|^2\,f(a^*a)$
  by~\sref{cp-cs},
 we get~$\ceill{f(a)\,}\equiv \ceil{f(a)^*f(a)}
@@ -2903,13 +2903,13 @@ along similar lines.\qed
 \end{point}
 \end{point}
 \end{parsec}%
-\begin{parsec}%
-\begin{point}{Proposition}%
+\begin{parsec}{620}%
+\begin{point}{10}{Proposition}%
 Let~$f\colon \scrA\to\scrB$ be a ncpsu-map
 between von Neumann algebras.
 Then~$\floor{f(a)}=\floor{f(\floor{a})}$
 for every effect~$a$ from~$\scrA$.
-\begin{point}{Proof}%
+\begin{point}{20}{Proof}%
 Since~$\floor{a}\leq a$,
 we have~$\floor{f(\floor{a})}\leq \floor{f(a)}$.
 Thus we only need to show that~$\floor{f(a)}\leq \floor{f(\floor{a})}$,
@@ -2936,8 +2936,8 @@ and~$\floor{a}=\bigwedge_n a^{2^n}$ (see~\sref{vna-floor}).\qed
 \end{point}
 \end{parsec}
 \subsection{Carrier and Commutant}
-\begin{parsec}%
-\begin{point}[carrier]{Definition}%
+\begin{parsec}{630}%
+\begin{point}{10}[carrier]{Definition}%
 The \Define{carrier}%
 \index{carrier}
 of an np-map $f\colon \scrA\to\scrB$
@@ -2948,7 +2948,7 @@ is the least projection~$p$
 with~$f(p^\perp)=0$
 (which exists by~\sref{ncp-union}.)
 \end{point}
-\begin{point}[carrier-basic]{Exercise}%
+\begin{point}{20}[carrier-basic]{Exercise}%
 Let~$f,g\colon \scrA\to\scrB$
 be np-maps between von Neumann algebras.
 \begin{enumerate}
@@ -2967,7 +2967,7 @@ show that~$\ceil{f}=1$ iff~$f$ is injective.
 the carrier of a nmiu-map, see~\sref{carrier-miu}.)
 \end{enumerate}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{30}{Exercise}%
 \begin{enumerate}
 \item
 Given an element~$a$ of a von Neumann algebra~$\scrA$
@@ -2999,13 +2999,13 @@ might differ from~$\ketbra{x}{x}$ because the former is in~$\scrA$,
 while the latter may not be, see~\sref{carrier-vector-state}.)
 \end{enumerate}
 \end{point}
-\begin{point}[cp-comprehension]{Lemma}%
+\begin{point}{40}[cp-comprehension]{Lemma}%
 Let~$f\colon \scrA\to\scrB$ be a p-map between
 $C^*$-algebras,
 and let~$p$ be an effect of~$\scrA$ with~$f(p^\perp)=0$.
 Then $f(a)=f(pa)=f(ap)=f(pap)$
 for all~$a\in\scrA$.
-\begin{point}{Proof}%
+\begin{point}{50}{Proof}%
 Assume~$\scrB=\C$ for now.
 Since~$p^\perp \leq 1$,
 we have $(p^\perp)^2=\sqrt{p^\perp}p^\perp \sqrt{p^\perp}
@@ -3037,15 +3037,15 @@ since~$\omega\circ f$
 is a p-map into~$\C$.\qed
 \end{point}
 \end{point}
-\begin{point}[carrier-fundamental]{Corollary}%
+\begin{point}{60}[carrier-fundamental]{Corollary}%
 Given an np-map $f\colon \scrA\to\scrB$
 between von Neumann algebras
 we have $f(a)=f(\ceil{f}a) = f(a\ceil{f})=f(\ceil{f}a\ceil{f})$
 for all~$a\in\scrA$.
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{640}%
+\begin{point}{10}%
 We turn
 to the task of showing that every element
 of a von Neumann
@@ -3054,11 +3054,11 @@ of projections in~\sref{projections-norm-dense}.
 We'll deal with the  commutative case first
 (see~\sref{abelian-projections-norm-dense}).
 \end{point}
-\begin{point}[abelian-projections-norm-dense]{Proposition}%
+\begin{point}{20}[abelian-projections-norm-dense]{Proposition}%
 Every element~$a$ of a commutative von Neumann algebra~$\scrA$
 is the norm limit
 of linear combinations of projections.
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 By~\sref{ngelfand}
 it suffices to show that the linear span
 of projections is norm dense
@@ -3092,15 +3092,15 @@ and so~$y\notin \overline{U}$.\qed
 \end{point}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{650}%
+\begin{point}{10}%
 To reduce the general case
 to the commutative case
 we need the following tool
 (that will be useful 
 later on too for different reasons).
 \end{point}
-\begin{point}[commutant]{Definition}%
+\begin{point}{20}[commutant]{Definition}%
 Given a subset~$S$ of a von Neumann algebra~$\scrA$
 	the \Define{commutant}\index{commutant} of~$S$
 is the set, denoted by~$\Define{\smash{S^\square}}$,%
@@ -3114,7 +3114,7 @@ and is called the \Define{centre}%
 \index{centre of a von Neumann algebra} of~$\scrA$.
 (Its elements, called \emph{central}, are the subjects of the next section.)
 \end{point}
-\begin{point}[commutant-basic]{Exercise}%
+\begin{point}{30}[commutant-basic]{Exercise}%
 Let~$S$ and~$T$ be subsets of a von Neumann algebra~$\scrA$.
 \begin{enumerate}
 \item
@@ -3169,12 +3169,12 @@ of~$\scrA$
 verify that $Z(\scrB)=\scrB\cap \scrB^{\square}$.
 \end{enumerate}
 \end{point}
-\begin{point}[projections-norm-dense]{Proposition}%
+\begin{point}{40}[projections-norm-dense]{Proposition}%
 Every self-adjoint element~$a$ of a von Neumann algebra~$\scrA$
 is the norm limit
 of linear combinations
 of projections from~$\smash{\{a\}}^{\square\square}$.
-\begin{point}{Proof}%
+\begin{point}{50}{Proof}%
 Since~$a$ is an element
 of the by~\sref{commutant-basic}
 commutative von Neumann subalgebra~$\smash{\{a\}}^{\square\square}$
@@ -3185,19 +3185,19 @@ by~\sref{abelian-projections-norm-dense}.\qed
 \end{point}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{660}%
+\begin{point}{10}%
 The carriers of np-functionals
 play such an important role in the theory
 that we decided to give them a name.
 \end{point}
-\begin{point}{Definition}%
+\begin{point}{20}{Definition}%
 We call a projection~$p$ of a von Neumann algebra~$\scrA$
 \Define{ultracyclic}%
 \index{ultracyclic projection}
 if~$p=\ceil{\omega}$
 for some np-map $\omega\colon \scrA\to\C$.
-\begin{point}{Remark}%
+\begin{point}{30}{Remark}%
 Some explanation of this terminology
 is in order.
 A projection~$E$
@@ -3224,7 +3224,7 @@ is the carrier of a vector functional
 with respect to some arbitrary Hilbert space.
 \end{point}
 \end{point}
-\begin{point}[ultracyclic-basic]{Exercise}%
+\begin{point}{40}[ultracyclic-basic]{Exercise}%
 Let~$\scrA$ be a von Neumann algebra.
 Verify the following facts.
 \begin{enumerate}
@@ -3251,15 +3251,15 @@ on~$\scrA$ with $p=\sum_i \ceil{\omega_i}$.
 \end{point}
 \end{parsec}
 \subsection{Central Support and Central Carrier}
-\begin{parsec}%
-\begin{point}{Definition}%
+\begin{parsec}{670}%
+\begin{point}{10}{Definition}%
 An element~$a$ of a von Neumann algebra~$\scrA$
 is called~\Define{central}%
 \index{central!element of a von Neumann algebra}
 when~$ab=ba$ for all~$b\in\scrA$
 (that is, when~$a\in Z(\scrA)$, see~\sref{commutant-basic}).
 \end{point}
-\begin{point}[central-examples]{Examples}%
+\begin{point}{20}[central-examples]{Examples}%
 \begin{enumerate}
 \item
 In a commutative von Neumann algebra
@@ -3287,7 +3287,7 @@ Hence~$A$ is (zero or) a scalar.
 
 \end{enumerate}
 \end{point}
-\begin{point}{Remark}%
+\begin{point}{30}{Remark}%
 A von Neumann algebra
 in which only the scalars are central
 --- of which the~$\scrB(\scrH)$ are but the simplest examples ---
@@ -3297,7 +3297,7 @@ is an important part
 of the theory of von Neumann algebras
 that we did not need in this thesis.
 \end{point}
-\begin{point}[central-projections-sums]{Exercise}%
+\begin{point}{40}[central-projections-sums]{Exercise}%
 Note that if a von Neumann algebra
 $\scrA$ can be written as
 a direct sum $\scrA\cong \scrB_1\oplus \scrB_2$,
@@ -3324,8 +3324,8 @@ gives a nmiu-isomorphism $\scrA\to\bigoplus_i c_i \scrA$.
 \end{enumerate}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}[cceil-fundamental]{Proposition}%
+\begin{parsec}{680}%
+\begin{point}{10}[cceil-fundamental]{Proposition}%
 Given a projection~$e$ of a von Neumann algebra~$\scrA$
 \begin{equation*}
 	\Define{\cceil{e}}\ :=\ 
@@ -3333,7 +3333,7 @@ Given a projection~$e$ of a von Neumann algebra~$\scrA$
 \end{equation*}%
 \index{*cceil@$\cceil{\,\cdot\,}$!$\cceil{a}$, central support}%
 is the least central projection above~$e$.
-\begin{point}{Proof}%
+\begin{point}{20}{Proof}%
 Let us first show that~$\cceil{e}$ is central.
 Given~$b\in\scrA$
 we have $\ceill{\cceil{e}b}=\ceil{b^*\cceil{e}b}
@@ -3360,7 +3360,7 @@ which implies that~$\ceill{ea}\leq c$.
 Thus~$\cceil{e}\leq c$.\qed
 \end{point}
 \end{point}
-\begin{point}[central support]{Definition}%
+\begin{point}{30}[central support]{Definition}%
 Let~$a$ be an element of a von Neumann algebra~$\scrA$.
 Since given a central projection~$c$ of~$\scrA$
 we have
@@ -3378,7 +3378,7 @@ which we'll call the
 \index{central support} 
 	of~$a$.
 \end{point}
-\begin{point}[cceil-basic]{Exercise}%
+\begin{point}{40}[cceil-basic]{Exercise}%
 Let~$\scrA$ be a von Neumann algebra.
 \begin{enumerate}
 \item
@@ -3407,8 +3407,8 @@ for all~$a,b\in\scrA$.
 \end{enumerate}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}[cceil-map-def]{Definition}%
+\begin{parsec}{690}%
+\begin{point}{10}[cceil-map-def]{Definition}%
 Let $f\colon \scrA\to\scrB$
 be an np-map
 between von Neumann algebras.
@@ -3426,7 +3426,7 @@ which we'll call the \Define{central carrier}%
 \index{central carrier}
 of~$f$.
 \end{point}
-\begin{point}[prop:weakly-closed-ideal]{Proposition}%
+\begin{point}{20}[prop:weakly-closed-ideal]{Proposition}%
 Every two-sided ideal~$\scrD$ of a von Neumann
 algebra~$\scrA$
 that is closed under bounded directed suprema of self-adjoint 
@@ -3434,7 +3434,7 @@ elements --- for example when~$\scrA$ is ultrastrongly closed ---
 is of the form~$c\scrA$
 for some unique central projection~$c$ of~$\scrA$.
 Moreover, $c$ is the greatest projection in~$\mathscr{D}$.
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 We'll obtain~$c$ as the supremum over all effects in~$\scrD$,
 and to this end we'll show first that~$\scrD\cap [0,1]_\scrA$
 is directed.
@@ -3498,20 +3498,20 @@ and so~$c'\leq c$.
 Since similarly $c\leq c'$, we get~$c=c'$.\qed
 \end{point}
 \end{point}
-\begin{point}[carrier-miu]{Corollary}%
+\begin{point}{40}[carrier-miu]{Corollary}%
 Given a nmiu-map $f\colon \scrA\to\scrB$
 between von Neumann algebras
 we have~$\ceil{f}=\cceil{f}$
 and $\ker(f)=\cceil{f}^\perp\!\scrA$.
 \end{point}
-\begin{point}[proto-gns-ceil]{Lemma}%
+\begin{point}{50}[proto-gns-ceil]{Lemma}%
 We have~$\cceil{\omega}=
 \ceil{\varrho_\omega}$
 for every np-functional $\omega\colon \scrA\to\C$
 on a von Neumann algebra~$\scrA$,
 where~$\varrho_\omega$
 is as in~\sref{gns}.
-\begin{point}{Proof}%
+\begin{point}{60}{Proof}%
 Let~$e$ be a projection in~$\scrA$.
 Note that $0=\|\varrho_\omega(e)(\eta_\omega(a))\|^2
 \equiv \omega(a^*ea)$
@@ -3532,14 +3532,14 @@ Hence $\ceil{\varrho_\omega}=
 by~\sref{cceil-fundamental}.\qed
 \end{point}
 \end{point}
-\begin{point}[gns-ceil]{Proposition}%
+\begin{point}{70}[gns-ceil]{Proposition}%
 Given a collection of np-functionals~$\Omega$
 on a von Neumann algebra~$\scrA$
 we have $\ceil{\varrho_\Omega}
 =\bigcup_{\omega\in\Omega} \cceil{\omega}$
 for~$\varrho_\Omega\colon \scrA\to\scrB(\scrH_\Omega)$
 from~\sref{gns}.
-\begin{point}{Proof}%
+\begin{point}{80}{Proof}%
 Let~$e$ be a projection of~$\scrA$.
 Since
 $\varrho_\Omega(e)(x)
@@ -3555,7 +3555,7 @@ iff~$e\leq \bigcap_{\omega\in\Omega}\smash{\cceil{\omega}}^\perp
 Hence~$\ceil{\varrho_\Omega}=\bigcup_{\omega\in\Omega}\cceil{\omega}$.\qed
 \end{point}
 \end{point}
-\begin{point}[vn-center-separating]{Corollary}%
+\begin{point}{90}[vn-center-separating]{Corollary}%
 For a collection~$\Omega$ of np-functionals
 on a von Neumann algebra,
 the following are equivalent.
@@ -3573,7 +3573,7 @@ The map $\varrho_\Omega\colon\scrA\to\scrB(\scrH_\Omega)$
 from~\sref{gns} 
 is injective.
 \end{enumerate}
-\begin{point}{Proof}%
+\begin{point}{100}{Proof}%
 We've seen in~\sref{proto-gelfand-naimark}
 that
 \ref{vn-center-separating-1}$\iff$\ref{vn-center-separating-3},
@@ -3603,26 +3603,26 @@ by~\sref{carrier-basic}.\qed
 \end{point}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{700}%
+\begin{point}{10}%
 With our new-found knowledge on central elements
 we can complete the classification
 of commutative von Neumann algebras
 we started in~\sref{classification-cvn}.
 \end{point}
-\begin{point}[central-projection-central-carrier]{Exercise}%
+\begin{point}{20}[central-projection-central-carrier]{Exercise}%
 Show that every central projection~$c$
 of a von Neumann algebra is of
 the form~$c\equiv \sum_i \cceil{\omega_i}$
 for some family of np-functionals $(\omega_i)_i$ on~$\scrA$.
 \end{point}
-\begin{point}[cvn]{Theorem}%
+\begin{point}{30}[cvn]{Theorem}%
 \index{von Neumann algebra!commutative}
 Every commutative von Neumann algebra
 is nmiu-isomorphic
 to a direct sum of the form  $\bigoplus_i L^\infty(X_i)$
 where~$X_i$ are finite complete measure spaces.
-\begin{point}{Proof}%
+\begin{point}{40}{Proof}%
 By~\sref{central-projection-central-carrier}
 we have $1\equiv \sum_i \cceil{\omega_i} $
 for some np-functionals $\omega_i\colon \scrA\to\C$,
@@ -3640,8 +3640,8 @@ From this the stated result follows.\qed
 \end{parsec}
 
 \section{Completeness}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{710}%
+\begin{point}{10}%
 We set to work on the ultrastrong and bounded ultraweak completeness
 of von Neumann algebras (see~\sref{vn-complete}) and their precursors:
 \begin{enumerate}
@@ -3680,8 +3680,8 @@ and bounded ultraweakly complete
 \end{point}
 \end{parsec}
 \subsection{Closure of a Convex Subset}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{720}%
+\begin{point}{10}%
 We saw in~\sref{npuws}
 that a \emph{positive} linear functional~$f$
 on a von Neumann algebra 
@@ -3699,7 +3699,7 @@ of np-maps $f_0,\dotsc,f_3$,
 and must therefore be ultraweakly continuous.
 We'll need the following tool.
 \end{point}
-\begin{point}[bstaromega]{Definition}%
+\begin{point}{20}[bstaromega]{Definition}%
 Let~$\scrA$ be a von Neumann algebra.
 Given an np-map $\omega\colon \scrA\to\C$,
 and~$b\in \scrA$,
@@ -3708,7 +3708,7 @@ define~$\Define{b*\omega}\colon \scrA\to \C$%
 	by
 $(b*\omega)(a)=\omega(b^*ab)$ for all~$a\in \scrA$.
 \end{point}
-\begin{point}[bstaromega-basic]{Exercise}%
+\begin{point}{30}[bstaromega-basic]{Exercise}%
 Let~$\omega\colon \scrA\to \C$ be an np-map on a von Neumann algebra~$\scrA$.
 \begin{enumerate}
 \item
@@ -3733,7 +3733,7 @@ and converges to a bounded linear map~$f\colon \scrA\to\C$.
 Show that~$f$ is an np-map.
 \end{enumerate}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{40}{Exercise}%
 Let~$f\colon \scrA\to \C$ be an ultrastrongly continuous linear
 functional on a von Neumann algebra~$\scrA$.
 Show that there are an np-map
@@ -3744,7 +3744,7 @@ for all~$a\in\scrA$ with $\|a\|_\omega \leq \delta$.
 
 (Keep this in mind when reading the following lemma.)
 \end{point}
-\begin{point}[normal-functionals-lemma]{Lemma}%
+\begin{point}{50}[normal-functionals-lemma]{Lemma}%
 Let~$\omega\colon \scrA\to\C$ be an np-map,
 and let~$f\colon \scrA\to \C$ be a linear map.
 The following are equivalent.
@@ -3768,9 +3768,9 @@ are np-maps for which there is~$B>0$
 such that~$f_k(a)\leq B \omega(a)$ for all~$a\in\pos{\scrA}$ 
 and~$k$. 
 \end{enumerate}
-\begin{point}{Proof}%
+\begin{point}{60}{Proof}%
 We make a circle.
-\begin{point}{%
+\begin{point}{70}{%
 \ref{normal-functionals-lemma-3}$\Longrightarrow$%
 \ref{normal-functionals-lemma-0}}%
 For $a\in \scrA$ and~$k$, we have
@@ -3786,7 +3786,7 @@ where
 Hence~$\left|f(a)\right|\leq \tilde{B}$
 for all~$a\in\scrA$ with $\|a\|_\omega\leq 1$.
 \end{point}
-\begin{point}{\ref{normal-functionals-lemma-0}$\Longrightarrow$%
+\begin{point}{80}{\ref{normal-functionals-lemma-0}$\Longrightarrow$%
 \ref{normal-functionals-lemma-1}}%
 Let~$a\in\scrA$, and~$\varepsilon>0$ be given.
 Then for~$\tilde{a}:=\delta(\varepsilon+\|a\|_\omega)^{-1}\,a$,
@@ -3799,7 +3799,7 @@ B\delta^{-1}(\varepsilon+\|a\|_\omega)$.
 Since~$\varepsilon>0$ was arbitrary, we get~$\left|f(a)\right|\leq
 B\delta^{-1}\|a\|_\omega$.
 \end{point}
-\begin{point}{%
+\begin{point}{90}{%
 \ref{normal-functionals-lemma-1}$\Longrightarrow$%
 \ref{normal-functionals-lemma-2}}%
 Since~$\left|f(a)\right|\leq B\|a\|_\omega$ for all~$a\in\scrA$,
@@ -3811,7 +3811,7 @@ for all~$x\in \scrH_\omega$.
 In particular,
 $f(a)=[b,a]_\omega$ for all~$a\in \scrA$.
 \end{point}
-\begin{point}{\ref{normal-functionals-lemma-2}$\Longrightarrow$%
+\begin{point}{100}{\ref{normal-functionals-lemma-2}$\Longrightarrow$%
 \ref{normal-functionals-lemma-3}}%
 We know that~$f(a)\equiv [b,a]_\omega$ for all~$a\in \scrA$,
 for some~$b\in\scrH_\omega$.
@@ -3845,7 +3845,7 @@ the number $B:=\lim_n \|b_n\|_\omega +1 $ will do.\qed
 \end{point}
 \end{point}
 \end{point}
-\begin{point}[luws]{Corollary}%
+\begin{point}{110}[luws]{Corollary}%
 For a linear map~$f\colon \scrA\to \C$
 on a von Neumann algebra~$\scrA$ the following are equivalent.
 \begin{enumerate}
@@ -3873,14 +3873,14 @@ for all~$a\in \scrA$, for some np-map $\omega\colon \scrA\to\C$.
 %
 %	ultrastrong and ultraweak closure of a convex subset
 %
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{730}%
+\begin{point}{10}%
 We'll show that the ultrastrong and ultraweak closure
 of a convex set agree. 
 For this we need the following proto-Hahn--Banach separation theorem,
 which concerns the following notion of openness.
 \end{point}
-\begin{point}{Definition}%
+\begin{point}{20}{Definition}%
 A subset~$A$ of a real vector space~$V$ 
 is called \Define{radially open}%
 \index{radially open set}
@@ -3888,7 +3888,7 @@ if for all~$a\in A$ and~$v\in V$
 there is $t\in (0,\infty)$
 with $a+sv\in A$ for all~$s\in [0,t)$.
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{30}{Exercise}%
 Let~$V$ be a vector space.
 \begin{enumerate}
 \item
@@ -3915,14 +3915,14 @@ Show that $\{\lambda a\colon a\in A,\lambda>0\}$ is radially open
 when~$A$ is radially open.
 \end{enumerate}
 \end{point}
-\begin{point}[hahn-banach]{Theorem}%
+\begin{point}{40}[hahn-banach]{Theorem}%
 \index{Hahn--Banach's Theorem}
 For every radially open
 convex subset~$K$ of a real vector space~$V$
 with~$0\notin K$
 there is a linear map $f\colon V\to\R$
 with $f(x)>0$ for all~$x\in K$.
-\begin{point}{Proof}%
+\begin{point}{50}{Proof}%
 (Based on Theorem~1.1.2 of~\cite{kr}.)
 
 By Zorn's Lemma we may assume without loss of generality that~$K$ is maximal
@@ -3942,7 +3942,7 @@ or $f(K)\subseteq(-\infty,0)$.
 Thus, by replacing $f$ by $-f$ if necessary,
 we see that there is a linear map $f\colon V\to \R$
 with $f(x)>0$ for all~$x\in K$.
-\begin{point}{$H$ is a linear subspace}%
+\begin{point}{60}{$H$ is a linear subspace}%
 Note that~$x\in K,\,\lambda>0\implies \lambda x\in K$,
 because the subset 
 $\{\lambda x\colon x\in K,\lambda\in(0,\infty)\}\supseteq K$
@@ -3976,7 +3976,7 @@ Since~$\overline{K}$ is a cone, $-\overline{K}$ is a cone,
 and thus~$H$ is a cone.  But then~$-H=H$ is a cone too,
 and thus~$H$ is a linear subspace.
 \end{point}
-\begin{point}{$V/H$ is one-dimensional}%
+\begin{point}{70}{$V/H$ is one-dimensional}%
 Note that~$H\neq V$, because~$K\cap H=\varnothing$
 and~$K$ is (assumed to be) non-empty.
 So to show that~$V/H$ is one-dimensional,
@@ -4003,7 +4003,7 @@ Whence~$x$ and~$y$ are linearly dependent in~$V/H$
 \end{point}
 \end{point}
 \end{point}
-\begin{point}[ultraclosed]{Exercise}%
+\begin{point}{80}[ultraclosed]{Exercise}%
 \index{ultraweak and ultrastrong!convex $\sim$ly closed subset}
 We will use~\sref{hahn-banach}
 to prove that 
@@ -4065,8 +4065,8 @@ which is impossible.
 \end{point}
 \end{parsec}
 \subsection{Kaplansky's Density Theorem}
-\begin{parsec}%
-\begin{point}[proto-kaplansky]{Proposition}%
+\begin{parsec}{740}%
+\begin{point}{10}[proto-kaplansky]{Proposition}%
 Let~$\scrA$ be a von Neumann algebra,
 and let~$f\colon \R\to\R$ be a continuous map 
 with $f(t)=\mathcal{O}(t)$,
@@ -4078,7 +4078,7 @@ for all~$t\in \R$ with~$\left|t\right| \geq n$.
 Then the map~$a\mapsto f(a),\,\sa{\scrA}\to\sa{\scrA}$,
 see~\sref{functional-calculus},
 is ultrastrongly continuous.
-\begin{point}{Proof}%
+\begin{point}{20}{Proof}%
 (An adaptation of Lemma~44.2 from~\cite{conway2000}.)
 
 Let~$S$ denote the set of all continuous $g\colon \R\to\R$
@@ -4173,12 +4173,12 @@ and so~$e$ is ultrastrongly continuous.\qed
 \end{point}
 \end{point}
 
-\begin{point}[abs-us-cont]{Corollary}%
+\begin{point}{30}[abs-us-cont]{Corollary}%
 Given a von Neumann algebra~$\scrA$
 the map $a\mapsto\left|a\right|\colon\,\Real{\scrA}\to\Real{\scrA}$
 is ultrastrongly continuous.
 \end{point}
-\begin{point}[kaplansky]{Kaplansky Density Theorem}%
+\begin{point}{40}[kaplansky]{Kaplansky Density Theorem}%
 \index{Kaplansky's Density Theorem}
 Let~$b$ be an element of a von Neumann algebra~$\scrB$
 which is the ultrastrong limit of a net
@@ -4199,7 +4199,7 @@ then the~$a_\alpha$ can be chosen to be positive as well, and
 if~$b$ is an effect,
 then the~$a_\alpha$ can be chosen to be effects as well.
 \end{enumerate}
-\begin{point}{Proof}%
+\begin{point}{50}{Proof}%
 Let~$(a_\alpha)_\alpha$
 be a net in~$\scrA$ that converges ultrastrongly
 to~$b$.
@@ -4262,7 +4262,7 @@ and~$\|(A_\alpha)_{12}\|\leq \|A_\alpha\|\leq \|b\|$
 for all~$\alpha$, we are done.\qed
 \end{point}
 \end{point}
-\begin{point}[dense-subalgebra]{Corollary}%
+\begin{point}{60}[dense-subalgebra]{Corollary}%
 Given~$\varepsilon>0$  and an ultraweakly dense $*$-subalgebra~$\scrS$
 of a von Neumann algebra~$\scrA$
 each element~$a$ of~$\scrA$
@@ -4270,7 +4270,7 @@ is the ultrastrong limit of a net~$(s_\alpha)_\alpha$
 from~$\scrS$
 with $\|s_\alpha\|\leq \|a\|(1+\varepsilon)$
 for all~$\alpha$.
-\begin{point}{Proof}%
+\begin{point}{70}{Proof}%
 As the norm closure~$\scrC$ of~$\scrS$ in~$\scrA$
 is an ultraweakly
 (and thus by~\sref{ultraclosed}
@@ -4300,8 +4300,8 @@ if we replace~$(s_{\alpha n})_n$ by the appropriate  subsequence.\qed
 \end{point}
 \end{parsec}
 \subsection{Closedness of Subalgebras}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{750}%
+\begin{point}{10}%
 Recall that according to our definition (\sref{von-neumann-examples})
 a von Neumann subalgebra~$\scrB$ 
 of a von Neumann algebra~$\scrA$
@@ -4310,7 +4310,7 @@ which is closed under suprema
 of bounded directed sets of self-adjoint elements.
 We will show that such~$\scrB$ is ultrastrongly closed in~$\scrA$.
 \end{point}
-\begin{point}[sequence-separation-lemma]{Lemma}%
+\begin{point}{20}[sequence-separation-lemma]{Lemma}%
 Let~$\scrB$ be a von Neumann subalgebra
 of a von Neumann algebra~$\scrA$.
 Let~$\omega_0,\omega_1\colon \scrA\to\C$
@@ -4323,7 +4323,7 @@ and $\lim_\alpha \omega_1(b_\alpha^\perp)=0$.
 Then~$\omega_0$ and~$\omega_1$ are separated by a 
 projection~$q$ of~$\scrB$ 
 in the sense that~$\omega_0(q)= 0 = \omega_1(q^\perp)$.
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 (Based on Lemma~45.3 and Theorem~45.6 of~\cite{conway2000}.)
 
 Note that it suffices to find an effect~$a$ in~$\scrB$
@@ -4370,14 +4370,14 @@ a_{34} \ar@{}|-{\leq}[r]  \ar@{}[u]|-{\uleq} &
 where~$a_n:= \bigvee_{m\geq n} a_{nm}$
 and~$a := \bigwedge_n a_n$.
 We'll prove that~$\omega_0(a)=0=\omega_1(a^\perp)$.
-\begin{point}{$\omega_0(a)=0$}%
+\begin{point}{40}{$\omega_0(a)=0$}%
 	Since~$\omega_0(b_n)\leq n^{-1}2^{-n}$ 
 and $a_{nm}\leq \sum_{k=n}^m k b_k$,
 we get~$\omega_0(a_{nm})\leq \sum_{k=n}^m k\omega_0(b_k) \leq 2^{1-n}$,
 and so $\omega_0(a)=\bigwedge_n\bigvee_{m\geq n} \omega_0(a_{nm})
 \leq \bigwedge_n 2^{1-n} = 0$.
 \end{point}
-\begin{point}{$\omega_1(a^\perp )=0$}%
+\begin{point}{50}{$\omega_1(a^\perp )=0$}%
 Let~$m> n$ be given.
 Since~$\sum_{k=n}^m kb_k \geq mb_m$
 and $d\mapsto (1+d)^{-1}d$
@@ -4403,7 +4403,7 @@ and so~$\omega_1(a^\perp)=\bigvee_n\omega_1(a_n^\perp)=0$.\qed
 
 
 \end{point}
-\begin{point}[kadisons-lemma]{Lemma}%
+\begin{point}{60}[kadisons-lemma]{Lemma}%
 Let~$\scrB$ be a von Neumann subalgebra
 of a von Neumann algebra~$\scrA$.
 Let~$p$ be a projection of~$\scrA$,
@@ -4413,7 +4413,7 @@ For all npu-maps $\omega_0,\omega_1\colon \scrA\to\C$
 with~$\omega_0(p)=0= \omega_1(p^\perp)$
 there is a projection~$q$ of~$\scrB$
 with~$\omega_0(q)=0=\omega_1(q^\perp)$.
-\begin{point}{Proof}%
+\begin{point}{70}{Proof}%
 Let~$(b_\alpha)_\alpha$ be a net in~$\scrB$
 which converges ultrastrongly to~$p$.
 We may assume that all~$b_\alpha$
@@ -4430,11 +4430,11 @@ to~$\omega_1(p^\perp)\equiv 0$.
 Now apply~\sref{sequence-separation-lemma}.\qed
 \end{point}
 \end{point}
-\begin{point}[vnsac]{Theorem}%
+\begin{point}{80}[vnsac]{Theorem}%
 \index{von Neumann subalgebra!is ultraweakly closed}
 A von Neumann subalgebra~$\scrB$ of a von Neumann algebra~$\scrA$
 is ultrastrongly and ultraweakly closed.
-\begin{point}{Proof}%
+\begin{point}{90}{Proof}%
 It suffices to show that~$\scrB$ is ultrastrongly closed,
 because then, by~\sref{ultraclosed}, $\scrB$ will be ultraweakly closed
 as well.
@@ -4483,12 +4483,12 @@ and so~$p=\bigvee_{\omega_1}\ceil{\omega_1}_\scrB \in \scrB$.\qed
 \end{point}
 \end{parsec}
 \subsection{Completeness}
-\begin{parsec}%
-\begin{point}[bh-us-complete]{Proposition}%
+\begin{parsec}{760}%
+\begin{point}{10}[bh-us-complete]{Proposition}%
 The von Neumann algebra~$\scrB(\scrH)$
 of bounded operators on a Hilbert space~$\scrH$
 is ultrastrongly complete.
-\begin{point}{Proof}
+\begin{point}{20}{Proof}
 Let~$(T_\alpha)_\alpha$ be an ultrastrongly Cauchy net
 in~$\scrB(\scrH)$
 (which must be shown to converge ultrastrongly to
@@ -4587,11 +4587,11 @@ all in all.
 Hence~$\scrB(\scrH)$ is ultrastrongly complete.\qed
 \end{point}
 \end{point}
-\begin{point}[bh-bounded-uw-complete]{Proposition}%
+\begin{point}{30}[bh-bounded-uw-complete]{Proposition}%
 The von Neumann algebra~$\scrB(\scrH)$
 of bounded operators on a Hilbert space~$\scrH$
 is bounded ultraweakly complete.
-\begin{point}{Proof}%
+\begin{point}{40}{Proof}%
 Let~$(T_\alpha)_\alpha$ be a norm-bounded ultraweakly Cauchy net
 in~$\scrB(\scrH)$.
 We must show that~$(T_\alpha)_\alpha$
@@ -4650,14 +4650,14 @@ and so~$(T_\alpha)_\alpha$ converges ultraweakly to~$T$.\qed
 \end{point}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}[vn-complete]{Theorem}%
+\begin{parsec}{770}%
+\begin{point}{10}[vn-complete]{Theorem}%
 	\index{von Neumann algebra!is ultrastrongly complete}%
 	\index{von Neumann algebra!is bounded ultraweakly complete}%
 	\index{ultraweak and ultrastrong!completeness}
 A von Neumann algebra~$\scrA$ is ultrastrongly complete
 and bounded ultraweakly complete.
-\begin{point}{Proof}%
+\begin{point}{20}{Proof}%
 Let~$\Omega$ be the set of all np-functionals
 on~$\scrA$.
 Recall from~\sref{ngns-proof}
@@ -4690,10 +4690,10 @@ in~$\scrB(\scrH_\Omega)$
 we see that~$\scrR$ is bounded ultraweakly complete.\qed
 \end{point}
 \end{point}
-\begin{point}[vn-ball-compact]{Theorem}%
+\begin{point}{30}[vn-ball-compact]{Theorem}%
 The ball $(\scrA)_1$
 of a von Neumann algebra~$\scrA$ is ultraweakly compact.
-\begin{point}{Proof}%
+\begin{point}{40}{Proof}%
 Writing~$\Omega$ for
 the set of npu-maps $\omega\colon \scrA\to\C$,
 the map~$\kappa\colon \scrA\to \C^\Omega$
@@ -4722,7 +4722,7 @@ is compact,
 and so $(\scrA)_1$ (being homeomorphic to it) is compact too.\qed
 \end{point}
 \end{point}
-\begin{point}[vn-extension]{Proposition}%
+\begin{point}{50}[vn-extension]{Proposition}%
 Given an ultraweakly dense $*$-subalgebra~$\scrS$
 of a von Neumann algebra~$\scrA$,
 any ultraweakly continuous and bounded linear map~$f\colon \scrS\to\scrB$
@@ -4731,7 +4731,7 @@ to an ultraweakly continuous map~$g\colon \scrA\to\scrB$.
 
 Moreover, $g$ is bounded,
 and in fact,  $\|g\|=\|f\|$.
-\begin{point}{Proof}%
+\begin{point}{60}{Proof}%
 As the uniqueness of~$g$ is rather obvious
 we concern ourselves only with its existence.
 Let~$a\in\scrA$ be given
@@ -4756,7 +4756,7 @@ to some element
 $\uwlim_\alpha f(s_\alpha)$
 of~$\scrB$.
 
-\begin{point}%
+\begin{point}{70}%
 Of course we'd like to define $g(a):=\uwlim_\alpha
 f(s_\alpha)$,
 but must first check
@@ -4774,7 +4774,7 @@ $\uwlim_\alpha f(s_\alpha-s_\alpha')=0$,
 implying that $\uwlim_\alpha f(s_\alpha)
 = \uwlim_\alpha f(s_\alpha')$.
 \end{point}
-\begin{point}%
+\begin{point}{80}%
 In this way
 we obtain a map $g \colon \scrA\to\scrB$
 --- which is clearly linear.
@@ -4847,8 +4847,8 @@ and so~$g$ is ultraweakly continuous.\qed
 \end{parsec}
 \section{Division}
 \label{S:division}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{780}%
+\begin{point}{10}%
 Using the ultrastrong completeness of von Neumann algebras
 (see~\sref{vn-complete})
 we'll address
@@ -4934,8 +4934,8 @@ the series converges.)
 \end{point}
 \end{parsec}
 \subsection{(Approximate) Pseudoinverses}
-\begin{parsec}%
-\begin{point}[dfn-pseudoinverse]{Definition}%
+\begin{parsec}{790}%
+\begin{point}{10}[dfn-pseudoinverse]{Definition}%
 Let~$a$ be an element of a von Neumann algebra~$\scrA$.
 We'll say that~$a$ is \Define{pseudoinvertible}%
 \index{pseudoinverse}
@@ -4954,7 +4954,7 @@ we say that~$a$ is a \Define{partial isometry}%
 \index{partial isometry!in a von Neumann algebra}
 (see~\sref{partial-isometry-equivalents}).
 \end{point}
-\begin{point}[pseudoinverse-equivalents]{Lemma}%
+\begin{point}{20}[pseudoinverse-equivalents]{Lemma}%
 For elements $a,t$ of a von Neumann algebra
 the following are equivalent.
 \begin{enumerate}
@@ -4977,7 +4977,7 @@ $t$ is a pseudoinverse of~$a$.
 \label{pseudoinverse-6}
 $a$ is a pseudoinverse of~$t$.
 \end{enumerate}
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 \grayed{(\ref{pseudoinverse-5}$\iff$%
 \ref{pseudoinverse-6})}\ 
 is clear.
@@ -5016,7 +5016,7 @@ is proven by the same principles, and
 is rather obvious.\qed
 \end{point}
 \end{point}
-\begin{point}[partial-isometry-equivalents]{Exercise}%
+\begin{point}{40}[partial-isometry-equivalents]{Exercise}%
 Show that an element~$u$ of a von Neumann algebra
 is a partial isometry iff
 $u^*u$ is a projection
@@ -5027,7 +5027,7 @@ iff~$u^*$ is the pseudoinverse of~$u$.
 (Hint: use~\sref{pseudoinverse-equivalents},
 or give a direct proof.)
 \end{point}
-\begin{point}[pseudoinverse-basic]{Exercise}%
+\begin{point}{50}[pseudoinverse-basic]{Exercise}%
 Let~$a$ and~$b$ be a elements of a von Neumann algebra~$\scrA$.
 \begin{enumerate}
 \item
@@ -5048,7 +5048,7 @@ and, in that case, $a^{\sim 1} = (a^*a)^{\sim1}a^*$
 and~$(a^*a)^{\sim1}=a^{\sim1}(a^{\sim1})^*$.
 \end{enumerate}
 \end{point}
-\begin{point}[pseudoinverse-basic-2]{Exercise}%
+\begin{point}{60}[pseudoinverse-basic-2]{Exercise}%
 Let~$a$ be a positive element of a von Neumann algebra~$\scrA$.
 \begin{enumerate}
 \item
@@ -5083,8 +5083,8 @@ is not pseudoinvertible in~$\ell_\infty$.
 \end{enumerate}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}{Remark}%
+\begin{parsec}{800}%
+\begin{point}{10}{Remark}%
 Note that the obvious candidate
 for the pseudoinverse of~$(0,0,1,\frac{1}{2},\frac{1}{3},\dotsc)$
 from~$\ell^\infty$
@@ -5104,7 +5104,7 @@ That this can also be done for an arbitrary element
 of a von Neumann algebra
 is what we'll see next.
 \end{point}
-\begin{point}[approximate-pseudoinverse-def]{Definition}%
+\begin{point}{20}[approximate-pseudoinverse-def]{Definition}%
 An \Define{approximate pseudoinverse}%
 \index{approximate pseudoinverse}%
 \index{pseudoinverse!approximate}
@@ -5115,7 +5115,7 @@ such that~$t_1a,\ t_2a,\ \dotsc, at_1,\ at_2,\ \dotsc$
 are projections with $\sum_n t_na = \ceill{a}=\sum_n \ceilr{t_n}$
 and~$\sum_n at_n =\ceilr{a}=\sum_n \ceill{t_n}$.
 \end{point}
-\begin{point}[approximate-pseudoinverse-reduction]{Exercise}%
+\begin{point}{30}[approximate-pseudoinverse-reduction]{Exercise}%
 Let~$b$ be an element of a von Neumann algebra~$\scrA$,
 and let~$t_1,t_2,\dotsc$
 be an approximate pseudoinverse
@@ -5123,10 +5123,10 @@ of~$b^*b$.
 Show that $t_1b^*,\ t_2b^*,\ \dotsc$
 is an approximate pseudoinverse of~$b$.
 \end{point}
-\begin{point}[approximate-pseudoinverse]{Theorem}%
+\begin{point}{40}[approximate-pseudoinverse]{Theorem}%
 Every element~$a$ of a von Neumann algebra~$\scrA$
 has an approximate pseudoinverse.
-\begin{point}{Proof}%
+\begin{point}{50}{Proof}%
 By~\sref{approximate-pseudoinverse-reduction},
 it suffices to consider the case that~$a$ is positive.
 When~$a=0$ the sequence~$0,0,0,\dotsc$
@@ -5186,8 +5186,8 @@ making $t_1,t_2,\dotsc$ an approximate pseudoinverse of~$a$.\qed
 \end{point}
 \end{parsec}
 \subsection{Division}
-\begin{parsec}%
-\begin{point}[division]{Definition}%
+\begin{parsec}{810}%
+\begin{point}{10}[division]{Definition}%
 Let~$b$ be an element of a von Neumann algebra~$\scrA$,
 and let~$a$ be an element of~$\scrA b$
 --- so~$a\equiv cb$ for some~$c\in\scrA$.
@@ -5203,7 +5203,7 @@ the unique
 element~$c$ of~$\ceill{b}\!\scrA$
 with~$a=bc$.
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{20}{Exercise}%
 Let~$a$ and~$b$
 be elements of a von Neumann algebra~$\scrA$.
 \begin{enumerate}
@@ -5239,7 +5239,7 @@ Show that~$c^* \,\in\, b^* \scrA$
 and $b^*\backslash c^* = (c/b)^*$.
 \end{enumerate}
 \end{point}
-\begin{point}[proto-douglas]{Lemma}%
+\begin{point}{30}[proto-douglas]{Lemma}%
 Given elements $a$ and~$b$ of a von Neumann algebra~$\scrA$
 with~$a^*a \leq b^*b$
 we have $a\,\in\, \scrA b$.
@@ -5249,7 +5249,7 @@ of~$b$,
 the series $\sum_nat_n$ converges ultrastrongly to~$a/b$,%
 \index{*slash@$a/b$!in a von Neumann algebra}
 and uniformly so in~$a$.
-\begin{point}{Proof}%
+\begin{point}{40}{Proof}%
 To show that~$\sum_{n=0}^N at_n$
 converges ultrastrongly as~$N\to \infty$
 it suffices
@@ -5306,7 +5306,7 @@ and so~$c\ceilr{b}=\sum_n at_n\ceilr{b}
 
 \end{point}
 \end{point}
-\begin{point}[douglas]{Exercise}%
+\begin{point}{50}[douglas]{Exercise}%
 \index{Douglas' Lemma}
 Let~$a$ and~$b$ be elements of a von Neumann algebra~$\scrA$.
 \begin{enumerate}
@@ -5324,7 +5324,7 @@ Show that $a \in \scrA\!\ceilr{b}$
 need not entail that~$a\in \scrA b$.
 \end{enumerate}
 \end{point}
-\begin{point}[sequential-douglas]{Exercise}%
+\begin{point}{60}[sequential-douglas]{Exercise}%
 Let~$b$ be an element of a von Neumann algebra~$\scrA$.
 \begin{enumerate}
 \item
@@ -5343,7 +5343,7 @@ for every positive element~$a$ of $ b^* \scrA b$.
 = b^*\backslash a/b$.)
 \end{enumerate}
 \end{point}
-\begin{point}[div-approx]{Exercise}%
+\begin{point}{70}[div-approx]{Exercise}%
 Given elements~$b$ and~$c$ of a von Neumann algebra~$\scrA$,
 an approximate pseudoinverse $t_1,t_2,\dotsc$
 of~$b$,
@@ -5356,7 +5356,7 @@ converges ultrastrongly to~$c\backslash a /b$%
 as~$N\to\infty$
 (and uniformly so) for~$a\in c(\scrA)_1 b$.
 \end{point}
-\begin{point}[sequential-quotient]{Exercise}%
+\begin{point}{80}[sequential-quotient]{Exercise}%
 Show that for positive elements~$a$ and~$b$ of a von Neumann
 algebra~$\scrA$,
 the following are equivalent.
@@ -5376,7 +5376,7 @@ is an approximate pseudoinverse of~$\sqrt{b}$,
 then~$\sum_{m,n} t_m a t_n$
 converges ultraweakly to such~$c$.
 \end{point}
-\begin{point}[div-usc]{Lemma}%
+\begin{point}{90}[div-usc]{Lemma}%
 Given elements~$b$ and~$c$  of a von Neumann algebra~$\scrA$
 the maps 
 \begin{equation*}
@@ -5386,7 +5386,7 @@ a\mapsto c\backslash a/b\colon\  c(\scrA)_1b\to \scrA
 \end{equation*}
 are ultrastrongly continuous
 (where $(\scrA)_1$ is the unit ball).
-\begin{point}{Proof}%
+\begin{point}{100}{Proof}%
 By~\sref{proto-douglas}
 the series~$\sum_n at_n$ converges ultraweakly to~$a/b$,
 where~$t_1,t_2,\dotsc$
@@ -5405,7 +5405,7 @@ are ultrastrongly continuous;
 as must be their composition $c\backslash\,\cdot\,/b\colon\,
 c(\scrA)_1b\to\scrA$.\qed
 \end{point}
-\begin{point}{Remark}%
+\begin{point}{110}{Remark}%
 The map $a\mapsto a/b$ might not give
 an ultrastrongly
 continuous map on the larger domain~$\scrA b$,
@@ -5421,8 +5421,8 @@ which is not ultrastrongly Cauchy.
 \end{point}
 \end{parsec}
 \subsection{Polar Decomposition}
-\begin{parsec}%
-\begin{point}[polar-decomposition]{Proposition (Polar Decomposition)}%
+\begin{parsec}{820}%
+\begin{point}{10}[polar-decomposition]{Proposition (Polar Decomposition)}%
 \index{polar decomposition!of an element of a von Neumann algebra}%
 Any element~$a$ of a von Neumann
 algebra~$\scrA$
@@ -5439,7 +5439,7 @@ and $[a][a]^*=\ceil{aa^*} \equiv \ceilr{a}$,
 \item
 and $[a^*]=[a]^*$, so that~$\sqrt{aa^*}[a]=a=[a]\sqrt{a^*a}$.
 \end{enumerate}
-\begin{point}{Proof}%
+\begin{point}{20}{Proof}%
 Since $a^*a\leq \sqrt{a^*a}\sqrt{a^*a}$,
 the existence and uniqueness
 of an element~$[a]$ of~$\scrA$
@@ -5497,8 +5497,8 @@ because $\ceill{\,[a]^*\,}=\ceilr{\,[a]\,}=  \ceilr{a}
 \end{point}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{830}%
+\begin{point}{10}%
 Recall from~\sref{cceil-fundamental}
 that the least central projection~$\cceil{e}$
 above a projection~$e$ of a von Neumann algebra~$\scrA$
@@ -5508,7 +5508,7 @@ we can give a more economical
 description of~$\cceil{e}$,
 see~\sref{cceil-sum}.
 \end{point}
-\begin{point}[vmleq]{Proposition}%
+\begin{point}{20}[vmleq]{Proposition}%
 Given projections $e'$ and~$e$
 of a von Neumann algebra~$\scrA$,
 the following are equivalent.
@@ -5530,7 +5530,7 @@ we write~$\Define{e'\vmleq e}$%
 \index{*vmleq@$\vmleq$, Murray--von Neumann preorder}
 (and say~$e'$ is \Define{Murray--von Neumann below}~$e$).%
 \index{Murray--von Neumann preorder}
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 That~\ref{vmleq-3}
 implies~\ref{vmleq-2} is clear.
 (\ref{vmleq-2}$\Rightarrow$\ref{vmleq-1})\ 
@@ -5544,18 +5544,18 @@ for which $u^*u = [ea]^*[ea]=\ceil{(ea)^*ea}=e'$
 and~$uu^*=\ceil{eaa^*e}\leq e$.\qed
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{40}{Exercise}%
 Show that~$\vmleq$  preorders
 the projections of a von Neumann algebra.
 \end{point}
-\begin{point}[cceil-sum]{Lemma}%
+\begin{point}{50}[cceil-sum]{Lemma}%
 \index{*cceil@$\cceil{\,\cdot\,}$!$\cceil{a}$, central support}%
 Given a projection~$e$
 of a von Neumann algebra~$\scrA$
 there is a family
 $(e_i)_i$ of non-zero projections with $\cceil{e}=\sum_i e_i$,
 and $e_i\vmleq e$ for all~$i$.
-\begin{point}{Proof}%
+\begin{point}{60}{Proof}%
 Let~$(e_i)_i$
 be a maximal set of non-zero pairwise orthogonal projections
 in~$\scrA$ with
@@ -5593,12 +5593,12 @@ Hence $\bigcup_i e_i = \cceil{e}$.
 \end{point}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{840}%
+\begin{point}{10}%
 Using~\sref{vmleq} we can classify
 all finite-dimensional $C^*$-algebras.
 \end{point}
-\begin{point}[fdcstar]{Theorem}%
+\begin{point}{20}[fdcstar]{Theorem}%
 \index{Cstar-algebra@$C^*$-algebra!finite dimensional}%
 \index{von Neumann algebra!finite dimensional}%
 Any finite-dimensional $C^*$-algebra~$\scrA$
@@ -5608,7 +5608,7 @@ of full matrix algebras,
 that is,
 $\scrA\cong \bigoplus_m M_{N_m}$
 for some  $N_1,\dotsc,N_M\in\N$.
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 Let~$e_1,\dotsc,e_N$ be a basis for~$\scrA$.
 We'll first show that~$\scrA$ is a von Neumann algebra,
 and for this we'll 
@@ -5675,7 +5675,7 @@ are bounded, the norms $\|\,\cdot\,\|$ and~$\|\,\cdot\,\|'$
 are equivalent,
 and $(\scrA)_1$
 is norm compact.
-\begin{point}[suprema-in-fdvna]{$\scrA$ is a von Neumann algebra}%
+\begin{point}{40}[suprema-in-fdvna]{$\scrA$ is a von Neumann algebra}%
 First we need to show that every bounded directed
 set~$D$ of self-adjoint elements
 of~$\scrA$ has a supremum (in $\Real{\scrA}$).
@@ -5706,7 +5706,7 @@ is normal; and since the positive functionals on~$\scrA$
 form a separating collection,
 $\scrA$ is a von Neumann algebra.
 \end{point}
-\begin{point}{Reduction to a factor}%
+\begin{point}{50}{Reduction to a factor}%
 Since pairwise orthogonal non-zero projections
 are easily seen to be linearly independent,
 and~$\scrA$ is finite dimensional,
@@ -5731,7 +5731,7 @@ Since~$z_m$ is a minimal central projection,
 the von Neumann algebra~$z_n \scrA$
 has no non-trivial central projections.
 \end{point}
-\begin{point}{When~$\scrA$ is a factor}%
+\begin{point}{60}{When~$\scrA$ is a factor}%
 Let~$e$ be a minimal
 projection of~$\scrA$
 (which exists by the previous discussion).
@@ -5850,8 +5850,8 @@ and thus a miu-isomorphism $M_N\to\scrA$.\qed
 \end{parsec}
 
 \section{Normal Functionals}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{850}%
+\begin{point}{10}%
 For our study of the category of von Neumann algebras
 we need two more technical results
 concerning the normal functionals
@@ -5876,19 +5876,19 @@ and requires a lot of hard work.
 \end{point}
 \end{parsec}
 \subsection{Ultraweak Boundedness}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{860}%
+\begin{point}{10}%
 To get a better handle on the normal positive functionals
 on a von Neumann algebra,
 we first analyse  the not-necessarily-positive normal functionals
 in greater detail.
 \end{point}
-\begin{point}[positive-functional-criterion]{Lemma}%
+\begin{point}{20}[positive-functional-criterion]{Lemma}%
 \index{functional!positive}
 A linear map $f\colon \scrA\to \C$
 on a $C^*$-algebra~$\scrA$
 is positive iff $\|f\|\leq f(1)$.
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 (Based on Theorem 4.3.2 of~\cite{kr}.)
 
 If~$f(1)=0$, then~$f=0$ in both cases 
@@ -5901,7 +5901,7 @@ by replacing~$f$ by~$f(1)^{-1}f$
 (noting that~$f(1)\geq 0$ in both cases),
 so we'll assume that~$f(1)=1$.
 
-\begin{point}{$f$ positive $\implies$ $\|f\|\leq 1$}%
+\begin{point}{40}{$f$ positive $\implies$ $\|f\|\leq 1$}%
 This follows
 immediately from~\sref{cp-russo-dye} and~\sref{cp-commutative},
 but here's a concrete proof:
@@ -5918,7 +5918,7 @@ because $\Real{(\lambda a)}
 and $f$ is positive.
 Hence~$\|f\|\leq 1$.
 \end{point}
-\begin{point}{$\|f\|\leq 1$ $\implies$ $f$ is positive}%
+\begin{point}{50}{$\|f\|\leq 1$ $\implies$ $f$ is positive}%
 Let~$a\in [0,1]_\scrA$ be given.
 To prove that~$f$ is positive, it suffices to show that $f(a)\geq 0$.
 Since $(\Real{f(a)})^\perp
@@ -5939,17 +5939,17 @@ that is, $\Imag{f(a)}=0$.\qed
 \end{point}
 \end{point}
 \end{point}
-\begin{point}[vn-ball-extreme-point]{Lemma}%
+\begin{point}{60}[vn-ball-extreme-point]{Lemma}%
 \index{unit ball!of a $C^*$-algebra!extreme points}%
 An extreme point~$u$ of the unit ball~$(\scrA)_1$
 of a $C^*$-algebra~$\scrA$
 is a partial isometry with $(uu^*)^\perp\scrA(u^*u)^\perp = \{0\}$.
-\begin{point}{Remark}%
+\begin{point}{70}{Remark}%
 The converse (viz.~every such partial isometry
 is extreme in~$(\scrA)_1$)
 also holds, but we won't need it.
 \end{point}
-\begin{point}{Proof}%
+\begin{point}{80}{Proof}%
 (Based on Theorem~7.3.1 of~\cite{kr}.)
 
 To show~$u$ is a partial isometry
@@ -5992,7 +5992,7 @@ Thus $(u\pm a)^*(u\pm a)
 so $\|u\pm a\|\leq 1$. \qed
 \end{point}
 \end{point}
-\begin{point}[polar-decomposition-of-functional]%
+\begin{point}{90}[polar-decomposition-of-functional]%
 	{Theorem (Polar decomposition of functionals)}%
 \index{polar decomposition!of a functional}
 Every functional $f\colon \scrA\to \C$ on a von Neumann algebra~$\scrA$
@@ -6003,9 +6003,9 @@ for some partial isometry~$u$ on~$\scrA$
 such that $f(u(\,\cdot\,))$
 and $f((\,\cdot\,)u)\colon \scrA\to\C$
 are positive.
-\begin{point}{Proof}%
+\begin{point}{100}{Proof}%
 (Based on Theorem~7.3.2 of~\cite{kr}.) 
-\begin{point}%
+\begin{point}{110}%
 We'll first show that~$f$ takes the value~$\|f\|$
 at some extreme point~$u$ of~$(\scrA)_1$.
 To begin, since~$(\scrA)_1$ is ultraweakly compact (\sref{vn-ball-compact}),
@@ -6054,14 +6054,14 @@ By a similar reasoning we get $f(uu^*a)=f(a)$.\qed
 \end{point}
 \end{point}
 \end{point}
-\begin{point}[uwcont-on-ball]{Corollary}%
+\begin{point}{120}[uwcont-on-ball]{Corollary}%
 \index{functional!ultraweakly continuous}
 A functional $f\colon \scrA\to\C$
 on a von Neumann algebra~$\scrA$
 is ultraweakly continuous
 when it is ultraweakly continuous
 on the unit ball~$(\scrA)_1$.
-\begin{point}{Proof}%
+\begin{point}{130}{Proof}%
 By~\sref{polar-decomposition-of-functional}
 there is a partial isometry~$u$
 such that $f(uu^*(\,\cdot\,))=f$
@@ -6079,7 +6079,7 @@ $f(u(\,\cdot\,))$ and $a\mapsto u^*a$
 is ultraweakly continuous on~$\scrA$ too.\qed
 \end{point}
 \end{point}
-\begin{point}[functional-norm]{Lemma}%
+\begin{point}{140}[functional-norm]{Lemma}%
 Let~$f\colon \scrA\to\C$
 be a normal functional
 on a von Neumann algebra~$\scrA$,
@@ -6087,7 +6087,7 @@ and let~$u$ be a partial isometry in~$\scrA$
 such that~$f(u(\,\cdot\,))$ is positive,
 and $f=f(uu^*(\,\cdot\,))$.
 Then~$\|f\|=f(u)$.\qed
-\begin{point}{Proof}%
+\begin{point}{150}{Proof}%
 Since~$f(u(\,\cdot\,))$ is positive,
 we have $\|f(u(\,\cdot\,))\|=f(u)$
 by~\sref{cp-russo-dye};
@@ -6101,8 +6101,8 @@ and thus~$\|f\|=f(u)$.
 \end{point}
 \end{parsec}
 
-\begin{parsec}%
-\begin{point}{Definition}%
+\begin{parsec}{870}%
+\begin{point}{10}{Definition}%
 Given a von Neumann algebra~$\scrA$,
 the vector space of ultraweakly continuous 
 linear maps $f\colon \scrA\to \C$
@@ -6112,7 +6112,7 @@ is denoted by~$\Define{\scrA_*}$,%
 and called the \Define{predual}%
 \index{predual}
 of~$\scrA$.
-\begin{point}{Remark}%
+\begin{point}{20}{Remark}%
 The reason
 that the space~$\scrA_*$ is called the \emph{predual}
 of~$\scrA$
@@ -6131,10 +6131,10 @@ because~$(\scrA_*)^*$ doesn't come equipped with a multiplication.)
 We will need this:
 \end{point}
 \end{point}
-\begin{point}[predual-complete]{Proposition}%
+\begin{point}{30}[predual-complete]{Proposition}%
 The predual~$\scrA_*$ of a von Neumann algebra~$\scrA$
 is complete (with respect to the operator norm).
-\begin{point}{Proof}%
+\begin{point}{40}{Proof}%
 Let $f_1,f_2,\dotsc$ be a sequence in~$\scrA_*$
 which is Cauchy with respect to the operator norm.
 We already know (from~\sref{operator-norm-complete})
@@ -6170,7 +6170,7 @@ Thus~$f$ is ultraweakly continuous,
 and so~$\scrA_*$ is complete.\qed
 \end{point}
 \end{point}
-\begin{point}%
+\begin{point}{50}%
 Note
 that for a self-adjoint
 element~$a$ of a von Neumann algebra~$\scrA$
@@ -6185,10 +6185,10 @@ can be lifted
 by letting~$\omega$
 range over all of~$\scrA_*$.
 \end{point}
-\begin{point}[norm-predual]{Lemma}%
+\begin{point}{60}[norm-predual]{Lemma}%
 We have $\|a\|=\sup_{f\in(\scrA_*)_1}\left|f(a)\right|$
 for every element~$a$ of a von Neumann algebra~$\scrA$.
-\begin{point}{Proof}%
+\begin{point}{70}{Proof}%
 It's clear that $\sup_{f\in(\scrA_*)_1}\left|f(a)\right|\leq \|a\|$.
 
 For the other direction,
@@ -6206,7 +6206,7 @@ and so $\|a\|=\sup_{\omega\in\Omega}
 \left|f(a)\right|$.\qed
 \end{point}
 \end{point}
-\begin{point}[ultraweakly-bounded-implies-bounded]{Theorem}%
+\begin{point}{80}[ultraweakly-bounded-implies-bounded]{Theorem}%
 A net  $(b_\alpha)_\alpha$
  in a von Neumann algebra~$\scrA$
 is norm bounded
@@ -6215,7 +6215,7 @@ provided it is \Define{ultraweakly bounded}, i.e.,%
 \index{ultraweakly bounded net}
 $\sup_\alpha \left|\omega(b_\alpha)\right|<\infty$
 	for every np(u)-map $\omega\colon \scrA\to \C$.
-\begin{point}{Proof}%
+\begin{point}{90}{Proof}%
 Note that $f\mapsto f(b_\alpha)$
 gives a linear map $(\,\cdot\,)(b_\alpha)\colon \scrA_*\to\C$
 with $\|(\,\cdot\,)(b_\alpha)\|=\|b_\alpha\|$ 
@@ -6243,8 +6243,8 @@ is norm bounded.\qed
 \end{point}
 \end{parsec}
 \subsection{Ultraweak Permanence}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{880}%
+\begin{point}{10}%
 We turn to 
 a subtle, and surprisingly difficult matter:
 it is not immediately clear
@@ -6291,7 +6291,7 @@ and in fact, is of the form
 $\omega\equiv \sum_n \left<x_n,(\,\cdot\,)x_n\right>$
 for some $x_1,x_2,\dotsc \in\scrH$, see~\sref{normal-functional}.
 \end{point}
-\begin{point}[commutant-ceil]{Proposition}%
+\begin{point}{20}[commutant-ceil]{Proposition}%
 Let~$S$ be a subset of a von Neumann algebra~$\scrA$
 that is closed under multiplication, involution, and contains~$1$.
 Let~$e$ be a projection in~$\scrA$.
@@ -6302,7 +6302,7 @@ is the least projection in~$S^\square$
 above~$e$.
 
 (Compare this with the paragraph ``Subspaces'' of \S2.6 of~\cite{kr}.)
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 Let us first show that~$p:= \ceil{e}_{S^\square}$
 is in~$S^\square$.
 Let $b\in S$ be given;
@@ -6337,7 +6337,7 @@ and thus~$p=\bigcup_{a\in S}\ceil{a^*ea} \leq q$.\qed
 \end{point}
 \end{point}
 
-\begin{point}[carrier-vector-state]{Exercise}%
+\begin{point}{40}[carrier-vector-state]{Exercise}%
 Show that given a vector~$x$ of Hilbert space~$\scrH$,
 and a collection~$S$ of bounded operators on~$\scrH$
 that is closed under addition, (scalar) multiplication,
@@ -6360,7 +6360,7 @@ the projection on~$\overline{S x}$.
 Conclude that $\overline{S^{\square\square}x}
 =\overline{S x}$.
 (Hint: $S^{\square\square\square}=S^\square$.)
-\begin{point}[proto-double-commutant]%
+\begin{point}{50}[proto-double-commutant]%
 Now consider
 (instead of~$x$)
 an np-map $\omega\colon \scrB(\scrH)\to \C$,
@@ -6403,7 +6403,7 @@ is contained in the ultrastrong closure of~$S$.
 \end{enumerate}
 \end{point}
 \end{point}
-\begin{point}[double-commutant]{Double Commutant Theorem}%
+\begin{point}{60}[double-commutant]{Double Commutant Theorem}%
 \index{Double Commutant Theorem}%
 \index{Bicommutant Theorem}
 For a collection~$S$ of bounded operators
@@ -6426,7 +6426,7 @@ $W^*(S)$,
 the least von Neumann subalgebra of~$\scrB(\scrH)$
 that contains~$S$.
 \end{enumerate}
-\begin{point}{Proof}%
+\begin{point}{70}{Proof}%
 (Based on Theorem~5.3.1 of~\cite{kr}.) 
 
 Note that: $\mathrm{us}\text{-}\mathrm{cl}(S)
@@ -6446,22 +6446,22 @@ and, finally, $S^{\square\square}\subseteq \mathrm{us}\text{-}\mathrm{cl}(S)$
 by~\sref{proto-double-commutant}.\qed
 \end{point}
 \end{point}
-\begin{point}[centre-commutant]{Exercise}
+\begin{point}{80}[centre-commutant]{Exercise}
 Show that central elements of
 a von Neumann algebra~$\scrA$
 of bounded operators on a Hilbert space~$\scrH$
 coincide with the central elements of the commutant~$\scrA^\square$,
 that is, $Z(\scrA)=Z(\scrA^\square)$.
 (Hint: $\scrA^{\square\square}=\scrA$ by~\sref{double-commutant}.)
-\begin{point}[commutant-cceil]%
+\begin{point}{90}[commutant-cceil]%
 Deduce that~$\cceil{f|\scrA}=\cceil{f|\scrA^\square}$
 for every np-map~$f\colon \scrB(\scrH)\to\scrB$ 
 into a von Neumann algebra~$\scrB$.
 \end{point}
 \end{point}
 \end{parsec}%
-\begin{parsec}%
-\begin{point}[gns-mapping-property]{Lemma}%
+\begin{parsec}{890}%
+\begin{point}{10}[gns-mapping-property]{Lemma}%
 Let~$\omega\colon \scrA\to\C$
 be an np-map on a von Neumann algebra~$\scrA$,
 which is represented by nmiu-maps
@@ -6478,7 +6478,7 @@ $U^*U$ is the projection
 on~$\overline{\pi(\scrA)y}$,
 and~$U\pi(a)=\varrho(a)U$
 for all~$a\in\scrA$.
-\begin{point}{Proof}%
+\begin{point}{20}{Proof}%
 (Compare this with Proposition 4.5.3 of~\cite{kr}.)
 
 Since $\|\varrho(a)x\|^2
@@ -6523,7 +6523,7 @@ EVF^*\pi(a)=EVF^*\pi(a) FF^*
 = \varrho(a)U$.\qed
 \end{point}
 \end{point}
-\begin{point}[summing-partial-isometries]{Exercise}%
+\begin{point}{30}[summing-partial-isometries]{Exercise}%
 It is not too difficult 
 to see that the (ultraweak) sum~$\sum_i u_i$
 of a collection $(u_i)_i$ 
@@ -6537,7 +6537,7 @@ but for partial isometries between two different Hilbert spaces,
 and avoiding the use of an analogue of 
 the ultraweak topology for such operators.
 
-\begin{point}%
+\begin{point}{40}%
 Let~$\scrH$ and~$\scrK$ be Hilbert spaces,
 and 
 let $U_i\colon \scrH\to\scrK$
@@ -6574,7 +6574,7 @@ Prove that $UU^* = \sum_i U_iU_i^*$.
 \end{enumerate}
 \end{point}
 \end{point}
-\begin{point}[sigma-weak-lemma-2]{Lemma}%
+\begin{point}{50}[sigma-weak-lemma-2]{Lemma}%
 Let~$\Omega$ be a collection of np-maps $\omega\colon \scrA\to\C$
 on a von Neumann algebra~$\scrA$ 
 whose central carriers,  $\cceil{\omega}$, are pairwise orthogonal to one another,
@@ -6604,7 +6604,7 @@ is projection in
 $\varrho(\scrA)^\square$
 with
 $\cceil{UU^*}_{\varrho(\scrA)^\square}=\varrho(\sum_\omega \cceil{\omega})$.
-\begin{point}{Proof}%
+\begin{point}{60}{Proof}%
 Given~$\omega\in\Omega$,
 let $\sigma_\omega\colon \varrho(\scrA)\to \C$
 and $\sigma_\omega'\colon \varrho(\scrA)^\square\to\C$
@@ -6674,7 +6674,7 @@ because $\left<x,U\pi(a)y\right>
 for all~$x\in\scrH$ and~$y\in\scrK$.\qed
 \end{point}
 \end{point}
-\begin{point}[sigma-weak-lemma]{Corollary}%
+\begin{point}{70}[sigma-weak-lemma]{Corollary}%
 Let~$\scrA$ be a von Neumann 
 of bounded operators on some Hilbert space~$\scrH$,
 and let~$\varrho\colon \scrA\to\scrB(\scrH)$
@@ -6691,7 +6691,7 @@ $\cceil{U^*U}_{\varrho_\Omega(\scrA)^\square}=1$
 and
 $U\varrho_\Omega(a)= \varrho(a) U$
 for all~$a\in\scrA$.
-\begin{point}{Proof}%
+\begin{point}{80}{Proof}%
 Let $\{x_i\}_i$ be a maximal set of vectors
 in~$\scrH$ 
 such that the 
@@ -6711,7 +6711,7 @@ to get a map~$U\colon \scrH_\Omega\to \scrH$
 with the desired properties.\qed
 \end{point}
 \end{point}
-\begin{point}[normal-functional]{Theorem}%
+\begin{point}{90}[normal-functional]{Theorem}%
 \index{functional!positive!normal}%
 \index{normal!positive functional}%
 Every np-map $\omega\colon \scrA\to\C$
@@ -6722,7 +6722,7 @@ is of the
 form~$\omega \equiv \sum_n \left<x_n,(\,\cdot\,)x_n\right>$
 for some $x_1,x_2,\dotsc \in\scrH$
 (with $\sum_n\|x_n\|^2<\infty$).
-\begin{point}{Proof}%
+\begin{point}{100}{Proof}%
 (Based on Theorem~7.1.8 of~\cite{kr}.)
 
 Let~$\varrho\colon \scrA\to\scrB(\scrH)$
@@ -6777,7 +6777,7 @@ and denoting those by~$x_1,x_2,\dotsc$,
 we get $\omega = \sum_n \left<x_n,(\,\cdot\,)x_n\right>$.\qed
 \end{point}
 \end{point}
-\begin{point}[functional-permanence]{Corollary}%
+\begin{point}{110}[functional-permanence]{Corollary}%
 Let~$\scrA$ be a von Neumann subalgebra
 of a von Neumann algebra~$\scrB$.
 \begin{enumerate}
@@ -6796,7 +6796,7 @@ the restriction of the ultrastrong topology on~$\scrB$
 to~$\scrA$ coincides with the ultrastrong topology on~$\scrA$.
 \end{enumerate}
 \end{point}
-\begin{point}[functional-extension]{Exercise}%
+\begin{point}{120}[functional-extension]{Exercise}%
 Let $\varrho\colon \scrA\to\scrB$
 be an injective nmiu-map.
 
@@ -6812,8 +6812,8 @@ with $\varrho\circ \omega' = \omega$.
 
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{900}%
+\begin{point}{10}%
 We end the chapter 
 with another corollary to~\sref{normal-functional}:
  that  the np-functionals
@@ -6828,7 +6828,7 @@ of von Neumann algebras
 (on which the product functionals are to be centre separating,
 \sref{tensor}).
 \end{point}
-\begin{point}[vn-center-separating-fundamental]{Proposition}%
+\begin{point}{20}[vn-center-separating-fundamental]{Proposition}%
 \index{centre separating collection!of np-functionals}
 Given a centre separating collection~$\Omega$ of np-functionals
 on a von Neumann algebra~$\scrA$,
@@ -6843,7 +6843,7 @@ is order separating, and
 	\label{vn-center-separating-fundamental-2}
 $\Omega'':=\{\,\sum_n\omega_n\colon\, \omega_1,\dotsc,\omega_N\in\Omega'\,\}$ is operator norm dense in $(\scrA_*)_+$.
 	\end{enumerate}
-\begin{point}[vn-center-separating-fundamental-i]{Proof}%
+\begin{point}{30}[vn-center-separating-fundamental-i]{Proof}%
 We tackle~\ref{vn-center-separating-fundamental-1}
 first. We already know from~\sref{proto-gelfand-naimark}
 that the collection $\Xi:=\{\, \omega(a^*(\,\cdot\,)a)\colon\, 
@@ -6863,7 +6863,7 @@ converge in norm to~$a\ast \omega$
 as $\alpha\to\infty$
 by~\sref{bstaromega-basic}.
 
-\begin{point}{Concerning~\ref{vn-center-separating-fundamental-2}}%
+\begin{point}{40}{Concerning~\ref{vn-center-separating-fundamental-2}}%
 Let~$f\colon \scrA\to\C$ be an np-map;
 we must show that~$f$ is in 
 the norm closure~$\overline{\Omega''}$ of~$\Omega''$.
@@ -6932,8 +6932,8 @@ we conclude that~$f\in \overline{\Omega''}$.\qed
 \end{point}
 \end{point}
 \end{parsec}
-\begin{parsec}
-\begin{point}
+\begin{parsec}{910}
+\begin{point}{10}
 With this chapter
 ends perhaps the most hairy part of this thesis:
 we've developed the theory of von Neumann algebras

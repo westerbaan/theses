@@ -1,8 +1,8 @@
 
 \chapter{Diamond, andthen, dagger}\label{chapter2}
 
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1730}%
+\begin{point}{10}%
 In the previous chapter and in \cite{bram}
     we have studied categorical properties of von Neumann algebras.
 In this chapter we change pace:
@@ -15,7 +15,7 @@ We do not reach this ambitious goal ---
     the existence of a unique $\dagger$-structure
     on the pure maps of a von Neumann algebras-like category.
 \end{point}
-\begin{point}%
+\begin{point}{20}%
 As a basic axiom we will require the categories we consider to be
     effectuses (which will be defined in \sref{dfn-effectus}).
 For us the definition of an effectus will play a similar role
@@ -33,7 +33,7 @@ In many applications,
 Similarly, there will be many pathological effectuses.
 Their use for us lies in their expressiveness.
 \end{point}
-\begin{point}%
+\begin{point}{30}%
 Before we dive into effectuses,
     we need to learn about effect algebras (and related structures),
     which were introduced by mathematical physicists as
@@ -60,7 +60,7 @@ For the moment, think of an effectus as a generalization
     and the maps represent the physical processes
     (or properly typed maps).
 \end{point}
-\begin{point}%
+\begin{point}{40}%
 The first two axioms we add on top of those of an effectus
     are the existence of quotients and comprehension.
 It's helpful to discuss the origin of these axioms.
@@ -96,7 +96,7 @@ It turned out that both~$\pi$ and~$\xi$ have
             Beware: an effectus quotient is not the same thing
         as a von Neumann-algebra quotient.}
 \end{point}
-\begin{point}%
+\begin{point}{50}%
 The existence of quotients and comprehension in some effectus~$C$
     is interesting on its own, but with
     two additional axioms (the existence of images and
@@ -121,7 +121,7 @@ Because of the central role of~$\diamond$,
     we call an effectus with these axioms 
     a~$\diamond$-effectus.
 \end{point}
-\begin{point}%
+\begin{point}{60}%
 The axioms of a~$\diamond$-effectus do not force
     any coherence between the quotients and comprehension.
 This has been a roadblock to the axiomatization
@@ -140,7 +140,7 @@ In an~$\&$-effectus, the predicates on an object carry a canonical
     which is the intended sequential product in
     the case of von Neumann algebras.
 \end{point}
-\begin{point}[pure-effectus]%
+\begin{point}{70}[pure-effectus]%
 In an effectus, we call a map pure if it can be written
     as the composition of quotients and comprehensions.
 In~\sref{paschke-pure} we saw that in the case of von Neumann algebras,
@@ -165,8 +165,8 @@ After this apogee,
 \end{point}
 \end{parsec}
 \section{Effect algebras et al}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1740}%
+\begin{point}{10}%
 Before we turn to effectuses,
     it is convenient to introduce some lesser-known algebraic structures
     of which the effect algebra is the most important.
@@ -179,7 +179,7 @@ In this way, effect algebras play the same role
     we will see that the partial maps between
     two objects in an effectus can be arranged into a PCM.
 \end{point}
-\begin{point}[dfn-pcm]{Definition}%
+\begin{point}{20}[dfn-pcm]{Definition}%
     A \Define{partial commutative monoid} (\Define{PCM})~$M$
         \index{PCM}
         is a set~$M$ together with distinguished element~$0 \in M$
@@ -214,7 +214,7 @@ For~$a,b$ in a PCM~$M$,
     \index{*leq@$\leq$!in PCM/EA}
     iff~$a \ovee c = b$ for some~$c \in M$.
 \end{point}
-\begin{point}[pcm-preorder]{Exercise}%
+\begin{point}{30}[pcm-preorder]{Exercise}%
 Show a PCM is preordered by~$\leq$.
 % \begin{point}{Proof}%
 % Reflexivity is easy:~$a \ovee 0 = 0 \ovee a = a$
@@ -229,8 +229,8 @@ Show a PCM is preordered by~$\leq$.
 \end{point}
 \end{parsec}
 
-\begin{parsec}%
-\begin{point}[dfn-ea]{Definition}%
+\begin{parsec}{1750}%
+\begin{point}{10}[dfn-ea]{Definition}%
 A PCM~$E$ together with distinguished element~$1 \in E$
     is called an \Define{effect algebra} (\Define{EA}) \cite{ea}
     \index{EA}
@@ -270,7 +270,7 @@ A subset~$D \subseteq E$ is a \Define{sub-effect algebra}
     with~$a\perp b$, we have~$a \ovee b \in D$
     and~$a^\perp \in D$.
 \end{point}
-\begin{point}{Examples}%
+\begin{point}{20}{Examples}%
 There are many examples of effect algebras
     --- we only give a few.
 \begin{enumerate}
@@ -319,7 +319,7 @@ The one-element Boolean algebra~$1 \equiv \{0=1\}$
 \end{enumerate}
 \end{point}
 
-\begin{point}[ea-product]{Exercise}%
+\begin{point}{30}[ea-product]{Exercise}%
 Let~$E$ and~$F$ be effect algebras.
 First show that the cartesian products~$E \times F$
     is an effect algebra with componentwise operations.
@@ -333,14 +333,14 @@ Finally, show that~\textsf{EA} has initial
         see \cite{corefl}.)
 \end{point}
 
-\begin{point}{Exercise}%
+\begin{point}{40}{Exercise}%
 There is a small redundancy in our definition of effect algebra:
 show that the zero axiom ($x \ovee 0 = x$)
 follows from the remaining axioms (partial commutativity,
 partial associativity, orthocomplement and zero--one.)
 \end{point}
 
-\begin{point}{Proposition}%
+\begin{point}{50}{Proposition}%
 In any effect algebra~$E$ with~$a,b,c\in E$, we have
 \begin{enumerate}
     \item \emph{(involution)}
@@ -357,7 +357,7 @@ In any effect algebra~$E$ with~$a,b,c\in E$, we have
         and~$a \ovee c \leq b \ovee c$ \emph{and}
     \item $a \perp b$ if and only if~$a \leq b^\perp$.
 \end{enumerate}
-\begin{point}{Proof}%
+\begin{point}{60}{Proof}%
 By partial commutativity and definition
 of orthocomplement both~$a^\perp \ovee a = 1$
 and~$a^\perp \ovee  a^{\perp\perp} = 1$.
@@ -412,15 +412,15 @@ Hence~$a \ovee c \perp b$
 \end{point}
 \end{parsec}%
 
-\begin{parsec}%
-\begin{point}{Definition}%
+\begin{parsec}{1760}%
+\begin{point}{10}{Definition}%
 Suppose~$E$ is an effect algebra.
 Write~$\Define{b \ominus a}$
         \index{*ominus@$\ominus$}
 for the (by cancellation) unique element (if it exists)
 with~$a \ovee (b \ominus a) = b$.
 \end{point}
-\begin{point}{Exercise*}%
+\begin{point}{20}{Exercise*}%
 Show that for any effect algebra~$E$, we have
 \begin{enumerate}
     \item[(D1)]~$a \ominus b$ is defined if and only if~$b \leq a$;
@@ -430,7 +430,7 @@ Show that for any effect algebra~$E$, we have
                 then~$c \ominus b \leq c \ominus a$
                 and~$(c \ominus a) \ominus (c \ominus b) = b \ominus a$.
 \end{enumerate}
-\begin{point}%
+\begin{point}{30}%
 Let~$E$ be a poset with maximum element~$1$
     and partial binary operation~$\ominus$
     satisfying~(D1)--(D4).
@@ -439,7 +439,7 @@ Define~$a \ovee b = c \Leftrightarrow c \ominus b = a$
 Show that this turns~$E$ into an effect algebra
     with compatible order and~$\ominus$.
 \end{point}
-\begin{point}{Remark}%
+\begin{point}{40}{Remark}%
     Such a structure~$(E,\ominus,1)$ is called a \Define{difference-poset}
     \index{D-poset}
     (\Define{D-poset}) \cite{kopka1994d} and is, as we have just seen,
@@ -447,7 +447,7 @@ Show that this turns~$E$ into an effect algebra
 \end{point}
 \end{point}
 
-\begin{point}{Exercise}%
+\begin{point}{50}{Exercise}%
 Show that for an effect algebra homomorphism~$f\colon E \to F$,
     we have
     \begin{enumerate}
@@ -460,8 +460,8 @@ Show that for an effect algebra homomorphism~$f\colon E \to F$,
 \end{point}
 \end{parsec}
 
-\begin{parsec}%
-\begin{point}[ea-modularity-prop]{Proposition}%
+\begin{parsec}{1770}%
+\begin{point}{10}[ea-modularity-prop]{Proposition}%
 Suppose~$E$ is an effect algebra.
 If the infimum~$a \wedge b$
     exists for some~$a,b \in E$ with~$a \perp b$,
@@ -469,7 +469,7 @@ If the infimum~$a \wedge b$
 \begin{equation*}
     a \ovee b \ = \ (a \wedge b) \,\ovee\, (a \vee b).
 \end{equation*}
-\begin{point}[modularity-lemma-proof]{Proof}%
+\begin{point}{20}[modularity-lemma-proof]{Proof}%
 The result follows from this lemma:
     if~$(x \ominus c) \wedge (x \ominus d)$ exists,
     then~$c \vee d$ exists as well
@@ -482,7 +482,7 @@ Indeed:
         (a \ovee b) \ominus (a \vee b)
 \end{equation*}
     and so~$(a \wedge b) \ovee (a \vee b) = a \ovee b$, as desired.
-\begin{point}%
+\begin{point}{30}%
 We turn to the main result.
 Assume~$(x \ominus c) \wedge (x \ominus d)$ exists.
 Note~$x \ominus c = (x^\perp \ovee c)^\perp$.
@@ -509,7 +509,7 @@ Consequently~$ (x \ominus c)\wedge (x \ominus d)
 \end{point}    
 \end{point}
 \end{point}
-\begin{point}[dfn-orthomodular-lattice]{Definition}%
+\begin{point}{40}[dfn-orthomodular-lattice]{Definition}%
 An \Define{ortholattice}~$L$
     \index{ortholattice}
     is a bounded lattice with orthocomplement
@@ -531,16 +531,16 @@ An \Define{ortholattice}~$L$
     a \ \leq \ b \quad \implies \quad a \vee (a^\perp \wedge b) \ =\  b.
 \end{equation*}
 \end{point}
-\begin{point}{Example}%
+\begin{point}{50}{Example}%
 The lattice of projections in a von Neumann algebra
     is an orthomodular lattice with
     orthocomplement~$p^\perp \equiv 1 - p$.
 \end{point}
-\begin{point}[orth-ea-is-orthomodular]{Proposition}%
+\begin{point}{60}[orth-ea-is-orthomodular]{Proposition}%
 An effect algebra~$E$
     that is an ortholattice
     is also orthomodular.
-\begin{point}{Proof}%
+\begin{point}{70}{Proof}%
 (For a different proof, see \cite[Prop.~1.5.8]{dvurecenskij2013new}.)
 Assume~$a \leq b$.
 We have to show~$a \vee (a^\perp \wedge b) = b$.
@@ -566,12 +566,12 @@ but~$b^\perp \wedge a \leq b^\perp \wedge b = 0$
 \end{parsec}
 
 \subsection{Effect monoids}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1780}%
+\begin{point}{10}%
 In \sref{dfn-mandso} we will see that the scalars of an effectus
 form an effect monoid:
 \end{point}
-\begin{point}[dfn-effect-monoid]{Definition}%
+\begin{point}{20}[dfn-effect-monoid]{Definition}%
 An \Define{effect monoid}~$M$ \cite{probdistrconv}
     \index{effect monoid}
     is an effect algebra
@@ -602,7 +602,7 @@ A map~$f\colon M \to N$ between effect monoids
     and furthermore~$f(a \odot b) = f(a) \odot f(b)$
     for all~$a,b \in M$.
 \end{point}
-\begin{point}[eff-monoid-examples]{Examples}%
+\begin{point}{30}[eff-monoid-examples]{Examples}%
 Effect monoids are less abundant than effect algebras.
 \begin{enumerate}
 \item The effect algebra~$[0,1]$
@@ -626,12 +626,12 @@ In particular: the two-element Boolean algebra~$2$
         for the effect monoid~$M$ with the opposite multiplication
             --- that is: $a \odot_M b = b \odot_{M^\mathsf{op}} a$.
 \end{enumerate}
-\begin{point}%
+\begin{point}{40}%
 Later, in a tangent,
     we will need the following specific fact about effect monoids.
 \end{point}
 \end{point}
-\begin{point}[emond-lemma-for-conv]{Exercise}%
+\begin{point}{50}[emond-lemma-for-conv]{Exercise}%
 Assume~$M$ is an effect monoid
 with~$a_1, \ldots, a_n, b_1, \ldots, b_n \in M$
 such that~$\bigovee_i a_i = 1$
@@ -641,14 +641,14 @@ Prove~$a_i \odot b_i = a_i$ for every~$1 \leq i \leq n$.
 \end{parsec}
 
 \subsection{Effect modules}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1790}%
+\begin{point}{10}%
 We will see that in an effectus,
     the effect monoid of scalars will act on
     every effect algebra of predicates,
     turning them into effect modules (see \sref{dfn-mandso}):
 \end{point}
-\begin{point}[dfn-effect-module]{Definition}%
+\begin{point}{20}[dfn-effect-module]{Definition}%
 Suppose~$M$ is an effect monoid.
 An \Define{effect module} $E$ over~$M$ \cite{corefl}
     \index{effect module}
@@ -684,7 +684,7 @@ Write~$\Define{\mathsf{EMod}_M}$
     for the category of effect modules over~$M$
     with effect module homomorphisms between them.
 \end{point}
-\begin{point}{Examples}%
+\begin{point}{30}{Examples}%
 There are many effect modules.
 \begin{enumerate}
 \item
@@ -710,8 +710,8 @@ An effectus comes in two guises:
     or a category of partial maps.
 We will start of with the total form as it has the simplest axioms.
 Later we will prefer to work with the partial form.
-\begin{parsec}%
-\begin{point}[dfn-effectus]{Definition}%
+\begin{parsec}{1800}%
+\begin{point}{10}[dfn-effectus]{Definition}%
 A category $C$ is said to be an \Define{effectus in total form}
     \index{effectus!in total form}
     \cite{effintro,newdirections,statesofconvexsets}
@@ -749,7 +749,7 @@ An arrow~$X \to Y+1$ is called a \Define{partial map} and written
     \index{partial map}
     $\Define{X \pto Y}$.
     \index{*pto@$X\pto Y$}
-\begin{point}%
+\begin{point}{20}%
 One with an interest in physics, might think of the objects
     of an effectus as physical systems and its arrows as
     the physical operations between them.
@@ -758,7 +758,7 @@ The coproduct~$X+Y$ is the system that can be prepared as either~$X$ or as~$Y$.
 An arrow~$1 \to X$ corresponds to a physical preparation of the system~$X$
     and an arrow~$X \to 1+1$ is a yes--no measurement.
 \end{point}
-\begin{point}%
+\begin{point}{30}%
 In this sense an effectus can be seen as a generalized
         probabilistic theory
         --- not unlike the operational-probabilistic theories (OPT)
@@ -771,7 +771,7 @@ In \cite{tull2016operational} Tull compares effectuses and OPTs.
 There are other approaches to categorical probabilistic theories;
  see, for instance~\cite{wilceshortcut,gogioso2017categorical}.
 \end{point}
-\begin{point}%
+\begin{point}{40}%
 Studying programming languages, one would do better thinking of
     the objects of an effectus as data types and
     its arrows as the allowed operations between them (semantics of programs).
@@ -780,7 +780,7 @@ The coproduct~$X + Y$ is the union data type of~$X$ and~$Y$.
 An arrow~$1 \to X$ is a value of~$X$
     and an arrow~$X \to 1+1$ is a predicate on~$X$.
 \end{point}
-\begin{point}[effectus-vn]%
+\begin{point}{50}[effectus-vn]%
 Our main example of an effectus in total form
     is the category~$\op{\vN}$
     of von Neumann algebras with completely positive normal unital
@@ -792,7 +792,7 @@ The partial maps correspond to
 (Equivalently: contractive ncp-maps.)
 We list more examples later on.
 \end{point}
-\begin{point}%
+\begin{point}{60}%
 Let~$C$ be an effectus in total form.
 Given two arrows~$f\colon X \to Y+1$
 and~$g \colon Y \to Z+1$ (i.e.~partial maps~$X \pto Y$ and~$Y \pto Z$)
@@ -812,7 +812,7 @@ The category~$\Par C$ is not an effectus in total form --- instead it
     is an effectus \emph{in partial form}.
 \end{point}
 \end{point}
-\begin{point}[effectus-in-partial-form]{Definition}%
+\begin{point}{70}[effectus-in-partial-form]{Definition}%
 A category~$C$ is called an \Define{effectus in partial form}
     \index{effectus!in partial form}
     \cite{effintro,kentapartial} if
@@ -876,12 +876,12 @@ A category~$C$ is called an \Define{effectus in partial form}
 In this setting,
 a map~$f\colon X \to Y$ is called \Define{total} if~$1 \after f = 1$.
     \index{total map}
-\begin{point}{Remark}%
+\begin{point}{80}{Remark}%
 The untying axiom is redundant: it follows from the others.
 We include it, as it is part
     of the definition of a finPAC.
 \end{point}
-\begin{point}%
+\begin{point}{90}%
 At first glance an effectus in partial form seems
     to have a much richer structure than an effectus in total form.
 This is not the case ---
@@ -889,7 +889,7 @@ This is not the case ---
     on the same thing \cite{kentapartial,effintro}:
 \end{point}
 \end{point}
-\begin{point}[cho-thm]{Theorem (Cho)}%
+\begin{point}{100}[cho-thm]{Theorem (Cho)}%
 Let~$C$ be an effectus in total form
 and~$D$ be an effectus in partial form.
 \begin{enumerate}
@@ -902,7 +902,7 @@ The total maps of~$D$ form an effectus in total form~$\Tot D$.
     Nothing is lost:
         $\Par (\Tot D) \cong D$ and~$\Tot (\Par C )\cong C$.
 \end{enumerate}
-\begin{point}%
+\begin{point}{110}%
 To prove the Theorem
     (in \sref{proof-cho-thm}),
     we need some preparation.
@@ -910,8 +910,8 @@ To prove the Theorem
 \end{point}
 \end{parsec}
 \subsection{From partial to total}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1810}%
+\begin{point}{10}%
 We will first show that the subcategory of
     total maps of an effectus in partial form
     is an effectus in total form.
@@ -920,10 +920,10 @@ This proof and especially the demonstration
     will elucidate the axioms of an effectus in total form
     and will make the proof in the opposite direction more palatable.
 \end{point}
-\begin{point}[coproj-total]{Lemma}%
+\begin{point}{20}[coproj-total]{Lemma}%
 In an effectus in partial form,
     coprojections are total.
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 Let~$\kappa_1 \colon X \to X+Y$ be any coprojection.
 We have to show~$1 \after \kappa_1 = 1$.
 Note that the first~$1$ denotes the maximum of~$\Pred X+Y$
@@ -933,7 +933,7 @@ Note that the first~$1$ denotes the maximum of~$\Pred X+Y$
 Indeed~$1 \after \kappa_1 = 1$. \qed
 \end{point}
 \end{point}
-\begin{point}[cotupl-pcm]{Proposition}%
+\begin{point}{40}[cotupl-pcm]{Proposition}%
 In an effectus in partial form,
 the cotupling bijection~$(f,g) \mapsto [f,g]$
     is a PCM-isomorphism ---
@@ -951,7 +951,7 @@ the cotupling bijection~$(f,g) \mapsto [f,g]$
 Furthermore~$[1,1]=1$ for maps into~$I$,
 so the cotupling map is an effect algebra
 isomorphism~$\Pred (X) \times \Pred (Y) \cong \Pred (X+Y) $.
-\begin{point}{Proof}%
+\begin{point}{50}{Proof}%
 First we show~$[h,l] = [h,0] \ovee [0,l]$.
 By the compatible sum axiom
 \begin{equation*}
@@ -995,12 +995,12 @@ Similarly by \sref{coproj-total} we have~$1 \after \kappa_1 = 1$
     and~$1 \after \kappa_2 = 1$,
     so~$1 = [1,1]$. \qed
 \end{point}
-\begin{point}%
+\begin{point}{60}%
 The coproduct in an effectus in partial form
 is almost a (bi)product:
 \end{point}
 \end{point}
-\begin{point}[coprod-prod]{Proposition}%
+\begin{point}{70}[coprod-prod]{Proposition}%
 In an effectus in partial form, we have a bijective correspondence
 \begin{prooftree}
 \AxiomC{$h\colon Z \to X+Y$}
@@ -1022,7 +1022,7 @@ In fact~$\langle f, g\rangle = (\kappa_1 \after f) \ovee (\kappa_2 \after g)$.
 Conversely~$h = \langle \pproj_1 \after h, \pproj_2 \after h \rangle$
     with~$1 \after \pproj_1 \after h \perp 1 \after \pproj_2 \after h$
     for~$h \colon Z \to X+Y$.
-\begin{point}{Proof}%
+\begin{point}{80}{Proof}%
 Let~$f\colon Z \to X$ and~$g\colon Z \to Y$ be given
         such that~$1\after f \perp 1\after g$.
 By \sref{coproj-total},
@@ -1071,7 +1071,7 @@ $\langle \pproj_1 \after h, \pproj_2 \after h\rangle
 \end{point}
 \end{point}
 
-\begin{point}[eff-prod-rules]{Exercise}%
+\begin{point}{90}[eff-prod-rules]{Exercise}%
 Show that in an effectus in partial form, we have
 \begin{enumerate}
     \item~$[a,b] \after \langle f, g \rangle = (a \after f) \ovee (b \after g)$;
@@ -1081,7 +1081,7 @@ Show that in an effectus in partial form, we have
     \item~$\langle f, g\rangle \after k = \langle f \after k,
                                 g \after k \rangle$.
 \end{enumerate}
-\begin{point}{Remark}%
+\begin{point}{100}{Remark}%
 In an effectus in partial form,
     there is a straight-forward generalization
     of the bijective correspondence~\sref{coprod-prod} to
@@ -1098,10 +1098,10 @@ The expected generalizations  of the rules in \sref{eff-prod-rules} also hold.
 \end{point}
 \end{point}
 
-\begin{point}[eff-partial-to-total]{Theorem}%
+\begin{point}{110}[eff-partial-to-total]{Theorem}%
 Let~$C$ be an effectus in partial form.
 The category of total maps of~$C$ is an effectus in total form.
-\begin{point}{Proof}%
+\begin{point}{120}{Proof}%
 The total maps form indeed a subcategory: $1 \after \id = 1$
     and $1 \after f \after g = 1 \after g = 1$ for composable total~$f,g$.
 In \sref{coproj-total} we saw coprojections are total.
@@ -1113,7 +1113,7 @@ The unique map~$!\colon 0 \to X$ must be total
     as~$1 \after ! = 1$ is the unique map~$0 \to I$,
     so~$\Tot C$ has initial object~$0$, hence all finite coproducts.
 \end{point}
-\begin{point}[one-m-is-id]%
+\begin{point}{130}[one-m-is-id]%
 To show~$I$ is the final object of~$\Tot C$,
     we need~$\id_I = 1$.
 As~$C(I,I)$ is an effect algebra~$1 = \id \ovee \id^\perp$
@@ -1127,7 +1127,7 @@ We claim~$1 \colon X \to I$ is the unique total map.
 Indeed, by the previous $1 = \id_I \after 1 = 1 \after 1$, so~$1$ is total
 and if~$h\colon X \to I$ is total, then~$1=1 \after h = \id_I \after h = h$.
 \end{point}
-\begin{point}%
+\begin{point}{140}%
 To show the square on the left of \eqref{pullbacks} is a pullback
     in~$\Tot C$,
 let~$f\colon Z \to X+I$ 
@@ -1176,7 +1176,7 @@ Then~$\langle \alpha, a\rangle = f= (\id + 1)\after h = \langle h_1, 1 \after h_
 Thus~$h = \langle \alpha, \beta\rangle$,
     which shows our square is indeed a pullback.
 \end{point}
-\begin{point}%
+\begin{point}{150}%
 To show the square on the right of \eqref{pullbacks} is a pullback
     in~$\Tot C$,
 assume (using \sref{coprod-prod})
@@ -1201,7 +1201,7 @@ So~$\alpha$ is total and~$\beta=0$.
 Hence~$\langle \alpha, \beta\rangle = \langle \alpha, 0\rangle
         = \kappa_1 \after \alpha$ as desired.
 \end{point}
-\begin{point}%
+\begin{point}{160}%
     Finally, to show~$m_1\equiv [\kappa_1,\kappa_2,\kappa_2],
         m_2 \equiv [\kappa_2,\kappa_1,\kappa_2]\colon
     I+I+I \to I+I$ are jointly monic,
@@ -1225,8 +1225,8 @@ Thus~$c_1 = c_2$ and so~$f_1 = f_2$, as desired. \qed
 \end{parsec}
 
 \subsection{From total to partial}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1820}%
+\begin{point}{10}%
 Let~$C$ be an effectus in total form.
 In this section we will show that~$\Par C$ is an effectus in partial form.
 Before we get to work, it is helpful to discuss the axioms
@@ -1261,11 +1261,11 @@ To prove the theorem, we need to study pullbacks:
 \end{point}
 \end{parsec}
 
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1830}%
+\begin{point}{10}%
     We start with two classic facts about pullbacks.
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{20}{Exercise}%
 Show that if we have any pullback square --- say
 \begin{equation*}
     \vcenter{\vbox{\xymatrix@R-1pc{
@@ -1277,7 +1277,7 @@ Show that if we have any pullback square --- say
 then~$m_1$ and~$m_2$ are jointly monic.
 \end{point}
 
-\begin{point}[pullback-lemma]{Exercise}%
+\begin{point}{30}[pullback-lemma]{Exercise}%
 Prove the \Define{pullback lemma} --- that is:
     \index{pullback lemma}
     if we have a commuting diagram
@@ -1301,7 +1301,7 @@ If the outer square is a pullback
     and~$l$ and~$g$ are jointly monic,
     then the left inner square is a pullback.
 \end{enumerate}
-\begin{point}{Remark}%
+\begin{point}{40}{Remark}%
 In the literature (e.g.~\cite[III.5 exc.~8]{maclane}),
     one often finds a weaker second implication,
     which assumes that the right square is a pullback.
@@ -1309,8 +1309,8 @@ In the literature (e.g.~\cite[III.5 exc.~8]{maclane}),
 \end{point}
 \end{parsec}
 
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1840}%
+\begin{point}{10}%
 It is well-known that monos are stable under pullbacks ---
 that is:
 \begin{equation*}
@@ -1330,7 +1330,7 @@ that is:
     where we used~$\xymatrix@C-1pc{\ar@{>->}[r]&}$ to denote a monic map.
 We will need an analogous result for jointly monic maps.
 \end{point}
-\begin{point}[joint-monicity-stable]{Lemma}%
+\begin{point}{20}[joint-monicity-stable]{Lemma}%
 If the pairs~$(m_1,m_2)$, $(n_1,g_1)$, $(n_2,g_2)$ and~$(h_1,h_2)$
 in the following commuting diagram
 are jointly monic (for instance: if they span pullback squares),
@@ -1347,7 +1347,7 @@ then~$(n_1 \after h_1, n_2 \after h_2)$ is jointly monic as well.
         & B_2
     }
 \end{equation*}
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 To show joint monicity of~$n_1 \after h_1$ and~$n_2 \after h_2$,
 assume~$\alpha_1,\alpha_2  \colon Z \to P$
     are maps with~$
@@ -1385,8 +1385,8 @@ Thus, by joint monicity of~$h_1$ and~$h_2$, we conclude that~$\alpha_1 = \alpha_
 \end{point}
 \end{parsec}
 
-\begin{parsec}%
-\begin{point}[tot-pullbacks]{Proposition}%
+\begin{parsec}{1850}%
+\begin{point}{10}[tot-pullbacks]{Proposition}%
 In an effectus in total form,
     any square of one of the two following forms is a pullback.
 \begin{equation*}
@@ -1404,7 +1404,7 @@ In an effectus in total form,
         & Y+B
     }
 \end{equation*}
-\begin{point}{Proof}%
+\begin{point}{20}{Proof}%
 To start with the left square, consider the following commuting diagram.
 \begin{equation*}
     \xymatrix{
@@ -1450,15 +1450,15 @@ So the inner left square is also a pullback by the pullback lemma, as desired.
 \end{point}
 \end{parsec}
 
-\begin{parsec}%
-\begin{point}{Definition}%
+\begin{parsec}{1860}%
+\begin{point}{10}{Definition}%
 Assume~$C$ is an effectus in total form.
 For a map~$f\colon X \to Y$,
     write~$\Define{\hat{f}} = \kappa_1 \after f \colon X \to Y+1$.
     \index{*hat@$\hat{f}$!in an effectus}
     (This is the Kleisli embedding~$C \to \Par C$.)
 \end{point}
-\begin{point}[par-c-coprod]{Exercise}%
+\begin{point}{20}[par-c-coprod]{Exercise}%
 Assume~$C$ is an effectus in total form.
 Show that if
 \begin{equation*}
@@ -1470,7 +1470,7 @@ Show that if
 \end{equation*}
     is a coproduct in~$\Par C$.
 Show~$0$ is also the initial object of~$\Par C$.
-\begin{point}{Beware}%
+\begin{point}{30}{Beware}%
 While cotupling in~$C$ and~$\Par C$ coincide:
 $[f,g]_{C} = [f,g]_{\Par C}$
 for any (properly typed) partial maps~$f,g$
@@ -1483,7 +1483,7 @@ and $\widehat{f+_C g} = \hat{f} +_{\Par C} \hat{g}$,
     \end{equation*}
 \end{point}
 \end{point}
-\begin{point}[par-pullbacks]{Proposition}%
+\begin{point}{40}[par-pullbacks]{Proposition}%
 Let~$C$ be an effectus in total form.
 Squares of the following form are pullbacks in~$\Par C$.
 \begin{equation*}
@@ -1500,7 +1500,7 @@ Squares of the following form are pullbacks in~$\Par C$.
         & B
     }
 \end{equation*}
-\begin{point}{Proof}%
+\begin{point}{50}{Proof}%
 It is sufficient to show that the following squares
 are pullbacks in~$C$.
 \begin{equation*}
@@ -1520,18 +1520,18 @@ are pullbacks in~$C$.
 These are indeed pullbacks by~\sref{tot-pullbacks}. \qed
 \end{point}
 \end{point}
-\begin{point}[zero-and-one-parc]{Definition}%
+\begin{point}{60}[zero-and-one-parc]{Definition}%
 Assume~$C$ is an effectus in total form.
 For arbitrary objects~$X,Y$ in~$C$,
     write~$\Define{0} \equiv \kappa_2 \after !\colon X \to Y+1$
     and~$\Define{1} \equiv \kappa_1 \after ! \equiv \hat! \colon X \to 1+1$.
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{70}{Exercise}%
     Show~$0$ is a zero object in~$\Par C$
         with unique zero map
         as in \sref{zero-and-one-parc}.
 \end{point}
-\begin{point}[pardp]{Proposition}%
+\begin{point}{80}[pardp]{Proposition}%
 Assume~$C$ is an effectus in total form
     and~$f$ is a map in~$\Par C$.
 \begin{enumerate}
@@ -1541,7 +1541,7 @@ If~$1 \hafter f = 1$,
 \item
 If~$1 \hafter f = 0$, then~$f = 0$.
 \end{enumerate}
-\begin{point}{Proof}%
+\begin{point}{90}{Proof}%
 Both points follow from the right pullback square of~\eqref{pullbacks}
  as follows.
 \begin{equation*}
@@ -1581,12 +1581,12 @@ For the other point, if~$1 \hafter f = 0$,
     and so~$f = \kappa_2 \after !$ as shown above on the right. \qed
 \end{point}
 \end{point}
-\begin{point}[pproj-joint-monicity]{Proposition}%
+\begin{point}{100}[pproj-joint-monicity]{Proposition}%
     Assume~$C$ is an effectus in total form.
     The partial projectors~$\pproj_1 \equiv [\id,0]$
         and~$\pproj_2 \equiv [0, \id]$
         are jointly monic in~$\Par C$.
-\begin{point}{Proof}%
+\begin{point}{110}{Proof}%
 Consider the following commuting diagram in~$\Par C$.
 \begin{equation*}
 \xymatrix {
@@ -1623,13 +1623,13 @@ Thus by \sref{joint-monicity-stable}
 \end{point}
 \end{parsec}
 
-\begin{parsec}%
-\begin{point}[eff-total-to-partial]{Theorem}%
+\begin{parsec}{1870}%
+\begin{point}{10}[eff-total-to-partial]{Theorem}%
 If~$C$ is an effectus in total form,
 then~$\Par C$ is an effectus in partial form.
-\begin{point}{Proof}%
+\begin{point}{20}{Proof}%
 In \sref{par-c-coprod}, we saw that~$\Par C$ has finite coproducts.
-\begin{point}{$\mathsf{PCM}$-enrichment, I}%
+\begin{point}{30}{$\mathsf{PCM}$-enrichment, I}%
 Assume~$f,g \colon X \pto Y$.
 We define that~$f \perp g$
     iff there is a \Define{bound}~$b\colon X \pto Y+Y$
@@ -1710,7 +1710,7 @@ f \ovee (g \ovee h)
 which shows the partial associativity.
 Homsets of~$\Par C$ are indeed PCMs.
 \end{point}
-\begin{point}{$\mathsf{PCM}$-enrichment, II}%
+\begin{point}{40}{$\mathsf{PCM}$-enrichment, II}%
 Assume~$f \perp g$ with bound~$b$.
 It is easy to see~$b \hafter k$
     is a bound for~$f \hafter k \perp g \hafter k$
@@ -1732,7 +1732,7 @@ And so~$(h \hafter f) \ovee (h \hafter g)
             = \nabla \hafter (h+h) \hafter b
             = h \hafter \nabla \hafter b = h \hafter (f \ovee g)$.
 \end{point}
-\begin{point}{FinPAC}%
+\begin{point}{50}{FinPAC}%
 We just saw~$\Par C$ is $\mathsf{PCM}$-enriched.
 We already know~$\Par C$ has coproducts.
 The compatible sum axiom holds by definition of~$\perp$.
@@ -1742,7 +1742,7 @@ then~$(\kappa_1 + \kappa_2) \hafter b$ is a bound for~$\kappa_1 \hafter f
     \perp \kappa_2 \hafter g$,
     which proves the untying axiom.
 \end{point}
-\begin{point}{Effect algebra of predicates}%
+\begin{point}{60}{Effect algebra of predicates}%
 Pick any predicate~$p \colon X \to 1+1$.
 We define~$p^\perp = [\kappa_2,\kappa_1]\after p$.
 ($p^\perp$ is~$p$ with swapped outcomes.)
@@ -1795,7 +1795,7 @@ By the following instance of the right pullback square of~\eqref{pullbacks},
 Hence~$p = \pproj_2 \hafter b = [[\kappa_2,\kappa_1],\kappa_1]\after
                         \kappa_1 \after \kappa_1 \after ! = \kappa_2 \after ! = 0$.
 \end{point}
-\begin{point}{Final axioms}%
+\begin{point}{70}{Final axioms}%
 In \sref{pardp} we proved that~$f = 0$ whenever~$1 \hafter f = 0$.
 It only remains to be shown that~$f \perp g$
     provided~$1 \hafter f \perp 1 \hafter g$.
@@ -1843,17 +1843,17 @@ Clearly~$\pproj_2 \hafter d = g$
 \end{point}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1880}%
+\begin{point}{10}%
 We are ready to show the equivalence of effectuses in partial and total form.
-\begin{point}[proof-cho-thm]{Proof of \sref{cho-thm}}%
+\begin{point}{20}[proof-cho-thm]{Proof of \sref{cho-thm}}%
 Let~$C$ and~$D$ be effectuses in total and respectively partial form.
 The first point, that~$\Par C$ is an effectus in partial form,
     is shown in \sref{eff-total-to-partial}.
 The second point, that~$\Tot D$ is an effectus in total form,
     is shown in \sref{eff-partial-to-total}.
 It remains to be shown that nothing is lost.
-\begin{point}{$\Par \Tot D \cong D$}%
+\begin{point}{30}{$\Par \Tot D \cong D$}%
 Let~$D$ be an effectus in partial form.
 A map~$f\colon X \to Y$ in~$\Par \Tot D$
     is by definition a map~$f\colon X \to Y+1$
@@ -1877,7 +1877,7 @@ and
 \begin{equation*}
     P' P f  \ =\  \langle \pproj_1 \after f, (1 \after \pproj_1 \after f)^\perp\rangle \ =\  (\kappa_1 \after \pproj_1 \after f) \ovee (\kappa_2 \after \pproj_1 \after f)^\perp\ =\  f.
 \end{equation*}
-\begin{point}{$\Tot \Par C \cong C$}%
+\begin{point}{40}{$\Tot \Par C \cong C$}%
 Assume~$C$ is an effectus in total form.
 Recall~$1 \hafter \hat{g} = 1$
 and~$\smash{\widehat{f \after g}} = \hat{f} \hafter \hat{g}$,
@@ -1893,8 +1893,8 @@ It is an isomorphism by the first part of \sref{pardp}:
 \end{point}
 \end{parsec}
 
-\begin{parsec}%
-\begin{point}[distinction-part-tot-eff]{Exercise}%
+\begin{parsec}{1890}%
+\begin{point}{10}[distinction-part-tot-eff]{Exercise}%
 In this exercise we will
     distinguish effectuses in total and partial form.
 \begin{enumerate}
@@ -1908,7 +1908,7 @@ Conclude that if~$C$ is both an effectus in total and partial form,
 then every object in~$C$ is isomorphic to~$0$.
 \end{enumerate}
 \end{point}
-\begin{point}[eff-convention]{Convention}%
+\begin{point}{20}[eff-convention]{Convention}%
 For the remainder of this text, we will work with effectuses in partial form
     and write~$1$ instead of~$I$.
 To spare ink, a phrase like ``let $C$ be an \Define{effectus}''
@@ -1927,11 +1927,11 @@ As before, when we took the effectus in partial form as base category,
 \end{parsec}
 
 \subsection{Predicates, states and scalars}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1900}%
+\begin{point}{10}%
 We turn to the internal structures of an effectus.
 \end{point}
-\begin{point}[dfn-mandso]{Definition}%
+\begin{point}{20}[dfn-mandso]{Definition}%
 Let~$C$ be an effectus (in partial form).
 \begin{enumerate}
 \item
@@ -1991,7 +1991,7 @@ An effectus~$C$ has \Define{separating predicates}
         is jointly epic for every~$X$ in~$C$.
 \end{enumerate}
 \end{point}
-\begin{point}{Example}%
+\begin{point}{30}{Example}%
     The category~$\op\vN$ (see \sref{effectus-vn})
     is a real effectus ($M \cong [0,1]$)
     with separating states and predicates.
@@ -2000,24 +2000,24 @@ The predicates on a von Neumann algebra~$\scrA$
     and~$\Stat \scrA$ can be identified with the convex set of normal states.
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1910}%
+\begin{point}{10}%
 Does every effect monoid~$M$ occur as the effect monoid of scalars of some
     effectus?  Does every $M$-effect module occur as
         effect module of predicates?
 We will show they do, in the following strong sense.
 \end{point}
-\begin{point}[emod-effectus]{Theorem}%
+\begin{point}{20}[emod-effectus]{Theorem}%
     Let~$M$ be any effect monoid.
     The category~$\EMod^{\mathsf{op}}_M$ is an effectus in total form
         with scalars~$M$.
 In fact: every effectus~$C$ in total form
     with scalars~$M$ and separating predicates
     is equivalent to a subcategory of~$\EMod^{\mathsf{op}}_M$.
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 To show~$\EMod^{\mathsf{op}}_M$ is an effectus,
     we have to show the dual  axioms for~$\EMod_M$.
-\begin{point}{Finite products}%
+\begin{point}{40}{Finite products}%
 For every~$M$-effect module~$E$,
     there is a unique $M$-effect module map~$!\colon M \to E$,
     which is given by~$\lambda \mapsto \lambda \cdot 1$.
@@ -2033,7 +2033,7 @@ The effect module~$E \times F$
     is the categorical product of~$E$ and~$F$ in~$\EMod_M$
     (as is the case with effect algebras, see \sref{ea-product}).
 \end{point}
-\begin{point}{Pushout diagrams}%
+\begin{point}{50}{Pushout diagrams}%
 To show the pushout diagrams corresponding to \eqref{pullbacks} hold,
 assume we are given $M$-effect modules~$E,F,G$
     with module maps~$\alpha,\beta,\delta$
@@ -2099,7 +2099,7 @@ Obviously~$g$ is the unique such map.
 Thus the right square of~\eqref{pullbacks}
     is a pullback in~$\EMod_M^{\mathsf{op}}$.
 \end{point}
-\begin{point}{Joint epicity}%
+\begin{point}{60}{Joint epicity}%
 To show~$\EMod^{\mathsf{op}}_M$ is an effectus,
     it only remains to be shown
     that~$
@@ -2124,7 +2124,7 @@ we have~$(\lambda_1,\lambda_2,\lambda_3)
                 \ovee \lambda_3\cdot (0,0,1)$
     we get~$f=g$.
 \end{point}
-\begin{point}{Representation}%
+\begin{point}{70}{Representation}%
 Let~$C$ be an effectus in total form.
 Clearly $\Pred f = \Pred g $ (for~$f,g\colon X \to Y$ in~$C$)
 if and only if~$p \after f = (\Pred f)(p)= (\Pred g)(p) = p \after g$
@@ -2139,13 +2139,13 @@ So if~$C$ has separating predicates,
 \end{point}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1920}%
+\begin{point}{10}%
 We studied the structure of predicates in an effectus.  What about the states?
 They will turn out to form an abstract~$M$-convex set.
 Before we define these, we introduce a generalized distribution monad.
 \end{point}
-\begin{point}{Definition}%
+\begin{point}{20}{Definition}%
 Let~$M$ be an effect monoid
     and~$X$ be any set.
 A \Define{formal $M$-convex combination} over~$X$
@@ -2161,7 +2161,7 @@ We write~$\Define{\mathcal{D}_M} X$
     \index{$\mathcal{D}_M$}
     for the set of all formal~$M$-convex combinations over~$X$.
 \end{point}
-\begin{point}{Exercise*}%
+\begin{point}{30}{Exercise*}%
     In this exercise you study~$\mathcal{D}_M$ as a monad.
     See \cite{probdistrconv,basmsc}.
 \begin{enumerate}
@@ -2199,7 +2199,7 @@ Show that~$(\mathcal{D}_M, \eta,\mu)$
     with~$M$ as scalars.
 \end{enumerate}
 \end{point}
-\begin{point}{Definition}%
+\begin{point}{40}{Definition}%
 Let~$X$ be a set together
     with a map~$h\colon \mathcal{D}_M X \to X$.
 We say~$(X,h)$ is an \Define{abstract $M$-convex set}
@@ -2246,7 +2246,7 @@ provided
 \end{equation*}
     for any~$x_1,x_2,y \in X$ and~$\lambda \in M, \lambda \neq 1$.
 \end{point}
-\begin{point}{Examples}%
+\begin{point}{50}{Examples}%
 We give some examples of abstract convex sets.
 \begin{enumerate}
 \item
@@ -2344,7 +2344,7 @@ Every cancellative~$[0,1]$-convex set
     is isomorphic to a convex subset of a real vector space.
     See e.g.~\cite[Thm.~8]{statesofconvexsets}.
 \end{enumerate}
-\begin{point}{Remarks}%
+\begin{point}{60}{Remarks}%
 The study of
     convex subsets (of real vector spaces)
     as algebraic structures goes back a long time,
@@ -2360,7 +2360,7 @@ For the even more exotic abstract~$M$-convex
         \cite{probdistrconv}.
 \end{point}
 \end{point}
-\begin{point}{Proposition}%
+\begin{point}{70}{Proposition}%
 Let~$C$ be an effectus with scalars~$M$.
 For any object~$X$, the set of states
 $\Stat X$ is an abstract $M^{\mathsf{op}}$-convex set
@@ -2374,7 +2374,7 @@ Furthermore,
     the map~$ (\Stat f)(\varphi) \ = \ f \after \varphi$
     is an~$M^{\mathsf{op}}$-affine map~$\Stat X \to \Stat Y$ yielding a
     functor~$\Stat \colon \Tot C \to \mathsf{AConv}_{M^{\mathsf{op}}}$.
-\begin{point}{Proof}%
+\begin{point}{80}{Proof}%
 Clearly~$h(\ket{\varphi}) = \varphi$.
 To show the other axiom~\eqref{convex-mult},
 assume we have any~$\bigovee^n_{i=1} \sigma_i \ket{\bigovee^{m_i}_{j=1} \lambda_{ij} \ket{\varphi_{ij}}}$
@@ -2419,8 +2419,8 @@ for every~$\bigovee_i \lambda_i \ket{\varphi_i}$
 \end{parsec}
 
 \subsection{More on abstract $M$-convex sets}\label{more-aconvm}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1930}%
+\begin{point}{10}%
 For our next project,
     we indulge ourselves in a tangent:
     we investigate whether the category~$\AConvM$ is an effectus.
@@ -2432,7 +2432,7 @@ The first step is to study the coproduct in~$\AConvM$.
 To construct the coproduct, we will need to know
     about quotients of abstract~$M$-convex sets.
 \end{point}
-\begin{point}[aconv-cong]{Exercise}%
+\begin{point}{20}[aconv-cong]{Exercise}%
 In this exercise you construct the quotient of an
     abstract~$M$-convex set by a congruence.
 Assume~$(X,h)$ is an abstract~$M$-convex set
@@ -2472,13 +2472,13 @@ Conclude that~$(X/_\sim,h_\sim)$ is an abstract~$M$-convex set
     and that the qoutient map~$q\colon X \to X/_\sim$ is~$M$-affine.
 \end{enumerate}
 \end{point}
-\begin{point}[affine-kernel-cong]{Exercise}%
+\begin{point}{30}[affine-kernel-cong]{Exercise}%
 Assume~$f\colon X \to Y$ is an affine map between abstract
     $M$-convex sets.
 Show that the kernel~$\{(x,y);\ f(x) = f(y)\}$ of~$f$
     is a congruence.
 \end{point}
-\begin{point}[least-conv-cong]{Exercise}%
+\begin{point}{40}[least-conv-cong]{Exercise}%
 Assume~$(X,h)$ is an abstract~$M$-convex set and~$R \subseteq X^2$
     is some relation.
 It is easy to see there is a least congruence containing~$R$.
@@ -2523,7 +2523,7 @@ Show that if~$\varphi \approx \psi$,
 Conclude~$\sim$ is the smallest congruence containing~$R$.
 \end{enumerate}
 \end{point}
-\begin{point}[aconv-coprod]{Proposition}%
+\begin{point}{50}[aconv-coprod]{Proposition}%
 Assume~$(X,h_X)$ and~$(Y,h_Y)$
     are abstract~$M$-convex sets.
     We will construct their coproduct.
@@ -2551,7 +2551,7 @@ Define~$c_1 \colon X \to C$ and~$c_2 \colon Y \to C$
 
 Then: $c_1 \colon X \to C \leftarrow Y \colon c_2$
 is a coproduct of~$X$~and~$Y$ in~$\AConvM$.
-\begin{point}{Proof}%
+\begin{point}{60}{Proof}%
 We start with the affinity of the coprojections:
 \begin{alignat*}{2}
     c_1 \after h_X & \ = \ 
@@ -2564,7 +2564,7 @@ We start with the affinity of the coprojections:
     & \ =\  \mu \after \mathcal{D}_M c_1,
 \end{alignat*}
 so~$c_1$ is affine. With similar reasoning, we see~$c_2$ is affine.
-\begin{point}%
+\begin{point}{70}%
 Assume~$f\colon X \to Z$ and~$g\colon Y \to Z$
     are two affine maps to some abstract~$M$-convex set~$(Z,h_Z)$.
 We want to show~$h_Z \after \mathcal{D}_M [f,g]$
@@ -2609,7 +2609,7 @@ Now
 \end{align*}
 and similarly~$k \after c_2 = g$.
 \end{point}
-\begin{point}%
+\begin{point}{80}%
 Only uniqueness of~$k$ remains.
 So assume~$k'\colon C \to Z$ is an affine map
     such that~$k' \after c_1 = f$
@@ -2632,7 +2632,7 @@ We turn the wheel:
 So~$k = k'$ by surjectivity of~$q$. \qed
 \end{point}
 \end{point}
-\begin{point}[elements-coprod-conv]{Remark}%
+\begin{point}{90}[elements-coprod-conv]{Remark}%
 The existence of coproducts of abstract~$M$-convex sets already
     follows from the more general theorem of Linton \cite{linton}.
     (Cf.~\cite{barr}.)
@@ -2698,7 +2698,7 @@ and~$\varphi_{(i+1)j} = (\mathcal{D}_M\kappa_2) (\chi')$
 \end{enumerate}
 \end{point}
 \end{point}
-\begin{point}[n-times-one-aconvm]{Exercise}%
+\begin{point}{100}[n-times-one-aconvm]{Exercise}%
 Show that the one-element set is an abstract~$M$-convex set
     and, in fact, the final object of~$\AConvM$.
 To continue, show that in~$\AConvM$
@@ -2711,11 +2711,11 @@ To continue, show that in~$\AConvM$
 \end{point}
 \end{parsec}
 
-\begin{parsec}%
-\begin{point}[aconvalmosteffectus]{Proposition}%
+\begin{parsec}{1940}%
+\begin{point}{10}[aconvalmosteffectus]{Proposition}%
 The category~$\AConvM$ obeys all the axioms of an effectus in total
 form except for the left pullback square of~\eqref{pullbacks}.
-\begin{point}{Proof}%
+\begin{point}{20}{Proof}%
 In \sref{aconv-coprod} we proved~$\AConvM$ has binary coproducts
     and in \sref{n-times-one-aconvm}
     that the one-element set~$1$ is its final object.
@@ -2723,7 +2723,7 @@ As~$\mathcal{D}_M \emptyset = \emptyset$,
     the empty set trivially also an abstract~$M$-convex set
     and in fact the initial object of~$\AConvM$.
 \end{point}
-\begin{point}%
+\begin{point}{30}%
 We continue with joint monicity
     of~$[\kappa_1,\kappa_2,\kappa_2],
     [\kappa_2,\kappa_1,\kappa_2]\colon 1+1+1 \to 1+1$.
@@ -2752,7 +2752,7 @@ Then clearly~$a=a'$,~$b=b'$
 Thus the maps~\eqref{conv-jointly-monic} are jointly injective,
     hence jointly monic.
 \end{point}
-\begin{point}%
+\begin{point}{40}%
 Finally, we prove that the square on the right of \eqref{pullbacks}
     is a pullback in~$\AConvM$.
 \begin{equation*}
@@ -2801,7 +2801,7 @@ $ and
 so indeed~$\gamma(h_Z(\varphi)) = h_X(\mathcal{D}_M \gamma (\varphi))$
     --- i.e.~$\gamma$ is affine.
 \end{point}
-\begin{point}%
+\begin{point}{50}%
 Finally, we will show that~$\kappa_1$ is indeed injective.
 Assume~$\kappa_1(x_0) = \kappa_1(x'_0)$
 for some~$x_0,x'_0 \in X$.
@@ -2924,14 +2924,14 @@ Now~\eqref{eqkappainj} follows from~$h_X(\chi) = h_X(\chi')$. \qed
 \end{point}
 \end{parsec}
 
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1950}%
+\begin{point}{10}%
 It is unclear whether the left square of~\eqref{pullbacks}
     is a pullback in~$\AConvM$.
 We will see that it is, if we assume that~$M$ has
         a partial division in the following sense.
 \end{point}
-\begin{point}[dfn-effect-divisoid]{Definition}%
+\begin{point}{20}[dfn-effect-divisoid]{Definition}%
 An \Define{effect divisoid}
     \index{effect divisoid}
     is an effect monoid~$M$
@@ -2946,11 +2946,11 @@ An \Define{effect divisoid}
 \item~$a \ \leq \ \rfrac{a}{a}$
 \item~$\rfrac{(\rfrac{a}{a})}{(\rfrac{a}{a})} \ =\  \rfrac{a}{a}$
 \end{enumerate}
-\begin{point}{Remark}%
+\begin{point}{30}{Remark}%
 The element~$\rfrac{a}{a}$ behaves like a support-projection for~$a$.
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{40}{Exercise}%
 Show that for an effect divisoid~$M$, the following holds.
 \begin{enumerate}
 \item
@@ -2961,7 +2961,7 @@ Show that for an effect divisoid~$M$, the following holds.
     we have~$\rfrac{b}{c} \odot \rfrac{a}{b} = \rfrac{a}{c}$.
 \end{enumerate}
 \end{point}
-\begin{point}{Examples}%
+\begin{point}{50}{Examples}%
 Almost all effect monoids we encountered
     are effect divisoids.
 \begin{enumerate}
@@ -2997,7 +2997,7 @@ The effect monoid on the unit interval of~$C[0,1]$
     is, see \sref{basic-divisoid-equiv}.
 \end{enumerate}
 \end{point}
-\begin{point}[basic-divisoid-equiv]{Exercise*}%
+\begin{point}{60}[basic-divisoid-equiv]{Exercise*}%
 Let~$X$ be a compact Hausdorff space.
 In this exercise you will show
     that the unit interval of~$C(X)$
@@ -3048,10 +3048,10 @@ Prove that this partial division turns the unit interval of~$C(X)$
 \end{enumerate}
 
 \end{point}
-\begin{point}{Proposition}%
+\begin{point}{70}{Proposition}%
 If $a \perp b$ and~$a \ovee b \leq c$ in an effect divisoid,
 then~$\rfrac{a \ovee b}{c } = \rfrac{a}{c} \ovee \rfrac{b}{c}$.
-\begin{point}{Proof}%
+\begin{point}{80}{Proof}%
 We will first show that if~$c \odot a \perp c \odot b$,
     then~$\rfrac{c}{c} \odot a \perp \rfrac{c}{c}\odot b$.
 To start,
@@ -3073,7 +3073,7 @@ Hence~$(\rfrac{c}{c}\odot b)^\perp
             \geq \rfrac{c}{c \odot a}
             = \rfrac{c}{c} \odot a $.
     Indeed:~$\rfrac{c}{c}\odot a \perp \rfrac{c}{c} \odot b$.
-\begin{point}%
+\begin{point}{90}%
 Assume~$a\perp b$ and~$a\ovee b \leq c$. 
 Clearly~$c \odot \rfrac{a}{c}  = a \perp b = c \odot \rfrac{b}{c}$.
 By our initial lemma, we get
@@ -3095,16 +3095,16 @@ as desired. \qed
 \end{point}
 \end{parsec}
 
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1960}%
+\begin{point}{10}%
 The following is a generalization
 of~\cite[Prop.~C.3]{kentapartial}.
 See also~\cite[Prop.~15]{statesofconvexsets}.
 \end{point}
-\begin{point}{Theorem}%
+\begin{point}{20}{Theorem}%
 If~$M$ is an effect divisoid,
     then~$\AConvM$ is an effectus.
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 We only have to show that the square on the left
     of \eqref{pullbacks} is a pullback in~$\AConvM$
     --- the other axioms were proven in \sref{aconvalmosteffectus}.
@@ -3165,7 +3165,7 @@ $x'_i \in X$ and $y'_i \in Y$ be (other) elements such that
         \beta(z) &\ =\  h_2 \Bigl(\sigma'_0 \ket{\kappa_2(\cdot)}
     \ovee \bigovee^{m'}_{i=1} \sigma'_i \ket{\kappa_1(x'_i)}\Bigr).
 \end{align*}
-\begin{point}%
+\begin{point}{40}%
 We have to show
 \begin{multline}\label{convexpulgoal}
     h_3 \Bigl(
@@ -3311,7 +3311,7 @@ and in a similar fashion
 \end{align*}
 So~$\Omega_i$ is a valid derivation of \eqref{convexpulgoal}.
 \end{point}
-\begin{point}%
+\begin{point}{50}%
 We are in the home stretch now.
 Define~$\gamma(z)$ as in \eqref{aconvmexpuldefgamma}.
 It is easy to see~$\gamma$
@@ -3383,12 +3383,12 @@ as desired. \qed
 \end{parsec}
 
 \section{Effectus with quotients}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1970}%
+\begin{point}{10}%
 We are ready to introduce our first additional axiom:
     the existence of quotients.
 \end{point}
-\begin{point}[dfn-quotient]{Definition}%
+\begin{point}{20}[dfn-quotient]{Definition}%
 Let~$C$ be an effectus.
 We say~$C$ is an \Define{effectus with quotients}
     \index{effectus!with quotients}
@@ -3405,12 +3405,12 @@ We say~$C$ is an \Define{effectus with quotients}
 Any  map with this universal property
     is called a \Define{quotient} for~$p$.
     \index{quotient}
-\begin{point}[quot-not]{Notation}%
+\begin{point}{30}[quot-not]{Notation}%
 Unless otherwise specified~$\xi_p$ will be some
     quotient for~$p$.
 \end{point}
 \end{point}
-\begin{point}{Example}%
+\begin{point}{40}{Example}%
 In~$\op{\vN}$ quotients are exactly the same thing
     as contractive filters,
     see~\sref{dils-def-filter}, \sref{filter}
@@ -3419,7 +3419,7 @@ An example of a quotient map for~$1-a \in \scrA$ is given
     by~$\xi\colon \ceil{a}\scrA \ceil{a} \to \scrA$
     with~$\xi(b) = \sqrt{a} b \sqrt{a}$.
 \end{point}
-\begin{point}[quotient-basics]{Exercise}%
+\begin{point}{50}[quotient-basics]{Exercise}%
 Verify the following basic properties of quotients.
 \begin{enumerate}
     \item If~$\xi\colon X \to Y$ is a quotient for~$p$
@@ -3436,20 +3436,20 @@ Verify the following basic properties of quotients.
                 (Hint: apply the universal property to $p^\perp$).
     \item Quotients are epic.
 \end{enumerate}
-\begin{point}%
+\begin{point}{60}%
 The following proposition is easy to prove,
     but shows an important property of quotients:
     any map~$f$ factors as a total map after a quotient
     for~$(1\after f)^\perp$.
 \end{point}
 \end{point}
-\begin{point}[quotient-total]{Proposition}%
+\begin{point}{70}[quotient-total]{Proposition}%
 Assume~$\xi_{p^\perp} \colon X \to X/_{p^\perp}$ is a quotient for~$p^\perp$.
 For any~$f\colon X \to Z$
     with~$1 \after f = p$,
     there is a unique \emph{total} $g\colon X/_{p^\perp} \to Z$
     with~$f = g \after \xi_{p^\perp}$.
-\begin{point}{Proof}%
+\begin{point}{80}{Proof}%
 By definition of quotient, there is a unique~$g\colon X/_{p^\perp} \to Z$
     with~$g \after \xi_{p^\perp} = f$.
 Note~$1 \after g \after \xi_{p^\perp} = 1 \after f = p = 1 \after \xi_{p^\perp}$.
@@ -3458,10 +3458,10 @@ Thus, as~$\xi_{p^\perp}$ is epi (\sref{quotient-basics}),
 That is: $g$ is total. \qed
 \end{point}
 \end{point}
-\begin{point}[quotients-composition]{Proposition}%
+\begin{point}{90}[quotients-composition]{Proposition}%
 In an effectus with quotients,
     quotients are closed under composition.
-\begin{point}{Proof}%
+\begin{point}{100}{Proof}%
 Assume~$\xi_1\colon X \to Y$ is a quotient for~$p^\perp$
     and~$\xi_2\colon Y \to Z$ is a quotient for~$q^\perp$.
 We will prove~$\xi_2 \after \xi_1$
@@ -3499,7 +3499,7 @@ Thus~$\xi_2 \after \xi_1 = g \after \xi$ for an isomorphism~$g$,
 which shows~$\xi_2 \after \xi_1$ is a quotient, see \sref{quotient-basics}. \qed
 \end{point}
 \end{point}
-\begin{point}[quot-fact-system]{Exercise}
+\begin{point}{110}[quot-fact-system]{Exercise}
 By \sref{quotient-total} we know that each
     map~$f$ in an effectus with quotients factors as~$t \after \xi$
     for some total map~$t$ and quotient~$\xi$.
@@ -3512,8 +3512,8 @@ Show that this forms an orthogonal factorization system (cf.~\cite{korostenski19
 \end{point}
 \end{parsec}
 
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1980}%
+\begin{point}{10}%
 In \sref{quot-fact-system} we saw
     that every  map~$f$
     factors uniquely via a quotient for~$(1 \after f)^\perp$.
@@ -3521,7 +3521,7 @@ In this sense quotients are the universal way to restrict to the
     support on the domain --- so why do we call them quotients
     instead of, say, initial-support-maps?
 \end{point}
-\begin{point}[dfn-eff-grothendieck]{Definition}%
+\begin{point}{20}[dfn-eff-grothendieck]{Definition}%
 For an effectus~$C$,
     write~$\Define{\int \Pred_\square}$
     \index{$\int \Pred_\square$}
@@ -3545,7 +3545,7 @@ The functor~$U$ has left- and right-adjoint
     given by~$0X = (X,0)$, $1X = (X,1)$
     and~$0f=1f=f$.
 \end{point}
-\begin{point}{Exercise*}%
+\begin{point}{30}{Exercise*}%
 Show that for an effectus~$C$, the following are equivalent.
 \begin{enumerate}
 \item $C$ has quotients.
@@ -3553,7 +3553,7 @@ Show that for an effectus~$C$, the following are equivalent.
         has a left-adjoint~$Q \colon \int\Pred_\square \to C$.
 \end{enumerate}
 \end{point}
-\begin{point}%
+\begin{point}{40}%
 If the existence of a left adjoint~$Q$ to~$0$
     gives quotients,
     what does the existence of a right adjoint~$K$ to~$1$ amount to?
@@ -3582,11 +3582,11 @@ There are numerous other examples
 \end{parsec}
 
 \section{Effectus with comprehension and images}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1990}%
+\begin{point}{10}%
 We continue with our second axiom.
 \end{point}
-\begin{point}[dfn-comprehension]{Definition}%
+\begin{point}{20}[dfn-comprehension]{Definition}%
 Let~$C$ be an effectus.
 We say~$C$ \Define{has comprehension}
     \index{effectus!with comprehension}
@@ -3603,18 +3603,18 @@ We say~$C$ \Define{has comprehension}
 Any  map with this universal property
     is called a \Define{comprehension} for~$p$.
     \index{comprehension}
-\begin{point}{Beware}%
+\begin{point}{30}{Beware}%
     We do not assume comprehensions are total
     (in contrast to~\cite{effintro}).
     In~\sref{compr-total} we will see that
     in an effectus with quotients, comprehensions must be total.
 \end{point}
-\begin{point}[compr-not]{Notation}%
+\begin{point}{40}[compr-not]{Notation}%
 Unless otherwise specified~$\pi_p$ will be some
     comprehension of~$p$.
 \end{point}
 \end{point}
-\begin{point}{Example}%
+\begin{point}{50}{Example}%
 In~$\op{\vN}$ comprehensions are exactly the same thing
     as corners, see \sref{dils-corner} or \sref{corner}.
 An example of a comprehension for~$a \in \scrA$
@@ -3622,13 +3622,13 @@ An example of a comprehension for~$a \in \scrA$
     with~$\pi(b) = \floor{a}b\floor{a}$
     as proven in \sref{prop-corner}.
 \end{point}
-\begin{point}[compr-grothendieck]{Exercise*}%
+\begin{point}{60}[compr-grothendieck]{Exercise*}%
     Show that an effectus~$C$ has comprehension if and only
         if the functor~$1 \colon C \to \int \Pred_\square$
         from \sref{dfn-eff-grothendieck}
         has a right adjoint~$K$.
 \end{point}
-\begin{point}[compr-basics]{Exercise}%
+\begin{point}{70}[compr-basics]{Exercise}%
 Show the following basic properties of comprehensions.
 \begin{enumerate}
     \item If~$\pi\colon X \to Y$ is a comprehension for~$p$
@@ -3647,11 +3647,11 @@ Show the following basic properties of comprehensions.
 \end{point}
 \end{parsec}
 
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{2000}%
+\begin{point}{10}%
 Comprehensions and kernels are very similar.
 \end{point}
-\begin{point}{Definition}%
+\begin{point}{20}{Definition}%
 Let~$C$ be a category with a zero object.
 A \Define{kernel}~of an arrow~$f$
     \index{kernel!category theoretic}
@@ -3666,12 +3666,12 @@ We will use \Define{$\cok f$}
     to denote a cokernel of~$f$
     --- that is: a kernel of~$f$ in~$\op{C}$.
 \end{point}
-\begin{point}[effectus-kernels]{Proposition}%
+\begin{point}{30}[effectus-kernels]{Proposition}%
 An effectus with comprehension has all kernels.
     The kernel of a map~$f$ is given by
         a comprehension~$\pi_{(1 \after f)^\perp}$
         for~$(1 \after f)^\perp$.
-\begin{point}{Proof}%
+\begin{point}{40}{Proof}%
 Clearly~$1 \after f \after \pi_{(1 \after f)^\perp} = 0$
     and so~$f \after \pi_{(1 \after f)^\perp} = 0$.
 Assume~$g$ is some other map with~$f \after g = 0$.
@@ -3681,30 +3681,30 @@ Thus there exists a unique~$g'$
     with~$\pi_{(1 \after f)^\perp} \after g' = g$. \qed
 \end{point}
 \end{point}
-\begin{point}[compr-is-kernel]{Exercise}%
+\begin{point}{50}[compr-is-kernel]{Exercise}%
 Show that in an effectus,
     a map~$f$ is a comprehension for~$p$
     if and only if it is a kernel of~$p^\perp$.
 \end{point}
 \end{parsec}
 
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{2010}%
+\begin{point}{10}%
 We are ready to define purity in effectuses.
 \end{point}
-\begin{point}{Definition}%
+\begin{point}{20}{Definition}%
 In an effectus a map~$f$ is called \Define{pure}
     \index{pure!in an effectus}
     if~$f = \pi \after \xi$
     for some comprehension~$\pi$
     and quotient~$\xi$.
 \end{point}
-\begin{point}{Example}%
+\begin{point}{30}{Example}%
 In $\op{\vN}$ the pure maps~$\scrB(\scrH) \to \scrB(\scrK)$
     are exactly the maps of the form~$\ad_T$
     where~$T$ is a contractive map~$\scrK \to \scrH$.
 \end{point}
-\begin{point}{Remark}%
+\begin{point}{40}{Remark}%
 In the previous chapter
     we discussed (in \sref{dils-pure-discussion})
     why some more familiar notions of purity for states,
@@ -3728,14 +3728,14 @@ The exact relation between
     and \cite{cunningham2017purity,selby2017leaks}
     is left open.
 \end{point}
-\begin{point}%
+\begin{point}{50}%
 We do not have a good handle on the structure of pure maps in
     an arbitrary effectus.  We will need a few additional assumptions.
 \end{point}
 \end{parsec}
 
-\begin{parsec}%
-\begin{point}{Definition}%
+\begin{parsec}{2020}%
+\begin{point}{10}{Definition}%
 Let~$C$ be an effectus.
 \begin{enumerate}
 \item
@@ -3760,17 +3760,17 @@ That is: $f$ is faithful if and only if
     $p \after f = 0$ implies~$p = 0$
     for every predicate~$p$.
 \end{enumerate}
-\begin{point}{Notation}%
+\begin{point}{20}{Notation}%
 The expression~$\IM f \after g$
     is read as~$\IM (f \after g)$.
 \end{point}
-\begin{point}%
+\begin{point}{30}%
 The predicate~$\IM f$ will play for comprehension the same role
     as~$1 \after f$ plays for quotients.
 Similarly faithful is the analogue of total.
 \end{point}
 \end{point}
-\begin{point}{Example}%
+\begin{point}{40}{Example}%
 In $\op{\vN}$ the image of a map~$f\colon \scrA \to \scrB$
     is given by the least projection~$e \in \scrA$
     with the property~$f(1-e) = 0$.
@@ -3778,24 +3778,24 @@ The map~$f$ is faithful if and only
     if~$f(a^*a)=0$ implies~$a^*a = 0$
     for all~$a\in \scrA$.
 \end{point}
-\begin{point}[im-ineq]{Exercise}%
+\begin{point}{50}[im-ineq]{Exercise}%
 Show~$\IM f \after g \leq \IM f$.
 Conclude~$\IM f \after \alpha = \IM f$
     for any iso~$\alpha$.
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{60}{Exercise}%
 Show that in an effectus, any quotient is faithful.
 \end{point}
-\begin{point}%
+\begin{point}{70}%
 In contrast to quotients,
     it is not clear at all whether (without additional assumptions)
     comprehensions are total;
     they are part of a factorization system
     or are closed under composition.
 \end{point}
-\begin{point}[compr-total]{Lemma}%
+\begin{point}{80}[compr-total]{Lemma}%
 In an effectus with quotients, comprehensions are total.
-\begin{point}{Proof}%
+\begin{point}{90}{Proof}%
 Assume~$\pi$ is some comprehension for~$p$.
 Let~$\xi$ be a quotient for~$(1 \after \pi)^\perp$.
 There is a total~$\pi_t$ with~$\pi = \pi_t \after \xi$.
@@ -3815,8 +3815,8 @@ Hence~$1 = 1 \after \id =1 \after f \after \xi \leq 1 \after \xi = 1 \after \pi$
 \end{point}
 \end{parsec}
 \subsection{Sharp predicates}
-\begin{parsec}%
-\begin{point}{Definition}%
+\begin{parsec}{2030}%
+\begin{point}{10}{Definition}%
 Let~$C$ be an effectus with comprehension and images.
 \begin{enumerate}
 \item
@@ -3832,7 +3832,7 @@ Let~$C$ be an effectus with comprehension and images.
 Also write~$\Define{\ceil{p}} = \floor{p^\perp}^\perp$.
     \index{*floorc@$\ceil{\ }$, ceiling}
 \end{enumerate}
-\begin{point}{Beware}%
+\begin{point}{20}{Beware}%
 In \cite{effintro} $p$ is called sharp whenever~$p \wedge p^\perp=0$.
 In general this is weaker than image-sharpness, which we use in this text.
 In~\sref{floor-basics}
@@ -3841,13 +3841,13 @@ It is unclear whether~$\ceil{p}$ is sharp (without additional
     assumptions).
 \end{point}
 \end{point}
-\begin{point}{Example}%
+\begin{point}{30}{Example}%
 In $\op{\vN}$ the sharp predicates are the projections.
 For a predicate~$a \in \scrA$,
     the sharp predicate~$\ceil{a}$
     is the least projection above~$a$.
 \end{point}
-\begin{point}[floor-basics]{Lemma}%
+\begin{point}{40}[floor-basics]{Lemma}%
 In an effectus with comprehension and images, we have
 \begin{multicols}{2}
 \begin{enumerate}
@@ -3870,14 +3870,14 @@ In an effectus with comprehension and images, we have
     predicates~$p,q$ on~$X$ and
 $\pi_p$ and~$\pi_{\floor{p}}$
     comprehensions for~$p$ and~$\floor{p}$ respectively.
-\begin{point}{Proof}%
+\begin{point}{50}{Proof}%
 We will prove the statements in listed order.
-\begin{point}{Ad 1}%
+\begin{point}{60}{Ad 1}%
     Let~$\pi$ be a comprehension for~$p$.
     By definition~$p \after \pi = 1 \after \pi$.
     Thus~$\floor{p} = \IM \pi \leq p$, as desired.
 \end{point}
-\begin{point}{Ad 2}%
+\begin{point}{70}{Ad 2}%
 It is sufficient to show~$\pi_p$ is a comprehension for~$\floor{p}$.
 First, note~$\floor{p}\after \pi_p = (\IM \pi_p) \after \pi_p = 1 \after \pi_p$.
 To show the universal property,
@@ -3889,10 +3889,10 @@ As~$\pi_p$ is a comprehension for~$p$,
     there is a unique~$g'$ with~$\pi_p \after  g' = g$
     and so~$\pi_p$ is indeed a comprehension for~$\floor{p}$ as well.
 \end{point}
-\begin{point}{Ad 3}%
+\begin{point}{80}{Ad 3}%
 Follows from the previous point and \sref{im-ineq}.
 \end{point}
-\begin{point}{Ad 4}%
+\begin{point}{90}{Ad 4}%
 Pick a comprehension~$\pi_p$ for~$p$ and~$\pi_q$ for~$q$.
 Note~$1 \after \pi_p = p \after \pi_p
                 \leq q \after \pi_p \leq 1 \after \pi_p $
@@ -3901,7 +3901,7 @@ and thus~$\pi_p = \pi_q \after f$ for some~$f$.
 By~\sref{im-ineq}
     we see~$\floor{p} = \IM \pi_p = \IM \pi_q \after f \leq \IM \pi_q = \floor{q}$.
 \end{point}
-\begin{point}{Ad 5}%
+\begin{point}{100}{Ad 5}%
 Clearly~$p \after f \after \pi_{(p \after f)^\perp} = 0$.
 (Recall our convention \sref{compr-not} for $\pi$'s.)
 Thus there is some~$h$
@@ -3919,7 +3919,7 @@ By point 2 there is some (isomorphism)~$\alpha$
 Thus~$\ceil{p} \after f \leq \IMperp \pi_{(p \after f)^\perp}
 = \lfloor(p \after f)^\perp\rfloor^\perp = \ceil{p \after f}$, as promised.
 \end{point}
-\begin{point}{Ad 6}%
+\begin{point}{110}{Ad 6}%
 Assume~$\ceil{p}\after f = 0$.
 From~$p \leq \ceil{p}$
 it follows~$p \after f \leq \ceil{p} \after f = 0$.
@@ -3931,18 +3931,18 @@ Then~$\ceil{p \after f} = \ceil{0} = (\IM \id)^\perp = 0$
 \end{point}
 \end{point}
 \end{point}
-\begin{point}[img-of-compr]{Exercise}%
+\begin{point}{120}[img-of-compr]{Exercise}%
 Let~$C$ be an effectus with comprehension and images.
 Show that~$p$ is sharp if and only if~$\floor{p}= p$.
 Conclude~$\IM \pi_s = s$ for sharp~$s$.
 \end{point}
-\begin{point}[ceiling-within-ceiling]{Exercise}%
+\begin{point}{130}[ceiling-within-ceiling]{Exercise}%
 Show that in an effectus with comprehension and images
     we have the equality
     $\ceil{\ceil{p}\after f} = \ceil{p \after f}$
     for any map~$f\colon X \to Y$ and predicate~$p$ on~$X$.
 \end{point}
-\begin{point}[img-tupling]{Exercise}%
+\begin{point}{140}[img-tupling]{Exercise}%
 Show that in an effectus with
 images~$\IM \left<f,g \right> = [\IM f, \IM g]$.
 Conclude that a predicate~$[p,q]$ is sharp
@@ -3950,8 +3950,8 @@ Conclude that a predicate~$[p,q]$ is sharp
 \end{point}
 \end{parsec}
 
-\begin{parsec}%
-\begin{point}[compr-is-full]{Lemma}%
+\begin{parsec}{2040}%
+\begin{point}{10}[compr-is-full]{Lemma}%
 In an effectus with comprehension and images
     we have
 \begin{equation*}
@@ -3961,7 +3961,7 @@ In an effectus with comprehension and images
     \quad \text{for some $h$},
 \end{equation*}
 for all sharp predicates~$s,t$ on the same object.
-\begin{point}{Proof}%
+\begin{point}{20}{Proof}%
 Assume~$\pi_s = \pi_t \after h$.
 Then
 \begin{equation*}
@@ -3976,10 +3976,10 @@ Then~$t^\perp \after \pi_s \leq s^\perp \after \pi_s = 0$
     for some~$h$ by the universal property of~$\pi_t$. \qed
 \end{point}
 \end{point}
-\begin{point}{Lemma}%
+\begin{point}{30}{Lemma}%
 In an effectus with images,
     we have~$\IM [f,g] = (\IM f) \vee (\IM g)$.
-\begin{point}{Proof}%
+\begin{point}{40}{Proof}%
 We get~$\IM[f,g] \geq \IM f$ and~$\IM[f,g] \geq \IM  g$
     from
 \begin{align*}
@@ -3999,7 +3999,7 @@ Then
     hence~$1 \after [f,g] = p \after [f,g]$
     and so~$p \geq \IM [f,g]$, as desired. \qed
 \end{point}
-\begin{point}[lattice-compr]{Corollary}%
+\begin{point}{50}[lattice-compr]{Corollary}%
 In an effectus with comprehension and images,
 we have for any sharp~$s,t$
     a supremum (among all predicates)
@@ -4009,17 +4009,17 @@ we have for any sharp~$s,t$
 \end{point}
 \end{parsec}
 
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{2050}%
+\begin{point}{10}%
 In \sref{compr-is-kernel} we saw that comprehensions
     are precisely kernels of predicates.
 What about cokernels and quotients?
 \end{point}
-\begin{point}[effectus-cokernels]{Proposition}%
+\begin{point}{20}[effectus-cokernels]{Proposition}%
 An effectus with quotients and images has all cokernels.
 A cokernel of a map~$f$
     is given by a quotient~$\xi_{\IM f}$ of~$\IM f$.
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 As~$0 = (\IMperp f) \after f = 1 \after \xi_{\IM f} \after f$,
         we have~$\xi_{\IM f} \after f = 0$.
     Assume~$g$ is any (other) map with~$g \after f = 0$.
@@ -4029,7 +4029,7 @@ Then~$1 \after g \leq \IMperp f$
 Thus indeed, $\xi_{\IM f}$ is a cokernel of~$f$. \qed
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{40}{Exercise}%
 Show that in an effectus with comprehension and images,
     a map~$f$ is a quotient of sharp~$s$
     if and only if~$f$ is a cokernel
@@ -4039,8 +4039,8 @@ Show that in an effectus with comprehension and images,
 
 \section{\texorpdfstring{$\diamond$-effectus}{%
                     diamond-effectus}}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{2060}%
+\begin{point}{10}%
 In quantum physics it is not uncommon to restrict one's attention
     to sharp predicates (i.e.~projections).
 Does this restriction hurt the expressivity?
@@ -4059,7 +4059,7 @@ The simple idea of taking the restriction to sharp predicates
     seriously, leads to a host of interesting new notions.
 We will give these right of the bat and study their relevance later on.
 \end{point}
-\begin{point}[diamond-basics]{Definition}%
+\begin{point}{20}[diamond-basics]{Definition}%
     A~\Define{$\diamond$-effectus} (``diamond effectus'')
     \index{effectus!$\diamond$-}
     \index{*dia@$\diamond$, diamond!-effectus}
@@ -4104,16 +4104,16 @@ For brevity, write $\Define{f^\BOX(s)} = f^\diamond(s^\perp)^\perp$.
     \index{$(\ )^\BOX$}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{2070}%
+\begin{point}{10}%
 Let's investigate the basic properties of~$(\ )^\diamond$, $(\ )_\diamond$
     and $(\ )^\BOX$.
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{20}{Exercise}%
 Show that in a~$\diamond$-effectus
     both~$f^\diamond$ and~$f^\BOX$ are order preserving maps.
 \end{point}
-\begin{point}[diamond-adjunction]{Proposition}%
+\begin{point}{30}[diamond-adjunction]{Proposition}%
 For~$f\colon X \to Y$ in a~$\diamond$-effectus we have
 \begin{equation}
     f^\diamond(s) \ \leq\  t^\perp
@@ -4122,7 +4122,7 @@ For~$f\colon X \to Y$ in a~$\diamond$-effectus we have
 \end{equation}
 for all sharp~$s,t$.
 In other words: $f_\diamond$ is the left order-adjoint of~$f^\BOX$.
-\begin{point}{Proof}%
+\begin{point}{40}{Proof}%
 To start, let's prove the order-adjunction reformulation
 \begin{equation*}
     f_\diamond(s) \leq t
@@ -4149,7 +4149,7 @@ Then as before (but in the other direction)
                 = \floor{t}^\perp = t^\perp$, as desired. \qed
 \end{point}
 \end{point}
-\begin{point}[order-adj-basics]{Exercise}%
+\begin{point}{50}[order-adj-basics]{Exercise}%
 Use the fact that there is an
 order adjunction between~$f_\diamond$ and $f^\BOX$
 to show that in a~$\diamond$-effectus
@@ -4164,7 +4164,7 @@ to show that in a~$\diamond$-effectus
 \end{enumerate}
 \end{multicols}
 \end{point}
-\begin{point}[diamond-functor]{Lemma}%
+\begin{point}{60}[diamond-functor]{Lemma}%
     In a~$\diamond$-effectus
         $(\ )^\diamond$,
         $(\ )^\BOX$ and
@@ -4188,7 +4188,7 @@ $(\id)_\diamond= \id$ and
             $(f \after g)_\diamond = f_\diamond \after g_\diamond$.
 \end{enumerate}
 \end{multicols}
-\begin{point}{Proof}%
+\begin{point}{70}{Proof}%
 We get~$(\id)^\diamond = \id$
 directly from~\sref{img-of-compr}.
 For 2 we only need a single line:
@@ -4215,8 +4215,8 @@ $(f\after g)_\diamond = f_\diamond \after g_\diamond$. \qed
 \end{point}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}[image-sharp-is-order-sharp]{Lemma}%
+\begin{parsec}{2080}%
+\begin{point}{10}[image-sharp-is-order-sharp]{Lemma}%
 In a $\diamond$-effectus,
 sharp predicates are \Define{order sharp} ---
     \index{sharp!order-}
@@ -4225,7 +4225,7 @@ sharp predicates are \Define{order sharp} ---
     and sharp predicate~$s$
     with~$p \leq s$ and~$p \leq s^\perp$,
     we must have~$p = 0$.
-\begin{point}{Proof}%
+\begin{point}{20}{Proof}%
 Note~$\ceil{p} \leq \ceil{s} = s$
     and~$\ceil{p} \leq \lceil s^\perp\rceil = s^\perp$.
 So by~\sref{compr-is-full},
@@ -4240,18 +4240,18 @@ Thus~$\pi_{\ceil{p}} = 0$
 and so~$p \leq \ceil{p} = \IM\pi_{\ceil{p}} = 0$, as desired.\qed
 \end{point}
 \end{point}
-\begin{point}[diamond-oml]{Proposition (Cho)}%
+\begin{point}{30}[diamond-oml]{Proposition (Cho)}%
 In a~$\diamond$-effectus,
 the poset~$\SPred X$ of sharp predicates on any object~$X$,
 is a sub-effect algebra of~$\Pred X$
 and an orthomodular lattice.
-\begin{point}{Proof}%
+\begin{point}{40}{Proof}%
 Let~$C$ be a~$\diamond$-effectus with some object~$X$.
 We will show~$\SPred X$ is a sub-effect algebra of~$\Pred X$,
     which is additionally an ortholattice.
     By \sref{orth-ea-is-orthomodular} this is sufficient to show
     $\SPred X$ is orthomodular.
-\begin{point}{Ortholattice}%
+\begin{point}{50}{Ortholattice}%
 In \sref{lattice-compr}
     we already saw that sharp~$s,t$ have a sharp supremum
     $s\vee t = \IM [\pi_s,\pi_t]$ 
@@ -4264,7 +4264,7 @@ As any sharp predicate~$s$ is order sharp by \sref{image-sharp-is-order-sharp},
     we find~$s \wedge s^\perp = 0$ (and consequently~$s^\perp \vee s = 1$).
     We have shown~$\SPred X$ is an ortholattice.
 \end{point}
-\begin{point}{Sub-EA}%
+\begin{point}{60}{Sub-EA}%
 Clearly~$0,1$ are sharp and~$s^\perp$ is sharp for sharp~$s$
         by definition of~$\diamond$-effectus.
 To prove~$\SPred X$ is a sub-effect algebra of~$\Pred X$,
@@ -4276,7 +4276,7 @@ Note~$s \wedge t \leq s \wedge s^\perp =0$ as~$\SPred X$ is an ortholattice
     we find~$s \ovee t = s \vee t$, which is indeed sharp. \qed
 \end{point}
 \end{point}
-\begin{point}{Corollary}%
+\begin{point}{70}{Corollary}%
 In an $\diamond$-effectus~$C$
 the assignment~$X\mapsto \SPred X$, ~$f \mapsto (f_\diamond,f^\BOX)$
     yields a functor from~$C$
@@ -4285,17 +4285,17 @@ the assignment~$X\mapsto \SPred X$, ~$f \mapsto (f_\diamond,f^\BOX)$
     with galois connection between them,
     as defined in~\cite{jacobs2009orthomodular}.
 \end{point}
-\begin{point}%
+\begin{point}{80}%
     There is a rather different
     formula for the infima of sharp predicates,
     which will be useful later on.
 \end{point}
 \end{point}
-\begin{point}[spred-infimum]{Lemma}%
+\begin{point}{90}[spred-infimum]{Lemma}%
 In a~$\diamond$-effectus, we have
 $s \wedge t = (\pi_s)_\diamond (\pi_s^\BOX (t))$
     for sharp predicates~$s,t$.
-\begin{point}{Proof}%
+\begin{point}{100}{Proof}%
 It is easy to see
 $(\pi_s)_\diamond (\pi_s^\BOX (t))$ is a lower bound:
 indeed
@@ -4319,12 +4319,12 @@ Hence~$r = (\pi_r)_\diamond(1)
 =  (\pi_s)_\diamond ( \pi_s^\BOX (r))
 \leq  (\pi_s)_\diamond ( \pi_s^\BOX (t))$. \qed
 \end{point}
-\begin{point}{Remark}%
+\begin{point}{110}{Remark}%
 In \cite{effintro} there appears a similar result due to Jacobs,
     which is based on subtly different assumptions.
 \end{point}
 \end{point}
-\begin{point}[spred-sup]{Exercise}%
+\begin{point}{120}[spred-sup]{Exercise}%
 Show that in a~$\diamond$-effectus,
 we have
         $(\xi^\BOX \after \xi_\diamond )(t) = s \vee t$
@@ -4333,11 +4333,11 @@ we have
 \end{point}
 \end{parsec}
 
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{2090}%
+\begin{point}{10}%
 We turn to~$\diamond$-adjointness.
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{20}{Exercise}%
 Show the following basic properties of~$\diamond$-adjointness
 \begin{enumerate}
     \item
@@ -4349,7 +4349,7 @@ If~$f$ and~$g$ are~$\diamond$-adjoint,
     then~$\IM f = \ceil{1 \after g}$.
 \end{enumerate}
 \end{point}
-\begin{point}[diamond-squares]{Exercise}%
+\begin{point}{30}[diamond-squares]{Exercise}%
 Show in order:
 \begin{enumerate}
 \item
@@ -4363,7 +4363,7 @@ If~$f$ is~$\diamond$-positive and~$f\after f$ is pure,
     then~$f \after f$ is~$\diamond$-positive.
 \end{enumerate}
 \end{point}
-\begin{point}[iso-diamond-adjoint]{Lemma}%
+\begin{point}{40}[iso-diamond-adjoint]{Lemma}%
 Let~$\alpha$ be an isomorphism in a~$\diamond$-effectus.
 Then
 \begin{enumerate}
@@ -4374,7 +4374,7 @@ Then
     and~$\alpha_\diamond(s) = s\after \alpha^{-1}$
     (so~$\alpha$ and~$\alpha^{-1}$ are~$\diamond$-adjoint).
 \end{enumerate}
-\begin{point}{Proof}%
+\begin{point}{50}{Proof}%
 Let~$s$ be a sharp predicate. Then~$s = \IM \pi_s$.
 Note~$\IM \alpha^{-1}\after \pi_s = s \after \alpha$
     --- indeed, $s \after \alpha \after \alpha^{-1} \after \pi_s=1$
@@ -4390,13 +4390,13 @@ So~$\alpha^\diamond(s) = \ceil{s \after \alpha} = s\after \alpha$
 \end{point}
 \end{parsec}
 
-\begin{parsec}%
-\begin{point}[sharp-map]{Definition}%
+\begin{parsec}{2100}%
+\begin{point}{10}[sharp-map]{Definition}%
 A map~$f$ in a~$\diamond$-effectus is a~\Define{sharp map}
     \index{sharp!map}
     provided~$s \after f$ is sharp for all sharp predicates~$s$.
 \end{point}
-\begin{point}[sharp-ceil]{Exercise}%
+\begin{point}{20}[sharp-ceil]{Exercise}%
 Show that the following are equivalent.
 \begin{enumerate}
     \item $f$ is a sharp map.
@@ -4405,7 +4405,7 @@ Show that the following are equivalent.
 \end{enumerate}
 \end{point}
 
-\begin{point}[exa-sharp-vn]{Example}%
+\begin{point}{30}[exa-sharp-vn]{Example}%
 In~$\op{\vN}$ the sharp maps are exactly the~mni-maps
 (i.e.~the normal $*$-homomorphisms).
 See \sref{sharp-multiplicative}.
@@ -4414,14 +4414,14 @@ See \sref{sharp-multiplicative}.
 \end{parsec}
 
 \section{$\&$-effectus}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{2110}%
+\begin{point}{10}%
 In a~$\diamond$-effectus
     quotient and comprehension are not tied together by its axioms.
     With two additional axioms, we will see quotient and comprehension
     become tightly interwoven.
 \end{point}
-\begin{point}{Definition}%
+\begin{point}{20}{Definition}%
 An~\Define{$\&$-effectus} (``andthen effectus'')
     \index{effectus!$\&$-}
 is a $\diamond$-effectus
@@ -4446,7 +4446,7 @@ we define~$\Define{\andthen{p}{q}} \equiv q \after \asrt_p$,
     \index{$\&$, andthen}
     pronounced ``$p$ andthen~$q$''.
 For brevity, we will write~$\Define{p^2} \equiv \andthen{p}{p}$.
-\begin{point}{Remarks}%
+\begin{point}{30}{Remarks}%
 The $\asrt_p$ maps are named after the \texttt{assert} statement
     found in many programming languages.
 The \texttt{assert} statement checks whether
@@ -4476,20 +4476,20 @@ If we discard the measurement outcome,
     which is the side-effect of measuring $p,q,r$.
 \end{point}
 \end{point}
-\begin{point}[vn-is-andthen-eff]{Example}%
+\begin{point}{40}[vn-is-andthen-eff]{Example}%
 The category~$\op{\vN}$ is an~$\&$-effectus
     with~$\asrt_a\colon b \mapsto \sqrt{a}b\sqrt{a}$.
 The first axiom is proven in \sref{positive-map-uniqueness}
     and the second in \sref{pure-fundamental}.
 \end{point}
-\begin{point}[sharp-prop]{Proposition}%
+\begin{point}{50}[sharp-prop]{Proposition}%
 For a predicate~$p$ in an $\&$-effectus the following are equivalent.
 \begin{enumerate}
 \item $p$ is sharp,
 \item $\andthen{p}{p}=p$ and
 \item $\asrt_p \after \asrt_p = \asrt_p$.
 \end{enumerate}
-\begin{point}{Proof}%
+\begin{point}{60}{Proof}%
 First we prove that~$p$ is sharp if and only if~$\andthen{p}{p}=p.$
 So, assume~$p$ is sharp.
 As $\diamond$-positive maps are~$\diamond$-self-adjoint
@@ -4543,7 +4543,7 @@ By uniqueness of positive maps~$\asrt_p \after \asrt_p = \asrt_p$,
     as desired. \qed
 \end{point}    
 \end{point}
-\begin{point}[prop-corr-zeta-pi]{Proposition}%
+\begin{point}{70}[prop-corr-zeta-pi]{Proposition}%
 Let~$C$ be an~$\&$-effectus and~$s$
      be any sharp predicate.
 There exist comprehension~$\pi_s$ of~$s$
@@ -4558,7 +4558,7 @@ In fact, for every comprehension~$\pi$ of~$s$,
     \emph{and} conversely for every quotient~$\xi$ of~$s^\perp$
     there exists a comprehension~$\pi$ of~$s$
     with~$\xi \after \pi = \id$ and~$\pi \after \xi = \asrt_s$.
-\begin{point}{Proof}%
+\begin{point}{80}{Proof}%
 Let~$s$ be any sharp predicate.
 By definition~$\diamond$-positive maps are pure and so
     there is a quotient~$\xi$ and comprehension~$\pi$
@@ -4594,7 +4594,7 @@ It is easy to see~$\pi' \after \xi' = \asrt_s$
 and~$\xi' \after \pi' = \id$.
 The other statement is proven in a similar way. \qed
 \end{point}
-\begin{point}[zeta-s-convention]{Notation}%
+\begin{point}{90}[zeta-s-convention]{Notation}%
 In an~$\&$-effectus
     together with chosen comprehension~$\pi_s$ for~$s$,
     we will write~$\zeta_s$
@@ -4608,14 +4608,14 @@ We call this~$\zeta_s$
     and vice versa~$\pi_s$ the \Define{corresponding comprehension}
     of~$\zeta_s$.
 \end{point}
-\begin{point}{Warning}%
+\begin{point}{100}{Warning}%
     $\xi_{s^\perp} = \zeta_s$!
 \end{point}
 \end{point}
-\begin{point}[upm-closed]{Proposition}%
+\begin{point}{110}[upm-closed]{Proposition}%
 In an $\&$-effectus
     both comprehensions and pure maps are closed under composition.
-\begin{point}{Proof}%
+\begin{point}{120}{Proof}%
 We will first prove that comprehensions are closed under composition.
 Assume~$\pi_1 \colon X \to Y$
     and~$\pi_2 \colon Y \to Z$
@@ -4647,7 +4647,7 @@ Hence there exists a unique~$g_1\colon V \to X$
 By monicity of~$\pi_2 \after \pi_1$,
     this~$g_1$ is unique and so~$\pi_2 \after \pi_1$
     is indeed a comprehension.
-\begin{point}%
+\begin{point}{130}%
 Now we will prove that pure maps are closed under composition.
 Assume~$g\colon X \to Y$ and~$f\colon Y \to Z$ are pure maps.
 Say~$f = \pi_1 \after \xi_1$
@@ -4667,11 +4667,11 @@ is pure. \qed
 \end{point}
 \end{point}
 \end{point}
-\begin{point}[andthen-square-rule]{Exercise}%
+\begin{point}{140}[andthen-square-rule]{Exercise}%
 Show that in an~$\&$-effectus,
     we have~$\asrt_p \after \asrt_p = \asrt_{\andthen{p}{p}}$.
 \end{point}
-\begin{point}[asrt-absorp-rule]{Exercise}%
+\begin{point}{150}[asrt-absorp-rule]{Exercise}%
     Show that in an~$\&$-effectus,
     we have
     \begin{align*}
@@ -4680,7 +4680,7 @@ Show that in an~$\&$-effectus,
     \end{align*}
 for any sharp predicates~$s$ and~$t$.
 \end{point}
-\begin{point}{Definition}%
+\begin{point}{160}{Definition}%
 Let~$C$ be an~$\&$-effectus.
 In \sref{upm-closed} we saw pure maps are closed under composition.
 Write~$\Define{\Pure C}$ for the subcategory
@@ -4689,12 +4689,12 @@ Write~$\Define{\Pure C}$ for the subcategory
 \end{point}
 \end{parsec}
 
-\begin{parsec}%
-\begin{point}[zeta-asrt-quot]{Lemma}%
+\begin{parsec}{2120}%
+\begin{point}{10}[zeta-asrt-quot]{Lemma}%
     In an~$\&$-effectus,
     $\zeta_{\ceil{p}} \after \asrt_p$
     is a quotient for~$p^\perp$.
-\begin{point}{Proof}%
+\begin{point}{20}{Proof}%
 Recall~$\IM \asrt_p = \ceil{1 \after \asrt_p} = \ceil{p}$ and so
 \begin{equation*}
 \IM \zeta_{\ceil{p}} \after \asrt_p
@@ -4712,7 +4712,7 @@ hence~$\zeta_{\ceil{p}}\after \asrt_p$
 is a quotient for the orthocomplement of~$\ceil{p} \after \asrt_p = p$. \qed
 \end{point}
 \end{point}
-\begin{point}[standard-form-map]{Proposition}%
+\begin{point}{30}[standard-form-map]{Proposition}%
 Every map~$f$
 in an~$\&$-effectus
 factors as
@@ -4729,7 +4729,7 @@ If~$f$ is pure and~$\IM f = 1$, then~$f$ is a quotient.
 \item
 If~$f$ is pure and~$1 \after f = 1$, then~$f$ is a comprehension.
 \end{enumerate}
-\begin{point}{Proof}%
+\begin{point}{40}{Proof}%
 By the universal property of~$\pi_{\IM f}$,
     there is a unique~$g'$ with~$f = \pi_{\IM f} \after g'$.
 To show~$g'$ is faithful, assume~$p\after g' = 0$
@@ -4775,12 +4775,12 @@ Point 3 is just as easy. \qed
 \end{point}
 \end{parsec}
 
-\begin{parsec}%
-\begin{point}[andthen-effect-divisoid]{Proposition}%
+\begin{parsec}{2130}%
+\begin{point}{10}[andthen-effect-divisoid]{Proposition}%
 If~$C$ is an~$\&$-effectus,
     then~$(\Scal C)^{\mathrm{op}}$ is an effect divisoid,
     see~\sref{dfn-effect-divisoid}.
-\begin{point}{Proof}%
+\begin{point}{20}{Proof}%
 Let~$\lambda,\mu$ be scalars with~$\lambda \leq \mu$.
 Recall that the scalar~$1=\id$
     and so~$\mu = 1 \after \asrt_\mu = \asrt_\mu$.
@@ -4816,10 +4816,10 @@ As~$
 we must have~$\lambda' = \sigma'$, whence~$\rfrac{\lambda}{\mu}=\sigma$. \qed
 \end{point}
 \end{point}
-\begin{point}[perp-sharp-is-orth]{Lemma}%
+\begin{point}{30}[perp-sharp-is-orth]{Lemma}%
 In an~$\&$-effectus, if~$s \perp t$
     for sharp~$s,t$, then~$\andthen{s}{t} = 0 = \andthen{t}{s}$.
-\begin{point}{Proof}%
+\begin{point}{40}{Proof}%
 Write~$r \equiv (s \ovee t)^\perp$.
     As~$1 = s \ovee t \ovee r$ and~$\andthen{s}{s}=s$, we have
 \begin{equation*}
@@ -4831,14 +4831,14 @@ Write~$r \equiv (s \ovee t)^\perp$.
 and so~$\andthen{s}{t} \leq \andthen{s}{t} \ovee \andthen{s}{r} = 0$. \qed
 \end{point}
 \end{point}
-\begin{point}[simple-andthen-absorption]{Exercise}%
+\begin{point}{50}[simple-andthen-absorption]{Exercise}%
 Show that in an~$\&$-effectus, we have
 \begin{equation*}
 p \ \leq\  s \quad \iff \quad \andthen{s}{p} \ =\  p
 \end{equation*}
 for sharp~$s$ and any predicate~$p$.
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{60}{Exercise}%
 Show that in a~$\&$-effectus,
     a map~$\left<f,g\right>$
     is sharp if and only if both~$f$ and~$g$ are sharp.
@@ -4848,8 +4848,8 @@ Show that in a~$\&$-effectus,
 
 \section{\texorpdfstring{$\dagger$-effectus}{%
                     dagger-effectus}}
-\begin{parsec}%
-\begin{point}[dagger-effectus]{Definition}%
+\begin{parsec}{2140}%
+\begin{point}{10}[dagger-effectus]{Definition}%
 A \Define{$\dagger$-category} (``dagger category'')
     \index{*dagg@$\dagger$, dagger!-category}
 is a category~$C$ together with an involutive identity-on-objects
@@ -4882,15 +4882,15 @@ In any~$\dagger$-category we may define the following.
         whenever~$\alpha^{-1} = \alpha^\dagger$.
 \end{enumerate}
 \end{point}
-\begin{point}{Example}%
+\begin{point}{20}{Example}%
 The category~$\mathsf{Hilb}$
     of Hilbert spaces with bounded linear maps
     is a~$\dagger$-category
     with the familiar adjoint as~$\dagger$.
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}{Definition}%
+\begin{parsec}{2150}%
+\begin{point}{10}{Definition}%
 We call an~$\&$-effectus~$C$,
     a~\Define{$\dagger$-effectus} (``dagger effectus'') provided
     \index{effectus!$\dagger$-}
@@ -4908,11 +4908,11 @@ We call an~$\&$-effectus~$C$,
     $\diamond$-positive maps are $\dagger$-positive.
 \end{enumerate}
 \end{point}
-\begin{point}{Example}%
+\begin{point}{20}{Example}%
 In \sref{vn-is-dagger-category}
 we will see that the category~$\op\vN$ is a~$\dagger$-effectus.
 \end{point}
-\begin{point}[dagger-theorem]{Theorem}%
+\begin{point}{30}[dagger-theorem]{Theorem}%
     An $\&$-effectus
         is a~$\dagger$-effectus if and only if
 \begin{enumerate}
@@ -4927,22 +4927,22 @@ for every predicate~$p$, there is a unique predicate~$q$
     a quotient for a sharp predicate (e.g.~$\zeta_s$)
     is a sharp map, see \sref{sharp-map}.
 \end{enumerate}
-\begin{point}{Proof}%
+\begin{point}{40}{Proof}%
 Necessity will be proven in
     \sref{dagger-thm-necessity}
         and sufficiency in \sref{dagger-thm-sufficiency}. \qed
 \end{point}
-\begin{point}%
+\begin{point}{50}%
 Especially the sufficiency requires quite some preparation.
 For convenience, call~$C$ a \Define{$\dagger'$-effectus}
     \index{effectus!$\dagger'$-}
     if~$C$ is an~$\&$-effectus
     satisfying axioms 1, 2 and 3 from the Theorem above.
 \end{point}
-\begin{point}[vn-is-dagger-category]{Corollary}%
+\begin{point}{60}[vn-is-dagger-category]{Corollary}%
 The category~$\op\vN$ is a~$\dagger$-category.
 \end{point}
-\begin{point}{Remarks}%
+\begin{point}{70}{Remarks}%
     In an~$\&$-effectus
     with separating predicates
     (see \sref{dfn-mandso}),
@@ -4966,11 +4966,11 @@ The second axiom of a~$\dagger$-effectus
 \end{parsec}
 
 
-\begin{parsec}%
-\begin{point}[diamond-is-dagger-positive]{Lemma}%
+\begin{parsec}{2160}%
+\begin{point}{10}[diamond-is-dagger-positive]{Lemma}%
 In a~$\dagger$-effectus,
     a map is~$\dagger$-positive if and only if it is~$\diamond$-positive.
-\begin{point}{Proof}%
+\begin{point}{20}{Proof}%
 Assume~$f$ is~$\dagger$-positive.
 By assumption 2, there is a (unique) $\dagger$-positive
     $g$ with~$f = g \after g$.
@@ -4991,12 +4991,12 @@ Thus~$f$ is the square of the~$\diamond$-self-adjoint map $g$,
 \end{point}
 \end{point}
 
-\begin{point}[dagger-eff-square-root]{Lemma}%
+\begin{point}{30}[dagger-eff-square-root]{Lemma}%
 Predicates in a~$\dagger$-effectus have a unique square root:
     for every predicate~$p$,
     there is a unique predicate~$q$
     with~$\andthen{q}{q}=p$.
-\begin{point}{Proof}%
+\begin{point}{40}{Proof}%
 Let~$p\colon X \to 1$ be any predicate.
 By assumption 3,
     the~$\diamond$-positive map~$\asrt_p$
@@ -5034,7 +5034,7 @@ Thus~$r = q$, which shows uniqueness of the square root.
 \qed
 \end{point}
 \end{point}
-\begin{point}[asrt-iso]{Proposition}%
+\begin{point}{50}[asrt-iso]{Proposition}%
 In an~$\&$-effectus with square roots
     (e.g.~$\dagger$- or~$\dagger'$-effectus) we have
 \begin{equation*}
@@ -5042,7 +5042,7 @@ In an~$\&$-effectus with square roots
         \ =\  \alpha \after \asrt_{p\after \alpha}
 \end{equation*}
 for every isomorphism~$\alpha$ and predicate~$p$.
-\begin{point}{Proof}%
+\begin{point}{60}{Proof}%
 There is some~$q$ with~$\andthen{q}{q}=p$.
 The map~$\alpha^{-1} \after \asrt_q \after \alpha$
     is~$\diamond$-self-adjoint:
@@ -5064,10 +5064,10 @@ Postcomposing~$\alpha$, we find~$\asrt_p\after\alpha =
         \alpha \after \asrt_{p \after \alpha}$, as desired. \qed
 \end{point}
 \end{point}
-\begin{point}[dagger-of-zeta]{Proposition}%
+\begin{point}{70}[dagger-of-zeta]{Proposition}%
 In a $\dagger$-effectus:~$\zeta_s^\dagger = \pi_s$
 (recall convention \sref{zeta-s-convention} for~$\pi_s$ and~$\zeta_s$).
-\begin{point}{Proof}%
+\begin{point}{80}{Proof}%
 As~$\pi_s$ is~$\diamond$-adjoint to~$\pi_s^\dagger$,
 we have
 \begin{equation*}
@@ -5103,14 +5103,14 @@ So by epicity of~$\zeta_s$, we find~$\zeta_s^\dagger = \pi_s$, as desired.\qed
 \end{point}
 \end{point}
 
-\begin{point}[dagger-of-iso]{Corollary}%
+\begin{point}{90}[dagger-of-iso]{Corollary}%
     In a~$\dagger$-effectus,
         $\pi_s$ is~$\diamond$-adjoint to~$\zeta_s$.
     Also~$\alpha^\dagger = \alpha^{-1}$
         for any iso~$\alpha$.
 \end{point}
 
-\begin{point}[zeta-through-asrt]{Exercise}%
+\begin{point}{100}[zeta-through-asrt]{Exercise}%
 Show that in an~$\&$-effectus
         where every predicate has a square root
         and where~$\pi_s$ is~$\diamond$-adjoint to~$\zeta_s$
@@ -5120,12 +5120,12 @@ Show that in an~$\&$-effectus
     (Hint: mimic the proof of \sref{asrt-iso}.)
 \end{point}
 
-\begin{point}[dagger-thm-necessity]{Theorem}%
+\begin{point}{110}[dagger-thm-necessity]{Theorem}%
     A~$\dagger$-effectus is a~$\dagger'$-effectus.
-\begin{point}{Proof}%
+\begin{point}{120}{Proof}%
 Assume~$C$ is a~$\dagger$-effectus.
 Axiom 1 is already proven in \sref{dagger-eff-square-root}.
-\begin{point}[pqqp-from-dagger]{Ax.~2}%
+\begin{point}{130}[pqqp-from-dagger]{Ax.~2}%
 Let~$p,q$ be predicates.
 To start, note~$1 \after \asrt_q\after  \asrt_p = \andthen{p}{q}$ and
 \begin{equation*}
@@ -5177,7 +5177,7 @@ Combining both:
 \end{align*}
 as desired.
 \end{point}
-\begin{point}{Ax.~3}%
+\begin{point}{140}{Ax.~3}%
 Pick any sharp predicates~$s,t$.
 We want to show~$t \after \zeta_s$ is sharp.
 To this end, we will show~$t \after \zeta_s$
@@ -5199,8 +5199,8 @@ we get~$t \after \zeta_s \leq \ceil{t \after \zeta_s} \leq p$,
     
 \end{parsec}
 
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{2170}%
+\begin{point}{10}%
 Let~$f$ be a pure map in a~$\dagger'$-effectus.
 We will work towards the definition of~$f^\dagger$.
 By \sref{standard-form-map} we
@@ -5268,7 +5268,7 @@ So with this choice of quotient and comprehension,
 which is indeed consistent with~\eqref{dagger-definition}.
 So we are justified to declare:
 \end{point}
-\begin{point}[dagger-definition2]{Definition}%
+\begin{point}{20}[dagger-definition2]{Definition}%
 In a~$\dagger'$-effectus, for a pure map~$f$, define
     \index{*dagg@$\dagger$, dagger!in a $\dagger'$-effectus}
 \begin{equation*}
@@ -5282,7 +5282,7 @@ where~$\alpha$ is the unique iso such that
 $f  =  \pi_{\IM f} \after \alpha \after \zeta_{\ceil{1\after f}}
             \after \asrt_{1 \after f}$.
 \end{point}
-\begin{point}[dagger-prime-basics]{Exercise}%
+\begin{point}{30}[dagger-prime-basics]{Exercise}%
 Show that in a~$\dagger'$-effectus,
     we have
 \begin{align*}
@@ -5296,18 +5296,18 @@ and iso~$\alpha$.
 \end{point}
 \end{parsec}
 
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{2180}%
+\begin{point}{10}%
 To compute~$f^{\dagger\dagger}$,
     we need to put~$f^\dagger$
     in the standard form of~\sref{standard-form-map}.
 To do this, we need to pull~$\asrt_p$ from one side to the other.
 In this section we will work towards a general result for this.
 \end{point}
-\begin{point}[quotcompr-diamond-adjoint]{Lemma}%
+\begin{point}{20}[quotcompr-diamond-adjoint]{Lemma}%
 In a~$\dagger'$-effectus,
 $\pi_s$ is~$\diamond$-adjoint to~$\zeta_s$.
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
     Pick any sharp~$t,u$.
 We have to
     show~$t \after \zeta_s \leq u^\perp$
@@ -5335,10 +5335,10 @@ From this,
 as desired. \qed
 \end{point}
 \end{point}
-\begin{point}[dfn-pristine]{Definition}%
+\begin{point}{40}[dfn-pristine]{Definition}%
     In an~$\&$-effectus, a map~$f$ is \Define{pristine}\index{pristine}
         if it is pure and~$1\after f$ is sharp.
-\begin{point}{Remarks}%
+\begin{point}{50}{Remarks}%
     In general, pristine maps are not closed under composition:
     in~$\op\vN$, the maps~$\asrt_{\ketbra{0}{0}}$
             and~$\asrt_{\ketbra{+}{+}}$ on~$M_2$
@@ -5352,14 +5352,14 @@ However, with a non-standard composition
     form a~$\dagger$-category. \cite{effintro}
 \end{point}
 \end{point}
-\begin{point}[standard-form-pristine]{Exercise}%
+\begin{point}{60}[standard-form-pristine]{Exercise}%
 Show that in an~$\&$-effectus, every pristine map~$h$ is of the form
         \begin{equation*}
             h \ =\ \pi_{\IM h} \after \alpha \after \zeta_{1 \after h}
         \end{equation*}
         for some iso~$\alpha$.
 \end{point}
-\begin{point}[pristine-asrt]{Proposition}%
+\begin{point}{70}[pristine-asrt]{Proposition}%
 In a~$\dagger'$-effectus,
     with pristine map~$h$, we have
 \begin{equation*}
@@ -5367,7 +5367,7 @@ In a~$\dagger'$-effectus,
         \ =\  h \after \asrt_{p \after h}
 \end{equation*}
 for any predicate~$p$ with~$p \leq \IM h$.
-\begin{point}{Proof}%
+\begin{point}{80}{Proof}%
 For brevity,
 write~$t = 1 \after h$
     and~$s = \IM h$.
@@ -5408,7 +5408,7 @@ Putting everything together
 as desired.\qed
 \end{point}
 \end{point}
-\begin{point}[asrt-pristine-reverse]{Exercise}%
+\begin{point}{90}[asrt-pristine-reverse]{Exercise}%
 Working in a~$\dagger'$-effectus, show in order
 \begin{enumerate}
     \item if~$h \equiv \pi_{\IM h} \after \alpha \after \zeta_{1 \after h}$
@@ -5422,14 +5422,14 @@ Working in a~$\dagger'$-effectus, show in order
         then~$\asrt_{p\after h^\dagger} \after h = h \after \asrt_p$.
 \end{enumerate}
 \end{point}
-\begin{point}[prist-asrt-decomp]{Proposition}%
+\begin{point}{100}[prist-asrt-decomp]{Proposition}%
 In a~$\dagger'$-effectus,
         for every pure map~$f$,
     there exists a unique pristine map~$h$
     with~$1 \after h = \ceil{1 \after f}$
     and~$f = h \after \asrt_{1 \after f}$.
     Furthermore~$f^\dagger = \asrt_{1 \after f}\after h^\dagger$.
-\begin{point}{Proof}%
+\begin{point}{110}{Proof}%
 By~\sref{standard-form-map}
  we know~$f = \pi_{\IM f} \after \alpha \after \zeta_{\ceil{1 \after f}}
         \after \asrt_{1 \after f}$
@@ -5470,10 +5470,10 @@ As~$\zeta_{\ceil{1 \after f}} \after \asrt_{1 \after f}$
     and so~$\alpha = \alpha'$ by \sref{standard-form-map}.\qed
 \end{point}
 \end{point}
-\begin{point}[dagger-idempotent]{Proposition}%
+\begin{point}{120}[dagger-idempotent]{Proposition}%
     In a~$\dagger'$-effectus, we have~$f^{\dagger\dagger}=f$
         for any pure map~$f$.
-\begin{point}{Proof}%
+\begin{point}{130}{Proof}%
 By~\sref{prist-asrt-decomp}
     we have~$f = h \after \asrt_{1\after f}$
     and~$f^\dagger = \asrt_{1 \after f} \after h^\dagger$
@@ -5496,15 +5496,15 @@ as desired. \qed
 \end{point}
 \end{parsec}
 
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{2190}%
+\begin{point}{10}%
 Now we tackle the most tedious part
     of \sref{dagger-theorem}:
     we will show~$(f \after g)^\dagger = g^\dagger \after f^\dagger$
     in a~$\dagger'$-effectus.
 To avoid too much repetition, let us fix the setting.
 \end{point}%
-\begin{point}[dagger-setting]{Setting}%
+\begin{point}{20}[dagger-setting]{Setting}%
 Let~$f,g$ be two composable pure maps in a~$\dagger'$-effectus.
 For brevity, write~$p = 1 \after f$, $q = 1 \after g$,
     $s = \IM f$ and $t = \IM g$.
@@ -5612,13 +5612,13 @@ and so there must be a unique iso~$\alpha$ with
     \pi_{\ceil{p}} \rceil} = \pi_{\ceil{t \after f^\dagger}} \after \alpha.
 \end{equation}
 \end{point}
-\begin{point}{Lemma}%
+\begin{point}{30}{Lemma}%
 In setting \sref{dagger-setting}, we have
     $f \after g  =  \pi_{\ceil{t \after f^\dagger}}
         \after \alpha \after \chi \after \beta \after \omega
         \after \zeta_{\ceil{p \after g}} \after
         \asrt_{p \after g}$.
-\begin{point}{Proof}%
+\begin{point}{40}{Proof}%
 It's a long, but easy verification,
     either with a diagram
 \begin{equation*}
@@ -5705,7 +5705,7 @@ or with equational reasoning
 whichever the Reader might prefer. \qed
 \end{point}
 \end{point}
-\begin{point}[dagger-of-fg]{Corollary}%
+\begin{point}{50}[dagger-of-fg]{Corollary}%
     $(f \after g)^\dagger = \asrt_{p \after g}
                 \after \pi_{\ceil{p \after g}}
                 \after \omega^{-1}
@@ -5713,7 +5713,7 @@ whichever the Reader might prefer. \qed
                 \after \chi^{-1}
                 \after \alpha^{-1}
                 \after \zeta_{\ceil{t \after f^\dagger}} $ .
-\begin{point}%
+\begin{point}{60}%
 To show~$(f \after g)^\dagger = g^\dagger \after f^\dagger$,
     it is sufficient to proof that
     the `daggered' version
@@ -5726,7 +5726,7 @@ To show~$(f \after g)^\dagger = g^\dagger \after f^\dagger$,
 We start with the simple ones.
 \end{point}
 \end{point}
-\begin{point}[dagger-iso-beta2]{Lemma}%
+\begin{point}{70}[dagger-iso-beta2]{Lemma}%
 In setting \sref{dagger-setting},
     the daggered version of
         \eqref{dagger-iso-beta} holds --- that is:
@@ -5734,7 +5734,7 @@ In setting \sref{dagger-setting},
         \pi_{\ceil{p \after k}} \after \beta^{-1}
             \ =\  \pi_{\ceil{q}} \after \psi^{-1} \after \pi_{\ceil{p \after \pi_t}}.
     \end{equation*}
-\begin{point}{Proof}%
+\begin{point}{80}{Proof}%
 The map~$
 \pi_{\ceil{q}} \after \psi^{-1} \after \pi_{\ceil{p \after \pi_t}} \after \beta$
 is a comprehension for~$\ceil{p \after k}$ --- indeed
@@ -5767,7 +5767,7 @@ $ is the unique comprehension corresponding to~$\zeta_{\ceil{p \after k}}$ --- t
 as desired. \qed
 \end{point}
 \end{point}
-\begin{point}[dagger-iso-alpha2]{Exercise}%
+\begin{point}{90}[dagger-iso-alpha2]{Exercise}%
 Show that in the setting \sref{dagger-setting},
     the daggered version of
         \eqref{dagger-iso-alpha} holds --- i.e.
@@ -5778,7 +5778,7 @@ Show that in the setting \sref{dagger-setting},
     \end{equation*}
 (Hint: mimic the proof of~\sref{dagger-iso-beta2}.)
 \end{point}
-\begin{point}[dagger-iso-zeta2]{Exercise}%
+\begin{point}{100}[dagger-iso-zeta2]{Exercise}%
 Show that in the setting \sref{dagger-setting},
 we have
 \begin{equation*}
@@ -5788,7 +5788,7 @@ we have
 (This is the daggered version of the subdiagram
 marked~\sref{pristine-asrt}.)
 \end{point}
-\begin{point}[dagger-iso-mu]{Proposition}%
+\begin{point}{110}[dagger-iso-mu]{Proposition}%
 If in a~$\dagger'$-effectus,
 $\nu$ is the unique iso (cf.~\sref{pqqp-from-dagger}) such that
 \begin{equation*}
@@ -5798,7 +5798,7 @@ $\nu$ is the unique iso (cf.~\sref{pqqp-from-dagger}) such that
 then~$\asrt_b \after \asrt_a\  =\  \asrt_{\andthen{b}{a}}
         \after \pi_{\ceil{\andthen{b}{a}}} 
         \after \nu^{-1} \after \zeta_{\ceil{\andthen{a}{b}}}$.
-\begin{point}{Proof}%
+\begin{point}{120}{Proof}%
 Let~$\mu$ be the unique iso with~$
 \asrt_b \after \asrt_a\  =\  
         \pi_{\ceil{\andthen{b}{a}}} 
@@ -5936,7 +5936,7 @@ we have
 as promised. \qed
 \end{point}
 \end{point}
-\begin{point}[dagger-iso-omega2]{Corollary}
+\begin{point}{130}[dagger-iso-omega2]{Corollary}
 In setting \sref{dagger-setting},
     the daggered version of
         \eqref{dagger-iso-omega} holds --- that is:
@@ -5950,7 +5950,7 @@ In setting \sref{dagger-setting},
     \zeta_{\lceil p \after k \rceil}.
     \end{equation*}
 \end{point}
-\begin{point}[dagger-iso-chi2]{Lemma}%
+\begin{point}{140}[dagger-iso-chi2]{Lemma}%
 In setting \sref{dagger-setting},
     the daggered version of
         \eqref{dagger-iso-chi} holds --- that is:
@@ -5964,7 +5964,7 @@ In setting \sref{dagger-setting},
     \chi^{-1} \after
     \zeta_{\lceil t \after \asrt_p \after \pi_{\ceil{p}}\rceil}.
     \end{equation*}
-\begin{point}{Proof}%
+\begin{point}{150}{Proof}%
 The heavy lifting has been done in \sref{dagger-iso-mu} already. To start, note
     \begin{align*}
 \asrt_p \after \asrt_t
@@ -6072,10 +6072,10 @@ Now we can apply \sref{dagger-iso-mu}:
 as desired. \qed
 \end{point}
 \end{point}
-\begin{point}[dagger-is-functor]{Proposition}%
+\begin{point}{160}[dagger-is-functor]{Proposition}%
 In a~$\dagger'$-effectus~$(f \after g)^\dagger = g^\dagger \after f^\dagger$
     holds.
-\begin{point}{Proof}%
+\begin{point}{170}{Proof}%
 We work in setting~\sref{dagger-setting}.
 The equality~$(f\after g)^\dagger = g^\dagger \after f^\dagger$
 follows from~\sref{dagger-of-fg} and the commutativity
@@ -6198,17 +6198,17 @@ whichever the Reader might prefer. \qed
 \end{point}
 \end{parsec}
 
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{2200}%
+\begin{point}{10}%
 We are ready to finish the proof of \sref{dagger-theorem}.
 \end{point}
-\begin{point}[dagger-thm-sufficiency]{Theorem}%
+\begin{point}{20}[dagger-thm-sufficiency]{Theorem}%
     A~$\dagger'$-effectus is a~$\dagger$-effectus
         with~$\dagger$
             as defined in \sref{dagger-definition2}.
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 Let~$C$ be a~$\dagger'$-effectus.
-\begin{point}{Ax.~1}%
+\begin{point}{40}{Ax.~1}%
 By~\sref{dagger-is-functor}, \sref{dagger-idempotent}
     and~\sref{dagger-prime-basics}
     the~$\dagger$ defined in~\sref{dagger-definition2}
@@ -6246,7 +6246,7 @@ We compute
 \end{align*}
 so~$f$ is indeed~$\diamond$-adjoint to~$f^\dagger$.
 \end{point}
-\begin{point}{Ax.~2}%
+\begin{point}{50}{Ax.~2}%
 Let~$f$ be a~$\dagger$-positive map.
 That is: $f = h^\dagger \after h$ for some pure map~$h$.
 By~\sref{standard-form-map}
@@ -6297,7 +6297,7 @@ So~$\andthen{(1 \after g)}{(1\after g)} = 1\after f =
 Hence~$1\after g = 1 \after h$ by uniqueness of the square root.
 So~$g = \asrt_{1 \after g} = \asrt_{1 \after h} = h$, as desired.
 \end{point}
-\begin{point}{Ax.~3}%
+\begin{point}{60}{Ax.~3}%
 Let~$\asrt_p$ be any~$\diamond$-positive map.
 Write~$q$ for the unique predicate with~$\andthen{q}{q}=p$.
 Then
@@ -6315,15 +6315,15 @@ so~$\asrt_p$ is~$\dagger$-positive, as desired. \qed
 \end{parsec}
 
 \subsection{Dilations}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{2210}%
+\begin{point}{10}%
 Being the main topic of the first part of this thesis,
     we cannot finish our discussion of~$\dagger$-effectuses
     without mentioning dilations.
 The presented abstract theory of dilations in a~$\dagger$-effectus
     is preliminary and as of yet rather unimpressive.
 \end{point}
-\begin{point}{Definition}%
+\begin{point}{20}{Definition}%
 Let~$f\colon X \to Y$ be any map in an effectus.
     A \Define{dilation} of~$f$ \index{dilation!in an effectus}
     is a triplet~$(P, \varrho, h)$
@@ -6342,13 +6342,13 @@ Let~$f\colon X \to Y$ be any map in an effectus.
     We say an effectus \Define{has dilations} if \index{effectus!with dilations}
     there exists a dilation for every map.
 \end{point}
-\begin{point}{Example}%
+\begin{point}{30}{Example}%
 The effectus $\op\vN$ has dilations,
     as shown in \sref{existence-paschke},
     but the full subcategory of commutative von Neumann algebras
     does not.
 \end{point}
-\begin{point}[dils-abstract-basics]{Proposition}%
+\begin{point}{40}[dils-abstract-basics]{Proposition}%
 Let~$C$ be an effectus with dilations.
 \begin{enumerate}
 \item
@@ -6393,7 +6393,7 @@ Let~$C$ be an effectus with dilations.
     then~$(P_1 + P_2, [\varrho_1,\varrho_2], h_1 + h_2)$
         is a dilation of~$[f_1, f_2] \colon X_1 + X_2 \to Y$.
 \end{enumerate}
-\begin{point}{Proof}%
+\begin{point}{50}{Proof}%
 Point 1 has been proven in \sref{paschke-unique-up-to-iso}.
 Point 2 is easily verified.
 To prove point 3, assume~$\varrho$ is a sharp total map.
@@ -6475,8 +6475,8 @@ For~$i=1,2$
 \end{point}
 \end{parsec}
 
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{2220}%
+\begin{point}{10}%
 With some additional assumptions,
     the existence of dilations
     forces the existence of some
@@ -6494,7 +6494,7 @@ We think of~$P$ as an abstract qubit
     and~$e$ is a projector on~$w\C$,
     with~$\left<v,w\right> = \frac{1}{\sqrt{2}}$
     (for instance~$v = \ket{0}$ and~$w = \ket{+}$).
-\begin{point}%
+\begin{point}{20}%
 By assumption~$\langle s,s^\perp \rangle \after h = \langle\lambda, \lambda\rangle$,
     so~$s \after h = s^\perp \after h = \lambda$.
 and~$\langle s^\perp,s \rangle \after h = \langle\lambda, \lambda\rangle$.
@@ -6513,7 +6513,7 @@ Thus the isomorphism~$X$ behaves like the~$X$-gate
     --- indeed, in~$\op\vN$, we have~$X = \ad_X$
         if~$e = \ketbra{0}{0}$.
 \end{point}
-\begin{point}%
+\begin{point}{30}%
 For the next gate,
     assume~$s$ is pure and~$\IM s = 1$.
 Note~$s^\dagger$ is total.
@@ -6545,7 +6545,7 @@ Hence~$H \after H = \id$,
     So~$H$ is similar to the Hadamard-gate
         --- indeed, in~$\op\vN$, we have~$H = \ad_H$ if~$e = \ketbra{0}{0}$.
 \end{point}
-\begin{point}%
+\begin{point}{40}%
 Do our additional assumptions (purity of~$s$, $\IM s = 1$, etc.)
 follow from more general principles.  Can we define the other gates, like
     the CNOT? Do these gates interact in the usual way?
@@ -6554,13 +6554,13 @@ follow from more general principles.  Can we define the other gates, like
 \end{point}
 \end{parsec}
 
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{2230}%
+\begin{point}{10}%
     To finish the discussion of dilations,
         we mention how to state \sref{paschke-correspondence}
     in an~$\&$-effectus.
 \end{point}
-\begin{point}[sefp]{Definition}%
+\begin{point}{20}[sefp]{Definition}%
 In an~$\&$-effectus,
 for any predicate~$p$,
     define~$\Define{\sef_p} \equiv \asrt_p \ovee \asrt_{p^\perp}$.
@@ -6573,12 +6573,12 @@ This map models the side-effect of measuring~$p$.
     \end{equation*}
 This is the set of predicates whose measurement does not disturb~$f$.
 \end{point}
-\begin{point}{Lemma}%
+\begin{point}{30}{Lemma}%
     In~$\op\vN$, for any nmiu-map~$\varrho\colon \scrA \to \scrB$,
         we have~$\Inv \varrho = [0,1]_{\varrho(\scrA)^\square}$ ---
         that is:~$\Inv \varrho$
 is the set of effects of the commutator of the image of~$\varrho$.
-\begin{point}{Proof}%
+\begin{point}{40}{Proof}%
 Assume~$a \in [0,1]_{f(\scrA)^\square}$.
 Simply unfolding definitions, we find~$\sef_a(\varrho(b)) = \sqrt{a} \varrho(b) \sqrt{a}
                         + \sqrt{1-a} \varrho(b) \sqrt{1-a}
@@ -6598,7 +6598,7 @@ For the converse, assume~$a \in \Inv \varrho$.
         but then clearly~$a = \sqrt{a} \varrho(1) \sqrt{a} = t \varrho(1) = t$. \qed
 \end{point}
 \end{point}
-\begin{point}{Definition}%
+\begin{point}{50}{Definition}%
 Let~$C$ be an $\&$-effectus.
 For a map~$f\colon X \to Y$,
     write
@@ -6616,7 +6616,7 @@ For a map~$f\colon X \to Y$,
 g \ =\  \varrho \after \asrt_{\Theta(g)} \after h.
 \end{equation*}
 \end{point}
-\begin{point}{Example}%
+\begin{point}{60}{Example}%
 By \sref{paschke-correspondence}
     every dilation in~$\op\vN$
     has the order correspondence.
@@ -6625,8 +6625,8 @@ By \sref{paschke-correspondence}
 
 \section{Comparisons}
 \subsection{Dagger kernel categories}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{2240}%
+\begin{point}{10}%
 To finish this chapter, we relate the structures in a~$\dagger$-effectus
     with existing structures in the literature.
 Just like we try to axiomatize~$\op\vN$,
@@ -6642,7 +6642,7 @@ We will discover that some of his axioms for~$\mathsf{Hilb}$
     and other do not in general.
 (We do not cover all his axioms.)
 \end{point}
-\begin{point}{Definition}%
+\begin{point}{20}{Definition}%
 Let~$C$ be a~$\dagger$-category.
 We say that an arrow~$f$
     is \Define{$\dagger$-mono}
@@ -6666,7 +6666,7 @@ A~\Define{$\dagger$-kernel category} is a~$\dagger$-category
     with zero object and where each arrow has a~$\dagger$-kernel.
 \cite[3.2.20]{heunenphd}
 \end{point}
-\begin{point}{Proposition}%
+\begin{point}{30}{Proposition}%
 In~$\Pure(C)$ for some~$\dagger$-effectus~$C$,
     the following holds.
 \begin{enumerate}
@@ -6679,7 +6679,7 @@ In~$\Pure(C)$ for some~$\dagger$-effectus~$C$,
 \end{enumerate}
 Furthermore: $\Pure C$ is a $\dagger$-kernel category:
     the~$\dagger$-kernel of~$f$ is given by~$\pi_{(1 \after f)^\perp}$.
-\begin{point}{Proof}%
+\begin{point}{40}{Proof}%
 Let~$f$ be any~$\dagger$-mono
 pure map, say~$f \equiv \pi_s \after \alpha \after \zeta_{\ceil{p}}
         \after \asrt_p$
@@ -6694,7 +6694,7 @@ Hence~$f$ is a comprehension.
 Dualizing, we see~$\dagger$-epis are exactly quotients of sharp predicates.
 Now it is clear that the~$\dagger$-partial isometries
 are exactly the pristine maps.
-\begin{point}%
+\begin{point}{50}%
 By the previous~$\pi_{(1 \after f)^\perp}$ is~$\dagger$-mono.
 To see it is the~$\dagger$-kernel of~$f$,
 we have to show it is the equalizer of~$f$ with~$0$.
@@ -6710,7 +6710,7 @@ Then~$1 \after f \after g = 0$,
 \end{point}
 \end{point}
 \end{point}
-\begin{point}{Exercise*}%
+\begin{point}{60}{Exercise*}%
 Let~$C$ be a~$\dagger$-effectus.
 In this exercise, you will show that
     in general $\Pure C$
@@ -6739,7 +6739,7 @@ Press on: show~$\scrC$ is trivial.
     Almost there: show~$\dim \scrH \geq 2$.
     Derive a contradiction.
 \end{point}
-\begin{point}{Exercise*}%
+\begin{point}{70}{Exercise*}%
 In this exercise you will show that~$\Pure(\op\vN)$ does not have
     all coequalizers.  It is helpful to first consider
     two concrete coequalizers in~$\mathsf{Hilb}$ and~$\op\vN$.
@@ -6778,7 +6778,7 @@ Prove that either~$\xi(b) \leq p_\scrA$ for all~$b\in \scrC$
     or~$\xi(b) \leq p_\scrS$ for all~$b \in \scrC$.
 Conclude~$\Pure(\op\vN)$ does not have all coequalizers.
 \end{point}
-\begin{point}%
+\begin{point}{80}%
 To summarize:
     the category~$\Pure(C)$
     of a~$\dagger$-effectus~$C$
@@ -6793,8 +6793,8 @@ To summarize:
 \end{parsec}
 
 \subsection{Sequential product}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{2250}%
+\begin{point}{10}%
 The sequential product --- the
     operation~$\andthen{a}{b} \equiv \sqrt{a}b\sqrt{a}$
     on the effects of a von Neumann algebra
@@ -6806,7 +6806,7 @@ Most of them are surprisingly hard to prove ---
     for instance, the proof that~$\andthen{a}{b}=\andthen{b}{a}$
     implies~$ab = ba$, requires
     the Fuglede--Rosenblum--Putnam Theorem.
-\begin{point}%
+\begin{point}{20}%
 Then, in \cite{gudder2008characterization},
     Gudder and Latr\'emoli\`ere (G\&L)
     characterize~$\&$ on~$\scrB(\scrH)$ as the unique operation satisfying
@@ -6833,7 +6833,7 @@ Their fourth axiom seems unrelated to our characterization
     and conversely the purity of our~$\diamond$-positive maps
     has no counterpart in their axioms.
 \end{point}
-\begin{point}%
+\begin{point}{30}%
 A few years earlier, Gudder and Greechie started
     \cite{gudder2001sequential}
     the abstract study of some of the algebraic properties of the
@@ -6842,7 +6842,7 @@ A few years earlier, Gudder and Greechie started
     \cite{li2011sequential,gudder2005open,shen2009not,gudder2005uniqueness,jun2009remarks,weihua2009uniqueness,tkadlec2008atomic,jia2010entropy,arias2004almost}.
 \end{point}
 \end{point}
-\begin{point}{Definition}%
+\begin{point}{40}{Definition}%
 A \Define{sequential effect algebra} (SEA)
     \index{SEA}
     \index{effect algebra!sequential-}
@@ -6870,19 +6870,19 @@ A \Define{sequential effect algebra} (SEA)
                 and~$\andthen{c}{(a \ovee b)} = \andthen{(a \ovee b)}{c}$.
 \end{enumerate}
 \end{point}
-\begin{point}{Examples}%
+\begin{point}{50}{Examples}%
 The effect algebra~$[0,1]_\scrA$
     of effects on a von Neumann algebra~$\scrA$
     is a sequential effect algebra with~$\andthen{a}{b} = \sqrt{a}b\sqrt{a}$.
 Any commutative effect monoid is a sequential effect algebra
     with~$\andthen{a}{b} = a \odot b$.
 \end{point}
-\begin{point}{Proposition}%
+\begin{point}{60}{Proposition}%
 In a~$\dagger$-effectus,
     the set of predicates~$\Pred X$ on any object~$X$
     with~$\andthen{p}{q} = q \after \asrt_p$
     satisfies axioms (S1), (S2) and (S3) of a SEA.
-\begin{point}{Proof}%
+\begin{point}{70}{Proof}%
 The proofs of (S1) and (S2) are obvious.
 To show~(S3), assume~$\andthen{p}{q} = 0$
     for some predicates~$p,q$.
@@ -6893,7 +6893,7 @@ $0 = \asrt_0^\dagger = \asrt_p^\dagger \after \asrt_q^\dagger
                 = \asrt_p \after \asrt_q$.
     Thus~$\andthen{q}{p} = 0 = \andthen{p}{q}$, as desired. \qed
 \end{point}
-\begin{point}{Remark}%
+\begin{point}{80}{Remark}%
 It's unclear whether the set of predicates in a~$\dagger$-effectus
     forms a sequential effect algebra.
 A seemingly related open problem
@@ -6904,19 +6904,19 @@ A seemingly related open problem
 \end{parsec}
 
 \subsection{Homological categories}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{2260}%
+\begin{point}{10}%
 Next we compare our effectuses
     to Grandis' homological categories \cite{grandis},
     which generalize abelian categories
     used in homological algebra.
 First, we need a lemma.
 \end{point}
-\begin{point}[homology-lemma]{Lemma}%
+\begin{point}{20}[homology-lemma]{Lemma}%
 Suppose~$s,t$ are any sharp predicates on the same object in a~$\dagger$-effectus.
     If~$s^\perp \leq t$,
     then~$\andthen{s}{t}$ is sharp.
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 By \sref{diamond-oml},
 it is sufficient to show
     $\andthen{s}{t^\perp}$ is sharp
@@ -6955,7 +6955,7 @@ It follows~$l \after \asrt_{\andthen{t^\perp}{s}} \after l^\dagger
     which shows~$\andthen{s}{t^\perp}$ is sharp. \qed
 \end{point}
 \end{point}
-\begin{point}{Definition}%
+\begin{point}{40}{Definition}%
 A category~$C$ is a \Define{pointed semiexact category} \cite[\S1.1]{grandis}
     \index{semiexact category!pointed}
     if~$C$ has a zero object and all kernels and cokernels.
@@ -6994,7 +6994,7 @@ A pointed semiexact category~$C$
         the composition~$q \after m$ is exact.
 \end{enumerate}
 \end{point}
-\begin{point}{Theorem}%
+\begin{point}{50}{Theorem}%
 Any~$\dagger$-effectus (in partial form) is a (pointed) homological category:
 \begin{enumerate}
     \item 
@@ -7004,7 +7004,7 @@ Any~$\dagger$-effectus (in partial form) is a (pointed) homological category:
     \item
         a map is exact iff it is pristine.
 \end{enumerate}
-\begin{point}{Proof}%
+\begin{point}{60}{Proof}%
 Let~$C$ be a~$\dagger$-effectus.
 By~\sref{effectus-kernels} and \sref{effectus-cokernels},
     we know~$C$ has all kernels and cokernels:
@@ -7023,7 +7023,7 @@ The map~$\zeta_2$ is sharp by \sref{quotients-composition}
 Hence~$\zeta_1 \after \zeta_2$ is a cokernel too.
 Unfolding definitions, it is easy to see exact maps correspond precisely
     to pristine maps.
-\begin{point}{Homology axiom}%
+\begin{point}{70}{Homology axiom}%
 We have to show~$q \after m$
     is exact for any cokernel~$q$ and kernel~$m$ with~$\ker q \leq m$.
 As~$q \after m$ is pure,
@@ -7050,13 +7050,13 @@ which show~$q \after m$ is sharp, as desired. \qed
 \end{point}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{2270}%
+\begin{point}{10}%
 In any homological category, a generalization
     of the famous \emph{Snake Lemma} holds.
 Before we can discuss it, we need some more homological category theory.
 \end{point}
-\begin{point}{Definition}%
+\begin{point}{20}{Definition}%
 Let a (pointed) semiexact category be given.
 \begin{enumerate}
 \item
@@ -7091,7 +7091,7 @@ We say~$f$ is \Define{modular}
     if it is both left- and right-modular.
 \end{enumerate}
 \end{point}
-\begin{point}{Example}%
+\begin{point}{30}{Example}%
 In a~$\dagger$-effectus, the previous concepts are related
 to our familiar notions as follows.
 \begin{enumerate}
@@ -7114,20 +7114,20 @@ to our familiar notions as follows.
             iff~$f_\diamond (f^\BOX ( \IM k)) = 
                 (\IM k) \wedge \IM f$.
 \end{enumerate}
-\begin{point}{Notation}%
+\begin{point}{40}{Notation}%
 As~$\Nsb A$ and~$\SPred A$ are isomorphic,
     we will abbreviate~``$f$ is left-modular at~$\pi_s$''
     by~``$f$ is left-modular at~$s$''
     and similarly for right-modularity.
 \end{point}
 \end{point}
-\begin{point}[diamondboxlemma]{Lemma}%
+\begin{point}{50}[diamondboxlemma]{Lemma}%
 In a~$\dagger$-effectus,
     we have~$\pi^\BOX \after \pi_\diamond = \id$
     and~$\zeta_\diamond \after \zeta^\BOX = \id$
     for any comprehension~$\pi$
     and sharp quotient~$\zeta$.
-\begin{point}{Proof}%
+\begin{point}{60}{Proof}%
 We start with~$\pi$.  The trick is to use~$\pi^\dagger$ is sharp:
     $\pi^\BOX \after \pi_\diamond (s) =
     \pi^\BOX \after (\pi^\dagger)^\diamond (s) =
@@ -7145,8 +7145,8 @@ As for the other equality:
 \end{point}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{2280}%
+\begin{point}{10}%
 In any homological category,
     a generalization of the famous \emph{Snake Lemma} holds.
     \cite[\S3.4]{grandis}.
@@ -7157,7 +7157,7 @@ We include a proof as it highlights how
     from the reasoning we already saw in a~$\dagger$-effectus:
     maps~$l^\BOX$ appear, where we would have expected~$l^\diamond$.
 \end{point}
-\begin{point}{Snake Lemma}%
+\begin{point}{20}{Snake Lemma}%
 Suppose we have a commuting
     diagram in~$\dagger$-effectus as follows.
 \begin{equation*}
@@ -7289,7 +7289,7 @@ into a (long) exact sequence. This reveals the snake:
 ;
 \end{tikzpicture}
 \end{equation*}
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 Before we start, we give an overview of the proof.
 We will first show
     there are comprehensions~$m,h'$
@@ -7318,7 +7318,7 @@ Before demonstrating the exactness of the snake,
     we need some non-trivial identities for~$d_\diamond$ and~$d^\BOX$.
 (These also follow from Grandis' calculus of direct and inverse images
     along an induced morphism.)
-\begin{point}%
+\begin{point}{40}%
 Define~$v \equiv \xi_{h_\diamond(\IM a)}$. 
 As~$(v \after h)^\diamond(1) = h^\diamond ( h_\diamond(\IM a)) = \IM a
         = 1\after a_\zeta$,
@@ -7333,7 +7333,7 @@ Reasoning in a similar way,
     we see there is a unique sharp quotient~$g'$
     with~$g \after m = c_\pi \after g'$.
 \end{point}
-\begin{point}%
+\begin{point}{50}%
 To show~$b$ lifts along~$m$ and~$h$,
     it suffices (by the universal property of comprehensions)
     to show~$(b \after m)_\diamond(1)
@@ -7383,7 +7383,7 @@ More concretely, using~$g' \after g'^\dagger = \id$,
     $ d  =  a_\zeta \after h^\dagger \after b \after m \after 
                 g'^\dagger$.
 \end{point}
-\begin{point}%
+\begin{point}{60}%
 Our next goal is to show
 \begin{align*}
     d_\diamond &\ =\ 
@@ -7498,7 +7498,7 @@ where~$
     is proven in the same way as $g^\BOX \after (c_\pi)_\diamond =
                                     m_\diamond \after g'^\BOX$.
 \end{point}
-\begin{point}%
+\begin{point}{70}%
 We are ready to show exactness of \eqref{thesnake}.
 We will first derive exactness in~$\cok a$
     from the right-modularity of~$b$ over~$\IM h$.
@@ -7538,7 +7538,7 @@ We will first derive exactness in~$\cok a$
         in~$\ker c$ from the left-modularity
         of~$b$ over~$\IM f$.
 \end{point}
-\begin{point}%
+\begin{point}{80}%
     To show exactness of
     $\eqref{thesnake}$ in~$\cok b$,
     we will use left-modularity of~$k$ in~$\IM b$:
@@ -7586,7 +7586,7 @@ We will first derive exactness in~$\cok a$
         using the right-modularity of~$f$ over~$\ceil{1\after b}^\perp$. \qed
 \end{point}
 \end{point}
-\begin{point}{Remark}%
+\begin{point}{90}{Remark}%
 As~$\op\vN$ is a~$\dagger$-effectus,
     Grandis' Snake Lemma also holds for von Neumann algebras.
 This is somewhat puzzling for the following reason.

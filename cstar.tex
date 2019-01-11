@@ -1,6 +1,6 @@
 \chapter{$\text{C}^*$-algebras}
-\begin{parsec}
-\begin{point}
+\begin{parsec}{20}
+\begin{point}{10}
 We redevelop the essentials of the theory of (unital) $C^*$-algebras
 in this chapter.
 Since we are ultimately interested
@@ -80,8 +80,8 @@ topic of the next chapter.
 \end{point}%
 \end{parsec}
 \section{Definition and Examples}
-\begin{parsec}
-\begin{point}{Definition}
+\begin{parsec}{30}
+\begin{point}{10}{Definition}
 A \Define{$C^*$-algebra}\index{Cstar-algebra@$C^*$-algebra}
 is a complex vector space~$\scrA$
 endowed with
@@ -124,7 +124,7 @@ holds; this equality is called the \Define{$C^*$-identity}.%
 The $C^*$-algebra $\scrA$ is called \Define{commutative}%
 \index{Cstar-algebra@$C^*$-algebra!commutative}
 if $ab=ba$ for all~$a,b\in\scrA$.
-\begin{point}{Warning}%
+\begin{point}{20}{Warning}%
 In the literature it is usually not
 required that a $C^*$-algebra
 possess a unit; but when it does it is called
@@ -132,7 +132,7 @@ a \Define{unital $C^*$-algebra}.%
 \index{unital!$C^*$-algebra}
 \end{point}
 \end{point}
-\begin{point}{Example}%
+\begin{point}{30}{Example}%
 The vector space~$\C$ of \Define{complex numbers}%
 \index{C@$\C$, the complex numbers!as a $C^*$-algebra}
 forms a commutative  $C^*$-algebra
@@ -142,7 +142,7 @@ have their usual meaning.
 Involution is given by conjugation ($z^*=\bar{z}$),
 and norm by modulus ($\|z\|=|z|$).
 \end{point}
-\begin{point}{Example}%
+\begin{point}{40}{Example}%
 A \Define{$C^*$-subalgebra}%
 \index{Cstar-subalgebra@$C^*$-subalgebra}
 of a $C^*$-algebra~$\scrA$
@@ -156,7 +156,7 @@ is itself a $C^*$-algebra
 when endowed with the operations and norm
 of~$\scrA$.
 \end{point}
-\begin{point}[cstar-product]{Example}%
+\begin{point}{50}[cstar-product]{Example}%
 One can form products (in the categorical sense,
 see~\sref{cstar-product-2}) of $C^*$-algebras as follows.
 Let~$\scrA_i$ be a $C^*$-algebra
@@ -192,7 +192,7 @@ of bounded complex-valued functions
 on a set~$X$ forms a commutative $C^*$-algebra
 with pointwise operations and supremum norm.
 \end{point}
-\begin{point}{Example}%
+\begin{point}{60}{Example}%
 The \Define{bounded continuous functions
 on a topological space}~$X$
 form a commutative $C^*$-subalgebra~\Define{$BC(X)$}%
@@ -211,7 +211,7 @@ We'll see that every commutative $C^*$-algebra
 is isomorphic to a~$C(X)$
 in~\sref{gelfand}.
 \end{point}
-\begin{point}[cstar-matrices-example]{Example}%
+\begin{point}{70}[cstar-matrices-example]{Example}%
 An example of a non-commutative
 $C^*$-algebra
 is
@@ -252,7 +252,7 @@ and the conjugate transpose $A^*$ is \emph{adjoint} to~$A$
 in the sense that $\left<v,Aw\right> = \left<A^*v,w\right>$
 for all~$v,w\in\C^n$.
 \end{point}
-\begin{point}{Remark}%
+\begin{point}{80}{Remark}%
 \index{Cstar-algebra@$C^*$-algebra!finite dimensional}
 Combining~\sref{cstar-product}
 and~\sref{cstar-matrices-example}
@@ -275,8 +275,8 @@ does not seem to be an immediate consequence of it.}
 \end{point}
 \end{parsec}
 \subsection{Operators}
-\begin{parsec}[hilb]%
-\begin{point}[example-hilb]{Example}%
+\begin{parsec}{40}[hilb]%
+\begin{point}{10}[example-hilb]{Example}%
 Let us now turn to perhaps the most important
 and difficult example:
 we'll show that the vector space~\Define{$\scrB(\scrH)$}%
@@ -297,7 +297,7 @@ refers to a $C^*$-subalgebra of~$\scrB(\scrH)$.
 We will eventually see that every $C^*$-algebra is isomorphic to a $C^*$-algebra
 of bounded operators in~\sref{gelfand-naimark}.
 \end{point}
-\begin{point}[bounded-linear-maps]{Definition}%
+\begin{point}{20}[bounded-linear-maps]{Definition}%
 Let~$\scrX$ and~$\scrY$ be normed
 vector spaces.
 We say that~$r\in [0,\infty)$
@@ -323,7 +323,7 @@ and the vector space of bounded operators
 from~$\scrX$ to itself is denoted by~$\scrB(\scrX)$.%
 \index{BX@$\scrB(\scrX)$}
 \end{point}
-\begin{point}[bounded-operators-basic]{Exercise}%
+\begin{point}{30}[bounded-operators-basic]{Exercise}%
 Let~$\scrX$, $\scrY$ and~$\scrZ$ be normed complex vector spaces.
 \begin{enumerate}
 \item
@@ -339,7 +339,7 @@ Show that the identity operator $\id\colon \scrX\to \scrX$
 is bounded by~$1$.
 \end{enumerate}
 \end{point}
-\begin{point}[operator-norm-ball]{Exercise}%
+\begin{point}{40}[operator-norm-ball]{Exercise}%
 Let $T\colon \scrX\to\scrY$
 be a bounded operator between normed vector spaces,
 	and let~$r\in[0,\infty)$.
@@ -355,10 +355,10 @@ where $\Define{(\scrX)_r}=\{x\in \scrX\colon \|x\|\leq r\}$.%
 	is called the \Define{unit ball} of~$\scrX$.)%
 \index{unit ball}
 \end{point}
-\begin{point}[operator-norm-complete]{Lemma}%
+\begin{point}{50}[operator-norm-complete]{Lemma}%
 The operator norm on~$\scrB(\scrX,\scrY)$ is complete
 when~$\scrY$ is a complete normed vector space.
-\begin{point}{Proof}%
+\begin{point}{60}{Proof}%
 Let~$(T_n)_n$ be a Cauchy sequence in~$\scrB(\scrX,\scrY)$.
 We must show that~$(T_n)_n$ converges to some
 bounded operator $T\colon \scrX\to\scrY$.
@@ -397,7 +397,7 @@ Whence~$T$ is bounded too,
 and $(T_n)_n$ converges to~$T$.\qed
 \end{point}
 \end{point}
-\begin{point}[bounded-operators-banach-algebra]%
+\begin{point}{70}[bounded-operators-banach-algebra]%
 From~\sref{bounded-operators-basic}
 and~\sref{operator-norm-complete}
 it is clear that the complex vector space
@@ -412,7 +412,7 @@ To get an involution,
 we need the additional structure
 provided by a Hilbert space as follows.
 \end{point}
-\begin{point}[hilb-def]{Definition}%
+\begin{point}{80}[hilb-def]{Definition}%
 An \Define{inner product}%
 \index{inner product!$\C$-valued}
 on a complex vector space~$V$ 
@@ -457,7 +457,7 @@ that such adjoinable~$T$ is adjoint to exactly one~$S$,
 which we denote by~\Define{$T^*$}.%
 \index{$(\,\cdot\,)^*$!adjoint of an operator}
 \end{point}
-\begin{point}[hilb-basic-examples]{Example}%
+\begin{point}{90}[hilb-basic-examples]{Example}%
 We endow $\C^N$%
 \index{C@$\C$, the complex numbers!as a Hilbert space}
 (where~$N$ is a natural number)
@@ -492,14 +492,14 @@ as its inner product,
 because at this point it is not
 even clear that this sum converges.
 \end{point}
-\begin{point}[uniqueness-adjoint]{Exercise}%
+\begin{point}{100}[uniqueness-adjoint]{Exercise}%
 Let~$x$ and~$x'$ be elements of a pre-Hilbert space~$\scrH$
 with $\left<y,x\right>=\left<y,x'\right>$
 for all~$y\in\scrH$.
 Show that~$x=x'$ (by taking $y=x-x'$).
 Conclude that every operator between pre-Hilbert spaces
 has at most one adjoint.
-\begin{point}{Remark}%
+\begin{point}{110}{Remark}%
 Note that we did not require that
 an adjoinable operator $T\colon \scrH\to\scrK$
 between pre-Hilbert spaces be bounded,
@@ -516,7 +516,7 @@ then both~$T$ and~$T^*$ are automatically bounded
 as we'll see in~\sref{hellinger-toeplitz}.
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{120}{Exercise}%
 Let~$S$ and~$T$ be adjoinable operators on a pre-Hilbert space.
 \begin{enumerate}
 \item
@@ -536,7 +536,7 @@ defined in~\sref{hilb-def} is a norm,
 which boils down to the following fact
 about  $2\times 2$-matrices.
 \end{point}
-\begin{point}[positive-2x2matrix]{Lemma}%
+\begin{point}{130}[positive-2x2matrix]{Lemma}%
 For a positive matrix $A\equiv 
 \left(\begin{smallmatrix}p & \overline{c} \\ c & q\end{smallmatrix}\right)$
 (i.e.~$\left(
@@ -546,7 +546,7 @@ A
 for all~$u,v\in \C$),
 we have
 $p,q\geq 0$, and $\left|c\right|^2 \leq pq$.
-\begin{point}{Proof}%
+\begin{point}{140}{Proof}%
 Let~$u,v\in\C$ be given.
 We have
 \begin{equation*}
@@ -586,7 +586,7 @@ Rewriting gives us
  $\left|c\right|^2\leq pq$.\qed
 \end{point}
 \end{point}
-\begin{point}[inner-product-basic]{Exercise}%
+\begin{point}{150}[inner-product-basic]{Exercise}%
 Let~$\left<\,\cdot\,,\,\cdot\,\right>$
 be an inner product on a vector space~$V$.
 Show that
@@ -637,12 +637,12 @@ Then prove $\|x+y\|^2\leq (\|x\|+\|y\|)^2$
 using the inequalities~$\left<x,y\right>+\left<y,x\right>
 \leq 2\left|\left<x,y\right>\right| \leq 2\|x\|\|y\|$.)
 \end{point}
-\begin{point}[operators-cstar-identity]{Lemma}%
+\begin{point}{160}[operators-cstar-identity]{Lemma}%
 For an adjoinable operator~$T$ on a pre-Hilbert space~$\scrH$
 \begin{equation*}
 \|T^*T\|\ =\ \|T\|^2\qquad\text{and}\qquad\|T^*\|\ =\ \|T\|.
 \end{equation*}
-\begin{point}{Proof}%
+\begin{point}{170}{Proof}%
 If~$T=0$, then~$T^*=0$, and the statements are surely true.
 
 Suppose~$T\neq 0$ (and so~$T^*\neq 0$).
@@ -660,12 +660,12 @@ But then $\|T\|^2\leq \|T^*T\|\leq \|T^*\|\|T\|=\|T\|^2$,
 and so $\|T\|^2=\|T^*T\|$.\qed
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{180}{Exercise}%
 Given a Hilbert space~$\scrH$
 show that the adjoinable operators
 form a closed subspace of~$\scrB(\scrH)$.
 \end{point}
-\begin{point}[ketbra]{Exercise}%
+\begin{point}{190}[ketbra]{Exercise}%
 Let~$x$ and~$y$ be vectors from a Hilbert space~$\scrH$.
 \begin{enumerate}
 \item
@@ -681,8 +681,8 @@ and~$(\ketbra{x}{y})^*=\ketbra{y}{x}$.
 \end{enumerate}
 \end{point}
 \end{parsec}
-\begin{parsec}[hilb-adjoint]%
-\begin{point}[adjoinables-cstar-algebra]%
+\begin{parsec}{50}[hilb-adjoint]%
+\begin{point}{10}[adjoinables-cstar-algebra]%
 At this point
 it is clear that the vector space of adjoinable operators
 on a Hilbert space forms a $C^*$-algebra.
@@ -695,7 +695,7 @@ has an adjoint, see~\sref{riesz-representation-theorem},
 for which we need the (existence and) properties of ``projections''
 on (closed) linear subspaces:
 \end{point}
-\begin{point}[projection-on-closed-linear-subspace]{Definition}
+\begin{point}{20}[projection-on-closed-linear-subspace]{Definition}
 Let~$x$ be an element of a pre-Hilbert space~$\scrH$.
 We say that an element~$y$ of a linear subspace~$C$
 of~$\scrH$ is a \Define{projection of~$x$ on~$C$}%
@@ -706,7 +706,7 @@ if
 \end{equation*}
 (In other words,~$y$ is one of the elements of~$C$ closest to~$x$.)
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{30}{Exercise}%
 We'll see in~\sref{projection-theorem}
 that on a \emph{closed}
 linear subspace
@@ -719,13 +719,13 @@ a projection on the linear subspace~$c_{00}$
 (from \sref{hilb-basic-examples})
 are the vectors in~$c_{00}$ themselves.
 \end{point}
-\begin{point}{Lemma}%
+\begin{point}{40}{Lemma}%
 Let~$\scrH$ be a pre-Hilbert space,
 and let $x,e\in\scrH$ with
 $\|e\|=1$.
 
 Then~$y=\left<e,x\right>e$ is the unique projection of~$x$ on~$e\C$.
-\begin{point}{Proof}%
+\begin{point}{50}{Proof}%
 Let~$y'\in e\C$
 with~$y'\neq y$
 be given.
@@ -748,7 +748,7 @@ we have $\|y'-x\|^2
 Hence~$\|y'-x\|>\|y-x\|$.\qed
 \end{point}
 \end{point}
-\begin{point}[hilb-projection-basic]{Exercise}%
+\begin{point}{60}[hilb-projection-basic]{Exercise}%
 Let~$y$ be a projection of an element~$x$ of a pre-Hilbert space~$\scrH$
 on a linear subspace~$C$.
 Show that~$y$ is a projection of~$x$ on $y\C$.
@@ -759,14 +759,14 @@ for every~$c\in C$.
 Conclude that~$\left<y',x-y\right>\equiv\left<y',(x+y'-y)-y'\right>=0$ 
 for every~$y'\in C$.
 \end{point}
-\begin{point}[projection-theorem]{Projection Theorem}%
+\begin{point}{70}[projection-theorem]{Projection Theorem}%
 \index{Projection Theorem}%
 Let~$C$ be a closed linear subspace
 of a Hilbert space~$\scrH$.
 Each~$x\in \scrH$
 has a unique projection~$y$ on~$C$,
 and $\left<y',y\right>=\left<y',x\right>$ for~$y'\in C$.
-\begin{point}{Proof}%
+\begin{point}{80}{Proof}%
 We only need to show that there is a projection~$y$
 of~$x$ on~$C$,
 because~\sref{hilb-projection-basic}
@@ -804,13 +804,13 @@ It follows easily that~$\|x-y\|=r$,
 and thus~$y$ is the projection of~$x$ on~$C$.\qed
 \end{point}
 \end{point}
-\begin{point}[riesz-representation-theorem]{Riesz'~Representation Theorem}%
+\begin{point}{90}[riesz-representation-theorem]{Riesz'~Representation Theorem}%
 \index{Riesz' Representation Theorem}%
 Let~$\scrH$ be a Hilbert space.
 For every bounded linear map~$f\colon \scrH\to\C$
 there is a unique vector~$x\in \scrH$
 with $\left<x,\,\cdot\,\right>=f$.
-\begin{point}{Proof}%
+\begin{point}{100}{Proof}%
 If~$f=0$, then $x=0$ does the job.
 Suppose that~$f\neq 0$.
 There is an~$x'\in\scrH$ with~$f(x')\neq 0$.
@@ -835,7 +835,7 @@ for all~$z\in \scrH$.
 Finally, uniqueness of~$x$ follows from~\sref{uniqueness-adjoint}.\qed
 \end{point}
 \end{point}
-\begin{point}[bounded-operator-adjoinable]{Exercise}%
+\begin{point}{110}[bounded-operator-adjoinable]{Exercise}%
 Prove that every bounded operator~$T$ on a Hilbert space~$\scrH$
 is adjoinable, as follows.
 Let~$x\in \scrH$ be given.
@@ -847,7 +847,7 @@ which exists by~\sref{riesz-representation-theorem}.
 Show that~$x\mapsto Sx$
 gives a bounded linear map $S$, which is adjoint to~$T$.
 \end{point}
-\begin{point}%
+\begin{point}{120}%
 Thus the bounded operators
 on a Hilbert space~$\scrH$
 form a $C^*$-algebra~$\scrB(\scrH)$%
@@ -860,13 +860,13 @@ is isomorphic to a $C^*$-subalgebra of
 a $\scrB(\scrH)$.
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{60}%
+\begin{point}{10}%
 Here is a non-trivial
 example of a Hilbert space
 that will be used later on.
 \end{point}
-\begin{point}[hilb-sum]{Proposition}%
+\begin{point}{20}[hilb-sum]{Proposition}%
 Given a family  $(\scrH_i)_{i\in I}$ 
 of Hilbert spaces,
 the vector space
@@ -881,7 +881,7 @@ the vector space
 is a Hilbert space
 when endowed with the inner product
 $\left<x,y\right>=\sum_i \left<x_i,y_i\right>$.
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 To begin with
 we must show that~$\sum_i \left<x_i,y_i\right>$
 converges for~$x,y\in\bigoplus_i \scrH_i$.
@@ -975,14 +975,14 @@ and we conclude that~$\|x_\infty-x_n\|\leq \varepsilon$.\qed
 \end{parsec}
 \section{The Basics}
 
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{70}%
+\begin{point}{10}%
 Now that we have seen the most important examples
 of $C^*$-algebras,
 we can begin developing the theory.
 We'll start easy with the self-adjoint elements:
 \end{point}
-\begin{point}{Definition}%
+\begin{point}{20}{Definition}%
 Given an element $a$ of a $C^*$-algebra $\scrA$, 
 \begin{enumerate}
 \item we say that $a$ is \Define{self-adjoint}%
@@ -1000,7 +1000,7 @@ The set of self-adjoint elements of~$\scrA$
 is denoted by~\Define{$\sa{\scrA}$}.%
 \index{$\Real{(\,\cdot\,)}$, real part!$\Real{\scrA}$, of a $C^*$-algebra}
 \end{point}
-\begin{point}[cstar-involution-basic]{Exercise}%
+\begin{point}{30}[cstar-involution-basic]{Exercise}%
 Let~$a$ be an element of a $C^*$-algebra~$\scrA$.
 \begin{enumerate}
 \item 
@@ -1052,8 +1052,8 @@ when~$a$ is not self-adjoint.
 \end{enumerate}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}{Notation}%
+\begin{parsec}{80}%
+\begin{point}{10}{Notation}%
 Recall that (in this text) every $C^*$-algebra~$\scrA$ has a unit, $1$.
 Thus, for every scalar $\lambda\in \C$,
 we have an element $\lambda\cdot 1$ of~$\scrA$,
@@ -1064,7 +1064,7 @@ such as $i+2+5a$ (where $a\in \scrA$)
 may be interpreted in several ways,
 the result is always the same.
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{20}{Exercise}%
 There is a subtle point regarding
 the norm~$\|\lambda\|$ of a
 scalar~$\lambda\in \C$ inside a $C^*$-algebra~$\scrA$:
@@ -1083,8 +1083,8 @@ are interpreted as elements of~$\scrA$.
 \end{enumerate}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{90}%
+\begin{point}{10}%
 Let us now generalize the notion of a positive function
 in~$C(X)$
 to a positive element of a $C^*$-algebra.
@@ -1098,7 +1098,7 @@ on the description that is perhaps
 not most familiar,
 but does give us the richest structure at this stage.
 \end{point}
-\begin{point}[cx-positive]{Exercise}%
+\begin{point}{20}[cx-positive]{Exercise}%
 Let~$X$ be a compact Hausdorff space.
 Show that for self-adjoint $f\in C(X)$, the following are equivalent.
 \begin{enumerate}
@@ -1111,14 +1111,14 @@ $f\equiv g^* g$ for some~$g\in C(X)$;
 \item
 $\|f-t\|\leq t$ for some $t\geq \frac{1}{2}\|f\|$.
 \end{enumerate}
-\begin{point}{Exercise}%
+\begin{point}{30}{Exercise}%
 To see how condition~\ref{cx-positive-1}
 can be expressed in terms of the $C^*$-algebra structure of~$C(X)$,
 prove that  $\lambda\in f(X)$ iff $f-\lambda$
 is not invertible.
 \end{point}
 \end{point}
-\begin{point}[cstar-positive-def]{Definition}%
+\begin{point}{40}[cstar-positive-def]{Definition}%
 A self-adjoint element~$a$ of a $C^*$-algebra~$\scrA$ is called
 \Define{positive}%
 \index{positive!element of a $C^*$-algebra}
@@ -1131,7 +1131,7 @@ and we denote the set of positive elements of~$\scrA$
 by~$\Define{\pos{\scrA}}$.%
 \index{$(\,\cdot\,)_+$, positive part!$\scrA_+$,
 of a $C^*$-algebra}
-\begin{point}{Remark}%
+\begin{point}{50}{Remark}%
 One advantage of this
 definition
 over, say, taking the elements of the form~$a^*a$
@@ -1147,15 +1147,15 @@ that the sum of such positive elements
 is again positive, see~\sref{cstar-positive-sum}.
 \end{point}
 \end{point}
-\begin{point}{Example}%
+\begin{point}{60}{Example}%
 We'll see in~\sref{hilb-positive-operators},
 that a bounded operator~$T$ on a Hilbert space~$\scrH$
 is positive iff~$\left<x,Tx\right>\geq 0$ for all~$x\in\scrH$.
 \end{point}
-\begin{point}[cstar-positive-sum]{Lemma}%
+\begin{point}{70}[cstar-positive-sum]{Lemma}%
 Let~$a,b$ be positive elements of a $C^*$-algebra.
 Then $a+b$ is positive.
-\begin{point}{Proof}
+\begin{point}{80}{Proof}
 Since~$t\geq 0$,
 there is~$t\geq \frac{1}{2}\|a\|$ with $\|a-t\|\leq t$.
 Similarly, there is~$s\geq \frac{1}{2}\|b\|$
@@ -1165,7 +1165,7 @@ and $t+s\geq \frac{1}{2}(\|a\|+\|b\|) \geq \frac{1}{2}\|a+b\|$,
 so~$a+b\geq 0$.\qed
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{90}{Exercise}%
 Given an element~$a$
 of a $C^*$-algebra~$\scrA$
 with~$0\leq a\leq 1$
@@ -1177,7 +1177,7 @@ the \Define{orthosupplement} $\Define{a^\perp} :=1-a$%
 \index{$(\,\cdot\,)^\perp$, orthosupplement}
 is an effect too.
 \end{point}
-\begin{point}[cstar-positive]{Exercise}%
+\begin{point}{100}[cstar-positive]{Exercise}%
 Let~$\scrA$ be a $C^*$-algebra.
 \begin{enumerate}
 \item
@@ -1230,12 +1230,12 @@ when we return to the positive elements in~\sref{cstar-positive-2}.
 \end{point}
 \end{parsec}
 
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{100}%
+\begin{point}{10}%
 Let us spend some words
 on the morphisms between $C^*$-algebras.
 \end{point}
-\begin{point}[maps]{Definition}
+\begin{point}{20}[maps]{Definition}
 A linear map $f\colon \scrA \to \scrB$
 between $C^*$-algebras
 is called
@@ -1269,7 +1269,7 @@ if $\sum_{i,j} b_i^*\,f(\,a_i^*a_j\,)\,b_j$ is positive
 for all~$a_1,\dotsc,a_n\in \scrA$, and $b_1,\dotsc,b_n\in\scrB$
 (see Remark~5.1 of~\cite{paschke}).
 \end{enumerate}
-\begin{point}%
+\begin{point}{30}%
 We use the bold letters as abbreviations,
 so for instance,
 $f$ is \Define{pu}%
@@ -1302,10 +1302,10 @@ when we start dealing with matrices (see~\sref{n-pos})
 and the tensor product (see~\sref{tensor-functorial}).
 \end{point}
 \end{point}
-\begin{point}[cstar-p-implies-i]{Lemma (``p$\Rightarrow$i'')}
+\begin{point}{40}[cstar-p-implies-i]{Lemma (``p$\Rightarrow$i'')}
 A positive map $f\colon \scrA\to\scrB$ between
 $C^*$-algebras is involution preserving.
-\begin{point}{Proof}%
+\begin{point}{50}{Proof}%
 Let~$a\in \scrA$ be given. We must show that~$f(a^*)=f(a)^*$.
 
 But first we'll show that if~$a$ is self adjoint,
@@ -1325,7 +1325,7 @@ Hence $f(a^*)\equiv f(\Real{a}-i\Imag{a})
 =\Real{f(a)}-i\Imag{f(a)}\equiv f(a)^*$.\qed
 \end{point}
 \end{point}
-\begin{point}{Remark}%
+\begin{point}{60}{Remark}%
 Other important relations between these types of morphisms
 can only be established later on
 once we have a firmer grasp on the positive elements.
@@ -1335,7 +1335,7 @@ is completely positive (in~\sref{cp}),
 and that every completely positive map is positive 
 (in~\sref{astara-pos-basic-consequences}).
 \end{point}
-\begin{point}[cstar-product-2]{Exercise}%
+\begin{point}{70}[cstar-product-2]{Exercise}%
 \index{product!in $\Cstar{miu}$ and $\cCstar{miu}$}
 Show that
 the product~$\bigoplus_{i\in I}\scrA_i$
@@ -1362,7 +1362,7 @@ when we're able to prove
 that an element~$a$ of $\bigoplus_i \scrA_i$
 is positive provided that each~$a(i)$ is positive.
 \end{point}
-\begin{point}[cstar-equaliser-1]{Exercise}%
+\begin{point}{80}[cstar-equaliser-1]{Exercise}%
 \index{equaliser!in~$\Cstar{miu}$ and $\Cstar{pu}$}
 Show that given miu-maps $f,g\colon \scrA\to\scrB$
 between $C^*$-algebras
@@ -1375,7 +1375,7 @@ that is in fact the equaliser of~$f$ and~$g$
 in~$\Cstar{miu}$ and~$\Cstar{pu}$.
 Show that the same description applies
 to~$\cCstar{miu}$ and~$\cCstar{pu}$.
-\begin{point}{Remark}%
+\begin{point}{90}{Remark}%
 The assumption here that~$f$ and~$g$ are miu-maps
 might be essential:
 it is not clear whether arbitrary pu-maps $f,g\colon \scrA\to\scrB$
@@ -1387,8 +1387,8 @@ have an equaliser in~$\Cstar{pu}$.
 %
 % geometric series 
 %
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{110}%
+\begin{point}{10}%
 After having visited the positive elements,
 let us explore our second landmark,
 the  invertible elements
@@ -1403,7 +1403,7 @@ is invertible in~$\scrA$,
 then~$a$ is already invertible in~$\scrB$,
 see~\sref{inverse-permanence}.
 \end{point}
-\begin{point}[geometric]{Lemma}%
+\begin{point}{20}[geometric]{Lemma}%
 \index{geometric series}%
 Let~$a$ be an element of a $C^*$-algebra~$\scrA$ with~$\|a\|<1$.
 Then~$a^\perp\equiv 1-a$ has an inverse,
@@ -1411,7 +1411,7 @@ namely~$(a^\perp)^{-1}= \sum_{n=0}^\infty\, a^n$.
 Moreover, this series converges absolutely,
 that is,
 $\sum_{n=0}^\infty \|a^n\|<\infty$.
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 Note that
 $(1-\|a\|)\,(1+\|a\|+\|a\|^2+\dotsb+\|a\|^N) \,=\, 1-\|a\|^{N+1}$,
 and so 
@@ -1431,14 +1431,14 @@ and~$\|a\| < 1$.}
  $\|a\|<1$),
 we  get $\sum_{n=0}^\infty \|a\|^n = (1-\|a\|)^{-1}$.
 
-\begin{point}%
+\begin{point}{40}%
 Note that $a^N$ norm converges to~$0$,
 because $\|a\|^N$ converges to~$0$.
 Also (but slightly less obvious),
 $\sum_n a^n$ norm converges,
 because~$\sum_n \|a\|^n$ converges.
 \end{point}
-\begin{point}%
+\begin{point}{50}%
 Thus, taking the norm limit
 on both sides of $(1-a)(1+a+a^2+\dotsb a^N) = 1-a^{N+1}$,
 gives us $(1-a)(\sum_n a^n) = 1$.
@@ -1448,7 +1448,7 @@ we see that $\sum_n a^n$ is the inverse of~$1-a$.\qed
 \end{point}
 \end{point}
 \end{point}
-\begin{point}[spectrum-bounded]{Exercise}%
+\begin{point}{60}[spectrum-bounded]{Exercise}%
 \index{invertible!element of a $C^*$-algebra}%
 Let~$a$ be an element of a $C^*$-algebra~$\scrA$.
 \begin{enumerate}
@@ -1463,13 +1463,13 @@ Show that $U:=\{\ b\in\scrA\colon\ \text{$b$ is invertible}\ \}$
 is an open subset of~$\scrA$.
 \end{enumerate}
 \end{point}
-\begin{point}[geometric-convergence]{Lemma}%
+\begin{point}{70}[geometric-convergence]{Lemma}%
 \index{geometric series}%
 For a self-adjoint element~$a$ of~$\scrA$
 the series $\sum_n a^n$ 
 converges iff~$\|a\|<1$;
 and in that case converges absolutely.
-\begin{point}{Proof}%
+\begin{point}{80}{Proof}%
 We have already seen in~\sref{geometric}
 that~$\sum_n a^n$
 converges absolutely when~$\|a\|<1$.
@@ -1480,7 +1480,7 @@ between consecutive partial sums of~$\sum_n a^n$)
 converges to~$0$,
 which only happens when~$\|a\|<1$.\qed
 \end{point}
-\begin{point}[geometric-non-self-adjoint]{Remark}%
+\begin{point}{90}[geometric-non-self-adjoint]{Remark}%
 For non-self-adjoint elements~$a$ of~$\scrA$,
 the convergence of~$\sum_n a^n$
 is a more delicate matter.
@@ -1500,13 +1500,13 @@ what happens when $1=\limsup_n \|a^n\|^{\nicefrac{1}{n}}$
 --- which I do not know.
 \end{point}
 \end{point}
-\begin{point}[cstar-inv-continuous]{Lemma}%
+\begin{point}{100}[cstar-inv-continuous]{Lemma}%
 Let~$\scrA$ be a $C^*$-algebra.
 The assignment $a\mapsto a^{-1}$
 gives a  continuous map
 (from the set $\{\,b\in \scrA\colon\, \text{$b$ is invertible}\,\}$
 to~$\scrA$.)
-\begin{point}[cstar-inv-continuous-1]{Proof}
+\begin{point}{110}[cstar-inv-continuous-1]{Proof}
 (Based on Proposition 3.1.6 of~\cite{kr}.)
 
 First we establish continuity at~$1$:
@@ -1522,7 +1522,7 @@ Then~$\|1-a^{-1}\|=\|\sum_{n=1}^\infty (1-a)^n\|\leq \sum_{n=1}^\infty \|1-a\|^n
 Thus, as $\|1-a\|\leq\frac{1}{2}$,
 we get $(1-\|1-a\|)^{-1}\leq 2$,
 and so $\|1-a^{-1}\|\leq 2\|1-a\|$.
-\begin{point}%
+\begin{point}{120}%
 Let~$a$ be an invertible element of~$\scrA$,
 and let~$b\in\scrA$ with~$\|a-b\|\leq\frac{1}{2}\|a^{-1}\|$.
 We claim that~$b$ is invertible,
@@ -1540,10 +1540,10 @@ Hence $\|a^{-1}-b^{-1}\| = \|(1-(a^{-1}b)^{-1})a^{-1}\|
 %
 %	Towards spectral permanence
 %
-\begin{point}{Lemma}%
+\begin{point}{130}{Lemma}%
 For a self-adjoint element~$a$ from a $C^*$-algebra,
 $a-i$ is invertible.
-\begin{point}{Proof}%
+\begin{point}{140}{Proof}%
 (Based on Proposition 4.1.1(ii) of~\cite{kr}.)
 
 The trick
@@ -1562,7 +1562,7 @@ we have $\|a+ni\|^2 = \|(a+ni)^*(a+ni)\|
 and so $\|a+ni\| < n+1$.\qed
 \end{point}
 \end{point}
-\begin{point}[spectrum-self-adjoint-real]{Exercise}%
+\begin{point}{150}[spectrum-self-adjoint-real]{Exercise}%
 Let~$a$ be a self-adjoint element of a $C^*$-algebra.
 \begin{enumerate}
 \item
@@ -1586,13 +1586,13 @@ $a^n+1= \prod_{k=1}^n a+\zeta^{2k+1}$
 where $\zeta=e^{\frac{\pi i}{n}}$.)
 \end{enumerate}
 \end{point}
-\begin{point}[inverse-permanence]{Proposition}%
+\begin{point}{160}[inverse-permanence]{Proposition}%
 Let~$\scrA$ be a $C^*$-subalgebra
 of a $C^*$-algebra $\scrB$.
 Let~$a$ be a self-adjoint element of~$\scrA$,
 which has an inverse, $a^{-1}$, in~$\scrB$.
 Then~$a^{-1}\in\scrA$.
-\begin{point}{Proof}%
+\begin{point}{170}{Proof}%
 While we do not know yet that~$a$ is invertible in~$\scrA$,
 we do know that~$a+\nicefrac{i}{n}$ 
 has an inverse $(a+\nicefrac{i}{n})^{-1}$ in~$\scrA$
@@ -1607,14 +1607,14 @@ and~$\scrA$ is closed in~$\scrB$,
 we see that~$a^{-1}$ is in~$\scrA$.\qed
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{180}{Exercise}%
 	Show that the assumption in~\sref{inverse-permanence} 
 	that~$a$ is self-adjoint
 may be dropped. 
 
 (Hint: consider $a^*a$, see Proposition VIII.1.14 of~\cite{conway2013}.)
 \end{point}
-\begin{point}[spectrum-of-element]{Definition}%
+\begin{point}{190}[spectrum-of-element]{Definition}%
 The \Define{spectrum},
 \Define{$\spec(a)$},%
 \index{sp@$\spec$, spectrum!$\spec(a)$, of an element of a $C^*$-algebra}
@@ -1624,7 +1624,7 @@ is the set
 of complex numbers~$\lambda$
 for which~$a-\lambda$ is not invertible.
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{200}{Exercise}%
 Verify the following examples.
 \begin{enumerate}
 \item
@@ -1639,7 +1639,7 @@ from the $C^*$-algebra $M_n$
 is the set of eigenvalues of~$A$.
 \end{enumerate}
 \end{point}
-\begin{point}[spectrum-basic]{Exercise}%
+\begin{point}{210}[spectrum-basic]{Exercise}%
 Let~$a$ be an element of a $C^*$-algebra $\scrA$.
 \begin{enumerate}
 \item
@@ -1671,7 +1671,7 @@ Prove that~$\spec(a^{-1})=\{\lambda^{-1}\colon \lambda\in \spec(a)\}$
 if~$a$ is invertible (and~$0\notin \spec(a)$).
 \end{enumerate}
 \end{point}
-\begin{point}%
+\begin{point}{220}%
 On first sight,
 the spectrum $\spec(a)$
 of an element~$a$ of a $C^*$-algebra~$\scrA$ 
@@ -1684,12 +1684,12 @@ However, such careful bookkeeping turns out
 be unnecessary
 by the following result.
 \end{point}
-\begin{point}[spectral-permanence]{Theorem (Spectral Permanence)}%
+\begin{point}{230}[spectral-permanence]{Theorem (Spectral Permanence)}%
 \index{Spectral Permanence}%
 Let~$\scrB$ be a $C^*$-subalgebra of a $C^*$-algebra $\scrA$.
 Then~$\spec_{\scrA}(a)=\spec_\scrB(a)$
 for every element~$a$ of~$\scrB$.
-\begin{point}{Proof}%
+\begin{point}{240}{Proof}%
 Let~$a$ be an element of~$\scrB$,
 and let~$\lambda\in \C$.
 We must show that $a-\lambda$ is invertible in~$\scrA$
@@ -1705,8 +1705,8 @@ directly from~\sref{inverse-permanence}.\qed%
 \end{parsec}
 \section{Positive Elements}
 \subsection{Holomorphic Functions}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{120}%
+\begin{point}{10}%
 The next order of business
 is to show that the spectrum~$\spec(a)$ of an element~$a$
 of a $C^*$-algebra contains enough points, so to speak.
@@ -1728,7 +1728,7 @@ for~$\scrA$-valued functions
 (instead of $\C$-valued functions),
 which will only be needed to prove this fact.
 \end{point}
-\begin{point}{Setting}%
+\begin{point}{20}{Setting}%
 Fix a $C^*$-algebra~$\scrA$ for the remainder of this paragraph.
 For brevity,
 we'll say that a \Define{function}%
@@ -1758,7 +1758,7 @@ is called its \Define{derivative}.%
 \index{derivative of a holomorphic function}%
 \index{$(\,\cdot\,)'$!$f'$, derivative of a holomorphic function}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{30}{Exercise}%
 Verify the following examples of holomorphic functions.
 \begin{enumerate}
 \item
@@ -1783,8 +1783,8 @@ is holomorphic with $f'(z)=na_nz^{n-1}+\dotsb+2a_2z+a_1$.
 \end{point}
 \end{parsec}
 
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{130}%
+\begin{point}{10}%
 We now turn
 to perhaps the most important example
 of a holomorphic $\scrA$-valued function ---
@@ -1795,7 +1795,7 @@ properties:
 the holomorphic $\scrA$-valued function
 given by a power series  $\sum_n a_n z^n$.
 \end{point}
-\begin{point}[hadamard]{Theorem}%
+\begin{point}{20}[hadamard]{Theorem}%
 \index{power series}%
 Let~$a_0,a_1,a_2,\dotsc\in\scrA$
 be given,
@@ -1813,7 +1813,7 @@ then~$\left|z\right|\leq R$.
 (The number~$R\in[0,\infty]$ is called the \Define{radius of convergence}%
 \index{radius of convergence}
 of the series $\sum_n a_n z^n$.)
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 Suppose that $\left|z\right|<R$.
 To show that the series 
 $\sum_n a_nz^n$ converges absolutely,
@@ -1857,7 +1857,7 @@ so that $R^{-1}\equiv \limsup_n \|a_n\|^{\nicefrac{1}{n}}
 giving $\left|z\right|\leq R$.\qed
 \end{point}
 \end{point}
-\begin{point}{Proposition}%
+\begin{point}{40}{Proposition}%
 The $\scrA$-valued function~$f$
 given by a series $\sum_n a_n z^n$
 with radius of convergence~$\smash{R:=(\,\limsup_n \|a_n\|^{\nicefrac{1}{n}}\,)^{-1}}$
@@ -1866,7 +1866,7 @@ when defined
 on the disk $\dom(f)=\{z\in\C\colon \left|z\right|<R\}$,
 and $f'(z)=\sum_{n=1}^\infty n a_n z^{n-1}$
 for all~$z\in \dom(f)$.
-\begin{point}{Proof}%
+\begin{point}{50}{Proof}%
 If~$R=0$,
 the statement is rather dull, but clearly true,
 so we assume that~$R\neq 0$,
@@ -1947,7 +1947,7 @@ from~\eqref{power-series-derivative-0}
 converges to~$0$ as~$h$ tends to~$0$.\qed
 \end{point}
 \end{point}
-\begin{point}[powerseries-uniqueness-coeffients]{Exercise}%
+\begin{point}{60}[powerseries-uniqueness-coeffients]{Exercise}%
 Let~$\sum_n a_n z^n$
 be a power series over~$\scrA$
 with radius of convergence~$R>0$
@@ -1961,8 +1961,8 @@ of the power series also vanishes on the disk around~$0$
 with radius~$r$.)
 \end{point}
 \end{parsec}%
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{140}%
+\begin{point}{10}%
 All holomorphic functions
 are power series
 in the sense
@@ -1989,7 +1989,7 @@ is integration of $\scrA$-valued
 holomorphic functions along
 line segments.
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{20}{Exercise}%
 We're going to define as quickly as possible
 an integral~$\int f $
 for every continuous map $f\colon [0,1]\to\scrA$.%
@@ -2080,7 +2080,7 @@ when~$f\colon [0,1]\to\C$
 is continuous and~$a\in \scrA$.
 \end{enumerate}
 \end{point}
-\begin{point}{Definition}%
+\begin{point}{30}{Definition}%
 The integral of
 a holomorphic $\scrA$-valued function~$f$
 along a line segment $[w,w']\subseteq\dom(f)$
@@ -2162,13 +2162,13 @@ around~$z$ to hit~$w_1$,
 that is, the angle of the corner on the right when travelling
 from~$w_0$ to~$w_1$ via~$z$.)
 \end{point}
-\begin{point}[goursat]{Goursat's Theorem}%
+\begin{point}{40}[goursat]{Goursat's Theorem}%
 \index{Goursat's Theorem}%
 Let~$f$ be a holomorphic function,
 and let~$T$ be a triangle whose closure
 is entirely contained in~$\dom(f)$.
 Then~$\int_T f = 0$.
-\begin{point}[goursat-1]{Proof}%
+\begin{point}{50}[goursat-1]{Proof}%
 (Based on~\cite{moore1900}.)
 If two vertices of~$T$ coincide
 the result is obviously true,
@@ -2190,7 +2190,7 @@ using the derivative of~$f$.
 But since such an approximation only
 concerns a single point,
 we first need to zoom in.
-\begin{point}[goursat-2]%
+\begin{point}{60}[goursat-2]%
 If we split~$T$ into four similar triangles
 $T^\text{i}$, $T^\text{ii}$,
 $T^\text{iii}$, $T^\text{iv}$
@@ -2232,7 +2232,7 @@ From this it is clear how to
 with $\|\int_Tf\|\leq 4^n \|\int_{T_n} f\|$,
 and $\length(T)=2^n\length(T_n)$.
 \end{point}
-\begin{point}%
+\begin{point}{70}%
 If we pick a point on the closure $\mathrm{cl}(T_n)$
 of each triangle~$T_n$ 
 we get a Cauchy sequence
@@ -2287,7 +2287,7 @@ we see that~$\int_T f=0$.\qed
 \end{point}
 \end{point}
 \end{point}%
-\begin{point}[invint]{Exercise}%
+\begin{point}{80}[invint]{Exercise}%
 	The assumption in Goursat's Theorem (\sref{goursat})
 that the holomorphic function~$f$
 is defined not only on the boundary~$\partial T$
@@ -2361,7 +2361,7 @@ show that
 \end{equation*}
 \end{enumerate}
 \end{point}
-\begin{point}%
+\begin{point}{90}%
 Thus integration of 
 $z\mapsto (z-z_0)^{-1}$
 along a triangle~$T$ detects
@@ -2379,8 +2379,8 @@ we restrict ourselves
 to regular $N$-gons.
 \end{point}
 \end{parsec}%
-\begin{parsec}%
-\begin{point}[cauchy-formula]{Theorem (Cauchy's Integral Formula)}%
+\begin{parsec}{150}%
+\begin{point}{10}[cauchy-formula]{Theorem (Cauchy's Integral Formula)}%
 \index{Cauchy's Integral Formula}%
 Let~$f$ be a holomorphic $\scrA$-valued function
 which is defined on the interior and boundary
@@ -2395,7 +2395,7 @@ we have
 	f(z_0)\ = \ \frac{1}{2\pi i}\,\sum_{n=0}^{N-1}\int_{w_n}^{w_{n+1}}
 	\frac{f(z)}{z-z_0}\,dz
 \end{equation*}
-\begin{point}{Proof}%
+\begin{point}{20}{Proof}%
 	Since~$\sum_{n=0}^{N-1} \int_{w_n}^{w_{n+1}} \frac{f(z_0)}{z-z_0}\,dz
 	= 2\pi i f(z_0)$ by~\sref{invint}
 it suffices to show that
@@ -2403,7 +2403,7 @@ it suffices to show that
 \label{eq:cauchy-formula-1}
 \sum_{n=0}^{N-1}\int_{w_n}^{w_{n+1}} \frac{f(z)-f(z_0)}{z-z_0}\,dz \ = \ 0.
 \end{equation}
-\begin{point}[cauchy-formula-1]%
+\begin{point}{30}[cauchy-formula-1]%
 Let~$\varepsilon>0$ be given.
 Since~$f$ is holomorphic at~$z_0$
 we can find $\delta>0$ with
@@ -2413,7 +2413,7 @@ we can find $\delta>0$ with
 \end{equation*}
 for all~$z\in\dom(f)$ with $\left|z-z_0\right|\leq \delta$. 
 \end{point}
-\begin{point}%
+\begin{point}{40}%
 To use~\sref{cauchy-formula-1},
 we must restrict our attention to a smaller polygon.
 Let~$T$ be a triangle 
@@ -2449,7 +2449,7 @@ follows from \eqref{eq:cauchy-formula-2}.\qed
 \end{point}
 \end{point}
 \end{point}
-\begin{point}[taylor]{Proposition}%
+\begin{point}{50}[taylor]{Proposition}%
 Let~$f$ be a holomorphic $\scrA$-valued function
 defined on the boundary and interior
 of a regular $K$-gon
@@ -2464,7 +2464,7 @@ f(z)\ = \
 	\frac{f(u)}{(u-w)^{n+1}}\,du\right)
 \ (z-w)^n.
 \end{equation*} 
-\begin{point}{Proof}%
+\begin{point}{60}{Proof}%
 By~\sref{cauchy-formula} and some easy algebra we have
 \begin{alignat*}{3}
 2\pi if(z)\ &=\  
@@ -2498,7 +2498,7 @@ $\sum_{n=0}^Nf(u)\frac{(z-w)^n}{(u-w)^{n+1}}$
 converges uniformly in~$u$ as~$N\to\infty$.\qed
 \end{point}
 \end{point}
-\begin{point}[rigid-expansion]{Proposition}%
+\begin{point}{70}[rigid-expansion]{Proposition}%
 Let~$f$ be an $\scrA$-valued holomorphic
 function
 that 
@@ -2512,7 +2512,7 @@ Then the formula $f(z)=\sum_n a_n (z-w)^n$
 holds also for any $z$ from a larger disk 
 with radius~$R>r$
 around~$w$ that still fits in~$\dom(f)$.
-\begin{point}{Proof}%
+\begin{point}{80}{Proof}%
 Let~$z$ with $\left|z-w\right|<R$ be given.
 By choosing~$K$ large enough
 we can fit the boundary of a regular $K$-gon
@@ -2540,8 +2540,8 @@ for all~$z'\in \C$ with $\left|z'-w\right|<r$.\qed
 \end{point}
 \end{parsec}
 \subsection{Spectral Radius}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{160}%
+\begin{point}{10}%
 Our analysis of $\scrA$-valued
 holomorphic functions
 allows us to expose
@@ -2550,7 +2550,7 @@ between the norm
 and the invertible elements
 in a $C^*$-algebra.
 \end{point}
-\begin{point}[norm-spectrum]{Proposition}%
+\begin{point}{20}[norm-spectrum]{Proposition}%
 For a self-adjoint element~$a$ of a $C^*$-algebra~$\scrA$,
 we have
 \begin{equation*}
@@ -2560,7 +2560,7 @@ we have
 (The quantity on the right hand-side above
 is called the \Define{spectral radius} of~$a$.)%
 \index{spectral radius}
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 Write~$r=
 \sup\{\left|\,\lambda\right|\colon\, \lambda\in \spec(a)\backslash\{0\}\,\}$
 where the supremum is computed
@@ -2609,7 +2609,7 @@ and thus $\sum_n a^n{z}^{n+1}$ diverges (see~\sref{geometric-convergence})
 Hence~$R=\|a\|^{-1}$, and so~$r=\|a\|$.\qed
 \end{point}
 \end{point}
-\begin{point}{Remark}%
+\begin{point}{40}{Remark}%
 For an arbitrary (possibly non-self-adjoint)
 element~$a$ of a $C^*$-algebra~$\scrA$
 the formula in~\sref{norm-spectrum}
@@ -2630,21 +2630,21 @@ $\sup\{\,\left|\lambda\right|\colon\, \lambda\in \spec(a)\,\}
 	can be derived (see e.g.~Theorem~3.3.3 of~\cite{kr}) --- 
 	which we won't need here.
 \end{point}
-\begin{point}[spectrum-non-empty]{Exercise}%
+\begin{point}{50}[spectrum-non-empty]{Exercise}%
 Given a self-adjoint element~$a$ of a $C^*$-algebra show that
 $\spec(a)\neq \varnothing$.
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{60}{Exercise}%
 Given a self-adjoint element~$a$ of a $C^*$-algebra
 and~$\lambda\in\R$
 show that $\spec(a) =\{\lambda\}$ iff $a=\lambda$.
 \end{point}
-\begin{point}{Exercise (Gelfand--Mazur's Theorem for $C^*$-algebras)}%
+\begin{point}{70}{Exercise (Gelfand--Mazur's Theorem for $C^*$-algebras)}%
 \index{Gelfand--Mazur's Theorem}%
 Prove that if every non-zero element of a $C^*$-algebra~$\scrA$
 is invertible, then~$\scrA=\C$ or~$\scrA=\{0\}$.
 \end{point}
-\begin{point}[gelfand-mazur-predicament]{Remark}%
+\begin{point}{80}[gelfand-mazur-predicament]{Remark}%
 A logical next step
 towards Gelfand's representation theorem
 is to show that if~$\lambda\in\spec(a)$
@@ -2680,8 +2680,8 @@ farther than is usually done
 for Gelfand's representation theorem.
 \end{point}
 \end{parsec}
-\begin{parsec}[cstar-positive-2]%
-\begin{point}%
+\begin{parsec}{170}[cstar-positive-2]%
+\begin{point}{10}%
 We return to the positive elements 
 in a $C^*$-algebra (see~\sref{cstar-positive}).
 We'll see that the connection we have established
@@ -2690,18 +2690,18 @@ of a $C^*$-algebra
 via the spectral radius (\sref{norm-spectrum})
 affects the positive elements as well, see~\sref{cstar-positive-1}.
 \end{point}
-\begin{point}[real-pos-ineq]{Exercise}%
+\begin{point}{20}[real-pos-ineq]{Exercise}%
 Show that 
 $\left|\,\lambda-t\,\right| \,\leq\, t$ iff  $\lambda \in[0,2t]$,
 where $\lambda,t\in\R$.
 \end{point}
-\begin{point}[pos-spectrum]{Proposition}%
+\begin{point}{30}[pos-spectrum]{Proposition}%
 For a self-adjoint element $a$ from a $C^*$-algebra,
 and $t\in [0,\infty]$, 
 \begin{equation*}
 \|a-t\|\,\leq\, t\qquad\iff\qquad \spec(a)\subseteq [0,2t].
 \end{equation*}%
-\begin{point}{Proof}%
+\begin{point}{40}{Proof}%
 To begin, note that~$\spec(a-t)=\spec(a)-t\subseteq \R$ 
 by~\sref{spectrum-basic},
 because~$a$ is self-adjoint.
@@ -2712,7 +2712,7 @@ iff $\left|\lambda-t\right|\leq t$ for all~$\lambda\in\spec(a)$
 iff $\spec(a)\subseteq [0,2t]$ (by \sref{real-pos-ineq}).\qed
 \end{point}
 \end{point}
-\begin{point}[cstar-positive-1]{Exercise}%
+\begin{point}{50}[cstar-positive-1]{Exercise}%
 \index{positive!element of a $C^*$-algebra}%
 Show
 (using~\sref{pos-spectrum} and~\sref{spectrum-basic})
@@ -2736,7 +2736,7 @@ $a$ is positive.
 \end{enumerate}
 We will complete this list in~\sref{cstar-positive-final}.
 \end{point}
-\begin{point}[positive-basic-2]{Exercise}%
+\begin{point}{60}[positive-basic-2]{Exercise}%
 Let~$\scrA$ be a $C^*$-algebra.
 \begin{enumerate}
 \item
@@ -2786,8 +2786,8 @@ iff $a\geq \frac{1}{n}$ for some~$n>0$.
 \end{enumerate}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}[cstar-product-3]{Exercise}%
+\begin{parsec}{180}%
+\begin{point}{10}[cstar-product-3]{Exercise}%
 \index{product!in $\Cstar{pu}$}%
 With our new-found
 knowledge about positive elements
@@ -2826,14 +2826,14 @@ in $\Cstar{pu}$.
 a final time in~\sref{cstar-product-4}.)
 \end{point}
 \end{parsec}
-\begin{parsec}
-\begin{point}[prod-spec]{Lemma}%
+\begin{parsec}{190}
+\begin{point}{10}[prod-spec]{Lemma}%
 For elements $a$ and $b$ from a $C^*$-algebra,
 we have
 \begin{equation*}
 \spec(ab)\backslash\{0\}\ =\ \spec(ba)\backslash\{0\}.
 \end{equation*}
-\begin{point}{Proof}%
+\begin{point}{20}{Proof}%
 Let~$\lambda\in \C$ with $\lambda\neq 0$ be given.
 We must show that $\lambda - ab$ is invertible
 iff $\lambda - ba$ is invertible.
@@ -2845,10 +2845,10 @@ we see that $\lambda^{-1}(1+b(\lambda-ab)a)$
 is the inverse of~$\lambda-ba$.\qed
 \end{point}
 \end{point}
-\begin{point}[astara-non-negative]{Lemma}%
+\begin{point}{30}[astara-non-negative]{Lemma}%
 We have $a^*a  \leq 0\implies a=0$
 for every element~$a$ of a $C^*$-algebra.
-\begin{point}{Proof}%
+\begin{point}{40}{Proof}%
 Suppose that $a^*a\leq 0$.
 Then~$\spec(a^*a)\subseteq (-\infty,0]$, almost by definition,
 and so $\spec(aa^*)\subseteq (-\infty,0]$ by~\sref{prod-spec},
@@ -2863,8 +2863,8 @@ and $a=0$.\qed
 \end{point}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{200}%
+\begin{point}{10}%
 Observe that the norm and order on 
 (the self-adjoint elements of a) $C^*$-algebra~$\scrA$
 completely determine one another (using the unit):
@@ -2876,7 +2876,7 @@ $a\geq 0$ iff $\|a-s\|\leq s$ for some $s\geq \frac{1}{2}\|a\|$
 by definition (\sref{cstar-positive-def}).
 This has some useful consequences.
 \end{point}
-\begin{point}[weak-russo-dye]{Lemma}%
+\begin{point}{20}[weak-russo-dye]{Lemma}%
 A positive map~$f\colon \scrA\to\scrB$
 between $C^*$-algebras
 is bounded.
@@ -2886,7 +2886,7 @@ $\|f(a)\|\leq \|f(1)\|\,\|a\|$
 for all self-adjoint~$a\in\sa{\scrA}$,
 and we have $\|f(a)\|\leq 2\|f(1)\|\,\|a\|$
 for arbitrary $a\in \scrA$.
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 Given~$a\in\sa{\scrA}$
 we have~$-\|a\|\leq a \leq \|a\|$,
 and $-\|a\|\,f(1)\leq f(a)\leq \|a\|\,f(1)$
@@ -2899,7 +2899,7 @@ of~$\scrA$
 we have 
 $\|f(a)\|\leq \|f(\Real{a})\|+\|f(\Imag{a})\|\leq 2\|f(1)\|\,\|a\|$.\qed
 \end{point}
-\begin{point}[russo-dye-remark]{Remark}%
+\begin{point}{40}[russo-dye-remark]{Remark}%
 It is a non-trivial theorem (known as \Define{Russo--Dye}%
 \index{Russo--Dye Theorem}
 in \cite{paulsen}),
@@ -2913,12 +2913,12 @@ for completely positive maps
 for which it's much easier to obtain (see~\sref{cp-russo-dye}).
 \end{point}
 \end{point}
-\begin{point}[norm-mi-map]{Exercise}%
+\begin{point}{50}[norm-mi-map]{Exercise}%
 Show that~$\|\varrho\|=\varrho(1)$
 for every mi-map~$\varrho$
 (using the $C^*$-identity).
 \end{point}
-\begin{point}[cstar-isometry]{Lemma}%
+\begin{point}{60}[cstar-isometry]{Lemma}%
 Show that for a pu-map $f\colon \scrA\to\scrB$
 between $C^*$-algebras,
 the following are equivalent.
@@ -2934,9 +2934,9 @@ that is, $\|f(a)\|=\|a\|$ for all~$\in \sa{\scrA}$;
 \item\label{cstar-isometry-3}
 	$f$ is an isometry on~$\pos{\scrA}$.
 \end{enumerate}
-\begin{point}{Proof}%
+\begin{point}{70}{Proof}%
 It is clear that \ref{cstar-isometry-2} implies~\ref{cstar-isometry-3}.
-\begin{point}{\ref{cstar-isometry-1}$\Longrightarrow$\ref{cstar-isometry-2}}%
+\begin{point}{80}{\ref{cstar-isometry-1}$\Longrightarrow$\ref{cstar-isometry-2}}%
 Let~$a\in \sa{\scrA}$ be given.
 Note that $-\lambda \leq a\leq \lambda$
 iff $-\lambda \leq f(a) \leq \lambda$
@@ -2953,7 +2953,7 @@ and so $\|a\|\leq \|f(a)\|$.
 Thus $\|a\|=\|f(a)\|$,
 and $f$ is an isometry on~$\sa{\scrA}$.
 \end{point}
-\begin{point}{\ref{cstar-isometry-3}$\Longrightarrow$\ref{cstar-isometry-1}}%
+\begin{point}{90}{\ref{cstar-isometry-3}$\Longrightarrow$\ref{cstar-isometry-1}}%
 Let~$a\in \scrA$ be given.
 We must show that~$f(a)\geq 0$ iff $a\geq 0$.
 Since~$f$ is involution preserving (\sref{cstar-p-implies-i})
@@ -2978,7 +2978,7 @@ and $\frac{1}{2}\|f(a)\|\leq  \|a\|$
 (by~\sref{weak-russo-dye}).\qed
 \end{point}
 \end{point}
-\begin{point}{Warning}%
+\begin{point}{100}{Warning}%
 Such a map~$f$ need not preserve the norm of arbitrary elements:
 the map $A\mapsto \frac{1}{2}A+\frac{1}{2}A^T\colon M_2\to M_2$
 is bipositive and unital,
@@ -2999,8 +2999,8 @@ cf.~\sref{warning-norm-states}.)
 \end{point}
 \end{parsec}
 
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{210}%
+\begin{point}{10}%
 We just saw in~\sref{cstar-isometry} that a
 map on a $C^*$-algebra~$\scrA$
 that preserves and reflects the order
@@ -3021,7 +3021,7 @@ of discernment
 that a collection of maps on a $C^*$-algebra
 might have already here.
 \end{point}
-\begin{point}[separating]{Definition}%
+\begin{point}{20}[separating]{Definition}%
 A collection~$\Omega$ of maps on a $C^*$-algebra~$\scrA$
 will be called
 \begin{enumerate}
@@ -3051,7 +3051,7 @@ and~$b\in \scrA$.
 will be explained in~\sref{vn-center-separating}.)
 \end{enumerate}
 \end{point}
-\begin{point}{Examples}%
+\begin{point}{30}{Examples}%
 We'll see later on that the following
 collections
 are order separating.
@@ -3083,7 +3083,7 @@ is a square, in~\sref{sqrt},
 it'll be obvious that vector functionals
 are positive too.)
 \end{enumerate}
-\begin{point}
+\begin{point}{40}
 None of the four levels of separation
 coincides.
 This follows from the following examples,
@@ -3121,7 +3121,7 @@ are at least two dimensional.
 \end{enumerate}
 \end{point}
 \end{point}
-\begin{point}[separating-self-adjoint]{Exercise}%
+\begin{point}{50}[separating-self-adjoint]{Exercise}%
 One use for 
 a separating collection~$\Omega$
 of involution preserving maps
@@ -3131,12 +3131,12 @@ is self-adjoint:
 show that $a\in\scrA$ is self-adjoint
 iff $\omega(a)$ is self-adjoint for all~$\omega\in\Omega$.
 \end{point}
-\begin{point}%
+\begin{point}{60}%
 An order separating
 collection senses the norm 
 of a self-adjoint element:
 \end{point}
-\begin{point}[order-separating-norm]{Proposition}%
+\begin{point}{70}[order-separating-norm]{Proposition}%
 For a collection~$\Omega$ of pu-maps on a $C^*$-algebra~$\scrA$
 the following are equivalent.
 \index{order separating collection!of pu-maps on a $C^*$-algebra}
@@ -3150,7 +3150,7 @@ the following are equivalent.
 	$\|a\| = \sup_{\omega\in\Omega} \left\|\omega(a)\right\|$
 	for all~$a\in \pos{\scrA}$.
 \end{enumerate}
-\begin{point}{Proof}%
+\begin{point}{80}{Proof}%
 Denoting the codomain of~$\omega\in\Omega$
 by~$\scrB_\omega$
 (so that $\omega\colon \scrA\to\scrB_\omega$),
@@ -3159,7 +3159,7 @@ to the pu-map $\left<\omega\right>_{\omega\in\Omega}\colon
 \scrA\to\bigoplus_{\omega\in\Omega}
 \scrB_\omega$ (see~\sref{cstar-product-3}).\qed
 \end{point}
-\begin{point}[warning-norm-states]{Warning}%
+\begin{point}{90}[warning-norm-states]{Warning}%
 The formula
 $\|a\|=\sup_{\omega\in\Omega} \|\omega(a)\|$
 need not be correct
@@ -3178,7 +3178,7 @@ while $\left| \left<x,\omega(A)x\right>\right|
 for $x\equiv (x_1,x_2)\in \scrH$ with $1=\|x\|$.
 \end{point}
 \end{point}
-\begin{point}[order-separating-dense-subset]{Exercise}%
+\begin{point}{100}[order-separating-dense-subset]{Exercise}%
 Show that any operator norm dense subset~$\Omega'$
 of an order separating collection~$\Omega$
 of positive functionals
@@ -3186,8 +3186,8 @@ on a $C^*$-algebra~$\scrA$
 is order separating too.
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{220}%
+\begin{point}{10}%
 We'll use~\sref{order-separating-norm}
 to show 
 that the pu-maps $\omega\colon \scrA\to\C$
@@ -3204,7 +3204,7 @@ To obtain such a state
 we first find its kernel,
 which leads us to the following definitions.
 \end{point}
-\begin{point}{Definition}%
+\begin{point}{20}{Definition}%
 An \Define{order ideal}%
 \index{order ideal of a $C^*$-algebra}
 of a $C^*$-algebra~$\scrA$
@@ -3218,7 +3218,7 @@ and \Define{maximal}
 \index{order ideal of a $C^*$-algebra!maximal}
 if it is maximal among all proper order ideals.
 \end{point}
-\begin{point}[order-ideal-basic]{Exercise}%
+\begin{point}{30}[order-ideal-basic]{Exercise}%
 Let~$\scrA$ be a $C^*$-algebra.
 \begin{enumerate}
 \item
@@ -3260,11 +3260,11 @@ or $\|a\|+a$ is not invertible
 (perhaps by considering the spectrum of~$a$.)
 \end{enumerate}
 \end{point}
-\begin{point}[maximal-ideal-state]{Lemma}%
+\begin{point}{40}[maximal-ideal-state]{Lemma}%
 For every maximal order ideal~$I$ of a $C^*$-algebra~$\scrA$,
  there is a state $\omega \colon \scrA\to \C$
 with $\ker(\omega)=I$.
-\begin{point}{Proof}%
+\begin{point}{50}{Proof}%
 Form the quotient vector space $\scrA/I$
 with quotient map $q\colon \scrA\to \scrA/I$.
 Note that since~$1\notin I$
@@ -3301,7 +3301,7 @@ has the pleasant consequence
 that once we have shown that~$\scrA/I=\C$,
 we automatically get that~$q\colon \scrA\to\C$ is positive.
 
-\begin{point}[pos-hahn-banach-1]%
+\begin{point}{60}[pos-hahn-banach-1]%
 Let~$a\in \sa{\scrA}$ be given.
 Define~$\alpha := \inf\{\,\lambda\in\R\colon\, q(a)\leq \lambda\,\}$.
 Note that $-\|a\| \leq \alpha\leq \|a\|$.
@@ -3344,7 +3344,7 @@ we get~$I=J$, by maximality of~$I$.
 Thus, as $\alpha-a\in J$, we have $\alpha-a\in I$,
 and so $q(a)=\alpha$, as desired.
 \end{point}
-\begin{point}%
+\begin{point}{70}%
 Let~$a\in \scrA$ be given.
 Then~$a=\Real{a}+i\Imag{a}$.
 By~\sref{pos-hahn-banach-1},
@@ -3357,7 +3357,7 @@ is pu, and $\ker(q)=I$, we are done.\qed
 \end{point}
 \end{point}
 \end{point}
-\begin{point}[states-order-separating]{Exercise}%
+\begin{point}{80}[states-order-separating]{Exercise}%
 \index{state of a $C^*$-algebra!order separating}%
 Show using~\sref{maximal-ideal-state} that given a self-adjoint element~$a$
 of a $C^*$-algebra~$\scrA$
@@ -3367,8 +3367,8 @@ is order separating (see~\sref{separating}).
 \end{point}
 \end{parsec}
 \subsection{The Square Root}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{230}%
+\begin{point}{10}%
 The key that unlocks the remaining basic facts 
 about the (positive) elements of a  $C^*$-algebra
 is the existence of the square root~$\sqrt{a}$ of a positive element~$a$,
@@ -3378,7 +3378,7 @@ we will assume $\|a\|\leq 1$,
 and construct
  $1-\sqrt{1-a}$ instead of~$\sqrt{a}$.
 \end{point}
-\begin{point}{Lemma}%
+\begin{point}{20}{Lemma}%
 Let $a$ be an element of a $C^*$-algebra $\scrA$
 with $0\leq a\leq 1$.
 Then there is a unique element~$b\in\scrA$ 
@@ -3393,7 +3393,7 @@ Moreover,
 if~$c\in\scrA$ commutes with~$a$, then~$c$ commutes with~$b$,
 and if in addition $a\leq 1-c^2$ and $c^*=c$,
 we have $b\leq 1-c$.
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 When discussing $b_n$ it 
 is convenient to write~$b_n \equiv q_n(a)$
 where~$q_0,q_1,\dotsc$ are the polynomials over~$\R$ given by
@@ -3467,7 +3467,7 @@ and if $\|b_n\|\leq 1$, then $\|b_{n+1}\|\leq \frac{1}{2}(\|a\|+\|b_n\|^2)
 Since~$b_n\geq 0$, we get $-1\leq b_n\leq 1$ for all~$n$,
 and so $b\leq 1$.
 
-\begin{point}[square-commuting-monotone]%
+\begin{point}{40}[square-commuting-monotone]%
 Let us take a step back for the moment.
 From what we have proven so far
 we see that each positive $c\in\scrA$
@@ -3489,7 +3489,7 @@ we have $c^2\leq d^2$.
 Indeed, $d^2-c^2 \equiv d(d-c)+c(d-c)$
 is positive by the previous paragraph.
 \end{point}
-\begin{point}[ineq-square-root]%
+\begin{point}{50}[ineq-square-root]%
 Let~$c\in\sa{\scrA}$ be such that~$ca=ac$ and  $a\leq 1-c^2$.
 We must show that $b\leq 1-c$.
 Of course,
@@ -3506,7 +3506,7 @@ Then $b_{n+1} = \frac{1}{2}(a+b_n^2)
 where we have used that $b_n^2 \leq (1-c)^2$,
 because $b_n\leq 1-c$
 by~\sref{square-commuting-monotone}.
-\begin{point}%
+\begin{point}{60}%
 We'll now show that~$b$ is unique
 in the sense that $b=b'$
 for any~$b'\in \scrA$ with $0\leq b'\leq 1$,
@@ -3529,7 +3529,7 @@ yielding $b=b'$.\qed
 \end{point}
 \end{point}
 \end{point}
-\begin{point}[sqrt]{Exercise}%
+\begin{point}{70}[sqrt]{Exercise}%
 \index{*sqrt@$\sqrt{a}$, square root!in a $C^*$-algebra}%
 Let~$a$ be a positive element of a $C^*$-algebra~$\scrA$.
 Show that there is a unique 
@@ -3573,8 +3573,8 @@ from~$M_2$.)
 \end{enumerate}
 \end{point}
 \end{parsec}
-\begin{parsec}
-\begin{point}{Definition}
+\begin{parsec}{240}
+\begin{point}{10}{Definition}
 Given a self-adjoint element~$a$ of a $C^*$-algebra $\scrA$,
 we write
 \begin{equation*}
@@ -3590,7 +3590,7 @@ We call $a_+$ the \Define{positive part} of~$a$,
 and $a_-$ the \Define{negative part}.
 \index{$(\,\cdot\,)_-$, negative part!$a_-$, of a self-adjoint element of a $C^*$-algebra}
 \end{point}
-\begin{point}[cstar-pos-neg-part]{Exercise}%
+\begin{point}{20}[cstar-pos-neg-part]{Exercise}%
 Let~$a$ be a self-adjoint element of a
  $C^*$-algebra $\scrA$.
 \begin{enumerate}
@@ -3613,16 +3613,16 @@ $a=\frac{1}{2}\left(\begin{smallmatrix}1 & 1 \\ 1 & 1\end{smallmatrix}\right)$
 and $b=-\left(\begin{smallmatrix}1 & 0 \\ 0 & 0 \end{smallmatrix}\right)$.)
 \end{enumerate}
 \end{point}
-\begin{point}%
+\begin{point}{30}%
 The existence of positive and negative parts
 in a $C^*$-algebra
 has many pleasant and subtle consequences
 of which we'll now show one.
 \end{point}
-\begin{point}[astara-positive]{Lemma}%
+\begin{point}{40}[astara-positive]{Lemma}%
 Given an element $a$ of a $C^*$-algebra $\scrA$,
 we have $a^*a\geq 0$.
-\begin{point}{Proof}%
+\begin{point}{50}{Proof}%
 Writing $b:=a((a^*a)_-)^{\nicefrac{1}{2}}$,
 we have $b^*b=
 ((a^*a)_-)^{\nicefrac{1}{2}} a^*a
@@ -3637,8 +3637,8 @@ Hence~$(a^*a)_-=0$ giving us $a^*a=(a^*a)_+\geq 0$.\qed
 \end{point}
 \end{point}
 \end{parsec}
-\begin{parsec}
-\begin{point}[cstar-positive-final]{Exercise}%
+\begin{parsec}{250}
+\begin{point}{10}[cstar-positive-final]{Exercise}%
 \index{positive!element of a $C^*$-algebra}%
 Round up our results regarding positive elements
 to 
@@ -3659,7 +3659,7 @@ $a\equiv c^* c$ for some $c\in\scrA$;
 $\spec(a)\subseteq [0,\infty)$.
 \end{enumerate}
 \end{point}
-\begin{point}[astara-pos-basic-consequences]{Exercise}%
+\begin{point}{20}[astara-pos-basic-consequences]{Exercise}%
 The fact that $a^*a$ is positive
 for an element~$a$ of a $C^*$-algebra~$\scrA$
 has some nice consequences
@@ -3684,12 +3684,12 @@ for $0\leq a\leq b$ from~$\scrA$.\\
 to both sides of the inequality.)
 \end{enumerate}
 \end{point}
-\begin{point}[hilb-vector-states-order-separating]{Proposition}%
+\begin{point}{30}[hilb-vector-states-order-separating]{Proposition}%
 The vector states
 of~$\scrB(\scrH)$
 are order separating (see~\sref{separating})
 for every Hilbert space~$\scrH$.
-\begin{point}{Proof}%
+\begin{point}{40}{Proof}%
 By\sref{order-separating-norm}
 tt suffices to show
 that~$\|T\|=  \sup_{x\in (\scrH)_1} 
@@ -3705,7 +3705,7 @@ we have $
 =\sup_{x\in (\scrH)_1} \left|\left<x,Tx\right>\right|$.\qed
 \end{point}
 \end{point}
-\begin{point}[hilb-positive-operators]{Corollary}%
+\begin{point}{50}[hilb-positive-operators]{Corollary}%
 For a bounded operator~$T$
 on a Hilbert space~$\scrH$, we have
 \begin{enumerate}
@@ -3719,7 +3719,7 @@ for all~$x\in (\scrH)_1$;
 	$\|T\|=\sup_{x\in (\scrH)_1}\left|\left<x,Tx\right>\right|$
 when~$T$ is self-adjoint.
 \end{enumerate}
-\begin{point}{Proof}%
+\begin{point}{60}{Proof}%
 This follows from~\sref{separating-self-adjoint} 
 and~\sref{order-separating-norm}
 because the vector states on~$\scrB(\scrH)$
@@ -3728,8 +3728,8 @@ by~\sref{hilb-vector-states-order-separating}.\qed
 \end{point}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{260}%
+\begin{point}{10}%
 The interaction between the multiplication and order
 on a $C^*$-algebra can be subtle,
 but
@@ -3741,7 +3741,7 @@ is isomorphic to a $C^*$-algebra
 of continuous functions on a compact Hausdorff space
 (as we'll see in~\sref{gelfand}).
 \end{point}
-\begin{point}[commutative-cstar-basic]{Exercise}%
+\begin{point}{20}[commutative-cstar-basic]{Exercise}%
 Let~$\scrA$ be a \emph{commutative} $C^*$-algebra.
 Let~$a,b,c\in\sa{\scrA}$.
 \begin{enumerate}
@@ -3762,7 +3762,7 @@ between commutative $C^*$-algebras
 preserves finite suprema and infima.
 \end{enumerate}
 \end{point}
-\begin{point}[riesz-decomposition-lemma]{Exercise}%
+\begin{point}{30}[riesz-decomposition-lemma]{Exercise}%
 Prove the \Define{Riesz decomposition lemma}:%
 \index{Riesz decomposition lemma}
 For positive elements~$a,b,c$ of a commutative $C^*$-algebra~$\scrA$
@@ -3773,8 +3773,8 @@ where  $0\leq a'\leq a$ and $0\leq b'\leq b$.
 \end{parsec}
 \section{Representation}
 \subsection{\dots by Continuous Functions}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{270}%
+\begin{point}{10}%
 Now that we have have a firm grip
 on the positive elements of a $C^*$-algebra
 we turn to what is perhaps the most important
@@ -3783,10 +3783,10 @@ that they are isomorphic to $C^*$-algebras
 of continuous functions on a compact Hausdorff space,
 via the \emph{Gelfand representation}.
 \end{point}
-\begin{point}{Setting}%
+\begin{point}{20}{Setting}%
 $\scrA$ is a commutative $C^*$-algebra.
 \end{point}
-\begin{point}[gelfand-representation]{Definition}%
+\begin{point}{30}[gelfand-representation]{Definition}%
 The \Define{spectrum} of~$\scrA$,%
 \index{sp@$\spec$, spectrum!$\spec(\scrA)$, of a $C^*$-algebra}
 denoted by \Define{$\spec(\scrA)$},
@@ -3800,13 +3800,13 @@ is the miu-map~$\gamma\colon \scrA\to C(\spec(\scrA))$%
 \index{Gelfand representation@$\gamma$, Gelfand representation}
 given by $\gamma(a)(f)=f(a)$.
 \end{point}
-\begin{point}[gelfand-representation-basic]{Exercise}%
+\begin{point}{40}[gelfand-representation-basic]{Exercise}%
 Verify that 
  the map $\spec(\scrA)\to \C,\ f\mapsto f(a)$ is indeed
 continuous for every~$a\in\scrA$,
 and that~$\gamma$ is miu.
 \end{point}
-\begin{point}{Remark}
+\begin{point}{50}{Remark}
 One might wonder if there is any connection between
 the spectrum~$\spec(\scrA)$
 of a commutative $C^*$-algebra,
@@ -3816,7 +3816,7 @@ and indeed there is
 as we'll see in~\sref{spectrum-miu}
 (and~\sref{functional-calculus}).
 \end{point}
-\begin{point}%
+\begin{point}{60}%
 Our program for this paragraph is to show that
 the Gelfand representation~$\gamma$ is 
 a miu-isomorphism.
@@ -3833,7 +3833,7 @@ so to speak ---,
 and involves
 the following special type of order ideal.
 \end{point}
-\begin{point}{Definition}%
+\begin{point}{70}{Definition}%
 A \Define{Riesz ideal}%
 \index{Riesz ideal}
 of~$\scrA$
@@ -3844,10 +3844,10 @@ A \Define{maximal Riesz ideal}%
 is a proper Riesz ideal which is maximal among
 proper Riesz ideals.
 \end{point}
-\begin{point}[riesz-ideal-ring-ideal]{Lemma}%
+\begin{point}{80}[riesz-ideal-ring-ideal]{Lemma}%
 Let~$I$ be a Riesz ideal of~$\scrA$.
 For all~$a\in \scrA$ and $x\in I$ we have $ax\in I$.
-\begin{point}{Proof}%
+\begin{point}{90}{Proof}%
 Since~$x=\Real{x}+i\Imag{x}$,
 it suffices to show that~$a\Real{x}\in I$ and $a\Imag{x}\in I$.
 Note that~$\Real{x},\Imag{x}\in I$,
@@ -3864,7 +3864,7 @@ and so~$ax\in I$,
 because $\|a\|x\in I$.\qed
 \end{point}
 \end{point}
-\begin{point}[riesz-ideal-basic]{Exercise}%
+\begin{point}{100}[riesz-ideal-basic]{Exercise}%
 Verify the following facts about Riesz ideals.
 \begin{enumerate}
 \item
@@ -3890,10 +3890,10 @@ when~$I$ and~$J$ are order ideals.
 Each proper Riesz ideal is contained in a maximal Riesz ideal.
 \end{enumerate}
 \end{point}
-\begin{point}[maximal-riesz-ideal-maximal-order-ideal]{Lemma}%
+\begin{point}{110}[maximal-riesz-ideal-maximal-order-ideal]{Lemma}%
 A maximal Riesz ideal~$I$ of~$\scrA$
 is a maximal order ideal.
-\begin{point}{Proof}%
+\begin{point}{120}{Proof}%
 Let~$J$ be a proper order ideal with $I\subseteq J$.
 We must show that $J=I$.
 Let~$a\in J$ be given;
@@ -3917,11 +3917,11 @@ and so~$I+(a)\subseteq J$ is proper.
 It follows that $a\in I+(a)=I$ by maximality of~$I$.\qed
 \end{point}
 \end{point}
-\begin{point}[riesz-ideal-miu-map]{Lemma}%
+\begin{point}{130}[riesz-ideal-miu-map]{Lemma}%
 Let~$I$ be a maximal Riesz ideal of~$\scrA$.
 Then there is a miu-map $f\colon \scrA\to \C$
 with $\ker(f)=I$.
-\begin{point}{Proof}%
+\begin{point}{140}{Proof}%
 Since~$I$ is a maximal order ideal 
 by~\sref{maximal-riesz-ideal-maximal-order-ideal},
 there is a pu-map $f\colon \scrA\to \C$
@@ -3938,12 +3938,12 @@ and so~$0=f(\,a(b-f(b))\,)=f(ab)-f(a)f(b)$.
 Hence~$f$ is multiplicative.\qed
 \end{point}
 \end{point}
-\begin{point}[inv-mult-state]{Proposition}%
+\begin{point}{150}[inv-mult-state]{Proposition}%
 Let~$a$ be a self-adjoint element of a $C^*$-algebra.
 Then~$a$ is not invertible
 iff there is $f\in\spec(\scrA)$ 
 with~$f(a)=0$.
-\begin{point}{Proof}%
+\begin{point}{160}{Proof}%
 Note that if~$a$ is invertible,
 then~$f(a^{-1})$ is the inverse of~$f(a)$---and so~$f(a)\neq 0$---for 
 every~$f\in\spec(\scrA)$.
@@ -3961,11 +3961,11 @@ Then~$f\in\spec(\scrA)$
 and~$f(a)=0$.\qed
 \end{point}
 \end{point}
-\begin{point}[spectrum-miu]{Exercise}%
+\begin{point}{170}[spectrum-miu]{Exercise}%
 Show that $\spec(a)=\{f(a)\colon f\in\spec(\scrA)\}$
 for each self-adjoint $a\in\scrA$.
 \end{point}
-\begin{point}[gelfand-representation-isometry]{Exercise}%
+\begin{point}{180}[gelfand-representation-isometry]{Exercise}%
 Prove that $\|\gamma(a)\|=\|a\|$
 for each~$a\in\scrA$
 where~$\gamma$ is from~\sref{gelfand}.
@@ -3980,20 +3980,20 @@ is injective,
 and that its range $\{\gamma(a)\colon a\in\scrA\}$
 is a $C^*$-subalgebra of~$C(\spec(\scrA))$.
 \end{point}
-\begin{point}%
+\begin{point}{190}%
 To show that~$\gamma$ is surjective,
 we use the following special case of
 the Stone--Weierstra\ss{} theorem.%
 \index{Stone--Weierstra\ss{}' Theorem}
 \end{point}
-\begin{point}[stone-weierstrass]{Theorem}%
+\begin{point}{200}[stone-weierstrass]{Theorem}%
 Let~$X$ be a compact Hausdorff space,
 and let~$\scrS$ be a $C^*$-subalgebra of~$C(X)$
 which `separates the points of~$X$',
 that is, for all~$x,y\in X$ with~$x\neq y$
 there is~$f\in \scrS$ with $f(x)\neq f(y)$.
 Then~$\scrS=C(X)$.
-\begin{point}{Proof}%
+\begin{point}{210}{Proof}%
 Let~$g\in \pos{C(X)}$ and $\varepsilon >0$.
 To prove that~$\scrS=C(X)$,
 it suffices to show that~$g\in \scrS$,
@@ -4004,7 +4004,7 @@ It is convenient to assume that~$g(x)> 0$ for all~$x\in X$,
 which we may, without loss of generality,
 by replacing~$g$ by~$1+g$.
 
-\begin{point}[stone-weierstrass-1]%
+\begin{point}{220}[stone-weierstrass-1]%
 Let~$x,y\in X$ with~$x\neq y$
 be given.
 We know there is~$f\in \scrS$ with $f(x)\neq f(y)$.
@@ -4018,7 +4018,7 @@ and that~$f(y)=g(y)>0$
 and that~$f\leq g(y)$
 (by replacing $f$ by $f\wedge g(y)$).
 \end{point}
-\begin{point}%
+\begin{point}{230}%
 Let~$y\in X$ be given.
 We will show that there is~$f\in\scrS$
 with $0\leq f\leq g+\varepsilon$
@@ -4050,7 +4050,7 @@ then $f(x)\leq g(y)\leq g(x)+\varepsilon$
 (by definition of~$V$).
 Hence $f\leq g+\varepsilon$.
 \end{point}
-\begin{point}%
+\begin{point}{240}%
 Thus for each~$y\in X$
 there is $f_y\in \scrS$ with $0\leq f_y \leq g+\varepsilon$
 and~$f_y(y)=g(y)$.
@@ -4070,9 +4070,9 @@ giving $\|f-g\|\leq \varepsilon$.\qed
 \end{point}
 \end{point}
 \end{point}
-\begin{point}[spectrum-calg-compact-hausdorff]{Lemma}%
+\begin{point}{250}[spectrum-calg-compact-hausdorff]{Lemma}%
 The spectrum $\spec(\scrA)$ of~$\scrA$ is a compact Hausdorff space.
-\begin{point}{Proof}%
+\begin{point}{260}{Proof}%
 Since for each~$a\in \scrA$
 and~$f\in \spec(\scrA)$
 we have  $\|f(a)\|\leq \|a\|$ 
@@ -4105,7 +4105,7 @@ for~$a,b\in\scrA$, we have $f(ab)
 = f(a) \,f(b)$.\qed
 \end{point}
 \end{point}
-\begin{point}[gelfand]{Gelfand's Representation Theorem}%
+\begin{point}{270}[gelfand]{Gelfand's Representation Theorem}%
 \index{Gelfand's Representation Theorem}%
 \index{Cstar-algebra@$C^*$-algebra!commutative}
 For a commutative $C^*$-algebra~$\scrA$,
@@ -4113,7 +4113,7 @@ the Gelfand representation,
  $\gamma\colon \scrA\to C(\spec(\scrA))$
 defined in~\sref{gelfand-representation}
 is a miu-isomorphism.
-\begin{point}{Proof}%
+\begin{point}{280}{Proof}%
 We already know that~$\gamma$ is an injective miu-map
 (see~\sref{gelfand-representation-basic} 
 and~\sref{gelfand-representation-isometry}).
@@ -4135,14 +4135,14 @@ there is~$a\in \scrA$ with~$f(a)\equiv \gamma(a)(f)
 \end{point}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{280}%
+\begin{point}{10}%
 While Gelfand's representation theorem
 is a result about commutative $C^*$-algebras,
 it tells us a lot about non-commutative $C^*$-algebras too,
 via their commutative $C^*$-subalgebras.
 \end{point}
-\begin{point}[functional-calculus]{Exercise}%
+\begin{point}{20}[functional-calculus]{Exercise}%
 Let~$a$ be an element of a (not necessarily commutative)
 $C^*$-algebra~$\scrA$.
 We are going to use Gelfand's representation
@@ -4236,12 +4236,12 @@ for~$\alpha,\beta\in (0,\infty)$
 and~$a\in\scrA_+$.
 \end{enumerate}
 \end{point}
-\begin{point}[sqrt-monotone]{Theorem}%
+\begin{point}{30}[sqrt-monotone]{Theorem}%
 We have $0\leq a\leq b \implies a^\alpha \leq b^\alpha$
 for all positive elements $a$ and~$b$
 of a $C^*$-algebra~$\scrA$,
 and $\alpha\in (0,1]$.
-\begin{point}{Proof}%
+\begin{point}{40}{Proof}%
 (Based on~\cite{pedersen1972}.)
 Note that the result is trivial if~$a$ and~$b$ commute.
 
@@ -4272,7 +4272,7 @@ is closed,
 and $\alpha,\beta\in E\implies \frac{1}{2}\alpha 
 + \frac{1}{2}\beta \in E$.
 
-\begin{point}{$E$ is closed}
+\begin{point}{50}{$E$ is closed}
 Let~$b$ be a positive and invertible element of~$\scrA$.
 A moment's thought reveals it suffices to 
 prove that $\alpha\mapsto b^\alpha, \,[0,1]\to\scrA$
@@ -4287,7 +4287,7 @@ and the functional
 	C(\spec(b))\to \scrA$, which being a miu-map is norm continous
 	as well.
 \end{point}
-\begin{point}{$\alpha,\beta\in E\implies \frac{1}{2}\alpha+\frac{1}{2}\beta
+\begin{point}{60}{$\alpha,\beta\in E\implies \frac{1}{2}\alpha+\frac{1}{2}\beta
 	\in E$}
 Let~$\alpha,\beta\in E$. Let~$a,b\in\scrA$ be positive
 and invertible with $a\leq b$.
@@ -4359,8 +4359,8 @@ and so we're done.\qed
 \end{point}
 \end{parsec}
 
-\begin{parsec}[gelfand-equivalence]%
-\begin{point}%
+\begin{parsec}{290}[gelfand-equivalence]%
+\begin{point}{10}%
 As a cherry on the cake,
 we use Gelfand's representation theorem~\sref{gelfand}
 to get an equivalence between the categories $\op{(\cCstar{miu})}$
@@ -4388,18 +4388,18 @@ it suffices to find a natural isomorphism
 from the identity on~$\CH$ to~$\spec\circ C$,
 which is provided by the following lemma.
 \end{point}
-\begin{point}{Lemma}%
+\begin{point}{20}{Lemma}%
 Let~$X$ be a compact Hausdorff space,
 and let~$\tau \colon C(X)\to \C$ be a miu-map.
 Then there is~$x\in X$ with $\tau(f)=f (x)$
 for all~$f\in C(X)$.
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 Define
 $Z\,= \, \{\,x\in X\colon \ h(x)\neq 0\text{ for some~$h\in \pos{C(X)}$
 with $\tau(h)=0$}\,\}$.
 We'll prove~$X\backslash Z$ contains
 exactly one point, $x_0$, and $\tau(f)=f(x_0)$ for all~$f$.
-\begin{point}%`
+\begin{point}{40}%`
 To see that~$X\backslash Z$ contains no more than one point,
 let~$x,y\in X$ with $x\neq y$ be given;
 we will show that either~$x\in Z$ or~$y\in Z$.
@@ -4413,7 +4413,7 @@ so either~$\tau(f)=0$ (and~$x\in Z$), or~$\tau(g)=0$
 That~$X\backslash Z$ is non-empty
 follows from the following result (by taking~$f=1$).
 \end{point}
-\begin{point}[multiplicative-state-on-cx-1]%
+\begin{point}{50}[multiplicative-state-on-cx-1]%
 For~$f\in \pos{C(X)}$
 with~$f(x)> 0 \implies x\in Z$ for all~$x\in X$
 we have~$\tau(f)=0$.
@@ -4435,7 +4435,7 @@ we have $0\leq f\leq g$ and~$\tau(g)=0$
 $\tau$ preserves finite infima).
 It follows that~$\tau(f)=0$.
 \end{point}
-\begin{point}%
+\begin{point}{60}%
 We now know that~$X\backslash Z$ contains exactly
 one point, say~$x_0$.
 To see that~$\tau(f)=f(x_0)$
@@ -4448,7 +4448,7 @@ and so $\tau(f)=f(x_0)$.\qed
 \end{point}
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{70}{Exercise}%
 Let~$X$ be a compact Hausdorff space.
 Show that for every~$x\in X$
 the map $\delta_x\colon C(X)\to \C,\ f\mapsto f(x)$
@@ -4458,7 +4458,7 @@ is a continuous bijection
 onto a compact Hausdorff space,
 and thus a homeomorphism.
 \end{point}
-\begin{point}[injective-miu-isometry]{Exercise}%
+\begin{point}{80}[injective-miu-isometry]{Exercise}%
 \index{miu-map!injective!is isometry}
 As an application of the equivalence
 between $\op{(\cCstar{MIU})}$
@@ -4485,7 +4485,7 @@ Use the $C^*$-identity
 to extend the equality $\|\varrho(a)\|=\|a\|$ 
 to (not necessarily self-adjoint) $a\in \scrA$.
 \end{point}
-\begin{point}[injective-miu-iso-on-image]{Exercise}%
+\begin{point}{90}[injective-miu-iso-on-image]{Exercise}%
 Let~$\varrho\colon \scrA\to\scrB$ 
 be an injective miu-map.
 Show that~$\varrho(\scrA)$
@@ -4497,8 +4497,8 @@ isomorphic to~$\scrA$.
 \end{point}
 \end{parsec}
 \subsection{Representation by Bounded Operators}
-\begin{parsec}%
-\begin{point}[completion-inner-product-space]%
+\begin{parsec}{300}%
+\begin{point}{10}[completion-inner-product-space]%
 Let us prove that every $C^*$-algebra~$\scrA$
 is isomorphic
 to a $C^*$-algebra
@@ -4547,7 +4547,7 @@ and that it can be generalized to apply
 not only to maps of the form $\omega\colon \scrA\to\C$,
 but also to maps of the form $\varphi\colon \scrA\to\scrB$.
 \end{point}
-\begin{point}[state-inner-product]{Lemma}%
+\begin{point}{20}[state-inner-product]{Lemma}%
 For every p-map~$\omega\colon \scrA\to \C$ on a
 $C^*$-algebra~$\scrA$,
 $\Define{[a,b]_\omega} = \omega(a^*b)$
@@ -4555,7 +4555,7 @@ defines an inner product~$\Define{[\,\cdot\,,\,\cdot\,]_\omega}$%
 \index{*innerprodomega@$[\,\cdot\,,\,\cdot\,]_\omega$, given np-functional $\omega$}
 on~$\scrA$
 (see~\sref{hilb-def}).
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 Note that $[a,a]_\omega\equiv \omega(a^*a)\geq 0$ for each~$a\in\scrA$,
 because $a^*a\geq 0$ (by~\sref{astara-positive});
 and  $\smash{\overline{[a,b]}_\omega}=[b,a]_\omega$
@@ -4565,7 +4565,7 @@ Finally, it is clear that $[a,\,\cdot\,]_\omega\equiv\omega(a^*\,\cdot\,)$
 is linear for each~$a\in\scrA$.\qed
 \end{point}
 \end{point}
-\begin{point}[omega-norm-basic]{Exercise}%
+\begin{point}{40}[omega-norm-basic]{Exercise}%
 Let~$\omega\colon \scrA\to\C$
 be a p-map on a $C^*$-algebra.
 Let us for a moment study
@@ -4617,7 +4617,7 @@ $\omega((\,(\begin{smallmatrix}c&d\\e&f\end{smallmatrix})\,)=c$.)
 Give a counterexample to $\|a^*\|_\omega = \|a\|_\omega$.
 \end{enumerate}
 \end{point}
-\begin{point}[inner-product-completion]{Exercise}%
+\begin{point}{50}[inner-product-completion]{Exercise}%
 \index{inner product!$\C$-valued!completion}
 Let us begin by showing how a complex vector space~$V$
 with inner product
@@ -4663,7 +4663,7 @@ form a reflexive subcategory of
 the category of bounded linear maps between
 complex vector spaces with an inner product.)
 \end{point}
-\begin{point}[gns]{Definition (Gelfand--Naimark--Segal construction)}%
+\begin{point}{60}[gns]{Definition (Gelfand--Naimark--Segal construction)}%
 \index{Gelfand--Naimark--Segal (GNS)}%
 	\\
 Let $\omega\colon \scrA\to\C$ be a p-map on a $C^*$-algebra~$\scrA$.
@@ -4696,10 +4696,10 @@ bounded linear map $\scrH_\omega\to\scrH_\omega$
 with $\varrho_\omega(a)(\eta_\omega(b)) = \eta_\omega(ab)$
 for all~$b\in\scrA$.
 \end{point}
-\begin{point}{Proposition}%
+\begin{point}{70}{Proposition}%
 The map $\varrho_\omega\colon \scrA\to\scrB(\scrH_\omega)$
 given by~\sref{gns} is a miu-map.
-\begin{point}{Proof}%
+\begin{point}{80}{Proof}%
 Let~$a_1,a_2\in\scrA$ be given.
 Since $\varrho_\omega(a_1+a_2)\,\eta_\omega(b)
 = \eta_\omega((a_1+a_2)b)
@@ -4743,7 +4743,7 @@ for all~$x,y\in\scrH_\omega$,
 and so~$\varrho_\omega(a^*)=\varrho_\omega(a)^*$.\qed
 \end{point}
 \end{point}
-\begin{point}[gelfand-naimark-representation]{Definition}%
+\begin{point}{90}[gelfand-naimark-representation]{Definition}%
 Given a collection~$\Omega$ of p-maps $\omega\colon \scrA\to\C$
 on a $C^*$-algebra~$\scrA$,
 let $\Define{\varrho_\Omega}\colon \scrA\to \scrB(\scrH_\Omega)$%
@@ -4754,7 +4754,7 @@ where~$\Define{\scrH_\Omega}=\bigoplus_{\omega\in\Omega}\scrH_\omega$%
 \index{HOmega@$\scrH_\Omega$}
 (and $\varrho_\omega$ is as in~\sref{gns}).
 \end{point}
-\begin{point}[proto-gelfand-naimark]{Proposition}%
+\begin{point}{100}[proto-gelfand-naimark]{Proposition}%
 For a collection~$\Omega$ of positive maps $\scrA\to \C$
 on a $C^*$-algebra~$\scrA$,
 the following are equivalent.
@@ -4776,10 +4776,10 @@ In that case, $\varrho_\Omega(\scrA)$ is a $C^*$-subalgebra
 of~$\scrB(\scrH_\Omega)$,
 and~$\varrho_\Omega$
 restricts to a miu-isomorphism from~$\scrA$ to~$\varrho_\Omega(\scrA)$.
-\begin{point}{Proof}%
+\begin{point}{110}{Proof}%
 It is clear that~\ref{proto-gelfand-naimark-3}
 entails~\ref{proto-gelfand-naimark-2}.
-\begin{point}{\ref{proto-gelfand-naimark-2}$\Longrightarrow$%
+\begin{point}{120}{\ref{proto-gelfand-naimark-2}$\Longrightarrow$%
 \ref{proto-gelfand-naimark-1}}%
 Let~$a\in \scrA$ with $\varrho_\Omega(a)=0$ be given.
 We must show that~$a=0$ (in order to show that~$\varrho_\Omega$
@@ -4795,7 +4795,7 @@ thus $0=\varrho_\omega(a)\,\eta_\omega(b)
 and so $\|ab\|_\omega=0$.
 Hence~$\varrho_\Omega$ is injective.
 \end{point}
-\begin{point}{\ref{proto-gelfand-naimark-1}$\Longrightarrow$%
+\begin{point}{130}{\ref{proto-gelfand-naimark-1}$\Longrightarrow$%
 \ref{proto-gelfand-naimark-3}}%
 Let~$a\in\scrA$ with $\omega(b^*a b)\geq 0$
 for all~$\omega\in\Omega$ and~$b\in\scrA$
@@ -4825,11 +4825,11 @@ by assumption.\qed
 \end{point}
 \end{point}
 \end{point}
-\begin{point}[gelfand-naimark]{Theorem (Gelfand--Naimark)}%
+\begin{point}{140}[gelfand-naimark]{Theorem (Gelfand--Naimark)}%
 \index{Gelfand--Naimark's Theorem}
 Every $C^*$-algebra~$\scrA$ is miu-isomorphic
 to a $C^*$-algebra of operators on a Hilbert space.
-\begin{point}{Proof}%
+\begin{point}{150}{Proof}%
 Since the states on~$\scrA$
 are separating
 (\sref{states-order-separating}),
@@ -4844,8 +4844,8 @@ by~\sref{proto-gelfand-naimark}.\qed
 \end{point}
 \end{parsec}
 \section{Matrices over $C^*$-algebras}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{310}%
+\begin{point}{10}%
 We have seen (in~\sref{hilb}) that the $N\times N$-matrices
 ($N$ being a natural number) over the complex numbers~$\C$
 form a $C^*$-algebra (denoted by~$M_N$) by interpreting
@@ -4864,8 +4864,8 @@ the \emph{Hilbert $\scrA$-module} $\scrA^N$,
 see~\sref{chilb-basic} and~\sref{bax-cstar}.
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}[chilb-basic]{Definition}%
+\begin{parsec}{320}%
+\begin{point}{10}[chilb-basic]{Definition}%
 	An ($\scrA$-valued)
 	\Define{inner product}%
 \index{inner product!$\scrA$-valued}
@@ -4922,13 +4922,13 @@ by~$\Define{\scrB^a(X,Y)}$,%
 and we write $\Define{\scrB^a(X)}=\scrB^a(X,X)$.%
 \index{BaX@$\scrB^a(X)$}
 \end{point}
-\begin{point}{Example}%
+\begin{point}{20}{Example}%
 We endow $\scrA^N$
 (where~$\scrA$ is a $C^*$-algebra and~$N$ is a natural number)
 with the inner product $\left<x,y\right>=\sum_n x_n^*y_n$,
 making it a Hilbert $\scrA$-module.
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{30}{Exercise}%
 Let~$S$ and~$T$ be adjoinable operators on a 
 pre-Hilbert $\scrA$-module.
 \begin{enumerate}
@@ -4942,7 +4942,7 @@ Show that $ST$ is adjoint to $T^*S^*$
 (and so $(ST)^*=T^*S^*$).
 \end{enumerate}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{40}{Exercise}%
 Although a bounded linear map between Hilbert spaces
 is always adjoinable (see~\sref{hilb-adjoint}),
 a bounded module map
@@ -4964,7 +4964,7 @@ with $\left<b,a\right>=Ta\equiv a$ for all~$a\in J$
 then $\left<T^*1,a\right>=\left<1,Ta\right>=a$
 for all~$a\in J$).
 
-\begin{point}{Remark}%
+\begin{point}{50}{Remark}%
 Note that part of the problem here is the lack 
 of the obvious analogue to
 Riesz'~representation theorem (\sref{riesz-representation-theorem})  
@@ -4980,7 +4980,7 @@ is complete with respect to a suitable uniformity,
 as in done in my twin brother's thesis, \cite{bas}, see~\sref{dils-selfdual}.
 \end{point}
 \end{point}
-\begin{point}[chilb-cs]{Proposition (Cauchy--Schwarz)}%
+\begin{point}{60}[chilb-cs]{Proposition (Cauchy--Schwarz)}%
 \index{Cauchy--Schwarz inequality!for A-valued@for $\scrA$-valued inner products}
 	We have
 $\left<x,y\right>\,\left<y,x\right>
@@ -4988,7 +4988,7 @@ $\left<x,y\right>\,\left<y,x\right>
 for every inner product $\left<\,\cdot\,,\,\cdot\,\right>$
 on a right $\scrA$-module~$X$,
 and $x,y\in X$.
-\begin{point}{Remark}%
+\begin{point}{70}{Remark}%
 The symmetry-breaking norm symbols ``$\|$'' cannot simply 
 be removed from this version of Cauchy--Schwarz,
 because 
@@ -5002,7 +5002,7 @@ and thus that $\left<y,y\right>$
 and~$\left<x,x\right>$ commute,
 which is not always the case.
 \end{point}
-\begin{point}{Proof}%
+\begin{point}{80}{Proof}%
 Let~$\omega\colon \scrA\to \C$ be a state of~$\scrA$.
 Since the states on~$\scrA$
 are order separating (\sref{states-order-separating}), 
@@ -5045,7 +5045,7 @@ that
 and so we're done.\qed
 \end{point}
 \end{point}
-\begin{point}[chilb-norm-basic]{Exercise}%
+\begin{point}{90}[chilb-norm-basic]{Exercise}%
 Let~$X$ be a pre-Hilbert $\scrA$-module.
 Verify that
 \begin{enumerate}
@@ -5061,7 +5061,7 @@ and $\left\|\left<x,y\right>\right\|\leq \left\|x\right\|
 for all~$x,y\in X$ and $b\in \scrA$.
 \end{enumerate}
 \end{point}
-\begin{point}[chilb-form-bounded]{Lemma}%
+\begin{point}{100}[chilb-form-bounded]{Lemma}%
 For a linear map~$T\colon X\to Y$
 between pre-Hilbert $\scrA$-modules,
 and $B>0$,
@@ -5079,7 +5079,7 @@ for all~$x\in X$, $y\in Y$.
 Moreover,
 if~$T$ is adjoinable,
 and bounded, then $\|T^*\|=\|T\|$.
-\begin{point}{Proof}%
+\begin{point}{110}{Proof}%
 If~$\|Tx\|\leq B\|x\|$ for all~$x\in X$,
 then~$T$ is bounded, $\|T\|\leq B$, and therefore
 $\left\|\left<y,Tx\right>\right\|
@@ -5103,12 +5103,12 @@ Since by a similar reasoning $\|T\|\leq \|T^*\|$,
 we get $\|T\|=\|T^*\|$.\qed
 \end{point}
 \end{point}
-\begin{point}[module-maps-cstar-identity]{Exercise}%
+\begin{point}{120}[module-maps-cstar-identity]{Exercise}%
 Show that $\|T^*T\|=\|T\|^2$
 for every adjoinable bounded map~$T$ on a pre-Hilbert $\scrA$-module.
 (Hint: adapt the proof of~\sref{operators-cstar-identity}.)
 \end{point}
-\begin{point}[bax-cstar]{Proposition}%
+\begin{point}{130}[bax-cstar]{Proposition}%
 The adjoinable bounded module maps
 on a Hilbert $\scrA$-module
 form a $C^*$-algebra%
@@ -5117,7 +5117,7 @@ $\scrB^a(X)$
 with composition as multiplication,
 adjoint as involution,
 and the operator norm as norm.
-\begin{point}{Proof}%
+\begin{point}{140}{Proof}%
 Considering~\sref{bounded-operators-banach-algebra}
 and~\sref{module-maps-cstar-identity},
 the only thing that remains to be shown is that~$\scrB^a(X)$
@@ -5151,7 +5151,7 @@ and~$T$ is adjoinable.
 \qed
 \end{point}
 \end{point}
-\begin{point}[chilb-vector-states-order-separating]{Exercise}%
+\begin{point}{150}[chilb-vector-states-order-separating]{Exercise}%
 Let~$X$ be a Hilbert~$\scrA$-module.
 Show that 
 the vector states%
@@ -5175,13 +5175,13 @@ when~$T$ is self-adjoint.
 of~\sref{hilb-vector-states-order-separating}
 and~\sref{hilb-positive-operators}.)
 \end{point}
-\begin{point}{Corollary}%
+\begin{point}{160}{Corollary}%
 The operator
 $T^*T$ is positive
 in~$\scrB^a(X)$
 for every adjoinable operator~$T\colon X\to Y$
 between Hilbert $\scrA$-modules.
-\begin{point}{Proof}%
+\begin{point}{170}{Proof}%
 $\left<x,T^*Tx\right>=
 \left<Tx,Tx\right> \geq 0$
 for all~$x\in X$,
@@ -5189,8 +5189,8 @@ and so~$T^*T\geq 0$ by~\sref{hilb-positive-operators}.\qed
 \end{point}
 \end{point}
 \end{parsec}
-\begin{parsec}
-\begin{point}[cstar-matrices]{Exercise}%
+\begin{parsec}{330}
+\begin{point}{10}[cstar-matrices]{Exercise}%
 Let us consider matrices over a $C^*$-algebra $\scrA$.
 \begin{enumerate}
 \item
@@ -5221,7 +5221,7 @@ conjugate transpose as involution,
 and the operator norm (as norm, so~$\|A\|=\|\underline{A}\|$).
 \end{enumerate}
 \end{point}
-\begin{point}[when-a-matrix-over-a-cstar-algebra-is-positive]{Exercise}%
+\begin{point}{20}[when-a-matrix-over-a-cstar-algebra-is-positive]{Exercise}%
 Let us describe the positive  $N\times N$ matrices
 over a $C^*$-algebras~$\scrA$.
 \begin{enumerate}
@@ -5239,7 +5239,7 @@ Show that the matrix $(a^*_ia_j)_{ij}$
 is positive for all $a_1,\dotsc,a_N\in\scrA$.
 \end{enumerate}
 \end{point}
-\begin{point}[mnf]{Exercise}%
+\begin{point}{30}[mnf]{Exercise}%
 Let~$f\colon \scrA\to\scrB$ be a linear map between $C^*$-algebras.
 \begin{enumerate}
 \item
@@ -5260,8 +5260,8 @@ and that~$M_nf$ need not be bounded, when~$f$ is.
 \end{enumerate}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{340}%
+\begin{point}{10}%
 Let us briefly return
 to the completely positive maps (defined in~\sref{maps}),
 to show that a map $f$ between $C^*$-algebras
@@ -5287,7 +5287,7 @@ we submit that the absence of analogues of \sref{cp-cs} and~\sref{choi}
 for positive maps
 is already enough to make complete positivity indispensable.
 \end{point}
-\begin{point}[n-pos]{Lemma}%
+\begin{point}{20}[n-pos]{Lemma}%
 \index{completely positive!map between $C^*$-algebras}
 For a linear map $f\colon \scrA\to\scrB$
 between $C^*$-algebras,
@@ -5308,7 +5308,7 @@ is positive;
 the matrix $(\,f(a_i^*a_j)\,)_{ij}$
 is positive in $M_N\scrB$ for all $a\in\scrA^N$.
 \end{enumerate}
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 Recall that~$M_Nf$ is positive
 iff $(M_Nf)(C)$ is positive for all $C\in \pos{(M_N\scrA)}$.
 The trick is to note that such~$C$ can be written as $C\equiv A^*A$
@@ -5327,7 +5327,7 @@ $0\leq\left<b,(M_Nf)(\, (a^T)^*a^T\,) b\right>
 for all~$a\in\scrA^N$ and~$b\in\scrB^N$.\qed
 \end{point}
 \end{point}
-\begin{point}[cp]{Exercise}%
+\begin{point}{40}[cp]{Exercise}%
 Conclude from~\sref{n-pos}
 that a linear map~$f$ between $C^*$-algebras
 is completely positive iff~$M_Nf$ is positive for all~$N$
@@ -5342,7 +5342,7 @@ completely positive.
 Show that a mi-map~$f$ is completely positive.
 (Hint: $M_Nf$ is a mi-map too.)
 \end{point}
-\begin{point}[ad-cp]{Exercise}%
+\begin{point}{50}[ad-cp]{Exercise}%
 Show that
 given a $C^*$-algebra~$\scrA$,
 the following maps are completely positive:
@@ -5364,7 +5364,7 @@ $T\mapsto \left<x,Tx\right>,\scrB^a(X)\to \scrA$%
 for every element~$x$ of a Hilbert $\scrA$-module~$X$.
 \end{enumerate}
 \end{point}
-\begin{point}[cstar-product-4]{Exercise}%
+\begin{point}{60}[cstar-product-4]{Exercise}%
 \index{product!in $\Cstar{cpsu}$}%
 \index{equaliser!in $\Cstar{cpsu}$}%
 Show that the product 
@@ -5382,14 +5382,14 @@ the $C^*$-subalgebra
 $\{\,a\in\scrA\colon\, f(a)=g(a)\,\}$
 of~$\scrA$ into~$\scrA$.
 \end{point}
-\begin{point}[ccstar-pos-mat]{Lemma}%
+\begin{point}{70}[ccstar-pos-mat]{Lemma}%
 Let~$\scrA$ be a commutative $C^*$-algebra,
 and let~$N$ be a natural number.
 The set of  matrices of the form $\sum_k a_k B_k$,
 where $a_1,\dotsc,a_K\in \scrA_+$
 and $B_1,\dotsc,B_K\in M_N(\C)_+$,
 is norm dense in~$(M_N\scrA)_+$.
-\begin{point}{Proof}%
+\begin{point}{80}{Proof}%
 Since~$\scrA$ is isomorphic to~$C(X)$ for some compact
 Hausdorff space~$X$ (by~$\sref{gelfand})$),
 we may as well assume that~$\scrA\equiv C(X)$.
@@ -5441,12 +5441,12 @@ $-\varepsilon \,\leq\, A- \sum_k g_k A(x_k)\,\leq\, \varepsilon$,
 and so $\|A-\sum_k g_k A(x_k)\|\leq \varepsilon$.\qed
 \end{point}
 \end{point}
-\begin{point}[cp-commutative]{Proposition}%
+\begin{point}{90}[cp-commutative]{Proposition}%
 Let~$f\colon \scrA\to\scrB$ be a 
 positive map between $C^*$-algebras.
 If either~$\scrA$ or~$\scrB$ is commutative,
 then~$f$ is completely positive.
-\begin{point}{Proof}%
+\begin{point}{100}{Proof}%
 Suppose that~$\scrB$ is commutative,
 and let~$a_1,\dotsc,a_N\in \scrA$,
 $b_1,\dotsc,b_N\in\scrB$ be given.
@@ -5456,7 +5456,7 @@ This follows from the observation that
 $\omega(\,\sum_{i,j} b_i^*f(a_i^*a_j)b_j\,)
 = \omega(f(\,\sum_{i,j}(a_i\omega(b_i))^*\,a_j \omega(b_j)\,))\,\geq \,0$
 for every~$\omega\in\spec(\scrA)$.
-\begin{point}%
+\begin{point}{110}%
 Suppose instead that~$\scrA$ is commutative,
 and let $A\in (M_N\scrA)_+$
 be given for some natural number~$N$.
@@ -5470,7 +5470,7 @@ we are done.\qed
 \end{point}
 \end{point}
 \end{point}
-\begin{point}[cstar-positive-2x2matrix]{Lemma}%
+\begin{point}{120}[cstar-positive-2x2matrix]{Lemma}%
 For a positive
 matrix $A\equiv \bigl(\begin{smallmatrix} p & a \\ a^* & q
 \end{smallmatrix}\bigr)$
@@ -5483,7 +5483,7 @@ we have
 \end{equation*}
 In particular,
 if $p=0$ or~$q=0$, then~$a=a^*=0$.
-\begin{point}{Proof}%
+\begin{point}{130}{Proof}%
 Since $(x,y)\mapsto \left<x,Ay\right>$
 gives an $\scrA$-valued inner product
 on~$\scrA^2$,
@@ -5507,13 +5507,13 @@ by Cauchy--Schwarz (see \sref{chilb-cs}).
 By a similar reasoning, we get $a^*a\leq \|p\|q$.\qed
 \end{point}
 \end{point}
-\begin{point}[cp-cs]{Lemma}%
+\begin{point}{140}[cp-cs]{Lemma}%
 We have $f(a^*b) f(b^*a)\leq \|f(b^*b)\|\,f(a^*a)$
 for every p-map $f\colon \scrA\to\scrB$
 between $C^*$-algebras
 and $a,b\in\scrA$,
 provided that $M_2f$ is positive.
-\begin{point}{Proof}%
+\begin{point}{150}{Proof}%
 Since writing $x\equiv (a,b)\in \scrA^2$,
 the $2\times 2$ matrix $(x^T)^* x^T\equiv 
 	\bigl(
@@ -5533,11 +5533,11 @@ Thus we get $f(a^*b) f(b^*a)\leq \|f(b^*b)\|\,f(a^*a)$
 by~\sref{cstar-positive-2x2matrix}.\qed
 \end{point}
 \end{point}
-\begin{point}[cp-russo-dye]{Corollary}%
+\begin{point}{160}[cp-russo-dye]{Corollary}%
 \index{Russo--Dye Theorem!for completely positive maps}
 $\|f\|= \|f(1)\|$
 for every cp-map $f\colon \scrA\to\scrB$ between $C^*$-algebras.
-\begin{point}{Proof}%
+\begin{point}{170}{Proof}%
 Let~$a\in\scrA$ be given.
 It suffices to show that $\|f(a)\|\leq \|f(1)\|\,\|a\|$
 so that~$\|f\|\leq\|f(1)\|$,
@@ -5553,7 +5553,7 @@ by~\sref{cp-cs},
 and so~$\|f(a)\|\leq \|f(1)\|\,\|a\|$.\qed
 \end{point}
 \end{point}
-\begin{point}[choi]{Lemma (Choi\cite{choi})}%
+\begin{point}{180}[choi]{Lemma (Choi\cite{choi})}%
 \index{Choi's Theorem}%
 We have
 $f(a)^*f(a) \leq f(a^* a)$ for
@@ -5564,7 +5564,7 @@ Moreover, if $f(a^*a)=f(a)^*f(a)$
 for some~$a\in\scrA$,
 then~$f(ba)=f(b)f(a)$
 for all~$b\in \scrA$.
-\begin{point}{Proof}%
+\begin{point}{190}{Proof}%
 By~\sref{cp-cs}
 we have $f(a)^*f(a)=f(a^* 1)f(1^* a) \leq
 \|f(1^*1)\| f(a^*a)=f(a^*a)$,
@@ -5603,8 +5603,8 @@ $f(a^*b)-f(a)^*f(b)=0$.\qed
 \end{point}
 \end{parsec}
 \section{Towards von Neumann Algebras}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{350}%
+\begin{point}{10}%
 Let us work towards
 the subject of the next chapter, von Neumann algebras,
 by pointing out two special properties
@@ -5632,7 +5632,7 @@ is a (possibly infinite) sum of vector functionals.
 \end{point}
 
 \subsection{Directed Suprema}
-\begin{point}[pub]{Theorem (Uniform Boundedness)}%
+\begin{point}{20}[pub]{Theorem (Uniform Boundedness)}%
 \index{Principle of Uniform Boundedness}%
 \index{Uniform Boundedness Theorem}%
 A set~$\scrF$ of bounded linear maps 
@@ -5643,9 +5643,9 @@ in the sense that $\sup_{T\in \scrF} \|T\|<\infty$
 provided that 
  $\sup_{T\in \scrF} \|Tx\|<\infty$
  for all~$x\in \scrX$.
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 Based on~\cite{sokal}.
-\begin{point}[sokal-lemma]%
+\begin{point}{40}[sokal-lemma]%
 Let $r>0$ and~$T\in\scrF$ be given.
 Writing~$B_r(x)=\{\,y\in\scrX\colon \|x-y\|\leq r\,\}$
 for the ball around~$x\in\scrX$ with radius~$r$,
@@ -5666,7 +5666,7 @@ Hence
 $r\|T\|=\sup_{\xi\in B_r(0)} \|T\xi\|\leq  
 \sup_{\xi \in B_r(x)} \|T\xi \|$.
 \end{point}
-\begin{point}%
+\begin{point}{50}%
 Suppose towards a contradiction
 that $\sup_{T\in\scrF}\|T\|=\infty$,
 and pick~$T_1,T_2,\dotsc$ with $\|T_n\|\geq n3^{n}$.
@@ -5687,12 +5687,12 @@ the assumption that $\sup_{T\in \scrF} \|Tx\| <\infty$.\qed
 \end{point}
 \end{point}
 \end{point}
-\begin{point}[hellinger-toeplitz]{Theorem}%
+\begin{point}{60}[hellinger-toeplitz]{Theorem}%
 Let~$T\colon X\to Y$ be an adjoinable map
 between pre-Hilbert $\scrA$-modules.
 If either~$X$ or~$Y$ is complete,
 then~$T$ and~$T^*$ are bounded.
-\begin{point}{Proof}%
+\begin{point}{70}{Proof}%
 We may assume without loss of generality
 that~$X$ is complete (by swapping~$T$ for~$T^*$
 and~$X$ with~$Y$ if necessary).
@@ -5718,7 +5718,7 @@ It follows that~$\|\left<y,Tx\right>\|\leq B\|y\|\|x\|$
 for all~$y\in Y$ and~$x\in X$,
 and thus~$T$ and~$T^*$ are bounded, by~\sref{chilb-form-bounded}.\qed
 \end{point}
-\begin{point}{Remark}%
+\begin{point}{80}{Remark}%
 As a special case of the preceding theorem
 we get the fact,
 known as the \Define{Hellinger--Toeplitz theorem},%
@@ -5726,7 +5726,7 @@ known as the \Define{Hellinger--Toeplitz theorem},%
 that every symmetric
 operator on a Hilbert space is bounded.
 \end{point}
-\begin{point}[hellinger-toeplitz-needs-complete]{Example}%
+\begin{point}{90}[hellinger-toeplitz-needs-complete]{Example}%
 The condition that either~$X$ or~$Y$ be complete may not be dropped:
 the linear map $T\colon c_{00}\to c_{00}$
 given by $T\alpha = (n\alpha_n)_n$ for $\alpha\in c_{00}$
@@ -5740,24 +5740,24 @@ which has $2$-norm equal to~$\sqrt{n}$.
 \end{point}
 \end{parsec}
 
-\begin{parsec}%
-\begin{point}[self-dual]{Definition}%
+\begin{parsec}{360}%
+\begin{point}{10}[self-dual]{Definition}%
 A Hilbert $\scrA$-module~$X$ is \Define{self-dual}%
 \index{Hilbert $\scrA$-module!self dual}
 when every bounded module map $r\colon X\to \scrA$
 is of the form $r\equiv \left<y,(\,\cdot\,)\right>$
 for some~$y\in X$.
 \end{point}
-\begin{point}{Example}%
+\begin{point}{20}{Example}%
 By Riesz' representation theorem (\sref{riesz-representation-theorem})
 every Hilbert space is self-dual.
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{30}{Exercise}%
 Show that given a $C^*$-algebra~$\scrA$
 the Hilbert $\scrA$-module $\scrA^{N}$
 of $N$-tuples is self dual.
 \end{point}
-\begin{point}[chilb-form]{Definition}%
+\begin{point}{40}[chilb-form]{Definition}%
 Let us say that a \Define{(bounded) form}%
 \index{form, between Hilbert $\scrA$-modules}%
 \index{form, between Hilbert $\scrA$-modules!bounded}
@@ -5768,7 +5768,7 @@ such that $[x,\,\cdot\,]\colon Y\to \scrA$
 and $[\,\cdot\,,y]^*\colon X\to \scrA$
 are (bounded) module maps for all~$x\in X$ and~$y\in Y$.
 \end{point}
-\begin{point}[chilb-form-representation]{Proposition}%
+\begin{point}{50}[chilb-form-representation]{Proposition}%
 For every bounded form  $[\,\cdot\,,\,\cdot\,]\colon X\times Y\rightarrow \scrA$
 on self-dual Hilbert $\scrA$-modules
 $X$ and~$Y$
@@ -5777,7 +5777,7 @@ $T\colon X\to Y$.
 with
 $[x,y]\equiv \left<Tx,y\right>$
 for all $x\in X$ and~$y\in Y$.
-\begin{point}{Proof}%
+\begin{point}{60}{Proof}%
 Let $x\in X$ be given.
 Since~$[x,\,\cdot\,]\colon Y\to \scrA$ is a
 a bounded module map,
@@ -5795,12 +5795,12 @@ they are bounded module maps by~\sref{hellinger-toeplitz}.\qed
 \end{point}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{370}%
+\begin{point}{10}%
 	Another consequence of~\sref{pub}
 	is this:
 \end{point}
-\begin{point}[hilb-weakly-bounded-complete]{Proposition}%
+\begin{point}{20}[hilb-weakly-bounded-complete]{Proposition}%
 Given a net~$(y_\alpha)_\alpha$
 in a Hilbert space~$\scrH$
 for which $\left<y_\alpha,x\right>$
@@ -5809,7 +5809,7 @@ for every~$x\in \scrH$,
 there is a unique~$y\in\scrH$
 with $\left<y,x\right>=\lim_\alpha \left<y_\alpha,x\right>$
 for all~$y\in\scrH$.
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 To obtain~$x$,
 we want to apply  Riesz' representation theorem
 (\sref{riesz-representation-theorem})
@@ -5829,7 +5829,7 @@ $\left<y,x\right>=f(x)\equiv \lim_\alpha \left<y_\alpha,x\right>$
 for all~$x\in \scrH$,
 and so we're done.\qed
 \end{point}
-\begin{point}{Remark}%
+\begin{point}{40}{Remark}%
 The condition in~\sref{hilb-weakly-bounded-complete} 
 that the net~$(\,\left<y_\alpha,x\right>\,)_\alpha$
 be bounded for every~$x$ may not be omitted
@@ -5868,7 +5868,7 @@ for every~$F$
 with $\{x\}\subseteq F$).
 \end{point}
 \end{point}
-\begin{point}[swot]{Definition}%
+\begin{point}{50}[swot]{Definition}%
 Let~$\scrH$ be a Hilbert space.
 \begin{enumerate}
 \item
@@ -5898,7 +5898,7 @@ is continuous for every~$x\in\scrH$.
 		$\|T_\alpha x -Tx \| \to 0$ as $\alpha\to\infty$
 		for all~$x\in\scrH$.
 \end{enumerate}
-\begin{point}{Remark}%
+\begin{point}{60}{Remark}%
 Although we'll only make use of the weak operator
 topology we have nonetheless included
 the definition of the strong operator topology here
@@ -5907,7 +5907,7 @@ with the \emph{ultrastrong
 topology} that appears in the next chapter.
 \end{point}
 \end{point}
-\begin{point}[bh-wot-bounded-complete]{Lemma}%
+\begin{point}{70}[bh-wot-bounded-complete]{Lemma}%
 Let~$(T_\alpha)_\alpha$ be a net of bounded operators
 on a Hilbert space~$\scrH$
 such that $(\,\left<x,T_\alpha x \right>\,)$ is
@@ -5915,7 +5915,7 @@ Cauchy and bounded for every~$x\in \scrH$.
 
 Then~$(T_\alpha)_\alpha$
 WOT-converges to some bounded operator~$T$ in $\scrB(\scrH)$.
-\begin{point}{Proof}%
+\begin{point}{80}{Proof}%
 Let~$x,y\in \scrH$ be given.
 Since by a simple computation
 \begin{equation*}
@@ -5949,7 +5949,7 @@ for all~$x,y\in\scrH$, which will be adjoint to~$T$,
 which is therefore bounded.\qed
 \end{point}
 \end{point}
-\begin{point}[hilb-suprema]{Proposition}%
+\begin{point}{90}[hilb-suprema]{Proposition}%
 Let~$\scrH$ be a Hilbert space,
 and~$\scrD$ an upwards directed subset of~$\Real{\scrB(\scrH)}$
 with $\sup_{T\in \scrD} \left<x,Tx\right> <\infty$
@@ -5969,7 +5969,7 @@ $\left<x,T'x\right> =
 \sup_{T\in\scrD}\left<x,Tx\right> $
 for all~$x\in \scrH$.
 \end{enumerate}
-\begin{point}{Proof}%
+\begin{point}{100}{Proof}%
 Let~$x\in \scrH$.
 Since $\left<x,(\,\cdot\,)x\right>\colon \scrB(\scrH)\to \C$
 is positive
@@ -6006,7 +6006,7 @@ we have $\left<x,T'x\right>\equiv \sup_{T\in\scrD} \left<x,Tx\right>
 and therefore $T'\leq S$ by~\sref{hilb-positive-operators}.\qed
 \end{point}
 \end{point}
-\begin{point}{Definition}%
+\begin{point}{110}{Definition}%
 Let~$\scrH$ be a Hilbert space.
 The supremum of a (norm) bounded directed subset~$\scrD$ 
 in~$\Real{(\scrB(\scrH))}$
@@ -6016,8 +6016,8 @@ is denoted by~$\Define{\bigvee\scrD}$.%
 \end{point}
 \end{parsec}
 \subsection{Normal Functionals}
-\begin{parsec}%
-\begin{point}[bh-normal]{Definition}%
+\begin{parsec}{380}%
+\begin{point}{10}[bh-normal]{Definition}%
 Given a Hilbert space~$\scrH$
 a p-map $\omega\colon \scrB(\scrH)\to\C$
 is called \Define{\textbf{n}ormal}%
@@ -6026,12 +6026,12 @@ when
 $\omega(\bigvee \scrD)=\bigvee_{T\in\scrD} \omega(T)$
 for every bounded directed subset $\scrD$ of~$\Real{\scrB(\scrH)}$.
 \end{point}
-\begin{point}{Example}%
+\begin{point}{20}{Example}%
 All vector functionals%
 \index{vector functional!for a Hilbert space!is normal}
 $\left<x,(\,\cdot\,)x\right>$ are normal by~\sref{hilb-suprema}.
 \end{point}
-\begin{point}[bh-normal-effects]{Exercise}%
+\begin{point}{30}[bh-normal-effects]{Exercise}%
 To show that a positive linear functional is normal, it suffices to show 
 that it preserves directed suprema of \emph{effects}: 
 show that given a Hilbert space~$\scrH$
@@ -6040,12 +6040,12 @@ is normal
 provided that $\omega(\bigvee \scrD) = \bigvee_{T\in\scrD} \omega(T)$
 for every directed subset $\scrD$ of $[0,1]_{\scrB(\scrH)}$.
 \end{point}
-\begin{point}[bh-functional-lemma]{Lemma}%
+\begin{point}{40}[bh-functional-lemma]{Lemma}%
 Every sequence $x_1,x_2,\dotsc $ in a Hilbert space~$\scrH$
 with $\sum_n \|x_n\|^2 < \infty$
 gives a np-map $\omega\colon\scrB(\scrH)\to\C$
 defined by~$\omega(T)=\sum_n \left<x_n,Tx_n\right>$.
-\begin{point}{Proof}%
+\begin{point}{50}{Proof}%
 Given $T\in\scrB(\scrH)$ 
 we have $\left|\left<x_n,Tx_n\right>\right|\leq \|x_n\|^2\|T\|$ 
 by Cauchy--Schwarz (\sref{inner-product-basic}),
@@ -6085,7 +6085,7 @@ where we used that~$\sum_{n=1}^N \left<x_n,(\,\cdot\,)x_n\right>$
 is normal.\qed
 \end{point}
 \end{point}
-\begin{point}[vector-functional-convergence]{Exercise}%
+\begin{point}{60}[vector-functional-convergence]{Exercise}%
 The following observations
 regarding
 a net~$(x_\alpha)_\alpha$ in a Hilbert space~$\scrH$
@@ -6110,8 +6110,8 @@ $\ketbra{x}{x}$ on~$\scrB(\scrH)$.)
 \end{enumerate}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{390}%
+\begin{point}{10}%
 The final project of this chapter
 is to show that each normal positive functional~$\omega$ 
 on a~$\scrB(\scrH)$
@@ -6122,7 +6122,7 @@ on a~$\scrB(\scrH)$
 For this we'll need some more nuggets
 from the theory of Hilbert spaces.
 \end{point}
-\begin{point}{Definition}%
+\begin{point}{20}{Definition}%
 A subset~$\scrE$ of a Hilbert space
 is called \Define{orthonormal}%
 \index{orthonormal, subset of a Hilbert space}
@@ -6141,12 +6141,12 @@ we call~$\scrE$ an \Define{orthonormal basis}%
 for~$\scrH$
 for reasons that will be become clear in~\sref{orthonormal}
 below.
-\begin{point}{Remark}%
+\begin{point}{30}{Remark}%
 Clearly, by Zorn's lemma,
 each Hilbert space has an orthonormal basis.
 \end{point}
 \end{point}
-\begin{point}[orthonormal]{Proposition}%
+\begin{point}{40}[orthonormal]{Proposition}%
 Given an orthonormal subset~$\scrE$
 of a Hilbert space~$\scrH$,
 and~$x\in \scrH$,
@@ -6173,7 +6173,7 @@ if~$\scrE$ is maximal, and
 $\sum_{e\in\scrE}\left|\left<e,x\right>\right|^2 = \|x\|^2$
 if~$\scrE$ is maximal.
 \end{enumerate}
-\begin{point}{Proof}%
+\begin{point}{50}{Proof}%
 \ref{orthonormal-1}\ 
 Since for finite subset $\scrF$ of $\scrE$
 we have $0\leq \|x-\sum_{e\in \scrF} \left<e,x\right>e\|^2
@@ -6218,7 +6218,7 @@ $\|x\|^2=\left<x,x\right>
 = \sum_{e\in \scrE} \left|\left<e,x\right>\right|^2$.\qed
 \end{point}
 \end{point}
-\begin{point}[sum-ketbras]{Exercise}%
+\begin{point}{60}[sum-ketbras]{Exercise}%
 Let~$\scrE$ be an orthonormal basis of a Hilbert space~$\scrH$.
 \begin{enumerate}
 \item
@@ -6238,7 +6238,7 @@ Conclude that~$\omega(1)=\sum_{e\in\scrE} \omega(\ketbra{e}{e})$
 for every np-map $\omega\colon \scrB(\scrH)\to\C$.
 \end{enumerate}
 \end{point}
-\begin{point}[bh-np-lemma]{Lemma}%
+\begin{point}{70}[bh-np-lemma]{Lemma}%
 Given a Hilbert space~$\scrH$
 with orthonormal basis~$\scrE$,
 we have
@@ -6248,7 +6248,7 @@ we have
 \end{equation*}
 for every normal p-map $\omega\colon \scrB(\scrH)\to\C$
 and~$A\in\scrB(\scrH)$.
-\begin{point}{Proof}%
+\begin{point}{80}{Proof}%
 Let~$\scrF$ be a finite subset of~$\scrE$,
 and write $P=\sum_{e\in \scrF} \ketbra{e}{e}$.
 Since $PAP
@@ -6284,14 +6284,14 @@ we see that~$\omega(P^\perp)\to0$
 as~$\scrF\to\infty$.\qed
 \end{point}
 \end{point}
-\begin{point}[bh-np]{Theorem}%
+\begin{point}{90}[bh-np]{Theorem}%
 \index{normal!positive functional!on~$\scrB(\scrH)$}%
 Let~$\scrH$ be a Hilbert space.
 Every normal p-map $\omega\colon \scrB(\scrH)\to \C$
 is of the form $\omega = \sum_n\left<x_n,(\,\cdot\,)x_n\right>$
 where $x_1,x_2,\dotsc\in \scrH$
 with~$\sum_n \|x_n\|^2=\|\omega\|$.
-\begin{point}{Proof}%
+\begin{point}{100}{Proof}%
 By~\sref{chilb-form-representation}
 there is a
 unique
@@ -6341,8 +6341,8 @@ by~\sref{bh-np-lemma}.\qed
 \end{point}
 \end{point}
 \end{parsec}
-\begin{parsec}
-\begin{point}
+\begin{parsec}{400}
+\begin{point}{10}
 In this chapter
 we've studied
 the algebraic  structure of 

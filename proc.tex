@@ -1,6 +1,6 @@
 \chapter{Assorted Structure in~$\W{cpsu}$}
-\begin{parsec}
-\begin{point}
+\begin{parsec}{920}
+\begin{point}{10}
 In the previous two chapters
 we have travelled through
 charted territory
@@ -51,8 +51,8 @@ all of the form $\ell^\infty(X)$.
 
 \section{Measurement}
 \label{S:measurement}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{930}%
+\begin{point}{10}%
 The maps on a von Neumann algebra~$\scrA$
 of the form
 $a\mapsto \sqrt{p}a\sqrt{p}\colon\,\scrA\to\scrA$,
@@ -172,8 +172,8 @@ of being~\emph{rigid} (see~\sref{rigid} and~\sref{pure-is-rigid}).
 \end{point}
 \end{parsec}
 \subsection{Corner and Filter}
-\begin{parsec}%
-\begin{point}{Definition}%
+\begin{parsec}{940}%
+\begin{point}{10}{Definition}%
 Given a projection~$e$ of a von Neumann algebra~$\scrA$,
 the \Define{corner}%
 	\index{corner (von Neumann algebra)}
@@ -191,7 +191,7 @@ and the map $a\mapsto eae,\ \scrA\to e\scrA e$
 is called the \Define{projection}.%
 \index{projection!onto a corner}
 \end{point}
-\begin{point}[corner-vna-basic]{Exercise}%
+\begin{point}{20}[corner-vna-basic]{Exercise}%
 Let~$e$ be a projection from a von Neumann algebra~$\scrA$.
 \begin{enumerate}
 \item
@@ -243,7 +243,7 @@ Show that the ultrastrong topologies on~$e\scrA e$ and~$\scrA$
 coincide in a similar fashion.
 \end{enumerate}
 \end{point}
-\begin{point}[ad-ncp]{Exercise}%
+\begin{point}{30}[ad-ncp]{Exercise}%
 Let~$a$ be an element of a von Neumann algebra~$\scrA$,
 and let~$p$ and~$q$ be projections
 of~$\scrA$ with $a^*pa\leq q$.
@@ -257,8 +257,8 @@ gives an ncp-map $p\scrA p\to q\scrA q$.
 \end{enumerate}
 \end{point}
 \end{parsec}%
-\begin{parsec}%
-\begin{point}[corner]{Definition}%
+\begin{parsec}{950}%
+\begin{point}{10}[corner]{Definition}%
 Let~$p$ be an effect of a von Neumann algebra~$\scrA$.
 A \Define{corner}%
 	\index{corner (map)}
@@ -283,13 +283,13 @@ always mean a ``unital corner''%
 \index{corner (map)!unital}
 unless explicitly stated otherwise.
 \end{point}
-\begin{point}[prop-corner]{Proposition}%
+\begin{point}{20}[prop-corner]{Proposition}%
 Given an effect~$p$ of a von Neumann algebra~$\scrA$,
 and a partial isometry~$u$ of~$\scrA$
 with $\floor{p}=uu^*$,
 the map $\pi\colon \scrA\to u^*u \scrA u^*u$
 given by~$\pi(a)=u^*au$ is a corner of~$p$.
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 By~\sref{ad-ncp}, $\pi$ is an ncp-map.
 To see that~$\pi(p^\perp)\equiv u^*p^\perp u =0$,
 note that since~$u^*u=u^*\,u u^*\,u$,
@@ -330,8 +330,8 @@ since~$\ceil{\smash{f(\,\smash{(uu^*)^\perp}\,)}}
 \end{point}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}[filter]{Definition}%
+\begin{parsec}{960}%
+\begin{point}{10}[filter]{Definition}%
 A \Define{filter}%
 \index{filter}
 is an ncp-map $c\colon \scrC\to\scrA$
@@ -343,13 +343,13 @@ for some unique ncp-map $g \colon \scrB\to\scrC$.
 We'll say that~$c$ is a \Define{filter for}~$c(1)$.
 \index{filter!for~$p$}
 \end{point}
-\begin{point}%
+\begin{point}{20}%
 To show that there is a filter
 for every positive element of a von Neumann algebra
 we need to the following result
 concerning ultraweak limits of ncp-maps.
 \end{point}
-\begin{point}[ncp-uwlim]{Lemma}%
+\begin{point}{30}[ncp-uwlim]{Lemma}%
 Given von Neumann algebras~$\scrA$
 and~$\scrB$
 the pointwise ultraweak limit
@@ -365,7 +365,7 @@ $f$ is normal provided that the $f_\alpha$ are normal
 and the ultraweak convergence of the~$f_\alpha$ to~$f$
 is uniform on~$[0,1]_\scrA$.
 \end{enumerate}
-\begin{point}{Proof}%
+\begin{point}{40}{Proof}%
 Since given~$a\in \scrA$ the element~$f(a)$
 is the ultraweak limit of the positive elements~$f_\alpha(a)$,
 and therefore positive (by~\sref{vn-positive-basic}),
@@ -399,12 +399,12 @@ on~$[0,1]_\scrA$
 and thus normal (by~\sref{p-uwcont}).\qed
 \end{point}
 \end{point}
-\begin{point}[canonical-filter]{Proposition}%
+\begin{point}{50}[canonical-filter]{Proposition}%
 Given an element~$d$ of a von Neumann algebra~$\scrA$,
 the map $c\colon \ceilr{d}\!\scrA\!\ceilr{d}\to\scrA$
 given by~$c(a)=d^*ad$
 is a filter.
-\begin{point}{Proof}%
+\begin{point}{60}{Proof}%
 Note that~$c$ is an ncp-map by~\sref{ad-ncp}.
 Let~$\scrB$ be a von Neumann algebra,
 and let~$f\colon \scrB\to\scrA$ be an ncp-map
@@ -452,8 +452,8 @@ is an approximate pseudoinverse of~$d$.\qed
 \end{point}
 \end{point}
 \end{parsec}
-\begin{parsec}
-\begin{point}
+\begin{parsec}{970}
+\begin{point}{10}
 Before exploring their more technical aspects,
 we'll explain how
 corners and filters can be made to appear at opposite ends
@@ -535,8 +535,8 @@ but such chains appear
 in many other categories as well, see~\cite{cho2015quotient}.
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}[dfn-standard-corner-and-filter]{Definition}%
+\begin{parsec}{980}%
+\begin{point}{10}[dfn-standard-corner-and-filter]{Definition}%
 Let~$\scrA$ be a von Neumann algebra.
 \begin{enumerate}
 \item
@@ -561,7 +561,7 @@ the \Define{standard corner}%
 given by~$\pi_p(a)=\floor{p}\!a\!\floor{p}$.
 \end{enumerate}
 \end{point}
-\begin{point}[filter-basic]{Exercise}%
+\begin{point}{20}[filter-basic]{Exercise}%
 Let~$c\colon \scrC\to\scrA$ be a filter,
 where~$\scrC$ and~$\scrA$ are von Neumann algebras.
 \begin{enumerate}
@@ -584,14 +584,14 @@ Show that~$c$ is bipositive
 is bipositive using~\sref{sequential-douglas}).
 \end{enumerate}
 \end{point}
-\begin{point}[filters-composition]{Exercise}%
+\begin{point}{30}[filters-composition]{Exercise}%
 Show that the composition~$d\circ c$
 of filters~$c\colon\scrC\to\scrD$
 and~$d\colon \scrD\to\scrA$ 
 between von Neumann algebras
 is again a filter.
 \end{point}
-\begin{point}[corner-basic]{Exercise}%
+\begin{point}{40}[corner-basic]{Exercise}%
 Let~$p$ be an effect of a von Neumann algebra~$\scrA$,
 and let~$\pi\colon \scrA\to\scrC$ be a corner of~$p$.
 \begin{enumerate}
@@ -604,7 +604,7 @@ and that this~$\beta$ is unital and an ncp-isomorphism.
 Show that~$\pi$ is surjective, and that~$\pi$ is epi in~$\W{cp}$.
 \end{enumerate}
 \end{point}
-\begin{point}[corners-floor]{Exercise}%
+\begin{point}{50}[corners-floor]{Exercise}%
 Show that an ncpu-map $\pi\colon \scrA\to\scrB$
 between von Neumann algebras
 is a corner for an effect~$p$ of~$\scrA$
@@ -613,7 +613,7 @@ in which case~$\ceil{\pi}=\floor{p}$.
 
 Thus a corner~$\pi$ is a corner for~$\ceil{\pi}$.
 \end{point}
-\begin{point}[corners-composition]{Exercise}%
+\begin{point}{60}[corners-composition]{Exercise}%
 Show that the composition~$\tau\circ \pi$
 of corners~$\pi\colon \scrA\to\scrB$
 and~$\tau\colon \scrB\to\scrC$
@@ -624,7 +624,7 @@ prove
 and use the inequality
 $\ceil{\tau}\leq \ceil{\smash{\pi(\ceil{\tau\circ \pi}^\perp)}}^\perp$.)
 \end{point}
-\begin{point}[filter-corner]{Theorem}%
+\begin{point}{70}[filter-corner]{Theorem}%
 Given an ncp-map $f\colon\scrA\to\scrB$
 between von Neumann algebras,
 a projection~$e$ of~$\scrA$
@@ -654,7 +654,7 @@ commutes,
 and it is given by
 $g(a)=\sqrt{p}\backslash f(a)/\!\sqrt{p}$
 for all~$a\in e\scrA e$.
-\begin{point}{Proof}%
+\begin{point}{80}{Proof}%
 Uniqueness of~$g$ follows from the facts
 that~$\pi_e$ is epi and~$c_p$ is mono
 in~$\W{cp}$,
@@ -680,7 +680,7 @@ for all~$a$ from~$e\scrA e$.
 Then~$c_p\circ g\circ \pi_e = h\circ \pi_e = f$.\qed
 \end{point}
 \end{point}
-\begin{point}[square-f]{Corollary}%
+\begin{point}{90}[square-f]{Corollary}%
 Given an ncp-map $f\colon \scrA\to\scrB$
 between von Neumann algebras,
 there is a unique ncp-map $\Define{[f]}\colon 
@@ -711,14 +711,14 @@ for all~$a$ from $\ceil{f}\!\scrA\!\ceil{f}$.
 Moreover, 
 $[f]$ is unital and faithful.
 \end{point}
-\begin{point}{Example}%
+\begin{point}{100}{Example}%
 For any faithful unital ncp-map $f\colon \scrA\to \scrB$
 we have~$[f]=f$.
 Such map need not be an isomorphism;
 	as one may take $f\colon (\lambda,\mu)\mapsto \frac{1}{2}(\lambda+\mu),
 \C^2\to\C$.
 \end{point}
-\begin{point}[ad-pure]{Example}%
+\begin{point}{110}[ad-pure]{Example}%
 In the concrete case
 that $f\equiv a^*(\,\cdot\,)a \colon
 s\scrA s\to t\scrA t$,
@@ -768,8 +768,8 @@ that'll be called \emph{pure} in a moment (see~\sref{pure-fundamental}).
 \end{point}
 \end{parsec}
 \subsection{Isomorphism}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{990}%
+\begin{point}{10}%
 In case you were wondering,
 the ncpu-isomorphism
 we encountered in~\sref{ad-pure}
@@ -777,7 +777,7 @@ is simply a nmiu-isomorphism
 (see~\sref{iso}), which follows
 from the following characterisation of multiplicativity.
 \end{point}
-\begin{point}[gardner]{Proposition}%
+\begin{point}{20}[gardner]{Proposition}%
 \index{multiplicative!ncpsu-map}
 For an ncpu-map $f\colon \scrA\to\scrB$
 between von Neumann algebras
@@ -802,26 +802,26 @@ $f$ maps projections to projections.
 $\ceil{f(a)}=f(\ceil{a})$
 for all~$a\in\scrA_+$.
 \end{enumerate}
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 (Based in part on the work of Gardner in~\cite{gardner}).
-\begin{point}{\sref{gardner-1}$\Longrightarrow$\sref{gardner-4}
+\begin{point}{40}{\sref{gardner-1}$\Longrightarrow$\sref{gardner-4}
  and \sref{gardner-5}$\Longrightarrow$\sref{gardner-4}}
 	are rather obvious.
 \end{point}
-\begin{point}{\sref{gardner-4}$\Longrightarrow$\sref{gardner-5}}%
+\begin{point}{50}{\sref{gardner-4}$\Longrightarrow$\sref{gardner-5}}%
  $\ceil{f(a)}
 \smash{\overset{\sref{ncp-ceil}}{=\joinrel=\joinrel=}}
 \ceil{f(\ceil{a})}
 =f(\ceil{a})$
 since~$f(\ceil{a})$ is a projection.
 \end{point}
-\begin{point}{\sref{gardner-4}$\Longrightarrow$\sref{gardner-3}}%
+\begin{point}{60}{\sref{gardner-4}$\Longrightarrow$\sref{gardner-3}}%
 Let~$p$ and~$q$ be projections of~$\scrA$ with~$pq=0$.
 Then~$p\leq q^\perp$, and so~$f(p)\leq f(q^\perp)=f(q)^\perp$,
 which implies that $\ceil{f(p)}\ceil{f(q)}
 =f(p)f(q)=0$ since~$f(p)$ and~$f(q)$ are projections.
 \end{point}
-\begin{point}{\sref{gardner-3}$\Longrightarrow$\sref{gardner-2}}%
+\begin{point}{70}{\sref{gardner-3}$\Longrightarrow$\sref{gardner-2}}%
 Let~$a,b\in\scrA$ with~$ab=0$ be given.
 We must show that~$f(a)f(b)=0$,
 and for this it suffices to show that
@@ -840,7 +840,7 @@ we get $\ceill{f(a)}\ceilr{f(b)}
 	\ceilr{f(a)}
 	=0$.
 \end{point}
-\begin{point}{\sref{gardner-2}$\Longrightarrow$\sref{gardner-1}}%
+\begin{point}{80}{\sref{gardner-2}$\Longrightarrow$\sref{gardner-1}}%
 We must show that~$f(a)f(b)=f(ab)$
 for all~$a,b\in \scrA$.
 Since the linear span of projections is norm-dense in~$\scrA$,
@@ -859,12 +859,12 @@ and the result that~$f$ is multiplicative.\qed
 \end{point}
 \end{point}
 \end{point}
-\begin{point}[iso]{Theorem}%
+\begin{point}{90}[iso]{Theorem}%
 An ncpsu-isomorphism $f\colon \scrA\to\scrB$
 between von Neumann algebras 
 (so both~$f$ and~$f^{-1}$ are ncpsu-maps)
 is an nmiu-isomorphism.
-\begin{point}{Proof}%
+\begin{point}{100}{Proof}%
 Since~$f^{-1}(1)\leq 1$
 and so~$1=f(f^{-1}(1))\leq f(1)\leq 1$,
 we see that~$f(1)=1$, so both $f$ and $f^{-1}$ are unital.
@@ -878,7 +878,7 @@ and is thus multiplicative, by~\sref{gardner}.
 It follows automatically that~$f^{-1}$ is multiplicative too.\qed
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{110}{Exercise}%
 Show that any filter of a projection is multiplicative.\\
 (Hint: the filter is
 a standard filter
@@ -886,7 +886,7 @@ up to an
 ncpu-isomorphism, \sref{filter-basic},
 which is a nmiu-isomorphism by~\sref{iso}.)
 \end{point}
-\begin{point}[sharp-multiplicative]{Exercise}%
+\begin{point}{120}[sharp-multiplicative]{Exercise}%
 \index{multiplicative!ncp-map}
 Show that for an ncp-map $f\colon \scrA\to\scrB$
 between von Neumann algebras
@@ -906,13 +906,13 @@ and~$h$ is an ncp-map.)
 \end{point}
 \end{parsec}
 \subsection{Purity}
-\begin{parsec}%
-\begin{point}[pure]{Definition}%
+\begin{parsec}{1000}%
+\begin{point}{10}[pure]{Definition}%
 Filters, corners,
 and their compositions we'll call \Define{pure}.%
 \index{pure map}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{20}{Exercise}%
 Show that the following maps are pure.
 \begin{enumerate}%
 \item
@@ -925,7 +925,7 @@ The map $a^*\,(\,\cdot\,)\,a\colon \scrA\to\scrA$
 for any element~$a$ of a von Neumann algebra~$\scrA$.
 \end{enumerate}
 \end{point}
-\begin{point}[pure-fundamental]{Proposition}%
+\begin{point}{30}[pure-fundamental]{Proposition}%
 For an ncp-map $f\colon \scrA\to\scrB$ between von Neumann algebras
 the following are equivalent.
 \begin{enumerate}
@@ -941,11 +941,11 @@ the following are equivalent.
 \label{pure-fundamental-3}
 	$[f]$ from~\sref{square-f} is an ncpu-isomorphism.
 \end{enumerate}
-\begin{point}{Proof}%
+\begin{point}{40}{Proof}%
 \ref{pure-fundamental-3}$\Longrightarrow$\ref{pure-fundamental-2}
 and \ref{pure-fundamental-2}$\Longrightarrow$\ref{pure-fundamental-1}
 are rather obvious.
-\begin{point}{\ref{pure-fundamental-1}$\Longrightarrow$%
+\begin{point}{50}{\ref{pure-fundamental-1}$\Longrightarrow$%
 \ref{pure-fundamental-2}}%
 Calling $f$ \emph{properly pure}
 when~$f\equiv c\circ \pi$
@@ -976,7 +976,7 @@ we know by~\sref{ad-pure}
 that~$[f]$ is an ncpu-isomorphism,
 and thus that~$f\equiv c_{f(1)}\circ [f]\circ \pi_{\ceil{f}}$ is properly pure.
 \end{point}
-\begin{point}{\ref{pure-fundamental-2}$\Longrightarrow$%
+\begin{point}{60}{\ref{pure-fundamental-2}$\Longrightarrow$%
 \ref{pure-fundamental-3}}%
 Recall that $[f]$
 is by definition the unique ncp-map
@@ -995,7 +995,7 @@ so~$[f]$ is an ncpu-isomorphism.\qed
 \end{point}
 \end{point}
 \end{point}
-\begin{point}[special-pure-maps]{Exercise}%
+\begin{point}{70}[special-pure-maps]{Exercise}%
 Use~\sref{pure-fundamental} to show that 
 \begin{enumerate}
 \item
@@ -1008,8 +1008,8 @@ a unital and faithful pure map is an ncpu-isomorphism.
 \end{point}
 \end{parsec}
 \subsection{Contraposition}
-\begin{parsec}%
-\begin{point}{Definition}%
+\begin{parsec}{1010}%
+\begin{point}{10}{Definition}%
 Given an ncp-map $f\colon \scrA\to\scrB$
 between von Neumann algebras
 we define
@@ -1018,7 +1018,7 @@ $\Define{f^\diamond}\colon \Proj(\scrA)\to \Proj(\scrB)$%
 by~$f^\diamond(e)=\ceil{f(e)}$
 for all~$e\in\Proj(\scrA)$.
 \end{point}
-\begin{point}{Proposition}%
+\begin{point}{20}{Proposition}%
 Given an ncp-map $f\colon \scrA\to\scrB$
 between von Neumann algebras
 and a projection~$e$ from~$\scrB$
@@ -1029,7 +1029,7 @@ namely~$f_\diamond(e) =\ceil{\,ef(\,\cdot\,)e\,}$
 (being the carrier 
 	of the ncp-map $ef(\,\cdot\,)e$ from~\sref{carrier});
 giving a map $\Define{f_\diamond}\colon \Proj(\scrB)\to\Proj(\scrA)$.
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 Since by definition $\ceil{\,ef(\,\cdot\,)e\,}$
 is the greatest projection~$s$ of~$\scrA$
 with $ef(s^\perp)e=0$ (see~\sref{carrier});
@@ -1041,7 +1041,7 @@ $\ceil{\,ef(\,\cdot\,)e\,}$
 satisfies the description of~$f_\diamond(e)$.\qed
 \end{point}
 \end{point}
-\begin{point}[diamond-suprema]{Exercise}%
+\begin{point}{40}[diamond-suprema]{Exercise}%
 Let~$f\colon \scrA\to\scrB$ be an ncp-map between von Neumann algebras.
 \begin{enumerate}
 \item
@@ -1054,13 +1054,13 @@ Show that $f^\diamond(\,\bigcup E\,)
 for every set of projections~$E$ from~$\scrA$.
 \end{enumerate}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{50}{Exercise}%
 Show that for ncp-maps $f,g\colon\scrA\to\scrB$
 between von Neumann algebras $f^\diamond = g^\diamond$
 iff $f_\diamond = g_\diamond$.
 In that case we say that $f$ and~$g$ are \Define{equivalent}.%
 	\index{equivalent ncp-maps}
-\begin{point}%
+\begin{point}{60}%
 Show that for ncp-maps $f\colon \scrA\to\scrB$
 and~$g\colon \scrB\to\scrA$ we have
 $f^\diamond=g_\diamond$ iff $f_\diamond = g^\diamond$
@@ -1071,7 +1071,7 @@ In that case we say that~$f$ and~$g$ are \Define{contraposed}.%
 	\index{contraposed}
 \end{point}
 \end{point}
-\begin{point}[equivalent-examples]{Examples}%
+\begin{point}{70}[equivalent-examples]{Examples}%
 \begin{enumerate}
 \item
 Given an element~$a$ of a von Neumann algebra~$\scrA$,
@@ -1102,7 +1102,7 @@ show that~$(zf)^\diamond = f^\diamond$
 for every positive central element~$z$ of~$\scrB$ with~$\ceil{z}=1$.
 \end{enumerate}
 \end{point}
-\begin{point}[diamond-composition]{Exercise}%
+\begin{point}{80}[diamond-composition]{Exercise}%
 Let $\xymatrix{
 	\scrA\ar[r]|-{f}&
 	\scrB\ar[r]|-{g}&
@@ -1129,7 +1129,7 @@ an ncp-map $g'\colon \scrC\to\scrB$,
 show that~$g\circ f$ is contraposed to~$f'\circ g'$.
 \end{enumerate}
 \end{point}
-\begin{point}[diamond-sum]{Proposition}%
+\begin{point}{90}[diamond-sum]{Proposition}%
 Given ncp-maps~$f,g\colon \scrA\to\scrB$
 between von Neumann algebras
 \begin{equation*}
@@ -1139,7 +1139,7 @@ between von Neumann algebras
 \qquad (f+g)_\diamond(t)\, =\, f_\diamond(t) \,\cup\, g_\diamond(t)
 \end{equation*}
 for all~$s\in \Proj(\scrA)$ and~$t\in \Proj(\scrB)$.
-\begin{point}[diamond-sum-proof]{Proof}%
+\begin{point}{100}[diamond-sum-proof]{Proof}%
 Note that $(f+g)^\diamond(s)
 =  \ceil{(f+g)(s)}
 = \ceil{f(s)+g(s)}
@@ -1154,12 +1154,12 @@ iff~$f_\diamond(t)\cup g_\diamond(t)\leq s^\perp$,
 we see that $(f+g)_\diamond(t)=f_\diamond(t)\cup g_\diamond(t)$.\qed
 \end{point}
 \end{point}
-\begin{point}[carrier-f-dagger-f]{Lemma}%
+\begin{point}{110}[carrier-f-dagger-f]{Lemma}%
 Given contraposed
 maps~$f\colon \scrA\to\scrB$
 and~$g\colon \scrB\to\scrA$ between von Neumann algebras,
 we have $\ceil{f}=\ceil{gf}$.
-\begin{point}{Proof}%
+\begin{point}{120}{Proof}%
 $\ceil{gf}=(gf)_\diamond(1)
 = f_\diamond(g_\diamond(1))
 = g^\diamond(\ceil{g})
@@ -1168,12 +1168,12 @@ $\ceil{gf}=(gf)_\diamond(1)
 \end{point}
 \end{parsec}
 \subsection{Rigidity}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1020}%
+\begin{point}{10}%
 We now turn to  a remarkable property shared
 by pure and nmiu-maps.
 \end{point}
-\begin{point}[rigid]{Definition}%
+\begin{point}{20}[rigid]{Definition}%
 We say that an ncp-map $f\colon \scrA\to\scrB$
 between von Neumann algebras is \Define{rigid}%
 \index{rigid ncp-map}
@@ -1181,12 +1181,12 @@ when the only ncp-map $g\colon \scrA\to\scrB$
 with $g(1)=f(1)$ and $\ceil{f(p)}=\ceil{g(p)}$ for all
 projections~$p$ from~$\scrA$ is~$f$ itself.
 \end{point}
-\begin{point}[rigid-ncp-extreme]{Proposition}%
+\begin{point}{30}[rigid-ncp-extreme]{Proposition}%
 A rigid map $f\colon \scrA\to\scrB$
 between von Neumann algebras
 is extreme among the ncp-maps $g\colon \scrA\to\scrB$
 with $g(1)=f(1)$.
-\begin{point}{Proof}%
+\begin{point}{40}{Proof}%
 Given $f\equiv \lambda g_1 + \lambda^\perp g_2$
 where~$\lambda\in(0,1)$ 
 and~$g_1,g_2\colon \scrA\to\scrB$
@@ -1208,10 +1208,10 @@ and thus~$f=g_2$.
 Similarly, $f=g_1$.\qed%
 \end{point}
 \end{point}
-\begin{point}[nmiu-rigid]{Proposition}%
+\begin{point}{50}[nmiu-rigid]{Proposition}%
 A nmiu-map $\varrho\colon \scrA\to\scrB$
 between von Neumann algebras is rigid.
-\begin{point}{Proof}%
+\begin{point}{60}{Proof}%
 Let~$g\colon \scrA\to\scrB$
 be an ncpu-map
 with~$\ceil{\varrho(p)}=\ceil{g(p)}$
@@ -1235,11 +1235,11 @@ $\ceil{g(p)}\ceil{g(q)}=\ceil{\varrho(p)}\ceil{\varrho(q)}
 =\varrho(p)\varrho(q)=\varrho(pq)=\varrho(0)=0$.\qed
 \end{point}
 \end{point}
-\begin{point}[canonical-quotient-rigid]{Lemma}%
+\begin{point}{70}[canonical-quotient-rigid]{Lemma}%
 Given an element~$b$ of a von Neumann algebra~$\scrA$
 the ncp-map $a\mapsto b^* a b,\ \ceilr{b}\!\scrA\!\ceilr{b}\to\scrA$
 is rigid.
-\begin{point}{Proof}%
+\begin{point}{80}{Proof}%
 Let~$g\colon \ceilr{b}\!\scrA\!\ceilr{b}\to\scrA$
 be an ncp-map with~$g(1)=b^*b$
 and $\ceil{b^*pb}=\ceil{g(p)}$ for every projection~$p$ 
@@ -1308,10 +1308,10 @@ so that~$e_n h(e_n^\perp) e_n =0$,
 which yields $e_nh(e_n)e_n = e_n$.\qed
 \end{point}
 \end{point}
-\begin{point}[pure-is-rigid]{Theorem}%
+\begin{point}{90}[pure-is-rigid]{Theorem}%
 \index{pure map!is rigid}
 Every pure map between von Neumann algebras is rigid.
-\begin{point}{Proof}%
+\begin{point}{100}{Proof}%
 Let~$f\colon \scrA\to\scrB$ be a pure map between von Neumann algebras,
 and let~$g\colon \scrA\to\scrB$ be an ncp-map
 with $f(1)=g(1)$
@@ -1355,8 +1355,8 @@ and thus~$f$ is rigid.\qed
 \end{point}
 \end{parsec}
 \subsection{\texorpdfstring{$\diamond$-P}{Diamond p}ositivity}
-\begin{parsec}%
-\begin{point}{Definition}%
+\begin{parsec}{1030}%
+\begin{point}{10}{Definition}%
 We'll call an ncp-map $f\colon \scrA\to\scrA$
 between von Neumann algebras
 \begin{enumerate}
@@ -1379,7 +1379,7 @@ but also to contrast it with
 	the notion of ``$\dagger$-positivity''
 	that appears in the following thesis (see~\sref{dagger-effectus}).
 \end{point}
-\begin{point}[purely-positive-examples]{Examples}%
+\begin{point}{20}[purely-positive-examples]{Examples}%
 Let~$\scrA$ be a von Neumann algebra.
 \begin{enumerate}
 \item
@@ -1391,7 +1391,7 @@ the map $a(\,\cdot\,)a\colon \scrA\to\scrA$
 is $\diamond$-positive.
 \end{enumerate}
 \end{point}
-\begin{point}[purely-positive-basic]{Exercise}%
+\begin{point}{30}[purely-positive-basic]{Exercise}%
 Let~$f\colon \scrA\to\scrA$
 be an ncp-map,
 where~$\scrA$ is a von Neumann algebra.
@@ -1409,8 +1409,8 @@ when~$f$ is $\diamond$-positive.
 \end{enumerate}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1040}%
+\begin{point}{10}%
 We now turn 
 	to the question
 	roughly speaking 
@@ -1423,14 +1423,14 @@ if and only if~$c_1(1)$ and~$c_2(1)$
 are equal up to some central elements,
 that is, \emph{centrally similar}.
 \end{point}
-\begin{point}{Definition}%
+\begin{point}{20}{Definition}%
 We say that positive elements $p$ and~$q$ of a von Neumann algebra~$\scrA$
 are \Define{centrally similar}
 if~$cp=dq$ for some positive central elements~$c$ and~$d$ of~$\scrA$
 with~$\ceil{p}\leq \ceil{c}$
 and~$\ceil{q}\leq \ceil{d}$.
 \end{point}
-\begin{point}[centrally-similar-basic]{Exercise}%
+\begin{point}{30}[centrally-similar-basic]{Exercise}%
 Let~$p$ and~$q$ be positive elements
 of a von Neumann algebra~$\scrA$.
 \begin{enumerate}
@@ -1476,14 +1476,14 @@ and
 converge ultraweakly to $\frac{p\wedge q}{p}$.)
 \end{enumerate}
 \end{point}
-\begin{point}[centrally-similar-fundamental]{Lemma}%
+\begin{point}{40}[centrally-similar-fundamental]{Lemma}%
 Suppose that $\ceil{q \, \vartheta(e)\, q}\leq e$
 and~$\ceil{q \,\vartheta(e^\perp)\, q} \leq e^\perp$,
 where~$e$ is a projection of a von Neumann algebra~$\scrA$,
 $q$ is a positive element of~$\scrA$,
 and~$\vartheta\colon \scrA\to\scrA$ is a miu-map.
 Then~$eq=qe$ and~$\vartheta(e)=e$.
-\begin{point}{Proof}%
+\begin{point}{50}{Proof}%
 We have $\vartheta(e)qe=\vartheta(e)q$,
 because~$e\geq  \ceil{q\,\vartheta(e)\,q}
 \equiv \ceill{\vartheta(e)q}$ (see~\sref{ceill-basic}).
@@ -1503,7 +1503,7 @@ and~$\ceil{q}=1$
 imply that~$\vartheta(e)=e$ by~\sref{mult-cancellation}.\qed
 \end{point}
 \end{point}
-\begin{point}[centrally-similar-corollary]{Corollary}%
+\begin{point}{60}[centrally-similar-corollary]{Corollary}%
 A positive element~$q$
 of a von Neumann algebra~$\scrA$
 with~$\ceil{q}=1$
@@ -1513,7 +1513,7 @@ with $\ceil{q\,\vartheta(e)\,q}\leq e$
 for every projection~$e$ from~$\scrA$;
 and in that case~$\vartheta=\id$.
 \end{point}
-\begin{point}[positive-quotients-centrally-similar]{Proposition}%
+\begin{point}{70}[positive-quotients-centrally-similar]{Proposition}%
 Positive elements~$p$ and~$q$
 of a von Neumann algebra~$\scrA$
 with~$\ceil{p}=\ceil{q}=1$
@@ -1523,7 +1523,7 @@ $\vartheta\colon \scrA\to\scrA$
 with~$\ceil{pep}=\ceil{q\,\vartheta(e)\,q}$
 for all projections~$e$ of~$\scrA$;
 and in that case  $\vartheta=\id$.
-\begin{point}{Proof}%
+\begin{point}{80}{Proof}%
 Let~$e$ be a projection from~$\scrA$ with~$ep=pe$.
 Since~$1=\ceil{p}=\ceil{\smash{p^2}}$
 we have $e=\ceil{e\ceil{\smash{p^2}}e}
@@ -1585,12 +1585,12 @@ $p$ and~$q$ are centrally similar (by~\sref{centrally-similar-basic}).
 \qed
 \end{point}
 \end{point}
-\begin{point}[faithful-positive-map-uniqueness]{Proposition}%
+\begin{point}{90}[faithful-positive-map-uniqueness]{Proposition}%
 A faithful $\diamond$-positive map $f\colon \scrA\to\scrA$
 on a von Neumann algebra~$\scrA$
 is of the form~$f=\sqrt{p}(\,\cdot\,)\sqrt{p}$
 where $p:=f(1)$.
-\begin{point}{Proof}%
+\begin{point}{100}{Proof}%
 Note that~$f$,
 being faithful and pure,
 is a filter
@@ -1638,8 +1638,8 @@ and hence that~$f=\sqrt{p}\,(\,\cdot\,)\,\sqrt{p}$.\qed
 \end{point}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1050}%
+\begin{point}{10}%
 To strip 
 from~\sref{faithful-positive-map-uniqueness}
 the assumption 
@@ -1647,7 +1647,7 @@ that~$f$
 be faithful 
 we employ this device:
 \end{point}
-\begin{point}[chevron-f]{Definition}%
+\begin{point}{20}[chevron-f]{Definition}%
 Given an ncp-map $f\colon \scrA\to\scrB$
 between von Neumann algebras
 we denote by
@@ -1674,7 +1674,7 @@ such that
 commutes.
 (Compare this with the definition of~$[f]$ in~\sref{square-f}.)
 \end{point}
-\begin{point}[chevron-f-basic]{Exercise}%
+\begin{point}{30}[chevron-f-basic]{Exercise}%
 Let~$f\colon \scrA\to\scrB$ be an ncp-map.
 \begin{enumerate}
 \item
@@ -1698,7 +1698,7 @@ show that~$\left<f\right>$ is pure,
 and hence a filter (by~\sref{special-pure-maps}).
 \end{enumerate}
 \end{point}
-\begin{point}[chevron-f-purely-positive]{Exercise}%
+\begin{point}{40}[chevron-f-purely-positive]{Exercise}%
 Let~$f\colon \scrA\to\scrA$
 be an ncp-map, where~$\scrA$ is a von Neumann algebra.
 \begin{enumerate}
@@ -1721,12 +1721,12 @@ Assuming that~$f$ is $\diamond$-positive,
 show that~$\left<f\right>$ is $\diamond$-positive.
 \end{enumerate}
 \end{point}
-\begin{point}[positive-map-uniqueness]{Theorem}%
+\begin{point}{50}[positive-map-uniqueness]{Theorem}%
 Given a positive element~$p$ of a von Neumann algebra~$\scrA$
 there is a unique $\diamond$-positive map $f\colon \scrA\to\scrA$
 with~$f(1)=p$,
 namely~$f=\sqrt{p}(\,\cdot\,)\sqrt{p}$.
-\begin{point}{Proof}%
+\begin{point}{60}{Proof}%
 We've already seen in~\sref{purely-positive-examples}
 that $f=\sqrt{p}(\,\cdot\,)\sqrt{p}\colon \scrA\to\scrA$
 is a $\diamond$-positive map with~$f(1)=p$.
@@ -1747,13 +1747,13 @@ $f= c_{\ceil{p}}\circ\left<f\right>\circ \pi_{\ceil{p}}
 = \sqrt{p}(\,\cdot\,)\sqrt{p}$.\qed
 \end{point}
 \end{point}
-\begin{point}{Corollary (``Square Root Axiom'')}%
+\begin{point}{70}{Corollary (``Square Root Axiom'')}%
 \index{square root axiom}
 Given a positive element~$p$ of a von Neumann algebra~$\scrA$
 there is a unique $\diamond$-positive map~$g\colon \scrA\to\scrA$
 with~$g(g(1))=p$, namely
 $g=\sqrt[4]{p}\,(\,\cdot\,)\,\sqrt[4]{p}$.
-\begin{point}{Proof}%
+\begin{point}{80}{Proof}%
 Any $\diamond$-positive map~$g\colon \scrA\to\scrA$ with~$g(g(1))=p$
 will be of the form
 $g=\smash{\sqrt{g(1)}\,(\,\cdot\,)\,\sqrt{g(1)}}$
@@ -1765,8 +1765,8 @@ thereby giving~$g=\sqrt[4]{p}\,(\,\cdot\,)\,\sqrt[4]{p}$.\qed
 \end{point}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}[uniqueness-sequential-product]{Theorem}%
+\begin{parsec}{1060}%
+\begin{point}{10}[uniqueness-sequential-product]{Theorem}%
 \index{sequential product}
 On the effects of every von Neumann algebra~$\scrA$
 there is a unique binary operation~$\ast$
@@ -1793,7 +1793,7 @@ namely, the sequential product,
 given by
 $p\ast q = \sqrt{p}q\sqrt{p}$
 for all~$p, q$ from~$[0,1]_\scrA$.
-\begin{point}{Proof}%
+\begin{point}{20}{Proof}%
 Let~$p$  from $[0,1]_\scrA$ be given.
 Pick~$p'$ from~$[0,1]_\scrA$
 with $p = p'\ast p'$
@@ -1813,7 +1813,7 @@ so $p\ast q
 for all~$q\in [0,1]_\scrA$ by~\ref{ax3}.\qed
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{30}{Exercise}%
 None of the axioms
 from~\sref{uniqueness-sequential-product}
 may be omitted (except perhaps~\ref{ax4},
@@ -1855,14 +1855,14 @@ satisfies all conditions of~\sref{uniqueness-sequential-product}
 except~\ref{ax5}.
 \end{enumerate}
 \end{point}
-\begin{point}[fourth-axiom]{Problem}%
+\begin{point}{40}[fourth-axiom]{Problem}%
 Is there a binary operation~$\ast$
 on the effects~$[0,1]_\scrA$
 of a von Neumann algebra~$\scrA$
 that satisfies all axioms of~\sref{uniqueness-sequential-product}
 except~\sref{ax4}?
 \end{point}
-\begin{point}{Remark}%
+\begin{point}{50}{Remark}%
 The axioms for the sequential product
 (on a single von Neumann algebra)
 presented here (in~\sref{uniqueness-sequential-product})
@@ -1916,8 +1916,8 @@ and for some more pointers to the literature.
 
 \section{Tensor product}
 \label{S:tensor}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1070}%
+\begin{point}{10}%
 The tensor
 product of von Neumann algebras~$\scrA$
 and~$\scrB$
@@ -1959,8 +1959,8 @@ but more of that later.
 \end{point}
 \end{parsec}
 \subsection{Definition}
-\begin{parsec}%
-\begin{point}[bilinear-basic]{Definition}%
+\begin{parsec}{1080}%
+\begin{point}{10}[bilinear-basic]{Definition}%
 A bilinear map
 	$\beta\colon \scrA\times \scrB\to\scrC$
 between von Neumann algebras is
@@ -1988,7 +1988,7 @@ and say, for instance, that $\beta$ is \Define{miu-bilinear}%
 when it is unital, multiplicative and involution preserving.
 
 \end{point}
-\begin{point}[tensor]{Definition}%
+\begin{point}{20}[tensor]{Definition}%
 A miu-bilinear map $\gamma\colon \scrA\times\scrB\to\scrT$
 between von Neumann algebras
 is a \Define{tensor product}%
@@ -2036,7 +2036,7 @@ in which not all product functionals of np-functionals
 are required to exists upfront 
 in~\sref{tensor-characterization}.)
 \end{point}
-\begin{point}{Remark}%
+\begin{point}{30}{Remark}%
 This compact definition of the tensor product
 leaves four questions unanswered:
 whether such a tensor product of two von Neumann algebras
@@ -2048,14 +2048,14 @@ We'll shortly address all four questions.
 \end{point}
 \end{parsec}
 \subsection{Existence}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1090}%
+\begin{point}{10}%
 We'll start with the existence
 of a tensor product of von Neumann algebras
 for which we'll first need the tensor product
 of Hilbert spaces.
 \end{point}
-\begin{point}{Definition}%
+\begin{point}{20}{Definition}%
 We'll call a bilinear map $\gamma\colon \scrH\times\scrK\to\scrT$
 between Hilbert spaces
 a \Define{tensor product}%
@@ -2070,7 +2070,7 @@ $\left<\gamma(x,y),\gamma(x',y')\right>
 for all~$x,x'\in\scrH$ and~$y,y'\in\scrK$.
 \end{enumerate}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{30}{Exercise}%
 \index{tensor product!of Hilbert spaces!exists}
 We're going to prove that every pair of Hilbert
 spaces~$\scrH$ and~$\scrK$ admits
@@ -2097,7 +2097,7 @@ of Hilbert spaces has a tensor product
 has an orthonormal basis).
 \end{enumerate}
 \end{point}
-\begin{point}[hilb-tensor-basic]{Proposition}%
+\begin{point}{40}[hilb-tensor-basic]{Proposition}%
 Let~$\gamma\colon \scrH\times\scrK\to\scrT$
 be a tensor product
 of Hilbert spaces.
@@ -2116,7 +2116,7 @@ the set
 \end{equation*}
 is an orthonormal basis for~$\scrT$.
 \end{enumerate}
-\begin{point}{Proof}%
+\begin{point}{50}{Proof}%
 \ref{hilb-tensor-basic-1}\ 
 We have $\|\gamma(x,y)\|^2
 = \left<\gamma(x,y),\gamma(x,y)\right>
@@ -2151,8 +2151,8 @@ is indeed in the closure of the span of~$\scrG$.\qed
 \end{point}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}{Definition}%
+\begin{parsec}{1100}%
+\begin{point}{10}{Definition}%
 We'll say that a bilinear map $\eta\colon\scrH\times\scrK\to\scrL$
 between Hilbert spaces
 is \Define{$\ell^2$-bounded}%
@@ -2165,7 +2165,7 @@ when
 \end{equation*}
 for all~$x_1,\dotsc,x_n\in \scrH$
 and~$y_1,\dotsc,y_n\in\scrK$.
-\begin{point}{Remark}%
+\begin{point}{20}{Remark}%
 We added the prefix ``$\ell^2$-''
 to clearly distinguish
 it from the boundedness
@@ -2183,7 +2183,7 @@ but it is not~$\ell^2$-bounded
 when~$\scrH$ is infinite dimensional
 \end{point}
 \end{point}
-\begin{point}[hilb-tensor-universal-property]{Theorem}%
+\begin{point}{30}[hilb-tensor-universal-property]{Theorem}%
 \index{tensor product!of Hilbert spaces!universal property}
 \index{tensor product!of Hilbert spaces!is $\ell^2$-bounded}
 A tensor product $\gamma\colon \scrH\times\scrK\to\scrT$
@@ -2200,7 +2200,7 @@ with $\beta_\gamma(\gamma(x,y))=\beta(x,y)$
 for all~$x\in\scrH$ and~$y\in\scrK$.
 Moreover, $\|\beta_\gamma\|\leq B$
 for such~$\beta$.
-\begin{point}{Proof}%
+\begin{point}{40}{Proof}%
 Note that $\gamma$ is $\ell^2$-bounded,
 since
 for all~$x_1,\dotsc,x_n\in\scrH$,
@@ -2289,7 +2289,7 @@ for all~$x\in \scrH$ and~$y\in\scrK$,
 and so we're done.\qed
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{50}{Exercise}%
 Show that the tensor product of Hilbert spaces~$\scrH$
 and~$\scrK$ is unique in the sense
 that given tensor products $\gamma\colon \scrH\times\scrK\to\scrT$
@@ -2300,7 +2300,7 @@ with $\gamma'(x,y) = \varphi(\gamma(x,y))$
 for all~$x\in\scrH$
 and~$y\in\scrK$.
 \end{point}
-\begin{point}{Notation}%
+\begin{point}{60}{Notation}%
 Now that we've established
 that that the tensor product
 of Hilbert spaces~$\scrH$ and~$\scrK$
@@ -2311,8 +2311,8 @@ we just pick one and denote it by $\Define{\otimes}\colon
 \index{*tensor@$\otimes$, tensor product!$x \otimes y$, of elements of Hilbert spaces}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1110}%
+\begin{point}{10}%
 Essentially to turn~$\otimes$
 into a functor on
 the category of Hilbert spaces
@@ -2323,7 +2323,7 @@ the following result
 \index{Schur's Product Theorem}
 which will be useful several times later on.
 \end{point}
-\begin{point}[schur]{Lemma}%
+\begin{point}{20}[schur]{Lemma}%
 For any natural number~$N$
 the entrywise product 
 $(a_{nm}b_{nm})$
@@ -2331,7 +2331,7 @@ of positive  $N\times N$-matrices
 $(a_{nm})$ and~$(b_{nm})$
 over~$\C$
 is positive.
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 Let~$z_1,\dotsc,z_N\in\C$ be given.
 To show that $(a_{nm}b_{nm})$
 is positive,
@@ -2379,7 +2379,7 @@ and so~$(a_{nm}b_{nm})$ is positive.
 \qed
 \end{point}
 \end{point}
-\begin{point}[mult-completely-monotone]{Exercise}%
+\begin{point}{40}[mult-completely-monotone]{Exercise}%
 Given square matrices 
 $(a_{nm})\leq (\tilde{a}_{nm})$
 and $(b_{nm})\leq (\smash{\tilde{b}_{nm}})$
@@ -2387,7 +2387,7 @@ over~$\C$
 of the same dimensions,
 show that $(\,a_{nm}b_{nm}\,)\leq (\,\tilde{a}_{nm}\smash{\tilde{b}_{nm}}\,)$.
 \end{point}
-\begin{point}[hilb-tensor-functor]{Proposition}%
+\begin{point}{50}[hilb-tensor-functor]{Proposition}%
 Given bounded linear maps
 $A\colon \scrH\to\scrH'$
 and~$B\colon \scrK\to\scrK'$
@@ -2402,7 +2402,7 @@ of operators between Hilbert spaces}
 with $(A\otimes B)(x\otimes y)=(Ax)\otimes (By)$
 for all~$x\in\scrH$
 and~$y\in\scrK$.
-\begin{point}{Proof}%
+\begin{point}{60}{Proof}%
 In view of~\sref{hilb-tensor-universal-property}
 the only thing we need
 to prove is that the bilinear map
@@ -2442,7 +2442,7 @@ $(\,\left<By_i,B y_j\right>\,)\leq
 (\, \|B\|^2 \left<y_i,y_j\right>\,)$.\qed
 \end{point}
 \end{point}
-\begin{point}[special-tensor]{Theorem}%
+\begin{point}{70}[special-tensor]{Theorem}%
 \index{spacial tensor product}
 Let~$\scrA$
 and~$\scrB$
@@ -2466,16 +2466,16 @@ generated by the range of~$\otimes$,
 the restriction~$\gamma\colon \scrA\times \scrB\to\scrT$
 of~$\otimes$
 is a tensor product of~$\scrA$ and~$\scrB$.
-\begin{point}{Proof}%
+\begin{point}{80}{Proof}%
 We'll check that the three conditions of~\sref{tensor} hold;
 we leave it to the reader to verify that~$\otimes$
 is miu-bilinear.
-\begin{point}{Condition~\ref{tensor-1}}%
+\begin{point}{90}{Condition~\ref{tensor-1}}%
 The range of~$\gamma$ being the same as the range of~$\otimes$
 generates~$\scrT$ 
 simply by the way~$\scrT$ was defined.
 \end{point}
-\begin{point}{Condition~\ref{tensor-2}}%
+\begin{point}{100}{Condition~\ref{tensor-2}}%
 Let~$\sigma\colon \scrA\to\C$
 and~$\tau\colon \scrB\to\C$ be np-maps.
 We must find an np-functional~$\omega$ on~$\scrT$
@@ -2500,7 +2500,7 @@ which does the job:  $\omega(A\otimes B)
 = \sigma(A)\tau(B)$
 for all~$A\in\scrA$ and~$B\in\scrB$.
 \end{point}
-\begin{point}{Condition~\ref{tensor-3}}%
+\begin{point}{110}{Condition~\ref{tensor-3}}%
 It remains to be shown that the
 product functionals
 on~$\scrT$ form a faithful collection.
@@ -2534,7 +2534,7 @@ and thus~$T=0$.\qed
 \end{point}
 \end{point}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{120}{Exercise}%
 \index{tensor product!of von Neumann algebras!exists}%
 Given von Neumann algebras~$\scrA$ and~$\scrB$
 (which are not a priori represented on Hilbert spaces)
@@ -2544,8 +2544,8 @@ using~\sref{ngns} and~\sref{special-tensor}.
 \end{point}
 \end{parsec}
 \subsection{Universal Property}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1120}%
+\begin{point}{10}%
 Before we bring our categorical faculties
 to bear upon the tensor product for von Neumann algebras
 we quickly review
@@ -2632,7 +2632,7 @@ is just a general
 observation concerning
 centre separating sets, as we saw in~\sref{vn-center-separating-fundamental}.
 \end{point}
-\begin{point}[tensor-extra]{Definitions}%
+\begin{point}{20}[tensor-extra]{Definitions}%
 Let~$\scrA$ and~$\scrB$ be von Neumann algebras.
 \begin{enumerate}
 \item
@@ -2717,13 +2717,13 @@ and $c_1,\dotsc,c_N\in\scrC$.
 \end{enumerate}
 \end{enumerate}
 \end{point}
-\begin{point}[product-state-positive]{Lemma}%
+\begin{point}{30}[product-state-positive]{Lemma}%
 Given $C^*$-algebras~$\scrA$ and~$\scrB$
 we have~$(\sigma\odot \tau) (t^*t)\geq 0$
 for all  $t\in\scrA\odot\scrB$
 and p-maps  $\sigma\colon \scrA\to\C$
 and~$\tau\colon \scrB\to\C$.
-\begin{point}{Proof}%
+\begin{point}{40}{Proof}%
 Note that writing~$t\equiv \sum_n a_n \odot b_n$,
 where~$a_1,\dotsc,a_N\in \scrA$, $b_1,\dotsc,b_N\in \scrB$,
 we have
@@ -2744,14 +2744,14 @@ $(\sigma\odot\tau)(t^*t)
 =\ \sum_{n,m} \sigma(a_n^*a_m)\,\tau(b_n^*b_m) \geq 0$.\qed
 \end{point}
 \end{point}
-\begin{point}[basic-state-inner-product]{Exercise}%
+\begin{point}{50}[basic-state-inner-product]{Exercise}%
 Use~\sref{product-state-positive} 
 to show that
  $[\,\cdot\,,\,\cdot\,]_\omega$
 from~\sref{tensor-extra}
 is an inner product.
 \end{point}
-\begin{point}{Lemma}%
+\begin{point}{60}{Lemma}%
 Product functionals on~$\scrA\odot\scrB$
 formed from 
 separating
@@ -2764,7 +2764,7 @@ in the sense that given~$t\in\scrA\odot\scrB$
 the condition that $(\sigma\odot \tau)(t)=0$
 for all~$\sigma\in \Omega$ and~$\tau\in\Xi$
 entails that~$t=0$.
-\begin{point}{Proof}%
+\begin{point}{70}{Proof}%
 Write~$t\equiv \sum_n a_n\odot b_n$
 for some  $a_1,\dotsc,a_N\in\scrA$
 and~$b_1,\dotsc,b_N\in \scrB$.
@@ -2785,12 +2785,12 @@ we get~$0=b_1=\dotsb=b_N$,
 and thus~$t=\sum_n a_n\odot b_n=0$.\qed
 \end{point}
 \end{point}
-\begin{point}[tensor-product-norm]{Exercise}%
+\begin{point}{80}[tensor-product-norm]{Exercise}%
 Show that the tensor product norm
 from~\sref{tensor-extra}
 is, indeed, a norm.
 \end{point}
-\begin{point}[product-functional]{Exercise}%
+\begin{point}{90}[product-functional]{Exercise}%
 Note that given np-functionals 
 $\sigma \colon \scrA\to\C$
 and~$\tau\colon \scrB\to\C$
@@ -2804,7 +2804,7 @@ bounded and ultraweakly continuous too
 for all~$f\in\scrA_*$ and~$g\in\scrB_*$
 (perhaps using~\sref{luws}).
 \end{point}
-\begin{point}[tensor-basic]{Exercise}%
+\begin{point}{100}[tensor-basic]{Exercise}%
 We're going to show that 
 the ultraweak tensor product topology
 and tensor product norm from~\sref{tensor-extra}
@@ -2915,7 +2915,7 @@ on~$\scrA\odot\scrB$ can be extended uniquely
 to a normal functional on~$\scrT$.)
 \end{enumerate}
 \end{point}
-\begin{point}[tensor-universal-property]{Theorem}%
+\begin{point}{110}[tensor-universal-property]{Theorem}%
 \index{tensor product!of von Neumann algebras!universal property}
 A tensor product~$\gamma\colon \scrA\times\scrB\to\scrT$
 of von Neumann algebras~$\scrA$ and~$\scrB$
@@ -2928,7 +2928,7 @@ map  $\Define{\beta_\gamma}\colon \scrT
 \index{*tensorsup@$\beta_\gamma$}
 with $\beta_\gamma\circ \gamma  = \beta$.
 Moreover, $\|\beta_\gamma\|=\|\beta_\odot\|$.
-\begin{point}{Proof}%
+\begin{point}{120}{Proof}%
 Since $\beta_\odot\colon \scrA\odot\scrB\to\scrC$
 is ultraweakly continuous and bounded,
 and
@@ -2941,19 +2941,19 @@ except for some trivial details.\qed
 \end{point}
 \end{point}
 \end{parsec}%
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1130}%
+\begin{point}{10}%
 \index{completely positive!bilinear map}%
 We'll need some observations
 concerning completely positive bilinear maps.
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{20}{Exercise}%
 \index{Schur's Product Theorem}
 Show that a mi-bilinear
 map $\beta\colon \scrA\times\scrB\to\scrC$ between von Neumann 
 algebras is completely positive.
 \end{point}
-\begin{point}{Notation}%
+\begin{point}{30}{Notation}%
 Given a bilinear map
 $\beta\colon \scrA\times\scrB\to\scrC$
 between von Neumann algebras,
@@ -2964,7 +2964,7 @@ by  $(M_N\beta)(A,B) =
 \index{Mnbeta@$M_n\beta$, for bilinear~$\beta$}
 for each~$N$.
 \end{point}
-\begin{point}[cp-bilinear]{Exercise}%
+\begin{point}{40}[cp-bilinear]{Exercise}%
 Show that for a bilinear map $\beta\colon \scrA\times\scrB\to\scrC$
 between von Neumann algebras
 the following are equivalent.
@@ -2987,8 +2987,8 @@ and~$h\colon \scrC\to\scrC'$
 are cp-maps between von Neumann algebras.
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}[tensor-universal-property-extra]{Exercise}%
+\begin{parsec}{1140}%
+\begin{point}{10}[tensor-universal-property-extra]{Exercise}%
 \index{tensor product!of von Neumann algebras!universal property}
 Let $\gamma\colon \scrA\times \scrB\to\scrT$
 be a tensor product
@@ -3021,7 +3021,7 @@ $\beta_\gamma$ is completely positive iff
 $\beta$ is completely positive.
 \end{enumerate}
 \end{point}
-\begin{point}[tensor-uniqueness]{Exercise}%
+\begin{point}{20}[tensor-uniqueness]{Exercise}%
 \index{tensor product!of von Neumann algebras!uniqueness}
 Show that the tensor product of von Neumann algebras~$\scrA$
 and~$\scrB$ is unique in
@@ -3036,8 +3036,8 @@ for all~$a\in\scrA$ and~$b\in\scrB$.
 \end{point}
 \end{parsec}
 \subsection{Functoriality}
-\begin{parsec}%
-\begin{point}{Notation}%
+\begin{parsec}{1150}%
+\begin{point}{10}{Notation}%
 Now that we've established
 that that the tensor product
 of von Neumann algebras~$\scrA$ and~$\scrB$
@@ -3048,7 +3048,7 @@ we just pick one and denote it by $\Define{\otimes}\colon
 \index{*tensor@$\otimes$, tensor product!$a\otimes b$,
 of elements of von Neumann algebras}
 \end{point}
-\begin{point}[tensor-functorial]{Proposition}%
+\begin{point}{20}[tensor-functorial]{Proposition}%
 Given ncp-maps $f\colon \scrA\to\scrC$
 and $g\colon \scrB\to\scrD$
 between von Neumann algebras
@@ -3072,7 +3072,7 @@ when~$f$ and~$g$ are involution preserving; and
 $f\otimes g$ is (sub)unital 
 when~$f$ and~$g$ are (sub)unital.
 \end{enumerate}
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 As uniqueness of~$f\otimes g$ is rather obvious,
 we leave it at that.
 To establish
@@ -3208,7 +3208,7 @@ h(\ (M_nf)(A^*A) \ \ (M_n \otimes)\ \
 which concludes this proof.\qed
 \end{point}
 \end{point}
-\begin{point}[tensor-functor]{Exercise}%
+\begin{point}{40}[tensor-functor]{Exercise}%
 Show that the assignments
 $(\scrA,\scrB)\mapsto \scrA\otimes \scrB$,
 and~$(f,g)\mapsto f\otimes g$
@@ -3221,12 +3221,12 @@ where~$\Cat{C}$
 can be~$\W{miu}$, $\W{cp}$, $\W{cpu}$
 or $\W{cpsu}$.
 \end{point}
-\begin{point}[tensor-injective]{Proposition}%
+\begin{point}{50}[tensor-injective]{Proposition}%
 Given injective nmiu-maps
 $f\colon \scrA\to\scrC$ and~$g\colon \scrB\to\scrD$,
 the nmiu-map $f\otimes g\colon \scrA\otimes \scrB\to
 \scrC\otimes\scrD$ is injective.
-\begin{point}{Proof}%
+\begin{point}{60}{Proof}%
 The trick
 is to consider the von Neumann subalgebra~$\scrT$
 generated by
@@ -3335,13 +3335,13 @@ $\gamma(\tilde\sigma,\tilde\tau)
 \end{point}
 \end{parsec}%
 \subsection{Miscellaneous Properties}
-\begin{parsec}%
-\begin{point}[product-functional-norm]{Lemma}%
+\begin{parsec}{1160}%
+\begin{point}{10}[product-functional-norm]{Lemma}%
 Given von Neumann algebras~$\scrA$ and~$\scrB$,
 we have $\|f\otimes g\|=\|f\|\|g\|$
 for all~$f\in\scrA_*$ and~$g\in\scrB_*$.%
 \index{*tensor@$\otimes$!$f\otimes g$, of normal functionals}
-\begin{point}{Proof}%
+\begin{point}{20}{Proof}%
 The trick is to use the polar decomposition
 for normal functionals, \sref{polar-decomposition-of-functional}.
 On its account we can find partial isometries $u\in\scrA$
@@ -3360,7 +3360,7 @@ so that $\|f\otimes g\|=(f\otimes g)(u\otimes v)
 = f(u)g(v)=\|f\|\|g\|$ by~\sref{functional-norm}.\qed
 \end{point}
 \end{point}
-\begin{point}[tensor-simple-facts]{Exercise}%
+\begin{point}{30}[tensor-simple-facts]{Exercise}%
 There are some easily obtained facts
 concerning the tensor product~$\scrA\otimes\scrB$
 of von Neumann algebras
@@ -3410,7 +3410,7 @@ and that $1\otimes(\,\cdot\,)\colon \scrB\to \scrA\otimes \scrB$
 is a nmiu-map.
 \end{enumerate}
 \end{point}
-\begin{point}[tensor-generation]{Proposition}
+\begin{point}{40}[tensor-generation]{Proposition}
 Let~$\scrA$ and~$\scrB$ 
 be von Neumann algebras.
 \begin{enumerate}
@@ -3428,7 +3428,7 @@ then~$\{\,\omega\otimes\vartheta\colon\,
 \omega\in\Omega,\,\vartheta\in\Theta\,\}$
 is centre separating for~$\scrA\otimes\scrB$.
 \end{enumerate}
-\begin{point}{Proof}%
+\begin{point}{50}{Proof}%
 Concerning~\ref{tensor-generation-1},
 since the elements of~$\scrA\otimes\scrB$
 of the form $a\otimes b$
@@ -3484,13 +3484,13 @@ by assumption,
 we conclude that~$(\sigma\otimes \tau)(t)=0$ too.\qed
 \end{point}
 \end{point}
-\begin{point}%
+\begin{point}{60}%
 To obtain certain examples
 the following characterisation of
 the tensor product of von Neumann algebras
 proves useful.
 \end{point}
-\begin{point}[tensor-characterization]{Theorem}%
+\begin{point}{70}[tensor-characterization]{Theorem}%
 Given centre separating collections~$\Sigma$ and~$\Gamma$
 of np-functionals
 on von Neumann algebras~$\scrA$ and~$\scrB$,
@@ -3512,7 +3512,7 @@ The set
 $\{\,\gamma(\sigma,\tau)\colon\,\sigma\in\Sigma,\,\tau\in \Gamma\,\}$
 is centre separating for~$\scrT$.
 \end{enumerate}
-\begin{point}{Proof}%
+\begin{point}{80}{Proof}%
 A tensor product~$\gamma$
 obeys these conditions
 by definition and by~\sref{tensor-generation},
@@ -3633,8 +3633,8 @@ Whence~$\gamma$ is a tensor product.\qed
 \end{point}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1170}%
+\begin{point}{10}%
 Using the characterization from~\sref{tensor-characterization}
 it is pretty 
 easy to see that the tensor product distributes
@@ -3644,7 +3644,7 @@ after some unsurprising
 observations regarding direct sums
 (in~\sref{sum-generation}).
 \end{point}
-\begin{point}[sum-generation]{Exercise}%
+\begin{point}{20}[sum-generation]{Exercise}%
 Let~$(\scrA_i)_{i\in I}$
 be a collection of von Neumann algebras.
 \begin{enumerate}
@@ -3668,7 +3668,7 @@ the collection $\{\,\omega\circ \pi_i\colon \,
 is centre separating for~$\bigoplus_{i\in I}\scrA_i$.
 \end{enumerate}
 \end{point}
-\begin{point}[tensor-distributes-over-sums]{Proposition}%
+\begin{point}{30}[tensor-distributes-over-sums]{Proposition}%
 Given von Neumann algebras
 $\scrA$ and~$(\scrB_i)_{i\in I}$
 the bilinear map
@@ -3683,7 +3683,7 @@ the bilinear map
 is a tensor product.
 (Whence~$\scrA\otimes \bigoplus_i \scrB_i
 \cong \bigoplus_i\scrA\otimes \scrB_i$.)
-\begin{point}{Proof}%
+\begin{point}{40}{Proof}%
 We use~\sref{tensor-characterization}
 to show that~$\gamma$ is a tensor product.
 Note that
@@ -3707,12 +3707,12 @@ we see that~$\gamma$ is indeed a tensor product.\qed
 \end{point}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1180}%
+\begin{point}{10}%
 The tensor interacts
 with projections as expected.
 \end{point}
-\begin{point}{Lemma}%
+\begin{point}{20}{Lemma}%
 Let~$\scrA$ and~$\scrB$ be von Neumann algebras.
 \begin{enumerate}
 \item
@@ -3722,7 +3722,7 @@ for all~$a\in\scrA_+$ and~$b\in\scrB_+$.
 We have~$\cceil{a\otimes b} = \cceil{a}\otimes \cceil{b}$
 for all~$a\in\scrA$ and~$b\in\scrB$.
 \end{enumerate}
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 Let~$a\in\scrA_+$ and~$b\in\scrB_+$ be given.
 Since the map~$(\,\cdot\,)\otimes b\colon \scrA\to \scrA\otimes \scrB$
 is np,
@@ -3789,7 +3789,7 @@ $\ceil{\smash{(\tilde{a}^*a^*a\tilde{a})
 (by~\sref{cceil-fundamental}, again.)\qed
 \end{point}
 \end{point}
-\begin{point}[carrier-tensor]{Exercise}%
+\begin{point}{40}[carrier-tensor]{Exercise}%
 Let~$f\colon \scrA\to\scrB$
 and~$g\colon \scrC\to\scrD$ be np-maps
 between von Neumann algebras.
@@ -3876,8 +3876,8 @@ and~$t\in \scrD$.
 \end{point}
 \end{parsec}
 \subsection{Monoidal Structure}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1190}%
+\begin{point}{10}%
 Up to this point
 we have only written about the tensor product~$\scrA\otimes \scrB$
 of \emph{two} von Neumann algebras
@@ -3902,12 +3902,12 @@ $\scrA\otimes (\scrB\otimes \scrC)$
 and~$\scrA\otimes\scrB\otimes\scrC$;
 but there is.
 \end{point}
-\begin{point}{Proposition}%
+\begin{point}{20}{Proposition}%
 Given von Neumann algebras~$\scrA$, $\scrB$ and~$\scrC$,
 the trilinear map $\gamma\colon (a,b,c)\mapsto (a\otimes b)\otimes c,\ 
 \scrA\times\scrB\times\scrC \to (\scrA\otimes \scrB)\otimes\scrC$
 is a tensor product.
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 We need to verify the three conditions
 from~\sref{tensor} (adapted
 to trilinear maps).
@@ -3939,7 +3939,7 @@ the set of all np-functionals on~$\scrC$),
 which was the third condition.\qed
 \end{point}
 \end{point}
-\begin{point}{Corollary}%
+\begin{point}{40}{Corollary}%
 There is a unique nmiu-isomorphism
 \begin{equation*}
 		\alpha\colon \, \scrA\otimes(\scrB\otimes \scrC)
@@ -3950,7 +3950,7 @@ for all~$a\in\scrA$, $b\in\scrB$, $c\in\scrC$,
 for any von Neumann algebras
 $\scrA$, $\scrB$, $\scrC$.
 \end{point}
-\begin{point}[vn-smc]{Exercise}%
+\begin{point}{50}[vn-smc]{Exercise}%
 Show that~$\W{miu}$, $\W{cp}$, $\W{cpu}$
 and~$\W{cpsu}$ endowed with the tensor product
 are symmetric monoidal categories with~$\C$ as unit.
@@ -3958,8 +3958,8 @@ are symmetric monoidal categories with~$\C$ as unit.
 \end{parsec}
 \section{Quantum Lambda Calculus}
 \label{S:model}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1200}%
+\begin{point}{10}%
 In this section we provide
 the parts needed
 to built a model
@@ -4128,13 +4128,13 @@ and that~$\linf(\nsp(\scrA))$
 is moreover the free $\otimes$-monoid
 on~$\scrA$.
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1210}%
+\begin{point}{10}%
 In this section,
 we'll need the following result
 from the literature on von Neumann algebras.
 \end{point}
-\begin{point}[intersection-tensor]{Proposition}%
+\begin{point}{20}[intersection-tensor]{Proposition}%
 Given Hilbert spaces~$\scrH$ and~$\scrK$,
 and von Neumann subalgebras~$\scrA_1$ and~$\scrA_2$
 of~$\scrB(\scrH)$
@@ -4157,14 +4157,14 @@ the least von Neumann subalgebra of~$\scrB(\scrH\otimes\scrK)$
 that contains all operators
 of the form $A\otimes B$ where~$A\in\scrA_1$
 and~$B\in\scrB_1$.
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 See Corollary IV.5.10 of~\cite{Takesaki1}.\qed
 \end{point}
 \end{point}
 \end{parsec}
 \subsection{First Adjunction}
-\begin{parsec}%
-\begin{point}{Definition}%
+\begin{parsec}{1220}%
+\begin{point}{10}{Definition}%
 We write $\Define{\nsp}:=\W{miu}(\,\cdot\,,\C)$
 	\index{nsp@$\nsp\colon \op{(\W{miu})}\to \Cat{Set}$}
 for the functor $\op{(\W{miu})}\to \Cat{Set}$
@@ -4177,7 +4177,7 @@ to the map~$\nsp(f)\colon \nsp(\scrB)\to\nsp(\scrA)$
 given by~$\nsp(f)(\varphi)=\varphi \circ f$
 for~$\varphi \in \nsp(\scrB)$.
 \end{point}
-\begin{point}[first-adjunction]{Proposition}%
+\begin{point}{20}[first-adjunction]{Proposition}%
 Given a set~$X$
 the map
 \begin{equation*}
@@ -4221,7 +4221,7 @@ to~$\nsp$,
 and is given by $\linf(f)(h) = h\circ f$
 for any map $f\colon X\to Y$
 and~$h\in \linf(Y)$.
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 Note that if we identify~$\linf(X)$
 with the $X$-fold product of~$\C$,
 we see that~$\eta(x)\colon \linf(X)\equiv \bigoplus_{x\in X}\C\to \C$
@@ -4269,13 +4269,13 @@ $ \linf(f)(h)(x)
 =h(f(x))$.\qed
 \end{point}
 \end{point}
-\begin{point}[nmiu-functional-product]{Lemma}%
+\begin{point}{40}[nmiu-functional-product]{Lemma}%
 A nmiu-functional $\varphi$
 on a direct sum $\bigoplus_i \scrA_i$
 of von Neumann algebras
 is of the form~$\varphi\equiv \varphi'\circ \pi_i$
 for some~$i$ and nmiu-functional~$\varphi'$ on~$\scrA_i$.
-\begin{point}{Proof}%
+\begin{point}{50}{Proof}%
 Let~$e_j$ denote the element of~$\bigoplus_i \scrA_i$
 given by $e_j(j)=1$ and~$e_j(i)=0$ for all~$i\neq j$.
 Note that given~$i$ and~$j$ with $i\neq j$
@@ -4296,7 +4296,7 @@ Hence taking~$\varphi':=\varphi\circ \kappa_i$
 does the job.\qed
 \end{point}
 \end{point}
-\begin{point}[cor:linf-ff]{Exercise}%
+\begin{point}{60}[cor:linf-ff]{Exercise}%
 Deduce from~\sref{nmiu-functional-product}
 that the functor $\nsp\colon \op{(\W{miu})}\to \Cat{Set}$
 preserves coproducts,
@@ -4311,8 +4311,8 @@ a coreflective subcategory of~$\op{(\W{miu})}$
 	via~$\linf\colon \Cat{Set} \to \op{(\W{miu})}$.
 \end{point}
 \end{parsec}
-\begin{parsec}
-\begin{point}{Exercise}%
+\begin{parsec}{1230}
+\begin{point}{10}{Exercise}%
 	We're going to prove that
 	$\ell^\infty(X\times Y)\cong \ell^\infty(X)\otimes \ell^\infty(Y)$.
 \begin{enumerate}%
@@ -4346,7 +4346,7 @@ Conclude that
 		(In fact, it follows that~$\ell^\infty$ is strong monoidal.)
 \end{enumerate}
 \end{point}
-\begin{point}{Exercise}%
+\begin{point}{20}{Exercise}%
 Let~$\scrA$ and~$\scrB$
 be von Neumann algebras.
 We're going to show that~$\nsp(\scrA\otimes\scrB)\cong \nsp(\scrA)\times
@@ -4369,8 +4369,8 @@ Show that~$\sigma,\tau\mapsto \sigma\otimes \tau$
 \end{point}
 \end{parsec}
 \subsection{Second Adjunction}
-\begin{parsec}%
-\begin{point}[vn-generation-bound]{Lemma}%
+\begin{parsec}{1240}%
+\begin{point}{10}[vn-generation-bound]{Lemma}%
 If a von Neumann algebra~$\scrA$
 is generated by~$S\subseteq \scrA$,
 then
@@ -4378,7 +4378,7 @@ then
 \#\scrA \ \leq\  2^{2^{\#\mathbb{C}+\#S}},
 \end{equation*}
 where~$\#S$ denotes the cardinality of~$S$, and so on.
-\begin{point}{Proof}%
+\begin{point}{20}{Proof}%
 Note that the
 $*$-subalgebra~$S'$ of~$\scrA$
 generated by~$S$
@@ -4400,11 +4400,11 @@ of which there no more than~$2^{2^{\#S'}}$,
 we conclude~$\#\scrA \leq 2^{2^{\#\mathbb{C}+\#S}}$.\qed
 \end{point}
 \end{point}
-\begin{point}[second-adjunction]{Theorem}%
+\begin{point}{30}[second-adjunction]{Theorem}%
 The inclusion $\W{miu}\to\W{cpsu}$
 has a left adjoint $\Define{\mathcal{F}}\colon \W{cpsu}\to\W{miu}$.%
 	\index{F@$\mathcal{F}\colon \W{cpsu}\to\W{miu}$}
-\begin{point}{Proof}%
+\begin{point}{40}{Proof}%
 Note that since the category~$\W{miu}$
 has all products (\sref{vn-products}),
 and equalisers (\sref{vn-equalisers}),
@@ -4460,7 +4460,7 @@ Hence~$U\colon \W{miu}\to\W{cpsu}$
 obeys the solution set condition,
 and therefore has a left adjoint.\qed
 \end{point}
-\begin{point}{Remark}%
+\begin{point}{50}{Remark}%
 A bit more can be said
 about the adjunction between the inclusion~$U\colon \W{miu}\to\W{ncpsu}$
 and~$\mathcal{F}$:
@@ -4476,8 +4476,8 @@ in a certain natural way
 \end{point}
 \end{parsec}
 \subsection{Free Exponential}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1250}%
+\begin{point}{10}%
 	We'll prove Kornell's result (from~\cite{kornell2012})
 that the functor
 $\scrB\otimes(\,\cdot\,)\colon
@@ -4498,12 +4498,12 @@ $\scrB\otimes(\,\cdot\,)\colon \W{miu}\to\W{miu}$
 preserves products,  equalisers,
 and satisfies the solution set condition.
 \end{point}
-\begin{point}[vn-gns-bound]{Lemma}%
+\begin{point}{20}[vn-gns-bound]{Lemma}%
 A von Neumann algebra~$\scrA$
 can be faithfully represented
 on a Hilbert space which contains no more
 than~$2^{\#\scrA}$ vectors.
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 If~$\scrA=\{0\}$,
 then the result is obvious,
 so let us assume that~$\scrA\neq \{0\}$.
@@ -4531,7 +4531,7 @@ Hence $\#\scrH = \sum_{\omega\in\Omega} \#\scrH_\omega
 \end{point}
 \end{point}
 
-\begin{point}[equaliser-lemma]{Lemma}%
+\begin{point}{40}[equaliser-lemma]{Lemma}%
 Every nmiu-map $h\colon \scrD\to\scrA\otimes \scrC$,
 where~$\scrA$, $\scrC$ and~$\scrD$ are von Neumann algebras,
 factors as 
@@ -4557,7 +4557,7 @@ Moreover,
 $\tilde\scrA$
 can be generated by
 less than~$\#\scrD\,\cdot\,2^{\#\scrC}$ elements.
-\begin{point}{Proof}%
+\begin{point}{50}{Proof}%
 Assume (without loss of generality)
 that
 $\scrC$
@@ -4657,7 +4657,7 @@ because
 $r_{i^k\xi+\zeta}(h(d)) \in\tilde\scrA$.\qed
 \end{point}
 \end{point}
-\begin{point}{Proposition}%
+\begin{point}{60}{Proposition}%
 Let $e\colon\scrE\to\scrA$ be an equaliser of
 nmiu-maps $f,g\colon\scrA\to\scrB$ 
 between von Neumann algebras.
@@ -4665,7 +4665,7 @@ Then $e\otimes\id\colon\scrE\otimes\scrC\to\scrA\otimes\scrC$
 is an equaliser of 
 $f\otimes\id$ and $g\otimes\id$
 for every von Neumann algebra~$\scrC$.
-\begin{point}{Proof}%
+\begin{point}{70}{Proof}%
 Let~$h\colon\scrD\to\scrA\otimes \scrC$
 be a nmiu-map 
 with $(f\otimes\id)\circ h=(g\otimes\id)\circ h$.
@@ -4704,11 +4704,11 @@ Then~$(e\otimes \id)\circ k =
 \end{point}
 
 
-\begin{point}[tensor-closed]{Theorem (Kornell)}%
+\begin{point}{80}[tensor-closed]{Theorem (Kornell)}%
 The functor $(-)\otimes\scrA\colon\W{miu}\to\W{miu}$
 has a left adjoint
 for every von Neumann algebra~$\scrA$.
-\begin{point}{Proof}%
+\begin{point}{90}{Proof}%
 	The category $\W{miu}$ is (small-)complete,
 and
 $(-)\otimes\scrA\colon\W{miu}\to\W{miu}$
@@ -4755,7 +4755,7 @@ is a subset of~$\kappa$,
 that is,~$\tilde\scrC\in\mathcal{S}$.\qed
 \end{point}
 \end{point}
-\begin{point}[cstar-no-model]{Remark}%
+\begin{point}{100}[cstar-no-model]{Remark}%
 It should be noted that analogues
 of the first and second adjunctions
 can be found in the setting of $C^*$-algebras,
@@ -4808,8 +4808,8 @@ in the same way~$\W{cpsu}$ that does.
 
 \section{Duplicators and Monoids}
 \label{S:duplicable}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1260}%
+\begin{point}{10}%
 When asked for an
 interpretation of the type $!A$
 as a von Neumann algebra
@@ -4846,8 +4846,8 @@ exonerating it in our minds from all doubts.
 \end{point}
 \end{parsec}
 \subsection{Duplicators}
-\begin{parsec}%
-\begin{point}{Definition}%
+\begin{parsec}{1270}%
+\begin{point}{10}{Definition}%
 A von Neumann algebra~$\mathscr{A}$
 is \Define{duplicable}%
 	\index{duplicable von Neumann algebra}
@@ -4865,7 +4865,7 @@ satisfying
 (Note that we require of~$\delta$ neither associativity
 nor commutativity.)
 \end{point}
-\begin{point}{Remark}
+\begin{point}{20}{Remark}
 The unit $u$ can be identified with
 a positive subunital map $\tilde{u}\colon \C\to \scrA$ via $\tilde{u}(\lambda)=\lambda u$.
 The definition is motivated by the fact that the interpretation of $\bang A$
@@ -4874,14 +4874,14 @@ The condition is weaker, requiring the maps to be only positive subunital,
 and dropping associativity and commutativity.
 Nevertheless this is sufficient to prove the following.
 \end{point}
-\begin{point}[duplicable]{Theorem}%
+\begin{point}{30}[duplicable]{Theorem}%
 A von Neumann algebra~$\mathscr{A}$
 is duplicable if and only if
 $\mathscr{A}$ is nmiu-isomorphic to $\linf(X)$ for some set~$X$.
 In that case, the duplicator $(\delta,u)$
 is unique, given by
 $\delta(a\otimes b) = a\cdot b$ and $u=1$.
-\begin{point}%
+\begin{point}{40}%
 Thus, to interpret duplicable types,
 we can really only use von Neumann algebras of the form $\linf(X)$.
 It also follows that a von Neumann algebra
@@ -4890,7 +4890,7 @@ in $\W{miu}$, or in the
 symmetric monoidal category $\W{cpsu}$ of von Neumann algebras
 and normal completely positive subunital (CPsU) maps.
 \end{point}
-\begin{point}[sec:characterisation-dup-vna]%
+\begin{point}{50}[sec:characterisation-dup-vna]%
 To prove~\sref{duplicable}
 we proceed as follows.
 First we prove 
@@ -4918,13 +4918,13 @@ for such~$C$
 (see~\sref{lem:continuous-measure-space}).
 \end{point}
 \end{point}
-\begin{point}[lem:unit-duplicator]{Lemma}%
+\begin{point}{60}[lem:unit-duplicator]{Lemma}%
 Let~$\delta$
 be a duplicator 
 with unit~$u$
 on a von Neumann algebra~$\mathscr{A}$.
 Then~$u=1$ and~$\delta(1\otimes 1)=1$.
-\begin{point}{Proof}%
+\begin{point}{70}{Proof}%
 Since~$1=\delta(u\otimes 1)\leq \delta(1\otimes 1) \leq 1$,
 	we have $\delta(1\otimes 1)=1$, and so $\delta(u^\perp\otimes 1)=0$.
 But,
@@ -4935,13 +4935,13 @@ Hence~$1=\delta(1\otimes u)=\delta(1\otimes 1)$.\qed
 \end{point}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1280}%
+\begin{point}{10}%
 To prove that a duplicable von Neumann 
 algebra is commutative we'll need the following two results from the theory
 on $C^*$-algebras.
 \end{point}
-\begin{point}[tomiyama]{Theorem (Tomiyama)}%
+\begin{point}{20}[tomiyama]{Theorem (Tomiyama)}%
 \index{Tomiyama's Theorem}
 Given a $C^*$-subalgebra~$\scrB$
 of a $C^*$-algebra~$\scrA$,
@@ -4951,22 +4951,22 @@ for all~$a\in \scrA$
 must be positive
 and obey~$bf(a)b'=f(bab')$
 for all~$a\in\scrA$ and~$b,b'\in\scrB$.
-\begin{point}{Proof}%
+\begin{point}{30}{Proof}%
 See~\cite{tomiyama}
 or~10.5.86 of~\cite{kr}.\qed
 \end{point}
 \end{point}
-\begin{point}[russo-dye]{Theorem (Russo--Dye)}%
+\begin{point}{40}[russo-dye]{Theorem (Russo--Dye)}%
 \index{Russo-Dye's Theorem}
 We have $\|f\|\leq 1$
 for any pu-map $f\colon \scrA\to\scrB$
 between $C^*$-algebras~$\scrA$
 and~$\scrB$.
-\begin{point}{Proof}%
+\begin{point}{50}{Proof}%
 See Corollary~1 of~\cite{russodye}.\qed
 \end{point}
 \end{point}
-\begin{point}[lem:sef-instrument]{Lemma}%
+\begin{point}{60}[lem:sef-instrument]{Lemma}%
 Let~$\mathscr{A}$ be a $C^*$-algebra,
 and let~$f\colon \mathscr{A}\oplus\mathscr{A}\to \mathscr{A}$
 be a pu-map 
@@ -4977,7 +4977,7 @@ and
 	f(a,b) \,=\, ap\,+\, bp^\perp
 \end{equation*}
 for all~$a,b\in\mathscr{A}$.
-\begin{point}{Proof}%
+\begin{point}{70}{Proof}%
 (Based on Lemma~8.3 of~\cite{newdirections}.)
 
 Note that $(c,d)\mapsto (\,f(c,d),\,f(c,d)\,)$
@@ -5004,14 +5004,14 @@ Then~$f(a,b)=f(a,0)+f(0,b)=ap+bp^\perp$
 for all~$a,b\in\mathscr{A}$.\qed
 \end{point}
 \end{point}
-\begin{point}[lem:uniqueness-duplicator]{Lemma}%
+\begin{point}{80}[lem:uniqueness-duplicator]{Lemma}%
 Let $\delta\colon\mathscr{A}\otimes \mathscr{A}\to\mathscr{A}$
 be a duplicator on a von Neumann algebra~$\mathscr{A}$.
 Then~$\mathscr{A}$ is commutative and~$\delta(a\otimes b)=a\cdot b$
 for all~$a,b\in\mathscr{A}$.%
 	\index{duplicator!is multiplication}%
 	\index{duplicable von Neumann algebra!is commutative}
-\begin{point}{Proof}%
+\begin{point}{90}{Proof}%
 To prove~$\scrA$ is commutative
 we must show that all~$a\in\mathscr{A}$ are central,
 but, of course,
@@ -5036,7 +5036,7 @@ and  $f(a,b)=ap+bp^\perp$ for all~$a,b\in\mathscr{A}$.
 Then~$a\cdot p=f(a,0)=\delta(a \otimes p)$.\qed
 \end{point}
 \end{point}
-\begin{point}{Remark}%
+\begin{point}{100}{Remark}%
 The special
 case of~\sref{lem:uniqueness-duplicator}
 in which~$\delta$ is \emph{completely} positive
@@ -5046,7 +5046,7 @@ see for example
 Theorem~6 of~\cite{Maassen2010}
 (in which~$\mathscr{A}$ is also finite dimensional).
 \end{point}
-\begin{point}[cor:duplicability-multiplication]{Corollary}
+\begin{point}{110}[cor:duplicability-multiplication]{Corollary}
 Let~$\mathscr{A}$
 be a von Neumann algebra.
 Then~$\mathscr{A}$
@@ -5057,7 +5057,7 @@ an np-map $\delta\colon\mathscr{A}\otimes\mathscr{A}
 with $\delta(a\otimes b)=a\cdot b$ 
 for all~$a,b\in\mathscr{A}$,
 (and in that case~$\scrA$ is commutative.)
-\begin{point}{Remark}%
+\begin{point}{120}{Remark}%
 Thus
 for a non-commutative von Neumann algebra~$\scrA$ 
 multiplication $(a,b)\mapsto ab\colon \scrA\times \scrA\to\scrA$
@@ -5065,12 +5065,12 @@ is not a normal bilinear map
 in the sense of~\sref{tensor-extra}.
 \end{point}
 \end{point}
-\begin{point}[cor:duplicable-product]{Corollary}%
+\begin{point}{130}[cor:duplicable-product]{Corollary}%
 When the direct sum~$\scrA\oplus\scrB$
 of von Neumann algebras~$\scrA$ and~$\scrB$
 is duplicable,
 $\scrA$ and~$\scrB$ are duplicable
-\begin{point}{Proof}%
+\begin{point}{140}{Proof}%
 Let $\delta\colon (\mathscr{A}\oplus\mathscr{B})\otimes
 (\mathscr{A}\oplus\mathscr{B})\longrightarrow
 \mathscr{A}\oplus\mathscr{B}$
@@ -5112,8 +5112,8 @@ is duplicable.\qed
 \end{point}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1290}%
+\begin{point}{10}%
 We will now work towards
 the proof that
 if~$C$ is a continuous complete finite measure space,
@@ -5125,7 +5125,7 @@ see~\sref{lem:continuous-finite-measure-space-not-duplicable}.
 Let us first fix some more terminology
 from measure theory (see~\sref{measure-theory-recap} and~\cite{fremlin}).
 \end{point}
-\begin{point}{Definition}
+\begin{point}{20}{Definition}
 \label{def:measure-space}
 Let~$X$ be a finite complete measure space.
 \begin{enumerate}
@@ -5150,14 +5150,14 @@ $X$ is \Define{continuous}%
 if~$X$ contains no atomic subsets.
 \end{enumerate}
 \end{point}
-\begin{point}%
+\begin{point}{30}%
 The following lemma,
 which will be very useful,
 is a variation on
 Zorn's Lemma
 (that does not require the axiom of choice).
 \end{point}
-\begin{point}[lem:measure-zorn]{Lemma}
+\begin{point}{40}[lem:measure-zorn]{Lemma}
 Let~$\mathcal{S}$
 be a collection of measurable subsets of
 a finite complete measure space~$X$ 
@@ -5174,7 +5174,7 @@ is contained in some~$B\in\mathcal{S}$
 that is maximal in~$\mathcal{S}$ in the sense
 that $\mu(B')=\mu(B)$
 for all~$B'\in\mathcal{S}$ with $B\subseteq B'$.
-\begin{point}{Proof}
+\begin{point}{50}{Proof}
 	The trick is to consider for every $C\in\mathcal{S}$
 the quantity
 \begin{equation*}
@@ -5216,11 +5216,11 @@ and so~$\beta_B = \mu(B)$.\qed
 \end{point}
 \end{point}
 
-\begin{point}[lem:measure-space-continuous-discrete]{Lemma}%
+\begin{point}{60}[lem:measure-space-continuous-discrete]{Lemma}%
 Each finite complete  measure space~$X$ 
 contains a  discrete measurable  subset~$D$
 such that~$X\backslash D$ is continuous.
-\begin{point}{Proof}%
+\begin{point}{70}{Proof}%
 Since clearly the countable union
 of discrete measurable subsets of~$X$
 is again discrete,
@@ -5242,11 +5242,11 @@ This contradicts the  maximality of~$D$.
 Thus~$X\backslash D$ is continuous.\qed
 \end{point}
 \end{point}
-\begin{point}[lem:continuous-measure-space]{Lemma}%
+\begin{point}{80}[lem:continuous-measure-space]{Lemma}%
 Given a continuous finite complete measure space~$X$,
 and~$r\in [0,\mu(X)]$,
 there is a measurable subset~$A$ of~$X$ with $\mu(A)=r$.
-\begin{point}{Proof}%
+\begin{point}{90}{Proof}%
 Let us quickly get rid of the case that~$\mu(X)=0$.
 Indeed, then~$r=0$, and so~$A=\varnothing$ will do.
 For the remainder, assume that~$\mu(X)>0$.
@@ -5300,11 +5300,11 @@ and $\mu(A\cup C)=\mu(A)+\mu(C)\leq \mu(A)+\varepsilon\leq r$,
 which contradicts the maximality of~$A$.\qed
 \end{point}
 \end{point}
-\begin{point}[lem:continuous-finite-measure-space-not-duplicable]{Lemma}%
+\begin{point}{100}[lem:continuous-finite-measure-space-not-duplicable]{Lemma}%
 Let~$X$ be a continuous finite complete measure space
 for which~$L^\infty(X)$ is duplicable.
 Then~$\mu(X)=0$.
-\begin{point}{Proof}%
+\begin{point}{110}{Proof}%
 Suppose that~$\mu(X)>0$
 towards a contradiction.
 Let~$\delta$
@@ -5402,16 +5402,16 @@ Thus, $q=0$ and $q\neq 0$, which is impossible.\qed
 \end{point}
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1300}%
+\begin{point}{10}%
 This takes care of the continuous case.
 To deal with the discrete case we first need some
 simple observations.
 \end{point}
-\begin{point}[lem:atomic-measure-space]{Lemma}%
+\begin{point}{20}[lem:atomic-measure-space]{Lemma}%
 Let~$A$ be an atomic measure space.
 Then~$L^\infty(A)\cong \mathbb{C}$.
-\begin{point}{Proof}
+\begin{point}{30}{Proof}
 Let~$f\in \mathcal{L}^\infty(A)$ be given.
 It suffices to show that
 there is~$z\in \mathbb{C}$
@@ -5455,25 +5455,25 @@ we have~$ t\leq f^\circ \leq t$,
 	and so~$t=f^\circ$. Hence~$L^\infty(X)\cong \C$. \qed
 \end{point}
 \end{point}
-\begin{point}[lem:measure-space-partition]{Exercise}%
+\begin{point}{40}[lem:measure-space-partition]{Exercise}%
 Let~$X$ be a measure space with~$\mu(X)<\infty$.
 Show that~$L^\infty(X)\cong \bigoplus_{A\in\mathcal{A}} L^\infty(A)$
 for every countable partition~$\mathcal{A}$
 of~$X$
 consisting of measurable subsets.
 \end{point}
-\begin{point}[cor:discrete-ell-x]{Corollary}%
+\begin{point}{50}[cor:discrete-ell-x]{Corollary}%
 For every discrete 
 measure space~$X$ with~$\mu(X)<\infty$
 there is a  set~$Y$ with $L^\infty(X)\cong \linf(Y)$.
 \end{point}
 \end{parsec}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1310}%
+\begin{point}{10}%
 We are now ready to prove
 the main result of this section.
 \end{point}
-\begin{point}[duplicable-proof]{Proof of~\ref{duplicable}}%
+\begin{point}{20}[duplicable-proof]{Proof of~\ref{duplicable}}%
 We have already seen that $\linf(X)$
 can be  equipped with a commutative monoid
 structure in~$\W{miu}$
@@ -5534,8 +5534,8 @@ All in all, we have $L^\infty(X_i)\cong \ell^\infty(Y)$.\qed
 \end{parsec}
 \subsection{Monoids}
 \label{sec:monoids-in-vna}
-\begin{parsec}%
-\begin{point}%
+\begin{parsec}{1320}%
+\begin{point}{10}%
 We further justify our choice,
 $\sem{!A} = \linf(\nsp(\sem{A}))$,
 by proving that $\linf(\nsp(\mathscr{A}))$
@@ -5544,7 +5544,7 @@ As a corollary, we also obtain that $\linf(\W{cpsu}(\mathscr{A},\mathbb{C}))$
 is the free (commutative) monoid on~$\mathscr{A}$
 in~$\W{cpsu}$.
 \end{point}
-\begin{point}%
+\begin{point}{20}%
 Let us first recall some terminology.
 Given a symmetric monoidal
 	category (\Define{SMC})%
@@ -5614,7 +5614,7 @@ with~$\C$ as tensor unit (see~\sref{vn-smc}),
 and so we may speak about monoids
 in~$\W{miu}$ and~$\W{cpsu}$.
 \end{point}
-\begin{point}[prop:dup-vna-is-monoid]{Exercise}%
+\begin{point}{30}[prop:dup-vna-is-monoid]{Exercise}%
 Let~$\scrA$ be a von Neumann algebra.
 \begin{enumerate}
 \item
@@ -5655,7 +5655,7 @@ consisting of duplicable von Neumann algebras.
 by~\sref{cor:linf-ff}.)
 \end{enumerate}
 \end{point}
-\begin{point}[thm:free-monoid-in-vNAMIU]{Theorem}%
+\begin{point}{40}[thm:free-monoid-in-vNAMIU]{Theorem}%
 \index{free monoid!in~$\W{miu}$}
 Let~$\mathscr{A}$
 be a von Neumann algebra,
@@ -5666,7 +5666,7 @@ Then $\linf(\nsp(\mathscr{A}))$
 is the free (commutative) monoid
 on~$\mathscr{A}$
 in~$\W{miu}$ via~$\eta$.
-\begin{point}{Proof}%
+\begin{point}{50}{Proof}%
 Let~$\mathscr{B}$
 be a monoid 
 on~$\W{miu}$,
@@ -5703,14 +5703,14 @@ which is preserved by~$\linf(h)$ being a miu-map.\qed
 \end{point}
 \end{point}
 
-\begin{point}{Corollary}
+\begin{point}{60}{Corollary}
 Let~$\mathscr{A}$
 be a von Neumann algebra.
 Then $\linf(\W{cpsu}(\mathscr{A},\C))$
 is the free (commutative) monoid
 on~$\mathscr{A}$ in~$\W{cpsu}$.%
 \index{free monoid!in~$\W{cpsu}$}
-\begin{point}{Proof}
+\begin{point}{70}{Proof}
 By~\sref{thm:free-monoid-in-vNAMIU}
 $\linf\circ\nsp$ is a left adjoint to
 the forgetful functor $\Mon(\W{miu})\to\W{miu}$.

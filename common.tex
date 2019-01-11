@@ -236,10 +236,11 @@
 
 % The first argument is the label this parsec will have--use \sref 
 % 	to refer to a parsec.
-\NewDocumentEnvironment{parsec}{o}{%
+\NewDocumentEnvironment{parsec}{g o}{%
 	\leavevmode\unskip%
 	\par\vskip1em\noindent%
-	\refstepcounter{parsec}%
+    \refstepcounter{parsec}%
+    \setcounter{parsec}{#1/10}%
 	%%\setcounter{point}{0}% - point is set to 0 by \numberwithin
 	% In the footer of every odd page we list the parsecs present on 
 	% the spread.  We pass this information to the footer via the 
@@ -262,7 +263,7 @@
 	% encoded by  2N+1.
 	\setcounter{tmptmp}{2*\value{parsec}}%
 	\markboth{\the\value{tmptmp}}{\the\value{tmptmp}}%
-	\IfValueT{#1}{\label{#1}}%
+	\IfValueT{#2}{\label{#2}}%
     \renewcommand{\thepoint}{\the\value{parsec}}%
     \setcounter{point}{\value{point}-1}%
     \refstepcounter{point}%
@@ -283,23 +284,24 @@
 			 % --- points may be nested.
 
 
-\NewDocumentEnvironment{point}{o g}{%
+\NewDocumentEnvironment{point}{g o g}{%
 	\leavevmode\unskip%
 	\setcounter{pointdepth}{\value{pointdepth}+1}%
 	\refstepcounter{point}%
-	\IfValueT{#1}{%
+    \setcounter{point}{#1/10}%
+	\IfValueT{#2}{%
 		\renewcommand{\thepoint}{\the\value{parsec}}%
 		\setcounter{point}{\value{point}-1}%
 		\refstepcounter{point}%
-		\label{#1::parsec}%
+		\label{#2::parsec}%
 		\renewcommand{\thepoint}{\Roman{point}}%
 		\setcounter{point}{\value{point}-1}%
 		\refstepcounter{point}%
-		\label{#1::point}%
+		\label{#2::point}%
 		\renewcommand{\thepoint}{\theparsec\,\Roman{point}}%
 		\setcounter{point}{\value{point}-1}%
 		\refstepcounter{point}%
-		\label{#1}%
+		\label{#2}%
 	}%
     \renewcommand{\thepoint}{\theparsec\,\Roman{point}}%
     \setcounter{point}{\value{point}-1}%
@@ -326,14 +328,14 @@
 				}%
 		}}}%
 	}%
-	\IfValueT{#2}{%
+	\IfValueT{#3}{%
 		\ifthenelse{\equal{\value{pointdepth}}{1}}{%
-			\textPointHeaderI{#2}%
+			\textPointHeaderI{#3}%
 		}{%
 			\ifthenelse{\equal{\value{pointdepth}}{2}}{%
-				\textPointHeaderII{#2}%
+				\textPointHeaderII{#3}%
 			}{%
-				\textPointHeaderIII{(#2)}%
+				\textPointHeaderIII{(#3)}%
 			}}%
 	\ \ }%	
 \ignorespaces%
