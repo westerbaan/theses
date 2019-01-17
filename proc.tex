@@ -4938,22 +4938,70 @@ Hence~$1=\delta(1\otimes u)=\delta(1\otimes 1)$.\qed
 \begin{parsec}{1280}%
 \begin{point}{10}%
 To prove that a duplicable von Neumann 
-algebra is commutative we'll need the following two results from the theory
-on $C^*$-algebras.
+algebra is commutative we'll need the following two classical theorems
+from the theory of $C^*$-algebras.
 \end{point}
 \begin{point}{20}[tomiyama]{Theorem (Tomiyama)}%
 \index{Tomiyama's Theorem}
-Given a $C^*$-subalgebra~$\scrB$
-of a $C^*$-algebra~$\scrA$,
-any linear map $f\colon \scrA\to\scrB$
+Any linear surjection
+ $f\colon \scrA\to\scrB$
+of a von Neumann algebra~$\scrA$ onto a von Neumann subalgebra 
+$\scrB\subseteq \scrA$
 with~$f(f(a))=f(a)$ and~$\|f(a)\|\leq\|a\|$ 
 for all~$a\in \scrA$
-must be positive
-and obey~$bf(a)b'=f(bab')$
-for all~$a\in\scrA$ and~$b,b'\in\scrB$.
+obeys~$bf(a)=f(ba)$
+for all~$a\in\scrA$ and~$b\in\scrB$.
+\begin{point}{21}{Remark}%
+The usual (see e.g.~10.5.86 of~\cite{kr}) 
+and original\cite{tomiyama} formulations of Tomiyama's theorem
+involve $C^*$-algebras instead of von Neumann algebras,
+and include the conclusion that~$f$ is positive.
+Since these improvements
+weren't necessary for our purposes,
+we've left them out, shortening the proof.
+\end{point}
 \begin{point}{30}{Proof}%
-See~\cite{tomiyama}
-or~10.5.86 of~\cite{kr}.\qed
+(Based on II.6.10.2 of \cite{blackadar2006operator}.)
+
+Let~$a\in\scrA$ and~$b\in\scrB$ be given.
+Since $b$ is the
+norm limit of linear combinations of projections
+(cf.~\sref{projections-norm-dense}),
+it suffices to show that $ef(a)=f(ea)$
+for every projection~$e$ from~$\scrB$ and~$a\in \scrA$.
+For this, in turn,
+it suffices to show that $e^\perp f(ea)=0$
+for every projection~$e$ from~$\scrB$,
+(and thus also~$ef(e^\perp a)=0$,)
+because then $f(ea)=ef(ea)=ef(a)$.
+
+Let~$\lambda \in \R$ be given.
+The trick is to obtain the following inequality.
+\begin{equation}
+\label{eq:tomiyama}
+(1+2\lambda) \left\|e^\perp f(ea)\right\|^2 
+\ \leq\  \left\|ea\right\|^2
+\end{equation}
+Indeed, this inequality can only hold for all~$\lambda$
+when $\|e^\perp f(ea)\|=0$.
+Working towards~\eqref{eq:tomiyama},
+let us first note that $f(e^\perp f(ea))=e^\perp f(ea)$:
+indeed, since  $e^\perp f(ea)\in \scrB$
+and~$f\colon \scrA\to\scrB$ is surjective,
+    there must be~$a'\in\scrA$ with~$f(a')=e^\perp f(ea)$,
+    and thus  $e^\perp f(ea)=f(a')=f(f(a'))=f(e^\perp f(ea))$.
+Then:
+\begin{alignat*}{3}
+    &(1+\lambda)^2 \left\|e^\perp f(ea)\right\|^2\\
+    &= \ \left\|e^\perp f(\,ea + \lambda e^\perp f(ea)\,)\right\|^2
+    \qquad && \text{since }f(e^\perp f(ea))=e^\perp f(ea) \\
+    &\leq \ \left\|\,ea\,+\,\lambda e^\perp f(ea)\,\right\|^2\qquad
+    &&\text{since }\|e^\perp\|\leq 1\text{ and }\|f\|\leq 1 \\
+    &=\ \left\|ea\right\|^2\,+\,\lambda^2 \left\|e^\perp f(ea)\right\|^2
+    \qquad&&\text{using $\|c\|^2=\|c^*c\|$ and $ee^\perp=0$}
+\end{alignat*}
+Substracting $\lambda^2 \left\|e^\perp f(ea)\right\|^2$ from both
+sides yields inequality~\eqref{eq:tomiyama}.\qed
 \end{point}
 \end{point}
 \begin{point}{40}[russo-dye]{Theorem (Russo--Dye)}%
@@ -4967,7 +5015,7 @@ See Corollary~1 of~\cite{russodye}.\qed
 \end{point}
 \end{point}
 \begin{point}{60}[lem:sef-instrument]{Lemma}%
-Let~$\mathscr{A}$ be a $C^*$-algebra,
+Let~$\mathscr{A}$ be a von Neumann algebra,
 and let~$f\colon \mathscr{A}\oplus\mathscr{A}\to \mathscr{A}$
 be a pu-map 
 with $f(a,a)=a$ for all~$a\in \mathscr{A}$.
@@ -4982,19 +5030,24 @@ for all~$a,b\in\mathscr{A}$.
 
 Note that $(c,d)\mapsto (\,f(c,d),\,f(c,d)\,)$
 gives a pu-map~$f'$ from~$\scrA\oplus \scrA$
-onto its $C^*$-subalgebra~$\{\,(a,a)\colon\,a\in\scrA\,\}$
+onto its von Neumann subalgebra~$\{\,(a,a)\colon\,a\in\scrA\,\}$
 with~$f'(f'(c,d))=f'(c,d)$ for all~$c,d\in\scrA$.
 Since~$\|f'\|\leq 1$ by Russo--Dye's theorem (\sref{russo-dye}),
 Tomiyama's theorem (\sref{tomiyama}) 
 implies that 
-for all~$a,b,c,d\in\mathscr{A}$,
+for all~$a,c,d\in\mathscr{A}$,
 \begin{equation*}
-	(a,a)\,f'(c,d)\,(b,b)
-	\ =\  f'(\,acb,\, adb\,),
+	(a,a)\,f'(c,d)
+	\ =\  f'(\,ac,\, ad\,),
 	\quad\text{and so}\quad
-a \,f(c,d)\, b \ = \ f(\,acb\,,\,adb\,).
+a \,f(c,d) \ = \ f(\,ac\,,\,ad\,).
 \end{equation*}
-In particular,
+Upon taking the adjoint
+we see that $f(c,d)b=f(cb,db)$
+for all~$b,c,d\in\scrA$
+(using here that~$f$ being positive is involution preserving,
+see~\sref{cstar-p-implies-i}.)
+As a result of these observations, we get
  $ap\equiv af(1,0)=f(a,0)=f(1,0)a\equiv pa$
  for all~$a\in\scrA$,
 and so~$p$ is central.
