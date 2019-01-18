@@ -260,6 +260,7 @@ if for all~$a, b \in E$, we have
     \item \emph{(unital)}
     $f(1) = 1$.
 \end{enumerate}
+(It follows that~$f(0)=0$ and~$f(a^\perp) = f(a)^\perp$. See~\sref{exc-eamorphism}.)
 Write~$\Define{\textsf{EA}}$
     \index{\textsf{EA}}
     for the category
@@ -447,15 +448,15 @@ Show that this turns~$E$ into an effect algebra
 \end{point}
 \end{point}
 
-\begin{point}{50}{Exercise}%
+\begin{point}{50}[exc-eamorphism]{Exercise}%
 Show that for an effect algebra homomorphism~$f\colon E \to F$,
     we have
     \begin{enumerate}
         \item~\emph{(preserves zero)} $f(0) = 0$;
-        \item~\emph{(order preserving)} if $a \leq b$, then~$f(a) \leq f(b)$
-                        \emph{and}
+        \item~\emph{(order preserving)} if $a \leq b$, then~$f(a) \leq f(b)$;
         \item~if~$a\ominus b$ is defined,
-            then $f(a \ominus b) = f(a) \ominus f(b)$.
+            then $f(a \ominus b) = f(a) \ominus f(b)$ \emph{and}
+        \item consequently~$f(a^\perp) = f(a)^\perp$.
     \end{enumerate}
 \end{point}
 \end{parsec}
@@ -704,7 +705,7 @@ See also \cite[Thm.~3]{jacobs2016expectation}
 \end{point}
 \end{parsec}
 
-\section{Effectus}
+\section{Effectuses}
 An effectus comes in two guises:
     axiomatizing either a category of total maps
     or a category of partial maps.
@@ -750,7 +751,7 @@ An arrow~$X \to Y+1$ is called a \Define{partial map} and written
     $\Define{X \pto Y}$.
     \index{*pto@$X\pto Y$}
 \begin{point}{20}%
-One with an interest in physics, might think of the objects
+One with an interest in physics might think of the objects
     of an effectus as physical systems and its arrows as
     the physical operations between them.
     The final object~$1$ is the physical system with a single state.
@@ -790,7 +791,10 @@ Our main example of an effectus in total form
 The partial maps correspond to
     ncp-maps~$f$ with~$f(1) \leq 1$.
 (Equivalently: contractive ncp-maps.)
-We list more examples later on.
+Some other examples appear later on in
+    \sref{emod-effectus}, \sref{exc-dm-effectus} and
+    \sref{aconvm-is-effectus}.
+For a comprehensive list of examples, see~\cite{effintro}.
 \end{point}
 \begin{point}{60}%
 Let~$C$ be an effectus in total form.
@@ -818,7 +822,7 @@ A category~$C$ is called an \Define{effectus in partial form}
     \cite{effintro,kentapartial} if
 \begin{enumerate}
 \item
-    $C$ is a finPAC \cite{kentapartial} (cf.~\cite{arbib}) --- that is:
+    $C$ is a finPAC\footnote{Finitarily partially additive category.} \cite{kentapartial} (cf.~\cite{arbib}) --- that is:
     \begin{enumerate}
         \item 
             $C$ has finite coproducts $(+,0)$;
@@ -828,7 +832,7 @@ A category~$C$ is called an \Define{effectus in partial form}
             every homset $C(X,Y)$ has a partial binary operation~$\ovee$
                     and distinguished element~$0 \in C(X,Y)$
                     that turns~$C(X,Y)$ into a partial commutative monoid,
-                    see \sref{dfn-pcm}, and
+                    see \sref{dfn-pcm};
             \item
             if $f \perp g$ then both
                 $(h \after f) \perp (h \after g)$ and
@@ -841,7 +845,11 @@ A category~$C$ is called an \Define{effectus in partial form}
             \end{equation*}
                 for any~$f,g \colon X \to Y$,
                 $h\colon Y \to Y'$
-                and~$k \colon X'\to X$;
+                    and~$k \colon X'\to X$ \emph{and}
+            \item
+                \emph{(zero)}
+                $0 \after f = 0$ and $f \after 0 = 0$ for
+                    any~$f\colon X \to Y$ \emph{and}
             \end{enumerate}
         \item
             \emph{(compatible sum)}
@@ -877,9 +885,8 @@ In this setting,
 a map~$f\colon X \to Y$ is called \Define{total} if~$1 \after f = 1$.
     \index{total map}
 \begin{point}{80}{Remark}%
-The untying axiom is redundant: it follows from the others.
-We include it, as it is part
-    of the definition of a finPAC.
+The untying and zero axioms are redundant: they follows from the others.
+We include them, as they are part of the definition of finPAC.
 \end{point}
 \begin{point}{90}%
 At first glance an effectus in partial form seems
@@ -903,6 +910,11 @@ The total maps of~$D$ form an effectus in total form~$\Tot D$.
         $\Par (\Tot D) \cong D$ and~$\Tot (\Par C )\cong C$.
 \end{enumerate}
 \begin{point}{110}%
+(The result can be rephrased categorically as
+    a 2-equivalence of the 2-category
+    of effectuses in partial form and
+    the 2-category of effectuses in total form.
+    For the details, see~\cite[\S5]{kentapartial}.)
 To prove the Theorem
     (in \sref{proof-cho-thm}),
     we need some preparation.
@@ -1079,8 +1091,9 @@ Show that in an effectus in partial form, we have
     \item~$(k+l) \after \langle f, g\rangle
         = \langle k \after f, l \after g \rangle$ \emph{and}
     \item~$\langle f, g\rangle \after k = \langle f \after k,
-                                g \after k \rangle$.
+                                g \after k \rangle$
 \end{enumerate}
+    assuming~$1 \after f \perp 1 \after g$.
 \begin{point}{100}{Remark}%
 In an effectus in partial form,
     there is a straight-forward generalization
@@ -1526,7 +1539,7 @@ For arbitrary objects~$X,Y$ in~$C$,
     write~$\Define{0} \equiv \kappa_2 \after !\colon X \to Y+1$
     and~$\Define{1} \equiv \kappa_1 \after ! \equiv \hat! \colon X \to 1+1$.
 \end{point}
-\begin{point}{70}{Exercise}%
+\begin{point}{70}[toteff-zero]{Exercise}%
     Show~$0$ is a zero object in~$\Par C$
         with unique zero map
         as in \sref{zero-and-one-parc}.
@@ -1732,11 +1745,13 @@ And so~$(h \hafter f) \ovee (h \hafter g)
             = \nabla \hafter (h+h) \hafter b
             = h \hafter \nabla \hafter b = h \hafter (f \ovee g)$.
 \end{point}
+Finally, the zero axiom holds by~\sref{toteff-zero}.
 \begin{point}{50}{FinPAC}%
 We just saw~$\Par C$ is $\mathsf{PCM}$-enriched.
 We already know~$\Par C$ has coproducts.
 The compatible sum axiom holds by definition of~$\perp$.
-To show~$\Par C$ is a finPAC, only the untying axiom remains to be proven.
+To show~$\Par C$ is a finPAC,
+    only the untying axiom remains to be proven.
 If~$f \perp g$ with bound~$b$,
 then~$(\kappa_1 + \kappa_2) \hafter b$ is a bound for~$\kappa_1 \hafter f
     \perp \kappa_2 \hafter g$,
@@ -2161,7 +2176,7 @@ We write~$\Define{\mathcal{D}_M} X$
     \index{$\mathcal{D}_M$}
     for the set of all formal~$M$-convex combinations over~$X$.
 \end{point}
-\begin{point}{30}{Exercise*}%
+\begin{point}{30}[exc-dm-effectus]{Exercise*}%
     In this exercise you study~$\mathcal{D}_M$ as a monad.
     See \cite{probdistrconv,basmsc}.
 \begin{enumerate}
@@ -3101,7 +3116,7 @@ The following is a generalization
 of~\cite[Prop.~C.3]{kentapartial}.
 See also~\cite[Prop.~15]{statesofconvexsets}.
 \end{point}
-\begin{point}{20}{Theorem}%
+\begin{point}{20}[aconvm-is-effectus]{Theorem}%
 If~$M$ is an effect divisoid,
     then~$\AConvM$ is an effectus.
 \begin{point}{30}{Proof}%
@@ -3382,7 +3397,7 @@ as desired. \qed
 \end{point}
 \end{parsec}
 
-\section{Effectus with quotients}
+\section{Effectuses with quotients}
 \begin{parsec}{1970}%
 \begin{point}{10}%
 We are ready to introduce our first additional axiom:
@@ -3581,7 +3596,7 @@ There are numerous other examples
 \end{point}
 \end{parsec}
 
-\section{Effectus with comprehension and images}
+\section{Effectuses with comprehension and images}
 \begin{parsec}{1990}%
 \begin{point}{10}%
 We continue with our second axiom.
@@ -4037,8 +4052,8 @@ Show that in an effectus with comprehension and images,
 \end{point}
 \end{parsec}
 
-\section{\texorpdfstring{$\diamond$-effectus}{%
-                    diamond-effectus}}
+\section{\texorpdfstring{$\diamond$-effectuses}{%
+                    diamond-effectuses}}
 \begin{parsec}{2060}%
 \begin{point}{10}%
 In quantum physics it is not uncommon to restrict one's attention
@@ -4063,7 +4078,7 @@ We will give these right of the bat and study their relevance later on.
     A~\Define{$\diamond$-effectus} (``diamond effectus'')
     \index{effectus!$\diamond$-}
     \index{*dia@$\diamond$, diamond!-effectus}
-    is an effectus with quotient, comprehension and images
+    is an effectus with quotients, comprehension and images
     such that~$s^\perp$ is sharp for every sharp predicate~$s$.
 In a~$\diamond$-effectus,
     define for~$f\colon X \to Y$
@@ -4413,7 +4428,7 @@ See \sref{sharp-multiplicative}.
     
 \end{parsec}
 
-\section{$\&$-effectus}
+\section{$\&$-effectuses}
 \begin{parsec}{2110}%
 \begin{point}{10}%
 In a~$\diamond$-effectus
@@ -4846,8 +4861,8 @@ Show that in a~$\&$-effectus,
 \end{point}
 \end{parsec}
 
-\section{\texorpdfstring{$\dagger$-effectus}{%
-                    dagger-effectus}}
+\section{\texorpdfstring{$\dagger$-effectuses}{%
+                    dagger-effectuses}}
 \begin{parsec}{2140}%
 \begin{point}{10}[dagger-effectus]{Definition}%
 A \Define{$\dagger$-category} (``dagger category'')
@@ -6343,7 +6358,7 @@ Let~$f\colon X \to Y$ be any map in an effectus.
     there exists a dilation for every map.
 \end{point}
 \begin{point}{30}{Example}%
-The effectus $\op\vN$ has dilations,
+    The effectus $\op\vN$~(\sref{effectus-vn}) has dilations,
     as shown in \sref{existence-paschke},
     but the full subcategory of commutative von Neumann algebras
     does not.
@@ -6556,9 +6571,14 @@ follow from more general principles.  Can we define the other gates, like
 
 \begin{parsec}{2230}%
 \begin{point}{10}%
-    To finish the discussion of dilations,
-        we mention how to state \sref{paschke-correspondence}
-    in an~$\&$-effectus.
+In~\sref{paschke-correspondence}
+    we saw that for any ncp-map~$\varphi$
+    with Paschke dilation~$(\scrP, \varrho, h)$,
+       there  is a linear order
+       isomorphism~$[0,1]_{\varrho(\scrA)^\square} \cong [0,\varphi]_\ncp$.
+To finish the discussion of dilations,
+    we mention how to state this correspondence
+        in an~$\&$-effectus.
 \end{point}
 \begin{point}{20}[sefp]{Definition}%
 In an~$\&$-effectus,
@@ -6639,7 +6659,7 @@ Heunen came very close:
     \cite[3.7.18]{heunenphd}
 We will discover that some of his axioms for~$\mathsf{Hilb}$
     hold in~$\Pure(C)$ for a~$\dagger$-effectus~$C$
-    and other do not in general.
+    and others do not in general.
 (We do not cover all his axioms.)
 \end{point}
 \begin{point}{20}{Definition}%
@@ -7147,10 +7167,8 @@ As for the other equality:
 \end{parsec}
 \begin{parsec}{2280}%
 \begin{point}{10}%
-In any homological category,
-    a generalization of the famous \emph{Snake Lemma} holds.
-    \cite[\S3.4]{grandis}.
-The following is a translation of (a part of) Grandis' Snake Lemma
+The following is a translation of (a part of) Grandis' Snake
+    Lemma~\cite[\S3.4]{grandis}.
     into~$\dagger$-effectus jargon.
 We include a proof as it highlights how
     the reasoning in a homological category is subtly different
