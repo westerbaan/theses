@@ -4847,7 +4847,7 @@ exonerating it in our minds from all doubts.
 \end{parsec}
 \subsection{Duplicators}
 \begin{parsec}{1270}%
-\begin{point}{10}{Definition}%
+\begin{point}{10}[def:duplicator]{Definition}%
 A von Neumann algebra~$\mathscr{A}$
 is \Define{duplicable}%
 	\index{duplicable von Neumann algebra}
@@ -5004,14 +5004,8 @@ Substracting $\lambda^2 \left\|e^\perp f(ea)\right\|^2$ from both
 sides yields inequality~\eqref{eq:tomiyama}.\qed
 \end{point}
 \end{point}
-\begin{point}{40}[russo-dye]{Theorem (Russo--Dye)}%
-\index{Russo--Dye's Theorem}
-We have $\|f\|\leq 1$
-for any pu-map $f\colon \scrA\to\scrB$
-between $C^*$-algebras~$\scrA$
-and~$\scrB$.
-\begin{point}{50}{Proof}%
-See Corollary~1 of~\cite{russodye}.\qed
+\begin{point}{40}{[Moved to~\sref{russo-dye}]}%
+    \begin{point}{50}{[Removed]}%
 \end{point}
 \end{point}
 \begin{point}{60}[lem:sef-instrument]{Lemma}%
@@ -5032,7 +5026,8 @@ Note that $(c,d)\mapsto (\,f(c,d),\,f(c,d)\,)$
 gives a pu-map~$f'$ from~$\scrA\oplus \scrA$
 onto its von Neumann subalgebra~$\{\,(a,a)\colon\,a\in\scrA\,\}$
 with~$f'(f'(c,d))=f'(c,d)$ for all~$c,d\in\scrA$.
-Since~$\|f'\|\leq 1$ by Russo--Dye's theorem (\sref{russo-dye}),
+Since~$\|f'\|\leq 1$ as a result of Russo--Dye's theorem 
+(see~\sref{russo-dye-cor}),
 Tomiyama's theorem (\sref{tomiyama}) 
 implies that 
 for all~$a,c,d\in\mathscr{A}$,
