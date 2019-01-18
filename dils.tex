@@ -3856,11 +3856,52 @@ Before we continue our study of Paschke dilations,
 First we will prove a generalization of the Kaplansky density
     theorem for Hilbert C$^*$-modules,
     which we will need to compute the tensor product of Paschke dilations.
-The proof is inspired by the proof of the regular Kaplansky density theorem
-    given in \cite[Thm.~1.2.2]{arveson2012invitation}.
-See also \sref{kaplansky}.
+
+The original density theorem (\sref{kaplansky})
+    is an important foundational result
+    in the theory of operator algebras;
+    quoting Pedersen:
+    ``The density theorem is Kaplansky's great gift to mankind.
+    It can be used every day, and twice on
+    Sundays.'' \cite[\S2.3.4]{pedersen1979c}.
+We used the original theorem already several times;
+    notably to show that
+        a von Neumann algebra is
+        ultrastrongly complete~(\sref{vn-complete}
+        via~\sref{vnsac}).
+This ultrastrong completeness was used
+    to define operator division~(\sref{division})
+        (and in turn filters~\sref{filter}),
+        to give the spatial tensor product a universal
+        property~(\sref{tensor-universal-property})
+    and in this thesis to show ultranorm completeness
+        of self-dual Hilbert C$^*$-modules~(\sref{dils-selfdual}).
+
+So what does is this density theorem again?
+In essence, it is a remedy for the fact
+    that strongly converging nets might not be bounded.
+The theorem is usually stated as follows:
+    the unit ball of the SOT-closure of a self-adjoint algebra
+    of operators~$\scrA$
+    is contained in the SOT-closure of the unit ball of~$\scrA$.
+For our generalization, it is more convenient to consider the following
+    variation.
 \end{point}
-\begin{point}{20}[kaplansky-hilbmod]{Theorem}%
+\begin{point}{11}{Kaplansky density theorem}%
+Let~$\scrB$ be a von Neumann algebra with ultrastrongly dense
+    C$^*$-subalgebra~$\scrA  \subseteq \scrB$.
+Then: for every element~$a \in \scrA$,
+    there is a net~$b_\alpha$ in~$\scrB$
+    with~$b_\alpha \to a$ ultranorm
+    and~$\|b_\alpha\| \leq \|b\|$ for all~$\alpha$.
+\end{point}
+\begin{point}{12}%
+Now we are ready to state and prove our generalization,
+    which is inspired by the proof of the regular Kaplansky density theorem
+    given in \cite[Thm.~1.2.2]{arveson2012invitation}.
+Cf.~\sref{kaplansky}.
+\end{point}
+\begin{point}{20}[kaplansky-hilbmod]{Kaplansky density theorem for Hilbert C$^*$-modules}%
 Let~$X$ be a Hilbert~$\scrB$-module for a von Neumann algebra~$\scrB$
     with an ultranorm dense $\scrA$-submodule $D \subseteq X$,
     where~$\scrA \subseteq \scrB$ is some C$^*$-subalgebra
