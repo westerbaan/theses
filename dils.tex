@@ -172,7 +172,7 @@ Then we allow for an intermezzo
     we generalize the Kaplansky density theorem
     to Hilbert C$^*$-modules, see \sref{kaplansky-hilbmod};
     \item
-   we prove that every self-dual Hilbert~C$^*$-modules over
+   we prove that every self-dual Hilbert~C$^*$-module over
             a von Neumann algebra factor
             is of a particularly nice form,
             see \sref{selfdual-normalish-form}, and
@@ -259,9 +259,11 @@ Clearly every Cauchy sequence has a fast subsequence
     which is (as all subsequences are) equivalent with it.
 \begin{point}{40}%
     Define~$\scrH$ to be the set of fast Cauchy sequences modulo
-        equivalence.
+        equivalence.\footnote{We use fast Cauchy sequences
+            in the definition of~$\scrH$ only to shorten the text:
+            any Cauchy sequence is equivalent to a fast one anyway.}
 For brevity we will denote an element of~$\scrH$,
-    which is an equivalence class of Cauchy sequences, simply by
+    which is an equivalence class of fast Cauchy sequences, simply by
     a single representative.
 Also, we often tersely write~$v$ for the Cauchy sequence~$(v_n)_n$.
 The set~$\scrH$ is a metric space
@@ -731,11 +733,18 @@ for some bounded operators~$V_i\colon \scrK \to \scrH$,
 for which the partial sums of~$\sum_i V_i^*V_i$ are bounded.
 These~$V_i$ are called \Define{Kraus operators}\index{Kraus operators} for~$\varphi$.
 
-Now assume~$\scrH$ and~$\scrK$ are finite dimensional,
-    say~$\dim \scrH = n$ and~$\dim \scrK = m$.
+Now assume~$\scrH$ and~$\scrK$ are finite dimensional.\footnote{%
+        For arbitrary~$\scrH$ and~$\scrK$,
+            the cardinality of the set of Kraus operators
+            can be chosen to be less than or equal
+            to~$(\dim \scrH) \cdot (\dim \scrK)$,
+            with dimension understood as the cardinality of
+                an orthonormal basis and the usual product on cardinals.}
 Show that in this case
     the total number of Kraus operators can be chosen
-    to be less than or equal to~$\dim \scrK' = n \cdot m$.
+    to be less than or equal to~$(\dim \scrH) \cdot (\dim \scrK)$.
+    (There is a similar fact for infinite-dimensional~$\scrH$ and~$\scrK$,
+        where the product of numbers is replaced by a maximum of cardinals.)
 \end{point}
 \end{parsec}
 
@@ -994,7 +1003,8 @@ $\xymatrix@C=2.5em@R=2em{
     such triplet~$(\scrP', \varrho', h')$
     with a von Neumann algebra~$\scrP'$;
     an nmiu-map $\varrho'\colon \scrA \to \scrP'$
-    and an ncp-map~$h' \colon \scrP' \to \scrB$,
+    and an ncp-map~$h' \colon \scrP' \to \scrB$
+    with~$\varphi = h' \after \varrho'$,
     there is a unique ncp-map~$\sigma \colon \scrP' \to \scrP$
     (the ``mediating map'')
     with~$\sigma \after \varrho' = \varrho$
@@ -1227,7 +1237,7 @@ We already encountered Hilbert C$^*$-modules
     in my twin brother's thesis \cite{bram}.
 (They appear in \sref{chilb-basic}.)
 As Hilbert C$^*$-modules are central to the present topic,
-    we will proof some basic results again, which were already
+    we will prove some basic results again, which were already
     covered by my twin.
 \end{point}
 \begin{point}{20}{Definition}%
@@ -1399,7 +1409,7 @@ Prove the \Define{polarization identity}\index{polarization identity}:
 \begin{parsec}{1430}%
 \begin{point}{10}{Definition}%
 Let~$X$, $Y$ be pre-Hilbert~$\scrB$-modules.
-A linear map~$T\colon X \to Y$
+    A ($\C$-)linear map~$T\colon X \to Y$
     is said to be \Define{adjointable}\index{adjointable}
     if there is a linear map~$S \colon Y \to X$
     such that~$\left<y, Tx\right>_Y = \left<Sy, x\right>_X$
@@ -1410,7 +1420,7 @@ Adjoints are unique:
     for all~$y \in Y$.
 We write \Define{$T^*$} for the adjoint of~$T$ (if it exists)
 and~$\Define{\scrB^a(X)}$\index{$\scrB^a(X)$}
-    for the subset of bounded operators on~$X$
+    for the subset of (norm-)bounded operators on~$X$
     which are adjointable.
 \end{point}
 \begin{point}{20}[adjointable-cstar-identity]{Lemma}%
@@ -1815,7 +1825,7 @@ Indeed, this is the case if we start of with a pseudometric
     when every Cauchy net converges.
 \item
 Let~$(Y,\Psi)$ be any (other) uniform space.
-A map~$f\colon X \to X'$
+A map~$f\colon X \to Y$
 is said to be \Define{uniformly continuous}\index{uniform space!uniformly continuous}
 if for each~$\varepsilon \in \Psi$
 there is a~$\delta \in \Phi$
@@ -2133,7 +2143,7 @@ By Zorn's lemma, there is a maximal orthonormal subset~$E \subseteq X$.
 We will show~$E$ is a basis.
 
 Let~$(b_e)_{e \in E}$ be an~$E$-tuple in~$\scrB$
-such that the partials sums of~$\sum_{e \in E} b_e^*b_e$ are bounded.
+such that the partial sums of~$\sum_{e \in E} b_e^*b_e$ are bounded.
 We want to show~$\sum_{e \in E} e b_e$ converges in the ultranorm
     uniformity.
 As the summands of~$\sum_{e \in E}b_e^*b_e$ are positive,
@@ -2850,7 +2860,7 @@ together with a~$\scrB$-valued inner product~$[\,\cdot\,,\,\cdot\,]$ a
 \end{enumerate}
 As~$\|\,\cdot\,\|^{\overline{V}}_f$ also
     generate the uniformity on~$\overline{V}$,
-    the last requirements implies
+    the last requirement implies
     that on a compatible extension~$W$
     the ultranorm uniformity and
     the uniformity induced by~$\overline{V}$
@@ -3547,7 +3557,7 @@ Hence there is a~$\lambda\in\C,\lambda\neq 0$
 If~$e \neq 0$,
     then from~$e = S_1\, 1\otimes 1 = \lambda S_2 \,1\otimes 1 = \lambda e$
     it follows~$\lambda = 1$ and so~$S_1 = S_2$.
-In the other case, if~$e \neq 0$,
+In the other case, if~$e = 0$,
 then~$h' = 0$ and so~$\varphi=0$,
     whence~$\scrA \otimes_\varphi \scrB = \{0\}$
     and indeed~$S_1=S_2=0$ trivially.
@@ -3719,7 +3729,7 @@ For linear  maps~$\varphi, \psi\colon \scrA \to \scrB$,
 \begin{point}{40}[paschke-correspondence]{Theorem}%
 Assume~$\varphi\colon \scrA \to \scrB$ is an ncp-map
     with Paschke dilation~$(\scrP, \varrho, h)$.
-The map~$t \mapsto \varphi_t$ is an linear
+The map~$t \mapsto \varphi_t$ is a linear
 order isomorphism~$[0,1]_{\varrho(\scrA)^\square} \to [0,\varphi]_\ncp$.
 \begin{point}{50}{Proof}
 First we show the correspondence holds
@@ -3913,7 +3923,9 @@ Then: for every element~$x \in X$,
     and~$\|x_\alpha\| \leq \|x\|$ for all~$\alpha$.
 \begin{point}{30}{Proof}%
 Let~$x \in X$ be given.
-Without loss of generality, we may assume~$\| x \| \leq 1$.
+The case~$x=0$ is trivial.
+Assume~$x \neq 0$.
+Without loss of generality, we may assume~$\| x \| = 1$.
 For this~$x$ and any~$y \in X$, define
 \begin{align*}
     h(y) &\ \equiv \ y \cdot\frac{2}{1+ \langle y, y \rangle}
@@ -3922,7 +3934,7 @@ For this~$x$ and any~$y \in X$, define
 \end{align*}
 We claim~$h$ is ultranorm continuous,
 $h(g(x)) = x$ and $\| h(y) \| \leq 1$ for all~$y \in X$.
-From the promised result follows.
+From this, the promised result follows.
 Indeed, let~$x_\alpha$ be a net in~$D$
     that converges ultranorm to~$g(x)$.
 Then~$h(x_\alpha)$ is
@@ -5723,7 +5735,7 @@ In~\sref{paschke-pure} we will see that these~$h$
     we will see that these pure maps are (in a sense) reversible.
 \begin{point}{20}%
 The reversibility of pure maps (in a much more general setting)
-    is the the main result of the next chapter.
+    is the main result of the next chapter.
 In the remainder of this chapter, we study purity of ncp-maps a bit more.
 We consider a seemingly unrelated  alternative notion of purity,
     which is based on Paschke's dilation,
@@ -5861,6 +5873,18 @@ Filters were introduced by us in \cite[Dfn.~2]{westerbaan2016universal}
 To avoid confusion with \cite{alfsen2012}
     and be closer to e.g.~\cite{wilce2016royal},
     we changed the name from compression to filter.
+Filters are named after polarization filters:
+    the action of a polarization filter on the polarization
+        of a photon is the same as a filter for
+        the projection of the space of polarizations
+        the polarization filter allows to pass without disturbance.
+Combining two polarization filters corresponds
+    to composing the corresponding filters.
+This composed filter is in general a filter for an effect instead
+    of a projection.
+This corresponds with the fact that there might not be a polarization
+    of the photon anymore,
+    with which it can pass both filters undisturbed.
 \end{point}
 \end{point}
 \begin{point}{100}[dils-stand-filter]{Example}%
