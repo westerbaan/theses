@@ -226,21 +226,32 @@
 \newcommand{\qed}{\hfill\textcolor{darkblue}{\ensuremath{\square}}}
 
 
-\newcounter{tmptmp} % used for arithmetic
+% used for arithmetic
+\newcounter{tmptmp} 
+\newcounter{tmptmp2} 
 
 % The content of this thesis is grouped into numbered paragraphs,
 % which are called "parsecs" (for paragraph--section),
 % and these parsecs contain several points.
 \newcounter{parsec} % keeps track of the current parsec number
-\newcounter{parsecFootersShown}
+\newcounter{parsecMajor}
+\newcounter{parsecMinor} % parsec = 10 * parsecMajor + parsecMinor
+
+\newcommand\refsforparsec{%
+    \setcounter{parsecMajor}{\value{parsec}/10}%
+    \setcounter{parsecMinor}{\value{parsec}-10*\value{parsecMajor}}%
+    \setcounter{parsec}{\value{parsec}-1}%
+    \refstepcounter{parsec}%
+}
 
 % The first argument is the label this parsec will have--use \sref 
 % 	to refer to a parsec.
 \NewDocumentEnvironment{parsec}{g o}{%
 	\leavevmode\unskip%
 	\par\vskip1em\noindent%
-    \refstepcounter{parsec}%
-    \setcounter{parsec}{#1/10}%
+    \renewcommand{\theparsec}{\the\value{parsecMajor}\alph{parsecMinor}}%
+    \setcounter{parsec}{#1}%
+    \refsforparsec{}%
 	%%\setcounter{point}{0}% - point is set to 0 by \numberwithin
 	% In the footer of every odd page we list the parsecs present on 
 	% the spread.  We pass this information to the footer via the 
@@ -264,12 +275,16 @@
 	\setcounter{tmptmp}{2*\value{parsec}}%
 	\markboth{\the\value{tmptmp}}{\the\value{tmptmp}}%
 	\IfValueT{#2}{\label{#2}}%
-    \renewcommand{\thepoint}{\the\value{parsec}}%
+    % For the table of contents:
+    \renewcommand{\thepoint}{\the\value{parsecMajor}\alph{parsecMinor}}%
     \setcounter{point}{\value{point}-1}%
-    \refstepcounter{point}%
+    \refstepcounter{point}% 
     \label{parsec-\the\value{parsec}}%
 	% Display the parsec number in the margin.
-	\marginnote{\makebox[3em][c]{\textParsecNumber{\the\value{parsec}}}}%
+        \marginnote{\makebox[3em][c]{\textParsecNumber{%
+            \the\value{parsecMajor}%
+            \alph{parsecMinor}%
+            }}}%
 	\ignorespaces%
 }{%
 	\leavevmode\unskip%
@@ -279,35 +294,40 @@
 }
 
 \newcounter{point} % keeps track of the current point
+\newcounter{pointMajor}
+\newcounter{pointMinor}
 \numberwithin{point}{parsec}
 \newcounter{pointdepth}  % keeps track of the depth of the current point
 			 % --- points may be nested.
 
+\newcommand\refsforpoint{%
+    \setcounter{pointMajor}{\value{point}/10}%
+    \setcounter{pointMinor}{\value{point}-10*\value{pointMajor}}%
+    \setcounter{point}{\value{point}-1}%
+    \refstepcounter{point}%
+}
 
 \NewDocumentEnvironment{point}{g o g}{%
 	\leavevmode\unskip%
 	\setcounter{pointdepth}{\value{pointdepth}+1}%
-	\refstepcounter{point}%
-    \setcounter{point}{(#1-1)/10+1}%
-	\IfValueT{#2}{%
-		\renewcommand{\thepoint}{\the\value{parsec}}%
-		\setcounter{point}{\value{point}-1}%
-		\refstepcounter{point}%
-		\label{#2::parsec}%
-		\renewcommand{\thepoint}{\Roman{point}}%
-		\setcounter{point}{\value{point}-1}%
-		\refstepcounter{point}%
-		\label{#2::point}%
-		\renewcommand{\thepoint}{\theparsec\,\Roman{point}}%
-		\setcounter{point}{\value{point}-1}%
-		\refstepcounter{point}%
-		\label{#2}%
-	}%
-    \renewcommand{\thepoint}{\theparsec\,\Roman{point}}%
-    \setcounter{point}{\value{point}-1}%
-    \refstepcounter{point}%
+	\refstepcounter{point}% TODO: <- is this needed?
+    \setcounter{point}{#1}%
+    % setup labels
+    \IfValueT{#2}{%
+        \renewcommand{\thepoint}{\the\value{parsec}}%
+        \refsforpoint{}%
+        \label{#2::parsec}%
+        \renewcommand{\thepoint}{\Roman{pointMajor}\alph{pointMinor}}%
+        \refsforpoint{}%
+        \label{#2::point}%
+        \renewcommand{\thepoint}{\theparsec\,\Roman{pointMajor}\alph{pointMinor}}%
+        \refsforpoint{}%
+        \label{#2}%
+    }%
+    \renewcommand{\thepoint}{\theparsec\,\Roman{pointMajor}\alph{pointMinor}}%
+    \refsforpoint{}%
     \label{parsec-\the\value{parsec}.\the\value{point}}%
-	\ifthenelse{\equal{\value{point}}{1}}{}{%
+	\ifthenelse{\equal{\value{point}}{10}}{}{%
 		\ifthenelse{\equal{\value{pointdepth}}{1}}{%
 			\par\penalty-100\vskip.5em\noindent%
 		}{%
@@ -318,14 +338,14 @@
 			}%
 		}%
 		\marginnote{\makebox[2em][c]{\small%
-			\ifthenelse{\equal{\value{pointdepth}}{1}}{%
-				\textPointNumberI{\Roman{point}}%
-			}{%
-				\ifthenelse{\equal{\value{pointdepth}}{2}}{%
-					\textPointNumberII{\Roman{point}}%
-				}{%
-					\textPointNumberIII{\Roman{point}}%
-				}%
+                    \ifthenelse{\equal{\value{pointdepth}}{1}}{%
+                        \textPointNumberI{\Roman{pointMajor}\alph{pointMinor}}%
+                    }{%
+                        \ifthenelse{\equal{\value{pointdepth}}{2}}{%
+                            \textPointNumberII{\Roman{pointMajor}\alph{pointMinor}}%
+                        }{%
+                            \textPointNumberIII{\Roman{pointMajor}\alph{pointMinor}}%
+                        }%
 		}}}%
 	}%
 	\IfValueT{#3}{%
@@ -373,6 +393,10 @@
 \newcounter{lastParsec}
 \newcounter{firstParsecF}
 \newcounter{lastParsecF}
+\newcounter{firstParsecMajor}
+\newcounter{firstParsecMinor}
+\newcounter{lastParsecMajor}
+\newcounter{lastParsecMinor}
 
 % parsecToBeContinued is 1 if the previous spread spilled a parsec,
 % and 0 otherwise.
@@ -384,33 +408,51 @@
     % We use "\rightmark+0", because \rightmark might be empty.
     \fancyfoot[CE]{%
         \IfInteger{\rightmark}{%
-            \setcounter{firstParsecF}{\rightmark+0}%
+            \setcounter{tmptmp}{\leftmark+0}%
+            \ifthenelse{\equal{\value{tmptmp}}{\value{lastParsecF}}}{%
+                % the last parsec encountered on this page is the same as
+                % the last parsec encountered on the previous page;
+                % so either the parsec spans the whole of this even page,
+                % or there's no parsec active at all.
+                % In both cases the first parsec on the spread will
+                % be the first parsec on the odd page that 
+                % comes next, so we need not set firstParsecF here.
+                \setcounter{firstParsecF}{0}%
+            }{%
+                \setcounter{firstParsecF}{\rightmark+0}%
+            }
         }{%
         }%
     }%
     \fancyfoot[RO]{%
         \textsf{\footnotesize\textcolor{lightgray}{\thepage}}}%
     \fancyfoot[CO]{%
-        % firstParsecF is already set by the even page that came before
+        % firstParsecF is already set by the even page that came before,
+        %  ... unless it is 0.
+        \ifthenelse{\equal{\value{firstParsecF}}{0}}{%
+            \setcounter{firstParsecF}{\rightmark+0}%
+        }{% 
+            %do nothing
+        }
         \setcounter{firstParsec}{\value{firstParsecF}/2}%
         \setcounter{lastParsecF}{\leftmark+0}%
         \ifthenelse{\equal{\value{lastParsecF}}{0}}{%
             % do nothing
         }{%
-            \stepcounter{parsecFootersShown}%
-            \ifthenelse{\equal{\value{parsecFootersShown}}{1}}{%
-                \setcounter{firstParsec}{\value{firstParsec}+1}%
-            }{}
             \setcounter{lastParsec}{\value{lastParsecF}/2}%
             \textPointNumberI{%
                 \ifthenelse{\equal{\value{parsecToBeContinued}}{1}}{..}{}%
-                \the\value{firstParsec}%
+                \setcounter{firstParsecMajor}{\value{firstParsec}/10}%
+                \setcounter{firstParsecMinor}{\value{firstParsec}-\value{firstParsecMajor}*10}%
+                \the\value{firstParsecMajor}\alph{firstParsecMinor}%
                 \ifthenelse{\equal{\value{firstParsec}}{\value{lastParsec}}}{%
                     % TODO
                 }{%  no footer without parsecs
                     \setcounter{tmptmp}{\value{firstParsec}+1}%
-                    \ifthenelse{\equal{\value{tmptmp}}{\value{lastParsec}}}{, }{--}%
-                    \the\value{lastParsec}%
+                    \ifthenelse{\equal{\value{tmptmp}}{\value{lastParsec}}}{, }{--}% TODO: fix this, maybe?
+                    \setcounter{lastParsecMajor}{\value{lastParsec}/10}%
+                    \setcounter{lastParsecMinor}{\value{lastParsec}-\value{lastParsecMajor}*10}%
+                    \the\value{lastParsecMajor}\alph{lastParsecMinor}%
                 }%
                 \setcounter{tmptmp}{\value{lastParsec}*2}%
                 \ifthenelse{\equal{\value{tmptmp}}{\value{lastParsecF}}}{%
@@ -441,26 +483,25 @@
 \let\oldchapter\chapter%
 \renewcommand\chapter[1]{%
     \oldchapter{#1}%
-    \setcounter{parsecFootersShown}{0}% XXX why is this necessary?
-    \setcounter{tmptmp}{\value{parsec}+1}
+    \setcounter{tmptmp}{(\value{parsec}/10)*10+10}
     \addtocontents{parsectoc}{\protect\contentsline{chapter}{\numberline{\thechapter} #1}{\sref{parsec-\the\value{tmptmp}}}{chapter.\thechapter}}%
 }
 \let\oldsection\section%
 \renewcommand\section[1]{%
     \oldsection{#1}%
-    \setcounter{tmptmp}{\value{parsec}+1}
+    \setcounter{tmptmp}{(\value{parsec}/10)*10+10}
     \addtocontents{parsectoc}{\protect\contentsline{section}{\numberline{\thesection} #1}{\sref{parsec-\the\value{tmptmp}}}{section.\thesection}}%
 }
 \let\oldsubsection\subsection%
 \renewcommand\subsection[1]{%
     \oldsubsection{#1}%
-    \setcounter{tmptmp}{\value{parsec}+1}
+    \setcounter{tmptmp}{(\value{parsec}/10)*10+10}
     \addtocontents{parsectoc}{\protect\contentsline{subsection}{\numberline{\thesubsection} #1}{\sref{parsec-\the\value{tmptmp}}}{subsection.\thesubsection}}%
 }
 \let\oldsubsubsection\subsubsection%
 \renewcommand\subsubsection[1]{%
     \oldsubsubsection{#1}%
-    \setcounter{tmptmp}{\value{parsec}+1}
+    \setcounter{tmptmp}{(\value{parsec}/10)*10+10}
     \addtocontents{parsectoc}{\protect\contentsline{subsubsection}{\numberline{\thesubsubsection} #1}{\sref{parsec-\the\value{tmptmp}}}{subsubsection.\thesubsubsection}}%
 }
 
