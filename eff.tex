@@ -58,7 +58,7 @@ For the moment, think of an effectus as a generalization
     the objects represent the physical systems
     (or data types, if you like)
     and the maps represent the physical processes
-    (or properly typed maps).
+    (or properly typed programs).
 \end{point}
 \begin{point}{40}%
 The first two axioms we add on top of those of an effectus
@@ -164,7 +164,7 @@ After this apogee,
     structures compare to those already known in the literature.
 \end{point}
 \end{parsec}
-\section{Effect algebras et al}
+\section{Effect algebras and related structures}
 \begin{parsec}{1740}%
 \begin{point}{10}%
 Before we turn to effectuses,
@@ -226,6 +226,26 @@ Show a PCM is preordered by~$\leq$.
 % associativity~$c = b \ovee e = (a \ovee d) \ovee e = a \ovee (d \ovee e)$
 % so~$a \leq c$.
 % \end{point}
+\end{point}
+\begin{point}{40}%
+The partial commutativity and associativity of a PCM
+    ensure that a sum only depends on which elements
+    occur (and how often), instead of their order.
+Formally:
+    if~$(\cdots( x_1 \ovee x_2) \ovee \cdots) \ovee x_n$
+    exists some~$x_1, \ldots, x_n$ in some PCM, then so
+    does~$(\cdots( x_{\pi(1)} \ovee x_{\pi(2)}) \ovee \cdots) \ovee x_{\pi(n)}$
+    for any permutation~$\pi$ of~$\{1,\ldots,n\}$ and
+\begin{equation*}
+    (\cdots( x_1 \ovee x_2) \ovee \cdots) \ovee x_n
+    \ = \ (\cdots( x_{\pi(1)} \ovee x_{\pi(2)}) \ovee \cdots) \ovee x_{\pi(n)}.
+\end{equation*}
+    Thus parantheses are superfluous and we will often leave them out:
+    \begin{equation*}
+        \bigovee^n_{i=1} x_i \ \equiv \ \Define{x_1 \ovee \cdots \ovee x_n}
+        \ \equiv\ 
+    (\cdots( x_1 \ovee x_2) \ovee \cdots) \ovee x_n.
+    \end{equation*}
 \end{point}
 \end{parsec}
 
@@ -614,8 +634,8 @@ Effect monoids are less abundant than effect algebras.
         with~$x \ovee y = x \vee y$ defined iff~$x \wedge y = 0$.
     The Boolean algebra is turned into an effect monoid
         with~$x \odot y \equiv x \wedge y$.
-    Every finite (\emph{a priori} non-commutative) effect monoid
-    is of this form \cite[Prop.~40]{basmsc}.
+    In fact, every finite (not necessarily commutative) effect monoid
+        is of this form \cite[Prop.~40]{basmsc} and thus commutative.
 \item
 In particular: the two-element Boolean algebra~$2$
     is an effect monoid.
@@ -857,7 +877,13 @@ A category~$C$ is called an \Define{effectus in partial form}
             $\pproj_1 \after b \perp \pproj_2 \after b$,
             where~$\Define{\pproj_i}\colon Y + Y \to Y$
             \index{*pproj@$\pproj_i$}
-            are \Define{partial projectors} defined
+            are \Define{partial projectors}\footnote{%
+                Later, in~\sref{coprod-prod},
+                    we will use the more slightly more general
+                    ${\pproj_1}\colon X_1 + X_2 \to X_1$ and
+                    ${\pproj_2}\colon X_1 + X_2 \to X_2$
+                    defined by~$\pproj_1 = [\id,0]$
+                        and~$\pproj_2 = [0,\id]$.} defined
             \index{partial projectors}
             by~$\pproj_1 \equiv [\id, 0]$
             and~$\pproj_2 \equiv [0, \id]$ \emph{and}
@@ -2433,7 +2459,7 @@ for every~$\bigovee_i \lambda_i \ket{\varphi_i}$
 \end{point}
 \end{parsec}
 
-\subsection{More on abstract $M$-convex sets}\label{more-aconvm}
+\subsection{Effectus of abstract $M$-convex sets}\label{more-aconvm}
 \begin{parsec}{1930}%
 \begin{point}{10}%
 For our next project,
