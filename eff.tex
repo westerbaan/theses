@@ -272,7 +272,8 @@ A map~$f\colon E \to F$
 between effect algebras~$E$ and~$F$
 is called an \Define{effect algebra homomorphism}
     \index{effect algebra!homomorphism}
-if for all~$a, b \in E$, we have
+if it is a PCM homomorphism that preserves~$1$;
+    concretely:
 \begin{enumerate}
     \item \emph{(additive)}
     $a \perp b$ implies $f(a) \perp f(b)$ and~$f(a)\ovee f(b) = f(a\ovee b)$
@@ -504,7 +505,7 @@ Indeed:
 \end{equation*}
     and so~$(a \wedge b) \ovee (a \vee b) = a \ovee b$, as desired.
 \begin{point}{30}%
-We turn to the main result.
+Now, we prove the lemma.
 Assume~$(x \ominus c) \wedge (x \ominus d)$ exists.
 Note~$x \ominus c = (x^\perp \ovee c)^\perp$.
 As~$z \mapsto z^\perp$ is an order anti-isomorphism,
@@ -729,7 +730,7 @@ See also \cite[Thm.~3]{jacobs2016expectation}
 An effectus comes in two guises:
     axiomatizing either a category of total maps
     or a category of partial maps.
-We will start of with the total form as it has the simplest axioms.
+We will start off with the total form as it has the simplest axioms.
 Later we will prefer to work with the partial form.
 \begin{parsec}{1800}%
 \begin{point}{10}[dfn-effectus]{Definition}%
@@ -1127,7 +1128,7 @@ In an effectus in partial form,
 \begin{prooftree}
 \AxiomC{$h\colon Z \to  X_1 + \cdots + X_n$}
 \doubleLine
-\UnaryInfC{$f_1\colon Z \to X_1 \ \cdots \  f_n\colon Z \to X_n \quad \bigperp_n  1 \after f_n$},
+\UnaryInfC{$f_1\colon Z \to X_1 \ \cdots \  f_n\colon Z \to X_n \quad \bigperp_n  1 \after f_n$}
 \end{prooftree}
 with~$f_i = \pproj_i \after h$
     and~$h = \langle f_1, \ldots, f_n\rangle \equiv
@@ -2037,7 +2038,7 @@ An effectus~$C$ has \Define{separating predicates}
     is a real effectus ($M \cong [0,1]$)
     with separating states and predicates.
 The predicates on a von Neumann algebra~$\scrA$
-    correspond to the the set of effects~$[0,1]_\scrA$
+    correspond to the set of effects~$[0,1]_\scrA$
     and~$\Stat \scrA$ can be identified with the convex set of normal states.
 \end{point}
 \end{parsec}
@@ -2051,7 +2052,7 @@ We will show they do, in the following strong sense.
 \begin{point}{20}[emod-effectus]{Theorem}%
     Let~$M$ be any effect monoid.
     The category~$\EMod^{\mathsf{op}}_M$ is an effectus in total form
-        with scalars~$M$.
+        with scalars~$M$ and separating predicates.
 In fact: every effectus~$C$ in total form
     with scalars~$M$ and separating predicates
     is equivalent to a subcategory of~$\EMod^{\mathsf{op}}_M$.
@@ -2178,6 +2179,25 @@ So if~$C$ has separating predicates,
 \end{point}
     \qed
 \end{point}
+\end{point}
+\begin{point}{80}{Exercise}%
+    Show that the category~$\op{\mathsf{Rng}}$ of unit rings
+    with unit-preserving homomorphisms in the opposite direction
+    is an effectus in total form.
+\begin{enumerate}
+    \item 
+        Show that the predicates on a ring~$R$
+            correspond to its idempotents;
+            that~$p \perp q$ iff~$pq = qp = 0$,
+            $p^\perp = 1-p$
+            and~$p \ovee q = p+q$.
+        (So~$2$ is its effect monoid of scalars.)
+        Conclude~$\op{\mathsf{Rng}}$ does not have separating predicates.
+    \item
+        Show that there is no unit-preserving
+            ring-homomorphism~$\Z_2 \to \Z$.
+            Conclude~$\op{\mathsf{Rng}}$ does not have separating states.
+\end{enumerate}
 \end{point}
 \end{parsec}
 \begin{parsec}{1920}%
@@ -2308,7 +2328,7 @@ is a congruence (we will cover these in \sref{aconv-cong})
         for the convex structure on~$T$
     (inherited by~$\R^2$)
     and so~$T /_\sim$ is an abstract~$[0,1]$-convex set.
-That is: we start of with a filled triangle
+That is: we start off with a filled triangle
 $T \equiv \begin{tikzpicture}[scale=0.2]
     \draw (0,0) -- (0,1) ; 
     \draw (1,0) -- (0,0) ; 
@@ -2755,13 +2775,13 @@ To continue, show that in~$\AConvM$
 \begin{parsec}{1940}%
 \begin{point}{10}[aconvalmosteffectus]{Proposition}%
 The category~$\AConvM$ obeys all the axioms of an effectus in total
-form except for the left pullback square of~\eqref{pullbacks}.
+form except perphaps for the left pullback square of~\eqref{pullbacks}.
 \begin{point}{20}{Proof}%
 In \sref{aconv-coprod} we proved~$\AConvM$ has binary coproducts
     and in \sref{n-times-one-aconvm}
     that the one-element set~$1$ is its final object.
 As~$\mathcal{D}_M \emptyset = \emptyset$,
-    the empty set trivially also an abstract~$M$-convex set
+    the empty set is trivially also an abstract~$M$-convex set
     and in fact the initial object of~$\AConvM$.
 \end{point}
 \begin{point}{30}%
@@ -2794,8 +2814,11 @@ Thus the maps~\eqref{conv-jointly-monic} are jointly injective,
     hence jointly monic.
 \end{point}
 \begin{point}{40}%
-Finally, we prove that the square on the right of \eqref{pullbacks}
-    is a pullback in~$\AConvM$.
+At last, we are ready to prove that the square on the right of \eqref{pullbacks}
+    is a pullback diagram in~$\AConvM$.
+So assume~$\alpha \colon Z \to X+Y$
+    is a map in~$\AConvM$
+    with~$(!+!) \after \alpha = \kappa_1 \after !$.
 \begin{equation*}
 \xymatrix{
     Z \ar@/^1pc/[rrd]^{!}
@@ -2806,9 +2829,6 @@ Finally, we prove that the square on the right of \eqref{pullbacks}
         &X+Y\ar[r]_{!+!} & 1+1
     }
 \end{equation*}
-So assume~$\alpha \colon Z \to X+Y$
-    is a map in~$\AConvM$
-    with~$(!+!) \after \alpha = \kappa_1 \after !$.
 We have to show~$\alpha = \kappa_1 \after \gamma$,
     for a unique~$\gamma\colon Z \to X+Y$ in~$\AConvM$.
 For the moment, assume~$\kappa_1$ is injective.
@@ -3059,7 +3079,8 @@ $C(X)$ is~$\sigma$-Dedekind complete
 \item
     Suppose the unit interval of~$C(X)$ is an effect divisoid.
         Let~$f \in C(X)$ with~$0 \leq f \leq 1$.
-    Pick any~$y \notin \overline{\supp f}$.
+    If~$\overline{\supp f} = X$, then you're done.
+        Otherwise pick any~$y \notin \overline{\supp f}$.
     Show, using Urysohn's lemma,
     that there is a~$g \in C(X), 0\leq g \leq \rfrac{f}{f}$
     with~$g(y) = 0$ and $g(x) = 1$ for all~$x \in \overline{\supp f}$.
@@ -3111,7 +3132,7 @@ To start,
 \end{equation*}
 Hence~$(\rfrac{c}{c}\odot b)^\perp
             \geq \rfrac{c}{c} \odot b^\perp
-            \geq \rfrac{c}{c \odot a}
+            \geq \rfrac{c \odot a}{c}
             = \rfrac{c}{c} \odot a $.
     Indeed:~$\rfrac{c}{c}\odot a \perp \rfrac{c}{c} \odot b$.
 \begin{point}{90}%
@@ -3128,7 +3149,7 @@ Clearly~$c \odot (\rfrac{a}{c} \ovee \rfrac{b}{c}) = a \ovee b$, so
     \rfrac{a \ovee b}{c} \ = \  
     \rfrac{c \odot (\rfrac{a}{c} \ovee \rfrac{b}{c})}{c} \ = \ 
 \rfrac{c}{c} \odot (\rfrac{a}{c} \ovee \rfrac{b}{c}) \ = \ 
-\rfrac{c}{a} \ovee \rfrac{c}{b},
+\rfrac{a}{c} \ovee \rfrac{b}{c},
 \end{equation*}
 as desired. \qed
 \end{point}
@@ -3531,7 +3552,7 @@ We are in the following situation.
         && X/_{(q \after \xi_1)^\perp} \ar@{.>}@/^/[u]^{g}
     }
 \end{equation*}
-We claim~$g$ and~$h_2$ are eachothers inverse.
+We claim~$g$ and~$h_2$ are each other's inverse.
 Indeed: from $g \after h_2 \after \xi_2 \after \xi_1= g \after \xi = \xi_2 \after \xi_1$
     we get~$g \after h_2 = \id$
     and from~$h_2 \after g \after \xi = h_2 \after \xi_2 \after \xi_1 = \xi$
@@ -3690,11 +3711,11 @@ Show the following basic properties of comprehensions.
 
 \begin{parsec}{2000}%
 \begin{point}{10}%
-Comprehensions and kernels are very similar.
+Comprehensions and categorical kernels are very similar.
 \end{point}
 \begin{point}{20}{Definition}%
 Let~$C$ be a category with a zero object.
-A \Define{kernel}~of an arrow~$f$
+    A \Define{(categorical) kernel}~of an arrow~$f$
     \index{kernel!category theoretic}
     (in symbols: $\Define{\ker f}$)
     \index{kerf@$\ker f$}
@@ -4098,7 +4119,7 @@ It is rare for quantum processes to send projections to projections
     so instead we consider the least projection above the outcome.
 The simple idea of taking the restriction to sharp predicates
     seriously, leads to a host of interesting new notions.
-We will give these right of the bat and study their relevance later on.
+We will give these right off the bat and study their relevance later on.
 \end{point}
 \begin{point}{20}[diamond-basics]{Definition}%
     A~\Define{$\diamond$-effectus} (``diamond effectus'')
@@ -4134,7 +4155,9 @@ In a~$\diamond$-effectus,
     \item
     Two maps~$f,g\colon X \to Y$
         are~\Define{$\diamond$-equivalent}
-        if~$f^\diamond = g^\diamond$.
+        if~$f^\diamond = g^\diamond$
+        (or equivalently whenever~$f_\diamond = g_\diamond$,
+                see~\sref{diamond-equiv-equiv}.)
             \index{*dia@$\diamond$, diamond!-equivalent}
     \item
         A pure endomap~$f$ is~\Define{$\diamond$-positive}
@@ -4255,6 +4278,11 @@ Thus by uniqueness of order adjoints, we find
 $(f\after g)_\diamond = f_\diamond \after g_\diamond$. \qed
 \end{point}
 \end{point}
+\begin{point}{70}[diamond-equiv-equiv]{Exercise}%
+Derive from~\sref{diamond-adjunction}
+    that~$f^\diamond = g^\diamond$
+    if and only if~$f_\diamond = g_\diamond$.
+\end{point}
 \end{parsec}
 \begin{parsec}{2080}%
 \begin{point}{10}[image-sharp-is-order-sharp]{Lemma}%
@@ -4323,7 +4351,7 @@ the assignment~$X\mapsto \SPred X$, ~$f \mapsto (f_\diamond,f^\BOX)$
     yields a functor from~$C$
     to~$\mathsf{OMLatGal}$,
     the category of orthomodular lattices
-    with galois connection between them,
+    with Galois connection between them,
     as defined in~\cite{jacobs2009orthomodular}.
 \end{point}
 \begin{point}{80}%
@@ -6588,7 +6616,7 @@ Hence~$H \after H = \id$,
 \end{point}
 \begin{point}{40}%
 Do our additional assumptions (purity of~$s$, $\IM s = 1$, etc.)
-follow from more general principles.  Can we define the other gates, like
+follow from more general principles?  Can we define the other gates, like
     the CNOT? Do these gates interact in the usual way?
     Unfortunately, we do not have an answer to any of these questions.
 \end{point}
@@ -6769,7 +6797,7 @@ Reasoning towards contradiction,
     has a product~$\ \C \xleftarrow{\pi_1} \scrA \xrightarrow{\pi_2} \C$
     of~$\C $ and~$\C$.
 First show that for any non-zero pure map~$f\colon \scrA \to \C$,
-    there exists a Hilbert space~$\scrH$, an element~$x \in X$,
+    there exists a Hilbert space~$\scrH$, an element~$x \in \scrH$,
     a von Neumann algebra~$\scrC$ and
     isomorphism~$\varphi\colon \scrB(\scrH)\oplus \scrC \to \scrA$
     with~$f \after \varphi = \langle x, (\,\cdot\,) x\rangle $.
