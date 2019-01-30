@@ -5848,6 +5848,99 @@ and thus a miu-isomorphism $M_N\to\scrA$.\qed
 \end{point}
 \end{point}
 \end{parsec}
+\begin{parsec}{841}%
+\begin{point}{10}[cstar-no-pu-equalisers-example]{Example}%
+Using the description of all finite-dimensional $C^*$-algebras
+    from~\sref{fdcstar}
+we can prove the  claim made at the start of this thesis,
+in~\sref{cstar-no-pu-equalisers},
+that in~$\Cstar{pu}$ there's no equaliser
+for the maps $f,g\colon \C^4\to \C$
+given  by
+\begin{equation*}
+\textstyle
+f(a,b,c,d)\,=\, \frac{1}{2}(a+b),
+\quad \text{and}\quad
+g(a,b,c,d)\,=\, \frac{1}{2}(c+d).
+\end{equation*}
+Indeed, suppose towards a contradiction
+that $f$ and~$g$ do have an
+equaliser $e\colon \scrE\to\C^4$ in~$\Cstar{pu}$,
+and let~$\scrS$
+denote the set-theoretic equaliser:
+\begin{alignat*}{3}
+    \scrS &:=\ \{\,(a,b,c,d)\in\C^4\colon\, f(a,b,c,d)=g(a,b,c,d)\,\}\\
+    &=\ \{\,(a,b,c,d)\in\C^4\colon\,a+b\,=\,c+d\,\}.
+\end{alignat*}
+Note that the elements~$s\in \scrS$
+with $0\leq s\leq 1$
+form a convex subset of~$\C^4$ that is isomorphic
+to an octahedron---this will be essential later.
+
+We claim that the range of~$e\colon \scrE\to\C^4$
+is simply the set-theoretic equaliser, $e(\scrE)=\scrS$.
+Indeed, surely, $e(\scrE) \subseteq \scrS$.
+For the other direction,
+let~$v\in \scrS$ be given; we must find~$a\in\scrE$ with~$e(a)=v$.
+Since~$e$ is involution preserving,
+and so~$\Real{v},\Imag{v}\in\scrS$,
+we may assume without loss of generality that~$v$ is self-adjoint.
+Since~$v+\|v\|\geq 0$, and~$e$ is unital, 
+    we may assume that~$v$ is positive too.
+By scaling~$v$ if necessary,
+we may assume also that~$0\leq v\leq 1$.
+Now, to use the universal property of~$e\colon \scrE\to\C^4$
+consider the unique pu-map $p\colon \C^2\to\C^4$
+    given by~$p(1,0)=v$.
+Since~$v\in \scrS$ we have $f\circ p = g\circ p$,
+and so there is a unique $q\colon \C^2\to\scrE$
+with $p = e\circ q$.  Then~$v=p(1,0)=e(q(1,0))$,
+    and so~$e(\scrE)=\scrS$.
+
+The next thing to note is that~$e$
+is injective,
+and for this it suffices to show
+that~$e$ is injective on $[0,1]_\scrE$.
+So let~$a,b\in[0,1]_\scrE$ with~$e(a)=e(b)$ be given;
+we must show that~$e(a)=0$.
+Let~$p,q\colon \C^2\to\C^4$ be the unique
+pu-maps given by~$p(1,0)=a$ and~$q(1,0)=b$,
+and note that~$e\circ p = e\circ q$.
+Since equalisers are mono, we get~$p=q$, and so~$a=b$.
+
+Thus~$e\colon \scrE\to \C^4$
+gives a linear isomorphism from~$\scrE$
+onto the 3-dimensional linear subspace~$\scrS$ of~$\scrA$,
+so~$\scrE$ is 3-dimensional too.
+By the classification of finite-dimensional
+$C^*$-algebras, \sref{fdcstar}, 
+$\scrE$ must be miu-isomorphic to~$\C^3$.
+
+The map $e\colon \scrE\to\C^4$
+is not only injectve,
+but in fact bipositive (see~\sref{cstar-isometry}).
+Indeed,  if $e(a)\leq 0$ for some $a\in[0,1]_\scrE$
+we can, as before,
+find~$q\colon \C^2 \to \scrE$
+with $e(q(1,0))=e(a)$,
+and so~$a=q(1,0)\geq 0$.
+It follows that~$e$ gives a linear order isomorphism
+between~$\scrE$ and the subspace~$\scrS$ of~$\C^4$,
+and so $[0,1]_\scrE$ is as convex space
+isomorphic to~$\scrS\cap[0,1]_{\C^4}$.
+This is problematic,
+because on the one
+hand
+the convex space $[0,1]_\scrE$ being a cube
+(because
+$\scrE$ is miu-isomorphic to~$\C^3$)
+has eight extreme points,
+while on the other 
+hand~$\scrS\cap[0,1]_{\C^4}$ being
+an octahedron
+has six extreme points: a contradiction.
+\end{point}
+\end{parsec}
 
 \section{Normal Functionals}
 \begin{parsec}{850}%
