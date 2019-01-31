@@ -9,4 +9,6 @@
 
 * Added an example in 84a showing that not all equalisers in CStarPU exist,
   and changed 10IX accordingly.
+
+* Added a remark, 22IIa, on other interpretations of the word "order ideal".
    
