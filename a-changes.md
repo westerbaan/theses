@@ -14,5 +14,9 @@
 
 * Added a remark, 96Ia, on the choice of 'filter'.
 
+* Added a remark, 101Ia, on the use of the symbol \diamond.
+
+
+
 
    
