@@ -11,4 +11,8 @@
   and changed 10IX accordingly.
 
 * Added a remark, 22IIa, on other interpretations of the word "order ideal".
+
+* Added a remark, 96Ia, on the choice of 'filter'.
+
+
    
