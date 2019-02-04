@@ -596,6 +596,7 @@ form an effect monoid:
 \begin{point}{20}[dfn-effect-monoid]{Definition}%
 An \Define{effect monoid}~$M$ \cite{probdistrconv}
     \index{effect monoid}
+    \index{*odot@$\odot$!effect monoid}
     is an effect algebra
     together with a binary operation~$\odot$
     such that for all~$a,b,c,d \in M$, we have
@@ -2255,7 +2256,7 @@ Show that~$(\mathcal{D}_M, \eta,\mu)$
 \item
     Show that~$\Kl \mathcal{D}_M$,
     the Kleisli category of~$\mathcal{D}_M$
-    (see eg.~\cite[\S 2.6]{basmsc}.),
+    (see e.g.~\cite[\S 2.6]{basmsc}.),
     is an effectus
     with~$M$ as scalars.
 \end{enumerate}
@@ -2789,7 +2790,7 @@ We continue with joint monicity
     of~$[\kappa_1,\kappa_2,\kappa_2],
     [\kappa_2,\kappa_1,\kappa_2]\colon 1+1+1 \to 1+1$.
 We can represent the convex set~$1+1+1$
-    as the set of triplets~$(a,b,c) \in M^3$
+    as the set of triples~$(a,b,c) \in M^3$
     with~$a\ovee b \ovee c = 1$
     with the obvious convex structure,
     cf.~\sref{n-times-one-aconvm}.
@@ -6395,13 +6396,13 @@ The presented abstract theory of dilations in a~$\dagger$-effectus
 \begin{point}{20}{Definition}%
 Let~$f\colon X \to Y$ be any map in an effectus.
     A \Define{dilation} of~$f$ \index{dilation!in an effectus}
-    is a triplet~$(P, \varrho, h)$
+    is a triple~$(P, \varrho, h)$
     of a sharp total map~$\varrho \colon P \to Y$
     and a pure map~$h \colon X \to P$
     with~$\varrho \after h = f$,
     such that
 \begin{quote}
-    for every (other) triplet~$(P', \varrho', h')$
+    for every (other) triple~$(P', \varrho', h')$
     with~$\varrho'\colon P' \to Y$ total sharp,
     $h'\colon X \to P$ arbitrary and~$f = \varrho'\after h'$,
     there is a unique~$\sigma \colon P \to P'$
@@ -6445,7 +6446,7 @@ Let~$C$ be an effectus with dilations.
     For any quotient~$\xi \colon X \to Q$
             and map~$f\colon Q \to Y$
             with dilation~$(P, \varrho, h)$,
-            the triplet~$(P, \varrho, h \after \xi)$
+            the triple~$(P, \varrho, h \after \xi)$
             is a dilation of~$f \after \xi$.
 
 \item
@@ -6457,7 +6458,7 @@ Let~$C$ be an effectus with dilations.
         where~$h''\colon Q \to P$ is the unique map with~$h'' \after \xi = h$.
 
 \item
-    If for~$i=1,2$ the triplet~$(P_i, \varrho_i, h_i)$
+    If for~$i=1,2$ the triple~$(P_i, \varrho_i, h_i)$
             is a dilation of~$f_i \colon X_i \to Y$,
     then~$(P_1 + P_2, [\varrho_1,\varrho_2], h_1 + h_2)$
         is a dilation of~$[f_1, f_2] \colon X_1 + X_2 \to Y$.
