@@ -42,7 +42,7 @@ of Stinespring~\cite[Thm.~1]{stinespring}.
         miu-map~$\varrho\colon \scrA \to \scrB(\scrK)$
         and bounded operator~$V\colon \scrH \to \scrK$
         such that~$\varphi = \ad_V \after \varrho$,
-        where~$\Define{\ad_V}\index{$\ad_V$!Hilbert spaces} \colon \scrB(\scrK) \to \scrB(\scrH)$
+        where~$\Define{\ad_V}\index{ad@$\ad_V$!Hilbert spaces} \colon \scrB(\scrK) \to \scrB(\scrH)$
         is given by~$\ad_V(T)\equiv V^*TV$.
 
 Furthermore:
@@ -768,7 +768,7 @@ Let~$\varphi\colon \scrA \to \scrB(\scrH)$
     A \Define{normal Stinespring dilation}\index{Stinespring dilation}
     is a triple~$(\scrK,\varrho, V)$
     with~$\scrK$ a Hilbert space,
-    $\varrho\colon \scrA \to \scrB(\scrK)$ a nmiu-map
+    $\varrho\colon \scrA \to \scrB(\scrK)$ an nmiu-map
         (i.e.~normal representation)
         and~$V\colon \scrH \to \scrK$ a bounded operator
         such that~$\varphi$ decomposes as~$\varphi = \ad_V \after \varrho$.
@@ -936,7 +936,7 @@ whence~$\ad_S \after \varrho' = \varrho$. \qed
             and as arrows between~$\varphi\colon \scrA \to \scrB(\scrH)$
             and~$\varphi'\colon \scrA' \to \scrB(\scrH')$
             pairs~$(m, S)$
-            where~$m\colon \scrA \to \scrA'$ is a nmiu-map
+            where~$m\colon \scrA \to \scrA'$ is an nmiu-map
             and~$S\colon \scrH \to \scrH'$ is an isometry
             such that~$\varphi = \ad_S \after \varphi' \after m$.
     Write~$\mathsf{Rep}$
@@ -1672,7 +1672,9 @@ Instead of embedding~$X$ into a dual space,
 A simple metric completion will not do,
     we will need to complete $X$ as a \emph{uniform space}.
 Uniformities are structures that sit between topological spaces
-    and metric spaces.
+    and metric spaces: every metric space is a uniformity
+        (see~\sref{dils-uniformity-examples})
+        and every uniformity is a topological space.
 We will refresh the basics of uniformities ---
 for a thorough treatment, see for instance \cite[Ch.~9]{willard}.
 \end{point}
@@ -1680,6 +1682,7 @@ for a thorough treatment, see for instance \cite[Ch.~9]{willard}.
     A \Define{uniform space}\index{uniform space} is a set~$X$
     together with a family of relations
     $\Phi \subseteq \wp (X\times X)$ called \Define{entourages}\index{entourages}
+    \index{p@$\wp$, power set}
         satisfying the following conditions.
     \begin{enumerate}
     \item
@@ -1758,6 +1761,7 @@ Define~$\hat\varepsilon \equiv \{(x,y);\ d(x,y) \leq \varepsilon\}$
 for any $\varepsilon > 0$.
 The set~$B \equiv \{ \hat\varepsilon; \ \varepsilon > 0\}$
 is a subbase and so fixes a uniformity~$\Phi$ on~$X$.
+In this sense every metric space is a uniformity.
         \item
     Let~$X$ be a set together with a (infinite)
             family~$(d_{\alpha})_{\alpha\in I}$
@@ -1866,7 +1870,7 @@ we know~$f(x) \mathrel\varepsilon f(y)$.
 \item
 We say two Cauchy nets
 $(x_\alpha)_{\alpha\in I}$
-and$(y_\beta)_{\beta\in J}$ are \Define{equivalent}\index{Cauchy net!equivalent},
+and~$(y_\beta)_{\beta\in J}$ are \Define{equivalent}\index{Cauchy net!equivalent},
 in symbols: $(x_\alpha)_\alpha \sim (y_\beta)_\beta$,
 when for every~$\varepsilon \in \Phi$
 there are~$\alpha_0 \in I$ and~$\beta_0 \in J$
@@ -2033,7 +2037,7 @@ $T \geq 0$ if and only if~$\left<x,Tx\right> \geq 0$
         \item $E$ is \Define{orthonormal}\index{orthonormal} if additionally
                     $\left<e,e\right>$ is a non-zero projection
                     for~$e \in E$.
-        \item A sequence $(b_e)_{e \in E}$ in~$\scrB$
+        \item A family $(b_e)_{e \in E}$ in~$\scrB$
                 is said to be \Define{$\ell^2$-summable}
                 if the partial sums of~$\sum_{e \in E} b_e^*b_e$
                 are bounded.
@@ -2054,7 +2058,7 @@ $T \geq 0$ if and only if~$\left<x,Tx\right> \geq 0$
     \end{enumerate}
 \begin{point}{20}{Notation}%
 As with Hilbert spaces, it will sometimes be more convenient
-    to view an orthonormal basis as a sequence~$(e_i)_{i \in I}$,
+    to view an orthonormal basis as a sequence/family~$(e_i)_{i \in I}$,
     instead of a subset. This should cause no confusion.
 \end{point}
 \end{point}
@@ -2625,7 +2629,7 @@ For nets~$(x_\alpha)_{\alpha}$
     and~$(y_\alpha)_{\alpha}$ in~$N$,
     define
     \begin{equation*}
-        (x_\alpha)_\alpha \mathrel{\Define{\hat\varepsilon}\index{epsi@$\hat\varepsilon$}}
+        (x_\alpha)_\alpha \mathrel{\Define{\hat\varepsilon}\index{*epsi@$\hat\varepsilon$}}
             (y_\alpha)_\alpha
             \quad\Leftrightarrow\quad
         \exists \beta \in \Phi \, \forall \gamma \geq \beta. \ 
@@ -2741,7 +2745,7 @@ for some~$\varepsilon \in \Phi$.
 Instead we define for any~$\varepsilon \in \Phi$
 the following entourages on~$\overline{V}$:
 \begin{equation*}
-    (x_\alpha)_\alpha \mathrel{\Define{\tilde\varepsilon}\index{epsiti@$\tilde\varepsilon$}}
+    (x_\alpha)_\alpha \mathrel{\Define{\tilde\varepsilon}\index{*epsiti@$\tilde\varepsilon$}}
     (y_\alpha)_\alpha \quad\Leftrightarrow\quad
     (x'_\alpha)_\alpha \mathrel{\hat\varepsilon}
     (y'_\alpha)_\alpha \quad
@@ -3158,7 +3162,8 @@ For every~$T \in \scrB^a(X)$
     the map~$\left<(\,\cdot\,), T (\,\cdot\,)\right>$
     is a bounded~$\scrB$-sesquilinear form.
 \begin{point}{40}%
-    For self-dual~$X$ the converse is true.
+    For self-dual~$X$ every bounded~$\scrB$-sesquilinear form
+        arises in this way.
 \end{point}
 \end{point}
 \begin{point}{50}[hilbmod-sesquilinear-forms]{Proposition}%
@@ -3364,7 +3369,7 @@ We are ready to show that every ncp-map has a Paschke dilation.
     A complex bilinear map~$B \colon \scrA \times \scrB \to X$,
         where~$X$ is a self-dual Hilbert~$\scrB$-module is
         called \Define{$\varphi$-compatible}\index{$\varphi$-compatible}
-        if there is a~$r > 0$
+        if there is an~$r > 0$
         such that for all~$n\in \N$, $a_1, \ldots, a_n \in \scrA$
         and~$b_1, \ldots, b_n \in \scrB$ we have
         \begin{equation}
@@ -4400,7 +4405,7 @@ What about Hilbert C$^*$-modules?
 In this exercise we prove \cite[Thm.~3.12]{paschke}.
 Let~$\scrB$ be a von Neumann algebra
     and~$(p_i)_{i \in I}$
-    a sequence of projections from~$\scrB$.
+    a family of projections from~$\scrB$.
     Write~$\Define{\ell^2((p_i)_{i \in I})}$\index{$\ell^2((p_i)_{i \in I})$}
     for the set of~$I$-tuples~$(b_i)_{i \in I}$
     from~$\scrB$ that are~$\ell^2$-summable (\sref{dfn-selfdual-basis})
@@ -4419,10 +4424,10 @@ and, in fact, that for every self-dual Hilbert~$\scrB$-module~$X$
     we have~$X \cong \ell^2(\,(\left<e_i,e_i\right>)_{i \in I}\,)$.
 \end{point}
 
-\begin{point}{30}%
+\begin{point}{30}[hilbel-matter]%
     Let~$\scrB$ be a von Neumann algebra
         and~$(p_i)_{i \in I}$, $(q_j)_{j \in J}$
-        sequences of projections from~$\scrB$.
+        families of projections from~$\scrB$.
     What can we say if~$\ell^2((p_i)_{i \in I}) 
     \cong \ell^2((q_i)_{j \in J})$?
     ($\ell^2$ as defined in \sref{hilbmod-el2}.)
@@ -4442,7 +4447,7 @@ However, for every projection~$p \in \scrB$
 is an orthonormal basis.
 
 \item
-Perhaps any two orthonormal bases have a common coarsening?
+Perhaps any two orthonormal bases have a common coarsening in some sense?
 Take~$\scrB = M_3$.
 It might not be obvious at this moment, but both
 \begin{equation*}
@@ -4452,6 +4457,8 @@ It might not be obvious at this moment, but both
 \end{equation*}
 are orthonormal bases of~$M_3$ over itself.
 (Combine \sref{onb1} with~\sref{onb2}.)
+There does not seem to be an obvious way in which these
+    two bases have a common coarsening of sorts.
 
 \item
 Maybe~$\sum_{i\in I} \left<e_i,e_i\right> = \sum_{j\in J} \left<d_j,d_j\right>$
@@ -4467,7 +4474,7 @@ However, in general it fails:
 \begin{point}{40}[onb1]{Exercise}%
 Let~$(e_i)_{ i \in I}$ be some orthonormal basis of a Hilbert~$\scrB$-module~$X$.
 Show that if~$(u_i)_{i \in I}$
-    is a sequence of partial isometries
+    is a family of partial isometries
     from~$\scrB$
     (see \sref{partial-isometry-equivalents})
     such that~$u_iu_i^* = \left<e_i,e_i\right>$
@@ -4501,7 +4508,12 @@ Conclude~$p \scrB \oplus q \scrB \cong (p+q) \scrB$
 \begin{parsec}{1620}%
 \begin{point}{10}%
 Before we can prove our normal form (in \sref{selfdual-normalish-form}),
-    we need some more \emph{comparison theory of projections}.
+    we need some more \emph{comparison theory of projections},
+    which was touched upon in~\sref{vmleq}.
+Recall that for projections~$p,q$ in a von Neumann algebra~$\scrA$,
+    we write~$\Define{p \lesssim q}$ if there is a partial isometry~$u$
+    with~$u^*u=p$ and~$uu^* \leq q$.\index{*lesssim@$\lesssim$}
+In~\sref{mvn-preorders} we saw~$\lesssim$ preorders the projections.
 \end{point}
 \begin{point}{20}[total-mv-order]{Proposition}%
 Let~$\scrB$ be a von Neumann algebra that is a factor (i.e.~with center~$\C 1$).
@@ -5747,9 +5759,13 @@ Schr\"odinger's equation is invariant under the reversal of time
 In stark contrast, the ncp-maps corresponding to measurement and discarding
     are rarely invertible.
 There are, however, many  processes in between
-    which might not be invertible, but are still pure enough to be `reversed',
-    for instance~$(\ad_V)^\dagger = \ad_{V^*}$.
-    Stinespring's theorem (\sref{stinespring-theorem}) implies that every ncp-map into~$\scrB(\scrH)$
+    which might not be invertible, but are still pure enough to be `reversed'
+        in some consistent and useful fashion.
+For instance, the ncp-map~$\ad_V$
+    has the obvious reversal~$(\ad_V)^\dagger = \ad_{V^*}$
+        (which is in general not the inverse.)
+    Stinespring's theorem (\sref{stinespring-theorem})
+        implies that every ncp-map into~$\scrB(\scrH)$
     splits as a reversible~$\ad_V$ after a (possibly) non-reversible
     nmiu-map~$\varrho$.
 Using Paschke's dilation,
@@ -5777,7 +5793,7 @@ Before we continue, let's rule out generalizations
     to arbitrary ncp-maps.
 \begin{enumerate}
 \item
-A state~$\varphi\colon \scrA \to \C$ is called pure, if it is an extreme
+A state~$\varphi\colon \scrA \to \C$ is called pure if it is an extreme
     point among all states.
 It is unreasonable to define an arbitrary ncp-map to be pure
     if it is extreme, as every nmiu-map (including 
@@ -5813,7 +5829,7 @@ Thus we have~$\ad_V = \ad_A \after \ad_U$.
 These two maps admit dual universal properties:
     $\ad_U$ is a \emph{corner}
     and~$\ad_A$ is a \emph{filter}.
-An ncp-map~$\varphi$ is pure,
+An ncp-map~$\varphi$ is pure
     if it is the composition of a filter after a corner.
 It turns out that~$\varphi$ is pure in this sense
     if and only if the map on the left-hand side of
