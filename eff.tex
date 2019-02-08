@@ -79,7 +79,9 @@ The sequential product as a binary operation
 We approach the sequential product in a rather different way:
     we take a step back and
     consider the map~$\asrt_a(b) \equiv  \andthen{a}{b}$
-        for fixed~$a$.
+        for fixed~$a$.  ($\asrt_a$ is named after the \texttt{assert} statement
+                    used in many programming languages,
+                    see~\sref{asrt-remarks}.)
     This map~$\asrt_a$ factors in two:
 \begin{equation*}
     \xymatrix@C+2pc@R-2pc{
@@ -104,7 +106,8 @@ The existence of quotients and comprehension in some effectus~$C$
     we get a surprisingly firm handle
     on the \emph{possibilistic} side of~$C$,
     by means of the existence
-    of a certain functor~$(\ )_\diamond\colon C \to \mathsf{OMLat}$.
+    of a certain functor~$(\ )_\diamond\colon C \to \mathsf{OMLat}$
+        to the category of orthomodular lattices.
 In the guiding example of von Neumann algebras,
     we have~$f_\diamond = g_\diamond$
         if and only
@@ -4501,7 +4504,7 @@ such that
     and each predicate~$p$ on~$X$,
         there is a unique $\diamond$-positive
         map $\Define{\asrt_p}\colon X \to X$
-        \index{asrt@$\asrt_p$}
+        \index{asrt@$\asrt_p$, assert}
         (``assert p'')
         with~$1 \after \asrt_p = p$ (see \sref{diamond-basics})
         \emph{and}
@@ -4515,7 +4518,7 @@ we define~$\Define{\andthen{p}{q}} \equiv q \after \asrt_p$,
     \index{$\&$, andthen}
     pronounced ``$p$ andthen~$q$''.
 For brevity, we will write~$\Define{p^2} \equiv \andthen{p}{p}$.
-\begin{point}{30}{Remarks}%
+\begin{point}{30}[asrt-remarks]{Remarks}%
 The $\asrt_p$ maps are named after the \texttt{assert} statement
     found in many programming languages.
 The \texttt{assert} statement checks whether

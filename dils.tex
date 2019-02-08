@@ -3386,6 +3386,7 @@ We are ready to show that every ncp-map has a Paschke dilation.
 \begin{enumerate}
     \item There is a self-dual Hilbert~$\scrB$-module~$\scrA \otimes_\varphi
             \scrB$ and~$\varphi$-compatible bilinear
+            \index{*tensorphi@$\otimes_\varphi$}
     \begin{equation*}
         \otimes \colon \scrA \times \scrB \to \scrA \otimes_\varphi \scrB
     \end{equation*}
@@ -4104,7 +4105,7 @@ Let~$X$ be a Hilbert~$\scrB$-module.
 For any~$x, y \in X$,
 define the bounded operator~$\ketbra{x}{y} \in \scrB^a(X)$
 by~$\Define{\ketbra{x}{y}}\index{*ketbra@$\ketbra{x}{y}$ for Hilbert $\scrB$-modules} z = x \left<y,z\right>$.
-\begin{point}{30}%
+\begin{point}{30}[hilbmodketbrarules]%
 The following rules are easy to check.
 For~$x,y,v,w \in X$ and~$b \in \scrB$
     we have
@@ -5886,7 +5887,7 @@ From~$\langle e,e\rangle = \varphi(1) = 1$
     it follows~$p$ is a projection.
 Define~$\vartheta\colon \scrB \to p \scrP p$
     by~$\vartheta(b) = \ketbra{e \cdot b}{e}$.
-Some straightforward computations
+    Some straightforward computations (using~\sref{hilbmodketbrarules})
     show~$\vartheta$ is an miu-map
     with inverse~$pTp \mapsto h(pTp)$.
 So~$\vartheta$ is an miu-isomorphism and thus also normal.
