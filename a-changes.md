@@ -18,6 +18,8 @@
 
 * Added a warning on 'normal bilinear maps' in 102IIa.
 
+* Added more examples of central similarity in 104III2a.
+
 
 
 
