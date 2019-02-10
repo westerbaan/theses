@@ -16,6 +16,8 @@
 
 * Added a remark, 101Ia, on the use of the symbol \diamond.
 
+* Added a warning on 'normal bilinear maps' in 102IIa.
+
 
 
 
