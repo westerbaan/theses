@@ -20,6 +20,7 @@
 
 * Added more examples of central similarity in 104III2a.
 
+* Attributed Lemma 125IV to Kornell.
 
 
 
