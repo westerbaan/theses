@@ -295,7 +295,7 @@ A subset~$D \subseteq E$ is a \Define{sub-effect algebra}
     with~$a\perp b$, we have~$a \ovee b \in D$
     and~$a^\perp \in D$.
 \end{point}
-\begin{point}{20}{Examples}%
+\begin{point}{20}[eaexamples]{Examples}%
 There are many examples of effect algebras
     --- we only give a few.
 \begin{enumerate}
@@ -346,13 +346,10 @@ The one-element Boolean algebra~$1 \equiv \{0=1\}$
 
 \begin{point}{30}[ea-product]{Exercise}%
 Let~$E$ and~$F$ be effect algebras.
-First show that the cartesian products~$E \times F$
+First show that the cartesian product~$E \times F$
     is an effect algebra with componentwise operations.
 Show that this is in fact the categorical product of~$E$ and~$F$
     in \textsf{EA}.
-Finally, show that~\textsf{EA} has initial
-    object~$\{0,1\}$
-    and final object~$\{0=1\}$.
 (The category \textsf{EA} is in fact complete and cocomplete;
     for this and more categorical properties,
         see \cite{corefl}.)
@@ -365,7 +362,7 @@ follows from the remaining axioms (partial commutativity,
 partial associativity, orthocomplement and zero--one.)
 \end{point}
 
-\begin{point}{50}{Proposition}%
+\begin{point}{50}[eabasics]{Proposition}%
 In any effect algebra~$E$ with~$a,b,c\in E$, we have
 \begin{enumerate}
     \item \emph{(involution)}
@@ -610,10 +607,10 @@ An \Define{effect monoid}~$M$ \cite{probdistrconv}
     $(a \odot b) \odot c 
     =a \odot (b \odot c)$ \emph{and}
 \item \emph{(distributivity)}
-    $(a \ovee b) \odot (c \ovee d)
-            = (a \odot c) \ovee (b \odot c) \ovee
-            (a \odot d) \ovee (b \odot d)$
-            whenever~$a \perp b$ and~$c \perp d$.
+    if~$a \perp b$ and~$c \perp d$,
+        then the following sum exists and
+        furthermore~$(a \odot c) \ovee (b \odot c) \ovee
+            (a \odot d) \ovee (b \odot d) = (a \ovee b) \odot (c \ovee d)$.
 \end{enumerate}
 (Phrased categorically:
     an effect monoid is a monoid in \textsf{EA}
@@ -642,8 +639,10 @@ Effect monoids are less abundant than effect algebras.
     In fact, every finite (not necessarily commutative) effect monoid
         is of this form \cite[Prop.~40]{basmsc} and thus commutative.
 \item
-In particular: the two-element Boolean algebra~$2$
-    is an effect monoid.
+    In particular: the two-element Boolean algebra~$2 = {0,1}$
+    from~\sref{eaexamples}
+    is an effect monoid
+        with~$x \odot y = x \wedge y$.
 \item There is a non-commutative effect monoid
         based on the lexicographically ordered vector space~$\R^5$,
         see ~\cite[Cor.~51]{basmsc}.
@@ -652,6 +651,10 @@ In particular: the two-element Boolean algebra~$2$
         for the effect monoid~$M$ with the opposite multiplication
             --- that is: $a \odot_M b = b \odot_{M^\mathsf{op}} a$.
 \end{enumerate}
+\end{point}
+\begin{point}{31}{Exercise}%
+Show that~$a \odot 0 = a = 0 \odot a$
+    for any~$a$ in an effect monoid~$M$.
 \begin{point}{40}%
 Later, in a tangent,
     we will need the following specific fact about effect monoids.
@@ -717,7 +720,7 @@ There are many effect modules.
 Every effect algebra is an effect module over
     the two-element effect monoid~$2$.
     (In fact $\mathsf{EA} \cong \mathsf{EMod}_{2}$.)
-The only effect module up-to-isomorphism over the one-element effect monoid~$1$,
+The only effect module up-to-isomorphism over the one-element effect monoid~$1$
     is the one-element effect algebra~$1$ itself.
 \item
 If~$V$ is an ordered real vector space with order unit~$u$,
@@ -745,22 +748,25 @@ A category $C$ is said to be an \Define{effectus in total form}
 \begin{enumerate}
 \item $C$ has finite coproducts (hence an initial object~$0$)
         and a final object~$1$;
-    \item all diagrams of the following form\footnote{%
-    As usual,
-        we write~$\kappa_i$ for coproduct coprojections;
-            square brackets~$[f,g]$ for coproduct cotupling;
-            $h+k = [\kappa_1 \after h, \kappa_2 \after k]$
-            and~$!$ for the unique maps associated to
+    \item all diagrams of the following
+        \index{kappa@$\kappa_i$, coprojection}
+        \index{$[\,\cdot\,,\,\cdot\,]$!cotupling}
+        \index{*bang@$"!$, initial/final map}
+        form\footnote{%
+        We write~$\Define{\kappa_i}$ for coproduct coprojections;
+            square brackets~$\Define{[f,g]}$ for coproduct cotupling;
+            $\Define{h+k} = [\kappa_1 \after h, \kappa_2 \after k]$
+            and~$\Define{!}$ for the unique maps associated to
             either the final object~$1$ or initial object~$0$.} are pullbacks
 \begin{equation}\label{pullbacks}
     \vcenter{\xymatrix{
-    X+Y \ar[r]^{\id+!} \ar[d]_{!+\id} & X+1\ar[d]^{!+\id} \\
+        X+Y \ar[r]^{\id+{!}} \ar[d]_{!+\id} & X+1\ar[d]^{!+\id} \\
     1+Y\ar[r]_{\id+!} & 1+1
 }}
     \qquad\qquad
     \vcenter{\xymatrix{
     X \ar[r]^{!} \ar[d]_{\kappa_1} & 1 \ar[d]^{\kappa_1} \\
-    X+Y\ar[r]_{!+!} & 1+1
+    X+Y\ar[r]_{{!}+{!}} & 1+1
 }}
 \end{equation}
 \item\label{eff-joint-monicity} and the following two arrows are jointly monic.
@@ -771,10 +777,10 @@ A category $C$ is said to be an \Define{effectus in total form}
         }
     \end{equation*}
 \end{enumerate}
-An arrow~$X \to Y+1$ is called a \Define{partial map} and written
+An arrow~$f\colon X \to Y+1$ is called a \Define{partial map} and written
     \index{partial map}
-    $\Define{X \pto Y}$.
-    \index{*pto@$X\pto Y$}
+    $f\colon \Define{X \pto Y}$.
+    \index{*pto@$\pto$}
 \begin{point}{20}%
 One with an interest in physics might think of the objects
     of an effectus as physical systems and its arrows as
@@ -808,7 +814,7 @@ An arrow~$1 \to X$ is a value of~$X$
 \end{point}
 \begin{point}{50}[effectus-vn]%
 Our main example of an effectus in total form
-    is the category~$\op{\vN}$
+    is the category~$\op{\vN}$\index{vN@$\vN$}
     of von Neumann algebras with completely positive normal unital
     maps in the opposite direction.
 (To see~$\op\vN$ is an effectus in total form,
@@ -970,7 +976,7 @@ In an effectus in partial form,
 Let~$\kappa_1 \colon X \to X+Y$ be any coprojection.
 We have to show~$1 \after \kappa_1 = 1$.
 Note that the first~$1$ denotes the maximum of~$\Pred X+Y$
-    and the second the maximum of~$X$.
+    and the second the maximum of~$\Pred X$.
     Hence~$1_X = 1_X \after \id_X = (1_X \after [\id_X, 0]) \after \kappa_1
                     \leq 1_{X+Y} \after \kappa_1 \leq 1_X$.
 Indeed~$1 \after \kappa_1 = 1$. \qed
@@ -1127,7 +1133,7 @@ Show that in an effectus in partial form, we have
     assuming~$1 \after f \perp 1 \after g$.
 \begin{point}{100}{Remark}%
 In an effectus in partial form,
-    there is a straight-forward generalization
+    there is a straightforward generalization
     of the bijective correspondence~\sref{coprod-prod} to
 \begin{prooftree}
 \AxiomC{$h\colon Z \to  X_1 + \cdots + X_n$}
@@ -1146,7 +1152,7 @@ The expected generalizations  of the rules in \sref{eff-prod-rules} also hold.
 Let~$C$ be an effectus in partial form.
 The category of total maps of~$C$ is an effectus in total form.
 \begin{point}{120}{Proof}%
-The total maps form indeed a subcategory: $1 \after \id = 1$
+The total maps indeed form a subcategory: $1 \after \id = 1$
     and $1 \after f \after g = 1 \after g = 1$ for composable total~$f,g$.
 In \sref{coproj-total} we saw coprojections are total.
 By \sref{cotupl-pcm}
@@ -1501,6 +1507,11 @@ For a map~$f\colon X \to Y$,
     write~$\Define{\hat{f}} = \kappa_1 \after f \colon X \to Y+1$.
     \index{*hat@$\hat{f}$!in an effectus}
     (This is the Kleisli embedding~$C \to \Par C$.)
+\end{point}
+\begin{point}{11}
+    (Recall that we use~$f\colon X \pto Y$
+        to denote a map~$f\colon X \to Y+1$,
+            see~\sref{dfn-effectus}.)
 \end{point}
 \begin{point}{20}[par-c-coprod]{Exercise}%
 Assume~$C$ is an effectus in total form.
@@ -2394,6 +2405,8 @@ h \Bigl(\frac{1}{2}\ket{\begin{tikzpicture}[scale=0.2]
 \end{equation*}
 \item
 Semilattices are exactly~abstract $2$-convex sets.
+    ($2$ is the two-element Effect Monoid,
+        see \sref{eff-monoid-examples}.)
 Furthermore, every semilattice~$(L, \vee)$
     is an abstract~$[0,1]$-convex set
     with
@@ -2702,7 +2715,7 @@ The existence of coproducts of abstract~$M$-convex sets already
     follows from the more general theorem of Linton \cite{linton}.
     (Cf.~\cite{barr}.)
 However, for the results in the remainder of this section we need to know
-    more about the coproduct, than Linton's construction provides.
+    more about the coproduct than Linton's construction provides.
 
 By our construction, we know that
     every~$z \in X+Y$
@@ -2766,7 +2779,7 @@ and~$\varphi_{(i+1)j} = (\mathcal{D}_M\kappa_2) (\chi')$
 \begin{point}{100}[n-times-one-aconvm]{Exercise}%
 Show that the one-element set is an abstract~$M$-convex set
     and, in fact, the final object of~$\AConvM$.
-To continue, show that in~$\AConvM$
+Moreover, show that in~$\AConvM$
 \begin{equation*}
     n \cdot 1 \ \equiv \ \underbrace{1 + \cdots + 1}_{\text{$n$ times}}
     \ \cong \ \mathcal{D}_M \{1, \ldots, n\}.
@@ -3494,7 +3507,7 @@ Verify the following basic properties of quotients.
                 as well.
     \item Conversely, if~$\xi_1$ and~$\xi_2$
             are both quotients for~$p$,
-            then there is unique a isomorphism~$\vartheta$
+            then there is a unique isomorphism~$\vartheta$
             with~$\xi_1 = \vartheta \after \xi_2$.
     \item Isomorphisms are quotients (for 0).
     \item Zero-maps are quotients (for 1).
@@ -3586,6 +3599,8 @@ In \sref{quot-fact-system} we saw
 In this sense quotients are the universal way to restrict to the
     support on the domain --- so why do we call them quotients
     instead of, say, initial-support-maps?
+We answer this question in~\sref{bartequivquotrem},
+    but need some preparation first.
 \end{point}
 \begin{point}{20}[dfn-eff-grothendieck]{Definition}%
 For an effectus~$C$,
@@ -3619,7 +3634,7 @@ Show that for an effectus~$C$, the following are equivalent.
         has a left-adjoint~$Q \colon \int\Pred_\square \to C$.
 \end{enumerate}
 \end{point}
-\begin{point}{40}%
+\begin{point}{40}[bartequivquotrem]%
 If the existence of a left adjoint~$Q$ to~$0$
     gives quotients,
     what does the existence of a right adjoint~$K$ to~$1$ amount to?
@@ -3703,7 +3718,7 @@ Show the following basic properties of comprehensions.
                 as well.
     \item Conversely, if~$\pi_1$ and~$\pi_2$
             are both comprehensions for~$p$,
-            then there is unique a isomorphism~$\vartheta$
+            then there is a unique isomorphism~$\vartheta$
             with~$\pi_1 = \pi_2 \after \vartheta$.
     \item Isomorphisms are comprehensions (for 1).
     \item Zero maps are comprehensions (for 0).
@@ -3786,8 +3801,8 @@ The identity map might not be pure
     in the sense of~\cite{chiribella2014distinguishability},
     which is too restrictive for our taste.
 Hazarding a guess,
-    it seems likely that
-     \cite{cunningham2017purity} considers maps pure, which we don't
+    it seems likely
+    that~\cite{cunningham2017purity} considers maps pure which we don't
      and that \cite{selby2017leaks} does not contain all our pure maps.
 The exact relation between
  our definition of pure
@@ -4121,7 +4136,7 @@ It is rare for quantum processes to send projections to projections
     (see \sref{exa-sharp-vn}),
     so instead we consider the least projection above the outcome.
 The simple idea of taking the restriction to sharp predicates
-    seriously, leads to a host of interesting new notions.
+    seriously leads to a host of interesting new notions.
 We will give these right off the bat and study their relevance later on.
 \end{point}
 \begin{point}{20}[diamond-basics]{Definition}%
@@ -4963,7 +4978,7 @@ The category~$\mathsf{Hilb}$
 \end{parsec}
 \begin{parsec}{2150}%
 \begin{point}{10}{Definition}%
-We call an~$\&$-effectus~$C$,
+We call an~$\&$-effectus~$C$
     a~\Define{$\dagger$-effectus} (``dagger effectus'') provided
     \index{effectus!$\dagger$-}
     \index{*dagg@$\dagger$, dagger!-effectus}
