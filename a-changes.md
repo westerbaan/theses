@@ -24,4 +24,8 @@
 
 
 
+
+* Fixed various typos and other small errors.
+
+
    
