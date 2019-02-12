@@ -406,7 +406,7 @@ on a complete normed vector space~$\scrX$
 with composition as multiplication
 and the identity operator as unit
 satisfies all the requirements
-to be $C^*$-algebra that do not involve the involution, $(\,\cdot\,)^*$
+to be a $C^*$-algebra that do not involve the involution, $(\,\cdot\,)^*$
 (that is, $\scrB(\scrX)$ is a \Define{Banach algebra}).
 To get an involution,
 we need the additional structure
@@ -449,11 +449,11 @@ when
 \left<Tx,y\right> \ = \ \left<x,Sy\right>
 \qquad\text{for all $x\in \scrH$ and $y\in \scrK$.}
 \end{equation*}
-In that case, we call~$T$ \Define{adjoinable}.%
+In that case, we call~$T$ \Define{adjointable}.%
 \index{adjointable!operator}%
 \index{operator!adjointable}
 We'll see (in~\sref{uniqueness-adjoint})
-that such adjoinable~$T$ is adjoint to exactly one~$S$,
+that such adjointable~$T$ is adjoint to exactly one~$S$,
 which we denote by~\Define{$T^*$}.%
 \index{$(\,\cdot\,)^*$!adjoint of an operator}
 \end{point}
@@ -501,7 +501,7 @@ Conclude that every operator between pre-Hilbert spaces
 has at most one adjoint.
 \begin{point}{110}{Remark}%
 Note that we did not require that
-an adjoinable operator $T\colon \scrH\to\scrK$
+an adjointable operator $T\colon \scrH\to\scrK$
 between pre-Hilbert spaces be bounded,
 and in fact, it might not be.
 Take for example
@@ -517,7 +517,7 @@ as we'll see in~\sref{hellinger-toeplitz}.
 \end{point}
 \end{point}
 \begin{point}{120}{Exercise}%
-Let~$S$ and~$T$ be adjoinable operators on a pre-Hilbert space.
+Let~$S$ and~$T$ be adjointable operators on a pre-Hilbert space.
 \begin{enumerate}
 \item
 Show that~$T^*$ is adjoint to~$T$ (and so $T^{**}=T$).
@@ -529,7 +529,7 @@ for every~$\lambda\in \C$.
 Show that~$ST$ is adjoint to $T^*S^*$ (and so $(ST)^*=T^*S^*$).
 \end{enumerate}
 We will, of course, show
-that every bounded operator on a Hilbert space is adjoinable,
+that every bounded operator on a Hilbert space is adjointable,
 see~\sref{bounded-operator-adjoinable}.
 But let us first show that~$\|\,\cdot\,\|$
 defined in~\sref{hilb-def} is a norm,
@@ -638,7 +638,7 @@ using the inequalities~$\left<x,y\right>+\left<y,x\right>
 \leq 2\left|\left<x,y\right>\right| \leq 2\|x\|\|y\|$.)
 \end{point}
 \begin{point}{160}[operators-cstar-identity]{Lemma}%
-For an adjoinable operator~$T$ on a pre-Hilbert space~$\scrH$
+For an adjointable operator~$T$ on a pre-Hilbert space~$\scrH$
 \begin{equation*}
 \|T^*T\|\ =\ \|T\|^2\qquad\text{and}\qquad\|T^*\|\ =\ \|T\|.
 \end{equation*}
@@ -662,7 +662,7 @@ and so $\|T\|^2=\|T^*T\|$.\qed
 \end{point}
 \begin{point}{180}{Exercise}%
 Given a Hilbert space~$\scrH$
-show that the adjoinable operators
+show that the adjointable operators
 form a closed subspace of~$\scrB(\scrH)$.
 \end{point}
 \begin{point}{190}[ketbra]{Exercise}%
@@ -676,7 +676,7 @@ $\scrH\to\scrH$,
 and, moreover, that~$\|\,\ketbra{x}{y}\,\|=\|x\|\|y\|$.
 \item
 Show that~$\ketbra{x}{y}$
-is adjoinable,
+is adjointable,
 and~$(\ketbra{x}{y})^*=\ketbra{y}{x}$.
 \end{enumerate}
 \end{point}
@@ -684,12 +684,12 @@ and~$(\ketbra{x}{y})^*=\ketbra{y}{x}$.
 \begin{parsec}{50}[hilb-adjoint]%
 \begin{point}{10}[adjoinables-cstar-algebra]%
 At this point
-it is clear that the vector space of adjoinable operators
+it is clear that the vector space of adjointable operators
 on a Hilbert space forms a $C^*$-algebra.
 So to prove that $\scrB(\scrH)$
 is a $C^*$-algebra,
 it remains to be shown that every bounded operator
-is adjoinable (which we'll do in~\sref{bounded-operator-adjoinable}).
+is adjointable (which we'll do in~\sref{bounded-operator-adjoinable}).
 We first show that each bounded functional $f\colon \scrH\to \C$
 has an adjoint, see~\sref{riesz-representation-theorem},
 for which we need the (existence and) properties of ``projections''
@@ -837,7 +837,7 @@ Finally, uniqueness of~$x$ follows from~\sref{uniqueness-adjoint}.\qed
 \end{point}
 \begin{point}{110}[bounded-operator-adjoinable]{Exercise}%
 Prove that every bounded operator~$T$ on a Hilbert space~$\scrH$
-is adjoinable, as follows.
+is adjointable, as follows.
 Let~$x\in \scrH$ be given.
 Prove that~$\left<x,T(\,\cdot\,)\right>\colon \scrH\to \C$
 is a bounded linear map.
@@ -910,7 +910,7 @@ It is easily seen that
 $\left<x,y\right>:=\sum_i \left<x_i,y_i\right>$
 gives a definite inner product on~$\bigoplus_i \scrH_i$; the
 remaining difficulty
-lies in showing that resulting norm is complete.
+lies in showing that the resulting norm is complete.
 To this end, let $x_1,x_2,\dotsc$ be a Cauchy sequence 
 in~$\bigoplus_{i\in I}\scrH_i$;
 we must show that it converges to some~$x_\infty\in \bigoplus_i \scrH_i$.
@@ -1156,7 +1156,7 @@ is positive iff~$\left<x,Tx\right>\geq 0$ for all~$x\in\scrH$.
 Let~$a,b$ be positive elements of a $C^*$-algebra.
 Then $a+b$ is positive.
 \begin{point}{80}{Proof}
-Since~$t\geq 0$,
+Since~$a\geq 0$,
 there is~$t\geq \frac{1}{2}\|a\|$ with $\|a-t\|\leq t$.
 Similarly, there is~$s\geq \frac{1}{2}\|b\|$
 with $\|b-s\|\leq s$.
@@ -1747,10 +1747,10 @@ is a partially defined map $f\colon \C\to \mathscr{A}$
 whose domain of definition $\dom(f)$%
 \index{dom@$\dom(f)$, domain of an $\scrA$-valued partial function}
 is an open subset of~$\C$.
-Such a function is called \Define{holomorphic} at a point~$z\in \C$%
-\index{function!holomorphic (at~$z$)}%
+Such a function is called \Define{holomorphic} at a point~$x\in \C$%
+\index{function!holomorphic (at~$x$)}%
 \index{holomorphic function}
-if $f$ is defined on~$z$,
+if $f$ is defined on~$x$,
 and 
 \begin{equation*}
 \frac{f(x)-f(y)}{x-y}
@@ -2143,7 +2143,7 @@ around a point $z\in \C\backslash \partial T$
 in the counterclockwise direction
 is
 called the 
-\Define{winding number}%
+\Define{winding number}, and
 is
 written $\Define{\mathrm{wn_T}(z)}$,%
 \index{wn@$\mathrm{wn_T}$, winding number}
@@ -2395,7 +2395,7 @@ to regular $N$-gons.
 Let~$f$ be a holomorphic $\scrA$-valued function
 which is defined on the interior and boundary
 of some regular $N$-gon 
-with center~$c\in\C$,
+with centre~$c\in\C$,
 circumradius~$r$
 and vertices $w_n := c+r\cos(2\pi/n)+ir\sin(2\pi/n)$.
 Then for any complex number~$z_0$ in
@@ -2466,7 +2466,7 @@ of a regular $K$-gon
 with vertices $w_0,\dotsc,w_{K-1},w_K=w_0$
 as in~\sref{cauchy-formula}.
 Then for every element~$z$ of an open disk in the interior of the $K$-gon
-with center~$w$,
+with centre~$w$,
 \begin{equation*}
 f(z)\ = \ 
 	\sum_{n=0}^\infty \ 
@@ -2486,7 +2486,7 @@ By~\sref{cauchy-formula} and some easy algebra we have
 \end{alignat*}
 Note that~$\left|z-w\right|<\left|u-w\right|$
 for all~$u\in [w_k,w_{k+1}]$ and~$k$,
-because the open disk with center~$w$
+because the open disk with centre~$w$
 from which~$z$ came lies entirely in the~$K$-gon.
 Hence,
 by~\sref{geometric},
@@ -3012,7 +3012,7 @@ map on a $C^*$-algebra~$\scrA$
 that preserves and reflects the order
 determines the norm of the self-adjoint
 --- but not all --- elements of~$\scrA$.
-This theme, to what extend a linear map
+This theme, to what extent a linear map
 (or a collection of linear maps)
 on a $C^*$-algebra
 determines its structure,
@@ -3028,7 +3028,7 @@ that a collection of maps on a $C^*$-algebra
 might have already here.
 \end{point}
 \begin{point}{20}[separating]{Definition}%
-A collection~$\Omega$ of maps on a $C^*$-algebra~$\scrA$
+A collection~$\Omega$ of linear maps on a $C^*$-algebra~$\scrA$
 will be called
 \begin{enumerate}
 \item
@@ -3705,7 +3705,7 @@ are order separating (see~\sref{separating})
 for every Hilbert space~$\scrH$.
 \begin{point}{40}{Proof}%
 By\sref{order-separating-norm}
-tt suffices to show
+it suffices to show
 that~$\|T\|=  \sup_{x\in (\scrH)_1} 
 \left|\left< x,Tx\right>\right|$
 for given~$T\in\scrB(\scrH)_+$.
@@ -4198,7 +4198,7 @@ the miu-maps
 	C(\spec(a))
 	\ar[r]^-{f\mapsto f\circ j}
 	&
-	C(\spec(C^*(A)))
+	C(\spec(C^*(a)))
 	\ar[r]^-{\cong,\, \text{\sref{gelfand}}}
 	&
 	C^*(a)
@@ -4277,7 +4277,7 @@ Writing~$E$ for the set of all~$\alpha\in[0,1]$
 for which $b\mapsto b^\alpha$ is monotone
 on positive,
 \emph{invertible} elements of~$\scrA$
-we must prove that~$E=(0,1]$,
+we must prove that~$E\supseteq(0,1]$,
 and we will in fact show that~$E=[0,1]$.
 Since clearly~$0,1\in E$
 it suffices to show that~$E$ is convex.
@@ -4779,7 +4779,7 @@ $\varrho_\Omega\colon \scrA\to\scrB(\scrH_\Omega)$
 is injective;
 \item
 \label{proto-gelfand-naimark-2}
-$\Omega$ is center separating on~$\scrA$
+$\Omega$ is centre separating on~$\scrA$
 (see~\sref{separating});
 \item
 \label{proto-gelfand-naimark-3}
@@ -4800,7 +4800,7 @@ We must show that~$a=0$ (in order to show that~$\varrho_\Omega$
 is injective),
 and for this it is enough to prove that~$a^*a=0$.
 Let~$b\in\scrA$ and~$\omega\in\Omega$ be given.
-Since~$\Omega$ is center separating,
+Since~$\Omega$ is centre separating,
 it suffices to show that $0=\omega(b^*a^*ab) \equiv \|ab\|_\omega^2$.
 Since~$\varrho_\Omega(a)=0$,
 we have $\varrho_\omega(a)=0$,
@@ -4847,7 +4847,7 @@ to a $C^*$-algebra of operators on a Hilbert space.
 Since the states on~$\scrA$
 are separating
 (\sref{states-order-separating}),
-and therefore center separating,
+and therefore centre separating,
 the miu-map $\varrho_\Omega\colon \scrA\to\scrB(\scrH_\Omega)$
 (defined in~\sref{gelfand-naimark-representation})
 restricts to a miu-isomorphism
@@ -4873,7 +4873,7 @@ and more general
 result that the 
 $N\times N$-matrices \emph{over a $C^*$-algebra~$\scrA$}
 form a $C^*$-algebra by interpreting them
-as \emph{adjoinable module maps} on
+as \emph{adjointable module maps} on
 the \emph{Hilbert $\scrA$-module} $\scrA^N$,
 see~\sref{chilb-basic} and~\sref{bax-cstar}.
 \end{point}
@@ -4929,7 +4929,7 @@ see~\sref{chilb-form-bounded},
 and if either~$X$ or~$Y$ is complete,
 then~$T$ is automatically bounded, see~\sref{hellinger-toeplitz}.)
 
-The vector space of adjoinable bounded module maps~$T\colon X\to Y$ 
+The vector space of adjointable bounded module maps~$T\colon X\to Y$ 
 is denoted
 by~$\Define{\scrB^a(X,Y)}$,%
 \index{BaXY@$\scrB^a(X,Y)$}
@@ -4943,7 +4943,7 @@ with the inner product $\left<x,y\right>=\sum_n x_n^*y_n$,
 making it a Hilbert $\scrA$-module.
 \end{point}
 \begin{point}{30}{Exercise}%
-Let~$S$ and~$T$ be adjoinable operators on a 
+Let~$S$ and~$T$ be adjointable operators on a 
 pre-Hilbert $\scrA$-module.
 \begin{enumerate}
 \item
@@ -4958,7 +4958,7 @@ Show that $ST$ is adjoint to $T^*S^*$
 \end{point}
 \begin{point}{40}{Exercise}%
 Although a bounded linear map between Hilbert spaces
-is always adjoinable (see~\sref{hilb-adjoint}),
+is always adjointable (see~\sref{hilb-adjoint}),
 a bounded module map
 between Hilbert $\scrA$-modules
 might have no adjoint
@@ -5091,7 +5091,7 @@ $\left\|\left<y,Tx\right>\right\|\leq B\,\|y\|\|x\|$
 for all~$x\in X$, $y\in Y$.
 \end{enumerate}
 Moreover,
-if~$T$ is adjoinable,
+if~$T$ is adjointable,
 and bounded, then $\|T^*\|=\|T\|$.
 \begin{point}{110}{Proof}%
 If~$\|Tx\|\leq B\|x\|$ for all~$x\in X$,
@@ -5108,7 +5108,7 @@ then we have $\|Tx\|^2=\left\|\left<Tx,Tx\right>\right\|
 entailing $\|Tx\|\leq B\|x\|$
 (also when~$\|Tx\|=0$).
 
-If~$T$ is adjoinable, and bounded,
+If~$T$ is adjointable, and bounded,
 then~$\left\|\left<x,T^*y\right>\right\|=\left\|\left<y,Tx\right>\right\|
 \leq \|T\|\|y\|\|x\|$ for all~$x\in X$, $y\in Y$,
 so~$\|T^*\|\leq \|T\|$,
@@ -5119,11 +5119,11 @@ we get $\|T\|=\|T^*\|$.\qed
 \end{point}
 \begin{point}{120}[module-maps-cstar-identity]{Exercise}%
 Show that $\|T^*T\|=\|T\|^2$
-for every adjoinable bounded map~$T$ on a pre-Hilbert $\scrA$-module.
+for every adjointable bounded map~$T$ on a pre-Hilbert $\scrA$-module.
 (Hint: adapt the proof of~\sref{operators-cstar-identity}.)
 \end{point}
 \begin{point}{130}[bax-cstar]{Proposition}%
-The adjoinable bounded module maps
+The adjointable bounded module maps
 on a Hilbert $\scrA$-module
 form a $C^*$-algebra%
 \index{BaX@$\scrB^a(X)!as $C^*$-algebra}
@@ -5139,7 +5139,7 @@ is closed (with respect to the operator norm)
 in the set of all bounded \emph{linear} maps $\scrB(X)$.
 So let~$T\colon X\to X$ be a bounded linear map
 which is the limit of a sequence $T_1,T_2,\dotsc$
-of adjoinable bounded module maps.
+of adjointable bounded module maps.
 
 To see that~$T$ has an adjoint,
 note that~$\left\|T_n^*-T_m^*\right\|
@@ -5161,7 +5161,7 @@ Since for~$x,y\in X$ and~$n$,
 \end{alignat*}
 we see that $\left<Sx,y\right>=\left<x,Ty\right>$,
 so~$S$ is the adjoint of~$T$,
-and~$T$ is adjoinable.
+and~$T$ is adjointable.
 \qed
 \end{point}
 \end{point}
@@ -5173,7 +5173,7 @@ the vector states%
 of~$\scrB^a(X)$
 are order separating (see~\sref{separating}).
 Conclude that 
-for an adjoinable operator~$T$ on~$X$
+for an adjointable operator~$T$ on~$X$
 \begin{enumerate}
 \item
 $T$ is self-adjoint iff $\left<x,Tx\right>$
@@ -5193,7 +5193,7 @@ and~\sref{hilb-positive-operators}.)
 The operator
 $T^*T$ is positive
 in~$\scrB^a(X)$
-for every adjoinable operator~$T\colon X\to Y$
+for every adjointable operator~$T\colon X\to Y$
 between Hilbert $\scrA$-modules.
 \begin{point}{170}{Proof}%
 $\left<x,T^*Tx\right>=
@@ -5218,7 +5218,7 @@ which is adjoint to~$\underline{A^*}$
 Show that $A\mapsto \underline{A}$
 gives a linear bijection between the vector 
 space of $N\times M$-matrices 
-over~$\scrA$ and the vector space of adjoinable bounded
+over~$\scrA$ and the vector space of adjointable bounded
 module maps~$\scrB^a(\scrA^N,\scrA^M)$.
 
 \item
@@ -5237,7 +5237,7 @@ and the operator norm (as norm, so~$\|A\|=\|\underline{A}\|$).
 \end{point}
 \begin{point}{20}[when-a-matrix-over-a-cstar-algebra-is-positive]{Exercise}%
 Let us describe the positive  $N\times N$ matrices
-over a $C^*$-algebras~$\scrA$.
+over a $C^*$-algebra~$\scrA$.
 \begin{enumerate}
 \item
 Show that an $N\times N$ matrix~$A$ over~$\scrA$
@@ -5370,7 +5370,7 @@ $T\mapsto S^* T S\colon \scrB^a(X)
 \to\scrB^a(Y)$
 \index{$A^*(\,\cdot\,) A\colon \scrB^a(X)
 \to\scrB^a(Y)$!is completely positive}
-for every adjoinable operator $S\colon Y\to X$
+for every adjointable operator $S\colon Y\to X$
 between Hilbert $\scrA$-modules;
 \item
 $T\mapsto \left<x,Tx\right>,\scrB^a(X)\to \scrA$%
@@ -5469,7 +5469,7 @@ show that $\sum_{i,j} b_i^*f(a_i^*a_j)b_j$ is positive.
 This follows from the observation that
 $\omega(\,\sum_{i,j} b_i^*f(a_i^*a_j)b_j\,)
 = \omega(f(\,\sum_{i,j}(a_i\omega(b_i))^*\,a_j \omega(b_j)\,))\,\geq \,0$
-for every~$\omega\in\spec(\scrA)$.
+for every~$\omega\in\spec(\scrB)$.
 \begin{point}{110}%
 Suppose instead that~$\scrA$ is commutative,
 and let $A\in (M_N\scrA)_+$
@@ -5849,7 +5849,7 @@ the assumption that $\sup_{T\in \scrF} \|Tx\| <\infty$.\qed
 \end{point}
 \end{point}
 \begin{point}{60}[hellinger-toeplitz]{Theorem}%
-Let~$T\colon X\to Y$ be an adjoinable map
+Let~$T\colon X\to Y$ be an adjointable map
 between pre-Hilbert $\scrA$-modules.
 If either~$X$ or~$Y$ is complete,
 then~$T$ and~$T^*$ are bounded.
@@ -5933,7 +5933,7 @@ are (bounded) module maps for all~$x\in X$ and~$y\in Y$.
 For every bounded form  $[\,\cdot\,,\,\cdot\,]\colon X\times Y\rightarrow \scrA$
 on self-dual Hilbert $\scrA$-modules
 $X$ and~$Y$
-there is a unique adjoinable bounded module map
+there is a unique adjointable bounded module map
 $T\colon X\to Y$.
 with
 $[x,y]\equiv \left<Tx,y\right>$
@@ -5969,9 +5969,9 @@ is Cauchy \emph{and bounded}
 for every~$x\in \scrH$,
 there is a unique~$y\in\scrH$
 with $\left<y,x\right>=\lim_\alpha \left<y_\alpha,x\right>$
-for all~$y\in\scrH$.
+for all~$x\in\scrH$.
 \begin{point}{30}{Proof}%
-To obtain~$x$,
+To obtain~$y$,
 we want to apply  Riesz' representation theorem
 (\sref{riesz-representation-theorem})
 to the linear map $f\colon \scrH\to\C$
@@ -5985,7 +5985,7 @@ that $\sup_{\alpha} \left|\left<y_\alpha,x\right>\right| <\infty$
 for every~$x\in \scrH$.
 
 By Riesz' representation theorem (\sref{riesz-representation-theorem}),
-there is a unique~$x\in\scrH$ with 
+there is a unique~$y\in\scrH$ with 
 $\left<y,x\right>=f(x)\equiv \lim_\alpha \left<y_\alpha,x\right>$
 for all~$x\in \scrH$,
 and so we're done.\qed
@@ -6512,7 +6512,7 @@ of bounded operators on a Hilbert space~$\scrH$
 abstractly 
 via the notion
 of
-the $C^*$-algebra.
+a $C^*$-algebra.
 We've seen not only that every $C^*$-algebra
 is miu-isomorphic to a $C^*$-subalgebra
 	of such a $\scrB(\scrH)$ (in~\sref{gelfand-naimark}),
