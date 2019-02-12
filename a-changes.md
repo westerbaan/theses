@@ -22,10 +22,16 @@
 
 * Attributed Lemma 125IV to Kornell.
 
+* Added definitions for := and \equiv in 1Va.
 
+* Replaced "c.q.".
 
+* Added a parenthetical remark in 44XV.
+
+* Added the first line of 45III.
+
+* Added an exercise 43Ia on filtered infima in a von Neumann algebra.
 
 * Fixed various typos and other small errors.
 
 
-   

@@ -172,7 +172,9 @@ when
 \item
 every bounded directed subset~$D$
 of self-adjoint elements of~$\scrA$ (so $D\subseteq \sa{\scrA}$) 
-has a supremum $\bigvee D$ in $\sa{\scrA}$, and
+    has a supremum \Define{$\bigvee D$}%
+\index{*sup@$\bigvee D$, supremum of~$D$!in a von Neumann algebra}
+    in $\sa{\scrA}$, and
 \item
 if $a$ is a positive element of~$\scrA$
 with $\omega(a)=0$ for every \emph{normal} (see below) positive 
@@ -190,7 +192,7 @@ functionals are faithful
 instead of just centre separating
 we did not use this weaker albeit more complex condition.}
 \end{enumerate}
-\begin{point}{20}%
+\begin{point}{20}[def-np-functional]
 A positive linear map $\omega\colon \scrA\to \C$
 is called \Define{normal}%
 \index{normal!functional}
@@ -319,6 +321,21 @@ it does so ultraweakly, too.
 Show that an ultraweakly closed subset~$C$ of~$\scrA$
 is also ultrastrongly closed.
 \end{enumerate}
+\end{point}
+\begin{point}{11}[infima-in-vna]{Exercise}%
+Note that given a von Neumann algebra~$\scrA$
+the map $a\mapsto -a\colon \scrA\to\scrA$ 
+is an order reversing isomorphism.
+
+Deduce from this that any bounded filtered\footnote{`Filtered' is the
+order dual of `directed':
+    $F$ is
+filtered when
+for all~$a,b\in F$ there is~$c\in F$ with $c\leq a$ and~$c\leq b$.}
+subset~$F$
+of self-adjoint elements of~$\scrA$
+has as infimum $\Define{\bigwedge F} := -\bigvee\{\,-d\colon \,d\in F\,\}$.%
+\index{*inf@$\bigwedge F$, infimum of~$F$!in a von Neumann algebra}
 \end{point}
 \begin{point}{20}[vn-counterexamples]{Exercise}%
 We give some counterexamples in $\scrB(\ell^2)$
@@ -761,6 +778,9 @@ for each np-map $\omega\colon \scrB\to\C$.
 \end{enumerate}
 In that case we say that~$f$ is \Define{\textbf{n}ormal}.%
 \index{normal!positive map between von Neumann algebras}
+(Note that this definition of ``normal'' extends the one
+for positive functionals
+from~\sref{def-np-functional}.)
 
 Conclude that $b\mapsto a^*ba,\,\scrA\to\scrA$%
 \index{$a^*(\,\cdot\,)a\colon \scrA\to\scrA$!is normal}
@@ -787,7 +807,9 @@ An ncp-map $f\colon \scrA\to\scrB$
 between von Neumann algebras is 
 ultrastrongly continuous.
 \begin{point}{30}{Proof}%
-To show that~$f$
+Note that $f$ is ultrastrongly continuous at~$a\in\scrA$
+iff $f((\,\cdot\,)+a)\equiv f + f(a)$ is ultrastrongly continuous at~$0$.
+Thus to show that~$f$
 is ultrastrongly continuous
 it suffices to show that~$f$ is ultrastrongly continuous at~$0$.
 So let~$(b_\alpha)_\alpha$ be a net in~$\scrA$
@@ -987,7 +1009,7 @@ without forcing it to be a biproduct (which it's not),
 
 	For~$\op{(\W{cpsu})}$ to be an effectus,\index{effectus}
 we need a second ingredient:
- the complex number~$\C$.
+ the complex numbers,~$\C$.
 Since the ncpsu-maps $p\colon \C\to \scrA$
 are all of the form $\lambda \mapsto \lambda a$
 for some effect $a\in [0,1]_\scrA$,
@@ -2332,7 +2354,8 @@ given by~$\floor{b} = \bigwedge_{n=0}^\infty b^{2^{n}}$.\\
 Moreover, if~$a\in \scrA$ commutes with~$b$,
 then~$b$ commutes with~$\floor{b}$.
 \begin{point}{70}{Proof}%
-Let~$p$ denote the infimum of $1\geq b\geq b^2 \geq b^4 \geq  \dotsb \geq 0$.
+Let~$p$ denote the infimum of $1\geq b\geq b^2 \geq b^4 \geq  \dotsb \geq 0$
+    (see~\sref{infima-in-vna}.)
 \begin{point}{80}[vna-floor-point-1]%
 If~$a\in \scrA$ commutes with~$b$,
 then~$a$ commutes with~$p$.
@@ -2343,7 +2366,7 @@ Thus~$a$ commutes with~$p\equiv\bigwedge_n b^{2^n}$
 (by a variation on~\sref{vna-supremum-commutes}.)
 \end{point}
 \begin{point}{90}%
-To see that~$p$ is a projection, c.q.~$p^2=p$,
+To see that~$p$ is a projection, i.e.~$p^2=p$,
 we only need to show that~$p\leq p^2$,
 because we get $p^2\equiv \sqrt{p}\,p\,\sqrt{p}\leq p$
 from $p\leq 1$ (using~\sref{astara-pos-basic-consequences}.)
@@ -2587,15 +2610,14 @@ Let~$\scrA$ be a von Neumann algebra.
 Because it will be very convenient
 we extend the definition of~$\ceil{b}$
 to all positive~$b$ from~$\scrA$
----
-contrary to what the notation suggests,
-$b\leq \ceil{b}$
----
 by 
-defining $\Define{\ceil{b}}=\ceil{\|b\|^{-1} b}$%
+$\Define{\ceil{b}}:=\ceil{\|b\|^{-1} b}$%
 \index{ceiling}%
 \index{*ceil@$\ceil{\,\cdot\,}$!$\ceil{a}$, ceiling}
 when~$b\nleq 1$.
+    Note that---contrary to what the notation suggests---we
+    do \emph{not} have  $b\leq \ceil{b}$, 
+    for those~$b\nleq 1$.
 
 Now, given an arbitrary element~$b$ of~$\scrA$,
 we'll call $\Define{\ceill{b}}:=\ceil{b^*b}$
