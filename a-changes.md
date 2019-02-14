@@ -50,6 +50,12 @@ Small changes:
 
 * Added an introductory remark, 116IIIa, to 116IV.
 
+* Added some explanation after the definition of S in 125IX.
+
+* Added a reference to 128X.
+
+* Added a remark on not yet using the normality of duplications in 128Xa.
+
 * Fixed various typos and other small errors.
 
 

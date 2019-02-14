@@ -4984,11 +4984,14 @@ Let $\scrB$ be an arbitrary von Neumann algebra.
 We claim that the following set $\mathcal{S}$ satisfies the required condition:
 \[
 	\mathcal{S}=
-\{\scrD\mid
-\text{$\scrD$ is a von Neumann algebra on~$\kappa$}\},
+\{\,\scrD\colon\,
+    \text{$\scrD$ is a von Neumann algebra on a subset of~$\kappa$}\,\},
 \quad\text{where}\quad\kappa=2^{2^{\#\C\cdot\#\scrB\cdot2^{\#\scrA}}}.
 \]
-Indeed,
+Note that~$\kappa$
+being an ordinal number
+is just the set of all ordinal numbers~$\alpha<\kappa$.
+To prove the claim,
 suppose that $h\colon \scrB\to\scrC\otimes\scrA$ is given.
 By \sref{equaliser-lemma},
 $h$ factors
@@ -5346,7 +5349,15 @@ can be found
 in the literature,
 see for example
 Theorem~6 of~\cite{Maassen2010}
-(in which~$\mathscr{A}$ is also finite dimensional).
+(where duplication is called copying,)
+and \S3.3 of~\cite{clifton2003characterizing} 
+    (where it's called broadcasting.)
+\end{point}
+\begin{point}{101}{Remark}
+Note that we've not yet used that a duplicator is normal.
+That a duplicator is normal will come in to play momentarily
+when we show that~$L^\infty(X)$
+is duplicable iff~$X$ is discrete.
 \end{point}
 \begin{point}{110}[cor:duplicability-multiplication]{Corollary}
 Let~$\mathscr{A}$
