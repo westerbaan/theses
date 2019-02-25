@@ -5961,7 +5961,137 @@ an octahedron
 has six extreme points: a contradiction.
 \end{point}
 \end{parsec}
+\subsection{Hereditarily Atomic Von Neumann Algebras}
+\begin{parsec}{842}
+\begin{point}{10}%
+We've seen in~\sref{fdcstar}
+that every finite-dimensional von Neumann algebra
+is the product of finitely many full matrix algebras.
+For our purposes this class is too small,
+not admitting interpretations of infinite-dimensional
+datatypes,
+so we've focused on all von Neumann algebras instead.
+There is,
+however, a rather modest but very promising subclass
+of von Neumann algebras
+that does sate our desire for the infinite:
+following Kornell
+we'll call a von Neumann algebra that is the 
+    product of a possibly infinite set
+of full matrix algebras
+\emph{hereditarily atomic}, see~\sref{def:hereditarily-atomic}.
+In his recent paper~\cite{kornell2018quantum}
+Kornell develops the position
+that these hereditarily atomic von Neumann 
+algebras are the ``correct'' quantum generalisation
+of sets, and---which is especially relevant to our work---observes
+that the category of hereditarily atomic von Neumann 
+algebras and the nmiu-maps between
+them endowed with the regular 
+tensor is monoidal coclosed (see~\cite{kornell2018quantum}, Theorem 9.1.)
+This will allow us to build a model of the quantum lambda calculus
+not only using all von Neumann algebras,
+but also just from the hereditarily atomic ones.
 
+Hereditarily atomic von Neumann algebras
+have garnered attention for a completely different reason too:
+Sellinger observed in Example~2.7 of~\cite{selinger2004towards} 
+that the effects of~$M_N$
+(and thus of every hereditarily atomic von Neumann algebra)
+form a continuous dcpo.
+Furber and Weaver have proven recently that the converse also holds:
+that every von Neumann algebra~$\scrA$
+for which $[0,1]_\scrA$ as dcpo is continuous,
+is hereditarily atomic,
+see Theorem III.15 of~\cite{furbercontinuous}.
+\end{point}
+    \begin{point}{20}[def:hereditarily-atomic]{Definition}%
+A von Neumann algebra is called \Define{hereditarily atomic}%
+\index{von Neumann algebra!hereditarily atomic}
+if it is nmiu-isomorphic
+to a direct sum
+$\bigoplus_{i\in I} M_{N_i}$
+of possibly infinitely many $M_{N_i}$'s.
+
+We denote by~$\Define{\haW{miu}}$ and  $\Define{\haW{cpsu}}$%
+    \index{haWmiu@$\haW{miu},\,\haW{cpsu},\,\dotsc$}
+the full subcategories of $\W{miu}$ and $\W{cpsu}$, respectively,
+of hereditarily atomic von Neumann algebras.
+\end{point}
+\begin{point}{30}{Proposition}%
+A von Neumann subalgebra~$\scrB$ of a hereditarily atomic
+von Neumann algebra~$\scrA$ is itself hereditarily atomic.
+\begin{point}{40}{Proof}%
+Since~$\scrA$ is hereditarily atomic, 
+we may assume without loss of generality
+that~$\scrA \equiv \bigoplus_{i \in I} M_{N_i}$
+for some family of natural numbers $(N_i)_{i\in I}$.
+
+Note that to show that~$\scrB$ is hereditarily atomic,
+it suffices to find a orthogonal family of central
+projections $(c_j)_{j\in J}$ in~$\scrB$
+with $\sum_j c_j=1$ 
+such that  each $c_j\scrB$ is finite-dimensional.
+Indeed, then each~$c_j\scrB$ is hereditarily atomic,
+and so will be~$\scrB\cong \bigoplus_{j\in J} c_j\scrB$
+(see~\sref{central-projections-sums}).
+
+It's even enough to find a family of central projections
+$(d_k)_{k\in K}$ in~$\scrB$,
+not necessarily orthogonal, but
+with $\bigcup_{k\in K} d_k =1$
+and each $d_k\scrB$  finite-dimensional.
+Indeed, any maximal orthogonal 
+family $(c_j)_{j\in J}$
+of non-zero central projections in~$\scrB$
+for which each~$c_j$ is below some~$d_k$
+will have the properties
+that $\sum_{j\in J} c_j =1$
+and~$c_j\scrB$ be finite-dimensional for every~$j$.
+
+Define $d_j := \ceil{\pi_j\circ e}$
+to be the carrier (see~\sref{carrier})
+of the inclusion $e\colon \scrB\to\scrA$
+followed by the $j$-th projection
+$\pi_j\colon \scrA\equiv\bigoplus_{i\in I}M_{N_i}\to M_{N_j}$.
+Since $\pi_j\circ e$ is a nmiu-map,
+    $d_j$ is a central projection by~\sref{carrier-miu}.
+Since there are fewer projection in~$\scrB$ than in~$\scrA$,
+we have $\ceil{\pi_j}\leq \ceil{\pi_j\circ e}\equiv d_j$.
+Now, since clearly $\sum_{i\in I}\ceil{\pi_i}=1$,
+this implies that $\bigcup_{i\in I} d_i =1$.
+
+Let~$i\in I$ be given.
+It remains to be shown that~$d_i\scrB$ is finite-dimensional.
+To see this, simply note that the restriction
+of $\pi_i\circ e$ to a map $d_i\scrB \to M_{N_i}$
+    is an injection (by~\sref{carrier-miu})
+    into the finite-dimensional space~$M_{N_i}$,
+    and so~$d_i\scrB$ is finite-dimensional too.\qed
+\end{point}
+\end{point}
+\begin{point}{50}{Corollary}%
+Given nmiu-maps
+$f,g\colon \scrA\to\scrB$
+between hereditarily atomic
+von Neumann algebras~$\scrA$ and~$\scrB$,
+the von Neumann subalgebra
+\begin{equation*}
+    \scrE \ :=\  \{\,a\in\scrA\colon\, f(a)=g(a)\,\}
+\end{equation*}
+of~$\scrA$
+is hereditarily atomic,
+and the inclusion~$e\colon \scrE\to\scrA$
+is an equaliser of~$f$ and~$g$ both in~$\haW{miu}$
+and~$\haW{cpsu}$.
+\end{point}
+\begin{point}{60}{Remark}%
+It folllows that~$\haW{miu}$
+is the least full subcategory of~$\W{miu}$
+closed under limits
+that contains all finite-dimensional von Neumann algebras.
+\end{point}
+\end{parsec}
 \section{Normal Functionals}
 \begin{parsec}{850}%
 \begin{point}{10}%
