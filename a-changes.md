@@ -26,7 +26,13 @@ Major corrections:
   The conclusion should have been the linear span S(x)T is ultraweakly
   dense in A(x)B.
 
+* Removed the superfluous condition that t>=1/2||a|| from the definition 
+  of a positive element of a Cstar-algebra (9IV), changed 9II and 9VIII
+  accordingly, and added a remark 9Va on the matter.
+
 Small changes:
+
+* Simplifies 5X by assuming that f(x')=1 instead of just f(x')=0.
 
 * Added a remark, 22IIa, on other interpretations of the word "order ideal".
 

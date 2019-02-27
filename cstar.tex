@@ -439,10 +439,10 @@ we say that~$\scrH$ is a \Define{Hilbert space}.%
 \index{Hilbert space}
 
 Let~$\scrH$ and~$\scrK$ be pre-Hilbert spaces.
-We say that a operator~$T\colon \scrH\to \scrK$
+We say that an operator~$T\colon \scrH\to \scrK$
 is \Define{adjoint}%
 \index{adjoint of an operator}
-to a operator
+to an operator
 $S\colon \scrK\to \scrH$ 
 when
 \begin{equation*}
@@ -813,7 +813,7 @@ with $\left<x,\,\cdot\,\right>=f$.
 \begin{point}{100}{Proof}%
 If~$f=0$, then $x=0$ does the job.
 Suppose that~$f\neq 0$.
-There is an~$x'\in\scrH$ with~$f(x')\neq 0$.
+There is an~$x'\in\scrH$ with~$f(x')=1$.
 Note that~$\ker(f)$ is closed, because~$f$
 is bounded.
 So by~\sref{projection-theorem},
@@ -821,7 +821,7 @@ we know that~$x'$
 has a projection~$y$ on~$\ker(f)$,
 and $\left<x',z\right>=\left<y,z\right>$
 for all~$z\in \ker(f)$.
-Then for~$x'':=f(x'-y)^{-1}(x'-y)$,
+Then for~$x'':=x'-y$,
 we have $f(x'')=1$ and~$\left<x'',y'\right>=0$
 for all~$y'\in \ker(f)$.
 Given $z\in \scrH$,
@@ -1093,7 +1093,7 @@ positive functions in~$C(X)$ in terms of the $C^*$-algebra structure
 (see~\sref{cx-positive}) on which we can base such a  generalization,
 and while we will eventually see that these all yield the same notion
 of positive element of a $C^*$-algebra (see~\sref{cstar-positive-final})
-we base our definition of positive element (\sref{cstar-positive})
+we base our definition of positive element (\sref{cstar-positive-def})
 on the description that is perhaps
 not most familiar,
 but does give us the richest structure at this stage.
@@ -1109,8 +1109,12 @@ $f\equiv g^2$ for some $g\in \sa{C(X)}$;
 \item
 $f\equiv g^* g$ for some~$g\in C(X)$;
 \item
-$\|f-t\|\leq t$ for some $t\geq \frac{1}{2}\|f\|$.
+$\|f-t\|\leq t$ for some $t\in \R$;
+\item
+$\|f-t\|\leq t$ for all $t\geq \frac{1}{2}\|f\|$.
 \end{enumerate}
+(Hint: $\|f-t\|\leq t$ iff $-t\leq f-t\leq t$
+iff $0\leq f\leq 2t$.)
 \begin{point}{30}{Exercise}%
 To see how condition~\ref{cx-positive-1}
 can be expressed in terms of the $C^*$-algebra structure of~$C(X)$,
@@ -1123,7 +1127,7 @@ A self-adjoint element~$a$ of a $C^*$-algebra~$\scrA$ is called
 \Define{positive}%
 \index{positive!element of a $C^*$-algebra}
 if $\|a-t\|\leq t$
-for some~$t\geq \frac{1}{2}\|a\|$.
+for some~$t\in \R$.
 We write $\Define{a\leq b}$%
 \index{*leq@$\leq$, order!on a $C^*$-algebra}
 for $a,b\in\scrA$ when $b-a$ is positive,
@@ -1146,6 +1150,19 @@ that it's also pretty easy to see
 that the sum of such positive elements
 is again positive, see~\sref{cstar-positive-sum}.
 \end{point}
+\begin{point}{51}{Remark}%
+Note that when an element~$a$
+of a $C^*$-algebra
+is positive on the grounds that $\|a-t\|\leq t$
+for some~$t\in \R$,
+then this number~$t$ must be positive,
+and we even have $t\geq \frac{1}{2}\|a\|$,
+since $\|a\|-\|t\|\leq \|a-t\|\leq t$.
+There's nothing special about this~$t$:
+we'll see in~\sref{cstar-positive-1}
+that $\|a-s\|\leq s$
+    for all~$s\geq \frac{1}{2} \|a\|$ and positive~$a$.
+\end{point}
 \end{point}
 \begin{point}{60}{Example}%
 We'll see in~\sref{hilb-positive-operators},
@@ -1157,12 +1174,11 @@ Let~$a,b$ be positive elements of a $C^*$-algebra.
 Then $a+b$ is positive.
 \begin{point}{80}{Proof}
 Since~$a\geq 0$,
-there is~$t\geq \frac{1}{2}\|a\|$ with $\|a-t\|\leq t$.
-Similarly, there is~$s\geq \frac{1}{2}\|b\|$
+there is~$t\in \R$
+    with $\|a-t\|\leq t$.
+Similarly, there is~$s\in \R$
 with $\|b-s\|\leq s$.
-Then $\|a+b-(t+s)\|\leq \|a-t\|+\|b-s\|\leq t+s$
-and $t+s\geq \frac{1}{2}(\|a\|+\|b\|) \geq \frac{1}{2}\|a+b\|$,
-so~$a+b\geq 0$.\qed
+Then $\|a+b-(t+s)\|\leq \|a-t\|+\|b-s\|\leq t+s$.\qed
 \end{point}
 \end{point}
 \begin{point}{90}{Exercise}%
@@ -2693,7 +2709,7 @@ for Gelfand's representation theorem.
 \begin{parsec}{170}[cstar-positive-2]%
 \begin{point}{10}%
 We return to the positive elements 
-in a $C^*$-algebra (see~\sref{cstar-positive}).
+in a $C^*$-algebra (see~\sref{cstar-positive-def}).
 We'll see that the connection we have established
 between the norm and invertible elements
 of a $C^*$-algebra
