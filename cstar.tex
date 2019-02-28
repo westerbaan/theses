@@ -1350,33 +1350,14 @@ that every mi-map
 is completely positive (in~\sref{cp}),
 and that every completely positive map is positive 
 (in~\sref{astara-pos-basic-consequences}).
+\begin{point}{61}%
+Note that we didn't bother to include
+an abbreviation for bounded linear maps in our list, \sref{maps}.
+That's because we'll see in~\sref{weak-russo-dye} that any positive
+map between $C^*$-algebras is automatically bounded.
 \end{point}
-\begin{point}{70}[cstar-product-2]{Exercise}%
-\index{product!in $\Cstar{miu}$ and $\cCstar{miu}$}
-Show that
-the product~$\bigoplus_{i\in I}\scrA_i$
-of
-a family $(\scrA_i)_{j\in I}$
-of $C^*$-algebras
-defined in~\sref{cstar-product}
-is also the categorical product 
-of these $C^*$-algebras
-in~$\Cstar{miu}$
-with as projections
-the maps~$\Define{\pi_j}\colon \bigoplus_{i \in I}\scrA_i\to\scrA_j$%
-\index{pi@$\pi_j$, projection!in $\Cstar{miu}$}
-given by~$\pi_j(a)=a(j)$.
-
-Show that the same description applies to~$\cCstar{miu}$.
-
-Of course,
-$\bigoplus_i\scrA_i$
-also gives the product in~$\Cstar{pu}$,
-but we must postpone the proof
-to~\sref{cstar-product-3}
-when we're able to prove
-that an element~$a$ of $\bigoplus_i \scrA_i$
-is positive provided that each~$a(i)$ is positive.
+\end{point}
+\begin{point}{70}{[Moved to~\sref{cstar-product-2}.]}%
 \end{point}
 \begin{point}{80}[cstar-equaliser-1]{Exercise}%
 \index{equaliser!in~$\Cstar{miu}$ and $\Cstar{pu}$}
@@ -2813,47 +2794,18 @@ iff $a\geq \frac{1}{n}$ for some~$n>0$.
 \end{point}
 \end{parsec}
 \begin{parsec}{180}%
-\begin{point}{10}[cstar-product-3]{Exercise}%
-\index{product!in $\Cstar{pu}$}%
-With our new-found
-knowledge about positive elements
-verify that
-the product~$\bigoplus_i \scrA_i$
-of $C^*$-algebras~$\scrA_i$
-from~\sref{cstar-product}
-is indeed the product of these $C^*$-algebras $\scrA_i$
-in the category~$\Cstar{pu}$.
-\begin{enumerate}
-\item
-Show
-that an element~$a$ of~$\bigoplus_{i\in I} \scrA_i$
-is positive iff~$a(i)\geq 0$ for all~$i$.
-\item
-Show that the projections $\pi_j\colon \bigoplus_{i \in I}
-\scrA_i \to\scrA_j$
-(defined in~\sref{cstar-product-2})
-are positive.
-\item
-Show that for any $C^*$-algebra~$\scrB$
-and collection
-of pu-maps $f_i\colon \scrB\to\scrA_i$
-there is a unique pu-map
-$\Define{\left<f_i\right>_i}\colon
-\scrB\to\bigoplus_{i}\scrA_i$
-with $\pi_j\circ \left<f_i\right>_i = f_j$
-for all~$j$.
-\item
-Conclude that~$\bigoplus_i \scrA_i$
-is
-the (categorical) product of the $\scrA_i$s
-in $\Cstar{pu}$.
-\end{enumerate}
-(We'll return to the product of $C^*$-algebras
-a final time in~\sref{cstar-product-4}.)
+\begin{point}{10}{[Moved to \sref{cstar-product-2}.]}
 \end{point}
 \end{parsec}
 \begin{parsec}{190}
-\begin{point}{10}[prod-spec]{Lemma}%
+\begin{point}{10}%
+Although we can't quite yet see that~$a^*a$
+is positive---for this we need the existence of the square root, 
+    \sref{sqrt},---we
+    can already prove that~$a^*a$ can't be negative,
+    see~\sref{astara-non-negative}.
+\end{point}
+\begin{point}{11}[prod-spec]{Lemma}%
 For elements $a$ and $b$ from a $C^*$-algebra,
 we have
 \begin{equation*}
@@ -2898,7 +2850,7 @@ on the one hand
 $\|a\|=\inf\{\lambda\geq 0\colon -\lambda\leq a\leq \lambda\}$
 by~\sref{positive-basic-2},
 and on the other hand
-$a\geq 0$ iff $\|a-s\|\leq s$ for some $s\geq \frac{1}{2}\|a\|$
+$a\geq 0$ iff $\|a-s\|\leq s$ for some $s\in\R$
 by definition (\sref{cstar-positive-def}).
 This has some useful consequences.
 \end{point}
@@ -2933,12 +2885,39 @@ can be dropped, i.e.~$\|f\|=\|f(1)\|$
 We'll be using this improved bound mostly
 for completely positive maps,
 for which it's much easier to obtain (see~\sref{cp-russo-dye}).
+
+For miu-maps we can already obtain the improved bound here:
 \end{point}
 \end{point}
-\begin{point}{50}[norm-mi-map]{Exercise}%
-Show that~$\|\varrho\|=\varrho(1)$
-for every mi-map~$\varrho$
-(using the $C^*$-identity).
+\begin{point}{50}[norm-mi-map]{Lemma}%
+Any miu-map $\varrho\colon\scrA\to\scrB$ 
+    between $C^*$-algebras $\scrA$ and~$\scrB$
+is positive, bounded,
+    and, in fact, $\|\varrho\|\leq 1$.
+\begin{point}{51}{Proof}%
+Let~$a$ be a positive element of~$\scrA$,
+    so~$\spec(a)\subseteq[0,\infty)$ by~\sref{cstar-positive-1},
+To show that~$\varrho$ is positive,
+we must prove that~$\varrho(a)\geq 0$,
+that is, $\spec(\varrho(a))\subseteq[0,\infty)$.
+This follows immediately
+from the observation that~$\spec(\varrho(a))\subseteq \spec(a)$:
+ when $a-\lambda$ is invertible,
+so is~$\varrho(\,a-\lambda\,)\equiv\varrho(a)-\lambda$,
+for any~$\lambda\in \C$.
+Hence~$\varrho$ is positive.
+
+It follows by~\sref{weak-russo-dye}
+that~$\varrho$ is bounded, and~$\|\varrho(b)\|\leq \|b\|$
+for \emph{self-adjoint} $b\in \scrA$.
+It remains to be shown that~$\|\varrho(a)\|\leq \|a\|$
+for arbitrary~$a\in\scrA$.
+But since~$a^*a$ is self-adjoint for such~$a$,
+we have $\|\varrho(a)\|^2\equiv\|\varrho(a^*a)\|\leq \|a^*a\|=\|a\|^2$
+by the $C^*$-identity and using that~$\varrho$
+    is a miu-map. Whence $\|\varrho(a)\|\leq\|a\|$
+    for all~$a\in\scrA$, and so~$\|\varrho\|\leq 1$.\qed
+\end{point}
 \end{point}
 \begin{point}{60}[cstar-isometry]{Lemma}%
 For a pu-map $f\colon \scrA\to\scrB$
@@ -3017,6 +2996,37 @@ but
 it might still only preserve the norm of self-adjoint elements
 cf.~\sref{warning-norm-states}.)
 \end{point}
+\end{point}
+\end{parsec}
+\begin{parsec}{201}
+\begin{point}{10}[cstar-product-2]{Exercise}%
+\index{product!in $\Cstar{miu}$ and $\cCstar{miu}$}
+\index{product!in $\Cstar{pu}$}%
+Show that
+the product~$\bigoplus_{i\in I}\scrA_i$
+of
+a family $(\scrA_i)_{j\in I}$
+of $C^*$-algebras
+defined in~\sref{cstar-product}
+is also the categorical product 
+of these $C^*$-algebras
+    in~$\Cstar{miu}$ and~$\cCstar{miu}$
+with as projections
+the maps~$\Define{\pi_j}\colon \bigoplus_{i \in I}\scrA_i\to\scrA_j$%
+\index{pi@$\pi_j$, projection!in $\Cstar{miu}$}
+given by~$\pi_j(a)=a(j)$.
+
+(Hint: use here that
+the projections $\pi_j$ are bounded by~\sref{norm-mi-map}.)
+
+Show that the same description applies to~$\cCstar{pu}$
+and $\cCstar{pu}$.
+(Hint: first show that an element~$a$
+of $\bigoplus_{i\in I}\scrA_i$ is positive
+    iff $a(i)$ is positive for every~$i\in I$.)
+
+We'll return to the product of $C^*$-algebras
+a final time in~\sref{cstar-product-4}.
 \end{point}
 \end{parsec}
 
@@ -3178,7 +3188,7 @@ by~$\scrB_\omega$
 apply~\sref{cstar-isometry}
 to the pu-map $\left<\omega\right>_{\omega\in\Omega}\colon 
 \scrA\to\bigoplus_{\omega\in\Omega}
-\scrB_\omega$ (see~\sref{cstar-product-3}).\qed
+\scrB_\omega$ (see~\sref{cstar-product-2}).\qed
 \end{point}
 \begin{point}{90}[warning-norm-states]{Warning}%
 The formula
@@ -5401,7 +5411,7 @@ of a family of $C^*$-algebras $(\scrA_i)_i$
 in the category~$\Cstar{cpsu}$
 (see~\sref{maps}) 
 is given by~$\bigoplus_i \scrA_i$
-with the same projections as in~\sref{cstar-product-3}.
+with the same projections as in~\sref{cstar-product-2}.
 
 Show that the equaliser
 of miu-maps $f,g\colon\scrA\to\scrB$

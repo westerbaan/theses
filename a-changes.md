@@ -30,7 +30,17 @@ Major corrections:
   of a positive element of a Cstar-algebra (9IV), changed 9II and 9VIII
   accordingly, and added a remark 9Va on the matter.
 
+* Replaced the dubious exercise 20V by a lemma with proof.
+
+* Since more information on the positive elements of a C-star algebra
+  is needed to solve them then is available there, moved the exercises on 
+  the categorical products in CStarMIU and CStarPU from 10VII and 18I to 20aI.
+
 Small changes:
+
+* Added an introduction to 19, moving 19I to 19Ia.
+
+* Added a remark in 10VIa on the boundedness of p-maps.
 
 * Simplifies 5X by assuming that f(x')=1 instead of just f(x')=0.
 
