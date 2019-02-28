@@ -2125,8 +2125,8 @@ is
 called the 
 \Define{winding number}, and
 is
-written $\Define{\mathrm{wn_T}(z)}$,%
-\index{wn@$\mathrm{wn_T}$, winding number}
+written $\Define{\mathrm{wn}_T(z)}$,%
+\index{wn@$\mathrm{wn}_T$, winding number}
 is either $1$ or~$-1$ when~$z\in\mathrm{in}(T)$
 (depending on the order of the vertices),
 is~$0$ when~$z\notin\mathrm{cl}(T)$,
@@ -2139,18 +2139,19 @@ It is defined formally for $z\in \C\backslash \partial T$ by
 \,+\,\measuredangle(w_1,z,w_2)
 \,+\, \measuredangle(w_2,z,w_0),
 \end{equation*}
-and pops
-up in the value of the integral $\int_T (z-z_0)^{-1}dz$
-later on,
-see~\sref{invint}.
-
-(Here~$\Define{\measuredangle(w_0,z,w_1)}$%
-\index{$\measuredangle(w_0,z,w_1)$, angle between complex numbers}%
+where~$\Define{\measuredangle(w_0,z,w_1)}$%
+\index{$\measuredangle(w_0,z,w_1)$, angle between complex numbers}
 denotes the number of radians in~$(-\pi,\pi)$
 needed to rotate the line through~$z$ and~$w_0$ counterclockwise
 around~$z$ to hit~$w_1$,
 that is, the angle of the corner on the right when travelling
-from~$w_0$ to~$w_1$ via~$z$.)
+from~$w_0$ to~$w_1$ via~$z$.
+
+The winding number~$\mathrm{wn}_T$
+pops
+up in the value of the integral $\int_T (z-z_0)^{-1}dz$
+later on,
+see~\sref{invint}.
 \end{point}
 \begin{point}{40}[goursat]{Goursat's Theorem}%
 \index{Goursat's Theorem}%
