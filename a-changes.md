@@ -39,6 +39,8 @@ Major corrections:
 
 Small changes:
 
+* Added a definition of [a,b] for C-star algebras in 8IVa.
+
 * Expands 11VIII a bit to prevent the 2^n from looking like a typo.
 
 * Added a line at the end of 11III explaining that 
