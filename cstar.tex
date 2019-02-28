@@ -3075,21 +3075,25 @@ A collection~$\Omega$ of linear maps on a $C^*$-algebra~$\scrA$
 will be called
 \begin{enumerate}
 \item
+\label{separating-1}
 \Define{order separating}%
 \index{order separating collection!of maps on a $C^*$-algebras}
 if an element~$a$ of~$\scrA$
 is positive iff $0\leq \omega(a)$
 for all~$\omega\in \Omega$;
 \item
+    \label{separating-2}
 \Define{separating}%
 \index{separating collection!of maps on a $C^*$-algebra} 
 if an element~$a$ of~$\scrA$
 is zero iff $\omega(a)=0$ for all~$\omega\in\Omega$;
 \item
+    \label{separating-3}
 \Define{faithful} if an element~$a$ of~$\scrA_+$%
 \index{faithful collection!of maps on a $C^*$-algebra}
 is zero iff~$\omega(a)=0$ for all~$\omega\in\Omega$; and
 \item
+    \label{separating-4}
 \Define{centre separating}%
 \index{centre separating collection!of maps on a $C^*$-algebra}
 if $a\in\scrA_+$
@@ -3099,6 +3103,14 @@ and~$b\in \scrA$.
 (The ``centre'' in ``centre separating''
 will be explained in~\sref{vn-center-separating}.)
 \end{enumerate}
+(Note that 
+    $\text{\eqref{separating-1}}
+\implies
+    \text{\eqref{separating-2}}
+\implies
+    \text{\eqref{separating-3}}
+\implies
+    \eqref{separating-4}$.)
 \end{point}
 \begin{point}{30}{Examples}%
 We'll see later on that the following
@@ -3259,7 +3271,8 @@ An \Define{order ideal}%
 of a $C^*$-algebra~$\scrA$
 is a linear subspace~$I$ of~$\scrA$
 with $b\in I\implies b^*\in I$
-and $b\in I\cap\pos{\scrA}\implies [-b,b]\subseteq I$.
+and $b\in I\cap\pos{\scrA}\implies [-b,b]
+    \equiv \{\,a\in\scrA\colon \,-b\leq a\leq b\, \} \ \subseteq\, I$.
 It is called \Define{proper}%
 \index{order ideal of a $C^*$-algebra!proper}
 if~$1\notin I$,
