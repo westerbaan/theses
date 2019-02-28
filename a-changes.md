@@ -34,9 +34,15 @@ Major corrections:
 
 * Since more information on the positive elements of a C-star algebra
   is needed to solve them then is available there, moved the exercises on 
-  the categorical products in CStarMIU and CStarPU from 10VII and 18I to 20aI.
+  the categorical products and equalisers in CStarMIU and CStarPU 
+  from 10VII, 10VIII, and 18I to 20a.
 
 Small changes:
+
+* Expands 11VIII a bit to prevent the 2^n from looking like a typo.
+
+* Added a line at the end of 11III explaining that 
+  the series converges absolutely.
 
 * Added an introduction to 19, moving 19I to 19Ia.
 

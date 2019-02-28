@@ -1359,34 +1359,8 @@ map between $C^*$-algebras is automatically bounded.
 \end{point}
 \begin{point}{70}{[Moved to~\sref{cstar-product-2}.]}%
 \end{point}
-\begin{point}{80}[cstar-equaliser-1]{Exercise}%
-\index{equaliser!in~$\Cstar{miu}$ and $\Cstar{pu}$}
-Show that given miu-maps $f,g\colon \scrA\to\scrB$
-between $C^*$-algebras
-the collection $\scrE:=\{a\in\scrA\colon f(a)=g(a)\}$
-is a $C^*$-subalgebra
-of~$\scrA$,
-and that the inclusion $e\colon \scrE\to\scrA$
-is a positive miu-map
-that is in fact the equaliser of~$f$ and~$g$
-in~$\Cstar{miu}$ and~$\Cstar{pu}$.
-Show that the same description applies
-to~$\cCstar{miu}$ and~$\cCstar{pu}$.
-\begin{point}{90}[cstar-no-pu-equalisers]{Remark}%
-The assumption here that~$f$ and~$g$ are miu-maps
-is essential:
-the pair of pu-maps $f,g\colon \C^4\to\C$
-given by
-\begin{equation*}
-    \textstyle
-f(a,b,c,d)\,=\, \frac{1}{2}(a+b),
-    \quad \text{and}\quad
-g(a,b,c,d)\,=\, \frac{1}{2}(c+d),
-\end{equation*}
-for example,
-has no equaliser
-in~$\Cstar{pu}$,
-as we'll show in~\sref{cstar-no-pu-equalisers-example}.
+\begin{point}{80}{[Moved to~\sref{cstar-equaliser-1}.]}%
+\begin{point}{90}{[Moved to~\sref{cstar-no-pu-equalisers}.]}
 \end{point}
 \end{point}
 \end{parsec}
@@ -1437,7 +1411,9 @@ because $\|a\|b=\lim_N \|a\|^{N+1}=b$
 and~$\|a\| < 1$.}
  $\|a\|<1$),
 we  get $\sum_{n=0}^\infty \|a\|^n = (1-\|a\|)^{-1}$.
-
+Note that since~$\|a^n\|\leq \|a\|^n$ for every~$n$,
+    this entails that $\sum_{n=0}^\infty \|a^n\|\leq (1-\|a\|)^{-1}
+    <\infty$.
 \begin{point}{40}%
 Note that $a^N$ norm converges to~$0$,
 because $\|a\|^N$ converges to~$0$.
@@ -1481,10 +1457,14 @@ We have already seen in~\sref{geometric}
 that~$\sum_n a^n$
 converges absolutely when~$\|a\|<1$.
 Now, if $\sum_n a^n$ converges,
-then~$\|a^{2^n}\|\equiv \|a\|^{2^n}$
+then~$\|a^n\|$
 (being the norm of the difference
 between consecutive partial sums of~$\sum_n a^n$)
-converges to~$0$,
+converges to~$0$.
+    In particular, $\smash{\|a\|^{2^n}}$
+    (being equal to $\|\smash{a^{2^n}}\|$
+    by the $C^*$-identity)
+converges to~$0$ too,
 which only happens when~$\|a\|<1$.\qed
 \end{point}
 \begin{point}{90}[geometric-non-self-adjoint]{Remark}%
@@ -3027,6 +3007,37 @@ of $\bigoplus_{i\in I}\scrA_i$ is positive
 
 We'll return to the product of $C^*$-algebras
 a final time in~\sref{cstar-product-4}.
+\end{point}
+\begin{point}{20}[cstar-equaliser-1]{Exercise}%
+\index{equaliser!in~$\Cstar{miu}$ and $\Cstar{pu}$}
+Show that given miu-maps $f,g\colon \scrA\to\scrB$
+between $C^*$-algebras
+the collection $\scrE:=\{a\in\scrA\colon f(a)=g(a)\}$
+is a $C^*$-subalgebra
+    of~$\scrA$ (using the fact that~$f$ and~$g$
+    are bounded by~\sref{norm-mi-map} to show that~$\scrE$ is closed.)
+Show that the inclusion $e\colon \scrE\to\scrA$
+is a (positive) miu-map
+that is in fact the equaliser of~$f$ and~$g$
+in~$\Cstar{miu}$ and~$\Cstar{pu}$.
+Show that the same description applies
+to~$\cCstar{miu}$ and~$\cCstar{pu}$.
+\begin{point}{30}[cstar-no-pu-equalisers]{Remark}%
+The assumption here that~$f$ and~$g$ are miu-maps
+is essential:
+the pair of pu-maps $f,g\colon \C^4\to\C$
+given by
+\begin{equation*}
+    \textstyle
+f(a,b,c,d)\,=\, \frac{1}{2}(a+b),
+    \quad \text{and}\quad
+g(a,b,c,d)\,=\, \frac{1}{2}(c+d),
+\end{equation*}
+for example,
+has no equaliser
+in~$\Cstar{pu}$,
+as we'll show in~\sref{cstar-no-pu-equalisers-example}.
+\end{point}
 \end{point}
 \end{parsec}
 
