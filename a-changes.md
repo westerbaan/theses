@@ -41,6 +41,8 @@ Small changes:
 
 * Added a definition of [a,b] for C-star algebras in 8IVa.
 
+* Added "**n**ormal" to the list of properties of linear maps in 10II.
+
 * Expands 11VIII a bit to prevent the 2^n from looking like a typo.
 
 * Added a line at the end of 11III explaining that 
@@ -53,6 +55,9 @@ Small changes:
 * Simplifies 5X by assuming that f(x')=1 instead of just f(x')=0.
 
 * Added a remark, 22IIa, on other interpretations of the word "order ideal".
+
+* Added explicit explanation of "n" as abbreviation of "normal" in 38Ia,
+  and added a reference back to it from 42IIa.
 
 * Added a remark, 96Ia, on the choice of 'filter'.
 
