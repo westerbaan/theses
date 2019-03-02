@@ -56,6 +56,8 @@ Small changes:
 
 * Added a remark, 22IIa, on other interpretations of the word "order ideal".
 
+* Explicitly attributed Definition 42I to Kadison.
+
 * Added explicit explanation of "n" as abbreviation of "normal" in 38Ia,
   and added a reference back to it from 42IIa.
 
