@@ -3976,11 +3976,22 @@ Show that with respect to this topology,
 scalar multiplication and translations $x\mapsto x+a$
 by a fixed vector~$a\in V$ are continuous.
 \item
-Show that $\{(0,0)\}\cup B_1(-1)\cup B_1(1)\cup B_2(-2)^c\cup B_2(2)^c$
-is a radially open subset of~$\R^2$, 
-which is not open
-in the usual topology.
-
+Show that 
+the subset of~$\R^2$ depicted below in blue
+\begin{center}
+\begin{tikzpicture}
+    \fill[style={fill=lightblue,draw=darkblue,densely dotted,thick}, even odd rule]
+    (-3.5cm,-2.0cm) rectangle (3.5cm,2.0cm)
+    (-1.5cm,0) circle (1.5cm)
+    (1.5cm,0) circle (1.5cm)
+    (-1cm,0) circle (1cm)
+    (1cm,0) circle (1cm)
+    (0,0) node[circle,inner sep=0pt,minimum size=3pt,fill=darkblue]{};
+\end{tikzpicture},
+\end{center}
+including the point in the middle
+but not the dashed borders,
+is radially open, but not open in the usual topology on~$\R^2$.
 \item
 Show that addition on~$\R^2$ is not jointly radially continuous.
 \item

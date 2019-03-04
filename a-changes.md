@@ -80,6 +80,8 @@ Small changes:
 
 * Added a hint to 70II.
 
+* Replaced the formula in 73III(3) by a drawing.
+
 * Added a remark, 96Ia, on the choice of 'filter'.
 
 * Added a remark, 101Ia, on the use of the symbol \diamond.
