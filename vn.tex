@@ -1747,6 +1747,35 @@ then~$A\cup B$ and~$A\backslash B$
 are almost clopen.
 \end{enumerate}
 \end{point}
+\begin{point}{31}%
+Meagreness can be thought of as a topological analogue of negligibility.
+In fact, with respect to the measure we'll put on $\spec(\scrA)$
+in~\sref{cvn-faithful},
+    meagreness and negligibility actually coincide.
+In general, however, 
+the notions are disparate,
+as is demonstrated rather dramatically by the following example.
+\end{point}
+\begin{point}{32}{Example}
+of a meagre subset~$A$ of~$[0,1]$
+with Lebesgue measure~$1$.
+Given an enumeration~$q_1,q_2,\dotsc$
+    of the rational numbers in~$[0,1]$,
+the set
+\begin{equation*}
+    \textstyle
+    B_m \ :=\  \bigcup_n 
+    \bigl(\,q_n-\frac{1}{2m}2^{-n},\,q_n+\frac{1}{2m}2^{-n}\,\bigr)
+    \cap[0,1]
+\end{equation*}
+is open and dense in~$[0,1]$, with a Lebesgue measure 
+of at most~$\nicefrac{1}{m}$.
+So the intersection~$B:=\bigcap_m B_m$ is Lebesgue negligible.
+On the other hand, $[0,1]\backslash B_m$
+is closed and has empty interior,
+so that $A:=[0,1]\backslash B\equiv \bigcup_m B_m$
+is meagre with Lebesgue measure~$1$.
+\end{point}
 \end{parsec}
 \begin{parsec}{530}%
 \begin{point}{10}%

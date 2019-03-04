@@ -69,6 +69,9 @@ Small changes:
 
 * Added a reminder of the meaning of finite (measure space) in 43V(7).
 
+* Adds some words on the relation between meagreness and negligibility
+  in 52IIIa and 52IIIb.
+
 * Added a remark, 96Ia, on the choice of 'filter'.
 
 * Added a remark, 101Ia, on the use of the symbol \diamond.
