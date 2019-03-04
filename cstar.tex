@@ -2655,7 +2655,7 @@ A logical next step
 towards Gelfand's representation theorem
 is to show that if~$\lambda\in\spec(a)$
 for some element~$a$ of a \emph{commutative} $C^*$-algebra~$\scrA$,
-then there is a miu-map $f\colon \scrA\to \C$
+then there is an miu-map $f\colon \scrA\to \C$
 with~$f(a)=\lambda$.
 Here we have moved ourselves into a tight spot
 by evading Banach algebras,
@@ -2666,7 +2666,7 @@ and then forming the \emph{Banach algebra} quotient~$\scrA/I$.
 One then applies Gelfand--Mazur's Theorem for \emph{Banach algebras}, 
 to see that
 $\scrA/I= \C$,
-and thereby obtain a miu-map~$f\colon \scrA\to \C$ with~$f(a-\lambda)=0$.
+and thereby obtain an miu-map~$f\colon \scrA\to \C$ with~$f(a-\lambda)=0$.
 The problem here is that while $\scrA/I$
 will turn out to be a $C^*$-algebra (indeed, be $\C$)
 the formation of the $C^*$-algebra quotient
@@ -2914,7 +2914,7 @@ for arbitrary~$a\in\scrA$.
 But since~$a^*a$ is self-adjoint for such~$a$,
 we have $\|\varrho(a)\|^2\equiv\|\varrho(a^*a)\|\leq \|a^*a\|=\|a\|^2$
 by the $C^*$-identity and using that~$\varrho$
-    is a miu-map. Whence $\|\varrho(a)\|\leq\|a\|$
+    is an miu-map. Whence $\|\varrho(a)\|\leq\|a\|$
     for all~$a\in\scrA$, and so~$\|\varrho\|\leq 1$.\qed
 \end{point}
 \end{point}
@@ -3848,7 +3848,7 @@ that is,  a lattice ordered vector space.\\
 (Hint: prove that $\frac{1}{2}(a+b+\left|a-b\right|)$
 is the supremum of~$a$ and~$b$ in~$\sa{\scrA}$.)
 \item
-Show that a miu-map $f\colon \scrA\to\scrB$
+Show that an miu-map $f\colon \scrA\to\scrB$
 between commutative $C^*$-algebras
 preserves finite suprema and infima.
 \end{enumerate}
@@ -3910,7 +3910,7 @@ as we'll see in~\sref{spectrum-miu}
 \begin{point}{60}%
 Our program for this paragraph is to show that
 the Gelfand representation~$\gamma$ is 
-a miu-isomorphism.
+an miu-isomorphism.
 In fact,
 we will show that it gives the unit
 of an equivalence between the category of commutative $C^*$-algebras
@@ -4010,7 +4010,7 @@ It follows that $a\in I+(a)=I$ by maximality of~$I$.\qed
 \end{point}
 \begin{point}{130}[riesz-ideal-miu-map]{Lemma}%
 Let~$I$ be a maximal Riesz ideal of~$\scrA$.
-Then there is a miu-map $f\colon \scrA\to \C$
+Then there is an miu-map $f\colon \scrA\to \C$
 with $\ker(f)=I$.
 \begin{point}{140}{Proof}%
 Since~$I$ is a maximal order ideal 
@@ -4046,7 +4046,7 @@ the least Riesz ideal $(a)_m$
 that contains~$a$ is proper,
 and can be extended to a maximal Riesz ideal~$I$.
 By~\sref{riesz-ideal-miu-map}
-there is a miu-map $f\colon \scrA\to\C$
+there is an miu-map $f\colon \scrA\to\C$
 with~$\ker(f)=I$.
 Then~$f\in\spec(\scrA)$
 and~$f(a)=0$.\qed
@@ -4186,7 +4186,7 @@ is closed.
 In other words,
 we must show that if~$f\colon \scrA\to \C$
 is the pointwise limit of a net of miu-maps $(f_i)_i$,
-then~$f$ is a miu-map as well.
+then~$f$ is an miu-map as well.
 But this is easily achieved
 using the continuity of addition, involution and multiplication on~$\C$,
 because, for instance, 
@@ -4203,12 +4203,12 @@ For a commutative $C^*$-algebra~$\scrA$,
 the Gelfand representation, 
  $\gamma\colon \scrA\to C(\spec(\scrA))$
 defined in~\sref{gelfand-representation}
-is a miu-isomorphism.
+is an miu-isomorphism.
 \begin{point}{280}{Proof}%
 We already know that~$\gamma$ is an injective miu-map
 (see~\sref{gelfand-representation-basic} 
 and~\sref{gelfand-representation-isometry}).
-So to prove that~$\gamma$ is a miu-isomorphism,
+So to prove that~$\gamma$ is an miu-isomorphism,
 it remains to be shown that~$\gamma$ is surjective.
 Since~$\spec(\scrA)$ is a compact Hausdorff space 
 (by~\sref{spectrum-calg-compact-hausdorff}),
@@ -4375,7 +4375,7 @@ the composition of the map $\alpha \mapsto b^\alpha\colon\,[0,1]
 	which is norm continuous,
 and the functional
 	calculus $f\mapsto f(b)\colon\,
-	C(\spec(b))\to \scrA$, which being a miu-map is norm continous
+	C(\spec(b))\to \scrA$, which being an miu-map is norm continous
 	as well.
 \end{point}
 \begin{point}{60}{$\alpha,\beta\in E\implies \frac{1}{2}\alpha+\frac{1}{2}\beta
@@ -4467,7 +4467,7 @@ to the miu-map $C(f)\colon C(Y)\to C(X)$
 given by~$C(f)(g)=g\circ f$ for $g\in C(Y)$,
 and we extend $\scrA\mapsto \spec(\scrA)$
 to a functor $\spec\colon \op{(\cCstar{miu})}\to \CH$
-by sending a miu-map $\varphi \colon \scrA\to\scrB$
+by sending an miu-map $\varphi \colon \scrA\to\scrB$
 to the continuous map~$\spec(\varphi)\colon \spec(\scrB)\to\spec(\scrA)$
 given by~$\spec(\varphi)(f)=f\circ \varphi$.
 
@@ -4481,7 +4481,7 @@ which is provided by the following lemma.
 \end{point}
 \begin{point}{20}{Lemma}%
 Let~$X$ be a compact Hausdorff space,
-and let~$\tau \colon C(X)\to \C$ be a miu-map.
+and let~$\tau \colon C(X)\to \C$ be an miu-map.
 Then there is~$x\in X$ with $\tau(f)=f (x)$
 for all~$f\in C(X)$.
 \begin{point}{30}{Proof}%
@@ -4568,7 +4568,7 @@ Let~$\varrho\colon \scrA\to\scrB$
 be an injective miu-map between $C^*$-algebras.
 Let~$a$ be a self-adjoint element of~$\scrA$.
 Show that~$\varrho$ can be restricted
-to a miu-map $\sigma\colon C^*(a)\to C^*(\varrho(a))$,
+to an miu-map $\sigma\colon C^*(a)\to C^*(\varrho(a))$,
 which is both epi and mono in~$\cCstar{MIU}$.
 Conclude that~$\sigma$ is an isomorphism,
 and thus~$\|\varrho(a)\|=\|a\|$.
@@ -4789,7 +4789,7 @@ for all~$b\in\scrA$.
 \end{point}
 \begin{point}{70}{Proposition}%
 The map $\varrho_\omega\colon \scrA\to\scrB(\scrH_\omega)$
-given by~\sref{gns} is a miu-map.
+given by~\sref{gns} is an miu-map.
 \begin{point}{80}{Proof}%
 Let~$a_1,a_2\in\scrA$ be given.
 Since $\varrho_\omega(a_1+a_2)\,\eta_\omega(b)
@@ -4866,7 +4866,7 @@ is order separating on~$\scrA$.
 In that case, $\varrho_\Omega(\scrA)$ is a $C^*$-subalgebra
 of~$\scrB(\scrH_\Omega)$,
 and~$\varrho_\Omega$
-restricts to a miu-isomorphism from~$\scrA$ to~$\varrho_\Omega(\scrA)$.
+restricts to an miu-isomorphism from~$\scrA$ to~$\varrho_\Omega(\scrA)$.
 \begin{point}{110}{Proof}%
 It is clear that~\ref{proto-gelfand-naimark-3}
 entails~\ref{proto-gelfand-naimark-2}.
@@ -4896,7 +4896,7 @@ Since~$\varrho_\Omega$ is injective,
 we know by~\sref{injective-miu-iso-on-image}
 that~$\varrho_\Omega(\scrA)$ is a $C^*$-subalgebra
 of~$\scrB(\scrH_\Omega)$,
-and~$\varrho_\Omega$ restricts to a miu-isomorphism
+and~$\varrho_\Omega$ restricts to an miu-isomorphism
 from~$\scrA$ to~$\varrho_\Omega(\scrA)$.
 So in order to prove that~$a\geq 0$,
 it suffices to show that $\varrho_\Omega(a)\geq 0$,
@@ -4927,7 +4927,7 @@ are separating
 and therefore centre separating,
 the miu-map $\varrho_\Omega\colon \scrA\to\scrB(\scrH_\Omega)$
 (defined in~\sref{gelfand-naimark-representation})
-restricts to a miu-isomorphism
+restricts to an miu-isomorphism
 from~$\scrA$ onto the $C^*$-subalgebra
 $\varrho(\scrA)$ of~$\scrB(\scrH_\Omega)$
 by~\sref{proto-gelfand-naimark}.\qed
@@ -6290,7 +6290,7 @@ for every directed subset $\scrD$ of $[0,1]_{\scrB(\scrH)}$.
 \begin{point}{40}[bh-functional-lemma]{Lemma}%
 Every sequence $x_1,x_2,\dotsc $ in a Hilbert space~$\scrH$
 with $\sum_n \|x_n\|^2 < \infty$
-gives a np-map $\omega\colon\scrB(\scrH)\to\C$
+gives an np-map $\omega\colon\scrB(\scrH)\to\C$
 defined by~$\omega(T)=\sum_n \left<x_n,Tx_n\right>$.
 \begin{point}{50}{Proof}%
 Given $T\in\scrB(\scrH)$ 
