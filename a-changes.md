@@ -37,6 +37,9 @@ Major corrections:
   the categorical products and equalisers in CStarMIU and CStarPU 
   from 10VII, 10VIII, and 18I to 20a.
 
+* Corrected the definition of the ultrastrong topology. (It's not the least
+  topology that makes all seminorms induced by np-functionals continuous.)
+
 Small changes:
 
 * Added a definition of [a,b] for C-star algebras in 8IVa.
@@ -60,6 +63,9 @@ Small changes:
   and added a reference back to it from 42IIa.
 
 * Explicitly attributed Definition 42I to Kadison.
+
+* Added a description of ultraweak and ultrastong convergence of nets in 42III,
+  and a description of the ultraweakly and ultrastrongly open subsets.
 
 * Added a reminder of the meaning of finite (measure space) in 43V(7).
 

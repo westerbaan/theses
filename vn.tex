@@ -207,15 +207,39 @@ for ``normal'', see~\sref{bh-normal-abbreviation}.
 \begin{point}{30}%
 The \Define{ultraweak topology}
 on $\scrA$
-is the least topology on~$\scrA$
+is the least topology
 that makes all normal positive linear maps $\omega\colon \scrA\to \C$
-continuous.
+continuous; the ultraweakly open subsets of~$\scrA$
+are exactly the unions
+of finite intersections of
+sets of the form $\omega^{-1}(U)$, where
+$\omega\colon \scrA\to\C$ is an np-map, 
+and $U$ is an open subset of~$\C$.
+One can verify that a net $(b_\alpha)_\alpha$
+in~$\scrA$ converges ultraweakly to some~$b$ in~$\scrA$
+    iff $\omega(b_\alpha)\to b$ for all
+    np-maps $\omega\colon \scrA\to\C$.
 The \Define{ultrastrong topology}%
 \index{ultraweak and ultrastrong}
 	on~$\scrA$
-is the least topology on~$\scrA$
-that makes $a\mapsto \omega(a^*a)$ continuous
-for every np-map~$\omega\colon \scrA\to \C$.
+is the topology
+induced by the seminorms
+$\|\,\cdot\,\|_\omega$
+associated to the np-maps $\omega\colon \scrA\to\C$
+    (given by
+$\|a\|_\omega \equiv \omega(a^*a)^{\nicefrac{1}{2}}$,
+    see~\sref{omega-norm-basic});
+a subset of~$\scrA$ is ultrastrongly open
+iff it is the union of a finite intersections
+of sets of the form
+$\{\,a\in\scrA\colon\, \|a-b\|_\omega \leq \varepsilon\,\}$,
+where~$b\in \scrA$, $\omega\colon \scrA\to\C$ is an np-map,
+and~$\varepsilon>0$.
+One can prove that a net~$(b_\alpha)_\alpha$
+in~$\scrA$
+converges ultrastrongly to an element~$b$ of~$\scrA$
+    iff~$\|b_\alpha-b\|_\omega\to 0$ for all np-maps 
+    $\omega\colon \scrA\to\C$.
 \end{point}
 \end{point}
 \begin{point}{40}{Remark}%
@@ -233,16 +257,6 @@ the ultraweak topology
 from being weaker than the ultrastrong topology:
 a net that converges ultrastrongly converges ultraweakly as well,
 see~\sref{uwweaker}.
-To see this,
-and when dealing with the 
-ultrastrong topology in general,
-it is useful to note that
-every np-functional~$\omega$
-on a von Neumann algebra~$\scrA$ gives rise
-to an inner product $[a,b]_\omega = \omega(a^*b)$
-and seminorm $\|a\|_\omega = [a,a]_\omega^{\nicefrac{1}{2}}
-= \omega(a^*a)^{\nicefrac{1}{2}}$
-(as in~\sref{state-inner-product} and~\sref{omega-norm-basic}).
 \end{point}
 \begin{point}{50}[von-neumann-examples]{Examples}%
 \begin{enumerate}
