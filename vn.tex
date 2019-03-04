@@ -2341,15 +2341,16 @@ Show that~$q-p$ is a projection
 Above every effect~$b$ of a von Neumann algebra~$\scrA$,
 there is a smallest projection, \Define{$\ceil{b}$},%
 \index{*ceil@$\ceil{\,\cdot\,}$!$\ceil{a}$, ceiling}
-we call the \Define{ceiling}%
+which we call the \Define{ceiling}%
 \index{ceiling}
 of~$b$,
  given by $\ceil{b}=\bigvee_{n=0}^\infty b^{\nicefrac{1}{2^n}}$.\\
 Moreover, if $a\in \scrA$ commutes with $b$,
 then~$a$ commutes with~$\ceil{b}$.
 \begin{point}{20}{Proof}
-Let~$p$ denote the supremum of~$0\leq b\leq b^{\nicefrac{1}{2}}\leq
-b^{\nicefrac{1}{4}}\leq\dotsb\leq 1$.
+Since~$0\leq b\leq b^{\nicefrac{1}{2}}\leq
+b^{\nicefrac{1}{4}}\leq\dotsb\leq 1$,
+    we may define~$p:=\bigvee_n b^{\nicefrac{1}{2^n}}$.
 \begin{point}{30}[vna-ceil-point-1]%
 To begin,
 note that if~$a\in \scrA$
@@ -2404,7 +2405,8 @@ given by~$\floor{b} = \bigwedge_{n=0}^\infty b^{2^{n}}$.\\
 Moreover, if~$a\in \scrA$ commutes with~$b$,
 then~$b$ commutes with~$\floor{b}$.
 \begin{point}{70}{Proof}%
-Let~$p$ denote the infimum of $1\geq b\geq b^2 \geq b^4 \geq  \dotsb \geq 0$
+Note that $1\geq b\geq b^2 \geq b^4 \geq  \dotsb \geq 0$,
+    and define $p:=\bigwedge_n b^{2^n}$
     (see~\sref{infima-in-vna}.)
 \begin{point}{80}[vna-floor-point-1]%
 If~$a\in \scrA$ commutes with~$b$,

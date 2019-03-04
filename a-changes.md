@@ -72,6 +72,8 @@ Small changes:
 * Adds some words on the relation between meagreness and negligibility
   in 52IIIa and 52IIIb.
 
+* Improves formulation of 56II,VII.
+
 * Added a remark, 96Ia, on the choice of 'filter'.
 
 * Added a remark, 101Ia, on the use of the symbol \diamond.
