@@ -69,10 +69,12 @@ Small changes:
 
 * Added a reminder of the meaning of finite (measure space) in 43V(7).
 
-* Adds some words on the relation between meagreness and negligibility
+* Added some words on the relation between meagreness and negligibility
   in 52IIIa and 52IIIb.
 
-* Improves formulation of 56II,VII.
+* Improved formulation of 56II,VII.
+
+* Added a line explaining the "Nevertheless" in 65III(4).
 
 * Added a remark, 96Ia, on the choice of 'filter'.
 
