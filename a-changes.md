@@ -78,6 +78,8 @@ Small changes:
 
 * Improved formulation of 69IV.
 
+* Added a hint to 70II.
+
 * Added a remark, 96Ia, on the choice of 'filter'.
 
 * Added a remark, 101Ia, on the use of the symbol \diamond.
