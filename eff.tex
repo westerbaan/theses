@@ -5027,7 +5027,60 @@ For convenience, call~$C$ a \Define{$\dagger'$-effectus}
 \end{point}
 \begin{point}{60}[vn-is-dagger-category]{Corollary}%
 The category~$\op\vN$ of von Neumann algebras with
-    ncp-maps in the opposite direction is a~$\dagger$-category.
+    ncpu-maps in the opposite direction is a~$\dagger$-effectus.
+\end{point}
+\begin{point}{61}{Remarks}%
+    The dagger on the pure maps of~$\vN$ (that exists by the previous
+    corollary) is fixed by the following two rules.
+\begin{enumerate}
+\item
+    For any (nmiu-)isomorphism~$\vartheta$
+        we have~$\vartheta^\dagger = \vartheta^{-1}$
+        as~$\vartheta$ is~$\diamond$-adjoint to~$\vartheta^{-1}$
+         and pure maps are rigid, see~\sref{pure-is-rigid}.
+\item
+    The standard filter~$c\colon \scrA \to \ceil{b} \scrA \ceil{b}$
+        for~$b \in \scrA$
+        (ie.~$c(a) = \sqrt{b}a\sqrt{b}$, see~\sref{dils-def-filter})
+        has as dagger~$c^\dagger\colon \ceil{b} \scrA  \ceil{b} \to \scrA$
+        given by~$c^\dagger(a) = \sqrt{b} a \sqrt{b}$.
+        (This follows from~$\asrt_p^\dagger = \asrt_p$
+            and~\sref{dagger-of-zeta}.)
+\end{enumerate}
+More concretely,
+    for any pure ncp-map~$\varphi\colon \scrA \to \scrB$
+    we can find
+    a unique isomorphism~$\vartheta \colon \ceil{\varphi} \scrA \ceil{\varphi}
+    \to \ceil{\varphi(1)} \scrB \ceil{\varphi(1)}$
+    such that
+\begin{equation*}
+    \varphi(a) \ =\  \sqrt{\varphi(1)} \,\vartheta
+    \bigl(\ceil{\varphi} a \ceil{\varphi}\bigr) \,\sqrt{\varphi(1)} \qquad \text{(for all $a\in \scrA$)}
+\end{equation*}
+    (this follows from~\sref{pure-fundamental} and~\sref{square-f})
+    and so by the previous two rules we get
+\begin{equation*}
+    \varphi^\dagger(b) \ = \  \ceil{\varphi} \,\vartheta^{-1} 
+    \Bigl( \sqrt{\varphi(1)} \, b \, \sqrt{\varphi(1)} \Bigr) \, \ceil{\varphi}
+        \qquad \text{(for all $b \in \scrB$)}.
+\end{equation*}
+\begin{point}{72}%
+In special cases, we can give a simpler definition of the dagger.
+For instance, if the
+    pure map is of the form~$\varphi\colon \scrB(\scrH) \to \scrB(\scrK)$,
+    then~$\varphi = \ad_T$ for some operator~$T \colon \scrK \to \scrH$
+    and in that case~$\varphi^\dagger = \ad_{T^*}$.
+
+Another example is a pure map~$\varphi\colon \scrA \to \scrB$
+    between finite-dimensional von Neumann algebras.
+The Hilbert--Schmidt inner product~$[a, b] \equiv \TR a^*b$
+    turns a finite-dimensional von Neumann algebra into a Hilbert space.
+The adjoint of~$\varphi$ with respect to this inner product
+    equals~$\varphi^\dagger$.
+This can be seen by considering the special cases
+    of nmiu-isomorphisms and standard filters
+    (noting nmiu-isomorphisms are trace-preserving).
+\end{point}
 \end{point}
 \begin{point}{70}{Remarks}%
     In an~$\&$-effectus
