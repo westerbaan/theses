@@ -163,7 +163,7 @@ see~\sref{tensor}.
 \section{The Basics}
 \subsection{Definition and Counterexamples}
 \begin{parsec}{420}[vna]%
-\begin{point}{10}{Definition}%
+\begin{point}{10}{Definition (Kadison~\cite{kadison1956})}%
 A $C^*$-algebra~$\scrA$
 is a \Define{von Neumann algebra}%
 \index{von Neumann algebra}
@@ -194,24 +194,52 @@ we did not use this weaker albeit more complex condition.}
 \end{enumerate}
 \begin{point}{20}[def-np-functional]
 A positive linear map $\omega\colon \scrA\to \C$
-is called \Define{normal}%
+is called \Define{\textbf{n}ormal}%
 \index{normal!functional}
 if $\omega(\bigvee D) = \bigvee_{d\in D} \omega(d)$
 for every bounded directed subset of self-adjoint elements of~$D$
 which has a supremum $\bigvee D$ in $\sa{\scrA}$.
+\begin{point}{21}
+Recall that we use the letter ``n'' as abbreviation
+for ``normal'', see~\sref{bh-normal-abbreviation}.
+\end{point}
 \end{point}%
 \begin{point}{30}%
 The \Define{ultraweak topology}
 on $\scrA$
-is the least topology on~$\scrA$
+is the least topology
 that makes all normal positive linear maps $\omega\colon \scrA\to \C$
-continuous.
+continuous; the ultraweakly open subsets of~$\scrA$
+are exactly the unions
+of finite intersections of
+sets of the form $\omega^{-1}(U)$, where
+$\omega\colon \scrA\to\C$ is an np-map, 
+and $U$ is an open subset of~$\C$.
+One can verify that a net $(b_\alpha)_\alpha$
+in~$\scrA$ converges ultraweakly to some~$b$ in~$\scrA$
+    iff $\omega(b_\alpha)\to b$ for all
+    np-maps $\omega\colon \scrA\to\C$.
 The \Define{ultrastrong topology}%
 \index{ultraweak and ultrastrong}
 	on~$\scrA$
-is the least topology on~$\scrA$
-that makes $a\mapsto \omega(a^*a)$ continuous
-for every np-map~$\omega\colon \scrA\to \C$.
+is the topology
+induced by the seminorms
+$\|\,\cdot\,\|_\omega$
+associated to the np-maps $\omega\colon \scrA\to\C$
+    (given by
+$\|a\|_\omega \equiv \omega(a^*a)^{\nicefrac{1}{2}}$,
+    see~\sref{omega-norm-basic});
+a subset of~$\scrA$ is ultrastrongly open
+iff it is the union of a finite intersections
+of sets of the form
+$\{\,a\in\scrA\colon\, \|a-b\|_\omega \leq \varepsilon\,\}$,
+where~$b\in \scrA$, $\omega\colon \scrA\to\C$ is an np-map,
+and~$\varepsilon>0$.
+One can prove that a net~$(b_\alpha)_\alpha$
+in~$\scrA$
+converges ultrastrongly to an element~$b$ of~$\scrA$
+    iff~$\|b_\alpha-b\|_\omega\to 0$ for all np-maps 
+    $\omega\colon \scrA\to\C$.
 \end{point}
 \end{point}
 \begin{point}{40}{Remark}%
@@ -229,16 +257,6 @@ the ultraweak topology
 from being weaker than the ultrastrong topology:
 a net that converges ultrastrongly converges ultraweakly as well,
 see~\sref{uwweaker}.
-To see this,
-and when dealing with the 
-ultrastrong topology in general,
-it is useful to note that
-every np-functional~$\omega$
-on a von Neumann algebra~$\scrA$ gives rise
-to an inner product $[a,b]_\omega = \omega(a^*b)$
-and seminorm $\|a\|_\omega = [a,a]_\omega^{\nicefrac{1}{2}}
-= \omega(a^*a)^{\nicefrac{1}{2}}$
-(as in~\sref{state-inner-product} and~\sref{omega-norm-basic}).
 \end{point}
 \begin{point}{50}[von-neumann-examples]{Examples}%
 \begin{enumerate}
@@ -301,6 +319,9 @@ on a finite complete measure space~$X$
 (modulo the negligible ones)
 form
 a commutative von Neumann algebra~$L^\infty(X)$.
+
+(Recall that a measure space~$X$ is called finite
+when $\mu(X)<\infty$.)
 \end{enumerate}
 \end{point}
 \end{parsec}
@@ -1085,17 +1106,17 @@ on a von Neumann algebra $\scrA$.
 Let~$f\colon \scrA\to\scrB$ be an injective nmiu-map
 between von Neumann algebras.
 Then the image~$f(\scrA)$ is a von Neumann subalgebra of~$\scrB$,
-and~$f$ restricts to a nmiu-isomorphism from~$\scrA$
+and~$f$ restricts to an nmiu-isomorphism from~$\scrA$
 to~$f(\scrA)$.
 \begin{point}{70}{Proof}%
 We already know by~\sref{injective-miu-iso-on-image}
 that~$f(\scrA)$ is a $C^*$-subalgebra of~$\scrA$,
-and that~$f$ restricts to a miu-isomorphism~$f'\colon \scrA\to f(\scrA)$.
+and that~$f$ restricts to an miu-isomorphism~$f'\colon \scrA\to f(\scrA)$.
 The only thing left to show is that~$f(\scrA)$
 is a von Neumann subalgebra of~$\scrB$,
-because a miu-isomorphism between von Neumann algebras
+because an miu-isomorphism between von Neumann algebras
 (being an order isomorphism)
-will automatically be a nmiu-isomorphism.
+will automatically be an nmiu-isomorphism.
 Let~$D$ be a bounded directed subset of~$f(\scrA)$.
 Note that~$S:=(f')^{-1}(D)$ is a bounded
 directed subset of~$\scrA$,
@@ -1121,7 +1142,7 @@ is injective.
 Since~$\varrho_\Omega$
 is also normal by~\sref{varrho-Omega-normal},
 we see by~\sref{injective-nmiu-iso-on-image} that~$\varrho_\Omega$
-restricts to a nmiu-isomorphism
+restricts to an nmiu-isomorphism
 from~$\scrA$ to the von Neumann subalgebra~$\varrho_\Omega(\scrA)$
 of~$\scrB(\scrH_\Omega)$.\qed
 \end{point}
@@ -1298,8 +1319,8 @@ for some set~$X$ (see~\sref{duplicable}).
 
 We should probably mention that~$L^\infty(X)$
 can be defined for any measure space~$X$,
-and is precisely a von Neumann algebra
-when~$X$ is \emph{localisable}
+and is a von Neumann algebra
+precisely when~$X$ is \emph{localisable},
 see~\cite{segal1951}.
 This has the advantage that any commutative von Neumann algebra
 is nmiu-isomorphic
@@ -1373,7 +1394,7 @@ The space $\mathcal{L}^\infty(X)$
 is not only closed with respect to the (supremum) norm
 on~$\C^X$,
 but also with respect to coordinatewise limits
-of \emph{sequences}
+of bounded \emph{sequences}
 (c.f.~121F of~\cite{fremlin}).
 As a result,
 the coordinatewise
@@ -1467,7 +1488,7 @@ when~$f(x)=g(x)$ for almost all~$x\in X$
 is negligible).
 It is easily seen that~$\approx$ is an equivalence relation;
 we denote the equivalence class
-of an function~$f\in \mathcal{L}^\infty(X)$
+of a function~$f\in \mathcal{L}^\infty(X)$
 by $\Define{f^\circ}$,%
 \index{*supcirc@$f^\circ$, equivalence class of~$f$}
 and
@@ -1534,7 +1555,7 @@ in~$\Real{L^\infty(X)}$.
 Note that~$\int\colon L^\infty(X)\to\C$
 is also faithful,
 because if~$\int f^\circ=\int f = 0$
-for some $f\in \mathcal{L}^\infty(X)$,
+for some $f\in \mathcal{L}^\infty(X)_+$,
 then~$f(x)=0$ for almost all~$x\in X$,
 and so~$f^\circ=0$.
 Now,
@@ -1726,6 +1747,35 @@ then~$A\cup B$ and~$A\backslash B$
 are almost clopen.
 \end{enumerate}
 \end{point}
+\begin{point}{31}%
+Meagreness can be thought of as a topological analogue of negligibility.
+In fact, with respect to the measure we'll put on $\spec(\scrA)$
+in~\sref{cvn-faithful},
+    meagreness and negligibility actually coincide.
+In general, however, 
+the notions are disparate,
+as is demonstrated rather dramatically by the following example.
+\end{point}
+\begin{point}{32}{Example}
+of a meagre subset~$A$ of~$[0,1]$
+with Lebesgue measure~$1$.
+Given an enumeration~$q_1,q_2,\dotsc$
+    of the rational numbers in~$[0,1]$,
+the set
+\begin{equation*}
+    \textstyle
+    B_m \ :=\  \bigcup_n 
+    \bigl(\,q_n-\frac{1}{2m}2^{-n},\,q_n+\frac{1}{2m}2^{-n}\,\bigr)
+    \cap[0,1]
+\end{equation*}
+is open and dense in~$[0,1]$, with a Lebesgue measure 
+of at most~$\nicefrac{1}{m}$.
+So the intersection~$B:=\bigcap_m B_m$ is Lebesgue negligible.
+On the other hand, $[0,1]\backslash B_m$
+is closed and has empty interior,
+so that $A:=[0,1]\backslash B\equiv \bigcup_m B_m$
+is meagre with Lebesgue measure~$1$.
+\end{point}
 \end{parsec}
 \begin{parsec}{530}%
 \begin{point}{10}%
@@ -1743,7 +1793,7 @@ Let~$\scrA$ be a commutative von Neumann algebra.
 Using the fact that
 the Gelfand representation~$\gamma_\scrA\colon \scrA\to C(\spec(\scrA))$
 from~\sref{gelfand-representation}
-is a miu-isomorphism 
+is an miu-isomorphism 
 by~\sref{gelfand}
 and thus an order isomorphism,
 show that~$C(\spec(\scrA))$
@@ -1948,7 +1998,7 @@ Let~$\scrA$ be a commutative von Neumann algebra~$\scrA$.
 Recall that
 the Gelfand representation $\gamma_\scrA\colon 
 \scrA\to C(\spec(\scrA))$
-is a nmiu-isomorphism (by~\sref{ngelfand}),
+is an nmiu-isomorphism (by~\sref{ngelfand}),
 $C(\spec(\scrA))$ is a von Neumann algebra,
 and that the almost clopen subsets (see~\sref{meagre}) of~$\spec(\scrA)$
 form a $\sigma$-algebra.
@@ -1967,7 +2017,7 @@ bounded function $f\colon \spec(\scrA)\to\C$
 is measurable iff~$f$ is continuous almost everywhere.
 Moreover, 
 $f\mapsto f^\circ\colon C(\spec(\scrA))\to L^\infty(\spec(\scrA))$
-is a nmiu-isomorphism,
+is an nmiu-isomorphism,
 and~$\int f^\circ = \omega(\gamma_\scrA^{-1}(f))$ for all~$f\in C(X)$.
 All in all,
 we get the following commuting diagram.
@@ -2291,15 +2341,16 @@ Show that~$q-p$ is a projection
 Above every effect~$b$ of a von Neumann algebra~$\scrA$,
 there is a smallest projection, \Define{$\ceil{b}$},%
 \index{*ceil@$\ceil{\,\cdot\,}$!$\ceil{a}$, ceiling}
-we call the \Define{ceiling}%
+which we call the \Define{ceiling}%
 \index{ceiling}
 of~$b$,
  given by $\ceil{b}=\bigvee_{n=0}^\infty b^{\nicefrac{1}{2^n}}$.\\
 Moreover, if $a\in \scrA$ commutes with $b$,
 then~$a$ commutes with~$\ceil{b}$.
 \begin{point}{20}{Proof}
-Let~$p$ denote the supremum of~$0\leq b\leq b^{\nicefrac{1}{2}}\leq
-b^{\nicefrac{1}{4}}\leq\dotsb\leq 1$.
+Since~$0\leq b\leq b^{\nicefrac{1}{2}}\leq
+b^{\nicefrac{1}{4}}\leq\dotsb\leq 1$,
+    we may define~$p:=\bigvee_n b^{\nicefrac{1}{2^n}}$.
 \begin{point}{30}[vna-ceil-point-1]%
 To begin,
 note that if~$a\in \scrA$
@@ -2354,7 +2405,8 @@ given by~$\floor{b} = \bigwedge_{n=0}^\infty b^{2^{n}}$.\\
 Moreover, if~$a\in \scrA$ commutes with~$b$,
 then~$b$ commutes with~$\floor{b}$.
 \begin{point}{70}{Proof}%
-Let~$p$ denote the infimum of $1\geq b\geq b^2 \geq b^4 \geq  \dotsb \geq 0$
+Note that $1\geq b\geq b^2 \geq b^4 \geq  \dotsb \geq 0$,
+    and define $p:=\bigwedge_n b^{2^n}$
     (see~\sref{infima-in-vna}.)
 \begin{point}{80}[vna-floor-point-1]%
 If~$a\in \scrA$ commutes with~$b$,
@@ -2423,7 +2475,7 @@ we have
 	\qquad
 	\text{and}\qquad
 	\floor{f^\circ}
-	\,=\, \mathbf{1}_{\{x\in X\colon  f(x)=0\}}^\circ
+	\,=\, \mathbf{1}_{\{x\in X\colon  f(x)=1\}}^\circ
 \end{equation*}
 for every~$f\in\mathcal{L}^\infty(X)$
 with~$0\leq f^\circ \leq 1$.
@@ -2984,7 +3036,7 @@ Assuming~$f$ is multiplicative
 show that~$\ceil{f}=1$ iff~$f$ is injective.
 
 (There is more to be said about
-the carrier of a nmiu-map, see~\sref{carrier-miu}.)
+the carrier of an nmiu-map, see~\sref{carrier-miu}.)
 \end{enumerate}
 \end{point}
 \begin{point}{30}{Exercise}%
@@ -3179,6 +3231,7 @@ with $\scrB\subseteq \scrB^{\square\square}$.
 Show that~$(\,\scrA\cap \C\,)^\square=\scrA$,
 and so~$(\,\scrA\cap\C\,)^{\square\square} = Z(\scrA)$.
 
+So in general~$\scrB^{\square\square}$ needn't equal~$\scrB$.
 Nevertheless,
 we'll see in \sref{proto-double-commutant} that $\scrB^{\square\square}=\scrB$
 when~$\scrA$ is of the form $\scrA=\scrB(\scrH)$
@@ -3297,8 +3350,8 @@ Indeed,
 given a positive central element~$A$ 
 of~$\scrB(\scrH)$,
 we have $\left<x, A\|y\|^2 x\right>
-= \left<x,A \ketbra{x}{y} y\right>
-= \left<x,\ketbra{x}{y}A y\right>
+        = \left<x,\,(A \ketbra{x}{y})\, y\right>
+        = \left<x,\,(\ketbra{x}{y}A)\, y\right>
 = \left<x,\smash{\|\sqrt{A}y\|^2 }x\right>$
 for all~$x,y\in\scrH$,
 and so~$A\|y\|^2= \|\sqrt{A}y\|^2$
@@ -3334,13 +3387,13 @@ for all but the fact that $1$ need not be in~$c\scrA$.
 Show~$c\scrA$
 is a von Neumann algebra with~$c$ as unit,
 and that $a\mapsto (ca,c^\perp a)$
-gives a nmiu-isomorphism
+gives an nmiu-isomorphism
 $\scrA\to c\scrA\oplus c^\perp \scrA$.
 \item
 Given a family of central projections $(c_i)_i$ in~$\scrA$
 with $\sum_i c_i=1$
 show that $a\mapsto (c_ia)_i$
-gives a nmiu-isomorphism $\scrA\to\bigoplus_i c_i \scrA$.
+gives an nmiu-isomorphism $\scrA\to\bigoplus_i c_i \scrA$.
 \end{enumerate}
 \end{point}
 \end{parsec}
@@ -3519,10 +3572,12 @@ Since similarly $c\leq c'$, we get~$c=c'$.\qed
 \end{point}
 \end{point}
 \begin{point}{40}[carrier-miu]{Corollary}%
-Given a nmiu-map $f\colon \scrA\to\scrB$
+The carrier $\ceil{f}$
+of an nmiu-map $f\colon \scrA\to\scrB$
 between von Neumann algebras
-we have~$\ceil{f}=\cceil{f}$
-and $\ker(f)=\cceil{f}^\perp\!\scrA$.
+is central, so
+$\ceil{f}=\cceil{f}$.
+    Moreover, $\smash{\ker(f)=\cceil{f}^\perp\!\scrA}$.
 \end{point}
 \begin{point}{50}[proto-gns-ceil]{Lemma}%
 We have~$\cceil{\omega}=
@@ -3635,6 +3690,9 @@ Show that every central projection~$c$
 of a von Neumann algebra is of
 the form~$c\equiv \sum_i \cceil{\omega_i}$
 for some family of np-functionals $(\omega_i)_i$ on~$\scrA$.
+(Hint: take
+    $(\omega_i)_i$ to be a maximal set
+    of np-functionals for which the $\cceil{\omega_i}$'s are orthogonal.)
 \end{point}
 \begin{point}{30}[cvn]{Theorem}%
 \index{von Neumann algebra!commutative}
@@ -3918,11 +3976,22 @@ Show that with respect to this topology,
 scalar multiplication and translations $x\mapsto x+a$
 by a fixed vector~$a\in V$ are continuous.
 \item
-Show that $\{(0,0)\}\cup B_1(-1)\cup B_1(1)\cup B_2(-2)^c\cup B_2(2)^c$
-is a radially open subset of~$\R^2$, 
-which is not open
-in the usual topology.
-
+Show that 
+the subset of~$\R^2$ depicted below in blue
+\begin{center}
+\begin{tikzpicture}
+    \fill[style={fill=lightblue,draw=darkblue,densely dotted,thick}, even odd rule]
+    (-3.5cm,-2.0cm) rectangle (3.5cm,2.0cm)
+    (-1.5cm,0) circle (1.5cm)
+    (1.5cm,0) circle (1.5cm)
+    (-1cm,0) circle (1cm)
+    (1cm,0) circle (1cm)
+    (0,0) node[circle,inner sep=0pt,minimum size=3pt,fill=darkblue]{};
+\end{tikzpicture},
+\end{center}
+including the point in the middle
+but not the dashed borders,
+is radially open, but not open in the usual topology on~$\R^2$.
 \item
 Show that addition on~$\R^2$ is not jointly radially continuous.
 \item
@@ -4089,7 +4158,7 @@ which is impossible.
 \begin{point}{10}[proto-kaplansky]{Proposition}%
 Let~$\scrA$ be a von Neumann algebra,
 and let~$f\colon \R\to\R$ be a continuous map 
-with $f(t)=\mathcal{O}(t)$,
+with $f(t)=O(t)$,
 that is,
 there are~$n\in \N$ and~$b\in [0,\infty)$
 such that $\left|f(t)\right|\leq b\left|t\right|$
@@ -4682,7 +4751,7 @@ Let~$\Omega$ be the set of all np-functionals
 on~$\scrA$.
 Recall from~\sref{ngns-proof}
 that $\varrho_\Omega$
-gives a nmiu-isomorphism
+gives an nmiu-isomorphism
 onto the 
 von Neumann algebra~$\scrR:=\varrho_\Omega(\scrA)$ of operators
 on the Hilbert space~$\scrH_\Omega$.
@@ -5099,7 +5168,7 @@ but also much harder to prove.)
 
 \item
 Show that $(0,0,1,\frac{1}{2}, \frac{1}{3},\dotsc)$
-is not pseudoinvertible in~$\ell_\infty$.
+        is not pseudoinvertible in~$\ell^\infty(\N)$.
 \end{enumerate}
 \end{point}
 \end{parsec}
@@ -5107,17 +5176,17 @@ is not pseudoinvertible in~$\ell_\infty$.
 \begin{point}{10}{Remark}%
 Note that the obvious candidate
 for the pseudoinverse of~$(0,0,1,\frac{1}{2},\frac{1}{3},\dotsc)$
-from~$\ell^\infty$
+    from~$\ell^\infty(\N)$
 being~$(0,0,1,2,3,\dotsc)$
 is not bounded,
-and therefore not an element of~$\ell^\infty$.
+    and therefore not an element of~$\ell^\infty(\N)$.
 We can nevertheless approximate~$(0,0,1,2,3,\dotsc)$
 by the elements
 \begin{equation*}
 (0,0,1,0,0,\dotsc),\ 
 (0,0,1,2,0,\dotsc),\  \dots 
 \end{equation*}
-of~$\ell^\infty$
+    of~$\ell^\infty(\N)$
 forming what we will call ``approximate pseudoinverse'' for 
 $(0,0,1,\frac{1}{2},\frac{1}{3},\dotsc)$.
 That this can also be done for an arbitrary element
@@ -5433,7 +5502,7 @@ because, for example,
 upon applying $(\,\cdot\,)/(1,\frac{1}{2},\frac{1}{3},\dotsc)$
 to the ultrastrongly Cauchy 
 sequence  $(1,0,0,\dotsc),\ (1,1,0,\dotsc),\ \dotsc$
-in~$\ell^\infty$
+    in~$\ell^\infty(\N)$
 we get the 
 sequence $(1,0,0,\dotsc),\ (1,2,0,\dotsc),\ \dotsc$,
 which is not ultrastrongly Cauchy.
@@ -5776,7 +5845,7 @@ define~$u_{k\ell } = u_k ^* u_\ell$;
 we'll show that
 $\varrho\colon A\mapsto \sum_{k\ell} A_{k\ell}  u_{ k \ell}
 \colon M_K\to\scrA$
-is a miu-isomorphism.
+is an miu-isomorphism.
 It's easy to see that~$\varrho$
 is linear, involution preserving and unital.
 To see that~$\varrho$ is multiplicative,
@@ -5863,7 +5932,7 @@ Hence~$\ceil{\|a\|e-a}=0$,
 and so~$a=\|a\|e$.
 In particular, $a$ is in the range of~$\varrho$.
 Whence~$\varrho$ is surjective,
-and thus a miu-isomorphism $M_N\to\scrA$.\qed
+and thus an miu-isomorphism $M_N\to\scrA$.\qed
 \end{point}
 \end{point}
 \end{point}
@@ -6054,7 +6123,7 @@ to be the carrier (see~\sref{carrier})
 of the inclusion $e\colon \scrB\to\scrA$
 followed by the $j$-th projection
 $\pi_j\colon \scrA\equiv\bigoplus_{i\in I}M_{N_i}\to M_{N_j}$.
-Since $\pi_j\circ e$ is a nmiu-map,
+Since $\pi_j\circ e$ is an nmiu-map,
     $d_j$ is a central projection by~\sref{carrier-miu}.
 Since there are fewer projection in~$\scrB$ than in~$\scrA$,
 we have $\ceil{\pi_j}\leq \ceil{\pi_j\circ e}\equiv d_j$.
@@ -7115,7 +7184,7 @@ the map $\varrho_\Omega\colon \scrA\to\scrB(\scrH_\Omega)$
 from~\sref{proto-gelfand-naimark}
 is injective,
 and in fact restricts
-to a nmiu-isomorphism
+to an nmiu-isomorphism
 from~$\scrA$ onto $\varrho_\Omega(\scrA)$
 (cf.~\sref{ngns}).
 So by~\sref{normal-functional}
