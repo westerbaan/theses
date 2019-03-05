@@ -2065,6 +2065,17 @@ As with Hilbert spaces, it will sometimes be more convenient
     to view an orthonormal basis as a sequence/family~$(e_i)_{i \in I}$,
     instead of a subset. This should cause no confusion.
 \end{point}
+% \begin{point}{21}{Beware}%
+% Many authors use a different definition for orthonormal basis
+%     in a Hilbert~$\scrB$-module.
+% For instance in~\cite[dfn.~1.2]{cabrera1995hilbert}
+%     an orthonormal basis is defined as an orthonormal subset
+%     whose~$\scrB$-linear span is norm-dense.
+% This definition is strictly weaker than ours:
+%     there are Hilbert~$\scrB$-modules
+%     with such a weaker orthonormal basis
+%     that are not self dual, cf.~\sref{dils-selfdual}.
+% \end{point}
 \end{point}
 \begin{point}{30}[mod-projelabs]{Exercise}%
 Let~$X$ be a pre-Hilbert $\scrB$-module for a C$^*$-algebra~$\scrB$.
@@ -2519,11 +2530,14 @@ If all norm-bounded ultranorm Cauchy-nets over~$V_1$ would
     converge in~$V_1$,
     then~$V_1$ would be a self-dual Hilbert~$\scrB$-module
     and~$V_1$ would even be ultranorm complete.
-Later, using \sref{kaplansky-hilbmod},
-    we will find out that~$V_1 = \overline{V}$ ---
+Later, when we have established that~$\overline{V}$ is a Hilbert~$\scrB$-module,
+    we will find out that in fact~$\overline{V} \subseteq V_1$
+    due to~\sref{kaplansky-hilbmod}
+    ---
     i.e.~$V_1$ is already ultranorm complete.
 However, in a most frustrating state of affairs,
-    we do not know how to prove this directly.
+    we do not know how to prove this directly
+    without first proving that~$\overline{V}$ is a Hilbert~$\scrB$-module.
 Instead, we repeat: let~$V_2 \subseteq \overline{V}$
     denote the limits of norm-bounded ultranorm Cauchy nets over~$V_1$.
 We have to go further:
@@ -5978,7 +5992,7 @@ Derive (perhaps from~\sref{dils-stand-filter} and~\sref{mult-cancellation}),
 \end{point}
 \end{parsec}
 \begin{parsec}{1700}%
-\begin{point}{10}{Definition}%
+\begin{point}{10}[dils-def-pure]{Definition}%
     Filters, corners and their compositions are called \Define{pure}.
     \index{pure!ncp-map}
 \end{point}
