@@ -2065,17 +2065,58 @@ As with Hilbert spaces, it will sometimes be more convenient
     to view an orthonormal basis as a sequence/family~$(e_i)_{i \in I}$,
     instead of a subset. This should cause no confusion.
 \end{point}
-% \begin{point}{21}{Beware}%
-% Many authors use a different definition for orthonormal basis
-%     in a Hilbert~$\scrB$-module.
-% For instance in~\cite[dfn.~1.2]{cabrera1995hilbert}
-%     an orthonormal basis is defined as an orthonormal subset
-%     whose~$\scrB$-linear span is norm-dense.
-% This definition is strictly weaker than ours:
-%     there are Hilbert~$\scrB$-modules
-%     with such a weaker orthonormal basis
-%     that are not self dual, cf.~\sref{dils-selfdual}.
-% \end{point}
+\begin{point}{21}{Remark}%
+The first assumption `(a)' in the definition of an orthonormal basis~$E$
+    requires that every element~$x$ can be reconstructed
+    from its coefficients~$(\left<e, x\right>)_{e \in E}$.
+This assumption fails, for instance, if there is a non-zero element
+    orthogonal to all basis elements.
+The second assumption `(b)' requires that behind
+    any a reasonable family of coefficients,
+    there is a corresponding element.
+This second assumption fails if the module is not ultranorm complete,
+    see~\sref{dils-selfdual}.
+\end{point}
+\begin{point}{22}{Beware}%
+In the literature, there are several different definitions of an
+    orthonormal basis
+    for a Hilbert~$\scrB$-module~$X$.
+\begin{enumerate}
+\item
+Some~\cite{landi2012orthogonal,manuilov2000hilbertc}
+    define an orthonormal basis as an orthonormal subset~$E \subseteq X$
+        such that~$x = \sum_{e \in E} e \left<e, x\right>$
+    for all~$x \in X$
+    where the sum converges in the \emph{norm}.
+This notion of basis is independent of ours:
+        there is a basis in our sense
+         that is not a basis
+        in their sense ($\{ \ketbra{0}{0}, \ketbra{1}{1}, \ldots\}$
+        in~$\scrB(\ell^2)$)
+        and vice versa (the standard Hilbert module~$H_{\scrB(\ell^2)}$
+            defined in~\cite[\S3]{landi2012orthogonal} has a basis
+            in their sense, but not a basis in ours
+            as it is not self dual, cf.~\sref{dils-selfdual}.)
+\item
+Others such as~\cite[lemma~8.5.23]{blecher2004operator}
+    define an orthonormal basis
+        only when~$X$ is a self-dual (\sref{dils-selfdual})
+        Hilbert C$^*$-module
+            over a von Neumann algebra.
+    In this case an orthonormal basis
+        is defined
+        as an orthonormal subset~$E \subseteq X$
+    such that~$x = \sum_{e \in E} e \left<e, x \right>$
+        for all~$x \in X$
+        where the sum converges in the~$w^*$-topology of~$X$
+        (with respect to the unique Banach space predual
+    of~$X$ for which the inner product is
+    separately~$w^*$-continuous,
+        see \cite[lemma 8.5.4]{blecher2004operator}.)
+This notion is equivalent to ours, but only defined
+    for self-dual modules over von Neumann algebras.
+\end{enumerate}
+\end{point}
 \end{point}
 \begin{point}{30}[mod-projelabs]{Exercise}%
 Let~$X$ be a pre-Hilbert $\scrB$-module for a C$^*$-algebra~$\scrB$.
