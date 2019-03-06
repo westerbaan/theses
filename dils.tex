@@ -1832,6 +1832,17 @@ If~$X=\scrB$ with~$[a,b]=a^*b$,
         ultraweak uniformity
         is stronger than the weak uniformity.
 \end{point}
+\begin{point}{91}{Remarks}%
+The ultranorm uniformity has appeared earlier in the literature
+    under various different names; for instance as the~$\tau_1$-topology
+    in~\cite[thm.~3.5.1]{manuilov2000hilbertc} and as the s-topology
+    in~\cite[2.9]{ghez1985w}.
+In previous work the ultranorm uniformity only plays a minor r\^ole,
+    often amongst other topologies.
+In this thesis we put the ultranorm uniformity center-stage
+    as the right generalization of the norm
+    and give it the `ultranorm' name to match this view.
+\end{point}
 \end{point}
 \end{parsec}
 
@@ -2065,17 +2076,58 @@ As with Hilbert spaces, it will sometimes be more convenient
     to view an orthonormal basis as a sequence/family~$(e_i)_{i \in I}$,
     instead of a subset. This should cause no confusion.
 \end{point}
-% \begin{point}{21}{Beware}%
-% Many authors use a different definition for orthonormal basis
-%     in a Hilbert~$\scrB$-module.
-% For instance in~\cite[dfn.~1.2]{cabrera1995hilbert}
-%     an orthonormal basis is defined as an orthonormal subset
-%     whose~$\scrB$-linear span is norm-dense.
-% This definition is strictly weaker than ours:
-%     there are Hilbert~$\scrB$-modules
-%     with such a weaker orthonormal basis
-%     that are not self dual, cf.~\sref{dils-selfdual}.
-% \end{point}
+\begin{point}{21}{Remark}%
+The first assumption `(a)' in the definition of an orthonormal basis~$E$
+    requires that every element~$x$ can be reconstructed
+    from its coefficients~$(\left<e, x\right>)_{e \in E}$.
+This assumption fails, for instance, if there is a non-zero element
+    orthogonal to all basis elements.
+The second assumption `(b)' requires that behind
+    any a reasonable family of coefficients,
+    there is a corresponding element.
+This second assumption fails if the module is not ultranorm complete,
+    see~\sref{dils-selfdual}.
+\end{point}
+\begin{point}{22}{Beware}%
+In the literature, there are several different definitions of an
+    orthonormal basis
+    for a Hilbert~$\scrB$-module~$X$.
+\begin{enumerate}
+\item
+Some~\cite{landi2012orthogonal,manuilov2000hilbertc}
+    define an orthonormal basis as an orthonormal subset~$E \subseteq X$
+        such that~$x = \sum_{e \in E} e \left<e, x\right>$
+    for all~$x \in X$
+    where the sum converges in the \emph{norm}.
+This notion of basis is independent of ours:
+        there is a basis in our sense
+         that is not a basis
+        in their sense ($\{ \ketbra{0}{0}, \ketbra{1}{1}, \ldots\}$
+        in~$\scrB(\ell^2)$)
+        and vice versa (the standard Hilbert module~$H_{\scrB(\ell^2)}$
+            defined in~\cite[\S3]{landi2012orthogonal} has a basis
+            in their sense, but not a basis in ours
+            as it is not self dual, cf.~\sref{dils-selfdual}.)
+\item
+Others such as~\cite[lemma~8.5.23]{blecher2004operator}
+    define an orthonormal basis
+        only when~$X$ is a self-dual (\sref{dils-selfdual})
+        Hilbert C$^*$-module
+            over a von Neumann algebra.
+    In this case an orthonormal basis
+        is defined
+        as an orthonormal subset~$E \subseteq X$
+    such that~$x = \sum_{e \in E} e \left<e, x \right>$
+        for all~$x \in X$
+        where the sum converges in the~$w^*$-topology of~$X$
+        (with respect to the unique Banach space predual
+    of~$X$ for which the inner product is
+    separately~$w^*$-continuous,
+        see \cite[lemma 8.5.4]{blecher2004operator}.)
+This notion is equivalent to ours, but only defined
+    for self-dual modules over von Neumann algebras.
+\end{enumerate}
+\end{point}
 \end{point}
 \begin{point}{30}[mod-projelabs]{Exercise}%
 Let~$X$ be a pre-Hilbert $\scrB$-module for a C$^*$-algebra~$\scrB$.
@@ -2124,7 +2176,9 @@ By \sref{module-CS} we
         f(\left<x_\alpha,x_\alpha\right>)$ for any~np-map~$f\colon \scrB \to \C$
         and so~$\left<y,x_\alpha\right>$ is an ultrastrong-Cauchy net in~$\scrB$.
 Von Neumann algebras are ultrastrongly complete, see \sref{vn-complete},
-so we can define~$\tau(y) = (\uslim_\alpha \left<y, x_\alpha\right>)^*$.
+so we can define~$\tau(y) = (\uslim_\alpha \left<y, x_\alpha\right>)^*$,
+    where~\Define{$\uslim$}\index{uslim@$\uslim$} denotes
+    the ultrastrong limit.
 As addition and multiplication by a fixed element
 are ultrastrongly continuous (see \sref{mult-uws-cont})
     $\tau$ is~$\scrB$-linear.
@@ -2135,8 +2189,10 @@ For each~$\alpha$ we have~$\left<x_\alpha, y\right>\left<y, x_\alpha\right>
     \tau(y)\tau(y)^*
     \ \overset{\sref{usconv}}{=} \ 
     \uwlim_\alpha \left<x_\alpha,y\right>\left<y,x_\alpha\right>
-    \ \leq \ \|y\|^2B^2.
+    \ \leq \ \|y\|^2B^2,
 \end{equation*}
+where \Define{$\uwlim$}\index{uwlim@$\uwlim$}
+    denotes the ultraweak limit.
 Thus~$\|\tau(y)\|^2 = \|\tau(y)\tau(y)^*\| \leq \|y\|^2B^2$.
 So~$\tau$ is bounded.
 By self-duality, there is a~$t \in X$ such that~$\tau(y) = \left<t,y\right>$
@@ -3135,7 +3191,8 @@ As~$T$ is ultranorm uniformly continuous
 With the same motions we see~$T(x_\alpha) \sim T(x'_\alpha)$
     when~$x_\alpha \sim x'_\alpha$.
 Using this and that~$Y$ is ultranorm complete, see \sref{dils-selfdual},
-    we may define~$\hat{T} x = \unlim_\alpha x_\alpha$.
+    we may define~$\hat{T} x = \unlim_\alpha x_\alpha$,
+    where~\Define{$\unlim$}\index{unlim@$\unlim$} denotes the limit in the ultranorm uniformity.
 Clearly~$\hat{T}\after\eta=T$.
 It is straightforward to check
     that $\scrB$-linearity
@@ -4408,7 +4465,8 @@ Let~$X$ be a self-dual Hilbert~$\scrB$-module for some von Neumann
     algebra~$\scrB$.
 Show that for any~$x_1, \ldots, x_n \in X$,
     there is a finite orthonormal basis
-    of~$\{x_1, \ldots, x_n\}^{\perp\perp}$.
+    of~$\{x_1, \ldots, x_n\}^{\perp\perp}$
+    consisting of at most~$n$ elements.
 (Use the orthonormalization in the last part of \sref{selfdual-bcompl-then-basis}.)
 \end{point}
 \end{parsec}
