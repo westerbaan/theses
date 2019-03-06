@@ -2165,7 +2165,9 @@ By \sref{module-CS} we
         f(\left<x_\alpha,x_\alpha\right>)$ for any~np-map~$f\colon \scrB \to \C$
         and so~$\left<y,x_\alpha\right>$ is an ultrastrong-Cauchy net in~$\scrB$.
 Von Neumann algebras are ultrastrongly complete, see \sref{vn-complete},
-so we can define~$\tau(y) = (\uslim_\alpha \left<y, x_\alpha\right>)^*$.
+so we can define~$\tau(y) = (\uslim_\alpha \left<y, x_\alpha\right>)^*$,
+    where~\Define{$\uslim$}\index{uslim@$\uslim$} denotes
+    the ultrastrong limit.
 As addition and multiplication by a fixed element
 are ultrastrongly continuous (see \sref{mult-uws-cont})
     $\tau$ is~$\scrB$-linear.
@@ -2176,8 +2178,10 @@ For each~$\alpha$ we have~$\left<x_\alpha, y\right>\left<y, x_\alpha\right>
     \tau(y)\tau(y)^*
     \ \overset{\sref{usconv}}{=} \ 
     \uwlim_\alpha \left<x_\alpha,y\right>\left<y,x_\alpha\right>
-    \ \leq \ \|y\|^2B^2.
+    \ \leq \ \|y\|^2B^2,
 \end{equation*}
+where \Define{$\uwlim$}\index{uwlim@$\uwlim$}
+    denotes the ultraweak limit.
 Thus~$\|\tau(y)\|^2 = \|\tau(y)\tau(y)^*\| \leq \|y\|^2B^2$.
 So~$\tau$ is bounded.
 By self-duality, there is a~$t \in X$ such that~$\tau(y) = \left<t,y\right>$
@@ -3176,7 +3180,8 @@ As~$T$ is ultranorm uniformly continuous
 With the same motions we see~$T(x_\alpha) \sim T(x'_\alpha)$
     when~$x_\alpha \sim x'_\alpha$.
 Using this and that~$Y$ is ultranorm complete, see \sref{dils-selfdual},
-    we may define~$\hat{T} x = \unlim_\alpha x_\alpha$.
+    we may define~$\hat{T} x = \unlim_\alpha x_\alpha$,
+    where~\Define{$\unlim$}\index{unlim@$\unlim$} denotes the limit in the ultranorm uniformity.
 Clearly~$\hat{T}\after\eta=T$.
 It is straightforward to check
     that $\scrB$-linearity
@@ -4449,7 +4454,8 @@ Let~$X$ be a self-dual Hilbert~$\scrB$-module for some von Neumann
     algebra~$\scrB$.
 Show that for any~$x_1, \ldots, x_n \in X$,
     there is a finite orthonormal basis
-    of~$\{x_1, \ldots, x_n\}^{\perp\perp}$.
+    of~$\{x_1, \ldots, x_n\}^{\perp\perp}$
+    consisting of at most~$n$ elements.
 (Use the orthonormalization in the last part of \sref{selfdual-bcompl-then-basis}.)
 \end{point}
 \end{parsec}
