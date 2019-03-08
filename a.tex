@@ -39,6 +39,32 @@
 \newpage
 }
 
+\newcommand{\achterkanttitelpagina}[3]{
+\vspace*{10em}
+\begin{center}
+{\large\sffamily\color{darkblue}#1:}
+\end{center}
+\begin{center}
+Prof.~dr.~B.P.F.~\textsc{Jacobs}
+\end{center}
+\vspace{5em}
+\begin{center}
+{\large\sffamily\color{darkblue}#2:}
+\end{center}
+\begin{center}
+Prof.~dr.~J.D.M.~\textsc{Maassen}\\
+\vspace{.5em}
+Prof.~dr.~P.~\textsc{Panangaden} (McGill University, Canada) \\
+\vspace{.5em}
+Prof.~dr.~P.~\textsc{Selinger} (Dalhousie University, Canada) \\
+\vspace{.5em}
+Dr.~C.~\textsc{Heunen} (University of Edinburgh, #3)\\
+\vspace{.5em}
+Dr.~A.R.~\textsc{Kissinger}
+\end{center}
+\newpage
+}
+
 \newcommand{\whiteout}[1]{{\color{white}#1}}
 
 \titelpagina{\whiteout{P}$\,$}{$\,$\whiteout{ter}\\
@@ -61,8 +87,7 @@ in het openbaar te verdedigen op
 om \textbf{10.30 uur precies}}{door}{geboren op 30 augustus 1988\\
 te Nijmegen}
 
-\vspace*{1em}
-\newpage
+\achterkanttitelpagina{Promotor}{Manuscriptcommissie}{Schotland}
 
 \titelpagina{Doctoral Thesis}{to obtain the degree of doctor \\
 from  Radboud University Nijmegen \\
@@ -72,8 +97,9 @@ to be defended in public on \textbf{Tuesday, May 14, 2019}\\
 at \textbf{10.30 hours}}{by}{Born on August 30, 1988\\
 in Nijmegen (The Netherlands)}
 
-\makeatletter\@starttoc{parsectoc}\makeatother
+\achterkanttitelpagina{Supervisor}{Doctoral Thesis Committee}{Scotland}
 
+\makeatletter\@starttoc{parsectoc}\makeatother
 \chapter{Introduction}
 
 % Code to print the dimensions of the paper:
