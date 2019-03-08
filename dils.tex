@@ -30,7 +30,7 @@ The common theme is that a complicated map
 
 \begin{point}{30}%
 Probably the most famous dilation theorem is that
-of Stinespring~\cite[Thm.~1]{stinespring}.
+of Stinespring~\cite[thm.~1]{stinespring}.
 (We will see a detailed proof later, in \sref{dils-proof-stinespring}.)
 \end{point}
 
@@ -749,7 +749,9 @@ Conclude all ncp-maps~$\varphi\colon \scrB(\scrH) \to \scrB(\scrK)$
 are of the form~$\varphi(a) = \sum_{i \in I} V_i^* a V_i$
 for some bounded operators~$V_i\colon \scrK \to \scrH$,
 for which the partial sums of~$\sum_i V_i^*V_i$ are bounded.
-These~$V_i$ are called \Define{Kraus operators}\index{Kraus operators} for~$\varphi$.
+These~$V_i$ are called \Define{Kraus operators}\index{Kraus operators}
+    for~$\varphi$.  (For a different approach,
+    see e.g.~\cite[thm.~2.3]{davies1976quantum}.)
 
 Now assume~$\scrH$ and~$\scrK$ are finite dimensional.\footnote{%
         For arbitrary~$\scrH$ and~$\scrK$,
@@ -772,6 +774,7 @@ Let~$\varphi\colon \scrA \to \scrB(\scrH)$
     be any ncp-map
     for some Hilbert space~$\scrH$ and von Neumann algebra~$\scrA$.
     A \Define{normal Stinespring dilation}\index{Stinespring dilation}
+        (cf.~\cite[ch.~4]{paulsen})
     is a triple~$(\scrK,\varrho, V)$
     with~$\scrK$ a Hilbert space,
     $\varrho\colon \scrA \to \scrB(\scrK)$ an nmiu-map
@@ -796,14 +799,15 @@ Every (normal) Stinespring dilation~$(\scrK, \varrho, V)$
 \begin{point}{20}%
 It is a well-known fact that all minimal normal Stinespring dilations
     for a fixed~$\varphi$ are unitarily equivalent,
-    see for instance~\cite[Proposition 4.2]{paulsen}.
+    see for instance~\cite[prop.~4.2]{paulsen}.
 We will adapt its proof to show that a minimal normal Stinespring
     dilation admits a universal property.
 Later we will use this to prove a second universal property \sref{stinespring-is-paschke}
     that allows us to generalize Stinespring's dilation to
     arbitrary ncp-maps.
 The modification of the familiar argument
-    is mostly straightforward, except for the following lemma.
+    is mostly straightforward, except for the following lemma,
+    which we published earlier as \cite[lem.~11]{wwpaschke}.
 \end{point}
 \parpic[r]{
 $\xymatrix{\mathscr{A} \ar[r]^\varrho \ar[rd]_{\varrho'}&
@@ -858,6 +862,7 @@ Hence
         then there is a unique isometry~$S\colon \scrK \to \scrK'$
         such that~$SV=V'$ and~$\varrho = \ad_S\after \varrho'$.
 \begin{point}{60}{Proof}
+(This is the same proof we gave in~\cite{wwpaschke}.)
 First we will deal with a pathological case.
 If~$V = 0$, then~$\varphi = 0$, $V' = 0$, $\scrK = \{0\}$
 and~$\varrho = 0$.  Thus the unique linear map~$S\colon \{0\} \to \scrK'$
@@ -890,7 +895,7 @@ As the linear span of~$\varrho(\scrA) V\scrH$ is dense in~$\scrK$,
 we see~$\ad_{S_1}(c) = \ad_{S_2}(c)$ for all~$c \in \scrB(\scrK')$.
 So~$\ad_{S_1} = \ad_{S_2}$
     and thus $\lambda S_1= S_2$ for some~$\lambda \in \C$,
-cf.~\cite[Lemma 9]{westerbaan2016universal}.
+cf.~\cite[lem.~9]{westerbaan2016universal}.
 As~$V \neq 0$, there is an~$x \in \scrH$ with~$Vx \neq 0$.
 Also~$S_1 V x \neq 0$ as~$S_1$ is an isometry and thus injective.
 From this and~$S_1 V x = V'x = S_2Vx = \lambda S_1 Vx$, we get~$\lambda=1$.
@@ -958,7 +963,7 @@ Show using~\sref{dils-univ-stinespring}
 In the special case of ncp-maps
     of the form~$\varphi \colon \scrB(\scrH) \to \scrB(\scrK)$,
     there is a different and noteworthy  property
-    concerning dilations `of the same dimension',
+    concerning dilations `of the same dimension'
     called \emph{essential uniqueness of purification}.
 This property is the cornerstone of several publications,
     notably \cite{chiribella}, which popularized it.
@@ -1038,7 +1043,7 @@ $\xymatrix@C=2.5em@R=2em{
 This unique mediating map~$\sigma$ should exist for every
     such triple~$(\scrP',\varrho',h')$,
     in particular for~$(\scrP, \varrho, h)$ itself (in which case it is~$\id$).
-Thus it is more correct to leave out ``(other) such'' (and add~$\varphi=h' \after \varrho'$).
+Thus it is more correct to leave out ``(other) such''.
 I feel, however, that this would be harder to follow for a reader
     unfamiliar with universal properties:
         the new triple would be introduced without being directly related
@@ -1065,6 +1070,8 @@ Let~$\varphi\colon \scrA \to \scrB(\scrH)$
 }
 
 \begin{point}{40}{Proof}%
+(This is essentially the same proof
+    we gave in \cite{wwpaschke}.)
 Let~$\scrP'$ be any von Neumann algebra
     together with nmiu-map~$\varrho'\colon \scrA \to \scrP'$
     and ncp-map~$h'\colon \scrP' \to \scrB(\scrH)$
@@ -1137,7 +1144,8 @@ Later we will show that
 Before we show this,
     we look at some other examples and basic properties
         of Paschke dilations.
-First, Paschke dilations are unique up to a unique nmiu-isomorphism:
+First, as Paschke dilations are defined by a simple universal property,
+    they are unique up to a unique nmiu-isomorphism:
 \par
 \end{point}
 \end{point}
@@ -1293,9 +1301,15 @@ A \Define{Hilbert $\scrB$-module}\index{Hilbert $\scrB$-module}
     (also called a \Define{Hilbert C$^*$-module over~$\scrB$})
     is a pre-Hilbert~$\scrB$-module
     which is complete in this norm.
+\begin{point}{21}{Beware}%
+In his original definition~\cite[\S2.1]{paschke}, Paschke
+    chose to make his~$\scrB$-valued inner product~$\scrB$-linear
+    on the left instead of on the right.
+He also assumes his inner products to be definite.
+\end{point}
 \end{point}
 \begin{point}{30}{Examples}%
-Several examples of (pre-)Hilbert C$^*$-modules follow,
+    Several examples\cite{paschke} of (pre-)Hilbert C$^*$-modules follow,
     to each of which we will return in the remainder.
 \begin{itemize}
 \item
@@ -1355,7 +1369,14 @@ This~$\left<\,\cdot\,,\,\cdot\,\right>_f$
     is a complex-valued inner product on~$X$.
 Hence, by~\sref{inner-product-basic},
     we know that~$\|\,\cdot\,\|_f$ is a seminorm
-        (i.e.~a non-positive-definite norm).
+        (i.e.~a not-necessarily-positive-definite norm.)
+\begin{point}{21}%
+We start with the Cauchy--Schwarz inequality
+    for~$\scrB$-valued inner products.
+The proof is the same as Paschke gives
+        in \cite[prop.~2.3 (ii)]{paschke},
+        but we use it to prove a slightly more general result.
+\end{point}
 \end{point}
 \begin{point}{30}[module-CS]{Proposition (Cauchy--Schwarz)}%
 Let~$X$ be a right~$\scrB$-module
@@ -1395,6 +1416,7 @@ First use Cauchy--Schwarz (\sref{module-CS})
 With this, derive $\|x\| =\|\left<x,x\right>\|^{\frac{1}{2}}$ is a seminorm on~$X$ with
     $\|x \cdot b \| \leq \|x\|\|b\|$
     for all~$b \in \scrB$.
+    (See \cite[prop.~2.3]{paschke}.)
 \begin{point}{60}%
 From this, it follows easily that
 that the addition and the module action
@@ -1416,6 +1438,12 @@ A~\Define{$\scrB$-sesquilinear form}\index{sesquilinear form!$\scrB$-valued} on~
 \beta^* \,\langle x,y\rangle \,b \ =\ \langle \,x \beta\,,\, y b \,\rangle 
     \qquad \text{for all $x,y \in X$ and~$b,\beta \in \scrB$}.
 \end{equation*}
+\begin{point}{71}{Remark}%
+It seems that~$\scrB$-sesquilinear forms do not explicitly appear
+    in the established literature,
+    even though its associated polarization identity
+    is often used implicitly.
+\end{point}
 \end{point}
 \begin{point}{80}{Example}%
 Let~$X$ be a pre-Hilbert~$\scrB$-module.
@@ -1453,7 +1481,13 @@ Adjoints are unique:
 We write \Define{$T^*$} for the adjoint of~$T$ (if it exists)
 and~$\Define{\scrB^a(X)}$\index{$\scrB^a(X)$}
     for the subset of (norm-)bounded operators on~$X$
-    which are adjointable.
+    which are adjointable. (See \cite[\S2]{paschke}.)
+\end{point}
+\begin{point}{11}%
+The second part of the following lemma is well-known,
+    but is proven in a new way using
+    the equivalence which is inspired
+    by~\cite[thm.~2.8 (ii)]{paschke}.
 \end{point}
 \begin{point}{20}[adjointable-cstar-identity]{Lemma}%
 For a linear map~$T \colon X \to Y$
@@ -1509,7 +1543,7 @@ With composition as multiplication,
     adjoint as involution
     and operator norm,
     the set of adjointable operators
-     $\scrB^a(X)$ is a C$^*$-algebra.
+     $\scrB^a(X)$ is a C$^*$-algebra. \cite[\S2]{paschke}
 \begin{point}{50}{Proof}
 It is easy to see~$T^*+S^*$ is an adjoint of~$T+S$
     for~$T,S \in \scrB^a(X)$
@@ -1552,7 +1586,7 @@ The vector states on~$\scrB^a(X)$ are order separating ---
 that is: $T \geq 0$ if and only if~$\left<x,Tx\right> \geq 0$
 for all~$x \in X$.
 \begin{point}{20}{Proof}%
-(Proof from \cite[Lemma 4.1]{lance}.)
+(Proof from \cite[lem.~4.1]{lance}.)
 Assume~$T \in \scrB^a(X)$ with~$T \geq 0$.
 Then~$T = S^*S$ for some~$S \in \scrB^a(X)$
     and so~$\left<x, Tx\right> = \left<Sx,Sx\right> \geq 0$
@@ -1577,8 +1611,9 @@ By assumption~$0 \leq \left<T_-x,TT_-x\right>$
 \end{point}
 \begin{point}{30}{Lemma}%
 Let~$T\colon X \to Y$
-    be an adjointable linear map between pre-Hilbert $\scrB$-modules~$X,Y$.
-Then~$T$ is~$\scrB$-linear.
+    be an adjointable linear map
+    between pre-Hilbert $\scrB$-modules~$X,Y$.
+    Then~$T$ is~$\scrB$-linear. \cite[\S2]{paschke}
 \begin{point}{40}{Proof}%
 We have
     $\left<y, (Tx)b\right>
@@ -1597,10 +1632,10 @@ Let~$X$ and~$Y$ be right~$\scrB$-modules with~$\scrB$-valued
 If~$T \colon X \to Y$ is a bounded~$\scrB$-linear map,
     then we have the
         inequality~$\left<Tx,Tx\right>\leq \|T\|^2 \left<x,x\right>$
-    for any~$x \in X$.
+    for any~$x \in X$.  (cf.~\cite[rem.~2.9]{paschke}.)
 \begin{point}{60}{Proof}
 (The proof is a slight variation on the first part
-of \cite[Thm.~2.8]{paschke}.)
+of \cite[thm.~2.8]{paschke}.)
 Pick~$\varepsilon > 0$.
 By \sref{cstar-positive-1}
     we know $\left<x,x\right> + \varepsilon$ is invertible.
@@ -1682,7 +1717,7 @@ Uniformities are structures that sit between topological spaces
         (see~\sref{dils-uniformity-examples})
         and every uniformity is a topological space.
 We will refresh the basics of uniformities ---
-for a thorough treatment, see for instance \cite[Ch.~9]{willard}.
+for a thorough treatment, see for instance \cite[ch.~9]{willard}.
 \end{point}
 \begin{point}{20}[dils-dfn-uniformity]{Definition}%
     A \Define{uniform space}\index{uniform space} is a set~$X$
@@ -1747,7 +1782,7 @@ Let~$X$ be a set together with
     a family of relations~$B \subseteq \wp (X \times X)$.
 The set~$B$ is said to be a \Define{subbase (for a uniformity on~$X$)}
     if it satisfies axioms 2, 3 and 4
-    of \sref{dils-dfn-uniformity}.
+    of \sref{dils-dfn-uniformity}. (Cf.~\cite[dfn.~5.5]{willard}.)
 \end{point}
 \begin{point}{40}{Exercise}%
 Let~$X$ be a set together with a subbase~$B$.
@@ -1783,7 +1818,7 @@ In this sense every metric space is a uniformity.
                     \alpha \in I\}$
                     is a subbase and fixes
                     a uniformity~$\Phi$ on~$X$.
-(Every uniform space is of this form, see e.g.~\cite[Thm.~39.11]{willard}.)
+(Every uniform space is of this form, see e.g.~\cite[thm.~39.11]{willard}.)
 \item
 Let~$V$ be a vector space with a
 family of seminorms~$(\|\  \|_\alpha)_{\alpha \in I}$.
@@ -1836,7 +1871,7 @@ If~$X=\scrB$ with~$[a,b]=a^*b$,
         ultraweak uniformity
         is stronger than the weak uniformity.
 \end{point}
-\begin{point}{91}{Remarks}%
+\begin{point}{100}{Remarks}%
 The ultranorm uniformity has appeared earlier in the literature
     under various different names; for instance as the~$\tau_1$-topology
     in~\cite[thm.~3.5.1]{manuilov2000hilbertc} and as the s-topology
@@ -2138,6 +2173,7 @@ Let~$X$ be a pre-Hilbert $\scrB$-module for a C$^*$-algebra~$\scrB$.
 Show that we have~$ e \langle e,e \rangle = e$
     for any~$e \in X$
    where~$\langle e, e\rangle$ is a projection.
+    (See the beginning of the proof of~\cite[thm.~3.12]{paschke}.)
 \end{point}
 \begin{point}{40}[mod-parseval]{Exercise}
 Let~$X$ be a pre-Hilbert~$\scrB$-module for a von Neumann algebra~$\scrB$
@@ -2147,7 +2183,7 @@ Let~$X$ be a pre-Hilbert~$\scrB$-module for a von Neumann algebra~$\scrB$
     \langle x, x \rangle \ =\ 
     \sum_{e \in E} \langle x, e\rangle \langle e, x\rangle,
 \end{equation*}
-where the sum converges ultraweakly.
+where the sum converges ultraweakly. \cite{paschke}
 (Hint: use~\sref{innerprod-ultraweak}.)
 \end{point}
 \begin{point}{50}[dils-selfdual]{Theorem}%
@@ -2166,9 +2202,12 @@ where the sum converges ultraweakly.
 \begin{point}{60}{Proof}%
 We will prove $1 \Rightarrow 3 \Rightarrow 4 \Rightarrow 2 \Rightarrow 4 \Rightarrow 1$.
 The equivalence~$1 \Leftrightarrow 4$
-    was already shown by Paschke in \cite[Thm.~3.12]{paschke},
-    but we give a different proof. The other equivalences are new,
-    as far as we know.
+    was already shown by Paschke in \cite[thm.~3.12]{paschke},
+    but we give a different proof.
+The equivalence~$1 \Leftrightarrow 3$ turns out
+    proven by Frank already \cite[thm.~3.2]{frank1990self}
+    in a different way.
+The final equivalence~$1 \Leftrightarrow 2$ is new, as far as we know.
 \begin{point}{70}{1 $\Rightarrow$ 3, self-dual~$X$ are bounded complete}%
     Let~$X$ be a self-dual pre-Hilbert~$\scrB$-module.
     To show norm-bounded ultranorm completeness,
@@ -2542,6 +2581,8 @@ In~\sref{prop-complete-into-hilbert-space}
     we saw that every vector space with inner product
     can be completed into a Hilbert space.
 We continue with the generalization to~Hilbert C$^*$-modules.
+Paschke proves a similar result~\cite[thm.~3.2]{paschke}
+    in a completely different way.
 \end{point}
 \begin{point}{20}[dils-completion]{Theorem}%
 Let~$\scrB$ be a von Neumann algebra
@@ -2643,7 +2684,7 @@ As we need some details in its construction,
     the completion of~$V$ in the ultranorm uniformity
     using Cauchy nets.
 There are other ways to construct a completion of a uniform space,
-    see for instance~\cite[Thm.~39.12]{willard}.
+    see for instance~\cite[thm.~39.12]{willard}.
 
 Let~$\Phi$ denote the set of entourages of the ultranorm
     uniformity on~$V$; for its definition see~\sref{dils-ultranorm}.
@@ -3160,7 +3201,12 @@ We have shown that~$\sigma(W)$ is a compatible extension.
 \end{point}
 \end{parsec}
 \begin{parsec}{1510}%
-\begin{point}{10}[selfdual-completion-univ]{Lemma}%
+\begin{point}{10}%
+The completion~\sref{dils-completion} we just constructed
+    has a universal property,
+    which can be seen as a generalization of~\cite[prop.~3.6]{paschke}.
+\end{point}
+\begin{point}{11}[selfdual-completion-univ]{Lemma}%
 Assume~$\scrB$ is a von Neumann algebra
     and~$V$ is a right $\scrB$-module
     with~$\scrB$-valued inner product.
@@ -3297,7 +3343,7 @@ In \sref{chilb-form-representation} a more general result was shown.
 Suppose~$T\colon X \to Y$ is a~$\scrB$-linear map between
     Hilbert~$\scrB$-modules.
 Show that if~$X$ is self-dual,
-    then~$T$ is adjointable.
+    then~$T$ is adjointable. \cite[prop.~3.4]{paschke}
 \end{point}
 \begin{point}{90}[hilmod-fixed-on-V]{Exercise}%
 Let~$V$ be a right $\scrB$-module with~$\scrB$-valued inner product;
@@ -3318,7 +3364,7 @@ Suppose~$X$ is a self-dual Hilbert~$\scrB$-module
     for a von Neumann algebra~$\scrB$.
 Then~$\scrB^a(X)$ is a von Neumann algebra.
 \begin{point}{110}{Proof}%
-The theorem is due to Paschke \cite[Prop.~3.10]{paschke};
+The theorem is due to Paschke \cite[prop.~3.10]{paschke};
     we give a new proof, which also appeared as \sref{bah-vn}.
 We already know that~$\scrB^a(X)$ is a C$^*$-algebra, see \sref{hilbmod-cstar}.
 \begin{point}{120}{bounded order completeness}%
@@ -3456,7 +3502,7 @@ We are ready to show that every ncp-map has a Paschke dilation.
         and~$b_1, \ldots, b_n \in \scrB$ we have
         \begin{equation}
             \bigl\| \sum_i B(a_i,b_i)\bigr\|^2
-                \leq r \cdot \bigl\| \sum_{i,j} b_i^* \varphi(a_i^*a_j)b_j
+             \    \leq \ r \cdot \bigl\| \sum_{i,j} b_i^* \varphi(a_i^*a_j)b_j
                 \bigr\| \label{phi-compatible}
         \end{equation}
         and~$B(a,b_1)b_2 = B(a,b_1b_2)$
@@ -3511,8 +3557,8 @@ $(\scrB^a(\scrA \otimes_\varphi \scrB), \varrho, h)$
 (This is a simplified version of the proof
     we published earlier in~\cite{wwpaschke}.
 The construction of~$\scrA \otimes_\varphi \scrB$
-    is essentially due to Paschke \cite[Thm.~5.2]{paschke}:
-    the self-dual completion of~$X$ in \cite[Thm.~5.2]{paschke}
+    is essentially due to Paschke \cite[thm.~5.2]{paschke}:
+    the self-dual completion of~$X$ in \cite[thm.~5.2]{paschke}
     is isomorphic to~$\scrA \otimes_\varphi \scrB$.)
 \begin{point}{50}{1: $\scrA \otimes_\varphi \scrB$}%
 The algebraic tensor product~$\scrA \odot \scrB$
@@ -3668,7 +3714,7 @@ Then~$h \after \ad_{S_k} = h'$
     and so (as~$\ad_{S_k}$ is an ncp-map by \sref{hilbmod-ad-ncp}),
     we know~$\ad_{S_1} = \ad_{S_2}$ by~\sref{paschke-uniqueness}.
 Hence there is a~$\lambda\in\C,\lambda\neq 0$
-    with~$S_1 = \lambda S_2$, cf.~\cite[Lemma 9]{westerbaan2016universal}.
+    with~$S_1 = \lambda S_2$, cf.~\cite[lemma 9]{westerbaan2016universal}.
 If~$e \neq 0$,
     then from~$e = S_1\, 1\otimes 1 = \lambda S_2 \,1\otimes 1 = \lambda e$
     it follows~$\lambda = 1$ and so~$S_1 = S_2$.
@@ -3780,7 +3826,7 @@ Thus~$\varrho$ is injective ($\ceil{\varrho}=1$) if and only if $\varphi$
 maps no non-zero central projection to zero ($\cceil{\varphi}=1$).
 \begin{point}{30}{Proof}%
 (This is a simplified version of the proof we published earlier
-    in~\cite[Thm.~30]{paschke}.)
+    in~\cite[thm.~30]{paschke}.)
 By~\sref{paschke-unique-up-to-iso},
     it is sufficient to prove the equivalence
     for the dilation constructed in \sref{existence-paschke}.
@@ -3841,6 +3887,10 @@ For linear  maps~$\varphi, \psi\colon \scrA \to \scrB$,
         For~$t \in \varrho(\scrA)^\square$, the commutant of~$\varrho(\scrA)$,
         define $\Define{\varphi_t}\index{$\varphi_t$} = h(t \varrho(a))$.
 \end{point}
+\begin{point}{31}%
+The following is a generalization~\cite[prop.~5.4]{paschke}
+    to arbitrary Paschke dilations.
+\end{point}
 \begin{point}{40}[paschke-correspondence]{Theorem}%
 Assume~$\varphi\colon \scrA \to \scrB$ is an ncp-map
     with Paschke dilation~$(\scrP, \varrho, h)$.
@@ -3849,7 +3899,7 @@ order isomorphism~$[0,1]_{\varrho(\scrA)^\square} \to [0,\varphi]_\ncp$.
 \begin{point}{50}{Proof}
 First we show the correspondence holds
     for the Paschke dilation constructed in~\sref{existence-paschke}.
-This proof is a slight variation on \cite[Prop.~5.4]{paschke}.
+This proof is a slight variation on \cite[prop.~5.4]{paschke}.
 Then we show the correspondence carries over to arbitrary Paschke dilations.
 \begin{point}{60}{Set-up}%
 Let~$(\scrB^a(\scrA \otimes_\varphi \scrB), \varrho, h)$
@@ -4023,7 +4073,7 @@ Then: for every element~$a \in \scrA$,
 \begin{point}{12}%
 Now we are ready to state and prove our generalization,
     which is inspired by the proof of the regular Kaplansky density theorem
-    given in \cite[Thm.~1.2.2]{arveson2012invitation}.
+    given in \cite[thm.~1.2.2]{arveson2012invitation}.
 Cf.~\sref{kaplansky}.
 \end{point}
 \begin{point}{20}[kaplansky-hilbmod]{Kaplansky density theorem for Hilbert C$^*$-modules}%
@@ -4187,6 +4237,11 @@ Let~$X$ be a Hilbert~$\scrB$-module.
 For any~$x, y \in X$,
 define the bounded operator~$\ketbra{x}{y} \in \scrB^a(X)$
 by~$\Define{\ketbra{x}{y}}\index{*ketbra@$\ketbra{x}{y}$ for Hilbert $\scrB$-modules} z = x \left<y,z\right>$.
+\begin{point}{21}{Remark}%
+The operator~$\ketbra{x}{y}$ is usually denoted by~$\theta_{x,y}$
+    in the literature,
+    see for instance~\cite[\S2.2]{manuilov2000hilbertc}.
+\end{point}
 \begin{point}{30}[hilbmodketbrarules]%
 The following rules are easy to check.
 For~$x,y,v,w \in X$ and~$b \in \scrB$
@@ -4486,7 +4541,7 @@ In fact, the cardinality of~$I$ is the only thing that matters,
 What about Hilbert C$^*$-modules?
 \end{point}
 \begin{point}{20}[hilbmod-el2]{Exercise}%
-In this exercise we prove \cite[Thm.~3.12]{paschke}.
+In this exercise we prove \cite[thm.~3.12]{paschke}.
 Let~$\scrB$ be a von Neumann algebra
     and~$(p_i)_{i \in I}$
     a family of projections from~$\scrB$.
@@ -4604,7 +4659,7 @@ Let~$\scrB$ be a von Neumann algebra that is a factor (i.e.~with center~$\C 1$).
 For any two projections~$p,q \in \scrB$,
     either~$p \lesssim q$ or~$q \lesssim p$ (see \sref{vmleq}).
 \begin{point}{30}{Proof}%
-(For a more traditional proof, see e.g.~\cite[Prop.~6.2.4]{kr}.)
+(For a more traditional proof, see e.g.~\cite[prop.~6.2.4]{kr}.)
 Let~$p,q \in \scrB$ be any projections.
 By Zorn's lemma, there is a maximal
     set~$U\subseteq \scrB$ of partial isometries
@@ -4800,8 +4855,8 @@ This is not the case.
 Indeed, if~$\scrB$ is a type III factor
     of operators on a separable Hilbert space,
     then for any non-zero projection~$p$,
-    we have~$p \sim 1 -p$ (by combining~\cite[Dfn.~6.5.1]{kr}
-        and~\cite[Cor.~6.3.5]{kr})
+    we have~$p \sim 1 -p$ (by combining~\cite[dfn.~6.5.1]{kr}
+        and~\cite[cor.~6.3.5]{kr})
     and so~$\scrB \cong p\scrB \oplus (1-p)\scrB \cong 
     \scrB \oplus \scrB$ as Hilbert C$^*$-modules.
 \end{point}
@@ -4883,7 +4938,7 @@ The inner product on~$X \odot Y$ can be extended
 This is a Hilbert C$^*$-module,
     which is called the \emph{exterior tensor product} of~$X$ and~$Y$.
 It is quite difficult to perform this construction:
-    Lance discusses the difficulties in \cite[Ch.~4]{lance}.
+    Lance discusses the difficulties in \cite[ch.~4]{lance}.
 But if we assume~$\scrA$ and~$\scrB$ are von Neumann algebras
     \emph{and} that $X$ and~$Y$ are self-dual,
     it is rather easier.
@@ -5929,7 +5984,7 @@ It turns out that~$\varphi$ is pure in this sense
 \begin{parsec}{1690}%
 \begin{point}{10}%
 We recall the definition of corner
-        from \cite[Dfn.~2]{westerbaan2016universal} and \sref{corner}.
+        from \cite[dfn.~2]{westerbaan2016universal} and \sref{corner}.
 \end{point}
 \begin{point}{20}[dils-corner]{Definition}%
 An ncp-map~$h \colon \scrA \to \scrB$
@@ -5956,12 +6011,13 @@ To help alleviate some confusion caused by the change of direction,
     is a corner of~$a \in [0,1]_\scrA$.
     We call~$h_a$ the \Define{standard corner}\index{corner!standard} of~$a$.
     See \sref{dfn-standard-corner-and-filter}, \sref{prop-corner}
-        or \cite[Prop.~5]{westerbaan2016universal}.
+        or \cite[prop.~5]{westerbaan2016universal}.
 \end{point}
 \begin{point}{50}[h-is-corner-for-unital-map]{Lemma}%
 If~$(\scrP, \varrho, h)$ is a Paschke dilation of a unital ncp-map,
     then~$h$ is a corner.
 \begin{point}{60}{Proof}%
+(This is a different proof of our similar result \cite[cor.~27]{wwpaschke}.)
 Let~$\varphi \colon \scrA \to \scrB$ be any unital ncp-map.
 It is sufficient to prove~$h$
     is a corner for the
@@ -5999,7 +6055,7 @@ is a \Define{filter}\index{filter} for~$b \in\scrB$, $b \geq 0$ if~$c(1)\leq b$
 The direction-reversed counterpart
     of filters are called \emph{quotients},
     see~\sref{dfn-quotient} and~\cite{effintro} .
-Filters were introduced by us in \cite[Dfn.~2]{westerbaan2016universal}
+Filters were introduced by us in \cite[dfn.~2]{westerbaan2016universal}
     under the name \emph{compressions}.
 To avoid confusion with \cite{alfsen2012}
     and be closer to e.g.~\cite{wilce2016royal},
@@ -6024,7 +6080,7 @@ This corresponds with the fact that there might not be a polarization
         of~$b\in \scrB$, $b\geq 0$.
         We call~$c_b$ the \Define{standard filter}\index{filter!standard} of~$b$.
     See \sref{canonical-filter}, \sref{dfn-standard-corner-and-filter}
-        or \cite[Prop.~6]{westerbaan2016universal}.
+        or \cite[prop.~6]{westerbaan2016universal}.
 \end{point}
 \begin{point}{110}[dils-filter-basics-exercise]{Exercise}%
 Let~$\varphi\colon \scrA \to \scrB$ be any ncp-map
@@ -6057,6 +6113,11 @@ Derive (perhaps from~\sref{dils-stand-filter} and~\sref{mult-cancellation}),
 \begin{point}{10}[dils-def-pure]{Definition}%
     Filters, corners and their compositions are called \Define{pure}.
     \index{pure!ncp-map}
+\begin{point}{11}{Remark}%
+This definition is equivalent to our previous definition
+    of purity given in \cite[dfn.~21]{wwpaschke};
+    see~\sref{pure-fundamental}.
+\end{point}
 \end{point}
 \begin{point}{20}[dils-examples-pure]{Examples}%
 Isomorphisms are pure.  Less trivial examples follow.
@@ -6111,7 +6172,7 @@ is given by~$(\cceil{p}\scrA, h_{\cceil{p}}, h'_p)$,
         is the restriction of~$h_p$.
 \begin{point}{30}{Proof}%
 (This is a simplified proof of the result we published earlier.
-    \cite[Thm.~28]{wwpaschke}.)
+    \cite[thm.~28]{wwpaschke})
 Let~$(\scrA \otimes_{h_p} p\scrA p, \varrho, h)$
     denote the Paschke dilation constructed in~\sref{existence-paschke}.
 We proceed in three steps:
@@ -6297,8 +6358,8 @@ Then the following are equivalent.
     \item The map~$\varphi$ is ncp-extreme.
 \end{enumerate}
 \begin{point}{40}{Proof}%
-(Based on \cite[Prop.~1.4.6]{arveson}
-    and \cite[Thm.~5.4]{paschke}.)
+(Based on \cite[prop.~1.4.6]{arveson}
+    and \cite[thm.~5.4]{paschke}.)
 We prove~$1 \Rightarrow 2 \Rightarrow 3 \Rightarrow 1$.
 \begin{point}{50}{$1 \Rightarrow 2$}%
 Trivial.
