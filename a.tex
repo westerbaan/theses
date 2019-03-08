@@ -8,11 +8,69 @@
 \makeindex
 
 \begin{document}
-\title{%
-\sffamily\color{darkblue}%
-The Category of Von Neumann Algebras}
-\author{Abraham A.~Westerbaan}
-\maketitle
+%\title{%
+%\sffamily\color{darkblue}%
+%The Category of Von Neumann Algebras}
+%\author{Abraham A.~Westerbaan}
+%\maketitle
+
+\newcommand{\titelpagina}[4]{%
+\vspace*{5em}
+\begin{center}
+{\huge\sffamily\color{darkblue}The Category of Von Neumann Algebras}
+\end{center}
+\vspace{2em}
+\begin{center}
+{\par\noindent\sffamily\color{darkblue}\large\textbf{#1}}
+\end{center}
+\begin{center}
+#2
+\end{center}
+\vspace{10em}
+\begin{center}%
+#3
+\end{center}%
+\begin{center}%
+\large\color{darkblue}Abraham Anton \textsc{Westerbaan}
+\end{center}%
+\begin{center}%
+#4
+\end{center}
+\newpage
+}
+
+\newcommand{\whiteout}[1]{{\color{white}#1}}
+
+\titelpagina{\whiteout{P}$\,$}{$\,$\whiteout{ter}\\
+\whiteout{aan}$\,$\\
+\whiteout{op}$\,$\\
+\whiteout{volgens}$\,$\\
+\whiteout{in}$\,$\\
+\whiteout{om}$\,$}{\whiteout{door}}{$\,$\whiteout{geboren}$\,$\\
+\whiteout{te}$\,$}
+
+\vspace*{1em}
+\newpage
+
+\titelpagina{Proefschrift}{ter verkrijging van de graad van doctor\\
+aan de Radboud Universiteit Nijmegen\\
+op gezag van de rector magnificus prof. dr. J.H.J.M. van Krieken,\\
+volgens besluit van het college van decanen \\
+in het openbaar te verdedigen op 
+\textbf{dinsdag 14 mei 2019} \\
+om \textbf{10.30 uur precies}}{door}{geboren op 30 augustus 1988\\
+te Nijmegen}
+
+\vspace*{1em}
+\newpage
+
+\titelpagina{Doctoral Thesis}{to obtain the degree of doctor \\
+from  Radboud University Nijmegen \\
+on the authority of the Rector Magnificus prof. dr. J.H.J.M. van Krieken,\\
+according to the decision of the Council of Deans \\
+to be defended in public on \textbf{Tuesday, May 14, 2019}\\
+at \textbf{10.30 hours}}{by}{Born on August 30, 1988\\
+in Nijmegen (The Netherlands)}
 
 \makeatletter\@starttoc{parsectoc}\makeatother
 
