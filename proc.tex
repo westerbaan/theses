@@ -696,7 +696,7 @@ there is a unique ncp-map $\Define{[f]}\colon
 \ceil{f}\!\scrA\!\ceil{f}
 \to
 \ceil{f(1)}\!\scrB\!\ceil{f(1)}$%
-\index{*bracketsf@$[f]$, for an ncp-map}
+\index{*brackets@$[\,\cdot\,]$!$[f]$, for an ncp-map}
 such that 
 \begin{equation*}
 \xymatrix@C=4em{
@@ -2575,15 +2575,15 @@ to bear upon the tensor product for von Neumann algebras
 we quickly review
 the (algebraic)
 tensor product of plain vector spaces~$V$ and~$W$ first ---
-it is a vector space~$V\odot W$%
+    it is a vector space~$\Define{V\odot W}$%
 \index{*tensora@$\odot$, algebraic tensor product}%
 \index{tensor product!algebraic = of vector spaces}
 equipped
-with a bilinear mapping~$\odot\colon V\times W\to V\odot W$
+    with a bilinear mapping~$\Define{\odot}\colon V\times W\to V\odot W$
 which is  universal  
 in the sense that for every bilinear mapping~$\beta\colon V\times W\to Z$
 into some vector space~$Z$
-there is a unique linear map~$\beta_\odot\colon V\odot W\to Z$%
+    there is a unique linear map~$\Define{\beta_\odot}\colon V\odot W\to Z$%
 \index{*tensorasup@$\beta_\odot$}
 with~$\beta_\odot(v\odot w)=\beta(v,w)$
 for all~$v\in V$ and~$w\in W$.
@@ -3250,7 +3250,7 @@ which concludes this proof.\qed
 Show that the assignments
 $(\scrA,\scrB)\mapsto \scrA\otimes \scrB$,
 and~$(f,g)\mapsto f\otimes g$
-give a bifunctor~$\otimes\colon \Cat{C}\times\Cat{C}
+    give a bifunctor~$\Define{\otimes}\colon \Cat{C}\times\Cat{C}
 \to\Cat{C}$
 \index{*tensor@$\otimes$, tensor product!bifunctor 
 on~$\W{miu},\dotsc$}%
@@ -4738,9 +4738,7 @@ that the functor
 $\scrB\otimes(\,\cdot\,)\colon
 \W{miu}\to\W{miu}$
 has a left adjoint~$(\,\cdot\,)^{*\scrB}$
-for every von Neumann algebra~$\scrB$.%
-	\index{free exponential}%
-	\index{*AstarB@$\scrA^{*\scrB}$, free exponential}
+for every von Neumann algebra~$\scrB$.
 Kornell original proof is rather complex,
 and so is ours, unfortunately,
 but we've managed
@@ -4959,9 +4957,12 @@ Then~$(e\otimes \id)\circ k =
 
 
 \begin{point}{80}[tensor-closed]{Theorem (Kornell)}%
-The functor $(-)\otimes\scrA\colon\W{miu}\to\W{miu}$
+The functor $(\,\cdot\,)\otimes\scrA\colon\W{miu}\to\W{miu}$
 has a left adjoint
+    $\Define{(\,\cdot\,)^{*\scrA}}$
 for every von Neumann algebra~$\scrA$.
+	\index{free exponential}%
+	\index{*AstarB@$\scrA^{*\scrB}$, free exponential}
 \begin{point}{90}{Proof}%
 	The category $\W{miu}$ is (small-)complete,
 and

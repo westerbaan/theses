@@ -14,8 +14,8 @@
 %\author{Abraham A.~Westerbaan}
 %\maketitle
 
-\newcommand{\titelpagina}[4]{%
-\vspace*{5em}
+\newcommand{\titelpagina}[8]{%
+\vspace*{4em}
 \begin{center}
 {\huge\sffamily\color{darkblue}The Category of Von Neumann Algebras}
 \end{center}
@@ -26,40 +26,53 @@
 \begin{center}
 #2
 \end{center}
+\vspace{1em}
+\begin{center}
+#3
+\end{center}
+\begin{center}
+#4
+\end{center}
+\begin{center}
+#5
+\end{center}
+\begin{center}
+#6
+\end{center}
 \vspace{10em}
 \begin{center}%
-#3
+#7
 \end{center}%
 \begin{center}%
 \large\color{darkblue}Abraham Anton \textsc{Westerbaan}
 \end{center}%
 \begin{center}%
-#4
+#8
 \end{center}
 \newpage
 }
 
 \newcommand{\achterkanttitelpagina}[3]{
-\vspace*{10em}
+\vspace*{8em}
 \begin{center}
-{\large\sffamily\color{darkblue}#1:}
+\textbf{\large\sffamily\color{darkblue}#1:}
 \end{center}
 \begin{center}
 Prof.~dr.~B.P.F.~\textsc{Jacobs}
 \end{center}
 \vspace{5em}
 \begin{center}
-{\large\sffamily\color{darkblue}#2:}
+\textbf{\large\sffamily\color{darkblue}#2:}
 \end{center}
 \begin{center}
 Prof.~dr.~J.D.M.~\textsc{Maassen}\\
-\vspace{.5em}
-Prof.~dr.~P.~\textsc{Panangaden} (McGill University, Canada) \\
-\vspace{.5em}
-Prof.~dr.~P.~\textsc{Selinger} (Dalhousie University, Canada) \\
-\vspace{.5em}
-Dr.~C.~\textsc{Heunen} (University of Edinburgh, #3)\\
-\vspace{.5em}
+\vspace{1em}
+    Prof.~dr.~P.~\textsc{Panangaden} \\ {\footnotesize(McGill University, Canada)} \\
+\vspace{1em}
+    Prof.~dr.~P.~\textsc{Selinger} \\ {\footnotesize(Dalhousie University, Canada)} \\
+\vspace{1em}
+    Dr.~C.J.M.~\textsc{Heunen} \\ {\footnotesize(University of Edinburgh, #3)} \\
+\vspace{1em}
 Dr.~A.R.~\textsc{Kissinger}
 \end{center}
 \newpage
@@ -71,8 +84,7 @@ Dr.~A.R.~\textsc{Kissinger}
 \whiteout{aan}$\,$\\
 \whiteout{op}$\,$\\
 \whiteout{volgens}$\,$\\
-\whiteout{in}$\,$\\
-\whiteout{om}$\,$}{\whiteout{door}}{$\,$\whiteout{geboren}$\,$\\
+\whiteout{in}$\,$}{\whiteout{op}$\,$}{\whiteout{dinsdag}$\,$}{\whiteout{om}$\,$}{\whiteout{10.30}$\,$}{\whiteout{door}}{$\,$\whiteout{geboren}$\,$\\
 \whiteout{te}$\,$}
 
 \vspace*{1em}
@@ -80,24 +92,21 @@ Dr.~A.R.~\textsc{Kissinger}
 
 \titelpagina{Proefschrift}{ter verkrijging van de graad van doctor\\
 aan de Radboud Universiteit Nijmegen\\
-op gezag van de rector magnificus prof. dr. J.H.J.M. van Krieken,\\
+op gezag van de rector magnificus prof. dr. J.H.J.M. \textsc{van Krieken},\\
 volgens besluit van het college van decanen \\
-in het openbaar te verdedigen op 
-\textbf{dinsdag 14 mei 2019} \\
-om \textbf{10.30 uur precies}}{door}{geboren op 30 augustus 1988\\
+in het openbaar te verdedigen}{op}{\textbf{dinsdag 14 mei 2019}}{om}{\textbf{10.30 uur precies}}{door}{geboren op 30 augustus 1988\\
 te Nijmegen}
 
-\achterkanttitelpagina{Promotor}{Manuscriptcommissie}{Schotland}
+\achterkanttitelpagina{Promotor}{Manuscriptcommissie}{Verenigd Koninkrijk}
 
 \titelpagina{Doctoral Thesis}{to obtain the degree of doctor \\
 from  Radboud University Nijmegen \\
-on the authority of the Rector Magnificus prof. dr. J.H.J.M. van Krieken,\\
+on the authority of the Rector Magnificus prof. dr. J.H.J.M. \textsc{van Krieken},\\
 according to the decision of the Council of Deans \\
-to be defended in public on \textbf{Tuesday, May 14, 2019}\\
-at \textbf{10.30 hours}}{by}{Born on August 30, 1988\\
-in Nijmegen (The Netherlands)}
+to be defended in public}{on}{\textbf{Tuesday, May 14, 2019}}{at}{\textbf{10.30 hours}}{by}{born on August 30, 1988\\
+in Nijmegen (the Netherlands)}
 
-\achterkanttitelpagina{Supervisor}{Doctoral Thesis Committee}{Scotland}
+\achterkanttitelpagina{Supervisor}{Doctoral Thesis Committee}{United Kingdom}
 
 \makeatletter\@starttoc{parsectoc}\makeatother
 \chapter{Introduction}
@@ -351,9 +360,9 @@ Instead these facts have been phrased as exercises
 as a challenge to the reader.
 \end{point}
 \begin{point}{51}
-    The symbol ``\Define{$:=$}''\index{((defequal@$:=$, is defined to be}
+    The symbol ``\Define{$:=$}''\index{(((defequal@$:=$, is defined to be}
 should be interpretted as ``is defined to be'',
-    while ``\Define{$\equiv$}''\index{((equiv@$\equiv$, being of the form}
+    while ``\Define{$\equiv$}''\index{(((equiv@$\equiv$, being of the form}
 should be read as ``being of the form''.
 Sometimes ``$\equiv$'' is
 used to define something on its right-hand side,
