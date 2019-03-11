@@ -414,7 +414,7 @@ provided by a Hilbert space as follows.
 \end{point}
 \begin{point}{80}[hilb-def]{Definition}%
 An \Define{inner product}%
-\index{inner product!$\C$-valued}
+\index{inner product!*C-valued@$\C$-valued}
 on a complex vector space~$V$ 
 is a map $\left<\,\cdot\,,\,\cdot\,\right>\colon V\times V\to \C$%
 \index{$\left<\,\cdot\,,\,\cdot\,\right>$, inner product!$\C$-valued}
@@ -425,7 +425,7 @@ $\left<x,x\right>\geq 0$;
 and
 $\left<x,y\right>=\overline{\left<y,x\right>}$.
 We say that the inner product is \Define{definite}%
-\index{inner product!$\C$-valued!definite}
+\index{inner product!*C-valued@$\C$-valued!definite}
 when~$\left<x,x\right>=0\implies x=0$ for~$x\in V$.
 A \Define{pre-Hilbert space}~$\scrH$%
 \index{pre-Hilbert space}
@@ -441,7 +441,7 @@ we say that~$\scrH$ is a \Define{Hilbert space}.%
 Let~$\scrH$ and~$\scrK$ be pre-Hilbert spaces.
 We say that an operator~$T\colon \scrH\to \scrK$
 is \Define{adjoint}%
-\index{adjoint of an operator}
+\index{adjoint!of an operator}
 to an operator
 $S\colon \scrK\to \scrH$ 
 when
@@ -622,8 +622,8 @@ $\|x\|^2\,+\,
 \frac{1}{2}(\,\|x+y\|^2\,+\,\|x-y\|^2\,)$;
 \item
 \label{polarization-identity}%
-The \Define{polarization identity}:%
-\index{polarization identity!for an inner product}
+The \Define{polarisation identity}:%
+\index{polarisation identity!for an inner product}
 $\left<x,y\right> \,=\, \frac{1}{4}\sum_{n=0}^3i^n\|i^nx+y\|^2$.
 \end{enumerate}
 
@@ -992,9 +992,9 @@ Given an element $a$ of a $C^*$-algebra $\scrA$,
 and $\Define{\Imag{a}}:=\frac{1}{2i}(a-a^*)$
 for the \Define{real} and \Define{imaginary part}%
 \index{real part!of an element of a $C^*$-algebra}%
-\index{$\Real{(\,\cdot\,)}$, real part!operation on a $C^*$-algebra}%
+        \index{$\Real{(\,\cdot\,)}$, real part!$\Real{a}$, of an element of a $C^*$-algebra}%
 \index{imaginary part!of an element of a $C^*$-algebra}%
-\index{$\Imag{(\,\cdot\,)}$, imaginary part!operation on a $C^*$-algebra}
+        \index{$\Imag{(\,\cdot\,)}$, imaginary part!$\Imag{a}$, of an element of a $C^*$-algebra}
 of~$a$, respectively.
 \end{enumerate}
 The set of self-adjoint elements of~$\scrA$
@@ -1130,7 +1130,7 @@ A self-adjoint element~$a$ of a $C^*$-algebra~$\scrA$ is called
 if $\|a-t\|\leq t$
 for some~$t\in \R$.
 We write $\Define{a\leq b}$%
-\index{*leq@$\leq$, order!on a $C^*$-algebra}
+\index{((leq@$\leq$, order!on a $C^*$-algebra}
 for $a,b\in\scrA$ when $b-a$ is positive,
 and we denote the set of positive elements of~$\scrA$
 by~$\Define{\pos{\scrA}}$.%
@@ -1199,7 +1199,7 @@ with~$0\leq a\leq 1$
 show that 
 the \Define{orthosupplement} $\Define{a^\perp} :=1-a$%
 \index{orthosupplement!operation in a $C^*$-algebra}%
-\index{$(\,\cdot\,)^\perp$, orthosupplement}
+\index{$(\,\cdot\,)^\perp$!$a^\perp$, orthosupplement of an effect}
 is an effect too.
 \end{point}
 \begin{point}{100}[cstar-positive]{Exercise}%
@@ -1752,7 +1752,7 @@ converges to~$x$.
 
 We say that~$f$ is \Define{holomorphic}
 if~$f$ is holomorphic at~$x$ for all~$x\in \dom(f)$,
-and the function $z\mapsto f'(z)$
+and the function $z\mapsto \Define{f'}(z)$
 with $\dom(f')=\dom(f)$
 is called its \Define{derivative}.%
 \index{derivative of a holomorphic function}%
@@ -4709,7 +4709,7 @@ Give a counterexample to $\|a^*\|_\omega = \|a\|_\omega$.
 \end{enumerate}
 \end{point}
 \begin{point}{50}[inner-product-completion]{Exercise}%
-\index{inner product!$\C$-valued!completion}
+\index{inner product!*C-valued@$\C$-valued!completion}
 Let us begin by showing how a complex vector space~$V$
 with inner product
 $[\,\cdot\,,\,\cdot\,]$ can be ``completed'' to a Hilbert space~$\scrH$.
@@ -4963,13 +4963,13 @@ see~\sref{chilb-basic} and~\sref{bax-cstar}.
 	on a right $\scrA$-module~$X$
 ($\scrA$ being a $C^*$-algebra) is a map
 $\left<\,\cdot\,,\,\cdot\,\right>\colon X\times X\to\scrA$%
-\index{$\left<\,\cdot\,,\,\cdot\,\right>$, inner product!$\scrA$-valued}
+\index{$\left<\,\cdot\,,\,\cdot\,\right>$, inner product!*avalued@$\scrA$-valued}
 such that, for all $x,y\in X$,
 $\left<x,\,\cdot\,\right>\colon X\to \scrA$
 is a module map, $\left<x,x\right>\geq 0$,
 and $\left<x,y\right>=\left<y,x\right>^*$.
 We say that such an inner product is \Define{definite}%
-	\index{$\left<\,\cdot\,,\,\cdot\,\right>$, inner product!$\scrA$-valued!definite}
+	\index{$\left<\,\cdot\,,\,\cdot\,\right>$, inner product!*avalued@$\scrA$-valued!definite}
 if~$\left<x,x\right>=0\implies x=0$ for all~$x\in X$.
 
 A \Define{pre-Hilbert $\scrA$-module}%
@@ -6253,7 +6253,7 @@ The supremum of a (norm) bounded directed subset~$\scrD$
 in~$\Real{(\scrB(\scrH))}$
 (which exists by~\sref{hilb-suprema})
 is denoted by~$\Define{\bigvee\scrD}$.%
-\index{*sup@$\bigvee D$, supremum of~$D$!in $\scrB(\scrH)$}
+\index{*infsup@$\bigvee D$, supremum of~$D$!in $\scrB(\scrH)$}
 \end{point}
 \end{parsec}
 \subsection{Normal Functionals}

@@ -173,7 +173,7 @@ when
 every bounded directed subset~$D$
 of self-adjoint elements of~$\scrA$ (so $D\subseteq \sa{\scrA}$) 
     has a supremum \Define{$\bigvee D$}%
-\index{*sup@$\bigvee D$, supremum of~$D$!in a von Neumann algebra}
+\index{*infsup@$\bigvee D$, supremum of~$D$!in a von Neumann algebra}
     in $\sa{\scrA}$, and
 \item
 if $a$ is a positive element of~$\scrA$
@@ -1482,7 +1482,7 @@ But let us first define~$L^\infty(X)$.
 We say that $f,g\in \mathcal{L}^\infty(X)$
 are \Define{equal almost everywhere}
 and write $\Define{f\approx g}$%
-\index{*approx@$\approx$! $f\approx g$, for measurable functions}
+\index{((approx@$\approx$! $f\approx g$, for measurable functions}
 when~$f(x)=g(x)$ for almost all~$x\in X$
 (that is, $\{\,x\in X\colon\, f(x)\neq g(x)\,\}$
 is negligible).
@@ -1707,7 +1707,7 @@ for all~$n$.)
 \item
 Given $A,B\subseteq X$ 
 we write $\Define{A\approx B}$
-\index{*approx@$\approx$!$A\approx B$, for subsets of a topological space} when
+\index{((approx@$\approx$!$A\approx B$, for subsets of a topological space} when
 $A\cup B\,\backslash\,A\cap B$
 is meagre.
 \item
@@ -2220,7 +2220,8 @@ A projection~$p$ is an effect,
 that is, $p^*=p$
 and $0\leq p\leq 1$.
 \item
-The orthocomplement $p^\perp \equiv 1-p$ of a projection~$p$
+    The orthocomplement $\Define{p^\perp} \equiv 1-p$ of a projection~$p$
+    \index{$(\,\cdot\,)^\perp$!$p^\perp$, orthocomplement of a projection}
 is a projection.
 \item
 An effect~$a$ is a projection iff $aa^\perp=0$.
@@ -5516,7 +5517,7 @@ which is not ultrastrongly Cauchy.
 Any element~$a$ of a von Neumann
 algebra~$\scrA$
 can be uniquely written as~$a=\Define{[a]}\sqrt{a^*a}$,%
-\index{*brackets@$[a]$, from the polar decomposition of~$a$}
+    \index{*brackets@$[\,\cdot\,]$!$[a]$, partial isometry from the polar decomposition of~$a$}
 where~$[a]$
 is an element of~$\scrA\!\ceill{a}$.
 Moreover,
@@ -5616,7 +5617,7 @@ for some partial isometry~$u$.
 \end{enumerate}
 In that case
 we write~$\Define{e'\vmleq e}$%
-\index{*vmleq@$\vmleq$, Murray--von Neumann preorder}
+\index{((vmleq@$\vmleq$, Murray--von Neumann preorder}
 (and say~$e'$ is \Define{Murray--von Neumann below}~$e$).%
 \index{Murray--von Neumann preorder}
 \begin{point}{30}{Proof}%
@@ -6076,7 +6077,8 @@ see Theorem III.15 of~\cite{furbercontinuous}.
 \end{point}
     \begin{point}{20}[def:hereditarily-atomic]{Definition}%
 A von Neumann algebra is called \Define{hereditarily atomic}%
-\index{von Neumann algebra!hereditarily atomic}
+\index{von Neumann algebra!hereditarily atomic}%
+\index{hereditarily atomic!von Neumann algebra}
 if it is nmiu-isomorphic
 to a direct sum
 $\bigoplus_{i\in I} M_{N_i}$
