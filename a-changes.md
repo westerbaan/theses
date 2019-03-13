@@ -42,7 +42,13 @@ Major corrections:
 
 Small changes:
 
+* Replaced "c.q.".
+
 * Added the exception (121II) to the claim (in 1III) that all proofs are given.
+
+* Added definitions for := and \equiv in 1Va.
+
+* Simplifies 5X by assuming that f(x')=1 instead of just f(x')=0.
 
 * Added a definition of [a,b] for C-star algebras in 8IVa.
 
@@ -57,8 +63,6 @@ Small changes:
 
 * Added a remark in 10VIa on the boundedness of p-maps.
 
-* Simplifies 5X by assuming that f(x')=1 instead of just f(x')=0.
-
 * Added a remark, 22IIa, on other interpretations of the word "order ideal".
 
 * Added explicit explanation of "n" as abbreviation of "normal" in 38Ia,
@@ -69,7 +73,13 @@ Small changes:
 * Added a description of ultraweak and ultrastong convergence of nets in 42III,
   and a description of the ultraweakly and ultrastrongly open subsets.
 
+* Added an exercise 43Ia on filtered infima in a von Neumann algebra.
+
 * Added a reminder of the meaning of finite (measure space) in 43V(7).
+
+* Added a parenthetical remark in 44XV.
+
+* Added the first line of 45III.
 
 * Added some words on the relation between meagreness and negligibility
   in 52IIIa and 52IIIb.
@@ -92,19 +102,9 @@ Small changes:
 
 * Added more examples of central similarity in 104III2a.
 
-* Attributed Lemma 125IV to Kornell.
-
-* Added definitions for := and \equiv in 1Va.
-
-* Replaced "c.q.".
-
-* Added a parenthetical remark in 44XV.
-
-* Added the first line of 45III.
-
-* Added an exercise 43Ia on filtered infima in a von Neumann algebra.
-
 * Added an introductory remark, 116IIIa, to 116IV.
+
+* Attributed Lemma 125IV to Kornell.
 
 * Added some explanation after the definition of S in 125IX.
 
