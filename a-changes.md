@@ -42,6 +42,8 @@ Major corrections:
 
 Small changes:
 
+* Added the exception (121II) to the claim (in 1III) that all proofs are given.
+
 * Added a definition of [a,b] for C-star algebras in 8IVa.
 
 * Added "**n**ormal" to the list of properties of linear maps in 10II.
