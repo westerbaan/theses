@@ -1,0 +1,53 @@
+\documentclass[b5paper]{book}
+
+\input{common}
+
+\setcounter{parsec}{0}
+\setcounter{firstParsecF}{0}
+
+\title{
+    \sffamily\color{darkblue}%
+    \Huge Errata \\
+    \vskip.3em
+    \sffamily\color{black}%
+    \Large to the theses \\
+    \vskip1em
+    \sffamily\color{darkblue}%
+    \huge The Category of von Neumann Algebras \\
+    \vskip.5em
+    \sffamily\color{black}%
+    \Large by A.A.~Westerbaan \cite{bram}  and \\
+    \vskip1.2em
+    \sffamily\color{darkblue}%
+    \huge Dagger and Dilation\\
+    \LARGE in the Category of von Neumann Algebras\\
+    \vskip.5em
+    \sffamily\color{black}%
+    \Large by B.E.~Westerbaan \cite{bas}}
+
+\author{A.A.~\& B.E.}
+
+\begin{document}
+
+\maketitle
+
+There are no errata, yet.
+
+\backmatter
+\fancyfoot[CE]{}
+\fancyfoot[CO]{}
+\fancypagestyle{plain}{
+    \fancyfoot[CE]{}
+    \fancyfoot[CO]{}
+}
+
+\begingroup
+\renewcommand\chapter[2]{\backmattertitle{Bibliography}}
+\bibliography{main}{}
+\endgroup
+
+\bibliographystyle{plain}
+
+\end{document}
+
+% vim: se ft=tex.latex :
