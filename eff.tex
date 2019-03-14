@@ -3500,6 +3500,7 @@ as desired. \qed
 Let~$C$ be an effectus.
 We say~$C$ is an \Define{effectus with quotients}
     \index{effectus!with quotients}
+    \index{*bra@$X/_p$}
     if for each predicate~$p \colon X \to 1$,
     there exists a map~$\xi_p \colon X \to X/_p$
     with~$1 \after \xi_p \leq p^\perp$
@@ -3518,7 +3519,7 @@ The universal property of quotients
     is essentially the same as
     the universal property of (contractive) \emph{compressions},
     which we proposed in~\cite{westerbaan2016universal}.
-Effectus with quotients also appear in~\cite{effintro}.
+Effectuses with quotients also appear in~\cite{effintro}.
 \end{point}
 \begin{point}{30}[quot-not]{Notation}%
     Unless otherwise specified~\Define{$\xi_p$}\index{*xi@$\xi_p$}
@@ -3719,6 +3720,7 @@ We continue with the formal introduction
 Let~$C$ be an effectus.
 We say~$C$ \Define{has comprehension}
     \index{effectus!with comprehension}
+    \index{*acc@$\cmpr{X}{p}$}
     if for each predicate~$p \colon X \to 1$,
     there exists a map~$\pi_p \colon \cmpr{X}{p} \to X$
     with~$p \after \pi_p = 1 \after \pi_p$
@@ -3737,6 +3739,12 @@ Any  map with this universal property
     (in contrast to~\cite{effintro}.)
     In~\sref{compr-total} we will see that
     in an effectus with quotients, comprehensions must be total.
+\end{point}
+\begin{point}{31}{Remarks}%
+The universal property of comprehensions is essentially the same
+    as the universal property of (contractive) \emph{corners},
+    which we proposed in~\cite{westerbaan2016universal}.
+Effectuses with compression also appear in~\cite{effintro}.
 \end{point}
 \begin{point}{40}[compr-not]{Notation}%
     Unless otherwise specified~\Define{$\pi_p$}\index{*pi@$\pi_p$}
@@ -3759,6 +3767,7 @@ An example of a comprehension for~$a \in \scrA$
 \end{point}
 \begin{point}{70}[compr-basics]{Exercise}%
 Show the following basic properties of comprehensions.
+    (See~\cite{effintro}.)
 \begin{enumerate}
     \item If~$\pi\colon X \to Y$ is a comprehension for~$p$
                 and~$\vartheta\colon Z \to X$ is an isomorphism,
@@ -3898,10 +3907,11 @@ That is: $f$ is faithful if and only if
 The expression~$\IM f \after g$
     is read as~$\IM (f \after g)$.
 \end{point}
-\begin{point}{30}%
+\begin{point}{30}{Remarks}%
 The predicate~$\IM f$ will play for comprehension the same role
     as~$1 \after f$ plays for quotients.
 Similarly faithful is the analogue of total.
+Images in effectuses are also studied in \cite{effintro}.
 \end{point}
 \end{point}
 \begin{point}{40}{Example}%
@@ -4096,6 +4106,7 @@ In an effectus with comprehension and images
 \end{equation*}
 for all sharp predicates~$s,t$ on the same object.
 \begin{point}{20}{Proof}%
+(This simpler proof than ours in~\cite{effintro}.)
 Assume~$\pi_s = \pi_t \after h$.
 Then
 \begin{equation*}
@@ -4747,7 +4758,7 @@ We call this~$\zeta_s$
     \index{comprehension!corresponding}
     the \Define{corresponding quotient} of~$\pi_s$
     and vice versa~$\pi_s$ the \Define{corresponding comprehension}
-    of~$\zeta_s$.
+    of~$\zeta_s$. \index{*zeta@$\zeta_s$}\index{*pi@$\pi_p$}
 \end{point}
 \begin{point}{100}{Warning}%
     $\xi_{s^\perp} = \zeta_s$!
