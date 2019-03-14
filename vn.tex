@@ -3606,6 +3606,29 @@ is central, so
 $\ceil{f}=\cceil{f}$.
     Moreover, $\smash{\ker(f)=\cceil{f}^\perp\!\scrA}$.
 \end{point}
+\begin{point}{41}[nmiu-factors]{Exercise}%
+Show using~\sref{carrier-miu} and~\sref{central-projections-sums}
+ that an nmiu-map $f\colon \scrA\to\scrB$
+factors as
+\begin{equation*}
+\xymatrix{
+\scrA 
+    \ar[rr]^f
+    \ar[rd]_{g\colon a\mapsto \cceil{f}a}
+	&
+    &
+    \scrB
+    \\
+&
+    \cceil{f}\scrA \ar[ru]_{h\colon a\mapsto f(a)}
+},
+\end{equation*}
+where the~$g$ an nmiu-surjection, and~$h$ is an nmiu-injection.
+\begin{point}{42}[nmiu-image]
+Use this, and~\sref{injective-nmiu-iso-on-image}, to show that~$f(\scrA)$
+is a von Neumann subalgebra of~$\scrB$.
+\end{point}
+\end{point}
 \begin{point}{50}[proto-gns-ceil]{Lemma}%
 We have~$\cceil{\omega}=
 \ceil{\varrho_\omega}$
@@ -6173,7 +6196,7 @@ of $\pi_i\circ e$ to a map $d_i\scrB \to M_{N_i}$
     and so~$d_i\scrB$ is finite-dimensional too.\qed
 \end{point}
 \end{point}
-\begin{point}{50}{Corollary}%
+\begin{point}{50}[ha-equalisers]{Corollary}%
 Given nmiu-maps
 $f,g\colon \scrA\to\scrB$
 between hereditarily atomic

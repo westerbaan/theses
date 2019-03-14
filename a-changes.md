@@ -90,6 +90,12 @@ Small changes:
 
 * Improved formulation of 69IV.
 
+* Added a 'factorisation theorem' in 69IVa for nmiu-maps (into a 
+  nmiu-surjection followed by a nmiu-injection.)
+
+* Added the observation in 69IVb that the range of an nmiu-map is a
+  von Neumann subalgebra of its codomain.
+
 * Added a hint to 70II.
 
 * Replaced the formula in 73III(3) by a drawing.
