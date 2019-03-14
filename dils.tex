@@ -1010,9 +1010,9 @@ This property is the cornerstone of several publications,
 \end{point}
 \begin{point}{20}[def-paschke]{Definition}%
     Let~$\varphi\colon \scrA \to \scrB$
-        be any ncp-map between von Neumann algebras.
+        be any ncp-map between von Neumann algebras.%
 \parpic[r]{
-$\xymatrix@C=2.5em@R=2em{
+$\xymatrix@C=2.5em@R=3em{
 \mathscr{A} 
 \ar[rr]^\varphi
 \ar[rd]_{\varrho}
@@ -1026,6 +1026,7 @@ $\xymatrix@C=2.5em@R=2em{
 \ar@/_1.5em/[ruu]_{h'}
 \ar@{..>}[u]_-{\sigma}
 }$}%
+\noindent
     A \Define{Paschke dilation}\index{Paschke dilation} of~$\varphi$
     is a triple~$(\scrP, \varrho, h)$
     with a von Neumann algebra~$\scrP$;
@@ -1063,6 +1064,9 @@ Let~$\varphi\colon \scrA \to \scrB(\scrH)$
     together with a minimal normal Stinespring dilation~$(\scrK,\varrho,V)$.
     Then $(\scrB(\scrK), \varrho, \ad_V)$
         is a Paschke dilation of~$\varphi$.
+\begin{point}{40}{Proof}%
+(This is essentially the same proof
+    we gave in \cite{wwpaschke}.)
 \parpic[r]{
 \xymatrix{
 \mathscr{A} \ar@/_/[rdd]_{\varrho'}\ar[rd]^\varrho \ar[rr]^\varphi
@@ -1071,19 +1075,18 @@ Let~$\varphi\colon \scrA \to \scrB(\scrH)$
 & \mathscr{P}' \ar[ruu]|{h'} \ar[r]_{\tilde\varrho}
 & \scrB(\tilde{\mathscr{K}}) \ar[uu]_{\ad_{\tilde V}} \ar[lu]|{\ad_S}
 }
-}
-
-\begin{point}{40}{Proof}%
-(This is essentially the same proof
-    we gave in \cite{wwpaschke}.)
-Let~$\scrP'$ be any von Neumann algebra
+}%
+\noindent Let~$\scrP'$ be any von Neumann algebra
     together with nmiu-map~$\varrho'\colon \scrA \to \scrP'$
     and ncp-map~$h'\colon \scrP' \to \scrB(\scrH)$
     for which it holds that~$h' \after \varrho' = \varphi$.
 We must show that there is a unique
     ncp-map~$\sigma\colon \scrP' \to \scrB(\scrK)$
-    with~$\sigma \after \varrho' = \varrho$
+    such that~$\sigma \after \varrho' = \varrho$
     and~$\ad_V \after \sigma = h'$.
+First we will prove uniqueness of this map~$\sigma$.
+Then we will show that such a~$\sigma$ exists
+    by appealing to the universal property~\sref{dils-univ-stinespring}.
 
 \begin{point}{50}{Uniqueness}%
     Let~$\sigma_1,\sigma_2\colon \scrP' \to \scrB(\scrH)$
@@ -1210,6 +1213,7 @@ Let~$\varphi\colon \scrA \to \scrB$
 Prove~$(\scrP, \varrho, \lambda h)$
     is a Paschke dilation of~$\lambda \varphi$.
 \end{enumerate}
+\spacingfix{}
 \end{point}
 \begin{point}{110}{Examples}%
 Later we will be able to compute more dilations.
@@ -1238,6 +1242,7 @@ In \sref{dils-filter-basics-exercise}
     the Paschke dilations of~$\varphi$
     and~$c \after \varphi$ for a filter~$c$ are related.
 \end{enumerate}
+\spacingfix{}
 \end{point}
 \end{parsec}
 
@@ -1442,6 +1447,7 @@ A~\Define{$\scrB$-sesquilinear form}\index{sesquilinear form!$\scrB$-valued} on~
 \beta^* \,\langle x,y\rangle \,b \ =\ \langle \,x \beta\,,\, y b \,\rangle 
     \qquad \text{for all $x,y \in X$ and~$b,\beta \in \scrB$}.
 \end{equation*}
+\spacingfix{}
 \begin{point}{71}{Remark}%
 It seems that~$\scrB$-sesquilinear forms do not explicitly appear
     in the established literature,
@@ -1467,6 +1473,7 @@ Prove the \Define{polarization identity}\index{polarization identity}:
     B(x,y) \ =\  \frac{1}{4} \sum_{k=0}^3 i^k B(i^k x + y, i^k x + y).
 \end{equation*}
 \end{point}
+\spacingfix{}
 \end{parsec}
 
 \begin{parsec}{1430}%
@@ -1844,6 +1851,7 @@ is fixed by the seminorms~$\|b\|_f = f(b^*b)^{\frac{1}{2}}$
         for np-maps~$f\colon \scrB \to \C$.
 
     \end{enumerate}
+    \spacingfix{}
 \begin{point}{60}%
 We are ready to define a uniformity for Hilbert $\scrB$-modules.
 Later, we will complete~$X$ with respect to this uniformity.
@@ -1940,6 +1948,7 @@ we have~$x_\alpha \mathrel\varepsilon x_\beta$.
     there is a~$y \in D$
     with~$x \mathrel\varepsilon y$.
 \end{enumerate}
+\spacingfix{}
 \end{point}
 \begin{point}{20}[dils-uniform-spaces-basics]{Exercise}%
     In the same setting as the previous definition.
@@ -1977,7 +1986,8 @@ we have~$x_\alpha \mathrel\varepsilon x_\beta$.
 Conclude from \ref{ex-continuous-preserves-lims} and
     \ref{ex-cauchy-from-dense-subset}
     that~$f$ and~$g$ are equal whenever they agree on a dense subset of~$X$.
-    \end{enumerate}
+\end{enumerate}
+\spacingfix{}
 \end{point}
 \begin{point}{30}[dils-product-uniformity]{Exercise}%
     Let~$(X_i)_{i \in I}$ be a family of sets with
@@ -2114,6 +2124,7 @@ $T \geq 0$ if and only if~$\left<x,Tx\right> \geq 0$
                         in~$\scrB$.
             \end{enumerate}
     \end{enumerate}
+\spacingfix{}
 \begin{point}{20}{Notation}%
 As with Hilbert spaces, it will sometimes be more convenient
     to view an orthonormal basis as a sequence/family~$(e_i)_{i \in I}$,
@@ -2170,6 +2181,7 @@ Others such as~\cite[lemma~8.5.23]{blecher2004operator}
 This notion is equivalent to ours, but only defined
     for self-dual modules over von Neumann algebras.
 \end{enumerate}
+\spacingfix{}
 \end{point}
 \end{point}
 \begin{point}{30}[mod-projelabs]{Exercise}%
@@ -2203,6 +2215,7 @@ where the sum converges ultraweakly. \cite{paschke}
             \item Every norm-bounded ultranorm-Cauchy net in~$X$ converges.
             \item $X$ has an orthonormal basis.
         \end{enumerate}
+        \spacingfix{}
 \begin{point}{60}{Proof}%
 We will prove $1 \Rightarrow 3 \Rightarrow 4 \Rightarrow 2 \Rightarrow 4 \Rightarrow 1$.
 The equivalence~$1 \Leftrightarrow 4$
@@ -3229,6 +3242,7 @@ For each bounded~$\scrB$-linear
     map~$\hat{T} \colon X \to Y$
     such that~$\hat{T} \after \eta = T$.
 \end{quote}
+    \spacingfix{}
 \begin{point}{20}{Proof}%
 By \sref{blinear-bounded-is-ultranorm} bounded~$\scrB$-linear
     maps are ultranorm uniformly continuous.
@@ -3557,6 +3571,7 @@ There is a unique
 $(\scrB^a(\scrA \otimes_\varphi \scrB), \varrho, h)$
         is a Paschke dilation of~$\varphi$, see \sref{def-paschke}.
 \end{enumerate}
+\spacingfix{}
 \begin{point}{40}{Proof}%
 (This is a simplified version of the proof
     we published earlier in~\cite{wwpaschke}.
@@ -3885,6 +3900,7 @@ For linear  maps~$\varphi, \psi\colon \scrA \to \scrB$,
             \ 0 \leq_\ncp\psi \leq_\ncp \varphi \}.
     \end{equation*}
 \end{point}
+\spacingfix{}
 \begin{point}{30}{Definition}%
     Let~$\varphi\colon \scrA \to \scrB$ be any ncp-map with Paschke
         dilation~$(\scrP, \varrho, h)$.
@@ -4130,6 +4146,7 @@ and so with basic algebra
 & \ = \ x.
 \end{alignat*}
 \end{point}
+\spacingfix{}
 \begin{point}{50}{Ultranorm continuity~$h$}%
 The real work is in the proof of the ultranorm continuity of~$h$.
 Suppose~$y_\alpha \to y$ ultranorm in~$X$. Define
@@ -4431,6 +4448,7 @@ Let~$X$ be a Hilbert~C$^*$-module
     V^\perp = \{ x; \ x \in X;\ \left<x,v\right>=0\text{ for all }v\in V\}.
 \end{equation*}
 \end{point}
+\spacingfix{}
 \begin{point}{40}[hilbmod-projthm]{Proposition}%
 Assume~$X$ is a self-dual Hilbert $\scrB$-module
     for a von Neumann algebra~$\scrB$.
@@ -4446,6 +4464,7 @@ $V^\perp$ is a ultranorm-closed Hilbert~$\scrB$-submodule of~$X$
     $V^{\perp\perp} \oplus V^\perp \cong X$ as Hilbert~C$^*$-modules
         via~$(x,y) \mapsto x+y$.
 \end{enumerate}
+\spacingfix{}
 \begin{point}{50}{Proof}%
 It is easy to see~$V^\perp$ is a submodule of~$X$
     and~$V \subseteq V^{\perp\perp}$.
@@ -4521,7 +4540,7 @@ Suppose~$E \subseteq X$ is an orthonormal set. Show
     if and only if~$\left<x,x\right> = \sum_{e \in E} \left<x,e\right>
                 \left<e,x\right>$.
 \end{enumerate}
-
+\spacingfix{}
 \end{point}
 \begin{point}{100}[selfdual-gramschmidt]{Exercise}%
 Let~$X$ be a self-dual Hilbert~$\scrB$-module for some von Neumann
@@ -4613,6 +4632,7 @@ However, in general it fails:
         are orthonormal bases of~$M_2$ over itself,
     but~$\ketbra{0}{0}+ \ketbra{1}{1} \neq 2 \ketbra{0}{0}$.
 \end{enumerate}
+\spacingfix{}
 \end{point}
 \begin{point}{40}[onb1]{Exercise}%
 Let~$(e_i)_{ i \in I}$ be some orthonormal basis of a Hilbert~$\scrB$-module~$X$.
@@ -5006,6 +5026,7 @@ For any such~$X \otimes Y$ we have the following.
         \end{enumerate}
                 
 \end{enumerate}
+\spacingfix{}
 \begin{point}{30}{Proof}%
 Pick orthonormal bases~$(e_i)_{i \in I}$ and~$(d_j)_{j \in J}$ of~$X$
     and~$Y$ respectively.
@@ -5338,6 +5359,7 @@ In~\sref{paschke-tensor} it will be shown that
         for all~ncp-maps $\varphi_i\colon \scrA_i \to \scrB_i$ ($i=1,2$)
     between von Neumann algebras.
 \end{enumerate}
+\spacingfix{}
 \end{point}
 \end{parsec}
 \begin{parsec}{1650}%
@@ -5463,6 +5485,7 @@ operation~$\otimes$ defined in \sref{dfn-tensor-of-hilbmod-maps}, we have
         for any bases~$E$ of~$X$ and~$D$ of~$Y$.)
 
 \end{enumerate}
+\spacingfix{}
 \end{point}
 \begin{point}{60}[ba-ext-tensor-pres]{Theorem}%
 There is an
@@ -5537,6 +5560,7 @@ Indeed for any~$S \in \scrB^a(X)$ and $T \in \scrB^a(Y)$, we have
             \sigma(S) \tau(T).
 \end{align*}
 \end{point}
+\spacingfix{}
 \begin{point}{100}%
 Finally, to show that~$\Omega$ is faithful,
         assume~$A \in \scrB^a(X \otimes Y)$, $A \geq 0$
@@ -5692,6 +5716,7 @@ Then~$(\scrP_1 \otimes \scrP_2, \varrho_1 \otimes \varrho_2, h_1\otimes h_2)$
 \ \cong \ 
 (\scrA_1 \otimes \scrA_2) \otimes_{\varphi_1\otimes \varphi_2} (\scrB_1 \otimes \scrB_2).
 \end{equation}
+\spacingfix{}
 \begin{point}{20}{Proof}%
 We will prove \eqref{tensor-of-paschke-dilation-spaces} first.
 We proceed as follows.
@@ -5964,6 +5989,7 @@ For every central element~$z$ of~$\scrA$,
         of St\o rmer,
         even though the identity map is clearly reversible.
 \end{enumerate}
+\spacingfix{}
 \end{point}
 \begin{point}{40}%
 Let's recall how we came to the notion of purity in \sref{pure},
@@ -6000,6 +6026,7 @@ is a \Define{corner}\index{corner} for~$a \in [0,1]_\scrA$ if~$h(a)=h(1)$
             there is a unique ncp-map~$f'\colon \scrB \to \scrC$
             with~$f = f' \after h$.
     \end{quote}
+\spacingfix{}
 \begin{point}{30}{Remark}%
 In the next chapter we will study maps with a similar universal property
     as corners in a more general setting,
@@ -6055,6 +6082,7 @@ is a \Define{filter}\index{filter} for~$b \in\scrB$, $b \geq 0$ if~$c(1)\leq b$
             there is a unique ncp-map~$f'\colon \scrC \to \scrA$
             with~$f = c \after f'$.
     \end{quote}
+\spacingfix{}
 \begin{point}{90}{Remark}%
 The direction-reversed counterpart
     of filters are called \emph{quotients},
@@ -6138,6 +6166,7 @@ In general, $h = c \after h'$ for some filter~$c$ and corner~$h'$
     by \sref{dils-filter-basics-exercise},
         and so~$h$ is pure.
 \end{enumerate}
+\spacingfix{}
 \end{point}
 \begin{point}{30}{Remark}%
 By definition, the set of pure maps is closed under composition.
@@ -6343,15 +6372,16 @@ We say~$\varphi$ is \Define{ncp-extreme}\index{ncp-extreme}
     the ncp-maps with the same value on~$1$~\cite{stormer1963positive}
     ---
     that is:
-    for any~$0 < \lambda < 1$, $\varphi_1,\varphi_2\colon \scrA \to \scrB$
-    ncp with~$\varphi_1(1) = \varphi_2(1) = \varphi(1)$
+    for any~$0 < \lambda < 1$, ncp-maps~$\varphi_1,\varphi_2\colon \scrA \to \scrB$
+    with~$\varphi_1(1) = \varphi_2(1) = \varphi(1)$
     we have
     \begin{equation*}
-    \lambda \varphi_1 + (1-\lambda)\varphi_2 \ =\  \varphi
+    \lambda \varphi_1  +  (1-\lambda)\varphi_2 \ =\  \varphi
     \quad \implies \quad
-    \varphi_1=\varphi_2=\varphi.
+    \varphi_1\ =\ \varphi_2\ =\ \varphi.
     \end{equation*}
 \end{point}
+\spacingfix{}
 \begin{point}{30}[ncp-extreme-paschke]{Theorem}%
 Assume~$\varphi\colon \scrA \to \scrB$ is an ncp-map
     with Paschke dilation~$(\scrP, \varrho, h)$.
@@ -6362,6 +6392,7 @@ Then the following are equivalent.
     \item The map $h$ is injective on~$[0,1]_{\varrho(\scrA)^\square}$.
     \item The map~$\varphi$ is ncp-extreme.
 \end{enumerate}
+\spacingfix{}
 \begin{point}{40}{Proof}%
 (Based on \cite[prop.~1.4.6]{arveson}
     and \cite[thm.~5.4]{paschke}.)
