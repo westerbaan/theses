@@ -145,6 +145,8 @@ Paschke's generalization of GNS for Hilbert C$^*$-modules~\cite{paschke}
     The first three appear prominently in this thesis;
         the last, KSGNS, is only briefly touched upon in \sref{ksgns}.}
 \end{center}
+\spacingfix{} % ok, wtf?
+\spacingfix{}
 \begin{point}{60}[overview-dils]%
 We start this chapter with a detailed proof of Stinespring's theorem.
 Then we show that it obeys a universal property.
@@ -815,6 +817,7 @@ The modification of the familiar argument
     is mostly straightforward, except for the following lemma,
     which we published earlier as \cite[lem.~11]{wwpaschke}.
 \end{point}
+\spacingfix{} % wtf?
 \parpic[r]{
 $\xymatrix{\mathscr{A} \ar[r]^\varrho \ar[rd]_{\varrho'}&
 \mathscr{B} \\
@@ -1045,7 +1048,8 @@ $\xymatrix@C=2.5em@R=3em{
     (the ``mediating map'')
     with~$\sigma \after \varrho' = \varrho$
     and~$h \after \sigma = h'$.
-    \par % XXX hack to get parpic to work
+\par % XXX hack to get parpic to work
+\spacingfix{}
 \begin{point}{21}[other-remark]{Remark on ``(other)''}%
 This unique mediating map~$\sigma$ should exist for every
     such triple~$(\scrP',\varrho',h')$,
@@ -1069,6 +1073,7 @@ Let~$\varphi\colon \scrA \to \scrB(\scrH)$
 \begin{point}{40}{Proof}%
 (This is essentially the same proof
     we gave in \cite{wwpaschke}.)
+\spacingfix{}
 \parpic[r]{
 \xymatrix{
 \mathscr{A} \ar@/_/[rdd]_{\varrho'}\ar[rd]^\varrho \ar[rr]^\varphi
@@ -1090,6 +1095,7 @@ First we will prove uniqueness of this map~$\sigma$.
 Then we will show that such a~$\sigma$ exists
     by appealing to the universal property~\sref{dils-univ-stinespring}.
 
+\spacingfix{}
 \begin{point}{50}{Uniqueness}%
     Let~$\sigma_1,\sigma_2\colon \scrP' \to \scrB(\scrH)$
         be two such ncp-maps.
@@ -1119,6 +1125,8 @@ the set of vectors of the form~$\sum_i \varrho(a_i) Vx_i$
     and so~$\sigma_1(c)=\sigma_2(c)$ as desired.
 \end{point}
 
+\spacingfix{}
+
 \begin{point}{60}{Existence}%
 Let~$(\tilde\scrK, \tilde\varrho, \tilde V)$
 be a minimal normal Stinespring dilation of~$h'$.
@@ -1139,7 +1147,7 @@ Clearly~$\sigma \after \varrho' = \ad_S \after \tilde\varrho \after \varrho'
 \end{point}
 \par
 \end{point}
-
+\spacingfix{}
 \begin{point}{70}%
 The converse holds as well:
     by \sref{paschke-unique-up-to-iso}
@@ -1158,6 +1166,7 @@ First, as Paschke dilations are defined by a simple universal property,
 \par
 \end{point}
 \end{point}
+\spacingfix{}
 \begin{point}{80}[paschke-unique-up-to-iso]{Lemma}%
 If $(\scrP_1, \varrho_1, h_1)$
 and $(\scrP_2, \varrho_2, h_2)$
@@ -1185,6 +1194,7 @@ But then
 \par
 \end{point}
 \end{point}
+\spacingfix{}
 \begin{point}{100}[paschke-basics]{Exercise}%
 The following can be shown using only the defining universal property.
 \begin{enumerate}
