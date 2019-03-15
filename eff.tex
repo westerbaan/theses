@@ -846,8 +846,8 @@ The partial maps correspond to
     ncp-maps~$f$ with~$f(1) \leq 1$.
 (Equivalently: contractive ncp-maps.)
 Some other examples appear later on in
-    \sref{emod-effectus}, \sref{exc-dm-effectus} and
-    \sref{aconvm-is-effectus}.
+    \sref{emod-effectus}, \sref{exc-dm-effectus},
+    \sref{aconvm-is-effectus} and~\sref{effexamplesintro}.
 For a comprehensive list of examples, see~\cite{effintro}.
 \end{point}
 \begin{point}{60}%
@@ -2027,6 +2027,57 @@ As before, when we took the effectus in partial form as base category,
 \end{point}
 \end{parsec}
 
+\begin{parsec}{1891}%
+\begin{point}{10}[effexamplesintro]{Examples}%
+Our main example of an effectus (in total form)
+    is the category~$\op\vN$ of von Neumann algebras with
+    ncpu-maps between them in the opposite direction,
+        see~\sref{effectus-vn}.
+Its full subcategory~$\op\CvN$ of commutative von Neumann algebras
+    is an effectus as well. \index{CvN@$\CvN$}
+\begin{point}{20}%
+In~\cite{effintro} several other examples of effectuses are
+    discussed in detail:
+\begin{enumerate}
+\item
+    The category~$\op\OUS$ of order unit spaces
+        (i.e.~ordered real vector spaces with distinguished order unit)
+        with positive unit-preserving linear maps in the opposite
+        direction is an effectus (in total form). \index{OUS@$\OUS$}
+\item
+    A related example is the category~$\op\OUG$ of order unit groups
+        (i.e.~ordered abelian groups with distinguished order unit)
+        with positive
+        unit-preserving homomorphisms in the opposite direction,
+        which is also an effectus. \index{OUG@$\OUG$}
+\item
+    Every extensive category~\cite{carboni1993introduction}
+        with final object is an effectus in total form.
+    Examples of extensive categories with final object
+            include
+    \begin{enumerate}
+        \item $\SET$, the category
+            of sets with maps between them; \index{Set@$\SET$}
+        \item $\op\CRng$, the category
+            of commutative unit rings with unit-preserving
+            homomorphisms between them
+            in the opposite direction; \index{CRng@$\CRng$}
+        \item $\bCH$, the category of
+            compact Hausdorff spaces with continuous maps
+            between them; \index{CH@$\bCH$} \emph{and}
+    \end{enumerate}
+\end{enumerate}
+\end{point}
+\spacingfix{}
+\begin{point}{30}%
+    Together with van de Wetering, we recently investigated~\cite{eja}
+    the category~$\op\EJA$ of Euclidean Jordan algebras
+    with positive unit-preserving linear maps
+    in the opposite direction, which is also an effectus (in total form).
+\end{point}
+\end{point}
+\end{parsec}
+
 \subsection{Predicates, states and scalars}
 \begin{parsec}{1900}%
 \begin{point}{10}%
@@ -2093,13 +2144,67 @@ An effectus~$C$ has \Define{separating predicates}
 \end{enumerate}
 \spacingfix{}
 \end{point}
-\begin{point}{30}{Example}%
+\begin{point}{30}{Examples}%
     The category~$\op\vN$ (see \sref{effectus-vn})
     is a real effectus ($M \cong [0,1]$)
     with separating states and predicates.~\cite{effintro}
 The predicates on a von Neumann algebra~$\scrA$
     correspond to the set of effects~$[0,1]_\scrA$
     and~$\Stat \scrA$ can be identified with the convex set of normal states.
+\begin{point}{40}%
+We briefly cover the examples from~\cite{effintro}
+    mentioned in~\sref{effexamplesintro}.
+\begin{enumerate}
+\item
+The category~$\op\OUS$ (see~\sref{effexamplesintro})
+    is a real effectus with separating predicates,
+    but without seperating states.
+    (The states on a single order unit space are separating
+        if and only if the order unit space is archimedean.)
+A predicate on an order unit space~$X$
+    corresponds  to a point~$x \in X$ with~$0 \leq x \leq 1$,
+    where~$1$ is the distinguished order unit.
+The states are exactly what are called states for order unit spaces
+    in the literature.
+\item
+The category~$\op\OUG$  (see~\sref{effexamplesintro})
+    has the two-element effect monoid~$2$ as scalars
+        and seperating predicates.
+The predicates of an order unit group~$G$ correspond
+    to the elements~$x \in G$ with~$0 \leq x \leq 1$,
+        where~$1$ is the distinguished order unit.
+States on~$G$ correspond to unit-preserving positive
+    homomorphisms~$G \to \Z$, which are not separating.
+\item
+Any extensive category with final object
+    (such as~$\SET$, $\op\CRng$ and $\bCH$)
+    has as scalars the two-element effect monoid~$2$.
+\begin{enumerate}
+\item
+In~$\SET$ the predicates on a set~$X$ correspond to subsets~$U \subseteq X$
+        and are thus separating. States on~$X$ correspond t
+        elements~$x \in X$, which are also separating.
+\item
+In~$\op\CRng$ the predicates on~$R$ correspond to idempotents of~$R$,
+    which are not separating.
+        States correspond to unit-preserving
+            homomorphisms~$R \to \Z$, which are not separating either.
+\item
+In~$\bCH$ the predicates on~$X$ correspond to clopen subsets~$U \subseteq X$,
+    which are not separating.
+States correspond on~$X$ correspond to its points~$x \in X$,
+    which are separating.
+\end{enumerate}
+\end{enumerate}
+\end{point}
+\spacingfix{}
+\begin{point}{50}%
+The category~$\op\EJA$ is a real effectus with separating states
+    and predicates. The predicates on an Euclidean Jordan algebra (EJA)~$E$
+    correspond to its effects; i.e.~the elements~$0 \leq a \leq 1$.
+    The states are exactly what are usually considered
+    states for EJAs.
+\end{point}
 \end{point}
 \end{parsec}
 \begin{parsec}{1910}%
@@ -2241,7 +2346,7 @@ So if~$C$ has separating predicates,
 \end{point}
 \end{point}
 \begin{point}{80}{Exercise}%
-    Show that the category~$\op{\mathsf{Rng}}$ of unit rings
+    Show that the category~$\op\Rng$ of unit rings \index{Rng@$\Rng$}
     with unit-preserving homomorphisms in the opposite direction
     is an effectus in total form.
 \begin{enumerate}
@@ -2252,11 +2357,11 @@ So if~$C$ has separating predicates,
             $p^\perp = 1-p$
             and~$p \ovee q = p+q$.
         (So~$2$ is its effect monoid of scalars.)
-        Conclude~$\op{\mathsf{Rng}}$ does not have separating predicates.
+        Conclude~$\op\Rng$ does not have separating predicates.
     \item
         Show that there is no unit-preserving
             ring-homomorphism~$\Z_2 \to \Z$.
-            Conclude~$\op{\mathsf{Rng}}$ does not have separating states.
+            Conclude~$\op\Rng$ does not have separating states.
 \end{enumerate}
 \spacingfix{}
 \end{point}
@@ -3554,7 +3659,7 @@ Effectuses with quotients also appear in~\cite{effintro}.
     will denote some quotient for~$p$.
 \end{point}
 \end{point}
-\begin{point}{40}{Example}%
+\begin{point}{40}{Examples}%
 In~$\op{\vN}$ quotients are exactly the same thing
     as contractive filters,
     see~\sref{dils-def-filter}, \sref{filter}
@@ -3562,6 +3667,26 @@ In~$\op{\vN}$ quotients are exactly the same thing
 An example of a quotient map for~$1-a \in \scrA$ is given
     by~$\xi\colon \ceil{a}\scrA \ceil{a} \to \scrA$
     with~$\xi(b) = \sqrt{a} b \sqrt{a}$.
+\begin{point}{41}%
+The effectus~$\op\EJA$ has quotients,
+    which are in essence very similar to those of~$\op\vN$,
+    when ignoring the technical complications Jordan algebras
+    impose. \cite[prop.~25]{eja}
+\end{point}
+\begin{point}{42}[opous-quotients]%
+The effectus~$\op\OUS$ has quotients,
+    which are rather different from the previous two examples.
+An example of a  quotient for a predicate~$v$ on an order unit space~$V$
+    is given by the inclusion of the order ideal generated by~$1-v$
+\begin{equation*}
+    \langle 1-v\rangle \ \equiv \ \{
+        a; \ a\in V; \ \exists n.\, -n (1-v) \leq a \leq n (1-v) \}
+    \ \subseteq\  V,
+\end{equation*}
+where the order ideal is considered as an order unit space
+    with order-unit~$1-v$.
+    The effectus~$\op\OUG$ has very similar quotients. See~\cite{effintro}.
+\end{point}
 \end{point}
 \begin{point}{50}[quotient-basics]{Exercise}%
 Verify the following basic properties of quotients.
@@ -3781,13 +3906,32 @@ Effectuses with compression also appear in~\cite{effintro}.
         will denote some comprehension of~$p$.
 \end{point}
 \end{point}
-\begin{point}{50}{Example}%
+\begin{point}{50}{Examples}%
 In~$\op{\vN}$ comprehensions are exactly the same thing
     as corners, see \sref{dils-corner} or \sref{corner}.
 An example of a comprehension for~$a \in \scrA$
     is given by~$\pi\colon \scrA \to \floor{a}\scrA\floor{a}$
     with~$\pi(b) = \floor{a}b\floor{a}$
     as proven in \sref{prop-corner}.
+\begin{point}{51}%
+The effectus~$\op\EJA$ also has comprehension,
+    which is very similar to those of~$\op\vN$.~\cite[prop.~24]{eja}
+
+The comprehension maps of~$\op\OUS$ are again quite different
+    from those of~$\op\vN$ and~$\op\EJA$.
+Confusingly, a comprehension for a predicate~$v$
+    of an order unit space~$V$
+    is given by the vector-space-quotient
+    map~$q\colon V \to V/_{\langle1-v\rangle}$,
+    where~$\langle 1-v \rangle$ is the order ideal generated
+    by~$1-v$ defined in~\sref{opous-quotients}.
+The effectus~$\op\OUG$ has similar comprehension.
+    See~\cite{effintro}.
+
+Any extensive category with final object has comprehension,
+    which includes~$\SET$, $\bCH$ and~$\CRng$,
+    see~\cite{effintro}.
+\end{point}
 \end{point}
 \begin{point}{60}[compr-grothendieck]{Exercise*}%
     Show that an effectus~$C$ has comprehension if and only
@@ -3812,10 +3956,9 @@ Show the following basic properties of comprehensions.
     \item Comprehensions are monic.
     \item $p^\perp \after \pi = 0$ if~$\pi$ is a comprehension for~$p$.
 \end{enumerate}
-\spacingfix{}
 \end{point}
 \end{parsec}
-
+\spacingfix{}
 \begin{parsec}{2000}%
 \begin{point}{10}%
 Comprehensions and categorical kernels are very similar.
@@ -3946,13 +4089,19 @@ Similarly faithful is the analogue of total.
 Images in effectuses are also studied in \cite{effintro}.
 \end{point}
 \end{point}
-\begin{point}{40}{Example}%
+\begin{point}{40}{Examples}%
 In $\op{\vN}$ the image of a map~$f\colon \scrA \to \scrB$
     is given by the least projection~$e \in \scrA$
     with the property~$f(1-e) = 0$.
 The map~$f$ is faithful if and only
     if~$f(a^*a)=0$ implies~$a^*a = 0$
     for all~$a\in \scrA$.
+\begin{point}{41}%
+The effectus~$\op\EJA$ also has all images,
+    which are defined similarly, see~\cite[prop.~29]{eja}.
+In contrast, the effectuses~$\op\OUG$ and~$\op\OUS$
+    do not have all images, see~\cite{effintro}.
+\end{point}
 \end{point}
 \begin{point}{50}[im-ineq]{Exercise}%
 Show~$\IM f \after g \leq \IM f$.
@@ -4282,6 +4431,10 @@ In a~$\diamond$-effectus,
     \end{enumerate}
 For brevity, write $\Define{f^\BOX(s)} = f^\diamond(s^\perp)^\perp$.
     \index{$(\ )^\BOX$}
+\end{point}
+\begin{point}{30}{Examples}%
+The categories~$\op\vN$, $\op\CvN$, $\op\EJA$
+        and $\SET$ are all~$\diamond$-effectuses.
 \end{point}
 \end{parsec}
 \begin{parsec}{2070}%
@@ -4666,11 +4819,18 @@ If we discard the measurement outcome,
     which is the side-effect of measuring $p,q,r$.
 \end{point}
 \end{point}
-\begin{point}{40}[vn-is-andthen-eff]{Example}%
-The category~$\op{\vN}$ is an~$\&$-effectus
+\begin{point}{40}[vn-is-andthen-eff]{Examples}%
+The category~$\op{\vN}$ is an~$\&$-effectuses
     with~$\asrt_a\colon b \mapsto \sqrt{a}b\sqrt{a}$.
 The first axiom is proven in \sref{positive-map-uniqueness}
     and the second in \sref{pure-fundamental}.
+The full subcategory~$\op\CvN$ of commutative von Neumann algebras
+    is a~$\&$-effectus as well.
+
+The only other known example of an~$\&$-effectus
+    is the category~$\op\EJA$ of Euclidean Jordan algebras
+    with positive unital maps in the opposite direction,
+    see~\cite{eja}.
 \end{point}
 \begin{point}{50}[sharp-prop]{Proposition}%
 For a predicate~$p$ in an $\&$-effectus the following are equivalent.
@@ -5101,9 +5261,14 @@ We call an~$\&$-effectus~$C$
 \end{enumerate}
 \end{point}
 \spacingfix{}
-\begin{point}{20}{Example}%
+\begin{point}{20}{Examples}%
 In \sref{vn-is-dagger-category}
 we will see that the category~$\op\vN$ is a~$\dagger$-effectus.
+Recently we have shown with van der Wetering
+    that the category~$\op\EJA$
+    of Euclidean Jordan algebras
+    with positive unital maps in the opposite direction,
+    is a~$\dagger$-effectus as well. \cite{eja}
 \end{point}
 \begin{point}{30}[dagger-theorem]{Theorem}%
     An $\&$-effectus
@@ -5172,6 +5337,7 @@ More concretely,
     \Bigl( \sqrt{\varphi(1)} \, b \, \sqrt{\varphi(1)} \Bigr) \, \ceil{\varphi}
         \qquad \text{(for all $b \in \scrB$)}.
 \end{equation*}
+\spacingfix{}
 \begin{point}{72}%
 In special cases, we can give a simpler definition of the dagger.
 For instance, if the
