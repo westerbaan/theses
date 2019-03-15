@@ -1,9 +1,6 @@
 .PHONY: all clean
 
-all: a.pdf b.pdf supp.pdf
-
-supp.pdf: common.tex supp.tex
-	latexmk -pdf -use-make supp.tex
+all: a.pdf b.pdf
 
 a.pdf: common.tex cstar.tex a.tex vn.tex proc.tex main.bib
 	latexmk -pdf -use-make a.tex
