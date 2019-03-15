@@ -73,6 +73,8 @@ Small changes:
 * Added a description of ultraweak and ultrastong convergence of nets in 42III,
   and a description of the ultraweakly and ultrastrongly open subsets.
 
+* Added a definition of W\*(S) in 42V4a.
+
 * Added an exercise 43Ia on filtered infima in a von Neumann algebra.
 
 * Added a reminder of the meaning of finite (measure space) in 43V(7).
