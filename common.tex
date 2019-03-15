@@ -59,6 +59,56 @@ paperheight=240truemm}
 
 \newcommand{\IGNORE}[1]{}
 
+\newcommand{\colofon}[4]{%
+\vspace*{8em}
+\noindent
+\begin{center}
+    \textcolor{darkblue}{\textsf{\textbf{ Identifiers}}}
+    \vspace{.5em}
+
+\href{https://hdl.handle.net/#4}{hdl:~#4}
+    \vspace{.5em}
+
+\href{https://arxiv.org/abs/#3}{arXiv:~#3}
+    \vspace{.5em}
+
+\textsc{isbn:}~#2
+\end{center}
+\vspace{3em}
+\begin{center}
+    \textcolor{darkblue}{\textsf{\textbf{ Persistent links}}}
+
+\vspace{.5em}
+\purl{https://arxiv.org/abs/#3}
+
+\vspace{.5em}
+\purl{https://doi.org/#4}
+
+\vspace{.5em}
+\purl{https://hdl.handle.net/#4}
+\end{center}
+\vspace{3em}
+
+\begin{center}
+    \textcolor{darkblue}{\textsf{\textbf{ \LaTeX{} code}}}
+\vspace{.5em}
+
+\purl{https://github.com/westerbaan/theses}
+\end{center}
+\vfill{}
+
+\noindent
+Printed by GVO drukkers \& vormgevers B.V., Ede, 
+\purl{https://proefschriften.nl}.
+
+\vspace{1em}
+\noindent
+Where applicable,
+\ccCopy{}~2019 #1,
+\ccLogo{}\,\ccAttribution{}  available under \textsc{cc by}, \cite{ccby40}.
+\newpage
+}
+
 % macros concerning textstyle
 \colorlet{darkgreen}{green!50!black}
 \colorlet{darkblue}{blue!75!black}
