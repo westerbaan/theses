@@ -5191,7 +5191,7 @@ Let~$\scrA$ be a hereditarily atomic von Neumann algebra.
     Let us say that two such maps $f_1\colon \scrA\to M_{N_{f_1}}$
     and $f_2 \colon \scrA\to M_{N_{f_2}}$
 are \Define{miu-equivalent}\index{miu-equivalent}
-when there is an miu-isomorphism
+when there is an nmiu-isomorphism
     $\varphi\colon M_{N_{f_1}}\to M_{N_{f_2}}$
 with~$\varphi \circ f_1 = f_2$,
     (which implies that  $N_{f_1}=N_{f_2}$.)
@@ -5209,7 +5209,6 @@ the ncpsu-map
      \bigoplus_{r\in R_\scrA} M_{N_r} =:
     \Define{\mathcal{F}_\mathrm{ha}(\scrA)}
 \end{equation*}%
-\index{F_ha@$\mathcal{F}_\mathrm{ha}\colon \haW{cpsu}\to\haW{miu}$}%
 is a universal arrow from~$\scrA$ to the inclusion
 functor $\haW{miu}\longrightarrow \haW{cpsu}$.
 \begin{point}{40}{Proof}%
@@ -5237,9 +5236,9 @@ is the $i$-th projection.
 
 We'd like to reduce to the case that $\scrB= M_N$
 for some~$N$ by considering $\pi_i\circ f$ instead of~$f$,
-but to this end must verify first that $\pi_i(f(\scrA))= M_{N_i}$
+but to this end we must verify first that $\pi_i(f(\scrA))= M_{N_i}$
 for all~$i\in I$.
-To see this, note that $f(\scrA)\subseteq \bigoplus_{i \in I} 
+To see this, note that clearly  $f(\scrA)\subseteq \bigoplus_{i \in I} 
 W^*(\pi_i (f(\scrA)))\subseteq \scrB$,
 and so~$\scrB = W^*(f(\scrA)) 
 \subseteq  W^*(\pi_i (f(\scrA)))\subseteq \scrB$,
@@ -5253,47 +5252,104 @@ for the purpose of showing that~$\varrho_1=\varrho_2$
 we may assume without loss of generality
 that~$\scrB=M_N$ for some natural number~$N$.
 We claim that~$\varrho_1$ is surjective.
-Indeed, since  $f(\scrA)\subseteq \varrho_1(\mathcal{F}_\mathrm{ha}(\scrA))$,
+Indeed, since $f=\varrho_1\circ \left<r\right>_{r\in R_\scrA}$,
+and so $f(\scrA)\subseteq \varrho_1(\mathcal{F}_\mathrm{ha}(\scrA))$,
 we have  $\scrB=W^*(f(\scrA))\subseteq 
 \varrho_1(\mathcal{F}_\mathrm{ha}(\scrA))$---using here that
-the range of an nmiu-map is a von Neumann subalgebra, see MARK.
+the range of an nmiu-map is a von Neumann subalgebra, see~\sref{nmiu-image}.
 
+We claim that~$\varrho_1$ must be of the form~$\varrho_1'\circ \pi_{r_1}$
+for some nmiu-isomorphism $\varrho_1'\colon M_{N_{r_1}}\to M_N$,
+and $r_1\in R_\scrA$.
+To see this,
+first note that 
+since~$\varrho_1$ is surjective, it sends
+central projections of~$\mathcal{F}_\mathrm{ha}(\scrA)$
+to central projections of~$M_N$.
+For each~$r\in R_\scrA$,
+let $c_r$ denote the central projection in~$\mathcal{F}_\mathrm{ha}(\scrA)$
+given by $c_r(r)=1$ and $c_r(r')=0$ for all~$r'\in R_\scrA\backslash\{r\}$.
+Then~$(c_r)_{r\in R_\scrA}$
+is a family of orthogonal central projections with 
+    $\sum_{r\in R_\scrA} c_r=1$.
+So~$(\varrho_1(c_r))_{r\in R_\scrA}$
+is an orthogonal family of central projections as well,
+    with $\sum_{r\in R_\scrA} \varrho_1(c_r)=1$.
+Since the only non-zero central projection 
+    in~$M_N$ (being a factor see~\sref{central-examples})
+is~$1$, it follows that
+there is exactly one $r_1\in R_\scrA$
+with $\varrho_1(c_{r_1})=1$,
+and $\varrho_1(c_r)=0$ for all $r\in R_\scrA\backslash\{r_1\}$.
+From this one easily deduces (c.f.~\sref{nmiu-factors}),
+that~$\varrho_1$ must be of the form
+$\varrho_1 = \varrho_1'\circ \pi_{r_1}$
+for some nmiu-map $\varrho_1'\colon M_{N_{r_1}}\to M_N$.
+Since~$\varrho_1$ is surjective,
+$\varrho_1'$ must be surjective too.
+Moreover,
+$\varrho_1'$ is injective,
+because~$\ceil{\varrho_1'}$ is a central projectio  (see~\sref{carrier-miu}).
+in~$M_{N_{r_1}}$ that can't be~$0$.
+Hence~$\varrho_1'$ is a nmiu-isomorphism.
 
+By a similar reasoning~$\varrho_2\equiv \varrho_2'\circ \pi_{r_2}$
+for some $r_2\in R_\scrA$ and some nmiu-isomorphism 
+$\varrho_2\colon M_{N_{r_2}}\to M_N$.
+Since then  
+\begin{equation*}
+    \varrho_1'\circ r_1
+= \varrho_1'\circ \pi_{r_1} \circ \left<r\right>_{r\in R_\scrA}
+= \varrho_1\circ \left<r\right>_{r\in R_\scrA}
+= \varrho_2 \circ \left<r\right>_{r\in R_\scrA}
+= \varrho_2'\circ r_2,
+\end{equation*}
+we see that~$r_1$ and~$r_2$ are miu-equivalent,
+and thus equal.
+Since then
+$\varrho_1'\circ r_1 = \varrho_2'\circ r_2 \equiv 
+\varrho_2'\circ r_1$,
+the assumption
+$W^*(r_1(\scrA))=M_{N_{r_1}}$
+entails~$\varrho_1' = \varrho_2'$.
+Hence $\varrho_1\equiv \varrho_1'\circ \pi_{r_1}
+= \varrho_2'\circ \pi_{r_2}\equiv \varrho_2$.
+\end{point}
+\begin{point}{60}{Existence}
+Recall that we're given a ncpsu-map $f \colon \scrA\to\scrB$
+    with $W^*(f(\scrA))=\scrB$,
+and that we must find a nmiu-map $\varrho\colon 
+\mathcal{F}_\mathrm{ha}(\scrA)\to \scrB$
+with $f= \varrho\circ \left<r\right>_{r\in R_\scrA}$.
+Writing $\scrB\equiv \bigoplus_{i \in I}M_{N_i}$,
+we again have $W^*(\pi_i(f(\scrA)))=M_{N_i}$
+for all~$i\in I$.
+By definition of~$R_\scrA$
+there is, given $i\in I$,
+a unique $r_i\in R_\scrA$
+miu-equivalent to~$\pi_i\circ f$.
+So there's a nmiu-isomorphism $\varphi_i\colon M_{N_{r_i}}\to M_{N_i}$
+with $\varphi_i \circ r_i = \pi_i\circ f$.
+Now, define~$\varrho := \left<\varphi_i\circ \pi_{r_i}\right>_{i\in I}$.
+Then~$\varrho$ is a nmiu-map,
+and~$f = \varrho \circ \left<r\right>_{r\in R_\scrA}$,
+because
+$\pi_i\circ f 
+\equiv  \varphi_i \circ r_i
+    \equiv \varphi_i\circ \pi_{r_i} \circ \left<r\right>_{r\in R_\scrA}
+=  \pi_i \circ  \varrho \circ \left<r\right>_{r\in R_\scrA}$
+for all~$i\in I$.\qed
 \end{point}
 \end{point}
 \end{point}
-\end{parsec}
-
-\begin{parsec}{1253}%
-\begin{point}{10}{Proposition}%
-The inclusion $\haW{cpsu}\longrightarrow\haW{miu}$
+\begin{point}{70}{Corollary}%
+The inclusion $\haW{miu}\longrightarrow\haW{cpsu}$
 has a left adjoint 
 \begin{equation*}\Define{\mathcal{F}_\mathrm{ha}}
-\colon \haW{miu}\longrightarrow\haW{cpsu}.
+\colon \haW{cpsu}\longrightarrow\haW{miu}.
 \end{equation*}
+\index{F_ha@$\mathcal{F}_\mathrm{ha}\colon \haW{cpsu}\to\haW{miu}$}%
 \spacingfix{}
-\begin{point}{20}{Proof}%
-Clearly, the subcategory $\haW{miu}$ of~$\W{miu}$
-is closed under products,
-and these products
-    are preserved by the inclusion 
-    $U_{\mathrm{ha}}\colon \haW{miu}\longrightarrow \haW{cpsu}$.
-By~\sref{ha-equalisers},
-$\haW{miu}$ is closed under equalisers as well,
-and these equalisers are preserved by~$U_\mathrm{ha}$.
-As in the proof of~\sref{second-adjunction},
-the result is obtained
-by an application of Freyd's adjoint functor theorem,
-but this time
-    we use as solution set for a \emph{hereditarily atomic}
-von Neumann algebra~$\scrA$
-the set of ncpsu-maps $\gamma\colon \scrA\to \scrC$
-where~$\scrC$
-is a \emph{hereditarily atomic} von Neumann algebra on a subset of
-$\kappa:= \smash{2^{2^{\#\C+\#\scrA}}}$.
-Aside from this detail
-the reasoning is the same as in~\sref{second-adjunction-proof}.\qed
-\end{point}
 \end{point}
 \end{parsec}
 
