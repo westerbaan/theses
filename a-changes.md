@@ -1,5 +1,9 @@
 Major additions:
 
+* Added subsection 3.4.4 discussing hereditarily atomic von Neumann algebras, 
+  and a subsection 4.3.4 arguing they form a model of 
+  the quantum lambda calculus.
+
 * Changed the formulation of Tomiyama's theorem (128II),
     added a remark about this (128IIa), and added a proof
     (changing 128III).
@@ -8,8 +12,6 @@ Major additions:
 
 * Added a proof of Russo--Dye's theorem (34a), and adapted
   128IV,V,VII accordingly.
-
-* Added subsection 3.4.4 discussing hereditarily atomic von Neumann algebras.
 
 * Added an example in 84a showing that not all equalisers in CStarPU exist,
   and changed 10IX accordingly.
