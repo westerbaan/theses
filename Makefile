@@ -5,7 +5,7 @@ all: a.pdf b.pdf
 a.pdf: common.tex cstar.tex a.tex vn.tex proc.tex main.bib
 	latexmk -pdf -use-make a.tex
 
-b.pdf: common.tex b.tex btitle.tex dils.tex eff.tex bintr.tex main.bib
+b.pdf: common.tex b.tex btitle.tex dils.tex eff.tex bintr.tex main.bib bfinal.tex
 	latexmk -pdf -use-make b.tex
 
 apropos.pdf: common.tex apropos.tex

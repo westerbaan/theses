@@ -1,4 +1,145 @@
 \oldchapter{Lekensamenvatting}
+    
+De volgende twee technische vraagstukken
+    in de wiskundige theorie van quantum computers
+    liggen ten grondslag aan dit proefschrift.
+\begin{enumerate}
+\item 
+    Breidt de stelling van Stinespring uit naar
+        alle von Neumann algebra's?
+\item
+    Is de categorie van von Neumann algebra's te axiomatiseren?
+\end{enumerate}
+Het eerste vraagstuk wordt beantwoord: ja, de stelling breidt uit.
+Het tweede vraagstuk blijft helaas voor een groot deel onbeantwoord.
+De belangrijkste bijdragen van dit proefschrift aan de wetenschap
+    zijn per se deze directe resultaten,
+    maar de bijvangst die het onderzoek erna heeft opgeleverd:
+    er worden verscheidene nieuwe stellingen bewezen
+        en begrippen ingevoerd
+    die toepassing hebben buiten dit onderzoek
+    (zoals bijvoorbeeld een uitbreiding van de stelling
+        van Kaplansky en het begrip~$\diamond$-geadjungeerdeheid).
+
+Maar waar gaan deze twee originele vraagstukken eigenlijk over?
+Wat is die stelling van Stinespring?
+Wat zijn von Neumann algebra's?
+En wat is een quantum computer \"uberhaupt?
+
+\oldsection*{Quantum computers}
+Een quantum computer gebruikt
+       bepaalde quantum mechanische eigenaardigheden
+    om sommige berekeningen veel effici\"enter uit
+    te voeren dan een traditionele computer.
+Een zorgelijk voorbeeld is
+    dat een middelgrote quantum computer
+    zo goed is in het ontbinden van getallen in priemfactoren,
+    dat het het grootste deel van de moderne cryptografie die ons
+    beveiligd, makkelijk kan breken.
+Gelukkig zijn de huidige quantum computers nog erg klein
+    en hebben wij de tijd om onze cryptografie aan te passen.
+Aan de positieve kant zijn
+    quantum computer erg geschikt voor het simuleren
+    van het gedrag van moleculen,
+    waaronder het lokale effect van potenti\"ele medicijnen.
+
+In functie is een quantum computer te vergelijken met
+        een grafische kaart:
+    voor de meeste berekeningen is een normale CPU het best,
+            maar voor sommige berekeningen
+        is een grafische kaart veel effici\"enter.
+Dit komt doordat een normale CPU gemaakt is om zo snel mogelijk
+    losse rekenstappen op afzonderlijke getallen
+    achter elkaar uit te voeren,
+    terwijl een grafische kaart rekenstappen
+    uitvoert op miljoenen getallen tegelijkertijd.
+Niet elke berekening heeft baat bij dat grote parallelisme.
+Voor diegene die dat wel hebben (zoals het
+    weergeven van een 3D-wereld in een computerspel)
+    is het lastig om het originele algoritme aan te passen
+    om optimaal gebruik te maken van de grafische kaart.
+    Programmeren voor een grafische kaart vraagt om een
+    heel andere \emph{mindset}.
+Ook de theoretische analyse van algoritmes voor grafische kaarten
+    is van een andere aard dan die van een traditionele computer.
+
+De situatie bij een quantum computer is vergelijkbaar, maar extremer:
+    de effici\"entiewinst tussen een quantum computer en PC
+    is groter dan die tussen een CPU en grafische kaart.
+Helaas is het vinden en analyseren van algoritmes voor quantum computers
+    ook vele malen ingewikkelder.
+Er is ook geen methode of zelfs vuistregel bekend
+    om te bepalen of een berekening effici\"enter uit te voeren
+    is op een quantum computer of niet.
+
+\oldsection*{Von Neumann algebra's}
+
+Het gedrag van een algoritme voor een traditionele computer,
+    zoals diegene die het kwadraat van een telgetal berekent,
+    wordt vaak beschreven met wiskundige functie,
+    zoals in dit geval de functie~$f\colon \N \to \N$
+        met~$f(n) = n^2$.
+De notatie~$f\colon \N \to \N$
+    betekent dat de functie als invoer
+    een telgetal~$\N \equiv \{0, 1, 2, \ldots \}$
+    neemt en ook een telgetal als uitvoer geeft.
+Een echt programma draait op een computer
+    dat maar een beperkte hoeveelheid geheugen heeft:
+        er is dus een grootste telgetal dat in de computer past
+        --- dat we het algoritme beschrijven
+    met willekeurig grote telgetallen is idealisering van de situatie.
+Het zou echter onhandig zijn om alle generiek toepasbare algoritme
+    te beschrijven als wiskundige functies tussen
+    eindige verzamelingen~(zoals~$\{0, 1, 2, 3\}$)
+    in plaats van tussen oneindige verzamelingen zoals~$\N$.
+
+Dit is helaas precies de situatie voor de meeste beschrijvingen van
+    algoritmes voor quantum computers.
+Het probleem is dat het analoog van~$\N$
+    en de wiskundige functies daartussen
+    vele malen complexer in aard zijn
+    dan de wiskundige functies die het gedrag
+    beschrijven voor het eindige geval,
+    die op zichzelf al ingewikkelder zijn dan
+    simpele functies tussen eindige verzamelingen.
+
+\emph{Von Neumann algebra's} zijn de wiskundige structuren
+    die gebruikt worden om oneindige quantumdatatypes
+    te beschrijven zoals het analoog van~$\N$.
+Zogenoemde~\emph{ncp-functies} tussen von Neumann algebras
+    zijn het analoog van de normale wiskundige functies
+    tussen verzamelingen.
+Het zijn deze von Neumann algebra's met bijbehorende
+    ncp-functies, die in dit proefschrift onderzocht worden
+    om ze beter te begrijpen en eenvoudiger toe te passen.
+
+\oldsection*{De stelling van Stinespring}
+Het is lastig om grip te krijgen
+    op een willekeurige ncp-functie
+    tussen von Neumann algebra's.
+De stelling van Stinespring helpt hierbij:
+    deze zegt dat elke ncp-functie~$f\colon \scrA \to \scrB_I$
+    tussen von Neumann algebra's~$\scrA$ en~$\scrB_I$
+        (waar~$\scrB_I$ van een speciale soort is)
+        in feite de samenstelling is
+        van twee veel simpelere ncp-functies:
+        eerst~$f_1\colon \scrA \to \scrP$
+            en dan~$f_2\colon \scrP \to \scrB_I$.
+    Deze bijzondere opsplitsing wordt
+        ook wel een \emph{dilatie} genoemd
+            en wordt gebruikt als cruciale stap in het
+    bewijs van vele stellingen, niet alleen over ncp-functies zelf,
+    maar ook over bijvoorneeld quantum protocollen en quantum informatie.
+Het probleem is dat de stelling van Stinespring alleen toepasbaar
+    is als~$\scrB_I$ van de speciale soort \emph{type I} is.
+Daarmee zijn de stellingen die ermee worden bewezen vaak ook maar toepasbaar
+    op zulke speciale von Neumann algebra's.
+In het eerste hoofdstuk van het proefschrift
+    wordt een generalisatie van de stelling van Stinespring
+    bewezen, die toepasbaar is op alle ncp-functies.
+
+\oldsection*{Axiomatisatie}
+
 
 \oldchapter{About the author}
 
@@ -34,3 +175,5 @@ During that same year he also taught a quarter-year course on
     computer networking
         and was kindly invited by dr.~Heunen
         to speak about his research at the University of Edinburgh.
+
+% vim: ft=tex.latex
