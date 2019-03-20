@@ -13,13 +13,13 @@ De volgende twee technische vraagstukken
 Het eerste vraagstuk wordt beantwoord: ja, de stelling breidt uit.
 Het tweede vraagstuk blijft helaas voor een groot deel onbeantwoord.
 De belangrijkste bijdragen van dit proefschrift aan de wetenschap
-    zijn per se deze directe resultaten,
+    zijn niet per se deze directe resultaten,
     maar de bijvangst die het onderzoek erna heeft opgeleverd:
     er worden verscheidene nieuwe stellingen bewezen
         en begrippen ingevoerd
-    die toepassing hebben buiten dit onderzoek
+    die toepassing hebben buiten deze vraagstukken
     (zoals bijvoorbeeld een uitbreiding van de stelling
-        van Kaplansky en het begrip~$\diamond$-geadjungeerdeheid).
+        van Kaplansky en het begrip~$\diamond$-geadjungeerdheid).
 
 Maar waar gaan deze twee originele vraagstukken eigenlijk over?
 Wat is die stelling van Stinespring?
@@ -61,7 +61,7 @@ Voor diegene die dat wel hebben (zoals het
     Programmeren voor een grafische kaart vraagt om een
     heel andere \emph{mindset}.
 Ook de theoretische analyse van algoritmes voor grafische kaarten
-    is van een andere aard dan die van een traditionele computer.
+    is van een andere aard dan die voor een traditionele computer.
 
 De situatie bij een quantum computer is vergelijkbaar, maar extremer:
     de effici\"entiewinst tussen een quantum computer en PC
@@ -80,14 +80,14 @@ Het gedrag van een algoritme voor een traditionele computer,
     zoals in dit geval de functie~$f\colon \N \to \N$
         met~$f(n) = n^2$.
 De notatie~$f\colon \N \to \N$
-    betekent dat de functie als invoer
+    betekent dat de functie~$f$ als invoer
     een telgetal~$\N \equiv \{0, 1, 2, \ldots \}$
     neemt en ook een telgetal als uitvoer geeft.
 Een echt programma draait op een computer
     dat maar een beperkte hoeveelheid geheugen heeft:
         er is dus een grootste telgetal dat in de computer past
         --- dat we het algoritme beschrijven
-    met willekeurig grote telgetallen is idealisering van de situatie.
+    met willekeurig grote telgetallen is een idealisering van de situatie.
 Het zou echter onhandig zijn om alle generiek toepasbare algoritme
     te beschrijven als wiskundige functies tussen
     eindige verzamelingen~(zoals~$\{0, 1, 2, 3\}$)
@@ -97,7 +97,7 @@ Dit is helaas precies de situatie voor de meeste beschrijvingen van
     algoritmes voor quantum computers.
 Het probleem is dat het analoog van~$\N$
     en de wiskundige functies daartussen
-    vele malen complexer in aard zijn
+    vele malen complexer van aard zijn
     dan de wiskundige functies die het gedrag
     beschrijven voor het eindige geval,
     die op zichzelf al ingewikkelder zijn dan
@@ -111,7 +111,7 @@ Zogenoemde~\emph{ncp-functies} tussen von Neumann algebras
     tussen verzamelingen.
 Het zijn deze von Neumann algebra's met bijbehorende
     ncp-functies, die in dit proefschrift onderzocht worden
-    om ze beter te begrijpen en eenvoudiger toe te passen.
+    om ze beter te begrijpen en eenvoudiger toe te kunnen passen.
 
 \oldsection*{De stelling van Stinespring}
 Het is lastig om grip te krijgen
@@ -139,7 +139,56 @@ In het eerste hoofdstuk van het proefschrift
     bewezen, die toepasbaar is op alle ncp-functies.
 
 \oldsection*{Axiomatisatie}
+Waarom zijn juist von Neumann algebra's en ncp-functies
+    geschikt voor oneindige quantum datatypes?
+In feite is het een wiskundige gok:
+    von Neumann algebra's en ncp-functies
+    lijken de eenvoudigste structuren die
+    de voorbeelden die we kennen goed beschrijven.
+Eenvoud hier is relatief: de ingewikkelde definitie
+    van een von Neumann algebra
+    staat ver van de intu\"itie van een
+    informaticus en natuurkundige.
+Het valt ook te betwijfelen of elke von Neumann
+    algebra een realistisch quantum mechanisch systeem bescrijft,
+    laat staan een quantum datatype.
 
+Een mogelijke manier om deze kwestie te beslechten is de volgende:
+    wij zoeken een lijst van kenmerkende
+    (en voor onze toepassing relevante) eigenschappen waaraan
+        von Neumann algebra's samen met ncp-functies aan voldoen.
+Als er bewezen kan worden dat alleen von Neumann algebra's
+    met ncp-functies aan deze lijst van eigenschappen kan voldoen
+    (en geen ander soort wiskundige structuur)
+    dan hebben wij met deze lijst van eigenschappen
+        (nu verheven tot axioma's)
+    een nieuw inzicht in de aard van von Neumann algebra's.
+
+Een dergelijke aanpak is eerder al succesvol gebruikt
+    om de regels van quantum theorie voor eindige system beter te begrijpen.
+Een voorbeeld hiervan zijn de axioma's van Chiribella et al,
+    die quantum theorie karakteriseren door
+    de wijze waarop informatie verwerkt wordt.
+
+In het tweede hoofdstuk van dit proefschrift
+    wordt gezocht naar een dergelijke axiomatisatie.
+        Een van de kernaxioma's is het bestaan
+            van een soort \emph{omkering}, een zogenoemde~\emph{dagger},
+            op de speciale ncp-functies die aan de rechterkant
+            voorkomen van een dilatie,
+            wat de twee hoofdstuken met elkaar verbindt.
+Helaas wordt een volledige axiomatisatie niet bereikt.
+Het verhaal eindigt hier niet:
+    mijn college van de Wetering
+        heeft recent bewezen dat met een paar toevoegingen,
+        de axioma's uit dit proefschrift
+        zogeheten Euclidische Jordan algebra's (EJA's) karakteriseren.
+Hiermee is de kous nog niet af:
+    EJA's zijn niet geschikt voor oneindige quantum datatypes.
+Dit resultaat suggereert wel de mogelijkheid
+    dat JBW-algebra's,
+        welke een kruising zijn van von Neumann en Jordan algebra's,
+    uiteindelijk de juiste algebra's zijn voor onze toepassing.
 
 \oldchapter{About the author}
 
