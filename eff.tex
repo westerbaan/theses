@@ -3181,6 +3181,25 @@ An \Define{effect divisoid}
 \item~$\rfrac{(\rfrac{a}{a})}{(\rfrac{a}{a})} \ =\  \rfrac{a}{a}$
 \end{enumerate}
 \spacingfix{}
+\begin{point}{21}{Beware}%
+The first axiom might be read as ``$\rfrac{a}{b}$ is defined to be the
+    unique element such that (...)'' in which case the definition
+    is cyclical and thus problematic.
+    What is meant instead is that~$\rfrac{a}{b}$ is
+        part of the structure and satisfies
+\begin{itemize}
+\item $\rfrac{a}{b} \leq \rfrac{b}{b}$
+        and~$b\odot \rfrac{a}{b} \ =\  a$ and
+\item
+        if~$c \leq \rfrac{b}{b}$
+        and~$b\odot c \ =\  a$,
+        then~$c = \rfrac{a}{b}$
+\end{itemize}
+for all~$a,b,c \in M$ with~$a\leq b$.
+In particular, it is not ruled out
+    that there is an effect monoid
+    which is an effect divisoid in two different ways.
+\end{point}
 \begin{point}{30}{Remark}%
 The element~$\rfrac{a}{a}$ behaves like a support-projection for~$a$.
 \end{point}
@@ -3900,6 +3919,9 @@ The universal property of comprehensions is essentially the same
     as the universal property of (contractive) \emph{corners},
     which we proposed in~\cite{westerbaan2016universal}.
 Effectuses with compression also appear in~\cite{effintro}.
+In partial form, comprehensions are
+    essentially the same
+    as categorical kernels, see~\sref{compr-is-kernel} later on.
 \end{point}
 \begin{point}{40}[compr-not]{Notation}%
     Unless otherwise specified~\Define{$\pi_p$}\index{*pi@$\pi_p$}
@@ -4401,7 +4423,7 @@ In a~$\diamond$-effectus,
             & \SPred Y \ar@/^/[l]^{f^\diamond}}
             \quad \text{by} \quad
             \Define{f^\diamond(s)} = \ceil{s \after f}
-            \index{*diamond1@$(\ )^\diamond$, $(\ )_\diamond$}
+            \index{*par1@$(\ )_\diamond$, $(\ )^\diamond$}
             \quad
             \text{and}
             \quad
@@ -4429,8 +4451,9 @@ In a~$\diamond$-effectus,
             if $f = g\after g$ for some~$\diamond$-self-adjoint~$g$.
             \index{*dia@$\diamond$, diamond!-positive}
     \end{enumerate}
-For brevity, write $\Define{f^\BOX(s)} = f^\diamond(s^\perp)^\perp$.
-    \index{$(\ )^\BOX$}
+For brevity, write $\Define{f^\BOX(s)} = f^\diamond(s^\perp)^\perp$
+    and~$\Define{f_\BOX(s)} = f_\diamond(s^\perp)^\perp$
+    \index{*par2@$(\ )_\BOX$, $(\ )^\BOX$}
 \end{point}
 \begin{point}{30}{Examples}%
 The categories~$\op\vN$, $\op\CvN$, $\op\EJA$
@@ -7519,7 +7542,7 @@ For any~$f\colon A \to B$,
     define~$f_*\colon \Nsb A \leftrightarrows \Nsb B \colon f^*$
         by~$\Define{f_*} (k) = \ker \cok (f \after k)$
         and~$\Define{f^*}(k) = \ker ((\cok k) \after f)$.
-        \index{$(\ )_*$, $(\ )^*$}
+        \index{*par3@$(\ )_*$, $(\ )^*$}
 \item
 We say~$f$ is \Define{left-modular at} $k$
         \index{modular}

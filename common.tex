@@ -222,7 +222,11 @@ Where applicable,
 \DeclareMathOperator{\Pure}{Pure}
 \DeclareMathOperator{\SPred}{SPred}
 \DeclareMathOperator{\IM}{im}
-\newcommand\BOX{{\rlap{\rotatebox[origin=c]{45}{$\diamond$}}\phantom{\diamond}}}
+%\newcommand\BOX{{\rlap{\kern-1pt\rotatebox[origin=c]{45}{$\diamond$}}\phantom{\diamond}}}
+\newcommand\BOX{%
+    % {\tikz[baseline]{\draw (-0.3ex,0) rectangle (0.3ex,0.6ex)}}%
+    {\rlap{\kern .5pt\tikz[baseline]{\draw[line width=0.08ex] (0,0) rectangle (0.6ex,0.6ex)}}%
+    \phantom{\diamond}}}
 \DeclareMathOperator{\IMperp}{im^\perp}
 \DeclareMathOperator{\cok}{cok}
 \DeclareMathOperator{\Par}{Par}
