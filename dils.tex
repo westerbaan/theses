@@ -625,7 +625,7 @@ Clearly~$\ker \varrho$ is a two-sided ideal
     --- indeed, if~$\varrho(a) = 0$ for some~$a\in \scrB(\scrH)$,
     then~$\varrho(ab) = \varrho(a)\varrho(b) = 0$
         and~$\varrho(ba) = 0$
-        for any (other)~$b \in \scrB(\scrH)$.
+        for any~$b \in \scrB(\scrH)$.
 As~$\varrho$ is normal,
     we have~$\varrho(\sup D) = \sup_{d \in D} \varrho(d) = 0$
     for any bounded directed~$D\subseteq \ker \varrho$
@@ -986,9 +986,9 @@ This property is the cornerstone of several publications,
     here is a Hilbert space~$\scrK'$
         and bounded operator~$V\colon \scrK \to \scrH \otimes \scrK'$
         such that~$V^* (a\otimes 1) V = \varphi(a)$.
-        Assume there is any (other) bounded operator
-        $W\colon \scrK \to \scrH \otimes \scrK'$
-        with~$W^* (a \otimes 1) W = \varphi(a)$.
+        Assume there is a bounded
+            operator~$W\colon \scrK \to \scrH \otimes \scrK'$
+        with~$W^* (a \otimes 1) W = \varphi(a)$ as well.
     We will show there is a unitary~$U \colon \scrK' \to \scrK'$
     such that~$V = (1 \otimes U) W$.
 
@@ -1013,11 +1013,9 @@ This property is the cornerstone of several publications,
         that Stinespring's dilation admits,
         which will allow us to generalize it to arbitrary ncp-maps.
 \end{point}
-\begin{point}{20}[def-paschke]{Definition}%
-    Let~$\varphi\colon \scrA \to \scrB$
-        be any ncp-map between von Neumann algebras.%
+%
 \parpic[r]{
-$\xymatrix@C=2.5em@R=3em{
+$\xymatrix@C=1em@R=1em{
 \mathscr{A} 
 \ar[rr]^\varphi
 \ar[rd]_{\varrho}
@@ -1031,39 +1029,32 @@ $\xymatrix@C=2.5em@R=3em{
 \ar@/_1.5em/[ruu]_{h'}
 \ar@{..>}[u]_-{\sigma}
 }$}%
-\noindent
+\spacingfix{}
+\begin{point}{20}[def-paschke]{Definition}%
+    Let~$\varphi\colon \scrA \to \scrB$
+        be any ncp-map between von Neumann algebras.
     A \Define{Paschke dilation}\index{Paschke dilation} of~$\varphi$
     is a triple~$(\scrP, \varrho, h)$
     with a von Neumann algebra~$\scrP$;
     an nmiu-map $\varrho \colon \scrA \to \scrP$
-    and an ncp-map~$h \colon \scrP \to \scrB$
+    and ncp-map~$h \colon \scrP \to \scrB$
     with~$\varphi = h \after \varrho$
-    such that for every (other\footnote{Other choice of possibly the same such triple. See \sref{other-remark}.})
-    such triple~$(\scrP', \varrho', h')$
+    and the following universal property holds.
+\begin{quote}
+    For every triple~$(\scrP', \varrho', h')$
     with a von Neumann algebra~$\scrP'$;
     an nmiu-map $\varrho'\colon \scrA \to \scrP'$
-    and an ncp-map~$h' \colon \scrP' \to \scrB$
+    and ncp-map~$h' \colon \scrP' \to \scrB$
     with~$\varphi = h' \after \varrho'$,
     there is a unique ncp-map~$\sigma \colon \scrP' \to \scrP$
     (the ``mediating map'')
     with~$\sigma \after \varrho' = \varrho$
     and~$h \after \sigma = h'$.
+\end{quote}
+
 \par % XXX hack to get parpic to work
+\end{point}
 \spacingfix{}
-\begin{point}{21}[other-remark]{Remark on ``(other)''}%
-This unique mediating map~$\sigma$ should exist for every
-    such triple~$(\scrP',\varrho',h')$,
-    in particular for~$(\scrP, \varrho, h)$ itself (in which case it is~$\id$).
-Thus it is more correct to leave out ``(other) such''.
-I feel, however, that this would be harder to follow for a reader
-    unfamiliar with universal properties:
-        the new triple would be introduced without being directly related
-            to the previous triple and the reader has to
-            notice that the assumptions on both triples are the same.
-In this case and for other universal properties
-    ``(other)'' should be understood as ``other choice of possibly the same''.
-\end{point}
-\end{point}
 \begin{point}{30}[stinespring-is-paschke]{Theorem}%
 Let~$\varphi\colon \scrA \to \scrB(\scrH)$
     be any ncp-map
@@ -1073,7 +1064,6 @@ Let~$\varphi\colon \scrA \to \scrB(\scrH)$
 \begin{point}{40}{Proof}%
 (This is essentially the same proof
     we gave in \cite{wwpaschke}.)
-\spacingfix{}
 \parpic[r]{
 \xymatrix{
 \mathscr{A} \ar@/_/[rdd]_{\varrho'}\ar[rd]^\varrho \ar[rr]^\varphi
@@ -1932,7 +1922,7 @@ Indeed, this is the case if we start of with a pseudometric
             The uniform space $X$ is \Define{complete}\index{uniform space!complete}
     when every Cauchy net converges.
 \item
-Let~$(Y,\Psi)$ be any (other) uniform space.
+Let~$(Y,\Psi)$ be a second uniform space.
 A map~$f\colon X \to Y$
 is said to be \Define{uniformly continuous}\index{uniform space!uniformly continuous}
 if for each~$\varepsilon \in \Psi$
@@ -3516,7 +3506,7 @@ We are ready to show that every ncp-map has a Paschke dilation.
         with~$\varphi = h \after \varrho$ via~$\scrP$
             for some ncp-map~$h$, nmiu-map~$\varrho$ and von Neumann algebra~$\scrP$,
             which is minimal in the sense
-            that for any (other) such triple~$(\scrP', \varrho', h')$
+            that for any such triple~$(\scrP', \varrho', h')$
             there is a unique ncp-map~$\sigma\colon \scrP' \to \scrP$
             with~$h' =h \after \sigma$ and~$\varrho=\sigma\after\varrho'$.
     See \sref{def-paschke}.
@@ -3570,7 +3560,7 @@ We are ready to show that every ncp-map has a Paschke dilation.
     given by~$h(T) =\left<1 \otimes 1, T(1 \otimes 1)\right>$
     is ncp.
 \item
-Let $X$ be any (other) self-dual Hilbert~$\scrB$-module with $e \in X$ and
+Let $X$ be any self-dual Hilbert~$\scrB$-module with $e \in X$ and
         nmiu-map~$\varrho'\colon \scrA \to \scrB^a(X)$
         such that~$\varphi  = h' \after \varrho'$
         with~$h'(T) = \left<e,T e\right>$.
@@ -4018,7 +4008,7 @@ For any~$a\in \scrA$ we have
                 constructed in~\sref{existence-paschke}.
 \end{point}
 \begin{point}{90}{Arbitrary dilation}%
-Let~$(\scrP', \varrho', h')$ be any (other) Paschke dilation
+Let~$(\scrP', \varrho', h')$ be any Paschke dilation
     of~$\varphi$.
 For brevity write~$\scrP \equiv \scrA \otimes_\varphi \scrB$
     and for clarity
@@ -6033,7 +6023,7 @@ An ncp-map~$h \colon \scrA \to \scrB$
 is a \Define{corner}\index{corner} for~$a \in [0,1]_\scrA$ if~$h(a)=h(1)$
     and
     \begin{quote}
-        for every (other) ncp-map $f\colon \scrA \to \scrC$
+        for every ncp-map $f\colon \scrA \to \scrC$
             with~$f(1)=f(a)$,
             there is a unique ncp-map~$f'\colon \scrB \to \scrC$
             with~$f = f' \after h$.
@@ -6089,7 +6079,7 @@ An ncp-map~$c \colon \scrA \to \scrB$
 is a \Define{filter}\index{filter} for~$b \in\scrB$, $b \geq 0$ if~$c(1)\leq b$
     and
     \begin{quote}
-        for every (other) ncp-map $f\colon \scrC \to \scrB$
+        for every ncp-map $f\colon \scrC \to \scrB$
             with~$f(1) \leq b$,
             there is a unique ncp-map~$f'\colon \scrC \to \scrA$
             with~$f = c \after f'$.
