@@ -2473,6 +2473,36 @@ provided
     \quad\text{implies}\quad~x_1=x_2
 \end{equation*}
     for any~$x_1,x_2,y \in X$ and~$\lambda \in M, \lambda \neq 1$.
+\begin{point}{41}{Remark}%
+    For an abstract~$[0,1]$-convex set~$(X,h)$,
+    binary convex combinations are sufficient:
+    for instance, for any~$\lambda \ovee \mu \neq 1$
+        and~$x,y,z \in X$ we have
+\begin{equation*}
+    h \bigl(\lambda \ket{x} \ovee \mu \ket{y} \ovee
+        (\lambda \ovee \mu)^\perp \ket{z}\bigr)
+        \ = \ 
+    h\Bigl(\lambda \ket{x}
+        \ovee \lambda^\perp \ket{
+            h\bigl( \nicefrac{\mu}{\lambda^\perp} \ket{y}
+        \ovee \nicefrac{(\lambda \ovee \mu)^\perp}{\lambda^\perp}
+        \ket{z}}\bigr)\Bigr).
+\end{equation*}
+This reduction to binary convex combinations uses
+    the division on~$[0,1]$.
+Some effect monoids have a suitable division as well,
+        but many do not
+    as we will see later on
+        in~\sref{dfn-effect-divisoid} and \sref{basic-divisoid-equiv}.
+It seems plausible that
+    it is impossible to write an arbitrary
+    three-element~$M$-convex combination
+    over~$\mathcal{D}_M \{x,y,z\}$
+    using only binary convex combinations
+    in the case that~$M$ is the effect monoid
+        on the unit interval of~$C[0,1]$.
+I do not have a proof to  back this claim.
+\end{point}
 \end{point}
 \begin{point}{50}{Examples}%
 We give some examples of abstract convex sets.
