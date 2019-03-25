@@ -3567,15 +3567,22 @@ We are ready to show that every ncp-map has a Paschke dilation.
     given by~$h(T) =\left<1 \otimes 1, T(1 \otimes 1)\right>$
     is ncp.
 \item
-Let $X$ be any self-dual Hilbert~$\scrB$-module with $e \in X$ and
-        nmiu-map~$\varrho'\colon \scrA \to \scrB^a(X)$
-        such that~$\varphi  = h' \after \varrho'$
-        with~$h'(T) = \left<e,T e\right>$.
-There is a unique
+The map~$\varrho \colon \scrA \to \scrB^a(\scrA \otimes_\varphi \scrB)$
+    together with~$1\otimes 1 \in \scrA \otimes_\varphi \scrB$
+    has the following universal property.
+\begin{quote}
+Let~$\varrho'\colon \scrA \to \scrB^a(X)$
+    be an nmiu-map
+    for a self-dual Hilbert~$\scrB$-module~$X$
+    together with an element~$e \in X$
+    such that~$\varphi  = h' \after \varrho'$
+        for~$h'(T) \equiv \left<e,T e\right>$.
+Then: there is a unique
         inner product preserving~$\scrB$-linear
         map~$S \colon \scrA\otimes_\varphi\scrB \to X$
         such that~$\ad_S \after \varrho' = \varrho$
         and~$S( 1\otimes 1) = e$.
+\end{quote}
 \item
 $(\scrB^a(\scrA \otimes_\varphi \scrB), \varrho, h)$
         is a Paschke dilation of~$\varphi$, see \sref{def-paschke}.
