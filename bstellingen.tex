@@ -1,0 +1,40 @@
+\documentclass{article}
+
+\usepackage{geometry}
+\usepackage{nicefrac}
+\usepackage{amsfonts}
+\geometry{nohead,
+    paperwidth=160truemm,
+    paperheight=230truemm}
+\usepackage[noinfo,width=166truemm,height=236truemm,center]{crop}
+\pagenumbering{gobble}
+
+\newcommand\rfrac[2]{\reflectbox{\nicefrac{\reflectbox{\ensuremath{#1}}}{\reflectbox{\ensuremath{#2}}}}}
+
+\begin{document}
+\begin{enumerate}
+\item
+    There is reason to~$\rfrac{0}{0}=0$.
+\item
+    An unordered pair of qubits is described
+        by the C$^*$-algebra~$M_3 \oplus \mathbb{C}$.
+\item
+    A Kochen--Specker system has at least 22 vectors.
+\item
+    In practice there is no tangible benefit
+        to quantum key distribution over traditional key-agreemenent protocols.
+\item
+    Perhaps the only thing that prevents JBW-algebras from replacing
+            von Neumann algebras is
+            the lack of a phyisically meaningful notion
+            of process between them
+            such as that of a normal completely positive linear map
+            between von Neumann algebras.
+\item
+    When cooking,
+        the only thing worse than adding too much salt,
+        is adding salt too late.
+\end{enumerate}
+\end{document}
+
+% vim: ft=tex.latex
