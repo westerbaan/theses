@@ -625,7 +625,7 @@ Clearly~$\ker \varrho$ is a two-sided ideal
     --- indeed, if~$\varrho(a) = 0$ for some~$a\in \scrB(\scrH)$,
     then~$\varrho(ab) = \varrho(a)\varrho(b) = 0$
         and~$\varrho(ba) = 0$
-        for any (other)~$b \in \scrB(\scrH)$.
+        for any~$b \in \scrB(\scrH)$.
 As~$\varrho$ is normal,
     we have~$\varrho(\sup D) = \sup_{d \in D} \varrho(d) = 0$
     for any bounded directed~$D\subseteq \ker \varrho$
@@ -986,9 +986,9 @@ This property is the cornerstone of several publications,
     here is a Hilbert space~$\scrK'$
         and bounded operator~$V\colon \scrK \to \scrH \otimes \scrK'$
         such that~$V^* (a\otimes 1) V = \varphi(a)$.
-        Assume there is any (other) bounded operator
-        $W\colon \scrK \to \scrH \otimes \scrK'$
-        with~$W^* (a \otimes 1) W = \varphi(a)$.
+        Assume there is a bounded
+            operator~$W\colon \scrK \to \scrH \otimes \scrK'$
+        with~$W^* (a \otimes 1) W = \varphi(a)$ as well.
     We will show there is a unitary~$U \colon \scrK' \to \scrK'$
     such that~$V = (1 \otimes U) W$.
 
@@ -1013,11 +1013,9 @@ This property is the cornerstone of several publications,
         that Stinespring's dilation admits,
         which will allow us to generalize it to arbitrary ncp-maps.
 \end{point}
-\begin{point}{20}[def-paschke]{Definition}%
-    Let~$\varphi\colon \scrA \to \scrB$
-        be any ncp-map between von Neumann algebras.%
+%
 \parpic[r]{
-$\xymatrix@C=2.5em@R=3em{
+$\xymatrix@C=1em@R=1em{
 \mathscr{A} 
 \ar[rr]^\varphi
 \ar[rd]_{\varrho}
@@ -1031,39 +1029,32 @@ $\xymatrix@C=2.5em@R=3em{
 \ar@/_1.5em/[ruu]_{h'}
 \ar@{..>}[u]_-{\sigma}
 }$}%
-\noindent
+\spacingfix{}
+\begin{point}{20}[def-paschke]{Definition}%
+    Let~$\varphi\colon \scrA \to \scrB$
+        be any ncp-map between von Neumann algebras.
     A \Define{Paschke dilation}\index{Paschke dilation} of~$\varphi$
     is a triple~$(\scrP, \varrho, h)$
     with a von Neumann algebra~$\scrP$;
     an nmiu-map $\varrho \colon \scrA \to \scrP$
-    and an ncp-map~$h \colon \scrP \to \scrB$
+    and ncp-map~$h \colon \scrP \to \scrB$
     with~$\varphi = h \after \varrho$
-    such that for every (other\footnote{Other choice of possibly the same such triple. See \sref{other-remark}.})
-    such triple~$(\scrP', \varrho', h')$
+    and the following universal property holds.
+\begin{quote}
+    For every triple~$(\scrP', \varrho', h')$
     with a von Neumann algebra~$\scrP'$;
     an nmiu-map $\varrho'\colon \scrA \to \scrP'$
-    and an ncp-map~$h' \colon \scrP' \to \scrB$
+    and ncp-map~$h' \colon \scrP' \to \scrB$
     with~$\varphi = h' \after \varrho'$,
     there is a unique ncp-map~$\sigma \colon \scrP' \to \scrP$
     (the ``mediating map'')
     with~$\sigma \after \varrho' = \varrho$
     and~$h \after \sigma = h'$.
+\end{quote}
+
 \par % XXX hack to get parpic to work
+\end{point}
 \spacingfix{}
-\begin{point}{21}[other-remark]{Remark on ``(other)''}%
-This unique mediating map~$\sigma$ should exist for every
-    such triple~$(\scrP',\varrho',h')$,
-    in particular for~$(\scrP, \varrho, h)$ itself (in which case it is~$\id$).
-Thus it is more correct to leave out ``(other) such''.
-I feel, however, that this would be harder to follow for a reader
-    unfamiliar with universal properties:
-        the new triple would be introduced without being directly related
-            to the previous triple and the reader has to
-            notice that the assumptions on both triples are the same.
-In this case and for other universal properties
-    ``(other)'' should be understood as ``other choice of possibly the same''.
-\end{point}
-\end{point}
 \begin{point}{30}[stinespring-is-paschke]{Theorem}%
 Let~$\varphi\colon \scrA \to \scrB(\scrH)$
     be any ncp-map
@@ -1073,7 +1064,6 @@ Let~$\varphi\colon \scrA \to \scrB(\scrH)$
 \begin{point}{40}{Proof}%
 (This is essentially the same proof
     we gave in \cite{wwpaschke}.)
-\spacingfix{}
 \parpic[r]{
 \xymatrix{
 \mathscr{A} \ar@/_/[rdd]_{\varrho'}\ar[rd]^\varrho \ar[rr]^\varphi
@@ -1293,7 +1283,7 @@ As Hilbert C$^*$-modules are central to the present topic,
     we will prove some basic results again, which were already
     covered by my twin.
 \end{point}
-\begin{point}{20}{Definition}%
+\begin{point}{20}[dils-basicdfns]{Definition}%
     Let~$\scrB$ be a C$^*$-algebra and~$X$
         be a right $\scrB$-module.
         A \Define{$\scrB$-valued inner product}
@@ -1322,7 +1312,14 @@ A \Define{Hilbert $\scrB$-module}\index{Hilbert $\scrB$-module}
     (also called a \Define{Hilbert C$^*$-module over~$\scrB$})
     is a pre-Hilbert~$\scrB$-module
     which is complete in this norm.
-\begin{point}{21}{Beware}%
+\begin{point}{21}%
+A pre-Hilbert~$\scrB$-module is called \Define{self dual}
+                \index{Hilbert~$\scrB$-module!self-dual}
+    if for each~$\scrB$-linear~$\tau\colon X \to \scrB$,
+                there is a~$t \in X$ such that~$\tau(x) = \left<t,x\right>$
+                    for all~$x \in X$.
+\end{point}
+\begin{point}{22}{Beware}%
 In his original definition~\cite[\S2.1]{paschke}, Paschke
     chose to make his~$\scrB$-valued inner product~$\scrB$-linear
     on the left instead of on the right.
@@ -1335,9 +1332,10 @@ He also assumes his inner products to be definite.
 \begin{itemize}
 \item
 Hilbert $\C$-modules are the same as Hilbert spaces.
+They are all self dual.
 
 \item
-Any C$^*$-algebra~$\scrB$ is a Hilbert C$^*$-module over itself
+Any C$^*$-algebra~$\scrB$ is a self-dual Hilbert C$^*$-module over itself
     with $\scrB$-valued inner product~$\left<a,b\right> = a^*b$.
 By the C$^*$-identity, the Hilbert~$\scrB$-module
     norm on~$\scrB$ coincides with
@@ -1349,13 +1347,15 @@ More generally: if~$J \subseteq \scrB$
     then~$J$ is a pre-Hilbert~$\scrB$-module
     with~$\left<a,b\right> = a^*b$.
 If~$J$ is closed with respect to the norm, then~$J$ is a Hilbert~$\scrB$-module.
+It might not be self dual.
 
 \item
-In particular, the right ideal~$e \scrB$ for a projection~$e \in \scrB$
-    is a Hilbert~$\scrB$-module with~$\left<ea,eb\right> = a^*eb$.
-Later we will see that every so-called self-dual
-    Hilbert~$\scrB$-module is built up from such~$e \scrB$,
-            where these~$\scrB$ are von Neumann algebras.
+Principal right-ideals are self dual:
+    the right ideal~$e \scrB$ for a projection~$e \in \scrB$
+    is a self-dual Hilbert~$\scrB$-module with~$\left<ea,eb\right> = a^*eb$.
+Later we will see that every self-dual
+    Hilbert~$\scrB$-module over a von Neumann algebra~$\scrB$
+        is built up from such~$e \scrB$.
     
 \item
 If~$X$ and~$Y$ are (pre-)Hilbert~$\scrB$-modules,
@@ -1363,6 +1363,7 @@ If~$X$ and~$Y$ are (pre-)Hilbert~$\scrB$-modules,
     is a (pre-)Hilbert~$\scrB$-module
     with the familiar inner product~$\left<(x,y), (x',y')\right>
                 = \left<x,x'\right>+\left<y,y'\right>$.
+If~$X$ and~$Y$ are self dual, then so is~$X \oplus Y$.
 \end{itemize}
 \end{point}
 \end{parsec}
@@ -1717,7 +1718,6 @@ Now we will see how to complete a right $\scrB$-module
     with $\scrB$-valued inner product
     to a \emph{self-dual} Hilbert~$\scrB$-module
     under the assumption~$\scrB$ is a von Neumann algebra.
-    (We will define \emph{self-dual} in \sref{dils-selfdual}.)
     We will use a different construction than Paschke used~\cite{paschke}.
 Paschke showed that for a pre-Hilbert $\scrB$-module~$X$
     the set of functionals~$X'$
@@ -1932,7 +1932,7 @@ Indeed, this is the case if we start of with a pseudometric
             The uniform space $X$ is \Define{complete}\index{uniform space!complete}
     when every Cauchy net converges.
 \item
-Let~$(Y,\Psi)$ be any (other) uniform space.
+Let~$(Y,\Psi)$ be a second uniform space.
 A map~$f\colon X \to Y$
 is said to be \Define{uniformly continuous}\index{uniform space!uniformly continuous}
 if for each~$\varepsilon \in \Psi$
@@ -2098,7 +2098,7 @@ Thus~$[x_\alpha,y_\alpha] \to [x,y]$ ultraweakly. \qed
 \end{point}
 \begin{point}{70}[hilbmod-denseordersep]{Corollary}%
 Let~$X$ be a Hilbert~$\scrB$-module
-    together with an ultranorm dense subset~$D \subseteq X$.
+    together with an ultranorm-dense subset~$D \subseteq X$.
 The vector states from~$D$ are order separating:
 for each~$T \in \scrB^a(X)$ we have
 $T \geq 0$ if and only if~$\left<x,Tx\right> \geq 0$
@@ -2219,10 +2219,7 @@ where the sum converges ultraweakly. \cite{paschke}
     For any pre-Hilbert~$\scrB$-module~$X$,
         the following conditions are equivalent.
         \begin{enumerate}
-            \item $X$ is \Define{self-dual}\index{Hilbert~$\scrB$-module!self-dual} ---
-                that is: for each~$\scrB$-linear~$\tau\colon X \to \scrB$
-                there is a~$t \in X$ such that~$\tau(x) = \left<t,x\right>$
-                    for all~$x \in X$.
+            \item $X$ is self dual.
             \item $X$ is ultranorm complete.
             \item Every norm-bounded ultranorm-Cauchy net in~$X$ converges.
             \item $X$ has an orthonormal basis.
@@ -3516,7 +3513,7 @@ We are ready to show that every ncp-map has a Paschke dilation.
         with~$\varphi = h \after \varrho$ via~$\scrP$
             for some ncp-map~$h$, nmiu-map~$\varrho$ and von Neumann algebra~$\scrP$,
             which is minimal in the sense
-            that for any (other) such triple~$(\scrP', \varrho', h')$
+            that for any such triple~$(\scrP', \varrho', h')$
             there is a unique ncp-map~$\sigma\colon \scrP' \to \scrP$
             with~$h' =h \after \sigma$ and~$\varrho=\sigma\after\varrho'$.
     See \sref{def-paschke}.
@@ -3570,7 +3567,7 @@ We are ready to show that every ncp-map has a Paschke dilation.
     given by~$h(T) =\left<1 \otimes 1, T(1 \otimes 1)\right>$
     is ncp.
 \item
-Let $X$ be any (other) self-dual Hilbert~$\scrB$-module with $e \in X$ and
+Let $X$ be any self-dual Hilbert~$\scrB$-module with $e \in X$ and
         nmiu-map~$\varrho'\colon \scrA \to \scrB^a(X)$
         such that~$\varphi  = h' \after \varrho'$
         with~$h'(T) = \left<e,T e\right>$.
@@ -3606,7 +3603,7 @@ By \sref{dils-completion},
     there is a self-dual Hilbert~$\scrB$-module~$\scrA\otimes_\varphi \scrB$
     and~$\scrB$-linear inner product-preserving
     $\eta\colon \scrA \odot \scrB \to \scrA \otimes_\varphi \scrB$
-    with ultranorm dense range.
+    with ultranorm-dense range.
 Define a bilinear map~$\otimes \colon \scrA \times \scrB \to \scrA \otimes_\varphi \scrB$
     by~$a \otimes b = \eta(a \otimes b)$.
 By definition we have
@@ -4018,7 +4015,7 @@ For any~$a\in \scrA$ we have
                 constructed in~\sref{existence-paschke}.
 \end{point}
 \begin{point}{90}{Arbitrary dilation}%
-Let~$(\scrP', \varrho', h')$ be any (other) Paschke dilation
+Let~$(\scrP', \varrho', h')$ be any Paschke dilation
     of~$\varphi$.
 For brevity write~$\scrP \equiv \scrA \otimes_\varphi \scrB$
     and for clarity
@@ -4095,7 +4092,7 @@ For our generalization, it is more convenient to consider the following
     variation.
 \end{point}
 \begin{point}{11}{Kaplansky density theorem}%
-Let~$\scrB$ be a von Neumann algebra with ultrastrongly dense
+Let~$\scrB$ be a von Neumann algebra with ultrastrongly-dense
     C$^*$-subalgebra~$\scrA  \subseteq \scrB$.
 Then: for every element~$a \in \scrA$,
     there is a net~$b_\alpha$ in~$\scrB$
@@ -4110,7 +4107,7 @@ Cf.~\sref{kaplansky}.
 \end{point}
 \begin{point}{20}[kaplansky-hilbmod]{Kaplansky density theorem for Hilbert C$^*$-modules}%
 Let~$X$ be a Hilbert~$\scrB$-module for a von Neumann algebra~$\scrB$
-    with an ultranorm dense $\scrA$-submodule $D \subseteq X$,
+    with an ultranorm-dense $\scrA$-submodule $D \subseteq X$,
     where~$\scrA \subseteq \scrB$ is some C$^*$-subalgebra
     with~$\langle y,y \rangle \in \scrA$ for all~$y \in D$.
 
@@ -5144,7 +5141,7 @@ If~$X \odot Y$ were an~$\scrA \otimes \scrB$-module
 Instead, we will retrace the steps of its proof
     and modify it for the present situation.
 Uniqueness of~$\hat{T}$ is the same:
-    $\hat{T}$ is fixed by the ultranorm dense image of~$\eta$
+    $\hat{T}$ is fixed by the ultranorm-dense image of~$\eta$
     as it is bounded~$\scrA\otimes\scrB$-linear
     and so ultranorm continuous by \sref{blinear-bounded-is-ultranorm}.
 The argument for existence of~$\hat{T}$ is more subtle.
@@ -5642,7 +5639,7 @@ Let~$X$ be a self-dual Hilbert~$\scrA$-module
     and~$Y$ be a self-dual Hilbert~$\scrB$-module
     for von Neumann algebras~$\scrA$ and~$\scrB$.
 Suppose~$U \subseteq X$ and~$V \subseteq Y$
-    are ultranorm dense submodules.
+    are ultranorm-dense submodules.
 Then the linear span of
 \begin{equation*}
     U \otimes V \ \equiv\  \{ u \otimes v;\  u \in U,\ v \in V\}
@@ -5752,7 +5749,7 @@ Using this isomorphism,
     is a dilation of the tensor product.
     From this, we finally derive the stated result.
 \begin{point}{30}[paschke-iso-tensor-density]{Density}%
-By construction, $\scrA_1 \odot \scrB_1$ is an ultranorm dense
+By construction, $\scrA_1 \odot \scrB_1$ is an ultranorm-dense
         $\scrB_1$-submodule
     of~$\scrA_1 \otimes_{\varphi_1} \scrB_1$.
 Similarly~$\scrA_2 \odot \scrB_2 $ is ultranorm dense
@@ -5764,7 +5761,7 @@ Thus by \sref{exttensor-dense-subsets}
 By \sref{tensor}
         (with~\sref{ultraclosed} and \sref{dense-subalgebra}),
     we know~$\scrA_1 \odot \scrA_2$
-    is an ultrastrongly dense subalgebra
+    is an ultrastrongly-dense subalgebra
     of~$\scrA_1 \otimes \scrA_2$.
 Similarly~$\scrB_1 \odot \scrB_2$
     is ultrastrongly dense in~$\scrB_1 \otimes \scrB_2$.
@@ -6033,7 +6030,7 @@ An ncp-map~$h \colon \scrA \to \scrB$
 is a \Define{corner}\index{corner} for~$a \in [0,1]_\scrA$ if~$h(a)=h(1)$
     and
     \begin{quote}
-        for every (other) ncp-map $f\colon \scrA \to \scrC$
+        for every ncp-map $f\colon \scrA \to \scrC$
             with~$f(1)=f(a)$,
             there is a unique ncp-map~$f'\colon \scrB \to \scrC$
             with~$f = f' \after h$.
@@ -6089,7 +6086,7 @@ An ncp-map~$c \colon \scrA \to \scrB$
 is a \Define{filter}\index{filter} for~$b \in\scrB$, $b \geq 0$ if~$c(1)\leq b$
     and
     \begin{quote}
-        for every (other) ncp-map $f\colon \scrC \to \scrB$
+        for every ncp-map $f\colon \scrC \to \scrB$
             with~$f(1) \leq b$,
             there is a unique ncp-map~$f'\colon \scrC \to \scrA$
             with~$f = c \after f'$.

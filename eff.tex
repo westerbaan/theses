@@ -533,7 +533,7 @@ Clearly~$ (x^\perp \ovee c) \vee
         (x^\perp \ovee d)) \ominus x^\perp$.
 We will show~$r = c \vee d$.
 It is easy to see~$r \geq c$ and~$r \geq d$.
-Assume~$s$ is an (other) element with~$s \geq c$ and~$s \geq d$.
+Assume~$s$ is any element with~$s \geq c$ and~$s \geq d$.
 Note~$x^\perp \ovee s \geq x^\perp \ovee c$
 and~$x^\perp \ovee s \geq x^\perp \ovee d$,
     hence~$x^\perp \ovee s \geq (x^\perp \ovee c) \vee (x^\perp \ovee d)$
@@ -1114,7 +1114,7 @@ Define~$\langle f, g\rangle = (\kappa_1 \after f) \ovee (\kappa_2 \after g)$.
 \end{align*}
 Similarly~$\pproj_2 \after \langle f, g \rangle = g$.
 To show uniqueness, assume~$f = \pproj_1 \after h$
-    and~$g = \pproj_2 \after h$ for some (other)
+    and~$g = \pproj_2 \after h$ for some
     $h\colon Z \to X+Y$.
 Note~$\kappa_1 \after \pproj_1 = [\kappa_1, 0]$
 and~$\kappa_2 \after \pproj_2 = [0, \kappa_2]$,
@@ -1245,7 +1245,7 @@ so~$\langle \alpha,\beta\rangle \colon Z \to X+Y$ exists
 We compute~$(\id + 1) \after \langle\alpha, \beta\rangle = \langle \alpha,
     1 \after \beta\rangle = \langle \alpha, a\rangle = f$.
     Similarly~$(1 + \id) \after \langle \alpha, \beta\rangle = g$.
-    Assume~$h\colon Z \to X+Y$ is any (other) map with~$(1 +\id) \after h
+    Assume~$h\colon Z \to X+Y$ is any map with~$(1 +\id) \after h
         = g$ and~$(\id+1) \after h = f$.
 Say~$h = \langle h_1, h_2 \rangle$.
 Then~$\langle \alpha, a\rangle = f= (\id + 1)\after h = \langle h_1, 1 \after h_2 \rangle$, so~$\alpha = h_1$. Similarly~$\beta=h_2$.
@@ -1860,7 +1860,7 @@ We compute
 So~$\hat{p}$ is a bound for~$p \perp p^\perp$
 and~$p \ovee p^\perp = 1$.
 To show~$p^\perp$ is the unique orthocomplement,
-    assume~$p \ovee q = 1$ for some (other)~$q$ via a bound~$b\colon
+    assume~$p \ovee q = 1$ for some~$q$ via a bound~$b\colon
         X \pto 1+1$.
 Note~$1 \hafter b =\nabla \hafter b = 1$
     and so by \sref{pardp}
@@ -2473,6 +2473,36 @@ provided
     \quad\text{implies}\quad~x_1=x_2
 \end{equation*}
     for any~$x_1,x_2,y \in X$ and~$\lambda \in M, \lambda \neq 1$.
+\begin{point}{41}{Remark}%
+    For an abstract~$[0,1]$-convex set~$(X,h)$,
+    binary convex combinations are sufficient:
+    for instance, for any~$\lambda \ovee \mu \neq 1$
+        and~$x,y,z \in X$ we have
+\begin{equation*}
+    h \bigl(\lambda \ket{x} \ovee \mu \ket{y} \ovee
+        (\lambda \ovee \mu)^\perp \ket{z}\bigr)
+        \ = \ 
+    h\Bigl(\lambda \ket{x}
+        \ovee \lambda^\perp \ket{
+            h\bigl( \nicefrac{\mu}{\lambda^\perp} \ket{y}
+        \ovee \nicefrac{(\lambda \ovee \mu)^\perp}{\lambda^\perp}
+        \ket{z}}\bigr)\Bigr).
+\end{equation*}
+This reduction to binary convex combinations uses
+    the division on~$[0,1]$.
+Some effect monoids have a suitable division as well,
+        but many do not
+    as we will see later on
+        in~\sref{dfn-effect-divisoid} and \sref{basic-divisoid-equiv}.
+It seems plausible that
+    it is impossible to write an arbitrary
+    three-element~$M$-convex combination
+    over~$\mathcal{D}_M \{x,y,z\}$
+    using only binary convex combinations
+    in the case that~$M$ is the effect monoid
+        on the unit interval of~$C[0,1]$.
+I do not have a proof to  back this claim.
+\end{point}
 \end{point}
 \begin{point}{50}{Examples}%
 We give some examples of abstract convex sets.
@@ -3181,6 +3211,25 @@ An \Define{effect divisoid}
 \item~$\rfrac{(\rfrac{a}{a})}{(\rfrac{a}{a})} \ =\  \rfrac{a}{a}$
 \end{enumerate}
 \spacingfix{}
+\begin{point}{21}{Beware}%
+The first axiom might be read as ``$\rfrac{a}{b}$ is defined to be the
+    unique element such that (...)'' in which case the definition
+    is cyclical and thus problematic.
+    What is meant instead is that~$\rfrac{a}{b}$ is
+        part of the structure and satisfies
+\begin{itemize}
+\item $\rfrac{a}{b} \leq \rfrac{b}{b}$
+        and~$b\odot \rfrac{a}{b} \ =\  a$ and
+\item
+        if~$c \leq \rfrac{b}{b}$
+        and~$b\odot c \ =\  a$,
+        then~$c = \rfrac{a}{b}$
+\end{itemize}
+for all~$a,b,c \in M$ with~$a\leq b$.
+In particular, it is not ruled out
+    that there is an effect monoid
+    which is an effect divisoid in two different ways.
+\end{point}
 \begin{point}{30}{Remark}%
 The element~$\rfrac{a}{a}$ behaves like a support-projection for~$a$.
 \end{point}
@@ -3396,7 +3445,7 @@ This suggests the following definition
 where~$h_3$ is the convex structure on~$X+Y$.
 To show this a proper definition,
 let~$n',m'\in \N$, $\lambda'_i, \sigma'_i \in M$,
-$x'_i \in X$ and $y'_i \in Y$ be (other) elements such that
+$x'_i \in X$ and $y'_i \in Y$ be any elements such that
 \begin{align*}
     \alpha(z) &\ =\ 
     h_1\Bigl(\lambda'_0 \ket{\kappa_1(\cdot)}
@@ -3637,9 +3686,9 @@ We say~$C$ is an \Define{effectus with quotients}
     if for each predicate~$p \colon X \to 1$,
     there exists a map~$\xi_p \colon X \to X/_p$
     with~$1 \after \xi_p \leq p^\perp$
-    satisfying the following universal property:
+    satisfying the following universal property.
 \begin{quote}
-    for any (other) map~$f\colon X \to Y$
+    For any map~$f\colon X \to Y$
         with~$1 \after f \leq p^\perp$,
         there is a unique map~$f' \colon X/_p \to Y$
         such that~$f' \after \xi_p = f$.
@@ -3779,7 +3828,7 @@ By \sref{quotient-total} we know that each
     for some total map~$t$ and quotient~$\xi$.
 Show that this forms an orthogonal factorization system (cf.~\cite{korostenski1993factorization}) ---
     that is: prove that if~$t' \after \xi' = t \after \xi$
-    for some (other) quotient~$\xi'$ and total map~$t'$,
+    for some quotient~$\xi'$ and total map~$t'$,
     then there is a unique isomorphism~$\vartheta$
     with~$\xi' = \vartheta \after \xi$
     and~$t = t' \after \vartheta$.
@@ -3879,9 +3928,9 @@ We say~$C$ \Define{has comprehension}
     if for each predicate~$p \colon X \to 1$,
     there exists a map~$\pi_p \colon \cmpr{X}{p} \to X$
     with~$p \after \pi_p = 1 \after \pi_p$
-    satisfying the following universal property:
+    satisfying the following universal property.
 \begin{quote}
-    for any (other) map~$g\colon Z \to X$
+    For any map~$g\colon Z \to X$
         with~$p \after g = 1 \after g$,
         there is a unique map~$g' \colon Z \to \cmpr{X}{p}$
         such that~$\pi_p \after g' = g$.
@@ -3900,6 +3949,9 @@ The universal property of comprehensions is essentially the same
     as the universal property of (contractive) \emph{corners},
     which we proposed in~\cite{westerbaan2016universal}.
 Effectuses with compression also appear in~\cite{effintro}.
+In partial form, comprehensions are
+    essentially the same
+    as categorical kernels, see~\sref{compr-is-kernel} later on.
 \end{point}
 \begin{point}{40}[compr-not]{Notation}%
     Unless otherwise specified~\Define{$\pi_p$}\index{*pi@$\pi_p$}
@@ -3986,7 +4038,7 @@ An effectus with comprehension has all kernels.
 \begin{point}{40}{Proof}%
 Clearly~$1 \after f \after \pi_{(1 \after f)^\perp} = 0$
     and so~$f \after \pi_{(1 \after f)^\perp} = 0$.
-Assume~$g$ is some (other) map with~$f \after g = 0$.
+Assume~$g$ is any map with~$f \after g = 0$.
 Then~$1 \after f \after g = 0$
     and so~$(1 \after f)^\perp \after g = 1 \after g$.
 Thus there exists a unique~$g'$
@@ -4063,7 +4115,7 @@ Let~$C$ be an effectus.
         \index{im@$\IM$, $\IMperp$}
         with the property~$(\IM f) \after f = 1 \after f$ ---
         that is, 
-    for every (other) predicate~$p$ on~$Y$
+    for every predicate~$p$ on~$Y$
     with~$p \after f = 1 \after f$,
     we must have~$\IM f \leq p$.
 For brevity, write~$\Define{\IMperp f} \equiv (\IM f)^\perp$. 
@@ -4349,7 +4401,7 @@ A cokernel of a map~$f$
 \begin{point}{30}{Proof}%
 As~$0 = (\IMperp f) \after f = 1 \after \xi_{\IM f} \after f$,
         we have~$\xi_{\IM f} \after f = 0$.
-    Assume~$g$ is any (other) map with~$g \after f = 0$.
+    Assume~$g$ is a map with~$g \after f = 0$.
 Then~$1 \after g \leq \IMperp f$
     and so~$g = g' \after \xi_{\IM f}$
     for a unique~$g'$.
@@ -4401,7 +4453,7 @@ In a~$\diamond$-effectus,
             & \SPred Y \ar@/^/[l]^{f^\diamond}}
             \quad \text{by} \quad
             \Define{f^\diamond(s)} = \ceil{s \after f}
-            \index{*diamond1@$(\ )^\diamond$, $(\ )_\diamond$}
+            \index{*par1@$(\ )_\diamond$, $(\ )^\diamond$}
             \quad
             \text{and}
             \quad
@@ -4429,8 +4481,9 @@ In a~$\diamond$-effectus,
             if $f = g\after g$ for some~$\diamond$-self-adjoint~$g$.
             \index{*dia@$\diamond$, diamond!-positive}
     \end{enumerate}
-For brevity, write $\Define{f^\BOX(s)} = f^\diamond(s^\perp)^\perp$.
-    \index{$(\ )^\BOX$}
+For brevity, write $\Define{f^\BOX(s)} = f^\diamond(s^\perp)^\perp$
+    and~$\Define{f_\BOX(s)} = f_\diamond(s^\perp)^\perp$
+    \index{*par2@$(\ )_\BOX$, $(\ )^\BOX$}
 \end{point}
 \begin{point}{30}{Examples}%
 The categories~$\op\vN$, $\op\CvN$, $\op\EJA$
@@ -4817,6 +4870,18 @@ Then~$\left<\asrt_p,\asrt_q,\asrt_r\right>\colon X \to X + X + X $
 If we discard the measurement outcome,
     we find the map~$\asrt_p \ovee \asrt_q \ovee \asrt_r \colon X \to X$,
     which is the side-effect of measuring $p,q,r$.
+\begin{point}{31}
+The second axiom is closely related to polar decomposition:
+    in the case of~$\op\vN$ (flipping direction of arrows now),
+    the unique isomorphism~$\varphi$
+    such that~$h \after c = c' \after \varphi \after h'$
+    for the suitable standard filter~$c'$ and corner~$h'$
+    is given by~$\ad_u$
+    where~$u$ is the isomtry from the
+    polar decomposition~$u \sqrt{\ceil{h}c(1)\ceil{h}}
+        \equiv \sqrt{c(1)} \ceil{h}$
+    restricted to a unitary.
+\end{point}
 \end{point}
 \end{point}
 \begin{point}{40}[vn-is-andthen-eff]{Examples}%
@@ -4938,7 +5003,7 @@ and~$\xi$ is a quotient of~$s^\perp$.
 We have proven the first part.
 
 For the second part,
-let~$\pi'$ be any (other) comprehension of~$s$.
+let~$\pi'$ be any comprehension of~$s$.
 Then~$\pi' = \pi \after \alpha$ for some iso~$\alpha$.
 Define~$\xi' = \alpha^{-1} \after \xi$.
 It is easy to see~$\pi' \after \xi' = \asrt_s$
@@ -5156,8 +5221,8 @@ Clearly~$\rfrac{\lambda}{\mu} = \lambda' \after \zeta_{\ceil{\mu}}
     and~$\mu \odot_{\mathrm{op}} \rfrac{\lambda}{\mu}
 = \lambda'  \after \zeta_{\ceil{\mu}} \after \mu = \lambda$
 as required.
-Assume~$\sigma$ is any
-    (other) scalar with~$\mu \odot_{\mathrm{op}} \sigma = \lambda$
+Assume~$\sigma$ is an arbitrary
+    scalar with~$\mu \odot_{\mathrm{op}} \sigma = \lambda$
     and~$\sigma \leq \rfrac{\mu}{\mu} \equiv \ceil{\mu}$.
 Then~$\sigma = \sigma' \after \zeta_{\ceil{\mu}}$
     for a unique~$\sigma'$.
@@ -5216,7 +5281,7 @@ is a category~$C$ together with an involutive identity-on-objects
 \end{enumerate}
 \end{multicols}
 \noindent
-Cf.~\cite{burgin1970categories,selinger2007,heunenphd}.
+Cf.~\cite{burgin1970categories,selinger,heunenphd}.
 In any~$\dagger$-category we may define the following.
 \begin{enumerate}
 \item
@@ -5433,7 +5498,7 @@ We compute
 \end{equation*}
 which shows~$p$ has as square root~$q$.
 
-To show uniqueness, assume~$p = \andthen{r}{r}$ for some (other)
+To show uniqueness, assume~$p = \andthen{r}{r}$ for some
     predicate~$r$.
 Note
 \begin{equation*}
@@ -5597,7 +5662,7 @@ We want to show~$t \after \zeta_s$ is sharp.
 To this end, we will show~$t \after \zeta_s$
     is the image of~$\pi_s \after \pi_t$.
 Clearly~$t \after \zeta_s \after \pi_s \after \pi_t = 1$.
-Let~$p$ be any (other) sharp predicate with~$p \after \pi_s \after \pi_t = 1$.
+Let~$p$ be any sharp predicate with~$p \after \pi_s \after \pi_t = 1$.
 Then~$p \after \pi_s \geq \IM \pi_t = t$.
 So~$  p^\perp \after \pi_s \leq t^\perp$
 and hence~$\ceil{p^\perp \after \pi_s} \leq t^\perp$.
@@ -5650,7 +5715,7 @@ Before we declare~\eqref{dagger-definition} a definition,
     of choice of~$\pi$ (and corresponding $\zeta$).
     So suppose~$ f  =  \pi' \after \alpha' \after \zeta'
         \after \asrt_{1 \after f}$
-        for some (other) iso~$\alpha'$, comprehension~$\pi'$ of~$\IM f$
+        for some iso~$\alpha'$, comprehension~$\pi'$ of~$\IM f$
         and quotient~$\zeta'$ of~$\smash{\ceil{1 \after f}^\perp}$.
 There are isos~$\beta$ and~$\gamma$
     such that~$\pi' = \pi_{\IM f} \after \beta$
@@ -5876,7 +5941,7 @@ Clearly~$1 \after h = \ceil{1 \after f}$
 \end{alignat*}
 Only uniqueness remains.
 Assume~$f = h' \after \asrt_{1 \after f}$
-    for some (other) pristine
+    for some pristine
     map~$h'$ with~$\ceil{1 \after h'} = \ceil{1 \after f}$.
 By \sref{standard-form-map} and \sref{asrt-absorp-rule},
     there is an iso~$\alpha'$
@@ -6706,7 +6771,7 @@ Thus~$\asrt_{1 \after h}$ is a~$\dagger$-positive
     with~$\asrt_{1 \after h} \after \asrt_{1 \after h} = f$.
 We have to show~$\asrt_{1 \after h}$
     is the unique map with this property.
-Let~$g$ be any (other)~$\dagger$-positive map with~$g \after g = f$.
+Let~$g$ be any~$\dagger$-positive map with~$g \after g = f$.
 Recall both~$g$ and~$f$ are~$\diamond$-positive, hence
 \begin{equation*}
     \asrt_{1 \after f} \ =\  f\ =\ g \after g \ = \ \asrt_{1 \after g}
@@ -6751,10 +6816,10 @@ Let~$f\colon X \to Y$ be any map in an effectus.
     is a triple~$(P, \varrho, h)$
     of a sharp total map~$\varrho \colon P \to Y$
     and a pure map~$h \colon X \to P$
-    with~$\varrho \after h = f$,
-    such that
+    such that~$\varrho \after h = f$
+        and the following universal property holds.
 \begin{quote}
-    for every (other) triple~$(P', \varrho', h')$
+    For every  triple~$(P', \varrho', h')$
     with~$\varrho'\colon P' \to Y$ total sharp,
     $h'\colon X \to P$ arbitrary and~$f = \varrho'\after h'$,
     there is a unique~$\sigma \colon P \to P'$
@@ -6843,7 +6908,7 @@ Now~$\varrho' \after \sigma \after h = \varrho' \after h' = h$.
         satisfies the properties of the unique mediating map~$\id\colon P \to P$,
         hence~$\varrho' \after \sigma = \id$.
 Only uniqueness of~$\sigma$ remains,
-    so assume~$\sigma'$ is any (other) map with~$h'  = \sigma' \after h$
+    so assume~$\sigma'$ is a ncp-map with~$h'  = \sigma' \after h$
     and~$\varrho' \after \sigma' = \id$.
 Then~$\varrho \after \varrho' \after \sigma' = \varrho$
     and so~$\sigma = \sigma'$.
@@ -6893,7 +6958,7 @@ Clearly~$\sigma \after (h_1 + h_2)
     and~$\varrho' \after \sigma
             = [\varrho' \after \sigma_1, \varrho' \after \sigma_2]
             = [\varrho_1, \varrho_2]$.
-Assume~$\sigma'$ is some (other) map with~$\sigma' \after (h_1 + h_2) = h'$
+Assume~$\sigma'$ is any ncp-map with~$\sigma' \after (h_1 + h_2) = h'$
     and~$\varrho' \after \sigma' = [\varrho_1, \varrho_2]$.
 For~$i=1,2$
     we have~$\varrho' \after \sigma' \after \kappa_i = \varrho_i$
@@ -7139,7 +7204,7 @@ we have to show it is the equalizer of~$f$ with~$0$.
 Clearly~$(1 \after f )^\perp \after \pi_{(1 \after f)^\perp} = 1$
 and so~$1 \after f \after \pi_{(1 \after f)^\perp} = 0$,
 whence~$f \after \pi_{(1 \after f)^\perp} = 0$.
-Assume~$f \after g = 0$ for some (other) pure map~$g$.
+Assume~$f \after g = 0$ for some pure map~$g$.
 Then~$1 \after f \after g = 0$,
     so~$1 \after f \leq \IMperp g$,
     hence~$(1 \after f)^\perp \geq \IM g$,
@@ -7519,7 +7584,7 @@ For any~$f\colon A \to B$,
     define~$f_*\colon \Nsb A \leftrightarrows \Nsb B \colon f^*$
         by~$\Define{f_*} (k) = \ker \cok (f \after k)$
         and~$\Define{f^*}(k) = \ker ((\cok k) \after f)$.
-        \index{$(\ )_*$, $(\ )^*$}
+        \index{*par3@$(\ )_*$, $(\ )^*$}
 \item
 We say~$f$ is \Define{left-modular at} $k$
         \index{modular}
