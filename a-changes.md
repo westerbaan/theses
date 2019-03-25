@@ -116,6 +116,8 @@ Small changes:
 
 * Attributed Lemma 125IV to Kornell.
 
+* Added an exercise on preimages and tensors in 125VIIa,b.
+
 * Added some explanation after the definition of S in 125IX.
 
 * Added a reference to 128X.
