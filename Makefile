@@ -1,6 +1,6 @@
 .PHONY: all clean
 
-all: a.pdf b.pdf
+all: a.pdf b.pdf bstellingen.pdf
 
 bstellingen.pdf: bstellingen.tex
 	latexmk -pdf -use-make bstellingen.tex
