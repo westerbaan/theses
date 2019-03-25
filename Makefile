@@ -2,6 +2,9 @@
 
 all: a.pdf b.pdf
 
+bstellingen.pdf: bstellingen.tex
+	latexmk -pdf -use-make bstellingen.tex
+
 a.pdf: common.tex cstar.tex a.tex vn.tex proc.tex main.bib
 	latexmk -pdf -use-make a.tex
 
