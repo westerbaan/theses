@@ -940,6 +940,8 @@ whence~$\ad_S \after \varrho' = \varrho$. \qed
 \end{point}
 \end{point}
 \end{point}
+
+\spacingfix{}
 \begin{point}{90}{Exercise*}%
     The statement of the universal property
         \sref{dils-univ-stinespring}
@@ -965,7 +967,24 @@ whence~$\ad_S \after \varrho' = \varrho$. \qed
 Show using~\sref{dils-univ-stinespring}
     that the inclusion functor~$U \colon \mathsf{Rep}
     \to \mathsf{Rep}_{\mathrm{cp}}$ has a left adjoint.
-\par % XXX wtf?
+\begin{point}{91}{Remarks}%
+Recently there have been two interesting categorical
+    discoveries concerning Stinespring's dilation theorem,
+    which deserve a mention.
+Parzygnat found a rather different characterization
+    of Stinespring's dilation
+    theorem as an adjunction~\cite{parzygnat2018stinespring}.
+Secondly, Huot and Staton discovered
+    that the category of completely positive maps
+    between matrix algebras
+    is the universal monoidal category with terminal unit
+    with a functor from the category of matrix algebras
+    with isometries between them.~\cite{huot}
+This fact is surprisingly closely related
+    to Stinespring's dilation theorem for matrix algebras.
+\end{point}
+
+\spacingfix{}
 \begin{point}{100}%
 In the special case of ncp-maps
     of the form~$\varphi \colon \scrB(\scrH) \to \scrB(\scrK)$,
@@ -974,7 +993,6 @@ In the special case of ncp-maps
     called \emph{essential uniqueness of purification}.
 This property is the cornerstone of several publications,
     notably \cite{chiribella}, which popularized it.
-\par % XXX wtf?
 \end{point}
 \end{point}
 \begin{point}{110}[ess-uniq-pur]{Exercise* (Essential uniqueness of purification)}
@@ -1628,7 +1646,8 @@ with~$T = T_+ - T_-$ and~$T_+T_- = 0$, see \sref{cstar-pos-neg-part}.
 By assumption~$0 \leq \left<T_-x,TT_-x\right>$
     from which~$-\left<x,T_-^3x\right> \geq 0$,
     but~$T_-^3 \geq 0$ so~$T_-^3 = 0$.
-    Thus~$T_- = 0$ and so~$T \geq 0$. \qed
+    Thus~$T_- = 0$ (by the functional calculus, \sref{functional-calculus})
+    and so~$T \geq 0$. \qed
 \end{point}
 \end{point}
 \begin{point}{30}{Lemma}%
@@ -2199,7 +2218,9 @@ Let~$X$ be a pre-Hilbert $\scrB$-module for a C$^*$-algebra~$\scrB$.
 Show that we have~$ e \langle e,e \rangle = e$
     for any~$e \in X$
    where~$\langle e, e\rangle$ is a projection.
-    (See the beginning of the proof of~\cite[thm.~3.12]{paschke}.)
+
+    (Hint: consider~$\| e(1-\langle e, e \rangle) \|^2$;
+                 cf.~\cite[thm.~3.12]{paschke}.)
 \end{point}
 \begin{point}{40}[mod-parseval]{Exercise}
 Let~$X$ be a pre-Hilbert~$\scrB$-module for a von Neumann algebra~$\scrB$
@@ -4569,7 +4590,7 @@ Show that for any~$x_1, \ldots, x_n \in X$,
 
 
 \begin{parsec}{1610}%
-\begin{point}{10}%
+\begin{point}{10}[thel2matter]%
 Every Hilbert space~$\scrH$ is isomorphic to some~$\ell^2(I)$.
 In fact, the cardinality of~$I$ is the only thing that matters,
     in the following sense:
@@ -4884,7 +4905,8 @@ Furthermore~$E_1$ is an orthonormal basis for~$E_0 \cup \{e\}$,
 \end{point}
 \end{point}
 \begin{point}{80}%
-Does this settle the matter?
+Does this settle the issue raised
+        in~\sref{thel2matter}?
       One might hope
     that~$\ell^2((1_{\mathscr{B}})_{\alpha \in \kappa}) \cong
         \ell^2((1_{\mathscr{B}})_{\beta\in\lambda})$
@@ -4902,8 +4924,12 @@ Indeed, if~$\scrB$ is a type III factor
 
 \begin{parsec}{1630}%
 \begin{point}{10}%
-The ultranorm completion~\sref{dils-completion}
+Before we continue to the next topic,
+    the exterior tensor product of Hilbert C$^*$-modules,
+    we will show that the ultranorm completion~\sref{dils-completion}
     is determined by its universal property.
+    We will need this fact in our treatment
+        of the exterior tensor product.
 \end{point}
 \begin{point}{20}[selfdual-compl-defining]{Proposition}%
 Let~$\scrB$ be a von Neumann algebra and~$V$ a right~$\scrB$-module
