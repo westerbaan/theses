@@ -29,34 +29,32 @@ The common theme is that a complicated map
     where~$h \colon \scrB(\scrH) \to \C$
     is given by~$h(T) \equiv \left<x,Tx\right>$.
 \end{point}
-
 \begin{point}{30}%
 Probably the most famous dilation theorem is that
 of Stinespring~\cite[thm.~1]{stinespring}.
 (We will see a detailed proof later, in \sref{dils-proof-stinespring}.)
 \end{point}
-
 \begin{point}{40}[stinespring-theorem]{Theorem (Stinespring)}
     For every cp-map~$\varphi\colon \scrA \to \scrB (\scrH)$
         between a C$^*$-algebra~$\scrA$
-            and the bounded operators on a Hilbert space~$\scrH$,
+            and the C$^*$-algebra of
+            bounded operators on a Hilbert space~$\scrH$,
     there is a Hilbert space~$\scrK$,
-        miu-map~$\varrho\colon \scrA \to \scrB(\scrK)$
-        and bounded operator~$V\colon \scrH \to \scrK$
+        an miu-map~$\varrho\colon \scrA \to \scrB(\scrK)$
+        and a bounded operator~$V\colon \scrH \to \scrK$
         such that~$\varphi = \ad_V \after \varrho$,
         where~$\Define{\ad_V}\index{ad@$\ad_V$!Hilbert spaces} \colon \scrB(\scrK) \to \scrB(\scrH)$
         is given by~$\ad_V(T)\equiv V^*TV$.
-
-Furthermore:
-\begin{inparaenum}
+Furthermore
+\begin{enumerate}
+\item
+    if~$\varphi$ is unital, then~$V$ is an isometry \emph{and}
 \item
     if~$\scrA$ is a von Neumann algebra
-    and~$\varphi$ is normal, then~$\varrho$ is normal as well \emph{and}
-\item
-    if~$\varphi$ is unital, then~$V$ is an isometry.
-\end{inparaenum}
+    and~$\varphi$ is normal, then~$\varrho$ is normal as well.
+\end{enumerate}
 \end{point}
-
+\spacingfix{}
 \begin{point}{50}%
 Stinespring's theorem
 is fundamental in the study
