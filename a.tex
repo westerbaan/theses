@@ -500,10 +500,11 @@ in de wereld om ons heen in de meest strenge en formele zin.
 De wiskundige
 maakt zich  bewust, bijna komisch, blind 
 voor zaken die een ander zo in het oog zouden springen.
-De `kern van waarheid' in een onnauwkeurige opmerking
-zoals ``de helft van je eten ligt naast je bord!'' negeert
-de wiskundige bijvoorbeeld beroepsmatig.
-(TODO: veelzijdigheid.)
+De bedoeling van een onnauwkeurige vraag
+zoals ``wil je koffie of thee?''
+negeert
+de wiskundige bijvoorbeeld beroepsmatig
+als het antwoord slechts ``ja'' is.
 Maar hierdoor kan de wiskundige wel
 met een onge\"evenaarde nauwkeurigheid
 zekerheid en tijdloosheid
@@ -582,35 +583,104 @@ de moderne computer-architectuur te danken,
 maar bijvoorbeeld ook de springstoflenzen die in kernwapens gebruikt worden,
 de afschrikwekkende strategie van \emph{mutual assured destruction}
 en de numerieke weersvoorspelling.
-De aanleiding voor zijn onderzoek naar von Neumann algebras
-is de ontdekking dat grootheden van deeltjes
-(zoals positie, momentum en energie) beter niet beschreven kunnen worden
-door een getal, maar door een \emph{operator}.
-Je zou je een operator voor kunnen proberen te stellen als een soort
-mogelijk oneindig grote tabel van complexe getallen,
-(maar als je de wiskundige definitie kent, \sref{bounded-linear-maps}, 
-hoeft dit niet.)
-Von Neumann bestudeerde deze operatoren eerst afzonderlijk,
-en vanaf~1937 in speciale groepjes,
-die hij \emph{ringen van operatoren} noemde,
-maar nu bekend staan als von Neumann algebras.
 
+Het is niet eenvoudig om uit te leggen
+ wat een Neumann algebra precies is,
+ maar 
+ik kan wel een indruk geven waarvoor ik ze gebruik.
+Uitgangspunt van dit proefschrift is dat 
+de elementaire
+systemen
+die je tegenkomt bij het ontwerpen van een algoritme
+voor een kwamtumcomputer omschreven
+kunen worden door von Neumann algebras.
+Zo wordt de klassieke bit (die~$0$ of~$1$ kan zijn)
+voorgesteld door de von Neumann algebra ``$\C^2$''
+en de kwantumbit (die een complexe combinatie van~$0$ of~$1$ is totdat
+je haar meet)
+voorgesteld door de von Neumann algebra~``$M_2$''.
+Dit geeft de hoop dat ingewikkeldere samengestelde systemen
+ook een bijpassende von Neumann algebra hebben.
+Dit hangt natuurlijk af van de wijze van samenstelling:
+het systeem dat bestaat uit twee kwantumbits en \'e\'en bit wordt voorgesteld
+met de von Neumann algebra $M_2\otimes M_2 \otimes \C^2$,
+terwijl het systeem dat een kwantumbit of een klassieke bit bevat 
+omschreven wordt met de von Neumann algebra $M_2 \oplus \C^2$.
+De bewerking ``$\otimes$'' op von Neumann algebras
+is de interpretatie voor de  ``en''-samenstelling van systemen, 
+terwijl ``$\oplus$'' de invulling geeft aan ``of''-samenstelling van systemen.
 
+Een veel complexere samenstelling van twee systemen~$A$ en~$B$
+bestaat uit alle `processen' van~$A$ naar~$B$.
+Meting is bijvoorbeeld zo'n process van een kwantumbit naar een klassieke bit.
+Zulke processen worden in de wereld van von Neumann algebras
+voorgesteld door ``ncpsu-afbeeldingen''
+tussen von Neumann algebras.
+Een van de hoofdresultaten van dit proefschrift
+is een interpretatie voor deze `processen'-samenstelling,
+de bewerking~$\limp$.
+Dit is niet slechts een kwestie van de ncpsu-afbeeldingen
+op een berg gooien---dat levert geen von Neumann algebra
+en bovendien moet de interpretatie in bepaalde formele zogenaamde 
+categorische
+kaders passen,
+wat de keuze sterk beperkt,
+maar je ook dwingt om rekening te houden met alle complexe interacties
+die deze twee systemen met elkaar kunnen hebben,
+en---verrassend genoeg---met buitenstaande systemen.
+De crux was niet te willen proberen de bewerking~$\limp$ 
+(en daarmee deze interacties) 
+direct te omschrijven,
+maar het bestaan indirect aan te tonen
+(zoals ik ook kan laten zien dat er een oudste persoon op aarde is,
+zonder zijn of (waarschijnlijker) haar  naam ken.)
+Voor een beperkte klasse van
+von Neumann algebras, de hereditair atomsische, bleek een
+directe omschrijven trouwens wel mogelijk.
 
+Het tweede hoofdresultaat van dit proefschrift
+is de vondst van een categorisch kader dat 
+(in de context van von Neumann algebras) het process
+van meting vastlegt.
+Deze categorische kaders zijn zelf weer aan categorische kaders gebonden, 
+wat voorkomt dat dit een triviale zaak wordt.
+Het probleem in dit geval was dat we lange tijd methode zagen
+om onderscheid te maken tussen de processen\footnote{Hier is~$u\neq 1$
+een  unitaire
+en 
+$p$ een positief element van een von Neumann algebra~$\scrA$
+met $\ceil{p}=1$.}
+\begin{equation*}
+\sqrt{p}(\,\cdot\,)\sqrt{p}\qquad\text{en}\qquad
+\sqrt{p}u^*(\,\cdot\,)u \sqrt{p}.
+\end{equation*}
+De linker geldt als een meting, de rechter niet.
+De oplossing was om een begrip uit de theorie van Hilbert ruimten,
+geadjungeerdeerdheid,
+in een zwakkere zin over te nemen, namelijk $\diamond$-geadjungeerdheid;
+het linker proces blijkt een kwadraat te zijn van een aan zichzelf
+$\diamond$-geadjungeerd proces; de rechter niet.
 
-
-
-
-
-
-
-
-
-
-
-
-
-\oldchapter{Lay Summary}
+Deze twee resultaten komen beide uit het laatste hoofdstuk.
+De rest van dit proefschrift bestaat,
+enigzins ongebruikelijk, 
+uit een uitgebreide introductie
+tot de benodigde reeds bestaande theorie
+van $C^*$-algebras en von Neumann algebras.
+In principe zou ieder die een bachelorgraad in de wiskunde heeft 
+behaald deze tekst moeten kunnen begrijpen.
+Niet alleen bestond
+een geschikte introductie nog niet, maar het leek me ook goede kans 
+om me nog verder te verdiepen in de theorie van von Neumann algebras.
+Ik ontwikkel de gehele benodigde theorie inclusief 
+bewijzen.  Op een groot aantal plekken wijk ik af van 
+het gebruikelijke pad:
+soms om de de tekst kort te houden, zo ontwijk ik de
+theorie van Banach algebras volkomen;
+maar meestal om te experimenteren met variaties,
+zo gebruik ik Kadison's omschrijving
+van von Neumann algebras om
+de theorie te ontwikkelen (wat niet eerder gedaan is.)
 
 \oldchapter{About the Author}
 Bram Westerbaan, born August 30, 1988,
