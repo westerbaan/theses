@@ -116,6 +116,8 @@ Small changes:
 
 * Added an introductory remark, 116IIIa, to 116IV.
 
+* Added the interpretation of lambda terms in 120.
+
 * Attributed Lemma 125IV to Kornell.
 
 * Added an exercise on preimages and tensors in 125VIIa,b.

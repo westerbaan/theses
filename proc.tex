@@ -4395,10 +4395,29 @@ and~$\sem{A\limp B}$ will then be
 \sem{A\limp B}
 \ = \ 
 \mathcal{F}(\sem{B})^{*\sem{A}}.
+\end{equation*}%
+By the universal properties of~$\mathcal{F}$
+and~$(\,\cdot\,)^{*\scrB}$,
+an ncpsu-map $f\colon \scrA\rightarrow \scrC\otimes \scrB$
+corresponds to unique nmiu-map 
+$\Lambda(f)\colon \mathcal{F}(\scrA)^{*\scrB}\longrightarrow \scrC$.
+This is used to interpret 
+the ``$\lambda$'':
+\begin{equation*}
+    \sem{\lambda x^B. t}
+    \,=\, \Lambda(\sem{t})\colon \mathcal{F}(\sem{A})^{\sem{B}}
+    \longrightarrow\sem{B_1}\otimes\dotsb\otimes\sem{B_N}
+\end{equation*}
+for any term  $t:A$  with free variables
+$x_1:B_1$, \ldots, $x_N:B_N$, $x:B$,
+so  
+\begin{equation*}
+\sem{t} \colon \sem{A}\longrightarrow 
+\sem{B_1}\otimes\dotsb\otimes\sem{B_N}\otimes \sem{B}.
 \end{equation*}
 
 Note that~$\sem{!A}$
-will always be a discrete von Neumann algebra
+will always be a `discrete' commutative von Neumann algebra
 no matter how complicated~$\sem{A}$ may be,
 so that although this does the job
 perhaps a more interesting interpretation of~$\bang$
