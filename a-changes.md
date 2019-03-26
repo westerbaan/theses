@@ -118,6 +118,8 @@ Small changes:
 
 * Added the interpretation of lambda terms in 120.
 
+* Added a short remark on recursion in the quantum lambda calculus in 120II.
+
 * Attributed Lemma 125IV to Kornell.
 
 * Added an exercise on preimages and tensors in 125VIIa,b.
