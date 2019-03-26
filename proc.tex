@@ -5026,7 +5026,7 @@ has a left adjoint
 for every von Neumann algebra~$\scrA$.
 	\index{free exponential}%
 	\index{*AstarB@$\scrA^{*\scrB}$, free exponential}
-\begin{point}{90}{Proof}%
+    \begin{point}{90}[tensor-closed-proof]{Proof}%
 	The category $\W{miu}$ is (small-)complete,
 and
 $(-)\otimes\scrA\colon\W{miu}\to\W{miu}$
@@ -5171,7 +5171,7 @@ the interpretation $\sem{A\limp B} = \mathcal{F}(\sem{B})^{*\sem{A}}$
 we chose is not always hereditarily atomic
 when $\sem{A}$ and~$\sem{B}$
 are hereditarily atomic:
-we'll see in TODO that
+    we claim (without proof) that
 $\sem{\top^{\oplus 3} \limp \top}
 \equiv \C^{*\C^3}$
 has $\scrB(\ell_2)$  as factor,
@@ -5200,7 +5200,8 @@ is that
 $\mathcal{F}_\mathrm{ha}$
 and $\scrA^{*_\mathrm{ha}\scrB}$
 admit a significantly more concrete
-description see TODO.
+    description see~\sref{Fha-concrete}
+    and~\sref{AstarhaB-concrete}
 A potential drawback might be that the purely quantum mechanical is restricted
 to finite dimensions, so to speak.
 \end{point}%
@@ -5291,7 +5292,7 @@ Here~$\eta$ denotes the unit of the adjunction
     between $\mathcal{F}_\mathrm{ha}$
     and the inclusion
     $\haW{miu}\to\haW{cpsu}$.
-\begin{point}{40}{Proof}%
+\begin{point}{40}[Fha-concrete-proof]{Proof}%
 Since~$\mathcal{F}_\mathrm{ha}(\scrA)$
 is hereditarily atomic,
 it's nmiu-isomorphic to 
@@ -5407,7 +5408,7 @@ Hence~$\pi_j = \varphi\circ \pi_i$.
     This entails that the carriers (see~\sref{carrier-miu}) 
     of~$\pi_j$ and~$\pi_i$
 are equal, so~$i=j$.
-\begin{point}{70}{Existence}
+\begin{point}{70}[Fha-concrete-existence]{Existence}
 Let~$f\colon \scrA\to M_{N_f}$
 be an ncpsu-map with $M_{N_f}=W^*(f(\scrA))$.
 We must show that there is an~$i\in I$
@@ -5475,8 +5476,8 @@ $W^*(\left<r\right>_{r\in R_\scrA})
 = \bigoplus_{r\in R_\scrA} M_{N_r}$
 using elementary means.
 
-Whether this hints at an error in our proof,
-or at the power of the adjoint functor theorem,
+Whether this indicates an error in our proof,
+or the power of the adjoint functor theorem,
 remains to be seen.
 \end{point}
 \end{parsec}%
@@ -5493,7 +5494,39 @@ This result has already been established by Kornell
 (in Theorem~9.1 of~\cite{kornell2018quantum});
 we improve upon it by giving a different,
 slightly more concrete, description.
-For this we need some notation.
+    As was the case for~$\mathcal{F}_\mathrm{ha}$,
+    we establish the existence
+    of~$(\,\cdot\,)^{*_\mathrm{ha}\scrB}$
+indirectly at first.
+\end{point}
+\begin{point}{20}{Proposition}%
+Given a hereditarily atomic von Neumann algebra~$\scrB$,
+    the functor $(\,\cdot\,)\otimes\scrB\colon
+    \haW{miu}\longrightarrow \haW{miu}$
+    has a left adjoint
+    $\Define{(\,\cdot\,)^{*_\mathrm{ha}\scrB}}\colon
+    \haW{miu}\to\haW{miu}$%
+\index{*AstarBha@$\scrA^{*_\mathrm{ha}\scrB}$}.
+\begin{point}{30}{Proof}%
+We already know from~\sref{tensor-closed} that~$(\,\cdot\,)\otimes \scrB$
+preserves limits as functor $\W{miu}\to\W{miu}$.
+Since the subcategory $\haW{miu}$
+of~$\W{miu}$ is closed
+under products and equalisers,
+    the restriction of~$(\,\cdot\,)\otimes\scrB$
+    to a functor $\haW{miu}\to\haW{miu}$
+    preserves limits as well.
+The proof is now completed by an application
+of Freyd's adjoint funtor theorem,
+exactly as in~\sref{tensor-closed-proof},
+    but with a suitably modified solution set.\qed
+\end{point}
+\end{point}
+\end{parsec}
+\begin{parsec}{1255}
+\begin{point}{10}
+To describe $\scrA^{*_\mathrm{ha}\scrB}$ concretely
+we need some notation.
 \end{point}
 \begin{point}{20}{Definition}
 We say that a nmiu-map~$s\colon \scrA\to\scrC\otimes \scrB$,
@@ -5518,7 +5551,7 @@ to a a map $s\colon \scrA\to\tilde\scrC\otimes \scrB$
     is $(\,\cdot\,)\otimes\scrB$-surjective.
 \end{point}
 \end{point}
-\begin{point}{30}{Lemma}
+\begin{point}{30}[tensorBsurjectivity]{Lemma}
 Given a $(\,\cdot\,)\otimes \scrB$-surjective
 nmiu-map $s\colon \scrA\to\scrC\otimes \scrB$
 and a nmiu-map  $\varrho\colon \scrC\to\scrD$
@@ -5590,42 +5623,164 @@ Pick a set of representatives
     for this 
 $(\,\cdot\,)\otimes\scrB$-equivalence.
 \end{point}
-\begin{point}{70}{Theorem}
+\begin{point}{70}[AstarhaB-concrete]{Theorem}
 Let~$\scrA$ and~$\scrB$ be hereditarily atomic 
 von Neumann algebras.
-Writing 
+the unique nmiu-map
+$\Phi\colon 
+    \scrA^{*_\mathrm{ha}\scrB}
+    \longrightarrow
+    \bigoplus_{s\in S_{\scrA,\scrB}} M_{N_s}$
+    that makes the diagram
 \begin{equation*}
-    \textstyle
-\Define{\scrA^{*_\mathrm{ha}\scrB}}
-   \  =\  \bigoplus_{s\in S_{\scrA,\scrB}} M_{N_s},
-\end{equation*}
-\index{*AstarBha@$\scrA^{*_\mathrm{ha}\scrB}$}%
-    the unique nmiu-map $\eta_{\scrA,\scrB}$ in
-    \begin{equation*}
-\xymatrix@C=8em{
+\xymatrix@C=10em{
 \scrA
-        \ar[r]^-{\Define{\eta_{\scrA,\scrB}}}
-        \ar[rd]_{\left<s\right>_{s\in S_{\scrA,\scrB}}}
-        &
-\scrA^{*_\mathrm{ha}\scrB}\otimes\scrB
-        \ar[d]_-{\cong}^-{\left< \pi_s  \otimes \scrB \right>_{s\in S_{\scrA,\scrB}}}
+    \ar[r]^-{\eta_{\scrA,\scrB}}
+    \ar[rdd]_-{\left<s\right>_{s\in S_{\scrA,\scrB}}}
+&
+\scrA^{*_\mathrm{ha}\scrB}\otimes \scrB
+    \ar[d]^-{\Phi\otimes \scrB}
 \\
-    &
-    \bigoplus_{s\in S_{\scrA,\scrB}} M_{N_s}\otimes\scrB
+&
+\bigl(\,\bigoplus_{s\in S_{\scrA,\scrB}} M_{N_s}\,\bigr)
+\otimes \scrB
+    \ar[d]_{\cong}^{\left<\pi_s\otimes \scrB\right>_{s\in S_{\scrA,\scrB}}}
+\\
+&
+\bigoplus_{s\in S_{\scrA,\scrB}} M_{N_s}\otimes \scrB
 }
-    \end{equation*}
-is a universal arrow from~$\scrA$
-    to $(\,\cdot\,)\otimes \scrB\colon \haW{miu}\to\haW{miu}$.
+\end{equation*}
+commute
+is a nmiu-isomorphism.
+Here $\eta_{(\,\cdot\,),\scrB}$
+    denotes
+the unit of the adjunction
+between $(\,\cdot\,)^{*_\mathrm{ha}\scrB}$
+and~$(\,\cdot\,)\otimes\scrB$.
 \begin{point}{80}{Proof}%
-Let~$f\colon \scrA\to \scrC\otimes \scrB$
-be a nmiu-map,
-where $\scrC$ is some hereditarily atomic von Neumann algebra.
-We must show that
-there is a unique nmiu-map $\varrho\colon 
-    \scrA^{*_\mathrm{ha}\scrB}\to\scrC$
-    with $f=(\varrho\otimes\scrB)\circ \eta_{\scrA,\scrB}$.
+We folllow roughly the same lines
+    as the proof of~\sref{Fha-concrete}.
+Since~$\scrA^{*_\mathrm{ha}\scrB}$
+is hereditarily atomic
+we write~$\scrA^{*_\mathrm{ha}\scrB}
+\equiv \bigoplus_{i\in I} M_{N_i}$
+without loss of generality.
+Note that writing $e_i = (\pi_i\otimes \scrB)\circ \eta_{\scrA,\scrB}$
+the diagram
+\begin{equation*}
+\xymatrix@C=10em{
+\scrA
+    \ar[r]^-{\eta_{\scrA,\scrB}}
+    \ar[rd]_-{\left<e_i\right>_{i\in I}}
+&
+\scrA^{*_\mathrm{ha}\scrB}\otimes \scrB
+    \,\equiv\, \bigoplus_{i\in I}M_{N_i}\otimes \scrB
+    \ar[d]_{\cong}^{\left<\pi_i\otimes \scrB\right>_{i \in I}}
+\\
+&
+\bigoplus_{i \in I} M_i\otimes \scrB
+}
+\end{equation*}
+commutes.
+We claim that the $e_i$ are $(\,\cdot\,)\otimes \scrB$-surjective,
+and, moreover,
+form a set of representatives
+for $(\,\cdot\,)\otimes \scrB$-equivalence
+on the set of nmiu-maps
+    $f\colon \scrA\to M_{N_f}\otimes \scrB$.
+From this claim the theorem follows
+with a reasoning similar to that
+in~\sref{Fha-concrete-proof}, which we won't repeat here.
+\begin{point}{90}
+To prove that $e_i\equiv (\pi_i \otimes \scrB)\circ \eta_{\scrA,\scrB}$
+is $(\,\cdot\,)\otimes\scrB$-surjective,
+it suffices,
+by~\sref{tensorBsurjectivity},
+to show that $\eta_{\scrA,\scrB}$
+is $(\,\cdot\,)\otimes \scrB$-surjective
+(since~$\pi_i$ is surjective.)
+So let~$\scrS$ be a von Neumann subalgebra of~$\scrA^{*_\mathrm{ha}\scrB}$
+such that $\eta_{\scrA,\scrB}(\scrA)\subseteq
+\scrS \otimes \scrB$.
+We must show that~$\scrS = \scrA^{*_\mathrm{ha}\scrB}$.
+Letting~$f\colon \scrA\to\scrS\otimes \scrB$
+denote the restriction of~$\eta_{\scrA,\scrB}$,
+there is, by the universal property of~$\eta_{\scrA,\scrB}$,
+a unique nmiu-map $\varrho\colon \scrA^{*_\mathrm{ha}\scrB}
+\to \scrS$
+such that~$f= (\varrho\otimes \scrB) \circ \eta_{\scrA,\scrB}$.
+Note that if we compose $\varrho$ with the inclusion
+    $e\colon \scrS\to \scrA^{*_\mathrm{ha}\scrB}$,
+    then
+we get a nmiu-map $\sigma := e\circ \varrho\colon 
+    \scrA^{*_\mathrm{ha}\scrB}
+    \to\scrA^{*_\mathrm{ha}\scrB}$
+    with the property
+    that 
+    $(\sigma\otimes\scrB)\circ \eta_{\scrA,\scrB} = \eta_{\scrA,\scrB}$.
+Since the identity on~$\scrA^{*_\mathrm{ha}\scrB}$
+is the only map with this property,
+we get $e \circ \varrho = \id$.
+This implies that~$e$ is surjective,
+and thus~$\scrS=
+    \scrA^{*_\mathrm{ha}\scrB}$.
+    Whence~$\eta_{\scrA,\scrB}$
+    is $(\,\cdot\,)\otimes \scrB$-surjective.
 
-
+It remains to be show that for every nmiu-map
+$f\colon \scrA\to M_{N_f}\otimes \scrB$
+there is a unique $i\in I$
+such that~$e_i$
+is $(\,\cdot\,)\otimes \scrB$-equivalent
+to~$f$.
+\end{point}
+\begin{point}{100}{Uniqueness}%
+Suppose that $e_i$ and~$e_j$ are $(\,\cdot\,)\otimes\scrB$-equivalent
+for some~$i,j\in I$;
+we must show that~$i=j$.
+Let~$\varphi\colon M_{N_i} \to M_{N_j}$
+be an nmiu-isomorphism 
+with $(\varphi\otimes \scrB ) \circ e_i = e_j$.
+Note that $\pi_j\colon \scrA^{*_\mathrm{ha}\scrB}
+    \equiv \bigoplus_{j'\in I} M_{N_{j'}}\longrightarrow
+M_{N_j}$
+    is the unique nmiu-map~$\varrho\colon \scrA^{*_\mathrm{ha}\scrB}
+    \to M_{N_j}$ 
+with $e_j = \varrho\otimes \scrB \circ \eta_{\scrA,\scrB}$.
+    Since $(\varphi \circ \pi_i)\otimes \scrB \circ \eta_{\scrA,\scrB}
+    = (\varphi\otimes \scrB) \,\circ\, (\pi_i\otimes\scrB )
+    \,\circ\, \eta_{\scrA,\scrB}
+    = \varphi\otimes \scrB \circ e_i = e_j$,
+    we get $\varphi \circ \pi_j = \pi_i$.
+    Hence~$i=j$.
+\end{point}
+\begin{point}{110}{Existence}%
+Let $f\colon \scrA\to M_{N_f}\otimes\scrB$
+be a $(\,\cdot\,)\otimes \scrB$-surjective  nmiu-map.
+We must show that there is a unique $i\in I$
+such that $f$ is $(\,\cdot\,)\otimes\scrB$-equivalent
+to~$e_i$.
+By the universal property of~$\eta_{\scrA,\scrB}$,
+there's a unique nmiu-map
+$\varrho\colon \scrA^{*_\mathrm{ha}\scrB}\longrightarrow
+M_{N_f}$
+with $(\varrho\otimes \scrB)\circ \eta_{\scrA,\scrB}
+=  f$.
+Note that~$\varrho$
+    is surjective by~\sref{tensorBsurjectivity}.
+Now, following the same reasoning as in~\sref{Fha-concrete-existence},
+we see that~$\varrho\colon \scrA^{*_\mathrm{ha}\scrB}\equiv
+\bigoplus_{i \in I} M_{N_i}\longrightarrow M_{N_f}$
+must be of the form~$\varrho\equiv \varrho'\circ \pi_i$
+for some~$i\in I$ and nmiu-isomorphism $\varrho'\colon
+M_{N_i}\to M_{N_f}$.
+So~$ f= (\varrho\otimes \scrB) \circ \eta_{\scrA,\scrB}
+    = (\varrho'\otimes\scrB) \,\circ\, 
+    (\pi_i\otimes \scrB) \,\circ\, \eta_{\scrA,\scrB}
+    = (\varrho'\otimes\scrB) \circ e_i$,
+    and hence $f$ is $(\,\cdot\,)\otimes\scrB$-equivalent
+    to~$e_i$.\qed
+\end{point}
 \end{point}
 \end{point}
 \end{parsec}
