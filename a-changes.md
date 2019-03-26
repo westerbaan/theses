@@ -42,6 +42,8 @@ Major corrections:
 * Corrected the definition of the ultrastrong topology. (It's not the least
   topology that makes all seminorms induced by np-functionals continuous.)
 
+* Corrected the definition of completely positive bilinear map in 112(4)d.
+
 Small changes:
 
 * Replaced "c.q.".
