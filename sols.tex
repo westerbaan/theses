@@ -1,0 +1,145 @@
+\documentclass[b5page]{book}
+\input{common}
+\externaldocument{a}
+\externaldocument{b}
+
+\author{Abraham Westerbaan \and Bas Westerbaan}
+
+\title{
+    {\large Solutions of Exercises from and Errata to} \\
+    \emph{The Category of Von Neumann Algebras}\\
+    {\large and}\\
+    \emph{Dagger and Dilation\\ {\large in the Category of Von Neumann Algebras}}}
+
+\begin{document}
+
+\maketitle
+
+\begin{erratum}{physics-stinespring}
+The second part of the exercise starts with
+    ``Conclude that any quantum channel~$\Phi\colon \scrB(\scrK) \to \scrB(\scrH)$ \ldots''.
+This should have read
+    ``Conclude that any quantum channel~$\Phi$ from~$\scrH$ to itself \ldots''
+\end{erratum}
+
+\begin{solution}{physics-stinespring}
+To prove the first statement,
+let~$\varphi \colon \scrB(\scrH) \to \scrB(\scrK)$ be any ncp-map.
+If~$\varphi=0$ then~$\scrK'=0$ and~$V=0$ does the job,
+        so for the other case, assume~$\varphi \neq 0$.
+    By~\sref{stinespring-theorem}
+        there is a Hilbert space~$\scrH'$,
+        a bounded operator~$W \colon \scrH \to \scrH'$ and an
+        nmiu-map~$\varrho \colon \scrB(\scrH) \to \scrB(\scrH')$
+        such that~$\varphi = \ad_W \after \varrho$.
+Clearly~$\varrho \neq 0$.
+    By~\sref{nmiu-between-type-I}
+        there is a Hilbert space~$\scrK'$
+        and a unitary~$U \colon \scrH' \to \scrH \otimes \scrK'$
+        with~$\varrho(A) = U^* (A \otimes 1) U$
+         for all~$A \in \scrB(\scrH)$.
+Define~$V \equiv UW$.
+    Then~$\varphi(A) = W^* \varrho(A) W = W^*U^* (A \otimes 1) UW
+        =  V^* (A \otimes 1 ) V$, as desired.
+
+Before we can continue with the second statement,
+    we need to understand the relationship
+    between quantum channels and ncpu-maps.
+This relationship is best understood with
+    predual characterization of von Neumann algebras
+    due to Sakai~\cite{sakai}, which we have been avoiding.
+The characterization is as thus:
+    a C$^*$-algebra~$\scrA$ is a von Neumann algebra
+    if and only if it is isomorphic to the dual of a Banach space.
+Then this Banach space is unique up-to-isomoprhism
+    as it must be isomorphic to the space of normal functionals on~$\scrA$
+    (denoted by~$\scrA_*$)
+    and is appropriately called the \emph{predual}~of~$\scrA$.
+Any normal linear map~$\varphi\colon \scrA \to \scrB$
+    between von Neumann algebras~$\scrA$ and~$\scrB$
+    yields a linear map~$\varphi_*\colon \scrB_* \to \scrA_*$
+    via~$\varphi_*(\omega) = \omega \after \varphi$.
+In the other direction, any linear map~$\varphi_* \colon \scrB_* \to \scrA_*$
+    gives rise to a normal linear map~$\varphi\colon \scrA \to \scrB$
+    by defining~$\varphi(a)(\omega) = \varphi_*(\omega)(a)$
+    where we identified~$\scrA \equiv (\scrA_*)^*$.
+Clearly~$\varphi$ is positive precisely
+    if~$\varphi_*$ maps positive functionals to positive functionals.
+
+A normal state~$\omega\colon \scrB(\scrH) \to \C$
+    is precisely of the form~$\omega(a) = \TR[\rho a]$ for some density
+        matrix~$\rho$ over~$\scrH$.
+Thus the predual of~$\scrB(\scrH)$ can be identified
+    with the set of trace-class operators over~$\scrH$.
+Let~$\varphi_*$ be a linear map from the density operators
+    on~$\scrH$ to those on~$\scrK$.
+The map~$\varphi_*$ is completely positive in its usual sense
+    if the corresponding map~$\varphi$ is completely positive.
+Furthermore~$\varphi$ is unital if and only if~$\varphi_*$
+    is trace-preserving.
+
+To prove the second statement,
+    let~$\Phi$ be any quantum channel
+    mapping density matrices over~$\scrH$ to those of~$\scrH$ again.
+(Note: in the printed version of the thesis
+    the exercise incorrectly
+    assumes~$\Phi$ to map density matrices over~$\scrH$
+    to those over some other Hilbert space~$\scrK$.)
+It follows from the previous, that there is a unique
+        ncpu-map~$\varphi\colon \scrB(\scrH) \to \scrB(\scrH)$ with
+\begin{equation*}
+    \TR[ \Phi(\rho) A] \ = \ \TR[\rho \varphi(A)]
+        \quad\text{for any density matrix~$\rho\in \scrB(\scrH)$}.
+\end{equation*}
+See also~\cite{tomamichel} for a more direct approach.
+By the first part if the exercise,
+    we know that there is a Hilbert space~$\scrK'$
+    and a bounded operator~$V \colon \scrH \to \scrH \otimes \scrK'$
+    with~$\varphi (A) = V^* (A \otimes 1) V$.
+Tracing back the definition of~$V$, we see that~$V$
+    is an isometry because~$\varphi$ is unital.
+Pick any orthonormal bases~$E$ and~$F$ of~$\scrH$ and~$\scrK'$
+    respectively.
+We may assume, without loss of generality,
+    that~$\scrK'$ is not zero-dimensional
+    by setting~$\scrK' =\C$ and~$V = 0$
+    in the case that~$\Phi = 0$.
+Pick any~$f_0 \in F$
+    and any unitary~$U\colon \scrH \otimes \scrK' \to \scrH \otimes \scrK'$
+    with~$U^* x \otimes f_0 = V x$,
+    which exists as~$V$ is an isometry.
+Now we compute
+\begin{align*}
+    \TR [\varphi(A) \rho ]
+    & \ = \ \TR[\rho V^* (A \otimes 1) V] \\
+    & \ = \ \sum_{e \in E} \langle V \rho e, (A \otimes 1) V e \rangle \\
+    & \ = \ \sum_{e \in E}
+    \bigl\langle U^* (\rho \otimes 1) \,e\otimes f_0 ,
+    \ (A \otimes 1) U^* \,e\otimes f_0 \bigr\rangle. \\
+\intertext{Inserting~$\ketbra{f_0}{f_0}$
+    in the previous,
+    we may sum over all~$f \in F$ and get}
+     \TR[\varphi(A) \rho] &\ = \ \sum_{\substack{e \in E \\ f\in F}}
+    \bigl\langle U^* (\rho \otimes \ketbra{f_0}{f_0}) \,e\otimes f ,
+    \ (A \otimes 1) U^* \,e\otimes f \bigr\rangle \\
+    & \ = \ \sum_{\substack{e \in E \\ f\in F}}
+    \bigl\langle
+    (U^* (e\otimes f)) , \ 
+    U^* (\rho \otimes \ketbra{f_0}{f_0})U \,
+    (A \otimes 1) \,(U (e\otimes f)) \bigr\rangle \\
+    & \ = \ 
+    \TR \bigl[
+    U^* (\rho \otimes \ketbra{f_0}{f_0})U \,
+    (A \otimes 1)  \bigr] \\
+& \ = \ 
+\TR \bigl[ A   \TR\nolimits_{\scrK'}[ U^* (\rho \otimes \ketbra{f_0}{f_0} ) U] \bigr].
+\end{align*}
+This show that indeed~$\Phi(\rho)
+    = \TR_{\scrK'}[ U^* (\rho \otimes \ketbra{v_0}{v_0})U]$
+    as desired with~$v_0 \equiv f_0$.
+\end{solution}
+
+
+\end{document}
+
+% vim: se ft=tex.latex :

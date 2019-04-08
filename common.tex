@@ -618,3 +618,14 @@ Where applicable,
                 \let\item\@idxitem}
                {\if@restonecol\onecolumn\else\clearpage\fi}
 \makeatother
+
+
+\NewDocumentEnvironment{solution}{g}{%
+    \par\noindent
+    \textbf{Solution of~\sref{#1}}.
+    }{\par}
+
+\NewDocumentEnvironment{erratum}{g}{%
+    \par\noindent
+    \textbf{Erratum to~\sref{#1}}.
+    }{\par}
