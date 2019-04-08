@@ -15,14 +15,14 @@
 
 \maketitle
 
-\begin{erratum}{physics-stinespring}
+\begin{erratum}{physics-stinespring}%
 The second part of the exercise starts with
     ``Conclude that any quantum channel~$\Phi\colon \scrB(\scrK) \to \scrB(\scrH)$ \ldots''.
 This should have read
     ``Conclude that any quantum channel~$\Phi$ from~$\scrH$ to itself \ldots''
 \end{erratum}
 
-\begin{solution}{physics-stinespring}
+\begin{solution}{physics-stinespring}%
 To prove the first statement,
 let~$\varphi \colon \scrB(\scrH) \to \scrB(\scrK)$ be any ncp-map.
 If~$\varphi=0$ then~$\scrK'=0$ and~$V=0$ does the job,
@@ -137,6 +137,53 @@ Now we compute
 This show that indeed~$\Phi(\rho)
     = \TR_{\scrK'}[ U^* (\rho \otimes \ketbra{v_0}{v_0})U]$
     as desired with~$v_0 \equiv f_0$.
+\end{solution}
+
+\begin{solution}{kraus-exercise}%
+Let~$\varphi\colon \scrB(\scrH) \to \scrB(\scrK)$
+    be any ncp-map.
+By~\sref{physics-stinespring}
+    there is a Hilbert space~$\scrK'$
+    and a bounded operator~$V\colon \scrK \to \scrH \otimes \scrK'$
+    with~$\varphi(A) = V^* (A \otimes 1) V$.
+Let~$E$ be any orthonormal basis of~$\scrK'$.
+    Then~$1 = \sum_{e\in E} \ketbra{e}{e}$
+        where the sum converges ultraweakly
+        and so by ultraweak continuity of~$\ad_V$ (\sref{ad-normal})
+        and~$B \mapsto A\otimes B$ (\sref{tensor-simple-facts}), we see
+    \begin{equation}\label{kraus-exc-eq1}
+        \varphi(A) \ =\  V^* \Bigl(A \otimes \sum_{e\in E} \ketbra{e}{e}\Bigr) V
+        ) \ =\  \sum_{e \in E} V^* (A \otimes \ketbra{e}{e}) V.
+    \end{equation}
+For~$e\in E$, define~$P_e \colon \scrH \otimes \scrK' \to \scrH$
+    by~$P_e \equiv 1\otimes \bra{e}$,
+    i.e.~$P_e(x \otimes y) = x \langle e, y\rangle$.
+Define~$V_e \equiv P_e V$.
+    Note that~$P_e^*AP_e = A \otimes\ketbra{e}{e}$ and so
+\begin{alignat*}{2}
+    \varphi(A)
+    &\ = \  \sum_{e \in E} V^* (A \otimes \ketbra{e}{e} ) V &\qquad&
+    \text{by \eqref{kraus-exc-eq1}} \\
+    &\ = \  \sum_{e \in E} V^* P_e^*A P_e V \\
+    &\ = \  \sum_{e \in E} V_e^* A V_e,
+\end{alignat*}
+as desired.
+From the special case~$A=1$, we see
+    that~$\sum_{e \in E} V_e^*V_e = \varphi(1)$
+    and so the partial sums of~$\sum_{e \in E} V_e^* V_e$ are bounded.
+
+For the final part, assume~$\scrH$ and~$\scrK$ are finite dimensional.
+Recall that the standard Stinespring dilation space (say~$\scrK''$)
+    for~$\varphi$ is constructed using a completion
+    and quotient of~$\scrB(\scrH)\odot \scrK$.
+As~$\scrB(\scrH)\odot \scrK$ is finite dimensional
+    it is already complete.
+    Hence~$\scrK''$ has dimension at most~$(\dim\scrH)^2( \dim\scrK)$.
+By construction~$\scrH \otimes \scrK' \cong \scrK''$,
+    hence~$\dim \scrK' \leq (\dim \scrH )(\dim \scrK)$.
+Recall~$E$ is a basis of~$\scrK'$
+    and so there are indeed at most~$(\dim \scrH )(\dim \scrK)$
+        Kraus operators.
 \end{solution}
 
 
