@@ -22,6 +22,19 @@ This should have read
     ``Conclude that any quantum channel~$\Phi$ from~$\scrH$ to itself \ldots''
 \end{erratum}
 
+\begin{erratum}{ess-uniq-pur}%
+The third-to-last sentence reads
+``Derive from the latter
+that for each~$y \in \scrK'$ and rank-one projector~$e \in \scrH$,
+there is a~$y' \in \scrK'$
+with~$U_0 (e \otimes y) = e \otimes y'$.''
+This should have been
+``Derive from the latter
+that for each~$y \in \scrK'$ and unit vector~$e \in \scrH$,
+there is a~$y' \in \scrK'$
+with~$U_0 (e \otimes y) = e \otimes y'$.''.
+\end{erratum}
+
 \begin{solution}{physics-stinespring}%
 To prove the first statement,
 let~$\varphi \colon \scrB(\scrH) \to \scrB(\scrK)$ be any ncp-map.
@@ -187,7 +200,121 @@ Recall~$E$ is a basis of~$\scrK'$
 \end{solution}
 
 \begin{solution}{exc-chris-univ-prop}%
-    
+We will show that~$U\colon \mathsf{Rep} \to \mathsf{Rep}_{\mathrm{cp}}$
+    has a left-adjoint by demonstrating the universal mapping property.
+    Let~$\varphi\colon \scrA \to \scrB(\scrH)$ be any object of~$\mathsf{Rep}_{\mathrm{cp}}$.
+    Pick any minimal Stinespring dilation~$(\scrK, \varrho, V)$ of~$\varphi$.
+The map~$\varrho\colon \scrA\to \scrB(\scrK)$ is an object
+        of~$\mathsf{Rep}$.
+Clearly~$\ad_V \after \varrho \after \id = \varphi$
+    and so~$\eta_\varphi\equiv (\id,V)\colon \varphi \to U\varrho$
+        is a morphism in~$\mathsf{Rep}_{\mathrm{cp}}$.
+We will show that for each~$f\colon \varphi \to U\varrho'$
+        in~$\mathsf{Rep}_{\mathrm{cp}}$,
+    there is a unique~$f'\colon \varrho \to \varrho'$
+    in~$\mathsf{Rep}$ with~$Uf' \after \eta_\varphi = f$.
+This is sufficient to show that~$U$
+    has a left adjoint.
+
+    So let~$f\colon \varphi\to U\varrho'$ be any morphism
+        in~$\mathsf{Rep}_{\mathrm{cp}}$.
+Say~$\varrho'\colon \scrA' \to \scrB(\scrK')$.
+    Then~$f \equiv (m', V')$ consists of
+    a nmiu-map~$m'\colon \scrA \to \scrA'$
+    and bounded operator~$V' \colon \scrH \to \scrK'$
+    with~$\ad_{V'} \after \varrho' \after m' = \varphi$.
+By~\sref{dils-univ-stinespring}
+    there is a unique bounded operator~$S\colon \scrK \to \scrK'$
+        with~$SV = V'$ and~$\varrho = \ad_S \after \varrho' \after m'$.
+This turns~$f' \equiv(m',S)$ into a
+    morphism~$\varrho \to \varrho'$ in~$\mathsf{Rep}$.
+Furthermore~$Uf' \after \eta_\varphi
+                = (m' \after \id, SV) = (m',V') = f$.
+To show uniqueness, assume
+        there is some~$f'' \colon \varrho \to \varrho'$
+        in~$\mathsf{Rep}$
+        with~$Uf'' \after \eta_\varphi = f$.
+Say~$f'' = (m'',S'')$.
+    Then~$(m',V') = f = Uf' \after \eta_\varphi = (m'', S''V)$.
+So~$m''=m'$ and~$V' = S''V$.
+The fact that~$f''$ is a morphism in~$\mathsf{Rep}$
+    is
+    equivalent to~$\ad_{S''} \after \varrho' \after m'' = \varrho$.
+Thus~$\ad_{S''} \after \varrho' \after m' = \varrho$.
+By uniqueness of~$S$, we get~$S'' = S$.
+    Hence~$f''=(m'',S'') = (m',S) = f'$, as desired.
+\end{solution}
+
+\begin{solution}{ess-uniq-pur}%
+Let~$\varphi\colon \scrB(\scrH) \to \scrB(\scrK)$ be any ncp-map.
+As in the description of the exercise,
+    let~$\scrK$ be a Hilbert space
+    and~$V,W\colon \scrK \to \scrH \otimes \scrK'$
+    be bounded operators
+    with~$V^* (a \otimes 1) V = \varphi(a) = W^* (a\otimes 1) W$.
+Write~$\scrV$ for the closed linear span
+    of~$\{(a \otimes 1) V x; \ a \in \scrB(\scrH),\ x \in \scrK\}$
+        in~$\scrH\otimes \scrK'$
+and similarly~$\scrW$ for that
+    of~$\{(a \otimes 1) W x; \ a \in \scrB(\scrH),\ x \in \scrK\}$.
+Note that for any~$n\in \N$, ~$x_1,\ldots, x_n \in \scrK$
+    and~$a_1, \ldots, a_n \in \scrB(\scrH)$ we have
+\begin{align*}
+    \bigl\| \sum_i (a_i\otimes1) V x_i \bigr\|^2
+    &\ = \ 
+     \sum_{i,j} \langle x_i,\, V^* ((a_i^*a_j) \otimes 1) V x_j\rangle \\
+    &\ = \ 
+     \sum_{i,j} \langle x_i,\, W^* ((a_i^*a_j) \otimes 1) W x_j\rangle \\
+     &\ = \ 
+    \bigl\| \sum_i (a_i\otimes1) W x_i \bigr\|^2.
+\end{align*}
+Thus there is a unique unitary~$U_0\colon \scrW \to \scrV$
+    fixed by~$U_0 (a \otimes 1) W x = U_0 (a \otimes 1) V x$.
+We see~$U_0 W = V$ by setting~$a=1$.
+Furthermore
+    \begin{equation*}
+        (\alpha \otimes 1) U_0 (a \otimes 1) W x
+        \ = \ ((\alpha a)  \otimes 1) V x
+        \ = \ U_0 (\alpha  \otimes 1 )(a  \otimes 1) W x
+    \end{equation*}
+    for any~$\alpha,a \in \scrB(\scrH)$ and~$x \in \scrK$,
+    hence~$(\alpha \otimes 1) U_0 = U_0 (\alpha \otimes 1)$.
+
+For any~$a \in \scrB(\scrH)$,
+    the operator~$a \otimes 1 \in \scrB(\scrH \otimes \scrK')$
+    restricts to~$\scrB(\scrW)$.
+Pick an orthonormal basis~$E$ of~$\scrH$
+    and some~$e_0 \in E$.
+    Note that~$(\ketbra{e_0}{e_0} \otimes 1) \scrW = e_0 \otimes \scrW'$
+    for some closed subspace~$\scrW' \subseteq \scrK'$.
+In fact, for any~$e \in E$
+    we have~$e \otimes \scrW'
+    = (\ketbra{e}{e_0} \otimes 1) (e_0 \otimes \scrW')
+    = (\ketbra{e}{e_0}\otimes 1)  (1 \otimes \ketbra{e_0}{e_0}) \scrW
+    = (\ketbra{e}{e} T \otimes 1)  \scrW = (\ketbra{e}{e} \otimes 1) \scrW$,
+    where~$T$ is the unitary on~$\scrH$ that only swaps~$e$ and~$e_0$.
+Hence~$\scrW = \scrH \otimes \scrW'$.
+Similarly~$\scrV = \scrH \otimes \scrV'$
+    for some closed subspace~$\scrV' \subseteq \scrK'$.
+
+For any non-zero~$w \in \scrW'$ and unit-vector~$x \in \scrH$,
+    we have~$U_0 (x \otimes w)
+        = U_0 (\ketbra{x}{x} \otimes 1)( x\otimes w)
+        = (\ketbra{x}{x} \otimes 1) U_0 (x\otimes w)$
+        so~$U_0 (x \otimes w) = x \otimes y$ for some~$y \in \scrV'$.
+Clearly~$\| w \| = \| x \otimes w\|=\| U_0 (x\otimes w) \|
+        = \|x \otimes y\| = \|y\|$,
+        so there is a unique unitary~$U_1\colon \scrW' \to \scrV'$
+        with~$U_0 (x \otimes w) = x \otimes U_1 w$.
+        It follows~$U_0 = 1 \otimes U_1$.
+
+As~$\scrV$ and~$\scrW$ are isomorphic, they have the same dimension
+    and so do~$\scrV^\perp$ and~$\scrW$.
+Consequently, there is an unitary~$U\colon \scrK' \to \scrK'$
+    extending~$U_1$.
+We have~$V = (1\otimes U) W
+    =   (1 \otimes U_1) W
+     = U_0 W = V$ as desired.
 \end{solution}
 
 \backmatter
