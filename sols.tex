@@ -21,7 +21,6 @@ The second part of the exercise starts with
 This should have read
     ``Conclude that any quantum channel~$\Phi$ from~$\scrH$ to itself \ldots''
 \end{erratum}
-
 \begin{erratum}{ess-uniq-pur}%
 The third-to-last sentence reads
 ``Derive from the latter
@@ -34,7 +33,6 @@ that for each~$y \in \scrK'$ and unit vector~$e \in \scrH$,
 there is a~$y' \in \scrK'$
 with~$U_0 (e \otimes y) = e \otimes y'$.''.
 \end{erratum}
-
 \begin{solution}{physics-stinespring}%
 To prove the first statement,
 let~$\varphi \colon \scrB(\scrH) \to \scrB(\scrK)$ be any ncp-map.
@@ -151,7 +149,6 @@ This show that indeed~$\Phi(\rho)
     = \TR_{\scrK'}[ U^* (\rho \otimes \ketbra{v_0}{v_0})U]$
     as desired with~$v_0 \equiv f_0$.
 \end{solution}
-
 \begin{solution}{kraus-exercise}%
 Let~$\varphi\colon \scrB(\scrH) \to \scrB(\scrK)$
     be any ncp-map.
@@ -198,7 +195,6 @@ Recall~$E$ is a basis of~$\scrK'$
     and so there are indeed at most~$(\dim \scrH )(\dim \scrK)$
         Kraus operators.
 \end{solution}
-
 \begin{solution}{exc-chris-univ-prop}%
 We will show that~$U\colon \mathsf{Rep} \to \mathsf{Rep}_{\mathrm{cp}}$
     has a left-adjoint by demonstrating the universal mapping property.
@@ -244,7 +240,6 @@ Thus~$\ad_{S''} \after \varrho' \after m' = \varrho$.
 By uniqueness of~$S$, we get~$S'' = S$.
     Hence~$f''=(m'',S'') = (m',S) = f'$, as desired.
 \end{solution}
-
 \begin{solution}{ess-uniq-pur}%
 Let~$\varphi\colon \scrB(\scrH) \to \scrB(\scrK)$ be any ncp-map.
 As in the description of the exercise,
@@ -316,7 +311,6 @@ We have~$V = (1\otimes U) W
     =   (1 \otimes U_1) W
      = U_0 W = V$ as desired.
 \end{solution}
-
 \begin{solution}{paschke-basics}%
 We cover the points in order.
 \begin{enumerate}
@@ -460,6 +454,58 @@ Clearly~$\lambda h \after \sigma = h'$ and so~$\sigma$
     also serves as the unique mediating map
     for the dilation of~$\lambda \varphi$.
 \end{enumerate}
+\end{solution}
+\spacingfix
+\begin{solution}{module-seminorm}%
+Let~$X$ be a right~$\scrB$-module
+with~$\scrB$-valued inner product~$\langle \,\cdot\,,\,\cdot\,\rangle$
+    for some C$^*$-algebra~$\scrB$.
+Using the C$^*$-identity, ~\sref{module-CS} and the definition
+    of~$\|\,\cdot\,\|$ on~$X$, we
+    get~$ \| \langle x, y\rangle\|^2
+        = \| \langle x, y\rangle^* \langle x, y\rangle\|
+        = \| \langle y,x \rangle\langle x,y\rangle \|
+        \leq \bigl\| \|\langle x,x\rangle\| \langle y, y \rangle \bigr\|
+        = \| x\|^2 \|y\|^2$,
+        so indeed~$\|\langle x, y \rangle \| \leq \|x\|\|y\|$.
+
+    Now we will show~$\|x\| \equiv \| \langle x,x\rangle\|^{\frac{1}{2}}$
+    is a seminorm on~$X$.
+    Clearly~$\|x\| \geq 0$ for any~$x \in X$.
+For any~$\lambda \in \C$ and~$x \in X$
+    we have~$\langle \lambda x, \lambda x \rangle
+        = \overline\lambda \langle x, x \rangle \lambda
+        = | \lambda |^2 \langle x,x\rangle$,
+    hence~$
+        \|\lambda x\|=
+       \|\lambda^2 \langle x, x \rangle \|^{\frac{1}{2}} =
+        |\lambda|  \|x\| $.
+Next, for any~$x,y \in X$ we have
+\begin{alignat*}{2}
+    \| x + y \|^2 & \ = \  \| \langle x + y, x+y\rangle \| \\
+    & \ \leq \ \| \langle x,x\rangle\| 
+        + \| \langle y,y\rangle\|
+        + \| \langle x, y \rangle \|
+        + \| \langle x, y \rangle^* \| \\
+    & \ = \ \|x\|^2 + \|y\|^2 + 2\|\langle x,y\rangle\| \\
+    & \ \leq \ \|x\|^2 + \|y\|^2 + 2\|x\|\|y\| \\
+    & \ =\ (\|x\| + \|y\|)^2
+\end{alignat*}
+and thus~$\|\,\cdot\,\|$ is indeed a seminorm.
+
+Finally, we will show~$\|x \cdot b\| \leq \|x\|\|b\|$
+    for any~$b\in \scrB$ and~$x \in X$.
+As~$\langle x,x\rangle$ is positive,
+    we have~$\langle x,x \rangle  \leq \|\langle x,x\rangle \|
+            = \|x\|^2$.
+Also recall~$a \mapsto b^* a b$ is clearly positive.
+Thus~$\|x\cdot b\|^2 \equiv \|\langle xb, xb\rangle \|
+        = \| b^* \langle x, x \rangle b\|
+        \leq  \bigl\|
+        \|x\|^2
+        b^*b
+        \bigr\|
+        = \|b\|^2 \|x\|^2$ as desired.
 \end{solution}
 
 \backmatter
