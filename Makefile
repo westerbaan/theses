@@ -14,7 +14,7 @@ a.pdf: common.tex cstar.tex a.tex vn.tex proc.tex main.bib
 b.pdf: common.tex b.tex btitle.tex dils.tex eff.tex bintr.tex main.bib bfinal.tex
 	latexmk -pdf -use-make b.tex
 
-sols.pdf: sols.tex
+sols.pdf: sols.tex common.tex main.bib
 	latexmk -pdf -use-make sols.tex
 
 cstar.pdf: common.tex cstar.tex

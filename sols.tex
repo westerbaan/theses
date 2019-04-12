@@ -317,6 +317,151 @@ We have~$V = (1\otimes U) W
      = U_0 W = V$ as desired.
 \end{solution}
 
+\begin{solution}{paschke-basics}%
+We cover the points in order.
+\begin{enumerate}
+\item
+Let~$\varrho \colon \scrA \to \scrB$ be a mniu-map.
+Assume there are nmiu~$\varrho'\colon \scrA \to \scrP'$
+    and ncp~$h'\colon \scrP' \to \scrB$
+        with~$h' \after \varrho' = \varrho$.
+We have to show there is a unique map~$\sigma\colon \scrP \to \scrB$
+    with~$\id \after \sigma= h'$ and~$h' \after \varrho' = \varrho$.
+        Clearly~$\sigma\equiv h' $ fits the bill.
+
+\item
+Let~$(\scrP,\varrho,h)$ be any Paschke dilation.
+        We will show that~$(\scrP, \id, h)$ is a Paschke dilation of~$h$.
+To this end, let~$\varrho'\colon \scrA \to \scrP'$
+        be any nmiu-map and~$h'\colon \scrP' \to \scrB$
+        be any ncp-map with~$h' \after \varrho' = h$.
+Consider~$\varrho' \after \varrho$ and~$h'$.
+    By the universal property of the original dilation,
+            there is a unique ncp-map~$\sigma \colon \scrP' \to \scrP$
+                with~$\sigma\after\varrho'\after\varrho = \varrho$
+                and~$h \after\sigma = h'$.
+Furthermore~$\id\colon \scrP \to \scrP$
+    is the unique ncp-map
+        with~$\id \after \varrho = \varrho$
+        and~$h \after \id = h$.
+Now~$(\sigma \after \varrho') \after \varrho = \varrho$
+    and~$h \after (\sigma \after \varrho') = h' \after \varrho' = h$,
+        so~$\sigma \after \varrho' = \id$.
+We are are halfway demonstrating that~$\sigma$ is also the mediating map
+        for our dilation of~$h$.
+It remains to be shown that~$\sigma$ is the unique ncp-map
+    with~$\sigma \after \varrho' = \id$
+        and~$h \after \sigma = h'$.
+So assume there is a ncp-map~$\sigma'\colon \scrP' \to \scrP$
+    with~$h \after \sigma' = h'$ and~$\sigma' \after \varrho' = \id$.
+    Clearly~$\sigma' \after\varrho' \after\varrho =\varrho$
+        and so by uniqueness of~$\sigma$ as the mediating map
+        for the orignal dilation,
+        we see~$\sigma' = \sigma$, as desired.
+    \item
+
+    Let~$
+        \left(\begin{smallmatrix}\varphi_1\\\varphi_2 \end{smallmatrix} \right)
+        \colon \scrA \to \scrB_1 \oplus \scrB_2$
+        be any ncp-map.
+    Pick Paschke dilations~$(\scrP_i, \varrho_i, h_i)$
+            of~$\varphi_i$ for~$i=1,2$.
+        We will show that~$(\scrP_1 \oplus \scrP_2, 
+        \left(\begin{smallmatrix}\varrho_1\\\varrho_2 \end{smallmatrix} \right),
+            h_1 \oplus h_2 )$
+            is a Paschke dilation of~$
+    \left(\begin{smallmatrix}\varphi_1\\\varphi_2 \end{smallmatrix} \right)$.
+Clearly~$h_1 \oplus h_2 \after 
+        \left(\begin{smallmatrix}\varrho_1\\\varrho_2 \end{smallmatrix} \right)=
+        (\begin{smallmatrix}h_1 \after\varrho_1\\h_2 \after \varrho_2 \end{smallmatrix} )
+            = 
+    \left(\begin{smallmatrix}\varphi_1\\\varphi_2 \end{smallmatrix} \right) $.
+Let~$\varrho'\colon \scrA \to \scrP'$ be any nmiu-map
+    and~$
+    \left(\begin{smallmatrix}h_1\\ h_2\end{smallmatrix} \right) 
+        \colon \scrP' \to \scrB_1 \oplus \scrB_2$
+        any ncp-map with~$
+    \left(\begin{smallmatrix}h_1\\ h_2\end{smallmatrix} \right)  \after
+        \varrho' = 
+    \left(\begin{smallmatrix}\varphi_1\\ \varphi_2\end{smallmatrix} \right) $.
+Note~$h_i \after \varrho' = \varphi_i$
+    (for~$i=1,2$)
+    and so there is a unique~$\sigma_i\colon \scrP' \to \scrP_i$
+    with~$\sigma_i \after \varrho' = \varrho_i$
+    and~$h_i \after \sigma_i = h_i'$.
+We will show that~$
+    \left(\begin{smallmatrix}\sigma_1\\ \sigma_2\end{smallmatrix} \right) 
+        \colon \scrP' \to \scrP_1\oplus \scrP_2$
+        is the unique mediating map.
+Clearly~$
+    \left(\begin{smallmatrix}\sigma_1\\ \sigma_2\end{smallmatrix} \right) 
+        \after \varrho' = 
+    \bigl(\begin{smallmatrix}\sigma_1 \after \varrho'\\ \sigma_2 \after \varrho' \end{smallmatrix} \bigr) =
+    \left(\begin{smallmatrix}\varrho_1\\ \varrho_2 \end{smallmatrix} \right) $
+and~$(h_1 \oplus h_2) \after
+\bigl( \begin{smallmatrix} \sigma_1\\ \sigma_2 \end{smallmatrix} \bigr)
+    =
+\bigl( \begin{smallmatrix}
+h'_1 \after \sigma_1\\
+h'_2 \after \sigma_2
+\end{smallmatrix} \bigr) =
+\bigl( \begin{smallmatrix}
+h_1 \\
+h_2
+\end{smallmatrix} \bigr)$.
+To show uniqueness of~$
+( \begin{smallmatrix}
+\sigma_1\\
+\sigma_2
+\end{smallmatrix})$,
+assume
+there is ncp-map$
+    \bigl(\begin{smallmatrix}\sigma'_1\\ \sigma'_2\end{smallmatrix} \bigr) 
+        \colon \scrP' \to \scrP_1\oplus \scrP_2$
+    such that~$ \bigl(\begin{smallmatrix}\sigma'_1\\ \sigma'_2\end{smallmatrix} \bigr) 
+        \after \varrho'
+        = 
+    \bigl(\begin{smallmatrix}\varrho_1\\ \varrho_2 \end{smallmatrix} \bigr) $
+and~$(h_1 \oplus h_2) \after
+\bigl( \begin{smallmatrix} \sigma'_1\\ \sigma'_2 \end{smallmatrix} \bigr)
+    =
+\bigl( \begin{smallmatrix}
+h_1 \\
+h_2
+\end{smallmatrix} \bigr)$.
+Then~$h_i \after \sigma_i' = h_i$ and~$\sigma_i' \after \varrho' = \varrho_i$
+    for~$i=1,2$ and so~$\sigma_i=\sigma_i'$ by the uniqueness
+    of the seperate~$\sigma_i$.
+    Thus indeed~$
+( \begin{smallmatrix}
+\sigma_1\\
+\sigma_2
+\end{smallmatrix}) =
+\bigl( \begin{smallmatrix}
+\sigma'_1\\
+\sigma'_2
+\end{smallmatrix}\bigr)$.
+
+\item
+Let~$\varphi\colon \scrA \to \scrB$ be any ncp-map
+    with Paschke dilation~$(\scrP, \varrho, h)$.
+Assume~$\lambda \in \R, \lambda > 0$.
+We will show~$(\scrP, \varrho, \lambda h)$
+    is a Paschke dilation of~$\lambda \varphi$.
+Clearly~$\lambda h \after \varrho = \lambda \varphi$.
+To this end, assume~$\varrho'\colon \scrA \to \scrP'$ is a nmiu-map
+    and~$h' \colon \scrP' \to \scrB$ is an ncp-map
+    with~$h' \after \varrho' = \lambda \varphi$.
+Then~$\lambda^{-1} h' \after \varrho' = \varphi $.
+Thus there is a unique~$\sigma\colon \scrP' \to \scrP$
+    with~$\sigma \after \varrho' = \varrho$
+    and~$h \after \sigma = \lambda^{-1} h'$.
+Clearly~$\lambda h \after \sigma = h'$ and so~$\sigma$
+    also serves as the unique mediating map
+    for the dilation of~$\lambda \varphi$.
+\end{enumerate}
+\end{solution}
+
 \backmatter
 \fancyfoot[CE]{}
 \fancyfoot[CO]{}

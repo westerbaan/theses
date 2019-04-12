@@ -623,11 +623,13 @@ Where applicable,
 
 
 \NewDocumentEnvironment{solution}{g}{%
-    \par\noindent
-    \textbf{Solution of~\sref{#1}}.
-    }{\par}
+    \leavevmode\unskip%
+    \par\vskip.1em\noindent%
+    \textPointHeaderI{Solution of~\sref{#1}.}
+    }{\leavevmode\unskip\ignorespaces}
 
 \NewDocumentEnvironment{erratum}{g}{%
-    \par\noindent
-    \textbf{Erratum to~\sref{#1}}.
-    }{\par}
+    \leavevmode\unskip%
+    \par\vskip.1em\noindent%
+    \textPointHeaderI{Erratum to~\sref{#1}.}
+    }{\leavevmode\unskip\ignorespaces}
