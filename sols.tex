@@ -33,6 +33,10 @@ that for each~$y \in \scrK'$ and unit vector~$e \in \scrH$,
 there is a~$y' \in \scrK'$
 with~$U_0 (e \otimes y) = e \otimes y'$.''.
 \end{erratum}
+\begin{erratum}{dils-uniform-spaces-basics}%
+The assumption  that the net~$x_\alpha$ is Cauchy in point 3
+    is superfluous.
+\end{erratum}
 \begin{solution}{physics-stinespring}%
 To prove the first statement,
 let~$\varphi \colon \scrB(\scrH) \to \scrB(\scrK)$ be any ncp-map.
@@ -576,6 +580,125 @@ Let~$B$ be any~$\scrB$-sesquilinear form on a pre-Hilbert~$\scrB$-module~$X$
 \end{enumerate}
     Thus indeed, $(X, \Phi)$ is a uniform space.
 \end{solution}
+\begin{solution}{dils-uniform-spaces-basics}%
+We prove the subexercises in order.
+\begin{enumerate}
+\item
+First we will show that equivalence of Cauchy nets is an equivalence
+    relation.
+As for every entourage~$\varepsilon$ we have~$x \mathrel\varepsilon x$,
+    we see that every Cauchy net is equivalent to itself.
+Assume~$(x_\alpha)_\alpha \sim (y_\beta)_\beta$.
+        We will show~$(y_\beta)_\beta \sim (y_\alpha)_\alpha$.
+Let~$\varepsilon$ be some entourage.
+    There is some entourage~$\delta$ with~$\delta^{-1}\subseteq \varepsilon$.
+        By assumption there are~$\alpha_0$ and~$\beta_0$
+        such that~$x_\alpha \mathrel{\delta} y_\beta$
+        for all~$\alpha \geq \alpha_0$ and~$\beta \geq \beta_0$.
+    But then~$y_\beta \mathrel{\varepsilon} x_\alpha$
+        for~$\alpha \geq \alpha_0$ and~$\beta \geq\beta_0$.
+        Hence~$(y_\beta)_\beta \sim (x_\alpha)_\alpha$.
+    To prove transitivity,
+assume we are given Cauchy nets~$(x_\alpha)_\alpha \sim (y_\beta)_\beta 
+            \sim (z_\gamma)_\gamma$.
+Let~$\varepsilon$ be some entourage.
+There is an entourage~$\delta$ with~$\delta \after \delta \subseteq \varepsilon$.
+There are~$\alpha_0, \beta_0, \gamma_0$
+    such that~$x_\alpha \mathrel\delta y_\beta $
+            and~$y_\beta \mathrel\delta z_\gamma $
+            for~$\alpha \geq \alpha_0$, $\beta \geq \beta_0$
+            and~$\gamma \geq \gamma_0$.
+        Hence~$x_\alpha \mathrel\varepsilon z_\gamma$ for such~$\alpha$ and~$\gamma$, which shows~$(x_\alpha)_\alpha \sim (z_\gamma)_\gamma$.
+
+Next, assume that~$(x_\alpha)_\alpha$ is a subnet
+        of a Cauchy net~$(y_\alpha)_\alpha$.
+    To show~$(x_\alpha)_\alpha \sim (y_\alpha)_\alpha$,
+            assume~$\varepsilon$ is some entourage.
+    By the definition of Cauchy net,
+            there is some~$\alpha_0$
+            such that~$x_\alpha \mathrel{\varepsilon} x_\beta$
+            for all~$\alpha,\beta \geq \alpha_0$.
+    In particular~$x_\alpha \mathrel{\varepsilon} y_\beta$
+        for all~$\alpha, \beta \geq \alpha_0$
+        which shows~$(x_\alpha)_\alpha \sim (x_\beta)_\beta$.
+
+\item
+Assume~$(x_\alpha)_\alpha \sim (y_\beta)_\beta$
+    and~$x_\alpha \to x$.
+To prove $y_\alpha \to x$, pick any entourage~$\varepsilon$.
+Pick~$\delta$ such that~$\delta^2 \subseteq \varepsilon$.
+There are~$\alpha_0$ and~$\beta_0$
+    such that~$y_\beta \mathrel\delta x_\alpha$
+        and~$x_\alpha \mathrel\delta x$
+        for all~$\alpha \geq \alpha_0 $ and~$\beta \geq \beta_0$.
+    Then~$y_\beta \mathrel\varepsilon x$ for all~$\beta \geq \beta_0$,
+        whence~$y_\beta \to x$.
+
+\item
+    Assume~$(x_\alpha)_\alpha \to x$ and~$(x_\alpha)_\alpha \to y$
+            in some Hausdorff uniform space.
+    Let~$\varepsilon$ be any entourage.
+        Pick~$\delta$ and~$\delta'$ with~$\delta^2 \subseteq \varepsilon$
+        and~$\delta'\subseteq \delta^{-1}$.
+    There is an~$\alpha_0$ such that~$x_\alpha \mathrel\delta x$
+        and~$x_\alpha \mathrel{\delta'} y$
+        for all~$\alpha \geq \alpha_0$.
+    Thus~$x \mathrel\varepsilon y$.
+    As our space is Hausdorff the previous implies~$x=y$.
+\item
+    Let~$f\colon X\to Y$ be a continuous map between uniform spaces.
+    Assume~$x_\alpha \to x$ in~$X$.
+    Let~$\varepsilon$ be any entourage of~$Y$.
+By continuity there is a~$\delta$
+    such that~$x \mathrel\delta y$ implies~$f(x) \mathrel{\varepsilon} f(y)$
+    for any~$y \in Y$.
+There is an~$\alpha_0$ such that~$x \mathrel{\delta} x_\alpha$
+    for all~$\alpha \geq \alpha_0$.
+For those~$\alpha$ we also have~$f(x) \mathrel{\varepsilon} f(x_\alpha)$,
+    which shows~$f(x_\alpha) \to f(x)$.
+\item
+    Let~$f\colon X\to Y$ be a uniformly continuous map
+        between uniform spaces.
+Let~$(x_\alpha)_\alpha$ and~$(y_\beta)_\beta$
+    be nets of~$X$
+    such that for each entourage~$\varepsilon$ of~$X$
+        there are~$\alpha_0,\beta_0$ with~$x_\alpha \mathrel\varepsilon y_\beta$
+        for all~$\alpha\geq\alpha_0$ and~$\beta \geq \beta_0$.
+The map~$f$ preserves this relation between the nets
+    in the following way.
+Let~$\varepsilon$ be any entourage of~$Y$
+By uniform continuity there is a~$\delta$
+    such that~$x \mathrel\delta y$ implies~$f(x) \mathrel\varepsilon f(y)$.
+There are~$\alpha_0$ and~$\beta_0$
+    with~$x_\alpha \mathrel\delta y_\beta$ for all~$\alpha \geq\alpha_0$
+    and~$\beta \geq\beta_0$.
+    Hence~$f(x_\alpha) \mathrel\varepsilon f(y_\beta)$
+        for such~$\alpha,\beta$.
+
+From the previous it follows that~$f$
+    preserves Cauchy nets (by setting~$x_\alpha=y_\alpha$)
+    and that it preserves equivalence between Cauchy nets.
+\item
+Let~$D \subseteq X$ be a dense subset of a uniform space~$X$.
+Let~$x \in X$ be any point.
+Pick for every~$\varepsilon \in \Phi$
+    an element~$d_\varepsilon \in D$
+    with~$x \mathrel\varepsilon d_\varepsilon$.
+Clearly~$(d_\varepsilon)_{\varepsilon\in\Phi}$ is a net with inverse
+inclusion. We have~$d_\varepsilon \to x$
+    as~$d_\delta \mathrel\varepsilon x$
+    whenever~$\delta \subseteq \varepsilon$.
+\item
+Assume~$f,g\colon X \to Y$ are continuous maps between uniform
+    spaces that agree on a dense subset~$D \subseteq X$.
+Let~$x\in X$ be any point.
+Pick a net~$x_\alpha$ from~$D$ with~$x_\alpha \to x$.
+Then~$f(x) = f(\lim_\alpha x_\alpha) = \lim_\alpha f(x_\alpha)
+    =  \lim_\alpha g(x_\alpha) = g(\lim_\alpha x_\alpha) = g(x)$.
+    Hence~$f=g$.
+\end{enumerate}
+\end{solution}
+\spacingfix
 
 \backmatter
 \fancyfoot[CE]{}
