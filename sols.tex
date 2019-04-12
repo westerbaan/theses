@@ -507,6 +507,27 @@ Thus~$\|x\cdot b\|^2 \equiv \|\langle xb, xb\rangle \|
         \bigr\|
         = \|b\|^2 \|x\|^2$ as desired.
 \end{solution}
+\begin{solution}{hilbmod-polarization}%
+Let~$B$ be any~$\scrB$-sesquilinear form on a pre-Hilbert~$\scrB$-module~$X$
+    for some C$^*$-algebra~$\scrB$.
+    Distributing~$B$ in~$\sum_{k=0}^3 i^k B(i^k x+y, i^k x+y)$
+    we get 16 terms
+    consisting of four of each~$B(x,x)$, $B(y,y)$, $B(x,y)$ and $B(y,x)$
+    with the following coefficients.
+    \begin{center}
+        \begin{tabular}{c|rrrr}
+        & $B(x,x)$ & $B(y,y)$ & $B(x,y)$ & $B(y,x)$\\ \hline
+        $k\,=\,0$ & $1$ & $1$ & $1$ & $1$ \\
+        $k\,=\,1$ & $i\cdot (-i)\cdot i\,=\,i$ & $i$ & $i \cdot (-i)\,=\,1$ & $i^2 \,=\, -1$ \\
+        $k\,=\,2$ & $(-1)^3\,=\,-1 $&$ -1 $&$ (-1)^2 \,=\,1$&$ (-1)^2\,=\,1$ \\
+            $k\,=\,3$ & $(-i) \cdot i \cdot (-i)\,=\,-i $&$ -i $&$ (-i)\cdot i\,=\, 1$&$ (-i)^2\,=\,-1 $\\
+    \end{tabular}
+\end{center}
+    Note that the coefficients in
+    every column sum to~$0$, except for the coefficients for~$B(x,y)$ which
+    sum to~$4$.
+    Hence~$ \sum_{k=0}^3 i^k B(i^k x+y, i^k x+y) = 4B(x,y)$.
+\end{solution}
 
 \backmatter
 \fancyfoot[CE]{}
