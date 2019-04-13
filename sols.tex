@@ -786,6 +786,30 @@ Note~$\| e p - e\|^2
     = (1-p) p (1-p) = 0$.
 Thus~$ep - e= 0$ and so~$ep = e$ as desired.
 \end{solution}
+\begin{solution}{mod-parseval}%
+Let~$X$ be a pre-Hilbert~$\scrB$-module for a von Neumann algebra~$\scrB$
+    with orthonormal basis~$E \subseteq X$.
+Assume~$x \in X$.
+By definition of orthonormal basis,
+    we know~$x = \sum_{e \in E} e \langle e,x\rangle$
+    where the sum converges ultranorm.
+That is: $\sum_{e \in S} e \langle e,x\rangle \to x$
+    as~$S$ ranges over the finite subsets of~$E$.
+    By~\sref{innerprod-ultraweak}
+        we
+        see~$
+        \bigl\langle
+        \sum_{e \in S} e \langle e,x\rangle,
+        \sum_{e \in S} e \langle e,x\rangle \bigr\rangle
+        \to \langle x, x\rangle $ ultraweakly.
+Thus~$\sum_{e \in S} \langle x,e\rangle\langle e, x\rangle
+    = \sum_{e,d \in S} \langle x,e\rangle\langle e,d\rangle\langle d, x\rangle
+    =
+        \bigl\langle
+        \sum_{e \in S} e \langle e,x\rangle,
+        \sum_{e \in S} e \langle e,x\rangle \bigr\rangle
+        \to \langle x, x\rangle $ ultraweakly, as desired.
+\end{solution}
 
 \backmatter
 \fancyfoot[CE]{}
