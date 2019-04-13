@@ -699,6 +699,69 @@ Then~$f(x) = f(\lim_\alpha x_\alpha) = \lim_\alpha f(x_\alpha)
 \end{enumerate}
 \end{solution}
 \spacingfix
+\begin{solution}{dils-product-uniformity}%
+Write~$B \equiv \{ \hat\varepsilon; \ \varepsilon \in \Phi_i;\ i \in I\}$.
+First we show~$B$ is a subbase,
+    i.e.~that is satisfies conditions 2, 3 and 4
+    of~\sref{dils-dfn-uniformity}.
+Let~$\hat\varepsilon$ be an arbitrary element of~$B$
+    and~$i \in I$ denote the index element with~$\varepsilon \in \Phi_i$.
+    Assume~$(x_i)_{i \in I} \in \Pi_i X_i$.
+Clearly~$x_i \mathrel\varepsilon x_i$
+    and so~$(x_i)_i \mathrel{\hat\varepsilon} (x_i)_i$.
+    Thus~$B$ satisfies condition 2 of~\sref{dils-dfn-uniformity}.
+Pick a~$\delta \in \Phi_i$ with~$\delta^2 \subseteq \varepsilon$.
+    Then~${\hat\delta}^2 =\widehat{\delta^2} \subseteq \hat{\varepsilon}$
+    and so~$B$ satisfies condition 3 of~\sref{dils-dfn-uniformity}.
+Now let~$\delta$ denote an entourage of~$X_i$
+    with~$\delta^{-1} \subseteq \varepsilon$.
+    Then~$\hat{\delta}^{-1} = \widehat{\delta^{-1}}
+        \subseteq \hat{\varepsilon}$
+        and so~$B$ also satisfies condition 4 of~\sref{dils-dfn-uniformity}.
+
+Next we show that the projectors~$\pi_i \colon \prod_i X_i \to X_i$
+    are uniformly continuous.
+    Assume~$i_0 \in I$ and~$\varepsilon$ is an entourage of~$X_{i_0}$.
+Define~$\delta \equiv \hat\varepsilon$.
+    Let~$(x_i)_i$ and~$(y_i)_i$
+        from~$\prod_i X_i$ be given
+        with~$(x_i)_i \mathrel\delta (y_i)_i$.
+    Then~$x_{i_0} \mathrel\varepsilon y_{i_0}$.
+    Thus~$\pi_{i_0}$ is indeed uniformly continuous.
+
+To show~$(\pi_i)_{i}$ is a categorical product,
+    assume we are given a uniform space~$Y$ together
+        with uniformly continuous maps~$f_i \colon Y \to X_i$
+            for each~$i \in I$.
+We have to show that there is a unique uniformly continuous 
+    map~$f\colon Y \to \prod_i X_i$
+        with~$\pi_i \after f = f_i$ for all~$i \in I$.
+    Define~$f$ by~$(f(y))_i \equiv f_i (y)$.
+    Clearly~$\pi_i \after f = f_i$.
+
+    To show~$f$ is uniformly continuous,
+        pick any entourage~$\varepsilon$ of~$\prod_i X_i$.
+        By definition, there are~$i_1, \ldots, i_n$
+            and~$\varepsilon_1, \ldots, \varepsilon_n$
+            with~$\varepsilon_j \in \Phi_{i_j}$
+            and~$\bigcap_j \widehat{\varepsilon_j} \subseteq \varepsilon$.
+    For each~$1 \leq j \leq n$
+        pick an entourage~$\delta_j$ of~$Y$
+        such that~$x \mathrel\delta_j y$
+        implies~$f_{i_j}(x) \mathrel{\varepsilon_j} f_{i_j}(y)$.
+Define~$\delta \equiv \bigcap_j \delta_j$
+    Assume~$x \mathrel\delta y$.
+    Then for each~$1 \leq j \leq n$
+        we have~$f_{i_j}(x) \mathrel{\varepsilon_j} f_{i_j}(y)$
+            and so~$f(x) \mathrel{\widehat{\varepsilon_j}} f(y)$,
+            hence~$f(x) \mathrel\varepsilon f(y)$.
+        Thus~$f$ is uniformly continuous.
+
+To show uniqueness of~$f$, assume there is a uniformly continuous
+    map~$f'\colon Y \to \prod_i X_i$ with~$\pi_i \after f' = f_i$.
+Then~$(f'(y))_i = f_i(y) = (f(y))_i$ for every~$y \in Y$
+    and so~$f' = f$.
+\end{solution}
 
 \backmatter
 \fancyfoot[CE]{}
