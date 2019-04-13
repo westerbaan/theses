@@ -762,6 +762,21 @@ To show uniqueness of~$f$, assume there is a uniformly continuous
 Then~$(f'(y))_i = f_i(y) = (f(y))_i$ for every~$y \in Y$
     and so~$f' = f$.
 \end{solution}
+\begin{solution}{ultranormscalar}%
+    Let~$\scrB$ be a von Neumann algebra and~$X$
+        a right $\scrB$-module with~$\scrB$-valued inner product.
+    We will show that~$x \mapsto xb$ is ultranorm continuous
+        for any~$b \in \scrB$.
+    It is sufficient to show it is ultranorm continuous at~$0$,
+        so assume~$x_\alpha \to 0$ ultranorm for some net~$x_\alpha$ in~$X$.
+Let~$f\colon \scrB \to \C$ be any np-map.
+    Then~$\|x_\alpha b\|_f^2  
+        = f([x_\alpha b, x_\alpha b])
+        = f(b^* [x_\alpha , x_\alpha ]b)
+        \leq \|b^*b\| f([x_\alpha, x_\alpha])
+        = \|b\|^2 \|x_\alpha \|_f^2 \to 0$
+        thus~$x_\alpha b \to 0$ ultranorm as well.
+\end{solution}
 
 \backmatter
 \fancyfoot[CE]{}
