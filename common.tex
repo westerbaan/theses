@@ -11,60 +11,27 @@ paperheight=240truemm}
 %\usepackage[frame,noinfo,width=176truemm,height=246truemm,center]{crop}
 \usepackage[noinfo,width=176truemm,height=246truemm,center]{crop}
 
-\usepackage{ccicons}
-\usepackage{cite}
-\usepackage{caption}
-\usepackage{xfrac}
-\usepackage{xparse}
-\usepackage{relsize}
-\usepackage{colortbl}
-\usepackage{bussproofs}
-\usepackage{xcolor}
-\usepackage{graphicx}
-\usepackage{makeidx}
-\usepackage{xstring}
-\usepackage{braket}
-\usepackage{mathtools}
-\usepackage{multicol}
-\usepackage{marginnote}
-\usepackage{ifthen}
-\usepackage{xifthen}
-\usepackage{paralist}
-\usepackage{calc}
-\usepackage{tikz}
-\usepackage{tikz-cd}
-\usetikzlibrary{calc,arrows,matrix,decorations.pathreplacing}
-\usepackage{picins}
-\usepackage{amssymb}
-\usepackage{amsmath}
-\usepackage{mathrsfs}
-\usepackage{nicefrac}
-\usepackage{stmaryrd}
-\usepackage{sectsty}
-\usepackage{xr}
-\usepackage{tikz}
-\usepackage[all]{xypic}
-\usepackage{hyperref} % <- should be last because it redefined \ref, etc..
+\input{common-lite}
 
-\renewcommand{\thefootnote}{\fnsymbol{footnote}}
-
-% for in main.bib
-\newcommand{\doi}[1]{\href{https://doi.org/#1}{doi:#1}}
-\newcommand{\arXiv}[1]{\href{https://arxiv.org/abs/#1}{arXiv:#1}}
+% Refer to a parsec.
+\RenewDocumentCommand{\sref}{m}{\textSref{%
+	\ifthenelse{%
+		\equal{\value{parsec}}{\ourrawref{#1::parsec}}%
+	}{%
+		\ref{#1::point}%
+	}{%
+        \ref{#1}%
+	}%
+}}
 
 
-\newcommand{\purl}[1]{\href{#1}{#1}}
-
-\newcommand{\spacingfix}[0]{\vspace{-1\baselineskip}\ignorespaces}
-% used to correct the spacing issues when a point is ended with 
-% an \end{enumerate} or \end{equation}
-
-\newcommand{\IGNORE}[1]{}
-
-\newcommand{\colofon}[4]{%
-\vspace*{8em}
+\newcommand{\colofon}[5]{%
+\vspace*{4em}
 \noindent
 \begin{center}
+    #5
+    \vspace{3em}
+
     \textcolor{darkblue}{\textsf{\textbf{ Identifiers}}}
     \vspace{.5em}
 
@@ -115,211 +82,6 @@ Where applicable,
 \newpage
 }
 
-\definecolor{pitchblack}{cmyk}{1 1 1 1}
-\definecolor{pitchgray}{cmyk}{.5 .5 .5 .5}
-
-% macros concerning textstyle
-\colorlet{darkgreen}{green!50!pitchblack}
-\colorlet{darkblue}{blue!75!pitchblack}
-\colorlet{lightblue}{blue!50!white}
-\colorlet{lightgray}{pitchgray!50!white}
-\colorlet{darkgray}{pitchgray!75!pitchblack}
-\colorlet{darkred}{red!75!pitchblack}
-
-\allsectionsfont{\sffamily\color{darkblue}}
-
-\newcommand{\textPointHeaderI}[1]{\textcolor{darkblue}{\textbf{\textsf{#1}}}}
-\newcommand{\textPointHeaderII}[1]{\textcolor{darkblue}{\textsf{#1}}}
-\newcommand{\textPointHeaderIII}[1]{\textcolor{lightgray}{\textsf{#1}}}
-\newcommand{\textParsecNumber}[1]{\textcolor{darkblue}{\textbf{\textsf{#1}}}}
-\newcommand{\textPointNumberI}[1]{\textcolor{darkblue}{\textsf{#1}}}
-\newcommand{\textPointNumberII}[1]{\textcolor{lightblue}{\textsf{#1}}}
-\newcommand{\textPointNumberIII}[1]{\textcolor{lightgray}{\textsf{#1}}}
-\newcommand{\textDefine}[1]{\textcolor{darkblue}{#1}}
-\newcommand{\textSref}[1]{\textsf{#1}}
-\newcommand{\textTodo}[1]{\textcolor{darkred}{#1}}
-\newcommand{\textRemark}[1]{\textcolor{purple}{#1}}
-
-\newcommand{\Define}[1]{\textDefine{#1}}
-
-\newcommand{\grayed}[1]{\textcolor{darkgray}{#1}}
-
-\renewcommand{\leq}{\leqslant}
-\renewcommand{\geq}{\geqslant}
-\renewcommand{\nleq}{\not\leqslant}
-\renewcommand{\ngeq}{\not\geqslant}
-
-\newcommand{\Cat}[1]{\mathbf{#1}}
-\newcommand{\cW}[1]{\Cat{cW}^*_{\text{\textsc{#1}}}}
-\newcommand{\haW}[1]{\Cat{haW}^*_{\text{\textsc{#1}}}}
-\newcommand{\W}[1]{\Cat{W}^*_{\text{\textsc{#1}}}}
-\newcommand{\dW}[1]{\Cat{dW}^*_{\text{\textsc{#1}}}}
-\newcommand{\cCstar}[1]{\Cat{cC}^*_{\text{\textsc{#1}}}}
-\newcommand{\Cstar}[1]{\Cat{C}^*_{\text{\textsc{#1}}}}
-\newcommand{\CH}{\Cat{CH}}
-\newcommand{\op}[1]{{#1}{^{\mathsf{op}}}}
-
-\newcommand{\ketbra}[2]{\left|#1\right>\!\left<#2\right|}
-\newcommand{\uleq}{\mathbin{\rotatebox[origin=c]{90}{$\leq$}}}
-\newcommand{\TR}{\mathop{\mathrm{tr}}}
-\newcommand{\wn}{\mathop{\mathrm{wn}}}
-
-\newcommand{\bsp}{\scrB}
-
-\NewDocumentCommand{\vmleq}{o}{\mathrel{%
-\IfNoValueTF{#1}{\lesssim}{\lesssim_{#1}}}}
-
-% Common symbols
-\newcommand{\C}{\mathbb{C}}
-\newcommand{\N}{\mathbb{N}}
-\newcommand{\Z}{\mathbb{Z}}
-\newcommand{\R}{\mathbb{R}}
-\newcommand{\I}{\mathbb{I}}
-\newcommand{\spec}{\mathrm{sp}}
-\newcommand{\scrA}{\mathscr{A}}
-\newcommand{\scrB}{\mathscr{B}}
-\newcommand{\scrC}{\mathscr{C}}
-\newcommand{\scrD}{\mathscr{D}}
-\newcommand{\scrE}{\mathscr{E}}
-\newcommand{\scrG}{\mathscr{G}}
-\newcommand{\scrH}{\mathscr{H}}
-\newcommand{\scrF}{\mathscr{F}}
-\newcommand{\scrP}{\mathscr{P}}
-\newcommand{\scrK}{\mathscr{K}}
-\newcommand{\scrL}{\mathscr{L}}
-\newcommand{\scrR}{\mathscr{R}}
-\newcommand{\scrS}{\mathscr{S}}
-\newcommand{\scrT}{\mathscr{T}}
-\newcommand{\scrX}{\mathscr{X}}
-\newcommand{\scrY}{\mathscr{Y}}
-\newcommand{\scrZ}{\mathscr{Z}}
-\newcommand{\scrV}{\mathscr{V}}
-\newcommand{\scrW}{\mathscr{W}}
-
-\newcommand{\ceil}[1]{\left\lceil#1\right\rceil}
-\newcommand{\cceil}[1]{\left\lceil\!\!\left\lceil#1\right\rceil\!\!\right\rceil}
-\newcommand{\cfloor}[1]{\left\lfloor\!\!\left\lfloor#1\right\rfloor\!\!\right\rfloor}
-\newcommand{\floor}[1]{\left\lfloor#1\right\rfloor}
-\newcommand{\ceill}[1]{\left\lceil#1\right)}
-\newcommand{\ceilr}[1]{\left(#1\right\rceil}
-\newcommand{\floorl}[1]{\left\lfloor#1\right)}
-\newcommand{\floorr}[1]{\left(#1\right\rfloor}
-\newcommand{\absl}[1]{\left|#1\right)}
-\newcommand{\absr}[1]{\left(#1\right|}
-
-\newcommand{\linf}{\ell^\infty}
-\newcommand{\incfun}{\mathcal{J}}
-\newcommand{\limp}{\mathbin{\multimap}}
-\newcommand{\Mon}{\mathrm{Mon}}
-\newcommand{\CMon}{\mathrm{cMon}}
-\newcommand{\nsp}{\mathrm{nsp}}
-\newcommand{\qbit}{\mathsf{qubit}}
-\newcommand{\bit}{\mathsf{bit}}
-\DeclarePairedDelimiter{\sem}{\llbracket}{\rrbracket}
-
-\newcommand{\Real}[1]{#1_{\R}}
-\newcommand{\Imag}[1]{#1_{\I}}
-\newcommand{\sa}[1]{#1_{\R}}
-\newcommand{\pos}[1]{#1_{+}}
-\newcommand{\bang}{\mathord{!}}
-
-\newcommand\T{\mathrm{t}} % for transpose
-
-\DeclareMathOperator{\dom}{dom}
-\DeclareMathOperator{\length}{length}
-\DeclareMathOperator{\interior}{in}
-\DeclareMathOperator{\Stat}{Stat}
-\DeclareMathOperator{\Pred}{Pred}
-\DeclareMathOperator{\Pure}{Pure}
-\DeclareMathOperator{\SPred}{SPred}
-\DeclareMathOperator{\IM}{im}
-%\newcommand\BOX{{\rlap{\kern-1pt\rotatebox[origin=c]{45}{$\diamond$}}\phantom{\diamond}}}
-\newcommand\BOX{%
-    % {\tikz[baseline]{\draw (-0.3ex,0) rectangle (0.3ex,0.6ex)}}%
-    {\rlap{\kern .5pt\tikz[baseline]{\draw[line width=0.08ex] (0,0) rectangle (0.6ex,0.6ex)}}%
-    \phantom{\diamond}}}
-\DeclareMathOperator{\IMperp}{im^\perp}
-\DeclareMathOperator{\cok}{cok}
-\DeclareMathOperator{\Par}{Par}
-\DeclareMathOperator{\Tot}{Tot}
-\newcommand{\andthen}[2]{#1 \mathbin{\&} #2}
-\newcommand\asrt{\mathrm{asrt}}
-\newcommand\sef{\mathrm{seff}}
-\newcommand\pproj{\mathord{\vartriangleright}}
-\newcommand{\cmpr}[2]{\ensuremath{\{#1|{\kern.2ex}#2\}}}
-\newcommand{\id}{\mathrm{id}}
-\DeclareMathOperator{\NStat}{NStat}
-\DeclareMathOperator{\Scal}{Scal}
-\DeclareMathOperator{\Cont}{C}
-\DeclareMathOperator{\Colim}{Colim}
-\DeclareMathOperator{\hZ}{hZ}
-\DeclareMathOperator{\Inv}{Inv}
-\DeclareMathOperator{\Proj}{Proj}
-\DeclareMathOperator{\supp}{supp}
-\DeclareMathOperator{\Ker}{Ker}
-\DeclareMathOperator{\Ran}{Ran}
-\DeclareMathOperator{\Nsb}{Nsb}
-\newenvironment{spmatrix}{%
-    \left(\begin{smallmatrix}}{%
-    \end{smallmatrix}\right)}
-
-\newcommand\after{\mathop{\circ}}
-\newcommand\hafter{\mathop{\hat\circ}}
-\newcommand\hotimes{\mathbin{\hat{\otimes}}}
-\newcommand\ad{\mathrm{ad}}
-\newcommand{\uwlim}{\qopname\relax m{uwlim}}
-\newcommand{\unlim}{\qopname\relax m{unlim}}
-\newcommand{\uslim}{\qopname\relax m{uslim}}
-\newcommand\concat{\mathbin{\raisebox{1ex}{\scalebox{.7}{$\frown$}}}}
-\newcommand\ncp{\mathrm{ncp}}
-\newcommand\pto{\rightharpoonup}
-\newcommand\pfrom{\leftharpoonup}
-\newcommand{\pullback}[1][dr]{\save*!/#1-1.2pc/#1:(-1,1)@^{|-}\restore}
-\newcommand\vN{\mathsf{vN}}
-\newcommand\CvN{\mathsf{CvN}}
-\newcommand\OUG{\mathsf{OUG}}
-\newcommand\EJA{\mathsf{EJA}}
-\newcommand\OUS{\mathsf{OUS}}
-\newcommand\SET{\mathsf{Set}}
-\newcommand\CRng{\mathsf{CRng}}
-\newcommand\Rng{\mathsf{Rng}}
-\newcommand\bCH{\mathsf{CH}}
-\newcommand\AConvM{\mathsf{AConv}_M}
-\newcommand\EMod{\mathsf{EMod}}
-\newcommand{\bigovee}{\mathop{\vphantom{\sum}\mathchoice%
-        {\vcenter{\hbox{\huge $\ovee$}}}%
-        {\vcenter{\hbox{\Large $\ovee$}}}%
-        {\ovee}{\ovee}}\displaylimits}
-\DeclareMathOperator{\Kl}{\mathcal{K}\!\ell}
-\newcommand\rfrac[2]{\reflectbox{\nicefrac{\reflectbox{\ensuremath{#1}}}{\reflectbox{\ensuremath{#2}}}}}
-
-\makeatletter
-\newcommand{\bigperp}{%
-  \mathop{\mathpalette\bigp@rp\relax}%
-  \displaylimits
-}
-
-\newcommand{\bigp@rp}[2]{%
-  \vcenter{
-    \m@th\hbox{\scalebox{\ifx#1\displaystyle2.1\else1.5\fi}{$#1\perp$}}
-  }%
-}
-\makeatother
-
-
-\makeatletter
-\def\ourrawref#1{%
-    \expandafter\expandafter\expandafter
-    \@car\csname r@#1\endcsname\@nil
-}
-\makeatother
-
-% number a single equation in an align*
-% http://tex.stackexchange.com/questions/42726/
-\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
-
-% typesetting theorems
-\newcommand{\qed}{\hfill\textcolor{darkblue}{\ensuremath{\square}}}
 
 
 % used for arithmetic
@@ -460,17 +222,6 @@ Where applicable,
 \setcounter{pointdepth}{\value{pointdepth}-1}%
 \ignorespaces%
 }
-
-% Refer to a parsec.
-\NewDocumentCommand{\sref}{m}{\textSref{%
-	\ifthenelse{%
-		\equal{\value{parsec}}{\ourrawref{#1::parsec}}%
-	}{%
-		\ref{#1::point}%
-	}{%
-        \ref{#1}%
-	}%
-}}
 
 % Adjust footer and header:
 \usepackage{fancyhdr}
@@ -621,15 +372,3 @@ Where applicable,
                {\if@restonecol\onecolumn\else\clearpage\fi}
 \makeatother
 
-
-\NewDocumentEnvironment{solution}{g}{%
-    \leavevmode\unskip%
-    \par\vskip.6em\noindent%
-    \textPointHeaderI{Solution of~\sref{#1}.}
-    }{\leavevmode\unskip\ignorespaces}
-
-\NewDocumentEnvironment{erratum}{g}{%
-    \leavevmode\unskip%
-    \par\vskip.6em\noindent%
-    \textPointHeaderI{Erratum to~\sref{#1}.}
-    }{\leavevmode\unskip\ignorespaces}
