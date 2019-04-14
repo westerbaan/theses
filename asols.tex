@@ -123,4 +123,34 @@ Then~$\| \,x\|x\|^{-1}\,\|\leq 1$,
     and thus $\|Tx\|\leq r\|x\|$,
     making $r$ is a bound for~$T$.
 \end{solution}
+\begin{solution}{parsec-40.100}%
+Taking~$y:=x-x'$ we see that
+$\|y\|^2 = \left<y,y\right>
+= \left<y,x\right> - \left<y,x'\right> = 0$,
+so~$\|y\|=0$,
+so~$y\equiv x-x'=0$,
+and thus~$x=x'$.
+
+For the second part,
+let~$T_1,T_2\colon \scrH\to\scrK$
+be operators between pre-Hilbert spaces~$\scrH$
+and~$\scrK$
+that are both adjoint to an operator~$S\colon \scrK\to\scrH$.
+We must show that~$T_1=T_2$.
+Given $x\in\scrH$ we have
+\begin{equation*}
+\left<T_1x,y\right>
+\ = \ 
+\left<x,Sy\right>
+\ = \ 
+\left<T_2x,y\right>
+\qquad 
+    \text{for all~$y\in\scrK$,}
+\end{equation*}
+and so~$T_1x=T_2x$ by the previous part.
+Whence~$T_1=T_2$.
+
+
+
+\end{solution}
 \end{document}
