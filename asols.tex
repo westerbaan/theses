@@ -1,0 +1,92 @@
+\documentclass[b5page]{book}
+\input{common}
+\externaldocument{a}
+\externaldocument{b}
+
+\begin{document}
+\appendix
+\chapter{Solutions to Exercises}
+
+\begin{solution}{parsec-40.30}%
+Let~$\scrX$, $\scrY$ and~$\scrZ$ be normed (complex) vector spaces.
+\begin{enumerate}
+\item
+To show that the operator norm does indeed
+give a norm on~$\scrB(\scrX,\scrY)$,
+the following
+three observations
+regarding $S,T\in\scrB(\scrX,\scrY)$
+suffice.
+\begin{enumerate}
+\item
+We have $\|S+T\|\leq \|S\|+\|T\|$.
+
+To see this,
+note that
+given~$x\in \scrX$,
+we have $\|Sx\|\leq \|S\|\|x\|$
+and $\|Tx\|\leq \|T\|\|x\|$---because $\|S\|$ and $\|T\|$ are bounds
+for~$S$ and~$T$, respectively,---and so 
+\begin{equation*}
+    \|(S+T)x\|
+\ \leq\  \|Sx\|+\|Tx\|
+\ \leq\  (\|S\|+\|T\|)\|x\|.
+\end{equation*}
+Thus~$\|S\|+\|T\|$ is a bound for~$S+T$.
+Since~$\|S+T\|$ is the least bound for~$S+T$,
+we get~$\|S+T\|\leq \|S\|+\|T\|$.
+
+\item
+We have
+$\|\lambda S\|=\left|\lambda \right| \|S\|$
+for any $\lambda \in \C$.
+
+Surely this statement is correct when~$\lambda= 0$.
+To see why it's correct for~$\lambda \neq 0$,
+note that
+$r\mapsto \left|\lambda\right| r$
+sends bounds of~$S$ to bounds of~$\lambda S$.
+Indeed,
+if~$r\in[0,\infty)$ is a bound of~$S$,
+then $\|Sx\|\leq r\|x\|$
+for all~$x\in \scrX$,
+and so~$\|\lambda Sx\| \equiv 
+\left|\lambda \right|\|Sx\|\leq \left|\lambda\right| r \|x\|$
+for all~$x\in\scrX$,
+that is, $\left|\lambda\right|r$
+is a bound for~$\lambda S$.
+Similarly~$r\mapsto \left|\lambda\right|^{-1} S$
+sends bounds of $\lambda S$
+to bounds of~$S$.
+Since the two aforementioned maps are each other's inverse,
+and both are order preserving,
+$r\mapsto \left|\lambda \right|r$
+gives an order isomorphism from 
+the bounds of~$S$ to the bounds of~$\lambda S$,
+and, in particular,
+    sends the least bound of~$S$ (being $\|S\|$)
+to the least bound of~$\lambda S$
+        (being~$\|\lambda S\|$),
+that is,
+$\left|\lambda\right|\|S\|=\|\lambda S\|$.
+\item
+We have $\|S\|=0$ iff~$S=0$.
+
+Indeed, the following are equivalent:
+$\|S\|=0$; the number~$0$ is a bound for~$S$;
+$\|Sx\|\leq 0$ for all~$x\in\scrX$;
+$Sx=0$ for all~$x\in\scrX$;
+$S=0$.
+\end{enumerate}
+\item
+Since $\|STx\|\leq \|S\| \|Tx\|
+\leq \|S\|\|T\|\|x\|$
+for all~$x\in \scrX$
+the operator $ST$ is bounded by
+$\|S\|\|T\|$.
+\item
+Indeed, $ \|\id x \|\equiv \|x\|\leq  1\cdot\|x\|$
+for all~$x\in\scrX$.
+\end{enumerate}
+\end{solution}
+\end{document}

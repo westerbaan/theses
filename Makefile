@@ -5,6 +5,9 @@ all: a.pdf b.pdf bstellingen.pdf berr-sep.pdf
 berr-sep.pdf: common-lite.tex berr-sep.tex berr.tex
 	latexmk -pdf -use-make berr-sep.tex
 
+asols.pdf: a.pdf common-lite.tex asols.tex a.tex
+	latexmk -pdf -use-make asols.tex
+
 common.tex: common-lite.tex
 
 common-lite.tex: main.bib
