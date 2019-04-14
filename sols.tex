@@ -810,6 +810,32 @@ Thus~$\sum_{e \in S} \langle x,e\rangle\langle e, x\rangle
         \sum_{e \in S} e \langle e,x\rangle \bigr\rangle
         \to \langle x, x\rangle $ ultraweakly, as desired.
 \end{solution}
+\begin{solution}{hilbmod-adjoint-exists}%
+Let~$T\colon X\to Y$ be a~$\scrB$-linear map between Hilbert~$\scrB$-modules.
+Assume~$X$ is self dual.
+For any~$y \in Y$, the map~$x \mapsto \langle y, Tx\rangle$
+    is~$\scrB$-linear
+    and so by self-duality of~$X$,
+    there is a~$t_y \in X$
+    with~$\langle t_y, x \rangle = \langle y, Tx\rangle$
+    for all~$x \in X$.
+For any~$z,y \in Y$ and~$x \in X$,
+        we have~$\langle t_z + t_y, x\rangle
+            = \langle t_z, x\rangle + \langle t_y, x\rangle
+            = \langle z, Tx\rangle + \langle y, Tx \rangle
+            = \langle z + y, Tx \rangle
+            = \langle t_{z+y}, x\rangle$.
+        Thus~$t_z + t_y = t_{z+y}$
+For any~$\lambda \in \C$, $y \in Y$ and~$x \in X$
+    we have~$\langle \lambda t_y, x \rangle
+        =  \langle \lambda y, T x\rangle
+        = \langle t_{\lambda y}, x \rangle$
+        and so~$\lambda t_y = t_{\lambda y}$.
+Hence~$T^* y \equiv t_y$ defines a linear map from~$Y$ to~$X$
+    with~$\langle y, Tx\rangle = \langle t_y, x\rangle
+    \equiv \langle T^*y, x \rangle$ for all~$x\in X$ and~$y \in Y$.
+So~$T^*$ is the adjoint of~$T$.
+\end{solution}
 
 \backmatter
 \fancyfoot[CE]{}
