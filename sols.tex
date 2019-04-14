@@ -861,6 +861,32 @@ Then by~\sref{innerprod-ultraweak}
             T\widehat{x_\alpha}\rangle \geq 0$.
             So indeed~$T \geq 0$, as desired.
 \end{solution}
+\begin{solution}{hilbmod-adj-vector-ncp}%
+   Let~$\scrA$ be a C$^*$-algebra
+        with~$a_1, \ldots, a_n \in \scrA$.
+    Define~$\varphi \colon \scrA \to M_n \scrA$
+        by~$\varphi(d) \equiv (a_i^* d a_j)_{ij}$.
+        We have to show~$\varphi$ is an ncp-map.
+Recall~$\scrA$ is a self-dual Hilbert~$\scrA$-module
+    with~$\langle a,b\rangle \equiv a^*b$
+    and so its~$n$-fold direct product~$\scrA^n$
+    is also self dual.
+Define~$T\colon \scrA^n \to \scrA$
+    by~$T((b_i)_i) \equiv \sum_i b_i a_i$
+    (i.e.~$T$ is the row-vector~$(a_i)_i$.)
+Clearly~$T$ is~$\scrA$-linear.
+    It is also bounded: $\| T (b_i)_i \|^2 = \sum_i \|b_i a_i\|^2
+        \leq \sum_i A \|b_i\|^2 = A \| (b_i)_i\|^2 $,
+            where~$A \equiv \max_i \|a_i\|^2$.
+    It's easy that~$T^*(b) \equiv (a_i^* b)_i$ is the adjoint of~$T$.
+We may identify~$\scrB^a(\scrA^n) = M_n$
+    and then~$\ad_T(d)\,  ((b_i)_i) = T^* d T (b_i)_i
+                =  T^* d \sum_i a_i b_i
+                = (\sum_i (a_j^* d a_i) b_i)_j 
+                = \varphi(d) \, ((b_i)_i)$.
+Thus~$\ad_T = \varphi$.
+    By~\sref{hilbmod-ad-ncp} the map~$\ad_T$ and thus~$\varphi$ is as well.
+\end{solution}
 
 \backmatter
 \fancyfoot[CE]{}
