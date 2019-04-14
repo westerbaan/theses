@@ -89,4 +89,38 @@ Indeed, $ \|\id x \|\equiv \|x\|\leq  1\cdot\|x\|$
 for all~$x\in\scrX$.
 \end{enumerate}
 \end{solution}
+\begin{solution}{parsec-40.40}%
+Recall that we must prove that
+    \begin{equation*}
+r\|T\|\ = \ \sup_{x\in (\scrX)_r} \|Tx\|.
+    \end{equation*}
+Since $(\scrX)_r \equiv \{x\in\scrX\colon \|x\|\leq r\}
+    = \{rx\colon x\in (\scrX)_1\}$
+    the problem becomes
+\begin{equation*}
+r\|T\|\ = \ \sup_{x\in (\scrX)_1} \|Trx\|
+    \,\equiv\, r\sup_{x\in (\scrX)_1} \|Tx\|.
+\end{equation*}
+So we've reduced the 
+problem to the case~$r=1$, that is, to showing that
+\begin{equation*}
+    \|T\|\ = \ \sup_{x\in (\scrX)_1} \|Tx\|.
+\end{equation*}
+Since for~$x\in (\scrX)_1$
+we have $\|x\|\leq 1$,
+and so~$\|Tx\|\leq \|T\|\,\|x\|\leq \|T\|$,
+we see that~$\sup_{x\in (\scrX)_1} \|Tx\|\leq \|T\|$.
+For the other direction,
+    $\|T\|\leq \sup_{x\in (\scrX)_1} \|Tx\|$,
+    it suffices to show that
+ $r:=\sup_{x\in(\scrX)_1} \|Tx\|$
+is a bound for~$T$,
+that is, we must show given~$x\in\scrX$
+that $\|Tx\|\leq r\|x\|$.
+When~$x=0$ this is obvious, so we'll assume that~$x\neq 0$.
+Then~$\| \,x\|x\|^{-1}\,\|\leq 1$,
+    so $\|x\|^{-1} \|Tx\|\equiv \|\,T x \|x\|^{-1}\, \| \leq r$,
+    and thus $\|Tx\|\leq r\|x\|$,
+    making $r$ is a bound for~$T$.
+\end{solution}
 \end{document}
