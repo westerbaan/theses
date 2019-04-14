@@ -881,7 +881,7 @@ Then by~\sref{innerprod-ultraweak}
 Recall~$\scrA$ is a self-dual Hilbert~$\scrA$-module
     with~$\langle a,b\rangle \equiv a^*b$
     and so its~$n$-fold direct product~$\scrA^n$
-    is also self dual.
+    is also self dual (see also \sref{direct-prod-self-dual-basis}.)
 Define~$T\colon \scrA^n \to \scrA$
     by~$T((b_i)_i) \equiv \sum_i b_i a_i$
     (i.e.~$T$ is the row-vector~$(a_i)_i$.)
@@ -897,6 +897,52 @@ We may identify~$\scrB^a(\scrA^n) = M_n$
                 = \varphi(d) \, ((b_i)_i)$.
 Thus~$\ad_T = \varphi$.
     By~\sref{hilbmod-ad-ncp} the map~$\ad_T$ and thus~$\varphi$ is as well.
+\end{solution}
+\begin{solution}{direct-prod-self-dual-basis}%
+    Assume~$X$ and~$Y$ are self-dual Hilbert~$\scrB$-modules over a
+        von Neumann algebra~$\scrB$ with orthonormal bases~$E \subseteq X$
+        and~$F \subseteq Y$.
+Write~$G \equiv \{(e,0); \ e \in E\} \cup \{ (0,d); \ d \in D \}$.
+Clearly~$G$ is orthonormal.
+To show~$G$ is an orthonormal basis,
+    two conditions remain.
+For the first, let~$(x,y) \in X \oplus Y$ be given.
+As~$E$ and~$F$ are orthonormal bases
+    we know~$x = \sum_{e\in E} e \langle e,x\rangle$
+    and~$y = \sum_{f \in F} f \langle f,x\rangle$,
+    where the sums converge ultranorm.
+    The inclusions~$x \mapsto (x,0)$ and~$y \mapsto (0,y)$
+        are bounded~$\scrB$-linear and thus ultranorm continuous,
+        hence
+\begin{align*}
+        \sum_{g\in G} g \langle g, (x,y)\rangle
+        &\ =\  \Bigl(\sum_{e\in E}
+                        (e,0) \langle (e,0), (x,y) \rangle \Bigr)  \ +\ 
+                        \Bigl( \sum_{f \in F} 
+                        (0,f) \langle (0,f), (x,y) \rangle \Bigr) \\
+        &\ =\  \Bigl(\sum_{e\in E}
+                        (e,0) \langle e, x \rangle \Bigr) \ + \ 
+                        \Bigl( \sum_{f \in F} 
+                        (0,f) \langle f, y \rangle \Bigr) \\
+        &\ =\  \Bigl(\sum_{e \in E} e \langle e,x \rangle ,
+                \sum_{f \in F} f \langle f, y \rangle  \Bigr)\\
+                    & \ =\ (x,y),
+\end{align*}
+which proves the first condition.
+    For the second condition, let~$(b_g)_{g\in G}$
+    be some~$\ell^2$-summable family from~$\scrB$.
+The subfamilies~$(b_{e_0})_{e \in E}$
+    and~$(b_{0,f})_{f \in F}$
+    are~$\ell^2$-summable as well.
+Hence the
+    sums~$\sum_{e \in E} e b_{(e,0)}$
+    and~$\sum_{f \in F} f b_{(0,f)}$ converge ultranorm.
+Thus~$\sum_{e \in E} (e,0) b_{(e,0)}
+    + \sum_{f \in F} (0,f) b_{(0,f)}
+    =\sum_{g \in G} g b_g$ converges ultranorm as well.
+We have shown~$G$ is an orthonormal basis of~$X\oplus Y$.
+Consequently~$X \oplus Y$ is self dual
+    by~\sref{dils-selfdual}.
 \end{solution}
 
 \backmatter
