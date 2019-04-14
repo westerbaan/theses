@@ -34,6 +34,15 @@ proc.pdf: common.tex proc.tex
 misc.pdf: common.tex misc.tex
 	latexmk -pdf -use-make misc.tex
 
+bas_arxiv = a.aux a.idx a.ind b.bbl b.idx b.ind b.tex \
+			bfinal.tex bintr.tex boutlook.tex btitle.tex common.tex \
+			common-lite.tex dils.tex eff.tex bsols.tex parsec.xdy \
+			picins.sty berr.tex
+
+bas-arxiv.zip: b.pdf a.pdf $(bas_arxiv)
+	-rm bas-arxiv.zip
+	zip bas-arxiv.zip $(bas_arxiv)
+
 clean:
 	latexmk -CA
 	-rm *.{bbl,parsectoc,log}
