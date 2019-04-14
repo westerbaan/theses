@@ -944,6 +944,45 @@ We have shown~$G$ is an orthonormal basis of~$X\oplus Y$.
 Consequently~$X \oplus Y$ is self dual
     by~\sref{dils-selfdual}.
 \end{solution}
+\begin{solution}{selfdual-orthn-basis}%
+    Assume~$X$ is a self-dual Hilbert~$\scrB$-module for a von Neumann
+    algebra~$\scrB$. Suppose~$E \subseteq X$ is an orthonormal set.
+We will show~$E$ is an orthonormal basis of~$E^{\perp\perp}$.
+Clearly~$E$ is orthonormal.
+    Because of this, and the fact that~$E^{\perp\perp}$ is ultranorm
+        closed (by~\sref{hilbmod-projthm}) 
+        we know~$\sum_e b b_e$ converges ultranorm in~$E^{\perp\perp}$
+        for any~$\ell^2$-family $(b_e)_e$.
+Assume~$x \in E^{\perp\perp}$.
+To show~$E$ is an orthonromal base,
+    it only remains to be shown that~$x = \sum_e e \langle e, x\rangle$.
+Define~$x' \equiv x - \sum_e e \langle e, x\rangle$.
+By~\sref{hilbmod-projthm} we know~$E^{\perp\perp}$ is ultranorm closed
+    and so~$x' \in E^{\perp\perp}$.
+For any~$e_0\in E$
+    we also have~$\langle e_0, x'\rangle = \langle e_0,x \rangle
+            - \sum_{e \in E} \langle e_0, e\rangle\langle e, x\rangle
+            = 0 $ and so~$x' \in E^{\perp}$.
+    Hence~$\langle x',x'\rangle = 0$, so indeed~$x = \sum_e e\langle e, x\rangle$
+        and~$E$ is an orthonormal basis of~$E^{\perp\perp}$.
+
+For the second part, assume~$x \in X$.
+    By Parseval's identity (see \sref{mod-parseval})
+        we have~$\langle x, x\rangle = \sum_e \langle x,e \rangle\langle e,x\rangle$
+        for any~$x \in E^{\perp\perp}$.
+To prove the converse,
+    assume~$\langle x, x\rangle = \sum_e \langle x,e \rangle\langle e,x\rangle$.
+By~\sref{hilbmod-projthm} we know~$x = x' + x''$
+    for~$x' \in E^{\perp\perp}$  and~$x'' \in E^\perp$.
+Note~$\langle e, x' \rangle = \langle e, x\rangle$ for any~$e \in E$
+    and so by Parseval's identity for~$E^{\perp\perp}$
+    we see~$\langle x',x'\rangle = \sum_e \langle x, e\rangle\langle e, x\rangle
+        = \langle x, x\rangle$.
+Now, using~$\langle x'',x'\rangle = 0$
+    we see~$\langle x,x\rangle = \langle x'', x''\rangle + \langle x', x'\rangle
+        = \langle x'', x''\rangle + \langle x, x\rangle$
+        and so~$\langle x'', x''\rangle=0$, whence~$x \in E^{\perp\perp}$.
+\end{solution}
 
 \backmatter
 \fancyfoot[CE]{}
