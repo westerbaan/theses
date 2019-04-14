@@ -1,141 +1,4 @@
-\documentclass[b5page]{book}
-\input{common}
-\externaldocument{a}
-\externaldocument{b}
-
-\author{Abraham Westerbaan \and Bas Westerbaan}
-
-\title{
-    {\large Solutions of Exercises from and Errata to} \\
-    \emph{The Category of Von Neumann Algebras}\\
-    {\large and}\\
-    \emph{Dagger and Dilation\\ {\large in the Category of Von Neumann Algebras}}}
-
-\begin{document}
-
-\maketitle
-
-\begin{erratum}{physics-stinespring}%
-The second part of the exercise starts with
-    ``Conclude that any quantum channel~$\Phi\colon \scrB(\scrK) \to \scrB(\scrH)$ \ldots''.
-This should have read
-    ``Conclude that any quantum channel~$\Phi$ from~$\scrH$ to itself \ldots''
-\end{erratum}
-\begin{erratum}{ess-uniq-pur}%
-The third-to-last sentence reads
-``Derive from the latter
-that for each~$y \in \scrK'$ and rank-one projector~$e \in \scrH$,
-there is a~$y' \in \scrK'$
-with~$U_0 (e \otimes y) = e \otimes y'$.''
-This should have been
-``Derive from the latter
-that for each~$y \in \scrK'$ and unit vector~$e \in \scrH$,
-there is a~$y' \in \scrK'$
-with~$U_0 (e \otimes y) = e \otimes y'$.''.
-\end{erratum}
-\begin{erratum}{moved-dfn-selfdual}%
-    A pre-Hilbert~$\scrB$-module~$X$ is \Define{self dual}
-    if every bounded~$\scrB$-linear~$\tau \colon X \to \scrB$
-    is of the form~$\tau(x) = \langle t, x\rangle$ for some~$t \in X$.
-In print the condition that~$\tau$ should be bounded
-        was accidentally lost when it was moved from~\sref{dils-selfdual}.
-\end{erratum}
-\begin{erratum}{dils-uniform-spaces-basics}%
-The assumption  that the net~$x_\alpha$ is Cauchy in point 3
-    is superfluous.
-\end{erratum}
-\begin{erratum}{hilbmod-adjoint-exists}%
-The map~$T$ should be presumed to be bounded.
-\end{erratum}
-\begin{erratum}{hilmod-fixed-on-V}%
-The C$^*$-algebra~$\scrB$ isn't assumed to be a von Neumann algebra,
-    which it should have been (for otherwise~\sref{dils-completion} wouldn't
-    be applicable.)
-\end{erratum}
-\clearpage
-\begin{solution}{parsec-40.30}%
-Let~$\scrX$, $\scrY$ and~$\scrZ$ be normed (complex) vector spaces.
-\begin{enumerate}
-\item
-To show that the operator norm does indeed
-give a norm on~$\scrB(\scrX,\scrY)$,
-the following
-three observations
-regarding $S,T\in\scrB(\scrX,\scrY)$
-suffice.
-\begin{enumerate}
-\item
-We have $\|S+T\|\leq \|S\|+\|T\|$.
-
-To see this,
-note that
-given~$x\in \scrX$,
-we have $\|Sx\|\leq \|S\|\|x\|$
-and $\|Tx\|\leq \|T\|\|x\|$---because $\|S\|$ and $\|T\|$ are bounds
-for~$S$ and~$T$, respectively,---and so 
-\begin{equation*}
-    \|(S+T)x\|
-\ \leq\  \|Sx\|+\|Tx\|
-\ \leq\  (\|S\|+\|T\|)\|x\|.
-\end{equation*}
-Thus~$\|S\|+\|T\|$ is a bound for~$S+T$.
-Since~$\|S+T\|$ is the least bound for~$S+T$,
-we get~$\|S+T\|\leq \|S\|+\|T\|$.
-
-\item
-We have
-$\|\lambda S\|=\left|\lambda \right| \|S\|$
-for any $\lambda \in \C$.
-
-Surely this statement is correct when~$\lambda= 0$.
-To see why it's correct for~$\lambda \neq 0$,
-note that
-$r\mapsto \left|\lambda\right| r$
-sends bounds of~$S$ to bounds of~$\lambda S$.
-Indeed,
-if~$r\in[0,\infty)$ is a bound of~$S$,
-then $\|Sx\|\leq r\|x\|$
-for all~$x\in \scrX$,
-and so~$\|\lambda Sx\| \equiv 
-\left|\lambda \right|\|Sx\|\leq \left|\lambda\right| r \|x\|$
-for all~$x\in\scrX$,
-that is, $\left|\lambda\right|r$
-is a bound for~$\lambda S$.
-Similarly~$r\mapsto \left|\lambda\right|^{-1} S$
-sends bounds of $\lambda S$
-to bounds of~$S$.
-Since the two aforementioned maps are each other's inverse,
-and both are order preserving,
-$r\mapsto \left|\lambda \right|r$
-gives an order isomorphism from 
-the bounds of~$S$ to the bounds of~$\lambda S$,
-and, in particular,
-    sends the least bound of~$S$ (being $\|S\|$)
-to the least bound of~$\lambda S$
-        (being~$\|\lambda S\|$),
-that is,
-$\left|\lambda\right|\|S\|=\|\lambda S\|$.
-\item
-We have $\|S\|=0$ iff~$S=0$.
-
-Indeed, the following are equivalent:
-$\|S\|=0$; the number~$0$ is a bound for~$S$;
-$\|Sx\|\leq 0$ for all~$x\in\scrX$;
-$Sx=0$ for all~$x\in\scrX$;
-$S=0$.
-\end{enumerate}
-\item
-Since $\|STx\|\leq \|S\| \|Tx\|
-\leq \|S\|\|T\|\|x\|$
-for all~$x\in \scrX$
-the operator $ST$ is bounded by
-$\|S\|\|T\|$.
-\item
-Indeed, $ \|\id x \|\equiv \|x\|\leq  1\cdot\|x\|$
-for all~$x\in\scrX$.
-\end{enumerate}
-\end{solution}
-\clearpage
+\oldchapter{Solutions to exercises}\label{sols}
 \begin{solution}{physics-stinespring}%
 To prove the first statement,
 let~$\varphi \colon \scrB(\scrH) \to \scrB(\scrK)$ be any ncp-map.
@@ -1251,23 +1114,53 @@ To show~$\vartheta$ is surjective,
     It follows~$\vartheta$ is an isomorphism~$X \cong
     \ell^2((\langle e,e\rangle)_{e \in E})$.
 \end{solution}
+\begin{solution}{onb1}%
+    Let~$X$ be a self-dual Hilbert~$\scrB$-module~$X$
+        for some von Neumann algebra~$\scrB$
+        with orthonormal basis~$(e_i)_{i\in I}$.
+Assume~$(u_i)_{i \in I}$ is a family partial isometries
+    with~$u_iu_i^* = \langle e_i, e_i \rangle$.
+    We will show~$(e_iu_i)_{i \in I}$ is an orthonormal basis
+    of~$X$.
+For brevity, write~$d_i \equiv e_iu_i$.
+To start, note~$\langle d_i, d_j\rangle
+            = u_i^* \langle e_i, e_j\rangle u_j$,
+            which is zero if~$i \neq j$.
+If~$i = j$, then~$\langle d_i, d_i\rangle = u_i^* \langle e_i, e_i\rangle u_i
+            = u_i^*u_i $ which is a projection.
+    So~$(d_i)_i$ is orthonormal.
+Hence~$\sum_i d_i b_i$ converges for any~$\ell^2$-family~$(d_i)_i$.
+It remains to be shown that~$x = \sum_i d_i \langle d_i, x\rangle$.
+Note~$\sum_i d_i \langle d_i, x\rangle
+    =  \sum_i e_i \langle e_i u_i u_i^*, x \rangle
+    =  \sum_i e_i \langle e_i \langle e_i, e_i\rangle, x \rangle
+    =  \sum_i e_i \langle e_i, x \rangle = x$,
+    so indeed~$(d_i)_i$ is an orthonormal basis of~$X$.
+
+For the next part, assume~$(p_i)_{i \in I}$ and~$(q_i)_{i \in I}$
+    are projections with~$p_i \sim q_i$.
+Let~$p_i$ denote the partial projection with~$u_i^* u_i = q_i$
+    and~$u_i u_i^* = p_i$.
+Consider~$\ell^2((p_i)_{i \in I})$.
+Define~$((\delta_i)_i) \in \ell^2$
+    by~$ (\delta_i)_j = 0$ if~$i \neq j$
+        and~$(\delta_i)_i = p_i$.
+    In~\sref{hilbmod-el2} we saw~$(\delta_i)_i$ is an
+        orthonormal basis of~$\ell^2((p_i)_{i \in I})$.
+    Note~$u_iu_i^* = p_i = \langle \delta_i, \delta_i\rangle$.
+    By the previous~$\delta_i u_i$ is another orthonormal basis of~$
+        \ell^2((p_i)_{i \in I})$.
+    By the second part of~\sref{hilbmod-el2}
+        we see~$
+        \ell^2((p_i)_{i \in I}) \cong
+        \ell^2((\langle \delta_i u_i, \delta_i u_i\rangle)_{i \in I} ) =
+        \ell^2((u_i^* p_i u_i  )_{i \in I} ) =
+        \ell^2((q_i )_{i \in I} )$,
+        as promised.
+\end{solution}
 
 
-\backmatter
-\fancyfoot[CE]{}
-\fancyfoot[CO]{}
-\fancypagestyle{plain}{
-    \fancyfoot[CE]{}
-    \fancyfoot[CO]{}
-}
 
-\begingroup
-\renewcommand\chapter[2]{\backmattertitle{Bibliography}}
-\bibliography{main}{}
-\endgroup
 
-\bibliographystyle{plain}
-
-\end{document}
 
 % vim: se ft=tex.latex :
