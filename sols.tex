@@ -37,6 +37,11 @@ with~$U_0 (e \otimes y) = e \otimes y'$.''.
 The assumption  that the net~$x_\alpha$ is Cauchy in point 3
     is superfluous.
 \end{erratum}
+\begin{erratum}{hilmod-fixed-on-V}%
+The C$^*$-algebra~$\scrB$ isn't assumed to be a von Neumann algebra,
+    which it should have been (for otherwise~\sref{dils-completion} wouldn't
+    be applicable.)
+\end{erratum}
 \begin{solution}{physics-stinespring}%
 To prove the first statement,
 let~$\varphi \colon \scrB(\scrH) \to \scrB(\scrK)$ be any ncp-map.
@@ -835,6 +840,26 @@ Hence~$T^* y \equiv t_y$ defines a linear map from~$Y$ to~$X$
     with~$\langle y, Tx\rangle = \langle t_y, x\rangle
     \equiv \langle T^*y, x \rangle$ for all~$x\in X$ and~$y \in Y$.
 So~$T^*$ is the adjoint of~$T$.
+\end{solution}
+\begin{solution}{hilmod-fixed-on-V}%
+    Let~$V$ be a right~$\scrB$-module with~$\scrB$-valued inner product
+        for some von Neumann algebra~$\scrB$.
+    Write~$\eta\colon V \to X$ for the ultranorm completion of~$V$
+        from~\sref{dils-completion}.
+    Let~$T \in \scrB^a(X)$ be given
+        with~$\langle \hat{x}, T \hat{x} \rangle \geq 0$
+        for all~$x \in V$.
+    We have to show~$T \geq 0$.
+    Let~$x \in X$ be an arbitrary vector.
+    As all vector states on~$\scrB^a(X)$ are order separating
+        by~\sref{hilbmod-denseordersep},
+        it is sufficient to show~$\langle x, Tx \rangle \geq 0$.
+As the image of~$V$ under~$\eta$ is ultranorm dense in~$X$,
+    we can find find a net~$x_\alpha$ with~$\widehat{x_\alpha} \to x$.
+Then by~\sref{innerprod-ultraweak}
+    we get~$\langle x, Tx\rangle = \uwlim_\alpha \langle \widehat{x_\alpha},
+            T\widehat{x_\alpha}\rangle \geq 0$.
+            So indeed~$T \geq 0$, as desired.
 \end{solution}
 
 \backmatter
