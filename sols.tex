@@ -1023,6 +1023,152 @@ For any~$d \in E^\perp$
         we know~$E$ is an orthonormal basis of~$E^{\perp\perp}$,
         which completes the proof by induction.
 \end{solution}
+\begin{solution}{hilbmod-el2}%
+For brevity write~$\ell^2 \equiv \ell^2((p_i)_{i \in I})$.
+We will first proof that~$\ell^2$ is a right~$\scrB$-module.
+Assume~$(a_i)_i, (b_i)_i \in \ell^2$.
+    We want to show~$(a_i+b_i)_i \in \ell^2$.
+    First, we to show~$\sum_i (a_i + b_i)^*(a_i+b_i)$ is bounded.
+Pick~$A,B\in \R^+$ with~$\sum_i a_i^*a_i \leq A$
+    and~$\sum_i b_i^* b_i \leq B$ which exist
+    as~$(a_i)_i$ and~$(b_i)_i$ are~$\ell^2$.
+Let~$f$ be any normal state on~$\scrB$
+    and~$S \subseteq I$ some finite subset.
+Then
+\begin{align*}
+    f \Bigl(\sum_{i \in S} (a_i + b_i)^*(a_i + b_i) \Bigr)
+        & \ =\ \sum_{i \in S} \| a_i + b_i\|_f^2  \\
+        & \ \leq\ \sum_{i \in S} \| a_i\|_f^2  +\| b_i\|_f^2 
+                                + 2\|a_i\|_f \|b_i\|_f \\
+        & \ \leq\ A+B+ 2\sum_{i \in S}  \|a_i\|_f \|b_i\|_f.
+\end{align*}
+    By Cauchy--Schwarz~$\sum_{i \in S} \|a_i\|_f \|b_i\|_f
+        \leq \bigl(\sum_{i \in S} \|a_i\|^2_f\bigr)^{\frac{1}{2}}
+            \bigl(\sum_{i \in S} \|b_i\|^2_f \bigr)^{\frac{1}{2}}
+            \leq (AB)^{\frac{1}{2}}$.
+    As normal states are order separating,
+        we see that we have a bounded and thus
+        converging sum of positive elements~$\sum_i (a_i+b_i)^*(a_i+b_i) \leq 
+                    A+B+(AB)^\frac{1}{2}$.
+Suppose~$i \in I$.
+    It remains to be shown~$\ceil{(a_i+b_i)(a_i+b_i)^*} \leq p_i$.
+Recall from~\sref{ceill-basic}
+    that~$\ceil{xx^*} \leq p_i $ if and only if~$p_i x = x$.
+Clearly~$p_i (a_i +b_i) =  p_i a_i + p_i b_i = a_i+b_i$
+    as~$(a_i)_i, (b_i)_i \in \ell^2$ and so indeed~$(a_i+b_i)_i \in \ell^2$.
+
+Suppose~$b \in \scrB$
+    and~$(a_i)_i \in \ell^2$.
+    Then~$b^* \bigl( \sum_i a_i^* a_i \bigr) b
+            = \sum_i (a_i b)^* a_i b$ as~$x \mapsto b^*xb$ is normal
+            by~\sref{ad-normal}
+            and so~$(a_ib)_i$ is~$\ell^2$.
+    Furthermore~$p_i a_i b = a_i b$ for any~$i \in I$,
+     so~$(a_i b)_i \in \ell^2$.
+     We have shown~$\ell^2$ is a right~$\scrB$-module
+     with coordinatewise operations.
+
+    Next we will show~$\langle (a_i)_i , (b_i)_i \rangle \equiv
+        \sum_i a_i^* b_i$ defines a~$\scrB$-valued inner product
+        on~$\ell^2$.
+    First we have to show the sum converges.
+    Suppose~$f$ is any normal state on~$\scrB$.
+Pick~$A,B\in \R^+$
+    with~$\sum_i a_i^*a_i \leq A$
+    and~$\sum_i b_i^*b_i \leq B$.
+For any finite subset~$S \subseteq I$
+    we have
+\begin{equation*}
+    \Bigl|f \Bigl( \sum_{ i \in S} a_i^*b_i \Bigr) \Bigr|
+    \ \leq \  \sum_{i \in S} | [a_i,b_i]_f | \ \leq \ 
+    \sum_{i \in S} \|a_i\|_f \|b_i\|_f
+    \ \leq\ (AB)^{\frac{1}{2}},
+\end{equation*}
+where we used Cauchy--Schwarz for~$\scrB$-valued inner products
+    in the second inequality and classic
+    Cauchy--Schwarz in the final inequality.
+We have shown that~$\sum_{i \in S} a_i^*b_i$
+    is a norm-bounded net in~$S$.
+    We claim it is ultraweakly Cauchy as well.
+For now, pick any finite sets~$S,T \subseteq I$.
+Assume~$f$ is any normal state on~$\scrB$.
+We want to show that the following quantity vanishes
+    for sufficiently large~$S \cap T$.
+\begin{equation}\label{e1612eq2}
+\Bigl| f \Bigl( \sum_{i \in S} a_i^*b_i
+                - \sum_{i \in T} a_i^*b_i \Bigr)\Bigr|
+                \ \leq \ 
+                \Bigl| \sum_{i \in S - T} f(a_i^*b_i) \Bigr|
+                    \ +\  \Bigl| \sum_{i \in T -S} f(a_i^*b_i) \Bigr|.
+\end{equation}
+Note that~$[ (a_i)_i, (b_i)_i ] \equiv \sum_{i\in S-T} f(a_i^*b_i)$
+    is an inner product and so
+\begin{equation}\label{e1612eq1}
+        \Bigl| \sum_{i \in S - T} f(a_i^*b_i) \Bigr|
+        \ \leq \ 
+         \Bigl( \sum_{i \in S - T} f(a_i^*a_i) \Bigr)^{\frac{1}{2}}
+         \Bigl( \sum_{i \in S - T} f(b_i^*b_i) \Bigr)^{\frac{1}{2}}.
+\end{equation}
+The sum~$\sum_i f(a_i^*a_i)$ converges
+    and so~$\sum_{i \in S - T} f(a_i^*a_i)$
+    can be made arbitrarily small
+    by picking sufficiently large~$S\cap T$.
+And so (with a similar argument for the other factor),
+    we see that~\eqref{e1612eq1} vanishes,
+    which is the left term of~\eqref{e1612eq2}.
+The argument for the other term of~\eqref{e1612eq2} is the same.
+Thus~$\sum_{i \in S} a_i^*b_i$ is ultraweakly Cauchy
+    and converges by~\sref{bh-bounded-uw-complete}.
+From the fact that~$a \mapsto a^*$,
+    $a \mapsto ab$ and~$(a,b) \mapsto a+b$
+    are all ultraweakly continuous,
+    it follows readily that~$\langle (a_i)_i , \rangle (b_i)_i\rangle \equiv
+        \sum_i a_i^*b_i$ is an inner product on~$\ell^2$.
+    We claim this inner product is definite.
+Assume~$0 = \langle (a_i)_i, (a_i)_i\rangle \equiv \sum_i a_i^*a_i$.
+Then~$a_i^*a_i = 0$~for each~$i \in I$ and so~$a_i = 0$,
+    which is to say~$(a_i)_i = 0$. Indeed our inner product is definite.
+    Thus~$\ell^2$ is a pre-Hilbert~$\scrB$-module.
+
+Write~$E \equiv \{ \delta_i; \ i \in I\}$,
+    where~$(\delta_i)_j = 0$ for~$i \neq j$
+    and~$(\delta_i)_i = p_i$.
+Clearly~$E$ is an orthonormal set.
+We claim it's an orthonormal basis of~$\ell^2$.
+Assume~$(a_i)_i \in \ell^2$.
+It is easy to see~$\sum_{i \in I} \delta_i a_i = (a_i)_i$
+    and so~$\sum_{\delta_i \in E} \delta_i \langle \delta_i, (a_i)_i\rangle
+        = \sum_{i \in I} \delta_i a_i = (a_i)_i$.
+    It remains to be shown that~$\sum_{\delta_i \in E} \delta_i b_{\delta_i}$
+        converges ultranorm for any~$\ell^2$ summable~$(b_i)_{\delta_i \in E}$,
+        which indeed it does to~$(b_{\delta_i})_{i \in I}$
+         as we already saw.
+Thus~$\ell^2$ is self dual.
+
+For the final part of the exercise, assume~$X$ is a self-dual Hilbert~$\scrB$-module
+    over some von Neumanna algebra~$\scrB$ with orthonormal basis~$E \subseteq X$.
+Define~$\vartheta\colon X \to \ell^2((\langle e,e\rangle)_{e \in E})$
+    by~$\vartheta(x) \equiv (\langle e, x\rangle)_e$.
+Clearly~$\vartheta$ is~$\scrB$-linear.
+It also preserves the inner product:
+$\langle x, y\rangle = \langle x, \sum_e e \langle e, y\rangle \rangle
+    = \sum_e \langle x, e\langle e, y\rangle\rangle
+    = \sum_e \langle x, e\rangle\langle e, y\rangle
+    = \langle \vartheta(x), \vartheta(y)\rangle$.
+    which entails it's injective.
+To show~$\vartheta$ is surjective,
+    let~$(x_e)_e \in \ell^2((\langle e,e\rangle)_{e \in E})$
+    be given.
+    The family~$(x_e)_e$ is~$\ell^2$
+        so~$\sum_e e b_e$ converges ultranorm.
+        Clearly~$\vartheta (\sum_e e b_e)
+                = (\langle e, \sum_e e b_e\rangle )_e
+                = (b_e)_e$,
+    so~$\vartheta$ is indeed surjective.
+    It follows~$\vartheta$ is an isomorphism~$X \cong
+    \ell^2((\langle e,e\rangle)_{e \in E})$.
+\end{solution}
+
 
 \backmatter
 \fancyfoot[CE]{}
