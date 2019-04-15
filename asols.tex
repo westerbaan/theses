@@ -5,8 +5,7 @@
 
 \begin{document}
 \appendix
-\chapter{Solutions to Exercises}
-
+\chapter{Solutions, Addenda, Errata}
 \begin{solution}{parsec-40.30}%
 Let~$\scrX$, $\scrY$ and~$\scrZ$ be normed (complex) vector spaces.
 \begin{enumerate}
@@ -149,8 +148,71 @@ Given $x\in\scrH$ we have
 \end{equation*}
 and so~$T_1x=T_2x$ by the previous part.
 Whence~$T_1=T_2$.
+\end{solution}
+\begin{solution}{parsec-40.120}%
+We prove slightly mor
+Let~$\scrH$, $\scrK$ and~$\scrL$ be pre-Hilbert spaces.
+\begin{enumerate}
+\item
+Let~$T\colon \scrH\to\scrK$ be an adjointable operator,
+        so we know that~$T$ is adjoint to some (by~\sref{parsec-40.100}
+        unique) operator~$T^*\colon \scrK\to\scrH$.
+We must show that $T^*$ is adjoint to~$T$ too.
 
+Let~$x\in\scrH$ and~$y\in\scrK$ be given.
+Since~$T$ is adjoint to~$T^*$,
+we know that~$\left<Tx,y\right>=\left<x,T^*y\right>$,
+and so taking the complex conjugate, we get
+        \begin{equation*}
+\left<y,Tx\right>\  =\  
+    \overline{\left<Tx,y\right>}
+    \ =\ 
+    \overline{\left<x,T^*y\right>}
+    \ =\ \left<T^*y,x\right>,
+\end{equation*}
+and see that~$T^*$ is adjoint to~$T$.
+        Thus~$T^{**}=T$ by definition, \sref{parsec-40.80}.
 
+\item
+Given adjointable operators
+$S,T\colon \scrH\to\scrK$ 
+and~$x\in \scrH$ and $y\in \scrK$,
+\begin{equation*}
+\left<(S+T)x,y\right>
+\ =\  \left<Sx,y\right>\,+\,\left<Tx,y\right>
+\ =\ \left<x,S^*y\right>\,+\,\left<x,T^*y\right>
+    \ =\ \left<x,(S^*+T^*)y\right>,
+\end{equation*}
+so~$S+T$ is adjoint to~$S^*+T^*$,
+and thus~$(S+T)^*=S^*+T^*$.
 
+Given an adjointable operator~$S\colon \scrH\to\scrK$,
+$\lambda\in\C$, $x\in\scrH$, and~$y\in\scrK$,
+\begin{equation*}
+\left<\lambda Sx,y\right>
+\ = \ 
+    \overline{\lambda} \left<Sx, y\right>
+\ = \ 
+    \overline{\lambda} \left<x, S^*y\right>
+\ = \ 
+     \left<x, \overline{\lambda}S^*y\right>,
+\end{equation*}
+so~$\lambda S$ is adjoint to $\overline{\lambda}S^*$,
+and thus $(\lambda S)^*=\overline{\lambda}S^*$.
+\item
+Given adjointable operators
+$S\colon \scrK\to\scrL$
+and $T\colon \scrH\to\scrK$,
+and
+$x\in\scrH$  and $y\in\scrL$,
+we have
+\begin{equation*}
+\left<STx,y\right>
+\ = \ \left<Tx,S^*y\right>
+\ = \ \left<x,T^*S^*y\right>,
+\end{equation*}
+so~$ST$ is adjoint to~$T^*S^*$,
+        and thus~$(ST)^*=T^*S^*$.
+\end{enumerate}
 \end{solution}
 \end{document}
