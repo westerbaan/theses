@@ -1362,5 +1362,53 @@ Recall~$c = c_b \after \vartheta_2$
     Then~$a_1 = a_2$ by~\sref{mult-cancellation}
         and so~$c_b$ is indeed injective.
 \end{solution}
+\begin{solution}{surjective-nmiu}%
+Assume~$\varrho \colon \scrA \to \scrB$
+    is a surjective nmiu-map between von Neumann algebras.
+We already saw in~\sref{kernel-ultraweak-twosided-ideal-dils}
+    that the kernel of an nmiu-map is an ultraweakly-closed
+    two-sided ideal and hence a principal ideal of a central projection
+        by~\sref{prop:weakly-closed-ideal}.
+    Write~$z$ for the central projection of~$\scrA$
+        with~$\ker \varrho = (1-z) \scrA$;
+        $h_z \colon \scrA \to z\scrA$ for the map~$h_z(a) = za$
+        and~$\varrho'\colon z\scrA \to \scrB$
+        for the restriction of~$\varrho$ to~$z \scrA$.
+    Clearly~$\varrho' \after h_z = \varrho$ and so~$\varrho'$ is surjective.
+    Furthermore~$\varrho'$ is injective,
+        because for any~$a \in z\scrA$ with~$\varrho(a)=0$
+        we have~$\varrho(a)=0$ and so~$a \in \ker \varrho = (1-z)\scrA$,
+        hence~$a = 0$.
+It is easy to see that~$\varrho'$ as a bijective miu-map
+    has an miu inverse and so it is an miu-isomorphism.
+    Consequently, it is an~nmiu-isomorphism (as
+        miu-maps are order-preserving)
+        and in particular an ncp-isomorphism.
+The map~$h_z$ is a standard corner for~$z$ (see~\sref{standard-corner-dils})
+    and so~$\varrho = \varrho' \after h_z$ is also a corner for~$z$
+    as~$\varrho'$ is an ncp-isomoprhism.
+
+Conversely, assume~$h\colon \scrA \to \scrC$
+        is a corner for a central projection~$z \in \scrA$.
+The map~$h_z\colon \scrA \to z \scrA$ given by~$a \mapsto za$
+    is another corner for~$z$, see~\sref{standard-corner-dils}.
+By the universal property of~$h$,
+    there is a unique ncp-map~$\vartheta_1\colon z\scrA \to \scrC$
+            with~$h \after \vartheta_1 =\vartheta_2$.
+On the other side, by the universal property of~$h_z$,
+    there is a unique ncp-map~$\vartheta_2\colon \scrC\to z\scrA$
+    with~$h_z \after \vartheta_2 = \vartheta_1$.
+Again, by the universal property of~$h$,
+    the map~$\id\colon \scrC \to \scrC$
+    is the unique ncp-map~$\scrC \to \scrC$
+        with~$h = h \after \id$.
+    Note~$h = h_z \after \vartheta_2 = h \after (\vartheta_1 \after \vartheta_2)$ and so~$\id = \vartheta_1 \after \vartheta_2$.
+    Similarly~$\vartheta_2 \after \vartheta_1 = \id$.
+    Thus~$\vartheta_1$ is an ncp-isomorphism
+        and consequently an nmiu-isomoprhism by~\sref{iso}.
+Clearly~$h_z$ is a surjective nmiu-map
+    and thus~$h = h_z \after \vartheta_2$
+    is a surjective nmiu-map as well.
+\end{solution}
 
 % vim: se ft=tex.latex :
