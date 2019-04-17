@@ -1410,5 +1410,15 @@ Clearly~$h_z$ is a surjective nmiu-map
     and thus~$h = h_z \after \vartheta_2$
     is a surjective nmiu-map as well.
 \end{solution}
+\begin{solution}{pcm-preorder}%
+Reflexivity is easy:~$a \ovee 0 = 0 \ovee a = a$
+    by the partial commutativity and zero axiom, so~$a \leq a$.
+For transitivity, assume~$a \leq b$ and~$b \leq c$.
+Pick~$d,e \in M$
+    with~$a \ovee d = b$ and~$b \ovee e = c$.
+Then by partial
+associativity~$c = b \ovee e = (a \ovee d) \ovee e = a \ovee (d \ovee e)$
+so~$a \leq c$.
+\end{solution}
 
 % vim: se ft=tex.latex :
