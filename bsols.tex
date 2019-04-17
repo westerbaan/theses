@@ -1206,5 +1206,67 @@ The the last part of the exercise, assume~$p,q \in \scrB$
         we see~$(p+q) \scrB \cong \ell^2(\{p, q\})
             = p\scrB \oplus q\scrB$, as promised.
 \end{solution}
+\begin{solution}{hilbmod-tensor-ketbra}%
+Assume~$X$ is a self-dual Hilbert~$\scrA$-module
+    and~$Y$ is a self-dual Hilbert~$\scrB$-module
+        for von Neumann algebras~$\scrA$ and~$\scrB$.
+\begin{enumerate}
+\item
+    Assume~$x_1,x_2,x \in X$ and~$y_1,y_2,y \in Y$.
+        Then
+    \begin{align*}
+        \ketbra{x_1}{x_2} \otimes \ketbra{y_1}{y_2} 
+            \, x \otimes y 
+        &\ =\  (\ketbra{x_1}{x_2} x) \otimes (\ketbra{y_1}{y_2} y) \\
+        &\ =\ (x_1 \langle x_2, x\rangle) \otimes (y_1 \langle y_2, y\rangle) \\
+        &\ =\ (x_1 \otimes y_1)  (\langle x_2, x\rangle \otimes \langle y_2, y\rangle) \\
+        &\ =\ (x_1 \otimes y_1)  \langle x_2 \otimes y_2, x \otimes y\rangle \\
+        &\ =\ \ketbra{x_1 \otimes y_1}{x_2 \otimes y_2} \, x\otimes y.
+    \end{align*}
+This is sufficient to show
+    that~$\ketbra{x_1}{x_2} \otimes \ketbra{y_1}{y_2} 
+        = \ketbra{x_1 \otimes y_1}{x_2 \otimes y_2}$,
+    either by appealing to the defining universal property of~$X \otimes Y$
+    or by the related property
+    that the~$\scrA \odot \scrB$-linear
+    span of~$\{x \otimes y; \ x \in X, y\in Y\}$
+    is ultranorm dense in~$X \otimes Y$.
+        (In fact the~$\C$-linear span is already ultranorm dense.)
+\item
+    Clearly, for any~$x \in X$ and~$y \in Y$
+            we have~$(1 \otimes 1) \, (x \otimes y)
+                    = 1 \, x \otimes y$
+        and so by same token (as the conclusion of the previous point)
+        we see~$1 = 1\otimes 1$.
+\item
+    Assume~$x \in X$, $y \in Y$, $S,S' \in \scrB^a(X)$ and~$T,T' \in \scrB^a(Y)$.
+        Then
+\begin{equation*}
+    (S \otimes T) (S' \otimes T') \, x \otimes y
+         \ = \ (SS' x) \otimes (TT' y) \\
+         \ = \ (SS')  \otimes (TT') \, x \otimes y,
+\end{equation*}
+        which is sufficient to show~$(SS') \otimes (TT') = (S\otimes T) \otimes (S' \otimes T')$ (see the conclusion of the first point.)
+\item
+    Assume~$S \in \scrB^a(X)$, $T \in \scrB^a(Y)$, $x_1,x_2\in X$
+        and~$y_1,y_2\in Y$.
+    Then
+\begin{align*}
+    \langle (S \otimes T)^* \, x_1 \otimes y_1, \ x_2 \otimes y_2\rangle    
+& \ = \  \langle x_1 \otimes y_1, \ (S \otimes T) \, x_2 \otimes y_2\rangle \\
+    & \ = \  \langle x_1 \otimes y_1, \ (Sx_2) \otimes (Ty_2) \rangle \\
+    & \ = \ \langle x_1, Sx_2\rangle \otimes \langle y_1 , T y_2\rangle\\
+    & \ = \ \langle S^* x_1, x_2\rangle \otimes \langle T^* y_1 ,  y_2\rangle\\
+    & \ = \  \langle (S^* \otimes T^*)\, x_1 \otimes y_1, \ x_2 \otimes y_2\rangle.
+\end{align*}
+This is sufficient (see the conclusion of the first point)
+        to show that the vector functionals
+        for~$(S \otimes T)^* x_1\otimes y_1$
+        and~$(S^*\otimes T^*)x_1 \otimes y_1$ agree.
+        Hence~$(S \otimes T)^* x_1\otimes y_1= (S^*\otimes T^*)x_1 \otimes y_1$.
+        In turn this is sufficient to show~$(S \otimes T)^* = S^* \otimes T^*$,
+        as desired.
+\end{enumerate}
+\end{solution}
 
 % vim: se ft=tex.latex :
