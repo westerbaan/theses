@@ -1158,9 +1158,53 @@ Define~$((\delta_i)_i) \in \ell^2$
         \ell^2((q_i )_{i \in I} )$,
         as promised.
 \end{solution}
+\begin{solution}{onb2}%
+Let~$X$ be a self-dual Hilbert~$\scrB$-module.
+Assume~$E \subseteq X$ and~$e_1,e_2 \in X$
+    such that~$E \cup \{ e_1, e_2\} $ is an orthonormal basis
+    and~$\langle e_1, e_1 \rangle + \langle e_2, e_2\rangle \leq 1$
+We will show that~$E' \equiv E \cup \{e_1 + e_2\}$
+        is an orthonormal basis as well.
+For brevity, write~$p_1 \equiv \langle e_1,e_1\rangle$
+    and~$p_2 \equiv \langle e_2, e_2\rangle$.
+Clearly~$E$ itself is an orthonormal set.
+For any~$e \in E$ we have~$\langle e, e_1+e_2 \rangle =
+    \langle e, e_1\rangle + \langle e,e_2\rangle = 0$
+    and so~$E'$ is an orthogonal set.
+By assumption~$p_1$ and~$p_2$ are projections
+    with~$p_1 + p_2 \leq 1$
+    and so by~\sref{orthogonal-tuple-of-projections}
+    they are orthogonal and thus in particular~$p_1 + p_2$
+        is again a projection.
+Hence~$\langle e_1 + e_2, e_1 + e_2 \rangle
+        = p_1 + p_2$ is a projection.
+    Thus~$E'$ is an orthonormal set.
 
+Let~$x \in X$ be given.
+By~\sref{mod-projelabs} we have~$e_2 = e_2 p_2$
+    and so~$e_2 \langle e_1 + e_2, x\rangle
+                = e_2 \langle (e_1 + e_2)p_2, x\rangle
+                = e_2 \langle e_2, x \rangle$.
+Similarly~$e_1 \langle e_1 + e_2, x\rangle
+                = e_1 \langle e_1, x\rangle$.
+Thus~$ x = e_1 \langle e_1, x\rangle + e_2 \langle e_2, x\rangle 
+            + \sum_{e \in E} e \langle e, x\rangle
+        = (e_1 + e_2) \langle e_1 + e_2, x\rangle
+            + \sum_{e \in E} e \langle e, x\rangle$,
+            which shows the first condition on an orthonormal
+            set to be an orthonormal basis.
+The second (and final) condition
+    holds automatically as~$E'$ is an orthonormal set
+        and~$X$ is ultranorm complete.  Thus~$E'$ is indeed
+        an orthonormal basis.
 
-
-
+The the last part of the exercise, assume~$p,q \in \scrB$
+    are projections with~$p+q \leq 1$.
+    Clearly~$\{p+q\}$ is an orthonormal basis of~$(p+q)\scrB$
+        and so is~$\{p,q\}$ by the previous.
+    Hence by~\sref{hilbmod-el2}
+        we see~$(p+q) \scrB \cong \ell^2(\{p, q\})
+            = p\scrB \oplus q\scrB$, as promised.
+\end{solution}
 
 % vim: se ft=tex.latex :
