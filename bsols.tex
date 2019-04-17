@@ -1268,5 +1268,70 @@ This is sufficient (see the conclusion of the first point)
         as desired.
 \end{enumerate}
 \end{solution}
+\begin{solution}{dils-filter-basics-exercise}%
+    Assume~$\varphi\colon \scrA \to \scrB$ is an ncp-map between
+        von Neumann algebras.
+\begin{enumerate}
+\item
+    Assume~$c\colon \scrB \to \scrC$ is a filter
+            and that~$(\scrP, \varrho, h)$ is a Paschke dilation of~$\varphi$.
+    We will show that~$(\scrP, \varrho, c \after h)$ is a Paschke
+        dilation of~$c \after \varphi$.
+    To this end, assume~$\varrho\colon \scrA \to \scrP'$ is some nmiu-map
+            and~$h'\colon \scrP' \to \scrC$ is any ncp-map
+            with~$h' \after \varrho' = c \after \varphi$.
+    Assume~$\varphi(1) \leq 1$.
+        (We will reduce the general to this one later on.)
+        Note~$h'(1) = h'(\varrho'(1)) = c(\varphi(1)) \leq c(1)$
+            and so by the universal property of~$c$,
+            there is a unique ncp-map map~$h''\colon \scrP' \to \scrB$
+                with~$c \after h'' = h'$.
+    Then~$c \after \varphi = h' \after \varrho' =
+             c \after h'' \after \varrho'$.
+    And so~$\varphi = h'' \after \varrho'$
+        as~$c$ is injective, see \sref{filter-basic}.
+    There is a unique ncp-map~$\sigma\colon \scrP' \to \scrP$
+            with~$h \after \sigma = h''$
+                and~$\sigma \after \varrho' =\varrho$.
+Then~$h' = c \after h'' = c \after h \after \sigma$.
+Assume~$\sigma'\colon \scrP'\to \scrP$
+    is any ncp-map with~$\sigma' \after \varrho = \varrho$
+            and~$c \after h \after \sigma' = h'$.
+Then~$c \after h \after \sigma' = h' = c \after h''$
+    and so~$h \after \sigma' = h''$.
+    Hence~$\sigma=\sigma'$ by the uniqueness of~$\sigma$.
+Thus~$(\scrP, \varrho, c\after h)$ is a Paschke dilation of~$c\after\varphi$.
+
+    Now, in the general case, assume~$\varphi(1) \nleq 1$.
+    Then~$\varphi(1) \neq 0$.
+        Define~$\varphi' \equiv \|\varphi(1)\|^{-1} \varphi$.
+        Then~$\varphi'(1) = \|\varphi(1)\|^{-1} \varphi(1) \leq 1$.
+        By~\sref{paschke-basics}
+         we know~$(\scrP, \varrho, \|\varphi(1)\|^{-1} h)$
+            is a Paschke dilation of~$\varphi'$.
+    Now we are in our previous case
+        and so~$(\scrP, \varrho, \|\varphi(1)\|^{-1} c \after h)$
+            is a Paschke dilation of~$c \after \varphi'$.
+    Applying~\sref{paschke-basics} once again,
+            we conclude~$(\scrP, \varrho,c \after h)$
+        is a Paschke dilation of~$c \after \varphi$ as desired.
+\item
+Assume~$c' \colon \scrC' \to \scrB$ is a filter of~$\varphi(1)$.
+By the universal property of~$c'$,
+    there is a unique ncp-map~$\varphi'\colon \scrA \to \scrC'$
+            with~$c'\after \varphi' = \varphi$.
+Then~$c'(\varphi'(1)) = \varphi(1) = c'(1)$
+    and so by injectivity of~$c'$ (see~\sref{filter-basic})
+            we get~$\varphi'(1) = 1$ ---
+            that is to say: $\varphi'$ is unital.
+
+For the final part of this exercise, assume~$(\scrP, \varrho, h)$
+    is a Paschke dilation of~$\varphi'$.
+By the previous point,
+    we know~$(\scrP, \varrho, c' \after h)$
+        is a Paschke dilation of~$c' \after \varphi' = \varphi$,
+        as desired.
+\end{enumerate}
+\end{solution}
 
 % vim: se ft=tex.latex :
