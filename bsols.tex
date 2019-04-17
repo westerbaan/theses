@@ -1289,7 +1289,7 @@ This is sufficient (see the conclusion of the first point)
     Then~$c \after \varphi = h' \after \varrho' =
              c \after h'' \after \varrho'$.
     And so~$\varphi = h'' \after \varrho'$
-        as~$c$ is injective, see \sref{filter-basic}.
+        as~$c$ is injective, see \sref{dils-filters-injective}.
     There is a unique ncp-map~$\sigma\colon \scrP' \to \scrP$
             with~$h \after \sigma = h''$
                 and~$\sigma \after \varrho' =\varrho$.
@@ -1321,7 +1321,7 @@ By the universal property of~$c'$,
     there is a unique ncp-map~$\varphi'\colon \scrA \to \scrC'$
             with~$c'\after \varphi' = \varphi$.
 Then~$c'(\varphi'(1)) = \varphi(1) = c'(1)$
-    and so by injectivity of~$c'$ (see~\sref{filter-basic})
+        and so by injectivity of~$c'$ (see~\sref{dils-filters-injective})
             we get~$\varphi'(1) = 1$ ---
             that is to say: $\varphi'$ is unital.
 
@@ -1332,6 +1332,35 @@ By the previous point,
         is a Paschke dilation of~$c' \after \varphi' = \varphi$,
         as desired.
 \end{enumerate}
+\end{solution}
+\begin{solution}{dils-filters-injective}%
+Let~$c\colon \scrC \to \scrB$ be some filter for~$b \in \scrB$.
+    By~\sref{dils-stand-filter}
+        we know~$c_b\colon \ceil{b} \scrB \ceil{b} \to \scrB$
+            given by~$a \mapsto \sqrt{b} a \sqrt{b}$
+                is also a filter for~$b$.
+    By the universal property of~$c$,
+        there is a unique ncp-map~$\vartheta_1$
+            with~$c \after \vartheta_1 = c_b$.
+    In the other direction, by the universal property of~$c_b$,
+        there is a unique ncp-map~$\vartheta_2$
+            with~$c_b \after \vartheta_2 = c$.
+    Hence~$c \after (\vartheta_1 \after \vartheta_2)
+            = c_b \after \vartheta_2 = c \after \id$.
+Clearly~$c(1) \leq c(1)$
+    and so by the universal property of~$c$
+    the map~$\id$ is the unique ncp-map
+    with~$c \after \id = c$, hence~$\vartheta_1 \after \vartheta_2 = \id$.
+Reasoning similarly on the other side,
+    we see~$\vartheta_2 \after \vartheta_1 = \id$
+    and so~$\vartheta_2$ is an isomorphism.
+Recall~$c = c_b \after \vartheta_2$
+    and so it is sufficient to show~$c_b$ is injective.
+    To this end, let~$a_1,a_2 \in \ceil{b} \scrB \ceil{b}$ be given
+    with~$c_b(a_1) = c_b(a_2)$;
+    i.e.~$\sqrt{b}a_1\sqrt{b} = \sqrt{b}a_2\sqrt{b}$.
+    Then~$a_1 = a_2$ by~\sref{mult-cancellation}
+        and so~$c_b$ is indeed injective.
 \end{solution}
 
 % vim: se ft=tex.latex :
