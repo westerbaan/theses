@@ -1472,5 +1472,24 @@ Clearly~$g$ is the unique map with~$\pi_i \after g = f_i$ for~$i=1,2$.
 It is also an effect algebra homomorphism and
     so~$E \times F$ is indeed the product of~$E$ and~$F$.
 \end{solution}
+\begin{solution}{ea-redund}%
+Let~$E$ be an effect algebra with any~$a \in E$.
+We will first show that~$1^\perp = 0$ and~$a^{\perp\perp} = a$.
+By the orthocomplement law~$1 \ovee 1^\perp = 1$,
+    so~$1^\perp \perp 1$,
+    hence~$1^\perp=0$ by the zero--one law.
+By the orthocomplement law~$a \ovee a^\perp = 1$.
+Thus~$a^\perp \ovee a = a \ovee a^\perp = 1$ by partial commutativity.
+    Hence~$a = a^{\perp\perp}$ by uniqueness of the orthocomplement.
+Now, to prove the zero law,
+    note~$a^\perp \ovee a^{\perp\perp}
+        = 1 = (a^\perp\ovee a^{\perp\perp})
+    \ovee (a^\perp \ovee a^{\perp\perp})^\perp
+    = (a^\perp \ovee a^{\perp\perp}) \ovee 0 
+        = a^\perp \ovee (a^{\perp\perp} \ovee 0)$
+    by the orthocomplement law and partial associativity.
+Thus by uniqueness of the orthocomplement~$a^{\perp\perp} = a^{\perp\perp} \ovee 0$,
+    hence~$0 \ovee a = a$ by partial commutativity and~$a^{\perp\perp} = a$.
+\end{solution}
 
 % vim: se ft=tex.latex :
