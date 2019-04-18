@@ -1420,5 +1420,57 @@ Then by partial
 associativity~$c = b \ovee e = (a \ovee d) \ovee e = a \ovee (d \ovee e)$
 so~$a \leq c$.
 \end{solution}
+\begin{solution}{ea-product}%
+Assume~$E$ and~$F$ are effect algebras.
+We define~$a \ovee b$ for~$a,b \in E\times F$
+    whenever both~$a_1 \perp b_1$ and~$a_2 \perp b_2$
+    and in that case~$a\ovee b \equiv (a_1 \ovee b_1, a_2 \ovee b_2)$.
+Furthermore, define~$1 \equiv (1,1)$ and~$0 \equiv (0,0)$.
+We claim that these operations turn~$E \times F$ into an effect algebra.
+
+We start with partial commutativity.
+Assume~$a,b \in E\times F$ with~$a \perp b$.
+Then~$a_1 \perp b_1$ and~$a_2 \perp b_2$,
+    hence~$b_1 \perp a_1$, $b_2 \perp a_2$
+    and~$a \ovee b = (a_1 \ovee b_1, a_2 \ovee b_2)
+                    = (b_1 \ovee a_1, b_2 \ovee a_2)
+                    = b \ovee a$.
+
+We continue with partial associativity.
+Assume~$a,b,c \in E\times F$ with~$a\perp b$ and~$a \ovee b \perp c$.
+Then~$a_i \perp b_i$, $a_i \ovee b_i \perp c_i$ for~$i=1,2$
+    and so~$b_i \perp c_i$ and~$(a_i \ovee b_i) \ovee c_i = a_i \ovee (
+    b_i \ovee c_i)$. Consequently~$(a \ovee b) \ovee c = a \ovee (b\ovee c)$.
+
+    Next the zero axiom: for any~$a \in E\times F$
+        we have~$a_1 \perp 0$,~$a_2 \perp 0$, $0 \ovee a_1 =a_1$
+        and~$0 \ovee a_2 = a_2$.
+            Thus~$0 \equiv (0,0) \perp (a_1,a_2)$ and~$0 \ovee a = a$.
+
+    To prove the orthocomplement law, assume~$a \in E \times F$.
+        Then for~$a \equiv (a_1^\perp, a_2^\perp)$
+            we have~$a \perp a^\perp$ and~$a \ovee a^\perp = (1,1) \equiv 1$.
+    Furthermore, if~$a \vee b = 1$ for some~$b \in E \times F$,
+        then~$b_1 = a_1^\perp$ and~$b_2 = a_2^\perp$, hence~$b = a^\perp$.
+
+Only the zero--one law remains.  Asumme~$a\perp 1$ for some~$a \in E \times F$.
+Then~$a_1 \perp 1$ and~$a_2 \perp 1$, hence~$a_1=0$ and~$a_2=0$.
+Thus~$a = 0$, as desired.
+We have shown~$E \times F$ is an effect algebra with componentwise operations.
+
+Write~$\pi_1\colon E\times F \to E$ and~$\pi_2\colon E\times F \to F$
+        for the maps given by~$\pi_1(a_1,a_2) = a_1$
+            and~$\pi_2(a_1,a_2)=a_2$.
+    Clearly~$\pi_1$ and~$\pi_2$ are additive and unital, hence
+    effect algebra homomorphisms.
+We will show that~$E\times F$ with projections~$\pi_1$ and~$\pi_2$
+    forms a categorical product of~$E$ and~$F$ in~$\mathsf{EA}$.
+To this end, assume~$f_1\colon G \to E$ and~$f_2\colon G \to F$
+    are effect algebra homomorphisms for some effect algebra~$G$.
+Define~$g\colon G \to E\times F$ by~$g(a) = (f_1(a), f_2(a))$.
+Clearly~$g$ is the unique map with~$\pi_i \after g = f_i$ for~$i=1,2$.
+It is also an effect algebra homomorphism and
+    so~$E \times F$ is indeed the product of~$E$ and~$F$.
+\end{solution}
 
 % vim: se ft=tex.latex :
