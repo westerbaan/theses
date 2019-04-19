@@ -1755,5 +1755,48 @@ Then clearly~$g \after f \after \gamma' = g \after \alpha$
     we find~$\gamma' = \gamma$.
     Thus the left inner square is a pullback as well.
 \end{solution}
+\begin{solution}{par-c-coprod}%
+    Let~$f\colon X \pto Z$ and~$g\colon Y \pto Z$
+        be two partial maps in~$C$;
+        that is~$f\colon X \to Z+1$ and~$g \colon Y \to Z+1$.
+    Then the cotuple~$[f,g]\colon X+Y \to Z+1$
+        (with respect to the coproduct that we assumed to exist)
+    is also a partial map~$X+Y \pto Z$.
+Note~$[f,g] \hafter \hat\kappa_1
+    = [[f,g],\kappa_2]\after\kappa_1\after\kappa_1 = f$
+and~$[f,g] \hafter \hat\kappa_2
+    = [[f,g],\kappa_2]\after\kappa_1\after\kappa_2 = g$.
+Suppose~$h \colon X+Y \pto Z$ is a partial map
+    with~$h \hafter \hat\kappa_1 = f$
+        and~$h \hafter \hat\kappa_2 = g$.
+Then~$h \after \kappa_1 = h \hafter \hat\kappa_1 = f$
+and~$h \after \kappa_2 = h \hafter \hat\kappa_2 = g$,
+    so~$h = [f,g]$.
+    This shows~$X+Y$ is also a coproduct in~$\Par C$ with
+        coprojectors~$\hat{\kappa_1}$ and~$\hat{\kappa_2}$.
+
+To show~$0$ is an initial object of~$\Par C$,
+    assume~$X$ is some object of~$\Par C$, i.e.~of~$C$.
+    As~$0$ is initial in~$C$, there
+    is a unique map~$!\colon 0 \to X+1$ in~$C$
+    and so there is a unique map~$!\colon 0 \pto X$ in~$\Par C$.
+\end{solution}
+\begin{solution}{toteff-zero}%
+We already know that the initial object~$0$ of~$C$
+    is also initial in~$\Par C$.
+    We will show that it is also final in~$\Par C$.
+To this end, assume~$X$ is some object in~$\Par C$, i.e.~of~$C$.
+There is a unique map~$!\colon X\to 1$ in~$C$
+    and so there is a unique map~$!\colon X \pto 0$ in~$\Par C$.
+    Thus~$0$ is final in~$\Par C$.
+
+For any objects~$X$ and~$Y$ from~$\Par C$,
+    the zero map~$0\colon X \to Y$ in~$\Par C$
+    is by definition equal to~$i \hafter f$,
+    where~$f \colon X \pto 0$ is the unique final map
+        and~$i \colon 0 \to \pto Y$ is the unique initial map.
+Unfolding definitions, we see~$0 = i \hafter f = [i, \kappa_2]\after f
+        = \kappa_2\after !$ as desired.
+\end{solution}
 
 % vim: se ft=tex.latex :
