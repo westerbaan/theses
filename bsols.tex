@@ -1641,5 +1641,22 @@ The element~$a \ominus_{\textrm{EA}} b$ is defined
     Hence by cancellation~$a \odot 0 = 0$.
     Similarly~$0 \odot a = 0$.
 \end{solution}
+\begin{solution}{emond-lemma-for-conv}%
+   Assume~$M$ is an effect monoid with~$a_1,\ldots,a_n,b_1, \ldots, b_n \in M$
+        such that~$\bigovee_i a_i = 1$ and~$\bigovee_i a_i \odot b_i = 1$.
+Note that for any~$1 \leq i \leq n$
+    we have~$a_i \odot b_i \leq a_i$
+        as~$(a_i \odot b_i) \ovee a_i \odot b_i^\perp = a_i \odot 1 = a_i$.
+Thus
+\begin{equation*}
+    a_i^\perp
+    \ = \ \bigovee_{j \neq i} a_j
+    \ \geq \ \bigovee_{j \neq i} a_j \odot b_j
+    \ = \ (a_i \odot b_i)^\perp
+    \ \geq a_i^\perp
+\end{equation*}
+    and so~$a_i^\perp = (a_i \odot b_i)^\perp$,
+        hence~$a_i = a_i \odot b_i$.
+\end{solution}
 
 % vim: se ft=tex.latex :
