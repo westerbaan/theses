@@ -1798,5 +1798,35 @@ For any objects~$X$ and~$Y$ from~$\Par C$,
 Unfolding definitions, we see~$0 = i \hafter f = [i, \kappa_2]\after f
         = \kappa_2\after !$ as desired.
 \end{solution}
+\begin{solution}{distinction-part-tot-eff}%
+For the first point, assume~$C$ is an effectus in total form
+    together with a map~$f\colon A \to 0$.
+    We will show that~$f$ is an isomorpism.
+    By initiality of~$0$, we know~$f \after !_A = !_0 = \id$.
+By~\sref{tot-pullbacks}, the following square is a pullback.
+\begin{equation*}
+    \xymatrix{
+        0 \pullback \ar[d]_{!} \ar@{=}[r]
+        & 0 \ar@{=}[d]
+        \\
+        A \ar[r]_{f}
+        & 0
+    }
+\end{equation*}
+As~$\id_0 \after f = f \after \id_A$,
+    there is a unique map~$h\colon A \to 0$
+        with~$\id \after h = f$ and~$! \after h = \id$.
+So~$h = f$ and~$! \after f = ! \after h = \id$.
+Thus~$f$ is indeed an isomorphism with inverse~$!$.
+
+For the second point, assume~$C$ is an effectus in total and partial form.
+Let~$X$ and~$Y$ be any two objects.
+As~$0$ is final in an effectus in total form,
+    there are maps~$!_X \colon X \to 0$ and~$!_Y \colon Y \to 0$.
+As~$0$ is a strict initial object in an effectus in partial form,
+    both~$!_X$ and~$!_Y$ are isomorphisms.
+Hence~$!_Y \after !_X^{-1}$ is an isomorphism between~$X$ and~$Y$.
+\end{solution}
+    
 
 % vim: se ft=tex.latex :
