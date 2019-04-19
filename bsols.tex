@@ -1635,5 +1635,11 @@ The element~$a \ominus_{\textrm{EA}} b$ is defined
     \end{enumerate}
 \end{solution}
 \spacingfix{}
+\begin{solution}{exc-emonzero}%
+    Let~$M$ be an effect monoid with any~$a \in M$.
+    Then~$a\odot 1 = a \odot (0 \ovee 1) = (a\odot 0) \ovee (a \odot 1)$.
+    Hence by cancellation~$a \odot 0 = 0$.
+    Similarly~$0 \odot a = 0$.
+\end{solution}
 
 % vim: se ft=tex.latex :
