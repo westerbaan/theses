@@ -1693,5 +1693,17 @@ Then by PCM-enrichment of~$C$, we
 \end{enumerate}
 \end{solution}
 \spacingfix{}
+\begin{solution}{exc-jointly-monic-pullback}%
+    Assume~$h_1,h_2 \colon Q \to P$
+        are two arrows with~$m_1 \after h_1 = m_1 \after h_2$
+        and~$m_2 \after h_1 = m_2 \after h_2$.
+    Note~$(f \after m_1) \after h_1= g \after m_2 \after h_1
+        = (g \after m_2) \after h_2$
+        and so by the universal property of a pullback
+        there is a unique map~$h\colon Q \to P$
+        with~$m_1 \after h = m_1 \after h_1$
+            and~$m_2 \after h = m_2 \after h_2$
+            and so~$h_1 = h_2 = h$.
+\end{solution}
 
 % vim: se ft=tex.latex :
