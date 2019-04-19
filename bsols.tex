@@ -1491,5 +1491,125 @@ Now, to prove the zero law,
 Thus by uniqueness of the orthocomplement~$a^{\perp\perp} = a^{\perp\perp} \ovee 0$,
     hence~$0 \ovee a = a$ by partial commutativity and~$a^{\perp\perp} = a$.
 \end{solution}
+\begin{solution}{exc-dposet}%
+We start with~(D1).  Assume~$b \leq a$. Then~$b \ovee c= a$ for some~$c$.
+    By definition~$c = a \ominus b $.
+Conversely, assume~$a \ominus b$ is defined.
+    Then~$b \ovee (b \ominus a) = a$, hence~$b \leq a$.
+To prove~(D2), assume~$a \ominus b$ is defined.
+    Then~$a \ominus b \leq b \ovee (a \ominus b) = a$ as desired.
+For~(D3) assume~$a \ominus b$ and~$a \ominus (a \ominus b)$
+    are defined.
+Note~$(a \ominus b) \ovee b = b \ovee (a \ominus b) = a$
+    and so~$b = a \ominus (a \ominus b)$.
+
+(D4) is next.  Assume~$a\leq b \leq c$.
+    Then~$(c \ominus b) \ovee (b\ominus a)  \ovee a
+        = c  =  (c \ominus a) \ovee a$
+            and so by cancellation~$
+               c \ominus b \leq (c\ominus b) \ovee (b \ominus a)
+               = c \ominus a$.
+    Note~$ ((c \ominus a) \ominus (c \ominus b))  \ovee (c \ominus b)
+        \ovee a = c = (b \ominus a) \ovee a \ovee (c \ominus b)$
+    and so by cancellation~$ (c\ominus a) \ominus (c \ominus b) = b\ominus a$.
+
+For the final part of the exercise, assume~$E$ is a poset
+    with maximum element~$1$ and a partial operation~$\ominus$
+    satisfying~(D1), (D2), (D3) and (D4).
+We will show~$E$ is an effect algebra with~$a \ovee b = c \Leftrightarrow
+            a = c \ominus b$ and~$0 = 1\ominus 1$.
+
+First we have to show that if~$c_1 \ominus b = c_2 \ominus b$
+    for some~$b \leq c_1, c_2$ in~$E$,
+    then~$c_1 = c_2$
+    so that~$\ovee$ is at most single-valued.
+By~(D4)
+    we have~$(1 \ominus b) \ominus (1 \ominus c_1)
+        = c_1\ominus b$
+        and so~$(1 \ominus b) \ominus a =
+        (1 \ominus b) \ominus (c_1 \ominus b)
+            =  (1\ominus b) \ominus ((1 \ominus b) \ominus (1 \ominus c_1))
+            = 1 \ominus c_1$ by (D3).
+Similarly~$1 \ominus c_2 = (1 \ominus b) \ominus a$,
+        so with another application of (D3) we
+        see~$c_1 = 1 \ominus(1\ominus c_1) = 1 \ominus (1 \ominus c_2)
+            = c_2$.
+
+The first axiom we will prove is partial commutativity.
+    Assume~$a,b \in E$ with~$a \perp b$.
+    By definition, there is some~$c\geq b$ with~$c \ominus b = a$.
+    By~(D3) we have~$c \ominus a = c \ominus (c \ominus b) = b$
+        and so~$b \perp a$
+        with~$b \ovee a = c = a\ovee b$ as desired.
+Note that we have also shown that~$a \leq a\ovee b$
+    and~$(a \ovee b) \ominus a = b$
+    for~$a \perp b$.
+
+Next, to prove partial associativity, assume~$a,b,c\in E$
+    with~$a \perp b$ and~$a \ovee b \perp c$.
+Then~$a \leq a \ovee b \leq (a \ovee b) \ovee c$ and thus
+\begin{align*}
+    b & \ =\ (a \ovee b) \ominus a \\
+    & \ \overset{\mathclap{\mathrm{(D4)}}}{=} \ 
+    \bigl( ((a \ovee b) \ovee c) \ominus a \bigr) \,
+    \ominus \, \bigl( ((a\ovee b) \ovee c) \ominus (a \ovee b) \bigr) \\
+    & \ = \ 
+    \bigl( ((a \ovee b) \ovee c) \ominus a \bigr) \,
+    \ominus \, c,
+\end{align*}
+which shows~$b \perp c$
+    with~$b \ovee c=  ((a \ovee b) \ovee c) \ominus a$.
+From that it immediately follows
+    that~$b \ovee c \perp a$ with~$(b\ovee c)\ovee a = (a\ovee b) \ovee c$
+        and so~$a \perp b \ovee c$
+            with~$(a \ovee b) \ovee c = a \ovee (b \ovee c)$
+                by partial commutativity.
+
+We continue with the zero axiom.
+Assume~$a \in E$.
+Clearly~$a \leq 1 \leq 1$ and
+    so~$(1 \ominus a) \ominus (1 \ominus 1) = 1 \ominus a$ by~(D4),
+    which shows~$1 \ominus a \perp  1\ominus 1 \equiv 0$
+    with~$(1 \ominus a) \ovee 0 = 1\ominus a$.
+    The zero law follows by partial commutativity.
+
+Now we prove the orthocomplement law.
+Assume~$a \in E$.
+By~(D3) we have~$1 \ominus( 1\ominus a) = a$,
+    which demonstrates~$a \perp 1\ominus a \equiv a^\perp$
+    with~$a \ovee a^\perp = 1$.
+Assume~$b \in E$ with~$a \ovee b = 1$.
+By definition, we have~$a = 1 \ominus b$ and so by~(D3)
+    we see~$b = 1 \ominus (1 \ominus b) = 1 \ominus a \equiv a^\perp$.
+
+To show the last axiom (zero--one), assume~$a \in E$ with~$a\perp 1$.
+Then~$1 \leq a\ovee 1 \leq 1$ and so~$a \ovee 1 = 1$.
+Hence~$a = (a\ovee 1) \ominus 1 = 1\ominus 1 \equiv 0$.
+We have shown~$E$ is an effect algebra.
+
+The conclude this exercise, we show that the original
+    order and~$\ominus$ coincide with
+    those defined for~$E$ as an effect algebra.
+For clarity, write~$\leq_{\mathrm{EA}}$ and~$\ominus_{\mathrm{EA}}$
+    for the latter.
+
+To start, assume~$a \leq b$ for some~$a,b \in E$ (as a D-poset).
+Then~$b = a \ovee (b \ominus a)$
+    as trivially~$b \ominus a = b \ominus a$.
+Hence~$a \leq_{\mathrm{EA}} b$.
+To prove the converse, assume~$a \leq_{\mathrm{EA}} b$.
+Then~$a \ovee c = b$ for some~$c \in E$.
+Hence~$a \leq a \ovee c \leq b$.  Indeed~$\leq = \leq_{\mathrm{EA}}$.
+
+Assume~$a,b\in E$.
+The element~$a \ominus_{\textrm{EA}} b$ is defined
+    if and only if~$b \leq a$,
+    which is precisely when~$ a \ominus b$ is defined.
+        Furthermore~$b \ovee (a \ominus_{\textrm{EA}} b) = a$
+        and so~$
+        a \ominus_{\textrm{EA}} b =
+        (b \ovee (a \ominus_{\textrm{EA}} b)) \ominus b =
+        a \ominus b $.
+\end{solution}
 
 % vim: se ft=tex.latex :
