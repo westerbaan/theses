@@ -1611,5 +1611,29 @@ The element~$a \ominus_{\textrm{EA}} b$ is defined
         (b \ovee (a \ominus_{\textrm{EA}} b)) \ominus b =
         a \ominus b $.
 \end{solution}
+\begin{solution}{exc-eamorphism}%
+   Assume~$f\colon E \to F$ is an homomorphism between effect algebras.
+    \begin{enumerate}
+        \item
+            We have~$0\perp 1$ and so~$f(0) \perp f(1) = 1$,
+                hence~$f(0) = 0$ by the zero--one law.
+        \item
+            Assume~$a \leq b$ in~$E$.
+            Then~$a \ovee c = b$ for some~$c \in E$.
+            Hence~$f(b) = f(a \ovee c) = f(a) \ovee f(c)$,
+            which shows~$f(a) \leq f(b)$.
+        \item
+            Assume~$a \ominus b$ is defined (i.e.~$a \geq b$).
+            Recall~$(a \ominus b) \ovee b = a$
+                and so~$f(a \ominus b) \ovee f(b) = f(a)$.
+                Hence~$f(a \ominus b) = f(a) \ominus f(b)$.
+        \item
+            Assume~$a \in E$.
+            In~\sref{exc-dposet} we saw~$1 \ominus a = a^\perp$
+            and so by the previous point~$f(a^\perp) = f(1\ominus a) =
+                f(1) \ominus f(a) = 1 \ominus f(a) = f(a)^\perp$.
+    \end{enumerate}
+\end{solution}
+\spacingfix{}
 
 % vim: se ft=tex.latex :
