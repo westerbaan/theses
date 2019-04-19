@@ -1658,5 +1658,40 @@ Thus
     and so~$a_i^\perp = (a_i \odot b_i)^\perp$,
         hence~$a_i = a_i \odot b_i$.
 \end{solution}
+\begin{solution}{eff-prod-rules}%
+   Let~$C$ be an effectus in partial form.
+Assume~$f\colon X \to A$ and~$g\colon X \to B$
+    are any arrows in~$C$ with~$1 \after f \perp 1 \after g$.
+\begin{enumerate}
+\item Assume~$[a,b]\colon A+B \to Y$ is any map.
+Then~$1 \after a \after f \leq 1 \after f \perp 1 \after g
+        \geq 1 \after b \after g$
+        and so~$1 \after a \after f \perp 1 \after b \after g$.
+    Hence~$a \after f \perp b \after g$
+    and so~$[a,b] \after \langle f, g \rangle
+        = [a,b] \after ((\kappa_1 \after f) \ovee (\kappa_2 \after g))
+        = ([a,b] \after (\kappa_1 \after f)) \ovee ([a,b] \after (\kappa_2 \after g)) = (a \after f) \ovee (b \after g)$.
+\item By the previous point and~\sref{cotupl-pcm},
+        we have~$1 \after \langle f,g\rangle
+            = [1,1] \after \langle f,g\rangle
+            = (1 \after f) \ovee (1 \after g)$.
+\item Assume~$k\colon A \to A'$ and~$l \colon B \to B'$ are two maps in~$C$.
+    Then by the first point of this exercise,
+            we have~$(k+l) \after \langle f, g\rangle
+                \equiv [\kappa_1 \after k, \kappa_2 \after l] \after
+                    \langle f, g \rangle 
+                = (\kappa_1 \after k \after f) \ovee
+                (\kappa_2 \after l \after g) \equiv \langle 
+                k \after f, l \after g \rangle $.
+\item
+Assume~$k\colon X' \to X$ is some map in~$C$.
+Then by PCM-enrichment of~$C$, we
+    get~$\langle f, g \rangle \after k 
+        \equiv ((\kappa_1 \after f) \ovee (\kappa_2 \after g)) \after k
+        = (\kappa_1 \after f\after k) \ovee (\kappa_2 \after g \after k)
+        \equiv \langle f \after k, g\after k\rangle$.
+\end{enumerate}
+\end{solution}
+\spacingfix{}
 
 % vim: se ft=tex.latex :
