@@ -1705,5 +1705,55 @@ Then by PCM-enrichment of~$C$, we
             and~$m_2 \after h = m_2 \after h_2$
             and so~$h_1 = h_2 = h$.
 \end{solution}
+\begin{solution}{pullback-lemma}%
+    For the first point,
+   assume the left and right inner squares are pullbacks.
+To prove the outer square is a pullback,
+    assume~$\alpha \colon S \to C$ and~$\beta\colon S \to X$
+    are any maps with~$g' \after f' \after \beta = m \after \alpha$.
+As the right inner square is a pullback,
+    there is a unique map~$\gamma\colon S \to B$
+        with~$g \after \gamma = \alpha$
+            and~$l \after \gamma = f' \after \beta$.
+By this last equality and the fact that the left inner square is
+    a pullback, there is a unique map~$\delta \colon S \to A$
+    with~$f \after \delta = \gamma$
+        and~$k \after \delta = \beta$.
+    We will prove that this~$\delta$ is also the mediating map
+        for the outer square.
+Clearly~$g \after f \after \delta g \after \gamma = \alpha$.
+Assume~$\delta'\colon S \to A$
+    is some other map with~$g \after f \after \delta' = \alpha$
+    and~$k \after \delta' \after \beta$.
+Note that~$g \after f \after \delta' = \alpha = g \after \gamma$
+    and~$l \after f \after \delta' = f' \after k \after \delta'
+        = f' \after \beta = l \after \gamma$.
+Thus~$f \after \delta' = \gamma$ as~$g$ and~$l$ are jointly monic by~\sref{exc-jointly-monic-pullback}.
+Consequently~$\delta=\delta'$ and so the outer square is indeed a pullback.
+
+For the second point, assume the outer square is a pullback
+    and that~$l$ and~$g$ are jointly monic.
+We will prove that the left inner square is a pullback.
+To this end, assume~$\alpha\colon S \to B$ and~$\beta\colon S \to X$
+    are maps with~$l \after \alpha = f' \after \beta$.
+Note~$m \after g \after \alpha = g' \after l \after \alpha = g' \after f' \after \beta$
+    and thus by the fact that the outer square is a pullback,
+        there is a unique~$\gamma\colon S \to A$
+        with~$g \after f \after \gamma = g \after \alpha$
+            and~$k \after \gamma = \beta$.
+    This will also be the unique mediating map
+        demonstrating that the left inner square is a pullback.
+We have~$l \after f \after \gamma = f' \after k \after \gamma
+        = f' \after \beta = l \after \alpha$
+            and so by the joint monicity of~$l$ and~$g$,
+            we conclude~$f \after \gamma = \alpha$.
+    Assume there is some map~$\gamma' \colon S \to A$
+        with~$f \after \gamma' = \alpha$ and~$k \after \gamma' = \beta$.
+Then clearly~$g \after f \after \gamma' = g \after \alpha$
+    and so by the uniqueness of~$\gamma$
+    as a mediating map for the outer square,
+    we find~$\gamma' = \gamma$.
+    Thus the left inner square is a pullback as well.
+\end{solution}
 
 % vim: se ft=tex.latex :
