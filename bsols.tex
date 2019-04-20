@@ -1827,6 +1827,164 @@ As~$0$ is a strict initial object in an effectus in partial form,
     both~$!_X$ and~$!_Y$ are isomorphisms.
 Hence~$!_Y \after !_X^{-1}$ is an isomorphism between~$X$ and~$Y$.
 \end{solution}
+\begin{solution}{exc-rng-eff}%
+   To show~$\op\Rng$ is an effectus in total form,
+        we shown the dual axioms for~$\Rng$.
+    Clearly, for any two unit rings~$R$ and~$S$,
+        their cartesian product~$R \times S$ is a categorical product
+        with projectors~$\pi_1(r,s) = r$ and~$\pi_2(r,s)=s$.
+    The integer ring~$\Z$ is the initial object of~$\Rng$.
+The zero ring (the unique unit ring with a single element~$0=1$)
+    is the final object of~$\Rng$.
+
+To show the pushout diagrams corresponding to~\eqref{pullbacks} hold,
+    assume we are given unit rings~$R,S,T$ with
+    unit-preserving homomorphisms~$\alpha, \beta,\delta$
+    that make the outer squares of the following diagrams commute.
+\begin{equation*}
+    \xymatrix{
+    T\\
+    & R \times S \ar@{.>}[lu]
+    & R \times \Z \ar[l]^{\id\times !}
+    \ar@/_1pc/[llu]_{\alpha}
+    \\& \Z \times S \ar[u]_{! \times \id}
+    \ar@/^1pc/[luu]^{\beta}
+    & \Z \times \Z \ar[l]^{\id\times!} \ar[u]_{! \times \id}
+    } \qquad
+    \xymatrix{
+    T\\
+    & R \ar@{.>}[lu]
+    & \Z \ar[l]^{!}
+    \ar@/_1pc/[llu]_{!}
+    \\& R \times S \ar[u]_{\pi_1}
+    \ar@/^1pc/[luu]^{\delta}
+    & \Z \times \Z \ar[l]^{!\times!} \ar[u]_{\pi_1}
+    }
+\end{equation*}
+    We have to show that there are unique dashed arrows (as shown)
+        that make these diagrams commute.
+    We start with the left diagram.
+    Define~$f\colon R\times S \to T$
+    by~$f(r,s) \equiv \alpha(r,0) + \beta(0,s)$.
+Clearly~$f$ is additive and $f(0,0) = \alpha(0,0) + \beta(0,0) = 0$.
+    By assumption~$\alpha(n,m) = \beta(n,m)$ for any~$n,m \in \Z$
+        and so~$\alpha(1,0) = \beta(1,0)$ in particular,
+        hence~$f(1,1) = \alpha(1,0) + \beta(0,1) = \beta(1,1) = 1$.
+It remains to be shown that~$f$ is multiplicative.
+    First note that~$\alpha(1,0) \beta(0,1)
+    = \beta(1,0)\beta(0,1) = \beta(0,0) = 0$.
+    Thus~$\alpha(r,0)\beta(0,s)
+            = \alpha(r,0)\alpha(1,0)\beta(0,1)\beta(0,s) = 0$
+        for any~$r \in R$ and~$s \in S$
+            and similarly~$\beta(0,s)\alpha(r,0) = 0$.
+Hence~$f(r,s)f(r',s') = \alpha(r,0)\alpha(r',0) + \beta(0,s)\beta(0,s')
+        = \alpha(rr',0) + \beta(0,ss') = f(rr', ss')$.
+        We have shown~$f$ is a unit-preserving ring homomorphism.
+Clearly~$f(r, m) = \alpha(r, 0) + \beta(0, m)
+            = \alpha(r,0) + \alpha(0,m) = \alpha(r,m)$
+                for any~$r \in R$ and~$m \in \Z$
+                hence~$\alpha = f \after (\id \times !)$.
+    Similarly~$\beta = f \after (! \after \id)$.
+Assume~$f'\colon R\times S \to T$ is any unit-preserving
+    ring homomorphism with~$\alpha = f' \after (\id \times !)$
+        and~$\beta = f' \after (! \after \id)$.
+Then clearly~$f'(r,0) = \alpha(r,0)$ and~$f'(0,s) = \beta(0,s)$,
+    so~$f'(r,s) = f'(r,0) + f'(0,s) = \alpha(r,0) + \beta(0,s) = f(r,s)$.
+This shows the left square above is indeed a pushout.
+
+We continue with the diagram on the right.
+By assumption~$\delta(n,m) = n$ for any~$n,m \in \Z$
+    hence~$\delta(0,s) = \delta(0,s)\delta(0,1) = 0$ for any~$s\in S$.
+Thus~$\delta(r,s) = \delta(r,0) + \delta(0,s) = \delta(r,0)$
+    for any~$r \in R$ and~$s \in S$.
+Define~$g\colon R \to T$ by~$g(r) = \delta(r,0)$.
+Clearly~$g$ is additive, multiplicative and~$g(0,0) = 0$.
+Furthermore~$g(1) = \delta(1,0) = \delta(1,1) = 1$,
+    so it is a unit-preserving ring homomorphism.
+It is easy to see that~$g \after \pi_1 = \delta$ and that~$g$
+    is the unique such unit-preserving ring homomorphism.
+We have shown the right diagram is a pushout too.
+
+To show~$\op\Rng$ is an effectus in total form,
+    it only remains to be shown that~$
+        \langle \pi_1, \pi_2,\pi_2\rangle,
+        \langle \pi_2, \pi_1,\pi_2\rangle
+        \colon \Z\times\Z
+            \to \Z\times\Z\times\Z$ are jointly epic.
+    So assume~$f,g\colon \Z\times\Z\times\Z \to R$
+        are two unit-preserving ring homomorphisms
+        for which we have~$f \after \langle \pi_1, \pi_2,\pi_2\rangle  =
+        g \after \langle \pi_1, \pi_2,\pi_2\rangle$
+        and~$f \after \langle \pi_2, \pi_1,\pi_2\rangle =
+        g \after \langle \pi_2, \pi_1,\pi_2\rangle$.
+    By the first equality~$f(k,0,0) = g(k,0,0)$
+        and by the second~$f(0,l,0) = g(0,l,0)$
+            for any~$k,l \in \Z$.
+In particular~$f(0,0,1) = 1-f(1,0,0) - f(0,1,0)
+    = 1 - g(1,0,0) - g(0,1,0) = g(0,0,1)$
+        and so~$f(0,0,m) = m f(0,0,1) = m g(0,0,1) = g(0,0,m)$
+            for any~$m \in \Z$.
+    Putting it all together: $f(k,l,m) 
+            = f(k,0,0) = f(0,l,m) + f(0,0,m)
+            = g(k,0,0) = g(0,l,m) + g(0,0,m) = g(k,l,m)$.
+    So~$f=g$ and so we have shown the required joint epicity.
+We have shown~$\op\Rng$ is indeed an effectus in total form.
+
+We continue with the two additional points.
+Let~$p \colon \Z\times\Z \to R$ be any predicate on~$R$.
+Then~$p(1,0) \in R$ with~$p(1,0)^2 = p(1,0^2) = p(1,0)$ and so~$p(1,0)$
+    is an idempotent.
+    Furthermore~$p(0,1) = p(1,1) - p(1,0) = 1 - p(1,0)$,
+        so~$p$ is fixed by the idempotent~$p(1,0)$.
+Let~$e \in R$ be any idempotent.
+It is easy to see that~$p(n,m) \equiv ne + m(1-e)$ is a unit-preserving
+    ring homomorphism with~$p(1,0) = e$.  Thus the predicates
+        on~$R$ correspond to its idempotents.
+    This also shows that the set of scalars of~$\op\Rng$
+        is the two-element effect monoid~$2$
+        as~$\Z$ has exactly two idempotents: $0$ and~$1$.
+
+Assume~$p \perp q$ for two predicates~$p,q \colon \Z\times\Z \to R$
+    on~$R$.
+Then, by definition, $p \perp q$ if
+        there is a~$b\colon \Z\times\Z\times\Z\to R$
+    with~$b(n,m,m) = p(n,m)$
+    and~$b(m,n,m) = q(n,m)$ for all~$n,m \in \Z$
+In particular~$p(1,0)q(1,0) = b(1,0,0)b(0,1,0) = 0$,
+    thus the idempotents corresponding to~$p$ and~$q$ are orthogonal.
+Conversely, if~$p(1,0)$ and~$q(1,0)$ are orthogonal,
+    then~$b(k,l,m) = k p(1,0) + l q(1,0) + m (1-p(1,0) - q(1,0))$
+        defines a unit-presrving ring homomorphism
+        that shows~$p \perp q$ with~$(p \ovee q)(1,0)
+            = b(1,1,0) = p(1,0) + q(1,0)$.
+From this it is also clear that~$p^\perp(1,0) = 1 - p(1,0)$.
+
+There are many examples to show unit-preserving ring homomorphisms
+    need not be fixed on their value on idempotents
+        (and thus that~$\op\Rng$ does not have separting predicates.)
+For instance, let~$R$ denote the unit ring of continuous real-valued
+    functions on the unit interval~$[0,1]$.
+This ring has only two idempotents: the functions that are constant~$0$
+    and~$1$, which are also the zero and unit element (respectively)
+    of the ring.
+For every~$x \in [0,1]$
+    the map~$\delta_x \colon R \to \R$ given by~$\delta_x(f) =f(x)$
+    is a unit-preserving ring homomorphism.
+Clearly~$\delta_x(0) = 0 = \delta_y(0)$ and~$\delta_x(1) = 1 = \delta_y(1)$
+    for any~$x,y \in [0,1]$ with~$x\neq y$, but not~$\delta_x = \delta_y$.
+
+Finally, we treat the second and last point of the exercise.
+Reasoning towards contradiction,
+    let~$f\colon \Z_2 \to \Z$ be any unit-preserving ring homomorphism.
+Then~$0 = f(0) = f(1+1) = f(1) + f(1) = 1 + 1 = 2$, which is absurd.
+Thus there is no such homomorphism.
+However, there are two unit-preserving ring
+    homomorphisms~$\Z \times \Z \to \Z_2$
+    corresponding to the idempotents~$0$ and~$1$ in~$\Z_2$.
+Hence the states cannot be separating (for otherwise
+    there could at most be a single unit-preserving
+    ring homomorphism~$\Z\times\Z\to\Z_2$.)
+\end{solution}
     
 
 % vim: se ft=tex.latex :
