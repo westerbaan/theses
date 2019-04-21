@@ -1985,6 +1985,91 @@ Hence the states cannot be separating (for otherwise
     there could at most be a single unit-preserving
     ring homomorphism~$\Z\times\Z\to\Z_2$.)
 \end{solution}
-    
+\begin{solution}{exc-dm-effectus}%
+We will first show that~$\mathcal{D}_M$ is a functor.
+To start, clearly
+\begin{equation*}
+    \mathcal{D}_M(\id)(p)(x) 
+        \ \equiv\  \bigovee_{y; \id(y)=x} p(y)
+        \ =\ p(x)
+\end{equation*}
+        and so~$\mathcal{D}_M(\id) = \id$.
+Let~$f\colon X \to Y$ and~$g\colon Y \to Z$ be given.
+    Then
+    \begin{align*}
+        \mathcal{D}_M (g \after f) (p) (z)
+        & \ \equiv\ \bigovee_{x;\ g(f(x))=z} p(x)\\
+        & \ =\ \bigovee_{y;\ g(y) = z}
+               \bigovee_{x;\ f(x) = y} p(x) \\
+        & \ =\ \bigovee_{y;\ g(y) = z}
+                \bigl((\mathcal{D}_M f)(p)\bigr)(y) \\
+        & \ =\ \bigl( \, (\mathcal{D}_M g) \bigl(
+                (\mathcal{D}_M f)(p)\bigr) \, \bigr)(z)
+    \end{align*}
+    and so~$\mathcal{D}_M (g \after f)
+        = (\mathcal{D}_M g)\after (\mathcal{D}_M f)$.
+
+Next, we show that~$\eta$ is a natural transformation.
+Let~$f\colon X \to Y$ be any map.
+Then for any~$x_0 \in X$, we have
+\begin{align*}
+    ((\mathcal{D}_M f) \after \eta_X) (x_0)
+        & \ = \ \bigovee_{x;\ f(x)=y} (\eta_X(x_0))(x) \\
+        & \ = \ \bigovee_{x;\  \substack{f(x)=y \\ x = x_0}} 1 \\
+        & \ = \ (\eta_Y (f(x_0)))
+\end{align*}
+and so~$\mathcal{D}_M f \after \eta_X = \eta_Y \after f$,
+    i.e.~$\eta$ is a natural transformation~$\id \Rightarrow \mathcal{D}_M$.
+
+To show~$\mu$ is a natural transformation,
+    assume~$f\colon X \to Y$ is some map, $y \in Y$ and~$\Phi \in
+        \mathcal{D}_M\mathcal{D}_M X$.
+Then
+\begin{align*}
+    (\mathcal{D}_M f) ( \mu_X(\Phi) ) (y)
+    & \ = \ \bigovee_{x;\ f(x)=y} \mu_X(\Phi)(x) \\
+    & \ = \ \bigovee_{x;\ f(x)=y}
+            \bigovee_{p} \Phi(p) \odot p(x) \\
+    & \ = \ \bigovee_{p}
+                \bigovee_{x;\ f(x)=y}
+            \Phi(p) \odot p(x) \\
+    & \ = \ \bigovee_{p}
+            \Phi(p) \odot 
+                \bigovee_{x;\ f(x)=y} p(x)  \\
+    & \ = \ \bigovee_{p}
+            \Phi(p) \odot 
+                (\mathcal{D}_M f)(p)(y) \\
+    & \ = \ \bigovee_{q}
+                \bigovee_{p;\ (\mathcal{D}_M f)(p) = q}
+            \Phi(p) \odot q(y) \\
+    & \ = \ \bigovee_{q}
+               \Bigl( \bigovee_{p;\ (\mathcal{D}_M f)(p) = q}
+            \Phi(p)\Bigr) \odot q(y) \\
+    & \ = \ \bigovee_{q}
+                    (\mathcal{D}_M \mathcal{D}_M f) (\Phi)(q) \odot q(y) \\
+    & \ = \ \mu_Y (( \mathcal{D}_M \mathcal{D}_M f)(\Phi)) (y)
+\end{align*}
+and so~$(\mathcal{D}_M f) \after \mu_X
+= \mu_Y \after (\mathcal{D}_M \mathcal{D}_M f)$,
+ hence~$\mu$ is a natural transformation~$\mathcal{D}_M \mathcal{D}_M
+    \Rightarrow \mathcal{D}_M$.
+    We continue with the monad laws. Assume~$X$ is a set, $x \in X$
+        and~$\aleph \in \mathcal{D}_M \mathcal{D}_M \mathcal{D}_M X$.
+        Then
+\begin{align*}
+\mu_X ( \mu_{\mathcal{D}_M X} ( \aleph))(x)
+    & \ = \ \bigovee_p (\mu_{\mathcal{D}_M X}) (\aleph) (p) \odot p(x) \\
+    & \ = \ \bigovee_p \bigovee_\Phi \aleph(\Phi) \odot \Phi(p) \odot p(x) \\
+    & \ = \ \bigovee_\Phi  \aleph(\Phi) \odot \bigovee_p \Phi(p) \odot p(x) \\
+    & \ = \ \bigovee_\Phi  \aleph(\Phi) \odot \mu_X(\Phi)(x) \\
+    & \ = \ \bigovee_p \bigovee_{\Phi; \ \mu_X(\Phi)=p}
+        \aleph(\Phi) \odot p(x) \\
+    & \ = \ \bigovee_p  (\mathcal{D}_M \mu_X) (\aleph) (p)\odot p(x) \\
+    & \ = \ \mu_X ((\mathcal{D}_M \mu_X)(\aleph)) (x)
+\end{align*}
+    and so~$\mu_X \after \mu_{\mathcal{D}_M X} = \mu_X \after (\mathcal{D}_M \mu_X)$.
+
+\end{solution}
+
 
 % vim: se ft=tex.latex :
