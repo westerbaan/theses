@@ -2067,9 +2067,153 @@ and so~$(\mathcal{D}_M f) \after \mu_X
     & \ = \ \bigovee_p  (\mathcal{D}_M \mu_X) (\aleph) (p)\odot p(x) \\
     & \ = \ \mu_X ((\mathcal{D}_M \mu_X)(\aleph)) (x)
 \end{align*}
-    and so~$\mu_X \after \mu_{\mathcal{D}_M X} = \mu_X \after (\mathcal{D}_M \mu_X)$.
+    and so~$\mu \after \mu_{\mathcal{D}_M} = \mu \after (\mathcal{D}_M )$.
+For any~$x \in X$ and $p \in \mathcal{D}_M X$, we have
+\begin{equation*}
+    \mu_X (\eta_{\mathcal{D}_M X}(p))(x)
+    \ = \ \bigovee_q \eta_{\mathcal{D}_M X}(p)(q) \odot q(x) \ = \ p(x)
+\end{equation*}
+and so~$\mu \after \eta_{\mathcal{D}_M} = \id$.
+For the final monad law, assume~$x \in X$ and~$p \in \mathcal{D}_M X$.
+Then
+\begin{align*}
+    \mu_X( (\mathcal{D}_M \eta_X)(p))(x)
+    & \ = \ \bigovee_q (\mathcal{D}_M \eta_X) (p)(q) \odot q(x) \\
+    & \ = \ \bigovee_q \bigovee_{y; \ \eta_X(y)=q}
+            p(y) \odot q(x) \\
+    & \ = \ \bigovee_y p(y) \odot \eta_X (y)(x) \\
+    & \ = \ p(x)
+\end{align*}
+and so~$\mu \after \mathcal{D}_M \eta = \id$.
+We have shown~$(\mathcal{D}_M, \eta, \mu)$ is a monad.
 
+Our next project is to show that~$\Kl \mathcal{D}_M$ is an effectus
+    in total form.
+It is easy to see that the coproduct~$X + Y$ from~$\mathsf{Set}$
+    is also a coproduct in~$\mathcal{D}_M$
+        with coprojectors~$\eta\after\kappa_i$,
+            where~$\kappa_i$ are the coprojectors for~$X+Y$ in~$\mathsf{Set}$.
+(In fact, for any category~$C$ and monad~$T$,
+    the inclusion functor~$K\colon C \to \Kl T$
+        given by~$K X = X$ and~$K f = \eta \after f$
+        is a left-adjoint and so~$K$ preserves colimits.)
+The empty set is also the initial object of~$\Kl \mathcal{D}_M$.
+As~$\mathcal{D}_M 1 \cong 1$,
+    the category~$\Kl \mathcal{D}_M$
+        has as final object the one-element set~$1$.
+
+Now we will show that a square such as that on the
+    left of \eqref{pullbacks} is a pullback.
+So assume~$\alpha \colon Z \to \mathcal{D}_M (X+1)$
+    and~$\beta\colon Z \to \mathcal{D}_M (1+Y)$
+        are maps with~$(\hat !+\hat\id) \hafter \alpha = (\hat\id+\hat!) \hafter \beta$,
+        where~$\hafter$ denotes the composition in~$\Kl \mathcal{D}_M$
+        and~$\hat f \equiv \eta \after f$ the Kleisli embedding.
+Assume~$z \in Z$.
+By assumption~$ \alpha(z) (\kappa_2*)
+                = ((\hat! + \hat\id) \hafter \alpha) (z) (\kappa_2 *)
+                = ((\hat\id + \hat!) \hafter \beta) (z) (\kappa_2 *)
+                = \bigovee_y \beta(z)(\kappa_2 y) $,
+                    where~$*$ is the unique element of~$1$.
+We want to define~$\delta\colon Z \to \mathcal{D}_M (X+Y)$
+    by~$\delta(z)(\kappa_1 x) = \alpha(z)(\kappa_1 x)$
+        and~$\delta(z)(\kappa_2 y) = \beta(z)(\kappa_2 y)$,
+            but first need to check the image of~$\delta(z)$ sums to~$1$.
+Indeed~$\bigovee_w \delta(z)(w)
+    = \bigovee_y \beta(z)(\kappa_2 y)
+    \ovee \bigovee_x \alpha(z)(\kappa_1 x)
+    = \alpha(z)(\kappa_2*)
+    \ovee \bigovee_x \alpha(z)(\kappa_1 x)
+    = 1$.
+Clearly~$\alpha = (\hat\id+\hat!) \hafter \delta $
+    and~$\beta = (\hat!+\hat\id)\hafter \delta$.
+Suppose~$\delta'\colon Z \to \mathcal{D}_M (X+Y)$
+    is some map with~$\alpha = (\hat\id+\hat!) \hafter \delta'$
+        and~$\beta = (\hat!+\hat\id) \hafter \delta'$.
+    Then~$\delta'(\kappa_1 x)
+        = ((\hat\id + \hat!) \hafter \delta')(\kappa_1 x)
+        = \alpha(\kappa_1 x)$ for any~$x \in X$
+        and similarly~$\delta'(\kappa_2 y)
+        = \beta(\kappa_2 y)$ for any~$y \in Y$, so~$\delta' = \delta$.
+We have shown that the square on the left of~\eqref{pullbacks}
+    is indeed a pullback in~$\Kl \mathcal{D}_M$.
+
+To show that the square on the right of~\eqref{pullbacks}
+    is also a pullback, assume~$\alpha\colon Z \to \mathcal{D}_M 1$
+        and~$\beta\colon Z \to \mathcal{D}_M (X+Y)$
+            are maps with~$(\hat!+\hat!) \hafter \beta = \hat\kappa_1 \hafter \alpha$.
+    Assume~$z \in Z$ and~$y \in Y$.
+    Then~$\beta(z)(\kappa_2 y) 
+                \leq ((\hat!+\hat!) \hafter \beta)(z)(\kappa_2 *)
+                = (\hat\kappa_1 \hafter \alpha)(z)(\kappa_2 *)
+                = 0 $.
+This allows us to define~$\delta \colon Z \to \mathcal{D}_M X$
+        by~$\delta(z)(x) = \beta(\kappa_1 x)$
+        as~$\bigovee_x \delta(z)(x)
+                = \bigovee_x \beta(\kappa_1 x)
+                = \bigovee_x \beta(\kappa_1 x)
+                 \ovee \bigovee_y \beta(\kappa_2 y) = 1$.
+    Clearly~$\hat\kappa_1 \hafter \delta = \beta$
+        and~$\hat! \hafter \delta = \alpha$.
+Suppose~$\delta' \colon Z \to \mathcal{D}_M X$ is some map
+    with~$\hat\kappa_1 \hafter \delta' = \beta$
+        and~$\hat! \hafter \delta' = \alpha$.
+    Then~$\delta'(z)(x) = (\hat\kappa_1 \hafter \delta')(\kappa_1 x)
+        = \beta(z)(\kappa_1 x) = \delta(z)(x)$
+        and so~$\delta = \delta'$.
+We have shown that the square on the right of~\eqref{pullbacks}
+    is a pullback in~$\Kl \mathcal{D}_M$.
+
+It only remains to be shown that the
+    maps~$
+    [\hat\kappa_1, \hat\kappa_2, \hat\kappa_2],
+    [\hat\kappa_2, \hat\kappa_1, \hat\kappa_2] \colon
+        1+1+1 \to \mathcal{D}_M (1+1) $
+        are jointly monic in~$\Kl \mathcal{D}_M$.
+To this end,
+assume~$f_1,f_2 \colon Z \to \mathcal{D}_M (1+1+1)$
+are given with~$
+    [\hat\kappa_1, \hat\kappa_2, \hat\kappa_2] \hafter f_1 =
+    [\hat\kappa_1, \hat\kappa_2, \hat\kappa_2] \hafter f_2$
+    and~$[\hat\kappa_2, \hat\kappa_1, \hat\kappa_2] \hafter f_1 =
+    [\hat\kappa_2, \hat\kappa_1, \hat\kappa_2] \hafter f_2$.
+Assume~$z \in Z$.
+Clearly
+\begin{align*}
+f_1 (z)(\kappa_1 *)
+            &\ =\  ([\hat \kappa_1, \hat\kappa_2, \hat\kappa_2] \hafter  f_1)
+                (z)(\kappa_1 *)\\
+            &\ =\  ([\hat \kappa_1, \hat\kappa_2, \hat\kappa_2] \hafter  f_2)
+                (z)(\kappa_1 *)\\
+            &\ =\  f_2(z)(\kappa_1 *)
+\end{align*}
+    and
+\begin{align*}
+    f_1 (z)(\kappa_2 *)
+           &\ =\ ([\hat \kappa_2, \hat\kappa_1, \hat\kappa_2] \hafter  f_1)
+                (z)(\kappa_1 *)\\
+           &\ =\ ([\hat \kappa_2, \hat\kappa_1, \hat\kappa_2] \hafter  f_2)
+                (z)(\kappa_1 *)\\
+           &\ =\ f_2(z)(\kappa_2 *).
+\end{align*}
+So
+\begin{align*}
+f_1(z)(\kappa_3 *)
+       &\ =\ \bigl(f_1(z)(\kappa_1 *) \ovee 
+        f_1(z)(\kappa_2 *)\bigr)^\perp\\
+       &\ =\ \bigl(f_2(z)(\kappa_1 *) \ovee 
+        f_2(z)(\kappa_2 *)\bigr)^\perp\\
+            &\ =\  f_2(z)(\kappa_3 *),
+\end{align*}
+hence~$f_1 = f_2$.
+We have shown that~$\Kl \mathcal{D}_M$ is an effectus.
+
+A scalar in~$\Kl \mathcal{D}_M$
+    corresponds to a map~$\lambda\colon 1 \to \mathcal{D}_M (1+1)$,
+        which corresponds in turn to an element of~$M$.
+Unfolding definitions, it is straight-forward to see
+    that the effect monoid structure defined on the scalars
+        is the same as that of~$M$.
 \end{solution}
-
 
 % vim: se ft=tex.latex :
