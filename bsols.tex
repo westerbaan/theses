@@ -2299,5 +2299,122 @@ Write~$q \colon X \to X/_\sim$
     and so~$h(\varphi) \sim h(\psi)$, which shows~$\sim$
     is a congruence.
 \end{solution}
+\begin{solution}{least-conv-cong}%
+Concerning the first point:
+clearly~$h (\eta(h(\psi))) = h(\psi)$
+    and so~$(\, \eta(h(\psi)), \, \psi\,)$
+    is a derivation of~$\eta(h(\psi)) \approx \psi$.
+Assume~$\varphi \approx \psi$.
+    Then~$\eta(h(\varphi)) \approx \varphi \approx \psi \approx \eta(h(\psi))$
+        and so~$h(\varphi) \sim h(\psi)$.
 
+We continue with the second point.
+    Suppose we are given~$\chi_1, \ldots, \chi_n, \varphi,\psi \in \mathcal{D}_M X$
+    and~$\lambda_0, \ldots, \lambda_n \in M$
+        with~$\bigovee_i \lambda_i = 1$.
+To cover the first base case in the definition
+    of a derivation, assume~$h(\varphi) = h(\psi)$.
+Then
+\begin{align*}
+    (h \after \mu) \Bigl(\lambda_0 \ket{\psi} \ovee \bigovee_{j=1}^n \lambda_j \ket{\chi_j}\Bigr)
+    & \ = \ 
+    (h \after \mathcal{D}_M h) \Bigl(\lambda_0 \ket{\psi} \ovee \bigovee_{j=1}^n \lambda_j \ket{\chi_j}\Bigr) \\
+    & \ = \ 
+    h  \Bigl(\lambda_0 \ket{h(\psi)} \ovee \bigovee_{j=1}^n \lambda_j \ket{h(\chi_j)}\Bigr) \\
+    & \ = \ 
+    h  \Bigl(\lambda_0 \ket{h(\varphi)} \ovee \bigovee_{j=1}^n \lambda_j \ket{h(\chi_j)}\Bigr) \\
+    & \ = \ 
+    (h \after \mu) \Bigl(\lambda_0 \ket{\varphi} \ovee \bigovee_{j=1}^n \lambda_j \ket{\chi_j}\Bigr)
+\end{align*}
+and so
+    $\mu \bigl(\lambda_0 \ket{\psi} \ovee \bigovee_{j=1}^n \lambda_j \ket{\chi_j}\bigr)
+     \approx  
+    \mu \bigl(\lambda_0 \ket{\varphi} \ovee \bigovee_{j=1}^n \lambda_j \ket{\chi_j}\bigr)$.
+Next, for the other base case in the definition of a derivation,
+    assume~$\varphi \equiv \bigovee_i^m \mu_i \ket{x_i}$
+    and~$\psi \equiv \bigovee_i^m \mu_i \ket{y_i}$
+    with~$x_i \mathrel{R^*} y_i$ for~$1 \leq i \leq m$.
+Then
+\begin{align*}
+    \mu \Bigl(\lambda_0 \ket{\psi} \ovee \bigovee_{j=1}^n \lambda_j \ket{\chi_j}\Bigr)
+    & \ = \  
+    \bigovee_{i=1}^m \lambda_0 \odot \mu_i \ket{y_i}
+    \ovee \bigovee_{j=1}^n \bigovee_x \lambda_j \odot \chi_j(x) \ket{x}\\
+    \mu \Bigl(\lambda_0 \ket{\varphi} \ovee \bigovee_{j=1}^n \lambda_j \ket{\chi_j}\Bigr)
+    & \ = \  
+    \bigovee_{i=1}^m \lambda_0 \odot \mu_i \ket{x_i}
+    \ovee \bigovee_{j=1}^n \bigovee_x \lambda_j \odot \chi_j(x) \ket{x}.
+\end{align*}
+This shows that~$\mu \bigl(\lambda_0 \ket{\psi} \ovee \bigovee_{j=1}^n \lambda_j \ket{\chi_j}\bigr)
+     \approx  
+    \mu \bigl(\lambda_0 \ket{\varphi} \ovee \bigovee_{j=1}^n \lambda_j \ket{\chi_j}\bigr)$ by the second base case of a derivation.
+Thus by induction~$\mu \bigl(\lambda_0 \ket{\psi} \ovee \bigovee_{j=1}^n \lambda_j \ket{\chi_j}\bigr)
+     \approx  
+    \mu \bigl(\lambda_0 \ket{\varphi} \ovee \bigovee_{j=1}^n \lambda_j \ket{\chi_j}\bigr)$ whenever merely~$\varphi \approx \psi$.
+
+For the third point, we need some preparation.
+Pick representatives~$R \subseteq X$ of~$\sim$:
+    for every~$x \in X$ there is a unique~$r_x \in R$ with~$r_x\sim x$.
+    By definition~$\eta(r_x) \approx \eta(x)$.
+    Let~$\varphi \equiv \bigovee^n_{i=1} \lambda_i\ket{x_i}  \in \mathcal{D}_M X$ given.
+By the previous point~
+\begin{align*}
+    \varphi & \ = \ 
+    \mu \Bigl( \lambda_1 \ket{\eta(x_1)}  \ovee \bigovee^n_{i=2} \lambda_i\ket{\eta(x_i)}  \Bigr) \\
+    & \ \approx \ 
+    \mu \Bigl( \lambda_1 \ket{\eta(r_{x_1})}  \ovee \bigovee^n_{i=2} \lambda_i\ket{\eta(x_i)}  \Bigr) \\
+    & \ = \ 
+    \mu \Bigl( \lambda_2 \ket{\eta(x_2)}  \ovee \lambda_1 \ket{r_{x_1}}  \ovee  \bigovee^n_{i=3} \lambda_i\ket{\eta(x_i)}  \Bigr) \\
+    & \ \approx \ 
+    \mu \Bigl( \lambda_2 \ket{\eta(r_{x_2})}  \ovee \lambda_1 \ket{r_{x_1}}  \ovee  \bigovee^n_{i=3} \lambda_i\ket{\eta(x_i)}  \Bigr) \\
+    & \qquad\qquad  \vdots\\
+    & \ \approx \ \bigovee_{i=1}^n \lambda_i \ket{r_{x_i}} \\
+    & \ \approx \ \bigovee_{r \in R} \Bigl(\bigovee_{x \sim r} \varphi(x) \Bigr)\ket{r}.
+\end{align*}
+Now, assume~$\varphi \sim \psi$.
+Then~$\bigovee_{x \sim x_0} \varphi(x)
+    = \bigovee_{x \sim x_0} \psi(x)$ for any~$x_0 \in X$
+        and so
+\begin{equation*}
+\varphi \ \approx  \ 
+                \bigovee_{r \in R} \Bigl( \bigovee_{x \sim r} \varphi(x) \Bigr) \ket{r}
+              \ = \  \bigovee_{r \in R} \Bigl( \bigovee_{x \sim r} \psi(x) \Bigr) \ket{r}
+            \ \approx \  \psi.
+\end{equation*}
+
+Clearly~$\sim$ is an equivalence relation on~$X$.
+To show it is a congruence, assume~$\varphi \sim \psi$.
+By the previous, we know~$\varphi \approx \psi$
+    and so~$h(\varphi) \sim h(\psi)$ by the first point,
+        which shows~$\sim$ is indeed a congruence.
+Furthermore~$R$ is contained in~$\sim$;
+indeed, if~$x \mathrel{R} y$,
+    then~$(\eta(x), \eta(y))$ is a derivation of~$\eta(x) \approx \eta(y)$
+    and so~$x \sim y$.
+
+To show~$\sim$ is the smallest congruence containing~$R$,
+    assume~$S \subseteq X^2$ is some congruence of~$X$
+        with~$R \subseteq S$.
+It is sufficient to show that~$\varphi \approx \psi$
+    implies~$h(\varphi) \mathrel{S} h(\psi)$.
+Indeed if this is the case and~$x \sim y$,
+    then by definition~$\eta(x) \approx \eta(y)$
+    and so~$x = h(\eta(x)) \mathrel{S} h(\eta(y)) = y$.
+
+We will prove that~$\varphi \approx \psi$
+    implies~$h(\varphi) \mathrel{S} h(\psi)$
+    by induction over the definition of~$\approx$.
+For the first base case in the definition of~$\approx$,
+    assume~$\varphi \equiv \bigovee^n_{i=1} \lambda_i \ket{x_i}$
+and~$\psi \equiv \bigovee^n_{i=1} \lambda_i \ket{y_i}$
+for some~$(x_1,y_1), \ldots, (x_n,y_n) \in R^*$.
+Then~$x_i \mathrel{S} y_i$
+    and so~$\varphi \mathrel{S} \psi$,
+    hence~$h(\varphi) \mathrel{S} h(\psi)$.
+For the other base case, suppose~$h(\varphi) = h(\psi)$
+    for some~$\varphi,\psi \in \mathcal{D}_M X$.
+Then clearly~$h(\varphi) \mathrel{S} h(\psi)$.
+Thus, by induction~$h(\varphi) \mathrel{S} h(\psi)$
+    whenever~$\varphi \approx \psi$. 
+\end{solution}
 % vim: se ft=tex.latex :
