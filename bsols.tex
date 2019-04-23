@@ -2282,5 +2282,22 @@ We have shown~$(X/_\sim, h_\sim)$ is an abstract~$M$-convex set.
         from the second point shows that~$q$ is
         an~$M$-affine map.
 \end{solution}
+\begin{solution}{affine-kernel-cong}%
+To show~$\sim$ is a congruence,
+    assume~$\varphi \sim \psi$ for~$\varphi,\psi \in \mathcal{D}_M X$.
+Write~$q \colon X \to X/_\sim$
+    for the quotient map for~$\sim$
+        and~$f_\sim \colon X/_\sim \to X$ for
+        the unique map with~$f_\sim \after q =f$.
+    Note that~$
+    \mathcal{D}_M q (\varphi)
+    = \mathcal{D}_M q (\psi)$ and so~$f(h(\varphi)) = 
+    h (\mathcal{D}_M f(\varphi)) =
+    h (\mathcal{D}_M f_\sim (\mathcal{D}_M q (\varphi))) =
+    h (\mathcal{D}_M f_\sim (\mathcal{D}_M q (\psi))) =
+    f(h(\psi))$
+    and so~$h(\varphi) \sim h(\psi)$, which shows~$\sim$
+    is a congruence.
+\end{solution}
 
 % vim: se ft=tex.latex :
