@@ -2215,5 +2215,72 @@ Unfolding definitions, it is straight-forward to see
     that the effect monoid structure defined on the scalars
         is the same as that of~$M$.
 \end{solution}
+\begin{solution}{aconv-cong}%
+We start with the surjectivity of~$q$, $\mathcal{D}_M q$
+    and~$\mathcal{D}_M \mathcal{D}_M q$.
+By definition~$q$ is clearly surjective.
+Pick a section~$r\colon X/_\sim \to X$ of~$q$;
+    i.e.~$q \after r = \id$.
+Then~$\mathcal{D}_M r$
+    and $\mathcal{D}_M \mathcal{D}_M r$
+    are sections of~$\mathcal{D}_M q$ and~$\mathcal{D}_M \mathcal{D}_M q$
+    respectively, hence~$\mathcal{D}_M q$ and~$\mathcal{D}_M \mathcal{D}_M q$
+        are surjective.
+
+To prove the second point,
+    assume~$\sim$ is a congruence.
+Assume~$\varphi, \psi \in \mathcal{D}_M X$ with~$
+    (\mathcal{D}_M q)(\varphi) =
+    (\mathcal{D}_M q)(\psi) $.
+    By definition~$\varphi \sim \psi$ and~$h(\varphi) \sim h(\psi)$
+        by assumption that~$\sim$ is a congruence.
+    Thus~$q \after h (\varphi) = q \after h (\psi)$.
+Thus together with the surjectivity of~$\mathcal{D}_M q$,
+    there is a unique map~$h_\sim \colon \mathcal{D}_M X/_\sim \to
+        X/_\sim$ fixed by~$h_\sim \after (\mathcal{D}_M q) = q \after h$.
+To prove the converse, assume there is a
+    map~$h_\sim \colon \mathcal{D}_M X/_\sim \to
+        X/_\sim$ with~$h_\sim \after (\mathcal{D}_M q) = q \after h$
+            and assume~$\varphi \sim \psi$
+            for some~$\varphi,\psi \in \mathcal{D}_M X$.
+    Then~$q(h(\varphi))
+    = h_\sim (\mathcal{D}_M q(\varphi))
+    = h_\sim (\mathcal{D}_M q(\psi))
+    = q(h(\psi))$ and so~$h(\varphi) \sim h(\psi)$,
+    which shows that~$\sim$ is a congruence.
+
+For the third point, assume~$\sim$ is a congruence.
+Then
+\begin{alignat*}{3}
+    h_\sim \after
+    \mathcal{D}_M h_\sim  \after
+    \mathcal{D}_M \mathcal{D}_M h_\sim 
+&\ =\ h_\sim \after
+    \mathcal{D}_M (h_\sim \after \mathcal{D}_M q)\\
+&\ =\ h_\sim \after
+    \mathcal{D}_M (q \after h) &\quad & \text{by the second point}\\
+    &\ =\ q \after h \after \mathcal{D}_M h && \text{idem}\\
+    &\ =\ q \after h \after \mu && \text{as $(X,h)$ is a.conv.}\\
+    &\ =\ h_\sim \after \mathcal{D}_M q \after \mu && \text{by the second point} \\
+    &\ =\ h_\sim \after \mu \after
+    \mathcal{D}_M \mathcal{D}_M q
+    && \text{by naturality~$\mu$.}
+\end{alignat*}
+    Hence by surjectivity of~$\mathcal{D}_M \mathcal{D}_M q$,
+        we find~$h_\sim \after \mathcal{D}_M h_\sim
+            = h_\sim \after \mu$.
+    Using naturality of~$\eta$,
+        the second point
+            and the fact that~$(X,h)$ is an abstract convex set
+            (in that order),
+            we find~$h_\sim \after \eta \after q
+        = h_\sim \after \mathcal{D}_M q \after \eta
+        = q \after h \after \eta
+        = q $ and so~$h_\sim \after \eta = \id$ by surjectivity of~$q$.
+We have shown~$(X/_\sim, h_\sim)$ is an abstract~$M$-convex set.
+    The equality~$q \after h = h_\sim \after \mathcal{D}_M q$
+        from the second point shows that~$q$ is
+        an~$M$-affine map.
+\end{solution}
 
 % vim: se ft=tex.latex :
