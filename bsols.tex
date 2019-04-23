@@ -2417,4 +2417,23 @@ Then clearly~$h(\varphi) \mathrel{S} h(\psi)$.
 Thus, by induction~$h(\varphi) \mathrel{S} h(\psi)$
     whenever~$\varphi \approx \psi$. 
 \end{solution}
+\begin{solution}{n-times-one-aconvm}%
+As the one element set is final in~$\mathsf{Set}$,
+    there is a unique map~$!\colon \mathcal{D}_M 1 \to 1$.
+        This turns~$\mathcal{D}_M 1$ into an abstract~$M$-convex set:
+        ${!} \after \mathcal{D}_M {!} = {!} = {!} \after \mu$
+        and~${!} \after \eta = {!} = \id$.
+Note that there is a single formal~$M$-convex combination over~$1$
+    and so~$\mathcal{D}_M 1 \cong 1$.
+As~$\AConvM$ is the Eilenberg--Moore category
+    of the monad~$\mathcal{D}_M$,
+    it follows that the functor~$F\colon \mathsf{Set} \to \AConvM$
+    given by~$F(X) = (\mathcal{D}_M X, \mu)$
+    and~$Ff = \mathcal{D}_M f$ is a left-adjoint
+    and so preserves coproducts.
+    Hence~$\mathcal{D}_M \{1,\ldots,n\}
+                \cong F(n\cdot 1)
+                \cong n \cdot F(1)
+                \cong n \cdot 1$.
+\end{solution}
 % vim: se ft=tex.latex :
