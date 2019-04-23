@@ -2436,4 +2436,31 @@ As~$\AConvM$ is the Eilenberg--Moore category
                 \cong n \cdot F(1)
                 \cong n \cdot 1$.
 \end{solution}
+\begin{solution}{exc-divisoid-basics}%
+    Clearly~$0 \leq \rfrac{0}{0}$
+        and~$0\odot 0 = 0$.
+        Thus, by uniqueness of~$\rfrac{0}{0}$,
+            we have~$\rfrac{0}{0}=0$.
+For any~$a \in M$,
+    we have~$\rfrac{a}{1} = 1 \odot \rfrac{a}{1} = a$
+        and so in particular~$\rfrac{1}{1}=1$.
+Next, note~$\rfrac{a}{a} \odot \rfrac{a}{a} \leq \rfrac{a}{a}$
+    and~$a \odot \rfrac{a}{a} \odot \rfrac{a}{a} = a \odot \rfrac{a}{a} = a$
+        and so by uniqueness of~$\rfrac{a}{a}$,
+            we have~$\rfrac{a}{a}\odot \rfrac{a}{a} = \rfrac{a}{a}$.
+For the final equation of the first point, assume~$b \in M$.
+    As~$a \odot b \leq a$ we know~$\rfrac{a\odot b}{a}$ is defined.
+Note~$\rfrac{a}{a} \odot b \leq \rfrac{a}{a}$
+    and~$a \odot \rfrac{a}{a} \odot b = a \odot b$.
+    So by uniqueness of~$ \rfrac{a\odot b}{a}$
+    we see~$ \rfrac{a\odot b}{a}
+    = \rfrac{a}{a} \odot b$.
+
+For the second point, suppose~$a,b,c \in M$ with~$a \leq b \leq c$.
+    Note~$\rfrac{b}{c} \odot \rfrac{a}{b} \leq \rfrac{b}{c} \leq \rfrac{c}{c}$
+        and~$c \odot \rfrac{b}{c} \odot \rfrac{a}{b}
+            = b\odot \rfrac{a}{b} = a $.
+    So by uniqueness of~$\rfrac{a}{c}$,
+        we get~$\rfrac{b}{c} \odot \rfrac{a}{b} = \rfrac{a}{c}$, as desired.
+\end{solution}
 % vim: se ft=tex.latex :
