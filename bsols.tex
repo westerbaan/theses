@@ -2603,6 +2603,74 @@ We have shown~$h = \rfrac{f}{g}$
     and thus the unit interval of~$C(X)$
     is an effect divisoid.
 \end{solution}
+\begin{solution}{quotient-basics}%
+Assume~$C$ is an effectus.
+\begin{enumerate}
+\item
+Assume~$\xi \colon X \to Y$ is a quotient for~$p$
+    and~$\vartheta \colon Y \to Z$ is an isomorphism.
+Note~$1 \after \vartheta \after \xi = 1 \after \xi \leq p^\perp$.
+To prove~$\vartheta \after \xi$ is a quotient for~$p$,
+    assume~$f\colon X \to Y'$ is some map
+        with~$1 \after f \leq p^\perp$.
+    As~$\xi$ is a quotient, there exists a unique map~$f'\colon Y \to Y'$
+        with~$f' \after \xi = f$.
+        Clearly~$f = f' \after \xi =
+            (f' \after \vartheta^{-1}) \after (\vartheta \after \xi)$.
+Assume~$h\colon Z \to Y'$ is any map with~$f = h\after (\vartheta \after \xi)$.
+Then~$h \after \vartheta = f'$ by uniqueness of~$f'$
+        and so~$h = f' \after \vartheta^{-1}$.
+    We have shown that~$\vartheta \after \xi$ is a quotient of~$p$ as well.
+\item
+    Assume~$\xi_1 \colon X \to Y_1$
+            and~$\xi_2 \colon X \to Y_2$
+        are quotients for~$p$.
+    By the universal property of~$\xi_1$,
+            there is a unique map~$\vartheta_1 \colon Y_1 \to Y_2$
+            with~$\vartheta_1 \after \xi_1 = \xi_2$.
+    Similarly, there is a unique map~$\vartheta_2 \colon Y_2 \to Y_1$
+            with~$\vartheta_2 \after \xi_2 = \xi_1$.
+Note that~$\xi_1 = \vartheta_2 \after \xi_2 = \vartheta_2 \after \vartheta_1 \after \xi_1$.
+By the universal property of~$\xi_1$ again,
+        the map~$\id\colon Y_1 \to Y_1$
+            is the unique map with~$\id \after \xi_1 = \xi_1$
+                and so~$\vartheta_2 \after \vartheta_1 = \id$.
+                Similarly~$\vartheta_1 \after \vartheta_2 = \id$.
+        Thus~$\vartheta_2$ is an isomorphism
+            with~$\vartheta_2 \after \xi_2 = \xi_1$.
+            It is the unique such isomorphism by the universal property of~$\xi_1$.
+\item
+Assume~$f\colon X \to Y$ is some map.
+        Clearly~$1 \after f \leq 1 = 0^\perp$.
+Furthermore~$f$ is itself the unique map~$f'$ with~$f' \after \id = f$.
+Thus~$\id$ is a quotient for~$0$.
+        Consequently any isomorphism is a quotient for~$0$ by the first point.
+\item
+Assume~$X$ is any object
+As~$0$ is a zero-object,
+    there is a unique map~$0_X \colon X \to 0$.
+Clearly~$1 \after 0 = 0 = 1^\perp$.
+Assume~$f\colon X \to Y$ is any map with~$1 \after f \leq 1^\perp= 0$.
+Then~$f = 0$ and so~$f = 0 = 0 \after 0_X$.
+If~$f = h \after 0_X$ for some~$h\colon 0 \to Y$,
+    then~$h=0$ and so any map into zero is indeed a quotient for~$1$.
+\item
+Assume~$\xi \colon X \to Y$ is a quotient for~$p$.
+Clearly~$1 \after p^\perp = p^\perp \leq p^\perp$
+    and so there is a unique map~$f\colon Y \colon 1$
+        with~$f \after \xi = p^\perp$.
+Then~$p^\perp = 1\after p^\perp=  1 \after f \after \xi \leq 1 \after \xi = p^\perp$
+    and so~$1 \after \xi = p^\perp$.
+\item
+Assume~$f_1 \after \xi = f_2 \after \xi$
+    for some quotient~$\xi$ of~$p$.
+        Then~$1 \after f_1 \after \xi \leq 1 \after \xi = p^\perp$.
+    Hence there is a unique~$f$ with~$f \after \xi = f_1 \after \xi$.
+    Both~$f_1$ and~$f_2$ fit the bill, hence~$f_1=f=f_2$.
+    Thus~$\xi$ is epic.
+\end{enumerate}
+\end{solution}
+\spacingfix{}
 
 
 % vim: se ft=tex.latex :
