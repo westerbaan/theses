@@ -163,7 +163,7 @@ Recall~$E$ is a basis of~$\scrK'$
 \end{solution}
 \begin{solution}{exc-chris-univ-prop}%
 We will show that~$U\colon \mathsf{Rep} \to \mathsf{Rep}_{\mathrm{cp}}$
-    has a left-adjoint by demonstrating the universal mapping property.
+    has a left adjoint by demonstrating the universal mapping property.
     Let~$\varphi\colon \scrA \to \scrB(\scrH)$ be any object of~$\mathsf{Rep}_{\mathrm{cp}}$.
     Pick any minimal Stinespring dilation~$(\scrK, \varrho, V)$ of~$\varphi$.
 The map~$\varrho\colon \scrA\to \scrB(\scrK)$ is an object
@@ -2096,7 +2096,7 @@ It is easy to see that the coproduct~$X + Y$ from~$\mathsf{Set}$
 (In fact, for any category~$C$ and monad~$T$,
     the inclusion functor~$K\colon C \to \Kl T$
         given by~$K X = X$ and~$K f = \eta \after f$
-        is a left-adjoint and so~$K$ preserves colimits.)
+        is a left adjoint and so~$K$ preserves colimits.)
 The empty set is also the initial object of~$\Kl \mathcal{D}_M$.
 As~$\mathcal{D}_M 1 \cong 1$,
     the category~$\Kl \mathcal{D}_M$
@@ -2429,7 +2429,7 @@ As~$\AConvM$ is the Eilenberg--Moore category
     of the monad~$\mathcal{D}_M$,
     it follows that the functor~$F\colon \mathsf{Set} \to \AConvM$
     given by~$F(X) = (\mathcal{D}_M X, \mu)$
-    and~$Ff = \mathcal{D}_M f$ is a left-adjoint
+    and~$Ff = \mathcal{D}_M f$ is a left adjoint
     and so preserves coproducts.
     Hence~$\mathcal{D}_M \{1,\ldots,n\}
                 \cong F(n\cdot 1)
@@ -2686,7 +2686,7 @@ Note~$t \after \xi = t' \after \xi' = t' \after \vartheta \after \xi$
 \end{solution}
 \begin{solution}{exc-quot-adjoint}%
 Assume~$C$ is an effectus with quotients.
-We will show that~$0$ has a left-adjoint using the universal mapping property.
+We will show that~$0$ has a left adjoint by demonstrating the universal mapping property.
 Pick for every object~$(X,p)$ in~$\int \Pred_\square$
     a quotient~$\xi_p \colon X \to X/_p$ of~$p$.
     Note~$(0^\perp \after \xi_p)^\perp = p$
@@ -2704,11 +2704,11 @@ Let~$g\colon X/_p \to Y$ be some map with~$(0 g) \after \xi_p = f$
 This shows that~$0$ has a left adjoint.
 
 To prove the converse, assume~$C$ is an effectus
-    where~$0\colon C \to \int\Pred_\square$ has a left-adjoint~$Q\colon \int \Pred_\square \to C$.
+    where~$0\colon C \to \int\Pred_\square$ has a left adjoint~$Q\colon \int \Pred_\square \to C$.
 Let~$X$ be some object in~$C$ with a predicate~$p$.
     Write~$\eta \colon (X,p) \to 0Q(X,p)$
         for the~$(X,p)$ component of the unit of the adjunction~$Q \dashv 0$.
-By definition of map in~$\int \Pred_\square$,
+By definition of maps in~$\int \Pred_\square$,
     we know~$1 \after \eta \leq p^\perp$.
 We will show that~$\eta$ is a quotientfor~$p$.
 To this end, assume~$f\colon X \to Y$ is some map in~$C$
@@ -2719,6 +2719,50 @@ By the universal mapping property,
     with~$(0f')\after \eta = f$, i.e.~$f' \after \eta = f$.
 This shows that~$\eta$ is indeed a quotient of~$p$.
 Hence~$C$ has quotients.
+\end{solution}
+\begin{solution}{compr-grothendieck}%
+Assume~$C$ is an effectus with comprehension.
+We will show that~$1$ has a right adjoint by demonstrating
+    the dual of the universal mapping property.
+Pick for every object~$(X,p)$ in~$\int \Pred_\square$
+    a comprehension~$\pi_p \colon \cmpr{X}{p} \to X$.
+Note that for any map~$f$,
+    we have~$1 \after f = p \after f$ if and only if~$p^\perp \after f = 0$.
+    Thus~$(p^\perp \after \pi_p)^\perp = 1$, which shows
+        that~$\pi_p$ is a map~$(\cmpr{X}{p}, 1) \to (X,p) $ in~$\int\Pred_\square$.
+    We will use these maps as components for the counit of the adjunction.
+Let~$f\colon (Y,1) \to (X,p)$ be some map in~$C$.
+By  definition of maps in~$\int \Pred_\square$,
+    we have~$1 \leq (p^\perp \after f)^\perp$,
+    viz.~$1 \after f = p \after f$.
+    Thus, by the universal property of~$\pi_p$,
+    there is a unique map~$f'\colon Y \to \cmpr{X}{p}$ in~$C$
+    with~$\pi_p \after f' = f$.
+    Hence~$1 f'$ is the unique map in~$\int \Pred_\square$
+        with~$\pi_p \after (1 f') = f$ in~$\int \Pred_\square$.
+    We have shown that~$1$ has a right adjoint.
+
+To prove the converse, assume~$C$ is an effectus
+    where~$1\colon C \to \int \Pred_\square$
+    has a right adjoint~$K\colon \int \Pred_\square \to C$.
+Let~$X$ be some object of~$C$ with a predicate~$p$.
+    Write~$\varepsilon\colon 1 K(X,p) \to (X,p)$ for the~$(X,p)$ component of
+    the counit of the adjunction~$1 \dashv K$.
+    By definition of maps in~$\int \Pred_\square$,
+        we know~$1 \leq (p^\perp \after \varepsilon)^\perp$,
+     hence~$1 \after \varepsilon = 1 \after \varepsilon$.
+We will show that~$\varepsilon$ is a comprehension for~$p$.
+To this end, assume~$f\colon Y \to X$ is some map in~$C$
+    with~$1 \after f = p \after f$.
+    Then~$1 = (p^\perp \after f)^\perp$
+        and so~$f$ is a map~$(Y, 1) \to (X,p)$
+        in~$\int \Pred_\square$.
+By the dual of the universal mapping property,
+    there is a unique map~$f'\colon Y \to K(X,p)$ in~$\int \Pred_\square$
+    with~$\varepsilon \after (1f') = f$,
+    i.e.~$\varepsilon \after f' = f$.
+    This shows that~$\varepsilon$ is indeed a comprehension for~$p$.
+    Hence~$C$ has comprehension.
 \end{solution}
 
 
