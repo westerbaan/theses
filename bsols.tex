@@ -2463,4 +2463,146 @@ For the second point, suppose~$a,b,c \in M$ with~$a \leq b \leq c$.
     So by uniqueness of~$\rfrac{a}{c}$,
         we get~$\rfrac{b}{c} \odot \rfrac{a}{b} = \rfrac{a}{c}$, as desired.
 \end{solution}
+\begin{solution}{basic-divisoid-equiv}%
+Let~$X$ be a compact Hausdorff space.
+Assume that the unit interval of~$C(X)$
+    is an effect divisoid.
+To show~$X$ is basically disconnected,
+    assume~$f \in C(X)$.
+We have to show that~$\overline{\supp f}$ is open.
+Note~$\supp | f | = \supp  f$ and so, without loss of generality,
+    we may assume that~$f \geq 0$.
+By compactness~$f$ is bounded.  Pick~$B > 0$ with~$B \geq f$.
+    Then~$\supp B^{-1} f = \supp f$ and~$B^{-1} f \leq 1$,
+    so we may also assume without loss of generality, that~$0 \leq f \leq 1$.
+    If~$\overline{\supp f} = X$, then we are done,
+    so assume~$\overline{\supp f} \neq X$.
+    Pick any~$y \notin \overline{\supp f}$.
+By Urysohn's lemma, there is a~$g \in C(X)$
+    with~$g(y) = 0$ and~$g(x) = 1$ for every~$x \in \overline{\supp f}$.
+    Define~$h \equiv  \rfrac{f}{f} \wedge (0 \vee g)$.
+Clearly~$0 \leq h \leq \rfrac{f}{f} \leq 1$
+    and~$h(y) \leq (0 \vee g)(y) = 0$.
+    Note that~$\rfrac{f}{f}\rfrac{f}{f} \equiv  \rfrac{f}{f} \odot \rfrac{f}{f} = \rfrac{f}{f}$
+    and so~$\rfrac{f}{f}$ is zero--one valued: a characteristic function.
+Pick any~$x \in \supp f$.
+    Then~$0 < f(x) \leq \rfrac{f}{f}(x) \in \{0,1\}$,
+        hence~$\rfrac{f}{f}(x)=1$.
+    By continuity~$\rfrac{f}{f}(x)=1$
+        for every~$x \in \overline{\supp f}$
+            and so~$h(x) = \rfrac{f}{f}(x) \wedge g(x) = 1 \wedge 1 = 1$.
+Hence~$(f \odot h) (x) = f(x)h(x) = f(x)$ for~$x \in \overline{\supp f}$
+    and~$(f \odot h)(x) = f(x)h(x) = 0 = f(x)$ whenever~$x \notin \overline{\supp f}$.
+Thus~$f \odot h = f$.
+    By uniqueness of~$\rfrac{f}{f}$, we have~$\rfrac{f}{f} = h$.
+    Consequently~$\rfrac{f}{f}(y) = h(y) = 0$.
+    Recall that~$y$ was an arbitrary element~$y \notin \overline{\supp f}$
+        and thus~$\rfrac{f}{f}$ is the characteristic function of~$\overline{\supp f}$,
+            which is thus open. Hence~$X$ is basically disconnected.
+
+To prove the converse, assume~$X$ is basically disconnected.
+Let~$f,g \in C(X)$ be given with~$0 \leq f \leq g \leq 1$.
+    Define~$U_n \equiv \{x; \ g(x) > \frac{1}{n}\}$.
+Note~$U_n = \supp ((g - \frac{1}{n}) \vee 0)$
+    and so~$\overline{U_n}$ is open as~$X$ is basically disconnected.
+Define
+\begin{equation*}
+    h_n \ \equiv \  \begin{cases}
+        \frac{f(x)}{g(x)} & x \in \overline{U_n}\\
+        0 & \text{otherwise}.
+    \end{cases}
+\end{equation*}
+To show~$h_n$ is continuous, assume
+    there is a net~$(x_\alpha)_\alpha$ with~$x_\alpha \to x$
+        for some~$x \in X$.
+    Suppose~$x \in \overline{U_n}$.
+    As~$\overline{U_n}$ is open,
+        we know~$x_\alpha \in U_n$
+        for sufficiently large~$\alpha$
+        and so~$h_n(x_\alpha) \to h_n(x)$
+            as~$\frac{f(x)}{g(x)}$
+            is continuous for~$x \in \overline{U_n}$
+                as then~$g(x) \geq \frac{1}{n} > 0$.
+    For the other case, suppose~$x \notin\overline{ U_n}$.
+The set~$X - \overline{U_n}$ is open
+    and so~$x_\alpha \notin \overline{U_n}$ for sufficiently large~$\alpha$
+        and then~$h_n(x_\alpha)=0 = h_n(x)$.
+    Thus~$h_n$ is continuous.
+
+Clearly~$0\leq h_1 \leq h_2 \leq \ldots \leq 1$
+ and so we may define~$\rfrac{f}{g} \equiv \sup_n h_n$
+ as~$C(X)$ is~$\omega$-complete by basic disconnectedness of~$X$.
+ Note~$0 \leq \rfrac{f}{g} \leq 1$.
+
+Suppose~$f=g$ and~$x \in \supp f$.
+Then~$h_n(x) = 1$ for all~$n > f(x)^{-1}$
+    and so~$\rfrac{f}{f}(x) = 1$.
+Thus~$\rfrac{f}{f}(x) = 1$ for all~$x \in \overline{\supp f}$.
+Write~$\chi$ for the characteristic function of~$\overline{\supp f}$.
+We just saw~$\chi \leq \rfrac{f}{f}(x)$.
+As~$\overline{U_n} \subseteq \overline{\supp f}$ and~$h_n \leq 1$,
+    we have~$h_n \leq \chi$ for all~$n$ and
+    so~$\rfrac{f}{f} \leq \chi$. Thus~$\rfrac{f}{f} = \chi$,
+    the characteristic function of~$\overline{\supp f}$.
+In particular~$f \leq \rfrac{f}{f}$
+    and~$\rfrac{f}{f} \odot \rfrac{f}{f}
+        \equiv \rfrac{f}{f}\rfrac{f}{f} = \rfrac{f}{f}$.
+
+Let~$f,g \in C(X)$ be given with~$0 \leq f\leq g \leq 1$
+    and~$h_1 \leq h_2\leq  \ldots$ as above.
+We will show~$\rfrac{f}{g} \leq \rfrac{g}{g}$.
+Assume~$x \in X$.
+Suppose~$x \in \supp g$.
+Then~$h_n(x) = \frac{f(x)}{g(x)} \leq 1 = \rfrac{g}{g}(x)$
+    for all~$n > g(x)^{-1}$
+    and so~$\rfrac{f}{g}(x) \leq \rfrac{g}{g}(x)$.
+In particular~$\rfrac{f}{g}(x) \leq \rfrac{g}{g}(x)$
+    for all~$x \in \overline{\supp g}$.
+For the other case, assume~$x \notin \overline{\supp g}$.
+Then~$x \notin \overline{U_n}$ and
+    so~$h_n(x) = 0$ for all~$n \in \N$,
+    whence~$\rfrac{f}{g}(x) = 0 \leq \rfrac{g}{g}(x)$.
+Thus indeed~$\rfrac{f}{g} \leq \rfrac{g}{g}$.
+
+In a similar way, it is easy to see
+    that~$\rfrac{f}{g}(x) \leq \frac{f(x)}{g(x)}$ for~$x \in \supp g$.
+    To show equality, we define
+\begin{equation*}
+    k_n \ \equiv \  \begin{cases}
+        \frac{f(x)}{g(x)} & x \in \overline{U_n}\\
+        1 & \text{otherwise}.
+    \end{cases}
+\end{equation*}
+With similar reasoning as for~$h_n$,  we see that these~$k_n$ are continuous.
+Furthermore~$h_m \leq k_n$ for all~$m$
+    and so~$\rfrac{f}{g} \leq k_n$ for any~$n$.
+Pick any~$x \in \supp g$.
+Then~$\rfrac{f}{g} (x) \leq k_n(x) = \frac{f(x)}{g(x)}$
+    for~$n > g(x)^{-1}$
+    and so~$\rfrac{f}{g}(x) = \frac{f(x)}{g(x)}$
+        for any~$x \in \supp g$.
+Thus~$(g \odot \rfrac{f}{g} )(x)= f(x) $ for~$x \in \supp g$
+    and so~$(g\odot \rfrac{f}{g})(x) = f(x)$ for~$x \in \overline{\supp g}$
+    by continuity.
+For the other case, assume~$x \notin \overline{\supp g}$.
+Then~$g \odot \rfrac{f}{g} (x) \leq \rfrac{f}{g} (x) \leq \rfrac{g}{g}(x) = 0
+    = g(0) \geq f(0)$.
+We have shown~$g\odot \rfrac{f}{g} = f$.
+
+Only uniquness of~$\rfrac{f}{g}$ remains.
+So assume~$h \in C(X)$
+    with~$0 \leq h \leq \rfrac{g}{g}$
+    and~$g \odot  h = f$.
+Assume~$x \in \supp g$.
+Then~$g(x)h(x) = f(x)$ and so~$h(x) = \frac{f(x)}{g(x)} = \rfrac{f}{g}(x)$.
+By continuity~$h(x) = \rfrac{f}{g} (x)$ for all~$x \in \overline{\supp g}$.
+For the other case, assume~$x \notin \overline{\supp g}$.
+As both~$h, \rfrac{f}{g} \leq \rfrac{g}{g}$,
+    we have~$h(x) = 0 = \rfrac{f}{g}(x)$.
+We have shown~$h = \rfrac{f}{g}$
+    and thus the unit interval of~$C(X)$
+    is an effect divisoid.
+\end{solution}
+
+
 % vim: se ft=tex.latex :
