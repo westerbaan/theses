@@ -2671,6 +2671,19 @@ Assume~$f_1 \after \xi = f_2 \after \xi$
 \end{enumerate}
 \end{solution}
 \spacingfix{}
+\begin{solution}{quot-fact-system}%
+Let~$C$ be an effectus with quotients.
+Assume~$t' \after \xi' = t \after \xi$
+    for some quotient-maps~$\xi,\xi'$ and total maps~$t,t'$.
+Then~$1 \after \xi = 1 \after t \after \xi = 1 \after t' \after \xi'
+        = 1 \after \xi'$.
+    Thus by~\sref{quotient-basics} there is a unique isomorphism~$\vartheta$
+        with~$\xi' = \vartheta \after \xi$.
+Note~$t \after \xi = t' \after \xi' = t' \after \vartheta \after \xi$
+    and so by epicity of~$\xi$
+    (see~\sref{quotient-basics}),
+    we see~$t = t' \after \vartheta$, as desired.
+\end{solution}
 
 
 % vim: se ft=tex.latex :
