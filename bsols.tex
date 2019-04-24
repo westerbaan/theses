@@ -2674,7 +2674,7 @@ Assume~$f_1 \after \xi = f_2 \after \xi$
 \begin{solution}{quot-fact-system}%
 Let~$C$ be an effectus with quotients.
 Assume~$t' \after \xi' = t \after \xi$
-    for some quotient-maps~$\xi,\xi'$ and total maps~$t,t'$.
+    for some quotient~$\xi,\xi'$ and total maps~$t,t'$.
 Then~$1 \after \xi = 1 \after t \after \xi = 1 \after t' \after \xi'
         = 1 \after \xi'$.
     Thus by~\sref{quotient-basics} there is a unique isomorphism~$\vartheta$
@@ -2683,6 +2683,42 @@ Note~$t \after \xi = t' \after \xi' = t' \after \vartheta \after \xi$
     and so by epicity of~$\xi$
     (see~\sref{quotient-basics}),
     we see~$t = t' \after \vartheta$, as desired.
+\end{solution}
+\begin{solution}{exc-quot-adjoint}%
+Assume~$C$ is an effectus with quotients.
+We will show that~$0$ has a left-adjoint using the universal mapping property.
+Pick for every object~$(X,p)$ in~$\int \Pred_\square$
+    a quotient~$\xi_p \colon X \to X/_p$ of~$p$.
+    Note~$(0^\perp \after \xi_p)^\perp = p$
+        and so~$\xi_p$ is a map~$(X,p) \to (X/_p, 0)$ in~$\int \Pred_\square$.
+We will use these maps~$\xi_p$ as the components of  the unit of the adjunction.
+    Let~$f \colon (X,p) \to (Y,0)$ be some map in~$\int \Pred_\square$.
+By definition of map~$1 \after f \leq p^\perp$
+    and so by the universal property of~$\xi_p$,
+    there exists a unique map~$f'\colon X/_p \to Y $
+        with~$f = f' \after \xi_p$ in~$C$.
+        Clearly also~$(0 f) \after \xi_p = f$ in~$\int\Pred_\square$.
+Let~$g\colon X/_p \to Y$ be some map with~$(0 g) \after \xi_p = f$
+    as well.
+    Then~$g \after \xi_p = f$ and so~$g' = f'$.
+This shows that~$0$ has a left adjoint.
+
+To prove the converse, assume~$C$ is an effectus
+    where~$0\colon C \to \int\Pred_\square$ has a left-adjoint~$Q\colon \int \Pred_\square \to C$.
+Let~$X$ be some object in~$C$ with a predicate~$p$.
+    Write~$\eta \colon (X,p) \to 0Q(X,p)$
+        for the~$(X,p)$ component of the unit of the adjunction~$Q \dashv 0$.
+By definition of map in~$\int \Pred_\square$,
+    we know~$1 \after \eta \leq p^\perp$.
+We will show that~$\eta$ is a quotientfor~$p$.
+To this end, assume~$f\colon X \to Y$ is some map in~$C$
+    with~$1 \after f \leq p^\perp$.
+Then~$f\colon (X,p) \to (Y,0)$ in~$\int \Pred_\square$.
+By the universal mapping property,
+    there is a unique map~$f'\colon Q(X,p) \to Y$ in~$C$
+    with~$(0f')\after \eta = f$, i.e.~$f' \after \eta = f$.
+This shows that~$\eta$ is indeed a quotient of~$p$.
+Hence~$C$ has quotients.
 \end{solution}
 
 
