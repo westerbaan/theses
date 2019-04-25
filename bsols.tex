@@ -3041,5 +3041,29 @@ Thus~$f^\diamond(t) \leq g^\diamond(t)^{\perp\perp} = g^\diamond(t)$.
 Reasoning in the same way with~$f$ and~$g$ swapped,
         we see~$g^\diamond(t) \leq f^\diamond(t)$ and so~$f^\diamond = g^\diamond$.
 \end{solution}
+\begin{solution}{spred-sup}%
+As~$\xi_\diamond$ is left adjoint to~$\xi^\BOX$,
+    we have~$t \leq \xi^\BOX (\xi_\diamond(t))$.
+    Furthermore~$s = \ceil{s^\perp}^\perp = \ceil{1 \after \xi}^\perp
+        = \xi^\BOX(0) \leq
+        \xi^\BOX (\xi_\diamond(t))$.
+Thus~$\xi^\BOX (\xi_\diamond(t))$ is an upper bound of~$s$ and~$t$.
+We have to show it is the least sharp upper bound.
+So assume~$r$ is any sharp predicate with~$r \geq s$ and~$r \geq t$.
+Then~$1 \after \xi_r = r^\perp \leq s^\perp$
+    and so there is a (unique) map~$h$ with~$\xi_r = h \after \xi$. We have
+\begin{equation*}
+    (\xi_r)^\BOX
+     \ = \ \xi^\BOX \after h^\BOX
+     \ = \ \xi^\BOX  \after \xi_\diamond \after \xi^\BOX\after h^\BOX
+     \ = \ \xi^\BOX  \after \xi_\diamond \after (\xi_r)^\BOX
+\end{equation*}
+    and so~$r
+    = (\xi_r)^\BOX(0)
+    = \xi^\BOX (\xi_\diamond((\xi_r)^\BOX(0)))
+    = \xi^\BOX (\xi_\diamond(r))
+    \geq \xi^\BOX (\xi_\diamond(t)) $.
+\end{solution}
+
 
 % vim: se ft=tex.latex :
