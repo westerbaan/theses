@@ -3164,6 +3164,32 @@ For the converse, assume~$f$ and~$g$ are sharp.
     is sharp as well by~\sref{diamond-oml}.
     Thus~$\langle f,g\rangle$ is sharp, as desired.
 \end{solution}
+\begin{solution}{zeta-through-asrt}%
+Assume~$C$ is a~$\&$-effectus
+    where every predicate has a square root
+    and where~$\pi_s$ is~$\diamond$-adjoint to~$\zeta_s$.
+Let~$p$ be a predicate and~$s$ be another predicate on the same object that is sharp.
+    Pick a predicate~$q$ with~$\andthen{q}{q}=p$.
+    The map~$ f\equiv \pi_s \after \asrt_q \after \zeta_s$ is pure and~$\diamond$-self-adjoint:
+\begin{equation*}
+    f^\diamond
+    \ =\ (\zeta_s)^\diamond \after (\asrt_q)^\diamond \after (\pi_s)^\diamond
+    \ =\ (\pi_s)_\diamond \after (\asrt_q)_\diamond \after (\zeta_s)_\diamond
+    \ =\ f_\diamond.
+\end{equation*}
+Thus~$f \after f$ is~$\diamond$-positive.
+By~\sref{andthen-square-rule}, we get~$f \after f = \pi_s \after \asrt_q \after \zeta_s \after \pi_s \after \asrt_q \after \zeta_s
+    = \pi_s \after \asrt_{\andthen{q}{q}} \after \zeta_s
+    = \pi_s \after \asrt_{p} \after \zeta_s$
+    and so~$1 \after f \after f = 1 \after \pi_s \after \asrt_p \after
+        \zeta_s = p \after \zeta_s$.
+    By uniqueness of~$\diamond$-positive maps,
+    we get~$\pi_s \after \asrt_{p} \after \zeta_s = f \after f 
+        = \asrt_{1 \after f \after f} = \asrt_{p \after \zeta_s}$.
+Thus~$\asrt_p \after \zeta_s =
+    \zeta_s \after \pi_s \after \asrt_{p} \after \zeta_s
+        = \zeta_s \after \asrt_{p \after \zeta_s}$.
+\end{solution}
 
 
 % vim: se ft=tex.latex :
