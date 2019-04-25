@@ -2962,5 +2962,66 @@ Furthermore~$t^\perp \leq s^\perp$,
         \leq f^\diamond(t^\perp)^\perp \equiv f^\BOX(t)$,
         which shows that~$f^\BOX$ is order preserving.
 \end{solution}
+\begin{solution}{order-adj-basics}%
+Let~$f\colon X \to Y$ be some map in a~$\diamond$-effectus.
+\begin{enumerate}
+\item
+Assume~$s \leq t$.
+        Clearly~$f_\diamond (t) \leq f_\diamond(t)$
+            so~$s \leq t \leq f^\BOX(f_\diamond(t))$,
+            hence~$f_\diamond(s) \leq f_\diamond(t)$,
+            which shows that~$f_\diamond$ is order preserving.
+\item
+Assume~$D \subseteq \SPred X$ is a set of sharp predicates with a supremum~$\sup D$.
+        We will show~$f_\diamond(\sup D)$ is the supremum of~$f_\diamond(D)$.
+For any~$d \in D$, we have~$d \leq \sup D$
+    and so~$f_\diamond (d) \leq f_\diamond(\sup D)$ by the previous point.
+Assume~$x$ is some sharp predicate of~$Y$
+    with~$f_\diamond(d) \leq x$ for all~$d \in D$ as well.
+Then~$d \leq f^\BOX(x)$ for all~$d \in D$
+    and so~$\sup D \leq f^\BOX(x)$.
+Hence~$f_\diamond(\sup D) \leq x$, which shows
+    that~$\sup f_\diamond (D) = f_\diamond(\sup D)$.
+\item
+Assume~$D \subseteq \SPred Y$ is a set of sharp predicates with an infimum~$\inf D$.
+        We will show~$f^\BOX(\inf D)$ is the infimum of~$f^\BOX(D)$.
+For any~$d \in D$, we have~$\inf D \leq d$
+        and so~$f^\BOX(\inf D) \leq f^\BOX(d)$
+        by~\sref{exc-diam-order-pres}.
+Assume~$x$ is some sharp predicate of~$X$
+    with~$x \leq f^\BOX(d)$ for all~$d \in D$ as well.
+    Then~$f_\diamond(x) \leq d$ for all~$d \in D$
+            and so~$f_\diamond(x) \leq \inf D$,
+hence~$x \leq f^\BOX(\inf D)$.
+        This shows that~$\inf f^\BOX(D) = f^\BOX(\inf D)$.
+\item
+    For for any~$D \subseteq \SPred Y$ with supremum,
+        we have
+        \begin{align*}
+        f^\diamond(\sup D)
+            & \ \equiv\ f^\BOX((\sup D)^\perp)^\perp \\
+            &\  =\ f^\BOX(\inf_{d \in D} ( d^\perp))^\perp \\
+            &\ =\ \bigl(\inf_{d \in D}f^\BOX(  d^\perp)\bigr)^\perp \\
+            &\ =\ \sup_{d \in D}f^\BOX(  d^\perp)^\perp \\
+            &\ =\ \sup_{d \in D}f^\diamond(d)
+        \end{align*}
+    and so~$f^\diamond$ preserves suprema.
+\item
+For any~$s \in \SPred X$
+        we have~$f_\diamond (s) \leq f_\diamond(s)$
+        and so~$s \leq f^\BOX (f_\diamond(s))$.
+Similarly, for any~$t \in \SPred Y$
+    we have~$f_\diamond (f^\BOX (t)) \leq t$.
+Hence~$ f_\diamond (f^\BOX (f_\diamond(s)))
+                \leq f_\diamond(s)
+                \leq f_\diamond(f^\BOX(f_\diamond(s)))$,
+                so~$f_\diamond = f_\diamond \after f^\BOX \after f_\diamond$.
+\item
+We have~$ f^\BOX(f_\diamond(f^\BOX(t)))
+            \leq f^\BOX(t) \leq f^\BOX(f_\diamond(f^\BOX(t)))$
+            and so~$f^\BOX = f^\BOX \after f_\diamond \after f^\BOX$.
+\end{enumerate}
+\end{solution}
+\spacingfix{}
 
 % vim: se ft=tex.latex :
