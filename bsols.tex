@@ -3190,6 +3190,37 @@ Thus~$\asrt_p \after \zeta_s =
     \zeta_s \after \pi_s \after \asrt_{p} \after \zeta_s
         = \zeta_s \after \asrt_{p \after \zeta_s}$.
 \end{solution}
+\begin{solution}{dagger-prime-basics}%
+By~\sref{asrt-absorp-rule} we have
+ \begin{equation*}
+    \asrt_p \ = \ 
+     \asrt_p \after \asrt_{\ceil{p}}
+     \ = \ \pi_{\ceil{p}} \after \id \after \zeta_{\ceil{p}} \after \asrt_p
+ \end{equation*}
+    and so
+\begin{equation*}
+    \asrt^\dagger_p \ =\  \asrt_p \after \pi_{\ceil{p}} \after \id^{-1} \after \zeta_{\ceil{p}}
+        \ =\  \asrt_p \after \asrt_{\ceil{p}} \ =\  \asrt_p.
+\end{equation*}
+    Next, note~$\zeta_1 = \pi_1 = \asrt_1 = \id$
+    and so~$\pi_s = \pi_s \after \id \after \zeta_1 \after \asrt_1$,
+    hence
+\begin{equation*}
+    \pi_s^\dagger 
+       \ =\ \asrt_1 \after \pi_1 \after \id^{-1} \after \zeta_s
+       \ =\ \zeta_s.
+\end{equation*}
+Also~$\zeta_s = \pi_1 \after \id \after \zeta_s \after \asrt_1$
+    and so
+\begin{equation*}
+    \zeta_s^\dagger \ = \ \asrt_1 \after \pi_s \after \id^{-1} \after \zeta_1 \ = \ \pi_s.
+\end{equation*}
+    Finally, note~$\alpha = \asrt_1 = \pi_1 \after \alpha \after \zeta_1$
+        for any isomorphism~$\alpha$ and so
+\begin{equation*}
+    \alpha^\dagger \ =  \ \asrt_1 \after \pi_1 \after \alpha^{-1} \after \zeta_{1} \ = \ \alpha^{-1}.
+\end{equation*}
+\end{solution}
 
 
 % vim: se ft=tex.latex :
