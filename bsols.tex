@@ -3233,5 +3233,51 @@ As~$1 \after h$ is sharp,
         and so~$
     h = \pi_{\IM h} \after \alpha \after \zeta_{1 \after h}$.
 \end{solution}
+\begin{solution}{asrt-pristine-reverse}%
+Assume~$h \equiv \pi_{\IM h} \after \alpha \after \zeta_{1 \after h}$
+    is a pristine map in a~$\dagger'$-effectus, cf.~\sref{standard-form-pristine}.
+\begin{enumerate}
+\item
+Clearly~$h =\pi_{\IM h} \after \alpha \after \zeta_{\ceil{1 \after h}} \after \asrt_{1 \after h}$
+as~$1 \after h$ is sharp and by~\sref{asrt-absorp-rule}.
+Thus
+\begin{equation*}
+    h^\dagger \ = \ \asrt_{1 \after h} \after \pi_{\ceil{1 \after h}}
+        \after \alpha^{-1} \after \zeta_{\IM h}
+        \ = \ \pi_{1 \after h} \after \alpha^{-1} \after \zeta_{\IM h}
+\end{equation*}
+        using other equivalence of~\sref{asrt-absorp-rule}.
+\item
+Note that by the previous point~$1 \after h^\dagger = \IM h$
+    and~$\IM h^\dagger = 1\after h$, hence
+        by a second appeal to the previous point:
+\begin{equation*}
+    h^{\dagger\dagger}
+    \ = \  \pi_{1 \after h^\dagger} \after (\alpha^{-1})^{-1} \after \zeta_{\IM h^\dagger}
+    \ = \  \pi_{\IM h} \after \alpha \after \zeta_{1 \after h} \ = \ h.
+\end{equation*}
+\item
+By the first point~$ h^\dagger \after h
+     =  \pi_{1 \after h} \after \alpha^{-1} \after \zeta_{\IM h}
+        \after \pi_{\IM h} \after \alpha \after \zeta_{1 \after h}
+     =  \pi_{1 \after h} \after \zeta_{1 \after h}
+     =  \asrt_{1 \after h}$ as promised.
+\item
+    Clearly~$p \after h^\dagger \leq 1 \after h^\dagger = \IM h$.
+\item
+    Assume~$p \leq 1 \after h$.
+Then~$p \after \asrt_{1 \after h} = p$ by \sref{asrt-absorp-rule} and
+        so~
+    \begin{equation*}
+        \asrt_{p \after h^\dagger} \after h
+                \ \stackrel{\mathclap{\sref{pristine-asrt}}}{=}\
+                h \after \asrt_{p \after h^\dagger \after h}
+                \ \stackrel{\mathclap{\text{pt.~3}}}{=}\  
+                h \after \asrt_{p \after \asrt_{1\after h}}
+                \ = \ h \after \asrt_p.
+    \end{equation*}
+\end{enumerate}
+\end{solution}
+\spacingfix{}
 
 % vim: se ft=tex.latex :
