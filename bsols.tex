@@ -3146,6 +3146,24 @@ Even more trivially,  $\andthen{s}{p} = p$
 Thus the result follows by applying the second equivalence
     of~\sref{asrt-absorp-rule} with~$f=p$ and~$t=s$.
 \end{solution}
+\begin{solution}{exc-prod-sharp-maps}%
+Let~$f \colon X \to A$ and~$g\colon X \to B$
+    be maps in a~$\&$-effectus.
+   Assume~$\langle f, g \rangle$ is sharp.
+Pick any sharp predicate~$s$ on~$A$.
+By~\sref{img-tupling} we know~$[s,0]$ is sharp
+    and so~$[s,0] \after \langle f, g \rangle = (s \after f) \ovee (0 \after g) = s \after f$
+    is sharp as well.
+This shows~$f$ is sharp.
+With a similar argument we see~$g$ is sharp.
+For the converse, assume~$f$ and~$g$ are sharp.
+    Assume~$[s,t]$ is some sharp predicate on~$A+B$.
+    By~\sref{img-tupling} we know~$s$ and~$t$ are sharp.
+    Thus~$s \after f$ and~$t \after g$ are sharp.
+    Consequently~$[s,t] \after \langle f, g \rangle = (s \after f) \ovee (t \after g)$
+    is sharp as well by~\sref{diamond-oml}.
+    Thus~$\langle f,g\rangle$ is sharp, as desired.
+\end{solution}
 
 
 % vim: se ft=tex.latex :
