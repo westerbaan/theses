@@ -2828,6 +2828,29 @@ Assume~$\pi$ is a comprehension of~$p$.
 \end{enumerate}
 \end{solution}
 \spacingfix{}
+\begin{solution}{compr-is-kernel}%
+Let~$C$ be any effectus.
+Assume~$\pi\colon X \to Y$ is a comprehension of~$p$.
+We will show~$\pi$ is a categorical kernel~$p^\perp$.
+To start, note~$p^\perp \after \pi = 0$ by~\sref{compr-basics}.
+Now assume~$f\colon X' \to Y$ is some map with~$p^\perp \after f = 0$.
+    Then~$p \after f = (p \after f) \ovee (p^\perp \after f)= 1 \after f $
+    and so by the universal property of~$\pi$,
+    there is a unique map~$f'\colon X' \to X$ with~$f = \pi \after f'$.
+    Hence~$\pi$ is a kernel of~$p^\perp$.
+
+To prove the converse, assume~$k\colon X \to Y$ is a kernel
+        of~$p^\perp\colon Y \to 1$. 
+We have~$1 \after k = (p \after p^\perp) \after k = (p \after k) \ovee (p^\perp \after k)
+            = p \after k$.
+Assume~$f\colon X' \to Y$ is some map with~$p \after f = 1 \after f$.
+Then~$(p^\perp \after f) \ovee (p \after f) = 1 \after f = p \after f$
+    and so by cancellation~$p^\perp \after f = 0$.
+Hence by the universal property of~$k$
+    there is a unique map~$f'\colon X' \to X$
+        with~$k \after f' = f$.
+    This shows that~$k$ is a comprehension of~$p$.
+\end{solution}
 
 
 % vim: se ft=tex.latex :
