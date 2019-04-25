@@ -2924,5 +2924,29 @@ Thus~$\IM f+g =  \IM \langle f \after \pproj_1 , g \after \pproj_2 \rangle
     =  [\IM f \after \pproj_1, \IM g \after \pproj_2]
     = [\IM f, \IM g] = [p,q]$, which shows~$[p,q]$ is sharp.
 \end{solution}
+\begin{solution}{exc-cokernels}%
+Let~$C$ be an effectus with comprehension and images.
+   Assume~$f\colon X \to Y$ is a quotient of sharp~$s$.
+Let~$\pi_s$ denote a comprehension of~$s$.
+Clearly~$1 \after f \after \pi_s = s^\perp \after \pi_s = 0$.
+Assume~$g\colon X \to Y'$ is some map with~$g \after \pi_s = 0$.
+Then~$1 \after g \after \pi_s = 0$ and so~$1 \after g \leq \IMperp \pi_s = s^\perp$.
+Thus by the universal property of~$f$ as a quotient,
+    there is a unique map~$g'\colon Y \to Y'$
+        with~$g = g' \after f$.
+        This shows~$f$ is a cokernel of~$\pi_s$.
+
+To prove the converse, assume~$f$ is a cokernel of~$\pi_s$.
+By assumption~$f \after \pi_s = 0$.
+Thus~$1 \after f \after \pi_s = 0$.
+Hence~$1 \after f \leq \IMperp \pi_s = s^\perp$.
+Let~$g\colon X \to Y'$ be a map with~$1 \after g \leq s^\perp$.
+Then~$1 \after g \after \pi_s \leq s^\perp \after \pi_s = 0$
+    and so~$g \after \pi_s = 0$.
+    Thus by the universal property of~$f$ as a cokernel,
+        there is a unique map~$g'\colon Y\to Y'$
+        with~$g = g' \after f$.
+This shows~$f$ is a quotient of~$s$.
+\end{solution}
 
 % vim: se ft=tex.latex :
