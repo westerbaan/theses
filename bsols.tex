@@ -3139,6 +3139,13 @@ So~$f \after \asrt_t = h \after \zeta_t \after \pi_t \after \zeta_t
 For the converse, assume~$f = f \after \asrt_t$.
 Then~$1 \after f = 1 \after f \after \asrt_t \leq 1 \after \asrt_t = t$.
 \end{solution}
+\begin{solution}{simple-andthen-absorption}%
+Clearly~$p \leq s$ if and only if~$1 \after p \leq s$.
+Even more trivially,  $\andthen{s}{p} = p$
+        if and only if~$p \after \asrt_s \equiv \andthen{s}{p} = p$.
+Thus the result follows by applying the second equivalence
+    of~\sref{asrt-absorp-rule} with~$f=p$ and~$t=s$.
+\end{solution}
 
 
 % vim: se ft=tex.latex :
