@@ -3100,6 +3100,17 @@ By the previous point~$f$ is~$\diamond$-self-adjoint
         and so~$f\after f$ is~$\diamond$-self-adjoint by the first point.
     Thus~$f \after f$ is~$\diamond$-positive.
 \end{solution}
+\begin{solution}{sharp-ceil}%
+Assume~$f\colon X \to Y$ is a sharp map and~$p$ is a predicate on~$Y$.
+Using~\sref{ceiling-within-ceiling}
+    and~\sref{img-of-compr}
+    we see~$\ceil{p \after f} = \ceil{\ceil{p} \after f} = \ceil{p} \after f$.
+For the converse assume~$\ceil{p} \after f = \ceil{p \after f}$
+    for every predicate~$p$ on~$Y$.
+Assume~$s$ is any sharp predicate on~$Y$.
+    Then~$\ceil{s \after f} = \ceil{s} \after f = s \after f$ and so~$s \after f$
+        is sharp.  Thus~$f$ is sharp.
+\end{solution}
 
 
 % vim: se ft=tex.latex :
