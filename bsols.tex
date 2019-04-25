@@ -3023,5 +3023,23 @@ We have~$ f^\BOX(f_\diamond(f^\BOX(t)))
 \end{enumerate}
 \end{solution}
 \spacingfix{}
+\begin{solution}{diamond-equiv-equiv}%
+Let~$f,g\colon X \to Y$  be some maps in a~$\diamond$-effectus.
+Assume~$f^\diamond = g^\diamond$ and~$t \in \SPred X$.
+    Trivially~$g_\diamond(t) \leq (g_\diamond(t)^\perp)^\perp$
+        and so~$f^\diamond(g_\diamond(t)^\perp) =
+        g^\diamond(g_\diamond(t)^\perp) \leq t^\perp$.
+Thus~$f_\diamond(t) \leq g_\diamond(t)^{\perp\perp} = g_\diamond(t)$.
+Reasoning in the same way with~$f$ and~$g$ swapped,
+        we see~$g_\diamond(t) \leq f_\diamond(t)$ and so~$f_\diamond = g_\diamond$.
+
+To prove the converse, assume~$f_\diamond = g_\diamond$ and~$s \in \SPred Y$.
+    Trivially~$g^\diamond(s) \leq (g^\diamond(s)^\perp)^\perp$
+        and so~$f_\diamond(g^\diamond(s)^\perp) =
+        g_\diamond(g^\diamond(s)^\perp) \leq t^\perp$.
+Thus~$f^\diamond(t) \leq g^\diamond(t)^{\perp\perp} = g^\diamond(t)$.
+Reasoning in the same way with~$f$ and~$g$ swapped,
+        we see~$g^\diamond(t) \leq f^\diamond(t)$ and so~$f^\diamond = g^\diamond$.
+\end{solution}
 
 % vim: se ft=tex.latex :
