@@ -2878,6 +2878,13 @@ Pick any comprehension~$\pi$ of~$p$.
         we find~$p = \IM f = \IM \pi \after g \leq \IM \pi \equiv \floor{p} \leq p$
         and so~$p = \floor{p}$.
 \end{solution}
-
+\begin{solution}{ceiling-within-ceiling}%
+Note~$\ceil{p} \leq \ceil{q}$  whenever~$p \leq q$
+    and so~$\ceil{p \after f} \leq \ceil{\ceil{p} \after f}
+        \leq \ceil{\ceil{p \after f}} = \ceil{p \after f}$
+        as~$p \leq \ceil{p}$
+        and~$\ceil{p} \after f \leq \ceil{p \after f}$ by~\sref{ceiling-within-ceiling}.
+    Thus~$\ceil{p \after f} = \ceil{\ceil{p} \after f}$.
+\end{solution}
 
 % vim: se ft=tex.latex :
