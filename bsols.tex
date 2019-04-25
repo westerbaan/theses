@@ -3111,6 +3111,13 @@ Assume~$s$ is any sharp predicate on~$Y$.
     Then~$\ceil{s \after f} = \ceil{s} \after f = s \after f$ and so~$s \after f$
         is sharp.  Thus~$f$ is sharp.
 \end{solution}
+\begin{solution}{andthen-square-rule}%
+    Note~$1 \after \asrt_p \after \asrt_p = p \after \asrt_p \equiv \andthen{p}{p}$.
+By \sref{diamond-squares} the map~$\asrt_p \after \asrt_p$
+    is~$\diamond$-positive
+    and thus~$\asrt_p \after \asrt_p = \asrt_{\andthen{p}{p}}$
+    by uniqueness of~$\diamond$-positive maps.
+\end{solution}
 
 
 % vim: se ft=tex.latex :
