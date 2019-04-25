@@ -2865,6 +2865,19 @@ Assume~$\xi\colon X \to Y$ is some quotient and~$p$ is a predicate on~$Y$
         and so~$p = 0$ by epicity of~$\xi$.
 Hence~$\xi$ is faithful.
 \end{solution}
+\begin{solution}{img-of-compr}%
+Assume~$\floor{p} = p$.
+    Then~$p = \floor{p} \equiv \IM \pi$ for some comprehension~$\pi$ of~$p$
+        and so~$p$ is sharp.
+To prove the converse, assume~$p$ is sharp;
+    that is: $p = \IM f$ for some~$f$.
+Pick any comprehension~$\pi$ of~$p$.
+    Clearly~$p \after f = (\IM f) \after f = 1 \after f$
+        and so there is a unique~$g$ with~$f = \pi \after g$.
+    By~\sref{im-ineq}
+        we find~$p = \IM f = \IM \pi \after g \leq \IM \pi \equiv \floor{p} \leq p$
+        and so~$p = \floor{p}$.
+\end{solution}
 
 
 % vim: se ft=tex.latex :
