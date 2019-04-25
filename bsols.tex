@@ -3333,5 +3333,24 @@ Thus we can apply the fourth point of~\sref{asrt-pristine-reverse}:
 \end{align*}
 which is the desired equality.
 \end{solution}
+\begin{solution}{exc-cvn-no-dilations}%
+Assume~$\scrA$ is a commutative von Neumann algebra
+    with effect~$a \in \scrA$.
+The standard corner~$h_a\colon \scrA \to \ceil{a} \scrA \ceil{a}$
+    for~$a$ (see~\sref{standard-corner-dils})
+    is given by~$b \mapsto \ceil{a} b \ceil{a}$.
+If~$\scrA$ is commutative,
+    then~$h_a(bc) = \ceil{a} bc \ceil{a}
+            = \ceil{a} b \ceil{a} \ceil{a} c \ceil{a} = h_a(b) h_a(c)$
+            and so~$h_a$ is an nmiu-map.
+Every corner is a standard corner up-to an isomorphism,
+    thus every corner on a commutative von Neumann algebra
+    is an nmiu-map as well.
+If~$\op\CvN$ were to have dilations,
+    then any ncpu-map would be the composition of a corner and an nmiu-map.
+We just saw that such corners are nmiu and so any ncp-map would be an nmiu-map
+    as well, which is absurd.  Thus~~$\op\CvN$ does not have dilations
+        in the sense of~\sref{dfn-eff-dilations}.
+\end{solution}
 
 % vim: se ft=tex.latex :
