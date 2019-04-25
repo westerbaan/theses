@@ -2886,5 +2886,43 @@ Note~$\ceil{p} \leq \ceil{q}$  whenever~$p \leq q$
         and~$\ceil{p} \after f \leq \ceil{p \after f}$ by~\sref{ceiling-within-ceiling}.
     Thus~$\ceil{p \after f} = \ceil{\ceil{p} \after f}$.
 \end{solution}
+\begin{solution}{img-tupling}%
+To start, note ~$[\IM f, \IM g]
+        \langle f,g\rangle = ((\IM f) \after f) \ovee ((\IM g) \after g)
+            = (1 \after f) \ovee (1 \after g) = 1 \after \langle f,g\rangle$
+            by~\sref{eff-prod-rules}.
+    Assume~$p\equiv[p_1,p_2]$ is some predicate with~$p \after \langle f,g \rangle
+        = 1 \after \langle f, g \rangle$.
+    Then~$(1 \after f) \ovee (1 \after g)
+        = 1 \after \langle f, g \rangle 
+        = p \after \langle f, g \rangle
+        = (p_1 \after f) \ovee (p_2 \after g)
+        \leq (p_1 \after f) \ovee (1 \after g)$
+        and so by cancellation~$1 \after f \leq p_1 \after f \leq 1 \after f$,
+        hence~$1 \after f = p_1 \after f$.
+Thus~$\IM f \leq p_1$.
+Similarly~$\IM g \leq p_2$.
+    Thus~$[\IM f, \IM g] \leq [p_1, p_2] = p$.
+We have shown~$\IM \langle f, g\rangle = [\IM f, \IM g]$.
+
+Assume~$[p,q]$ is sharp.
+    That is, there is some~$f$ with~$[p,q] = \IM f$.
+    Then~$[p,q] = \IM f = \IM \langle \pproj_1 \after f, \pproj_2 \after f \rangle 
+    = [\IM \pproj_1 \after f, \IM \pproj_2 \after f]$
+    and so~$p = \IM \pproj_1 \after f$
+    and~$q = \IM \pproj_2 \after f$,
+    which shows~$p$ and~$q$ are sharp.
+
+To prove the converse, assume~$p$ and~$q$ are sharp.
+Pick~$f$ and~$g$ with~$p = \IM f$ and~$g = \IM g$.
+Note~$f+g = \langle f \after \pproj_1 , g \after \pproj_2 \rangle$.
+We have~$\IM f = \IM f \after \pproj_1 \after \kappa_1
+                \leq \IM f \after \pproj_1  \leq \IM f$
+                and so~$\IM f \after \pproj_1 = \IM f$.
+Similarly~$\IM g \after \pproj_2 = \IM g$.
+Thus~$\IM f+g =  \IM \langle f \after \pproj_1 , g \after \pproj_2 \rangle
+    =  [\IM f \after \pproj_1, \IM g \after \pproj_2]
+    = [\IM f, \IM g] = [p,q]$, which shows~$[p,q]$ is sharp.
+\end{solution}
 
 % vim: se ft=tex.latex :
