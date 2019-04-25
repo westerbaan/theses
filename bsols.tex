@@ -2948,5 +2948,19 @@ Then~$1 \after g \after \pi_s \leq s^\perp \after \pi_s = 0$
         with~$g = g' \after f$.
 This shows~$f$ is a quotient of~$s$.
 \end{solution}
+\begin{solution}{exc-diam-order-pres}%
+Assume~$s \leq t$.
+Then~$s \after f \leq t \after f$,
+    hence~$(t \after f) ^\perp \leq (s \after f)^\perp$ so~$\floor{(t \after f)^\perp} \leq \floor{(s \after f)^\perp}$.
+    Thus~$f^\diamond(s) \equiv \ceil{s \after f}
+        \equiv \floor{(s \after f)^\perp}^\perp \leq \floor{(t \after f)^\perp}^\perp \equiv
+            f^\diamond(t)$.
+        This shows~$f^\diamond$ is order preserving.
+Furthermore~$t^\perp \leq s^\perp$,
+    so~$f^\diamond(t^\perp) \leq f^\diamond(s^\perp)$,
+    hence~$f^\BOX (s) \equiv f^\diamond(s^\perp)^\perp
+        \leq f^\diamond(t^\perp)^\perp \equiv f^\BOX(t)$,
+        which shows that~$f^\BOX$ is order preserving.
+\end{solution}
 
 % vim: se ft=tex.latex :
