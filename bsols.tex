@@ -3064,6 +3064,42 @@ Then~$1 \after \xi_r = r^\perp \leq s^\perp$
     = \xi^\BOX (\xi_\diamond(r))
     \geq \xi^\BOX (\xi_\diamond(t)) $.
 \end{solution}
+\begin{solution}{exc-diamond-adj}%
+For the first point, assume~$f^\diamond = g_\diamond$
+    for some~$f : X \leftrightarrows Y : g$.
+    Trivially~$g^\diamond(s) \leq (g^\diamond(s)^\perp)^\perp$ for any~
+    for any~$s \in \SPred X$ and
+    so~$ f^\diamond(g^\diamond(s)^\perp) =
+    g_\diamond(g^\diamond(s)^\perp) \leq s^\perp$.
+    Hence~$f_\diamond(s) \leq g^\diamond(s)^{\perp\perp} = g^\diamond(s)$.
+With essentially the same argument
+    (swapping  both~$f$ and~$g$ and the up/down position of the diamonds),
+    we see~$g^\diamond(s) \leq  f_\diamond(s)$,
+    hence~$g^\diamond = f_\diamond$.
+Swapping~$f$ and~$g$ again, gives the argument for the converse.
+
+For the second point, assume~$f$ and~$g$ are~$\diamond$-adjoint.
+    Then~$\IM f = f_\diamond(1) = g^\diamond(1) = \ceil{1 \after g}$,
+    as desired.
+\end{solution}
+\begin{solution}{diamond-squares}%
+For the first point, assume~$f$ is~$\diamond$-self-adjoint.
+Then~$(f \after f)_\diamond
+        = f_\diamond \after f_\diamond
+        = f^\diamond \after f^\diamond
+        = (f \after f)^\diamond $
+        and so~$f\after f$ is~$\diamond$-self-adjoint as well.
+
+For the second point, assume~$f$ is~$\diamond$-positive.
+Then~$f = g \after g$ for some~$\diamond$-self-adjoint~$g$.
+Hence~$f$ is~$\diamond$-self-adjoint by the previous point.
+
+For the third point, assume~$f$ is~$\diamond$-positive
+    and~$f \after f$ is pure.
+By the previous point~$f$ is~$\diamond$-self-adjoint
+        and so~$f\after f$ is~$\diamond$-self-adjoint by the first point.
+    Thus~$f \after f$ is~$\diamond$-positive.
+\end{solution}
 
 
 % vim: se ft=tex.latex :
