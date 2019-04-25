@@ -3316,5 +3316,22 @@ Furthermore
         \after \varphi^{-1} \after \zeta_s
         = \zeta_{\ceil{t \after f^\dagger}}$, as desired.
 \end{solution}
+\begin{solution}{dagger-iso-zeta2}%
+    Note that~$\pi_{\ceil{q}} \after \psi^{-1}
+        = \pi_{\ceil{q}} \after \psi^{-1} \after \zeta_{1} \after \asrt_1$
+        and so by definition of the dagger, we have~$(\pi_{\ceil{q}} \after \psi^{-1})^\dagger
+            = \asrt_1 \after \pi_1 \after (\psi^{-1})^{-1} \after \zeta_{\ceil{q}}
+            = \psi\after \zeta_{\ceil{q}}$.
+    Furthermore~$p \after \pi_t \leq 1 = 1 \after \pi_{\ceil{q}} \after \psi^{-1}$.
+Thus we can apply the fourth point of~\sref{asrt-pristine-reverse}:
+\begin{align*}
+    \pi_{\ceil{q}} \after \psi^{-1} \after \asrt_{p \after \pi_t}
+    & \ = \ \asrt_{p \after \pi_t \after (\pi_{\ceil{q}} \after \psi^{-1})^{-1}}
+    \after \pi_{\ceil{q}} \after \psi^{-1} \\
+    & \ = \ \asrt_{p \after \pi_t \after \psi \after \zeta{\ceil{q}}} \after \pi_{\ceil{q}} \after \psi^{-1} \\
+    & \ = \ \asrt_{p \after k} \after \pi_{\ceil{q}} \after \psi^{-1},
+\end{align*}
+which is the desired equality.
+\end{solution}
 
 % vim: se ft=tex.latex :
