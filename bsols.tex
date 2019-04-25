@@ -3118,6 +3118,27 @@ By \sref{diamond-squares} the map~$\asrt_p \after \asrt_p$
     and thus~$\asrt_p \after \asrt_p = \asrt_{\andthen{p}{p}}$
     by uniqueness of~$\diamond$-positive maps.
 \end{solution}
+\begin{solution}{asrt-absorp-rule}%
+Assume~$f\colon X\to Y$ is a map in a~$\&$-effectus
+    with~$s \in \SPred Y$ and~$t \in \SPred X$.
+
+Assume~$\IM f \leq s$.
+Then~$1\after f = s \after f$.
+Thus there is a~$g$ with~$f = \pi_s \after g$.
+Then~$\asrt_s \after f = \pi_s \after \zeta_s \after\pi_s \after g
+        = \pi_s \after g = f$.
+For the converse, assume~$\asrt_s \after f = f$.
+Then~$1 \after f = 1 \after \asrt_s \after f =s \after f$
+    and so~$\IM f \leq s$.
+We have shown the first equivalence.
+
+For the second equivalence, assume~$1 \after f \leq t$.
+    Then~$f = h \after \zeta_t$ for a (unique) map~$h$.
+So~$f \after \asrt_t = h \after \zeta_t \after \pi_t \after \zeta_t
+        = h \after \zeta_t = f$.
+For the converse, assume~$f = f \after \asrt_t$.
+Then~$1 \after f = 1 \after f \after \asrt_t \leq 1 \after \asrt_t = t$.
+\end{solution}
 
 
 % vim: se ft=tex.latex :
