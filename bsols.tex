@@ -3352,5 +3352,127 @@ We just saw that such corners are nmiu and so any ncp-map would be an nmiu-map
     as well, which is absurd.  Thus~~$\op\CvN$ does not have dilations
         in the sense of~\sref{dfn-eff-dilations}.
 \end{solution}
+\begin{solution}{exc-purec-no-biproduct}%
+   We will first show that for any non-zero pure map~$f\colon \scrA \to \C$,
+        there is a Hilbert space~$\scrH$, an element~$x \in \scrH$,
+    von Neumann algebra~$\scrC$ and isomorphism~$\varphi\colon \scrB(\scrH)\oplus \scrC \to \scrA$
+    with~$f (\varphi (T, c))= \langle x, T x\rangle$.
+By definition of purity, we know~$f = c \after h$
+    for some corner~$h$ and filter~$c$ for~$f(1)$.
+Clearly~$c(1)=f(1) \neq 0$ as~$f\neq 0$ and
+    so~$c\colon \C \to \C$ is simply given by~$c(1)\id$,
+    hence~$f = f(1) h$ for a corner~$h\colon \scrA \to \C$
+        of~$p \in \scrA$.
+    As~$p \scrA p \cong \C$ both have only two projections
+        and so~$p$ is a mimimal projection.
+    In particular~$0$ is the only central element strictly below~$p$,
+        thus~$\cceil{p}\scrA$ is a factor.
+Let~$\varrho\colon \cceil{p}\scrA \to \scrB(\scrH)$, $y\in \scrH$
+    be a GNS-representation of the restriction of~$h$ to~$\cceil{p}\scrA$
+    with~$y\in\scrH$ such that~$h(\cceil{p}a) = \langle y, \varrho(\cceil{p}a) y \rangle$.
+    This restriction of~$h$ is still a corner, hence pure
+    and so by~\sref{paschke-pure} we know~$\varrho$ is surjective.
+    As~$\cceil{p}\scrA$ is a factor, $\varrho$ must be injective as well.
+    Thus~$\varrho$ is an nmiu-isomorphism.
+    Hence~$\varphi\colon \scrB(\scrH) \oplus \scrB \to \scrA$
+        defined by~$\varphi(T,c) \equiv \varrho^{-1}(T) + c$
+                is an nmiu-isomorphism as well.
+Define~$x \equiv \sqrt{f(1)}$. Then~$f(\varphi(T, c))
+            = f(1) h(\varrho^{-1}(T) + c)
+            = f(1) h(\varrho^{-1}(T))
+            = f(1) \langle y, \varrho (\varrho^{-1}(T)) y \rangle
+            = f(1) \langle y, T y \rangle
+            =  \langle x, T x \rangle$ as desired.
+
+We continue with the main task of this exercise.
+Assume~$(\Pure \op\vN)^{\mathsf{op}}$ has a
+        product~$ \C \xleftarrow{\pi_1} \scrA \xrightarrow{\pi_2} \C$
+        of~$\C$ and~$\C$.
+Note~$\pi_1 \neq 0$
+    for otherwise~$\id_\C = \pi_1 \after h = 0$,
+    where~$h\colon \C \to \scrA$ is the unique map given by the universal property
+    of the product for~$\id_\C$ and~$\id_\C$.
+    Similarly~$\pi_2 \neq 0$.
+
+By assumption, there is a unqiue pure map~$h\colon \C \to \scrA$
+    with~$\pi_1 \after h = \id$ and~$\pi_2 \after h = \id$.
+With the reasoning at the start,
+    we know there is a Hilbert space~$\scrH$, an element~ $z\in \scrH$,
+    a von Neumann algebras~$\scrC$
+    and an isomorphism~$\varphi\colon \scrB(\scrH)\oplus \scrC$
+    with~$h^\dagger (\varphi(T,c)) = \langle z, Tz \rangle$.
+    Note that~$T \mapsto \langle z, T z\rangle$
+        is the dagger of the standard filter~$c_{\ketbra{z}{z}}$.
+    Write~$p\colon \scrB(\scrH) \oplus \C \to \scrB(\scrH)$
+        for the regular coprojection~$(T,c) \mapsto T$,
+        which is corner with~$p^\dagger(T) = (T,0)$.
+        Then~$h^\dagger \after \varphi = c^\dagger_{\ketbra{z}{z}} \after p$
+            and so~$h = \varphi \after p^\dagger \after c_{\ketbra{z}{z}}$.
+    By definition of~$h$, we have 
+\begin{equation}\label{exc-224VI1}
+    \id \ =\ \pi_1 \after h = \pi_1 \after \varphi \after p^\dagger \after c_{\ketbra{z}{z}}.
+\end{equation}
+Reasoning the same way as we did for~$f$ at the start
+    of this exercise,
+    we know that~$\ceil{\pi_1 \after \varphi}$ is a minimal projection.
+    If~$\ceil{\pi_1 \after \varphi} \leq (0,1)$,
+        then~$\pi_1 \after \varphi \after p^\dagger = 0$
+        and so~$\id = 0$ by~\eqref{exc-224VI1}, which is absurd.
+    Thus~$\ceil{\pi_1 \after \varphi} = (p_1,0)$
+    for some minimal projection~$p_1$ of~$\scrB(\scrH)$.
+Thus~$\pi_1 (\varphi(T,c)) = \langle x, T x\rangle$ for some~$x \in \scrH$.
+Similarly~$\pi_2 (\varphi(T,c)) = \langle y, T y\rangle$ for some~$y \in \scrH$.
+
+Note that~$
+\pi_i \after \varphi \after (\id \oplus \vartheta)
+=\pi_i \after \varphi$
+for any map~$\vartheta\colon \scrC \to \scrC$ and~$i=1,2$.
+Hence~$\id \after \pi_i \after \varphi \after (\id \oplus\vartheta) \after \varphi^{-1} \after h$
+    for~$i=1,2$ and so~$(\id\oplus\vartheta) \after \varphi^{-1}\after h = \varphi^{-1}\after h$
+    for every~$\vartheta$ by uniqueness of~$h$,
+    which is absurd unless~$\scrC = 0$.
+
+Suppose~$\dim \scrH \geq 3$.
+Then there is some non-zero~$z_0 \in \scrH$
+    with~$z_0 \perp x$ and~$x_0 \perp y$.
+So~$\pi_i \after \varphi \after c_{\ketbra{z_0}{z_0}} = 0$ for~$i=1,2$.
+By the presumed universal property of~$\scrA$,
+    there is a unique map~$h\colon \C \to \scrA$
+        with~$\pi_1 \after h = \pi_1 \after \varphi \after c_{\ketbra{z_0}{z_0}}$
+        and~$\pi_2 \after h = \pi_2 \after \varphi \after c_{\ketbra{z_0}{z_0}}$
+Both~$\varphi \after c_{\ketbra{z_0}{z_0}}$ and~$0$ fit the bill,
+    so~$\varphi \after c_{\ketbra{z_0}{z_0}} = 0$,
+    which is absured. Thus~$\dim \scrH \leq 2$.
+
+Clearly~$\dim \scrH \neq 0$, for otherwise there would be a unqiue pure map~$\C \to \C$, which is absurd.
+If~$\dim \scrH = 1$, then~$x = \lambda y$ for some~$\lambda \in \C, \lambda \neq 0$
+    and so~$\pi_1 = \lambda \pi_2$,
+    hence for any two pure maps~$f_1,f_2\colon \scrB \to \C$ we would have~$f_1 = \lambda f_2$,
+        which is absurd.
+
+Reducing clutter a bit,
+    we may assume without loss of generality~$\scrA = M_2$, $\pi_1(T) = \langle x, Tx\rangle$
+    and~$\pi_2(T) = \langle y, T y\rangle$ for some~$x,y \in \C^2$.
+Write~$f_1,f_2\colon \C^2\to\C$
+    for the maps~$f_1(\lambda,\mu) = \lambda$
+    and~$f_2(\lambda,\mu) = \mu$.
+By the presumed universal property of~$M_2$ as product,
+    there is a unique pure map~$f\colon \C^2 \to \scrA$
+    with~$\pi_1 \after f = f_1$ and~$\pi_2 \after f = f_2$.
+From the definition of purity,
+    it follows that~$f = c \after h$
+        for some corner~$h\colon \C^2 \to \ceil{h(1)} M_2 \ceil{h(1)}$
+        and the standard filter~$c \colon \ceil{h(1)} M_2 \ceil{h(1)} \to M_2$.
+Note~$\ceil{h} \C^2 \ceil{h} \cong \ceil{h(1)} M_2 \ceil{h(1)}$.
+The former is commutative, so~$\ceil{h(1)} \neq 1$.
+If~$\ceil{h(1)} = 0$, then~$h = 0$ and so~$f_1=0$, quod non.
+Thus~$\ceil{h(1)} M_2 \ceil{h(1)} \cong \C$ and so
+    either~$\ceil{h} = (1,0)$
+    or~$\ceil{h} = (0,1)$.
+In the first case~$1 = f_2 (0,1)= \pi_2 (h(0,1)) = \pi_2(0) = 0$,
+    which is a contradiction.
+The second case leads to a similar contradiction.
+So there is no product of~$\C$ and~$\C$ in~$(\Pure \op\vN)^{\mathsf{op}}$.
+\end{solution}
 
 % vim: se ft=tex.latex :

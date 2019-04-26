@@ -3258,7 +3258,7 @@ In particular~$[0,1]^n$ is an effect divisoid
 \item
 Later, in \sref{andthen-effect-divisoid},
     we will see that if~$C$ is an~$\&$-effectus,
-then~$(\Scal C)^{\mathrm{op}}$ (the scalars with multiplication in the
+then~$(\Scal C)^{\mathsf{op}}$ (the scalars with multiplication in the
     opposite direction)
     is an effect divisoid.
 \item
@@ -5183,7 +5183,7 @@ Point 3 is just as easy. \qed
 \begin{parsec}{2130}%
 \begin{point}{10}[andthen-effect-divisoid]{Proposition}%
 If~$C$ is an~$\&$-effectus,
-    then~$(\Scal C)^{\mathrm{op}}$ is an effect divisoid,
+    then~$(\Scal C)^{\mathsf{op}}$ is an effect divisoid,
     see~\sref{dfn-effect-divisoid}.
 \begin{point}{20}{Proof}%
 Let~$\lambda,\mu$ be scalars with~$\lambda \leq \mu$.
@@ -5207,11 +5207,11 @@ We return to the general case to prove axiom 1.
 Clearly~$\rfrac{\lambda}{\mu} = \lambda' \after \zeta_{\ceil{\mu}}
             \leq 1 \after \zeta_{\ceil{\mu}} = \ceil{\mu} 
             = \rfrac{\mu}{\mu}$
-    and~$\mu \odot_{\mathrm{op}} \rfrac{\lambda}{\mu}
+    and~$\mu \odot_{\mathsf{op}} \rfrac{\lambda}{\mu}
 = \lambda'  \after \zeta_{\ceil{\mu}} \after \mu = \lambda$
 as required.
 Assume~$\sigma$ is an arbitrary
-    scalar with~$\mu \odot_{\mathrm{op}} \sigma = \lambda$
+    scalar with~$\mu \odot_{\mathsf{op}} \sigma = \lambda$
     and~$\sigma \leq \rfrac{\mu}{\mu} \equiv \ceil{\mu}$.
 Then~$\sigma = \sigma' \after \zeta_{\ceil{\mu}}$
     for a unique~$\sigma'$.
@@ -7203,7 +7203,7 @@ Then~$1 \after f \after g = 0$,
 \end{point}
 \end{point}
 \end{point}
-\begin{point}{60}{Exercise*}%
+\begin{point}{60}[exc-purec-no-biproduct]{Exercise*}%
 Let~$C$ be a~$\dagger$-effectus.
 In this exercise, you will show that
     in general $\Pure C$
@@ -7212,14 +7212,14 @@ In particular, $\Pure C$ does not have~$\dagger$-biproducts,
     see~\cite[3.2.15]{heunenphd}.
 Consider~$C \equiv \op\vN$.
 Reasoning towards contradiction,
-    assume~$(\Pure \op\vN)^{\mathrm{op}}$
-    has a product~$\ \C \xleftarrow{\pi_1} \scrA \xrightarrow{\pi_2} \C$
+    assume~$(\Pure \op\vN)^{\mathsf{op}}$
+    has a product~$ \C \xleftarrow{\pi_1} \scrA \xrightarrow{\pi_2} \C$
     of~$\C $ and~$\C$.
 First show that for any non-zero pure map~$f\colon \scrA \to \C$,
     there exists a Hilbert space~$\scrH$, an element~$x \in \scrH$,
     a von Neumann algebra~$\scrC$ and
     isomorphism~$\varphi\colon \scrB(\scrH)\oplus \scrC \to \scrA$
-    with~$f \after \varphi = \langle x, (\,\cdot\,) x\rangle $.
+    with~$f (varphi(T,c)) = \langle x, T x\rangle $.
 Use this on~$\pi_1$, $\pi_2$ and~$\langle\id_\C,\id_\C\rangle $
     to show there is an
     isomorphism~$\varphi\colon  \scrB(\scrH) \oplus \scrC \cong \scrA$
