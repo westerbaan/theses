@@ -3474,5 +3474,66 @@ In the first case~$1 = f_2 (0,1)= \pi_2 (h(0,1)) = \pi_2(0) = 0$,
 The second case leads to a similar contradiction.
 So there is no product of~$\C$ and~$\C$ in~$(\Pure \op\vN)^{\mathsf{op}}$.
 \end{solution}
+\begin{solution}{exc-purec-equal}%
+   Assume~$\xi\colon \scrC \to M_4$ is some filter
+    with~$\ad_\sigma \after \xi = \xi$.
+    Note~$\sigma^* = \sigma$.
+    Assume~$c \in \scrC$.
+    Then~$\xi(c) = \ad_\sigma(\xi (c)) = \sigma \xi(c) \sigma$.
+Let~$b \in M_4$ be any element with~$\sigma b \sigma = b$.
+    Then~$
+    (p_\scrS + p_\scrA) b (p_\scrS +p_\scrA)
+        = b = \sigma b \sigma
+  =  (\sigma p_\scrS + \sigma p_\scrA) b (p_\scrS  \sigma +p_\scrA \sigma)
+  =  ( p_\scrS -  p_\scrA) b (p_\scrS  -p_\scrA )$
+    and so~$p_\scrA b p_\scrS + p_\scrS b p_\scrA = 0$.
+As~$p_\scrA$ and~$p_\scrS$ have orthogonal ranges,
+    we see~$p_\scrA b p_\scrS = 0 = p_\scrS b p_\scrA$.
+Hence~$b = p_\scrS b p_\scrS + p_\scrA b p_\scrA$.
+Furthermore~$b p_\scrS =
+    p_\scrS b p_\scrS$.
+If~$b$ is additionally self adjoint, then~$p_\scrS b = 
+    p_\scrS b^* p_\scrS =
+    p_\scrS b p_\scrS = p_\scrS b$.
+Thus~$p_\scrS \xi(c) = \xi(c) p_\scrS$ for any~$c \in \scrC$
+There is some isomorphism~$\vartheta \colon \scrC \to \ceil{\xi(1)} M_4 \ceil{\xi(1)}$
+    with~$\xi(c) = \sqrt{\xi(1)} \vartheta(c) \sqrt{\xi(1)}$
+    and so~$ p_\scrS \sqrt{\xi(1)} b \sqrt{\xi(1)} = \sqrt{\xi(1)} b \sqrt{\xi(1)} p_\scrS$
+    for any~$b \in M_4$.
+    From this it follows (using the pseudoinverse of~$\sqrt{\xi(1)}$)
+    that~$
+    p_\scrS \ceil{\xi(1)} b  \ceil{\xi(1)} =
+     \ceil{\xi(1)} b  \ceil{\xi(1)}  p_\scrS$.
+    Thus~$\ceil{\xi(1)}p_\scrS\ceil{\xi(1)}$ is central in~$\ceil{\xi(1)}M_4 \ceil{\xi(1)}$.
+So either~$\ceil{\xi(1)} p_\scrS \ceil{\xi(1)} = 0$
+    or~$\ceil{\xi(1)} p_\scrS \ceil{\xi(1)} = \ceil{\xi(1)}$.
+    In the first case, we have~$\ceil{\xi(1)} p_\scrS = 0$
+        hence~$\xi(c) = p_\scrA \xi(c) p_\scrA + p_\scrS \xi(c) \ceil{\xi(1)} p_\scrS
+        = p_\scrA \xi(c) p_\scrA \leq p_\scrA$ for all~$c \in \scrC $.
+    With similar reasoning we see that~$\xi(c) \leq p_\scrS$ for all~$c \in \scrC$
+        in the second case.
+
+Assume there is an equalizer~$e\colon E \to M_4$
+    of~$\id_{M_4}$ and~$\ad_\sigma$ in~$(\Pure \op\vN)^{\mathsf{op}}$.
+    By definition of purity~$e = c \after h$ for some filter~$c$ and comprehension~$h$.
+As~$e$ is supposed to be an equalizer of~$\id$ and~$\ad_\sigma$,
+    we have~$\ad_\sigma \after c \after h = \ad_\sigma \after e = e = c \after h$,
+    hence~$\ad_\sigma \after c = c$ by the surjectivity of the corner~$h$.
+We have just shown that then
+        either~$c(b) \leq p_\scrA$ for all~$b$ or
+        or~$c(b) \leq p_\scrS$ for all~$b$.
+    Hence~$h(e) \leq p_\scrA$ for all~$e \in E$
+        or~$h(e) \leq p_\scrS$ for all~$e \in E$.
+    In the first case, consider the map~$\ad_{e^\dagger_\scrS} \colon M_3 \to M_4$.
+    Clearly~$\ad_\sigma \after \ad_{e^\dagger_\scrS}
+     = \ad_{e^\dagger_\scrS}$
+     and so there must be a (unique) map~$h\colon M_3 \to E$
+     with~$e \after h = \ad_{e^\dagger_\scrS}$.
+    However~$p_\scrA \geq e(h(T)) = \ad_{e^\dagger_\scrS}(T) \leq p_\scrS$
+        for all~$T \in M_3$
+        and so~$\ad_{e^\dagger_\scrS} = 0$, quod non.
+    We reach a contradiction in the other case in a similar fashion.
+    Hence~$\Pure \op\vN$ has no coequalizers.
+\end{solution}
 
 % vim: se ft=tex.latex :
