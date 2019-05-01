@@ -1,6 +1,6 @@
 .PHONY: all clean
 
-all: a.pdf b.pdf bstellingen.pdf berr-sep.pdf
+all: a.pdf b.pdf bstellingen.pdf berr-sep.pdf asols.pdf
 
 berr-sep.pdf: common-lite.tex berr-sep.tex berr.tex
 	latexmk -pdf -use-make berr-sep.tex

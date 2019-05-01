@@ -150,7 +150,7 @@ and so~$T_1x=T_2x$ by the previous part.
 Whence~$T_1=T_2$.
 \end{solution}
 \begin{solution}{parsec-40.120}%
-We prove slightly mor
+We prove slightly more than was requested.
 Let~$\scrH$, $\scrK$ and~$\scrL$ be pre-Hilbert spaces.
 \begin{enumerate}
 \item
@@ -215,4 +215,165 @@ so~$ST$ is adjoint to~$T^*S^*$,
         and thus~$(ST)^*=T^*S^*$.
 \end{enumerate}
 \end{solution}
+\begin{solution}{parsec-40.150}%
+We'll check the first two requirements
+    for $\|x\|=\smash{\sqrt{\left<x,x\right>}}$
+    to give a seminorm first.
+Given $x\in V$,
+we have $\left<x,x\right>\geq 0$,
+    so~$\|x\|\equiv \smash{\sqrt{\left<x,x\right>}}\geq 0$.
+Given $x\in V$ and $\lambda\in \C$,
+we have $\left\|\lambda x\right\|^2
+    = \left<\lambda x,\lambda x\right> = \overline{\lambda}\left<x,x\right>
+    \lambda = \left|\lambda\right|^2\|x\|^2\geq 0$,
+    so
+    we get~$\|\lambda x\| = \left|\lambda\right|\|x\|$
+    by taking the square root.
+
+Verifying that the triangle inequality holds takes some 
+preparations.
+As the hint suggests, we prove the Cauchy--Schwarz inequality first.
+For this, we must given $x,y\in V$  prove
+    that $\left|\left<x,y\right>\right|^2 \leq \left<x,x\right>
+    \left<y,y\right>$.
+This inequality follows
+by applying~\sref{positive-2x2matrix} 
+to the matrix
+$\smash{\bigl(\begin{smallmatrix}
+\smash{\left<x,x\right>} & \smash{\left<x,y\right>} \\
+\smash{\left<y,x\right>} & \smash{\left<y,y\right>}
+\end{smallmatrix}\bigr)}$,
+which is positive,
+as for all~$u,v\in\C$,
+    \begin{alignat*}{3}
+        (
+        \begin{smallmatrix}
+            \bar{u} & \bar{v}
+        \end{smallmatrix})
+        \ 
+        \bigl(
+        \begin{smallmatrix}
+\smash{\left<x,x\right>} & \smash{\left<x,y\right>} \\
+\smash{\left<y,x\right>} & \smash{\left<y,y\right>}
+\end{smallmatrix}\bigr)
+        \ \bigl(
+        \begin{smallmatrix}
+            u \\ v
+        \end{smallmatrix}
+        \bigr)
+        \ &=\  
+        \bar{u}u\left<x,x\right>\,+\,
+        \bar{u}v\left<x,y\right> \,+\,
+        u\bar{v}\left<y,x\right> \,+\,
+        \bar{v}v\left<y,y\right> 
+        \\
+        &=\ \left<\,ux+vy,\,ux+vy\,\right>\,\geq \,0.
+    \end{alignat*}
+Upon taking the square root
+the Cauchy--Schwarz inequality
+takes the forms
+    \begin{equation*}
+    \left|\left<x,y\right>\right|
+    \ \leq\  \|x\|\,\|y\|\qquad\text{for all }x,y\in V.
+    \end{equation*}
+Next, note that~$\bar{z}+z \leq 2\left|z\right|$ for any~$z\in\C$,
+    because writing $z\equiv a+ib$,
+    we have $\left|\bar{z}+z\right|^2=(\bar{z}+z)^2 = 4a^2 \leq 4(a^2 + b^2) = 4\left|z\right|^2$,
+    and so $\bar{z}+z \leq \left|\bar{z}+z\right|\leq 2\left|z\right|$.
+In particular, we have,
+for all~$x,y\in V$,
+\begin{equation*}
+\left<x,y\right>+\left<y,x\right>
+\ \leq\  2\left|\left<x,y\right>\right|\ \leq\ 
+2 \|x\|\,\|y\|.
+\end{equation*}
+Given $x,y\in V$,
+the triangle inequality,
+$\|x+y\|\leq \|x\|+\|y\|$,
+holds,
+because
+\begin{alignat*}{3}
+    \|x+y\|^2\ &=\ 
+    \left<x+y,x+y\right> 
+    \ =\ \left<x,x\right>\,+\,
+    \left<x,y\right>\,+\,
+    \left<y,x\right>\,+\,
+    \left<y,y\right> \\
+    &\leq \ \left<x,x\right>\,+\,
+    2\|x\|\,\|y\|
+    \,+\,
+    \left<y,y\right>  
+    \quad\equiv\ 
+    \|x\|^2 \,+\, 2\|x\|\,\|y\| \,+\, \|y\|^2\\
+    \ &=\   (\|x\|+\|y\|)^2.
+\end{alignat*}
+
+Whence~$\|x\|=\smash{\sqrt{\left<x,x\right>}}$ gives
+a seminorm on~$V$.
+Recall that for~$\|\,\cdot\,\|$ to be a \emph{norm},
+the additional condition
+$\|x\|=0\implies x=0$
+for all~$x\in V$
+must be met.
+This is the case when
+$\left<\,\cdot\,,\,\cdot\,\right>$
+is definite,
+because 
+$\|x\|=0$
+entails $0=\|x\|^2=\left<x,x\right>$,
+which, by definiteness of~$\left<\,\cdot\,,\,\cdot\,\right>$,
+entails $x=0$.
+
+Let~$x,y\in V$ be given.
+To complete this exercise we must establish three
+identities.
+\emph{Pythagoras' theorem}
+holds since $\left<x,y\right>=0$ implies
+\begin{alignat*}{3}
+\|x+y\|^2\ \equiv  \ \left<x+y,x+y\right>
+    \ &=\ 
+\left<x,x\right>
+\,+\, \left<x,y\right>
+\,+\, \left<y,x\right>
+\,+\, \left<y,y\right>\\
+    \ &=\  
+\left<x,x\right>\,+\,\left<y,y\right>
+\ = \ \|x\|^2 + \|y\|^2.
+\end{alignat*}
+Similar to the first line of the display above, we have,
+(for any~$x,y\in V$,)
+\begin{equation*}
+\|x-y\|^2\ =\ 
+\left<x,x\right>
+\,-\, \left<x,y\right>
+\,-\, \left<y,x\right>
+\,+\, \left<y,y\right>.
+\end{equation*}
+Taking the average of these two equations gives the \emph{parallelogram law}:
+\begin{equation*}
+    \textstyle \frac{1}{2}(\ \|x+y\|^2\,+\,\|x-y\|^2\ )
+    \ =\ 
+\left<x,x\right>
+\,+\, \left<y,y\right>\ \equiv\ 
+\|x\|^2 + \|y\|^2.
+\end{equation*}
+Concerning the \emph{polarisation identity},
+note that for any~$n$, we have
+\begin{equation*}
+i^n\left<i^nx+y,i^nx+y\right>
+\ = \ i^n\left<x,x\right>
+\,+\, \left<x,y\right>
+    \,+\, (-1)^n\left<y,x\right>
+    \,+\, i^n\left<y,y\right>.
+\end{equation*}
+Since~$\sum_{n=0}^3 i^n = 0$
+and $\sum_{n=0}^3 (-1)^n=0$,
+we get 
+\begin{equation*}
+    \textstyle
+    \sum_{n=0}^3i^n\left\|i^nx+y\right\|^2
+\ = \ 4\left<x,y\right>.
+\end{equation*}
+\end{solution}
+
 \end{document}
