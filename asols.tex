@@ -462,4 +462,59 @@ Finally,  $\ketbra{x}{y}$
         \left<\, z,\,(\ketbra{y}{x}w)\,\right>.
     \end{equation*}
 \end{solution}
+\begin{solution}{parsec-50.30}%
+Let~$x$ be an element of~$\ell^2\backslash c_{00}$
+    (so $x_n$ is non-zero for infinitely many~$n$s.)
+We must show that there are no element of~$c_{00}$ with minimal
+distance to~$x$.
+So let~$y$ be an element of~$c_{00}$,
+and suppose (towards a contradiction)
+that~$\|x-y\|\leq \|x-y'\|$
+for all~$y'\in c_{00}$.
+
+Since~$y$ is in $c_{00}$,
+there's~$N$ such that~$y_n=0$ for all~$n> N$.
+We claim that~$x_n=y_n$ for all~$n\leq N$.
+    Indeed, (if not) define $y'\in c_{00}$
+    by $y_n' = x_n$ for all~$n\leq 0$, and~$y_n'=0$ for all~$n >N$.
+    Then
+\begin{alignat*}{3}
+\textstyle
+    \|x-y'\|^2\ &=\ 
+\textstyle
+    \sum_{n=N+1}^\infty \left|x_n\right|^2\\
+    \ &\leq \ 
+\textstyle
+    \sum_{n=0}^N \left|x_n-y_n\right|^2 
+    \ +\ \sum_{n=N+1}^\infty \left|x_n\right|^2
+    \ = \ \|x-y\|^2.
+\end{alignat*}
+Thus~$\|x-y'\|\leq \|x-y\|$.
+But since~$y$ is assumed to have minimal
+distance to~$x$ among the elements of~$c_{00}$,
+we already had $\|x-y\|\leq \|x-y'\|$,
+and so~$\|x-y\|=\|x-y'\|$.
+    Whence~$\sum_{n=0}^N \left|x_n-y_n\right|^2
+    = 0$,
+    and so~$x_n=y_n$ for all~$n\leq N$.
+    In particular, $y=y'$.
+
+It's now easy to find a better approximation
+    of~$x$ in~$c_{00}$ than~$y$.
+    Indeed, since~$x_n$ is non-zero for infinitely many~$n$s,
+    there's an~$M\geq 0$ with 
+    \begin{equation*}
+        \textstyle
+        \sum_{n=M+1}^\infty \left|x_n\right|^2
+    \ <\  \sum_{n=N+1}^\infty \left|x_n\right|^2.
+    \end{equation*}
+    Writing $y''$ for the element of~$c_{00}$
+    with $y_n''=x_n$ for all~$n\leq M$ and~$y_n''=0$
+    for all~$n > M$,
+    we have 
+    $\|x-y''\|^2=\sum_{n=M+1}^\infty \left|x_n\right|^2
+    < \sum_{n=N+1}^\infty \left|x_n\right|^2 = \|x-y'\|^2 = \|x-y\|^2$,
+    which contradicts $\|x-y\|\leq \|x-y''\|$.
+    Hence no such~$y$ exists.
+\end{solution}
 \end{document}
