@@ -431,5 +431,35 @@ and so~$\left<x,Sy\right>=\left<Tx,y\right>$.
 Whence~$T$ is adjoint to~$S$,
 and thus~$\scrS$ is closed.
 \end{solution}
+\begin{solution}{parsec-40.190}%
+That~$\ketbra{x}{y}\equiv \left<y,\,\cdot\,\right>x\colon \scrH\to\scrH$ 
+is linear is pretty obvious.
+    
+    Since $\|\,\ketbra{x}{y}z\,\|
+    = \|\left<y,z\right>x\|
+    =\left|\left<y,z\right>\right|\,\|x\|
+    \leq \|y\|\,\|z\|\,\|x\|$
+    for all~$z\in\scrH$,
+    we see that~$\ketbra{x}{y}$
+    is bounded by~$\|y\|\,\|x\|$,
+    and so~$\|\ketbra{x}{y}\|\leq \|x\|\,\|y\|$.
+    For the other direction,
+    note that $\|\ketbra{x}{y}\| \,\|y\|\geq 
+    \|\ketbra{x}{y}y\|=\|\left<y,y\right>x\|
+    = \|y\|^2\,\|x\|$,
+    and so~$\|\ketbra{x}{y}\|\geq \|y\|\,\|x\|$.
+    (Even when~$\|y\|=0$.)
+    Whence $\|\ketbra{x}{y}\|=\|x\|\,\|y\|$.
 
+Finally,  $\ketbra{x}{y}$
+    is adjoint~$\ketbra{y}{x}$,
+    because, for all~$w,z\in\scrH$,
+    \begin{equation*}
+        \left<\,\ketbra{x}{y}z,\, w\,\right>
+        \ = \ 
+        \left<z,y\right>\,\left<x,w\right>
+        \ = \ 
+        \left<\, z,\,(\ketbra{y}{x}w)\,\right>.
+    \end{equation*}
+\end{solution}
 \end{document}
