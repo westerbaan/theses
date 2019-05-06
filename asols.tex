@@ -729,6 +729,34 @@ while $\|\ketbra{x}{y}\|^2 = \|x\|^2\|y\|^2$
 (see~\sref{parsec-40.190}) is non-zero.
 \end{enumerate}
 \end{solution}
+\begin{solution}{parsec-80.20}
+For the sake of clarity,
+we'll denote the zero and unit of a $C^*$-algebra~$\scrA$
+in this exercise
+by~$0_\scrA$ and~$1_\scrA$, respectively.
+\begin{enumerate}
+\item
+Since~$0_\scrA=1_\scrA$ when~$\scrA=\{0_\scrA\}$,
+then also $0_\C=\|0_\scrA\|=\|1_\scrA\|$.
+\item
+We claim that~$\|1_\scrA\|\leq 1_\C$.
+Indeed, since $\|1_\scrA\|=\|1_\scrA^*1_\scrA\|=\|1_\scrA\|^2$,
+we either have $\|1_\scrA\|=1_\C$
+        or $\|1_\scrA\|=0_\C$.
+        In either case, $\|1_\scrA\|\leq 1_\C$.
+
+Thus $\|\lambda 1_\scrA\| = \left|\lambda\right|\|1_\scrA\|\leq
+        \left|\lambda\right|$, in~$\C$.
+\item
+Since $\|\lambda 1_\scrA\|1_\scrA
+= \left|\lambda\right| \,\|1_\scrA\|\, 1_\scrA$,
+it suffices to show that $\|1_\scrA\|\, 1_\scrA = 1_\scrA$,
+        that is, that $\left| 1_\C-\|1_\scrA\|\right|\,\|1_\scrA\| =0$.
+But as we already saw that~$\|1_\scrA\|$
+is equal to either~$1_\C$ or~$0_\C$,
+this is indeed the case.
+\end{enumerate}
+\end{solution}
 
 
 \end{document}
