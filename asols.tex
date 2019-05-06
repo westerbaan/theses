@@ -9,6 +9,12 @@
 \begin{erratum}{parsec-40.160}%
     It should be assumed that $T$ is bounded.
 \end{erratum}
+\begin{erratum}{parsec-50.60}%
+Don't follow the hints.
+\end{erratum}
+\begin{erratum}{parsec-60.30}%
+    ``$\|x_\infty-x\|\leq \varepsilon$'' should read  ``$\|x_\infty-x_n\|\leq\varepsilon$''.
+\end{erratum}
 \begin{solution}{parsec-40.30}%
 Let~$\scrX$, $\scrY$ and~$\scrZ$ be normed (complex) vector spaces.
 \begin{enumerate}
@@ -564,4 +570,46 @@ of $x':=x+y'-y$ on~$C$,
     \left<y',(x+y'-y)-y'\right>\ \equiv\  \left<y',x-y\right>.
 \end{equation*}
 \end{solution}
+\begin{solution}{parsec-50.110}%
+Let~$T\colon \scrH\to\scrK$
+be a bounded linear map between Hilbert spaces
+$\scrH$ and~$\scrK$.
+We'll show that~$T$ is adjointable.
+
+Let~$y \in \scrK$ be given. 
+    Then~$\left<y,T(\,\cdot\,)\right>\colon \scrH\to\C$
+    is a linear map,
+    bounded by $\|y\|\|T\|$,
+    because $\left|\left<y,Tx\right>\right|\leq
+    \|y\|\, \|Tx\|\leq \|y\|\,\|T\|\,\|x\|$
+    for all~$x\in \scrH$.
+Thus $\left<y,T(\,\cdot\,)\right>\equiv \left<Sy,\,\cdot\,\right>$
+    for some unique $Sy\in \scrH$ by~\sref{parsec-50.90}.
+
+The resulting map~$S\colon \scrK\to\scrH$
+is linear, because
+    \begin{alignat*}{3}
+\left<S(y_1+\lambda y_2),\,\cdot\,\right>
+        &=\  \left< y_1+\lambda y_2, T(\,\cdot\,)\right>
+    \ =\  \left<y_1,T(\,\cdot\,)\right> + 
+    \bar\lambda\left<y_2,T(\,\cdot\,)\right>\\
+        \ &=\  \left<Sy_1,\,\cdot\,\right> + 
+    \bar\lambda\left<Sy_2,\,\cdot\,\right>
+    \ =\  \left<(Sy_1+\lambda Sy_2),\,\cdot\,\right>,
+\end{alignat*}
+for all $y_1,y_2\in\scrK$ and~$\lambda\in\C$.
+Since $\left<Sy,x\right>=\left<y,Tx\right>$
+for all~$x\in\scrH$ and~$y\in\scrK$,
+ $S$ is adjoint to~$T$ (and~$T$ is adjoint to~$S$).
+
+Finally, note that~$S$ is bounded by~$\|T\|$,
+because
+$\|Sy\|^2 = \left<Sy,Sy\right>
+= \left<y,TSy\right>
+\leq \|y\|\,\|T\|\,\|Sy\|$,
+and so~$\|Sy\|\leq \|y\|\|T\|$,
+for all~$y\in\scrK$.
+\end{solution}
+
+
 \end{document}
