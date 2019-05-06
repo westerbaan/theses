@@ -517,4 +517,51 @@ It's now easy to find a better approximation
     which contradicts $\|x-y\|\leq \|x-y''\|$.
     Hence no such~$y$ exists.
 \end{solution}
+\begin{solution}{parsec-50.60}%
+Surely, if $y$ is closest to~$x$
+among all elements of~$C$,
+it is among all elements of~$y\C\subseteq C$.
+Whence~$y$ is a projection of~$x$ on~$y\C$.
+
+We claim that~$\|y\|^2 = \left<x,y\right>$.  When~$y=0$
+    this is obvious, so we may assume that~$y\neq 0$,
+    so that we can define $e:= y\|y\|^{-1}$.
+Since~$y$ is the projection of~$x$ on~$y\C\equiv e\C$,
+we know by~\sref{parsec-50.40} that
+$y=\left<e,x\right>e$,
+and so $\|y\|^2 y = \left<y,x\right>y$.
+Whence~$\|y\|^2 = \left<y,x\right>$.
+Note that the claim implies that $\left<x-y,y\right>=0$:
+\begin{equation*}
+0\ =\ \|y\|^2-\left<x,y\right> \ =\  \left<y,y\right>-\left<x,y\right>
+\ =\  \left<y,x-y\right>.
+\end{equation*}
+Let~$c\in C$ be given.
+Note that when~$y_1$ is a projection of
+    $x$ on~$C$, then~$y_1+c$ is a projection
+of~$x+c$ on~$C$, because
+    $\|(y_1+c)-(x+c)\|=\|y_1-x\|\leq \|(y'-c)-x\|\equiv \|y'-(x+c)\|$
+    for all~$y'\in C$.
+
+Let~$y_1$ and~$y_2$ be projections of~$x$ on~$C$;
+we will show that~$y_1=y_2$.
+By the previous paragraph,
+$0\equiv y_1-y_1$ and~$y_2-y_1$ are projections of~$x-y_1$ on~$C$,
+and thus on~$y_1\C$.
+But since there's at most one projection of~$x-y_1$ on~$y_1\C$
+    by~\sref{parsec-50.40} (even when~$y=0$),
+    we get~$0=y_2-y_1$, and so~$y_1=y_2$.
+
+Let~$y'\in C$ be given.
+Recall that~$y$ is a (and thus the unique) projection of~$x$
+on~$C$. It remains to be shown that
+$\left<y',x-y\right>=0$.
+Since~$y' \equiv y+y'-y$ is a projection
+of $x':=x+y'-y$ on~$C$,
+    we get 
+\begin{equation*}
+0\ =\ \left<y',x'-y'\right>\ \equiv \ 
+    \left<y',(x+y'-y)-y'\right>\ \equiv\  \left<y',x-y\right>.
+\end{equation*}
+\end{solution}
 \end{document}
