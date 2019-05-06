@@ -610,6 +610,125 @@ $\|Sy\|^2 = \left<Sy,Sy\right>
 and so~$\|Sy\|\leq \|y\|\|T\|$,
 for all~$y\in\scrK$.
 \end{solution}
+\begin{solution}{parsec-70.30}
+Let~$a$ be an element of a $C^*$-algebra~$\scrA$.
+\begin{enumerate}
+    \item[1.]
+$\Real{a}$ is self-adjoint, because
+$(\Real{a})^*
+        = \frac{1}{2}(a^{*}+a^{**}) = \frac{1}{2}(a^*+a) = \Real{a}$.
+To see that~$\Imag{a}$ is self-adjoint, recall
+        that $\bar{i}=-i$,
+so
+        $(\Imag{a})^*
+        = -\frac{1}{2i}(a^*-a) 
+        = \Imag{a}$.
+
+The identity $a=\Real{a}+i\Imag{a}$
+follows from
+        $2(\Real{a}+i\Imag{a})
+        = a+a^* \,+\, (a-a^*)
+        = 2a$.
+    \item[2.]
+    Since $a^*=b^*+\bar{i}c^* =b-ic$,
+        we have $2\Real{a}=a+a^* = b+ic\,+\,b-ic = 2b$,
+        and $2i\Imag{a} = a-a^* = b+ic \,-\, (b-ic) = 2ic$,
+        so~$\Real{a}=b$, and~$\Imag{a}=c$.
+
+\item[3.]
+Since $a^* = (\Real{a}+i\Imag{a})^*
+        = \Real{a} - i\Imag{a}$ by point~1,
+        we get $\Real{(a^*)}=\Real{a}$
+        and $\Imag{(a^*)} = -\Imag{a}$ by point~2.
+
+\item[4.]
+Indeed,
+$a$ is self-adjoint iff~$a=a^*$
+        iff $a+a^*=2a$
+        iff $\Real{a} \equiv \frac{1}{2}(a+a^*) = a$
+        iff $a-a^* = 0$
+        iff $\Imag{a}\equiv \frac{1}{2i}(a-a^*) = 0$.
+
+\item[5.]
+    $\Real{(\,\cdot\,)}$
+        and $\Imag{(\,\cdot\,)}$
+        are $\R$-linear,
+        because~$(\,\cdot\,)^*$
+        is $\R$-linear.
+
+\item[6.]
+    Apply point~2 to
+    $ia = i(\Real{a}+i\Imag{a}) = \Imag{a}-i\Real{a}$.
+
+\item[7.]
+The element
+$a^*a$ is self-adjoint,
+        because $(a^*a)^*=a^*a^{**}=a^*a$.
+
+Further,
+        $a^*a = (\Real{a}-i\Imag{a})(\Real{a}+i\Imag{a})
+        = \Real{a}^2 + \Imag{a}^2 + i(\Real{a}\Imag{a}-\Imag{a}\Real{a})$.
+
+\item[8.]
+It suffices to find self-adjoint elements~$b$ and~$c$
+of some~$C^*$-algebra~$\scrA$ with~$bc\neq cb$,
+because then~$a:= b+ic$ will do the job.
+
+Given any linearly independent vectors
+$x$ and~$y$
+from some Hilbert space~$\scrH$
+with $\left<x,y\right>\neq 0$.
+define~$b:=\ketbra{x}{x}$ and $c:=\ketbra{y}{y}$.
+Then~$bc = \ketbra{x}{y}\,\left<x,y\right> $
+and~$cb=\ketbra{y}{x}\,\left<y,x\right>$.
+So if~$bc=cb$,
+then~$\left|\left<x,y\right>\right|^2x = bcx
+= cbx = \left<y,x\right>\|x\|^2y$,
+contradicting the linear independence of~$x$ and~$y$.
+
+\item[9.]
+Combine point~3 and point~7.
+
+\item[10.]
+Indeed, $bc$ is self-adjoint
+iff~$bc=(bc)^*\equiv c^*b^*\equiv cb$.
+
+So~$x$ and~$y$ are non-orthogonal linearly independent vectors
+of a Hilbert space~$\scrH$ as in point~8,
+then~$\ketbra{x}{x}\ketbra{y}{y}\equiv \left<x,y\right>\,\ketbra{x}{y}$
+is a not self-adjoint.
+
+\item[11.]
+Surely, if~$a=0$,
+then~$a^*=0$, and so~$\|a\|=0=\|a^*\|$.
+So we may assume that~$a\neq 0$
+(and so~$a^*\neq 0$).
+Then, since~$\|a\|^2=\|a^*a\|\leq \|a^*\|\,\|a\|$,
+we have $\|a\|\leq \|a^*\|$.
+Since similarly $\|a^*\|\leq \|a\|$,
+we get~$\|a\|=\|a^*\|$.
+
+\item[12.]
+Note that
+$\|\Real{a}\|\leq
+\frac{1}{2}\|a\|+\frac{1}{2}\|a^*\|
+= \|a\|$
+and $\|\Imag{a}\|\leq
+\frac{1}{2}\|a\| + \frac{1}{2}\|a^*\|
+= \|a\|$
+by the triangle inequality and $\|a^*\|=\|a\|$.
+
+\item[13.]
+When~$a$ is self-adjoint,
+$\|a^2\| = \|a^*a\| = \|a\|^2$.
+
+Let~$x$ and~$y$ be non-zero orthogonal vectors
+from some Hilbert space~$\scrH$.
+Then~$\ketbra{x}{y}^2 = 0$, and so~$\|\ketbra{x}{y}^2\|=0$,
+while $\|\ketbra{x}{y}\|^2 = \|x\|^2\|y\|^2$
+(see~\sref{parsec-40.190}) is non-zero.
+\end{enumerate}
+\end{solution}
 
 
 \end{document}
