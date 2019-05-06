@@ -757,6 +757,43 @@ is equal to either~$1_\C$ or~$0_\C$,
 this is indeed the case.
 \end{enumerate}
 \end{solution}
+\begin{solution}{parsec-90.20}
+Showing that the first three points are equivalent is not too difficult.
+$\text{1.}\implies\text{2.}$:
+    If~$f(x)\geq 0$ for all~$x\in X$,
+    then~$g\colon X\to\C$ given by~$g(x)=\sqrt{f(x)}$
+    for all~$x\in X$ is continuous,
+    and~$g^2=f$.
+$\text{2.}\implies\text{3.}$:
+is obvious.
+$\text{3.}\implies\text{1.}$:
+If~$f\equiv g^*g$ for some~$g\in C(X)$,
+    then~$f(x)=\smash{\overline{g(x)}}g(x)=\left|g(x)\right|^2\geq 0$
+    for all~$x\in X$.
+Of course,
+$\text{5.}\implies \text{4.}$ is obvious.
+For the remainder,
+note that given~$t\in \R$ we have
+    $\|f-t\|\equiv \sup\{\left|f(x)-t\right|\colon x\in X\}\leq t$
+    iff $\left|f(x)-t\right|\leq t$ for all~$x\in X$
+    iff $-t\leq f(x)-t \leq t $ for all~$x\in X$
+    iff $0\leq f(x)\leq 2t$ for all~$x\in X$
+    iff $0\leq f\leq 2t$
+    iff $0\leq f$ and~$\frac{1}{2}\|f\|\leq t$.
+Hence $\text{4.}\implies\text{1.}\implies\text{5.}$.
+\end{solution}
+\begin{solution}{parsec-90.30}
+Since only~$0$ is not invertible in~$\C$,
+    we see that an element $f$ of $C(X)$
+    is invertible (with inverse given by~$f^{-1}(x)=f(x)^{-1}$ 
+    for all~$x\in X$) precisely when~$f(x)\neq 0$ for all~$x\in X$,
+    that is, when $0\notin f(X)$.
+In particular,
+    $f-\lambda $ is \emph{not} invertible
+    iff $0\in (f-\lambda)(X)$
+    iff $f(x)=\lambda$ for some~$x\in X$
+    iff $\lambda \in f(X)$.
+\end{solution}
 
 
 \end{document}
