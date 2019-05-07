@@ -696,7 +696,7 @@ iff~$bc=(bc)^*\equiv c^*b^*\equiv cb$.
 So~$x$ and~$y$ are non-orthogonal linearly independent vectors
 of a Hilbert space~$\scrH$ as in point~8,
 then~$\ketbra{x}{x}\ketbra{y}{y}\equiv \left<x,y\right>\,\ketbra{x}{y}$
-is a not self-adjoint.
+is not self-adjoint.
 
 \item[11.]
 Surely, if~$a=0$,
@@ -803,6 +803,123 @@ we have that
     iff both $a^{\perp\perp}\equiv a$ and~$a^\perp$ are positive
     iff $0\leq a^\perp\leq 1$
     iff $a^\perp$ is an effect.
+\end{solution}
+\begin{solution}{parsec-90.100}
+\begin{enumerate}
+\item[1.]
+$0$ is positive, because~$0^*=0$ and~$\|0-0\|\leq 0$.
+
+That~$a+b\in\scrA_+$ when~$a,b\in\scrA_+$
+was proven in~\sref{parsec-90.70}.
+
+To show that~$\lambda a$ is positive
+for~$a\in\scrA_+$ and~$\lambda\in[0,\infty)$,
+pick~$t\in \R$ with~$\|a-t\|\leq t $.
+Then~$\lambda a$ is self-adjoint,
+        and~$\|\lambda a -\lambda t\| = \lambda \|a-t\|\leq  \lambda t$,
+so~$\lambda a$ is positive.
+
+Since~$0$ is positive,
+we have $a\leq a$ for all~$a\in\scrA$.
+Further, when~$a\leq b\leq c$ for some~$a,b,c\in\scrA$,
+then~$b-a$ and~$c-b$ are positive,
+so~$c-a\equiv (c-b)+(b-a)$
+    is positive,
+        that is~$a\leq c$.
+Hence~$\leq$ is a preorder, on~$\scrA$.
+
+\item[2.]
+The unit, $1$, is self-adjoint since
+$1^*=1^*1 = (1^*1)^* = (1^*)^*=1$,
+and positive, because $\|1-1\|\leq 1$.
+
+Given self-adjoint $a$ in~$\scrA$,
+$\|a\|+a$ and~$\|a\|-a$ are self-adjoint,
+and positive,
+because~$\|\,(a+\|a\|)\,-\,\|a\|\,\|\leq\|a\|$
+        and $\|\,(\|a\|-a)\,-\,\|a\|\,\|\leq \|a\|$.
+    Hence~$-\|a\|\leq a \leq \|a\|$
+        for self-adjoint~$a\in\scrA$.
+
+\item[3.]
+Let~$x$ and~$y$ be non-orthogonal linearly independent
+vectors of a Hilbert space~$\scrH$.
+        Then~$\ketbra{x}{x}$ and~$\ketbra{y}{y}$ are self-adjoint.
+
+To see that~$\ketbra{x}{x}$ is positive,
+note that~$\ketbra{x}{x}^2 = \ketbra{x}{x}\|x\|^2$,
+and   
+\begin{alignat*}{3}
+    \|\,\ketbra{x}{x}\,-\,\|x\|^2\,\|^2
+        &=\  \|\,\ketbra{x}{x}^2 
+        \,-\, 2\|x\|^2\ketbra{x}{x}\,+\,\|x\|^4\,\|\\
+        \ &=\  \|x\|^2 \ \|\,\ketbra{x}{x}-\|x\|^2\,\|,
+\end{alignat*}
+        so $\|\,\ketbra{x}{x}-\|x\|^2\,\| \leq \|x\|^2$,
+        and hence~$\ketbra{x}{x}$ is positive.
+
+Similarly, $\ketbra{y}{y}$ is positive,
+but their product
+$\ketbra{x}{x}\,\ketbra{y}{y} 
+\equiv \ketbra{x}{y}\,\left<x,y \right>$
+isn't even self-adjoint,
+        as we saw in 
+        the solution to~\sref{parsec-70.30}(10).
+\item[4.]
+Note that~$\|a\|_o\leq \|a\|$, because
+we saw that $-\|a\|\leq a \leq \|a\|$ in point~2.
+In particular, $\|a\|_o < \infty$.
+Also, clearly, $\|a\|_o\geq 0$ for all~$a\in\Real\scrA$.
+
+Note that~$\|a\|_o = \|-a\|_o$
+for all~$a\in\Real\scrA$,
+because $-\lambda \leq a\leq \lambda$
+iff $\lambda\geq -a \geq -\lambda$
+for all~$\lambda\in[0,\infty)$.
+
+Let~$\mu\in\R$ and~$a\in\scrA$ be given;
+we want to show that $\|\mu a \|_o = \left|\mu\right|\|a\|_o$.
+Since this identity holds when~$\mu=0$,
+we may assume that~$\mu\neq 0$.
+Suppose for now that~$\mu>0$;
+we'll deal with the case that~$\mu<0$ in a moment.
+Note that for~$\lambda\in [0,\infty)$,
+with $-\lambda \leq \mu a \leq \lambda$
+we have~$-\smash{\frac{\lambda}{\mu}}\leq a \leq \smash{\frac{\lambda}{\mu}} $,
+so~$\|a\|_o\leq \smash{\frac{\lambda}{\mu}}$,
+that is~$\mu \|a\|_o \leq \lambda$.
+Taking the infimum, we get~$\mu \|a\|_o\leq \|\mu a\|_o$.
+For the other direction,
+replace~$\mu$ and $a$ by $\mu^{-1}$ and~$\mu a$,
+to get $\mu^{-1} \|\mu a\|_o \leq \|\mu^{-1} \mu a\|_o$,
+and so~$\|\mu a\|_o \leq \mu \|a\|_o$.
+Thus~$\|\mu a\|_o = \mu\|a\|_o$,
+for~$\mu>0$.
+In the other case, $\mu<0$,
+we have~$-\mu=\left|\mu\right| >0$, 
+and so $\|\mu a\|_o = \|-(-\mu)a\|_o
+= -\mu \|a\|_o = \left|\mu\right|\|a\|_o$.
+
+Let~$a$ and~$b$ be self-adjoint elements of~$\scrA$.
+To show that~$\|\,\cdot\,\|_o$ is a seminorm,
+it remains to be shown that
+$\|a+b\|_o\leq \|a\|_o+\|b\|_o$.
+Given~$\lambda,\mu\in [0,\infty)$
+with $-\lambda \leq a\leq \lambda$
+and $-\mu \leq b\leq \mu$,
+we have $-(\lambda+\mu)\leq a+b\leq \lambda+\mu$,
+and so~$\|a+b\|_o\leq \lambda+\mu$.
+Taking the infimum over all such~$\lambda$ and~$\mu$,
+we get $\|a+b\|_o\leq \|a\|_o + \|b\|_o$.
+
+\item[5.]
+Please contact me if you've found a short and elementary proof for any of these
+five problems.
+\end{enumerate}
+
+
+
+
 \end{solution}
 
 
