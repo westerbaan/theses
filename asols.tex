@@ -15,6 +15,12 @@ Don't follow the hints.
 \begin{erratum}{parsec-60.30}%
     ``$\|x_\infty-x\|\leq \varepsilon$'' should read  ``$\|x_\infty-x_n\|\leq\varepsilon$''.
 \end{erratum}
+\begin{erratum}{parsec-110.60}
+``$\|a\| < \|b\|$'' in point~2
+    should read ``$\|a\|<  \|b^{-1}\|^{-1}$''.
+\end{erratum}
+
+
 \begin{solution}{parsec-40.30}%
 Let~$\scrX$, $\scrY$ and~$\scrZ$ be normed (complex) vector spaces.
 \begin{enumerate}
@@ -916,10 +922,41 @@ we get $\|a+b\|_o\leq \|a\|_o + \|b\|_o$.
 Please contact me if you've found a short and elementary proof for any of these
 five problems.
 \end{enumerate}
+\end{solution}
+\begin{solution}{parsec-110.60}
+\begin{enumerate}
+\item[1.]
+Since~$\|a\|<\left|\lambda\right|$,
+we have $\| \, a\lambda^{-1}\,\|
+= \left|\lambda\right|^{-1}\|a\| <1$.
+Thus by~\sref{parsec-110.20},
+$1-a\lambda^{-1}$ is invertible.
+But then~$\lambda-a \equiv \lambda (1-a\lambda^{-1})$
+is invertible too.
+\item[2.]
+(There is an erratum to the printed
+        version of this exercise.)
 
+Since~$a-b = b(1-ab^{-1})$
+it suffices to show
+        that~$1-ab^{-1}$ is invertible.
+    Indeed it is, by~\sref{parsec-110.20},
+        because $\|ab^{-1}\|\leq \|a\|\,\|b^{-1}\| < 
+        \|b^{-1}\|^{-1}\,\|b^{-1}\| = 1$.
 
+\item[3.]
+Let~$b\in U$ be given.
+To show that~$U$ is open,
+we must find~$\varepsilon>0$
+with $a\in U$ for all~$a\in\scrA$ with $\|a-b\|\leq \varepsilon$.
 
-
+Take~$\varepsilon:= \|b^{-1}\|^{-1}$. 
+By the previous point,
+        $a\equiv (a-b)-(-b)$
+        is invertible
+        provided that~$\|a-b\|\leq \varepsilon \equiv \|(-b)^{-1}\|^{-1}$,
+        because~$-b$ is invertible.
+\end{enumerate}
 \end{solution}
 
 
