@@ -1185,7 +1185,31 @@ Further, if~$(\chi^{n+1})'=(n+1)\chi^n$
         = (n+2)\chi^{n+1}$.
 \end{enumerate}
 \end{solution}
+\begin{solution}{parsec-130.60}
+Let~$f$ denote the holomorphic
+    function on the disk $\dom(f)=\{z\in \C\colon \left|z\right|<R\}$
+    given by the power series $\sum_n a_n z^n$.
+Let~$r>0$ be the radius of a disk around~$0$ on  which~$f$ is zero,
+    so~$f(z)=0$ for all~$z\in \C$ with $\left|z\right|<r$.
+Then~$f'(z)=0$ for all~$z\in \C$ with~$\left|z\right|<r$,
+    (because~$f'$ is zero on an open neighbourhood around~$z$.)
+In particular~$f'(0)=0$.
 
+On the other hand,
+    since~$f'(z)=\sum_{n=1}^\infty
+    n a_{n} z^{n-1}$ for all~$z\in \C$
+by~\sref{parsec-130.40},
+    we get~$f'(0)=a_1$.
+    Thus~$a_1=0$.
 
+Writing $f^{n\prime }$ for the $n$-th derivative of~$f$,
+we get by induction 
+that $f^{n \prime }(z)=0$ for all~$z\in \C$
+    with $\left|z\right|< r$,
+    and~$0=f^{n\prime }(0)=na_n$, for all~$n$.
+
+    Thus~$0=a_0=a_1=a_2=\dotsb$,
+    and so~$f=0$.
+\end{solution}
 
 \end{document}
