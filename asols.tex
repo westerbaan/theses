@@ -19,6 +19,13 @@ Don't follow the hints.
 ``$\|a\| < \|b\|$'' in point~2
     should read ``$\|a\|<  \|b^{-1}\|^{-1}$''.
 \end{erratum}
+\begin{erratum}{parsec-110.150}
+In the hint for point 3,
+``$a^n+1 = \prod_{k=1}^n a+\zeta^{2k+1}$''
+should read
+``$a^n+1 = \prod_{k=1}^n a-\zeta^{2k+1}$''.
+\end{erratum}
+
 
 
 \begin{solution}{parsec-40.30}%
@@ -956,6 +963,68 @@ By the previous point,
         is invertible
         provided that~$\|a-b\|\leq \varepsilon \equiv \|(-b)^{-1}\|^{-1}$,
         because~$-b$ is invertible.
+\end{enumerate}
+\end{solution}
+
+\begin{solution}{parsec-110.150}
+\begin{enumerate}
+\item
+Since~$\lambda \in \C\backslash \R$,
+        we have~$\Imag{\lambda}\neq 0$.
+        Then~$\smash{\frac{a-\lambda}{\Imag{\lambda}}}
+        = \smash{\frac{a-\Real{\lambda}}{\Imag{\lambda}}}-i$
+        is invertible by~\sref{parsec-110.130},
+        since $\smash{\frac{a-\Real{\lambda}}{\Imag{\lambda}}}$
+        is self-adjoint.
+        Upon multiplication with~$\Imag{\lambda}$
+        we
+        see that~$a-\lambda$ is invertible too.
+
+    \item
+We already know that~$a^2-\lambda$ is invertible
+for all~$\lambda \in\C\backslash\R$,
+so the only thing that remains to be shown is that
+$a^2+\lambda$ is invertible
+        for $\lambda \in (0,\infty)$.
+For this,
+        note that since~$a-\sqrt{\lambda}i$ and~$a+\sqrt{\lambda}i$
+        are invertible by point~2,
+        so is their product $(a-\sqrt{\lambda}i)(a+\sqrt{\lambda}i)
+        = a^2+\lambda$.
+\item
+We already know that~$a^n-\lambda$
+is invertible for all~$\lambda\in \C\backslash \R$,
+by point~1, so we only need to show
+that~$a^n+\lambda$ is invertible for all~$\lambda>0$
+iff $a+\lambda$ is invertible for all~$\lambda>0$.
+In fact, we'll show that for any~$\lambda>0$ 
+the element~$a+\lambda$ is invertible
+        iff~$a^n+\lambda^n$ is invertible.
+    Since~$a+\lambda = \lambda(\lambda^{-1}a+1)$
+    and $a^n+\lambda^n = \lambda^n((\lambda^{-1}a)^n + 1)$,
+    it suffices to show that
+    $b+1$ is invertible iff $b^n+1$ is invertible, where~$b:=\lambda^{-1}a$.
+
+    Since~$\zeta^2, \zeta^4,\zeta^6,\dotsc,\zeta^{2n}$
+are the $n$ roots
+of the polynomial~$x^n-1$,
+        we have $x^n-1 = \prod_{k=1}^n (x-\zeta^{2k})$.
+Substituting~$\zeta^{-1} b$ for~$x$,
+and
+multiplication by~$-1\equiv \zeta^n$ gives
+\begin{equation}
+\label{eq:11XV3}
+b^n+1 \ =\  \zeta^n(\zeta^{-1}b)^n - \zeta^n
+        \ =\  \prod_{k=1}^n b-\zeta^{2k+1}.
+\end{equation}
+Note that~$\zeta^{2k+1}\notin \R$ when~$k\neq \frac{1}{2}(n-1)$,
+and so~$b-\zeta^{2k+1}$
+is invertible for such~$k$, by point~1
+of this exercise.
+
+Thus in light of~\eqref{eq:11XV3},
+$b^n+1$ is invertible
+iff $b-\zeta^n\equiv b+1$ is invertible.
 \end{enumerate}
 \end{solution}
 
