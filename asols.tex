@@ -1043,6 +1043,30 @@ because~$a^*a$ is self-adjoint.
     \equiv a^{-1} (aa^{-1})^* = a^{-1}$
     is in the subalgebra~$\scrA$ as well.
 \end{solution}
+\begin{solution}{parsec-110.200}
+\begin{enumerate}
+    \item
+Given~$\lambda\in\C$, we have
+        $\lambda \in \spec(f)$
+        iff $f-\lambda$ is not invertible
+        iff~$\lambda \in f(X)$,
+using~\sref{parsec-90.30} in the last step.
+        Thus~$\spec(f)=f(X)$.
+    \item
+        A square matrix is invertible iff its kernel is not~$\{0\}$.
+In particilar, $A-\lambda$
+        is not invertible iff $(A-\lambda)v=0$
+        for some non-zero vector~$v\in \C^n$.
+In that case, we have $Av=\lambda v$, and so~$\lambda$
+is an eigenvalue for~$A$.  Conversely,
+for any eigenvalue~$\lambda$ of~$A$
+the kernel of~$A-\lambda$ will consist
+of the associated eigenvectors, and so~$A-\lambda$ will not be invertible.
+Hence the spectrum of~$A$ 
+is the set of eigenvalues of~$A$.
+\end{enumerate}
+\end{solution}
+
 
 
 \end{document}
