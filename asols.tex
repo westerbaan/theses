@@ -1194,7 +1194,6 @@ Let~$r>0$ be the radius of a disk around~$0$ on  which~$f$ is zero,
 Then~$f'(z)=0$ for all~$z\in \C$ with~$\left|z\right|<r$,
     (because~$f'$ is zero on an open neighbourhood around~$z$.)
 In particular~$f'(0)=0$.
-
 On the other hand,
     since~$f'(z)=\sum_{n=1}^\infty
     n a_{n} z^{n-1}$ for all~$z\in \C$
@@ -1210,6 +1209,180 @@ that $f^{n \prime }(z)=0$ for all~$z\in \C$
 
     Thus~$0=a_0=a_1=a_2=\dotsb$,
     and so~$f=0$.
+\end{solution}
+\begin{solution}{parsec-140.20}
+\begin{enumerate}
+    \item[1.]
+Following the hint
+it suffices to show that
+we have
+$\sum_n a_n\left|I_n\right| = 0$
+for any intervals~$I_1,\dotsc,I_N$ 
+and~$a_1,\dotsc,a_N\in \scrA$
+with $\sum_n a_n \mathbf{1}_{I_n}=0$.
+
+Note that when an interval $I$ is the disjoint
+union of two intervals $I'$ and~$I''$,
+        we have both
+        $\mathbf{1}_{I} = \mathbf{1}_{I'} + \mathbf{1}_{I''}$,
+        and $\left|I\right| = \left|I'\right|+\left|I''\right|$.
+
+It's therefore possible
+by splitting the intervals~$I_1,\dotsc,I_N$ as needed,
+        to find intervals~$I_1',\dotsc,I_M'$
+    and~$a_1',\dotsc,a_M'\in\scrA$
+with~$\sum_n a_n \mathbf{1}_{I_n}
+= \sum_n a_n' \mathbf{1}_{I_n'}$
+and~$\sum_n a_n\left|I_n\right|
+= \sum_n a_n'\left|I_n'\right|$,
+and the property
+that if~$I_n'\cap I_m'\neq \varnothing$,
+then~$I_n'=I_m'$.
+    Furthermore, by aggregating the~$a_n'$'s of intersecting (and thus equal)
+    intervals, we can get  $I_n'\cap I_m'\neq \varnothing$
+        to imply that~$n=m$.
+
+We can also arrange the~$I_m'$ to be non-empty, by discarding
+        the empty $I_m'$'s (which
+        doesn't affect the values of  $\sum_n a_n'\mathbf{1}_{I_n'}$
+        and $\sum_n a_n'\left|I_n'\right|$.)
+
+Let~$m$ be given,
+        and pick some~$x\in I_m'$.
+Since~$I_m'$ intersects none of the intervals $I_1',\dotsc,I_M'$
+except itself, we have
+\begin{equation*}
+    \textstyle
+    0\ \equiv\  (\sum_n a_n \mathbf{1}_{I_n})(x)
+        \ \equiv\ 
+        (\sum_n a_n' \mathbf{1}_{I_n'})(x) \ =\  a_m'.
+\end{equation*}
+Hence~$a_m'=0$ for all~$m$,
+and so~$\sum_n a_n \left|I_n\right|
+ = \sum_n a_n' \left|I_n'\right| = 0$.
+\item[2.]
+We already showed in point~1 that any step function~$f$
+        may be written as 
+        $f=\sum_n a_n \mathbf{1}_{I_n}$,
+        using disjoint and non-empty intervals 
+$I_1,\dotsc,I_N$, and~$a_1,\dotsc, a_N\in\scrA$.
+
+We'll show that~$\|f\|=\sup_n\|a_n\|$.
+Let~$x\in [0,1]$ be given.
+Since the~$I_n$ are disjoint,
+        either $f(x)=0$,
+        or $f(x)=a_n$ for some~$n$.
+In either case, $\|f(x)\|\leq \sup_n \|a_n\|$,
+so that~$\|f\|=\sup_{x\in [0,1]}\|f(x)\|\leq \sup_n\|a_n\|$.
+On the other hand,
+since each~$I_n$ is non-empty,
+$f(x)=a_n$ for some~$x$,
+and so~$\|a_n\|\leq \|f\|$ for all~$n$,
+Hence~$\|f\|=\sup_n \|a_n\|$.
+
+That~$\sum_n\left|I_n\right| \leq 1$ is rather obvious,
+but useful in
+\begin{equation*}
+    \textstyle
+    \|\int f \|
+\ \equiv\  \|\sum_n a_n \left|I_n\right| \|
+\ \leq\  \sum_n \|a_n\| \left|I_n\right|
+\ \leq\  \|f\| \sum_n \left|I_n\right|
+\ \leq\  \|f\|,
+\end{equation*}
+to show that the linear operator~$\int\colon S_\scrA\to \scrA$
+is bounded by~$1$.
+
+Let~$g\in \overline{S}_\scrA$ be given,
+and let
+$f_1,f_2,\dotsc$ be a sequence in~$S_\scrA$ converging
+to~$g$.
+Then since~$\|\int (f_n-f_m)\|\leq \|f_n-f_m\|$
+for all~$n$ and~$m$,
+the sequence~$\int f_1, \,\int f_2,\dotsc$
+is Cauchy,
+and therefore convergent.
+If~$f_1',f_2',\dotsc$ is a sequence in~$S_\scrA$
+that converges to~$g$ too,
+then the differences $f_1-f_1',\ f_2-f_2',\ \dotsc$
+converge to~$0$,
+so $\int f_1 - \int f_1',\ \int f_2-\int f_2',\ \dotsc$
+converges to~$\int 0 = 0$.
+Since that sequence also converges to
+$\lim_n \int f_n - \lim_n \int f_n'$,
+we
+get~$\lim_n \int f_n = \lim_n \int f_n'$.
+
+We may thus define a map $\int\colon \overline{S}_\scrA \to\scrA$
+by setting~$\int g = \lim_n \int f_n$
+for any sequence~$f_1,f_2,\dotsc $ in~$S_\scrA$
+that converges to~$g$.
+
+It's not hard to see that~$\int$ is linear
+using the facts that addition and scalar multiplication
+are continuous on~$S_\scrA$ and~$\scrA$.
+
+To see that the map~$\int\colon \overline{S}_\scrA\to\scrA$
+is bounded,
+let $g\in\overline{S}_\scrA$ be given,
+and let~$f_1,f_2,\dotsc$ be a sequence in~$S_\scrA$
+that converges to~$g$.
+Since~$f_1,f_2,\dotsc$ converges to~$g$,
+we have~$\lim_n \|f_n\| = \|g\|$.
+We already know that~$\| \int f_n \| \leq \|f_n\|$.
+Taking the limit on both sides, we get
+$\|\int g\| \equiv \lim_n \|\int f_n\| = \lim_n \|f_n\| \equiv
+\|g\|$,
+and so~$\int$ is bounded.
+
+That~$\int\colon \overline{S}_\scrA\to \scrA$
+is the only bounded linear extension of~$\int\colon S_\scrA\to\scrA$
+is rather obvious.
+
+\item[3.]
+Let~$g\colon [0,1]\to\scrA$
+be a continuous map,
+and let~$\varepsilon>0$ be given.
+We must find a step function~$f\in S_\scrA$
+with $\|f-g\|\leq \varepsilon$.
+Since~$g$ is continuous,
+there is
+for each~$x\in [0,1]$
+a $\delta_x>0$
+such that $\|g(x)-g(y)\|\leq \varepsilon$
+for all~$y\in I_x:=(x-\delta_x,x+\delta_x)\cap[0,1]$.
+Since these in-$[0,1]$-open interval~$I_x$
+cover the compact set~$[0,1]$,
+there are~$x_1,\dotsc,x_N\in [0,1]$
+with~$I_{x_1}\cup \dotsb\cup I_{x_N} = [0,1]$.
+Pick disjoint intervals~$J_1,\dotsc,J_N$
+with $J_n\subseteq I_{x_n}$ for all~$n$,
+and~$J_1\cup \dotsb\cup J_N=[0,1]$,
+and define $f:= \sum_n g(x_n) \mathbf{1}_{J_n}$.
+
+We claim that~$\|f-g\|\leq \varepsilon$.
+To proof this, let~$x\in [0,1]$ be given.
+There's exactly one~$n$ with~$x\in J_n$,
+and so~$f(x) = g(x_n)$.
+Thus $\|g(x)-f(x)\|= \|g(x)-g(x_n)\|\leq \varepsilon$
+since~$x\in J_n\subseteq I_{x_n}$.
+Hence~$\|f-g\|\leq \varepsilon$.
+
+\item[4.]
+Let~$a\in\scrA$ be given.
+We must show that
+$\int af = a\int f$
+for all continuous $f\colon [0,1]\to \C$.
+Since such~$f$ can be written as the limit
+of linear combinations
+of indicator functions,
+we may assume without loss of generality
+that $f=\mathbf{1}_I$ for some interval~$I$.
+Now,
+$\int a \mathbf{1}_I = a \left|I\right|
+= a \int \mathbf{1}_I$.
+\end{enumerate}
+
 \end{solution}
 
 \end{document}
