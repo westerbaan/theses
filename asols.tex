@@ -1066,6 +1066,59 @@ Hence the spectrum of~$A$
 is the set of eigenvalues of~$A$.
 \end{enumerate}
 \end{solution}
+\begin{solution}{parsec-110.210}
+\begin{enumerate}
+\item[1.]
+That~$\spec(a)\subseteq \R$ for self-adjoint~$a$
+follows from \sref{parsec-110.150}(1).
+
+        To see that  $ \spec(\,\smash{\bigl(\begin{smallmatrix} 0 & 2 \\ 0 & 0
+        \end{smallmatrix}\bigr)}\,)=\{0\}$
+we must show that~$0$ is the only eigenvalue of
+        $ \smash{\bigl(\begin{smallmatrix} 0 & 2 \\ 0 & 0
+        \end{smallmatrix}\bigr)}$,
+that is,
+that~$0$ is the only root of the characteristic polynomial
+        $\det(
+        \smash{\bigl(\begin{smallmatrix} 0 & 2 \\ 0 & 0
+        \end{smallmatrix}\bigr)}
+        -\lambda ) = \lambda^2$,
+        which is so.
+\item[2.]
+This follows immediately from \sref{parsec-110.150}(2).
+\item[3.]
+This follows directly from~\sref{parsec-110.60}(1).
+\item[4.]
+Let~$\lambda_1,\lambda_2,\dotsc$
+        be a sequence in~$\spec(a)$
+        that converges to some~$\lambda\in \C$;
+        we must show that~$\lambda\in\spec(a)$.
+Note that since the set of invertible elements of~$\scrA$
+        is open by~\sref{parsec-110.60}(3),
+        the set of non-invertible elements of~$\scrA$
+        is closed.
+Thus, as the $a-\lambda_1,\,a-\lambda_2,\,\dotsc$
+are all non-invertible,
+and converge to~$a-\lambda$,
+this element~$a-\lambda$ is non-invertible as well.
+        Hence~$\lambda\in\spec(a)$.
+
+Thus, $\spec(a)$, being a closed and bounded subset of~$\C$,
+is compact.
+\item[5.]
+Given $\lambda\in\C$
+        we have $\lambda\in \spec(a)$
+        iff $a-\lambda\equiv a+z-(\lambda+z)$ is not invertible
+        iff $\lambda+z\in \spec(a+z)$.
+        Thus $\spec(a)+z = \spec(a+z)$.
+\item[6.]
+Let~$\lambda\in \C$ be given.
+    Since~$\lambda-a = \lambda a (a^{-1}-\lambda^{-1})$,
+    we see that~$\lambda-a$ is invertible
+    iff $a^{-1} - \lambda^{-1}$ is invertible.
+        Hence~$\spec(a^{-1})=\spec(a)^{-1}$.
+\end{enumerate}
+\end{solution}
 
 
 
