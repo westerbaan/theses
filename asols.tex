@@ -25,6 +25,10 @@ In the hint for point 3,
 should read
 ``$a^n+1 = \prod_{k=1}^n a-\zeta^{2k+1}$''.
 \end{erratum}
+\begin{erratum}{parsec-120.30}
+``$(f\cdot g)'=f'\cdot g + g'\cdot f$'' should
+    read ``$(f\cdot g)' = f'\cdot g + f\cdot g'$''.
+\end{erratum}
 
 
 
@@ -1117,6 +1121,68 @@ Let~$\lambda\in \C$ be given.
     we see that~$\lambda-a$ is invertible
     iff $a^{-1} - \lambda^{-1}$ is invertible.
         Hence~$\spec(a^{-1})=\spec(a)^{-1}$.
+\end{enumerate}
+\end{solution}
+\begin{solution}{parsec-120.30}
+\begin{enumerate}
+\item[1.]
+Let~$U:= \dom(f)\equiv\dom(g)$.
+Given~$x\in U$ the expression
+        \begin{equation*}
+            \frac{(f+g)(x)-(f+g)(y)}{x-y}
+            \ =\  \frac{f(x)-f(y)}{x-y}
+            \ +\ \frac{g(x)-g(y)}{x-y}
+        \end{equation*}
+        converges to~$f'(x)+g'(x)$ as $y\in U\backslash\{x\}$
+        tends to~$x$.  
+Thus $f+g$ is holomorphic, and $(f+g)'=f'+g'$.
+
+Given~$x\in U$ the expression
+\begin{equation*}
+            \frac{(f\cdot g)(x)-(f\cdot g)(y)}{x-y}
+            \ =\  \frac{f(x)-f(y)}{x-y}\cdot g(x)
+            \ +\ f(y)\cdot \frac{g(x)-g(y) }{x-y}
+\end{equation*}
+converges to $f'(x)g(x)+f(x)g'(x)$ as $y\in U\backslash\{x\}$
+tends to~$x$. Hence~$f\cdot g$ is holomorphic, 
+        and $(f\cdot g)' = f'g + fg'$.
+
+\item[2.]
+Since for all $x,y\in\C$ with $x\neq y$, 
+        we have
+\begin{equation*}
+\frac{f(x)-f(y)}{x-y} \ = \ 
+    \frac{x-y}{x-y} \ = \ 1,
+\end{equation*}
+$f$ is holomorphic, and $f'(x)=1$ for all~$x\in \C$.
+
+\item[3.]
+    Since we have, for all $x,y\in U$ with $x\neq y$,
+\begin{equation*}
+\frac{f(x)-f(y)}{x-y} \ = \ 
+    \frac{a-a}{x-y} \ = \ 0,
+\end{equation*}
+$f$ is holomorphic, and $f'=0$.
+
+\item[4.]
+That~$f$ is holomorphic follows from the previous three points.
+
+The only thing that's not immediately clear
+about the expression for~$f'$
+is that $(\chi^{n+1})'=(n+1)\chi^n$,
+where $\chi$ denotes the holomorphic
+function with~$\dom(\chi)=\C$
+given by~$\chi(z)=z$ for all~$z\in \C$.
+
+This is, however, easily proven with induction as follows.
+The case~$n=0$ follows from point~2.
+Further, if~$(\chi^{n+1})'=(n+1)\chi^n$
+        for some~$n$,
+        then we have~$(\chi^{n+2})'
+        = (\chi^{n+1}\cdot\chi)'
+        = (\chi^{n+1})'\cdot \chi + \chi^{n+1}\cdot\chi'
+        = (n+1)\chi^n\cdot \chi + \chi^{n+1}\cdot 1
+        = (n+2)\chi^{n+1}$.
 \end{enumerate}
 \end{solution}
 
