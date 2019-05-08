@@ -1027,6 +1027,22 @@ $b^n+1$ is invertible
 iff $b-\zeta^n\equiv b+1$ is invertible.
 \end{enumerate}
 \end{solution}
+\begin{solution}{parsec-110.180}
+Let~$a$ be an element of a $C^*$-sublalgebra~$\scrA$
+of a $C^*$-algebra~$\scrB$,
+    and assume~$a$ has an inverse~$a^{-1}$ in~$\scrB$.
+    We must show that~$a^{-1}\in\scrA$.
+
+Note that~$a^*a$ is invertible in~$\scrB$
+    with inverse~$a^{-1} (a^{-1})^*$.
+This inverse
+$(a^*a)^{-1}$ is in the subalgebra~$\scrA$
+by~\sref{parsec-110.160},
+because~$a^*a$ is self-adjoint.
+    Thus~$(a^*a)^{-1}a^*\equiv a^{-1} (a^{-1})^* a^*
+    \equiv a^{-1} (aa^{-1})^* = a^{-1}$
+    is in the subalgebra~$\scrA$ as well.
+\end{solution}
 
 
 \end{document}
