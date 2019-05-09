@@ -1384,5 +1384,102 @@ $\int a \mathbf{1}_I = a \left|I\right|
 \end{enumerate}
 
 \end{solution}
+\begin{solution}{parsec-140.80}
+    \begin{enumerate}
+    \item
+   Since~$\bar{z}z=\left|z\right|^2$,
+            we have $z (\bar{z} \left|z\right|^{-2})=1$,
+            and so~$z^{-1} = \bar{z} (\left|z\right|^2)^{-1}$.
+This yields the required identity since
+            $\bar{z}=\Real{z}-i\Imag{z}$
+            and $\left|z\right|^2 = \Real{z}^2+ \Imag{z}^2$.
+    \item
+        To the first computation
+            I've got nothing to add,
+            except $$\textstyle \frac{1}{2}\log(a^2+b^2)
+            \ =\  \smash{\log(\sqrt{a^2+b^2})} \ =\  
+            \log\left|a+ib\right|.$$
+    Concerning the second integral:
+            \begin{alignat*}{3}
+                \int_{a+ib}^{ib} z^{-1} \,dz 
+                \ &=\ \int_a^0
+                \frac{t-ib}{t^2+b^2}\,dt \\
+                \ &=\ 
+                \int_a^0
+                \frac{-ib}{t^2+b^2}\,dt 
+                \ +\ 
+                \int_a^0
+                \frac{t}{t^2+b^2}\,dt 
+                \\
+                \ &=\  i\arctan(\,b/a\,)
+                \ + \  \log\left|b\right|
+                \ + \ \log\left|a+ib\right|.
+            \end{alignat*}
+\item
+The problem is easily reduced to the case that~$z_0=0$.
+In other words,
+we must show that
+\begin{equation}
+    \label{eq:14VIII}
+    \int_w^{w'} z^{-1}
+    \,dz \ =\ i\measuredangle(w,0,w')\ +\ \log\frac{\left|w'\right|}{\left|w\right|}.
+\end{equation}
+            Suppose that~$\Imag{w}=\Imag{w'}=:b$
+            then the equation above
+            follows easily
+            from the expression for $
+                \int_{a+ib}^{ib} z^{-1} \,dz $ computed above,
+                because
+                $$\int_w^{w'}
+                z^{-1}\,dz\ = \ 
+                \int_{\Real{w}+ib}^{ib} z^{-1}\,dz\ - \ 
+                \int_{\Real{w'}+ib}^{ib} z^{-1}\,dz
+                \ = \ \dotsb
+                \ =\  i\measuredangle(w,0,w')
+                \ + \ \log\frac{\left|w'\right|}{\left|w\right|},$$
+            using here that
+            $\arctan(\,\Real{w}/\Imag{w}\,)
+            = 2\pi - \arctan(\,\Imag{w}/\Real{w}\,)
+            = 2\pi - \measuredangle(1,0,w)$,
+            and so~$\arctan(\,\Real{w}/\Imag{w}\,)
+            -\arctan(\,\Real{w'}/\Imag{w'}\,) =
+            \measuredangle(w,0,w')$.
+
+Similarly, \eqref{eq:14VIII}
+follows easily from the first integral computed in point~2
+when $\Real{w}=\Real{w'}$.
+
+For the general case we consider
+the triangle~$T$ with vertices~$w$, $w'$ and~$w''$
+where either $w''=\Real{w}'+i\Imag{w}$
+or 
+$w''=\Real{w}+i\Imag{w}'$
+such that~$0$ is not on the closure of~$T$.
+Then Goursat's Theorem, \sref{parsec-140.40}
+implies that
+\begin{equation*}
+    \int_w^{w''} z^{-1}\,dz  \ +\ 
+    \int_{w''}^{w'} z^{-1}\,dz \ +\ 
+    \int_{w'}^{w} z^{-1}\,dz\ = \ 0,
+\end{equation*}
+and so
+\begin{alignat*}{3}
+    \int_{w}^{w'} z^{-1}\,dz \ &= \ 
+    \int_w^{w''} z^{-1}\,dz  \ +\ 
+    \int_{w''}^{w'} z^{-1}\,dz \\
+    &=\ i\measuredangle(w,0,w'')\ 
+    +\ \log\frac{\left|w''\right|}{\left|w\right|}
+    \ +\ \ i\measuredangle(w'',0,w')\ 
+    +\ \log\frac{\left|w'\right|}{\left|w''\right|}\\
+    &=\ i(\,\measuredangle(w,0,w'')\,+\measuredangle(w'',0,w')\,)\ 
+    +\ \log\frac{\left|w''\right|}{\left|w\right|}\frac{\left|w'\right|}{\left|w''\right|}\\
+    &=\ i\measuredangle(w,0,w')\ 
+    +\ \log\frac{\left|w'\right|}{\left|w\right|}.
+\end{alignat*}
+\item
+This is obvious if one notes
+that the ``$\log$'' terms  will cancel.
+\end{enumerate}
+\end{solution}
 
 \end{document}
