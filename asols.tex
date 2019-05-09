@@ -1481,5 +1481,35 @@ This is obvious if one notes
 that the ``$\log$'' terms  will cancel.
 \end{enumerate}
 \end{solution}
+\begin{solution}{parsec-160.50}%
+    If~$\spec(a)=\varnothing$,
+    then~$\|a\|=\sup\varnothing=\infty$ by~\sref{parsec-160.20},
+    which is absurd.
+\end{solution}
+\begin{solution}{parsec-160.60}%
+Given~$\mu\in \C$,
+the scalar~$\lambda - \mu$ 
+is invertible in~$\scrA$
+iff it is invertible in~$\C$
+iff~$\lambda\neq \mu$.
+Hence~$\spec(\lambda)=\{\lambda\}$.
+
+For the other direction,
+suppose that~$a$ is a self-adjoint element of~$\scrA$
+    with $\spec(a)=\{\lambda\}$ for some $\lambda\in\C$.
+Then $\spec(a-\lambda)=\spec(a)-\lambda = \{0\}$.
+    Hence~$\|a-\lambda\|=\sup\{0\}=0$
+    by~\sref{parsec-160.20},
+    and so~$a=\lambda$.
+\end{solution}
+\begin{solution}{parsec-160.61}
+    Let~$a$ from~$\scrA$ be given.
+    Since~$\spec(a)$ is not empty by~\sref{parsec-160.60},
+    there is~$\lambda\in\C$ such that~$a-\lambda$ is not intertible.
+    As~$0$ is the only non-invertible element of~$\C$,
+    we get $a-\lambda = 0$, and so~$a=\lambda$.
+    Whence every element of~$\scrA$ is a scalar.
+    Thus~$\scrA=\C$ or~$\scrA=\{0\}$.
+\end{solution}
 
 \end{document}
