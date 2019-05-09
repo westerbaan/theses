@@ -1938,5 +1938,40 @@ we either have~$\omega(a)=\|a\|$
 or~$\omega(a)=-\|a\|$,
 so in any case, $\left|\omega(a)\right|=\|a\|$.
 \end{solution}
+\begin{solution}{parsec-230.70}
+This all follows without much effort from~\sref{parsec-230.20}.
+\end{solution}
+\begin{solution}{parsec-240.20}
+\begin{enumerate}
+\item
+Since~$a$ commutes with~$a^2$,
+and~$a^2\leq a^2$,
+we have $a\leq \smash{\sqrt{a^2}}\equiv\left|a\right|$,
+by~\sref{parsec-230.70}.
+Similarly, since $-a$ commutes with~$a^2$,
+and $(-a)^2\leq a^2$,
+we get $-a\leq \left|a\right|$.
+Hence~$-\left|a\right|\leq a\leq \left|a\right|$.
+Further, $\|\,\left|a\right|\,\|^2
+= \|a^2\|=\|a\|^2$, so~$\|\,\left|a\right|\,\|=\|a\|$.
+\item
+Note that $a_+\equiv \frac{1}{2}(\left|a\right|+a)$
+is positive
+since~$-\left|a\right|\leq a$ by point~1.
+Similarly, $a_-\equiv \frac{1}{2}(\left|a\right|-a)$
+is positive, since~$a\leq \left|a\right|$.
+
+The identity~$a=a_+-a_- $ is trivial.
+
+We have~$a_+a_-=0$, because $4a_+a_- = (\left|a\right|+a)(\left|a\right|-a)
+= \left|a\right|^2 - a^2=0$,
+using here that~$\left|a\right|^2 = a^2$.
+Upon applying~$(\,\cdot\,)^*$,
+we see that~$a_-a_+=0$ too.
+
+\item
+The hint gives the solution away.
+\end{enumerate}
+\end{solution}
 
 \end{document}
