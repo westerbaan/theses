@@ -1511,5 +1511,117 @@ Then $\spec(a-\lambda)=\spec(a)-\lambda = \{0\}$.
     Whence every element of~$\scrA$ is a scalar.
     Thus~$\scrA=\C$ or~$\scrA=\{0\}$.
 \end{solution}
+\begin{solution}{parsec-170.20}
+    We already saw this in~\sref{parsec-90.20},
+    but here's the argument again.
+We have $\left|\lambda - t\right| \leq t$
+iff $-t\leq \lambda - t\leq t$
+iff $0\leq \lambda \leq 2t$.
+\end{solution}
+\begin{solution}{parsec-170.50}
+    Note that
+2$\implies$1 is obvious, and
+1$\iff$4 is true by definition of ``positive'',
+so it suffices to prove 
+that 1$\implies$ 3$\implies$ 2.
+
+Concerning~1$\implies$ 3, if
+$\|a-t\|\leq t$,
+    then~$\spec(a)\subseteq [0,2t]\subseteq [0,\infty)$
+    by~\sref{parsec-170.30}.
+
+Ad~3$\implies$ 2,
+    if~$\spec(a)\subseteq [0,\infty)$,
+    then given~$t\geq \frac{1}{2}\|a\|$,
+    we have $\spec(a)\subseteq [0,\|a\|]\subseteq [0,2t]$,
+    and so~$\|a-t\|\leq t$ by~\sref{parsec-170.30}.
+\end{solution}
+\begin{solution}{parsec-170.60}
+\begin{enumerate}
+\item
+If~$0\leq a\leq 0$,
+then~$\spec(a)\subseteq [0,\infty)$,
+and~$\spec(a)=-\spec(-a)= (-\infty,0]$,
+so that~$\spec(a)=\{0\}$,
+which entails that~$a=0$.
+\item
+Let~$a_1,a_2,\dotsc$ be a sequence of positive elements
+of~$\scrA$ that converges to some element~$a$ of~$\scrA$;
+we must show that~$a$ is positive.
+Then it's easy to see that~$a$ is self-adjoint,
+using the fact that~$(\,\cdot\,)^*$ is continuous.
+
+To show that~$a$ is positive,
+it suffices to show that~$\|a-t\|\leq t$ for some~$t\in \R$.
+Since the sequence $a_1,a_2,\dotsc$  converges,
+it is bounded,
+so there is some~$t>0$ with $\|a_n\|\leq t$ for all~$n$.
+Since~$a_n$ is positive,
+we have~$\|a_n-t\|\leq t$ for all~$n$
+by~\sref{parsec-170.50}.
+Taking the limit over~$n$,
+we get $\lim_n\|a_n-t\|\equiv \|a-t\|\leq t$.
+Hence~$a$ is positive, and so~$\scrA_+$ is closed.
+
+\item
+We have
+$\|a\|\leq \lambda$
+iff (\sref{parsec-160.20}) $\left|\mu\right|\leq \lambda$
+for all~$\mu\in\spec(a)$
+iff $-\lambda \leq \mu \leq \lambda$
+for all~$\mu\in\spec(a)$
+iff
+$\lambda-\mu\geq 0$ and~$\lambda+\mu\geq 0$
+for all~$\mu\in\spec(a)$
+iff
+$\lambda-\spec(a)\equiv\spec(\lambda-a)\subseteq [0,\infty)$
+and $\lambda+\spec(a)\equiv\spec(\lambda+a)\subseteq [0,\infty)$
+iff (\sref{parsec-170.50})
+$\lambda -a$ and~$\lambda+a$ are positive
+iff~$-\lambda \leq a\leq \lambda$.
+
+Next,
+writing $\|a\|_o = \inf\{\lambda\in \R\colon -\lambda\leq a \leq \lambda\}$
+we must show that~$\|a\|=\|a\|_o$.
+In~\sref{parsec-90.100},
+we already saw that~$\|a\|_o\leq \|a\|$.
+For the other direction,
+let~$\lambda_1\geq \lambda_2\geq\dotsb\geq \|a\|_o$
+be such that~$-\lambda_n \leq a\leq \lambda_n$
+for all~$n$,
+and~$\inf_n \lambda_n = \|a\|_o$.
+Then~$\|a\|\leq \lambda_n$
+(by the previous paragraph,)
+and so~$\|a\|\leq \inf_n\lambda_n = \|a\|_o$.
+Whence~$\|a\|=\|a\|_o$.
+
+Finally,
+given self-adjoint elements~$a,b\in\scrA$ with~$0\leq a\leq b$,
+we have~$-\|b\|\leq 0\leq a \leq b\leq \|b\|$,
+and so $\|a\|\leq\|b\|$.
+\item
+All this follows from~\sref{parsec-110.150},
+using the fact (from~\sref{parsec-170.50}) that self-adjoint~$b\in\scrA$
+is positive iff~$\spec(b)\subseteq[0,\infty)$.
+\item
+This follows from~\sref{parsec-110.210}(6).
+\item
+First note that~$\frac{1}{n}\leq a$
+iff~$a-\frac{1}{n}$ is positive
+iff $\spec(\,a-\frac{1}{n}\,)\equiv \spec(a)-\frac{1}{n} \subseteq [0,\infty)$
+iff $\spec(a)\subseteq [\frac{1}{n},\infty)$.
+
+Recall that~$a$ is invertibe iff~$0\notin\spec(a)$.
+Surely, if~$\spec(a)\subseteq [\frac{1}{n},\infty)$,
+then~$0\notin \spec(a)$, and so~$a$ is invertible.
+For the other direction,
+suppose that~$a$ is not invertible,
+then~$0\notin \spec(a)\subseteq [0,\infty)$,
+and so (since~$\spec(a)$ is closed),
+there's $n$ such that~$\lambda\notin \spec(a)$
+for all~$\lambda\in \C$ with $\left|\lambda\right|\leq \frac{1}{n}$.
+Thus $\spec(a)\subseteq[\frac{1}{n},\infty)$.
+\end{enumerate}
+\end{solution}
 
 \end{document}
