@@ -1772,5 +1772,148 @@ we must show that~$a\geq 0$.
     to~$\omega(a)$.  Thus~$\omega(a)\geq 0$, and so~$a=0$.
     Hence~$\Omega'$ is order separating.
 \end{solution}
+\begin{solution}{parsec-220.30}
+\begin{enumerate}
+\item
+Let~$f\colon \scrA\to\C$ be a state,
+and let~$I$ be an order ideal of~$\scrA$
+with~$\ker(f)\subsetneq I$.
+Then there's an element~$x\in I$ with~$f(x)\neq 0$.
+By scaling~$x$ if necessary,  we may assume that~$f(x)=1$.
+Note that~$f(1-x)=f(1)-f(x)=1-1=0$,
+and so~$1-x\in\ker(f)\subseteq I$.
+But since~$x\in I$, too, we get $1\equiv(1-x)+x\,\in I$.
+Hence~$I=\scrA$, and so~$\ker(f)$ is maximal.
+\item
+By Zorn's lemma,
+it suffices to show that a non-empty
+chain~$\mathcal{I}$ of proper order ideals
+containing~$I$ has an upper bound.
+We claim that $J:=\bigcup\mathcal{I}$
+is such an upper bound.
+For this, we only need to check that~$J$
+is an order ideal.  Indeed,
+if it is, it'll be an upper bound for~$\mathcal{I}$,
+and proper, because~$1\in J\equiv\bigcup \mathcal{I}$
+would imply that~$1\in I$
+for some $I \in\mathcal{I}$.
+
+Let~$a,b\in J$
+be given.
+Then $a\in I_1$, and~$b\in I_2$ for some~$I_1,I_2\in\mathcal{I}$.
+Since~$\mathcal{I}$ is a chain,
+either $I_1\subseteq I_2$ or~$I_2\subseteq I_1$.
+Letting~$I$ denote the largest one,
+we have~$a,b\in I$, and so~$a+b\in I\subseteq J$.
+You get the idea;
+by such reasoning we see that~$I$
+is an order ideal.
+
+\item
+Define $(a):=\Real{(a)}+i\Real{(a)}$,
+where
+$$\Real{(a)}\ :=\ \{\ b\in \Real{\scrA}\colon \exists\lambda,\mu\in\R\ 
+[ \ \lambda a \leq b \leq \mu a\ ]\ \}.$$
+Then clearly~$(a)$ is a linear subpace of~$\scrA$
+that contains~$a$.
+Moreover,
+given~$b\in\scrA$
+we have $b\in(a)$
+iff~$\Real{b},\Imag{b}\in \Real{(a)}$.
+Thus~$b\in(a)\implies b^*\in (a)$.
+
+To show that~$(a)$ is an order ideal,
+let~$b\in (a)\cap \scrA_+$ 
+and $c\in\scrA$ with $-b\leq c\leq b$ be given;
+we must show that~$c\in(a)$.
+
+Since~$b$ being positive is self-adjoint,
+we have~$b=\Real{b}\in \Real{(a)}$,
+and so there are $\lambda,\mu\in \R$
+with $\lambda a\leq b\leq \mu a$.
+Then $-\mu \leq-b \leq c \leq b  \leq \mu a$,
+and so~$c\in \Real{(a)}\subseteq (a)$.
+Hence~$(a)$ is an order ideal.
+
+It remains to be shown that~$(a)$ is the least order ideal
+that contains~$a$. 
+To this end, let an order ideal~$I$ that contains~$a$ be given;
+we must show that~$(a)\subseteq I$.
+It suffices to show that~$\Real{(a)}\subseteq I$,
+and for this,
+we must show given~$\lambda,\mu\in \R$
+and~$b\in \Real{\scrA}$ with $\lambda a \leq b \leq \mu a$,
+that~$b\in I$.
+
+Since then $(\mu-\lambda)a \geq 0$
+is a positive element of~$I$,
+and $-(\mu-\lambda)a\leq 0 \leq b-\lambda a \leq (\mu-\lambda)a$,
+we get $b-\lambda a \in I$,
+and thus $b\in I$ too, (since~$\lambda a\in I$).
+
+Hence~$(a)$ is the least order ideal that contains~$a$.
+
+Suppose that~$0\nleq a\nleq 0$,
+and let~$b\in \Real{(a)}$ be given.
+Pick~$\lambda,\mu \in \R$ with $\lambda a \leq b \leq \mu a$.
+Then~$(\mu-\lambda)a\geq 0$.
+There are now three cases to consider:
+if~$\mu-\lambda >0$, then~$a\geq 0$;
+if~$\mu-\lambda < 0$, then~$a\leq 0$;
+and if~$\mu-\lambda = 0$, then~$\lambda a = b = \mu a$.
+Since the latter case is the only possibility,
+we see that~$\Real{(a)}=a\R$, and so~$(a)=a\C$.
+
+Suppose that~$1\in(a)$.
+If $0\nleq a\nleq 0$, then we have~$(a)=a\C$,
+so~$a$ is a real scalar, which contradicts
+$0\nleq a\nleq 0$.
+So either~$0\leq a$ or~$a\leq 0$.
+In any case,
+since~$1\in (a)$,
+we have~$1\in \Real{(a)}$,
+and so $\lambda a\leq 1\leq \mu a$
+for some~$\lambda,\mu\in \R$.
+If~$a\geq 0$,
+then~$1\leq \mu a$ entails that~$\mu\geq 0$, 
+and
+$\frac{1}{\mu}\leq a$,
+so~$a$ is invertible, by~\sref{parsec-170.60}(6).
+If~$a\leq 0$,
+then~$1\leq \mu a$ entails that~$\mu\leq 0$,
+and
+$-\frac{1}{\mu} \leq -a$,
+so~$-a$ is invertible,
+thus $a$ is invertible too.
+\item
+Since~$a$ is not invertible,
+$(a)$ is proper, by point~3,
+and~$(a)$ is thus contained in a maximal order ideal, by point~2.
+\item
+Recall that $\|a\|=\sup\{\left|\lambda\right|\colon \lambda\in \spec(a)\}$
+by~\sref{parsec-160.20}.
+Let~$\lambda_1,\lambda_2,\dotsc$
+be a sequence in~$\spec(a)$
+such that~$\left|\lambda_1\right|\,\leq\,
+\left|\lambda_2\right|\,\leq\,
+\dotsb$ converges to~$\|a\|$.
+Then since~$\spec(a)$ is compact,
+a subsequence~$\lambda_{n_1},\,\lambda_{n_2},\,\dotsc$
+of  $\lambda_1,\lambda_2,\dotsc$
+converges to some~$\lambda\in\spec(a)$.
+Since $\left|\lambda_{n_1}\right|,\,\left|\lambda_{n_2}\right|,\,\dotsc$
+is a subsequence of 
+$\left|\lambda_1\right|\,\leq\,
+\left|\lambda_2\right|\,\leq\,$
+it must converge to~$\|a\|$, too.
+Thus~$\left|\lambda\right|=\|a\|$,
+and so either~$\lambda=\|a\|$ or~$\lambda=-\|a\|$.
+Thus either~$\|a\|\in \spec(a)$
+or~$-\|a\|\in \spec(a)$.
+So at least one of
+$\|a\|-a$ and~$\|a\|+a$
+is not invertible.
+\end{enumerate}
+\end{solution}
 
 \end{document}
