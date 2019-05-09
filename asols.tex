@@ -1630,5 +1630,116 @@ for all~$\lambda\in \C$ with $\left|\lambda\right|\leq \frac{1}{n}$.
 Thus $\spec(a)\subseteq[\frac{1}{n},\infty)$.
 \end{enumerate}
 \end{solution}
+\begin{solution}{parsec-201.10}
+Note that the projections
+$\pi_j\colon\bigoplus_i \scrA_i\to \scrA_j$
+are miu-maps.
+
+Let~$a$ be an element of~$\bigoplus_i \scrA_i$.
+Note that since
+    $\|a\|=\sup_i\|a(i)\|$, we have $\|a(i)\|\leq \|a\|$ for all~$i\in I$.
+Thus, $a$ is positive iff
+$\|\,a-\|a\|\,\|\leq\|a\|$
+    iff $\|\,a(i)-\|a\|\,\|\leq \|a\|$
+    for all~$i\in I$
+    iff $a(i)$ is positive for all~$i\in I$.
+In particular,
+every projection $\pi_j\colon \bigoplus_i\scrA_i\to\scrA_j$
+is positive,
+    (which also follows from~\sref{parsec-200.50}.)
+
+Let~$\scrB$ be a $C^*$-algebra,
+and for each~$i\in I$,
+let $f_i\colon \scrB \to \scrA_i$ be an pu-map.
+We must show that there is a unique
+    pu-map $g\colon \scrB\to \bigoplus_i \scrA_i $
+    with~$\pi_i\circ g = f_i$ for all~$i\in I$.
+Given~$b\in \scrB$,
+    we have~$\|f_i(b)\|\leq 2\|b\|$
+    by~\sref{parsec-200.20},
+    and so $g(b)(i)=f_i(b)$
+    defines an element~$g(b)$ of~$\bigoplus_i\scrA_i$,
+    and a map~$g\colon \scrB\to\bigoplus_i\scrA_i$.
+Clearly, $g$ is linear, unital,
+    and $\pi_i\circ g = f_i$ for all~$i\in I$.
+Also, $g$ is positive:
+given positive~$b\in \scrB_+$,
+we know that~$g(b)(i)=f_i(b)\geq 0$ for every~$i\in I$,
+    and so~$g(b)\geq 0$.
+
+The only thing left to show
+before we know~$\bigoplus_i \scrA_i$
+is the product of the~$\scrA_i$
+    in~$\Cstar{pu}$
+    is the uniqueness of~$g$.
+So let~$g'\colon \scrB\to\bigoplus_i\scrA_i$
+be a pu-map
+with $\pi_i\circ g' =f_i$ for all~$i\in I$.
+Then 
+    $g'(b)(i)=\pi_i(g'(b))
+    = f_i(b) = g(b)(i)$
+    for all~$i\in I$ and~$b\in\scrB$.
+    Hence~$g=g'$.
+
+Since the projections $\pi_i$ are all miu-maps,
+and the map~$g$ in the proof above is clearly miu when all~$f_i$'s are miu,
+we see that $\bigoplus_i\scrA_i$ is also the product
+    of the~$\scrA_i$ in~$\Cstar{miu}$.
+Since clearly $\bigoplus_i \scrA_i$ is commutative
+when all~$\scrA_i$ are commutative,
+the full subcategories
+    $\cCstar{miu}$ and~$\cCstar{pu}$
+    of~$\Cstar{pu}$
+    are closed under products.
+\end{solution}
+\begin{solution}{parsec-201.20}
+The only non-trivial part to proving that~$\scrE$
+is a $C^*$-subalgebra of~$\scrA$ is
+showing that~$\scrE$ is a closed subset of~$\scrA$.
+So let~$a_1,a_2,\dotsc$ be a sequence from~$\scrE$
+converging to some element~$a$ of~$\scrA$;
+we must show that~$a\in \scrE$.
+Since~$a_1,a_2,\dotsc$ converges to~$a$,
+    the sequence $f(a_1),\,f(a_2),\,\dotsc$
+    converges to~$f(a)$,
+since $f$, being bounded, is continuous.
+    Similarly, $g(a_1),\,g(a_2),\,\dotsc$
+    converges to~$g(a)$.
+But since  $f(a_n)=g(a_n)$
+    for all~$n$ (as~$a_n\in\scrE$)
+these sequences
+    are the same, and thus their
+    limits are equal too.  Thus~$f(a)=g(a)$ and~$a\in\scrE$.
+
+That the inclusion $e\colon \scrE\to\scrA$
+is a miu-map is obvious. To see that it's also the equaliser
+    of~$f$ and~$g$ in~$\Cstar{pu}$, let~$\scrC$ be a $C^*$-algebra,
+and let $\gamma\colon \scrC\to\scrA$ be a pu-map with
+$f\circ \gamma = g\circ \gamma$.
+We must show that there's a unique pu-map $h\colon \scrC\to\scrE$
+with~$e\circ h = g$.
+Since~$e$ is injective, uniqueness is clear.
+Concerning existence, note
+that~$f(\gamma(c))=g(\gamma(c))$
+for all~$c\in\scrC$,
+and so~$\gamma(c)\in\scrE$.
+We may thus define $h\colon \scrC\to\scrE$ by
+$h(c)=\gamma(c)$ for all~$c\in\scrC$.
+Clearly, $h$ is linear, unital, and~$\gamma=e\circ h$.
+Also~$h$ is positive, 
+since the elements of~$\scrE$ that are positive in~$\scrA$
+are positive in~$\scrE$ too.
+    Thus~$e$ is the equaliser of~$f$ and~$g$ in~$\Cstar{pu}$.
+
+Note that since~$e$ is a miu-map,
+and the map~$h$ in the proof above is miu provided that~$\gamma$
+is miu,
+    we see that~$e$ is the equaliser of~$f$ and~$g$ in~$\Cstar{miu}$ too.
+
+Since~$\scrE$ is commutative when~$\scrA$ is commutative,
+    $e$ is the equaliser of~$f$ and~$g$ in~$\cCstar{miu}$
+    and~$\cCstar{pu}$
+    when~$\scrA$ and~$\scrB$ are commutative.
+\end{solution}
 
 \end{document}
