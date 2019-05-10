@@ -1,7 +1,10 @@
+% vim: set indentexpr= :
 \documentclass[b5page]{book}
 \input{common}
 \externaldocument{a}
 \externaldocument{b}
+
+\newcommand{\TODO}[1]{\textcolor{darkred}{\textsc{\underline{todo}}}}
 
 \begin{document}
 \appendix
@@ -43,8 +46,10 @@ and~``$q(\Imag{b})$''
 instead of~``$\Real{b}$''
 and~``$\Imag{b}$'', respectively.
 \end{erratum}
-
-
+\begin{erratum}{parsec-230.50}
+It should be assumed that $a$ and~$b$ are
+positive in point~3.
+\end{erratum}
 
 \begin{solution}{parsec-40.30}%
 Let~$\scrX$, $\scrY$ and~$\scrZ$ be normed (complex) vector spaces.
@@ -1972,6 +1977,53 @@ we see that~$a_-a_+=0$ too.
 \item
 The hint gives the solution away.
 \end{enumerate}
+\end{solution}
+\begin{solution}{parsec-250.10}
+    \TODO{}
+\end{solution}
+\begin{solution}{parsec-250.20}
+    \TODO{}
+\end{solution}
+\begin{solution}{parsec-260.20}
+\begin{enumerate}
+\item
+We already know that~$a\leq \left|a\right|$
+and $-a\leq \left|a\right|$ by~\sref{parsec-240.20}(1).
+So to show that~$\left|a\right|$
+is the least upper bound for~$a$ and~$-a$
+    in~$\Real{\scrA}$,
+we must show
+    given an upper bound~$b$ for~$a$, and~$-a$ in~$\Real{\scrA}$
+that~$\left|a\right|\leq b$.
+        Since~$\sqrt{\,\cdot\,}$ is monotone
+        on commuting positive elements,
+        and~$a$ and~$b$ are positive, and commute (because
+        $\scrA$ is commutative),
+        it suffices to show that
+        $\left|a\right|^2\equiv a^2 \leq b^2$.
+In other words,
+we must show that~$b^2-a^2\equiv (b+a)(b-a)$ is positive,
+which it is,
+by~\sref{parsec-230.70}(2),
+being the product of commuting positive elements.
+\item
+\TODO{}
+$c+(\,\cdot\,)$ is an order isomorphism.
+\item
+\TODO{}
+Use point~2, and $\left|a-b \right|
+= (a-b)\vee(b-a)$.
+\item
+\TODO{}
+\end{enumerate}
+\end{solution}
+\begin{solution}{parsec-260.30}
+Define $a' = a-(a+b-c)\wedge a$.
+Then clearly~$0\leq a' \leq a$.
+Further, since $-a' = (a+b-c)\wedge a-a
+= b\wedge c -c$,
+writing $b':= c-a'=b\wedge c$ 
+we have~$0\leq b'\leq b$,  and $a'+b'=c$.
 \end{solution}
 
 \end{document}
