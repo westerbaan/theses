@@ -2083,7 +2083,80 @@ for $c:=\sqrt{a}$,
 see~\sref{parsec-230.70}.
 \end{solution}
 \begin{solution}{parsec-250.20}
-    \TODO{}
+\begin{enumerate}
+\item
+Since~$b\leq c$,
+the element $d:=c-b$ is positive.
+Note that to prove that $a^*ba \leq a^*ca$,
+we must show that $a^*ca - a^*ba=a^*da$
+is positive.
+Using~\sref{parsec-250.10} to write 
+$d\equiv e^* e$ for some~$e\in \scrA$,
+we see that~$a^*da =a^*e^*ea=(ea)^*(ea)$,
+which is positive,
+by~\sref{parsec-250.10}.
+\item
+An mi-map $f\colon \scrA \to\scrB$
+between $C^*$-algebras~$\scrA$ and~$\scrB$
+(which preserves multiplication and involution)
+sends a positive element of the form~$a^*a$
+to $f(a)^*f(a)$,
+which is positive too.
+Thus such~$f$ is positive.
+
+A completely positive map $f\colon \scrA\to\scrB$
+between $C^*$-algebras~$\scrA$
+and~$\scrB$,
+for which, by definition, $\sum_{i,j} b_i^* f(a_i^*a_j) b_j^*$ is positive
+for all tuples $a_1,\dotsc,a_N\in\scrA$
+and $b_1,\dotsc,b_N\in\scrB$,
+is a positive map too,
+because upon taking $N=1$ and~$b_1=1$,
+we see that~$f(a^*a)\geq 0$
+for all~$a\in\scrA$,
+using here that any positive element of~$\scrA$
+is of the form~$a^*a$ for some~$a\in\scrA$,
+by~\sref{parsec-250.10}.
+
+\item
+We need the following observation 
+first: we claim that given a positive invertible element~$a$
+of a $C^*$-algebra~$\scrA$,
+the element~$\sqrt{a}$ is invertible too,
+and~$\smash{\sqrt{a}^{-1}} = \smash{\sqrt{a^{-1}}}$.
+(Note that~$a^{-1}$ is positive, by~\sref{parsec-170.60}(5).)
+
+That~$a$ is positive and invertible
+means that $a\geq \frac{1}{n}$ for some~$n$,
+by~\sref{parsec-170.60}(6).
+In particular, $a\geq (\frac{1}{n})^2$
+for some (greater)~$n$.
+For this latter~$n$,
+we have~$\sqrt{a}\geq \frac{1}{n}$,
+by~\sref{parsec-230.70}---$\sqrt{\,\cdot\,}$
+is monotone on a commutative subset,---and 
+thus~$\sqrt{a}$ is invertible.
+
+To see that~$\smash{\sqrt{a}^{-1}}=\smash{\sqrt{a^{-1}}}$,
+it suffices to show,
+by the unique property of the square root
+from~\sref{parsec-230.70},
+that~$\smash{\sqrt{a}^{-1}}$ commutes with
+$a^{-1}$,
+(which it does,
+because $a$ commutes with~$\sqrt{a}$,)
+and that~$\smash{\sqrt{a}^{-1}\cdot\sqrt{a}^{-1}}
+= a^{-1}$,
+(which is indeed so,
+because~$\sqrt{a}\cdot \sqrt{a}=a$.)
+Whence~$\smash{\sqrt{a}^{-1}=\sqrt{a^{-1}}}$.
+
+\TODO{}
+\item
+\TODO{}
+
+
+\end{enumerate}
 \end{solution}
 \begin{solution}{parsec-260.20}
 \begin{enumerate}
