@@ -2151,11 +2151,76 @@ and that~$\smash{\sqrt{a}^{-1}\cdot\sqrt{a}^{-1}}
 because~$\sqrt{a}\cdot \sqrt{a}=a$.)
 Whence~$\smash{\sqrt{a}^{-1}=\sqrt{a^{-1}}}$.
 
-\TODO{}
+To complete this part of the exercise 
+we must show that given
+invertible elements~$a$ and~$b$ of
+a $C^*$-algebra~$\scrA$
+the following are equivalent.
+\begin{multicols}{2}
+\begin{enumerate}
+\item 
+\label{S25II3a}
+$a\leq b^{-1}$
+\item 
+\label{S25II3b}
+$\sqrt{b}a\sqrt{b} \leq 1$
+\item 
+\label{S25II3c}
+$\|\sqrt{a}\sqrt{b}\|\leq 1$
+\item 
+\label{S25II3d}
+$b\leq a^{-1}$
+\end{enumerate}
+\end{multicols}
+\ref{S25II3a}$\iff$\ref{S25II3b}.
+If~$a\leq b^{-1}$,
+then~$\sqrt{b} a\sqrt{b}\leq \sqrt{b}b^{-1}\sqrt{b} = 1$,
+by part~1 of this exercise,
+where we used that~$\smash{\sqrt{b^{-1}}}$
+is the inverse of~$\sqrt{b}$.
+On the other hand,
+if~$\sqrt{b}a\sqrt{b}\leq 1$,
+then~$a\equiv \smash{\sqrt{b}^{-1} \sqrt{b} a \sqrt{b}\sqrt{b}^{-1}}
+\leq b^{-1}$, 
+again using part~1 of this exercise.
+
+\ref{S25II3b}$\iff$\ref{S25II3c}
+follows from~\sref{parsec-170.60}(3)
+for by it
+$(-1\leq)\sqrt{b}a\sqrt{b}\leq 1$
+iff $\|\sqrt{a}\sqrt{b}\|^2\equiv \|\sqrt{b}a\sqrt{b}\|\leq 1$
+iff $\|\sqrt{a}\sqrt{b}\|\leq 1$.
+
+\ref{S25II3a}$\iff$\ref{S25II3d}.
+Note that since $\|\sqrt{a}\sqrt{b}\| = 
+\|(\sqrt{a}\sqrt{b})^*\|=\|\sqrt{b}\sqrt{a}\|$,
+we have
+$a\leq b^{-1}$
+iff~$\|\sqrt{a}\sqrt{b}\|\leq 1$
+iff~$\|\sqrt{b}\sqrt{a}\|\leq 1$
+iff~$b\leq a^{-1}$.
 \item
-\TODO{}
-
-
+Since~$0\leq a\leq b$,
+both~$1+a$ and~$1+b$
+are invertible and positive,
+and $1+a\leq 1+b$,
+Thus, by the previous point,
+$(1+b)^{-1}\leq (1+a)^{-1}$, and so:
+\begin{alignat*}{3}
+a(1+a)^{-1}
+\,&+\, (1+a)^{-1}
+\,+\, (1+b)^{-1}\\
+&\ =\ 
+(1+a)(1+a)^{-1}\,+\, (1+b)^{-1} \\
+&\ =\ 1+(1+b)^{-1} \\
+&\ \leq\ 1+(1+a)^{-1} \\
+&\ =\ 
+b(1+b)^{-1}
+\,+\, (1+b)^{-1}
+\,+\, (1+a)^{-1}.
+\end{alignat*}
+Whence
+$a(1+a)^{-1} \leq b(1+b)^{-1}$.
 \end{enumerate}
 \end{solution}
 \begin{solution}{parsec-260.20}
