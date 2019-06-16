@@ -2246,14 +2246,59 @@ which it is,
 by~\sref{parsec-230.70}(2),
 being the product of commuting positive elements.
 \item
-\TODO{}
-$c+(\,\cdot\,)$ is an order isomorphism.
+Note that $c+(\,\cdot\,)\colon \Real{\scrA}\to\Real\scrA$
+is order preserving,
+and, in fact,
+an order isomorphism
+with inverse $(-c)+(\,\cdot\,)$.
+Since order isomorphisms preserve suprema,
+$c+a\vee b$ is the supremum
+of~$c+a$ and~$c+b$.
 \item
-\TODO{}
-Use point~2, and $\left|a-b \right|
-= (a-b)\vee(b-a)$.
+Let~$a$ and~$b$ in~$\Real\scrA$
+be given.
+To prove that~$\Real\scrA$
+is a Riesz space
+it suffices to show that~$a$ and~$b$ have a supremum
+(in~$\Real\scrA$).
+By part~1 of this exercise,
+we know that~$\left|a-b\right|=(a-b)\vee (b-a)$.
+Thus,
+by part~2, 
+$a+b+\left|a-b\right|$
+is the supremum of $2a\equiv a-b+a+b$
+and~$2b=b-a+a+b$.
+Since~$c\mapsto \frac{1}{2}c\colon \Real\scrA\to\Real\scrA$
+is easily seen to be an order isomorphism,
+which preserves suprema,
+we see that $\frac{1}{2}(a+b+\left|a-b\right|)$
+is the supremum of~$a$ and~$b$.
 \item
-\TODO{}
+Let~$f\colon \scrA\to\scrB$
+be a miu-map between commutative 
+$C^*$-algebras~$\scrA$ and~$\scrB$.
+Note first that~$f$ preserves the square root
+of a positive element~$a\in\scrA$
+in the sense that~$\sqrt{f(a)} = f(\sqrt{a})$.
+Indeed, 
+by~\sref{parsec-230.70}
+$\sqrt{f(a)}$
+ is the unique element~$b$ of~$\scrB_+$
+with~$bf(a)=f(a)b$ and~$b^2=f(a)$.
+Since clearly  $f(\sqrt{a})^2 = f(\sqrt{a}\sqrt{a})=f(a)$
+and~$f(\sqrt{a})f(a)=f(\sqrt{a}a)=f(a\sqrt{a})=f(a)f(\sqrt{a})$,
+we see that~$f(\sqrt{a})$ has this unique property of~$\sqrt{f(a)}$
+too,
+and so $f(\sqrt{a})=\sqrt{f(a)}$.
+
+As a result~$f(\left|a\right|)=\left|f(a)\right|$
+for any~$\Real\scrA$ (since $\left|a\right|=\smash{\sqrt{a^2}}$,)
+and thus~$f(a\vee b)=f(a)\vee f(b)$
+for all~$a,b\in\Real\scrA$
+(since $a\vee b=\frac{1}{2}(a+b+\left|a+b\right|)$,)
+and so $f(a\wedge b)=f(a)\wedge f(b)$
+for all~$a,b\in\Real\scrA$
+(since~$a\wedge b = -((-a)\vee(-b))$.)
 \end{enumerate}
 \end{solution}
 \begin{solution}{parsec-260.30}
