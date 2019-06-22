@@ -2299,6 +2299,27 @@ for all~$a,b\in\Real\scrA$
 and so $f(a\wedge b)=f(a)\wedge f(b)$
 for all~$a,b\in\Real\scrA$
 (since~$a\wedge b = -((-a)\vee(-b))$.)
+\item
+We claim that~$\left|a+b\right|\leq \left|a\right|+\left|b\right|$
+(in this commutative setting.)
+Indeed,
+\begin{alignat*}{3}
+\left|a\right| \,+\, \left|b\right|
+\ &= \ 
+a\vee -a\,+\, b\vee -b
+\qquad &&\text{by point~1} \\
+\ &= \ 
+(\,a\,+\,b\vee -b\,)\vee (\,-a \,+\, b\vee -b\,)
+\qquad &&\text{by point~2} \\
+\ &= \ 
+(a+b)\vee(a-b)\vee (-a+b)\vee (-a-b)
+\qquad &&\text{by point~2} \\
+\ &= \ 
+\left|a+b\right| \vee \left | a-b\right|
+\qquad &&\text{by point~1} \\
+\ &\geq \ 
+\left|a+b\right|.
+\end{alignat*}
 \end{enumerate}
 \end{solution}
 \begin{solution}{parsec-260.30}
@@ -2336,7 +2357,156 @@ so does~$\gamma$.
 Whence~$\gamma$ is miu.
 \end{solution}
 \begin{solution}{parsec-270.100}
-\TODO{}
+Let~$I$ be a Riesz ideal with~$a\in I$;
+we'll show that~$(a)_m \subseteq I$.
+Let~$b\in (a)_m$ be given.
+By definition of~$(a)_m$ we can
+find $n\in \N$ with 
+$$\textstyle 0\ \leq\  \left|\Real{b}\right|,
+\left|\Imag{b}\right|\ \leq\  n\left|a\right|.$$
+Since~$a\in I$, and so~$\left|a\right|\in I$,
+the inequalities displayed above imply
+$\left|\Real{b}\right|,\left|\Imag{b}\right|\in I$
+(since~$I$ is an order ideal, 
+see~\sref{parsec-220.20}.)
+Further, as $-\left|\Real{b}\right|\leq \Real{b} \leq \left|\Real{b}\right|$
+by~\sref{parsec-240.20}(1),
+we get $\Real{b}\in I$.
+Since similarly $\Imag{b}\in I$,
+we see that~$b\equiv \Real{b}+i\Imag{b}\in I$.
+Whence~$(a)_m\subseteq I$.
+
+Thus, if~$(a)_m$ is a Riesz ideal,
+then~$(a)_m$  will automatically the least Riesz ideal that contains~$a$.
+We'll show that~$(a)_m$ is a linear subspace first.
+Let $b,b'\in (a)_m$
+and~$z\in\C$
+be given, and pick~$n,n',k\in \N$ 
+with $\left|\Real{b}\right|,\left|\Imag{b}\right|
+\leq n \left|a\right|$, 
+$\left|\Real{b}'\right|,\left|\Imag{b}'\right|\leq n'a$,
+and~$\left|z\right|\leq k$.
+Then 
+$$\textstyle 
+\left|\Real{(b+zb')}\right|
+\ =\ \left|\Real{b}+z\Real{b}'\right|
+\ \leq\  \left|\Real{b}\right|+\left|z\right| \left|\Real{b}'\right|
+\ \leq\  (n+kn')\,\left|a\right|,
+$$
+using item~5 of the solution to~\sref{parsec-260.20} here.
+Since along similar lines, $\left|\Imag{(b+zb')}\right|
+\leq (n+kn')\,\left|a\right|$,
+we get~$b+zb'\in (a)_m$.
+Thus~$(a)_m$ is a linear subspace of~$\scrA$.
+
+Further, note that~$b\in (a)_m\implies b^*\in(a)_m$,
+almost trivially,
+because  $\Real{(b^*)}=\Imag{b}$
+and~$\Imag{(b^*)}=\Real{b}$
+for any~$b\in\scrA$.
+
+To see that~$(a)_m$ is an order ideal,
+let~$b\in ((a)_m)_+$ and~$c\in \Real\scrA$
+with~$-b\leq c\leq b$ be given;
+we must show that~$c\in (a)_m$.
+By definition of~$(a)_m$,
+and using that~$b$ is positive,
+we know there is~$n\in\N$ with
+$0\leq b\leq n \left|a\right|$.
+Then 
+$-n\left|a\right| \leq -b \leq c \leq b \leq n\left| a\right| $,
+and so~$\left|c\right| \leq n\left|a\right|$,
+(since $\left|c\right|= c\vee -c$ by~\sref{parsec-220.20}.)
+Thus~$c\in (a)_m$
+(since~$\Real{c}=c$ and~$\Imag{c}=0$.)
+
+To show that~$(a)_m$ is a Riesz ideal,
+it remains to be shown that~$\left|b\right|\in (a)_m$
+for any self-adjoint~$b\in (a)_m$.
+For such~$b$ we can find~$n\in\N$ with
+$ \left|b\right|  \leq n\left|a\right|$.
+Since then
+ $\left| \,\left|b\right|\,\right|
+\equiv \left|b\right| \leq n\left|a\right|$,
+we get~$\left|b\right|\in(a)_m$ too.
+Whence~$(a)_m$ is the least Riesz ideal of~$\scrA$
+that contains~$a$.
+
+The second order of business
+is showing that~$(a)_m=\scrA$ iff~$a$ is invertible.
+Suppose that~$a$ is invertible,
+then, by~\sref{parsec-270.80},
+$b\equiv (ba^{-1})a\in (a)_m$
+for all~$b\in\scrA$, so~$\scrA=(a)_m$.
+Conversely, suppose that~$(a)_m=\scrA$;
+we must show that~$a$ is invertible.
+It suffices to show that~$a^2$ is invertible,
+because then~$a (a^2)^{-1}$ will the inverse of~$a$.
+For this, in turn,
+it suffices to show that~$\left|a\right|\equiv \smash{\sqrt{a^2}}$
+is invertible,
+because then~$(\left|a\right|^{-1})^2$
+will be the inverse of~$a^2$.
+Since~$(a)_m=\scrA$,
+we have~$1\in(a)_m$,
+and so~$1\leq n\left|a\right|$ for some~$n\in \N$.
+Since this inequality remains valid if we increase~$n$,
+we may assume that~$n\neq 0$.
+Then~$\frac{1}{n} \leq \left|a\right|$,
+and so~$\left|a\right|$ is invertible,
+by~\sref{parsec-170.60}6.
+
+The next task is to prove that~$(a)=(a)_m$ when~$a$ is positive.
+It suffices to show that~$(a)$ is a Riesz ideal for such positive~$a$.
+That is, given self-adjoint $b\in (a)$ we must show 
+that~$\left|b\right|\in(a)$.
+By the description of~$(a)$ 
+from the solution to~\sref{parsec-220.30}3,
+we know that there are $\lambda,\mu\in \R$ with
+$\lambda a \leq b\leq \mu a$.
+Then since writing~$\nu:= \mu\vee -\lambda$,
+we have $\mu\leq \nu$ and $-\nu\leq -\lambda$,
+and so
+$$-\nu a \ \leq\  \lambda a \ \leq\  b\ \leq\  
+\mu a\ \leq\  \nu a,$$ using here that~$a$ is positive.
+Whence $\left|b\right|\leq \nu a$,
+and thus~$\left|b\right| \in (a)$.
+
+Finally,
+we must show that~$(a)\neq (a)_m$ may occur for non-positive~$a$.
+In fact,
+we have~$(a)=(a)_m$ iff either~$0\leq a$ or~$a\leq 0$.
+Indeed,
+``$\Longleftarrow$'' follows easily from the previous discussion.
+For the converse,
+suppose that~$(a)=(a)_m$,
+and, towards a contradiction,
+that neither~$0\leq a$ nor~$a\leq 0$.
+Then~$(a)=\C a$
+by~\sref{parsec-220.30}3,
+and so~$\left|a\right|=\lambda a$ for some~$\lambda\in \C$,
+because~$\left|a\right| \in (a)_m=(a)$.
+What can~$\lambda$ be?
+Note first that~$a\neq 0$ (because otherwise~$0\leq a$,)
+and so~$\left|a\right| \neq 0$.
+With this we can see that~$\lambda$ must be real:
+since
+$\lambda a = \left|a\right| = \left|a\right|^* = \bar\lambda a^*
+=\bar\lambda a$,
+we have $\lambda=\bar\lambda$.
+Moreover,
+since $\left|a\right|=\left|\,\left|a\right|\,\right|
+= \left|\lambda a\right| = \left| \lambda\right|\,\left|a \right|$,
+we get~$\left|\lambda\right| = 1$,
+and thus~$\lambda = \pm 1$.
+If~$\lambda =1$,
+then~$a = \left|a\right|\geq 0$, quod non.
+On the other hand,
+if~$\lambda=-1$,
+then~$a=-\left|a\right|\leq 0$, quod non.
+So we reach a contradiction in any case.
+Whence, if~$(a)=(a)_m$,
+then either~$0\leq a$ or~$a\leq 0$.
 \end{solution}
 \begin{solution}{parsec-270.170}
 \TODO{}
