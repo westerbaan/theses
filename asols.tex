@@ -2509,7 +2509,14 @@ Whence, if~$(a)=(a)_m$,
 then either~$0\leq a$ or~$a\leq 0$.
 \end{solution}
 \begin{solution}{parsec-270.170}
-\TODO{}
+Given~$\lambda\in\C$,
+we have: $\lambda\in \spec(a)$
+iff $a-\lambda$ is not invertible,
+(by definition of~$\spec(a)$, \sref{parsec-110.190};)
+iff $f(a-\lambda)=0$ for some~$f\in \spec(\scrA)$
+(by~\sref{parsec-270.150};)
+that is, iff~$\lambda=f(a)$ for some~$f\in \spec(\scrA)$.
+Whence $\spec(a)=\{\,f(a)\colon\, f\in \spec(\scrA)\,\}$.
 \end{solution}
 \begin{solution}{parsec-270.180}
 \TODO{}
