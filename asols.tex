@@ -2519,7 +2519,59 @@ that is, iff~$\lambda=f(a)$ for some~$f\in \spec(\scrA)$.
 Whence $\spec(a)=\{\,f(a)\colon\, f\in \spec(\scrA)\,\}$.
 \end{solution}
 \begin{solution}{parsec-270.180}
-\TODO{}
+Given an  element~$a$ of~$\scrA$
+we have
+\begin{alignat*}{3}
+\|a\|^2  \ &=\ \|a^*a\|
+&& \text{by the $C^*$-identity}\\
+\ &=\  \sup\{\, \left|\lambda\right|\colon\, 
+\lambda\in\spec(a^*a)\,\}
+&&\text{by~\sref{parsec-160.20}}\\
+\ &=\  \sup\{\, \left|f(a^*a)\right|\colon\, 
+f\in\spec(\scrA)\,\}
+&&\text{by~\sref{parsec-270.170}}
+\\
+\ &=\  \sup\{\, \left|f(a)^*f(a)\right|\colon\, 
+f\in\spec(\scrA)\,\}
+&&\text{as such~$f$ are miu-maps}\\
+\ &=\  \sup\{\, \left|(\,\gamma(a)^*\gamma(a)\,)(f)\right|\colon
+f\in \spec(\scrA)\,\}
+\qquad&&\text{by def.~of~$\gamma$, \sref{parsec-270.30}} \\
+\ &=\ \|\gamma(a)^*\gamma(a)\|&&
+\text{by def.~of~$\|\,\cdot\,\|$ on~$C(\spec(\scrA))$,
+\sref{parsec-30.60}}\\
+\ &=\ \|\gamma(a)\|^2
+&&\text{by the $C^*$-identity},
+\end{alignat*}
+and so~$\|\gamma(a)\|=\|a\|$.
+It follows that~$\gamma\colon \scrA\to C(\spec(\scrA))$
+is injective,
+for if $\gamma(a)=0$ for some~$a\in\scrA$,
+then~$\|\gamma(a)\|=\|a\|=0$,
+and so~$a=0$ too.
+
+To see that~$\gamma(\scrA)$ is closed,
+let~$a_1,\,a_2,\,\dotsc$
+be a sequence in~$\scrA$
+such that $\gamma(a_1),\,\gamma(a_2),\,\dotsc$
+converges to some element~$g$ of~$C(\spec(\scrA))$;
+we must show that~$g\in\gamma(\scrA)$.
+The sequence~$\gamma(a_1),\,\gamma(a_2),\,\dotsc$
+being convergent is Cauchy,
+and so~$a_1,a_2,\dotsc$ is Cauchy too
+(since~$\|\gamma(a)\|=\|a\|$ for all~$a\in\scrA$,)
+and thus converges to some~$a\in\scrA$
+(since~$\scrA$ is complete.)
+But then~$\gamma(a_1),\,\gamma(a_2),\,\dotsc$
+converges not only to~$g$, but also to~$\gamma(a)$.
+Thus~$g=\gamma(a)\in\gamma(\scrA)$,
+and so~$\gamma(\scrA)$
+is closed.
+It follows that~$\gamma(\scrA)$ is a $C^*$-subalgebra of~$C(\spec(\scrA))$
+as~$\gamma(\scrA)$ is clearly a linear subspace
+of~$C(\spec(\scrA))$
+that contains~$1$ and is closed under multiplication and involution,
+see~\sref{parsec-30.40}.
 \end{solution}
 \begin{solution}{parsec-280.20}
 \TODO{}
