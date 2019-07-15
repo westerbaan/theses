@@ -2574,7 +2574,74 @@ that contains~$1$ and is closed under multiplication and involution,
 see~\sref{parsec-30.40}.
 \end{solution}
 \begin{solution}{parsec-280.20}
-\TODO{}
+\begin{enumerate}
+\item
+We define~$C^*(a)$ to be
+the norm closure of
+\begin{equation*}
+\C[a,a^*]\ \equiv\  \{\,f(a,a^*)\colon \,f\in \C[x,y]\,\},
+\end{equation*}
+where~$\C[x,y]$ denotes the ring
+of polynomials over the non-commuting variables~$x$ and~$y$.
+Our task then is to show that~$C^*(a)$
+defined thus is the least $C^*$-subalgebra
+that contains~$a$.
+Clearly, $\C[a,a^*]$ is a linear subspace of~$\scrA$
+that contains~$1$, $a$, and is
+closed under involution and multiplication.
+From this it follows easily that its closure, $C^*(a)$,
+is a $C^*$-subalgebra of~$\scrA$ that contains~$a$.
+Any $C^*$-subalgebra~$\scrS$ of~$\scrA$
+that contains~$a$, contains $\C[a,a^*]$, 
+and thus its closure, $C^*(a)$, too.
+Whence~$C^*(a)$ is the least $C^*$-subalgebra of~$\scrA$ that 
+contains~$a$.
+
+For the second part
+we must show that an element~$b$ of~$C^*(a)$
+commutes with any~$c\in \scrA$
+that commutes with both~$a$ and~$a^*$.
+To this end it's conventient 
+to already bring up the notion
+of a \emph{commutant} $S^\square$ of 
+a subset~$S$ of~$\scrA$
+(treated properly in~\sref{parsec-650.20},)
+which is defined by
+\begin{equation*}
+S^\square\ := \ \{\,
+b\in \scrA\colon\, \forall s\in S\,[\ bs=sb\ ]\,\}.
+\end{equation*}
+Indeed,
+in this notation
+our goal is to prove that
+$C^*(a)\subseteq \{a,a^*\}^{\square\square}$.
+Since $a\in \{a,a^*\}^{\square\square}$
+it suffices  to show that $\{a,a^*\}^{\square\square}$
+is a $C^*$-subalgebra of~$\scrA$.
+
+In general, $S^\square$ is only a closed linear subspace
+of~$\scrA$ that contains~$1$,
+and is closed under multiplication.
+But when~$S$ is closed under involution,
+(that is, $s\in S\implies s^*\in S$,)
+then~$S^\square$
+is closed under involution too
+(because then $b^*s=(s^*b)^*=(bs^*)^*=sb^*$
+for all~$b\in S^\square$ and $s\in S$.)
+In particular, $\{a,a^*\}^\square$
+is closed under involution,
+and 
+so  $\{a,a^*\}^{\square\square}$,
+is closed under involution too,
+making $\{a,a^*\}^{\square\square}$ a $C^*$-subalgebra of~$\scrA$.
+
+\item \TODO{}
+\item \TODO{}
+\item \TODO{}
+\item \TODO{}
+\item \TODO{}
+\item \TODO{}
+\end{enumerate}
 \end{solution}
 \begin{solution}{parsec-290.70}
 \TODO{}
