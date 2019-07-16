@@ -2635,9 +2635,68 @@ so  $\{a,a^*\}^{\square\square}$,
 is closed under involution too,
 making $\{a,a^*\}^{\square\square}$ a $C^*$-subalgebra of~$\scrA$.
 
-\item \TODO{}
-\item \TODO{}
-\item \TODO{}
+\item 
+When~$C^*(a)$ is commutative,
+we have
+$aa^*=a^*a$ since~$a,a^*\in C^*(a)$.
+Conversely,
+suppose that $aa^*=a^*a$,
+and let~$b\in C^*(a)$ be given;
+we must show that~$b$ commutes with all~$c\in C^*(a)$.
+Note first that
+since~$a$ commutes with both itself and~$a^*$,
+we know by part~1 of this exercise
+that~$a$ commutes with all elements of~$C^*(a)$,
+and, in particular, with~$b$.
+Since similarly~$a^*$ commutes with~$b$,
+we get (again by part~1)
+that~$b$ commutes with all~$c\in C^*(a)$.
+
+It remains to be shown that $a$ and~$a^*$
+commute precisely when~$\Real{a}$ and~$\Imag{a}$ commute.
+Since $a=\Real{a}+i\Imag{a}$
+and $a^*=\Real{a}-i\Imag{a}$ (by~\sref{parsec-70.30}),
+we see that~$a$ and~$a^*$ commute provided that $\Real{a}$ and~$\Imag{a}$
+commute.
+The other direction follows from the equalities
+$\Real{a}=\frac{1}{2}(a+a^*)$
+and~$\Imag{a}=\frac{1}{2i}(a-a^*)$
+(see~\sref{parsec-70.20}).
+
+\item
+Note that~$j(\varrho)\equiv 
+\varrho(a)\in\spec(a)$ for all~$\varrho\in\spec(C^*(a))$ 
+by~\sref{parsec-270.170},
+so we indeed get a map $j\colon \spec(C^*(a))\to\spec(a)$.
+Since $\spec(C^*(a))$
+is endowed with the topology of pointwise convergence,
+$j\colon \varrho\mapsto \varrho(a)$
+is continuous, almost by definition.
+
+Let~$a\in \scrA_+$ and~$\alpha\in (0,\infty)$ be given.
+Since~$\spec(a)\subseteq[0,\infty)$,
+the continous map 
+$[0,\infty)\to \C$
+given
+by the assignment $x\mapsto x^\alpha$
+can be restricted
+to a continuous map $(-)^\alpha\colon \spec(a)\to\C$,
+and thus~$a^\alpha$ is defined,
+by $a^\alpha = \Phi(\,(-)^\alpha\,)$.
+Since this~$\Phi\colon C(\spec(a))\to\scrA$
+is a miu-map,
+we have,
+\begin{alignat*}{3}
+a^{\alpha +\beta} \ &=\  \Phi(\,(-)^{\alpha+\beta}\,)
+\\
+\ &=\  \Phi(\,(-)^\alpha\,(-)^\beta\,) 
+\\
+&=\  \Phi(\,(-)^\alpha\,)\ \Phi(\,(-)^\beta\,) 
+\\
+&=\  a^\alpha a^\beta
+\end{alignat*}
+for all~$\alpha,\beta\in(0,\infty)$ and~$a\in\scrA_+$.
+\item\TODO{}
 \item \TODO{}
 \item \TODO{}
 \item \TODO{}
