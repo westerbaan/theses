@@ -2696,10 +2696,123 @@ a^{\alpha +\beta} \ &=\  \Phi(\,(-)^{\alpha+\beta}\,)
 &=\  a^\alpha a^\beta
 \end{alignat*}
 for all~$\alpha,\beta\in(0,\infty)$ and~$a\in\scrA_+$.
-\item\TODO{}
-\item \TODO{}
-\item \TODO{}
-\item \TODO{}
+\item
+By definition,
+$f(a)=\Phi(f)=\gamma_{C^*(a)}^{-1}(f\circ j)$,
+where
+$$ \gamma_{C^*(a)}\colon\ \ 
+C^*(a)\longrightarrow C(\spec( C^*(a))),\ \ 
+b\,\mapsto\, (\varrho \mapsto \varrho(b))
+$$
+is the miu-isomorphism from~\sref{parsec-270.270}.
+Since~$\gamma_{C^*(a)}$
+is injective,
+$f(a)$ is uniquely determined by
+$\gamma_{C^*(a)}(f(a))=f\circ j$.
+In other words,
+$f(a)$ is the unique
+element of~$C^*(a)$
+with
+$f(a)(\varphi)\equiv \gamma_{C^*(a)}(f(a))(\varphi)
+= f(j(\varphi))\equiv f(\varphi(a))$
+for all~$\varphi \in \spec(C^*(a))$.
+\item
+We have:
+\begin{alignat*}{3}
+f(\spec(a))
+\ &=\ 
+\{\, f(\varphi(a))\colon \, \varphi\in \spec(C^*(a))\,\}
+\qquad&&\text{by~\sref{parsec-270.170}} \\
+\ &=\ 
+\{\, \varphi(f(a))\colon \, \varphi\in \spec(C^*(a))\,\}
+\qquad&&\text{by the previous point} \\
+\ &=\ 
+\spec(f(a))\qquad&&\text{by~\sref{parsec-270.170},}
+\\
+&&&\quad\text{since~$f(a)\in C^*(a)$}.
+\end{alignat*}
+\item
+We'll first show that~$\spec(\varrho(a))\subseteq \spec(a)$.
+So let~$\lambda\in \spec(\varrho(a))$ be given.
+We know that~$\varrho(a)-\lambda$
+isn't invertible,
+and we must show that neither is~$a-\lambda$.
+Indeed,
+if~$a-\lambda$ were invertible,
+then so would be $\varrho(a-\lambda)\equiv \varrho(a)-\lambda$,
+which it isn't,
+so $a-\lambda$ isn't either.
+
+Next,
+to prove that $f(\varrho(a))=\varrho(f(a))$,
+it suffices, by point~4,
+to show that~$\varrho(f(a))\in C^*(\varrho(a))$,
+and,
+for all
+$\varphi\in\spec(C^*(\varrho(a)))$,
+\begin{equation}
+\label{eq:28II6}
+\varphi(\varrho(f(a)))
+\ =\ f(\varphi(\varrho(a))).
+\end{equation}
+The first condition
+follows from the observation
+that~$\varrho(\,C^*(a)\,)\subseteq C^*(\varrho(a))$.
+Indeed,
+let~$b\in C^*(a)$ be given.
+Then, by the concrete description
+for~$C^*(a)$ from point~1, we know that there's a sequence
+$b_1,b_2,\dotsc$ in~$\C[a,a^*]$
+that converges to~$b$.
+Since~$\varrho$ is a miu-map,
+we clearly have $\varrho(b_n)\in \C[\varrho(a),\varrho(a)^*]$
+for all~$n$.
+Moreover, $\varrho(b_1),\,\varrho(b_2),\,\dotsc$
+converges to~$\varrho(b)$,
+since~$\varrho$ is bounded
+by~\sref{parsec-200.50}.
+Whence~$\varrho(b)\in \overline{\C[\varrho(a),\varrho(a)^*]}
+\equiv C^*(\varrho(a))$.
+
+Finally,
+\eqref{eq:28II6}
+follows immediately from point~4,
+since~$b\mapsto \varphi(\varrho(b))$
+gives a miu-map $C^*(a)\to \C$,
+using here that~$\varrho(b)\in C^*(\varrho(a))$
+for all~$b\in C^*(a)$.
+\item 
+To prove that $g(f(a))=(g\circ f)(a)$
+it suffices by point~4
+to show that $g(f(a))\in C^*(a)$
+and~$\varphi(g(f(a))=g(f(\varphi(a)))$
+for all $\varphi\in\spec(C^*(a))$.
+
+Note first that~$C^*(f(a))\subseteq C^*(a)$,
+because~$f(a)\in C^*(a)$.
+So we  indeed get $g(f(a))\in C^*(f(a))\subseteq C^*(a)$.
+Finally,
+for all~$\varphi\in \spec(C^*(a))$,
+\begin{alignat*}{3}
+g(f(\varphi(a)))
+\ &=\ 
+g(\varphi(f(a)))\qquad
+&&\text{by point~4} \\
+\ &=\ 
+\varphi(g(f(a))),
+\end{alignat*}
+where the latter equality
+follows from point~4 too,
+using here that~$\varphi$
+restricts to an element of~$\spec(C^*(f(a)))$
+since~$C^*(f(a))\subseteq C^*(a)$.
+
+The identity $(a^\alpha)^\beta = a^{\alpha\beta}$
+for $\alpha,\beta\in(0,\infty)$
+and~$a\in\scrA_+$
+is a trivial corollary,
+as $x\mapsto x^\alpha$
+gives a continuous map $[0,\infty)\to [0,\infty)$.
 \end{enumerate}
 \end{solution}
 \begin{solution}{parsec-290.70}
