@@ -115,8 +115,47 @@ In point 1,
 ``$ac=ca$ and $a^*c=ca^*$''.
 \end{erratum}
 \begin{addendum}{parsec-280.40}
-\TODO{}  Show that $a\mapsto f(a)$
-is continuous, at least on commuting subspaces.
+The statement ``$(a+\frac{1}{n})^\alpha$
+norm converges to $a^\alpha$ as $n\to\infty$''
+lacks an argument.
+Here is one.
+First note that~$a$ and all~$a+\frac{1}{n}$
+are elements of a commutative $C^*$-subalgebra~$\scrB$
+of~$\scrA$.
+We'll show, more generally,
+that given any uniformly continuous map $f\colon D\to\C$
+on some subset~$D$ of~$\C$,
+the assignment $b\mapsto f(b)$
+where~$b\in \scrB$ with~$\spec(b)\subseteq D$
+is uniformly continuous
+with respect to the norm on~$\scrA$.
+So let~$\varepsilon>0$ be given.
+Since~$f$ is uniformly continuous,
+there's $\delta>0$ with $\left|f(x)-f(y)\right|\leq\varepsilon$
+for all~$x,y\in D$ with $\left|x-y\right|\leq \delta$.
+Now, let~$a,b\in \scrB$ with
+$\spec(a),\spec(b)\subseteq D$
+and~$\left\|a-b\right\|\leq \delta$ be given. Then:
+\begin{alignat*}{3}
+\|f(a)-f(b)\|
+\ &= \ \sup_{\varphi\in \spec(\scrB)}
+\left|\,\varphi(\,f(a)\,-\,f(b)\,)\,\right|\qquad
+&&\text{by~\sref{parsec-270.180}}
+\\
+\ &=\ \sup_{\varphi\in\spec(\scrB)}\left|
+\,\varphi(f(a))\,-\,\varphi(f(b))\,\right|\qquad
+&&
+\\
+\ &=\ \sup_{\varphi\in\spec(\scrB)}\left|
+\,f(\varphi(a))\,-\,f(\varphi(b))\,\right|\qquad
+&&\text{by~\sref{parsec-280.20}4}
+\\
+\ &\leq\ \varepsilon,
+\end{alignat*}
+because $\left|\varphi(a)-\varphi(b)\right|
+\leq \|\varphi\|\,\|a-b\|\leq \delta$,
+using here that~$\|\varphi\|\leq 1$
+(see~\sref{parsec-200.50}).
 \end{addendum}
 \begin{erratum}{parsec-341.50}
 In point~6, ``$u=\sqrt{a^{-1}(a^{-1})^*}$''
@@ -2815,6 +2854,7 @@ as $x\mapsto x^\alpha$
 gives a continuous map $[0,\infty)\to [0,\infty)$.
 \end{enumerate}
 \end{solution}
+
 \begin{solution}{parsec-290.70}
 \TODO{}
 \end{solution}
