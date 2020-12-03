@@ -1,4 +1,4 @@
-% vim: set indentexpr= :
+% vim: noai:
 \documentclass[b5page]{book}
 \input{common}
 \externaldocument{a}
@@ -157,6 +157,16 @@ because $\left|\varphi(a)-\varphi(b)\right|
 using here that~$\|\varphi\|\leq 1$
 (see~\sref{parsec-200.50}).
 \end{addendum}
+\begin{erratum}{parsec-290.70}
+``continuous bijection onto a compact Hausdorff space''
+should read
+``continuous bijection from a compact space
+to a Hausdorff space''.
+
+A continuous bijection into a compact Hausdorff space need not be a
+homeomorphism; take, for example, the identity map from~$[0,1]$
+with the discrete topology to~$[0,1]$ with the standard topology.
+\end{erratum}
 \begin{erratum}{parsec-341.50}
 In point~6, ``$u=\sqrt{a^{-1}(a^{-1})^*}$''
 should read ``$u=a\sqrt{a^{-1}(a^{-1})^*}$''.
@@ -2854,9 +2864,48 @@ as $x\mapsto x^\alpha$
 gives a continuous map $[0,\infty)\to [0,\infty)$.
 \end{enumerate}
 \end{solution}
-
 \begin{solution}{parsec-290.70}
-\TODO{}
+Let~$x\in X$ be given;
+  we must  prove that~$\delta_x\colon C(X)\to\C$ is a miu-map.
+Note that~$\delta_x$ is multiplicative,
+because for~$f,g\in C(X)$,
+we have $\delta_x(fg)=(fg)(x)=f(x)g(x)=\delta_x(f)\delta_x(g)$.
+Similarly, any operation on~$C(X)$ that is defined `coordinatewise'
+is preserved by~$\delta_x$. In particular,
+$\delta_x$ is unital, since $\delta_x(1)=1(x)=1$,
+and $\delta_x$ is involution preserving,
+since~$\delta_x(f^*)=f^*(x)=\smash{\overline{f(x)}}=\delta_x(f)^*$
+for all~$f\in C(X)$.
+
+The map~$x\mapsto \delta_x\colon X\to \spec(C(X))$
+is 
+\begin{itemize}
+\item
+continuous,
+because for each~$f\in C(X)$
+the map  $x\mapsto \delta_x(f)\colon X\to\C$ (being just~$f$) is continuous,
+using here that the topology on~$\spec(C(X))$ 
+is the one of pointwise convergence;
+\item
+surjective,
+because by~\sref{parsec-290.20}
+each~$\tau \in \spec(C(X))$
+is of the form~$\tau\equiv \delta_x$
+for some~$x\in X$;
+\item
+injective,
+because for~$x\neq y$ in~$X$
+a function~$f\in C(X)$ with $f(x)\neq f(y)$
+    can be found (using Urysohn's lemma,)
+and so~$\delta_x\neq \delta_y$,
+because for one $\delta_x(f)=f(x)\neq f(y)=\delta_y(f)$.
+\end{itemize}
+Whence~$x\mapsto \delta_x\colon X\to \spec(C(X))$
+is a continuous bijection,
+  from the compact space~$X$
+  to the Hausdorff space~$\spec(C(X))$,
+  and thus a homeomorphism
+  by e.g.~Theorem~17.14 of~\cite{willard}.
 \end{solution}
 \begin{solution}{parsec-290.80}
 \TODO{}
