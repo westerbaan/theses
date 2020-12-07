@@ -1,4 +1,4 @@
-% vim: noai:
+% vim:  indentexpr=
 \documentclass[b5page]{book}
 \input{common}
 \externaldocument{a}
@@ -2908,7 +2908,116 @@ is a continuous bijection,
   by e.g.~Theorem~17.14 of~\cite{willard}.
 \end{solution}
 \begin{solution}{parsec-290.80}
-\TODO{}
+\begin{enumerate}
+\item
+When~$f\colon X\to Y$ in~$\CH$ is injective,
+it is monic~$\Cat{Set}$ and thus a mono in~$\CH$ too.
+Conversely,
+when~$f$ is mono in~$\CH$,
+then it must be injective:
+given~$x,y\in X$
+with~$f(x)=f(y)$
+we have~$f\circ \hat{x}=g\circ \hat{y}$
+for the morphisms $\hat{x},\hat{y}\colon \{\ast\}\to X$
+in~$\CH$
+given by~$\hat{x}(\ast)=x$ and~$\hat{y}(\ast)=y$,
+so that~$\hat{x}=\hat{y}$
+by monicity of~$f$,
+entailing that~$x=y$.
+\item
+A surjective map is epi in~$\Cat{Set}$, and thus epi in~$\CH$ too.
+Conversely, 
+when~$f\colon X\to Y$ in~$\CH$ is not surjective,
+and there is thus a~$y\in Y\backslash f(X)$,
+we can find by complete regularity of~$Y$
+a continuous map~$g\colon Y\to \R$ 
+that is zero on
+the closed set~$f(X)$,
+and~$g(y)=1$.
+Then $g\circ f$ and~$(2g)\circ f$ are equal,
+being both zero,
+but~$2g\neq g$
+since~$2g(y)=2\neq 1=g(y)$,
+and so~$f$ is not epi.
+\item
+Thus the proposition
+that morphisms that are both epi and mono are isomorphisms
+holds
+in~$\CH$ (by the previous two point,)
+in~$\op{\CH}$ (because of symmetry,)
+and whence in~$\cCstar{miu}$ (as
+it is
+equivalent to $\op{\CH}$ by~\sref{parsec-290}.)
+\item
+\label{S29VIII3}
+Let~$\varrho\colon \scrA\to\scrB$
+be an injective miu-map between $C^*$-algebras;
+we will show that~$\varrho$ is an isometry,
+that is, 
+that~$\|\varrho(a)\|=\|a\|$ given~$a\in \scrA$.
+
+Suppose for now that~$a$ is self-adjoint.
+We claim that~$\varrho(C^*(a))\subseteq C^*(\varrho(a))$.
+To this end note
+that~$C^*(a)$
+is the norm closure
+of
+$$\C[a]\ \equiv\  \{\ f(a)\colon \ f\in\C[x]\ \},$$
+where~$\C[x]$ denotes the ring of polynomials over a variable~$x$.
+(Compare this with the expression for~$C^*(a)$
+for not-necessarily-self-adjoint~$a$ from 
+point~1 of our solution to~\sref{parsec-280.20}.)
+Of course, given~$f\in \C[x]$,
+we have~$\varrho(f(a))=f(\varrho(a))\in \C[\varrho(a)]\subseteq
+C^*(\varrho(a))$,
+and so~$\C[a]$ is mapped by~$\varrho$ into~$C^*(\varrho(a))$.
+But then into~$C^*(\varrho(a))$
+will be mapped too
+by~$\varrho$
+any~$b\in C^*(a)$ being the norm limit
+of a sequence $b_1,b_2,\dotsc\in \C[a]$,
+because $\varrho(b)$
+is the norm limit of
+the sequence 
+$\varrho(b_1),\,\varrho(b_2),\,\dotsc$ in $C^*(\varrho(a))$
+using here that $\varrho$ is bounded by \sref{parsec-200.50}.
+
+The restriction $\sigma\colon C^*(a)\to C^*(\varrho(a))$
+is an isomorphism by point~\ref{S29VIII3} because~$\sigma$
+is both mono and epi in~$\cCstar{miu}$.
+(Note that $C^*(a)$ and~$C^*(\varrho(a))$ are commutative,
+because~$a$ is self-adjoint.)
+That $\sigma$ is mono follows simply form the fact
+that~$\sigma$ like~$\varrho$ is injective.
+To see that~$\sigma$ is epi,
+note that if~$g_1,g_2\colon C^*(\varrho(a))\to\scrC$
+are miu-maps into some commutative $C^*$-algebra~$\scrC$
+with~$g_1\circ \sigma = g_2\circ \sigma$,
+then~$g_1$ and~$g_2$ coincide on~$\varrho(a)=\sigma(a)$,
+and thus
+on~$\C[\varrho(a)]$ too (since~$g_1$ and~$g_2$ preserve sums and products,)
+and finally on all of~$C^*(\varrho(a))$
+(since~$C^*(\varrho(a))$ is
+the norm closure of~$\C[\varrho(a)]$
+and~$g_1$ and~$g_2$ are norm continuous.)
+
+Since mi(u)-maps are positive (by~\sref{parsec-250.20}(2))
+$\sigma$ is an isomorphism in~$\cCstar{pu}$ too,
+and in particular $\sigma$ is bipositive,
+(meaning that $\sigma(b)\geq 0$ iff~$b\geq 0$ for all~$b\in C^*(a)$,)
+and so by~\sref{parsec-200.60}
+$\sigma$ is an isometry on the self-adjoint elements
+of~$C^*(a)$, yielding (among other things) that
+$\|\varrho(a)\|\equiv\|\sigma(a)\|= \|a\|$.
+
+For arbitrary~$a\in \scrA$,
+we have
+$\|\varrho(a)\|^2
+= \|\varrho(a)^* \varrho(a)\|
+= \|\varrho(a^*a)\|=\|a^*a\|=\|a\|^2$
+using the $C^*$-identity here twice,
+and so~$\varrho$ is an isometry.
+\end{enumerate}
 \end{solution}
 \begin{solution}{parsec-290.90}
 \TODO{}
