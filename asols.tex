@@ -3020,7 +3020,33 @@ and so~$\varrho$ is an isometry.
 \end{enumerate}
 \end{solution}
 \begin{solution}{parsec-290.90}
-\TODO{}
+Let~$b_1,b_2,\dotsc$ be a sequence in~$\varrho(\scrA)$
+that converges to~$b\in \scrB$. 
+To prove that~$\varrho(\scrA)$ is closed,
+we must show that~$b\in \varrho(\scrA)$.
+Since~$\varrho$ is injective,
+there are unique~$a_1,a_2,\dotsc$ in~$\scrA$ with
+$\varrho(a_n)=b_n$ for all~$n$.
+Since~$\varrho$ is by~\sref{parsec-290.80}
+ an isometry,
+we have $\|a_n-a_m\|=\|\varrho(a_n - a_m)\|
+= \|\varrho(a_n)-\varrho(a_m)\|= \|b_n-b_m\|$
+for all~$n$ and~$m$,
+which implies that~$a_1,a_2,\dotsc$
+(like $b_1,b_2,\dotsc$) is a Cauchy sequence,
+and therefore ($\scrA$ as $C^*$-algebra being complete)
+converges to some~$a\in\scrA$.
+Then~$\varrho(a)=\varrho(\lim_n a_n)=
+\lim_n \varrho(a_n)=\lim_n b_n=b$
+gives us~$b\in \varrho(\scrA)$.
+
+Whence~$\varrho(\scrA)$ is norm closed in~$\scrB$.
+Since $\varrho$ preserves (scalar) multiplication, addition and the unit,
+it is clear that~$\varrho(\scrA)$ is closed too
+under these operations,
+and is thus a $C^*$-subalgbra of~$\scrB$.
+Restricting~$\varrho$ gives a miu-map $\scrA\to\varrho(\scrA)$
+which is both injective and surjective, and therefore a miu-isomorphism.
 \end{solution}
 
 \end{document}
