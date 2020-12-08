@@ -167,6 +167,16 @@ A continuous bijection into a compact Hausdorff space need not be a
 homeomorphism; take, for example, the identity map from~$[0,1]$
 with the discrete topology to~$[0,1]$ with the standard topology.
 \end{erratum}
+\begin{erratum}{parsec-300.40}
+``$\|ab\|_\omega \leq \|\omega\|\,\|a\|\,\|b\|_\omega$''
+should read
+``$\|ab\|_\omega \leq\,\|a\|\,\|b\|_\omega$''.
+\end{erratum}
+\begin{erratum}{parsec-300.60}
+``$\|ab\|_\omega \leq \|\omega\|\,\|a\|\,\|b\|_\omega$''
+should read
+``$\|ab\|_\omega \leq\,\|a\|\,\|b\|_\omega$''.
+\end{erratum}
 \begin{erratum}{parsec-341.50}
 In point~6, ``$u=\sqrt{a^{-1}(a^{-1})^*}$''
 should read ``$u=a\sqrt{a^{-1}(a^{-1})^*}$''.
@@ -186,11 +196,21 @@ Don't show that~$M_nf$ needn't be bounded
 in point~3,
 but on the contrary, that it is bounded by~$n^2\|f\|$.
 \end{erratum}
+\begin{erratum}{parsec-720.30}
+``$\|\omega\|$''
+should be removed
+from
+``$\left|\omega(a^*bc)\right|\,\leq\,
+\|\omega\|\,\|a\|_\omega\,\|b\|\,\|c\|_\omega$''
+and 
+``$\|b\ast \omega-b'\ast \omega\|
+\leq \|\omega\|\,\|b-b'\|_\omega\,(\|b\|_\omega+\|b'\|_\omega)$''
+in point~1.
+\end{erratum}
 \begin{erratum}{parsec-750.30}
 ``we have $0\leq a_{nm}\leq \frac{1}{2}$''
 should read ``we have $0\leq a_{nm}\leq 1$''.
 \end{erratum}
-
 \begin{solution}{parsec-40.30}%
 Let~$\scrX$, $\scrY$ and~$\scrZ$ be normed (complex) vector spaces.
 \begin{enumerate}
@@ -3047,6 +3067,48 @@ under these operations,
 and is thus a $C^*$-subalgbra of~$\scrB$.
 Restricting~$\varrho$ gives a miu-map $\scrA\to\varrho(\scrA)$
 which is both injective and surjective, and therefore a miu-isomorphism.
+\end{solution}
+\begin{solution}{parsec-300.40}
+\begin{enumerate}
+\item
+$\left|\omega(a^*b)\right|^2
+\,\equiv\, \left|[a,b]_\omega\right|^2
+\,\leq\, [a,a]_\omega^2\,[b,b]_\omega^2
+\,\equiv\, \omega(a^*a)\,\omega(b^*b)$.
+
+\item
+\begin{enumerate}
+\item
+We must show that~$\|ab\|_\omega\leq \|a\|\, \|b\|_\omega$
+and not~$\|ab\|_\omega\leq \|\omega\|\,\|a\|\,\|b\|_\omega$
+(see erratum).
+In fact, the inequality
+$\|ab\|_\omega\leq \|\omega\|\,\|a\|\,\|b\|_\omega$
+is false\footnote{But
+$\|ab\|_\omega\leq \smash{\|\omega\|^{\frac{1}{2}}}\,\|a\|\,\|b\|$
+does hold.} unless $\|\omega\|\geq 1$;
+indeed taking~$a=b=1$ the inequality
+gives $\smash{\left|\omega(1)\right|^\frac{1}{2}
+\leq \|\omega\|\,  \left|\omega(1)\right|^\frac{1}{2}}$,
+and so~$1\leq \|\omega\|$.
+
+Since~$a^*a\leq \|a^*a\|= \|a\|^2$ (by~\sref{parsec-90.100}(2)
+and the $C^*$-identity),
+we have $$
+\|ab\|_\omega^2
+\ \equiv\ 
+\omega(b^*a^*ab)\ \leq\  \|a\|^2\, \omega(b^*b)
+\ \equiv \ \|a\|^2\,\|b\|_\omega^2
+$$
+($b^*(\,\cdot\,)b$ being order preserving by~\sref{parsec-250.20}(1))
+and so~$\|ab\|_\omega \leq \|a\|\|b\|_\omega$.
+\item
+\TODO{}
+\end{enumerate}
+\end{enumerate}
+\end{solution}
+\begin{solution}{parsec-300.50}
+\TODO{}
 \end{solution}
 
 \end{document}
