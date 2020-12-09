@@ -170,7 +170,11 @@ with the discrete topology to~$[0,1]$ with the standard topology.
 \begin{erratum}{parsec-300.40}
 ``$\|ab\|_\omega \leq \|\omega\|\,\|a\|\,\|b\|_\omega$''
 should read
-``$\|ab\|_\omega \leq\,\|a\|\,\|b\|_\omega$''.
+``$\|ab\|_\omega \leq\,\|a\|\,\|b\|_\omega$'',
+and
+``$\|ab\|_\omega \leq \|\omega\|\,\|a\|_\omega\,\|b\|$''
+should read
+``$\|ab\|_\omega \leq\,\|a\|_\omega\,\|b\|$''.
 \end{erratum}
 \begin{erratum}{parsec-300.60}
 ``$\|ab\|_\omega \leq \|\omega\|\,\|a\|\,\|b\|_\omega$''
@@ -3103,7 +3107,46 @@ $$
 ($b^*(\,\cdot\,)b$ being order preserving by~\sref{parsec-250.20}(1))
 and so~$\|ab\|_\omega \leq \|a\|\|b\|_\omega$.
 \item
-\TODO{}
+We must show that $\|ab\|_\omega\leq \|a\|_\omega\,\|b\|$
+(see erratum)
+does not always hold.
+Indeed, following the hint,
+we see that for
+$a=\smash{\bigl(\begin{smallmatrix}
+0&0\\0&1
+\end{smallmatrix}\bigr)}$
+and
+$b=\frac{1}{2}\smash{\bigl(\begin{smallmatrix}
+1&1\\1&1
+\end{smallmatrix}\bigr)}$
+from~$M_2$,
+and~$\omega\colon M_2\to \C$
+given by~$\omega(\,\smash{\bigl(\begin{smallmatrix}
+1&1\\1&1
+\end{smallmatrix}\bigr)}\,)=c$,
+we have~$a^*a = a$, so~$\|a\|_\omega$,
+but
+$(ab)^*(ab) = \frac{1}{2} b $,
+and thus~$$\textstyle{}\|ab\|_\omega\,=\,\frac{1}{2} \,\nleq\, 0
+\,=\, \|a\|_\omega\,\|b\|.$$
+
+\item
+Similarly  $\|ab\|_\omega = \frac{1}{2} \nleq
+0 = \|a\|_\omega\,\|b\|_\omega$
+(where $a$, $b$ and~$\omega$ are the same as before.)
+
+\item
+Note that~$b^*b=b$ so $\|b^*b\|_\omega= \|b\|_\omega$,
+which means that the $C^*$-type-identity
+$\|b^*b\|_\omega = \|b\|_\omega^2$
+holds only when~$\|b\|_\omega^2=\|b\|_\omega$,
+but~$\|b\|_\omega=\frac{1}{\sqrt{2}}$.
+\item
+Finally,
+since $ab(ab)^* = \frac{1}{2}a$,
+we see that
+$\textstyle{}
+\|(ab)^*\|_\omega =0\neq \frac{1}{2}= \|ab\|_\omega.$
 \end{enumerate}
 \end{enumerate}
 \end{solution}
