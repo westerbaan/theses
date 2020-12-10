@@ -3151,7 +3151,160 @@ $\textstyle{}
 \end{enumerate}
 \end{solution}
 \begin{solution}{parsec-300.50}
-\TODO{}
+\begin{enumerate}
+\item
+\emph{(kernel of~$\eta$)}
+Given~$a,b\in V$,
+ $\eta(a)=\eta(b)$
+iff $\lim_n \|a-b\|=0$
+iff $\|a-b\|=0$.
+\item
+\emph{(pseudometric on the Cauchy sequences)}
+Given Cauchy sequences~$a_1,a_2,\dotsc$ and~$b_1,b_2,\dotsc$
+abbreviated to~$a$ and~$b$, respectively,
+the limit 
+\begin{equation}
+\label{S30V-defd}
+\textstyle d(a,b)\,:=\,\lim_n \|a_n-b_n\|
+\end{equation}
+exists,
+because the sequence  $\|a_1-b_1\|,\ \|a_2-b_2\|,\ \dotsc$
+is Cauchy by
+\begin{alignat*}{3}
+\left|\,\|a_n-b_n\|\,-\,\|a_m-b_m\|\,\right|
+\ &\leq\ 
+\|\,(a_n-a_m)\,-\,(b_n-b_m)\,\|\\
+\ &\leq\ \|a_n-a_m\|\,+\,\|b_n-b_m\|,
+\end{alignat*}
+where in the first step
+we used the inequality  $\left|\|c\|-\|d\|\right|\leq \|c-d\|$
+holding for all seminorms.
+
+We claim that~\eqref{S30V-defd} defines
+a pseudometric on the set of all Cauchy sequences on~$V$.
+Indeed, given Cauchy sequences $a$, $b$, and~$c$ on~$V$,
+we have:
+\begin{enumerate}
+\item
+$d(a,a)=0$, since~$\|a_n-a_n\|=0$ for all~$n$;
+\item
+$d(a,b)=d(b,a)$, since~$\|a_n-b_n\|=\|b_n-a_n\|$
+for all~$n$;
+\item
+$d(a,c)\leq d(a,b)+d(b,c)$---the triangle inequality---since
+$\|a_n-c_n\|\leq \|a_n-b_n\|+\|b_n-c_n\|$
+for all~$n$.
+\end{enumerate}
+\item\emph{(metric on~$\scrH$)}
+Note that given Cauchy sequences $a$, $a'$, $b$ and~$b'$ on~$V$
+with $d(a,a')=0$ and~$d(b,b')=0$
+we have $d(a,b)=d(a',b')$,
+because by the triangle inequality
+we have
+$d(a,b) \leq d(a,a')+d(a',b')+d(b',b)
+= d(a',b')$, and similarly $d(a',b')\leq d(a,b)$,
+yielding~$d(a,b)=d(a',b')$.
+
+Whence we may define a distance function~$d$ 
+on~$\scrH$ by Equation~\eqref{S30V-defd} as well,
+since two Cauchy sequences~$a$ and~$a'$
+on~$V$ are considered equivalent in~$\scrH$
+exactly when~$d(a,a')\equiv\lim_n\|a_n -a'_n\|=0$.
+
+From what we already established it is clear that~$d$ gives a metric
+on~$\scrH$.
+
+\item \emph{(completeness of~$\scrH$)}
+In order to show that~$\scrH$
+is complete
+we must prove that any
+Cauchy sequence
+$a_1,a_2,\dotsc$ over~$\scrH$
+(so each~$a_n$ is a Cauchy sequence $a_{n1},a_{n2},\dotsc$
+over~$V$) converges to some element~$b$ of~$\scrH$.
+
+We may assume without loss of generality
+that~$d(a_N,a_n)< 2^{-N}$
+for all~$n\geq N$
+by replacing~$a_1,a_2,\dotsc$
+by an appropriate subsequence,
+because if this subsequence converges to some~$b\in \scrH$,
+then so will the original sequence.
+
+We may also assume without loss of generality
+that~$\|a_{nm}-a_{nM}\| \leq  2^{-M}$
+for all~$m\geq M$ and~$n$
+by replacing~$a_{n1},a_{n2},\dotsc$
+by an appropriate subsequence,
+because a subsequence is equivalent
+to the original sequence.
+
+We will momentarily show that~$a_{11},a_{22},\dotsc$
+is a Cauchy sequence over~$V$
+to which~$a_1,a_2,\dotsc$ converges,
+but before we (and in order to) do this
+note that given natural numbers~$n,m,s,t\geq N$,
+\begin{alignat*}{8}
+\|a_{ns}-a_{mt}\|\ &\leq\ 
+\|a_{ns}-a_{nk}\|
+\,&&+\,
+\|a_{nk}-a_{mk}\|
+\,&&+\,
+\|a_{mk}-a_{mt}\|&& \\
+\ &\leq\ 
+ 2^{-N}
+&&+\, 2^{-N}
+&&+\, 2^{-N}
+\ &&=\ 3\cdot 2^{-N},
+\end{alignat*}
+for sufficiently large~$k$,
+because 
+$\textstyle{} \lim_k \|a_{nk}-a_{mk}\|
+=d(a_n,a_m)
+< 2^{-N}$.
+
+It follows that~$a_{11},a_{22},\dotsc$
+is Cauchy,
+because given~$\varepsilon>0$
+and~$N$ with $3\cdot 2^{-N}<\varepsilon$,
+we have 
+$\|a_{nn}-a_{mm}\|\leq 3\cdot 2^{-N}\leq \varepsilon$
+for all~$n,m\geq N$.
+
+Also~$\|a_{nn}-a_{nm}\|\leq \varepsilon$
+for $n,m\geq N$,
+which implies that $d(\,(a_{nn})_n,\, a_m\,)\leq \varepsilon$
+for all~$m\geq N$,
+and so~$a_1,a_2,\dotsc$ converges to~$(a_{nn})_n$.
+
+Whence~$\scrH$ is complete.
+
+\item
+\label{S30Vdenseness}
+\emph{(denseness of~$\eta(V)$)}
+Given a Cauchy sequence~$a_1,a_2,\dotsc$ in~$V$
+(that is, an element of~$\scrH$),
+we claim that~$\eta(a_1)\,\eta(a_2),\,\dotsc$
+converges to~$(a_n)_n$ in~$\scrH$.
+Indeed, $d(\eta(a_m),(a_n)_n) = \lim_n\|a_m-a_n\|$
+converges to~$0$ as~$m\to \infty$,
+since~$a_1,a_2,\dotsc$ is Cauchy.
+
+\item
+\emph{(extension property)}
+We must show that that any
+uniformly continuous map~$f\colon V\to Y$
+into a complete metric space~$Y$
+extends uniquely along~$\eta$ 
+to a uniformly continuous map~$g\colon \scrH\to Y$,
+but we'll prove the more general 
+fact that any uniformly continuous map~$f\colon D\to Y$
+to a complete metric space~$Y$
+defined on a via an isometry $\iota\colon D\to X$ dense subset~$D$
+of a complete metric space~$X$
+extends uniquely to a uniformly continuous map~$g\colon X\to Y$.
+
+\end{enumerate}
 \end{solution}
 
 \end{document}
