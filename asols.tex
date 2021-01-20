@@ -3195,7 +3195,7 @@ $d(a,c)\leq d(a,b)+d(b,c)$---the triangle inequality---since
 $\|a_n-c_n\|\leq \|a_n-b_n\|+\|b_n-c_n\|$
 for all~$n$.
 \end{enumerate}
-\item\emph{(metric on~$\scrH$)}
+\item\emph{(metric on~$\scrH$)}\label{S40Vmetric}
 Note that given Cauchy sequences $a$, $a'$, $b$ and~$b'$ on~$V$
 with $d(a,a')=0$ and~$d(b,b')=0$
 we have $d(a,b)=d(a',b')$,
@@ -3291,6 +3291,13 @@ converges to~$0$ as~$m\to \infty$,
 since~$a_1,a_2,\dotsc$ is Cauchy.
 
 \item
+\label{S30Visometry}
+\emph{($\eta$ is an isometry,)}
+because 
+$d(\eta(a),\eta(b))
+= \lim_n \|a-b\| = \|a-b\|$.
+\item
+\label{S30Vextension}
 \emph{(extension property)}
 We must show that that any
 uniformly continuous map~$f\colon V\to Y$
@@ -3304,6 +3311,159 @@ defined on a via an isometry $\iota\colon D\to X$ dense subset~$D$
 of a complete metric space~$X$
 extends uniquely to a uniformly continuous map~$g\colon X\to Y$.
 
+Uniqueness of~$g$ is clear,
+since for any~$x\in X$
+there is a Cauchy sequence $\eta(d_1),\,\eta(d_2),\,\dotsc$
+in~$\eta(D)$ 
+with $x=\lim_n \eta(d_n)$, 
+and so
+\begin{equation}
+\label{S30Vg}
+\textstyle g(x)\ =\ \lim_n g(\eta(d_n))\ =\ \lim_n f(d_n)
+\end{equation}
+for any potential~$g$.
+
+Concerning existence,
+we wish to take equation~\eqref{S30Vg} as definition for~$g$.
+To this end, note that the limit $\lim_n f(d_n)$ exists,
+because $d_1,d_2,\dotsc$ being a Cauchy sequence
+(just like its isometric image $\eta(d_1),\,\eta(d_2),\dotsc$)
+is mapped by the uniformly continuous map~$f\colon D\to Y$
+to a Cauchy sequence $f(d_1),\,f(d_2),\,\dotsc$.
+
+We must also show that there is no ambiguity in our definition
+of~$g$ in that if~$d_1',d_2',\dotsc$
+is (possibly another) Cauchy sequence in~$D$
+with~$x=\lim_n \eta(d_n')$,
+then~$\lim_n f(d_n)=\lim_n f(d_n')$.
+
+To this end we will prove the more general fact
+that given~$\varepsilon>0$ and any $\delta>0$
+with $\forall a,b\in D \,[\ d(a,b)\leq \delta
+\implies d(f(a),f(b))\leq \varepsilon\ ]$
+--- such~$\delta$ exist since~$f$ is uniformly continuous ---
+we have
+\begin{equation*}
+\begin{alignedat}{3}
+\textstyle
+d(\,\lim_n\eta(a_n),&\,\textstyle \lim_n\eta(b_n)\,)\ <\  \delta\\
+&\textstyle\implies\quad
+d(\,\lim_n f(a_n),\,\lim_n f(b_n)\,)\ \leq \ \varepsilon,
+\end{alignedat}
+\end{equation*}
+for any Cauchy sequences
+$a_1,a_2,\dotsc$ and $b_1,b_2,\dotsc$
+in~$D$,
+for then we will immediately get
+that~$g\colon X\to Y$
+defined by~\eqref{S30Vg}
+is uniformly continuous.
+
+To begin, since
+$d(\, \lim_n \eta(a_n),\,\lim_n \eta(b_n)\,)
+\,<\,\delta$
+ we have $d(a_k,b_\ell)\leq \delta$
+for all sufficiently large~$k$ and~$\ell$,
+and so~$d(f(a_k),f(b_\ell))\leq \varepsilon$
+for those~$k$s and~$\ell$s,
+and then  also:
+\begin{equation*}
+\begin{alignedat}{3}
+d&\textstyle{}(\,\lim_n f(a_n),\,\lim_n f(b_n)\,)\\
+\ &\textstyle\leq\ 
+d(\,\lim_n f(a_n),\,f(a_k)\,)
+\ +\ 
+d(f(a_k),f(b_\ell))
+\ +\ 
+d(\,f(b_\ell),\,\lim_n f(b_n)\,)\\
+\ &\textstyle\leq\ 
+d(\,\lim_n f(a_n),\,f(a_k)\,)
+\ +\ 
+\varepsilon
+\ +\ 
+d(\,f(b_\ell),\,\lim_n f(b_n)\,)\\
+\ &\textstyle\qquad\longrightarrow\ 0\ +\ \varepsilon \ +\ 0\quad\text{as $k,l\to\infty$.}
+\end{alignedat}
+\end{equation*}
+Whence there is a unique uniformly continuous
+map $g\colon X\to Y$
+defined by~\eqref{S30Vg}.
+Finally,
+it is clear that $g(\eta(a))=f(a)$
+for all~$a\in D$ ---
+indeed, $\eta(a),\,\eta(a),\,\dotsc$
+converges to~$\eta(a)$ in~$X$,
+and so~$g(\eta(a))=\lim_n f(a)\equiv f(a)$
+by definition of~$g$.
+
+\item
+\emph{($\mathscr{H}$ is a Hilbert space)}
+By the general fact proven in point~\ref{S30Vextension} 
+there are unique uniformly continuous maps
+\begin{equation}
+\label{S30VHops}
+\begin{alignedat}{3}
++ &\colon &\scrH&\times \scrH\to \scrH\\
+\,\cdot\, &\colon &\C&\times\scrH\to \scrH\\
+\left<\,\cdot\,,\,\cdot\,\right>&\colon
+&\scrH&\times\scrH\to \C
+\end{alignedat}
+\quad\text{with}\quad
+\begin{alignedat}{3}
+\eta(a)\,+\,\eta(b)\ &=\ \eta(a+b)\\
+\lambda\,\cdot\,\eta(a)\ &=\ \eta(\lambda a) \\
+\left<\,\eta(a),\,\eta(b)\,\right>\ &=\ \left<a,b\right>
+\end{alignedat}
+\end{equation}
+for all~$a,b\in V$ and~$\lambda\in \C$,
+since
+$\eta\circ +\colon V\times V\to \scrH$,
+$\eta\circ \cdot \colon \C\times V\to \scrH$,
+and $\left<\,\cdot\,,\,\cdot\,\right>\colon V\times V\to \C$
+are uniformly continuous, 
+$\eta\times \eta\colon V\times V \to \scrH\times\scrH$, and
+$\C\times \eta\colon \C\times V\to \C\times \scrH$
+have dense image,
+and $\C$ and~$\scrH$ are complete.
+
+Any equation  $s(x_1,\dotsc,x_n)=t(x_1,\dotsc,x_n)$
+involving these (and other continuous) operations
+that holds for all $x_1,\dotsc,x_n\in V$
+will hold for all $x_1,\dotsc,x_n\in \scrH$
+as well,
+since the continuous functions $s$ and~$t$
+defined on $\scrH\times\dotsb \times\scrH$
+are equal when equal
+on the dense subset $V\times\dotsb\times V$.
+Whence~$\scrH$ is a vector space.
+Similarly,
+any $\leq$-inequality between continuous operations
+on~$V$ holds for~$\scrH$ as well,
+which implies that~$\left<\,\cdot\,,\,\cdot\,\right>$
+gives an inner product on~$\scrH$.
+Since the equation $\left<x-y,x-y\right>=d(x,y)^2$
+which holds on~$V$ holds on~$\scrH$,
+we see that the metric induced by the inner product on~$\scrH$
+coincides with the metric defined on~$\scrH$ in point~\ref{S40Vmetric}.
+As a result, the inner product on~$\scrH$
+is definite and complete,
+and so~$\scrH$ is a Hilbert space.
+\item
+\emph{(extension of bounded linear maps)}
+Let~$f\colon V\to\scrK$ be a bounded linear map
+to a Hilbert space~$\scrK$.
+We must show that there is a unique bounded linear map
+$g\colon \scrH\to \scrK$ with $g\circ \eta = f$.
+By~\ref{S30Vextension}
+we know that there is a unique uniformly continuous map~$g$
+with $g\circ \eta=f$,
+so the only thing left to prove is that~$g$
+is linear and bounded.
+Since the equations and inequalities involved in~$g$ being linear
+and bounded hold on~$\eta(V)$
+(since~$f$ is linear and bounded,)
+they hold on~$\scrH$ as well,
+and thus~$g$ is linear and bounded.
 \end{enumerate}
 \end{solution}
 
