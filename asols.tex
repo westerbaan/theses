@@ -3477,5 +3477,49 @@ they hold on~$\scrH$ as well,
 and thus~$g$ is linear and bounded.
 \end{enumerate}
 \end{solution}
+\begin{solution}{parsec-320.30}%
+Let~$T\colon X\to Y$ be an adjointable operator
+between pre-Hilbert $\scrA$-modules~$X$ and~$Y$.
+\begin{enumerate}
+\item
+$T^{**}=T$,
+because 
+$\left<T^*y,x\right>
+= \left<x,T^*y\right>^* 
+= \left<Tx,y\right>^*
+= \left<y,Tx\right>$
+for all~$x\in X$ and~$y\in Y$.
+\item
+Let~$S\colon X\to Y$ be an adjointable operator too.
+\begin{enumerate}
+\item
+$(T+S)^*=T^*+S^*$,
+because $\left<(T+S)x,y\right>
+= \left<Tx,y\right>+\left<Sx,y\right>
+= \left<x,T^*y\right>+\left<x,S^*y\right>
+= \left<x,(T^*+S^*)y\right>$
+for all~$x\in X$ and $y\in Y$.
+\item
+$(\lambda T)^* = \smash{\overline{\lambda}}T^*$
+for all~$\lambda\in \C$,
+because $\left<\lambda Tx,y\right>
+= \smash{\overline{\lambda}}\left<Tx,y\right>
+= \smash{\overline{\lambda}}\left<x,T^*y\right>
+= \left<x,\smash{\overline{\lambda}}T^*y\right>$
+for all~$x\in X$ and $y\in Y$.
+\end{enumerate}
+
+\item
+Let~$S$ now be an adjointable operator
+$S\colon Y\to Z$
+to a pre-Hilbert $\scrA$-module~$Z$.
+Then~$(ST)^*=T^*S^*$,
+because
+$\left<STx,z\right>
+= \left<Tx,S^*z\right>
+= \left<x,T^*S^*z\right>$
+for all~$x\in X$ and~$z\in Z$.
+\end{enumerate}
+\end{solution}
 
 \end{document}
