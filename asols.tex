@@ -3521,5 +3521,28 @@ $\left<STx,z\right>
 for all~$x\in X$ and~$z\in Z$.
 \end{enumerate}
 \end{solution}
+\begin{solution}{parsec-320.40}%
+In general,
+any closed submodule of a Hilbert $\scrA$-module
+is a Hilbert $\scrA$-module.
+The subset~$J$ of~$C[0,1]$,
+being the kernel of the map miu-map $f\mapsto f(0)\colon C[0,1]\to\C$,
+is a closed two-sided $C^*$-ideal,
+and in particilar a closed submodule of
+the Hilbert $C[0,1]$-module $C[0,1]$ itself.
+
+It remains to be shown that $b\in J$ 
+with $\left<b,a\right>=a$ for all~$a\in J$ are absent.
+Suppose such~$b$ is given towards a contradiction,
+and let~$a$ be an element of~$J$
+with $a(x)\neq 0$ for all~$x\neq 0$
+(taking, for example, $a(x)=x$ for all~$x\in [0,1]$.)
+Since $a(x)= \smash{\overline{b(x)}}\,a(x)$
+for all~$x\in [0,1]$,
+we not only get $b(x)=1$
+for all~$x\neq 0$,
+but also~$b(0)=1$ by continuity of~$b$,
+which contradicts that~$b\in J$.
+\end{solution}
 
 \end{document}
