@@ -3544,5 +3544,81 @@ for all~$x\neq 0$,
 but also~$b(0)=1$ by continuity of~$b$,
 which contradicts that~$b\in J$.
 \end{solution}
+\begin{solution}{parsec-320.90}%
+We prove the statements in a different order.
+Let~$x,y\in X$.
+\begin{enumerate}
+\setcounter{enumi}{1}
+\item
+\label{S32IX-2}
+$\left\|\left<x,y\right>\right\|\leq \|x\|\,\|y\|$
+follows from  $\left<x,y\right>\left<y,x\right>
+\leq \|y\|^2\left<x,x\right>$
+(Cauchy--Schwarz)
+since
+$\|\left<x,y\right>\|^2
+=\left\|\,\left<x,y\right>\,\left<y,x\right>\,\right\|
+\leq \left\|y\right\|^2\,\left\|\left<x,x\right>\right\|
+\equiv \|y\|^2\|x\|^2$
+(using~\sref{positive-basic-2}.)
+
+$\left\|bx\right\|=\|b\|\|x\|$ given~$b\in B$:
+because $\left<x,x\right>\leq \left\|\left<x,x\right>\right\|
+\equiv \|x\|^2$,
+and
+thus $b^*\left<x,x\right>b \leq b^*b\,\|x\|^2$
+(see~\sref{astara-pos-basic-consequences}),
+we have
+$\|bx\|^2
+\equiv \left\|\left<bx,bx\right>\right\|
+= \left\|b^*\left<x,x\right>b\right\|
+\leq \left\|b^*b\right\|\,\|x\|^2
+\equiv \|b\|^2\|x\|^2$.
+
+\setcounter{enumi}{0}
+\item
+The map $\|\,\cdot\,\|\colon X\to [0,\infty)$
+is a norm, because:
+\begin{enumerate}
+\item
+$\|x\|=0\implies x=0$,
+since~$0=\|x\|^2\equiv\|\left<x,x\right>\|$,
+so~$\left<x,x\right>=0$,
+and thus~$x=0$;
+
+\item
+$\left\|\lambda x\right\|=\left|\lambda\right|\|x\|$
+for all~$\lambda\in \C$,
+being a special case of the second
+result in point~\ref{S32IX-2}; and
+
+\item
+$\left\|x+y\right\|\leq\|x\|+\|y\|$, 
+because
+\begin{alignat*}{3}
+\left\|x+y\right\|^2 \ &=\ \left\|\left<x+y,x+y\right>\right\|\\
+&\equiv\ \left\|\,
+\left<x,x\right>\,+\,
+\left<x,y\right>\,+\,
+\left<y,x\right>\,+\,
+\left<y,y\right>\,\right\| \\
+&\leq\ 
+\left\|\left<x,x\right>\right\| \,+\, 
+\left\|\left<x,y\right>\right\| \,+\, 
+\left\|\left<y,x\right>\right\| \,+\, 
+\left\|\left<y,y\right>\right\|\\
+&=\ 
+\|x\|^2 \,+\, 2\left\|\left<x,y\right>\right\| \,+\, \|y\|^2\\
+&\leq\ 
+\|x\|^2 \,+\, 2\|x\|\|y\| \,+\, \|y\|^2
+&&\text{by point~\ref{S32IX-2}}\\
+&\leq\ 
+(\|x\|+\|y\|)^2.
+\end{alignat*}
+\end{enumerate}
+\end{enumerate}
+\end{solution}
+\begin{solution}{parsec-320.120}%
+\end{solution}
 
 \end{document}
