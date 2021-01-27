@@ -192,6 +192,16 @@ should read
 ``$\varrho_\Omega(a)x = \bigoplus_{\omega\in\Omega}
 \varrho_\omega(a)x(\omega)$''.
 \end{erratum}
+\begin{erratum}{parsec-320.140}
+``vector state'' and ``$(X)_1$''
+should read ``subunital vector functional''
+and ``$(X)_{\leq 1}$'', respectively,
+where $(X)_{\leq 1} := 
+\{x\in X\colon \|x\|\leq 1\}$.
+Indeed, there might
+not be any vector states on $\scrB^a(X)$.
+Also, ignore the hint.
+\end{erratum}
 \begin{erratum}{parsec-341.50}
 In point~6, ``$u=\sqrt{a^{-1}(a^{-1})^*}$''
 should read ``$u=a\sqrt{a^{-1}(a^{-1})^*}$''.
@@ -3619,6 +3629,104 @@ because
 \end{enumerate}
 \end{solution}
 \begin{solution}{parsec-320.120}%
+$\|T^*T\|\leq \|T^*\|\|T\|=\|T\|^2$,
+since $\|T^*\|=\|T\|$ by~\sref{parsec-320.100},
+and 
+$\|T\|^2 \leq \|T^*T \|$,
+because $\|Tx\|^2
+=\left\|\left<Tx,Tx\right>\right\|
+= \left\|\left<x,T^*Tx\right>\right\|
+\leq \|x\|^2 \|T^*T\|$
+by~\sref{parsec-320.50} or~\sref{parsec-320.100}.
 \end{solution}
+\begin{solution}{parsec-320.140}%
+(There is an erratum to the printed version of this exercise.)
+\begin{enumerate}
+\setcounter{enumi}{-1}
+\item
+Before we get to the claims
+made in the exercise,
+we'll show that the \emph{vector substates} of~$X$,
+maps $\left<x,(\,\cdot\,)x\right>
+\colon \scrB^a(X)\to \scrA$ with~$x\in (X)_{\leq 1}
+\equiv
+\{x\in X\colon \|x\|\leq 1\}$
+are (just) separating,
+that is,
+given~$T\in \scrB^a(X)$ 
+we will show that $T=0$ iff $\left<x,Tx\right>=0$
+for all~$x\in (X)_{\leq 1}$.
+
+Certainly, if~$T=0$, then~$\left<x,Tx\right>=0$ for all~$x\in (X)_{\leq 1}$.
+
+For the other direction,
+assume that~$\left<x,Tx\right>=0$ for all~$x\in (X)_{\leq 1}$
+(and so by scaling for all $x\in X$ too.)
+Then by polarization (c.f.~\sref{parsec-40.90})
+we get
+$\left<x,Ty\right>
+= \frac{1}{4}\sum_{n=0}^3 i^n \left<i^nx+y,T(i^nx+y)\right>=0$
+for all~$x,y\in X$.
+In particular, 
+$\left<Tx,Tx\right>=0$, so~$Tx=0$ for all~$x\in X$.
+Thus~$T=0$.
+
+\item
+Let~$T\in\scrB^a(X)$ be given.
+We must show that $T$ is self-adjoint
+iff $\left<x,Tx\right>$ is self-adoint for all
+$x\in (X)_{\leq 1}$.
+
+Certainly, when~$T$ is self-adjoint,
+we have $\left<x,Tx\right>^*
+= \left<Tx,x\right>=\left<x,Tx\right>$.
+
+Conversely, if~$\left<x,Tx\right>$ is self-adjoint for all
+$x\in (X)_{\leq 1}$,
+then $\left<x,Tx\right>=\left<Tx,x\right>
+=\left<x,T^*x\right>$,
+and so~$\left<x,(T-T^*)x\right>=0$
+for all~$x\in (X)_{\leq 1}$,
+which implies that~$T=T^*$,
+because the vector substates are separating.
+
+\item
+We must show that the vector substates are order
+separating.
+
+Let~$T\in \scrB^a(X)$ be given.
+It's clear that $T\geq 0$ 
+implies that
+$\left<x,Tx\right>\equiv \left<\smash{T^{\frac{1}{2}}x,
+T^{\frac{1}{2}}x}\right> \geq 0$
+for all~$x\in X$, and thus all $x\in (X)_{\leq 1}$ too.
+
+For the converse,
+suppose that~$\left<x,Tx\right>\geq 0$
+for all~$x\in (X)_{\leq 1}$;
+we must show that~$T\geq 0$.
+Certainly, $T$ is self-adjoint,
+because the $\left<x,Tx\right>\geq 0$ are self-adjoint.
+Writing $T=T_+-T_-$
+for positive $T_+$ and~$T_-$
+with $T_+T_-=0$
+(see~\sref{parsec-240.20}),
+we need only show that~$T_-=0$.
+Note that
+ $TT_- = -T_-^2$,
+and so
+$0\leq\left<T_-x,T(T_-x)\right>
+=-\left<x,T_-^3x\right>\leq 0$
+for all~$x\in X$
+using here that~$-T_-^3\leq 0$.
+Whence $\left<x,T_-^3 x\right>=0$
+for all~$x\in (X)_{\leq 1}$, 
+so~$T_-^3=0$ (since the vector substates are separating,)
+and thus~$T_-=0$.
+\item
+\TODO{}
+\end{enumerate}
+\end{solution}
+
 
 \end{document}
