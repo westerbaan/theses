@@ -50,6 +50,14 @@ and~``$\Imag{b}$'', respectively.
 It should be assumed that $a$ and~$b$ are
 positive in point~3.
 \end{erratum}
+\begin{addendum}{parsec-240.20}
+Another property worth proving is:
+\begin{enumerate}
+\setcounter{enumi}{3}
+\item
+$\|a\|=\|a_+\|\vee \|a_-\|$.
+\end{enumerate}
+\end{addendum}
 \begin{erratum}{parsec-270.120}
 It's erroneously assumed that~$\left|a\right|\in J$.
 
@@ -2161,6 +2169,25 @@ we see that~$a_-a_+=0$ too.
 
 \item
 The hint gives the solution away.
+
+\item
+(From the addendum.)
+We must show that~$\|a\|=\|a_+\|\vee \|a_-\|$.
+
+Since $-\|a_+\|\vee \|a_-\| 
+\leq -\|a_-\| \leq -a_- \leq a \leq
+a_+ \leq \|a_+\|\leq \|a_+\|\vee \|a_-\|$,
+we have $\|a\|\leq \|a_+\|\vee \|a_-\|$.
+
+For the other direction,
+note that $a_+^2 + a_-^2=(a_+-a_-)^2\equiv a^2$,
+because $a_+a_-=0$.
+In particular, $a_+^2\leq a^2$,
+so $\|a_+\|^2 \equiv \|a_+^2\|\leq
+\|a^2\|\equiv \|a\|^2$,
+and~$\|a_+\|\leq \|a\|$.
+Since similarly $\|a_-\|\leq \|a\|$,
+we get $\|a_+\|\vee \|a_-\|\leq \|a\|$.
 \end{enumerate}
 \end{solution}
 \begin{solution}{parsec-250.10}
@@ -3683,9 +3710,11 @@ we have $\left<x,Tx\right>^*
 
 Conversely, if~$\left<x,Tx\right>$ is self-adjoint for all
 $x\in (X)_{\leq 1}$,
-then $\left<x,Tx\right>=\left<Tx,x\right>
+then $\left<x,Tx\right>
+={\left<x,Tx\right>}^*
+=\left<Tx,x\right>
 =\left<x,T^*x\right>$,
-and so~$\left<x,(T-T^*)x\right>=0$
+so~$\left<x,(T-T^*)x\right>=0$
 for all~$x\in (X)_{\leq 1}$,
 which implies that~$T=T^*$,
 because the vector substates are separating.
@@ -3724,7 +3753,77 @@ for all~$x\in (X)_{\leq 1}$,
 so~$T_-^3=0$ (since the vector substates are separating,)
 and thus~$T_-=0$.
 \item
-\TODO{}
+Let~$T\in\sa{\scrB^a(X)}$ be given;
+we must show that $\|T\|=\sup_{x\in (X)_{\leq 1}} \|\left<x,Tx\right>\|$.
+We cannot simply  apply~\sref{parsec-210.70},
+because the  maps  $\left<x,(\,\cdot\,)x\right>$ 
+not all unital.
+
+Given~$x\in X$,
+we have
+$\|\left<x,Tx\right>\|\leq \|x\|\,\|Tx\|
+\leq \|x\|^2\|T\| $,
+and
+whence $\sup_{x\in (X)_{\leq 1} } \|\left<x,Tx\right>\| \leq \|T\|$.
+
+For the other direction,
+note first that by scaling down~$T$ if necessary
+we may assume without loss of generality that~$\|T\|\leq 1$.
+Also 
+recall that~$\|T\|=\|T_+\|\vee \|T_-\|$
+(from the addendum to)
+\sref{parsec-240.20},
+so we must show that
+$\|T_\pm\| \leq 
+\sup_{x\in (X)_{\leq 1} } \|\left<x,Tx\right>\|$,
+where~$\pm$ can be either~$+$ or~$-$.
+
+By considering only $x$'s of the form
+$T^\varepsilon_\pm y$ where~$y\in (X)_{\leq 1}$,
+and~$\varepsilon>0$ a dyadic rational
+we see that it suffices to show that
+\begin{equation}
+\label{S32XV3}
+\textstyle \|T_\pm\| 
+\ \leq\  \sup_{\varepsilon>0} \sup_{y\in (X)_{\leq 1}}
+\|\left<T_\pm^\varepsilon y,T\,T_\pm^\varepsilon y\right>\|,
+\end{equation}
+using here that $\|T_\pm^\varepsilon y \|\leq 1$,
+because $\|T_\pm\|\leq 1$ and~$\|y\|\leq 1$.
+
+We claim that $T T_{\pm}^\varepsilon = \pm T_\pm T_{\pm}^\varepsilon$,
+and for this
+(since~$T=T_+-T_-$,)
+it suffices to show that $T_\mp T_{\pm}^\varepsilon = 0$.
+Surely, $T_\mp T_\pm = 0$ (since~$T_+T_-=0$.)
+To get the equality for the other dyadic rationals $\varepsilon>0$
+simply note that  $ab=0 \implies a\sqrt{b} = 0$
+for all self-adjoint~$a$ and positive~$b$
+from a $C^*$-algebra~$\scrA$,
+because $\|a\sqrt{b}\|^2=\|aba\|=0$ when~$ab=0$.
+
+Whence $
+\left<T_\pm^\varepsilon y,
+T T_\pm^\varepsilon y \right>
+= \pm 
+\left<T_\pm^\varepsilon y,
+T_\pm T_\pm^\varepsilon y \right>
+=
+\pm
+\left<\sqrt{T_\pm} T_\pm^\varepsilon y,
+\sqrt{T_\pm} T_\pm^\varepsilon y \right>$,
+and
+$$
+\sup_{y\in (X)_{\leq 1}}
+\|\left<T_\pm^\varepsilon y,T\,T_\pm^\varepsilon y\right>\|
+=\ 
+\|\sqrt{T_\pm} T_\pm^\varepsilon\|^2
+\ = \| T_\pm T_\pm^{2\varepsilon}\|
+\ = \ \|T_\pm\|\, \|T_\pm\|^{2\varepsilon}.
+$$
+Upon taking the supremum over all dyadic $\varepsilon >0$,
+we see that~\eqref{S32XV3}
+holds (and is in fact an equality.)
 \end{enumerate}
 \end{solution}
 
