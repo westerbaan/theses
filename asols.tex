@@ -210,6 +210,11 @@ Indeed, there might
 not be any vector states on $\scrB^a(X)$.
 Also, ignore the hint.
 \end{erratum}
+\begin{erratum}{parsec-330.10}
+In points~1 and~2,
+``$N\times M$'' should read
+``$M\times N$''.
+\end{erratum}
 \begin{erratum}{parsec-341.50}
 In point~6, ``$u=\sqrt{a^{-1}(a^{-1})^*}$''
 should read ``$u=a\sqrt{a^{-1}(a^{-1})^*}$''.
@@ -3826,6 +3831,77 @@ we see that~\eqref{S32XV3}
 holds (and is in fact an equality.)
 \end{enumerate}
 \end{solution}
+\begin{solution}{parsec-330.10}%
+\begin{enumerate}
+\item
+Let $A$ be an $M\times N$-matrix (see erratum).
 
+Matrix multiplication by~$A$,
+which we denote by $\underline{A}\colon \scrA^N\to\scrA^M$,
+sends a vector~$v\in \scrA^N$
+to $(\sum_{n=1}^N A_{mn}v_n)_{m=1}^M$,
+and
+can thus be expressed as the combination
+$\underline{A}= \sum_{m=1}^M  \sum_{n=1}^N  \kappa_m \underline{A_{mn}} \pi_n $
+of adjointable bounded module maps, 
+where $\pi_n\colon \scrA^N\to \scrA$ is the $n$-th projection,
+$\underline{A_{mn}}\colon \scrA\to\scrA$ sends~$a$ to $A_{mn} a$,
+and $\kappa_m\in \scrA\to \scrA^M$ is the $m$-th coprojection,
+making~$\underline{A}$ itself an adjointable bounded
+module map, with adjoint
+$\underline{A}^* 
+= \sum_{m=1}^M \sum_{n=1}^N
+\pi_n^* (\underline{A_{mn}})^* \kappa_m^*
+= \sum_{m=1}^M \sum_{n=1}^N
+\kappa_n \underline{A_{mn}^*} \pi_m
+= \underline{A^*}$.
 
+\item
+The assignment $A\mapsto \underline{A}$ is clearly linear.
+
+To see that~$A\mapsto \underline{A}$ is injective,
+we must show that an  $M\times N$-matrix (see erratum) is zero
+when $\underline{A}=0$.
+This is easy enough: simply apply~$\overline{A}$
+to the vector $e_n$ that is~$1$
+in the $n$-th coordinate and~$0$ elsewhere,
+to see that $0 = \underline{A}(e_n) = (A_{mn})_{m=1}^M$,
+so~$A_{mn} = 0$ for all~$m$ (and~$n$), so indeed~$A=0$.
+
+To establish surjectivety, let~$T\colon \scrA^N\to\scrA^M$ be a module map.
+Then
+with the~$e_n$s as defined above, we have $v=\sum_{n=1}^N e_n v_n$
+for every vector $v\in \scrA^N$, and so
+$\smash{Tv = \sum_{n=1}^N Te_nv_n
+= ( \sum_{n=1}^N (Te_n)_m v_n )_{m=1}^M = \underline{A}(v)}$,
+where $A$ is the $M\times N$ matrix
+given by~$A_{mn} = (Te_n)_m $.
+
+\item
+Given~$v\in \scrA^K$,
+we have 
+\begin{alignat*}{3}
+(\underline{A}\circ \underline{B})(v) 
+&=\  \sum_{k=1}^K \underline{A}(B_{mk} v_k)_{m=1}^M \\
+&=\  \sum_{k=1}^K\sum_{m=1}^M (A_{nm} B_{mk} v_k)_{n=1}^N \\
+&=\ \bigl(\sum_{k=1}^K \bigl(\sum_{m=1}^M A_{nm} B_{mk}  \bigr)v_k\bigr)_{n=1}^N \ = \ \underline{AB}(v).
+\end{alignat*}
+
+\item
+We already know
+from~\sref{parsec-320.130}
+that
+$\scrB^a(\scrA^N)$
+is a $C^*$-algebra
+with composition as multiplication
+and the adjoint as involution.
+Since these operations are carried over to
+matrix multiplication and the conjugate transpose, respectively,
+under the inverse of $A\mapsto \underline{A}\colon 
+M_N\scrA\longrightarrow \scrB^a(\scrA^N)$,
+we see that~$M_N\scrA$ is a $C^*$-algebra
+under those operations,
+with as norm the operator norm.
+\end{enumerate}
+\end{solution}
 \end{document}
