@@ -215,6 +215,16 @@ In points~1 and~2,
 ``$N\times M$'' should read
 ``$M\times N$''.
 \end{erratum}
+\begin{erratum}{parsec-330.20}
+In point~1,
+``Hint: use~\sref{parsec-250.30}'' should read
+``Hint: use~\sref{parsec-320.150}''.
+\end{erratum}
+\begin{erratum}{parsec-330.30}
+Don't show that~$M_nf$ needn't be bounded
+in point~3,
+but on the contrary, that it is bounded by~$n^2\|f\|$.
+\end{erratum}
 \begin{erratum}{parsec-341.50}
 In point~6, ``$u=\sqrt{a^{-1}(a^{-1})^*}$''
 should read ``$u=a\sqrt{a^{-1}(a^{-1})^*}$''.
@@ -228,11 +238,6 @@ all these seminorms continuous.)
 \begin{erratum}{parsec-430.20}
 The remark in point~3 that~$a_\alpha^*a_\alpha$
 is norm-bounded is unwarranted.
-\end{erratum}
-\begin{erratum}{parsec-330.30}
-Don't show that~$M_nf$ needn't be bounded
-in point~3,
-but on the contrary, that it is bounded by~$n^2\|f\|$.
 \end{erratum}
 \begin{erratum}{parsec-720.30}
 ``$\|\omega\|$''
@@ -3902,6 +3907,80 @@ M_N\scrA\longrightarrow \scrB^a(\scrA^N)$,
 we see that~$M_N\scrA$ is a $C^*$-algebra
 under those operations,
 with as norm the operator norm.
+\end{enumerate}
+\end{solution}
+\begin{solution}{parsec-330.20}%
+\begin{enumerate}
+\item
+\label{S33II1}
+As a result of~\sref{parsec-320.150}
+and~\sref{parsec-330.10}
+the `vector' functionals on $M_N\scrA$,
+i.e.~those of the form $A\mapsto a^* A a \colon M_N\scrA\to \scrA$
+with~$a\in \scrA^N$,
+are order separating.
+(In fact, we get
+that the subset of functionals with $a^*a\leq 1$ is already
+order separating, but that is not needed here.)
+
+Whence a matrix~$A\in M_N\scrA$ is positive
+iff $0\leq a^* A a\equiv \sum_{i,j} a_i^* A_{ij} a_j$
+for all~$a\in \scrA^N$
+(by definition of order separating.)
+
+\item
+\label{S33II2}
+The matrix $(\left<x_i,x_j\right>)_{i,j}$ is positive
+by point~\sref{S33II1},
+because $\sum_{i,j} a_i^* \left<x_i,x_j\right>a_j
+=  \left<\,\smash{\sum_ix_i a_i,\,\sum_jx_j a_j\,}\right>\geq 0$
+for all $a_1,\dotsc,a_N\in\scrA$.
+
+\item
+This follows immediately from point~\ref{S33II2}
+by taking for~$X$ the pre-Hilbert $\scrA$-module~$\scrA$
+(which has inner product $\left<a,b\right>=a^*b$.)
+\end{enumerate}
+\end{solution}
+\begin{solution}{parsec-330.30}%
+\begin{enumerate}
+\item 
+Since  $M_Nf = \sum_{i,j} \kappa_{ij}\circ f\circ \pi_{ij}$,
+where  $\pi_{ij}\colon M_N\scrA\to \scrA$, 
+$\kappa_{ij}\colon \scrB\to M_N\scrB$
+are the $(i,j)$-th projection and coprojection, respectively,
+which are clearly linear maps,
+we see 
+that $M_Nf$ is linear.
+\item
+When~$f$ is unital, $M_Nf$ clearly sends the identity matrix 
+on~$M_N\scrA$ to the identity matrix on~$M_N\scrB$,
+and is therefore unital.
+
+Suppose that~$f$ is multiplicative,
+and let~$A,B\in M_N\scrA$ be given.
+Then since $(AB)_{ij} = \sum_k A_{ik} B_{kj}$
+we have $((M_Nf)(AB))_{ij}
+= f((AB)_{ij})
+= \sum_k f(A_{ik})\,f(B_{kj})
+= (\,(M_Nf)(A)\,(M_Nf)(B)\,)_{ij}$ for all~$i,j$,
+and so~$M_Nf$ is multiplicative.
+
+Suppose finally that~$f$ is involution preserving,
+and let~$A\in M_N\scrA$ be given.
+Then since $(A^*)_{ij}=A_{ji}^*$,
+we have
+$((M_Nf)(A^*))_{ij}
+= f((A^*)_{ij})
+= f(A_{ji})^*
+= (\,(\,(M_Nf)(A)\,)^*\,)_{ij}$
+for all~$i,j$,
+so~$M_N f$ is involution preserving.
+\item
+
+\TODO{}
+
+
 \end{enumerate}
 \end{solution}
 \end{document}
