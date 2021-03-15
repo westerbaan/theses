@@ -3977,10 +3977,88 @@ $((M_Nf)(A^*))_{ij}
 for all~$i,j$,
 so~$M_N f$ is involution preserving.
 \item
+Concerning the point mentioned in the erratum,
+that~$M_Nf$ \emph{is}
+bounded by~$N^2\|f\|$,
+simply note that 
+since the norm a matrix over a $C^*$-algebra
+containing only one non-zero entry~$a$
+is $\leq \|a\|$,
+and any matrix is a sum of~$N^2$ of those,
+the inequality follows.
 
-\TODO{}
+Let~$\scrA$ be a $C^*$-algebra,
+and let~$\op{\scrA}$ be the opposite of~$\scrA$,
+that is, $\scrA$ in all respects, except the multiplication
+on~$\op{\scrA}$ is given by 
+$a\cdot_{\op{\scrA}} b = b\cdot_\scrA a$.
 
+We claim that the positive unital
+linear map~$j_\scrA \colon a\mapsto a,\, \op{\scrA}\to\scrA$
+is completely positive iff~$\scrA$ is commutative.
 
+Suppose that~$j_\scrA$ is completely positive.
+We must show that~$\scrA$ is commutative.
+Clearly, it suffices to show that all self-adjoint
+elements $a,b\in \scrA$ commute,
+and for this it suffices to show that all elements of~$\scrA$ 
+are normal,
+since, as you'll recall from~\sref{parsec-280.20},
+self-adjoint elements~$a$ and~$b$ of~$\scrA$ commute
+iff $c:=a+ib$ is normal,
+that is, $c^*c=cc^*$.
+
+Now, given~$a\in\scrA$
+consider
+the 
+by~\sref{parsec-330.20} positive
+matrix $(\begin{smallmatrix}1 & a \\ a^* & a^*a \end{smallmatrix})$
+over~$\op{\scrA}$
+which is sent by $M_2j_{\scrA}$,
+writing $j:=j_{\scrA}$,
+to the matrix  
+$$
+A\ :=\ 
+\bigl(\begin{smallmatrix}j(1) & j(a) \\ j(a^*) & j(a^*a)\end{smallmatrix}\bigr)
+\ =\
+\bigl(\begin{smallmatrix}1 & j(a) \\ j(a)^* & j(a)j(a)^*\end{smallmatrix}\bigr)
+\ =\
+\bigl(\begin{smallmatrix}1 & a \\ a^* & aa^*\end{smallmatrix}\bigr)
+$$
+over~$\scrA$,
+which is positive, because~$j_{\scrA}$ is completely positive.
+
+Being positive, 
+$A$ yields an $\scrA$-valued inner product
+on~$\scrA^2$ given by
+$$
+\left<v,w\right>\ = \ v^* A w\ = \ 
+v_1^* w_1 \,+\,
+v_1^*a w_2 \,+\,
+v_2^*a^*w_1 \,+\,
+v_2^* aa^* w_2
+$$
+for all~$v,w\in \scrA^2$.
+The Cauchy--Schwarz inequality~\sref{parsec-320.60}
+now gives us 
+$$
+a^*\, a \,\equiv\, 
+\left<(0,1),(1,0)\right>\,
+\left<(1,0),(0,1)\right>\ \leq\, 
+\|\left<(1,0),(1,0)\right>\|
+\,\left<(0,1),(0,1)\right>
+\,\equiv\, aa^*
+$$
+Since~$a\in \scrA$ was arbitrary,
+we not only have $a^*a\leq aa^*$,
+but also $aa^* = (a^*)^* a^* \leq a^* (a^*)^*=a^*a$,
+and whence~$a^*a=aa^*$.
+
+The converse,
+that~$j_\scrA$ is completely positive when~$\scrA$
+is commutative, is obvious,
+as then~$\scrA=\op{\scrA}$,
+making $j_\scrA$ just the identity on~$\scrA$.
 \end{enumerate}
 \end{solution}
 \end{document}
