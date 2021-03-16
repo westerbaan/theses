@@ -4061,4 +4061,32 @@ as then~$\scrA=\op{\scrA}$,
 making $j_\scrA$ just the identity on~$\scrA$.
 \end{enumerate}
 \end{solution}
+\begin{solution}{parsec-340.40}%
+By definition (see~\sref{parsec-100.20})
+the map $f\colon \scrA\to\scrB$
+is completely positive iff point~2 of~\sref{parsec-340.20} holds
+for all~$N$,
+which is equivalent to~$M_Nf$ being positive for all~$N$
+(point~1),
+and equivalent to~$(f(a_i^* a_j))_{ij}$ being positive
+in~$M_N\scrB$
+for all~$a\in \scrA^N$ and~$N$ (point~3).
+
+The composition of completely positive maps
+$f\colon \scrA\to\scrB$
+and~$g\colon \scrB\to\scrC$
+between $C^*$-algebras
+is completely positive,
+because $M_N(g\circ f)=M_Ng\circ M_Nf$
+being the composition of positive maps $M_Ng$
+and~$M_Nf$ is positive.
+
+Let~$f\colon \scrA\to\scrB$
+be an mi-map;
+we must show that~$f$ is completely positive.
+By~\sref{parsec-330.30}(2)
+we know that~$M_Nf$ is a mi-map,
+and thus positive (by~\sref{parsec-250.20}(2).)
+Whence~$f$ is completely positive.
+\end{solution}
 \end{document}
