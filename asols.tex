@@ -3981,11 +3981,10 @@ Concerning the point mentioned in the erratum,
 that~$M_Nf$ \emph{is}
 bounded by~$N^2\|f\|$,
 simply note that 
-since the norm a matrix over a $C^*$-algebra
+the norm of a matrix over a $C^*$-algebra
 containing only one non-zero entry~$a$
 is $\leq \|a\|$,
-and any matrix is a sum of~$N^2$ of those,
-the inequality follows.
+and any matrix is a sum of~$N^2$ of those.
 
 Let~$\scrA$ be a $C^*$-algebra,
 and let~$\op{\scrA}$ be the opposite of~$\scrA$,
@@ -3993,11 +3992,12 @@ that is, $\scrA$ in all respects, except the multiplication
 on~$\op{\scrA}$ is given by 
 $a\cdot_{\op{\scrA}} b = b\cdot_\scrA a$.
 
-We claim that the positive unital
+We claim that for the positive unital
 linear map~$j_\scrA \colon a\mapsto a,\, \op{\scrA}\to\scrA$
-is completely positive iff~$\scrA$ is commutative.
+the map $M_2 j_\scrA$ is
+ positive iff~$\scrA$ is commutative.
 
-Suppose that~$j_\scrA$ is completely positive.
+Suppose that~$M_2 j_\scrA$ is positive.
 We must show that~$\scrA$ is commutative.
 Clearly, it suffices to show that all self-adjoint
 elements $a,b\in \scrA$ commute,
@@ -4055,7 +4055,7 @@ but also $aa^* = (a^*)^* a^* \leq a^* (a^*)^*=a^*a$,
 and whence~$a^*a=aa^*$.
 
 The converse,
-that~$j_\scrA$ is completely positive when~$\scrA$
+that~$M_2j_\scrA$ is positive when~$\scrA$
 is commutative, is obvious,
 as then~$\scrA=\op{\scrA}$,
 making $j_\scrA$ just the identity on~$\scrA$.
