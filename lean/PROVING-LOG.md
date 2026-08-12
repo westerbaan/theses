@@ -28,7 +28,11 @@ Do not re-derive the mathematics — the theses contain it.
      Grepping `asols.tex` by label returns **zero matches for all 64
      solutions**, which reads exactly like "there is no solution".  List what
      exists with `grep -o 'solution}{[^}]*}' ../asols.tex`.
-3. **Errata.** `../berr.tex` — check here when a statement looks false.
+3. **Known errata — check these before filing anything new.**  Thesis B has
+   `../berr.tex`.  **Thesis A has no `aerr.tex`**: its 27 errata/addenda live at
+   the *top of* `../asols.tex`, keyed the same `parsec-N.M` way.  (Checking
+   there first would have saved this project one duplicate finding: the 11XV.3
+   sign error is already recorded at `asols.tex:30–34`.)
 
 So the workflow per `sorry` is: find the thesis's own proof, then transcribe
 it into Lean.  When parking an item, note whether the thesis has a proof you
@@ -228,7 +232,78 @@ the Lean proof does instead.`)
   **27XVII**, **27XVIII**, **27XXVII**) from Mathlib, and the Riesz-ideal
   machinery of 27VIII–27XIII is left as the thesis's own (independent) route.
 
+### Session 2 — errata found by the Basic.lean cross-check audit
+
+These came from deliberately re-reading the authors' own proofs for the nine
+statements listed in the next section, which had been closed from Mathlib
+without consulting them.  **No statement was refuted and no author proof is
+wrong in substance** — all nine are true and the arguments sound modulo these
+defects — but the audit is what turned "proved" into "cross-checked", and it
+found four new items in one pass.
+
+- **11XX**.1 `cstar.tex:1636` — the exercise reads "the spectrum of a continuous
+  function `f : X → ℝ` … being an element of the C\*-algebra `C(X)`", but `C(X)`
+  is defined at `cstar.tex:206` (2VI) as the **complex**-valued continuous
+  functions, and `spec(f) ⊆ ℂ`.  The author's own solution
+  (`asols.tex:1276–1284`) proves `spec(f) = f(X)` for arbitrary `f ∈ C(X)`,
+  never using real-valuedness.  Should read `f : X → ℂ`, or just "`f ∈ C(X)`".
+  Lean states the general ℂ-valued version (`spectrum_continuousMap`).
+- **11XX**.2 `asols.tex:1286` — the solution opens "A square matrix is
+  invertible iff its kernel is **not** `{0}`", which is exactly backwards
+  (`A = 0` in `M₁` has kernel `ℂ ≠ {0}` and is not invertible).  The *next*
+  sentence is correct and is what the rest of the argument uses, so this is a
+  dropped negation rather than a broken proof.  (Same solution, `:1287`: "In
+  particilar".)
+- **11XV**.2 `asols.tex:1221` — "since `a − √λ i` and `a + √λ i` are invertible
+  **by point 2**" is a self-reference: point 2 is the statement being proved.
+  The invertibility comes from **point 1**, which the author cites correctly for
+  the same fact three paragraphs later (`asols.tex:1252`).  Mis-citation only.
+- **4VIII** `cstar.tex:424` — in the *definition* of an inner product,
+  "`⟨x,·⟩ : V → V` is linear"; the codomain is `ℂ`.  A typo, but in a definition
+  the whole of parsec 40 rests on.
+- **11XV**.3 `cstar.tex:1589` — the hint `aⁿ+1 = ∏ₖ (a + ζ^{2k+1})` has the wrong
+  sign; the right-hand side is `aⁿ − 1` (check `n = 1`: `x + ζ³ = x − 1`).  The
+  author's own solution derives the corrected form at `asols.tex:1248`.
+  **Already recorded** at `asols.tex:30–34` — confirmed independently here, not
+  a new finding.
+
+Minor, recorded for completeness: `asols.tex:1250` states the exceptional index
+as `k ≠ (n−1)/2` where it should be `k ≢ (n−1)/2 mod n` (literally false at
+`n = 1`, harmless there); `asols.tex:1214–1223` never states the one-line
+even-`n` conclusion the exercise asks for; `asols.tex:1092–1102` silently
+divides by `‖P − ‖x‖²‖`; and the counterexample solutions for **7III**.8,
+**7III**.13 and **9X**.3 all open "let `x,y` be … vectors of a Hilbert space"
+without exhibiting one, leaving the existence half of "give an example"
+implicit (`ℂ²` works in all three; Lean names concrete 2×2 matrices).
+
+**Development-order divergences — worth the authors' attention.**  Two Lean
+proofs are correct but use results the thesis deliberately does *not* have
+available at that point, so they do not validate the thesis's own bootstrapping:
+
+- **9X**.3 `cstar_positive_3` — Lean picks the same witnesses as the author
+  (`|e₁⟩⟨e₁|` and `|v⟩⟨v|`, `v = (1,1)`) but establishes positivity via
+  `star_mul_self_nonneg`, i.e. `a*a ≥ 0`.  The thesis explicitly cannot use that
+  at parsec 90: **9X**.5 lists even "`a²` is positive" as out of reach, and it is
+  settled only at **25I**.  The author's elementary norm computation
+  `‖P − s‖² = s‖P − s‖` is the honest route and would formalise easily.
+- **11XV**.3 `spectrum_self_adjoint_real_3` — Lean uses polynomial spectral
+  mapping (`spectrum.map_pow_of_pos`); the author's factorisation
+  `bⁿ + 1 = ∏ₖ (b − ζ^{2k+1})` is precisely the *elementary substitute* for that
+  theorem, which parsec 110 is still building towards.  Both correct; the
+  factorisation was verified here in general and at `n = 1, 3`.
+
+Neither is unsound — Mathlib proves these independently of the thesis — but a
+reader wanting the formalization to check the thesis's *own* development order
+should treat these two as not yet doing so.
+
 ### Session 2 — divergences from the thesis's proofs (A/CStar/Basic.lean)
+
+**Status: all nine were subsequently cross-checked** (see the audit errata
+above).  Verdicts: **6 match** the author's argument, **3 diverge**, **0**
+statements refuted.  A specific check for the trivial-algebra pattern
+(`𝒜 = {0}`, `ℋ = {0}`, `X = ∅`, `n = 0`) that produced 16V/16VI/22III.5 found
+**no new instance** among the nine.  The list below is kept as the record of how
+they were originally closed.
 
 **These statements are proved but were NOT cross-checked against the thesis's
 own argument.**  They were closed directly from Mathlib without reading the

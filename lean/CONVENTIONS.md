@@ -29,6 +29,34 @@ tag.  Declarations are named after the LaTeX label when there is one
 (`operator-norm-complete` → `operatorNorm_complete` / thematic Lean name),
 otherwise a descriptive name is invented.
 
+### Finding an exercise's published solution
+
+The two solution files are keyed **differently**, and a wrong guess fails
+*silently* — it returns no matches, which is indistinguishable from "this
+exercise has no solution".  That mistake suppressed the author's proofs for a
+whole batch of A/CStar statements in session 2.
+
+* **`../bsols.tex`** (thesis B, 79 solutions) — keyed by the **LaTeX label** the
+  doc comment carries: `grep -n 'solution}{exc-subbase}' ../bsols.tex`.
+* **`../asols.tex`** (thesis A, 64 solutions) — keyed by **parsec and point**:
+  `solution}{parsec-<parsec×10>.<point×10>}`.  So DISP `4IV` is
+  `parsec-40.40`, `9X` is `parsec-90.100`, `11XV` is `parsec-110.150`.
+
+The inverse rule — key `parsec-<P>.<Q>` → DISP `(P/10)·roman(Q/10)` — was
+checked mechanically against all 792 DISP + `file:line` doc comments in the Lean
+tree, with **zero genuine violations**.  Two extensions cover the exceptions:
+
+* point not a multiple of 10 → letter suffix on the *numeral*:
+  `90.41` → **9IVa**, `160.61` → **16VIa**;
+* parsec not a multiple of 10 → letter suffix on the *parsec*:
+  `201` → **20a**, `341` → **34a**, `842` → **84b**.
+
+Two further facts worth knowing: every solution in `asols.tex` is for a
+`cstar.tex` exercise (parsecs 40–340 — there are none for `vn.tex` or
+`proc.tex`); and **there is no `aerr.tex`** — thesis A's 27 errata and addenda
+live at the *top of* `asols.tex`, keyed the same way, and should be consulted
+before filing a new erratum.  (Thesis B does have `../berr.tex`.)
+
 ## File layout
 
 ```
