@@ -384,6 +384,708 @@ theorem pos_spectrum (a : 𝒜) (ha : IsSelfAdjoint a) (t : ℝ) (ht : 0 ≤ t) 
       rw [hrz, ← Complex.ofReal_sub, Complex.norm_real, Real.norm_eq_abs]
       exact (real_pos_ineq r t).mpr ⟨hr0, hr2⟩
 
+/-! ### The order-free core of the 23II iteration
+
+The iteration `b₀ = 0`, `b_{n+1} = ½(a + bₙ²)` of **23II** (parsec 230) and
+its convergence estimates use nothing but the norm — no order at all.  They
+are therefore stated here, at parsec 170, so that the audit of the thesis's
+own notion of positivity below (`ThesisPos`) can use them; the order-dependent
+part of **23II** stays at parsec 230 where it belongs. -/
+
+section SqrtIterationCore
+
+/-- The iteration `b₀ = 0`, `b_{n+1} = ½(a + bₙ²)` converging to
+`1 - √(1-a)` (**23II**, cstar.tex:3485). -/
+noncomputable def sqrtApproxSeq (a : 𝒜) : ℕ → 𝒜
+  | 0 => 0
+  | n + 1 => (2 : ℂ)⁻¹ • (a + sqrtApproxSeq a n ^ 2)
+
+/-- Auxiliary for **23II**: the real iteration `r₀ = 0`, `r_{n+1} = ½(1+rₙ²)`,
+i.e. the thesis's `qₙ(1)` (cstar.tex:3546). -/
+private noncomputable def sqrtApproxReal : ℕ → ℝ
+  | 0 => 0
+  | n + 1 => (1 + sqrtApproxReal n ^ 2) / 2
+
+private theorem sqrtApproxReal_zero : sqrtApproxReal 0 = 0 := rfl
+
+private theorem sqrtApproxReal_succ (n : ℕ) :
+    sqrtApproxReal (n + 1) = (1 + sqrtApproxReal n ^ 2) / 2 := rfl
+
+private theorem sqrtApproxReal_nonneg (n : ℕ) : 0 ≤ sqrtApproxReal n := by
+  induction n with
+  | zero => rw [sqrtApproxReal_zero]
+  | succ n ih => rw [sqrtApproxReal_succ]; positivity
+
+private theorem sqrtApproxReal_le_one (n : ℕ) : sqrtApproxReal n ≤ 1 := by
+  induction n with
+  | zero => rw [sqrtApproxReal_zero]; norm_num
+  | succ n ih =>
+    have h0 := sqrtApproxReal_nonneg n
+    rw [sqrtApproxReal_succ]
+    nlinarith
+
+private theorem sqrtApproxReal_mono : Monotone sqrtApproxReal := by
+  refine monotone_nat_of_le_succ fun n => ?_
+  rw [sqrtApproxReal_succ]
+  nlinarith [sq_nonneg (1 - sqrtApproxReal n)]
+
+private theorem norm_one_le' : ‖(1 : 𝒜)‖ ≤ 1 := by
+  rcases subsingleton_or_nontrivial 𝒜 with _ | _
+  · rw [Subsingleton.elim (1 : 𝒜) 0, norm_zero]; norm_num
+  · rw [norm_one]
+
+private theorem sqrtApproxSeq_zero (a : 𝒜) : sqrtApproxSeq a 0 = 0 := rfl
+
+private theorem sqrtApproxSeq_succ (a : 𝒜) (n : ℕ) :
+    sqrtApproxSeq a (n + 1) = (2 : ℂ)⁻¹ • (a + sqrtApproxSeq a n ^ 2) := rfl
+
+private theorem sqrtApproxSeq_commute (a c : 𝒜) (hc : c * a = a * c) (n : ℕ) :
+    c * sqrtApproxSeq a n = sqrtApproxSeq a n * c := by
+  induction n with
+  | zero => rw [sqrtApproxSeq_zero, mul_zero, zero_mul]
+  | succ n ih =>
+    rw [sqrtApproxSeq_succ, mul_smul_comm, smul_mul_assoc, mul_add, add_mul, hc,
+      sq, ← mul_assoc, ih, mul_assoc, ih, ← mul_assoc]
+
+private theorem sqrtApproxSeq_self_commute (a : 𝒜) (m n : ℕ) :
+    sqrtApproxSeq a m * sqrtApproxSeq a n = sqrtApproxSeq a n * sqrtApproxSeq a m :=
+  sqrtApproxSeq_commute a _ (sqrtApproxSeq_commute a a rfl m).symm n
+
+private theorem sqrtApproxSeq_norm_le (a : 𝒜) (ha : ‖a‖ ≤ 1) (n : ℕ) :
+    ‖sqrtApproxSeq a n‖ ≤ sqrtApproxReal n := by
+  induction n with
+  | zero => rw [sqrtApproxSeq_zero, sqrtApproxReal_zero, norm_zero]
+  | succ n ih =>
+    have hb0 : (0 : ℝ) ≤ ‖sqrtApproxSeq a n‖ := norm_nonneg _
+    have hsq : ‖sqrtApproxSeq a n ^ 2‖ ≤ ‖sqrtApproxSeq a n‖ ^ 2 := by
+      rw [sq, sq]; exact norm_mul_le _ _
+    have hadd : ‖a + sqrtApproxSeq a n ^ 2‖ ≤ 1 + sqrtApproxReal n ^ 2 := by
+      refine le_trans (norm_add_le _ _) ?_
+      have := sqrtApproxReal_nonneg n
+      nlinarith
+    rw [sqrtApproxSeq_succ, norm_smul, sqrtApproxReal_succ]
+    have hc : ‖(2 : ℂ)⁻¹‖ = 1 / 2 := by norm_num
+    rw [hc]
+    linarith
+
+private theorem sqrtApproxSeq_dist (a : 𝒜) (ha : ‖a‖ ≤ 1) (n : ℕ) :
+    ‖sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n‖
+      ≤ sqrtApproxReal (n + 1) - sqrtApproxReal n := by
+  induction n with
+  | zero =>
+    rw [sqrtApproxSeq_zero, sqrtApproxSeq_succ, sqrtApproxSeq_zero,
+      sqrtApproxReal_zero, sqrtApproxReal_succ, sqrtApproxReal_zero]
+    have hc : ‖(2 : ℂ)⁻¹‖ = 1 / 2 := by norm_num
+    rw [sub_zero, sub_zero, norm_smul, hc]
+    have hz : ((0 : 𝒜) ^ 2) = 0 := by norm_num
+    have hz' : ((0 : ℝ) ^ 2) = 0 := by norm_num
+    rw [hz, add_zero, hz']
+    linarith
+  | succ n ih =>
+    have key : sqrtApproxSeq a (n + 2) - sqrtApproxSeq a (n + 1)
+        = (2 : ℂ)⁻¹ • (sqrtApproxSeq a (n + 1) *
+            (sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n)
+          + (sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n) * sqrtApproxSeq a n) := by
+      rw [sqrtApproxSeq_succ a (n + 1), sqrtApproxSeq_succ a n, ← smul_sub]
+      congr 1
+      noncomm_ring
+    have hd0 : (0 : ℝ) ≤ sqrtApproxReal (n + 1) - sqrtApproxReal n :=
+      sub_nonneg.mpr (sqrtApproxReal_mono (Nat.le_succ n))
+    have hn1 := sqrtApproxSeq_norm_le a ha (n + 1)
+    have hn0 := sqrtApproxSeq_norm_le a ha n
+    have hr0 := sqrtApproxReal_nonneg n
+    have hr1 := sqrtApproxReal_nonneg (n + 1)
+    have hbound : ‖sqrtApproxSeq a (n + 1) *
+          (sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n)
+        + (sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n) * sqrtApproxSeq a n‖
+        ≤ (sqrtApproxReal (n + 1) + sqrtApproxReal n) *
+            (sqrtApproxReal (n + 1) - sqrtApproxReal n) := by
+      refine le_trans (norm_add_le _ _) ?_
+      have h1 := norm_mul_le (sqrtApproxSeq a (n + 1))
+        (sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n)
+      have h2 := norm_mul_le (sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n)
+        (sqrtApproxSeq a n)
+      have hd := ih
+      have hdn : (0 : ℝ) ≤ ‖sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n‖ :=
+        norm_nonneg _
+      nlinarith [norm_nonneg (sqrtApproxSeq a (n + 1)), norm_nonneg (sqrtApproxSeq a n)]
+    have hc : ‖(2 : ℂ)⁻¹‖ = 1 / 2 := by norm_num
+    have hr2 : sqrtApproxReal (n + 2) = (1 + sqrtApproxReal (n + 1) ^ 2) / 2 :=
+      sqrtApproxReal_succ (n + 1)
+    have hr1' : sqrtApproxReal (n + 1) = (1 + sqrtApproxReal n ^ 2) / 2 :=
+      sqrtApproxReal_succ n
+    have hkey2 : (sqrtApproxReal (n + 1) + sqrtApproxReal n) *
+        (sqrtApproxReal (n + 1) - sqrtApproxReal n)
+        = 2 * (sqrtApproxReal (n + 2) - sqrtApproxReal (n + 1)) := by
+      rw [hr2, hr1']; ring
+    rw [key, norm_smul, hc]
+    linarith
+
+private theorem sqrtApproxSeq_cauchy (a : 𝒜) (ha : ‖a‖ ≤ 1) :
+    CauchySeq (sqrtApproxSeq a) := by
+  refine cauchySeq_of_summable_dist ?_
+  have hsum : Summable fun n => sqrtApproxReal (n + 1) - sqrtApproxReal n := by
+    refine summable_of_sum_range_le (c := 1)
+      (fun n => sub_nonneg.mpr (sqrtApproxReal_mono (Nat.le_succ n))) fun n => ?_
+    rw [Finset.sum_range_sub sqrtApproxReal, sqrtApproxReal_zero, sub_zero]
+    exact sqrtApproxReal_le_one n
+  refine Summable.of_nonneg_of_le (fun n => dist_nonneg) (fun n => ?_) hsum
+  rw [dist_eq_norm, norm_sub_rev]
+  exact sqrtApproxSeq_dist a ha n
+
+end SqrtIterationCore
+
+/-! ### The thesis's own notion of positivity: a bootstrapping audit
+
+In Lean, `0 ≤ a` is Mathlib's *star order*: `a` is a finite sum of elements of
+the form `star s * s`.  The thesis instead **defines** `a` to be positive when
+`a` is self-adjoint and `‖a - t‖ ≤ t` for some `t ∈ ℝ` (**9IV**,
+`cstar-positive-def`, cstar.tex:1130); that the two notions agree is thesis
+**25I** (`cstar-positive-final`, cstar.tex:3750), sixteen parsecs further on,
+and one of the deepest results of the chapter.  Encoding "positive" as `0 ≤`
+therefore silently imports **25I** — and with it **19III**+**24IV**, which
+`star_mul_self_nonneg` makes true by definition — into every parsec below 250.
+
+`ThesisPos` below is the thesis's notion, and this block proves `ThesisPos ↔
+(0 ≤ ·)` (`thesisPos_iff_nonneg`) from the thesis's own development, in the
+thesis's own order:
+
+* parsec 110 (`spectrum_self_adjoint_real_2`/`_3`) and parsec 170
+  (`pos_spectrum`, **17III**) for the spectral characterisation and the cone
+  laws;
+* the order-free core of the 23II iteration above for the square root
+  (**23II**, parsec 230);
+* the thesis's `astara-non-negative` argument (**19III**, parsec 190) and its
+  `astara-positive` argument (**24IV**, parsec 240) for `ThesisPos (a* a)`.
+
+Mathlib's `StarOrderedRing.nonneg_iff_spectrum_nonneg` (its CFC-backed form of
+**25I**) is *never* used here.  `star_mul_self_nonneg` and
+`StarOrderedRing.nonneg_iff` are used only in the final bridge, and only to
+unfold Mathlib's *definition* of `0 ≤`; no thesis content is taken from them.
+
+Once `thesisPos_iff_nonneg` is available, every `0 ≤` in this file is
+certified to be the thesis's notion of positivity, and the parsec-170
+statements below can be proved without appealing to **25I**. -/
+
+section ThesisPositive
+
+/-- The thesis's *definition* of a positive element (**9IV**,
+`cstar-positive-def`, cstar.tex:1130): a self-adjoint `a` with `‖a - t‖ ≤ t`
+for some `t ∈ ℝ`. -/
+private def ThesisPos (a : 𝒜) : Prop :=
+  IsSelfAdjoint a ∧ ∃ t : ℝ, ‖a - algebraMap ℂ 𝒜 (t : ℂ)‖ ≤ t
+
+/-- Auxiliary for **17V**.3 → 2: if the spectrum of a self-adjoint `a` lies in
+`[0,∞)`, then `‖a - t‖ ≤ t` already at `t = ‖a‖`. -/
+private theorem thesisPos_norm_of_spectrum {a : 𝒜} (ha : IsSelfAdjoint a)
+    (h : spectrum ℂ a ⊆ {z : ℂ | ∃ r : ℝ, 0 ≤ r ∧ z = r}) :
+    ‖a - algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ)‖ ≤ ‖a‖ := by
+  refine (pos_spectrum a ha ‖a‖ (norm_nonneg a)).mpr fun z hz => ?_
+  obtain ⟨r, hr0, hrz⟩ := h hz
+  refine ⟨r, hr0, ?_, hrz⟩
+  have hzn : ‖z‖ ≤ ‖a‖ :=
+    (norm_le_iff_spectrum_norm_le a ha ‖a‖ (norm_nonneg a)).mp le_rfl z hz
+  rw [hrz, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hr0] at hzn
+  linarith
+
+/-- **17V**.1 ↔ 3 for the thesis's notion of positivity, by the thesis's own
+route: `pos_spectrum` (**17III**) in both directions. -/
+private theorem thesisPos_iff_spectrum {a : 𝒜} (ha : IsSelfAdjoint a) :
+    ThesisPos a ↔ spectrum ℂ a ⊆ {z : ℂ | ∃ r : ℝ, 0 ≤ r ∧ z = r} := by
+  constructor
+  · rintro ⟨-, t, ht⟩
+    have ht0 : 0 ≤ t := le_trans (norm_nonneg _) ht
+    intro z hz
+    obtain ⟨r, hr0, -, hrz⟩ := (pos_spectrum a ha t ht0).mp ht hz
+    exact ⟨r, hr0, hrz⟩
+  · exact fun h => ⟨ha, ‖a‖, thesisPos_norm_of_spectrum ha h⟩
+
+private theorem ThesisPos.spectrum_subset {a : 𝒜} (h : ThesisPos a) :
+    spectrum ℂ a ⊆ {z : ℂ | ∃ r : ℝ, 0 ≤ r ∧ z = r} :=
+  (thesisPos_iff_spectrum h.1).mp h
+
+/-- **17V**.1 → 2 in the form used below. -/
+private theorem ThesisPos.norm_le {a : 𝒜} (h : ThesisPos a) :
+    ‖a - algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ)‖ ≤ ‖a‖ :=
+  thesisPos_norm_of_spectrum h.1 h.spectrum_subset
+
+/-! #### The cone laws (**17VI**), for `ThesisPos` -/
+
+private theorem thesisPos_algebraMap {r : ℝ} (hr : 0 ≤ r) :
+    ThesisPos (algebraMap ℂ 𝒜 (r : ℂ)) :=
+  ⟨isSelfAdjoint_algebraMap_ofReal' r, r, by simpa using hr⟩
+
+private theorem thesisPos_zero : ThesisPos (0 : 𝒜) := by
+  have h := thesisPos_algebraMap (𝒜 := 𝒜) (r := 0) le_rfl
+  simpa using h
+
+private theorem thesisPos_one : ThesisPos (1 : 𝒜) := by
+  have h := thesisPos_algebraMap (𝒜 := 𝒜) (r := 1) zero_le_one
+  simpa using h
+
+private theorem thesisPos_add {a b : 𝒜} (ha : ThesisPos a) (hb : ThesisPos b) :
+    ThesisPos (a + b) := by
+  obtain ⟨hsa, s, hs⟩ := ha
+  obtain ⟨hsb, t, ht⟩ := hb
+  refine ⟨hsa.add hsb, s + t, ?_⟩
+  have hc : (((s + t : ℝ)) : ℂ) = (s : ℂ) + (t : ℂ) := by push_cast; ring
+  have he : a + b - algebraMap ℂ 𝒜 (((s + t : ℝ)) : ℂ)
+      = (a - algebraMap ℂ 𝒜 (s : ℂ)) + (b - algebraMap ℂ 𝒜 (t : ℂ)) := by
+    rw [hc, map_add]
+    abel
+  rw [he]
+  exact le_trans (norm_add_le _ _) (add_le_add hs ht)
+
+private theorem thesisPos_ofReal_smul {r : ℝ} (hr : 0 ≤ r) {a : 𝒜} (ha : ThesisPos a) :
+    ThesisPos (((r : ℝ) : ℂ) • a) := by
+  obtain ⟨hsa, t, ht⟩ := ha
+  have hrsa : IsSelfAdjoint ((r : ℝ) : ℂ) := by
+    rw [IsSelfAdjoint, Complex.star_def, Complex.conj_ofReal]
+  refine ⟨hrsa.smul hsa, r * t, ?_⟩
+  have he : ((r : ℝ) : ℂ) • a - algebraMap ℂ 𝒜 (((r * t : ℝ)) : ℂ)
+      = ((r : ℝ) : ℂ) • (a - algebraMap ℂ 𝒜 (t : ℂ)) := by
+    rw [smul_sub, Algebra.algebraMap_eq_smul_one, Algebra.algebraMap_eq_smul_one, smul_smul]
+    push_cast
+    ring_nf
+  rw [he, norm_smul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hr]
+  exact mul_le_mul_of_nonneg_left ht hr
+
+/-- **17VI**.1 for `ThesisPos`: the thesis's positive cone is proper. -/
+private theorem thesisPos_antisymm {a : 𝒜} (h : ThesisPos a) (h' : ThesisPos (-a)) :
+    a = 0 := by
+  have hz : ‖a‖ ≤ 0 := by
+    refine (norm_le_iff_spectrum_norm_le a h.1 0 le_rfl).mpr fun z hz => ?_
+    obtain ⟨r, hr0, hrz⟩ := h.spectrum_subset hz
+    have hmem : -z ∈ spectrum ℂ (-a) := by
+      rw [← spectrum.neg_eq]
+      exact Set.neg_mem_neg.mpr hz
+    obtain ⟨s, hs0, hsz⟩ := h'.spectrum_subset hmem
+    have hrs : -(r : ℝ) = s := by
+      have : (-(r : ℝ) : ℂ) = ((s : ℝ) : ℂ) := by rw [← hrz, ← hsz]
+      exact_mod_cast this
+    have hr : r = 0 := by linarith
+    rw [hrz, hr]
+    simp
+  simpa using norm_le_zero_iff.mp hz
+
+/-- **17VI**.2 for `ThesisPos`: the thesis's positive cone is closed
+(the thesis's own argument, asols.tex:1727). -/
+private theorem isClosed_thesisPos : IsClosed {a : 𝒜 | ThesisPos a} := by
+  have hset : {a : 𝒜 | ThesisPos a}
+      = {a : 𝒜 | star a = a} ∩
+        {a : 𝒜 | ‖a - algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ)‖ ≤ ‖a‖} := by
+    ext a
+    exact ⟨fun h => ⟨h.1, h.norm_le⟩, fun h => ⟨h.1, ‖a‖, h.2⟩⟩
+  rw [hset]
+  refine IsClosed.inter (isClosed_eq continuous_star continuous_id) (isClosed_le ?_ ?_)
+  · exact (continuous_id.sub ((continuous_algebraMap ℂ 𝒜).comp
+      (Complex.continuous_ofReal.comp continuous_norm))).norm
+  · exact continuous_norm
+
+/-! #### The norm–order correspondence (**17VI**.3a) for `ThesisPos` -/
+
+private theorem thesisPos_sub_of_norm_le {a : 𝒜} (ha : IsSelfAdjoint a) {t : ℝ}
+    (h : ‖a‖ ≤ t) : ThesisPos (algebraMap ℂ 𝒜 (t : ℂ) - a) :=
+  ⟨(isSelfAdjoint_algebraMap_ofReal' t).sub ha, t, by simpa using h⟩
+
+private theorem thesisPos_add_of_norm_le {a : 𝒜} (ha : IsSelfAdjoint a) {t : ℝ}
+    (h : ‖a‖ ≤ t) : ThesisPos (algebraMap ℂ 𝒜 (t : ℂ) + a) :=
+  ⟨(isSelfAdjoint_algebraMap_ofReal' t).add ha, t, by simpa using h⟩
+
+private theorem norm_le_of_thesisPos_pair {a : 𝒜} (ha : IsSelfAdjoint a) {t : ℝ}
+    (ht : 0 ≤ t) (h1 : ThesisPos (algebraMap ℂ 𝒜 (t : ℂ) - a))
+    (h2 : ThesisPos (algebraMap ℂ 𝒜 (t : ℂ) + a)) : ‖a‖ ≤ t := by
+  refine (norm_le_iff_spectrum_norm_le a ha t ht).mpr fun z hz => ?_
+  obtain ⟨x, rfl⟩ : ∃ x : ℝ, z = (x : ℂ) := ⟨z.re, ha.mem_spectrum_eq_re hz⟩
+  have hm1 : (t : ℂ) - (x : ℂ) ∈ spectrum ℂ (algebraMap ℂ 𝒜 (t : ℂ) - a) := by
+    rw [← spectrum.singleton_sub_eq]
+    exact ⟨(t : ℂ), rfl, (x : ℂ), hz, rfl⟩
+  have hm2 : (t : ℂ) + (x : ℂ) ∈ spectrum ℂ (algebraMap ℂ 𝒜 (t : ℂ) + a) := by
+    rw [← spectrum.singleton_add_eq]
+    exact ⟨(t : ℂ), rfl, (x : ℂ), hz, rfl⟩
+  obtain ⟨r1, hr1, he1⟩ := h1.spectrum_subset hm1
+  obtain ⟨r2, hr2, he2⟩ := h2.spectrum_subset hm2
+  have hv1 : t - x = r1 := by exact_mod_cast he1
+  have hv2 : t + x = r2 := by exact_mod_cast he2
+  rw [Complex.norm_real, Real.norm_eq_abs, abs_le]
+  constructor <;> linarith
+
+/-! #### Squares and odd powers (**11XV**.2–3, parsec 110) -/
+
+/-- **17VI**.4a for `ThesisPos`, by the thesis's own route: **11XV**.2. -/
+private theorem thesisPos_sq {a : 𝒜} (ha : IsSelfAdjoint a) : ThesisPos (a ^ 2) := by
+  refine (thesisPos_iff_spectrum (ha.pow 2)).mpr fun z hz => ?_
+  by_contra hcon
+  simp only [Set.mem_setOf_eq] at hcon
+  push_neg at hcon
+  have hu := spectrum_self_adjoint_real_2 a ha 2 even_two z hcon
+  rw [spectrum.mem_iff] at hz
+  exact hz (by simpa using hu.neg)
+
+/-- **17VI**.4c for `ThesisPos`, by the thesis's own route: **11XV**.3. -/
+private theorem thesisPos_of_pow_odd {a : 𝒜} (ha : IsSelfAdjoint a) {n : ℕ}
+    (hn : Odd n) (h : ThesisPos (a ^ n)) : ThesisPos a := by
+  refine (thesisPos_iff_spectrum ha).mpr fun z hz => ?_
+  by_contra hcon
+  simp only [Set.mem_setOf_eq] at hcon
+  push_neg at hcon
+  have hpow : ∀ w : ℂ, (∀ r : ℝ, 0 ≤ r → w ≠ r) → IsUnit (a ^ n - algebraMap ℂ 𝒜 w) := by
+    intro w hw
+    have hns : w ∉ spectrum ℂ (a ^ n) := fun hmem => by
+      obtain ⟨r, hr0, hrw⟩ := h.spectrum_subset hmem
+      exact hw r hr0 hrw
+    rw [spectrum.notMem_iff] at hns
+    simpa using hns.neg
+  have hu := (spectrum_self_adjoint_real_3 a ha n hn).mp hpow z hcon
+  rw [spectrum.mem_iff] at hz
+  exact hz (by simpa using hu.neg)
+
+/-! #### The square root (**23II**/**23VII**, parsec 230) for `ThesisPos`
+
+The iteration of **23II** is run here against the thesis's own notion of
+positivity.  Only the *existence* half is needed, and only its order-free
+estimates (above) are used; the order-theoretic `ineq-square-root` clause of
+**23II** is not needed at all for what follows. -/
+
+private theorem isSelfAdjoint_star_mul_self' (a : 𝒜) : IsSelfAdjoint (star a * a) := by
+  rw [IsSelfAdjoint, star_mul, star_star]
+
+/-- `‖y‖ ≤ t` for a thesis-positive `y` below `t` (**17VI**.3a/3c). -/
+private theorem norm_le_of_thesisPos_sub {y : 𝒜} (hy : ThesisPos y) {t : ℝ} (ht : 0 ≤ t)
+    (h : ThesisPos (algebraMap ℂ 𝒜 (t : ℂ) - y)) : ‖y‖ ≤ t :=
+  norm_le_of_thesisPos_pair hy.1 ht h (thesisPos_add (thesisPos_algebraMap ht) hy)
+
+/-- The existence half of **23II** for `ThesisPos`: for thesis-positive `a`
+with `‖a‖ ≤ 1` the iteration `b₀ = 0`, `b_{n+1} = ½(a + bₙ²)` converges to a
+thesis-positive `b` with `‖b‖ ≤ 1` and `(1-b)² = 1-a`, commuting with
+everything that commutes with `a`. -/
+private theorem thesisSqrt_iteration {a : 𝒜} (hp : ThesisPos a) (hn : ‖a‖ ≤ 1) :
+    ∃ b : 𝒜, ThesisPos b ∧ ‖b‖ ≤ 1 ∧ (1 - b) ^ 2 = 1 - a ∧
+      ∀ c : 𝒜, c * a = a * c → c * b = b * c := by
+  obtain ⟨b, hb⟩ := cauchySeq_tendsto_of_complete (sqrtApproxSeq_cauchy a hn)
+  have hhalf : ((2 : ℂ))⁻¹ = (((1 / 2 : ℝ)) : ℂ) := by norm_num
+  have hpn : ∀ n, ThesisPos (sqrtApproxSeq a n) := by
+    intro n
+    induction n with
+    | zero => rw [sqrtApproxSeq_zero]; exact thesisPos_zero
+    | succ n ih =>
+      rw [sqrtApproxSeq_succ, hhalf]
+      exact thesisPos_ofReal_smul (by norm_num) (thesisPos_add hp (thesisPos_sq ih.1))
+  refine ⟨b, isClosed_thesisPos.mem_of_tendsto hb (Filter.Eventually.of_forall hpn), ?_, ?_, ?_⟩
+  · have hlim : Tendsto (fun n => ‖sqrtApproxSeq a n‖) atTop (𝓝 ‖b‖) := hb.norm
+    refine le_of_tendsto hlim (Filter.Eventually.of_forall fun n => ?_)
+    exact le_trans (sqrtApproxSeq_norm_le a hn n) (sqrtApproxReal_le_one n)
+  · have hrec : b = (2 : ℂ)⁻¹ • (a + b ^ 2) := by
+      have hl : Tendsto (fun n => sqrtApproxSeq a (n + 1)) atTop (𝓝 b) :=
+        hb.comp (Filter.tendsto_add_atTop_nat 1)
+      have hr : Tendsto (fun n => sqrtApproxSeq a (n + 1)) atTop
+          (𝓝 ((2 : ℂ)⁻¹ • (a + b ^ 2))) := by
+        simp only [sqrtApproxSeq_succ]
+        exact ((hb.pow 2).const_add a).const_smul _
+      exact tendsto_nhds_unique hl hr
+    have h2 : a + b ^ 2 = b + b := by
+      have h3 : (2 : ℂ) • ((2 : ℂ)⁻¹ • (a + b ^ 2)) = (2 : ℂ) • b := by rw [← hrec]
+      have he : (2 : ℂ) * (2 : ℂ)⁻¹ = 1 := by norm_num
+      rw [smul_smul, he, one_smul, two_smul] at h3
+      exact h3
+    have hsq : (1 - b) ^ 2 = 1 - (b + b) + b ^ 2 := by noncomm_ring
+    rw [hsq, ← h2]
+    abel
+  · intro c hc
+    have hl : Tendsto (fun n => c * sqrtApproxSeq a n) atTop (𝓝 (c * b)) := hb.const_mul c
+    have hr : Tendsto (fun n => sqrtApproxSeq a n * c) atTop (𝓝 (b * c)) := hb.mul_const c
+    refine tendsto_nhds_unique hl ?_
+    simpa only [sqrtApproxSeq_commute a c hc] using hr
+
+/-- **23VII** for `ThesisPos`: every thesis-positive element has a
+thesis-positive square root, commuting with everything that commutes with it.
+(Uniqueness is not needed below and is not claimed here.) -/
+private theorem thesisSqrt_exists {x : 𝒜} (hx : ThesisPos x) :
+    ∃ m : 𝒜, ThesisPos m ∧ m ^ 2 = x ∧ ∀ c : 𝒜, c * x = x * c → c * m = m * c := by
+  rcases eq_or_lt_of_le (norm_nonneg x) with h0 | h0
+  · have hx0 : x = 0 := norm_eq_zero.mp h0.symm
+    exact ⟨0, thesisPos_zero, by simp [hx0], by simp⟩
+  · have hs0 : (0 : ℝ) < ‖x‖ := h0
+    set s : ℝ := ‖x‖ with hs
+    have hy : ThesisPos (((s⁻¹ : ℝ) : ℂ) • x) :=
+      thesisPos_ofReal_smul (le_of_lt (inv_pos.mpr hs0)) hx
+    set y : 𝒜 := ((s⁻¹ : ℝ) : ℂ) • x with hydef
+    have hyn : ‖y‖ = 1 := by
+      rw [hydef, norm_smul, Complex.norm_real, Real.norm_eq_abs,
+        abs_of_nonneg (le_of_lt (inv_pos.mpr hs0)), ← hs, inv_mul_cancel₀ (ne_of_gt hs0)]
+    have hone : algebraMap ℂ 𝒜 (((1 : ℝ)) : ℂ) = 1 := by norm_num
+    have hay : ThesisPos (1 - y) := by
+      have := thesisPos_sub_of_norm_le hy.1 (t := 1) (le_of_eq hyn)
+      rwa [hone] at this
+    have han : ‖1 - y‖ ≤ 1 := by
+      refine norm_le_of_thesisPos_sub hay zero_le_one ?_
+      rw [hone]
+      simpa using hy
+    obtain ⟨b, hb, hbn, hb2, hbc⟩ := thesisSqrt_iteration hay han
+    have hm0 : ThesisPos (1 - b) := by
+      have := thesisPos_sub_of_norm_le hb.1 hbn
+      rwa [hone] at this
+    have hm0sq : (1 - b) ^ 2 = y := by rw [hb2]; abel
+    refine ⟨((Real.sqrt s : ℝ) : ℂ) • (1 - b),
+      thesisPos_ofReal_smul (Real.sqrt_nonneg s) hm0, ?_, ?_⟩
+    · have hsmulsq : ∀ (r : ℂ) (z : 𝒜), (r • z) ^ 2 = (r * r) • z ^ 2 := by
+        intro r z; rw [sq, sq, smul_mul_assoc, mul_smul_comm, smul_smul]
+      rw [hsmulsq, hm0sq, hydef, smul_smul]
+      have hcc : ((Real.sqrt s : ℝ) : ℂ) * ((Real.sqrt s : ℝ) : ℂ) * ((s⁻¹ : ℝ) : ℂ) = 1 := by
+        have : Real.sqrt s * Real.sqrt s * s⁻¹ = 1 := by
+          rw [Real.mul_self_sqrt (le_of_lt hs0), mul_inv_cancel₀ (ne_of_gt hs0)]
+        exact_mod_cast congrArg (fun r : ℝ => (r : ℂ)) this
+      rw [hcc, one_smul]
+    · intro c hc
+      have hcy : c * y = y * c := by
+        rw [hydef, mul_smul_comm, smul_mul_assoc, hc]
+      have hca : c * (1 - y) = (1 - y) * c := by
+        rw [mul_sub, sub_mul, mul_one, one_mul, hcy]
+      have hcb := hbc c hca
+      rw [mul_smul_comm, smul_mul_assoc, mul_sub, sub_mul, mul_one, one_mul, hcb]
+
+/-- The thesis's `square-commuting-monotone` (cstar.tex:3573) for `ThesisPos`:
+the product of two commuting thesis-positive elements is thesis-positive,
+because each is a square whose root commutes with the other. -/
+private theorem thesisPos_mul_of_commute {x y : 𝒜} (hx : ThesisPos x) (hy : ThesisPos y)
+    (hxy : x * y = y * x) : ThesisPos (x * y) := by
+  obtain ⟨d, hd, hdsq, hdc⟩ := thesisSqrt_exists hx
+  obtain ⟨e, he, hesq, hec⟩ := thesisSqrt_exists hy
+  have hdy : d * y = y * d := (hdc y hxy.symm).symm
+  have hde : d * e = e * d := hec d hdy
+  have hsa : IsSelfAdjoint (d * e) := by
+    rw [IsSelfAdjoint, star_mul, hd.1.star_eq, he.1.star_eq, ← hde]
+  have hprod : x * y = (d * e) ^ 2 := by
+    rw [← hdsq, ← hesq, sq, sq, sq]
+    calc d * d * (e * e) = d * (d * e) * e := by noncomm_ring
+      _ = d * (e * d) * e := by rw [hde]
+      _ = d * e * (d * e) := by noncomm_ring
+  rw [hprod]
+  exact thesisPos_sq hsa
+
+/-- **17VI**.4d for `ThesisPos`: powers of a thesis-positive element are
+thesis-positive. -/
+private theorem thesisPos_pow {a : 𝒜} (ha : ThesisPos a) : ∀ n : ℕ, ThesisPos (a ^ n)
+  | 0 => by simpa using thesisPos_one
+  | (n + 1) => by
+      rw [pow_succ]
+      exact thesisPos_mul_of_commute (thesisPos_pow ha n) ha (by rw [← pow_succ, pow_succ'])
+
+/-! #### **19III** and **24IV** for `ThesisPos` -/
+
+/-- Auxiliary: `x + x = y + y` implies `x = y` (the algebra is a `ℂ`-vector
+space).  Used to divide the thesis's identities by two. -/
+private theorem eq_of_add_self_eq {x y : 𝒜} (hxy : x + x = y + y) : x = y := by
+  have h2 : ((2 : ℂ))⁻¹ • ((2 : ℂ) • x) = ((2 : ℂ))⁻¹ • ((2 : ℂ) • y) := by
+    rw [two_smul, two_smul, hxy]
+  rwa [smul_smul, smul_smul, show ((2 : ℂ))⁻¹ * 2 = 1 by norm_num, one_smul, one_smul] at h2
+
+/-- **19III** (`astara-non-negative`, cstar.tex:2838, Lemma) for the thesis's
+notion of positivity, transcribing the thesis's argument at parsec 190:
+`a*a ≤ 0` implies `a = 0`.  Note that the Lean statement `astara_non_negative`
+below is *not* this: with Mathlib's star order `0 ≤ star a * a` holds by
+definition, so that statement is a triviality, whereas this one is not. -/
+private theorem thesisPos_astara_non_negative {b : 𝒜} (h : ThesisPos (-(star b * b))) :
+    b = 0 := by
+  have hsa2 : IsSelfAdjoint (b * star b) := by
+    simpa using isSelfAdjoint_star_mul_self' (star b)
+
+  -- `spec(b*b) ⊆ (-∞,0]` gives `spec(bb*) ⊆ (-∞,0]` by `prod_spec` (**19Ia**,
+  -- stated below at parsec 190; Mathlib's form of it is cited here because
+  -- this block is placed early in the file for technical reasons only).
+  have h2 : ThesisPos (-(b * star b)) := by
+    refine (thesisPos_iff_spectrum hsa2.neg).mpr fun z hz => ?_
+    have hz' : -z ∈ spectrum ℂ (b * star b) := by
+      have hzz : z ∈ -spectrum ℂ (b * star b) := by rw [spectrum.neg_eq]; exact hz
+      exact Set.mem_neg.mp hzz
+    by_cases hz0 : (-z) = 0
+    · exact ⟨0, le_rfl, by simpa using neg_eq_zero.mp hz0⟩
+    · have hd : -z ∈ spectrum ℂ (b * star b) \ {0} :=
+        Set.mem_sdiff_of_mem hz' (by simpa using hz0)
+      rw [spectrum.nonzero_mul_comm b (star b)] at hd
+      have hmem : -z ∈ spectrum ℂ (star b * b) := Set.mem_of_mem_sdiff hd
+      refine h.spectrum_subset ?_
+      rw [← spectrum.neg_eq]
+      exact Set.mem_neg.mpr (by simpa using hmem)
+  -- on the other hand `b*b + bb* = ½((b+b*)² + (i(b-b*))²) ≥ 0`
+  have hsum : ThesisPos (star b * b + b * star b) := by
+    have hp : IsSelfAdjoint (b + star b) := by
+      rw [IsSelfAdjoint, star_add, star_star]; abel
+    have hq : IsSelfAdjoint (Complex.I • (b - star b)) := by
+      rw [IsSelfAdjoint, star_smul, star_sub, star_star, Complex.star_def, Complex.conj_I,
+        neg_smul, smul_sub, smul_sub, neg_sub]
+    have hexp : (b + star b) ^ 2 + (Complex.I • (b - star b)) ^ 2
+        = (star b * b + b * star b) + (star b * b + b * star b) := by
+      have h1 : (Complex.I • (b - star b)) ^ 2
+          = (Complex.I * Complex.I) • (b - star b) ^ 2 := by
+        rw [sq, sq, smul_mul_assoc, mul_smul_comm, smul_smul]
+      rw [h1, Complex.I_mul_I, neg_one_smul]
+      noncomm_ring
+    have hps : ThesisPos ((star b * b + b * star b) + (star b * b + b * star b)) := by
+      rw [← hexp]
+      exact thesisPos_add (thesisPos_sq hp) (thesisPos_sq hq)
+    -- and a self-adjoint `x` with `x + x` positive is positive
+    have hhalf := thesisPos_ofReal_smul (𝒜 := 𝒜) (r := 1 / 2) (by norm_num) hps
+    have hcalc : (((1 / 2 : ℝ)) : ℂ) •
+        ((star b * b + b * star b) + (star b * b + b * star b))
+        = star b * b + b * star b := by
+      rw [← two_smul ℂ, smul_smul]
+      norm_num
+    rwa [hcalc] at hhalf
+  have hzero : star b * b + b * star b = 0 := by
+    refine thesisPos_antisymm hsum ?_
+    have hrw : (-(star b * b)) + (-(b * star b)) = -(star b * b + b * star b) := by abel
+    rw [← hrw]
+    exact thesisPos_add h h2
+  have hstar : star b * b = 0 := by
+    refine thesisPos_antisymm ?_ h
+    have he : star b * b = -(b * star b) := by
+      have hx : star b * b = -(b * star b) + 0 := by rw [← hzero]; abel
+      simpa using hx
+    rw [he]
+    exact h2
+  have hnb : ‖b‖ * ‖b‖ = 0 := by
+    rw [← CStarRing.norm_star_mul_self, hstar, norm_zero]
+  have hn0 : ‖b‖ = 0 := by nlinarith [norm_nonneg b]
+  exact norm_eq_zero.mp hn0
+
+/-- **24IV** (`astara-positive`, cstar.tex:3725, Lemma) for the thesis's
+notion of positivity, transcribing the thesis's argument: `a*a` is positive.
+
+The thesis takes `b := a ((a*a)_-)^{1/2}`; here the negative part is reached
+directly as `u := |h| - h` (with `h := a*a` and `|h|` the square root of `h²`
+from **23VII**), and `b := a u` already does the job, `u` being positive
+because `u³ = 2|h|u²` is a product of commuting positives (**11XV**.3). -/
+private theorem thesisPos_star_mul_self (a : 𝒜) : ThesisPos (star a * a) := by
+  set h : 𝒜 := star a * a with hdef
+  have hsa : IsSelfAdjoint h := isSelfAdjoint_star_mul_self' a
+  -- `m := |h|`, a thesis-positive square root of `h²`, commuting with `h`
+  obtain ⟨m, hm, hm2, hmc⟩ := thesisSqrt_exists (thesisPos_sq hsa)
+  have hmh : h * m = m * h := hmc h (by noncomm_ring)
+  set u : 𝒜 := m - h with hu
+  have husa : IsSelfAdjoint u := hm.1.sub hsa
+  have hhu : h * u = u * h := by rw [hu, mul_sub, sub_mul, hmh]
+  -- the thesis's `h h₋ = -(h₋)²`, in the form `2 h u = -u²`
+  have hkey : h * u + h * u = -(u ^ 2) := by
+    have hexp : u ^ 2 = m ^ 2 - m * h - h * m + h ^ 2 := by rw [hu]; noncomm_ring
+    rw [hm2, ← hmh] at hexp
+    rw [hexp, hu]
+    noncomm_ring
+  -- `u² = 2 m u = 2 u m`, whence `m` and `u` commute
+  have hmsum : m = u + h := by rw [hu]; abel
+  have h1 : m * u + m * u = u ^ 2 := by
+    have hmu' : m * u = u * u + h * u := by rw [hmsum]; noncomm_ring
+    rw [hmu']
+    have hre : u * u + h * u + (u * u + h * u) = u * u + u * u + (h * u + h * u) := by abel
+    rw [hre, hkey, sq]
+    abel
+  have h2 : u * m + u * m = u ^ 2 := by
+    have hmu' : u * m = u * u + u * h := by rw [hmsum]; noncomm_ring
+    rw [hmu', ← hhu]
+    have hre : u * u + h * u + (u * u + h * u) = u * u + u * u + (h * u + h * u) := by abel
+    rw [hre, hkey, sq]
+    abel
+  have hmu : m * u = u * m := eq_of_add_self_eq (by rw [h1, h2])
+  -- `u ≥ 0`, because `u³ = 2 m u²` is a product of commuting positives
+  have hu3 : ThesisPos (u ^ 3) := by
+    have hcube : u ^ 3 = m * u ^ 2 + m * u ^ 2 := by
+      have he : u ^ 3 = (m * u + m * u) * u := by rw [h1]; exact pow_succ u 2
+      rw [he, sq]
+      noncomm_ring
+    have hmc2 : m * u ^ 2 = u ^ 2 * m := by
+      rw [sq, ← mul_assoc, hmu, mul_assoc, hmu, mul_assoc]
+    have hpos : ThesisPos (m * u ^ 2) :=
+      thesisPos_mul_of_commute hm (thesisPos_sq husa) hmc2
+    rw [hcube]
+    exact thesisPos_add hpos hpos
+  have hup : ThesisPos u := thesisPos_of_pow_odd husa (by decide) hu3
+  -- the thesis's `b := a (h₋)^{1/2}`; here `b := a u` already works
+  have hbb : star (a * u) * (a * u) = h * u ^ 2 := by
+    have hb1 : star (a * u) * (a * u) = u * h * u := by
+      rw [star_mul, husa.star_eq, hdef]; noncomm_ring
+    rw [hb1, ← hhu, mul_assoc, ← sq]
+  have hbneg : ThesisPos (-(star (a * u) * (a * u))) := by
+    have hsum2 : (-(star (a * u) * (a * u))) + (-(star (a * u) * (a * u))) = u ^ 3 := by
+      rw [hbb, ← neg_add]
+      have hfac : h * u ^ 2 + h * u ^ 2 = (h * u + h * u) * u := by
+        rw [sq]; noncomm_ring
+      rw [hfac, hkey]
+      noncomm_ring
+    have hhalf := thesisPos_ofReal_smul (𝒜 := 𝒜) (r := 1 / 2) (by norm_num) (hsum2 ▸ hu3)
+    have hcalc : (((1 / 2 : ℝ)) : ℂ) •
+        ((-(star (a * u) * (a * u))) + (-(star (a * u) * (a * u))))
+        = -(star (a * u) * (a * u)) := by
+      rw [← two_smul ℂ, smul_smul]
+      norm_num
+    rwa [hcalc] at hhalf
+  have hb0 : a * u = 0 := thesisPos_astara_non_negative hbneg
+  have hzero2 : h * u ^ 2 = 0 := by rw [← hbb, hb0]; simp
+  have hu3z : u ^ 3 = 0 := by
+    have hfac : h * u ^ 2 + h * u ^ 2 = -(u ^ 3) := by
+      have he : h * u ^ 2 + h * u ^ 2 = (h * u + h * u) * u := by rw [sq]; noncomm_ring
+      rw [he, hkey, neg_mul, ← pow_succ]
+    have hz : -(u ^ 3) = 0 := by rw [← hfac, hzero2, add_zero]
+    exact neg_eq_zero.mp hz
+  have hu0 : u = 0 := by
+    have hn2 : ‖u ^ 2‖ = ‖u‖ ^ 2 := by
+      rw [sq, sq, ← CStarRing.norm_star_mul_self, husa.star_eq]
+    have hs2 : IsSelfAdjoint (u ^ 2) := husa.pow 2
+    have hn4 : ‖u ^ 4‖ = ‖u ^ 2‖ ^ 2 := by
+      rw [show u ^ 4 = u ^ 2 * u ^ 2 by rw [show (4 : ℕ) = 2 + 2 from rfl, pow_add],
+        sq (‖u ^ 2‖), ← CStarRing.norm_star_mul_self, hs2.star_eq]
+    have hu4 : u ^ 4 = 0 := by rw [pow_succ, hu3z, zero_mul]
+    rw [hu4, norm_zero, hn2] at hn4
+    have hq : ‖u‖ ^ 2 = 0 := by nlinarith [sq_nonneg (‖u‖ ^ 2)]
+    have hn0 : ‖u‖ = 0 := by nlinarith [norm_nonneg u]
+    exact norm_eq_zero.mp hn0
+  have hmeq : m = h := sub_eq_zero.mp (by rw [← hu]; exact hu0)
+  rw [← hmeq]
+  exact hm
+
+/-! #### **25I**: the thesis's notion of positivity is Mathlib's `0 ≤` -/
+
+section Bridge
+
+variable [PartialOrder 𝒜] [StarOrderedRing 𝒜]
+
+/-- **25I**, cheap half: a thesis-positive element is nonnegative in Mathlib's
+star order.  This is a matter of unfolding Mathlib's *definition* of `0 ≤`:
+a thesis-positive `a` is a square `m²` by **23VII**, hence `star m * m`, hence
+`0 ≤ a` by `star_mul_self_nonneg`, which carries no thesis content.  It rests
+on the square root (parsec 230) and nothing later. -/
+private theorem ThesisPos.nonneg {a : 𝒜} (h : ThesisPos a) : 0 ≤ a := by
+  obtain ⟨m, hm, hm2, -⟩ := thesisSqrt_exists h
+  have hms : star m * m = m ^ 2 := by rw [hm.1.star_eq, sq]
+  rw [← hm2, ← hms]
+  exact star_mul_self_nonneg m
+
+/-- **25I**, expensive half: an element nonnegative in Mathlib's star order is
+thesis-positive.  This is the real statement: an element of the star-positive
+cone is a sum of elements `star s * s`, and each of those is thesis-positive by
+**24IV** above — the theorem proved from the thesis's own parsec-190 and
+parsec-230 development.  `StarOrderedRing.nonneg_iff` used here is again only
+the *definition* of Mathlib's order. -/
+private theorem thesisPos_of_nonneg {a : 𝒜} (h : 0 ≤ a) : ThesisPos a := by
+  rw [StarOrderedRing.nonneg_iff] at h
+  induction h using AddSubmonoid.closure_induction with
+  | mem x hx =>
+      obtain ⟨s, rfl⟩ := hx
+      exact thesisPos_star_mul_self s
+  | zero => exact thesisPos_zero
+  | add x y _ _ hx hy => exact thesisPos_add hx hy
+
+/-- **25I** (`cstar-positive-final`, cstar.tex:3750, Exercise), the part that
+the encoding of positivity as `0 ≤` presupposes: the thesis's notion of
+positivity and Mathlib's star order agree.  Proofs below cite the two halves
+separately wherever only one is needed, so that the dependency on **24IV**
+stays visible. -/
+private theorem thesisPos_iff_nonneg (a : 𝒜) : ThesisPos a ↔ 0 ≤ a :=
+  ⟨ThesisPos.nonneg, thesisPos_of_nonneg⟩
+
+end Bridge
+
+end ThesisPositive
+
 section Order
 
 variable [PartialOrder 𝒜] [StarOrderedRing 𝒜]
@@ -393,18 +1095,12 @@ spectrum consists of nonnegative reals. -/
 private theorem nonneg_iff_spectrum_ofReal_nonneg (a : 𝒜) (ha : IsSelfAdjoint a) :
     0 ≤ a ↔ spectrum ℂ a ⊆ {z : ℂ | ∃ r : ℝ, 0 ≤ r ∧ z = r} :=
   by
-    rw [StarOrderedRing.nonneg_iff_spectrum_nonneg (R := ℝ) a ha]
-    constructor
-    · intro h z hz
-      refine ⟨z.re, ?_, ha.mem_spectrum_eq_re hz⟩
-      exact h _ (by simpa using ha.spectrumRestricts.apply_mem hz)
-    · intro h x hx
-      have hx' : (x : ℂ) ∈ spectrum ℂ a := by
-        rw [← ha.spectrumRestricts.algebraMap_image]
-        exact ⟨x, hx, by simp⟩
-      obtain ⟨r, hr, hrx⟩ := h hx'
-      have hxr : x = r := by exact_mod_cast hrx
-      rw [hxr]; exact hr
+    -- The thesis proves this at parsec 170, from `pos-spectrum` (**17III**)
+    -- alone; what the Lean encoding adds is the identification of `0 ≤ a` with
+    -- the thesis's notion of positivity, which is **25I** and is supplied by
+    -- `thesisPos_iff_nonneg` above (proved from the thesis's own development,
+    -- not from Mathlib's `StarOrderedRing.nonneg_iff_spectrum_nonneg`).
+    rw [← thesisPos_iff_nonneg, thesisPos_iff_spectrum ha]
 
 /-- **17V** (`cstar-positive-1`, cstar.tex:2732, Exercise): for a
 self-adjoint element `a` of a C*-algebra the following are equivalent:
@@ -450,7 +1146,11 @@ theorem positive_basic_2_1 (a : 𝒜) (h0 : 0 ≤ a) (h1 : a ≤ 0) : a = 0 :=
 /-- **17VI** (`positive-basic-2`, cstar.tex:2756, Exercise), part 2: the set
 `𝒜₊` of positive elements is closed. -/
 theorem positive_basic_2_2 : IsClosed {a : 𝒜 | 0 ≤ a} :=
-  CStarAlgebra.isClosed_nonneg
+  by
+    have hset : {a : 𝒜 | 0 ≤ a} = {a : 𝒜 | ThesisPos a} := by
+      ext a; exact (thesisPos_iff_nonneg a).symm
+    rw [hset]
+    exact isClosed_thesisPos
 
 /-- **17VI** (`positive-basic-2`, cstar.tex:2756, Exercise), part 3a: for
 self-adjoint `a` and `λ ∈ [0,∞)`: `-λ ≤ a ≤ λ` iff `‖a‖ ≤ λ`. -/
@@ -458,7 +1158,23 @@ theorem positive_basic_2_3a (a : 𝒜) (ha : IsSelfAdjoint a) (lam : ℝ)
     (hlam : 0 ≤ lam) :
     (-(algebraMap ℂ 𝒜 (lam : ℂ)) ≤ a ∧ a ≤ algebraMap ℂ 𝒜 (lam : ℂ)) ↔
       ‖a‖ ≤ lam :=
-  (norm_le_iff_neg_algebraMap_le ha hlam).symm
+  by
+    -- the thesis's own argument (asols.tex:1745), through the spectrum
+    constructor
+    · rintro ⟨h1, h2⟩
+      refine norm_le_of_thesisPos_pair ha hlam
+        (thesisPos_of_nonneg (sub_nonneg.mpr h2)) ?_
+      have h3 : (0 : 𝒜) ≤ algebraMap ℂ 𝒜 (lam : ℂ) + a := by
+        have h4 := sub_nonneg.mpr h1
+        rwa [sub_neg_eq_add, add_comm] at h4
+      exact thesisPos_of_nonneg h3
+    · intro h
+      refine ⟨?_, ?_⟩
+      · have h1 := (thesisPos_add_of_norm_le ha h).nonneg
+        rw [← sub_neg_eq_add, sub_nonneg] at h1
+        exact neg_le.mp h1
+      · have h2 := (thesisPos_sub_of_norm_le ha h).nonneg
+        rwa [sub_nonneg] at h2
 
 /-- **17VI** (`positive-basic-2`, cstar.tex:2756, Exercise), part 3b:
 `‖a‖ = inf { λ ∈ ℝ : -λ ≤ a ≤ λ }` for self-adjoint `a` (so `sa(𝒜)` is a
@@ -493,9 +1209,11 @@ theorem positive_basic_2_3b (a : 𝒜) (ha : IsSelfAdjoint a) :
           obtain ⟨r, hr, hre⟩ := h5 h6
           have h7 : lam + lam = r := by exact_mod_cast hre
           have hlam : 0 ≤ lam := by linarith
-          exact (norm_le_iff_neg_algebraMap_le ha hlam).mpr ⟨h1, h2⟩
+          exact (positive_basic_2_3a a ha lam hlam).mp ⟨h1, h2⟩
         · intro h
-          exact (norm_le_iff_neg_algebraMap_le ha (le_trans (norm_nonneg a) h)).mp h
+          exact (positive_basic_2_3a a ha ‖a‖ (norm_nonneg a)).mpr le_rfl |>.imp
+            (fun hx => le_trans (neg_le_neg (algebraMap_ofReal_mono h)) hx)
+            (fun hx => le_trans hx (algebraMap_ofReal_mono h))
       rw [hset, csInf_Ici]
 
 
@@ -503,15 +1221,29 @@ theorem positive_basic_2_3b (a : 𝒜) (ha : IsSelfAdjoint a) :
 `0 ≤ a ≤ b` entails `‖a‖ ≤ ‖b‖`. -/
 theorem positive_basic_2_3c (a b : 𝒜) (h0 : 0 ≤ a) (hab : a ≤ b) :
     ‖a‖ ≤ ‖b‖ :=
-  CStarAlgebra.norm_le_norm_of_nonneg_of_le h0 hab
+  by
+    -- the thesis's argument: `-‖b‖ ≤ 0 ≤ a ≤ b ≤ ‖b‖`, then **17VI**.3a
+    have hb : (0 : 𝒜) ≤ b := le_trans h0 hab
+    have hbsa : IsSelfAdjoint b := IsSelfAdjoint.of_nonneg hb
+    have hasa : IsSelfAdjoint a := IsSelfAdjoint.of_nonneg h0
+    refine norm_le_of_thesisPos_pair hasa (norm_nonneg b) ?_ ?_
+    · have h1 : ThesisPos (algebraMap ℂ 𝒜 ((‖b‖ : ℝ) : ℂ) - b) :=
+        thesisPos_sub_of_norm_le hbsa le_rfl
+      have h2 : ThesisPos (b - a) := thesisPos_of_nonneg (sub_nonneg.mpr hab)
+      have h3 := thesisPos_add h1 h2
+      have he : algebraMap ℂ 𝒜 ((‖b‖ : ℝ) : ℂ) - b + (b - a)
+          = algebraMap ℂ 𝒜 ((‖b‖ : ℝ) : ℂ) - a := by abel
+      rwa [he] at h3
+    · exact thesisPos_add (thesisPos_algebraMap (norm_nonneg b))
+        (thesisPos_of_nonneg h0)
 
 /-- **17VI** (`positive-basic-2`, cstar.tex:2756, Exercise), part 4a: `a²`
 is positive for self-adjoint `a`. -/
 theorem positive_basic_2_4a (a : 𝒜) (ha : IsSelfAdjoint a) : 0 ≤ a ^ 2 :=
   by
-    have h : a ^ 2 = star a * a := by rw [ha.star_eq, sq]
-    rw [h]
-    exact star_mul_self_nonneg a
+    -- the thesis's route (**11XV**.2): `spec(a²) ⊆ [0,∞)`, not the Lean
+    -- triviality `a² = star a * a`
+    exact (thesisPos_sq ha).nonneg
 
 /-- **17VI** (`positive-basic-2`, cstar.tex:2756, Exercise), part 4b: `aⁿ`
 is positive for self-adjoint `a` and even `n`. -/
@@ -519,38 +1251,54 @@ theorem positive_basic_2_4b (a : 𝒜) (ha : IsSelfAdjoint a) (n : ℕ)
     (hn : Even n) : 0 ≤ a ^ n :=
   by
     obtain ⟨m, rfl⟩ := hn
-    have h : a ^ (m + m) = star (a ^ m) * a ^ m := by
-      rw [(ha.pow m).star_eq, ← pow_add]
+    have h : a ^ (m + m) = (a ^ m) ^ 2 := by rw [← pow_mul, Nat.mul_two]
     rw [h]
-    exact star_mul_self_nonneg _
+    exact (thesisPos_sq (ha.pow m)).nonneg
 
 /-- **17VI** (`positive-basic-2`, cstar.tex:2756, Exercise), part 4c: for
 self-adjoint `a` and odd `n`: `aⁿ` is positive iff `a` is positive. -/
 theorem positive_basic_2_4c (a : 𝒜) (ha : IsSelfAdjoint a) (n : ℕ)
     (hn : Odd n) : 0 ≤ a ^ n ↔ 0 ≤ a :=
   by
+    -- the thesis's route (**11XV**.3) in both directions
     constructor
     · intro h
-      rw [StarOrderedRing.nonneg_iff_spectrum_nonneg (R := ℝ) a ha]
-      intro x hx
-      rw [StarOrderedRing.nonneg_iff_spectrum_nonneg (R := ℝ) (a ^ n) (ha.pow n)] at h
-      exact hn.pow_nonneg_iff.mp (h _ (spectrum.pow_mem_pow a n hx))
+      exact (thesisPos_of_pow_odd ha hn (thesisPos_of_nonneg h)).nonneg
     · intro h
-      exact CStarAlgebra.pow_nonneg h n
+      exact (thesisPos_pow (thesisPos_of_nonneg h) n).nonneg
 
 /-- **17VI** (`positive-basic-2`, cstar.tex:2756, Exercise), part 4d: `aⁿ` is
 positive for positive `a` and every `n`. -/
 theorem positive_basic_2_4d (a : 𝒜) (ha : 0 ≤ a) (n : ℕ) : 0 ≤ a ^ n :=
-  CStarAlgebra.pow_nonneg ha n
+  (thesisPos_pow (thesisPos_of_nonneg ha) n).nonneg
 
 /-- **17VI** (`positive-basic-2`, cstar.tex:2756, Exercise), part 5: for
 invertible `a`: `a ≥ 0` iff `a⁻¹ ≥ 0`. -/
 theorem positive_basic_2_5 (a : 𝒜) (ha : IsUnit a) :
     0 ≤ a ↔ 0 ≤ Ring.inverse a :=
   by
+    -- the thesis's route (asols.tex:1834): `spec(a⁻¹) = spec(a)⁻¹`, via
+    -- **17V**.3; `CFC.inv_nonneg` would import the functional calculus
     obtain ⟨u, rfl⟩ := ha
     rw [Ring.inverse_unit]
-    exact (CFC.inv_nonneg u).symm
+    have hkey : ∀ v : 𝒜ˣ, (0 : 𝒜) ≤ (v : 𝒜) → (0 : 𝒜) ≤ ((v⁻¹ : 𝒜ˣ) : 𝒜) := by
+      intro v hv
+      have hvsa : IsSelfAdjoint ((v : 𝒜)) := IsSelfAdjoint.of_nonneg hv
+      have hvu : star v = v := Units.ext (by rw [Units.coe_star, hvsa.star_eq])
+      have hisa : IsSelfAdjoint (((v⁻¹ : 𝒜ˣ) : 𝒜)) := by
+        show star (((v⁻¹ : 𝒜ˣ)) : 𝒜) = _
+        rw [← Units.coe_star_inv, hvu]
+      refine (nonneg_iff_spectrum_ofReal_nonneg _ hisa).mpr fun z hz => ?_
+      rw [← spectrum.map_inv v] at hz
+      obtain ⟨r, hr0, hrz⟩ :=
+        (nonneg_iff_spectrum_ofReal_nonneg _ hvsa).mp hv (Set.mem_inv.mp hz)
+      refine ⟨r⁻¹, inv_nonneg.mpr hr0, ?_⟩
+      rw [Complex.ofReal_inv, ← hrz, inv_inv]
+    constructor
+    · exact hkey u
+    · intro h
+      have h2 := hkey u⁻¹ h
+      rwa [inv_inv] at h2
 
 /-- **17VI** (`positive-basic-2`, cstar.tex:2756, Exercise), part 6: a
 positive element `a` is invertible iff `a ≥ 1/n` for some `n > 0`. -/
@@ -658,10 +1406,17 @@ theorem weak_russo_dye_1 (f : 𝒜 →ₗ[ℂ] ℬ) (hf : IsPositiveMap f) (a : 
     (ha : IsSelfAdjoint a) : ‖f a‖ ≤ ‖f 1‖ * ‖a‖ :=
   by
     have hfsa : IsSelfAdjoint (f a) := by
-      have h1 := CFC.posPart_sub_negPart a ha
-      rw [← h1, map_sub]
-      exact (IsSelfAdjoint.of_nonneg (hf _ (CFC.posPart_nonneg a))).sub
-        (IsSelfAdjoint.of_nonneg (hf _ (CFC.negPart_nonneg a)))
+      -- `a = (‖a‖ + a) - ‖a‖` with both terms positive (**17VI**.3a); the
+      -- positive/negative parts are only available at parsec 240
+      have hp1 : (0 : 𝒜) ≤ algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ) + a :=
+        (thesisPos_add_of_norm_le ha le_rfl).nonneg
+      have hp0 : (0 : 𝒜) ≤ algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ) :=
+        (thesisPos_algebraMap (norm_nonneg a)).nonneg
+      have he : f a = f (algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ) + a)
+          - f (algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ)) := by
+        rw [map_add]; abel
+      rw [he]
+      exact (IsSelfAdjoint.of_nonneg (hf _ hp1)).sub (IsSelfAdjoint.of_nonneg (hf _ hp0))
     have hmono : ∀ x y : 𝒜, x ≤ y → f x ≤ f y := by
       intro x y h
       have h2 := hf _ (sub_nonneg.mpr h)
@@ -790,6 +1545,12 @@ theorem cstar_product_2_miu {ι : Type*} {𝒜 : ι → Type*}
     ext b i
     exact hg' i b
 
+/-- Auxiliary: `⊕ᵢ 𝒜ᵢ` is a C*-algebra.  Mathlib supplies the `NormedRing`
+instance (`Mathlib/Analysis/CStarAlgebra/lpSpace.lean`) and the commutative
+case, but not this one. -/
+noncomputable instance lpInftyCStarAlgebra {ι : Type*} {𝒜 : ι → Type*}
+    [∀ i, Nontrivial (𝒜 i)] [∀ i, CStarAlgebra (𝒜 i)] : CStarAlgebra (lp 𝒜 ∞) where
+
 /-- **20aI** (`cstar-product-2`, cstar.tex:3015, Exercise), part 2 (key step
 for the `pu`-variant): an element of `⊕ᵢ 𝒜ᵢ` is positive iff all of its
 components are. -/
@@ -814,28 +1575,39 @@ theorem cstar_product_2_positive {ι : Type*} {𝒜 : ι → Type*}
           show (0 : 𝒜 i) ≤ (x : ∀ i, 𝒜 i) i + (y : ∀ i, 𝒜 i) i
           exact add_nonneg (hx i) (hy i)
     · intro h
-      have hsq : ∀ i, ‖CFC.sqrt ((a : ∀ i, 𝒜 i) i)‖ = Real.sqrt ‖(a : ∀ i, 𝒜 i) i‖ := by
+      -- The thesis's own criterion (**17V**, parsec 170) reads positivity off the
+      -- norm: `0 ≤ x` iff `‖x - t‖ ≤ t` for every `t ≥ ‖x‖/2`.  On `⊕ᵢ 𝒜ᵢ` the
+      -- norm is a supremum, so a single `t` works for all components at once.
+      -- No square root — and in particular no continuous functional calculus,
+      -- which the thesis only reaches at parsec 270 — is needed.
+      set t : ℝ := ‖a‖ / 2 with ht
+      have ht0 : 0 ≤ t := by positivity
+      have hti : ∀ i, ‖(a : ∀ i, 𝒜 i) i‖ / 2 ≤ t := by
         intro i
-        have h1 : ‖CFC.sqrt ((a : ∀ i, 𝒜 i) i)‖ * ‖CFC.sqrt ((a : ∀ i, 𝒜 i) i)‖
-            = ‖(a : ∀ i, 𝒜 i) i‖ := by
-          rw [← CStarRing.norm_star_mul_self,
-            (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg _)).star_eq,
-            CFC.sqrt_mul_sqrt_self _ (h i)]
-        rw [← h1, Real.sqrt_mul_self (norm_nonneg _)]
-      have hmem : Memℓp (fun i => CFC.sqrt ((a : ∀ i, 𝒜 i) i)) ∞ := by
-        refine memℓp_infty ⟨Real.sqrt ‖a‖, ?_⟩
-        rintro y ⟨i, rfl⟩
-        show ‖CFC.sqrt ((a : ∀ i, 𝒜 i) i)‖ ≤ Real.sqrt ‖a‖
-        rw [hsq i]
-        exact Real.sqrt_le_sqrt (lp.norm_apply_le_norm ENNReal.top_ne_zero a i)
-      have hba : star (⟨fun i => CFC.sqrt ((a : ∀ i, 𝒜 i) i), hmem⟩ : lp 𝒜 ∞) *
-          ⟨fun i => CFC.sqrt ((a : ∀ i, 𝒜 i) i), hmem⟩ = a := by
-        ext i
-        show star (CFC.sqrt ((a : ∀ i, 𝒜 i) i)) * CFC.sqrt ((a : ∀ i, 𝒜 i) i) = _
-        rw [(IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg _)).star_eq,
-          CFC.sqrt_mul_sqrt_self _ (h i)]
-      rw [← hba]
-      exact star_mul_self_nonneg _
+        have := lp.norm_apply_le_norm ENNReal.top_ne_zero a i
+        rw [ht]; linarith
+      have hai : ∀ i, ‖(a : ∀ i, 𝒜 i) i - algebraMap ℂ (𝒜 i) (t : ℂ)‖ ≤ t := by
+        intro i
+        have hi : (0 : 𝒜 i) ≤ (a : ∀ i, 𝒜 i) i ↔
+            ∀ s : ℝ, ‖(a : ∀ i, 𝒜 i) i‖ / 2 ≤ s →
+              ‖(a : ∀ i, 𝒜 i) i - algebraMap ℂ (𝒜 i) (s : ℂ)‖ ≤ s :=
+          (cstar_positive_tfae ((a : ∀ i, 𝒜 i) i) (IsSelfAdjoint.of_nonneg (h i))).out 3 1
+        exact hi.mp (h i) t (hti i)
+      have hsa : IsSelfAdjoint a := by
+        refine lp.ext ?_
+        rw [lp.coeFn_star]
+        funext i
+        exact (IsSelfAdjoint.of_nonneg (h i)).star_eq
+      have hmain : (∃ s : ℝ, ‖a‖ / 2 ≤ s ∧ ‖a - algebraMap ℂ (lp 𝒜 ∞) (s : ℂ)‖ ≤ s) ↔
+          (0 : lp 𝒜 ∞) ≤ a := (cstar_positive_tfae a hsa).out 0 3
+      refine hmain.mp ⟨t, le_rfl, ?_⟩
+      refine lp.norm_le_of_forall_le ht0 fun i => ?_
+      have hco : ((a - algebraMap ℂ (lp 𝒜 ∞) (t : ℂ) : lp 𝒜 ∞) : ∀ i, 𝒜 i) i
+          = (a : ∀ i, 𝒜 i) i - algebraMap ℂ (𝒜 i) (t : ℂ) := by
+        rw [lp.coeFn_sub]
+        rfl
+      rw [hco]
+      exact hai i
 
 /-- **20aII** (`cstar-equaliser-1`, cstar.tex:3044, Exercise): for miu-maps
 `f, g : 𝒜 → ℬ` the set `ℰ = {a : f(a) = g(a)}` is a (closed) C*-subalgebra
@@ -1119,12 +1891,6 @@ section Sqrt
 
 variable {𝒜 : Type*} [CStarAlgebra 𝒜] [PartialOrder 𝒜] [StarOrderedRing 𝒜]
 
-/-- The iteration `b₀ = 0`, `b_{n+1} = ½(a + bₙ²)` converging to
-`1 - √(1-a)` (**23II**, cstar.tex:3485). -/
-noncomputable def sqrtApproxSeq (a : 𝒜) : ℕ → 𝒜
-  | 0 => 0
-  | n + 1 => (2 : ℂ)⁻¹ • (a + sqrtApproxSeq a n ^ 2)
-
 /-! ### Auxiliary development for 23II
 
 Everything in this block follows the thesis's own proof of **23II**
@@ -1147,40 +1913,6 @@ Two small departures from the letter of the thesis, both order-preserving:
 
 section SqrtAux
 
-/-- Auxiliary for **23II**: the real iteration `r₀ = 0`, `r_{n+1} = ½(1+rₙ²)`,
-i.e. the thesis's `qₙ(1)` (cstar.tex:3546). -/
-private noncomputable def sqrtApproxReal : ℕ → ℝ
-  | 0 => 0
-  | n + 1 => (1 + sqrtApproxReal n ^ 2) / 2
-
-private theorem sqrtApproxReal_zero : sqrtApproxReal 0 = 0 := rfl
-
-private theorem sqrtApproxReal_succ (n : ℕ) :
-    sqrtApproxReal (n + 1) = (1 + sqrtApproxReal n ^ 2) / 2 := rfl
-
-private theorem sqrtApproxReal_nonneg (n : ℕ) : 0 ≤ sqrtApproxReal n := by
-  induction n with
-  | zero => rw [sqrtApproxReal_zero]
-  | succ n ih => rw [sqrtApproxReal_succ]; positivity
-
-private theorem sqrtApproxReal_le_one (n : ℕ) : sqrtApproxReal n ≤ 1 := by
-  induction n with
-  | zero => rw [sqrtApproxReal_zero]; norm_num
-  | succ n ih =>
-    have h0 := sqrtApproxReal_nonneg n
-    rw [sqrtApproxReal_succ]
-    nlinarith
-
-private theorem sqrtApproxReal_mono : Monotone sqrtApproxReal := by
-  refine monotone_nat_of_le_succ fun n => ?_
-  rw [sqrtApproxReal_succ]
-  nlinarith [sq_nonneg (1 - sqrtApproxReal n)]
-
-private theorem norm_one_le' : ‖(1 : 𝒜)‖ ≤ 1 := by
-  rcases subsingleton_or_nontrivial 𝒜 with _ | _
-  · rw [Subsingleton.elim (1 : 𝒜) 0, norm_zero]; norm_num
-  · rw [norm_one]
-
 /-- `½·(-)` preserves positivity (`ofReal_smul_nonneg`, i.e. **9X**.1). -/
 private theorem half_smul_nonneg {x : 𝒜} (hx : 0 ≤ x) : 0 ≤ (2 : ℂ)⁻¹ • x := by
   have h := ofReal_smul_nonneg hx (r := 1 / 2) (by norm_num)
@@ -1196,18 +1928,13 @@ private theorem half_smul_le {x y : 𝒜} (h : x ≤ y) :
 one is below `1`. -/
 private theorem le_one_of_norm_le_one {x : 𝒜} (hsa : IsSelfAdjoint x)
     (h : ‖x‖ ≤ 1) : x ≤ 1 := by
-  have h2 := (norm_le_iff_neg_algebraMap_le hsa zero_le_one).mp h
+  have h2 := (positive_basic_2_3a x hsa 1 zero_le_one).mpr h
   simpa using h2.2
 
 /-- **17VI**.3c in the form used below. -/
 private theorem norm_le_one_of_le_one {x : 𝒜} (h0 : 0 ≤ x) (h1 : x ≤ 1) :
     ‖x‖ ≤ 1 :=
   le_trans (positive_basic_2_3c x 1 h0 h1) norm_one_le'
-
-private theorem sqrtApproxSeq_zero (a : 𝒜) : sqrtApproxSeq a 0 = 0 := rfl
-
-private theorem sqrtApproxSeq_succ (a : 𝒜) (n : ℕ) :
-    sqrtApproxSeq a (n + 1) = (2 : ℂ)⁻¹ • (a + sqrtApproxSeq a n ^ 2) := rfl
 
 private theorem sqrtApproxSeq_nonneg (a : 𝒜) (h0 : 0 ≤ a) (n : ℕ) :
     0 ≤ sqrtApproxSeq a n := by
@@ -1217,100 +1944,6 @@ private theorem sqrtApproxSeq_nonneg (a : 𝒜) (h0 : 0 ≤ a) (n : ℕ) :
     rw [sqrtApproxSeq_succ]
     exact half_smul_nonneg
       (add_nonneg h0 (positive_basic_2_4a _ (IsSelfAdjoint.of_nonneg ih)))
-
-private theorem sqrtApproxSeq_commute (a c : 𝒜) (hc : c * a = a * c) (n : ℕ) :
-    c * sqrtApproxSeq a n = sqrtApproxSeq a n * c := by
-  induction n with
-  | zero => rw [sqrtApproxSeq_zero, mul_zero, zero_mul]
-  | succ n ih =>
-    rw [sqrtApproxSeq_succ, mul_smul_comm, smul_mul_assoc, mul_add, add_mul, hc,
-      sq, ← mul_assoc, ih, mul_assoc, ih, ← mul_assoc]
-
-private theorem sqrtApproxSeq_self_commute (a : 𝒜) (m n : ℕ) :
-    sqrtApproxSeq a m * sqrtApproxSeq a n = sqrtApproxSeq a n * sqrtApproxSeq a m :=
-  sqrtApproxSeq_commute a _ (sqrtApproxSeq_commute a a rfl m).symm n
-
-private theorem sqrtApproxSeq_norm_le (a : 𝒜) (ha : ‖a‖ ≤ 1) (n : ℕ) :
-    ‖sqrtApproxSeq a n‖ ≤ sqrtApproxReal n := by
-  induction n with
-  | zero => rw [sqrtApproxSeq_zero, sqrtApproxReal_zero, norm_zero]
-  | succ n ih =>
-    have hb0 : (0 : ℝ) ≤ ‖sqrtApproxSeq a n‖ := norm_nonneg _
-    have hsq : ‖sqrtApproxSeq a n ^ 2‖ ≤ ‖sqrtApproxSeq a n‖ ^ 2 := by
-      rw [sq, sq]; exact norm_mul_le _ _
-    have hadd : ‖a + sqrtApproxSeq a n ^ 2‖ ≤ 1 + sqrtApproxReal n ^ 2 := by
-      refine le_trans (norm_add_le _ _) ?_
-      have := sqrtApproxReal_nonneg n
-      nlinarith
-    rw [sqrtApproxSeq_succ, norm_smul, sqrtApproxReal_succ]
-    have hc : ‖(2 : ℂ)⁻¹‖ = 1 / 2 := by norm_num
-    rw [hc]
-    linarith
-
-private theorem sqrtApproxSeq_dist (a : 𝒜) (ha : ‖a‖ ≤ 1) (n : ℕ) :
-    ‖sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n‖
-      ≤ sqrtApproxReal (n + 1) - sqrtApproxReal n := by
-  induction n with
-  | zero =>
-    rw [sqrtApproxSeq_zero, sqrtApproxSeq_succ, sqrtApproxSeq_zero,
-      sqrtApproxReal_zero, sqrtApproxReal_succ, sqrtApproxReal_zero]
-    have hc : ‖(2 : ℂ)⁻¹‖ = 1 / 2 := by norm_num
-    rw [sub_zero, sub_zero, norm_smul, hc]
-    have hz : ((0 : 𝒜) ^ 2) = 0 := by norm_num
-    have hz' : ((0 : ℝ) ^ 2) = 0 := by norm_num
-    rw [hz, add_zero, hz']
-    linarith
-  | succ n ih =>
-    have key : sqrtApproxSeq a (n + 2) - sqrtApproxSeq a (n + 1)
-        = (2 : ℂ)⁻¹ • (sqrtApproxSeq a (n + 1) *
-            (sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n)
-          + (sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n) * sqrtApproxSeq a n) := by
-      rw [sqrtApproxSeq_succ a (n + 1), sqrtApproxSeq_succ a n, ← smul_sub]
-      congr 1
-      noncomm_ring
-    have hd0 : (0 : ℝ) ≤ sqrtApproxReal (n + 1) - sqrtApproxReal n :=
-      sub_nonneg.mpr (sqrtApproxReal_mono (Nat.le_succ n))
-    have hn1 := sqrtApproxSeq_norm_le a ha (n + 1)
-    have hn0 := sqrtApproxSeq_norm_le a ha n
-    have hr0 := sqrtApproxReal_nonneg n
-    have hr1 := sqrtApproxReal_nonneg (n + 1)
-    have hbound : ‖sqrtApproxSeq a (n + 1) *
-          (sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n)
-        + (sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n) * sqrtApproxSeq a n‖
-        ≤ (sqrtApproxReal (n + 1) + sqrtApproxReal n) *
-            (sqrtApproxReal (n + 1) - sqrtApproxReal n) := by
-      refine le_trans (norm_add_le _ _) ?_
-      have h1 := norm_mul_le (sqrtApproxSeq a (n + 1))
-        (sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n)
-      have h2 := norm_mul_le (sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n)
-        (sqrtApproxSeq a n)
-      have hd := ih
-      have hdn : (0 : ℝ) ≤ ‖sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n‖ :=
-        norm_nonneg _
-      nlinarith [norm_nonneg (sqrtApproxSeq a (n + 1)), norm_nonneg (sqrtApproxSeq a n)]
-    have hc : ‖(2 : ℂ)⁻¹‖ = 1 / 2 := by norm_num
-    have hr2 : sqrtApproxReal (n + 2) = (1 + sqrtApproxReal (n + 1) ^ 2) / 2 :=
-      sqrtApproxReal_succ (n + 1)
-    have hr1' : sqrtApproxReal (n + 1) = (1 + sqrtApproxReal n ^ 2) / 2 :=
-      sqrtApproxReal_succ n
-    have hkey2 : (sqrtApproxReal (n + 1) + sqrtApproxReal n) *
-        (sqrtApproxReal (n + 1) - sqrtApproxReal n)
-        = 2 * (sqrtApproxReal (n + 2) - sqrtApproxReal (n + 1)) := by
-      rw [hr2, hr1']; ring
-    rw [key, norm_smul, hc]
-    linarith
-
-private theorem sqrtApproxSeq_cauchy (a : 𝒜) (ha : ‖a‖ ≤ 1) :
-    CauchySeq (sqrtApproxSeq a) := by
-  refine cauchySeq_of_summable_dist ?_
-  have hsum : Summable fun n => sqrtApproxReal (n + 1) - sqrtApproxReal n := by
-    refine summable_of_sum_range_le (c := 1)
-      (fun n => sub_nonneg.mpr (sqrtApproxReal_mono (Nat.le_succ n))) fun n => ?_
-    rw [Finset.sum_range_sub sqrtApproxReal, sqrtApproxReal_zero, sub_zero]
-    exact sqrtApproxReal_le_one n
-  refine Summable.of_nonneg_of_le (fun n => dist_nonneg) (fun n => ?_) hsum
-  rw [dist_eq_norm, norm_sub_rev]
-  exact sqrtApproxSeq_dist a ha n
 
 /-- The existence half of **23II** (cstar.tex:3495–3570). -/
 private theorem sqrt_lemma_exists (a : 𝒜) (h0 : 0 ≤ a) (h1 : a ≤ 1) :
@@ -1848,7 +2481,7 @@ theorem cstar_pos_neg_part_3 :
 /-- **24IV** (`astara-positive`, cstar.tex:3729, Lemma): `a* a ≥ 0` for every
 element `a` of a C*-algebra.  (Mathlib: `star_mul_self_nonneg`.) -/
 theorem astara_positive (a : 𝒜) : 0 ≤ star a * a :=
-  star_mul_self_nonneg a
+  (thesisPos_star_mul_self a).nonneg
 
 /-! ## Parsec 250: positivity rounded up; vector states -/
 

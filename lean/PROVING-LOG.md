@@ -313,16 +313,87 @@ defects are *modelling artefacts*, not proof defects:
 
 The same applies at `astara_non_negative` (19III).
 
-**The fix is `ThesisPos`, and it is cheaper than it looks.**  Define
-`private def ThesisPos a := ∃ t : ℝ, ‖a − algebraMap ℂ 𝒜 t‖ ≤ t` and prove the
-spine in those terms alongside the shipped statements — no restatement, so no
-statement change.  17V *already contains it* as items 1–2 and now proves
-`1↔2↔3` elementarily.  Estimated 400–600 lines, of which the only real work is
-**`ThesisPos (a*a)` by the thesis's parsec-190 argument (~150 lines)**;
-`prod_spec` (19Ia) is already proved.  The `SqrtAux` block consumes only six
-lemmas, so once those exist in `ThesisPos` form the entire square-root
-development transfers mechanically — and 25I becomes a genuine theorem that
-*derives* the bridge instead of importing it.
+**The fix is `ThesisPos`** — define the thesis's own positivity predicate and
+prove the spine in those terms *alongside* the shipped statements, so nothing is
+restated and no statement changes.  **This has now been done in full**; see the
+next section.
+
+### Session 2 — `ThesisPos`: 25I is now a theorem, not an assumption
+
+All five steps of the programme are done.  `sorry` count unchanged at 29 — that
+is the expected outcome, since the goal was never to close goals but to make the
+existing proofs rest on what the thesis actually has.  `lake build` of all four
+A/CStar modules exits 0; nine key theorems verified
+`[propext, Classical.choice, Quot.sound]`.  No statement, hypothesis, name or
+doc comment changed anywhere.
+
+**Two corrections to the plan as briefed, both material.**
+
+- **The `IsSelfAdjoint` conjunct is not redundant.**  The brief proposed
+  `ThesisPos a := ∃ t, ‖a − t‖ ≤ t`.  The thesis's definition (**9IV**,
+  `cstar.tex:1130`) also demands self-adjointness, and dropping it makes
+  `ThesisPos a ↔ spec(a) ⊆ [0,∞)` **false**: in `M₂`, `1 + iε·e` satisfies
+  `‖a − 1‖ ≤ 1` without being self-adjoint.  The shipped definition is
+  `IsSelfAdjoint a ∧ ∃ t : ℝ, ‖a − t‖ ≤ t`, placed at parsec 170 and entirely
+  order-free.
+- **`a*a ≥ 0` is not a parsec-190 result.**  The brief said to prove
+  `ThesisPos (a*a)` by the parsec-190 argument.  Parsec 190 explicitly
+  *disclaims* it — 19I.1 (`cstar.tex:2813`) reads "Although we can't quite yet
+  see that `a*a` is positive — for this we need the existence of the square
+  root."  Parsec 190 gives only **19III** (`a*a ≤ 0 ⟹ a = 0`); positivity of
+  `a*a` is **24IV**.  Both are now transcribed separately:
+  `thesisPos_astara_non_negative` (the literal parsec-190 argument, via
+  `prod_spec` and `a*a + aa* = ½((a+a*)² + (i(a−a*))²)`) and
+  `thesisPos_star_mul_self` (the parsec-240 argument, taking `u := |h| − h` and
+  `b := a·u` in place of `a((a*a)₋)^{1/2}`, which avoids needing a square root of
+  `h₋` and the `ineq-square-root` clause entirely).
+
+**The payoff.**  `thesisPos_iff_nonneg` is an honest Lean proof of **25I**,
+deliberately split into `ThesisPos.nonneg` (cheap) and `thesisPos_of_nonneg`
+(expensive — 24IV on each `star s * s` generator) so the dependence on 24IV stays
+visible at every call site.  Mathlib's
+`StarOrderedRing.nonneg_iff_spectrum_nonneg` appears nowhere in the block.  The
+square root for the `ThesisPos` development comes from re-running the 23II
+iteration against `ThesisPos`; none of the order-based `SqrtAux` is reused.
+
+Eleven pre-25I proofs were re-pointed onto it, none reverted — including
+`astara_positive` (24IV, previously `star_mul_self_nonneg`),
+`nonneg_iff_spectrum_ofReal_nonneg` (previously Mathlib's CFC-backed 25I), and
+17VI.2/3a/3b/3c/4a/4b/4c/4d/5.  **One was left deliberately**: the Lean
+`astara_non_negative` still uses `star_mul_self_nonneg`, because re-pointing it
+would make parsec 190 depend on parsec 240 — backwards.  In the star-order
+encoding that statement genuinely *is* trivial, and the thesis's real 19III now
+exists separately.
+
+Also fixed here: **20aI.2** by the thesis's own sup-norm hint (no square root, no
+CFC), which required filling a **Mathlib gap** — `CStarAlgebra (lp 𝒜 ∞)` is
+neither provided nor synthesizable, so a one-line instance was added.  Two
+further CFC-at-the-wrong-parsec violations surfaced and were fixed:
+`weak_russo_dye_1` (parsec 200 using positive/negative parts from 240) and
+`positive_basic_2_5` (parsec 170 using `CFC.inv_nonneg`).
+
+**New erratum.**
+
+- **19Ia** `cstar.tex:2834` — "`λ⁻¹(1 + b(λ−ab)a)`" is missing an inverse; it
+  should read "`λ⁻¹(1 + b(λ−ab)⁻¹a)`".  Not in `asols.tex`'s errata block, which
+  has no parsec-190 entry at all.
+
+### Where the bootstrapping now stands
+
+**It holds from parsec 110 upward**, with exactly two imported facts at the base:
+`IsSelfAdjoint.spectralRadius_eq_nnnorm` (**16III**) and
+`IsSelfAdjoint.mem_spectrum_eq_re` (**11XV**.1).  Both are taken from Mathlib
+because the thesis's own route to them — the 𝒜-valued complex-analysis block at
+parsecs 120–150 — is still `sorry`.  Both sit *below* the CFC in Mathlib's import
+graph, so neither smuggles in later thesis content.
+
+Above that line: **25I** is a theorem rather than an assumption; **19III** and
+**24IV** are theorems rather than artefacts of Lean's definition of the star
+order; and the continuous functional calculus appears nowhere below parsec 230.
+
+Closing parsecs 120–150 would remove the last two imports and make the chapter
+self-supporting from the ground up.  That is now the single highest-value target
+in A/CStar.
 
 ### Session 2 — A/VN, first pass
 

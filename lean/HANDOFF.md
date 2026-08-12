@@ -438,11 +438,30 @@ uses it in five files — must apply the swap.**
 
 ### Still open
 
-**0. Scope question: should the formalization validate the thesis's own
-bootstrapping, or only its statements?**  This is now the biggest open
-question, and it is not about any single statement.  An audit of 37 first-pass
-proofs found seven places where the Lean proof is correct but uses a result the
-thesis does not yet have — two of them systemic:
+**0. RESOLVED — the formalization validates the thesis's own bootstrapping.**
+The author decided this should be the goal, and it has been implemented for
+A/CStar.  **The bootstrapping now holds from parsec 110 upward**, with exactly
+two imported facts at the base: `IsSelfAdjoint.spectralRadius_eq_nnnorm` (16III)
+and `IsSelfAdjoint.mem_spectrum_eq_re` (11XV.1), both taken from Mathlib only
+because the thesis's own route to them — the 𝒜-valued complex-analysis block at
+parsecs **120–150** — is still `sorry`.  Both sit below the CFC in Mathlib's
+import graph, so neither smuggles in later thesis content.
+
+Above that line, **25I** is a theorem rather than an assumption, **19III** and
+**24IV** are theorems rather than artefacts of Lean's star order, **23II** (the
+thesis's hand-built square root) is proved, and the continuous functional
+calculus appears nowhere below parsec 230.  See PROVING-LOG.md for the
+`ThesisPos` development that achieved it.
+
+**Closing parsecs 120–150 would remove the last two imports and make the chapter
+self-supporting from the ground up — the single highest-value target in
+A/CStar.**  It needs Banach-space-valued contour integration (Goursat, Cauchy,
+Taylor, winding numbers) bridged to Mathlib.
+
+Keep the rule that produced this, for every other chapter: *a proof of a
+statement at parsec P may use only what the thesis has at or before P; the test
+is mathematical content, not provenance.*  The original diagnosis, retained
+because the failure modes recur:
 
 * **What `0 ≤ a` means.**  In Lean it is Mathlib's star order (`a = b*b`); in
   the thesis before **25I** it is "`‖a − t‖ ≤ t` for some `t`", and their
