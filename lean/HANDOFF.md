@@ -70,17 +70,17 @@ machines.
 
 ## Progress
 
-**Session 2 result: 947 → 865 code `sorry`s (82 proved).  All of A/CStar was
+**Session 2 result: 947 → 839 code `sorry`s (108 proved).  All of A/CStar was
 worked; every other chapter is untouched.  `A/CStar/Basic.lean` is complete.**
 
 | chapter | file | after s1 | now |
 |---|---|---|---|
-| **A/CStar** | | **170** | **88** |
+| **A/CStar** | | **170** | **62** |
 | | Basic.lean | 11 | **0 — complete** |
-| | Positive.lean | 63 | 40 |
-| | Matrices.lean | 55 | 20 |
-| | TowardsVN.lean | 27 | 15 |
-| | Representation.lean | 17 | 13 |
+| | Positive.lean | 63 | 33 |
+| | Matrices.lean | 55 | 11 |
+| | TowardsVN.lean | 27 | 7 |
+| | Representation.lean | 17 | 11 |
 | B/Eff | (8 files) | 129 | 129 — untouched |
 | A/VN | (5 files) | 276 | 276 — untouched |
 | A/Proc | (4 files) | 233 | 233 — untouched |
