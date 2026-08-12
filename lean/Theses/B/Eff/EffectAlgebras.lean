@@ -13,9 +13,9 @@ Conventions (see `CONVENTIONS.md`):
   with a total operation `ovee : (a b : M) → Perp a b → M` on the graph of
   `Perp`.  This style is used consistently throughout `Theses.B.Eff`.
 * `Definition` points are real definitions; `Lemma`/`Proposition`/`Exercise`
-  points are `sorry`-ed theorems.  Example points that make substantive
-  claims appear as instances/defs whose *data* is genuine and whose proof
-  obligations are `sorry`-ed, or as `sorry`-ed theorems.
+  points are theorems.  Example points that make substantive claims appear as
+  instances/defs or as theorems.  Proofs still outstanding are marked `sorry`
+  and listed, with the reason, in `PROVING-LOG.md`.
 -/
 import Theses.Common
 
@@ -125,14 +125,64 @@ instance : Category PCMCat.{u} where
   comp_id _ := rfl
   assoc _ _ _ := rfl
 
+/-- Helper (right unit): `a ⋁ 0 = a`, the mirror image of `PCM.zero_ovee`. -/
+theorem PCM.ovee_zero {M : Type u} [PCM M] (a : M) (h : Perp a 0) :
+    ovee a 0 h = a := by
+  rw [PCM.ovee_comm]; exact PCM.zero_ovee a
+
+/-- Helper: `a ⊥ 0` in any PCM. -/
+theorem PCM.perp_zero {M : Type u} [PCM M] (a : M) : Perp a (0 : M) :=
+  PCM.perp_comm (PCM.zero_perp a)
+
+/-- Helper (left unit, arbitrary definedness proof): `0 ⋁ a = a`. -/
+theorem PCM.zero_ovee' {M : Type u} [PCM M] (a : M) (h : Perp 0 a) :
+    ovee 0 a h = a :=
+  PCM.zero_ovee a
+
+/-- Helper (congruence): `ovee` only depends on its two element arguments,
+the definedness proof being irrelevant. -/
+theorem PCM.ovee_congr {M : Type u} [PCM M] {a b a' b' : M} (ha : a = a')
+    (hb : b = b') (h : Perp a b) (h' : Perp a' b') :
+    ovee a b h = ovee a' b' h' := by
+  subst ha; subst hb; rfl
+
+/-- Helper (associativity, right-to-left): if `b ⊥ c` and `a ⊥ (b ⋁ c)`, then
+`a ⊥ b`, `(a ⋁ b) ⊥ c` and `(a ⋁ b) ⋁ c = a ⋁ (b ⋁ c)`.  (The axiom
+`PCM.ovee_assoc` only provides the left-to-right direction.) -/
+theorem PCM.assoc_left {M : Type u} [PCM M] {a b c : M} (hbc : Perp b c)
+    (h : Perp a (ovee b c hbc)) :
+    ∃ (hab : Perp a b) (h' : Perp (ovee a b hab) c),
+      ovee (ovee a b hab) c h' = ovee a (ovee b c hbc) h := by
+  have hcb : Perp c b := PCM.perp_comm hbc
+  have e1 : ovee c b hcb = ovee b c hbc := (PCM.ovee_comm hbc).symm
+  have h2 : Perp (ovee c b hcb) a := by rw [e1]; exact PCM.perp_comm h
+  have hba : Perp b a := PCM.perp_of_ovee_perp hcb h2
+  have hab : Perp a b := PCM.perp_comm hba
+  have h3 : Perp c (ovee b a hba) := PCM.perp_ovee_of_ovee_perp hcb h2
+  have e2 : ovee b a hba = ovee a b hab := PCM.ovee_comm hba
+  have h4 : Perp c (ovee a b hab) := by rw [← e2]; exact h3
+  refine ⟨hab, PCM.perp_comm h4, ?_⟩
+  have h5 : Perp (ovee b c hbc) a := by rw [← e1]; exact h2
+  calc ovee (ovee a b hab) c (PCM.perp_comm h4)
+      = ovee c (ovee a b hab) h4 := PCM.ovee_comm _
+    _ = ovee c (ovee b a hba) h3 := PCM.ovee_congr rfl e2.symm _ _
+    _ = ovee (ovee c b hcb) a h2 := (PCM.ovee_assoc hcb h2).symm
+    _ = ovee (ovee b c hbc) a h5 := PCM.ovee_congr e1 rfl _ _
+    _ = ovee a (ovee b c hbc) h := (PCM.ovee_comm h).symm
+
 /-- **174III** (`pcm-preorder`, eff.tex:220, Exercise), part 1: `≼` is
 reflexive on a PCM. -/
-theorem pcm_preorder_refl {M : Type u} [PCM M] (a : M) : a ≼ a := sorry
+theorem pcm_preorder_refl {M : Type u} [PCM M] (a : M) : a ≼ a :=
+  ⟨0, PCM.perp_comm (PCM.zero_perp a), by
+    rw [PCM.ovee_comm, PCM.zero_ovee]⟩
 
 /-- **174III** (`pcm-preorder`, eff.tex:220, Exercise), part 2: `≼` is
 transitive on a PCM, so a PCM is preordered by `≼`. -/
 theorem pcm_preorder_trans {M : Type u} [PCM M] {a b c : M} :
-    a ≼ b → b ≼ c → a ≼ c := sorry
+    a ≼ b → b ≼ c → a ≼ c := by
+  rintro ⟨x, hax, rfl⟩ ⟨y, hby, rfl⟩
+  exact ⟨ovee x y (PCM.perp_of_ovee_perp hax hby),
+    PCM.perp_ovee_of_ovee_perp hax hby, (PCM.ovee_assoc hax hby).symm⟩
 
 /-- The relation "`s` is a sum of the (multiset of) elements listed in `l`"
 in a PCM, by iterating `ovee` (used for 174IV, and for the distributivity
@@ -141,6 +191,24 @@ inductive PCM.IsSumOf {M : Type u} [PCM M] : List M → M → Prop
   | nil : PCM.IsSumOf [] 0
   | cons {a : M} {l : List M} {s : M} (hl : PCM.IsSumOf l s) (h : Perp a s) :
       PCM.IsSumOf (a :: l) (ovee a s h)
+
+/-- Helper: inversion for `PCM.IsSumOf` on the empty list. -/
+theorem PCM.isSumOf_nil_iff {M : Type u} [PCM M] {s : M} :
+    PCM.IsSumOf [] s ↔ s = 0 := by
+  constructor
+  · intro h; cases h; rfl
+  · rintro rfl; exact PCM.IsSumOf.nil
+
+/-- Helper: inversion for `PCM.IsSumOf` on a cons. -/
+theorem PCM.isSumOf_cons_iff {M : Type u} [PCM M] {a : M} {l : List M} {s : M} :
+    PCM.IsSumOf (a :: l) s ↔
+      ∃ (t : M) (_ : PCM.IsSumOf l t) (h : Perp a t), ovee a t h = s := by
+  constructor
+  · intro h
+    cases h with
+    | cons hl hp => exact ⟨_, hl, hp, rfl⟩
+  · rintro ⟨t, hl, hp, rfl⟩
+    exact PCM.IsSumOf.cons hl hp
 
 /-- **174IV** (eff.tex:223): in a PCM a sum depends only on which elements
 occur (and how often), not on their order: if `x₁ ⋁ ⋯ ⋁ xₙ` exists, then so
@@ -177,6 +245,16 @@ structure EAHom (E : Type u) (F : Type v) [EffectAlgebra E] [EffectAlgebra F]
 
 instance {E F : Type u} [EffectAlgebra E] [EffectAlgebra F] :
     CoeFun (EAHom E F) (fun _ => E → F) := ⟨fun f => f.toFun⟩
+
+/-- Helper (extensionality): effect algebra homomorphisms are determined by
+their underlying function. -/
+theorem EAHom.ext {E : Type u} {F : Type v} [EffectAlgebra E] [EffectAlgebra F]
+    {f g : EAHom E F} (h : f.toFun = g.toFun) : f = g := by
+  obtain ⟨⟨f₁, _, _⟩, _⟩ := f
+  obtain ⟨⟨g₁, _, _⟩, _⟩ := g
+  dsimp only at h
+  subst h
+  rfl
 
 /-- The identity effect algebra homomorphism. -/
 def EAHom.id (E : Type u) [EffectAlgebra E] : EAHom E E :=
@@ -224,24 +302,47 @@ structure SubEffectAlgebra (E : Type u) [EffectAlgebra E] where
 
 /-- **175II.1** (`eaexamples`, eff.tex:289, Examples): the real unit interval
 `[0,1]` is an effect algebra with `x ⊥ y` iff `x + y ≤ 1`, `x ⋁ y = x + y`
-and `xᵖ = 1 - x`.  (Data genuine; verification obligations `sorry`-ed.) -/
+and `xᵖ = 1 - x`. -/
 noncomputable instance unitInterval.effectAlgebra : EffectAlgebra I where
   zero := 0
   one := 1
   Perp x y := (x : ℝ) + (y : ℝ) ≤ 1
-  ovee x y _ := ⟨(x : ℝ) + y, sorry⟩
-  orth x := ⟨1 - (x : ℝ), sorry⟩
-  perp_comm := sorry
-  ovee_comm := sorry
-  perp_of_ovee_perp := sorry
-  perp_ovee_of_ovee_perp := sorry
-  ovee_assoc := sorry
-  zero_perp := sorry
-  zero_ovee := sorry
-  perp_orth := sorry
-  ovee_orth := sorry
-  orth_unique := sorry
-  eq_zero_of_perp_one := sorry
+  ovee x y h := ⟨(x : ℝ) + y, add_nonneg x.2.1 y.2.1, h⟩
+  orth x := ⟨1 - (x : ℝ), by linarith [x.2.2], by linarith [x.2.1]⟩
+  perp_comm := by intro a b h; simpa [add_comm] using h
+  ovee_comm := by intro a b h; apply Subtype.ext; simp [add_comm]
+  perp_of_ovee_perp := by
+    intro a b c _ h
+    have h' : (a : ℝ) + b + c ≤ 1 := h
+    show (b : ℝ) + c ≤ 1
+    linarith [a.2.1]
+  perp_ovee_of_ovee_perp := by
+    intro a b c _ h
+    have h' : (a : ℝ) + b + c ≤ 1 := h
+    show (a : ℝ) + ((b : ℝ) + c) ≤ 1
+    linarith
+  ovee_assoc := by intro a b c _ _; apply Subtype.ext; simp [add_assoc]
+  zero_perp := by
+    intro a
+    show (0 : ℝ) + (a : ℝ) ≤ 1
+    linarith [a.2.2]
+  zero_ovee := by intro a; apply Subtype.ext; simp
+  perp_orth := by
+    intro a
+    show (a : ℝ) + (1 - (a : ℝ)) ≤ 1
+    linarith
+  ovee_orth := by intro a; apply Subtype.ext; simp
+  orth_unique := by
+    intro a b h heq
+    apply Subtype.ext
+    have : (a : ℝ) + b = 1 := congrArg Subtype.val heq
+    simp only; linarith
+  eq_zero_of_perp_one := by
+    intro a h
+    have h' : (a : ℝ) + 1 ≤ 1 := h
+    apply Subtype.ext
+    show (a : ℝ) = 0
+    linarith [a.2.1]
 
 /-- **175II.2** (`eaexamples`, eff.tex:299, Examples): for an ordered abelian
 group `G` with a distinguished element `u ≥ 0`, the order interval
@@ -253,19 +354,53 @@ noncomputable def orderIntervalEffectAlgebra (G : Type u) [AddCommGroup G]
   zero := ⟨0, le_refl 0, hu⟩
   one := ⟨u, hu, le_refl u⟩
   Perp x y := (x : G) + y ≤ u
-  ovee x y _ := ⟨(x : G) + y, sorry⟩
-  orth x := ⟨u - x, sorry⟩
-  perp_comm := sorry
-  ovee_comm := sorry
-  perp_of_ovee_perp := sorry
-  perp_ovee_of_ovee_perp := sorry
-  ovee_assoc := sorry
-  zero_perp := sorry
-  zero_ovee := sorry
-  perp_orth := sorry
-  ovee_orth := sorry
-  orth_unique := sorry
-  eq_zero_of_perp_one := sorry
+  ovee x y h := ⟨(x : G) + y, add_nonneg x.2.1 y.2.1, h⟩
+  orth x := ⟨u - x, sub_nonneg.mpr x.2.2, sub_le_self u x.2.1⟩
+  perp_comm := by
+    intro a b h
+    show (b : G) + a ≤ u
+    rw [add_comm]; exact h
+  ovee_comm := by intro a b _; apply Subtype.ext; exact add_comm _ _
+  perp_of_ovee_perp := by
+    intro a b c _ h
+    have h' : (a : G) + b + c ≤ u := h
+    show (b : G) + c ≤ u
+    refine le_trans ?_ h'
+    rw [add_assoc]
+    exact le_add_of_nonneg_left a.2.1
+  perp_ovee_of_ovee_perp := by
+    intro a b c _ h
+    have h' : (a : G) + b + c ≤ u := h
+    show (a : G) + ((b : G) + c) ≤ u
+    rwa [← add_assoc]
+  ovee_assoc := by intro a b c _ _; apply Subtype.ext; exact add_assoc _ _ _
+  zero_perp := by
+    intro a
+    show (0 : G) + (a : G) ≤ u
+    rw [zero_add]; exact a.2.2
+  zero_ovee := by intro a; apply Subtype.ext; exact zero_add _
+  perp_orth := by
+    intro a
+    show (a : G) + (u - (a : G)) ≤ u
+    rw [show (a : G) + (u - (a : G)) = u by abel]
+  ovee_orth := by
+    intro a; apply Subtype.ext
+    show (a : G) + (u - (a : G)) = u
+    abel
+  orth_unique := by
+    intro a b h heq
+    have h' : (a : G) + b = u := congrArg Subtype.val heq
+    apply Subtype.ext
+    show (b : G) = u - (a : G)
+    exact eq_sub_of_add_eq' h'
+  eq_zero_of_perp_one := by
+    intro a h
+    have h' : (a : G) + u ≤ u := h
+    apply Subtype.ext
+    show (a : G) = 0
+    refine le_antisymm ?_ a.2.1
+    have h₂ : (a : G) + u ≤ 0 + u := by rwa [zero_add]
+    exact le_of_add_le_add_right h₂
 
 /-- **175II.3** (`eaexamples`, eff.tex:307, Examples): the set of **effects**
 `[0,1]_𝒜` of a von Neumann algebra `𝒜` is an effect algebra with `a ⊥ b`
@@ -274,22 +409,56 @@ algebra originates from this example.) -/
 noncomputable instance effectsEffectAlgebra (A : Type u) [CStarAlgebra A]
     [PartialOrder A] [StarOrderedRing A] [Theses.VonNeumannAlgebra A] :
     EffectAlgebra (Theses.effects A) where
-  zero := ⟨0, le_refl 0, sorry⟩
-  one := ⟨1, sorry, le_refl 1⟩
+  zero := ⟨0, le_refl 0, zero_le_one⟩
+  one := ⟨1, zero_le_one, le_refl 1⟩
   Perp a b := (a : A) + b ≤ 1
-  ovee a b _ := ⟨(a : A) + b, sorry⟩
-  orth a := ⟨1 - a, sorry⟩
-  perp_comm := sorry
-  ovee_comm := sorry
-  perp_of_ovee_perp := sorry
-  perp_ovee_of_ovee_perp := sorry
-  ovee_assoc := sorry
-  zero_perp := sorry
-  zero_ovee := sorry
-  perp_orth := sorry
-  ovee_orth := sorry
-  orth_unique := sorry
-  eq_zero_of_perp_one := sorry
+  ovee a b h := ⟨(a : A) + b, add_nonneg a.2.1 b.2.1, h⟩
+  orth a := ⟨1 - a, sub_nonneg.mpr a.2.2, sub_le_self 1 a.2.1⟩
+  perp_comm := by
+    intro a b h
+    show (b : A) + a ≤ 1
+    rw [add_comm]; exact h
+  ovee_comm := by intro a b _; apply Subtype.ext; exact add_comm _ _
+  perp_of_ovee_perp := by
+    intro a b c _ h
+    have h' : (a : A) + b + c ≤ 1 := h
+    show (b : A) + c ≤ 1
+    refine le_trans ?_ h'
+    rw [add_assoc]
+    exact le_add_of_nonneg_left a.2.1
+  perp_ovee_of_ovee_perp := by
+    intro a b c _ h
+    have h' : (a : A) + b + c ≤ 1 := h
+    show (a : A) + ((b : A) + c) ≤ 1
+    rwa [← add_assoc]
+  ovee_assoc := by intro a b c _ _; apply Subtype.ext; exact add_assoc _ _ _
+  zero_perp := by
+    intro a
+    show (0 : A) + (a : A) ≤ 1
+    rw [zero_add]; exact a.2.2
+  zero_ovee := by intro a; apply Subtype.ext; exact zero_add _
+  perp_orth := by
+    intro a
+    show (a : A) + (1 - (a : A)) ≤ 1
+    rw [show (a : A) + (1 - (a : A)) = 1 by abel]
+  ovee_orth := by
+    intro a; apply Subtype.ext
+    show (a : A) + (1 - (a : A)) = 1
+    abel
+  orth_unique := by
+    intro a b h heq
+    have h' : (a : A) + b = 1 := congrArg Subtype.val heq
+    apply Subtype.ext
+    show (b : A) = 1 - (a : A)
+    exact eq_sub_of_add_eq' h'
+  eq_zero_of_perp_one := by
+    intro a h
+    have h' : (a : A) + 1 ≤ 1 := h
+    apply Subtype.ext
+    show (a : A) = 0
+    refine le_antisymm ?_ a.2.1
+    have h₂ : (a : A) + 1 ≤ 0 + 1 := by rwa [zero_add]
+    exact le_of_add_le_add_right h₂
 
 /-- **175II.5** (`eaexamples`, eff.tex:323, Examples): any Boolean algebra
 `L` is an effect algebra with complement as orthocomplement, `x ⊥ y` iff
@@ -301,17 +470,31 @@ def booleanEffectAlgebra (L : Type u) [BooleanAlgebra L] : EffectAlgebra L where
   Perp x y := x ⊓ y = ⊥
   ovee x y _ := x ⊔ y
   orth x := xᶜ
-  perp_comm := sorry
-  ovee_comm := sorry
-  perp_of_ovee_perp := sorry
-  perp_ovee_of_ovee_perp := sorry
-  ovee_assoc := sorry
-  zero_perp := sorry
-  zero_ovee := sorry
-  perp_orth := sorry
-  ovee_orth := sorry
-  orth_unique := sorry
-  eq_zero_of_perp_one := sorry
+  perp_comm := by intro a b h; rw [inf_comm]; exact h
+  ovee_comm := by intro a b _; exact sup_comm a b
+  perp_of_ovee_perp := by
+    intro a b c _ h
+    show b ⊓ c = ⊥
+    have : b ⊓ c ≤ (a ⊔ b) ⊓ c := inf_le_inf_right c le_sup_right
+    exact le_bot_iff.mp (h ▸ this)
+  perp_ovee_of_ovee_perp := by
+    intro a b c hab h
+    have hac : a ⊓ c = ⊥ :=
+      le_bot_iff.mp (h ▸ (inf_le_inf_right c le_sup_left : a ⊓ c ≤ (a ⊔ b) ⊓ c))
+    show a ⊓ (b ⊔ c) = ⊥
+    rw [inf_sup_left, hab, hac, sup_idem]
+  ovee_assoc := by intro a b c _ _; exact sup_assoc a b c
+  zero_perp := by intro a; show (⊥ : L) ⊓ a = ⊥; exact bot_inf_eq a
+  zero_ovee := by intro a; show (⊥ : L) ⊔ a = a; exact bot_sup_eq a
+  perp_orth := by intro a; show a ⊓ aᶜ = ⊥; exact inf_compl_eq_bot
+  ovee_orth := by intro a; show a ⊔ aᶜ = ⊤; exact sup_compl_eq_top
+  orth_unique := by
+    intro a b h heq
+    exact (compl_unique h heq).symm
+  eq_zero_of_perp_one := by
+    intro a h
+    have h' : a ⊓ (⊤ : L) = ⊥ := h
+    rwa [inf_top_eq] at h'
 
 /-- The two-element Boolean algebra `2 = {0, 1}` as an effect algebra
 (175II.6, `eaexamples`). -/
@@ -325,26 +508,72 @@ instance : EffectAlgebra PUnit where
   Perp _ _ := True
   ovee _ _ _ := PUnit.unit
   orth _ := PUnit.unit
-  perp_comm := sorry
-  ovee_comm := sorry
-  perp_of_ovee_perp := sorry
-  perp_ovee_of_ovee_perp := sorry
-  ovee_assoc := sorry
-  zero_perp := sorry
-  zero_ovee := sorry
-  perp_orth := sorry
-  ovee_orth := sorry
-  orth_unique := sorry
-  eq_zero_of_perp_one := sorry
+  perp_comm _ := trivial
+  ovee_comm _ := rfl
+  perp_of_ovee_perp _ _ := trivial
+  perp_ovee_of_ovee_perp _ _ := trivial
+  ovee_assoc _ _ := rfl
+  zero_perp _ := trivial
+  zero_ovee _ := rfl
+  perp_orth _ := trivial
+  ovee_orth _ := rfl
+  orth_unique _ _ := rfl
+  eq_zero_of_perp_one _ := rfl
 
 /-- **175II.6** (`eaexamples`, eff.tex:330, Examples): the one-element
 Boolean algebra `1` is the final object of **EA**. -/
-theorem eaexamples_final : Nonempty (IsTerminal (EACat.of PUnit.{u + 1})) := sorry
+theorem eaexamples_final : Nonempty (IsTerminal (EACat.of PUnit.{u + 1})) := by
+  have mk : ∀ E : EACat.{u}, (E ⟶ EACat.of PUnit.{u + 1}) := fun _ =>
+    { toFun := fun _ => PUnit.unit
+      perp_map := fun _ => trivial
+      ovee_map := fun _ => rfl
+      map_one := rfl }
+  exact ⟨IsTerminal.ofUniqueHom mk fun _ _ => EAHom.ext (funext fun _ => rfl)⟩
 
 /-- **175II.6** (`eaexamples`, eff.tex:330, Examples): the two-element
 Boolean algebra `2` is the initial object of **EA**.  (Stated in universe 0,
 where `Bool` lives.) -/
-theorem eaexamples_initial : Nonempty (IsInitial (EACat.of Bool)) := sorry
+theorem eaexamples_initial : Nonempty (IsInitial (EACat.of Bool)) := by
+  -- `f 0 = 0` for any effect algebra homomorphism (176V.1, proved below as
+  -- `exc_eamorphism_map_zero`; inlined here as that comes later in the file).
+  have hz : ∀ (E : EACat.{0}) (f : EACat.of Bool ⟶ E), f.toFun false = 0 := by
+    intro E f
+    have h : Perp (f.toFun 0) (f.toFun 1) := f.perp_map (PCM.zero_perp 1)
+    rw [f.map_one] at h
+    exact EffectAlgebra.eq_zero_of_perp_one h
+  let mk : ∀ E : EACat.{0}, (EACat.of Bool ⟶ E) := by
+    intro E
+    have hp : ∀ {a b : Bool}, Perp a b →
+        Perp (if a then (1 : E.carrier) else 0) (if b then (1 : E.carrier) else 0) := by
+      intro a b h
+      cases a <;> cases b
+      · exact PCM.zero_perp 0
+      · exact PCM.zero_perp 1
+      · exact PCM.perp_zero 1
+      · have h' : (true : Bool) ⊓ true = ⊥ := h
+        exact absurd h' (by decide)
+    have ho : ∀ {a b : Bool} (h : Perp a b),
+        (if (ovee a b h) then (1 : E.carrier) else 0)
+          = ovee (if a then (1 : E.carrier) else 0)
+              (if b then (1 : E.carrier) else 0) (hp h) := by
+      intro a b h
+      cases a <;> cases b
+      · exact (PCM.zero_ovee (0 : E.carrier)).symm
+      · exact (PCM.zero_ovee (1 : E.carrier)).symm
+      · exact (PCM.ovee_zero (1 : E.carrier) _).symm
+      · have h' : (true : Bool) ⊓ true = ⊥ := h
+        exact absurd h' (by decide)
+    exact
+      { toFun := fun b : Bool => if b then (1 : E.carrier) else 0
+        perp_map := hp
+        ovee_map := ho
+        map_one := rfl }
+  refine ⟨IsInitial.ofUniqueHom mk ?_⟩
+  intro E f
+  refine EAHom.ext (funext fun b => ?_)
+  cases b
+  · exact hz E f
+  · exact f.map_one
 
 /-- **175III** (`ea-product`, eff.tex:338, Exercise), part 1: the cartesian
 product `E × F` of two effect algebras is an effect algebra with
@@ -356,22 +585,53 @@ instance prodEffectAlgebra (E F : Type u) [EffectAlgebra E] [EffectAlgebra F] :
   Perp p q := Perp p.1 q.1 ∧ Perp p.2 q.2
   ovee p q h := (ovee p.1 q.1 h.1, ovee p.2 q.2 h.2)
   orth p := (orth p.1, orth p.2)
-  perp_comm := sorry
-  ovee_comm := sorry
-  perp_of_ovee_perp := sorry
-  perp_ovee_of_ovee_perp := sorry
-  ovee_assoc := sorry
-  zero_perp := sorry
-  zero_ovee := sorry
-  perp_orth := sorry
-  ovee_orth := sorry
-  orth_unique := sorry
-  eq_zero_of_perp_one := sorry
+  perp_comm h := ⟨PCM.perp_comm h.1, PCM.perp_comm h.2⟩
+  ovee_comm h := Prod.ext (PCM.ovee_comm h.1) (PCM.ovee_comm h.2)
+  perp_of_ovee_perp hab h :=
+    ⟨PCM.perp_of_ovee_perp hab.1 h.1, PCM.perp_of_ovee_perp hab.2 h.2⟩
+  perp_ovee_of_ovee_perp hab h :=
+    ⟨PCM.perp_ovee_of_ovee_perp hab.1 h.1, PCM.perp_ovee_of_ovee_perp hab.2 h.2⟩
+  ovee_assoc hab h := Prod.ext (PCM.ovee_assoc hab.1 h.1) (PCM.ovee_assoc hab.2 h.2)
+  zero_perp a := ⟨PCM.zero_perp a.1, PCM.zero_perp a.2⟩
+  zero_ovee a := Prod.ext (PCM.zero_ovee a.1) (PCM.zero_ovee a.2)
+  perp_orth a := ⟨EffectAlgebra.perp_orth a.1, EffectAlgebra.perp_orth a.2⟩
+  ovee_orth a := Prod.ext (EffectAlgebra.ovee_orth a.1) (EffectAlgebra.ovee_orth a.2)
+  orth_unique h heq :=
+    Prod.ext (EffectAlgebra.orth_unique h.1 (congrArg Prod.fst heq))
+      (EffectAlgebra.orth_unique h.2 (congrArg Prod.snd heq))
+  eq_zero_of_perp_one h :=
+    Prod.ext (EffectAlgebra.eq_zero_of_perp_one h.1)
+      (EffectAlgebra.eq_zero_of_perp_one h.2)
 
 /-- **175III** (`ea-product`, eff.tex:338, Exercise), part 2: `E × F` with
 the componentwise structure is the categorical product in **EA** (stated
 here as: **EA** has binary products). -/
-theorem ea_product_categorical : HasBinaryProducts EACat.{u} := sorry
+theorem ea_product_categorical : HasBinaryProducts EACat.{u} := by
+  have hl : ∀ {X Y : EACat.{u}}, HasLimit (pair X Y) := by
+    intro X Y
+    let p1 : EACat.of (X.carrier × Y.carrier) ⟶ X :=
+      { toFun := Prod.fst
+        perp_map := fun h => h.1
+        ovee_map := fun _ => rfl
+        map_one := rfl }
+    let p2 : EACat.of (X.carrier × Y.carrier) ⟶ Y :=
+      { toFun := Prod.snd
+        perp_map := fun h => h.2
+        ovee_map := fun _ => rfl
+        map_one := rfl }
+    let lift : ∀ s : BinaryFan X Y, (s.pt ⟶ EACat.of (X.carrier × Y.carrier)) :=
+      fun s =>
+      { toFun := fun z => (s.fst.toFun z, s.snd.toFun z)
+        perp_map := fun h => ⟨s.fst.perp_map h, s.snd.perp_map h⟩
+        ovee_map := fun h => Prod.ext (s.fst.ovee_map h) (s.snd.ovee_map h)
+        map_one := Prod.ext s.fst.map_one s.snd.map_one }
+    refine HasLimit.mk ⟨BinaryFan.mk p1 p2,
+      BinaryFan.isLimitMk lift (fun _ => rfl) (fun _ => rfl) ?_⟩
+    intro s m e₁ e₂
+    refine EAHom.ext (funext fun z => Prod.ext ?_ ?_)
+    · exact congrFun (congrArg (fun f : s.pt ⟶ X => f.toFun) e₁) z
+    · exact congrFun (congrArg (fun f : s.pt ⟶ Y => f.toFun) e₂) z
+  exact hasBinaryProducts_of_hasLimit_pair EACat.{u}
 
 /-- The data of an effect algebra *without* the zero axiom (`0 ⊥ a` and
 `0 ⋁ a = a`), used to state the redundancy exercise **175IV**
@@ -399,7 +659,41 @@ structure EASansZero (M : Type u) where
 effect algebra is redundant — it follows from partial commutativity, partial
 associativity, orthocomplement and zero–one. -/
 theorem ea_redund {M : Type u} (S : EASansZero M) :
-    ∀ a : M, ∃ h : S.Perp S.zero a, S.ovee S.zero a h = a := sorry
+    ∀ a : M, ∃ h : S.Perp S.zero a, S.ovee S.zero a h = a := by
+  have congr' : ∀ {x y x' y' : M}, x = x' → y = y' →
+      ∀ (h : S.Perp x y) (h' : S.Perp x' y'), S.ovee x y h = S.ovee x' y' h' := by
+    rintro x y x' y' rfl rfl h h'; rfl
+  -- `1ᵖ = 0`, by the zero–one law applied to `1ᵖ ⊥ 1`.
+  have h1 : S.orth S.one = S.zero :=
+    S.eq_zero_of_perp_one (S.perp_comm (S.perp_orth S.one))
+  -- `aᵖᵖ = a`, by uniqueness of the orthocomplement.
+  have hinv : ∀ a : M, S.orth (S.orth a) = a := by
+    intro a
+    refine (S.orth_unique (S.perp_comm (S.perp_orth a)) ?_).symm
+    exact (S.ovee_comm (S.perp_orth a)).symm.trans (S.ovee_orth a)
+  -- `pᵖ ⋁ 0 = pᵖ`, from `p ⋁ (pᵖ ⋁ 0) = (p ⋁ pᵖ) ⋁ 0 = 1 ⋁ 1ᵖ = 1`.
+  have key : ∀ p : M, ∃ h : S.Perp (S.orth p) S.zero,
+      S.ovee (S.orth p) S.zero h = S.orth p := by
+    intro p
+    have hpo : S.Perp p (S.orth p) := S.perp_orth p
+    have hone : S.ovee p (S.orth p) hpo = S.one := S.ovee_orth p
+    have hpz : S.Perp (S.ovee p (S.orth p) hpo) S.zero := by
+      rw [← h1, ← hone]; exact S.perp_orth _
+    have hazero : S.Perp (S.orth p) S.zero := S.perp_of_ovee_perp hpo hpz
+    have hA : S.Perp p (S.ovee (S.orth p) S.zero hazero) :=
+      S.perp_ovee_of_ovee_perp hpo hpz
+    have e1 : S.ovee (S.ovee p (S.orth p) hpo) S.zero hpz
+        = S.ovee p (S.ovee (S.orth p) S.zero hazero) hA := S.ovee_assoc hpo hpz
+    have hE : S.ovee p (S.ovee (S.orth p) S.zero hazero) hA = S.one := by
+      refine e1.symm.trans (Eq.trans ?_ (S.ovee_orth S.one))
+      exact congr' hone h1.symm hpz (S.perp_orth S.one)
+    exact ⟨hazero, S.orth_unique hA hE⟩
+  intro a
+  obtain ⟨h, e⟩ := key (S.orth a)
+  have ha : S.Perp a S.zero := (hinv a) ▸ h
+  have ea' : S.ovee a S.zero ha = a := by
+    rw [congr' (hinv a).symm rfl ha h, e, hinv a]
+  exact ⟨S.perp_comm ha, (S.ovee_comm ha).symm.trans ea'⟩
 
 section EABasics
 
@@ -407,41 +701,122 @@ variable {E : Type u} [EffectAlgebra E]
 
 /-- **175V.1** (`eabasics`, eff.tex:354, Proposition): *(involution)*
 `aᵖᵖ = a`. -/
-theorem eabasics_orth_orth (a : E) : orth (orth a) = a := sorry
+theorem eabasics_orth_orth (a : E) : orth (orth a) = a :=
+  (EffectAlgebra.orth_unique (PCM.perp_comm (EffectAlgebra.perp_orth a))
+    (by rw [← PCM.ovee_comm]; exact EffectAlgebra.ovee_orth a)).symm
 
 /-- **175V.2** (`eabasics`, eff.tex:354, Proposition): `1ᵖ = 0`. -/
-theorem eabasics_orth_one : orth (1 : E) = 0 := sorry
+theorem eabasics_orth_one : orth (1 : E) = 0 := by
+  have := eabasics_orth_orth (0 : E)
+  rwa [(EffectAlgebra.orth_unique (PCM.zero_perp (1 : E)) (PCM.zero_ovee 1)).symm] at this
 
 /-- **175V.2** (`eabasics`, eff.tex:354, Proposition): `0ᵖ = 1`. -/
-theorem eabasics_orth_zero : orth (0 : E) = 1 := sorry
+theorem eabasics_orth_zero : orth (0 : E) = 1 :=
+  (EffectAlgebra.orth_unique (PCM.zero_perp (1 : E)) (PCM.zero_ovee 1)).symm
 
 /-- **175V.3** (`eabasics`, eff.tex:354, Proposition): *(positivity)* if
 `a ⋁ b = 0` then `a = 0` and `b = 0`. -/
 theorem eabasics_positivity {a b : E} (h : Perp a b) (h0 : ovee a b h = 0) :
-    a = 0 ∧ b = 0 := sorry
+    a = 0 ∧ b = 0 := by
+  have key : ∀ {x y : E} (hxy : Perp x y), ovee x y hxy = 0 → y = 0 := by
+    intro x y hxy hxy0
+    refine EffectAlgebra.eq_zero_of_perp_one (PCM.perp_of_ovee_perp hxy ?_)
+    rw [hxy0]; exact PCM.zero_perp 1
+  refine ⟨key (PCM.perp_comm h) ?_, key h h0⟩
+  rw [← PCM.ovee_comm]; exact h0
 
 /-- **175V.4** (`eabasics`, eff.tex:354, Proposition): *(cancellation)* if
 `a ⋁ c = b ⋁ c` then `a = b`. -/
 theorem eabasics_cancellation {a b c : E} (h₁ : Perp a c) (h₂ : Perp b c)
-    (h : ovee a c h₁ = ovee b c h₂) : a = b := sorry
+    (h : ovee a c h₁ = ovee b c h₂) : a = b := by
+  -- `c ⋁ (a ⋁ c)ᵖ` is an orthocomplement of `a` and, since `a ⋁ c = b ⋁ c`,
+  -- also one of `b`; orthocomplements are unique and involutive.
+  have key : ∀ {x : E} (hx : Perp x c),
+      ovee c (orth (ovee x c hx))
+          (PCM.perp_of_ovee_perp hx (EffectAlgebra.perp_orth (ovee x c hx))) = orth x := by
+    intro x hx
+    refine EffectAlgebra.orth_unique
+      (PCM.perp_ovee_of_ovee_perp hx (EffectAlgebra.perp_orth (ovee x c hx))) ?_
+    rw [← PCM.ovee_assoc hx (EffectAlgebra.perp_orth (ovee x c hx))]
+    exact EffectAlgebra.ovee_orth _
+  have ha := key h₁
+  have hb := key h₂
+  have : orth a = orth b := by
+    rw [← ha, ← hb]
+    congr 1
+    simp only [h]
+  rw [← eabasics_orth_orth a, ← eabasics_orth_orth b, this]
+
+/-- Helper: if `a ⊥ b` then `b ≼ aᵖ`, with witness `(a ⋁ b)ᵖ`. -/
+theorem perp_le_orth {a b : E} (h : Perp a b) : b ≼ orth a := by
+  have hab' : Perp (ovee a b h) (orth (ovee a b h)) := EffectAlgebra.perp_orth _
+  refine ⟨orth (ovee a b h), PCM.perp_of_ovee_perp h hab',
+    EffectAlgebra.orth_unique (PCM.perp_ovee_of_ovee_perp h hab') ?_⟩
+  rw [← PCM.ovee_assoc h hab']
+  exact EffectAlgebra.ovee_orth _
 
 /-- **175V.5** (`eabasics`, eff.tex:354, Proposition): the relation `≼` of
 174II partially orders `E` (antisymmetry; reflexivity and transitivity are
 174III). -/
-theorem eabasics_le_antisymm {a b : E} (hab : a ≼ b) (hba : b ≼ a) : a = b := sorry
+theorem eabasics_le_antisymm {a b : E} (hab : a ≼ b) (hba : b ≼ a) : a = b := by
+  obtain ⟨x, hax, rfl⟩ := hab
+  obtain ⟨y, hby, hy⟩ := hba
+  have hxy : Perp x y := PCM.perp_of_ovee_perp hax hby
+  have hsum : ovee a (ovee x y hxy) (PCM.perp_ovee_of_ovee_perp hax hby) = a := by
+    rw [← PCM.ovee_assoc hax hby]; exact hy
+  have h0 : ovee x y hxy = 0 := by
+    refine eabasics_cancellation (c := a)
+      (PCM.perp_comm (PCM.perp_ovee_of_ovee_perp hax hby)) (PCM.zero_perp a) ?_
+    rw [← PCM.ovee_comm, PCM.zero_ovee]; exact hsum
+  have hx0 : x = 0 := (eabasics_positivity hxy h0).1
+  subst hx0
+  exact (PCM.ovee_zero a hax).symm
 
 /-- **175V.6** (`eabasics`, eff.tex:354, Proposition): `a ≼ b` iff
 `bᵖ ≼ aᵖ`. -/
-theorem eabasics_le_iff_orth_le {a b : E} : a ≼ b ↔ orth b ≼ orth a := sorry
+theorem eabasics_le_iff_orth_le {a b : E} : a ≼ b ↔ orth b ≼ orth a := by
+  -- `a ⋁ c = b` implies `c ⋁ bᵖ = aᵖ`, hence `bᵖ ≼ aᵖ`.
+  have key : ∀ {x y : E}, x ≼ y → orth y ≼ orth x := by
+    rintro x y ⟨c, hxc, rfl⟩
+    have hp : Perp (ovee x c hxc) (orth (ovee x c hxc)) := EffectAlgebra.perp_orth _
+    have h1 : Perp c (orth (ovee x c hxc)) := PCM.perp_of_ovee_perp hxc hp
+    have h2 : ovee c (orth (ovee x c hxc)) h1 = orth x :=
+      EffectAlgebra.orth_unique (PCM.perp_ovee_of_ovee_perp hxc hp) (by
+        rw [← PCM.ovee_assoc hxc hp]; exact EffectAlgebra.ovee_orth _)
+    exact ⟨c, PCM.perp_comm h1, by rw [← PCM.ovee_comm]; exact h2⟩
+  refine ⟨key, fun h => ?_⟩
+  have := key h
+  rwa [eabasics_orth_orth, eabasics_orth_orth] at this
 
 /-- **175V.7** (`eabasics`, eff.tex:354, Proposition): if `a ≼ b` and
 `b ⊥ c`, then `a ⊥ c` and `a ⋁ c ≼ b ⋁ c`. -/
 theorem eabasics_le_perp_compat {a b c : E} (hab : a ≼ b) (hbc : Perp b c) :
-    ∃ hac : Perp a c, ovee a c hac ≼ ovee b c hbc := sorry
+    ∃ hac : Perp a c, ovee a c hac ≼ ovee b c hbc := by
+  -- Write `b = a ⋁ d`; then `b ⋁ c = a ⋁ (d ⋁ c) = a ⋁ (c ⋁ d) = (a ⋁ c) ⋁ d`.
+  obtain ⟨d, had, rfl⟩ := hab
+  have hdc : Perp d c := PCM.perp_of_ovee_perp had hbc
+  have hA : Perp a (ovee d c hdc) := PCM.perp_ovee_of_ovee_perp had hbc
+  have eA : ovee (ovee a d had) c hbc = ovee a (ovee d c hdc) hA :=
+    PCM.ovee_assoc had hbc
+  have hcd : Perp c d := PCM.perp_comm hdc
+  have e : ovee c d hcd = ovee d c hdc := (PCM.ovee_comm hdc).symm
+  have hB : Perp a (ovee c d hcd) := by rw [e]; exact hA
+  obtain ⟨hac, h', eq⟩ := PCM.assoc_left hcd hB
+  refine ⟨hac, d, h', ?_⟩
+  rw [eq, eA]
+  exact PCM.ovee_congr rfl e hB hA
 
 /-- **175V.8** (`eabasics`, eff.tex:354, Proposition): `a ⊥ b` iff
 `a ≼ bᵖ`. -/
-theorem eabasics_perp_iff_le_orth {a b : E} : Perp a b ↔ a ≼ orth b := sorry
+theorem eabasics_perp_iff_le_orth {a b : E} : Perp a b ↔ a ≼ orth b := by
+  constructor
+  · exact fun h => perp_le_orth (PCM.perp_comm h)
+  · rintro ⟨c, hac, hc⟩
+    -- `a ⋁ c = bᵖ`, so `b ⊥ (c ⋁ a)`, whence `a ⊥ b`.
+    have h1 : Perp b (ovee a c hac) := by rw [hc]; exact EffectAlgebra.perp_orth b
+    refine PCM.perp_of_ovee_perp (PCM.perp_comm hac) (PCM.perp_comm ?_)
+    rwa [PCM.ovee_comm] at h1
+
 
 /-! ### Partial difference and D-posets (parsec 176) -/
 
@@ -453,7 +828,12 @@ def IsDiff (b a c : E) : Prop := ∃ h : Perp a c, ovee a c h = b
 /-- **176I** (eff.tex:430, Definition): well-definedness of `⊖` — the
 difference is unique (by cancellation). -/
 theorem isDiff_unique {b a c c' : E} (h : IsDiff b a c) (h' : IsDiff b a c') :
-    c = c' := sorry
+    c = c' := by
+  obtain ⟨h1, e1⟩ := h
+  obtain ⟨h2, e2⟩ := h'
+  have k1 : ovee c a (PCM.perp_comm h1) = b := by rw [← PCM.ovee_comm h1]; exact e1
+  have k2 : ovee c' a (PCM.perp_comm h2) = b := by rw [← PCM.ovee_comm h2]; exact e2
+  exact eabasics_cancellation (PCM.perp_comm h1) (PCM.perp_comm h2) (k1.trans k2.symm)
 
 /-- **176I** (eff.tex:430, Definition): the difference `b ⊖ a`, defined when
 `a ≼ b`. -/
@@ -465,22 +845,49 @@ theorem isDiff_ominus {b a : E} (h : a ≼ b) : IsDiff b a (ominus b a h) :=
 
 /-- **176II** (`exc-dposet`, eff.tex:437, Exercise\*), (D1): `a ⊖ b` is
 defined iff `b ≼ a`. -/
-theorem exc_dposet_D1 {a b : E} : (∃ c, IsDiff a b c) ↔ b ≼ a := sorry
+theorem exc_dposet_D1 {a b : E} : (∃ c, IsDiff a b c) ↔ b ≼ a := Iff.rfl
 
 /-- **176II** (`exc-dposet`, eff.tex:437, Exercise\*), (D2): `a ⊖ b ≼ a`
 (when defined). -/
-theorem exc_dposet_D2 {a b c : E} (h : IsDiff a b c) : c ≼ a := sorry
+theorem exc_dposet_D2 {a b c : E} (h : IsDiff a b c) : c ≼ a := by
+  obtain ⟨hbc, e⟩ := h
+  exact ⟨b, PCM.perp_comm hbc, by rw [← PCM.ovee_comm]; exact e⟩
 
 /-- **176II** (`exc-dposet`, eff.tex:437, Exercise\*), (D3):
 `a ⊖ (a ⊖ b) = b` (when defined). -/
-theorem exc_dposet_D3 {a b c : E} (h : IsDiff a b c) : IsDiff a c b := sorry
+theorem exc_dposet_D3 {a b c : E} (h : IsDiff a b c) : IsDiff a c b := by
+  obtain ⟨hbc, e⟩ := h
+  exact ⟨PCM.perp_comm hbc, by rw [← PCM.ovee_comm]; exact e⟩
 
 /-- **176II** (`exc-dposet`, eff.tex:437, Exercise\*), (D4): if
 `a ≼ b ≼ c`, then `c ⊖ b ≼ c ⊖ a` and
 `(c ⊖ a) ⊖ (c ⊖ b) = b ⊖ a`. -/
 theorem exc_dposet_D4 {a b c u v : E} (hab : a ≼ b) (hbc : b ≼ c)
     (hu : IsDiff c b u) (hv : IsDiff c a v) :
-    u ≼ v ∧ ∀ w, IsDiff v u w → IsDiff b a w := sorry
+    u ≼ v ∧ ∀ w, IsDiff v u w → IsDiff b a w := by
+  -- Write `b = a ⋁ t`; then `c = b ⋁ u = a ⋁ (t ⋁ u) = a ⋁ v`, so `v = t ⋁ u`.
+  obtain ⟨t, hat, rfl⟩ := hab
+  obtain ⟨hbu, hc⟩ := hu
+  obtain ⟨hav, hc'⟩ := hv
+  have htu : Perp t u := PCM.perp_of_ovee_perp hat hbu
+  have hatu : Perp a (ovee t u htu) := PCM.perp_ovee_of_ovee_perp hat hbu
+  have ec : ovee a (ovee t u htu) hatu = c := by
+    rw [← PCM.ovee_assoc hat hbu]; exact hc
+  have hveq : ovee t u htu = v := by
+    have k1 : ovee (ovee t u htu) a (PCM.perp_comm hatu) = c := by
+      rw [← PCM.ovee_comm hatu]; exact ec
+    have k2 : ovee v a (PCM.perp_comm hav) = c := by
+      rw [← PCM.ovee_comm hav]; exact hc'
+    exact eabasics_cancellation (PCM.perp_comm hatu) (PCM.perp_comm hav)
+      (k1.trans k2.symm)
+  refine ⟨⟨t, PCM.perp_comm htu, by rw [← PCM.ovee_comm htu]; exact hveq⟩, ?_⟩
+  rintro w ⟨huw, hw⟩
+  have hwt : w = t := by
+    have k1 : ovee w u (PCM.perp_comm huw) = v := by
+      rw [← PCM.ovee_comm huw]; exact hw
+    exact eabasics_cancellation (PCM.perp_comm huw) htu (k1.trans hveq.symm)
+  subst hwt
+  exact ⟨hat, rfl⟩
 
 end EABasics
 
@@ -516,22 +923,31 @@ variable {E : Type u} {F : Type u} [EffectAlgebra E] [EffectAlgebra F]
 
 /-- **176V.1** (`exc-eamorphism`, eff.tex:465, Exercise): an effect algebra
 homomorphism preserves zero: `f 0 = 0`. -/
-theorem exc_eamorphism_map_zero (f : EAHom E F) : f.toFun 0 = 0 := sorry
+theorem exc_eamorphism_map_zero (f : EAHom E F) : f.toFun 0 = 0 := by
+  have h : Perp (f.toFun 0) (f.toFun 1) := f.perp_map (PCM.zero_perp 1)
+  rw [f.map_one] at h
+  exact EffectAlgebra.eq_zero_of_perp_one h
 
 /-- **176V.2** (`exc-eamorphism`, eff.tex:465, Exercise): an effect algebra
 homomorphism is order preserving. -/
 theorem exc_eamorphism_monotone (f : EAHom E F) {a b : E} (h : a ≼ b) :
-    f.toFun a ≼ f.toFun b := sorry
+    f.toFun a ≼ f.toFun b := by
+  obtain ⟨c, hac, rfl⟩ := h
+  exact ⟨f.toFun c, f.perp_map hac, (f.ovee_map hac).symm⟩
 
 /-- **176V.3** (`exc-eamorphism`, eff.tex:465, Exercise): if `a ⊖ b` is
 defined, then `f (a ⊖ b) = f a ⊖ f b`. -/
 theorem exc_eamorphism_map_diff (f : EAHom E F) {a b c : E} (h : IsDiff a b c) :
-    IsDiff (f.toFun a) (f.toFun b) (f.toFun c) := sorry
+    IsDiff (f.toFun a) (f.toFun b) (f.toFun c) := by
+  obtain ⟨hbc, e⟩ := h
+  exact ⟨f.perp_map hbc, by rw [← f.ovee_map hbc, e]⟩
 
 /-- **176V.4** (`exc-eamorphism`, eff.tex:465, Exercise): consequently
 `f (aᵖ) = (f a)ᵖ`. -/
 theorem exc_eamorphism_map_orth (f : EAHom E F) (a : E) :
-    f.toFun (orth a) = orth (f.toFun a) := sorry
+    f.toFun (orth a) = orth (f.toFun a) := by
+  refine EffectAlgebra.orth_unique (f.perp_map (EffectAlgebra.perp_orth a)) ?_
+  rw [← f.ovee_map (EffectAlgebra.perp_orth a), EffectAlgebra.ovee_orth, f.map_one]
 
 end EAMorphism
 
@@ -559,6 +975,18 @@ ortholattice is **orthomodular** provided `a ≤ b → a ⊔ (aᶜ ⊓ b) = b`. 
 class OrthomodularLattice (L : Type u) extends Ortholattice L where
   orthomodular : ∀ {a b : L}, a ≤ b → a ⊔ (aᶜ ⊓ b) = b
 
+/-- Helper: in an ortholattice `a ≤ bᶜ` implies `b ≤ aᶜ` (the orthogonality
+relation is symmetric). -/
+theorem Ortholattice.le_compl_comm {L : Type u} [Ortholattice L] {a b : L}
+    (h : a ≤ bᶜ) : b ≤ aᶜ := by
+  have h' := Ortholattice.compl_antitone h
+  rwa [Ortholattice.compl_compl] at h'
+
+/-- Helper: `⊤ᶜ = ⊥` in an ortholattice. -/
+theorem Ortholattice.compl_top {L : Type u} [Ortholattice L] : (⊤ : L)ᶜ = ⊥ := by
+  have h := Ortholattice.inf_compl (⊤ : L)
+  rwa [top_inf_eq] at h
+
 /-- **177V** (eff.tex:559, Example): the lattice of projections of a von
 Neumann algebra is an orthomodular lattice with `pᶜ = 1 - p`. -/
 theorem projections_orthomodularLattice (A : Type u) [CStarAlgebra A]
@@ -575,17 +1003,39 @@ def orthomodularEffectAlgebra (L : Type u) [OrthomodularLattice L] :
   Perp x y := x ≤ yᶜ
   ovee x y _ := x ⊔ y
   orth x := xᶜ
-  perp_comm := sorry
-  ovee_comm := sorry
-  perp_of_ovee_perp := sorry
-  perp_ovee_of_ovee_perp := sorry
-  ovee_assoc := sorry
-  zero_perp := sorry
-  zero_ovee := sorry
-  perp_orth := sorry
-  ovee_orth := sorry
-  orth_unique := sorry
-  eq_zero_of_perp_one := sorry
+  perp_comm h := Ortholattice.le_compl_comm h
+  ovee_comm := by intro a b _; exact sup_comm a b
+  perp_of_ovee_perp := by
+    intro a b c _ h
+    exact le_sup_right.trans h
+  perp_ovee_of_ovee_perp := by
+    intro a b c hab h
+    have hb : b ≤ aᶜ := Ortholattice.le_compl_comm hab
+    have hc : c ≤ aᶜ :=
+      (Ortholattice.le_compl_comm h).trans (Ortholattice.compl_antitone le_sup_left)
+    exact Ortholattice.le_compl_comm (sup_le hb hc)
+  ovee_assoc := by intro a b c _ _; exact sup_assoc a b c
+  zero_perp := by intro a; exact bot_le
+  zero_ovee := by intro a; exact bot_sup_eq a
+  perp_orth := by intro a; exact le_of_eq (Ortholattice.compl_compl a).symm
+  ovee_orth := by intro a; exact Ortholattice.sup_compl a
+  orth_unique := by
+    intro a b h heq
+    have heq' : a ⊔ b = (⊤ : L) := heq
+    have hb : b ≤ aᶜ := Ortholattice.le_compl_comm h
+    have hx : bᶜ ⊓ aᶜ = ⊥ := by
+      have h1 : a ≤ (bᶜ ⊓ aᶜ)ᶜ := Ortholattice.le_compl_comm inf_le_right
+      have h2 : b ≤ (bᶜ ⊓ aᶜ)ᶜ := Ortholattice.le_compl_comm inf_le_left
+      have h3 : (bᶜ ⊓ aᶜ)ᶜ = ⊤ := top_le_iff.mp (heq' ▸ sup_le h1 h2)
+      have h4 := congrArg (fun z : L => zᶜ) h3
+      simpa [Ortholattice.compl_compl, Ortholattice.compl_top] using h4
+    have hom := OrthomodularLattice.orthomodular hb
+    rwa [hx, sup_bot_eq] at hom
+  eq_zero_of_perp_one := by
+    intro a h
+    have h' : a ≤ (⊤ : L)ᶜ := h
+    rw [Ortholattice.compl_top] at h'
+    exact le_bot_iff.mp h'
 
 /-- **177VI** (`orth-ea-is-orthomodular`, eff.tex:564, Proposition): an
 effect algebra that is an ortholattice (for its algebraic order, with
@@ -630,10 +1080,39 @@ Boolean algebra is an effect monoid with `x ⊙ y = x ⊓ y`. -/
 def booleanEffectMonoid (L : Type u) [BooleanAlgebra L] : EffectMonoid L :=
   { booleanEffectAlgebra L with
     mul := (· ⊓ ·)
-    one_mul := sorry
-    mul_one := sorry
-    mul_assoc := sorry
-    distrib := sorry }
+    one_mul := by intro a; exact top_inf_eq a
+    mul_one := by intro a; exact inf_top_eq a
+    mul_assoc := by intro a b c; exact inf_assoc a b c
+    distrib := by
+      let _ : EffectAlgebra L := booleanEffectAlgebra L
+      intro a b c d hab hcd
+      have hab' : a ⊓ b = ⊥ := hab
+      have hcd' : c ⊓ d = ⊥ := hcd
+      have hba' : b ⊓ a = ⊥ := by rw [inf_comm]; exact hab'
+      have hdc' : d ⊓ c = ⊥ := by rw [inf_comm]; exact hcd'
+      have sub_bot : ∀ {x y p q : L}, p ≤ x → q ≤ y → x ⊓ y = ⊥ → p ⊓ q = ⊥ :=
+        fun hp hq h => le_bot_iff.mp (h ▸ inf_le_inf hp hq)
+      have e1 : (a ⊓ d) ⊓ (b ⊓ d) = ⊥ := sub_bot inf_le_left inf_le_left hab'
+      have e2 : (b ⊓ c) ⊓ (a ⊓ d) = ⊥ := sub_bot inf_le_left inf_le_left hba'
+      have e3 : (b ⊓ c) ⊓ (b ⊓ d) = ⊥ := sub_bot inf_le_right inf_le_right hcd'
+      have e4 : (a ⊓ c) ⊓ (b ⊓ c) = ⊥ := sub_bot inf_le_left inf_le_left hab'
+      have e5 : (a ⊓ c) ⊓ (a ⊓ d) = ⊥ := sub_bot inf_le_right inf_le_right hcd'
+      have e6 : (a ⊓ c) ⊓ (b ⊓ d) = ⊥ := sub_bot inf_le_left inf_le_left hab'
+      refine PCM.isSumOf_cons_iff.mpr
+        ⟨(b ⊓ c) ⊔ ((a ⊓ d) ⊔ (b ⊓ d)), ?_, ?_, ?_⟩
+      · refine PCM.isSumOf_cons_iff.mpr ⟨(a ⊓ d) ⊔ (b ⊓ d), ?_, ?_, rfl⟩
+        · refine PCM.isSumOf_cons_iff.mpr ⟨b ⊓ d, ?_, ?_, rfl⟩
+          · exact PCM.isSumOf_cons_iff.mpr
+              ⟨0, PCM.IsSumOf.nil, PCM.perp_zero _, PCM.ovee_zero _ _⟩
+          · show (a ⊓ d) ⊓ (b ⊓ d) = ⊥
+            exact e1
+        · show (b ⊓ c) ⊓ ((a ⊓ d) ⊔ (b ⊓ d)) = ⊥
+          simp only [inf_sup_left, e2, e3, sup_bot_eq]
+      · show (a ⊓ c) ⊓ ((b ⊓ c) ⊔ ((a ⊓ d) ⊔ (b ⊓ d))) = ⊥
+        simp only [inf_sup_left, e4, e5, e6, sup_bot_eq]
+      · show (a ⊓ c) ⊔ ((b ⊓ c) ⊔ ((a ⊓ d) ⊔ (b ⊓ d))) = (a ⊔ b) ⊓ (c ⊔ d)
+        rw [inf_sup_right, inf_sup_left, inf_sup_left]
+        simp only [sup_assoc, sup_left_comm] }
 
 /-- **178III.3** (`eff-monoid-examples`, eff.tex:646, Examples): the
 two-element Boolean algebra `2` is an effect monoid with
@@ -645,10 +1124,49 @@ a commutative effect monoid with the usual product. -/
 noncomputable instance unitInterval.effectMonoid : EffectMonoid I :=
   { unitInterval.effectAlgebra with
     mul := (· * ·)
-    one_mul := sorry
-    mul_one := sorry
-    mul_assoc := sorry
-    distrib := sorry }
+    one_mul := by intro a; exact _root_.one_mul a
+    mul_one := by intro a; exact _root_.mul_one a
+    mul_assoc := by intro a b c; exact _root_.mul_assoc a b c
+    distrib := by
+      intro a b c d hab hcd
+      have hab' : (a : ℝ) + b ≤ 1 := hab
+      have hcd' : (c : ℝ) + d ≤ 1 := hcd
+      obtain ⟨ha0, ha1⟩ := a.2
+      obtain ⟨hb0, hb1⟩ := b.2
+      obtain ⟨hc0, hc1⟩ := c.2
+      obtain ⟨hd0, hd1⟩ := d.2
+      have m1 : (0 : ℝ) ≤ (a : ℝ) * c := mul_nonneg ha0 hc0
+      have m2 : (0 : ℝ) ≤ (b : ℝ) * c := mul_nonneg hb0 hc0
+      have m3 : (0 : ℝ) ≤ (a : ℝ) * d := mul_nonneg ha0 hd0
+      have m4 : (0 : ℝ) ≤ (b : ℝ) * d := mul_nonneg hb0 hd0
+      have hprod : ((a : ℝ) + b) * ((c : ℝ) + d) ≤ 1 := by nlinarith
+      have hP : ∀ x y : I, (x : ℝ) + (y : ℝ) ≤ 1 → Perp x y := fun _ _ h => h
+      have hO : ∀ (x y : I) (h : Perp x y),
+          ((ovee x y h : I) : ℝ) = (x : ℝ) + (y : ℝ) := fun _ _ _ => rfl
+      refine PCM.isSumOf_cons_iff.mpr
+        ⟨⟨(b : ℝ) * c + ((a : ℝ) * d + (b : ℝ) * d), by nlinarith, by nlinarith⟩,
+          ?_, hP _ _ ?_, ?_⟩
+      · refine PCM.isSumOf_cons_iff.mpr
+          ⟨⟨(a : ℝ) * d + (b : ℝ) * d, by nlinarith, by nlinarith⟩, ?_, hP _ _ ?_, ?_⟩
+        · refine PCM.isSumOf_cons_iff.mpr ⟨b * d, ?_, hP _ _ ?_, ?_⟩
+          · exact PCM.isSumOf_cons_iff.mpr
+              ⟨0, PCM.IsSumOf.nil, PCM.perp_zero _, PCM.ovee_zero _ _⟩
+          · show ((a * d : I) : ℝ) + ((b * d : I) : ℝ) ≤ 1
+            simp only [Set.Icc.coe_mul]
+            nlinarith
+          · apply Subtype.ext
+            simp only [hO, Set.Icc.coe_mul]
+        · show ((b * c : I) : ℝ) + ((a : ℝ) * d + (b : ℝ) * d) ≤ 1
+          simp only [Set.Icc.coe_mul]
+          nlinarith
+        · apply Subtype.ext
+          simp only [hO, Set.Icc.coe_mul]
+      · show ((a * c : I) : ℝ) + ((b : ℝ) * c + ((a : ℝ) * d + (b : ℝ) * d)) ≤ 1
+        simp only [Set.Icc.coe_mul]
+        nlinarith
+      · apply Subtype.ext
+        simp only [hO, Set.Icc.coe_mul]
+        ring }
 
 /-- **178III.1** (`eff-monoid-examples`, eff.tex:636, Examples): the usual
 product is the *only* way to turn the effect algebra `[0,1]` into an effect
@@ -678,7 +1196,47 @@ theorem exists_noncommutative_effectMonoid :
 in any effect monoid.  (The thesis's "`a ⊙ 0 = a = 0 ⊙ a`" is a typo for
 "`= 0 =`".) -/
 theorem exc_emonzero {M : Type u} [EffectMonoid M] (a : M) :
-    a * 0 = 0 ∧ (0 : M) * a = 0 := sorry
+    a * 0 = 0 ∧ (0 : M) * a = 0 := by
+  -- `(x ⋁ 0) ⊙ (0 ⋁ 0) = x ⊙ 0` expands to `(x⊙0) ⋁ (0⊙0) ⋁ (x⊙0) ⋁ (0⊙0)`;
+  -- cancelling the leading `x⊙0` and using positivity gives `x ⊙ 0 = 0`.
+  have hmul0 : ∀ x : M, x * 0 = 0 := by
+    intro x
+    have hd := EffectMonoid.distrib (PCM.perp_zero x) (PCM.zero_perp (0 : M))
+    rw [PCM.ovee_zero x (PCM.perp_zero x), PCM.zero_ovee (0 : M)] at hd
+    rw [PCM.isSumOf_cons_iff] at hd
+    obtain ⟨t, ht, hp, he⟩ := hd
+    have ht0 : t = 0 := by
+      refine eabasics_cancellation (c := x * 0) (PCM.perp_comm hp) (PCM.zero_perp _) ?_
+      rw [← PCM.ovee_comm hp, he, PCM.zero_ovee']
+    subst ht0
+    rw [PCM.isSumOf_cons_iff] at ht
+    obtain ⟨t2, ht2, hp2, he2⟩ := ht
+    have h2 := eabasics_positivity hp2 he2
+    rw [PCM.isSumOf_cons_iff] at ht2
+    obtain ⟨t3, ht3, hp3, he3⟩ := ht2
+    exact (eabasics_positivity hp3 (he3.trans h2.2)).1
+  refine ⟨hmul0 a, ?_⟩
+  -- `(0 ⋁ 0) ⊙ (0 ⋁ a) = 0 ⊙ a` expands to `(0⊙0) ⋁ (0⊙0) ⋁ (0⊙a) ⋁ (0⊙a)`.
+  have hd := EffectMonoid.distrib (PCM.zero_perp (0 : M)) (PCM.zero_perp a)
+  rw [PCM.zero_ovee (0 : M), PCM.zero_ovee a, hmul0 0] at hd
+  rw [PCM.isSumOf_cons_iff] at hd
+  obtain ⟨t1, ht1, hp1, he1⟩ := hd
+  rw [PCM.zero_ovee' t1 hp1] at he1
+  subst he1
+  rw [PCM.isSumOf_cons_iff] at ht1
+  obtain ⟨t2, ht2, hp2, he2⟩ := ht1
+  rw [PCM.zero_ovee' t2 hp2] at he2
+  subst he2
+  rw [PCM.isSumOf_cons_iff] at ht2
+  obtain ⟨t3, ht3, hp3, he3⟩ := ht2
+  have ht30 : t3 = 0 := by
+    refine eabasics_cancellation (c := (0 : M) * a) (PCM.perp_comm hp3)
+      (PCM.zero_perp _) ?_
+    rw [← PCM.ovee_comm hp3, he3, PCM.zero_ovee']
+  subst ht30
+  rw [PCM.isSumOf_cons_iff] at ht3
+  obtain ⟨t4, ht4, hp4, he4⟩ := ht3
+  exact (eabasics_positivity hp4 he4).1
 
 /-- **178V** (`emond-lemma-for-conv`, eff.tex:669, Exercise): if `M` is an
 effect monoid and `a₁, …, aₙ, b₁, …, bₙ ∈ M` with `⋁ᵢ aᵢ = 1` and
@@ -760,10 +1318,21 @@ instance (M : Type u) [EffectMonoid M] : Category (EModCat.{u, v} M) where
 module over the two-element effect monoid `2` (= `Bool`). -/
 def effectModuleBool (E : Type v) [EffectAlgebra E] : EffectModule Bool E where
   smul b a := if b then a else 0
-  mul_smul := sorry
-  smul_perp := sorry
-  perp_smul := sorry
-  one_smul := sorry
+  mul_smul := by intro l m a; cases l <;> cases m <;> rfl
+  smul_perp := by
+    intro l a b h
+    cases l
+    · exact ⟨PCM.zero_perp 0, PCM.zero_ovee 0⟩
+    · exact ⟨h, rfl⟩
+  perp_smul := by
+    intro l m h a
+    cases l <;> cases m
+    · exact ⟨PCM.zero_perp 0, PCM.zero_ovee 0⟩
+    · exact ⟨PCM.zero_perp a, PCM.zero_ovee a⟩
+    · exact ⟨PCM.perp_zero a, PCM.ovee_zero a _⟩
+    · have h' : (true : Bool) ⊓ true = ⊥ := h
+      exact absurd h' (by decide)
+  one_smul := by intro a; rfl
 
 /-- **179III.1** (eff.tex:722, Examples): `EA ≅ EMod₂` — the category of
 effect algebras is equivalent to that of effect modules over `2`. -/
@@ -774,16 +1343,33 @@ theorem ea_equiv_emod_two :
 instance : EffectMonoid PUnit :=
   { (inferInstance : EffectAlgebra PUnit) with
     mul := fun _ _ => PUnit.unit
-    one_mul := sorry
-    mul_one := sorry
-    mul_assoc := sorry
-    distrib := sorry }
+    one_mul _ := rfl
+    mul_one _ := rfl
+    mul_assoc _ _ _ := rfl
+    distrib := by
+      intro a b c d hab hcd
+      exact PCM.IsSumOf.cons (PCM.IsSumOf.cons (PCM.IsSumOf.cons
+        (PCM.IsSumOf.cons PCM.IsSumOf.nil trivial) trivial) trivial) trivial }
 
 /-- **179III.1** (eff.tex:722, Examples): the only effect module over the
 one-element effect monoid `1` is (up to isomorphism) the one-element effect
 algebra. -/
 theorem emod_punit_subsingleton (E : Type v) [EffectAlgebra E]
-    [EffectModule PUnit E] : Subsingleton E := sorry
+    [EffectModule PUnit E] : Subsingleton E := by
+  -- `1 = 0` in `1`, so `a ⋁ a = (1 ⋁ 1) • a = 1 • a = a`, whence `a = 0`.
+  have hone := EffectModule.one_smul (M := PUnit) (E := E)
+  have key : ∀ a : E, a = 0 := by
+    intro a
+    obtain ⟨h', e⟩ :=
+      EffectModule.perp_smul (M := PUnit) (E := E) (l := PUnit.unit) (m := PUnit.unit)
+        trivial a
+    have hpa : Perp a a := by rw [← hone a]; exact h'
+    have e' : ovee _ _ h' = a := by rw [e]; exact hone a
+    have ea : ovee a a hpa = a :=
+      (PCM.ovee_congr (hone a) (hone a) h' hpa).symm.trans e'
+    exact eabasics_cancellation (c := a) hpa (PCM.zero_perp a)
+      (ea.trans (PCM.zero_ovee a).symm)
+  exact ⟨fun x y => (key x).trans (key y).symm⟩
 
 /-- **179III.2** (eff.tex:731, Examples): if `V` is an ordered real vector
 space with `u ≥ 0`, then `[0,u]_V` is an effect module over `[0,1]`

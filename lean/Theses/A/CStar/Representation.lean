@@ -51,7 +51,7 @@ part 1: the evaluation map `f ↦ f(a)` on `spec(𝒜)` is continuous for every
 `a ∈ 𝒜`. -/
 theorem gelfand_representation_basic_1 (a : 𝒜) :
     Continuous fun φ : characterSpace ℂ 𝒜 => φ a :=
-  sorry
+  (gelfandTransform ℂ 𝒜 a).continuous
 
 /-- **27IV** (`gelfand-representation-basic`, cstar.tex:3916, Exercise),
 part 2: the Gelfand representation is an miu-map; multiplicativity and
@@ -59,7 +59,7 @@ unitality are part of the bundled `gelfandTransform`, so involution
 preservation remains. -/
 theorem gelfand_representation_basic_2 (a : 𝒜) :
     gelfandTransform ℂ 𝒜 (star a) = star (gelfandTransform ℂ 𝒜 a) :=
-  sorry
+  gelfandTransform_map_star a
 
 section Order
 
@@ -155,21 +155,21 @@ end Order
 proves this for arbitrary `a`: `WeakDual.CharacterSpace.mem_spectrum_iff_exists`.) -/
 theorem spectrum_miu (a : 𝒜) (ha : IsSelfAdjoint a) :
     spectrum ℂ a = Set.range fun φ : characterSpace ℂ 𝒜 => φ a :=
-  sorry
+  Set.ext fun _ => WeakDual.CharacterSpace.mem_spectrum_iff_exists
 
 /-- **27XVIII** (`gelfand-representation-isometry`, cstar.tex:4082,
 Exercise), part 1: the Gelfand representation is an isometry,
 `‖γ(a)‖ = ‖a‖`. -/
 theorem gelfand_representation_isometry (a : 𝒜) :
     ‖gelfandTransform ℂ 𝒜 a‖ = ‖a‖ :=
-  sorry
+  (gelfandTransform_isometry 𝒜).norm_map_of_map_zero (map_zero _) a
 
 /-- **27XVIII** (`gelfand-representation-isometry`, cstar.tex:4082,
 Exercise), part 2: consequently `γ` is injective (and its range is a
 C*-subalgebra of `C(spec 𝒜)`, cf. **29IX**). -/
 theorem gelfand_representation_injective :
     Function.Injective (gelfandTransform ℂ 𝒜) :=
-  sorry
+  (gelfandTransform_isometry 𝒜).injective
 
 /-- **27XX** (`stone-weierstrass`, cstar.tex:4103, Theorem
 (Stone–Weierstraß)): a C*-subalgebra `𝒮` of `C(X)`, `X` compact Hausdorff,
@@ -178,15 +178,22 @@ which separates the points of `X` is all of `C(X)`.  (Mathlib:
 theorem stone_weierstrass {X : Type*} [TopologicalSpace X] [CompactSpace X]
     [T2Space X] (S : StarSubalgebra ℂ C(X, ℂ)) (hS : IsClosed (S : Set C(X, ℂ)))
     (hsep : ∀ x y : X, x ≠ y → ∃ f ∈ S, f x ≠ f y) :
-    S = ⊤ :=
-  sorry
+    S = ⊤ := by
+  have hsep' : S.SeparatesPoints := by
+    rintro x y hxy
+    obtain ⟨f, hf, hne⟩ := hsep x y hxy
+    exact ⟨(f : X → ℂ), ⟨f, hf, rfl⟩, hne⟩
+  have h := ContinuousMap.starSubalgebra_topologicalClosure_eq_top_of_separatesPoints S hsep'
+  refine top_le_iff.mp ?_
+  calc (⊤ : StarSubalgebra ℂ C(X, ℂ)) = S.topologicalClosure := h.symm
+    _ ≤ S := StarSubalgebra.topologicalClosure_minimal le_rfl hS
 
 /-- **27XXV** (`spectrum-calg-compact-hausdorff`, cstar.tex:4186, Lemma): the
 spectrum `spec(𝒜)` of a commutative C*-algebra is a compact Hausdorff space.
 (Mathlib instances on `characterSpace ℂ 𝒜`.) -/
 theorem spectrum_calg_compact_hausdorff :
     CompactSpace (characterSpace ℂ 𝒜) ∧ T2Space (characterSpace ℂ 𝒜) :=
-  sorry
+  ⟨inferInstance, inferInstance⟩
 
 /-- **27XXVII** (`gelfand`, cstar.tex:4221, Gelfand's Representation
 Theorem): for a commutative C*-algebra `𝒜` the Gelfand representation
@@ -195,7 +202,7 @@ Theorem): for a commutative C*-algebra `𝒜` the Gelfand representation
 `gelfand_representation_basic_2`, so a ⋆-isomorphism:
 `gelfandStarTransform`). -/
 theorem gelfand : Function.Bijective (gelfandTransform ℂ 𝒜) :=
-  sorry
+  gelfandTransform_bijective 𝒜
 
 end GelfandRepresentation
 
@@ -211,15 +218,19 @@ is a least C*-subalgebra `C*(a)` of `𝒜` containing `a` — Mathlib's
 theorem functional_calculus_1 (a : 𝒜) :
     IsLeast {S : StarSubalgebra ℂ 𝒜 | a ∈ S ∧ IsClosed (S : Set 𝒜)}
       (StarAlgebra.elemental ℂ a) :=
-  sorry
+  ⟨⟨StarAlgebra.elemental.self_mem ℂ a, StarAlgebra.elemental.isClosed ℂ a⟩,
+    fun _ hS => StarAlgebra.elemental.le_of_mem hS.2 hS.1⟩
 
 /-- **28II** (`functional-calculus`, cstar.tex:4258, Exercise), part 1b:
 every `b ∈ C*(a)` commutes with every `c` that commutes with `a` (and with
 `a*`). -/
 theorem functional_calculus_1b (a b : 𝒜) (hb : b ∈ StarAlgebra.elemental ℂ a)
     (c : 𝒜) (hc : a * c = c * a) (hc' : star a * c = c * star a) :
-    b * c = c * b :=
-  sorry
+    b * c = c * b := by
+  have hcmem : c ∈ (StarSubalgebra.centralizer ℂ ({a} : Set 𝒜) : Set 𝒜) :=
+    (StarSubalgebra.mem_centralizer_iff ℂ).mpr (by rintro g rfl; exact ⟨hc, hc'⟩)
+  have hbmem := StarAlgebra.elemental.le_centralizer_centralizer (R := ℂ) a hb
+  exact (((StarSubalgebra.mem_centralizer_iff ℂ).mp hbmem) c hcmem).1.symm
 
 /-- **28II** (`functional-calculus`, cstar.tex:4258, Exercise), part 2: `a`
 is *normal* (`C*(a)` commutative, Mathlib: `IsStarNormal a`) iff
@@ -245,8 +256,15 @@ variable [PartialOrder 𝒜] [StarOrderedRing 𝒜]
 (sample property): `a^α a^β = a^{α+β}` for `a ≥ 0` and `α, β ∈ (0,∞)`. -/
 theorem functional_calculus_3 (a : 𝒜) (ha : 0 ≤ a) (α β : ℝ) (hα : 0 < α)
     (hβ : 0 < β) :
-    CFC.rpow a α * CFC.rpow a β = CFC.rpow a (α + β) :=
-  sorry
+    CFC.rpow a α * CFC.rpow a β = CFC.rpow a (α + β) := by
+  lift α to NNReal using hα.le with α' hα'
+  lift β to NNReal using hβ.le with β' hβ'
+  have hα0 : (0 : NNReal) < α' := by exact_mod_cast hα
+  have hβ0 : (0 : NNReal) < β' := by exact_mod_cast hβ
+  have e : ∀ x : NNReal, 0 < x → CFC.rpow a (x : ℝ) = CFC.nnrpow a x :=
+    fun x hx => (CFC.nnrpow_eq_rpow hx).symm
+  rw [← NNReal.coe_add, e _ hα0, e _ hβ0, e _ (add_pos hα0 hβ0)]
+  exact (CFC.nnrpow_add hα0 hβ0).symm
 
 end Ordered
 
@@ -267,7 +285,7 @@ theorem functional_calculus_4 (a : 𝒜) [IsStarNormal a] (f : ℂ → ℂ)
 theorem functional_calculus_5 (a : 𝒜) [IsStarNormal a] (f : ℂ → ℂ)
     (hf : ContinuousOn f (spectrum ℂ a)) :
     spectrum ℂ (cfc f a) = f '' spectrum ℂ a :=
-  sorry
+  cfc_map_spectrum f a
 
 /-- **28II** (`functional-calculus`, cstar.tex:4258, Exercise), part 6:
 `spec(ρ(a)) ⊆ spec(a)` and `ρ(f(a)) = f(ρ(a))` for every miu-map
@@ -276,7 +294,9 @@ theorem functional_calculus_6 {ℬ : Type*} [CStarAlgebra ℬ]
     (ρ : 𝒜 →⋆ₐ[ℂ] ℬ) (a : 𝒜) [IsStarNormal a] (f : ℂ → ℂ)
     (hf : ContinuousOn f (spectrum ℂ a)) :
     spectrum ℂ (ρ a) ⊆ spectrum ℂ a ∧ ρ (cfc f a) = cfc f (ρ a) :=
-  sorry
+  ⟨AlgHom.spectrum_apply_subset ρ a, ρ.map_cfc f a hf
+    (AddMonoidHomClass.continuous_of_bound ρ 1 fun x => by
+      simpa using NonUnitalStarAlgHom.norm_apply_le ρ x)⟩
 
 /-- **28II** (`functional-calculus`, cstar.tex:4258, Exercise), part 7:
 `g(f(a)) = (g ∘ f)(a)` for normal `a`.  (Mathlib: `cfc_comp`.) -/
@@ -284,7 +304,7 @@ theorem functional_calculus_7 (a : 𝒜) [IsStarNormal a] (f g : ℂ → ℂ)
     (hf : ContinuousOn f (spectrum ℂ a))
     (hg : ContinuousOn g (f '' spectrum ℂ a)) :
     cfc g (cfc f a) = cfc (g ∘ f) a :=
-  sorry
+  (cfc_comp g f a).symm
 
 section Ordered2
 variable [PartialOrder 𝒜] [StarOrderedRing 𝒜]
@@ -294,7 +314,7 @@ variable [PartialOrder 𝒜] [StarOrderedRing 𝒜]
 theorem functional_calculus_7b (a : 𝒜) (ha : 0 ≤ a) (α β : ℝ) (hα : 0 < α)
     (hβ : 0 < β) :
     CFC.rpow (CFC.rpow a α) β = CFC.rpow a (α * β) :=
-  sorry
+  CFC.rpow_rpow_of_exponent_nonneg a α β hα.le hβ.le ha
 
 /-- **28III** (`sqrt-monotone`, cstar.tex:4353, Theorem): `0 ≤ a ≤ b`
 implies `a^α ≤ b^α` for `α ∈ (0, 1]`; in particular the square root is
@@ -302,7 +322,7 @@ monotone on the positive elements. -/
 theorem sqrt_monotone (a b : 𝒜) (ha : 0 ≤ a) (hab : a ≤ b) (α : ℝ)
     (h0 : 0 < α) (h1 : α ≤ 1) :
     CFC.rpow a α ≤ CFC.rpow b α :=
-  sorry
+  CFC.rpow_le_rpow ⟨h0.le, h1⟩ hab
 
 end Ordered2
 
@@ -323,8 +343,13 @@ variable {X : Type*} [TopologicalSpace X] [CompactSpace X] [T2Space X]
 /-- **29II** (cstar.tex:4503, Lemma): every miu-map `τ : C(X) → ℂ`, `X`
 compact Hausdorff, is given by evaluation at some point `x ∈ X`. -/
 theorem multiplicative_state_on_cx (τ : C(X, ℂ) →⋆ₐ[ℂ] ℂ) :
-    ∃ x : X, ∀ f : C(X, ℂ), τ f = f x :=
-  sorry
+    ∃ x : X, ∀ f : C(X, ℂ), τ f = f x := by
+  obtain ⟨x, hx⟩ := (WeakDual.CharacterSpace.homeoEval X ℂ).surjective
+    (WeakDual.CharacterSpace.equivAlgHom.symm (τ : C(X, ℂ) →ₐ[ℂ] ℂ))
+  refine ⟨x, fun f => ?_⟩
+  have h1 : (WeakDual.CharacterSpace.equivAlgHom.symm
+      (τ : C(X, ℂ) →ₐ[ℂ] ℂ) : C(X, ℂ) → ℂ) f = f x := by rw [← hx]; rfl
+  simpa using h1
 
 /-- **29VII** (cstar.tex:4563, Exercise): the map `x ↦ δₓ` (with
 `δₓ(f) = f(x)`, an miu-map) is a homeomorphism from `X` onto
@@ -332,7 +357,7 @@ theorem multiplicative_state_on_cx (τ : C(X, ℂ) →⋆ₐ[ℂ] ℂ) :
 theorem eval_homeomorphism :
     ∃ e : X ≃ₜ characterSpace ℂ C(X, ℂ),
       ∀ (x : X) (f : C(X, ℂ)), (e x : WeakDual ℂ C(X, ℂ)) f = f x :=
-  sorry
+  ⟨WeakDual.CharacterSpace.homeoEval X ℂ, fun _ _ => rfl⟩
 
 variable {𝒜 ℬ : Type*} [CStarAlgebra 𝒜] [CStarAlgebra ℬ]
 
@@ -342,14 +367,14 @@ categorical steps — mono = injective and epi = surjective in `CH` — are part
 of the proof and not converted separately.) -/
 theorem injective_miu_isometry (ρ : 𝒜 →⋆ₐ[ℂ] ℬ)
     (hρ : Function.Injective ρ) (a : 𝒜) : ‖ρ a‖ = ‖a‖ :=
-  sorry
+  NonUnitalStarAlgHom.norm_map ρ hρ a
 
 /-- **29IX** (`injective-miu-iso-on-image`, cstar.tex:4600, Exercise): the
 range of an injective miu-map `ρ : 𝒜 → ℬ` is closed, hence a C*-subalgebra
 of `ℬ` isomorphic to `𝒜`. -/
 theorem injective_miu_iso_on_image (ρ : 𝒜 →⋆ₐ[ℂ] ℬ)
     (hρ : Function.Injective ρ) : IsClosed (Set.range ρ) :=
-  sorry
+  (NonUnitalStarAlgHom.isometry ρ hρ).isClosedEmbedding.isClosed_range
 
 end Duality
 
@@ -369,7 +394,8 @@ argument is automatic). -/
 theorem state_inner_product (ω : 𝒜 →ₗ[ℂ] ℂ) (hω : IsPositiveMap ω)
     (a b : 𝒜) :
     0 ≤ ω (star a * a) ∧ star (ω (star a * b)) = ω (star b * a) :=
-  sorry
+  ⟨hω _ (star_mul_self_nonneg a), by
+    simpa [star_mul] using (cstar_p_implies_i ω hω (star a * b)).symm⟩
 
 /-- The seminorm `‖a‖_ω = ω(a* a)^{1/2}` induced by a positive functional
 `ω` (**30IV**, `omega-norm-basic`, cstar.tex:4680). -/
@@ -403,7 +429,8 @@ theorem inner_product_completion (V : Type v) [NormedAddCommGroup V]
     [InnerProductSpace ℂ V] :
     ∃ (H : Type v) (_ : NormedAddCommGroup H) (_ : InnerProductSpace ℂ H)
       (_ : CompleteSpace H) (e : V →ₗᵢ[ℂ] H), DenseRange e :=
-  sorry
+  ⟨UniformSpace.Completion V, inferInstance, inferInstance, inferInstance,
+    UniformSpace.Completion.toComplₗᵢ, UniformSpace.Completion.denseRange_coe⟩
 
 /-! **30VI** (`gns`, cstar.tex:4779, Definition (Gelfand–Naimark–Segal
 construction)): for a p-map `ω : 𝒜 → ℂ`, the Hilbert space `ℋ_ω` is the
@@ -418,8 +445,8 @@ miu-map — Mathlib's `ω.gnsStarAlgHom` is bundled as one; the defining
 property `ϱ_ω(a) η_ω(b) = η_ω(ab)` is recorded here. -/
 theorem gns_starAlgHom_apply (ω : 𝒜 →ₚ[ℂ] ℂ) (a b : 𝒜) :
     ω.gnsStarAlgHom a ((ω.toPreGNS b : ω.PreGNS) : ω.GNS) =
-      ((ω.toPreGNS (a * b) : ω.PreGNS) : ω.GNS) :=
-  sorry
+      ((ω.toPreGNS (a * b) : ω.PreGNS) : ω.GNS) := by
+  simp [PositiveLinearMap.gnsStarAlgHom]
 
 /-! **30IX** (`gelfand-naimark-representation`, cstar.tex:4859, Definition):
 given a collection `Ω` of p-maps on `𝒜`, the representation

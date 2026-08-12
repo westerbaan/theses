@@ -75,7 +75,9 @@ variable [AndThenEffectus C]
 
 /-- The zero maps of an effectus are pure (used to speak of zero morphisms
 in `Pure C`; implicit in 224III). -/
-theorem isPure_zero {X Y : C} : IsPure (0 : X ⟶ Y) := sorry
+theorem isPure_zero {X Y : C} : IsPure (0 : X ⟶ Y) :=
+  ⟨⊥_ C, 0, 0, 1, 0, quotient_basics_4 _, compr_basics_4 _,
+    (FinPAC.zero_comp _).symm⟩
 
 /-- **224III.1** (eff.tex:7162, Proposition): in `Pure C` for a †-effectus
 `C`, a map is †-mono iff it is a comprehension. -/
@@ -175,7 +177,16 @@ theorem effects_sea (A : Type u) [CStarAlgebra A] [PartialOrder A]
 sequential effect algebra with `a & b = a ⊙ b`. -/
 theorem commutative_effectMonoid_sea (M : Type u) [EffectMonoid M]
     (hc : EffectMonoid.Commutative M) :
-    Nonempty (SequentialEffectAlgebra M) := sorry
+    Nonempty (SequentialEffectAlgebra M) :=
+  ⟨{ seq := fun a b => a * b
+     seq_add := fun c _ _ h =>
+       let ⟨h', e⟩ := emon_mul_ovee c h
+       ⟨h', e.symm⟩
+     one_seq := EffectMonoid.one_mul
+     seq_zero_comm := fun a b hab => (hc b a).trans hab
+     seq_comm_orth := fun {a b} _ => hc a (orth b)
+     seq_comm_assoc := fun {a b} _ c => EffectMonoid.mul_assoc a b c
+     seq_comm_compat := fun {a b c} h _ _ => ⟨hc c (a * b), hc c (ovee a b h)⟩ }⟩
 
 /-- **225VI** (eff.tex:7405, Proposition): in a †-effectus, the predicates
 `Pred X` with `p & q = q ∘ asrt_p` satisfy axioms (S1), (S2) and (S3) of a
@@ -186,7 +197,42 @@ theorem pred_sea_s1_s2_s3 [AndThenEffectus C] [DaggerPrimeEffectus C]
       ∃ h' : Perp (andThen c p) (andThen c q),
         ovee (andThen c p) (andThen c q) h' = andThen c (ovee p q h)) ∧
     (∀ p : Pred X, andThen 1 p = p) ∧
-    (∀ p q : Pred X, andThen p q = 0 → andThen q p = 0) := sorry
+    (∀ p q : Pred X, andThen p q = 0 → andThen q p = 0) := by
+  refine ⟨?_, ?_, ?_⟩
+  · -- (S1): `c & (–)` is additive, because precomposition with `asrt c`
+    -- preserves partial sums (`FinPAC.ovee_comp`).
+    intro c p q h
+    obtain ⟨h', e⟩ := FinPAC.ovee_comp h (asrt c)
+    exact ⟨h', e.symm⟩
+  · -- (S2): `asrt_1 = id`, by the absorption rule 211XV for the sharp
+    -- predicate `1` (`1 ∘ p ≤ 1` always holds).
+    intro p
+    exact ((asrt_absorp_rule p (isSharp_one (effObj C)) (isSharp_one X)).2).mp
+      (pred_le_truth _)
+  · -- (S3): the thesis (eff.tex:7415) applies the dagger to
+    -- `asrt_q ∘ asrt_p = 0 = asrt_0`.  We avoid `pureDagger` (still `sorry`)
+    -- and argue instead with the `asrt_sq` axiom of a †-effectus together
+    -- with the uniqueness of square roots; see the errata note.
+    intro p q h
+    -- `asrt p ≫ asrt q = 0`, since `1 ∘ asrt_q = q`.
+    have hpq : asrt p ≫ asrt q = (0 : X ⟶ X) := by
+      refine EffectusPartialForm.eq_zero_of_one_zero ?_
+      show (asrt p ≫ asrt q) ≫ truth X = 0
+      rw [Category.assoc, (asrt_spec q).2]
+      exact h
+    -- Hence `asrt_{q&p} ∘ asrt_{q&p} = asrt_q ∘ asrt_p ∘ asrt_p ∘ asrt_q = 0`.
+    have hsq : asrt (andThen q p) ≫ asrt (andThen q p) = (0 : X ⟶ X) := by
+      rw [DaggerPrimeEffectus.asrt_sq q p, hpq, FinPAC.comp_zero,
+        FinPAC.comp_zero]
+    -- So `(q&p) & (q&p) = 0 = 0 & 0`, and square roots of `0` are unique.
+    have hr : andThen (andThen q p) (andThen q p) = (0 : Pred X) := by
+      have e : andThen (andThen q p) (andThen q p)
+          = (asrt (andThen q p) ≫ asrt (andThen q p)) ≫ truth X := by
+        show asrt (andThen q p) ≫ andThen q p = _
+        rw [Category.assoc, (asrt_spec (andThen q p)).2]
+      rw [e, hsq, FinPAC.zero_comp]
+    have hz : andThen (0 : Pred X) 0 = (0 : Pred X) := FinPAC.comp_zero _
+    exact (DaggerPrimeEffectus.sqrt_existsUnique (0 : Pred X)).unique hr hz
 
 /-! ## Homological categories (parsecs 226–228) -/
 
@@ -282,10 +328,6 @@ theorem diamondboxlemma_quot [DaggerPrimeEffectus C] {X W : C}
     (hζ : IsQuotient s₀ ζ) (t : SPred W) :
     diaPush ζ (boxPull ζ t) = t := sorry
 
-/-- The predicate `0` is sharp (needed to state condition 4 of the Snake
-Lemma 228II; `0 = im 0`). -/
-theorem isSharp_zero {X : C} : IsSharp (0 : Pred X) := sorry
-
 end Homological
 
 section Snake
@@ -348,7 +390,7 @@ theorem snake_lemma {A B C₃ A' B' C₃' : C}
     (m₄ : SPred.IsInf
       (SPred.orth ⟨ceilPred (b ≫ truth B'), isSharp_ceil _⟩)
       ⟨imPred f, isSharp_imPred C f⟩
-      (diaPush f (boxPull f (boxPull b ⟨0, isSharp_zero⟩)))) :
+      (diaPush f (boxPull f (boxPull b ⟨0, dia_isSharp_zero _⟩)))) :
     ∃ d : comprObj (orth (c ≫ truth C₃')) ⟶ quotObj (imPred a),
       -- the connecting sequence, with the induced maps on (co)kernels:
       letI fbar := comprMap (orth (a ≫ truth A')) ≫ f ≫

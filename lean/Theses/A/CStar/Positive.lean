@@ -44,7 +44,7 @@ holomorphic at `z` is holomorphic at `z`, with `(f + g)' = f' + g'`. -/
 theorem holomorphic_add (f g : ℂ → 𝒜) (f' g' : 𝒜) (z : ℂ)
     (hf : HasDerivAt f f' z) (hg : HasDerivAt g g' z) :
     HasDerivAt (fun w => f w + g w) (f' + g') z :=
-  sorry
+  hf.add hg
 
 /-- **12III** (cstar.tex:1769, Exercise), part 1 (products): the product of
 functions holomorphic at `z` is holomorphic, with the Leibniz rule for the
@@ -52,19 +52,20 @@ derivative. -/
 theorem holomorphic_mul (f g : ℂ → 𝒜) (f' g' : 𝒜) (z : ℂ)
     (hf : HasDerivAt f f' z) (hg : HasDerivAt g g' z) :
     HasDerivAt (fun w => f w * g w) (f' * g z + f z * g') z :=
-  sorry
+  hf.mul hg
 
 /-- **12III** (cstar.tex:1769, Exercise), part 2: the function `z ↦ z`
 (as the 𝒜-valued function `z ↦ z·1`) is holomorphic with derivative `1`. -/
 theorem holomorphic_id (z : ℂ) :
     HasDerivAt (fun w => algebraMap ℂ 𝒜 w) (1 : 𝒜) z :=
-  sorry
+  by
+    simpa [Algebra.algebraMap_eq_smul_one] using (hasDerivAt_id z).smul_const (1 : 𝒜)
 
 /-- **12III** (cstar.tex:1769, Exercise), part 3: constant functions are
 holomorphic with derivative `0`. -/
 theorem holomorphic_const (a : 𝒜) (z : ℂ) :
     HasDerivAt (fun _ : ℂ => a) (0 : 𝒜) z :=
-  sorry
+  hasDerivAt_const z a
 
 /-- **12III** (cstar.tex:1769, Exercise), part 4: a polynomial
 `z ↦ ∑_{i ≤ n} zⁱ aᵢ` with coefficients in `𝒜` is holomorphic, with
@@ -72,7 +73,8 @@ derivative `z ↦ ∑ i zⁱ⁻¹ aᵢ`. -/
 theorem holomorphic_polynomial (n : ℕ) (a : ℕ → 𝒜) (z : ℂ) :
     HasDerivAt (fun w => ∑ i ∈ Finset.range (n + 1), w ^ i • a i)
       (∑ i ∈ Finset.range (n + 1), ((i : ℂ) * z ^ (i - 1)) • a i) z :=
-  sorry
+  by
+    exact HasDerivAt.fun_sum fun i _ => (hasDerivAt_pow i z).smul_const (a i)
 
 /-! ## Parsec 130: power series -/
 
@@ -302,7 +304,13 @@ nothing to formalize. -/
 /-- **17II** (`real-pos-ineq`, cstar.tex:2709, Exercise): `|λ - t| ≤ t` iff
 `λ ∈ [0, 2t]`, for `λ, t ∈ ℝ`. -/
 theorem real_pos_ineq (lam t : ℝ) : |lam - t| ≤ t ↔ lam ∈ Set.Icc 0 (2 * t) :=
-  sorry
+  by
+    rw [abs_le, Set.mem_Icc]
+    constructor
+    · rintro ⟨h1, h2⟩
+      constructor <;> linarith
+    · rintro ⟨h1, h2⟩
+      constructor <;> linarith
 
 /-- **17III** (`pos-spectrum`, cstar.tex:2714, Proposition): for self-adjoint
 `a` and `t ∈ [0,∞)`: `‖a - t‖ ≤ t` iff `spec(a) ⊆ [0, 2t]`. -/
@@ -330,12 +338,12 @@ theorem cstar_positive_tfae (a : 𝒜) (ha : IsSelfAdjoint a) :
 /-- **17VI** (`positive-basic-2`, cstar.tex:2756, Exercise), part 1:
 `0 ≤ a ≤ 0` entails `a = 0`. -/
 theorem positive_basic_2_1 (a : 𝒜) (h0 : 0 ≤ a) (h1 : a ≤ 0) : a = 0 :=
-  sorry
+  le_antisymm h1 h0
 
 /-- **17VI** (`positive-basic-2`, cstar.tex:2756, Exercise), part 2: the set
 `𝒜₊` of positive elements is closed. -/
 theorem positive_basic_2_2 : IsClosed {a : 𝒜 | 0 ≤ a} :=
-  sorry
+  CStarAlgebra.isClosed_nonneg
 
 /-- **17VI** (`positive-basic-2`, cstar.tex:2756, Exercise), part 3a: for
 self-adjoint `a` and `λ ∈ [0,∞)`: `-λ ≤ a ≤ λ` iff `‖a‖ ≤ λ`. -/
@@ -343,7 +351,7 @@ theorem positive_basic_2_3a (a : 𝒜) (ha : IsSelfAdjoint a) (lam : ℝ)
     (hlam : 0 ≤ lam) :
     (-(algebraMap ℂ 𝒜 (lam : ℂ)) ≤ a ∧ a ≤ algebraMap ℂ 𝒜 (lam : ℂ)) ↔
       ‖a‖ ≤ lam :=
-  sorry
+  (norm_le_iff_neg_algebraMap_le ha hlam).symm
 
 /-- **17VI** (`positive-basic-2`, cstar.tex:2756, Exercise), part 3b:
 `‖a‖ = inf { λ ∈ ℝ : -λ ≤ a ≤ λ }` for self-adjoint `a` (so `sa(𝒜)` is a
@@ -357,35 +365,54 @@ theorem positive_basic_2_3b (a : 𝒜) (ha : IsSelfAdjoint a) :
 `0 ≤ a ≤ b` entails `‖a‖ ≤ ‖b‖`. -/
 theorem positive_basic_2_3c (a b : 𝒜) (h0 : 0 ≤ a) (hab : a ≤ b) :
     ‖a‖ ≤ ‖b‖ :=
-  sorry
+  CStarAlgebra.norm_le_norm_of_nonneg_of_le h0 hab
 
 /-- **17VI** (`positive-basic-2`, cstar.tex:2756, Exercise), part 4a: `a²`
 is positive for self-adjoint `a`. -/
 theorem positive_basic_2_4a (a : 𝒜) (ha : IsSelfAdjoint a) : 0 ≤ a ^ 2 :=
-  sorry
+  by
+    have h : a ^ 2 = star a * a := by rw [ha.star_eq, sq]
+    rw [h]
+    exact star_mul_self_nonneg a
 
 /-- **17VI** (`positive-basic-2`, cstar.tex:2756, Exercise), part 4b: `aⁿ`
 is positive for self-adjoint `a` and even `n`. -/
 theorem positive_basic_2_4b (a : 𝒜) (ha : IsSelfAdjoint a) (n : ℕ)
     (hn : Even n) : 0 ≤ a ^ n :=
-  sorry
+  by
+    obtain ⟨m, rfl⟩ := hn
+    have h : a ^ (m + m) = star (a ^ m) * a ^ m := by
+      rw [(ha.pow m).star_eq, ← pow_add]
+    rw [h]
+    exact star_mul_self_nonneg _
 
 /-- **17VI** (`positive-basic-2`, cstar.tex:2756, Exercise), part 4c: for
 self-adjoint `a` and odd `n`: `aⁿ` is positive iff `a` is positive. -/
 theorem positive_basic_2_4c (a : 𝒜) (ha : IsSelfAdjoint a) (n : ℕ)
     (hn : Odd n) : 0 ≤ a ^ n ↔ 0 ≤ a :=
-  sorry
+  by
+    constructor
+    · intro h
+      rw [StarOrderedRing.nonneg_iff_spectrum_nonneg (R := ℝ) a ha]
+      intro x hx
+      rw [StarOrderedRing.nonneg_iff_spectrum_nonneg (R := ℝ) (a ^ n) (ha.pow n)] at h
+      exact hn.pow_nonneg_iff.mp (h _ (spectrum.pow_mem_pow a n hx))
+    · intro h
+      exact CStarAlgebra.pow_nonneg h n
 
 /-- **17VI** (`positive-basic-2`, cstar.tex:2756, Exercise), part 4d: `aⁿ` is
 positive for positive `a` and every `n`. -/
 theorem positive_basic_2_4d (a : 𝒜) (ha : 0 ≤ a) (n : ℕ) : 0 ≤ a ^ n :=
-  sorry
+  CStarAlgebra.pow_nonneg ha n
 
 /-- **17VI** (`positive-basic-2`, cstar.tex:2756, Exercise), part 5: for
 invertible `a`: `a ≥ 0` iff `a⁻¹ ≥ 0`. -/
 theorem positive_basic_2_5 (a : 𝒜) (ha : IsUnit a) :
     0 ≤ a ↔ 0 ≤ Ring.inverse a :=
-  sorry
+  by
+    obtain ⟨u, rfl⟩ := ha
+    rw [Ring.inverse_unit]
+    exact (CFC.inv_nonneg u).symm
 
 /-- **17VI** (`positive-basic-2`, cstar.tex:2756, Exercise), part 6: a
 positive element `a` is invertible iff `a ≥ 1/n` for some `n > 0`. -/
@@ -404,13 +431,19 @@ formalize.  **19I** (cstar.tex:2812): introduction — nothing to formalize. -/
 C*-algebra, `spec(ab) \ {0} = spec(ba) \ {0}`. -/
 theorem prod_spec (a b : 𝒜) :
     spectrum ℂ (a * b) \ {0} = spectrum ℂ (b * a) \ {0} :=
-  sorry
+  spectrum.nonzero_mul_comm a b
 
 /-- **19III** (`astara-non-negative`, cstar.tex:2838, Lemma):
 `a* a ≤ 0` implies `a = 0`. -/
 theorem astara_non_negative [PartialOrder 𝒜] [StarOrderedRing 𝒜] (a : 𝒜)
     (h : star a * a ≤ 0) : a = 0 :=
-  sorry
+  by
+    have h0 := star_mul_self_nonneg a
+    have heq : star a * a = 0 := le_antisymm h h0
+    have hn : ‖a‖ * ‖a‖ = 0 := by
+      rw [← CStarRing.norm_star_mul_self, heq, norm_zero]
+    have hz : ‖a‖ = 0 := by nlinarith [norm_nonneg a]
+    exact norm_eq_zero.mp hz
 
 end Holomorphic
 
@@ -442,12 +475,17 @@ maps at 34aVIII (`russo_dye_cor`); not converted separately. -/
 between C*-algebras is positive. -/
 theorem norm_mi_map_positive (ρ : 𝒜 →⋆ₐ[ℂ] ℬ) (a : 𝒜) (ha : 0 ≤ a) :
     0 ≤ ρ a :=
-  sorry
+  by
+    have hs := CFC.sqrt_mul_sqrt_self a ha
+    have h : ρ a = star (ρ (CFC.sqrt a)) * ρ (CFC.sqrt a) := by
+      rw [← map_star, (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg a)).star_eq, ← map_mul, hs]
+    rw [h]
+    exact star_mul_self_nonneg _
 
 /-- **20V** (`norm-mi-map`, cstar.tex:2904, Lemma), part 2: every miu-map
 between C*-algebras is bounded with `‖ρ‖ ≤ 1`, i.e. `‖ρ(a)‖ ≤ ‖a‖`. -/
 theorem norm_mi_map_contractive (ρ : 𝒜 →⋆ₐ[ℂ] ℬ) (a : 𝒜) : ‖ρ a‖ ≤ ‖a‖ :=
-  sorry
+  NonUnitalStarAlgHom.norm_apply_le ρ a
 
 /-- **20VI** (`cstar-isometry`, cstar.tex:2934, Lemma): for a pu-map
 `f : 𝒜 → ℬ` the following are equivalent: (1) `f` is *bipositive*
@@ -543,19 +581,34 @@ def CentreSeparating (ω : ∀ i, 𝒜 →ₗ[ℂ] ℬf i) : Prop :=
 order separating collections are separating. -/
 theorem OrderSeparating.separating (ω : ∀ i, 𝒜 →ₗ[ℂ] ℬf i)
     (h : OrderSeparating ω) : Separating ω :=
-  sorry
+  by
+    intro a
+    constructor
+    · intro ha i
+      rw [ha, map_zero]
+    · intro hzero
+      have h1 : 0 ≤ a := (h a).mpr fun i => by rw [hzero i]
+      have h2 : 0 ≤ -a := (h (-a)).mpr fun i => by rw [map_neg, hzero i, neg_zero]
+      exact le_antisymm (neg_nonneg.mp h2) h1
 
 /-- **21II** (`separating`, cstar.tex:3098, Definition), noted implication:
 separating collections are faithful. -/
 theorem Separating.faithful (ω : ∀ i, 𝒜 →ₗ[ℂ] ℬf i) (h : Separating ω) :
     Faithful ω :=
-  sorry
+  fun a _ => h a
 
 /-- **21II** (`separating`, cstar.tex:3098, Definition), noted implication:
 faithful collections are centre separating. -/
 theorem Faithful.centreSeparating (ω : ∀ i, 𝒜 →ₗ[ℂ] ℬf i) (h : Faithful ω) :
     CentreSeparating ω :=
-  sorry
+  by
+    intro a ha
+    constructor
+    · rintro rfl i b
+      simp
+    · intro hb
+      refine (h a ha).mpr fun i => ?_
+      simpa using hb i 1
 
 /-! **21III**–**21IV** (cstar.tex:3140, Examples): the states, the
 multiplicative states (on a commutative C*-algebra), and the vector
@@ -568,7 +621,15 @@ separating collection `Ω` of involution preserving maps on `𝒜`, an element
 theorem separating_self_adjoint (ω : ∀ i, 𝒜 →ₗ[ℂ] ℬf i) (hΩ : Separating ω)
     (hstar : ∀ i (a : 𝒜), ω i (star a) = star (ω i a)) (a : 𝒜) :
     IsSelfAdjoint a ↔ ∀ i, IsSelfAdjoint (ω i a) :=
-  sorry
+  by
+    constructor
+    · intro hsa i
+      rw [isSelfAdjoint_iff, ← hstar i a, hsa.star_eq]
+    · intro hall
+      have hd : star a - a = 0 := by
+        refine (hΩ _).mpr fun i => ?_
+        rw [map_sub, hstar i a, (hall i).star_eq, sub_self]
+      exact sub_eq_zero.mp hd
 
 /-- **21VII** (`order-separating-norm`, cstar.tex:3232, Proposition): for a
 collection `Ω` of pu-maps on `𝒜` the following are equivalent:
@@ -752,7 +813,12 @@ theorem sqrt_existsUnique (a : 𝒜) (ha : 0 ≤ a) :
 `CFC.sqrt a` is such a square root. -/
 theorem sqrt_spec (a : 𝒜) (ha : 0 ≤ a) :
     0 ≤ CFC.sqrt a ∧ CFC.sqrt a ^ 2 = a ∧ a * CFC.sqrt a = CFC.sqrt a * a :=
-  sorry
+  by
+    have h2 := CFC.sq_sqrt a ha
+    refine ⟨CFC.sqrt_nonneg a, h2, ?_⟩
+    calc a * CFC.sqrt a = CFC.sqrt a ^ 2 * CFC.sqrt a := by rw [h2]
+      _ = CFC.sqrt a * CFC.sqrt a ^ 2 := pow_mul_comm' _ 2
+      _ = CFC.sqrt a * a := by rw [h2]
 
 /-- **23VII** (`sqrt`, cstar.tex:3637, Exercise), part 0'': if `c` commutes
 with `a ≥ 0` then `c` commutes with `√a`; if in addition `c* = c` and
@@ -801,13 +867,32 @@ and `a⁻` (`CFC.negPart`). -/
 `-|a| ≤ a ≤ |a|` and `‖|a|‖ = ‖a‖` for self-adjoint `a`. -/
 theorem cstar_pos_neg_part_1 (a : 𝒜) (ha : IsSelfAdjoint a) :
     -CFC.abs a ≤ a ∧ a ≤ CFC.abs a ∧ ‖CFC.abs a‖ = ‖a‖ :=
-  sorry
+  by
+    have h1 : -CFC.abs a ≤ a := by
+      have h := CFC.abs_add_self a ha
+      have h2 : (0 : 𝒜) ≤ 2 • a⁺ := nsmul_nonneg (CFC.posPart_nonneg a) 2
+      rw [← h, add_comm] at h2
+      exact neg_le_iff_add_nonneg.mpr h2
+    have h2 : a ≤ CFC.abs a := by
+      have h := CFC.abs_sub_self a ha
+      have h3 : (0 : 𝒜) ≤ 2 • a⁻ := nsmul_nonneg (CFC.negPart_nonneg a) 2
+      rw [← h, sub_nonneg] at h3
+      exact h3
+    refine ⟨h1, h2, ?_⟩
+    have hsa : IsSelfAdjoint (CFC.abs a) := .of_nonneg (CFC.abs_nonneg a)
+    have h4 := cstar_involution_basic_13 (CFC.abs a) hsa
+    rw [sq, CFC.abs_mul_abs, CStarRing.norm_star_mul_self] at h4
+    have h5 := congrArg Real.sqrt h4
+    rw [← sq, Real.sqrt_sq (norm_nonneg a), Real.sqrt_sq (norm_nonneg _)] at h5
+    exact h5.symm
 
 /-- **24II** (`cstar-pos-neg-part`, cstar.tex:3699, Exercise), part 2:
 `a₊, a₋ ≥ 0`, `a = a₊ - a₋` and `a₊ a₋ = a₋ a₊ = 0`. -/
 theorem cstar_pos_neg_part_2 (a : 𝒜) (ha : IsSelfAdjoint a) :
     0 ≤ a⁺ ∧ 0 ≤ a⁻ ∧ a = a⁺ - a⁻ ∧ a⁺ * a⁻ = 0 ∧ a⁻ * a⁺ = 0 :=
-  sorry
+  by
+    exact ⟨CFC.posPart_nonneg a, CFC.negPart_nonneg a, (CFC.posPart_sub_negPart a ha).symm,
+      CFC.posPart_mul_negPart a, CFC.negPart_mul_posPart a⟩
 
 /-- **24II** (`cstar-pos-neg-part`, cstar.tex:3699, Exercise), part 3: the
 triangle inequality fails for `|·|`: there are self-adjoint `a, b` with
@@ -821,7 +906,7 @@ theorem cstar_pos_neg_part_3 :
 /-- **24IV** (`astara-positive`, cstar.tex:3729, Lemma): `a* a ≥ 0` for every
 element `a` of a C*-algebra.  (Mathlib: `star_mul_self_nonneg`.) -/
 theorem astara_positive (a : 𝒜) : 0 ≤ star a * a :=
-  sorry
+  star_mul_self_nonneg a
 
 /-! ## Parsec 250: positivity rounded up; vector states -/
 
@@ -843,21 +928,31 @@ theorem cstar_positive_final (a : 𝒜) (ha : IsSelfAdjoint a) :
 part 1: `b ≤ c` implies `a* b a ≤ a* c a`. -/
 theorem astara_pos_basic_1 (a b c : 𝒜) (h : b ≤ c) :
     star a * b * a ≤ star a * c * a :=
-  sorry
+  star_left_conjugate_le_conjugate h a
 
 /-- **25II** (`astara-pos-basic-consequences`, cstar.tex:3772, Exercise),
 part 2 (mi-maps): every mi-map between C*-algebras is positive. -/
 theorem astara_pos_basic_2_mi {ℬ : Type*} [CStarAlgebra ℬ] [PartialOrder ℬ]
     [StarOrderedRing ℬ] (f : 𝒜 →ₗ[ℂ] ℬ) (hm : IsMultiplicativeMap f)
     (hi : IsInvolutionPreserving f) : IsPositiveMap f :=
-  sorry
+  by
+    intro a ha
+    have hs := CFC.sqrt_mul_sqrt_self a ha
+    have h : f a = star (f (CFC.sqrt a)) * f (CFC.sqrt a) := by
+      rw [← hi, (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg a)).star_eq, ← hm, hs]
+    rw [h]
+    exact star_mul_self_nonneg _
 
 /-- **25II** (`astara-pos-basic-consequences`, cstar.tex:3772, Exercise),
 part 2 (cp-maps): every cp-map between C*-algebras is positive. -/
 theorem astara_pos_basic_2_cp {ℬ : Type*} [CStarAlgebra ℬ] [PartialOrder ℬ]
     [StarOrderedRing ℬ] (f : 𝒜 →ₗ[ℂ] ℬ) (hf : IsCompletelyPositiveMap f) :
     IsPositiveMap f :=
-  sorry
+  by
+    intro a ha
+    have h := hf 1 (fun _ => CFC.sqrt a) (fun _ => 1)
+    simpa [(IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg a)).star_eq,
+      CFC.sqrt_mul_sqrt_self a ha] using h
 
 /-- **25II** (`astara-pos-basic-consequences`, cstar.tex:3772, Exercise),
 part 3: for positive invertible `a, b`: `a ≤ b⁻¹` iff `√b a √b ≤ 1` iff

@@ -87,12 +87,14 @@ theorem isSharp_imPred {X Y : C} (f : X ⟶ Y) : IsSharp (imPred f) :=
 /-- Quotients are pure (an immediate consequence of 199VII.3 and 201II;
 used to regard `ζ_s` as a morphism of `Pure C`). -/
 theorem isPure_quotient {X Q : C} {p : Pred X} {ξ : X ⟶ Q}
-    (h : IsQuotient p ξ) : IsPure ξ := sorry
+    (h : IsQuotient p ξ) : IsPure ξ :=
+  ⟨Q, ξ, 𝟙 Q, p, 1, h, compr_basics_3 _, (Category.comp_id _).symm⟩
 
 /-- Comprehensions are pure (an immediate consequence of 197V.3 and 201II;
 used to regard `π_s` as a morphism of `Pure C`). -/
 theorem isPure_comprehension {W X : C} {p : Pred X} {π : W ⟶ X}
-    (h : IsComprehension p π) : IsPure π := sorry
+    (h : IsComprehension p π) : IsPure π :=
+  ⟨W, 𝟙 W, π, 0, p, quotient_basics_3 _, h, (Category.id_comp _).symm⟩
 
 /-- **215I** (eff.tex:5299, Definition): a **†-effectus** is an &-effectus
 `C` such that
@@ -425,18 +427,53 @@ theorem dils_abstract_basics_2 {P' : C} {f : X ⟶ Y} {ϱ : P ⟶ Y}
     {h : X ⟶ P} (d : IsDilation f ϱ h) (α : P ≅ P') :
     IsDilation f (α.inv ≫ ϱ) (h ≫ α.hom) := sorry
 
+theorem sharpMap_comp {X Y Z : C} {f : X ⟶ Y} {g : Y ⟶ Z} (hf : SharpMap f)
+    (hg : SharpMap g) : SharpMap (f ≫ g) := by
+  intro s hs
+  rw [Category.assoc]
+  exact hf _ (hg s hs)
+
+theorem isTotal_comp {X Y Z : C} {f : X ⟶ Y} {g : Y ⟶ Z} (hf : IsTotal f)
+    (hg : IsTotal g) : IsTotal (f ≫ g) := by
+  show (f ≫ g) ≫ truth Z = truth X
+  rw [Category.assoc, show g ≫ truth Z = truth Y from hg,
+    show f ≫ truth Y = truth X from hf]
+
 /-- **221IV.3** (`dils-abstract-basics`, eff.tex:6837, Proposition):
 `(X, ϱ, id)` is the dilation of a sharp total map `ϱ`. -/
 theorem dils_abstract_basics_3 {ϱ : X ⟶ Y} (hs : SharpMap ϱ)
     (ht : IsTotal ϱ) (hp : IsPure (𝟙 X)) :
-    IsDilation ϱ ϱ (𝟙 X) := sorry
+    IsDilation ϱ ϱ (𝟙 X) := by
+  refine ⟨hs, ht, hp, Category.id_comp _, ?_⟩
+  intro P' ϱ' h' _ _ hfac
+  refine ⟨h', ⟨Category.id_comp _, hfac⟩, ?_⟩
+  rintro σ ⟨hσ, -⟩
+  rw [← hσ, Category.id_comp]
 
 /-- **221IV.4** (`dils-abstract-basics`, eff.tex:6837, Proposition): if
 `(P, ϱ, h)` is a dilation (of some map), then `(P, id, h)` is a dilation
 of `h`. -/
 theorem dils_abstract_basics_4 {f : X ⟶ Y} {ϱ : P ⟶ Y} {h : X ⟶ P}
     (d : IsDilation f ϱ h) (hid : SharpMap (𝟙 P) ∧ IsTotal (𝟙 P)) :
-    IsDilation h (𝟙 P) h := sorry
+    IsDilation h (𝟙 P) h := by
+  obtain ⟨hsϱ, htϱ, hph, hfac, huniv⟩ := d
+  refine ⟨hid.1, hid.2, hph, Category.comp_id _, ?_⟩
+  intro P' ϱ' h' hsϱ' htϱ' hfac'
+  -- `(P', ϱ' ≫ ϱ, h')` is a factorization of `f`
+  have hfac'' : h' ≫ (ϱ' ≫ ϱ) = f := by
+    rw [← Category.assoc, hfac', hfac]
+  obtain ⟨σ, ⟨hσ1, hσ2⟩, hσu⟩ :=
+    huniv (ϱ' ≫ ϱ) h' (sharpMap_comp hsϱ' hsϱ) (isTotal_comp htϱ' htϱ) hfac''
+  -- `σ ≫ ϱ'` mediates `(P, ϱ, h)` with itself, hence is the identity
+  obtain ⟨τ, -, hτu⟩ := huniv ϱ h hsϱ htϱ hfac
+  have hid' : σ ≫ ϱ' = 𝟙 P := by
+    rw [hτu (σ ≫ ϱ') ⟨by rw [← Category.assoc, hσ1, hfac'],
+      by rw [Category.assoc]; exact hσ2⟩,
+      hτu (𝟙 P) ⟨Category.comp_id _, Category.id_comp _⟩]
+  refine ⟨σ, ⟨hσ1, hid'⟩, ?_⟩
+  rintro σ' ⟨hσ'1, hσ'2⟩
+  refine hσu σ' ⟨hσ'1, ?_⟩
+  rw [← Category.assoc, hσ'2, Category.id_comp]
 
 /-- **221IV.5** (`dils-abstract-basics`, eff.tex:6837, Proposition): for a
 quotient `ξ : X ⟶ Q` and `f : Q ⟶ Y` with dilation `(P, ϱ, h)`, the triple
@@ -444,7 +481,29 @@ quotient `ξ : X ⟶ Q` and `f : Q ⟶ Y` with dilation `(P, ϱ, h)`, the triple
 theorem dils_abstract_basics_5 {Q : C} {p : Pred X} {ξ : X ⟶ Q}
     (hξ : IsQuotient p ξ) {f : Q ⟶ Y} {ϱ : P ⟶ Y} {h : Q ⟶ P}
     (d : IsDilation f ϱ h) (hpure : IsPure (ξ ≫ h)) :
-    IsDilation (ξ ≫ f) ϱ (ξ ≫ h) := sorry
+    IsDilation (ξ ≫ f) ϱ (ξ ≫ h) := by
+  obtain ⟨hsϱ, htϱ, hph, hfac, huniv⟩ := d
+  haveI : Epi ξ := quotient_basics_6 hξ
+  refine ⟨hsϱ, htϱ, hpure, by rw [Category.assoc, hfac], ?_⟩
+  intro P' ϱ' h' hsϱ' htϱ' hfac'
+  -- `h'` factors through the quotient `ξ`
+  have ht' : ϱ' ≫ truth Y = truth P' := htϱ'
+  have hle : (h' ≫ truth P') ≼ orth p := by
+    rw [← quotient_basics_5 hξ]
+    have e : h' ≫ truth P' = ξ ≫ (f ≫ truth Y) := by
+      rw [← ht', ← Category.assoc, hfac', Category.assoc]
+    rw [e]
+    exact comp_le_comp ξ (pred_le_truth _)
+  obtain ⟨h'', hh'', -⟩ := hξ.2 h' hle
+  have hfacQ : h'' ≫ ϱ' = f := by
+    apply (cancel_epi ξ).mp
+    rw [← Category.assoc, hh'', hfac']
+  obtain ⟨σ, ⟨hσ1, hσ2⟩, hσu⟩ := huniv ϱ' h'' hsϱ' htϱ' hfacQ
+  refine ⟨σ, ⟨by rw [Category.assoc, hσ1, hh''], hσ2⟩, ?_⟩
+  rintro σ' ⟨hσ'1, hσ'2⟩
+  refine hσu σ' ⟨?_, hσ'2⟩
+  apply (cancel_epi ξ).mp
+  rw [← Category.assoc, hσ'1, hh'']
 
 /-- **221IV.6** (`dils-abstract-basics`, eff.tex:6837, Proposition):
 conversely, if `(P, ϱ, h)` is a dilation of `f ∘ ξ` for a quotient `ξ`,
@@ -453,7 +512,35 @@ with `h'' ∘ ξ = h`. -/
 theorem dils_abstract_basics_6 {Q : C} {p : Pred X} {ξ : X ⟶ Q}
     (hξ : IsQuotient p ξ) {f : Q ⟶ Y} {ϱ : P ⟶ Y} {h : X ⟶ P}
     (d : IsDilation (ξ ≫ f) ϱ h) :
-    ∃ h'' : Q ⟶ P, ξ ≫ h'' = h ∧ IsDilation f ϱ h'' := sorry
+    ∃ h'' : Q ⟶ P, ξ ≫ h'' = h ∧ IsDilation f ϱ h'' := by
+  obtain ⟨hsϱ, htϱ, hph, hfac, huniv⟩ := d
+  haveI : Epi ξ := quotient_basics_6 hξ
+  -- `h` factors through the quotient `ξ`
+  have ht : ϱ ≫ truth Y = truth P := htϱ
+  have hle : (h ≫ truth P) ≼ orth p := by
+    rw [← quotient_basics_5 hξ]
+    have e : h ≫ truth P = ξ ≫ (f ≫ truth Y) := by
+      rw [← ht, ← Category.assoc, hfac, Category.assoc]
+    rw [e]
+    exact comp_le_comp ξ (pred_le_truth _)
+  obtain ⟨h'', hh'', -⟩ := hξ.2 h hle
+  have hfacQ : h'' ≫ ϱ = f := by
+    apply (cancel_epi ξ).mp
+    rw [← Category.assoc, hh'', hfac]
+  refine ⟨h'', hh'', hsϱ, htϱ, ?_, hfacQ, ?_⟩
+  · -- purity of `h''`: it is the total-part of the pure map `h`… we reuse
+    -- purity of `h` via the factorization `h = ξ ≫ h''`
+    sorry
+  · intro P' ϱ' h' hsϱ' htϱ' hfac'
+    have hfac'' : (ξ ≫ h') ≫ ϱ' = ξ ≫ f := by
+      rw [Category.assoc, hfac']
+    obtain ⟨σ, ⟨hσ1, hσ2⟩, hσu⟩ := huniv ϱ' (ξ ≫ h') hsϱ' htϱ' hfac''
+    refine ⟨σ, ⟨?_, hσ2⟩, ?_⟩
+    · apply (cancel_epi ξ).mp
+      rw [← Category.assoc, hh'', hσ1]
+    · rintro σ' ⟨hσ'1, hσ'2⟩
+      refine hσu σ' ⟨?_, hσ'2⟩
+      rw [← hh'', Category.assoc, hσ'1]
 
 /-- **221IV.7** (`dils-abstract-basics`, eff.tex:6837, Proposition):
 dilations are closed under coproducts:
@@ -465,7 +552,41 @@ theorem dils_abstract_basics_7 {X₁ X₂ P₁ P₂ : C}
     (hcop : SharpMap (coprod.desc ϱ₁ ϱ₂) ∧ IsTotal (coprod.desc ϱ₁ ϱ₂) ∧
       IsPure (coprod.map h₁ h₂)) :
     IsDilation (coprod.desc f₁ f₂) (coprod.desc ϱ₁ ϱ₂)
-      (coprod.map h₁ h₂) := sorry
+      (coprod.map h₁ h₂) := by
+  obtain ⟨hs₁, ht₁, hp₁, hfac₁, huniv₁⟩ := d₁
+  obtain ⟨hs₂, ht₂, hp₂, hfac₂, huniv₂⟩ := d₂
+  refine ⟨hcop.1, hcop.2.1, hcop.2.2, ?_, ?_⟩
+  · rw [coprod.map_desc, hfac₁, hfac₂]
+  · intro P' ϱ' h' hsϱ' htϱ' hfac'
+    have e₁ : (coprod.inl ≫ h') ≫ ϱ' = f₁ := by
+      rw [Category.assoc, hfac', coprod.inl_desc]
+    have e₂ : (coprod.inr ≫ h') ≫ ϱ' = f₂ := by
+      rw [Category.assoc, hfac', coprod.inr_desc]
+    obtain ⟨σ₁, ⟨hσ₁1, hσ₁2⟩, hσ₁u⟩ :=
+      huniv₁ ϱ' (coprod.inl ≫ h') hsϱ' htϱ' e₁
+    obtain ⟨σ₂, ⟨hσ₂1, hσ₂2⟩, hσ₂u⟩ :=
+      huniv₂ ϱ' (coprod.inr ≫ h') hsϱ' htϱ' e₂
+    refine ⟨coprod.desc σ₁ σ₂, ⟨?_, ?_⟩, ?_⟩
+    · refine coprod.hom_ext ?_ ?_
+      · rw [← Category.assoc, coprod.inl_map, Category.assoc, coprod.inl_desc,
+          hσ₁1]
+      · rw [← Category.assoc, coprod.inr_map, Category.assoc, coprod.inr_desc,
+          hσ₂1]
+    · refine coprod.hom_ext ?_ ?_
+      · rw [← Category.assoc, coprod.inl_desc, hσ₁2, coprod.inl_desc]
+      · rw [← Category.assoc, coprod.inr_desc, hσ₂2, coprod.inr_desc]
+    · rintro σ' ⟨hσ'1, hσ'2⟩
+      have k₁ : coprod.inl ≫ σ' = σ₁ := by
+        refine hσ₁u _ ⟨?_, ?_⟩
+        · rw [← Category.assoc, ← coprod.inl_map h₁ h₂, Category.assoc, hσ'1]
+        · rw [Category.assoc, hσ'2, coprod.inl_desc]
+      have k₂ : coprod.inr ≫ σ' = σ₂ := by
+        refine hσ₂u _ ⟨?_, ?_⟩
+        · rw [← Category.assoc, ← coprod.inr_map h₁ h₂, Category.assoc, hσ'1]
+        · rw [Category.assoc, hσ'2, coprod.inr_desc]
+      refine coprod.hom_ext ?_ ?_
+      · rw [coprod.inl_desc, k₁]
+      · rw [coprod.inr_desc, k₂]
 
 /-- **221III** (eff.tex:6822, Example): the effectus `vNᵒᵖ` has dilations
 (Paschke dilations; the full subcategory `CvNᵒᵖ` does not, 221IIIa — not
@@ -488,7 +609,12 @@ variable [AndThenEffectus C] {X Y P : C}
 /-- The claim implicit in 223II that `asrt_p ⊥ asrt_{pᵖ}` (so that their
 sum `sef_p` exists). -/
 theorem asrt_perp_asrt_orth (p : Pred X) :
-    Perp (asrt p) (asrt (orth p)) := sorry
+    Perp (asrt p) (asrt (orth p)) := by
+  -- summability criterion of an effectus in partial form: `1∘f ⊥ 1∘g ⟹ f ⊥ g`
+  refine EffectusPartialForm.perp_of_one_perp ?_
+  show Perp (asrt p ≫ truth X) (asrt (orth p) ≫ truth X)
+  rw [(asrt_spec p).2, (asrt_spec (orth p)).2]
+  exact EffectAlgebra.perp_orth p
 
 /-- **223II** (`sefp`, eff.tex:7055, Definition): the **side-effect**
 `sef_p = asrt_p ⋁ asrt_{pᵖ}` of measuring the predicate `p`. -/
