@@ -38,29 +38,209 @@ variable {A B : Type*} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
 **55III** (vn.tex:2210, Examples): the projections of `ℂ`, `L^∞(X)` and
 `B(H)` — descriptive examples, not converted. -/
 
+/-! ### Auxiliary: effects versus a projection
+
+The two workhorses of parsec 550 are:  for an effect `b` and a projection
+`p`,  `b ≤ p  ↔  b p^⊥ = 0`  and  `p ≤ b  ↔  p b^⊥ = 0`.  Everything in
+**55VIII**–**55X** is an instance of one of them (applied to `b`, `√b` or
+`b²`), and the argument is exactly the one the thesis gives for **55X**:
+conjugate by `p^⊥` (resp. `p`) and use the C*-identity. -/
+
+section EffectsAux
+
+theorem norm_le_one_of_mem_effects {a : A} (ha : a ∈ effects A) : ‖a‖ ≤ 1 :=
+  (CStarAlgebra.norm_le_one_iff_of_nonneg a ha.1).mpr ha.2
+
+/-- `a² ≤ a` for an effect `a`. -/
+theorem mul_self_le_self {a : A} (ha : a ∈ effects A) : a * a ≤ a := by
+  refine (mul_self_le_norm_smul ha.1).trans ?_
+  have h := smul_nonneg
+    (by linarith [norm_le_one_of_mem_effects ha] : (0 : ℝ) ≤ 1 - ‖a‖) ha.1
+  rw [sub_smul, one_smul, sub_nonneg] at h
+  exact h
+
+theorem sqrt_mem_effects {a : A} (ha : a ∈ effects A) :
+    CFC.sqrt a ∈ effects A :=
+  ⟨CFC.sqrt_nonneg a, by simpa using CFC.sqrt_le_sqrt a 1 ha.2⟩
+
+theorem sq_mem_effects {a : A} (ha : a ∈ effects A) : a ^ 2 ∈ effects A := by
+  have h2 : a ^ 2 = a * a := sq a
+  refine ⟨h2 ▸ ?_, h2 ▸ (mul_self_le_self ha).trans ha.2⟩
+  simpa [(IsSelfAdjoint.of_nonneg ha.1).star_eq] using star_mul_self_nonneg a
+
+/-- For `0 ≤ b` and any `c`, `b c = 0` iff `√b c = 0`: multiply on the left
+by `c*` and use the C*-identity. -/
+theorem sqrt_mul_eq_zero_iff {b : A} (hb : 0 ≤ b) (c : A) :
+    CFC.sqrt b * c = 0 ↔ b * c = 0 := by
+  constructor
+  · intro h
+    rw [← CFC.sqrt_mul_sqrt_self b hb, mul_assoc, h, mul_zero]
+  · intro h
+    rw [← CStarRing.star_mul_self_eq_zero_iff (CFC.sqrt b * c), star_mul,
+      (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg b)).star_eq]
+    calc star c * CFC.sqrt b * (CFC.sqrt b * c)
+        = star c * (CFC.sqrt b * CFC.sqrt b * c) := by noncomm_ring
+      _ = star c * (b * c) := by rw [CFC.sqrt_mul_sqrt_self b hb]
+      _ = 0 := by rw [h, mul_zero]
+
+/-- **Key lemma 1**: an effect `b` lies below a projection `p` iff
+`b p^⊥ = 0`. -/
+theorem le_proj_iff {b p : A} (hb : b ∈ effects A) (hp : IsStarProjection p) :
+    b ≤ p ↔ b * (1 - p) = 0 := by
+  constructor
+  · intro h
+    rw [mul_sub, mul_one,
+      (hp.mul_right_and_mul_left_of_nonneg_of_le hb.1 h).1, sub_self]
+  · intro h
+    have hbp : b * p = b := by
+      have := h; rw [mul_sub, mul_one, sub_eq_zero] at this; exact this.symm
+    have hpb : p * b = b := by
+      simpa [(IsSelfAdjoint.of_nonneg hb.1).star_eq, hp.isSelfAdjoint.star_eq]
+        using congrArg star hbp
+    have hcon := star_left_conjugate_le_conjugate hb.2 p
+    rw [hp.isSelfAdjoint.star_eq, mul_one, hp.isIdempotentElem.eq] at hcon
+    rwa [hpb, hbp] at hcon
+
+/-- **Key lemma 2**: a projection `p` lies below an effect `b` iff
+`p b^⊥ = 0`. -/
+theorem proj_le_iff {b p : A} (hb : b ∈ effects A) (hp : IsStarProjection p) :
+    p ≤ b ↔ p * (1 - b) = 0 := by
+  have hb' : (0 : A) ≤ 1 - b := sub_nonneg.mpr hb.2
+  constructor
+  · intro h
+    -- `p(1-b)p ≤ p(1-p)p = 0` and `p(1-b)p = (√(1-b) p)* (√(1-b) p) ≥ 0`
+    have hcon : p * (1 - b) * p ≤ p * (1 - p) * p := by
+      have := star_left_conjugate_le_conjugate (sub_le_sub_left h 1) p
+      rwa [hp.isSelfAdjoint.star_eq] at this
+    rw [hp.mul_one_sub_self, zero_mul] at hcon
+    have hnn : (0 : A) ≤ p * (1 - b) * p := by
+      have := star_left_conjugate_nonneg hb' p
+      rwa [hp.isSelfAdjoint.star_eq] at this
+    have hzero : p * (1 - b) * p = 0 := le_antisymm hcon hnn
+    have hsq : star (CFC.sqrt (1 - b) * p) * (CFC.sqrt (1 - b) * p) = 0 := by
+      rw [star_mul, hp.isSelfAdjoint.star_eq,
+        (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg (1 - b))).star_eq]
+      calc p * CFC.sqrt (1 - b) * (CFC.sqrt (1 - b) * p)
+          = p * (CFC.sqrt (1 - b) * CFC.sqrt (1 - b)) * p := by noncomm_ring
+        _ = p * (1 - b) * p := by rw [CFC.sqrt_mul_sqrt_self _ hb']
+        _ = 0 := hzero
+    have h0 : (1 - b) * p = 0 :=
+      (sqrt_mul_eq_zero_iff hb' p).mp
+        (CStarRing.star_mul_self_eq_zero_iff _ |>.mp hsq)
+    simpa [(IsSelfAdjoint.of_nonneg hb').star_eq, hp.isSelfAdjoint.star_eq]
+      using congrArg star h0
+  · intro h
+    have hpb : p * b = p := by
+      rw [mul_sub, mul_one, sub_eq_zero] at h; exact h.symm
+    have hbp : b * p = p := by
+      simpa [(IsSelfAdjoint.of_nonneg hb.1).star_eq, hp.isSelfAdjoint.star_eq]
+        using congrArg star hpb
+    -- `b = p + p^⊥ b p^⊥`
+    have hexp : b - p = (1 - p) * b * (1 - p) := by
+      have e : (1 - p) * b * (1 - p)
+          = b - p * b - b * p + p * (b * p) := by noncomm_ring
+      rw [e, hpb, hbp, hp.isIdempotentElem.eq]
+      abel
+    have : (0 : A) ≤ (1 - p) * b * (1 - p) := by
+      have := star_left_conjugate_nonneg hb.1 (1 - p)
+      rwa [hp.one_sub.isSelfAdjoint.star_eq] at this
+    rw [← hexp, sub_nonneg] at this
+    exact this
+
+end EffectsAux
+
+omit [PartialOrder A] [StarOrderedRing A] in
 /-- **55IV** (`projection-basic`, vn.tex:2232, Exercise), part 1: `0` and
 `1` are projections. -/
 theorem projection_basic_1 :
     IsStarProjection (0 : A) ∧ IsStarProjection (1 : A) :=
-  sorry
+  ⟨IsStarProjection.zero _, IsStarProjection.one _⟩
 
 /-- **55IV** (`projection-basic`, vn.tex:2232, Exercise), part 2: a
 projection is an effect: `p* = p` and `0 ≤ p ≤ 1`. -/
 theorem projection_basic_2 (p : A) (hp : IsStarProjection p) :
     IsSelfAdjoint p ∧ p ∈ effects A :=
-  sorry
+  ⟨hp.isSelfAdjoint, hp.nonneg, hp.le_one⟩
 
+omit [PartialOrder A] [StarOrderedRing A] in
 /-- **55IV** (`projection-basic`, vn.tex:2232, Exercise), part 3: the
 orthocomplement `p^⊥ = 1 - p` of a projection is a projection. -/
 theorem projection_basic_3 (p : A) (hp : IsStarProjection p) :
     IsStarProjection (1 - p) :=
-  sorry
+  hp.one_sub
 
 /-- **55IV** (`projection-basic`, vn.tex:2232, Exercise), part 4: an effect
 `a` is a projection iff `a·a^⊥ = 0`. -/
 theorem projection_basic_4 (a : A) (ha : a ∈ effects A) :
-    IsStarProjection a ↔ a * (1 - a) = 0 :=
-  sorry
+    IsStarProjection a ↔ a * (1 - a) = 0 := by
+  refine ⟨fun h => h.mul_one_sub_self, fun h => ⟨?_, IsSelfAdjoint.of_nonneg ha.1⟩⟩
+  rw [mul_sub, mul_one, sub_eq_zero] at h
+  exact h.symm
+
+section AdContraposed
+
+/-- First half of the thesis's argument for **55V**: from `a* p a ≤ q^⊥` one
+gets `q a* p a q ≤ q q^⊥ q = 0`, whence `p a q = 0` by the C*-identity. -/
+private theorem paq_eq_zero_of_le {a p q : A} (hp : IsStarProjection p)
+    (hq : IsStarProjection q) (h : star a * p * a ≤ 1 - q) : p * a * q = 0 := by
+  have hcon := star_left_conjugate_le_conjugate h q
+  rw [hq.isSelfAdjoint.star_eq, hq.mul_one_sub_self, zero_mul] at hcon
+  have hnn : (0 : A) ≤ q * (star a * p * a) * q := by
+    have := star_left_conjugate_nonneg (star_left_conjugate_nonneg hp.nonneg a) q
+    rwa [hq.isSelfAdjoint.star_eq] at this
+  have hzero : q * (star a * p * a) * q = 0 := le_antisymm hcon hnn
+  rw [← CStarRing.star_mul_self_eq_zero_iff (p * a * q)]
+  have h1 : star (p * a * q) = q * star a * p := by
+    rw [star_mul, star_mul, hq.isSelfAdjoint.star_eq, hp.isSelfAdjoint.star_eq]
+    noncomm_ring
+  rw [h1]
+  calc q * star a * p * (p * a * q) = q * (star a * (p * p) * a) * q := by
+        noncomm_ring
+    _ = q * (star a * p * a) * q := by rw [hp.isIdempotentElem.eq]
+    _ = 0 := hzero
+
+/-- Second half of the thesis's argument for **55V**: from `p a q = 0` one
+gets `a q a* = p^⊥ (a q a*) p^⊥ ≤ p^⊥`, using `a q a* ≤ a a* ≤ ‖a‖²·1 ≤ 1`. -/
+private theorem le_of_paq_eq_zero {a p q : A} (ha : ‖a‖ ≤ 1)
+    (hp : IsStarProjection p) (hq : IsStarProjection q) (h : p * a * q = 0) :
+    a * q * star a ≤ 1 - p := by
+  have hstar : q * star a * p = 0 := by
+    have h1 : star (p * a * q) = q * star a * p := by
+      rw [star_mul, star_mul, hq.isSelfAdjoint.star_eq, hp.isSelfAdjoint.star_eq]
+      noncomm_ring
+    rw [← h1, h, star_zero]
+  have e1 : (1 - p) * (a * q) = a * q := by
+    have e : (1 - p) * (a * q) = a * q - p * a * q := by noncomm_ring
+    rw [e, h, sub_zero]
+  have e2 : q * star a * (1 - p) = q * star a := by
+    have e : q * star a * (1 - p) = q * star a - q * star a * p := by noncomm_ring
+    rw [e, hstar, sub_zero]
+  have hqq : a * q * (q * star a) = a * q * star a := by
+    calc a * q * (q * star a) = a * (q * q) * star a := by noncomm_ring
+      _ = a * q * star a := by rw [hq.isIdempotentElem.eq]
+  have key : (1 - p) * (a * q * star a) * (1 - p) = a * q * star a := by
+    calc (1 - p) * (a * q * star a) * (1 - p)
+        = (1 - p) * (a * q * (q * star a)) * (1 - p) := by rw [hqq]
+      _ = (1 - p) * (a * q) * (q * star a * (1 - p)) := by noncomm_ring
+      _ = a * q * (q * star a) := by rw [e1, e2]
+      _ = a * q * star a := hqq
+  -- `a q a* ≤ a a* ≤ 1`
+  have hle1 : a * q * star a ≤ 1 := by
+    have h1 := star_left_conjugate_le_conjugate hq.le_one (star a)
+    rw [star_star, mul_one] at h1
+    refine h1.trans ?_
+    have hnn : (0 : A) ≤ a * star a := mul_star_self_nonneg a
+    have hn : ‖a * star a‖ ≤ 1 := by
+      calc ‖a * star a‖ ≤ ‖a‖ * ‖star a‖ := norm_mul_le _ _
+        _ ≤ 1 := by rw [norm_star]; nlinarith [norm_nonneg a]
+    refine (le_norm_smul_one hnn).trans ?_
+    have := smul_nonneg (by linarith : (0 : ℝ) ≤ 1 - ‖a * star a‖) (zero_le_one (α := A))
+    rw [sub_smul, one_smul, sub_nonneg] at this
+    exact this
+  have hconj := star_left_conjugate_le_conjugate hle1 (1 - p)
+  rw [hp.one_sub.isSelfAdjoint.star_eq, key, mul_one,
+    hp.one_sub.isIdempotentElem.eq] at hconj
+  exact hconj
 
 /-- **55V** (`ad-contraposed`, vn.tex:2250, Lemma): for `‖a‖ ≤ 1` and
 projections `p`, `q`: `a* p a ≤ q^⊥` iff `p a q = 0` iff `a q a* ≤ p^⊥`. -/
@@ -69,8 +249,19 @@ theorem ad_contraposed (a p q : A) (ha : ‖a‖ ≤ 1)
     List.TFAE
       [star a * p * a ≤ 1 - q,
        p * a * q = 0,
-       a * q * star a ≤ 1 - p] :=
-  sorry
+       a * q * star a ≤ 1 - p] := by
+  tfae_have 1 → 2 := fun h => paq_eq_zero_of_le hp hq h
+  tfae_have 2 → 3 := fun h => le_of_paq_eq_zero ha hp hq h
+  tfae_have 3 → 1 := by
+    intro h
+    have h' : star (star a) * q * star a ≤ 1 - p := by rwa [star_star]
+    have h2 : q * star a * p = 0 := paq_eq_zero_of_le hq hp h'
+    have h3 : star a * p * star (star a) ≤ 1 - q :=
+      le_of_paq_eq_zero (by rwa [norm_star]) hq hp h2
+    rwa [star_star] at h3
+  tfae_finish
+
+end AdContraposed
 
 /-- **55VIII** (`projection-above-effect`, vn.tex:2278): for an effect `a`
 and a projection `p` the following are equivalent: `a ≤ p`; `p√a = √a`;
@@ -89,8 +280,29 @@ theorem projection_above_effect (a p : A) (ha : a ∈ effects A)
        a * p = a,
        (1 - p) * a = 0,
        a * (1 - p) = 0,
-       CFC.sqrt a ≤ p] :=
-  sorry
+       CFC.sqrt a ≤ p] := by
+  have hsa : IsSelfAdjoint a := IsSelfAdjoint.of_nonneg ha.1
+  have hsq : IsSelfAdjoint (CFC.sqrt a) :=
+    IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg a)
+  tfae_have 1 ↔ 10 := le_proj_iff ha hp
+  tfae_have 10 ↔ 8 := by rw [mul_sub, mul_one, sub_eq_zero, eq_comm]
+  tfae_have 8 ↔ 7 := by
+    constructor <;> intro h <;>
+      simpa [hsa.star_eq, hp.isSelfAdjoint.star_eq] using congrArg star h
+  tfae_have 7 ↔ 9 := by rw [sub_mul, one_mul, sub_eq_zero, eq_comm]
+  tfae_have 10 ↔ 5 := (sqrt_mul_eq_zero_iff ha.1 (1 - p)).symm
+  tfae_have 5 ↔ 3 := by rw [mul_sub, mul_one, sub_eq_zero, eq_comm]
+  tfae_have 3 ↔ 2 := by
+    constructor <;> intro h <;>
+      simpa [hsq.star_eq, hp.isSelfAdjoint.star_eq] using congrArg star h
+  tfae_have 2 ↔ 4 := by rw [sub_mul, one_mul, sub_eq_zero, eq_comm]
+  tfae_have 5 ↔ 11 := (le_proj_iff (sqrt_mem_effects ha) hp).symm
+  tfae_have 6 ↔ 10 := by
+    refine (le_proj_iff (sq_mem_effects ha) hp).trans ?_
+    have h := sqrt_mul_eq_zero_iff (b := a ^ 2) (sq_mem_effects ha).1 (1 - p)
+    rw [CFC.sqrt_sq a ha.1] at h
+    exact h.symm
+  tfae_finish
 
 /-- **55IX** (`projection-below-effect`, vn.tex:2291): for an effect `a` and
 a projection `p` the following are equivalent: `p ≤ a`; `p√a = p`;
@@ -109,15 +321,72 @@ theorem projection_below_effect (a p : A) (ha : a ∈ effects A)
        p * a = p,
        p * (1 - a) = 0,
        (1 - a) * p = 0,
-       p ≤ CFC.sqrt a] :=
-  sorry
+       p ≤ CFC.sqrt a] := by
+  have hsa : IsSelfAdjoint a := IsSelfAdjoint.of_nonneg ha.1
+  have hsq : IsSelfAdjoint (CFC.sqrt a) :=
+    IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg a)
+  -- `a ≤ √a` and `a² ≤ a` for an effect `a`
+  have hasqrt : a ≤ CFC.sqrt a := by
+    have h := mul_self_le_self (sqrt_mem_effects ha)
+    rwa [CFC.sqrt_mul_sqrt_self a ha.1] at h
+  have hsqle : a ^ 2 ≤ a := by rw [sq]; exact mul_self_le_self ha
+  tfae_have 1 ↔ 9 := proj_le_iff ha hp
+  tfae_have 9 ↔ 8 := by rw [mul_sub, mul_one, sub_eq_zero, eq_comm]
+  tfae_have 8 ↔ 7 := by
+    constructor <;> intro h <;>
+      simpa [hsa.star_eq, hp.isSelfAdjoint.star_eq] using congrArg star h
+  tfae_have 7 ↔ 10 := by rw [sub_mul, one_mul, sub_eq_zero, eq_comm]
+  tfae_have 11 ↔ 4 := proj_le_iff (sqrt_mem_effects ha) hp
+  tfae_have 4 ↔ 2 := by rw [mul_sub, mul_one, sub_eq_zero, eq_comm]
+  tfae_have 2 ↔ 3 := by
+    constructor <;> intro h <;>
+      simpa [hsq.star_eq, hp.isSelfAdjoint.star_eq] using congrArg star h
+  tfae_have 3 ↔ 5 := by rw [sub_mul, one_mul, sub_eq_zero, eq_comm]
+  tfae_have 1 → 11 := fun h => h.trans hasqrt
+  tfae_have 3 → 7 := by
+    intro h
+    calc a * p = CFC.sqrt a * (CFC.sqrt a * p) := by
+          rw [← mul_assoc, CFC.sqrt_mul_sqrt_self a ha.1]
+      _ = p := by rw [h, h]
+  tfae_have 8 → 6 := by
+    intro h
+    refine (proj_le_iff (sq_mem_effects ha) hp).mpr ?_
+    rw [mul_sub, mul_one, sq, ← mul_assoc, h, h, sub_self]
+  tfae_have 6 → 1 := fun h => h.trans hsqle
+  tfae_finish
 
 /-- **55X** (`projection-order-sharp`, vn.tex:2305, Lemma): an effect `a` is
 a projection iff the only effect below both `a` and `a^⊥` is `0`. -/
 theorem projection_order_sharp (a : A) (ha : a ∈ effects A) :
     IsStarProjection a ↔
-      ∀ b ∈ effects A, b ≤ a → b ≤ 1 - a → b = 0 :=
-  sorry
+      ∀ b ∈ effects A, b ≤ a → b ≤ 1 - a → b = 0 := by
+  have hsa : IsSelfAdjoint a := IsSelfAdjoint.of_nonneg ha.1
+  constructor
+  · -- `b ≤ a` gives `b a^⊥ = 0`, `b ≤ a^⊥` gives `b a = 0`, so `b = 0`
+    intro hpa b hb hba hbc
+    have h1 : b * (1 - a) = 0 := (le_proj_iff hb hpa).mp hba
+    have h2 : b * a = 0 := by
+      have := (le_proj_iff hb hpa.one_sub).mp hbc
+      simpa using this
+    have e : b = b * a + b * (1 - a) := by noncomm_ring
+    rw [h1, h2, add_zero] at e
+    exact e
+  · -- `a a^⊥ = √a a^⊥ √a` is an effect below `a` and below `a^⊥`
+    intro h
+    have hx0 : (0 : A) ≤ a - a * a := sub_nonneg.mpr (mul_self_le_self ha)
+    have haa : (0 : A) ≤ a * a := by
+      simpa [hsa.star_eq] using star_mul_self_nonneg a
+    have hxa : a - a * a ≤ a := by simpa using haa
+    have hxc : a - a * a ≤ 1 - a := by
+      have hone : (0 : A) ≤ (1 - a) * (1 - a) := by
+        simpa [hsa.star_eq] using star_mul_self_nonneg (1 - a)
+      have e : (1 - a) * (1 - a) = (1 - a) - (a - a * a) := by noncomm_ring
+      rw [e, sub_nonneg] at hone
+      exact hone
+    have hzero := h (a - a * a) ⟨hx0, hxa.trans ha.2⟩ hxa hxc
+    rw [projection_basic_4 a ha]
+    have e : a * (1 - a) = a - a * a := by noncomm_ring
+    rw [e, hzero]
 
 /-- **55XII** (vn.tex:2323, Definition): a subset `E` of projections is
 **orthogonal** (its members *pairwise orthogonal*) when any two members are
@@ -136,8 +405,45 @@ theorem orthogonal_tuple_of_projections_1 (p q : A)
        p * q * p = 0,
        p + q ≤ 1,
        p ≤ 1 - q,
-       IsStarProjection (p + q)] :=
-  sorry
+       IsStarProjection (p + q)] := by
+  have hpe : p ∈ effects A := ⟨hp.nonneg, hp.le_one⟩
+  tfae_have 1 ↔ 2 := by
+    constructor <;> intro h <;>
+      simpa [hp.isSelfAdjoint.star_eq, hq.isSelfAdjoint.star_eq]
+        using congrArg star h
+  tfae_have 1 → 3 := by intro h; rw [h, zero_mul]
+  tfae_have 3 → 2 := by
+    intro h
+    rw [← CStarRing.star_mul_self_eq_zero_iff (q * p)]
+    have h1 : star (q * p) = p * q := by
+      rw [star_mul, hp.isSelfAdjoint.star_eq, hq.isSelfAdjoint.star_eq]
+    rw [h1]
+    calc p * q * (q * p) = p * (q * q) * p := by noncomm_ring
+      _ = p * q * p := by rw [hq.isIdempotentElem.eq]
+      _ = 0 := h
+  tfae_have 5 ↔ 1 := by simpa using le_proj_iff hpe hq.one_sub
+  tfae_have 5 ↔ 4 := le_sub_iff_add_le
+  tfae_have 1 → 6 := fun h => hp.add hq h
+  tfae_have 6 → 4 := fun h => h.le_one
+  tfae_finish
+
+omit [PartialOrder A] [StarOrderedRing A] in
+/-- A finite sum of pairwise orthogonal projections is a projection. -/
+theorem isStarProjection_sum {ι : Type*} (s : Finset ι)
+    (p : ι → A) (hp : ∀ i, IsStarProjection (p i))
+    (h : ∀ i ∈ s, ∀ j ∈ s, i ≠ j → p i * p j = 0) :
+    IsStarProjection (∑ i ∈ s, p i) := by
+  classical
+  induction s using Finset.induction_on with
+  | empty => simp
+  | insert a s ha ih =>
+      rw [Finset.sum_insert ha]
+      refine (hp a).add (ih fun i hi j hj hij =>
+        h i (Finset.mem_insert_of_mem hi) j (Finset.mem_insert_of_mem hj) hij) ?_
+      rw [Finset.mul_sum]
+      refine Finset.sum_eq_zero fun j hj => ?_
+      exact h a (Finset.mem_insert_self a s) j (Finset.mem_insert_of_mem hj)
+        (by rintro rfl; exact ha hj)
 
 /-- **55XIII** (`orthogonal-tuple-of-projections`, vn.tex:2334, Exercise),
 part 2: a finite tuple of projections is pairwise orthogonal iff
@@ -147,8 +453,21 @@ theorem orthogonal_tuple_of_projections_2 {n : ℕ} (p : Fin n → A)
     List.TFAE
       [Pairwise fun i j => p i * p j = 0,
        ∑ i, p i ≤ 1,
-       IsStarProjection (∑ i, p i)] :=
-  sorry
+       IsStarProjection (∑ i, p i)] := by
+  tfae_have 1 → 3 := fun h =>
+    isStarProjection_sum Finset.univ p hp fun i _ j _ hij => h hij
+  tfae_have 3 → 2 := fun h => h.le_one
+  tfae_have 2 → 1 := by
+    intro h i j hij
+    -- `p i + p j ≤ ∑ₖ pₖ ≤ 1`, so `p i * p j = 0` by part 1
+    have hsub : p i + p j ≤ ∑ k, p k := by
+      have := Finset.sum_le_sum_of_subset_of_nonneg
+        (Finset.subset_univ ({i, j} : Finset (Fin n)))
+        (fun k _ _ => (hp k).nonneg)
+      rwa [Finset.sum_pair hij] at this
+    exact ((orthogonal_tuple_of_projections_1 (p i) (p j) (hp i) (hp j)).out 3 0).mp
+      (hsub.trans h)
+  tfae_finish
 
 /-- **55XIII** (`orthogonal-tuple-of-projections`, vn.tex:2334, Exercise),
 part 2 (second half): for a pairwise orthogonal finite tuple of projections,
@@ -156,14 +475,23 @@ part 2 (second half): for a pairwise orthogonal finite tuple of projections,
 theorem orthogonal_tuple_of_projections_2' {n : ℕ} (p : Fin n → A)
     (hp : ∀ i, IsStarProjection (p i))
     (horth : Pairwise fun i j => p i * p j = 0) :
-    IsLeast {q : A | IsStarProjection q ∧ ∀ i, p i ≤ q} (∑ i, p i) :=
-  sorry
+    IsLeast {q : A | IsStarProjection q ∧ ∀ i, p i ≤ q} (∑ i, p i) := by
+  have hsum : IsStarProjection (∑ i, p i) :=
+    ((orthogonal_tuple_of_projections_2 p hp).out 0 2).mp horth
+  refine ⟨⟨hsum, fun i => ?_⟩, ?_⟩
+  · exact Finset.single_le_sum (f := p) (fun k _ => (hp k).nonneg)
+      (Finset.mem_univ i)
+  · rintro q ⟨hq, hle⟩
+    refine (hsum.le_iff_mul_eq_right hq).mpr ?_
+    rw [Finset.mul_sum]
+    exact Finset.sum_congr rfl fun i _ =>
+      ((hp i).le_iff_mul_eq_right hq).mp (hle i)
 
 /-- **55XIV** (`projection-below-projection`, vn.tex:2353, Exercise): the
 difference `q - p` of projections `p ≤ q` is a projection. -/
 theorem projection_below_projection (p q : A) (hp : IsStarProjection p)
     (hq : IsStarProjection q) (hpq : p ≤ q) : IsStarProjection (q - p) :=
-  sorry
+  (hp.le_iff_sub hq).mp hpq
 
 /-! ## Parsec 560: Ceiling and Floor -/
 
@@ -746,7 +1074,10 @@ theorem commutant_basic_1 (S T : Set A) :
       (S ⊆ T → commutant A T ⊆ commutant A S) ∧
       S ⊆ commutant A (commutant A S) ∧
       commutant A (commutant A (commutant A S)) = commutant A S :=
-  sorry
+  ⟨⟨fun h t ht s hs => (h hs t ht).symm, fun h s hs t ht => (h ht s hs).symm⟩,
+    fun h => Set.centralizer_subset h,
+    Set.subset_centralizer_centralizer,
+    Set.centralizer_centralizer_centralizer S⟩
 
 /-- **65III** (`commutant-basic`, vn.tex:3222, Exercise), part 2: `S^□` is
 closed under addition and (scalar) multiplication, contains `1`, and is
@@ -785,14 +1116,20 @@ containing `S` — but `S^□□ = S` can fail: `(A ∩ ℂ)^□ = A`, so
 `(A ∩ ℂ)^□□ = Z(A)` (the scalars' double commutant is the centre). -/
 theorem commutant_basic_4 :
     commutant A (Set.range (algebraMap ℂ A)) = Set.univ ∧
-      commutant A (commutant A (Set.range (algebraMap ℂ A))) = centre A :=
-  sorry
+      commutant A (commutant A (Set.range (algebraMap ℂ A))) = centre A := by
+  have h : commutant A (Set.range (algebraMap ℂ A)) = Set.univ := by
+    refine Set.eq_univ_of_forall fun a => ?_
+    rintro _ ⟨z, rfl⟩
+    exact (Algebra.commutes z a)
+  exact ⟨h, by rw [h]; rfl⟩
 
 /-- **65III** (`commutant-basic`, vn.tex:3222, Exercise), part 5: for (the
 carrier `R` of) a von Neumann subalgebra of `A`: `Z(R) = R ∩ R^□`. -/
 theorem commutant_basic_5 (R : Set A) :
     R ∩ commutant A R = {a ∈ R | ∀ b ∈ R, a * b = b * a} :=
-  sorry
+  Set.ext fun a =>
+    ⟨fun h => ⟨h.1, fun b hb => (h.2 b hb).symm⟩,
+      fun h => ⟨h.1, fun b hb => (h.2 b hb).symm⟩⟩
 
 /-- **65IV** (`projections-norm-dense`, vn.tex:3279, Proposition): every
 self-adjoint element `a` of a von Neumann algebra is the norm limit of

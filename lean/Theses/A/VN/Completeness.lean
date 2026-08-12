@@ -155,9 +155,18 @@ variable (V) in
 a real vector space form a topology. -/
 def radialTopology : TopologicalSpace V where
   IsOpen := RadiallyOpen V
-  isOpen_univ := sorry
-  isOpen_inter := sorry
-  isOpen_sUnion := sorry
+  isOpen_univ := fun _ _ _ => ⟨1, one_pos, fun _ _ _ => Set.mem_univ _⟩
+  isOpen_inter := by
+    rintro s t hs ht a ⟨has, hat⟩ v
+    obtain ⟨t₁, ht₁, h₁⟩ := hs a has v
+    obtain ⟨t₂, ht₂, h₂⟩ := ht a hat v
+    exact ⟨min t₁ t₂, lt_min ht₁ ht₂, fun r hr0 hr =>
+      ⟨h₁ r hr0 (lt_of_lt_of_le hr (min_le_left _ _)),
+        h₂ r hr0 (lt_of_lt_of_le hr (min_le_right _ _))⟩⟩
+  isOpen_sUnion := by
+    rintro S hS a ⟨u, huS, hau⟩ v
+    obtain ⟨d, hd, h⟩ := hS u huS a hau v
+    exact ⟨d, hd, fun r hr0 hr => ⟨u, huS, h r hr0 hr⟩⟩
 
 /-- **73III** (vn.tex:4033, Exercise), part 2: with respect to the radial
 topology, translations and scalar multiplication are continuous.
@@ -167,22 +176,81 @@ converted.) -/
 theorem radialTopology_continuous (a : V) (c : ℝ) :
     @Continuous V V (radialTopology V) (radialTopology V) (fun x => x + a) ∧
       @Continuous V V (radialTopology V) (radialTopology V)
-        (fun x => c • x) :=
-  sorry
+        (fun x => c • x) := by
+  constructor
+  · refine (@continuous_def V V (radialTopology V) (radialTopology V) _).mpr ?_
+    intro s hs
+    change RadiallyOpen V _
+    intro x hx v
+    obtain ⟨d, hd, h⟩ := hs (x + a) hx v
+    refine ⟨d, hd, fun r hr0 hr => ?_⟩
+    change x + r • v + a ∈ s
+    have e : x + r • v + a = x + a + r • v := by abel
+    rw [e]
+    exact h r hr0 hr
+  · refine (@continuous_def V V (radialTopology V) (radialTopology V) _).mpr ?_
+    intro s hs
+    change RadiallyOpen V _
+    intro x hx v
+    obtain ⟨d, hd, h⟩ := hs (c • x) hx (c • v)
+    refine ⟨d, hd, fun r hr0 hr => ?_⟩
+    change c • (x + r • v) ∈ s
+    have e : c • (x + r • v) = c • x + r • (c • v) := by
+      rw [smul_add, smul_comm]
+    rw [e]
+    exact h r hr0 hr
 
 /-- **73III** (vn.tex:4033, Exercise), part 5: for radially open
 `s ⊆ V` and `x, y ∈ V` the set `{t ∈ ℝ | t•x + (1-t)•y ∈ s}` is open. -/
 theorem radialTopology_segment (s : Set V) (hs : RadiallyOpen V s)
-    (x y : V) : IsOpen {t : ℝ | t • x + (1 - t) • y ∈ s} :=
-  sorry
+    (x y : V) : IsOpen {t : ℝ | t • x + (1 - t) • y ∈ s} := by
+  rw [Metric.isOpen_iff]
+  intro t₀ ht₀
+  obtain ⟨d₁, hd₁, h₁⟩ := hs _ ht₀ (x - y)
+  obtain ⟨d₂, hd₂, h₂⟩ := hs _ ht₀ (y - x)
+  refine ⟨min d₁ d₂, lt_min hd₁ hd₂, fun t ht => ?_⟩
+  rw [Metric.mem_ball, Real.dist_eq] at ht
+  rcases le_or_gt t₀ t with hle | hlt
+  · have hr : t - t₀ < d₁ := by
+      have := lt_of_lt_of_le ht (min_le_left d₁ d₂)
+      rw [abs_of_nonneg (by linarith)] at this
+      linarith
+    have := h₁ (t - t₀) (by linarith) hr
+    have e : t₀ • x + (1 - t₀) • y + (t - t₀) • (x - y)
+        = t • x + (1 - t) • y := by module
+    rwa [e] at this
+  · have hr : t₀ - t < d₂ := by
+      have := lt_of_lt_of_le ht (min_le_right d₁ d₂)
+      rw [abs_of_neg (by linarith)] at this
+      linarith
+    have := h₂ (t₀ - t) (by linarith) hr
+    have e : t₀ • x + (1 - t₀) • y + (t₀ - t) • (y - x)
+        = t • x + (1 - t) • y := by module
+    rwa [e] at this
 
+-- only `hs` is needed for the first half; `ht` is part of the exercise's
+-- statement and is left unused:
+set_option linter.unusedVariables false in
 /-- **73III** (vn.tex:4033, Exercise), part 6: sums and positive dilates of
 radially open sets are radially open. -/
 theorem radialTopology_add (s t : Set V) (hs : RadiallyOpen V s)
     (ht : RadiallyOpen V t) :
     RadiallyOpen V (s + t) ∧
-      RadiallyOpen V {x : V | ∃ l : ℝ, 0 < l ∧ ∃ a ∈ s, x = l • a} :=
-  sorry
+      RadiallyOpen V {x : V | ∃ l : ℝ, 0 < l ∧ ∃ a ∈ s, x = l • a} := by
+  constructor
+  · rintro a ⟨p, hp, q, hq, rfl⟩ v
+    obtain ⟨d, hd, h⟩ := hs p hp v
+    refine ⟨d, hd, fun r hr0 hr => ?_⟩
+    have e : p + q + r • v = p + r • v + q := by abel
+    rw [e]
+    exact Set.add_mem_add (h r hr0 hr) hq
+  · rintro z ⟨l, hl, a, ha, rfl⟩ v
+    obtain ⟨d, hd, h⟩ := hs a ha v
+    refine ⟨l * d, by positivity, fun r hr0 hr => ?_⟩
+    refine ⟨l, hl, a + (r / l) • v, h (r / l) (by positivity) ?_, ?_⟩
+    · rw [div_lt_iff₀ hl]
+      linarith [mul_comm l d]
+    · rw [smul_add, smul_smul, mul_div_cancel₀ r (ne_of_gt hl)]
 
 /-- **73IV** (`hahn-banach`, vn.tex:4072, Theorem): for every radially open
 convex subset `K` of a real vector space with `0 ∉ K` there is a linear

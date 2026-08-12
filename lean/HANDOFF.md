@@ -516,6 +516,13 @@ because the standing rule is never to change a statement without approval:
    read `‖a‖ < 1` and the conclusion `a = 0`.  The thesis says "for some
    natural number `N`" and means `N ≥ 1`.  Needs `N ≠ 0`; for `N ≥ 1` it is
    immediate from the proved `sum_of_unitaries_3`.
+6. **72III**.1b and .1c (A/VN/Completeness.lean, vn.tex:3850) — **false as
+   stated**: the `‖ω‖` factor in `|ω(a*bc)| ≤ ‖ω‖‖a‖_ω‖b‖‖c‖_ω` breaks
+   homogeneity, since `‖a‖_ω = ω(a*a)^½` is unnormalised and `ω ↦ tω` scales the
+   two sides by `t` and `t²`.  Counterexample `𝒜 = ℂ`, `ω = t·id`, `t ∈ (0,1)`,
+   `a = b = c = 1`: `t ≤ t²`.  **Delete the `‖ω‖`** and both are provable as
+   intended.  Note this is the same slip as **30IV**.2, where an extra `‖ω‖` was
+   also spurious — worth sweeping every `‖·‖_ω` estimate in both theses.
 
 Also worth a decision: whether `Theses.VonNeumannAlgebra` (Kadison) should
 eventually be proved *equivalent* to Mathlib's `WStarAlgebra` (Sakai) — that

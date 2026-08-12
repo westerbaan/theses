@@ -379,13 +379,75 @@ noncomputable instance : VonNeumannAlgebra ℂ where
         exact c.2
   np_faithful := fun a _ h => h complexIdNP
 
+section BH
+
+variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+  [CompleteSpace H]
+
+/-- A vector functional `⟪x, (·) x⟫` on `B(H)` is monotone for the C*-order.
+(Auxiliary for **42V**.2.) -/
+private theorem inner_diag_mono (x : H) :
+    Monotone fun T : H →L[ℂ] H => (⟪x, T x⟫ : ℂ) := by
+  intro S T h
+  have h0 : (0 : H →L[ℂ] H) ≤ T - S := sub_nonneg.mpr h
+  have hp := (ContinuousLinearMap.isPositive_iff_complex (T - S)).mp
+    ((ContinuousLinearMap.nonneg_iff_isPositive _).mp h0) x
+  have key : (0 : ℂ) ≤ ⟪x, (T - S) x⟫ := by
+    rw [← inner_conj_symm, ← hp.1, Complex.conj_ofReal, Complex.le_def]
+    refine ⟨by simpa using hp.2, by simp⟩
+  have hsub : (⟪x, T x⟫ : ℂ) - ⟪x, S x⟫ = ⟪x, (T - S) x⟫ := by
+    rw [sub_apply, inner_sub_right]
+  change (⟪x, S x⟫ : ℂ) ≤ ⟪x, T x⟫
+  rw [← sub_nonneg, hsub]
+  exact key
+
+/-- The vector functional `⟪x, (·) x⟫` bundled as an np-functional on `B(H)`
+(positivity is `inner_diag_mono`, normality is cstar.tex **38II**,
+`Theses.A.CStar.vector_functional_normal`).  It is the witness for the
+faithfulness clause of **42V**.2. -/
+noncomputable def vectorNP (x : H) : NPFunctional (H →L[ℂ] H) where
+  toPositiveLinearMap :=
+    { toLinearMap := (vectorFunctionalCLM x : (H →L[ℂ] H) →L[ℂ] ℂ).toLinearMap
+      monotone' := inner_diag_mono x }
+  preservesDirSups' := vector_functional_normal x
+
+@[simp] theorem vectorNP_apply (x : H) (T : H →L[ℂ] H) :
+    vectorNP x T = ⟪x, T x⟫ :=
+  rfl
+
 /-- **42V** (`von-neumann-examples`, vn.tex:262, Examples), part 2: the
 C*-algebra `B(H)` of bounded operators on a Hilbert space `H` is a von
 Neumann algebra: it has bounded directed suprema of self-adjoint elements by
 cstar.tex 37IX, and the vector states are order separating by cstar.tex
 25III. -/
-instance {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
-    [CompleteSpace H] : VonNeumannAlgebra (H →L[ℂ] H) := sorry
+instance : VonNeumannAlgebra (H →L[ℂ] H) where
+  isLUB_of_bddAbove_directed := by
+    -- cstar.tex **37IX** (`hilb_suprema_1/2`) as the thesis states it: it asks
+    -- only for the *pointwise* bounds `sup_{T ∈ D} ⟪x, T x⟫ < ∞`, which an
+    -- order bound `S` supplies.  (Its 37XI repackaging `bhSup` asks for norm
+    -- boundedness instead, which an order-bounded directed set need not have.)
+    intro D hne hdir hbdd
+    obtain ⟨S, hS⟩ := hbdd
+    have hb : ∀ x : H, BddAbove
+        ((fun T : selfAdjoint (H →L[ℂ] H) => ⟪x, (T : H →L[ℂ] H) x⟫) '' D) := by
+      intro x
+      refine ⟨⟪x, (S : H →L[ℂ] H) x⟫, ?_⟩
+      rintro _ ⟨T, hT, rfl⟩
+      exact inner_diag_mono x (Subtype.coe_le_coe.mpr (hS hT))
+    obtain ⟨T', hT'⟩ := hilb_suprema_1 D hne hdir hb
+    exact ⟨T', hilb_suprema_2 D hne hdir hb T' hT'⟩
+  np_faithful := by
+    intro T _ h
+    have hz : ∀ x : H, (⟪(T : H →ₗ[ℂ] H) x, x⟫ : ℂ) = 0 := by
+      intro x
+      have hx : (⟪x, T x⟫ : ℂ) = 0 := h (vectorNP x)
+      rw [← inner_conj_symm] at hx
+      simpa using congrArg (starRingEnd ℂ) hx
+    refine ContinuousLinearMap.coe_injective ?_
+    rw [ContinuousLinearMap.toLinearMap_zero]
+    exact (inner_map_self_eq_zero _).mp hz
+
+end BH
 
 section DirectSum
 
@@ -507,11 +569,38 @@ noncomputable def ketbraNat (n m : ℕ) : ℓ² →L[ℂ] ℓ² :=
 /-- **43II** (`vn-counterexamples`, vn.tex:374, Exercise), part 1:
 computation rules `(|n⟩⟨m|)* = |m⟩⟨n|` and
 `|n⟩⟨m| |l⟩⟨k| = δ_{m,l} |n⟩⟨k|`. -/
+private theorem ketbraNat_apply (n m : ℕ) (z : ℓ²) :
+    ketbraNat n m z = (⟪lp.single 2 m (1 : ℂ), z⟫ : ℂ) • lp.single 2 n (1 : ℂ) :=
+  rfl
+
+private theorem inner_single_nat (m l : ℕ) :
+    (⟪(lp.single 2 m (1 : ℂ) : ℓ²), (lp.single 2 l (1 : ℂ) : ℓ²)⟫ : ℂ) =
+      if m = l then 1 else 0 := by
+  rw [lp.inner_single_left, lp.single_apply]
+  simp [Pi.single_apply]
+
 theorem vn_counterexamples_1 (k l m n : ℕ) :
     star (ketbraNat n m) = ketbraNat m n ∧
       ketbraNat n m * ketbraNat l k =
-        (if m = l then ketbraNat n k else 0) :=
-  sorry
+        (if m = l then ketbraNat n k else 0) := by
+  constructor
+  · rw [ContinuousLinearMap.star_eq_adjoint]
+    symm
+    rw [ContinuousLinearMap.eq_adjoint_iff]
+    intro u v
+    rw [ketbraNat_apply, ketbraNat_apply, inner_smul_left, inner_smul_right,
+      inner_conj_symm]
+    ring
+  · refine ContinuousLinearMap.ext fun z => ?_
+    have hL : (ketbraNat n m * ketbraNat l k) z
+        = ((⟪(lp.single 2 m (1 : ℂ) : ℓ²), (lp.single 2 l (1 : ℂ) : ℓ²)⟫ : ℂ) *
+            ⟪lp.single 2 k (1 : ℂ), z⟫) • lp.single 2 n (1 : ℂ) := by
+      change ketbraNat n m (ketbraNat l k z) = _
+      rw [ketbraNat_apply, ketbraNat_apply, inner_smul_right, mul_comm]
+    rw [hL, inner_single_nat]
+    by_cases h : m = l
+    · simp only [h, ite_true, one_mul, ketbraNat_apply]
+    · simp only [h, ite_false, zero_mul, zero_smul, zero_apply]
 
 /-- **43II** (`vn-counterexamples`, vn.tex:374, Exercise), part 2 (first
 half): `⋁_N ∑_{n≤N} |n⟩⟨n| = 1` in `B(ℓ²)`. -/
@@ -535,8 +624,68 @@ products `e^{-in}·e^{in} = 1` are norm-bounded and converge; so ultraweak
 convergence of `(b_α* b_α)_α` and norm-boundedness do not imply ultrastrong
 convergence of `(b_α)_α`. -/
 theorem vn_counterexamples_3 :
-    ¬∃ z : ℂ, UWTendsto (fun n : ℕ => Complex.exp (Complex.I * n)) atTop z :=
-  sorry
+    ¬∃ z : ℂ, UWTendsto (fun n : ℕ => Complex.exp (Complex.I * n)) atTop z := by
+  rintro ⟨z, hz⟩
+  rw [uwTendsto_iff] at hz
+  -- the identity is an np-functional on `ℂ`, so ultraweak convergence in `ℂ`
+  -- is ordinary convergence
+  have h : Tendsto (fun n : ℕ => Complex.exp (Complex.I * n)) atTop (𝓝 z) :=
+    hz complexIdNP
+  -- `|e^{in}| = 1`, so `z ≠ 0`
+  have hz1 : ‖z‖ = 1 := by
+    have hn : Tendsto (fun n : ℕ => ‖Complex.exp (Complex.I * n)‖) atTop (𝓝 ‖z‖) :=
+      (continuous_norm.tendsto z).comp h
+    refine tendsto_nhds_unique hn ?_
+    have : ∀ n : ℕ, ‖Complex.exp (Complex.I * n)‖ = 1 := by
+      intro n
+      rw [Complex.norm_exp]
+      simp
+    simp only [this]
+    exact tendsto_const_nhds
+  have hz0 : z ≠ 0 := by
+    intro h0
+    rw [h0, norm_zero] at hz1
+    exact zero_ne_one hz1
+  -- shifting the index multiplies the limit by `e^{i}`
+  have hshift : Tendsto (fun n : ℕ => Complex.exp (Complex.I * ((n : ℂ) + 1)))
+      atTop (𝓝 z) := by
+    have := h.comp (tendsto_add_atTop_nat 1)
+    simpa [Function.comp_def, Nat.cast_add, Nat.cast_one] using this
+  have hmul : Tendsto (fun n : ℕ => Complex.exp (Complex.I * ((n : ℂ) + 1)))
+      atTop (𝓝 (Complex.exp Complex.I * z)) := by
+    have hc : Tendsto (fun n : ℕ =>
+        Complex.exp Complex.I * Complex.exp (Complex.I * n)) atTop
+        (𝓝 (Complex.exp Complex.I * z)) := h.const_mul _
+    refine hc.congr fun n => ?_
+    rw [← Complex.exp_add]
+    ring_nf
+  have hfix : z = Complex.exp Complex.I * z := tendsto_nhds_unique hshift hmul
+  have hone : Complex.exp Complex.I = 1 := by
+    have : (Complex.exp Complex.I - 1) * z = 0 := by
+      rw [sub_mul, one_mul, ← hfix, sub_self]
+    rcases mul_eq_zero.mp this with h1 | h1
+    · exact sub_eq_zero.mp h1
+    · exact absurd h1 hz0
+  obtain ⟨k, hk⟩ := Complex.exp_eq_one_iff.mp hone
+  -- `I = k · 2π I` forces `1 = 2πk`, impossible for an integer `k`
+  have hk' : (1 : ℂ) = (k : ℂ) * (2 * (Real.pi : ℂ)) := by
+    refine mul_right_cancel₀ Complex.I_ne_zero ?_
+    calc (1 : ℂ) * Complex.I = Complex.I := one_mul _
+      _ = (k : ℂ) * (2 * (Real.pi : ℂ) * Complex.I) := hk
+      _ = ((k : ℂ) * (2 * (Real.pi : ℂ))) * Complex.I := by ring
+  have hk'' : (1 : ℝ) = (k : ℝ) * (2 * Real.pi) := by
+    exact_mod_cast hk'
+  have hpi : (3 : ℝ) < 2 * Real.pi := by
+    nlinarith [Real.pi_gt_three]
+  rcases lt_trichotomy (k : ℝ) 1 with hlt | heq | hgt
+  · have hk0 : (k : ℝ) ≤ 0 := by
+      have : k < 1 := by exact_mod_cast hlt
+      have : k ≤ 0 := by omega
+      exact_mod_cast this
+    nlinarith [Real.pi_pos]
+  · rw [heq, one_mul] at hk''
+    nlinarith
+  · nlinarith [Real.pi_pos]
 
 /-- **43II** (`vn-counterexamples`, vn.tex:374, Exercise), part 4 (first
 half): `(|0⟩⟨n|)_n` converges ultrastrongly to `0`. -/
@@ -800,6 +949,136 @@ theorem vna_supremum_mult [VonNeumannAlgebra A] (D : Set (selfAdjoint A))
       (f := (atTop : Filter D))).sub h3
     simpa using this
 
+section AdNormal
+
+/-- Conjugation `d ↦ a* d a` as a map on the self-adjoint part. -/
+private def conjSA (a : A) (d : selfAdjoint A) : selfAdjoint A :=
+  ⟨star a * (d : A) * a, by
+    change star (star a * (d : A) * a) = star a * (d : A) * a
+    simp [star_mul, d.2.star_eq, mul_assoc]⟩
+
+omit [PartialOrder A] [StarOrderedRing A] in
+private theorem conjSA_coe (a : A) (d : selfAdjoint A) :
+    ((conjSA a d : selfAdjoint A) : A) = star a * (d : A) * a := rfl
+
+private theorem conjSA_mono (a : A) : Monotone (conjSA a) := fun _ _ hd =>
+  Subtype.coe_le_coe.mp
+    (star_left_conjugate_le_conjugate (Subtype.coe_le_coe.mpr hd) a)
+
+/-- **44VIII** (`ad-normal-1`, vn.tex:713): for invertible `a` the map
+`b ↦ a* b a` is an order isomorphism (with inverse `b ↦ (a⁻¹)* b a⁻¹`) and
+therefore preserves all suprema. -/
+private theorem conjSA_isLUB_of_isUnit {a : A} (ha : IsUnit a)
+    {D : Set (selfAdjoint A)} {s : selfAdjoint A} (hlub : IsLUB D s) :
+    IsLUB (conjSA a '' D) (conjSA a s) := by
+  obtain ⟨w, rfl⟩ := ha
+  have hinv : ∀ (x : A) (d : selfAdjoint A),
+      x * ((w : A)) = 1 → ((w : A)) * x = 1 →
+        conjSA x (conjSA ((w : A)) d) = d := by
+    intro x d hxw hwx
+    refine Subtype.ext ?_
+    change star x * (star (w : A) * (d : A) * (w : A)) * x = (d : A)
+    calc star x * (star (w : A) * (d : A) * (w : A)) * x
+        = star ((w : A) * x) * (d : A) * ((w : A) * x) := by
+          rw [star_mul]; noncomm_ring
+      _ = (d : A) := by rw [hwx, star_one, one_mul, mul_one]
+  refine ⟨?_, ?_⟩
+  · rintro _ ⟨d, hd, rfl⟩
+    exact conjSA_mono _ (hlub.1 hd)
+  · intro v hv
+    have hb1 : ((w⁻¹ : Aˣ) : A) * ((w : A)) = 1 := w.inv_mul
+    have hb2 : ((w : A)) * ((w⁻¹ : Aˣ) : A) = 1 := w.mul_inv
+    have hup : ∀ d ∈ D, d ≤ conjSA ((w⁻¹ : Aˣ) : A) v := by
+      intro d hd
+      have h1 : conjSA ((w : A)) d ≤ v := hv ⟨d, hd, rfl⟩
+      have h2 := conjSA_mono ((w⁻¹ : Aˣ) : A) h1
+      rwa [hinv _ d hb1 hb2] at h2
+    have h3 := conjSA_mono ((w : A)) (hlub.2 hup)
+    have h4 : conjSA ((w : A)) (conjSA ((w⁻¹ : Aˣ) : A) v) = v := by
+      refine Subtype.ext ?_
+      change star ((w : A)) * (star ((w⁻¹ : Aˣ) : A) * (v : A) * ((w⁻¹ : Aˣ) : A))
+          * ((w : A)) = (v : A)
+      calc star ((w : A)) * (star ((w⁻¹ : Aˣ) : A) * (v : A) * ((w⁻¹ : Aˣ) : A))
+              * ((w : A))
+          = star (((w⁻¹ : Aˣ) : A) * ((w : A))) * (v : A)
+              * (((w⁻¹ : Aˣ) : A) * ((w : A))) := by
+            rw [star_mul]; noncomm_ring
+        _ = (v : A) := by rw [hb1, star_one, one_mul, mul_one]
+    rwa [h4] at h3
+
+/-- Generalisation of the argument of **44VI**: for a monotone
+`g : sa(A) → sa(A)` sending a nonempty directed `D` to a set with supremum
+`y`, the net `(ω(g d))_{d ∈ D}` converges to `ω(y)`. -/
+private theorem tendsto_npFunctional_of_isLUB {D : Set (selfAdjoint A)}
+    (hne : D.Nonempty) (hdir : DirectedOn (· ≤ ·) D)
+    (g : selfAdjoint A → selfAdjoint A) (hmono : Monotone g)
+    {y : selfAdjoint A} (hlub : IsLUB (g '' D) y) (ω : NPFunctional A) :
+    Tendsto (fun d : D => ω ((g (d : selfAdjoint A) : selfAdjoint A) : A)) atTop
+      (𝓝 (ω (y : A))) := by
+  have hne' : (g '' D).Nonempty := hne.image g
+  have hdir' : DirectedOn (· ≤ ·) (g '' D) := by
+    rintro _ ⟨x, hx, rfl⟩ _ ⟨z, hz, rfl⟩
+    obtain ⟨u, hu, hxu, hzu⟩ := hdir x hx z hz
+    exact ⟨g u, ⟨u, hu, rfl⟩, hmono hxu, hmono hzu⟩
+  have hω : IsLUB ((fun e : selfAdjoint A => ω (e : A)) '' (g '' D))
+      (ω (y : A)) :=
+    ω.preservesDirSups' (g '' D) y hne' hdir' hlub
+  have himg : ∀ w ∈ (fun e : selfAdjoint A => ω (e : A)) '' (g '' D),
+      w.im = 0 := by
+    rintro w ⟨e, -, rfl⟩
+    exact npFunctional_im_eq_zero ω e.2
+  have hre := isLUB_re_of_isLUB himg hω
+  have hrange :
+      Complex.re '' ((fun e : selfAdjoint A => ω (e : A)) '' (g '' D)) =
+        Set.range fun d : D =>
+          (ω ((g (d : selfAdjoint A) : selfAdjoint A) : A)).re := by
+    rw [← Set.image_comp, ← Set.image_comp]
+    exact (Set.image_eq_range _ _).trans rfl
+  rw [hrange] at hre
+  have hmono' : Monotone fun d : D =>
+      (ω ((g (d : selfAdjoint A) : selfAdjoint A) : A)).re := by
+    intro d₁ d₂ hd
+    exact (Complex.le_def.mp (ω.toPositiveLinearMap.monotone
+      (Subtype.coe_le_coe.mpr (hmono hd)))).1
+  have hlim := tendsto_atTop_isLUB hmono' hre
+  have hcast : ∀ z : ℂ, z.im = 0 → ((z.re : ℂ)) = z := fun z hz =>
+    Complex.ext (by simp) (by simp [hz])
+  have h2 := (Complex.continuous_ofReal.tendsto _).comp hlim
+  simp only [Function.comp_def] at h2
+  rw [hcast _ (npFunctional_im_eq_zero ω y.2)] at h2
+  refine h2.congr fun d => ?_
+  exact hcast _ (npFunctional_im_eq_zero ω (g (d : selfAdjoint A)).2)
+
+omit [PartialOrder A] [StarOrderedRing A] in
+/-- Every element of a unital C*-algebra becomes invertible after adding a
+large enough positive scalar (cstar.tex `spectrum-bounded`). -/
+private theorem exists_isUnit_smul_one_add (a : A) :
+    ∃ l : ℝ, 0 < l ∧ IsUnit (((l : ℂ)) • (1 : A) + a) := by
+  refine ⟨‖a‖ + 1, by positivity, ?_⟩
+  set l : ℝ := ‖a‖ + 1 with hl
+  have hl0 : (0 : ℝ) < l := by positivity
+  have hlne : ((l : ℂ)) ≠ 0 := by
+    simpa using ne_of_gt hl0
+  have hnorm : ‖-(((l : ℂ))⁻¹ • a)‖ < 1 := by
+    rw [norm_neg, norm_smul, norm_inv]
+    have hln : ‖((l : ℂ))‖ = l := by
+      simp [Complex.norm_real, abs_of_pos hl0]
+    rw [hln, inv_mul_lt_one₀ hl0]
+    simp [hl]
+  have hunit : IsUnit ((1 : A) - -(((l : ℂ))⁻¹ • a)) :=
+    (Units.oneSub _ hnorm).isUnit
+  have hscal : IsUnit (((l : ℂ)) • (1 : A)) := by
+    have : ((l : ℂ)) • (1 : A) = algebraMap ℂ A ((l : ℂ)) := by
+      rw [Algebra.algebraMap_eq_smul_one]
+    rw [this]
+    exact (Ne.isUnit hlne).map (algebraMap ℂ A)
+  have heq : ((l : ℂ)) • (1 : A) + a
+      = (((l : ℂ)) • (1 : A)) * ((1 : A) - -(((l : ℂ))⁻¹ • a)) := by
+    rw [sub_neg_eq_add, mul_add, mul_one, smul_mul_assoc, one_mul, smul_smul,
+      mul_inv_cancel₀ hlne, one_smul]
+  rw [heq]
+  exact hscal.mul hunit
+
 /-- **44VIII** (`ad-normal`, vn.tex:704, Proposition):
 `⋁_{d∈D} a* d a = a* (⋁D) a` for every bounded directed set `D` of
 self-adjoint elements and every `a ∈ A` (stated as an `IsLUB` in `A`; upper
@@ -807,8 +1086,136 @@ bounds of sets of self-adjoint elements are automatically self-adjoint). -/
 theorem ad_normal [VonNeumannAlgebra A] (a : A) (D : Set (selfAdjoint A))
     (h : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧ BddAbove D) :
     IsLUB ((fun d : selfAdjoint A => star a * (d : A) * a) '' D)
-      (star a * ((dirSup D h : selfAdjoint A) : A) * a) :=
-  sorry
+      (star a * ((dirSup D h : selfAdjoint A) : A) * a) := by
+  obtain ⟨d₀, hd₀⟩ := h.1
+  have : Nonempty D := ⟨⟨d₀, hd₀⟩⟩
+  have : IsDirectedOrder D := directedOn_iff_isDirectedOrder.mp h.2.1
+  set s : selfAdjoint A := dirSup D h with hs
+  have hlubD : IsLUB D s := isLUB_dirSup D h
+  -- the conjugated set, its supremum `t`, and `t ≤ a* (⋁D) a`
+  have hEne : (conjSA a '' D).Nonempty := ⟨conjSA a d₀, d₀, hd₀, rfl⟩
+  have hEdir : DirectedOn (· ≤ ·) (conjSA a '' D) := by
+    rintro _ ⟨x, hx, rfl⟩ _ ⟨z, hz, rfl⟩
+    obtain ⟨u, hu, hxu, hzu⟩ := h.2.1 x hx z hz
+    exact ⟨conjSA a u, ⟨u, hu, rfl⟩, conjSA_mono a hxu, conjSA_mono a hzu⟩
+  have hEub : conjSA a s ∈ upperBounds (conjSA a '' D) := by
+    rintro _ ⟨d, hd, rfl⟩
+    exact conjSA_mono a (hlubD.1 hd)
+  have hEbdd : BddAbove (conjSA a '' D) := ⟨_, hEub⟩
+  set t : selfAdjoint A := dirSup (conjSA a '' D) ⟨hEne, hEdir, hEbdd⟩ with ht
+  have hlubE : IsLUB (conjSA a '' D) t := isLUB_dirSup _ _
+  have hts : t ≤ conjSA a s := hlubE.2 hEub
+  -- `a* (⋁D) a = t`, because their difference is positive and killed by every
+  -- np-functional
+  have hkey : conjSA a s = t := by
+    refine Subtype.ext (sub_eq_zero.mp ?_)
+    refine VonNeumannAlgebra.np_faithful _
+      (sub_nonneg.mpr (Subtype.coe_le_coe.mpr hts)) (fun ω => ?_)
+    obtain ⟨l, hl, hu⟩ := exists_isUnit_smul_one_add a
+    set c : A := ((l : ℂ)) • (1 : A) + a with hc
+    have hsc : star c = ((l : ℂ)) • (1 : A) + star a := by
+      rw [hc, star_add, star_smul, star_one, Complex.star_def,
+        Complex.conj_ofReal]
+    -- the thesis's decomposition
+    have hdecomp : ∀ d : selfAdjoint A,
+        ω (star a * (d : A) * a)
+          = ω ((conjSA c d : selfAdjoint A) : A)
+            - (((l : ℂ)) * ((l : ℂ))) * ω (d : A)
+            - ((l : ℂ)) * ω ((d : A) * a)
+            - ((l : ℂ)) * ω (star a * (d : A)) := by
+      intro d
+      have hid : ((conjSA c d : selfAdjoint A) : A)
+          = (((l : ℂ)) * ((l : ℂ))) • (d : A) + ((l : ℂ)) • ((d : A) * a)
+            + ((l : ℂ)) • (star a * (d : A)) + star a * (d : A) * a := by
+        rw [conjSA_coe, hsc, hc]
+        simp only [add_mul, mul_add, smul_mul_assoc, mul_smul_comm, one_mul,
+          mul_one, mul_assoc]
+        module
+      have hadd : ∀ x y : A, ω (x + y) = ω x + ω y := fun x y =>
+        map_add ω.toPositiveLinearMap x y
+      have hsmul : ∀ (r : ℂ) (x : A), ω (r • x) = r * ω x := by
+        intro r x
+        rw [show ω (r • x) = r • ω x from map_smul ω.toPositiveLinearMap r x,
+          smul_eq_mul]
+      rw [hid]
+      simp only [hadd, hsmul]
+      ring
+    -- the four limits
+    have h1 : Tendsto (fun d : D =>
+        ω ((conjSA c (d : selfAdjoint A) : selfAdjoint A) : A)) atTop
+        (𝓝 (ω ((conjSA c s : selfAdjoint A) : A))) :=
+      tendsto_npFunctional_of_isLUB ⟨d₀, hd₀⟩ h.2.1 (conjSA c) (conjSA_mono c)
+        (conjSA_isLUB_of_isUnit hu hlubD) ω
+    have h2 : Tendsto (fun d : D => ω ((d : selfAdjoint A) : A)) atTop
+        (𝓝 (ω (s : A))) := by
+      have hx := vna_supremum_uwlimit D h
+      rw [uwTendsto_iff] at hx
+      exact hx ω
+    have h3 : Tendsto (fun d : D => ω (((d : selfAdjoint A) : A) * a)) atTop
+        (𝓝 (ω ((s : A) * a))) := by
+      have hx := (vna_supremum_mult D h a).1
+      rw [uwTendsto_iff] at hx
+      exact hx ω
+    have h4 : Tendsto (fun d : D => ω (star a * ((d : selfAdjoint A) : A)))
+        atTop (𝓝 (ω (star a * (s : A)))) := by
+      have hx := (vna_supremum_mult D h a).2
+      rw [uwTendsto_iff] at hx
+      exact hx ω
+    have hlim : Tendsto
+        (fun d : D => ω (star a * ((d : selfAdjoint A) : A) * a)) atTop
+        (𝓝 (ω (star a * (s : A) * a))) := by
+      have hcomb :=
+        Filter.Tendsto.sub
+          (Filter.Tendsto.sub
+            (Filter.Tendsto.sub h1
+              (Filter.Tendsto.const_mul (((l : ℂ)) * ((l : ℂ))) h2))
+            (Filter.Tendsto.const_mul ((l : ℂ)) h3))
+          (Filter.Tendsto.const_mul ((l : ℂ)) h4)
+      rw [← hdecomp s] at hcomb
+      exact hcomb.congr fun d => (hdecomp _).symm
+    -- `ω(a* d a) ≤ ω(t)` for every `d`, hence in the limit
+    have hbnd : ∀ d : D, (ω (star a * ((d : selfAdjoint A) : A) * a)).re
+        ≤ (ω (t : A)).re := by
+      intro d
+      exact (Complex.le_def.mp (ω.toPositiveLinearMap.monotone
+        (Subtype.coe_le_coe.mpr (hlubE.1 ⟨(d : selfAdjoint A), d.2, rfl⟩)))).1
+    have hre_le : (ω (star a * (s : A) * a)).re ≤ (ω (t : A)).re :=
+      le_of_tendsto ((Complex.continuous_re.tendsto _).comp hlim)
+        (Eventually.of_forall hbnd)
+    have hre_ge : (ω (t : A)).re ≤ (ω (star a * (s : A) * a)).re :=
+      (Complex.le_def.mp (ω.toPositiveLinearMap.monotone
+        (Subtype.coe_le_coe.mpr hts))).1
+    rw [npFunctional_sub]
+    refine Complex.ext ?_ ?_
+    · simp only [Complex.sub_re, Complex.zero_re, sub_eq_zero]
+      exact le_antisymm hre_le hre_ge
+    · simp only [Complex.sub_im, Complex.zero_im, sub_eq_zero]
+      rw [npFunctional_im_eq_zero ω (conjSA a s).2,
+        npFunctional_im_eq_zero ω t.2]
+  -- transfer the `IsLUB` from `sa(A)` to `A`
+  have himg : (fun d : selfAdjoint A => star a * (d : A) * a) '' D
+      = Subtype.val '' (conjSA a '' D) := by
+    rw [← Set.image_comp]
+    rfl
+  rw [himg]
+  have hgoal : star a * (s : A) * a = ((t : selfAdjoint A) : A) := by
+    rw [← conjSA_coe, hkey]
+  rw [hgoal]
+  refine ⟨?_, ?_⟩
+  · rintro _ ⟨e, he, rfl⟩
+    exact Subtype.coe_le_coe.mpr (hlubE.1 he)
+  · intro u hu
+    have hu0 : ((conjSA a d₀ : selfAdjoint A) : A) ≤ u :=
+      hu ⟨conjSA a d₀, ⟨d₀, hd₀, rfl⟩, rfl⟩
+    have husa : IsSelfAdjoint u := by
+      have hd : IsSelfAdjoint (u - ((conjSA a d₀ : selfAdjoint A) : A)) :=
+        IsSelfAdjoint.of_nonneg (sub_nonneg.mpr hu0)
+      simpa using hd.add (conjSA a d₀).2
+    have hub : (⟨u, husa⟩ : selfAdjoint A) ∈ upperBounds (conjSA a '' D) :=
+      fun e he => hu ⟨e, he, rfl⟩
+    exact hlubE.2 hub
+
+end AdNormal
 
 /-- **44XI** (`vn-positive-basic`, vn.tex:756, Exercise), preliminary claim:
 the np-functionals on a von Neumann algebra are not only faithful but order

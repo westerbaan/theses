@@ -395,6 +395,70 @@ Closing parsecs 120–150 would remove the last two imports and make the chapter
 self-supporting from the ground up.  That is now the single highest-value target
 in A/CStar.
 
+### Session 2 — A/VN, second pass
+
+251 → 226 (Basic 52→48, Projections 103→88, Completeness 32→26).  Full VN chain
+builds; sampled results verified `[propext, Classical.choice, Quot.sound]`.
+
+**Two structural wins.**  **44VIII** `ad_normal` (`⋁_d a*da = a*(⋁D)a`) — the
+chapter's bottleneck — is transcribed in full from the thesis: the
+order-isomorphism for invertible `a`, `λ+a` invertible via `Units.oneSub`, the
+decomposition `a*da = (λ+a)*d(λ+a) − λ²d − λ(da) − λ(a*d)` with the four
+ultraweak limits from 44VI/44VII, and the author's own work-around for the
+not-yet-Hausdorff ultraweak topology (a positive difference killed by every
+np-functional is zero, by `np_faithful`).  And **42V.2**
+`VonNeumannAlgebra (H →L[ℂ] H)` via cstar.tex 37IX plus a new bundled
+`vectorNP x : NPFunctional (H →L[ℂ] H)`.  Also all of parsec 550, resting on two
+extracted workhorses `le_proj_iff`/`proj_le_iff` (`b ≤ p ↔ b·p^⊥ = 0` and
+dually) that reduce the two 11-fold TFAEs of 55VIII/55IX to instances at `b`,
+`√b`, `b²`.
+
+**Erratum — 72III.1b/1c are FALSE as stated.**  `Completeness.lean:63`, `:70`;
+`vn.tex:3850`.  The `‖ω‖` factor in `|ω(a*bc)| ≤ ‖ω‖‖a‖_ω‖b‖‖c‖_ω` (and in the
+companion Lipschitz bound) **breaks homogeneity**: with `‖a‖_ω = ω(a*a)^½`
+unnormalised, replacing `ω` by `tω` scales the left side by `t` and the right by
+`t²`.  Counterexample: `𝒜 = ℂ`, `ω = t·id` with `t ∈ (0,1)`, `a = b = c = 1`
+gives `t ≤ t²`.  The correct inequalities are the same ones **without `‖ω‖`**,
+and those are provable exactly as intended.  Both left `sorry` — they are not
+provable as written.
+
+Note this is the **same authorial slip as 30IV.2**, where the extra `‖ω‖` was
+also confirmed spurious (Mathlib's `leftMulMapPreGNS` is *defined* with bound
+exactly `‖a‖`).  A spurious `‖ω‖` on a `‖·‖_ω` estimate has now appeared twice
+in two chapters; worth checking every such bound in both theses.
+
+**The directed-net conflation, third instance — and this one is ours.**
+vn.tex 272 (42V.2) is *correct*: cstar.tex 37IX carries the pointwise hypothesis
+`sup ⟪x,Tx⟫ < ∞`, which an order bound supplies.  But its 37XI repackaging in
+`A/CStar/TowardsVN.lean` (`exists_isLUB_of_normBounded_directed`, `bhSup`)
+demands **norm** boundedness, which order-bounded directed sets need not have.
+So `bhSup` cannot be used for 42V.2, and the proof must go through
+`hilb_suprema_1/_2`.  First time the defect sits in the Lean repackaging rather
+than in the text — worth remembering that our own helper lemmas can reintroduce
+a defect we just removed from the thesis.
+
+**A systematic sweep came back clean.**  Every bounded-directed-net occurrence
+in `vn.tex` was checked — 22 sites — and there are **no further instances**: the
+text consistently says "norm bounded" where it means it.  So the earlier
+expectation that this pattern would recur throughout the theses is **not** borne
+out for A/VN; 37IX and the 44III citation remain the only textual cases.
+
+**Now unblocked, in order.**  (1) `bstaromega_np` (72III.1a) — normality *is*
+`ad_normal`.  (2) `np_orderSeparating` (44XI), which needs
+`import Theses.A.CStar.Representation` — deliberately not added so as to leave
+the tree green.  The recipe: every np-functional is `CentreSeparating` trivially
+(take `b = 1`, use `np_faithful`); `proto_gelfand_naimark_1` upgrades that to
+`OrderSeparating` for `{a ↦ ω(b*ab)}`; and those are np-functionals **by
+`ad_normal`** — the step that was impossible before.  Then 44XI.1–3 and 44XIII
+follow.  (3) `exists_ceil`/`exists_floor` (56I/56VI) need 44XIII first, and
+unlock parsecs 560–630 (~40 `sorry`s).
+
+Parked with reasons: `hahn_banach` (73IV — Mathlib's geometric Hahn–Banach does
+not apply, the radial topology is not a TVS), `commutant_basic_2` (ultraweak
+closedness, blocked on 44XI), the remaining 43II counterexamples (need
+`bh_functional_lemma_2`), `vonNeumannAlgebra_lp_infty`.  **Nothing in the chapter
+relies on Mathlib's Sakai-style `VonNeumannAlgebra`/`WStarAlgebra`.**
+
 ### Session 2 — A/VN, first pass
 
 `A/VN/Basic.lean` 77 → 52 (25 proved); the other four files untouched.  The
