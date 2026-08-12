@@ -145,8 +145,9 @@ theorem riesz_ideal_miu_map (I : Submodule ℂ 𝒜) (hI : IsMaximalRieszIdeal I
 element `a` of the commutative C*-algebra `𝒜` is not invertible iff
 `f(a) = 0` for some `f ∈ spec(𝒜)`. -/
 theorem inv_mult_state (a : 𝒜) (ha : IsSelfAdjoint a) :
-    ¬IsUnit a ↔ ∃ φ : characterSpace ℂ 𝒜, φ a = 0 :=
-  sorry
+    ¬IsUnit a ↔ ∃ φ : characterSpace ℂ 𝒜, φ a = 0 := by
+  rw [← spectrum.zero_mem_iff (R := ℂ)]
+  exact WeakDual.CharacterSpace.mem_spectrum_iff_exists
 
 end Order
 
@@ -402,12 +403,37 @@ theorem state_inner_product (ω : 𝒜 →ₗ[ℂ] ℂ) (hω : IsPositiveMap ω)
 noncomputable def omegaSeminorm (ω : 𝒜 →ₗ[ℂ] ℂ) (a : 𝒜) : ℝ :=
   Real.sqrt (ω (star a * a)).re
 
+/-- A positive linear functional in the sense of `IsPositiveMap`, bundled as
+Mathlib's `PositiveLinearMap` so that the GNS machinery applies.  (Auxiliary.) -/
+private def toPLM (ω : 𝒜 →ₗ[ℂ] ℂ) (hω : IsPositiveMap ω) : 𝒜 →ₚ[ℂ] ℂ where
+  __ := ω
+  monotone' a b hab := by
+    have h := hω (b - a) (sub_nonneg.mpr hab)
+    rw [map_sub] at h
+    exact sub_nonneg.mp h
+
+@[simp]
+private theorem toPLM_apply (ω : 𝒜 →ₗ[ℂ] ℂ) (hω : IsPositiveMap ω) (a : 𝒜) :
+    toPLM ω hω a = ω a := rfl
+
 /-- **30IV** (`omega-norm-basic`, cstar.tex:4680, Exercise), part 1
 (Kadison's inequality): `|ω(a* b)|² ≤ ω(a* a) ω(b* b)` for a p-map `ω`. -/
 theorem omega_norm_basic_1 (ω : 𝒜 →ₗ[ℂ] ℂ) (hω : IsPositiveMap ω)
     (a b : 𝒜) :
-    ((‖ω (star a * b)‖ : ℂ)) ^ 2 ≤ ω (star a * a) * ω (star b * b) :=
-  sorry
+    ((‖ω (star a * b)‖ : ℂ)) ^ 2 ≤ ω (star a * a) * ω (star b * b) := by
+  set f := toPLM ω hω with hf
+  have hA : ((‖(f.toPreGNS a : f.PreGNS)‖ : ℂ)) ^ 2 = ω (star a * a) :=
+    f.preGNS_norm_sq (f.toPreGNS a)
+  have hB : ((‖(f.toPreGNS b : f.PreGNS)‖ : ℂ)) ^ 2 = ω (star b * b) :=
+    f.preGNS_norm_sq (f.toPreGNS b)
+  have hi : ⟪(f.toPreGNS a : f.PreGNS), (f.toPreGNS b : f.PreGNS)⟫ = ω (star a * b) := rfl
+  have hcs := norm_inner_le_norm (𝕜 := ℂ) (f.toPreGNS a : f.PreGNS) (f.toPreGNS b : f.PreGNS)
+  rw [hi] at hcs
+  have hsq : ‖ω (star a * b)‖ ^ 2 ≤
+      (‖(f.toPreGNS a : f.PreGNS)‖ * ‖(f.toPreGNS b : f.PreGNS)‖) ^ 2 :=
+    pow_le_pow_left₀ (norm_nonneg _) hcs 2
+  rw [← hA, ← hB, ← mul_pow]
+  exact_mod_cast RCLike.ofReal_le_ofReal (K := ℂ) |>.mpr hsq
 
 /-- **30IV** (`omega-norm-basic`, cstar.tex:4680, Exercise), part 2:
 `‖ab‖_ω ≤ ‖a‖ ‖b‖_ω` (using `a* a ≤ ‖a‖²`; the thesis writes an additional
@@ -416,8 +442,16 @@ harmless factor `‖ω‖`).  The counterexamples to the variants
 `‖a*‖_ω = ‖a‖_ω` are not converted. -/
 theorem omega_norm_basic_2 (ω : 𝒜 →ₗ[ℂ] ℂ) (hω : IsPositiveMap ω)
     (a b : 𝒜) :
-    omegaSeminorm ω (a * b) ≤ ‖a‖ * omegaSeminorm ω b :=
-  sorry
+    omegaSeminorm ω (a * b) ≤ ‖a‖ * omegaSeminorm ω b := by
+  set f := toPLM ω hω with hf
+  have hn : ∀ x : 𝒜, omegaSeminorm ω x = ‖(f.toPreGNS x : f.PreGNS)‖ := fun _ => rfl
+  rw [hn, hn]
+  have heq : (f.toPreGNS (a * b) : f.PreGNS) = f.leftMulMapPreGNS a (f.toPreGNS b) := rfl
+  rw [heq]
+  refine (ContinuousLinearMap.le_opNorm _ _).trans ?_
+  have h2 : ‖f.leftMulMapPreGNS a‖ ≤ ‖a‖ :=
+    LinearMap.mkContinuous_norm_le _ (norm_nonneg a) _
+  exact mul_le_mul_of_nonneg_right h2 (norm_nonneg _)
 
 /-- **30V** (`inner-product-completion`, cstar.tex:4733, Exercise): every
 complex inner product space `V` can be completed to a Hilbert space `H` in

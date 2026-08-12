@@ -207,6 +207,97 @@ the Lean proof does instead.`)
   **27XVII**, **27XVIII**, **27XXVII**) from Mathlib, and the Riesz-ideal
   machinery of 27VIII–27XIII is left as the thesis's own (independent) route.
 
+### Session 2 (A/CStar)
+
+**Transcription errata — our Lean statements, not the thesis.**  Mathlib's
+`CStarModule` uses the *opposite* inner-product convention to the thesis: the
+thesis has right 𝒜-modules with `⟨x, y·b⟩ = ⟨x,y⟩ b`, Mathlib has
+`⟪x, a•y⟫ = a ⟪x,y⟫`, so `⟪x,y⟫_Mathlib = ⟨y,x⟩_thesis`.  Two statements were
+transcribed without the swap and were therefore **false**.  Both have now been
+corrected (with the convention recorded in their doc comments):
+
+- **32VI** `Theses/A/CStar/Matrices.lean:196` (`chilb_cs`) — Cauchy–Schwarz.  As
+  written it asserted `⟪x,y⟫⟪y,x⟫ ≤ ‖⟪y,y⟫‖ • ⟪x,x⟫`; counterexample
+  `𝒜 = M₂(ℂ)`, `X = C⋆ᵐᵒᵈ(𝒜,𝒜)`, `x = e₁₁`, `y = e₂₁`, giving `e₂₂ ≤ e₁₁`.
+  **Fixed** by swapping to `⟪y,x⟫⟪x,y⟫ ≤ ‖⟪y,y⟫‖ • ⟪x,x⟫`, which is then
+  Mathlib's `CStarModule.inner_mul_inner_swap_le` plus `norm_sq_eq` — now
+  **proved** in one line.
+- **33II**.2 `Theses/A/CStar/Matrices.lean:433` (`cstar_matrix_gram_nonneg`) —
+  the Gram matrix.  In Mathlib's convention `(⟪xᵢ,xⱼ⟫)ᵢⱼ` is the *block
+  transpose* of the thesis's Gram matrix, and block transposition does not
+  preserve positivity — that is exactly **33III**.3.  Counterexample: `𝒜 = M₂(ℂ)`,
+  `x₁ = e₁₁`, `x₂ = e₂₁` gives the transposition permutation matrix in
+  `M₂(M₂(ℂ)) ≅ M₄(ℂ)`, eigenvalue `−1`.  **Fixed** to
+  `fun i j => inner 𝒜 (x j) (x i)`; still `sorry` (downstream of 33II.1).
+
+Checked and *not* affected by the same flip: the adjointness condition
+`⟪Tx,y⟫ = ⟪x,Sy⟫` (it is the star of the thesis's condition, hence equivalent);
+the diagonal forms `⟪x,Tx⟫` in 32XII/32XIII/32XIV (`0 ≤ a ↔ 0 ≤ star a`, and
+norms are star-invariant); `B/Dils/HilbertModules.lean` (its doc comment already
+states the mirrored convention); `B/Dils/SelfDual.lean:507` (both sides flip
+together); `B/Dils/Stinespring.lean` (ℂ-valued inner product, whose convention
+*does* match Mathlib — confirmed by `inner_product_basic_4` proving against
+`inner_eq_sum_norm_sq_div_four` with no swap).
+
+**Thesis errata.**
+
+- **23VII**.3 `Theses/A/CStar/Positive.lean` (cstar.tex:3663) — "if `a,b ∈ sa(𝒜)`
+  commute and `a ≤ b` then `a² ≤ b²`" is **false as stated**: in `𝒜 = ℂ`,
+  `a = -2 ≤ 1 = b` but `4 ≰ 1`.  The intended hypothesis is `0 ≤ a`, which the
+  immediately following item 4 already assumes; with it the proof works via
+  `b² − a² = b(b−a) + (b−a)a ≥ 0`.  **Parked** — needs author approval.
+- **34aVII** `Theses/A/CStar/Matrices.lean` (cstar.tex:5842) — `russo_dye` is
+  **false at `N = 0`**, purely from Lean's `2/(0:ℝ) = 0`: the hypothesis
+  degenerates to `‖a‖ < 1` while the conclusion says `a = 0`.  The thesis says
+  "for some natural number `N`" and means `N ≥ 1`.  **Parked** — needs `N ≠ 0`.
+  For `N ≥ 1` it follows immediately from the proved `sum_of_unitaries_3`.
+- **Four more statements false for the trivial C\*-algebra `{0}`**, joining 16V:
+  **16VI** `spectrum_eq_singleton_iff` (← direction) and **22III**.5
+  `order_ideal_basic_5`.  Mathlib's `CStarAlgebra` does not extend `Nontrivial`.
+  Notably the thesis's *own* solution to 22III.5 (asols.tex:2112) picks a
+  convergent subsequence in `spec(a)`, silently assuming it non-empty — the same
+  missing hypothesis.  **16VII** `gelfand_mazur` and **17VI**.3b survive the
+  trivial case only accidentally, and their Lean proofs need a
+  `subsingleton_or_nontrivial` split the thesis proofs do not have.
+- **37IX vs 37VII** `Theses/A/CStar/TowardsVN.lean:456` — a real gap.  37VII
+  requires the diagonal net **norm**-bounded; 37IX supplies only bounded
+  **above**, and these are not equivalent for directed sets: `D = {−n·1}` is
+  upward directed and bounded above by `0`, yet `‖⟪x,(−n)x⟫‖ = n‖x‖²` is
+  unbounded.  So 37IX does not follow from 37VII by substitution; one must pass
+  to the cofinal tail `{d ∈ D : d₀ ≤ d}` and transport `atTop` along the
+  inclusion.  The thesis glosses this by reading the net "eventually".
+- **38VI**.2 `Theses/A/CStar/TowardsVN.lean:345` — the `←` direction is **false
+  as stated**: a constant net `x_α = i·x` gives the same vector functional.
+  Parked.
+- **30IV**.2 `Theses/A/CStar/Representation.lean:417` — independent confirmation
+  that the extra `‖ω‖` is spurious: Mathlib's `leftMulMapPreGNS` is *defined*
+  with bound exactly `‖a‖`, so the Lean proof never mentions `‖ω‖`.
+- **34XVI** `Theses/A/CStar/Matrices.lean:704` (`cp_russo_dye`) — the thesis
+  derives this from Russo–Dye (**34aVIII**), a *later* point; a forward
+  reference is impossible in Lean.  The Lean proof derives it from the cp
+  Cauchy–Schwarz **34XIV** instead — a genuine reduction that avoids Russo–Dye
+  entirely, and arguably the better dependency order.
+- **20II**.1 `weak_russo_dye_1` — the thesis proof needs one unstated step in
+  Lean: that `f a` is self-adjoint, which is not part of `IsPositiveMap` and must
+  be derived from `a = a⁺ − a⁻`.
+- **23VII**.0'' `sqrt_commute` — proved via Mathlib's CFC commutation and
+  monotonicity of `√` rather than the thesis's iteration of 23II.  No
+  circularity, but a different dependency order.
+- **5III** `Theses/A/CStar/Basic.lean:497` (`projection_on_c00`) — not an error,
+  but the Lean proof is **shorter than the thesis's**: the thesis argues via
+  density of `c₀₀` in `ℓ²`, whereas orthogonality of `x − y` to each
+  `lp.single 2 n 1` kills every coordinate directly, so `lp.ext` finishes it with
+  no density argument at all.
+- **33I**.2 `Theses/A/CStar/Matrices.lean:366` — the surjectivity half of
+  `cstar_matrices_2` never uses the adjointability hypothesis; it is redundant
+  (harmless) there.
+- **32I** `Theses/A/CStar/Matrices.lean:83` — the module-map proof needs
+  definiteness of the inner product in the *first* argument, while uniqueness of
+  the adjoint needs it in the *second*.  The thesis states definiteness once;
+  both directions get used.
+- **34XVIII**.1 `choi_1`, and `sum_of_unitaries_2/3` — need a `Subsingleton ℬ`
+  case split, since `‖(1 : ℬ)‖ = 1` requires `Nontrivial` in Mathlib.
+
 ## Parked items
 
 (Format: `**DISP** file:line — reason`.)
@@ -672,6 +763,28 @@ Mathlib) is recorded here so the next worker does not repeat it:
 | A/VN/* | 282 | 282 |
 | A/Proc/* | 235 | 235 |
 | B/Dils/* | 148 | 148 |
+
+### After session 2 (A/CStar only; other chapters untouched)
+
+**865 code `sorry`s remain, down from 947 — 82 proved.**
+
+| file | after session 1 | now |
+|---|---|---|
+| **A/CStar total** | **170** | **88** |
+| ↳ A/CStar/Basic.lean | 11 | **0 — complete** |
+| ↳ A/CStar/Positive.lean | 63 | 40 |
+| ↳ A/CStar/Matrices.lean | 55 | 20 |
+| ↳ A/CStar/TowardsVN.lean | 27 | 15 |
+| ↳ A/CStar/Representation.lean | 17 | 13 |
+| B/Eff/* | 129 | 129 — untouched |
+| A/VN/* | 276 | 276 — untouched |
+| A/Proc/* | 233 | 233 — untouched |
+| B/Dils/* | 139 | 139 — untouched |
+
+`lake build` succeeds (8738 jobs, exit 0): `sorry` and style-linter warnings
+only.  Session-1 "start" figures above use the older raw-token count, so they
+run a few higher per file than the code-only counts used here; the session-2
+columns are all code-only and directly comparable.
 
 Counting convention for the `B/Eff/*` rows (fixed in the consolidation pass):
 `sorry` *occurrences in code*, i.e. `grep -o '\bsorry\b' | wc -l` minus the

@@ -98,7 +98,45 @@ theorem boundedOperators_basic_3 : ‖(ContinuousLinearMap.id ℂ 𝒳)‖ ≤ 1
 `r ∈ [0,∞)`. -/
 theorem operatorNorm_ball (T : 𝒳 →L[ℂ] 𝒴) (r : ℝ) (hr : 0 ≤ r) :
     r * ‖T‖ = ⨆ x : {x : 𝒳 // ‖x‖ ≤ r}, ‖T x‖ :=
-  sorry
+  by
+    have hzero : ‖(0 : 𝒳)‖ ≤ r := by simpa using hr
+    have hne : Nonempty {x : 𝒳 // ‖x‖ ≤ r} := ⟨⟨0, hzero⟩⟩
+    have hle : ∀ x : {x : 𝒳 // ‖x‖ ≤ r}, ‖T x‖ ≤ r * ‖T‖ := by
+      intro x
+      calc ‖T x‖ ≤ ‖T‖ * ‖(x : 𝒳)‖ := T.le_opNorm _
+        _ ≤ ‖T‖ * r := mul_le_mul_of_nonneg_left x.2 (norm_nonneg T)
+        _ = r * ‖T‖ := mul_comm _ _
+    have hbdd : BddAbove (Set.range fun x : {x : 𝒳 // ‖x‖ ≤ r} => ‖T x‖) := by
+      refine ⟨r * ‖T‖, ?_⟩
+      rintro _ ⟨x, rfl⟩
+      exact hle x
+    refine le_antisymm ?_ (ciSup_le hle)
+    -- `0 ≤ ⨆`, witnessed by `x = 0`
+    have hS0 : (0 : ℝ) ≤ ⨆ x : {x : 𝒳 // ‖x‖ ≤ r}, ‖T x‖ :=
+      le_ciSup_of_le hbdd ⟨0, hzero⟩ (by simp)
+    rcases eq_or_lt_of_le hr with hr0 | hr0
+    · have hz : r * ‖T‖ = 0 := by rw [← hr0]; ring
+      rw [hz]; exact hS0
+    -- For `0 < r`, bound `‖T‖` by `(⨆)/r` by rescaling `x` to norm exactly `r`.
+    have hTle : ‖T‖ ≤ (⨆ x : {x : 𝒳 // ‖x‖ ≤ r}, ‖T x‖) / r := by
+      refine T.opNorm_le_bound (by positivity) fun x => ?_
+      rcases eq_or_ne x 0 with rfl | hx
+      · simp
+      · have hxn : 0 < ‖x‖ := norm_pos_iff.mpr hx
+        have hy : ‖(r / ‖x‖ : ℝ) • x‖ ≤ r := by
+          rw [norm_smul, Real.norm_eq_abs, abs_of_nonneg (by positivity),
+            div_mul_cancel₀ _ (ne_of_gt hxn)]
+        have hTy : ‖T ((r / ‖x‖ : ℝ) • x)‖ ≤ ⨆ x : {x : 𝒳 // ‖x‖ ≤ r}, ‖T x‖ :=
+          le_ciSup_of_le hbdd ⟨(r / ‖x‖ : ℝ) • x, hy⟩ le_rfl
+        rw [T.map_smul_of_tower, norm_smul, Real.norm_eq_abs,
+          abs_of_nonneg (by positivity)] at hTy
+        rw [div_mul_eq_mul_div, le_div_iff₀ hr0]
+        calc ‖T x‖ * r = (r / ‖x‖ * ‖T x‖) * ‖x‖ := by field_simp
+          _ ≤ (⨆ x : {x : 𝒳 // ‖x‖ ≤ r}, ‖T x‖) * ‖x‖ :=
+              mul_le_mul_of_nonneg_right hTy (norm_nonneg x)
+    calc r * ‖T‖ ≤ r * ((⨆ x : {x : 𝒳 // ‖x‖ ≤ r}, ‖T x‖) / r) :=
+          mul_le_mul_of_nonneg_left hTle hr
+      _ = ⨆ x : {x : 𝒳 // ‖x‖ ≤ r}, ‖T x‖ := by field_simp
 
 /-- **4V** (`operator-norm-complete`, cstar.tex:359, Lemma): the operator
 norm on `B(𝒳,𝒴)` is complete when `𝒴` is complete.  (Mathlib instance:
@@ -210,7 +248,54 @@ theorem positive_2x2matrix_2 (p q c : ℂ)
     (h : ∀ u v : ℂ, 0 ≤ (starRingEnd ℂ) u * (p * u + (starRingEnd ℂ) c * v)
       + (starRingEnd ℂ) v * (c * u + q * v)) :
     ((‖c‖ : ℂ)) ^ 2 ≤ p * q :=
-  sorry
+  by
+    obtain ⟨hp0, hq0⟩ := positive_2x2matrix_1 p q c h
+    have key : ∀ t : ℝ,
+        (0 : ℂ) ≤ p * (‖c‖ : ℂ) ^ 2 * (t : ℂ) ^ 2 + 2 * (‖c‖ : ℂ) ^ 2 * (t : ℂ) + q := by
+      intro t
+      have H := h ((t : ℂ) * (starRingEnd ℂ) c) 1
+      have e : (starRingEnd ℂ) ((t : ℂ) * (starRingEnd ℂ) c)
+              * (p * ((t : ℂ) * (starRingEnd ℂ) c) + (starRingEnd ℂ) c * 1)
+            + (starRingEnd ℂ) 1 * (c * ((t : ℂ) * (starRingEnd ℂ) c) + q * 1)
+          = p * (‖c‖ : ℂ) ^ 2 * (t : ℂ) ^ 2 + 2 * (‖c‖ : ℂ) ^ 2 * (t : ℂ) + q := by
+        simp only [map_mul, Complex.conj_conj, map_one, one_mul, mul_one,
+          Complex.conj_ofReal]
+        rw [← Complex.conj_mul' c]
+        ring
+      rwa [e] at H
+    rw [Complex.nonneg_iff] at hp0 hq0
+    obtain ⟨hpre, hpim⟩ := hp0
+    obtain ⟨hqre, hqim⟩ := hq0
+    have hp : p = (p.re : ℂ) := by apply Complex.ext <;> simp [← hpim]
+    have hq : q = (q.re : ℂ) := by apply Complex.ext <;> simp [← hqim]
+    have keyR : ∀ t : ℝ, 0 ≤ p.re * ‖c‖ ^ 2 * t ^ 2 + 2 * ‖c‖ ^ 2 * t + q.re := by
+      intro t
+      have H := key t
+      rw [Complex.nonneg_iff] at H
+      simpa [Complex.add_re, Complex.mul_re, ← Complex.ofReal_pow, ← hpim] using H.1
+    have hK0 : (0 : ℝ) ≤ ‖c‖ ^ 2 := by positivity
+    have main : ‖c‖ ^ 2 ≤ p.re * q.re := by
+      rcases eq_or_lt_of_le hpre with hP | hP
+      · have hKz : ‖c‖ ^ 2 = 0 := by
+          by_contra hne
+          have hKpos : 0 < ‖c‖ ^ 2 := lt_of_le_of_ne hK0 (Ne.symm hne)
+          have hcne : ‖c‖ ≠ 0 := by
+            intro h0
+            rw [h0] at hKpos
+            simp at hKpos
+          have hx := keyR (-(q.re + 1) / (2 * ‖c‖ ^ 2))
+          rw [← hP, zero_mul, zero_mul, zero_add] at hx
+          rw [show 2 * ‖c‖ ^ 2 * (-(q.re + 1) / (2 * ‖c‖ ^ 2)) = -(q.re + 1) by
+            field_simp] at hx
+          linarith
+        rw [hKz, ← hP]
+        simp
+      · have hne : p.re ≠ 0 := ne_of_gt hP
+        have hx := keyR (-1 / p.re)
+        field_simp at hx
+        nlinarith [hx, hP, hK0]
+    rw [hp, hq]
+    exact_mod_cast main
 
 /-! **4XV** (`inner-product-basic`, cstar.tex:590, Exercise): the formula
 `‖x‖ = √⟪x,x⟫` defines a seminorm, and a norm when the inner product is
@@ -249,7 +334,24 @@ polarisation identity `⟪x,y⟫ = ¼ ∑_{n<4} iⁿ ‖iⁿ x + y‖²`. -/
 theorem inner_product_basic_4 (x y : H) :
     ⟪x, y⟫ = (∑ n ∈ Finset.range 4,
       Complex.I ^ n * ((‖(Complex.I ^ n : ℂ) • x + y‖ : ℂ)) ^ 2) / 4 :=
-  sorry
+  by
+    have h1 : ‖(Complex.I : ℂ) • x + y‖ = ‖x - Complex.I • y‖ := by
+      have e : (Complex.I : ℂ) • x + y = Complex.I • (x - Complex.I • y) := by
+        rw [smul_sub, smul_smul, Complex.I_mul_I, neg_one_smul, sub_neg_eq_add]
+      rw [e, norm_smul, Complex.norm_I, one_mul]
+    have h2 : ‖(-Complex.I : ℂ) • x + y‖ = ‖x + Complex.I • y‖ := by
+      have e : (-Complex.I : ℂ) • x + y = (-Complex.I) • (x + Complex.I • y) := by
+        rw [smul_add, smul_smul, neg_mul, Complex.I_mul_I, neg_neg, one_smul]
+      rw [e, norm_smul, norm_neg, Complex.norm_I, one_mul]
+    have h3 : ‖(-1 : ℂ) • x + y‖ = ‖x - y‖ := by
+      rw [neg_one_smul, neg_add_eq_sub, norm_sub_rev]
+    simp only [Finset.sum_range_succ, Finset.sum_range_zero, zero_add,
+      pow_zero, pow_one, one_smul]
+    rw [show (Complex.I : ℂ) ^ 2 = -1 from Complex.I_sq,
+      show (Complex.I : ℂ) ^ 3 = -Complex.I from Complex.I_pow_three,
+      h1, h2, h3, inner_eq_sum_norm_sq_div_four]
+    simp [RCLike.I]
+    ring
 
 /-- Auxiliary: if `A` is adjoint to `B` (as bounded operators on a pre-Hilbert
 space) then `‖A‖ ≤ ‖B‖`.  Used for both parts of **4XVI**. -/
@@ -392,7 +494,23 @@ theorem projection_on_c00 (x : lp (fun _ : ℕ => ℂ) 2) :
         x y) ↔
       x ∈ Submodule.span ℂ
         {f : lp (fun _ : ℕ => ℂ) 2 | ∃ n z, f = lp.single 2 n z} :=
-  sorry
+  by
+    constructor
+    · rintro ⟨y, hy⟩
+      have hmem : ∀ n : ℕ, (lp.single 2 n (1 : ℂ)) ∈
+          Submodule.span ℂ {f : lp (fun _ : ℕ => ℂ) 2 | ∃ n z, f = lp.single 2 n z} :=
+        fun n => Submodule.subset_span ⟨n, 1, rfl⟩
+      have hcoord : ∀ n : ℕ, (x - y) n = 0 := by
+        intro n
+        have h0 := hy.inner_eq_zero (hmem n)
+        rw [lp.inner_single_left] at h0
+        simpa using h0
+      have hxy : x - y = 0 := lp.ext (funext fun n => by simpa using hcoord n)
+      rw [sub_eq_zero] at hxy
+      rw [hxy]
+      exact hy.1
+    · intro hx
+      exact ⟨x, hx, fun y' _ => by simpa using norm_nonneg (x - y')⟩
 
 /-- **5IV** (cstar.tex:726, Lemma): for a unit vector `e` of a pre-Hilbert
 space, `⟪e, x⟫ e` is a projection of `x` on the line `ℂe`. -/
@@ -645,7 +763,14 @@ theorem cstar_involution_basic_8 :
     ∃ a : Matrix (Fin 2) (Fin 2) ℂ,
       (ℜ a : Matrix (Fin 2) (Fin 2) ℂ) * (ℑ a : Matrix (Fin 2) (Fin 2) ℂ) ≠
         (ℑ a : Matrix (Fin 2) (Fin 2) ℂ) * (ℜ a : Matrix (Fin 2) (Fin 2) ℂ) :=
-  sorry
+  by
+    refine ⟨!![0, 1; 0, 0], fun hcomm => ?_⟩
+    have h := congrFun (congrFun hcomm 0) 0
+    rw [realPart_apply_coe, imaginaryPart_apply_coe] at h
+    simp [Matrix.mul_apply, Fin.sum_univ_succ, Matrix.star_eq_conjTranspose,
+      Matrix.conjTranspose_apply, Matrix.smul_apply, Matrix.add_apply,
+      Matrix.sub_apply] at h
+    exact Complex.I_ne_zero (by linear_combination 2 * h)
 
 /-- **7III** (`cstar-involution-basic`, cstar.tex:1007, Exercise), part 9:
 `a* a + a a* = 2((ℜa)² + (ℑa)²)`. -/
@@ -705,7 +830,27 @@ theorem cstar_involution_basic_13 (a : 𝒜) (ha : IsSelfAdjoint a) :
 theorem cstar_involution_basic_13' :
     ∃ T : EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2),
       ‖T ^ 2‖ ≠ ‖T‖ ^ 2 :=
-  sorry
+  by
+    refine ⟨Matrix.toEuclideanCLM (𝕜 := ℂ) (!![0, 1; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ), ?_⟩
+    have hsq : (!![0, 1; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ) ^ 2 = 0 := by
+      rw [pow_two]
+      ext i j
+      fin_cases i <;> fin_cases j <;>
+        simp [Matrix.mul_apply, Fin.sum_univ_succ]
+    have h1 : (Matrix.toEuclideanCLM (𝕜 := ℂ)
+        (!![0, 1; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ)) ^ 2 = 0 := by
+      rw [← map_pow, hsq, map_zero]
+    have h2 : Matrix.toEuclideanCLM (𝕜 := ℂ)
+        (!![0, 1; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ) ≠ 0 := by
+      intro hc
+      have hM : (!![0, 1; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ) = 0 := by
+        have := congrArg (Matrix.toEuclideanCLM (𝕜 := ℂ)).symm hc
+        simpa using this
+      have := congrFun (congrFun hM 0) 1
+      simp at this
+    rw [h1, norm_zero]
+    intro hc
+    exact h2 (norm_eq_zero.mp ((pow_eq_zero_iff two_ne_zero).mp hc.symm))
 
 /-! ## Parsec 80: scalars in a C*-algebra
 
@@ -755,7 +900,72 @@ theorem cx_positive (f : C(X, ℂ)) (hf : IsSelfAdjoint f) :
       ∃ g : C(X, ℂ), f = star g * g,
       ∃ t : ℝ, ‖f - algebraMap ℂ C(X, ℂ) (t : ℂ)‖ ≤ t,
       ∀ t : ℝ, ‖f‖ / 2 ≤ t → ‖f - algebraMap ℂ C(X, ℂ) (t : ℂ)‖ ≤ t] :=
-  sorry
+  by
+    have hstar : ∀ x, (starRingEnd ℂ) (f x) = f x := by
+      intro x
+      have h := hf.star_eq
+      have := congrArg (fun g : C(X, ℂ) => g x) h
+      simpa using this
+    have him : ∀ x, (f x).im = 0 := by
+      intro x
+      have h := hstar x
+      rw [Complex.ext_iff] at h
+      have := h.2
+      simp only [Complex.conj_im] at this
+      linarith
+    tfae_have 1 → 2 := by
+      intro h1
+      have hcont : Continuous fun x => ((Real.sqrt (f x).re : ℝ) : ℂ) :=
+        Complex.continuous_ofReal.comp
+          (Real.continuous_sqrt.comp (Complex.continuous_re.comp f.continuous))
+      refine ⟨⟨_, hcont⟩, ?_, ?_⟩
+      · ext x
+        simp
+      · ext x
+        have hre : 0 ≤ (f x).re := (Complex.nonneg_iff.mp (h1 x)).1
+        have hsq : ((Real.sqrt (f x).re : ℝ) : ℂ) ^ 2 = ((f x).re : ℂ) := by
+          rw [← Complex.ofReal_pow, Real.sq_sqrt hre]
+        have hfx : f x = ((f x).re : ℂ) := by
+          apply Complex.ext <;> simp [him x]
+        simp only [ContinuousMap.pow_apply, ContinuousMap.coe_mk]
+        rw [hsq]
+        exact hfx
+    tfae_have 2 → 3 := by
+      rintro ⟨g, hg, rfl⟩
+      exact ⟨g, by rw [hg.star_eq, sq]⟩
+    tfae_have 3 → 1 := by
+      rintro ⟨g, rfl⟩ x
+      have hx : (star g * g) x = (starRingEnd ℂ) (g x) * g x := by simp
+      rw [hx, Complex.conj_mul', ← Complex.ofReal_pow]
+      simp [Complex.nonneg_iff]
+    tfae_have 1 → 5 := by
+      intro h1 t ht
+      have ht0 : 0 ≤ t := le_trans (by positivity) ht
+      rw [ContinuousMap.norm_le _ ht0]
+      intro x
+      have hre : 0 ≤ (f x).re := (Complex.nonneg_iff.mp (h1 x)).1
+      have hfx : f x = ((f x).re : ℂ) := by
+        apply Complex.ext <;> simp [him x]
+      have hle : (f x).re ≤ ‖f‖ := by
+        have h := ContinuousMap.norm_coe_le_norm f x
+        rw [hfx, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hre] at h
+        exact h
+      have hval : (f - algebraMap ℂ C(X, ℂ) (t : ℂ)) x = f x - (t : ℂ) := by simp
+      rw [hval, hfx, ← Complex.ofReal_sub, Complex.norm_real, Real.norm_eq_abs, abs_le]
+      constructor <;> linarith
+    tfae_have 5 → 4 := fun h5 => ⟨‖f‖ / 2, h5 _ le_rfl⟩
+    tfae_have 4 → 1 := by
+      rintro ⟨t, ht⟩ x
+      have hpt : ‖(f - algebraMap ℂ C(X, ℂ) (t : ℂ)) x‖ ≤ t :=
+        le_trans (ContinuousMap.norm_coe_le_norm _ x) ht
+      have hval : (f - algebraMap ℂ C(X, ℂ) (t : ℂ)) x = f x - (t : ℂ) := by simp
+      rw [hval] at hpt
+      have hfx : f x = ((f x).re : ℂ) := by
+        apply Complex.ext <;> simp [him x]
+      rw [hfx, ← Complex.ofReal_sub, Complex.norm_real, Real.norm_eq_abs] at hpt
+      rw [Complex.nonneg_iff]
+      exact ⟨by linarith [(abs_le.mp hpt).1], (him x).symm⟩
+    tfae_finish
 
 /-- **9III** (cstar.tex:1123, Exercise): `λ ∈ f(X)` iff `f - λ` is not
 invertible in `C(X)`. -/
@@ -917,7 +1127,37 @@ on ℂ²). -/
 theorem cstar_positive_3 :
     ∃ a b : EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2),
       0 ≤ a ∧ 0 ≤ b ∧ ¬(0 ≤ a * b) :=
-  sorry
+  by
+    refine ⟨Matrix.toEuclideanCLM (𝕜 := ℂ) (!![1, 0; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ),
+      Matrix.toEuclideanCLM (𝕜 := ℂ) (!![1, 1; 1, 1] : Matrix (Fin 2) (Fin 2) ℂ),
+      ?_, ?_, ?_⟩
+    · have hP : (!![1, 0; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ)
+          = star (!![1, 0; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ) * !![1, 0; 0, 0] := by
+        ext i j
+        fin_cases i <;> fin_cases j <;>
+          simp [Matrix.mul_apply, Fin.sum_univ_succ, Matrix.star_eq_conjTranspose,
+            Matrix.conjTranspose_apply]
+      rw [hP, map_mul, map_star]
+      exact star_mul_self_nonneg _
+    · have hQ : (!![1, 1; 1, 1] : Matrix (Fin 2) (Fin 2) ℂ)
+          = star (!![1, 1; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ) * !![1, 1; 0, 0] := by
+        ext i j
+        fin_cases i <;> fin_cases j <;>
+          simp [Matrix.mul_apply, Fin.sum_univ_succ, Matrix.star_eq_conjTranspose,
+            Matrix.conjTranspose_apply]
+      rw [hQ, map_mul, map_star]
+      exact star_mul_self_nonneg _
+    · intro hle
+      have hsa := hle.isSelfAdjoint
+      rw [← map_mul] at hsa
+      have h := hsa.star_eq
+      rw [← map_star] at h
+      have hstar : star ((!![1, 0; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ) * !![1, 1; 1, 1])
+          = (!![1, 0; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ) * !![1, 1; 1, 1] :=
+        (Matrix.toEuclideanCLM (𝕜 := ℂ) (n := Fin 2)).injective h
+      have h01 := congrFun (congrFun hstar 0) 1
+      simp [Matrix.mul_apply, Fin.sum_univ_succ, Matrix.star_eq_conjTranspose,
+        Matrix.conjTranspose_apply] at h01
 
 /-- **9X** (`cstar-positive`, cstar.tex:1209, Exercise), part 4: the *order
 (semi)norm* `‖a‖ₒ = inf { λ ≥ 0 : -λ ≤ a ≤ λ }` on the self-adjoint
@@ -1254,7 +1494,40 @@ theorem spectrum_self_adjoint_real_3 (a : 𝒜) (ha : IsSelfAdjoint a)
     (n : ℕ) (hn : Odd n) :
     (∀ z : ℂ, (∀ r : ℝ, 0 ≤ r → z ≠ r) → IsUnit (a ^ n - algebraMap ℂ 𝒜 z)) ↔
       (∀ z : ℂ, (∀ r : ℝ, 0 ≤ r → z ≠ r) → IsUnit (a - algebraMap ℂ 𝒜 z)) :=
-  sorry
+  by
+    have hn0 : 0 < n := hn.pos
+    have hunit : ∀ (b : 𝒜) (z : ℂ), IsUnit (b - algebraMap ℂ 𝒜 z) ↔ z ∉ spectrum ℂ b := by
+      intro b z
+      rw [spectrum.mem_iff, not_not]
+      constructor
+      · intro h; rw [← neg_sub]; exact h.neg
+      · intro h; rw [← neg_sub] at h; simpa using h.neg
+    simp only [hunit]
+    constructor
+    · -- `spec aⁿ ⊆ ℝ≥0` forces `spec a ⊆ ℝ≥0`, using that `n` is odd
+      intro h z hz hmem
+      have hzr : z = (z.re : ℂ) := ha.mem_spectrum_eq_re hmem
+      have hpow : z ^ n ∈ spectrum ℂ (a ^ n) := spectrum.pow_mem_pow a n hmem
+      by_cases hnn : ∀ r : ℝ, 0 ≤ r → z ^ n ≠ (r : ℂ)
+      · exact h _ hnn hpow
+      · push_neg at hnn
+        obtain ⟨r, hr0, hrz⟩ := hnn
+        -- `z` is real and `z ^ n = r ≥ 0`, so `z.re ≥ 0` since `n` is odd
+        have hre : (z.re : ℂ) ^ n = (r : ℂ) := by rw [← hzr]; exact hrz
+        have hre' : z.re ^ n = r := by exact_mod_cast hre
+        have : 0 ≤ z.re := by
+          have : 0 ≤ z.re ^ n := hre' ▸ hr0
+          exact (hn.pow_nonneg_iff).mp this
+        exact absurd hzr (hz z.re this)
+    · -- `spec a ⊆ ℝ≥0` forces `spec aⁿ ⊆ ℝ≥0`
+      intro h z hz hmem
+      rw [spectrum.map_pow_of_pos a hn0] at hmem
+      obtain ⟨lam, hlam, rfl⟩ := hmem
+      by_cases hnn : ∀ r : ℝ, 0 ≤ r → lam ≠ (r : ℂ)
+      · exact h _ hnn hlam
+      · push_neg at hnn
+        obtain ⟨r, hr0, rfl⟩ := hnn
+        exact hz (r ^ n) (by positivity) (by push_cast; ring)
 
 variable {ℬ : Type*} [CStarAlgebra ℬ]
 
@@ -1313,7 +1586,18 @@ theorem spectrum_continuousMap {X : Type*} [TopologicalSpace X]
 matrix `A ∈ Mₙ` is its set of eigenvalues. -/
 theorem spectrum_matrix {n : ℕ} (A : Matrix (Fin n) (Fin n) ℂ) :
     spectrum ℂ A = {z : ℂ | ∃ v : Fin n → ℂ, v ≠ 0 ∧ A.mulVec v = z • v} :=
-  sorry
+  by
+    ext z
+    have key : ∀ v : Fin n → ℂ,
+        (algebraMap ℂ (Matrix (Fin n) (Fin n) ℂ) z - A).mulVec v = 0 ↔
+          A.mulVec v = z • v := by
+      intro v
+      rw [Matrix.sub_mulVec, sub_eq_zero, Algebra.algebraMap_eq_smul_one,
+        Matrix.smul_mulVec, Matrix.one_mulVec]
+      exact eq_comm
+    rw [Set.mem_setOf_eq, spectrum.mem_iff, Matrix.isUnit_iff_isUnit_det,
+      isUnit_iff_ne_zero, not_not, ← Matrix.exists_mulVec_eq_zero_iff]
+    exact exists_congr fun v => and_congr_right fun _ => key v
 
 /-- **11XXI** (`spectrum-basic`, cstar.tex:1648, Exercise), part 1: the
 spectrum of a self-adjoint element is real. -/
@@ -1328,7 +1612,36 @@ theorem spectrum_basic_1 (a : 𝒜) (ha : IsSelfAdjoint a) :
 while the matrix is not self-adjoint. -/
 theorem spectrum_basic_1' :
     spectrum ℂ (!![0, 2; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ) = {0} :=
-  sorry
+  by
+    rw [spectrum_matrix]
+    ext z
+    simp only [Set.mem_setOf_eq, Set.mem_singleton_iff]
+    constructor
+    · rintro ⟨v, hv, hvz⟩
+      by_contra hz
+      refine hv (funext fun i => ?_)
+      have h0 := congrFun hvz 0
+      have h1 := congrFun hvz 1
+      simp [Matrix.mulVec, dotProduct, Fin.sum_univ_succ,
+        Matrix.vecHead, Matrix.vecTail] at h0 h1
+      have hv1 : v 1 = 0 := by
+        rcases h1 with h1 | h1
+        · exact absurd h1 hz
+        · exact h1
+      rw [hv1, mul_zero] at h0
+      have hv0 : v 0 = 0 := by
+        rcases mul_eq_zero.mp h0.symm with h | h
+        · exact absurd h hz
+        · exact h
+      fin_cases i <;> simp [hv0, hv1]
+    · rintro rfl
+      refine ⟨![1, 0], ?_, ?_⟩
+      · intro hc
+        have := congrFun hc 0
+        simp at this
+      · funext i
+        fin_cases i <;>
+          simp [Matrix.mulVec, dotProduct, Fin.sum_univ_succ]
 
 /-- **11XXI** (`spectrum-basic`, cstar.tex:1648, Exercise), part 2:
 `spec(a²) ⊆ [0,∞)` for self-adjoint `a`. -/
