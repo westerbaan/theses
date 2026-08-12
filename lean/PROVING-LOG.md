@@ -244,6 +244,40 @@ the Lean proof does instead.`)
   **27XVII**, **27XVIII**, **27XXVII**) from Mathlib, and the Riesz-ideal
   machinery of 27VIII–27XIII is left as the thesis's own (independent) route.
 
+### Session 2 — Positive.lean / Representation.lean, second pass
+
+Nine statements closed (20aI.1, 20aI.2, 21X, 25II.3, 25V.3, 26II.4, 26III;
+28II.2 and 30X (2)⇔(3) in `Representation.lean`).  **No errata** — no thesis
+proof read in this pass was wrong or incomplete.  Two findings worth the
+authors' attention are about *structure* rather than correctness:
+
+- **30X (2)⇒(3)** — the thesis routes this through (1), i.e. through
+  injectivity of the *direct-sum* GNS representation `ϱ_Ω` on `⊕_ω ℋ_ω`
+  (plus 25III and 29IX).  That infrastructure is deliberately absent here, so
+  the Lean proof goes **directly, with no GNS at all**: involution-preservation
+  of p-maps forces `a = a*`, and substituting `b := a⁻c` into centre separation
+  forces `(a⁻)³ = 0`.  **This suggests the detour through (1) is avoidable**,
+  which would make 30X's (2)⇔(3) independent of the direct-sum construction — a
+  simplification the authors may want.
+- **25V.3** — **not cross-checked.**  There is no published solution
+  (`parsec-250.50` is absent), and the inline proof derives it from **21VII**,
+  which is still `sorry` here (and whose own proof reduces to **20VI**, also
+  `sorry`).  It was proved independently via Mathlib's Rayleigh-quotient norm
+  formula, so the author's route remains unverified.
+- **20aI**.2 could not follow the thesis's norm route at all: Mathlib has no
+  `CStarAlgebra (lp 𝒜 ∞)` instance.  **20aI**.1 uses the miu norm bound rather
+  than the thesis's pu/Russo–Dye bound.
+
+21X, 25II.3, 26II.4 and 26III **do** follow the authors' arguments.  The last
+two were initially closed Mathlib-first and then **rewritten** to follow the
+thesis after the "author's proof takes precedence" policy came in — 26II.4 now
+goes `f√ = √f → f|·| = |f·| → f(∨)`, and 26III now uses the author's own `a'`,
+`b'` with meets re-expressed via `(·)⁺`.
+
+Also parked here: **24II.3**, whose published solution reads, in full, "The hint
+gives the solution away" — an explicit 2×2 counterexample still has to be
+produced.
+
 ### Session 2 — 37IX (A/CStar/TowardsVN.lean)
 
 The gap previously recorded between 37VII and 37IX is now resolved, and it
