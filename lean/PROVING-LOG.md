@@ -244,6 +244,38 @@ the Lean proof does instead.`)
   **27XVII**, **27XVIII**, **27XXVII**) from Mathlib, and the Riesz-ideal
   machinery of 27VIII–27XIII is left as the thesis's own (independent) route.
 
+### Session 2 — 37IX (A/CStar/TowardsVN.lean)
+
+The gap previously recorded between 37VII and 37IX is now resolved, and it
+turned out to be **three** defects in one Proposition, not one:
+
+- **37IX** `cstar.tex:6244` — "is WOT-Cauchy, and *WOT-bounded*" is unjustified:
+  37VII needs the diagonal net **norm**-bounded, while 37IX supplies only a
+  bound from **above**.  Counterexample: `D = {−n·1}` is upward directed and
+  bounded above by `0`, yet `‖⟪x,(−n)x⟫‖ = n‖x‖²` is unbounded.
+- **37IX** `cstar.tex:6224` — the Proposition omits `D ≠ ∅`, which parts 1 and 2
+  need.
+- **37IX** `cstar.tex:6247` — the proof claims 37VII yields a *self-adjoint*
+  limit, but 37VII as stated concludes only "some bounded operator".  The Lean
+  proof establishes self-adjointness separately, from realness of the limit's
+  diagonal values.
+
+**The repair is cheaper than expected.**  The obvious fix — pass to the cofinal
+tail `{d ∈ D : d₀ ≤ d}` and transport `atTop` along the inclusion — was not
+needed.  Replacing the net by its truncation `F T = if d₀ ≤ T then T else d₀`
+gives something globally norm-bounded (squeezed between `⟪x,d₀x⟫` and the given
+upper bound), so 37VII applies directly, and `F T = T` holds *eventually* along
+`atTop`, so `Filter.Tendsto.congr'` carries the limit back.  No filter-basis
+reasoning at all.  This unblocked 37IX.1–3, 37XI and 38II, plus 38III, 38VI.1
+and 39VI.3.
+
+Dependency-order note: the thesis proves 37IX.3 and derives 37IX.2 from it; our
+statements are independent, so each is proved directly from the diagonal-net
+convergence.
+
+Scope note: `asols.tex` stops at `parsec-340.60`, so **38III and 38VI.1 have no
+published solution** — those Lean proofs are original, not transcriptions.
+
 ### Session 2 — errata found by the Basic.lean cross-check audit
 
 These came from deliberately re-reading the authors' own proofs for the nine
