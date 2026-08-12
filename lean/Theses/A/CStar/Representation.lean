@@ -146,8 +146,23 @@ element `a` of the commutative C*-algebra `𝒜` is not invertible iff
 `f(a) = 0` for some `f ∈ spec(𝒜)`. -/
 theorem inv_mult_state (a : 𝒜) (ha : IsSelfAdjoint a) :
     ¬IsUnit a ↔ ∃ φ : characterSpace ℂ 𝒜, φ a = 0 := by
-  rw [← spectrum.zero_mem_iff (R := ℂ)]
-  exact WeakDual.CharacterSpace.mem_spectrum_iff_exists
+  constructor
+  · -- The thesis (cstar.tex:4060) proves this direction by extending the least
+    -- Riesz ideal containing `a` to a maximal one (**27X**.2,3) and applying
+    -- **27XIII**.  Those four results (**27VIII**–**27XIII**) are still
+    -- `sorry`, and citing them here would hide a `sorryAx`; so this direction
+    -- still goes through Mathlib's Gelfand theory, which reaches the character
+    -- space through maximal *ring* ideals — exactly the route **16VIII**
+    -- (cstar.tex:2663) rejects.  It cannot be made honest before that chain is
+    -- proved.
+    intro h
+    rw [← spectrum.zero_mem_iff (R := ℂ)] at h
+    exact WeakDual.CharacterSpace.mem_spectrum_iff_exists.mp h
+  · -- The easy direction is the thesis's own, and elementary: `φ(a) ∈ spec(a)`
+    -- because `a - φ(a)` lies in `ker φ`, which contains no unit.
+    rintro ⟨φ, hφ⟩
+    rw [← spectrum.zero_mem_iff (R := ℂ), ← hφ]
+    exact WeakDual.CharacterSpace.apply_mem_spectrum φ a
 
 end Order
 

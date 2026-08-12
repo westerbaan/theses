@@ -424,19 +424,22 @@ theorem cstar_positive_tfae (a : 𝒜) (ha : IsSelfAdjoint a) :
       intro z hz
       obtain ⟨r, hr0, _, hrz⟩ := (pos_spectrum a ha t ht0).mp ht hz
       exact ⟨r, hr0, hrz⟩
-    tfae_have 3 → 4 := fun h => (nonneg_iff_spectrum_ofReal_nonneg a ha).mpr h
-    tfae_have 4 → 2 := by
+    -- The thesis proves 1 ⟹ 3 ⟹ 2 ⟹ 1 from `pos-spectrum` (**17III**) and
+    -- `spectrum-basic` alone; only the bridge 3 ↔ 4 to Mathlib's star order
+    -- `0 ≤ a` needs more (see the note on **25I** in the report).
+    tfae_have 3 → 2 := by
       intro h t hts
       have ht0 : 0 ≤ t := le_trans hhalf hts
       refine (pos_spectrum a ha t ht0).mpr ?_
       intro z hz
-      obtain ⟨r, hr0, hrz⟩ := (nonneg_iff_spectrum_ofReal_nonneg a ha).mp h hz
+      obtain ⟨r, hr0, hrz⟩ := h hz
       refine ⟨r, hr0, ?_, hrz⟩
       have hzn : ‖z‖ ≤ ‖a‖ :=
         (norm_le_iff_spectrum_norm_le a ha ‖a‖ (norm_nonneg a)).mp le_rfl z hz
       rw [hrz, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hr0] at hzn
       linarith
     tfae_have 2 → 1 := fun h => ⟨‖a‖ / 2, le_rfl, h _ le_rfl⟩
+    tfae_have 3 ↔ 4 := (nonneg_iff_spectrum_ofReal_nonneg a ha).symm
     tfae_finish
 
 /-- **17VI** (`positive-basic-2`, cstar.tex:2756, Exercise), part 1:
@@ -554,39 +557,65 @@ positive element `a` is invertible iff `a ≥ 1/n` for some `n > 0`. -/
 theorem positive_basic_2_6 (a : 𝒜) (ha : 0 ≤ a) :
     IsUnit a ↔ ∃ n : ℕ, 0 < n ∧ algebraMap ℂ 𝒜 ((n : ℂ)⁻¹) ≤ a :=
   by
+    -- The author's route (asols.tex:1834): `1/n ≤ a` iff `spec(a) ⊆ [1/n, ∞)`,
+    -- and `a` is invertible iff `0 ∉ spec(a)`; the spectrum is closed, so a
+    -- spectrum inside `[0,∞)` avoiding `0` avoids a whole disc around `0`.
+    -- This uses only **17V**.3 ↔ 4 and the closedness of the spectrum, not
+    -- the operator-monotonicity of `(·)⁻¹`, which is **25II**.3.
+    have hcast : ∀ n : ℕ, ((n : ℂ))⁻¹ = (((n : ℝ)⁻¹ : ℝ) : ℂ) := by
+      intro n; push_cast; ring
+    have hsub : ∀ n : ℕ, IsSelfAdjoint (a - algebraMap ℂ 𝒜 (((n : ℝ)⁻¹ : ℝ) : ℂ)) :=
+      fun n => (IsSelfAdjoint.of_nonneg ha).sub (isSelfAdjoint_algebraMap_ofReal' _)
     constructor
     · intro hu
-      rcases subsingleton_or_nontrivial 𝒜 with _ | _
-      · exact ⟨1, one_pos, le_of_eq (Subsingleton.elim _ _)⟩
-      obtain ⟨u, rfl⟩ := hu
-      have hinv : (0 : 𝒜) ≤ (↑u⁻¹ : 𝒜) := (CFC.inv_nonneg u).mpr ha
-      have hsa : IsSelfAdjoint (↑u⁻¹ : 𝒜) := IsSelfAdjoint.of_nonneg hinv
-      obtain ⟨n, hn⟩ := exists_nat_gt ‖(↑u⁻¹ : 𝒜)‖
-      have hn0 : 0 < n := by
-        have h0 : (0 : ℝ) < n := lt_of_le_of_lt (norm_nonneg _) hn
-        exact_mod_cast h0
-      have hnC : (n : ℂ) ≠ 0 := by exact_mod_cast Nat.cast_ne_zero.mpr hn0.ne'
-      set v : 𝒜ˣ := Units.map (algebraMap ℂ 𝒜 : ℂ →+* 𝒜).toMonoidHom
-        (Units.mk0 (n : ℂ) hnC) with hv
-      have hvval : (↑v : 𝒜) = algebraMap ℂ 𝒜 ((n : ℝ) : ℂ) := by simp [hv]
-      have hvinv : (↑v⁻¹ : 𝒜) = algebraMap ℂ 𝒜 ((n : ℂ)⁻¹) := by simp [hv]
-      have hle : (↑u⁻¹ : 𝒜) ≤ (↑v : 𝒜) := by
-        rw [hvval]
-        refine le_trans ?_ (algebraMap_ofReal_mono hn.le)
-        rw [← algebraMap_real_eq]
-        exact hsa.le_algebraMap_norm_self
-      have hmain := CStarAlgebra.inv_le_inv hinv hle
-      rw [inv_inv, hvinv] at hmain
-      exact ⟨n, hn0, hmain⟩
+      have h0 : (0 : ℂ) ∉ spectrum ℂ a := (spectrum.zero_notMem_iff ℂ).mpr hu
+      obtain ⟨ε, hε, hball⟩ :=
+        Metric.isOpen_iff.mp (spectrum.isClosed (𝕜 := ℂ) a).isOpen_compl 0 h0
+      obtain ⟨n, hn⟩ := exists_nat_gt ε⁻¹
+      have hnpos : (0 : ℝ) < n := lt_of_le_of_lt (by positivity) hn
+      have hn0 : 0 < n := by exact_mod_cast hnpos
+      have hεn : (n : ℝ)⁻¹ < ε := by
+        rw [inv_eq_one_div, div_lt_iff₀ hnpos]
+        nlinarith [mul_lt_mul_of_pos_left hn hε, inv_mul_cancel₀ (ne_of_gt hε)]
+      refine ⟨n, hn0, ?_⟩
+      rw [hcast n, ← sub_nonneg]
+      refine (nonneg_iff_spectrum_ofReal_nonneg _ (hsub n)).mpr ?_
+      intro z hz
+      rw [← spectrum.sub_singleton_eq] at hz
+      obtain ⟨w, hw, s, hs, rfl⟩ := hz
+      rw [Set.mem_singleton_iff] at hs
+      subst hs
+      obtain ⟨r, hr0, hrw⟩ :=
+        (nonneg_iff_spectrum_ofReal_nonneg a (IsSelfAdjoint.of_nonneg ha)).mp ha hw
+      have hwn : ε ≤ ‖w‖ := by
+        by_contra hlt
+        push_neg at hlt
+        exact hball (by simpa [Metric.mem_ball, dist_eq_norm] using hlt) hw
+      rw [hrw, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hr0] at hwn
+      refine ⟨r - (n : ℝ)⁻¹, by linarith, ?_⟩
+      rw [hrw]
+      push_cast
+      ring
     · rintro ⟨n, hn, hle⟩
-      have hnC : ((n : ℂ))⁻¹ ≠ 0 := by simp [Nat.cast_ne_zero.mpr hn.ne']
-      have hcast : ((n : ℂ))⁻¹ = (((n : ℝ)⁻¹ : ℝ) : ℂ) := by push_cast; ring
-      have hsp : IsStrictlyPositive (algebraMap ℂ 𝒜 ((n : ℂ)⁻¹)) := by
-        refine ⟨?_, ?_⟩
-        · rw [hcast]
-          exact algebraMap_ofReal_nonneg (by positivity)
-        · exact (isUnit_iff_ne_zero.mpr hnC).map (algebraMap ℂ 𝒜)
-      exact CStarAlgebra.isUnit_of_le _ hle hsp
+      rw [hcast n] at hle
+      have hnpos : (0 : ℝ) < (n : ℝ)⁻¹ := by
+        have h : (0 : ℝ) < n := by exact_mod_cast hn
+        positivity
+      by_contra hnu
+      have h0 : (0 : ℂ) ∈ spectrum ℂ a := (spectrum.zero_mem_iff ℂ).mpr hnu
+      have hmem : (0 : ℂ) - (((n : ℝ)⁻¹ : ℝ) : ℂ)
+          ∈ spectrum ℂ (a - algebraMap ℂ 𝒜 (((n : ℝ)⁻¹ : ℝ) : ℂ)) := by
+        rw [← spectrum.sub_singleton_eq]
+        exact ⟨0, h0, _, rfl, rfl⟩
+      obtain ⟨r, hr0, hrz⟩ := (nonneg_iff_spectrum_ofReal_nonneg _ (hsub n)).mp
+        (sub_nonneg.mpr hle) hmem
+      have hreal : (0 : ℝ) - (n : ℝ)⁻¹ = r := by
+        have he : (((0 : ℝ) - (n : ℝ)⁻¹ : ℝ) : ℂ) = ((r : ℝ) : ℂ) := by
+          push_cast
+          push_cast at hrz
+          exact hrz
+        exact Complex.ofReal_inj.mp he
+      linarith
 
 end Order
 
@@ -697,11 +726,16 @@ between C*-algebras is positive. -/
 theorem norm_mi_map_positive (ρ : 𝒜 →⋆ₐ[ℂ] ℬ) (a : 𝒜) (ha : 0 ≤ a) :
     0 ≤ ρ a :=
   by
-    have hs := CFC.sqrt_mul_sqrt_self a ha
-    have h : ρ a = star (ρ (CFC.sqrt a)) * ρ (CFC.sqrt a) := by
-      rw [← map_star, (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg a)).star_eq, ← map_mul, hs]
-    rw [h]
-    exact star_mul_self_nonneg _
+    -- The thesis's argument (cstar.tex:2910) is spectral: `spec(ρ a) ⊆ spec a`
+    -- because `ρ` carries invertibles to invertibles.  The square root, which
+    -- would give `ρ a = ρ(√a)* ρ(√a)`, is only available at **23VII**, three
+    -- parsecs later.
+    have hsa : IsSelfAdjoint a := IsSelfAdjoint.of_nonneg ha
+    have hρsa : IsSelfAdjoint (ρ a) := by
+      rw [IsSelfAdjoint, ← map_star, hsa.star_eq]
+    refine (nonneg_iff_spectrum_ofReal_nonneg _ hρsa).mpr fun z hz =>
+      (nonneg_iff_spectrum_ofReal_nonneg a hsa).mp ha ?_
+    exact AlgHom.spectrum_apply_subset (ρ : 𝒜 →ₐ[ℂ] ℬ) a hz
 
 /-- **20V** (`norm-mi-map`, cstar.tex:2904, Lemma), part 2: every miu-map
 between C*-algebras is bounded with `‖ρ‖ ≤ 1`, i.e. `‖ρ(a)‖ ≤ ‖a‖`. -/
@@ -1091,24 +1125,582 @@ noncomputable def sqrtApproxSeq (a : 𝒜) : ℕ → 𝒜
   | 0 => 0
   | n + 1 => (2 : ℂ)⁻¹ • (a + sqrtApproxSeq a n ^ 2)
 
+/-! ### Auxiliary development for 23II
+
+Everything in this block follows the thesis's own proof of **23II**
+(cstar.tex:3495–3634) and uses nothing beyond parsec 170: the continuous
+functional calculus is deliberately *not* used, since **23II** is precisely
+what the thesis builds in order to avoid it.
+
+Two small departures from the letter of the thesis, both order-preserving:
+
+* the thesis bounds `‖bₙ - b_N‖` by `qₙ(1) - q_N(1)` using that the
+  polynomials `qₙ` have nonnegative coefficients; we instead bound the
+  successive differences `‖b_{n+1} - bₙ‖` by `r_{n+1} - rₙ` for the real
+  iteration `r₀ = 0`, `r_{n+1} = ½(1 + rₙ²)` by a direct induction.  This
+  needs no polynomial algebra and no positivity of coefficients.
+* consequently the monotonicity of `b₀ ≤ b₁ ≤ ⋯` (part 2 of **23II**) is
+  *not* needed for the existence of the limit, and we derive it after
+  `mul_nonneg_of_commute` (the thesis's `square-commuting-monotone`,
+  cstar.tex:3573) rather than before.  No circularity is introduced:
+  `mul_nonneg_of_commute` rests only on the existence half of the lemma. -/
+
+section SqrtAux
+
+/-- Auxiliary for **23II**: the real iteration `r₀ = 0`, `r_{n+1} = ½(1+rₙ²)`,
+i.e. the thesis's `qₙ(1)` (cstar.tex:3546). -/
+private noncomputable def sqrtApproxReal : ℕ → ℝ
+  | 0 => 0
+  | n + 1 => (1 + sqrtApproxReal n ^ 2) / 2
+
+private theorem sqrtApproxReal_zero : sqrtApproxReal 0 = 0 := rfl
+
+private theorem sqrtApproxReal_succ (n : ℕ) :
+    sqrtApproxReal (n + 1) = (1 + sqrtApproxReal n ^ 2) / 2 := rfl
+
+private theorem sqrtApproxReal_nonneg (n : ℕ) : 0 ≤ sqrtApproxReal n := by
+  induction n with
+  | zero => rw [sqrtApproxReal_zero]
+  | succ n ih => rw [sqrtApproxReal_succ]; positivity
+
+private theorem sqrtApproxReal_le_one (n : ℕ) : sqrtApproxReal n ≤ 1 := by
+  induction n with
+  | zero => rw [sqrtApproxReal_zero]; norm_num
+  | succ n ih =>
+    have h0 := sqrtApproxReal_nonneg n
+    rw [sqrtApproxReal_succ]
+    nlinarith
+
+private theorem sqrtApproxReal_mono : Monotone sqrtApproxReal := by
+  refine monotone_nat_of_le_succ fun n => ?_
+  rw [sqrtApproxReal_succ]
+  nlinarith [sq_nonneg (1 - sqrtApproxReal n)]
+
+private theorem norm_one_le' : ‖(1 : 𝒜)‖ ≤ 1 := by
+  rcases subsingleton_or_nontrivial 𝒜 with _ | _
+  · rw [Subsingleton.elim (1 : 𝒜) 0, norm_zero]; norm_num
+  · rw [norm_one]
+
+/-- `½·(-)` preserves positivity (`ofReal_smul_nonneg`, i.e. **9X**.1). -/
+private theorem half_smul_nonneg {x : 𝒜} (hx : 0 ≤ x) : 0 ≤ (2 : ℂ)⁻¹ • x := by
+  have h := ofReal_smul_nonneg hx (r := 1 / 2) (by norm_num)
+  have he : (((1 : ℝ) / 2 : ℝ) : ℂ) = (2 : ℂ)⁻¹ := by norm_num
+  rwa [he] at h
+
+private theorem half_smul_le {x y : 𝒜} (h : x ≤ y) :
+    (2 : ℂ)⁻¹ • x ≤ (2 : ℂ)⁻¹ • y := by
+  have h2 := half_smul_nonneg (sub_nonneg.mpr h)
+  rwa [smul_sub, sub_nonneg] at h2
+
+/-- **17VI**.3a in the form used below: a positive element of norm at most
+one is below `1`. -/
+private theorem le_one_of_norm_le_one {x : 𝒜} (hsa : IsSelfAdjoint x)
+    (h : ‖x‖ ≤ 1) : x ≤ 1 := by
+  have h2 := (norm_le_iff_neg_algebraMap_le hsa zero_le_one).mp h
+  simpa using h2.2
+
+/-- **17VI**.3c in the form used below. -/
+private theorem norm_le_one_of_le_one {x : 𝒜} (h0 : 0 ≤ x) (h1 : x ≤ 1) :
+    ‖x‖ ≤ 1 :=
+  le_trans (positive_basic_2_3c x 1 h0 h1) norm_one_le'
+
+private theorem sqrtApproxSeq_zero (a : 𝒜) : sqrtApproxSeq a 0 = 0 := rfl
+
+private theorem sqrtApproxSeq_succ (a : 𝒜) (n : ℕ) :
+    sqrtApproxSeq a (n + 1) = (2 : ℂ)⁻¹ • (a + sqrtApproxSeq a n ^ 2) := rfl
+
+private theorem sqrtApproxSeq_nonneg (a : 𝒜) (h0 : 0 ≤ a) (n : ℕ) :
+    0 ≤ sqrtApproxSeq a n := by
+  induction n with
+  | zero => rw [sqrtApproxSeq_zero]
+  | succ n ih =>
+    rw [sqrtApproxSeq_succ]
+    exact half_smul_nonneg
+      (add_nonneg h0 (positive_basic_2_4a _ (IsSelfAdjoint.of_nonneg ih)))
+
+private theorem sqrtApproxSeq_commute (a c : 𝒜) (hc : c * a = a * c) (n : ℕ) :
+    c * sqrtApproxSeq a n = sqrtApproxSeq a n * c := by
+  induction n with
+  | zero => rw [sqrtApproxSeq_zero, mul_zero, zero_mul]
+  | succ n ih =>
+    rw [sqrtApproxSeq_succ, mul_smul_comm, smul_mul_assoc, mul_add, add_mul, hc,
+      sq, ← mul_assoc, ih, mul_assoc, ih, ← mul_assoc]
+
+private theorem sqrtApproxSeq_self_commute (a : 𝒜) (m n : ℕ) :
+    sqrtApproxSeq a m * sqrtApproxSeq a n = sqrtApproxSeq a n * sqrtApproxSeq a m :=
+  sqrtApproxSeq_commute a _ (sqrtApproxSeq_commute a a rfl m).symm n
+
+private theorem sqrtApproxSeq_norm_le (a : 𝒜) (ha : ‖a‖ ≤ 1) (n : ℕ) :
+    ‖sqrtApproxSeq a n‖ ≤ sqrtApproxReal n := by
+  induction n with
+  | zero => rw [sqrtApproxSeq_zero, sqrtApproxReal_zero, norm_zero]
+  | succ n ih =>
+    have hb0 : (0 : ℝ) ≤ ‖sqrtApproxSeq a n‖ := norm_nonneg _
+    have hsq : ‖sqrtApproxSeq a n ^ 2‖ ≤ ‖sqrtApproxSeq a n‖ ^ 2 := by
+      rw [sq, sq]; exact norm_mul_le _ _
+    have hadd : ‖a + sqrtApproxSeq a n ^ 2‖ ≤ 1 + sqrtApproxReal n ^ 2 := by
+      refine le_trans (norm_add_le _ _) ?_
+      have := sqrtApproxReal_nonneg n
+      nlinarith
+    rw [sqrtApproxSeq_succ, norm_smul, sqrtApproxReal_succ]
+    have hc : ‖(2 : ℂ)⁻¹‖ = 1 / 2 := by norm_num
+    rw [hc]
+    linarith
+
+private theorem sqrtApproxSeq_dist (a : 𝒜) (ha : ‖a‖ ≤ 1) (n : ℕ) :
+    ‖sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n‖
+      ≤ sqrtApproxReal (n + 1) - sqrtApproxReal n := by
+  induction n with
+  | zero =>
+    rw [sqrtApproxSeq_zero, sqrtApproxSeq_succ, sqrtApproxSeq_zero,
+      sqrtApproxReal_zero, sqrtApproxReal_succ, sqrtApproxReal_zero]
+    have hc : ‖(2 : ℂ)⁻¹‖ = 1 / 2 := by norm_num
+    rw [sub_zero, sub_zero, norm_smul, hc]
+    have hz : ((0 : 𝒜) ^ 2) = 0 := by norm_num
+    have hz' : ((0 : ℝ) ^ 2) = 0 := by norm_num
+    rw [hz, add_zero, hz']
+    linarith
+  | succ n ih =>
+    have key : sqrtApproxSeq a (n + 2) - sqrtApproxSeq a (n + 1)
+        = (2 : ℂ)⁻¹ • (sqrtApproxSeq a (n + 1) *
+            (sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n)
+          + (sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n) * sqrtApproxSeq a n) := by
+      rw [sqrtApproxSeq_succ a (n + 1), sqrtApproxSeq_succ a n, ← smul_sub]
+      congr 1
+      noncomm_ring
+    have hd0 : (0 : ℝ) ≤ sqrtApproxReal (n + 1) - sqrtApproxReal n :=
+      sub_nonneg.mpr (sqrtApproxReal_mono (Nat.le_succ n))
+    have hn1 := sqrtApproxSeq_norm_le a ha (n + 1)
+    have hn0 := sqrtApproxSeq_norm_le a ha n
+    have hr0 := sqrtApproxReal_nonneg n
+    have hr1 := sqrtApproxReal_nonneg (n + 1)
+    have hbound : ‖sqrtApproxSeq a (n + 1) *
+          (sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n)
+        + (sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n) * sqrtApproxSeq a n‖
+        ≤ (sqrtApproxReal (n + 1) + sqrtApproxReal n) *
+            (sqrtApproxReal (n + 1) - sqrtApproxReal n) := by
+      refine le_trans (norm_add_le _ _) ?_
+      have h1 := norm_mul_le (sqrtApproxSeq a (n + 1))
+        (sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n)
+      have h2 := norm_mul_le (sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n)
+        (sqrtApproxSeq a n)
+      have hd := ih
+      have hdn : (0 : ℝ) ≤ ‖sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n‖ :=
+        norm_nonneg _
+      nlinarith [norm_nonneg (sqrtApproxSeq a (n + 1)), norm_nonneg (sqrtApproxSeq a n)]
+    have hc : ‖(2 : ℂ)⁻¹‖ = 1 / 2 := by norm_num
+    have hr2 : sqrtApproxReal (n + 2) = (1 + sqrtApproxReal (n + 1) ^ 2) / 2 :=
+      sqrtApproxReal_succ (n + 1)
+    have hr1' : sqrtApproxReal (n + 1) = (1 + sqrtApproxReal n ^ 2) / 2 :=
+      sqrtApproxReal_succ n
+    have hkey2 : (sqrtApproxReal (n + 1) + sqrtApproxReal n) *
+        (sqrtApproxReal (n + 1) - sqrtApproxReal n)
+        = 2 * (sqrtApproxReal (n + 2) - sqrtApproxReal (n + 1)) := by
+      rw [hr2, hr1']; ring
+    rw [key, norm_smul, hc]
+    linarith
+
+private theorem sqrtApproxSeq_cauchy (a : 𝒜) (ha : ‖a‖ ≤ 1) :
+    CauchySeq (sqrtApproxSeq a) := by
+  refine cauchySeq_of_summable_dist ?_
+  have hsum : Summable fun n => sqrtApproxReal (n + 1) - sqrtApproxReal n := by
+    refine summable_of_sum_range_le (c := 1)
+      (fun n => sub_nonneg.mpr (sqrtApproxReal_mono (Nat.le_succ n))) fun n => ?_
+    rw [Finset.sum_range_sub sqrtApproxReal, sqrtApproxReal_zero, sub_zero]
+    exact sqrtApproxReal_le_one n
+  refine Summable.of_nonneg_of_le (fun n => dist_nonneg) (fun n => ?_) hsum
+  rw [dist_eq_norm, norm_sub_rev]
+  exact sqrtApproxSeq_dist a ha n
+
+/-- The existence half of **23II** (cstar.tex:3495–3570). -/
+private theorem sqrt_lemma_exists (a : 𝒜) (h0 : 0 ≤ a) (h1 : a ≤ 1) :
+    ∃ b : 𝒜, Tendsto (sqrtApproxSeq a) atTop (𝓝 b) ∧ 0 ≤ b ∧ b ≤ 1 ∧
+      (1 - b) ^ 2 = 1 - a ∧ ∀ c : 𝒜, c * a = a * c → c * b = b * c := by
+  have ha : ‖a‖ ≤ 1 := norm_le_one_of_le_one h0 h1
+  obtain ⟨b, hb⟩ := cauchySeq_tendsto_of_complete (sqrtApproxSeq_cauchy a ha)
+  refine ⟨b, hb, ?_, ?_, ?_, ?_⟩
+  · exact (positive_basic_2_2 (𝒜 := 𝒜)).mem_of_tendsto hb
+      (Filter.Eventually.of_forall fun n => sqrtApproxSeq_nonneg a h0 n)
+  · have hnb : ‖b‖ ≤ 1 := by
+      have hlim : Tendsto (fun n => ‖sqrtApproxSeq a n‖) atTop (𝓝 ‖b‖) := hb.norm
+      refine le_of_tendsto hlim (Filter.Eventually.of_forall fun n => ?_)
+      exact le_trans (sqrtApproxSeq_norm_le a ha n) (sqrtApproxReal_le_one n)
+    refine le_one_of_norm_le_one ?_ hnb
+    exact IsSelfAdjoint.of_nonneg ((positive_basic_2_2 (𝒜 := 𝒜)).mem_of_tendsto hb
+      (Filter.Eventually.of_forall fun n => sqrtApproxSeq_nonneg a h0 n))
+  · have hrec : b = (2 : ℂ)⁻¹ • (a + b ^ 2) := by
+      have hl : Tendsto (fun n => sqrtApproxSeq a (n + 1)) atTop (𝓝 b) :=
+        hb.comp (Filter.tendsto_add_atTop_nat 1)
+      have hr : Tendsto (fun n => sqrtApproxSeq a (n + 1)) atTop
+          (𝓝 ((2 : ℂ)⁻¹ • (a + b ^ 2))) := by
+        simp only [sqrtApproxSeq_succ]
+        exact ((hb.pow 2).const_add a).const_smul _
+      exact tendsto_nhds_unique hl hr
+    have h2 : a + b ^ 2 = b + b := by
+      have h3 : (2 : ℂ) • ((2 : ℂ)⁻¹ • (a + b ^ 2)) = (2 : ℂ) • b := by rw [← hrec]
+      have he : (2 : ℂ) * (2 : ℂ)⁻¹ = 1 := by norm_num
+      rw [smul_smul, he, one_smul, two_smul] at h3
+      exact h3
+    have : (1 - b) ^ 2 = 1 - (b + b) + b ^ 2 := by noncomm_ring
+    rw [this, ← h2]
+    abel
+  · intro c hc
+    have hl : Tendsto (fun n => c * sqrtApproxSeq a n) atTop (𝓝 (c * b)) :=
+      hb.const_mul c
+    have hr : Tendsto (fun n => sqrtApproxSeq a n * c) atTop (𝓝 (b * c)) :=
+      hb.mul_const c
+    refine tendsto_nhds_unique hl ?_
+    simpa only [sqrtApproxSeq_commute a c hc] using hr
+
+private theorem smul_sq (r : ℂ) (x : 𝒜) : (r • x) ^ 2 = (r * r) • x ^ 2 := by
+  rw [sq, sq, smul_mul_assoc, mul_smul_comm, smul_smul]
+
+private theorem ofReal_smul_le {r : ℝ} (hr : 0 ≤ r) {x y : 𝒜} (h : x ≤ y) :
+    ((r : ℝ) : ℂ) • x ≤ ((r : ℝ) : ℂ) • y := by
+  have h2 := ofReal_smul_nonneg (sub_nonneg.mpr h) hr
+  rwa [smul_sub, sub_nonneg] at h2
+
+private theorem eq_zero_of_sq_eq_zero {x : 𝒜} (hsa : IsSelfAdjoint x)
+    (h : x ^ 2 = 0) : x = 0 := by
+  have h2 := cstar_involution_basic_13 x hsa
+  rw [h, norm_zero] at h2
+  have h3 : ‖x‖ = 0 := by nlinarith [norm_nonneg x]
+  exact norm_eq_zero.mp h3
+
+/-- The square root of a positive element of norm at most one, obtained by
+applying **23II** to `1 - x` (cstar.tex:3573). -/
+private theorem sqrt_unit_exists (x : 𝒜) (hx0 : 0 ≤ x) (hx1 : x ≤ 1) :
+    ∃ d : 𝒜, 0 ≤ d ∧ d ^ 2 = x ∧ ∀ e : 𝒜, e * x = x * e → e * d = d * e := by
+  obtain ⟨b, _, hb0, hb1, hbsq, hbc⟩ :=
+    sqrt_lemma_exists (1 - x) (sub_nonneg.mpr hx1) (sub_le_self 1 hx0)
+  refine ⟨1 - b, sub_nonneg.mpr hb1, ?_, ?_⟩
+  · rw [hbsq]; abel
+  · intro e he
+    have he' : e * (1 - x) = (1 - x) * e := by
+      rw [mul_sub, sub_mul, mul_one, one_mul, he]
+    have h := hbc e he'
+    rw [mul_sub, sub_mul, mul_one, one_mul, h]
+
+/-- Every positive element has a positive square root commuting with
+everything that commutes with it (cstar.tex:3576). -/
+private theorem sqrt_exists_core (x : 𝒜) (hx : 0 ≤ x) :
+    ∃ d : 𝒜, 0 ≤ d ∧ d ^ 2 = x ∧ ∀ e : 𝒜, e * x = x * e → e * d = d * e := by
+  rcases eq_or_lt_of_le (norm_nonneg x) with hs | hs
+  · have hx0 : x = 0 := norm_eq_zero.mp hs.symm
+    subst hx0
+    exact ⟨0, le_rfl, by norm_num, by intro e _; rw [mul_zero, zero_mul]⟩
+  · have hsinv : (0 : ℝ) ≤ ‖x‖⁻¹ := by positivity
+    have hy0 : 0 ≤ ((‖x‖⁻¹ : ℝ) : ℂ) • x := ofReal_smul_nonneg hx hsinv
+    have hyn : ‖((‖x‖⁻¹ : ℝ) : ℂ) • x‖ ≤ 1 := by
+      rw [norm_smul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hsinv,
+        inv_mul_cancel₀ (ne_of_gt hs)]
+    have hy1 : ((‖x‖⁻¹ : ℝ) : ℂ) • x ≤ 1 :=
+      le_one_of_norm_le_one (IsSelfAdjoint.of_nonneg hy0) hyn
+    obtain ⟨d, hd0, hd2, hdc⟩ := sqrt_unit_exists _ hy0 hy1
+    refine ⟨((Real.sqrt ‖x‖ : ℝ) : ℂ) • d,
+      ofReal_smul_nonneg hd0 (Real.sqrt_nonneg _), ?_, ?_⟩
+    · rw [smul_sq, hd2, ← Complex.ofReal_mul, Real.mul_self_sqrt hs.le, smul_smul,
+        ← Complex.ofReal_mul, mul_inv_cancel₀ (ne_of_gt hs), Complex.ofReal_one,
+        one_smul]
+    · intro e he
+      have he' : e * (((‖x‖⁻¹ : ℝ) : ℂ) • x) = (((‖x‖⁻¹ : ℝ) : ℂ) • x) * e := by
+        rw [mul_smul_comm, smul_mul_assoc, he]
+      have h := hdc e he'
+      rw [mul_smul_comm, smul_mul_assoc, h]
+
+/-- Positive square roots are unique (cstar.tex:3637). -/
+private theorem sqrt_unique_core {x s t : 𝒜} (hs0 : 0 ≤ s) (ht0 : 0 ≤ t)
+    (hs2 : s ^ 2 = x) (ht2 : t ^ 2 = x) (hst : s * t = t * s) : s = t := by
+  set v := s - t with hv
+  have hvsa : IsSelfAdjoint v :=
+    (IsSelfAdjoint.of_nonneg hs0).sub (IsSelfAdjoint.of_nonneg ht0)
+  have hvst : v * (s + t) = 0 := by
+    rw [hv]
+    have he : (s - t) * (s + t) = s ^ 2 - t ^ 2 + (s * t - t * s) := by noncomm_ring
+    rw [he, hs2, ht2, hst]
+    simp
+  have h1 : 0 ≤ v * s * v := by
+    have h := star_left_conjugate_nonneg hs0 v
+    rwa [hvsa.star_eq] at h
+  have h2 : 0 ≤ v * t * v := by
+    have h := star_left_conjugate_nonneg ht0 v
+    rwa [hvsa.star_eq] at h
+  have hsum : v * s * v + v * t * v = 0 := by
+    have he : v * s * v + v * t * v = v * (s + t) * v := by noncomm_ring
+    rw [he, hvst, zero_mul]
+  have h1z : v * s * v = 0 := by
+    have heq : v * s * v = -(v * t * v) := by
+      rw [eq_neg_iff_add_eq_zero]; exact hsum
+    exact le_antisymm (heq ▸ neg_nonpos_of_nonneg h2) h1
+  have h2z : v * t * v = 0 := by
+    have heq : v * t * v = -(v * s * v) := by
+      rw [eq_neg_iff_add_eq_zero, add_comm]; exact hsum
+    rw [heq, h1z, neg_zero]
+  have hv3 : v ^ 3 = 0 := by
+    have he : v ^ 3 = v * s * v - v * t * v := by rw [hv]; noncomm_ring
+    rw [he, h1z, h2z, sub_zero]
+  have hv2 : v ^ 2 = 0 := by
+    refine eq_zero_of_sq_eq_zero (hvsa.pow 2) ?_
+    have he : (v ^ 2) ^ 2 = v ^ 3 * v := by noncomm_ring
+    rw [he, hv3, zero_mul]
+  have hv0 : v = 0 := eq_zero_of_sq_eq_zero hvsa hv2
+  rw [hv] at hv0
+  exact sub_eq_zero.mp hv0
+
+/-- **23II** in the form `square-commuting-monotone` (cstar.tex:3573): the
+product of two commuting positive elements is positive. -/
+private theorem mul_nonneg_of_commute {x y : 𝒜} (hx : 0 ≤ x) (hy : 0 ≤ y)
+    (h : x * y = y * x) : 0 ≤ x * y := by
+  obtain ⟨d, hd0, hd2, hdc⟩ := sqrt_exists_core x hx
+  obtain ⟨e, he0, he2, hec⟩ := sqrt_exists_core y hy
+  have hdy : y * d = d * y := hdc y h.symm
+  have hde : Commute d e := hec d hdy.symm
+  have hsa : IsSelfAdjoint (d * e) := by
+    rw [IsSelfAdjoint, star_mul, (IsSelfAdjoint.of_nonneg he0).star_eq,
+      (IsSelfAdjoint.of_nonneg hd0).star_eq, ← hde.eq]
+  have hprod : x * y = (d * e) ^ 2 := by
+    rw [← hd2, ← he2, hde.mul_pow]
+  rw [hprod]
+  exact positive_basic_2_4a _ hsa
+
+/-- The corollary of `square-commuting-monotone` (cstar.tex:3588). -/
+private theorem sq_le_sq_of_commute {x y : 𝒜} (hx : 0 ≤ x) (hy : 0 ≤ y)
+    (hcomm : x * y = y * x) (hxy : x ≤ y) : x ^ 2 ≤ y ^ 2 := by
+  have hd : 0 ≤ y - x := sub_nonneg.mpr hxy
+  have h1 : 0 ≤ y * (y - x) :=
+    mul_nonneg_of_commute hy hd (by rw [mul_sub, sub_mul, hcomm])
+  have h2 : 0 ≤ (y - x) * x :=
+    mul_nonneg_of_commute hd hx (by rw [sub_mul, mul_sub, hcomm])
+  have hid : y ^ 2 - x ^ 2 = y * (y - x) + (y - x) * x := by noncomm_ring
+  have h3 := add_nonneg h1 h2
+  rw [← hid, sub_nonneg] at h3
+  exact h3
+
+/-- **23II**, the inequality of `ineq-square-root` (cstar.tex:3595). -/
+private theorem sqrt_lemma_le (a : 𝒜) (h0 : 0 ≤ a) (h1 : a ≤ 1) (b : 𝒜)
+    (hlim : Tendsto (sqrtApproxSeq a) atTop (𝓝 b)) (c : 𝒜) (hcsa : IsSelfAdjoint c)
+    (hca : c * a = a * c) (hc2 : c ^ 2 ≤ 1 - a) : c ≤ 1 - b := by
+  have hc2pos : 0 ≤ c ^ 2 := positive_basic_2_4a c hcsa
+  have h1a0 : (0 : 𝒜) ≤ 1 - a := sub_nonneg.mpr h1
+  have hn1a : ‖(1 : 𝒜) - a‖ ≤ 1 := norm_le_one_of_le_one h1a0 (sub_le_self 1 h0)
+  have hcn : ‖c‖ ≤ 1 := by
+    have h := positive_basic_2_3c (c ^ 2) (1 - a) hc2pos hc2
+    rw [cstar_involution_basic_13 c hcsa] at h
+    nlinarith [norm_nonneg c]
+  have hu0 : (0 : 𝒜) ≤ 1 - c := sub_nonneg.mpr (le_one_of_norm_le_one hcsa hcn)
+  have hale : a ≤ 1 - c ^ 2 := by
+    have h := sub_nonneg.mpr hc2
+    have he : (1 - a) - c ^ 2 = (1 - c ^ 2) - a := by abel
+    rw [he, sub_nonneg] at h
+    exact h
+  have hstep : ∀ n, sqrtApproxSeq a n ≤ 1 - c := by
+    intro n
+    induction n with
+    | zero => rw [sqrtApproxSeq_zero]; exact hu0
+    | succ n ih =>
+      have hbn0 : 0 ≤ sqrtApproxSeq a n := sqrtApproxSeq_nonneg a h0 n
+      have hbc : sqrtApproxSeq a n * (1 - c) = (1 - c) * sqrtApproxSeq a n := by
+        have h := sqrtApproxSeq_commute a c hca n
+        rw [mul_sub, sub_mul, mul_one, one_mul, h]
+      have hsq : sqrtApproxSeq a n ^ 2 ≤ (1 - c) ^ 2 :=
+        sq_le_sq_of_commute hbn0 hu0 hbc ih
+      have hsum := half_smul_le (add_le_add hale hsq)
+      have hcalc : (1 : 𝒜) - c ^ 2 + (1 - c) ^ 2 = (1 - c) + (1 - c) := by
+        noncomm_ring
+      have he : (2 : ℂ)⁻¹ * (2 : ℂ) = 1 := by norm_num
+      have hhalf : (2 : ℂ)⁻¹ • ((1 - c) + (1 - c) : 𝒜) = 1 - c := by
+        rw [← two_smul ℂ (1 - c : 𝒜), smul_smul, he, one_smul]
+      rw [hcalc, hhalf] at hsum
+      rw [sqrtApproxSeq_succ]
+      exact hsum
+  have hcont : Continuous fun x : 𝒜 => 1 - c - x := by fun_prop
+  have hset : {x : 𝒜 | x ≤ 1 - c} = (fun x : 𝒜 => 1 - c - x) ⁻¹' {y : 𝒜 | 0 ≤ y} := by
+    ext x
+    simp only [Set.mem_setOf_eq, Set.mem_preimage]
+    exact (sub_nonneg (a := 1 - c) (b := x)).symm
+  have hclosed : IsClosed {x : 𝒜 | x ≤ 1 - c} := by
+    rw [hset]; exact (positive_basic_2_2 (𝒜 := 𝒜)).preimage hcont
+  have hble : b ≤ 1 - c :=
+    hclosed.mem_of_tendsto hlim (Filter.Eventually.of_forall hstep)
+  have h := sub_nonneg.mpr hble
+  have he : (1 - c) - b = (1 - b) - c := by abel
+  rw [he, sub_nonneg] at h
+  exact h
+
+/-- `ineq-square-root` for positive elements of norm at most one. -/
+private theorem sqrt_unit_le {x : 𝒜} (hx0 : 0 ≤ x) (hx1 : x ≤ 1) {d : 𝒜}
+    (hd0 : 0 ≤ d) (hd2 : d ^ 2 = x) {c : 𝒜} (hcsa : IsSelfAdjoint c)
+    (hcx : c * x = x * c) (hc2 : c ^ 2 ≤ x) : c ≤ d := by
+  obtain ⟨b, hlim, hb0, hb1, hbsq, hbc⟩ :=
+    sqrt_lemma_exists (1 - x) (sub_nonneg.mpr hx1) (sub_le_self 1 hx0)
+  have hbx : (1 - b) ^ 2 = x := by rw [hbsq]; abel
+  have hdx : d * x = x * d := by rw [← hd2, sq, mul_assoc]
+  have hd1x : d * (1 - x) = (1 - x) * d := by
+    rw [mul_sub, sub_mul, mul_one, one_mul, hdx]
+  have hdb : d * (1 - b) = (1 - b) * d := by
+    have h := hbc d hd1x
+    rw [mul_sub, sub_mul, mul_one, one_mul, h]
+  have hdeq : d = 1 - b :=
+    sqrt_unique_core hd0 (sub_nonneg.mpr hb1) hd2 hbx hdb
+  have hc1x : c * (1 - x) = (1 - x) * c := by
+    rw [mul_sub, sub_mul, mul_one, one_mul, hcx]
+  have hcle : c ≤ 1 - b := by
+    refine sqrt_lemma_le (1 - x) (sub_nonneg.mpr hx1) (sub_le_self 1 hx0) b hlim c
+      hcsa hc1x ?_
+    have he : (1 : 𝒜) - (1 - x) = x := by abel
+    rw [he]; exact hc2
+  rw [hdeq]; exact hcle
+
+/-- `ineq-square-root` in general (cstar.tex:3637): if `c` is self-adjoint,
+commutes with `x ≥ 0` and `c² ≤ x`, then `c` is below every positive square
+root of `x`. -/
+private theorem sqrt_le {x : 𝒜} (hx : 0 ≤ x) {d : 𝒜} (hd0 : 0 ≤ d)
+    (hd2 : d ^ 2 = x) {c : 𝒜} (hcsa : IsSelfAdjoint c) (hcx : c * x = x * c)
+    (hc2 : c ^ 2 ≤ x) : c ≤ d := by
+  rcases eq_or_lt_of_le (norm_nonneg x) with hs | hs
+  · have hx0 : x = 0 := norm_eq_zero.mp hs.symm
+    subst hx0
+    have hc0 : c ^ 2 = 0 := le_antisymm hc2 (positive_basic_2_4a c hcsa)
+    rw [eq_zero_of_sq_eq_zero hcsa hc0]
+    exact hd0
+  · have hsq : 0 < Real.sqrt ‖x‖ := Real.sqrt_pos.mpr hs
+    have ht0 : (0 : ℝ) ≤ (Real.sqrt ‖x‖)⁻¹ := by positivity
+    have hsinv : (0 : ℝ) ≤ ‖x‖⁻¹ := by positivity
+    have htt : ((((Real.sqrt ‖x‖)⁻¹ : ℝ) : ℂ)) * ((((Real.sqrt ‖x‖)⁻¹ : ℝ) : ℂ))
+        = ((‖x‖⁻¹ : ℝ) : ℂ) := by
+      rw [← Complex.ofReal_mul, ← mul_inv, Real.mul_self_sqrt hs.le]
+    have hy0 : 0 ≤ ((‖x‖⁻¹ : ℝ) : ℂ) • x := ofReal_smul_nonneg hx hsinv
+    have hyn : ‖((‖x‖⁻¹ : ℝ) : ℂ) • x‖ ≤ 1 := by
+      rw [norm_smul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hsinv,
+        inv_mul_cancel₀ (ne_of_gt hs)]
+    have hy1 : ((‖x‖⁻¹ : ℝ) : ℂ) • x ≤ 1 :=
+      le_one_of_norm_le_one (IsSelfAdjoint.of_nonneg hy0) hyn
+    have hrsa : IsSelfAdjoint (((Real.sqrt ‖x‖)⁻¹ : ℝ) : ℂ) := Complex.conj_ofReal _
+    have hc'sa : IsSelfAdjoint ((((Real.sqrt ‖x‖)⁻¹ : ℝ) : ℂ) • c) := hrsa.smul hcsa
+    have hd'0 : 0 ≤ (((Real.sqrt ‖x‖)⁻¹ : ℝ) : ℂ) • d := ofReal_smul_nonneg hd0 ht0
+    have hd'2 : ((((Real.sqrt ‖x‖)⁻¹ : ℝ) : ℂ) • d) ^ 2 = ((‖x‖⁻¹ : ℝ) : ℂ) • x := by
+      rw [smul_sq, htt, hd2]
+    have hc'2 : ((((Real.sqrt ‖x‖)⁻¹ : ℝ) : ℂ) • c) ^ 2 ≤ ((‖x‖⁻¹ : ℝ) : ℂ) • x := by
+      rw [smul_sq, htt]
+      exact ofReal_smul_le hsinv hc2
+    have hc'x : (((Real.sqrt ‖x‖)⁻¹ : ℝ) : ℂ) • c * (((‖x‖⁻¹ : ℝ) : ℂ) • x)
+        = ((‖x‖⁻¹ : ℝ) : ℂ) • x * ((((Real.sqrt ‖x‖)⁻¹ : ℝ) : ℂ) • c) := by
+      rw [smul_mul_assoc, mul_smul_comm, smul_mul_assoc, mul_smul_comm, hcx,
+        smul_comm]
+    have hstep := sqrt_unit_le hy0 hy1 hd'0 hd'2 hc'sa hc'x hc'2
+    have hfin := ofReal_smul_le (Real.sqrt_nonneg ‖x‖) hstep
+    have hcancel : ∀ z : 𝒜, ((Real.sqrt ‖x‖ : ℝ) : ℂ) •
+        ((((Real.sqrt ‖x‖)⁻¹ : ℝ) : ℂ) • z) = z := by
+      intro z
+      rw [smul_smul, ← Complex.ofReal_mul, mul_inv_cancel₀ (ne_of_gt hsq),
+        Complex.ofReal_one, one_smul]
+    rw [hcancel, hcancel] at hfin
+    exact hfin
+
+/-- The uniqueness half of **23II** (cstar.tex:3616). -/
+private theorem sqrt_lemma_unique (a : 𝒜) (h0 : 0 ≤ a) (h1 : a ≤ 1) (b : 𝒜)
+    (hlim : Tendsto (sqrtApproxSeq a) atTop (𝓝 b)) (hb0 : 0 ≤ b)
+    (hbsq : (1 - b) ^ 2 = 1 - a) (b' : 𝒜) (hb'0 : 0 ≤ b') (hb'1 : b' ≤ 1)
+    (hb'a : a * b' = b' * a) (hb'sq : (1 - b') ^ 2 = 1 - a) : b = b' := by
+  have hb'sa : IsSelfAdjoint b' := IsSelfAdjoint.of_nonneg hb'0
+  have hu0 : (0 : 𝒜) ≤ 1 - b' := sub_nonneg.mpr hb'1
+  have hle : b ≤ b' := by
+    have hsa1 : IsSelfAdjoint (1 - b' : 𝒜) := by
+      rw [IsSelfAdjoint, star_sub, star_one, hb'sa.star_eq]
+    have h := sqrt_lemma_le a h0 h1 b hlim (1 - b') hsa1
+      (by rw [mul_sub, sub_mul, mul_one, one_mul, hb'a]) (le_of_eq hb'sq)
+    have h2 := sub_nonneg.mpr h
+    have he : (1 - b) - (1 - b') = b' - b := by abel
+    rw [he, sub_nonneg] at h2
+    exact h2
+  have hcomm : b' * b = b * b' := by
+    have hl : Tendsto (fun n => b' * sqrtApproxSeq a n) atTop (𝓝 (b' * b)) :=
+      hlim.const_mul b'
+    have hr : Tendsto (fun n => sqrtApproxSeq a n * b') atTop (𝓝 (b * b')) :=
+      hlim.mul_const b'
+    refine tendsto_nhds_unique hl ?_
+    simpa only [sqrtApproxSeq_commute a b' hb'a.symm] using hr
+  have hv0 : (0 : 𝒜) ≤ b' - b := sub_nonneg.mpr hle
+  have huv : (1 - b') * (b' - b) = (b' - b) * (1 - b') := by
+    have h : (1 - b') * (b' - b) - (b' - b) * (1 - b') = b' * b - b * b' := by
+      noncomm_ring
+    rw [hcomm, sub_self] at h
+    exact sub_eq_zero.mp h
+  have huvpos : 0 ≤ (1 - b') * (b' - b) := mul_nonneg_of_commute hu0 hv0 huv
+  have hzero : (1 - b') * (b' - b) + (1 - b') * (b' - b) + (b' - b) ^ 2 = 0 := by
+    have h : (1 - b') * (b' - b) + (b' - b) * (1 - b') + (b' - b) ^ 2
+        = (1 - b) ^ 2 - (1 - b') ^ 2 := by noncomm_ring
+    rw [← huv] at h
+    rw [h, hbsq, ← hb'sq, sub_self]
+  have hvsq : (b' - b) ^ 2 ≤ 0 := by
+    have h : (b' - b) ^ 2 = -((1 - b') * (b' - b) + (1 - b') * (b' - b)) := by
+      rw [eq_neg_iff_add_eq_zero, add_comm]
+      exact hzero
+    rw [h]
+    exact neg_nonpos_of_nonneg (add_nonneg huvpos huvpos)
+  have hvsq0 : (b' - b) ^ 2 = 0 :=
+    le_antisymm hvsq
+      (positive_basic_2_4a _ (IsSelfAdjoint.of_nonneg hv0))
+  have := eq_zero_of_sq_eq_zero (IsSelfAdjoint.of_nonneg hv0) hvsq0
+  exact (sub_eq_zero.mp this).symm
+
+end SqrtAux
+
 /-- **23II** (cstar.tex:3485, Lemma), part 1: for `0 ≤ a ≤ 1` there is a
 unique `b` with `0 ≤ b ≤ 1`, `ab = ba` and `(1-b)² = 1-a`. -/
 theorem sqrt_lemma_existsUnique (a : 𝒜) (h0 : 0 ≤ a) (h1 : a ≤ 1) :
     ∃! b : 𝒜, 0 ≤ b ∧ b ≤ 1 ∧ a * b = b * a ∧ (1 - b) ^ 2 = 1 - a :=
-  sorry
+  by
+    obtain ⟨b, hlim, hb0, hb1, hbsq, hbc⟩ := sqrt_lemma_exists a h0 h1
+    refine ⟨b, ⟨hb0, hb1, hbc a rfl, hbsq⟩, ?_⟩
+    rintro b' ⟨hb'0, hb'1, hb'a, hb'sq⟩
+    exact (sqrt_lemma_unique a h0 h1 b hlim hb0 hbsq b' hb'0 hb'1 hb'a hb'sq).symm
 
 /-- **23II** (cstar.tex:3485, Lemma), part 2: the sequence
 `b₀ ≤ b₁ ≤ ⋯` given by `b₀ = 0`, `b_{n+1} = ½(a + bₙ²)` is monotone. -/
 theorem sqrt_lemma_monotone (a : 𝒜) (h0 : 0 ≤ a) (h1 : a ≤ 1) :
     Monotone (sqrtApproxSeq a) :=
-  sorry
+  by
+    refine monotone_nat_of_le_succ fun n => ?_
+    induction n with
+    | zero =>
+      rw [sqrtApproxSeq_zero, sqrtApproxSeq_succ, sqrtApproxSeq_zero]
+      have hz : (a + (0 : 𝒜) ^ 2) = a := by norm_num
+      rw [hz]
+      exact half_smul_nonneg h0
+    | succ n ih =>
+      have hb1 := sqrtApproxSeq_nonneg a h0 (n + 1)
+      have hbn := sqrtApproxSeq_nonneg a h0 n
+      have hd : 0 ≤ sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n := sub_nonneg.mpr ih
+      have hcomm : sqrtApproxSeq a (n + 1) * sqrtApproxSeq a n
+          = sqrtApproxSeq a n * sqrtApproxSeq a (n + 1) :=
+        sqrtApproxSeq_self_commute a (n + 1) n
+      have h1' : 0 ≤ sqrtApproxSeq a (n + 1) *
+          (sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n) :=
+        mul_nonneg_of_commute hb1 hd (by rw [mul_sub, sub_mul, hcomm])
+      have h2' : 0 ≤ (sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n) *
+          sqrtApproxSeq a n :=
+        mul_nonneg_of_commute hd hbn (by rw [sub_mul, mul_sub, hcomm])
+      have hkey : sqrtApproxSeq a (n + 2) - sqrtApproxSeq a (n + 1)
+          = (2 : ℂ)⁻¹ • (sqrtApproxSeq a (n + 1) *
+              (sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n)
+            + (sqrtApproxSeq a (n + 1) - sqrtApproxSeq a n) * sqrtApproxSeq a n) := by
+        rw [sqrtApproxSeq_succ a (n + 1), sqrtApproxSeq_succ a n, ← smul_sub]
+        congr 1
+        noncomm_ring
+      have h3 := half_smul_nonneg (add_nonneg h1' h2')
+      rw [← hkey, sub_nonneg] at h3
+      exact h3
 
 /-- **23II** (cstar.tex:3485, Lemma), part 3: the `b` of
 `sqrt_lemma_existsUnique` is the norm limit of the sequence `(bₙ)ₙ`. -/
 theorem sqrt_lemma_tendsto (a : 𝒜) (h0 : 0 ≤ a) (h1 : a ≤ 1) (b : 𝒜)
     (hb : 0 ≤ b ∧ b ≤ 1 ∧ a * b = b * a ∧ (1 - b) ^ 2 = 1 - a) :
     Tendsto (sqrtApproxSeq a) atTop (𝓝 b) :=
-  sorry
+  by
+    obtain ⟨b₀, hlim, hb₀0, _, hb₀sq, _⟩ := sqrt_lemma_exists a h0 h1
+    obtain ⟨hb1, hb2, hb3, hb4⟩ := hb
+    rwa [sqrt_lemma_unique a h0 h1 b₀ hlim hb₀0 hb₀sq b hb1 hb2 hb3 hb4] at hlim
 
 /-- **23II** (cstar.tex:3485, Lemma), part 4: any `c` commuting with `a`
 commutes with `b`; and if moreover `c* = c` and `c² ≤ 1 - a`, then
@@ -1117,7 +1709,15 @@ theorem sqrt_lemma_commute (a : 𝒜) (h0 : 0 ≤ a) (h1 : a ≤ 1) (b : 𝒜)
     (hb : 0 ≤ b ∧ b ≤ 1 ∧ a * b = b * a ∧ (1 - b) ^ 2 = 1 - a) (c : 𝒜)
     (hc : c * a = a * c) :
     c * b = b * c ∧ (IsSelfAdjoint c → c ^ 2 ≤ 1 - a → c ≤ 1 - b) :=
-  sorry
+  by
+    have hlim : Tendsto (sqrtApproxSeq a) atTop (𝓝 b) := sqrt_lemma_tendsto a h0 h1 b hb
+    refine ⟨?_, fun hcsa hc2 => sqrt_lemma_le a h0 h1 b hlim c hcsa hc hc2⟩
+    have hl : Tendsto (fun n => c * sqrtApproxSeq a n) atTop (𝓝 (c * b)) :=
+      hlim.const_mul c
+    have hr : Tendsto (fun n => sqrtApproxSeq a n * c) atTop (𝓝 (b * c)) :=
+      hlim.mul_const c
+    refine tendsto_nhds_unique hl ?_
+    simpa only [sqrtApproxSeq_commute a c hc] using hr
 
 /-- **23VII** (`sqrt`, cstar.tex:3637, Exercise), part 0 (existence and
 uniqueness): every positive `a` has a unique positive square root commuting
@@ -1126,13 +1726,10 @@ with `a`.  (Mathlib's square root via the continuous functional calculus is
 theorem sqrt_existsUnique (a : 𝒜) (ha : 0 ≤ a) :
     ∃! s : 𝒜, 0 ≤ s ∧ s ^ 2 = a ∧ a * s = s * a :=
   by
-    have h2 := CFC.sq_sqrt a ha
-    refine ⟨CFC.sqrt a, ⟨CFC.sqrt_nonneg a, h2, ?_⟩, ?_⟩
-    · calc a * CFC.sqrt a = CFC.sqrt a ^ 2 * CFC.sqrt a := by rw [h2]
-        _ = CFC.sqrt a * CFC.sqrt a ^ 2 := pow_mul_comm' _ 2
-        _ = CFC.sqrt a * a := by rw [h2]
-    · rintro s ⟨hs0, hs2, -⟩
-      exact (CFC.sqrt_unique (by rw [← sq]; exact hs2) hs0).symm
+    obtain ⟨d, hd0, hd2, hdc⟩ := sqrt_exists_core a ha
+    refine ⟨d, ⟨hd0, hd2, hdc a rfl⟩, ?_⟩
+    rintro s ⟨hs0, hs2, hsa⟩
+    exact sqrt_unique_core hs0 hd0 hs2 hd2 (hdc s hsa.symm)
 
 /-- **23VII** (`sqrt`, cstar.tex:3637, Exercise), part 0': Mathlib's
 `CFC.sqrt a` is such a square root. -/
@@ -1152,26 +1749,27 @@ theorem sqrt_commute (a : 𝒜) (ha : 0 ≤ a) (c : 𝒜) (hc : c * a = a * c) :
     c * CFC.sqrt a = CFC.sqrt a * c ∧
       (IsSelfAdjoint c → c ^ 2 ≤ a → c ≤ CFC.sqrt a) :=
   by
-    have hcom : Commute a c := hc.symm
-    have h1 : Commute (cfcₙ Real.sqrt a) c := Commute.cfcₙ_real hcom Real.sqrt
-    rw [← CFC.sqrt_eq_real_sqrt a ha] at h1
-    refine ⟨h1.symm, ?_⟩
-    intro hsa hle
-    have habs : c ≤ CFC.abs c := by
-      have h2 := CFC.abs_sub_self c hsa
-      have h3 : (0 : 𝒜) ≤ 2 • c⁻ := nsmul_nonneg (CFC.negPart_nonneg c) 2
-      rw [← h2, sub_nonneg] at h3
-      exact h3
-    have heq : CFC.abs c = CFC.sqrt (star c * c) := rfl
-    rw [hsa.star_eq, ← sq] at heq
-    rw [heq] at habs
-    exact habs.trans (CFC.sqrt_le_sqrt _ _ hle)
+    -- The thesis's square root of `a` (**23II**); the only role Mathlib's
+    -- continuous functional calculus plays here is to identify `CFC.sqrt a`
+    -- with it, which the *statement* forces.  In particular `CFC.sqrt_le_sqrt`
+    -- (the monotonicity of `√`, which is **28III**, cstar.tex:4353, five
+    -- parsecs later and itself resting on this very exercise) is not used.
+    obtain ⟨d, hd0, hd2, hdc⟩ := sqrt_exists_core a ha
+    have hs2 : CFC.sqrt a ^ 2 = a := CFC.sq_sqrt a ha
+    have hsa : CFC.sqrt a * a = a * CFC.sqrt a := by
+      calc CFC.sqrt a * a = CFC.sqrt a * CFC.sqrt a ^ 2 := by rw [hs2]
+        _ = CFC.sqrt a ^ 2 * CFC.sqrt a := by rw [sq, mul_assoc]
+        _ = a * CFC.sqrt a := by rw [hs2]
+    have hcfc : d = CFC.sqrt a :=
+      sqrt_unique_core hd0 (CFC.sqrt_nonneg a) hd2 hs2 (hdc _ hsa).symm
+    rw [← hcfc]
+    exact ⟨hdc c hc, fun hcsa hle => sqrt_le ha hd0 hd2 hcsa hc hle⟩
 
 /-- **23VII** (`sqrt`, cstar.tex:3637, Exercise), part 1: the product of
 commuting positive elements is positive. -/
 theorem sqrt_1 (a b : 𝒜) (ha : 0 ≤ a) (hb : 0 ≤ b) (hab : a * b = b * a) :
     0 ≤ a * b :=
-  Commute.mul_nonneg ha hb hab
+  mul_nonneg_of_commute ha hb hab
 
 /-- **23VII** (`sqrt`, cstar.tex:3637, Exercise), part 2: for `a ≥ 0` and
 self-adjoint `b, c` commuting with `a`: `b ≤ c` implies `ab ≤ ac`. -/
@@ -1179,9 +1777,9 @@ theorem sqrt_2 (a : 𝒜) (ha : 0 ≤ a) (b c : 𝒜) (hb : IsSelfAdjoint b)
     (hc : IsSelfAdjoint c) (hba : b * a = a * b) (hca : c * a = a * c)
     (hbc : b ≤ c) : a * b ≤ a * c :=
   by
-    have h1 : Commute a c := hca.symm
-    have h2 : Commute a b := hba.symm
-    have h := Commute.mul_nonneg ha (sub_nonneg.mpr hbc) (h1.sub_right h2)
+    have hcomm : a * (c - b) = (c - b) * a := by
+      rw [mul_sub, sub_mul, hba, hca]
+    have h := mul_nonneg_of_commute ha (sub_nonneg.mpr hbc) hcomm
     rw [mul_sub, sub_nonneg] at h
     exact h
 
@@ -1268,8 +1866,10 @@ theorem cstar_positive_final (a : 𝒜) (ha : IsSelfAdjoint a) :
       spectrum ℂ a ⊆ {z : ℂ | ∃ r : ℝ, 0 ≤ r ∧ z = r}] :=
   by
     tfae_have 1 ↔ 2 := (cstar_positive_tfae a ha).out 3 1
-    tfae_have 1 → 3 := fun h =>
-      ⟨CFC.sqrt a, IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg a), (CFC.sq_sqrt a h).symm⟩
+    tfae_have 1 → 3 := by
+      intro h
+      obtain ⟨d, hd0, hd2, -⟩ := sqrt_exists_core a h
+      exact ⟨d, IsSelfAdjoint.of_nonneg hd0, hd2.symm⟩
     tfae_have 3 → 4 := by
       rintro ⟨b, hb, rfl⟩
       exact ⟨b, by rw [hb.star_eq, sq]⟩
@@ -1292,9 +1892,10 @@ theorem astara_pos_basic_2_mi {ℬ : Type*} [CStarAlgebra ℬ] [PartialOrder ℬ
     (hi : IsInvolutionPreserving f) : IsPositiveMap f :=
   by
     intro a ha
-    have hs := CFC.sqrt_mul_sqrt_self a ha
-    have h : f a = star (f (CFC.sqrt a)) * f (CFC.sqrt a) := by
-      rw [← hi, (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg a)).star_eq, ← hm, hs]
+    obtain ⟨d, hd0, hd2, -⟩ := sqrt_exists_core a ha
+    have hs : d * d = a := by rw [← hd2, sq]
+    have h : f a = star (f d) * f d := by
+      rw [← hi, (IsSelfAdjoint.of_nonneg hd0).star_eq, ← hm, hs]
     rw [h]
     exact star_mul_self_nonneg _
 
@@ -1305,9 +1906,10 @@ theorem astara_pos_basic_2_cp {ℬ : Type*} [CStarAlgebra ℬ] [PartialOrder ℬ
     IsPositiveMap f :=
   by
     intro a ha
-    have h := hf 1 (fun _ => CFC.sqrt a) (fun _ => 1)
-    simpa [(IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg a)).star_eq,
-      CFC.sqrt_mul_sqrt_self a ha] using h
+    obtain ⟨d, hd0, hd2, -⟩ := sqrt_exists_core a ha
+    have hs : d * d = a := by rw [← hd2, sq]
+    have h := hf 1 (fun _ => d) (fun _ => 1)
+    simpa [(IsSelfAdjoint.of_nonneg hd0).star_eq, hs] using h
 
 /-- **25II** (`astara-pos-basic-consequences`, cstar.tex:3772, Exercise),
 part 3: for positive invertible `a, b`: `a ≤ b⁻¹` iff `√b a √b ≤ 1` iff
@@ -1562,7 +2164,8 @@ theorem commutative_cstar_basic_1 (a : 𝒜) (ha : IsSelfAdjoint a) :
       have hcb : 0 ≤ c + a := by
         have h0 := sub_nonneg.mpr hnac
         rwa [sub_neg_eq_add] at h0
-      have hprod : 0 ≤ (c - a) * (c + a) := Commute.mul_nonneg hca hcb (Commute.all _ _)
+      have hprod : 0 ≤ (c - a) * (c + a) :=
+        mul_nonneg_of_commute hca hcb (mul_comm _ _)
       have hexp : (c - a) * (c + a) = c ^ 2 - a ^ 2 := by ring
       rw [hexp, sub_nonneg] at hprod
       have h4 : (0 : 𝒜) ≤ c + c := by
@@ -1576,9 +2179,18 @@ theorem commutative_cstar_basic_1 (a : 𝒜) (ha : IsSelfAdjoint a) :
       have habs : CFC.abs a = CFC.sqrt (a ^ 2) := by
         have h7 : CFC.abs a = CFC.sqrt (star a * a) := rfl
         rwa [ha.star_eq, ← sq] at h7
-      have hcsq : CFC.sqrt (c ^ 2) = c := CFC.sqrt_unique (by rw [← sq]) hc0
-      rw [habs, ← hcsq]
-      exact CFC.sqrt_le_sqrt _ _ hprod
+      -- The thesis (asols.tex:2372) invokes the monotonicity of `√` *on
+      -- commuting positive elements*, which is **23VII**.0'' (`sqrt_le`), not
+      -- the general `sqrt-monotone` of **28III**: `|a|` is self-adjoint,
+      -- commutes with `c²`, and `|a|² = a² ≤ c²`, so `|a| ≤ c`.
+      have ha2 : (0 : 𝒜) ≤ a ^ 2 := positive_basic_2_4a a ha
+      have habs0 : (0 : 𝒜) ≤ CFC.abs a := by rw [habs]; exact CFC.sqrt_nonneg _
+      have habssq : CFC.abs a ^ 2 = a ^ 2 := by rw [habs]; exact CFC.sq_sqrt _ ha2
+      refine sqrt_le (x := c ^ 2)
+        (positive_basic_2_4a c (IsSelfAdjoint.of_nonneg hc0)) hc0 rfl
+        (IsSelfAdjoint.of_nonneg habs0) (mul_comm _ _) ?_
+      rw [habssq]
+      exact hprod
 
 /-- **26II** (`commutative-cstar-basic`, cstar.tex:3856, Exercise), part 2:
 if `a` and `b` have a supremum `a ∨ b` then `c + a ∨ b` is the supremum of

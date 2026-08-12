@@ -244,6 +244,86 @@ the Lean proof does instead.`)
   **27XVII**, **27XVIII**, **27XXVII**) from Mathlib, and the Riesz-ideal
   machinery of 27VIII–27XIII is left as the thesis's own (independent) route.
 
+### Session 2 — bootstrapping rework (the author's decision)
+
+Once the author decided the formalization should validate the thesis's *own
+development order*, not merely its statements, the seven dependency-order
+findings became work.  Result: `Positive.lean` 33 → 29, both files build, every
+touched theorem re-verified `[propext, Classical.choice, Quot.sound]`, and
+**nothing regressed**.
+
+**23II is proved — all four parts, and this was the whole game.**  The thesis
+hand-builds `√` at 23II precisely so it does not need the continuous functional
+calculus, which it only obtains after Gelfand at 270–280.  `Positive.lean` now
+carries a ~450-line private `SqrtAux` development following cstar.tex:3495–3634
+that **uses nothing past parsec 170** — CFC appears nowhere in it.  Chain:
+`sqrt_lemma_exists` → `sqrt_unit_exists` → `sqrt_exists_core` →
+`sqrt_unique_core` → `mul_nonneg_of_commute` (230.40) → `sq_le_sq_of_commute` →
+`sqrt_lemma_le` (230.50) → `sqrt_le` → `sqrt_lemma_unique` (230.60).  Two
+documented departures, neither weakening the order: successive differences are
+bounded against the scalar iteration `r_{n+1} = ½(1 + rₙ²)` rather than via
+nonneg-coefficient polynomials (less machinery, same inputs), and monotonicity is
+derived *after* `mul_nonneg_of_commute`, since existence never needed it.
+
+**Parsec 230 de-CFC'd.**  The sharpest case, **23VII.0''**, no longer calls
+`CFC.sqrt_le_sqrt` (= thesis 28III, five parsecs later and resting on 23VII):
+it builds the thesis's `d`, gets `c ≤ d` from `ineq-square-root`, and only then
+identifies `d = CFC.sqrt a`.  **23VII.0** is now entirely CFC-free.  Also
+repaired: 23VII.1, .2, 25I(1→3), 25II.2, and **26II.1** — which used
+`CFC.sqrt_le_sqrt` again, and now uses the author's actual argument
+(asols.tex:2372 says `√` is monotone *on commuting positive elements*, which is
+23VII, not 28III).
+
+Also: **17V** restructured to the elementary cycle `1→3→2→1`, with the bridge to
+Mathlib's `0 ≤ a` isolated in a single `tfae_have`; **17VI.6** now uses the
+author's spectral route instead of `CStarAlgebra.inv_le_inv` (= 25II.3);
+**27XV**'s easy direction is now elementary and Gelfand-free.  One violation not
+in the audit was found and fixed: **20V.1** used `CFC.sqrt` (parsec 230) at
+parsec 200.  One more is flagged but unfixed: **20aI.2**
+`cstar_product_2_positive` does the same at parsec 201, repairable in ~40 lines
+via the sup-norm characterisation with no square root at all.
+
+**Could not be made honest, with reasons.**  **27XV**'s hard direction needs
+27VIII–27XIII, all still `sorry`; citing them would hide a `sorryAx`.  **16II**
+is blocked twice over — Mathlib's proof uses the Gelfand–Beurling formula that
+**16IV** explicitly disowns, *and* the thesis's own route needs
+`rigid_expansion`/`taylor`/`goursat`, i.e. the unproved complex-analysis block at
+parsecs 120–150.
+
+**Two new errata** (neither already in the `asols.tex` header block):
+
+- **23II** `cstar.tex:3629` — "`(1−b')(b'−b)` is positive by
+  `\sref{ineq-square-root}`" cites the wrong result; it should be
+  `\sref{square-commuting-monotone}` (230.40), which is where commuting products
+  are handled.  230.50 is the inequality.
+- **17VI**.6 `asols.tex:1844` — "suppose that `a` is **not** invertible, then
+  `0 ∉ spec(a)`" should read "**is** invertible"; as written it contradicts
+  itself.  (Independently re-derived here; also found by the round-1 audit.)
+
+### The remaining obstruction: what `0 ≤ a` means
+
+**25I is not honest, and no rewrite of any proof can make it so.**  The two
+defects are *modelling artefacts*, not proof defects:
+
+- `4 → 1` — "`a = c*c` implies `a` positive" is the thesis's 19III + 24IV, one of
+  the chapter's deepest results.  In Lean it is `star_mul_self_nonneg`: **true by
+  definition** of Mathlib's star order.  The deepest theorem of the chapter is
+  a triviality in our encoding.
+- `1 ↔ 5` is 25I itself, imported from the CFC.
+
+The same applies at `astara_non_negative` (19III).
+
+**The fix is `ThesisPos`, and it is cheaper than it looks.**  Define
+`private def ThesisPos a := ∃ t : ℝ, ‖a − algebraMap ℂ 𝒜 t‖ ≤ t` and prove the
+spine in those terms alongside the shipped statements — no restatement, so no
+statement change.  17V *already contains it* as items 1–2 and now proves
+`1↔2↔3` elementarily.  Estimated 400–600 lines, of which the only real work is
+**`ThesisPos (a*a)` by the thesis's parsec-190 argument (~150 lines)**;
+`prod_spec` (19Ia) is already proved.  The `SqrtAux` block consumes only six
+lemmas, so once those exist in `ThesisPos` form the entire square-root
+development transfers mechanically — and 25I becomes a genuine theorem that
+*derives* the bridge instead of importing it.
+
 ### Session 2 — A/VN, first pass
 
 `A/VN/Basic.lean` 77 → 52 (25 proved); the other four files untouched.  The
