@@ -13,6 +13,11 @@ A diagnostic command, `#sorry_leaks`, that reports every declaration in the
 
 For each indirect leak the offending direct `sorry`s it rests on are listed.
 
+Reading the output: auto-generated declarations (`.rec`, `.casesOn`, `.mk`,
+`.injEq`, `.noConfusion`, `.sizeOf_spec`, projections) of a structure whose
+*type* mentions a `sorry`ed definition show up as indirect leaks. They are
+benign noise; the interesting indirect leaks are the hand-written ones.
+
 This file is deliberately **NOT** imported by `Theses.lean`, so it has no
 effect on the normal build.  Run it with
 
@@ -32,16 +37,22 @@ namespace Theses.AxiomCheck
 private def exprHasSorry (e : Expr) : Bool :=
   (e.find? fun s => s.isConstOf ``sorryAx).isSome
 
+/-- The body of a declaration.  NOTE: `ConstantInfo.value?` returns `none` for
+theorems (and opaques) unless `allowOpaque := true` — without it every
+`theorem foo : P := sorry` is silently misclassified as an *indirect* leak. -/
+private def bodyOf (ci : ConstantInfo) : Option Expr :=
+  ci.value? (allowOpaque := true)
+
 /-- Is the declaration *itself* a `sorry` (as opposed to merely depending on
 one)? -/
 private def isDirectSorry (ci : ConstantInfo) : Bool :=
   exprHasSorry ci.type ||
-    (match ci.value? with | some v => exprHasSorry v | none => false)
+    (match bodyOf ci with | some v => exprHasSorry v | none => false)
 
 /-- The constants directly used by a declaration (type and value). -/
 private def usedConstants (ci : ConstantInfo) : Array Name :=
   ci.type.getUsedConstants ++
-    (match ci.value? with | some v => v.getUsedConstants | none => #[])
+    (match bodyOf ci with | some v => v.getUsedConstants | none => #[])
 
 /-- For a declaration `n`, the set of *directly* `sorry`ed declarations (drawn
 from `directs`) that `n` transitively depends on.  Memoised; the search is
