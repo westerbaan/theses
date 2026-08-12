@@ -423,7 +423,65 @@ has quotients if and only if the functor `0 : C → ∫ Pred_□` has a left
 adjoint `Q`. -/
 theorem exc_quot_adjoint :
     HasQuotients C ↔
-      ∃ Q : PredSquare C ⥤ C, Nonempty (Q ⊣ predSquareZero C) := sorry
+      ∃ Q : PredSquare C ⥤ C, Nonempty (Q ⊣ predSquareZero C) := by
+  -- A map `f : X ⟶ Y` is a map `(X,p) ⟶ (Y,0)` in `∫ Pred_□` exactly when
+  -- `1 ∘ f ≤ pᵖ`, i.e. exactly under the hypothesis of the universal
+  -- property of a quotient of `p`.
+  have key : ∀ (P : PredSquare C) (Y : C) (f : P.obj ⟶ Y),
+      (P.pred ≼ orth (f ≫ orth ((predSquareZero C).obj Y).pred)) ↔
+        (f ≫ truth Y) ≼ orth P.pred := by
+    intro P Y f
+    change (P.pred ≼ orth (f ≫ orth (0 : Pred Y))) ↔ _
+    rw [eabasics_orth_zero]
+    change (P.pred ≼ orth (f ≫ truth Y)) ↔ _
+    rw [← eabasics_perp_iff_le_orth, ← eabasics_perp_iff_le_orth]
+    exact ⟨PCM.perp_comm, PCM.perp_comm⟩
+  constructor
+  · -- Quotients give a left adjoint: `ξ_p` is the unit component at `(X,p)`.
+    intro _
+    have hiff : ∀ (P : PredSquare C) (Y : C) (f : P ⟶ (predSquareZero C).obj Y),
+        (f.1 ≫ truth Y) ≼ orth P.pred := fun P Y f => (key P Y f.1).mp f.2
+    have hto : ∀ (P : PredSquare C) (Y : C) (g : quotObj P.pred ⟶ Y),
+        P.pred ≼ orth ((quotMap P.pred ≫ g) ≫
+          orth ((predSquareZero C).obj Y).pred) := by
+      intro P Y g
+      refine (key P Y _).mpr ?_
+      have h1 : (quotMap P.pred ≫ (g ≫ truth Y)) ≼
+          (quotMap P.pred ≫ truth (quotObj P.pred)) :=
+        comp_le_comp _ (pred_le_truth _)
+      rw [← Category.assoc] at h1
+      exact pcm_preorder_trans h1 (isQuotient_quotMap P.pred).1
+    let e : ∀ (P : PredSquare C) (Y : C),
+        (quotObj P.pred ⟶ Y) ≃ (P ⟶ (predSquareZero C).obj Y) := fun P Y =>
+      { toFun := fun g => ⟨quotMap P.pred ≫ g, hto P Y g⟩
+        invFun := fun f =>
+          ((isQuotient_quotMap P.pred).2 f.1 (hiff P Y f)).choose
+        left_inv := fun g =>
+          (((isQuotient_quotMap P.pred).2 (quotMap P.pred ≫ g)
+            (hiff P Y ⟨quotMap P.pred ≫ g, hto P Y g⟩)).choose_spec.2 g rfl).symm
+        right_inv := fun f =>
+          Subtype.ext
+            ((isQuotient_quotMap P.pred).2 f.1 (hiff P Y f)).choose_spec.1 }
+    have he : ∀ (P : PredSquare C) (Y Y' : C) (g : Y ⟶ Y')
+        (h : quotObj P.pred ⟶ Y),
+        e P Y' (h ≫ g) = e P Y h ≫ (predSquareZero C).map g := fun P Y Y' g h =>
+      Subtype.ext (Category.assoc _ _ _).symm
+    exact ⟨Adjunction.leftAdjointOfEquiv e he,
+      ⟨Adjunction.adjunctionOfEquivLeft e he⟩⟩
+  · -- Conversely, the unit component of `Q ⊣ 0` at `(X,p)` is a quotient.
+    rintro ⟨Q, ⟨adj⟩⟩
+    refine ⟨fun {X} p => ⟨Q.obj ⟨X, p⟩, (adj.unit.app ⟨X, p⟩).1, ?_, ?_⟩⟩
+    · exact (key ⟨X, p⟩ _ _).mp (adj.unit.app ⟨X, p⟩).2
+    · intro Y f hf
+      refine ⟨(adj.homEquiv ⟨X, p⟩ Y).symm ⟨f, (key ⟨X, p⟩ Y f).mpr hf⟩, ?_, ?_⟩
+      · have := (adj.homEquiv ⟨X, p⟩ Y).apply_symm_apply
+          ⟨f, (key ⟨X, p⟩ Y f).mpr hf⟩
+        exact congrArg Subtype.val
+          ((Adjunction.homEquiv_unit adj _ _ _).symm.trans this)
+      · intro g hg
+        refine (adj.homEquiv ⟨X, p⟩ Y).injective ?_
+        rw [Equiv.apply_symm_apply, Adjunction.homEquiv_unit]
+        exact Subtype.ext hg
 
 /-! ## Effectuses with comprehension (parsec 199) -/
 
@@ -464,7 +522,83 @@ has comprehension if and only if the functor `1 : C → ∫ Pred_□` has a righ
 adjoint `K`. -/
 theorem compr_grothendieck :
     HasComprehension C ↔
-      ∃ K : PredSquare C ⥤ C, Nonempty (predSquareOne C ⊣ K) := sorry
+      ∃ K : PredSquare C ⥤ C, Nonempty (predSquareOne C ⊣ K) := by
+  -- A map `f : X ⟶ Y` is a map `(X,1) ⟶ (Y,q)` in `∫ Pred_□` exactly when
+  -- `q ∘ f = 1 ∘ f`, i.e. exactly under the hypothesis of the universal
+  -- property of a comprehension of `q`.
+  have key : ∀ (P : PredSquare C) (X : C) (f : X ⟶ P.obj),
+      (((predSquareOne C).obj X).pred ≼ orth (f ≫ orth P.pred)) ↔
+        f ≫ P.pred = f ≫ truth P.obj := by
+    intro P X f
+    rw [← comp_orth_eq_zero_iff]
+    change ((1 : Pred X) ≼ orth (f ≫ orth P.pred)) ↔ _
+    constructor
+    · intro h
+      have h1 : orth (f ≫ orth P.pred) = (1 : Pred X) :=
+        eabasics_le_antisymm (pred_le_truth _) h
+      have h2 := congrArg orth h1
+      rwa [eabasics_orth_orth, eabasics_orth_one] at h2
+    · intro h
+      rw [h, eabasics_orth_zero]
+      exact pcm_preorder_refl _
+  constructor
+  · -- Comprehensions give a right adjoint: `π_p` is the counit component.
+    intro _
+    have hiff : ∀ (P : PredSquare C) (X : C)
+        (f : (predSquareOne C).obj X ⟶ P),
+        f.1 ≫ P.pred = f.1 ≫ truth P.obj := fun P X f => (key P X f.1).mp f.2
+    have hfrom : ∀ (P : PredSquare C) (X : C) (g : X ⟶ comprObj P.pred),
+        ((predSquareOne C).obj X).pred ≼
+          orth ((g ≫ comprMap P.pred) ≫ orth P.pred) := by
+      intro P X g
+      refine (key P X _).mpr ?_
+      have h : g ≫ (comprMap P.pred ≫ P.pred)
+          = g ≫ (comprMap P.pred ≫ truth P.obj) :=
+        congrArg (fun x => g ≫ x) (isComprehension_comprMap P.pred).1
+      exact ((Category.assoc g (comprMap P.pred) P.pred).trans h).trans
+        (Category.assoc g (comprMap P.pred) (truth P.obj)).symm
+    let e : ∀ (X : C) (P : PredSquare C),
+        ((predSquareOne C).obj X ⟶ P) ≃ (X ⟶ comprObj P.pred) := fun X P =>
+      { toFun := fun f =>
+          ((isComprehension_comprMap P.pred).2 f.1 (hiff P X f)).choose
+        invFun := fun g => ⟨g ≫ comprMap P.pred, hfrom P X g⟩
+        left_inv := fun f =>
+          Subtype.ext
+            ((isComprehension_comprMap P.pred).2 f.1 (hiff P X f)).choose_spec.1
+        right_inv := fun g =>
+          (((isComprehension_comprMap P.pred).2 (g ≫ comprMap P.pred)
+            (hiff P X ⟨g ≫ comprMap P.pred, hfrom P X g⟩)).choose_spec.2
+              g rfl).symm }
+    have he : ∀ (X' X : C) (P : PredSquare C) (f : X' ⟶ X)
+        (g : (predSquareOne C).obj X ⟶ P),
+        e X' P ((predSquareOne C).map f ≫ g) = f ≫ e X P g := by
+      intro X' X P f g
+      have h1 : (e X P g) ≫ comprMap P.pred = g.1 :=
+        ((isComprehension_comprMap P.pred).2 g.1 (hiff P X g)).choose_spec.1
+      refine (((isComprehension_comprMap P.pred).2
+        ((predSquareOne C).map f ≫ g).1
+        (hiff P X' ((predSquareOne C).map f ≫ g))).choose_spec.2
+        (f ≫ e X P g) ?_).symm
+      calc (f ≫ e X P g) ≫ comprMap P.pred
+          = f ≫ ((e X P g) ≫ comprMap P.pred) := Category.assoc _ _ _
+        _ = f ≫ g.1 := congrArg (fun x => f ≫ x) h1
+    exact ⟨Adjunction.rightAdjointOfEquiv e he,
+      ⟨Adjunction.adjunctionOfEquivRight e he⟩⟩
+  · -- Conversely, the counit component of `1 ⊣ K` at `(X,p)` is a
+    -- comprehension.
+    rintro ⟨K, ⟨adj⟩⟩
+    refine ⟨fun {X} p => ⟨K.obj ⟨X, p⟩, (adj.counit.app ⟨X, p⟩).1, ?_, ?_⟩⟩
+    · exact (key ⟨X, p⟩ _ _).mp (adj.counit.app ⟨X, p⟩).2
+    · intro Z g hg
+      refine ⟨adj.homEquiv Z ⟨X, p⟩ ⟨g, (key ⟨X, p⟩ Z g).mpr hg⟩, ?_, ?_⟩
+      · have h := (adj.homEquiv Z ⟨X, p⟩).symm_apply_apply
+          ⟨g, (key ⟨X, p⟩ Z g).mpr hg⟩
+        exact congrArg Subtype.val
+          ((Adjunction.homEquiv_counit adj _ _ _).symm.trans h)
+      · intro h hh
+        refine (adj.homEquiv Z ⟨X, p⟩).symm.injective ?_
+        rw [Equiv.symm_apply_apply, Adjunction.homEquiv_counit]
+        exact Subtype.ext hh
 
 section ComprBasics
 

@@ -213,8 +213,34 @@ theorem PCM.isSumOf_cons_iff {M : Type u} [PCM M] {a : M} {l : List M} {s : M} :
 /-- **174IV** (eff.tex:223): in a PCM a sum depends only on which elements
 occur (and how often), not on their order: if `x₁ ⋁ ⋯ ⋁ xₙ` exists, then so
 does the sum over any permutation, with the same value. -/
+theorem PCM.isSumOf_swap {M : Type u} [PCM M] {a b : M} {l : List M} {s : M}
+    (hs : PCM.IsSumOf (a :: b :: l) s) : PCM.IsSumOf (b :: a :: l) s := by
+  rw [PCM.isSumOf_cons_iff] at hs
+  obtain ⟨t2, hbl, h2, rfl⟩ := hs
+  rw [PCM.isSumOf_cons_iff] at hbl
+  obtain ⟨t, hl, h1, rfl⟩ := hbl
+  -- `a ⋁ (b ⋁ t) = (a ⋁ b) ⋁ t = (b ⋁ a) ⋁ t = b ⋁ (a ⋁ t)`
+  obtain ⟨hab, h', he⟩ := PCM.assoc_left h1 h2
+  have hba : Perp b a := PCM.perp_comm hab
+  have hcomm : ovee b a hba = ovee a b hab := PCM.ovee_comm hba
+  have h'' : Perp (ovee b a hba) t := by rw [hcomm]; exact h'
+  have key : ovee b (ovee a t (PCM.perp_of_ovee_perp hba h''))
+      (PCM.perp_ovee_of_ovee_perp hba h'') = ovee a (ovee b t h1) h2 := by
+    rw [← PCM.ovee_assoc hba h'', ← he]
+    exact PCM.ovee_congr hcomm rfl _ _
+  rw [← key]
+  exact PCM.IsSumOf.cons (PCM.IsSumOf.cons hl _) _
+
 theorem PCM.isSumOf_perm {M : Type u} [PCM M] {l l' : List M} {s : M}
-    (hp : l.Perm l') (hs : PCM.IsSumOf l s) : PCM.IsSumOf l' s := sorry
+    (hp : l.Perm l') (hs : PCM.IsSumOf l s) : PCM.IsSumOf l' s := by
+  induction hp generalizing s with
+  | nil => exact hs
+  | cons x _ ih =>
+    rw [PCM.isSumOf_cons_iff] at hs
+    obtain ⟨t, hl, hperp, rfl⟩ := hs
+    exact PCM.IsSumOf.cons (ih hl) hperp
+  | swap x y l => exact PCM.isSumOf_swap hs
+  | trans _ _ ih₁ ih₂ => exact ih₂ (ih₁ hs)
 
 /-! ## Effect algebras (parsecs 175–177) -/
 
@@ -1043,7 +1069,115 @@ orthocomplement as lattice complement) is orthomodular. -/
 theorem orth_ea_is_orthomodular (E : Type u) [EffectAlgebra E] [Ortholattice E]
     (hle : ∀ a b : E, a ≤ b ↔ a ≼ b)
     (hcompl : ∀ a : E, aᶜ = orth a) :
-    ∀ {a b : E}, a ≤ b → a ⊔ (aᶜ ⊓ b) = b := sorry
+    ∀ {a b : E}, a ≤ b → a ⊔ (aᶜ ⊓ b) = b := by
+  -- the two orders agree, hence so do the two bottoms and tops
+  have hbot : (⊥ : E) = 0 := by
+    obtain ⟨c, hc, he⟩ := (hle ⊥ 0).mp bot_le
+    exact (eabasics_positivity hc he).1
+  have htop : (⊤ : E) = 1 := by
+    have h1 : orth (⊤ : E) ≼ orth 1 :=
+      eabasics_le_iff_orth_le.mp ((hle 1 ⊤).mp le_top)
+    rw [eabasics_orth_one] at h1
+    obtain ⟨c, hc, he⟩ := h1
+    have h2 := congrArg orth (eabasics_positivity hc he).1
+    rwa [eabasics_orth_orth, eabasics_orth_zero] at h2
+  -- de Morgan, from antitonicity and involutivity of the orthocomplement
+  have hdm : ∀ y z : E, orth (y ⊔ z) = orth y ⊓ orth z := by
+    intro y z
+    simp only [← hcompl]
+    refine le_antisymm (le_inf (Ortholattice.compl_antitone le_sup_left)
+      (Ortholattice.compl_antitone le_sup_right)) ?_
+    have h1 : y ≤ (yᶜ ⊓ zᶜ)ᶜ := by
+      have h := Ortholattice.compl_antitone (inf_le_left : yᶜ ⊓ zᶜ ≤ yᶜ)
+      rwa [Ortholattice.compl_compl] at h
+    have h2 : z ≤ (yᶜ ⊓ zᶜ)ᶜ := by
+      have h := Ortholattice.compl_antitone (inf_le_right : yᶜ ⊓ zᶜ ≤ zᶜ)
+      rwa [Ortholattice.compl_compl] at h
+    have h3 := Ortholattice.compl_antitone (sup_le h1 h2)
+    rwa [Ortholattice.compl_compl] at h3
+  -- the key step: for orthogonal `p, q` with `p ∧ q = 0` the partial sum
+  -- `p ⋁ q` is the supremum `p ∨ q` (this is `ea-modularity-prop` for
+  -- `x = p ⋁ q`; the upper bound `p ∨ q` of `p, q` is automatically below
+  -- `x`, which is what makes the argument of eff.tex:500 go through)
+  have key : ∀ (p q : E) (h : Perp p q), p ⊓ q = ⊥ → ovee p q h = p ⊔ q := by
+    intro p q h hpq
+    obtain ⟨x, hx⟩ : ∃ x : E, ovee p q h = x := ⟨_, rfl⟩
+    rw [hx]
+    have hqp : Perp q p := PCM.perp_comm h
+    have hxqp : ovee q p hqp = x := (PCM.ovee_comm h).symm.trans hx
+    have hoxx : Perp (orth x) x := PCM.perp_comm (EffectAlgebra.perp_orth x)
+    have hoxx1 : ovee (orth x) x hoxx = 1 :=
+      (PCM.ovee_comm (EffectAlgebra.perp_orth x)).symm.trans
+        (EffectAlgebra.ovee_orth x)
+    -- `p = (xᵖ ⋁ q)ᵖ` and `q = (xᵖ ⋁ p)ᵖ`
+    have hox_qp : Perp (orth x) (ovee q p hqp) := by rw [hxqp]; exact hoxx
+    obtain ⟨hoxq, hu, heu⟩ := PCM.assoc_left hqp hox_qp
+    have hup : p = orth (ovee (orth x) q hoxq) :=
+      EffectAlgebra.orth_unique hu (by
+        rw [heu, PCM.ovee_congr rfl hxqp hox_qp hoxx]; exact hoxx1)
+    have hox_pq : Perp (orth x) (ovee p q h) := by rw [hx]; exact hoxx
+    obtain ⟨hoxp, hv, hev⟩ := PCM.assoc_left h hox_pq
+    have hvq : q = orth (ovee (orth x) p hoxp) :=
+      EffectAlgebra.orth_unique hv (by
+        rw [hev, PCM.ovee_congr rfl hx hox_pq hoxx]; exact hoxx1)
+    -- hence `(xᵖ ⋁ q) ∨ (xᵖ ⋁ p) = 1`, since its orthocomplement is `p ∧ q`
+    have h7 : ovee (orth x) q hoxq ⊔ ovee (orth x) p hoxp = 1 := by
+      have h6 : orth (ovee (orth x) q hoxq ⊔ ovee (orth x) p hoxp) = 0 := by
+        rw [hdm, ← hup, ← hvq, hpq, hbot]
+      have h6' := congrArg orth h6
+      rwa [eabasics_orth_orth, eabasics_orth_zero] at h6'
+    -- `p ∨ q ≤ x`, so `xᵖ ⋁ (p ∨ q)` is defined and dominates both terms
+    have hpx : p ≼ x := ⟨q, h, hx⟩
+    have hqx : q ≼ x := ⟨p, hqp, hxqp⟩
+    have hsx : (p ⊔ q) ≼ x :=
+      (hle _ _).mp (sup_le ((hle _ _).mpr hpx) ((hle _ _).mpr hqx))
+    have hsox : Perp (p ⊔ q) (orth x) :=
+      eabasics_perp_iff_le_orth.mpr (by rwa [eabasics_orth_orth])
+    have hoxs : Perp (orth x) (p ⊔ q) := PCM.perp_comm hsox
+    have e2 : ovee (p ⊔ q) (orth x) hsox = ovee (orth x) (p ⊔ q) hoxs :=
+      PCM.ovee_comm hsox
+    obtain ⟨hqox, hmq⟩ :=
+      eabasics_le_perp_compat ((hle q (p ⊔ q)).mp le_sup_right) hsox
+    obtain ⟨hpox, hmp⟩ :=
+      eabasics_le_perp_compat ((hle p (p ⊔ q)).mp le_sup_left) hsox
+    have e1 : ovee q (orth x) hqox = ovee (orth x) q hoxq := PCM.ovee_comm hqox
+    have e3 : ovee p (orth x) hpox = ovee (orth x) p hoxp := PCM.ovee_comm hpox
+    rw [e1, e2] at hmq
+    rw [e3, e2] at hmp
+    -- so `xᵖ ⋁ (p ∨ q) = 1`, whence `p ∨ q = x`
+    have hw1 : ovee (orth x) (p ⊔ q) hoxs = 1 := by
+      refine le_antisymm ?_ ?_
+      · rw [← htop]; exact le_top
+      · rw [← h7]; exact sup_le ((hle _ _).mpr hmq) ((hle _ _).mpr hmp)
+    have hfin := EffectAlgebra.orth_unique hoxs hw1
+    rw [eabasics_orth_orth] at hfin
+    exact hfin.symm
+  -- the proposition itself
+  intro a b hab
+  have hc_le_orth : (aᶜ ⊓ b) ≼ orth a := by
+    have h : aᶜ ⊓ b ≤ orth a := by rw [← hcompl a]; exact inf_le_left
+    exact (hle _ _).mp h
+  have hac : Perp a (aᶜ ⊓ b) :=
+    PCM.perp_comm (eabasics_perp_iff_le_orth.mpr hc_le_orth)
+  have hinf : a ⊓ (aᶜ ⊓ b) = ⊥ :=
+    le_antisymm ((inf_le_inf_left a inf_le_left).trans
+      (le_of_eq (Ortholattice.inf_compl a))) bot_le
+  have hsup := key a (aᶜ ⊓ b) hac hinf
+  -- `b ⊖ a` is below `aᵖ ∧ b`, so `b ≤ a ⋁ (aᵖ ∧ b) = a ∨ (aᵖ ∧ b) ≤ b`
+  obtain ⟨d, had, hd⟩ := (hle a b).mp hab
+  have hd_le_ac : d ≤ aᶜ := by rw [hcompl]; exact (hle _ _).mpr (perp_le_orth had)
+  have hd_le_b : d ≤ b :=
+    (hle _ _).mpr ⟨a, PCM.perp_comm had, (PCM.ovee_comm had).symm.trans hd⟩
+  have hle1 : b ≤ a ⊔ (aᶜ ⊓ b) := by
+    rw [← hsup]
+    obtain ⟨hdA, hmono⟩ :=
+      eabasics_le_perp_compat ((hle _ _).mp (le_inf hd_le_ac hd_le_b))
+        (PCM.perp_comm hac)
+    rw [show ovee d a hdA = b from (PCM.ovee_comm had).symm.trans hd,
+      show ovee (aᶜ ⊓ b) a (PCM.perp_comm hac) = ovee a (aᶜ ⊓ b) hac from
+        (PCM.ovee_comm hac).symm] at hmono
+    exact (hle _ _).mpr hmono
+  exact le_antisymm (sup_le hab inf_le_right) hle1
 
 /-! ## Effect monoids (parsec 178) -/
 
@@ -1238,6 +1372,78 @@ theorem exc_emonzero {M : Type u} [EffectMonoid M] (a : M) :
   obtain ⟨t4, ht4, hp4, he4⟩ := ht3
   exact (eabasics_positivity hp4 he4).1
 
+/-- Helper: the head of a list is below its sum. -/
+theorem PCM.le_of_isSumOf_cons {M : Type u} [PCM M] {a : M} {l : List M} {s : M}
+    (h : PCM.IsSumOf (a :: l) s) : a ≼ s := by
+  rw [PCM.isSumOf_cons_iff] at h
+  obtain ⟨t, _, hp, he⟩ := h
+  exact ⟨t, hp, he⟩
+
+/-- Helper for 178V: `a ⊙ b ≼ a` in an effect monoid, since
+`(a ⊙ b) ⋁ (a ⊙ bᵖ) = a ⊙ 1 = a`. -/
+theorem emon_mul_le_self {M : Type u} [EffectMonoid M] (a b : M) : a * b ≼ a := by
+  have hd := EffectMonoid.distrib (PCM.perp_zero a) (EffectAlgebra.perp_orth b)
+  rw [PCM.ovee_zero a (PCM.perp_zero a), EffectAlgebra.ovee_orth b,
+    EffectMonoid.mul_one a] at hd
+  exact PCM.le_of_isSumOf_cons hd
+
+/-- Helper: sums are monotone termwise. -/
+theorem PCM.isSumOf_le_of_forall₂ {M : Type u} [EffectAlgebra M] {l l' : List M}
+    (hle : List.Forall₂ (· ≼ ·) l' l) :
+    ∀ {s s' : M}, PCM.IsSumOf l s → PCM.IsSumOf l' s' → s' ≼ s := by
+  induction hle with
+  | nil =>
+    intro s s' h h'
+    rw [PCM.isSumOf_nil_iff] at h h'
+    rw [h, h']
+    exact pcm_preorder_refl 0
+  | cons hxx _ ih =>
+    intro s s' h h'
+    rw [PCM.isSumOf_cons_iff] at h h'
+    obtain ⟨u, hu, hp, he⟩ := h
+    obtain ⟨u', hu', hp', he'⟩ := h'
+    obtain ⟨h1, k1⟩ := eabasics_le_perp_compat hxx hp
+    obtain ⟨h2, k2⟩ := eabasics_le_perp_compat (ih hu hu') (PCM.perp_comm h1)
+    rw [← he, ← he']
+    refine pcm_preorder_trans ?_ k1
+    rw [show ovee _ u' hp' = ovee u' _ h2 from PCM.ovee_comm hp',
+      show ovee _ u h1 = ovee u _ (PCM.perp_comm h1) from PCM.ovee_comm h1]
+    exact k2
+
+/-- Helper for 178V: the list version of the statement, from which the
+indexed one follows by moving `i` to the front of the list. -/
+theorem emond_lemma_for_conv_list {M : Type u} [EffectMonoid M]
+    (l : List (M × M)) (h1 : PCM.IsSumOf (l.map Prod.fst) 1)
+    (h2 : PCM.IsSumOf (l.map fun p => p.1 * p.2) 1) :
+    ∀ p ∈ l, p.1 * p.2 = p.1 := by
+  classical
+  have hf₂ : ∀ t : List (M × M),
+      List.Forall₂ (· ≼ ·) (t.map fun q => q.1 * q.2) (t.map Prod.fst) := by
+    intro t
+    induction t with
+    | nil => exact List.Forall₂.nil
+    | cons c u ih => exact List.Forall₂.cons (emon_mul_le_self c.1 c.2) ih
+  intro p hp
+  have hperm : l.Perm (p :: l.erase p) := List.perm_cons_erase hp
+  have k1 := PCM.isSumOf_perm (hperm.map Prod.fst) h1
+  have k2 := PCM.isSumOf_perm (hperm.map fun q => q.1 * q.2) h2
+  rw [List.map_cons, PCM.isSumOf_cons_iff] at k1 k2
+  obtain ⟨s, hs, hps, hes⟩ := k1
+  obtain ⟨s', hs', hps', hes'⟩ := k2
+  -- `s = p₁ᵖ` and `s' = (p₁ ⊙ p₂)ᵖ`
+  have e1 : s = orth p.1 := EffectAlgebra.orth_unique hps hes
+  have e2 : s' = orth (p.1 * p.2) := EffectAlgebra.orth_unique hps' hes'
+  -- `⋁_{j ≠ i} aⱼ ⊙ bⱼ ≤ ⋁_{j ≠ i} aⱼ`, i.e. `(p₁ ⊙ p₂)ᵖ ≤ p₁ᵖ`
+  have hmono : s' ≼ s := PCM.isSumOf_le_of_forall₂ (hf₂ (l.erase p)) hs hs'
+  -- and `p₁ ⊙ p₂ ≤ p₁` gives `p₁ᵖ ≤ (p₁ ⊙ p₂)ᵖ`
+  have hmono' : s ≼ s' := by
+    rw [e1, e2]
+    exact eabasics_le_iff_orth_le.mp (emon_mul_le_self p.1 p.2)
+  have := eabasics_le_antisymm hmono' hmono
+  rw [e1, e2] at this
+  have h3 := congrArg orth this
+  rwa [eabasics_orth_orth, eabasics_orth_orth, eq_comm] at h3
+
 /-- **178V** (`emond-lemma-for-conv`, eff.tex:669, Exercise): if `M` is an
 effect monoid and `a₁, …, aₙ, b₁, …, bₙ ∈ M` with `⋁ᵢ aᵢ = 1` and
 `⋁ᵢ aᵢ ⊙ bᵢ = 1`, then `aᵢ ⊙ bᵢ = aᵢ` for every `i`. -/
@@ -1245,7 +1451,12 @@ theorem emond_lemma_for_conv {M : Type u} [EffectMonoid M] {n : ℕ}
     (a b : Fin n → M)
     (ha : PCM.IsSumOf (List.ofFn a) 1)
     (hab : PCM.IsSumOf (List.ofFn fun i => a i * b i) 1) :
-    ∀ i, a i * b i = a i := sorry
+    ∀ i, a i * b i = a i := by
+  intro i
+  refine emond_lemma_for_conv_list (List.ofFn fun j => (a j, b j)) ?_ ?_
+    (a i, b i) (List.mem_ofFn.mpr ⟨i, rfl⟩)
+  · rw [List.map_ofFn]; exact ha
+  · rw [List.map_ofFn]; exact hab
 
 /-! ## Effect modules (parsec 179) -/
 

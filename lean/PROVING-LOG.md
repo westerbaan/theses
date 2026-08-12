@@ -318,6 +318,41 @@ prove the spine in those terms *alongside* the shipped statements, so nothing is
 restated and no statement changes.  **This has now been done in full**; see the
 next section.
 
+### ⚠️ Session 2 — the `sorry` count overstates progress in B/Eff's upper chain
+
+**The single most important finding of this session, and it is not an erratum.**
+
+`PureCat.category` (`DiamondAmp.lean:938`) — the *`Category` instance on `Pure C`* — defines
+composition as `comp f g := ⟨f.1 ≫ g.1, upm_closed_pure f.2 g.2⟩`, and
+**`upm_closed_pure` (`DiamondAmp.lean:872`) is still `sorry`**.  A sorried lemma
+is therefore baked into an *instance*, so every declaration that treats `Pure C`
+as a category inherits `sorryAx` — which is essentially all of `Dagger.lean` and
+`Comparisons.lean`.
+
+Twelve declarations were confirmed to depend on `sorryAx` while *appearing*
+proved.  Seven are the documented "choice from a sorried existence lemma"
+pattern; **five are flagged nowhere at all**, including `isSharp_ovee` →
+`diamond_oml_subEA` (via `ea_modularity_prop`), `perp_sharp_is_orth` and
+`andthen_square_rule`.  One case is pointed: `pred_sea_s1_s2_s3` carries a
+comment explaining that it *avoids* `pureDagger` because that is "still sorry" —
+and it depends on `sorryAx` regardless, through the category instance.
+
+Consequences:
+
+* **A `sorry` count is not a progress measure.**  Closing goals above
+  `upm_closed_pure` moves the count without making anything true.  Proving
+  **211XI `upm_closed_pure`** (pure maps compose) is worth more than any number
+  of downstream statements, and should be the next target in B/Eff.
+* `lean_verify` / `#print axioms` on the *statement you care about* is the only
+  honest check.  Spot-checking a few per file is not enough when the leak is in
+  an instance every file uses.
+* **Add an automated axiom check** (see below) so this class of leak cannot
+  recur silently.
+
+Note this is a different failure from "citing a sorried lemma", which workers
+are told not to do: nobody cited anything: the dependency entered through
+instance resolution, invisibly.
+
 ### Session 2 — `orderIntervalEffectModule` was also our bug
 
 The second long-standing "open decision" inherited from session 1, and the

@@ -875,19 +875,65 @@ theorem par_c_initial : Nonempty (IsInitial (Par.of (⊥_ C))) :=
     (fun Y m => initialIsInitial.hom_ext
       (show (⊥_ C) ⟶ Y.base ⨿ ⊤_ C from m) _)⟩
 
+/-- `! : 1 ⟶ 1` is the identity. -/
+private theorem terminal_from_self :
+    terminal.from (⊤_ C) = 𝟙 (⊤_ C) := terminalIsTerminal.hom_ext _ _
+
+/-- The identity of `Par C` is `κ₁`. -/
+private theorem par_id_eq (X : C) :
+    (show X ⟶ X ⨿ ⊤_ C from 𝟙 (Par.of X)) = coprod.inl := rfl
+
+/-- Since `Par C(Z, W) = C(Z, W + 1)` naturally in `W`, a square of partial
+maps is a pullback in `Par C` as soon as the square obtained by
+post-composing each map with `[–, κ₂] : (–) + 1 ⟶ (–) + 1` is a pullback
+in `C`.  (This is what makes the reduction of the proof of 186IV to
+185I work.) -/
+private theorem par_isPullback_of_isPullback {P B₁ B₂ Z : C}
+    (fst : Par.of P ⟶ Par.of B₁) (snd : Par.of P ⟶ Par.of B₂)
+    (f : Par.of B₁ ⟶ Par.of Z) (g : Par.of B₂ ⟶ Par.of Z)
+    (h : IsPullback
+      (coprod.desc (show P ⟶ B₁ ⨿ ⊤_ C from fst) coprod.inr)
+      (coprod.desc (show P ⟶ B₂ ⨿ ⊤_ C from snd) coprod.inr)
+      (coprod.desc (show B₁ ⟶ Z ⨿ ⊤_ C from f) coprod.inr)
+      (coprod.desc (show B₂ ⟶ Z ⨿ ⊤_ C from g) coprod.inr)) :
+    IsPullback fst snd f g := by
+  refine IsPullback.mk' ?_ (fun _ _ _ hφ hφ' => h.hom_ext hφ hφ')
+    (fun _ a b hab => ⟨h.lift a b hab, h.lift_fst _ _ _, h.lift_snd _ _ _⟩)
+  have hw := (coprod.inl : P ⟶ P ⨿ ⊤_ C) ≫= h.w
+  rw [← Category.assoc, ← Category.assoc, coprod.inl_desc, coprod.inl_desc] at hw
+  exact hw
+
 /-- **186IV** (`par-pullbacks`, eff.tex:1562, Proposition), left square:
 squares `(id+f̂, ĝ+id; ĝ+id, id+f̂)` are pullbacks in `Par C`. -/
 theorem par_pullbacks_left {X Y A B : C} (g : X ⟶ Y) (f : A ⟶ B) :
     IsPullback (Par.map (𝟙 (Par.of X)) (Par.hat f))
       (Par.map (Par.hat g) (𝟙 (Par.of A)))
       (Par.map (Par.hat g) (𝟙 (Par.of B)))
-      (Par.map (𝟙 (Par.of Y)) (Par.hat f)) := sorry
+      (Par.map (𝟙 (Par.of Y)) (Par.hat f)) := by
+  -- it suffices that the square `(id+(f+id), g+id; g+id, id+(f+id))` on
+  -- `X+(A+1)`, … is a pullback in `C`, which is 185I (eff.tex:1585)
+  refine par_isPullback_of_isPullback _ _ _ _ ?_
+  refine (tot_pullbacks_left g (coprod.map f (𝟙 (⊤_ C)))).of_iso
+    (coprod.associator X A (⊤_ C)).symm (coprod.associator X B (⊤_ C)).symm
+    (coprod.associator Y A (⊤_ C)).symm (coprod.associator Y B (⊤_ C)).symm
+    ?_ ?_ ?_ ?_
+  all_goals
+    ext <;> simp [Par.map, Par.hat, par_id_eq, coprod.inl_desc, coprod.inr_desc]
 
 /-- **186IV** (`par-pullbacks`, eff.tex:1562, Proposition), right square:
 squares `(f̂+id, ▷₁; ▷₁, f̂)` are pullbacks in `Par C`. -/
 theorem par_pullbacks_right {A B X : C} (f : A ⟶ B) :
     IsPullback (Par.map (Par.hat f) (𝟙 (Par.of X)))
-      (Par.pproj₁ A X) (Par.pproj₁ B X) (Par.hat f) := sorry
+      (Par.pproj₁ A X) (Par.pproj₁ B X) (Par.hat f) := by
+  -- it suffices that the square `(f+id, id+!; id+!, f+id)` on `A+(X+1)`, …
+  -- is a pullback in `C`, which is 185I (eff.tex:1592)
+  refine par_isPullback_of_isPullback _ _ _ _ ?_
+  refine (tot_pullbacks_left f (terminal.from (X ⨿ ⊤_ C))).flip.of_iso
+    (coprod.associator A X (⊤_ C)).symm (coprod.associator B X (⊤_ C)).symm
+    (Iso.refl _) (Iso.refl _) ?_ ?_ ?_ ?_
+  all_goals
+    ext <;> simp [Par.map, Par.hat, Par.pproj₁, Par.zero, par_id_eq,
+      coprod.inl_desc, coprod.inr_desc, terminal_from_self]
 
 /-- The canonical iso `0 + 1 ≅ 1` (used for the zero object of `Par C`):
 `[!, id] ≫ κ₂ = id`. -/
@@ -989,10 +1035,94 @@ theorem pardp_2 {X Y : C} (f : Par.of X ⟶ Par.of Y)
   rw [← hlift, terminalIsTerminal.hom_ext (hsq.lift (terminal.from X) f h')
     (terminal.from X)]
 
+/-- The rebracketing `A + (X + 1) ≅ (X + A) + 1`, used for the
+`▷₂`-variant of the right pullback square of 186IV. -/
+private noncomputable def swapAssocIso (X A : C) :
+    A ⨿ (X ⨿ ⊤_ C) ≅ (X ⨿ A) ⨿ ⊤_ C where
+  hom := coprod.desc (coprod.inr ≫ coprod.inl)
+    (coprod.desc (coprod.inl ≫ coprod.inl) coprod.inr)
+  inv := coprod.desc (coprod.desc (coprod.inl ≫ coprod.inr) coprod.inl)
+    (coprod.inr ≫ coprod.inr)
+  hom_inv_id := by ext <;> simp [coprod.inl_desc, coprod.inr_desc]
+  inv_hom_id := by ext <;> simp [coprod.inl_desc, coprod.inr_desc]
+
+/-- The `▷₂`-variant of the right pullback square of 186IV: squares
+`(id+f̂, ▷₂; ▷₂, f̂)` are pullbacks in `Par C`.  (The diagram in the proof of
+186X uses both variants; this one reduces to 185I in the same way, via the
+rebracketing `A+(X+1) ≅ (X+A)+1`.) -/
+private theorem par_pullbacks_right₂ {A B X : C} (f : A ⟶ B) :
+    IsPullback (Par.map (𝟙 (Par.of X)) (Par.hat f))
+      (Par.pproj₂ X A) (Par.pproj₂ X B) (Par.hat f) := by
+  refine par_isPullback_of_isPullback _ _ _ _ ?_
+  refine (tot_pullbacks_left f (terminal.from (X ⨿ ⊤_ C))).flip.of_iso
+    (swapAssocIso X A) (swapAssocIso X B) (Iso.refl _) (Iso.refl _) ?_ ?_ ?_ ?_
+  all_goals
+    ext <;> simp [Par.map, Par.hat, Par.pproj₂, Par.zero, par_id_eq,
+      swapAssocIso, coprod.inl_desc, coprod.inr_desc, terminal_from_self]
+
+/-- `▷₁ : 1+1 ⇸ 1` is the cotuple `[κ₁,κ₂,κ₂]` of the joint monicity axiom
+of 180I. -/
+private theorem par_pproj₁_one :
+    (coprod.desc (show (⊤_ C) ⨿ ⊤_ C ⟶ (⊤_ C) ⨿ ⊤_ C from
+        Par.pproj₁ (⊤_ C) (⊤_ C)) coprod.inr :
+      ((⊤_ C) ⨿ ⊤_ C) ⨿ ⊤_ C ⟶ (⊤_ C) ⨿ ⊤_ C)
+      = coprod.desc (coprod.desc coprod.inl coprod.inr) coprod.inr := by
+  simp [Par.pproj₁, Par.zero, terminal_from_self]
+
+/-- `▷₂ : 1+1 ⇸ 1` is the cotuple `[κ₂,κ₁,κ₂]` of the joint monicity axiom
+of 180I. -/
+private theorem par_pproj₂_one :
+    (coprod.desc (show (⊤_ C) ⨿ ⊤_ C ⟶ (⊤_ C) ⨿ ⊤_ C from
+        Par.pproj₂ (⊤_ C) (⊤_ C)) coprod.inr :
+      ((⊤_ C) ⨿ ⊤_ C) ⨿ ⊤_ C ⟶ (⊤_ C) ⨿ ⊤_ C)
+      = coprod.desc (coprod.desc coprod.inr coprod.inl) coprod.inr := by
+  simp [Par.pproj₂, Par.zero, terminal_from_self]
+
+/-- The joint monicity axiom of 180I, read in `Par C`: `▷₁, ▷₂ : 1+1 ⇸ 1`
+are jointly monic (eff.tex:1703). -/
+private theorem par_pproj_jointlyMonic_one :
+    JointlyMonic (Par.pproj₁ (⊤_ C) (⊤_ C)) (Par.pproj₂ (⊤_ C) (⊤_ C)) := by
+  intro Z a b ha hb
+  refine EffectusTotalForm.jointlyMonic_cotuples a b ?_ ?_
+  · rw [← par_pproj₁_one]
+    exact ha
+  · rw [← par_pproj₂_one]
+    exact hb
+
 /-- **186X** (`pproj-joint-monicity`, eff.tex:1667, Proposition): the
 partial projectors `▷₁, ▷₂` are jointly monic in `Par C`. -/
 theorem pproj_joint_monicity (X Y : C) :
-    JointlyMonic (Par.pproj₁ X Y) (Par.pproj₂ X Y) := sorry
+    JointlyMonic (Par.pproj₁ X Y) (Par.pproj₂ X Y) := by
+  -- the diagram of eff.tex:1676: the three inner squares are pullbacks by
+  -- 186IV, the pair `▷₁, ▷₂ : 1+1 ⇸ 1` is jointly monic by the axiom, and
+  -- 184II propagates joint monicity to the outer `▷₁, ▷₂`
+  have hTL := par_pullbacks_left (terminal.from X) (terminal.from Y)
+  have hTR := par_pullbacks_right (X := ⊤_ C) (terminal.from X)
+  have hBL := par_pullbacks_right₂ (X := ⊤_ C) (terminal.from Y)
+  have key := joint_monicity_stable hTR.w.symm hBL.w.symm hTL.w
+    par_pproj_jointlyMonic_one
+    (exc_jointly_monic_pullback hTR.flip)
+    (exc_jointly_monic_pullback hBL.flip)
+    (exc_jointly_monic_pullback hTL)
+  have e₁ : Par.map (𝟙 (Par.of X)) (Par.hat (terminal.from Y)) ≫
+      Par.pproj₁ X (⊤_ C) = Par.pproj₁ X Y := by
+    show (show X ⨿ Y ⟶ (X ⨿ ⊤_ C) ⨿ ⊤_ C from
+        Par.map (𝟙 (Par.of X)) (Par.hat (terminal.from Y))) ≫
+        coprod.desc (show X ⨿ ⊤_ C ⟶ X ⨿ ⊤_ C from Par.pproj₁ X (⊤_ C))
+          coprod.inr
+      = (show X ⨿ Y ⟶ X ⨿ ⊤_ C from Par.pproj₁ X Y)
+    ext <;> simp [Par.map, Par.hat, Par.pproj₁, Par.zero, par_id_eq,
+      coprod.inl_desc, coprod.inr_desc, terminal_from_self]
+  have e₂ : Par.map (Par.hat (terminal.from X)) (𝟙 (Par.of Y)) ≫
+      Par.pproj₂ (⊤_ C) Y = Par.pproj₂ X Y := by
+    show (show X ⨿ Y ⟶ ((⊤_ C) ⨿ Y) ⨿ ⊤_ C from
+        Par.map (Par.hat (terminal.from X)) (𝟙 (Par.of Y))) ≫
+        coprod.desc (show (⊤_ C) ⨿ Y ⟶ Y ⨿ ⊤_ C from Par.pproj₂ (⊤_ C) Y)
+          coprod.inr
+      = (show X ⨿ Y ⟶ Y ⨿ ⊤_ C from Par.pproj₂ X Y)
+    ext <;> simp [Par.map, Par.hat, Par.pproj₂, Par.zero, par_id_eq,
+      coprod.inl_desc, coprod.inr_desc, terminal_from_self]
+  rwa [e₁, e₂] at key
 
 end TotalToPartial
 
