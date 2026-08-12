@@ -1413,7 +1413,22 @@ noncomputable def orderIntervalEffectModule (V : Type v) [AddCommGroup V]
 /-- **179III.2** (eff.tex:731, Examples): *representation theorem* (Gudder–
 Pulmannová): every effect module over `[0,1]` is isomorphic to the order
 interval `[0,u]` of an ordered real vector space `V` with order unit `u`,
-by a bijection preserving partial sum and scalar multiplication. -/
+by a bijection preserving partial sum and scalar multiplication.
+
+**PARKED — this is not a result of the thesis.**  eff.tex:739 asserts it by
+*citation only* ("In fact, every effect module over `[0,1]` is of this form
+`\cite{gudder1998representation}`"); there is no proof in the text to
+transcribe, and nothing in this development uses it.  Proving it is an
+independent project (Gudder's representation theorem), not part of validating
+the thesis.
+
+Note also that the statement below is **weaker than the cited result**: it
+produces only `[PartialOrder V] [IsOrderedAddMonoid V]` and `0 ≤ u`, whereas
+"ordered real vector space with order unit" additionally requires the positive
+cone to be closed under nonnegative scalars (`PosSMulMono`/`SMulPosMono`, as in
+`orderIntervalEffectModule` above) and `u` to be an order unit.  If this is ever
+revived, strengthen it first — as written it would be provable without being the
+theorem. -/
 theorem effectModule_unitInterval_representation (E : Type u) [EffectAlgebra E]
     [EffectModule I E] :
     ∃ (V : Type u) (_ : AddCommGroup V) (_ : Module ℝ V) (_ : PartialOrder V)
