@@ -204,8 +204,24 @@ Per `sorry`: **(a)** look for the Mathlib lemma first — many statements close
 in one line; **(b)** otherwise read the thesis's own proof — in the `.tex`,
 nearly every statement point is immediately followed by a `{Proof}` point,
 and each Lean doc comment gives `file:LINE`; **(c)** exercise solutions are in
-`../asols.tex` / `../bsols.tex`, keyed by the *same* LaTeX label the doc
-comment carries: `grep -n 'solution}{exc-subbase}' ../bsols.tex`.
+`../asols.tex` / `../bsols.tex`.
+
+⚠️ **The two solution files are keyed differently, and getting this wrong is
+silent.**  `bsols.tex` uses the LaTeX label the doc comment carries
+(`grep -n 'solution}{exc-subbase}' ../bsols.tex`), but `asols.tex` uses
+**parsec/point numbers**: `solution}{parsec-<parsec×10>.<point×10>}`, so `4IV`
+is `parsec-40.40`, `9X` is `parsec-90.100`, `11XV` is `parsec-110.150`.  A
+label search against `asols.tex` matches **none** of its 64 solutions and looks
+exactly like "there is no published solution".  This cost session 2 a batch of
+statements that were proved from Mathlib without ever consulting the author's
+argument — see the divergence list at the top of PROVING-LOG.md.
+
+**Ordering caveat:** step (a) before (b) is efficient, but if a Mathlib lemma
+closes the goal it is tempting to stop there and never read the thesis proof.
+That is fine for throughput and bad for the errata, which are the point of the
+exercise — errata are only found by *comparing* the two. When you skip the
+thesis proof, log that you skipped it (case 4 in PROVING-LOG's divergence list)
+so the gap is visible rather than invisible.
 
 ### Tooling: the Lean MCP server (installed)
 
@@ -330,8 +346,13 @@ files.  What to watch for (all of it bit us at least once):
 Rules given to every worker, worth keeping:
 * **Never change a statement.**  Park instead: leave the `sorry`, add a line
   to PROVING-LOG.md saying why.  A wrong proof is far worse than a `sorry`.
-* Log every thesis proof you had to repair (see PROVING-LOG.md) — that file
-  is the most valuable output of this exercise for the authors.
+* Log every place your proof **diverges from the thesis's**, not merely the
+  ones you had to repair (see PROVING-LOG.md) — that file is the most valuable
+  output of this exercise for the authors.  Four cases: thesis proof wrong;
+  thesis proof fine but you used another route; different dependency order;
+  and **you never read the thesis proof at all**.  The last is the easiest to
+  omit and the most important to state, because it marks a statement that is
+  proved but *not* cross-checked.
 * Compile after every small batch; never leave a file broken.
 * No `axiom`s, no `native_decide`.
 

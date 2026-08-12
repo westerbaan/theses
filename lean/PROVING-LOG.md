@@ -16,15 +16,36 @@ Do not re-derive the mathematics — the theses contain it.
    Theorem point is immediately followed by a `\begin{point}{N}{Proof}` point
    with the author's proof.  Each Lean declaration's doc comment gives
    `file:LINE`; read on from there in the `.tex`.
-2. **Exercise solutions.** `../bsols.tex` (thesis B, 79 solutions) and
-   `../asols.tex` (thesis A, 64) hold worked solutions, keyed by the *same*
-   LaTeX label our doc comments carry:
-   `grep -n 'solution}{exc-subbase}' ../bsols.tex`.
+2. **Exercise solutions.**  `../bsols.tex` (thesis B, 79 solutions) and
+   `../asols.tex` (thesis A, 64).  **The two are keyed differently — this
+   caught us out for a whole session:**
+   * `bsols.tex` uses the *same LaTeX label* our doc comments carry:
+     `grep -n 'solution}{exc-subbase}' ../bsols.tex`.
+   * `asols.tex` uses **parsec and point numbers**, not labels:
+     `solution}{parsec-<parsec×10>.<point×10>}`.  So the DISP `4IV` (parsec 4,
+     point IV = 4) is `grep -n 'solution}{parsec-40.40}' ../asols.tex`; `9X` is
+     `parsec-90.100`; `11XV` is `parsec-110.150`.
+     Grepping `asols.tex` by label returns **zero matches for all 64
+     solutions**, which reads exactly like "there is no solution".  List what
+     exists with `grep -o 'solution}{[^}]*}' ../asols.tex`.
 3. **Errata.** `../berr.tex` — check here when a statement looks false.
 
 So the workflow per `sorry` is: find the thesis's own proof, then transcribe
 it into Lean.  When parking an item, note whether the thesis has a proof you
 couldn't transcribe or leaves it to the reader.
+
+**Record every divergence, not just repairs.**  The authors need to know which
+statements have actually been cross-checked against their arguments.  Four
+cases, all worth logging:
+
+1. the thesis proof is wrong or incomplete (the errata below);
+2. the thesis proof is fine but Lean took a different route (say which Mathlib
+   lemma replaced it);
+3. the Lean proof uses a different *dependency order* (e.g. 34XVI, 23VII.0'');
+4. **the thesis proof was never consulted** — closed directly from Mathlib.
+   This is a legitimate and useful entry: it flags a statement that is proved
+   but *not* cross-checked against the thesis.  It is also the easiest to omit,
+   so state it explicitly.
 
 ## Errata / proof repairs
 
@@ -206,6 +227,55 @@ the Lean proof does instead.`)
   `inv_mult_state` is Mathlib's `WeakDual.CharacterSpace.exists_apply_eq_zero`,
   **27XVII**, **27XVIII**, **27XXVII**) from Mathlib, and the Riesz-ideal
   machinery of 27VIII–27XIII is left as the thesis's own (independent) route.
+
+### Session 2 — divergences from the thesis's proofs (A/CStar/Basic.lean)
+
+**These statements are proved but were NOT cross-checked against the thesis's
+own argument.**  They were closed directly from Mathlib without reading the
+published proof or solution — in most cases because the solution was looked for
+with the wrong `grep` pattern (see "Where the proofs are" above: `asols.tex` is
+keyed by `parsec-N.M`, not by label, so a label search finds nothing and looks
+like "no solution exists").  **A published solution does in fact exist for every
+one of them.**  Re-checking these against the authors' arguments is outstanding
+work — it is exactly the cross-check that produces errata.
+
+- **4IV** `operatorNorm_ball` — solution at `parsec-40.40`.  Lean proves
+  `r‖T‖ = sup{‖Tx‖ : ‖x‖ ≤ r}` by rescaling `x` to norm exactly `r` and
+  bounding via `ContinuousLinearMap.opNorm_le_bound`, with a separate `r = 0`
+  branch.  Not compared to the author's argument.
+- **4XV**.4 `inner_product_basic_4` — solution at `parsec-40.150`.  Closed from
+  Mathlib's `inner_eq_sum_norm_sq_div_four` after rewriting `‖Iⁿx + y‖` into
+  `‖x ± Iy‖` form.  Not compared.
+- **7III**.8 `cstar_involution_basic_8` — solution at `parsec-70.30`.  Lean uses
+  its own counterexample `a = !![0,1;0,0]`; the authors may intend a different
+  one.  Not compared.
+- **7III**.13' `cstar_involution_basic_13'` — solution at `parsec-70.30`.  Lean
+  sidesteps computing any operator norm: it picks `T` with `T² = 0` but `T ≠ 0`,
+  reducing the claim to `0 ≠ ‖T‖²`.  Almost certainly *not* the thesis's route.
+- **9II** `cx_positive` — solution at `parsec-90.20`.  Lean proves the five-way
+  TFAE as the cycle 1→2→3→1 plus 1→5→4→1, chosen for convenience; the author's
+  cycle is likely different.  Not compared.
+- **9X**.3 `cstar_positive_3` — solution at `parsec-90.100`.  Lean uses its own
+  counterexample (`!![1,0;0,0]`, `!![1,1;1,1]` via `Matrix.toEuclideanCLM`), with
+  the obstruction being that `ab` is not self-adjoint.  Not compared.
+- **11XV**.3 `spectrum_self_adjoint_real_3` — solution at `parsec-110.150`.
+  Closed from Mathlib's spectral mapping (`spectrum.map_pow_of_pos`,
+  `spectrum.pow_mem_pow`) plus `Odd.pow_nonneg_iff`.  Not compared.
+- **11XX**.2 `spectrum_matrix` — solution at `parsec-110.200`.  Closed from
+  `Matrix.exists_mulVec_eq_zero_iff`.  Not compared.
+- **11XXI**.1' `spectrum_basic_1'` — solution at `parsec-110.210`.  Derived from
+  our own `spectrum_matrix` rather than from the thesis's argument.  Not
+  compared.
+
+For contrast, the two that *were* cross-checked:
+
+- **4XIII**.2 `positive_2x2matrix_2` — **follows the thesis**, transcribing the
+  `v = 1`, `u = tc̄` discriminant argument at cstar.tex:571 including its
+  `p = 0` / `p > 0` split.
+- **5III** `projection_on_c00` — **deliberate divergence**, and the Lean proof is
+  shorter: the thesis argues via density of `c₀₀` in `ℓ²`, whereas orthogonality
+  of `x − y` to each `lp.single 2 n 1` kills every coordinate directly, so
+  `lp.ext` closes it with no density argument at all.
 
 ### Session 2 (A/CStar)
 
