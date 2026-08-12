@@ -1,0 +1,108 @@
+/-
+Theses/AxiomCheck.lean
+
+A diagnostic command, `#sorry_leaks`, that reports every declaration in the
+`Theses` namespace whose proof depends on `sorryAx`.  It distinguishes
+
+* **direct** leaks — the declaration is itself `sorry` (`sorryAx` occurs in
+  its own type or value); these are the honest, counted `sorry`s; and
+* **indirect** leaks — the declaration looks proved but *uses* a `sorry`ed
+  result, typically through a `Prop`-valued class instance or a
+  `Classical.choice` of a `sorry`ed existence statement.  These are the
+  dangerous ones: `grep -c sorry` does not see them.
+
+For each indirect leak the offending direct `sorry`s it rests on are listed.
+
+This file is deliberately **NOT** imported by `Theses.lean`, so it has no
+effect on the normal build.  Run it with
+
+    lake env lean Theses/AxiomCheck.lean
+
+Beware: `#sorry_leaks` walks the whole environment, so it takes a while.
+-/
+import Theses
+import Lean.Util.CollectAxioms
+import Lean.Elab.Command
+
+open Lean Elab Command
+
+namespace Theses.AxiomCheck
+
+/-- Does `e` mention `sorryAx` itself? -/
+private def exprHasSorry (e : Expr) : Bool :=
+  (e.find? fun s => s.isConstOf ``sorryAx).isSome
+
+/-- Is the declaration *itself* a `sorry` (as opposed to merely depending on
+one)? -/
+private def isDirectSorry (ci : ConstantInfo) : Bool :=
+  exprHasSorry ci.type ||
+    (match ci.value? with | some v => exprHasSorry v | none => false)
+
+/-- The constants directly used by a declaration (type and value). -/
+private def usedConstants (ci : ConstantInfo) : Array Name :=
+  ci.type.getUsedConstants ++
+    (match ci.value? with | some v => v.getUsedConstants | none => #[])
+
+/-- For a declaration `n`, the set of *directly* `sorry`ed declarations (drawn
+from `directs`) that `n` transitively depends on.  Memoised; the search is
+pruned by `collectAxioms`, which is `O(1)` for imported declarations. -/
+private partial def sorryRoots (directs : NameSet) (n : Name) :
+    StateT (NameMap NameSet) CommandElabM NameSet := do
+  if let some r := (← get).find? n then
+    return r
+  -- provisional entry, so that a dependency cycle terminates
+  modify (·.insert n {})
+  let axs ← Lean.collectAxioms n
+  unless axs.contains ``sorryAx do
+    return {}
+  let mut acc : NameSet := if directs.contains n then ({} : NameSet).insert n else {}
+  if let some ci := (← getEnv).find? n then
+    for d in usedConstants ci do
+      if d != n then
+        let r ← sorryRoots directs d
+        for x in r.toList do
+          acc := acc.insert x
+  modify (·.insert n acc)
+  return acc
+
+/--
+`#sorry_leaks` lists every declaration under the `Theses` namespace whose
+axioms include `sorryAx`, split into declarations that are themselves `sorry`
+and declarations that merely depend on one (with the `sorry`s they rest on).
+-/
+elab "#sorry_leaks" : command => do
+  let env ← getEnv
+  let names : Array Name :=
+    env.constants.fold
+      (fun (acc : Array Name) (n : Name) _ =>
+        if (`Theses).isPrefixOf n && !n.isInternalDetail then acc.push n else acc)
+      #[]
+  let names := names.qsort Name.lt
+  let mut direct : Array Name := #[]
+  let mut indirect : Array Name := #[]
+  for n in names do
+    let axs ← Lean.collectAxioms n
+    if axs.contains ``sorryAx then
+      if let some ci := env.find? n then
+        if isDirectSorry ci then direct := direct.push n else indirect := indirect.push n
+  let directSet : NameSet := direct.foldl (init := {}) fun s n => s.insert n
+  let mut msg := m!"checked {names.size} declarations under `Theses`\n"
+  msg := msg ++
+    m!"{direct.size} are themselves `sorry`; {indirect.size} depend on a `sorry`\n"
+  msg := msg ++ m!"\n=== declarations that ARE `sorry` ({direct.size}) ===\n"
+  for n in direct do
+    msg := msg ++ m!"  {n}\n"
+  msg := msg ++
+    m!"\n=== declarations that DEPEND on a `sorry` ({indirect.size}) ===\n"
+  for n in indirect do
+    let roots ← (sorryRoots directSet n).run' {}
+    let rs := roots.toList
+    if rs.isEmpty then
+      msg := msg ++ m!"  {n}\n"
+    else
+      msg := msg ++ m!"  {n}\n      via: {rs}\n"
+  logInfo msg
+
+end Theses.AxiomCheck
+
+#sorry_leaks

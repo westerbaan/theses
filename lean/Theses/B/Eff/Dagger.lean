@@ -96,6 +96,13 @@ theorem isPure_comprehension {W X : C} {p : Pred X} {π : W ⟶ X}
     (h : IsComprehension p π) : IsPure π :=
   ⟨W, 𝟙 W, π, 0, p, quotient_basics_3 _, h, (Category.id_comp _).symm⟩
 
+/-- Isomorphisms are faithful: `im α = im id = 1` by 202V. -/
+theorem faithfulMap_of_isIso {X Y : C} (θ : X ⟶ Y) [IsIso θ] : FaithfulMap θ := by
+  have h := (im_ineq (𝟙 Y) θ).2 θ inferInstance
+  rw [Category.comp_id, imPred_id] at h
+  have h4 := isImage_imPred θ
+  rwa [h] at h4
+
 /-- **215I** (eff.tex:5299, Definition): a **†-effectus** is an &-effectus
 `C` such that
 
@@ -233,7 +240,20 @@ def IsDaggerOf (f : X ⟶ Y) (g : Y ⟶ X) : Prop :=
 †'-effectus every pure map has a unique dagger in the sense of
 `IsDaggerOf` (well-definedness is the argument of 217I). -/
 theorem pureDagger_existsUnique [DaggerPrimeEffectus C] (f : X ⟶ Y)
-    (hf : IsPure f) : ∃! g : Y ⟶ X, IsDaggerOf f g := sorry
+    (hf : IsPure f) : ∃! g : Y ⟶ X, IsDaggerOf f g := by
+  obtain ⟨g₀, ⟨-, hg₀⟩, hu⟩ := standard_form_map f
+  haveI hiso : IsIso g₀ := standard_form_map_pure hf g₀ hg₀
+  refine ⟨zetaMap (imPred f) (isSharp_imPred C f) ≫ inv g₀ ≫
+      comprMap (ceilPred (f ≫ truth Y)) ≫ asrt (f ≫ truth Y),
+    ⟨asIso g₀, hg₀, rfl⟩, ?_⟩
+  rintro g₁ ⟨α, hα, hgeq⟩
+  -- `α.hom` also puts `f` in standard form, so `α.hom = g₀` by 212III
+  have hαg : α.hom = g₀ :=
+    hu α.hom ⟨⟨iso_isTotal α.hom, faithfulMap_of_isIso C α.hom⟩, hα⟩
+  have hinv : α.inv = inv g₀ := by
+    refine (cancel_mono g₀).mp ?_
+    rw [IsIso.inv_hom_id, ← hαg, α.inv_hom_id]
+  rw [hgeq, hinv]
 
 /-- **217II** (`dagger-definition2`, eff.tex:5738, Definition): the dagger
 `f†` of a pure map `f` in a †'-effectus. -/
