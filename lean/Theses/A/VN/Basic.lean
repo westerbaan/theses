@@ -30,6 +30,7 @@ via the convergence predicates `UWTendsto`/`USTendsto`.
 import Theses.Common
 import Theses.A.CStar.Basic
 import Theses.A.CStar.TowardsVN
+import Theses.A.CStar.Representation
 
 open scoped ComplexOrder ComplexInnerProductSpace CStarAlgebra ENNReal symmDiff
 open Filter Topology MeasureTheory Theses Theses.A.CStar
@@ -288,6 +289,33 @@ omit [StarOrderedRing A] in
     ω (a - b) = ω a - ω b :=
   map_sub ω.toPositiveLinearMap a b
 
+omit [StarOrderedRing A] in
+@[simp] theorem npFunctional_neg (ω : NPFunctional A) (a : A) : ω (-a) = -ω a :=
+  map_neg ω.toPositiveLinearMap a
+
+omit [StarOrderedRing A] in
+@[simp] theorem npFunctional_add (ω : NPFunctional A) (a b : A) :
+    ω (a + b) = ω a + ω b :=
+  map_add ω.toPositiveLinearMap a b
+
+omit [StarOrderedRing A] in
+@[simp] theorem npFunctional_zero (ω : NPFunctional A) : ω (0 : A) = 0 :=
+  map_zero ω.toPositiveLinearMap
+
+theorem npFunctional_mono (ω : NPFunctional A) {a b : A} (h : a ≤ b) :
+    (ω a : ℂ) ≤ ω b :=
+  ω.toPositiveLinearMap.monotone h
+
+theorem npFunctional_nonneg (ω : NPFunctional A) {a : A} (ha : 0 ≤ a) :
+    (0 : ℂ) ≤ ω a := by
+  have h1 := npFunctional_mono ω ha
+  rwa [npFunctional_zero] at h1
+
+/-- An np-functional is involution preserving (cstar.tex 10IV). -/
+theorem npFunctional_star (ω : NPFunctional A) (a : A) :
+    ω (star a) = star (ω a) :=
+  map_star ω.toPositiveLinearMap a
+
 /-- The "balls" `{a | ‖a - b‖_ω < ε}` of **42III** are ultrastrong
 neighbourhoods of `b` (they are among the generators of the topology). -/
 theorem ultrastrong_ball_mem_nhds (ω : NPFunctional A) (b : A) {ε : ℝ}
@@ -316,6 +344,35 @@ theorem continuous_ultrastrong_npFunctional (ω : NPFunctional A) :
     nlinarith
   rw [Metric.mem_ball, dist_eq_norm]
   linarith
+
+/-- Every np-functional is ultraweakly continuous: the ultraweak topology is
+by definition the initial topology of the np-functionals. -/
+theorem continuous_ultraweak_npFunctional (ω : NPFunctional A) :
+    @Continuous A ℂ (ultraweak A) _ (fun a => ω a) :=
+  continuous_iff_le_induced.mpr (iInf_le _ ω)
+
+/-- Auxiliary: an intersection of ultraweakly closed sets is ultraweakly
+closed (`isClosed_iInter` with the topology spelled out). -/
+private theorem isClosed_ultraweak_iInter {ι : Sort*} (s : ι → Set A)
+    (h : ∀ i, @IsClosed A (ultraweak A) (s i)) :
+    @IsClosed A (ultraweak A) (⋂ i, s i) := by
+  letI : TopologicalSpace A := ultraweak A
+  exact isClosed_iInter h
+
+/-- Auxiliary: the intersection of two ultraweakly closed sets. -/
+private theorem isClosed_ultraweak_inter (s t : Set A)
+    (hs : @IsClosed A (ultraweak A) s) (ht : @IsClosed A (ultraweak A) t) :
+    @IsClosed A (ultraweak A) (s ∩ t) := by
+  letI : TopologicalSpace A := ultraweak A
+  exact hs.inter ht
+
+/-- Auxiliary: the preimage of a closed subset of `ℂ` under an np-functional
+is ultraweakly closed. -/
+private theorem isClosed_ultraweak_preimage (ω : NPFunctional A) {S : Set ℂ}
+    (hS : IsClosed S) :
+    @IsClosed A (ultraweak A) ((fun a : A => (ω a : ℂ)) ⁻¹' S) :=
+  (@continuous_iff_isClosed A ℂ (ultraweak A) _ _).mp
+    (continuous_ultraweak_npFunctional ω) S hS
 
 /-- **43I** (`uwweaker`): the ultrastrong topology is finer than the
 ultraweak topology.  (Mathlib orders topologies by fineness: `t ≤ s` means
@@ -1215,21 +1272,150 @@ theorem ad_normal [VonNeumannAlgebra A] (a : A) (D : Set (selfAdjoint A))
       fun e he => hu ⟨e, he, rfl⟩
     exact hlubE.2 hub
 
+/-- **44VIII** in the form needed below: conjugation by `a` preserves the
+suprema of bounded directed sets, stated on `sa(A)`. -/
+private theorem conjSA_isLUB [VonNeumannAlgebra A] (a : A)
+    {D : Set (selfAdjoint A)} {s : selfAdjoint A} (hne : D.Nonempty)
+    (hdir : DirectedOn (· ≤ ·) D) (hlub : IsLUB D s) :
+    IsLUB (conjSA a '' D) (conjSA a s) := by
+  have h : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧ BddAbove D :=
+    ⟨hne, hdir, ⟨s, hlub.1⟩⟩
+  have hs : dirSup D h = s := (isLUB_dirSup D h).unique hlub
+  have hA := ad_normal a D h
+  rw [hs] at hA
+  have himg : (fun d : selfAdjoint A => star a * (d : A) * a) '' D
+      = Subtype.val '' (conjSA a '' D) := by
+    rw [← Set.image_comp]; rfl
+  rw [himg, ← conjSA_coe a s] at hA
+  refine ⟨?_, ?_⟩
+  · rintro _ ⟨d, hd, rfl⟩
+    exact Subtype.coe_le_coe.mp (hA.1 ⟨conjSA a d, ⟨d, hd, rfl⟩, rfl⟩)
+  · intro v hv
+    refine Subtype.coe_le_coe.mp (hA.2 ?_)
+    rintro _ ⟨e, he, rfl⟩
+    exact Subtype.coe_le_coe.mpr (hv he)
+
 end AdNormal
+
+/-- **72III**.1a (`bstaromega-basic`, vn.tex:3850) as far as it is needed
+here: for an np-functional `ω` and `b ∈ A` the functional `b*ω : a ↦ ω(b* a b)`
+is again an np-functional.  Positivity is
+`star_left_conjugate_le_conjugate`; normality is exactly **44VIII**
+(`ad_normal`).  This is what turns the (trivial) faithfulness of the
+np-functionals into *order* separation in **44XI**. -/
+noncomputable def conjNP [VonNeumannAlgebra A] (b : A) (ω : NPFunctional A) :
+    NPFunctional A where
+  toPositiveLinearMap :=
+    { toFun := fun x => ω (star b * x * b)
+      map_add' := fun x y => by
+        rw [mul_add, add_mul]; exact map_add ω.toPositiveLinearMap _ _
+      map_smul' := fun c x => by
+        rw [mul_smul_comm, smul_mul_assoc]
+        exact map_smul ω.toPositiveLinearMap _ _
+      monotone' := fun x y hxy =>
+        ω.toPositiveLinearMap.monotone (star_left_conjugate_le_conjugate hxy b) }
+  preservesDirSups' := by
+    intro D s hne hdir hlub
+    have hEdir : DirectedOn (· ≤ ·) (conjSA b '' D) := by
+      rintro _ ⟨x, hx, rfl⟩ _ ⟨z, hz, rfl⟩
+      obtain ⟨u, hu, hxu, hzu⟩ := hdir x hx z hz
+      exact ⟨conjSA b u, ⟨u, hu, rfl⟩, conjSA_mono b hxu, conjSA_mono b hzu⟩
+    have hkey := ω.preservesDirSups' (conjSA b '' D) (conjSA b s)
+      (hne.image _) hEdir (conjSA_isLUB b hne hdir hlub)
+    rw [← Set.image_comp] at hkey
+    exact hkey
+
+@[simp] theorem conjNP_apply [VonNeumannAlgebra A] (b : A) (ω : NPFunctional A)
+    (a : A) : conjNP b ω a = ω (star b * a * b) :=
+  rfl
+
+/-- **44XI** (`vn-positive-basic`, vn.tex:756, Exercise), the preliminary
+claim in the form **30X** delivers it: `a` is positive as soon as
+`ω(c* a c) ≥ 0` for every np-functional `ω` and every `c ∈ A`.
+
+The np-functionals are *centre separating* for the trivial reason that they
+are faithful (take `c = 1`); cstar.tex **30X** turns that into order
+separation of the family `{a ↦ ω(c* a c)}`, whose members are np-functionals
+again by `conjNP` (i.e. by **44VIII**). -/
+theorem nonneg_of_conjNP [VonNeumannAlgebra A] {a : A}
+    (h : ∀ (ω : NPFunctional A) (c : A), (0 : ℂ) ≤ ω (star c * a * c)) :
+    0 ≤ a := by
+  -- the np-functionals, as a family of positive linear maps
+  set Ω : NPFunctional A → (A →ₗ[ℂ] ℂ) :=
+    fun ω => ω.toPositiveLinearMap.toLinearMap with hΩ
+  have hpos : ∀ ω, IsPositiveMap (Ω ω) := fun ω x hx => by
+    have h0 : (ω 0 : ℂ) = 0 := map_zero ω.toPositiveLinearMap
+    have h1 : (ω 0 : ℂ) ≤ ω x := ω.toPositiveLinearMap.monotone hx
+    rw [h0] at h1
+    exact h1
+  -- the family is centre separating: this is bare faithfulness (take `c = 1`)
+  have hcentre : CentreSeparating Ω := by
+    intro x hx
+    refine ⟨fun hx0 ω c => by rw [hx0]; simp, fun H => ?_⟩
+    refine VonNeumannAlgebra.np_faithful x hx fun ω => ?_
+    have h1 := H ω 1
+    rw [star_one, one_mul, mul_one] at h1
+    exact h1
+  -- **30X** upgrades that to order separation of `{a ↦ ω(c* a c)}`
+  refine ((proto_gelfand_naimark_1 Ω hpos).mp hcentre a).mpr fun p => ?_
+  show (0 : ℂ) ≤ Ω p.1 (star p.2 * (a * p.2))
+  rw [← mul_assoc]
+  exact h p.1 p.2
 
 /-- **44XI** (`vn-positive-basic`, vn.tex:756, Exercise), preliminary claim:
 the np-functionals on a von Neumann algebra are not only faithful but order
 separating. -/
 theorem np_orderSeparating [VonNeumannAlgebra A] (a b : A)
     (ha : IsSelfAdjoint a) (hb : IsSelfAdjoint b)
-    (h : ∀ ω : NPFunctional A, ω a ≤ ω b) : a ≤ b :=
-  sorry
+    (h : ∀ ω : NPFunctional A, ω a ≤ ω b) : a ≤ b := by
+  rw [← sub_nonneg]
+  refine nonneg_of_conjNP fun ω c => ?_
+  have hle := h (conjNP c ω)
+  rw [conjNP_apply, conjNP_apply] at hle
+  rw [show star c * (b - a) * c = star c * b * c - star c * a * c by noncomm_ring,
+    npFunctional_sub, sub_nonneg]
+  exact hle
+
+/-- **44XI**, preliminary claim, separating form: an element killed by every
+np-functional is zero.  (Faithfulness gives this only for *positive*
+elements; order separation removes that restriction.) -/
+theorem np_separating [VonNeumannAlgebra A] (a : A)
+    (h : ∀ ω : NPFunctional A, ω a = 0) : a = 0 := by
+  have h1 : (0 : A) ≤ a := nonneg_of_conjNP fun ω c => by
+    have := h (conjNP c ω); rw [conjNP_apply] at this; rw [this]
+  have h2 : (0 : A) ≤ -a := nonneg_of_conjNP fun ω c => by
+    have := h (conjNP c ω)
+    rw [conjNP_apply] at this
+    rw [show star c * (-a) * c = -(star c * a * c) by noncomm_ring,
+      npFunctional_neg, this, neg_zero]
+  exact le_antisymm (neg_nonneg.mp h2) h1
+
+/-- **44XI**, preliminary claim: the np-functionals separate the points of a
+von Neumann algebra. -/
+theorem eq_of_forall_npFunctional [VonNeumannAlgebra A] {a b : A}
+    (h : ∀ ω : NPFunctional A, ω a = ω b) : a = b :=
+  sub_eq_zero.mp (np_separating (a - b) fun ω => by
+    rw [npFunctional_sub, h ω, sub_self])
 
 /-- **44XI** (`vn-positive-basic`, vn.tex:756, Exercise), part 1: the
 ultraweak and ultrastrong topologies are Hausdorff. -/
 theorem vn_positive_basic_1 [VonNeumannAlgebra A] :
-    @T2Space A (ultraweak A) ∧ @T2Space A (ultrastrong A) :=
-  sorry
+    @T2Space A (ultraweak A) ∧ @T2Space A (ultrastrong A) := by
+  have huw : @T2Space A (ultraweak A) := by
+    refine @T2Space.mk A (ultraweak A) fun x y hxy => ?_
+    obtain ⟨ω, hω⟩ : ∃ ω : NPFunctional A, (ω x : ℂ) ≠ ω y := by
+      by_contra hc
+      push_neg at hc
+      exact hxy (eq_of_forall_npFunctional hc)
+    obtain ⟨u, v, hu, hv, hxu, hyv, huv⟩ := t2_separation hω
+    exact ⟨(fun a : A => (ω a : ℂ)) ⁻¹' u, (fun a : A => (ω a : ℂ)) ⁻¹' v,
+      @Continuous.isOpen_preimage A ℂ (ultraweak A) _ _
+        (continuous_ultraweak_npFunctional ω) u hu,
+      @Continuous.isOpen_preimage A ℂ (ultraweak A) _ _
+        (continuous_ultraweak_npFunctional ω) v hv, hxu, hyv,
+      huv.preimage _⟩
+  -- the ultrastrong topology is finer (**43I**), and `T2Space` is antitone
+  exact ⟨huw, t2Space_antitone ultrastrong_le_ultraweak huw⟩
 
 /-- **44XI** (`vn-positive-basic`, vn.tex:756, Exercise), part 2: the
 positive cone, the self-adjoint part, and the set of effects are ultraweakly
@@ -1237,8 +1423,65 @@ positive cone, the self-adjoint part, and the set of effects are ultraweakly
 theorem vn_positive_basic_2 [VonNeumannAlgebra A] :
     @IsClosed A (ultraweak A) {a : A | 0 ≤ a} ∧
       @IsClosed A (ultraweak A) {a : A | IsSelfAdjoint a} ∧
-      @IsClosed A (ultraweak A) (effects A) :=
-  sorry
+      @IsClosed A (ultraweak A) (effects A) := by
+  -- Order separation writes each of the three sets as an intersection of
+  -- preimages of closed subsets of `ℂ` under np-functionals.
+  have hle : ∀ x : A, @IsClosed A (ultraweak A) {a : A | a ≤ x} := by
+    intro x
+    have hset : {a : A | a ≤ x}
+        = ⋂ p : NPFunctional A × A,
+            (fun a : A => (conjNP p.2 p.1 a : ℂ)) ⁻¹' Set.Iic (conjNP p.2 p.1 x) := by
+      ext a
+      simp only [Set.mem_setOf_eq, Set.mem_iInter, Set.mem_preimage, Set.mem_Iic]
+      constructor
+      · exact fun hax p => npFunctional_mono (conjNP p.2 p.1) hax
+      · intro H
+        rw [← sub_nonneg]
+        refine nonneg_of_conjNP fun ω c => ?_
+        have hc := H (ω, c)
+        rw [show star c * (x - a) * c = star c * x * c - star c * a * c by
+          noncomm_ring, npFunctional_sub, sub_nonneg]
+        exact hc
+    rw [hset]
+    exact isClosed_ultraweak_iInter _ fun p =>
+      isClosed_ultraweak_preimage (conjNP p.2 p.1) isClosed_Iic
+  have hge : ∀ x : A, @IsClosed A (ultraweak A) {a : A | x ≤ a} := by
+    intro x
+    have hset : {a : A | x ≤ a}
+        = ⋂ p : NPFunctional A × A,
+            (fun a : A => (conjNP p.2 p.1 a : ℂ)) ⁻¹' Set.Ici (conjNP p.2 p.1 x) := by
+      ext a
+      simp only [Set.mem_setOf_eq, Set.mem_iInter, Set.mem_preimage, Set.mem_Ici]
+      constructor
+      · exact fun hax p => npFunctional_mono (conjNP p.2 p.1) hax
+      · intro H
+        rw [← sub_nonneg]
+        refine nonneg_of_conjNP fun ω c => ?_
+        have hc := H (ω, c)
+        rw [show star c * (a - x) * c = star c * a * c - star c * x * c by
+          noncomm_ring, npFunctional_sub, sub_nonneg]
+        exact hc
+    rw [hset]
+    exact isClosed_ultraweak_iInter _ fun p =>
+      isClosed_ultraweak_preimage (conjNP p.2 p.1) isClosed_Ici
+  refine ⟨hge 0, ?_, ?_⟩
+  · -- `a` is self-adjoint iff `ω(a)` is real for every np-functional
+    have hset : {a : A | IsSelfAdjoint a}
+        = ⋂ ω : NPFunctional A, (fun a : A => (ω a : ℂ)) ⁻¹' {z : ℂ | z.im = 0} := by
+      ext a
+      simp only [Set.mem_setOf_eq, Set.mem_iInter, Set.mem_preimage]
+      refine ⟨fun ha ω => npFunctional_im_eq_zero ω ha, fun H => ?_⟩
+      have h0 : star a - a = 0 := by
+        refine np_separating _ fun ω => ?_
+        rw [npFunctional_sub, npFunctional_star, Complex.star_def,
+          Complex.conj_eq_iff_im.mpr (H ω), sub_self]
+      exact sub_eq_zero.mp h0
+    rw [hset]
+    exact isClosed_ultraweak_iInter _ fun ω =>
+      isClosed_ultraweak_preimage ω
+        (isClosed_eq Complex.continuous_im continuous_const)
+  · exact (Set.ext fun _ => Iff.rfl : effects A = {a : A | 0 ≤ a} ∩ {a : A | a ≤ 1}) ▸
+      isClosed_ultraweak_inter _ _ (hge 0) (hle 1)
 
 /-- **44XI** (`vn-positive-basic`, vn.tex:756, Exercise), part 3: the unit
 ball is ultrastrongly closed.  (It is ultraweakly closed too, but that is
@@ -1255,8 +1498,24 @@ theorem vna_supremum_commutes [VonNeumannAlgebra A]
     (h : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧ BddAbove D) (a : A)
     (hc : ∀ d ∈ D, a * (d : A) = (d : A) * a) :
     a * ((dirSup D h : selfAdjoint A) : A) =
-      ((dirSup D h : selfAdjoint A) : A) * a :=
-  sorry
+      ((dirSup D h : selfAdjoint A) : A) * a := by
+  -- `(da)_d → (⋁D)a` and `(ad)_d → a(⋁D)` ultraweakly by **44VII** (the
+  -- second by instantiating it at `a*`); the two nets are equal, so — now
+  -- that the np-functionals separate points (**44XI**) — so are the limits.
+  obtain ⟨d₀, hd₀⟩ := h.1
+  have : Nonempty D := ⟨⟨d₀, hd₀⟩⟩
+  have : IsDirectedOrder D := directedOn_iff_isDirectedOrder.mp h.2.1
+  refine sub_eq_zero.mp (np_separating _ fun ω => ?_)
+  rw [npFunctional_sub, sub_eq_zero]
+  have h1 := (uwTendsto_iff _ _ _).mp (vna_supremum_mult D h a).1 ω
+  have h2 := (uwTendsto_iff _ _ _).mp (vna_supremum_mult D h (star a)).2 ω
+  rw [star_star] at h2
+  have heq : (fun d : D => (ω (a * ((d : selfAdjoint A) : A)) : ℂ))
+      = fun d : D => (ω (((d : selfAdjoint A) : A) * a) : ℂ) := by
+    funext d
+    rw [hc _ d.2]
+  rw [heq] at h2
+  exact tendsto_nhds_unique h2 h1
 
 /-- **44XIV** (`vna-supremum-uslimit`, vn.tex:791): for a bounded directed
 set `D` of self-adjoint elements, `(⋁D − d)² → 0` ultraweakly, i.e. the net

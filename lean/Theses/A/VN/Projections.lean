@@ -147,6 +147,28 @@ theorem proj_le_iff {b p : A} (hb : b ∈ effects A) (hp : IsStarProjection p) :
     rw [← hexp, sub_nonneg] at this
     exact this
 
+/-- Auxiliary: for `0 ≤ x` and self-adjoint `c`, `c x c = 0` iff `x c = 0`
+(the C*-identity argument of **55X**). -/
+private theorem conj_sa_eq_zero_iff {x c : A} (hx : 0 ≤ x) (hc : IsSelfAdjoint c) :
+    c * x * c = 0 ↔ x * c = 0 := by
+  have hxsa : star (CFC.sqrt x) = CFC.sqrt x :=
+    (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg x)).star_eq
+  have hxx : CFC.sqrt x * CFC.sqrt x = x := CFC.sqrt_mul_sqrt_self x hx
+  have hkey : star (CFC.sqrt x * c) * (CFC.sqrt x * c) = c * x * c := by
+    rw [star_mul, hxsa, hc.star_eq]
+    calc c * CFC.sqrt x * (CFC.sqrt x * c)
+        = c * (CFC.sqrt x * CFC.sqrt x) * c := by noncomm_ring
+      _ = c * x * c := by rw [hxx]
+  refine ⟨fun h => ?_, fun h => by rw [mul_assoc, h, mul_zero]⟩
+  exact (sqrt_mul_eq_zero_iff hx c).mp
+    ((CStarRing.star_mul_self_eq_zero_iff _).mp (hkey.trans h))
+
+/-- Auxiliary: for an effect `x` and a projection `p`,
+`p^⊥ x p^⊥ = 0` iff `x ≤ p` (the C*-identity argument of **55X**). -/
+private theorem conj_ortho_eq_zero_iff {x p : A} (hx : x ∈ effects A)
+    (hp : IsStarProjection p) : (1 - p) * x * (1 - p) = 0 ↔ x ≤ p :=
+  (conj_sa_eq_zero_iff hx.1 hp.one_sub.isSelfAdjoint).trans (le_proj_iff hx hp).symm
+
 end EffectsAux
 
 omit [PartialOrder A] [StarOrderedRing A] in
@@ -497,15 +519,232 @@ theorem projection_below_projection (p q : A) (hp : IsStarProjection p)
 
 section CeilFloor
 
+/-! ### Auxiliary: the iterated square roots `b^{1/2ⁿ}`
+
+The thesis builds `⌈b⌉` as `⋁ₙ b^{1/2ⁿ}` (56I.20).  We write `b^{1/2ⁿ}` as
+the `n`-fold iterate of `CFC.sqrt`, which is the form the *statement* of
+`vna_ceil_sup` uses; the only property of the exponents that is needed is
+`b^{1/2^{n+1}} · b^{1/2^{n+1}} = b^{1/2ⁿ}`. -/
+
+/-- `b^{1/2ⁿ}`. -/
+private noncomputable abbrev sqrtIter (b : A) (n : ℕ) : A :=
+  (fun x : A => CFC.sqrt x)^[n] b
+
+private theorem sqrtIter_succ (b : A) (n : ℕ) :
+    sqrtIter b (n + 1) = CFC.sqrt (sqrtIter b n) :=
+  Function.iterate_succ_apply' _ _ _
+
+private theorem sqrtIter_mem_effects {b : A} (hb : b ∈ effects A) (n : ℕ) :
+    sqrtIter b n ∈ effects A := by
+  induction n with
+  | zero => exact hb
+  | succ n ih => rw [sqrtIter_succ]; exact sqrt_mem_effects ih
+
+/-- `b^{1/2^{n+1}} · b^{1/2^{n+1}} = b^{1/2ⁿ}`. -/
+private theorem sqrtIter_mul_self {b : A} (hb : b ∈ effects A) (n : ℕ) :
+    sqrtIter b (n + 1) * sqrtIter b (n + 1) = sqrtIter b n := by
+  rw [sqrtIter_succ]
+  exact CFC.sqrt_mul_sqrt_self _ (sqrtIter_mem_effects hb n).1
+
+/-- `0 ≤ b ≤ b^{1/2} ≤ b^{1/4} ≤ ⋯ ≤ 1` (56I.20). -/
+private theorem sqrtIter_monotone {b : A} (hb : b ∈ effects A) :
+    Monotone (sqrtIter b) := by
+  refine monotone_nat_of_le_succ fun n => ?_
+  have h := mul_self_le_self (sqrt_mem_effects (sqrtIter_mem_effects hb n))
+  rwa [CFC.sqrt_mul_sqrt_self _ (sqrtIter_mem_effects hb n).1, ← sqrtIter_succ] at h
+
+/-- **56I**.30 (`vna-ceil-point-1`), first half: whatever commutes with `b`
+commutes with every `b^{1/2ⁿ}` (by `sqrt`, cstar.tex **23VII**). -/
+private theorem sqrtIter_comm {b : A} (hb : b ∈ effects A) {a : A}
+    (h : a * b = b * a) (n : ℕ) :
+    a * sqrtIter b n = sqrtIter b n * a := by
+  induction n with
+  | zero => exact h
+  | succ n ih =>
+      rw [sqrtIter_succ]
+      exact (sqrt_commute _ (sqrtIter_mem_effects hb n).1 a ih).1
+
+private theorem sqrtIter_comm_sqrtIter {b : A} (hb : b ∈ effects A) (m n : ℕ) :
+    sqrtIter b m * sqrtIter b n = sqrtIter b n * sqrtIter b m :=
+  sqrtIter_comm hb (sqrtIter_comm hb rfl m).symm n
+
 variable [VonNeumannAlgebra A]
+
+/-- Auxiliary: an `IsLUB` in `sa(A)` is an `IsLUB` in `A` (upper bounds of a
+nonempty set of self-adjoint elements are automatically self-adjoint). -/
+private theorem isLUB_coe_of_isLUB {D : Set (selfAdjoint A)} {s : selfAdjoint A}
+    (hne : D.Nonempty) (h : IsLUB D s) :
+    IsLUB (Subtype.val '' D) ((s : selfAdjoint A) : A) := by
+  obtain ⟨d₀, hd₀⟩ := hne
+  refine ⟨?_, fun u hu => ?_⟩
+  · rintro _ ⟨d, hd, rfl⟩
+    exact Subtype.coe_le_coe.mpr (h.1 hd)
+  · have hu0 : ((d₀ : selfAdjoint A) : A) ≤ u := hu ⟨d₀, hd₀, rfl⟩
+    have husa : IsSelfAdjoint u := by
+      have hd : IsSelfAdjoint (u - ((d₀ : selfAdjoint A) : A)) :=
+        IsSelfAdjoint.of_nonneg (sub_nonneg.mpr hu0)
+      simpa using hd.add d₀.2
+    have hub : (⟨u, husa⟩ : selfAdjoint A) ∈ upperBounds D :=
+      fun e he => hu ⟨e, he, rfl⟩
+    exact h.2 hub
+
+/-- Auxiliary: `√x·x·√x = x²`. -/
+private theorem conj_sqrt_self {x : A} (hx : 0 ≤ x) :
+    CFC.sqrt x * x * CFC.sqrt x = x * x := by
+  have hxx : CFC.sqrt x * CFC.sqrt x = x := CFC.sqrt_mul_sqrt_self x hx
+  calc CFC.sqrt x * x * CFC.sqrt x
+      = CFC.sqrt x * (CFC.sqrt x * CFC.sqrt x) * CFC.sqrt x := by rw [hxx]
+    _ = (CFC.sqrt x * CFC.sqrt x) * (CFC.sqrt x * CFC.sqrt x) := by noncomm_ring
+    _ = x * x := by rw [hxx]
+
+/-- **56I** (`vna-ceil`, vn.tex:2362, Proposition), the construction: for an
+effect `b`, the supremum `p = ⋁ₙ b^{1/2ⁿ}` exists, is a projection, is the
+least projection above `b`, and commutes with everything that `b` commutes
+with.  This is the thesis's proof 56I.20–50. -/
+private theorem exists_ceil_effect {b : A} (hb : b ∈ effects A) :
+    ∃ p : A, IsStarProjection p ∧ IsLUB (Set.range (sqrtIter b)) p ∧
+      (∀ q : A, IsStarProjection q → b ≤ q → p ≤ q) ∧
+      (∀ a : A, a * b = b * a → a * p = p * a) := by
+  classical
+  -- the chain `D = {b^{1/2ⁿ}}` and its supremum `s`
+  set E : ℕ → selfAdjoint A := fun n =>
+    ⟨sqrtIter b n, IsSelfAdjoint.of_nonneg (sqrtIter_mem_effects hb n).1⟩ with hE
+  have hEmono : Monotone E := fun m n hmn =>
+    Subtype.coe_le_coe.mp (sqrtIter_monotone hb hmn)
+  set D : Set (selfAdjoint A) := Set.range E with hD
+  have hne : D.Nonempty := ⟨E 0, 0, rfl⟩
+  have hdir : DirectedOn (· ≤ ·) D := by
+    rintro _ ⟨m, rfl⟩ _ ⟨n, rfl⟩
+    exact ⟨E (max m n), ⟨max m n, rfl⟩, hEmono (le_max_left _ _),
+      hEmono (le_max_right _ _)⟩
+  have hbdd : BddAbove D := by
+    refine ⟨⟨1, IsSelfAdjoint.one A⟩, ?_⟩
+    rintro _ ⟨n, rfl⟩
+    exact Subtype.coe_le_coe.mp (sqrtIter_mem_effects hb n).2
+  have h3 : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧ BddAbove D := ⟨hne, hdir, hbdd⟩
+  set s : selfAdjoint A := dirSup D h3 with hs
+  set p : A := ((s : selfAdjoint A) : A) with hp
+  have hlubSA : IsLUB D s := isLUB_dirSup D h3
+  have hrange : Subtype.val '' D = Set.range (sqrtIter b) := by
+    rw [hD, ← Set.range_comp]; rfl
+  have hlub : IsLUB (Set.range (sqrtIter b)) p := by
+    rw [← hrange]; exact isLUB_coe_of_isLUB hne hlubSA
+  have hben : ∀ n, sqrtIter b n ≤ p := fun n => hlub.1 ⟨n, rfl⟩
+  have hp1 : p ≤ 1 :=
+    hlub.2 (by rintro _ ⟨n, rfl⟩; exact (sqrtIter_mem_effects hb n).2)
+  have hp0 : (0 : A) ≤ p := le_trans hb.1 (hben 0)
+  have hpeff : p ∈ effects A := ⟨hp0, hp1⟩
+  -- **56I**.30: whatever commutes with `b` commutes with `p` (**44XIII**)
+  have hcomm : ∀ a : A, a * b = b * a → a * p = p * a := by
+    intro a ha
+    exact vna_supremum_commutes D h3 a (by
+      rintro _ ⟨n, rfl⟩
+      exact sqrtIter_comm hb ha n)
+  -- and therefore so does `√p` (`sqrt`, cstar.tex **23VII**)
+  have hsqp : ∀ n, sqrtIter b n * CFC.sqrt p = CFC.sqrt p * sqrtIter b n := fun n =>
+    (sqrt_commute p hp0 _ (hcomm _ (sqrtIter_comm hb rfl n).symm)).1
+  have hsqsq : CFC.sqrt p * CFC.sqrt p = p := CFC.sqrt_mul_sqrt_self p hp0
+  -- **56I**.40: `p² = p`; `p² ≤ p` because `p ≤ 1`
+  have hpp_le : p * p ≤ p := mul_self_le_self hpeff
+  have hle_pp : p ≤ p * p := by
+    refine hlub.2 ?_
+    rintro _ ⟨k, rfl⟩
+    -- `p² = √p·p·√p ≥ √p·b^{1/2^{k+1}}·√p = b^{1/2^{k+2}}·p·b^{1/2^{k+2}}`
+    -- `      ≥ b^{1/2^{k+2}}·b^{1/2^{k+1}}·b^{1/2^{k+2}} = b^{1/2^k}`
+    have hsqsa : star (CFC.sqrt p) = CFC.sqrt p :=
+      (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg p)).star_eq
+    have hEsa : star (sqrtIter b (k + 1 + 1)) = sqrtIter b (k + 1 + 1) :=
+      (IsSelfAdjoint.of_nonneg (sqrtIter_mem_effects hb (k + 1 + 1)).1).star_eq
+    have step1 : CFC.sqrt p * sqrtIter b (k + 1) * CFC.sqrt p ≤ p * p := by
+      have hmono := star_left_conjugate_le_conjugate (hben (k + 1)) (CFC.sqrt p)
+      rw [hsqsa] at hmono
+      exact hmono.trans (le_of_eq (conj_sqrt_self hp0))
+    have step2 : CFC.sqrt p * sqrtIter b (k + 1) * CFC.sqrt p
+        = sqrtIter b (k + 1 + 1) * p * sqrtIter b (k + 1 + 1) := by
+      calc CFC.sqrt p * sqrtIter b (k + 1) * CFC.sqrt p
+          = CFC.sqrt p * (sqrtIter b (k + 1 + 1) * sqrtIter b (k + 1 + 1))
+              * CFC.sqrt p := by rw [sqrtIter_mul_self hb (k + 1)]
+        _ = (CFC.sqrt p * sqrtIter b (k + 1 + 1))
+              * (sqrtIter b (k + 1 + 1) * CFC.sqrt p) := by noncomm_ring
+        _ = (sqrtIter b (k + 1 + 1) * CFC.sqrt p)
+              * (CFC.sqrt p * sqrtIter b (k + 1 + 1)) := by rw [hsqp (k + 1 + 1)]
+        _ = sqrtIter b (k + 1 + 1) * (CFC.sqrt p * CFC.sqrt p)
+              * sqrtIter b (k + 1 + 1) := by noncomm_ring
+        _ = sqrtIter b (k + 1 + 1) * p * sqrtIter b (k + 1 + 1) := by rw [hsqsq]
+    have step3 : sqrtIter b (k + 1 + 1) * sqrtIter b (k + 1) * sqrtIter b (k + 1 + 1)
+        ≤ sqrtIter b (k + 1 + 1) * p * sqrtIter b (k + 1 + 1) := by
+      have hmono :=
+        star_left_conjugate_le_conjugate (hben (k + 1)) (sqrtIter b (k + 1 + 1))
+      rwa [hEsa] at hmono
+    have step4 : sqrtIter b (k + 1 + 1) * sqrtIter b (k + 1) * sqrtIter b (k + 1 + 1)
+        = sqrtIter b k := by
+      calc sqrtIter b (k + 1 + 1) * sqrtIter b (k + 1) * sqrtIter b (k + 1 + 1)
+          = sqrtIter b (k + 1)
+              * (sqrtIter b (k + 1 + 1) * sqrtIter b (k + 1 + 1)) := by
+            rw [sqrtIter_comm_sqrtIter hb (k + 1 + 1) (k + 1)]; noncomm_ring
+        _ = sqrtIter b (k + 1) * sqrtIter b (k + 1) := by
+            rw [sqrtIter_mul_self hb (k + 1)]
+        _ = sqrtIter b k := sqrtIter_mul_self hb k
+    calc sqrtIter b k
+        = sqrtIter b (k + 1 + 1) * sqrtIter b (k + 1) * sqrtIter b (k + 1 + 1) :=
+          step4.symm
+      _ ≤ sqrtIter b (k + 1 + 1) * p * sqrtIter b (k + 1 + 1) := step3
+      _ = CFC.sqrt p * sqrtIter b (k + 1) * CFC.sqrt p := step2.symm
+      _ ≤ p * p := step1
+  refine ⟨p, ⟨le_antisymm hpp_le hle_pp, s.2⟩, hlub, ?_, hcomm⟩
+  -- **56I**.50: `p` is the *least* projection above `b`
+  intro q hq hbq
+  refine hlub.2 ?_
+  rintro _ ⟨n, rfl⟩
+  induction n with
+  | zero => exact hbq
+  | succ n ih =>
+      rw [sqrtIter_succ]
+      exact ((projection_above_effect _ q (sqrtIter_mem_effects hb n) hq).out 0 10).mp ih
+
+/-- Auxiliary (the rescaling `⌈b⌉ = ⌈‖b‖⁻¹b⌉` of **59I**): a nonzero
+positive `b` has the same "absorbing" projections and the same commutant as
+the effect `‖b‖⁻¹b`. -/
+private theorem exists_normalize {b : A} (hb : 0 ≤ b) (hbne : b ≠ 0) :
+    ∃ b' : A, b' ∈ effects A ∧ (∀ p : A, b * p = b ↔ b' * p = b') ∧
+      (∀ a : A, a * b = b * a ↔ a * b' = b' * a) := by
+  have hn : (0 : ℝ) < ‖b‖ := norm_pos_iff.mpr hbne
+  have hne : (‖b‖ : ℝ) ≠ 0 := ne_of_gt hn
+  refine ⟨(‖b‖⁻¹ : ℝ) • b, ⟨smul_nonneg (by positivity) hb, ?_⟩, fun p => ?_, fun a => ?_⟩
+  · refine (CStarAlgebra.norm_le_one_iff_of_nonneg _
+      (smul_nonneg (by positivity) hb)).mp ?_
+    rw [norm_smul, Real.norm_eq_abs, abs_of_pos (by positivity),
+      inv_mul_cancel₀ hne]
+  · rw [smul_mul_assoc]
+    refine ⟨fun h => by rw [h], fun h => ?_⟩
+    have h2 := congrArg (fun x : A => (‖b‖ : ℝ) • x) h
+    simpa [smul_smul, mul_inv_cancel₀ hne] using h2
+  · rw [mul_smul_comm, smul_mul_assoc]
+    refine ⟨fun h => by rw [h], fun h => ?_⟩
+    have h2 := congrArg (fun x : A => (‖b‖ : ℝ) • x) h
+    simpa [smul_smul, mul_inv_cancel₀ hne] using h2
 
 /-- **56I** (`vna-ceil`, vn.tex:2362, Proposition), well-definedness (in the
 uniform formulation of 59III `ceil-basic`): every positive `b` in a von
 Neumann algebra has a least projection `p` with `b·p = b`. -/
 theorem exists_ceil (b : A) (hb : 0 ≤ b) :
     ∃! p : A, IsStarProjection p ∧ b * p = b ∧
-      ∀ q : A, IsStarProjection q → b * q = b → p ≤ q :=
-  sorry
+      ∀ q : A, IsStarProjection q → b * q = b → p ≤ q := by
+  -- uniqueness is automatic from the two minimality clauses
+  suffices hex : ∃ p : A, IsStarProjection p ∧ b * p = b ∧
+      ∀ q : A, IsStarProjection q → b * q = b → p ≤ q by
+    obtain ⟨p, hp⟩ := hex
+    exact ⟨p, hp, fun q hq => le_antisymm (hq.2.2 p hp.1 hp.2.1) (hp.2.2 q hq.1 hq.2.1)⟩
+  rcases eq_or_ne b 0 with rfl | hbne
+  · exact ⟨0, IsStarProjection.zero A, by simp, fun q hq _ => hq.nonneg⟩
+  -- the general positive case is the effect case rescaled by `‖b‖⁻¹` (59I)
+  obtain ⟨b', hb'eff, hscale, -⟩ := exists_normalize hb hbne
+  obtain ⟨p, hproj, hlub, hleast, -⟩ := exists_ceil_effect hb'eff
+  have hb'p : b' ≤ p := hlub.1 ⟨0, rfl⟩
+  refine ⟨p, hproj, (hscale p).mpr
+    (((projection_above_effect b' p hb'eff hproj).out 0 7).mp hb'p), fun q hq hbq => ?_⟩
+  exact hleast q hq
+    (((projection_above_effect b' q hb'eff hq).out 0 7).mpr ((hscale q).mp hbq))
 
 open scoped Classical in
 /-- **56I**/**59I** (`vna-ceil`/`ceill`, vn.tex:2362/2684): the **ceiling**
@@ -517,31 +756,104 @@ cone.) -/
 noncomputable def ceil (b : A) : A :=
   if hb : 0 ≤ b then (exists_ceil b hb).choose else 0
 
+/-- The defining property of `⌈b⌉` for positive `b`. -/
+theorem ceil_spec {b : A} (hb : 0 ≤ b) :
+    IsStarProjection (ceil b) ∧ b * ceil b = b ∧
+      ∀ q : A, IsStarProjection q → b * q = b → ceil b ≤ q := by
+  rw [ceil, dif_pos hb]
+  exact (exists_ceil b hb).choose_spec.1
+
+/-- `⌈b⌉` is characterized by its defining property. -/
+theorem ceil_eq_of_isLeast {b : A} (hb : 0 ≤ b) {p : A}
+    (hproj : IsStarProjection p) (hbp : b * p = b)
+    (hleast : ∀ q : A, IsStarProjection q → b * q = b → p ≤ q) : ceil b = p := by
+  obtain ⟨h1, h2, h3⟩ := ceil_spec hb
+  exact le_antisymm (h3 p hproj hbp) (hleast _ h1 h2)
+
 /-- **56I** (`vna-ceil`, vn.tex:2362, Proposition): for an *effect* `b`,
 `⌈b⌉` is the least projection above `b`. -/
 theorem vna_ceil (b : A) (hb : b ∈ effects A) :
-    IsLeast {p : A | IsStarProjection p ∧ b ≤ p} (ceil b) :=
-  sorry
+    IsLeast {p : A | IsStarProjection p ∧ b ≤ p} (ceil b) := by
+  obtain ⟨h1, h2, h3⟩ := ceil_spec hb.1
+  refine ⟨⟨h1, ((projection_above_effect b _ hb h1).out 0 7).mpr h2⟩, ?_⟩
+  rintro q ⟨hq, hbq⟩
+  exact h3 q hq (((projection_above_effect b q hb hq).out 0 7).mp hbq)
 
 /-- **56I** (`vna-ceil`, vn.tex:2362, Proposition), formula:
 `⌈b⌉ = ⋁ₙ b^{1/2ⁿ}` for an effect `b` (the iterated square roots). -/
 theorem vna_ceil_sup (b : A) (hb : b ∈ effects A) :
-    IsLUB (Set.range fun n : ℕ => (fun x : A => CFC.sqrt x)^[n] b) (ceil b) :=
-  sorry
+    IsLUB (Set.range fun n : ℕ => (fun x : A => CFC.sqrt x)^[n] b) (ceil b) := by
+  obtain ⟨p, hproj, hlub, hleast, -⟩ := exists_ceil_effect hb
+  have hb'p : b ≤ p := hlub.1 ⟨0, rfl⟩
+  have hceil : ceil b = p := by
+    refine ceil_eq_of_isLeast hb.1 hproj
+      (((projection_above_effect b p hb hproj).out 0 7).mp hb'p) fun q hq hbq => ?_
+    exact hleast q hq (((projection_above_effect b q hb hq).out 0 7).mpr hbq)
+  rw [hceil]
+  exact hlub
 
 /-- **56I** (`vna-ceil`, vn.tex:2362, Proposition), moreover: whatever
 commutes with `b` commutes with `⌈b⌉`. -/
 theorem vna_ceil_comm (b : A) (hb : 0 ≤ b) (a : A) (h : a * b = b * a) :
-    a * ceil b = ceil b * a :=
-  sorry
+    a * ceil b = ceil b * a := by
+  rcases eq_or_ne b 0 with rfl | hbne
+  · have h0 : ceil (0 : A) = 0 := by
+      refine ceil_eq_of_isLeast le_rfl (IsStarProjection.zero A) (by simp) ?_
+      exact fun q hq _ => hq.nonneg
+    rw [h0, mul_zero, zero_mul]
+  obtain ⟨b', hb'eff, hscale, hcomm'⟩ := exists_normalize hb hbne
+  obtain ⟨p, hproj, hlub, hleast, hpcomm⟩ := exists_ceil_effect hb'eff
+  have hb'p : b' ≤ p := hlub.1 ⟨0, rfl⟩
+  have hceil : ceil b = p := by
+    refine ceil_eq_of_isLeast hb hproj
+      ((hscale p).mpr (((projection_above_effect b' p hb'eff hproj).out 0 7).mp hb'p))
+      fun q hq hbq => ?_
+    exact hleast q hq
+      (((projection_above_effect b' q hb'eff hq).out 0 7).mpr ((hscale q).mp hbq))
+  rw [hceil]
+  exact hpcomm a ((hcomm' a).mp h)
+
+/-- Auxiliary: `⌈b^⊥⌉` is a projection (**56I**). -/
+private theorem ceil_isStarProjection {b : A} (hb : b ∈ effects A) :
+    IsStarProjection (ceil (1 - b)) :=
+  (vna_ceil (1 - b) (effect_orthosupplement b hb)).1.1
+
+/-- Auxiliary (the duality `⌊b⌋ = ⌈b^⊥⌉^⊥` behind **56VI**): for a projection
+`q` and an effect `b`,
+`q ≤ b  ↔  b^⊥q = 0  ↔  b^⊥ ≤ q^⊥  ↔  ⌈b^⊥⌉ ≤ q^⊥  ↔  q ≤ ⌈b^⊥⌉^⊥`. -/
+private theorem proj_le_iff_le_ceil_compl {b : A} (hb : b ∈ effects A)
+    {q : A} (hq : IsStarProjection q) : q ≤ b ↔ q ≤ 1 - ceil (1 - b) := by
+  have hb' : (1 : A) - b ∈ effects A := effect_orthosupplement b hb
+  obtain ⟨⟨hc, hbc⟩, hcleast⟩ := vna_ceil (1 - b) hb'
+  have e1 : q ≤ b ↔ q * (1 - b) = 0 := proj_le_iff hb hq
+  have e2 : ((1 : A) - b) * q = 0 ↔ q * (1 - b) = 0 := by
+    constructor <;> intro h <;>
+      simpa [(IsSelfAdjoint.of_nonneg hb'.1).star_eq, hq.isSelfAdjoint.star_eq]
+        using congrArg star h
+  have e3 : (1 : A) - b ≤ 1 - q ↔ ((1 : A) - b) * q = 0 := by
+    have h := le_proj_iff hb' hq.one_sub
+    rwa [sub_sub_cancel] at h
+  have e4 : ceil (1 - b) ≤ 1 - q ↔ (1 : A) - b ≤ 1 - q :=
+    ⟨fun h => hbc.trans h, fun h => hcleast ⟨hq.one_sub, h⟩⟩
+  rw [e1, ← e2, ← e3, ← e4]
+  exact le_sub_comm.symm
 
 /-- **56VI** (`vna-floor`, vn.tex:2419, Proposition), well-definedness:
 every effect `b` of a von Neumann algebra has a greatest projection `p` with
 `p·b = p`. -/
 theorem exists_floor (b : A) (hb : b ∈ effects A) :
     ∃! p : A, IsStarProjection p ∧ p * b = p ∧
-      ∀ q : A, IsStarProjection q → q * b = q → q ≤ p :=
-  sorry
+      ∀ q : A, IsStarProjection q → q * b = q → q ≤ p := by
+  have hple : (1 : A) - ceil (1 - b) ≤ b :=
+    (proj_le_iff_le_ceil_compl hb (ceil_isStarProjection hb).one_sub).mpr le_rfl
+  have hmem : ((1 : A) - ceil (1 - b)) * b = 1 - ceil (1 - b) :=
+    ((projection_below_effect b _ hb (ceil_isStarProjection hb).one_sub).out 0 7).mp hple
+  refine ⟨1 - ceil (1 - b), ⟨(ceil_isStarProjection hb).one_sub, hmem, fun q hq hqb => ?_⟩,
+    fun q hq => le_antisymm ?_ (hq.2.2 _ (ceil_isStarProjection hb).one_sub hmem)⟩
+  · exact (proj_le_iff_le_ceil_compl hb hq).mp
+      (((projection_below_effect b q hb hq).out 0 7).mpr hqb)
+  · exact (proj_le_iff_le_ceil_compl hb hq.1).mp
+      (((projection_below_effect b q hb hq.1).out 0 7).mpr hq.2.1)
 
 open scoped Classical in
 /-- **56VI** (`vna-floor`, vn.tex:2419, Proposition): the **floor** `⌊b⌋` of
@@ -550,6 +862,35 @@ an effect `b` of a von Neumann algebra: the greatest projection below `b`
 (Junk value `0` off the effects.) -/
 noncomputable def floor (b : A) : A :=
   if hb : b ∈ effects A then (exists_floor b hb).choose else 0
+
+/-- The defining property of `⌊b⌋` for an effect `b`. -/
+theorem floor_spec {b : A} (hb : b ∈ effects A) :
+    IsStarProjection (floor b) ∧ floor b * b = floor b ∧
+      ∀ q : A, IsStarProjection q → q * b = q → q ≤ floor b := by
+  rw [floor, dif_pos hb]
+  exact (exists_floor b hb).choose_spec.1
+
+theorem floor_le {b : A} (hb : b ∈ effects A) : floor b ≤ b :=
+  ((projection_below_effect b _ hb (floor_spec hb).1).out 0 7).mpr (floor_spec hb).2.1
+
+/-- **56XIII**.1 in the form in which **56VI** produces it: `⌊b⌋ = ⌈b^⊥⌉^⊥`. -/
+theorem floor_eq_one_sub_ceil {b : A} (hb : b ∈ effects A) :
+    floor b = 1 - ceil (1 - b) := by
+  obtain ⟨h1, -, h3⟩ := floor_spec hb
+  have hcp : IsStarProjection (ceil (1 - b)) := ceil_isStarProjection hb
+  have hple : (1 : A) - ceil (1 - b) ≤ b :=
+    (proj_le_iff_le_ceil_compl hb hcp.one_sub).mpr le_rfl
+  refine le_antisymm ((proj_le_iff_le_ceil_compl hb h1).mp (floor_le hb)) ?_
+  exact h3 _ hcp.one_sub
+    (((projection_below_effect b _ hb hcp.one_sub).out 0 7).mp hple)
+
+/-- **56VI**: `⌊b⌋` is the greatest projection below the effect `b`. -/
+theorem floor_isGreatest {b : A} (hb : b ∈ effects A) :
+    IsGreatest {p : A | IsStarProjection p ∧ p ≤ b} (floor b) := by
+  obtain ⟨h1, -, h3⟩ := floor_spec hb
+  refine ⟨⟨h1, floor_le hb⟩, ?_⟩
+  rintro q ⟨hq, hqb⟩
+  exact h3 q hq (((projection_below_effect b q hb hq).out 0 7).mp hqb)
 
 /-- **56VI** (`vna-floor`, vn.tex:2419, Proposition): `⌊b⌋` is the greatest
 projection below the effect `b`, and equals `⋀ₙ b^{2ⁿ}`. -/
@@ -561,8 +902,12 @@ theorem vna_floor (b : A) (hb : b ∈ effects A) :
 /-- **56VI** (`vna-floor`, vn.tex:2419, Proposition), moreover: whatever
 commutes with `b` commutes with `⌊b⌋`. -/
 theorem vna_floor_comm (b : A) (hb : b ∈ effects A) (a : A)
-    (h : a * b = b * a) : a * floor b = floor b * a :=
-  sorry
+    (h : a * b = b * a) : a * floor b = floor b * a := by
+  have hb' : (1 : A) - b ∈ effects A := effect_orthosupplement b hb
+  have h' : a * (1 - b) = (1 - b) * a := by
+    rw [mul_sub, sub_mul, mul_one, one_mul, h]
+  have hc := vna_ceil_comm (1 - b) hb'.1 a h'
+  rw [floor_eq_one_sub_ceil hb, mul_sub, sub_mul, mul_one, one_mul, hc]
 
 /-- **56XI** (`ceil-floor-second-property`, vn.tex:2471, Exercise), part 1:
 for an effect `a` and a projection `p`: `pa = a` iff `ap = a` iff
@@ -570,8 +915,13 @@ for an effect `a` and a projection `p`: `pa = a` iff `ap = a` iff
 and `a = a⌈a⌉ = ⌈a⌉a`. -/
 theorem ceil_floor_second_property_1 (a p : A) (ha : a ∈ effects A)
     (hp : IsStarProjection p) :
-    List.TFAE [p * a = a, a * p = a, ceil a ≤ p] :=
-  sorry
+    List.TFAE [p * a = a, a * p = a, ceil a ≤ p] := by
+  obtain ⟨⟨hcp, hac⟩, hcleast⟩ := vna_ceil a ha
+  tfae_have 1 ↔ 2 := (projection_above_effect a p ha hp).out 6 7
+  have e : a * p = a ↔ a ≤ p := (projection_above_effect a p ha hp).out 7 0
+  tfae_have 2 ↔ 3 :=
+    e.trans ⟨fun h => hcleast ⟨hp, h⟩, fun h => hac.trans h⟩
+  tfae_finish
 
 /-- **56XI** (`ceil-floor-second-property`, vn.tex:2471, Exercise), part 2:
 for an effect `a` and a projection `p`: `pa = p` iff `ap = p` iff
@@ -579,8 +929,13 @@ for an effect `a` and a projection `p`: `pa = p` iff `ap = p` iff
 `p = ap`, and `⌊a⌋ = a⌊a⌋ = ⌊a⌋a`. -/
 theorem ceil_floor_second_property_2 (a p : A) (ha : a ∈ effects A)
     (hp : IsStarProjection p) :
-    List.TFAE [p * a = p, a * p = p, p ≤ floor a] :=
-  sorry
+    List.TFAE [p * a = p, a * p = p, p ≤ floor a] := by
+  obtain ⟨⟨hfp, hfa⟩, hfgreatest⟩ := floor_isGreatest ha
+  tfae_have 1 ↔ 2 := (projection_below_effect a p ha hp).out 7 6
+  have e : p * a = p ↔ p ≤ a := (projection_below_effect a p ha hp).out 7 0
+  tfae_have 1 ↔ 3 :=
+    e.trans ⟨fun h => hfgreatest ⟨hp, h⟩, fun h => h.trans hfa⟩
+  tfae_finish
 
 /-! **56XII** (vn.tex:2491, Example): ceiling and floor in `L^∞(X)` —
 descriptive example, not converted (cf. 51IX on `L^∞`). -/
@@ -588,8 +943,11 @@ descriptive example, not converted (cf. 51IX on `L^∞`). -/
 /-- **56XIII** (`ceil-floor-basic`, vn.tex:2505, Exercise), part 1:
 `⌈a⌉^⊥ = ⌊a^⊥⌋` and `⌊a⌋^⊥ = ⌈a^⊥⌉` for an effect `a`. -/
 theorem ceil_floor_basic_1 (a : A) (ha : a ∈ effects A) :
-    1 - ceil a = floor (1 - a) ∧ 1 - floor a = ceil (1 - a) :=
-  sorry
+    1 - ceil a = floor (1 - a) ∧ 1 - floor a = ceil (1 - a) := by
+  have ha' : (1 : A) - a ∈ effects A := effect_orthosupplement a ha
+  constructor
+  · rw [floor_eq_one_sub_ceil ha', sub_sub_cancel]
+  · rw [floor_eq_one_sub_ceil ha, sub_sub_cancel]
 
 /-- **56XIII** (`ceil-floor-basic`, vn.tex:2505, Exercise), part 2:
 `⌈λa⌉ = ⌈a⌉` for `λ ∈ (0,1]`, and for `λ ∈ (0,1)` the projection
@@ -599,14 +957,102 @@ theorem ceil_floor_basic_2 (a b : A) (ha : a ∈ effects A)
     (hb : b ∈ effects A) (l : ℝ) (hl0 : 0 < l) (hl1 : l < 1) :
     ceil ((l : ℂ) • a) = ceil a ∧
       IsLeast {p : A | IsStarProjection p ∧ ceil a ≤ p ∧ ceil b ≤ p}
-        (ceil ((l : ℂ) • a + ((1 - l : ℝ) : ℂ) • b)) :=
-  sorry
+        (ceil ((l : ℂ) • a + ((1 - l : ℝ) : ℂ) • b)) := by
+  rw [Complex.coe_smul, Complex.coe_smul]
+  have hm0 : (0 : ℝ) < 1 - l := by linarith
+  have hsmul : ∀ {x : A} {r : ℝ}, x ∈ effects A → 0 ≤ r → r ≤ 1 → r • x ∈ effects A := by
+    intro x r hx hr0 hr1
+    refine ⟨smul_nonneg hr0 hx.1, ?_⟩
+    have h1 : r • x ≤ x := by
+      have h := smul_nonneg (by linarith : (0 : ℝ) ≤ 1 - r) hx.1
+      rw [sub_smul, one_smul, sub_nonneg] at h
+      exact h
+    exact h1.trans hx.2
+  have hla : (l : ℝ) • a ∈ effects A := hsmul ha hl0.le hl1.le
+  -- for a projection `p`, `r·x ≤ p ↔ x ≤ p` when `r > 0`
+  have hscale : ∀ {x : A} {r : ℝ} {p : A}, x ∈ effects A → 0 < r → r ≤ 1 →
+      IsStarProjection p → (r • x ≤ p ↔ x ≤ p) := by
+    intro x r p hx hr0 hr1 hp
+    rw [le_proj_iff (hsmul hx hr0.le hr1) hp, le_proj_iff hx hp, smul_mul_assoc]
+    refine ⟨fun h => ?_, fun h => by rw [h, smul_zero]⟩
+    have h2 := congrArg (fun z : A => (r⁻¹ : ℝ) • z) h
+    simpa [smul_smul, inv_mul_cancel₀ (ne_of_gt hr0)] using h2
+  constructor
+  · refine (vna_ceil _ hla).unique ?_
+    have hset : {p : A | IsStarProjection p ∧ (l : ℝ) • a ≤ p}
+        = {p : A | IsStarProjection p ∧ a ≤ p} :=
+      Set.ext fun p => and_congr_right fun hp => hscale ha hl0 hl1.le hp
+    rw [hset]
+    exact vna_ceil a ha
+  -- the convex combination
+  set c : A := (l : ℝ) • a + ((1 - l : ℝ)) • b with hcdef
+  have hceff : c ∈ effects A := by
+    refine ⟨add_nonneg (smul_nonneg hl0.le ha.1) (smul_nonneg hm0.le hb.1), ?_⟩
+    have hone : (l : ℝ) • (1 : A) + ((1 - l : ℝ)) • (1 : A) = 1 := by
+      rw [← add_smul]; norm_num
+    have h1 : (l : ℝ) • (1 - a) + ((1 - l : ℝ)) • (1 - b) = 1 - c := by
+      rw [smul_sub, smul_sub, sub_add_sub_comm, hone, hcdef]
+    have h2 : (0 : A) ≤ (l : ℝ) • (1 - a) + ((1 - l : ℝ)) • (1 - b) :=
+      add_nonneg (smul_nonneg hl0.le (sub_nonneg.mpr ha.2))
+        (smul_nonneg hm0.le (sub_nonneg.mpr hb.2))
+    rw [h1, sub_nonneg] at h2
+    exact h2
+  have hset2 : {p : A | IsStarProjection p ∧ ceil a ≤ p ∧ ceil b ≤ p}
+      = {p : A | IsStarProjection p ∧ c ≤ p} := by
+    ext p
+    refine and_congr_right fun hp => ?_
+    have ea : ceil a ≤ p ↔ a ≤ p :=
+      ⟨fun h => (vna_ceil a ha).1.2.trans h, fun h => (vna_ceil a ha).2 ⟨hp, h⟩⟩
+    have eb : ceil b ≤ p ↔ b ≤ p :=
+      ⟨fun h => (vna_ceil b hb).1.2.trans h, fun h => (vna_ceil b hb).2 ⟨hp, h⟩⟩
+    have expand : (1 - p) * c * (1 - p)
+        = (l : ℝ) • ((1 - p) * a * (1 - p))
+          + ((1 - l : ℝ)) • ((1 - p) * b * (1 - p)) := by
+      rw [hcdef, mul_add, add_mul, mul_smul_comm, mul_smul_comm, smul_mul_assoc,
+        smul_mul_assoc]
+    have hAnn : (0 : A) ≤ (1 - p) * a * (1 - p) := by
+      have := star_left_conjugate_nonneg ha.1 (1 - p)
+      rwa [hp.one_sub.isSelfAdjoint.star_eq] at this
+    have hBnn : (0 : A) ≤ (1 - p) * b * (1 - p) := by
+      have := star_left_conjugate_nonneg hb.1 (1 - p)
+      rwa [hp.one_sub.isSelfAdjoint.star_eq] at this
+    rw [ea, eb, ← conj_ortho_eq_zero_iff ha hp, ← conj_ortho_eq_zero_iff hb hp,
+      ← conj_ortho_eq_zero_iff hceff hp, expand]
+    refine ⟨fun h => by rw [h.1, h.2, smul_zero, smul_zero, add_zero], fun h => ?_⟩
+    have hA0 : (l : ℝ) • ((1 - p) * a * (1 - p)) = 0 := by
+      refine le_antisymm ?_ (smul_nonneg hl0.le hAnn)
+      have e : (l : ℝ) • ((1 - p) * a * (1 - p))
+          = -(((1 - l : ℝ)) • ((1 - p) * b * (1 - p))) := by
+        rw [eq_neg_iff_add_eq_zero]; exact h
+      rw [e, neg_nonpos]
+      exact smul_nonneg hm0.le hBnn
+    have hB0 : ((1 - l : ℝ)) • ((1 - p) * b * (1 - p)) = 0 := by
+      rw [hA0, zero_add] at h; exact h
+    constructor
+    · have h2 := congrArg (fun z : A => (l⁻¹ : ℝ) • z) hA0
+      simpa [smul_smul, inv_mul_cancel₀ (ne_of_gt hl0)] using h2
+    · have h2 := congrArg (fun z : A => ((1 - l : ℝ)⁻¹) • z) hB0
+      simpa [smul_smul, inv_mul_cancel₀ (ne_of_gt hm0)] using h2
+  rw [hset2]
+  exact vna_ceil c hceff
 
 /-- **56XIII** (`ceil-floor-basic`, vn.tex:2505, Exercise), part 3:
 `⌊a⌋ = ⌊a²⌋` and `⌈a⌉ = ⌈a²⌉` for an effect `a`. -/
 theorem ceil_floor_basic_3 (a : A) (ha : a ∈ effects A) :
-    floor a = floor (a ^ 2) ∧ ceil a = ceil (a ^ 2) :=
-  sorry
+    floor a = floor (a ^ 2) ∧ ceil a = ceil (a ^ 2) := by
+  have ha2 : a ^ 2 ∈ effects A := sq_mem_effects ha
+  -- for a projection `p`, `p ≤ a ↔ p ≤ a²` and `a ≤ p ↔ a² ≤ p` (**55VIII**/**55IX**)
+  have hbelow : {p : A | IsStarProjection p ∧ p ≤ a}
+      = {p : A | IsStarProjection p ∧ p ≤ a ^ 2} := by
+    ext p
+    exact and_congr_right fun hp => (projection_below_effect a p ha hp).out 0 5
+  have habove : {p : A | IsStarProjection p ∧ a ≤ p}
+      = {p : A | IsStarProjection p ∧ a ^ 2 ≤ p} := by
+    ext p
+    exact and_congr_right fun hp => (projection_above_effect a p ha hp).out 0 5
+  refine ⟨(floor_isGreatest ha).unique ?_, (vna_ceil a ha).unique ?_⟩
+  · rw [hbelow]; exact floor_isGreatest ha2
+  · rw [habove]; exact vna_ceil (a ^ 2) ha2
 
 /-- **56XIV** (`vna-directed-supremum-projections`, vn.tex:2526, Lemma): the
 supremum of a directed set of projections of a von Neumann algebra is a
@@ -614,15 +1060,144 @@ projection. -/
 theorem vna_directed_supremum_projections (D : Set A) (s : A)
     (hD : ∀ p ∈ D, IsStarProjection p) (hne : D.Nonempty)
     (hdir : DirectedOn (· ≤ ·) D) (hs : IsLUB D s) :
-    IsStarProjection s :=
-  sorry
+    IsStarProjection s := by
+  -- `dp = d` for `d ∈ D` (**55IX**); `(d)_d → p` and `(dp)_d → p²` ultraweakly
+  -- (**44VI**, **44VII**), so `p = p²` by uniqueness of ultraweak limits.
+  obtain ⟨d₀, hd₀⟩ := hne
+  have hs0 : (0 : A) ≤ s := (hD d₀ hd₀).nonneg.trans (hs.1 hd₀)
+  have hs1 : s ≤ 1 := hs.2 fun d hd => (hD d hd).le_one
+  have hssa : IsSelfAdjoint s := IsSelfAdjoint.of_nonneg hs0
+  set D' : Set (selfAdjoint A) := {d : selfAdjoint A | (d : A) ∈ D} with hD'def
+  have hval : Subtype.val '' D' = D := by
+    ext x
+    exact ⟨by rintro ⟨d, hd, rfl⟩; exact hd,
+      fun hx => ⟨⟨x, (hD x hx).isSelfAdjoint⟩, hx, rfl⟩⟩
+  have hne' : D'.Nonempty := ⟨⟨d₀, (hD d₀ hd₀).isSelfAdjoint⟩, hd₀⟩
+  have hdir' : DirectedOn (· ≤ ·) D' := by
+    intro x hx y hy
+    obtain ⟨c, hc, hxc, hyc⟩ := hdir _ hx _ hy
+    exact ⟨⟨c, (hD c hc).isSelfAdjoint⟩, hc, hxc, hyc⟩
+  have hbdd' : BddAbove D' := ⟨⟨s, hssa⟩, fun d hd => hs.1 hd⟩
+  have h3 : D'.Nonempty ∧ DirectedOn (· ≤ ·) D' ∧ BddAbove D' := ⟨hne', hdir', hbdd'⟩
+  have hlubSA : IsLUB D' (⟨s, hssa⟩ : selfAdjoint A) := by
+    refine ⟨fun d hd => hs.1 hd, fun u hu => hs.2 ?_⟩
+    rw [← hval]
+    rintro _ ⟨d, hd, rfl⟩
+    exact hu hd
+  have hdsup : ((dirSup D' h3 : selfAdjoint A) : A) = s := by
+    rw [(isLUB_dirSup D' h3).unique hlubSA]
+  have : Nonempty D' := ⟨⟨⟨d₀, (hD d₀ hd₀).isSelfAdjoint⟩, hd₀⟩⟩
+  have : IsDirectedOrder D' := directedOn_iff_isDirectedOrder.mp hdir'
+  refine ⟨?_, hssa⟩
+  show s * s = s
+  refine sub_eq_zero.mp (np_separating (s * s - s) fun ω => ?_)
+  have h1 := (uwTendsto_iff _ _ _).mp (vna_supremum_mult D' h3 s).1 ω
+  have h2 := (uwTendsto_iff _ _ _).mp (vna_supremum_uwlimit D' h3) ω
+  rw [hdsup] at h1 h2
+  have heq : (fun d : D' => (ω (((d : selfAdjoint A) : A) * s) : ℂ))
+      = fun d : D' => (ω ((d : selfAdjoint A) : A) : ℂ) := by
+    funext d
+    have hd : ((d : selfAdjoint A) : A) * s = ((d : selfAdjoint A) : A) :=
+      ((projection_below_effect s _ ⟨hs0, hs1⟩ (hD _ d.2)).out 0 7).mp (hs.1 d.2)
+    rw [hd]
+  rw [heq] at h1
+  rw [npFunctional_sub, sub_eq_zero]
+  exact tendsto_nhds_unique h1 h2
+
+/-- Auxiliary: `⌈p⌉ = p` for a projection. -/
+theorem ceil_of_isStarProjection {p : A} (hp : IsStarProjection p) : ceil p = p :=
+  (vna_ceil p ⟨hp.nonneg, hp.le_one⟩).unique
+    ⟨⟨hp, le_rfl⟩, fun q hq => hq.2⟩
+
+/-- Auxiliary (the binary join of projections): `⌈p + q⌉` is the least
+projection above both `p` and `q`. -/
+private theorem isLeast_ceil_add {p q : A} (hp : IsStarProjection p)
+    (hq : IsStarProjection q) :
+    IsLeast {r : A | IsStarProjection r ∧ p ≤ r ∧ q ≤ r} (ceil (p + q)) := by
+  have hpq : (0 : A) ≤ p + q := add_nonneg hp.nonneg hq.nonneg
+  obtain ⟨h1, h2, h3⟩ := ceil_spec hpq
+  -- for a projection `r`: `(p+q)r = p+q ↔ p ≤ r ∧ q ≤ r`
+  have key : ∀ r : A, IsStarProjection r →
+      ((p + q) * r = p + q ↔ p ≤ r ∧ q ≤ r) := by
+    intro r hr
+    constructor
+    · intro h
+      have hzero : (1 - r) * (p + q) * (1 - r) = 0 := by
+        have hpr : (p + q) * (1 - r) = 0 := by
+          rw [mul_sub, mul_one, h, sub_self]
+        rw [mul_assoc, hpr, mul_zero]
+      have hsplit : (1 - r) * p * (1 - r) + (1 - r) * q * (1 - r) = 0 := by
+        rw [← hzero]; noncomm_ring
+      have hpnn : (0 : A) ≤ (1 - r) * p * (1 - r) := by
+        have := star_left_conjugate_nonneg hp.nonneg (1 - r)
+        rwa [hr.one_sub.isSelfAdjoint.star_eq] at this
+      have hqnn : (0 : A) ≤ (1 - r) * q * (1 - r) := by
+        have := star_left_conjugate_nonneg hq.nonneg (1 - r)
+        rwa [hr.one_sub.isSelfAdjoint.star_eq] at this
+      have hp0 : (1 - r) * p * (1 - r) = 0 := by
+        refine le_antisymm ?_ hpnn
+        have : (1 - r) * p * (1 - r) = -((1 - r) * q * (1 - r)) := by
+          rw [eq_neg_iff_add_eq_zero]; exact hsplit
+        rw [this, neg_nonpos]
+        exact hqnn
+      have hq0 : (1 - r) * q * (1 - r) = 0 := by
+        rw [hp0, zero_add] at hsplit; exact hsplit
+      exact ⟨(conj_ortho_eq_zero_iff ⟨hp.nonneg, hp.le_one⟩ hr).mp hp0,
+        (conj_ortho_eq_zero_iff ⟨hq.nonneg, hq.le_one⟩ hr).mp hq0⟩
+    · rintro ⟨hpr, hqr⟩
+      have e1 : p * r = p :=
+        ((projection_above_effect p r ⟨hp.nonneg, hp.le_one⟩ hr).out 0 7).mp hpr
+      have e2 : q * r = q :=
+        ((projection_above_effect q r ⟨hq.nonneg, hq.le_one⟩ hr).out 0 7).mp hqr
+      rw [add_mul, e1, e2]
+  refine ⟨⟨h1, ((key _ h1).mp h2).1, ((key _ h1).mp h2).2⟩, ?_⟩
+  rintro r ⟨hr, hpr, hqr⟩
+  exact h3 r hr ((key r hr).mpr ⟨hpr, hqr⟩)
 
 /-- **56XVI** (vn.tex:2542, Exercise), suprema: every set of projections of
 a von Neumann algebra has a supremum `⋃A` *in the poset of projections*. -/
 theorem exists_projSup (P : Set A) (hP : ∀ p ∈ P, IsStarProjection p) :
     ∃! s : A, IsStarProjection s ∧ (∀ p ∈ P, p ≤ s) ∧
-      ∀ q : A, IsStarProjection q → (∀ p ∈ P, p ≤ q) → s ≤ q :=
-  sorry
+      ∀ q : A, IsStarProjection q → (∀ p ∈ P, p ≤ q) → s ≤ q := by
+  -- `D` = the projections below *every* projection upper-bounding `P`.  It is
+  -- directed (binary joins) and contains `P`, so its supremum is a projection
+  -- (**56XIV**) and is the join of `P` in the poset of projections.
+  classical
+  set D : Set A := {d : A | IsStarProjection d ∧
+    ∀ r : A, IsStarProjection r → (∀ p ∈ P, p ≤ r) → d ≤ r} with hDdef
+  have hPD : P ⊆ D := fun p hp => ⟨hP p hp, fun r _ hr => hr p hp⟩
+  have hne : D.Nonempty := ⟨0, IsStarProjection.zero A, fun r hr _ => hr.nonneg⟩
+  have hdir : DirectedOn (· ≤ ·) D := by
+    rintro x ⟨hx, hxle⟩ y ⟨hy, hyle⟩
+    obtain ⟨⟨hj, hxj, hyj⟩, hjleast⟩ := isLeast_ceil_add hx hy
+    exact ⟨ceil (x + y), ⟨hj, fun r hr hrP =>
+      hjleast ⟨hr, hxle r hr hrP, hyle r hr hrP⟩⟩, hxj, hyj⟩
+  have hbdd : BddAbove D := ⟨1, fun d hd => hd.1.le_one⟩
+  set D' : Set (selfAdjoint A) := {d : selfAdjoint A | (d : A) ∈ D} with hD'def
+  have hval : Subtype.val '' D' = D := by
+    ext x
+    exact ⟨by rintro ⟨d, hd, rfl⟩; exact hd,
+      fun hx => ⟨⟨x, (hx.1).isSelfAdjoint⟩, hx, rfl⟩⟩
+  obtain ⟨d₀, hd₀⟩ := id hne
+  have hne' : D'.Nonempty := ⟨⟨d₀, hd₀.1.isSelfAdjoint⟩, hd₀⟩
+  have hdir' : DirectedOn (· ≤ ·) D' := by
+    intro x hx y hy
+    obtain ⟨c, hc, hxc, hyc⟩ := hdir _ hx _ hy
+    exact ⟨⟨c, hc.1.isSelfAdjoint⟩, hc, hxc, hyc⟩
+  have hbdd' : BddAbove D' := ⟨⟨1, IsSelfAdjoint.one A⟩, fun d hd => hd.1.le_one⟩
+  have h3 : D'.Nonempty ∧ DirectedOn (· ≤ ·) D' ∧ BddAbove D' := ⟨hne', hdir', hbdd'⟩
+  set s : A := ((dirSup D' h3 : selfAdjoint A) : A) with hsdef
+  have hlubSA : IsLUB D' (dirSup D' h3) := isLUB_dirSup D' h3
+  have hlub : IsLUB D s := by
+    rw [← hval]
+    exact isLUB_coe_of_isLUB hne' hlubSA
+  have hproj : IsStarProjection s :=
+    vna_directed_supremum_projections D s (fun d hd => hd.1) hne hdir hlub
+  refine ⟨s, ⟨hproj, fun p hp => hlub.1 (hPD hp), fun q hq hqP => ?_⟩, ?_⟩
+  · exact hlub.2 fun d hd => hd.2 q hq hqP
+  · rintro t ⟨ht, htP, htleast⟩
+    exact le_antisymm (htleast s hproj fun p hp => hlub.1 (hPD hp))
+      (hlub.2 fun d hd => hd.2 t ht htP)
 
 open scoped Classical in
 /-- **56XVI** (vn.tex:2542, Exercise): the supremum `⋃P` of a set of
@@ -631,18 +1206,60 @@ non-projection). -/
 noncomputable def projSup (P : Set A) : A :=
   if hP : ∀ p ∈ P, IsStarProjection p then (exists_projSup P hP).choose else 0
 
+/-- The defining property of `⋃P`. -/
+theorem projSup_spec {P : Set A} (hP : ∀ p ∈ P, IsStarProjection p) :
+    IsStarProjection (projSup P) ∧ (∀ p ∈ P, p ≤ projSup P) ∧
+      ∀ q : A, IsStarProjection q → (∀ p ∈ P, p ≤ q) → projSup P ≤ q := by
+  rw [projSup, dif_pos hP]
+  exact (exists_projSup P hP).choose_spec.1
+
+theorem projSup_eq {P : Set A} (hP : ∀ p ∈ P, IsStarProjection p) {s : A}
+    (hs : IsStarProjection s) (hub : ∀ p ∈ P, p ≤ s)
+    (hleast : ∀ q : A, IsStarProjection q → (∀ p ∈ P, p ≤ q) → s ≤ q) :
+    projSup P = s :=
+  (exists_projSup P hP).unique (projSup_spec hP) ⟨hs, hub, hleast⟩
+
 /-- **56XVI** (vn.tex:2542, Exercise), infima: every set of projections of a
 von Neumann algebra has an infimum `⋂A` in the poset of projections. -/
 theorem exists_projInf (P : Set A) (hP : ∀ p ∈ P, IsStarProjection p) :
     ∃! s : A, IsStarProjection s ∧ (∀ p ∈ P, s ≤ p) ∧
-      ∀ q : A, IsStarProjection q → (∀ p ∈ P, q ≤ p) → q ≤ s :=
-  sorry
+      ∀ q : A, IsStarProjection q → (∀ p ∈ P, q ≤ p) → q ≤ s := by
+  -- `p ↦ p^⊥` is an order anti-isomorphism of the poset of projections
+  classical
+  set P' : Set A := (fun p : A => 1 - p) '' P with hP'def
+  have hP'proj : ∀ p ∈ P', IsStarProjection p := by
+    rintro _ ⟨p, hp, rfl⟩
+    exact (hP p hp).one_sub
+  obtain ⟨u, ⟨hu, huP, huleast⟩, -⟩ := exists_projSup P' hP'proj
+  refine ⟨1 - u, ⟨hu.one_sub, fun p hp => sub_le_comm.mp (huP _ ⟨p, hp, rfl⟩),
+    fun q hq hqP => ?_⟩, ?_⟩
+  · refine le_sub_comm.mp (huleast (1 - q) hq.one_sub ?_)
+    rintro _ ⟨p, hp, rfl⟩
+    exact sub_le_sub_left (hqP p hp) 1
+  · rintro t ⟨ht, htP, htgreatest⟩
+    refine le_antisymm (le_sub_comm.mp (huleast (1 - t) ht.one_sub ?_))
+      (htgreatest _ hu.one_sub fun p hp => sub_le_comm.mp (huP _ ⟨p, hp, rfl⟩))
+    rintro _ ⟨p, hp, rfl⟩
+    exact sub_le_sub_left (htP p hp) 1
 
 open scoped Classical in
 /-- **56XVI** (vn.tex:2542, Exercise): the infimum `⋂P` of a set of
 projections in the poset of projections (junk value `0`). -/
 noncomputable def projInf (P : Set A) : A :=
   if hP : ∀ p ∈ P, IsStarProjection p then (exists_projInf P hP).choose else 0
+
+/-- The defining property of `⋂P`. -/
+theorem projInf_spec {P : Set A} (hP : ∀ p ∈ P, IsStarProjection p) :
+    IsStarProjection (projInf P) ∧ (∀ p ∈ P, projInf P ≤ p) ∧
+      ∀ q : A, IsStarProjection q → (∀ p ∈ P, q ≤ p) → q ≤ projInf P := by
+  rw [projInf, dif_pos hP]
+  exact (exists_projInf P hP).choose_spec.1
+
+theorem projInf_eq {P : Set A} (hP : ∀ p ∈ P, IsStarProjection p) {s : A}
+    (hs : IsStarProjection s) (hlb : ∀ p ∈ P, s ≤ p)
+    (hgreatest : ∀ q : A, IsStarProjection q → (∀ p ∈ P, q ≤ p) → q ≤ s) :
+    projInf P = s :=
+  (exists_projInf P hP).unique (projInf_spec hP) ⟨hs, hlb, hgreatest⟩
 
 /-- **56XVII** (`ceil-supremum`, vn.tex:2554, Exercise), part 1:
 `⌈⋁D⌉ = ⋃_{d∈D} ⌈d⌉` for a directed set `D` of effects. -/
@@ -686,8 +1303,64 @@ theorem sum_of_orthogonal_projections {ι : Type*} (p : ι → A)
 `b`. -/
 theorem floor_sequential_product (a b : A) (ha : a ∈ effects A)
     (hb : b ∈ effects A) :
-    floor (CFC.sqrt a * b * CFC.sqrt a) = projInf {floor a, floor b} :=
-  sorry
+    floor (CFC.sqrt a * b * CFC.sqrt a) = projInf {floor a, floor b} := by
+  have hsa : star (CFC.sqrt a) = CFC.sqrt a :=
+    (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg a)).star_eq
+  have haa : CFC.sqrt a * CFC.sqrt a = a := CFC.sqrt_mul_sqrt_self a ha.1
+  set c : A := CFC.sqrt a * b * CFC.sqrt a with hcdef
+  have hcnn : (0 : A) ≤ c := by
+    have := star_left_conjugate_nonneg hb.1 (CFC.sqrt a)
+    rwa [hsa] at this
+  have hca : c ≤ a := by
+    have h := star_left_conjugate_le_conjugate hb.2 (CFC.sqrt a)
+    rw [hsa, mul_one, haa] at h
+    exact h
+  have hceff : c ∈ effects A := ⟨hcnn, hca.trans ha.2⟩
+  obtain ⟨⟨hfp, hfc⟩, hfgreat⟩ := floor_isGreatest hceff
+  set f : A := floor c with hfdef
+  -- `f ≤ a`, hence `f √a = f`, and `f c f = f`, so `f b f = f`, so `f ≤ b`
+  have hfa : f ≤ a := hfc.trans hca
+  have hfsqrt : CFC.sqrt a * f = f :=
+    ((projection_below_effect a f ha hfp).out 0 2).mp hfa
+  have hfsqrt' : f * CFC.sqrt a = f :=
+    ((projection_below_effect a f ha hfp).out 0 1).mp hfa
+  have hfcf : f * c * f = f := by
+    have h1 : f * c = f := ((projection_below_effect c f hceff hfp).out 0 7).mp hfc
+    rw [h1, hfp.isIdempotentElem.eq]
+  have hfbf : f * b * f = f := by
+    calc f * b * f = (f * CFC.sqrt a) * b * (CFC.sqrt a * f) := by
+          rw [hfsqrt, hfsqrt']
+      _ = f * c * f := by rw [hcdef]; noncomm_ring
+      _ = f := hfcf
+  have hfb : f ≤ b := by
+    refine (proj_le_iff hb hfp).mpr ?_
+    have hzero : f * (1 - b) * f = 0 := by
+      have e : f * (1 - b) * f = f * f - f * b * f := by noncomm_ring
+      rw [e, hfbf, hfp.isIdempotentElem.eq, sub_self]
+    have h1 : (1 - b) * f = 0 :=
+      (conj_sa_eq_zero_iff (sub_nonneg.mpr hb.2) hfp.isSelfAdjoint).mp hzero
+    simpa [(IsSelfAdjoint.of_nonneg (sub_nonneg.mpr hb.2)).star_eq,
+      hfp.isSelfAdjoint.star_eq] using congrArg star h1
+  -- `f` is the greatest projection below both `⌊a⌋` and `⌊b⌋`
+  have hPproj : ∀ p ∈ ({floor a, floor b} : Set A), IsStarProjection p := by
+    rintro p (rfl | rfl)
+    · exact (floor_spec ha).1
+    · exact (floor_spec hb).1
+  refine (projInf_eq hPproj hfp ?_ ?_).symm
+  · rintro p (rfl | rfl)
+    · exact (floor_isGreatest ha).2 ⟨hfp, hfa⟩
+    · exact (floor_isGreatest hb).2 ⟨hfp, hfb⟩
+  · intro e he hle
+    have hea : e ≤ a := (hle _ (by left; rfl)).trans (floor_le ha)
+    have heb : e ≤ b := (hle _ (by right; rfl)).trans (floor_le hb)
+    refine hfgreat ⟨he, ?_⟩
+    refine ((projection_below_effect c e hceff he).out 0 7).mpr ?_
+    have h1 : e * CFC.sqrt a = e := ((projection_below_effect a e ha he).out 0 1).mp hea
+    have h2 : e * b = e := ((projection_below_effect b e hb he).out 0 7).mp heb
+    calc e * c = e * CFC.sqrt a * b * CFC.sqrt a := by rw [hcdef]; noncomm_ring
+      _ = e * b * CFC.sqrt a := by rw [h1]
+      _ = e * CFC.sqrt a := by rw [h2]
+      _ = e := h1
 
 /-! ## Parsec 580
 
@@ -697,8 +1370,22 @@ theorem floor_sequential_product (a b : A) (ha : a ∈ effects A)
 and an effect `a ≤ p`: `p - ⌈a⌉ = ⌊p - a⌋`. -/
 theorem floor_difference (p a : A) (hp : IsStarProjection p)
     (ha : a ∈ effects A) (hap : a ≤ p) :
-    p - ceil a = floor (p - a) :=
-  sorry
+    p - ceil a = floor (p - a) := by
+  obtain ⟨⟨hcp, hac⟩, hcleast⟩ := vna_ceil a ha
+  have hcple : ceil a ≤ p := hcleast ⟨hp, hap⟩
+  have hpa : p - a ∈ effects A :=
+    ⟨sub_nonneg.mpr hap, (sub_le_self p ha.1).trans hp.le_one⟩
+  -- `p - ⌈a⌉` is a projection below `p - a`
+  have hdproj : IsStarProjection (p - ceil a) :=
+    projection_below_projection _ _ hcp hp hcple
+  have hdle : p - ceil a ≤ p - a := sub_le_sub_left hac p
+  refine ((floor_isGreatest hpa).unique ⟨⟨hdproj, hdle⟩, ?_⟩).symm
+  rintro q ⟨hq, hqle⟩
+  -- the trick: `a ≤ p - q`, and `p - q` is a projection
+  have hqp : q ≤ p := hqle.trans (sub_le_self p ha.1)
+  have hpq : IsStarProjection (p - q) := projection_below_projection _ _ hq hp hqp
+  have hapq : a ≤ p - q := le_sub_comm.mp hqle
+  exact le_sub_comm.mp (hcleast ⟨hpq, hapq⟩)
 
 /-- **58IV** (`ceil-sequential-product`, vn.tex:2663, Proposition):
 `⌈pqp⌉ = p ∩ (p^⊥ ∪ q)` for projections `p`, `q`. -/

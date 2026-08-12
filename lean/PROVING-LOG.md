@@ -318,6 +318,50 @@ prove the spine in those terms *alongside* the shipped statements, so nothing is
 restated and no statement changes.  **This has now been done in full**; see the
 next section.
 
+### Session 2 — A/VN, third pass: the 44XI chain and parsecs 560–580
+
+226 → 205 (Basic 48→44, Projections 88→72, Completeness 26→25).  Build green;
+all 15 headline results `#print axioms`-clean.
+
+**The predicted import unblock worked exactly as forecast.**  Adding
+`import Theses.A.CStar.Representation` to `A/VN/Basic.lean` (after verifying
+`proto_gelfand_naimark_1` really is sorry-free) released the whole chain:
+`conjNP` — the new hinge, that `a ↦ ω(b*ab)` is an np-functional, by positivity
+plus `ad_normal` for normality — then **44XI** `np_orderSeparating` with
+`np_separating` and `eq_of_forall_npFunctional`, **44XI.1/.2**, **44XIII**
+`vna_supremum_commutes`, and **72III.1a** `bstaromega_np`.
+
+Notably **44XIII went through 44VII alone, with no forward reference**: `(da)_d →
+(⋁D)a` and `(ad)_d → a(⋁D)`, the two nets are equal, so `tendsto_nhds_unique` in
+`ℂ` plus `np_separating` finishes it.
+
+That opened **parsecs 560–580** — 16 statements (`exists_ceil`, `vna_ceil`,
+`vna_ceil_sup/_comm`, `exists_floor`, `vna_floor_comm`, 56XI.1/.2,
+56XIII.1/.2/.3, 56XIV, 56XVI, 57I, 58II) plus a public API (`ceil_spec`,
+`floor_spec`, `floor_isGreatest`, `projSup_spec`, `projInf_spec`) that the
+590–630 block should be built on.
+
+**Two divergences.**  *56I.40*: the thesis computes `p²` via `ad_normal` twice;
+the Lean proof keeps the identical chain and index choice `n = m = k+1` but with
+`≥` at each step, which is all `p ≤ p²` needs and follows from bare monotonicity
+of `b ↦ c*bc` — a weakening of the author's computation, not a different
+argument.  *56VI*: the thesis proves the floor symmetrically via `⋀ₙ b^{2ⁿ}` and
+"a variation on `ad-normal`" for *filtered infima*, which our development lacks;
+the Lean proof instead derives `⌊b⌋ = ⌈b^⊥⌉^⊥` directly, proving rather than
+citing the later 56XIII.1.  Cost: `vna_floor` bundles `IsGreatest` with the
+`⋀ₙ b^{2ⁿ}` formula in one theorem, so it stays `sorry`; the useful half is
+available as `floor_isGreatest`.
+
+**Next step, one short lemma**: derive `ad_normal` for *filtered infima* from
+`ad_normal` + `infima_in_vna` by `x ↦ −x` — `Basic.lean:604` already uses exactly
+that negation trick.  That finishes `vna_floor` along the thesis's own 56VI.90.
+
+**No new errata** this pass; E1/E2 from the previous A/VN pass stand.  One
+formalization trap recorded so it is not rediscovered:
+`@IsClosed A (ultraweak A) S` does **not** survive dot-notation or a plain
+`exact` — `A`'s norm topology gets re-synthesised — hence the three `@`-applied
+wrappers in `Basic.lean`.
+
 ### ⚠️ Session 2 — the `sorry` count overstates progress in B/Eff's upper chain
 
 **The single most important finding of this session, and it is not an erratum.**

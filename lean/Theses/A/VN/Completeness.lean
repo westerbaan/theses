@@ -55,7 +55,8 @@ noncomputable def bStarOmega (b : A) (ω : NPFunctional A) : A → ℂ :=
 an np-functional. -/
 theorem bstaromega_np (b : A) (ω : NPFunctional A) :
     ∃ ω' : NPFunctional A, ⇑ω' = bStarOmega A b ω :=
-  sorry
+  -- positivity is `star_left_conjugate_le_conjugate`, normality is **44VIII**
+  ⟨conjNP b ω, funext fun a => conjNP_apply b ω a⟩
 
 /-- **72III** (`bstaromega-basic`, vn.tex:3850, Exercise), part 1b:
 `|ω(a* b c)| ≤ ‖ω‖ ‖a‖_ω ‖b‖ ‖c‖_ω` (with `‖ω‖ = ω(1)` for the positive
