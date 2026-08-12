@@ -139,8 +139,17 @@ file.)
 ## Findings for the authors
 
 The point of this exercise, beyond the Lean files, is
-[PROVING-LOG.md](PROVING-LOG.md): **~25 errata** in the theses' own proofs,
-found by trying to transcribe them.  Session 2 added, from A/CStar: **23VII.3**
+[PROVING-LOG.md](PROVING-LOG.md): **~34 errata** in the theses' own proofs,
+found by trying to transcribe them.  Note how they were found: a dedicated pass
+that re-read the authors' arguments for statements already proved from Mathlib
+turned up **10 errata across two audits** — proving a statement finds nothing;
+*comparing* the two proofs is what finds things.  Session 2 added, from A/CStar:
+**17III** (`[0,∞]` should be `[0,∞)`), **17VI.6** (a "not" that inverts the
+direction being proved), **26II.1** (`a` need not be positive; a missing step),
+**26II.4** (`|a+b|` should be `|a−b|`), **30IV.1** (Cauchy–Schwarz displayed with
+squares on the right), **20aII** (`g` for `γ`), **11XX.1** (`f : X → ℝ` should be
+`→ ℂ`), **11XX.2** (a dropped negation), **11XV.2** (a self-citation), **4VIII**
+(inner product typed `V → V`); plus **23VII.3**
 false as stated (needs `0 ≤ a`); **34aVII** Russo–Dye false at `N = 0`;
 **37IX** does not follow from **37VII** (bounded-above ≠ norm-bounded for a
 directed set); **38VI.2** false in the `←` direction; three more statements
@@ -428,6 +437,31 @@ new `CStarModule` statements — especially in B/Dils, which is untouched and
 uses it in five files — must apply the swap.**
 
 ### Still open
+
+**0. Scope question: should the formalization validate the thesis's own
+bootstrapping, or only its statements?**  This is now the biggest open
+question, and it is not about any single statement.  An audit of 37 first-pass
+proofs found seven places where the Lean proof is correct but uses a result the
+thesis does not yet have — two of them systemic:
+
+* **What `0 ≤ a` means.**  In Lean it is Mathlib's star order (`a = b*b`); in
+  the thesis before **25I** it is "`‖a − t‖ ≤ t` for some `t`", and their
+  equivalence *is* 25I.  So statements before 25I phrased with `0 ≤ a` already
+  presuppose 25I.
+* **CFC before Gelfand.**  Everything from parsec 230 uses the continuous
+  functional calculus, which the thesis obtains only at parsecs 270–280 — it
+  hand-builds `√` at **23II** precisely to avoid this.  Sharpest instance:
+  **23VII**.0'' is closed with `CFC.sqrt_le_sqrt`, i.e. thesis **28III**, five
+  parsecs later and itself resting on 23VII.  Also **27XV**, closed via Gelfand
+  through maximal ring ideals — the route **16VIII** explicitly rejects.
+
+Nothing here is unsound: Mathlib proves all of it independently.  But if the
+goal is to check that the *thesis's* development stands up, these proofs do not
+do that, and several would need rewriting along the author's elementary routes
+(the audit notes that for 17V, 17VI.6 and 23VII.0'' the author's route is
+already available in the file).  If the goal is only that the statements are
+true, they are fine as they are.  **This needs the author's call**, because it
+determines a lot of rework.
 
 Places where the honest fix is to change one of *our* statements, not done
 because the standing rule is never to change a statement without approval:

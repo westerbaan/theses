@@ -244,6 +244,82 @@ the Lean proof does instead.`)
   **27XVII**, **27XVIII**, **27XXVII**) from Mathlib, and the Riesz-ideal
   machinery of 27VIII–27XIII is left as the thesis's own (independent) route.
 
+### Session 2 — audit of the 37 first-pass proofs
+
+All 37 statements proved before the "author's proof first" policy came in were
+re-read against the authors' arguments (Positive 23, TowardsVN 11,
+Representation 3).  Verdicts: **20 match, 11 diverge** (7 of them carrying a
+dependency-order flag), **6 errata**, **3 not cross-checkable**.  All six errata
+were checked against the 27 already recorded at the top of `asols.tex`; three
+further items in scope (`200.30`, `300.40`, `370.50`) were found to be already
+recorded and are *not* re-reported.
+
+**New errata.**
+
+- **17III** `cstar.tex:2716` — stated for `t ∈ [0,∞]`; at `t = ∞` the condition
+  `‖a − t‖ ≤ t` is meaningless.  Should be `[0,∞)`.
+- **17VI**.6 `asols.tex:1844` — "suppose that `a` is **not** invertible, then
+  `0 ∉ spec(a)`".  The direction actually being proved (invertible ⟹ `a ≥ 1/n`)
+  is never begun; delete the "not" and the rest of the solution is correct.
+- **26II**.1 `asols.tex:2372` — "`a` and `b` are positive": `a` is an arbitrary
+  self-adjoint element and need not be positive (`𝒜 = ℂ`, `a = −1`, `b = 1`).
+  Separately, `b ≥ 0` — which *is* needed, to turn `√(b²)` back into `b` — is
+  asserted without the step `2b = (b−a) + (b+a) ≥ 0`.  The Lean proof supplies
+  exactly that missing step.
+- **26II**.4 `asols.tex:2433` — "`a ∨ b = ½(a + b + |a + b|)`" should have
+  `|a − b|`.  Check `a = 2`, `b = −1`: the printed right-hand side gives `1`,
+  while `a ∨ b = 2`.
+- **30IV**.1 `asols.tex:3142` — Cauchy–Schwarz is written with squares on the
+  right, `|[a,b]_ω|² ≤ [a,a]_ω² [b,b]_ω²`; as displayed it does not yield
+  Kadison's inequality.
+- **20aII** `asols.tex:1939` — "`e ∘ h = g`" should be "`e ∘ h = γ`" (typo).
+
+Three further sub-erratum gaps: **37VII** omits Cauchy-ness when invoking 37II;
+a garbled sentence in solution `250.10`; and implicit boundedness in the wlog of
+solution `140.20`(4).
+
+**Dependency-order findings — the important part.**  Seven, of which two are
+systemic.  None is a soundness problem: every Lean proof is correct, and Mathlib
+establishes these results independently.  What they mean is that **these proofs
+do not validate the thesis's own bootstrapping**, which is a distinct kind of
+value from validating its statements.
+
+- **(A) systemic — what `0 ≤ a` *means*.**  In Lean, `0 ≤ a` is Mathlib's star
+  order (`a = b*b`).  In the thesis before **25I**, positivity is "`‖a − t‖ ≤ t`
+  for some `t`".  Their equivalence *is* 25I.  So every statement before 25I
+  that is phrased with `0 ≤ a` is, strictly, using the conclusion of 25I to say
+  what it says.  Visible concretely in **17V**, where Lean's 3→4 goes through a
+  CFC theorem while the thesis proves 3⟹2 elementarily — and the author's route
+  is already available in the file.
+- **(B) systemic — CFC used before the thesis has it.**  Everything from parsec
+  230 onward uses the continuous functional calculus (`CFC.sqrt/abs/posPart`,
+  `Commute.mul_nonneg`), which the thesis obtains only after Gelfand
+  (parsecs 270–280).  The thesis hand-builds `√` at **23II** precisely to avoid
+  this.  Affects 23VII.0/.0'/.0''/.1/.2, 25I(1→3), 26II.
+- **(C) sharpest.**  **23VII**.0'' closes `c² ≤ a ⟹ c ≤ √a` with
+  `CFC.sqrt_le_sqrt`, which is thesis **28III** `sqrt-monotone`
+  (`cstar.tex:4353`) — five parsecs later, and itself built on top of 23VII.
+  Circular with respect to the thesis's development order.
+- **(D)** **17VI**.6 uses `CStarAlgebra.inv_le_inv`, i.e. thesis **25II**.3.  The
+  author's spectral route would work in Lean.
+- **(E)** **27XV** is closed by
+  `WeakDual.CharacterSpace.mem_spectrum_iff_exists` — Gelfand theory obtained
+  through maximal *ring* ideals, which is circular w.r.t. the thesis and is
+  exactly the route **16VIII** rejects.
+- **(F)** **16II** uses Mathlib's general spectral-radius formula, which
+  **16IV** says the thesis does not prove.
+- **(G)** 23VII.1/.2 are statement-faithful but CFC-backed.
+
+**Trivial algebra `{0}`.**  16VII and 17VI.3b are **confirmed** to survive only
+accidentally — 17VI.3b's thesis infimum is over `ℝ` and is honestly `−∞` in
+`{0}`, while Lean survives on `Real.sInf` junk-value conventions.  Refuted for
+all other 35.
+
+**Not cross-checkable (3).**  39VI.1 and 39VI.2 are Exercises with no inline
+proof, and parsec 390 is outside `asols.tex`'s coverage — the Lean proofs there
+are **original work**, not transcriptions.  37V.1 is a Definition whose net
+claim is asserted without argument, and the Lean theorem proves strictly more.
+
 ### Session 2 — Matrices.lean, second pass (33II.1 unblocked)
 
 Nine statements closed, including the bottleneck **33II.1**
