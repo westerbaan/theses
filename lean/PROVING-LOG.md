@@ -244,6 +244,48 @@ the Lean proof does instead.`)
   **27XVII**, **27XVIII**, **27XXVII**) from Mathlib, and the Riesz-ideal
   machinery of 27VIII–27XIII is left as the thesis's own (independent) route.
 
+### Session 2 — Matrices.lean, second pass (33II.1 unblocked)
+
+Nine statements closed, including the bottleneck **33II.1**
+`cstar_matrix_positive_iff` in both directions, and everything that waited on
+it: 33II.2, 33III.3, 34II, 34IV.1, 34IV.2, 34XII, 34XIV, 32XV.1.
+
+**The convention fix is confirmed correct.**  `cstar_matrix_gram_nonneg` is now
+*proved* in the corrected, argument-swapped form, and the author's own solution
+goes through verbatim once the swap is applied.  That is independent evidence
+that the transcription — not the thesis — was at fault.
+
+**Three places where the author's argument could not be transcribed.**  Each is
+a finding in its own right, and all three trace to the same root: the thesis
+works with structures that Mathlib either does not bundle or bundles more
+strongly.
+
+- **33II.1** — the thesis derives it from **32XV.2** (vector states on `Bᵃ(X)`
+  are order-separating).  `Bᵃ(X)` is not a bundled C\*-algebra here — only
+  predicates — so 32XV.2 is itself not provable.  The Lean proof instead runs
+  *the author's own 32XV.2 argument, step for step*, inside `M_N(𝒜)` where the
+  structure does exist: `T = T₊ − T₋`, `T T₋ = −T₋²`, `T₋³ = 0`, `T₋ = 0`.
+- **34XII** — the thesis applies Cauchy–Schwarz to the form `⟨x, Ay⟩` on `𝒜²`.
+  Mathlib's `CStarModule` **bundles definiteness**, so that semi-inner product
+  is not an instance and `chilb_cs` cannot be applied to it.  Lean completes the
+  square inside `M₂(𝒜)` instead.
+- **33III.3** — the author's route needs that same Cauchy–Schwarz, which exists
+  in Lean only as 34XII, sitting *later* in the file; a forward reference is
+  impossible.  The faithful version was compiled separately and does work if
+  34XII is moved earlier; as shipped, 33III.3 uses an explicit counterexample.
+
+Followed the thesis: 33II.2, 34II, 34IV.1/2, 34XIV, 32XV.1.
+
+**Mathlib defect worth reporting upstream.**
+`ContinuousFunctionalCalculus ℝ (CStarMatrix n n 𝒜) IsSelfAdjoint` cannot be
+synthesised, although the instance term typechecks when supplied by hand: the
+conclusion carries `Algebra.complexToReal` while `Algebra ℝ (CStarMatrix n n 𝒜)`
+resolves to `CStarMatrix.instAlgebra` — defeq but not syntactically equal.  So
+`CStarAlgebra.nonneg_iff_eq_star_mul_self`, `CFC.negPart` and
+`NonnegSpectrumClass ℝ` are all unusable directly on `CStarMatrix`.  Workaround
+used throughout: state the CFC-dependent fact for an abstract `M`, then
+instantiate.
+
 ### Session 2 — Positive.lean / Representation.lean, second pass
 
 Nine statements closed (20aI.1, 20aI.2, 21X, 25II.3, 25V.3, 26II.4, 26III;
@@ -989,16 +1031,16 @@ Mathlib) is recorded here so the next worker does not repeat it:
 
 ### After session 2 (A/CStar only; other chapters untouched)
 
-**865 code `sorry`s remain, down from 947 — 82 proved.**
+**839 code `sorry`s remain, down from 947 — 108 proved.**
 
 | file | after session 1 | now |
 |---|---|---|
-| **A/CStar total** | **170** | **88** |
+| **A/CStar total** | **170** | **62** |
 | ↳ A/CStar/Basic.lean | 11 | **0 — complete** |
-| ↳ A/CStar/Positive.lean | 63 | 40 |
-| ↳ A/CStar/Matrices.lean | 55 | 20 |
-| ↳ A/CStar/TowardsVN.lean | 27 | 15 |
-| ↳ A/CStar/Representation.lean | 17 | 13 |
+| ↳ A/CStar/Positive.lean | 63 | 33 |
+| ↳ A/CStar/Matrices.lean | 55 | 11 |
+| ↳ A/CStar/TowardsVN.lean | 27 | 7 |
+| ↳ A/CStar/Representation.lean | 17 | 11 |
 | B/Eff/* | 129 | 129 — untouched |
 | A/VN/* | 276 | 276 — untouched |
 | A/Proc/* | 233 | 233 — untouched |
