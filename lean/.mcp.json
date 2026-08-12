@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "lean-lsp": {
+      "type": "stdio",
+      "command": "bash",
+      "args": [
+        "-c",
+        "H=\"${HOME:-$(getent passwd \"$(id -un)\" | cut -d: -f6)}\"; export HOME=\"$H\"; export PATH=\"$H/.elan/bin:$H/.local/bin:$PATH\"; exec uvx lean-lsp-mcp"
+      ],
+      "env": {
+        "LEAN_PROJECT_PATH": ".",
+        "LEAN_LOG_LEVEL": "NONE"
+      }
+    }
+  }
+}

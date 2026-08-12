@@ -126,7 +126,7 @@ continuous `f : [0,1] → ℂ` and `a ∈ 𝒜`. -/
 theorem integral_scalar_smul (f : ℝ → ℂ) (hf : ContinuousOn f (Set.Icc 0 1))
     (a : 𝒜) :
     ∫ t in (0:ℝ)..1, f t • a = (∫ t in (0:ℝ)..1, f t) • a :=
-  sorry
+  intervalIntegral.integral_smul_const f a
 
 /-- **14III** (cstar.tex:2094, Definition): the integral
 `∫_w^{w'} f = (w' - w) ∫₀¹ f(w + t(w' - w)) dt` of an 𝒜-valued function
@@ -167,7 +167,12 @@ complex number `z`, `z⁻¹ = (Re z - i Im z)/(Re z² + Im z²)`. -/
 theorem invint_1 (z : ℂ) (hz : z ≠ 0) :
     z⁻¹ = ((z.re : ℂ) - (z.im : ℂ) * Complex.I) /
       ((z.re : ℂ) ^ 2 + (z.im : ℂ) ^ 2) :=
-  sorry
+  by
+    have h1 : ((z.re : ℂ) ^ 2 + (z.im : ℂ) ^ 2) = (Complex.normSq z : ℂ) := by
+      rw [Complex.normSq_apply]; push_cast; ring
+    have h2 : ((z.re : ℂ) - (z.im : ℂ) * Complex.I) = (starRingEnd ℂ) z := by
+      apply Complex.ext <;> simp
+    rw [h1, h2, Complex.inv_def, div_eq_mul_inv, Complex.ofReal_inv]
 
 /-- **14VIII** (`invint`, cstar.tex:2302, Exercise), part 2 (vertical
 segment): `∫_a^{a+ib} z⁻¹ dz = i arctan(b/a) + log|a+ib| - log|ia|` for real
@@ -267,7 +272,7 @@ self-adjoint element `a` of a C*-algebra,
 `spectralRadius ℂ a`, valued in `ℝ≥0∞`). -/
 theorem norm_spectrum (a : 𝒜) (ha : IsSelfAdjoint a) :
     spectralRadius ℂ a = (‖a‖₊ : ℝ≥0∞) :=
-  sorry
+  ha.spectralRadius_eq_nnnorm
 
 /-! **16IV** (cstar.tex:2625, Remark): for non-self-adjoint `a` the formula
 may fail (e.g. `[[0,1],[0,0]]`); the general formula
@@ -293,7 +298,15 @@ cstar.tex:2655, Exercise, asks to prove this from **16VI**; it is merged into
 this statement.) -/
 theorem gelfand_mazur (h : ∀ a : 𝒜, a ≠ 0 → IsUnit a) :
     ∀ a : 𝒜, ∃ z : ℂ, a = algebraMap ℂ 𝒜 z :=
-  sorry
+  by
+    intro a
+    rcases subsingleton_or_nontrivial 𝒜 with _ | _
+    · exact ⟨0, Subsingleton.elim _ _⟩
+    · obtain ⟨z, hz⟩ := spectrum.nonempty a
+      refine ⟨z, ?_⟩
+      rw [spectrum.mem_iff] at hz
+      by_contra hne
+      exact hz (h _ (sub_ne_zero.mpr (Ne.symm hne)))
 
 /-! **16VIII** (`gelfand-mazur-predicament`, cstar.tex:2663, Remark): why the
 usual Banach-algebra route to Gelfand's representation theorem is avoided —
@@ -312,16 +325,86 @@ theorem real_pos_ineq (lam t : ℝ) : |lam - t| ≤ t ↔ lam ∈ Set.Icc 0 (2 *
     · rintro ⟨h1, h2⟩
       constructor <;> linarith
 
+/-- Auxiliary (**16II**): for a self-adjoint element `b` and `t ≥ 0`,
+`‖b‖ ≤ t` iff every spectral value of `b` has modulus at most `t`. -/
+private theorem norm_le_iff_spectrum_norm_le (b : 𝒜) (hb : IsSelfAdjoint b)
+    (t : ℝ) (ht : 0 ≤ t) : ‖b‖ ≤ t ↔ ∀ z ∈ spectrum ℂ b, ‖z‖ ≤ t :=
+  by
+    constructor
+    · intro h z hz
+      have h1 : ((‖z‖₊ : ℝ≥0∞)) ≤ spectralRadius ℂ b :=
+        le_iSup₂ (f := fun k (_ : k ∈ spectrum ℂ b) => (‖k‖₊ : ℝ≥0∞)) z hz
+      rw [hb.spectralRadius_eq_nnnorm, ENNReal.coe_le_coe] at h1
+      exact le_trans (by exact_mod_cast h1) h
+    · intro h
+      set T : NNReal := ⟨t, ht⟩ with hT
+      have h1 : spectralRadius ℂ b ≤ (T : ℝ≥0∞) := by
+        refine iSup₂_le fun z hz => ?_
+        refine ENNReal.coe_le_coe.mpr ?_
+        rw [hT]
+        exact h z hz
+      rw [hb.spectralRadius_eq_nnnorm, ENNReal.coe_le_coe] at h1
+      exact h1
+
+/-- Auxiliary: a real scalar is a self-adjoint element of a C*-algebra
+(the version of `Basic.isSelfAdjoint_algebraMap_ofReal` that does not need an
+order on `𝒜`). -/
+private theorem isSelfAdjoint_algebraMap_ofReal' (r : ℝ) :
+    IsSelfAdjoint (algebraMap ℂ 𝒜 (r : ℂ)) :=
+  by rw [IsSelfAdjoint, ← algebraMap_star_comm, Complex.star_def, Complex.conj_ofReal]
+
 /-- **17III** (`pos-spectrum`, cstar.tex:2714, Proposition): for self-adjoint
 `a` and `t ∈ [0,∞)`: `‖a - t‖ ≤ t` iff `spec(a) ⊆ [0, 2t]`. -/
 theorem pos_spectrum (a : 𝒜) (ha : IsSelfAdjoint a) (t : ℝ) (ht : 0 ≤ t) :
     ‖a - algebraMap ℂ 𝒜 (t : ℂ)‖ ≤ t ↔
       spectrum ℂ a ⊆ {z : ℂ | ∃ r : ℝ, 0 ≤ r ∧ r ≤ 2 * t ∧ z = r} :=
-  sorry
+  by
+    have hb : IsSelfAdjoint (a - algebraMap ℂ 𝒜 (t : ℂ)) :=
+      ha.sub (isSelfAdjoint_algebraMap_ofReal' t)
+    rw [norm_le_iff_spectrum_norm_le _ hb t ht]
+    constructor
+    · intro h z hz
+      have hz' : z - (t : ℂ) ∈ spectrum ℂ (a - algebraMap ℂ 𝒜 (t : ℂ)) := by
+        rw [← spectrum.sub_singleton_eq]
+        exact ⟨z, hz, (t : ℂ), rfl, rfl⟩
+      have hnorm := h _ hz'
+      have hre : z = (z.re : ℂ) := ha.mem_spectrum_eq_re hz
+      have habs : |z.re - t| ≤ t := by
+        rw [← Real.norm_eq_abs, ← Complex.norm_real, Complex.ofReal_sub, ← hre]
+        exact hnorm
+      exact ⟨z.re, ((real_pos_ineq z.re t).mp habs).1,
+        ((real_pos_ineq z.re t).mp habs).2, hre⟩
+    · intro h w hw
+      rw [← spectrum.sub_singleton_eq] at hw
+      obtain ⟨z, hz, s, hs, rfl⟩ := hw
+      obtain ⟨r, hr0, hr2, hrz⟩ := h hz
+      rw [Set.mem_singleton_iff] at hs
+      subst hs
+      show ‖z - (t : ℂ)‖ ≤ t
+      rw [hrz, ← Complex.ofReal_sub, Complex.norm_real, Real.norm_eq_abs]
+      exact (real_pos_ineq r t).mpr ⟨hr0, hr2⟩
 
 section Order
 
 variable [PartialOrder 𝒜] [StarOrderedRing 𝒜]
+
+/-- Auxiliary (**17V**.3): a self-adjoint element is positive iff its complex
+spectrum consists of nonnegative reals. -/
+private theorem nonneg_iff_spectrum_ofReal_nonneg (a : 𝒜) (ha : IsSelfAdjoint a) :
+    0 ≤ a ↔ spectrum ℂ a ⊆ {z : ℂ | ∃ r : ℝ, 0 ≤ r ∧ z = r} :=
+  by
+    rw [StarOrderedRing.nonneg_iff_spectrum_nonneg (R := ℝ) a ha]
+    constructor
+    · intro h z hz
+      refine ⟨z.re, ?_, ha.mem_spectrum_eq_re hz⟩
+      exact h _ (by simpa using ha.spectrumRestricts.apply_mem hz)
+    · intro h x hx
+      have hx' : (x : ℂ) ∈ spectrum ℂ a := by
+        rw [← ha.spectrumRestricts.algebraMap_image]
+        exact ⟨x, hx, by simp⟩
+      obtain ⟨r, hr, hrx⟩ := h hx'
+      have hxr : x = r := by exact_mod_cast hrx
+      rw [hxr]; exact hr
 
 /-- **17V** (`cstar-positive-1`, cstar.tex:2732, Exercise): for a
 self-adjoint element `a` of a C*-algebra the following are equivalent:
@@ -333,7 +416,28 @@ theorem cstar_positive_tfae (a : 𝒜) (ha : IsSelfAdjoint a) :
       ∀ t : ℝ, ‖a‖ / 2 ≤ t → ‖a - algebraMap ℂ 𝒜 (t : ℂ)‖ ≤ t,
       spectrum ℂ a ⊆ {z : ℂ | ∃ r : ℝ, 0 ≤ r ∧ z = r},
       0 ≤ a] :=
-  sorry
+  by
+    have hhalf : (0 : ℝ) ≤ ‖a‖ / 2 := by positivity
+    tfae_have 1 → 3 := by
+      rintro ⟨t, hts, ht⟩
+      have ht0 : 0 ≤ t := le_trans hhalf hts
+      intro z hz
+      obtain ⟨r, hr0, _, hrz⟩ := (pos_spectrum a ha t ht0).mp ht hz
+      exact ⟨r, hr0, hrz⟩
+    tfae_have 3 → 4 := fun h => (nonneg_iff_spectrum_ofReal_nonneg a ha).mpr h
+    tfae_have 4 → 2 := by
+      intro h t hts
+      have ht0 : 0 ≤ t := le_trans hhalf hts
+      refine (pos_spectrum a ha t ht0).mpr ?_
+      intro z hz
+      obtain ⟨r, hr0, hrz⟩ := (nonneg_iff_spectrum_ofReal_nonneg a ha).mp h hz
+      refine ⟨r, hr0, ?_, hrz⟩
+      have hzn : ‖z‖ ≤ ‖a‖ :=
+        (norm_le_iff_spectrum_norm_le a ha ‖a‖ (norm_nonneg a)).mp le_rfl z hz
+      rw [hrz, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hr0] at hzn
+      linarith
+    tfae_have 2 → 1 := fun h => ⟨‖a‖ / 2, le_rfl, h _ le_rfl⟩
+    tfae_finish
 
 /-- **17VI** (`positive-basic-2`, cstar.tex:2756, Exercise), part 1:
 `0 ≤ a ≤ 0` entails `a = 0`. -/
@@ -359,7 +463,38 @@ complete Archimedean order unit space). -/
 theorem positive_basic_2_3b (a : 𝒜) (ha : IsSelfAdjoint a) :
     ‖a‖ = sInf {lam : ℝ |
       -(algebraMap ℂ 𝒜 (lam : ℂ)) ≤ a ∧ a ≤ algebraMap ℂ 𝒜 (lam : ℂ)} :=
-  sorry
+  by
+    rcases subsingleton_or_nontrivial 𝒜 with hs | hn
+    · have hset : {lam : ℝ |
+          -(algebraMap ℂ 𝒜 (lam : ℂ)) ≤ a ∧ a ≤ algebraMap ℂ 𝒜 (lam : ℂ)} = Set.univ :=
+        Set.eq_univ_of_forall fun lam =>
+          ⟨le_of_eq (Subsingleton.elim _ _), le_of_eq (Subsingleton.elim _ _)⟩
+      rw [hset, Real.sInf_univ, Subsingleton.elim a (0 : 𝒜), norm_zero]
+    · have hset : {lam : ℝ |
+          -(algebraMap ℂ 𝒜 (lam : ℂ)) ≤ a ∧ a ≤ algebraMap ℂ 𝒜 (lam : ℂ)} = Set.Ici ‖a‖ := by
+        ext lam
+        simp only [Set.mem_setOf_eq, Set.mem_Ici]
+        constructor
+        · rintro ⟨h1, h2⟩
+          have h3 : (0 : 𝒜) ≤ algebraMap ℂ 𝒜 (lam : ℂ) - -(algebraMap ℂ 𝒜 (lam : ℂ)) :=
+            sub_nonneg.mpr (h1.trans h2)
+          have h4 : algebraMap ℂ 𝒜 (lam : ℂ) - -(algebraMap ℂ 𝒜 (lam : ℂ))
+              = algebraMap ℂ 𝒜 (((lam + lam : ℝ)) : ℂ) := by
+            rw [sub_neg_eq_add, ← map_add, Complex.ofReal_add]
+          rw [h4] at h3
+          have h5 := (nonneg_iff_spectrum_ofReal_nonneg _
+            (isSelfAdjoint_algebraMap_ofReal' (lam + lam))).mp h3
+          have h6 : (((lam + lam : ℝ)) : ℂ) ∈
+              spectrum ℂ (algebraMap ℂ 𝒜 (((lam + lam : ℝ)) : ℂ)) := by
+            rw [spectrum.scalar_eq]; rfl
+          obtain ⟨r, hr, hre⟩ := h5 h6
+          have h7 : lam + lam = r := by exact_mod_cast hre
+          have hlam : 0 ≤ lam := by linarith
+          exact (norm_le_iff_neg_algebraMap_le ha hlam).mpr ⟨h1, h2⟩
+        · intro h
+          exact (norm_le_iff_neg_algebraMap_le ha (le_trans (norm_nonneg a) h)).mp h
+      rw [hset, csInf_Ici]
+
 
 /-- **17VI** (`positive-basic-2`, cstar.tex:2756, Exercise), part 3c:
 `0 ≤ a ≤ b` entails `‖a‖ ≤ ‖b‖`. -/
@@ -418,7 +553,40 @@ theorem positive_basic_2_5 (a : 𝒜) (ha : IsUnit a) :
 positive element `a` is invertible iff `a ≥ 1/n` for some `n > 0`. -/
 theorem positive_basic_2_6 (a : 𝒜) (ha : 0 ≤ a) :
     IsUnit a ↔ ∃ n : ℕ, 0 < n ∧ algebraMap ℂ 𝒜 ((n : ℂ)⁻¹) ≤ a :=
-  sorry
+  by
+    constructor
+    · intro hu
+      rcases subsingleton_or_nontrivial 𝒜 with _ | _
+      · exact ⟨1, one_pos, le_of_eq (Subsingleton.elim _ _)⟩
+      obtain ⟨u, rfl⟩ := hu
+      have hinv : (0 : 𝒜) ≤ (↑u⁻¹ : 𝒜) := (CFC.inv_nonneg u).mpr ha
+      have hsa : IsSelfAdjoint (↑u⁻¹ : 𝒜) := IsSelfAdjoint.of_nonneg hinv
+      obtain ⟨n, hn⟩ := exists_nat_gt ‖(↑u⁻¹ : 𝒜)‖
+      have hn0 : 0 < n := by
+        have h0 : (0 : ℝ) < n := lt_of_le_of_lt (norm_nonneg _) hn
+        exact_mod_cast h0
+      have hnC : (n : ℂ) ≠ 0 := by exact_mod_cast Nat.cast_ne_zero.mpr hn0.ne'
+      set v : 𝒜ˣ := Units.map (algebraMap ℂ 𝒜 : ℂ →+* 𝒜).toMonoidHom
+        (Units.mk0 (n : ℂ) hnC) with hv
+      have hvval : (↑v : 𝒜) = algebraMap ℂ 𝒜 ((n : ℝ) : ℂ) := by simp [hv]
+      have hvinv : (↑v⁻¹ : 𝒜) = algebraMap ℂ 𝒜 ((n : ℂ)⁻¹) := by simp [hv]
+      have hle : (↑u⁻¹ : 𝒜) ≤ (↑v : 𝒜) := by
+        rw [hvval]
+        refine le_trans ?_ (algebraMap_ofReal_mono hn.le)
+        rw [← algebraMap_real_eq]
+        exact hsa.le_algebraMap_norm_self
+      have hmain := CStarAlgebra.inv_le_inv hinv hle
+      rw [inv_inv, hvinv] at hmain
+      exact ⟨n, hn0, hmain⟩
+    · rintro ⟨n, hn, hle⟩
+      have hnC : ((n : ℂ))⁻¹ ≠ 0 := by simp [Nat.cast_ne_zero.mpr hn.ne']
+      have hcast : ((n : ℂ))⁻¹ = (((n : ℝ)⁻¹ : ℝ) : ℂ) := by push_cast; ring
+      have hsp : IsStrictlyPositive (algebraMap ℂ 𝒜 ((n : ℂ)⁻¹)) := by
+        refine ⟨?_, ?_⟩
+        · rw [hcast]
+          exact algebraMap_ofReal_nonneg (by positivity)
+        · exact (isUnit_iff_ne_zero.mpr hnC).map (algebraMap ℂ 𝒜)
+      exact CStarAlgebra.isUnit_of_le _ hle hsp
 
 end Order
 
@@ -459,13 +627,66 @@ map `f : 𝒜 → ℬ` between C*-algebras satisfies `‖f(a)‖ ≤ ‖f(1)‖ 
 self-adjoint `a`. -/
 theorem weak_russo_dye_1 (f : 𝒜 →ₗ[ℂ] ℬ) (hf : IsPositiveMap f) (a : 𝒜)
     (ha : IsSelfAdjoint a) : ‖f a‖ ≤ ‖f 1‖ * ‖a‖ :=
-  sorry
+  by
+    have hfsa : IsSelfAdjoint (f a) := by
+      have h1 := CFC.posPart_sub_negPart a ha
+      rw [← h1, map_sub]
+      exact (IsSelfAdjoint.of_nonneg (hf _ (CFC.posPart_nonneg a))).sub
+        (IsSelfAdjoint.of_nonneg (hf _ (CFC.negPart_nonneg a)))
+    have hmono : ∀ x y : 𝒜, x ≤ y → f x ≤ f y := by
+      intro x y h
+      have h2 := hf _ (sub_nonneg.mpr h)
+      rw [map_sub, sub_nonneg] at h2
+      exact h2
+    have hM : (0:ℝ) ≤ ‖f 1‖ * ‖a‖ := mul_nonneg (norm_nonneg _) (norm_nonneg _)
+    have hup : a ≤ algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ) := by
+      rw [← algebraMap_real_eq]; exact ha.le_algebraMap_norm_self
+    have hlow : -(algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ)) ≤ a := by
+      rw [← algebraMap_real_eq]; exact ha.neg_algebraMap_norm_le_self
+    have hfalg : f (algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ)) = ((‖a‖ : ℝ) : ℂ) • f 1 := by
+      rw [Algebra.algebraMap_eq_smul_one, map_smul]
+    have hf1 : f 1 ≤ algebraMap ℂ ℬ ((‖f 1‖ : ℝ) : ℂ) := by
+      rw [← algebraMap_real_eq]
+      exact (IsSelfAdjoint.of_nonneg (hf 1 zero_le_one)).le_algebraMap_norm_self
+    have hkey : ((‖a‖ : ℝ) : ℂ) • f 1 ≤ algebraMap ℂ ℬ (((‖f 1‖ * ‖a‖ : ℝ)) : ℂ) := by
+      have h3 : (0 : ℬ) ≤ ((‖a‖ : ℝ) : ℂ) • (algebraMap ℂ ℬ ((‖f 1‖ : ℝ) : ℂ) - f 1) :=
+        ofReal_smul_nonneg (sub_nonneg.mpr hf1) (norm_nonneg a)
+      rw [smul_sub, sub_nonneg] at h3
+      refine h3.trans (le_of_eq ?_)
+      rw [Algebra.algebraMap_eq_smul_one, Algebra.algebraMap_eq_smul_one, smul_smul,
+        ← Complex.ofReal_mul, mul_comm]
+    rw [norm_le_iff_neg_algebraMap_le hfsa hM]
+    constructor
+    · have h4 := hmono _ _ hlow
+      rw [map_neg, hfalg] at h4
+      exact (neg_le_neg hkey).trans h4
+    · have h5 := hmono _ _ hup
+      rw [hfalg] at h5
+      exact h5.trans hkey
 
 /-- **20II** (`weak-russo-dye`, cstar.tex:2869, Lemma), part 2: a positive
 map `f : 𝒜 → ℬ` is bounded, with `‖f(a)‖ ≤ 2 ‖f(1)‖ ‖a‖` for all `a`. -/
 theorem weak_russo_dye_2 (f : 𝒜 →ₗ[ℂ] ℬ) (hf : IsPositiveMap f) (a : 𝒜) :
     ‖f a‖ ≤ 2 * ‖f 1‖ * ‖a‖ :=
-  sorry
+  by
+    have hdec : a = (ℜ a : 𝒜) + Complex.I • (ℑ a : 𝒜) :=
+      (realPart_add_I_smul_imaginaryPart a).symm
+    have h1 := weak_russo_dye_1 f hf (ℜ a : 𝒜) (ℜ a).property
+    have h2 := weak_russo_dye_1 f hf (ℑ a : 𝒜) (ℑ a).property
+    obtain ⟨hre, him⟩ := cstar_involution_basic_12 a
+    have hfa : f a = f (ℜ a : 𝒜) + Complex.I • f (ℑ a : 𝒜) := by
+      conv_lhs => rw [hdec]
+      rw [map_add, map_smul]
+    rw [hfa]
+    have hsm : ‖Complex.I • f (ℑ a : 𝒜)‖ = ‖f (ℑ a : 𝒜)‖ := by
+      rw [norm_smul]; simp
+    calc ‖f (ℜ a : 𝒜) + Complex.I • f (ℑ a : 𝒜)‖
+        ≤ ‖f (ℜ a : 𝒜)‖ + ‖Complex.I • f (ℑ a : 𝒜)‖ := norm_add_le _ _
+      _ = ‖f (ℜ a : 𝒜)‖ + ‖f (ℑ a : 𝒜)‖ := by rw [hsm]
+      _ ≤ ‖f 1‖ * ‖a‖ + ‖f 1‖ * ‖a‖ := by
+          exact add_le_add (h1.trans (by nlinarith [norm_nonneg (f 1)]))
+            (h2.trans (by nlinarith [norm_nonneg (f 1)]))
+      _ = 2 * ‖f 1‖ * ‖a‖ := by ring
 
 /-! **20IV** (`russo-dye-remark`, cstar.tex:2892, Remark): the factor 2 can
 be dropped — proved for cp-maps at 34XVI (`cp_russo_dye`) and for positive
@@ -542,7 +763,13 @@ theorem cstar_equaliser_1 {𝒜 ℬ : Type*} [CStarAlgebra 𝒜] [CStarAlgebra �
     (f g : 𝒜 →⋆ₐ[ℂ] ℬ) :
     ∃ S : StarSubalgebra ℂ 𝒜,
       (S : Set 𝒜) = {a : 𝒜 | f a = g a} ∧ IsClosed (S : Set 𝒜) :=
-  sorry
+  by
+    have hc : ∀ φ : 𝒜 →⋆ₐ[ℂ] ℬ, Continuous φ := fun φ =>
+      AddMonoidHomClass.continuous_of_bound φ 1
+        (fun a => by simpa using NonUnitalStarAlgHom.norm_apply_le φ a)
+    have hset : (StarAlgHom.equalizer f g : Set 𝒜) = {a : 𝒜 | f a = g a} := by
+      ext a; exact StarAlgHom.mem_equalizer f g a
+    exact ⟨StarAlgHom.equalizer f g, hset, hset ▸ isClosed_eq (hc f) (hc g)⟩
 
 end Products
 
@@ -807,7 +1034,14 @@ with `a`.  (Mathlib's square root via the continuous functional calculus is
 `CFC.sqrt a`.) -/
 theorem sqrt_existsUnique (a : 𝒜) (ha : 0 ≤ a) :
     ∃! s : 𝒜, 0 ≤ s ∧ s ^ 2 = a ∧ a * s = s * a :=
-  sorry
+  by
+    have h2 := CFC.sq_sqrt a ha
+    refine ⟨CFC.sqrt a, ⟨CFC.sqrt_nonneg a, h2, ?_⟩, ?_⟩
+    · calc a * CFC.sqrt a = CFC.sqrt a ^ 2 * CFC.sqrt a := by rw [h2]
+        _ = CFC.sqrt a * CFC.sqrt a ^ 2 := pow_mul_comm' _ 2
+        _ = CFC.sqrt a * a := by rw [h2]
+    · rintro s ⟨hs0, hs2, -⟩
+      exact (CFC.sqrt_unique (by rw [← sq]; exact hs2) hs0).symm
 
 /-- **23VII** (`sqrt`, cstar.tex:3637, Exercise), part 0': Mathlib's
 `CFC.sqrt a` is such a square root. -/
@@ -826,20 +1060,39 @@ with `a ≥ 0` then `c` commutes with `√a`; if in addition `c* = c` and
 theorem sqrt_commute (a : 𝒜) (ha : 0 ≤ a) (c : 𝒜) (hc : c * a = a * c) :
     c * CFC.sqrt a = CFC.sqrt a * c ∧
       (IsSelfAdjoint c → c ^ 2 ≤ a → c ≤ CFC.sqrt a) :=
-  sorry
+  by
+    have hcom : Commute a c := hc.symm
+    have h1 : Commute (cfcₙ Real.sqrt a) c := Commute.cfcₙ_real hcom Real.sqrt
+    rw [← CFC.sqrt_eq_real_sqrt a ha] at h1
+    refine ⟨h1.symm, ?_⟩
+    intro hsa hle
+    have habs : c ≤ CFC.abs c := by
+      have h2 := CFC.abs_sub_self c hsa
+      have h3 : (0 : 𝒜) ≤ 2 • c⁻ := nsmul_nonneg (CFC.negPart_nonneg c) 2
+      rw [← h2, sub_nonneg] at h3
+      exact h3
+    have heq : CFC.abs c = CFC.sqrt (star c * c) := rfl
+    rw [hsa.star_eq, ← sq] at heq
+    rw [heq] at habs
+    exact habs.trans (CFC.sqrt_le_sqrt _ _ hle)
 
 /-- **23VII** (`sqrt`, cstar.tex:3637, Exercise), part 1: the product of
 commuting positive elements is positive. -/
 theorem sqrt_1 (a b : 𝒜) (ha : 0 ≤ a) (hb : 0 ≤ b) (hab : a * b = b * a) :
     0 ≤ a * b :=
-  sorry
+  Commute.mul_nonneg ha hb hab
 
 /-- **23VII** (`sqrt`, cstar.tex:3637, Exercise), part 2: for `a ≥ 0` and
 self-adjoint `b, c` commuting with `a`: `b ≤ c` implies `ab ≤ ac`. -/
 theorem sqrt_2 (a : 𝒜) (ha : 0 ≤ a) (b c : 𝒜) (hb : IsSelfAdjoint b)
     (hc : IsSelfAdjoint c) (hba : b * a = a * b) (hca : c * a = a * c)
     (hbc : b ≤ c) : a * b ≤ a * c :=
-  sorry
+  by
+    have h1 : Commute a c := hca.symm
+    have h2 : Commute a b := hba.symm
+    have h := Commute.mul_nonneg ha (sub_nonneg.mpr hbc) (h1.sub_right h2)
+    rw [mul_sub, sub_nonneg] at h
+    exact h
 
 /-- **23VII** (`sqrt`, cstar.tex:3637, Exercise), part 3: for commuting
 self-adjoint `a ≤ b`: `a² ≤ b²`. -/
@@ -922,7 +1175,18 @@ theorem cstar_positive_final (a : 𝒜) (ha : IsSelfAdjoint a) :
       ∃ b : 𝒜, IsSelfAdjoint b ∧ a = b ^ 2,
       ∃ c : 𝒜, a = star c * c,
       spectrum ℂ a ⊆ {z : ℂ | ∃ r : ℝ, 0 ≤ r ∧ z = r}] :=
-  sorry
+  by
+    tfae_have 1 ↔ 2 := (cstar_positive_tfae a ha).out 3 1
+    tfae_have 1 → 3 := fun h =>
+      ⟨CFC.sqrt a, IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg a), (CFC.sq_sqrt a h).symm⟩
+    tfae_have 3 → 4 := by
+      rintro ⟨b, hb, rfl⟩
+      exact ⟨b, by rw [hb.star_eq, sq]⟩
+    tfae_have 4 → 1 := by
+      rintro ⟨c, rfl⟩
+      exact star_mul_self_nonneg c
+    tfae_have 1 ↔ 5 := nonneg_iff_spectrum_ofReal_nonneg a ha
+    tfae_finish
 
 /-- **25II** (`astara-pos-basic-consequences`, cstar.tex:3772, Exercise),
 part 1: `b ≤ c` implies `a* b a ≤ a* c a`. -/
@@ -970,7 +1234,20 @@ theorem astara_pos_basic_3 (a b : 𝒜) (ha : 0 ≤ a) (hb : 0 ≤ b)
 part 4: `(1+a)⁻¹ a ≤ (1+b)⁻¹ b` for `0 ≤ a ≤ b`. -/
 theorem astara_pos_basic_4 (a b : 𝒜) (ha : 0 ≤ a) (hab : a ≤ b) :
     Ring.inverse (1 + a) * a ≤ Ring.inverse (1 + b) * b :=
-  sorry
+  by
+    have hb : 0 ≤ b := ha.trans hab
+    have hsp1 : IsStrictlyPositive (1 : 𝒜) := ⟨zero_le_one, isUnit_one⟩
+    have hspa : IsStrictlyPositive (1 + a) := hsp1.add_nonneg ha
+    have hspb : IsStrictlyPositive (1 + b) := hsp1.add_nonneg hb
+    have key : ∀ x : 𝒜, IsUnit (1 + x) →
+        Ring.inverse (1 + x) * x = 1 - Ring.inverse (1 + x) := by
+      intro x hx
+      have h := Ring.inverse_mul_cancel _ hx
+      rw [mul_add, mul_one] at h
+      exact eq_sub_of_add_eq' h
+    rw [key a hspa.isUnit, key b hspb.isUnit]
+    refine sub_le_sub_left ?_ 1
+    exact CStarAlgebra.ringInverse_le_ringInverse (add_le_add_right hab 1) hspa
 
 end Sqrt
 
@@ -988,27 +1265,97 @@ theorem vectorFunctional_apply (x : H) (T : H →L[ℂ] H) :
     vectorFunctional x T = ⟪x, T x⟫ :=
   rfl
 
+/-- Auxiliary: every non-zero vector can be rescaled to a unit vector, and the
+quantity `⟪x, T x⟫` scales by the positive real factor `‖x‖²`. -/
+private theorem inner_self_scale_aux (T : H →L[ℂ] H) (x : H) (hx : x ≠ 0) :
+    ‖((‖x‖⁻¹ : ℝ) : ℂ) • x‖ = 1 ∧
+      (⟪x, T x⟫ : ℂ) = ((‖x‖ ^ 2 : ℝ) : ℂ) *
+        ⟪((‖x‖⁻¹ : ℝ) : ℂ) • x, T (((‖x‖⁻¹ : ℝ) : ℂ) • x)⟫ :=
+  by
+    have hnx : (‖x‖ : ℝ) ≠ 0 := norm_ne_zero_iff.mpr hx
+    constructor
+    · simp [norm_smul, abs_of_nonneg (norm_nonneg x), inv_mul_cancel₀ hnx]
+    · rw [map_smul, inner_smul_left, inner_smul_right, Complex.conj_ofReal]
+      push_cast
+      field_simp
+
 variable [CompleteSpace H]
+
+/-- Auxiliary: an operator is positive iff `⟪x, T x⟫ ≥ 0` for all unit vectors
+`x`; this is the content of both **25III** and **25V**.2 below. -/
+private theorem nonneg_clm_iff_inner_unit (T : H →L[ℂ] H) :
+    0 ≤ T ↔ ∀ x : H, ‖x‖ = 1 → 0 ≤ ⟪x, T x⟫ :=
+  by
+    rw [ContinuousLinearMap.nonneg_iff_isPositive]
+    constructor
+    · intro hT x _
+      exact hT.inner_nonneg_right x
+    · intro hx
+      have key : ∀ y : H, (0 : ℂ) ≤ ⟪y, T y⟫ := by
+        intro y
+        rcases eq_or_ne y 0 with rfl | hy
+        · simp
+        · obtain ⟨hu, he⟩ := inner_self_scale_aux T y hy
+          rw [he]
+          exact mul_nonneg (by positivity) (hx _ hu)
+      rw [ContinuousLinearMap.isPositive_iff]
+      constructor
+      · rw [LinearMap.isSymmetric_iff_inner_map_self_real]
+        intro v
+        simp only [ContinuousLinearMap.coe_coe]
+        have hk := key v
+        rw [Complex.le_def] at hk
+        rw [Complex.conj_eq_iff_im, ← inner_conj_symm (T v) v, Complex.conj_im, neg_eq_zero]
+        exact hk.2.symm
+      · intro x
+        rw [← inner_conj_symm (T x) x]
+        have h1 := key x
+        have h2 : (starRingEnd ℂ) ⟪x, T x⟫ = ⟪x, T x⟫ := by
+          refine Complex.conj_eq_iff_im.mpr ?_
+          rw [Complex.le_def] at h1
+          simpa using h1.2.symm
+        rw [h2]
+        exact h1
 
 /-- **25III** (`hilb-vector-states-order-separating`, cstar.tex:3798,
 Proposition): the vector states `⟪x, (·) x⟫`, `‖x‖ = 1`, of B(H) are order
 separating, for every Hilbert space `H`. -/
 theorem hilb_vector_states_order_separating :
     OrderSeparating fun x : {x : H // ‖x‖ = 1} => vectorFunctional (x : H) :=
-  sorry
+  by
+    intro T
+    rw [nonneg_clm_iff_inner_unit T]
+    exact ⟨fun h x => h x x.2, fun h x hx => h ⟨x, hx⟩⟩
 
 /-- **25V** (`hilb-positive-operators`, cstar.tex:3819, Corollary), part 1:
 a bounded operator `T` on a Hilbert space is self-adjoint iff `⟪x, Tx⟫` is
 real for every unit vector `x`. -/
 theorem hilb_positive_operators_1 (T : H →L[ℂ] H) :
     IsSelfAdjoint T ↔ ∀ x : H, ‖x‖ = 1 → (⟪x, T x⟫ : ℂ).im = 0 :=
-  sorry
+  by
+    rw [ContinuousLinearMap.isSelfAdjoint_iff_isSymmetric,
+      LinearMap.isSymmetric_iff_inner_map_self_real]
+    have e : ∀ v : H,
+        ((starRingEnd ℂ) ⟪(T : H →ₗ[ℂ] H) v, v⟫ = ⟪(T : H →ₗ[ℂ] H) v, v⟫) ↔
+          (⟪v, T v⟫ : ℂ).im = 0 := by
+      intro v
+      simp only [ContinuousLinearMap.coe_coe]
+      rw [Complex.conj_eq_iff_im, ← inner_conj_symm (T v) v, Complex.conj_im, neg_eq_zero]
+    constructor
+    · intro h x _
+      exact (e x).mp (h x)
+    · intro h v
+      refine (e v).mpr ?_
+      rcases eq_or_ne v 0 with rfl | hv
+      · simp
+      · obtain ⟨hu, he⟩ := inner_self_scale_aux T v hv
+        rw [he, Complex.mul_im, h _ hu, mul_zero, zero_add, Complex.ofReal_im, zero_mul]
 
 /-- **25V** (`hilb-positive-operators`, cstar.tex:3819, Corollary), part 2:
 `0 ≤ T` iff `0 ≤ ⟪x, Tx⟫` for every unit vector `x`. -/
 theorem hilb_positive_operators_2 (T : H →L[ℂ] H) :
     0 ≤ T ↔ ∀ x : H, ‖x‖ = 1 → 0 ≤ ⟪x, T x⟫ :=
-  sorry
+  nonneg_clm_iff_inner_unit T
 
 /-- **25V** (`hilb-positive-operators`, cstar.tex:3819, Corollary), part 3:
 `‖T‖ = sup_{‖x‖=1} |⟪x, Tx⟫|` for self-adjoint `T`. -/
@@ -1028,14 +1375,77 @@ variable {𝒜 : Type*} [CommCStarAlgebra 𝒜] [PartialOrder 𝒜] [StarOrdered
 in a commutative C*-algebra, `|a|` is the supremum of `a` and `-a`. -/
 theorem commutative_cstar_basic_1 (a : 𝒜) (ha : IsSelfAdjoint a) :
     IsLUB {a, -a} (CFC.abs a) :=
-  sorry
+  by
+    have h1 : a ≤ CFC.abs a := by
+      have h := CFC.abs_sub_self a ha
+      have h3 : (0 : 𝒜) ≤ 2 • a⁻ := nsmul_nonneg (CFC.negPart_nonneg a) 2
+      rw [← h, sub_nonneg] at h3
+      exact h3
+    have h2 : -a ≤ CFC.abs a := by
+      have h := CFC.abs_add_self a ha
+      have h3 : (0 : 𝒜) ≤ 2 • a⁺ := nsmul_nonneg (CFC.posPart_nonneg a) 2
+      rw [← h] at h3
+      exact neg_le_iff_add_nonneg.mpr h3
+    refine ⟨?_, ?_⟩
+    · rintro x hx
+      simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hx
+      rcases hx with rfl | rfl
+      · exact h1
+      · exact h2
+    · intro c hc
+      have hac : a ≤ c := hc (Set.mem_insert _ _)
+      have hnac : -a ≤ c := hc (Set.mem_insert_of_mem _ rfl)
+      have hca : 0 ≤ c - a := sub_nonneg.mpr hac
+      have hcb : 0 ≤ c + a := by
+        have h0 := sub_nonneg.mpr hnac
+        rwa [sub_neg_eq_add] at h0
+      have hprod : 0 ≤ (c - a) * (c + a) := Commute.mul_nonneg hca hcb (Commute.all _ _)
+      have hexp : (c - a) * (c + a) = c ^ 2 - a ^ 2 := by ring
+      rw [hexp, sub_nonneg] at hprod
+      have h4 : (0 : 𝒜) ≤ c + c := by
+        have h4' := add_nonneg hca hcb
+        have h4'' : (c - a) + (c + a) = c + c := by ring
+        rwa [h4''] at h4'
+      have h6 : (((1 : ℝ) / 2 : ℝ) : ℂ) • (c + c) = c := by
+        rw [← two_smul ℂ c, smul_smul]
+        norm_num
+      have hc0 : 0 ≤ c := h6 ▸ ofReal_smul_nonneg h4 (by norm_num)
+      have habs : CFC.abs a = CFC.sqrt (a ^ 2) := by
+        have h7 : CFC.abs a = CFC.sqrt (star a * a) := rfl
+        rwa [ha.star_eq, ← sq] at h7
+      have hcsq : CFC.sqrt (c ^ 2) = c := CFC.sqrt_unique (by rw [← sq]) hc0
+      rw [habs, ← hcsq]
+      exact CFC.sqrt_le_sqrt _ _ hprod
 
 /-- **26II** (`commutative-cstar-basic`, cstar.tex:3856, Exercise), part 2:
 if `a` and `b` have a supremum `a ∨ b` then `c + a ∨ b` is the supremum of
 `a + c` and `b + c`. -/
 theorem commutative_cstar_basic_2 (a b c s : 𝒜) (h : IsLUB {a, b} s) :
     IsLUB {a + c, b + c} (c + s) :=
-  sorry
+  by
+    obtain ⟨hub, hlub⟩ := h
+    constructor
+    · rintro y hy
+      simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hy
+      rcases hy with rfl | rfl
+      · rw [add_comm c s]
+        exact add_le_add_left (hub (Set.mem_insert _ _)) c
+      · rw [add_comm c s]
+        exact add_le_add_left (hub (Set.mem_insert_of_mem _ rfl)) c
+    · intro y hy
+      have hs : s ≤ -c + y := by
+        refine hlub ?_
+        rintro z hz
+        simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hz
+        rcases hz with rfl | rfl
+        · have h1 := hy (Set.mem_insert _ _)
+          have h2 := add_le_add_left h1 (-c)
+          simpa [add_comm, add_left_comm, add_assoc] using h2
+        · have h1 := hy (Set.mem_insert_of_mem _ rfl)
+          have h2 := add_le_add_left h1 (-c)
+          simpa [add_comm, add_left_comm, add_assoc] using h2
+      have h3 := add_le_add_left hs c
+      simpa [add_comm, add_left_comm, add_assoc] using h3
 
 /-- **26II** (`commutative-cstar-basic`, cstar.tex:3856, Exercise), part 3:
 `sa(𝒜)` is a Riesz space: `½(a + b + |a - b|)` is the supremum of the
@@ -1043,7 +1453,24 @@ self-adjoint elements `a` and `b`. -/
 theorem commutative_cstar_basic_3 (a b : 𝒜) (ha : IsSelfAdjoint a)
     (hb : IsSelfAdjoint b) :
     IsLUB {a, b} ((2 : ℂ)⁻¹ • (a + b + CFC.abs (a - b))) :=
-  sorry
+  by
+    have hhalf : IsSelfAdjoint ((2 : ℂ)⁻¹) := by simp [isSelfAdjoint_iff]
+    have hd : IsSelfAdjoint ((2 : ℂ)⁻¹ • (a - b)) := hhalf.smul (ha.sub hb)
+    have hlub1 := commutative_cstar_basic_1 ((2 : ℂ)⁻¹ • (a - b)) hd
+    have hlub2 := commutative_cstar_basic_2 ((2 : ℂ)⁻¹ • (a - b))
+      (-((2 : ℂ)⁻¹ • (a - b))) ((2 : ℂ)⁻¹ • (a + b))
+      (CFC.abs ((2 : ℂ)⁻¹ • (a - b))) hlub1
+    have e1 : (2 : ℂ)⁻¹ • (a - b) + (2 : ℂ)⁻¹ • (a + b) = a := by module
+    have e2 : -((2 : ℂ)⁻¹ • (a - b)) + (2 : ℂ)⁻¹ • (a + b) = b := by module
+    have habs : CFC.abs ((2 : ℂ)⁻¹ • (a - b)) = ((1 / 2 : ℝ)) • CFC.abs (a - b) := by
+      rw [CFC.abs_smul]
+      norm_num
+    have e3 : (2 : ℂ)⁻¹ • (a + b) + CFC.abs ((2 : ℂ)⁻¹ • (a - b))
+        = (2 : ℂ)⁻¹ • (a + b + CFC.abs (a - b)) := by
+      rw [habs, RCLike.real_smul_eq_coe_smul (K := ℂ), smul_add]
+      norm_num
+    rw [e1, e2, e3] at hlub2
+    exact hlub2
 
 /-- **26II** (`commutative-cstar-basic`, cstar.tex:3856, Exercise), part 4:
 an miu-map between commutative C*-algebras preserves finite suprema (and,
@@ -1063,5 +1490,6 @@ theorem riesz_decomposition_lemma (a b c : 𝒜) (ha : 0 ≤ a) (hb : 0 ≤ b)
   sorry
 
 end Commutative
+
 
 end Theses.A.CStar

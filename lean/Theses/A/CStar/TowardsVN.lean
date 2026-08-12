@@ -41,8 +41,11 @@ vector space `𝒴` is bounded, `sup_T ‖T‖ < ∞`, provided that `sup_T ‖T
 for every `x ∈ 𝒳`.  Mathlib: `banach_steinhaus`. -/
 theorem pub [CompleteSpace 𝒳] {ι : Type*} (F : ι → 𝒳 →L[ℂ] 𝒴)
     (h : ∀ x : 𝒳, BddAbove (Set.range fun i => ‖F i x‖)) :
-    BddAbove (Set.range fun i => ‖F i‖) :=
-  sorry
+    BddAbove (Set.range fun i => ‖F i‖) := by
+  obtain ⟨C, hC⟩ := banach_steinhaus (g := F) (fun x => by
+    obtain ⟨C, hC⟩ := h x
+    exact ⟨C, fun i => hC (Set.mem_range_self i)⟩)
+  exact ⟨C, by rintro _ ⟨i, rfl⟩; exact hC i⟩
 
 end UniformBoundedness
 
@@ -147,8 +150,39 @@ theorem hilb_weakly_bounded_complete {ι : Type*} {l : Filter ι} [l.NeBot]
     (y : ι → H)
     (hcauchy : ∀ x : H, Cauchy (l.map fun α => ⟪y α, x⟫))
     (hbdd : ∀ x : H, BddAbove (Set.range fun α => ‖⟪y α, x⟫‖)) :
-    ∃! z : H, ∀ x : H, Tendsto (fun α => ⟪y α, x⟫) l (𝓝 ⟪z, x⟫) :=
-  sorry
+    ∃! z : H, ∀ x : H, Tendsto (fun α => ⟪y α, x⟫) l (𝓝 ⟪z, x⟫) := by
+  classical
+  have hlim : ∀ x : H, ∃ c : ℂ, Tendsto (fun α => ⟪y α, x⟫) l (𝓝 c) := fun x =>
+    CompleteSpace.complete (hcauchy x)
+  choose φ hφ using hlim
+  obtain ⟨C, hC⟩ : BddAbove (Set.range fun α => ‖innerSL ℂ (y α)‖) :=
+    pub _ fun x => by simpa using hbdd x
+  have hCle : ∀ α, ‖y α‖ ≤ C := fun α => by
+    simpa using hC (Set.mem_range_self α)
+  have hbound : ∀ x : H, ‖φ x‖ ≤ C * ‖x‖ := by
+    intro x
+    refine le_of_tendsto (hφ x).norm (Eventually.of_forall fun α => ?_)
+    calc ‖⟪y α, x⟫‖ ≤ ‖y α‖ * ‖x‖ := norm_inner_le_norm _ _
+      _ ≤ C * ‖x‖ := by gcongr; exact hCle α
+  have hadd : ∀ x x' : H, φ (x + x') = φ x + φ x' := by
+    intro x x'
+    refine tendsto_nhds_unique (hφ (x + x')) ?_
+    simpa [inner_add_right] using (hφ x).add (hφ x')
+  have hsmul : ∀ (c : ℂ) (x : H), φ (c • x) = c • φ x := by
+    intro c x
+    refine tendsto_nhds_unique (hφ (c • x)) ?_
+    simpa [inner_smul_right] using (hφ x).const_smul c
+  let φL : H →ₗ[ℂ] ℂ := { toFun := φ, map_add' := hadd, map_smul' := hsmul }
+  let φC : H →L[ℂ] ℂ := φL.mkContinuous C hbound
+  refine ⟨(InnerProductSpace.toDual ℂ H).symm φC, fun x => ?_, ?_⟩
+  · have : ⟪(InnerProductSpace.toDual ℂ H).symm φC, x⟫ = φ x :=
+      InnerProductSpace.toDual_symm_apply
+    rw [this]
+    exact hφ x
+  · intro z hz
+    refine ext_inner_right ℂ fun x => ?_
+    rw [InnerProductSpace.toDual_symm_apply]
+    exact tendsto_nhds_unique (hz x) (hφ x)
 
 /-! **37V** (`swot`, cstar.tex:6140, Definition):
 
@@ -166,6 +200,21 @@ theorem hilb_weakly_bounded_complete {ι : Type*} {l : Filter ι} [l.NeBot]
    0` pointwise); it is only mentioned for comparison (**37VI**, Remark) and
    not used in the thesis, so we do not formalize it. -/
 
+/-- The polarization identity in the form used to pass between the thesis's
+diagonal description of the weak operator topology and Mathlib's:
+`⟪y, S x⟫` is a fixed linear combination of the four diagonal values
+`⟪z, S z⟫`, `z ∈ {x ± y, x ± i y}`.  (Auxiliary.) -/
+private theorem inner_polarization (S : H →L[ℂ] H) (x y : H) : ⟪y, S x⟫ =
+    (⟪x + y, S (x + y)⟫ - ⟪x - y, S (x - y)⟫ +
+      Complex.I * ⟪x + Complex.I • y, S (x + Complex.I • y)⟫ -
+      Complex.I * ⟪x - Complex.I • y, S (x - Complex.I • y)⟫) / 4 := by
+  simp only [map_add, map_sub, map_smul, inner_add_left, inner_add_right, inner_sub_left,
+    inner_sub_right, inner_smul_left, inner_smul_right, Complex.conj_I]
+  field_simp
+  ring_nf
+  rw [Complex.I_sq]
+  ring
+
 /-- **37V** (`swot`, cstar.tex:6140, Definition), part 1, embedded claim: a
 net `(T_α)_α` converges to `T` in B(H) with respect to the weak operator
 topology (Mathlib: `H →WOT[ℂ] H`) if and only if `⟪x, T_α x⟫ → ⟪x, T x⟫` for
@@ -176,8 +225,20 @@ theorem swot_tendsto_iff {ι : Type*} {l : Filter ι} (T : ι → H →L[ℂ] H)
     (T₀ : H →L[ℂ] H) :
     Tendsto (fun α => ContinuousLinearMapWOT.ofCLM (T α)) l
         (𝓝 (ContinuousLinearMapWOT.ofCLM T₀)) ↔
-      ∀ x : H, Tendsto (fun α => ⟪x, T α x⟫) l (𝓝 ⟪x, T₀ x⟫) :=
-  sorry
+      ∀ x : H, Tendsto (fun α => ⟪x, T α x⟫) l (𝓝 ⟪x, T₀ x⟫) := by
+  have key := fun (S : H →L[ℂ] H) (x y : H) => inner_polarization S x y
+  constructor
+  · intro h x
+    simpa using ContinuousLinearMapWOT.tendsto_iff_forall_inner_apply_tendsto.mp h x x
+  · intro h
+    rw [ContinuousLinearMapWOT.tendsto_iff_forall_inner_apply_tendsto]
+    intro x y
+    simp only [ContinuousLinearMapWOT.ofCLM_apply]
+    rw [key T₀ x y]
+    refine Filter.Tendsto.congr (fun α => (key (T α) x y).symm) ?_
+    exact ((((h (x + y)).sub (h (x - y))).add
+      ((h (x + Complex.I • y)).const_mul Complex.I)).sub
+      ((h (x - Complex.I • y)).const_mul Complex.I)).div_const 4
 
 /-- **37VII** (`bh-wot-bounded-complete`, cstar.tex:6180, Lemma): if
 `(T_α)_α` is a net of bounded operators on a Hilbert space `H` such that
@@ -189,8 +250,165 @@ theorem bh_wot_bounded_complete {ι : Type*} {l : Filter ι} [l.NeBot]
     (hbdd : ∀ x : H, BddAbove (Set.range fun α => ‖⟪x, T α x⟫‖)) :
     ∃ T₀ : H →L[ℂ] H,
       Tendsto (fun α => ContinuousLinearMapWOT.ofCLM (T α)) l
-        (𝓝 (ContinuousLinearMapWOT.ofCLM T₀)) :=
-  sorry
+        (𝓝 (ContinuousLinearMapWOT.ofCLM T₀)) := by
+  classical
+  -- the diagonal values converge
+  have hd : ∀ x : H, ∃ c : ℂ, Tendsto (fun α => ⟪x, T α x⟫) l (𝓝 c) :=
+    fun x => CompleteSpace.complete (hcauchy x)
+  choose d hdlim using hd
+  -- hence, by polarization, so do all matrix coefficients
+  have hfull : ∀ x y : H, Tendsto (fun α => ⟪y, T α x⟫) l
+      (𝓝 ((d (x + y) - d (x - y) + Complex.I * d (x + Complex.I • y) -
+        Complex.I * d (x - Complex.I • y)) / 4)) := by
+    intro x y
+    refine Filter.Tendsto.congr (fun α => (inner_polarization (T α) x y).symm) ?_
+    exact ((((hdlim (x + y)).sub (hdlim (x - y))).add
+      ((hdlim (x + Complex.I • y)).const_mul Complex.I)).sub
+      ((hdlim (x - Complex.I • y)).const_mul Complex.I)).div_const 4
+  -- and all matrix coefficients are bounded
+  have habs : ∀ A B C D : ℂ,
+      ‖(A - B + Complex.I * C - Complex.I * D) / 4‖ ≤ (‖A‖ + ‖B‖ + ‖C‖ + ‖D‖) / 4 := by
+    intro A B C D
+    have e1 : ‖A - B + Complex.I * C - Complex.I * D‖ ≤
+        ‖A - B + Complex.I * C‖ + ‖Complex.I * D‖ := norm_sub_le _ _
+    have e2 : ‖A - B + Complex.I * C‖ ≤ ‖A - B‖ + ‖Complex.I * C‖ := norm_add_le _ _
+    have e3 : ‖A - B‖ ≤ ‖A‖ + ‖B‖ := norm_sub_le _ _
+    have e4 : ‖Complex.I * C‖ = ‖C‖ := by simp
+    have e5 : ‖Complex.I * D‖ = ‖D‖ := by simp
+    have e6 : ‖(A - B + Complex.I * C - Complex.I * D) / 4‖
+        = ‖A - B + Complex.I * C - Complex.I * D‖ / 4 := by
+      rw [norm_div]; norm_num
+    rw [e6]
+    linarith
+  have hbdd2 : ∀ x y : H, BddAbove (Set.range fun α => ‖⟪y, T α x⟫‖) := by
+    intro x y
+    obtain ⟨b1, hb1⟩ := hbdd (x + y)
+    obtain ⟨b2, hb2⟩ := hbdd (x - y)
+    obtain ⟨b3, hb3⟩ := hbdd (x + Complex.I • y)
+    obtain ⟨b4, hb4⟩ := hbdd (x - Complex.I • y)
+    refine ⟨(b1 + b2 + b3 + b4) / 4, ?_⟩
+    rintro _ ⟨α, rfl⟩
+    dsimp only
+    rw [inner_polarization (T α) x y]
+    refine (habs _ _ _ _).trans ?_
+    have h1 := hb1 (Set.mem_range_self α)
+    have h2 := hb2 (Set.mem_range_self α)
+    have h3 := hb3 (Set.mem_range_self α)
+    have h4 := hb4 (Set.mem_range_self α)
+    linarith
+  have hconj : ∀ (x y : H) (α : ι), ‖⟪T α x, y⟫‖ = ‖⟪y, T α x⟫‖ := by
+    intro x y α
+    rw [← inner_conj_symm (T α x) y, RCLike.norm_conj]
+  -- the net `(T α x)` converges weakly, for every `x`
+  have hxlim : ∀ x : H, ∃! z : H, ∀ y : H, Tendsto (fun α => ⟪T α x, y⟫) l (𝓝 ⟪z, y⟫) := by
+    intro x
+    refine hilb_weakly_bounded_complete (fun α => T α x) (fun y => ?_) (fun y => ?_)
+    · have h0 : Tendsto (fun α => ⟪T α x, y⟫) l
+          (𝓝 (star ((d (x + y) - d (x - y) + Complex.I * d (x + Complex.I • y) -
+            Complex.I * d (x - Complex.I • y)) / 4))) :=
+        Filter.Tendsto.congr (fun α => inner_conj_symm (T α x) y) (hfull x y).star
+      exact h0.cauchy_map
+    · obtain ⟨b, hb⟩ := hbdd2 x y
+      refine ⟨b, ?_⟩
+      rintro _ ⟨α, rfl⟩
+      dsimp only
+      rw [hconj x y α]
+      exact hb (Set.mem_range_self α)
+  choose S hS _huniq using hxlim
+  have hSadd : ∀ x x' : H, S (x + x') = S x + S x' := by
+    intro x x'
+    refine ext_inner_right ℂ fun y => ?_
+    rw [inner_add_left]
+    refine tendsto_nhds_unique (hS (x + x') y) ?_
+    simpa [inner_add_left] using (hS x y).add (hS x' y)
+  have hSsmul : ∀ (c : ℂ) (x : H), S (c • x) = c • S x := by
+    intro c x
+    refine ext_inner_right ℂ fun y => ?_
+    rw [inner_smul_left]
+    refine tendsto_nhds_unique (hS (c • x) y) ?_
+    simpa [inner_smul_left, mul_comm] using (hS x y).const_mul (starRingEnd ℂ c)
+  -- uniform boundedness gives a common bound on `‖T α‖`
+  have hptbdd : ∀ x : H, BddAbove (Set.range fun α => ‖T α x‖) := by
+    intro x
+    have h := pub (fun α => innerSL ℂ (T α x)) (fun y => by
+      obtain ⟨b, hb⟩ := hbdd2 x y
+      refine ⟨b, ?_⟩
+      rintro _ ⟨α, rfl⟩
+      simpa [hconj x y α] using hb (Set.mem_range_self α))
+    simpa using h
+  obtain ⟨C, hCb⟩ := pub T hptbdd
+  have hTle : ∀ α, ‖T α‖ ≤ C := fun α => hCb (Set.mem_range_self α)
+  have hCnn : 0 ≤ C := by
+    obtain ⟨α⟩ := Filter.nonempty_of_neBot l
+    exact (norm_nonneg (T α)).trans (hTle α)
+  have hSb : ∀ x : H, ‖S x‖ ≤ C * ‖x‖ := by
+    intro x
+    have hlim : ‖⟪S x, S x⟫‖ ≤ C * ‖x‖ * ‖S x‖ := by
+      refine le_of_tendsto (hS x (S x)).norm (Eventually.of_forall fun α => ?_)
+      calc ‖⟪T α x, S x⟫‖ ≤ ‖T α x‖ * ‖S x‖ := norm_inner_le_norm _ _
+        _ ≤ (C * ‖x‖) * ‖S x‖ := by
+            gcongr
+            exact ((T α).le_opNorm x).trans (by gcongr; exact hTle α)
+    have hnorm : ‖⟪S x, S x⟫‖ = ‖S x‖ ^ 2 := by
+      rw [inner_self_eq_norm_sq_to_K]; simp
+    rw [hnorm] at hlim
+    rcases eq_or_lt_of_le (norm_nonneg (S x)) with h | h
+    · rw [← h]
+      exact mul_nonneg hCnn (norm_nonneg x)
+    · nlinarith
+  let SL : H →ₗ[ℂ] H := { toFun := S, map_add' := hSadd, map_smul' := hSsmul }
+  refine ⟨SL.mkContinuous C hSb, ?_⟩
+  rw [ContinuousLinearMapWOT.tendsto_iff_forall_inner_apply_tendsto]
+  intro x y
+  simp only [ContinuousLinearMapWOT.ofCLM_apply]
+  have h2 : ⟪y, SL.mkContinuous C hSb x⟫ = ⟪y, S x⟫ := rfl
+  rw [h2, ← inner_conj_symm y (S x)]
+  exact Filter.Tendsto.congr (fun α => inner_conj_symm y (T α x)) ((hS x y).star)
+
+/-- Symmetry of the real part of the inner product.  (Auxiliary.) -/
+private theorem re_inner_comm (x y : H) : (⟪x, y⟫ : ℂ).re = (⟪y, x⟫ : ℂ).re := by
+  have h : (⟪x, y⟫ : ℂ) = starRingEnd ℂ ⟪y, x⟫ := (inner_conj_symm x y).symm
+  rw [h, Complex.conj_re]
+
+/-- For a self-adjoint operator the diagonal values `⟪x, T x⟫` are real.
+(Auxiliary for **37IX**.) -/
+private theorem inner_self_ofReal_re {T : H →L[ℂ] H} (hT : IsSelfAdjoint T) (x : H) :
+    (((⟪x, T x⟫).re : ℝ) : ℂ) = ⟪x, T x⟫ := by
+  refine Complex.conj_eq_iff_re.mp ?_
+  rw [inner_conj_symm]
+  have hsym := ContinuousLinearMap.isSelfAdjoint_iff_isSymmetric.mp hT x x
+  simpa using hsym
+
+/-- Monotonicity of the diagonal values. (Auxiliary for **37IX**.) -/
+private theorem re_inner_mono {S T : H →L[ℂ] H} (h : S ≤ T) (x : H) :
+    (⟪x, S x⟫).re ≤ (⟪x, T x⟫).re := by
+  have h0 : (0 : H →L[ℂ] H) ≤ T - S := sub_nonneg.mpr h
+  have hp := (ContinuousLinearMap.isPositive_iff_complex (T - S)).mp
+    ((ContinuousLinearMap.nonneg_iff_isPositive _).mp h0) x
+  have h2 : (0 : ℝ) ≤ (⟪(T - S) x, x⟫).re := by simpa using hp.2
+  rw [ContinuousLinearMap.sub_apply, inner_sub_left] at h2
+  simp only [Complex.sub_re] at h2
+  rw [re_inner_comm x (S x), re_inner_comm x (T x)]
+  linarith
+
+/-- Conversely, a self-adjoint operator dominating another one on the diagonal
+dominates it.  (Auxiliary for **37IX**.) -/
+private theorem le_of_re_inner {S T : H →L[ℂ] H} (hS : IsSelfAdjoint S) (hT : IsSelfAdjoint T)
+    (h : ∀ x, (⟪x, S x⟫).re ≤ (⟪x, T x⟫).re) : S ≤ T := by
+  have hTS : IsSelfAdjoint (T - S) := hT.sub hS
+  rw [← sub_nonneg, ContinuousLinearMap.nonneg_iff_isPositive,
+    ContinuousLinearMap.isPositive_iff_complex]
+  intro x
+  have hre : (((⟪x, (T - S) x⟫).re : ℝ) : ℂ) = ⟪x, (T - S) x⟫ := inner_self_ofReal_re hTS x
+  have hcomm : (⟪(T - S) x, x⟫ : ℂ) = ⟪x, (T - S) x⟫ := by
+    have hsym := ContinuousLinearMap.isSelfAdjoint_iff_isSymmetric.mp hTS x x
+    simpa using hsym
+  have hnn : (0 : ℝ) ≤ (⟪x, (T - S) x⟫).re := by
+    rw [ContinuousLinearMap.sub_apply, inner_sub_right]
+    simp only [Complex.sub_re]
+    linarith [h x]
+  rw [hcomm]
+  exact ⟨by simpa using hre, by simpa using hnn⟩
 
 /-- **37IX** (`hilb-suprema`, cstar.tex:6223, Proposition), part 1: an upwards
 directed set `D` of self-adjoint operators on a Hilbert space `H` with
@@ -302,8 +520,11 @@ theorem bh_normal_effects (ω : (H →L[ℂ] H) →ₚ[ℂ] ℂ)
 `∑ₙ ‖xₙ‖² < ∞` and any `T ∈ B(H)`, the sum `∑ₙ ⟪xₙ, T xₙ⟫` converges. -/
 theorem bh_functional_lemma_1 (x : ℕ → H) (hx : Summable fun n => ‖x n‖ ^ 2)
     (T : H →L[ℂ] H) :
-    Summable fun n => ⟪x n, T (x n)⟫ :=
-  sorry
+    Summable fun n => ⟪x n, T (x n)⟫ := by
+  refine Summable.of_norm_bounded (hx.mul_left ‖T‖) fun n => ?_
+  calc ‖⟪x n, T (x n)⟫‖ ≤ ‖x n‖ * ‖T (x n)‖ := norm_inner_le_norm _ _
+    _ ≤ ‖x n‖ * (‖T‖ * ‖x n‖) := by gcongr; exact T.le_opNorm _
+    _ = ‖T‖ * ‖x n‖ ^ 2 := by ring
 
 /-- **38IV** (`bh-functional-lemma`, cstar.tex:6321, Lemma), part 2: every
 sequence `x₁, x₂, …` in a Hilbert space `H` with `∑ₙ ‖xₙ‖² < ∞` gives an
@@ -370,28 +591,47 @@ inequality): for an orthonormal subset `E` of a Hilbert space `H` and `x ∈ H`,
 theorem orthonormal_1 (E : Set H) (hE : Orthonormal ℂ ((↑) : E → H)) (x : H) :
     (Summable fun e : E => ‖⟪(e : H), x⟫‖ ^ 2) ∧
       ∑' e : E, ‖⟪(e : H), x⟫‖ ^ 2 ≤ ‖x‖ ^ 2 :=
-  sorry
+  ⟨hE.inner_products_summable x, hE.tsum_inner_products_le x⟩
 
 /-- **39IV** (`orthonormal`, cstar.tex:6427, Proposition), part 2: for an
 orthonormal subset `E` and `x ∈ H`, the sum `∑_{e ∈ E} ⟪e, x⟫ e` converges in
 `H`. -/
 theorem orthonormal_2 (E : Set H) (hE : Orthonormal ℂ ((↑) : E → H)) (x : H) :
-    ∃ y : H, HasSum (fun e : E => ⟪(e : H), x⟫ • (e : H)) y :=
-  sorry
+    ∃ y : H, HasSum (fun e : E => ⟪(e : H), x⟫ • (e : H)) y := by
+  have hmem : Memℓp (fun e : E => (⟪(e : H), x⟫ : ℂ)) 2 :=
+    memℓp_gen (by simpa using hE.inner_products_summable x)
+  have hs := hE.orthogonalFamily.summable_of_lp ⟨_, hmem⟩
+  simp only [LinearIsometry.toSpanSingleton_apply] at hs
+  exact ⟨_, hs.hasSum⟩
 
 /-- **39IV** (`orthonormal`, cstar.tex:6427, Proposition), part 3: if `E` is a
 maximal orthonormal subset (an orthonormal basis), then
 `∑_{e ∈ E} ⟪e, x⟫ e = x` for every `x ∈ H`. -/
 theorem orthonormal_3 (E : Set H) (hE : IsOrthonormalBasis E) (x : H) :
-    HasSum (fun e : E => ⟪(e : H), x⟫ • (e : H)) x :=
-  sorry
+    HasSum (fun e : E => ⟪(e : H), x⟫ • (e : H)) x := by
+  have hsp : (Submodule.span ℂ (Set.range ((↑) : E → H)))ᗮ = ⊥ := by
+    have h := (maximal_orthonormal_iff_orthogonalComplement_eq_bot hE.1).mp
+      (fun u hu hu' => hE.2 u hu hu')
+    simpa [Subtype.range_coe] using h
+  have hb := (HilbertBasis.mkOfOrthogonalEqBot hE.1 hsp).hasSum_repr x
+  simpa [HilbertBasis.repr_apply_apply, HilbertBasis.coe_mkOfOrthogonalEqBot] using hb
 
 /-- **39IV** (`orthonormal`, cstar.tex:6427, Proposition), part 4 (Parseval's
 identity): if `E` is an orthonormal basis, then
 `∑_{e ∈ E} |⟪e, x⟫|² = ‖x‖²` for every `x ∈ H`. -/
 theorem orthonormal_4 (E : Set H) (hE : IsOrthonormalBasis E) (x : H) :
-    HasSum (fun e : E => ‖⟪(e : H), x⟫‖ ^ 2) (‖x‖ ^ 2) :=
-  sorry
+    HasSum (fun e : E => ‖⟪(e : H), x⟫‖ ^ 2) (‖x‖ ^ 2) := by
+  have h := (orthonormal_3 E hE x).mapL (innerSL ℂ x)
+  simp only [innerSL_apply_apply] at h
+  have key : ∀ e : E, ⟪x, ⟪(e : H), x⟫ • (e : H)⟫ = ((‖⟪(e : H), x⟫‖ ^ 2 : ℝ) : ℂ) := by
+    intro e
+    rw [inner_smul_right, ← inner_conj_symm x (e : H), Complex.mul_conj,
+      Complex.normSq_eq_norm_sq]
+  have hx : ⟪x, x⟫ = ((‖x‖ ^ 2 : ℝ) : ℂ) := by
+    rw [inner_self_eq_norm_sq_to_K]; norm_cast
+  rw [hx] at h
+  simp only [key] at h
+  exact_mod_cast h
 
 /-- The rank-one operator `|x⟩⟨y| : z ↦ ⟪y, z⟫ • x` (**4XIX**, `ketbra`,
 cstar.tex:671; re-declared privately from `Theses.A.CStar.Basic`, which this
@@ -404,16 +644,79 @@ orthonormal basis `E` of a Hilbert space `H`, `∑_{e ∈ E} |e⟩⟨e|` converg
 `1` in the weak operator topology. -/
 theorem sum_ketbras_1 (E : Set H) (hE : IsOrthonormalBasis E) :
     HasSum (fun e : E => ContinuousLinearMapWOT.ofCLM (ketbra (e : H) (e : H)))
-      (ContinuousLinearMapWOT.ofCLM (1 : H →L[ℂ] H)) :=
-  sorry
+      (ContinuousLinearMapWOT.ofCLM (1 : H →L[ℂ] H)) := by
+  have key : ∀ (s : Finset E) (z : H),
+      (∑ e ∈ s, ContinuousLinearMapWOT.ofCLM (ketbra (e : H) (e : H))) z
+        = ∑ e ∈ s, ⟪(e : H), z⟫ • (e : H) := by
+    classical
+    intro s z
+    induction s using Finset.induction with
+    | empty => simp
+    | insert e s he ih =>
+        rw [Finset.sum_insert he, Finset.sum_insert he, ContinuousLinearMapWOT.add_apply, ih]
+        simp [ketbra]
+  rw [HasSum, ContinuousLinearMapWOT.tendsto_iff_forall_inner_apply_tendsto]
+  intro x y
+  have h := (orthonormal_3 E hE x).mapL (innerSL ℂ y)
+  simpa [key, inner_sum, ContinuousLinearMapWOT.ofCLM_apply, HasSum] using h
 
 /-- **39VI** (`sum-ketbras`, cstar.tex:6500, Exercise), part 2:
 `∑_{e ∈ E} |e⟩⟨e| = 1` also in the sense that the directed set of partial sums
 `∑_{e ∈ F} |e⟩⟨e|` over finite `F ⊆ E` has `1` as its supremum in B(H). -/
 theorem sum_ketbras_2 (E : Set H) (hE : IsOrthonormalBasis E) :
     IsLUB {S : H →L[ℂ] H | ∃ F : Finset E, S = ∑ e ∈ F, ketbra (e : H) (e : H)}
-      1 :=
-  sorry
+      1 := by
+  classical
+  have hket : ∀ (F : Finset E) (x : H),
+      (∑ e ∈ F, ketbra (e : H) (e : H)) x = ∑ e ∈ F, ⟪(e : H), x⟫ • (e : H) := by
+    intro F x
+    induction F using Finset.induction with
+    | empty => simp
+    | insert e s he ih =>
+        rw [Finset.sum_insert he, Finset.sum_insert he, ContinuousLinearMap.add_apply, ih]
+        simp [ketbra]
+  have hinner : ∀ (F : Finset E) (x : H),
+      ⟪x, (∑ e ∈ F, ketbra (e : H) (e : H)) x⟫
+        = ((∑ e ∈ F, ‖⟪(e : H), x⟫‖ ^ 2 : ℝ) : ℂ) := by
+    intro F x
+    rw [hket F x, inner_sum]
+    push_cast
+    refine Finset.sum_congr rfl fun e _ => ?_
+    rw [inner_smul_right, ← inner_conj_symm x (e : H), Complex.mul_conj,
+      Complex.normSq_eq_norm_sq]
+    norm_cast
+  have hsa : ∀ F : Finset E, IsSelfAdjoint (∑ e ∈ F, ketbra (e : H) (e : H)) := by
+    intro F
+    rw [ContinuousLinearMap.isSelfAdjoint_iff_isSymmetric]
+    intro x y
+    simp only [ContinuousLinearMap.coe_coe, hket]
+    rw [sum_inner, inner_sum]
+    refine Finset.sum_congr rfl fun e _ => ?_
+    rw [inner_smul_left, inner_smul_right, ← inner_conj_symm x (e : H)]
+    ring
+  have hone : ∀ x : H, (⟪x, (1 : H →L[ℂ] H) x⟫).re = ‖x‖ ^ 2 := by
+    intro x
+    simpa using inner_self_eq_norm_sq (𝕜 := ℂ) x
+  constructor
+  · rintro S ⟨F, rfl⟩
+    refine le_of_re_inner (hsa F) (star_one _) fun x => ?_
+    rw [hinner F x, hone x, Complex.ofReal_re]
+    exact hE.1.sum_inner_products_le x
+  · intro T hT
+    have h0 : (0 : H →L[ℂ] H) ≤ T := by
+      have h := hT (⟨(∅ : Finset E), by simp⟩ :
+        (0 : H →L[ℂ] H) ∈ {S : H →L[ℂ] H | ∃ F : Finset E, S = ∑ e ∈ F, ketbra (e : H) (e : H)})
+      exact h
+    have hTsa : IsSelfAdjoint T :=
+      ((ContinuousLinearMap.nonneg_iff_isPositive T).mp h0).isSelfAdjoint
+    refine le_of_re_inner (star_one _) hTsa fun x => ?_
+    rw [hone x]
+    refine hasSum_le_of_sum_le (orthonormal_4 E hE x) fun F => ?_
+    have hle := re_inner_mono (hT (⟨F, rfl⟩ :
+      (∑ e ∈ F, ketbra (e : H) (e : H)) ∈
+        {S : H →L[ℂ] H | ∃ F : Finset E, S = ∑ e ∈ F, ketbra (e : H) (e : H)})) x
+    rw [hinner F x, Complex.ofReal_re] at hle
+    exact hle
 
 /-- **39VI** (`sum-ketbras`, cstar.tex:6500, Exercise), part 3: consequently
 `ω 1 = ∑_{e ∈ E} ω (|e⟩⟨e|)` for every np-map `ω : B(H) → ℂ`. -/
