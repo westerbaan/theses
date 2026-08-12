@@ -244,6 +244,64 @@ the Lean proof does instead.`)
   **27XVII**, **27XVIII**, **27XXVII**) from Mathlib, and the Riesz-ideal
   machinery of 27VIII–27XIII is left as the thesis's own (independent) route.
 
+### Session 2 — A/VN, first pass
+
+`A/VN/Basic.lean` 77 → 52 (25 proved); the other four files untouched.  The
+whole VN chain builds.  **No errata** — and note this chapter was worked under
+the corrected policy, so `vn.tex` was read for every point touched: **zero
+"did not consult" cases**.  Per the author's confirmation that the vN exercise
+solutions were never written, the ~15 Exercise points proved here are logged as
+**original work (no author argument exists)**, which is a different status from
+"unchecked".
+
+Two statements looked wrong and are not, both worth recording so nobody
+re-investigates: `almostClopen_sigmaAlgebra` (53V) carries only
+`[ExtremallyDisconnected X]` with no compactness, unlike its neighbours — but
+vn.tex:1876 really does state the Corollary for an arbitrary extremally
+disconnected space and its proof never uses Baire.  And `uwweaker_1` (43I.1)
+assumes `[VonNeumannAlgebra A]` although the inequality holds for any positive
+functional on any C\*-algebra — weaker, not wrong; the general form is exported
+as `norm_apply_le_omegaNorm`.
+
+**The reusable win**: the thesis's seminorm `‖a‖_ω` is *definitionally* the norm
+of Mathlib's GNS pre-Hilbert space — `omegaNorm_eq_norm` is `rfl`.  That single
+identification yields Kadison's inequality, the seminorm laws, and the
+`IsLUB`-in-`ℂ` → `IsLUB`-in-`ℝ` bridge that drives every supremum/net result in
+the chapter.  `Completeness.lean` alone mentions `omegaNorm` seven times, so this
+is the lever for the next pass.
+
+**The directed-net pattern recurs — a finding in its own right.**  44VII and
+44XIV both say "use `vanishing-effects` (44III)", but **44III cannot be used as a
+black box there**: it demands `∀ i, x i ∈ effects A`, while `(⋁D − d)/M` is only
+*eventually* an effect.  A bounded directed set need not be bounded below
+(`D = {−n} ∪ {0} ⊆ ℝ` gives unbounded `‖⋁D − d‖`), so no single normaliser works;
+informally one passes to the cofinal subnet `{d ≥ d₀}`, which in Lean is a change
+of index type.  The Lean proof inlines the *estimate underlying* 44III with an
+`∀ᶠ` bound instead.  Nothing is wrong with 44III or with the exercises, but the
+hint needs a footnote once nets are made precise.  **This is the same defect as
+37IX** (`cstar.tex:6244`), where "bounded above" was silently read as
+"norm-bounded" — so the pattern spans both chapters and is worth a systematic
+check wherever the theses invoke a bounded directed net.
+
+Divergences, both type (2), the thesis's own order otherwise followed
+throughout: `meagre_full_measure` gets its dense open sets of small measure from
+outer regularity rather than explicit intervals around an enumeration of
+`ℚ ∩ [0,1]`; and `baire_category_theorem` (54II) uses Mathlib's
+`BaireSpace.of_t2Space_locallyCompactSpace` rather than the thesis's from-scratch
+nested-open-sets proof — which does *not* break bootstrapping, since vn.tex
+itself cites Willard at that point.
+
+**Next steps identified.**  44VIII `ad_normal` → 44XI `np_orderSeparating` →
+44XIII are blocked only by an import: the thesis routes them through
+`proto-gelfand-naimark` (cstar.tex 30X), which *is* formalized and sorry-free as
+`Theses.A.CStar.proto_gelfand_naimark_1` — but in `A/CStar/Representation.lean`,
+which `A/VN/Basic.lean` does not import.  Adding that import is low-risk and
+unblocks three statements.  (44XIII is *not* provable from faithfulness alone —
+`a·⋁D − ⋁D·a` is not positive — so it must wait for 44XI.1.)  Separately, 42V.2
+`VonNeumannAlgebra (H →L[ℂ] H)` should be proved from cstar.tex 37IX + 25III in
+the already-imported `TowardsVN.lean`, **not** via Mathlib's differently-defined
+`VonNeumannAlgebra H`.
+
 ### Session 2 — Matrices.lean, third pass
 
 Four more closed (`bax_cstar` 32XIII, `choi_2` 34XVIII.2, `cp_commutative_cod`

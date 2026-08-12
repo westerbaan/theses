@@ -67,6 +67,150 @@ np-functional `ω` (cf. `omega-norm-basic`, cstar.tex 30IV). -/
 noncomputable def omegaNorm (ω : NPFunctional A) (a : A) : ℝ :=
   Real.sqrt (ω (star a * a)).re
 
+/-! ### Auxiliary: `‖·‖_ω` is the GNS seminorm
+
+The seminorm `‖a‖_ω = ω(a*a)^½` of `42III` is literally the norm of the GNS
+pre-Hilbert space `PositiveLinearMap.PreGNS ω` that Mathlib builds from a
+positive functional (cf. cstar.tex 30II–30IV, `state-inner-product` and
+`omega-norm-basic`, where the thesis constructs the same inner product).  All
+the seminorm properties used below are read off from that identification. -/
+
+/-- `‖a‖_ω` is the GNS-norm of `a` (`Theses.A.CStar.omega_norm_basic`, i.e.
+cstar.tex 30IV, is the same observation). -/
+theorem omegaNorm_eq_norm (ω : NPFunctional A) (a : A) :
+    omegaNorm A ω a =
+      ‖(ω.toPositiveLinearMap.toPreGNS a : ω.toPositiveLinearMap.PreGNS)‖ :=
+  rfl
+
+theorem omegaNorm_nonneg (ω : NPFunctional A) (a : A) : 0 ≤ omegaNorm A ω a := by
+  rw [omegaNorm_eq_norm]; exact norm_nonneg _
+
+@[simp] theorem omegaNorm_zero (ω : NPFunctional A) : omegaNorm A ω 0 = 0 := by
+  rw [omegaNorm_eq_norm, map_zero, norm_zero]
+
+theorem omegaNorm_add_le (ω : NPFunctional A) (a b : A) :
+    omegaNorm A ω (a + b) ≤ omegaNorm A ω a + omegaNorm A ω b := by
+  simp only [omegaNorm_eq_norm, map_add]
+  exact norm_add_le _ _
+
+@[simp] theorem omegaNorm_neg (ω : NPFunctional A) (a : A) :
+    omegaNorm A ω (-a) = omegaNorm A ω a := by
+  simp only [omegaNorm_eq_norm, map_neg]
+  exact norm_neg _
+
+theorem omegaNorm_sub_le (ω : NPFunctional A) (a b c : A) :
+    omegaNorm A ω (a - c) ≤ omegaNorm A ω (a - b) + omegaNorm A ω (b - c) := by
+  simp only [omegaNorm_eq_norm, map_sub]
+  exact norm_sub_le_norm_sub_add_norm_sub _ _ _
+
+omit [StarOrderedRing A] in
+@[simp] theorem omegaNorm_one (ω : NPFunctional A) :
+    omegaNorm A ω 1 = Real.sqrt (ω 1).re := by
+  rw [omegaNorm, star_one, one_mul]
+
+/-- Kadison's inequality (cstar.tex 30IV, `omega-norm-basic`, part 1) in the
+form `|ω(u* v)| ≤ ‖u‖_ω ‖v‖_ω`: it is Cauchy–Schwarz in the GNS space. -/
+theorem norm_apply_star_mul_le (ω : NPFunctional A) (u v : A) :
+    ‖ω (star u * v)‖ ≤ omegaNorm A ω u * omegaNorm A ω v := by
+  have h := norm_inner_le_norm (𝕜 := ℂ)
+    (ω.toPositiveLinearMap.toPreGNS u) (ω.toPositiveLinearMap.toPreGNS v)
+  have hi : (⟪ω.toPositiveLinearMap.toPreGNS u,
+      ω.toPositiveLinearMap.toPreGNS v⟫ : ℂ) = ω (star u * v) := rfl
+  rw [hi, ← omegaNorm_eq_norm, ← omegaNorm_eq_norm] at h
+  exact h
+
+omit [StarOrderedRing A] in
+/-- `‖·‖_ω` is monotone in `u* u`. -/
+theorem omegaNorm_le_omegaNorm (ω : NPFunctional A) {u v : A}
+    (h : star u * u ≤ star v * v) : omegaNorm A ω u ≤ omegaNorm A ω v := by
+  rw [omegaNorm, omegaNorm]
+  exact Real.sqrt_le_sqrt
+    (Complex.le_def.mp (ω.toPositiveLinearMap.monotone h)).1
+
+/-- `a ≤ ‖a‖·1` for positive `a` (cstar.tex 24-ish; stated here because it is
+needed for **44XIV**). -/
+theorem le_norm_smul_one {a : A} (ha : 0 ≤ a) : a ≤ (‖a‖ : ℝ) • (1 : A) := by
+  rcases eq_or_lt_of_le (norm_nonneg a) with hn | hn
+  · simp [norm_eq_zero.mp hn.symm]
+  · have h1 : ‖(‖a‖ : ℝ)⁻¹ • a‖ ≤ 1 := by
+      rw [norm_smul, norm_inv, norm_norm, inv_mul_cancel₀ (ne_of_gt hn)]
+    have h2 : (‖a‖ : ℝ)⁻¹ • a ≤ 1 :=
+      (CStarAlgebra.norm_le_one_iff_of_nonneg _
+        (smul_nonneg (by positivity) ha)).mp h1
+    have h3 := smul_le_smul_of_nonneg_left h2 hn.le
+    simpa [smul_smul, mul_inv_cancel₀ (ne_of_gt hn)] using h3
+
+/-- `a² ≤ ‖a‖·a` for positive `a` (conjugate `a ≤ ‖a‖·1` by `√a`). -/
+theorem mul_self_le_norm_smul {a : A} (ha : 0 ≤ a) :
+    a * a ≤ (‖a‖ : ℝ) • a := by
+  have hsq : CFC.sqrt a * CFC.sqrt a = a := CFC.sqrt_mul_sqrt_self a ha
+  have hst : star (CFC.sqrt a) = CFC.sqrt a :=
+    (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg a)).star_eq
+  have h := star_left_conjugate_le_conjugate (le_norm_smul_one ha) (CFC.sqrt a)
+  rw [hst] at h
+  have e1 : CFC.sqrt a * a * CFC.sqrt a = a * a := by
+    have step : CFC.sqrt a * (CFC.sqrt a * CFC.sqrt a) * CFC.sqrt a
+        = CFC.sqrt a * CFC.sqrt a * (CFC.sqrt a * CFC.sqrt a) := by noncomm_ring
+    rw [hsq] at step
+    exact step
+  have e2 : CFC.sqrt a * ((‖a‖ : ℝ) • (1 : A)) * CFC.sqrt a = (‖a‖ : ℝ) • a := by
+    rw [mul_smul_comm, smul_mul_assoc, mul_one, hsq]
+  rwa [e1, e2] at h
+
+/-- The estimate behind **44III** and **44VII**: for `0 ≤ x`,
+`|ω(xa)| = |ω(√x · √x a)| ≤ ‖√x‖_ω ‖√x a‖_ω = ω(x)^½ ω(a* x a)^½`. -/
+theorem norm_apply_mul_le_of_nonneg (ω : NPFunctional A) {x : A} (hx : 0 ≤ x)
+    (a : A) :
+    ‖ω (x * a)‖ ≤
+      Real.sqrt (ω x).re * Real.sqrt (ω (star a * x * a)).re := by
+  have hu0 : (0 : A) ≤ CFC.sqrt x := CFC.sqrt_nonneg x
+  have husa : star (CFC.sqrt x) = CFC.sqrt x :=
+    (IsSelfAdjoint.of_nonneg hu0).star_eq
+  have huu : CFC.sqrt x * CFC.sqrt x = x := CFC.sqrt_mul_sqrt_self x hx
+  have h1 : star (CFC.sqrt x) * (CFC.sqrt x * a) = x * a := by
+    rw [husa, ← mul_assoc, huu]
+  have h2 : omegaNorm A ω (CFC.sqrt x) = Real.sqrt (ω x).re := by
+    rw [omegaNorm, husa, huu]
+  have h3 : omegaNorm A ω (CFC.sqrt x * a)
+      = Real.sqrt (ω (star a * x * a)).re := by
+    rw [omegaNorm, star_mul, husa]
+    congr 3
+    rw [mul_assoc, ← mul_assoc (CFC.sqrt x), huu, ← mul_assoc]
+  calc ‖ω (x * a)‖ = ‖ω (star (CFC.sqrt x) * (CFC.sqrt x * a))‖ := by rw [h1]
+    _ ≤ omegaNorm A ω (CFC.sqrt x) * omegaNorm A ω (CFC.sqrt x * a) :=
+        norm_apply_star_mul_le ω _ _
+    _ = _ := by rw [h2, h3]
+
+/-- An np-functional is real on self-adjoint elements (it is involution
+preserving by cstar.tex 10IV, `cstar-p-implies-i`). -/
+theorem npFunctional_im_eq_zero (ω : NPFunctional A) {a : A}
+    (ha : IsSelfAdjoint a) : (ω a).im = 0 := by
+  have h := map_star ω.toPositiveLinearMap a
+  rw [ha.star_eq] at h
+  exact Complex.conj_eq_iff_im.mp h.symm
+
+/-- Transfer of a supremum of (a nonempty set of) real complex numbers from
+`ℂ` with the `ComplexOrder` to `ℝ` — the bridge between normality of an
+np-functional and convergence of the corresponding net of reals. -/
+theorem isLUB_re_of_isLUB {S : Set ℂ} {z : ℂ}
+    (hreal : ∀ w ∈ S, w.im = 0) (h : IsLUB S z) :
+    IsLUB (Complex.re '' S) z.re := by
+  constructor
+  · rintro r ⟨w, hw, rfl⟩
+    exact (Complex.le_def.mp (h.1 hw)).1
+  · intro r hr
+    have hz : z ≤ (r : ℂ) := h.2 fun w hw => Complex.le_def.mpr
+      ⟨hr ⟨w, hw, rfl⟩, by rw [hreal w hw, Complex.ofReal_im]⟩
+    simpa using (Complex.le_def.mp hz).1
+
+/-- Cauchy–Schwarz for `‖·‖_ω`, i.e. **43I**.1 without the (unused) von
+Neumann hypothesis: `|ω(a)| = |[1,a]_ω| ≤ ‖1‖_ω ‖a‖_ω = ‖a‖_ω ω(1)^½`. -/
+theorem norm_apply_le_omegaNorm (ω : NPFunctional A) (a : A) :
+    ‖ω a‖ ≤ omegaNorm A ω a * Real.sqrt (ω 1).re := by
+  have h := norm_apply_star_mul_le ω 1 a
+  rw [star_one, one_mul, omegaNorm_one, mul_comm] at h
+  exact h
+
 variable (A) in
 /-- **42III** (vn.tex:208): the **ultraweak topology** on a von Neumann
 algebra `A`: the least topology making every np-functional `ω : A → ℂ`
@@ -94,13 +238,15 @@ throughout these files). -/
 def USTendsto {ι : Type*} (x : ι → A) (l : Filter ι) (a : A) : Prop :=
   Tendsto x l (@nhds A (ultrastrong A) a)
 
+omit [StarOrderedRing A] in
 /-- **42III** (vn.tex:208), embedded claim ("one can verify"): a net
 `(b_α)_α` converges ultraweakly to `b` iff `ω(b_α) → ω(b)` for every
 np-functional `ω`. -/
 theorem uwTendsto_iff {ι : Type*} (x : ι → A) (l : Filter ι) (b : A) :
     UWTendsto x l b ↔
-      ∀ ω : NPFunctional A, Tendsto (fun i => ω (x i)) l (𝓝 (ω b)) :=
-  sorry
+      ∀ ω : NPFunctional A, Tendsto (fun i => ω (x i)) l (𝓝 (ω b)) := by
+  rw [UWTendsto, ultraweak, nhds_iInf]
+  simp only [nhds_induced, tendsto_iInf, tendsto_comap_iff, Function.comp_def]
 
 /-- **42III** (vn.tex:208), embedded claim ("one can prove"): a net `(b_α)_α`
 converges ultrastrongly to `b` iff `‖b_α - b‖_ω → 0` for every np-functional
@@ -108,15 +254,130 @@ converges ultrastrongly to `b` iff `‖b_α - b‖_ω → 0` for every np-functi
 theorem usTendsto_iff {ι : Type*} (x : ι → A) (l : Filter ι) (b : A) :
     USTendsto x l b ↔
       ∀ ω : NPFunctional A,
-        Tendsto (fun i => omegaNorm A ω (x i - b)) l (𝓝 0) :=
-  sorry
+        Tendsto (fun i => omegaNorm A ω (x i - b)) l (𝓝 0) := by
+  constructor
+  · -- each "ball" around `b` is an ultrastrong neighbourhood of `b`
+    intro h ω
+    rw [Metric.tendsto_nhds]
+    intro ε hε
+    have hmem : b ∈ {a : A | omegaNorm A ω (a - b) < ε} := by
+      simp [hε]
+    have hopen : @IsOpen A (ultrastrong A) {a : A | omegaNorm A ω (a - b) < ε} :=
+      TopologicalSpace.isOpen_generateFrom_of_mem ⟨ω, b, ε, hε, rfl⟩
+    have := h (@IsOpen.mem_nhds A (ultrastrong A) _ _ hopen hmem)
+    filter_upwards [this] with i hi
+    rw [Real.dist_eq, sub_zero, abs_of_nonneg (omegaNorm_nonneg ω _)]
+    exact hi
+  · -- conversely, use the triangle inequality for `‖·‖_ω`
+    intro h
+    rw [USTendsto, ultrastrong, TopologicalSpace.nhds_generateFrom]
+    simp only [tendsto_iInf, tendsto_principal, Set.mem_ofPred_eq]
+    rintro s ⟨hbs, ω, c, ε, hε, rfl⟩
+    simp only [Set.mem_ofPred_eq] at hbs ⊢
+    have hδ : 0 < ε - omegaNorm A ω (b - c) := sub_pos.mpr hbs
+    have := (Metric.tendsto_nhds.mp (h ω)) _ hδ
+    filter_upwards [this] with i hi
+    rw [Real.dist_eq, sub_zero, abs_of_nonneg (omegaNorm_nonneg ω _)] at hi
+    calc omegaNorm A ω (x i - c)
+        ≤ omegaNorm A ω (x i - b) + omegaNorm A ω (b - c) :=
+          omegaNorm_sub_le ω _ _ _
+      _ < ε := by linarith
+
+omit [StarOrderedRing A] in
+@[simp] theorem npFunctional_sub (ω : NPFunctional A) (a b : A) :
+    ω (a - b) = ω a - ω b :=
+  map_sub ω.toPositiveLinearMap a b
+
+/-- The "balls" `{a | ‖a - b‖_ω < ε}` of **42III** are ultrastrong
+neighbourhoods of `b` (they are among the generators of the topology). -/
+theorem ultrastrong_ball_mem_nhds (ω : NPFunctional A) (b : A) {ε : ℝ}
+    (hε : 0 < ε) : {a : A | omegaNorm A ω (a - b) < ε} ∈ @nhds A (ultrastrong A) b :=
+  @IsOpen.mem_nhds A (ultrastrong A) _ _
+    (TopologicalSpace.isOpen_generateFrom_of_mem ⟨ω, b, ε, hε, rfl⟩) (by simp [hε])
+
+/-- Every np-functional is ultrastrongly continuous — this is the content of
+**43I**.1, and gives **43I**.2 and **43I**.3 below. -/
+theorem continuous_ultrastrong_npFunctional (ω : NPFunctional A) :
+    @Continuous A ℂ (ultrastrong A) _ (fun a => ω a) := by
+  refine (@continuous_def A ℂ (ultrastrong A) _ _).mpr fun U hU => ?_
+  refine (@isOpen_iff_mem_nhds A (ultrastrong A) _).mpr fun b hb => ?_
+  obtain ⟨ε, hε, hball⟩ := Metric.isOpen_iff.mp hU (ω b) hb
+  set c := Real.sqrt (ω 1).re with hc
+  have hc0 : 0 ≤ c := Real.sqrt_nonneg _
+  have hδ : 0 < ε / (c + 1) := by positivity
+  filter_upwards [ultrastrong_ball_mem_nhds ω b hδ] with a ha
+  refine hball ?_
+  have h1 : ‖ω a - ω b‖ ≤ omegaNorm A ω (a - b) * c := by
+    simpa using norm_apply_le_omegaNorm ω (a - b)
+  have h2 : omegaNorm A ω (a - b) * c ≤ ε / (c + 1) * c :=
+    mul_le_mul_of_nonneg_right ha.le hc0
+  have h3 : ε / (c + 1) * c < ε := by
+    rw [div_mul_eq_mul_div, div_lt_iff₀ (by linarith)]
+    nlinarith
+  rw [Metric.mem_ball, dist_eq_norm]
+  linarith
+
+/-- **43I** (`uwweaker`): the ultrastrong topology is finer than the
+ultraweak topology.  (Mathlib orders topologies by fineness: `t ≤ s` means
+`t` has more open sets.) -/
+theorem ultrastrong_le_ultraweak : ultrastrong A ≤ ultraweak A := by
+  rw [ultraweak]
+  exact le_iInf fun ω =>
+    continuous_iff_le_induced.mp (continuous_ultrastrong_npFunctional ω)
 
 /-! ## 42V: Examples of von Neumann algebras -/
+
+/-- The identity is an np-functional on `ℂ`; it is the witness for both
+clauses of Kadison's definition in the example `ℂ` (**42V**.1). -/
+noncomputable def complexIdNP : NPFunctional ℂ where
+  toPositiveLinearMap :=
+    { toLinearMap := LinearMap.id, monotone' := fun _ _ h => h }
+  preservesDirSups' := by
+    intro D s hne _ hlub
+    obtain ⟨d₀, hd₀⟩ := hne
+    refine ⟨?_, fun w hw => ?_⟩
+    · rintro w ⟨d, hd, rfl⟩
+      exact Subtype.coe_le_coe.mpr (hlub.1 hd)
+    · have hwim : w.im = 0 := by
+        have h := hw ⟨d₀, hd₀, rfl⟩
+        rw [Complex.le_def] at h
+        rw [← h.2, Complex.im_eq_zero_iff_isSelfAdjoint]
+        exact d₀.2
+      have hub : (⟨w, (Complex.im_eq_zero_iff_isSelfAdjoint w).mp hwim⟩ :
+          selfAdjoint ℂ) ∈ upperBounds D :=
+        fun d hd => Subtype.coe_le_coe.mp (hw ⟨d, hd, rfl⟩)
+      exact Subtype.coe_le_coe.mpr (hlub.2 hub)
 
 /-- **42V** (`von-neumann-examples`, vn.tex:262, Examples), part 1: `ℂ` is a
 von Neumann algebra.  (`{0}` — any subsingleton C*-algebra — is one too,
 trivially.) -/
-noncomputable instance : VonNeumannAlgebra ℂ := sorry
+noncomputable instance : VonNeumannAlgebra ℂ where
+  isLUB_of_bddAbove_directed := by
+    -- `sa(ℂ) ≅ ℝ`, and `ℝ` is conditionally complete
+    intro D hne _ hbdd
+    obtain ⟨b, hb⟩ := hbdd
+    obtain ⟨d₀, hd₀⟩ := hne
+    set S : Set ℝ := (fun d : selfAdjoint ℂ => (d : ℂ).re) '' D with hS
+    have hSne : S.Nonempty := ⟨_, ⟨d₀, hd₀, rfl⟩⟩
+    have hSbdd : BddAbove S := by
+      refine ⟨(b : ℂ).re, ?_⟩
+      rintro r ⟨d, hd, rfl⟩
+      exact (Complex.le_def.mp (Subtype.coe_le_coe.mpr (hb hd))).1
+    have hsup := Real.isLUB_sSup hSne hSbdd
+    have hsa : IsSelfAdjoint ((sSup S : ℝ) : ℂ) :=
+      (Complex.im_eq_zero_iff_isSelfAdjoint _).mp (Complex.ofReal_im _)
+    refine ⟨⟨((sSup S : ℝ) : ℂ), hsa⟩, ?_, fun c hc => ?_⟩
+    · intro d hd
+      refine Subtype.coe_le_coe.mp (Complex.le_def.mpr ⟨hsup.1 ⟨d, hd, rfl⟩, ?_⟩)
+      rw [Complex.ofReal_im, Complex.im_eq_zero_iff_isSelfAdjoint]
+      exact d.2
+    · refine Subtype.coe_le_coe.mp (Complex.le_def.mpr ⟨?_, ?_⟩)
+      · refine hsup.2 ?_
+        rintro r ⟨d, hd, rfl⟩
+        exact (Complex.le_def.mp (Subtype.coe_le_coe.mpr (hc hd))).1
+      · rw [Complex.ofReal_im, eq_comm, Complex.im_eq_zero_iff_isSelfAdjoint]
+        exact c.2
+  np_faithful := fun a _ h => h complexIdNP
 
 /-- **42V** (`von-neumann-examples`, vn.tex:262, Examples), part 2: the
 C*-algebra `B(H)` of bounded operators on a Hilbert space `H` is a von
@@ -171,12 +432,26 @@ intersection of all von Neumann subalgebras containing `S`. -/
 def wstar (S : Set A) : StarSubalgebra ℂ A :=
   sInf {T : StarSubalgebra ℂ A | IsVNSubalgebra A T ∧ S ⊆ T}
 
+omit [StarOrderedRing A] in
 /-- **42V** (`von-neumann-examples`, vn.tex:262, Examples), part 4a,
 well-definedness: `W*(S)` is indeed a von Neumann subalgebra containing `S`
 (the intersection of von Neumann subalgebras is one). -/
 theorem isVNSubalgebra_wstar [VonNeumannAlgebra A] (S : Set A) :
-    IsVNSubalgebra A (wstar A S) ∧ S ⊆ wstar A S :=
-  sorry
+    IsVNSubalgebra A (wstar A S) ∧ S ⊆ wstar A S := by
+  -- the intersection of a family of von Neumann subalgebras is one
+  refine ⟨⟨?_, ?_⟩, ?_⟩
+  · rw [wstar, StarSubalgebra.coe_sInf]
+    exact isClosed_biInter fun T hT => hT.1.isClosed
+  · intro D s hDS hne hdir hlub
+    rw [wstar, StarSubalgebra.mem_sInf]
+    intro T hT
+    exact hT.1.dirSup_mem D s (fun d hd => by
+      have := hDS d hd
+      rw [wstar, StarSubalgebra.mem_sInf] at this
+      exact this T hT) hne hdir hlub
+  · intro x hx
+    rw [SetLike.mem_coe, wstar, StarSubalgebra.mem_sInf]
+    exact fun T hT => hT.2 hx
 
 /-! **42V**, parts 5–7 (commutants, matrices, `L^∞(X)`) are stated at their
 proper places: 65III (`Theses/A/VN/Projections.lean`), 49IV (`mn_vna` below)
@@ -190,27 +465,36 @@ positive functional `‖ω‖ = ω(1)`, which is how the norm is rendered
 here). -/
 theorem uwweaker_1 [VonNeumannAlgebra A] (ω : NPFunctional A) (a : A) :
     ‖ω a‖ ≤ omegaNorm A ω a * Real.sqrt (ω 1).re :=
-  sorry
+  norm_apply_le_omegaNorm ω a
 
 /-- **43I** (`uwweaker`, vn.tex:341, Exercise), part 2: ultrastrong
 convergence implies ultraweak convergence. -/
 theorem uwweaker_2 [VonNeumannAlgebra A] {ι : Type*} (x : ι → A)
     (l : Filter ι) (a : A) (h : USTendsto x l a) : UWTendsto x l a :=
-  sorry
+  h.mono_right (nhds_mono ultrastrong_le_ultraweak)
 
 /-- **43I** (`uwweaker`, vn.tex:341, Exercise), part 3: an ultraweakly closed
 subset of `A` is ultrastrongly closed. -/
 theorem uwweaker_3 [VonNeumannAlgebra A] (C : Set A)
     (h : @IsClosed A (ultraweak A) C) : @IsClosed A (ultrastrong A) C :=
-  sorry
+  h.mono ultrastrong_le_ultraweak
 
 /-- **43Ia** (`infima-in-vna`, vn.tex:359, Exercise): every nonempty bounded
 filtered (downwards directed) set `F` of self-adjoint elements of a von
 Neumann algebra has an infimum, namely `⋀ F = -⋁{-d : d ∈ F}`. -/
 theorem infima_in_vna [VonNeumannAlgebra A] (F : Set (selfAdjoint A))
     (hne : F.Nonempty) (hdir : DirectedOn (· ≥ ·) F) (hbdd : BddBelow F) :
-    ∃ i : selfAdjoint A, IsGLB F i :=
-  sorry
+    ∃ i : selfAdjoint A, IsGLB F i := by
+  -- `a ↦ -a` is an order-reversing isomorphism, so apply 42I.1 to `-F`
+  have hne' : (-F).Nonempty := hne.neg
+  have hdir' : DirectedOn (· ≤ ·) (-F) := by
+    rintro x hx y hy
+    rw [Set.mem_neg] at hx hy
+    obtain ⟨c, hc, hcx, hcy⟩ := hdir _ hx _ hy
+    exact ⟨-c, by simpa using hc, le_neg.mpr hcx, le_neg.mpr hcy⟩
+  obtain ⟨s, hs⟩ :=
+    VonNeumannAlgebra.isLUB_of_bddAbove_directed (-F) hne' hdir' hbdd.neg
+  exact ⟨-s, by simpa using hs.neg⟩
 
 section Counterexamples
 
@@ -323,30 +607,109 @@ end Counterexamples
 
 **44I** (vn.tex:624): introduction — nothing to formalize. -/
 
+omit [PartialOrder A] [StarOrderedRing A] in
 /-- **44II** (`mult-polarization`, vn.tex:643, Exercise): the polarisation
 identity `a* c b = ¼ ∑_{k<4} iᵏ (iᵏa + b)* c (iᵏa + b)` in a C*-algebra. -/
 theorem mult_polarization (a b c : A) :
     star a * c * b =
       (4 : ℂ)⁻¹ • ∑ k ∈ Finset.range 4, Complex.I ^ k •
         (star ((Complex.I ^ k : ℂ) • a + b) * c *
-          ((Complex.I ^ k : ℂ) • a + b)) :=
-  sorry
+          ((Complex.I ^ k : ℂ) • a + b)) := by
+  simp [Finset.sum_range_succ, star_add, star_smul, add_mul, mul_add,
+    smul_smul]
+  match_scalars <;> norm_num [pow_succ, Complex.I_mul_I]
 
 /-- **44III** (`vanishing-effects`, vn.tex:654, Lemma): if a net `(x_α)_α` of
 effects converges ultraweakly to `0` and `(b_α)_α` is a net with
 `‖b_α‖ ≤ 1`, then `(x_α b_α)_α` converges ultraweakly to `0`. -/
 theorem vanishing_effects [VonNeumannAlgebra A] {ι : Type*} {l : Filter ι}
     (x b : ι → A) (hx : ∀ i, x i ∈ effects A) (hb : ∀ i, ‖b i‖ ≤ 1)
-    (h : UWTendsto x l 0) : UWTendsto (fun i => x i * b i) l 0 :=
-  sorry
+    (h : UWTendsto x l 0) : UWTendsto (fun i => x i * b i) l 0 := by
+  -- The thesis's estimate, for an np-map `ω`:
+  --   |ω(xₐbₐ)|² = |ω(√xₐ · √xₐbₐ)|² ≤ ω(xₐ) ω(bₐ* xₐ bₐ)
+  --                                  ≤ ω(xₐ) ω(bₐ* bₐ) ≤ ω(xₐ) ω(1).
+  rw [uwTendsto_iff] at h ⊢
+  intro ω
+  have hω0 : (ω 0 : ℂ) = 0 := map_zero ω.toPositiveLinearMap
+  have key : ∀ i, ‖ω (x i * b i)‖ ≤
+      Real.sqrt (ω (x i)).re * Real.sqrt (ω 1).re := by
+    intro i
+    have hxi1 : x i ≤ 1 := (hx i).2
+    have hu0 : (0 : A) ≤ CFC.sqrt (x i) := CFC.sqrt_nonneg (x i)
+    have husa : star (CFC.sqrt (x i)) = CFC.sqrt (x i) :=
+      (IsSelfAdjoint.of_nonneg hu0).star_eq
+    have huu : CFC.sqrt (x i) * CFC.sqrt (x i) = x i :=
+      CFC.sqrt_mul_sqrt_self (x i) (hx i).1
+    have h1 : star (CFC.sqrt (x i)) * (CFC.sqrt (x i) * b i) = x i * b i := by
+      rw [husa, ← mul_assoc, huu]
+    have h2 : omegaNorm A ω (CFC.sqrt (x i)) = Real.sqrt (ω (x i)).re := by
+      rw [omegaNorm, husa, huu]
+    have hbb : star (b i) * b i ≤ 1 := by
+      refine (CStarAlgebra.norm_le_one_iff_of_nonneg _ (star_mul_self_nonneg _)).mp ?_
+      rw [CStarRing.norm_star_mul_self]
+      nlinarith [norm_nonneg (b i), hb i]
+    have h3 : omegaNorm A ω (CFC.sqrt (x i) * b i) ≤ Real.sqrt (ω 1).re := by
+      refine (omegaNorm_le_omegaNorm ω (v := 1) ?_).trans_eq (omegaNorm_one ω)
+      rw [star_one, one_mul, star_mul, husa]
+      calc star (b i) * CFC.sqrt (x i) * (CFC.sqrt (x i) * b i)
+          = star (b i) * x i * b i := by
+            rw [mul_assoc, ← mul_assoc (CFC.sqrt (x i)), huu, ← mul_assoc]
+        _ ≤ star (b i) * 1 * b i := star_left_conjugate_le_conjugate hxi1 (b i)
+        _ ≤ 1 := by rw [mul_one]; exact hbb
+    calc ‖ω (x i * b i)‖
+        = ‖ω (star (CFC.sqrt (x i)) * (CFC.sqrt (x i) * b i))‖ := by rw [h1]
+      _ ≤ omegaNorm A ω (CFC.sqrt (x i)) *
+            omegaNorm A ω (CFC.sqrt (x i) * b i) := norm_apply_star_mul_le ω _ _
+      _ ≤ Real.sqrt (ω (x i)).re * Real.sqrt (ω 1).re := by
+            rw [h2]
+            exact mul_le_mul_of_nonneg_left h3 (Real.sqrt_nonneg _)
+  have hx0 : Tendsto (fun i => ω (x i)) l (𝓝 0) := by
+    have := h ω
+    rwa [hω0] at this
+  have hsq : Tendsto (fun i => Real.sqrt (ω (x i)).re) l (𝓝 0) := by
+    have h1 : Tendsto (fun i => (ω (x i)).re) l (𝓝 0) := by
+      simpa [Function.comp_def] using (Complex.continuous_re.tendsto (0 : ℂ)).comp hx0
+    simpa [Function.comp_def] using (Real.continuous_sqrt.tendsto (0 : ℝ)).comp h1
+  rw [hω0]
+  refine tendsto_zero_iff_norm_tendsto_zero.mpr ?_
+  refine squeeze_zero (fun i => norm_nonneg _) key ?_
+  simpa using hsq.mul_const (Real.sqrt (ω 1).re)
 
 /-- **44VI** (`vna-supremum-uwlimit`, vn.tex:692): for a bounded directed set
 `D` of self-adjoint elements, the net `(d)_{d∈D}` converges ultraweakly to
 `⋁D`. -/
 theorem vna_supremum_uwlimit [VonNeumannAlgebra A] (D : Set (selfAdjoint A))
     (h : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧ BddAbove D) :
-    UWTendsto (fun d : D => (d : A)) atTop ((dirSup D h : selfAdjoint A) : A) :=
-  sorry
+    UWTendsto (fun d : D => (d : A)) atTop ((dirSup D h : selfAdjoint A) : A) := by
+  -- for an np-map `ω`, `(ω d)_{d∈D}` is a monotone net of reals with
+  -- supremum `ω(⋁D)` by normality of `ω`, hence converges to it
+  rw [uwTendsto_iff]
+  intro ω
+  have hlub : IsLUB D (dirSup D h) := isLUB_dirSup D h
+  have hω : IsLUB ((fun d : selfAdjoint A => ω (d : A)) '' D)
+      (ω ((dirSup D h : selfAdjoint A) : A)) :=
+    ω.preservesDirSups' D (dirSup D h) h.1 h.2.1 hlub
+  have himg : ∀ w ∈ (fun d : selfAdjoint A => ω (d : A)) '' D, w.im = 0 := by
+    rintro w ⟨d, -, rfl⟩
+    exact npFunctional_im_eq_zero ω d.2
+  have hre := isLUB_re_of_isLUB himg hω
+  have hrange : Complex.re '' ((fun d : selfAdjoint A => ω (d : A)) '' D) =
+      Set.range fun d : D => (ω ((d : selfAdjoint A) : A)).re := by
+    rw [← Set.image_comp]
+    exact (Set.image_eq_range _ _).trans rfl
+  rw [hrange] at hre
+  have hmono : Monotone fun d : D => (ω ((d : selfAdjoint A) : A)).re := by
+    intro d₁ d₂ hd
+    exact (Complex.le_def.mp (ω.toPositiveLinearMap.monotone
+      (Subtype.coe_le_coe.mpr hd))).1
+  have hlim := tendsto_atTop_isLUB hmono hre
+  have hcast : ∀ z : ℂ, z.im = 0 → ((z.re : ℂ)) = z := fun z hz =>
+    Complex.ext (by simp) (by simp [hz])
+  have := (Complex.continuous_ofReal.tendsto _).comp hlim
+  simp only [Function.comp_def] at this
+  rw [hcast _ (npFunctional_im_eq_zero ω (dirSup D h).2)] at this
+  refine this.congr fun d => ?_
+  exact hcast _ (npFunctional_im_eq_zero ω (d : selfAdjoint A).2)
 
 /-- **44VII** (`vna-supremum-mult`, vn.tex:695): for a bounded directed `D`
 and `a ∈ A`, `(d·a)_d` converges ultraweakly to `(⋁D)·a` and `(a*·d)_d` to
@@ -356,8 +719,86 @@ theorem vna_supremum_mult [VonNeumannAlgebra A] (D : Set (selfAdjoint A))
     UWTendsto (fun d : D => (d : A) * a) atTop
         (((dirSup D h : selfAdjoint A) : A) * a) ∧
       UWTendsto (fun d : D => star a * (d : A)) atTop
-        (star a * ((dirSup D h : selfAdjoint A) : A)) :=
-  sorry
+        (star a * ((dirSup D h : selfAdjoint A) : A)) := by
+  -- The thesis's hint is to use `vanishing_effects`; concretely we use the
+  -- estimate behind it, `|ω((⋁D-d)a)| ≤ ω(⋁D-d)^½ ω(a*(⋁D-d)a)^½`, whose
+  -- second factor is *eventually* bounded because `a*(⋁D-d)a` decreases.
+  obtain ⟨d₀, hd₀⟩ := h.1
+  set s : A := ((dirSup D h : selfAdjoint A) : A) with hs
+  have hle : ∀ d ∈ D, ((d : selfAdjoint A) : A) ≤ s := fun d hd =>
+    Subtype.coe_le_coe.mpr ((isLUB_dirSup D h).1 hd)
+  -- the key limit: `ω((⋁D - d)a) → 0` for every np-functional `ω`
+  have main : ∀ ω : NPFunctional A,
+      Tendsto (fun d : D => ω ((s - ((d : selfAdjoint A) : A)) * a)) atTop
+        (𝓝 0) := by
+    intro ω
+    set K : ℝ := (ω (star a * (s - ((d₀ : selfAdjoint A) : A)) * a)).re with hK
+    have hbound : ∀ᶠ d : D in atTop,
+        ‖ω ((s - ((d : selfAdjoint A) : A)) * a)‖ ≤
+          Real.sqrt (ω (s - ((d : selfAdjoint A) : A))).re * Real.sqrt K := by
+      filter_upwards [eventually_ge_atTop (⟨d₀, hd₀⟩ : D)] with d hdd
+      refine (norm_apply_mul_le_of_nonneg ω
+        (sub_nonneg.mpr (hle d d.2)) a).trans ?_
+      refine mul_le_mul_of_nonneg_left ?_ (Real.sqrt_nonneg _)
+      refine Real.sqrt_le_sqrt ?_
+      refine (Complex.le_def.mp (ω.toPositiveLinearMap.monotone ?_)).1
+      refine star_left_conjugate_le_conjugate ?_ a
+      exact sub_le_sub_left (Subtype.coe_le_coe.mpr (Subtype.coe_le_coe.mpr hdd)) s
+    have hω := (uwTendsto_iff _ _ _).mp (vna_supremum_uwlimit D h) ω
+    have hsub : Tendsto (fun d : D => ω (s - ((d : selfAdjoint A) : A))) atTop
+        (𝓝 0) := by
+      have := (tendsto_const_nhds (x := ω s) (f := (atTop : Filter D))).sub hω
+      simpa [← hs] using this
+    have hsq : Tendsto
+        (fun d : D => Real.sqrt (ω (s - ((d : selfAdjoint A) : A))).re) atTop
+        (𝓝 0) := by
+      have h1 : Tendsto
+          (fun d : D => (ω (s - ((d : selfAdjoint A) : A))).re) atTop (𝓝 0) := by
+        simpa [Function.comp_def] using
+          (Complex.continuous_re.tendsto (0 : ℂ)).comp hsub
+      simpa [Function.comp_def] using (Real.continuous_sqrt.tendsto (0 : ℝ)).comp h1
+    refine tendsto_zero_iff_norm_tendsto_zero.mpr ?_
+    refine squeeze_zero' (Eventually.of_forall fun d => norm_nonneg _) hbound ?_
+    simpa using hsq.mul_const (Real.sqrt K)
+  constructor
+  · rw [uwTendsto_iff]
+    intro ω
+    have h1 := main ω
+    have h2 : ∀ d : D, ω ((s - ((d : selfAdjoint A) : A)) * a)
+        = ω (s * a) - ω (((d : selfAdjoint A) : A) * a) := by
+      intro d
+      rw [sub_mul, npFunctional_sub]
+    simp only [h2] at h1
+    have := (tendsto_const_nhds (x := ω (s * a)) (f := (atTop : Filter D))).sub h1
+    simpa using this
+  · rw [uwTendsto_iff]
+    intro ω
+    -- take adjoints: `ω(a*(⋁D-d)) = conj ω((⋁D-d)a)` as `⋁D-d` is self-adjoint
+    have h1 := main ω
+    have hstar : ∀ d : D, star a * (s - ((d : selfAdjoint A) : A))
+        = star ((s - ((d : selfAdjoint A) : A)) * a) := by
+      intro d
+      rw [star_mul, star_sub, hs, selfAdjoint.star_val_eq,
+        selfAdjoint.star_val_eq]
+    have h2 : ∀ d : D, ω (star a * (s - ((d : selfAdjoint A) : A)))
+        = star (ω ((s - ((d : selfAdjoint A) : A)) * a)) := by
+      intro d
+      rw [hstar d]
+      exact map_star ω.toPositiveLinearMap _
+    have h3 : Tendsto
+        (fun d : D => ω (star a * (s - ((d : selfAdjoint A) : A)))) atTop
+        (𝓝 0) := by
+      simp only [h2]
+      simpa [Function.comp_def] using
+        (Complex.continuous_conj.tendsto (0 : ℂ)).comp h1
+    have h4 : ∀ d : D, ω (star a * (s - ((d : selfAdjoint A) : A)))
+        = ω (star a * s) - ω (star a * ((d : selfAdjoint A) : A)) := by
+      intro d
+      rw [mul_sub, npFunctional_sub]
+    simp only [h4] at h3
+    have := (tendsto_const_nhds (x := ω (star a * s))
+      (f := (atTop : Filter D))).sub h3
+    simpa using this
 
 /-- **44VIII** (`ad-normal`, vn.tex:704, Proposition):
 `⋁_{d∈D} a* d a = a* (⋁D) a` for every bounded directed set `D` of
@@ -415,8 +856,71 @@ set `D` of self-adjoint elements, `(⋁D − d)² → 0` ultraweakly, i.e. the n
 `(d)_{d∈D}` converges *ultrastrongly* to `⋁D`. -/
 theorem vna_supremum_uslimit [VonNeumannAlgebra A] (D : Set (selfAdjoint A))
     (h : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧ BddAbove D) :
-    USTendsto (fun d : D => (d : A)) atTop ((dirSup D h : selfAdjoint A) : A) :=
-  sorry
+    USTendsto (fun d : D => (d : A)) atTop
+      ((dirSup D h : selfAdjoint A) : A) := by
+  -- `‖d - ⋁D‖_ω² = ω((⋁D-d)²) ≤ ‖⋁D-d‖ · ω(⋁D-d) ≤ M · ω(⋁D-d) → 0`,
+  -- the norms being eventually bounded because `0 ≤ ⋁D-d ≤ ⋁D-d₀`.
+  obtain ⟨d₀, hd₀⟩ := h.1
+  set s : A := ((dirSup D h : selfAdjoint A) : A) with hs
+  have hle : ∀ d ∈ D, ((d : selfAdjoint A) : A) ≤ s := fun d hd =>
+    Subtype.coe_le_coe.mpr ((isLUB_dirSup D h).1 hd)
+  rw [usTendsto_iff]
+  intro ω
+  set M : ℝ := ‖s - ((d₀ : selfAdjoint A) : A)‖ with hM
+  -- rewrite `‖d - ⋁D‖_ω` as `ω((⋁D-d)²)^½`
+  have hnorm : ∀ d : D, omegaNorm A ω (((d : selfAdjoint A) : A) - s) =
+      Real.sqrt (ω ((s - ((d : selfAdjoint A) : A)) *
+        (s - ((d : selfAdjoint A) : A)))).re := by
+    intro d
+    rw [omegaNorm]
+    congr 3
+    rw [star_sub, hs, selfAdjoint.star_val_eq, selfAdjoint.star_val_eq]
+    noncomm_ring
+  have hbound : ∀ᶠ d : D in atTop,
+      omegaNorm A ω (((d : selfAdjoint A) : A) - s) ≤
+        Real.sqrt (M * (ω (s - ((d : selfAdjoint A) : A))).re) := by
+    filter_upwards [eventually_ge_atTop (⟨d₀, hd₀⟩ : D)] with d hdd
+    rw [hnorm d]
+    refine Real.sqrt_le_sqrt ?_
+    have hx : (0 : A) ≤ s - ((d : selfAdjoint A) : A) := sub_nonneg.mpr (hle d d.2)
+    have hxM : ‖s - ((d : selfAdjoint A) : A)‖ ≤ M :=
+      CStarAlgebra.norm_le_norm_of_nonneg_of_le hx
+        (sub_le_sub_left (Subtype.coe_le_coe.mpr
+          (Subtype.coe_le_coe.mpr hdd)) s)
+    have h1 : (s - ((d : selfAdjoint A) : A)) * (s - ((d : selfAdjoint A) : A))
+        ≤ M • (s - ((d : selfAdjoint A) : A)) :=
+      (mul_self_le_norm_smul hx).trans
+        (smul_le_smul_of_nonneg_right hxM hx)
+    have h2 : (ω ((s - ((d : selfAdjoint A) : A)) *
+          (s - ((d : selfAdjoint A) : A)))).re
+        ≤ (ω (M • (s - ((d : selfAdjoint A) : A)))).re :=
+      (Complex.le_def.mp (ω.toPositiveLinearMap.monotone h1)).1
+    have h3 : ω (M • (s - ((d : selfAdjoint A) : A)))
+        = (M : ℂ) * ω (s - ((d : selfAdjoint A) : A)) := by
+      have hsm : M • (s - ((d : selfAdjoint A) : A))
+          = ((M : ℂ)) • (s - ((d : selfAdjoint A) : A)) :=
+        (algebraMap_smul ℂ M (s - ((d : selfAdjoint A) : A))).symm
+      rw [hsm]
+      exact (map_smul ω.toPositiveLinearMap _ _).trans (smul_eq_mul _ _)
+    rw [h3] at h2
+    rwa [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, zero_mul,
+      sub_zero] at h2
+  refine squeeze_zero' (Eventually.of_forall fun d => omegaNorm_nonneg ω _)
+    hbound ?_
+  -- and `ω(⋁D - d) → 0` by 44VI
+  have hω := (uwTendsto_iff _ _ _).mp (vna_supremum_uwlimit D h) ω
+  have hsub : Tendsto (fun d : D => ω (s - ((d : selfAdjoint A) : A))) atTop
+      (𝓝 0) := by
+    have := (tendsto_const_nhds (x := ω s) (f := (atTop : Filter D))).sub hω
+    simpa [← hs] using this
+  have h1 : Tendsto
+      (fun d : D => (ω (s - ((d : selfAdjoint A) : A))).re) atTop (𝓝 0) := by
+    simpa [Function.comp_def] using
+      (Complex.continuous_re.tendsto (0 : ℂ)).comp hsub
+  have h2 : Tendsto
+      (fun d : D => M * (ω (s - ((d : selfAdjoint A) : A))).re) atTop (𝓝 0) := by
+    simpa using h1.const_mul M
+  simpa [Function.comp_def] using (Real.continuous_sqrt.tendsto (0 : ℝ)).comp h2
 
 /-- **44XV** (`p-uwcont`, vn.tex:799, Exercise): for a positive linear map
 `f : A → B` between von Neumann algebras the following are equivalent:
@@ -802,50 +1306,115 @@ def MeagreEquiv (s t : Set X) : Prop := IsMeagre (s ∆ t)
 **almost clopen** when it is `≈` to a clopen subset. -/
 def AlmostClopen (s : Set X) : Prop := ∃ C : Set X, IsClopen C ∧ MeagreEquiv s C
 
+/-! `≈` is an equivalence relation (used silently throughout vn.tex §520–540). -/
+
+@[refl] theorem MeagreEquiv.refl (s : Set X) : MeagreEquiv s s := by
+  simpa [MeagreEquiv] using (IsMeagre.empty : IsMeagre (∅ : Set X))
+
+@[symm] theorem MeagreEquiv.symm {s t : Set X} (h : MeagreEquiv s t) :
+    MeagreEquiv t s := by
+  rwa [MeagreEquiv, symmDiff_comm]
+
+theorem MeagreEquiv.trans {s t u : Set X} (h : MeagreEquiv s t)
+    (h' : MeagreEquiv t u) : MeagreEquiv s u :=
+  IsMeagre.mono (symmDiff_triangle s t u) (h.union h')
+
 /-- **52III** (`meagre-basic`, vn.tex:1737, Exercise), part 1: a countable
 union of meagre sets is meagre.  (Mathlib: `IsMeagre` is closed under
 countable unions.) -/
 theorem meagre_basic_1 (s : ℕ → Set X) (h : ∀ n, IsMeagre (s n)) :
     IsMeagre (⋃ n, s n) :=
-  sorry
+  isMeagre_iUnion h
 
 /-- **52III** (`meagre-basic`, vn.tex:1737, Exercise), part 2: a subset of a
 meagre set is meagre. -/
 theorem meagre_basic_2 (s t : Set X) (hst : s ⊆ t) (h : IsMeagre t) :
     IsMeagre s :=
-  sorry
+  h.mono hst
 
 /-- **52III** (`meagre-basic`, vn.tex:1737, Exercise), part 3:
 `closure U ≈ U` for every open `U`. -/
 theorem meagre_basic_3 (U : Set X) (hU : IsOpen U) :
-    MeagreEquiv (closure U) U :=
-  sorry
+    MeagreEquiv (closure U) U := by
+  -- the thesis's hint: `closure U \ U` is closed with empty interior
+  have heq : closure U ∆ U = closure U \ U := by
+    rw [Set.symmDiff_def]
+    simp [Set.sdiff_eq_empty.mpr (subset_closure : U ⊆ closure U)]
+  have hclosed : IsClosed (closure U \ U) := isClosed_closure.sdiff hU
+  refine (IsNowhereDense.isMeagre ?_).mono heq.subset
+  rw [hclosed.isNowhereDense_iff, Set.eq_empty_iff_forall_notMem]
+  intro x hx
+  have hxU : x ∈ closure U := (interior_subset hx).1
+  obtain ⟨y, hyi, hyU⟩ := mem_closure_iff.mp hxU _ isOpen_interior hx
+  exact (interior_subset hyi).2 hyU
 
 /-- **52III** (`meagre-basic`, vn.tex:1737, Exercise), part 4:
 `⋃ₙ Aₙ ≈ ⋃ₙ Bₙ` when `Aₙ ≈ Bₙ` for all `n`. -/
 theorem meagre_basic_4 (s t : ℕ → Set X) (h : ∀ n, MeagreEquiv (s n) (t n)) :
-    MeagreEquiv (⋃ n, s n) (⋃ n, t n) :=
-  sorry
+    MeagreEquiv (⋃ n, s n) (⋃ n, t n) := by
+  refine IsMeagre.mono ?_ (isMeagre_iUnion h)
+  intro x hx
+  rw [Set.mem_symmDiff] at hx
+  simp only [Set.mem_iUnion, not_exists] at hx
+  obtain ⟨⟨n, hn⟩, hnot⟩ | ⟨⟨n, hn⟩, hnot⟩ := hx <;>
+    exact Set.mem_iUnion.mpr ⟨n, by rw [Set.mem_symmDiff]; tauto⟩
 
 /-- **52III** (`meagre-basic`, vn.tex:1737, Exercise), part 5:
 `A \ B ≈ A' \ B'` when `A ≈ A'` and `B ≈ B'`. -/
 theorem meagre_basic_5 (s s' t t' : Set X) (hs : MeagreEquiv s s')
-    (ht : MeagreEquiv t t') : MeagreEquiv (s \ t) (s' \ t') :=
-  sorry
+    (ht : MeagreEquiv t t') : MeagreEquiv (s \ t) (s' \ t') := by
+  refine IsMeagre.mono ?_ (hs.union ht)
+  intro x hx
+  simp only [Set.mem_symmDiff, Set.mem_sdiff, Set.mem_union] at hx ⊢
+  tauto
 
 /-- **52III** (`meagre-basic`, vn.tex:1737, Exercise), part 6: unions and
 differences of almost clopen sets are almost clopen. -/
 theorem meagre_basic_6 (s t : Set X) (hs : AlmostClopen s)
-    (ht : AlmostClopen t) : AlmostClopen (s ∪ t) ∧ AlmostClopen (s \ t) :=
-  sorry
+    (ht : AlmostClopen t) : AlmostClopen (s ∪ t) ∧ AlmostClopen (s \ t) := by
+  obtain ⟨C, hC, hsC⟩ := hs
+  obtain ⟨D, hD, htD⟩ := ht
+  refine ⟨⟨C ∪ D, hC.union hD, ?_⟩, ⟨C \ D, hC.diff hD, meagre_basic_5 _ _ _ _ hsC htD⟩⟩
+  refine IsMeagre.mono ?_ (hsC.union htD)
+  intro x hx
+  simp only [Set.mem_symmDiff, Set.mem_union] at hx ⊢
+  tauto
 
 end Meagre
 
 /-- **52IIIb** (vn.tex:1776, Example): there is a meagre subset of `[0,1]`
 of Lebesgue measure `1`. -/
 theorem meagre_full_measure :
-    ∃ s : Set ℝ, s ⊆ Set.Icc 0 1 ∧ IsMeagre s ∧ volume s = 1 :=
-  sorry
+    ∃ s : Set ℝ, s ⊆ Set.Icc 0 1 ∧ IsMeagre s ∧ volume s = 1 := by
+  -- As in the thesis: cover `ℚ` by open (hence dense) sets `Uₙ` of measure
+  -- `< 1/(n+1)`; then `B = ⋂ₙ Uₙ` is negligible and comeagre, and
+  -- `[0,1] \ B` is meagre of measure `1`.  (The thesis writes down explicit
+  -- intervals around an enumeration of `ℚ ∩ [0,1]`; we get the `Uₙ` from
+  -- outer regularity of Lebesgue measure instead.)
+  have hQ0 : volume (Set.range ((↑) : ℚ → ℝ)) = 0 :=
+    (Set.countable_range _).measure_zero _
+  have hpos : ∀ n : ℕ, volume (Set.range ((↑) : ℚ → ℝ)) < ((n : ℝ≥0∞) + 1)⁻¹ := by
+    intro n
+    rw [hQ0]
+    exact ENNReal.inv_pos.mpr (by simp)
+  choose U hUsub hUopen hUvol using fun n : ℕ =>
+    Set.exists_isOpen_lt_of_lt (μ := volume) (Set.range ((↑) : ℚ → ℝ))
+      (((n : ℝ≥0∞) + 1)⁻¹) (hpos n)
+  have hBres : (⋂ n : ℕ, U n) ∈ residual ℝ :=
+    countable_iInter_mem.mpr fun n =>
+      residual_of_dense_open (hUopen n) (Rat.denseRange_cast.mono (hUsub n))
+  have hB0 : volume (⋂ n : ℕ, U n) = 0 := by
+    by_contra h
+    obtain ⟨n, hn⟩ := ENNReal.exists_inv_nat_lt h
+    have h1 : volume (⋂ n : ℕ, U n) < ((n : ℝ≥0∞) + 1)⁻¹ :=
+      lt_of_le_of_lt (measure_mono (Set.iInter_subset U n)) (hUvol n)
+    have h2 : ((n : ℝ≥0∞) + 1)⁻¹ ≤ (n : ℝ≥0∞)⁻¹ :=
+      ENNReal.inv_le_inv.mpr (le_add_right le_rfl)
+    exact absurd (h1.trans_le h2) (not_lt.mpr hn.le)
+  refine ⟨Set.Icc 0 1 \ (⋂ n : ℕ, U n), Set.sdiff_subset, ?_, ?_⟩
+  · exact Filter.mem_of_superset hBres fun x hx hx' => hx'.2 hx
+  · rw [measure_sdiff_null hB0, Real.volume_Icc]
+    norm_num
 
 /-! ## Parsec 530: extremal disconnectedness of the spectrum -/
 
@@ -892,8 +1461,27 @@ def almostClopenMS : MeasurableSpace X :=
 topological space the almost clopen subsets form a σ-algebra, i.e. every
 member of the σ-algebra they generate is itself almost clopen. -/
 theorem almostClopen_sigmaAlgebra [ExtremallyDisconnected X] (s : Set X) :
-    MeasurableSet[almostClopenMS X] s ↔ AlmostClopen s :=
-  sorry
+    MeasurableSet[almostClopenMS X] s ↔ AlmostClopen s := by
+  constructor
+  · refine MeasurableSpace.generateFrom_induction
+      {s : Set X | AlmostClopen s} (fun t _ => AlmostClopen t)
+      (fun t ht _ => ht) ⟨∅, isClopen_empty, MeagreEquiv.refl ∅⟩
+      (fun t _ ht => ?_) (fun u _ hu => ?_) s
+    · -- complements: `tᶜ = X \ t`, and 52III.6 covers differences
+      have h := (meagre_basic_6 Set.univ t ⟨Set.univ, isClopen_univ,
+        MeagreEquiv.refl _⟩ ht).2
+      rwa [← Set.compl_eq_univ_diff] at h
+    · -- countable unions: the thesis's argument, using that `X` is
+      -- extremally disconnected so `closure (⋃ Cₙ)` is clopen
+      choose C hC hUC using hu
+      have h1 : MeagreEquiv (⋃ n, u n) (⋃ n, C n) :=
+        meagre_basic_4 _ _ hUC
+      have hopen : IsOpen (⋃ n, C n) := isOpen_iUnion fun n => (hC n).2
+      refine ⟨closure (⋃ n, C n),
+        ⟨isClosed_closure, ExtremallyDisconnected.open_closure _ hopen⟩, ?_⟩
+      exact h1.trans (meagre_basic_3 _ hopen).symm
+  · intro hs
+    exact MeasurableSpace.measurableSet_generateFrom hs
 
 end AlmostClopenSigma
 
@@ -907,30 +1495,72 @@ variable {X : Type*} [TopologicalSpace X] [CompactSpace X] [T2Space X]
 theorem): a meagre subset of a compact Hausdorff space has empty
 interior. -/
 theorem baire_category_theorem (s : Set X) (h : IsMeagre s) :
-    interior s = ∅ :=
-  sorry
+    interior s = ∅ := by
+  -- a compact Hausdorff space is locally compact regular, hence Baire
+  by_contra hne
+  exact not_isMeagre_of_isOpen isOpen_interior (Set.nonempty_iff_ne_empty.mpr hne)
+    (h.mono interior_subset)
 
 /-- **54IV** (`approx-closure`, vn.tex:1949, Lemma): for open subsets `U`,
 `V` of a compact Hausdorff space:
 `U ≈ V ↔ closure U ≈ closure V ↔ closure U = closure V`. -/
 theorem approx_closure (U V : Set X) (hU : IsOpen U) (hV : IsOpen V) :
     (MeagreEquiv U V ↔ MeagreEquiv (closure U) (closure V)) ∧
-      (MeagreEquiv (closure U) (closure V) ↔ closure U = closure V) :=
-  sorry
+      (MeagreEquiv (closure U) (closure V) ↔ closure U = closure V) := by
+  -- `U ≈ closure U` by 52III.3, so only `closure U ≈ closure V → closure U =
+  -- closure V` needs an argument, and that is Baire's theorem.
+  have hcl : ∀ W : Set X, IsOpen W → MeagreEquiv (closure W) W := fun W hW =>
+    meagre_basic_3 W hW
+  have key : ∀ W W' : Set X, IsOpen W → IsOpen W' →
+      MeagreEquiv (closure W) (closure W') → closure W ⊆ closure W' := by
+    intro W W' hW hW' hWW'
+    have hsub : W \ closure W' ⊆ closure W ∆ closure W' := by
+      intro x hx
+      exact Or.inl ⟨subset_closure hx.1, hx.2⟩
+    have hopen : IsOpen (W \ closure W') := hW.sdiff isClosed_closure
+    have : W \ closure W' = ∅ := by
+      rw [← hopen.interior_eq]
+      exact baire_category_theorem _ (hWW'.mono hsub)
+    have : W ⊆ closure W' := by
+      intro x hx
+      by_contra hx'
+      exact (Set.eq_empty_iff_forall_notMem.mp this x) ⟨hx, hx'⟩
+    exact closure_minimal this isClosed_closure
+  refine ⟨⟨fun h => ((hcl U hU).trans h).trans (hcl V hV).symm,
+    fun h => (((hcl U hU).symm).trans h).trans (hcl V hV)⟩, ⟨fun h => ?_, ?_⟩⟩
+  · exact subset_antisymm (key U V hU hV h) (key V U hV hU h.symm)
+  · intro h
+    rw [h]
 
 /-- **54VI** (vn.tex:1975, Corollary; proof label
 `almost-meagre-fundamental`): an almost clopen subset of a compact Hausdorff
 space is `≈` to exactly one clopen set. -/
 theorem almost_meagre_fundamental (s : Set X) (hs : AlmostClopen s) :
-    ∃! C : Set X, IsClopen C ∧ MeagreEquiv s C :=
-  sorry
+    ∃! C : Set X, IsClopen C ∧ MeagreEquiv s C := by
+  obtain ⟨C, hC, hsC⟩ := hs
+  refine ⟨C, ⟨hC, hsC⟩, fun C' ⟨hC', hsC'⟩ => ?_⟩
+  -- `C' ≈ s ≈ C`, so `C' = C` by `approx_closure`
+  have h : MeagreEquiv C' C := hsC'.symm.trans hsC
+  have h2 := ((approx_closure C' C hC'.2 hC.2).1.mp h)
+  have h3 := (approx_closure C' C hC'.2 hC.2).2.mp h2
+  rwa [hC'.1.closure_eq, hC.1.closure_eq] at h3
 
 /-- **54IX** (`open-almost-clopen`, vn.tex:1991, Proposition): a compact
 Hausdorff space is extremally disconnected iff every open subset is almost
 clopen. -/
 theorem open_almost_clopen :
-    ExtremallyDisconnected X ↔ ∀ U : Set X, IsOpen U → AlmostClopen U :=
-  sorry
+    ExtremallyDisconnected X ↔ ∀ U : Set X, IsOpen U → AlmostClopen U := by
+  constructor
+  · intro hX U hU
+    exact ⟨closure U, ⟨isClosed_closure, hX.open_closure U hU⟩,
+      (meagre_basic_3 U hU).symm⟩
+  · intro h
+    refine ⟨fun U hU => ?_⟩
+    obtain ⟨C, hC, hUC⟩ := h U hU
+    have h2 := (approx_closure U C hU hC.2).1.mp hUC
+    have h3 := (approx_closure U C hU hC.2).2.mp h2
+    rw [h3, hC.1.closure_eq]
+    exact hC.2
 
 end Baire
 
