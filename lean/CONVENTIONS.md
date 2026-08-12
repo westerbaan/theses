@@ -57,7 +57,24 @@ exercise; there are none for `vn.tex` or `proc.tex`, and none for the
 `cstar.tex` parsecs **350–390** either.  So for 35VI, 36III, 37IX, 38III, 38VI,
 39VI and their neighbours there is genuinely no published solution, and a Lean
 proof there is original work rather than a transcription — worth saying so in
-the log.  Second, **there is no `aerr.tex`**: thesis A's 27 errata and addenda
+the log.
+
+**This is confirmed by the author, not merely inferred from a failed search:**
+the solutions to the von Neumann exercises were never written.  `vn.tex` does
+have **75 inline `{Proof}` points** covering its Lemmas, Propositions, Theorems
+and Corollaries — those are author arguments and should be transcribed as usual
+— but its **62 Exercises have no author argument at all**.
+
+That has a consequence worth stating plainly.  Every `cstar.tex` exercise came
+with a written solution, so someone had already checked the statement was
+provable.  The `vn.tex` exercises have never had that check, and a Lean proof of
+one is the first proof of it that has ever existed.  **Statement bugs are
+therefore much likelier there**, and finding that such an exercise is false as
+stated is a *more* valuable result than proving it.  Test against the failure
+modes this project has already hit: falsity in the trivial algebra `{0}`
+(Mathlib's `CStarAlgebra` does not extend `Nontrivial` — see 16V, 16VI, 22III.5);
+degeneracy at `N = 0` or an empty index (Lean's `2/(0:ℝ) = 0` made 34aVII false);
+and hypotheses the author uses but never states (26II.1, 37IX).  Second, **there is no `aerr.tex`**: thesis A's 27 errata and addenda
 live at the *top of* `asols.tex`, keyed the same way, and should be consulted
 before filing a new erratum.  (Thesis B does have `../berr.tex`.)
 
