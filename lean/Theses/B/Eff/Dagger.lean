@@ -418,7 +418,23 @@ theorem dils_abstract_basics_1 {P₂ : C} {f : X ⟶ Y} {ϱ₁ : P ⟶ Y}
     {h₁ : X ⟶ P} {ϱ₂ : P₂ ⟶ Y} {h₂ : X ⟶ P₂}
     (d₁ : IsDilation f ϱ₁ h₁) (d₂ : IsDilation f ϱ₂ h₂) :
     ∃ α : P ⟶ P₂, IsIso α ∧ h₁ ≫ α = h₂ ∧ α ≫ ϱ₂ = ϱ₁ ∧
-      ∀ α' : P ⟶ P₂, h₁ ≫ α' = h₂ → α' = α := sorry
+      ∀ α' : P ⟶ P₂, h₁ ≫ α' = h₂ → α' ≫ ϱ₂ = ϱ₁ → α' = α := by
+  obtain ⟨hs₁, ht₁, hp₁, hfac₁, huniv₁⟩ := d₁
+  obtain ⟨hs₂, ht₂, hp₂, hfac₂, huniv₂⟩ := d₂
+  obtain ⟨σ₁, ⟨hσ₁h, hσ₁ϱ⟩, huσ₁⟩ := huniv₁ ϱ₂ h₂ hs₂ ht₂ hfac₂
+  obtain ⟨σ₂, ⟨hσ₂h, hσ₂ϱ⟩, -⟩ := huniv₂ ϱ₁ h₁ hs₁ ht₁ hfac₁
+  -- `σ₁ ≫ σ₂` and `𝟙 P` both mediate `(P, ϱ₁, h₁)` to itself, hence agree.
+  obtain ⟨τ, -, huτ⟩ := huniv₁ ϱ₁ h₁ hs₁ ht₁ hfac₁
+  have e1 : σ₁ ≫ σ₂ = 𝟙 P :=
+    (huτ (σ₁ ≫ σ₂) ⟨by rw [← Category.assoc, hσ₁h, hσ₂h],
+        by rw [Category.assoc, hσ₂ϱ, hσ₁ϱ]⟩).trans
+      (huτ (𝟙 P) ⟨Category.comp_id _, Category.id_comp _⟩).symm
+  obtain ⟨τ', -, huτ'⟩ := huniv₂ ϱ₂ h₂ hs₂ ht₂ hfac₂
+  have e2 : σ₂ ≫ σ₁ = 𝟙 P₂ :=
+    (huτ' (σ₂ ≫ σ₁) ⟨by rw [← Category.assoc, hσ₂h, hσ₁h],
+        by rw [Category.assoc, hσ₁ϱ, hσ₂ϱ]⟩).trans
+      (huτ' (𝟙 P₂) ⟨Category.comp_id _, Category.id_comp _⟩).symm
+  exact ⟨σ₁, ⟨σ₂, e1, e2⟩, hσ₁h, hσ₁ϱ, fun α' hα'h hα'ϱ => huσ₁ α' ⟨hα'h, hα'ϱ⟩⟩
 
 /-- **221IV.2** (`dils-abstract-basics`, eff.tex:6837, Proposition):
 dilations transport along isomorphisms:

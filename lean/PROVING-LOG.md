@@ -318,6 +318,40 @@ prove the spine in those terms *alongside* the shipped statements, so nothing is
 restated and no statement changes.  **This has now been done in full**; see the
 next section.
 
+### Session 2 — 221IV.1 was our bug, not the thesis's
+
+Recorded since session 1 as an open decision ("our statement is too strong; not
+a thesis error"), this turned out to be a **mis-transcription on our side**,
+now corrected and **proved** (`Theses/B/Eff/Dagger.lean`, axiom-clean).
+
+Our uniqueness clause read `∀ α', h₁ ≫ α' = h₂ → α' = α`, quantifying over every
+map satisfying only the *first* condition.  The source (eff.tex:6837) says:
+
+> there is a unique isomorphism `α : P₁ → P₂` with `α ∘ h₁ = h₂` **and**
+> `ϱ₂ ∘ α = ϱ₁`.
+
+Restoring the missing `α' ≫ ϱ₂ = ϱ₁` hypothesis makes the statement provable
+straight from the universal property, by the thesis's own argument: `σ₁ ≫ σ₂`
+and `𝟙 P` both mediate `(P, ϱ₁, h₁)` to itself, so they agree, and symmetrically
+on the other side.
+
+**Two process lessons, both cheap to avoid.**  First, the entry cited
+`dils.tex:1176` — `paschke-unique-up-to-iso`, about *Paschke* dilations of
+ncp-maps between von Neumann algebras.  The Lean doc comment says
+**eff.tex:6837**, the abstract effectus proposition.  Checking the wrong text is
+what turned a transcription bug into a recorded "statement too strong" decision
+that sat open for a whole session.  **Always verify against the `file:LINE` the
+doc comment itself carries.**  Second: when a statement looks unprovably strong,
+suspect the transcription before suspecting the thesis.
+
+**Erratum found while re-reading.**
+
+- **221II** `eff.tex:6791` — in the definition of a dilation: "For every triple
+  `(P', ϱ', h')` with `ϱ' : P' → Y` total sharp, **`h' : X → P`** arbitrary and
+  `f = ϱ' ∘ h'`".  The type is wrong: `h'` must be `X → P'`, since `ϱ' : P' → Y`
+  and `ϱ' ∘ h'` has to typecheck.  A typo, but in the definition on which the
+  whole of parsecs 221–223 rests.
+
 ### Session 2 — `ThesisPos`: 25I is now a theorem, not an assumption
 
 All five steps of the programme are done.  `sorry` count unchanged at 29 — that

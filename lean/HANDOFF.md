@@ -489,10 +489,19 @@ because the standing rule is never to change a statement without approval:
    stated: the hypotheses relate the order of `V` to `+` but never to the
    scalar action, so even the data field `r • v ∈ [0,u]` fails (order `ℝ` by
    the cone of a ℚ-linear functional).  Needs `PosSMulMono ℝ V` added.
-2. **221IV.1** (B/Eff/Dagger.lean) — our statement asks the mediating iso to
-   be unique among all `α'` with `h₁ ∘ α' = h₂`, but the universal property
-   (and dils.tex:1176) only gives uniqueness among those that also satisfy
-   `ϱ₂ ∘ α' = ϱ₁`.  As stated it is too strong.  Not a thesis error.
+2. ~~**221IV.1**~~ — **RESOLVED.**  This was a **transcription error on our
+   side**, now fixed and proved.  Our uniqueness clause read
+   `∀ α', h₁ ≫ α' = h₂ → α' = α`, dropping the second condition; the source
+   (eff.tex:6837) says "there is a unique isomorphism `α` with `α ∘ h₁ = h₂`
+   **and** `ϱ₂ ∘ α = ϱ₁`".  Adding the missing `α' ≫ ϱ₂ = ϱ₁` hypothesis makes
+   it provable directly from the universal property, by the thesis's own
+   argument (`σ₁ ≫ σ₂` and `𝟙` both mediate `(P,ϱ₁,h₁)` to itself).
+   *Note for future reference*: HANDOFF previously cited `dils.tex:1176` for
+   this, which is `paschke-unique-up-to-iso` — a lemma about **Paschke**
+   dilations of ncp-maps between von Neumann algebras, a different setting from
+   the abstract effectus proposition.  Checking the wrong text is what let the
+   mis-transcription be recorded as a "statement too strong" decision instead of
+   a bug.  Always confirm the doc comment's own `file:LINE`.
 3. **The trivial C\*-algebra `{0}`** — the largest cluster, and the one worth
    deciding *globally* rather than statement by statement.  Mathlib's
    `CStarAlgebra` does not extend `Nontrivial`, but the thesis explicitly
