@@ -739,7 +739,22 @@ theorem cstar_product_2_miu {ι : Type*} {𝒜 : ι → Type*}
     [CStarAlgebra ℬ] (f : ∀ i, ℬ →⋆ₐ[ℂ] 𝒜 i) :
     ∃! g : ℬ →⋆ₐ[ℂ] lp 𝒜 ∞, ∀ (i : ι) (b : ℬ),
       (g b : ∀ i, 𝒜 i) i = f i b :=
-  sorry
+  by
+    have hmem : ∀ b : ℬ, Memℓp (fun i => f i b) ∞ := fun b =>
+      memℓp_infty ⟨‖b‖, by
+        rintro y ⟨i, rfl⟩
+        exact NonUnitalStarAlgHom.norm_apply_le (f i) b⟩
+    refine ⟨{ toFun := fun b => ⟨fun i => f i b, hmem b⟩
+              map_one' := by ext i; simp
+              map_mul' := fun x y => by ext i; simp
+              map_zero' := by ext i; simp
+              map_add' := fun x y => by ext i; exact map_add (f i) x y
+              commutes' := fun r => by ext i; simp [Algebra.algebraMap_eq_smul_one]
+              map_star' := fun x => by ext i; simpa using map_star (f i) x },
+            fun i b => rfl, ?_⟩
+    intro g' hg'
+    ext b i
+    exact hg' i b
 
 /-- **20aI** (`cstar-product-2`, cstar.tex:3015, Exercise), part 2 (key step
 for the `pu`-variant): an element of `⊕ᵢ 𝒜ᵢ` is positive iff all of its
@@ -749,7 +764,44 @@ theorem cstar_product_2_positive {ι : Type*} {𝒜 : ι → Type*}
     [∀ i, PartialOrder (𝒜 i)] [∀ i, StarOrderedRing (𝒜 i)]
     [PartialOrder (lp 𝒜 ∞)] [StarOrderedRing (lp 𝒜 ∞)] (a : lp 𝒜 ∞) :
     0 ≤ a ↔ ∀ i, 0 ≤ (a : ∀ i, 𝒜 i) i :=
-  sorry
+  by
+    constructor
+    · intro h
+      rw [StarOrderedRing.nonneg_iff] at h
+      induction h using AddSubmonoid.closure_induction with
+      | mem x hx =>
+          obtain ⟨s, rfl⟩ := hx
+          intro i
+          show (0 : 𝒜 i) ≤ star ((s : ∀ i, 𝒜 i) i) * ((s : ∀ i, 𝒜 i) i)
+          exact star_mul_self_nonneg _
+      | zero => intro i; exact le_of_eq rfl
+      | add x y _ _ hx hy =>
+          intro i
+          show (0 : 𝒜 i) ≤ (x : ∀ i, 𝒜 i) i + (y : ∀ i, 𝒜 i) i
+          exact add_nonneg (hx i) (hy i)
+    · intro h
+      have hsq : ∀ i, ‖CFC.sqrt ((a : ∀ i, 𝒜 i) i)‖ = Real.sqrt ‖(a : ∀ i, 𝒜 i) i‖ := by
+        intro i
+        have h1 : ‖CFC.sqrt ((a : ∀ i, 𝒜 i) i)‖ * ‖CFC.sqrt ((a : ∀ i, 𝒜 i) i)‖
+            = ‖(a : ∀ i, 𝒜 i) i‖ := by
+          rw [← CStarRing.norm_star_mul_self,
+            (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg _)).star_eq,
+            CFC.sqrt_mul_sqrt_self _ (h i)]
+        rw [← h1, Real.sqrt_mul_self (norm_nonneg _)]
+      have hmem : Memℓp (fun i => CFC.sqrt ((a : ∀ i, 𝒜 i) i)) ∞ := by
+        refine memℓp_infty ⟨Real.sqrt ‖a‖, ?_⟩
+        rintro y ⟨i, rfl⟩
+        show ‖CFC.sqrt ((a : ∀ i, 𝒜 i) i)‖ ≤ Real.sqrt ‖a‖
+        rw [hsq i]
+        exact Real.sqrt_le_sqrt (lp.norm_apply_le_norm ENNReal.top_ne_zero a i)
+      have hba : star (⟨fun i => CFC.sqrt ((a : ∀ i, 𝒜 i) i), hmem⟩ : lp 𝒜 ∞) *
+          ⟨fun i => CFC.sqrt ((a : ∀ i, 𝒜 i) i), hmem⟩ = a := by
+        ext i
+        show star (CFC.sqrt ((a : ∀ i, 𝒜 i) i)) * CFC.sqrt ((a : ∀ i, 𝒜 i) i) = _
+        rw [(IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg _)).star_eq,
+          CFC.sqrt_mul_sqrt_self _ (h i)]
+      rw [← hba]
+      exact star_mul_self_nonneg _
 
 /-- **20aII** (`cstar-equaliser-1`, cstar.tex:3044, Exercise): for miu-maps
 `f, g : 𝒜 → ℬ` the set `ℰ = {a : f(a) = g(a)}` is a (closed) C*-subalgebra
@@ -882,7 +934,46 @@ theorem order_separating_dense_subset (Ω Ω' : Set (𝒜 →L[ℂ] ℂ))
     (hpos : ∀ ω ∈ Ω, ∀ a : 𝒜, 0 ≤ a → 0 ≤ ω a)
     (hΩ : OrderSeparating fun ω : Ω => ((ω : 𝒜 →L[ℂ] ℂ) : 𝒜 →ₗ[ℂ] ℂ)) :
     OrderSeparating fun ω : Ω' => ((ω : 𝒜 →L[ℂ] ℂ) : 𝒜 →ₗ[ℂ] ℂ) :=
-  sorry
+  by
+    intro a
+    refine ⟨fun ha ω' => hpos _ (hsub ω'.2) a ha, fun H => ?_⟩
+    refine (hΩ a).mpr ?_
+    rintro ⟨ω, hω⟩
+    show (0 : ℂ) ≤ ω a
+    rcases eq_or_ne a 0 with rfl | ha0
+    · simp
+    have hanorm : (0 : ℝ) < ‖a‖ := norm_pos_iff.mpr ha0
+    have key : ∀ δ : ℝ, 0 < δ → ∃ w : ℂ, 0 ≤ w ∧ ‖ω a - w‖ ≤ δ := by
+      intro δ hδ
+      obtain ⟨ω', hω', hlt⟩ := hdense ω hω (δ / ‖a‖) (by positivity)
+      refine ⟨ω' a, H ⟨ω', hω'⟩, ?_⟩
+      have h1 : ω a - ω' a = (ω - ω') a := by simp
+      rw [h1]
+      calc ‖(ω - ω') a‖ ≤ ‖ω - ω'‖ * ‖a‖ := ContinuousLinearMap.le_opNorm _ _
+        _ ≤ (δ / ‖a‖) * ‖a‖ := mul_le_mul_of_nonneg_right hlt.le (norm_nonneg a)
+        _ = δ := by field_simp
+    have hre : 0 ≤ (ω a).re := by
+      refine le_of_forall_pos_le_add fun ε hε => ?_
+      obtain ⟨w, hw, hle⟩ := key ε hε
+      have hwre : 0 ≤ w.re := by simpa using (Complex.le_def.mp hw).1
+      have hbd : |(ω a).re - w.re| ≤ ε := by
+        refine le_trans ?_ hle
+        simpa using Complex.abs_re_le_norm (ω a - w)
+      have := abs_le.mp hbd
+      linarith [this.1]
+    have him : (ω a).im = 0 := by
+      have h0 : |(ω a).im| ≤ 0 := by
+        refine le_of_forall_pos_le_add fun ε hε => ?_
+        obtain ⟨w, hw, hle⟩ := key ε hε
+        have hwim : w.im = 0 := (Complex.le_def.mp hw).2.symm
+        have hbd : |(ω a).im - w.im| ≤ ε := by
+          refine le_trans ?_ hle
+          simpa using Complex.abs_im_le_norm (ω a - w)
+        rw [hwim, sub_zero] at hbd
+        linarith
+      simpa using abs_nonpos_iff.mp h0
+    rw [Complex.le_def]
+    exact ⟨by simpa using hre, by simpa using him.symm⟩
 
 end Separating
 
@@ -1228,7 +1319,46 @@ theorem astara_pos_basic_3 (a b : 𝒜) (ha : 0 ≤ a) (hb : 0 ≤ b)
       CFC.sqrt b * a * CFC.sqrt b ≤ 1,
       ‖CFC.sqrt a * CFC.sqrt b‖ ≤ 1,
       b ≤ Ring.inverse a] :=
-  sorry
+  by
+    have hstar : ‖CFC.sqrt b * CFC.sqrt a‖ = ‖CFC.sqrt a * CFC.sqrt b‖ := by
+      rw [← norm_star (CFC.sqrt b * CFC.sqrt a), star_mul,
+        (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg a)).star_eq,
+        (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg b)).star_eq]
+    have key12 : ∀ x y : 𝒜, 0 ≤ x → 0 ≤ y → IsUnit y →
+        (x ≤ Ring.inverse y ↔ CFC.sqrt y * x * CFC.sqrt y ≤ 1) := by
+      intro x y hx hy huy
+      have hsp : IsStrictlyPositive y := ⟨hy, huy⟩
+      have hspi : IsStrictlyPositive (Ring.inverse y) := hsp.ringInverse
+      have hone : CFC.conjSqrt y (Ring.inverse y) = 1 := by
+        have h1 := CFC.conjSqrt_conjSqrt_ringInverse y 1 hsp
+        rwa [CFC.conjSqrt_one (Ring.inverse y) hspi.nonneg] at h1
+      constructor
+      · intro hle
+        have h2 := CFC.conjSqrt_le_conjSqrt (c := y) hle
+        rwa [hone, CFC.conjSqrt_apply] at h2
+      · intro hle
+        have h2 := CFC.conjSqrt_le_conjSqrt (c := Ring.inverse y) hle
+        rwa [← CFC.conjSqrt_apply, CFC.conjSqrt_ringInverse_conjSqrt y x hsp,
+          CFC.conjSqrt_one (Ring.inverse y) hspi.nonneg] at h2
+    have key23 : ∀ x y : 𝒜, 0 ≤ x → 0 ≤ y →
+        (CFC.sqrt y * x * CFC.sqrt y ≤ 1 ↔ ‖CFC.sqrt x * CFC.sqrt y‖ ≤ 1) := by
+      intro x y hx hy
+      have heq : star (CFC.sqrt x * CFC.sqrt y) * (CFC.sqrt x * CFC.sqrt y)
+          = CFC.sqrt y * x * CFC.sqrt y := by
+        rw [star_mul, (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg x)).star_eq,
+          (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg y)).star_eq]
+        rw [show CFC.sqrt y * CFC.sqrt x * (CFC.sqrt x * CFC.sqrt y)
+            = CFC.sqrt y * (CFC.sqrt x * CFC.sqrt x) * CFC.sqrt y by
+          simp only [mul_assoc]]
+        rw [CFC.sqrt_mul_sqrt_self x hx]
+      have hnn : (0 : 𝒜) ≤ CFC.sqrt y * x * CFC.sqrt y :=
+        conjugate_nonneg_of_nonneg hx (CFC.sqrt_nonneg y)
+      rw [← CStarAlgebra.norm_le_one_iff_of_nonneg _ hnn, ← heq,
+        CStarRing.norm_star_mul_self, ← sq, sq_le_one_iff₀ (norm_nonneg _)]
+    tfae_have 1 ↔ 2 := key12 a b ha hb hub
+    tfae_have 2 ↔ 3 := key23 a b ha hb
+    tfae_have 4 ↔ 3 := by rw [key12 b a hb ha hua, key23 b a hb ha, hstar]
+    tfae_finish
 
 /-- **25II** (`astara-pos-basic-consequences`, cstar.tex:3772, Exercise),
 part 4: `(1+a)⁻¹ a ≤ (1+b)⁻¹ b` for `0 ≤ a ≤ b`. -/
@@ -1361,7 +1491,40 @@ theorem hilb_positive_operators_2 (T : H →L[ℂ] H) :
 `‖T‖ = sup_{‖x‖=1} |⟪x, Tx⟫|` for self-adjoint `T`. -/
 theorem hilb_positive_operators_3 (T : H →L[ℂ] H) (hT : IsSelfAdjoint T) :
     ‖T‖ = ⨆ x : {x : H // ‖x‖ = 1}, ‖⟪(x : H), T x⟫‖ :=
-  sorry
+  by
+    set M := ⨆ x : {x : H // ‖x‖ = 1}, ‖⟪(x : H), T x⟫‖ with hMdef
+    have hcs : ∀ x : {x : H // ‖x‖ = 1}, ‖⟪(x : H), T x⟫‖ ≤ ‖T‖ := by
+      intro x
+      have h1 : ‖⟪(x : H), T x⟫‖ ≤ ‖(x : H)‖ * ‖T (x : H)‖ := norm_inner_le_norm _ _
+      have h2 : ‖T (x : H)‖ ≤ ‖T‖ * ‖(x : H)‖ := T.le_opNorm _
+      rw [x.2] at h1 h2
+      simp only [one_mul, mul_one] at h1 h2
+      exact h1.trans h2
+    have hbddA : BddAbove (Set.range fun x : {x : H // ‖x‖ = 1} => ‖⟪(x : H), T x⟫‖) :=
+      ⟨‖T‖, by rintro y ⟨x, rfl⟩; exact hcs x⟩
+    have hM0 : 0 ≤ M := Real.iSup_nonneg fun _ => norm_nonneg _
+    have hle : M ≤ ‖T‖ := Real.iSup_le hcs (norm_nonneg T)
+    have hbound : ∀ x : H, ‖⟪x, T x⟫‖ ≤ M * ‖x‖ ^ 2 := by
+      intro x
+      rcases eq_or_ne x 0 with rfl | hx
+      · simp
+      · obtain ⟨hu, he⟩ := inner_self_scale_aux T x hx
+        rw [he, norm_mul, Complex.norm_real, Real.norm_eq_abs,
+          abs_of_nonneg (by positivity : (0:ℝ) ≤ ‖x‖ ^ 2), mul_comm]
+        exact mul_le_mul_of_nonneg_right (le_ciSup hbddA ⟨_, hu⟩) (by positivity)
+    have hge : ‖T‖ ≤ M := by
+      rw [T.norm_eq_iSup_rayleighQuotient hT.isSymmetric]
+      refine ciSup_le fun x => ?_
+      rcases eq_or_ne x 0 with rfl | hx
+      · simpa using hM0
+      · have hx2 : (0:ℝ) < ‖x‖ ^ 2 := by positivity
+        have h1 : |T.reApplyInnerSelf x| ≤ ‖⟪x, T x⟫‖ := by
+          rw [ContinuousLinearMap.reApplyInnerSelf_apply, ← inner_conj_symm (𝕜 := ℂ) (T x) x]
+          rw [RCLike.conj_re]
+          exact RCLike.abs_re_le_norm _
+        rw [ContinuousLinearMap.rayleighQuotient, abs_div, abs_of_pos hx2, div_le_iff₀ hx2]
+        exact h1.trans (hbound x)
+    exact le_antisymm hge hle
 
 end VectorStates
 
@@ -1472,13 +1635,85 @@ theorem commutative_cstar_basic_3 (a b : 𝒜) (ha : IsSelfAdjoint a)
     rw [e1, e2, e3] at hlub2
     exact hlub2
 
+/-- Auxiliary (**26II**.4): an miu-map between C*-algebras preserves the
+square root of a positive element — `f(√a)` has the property that
+characterises `√(f a)` uniquely (**23VII**.0). -/
+private theorem map_sqrt {A B : Type*} [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
+    (f : A →⋆ₐ[ℂ] B) (a : A) (ha : 0 ≤ a) : f (CFC.sqrt a) = CFC.sqrt (f a) :=
+  by
+    refine (CFC.sqrt_unique ?_ ?_).symm
+    · rw [← map_mul, CFC.sqrt_mul_sqrt_self a ha]
+    · exact norm_mi_map_positive f _ (CFC.sqrt_nonneg a)
+
+/-- Auxiliary (**26II**.4): consequently an miu-map preserves `|·|`. -/
+private theorem map_abs {A B : Type*} [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
+    (f : A →⋆ₐ[ℂ] B) (x : A) : f (CFC.abs x) = CFC.abs (f x) :=
+  by
+    show f (CFC.sqrt (star x * x)) = CFC.sqrt (star (f x) * f x)
+    rw [map_sqrt f _ (star_mul_self_nonneg x), map_mul, map_star]
+
+/-- Auxiliary (**26II**.3): `a⁺ = ½(|a| + a)` for self-adjoint `a`. -/
+private theorem posPart_eq_half {A : Type*} [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] (x : A) (hx : IsSelfAdjoint x) :
+    x⁺ = (2 : ℂ)⁻¹ • (CFC.abs x + x) :=
+  by
+    rw [CFC.abs_add_self x hx, two_nsmul, ← two_smul ℂ, smul_smul]
+    norm_num
+
+/-- Auxiliary (**26II**.4): an miu-map between C*-algebras preserves the
+positive part of a self-adjoint element (via `|·|`). -/
+private theorem map_posPart {A B : Type*} [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
+    (f : A →⋆ₐ[ℂ] B) (x : A) (hx : IsSelfAdjoint x) : f (x⁺) = (f x)⁺ :=
+  by
+    rw [posPart_eq_half x hx, map_smul, map_add, map_abs,
+      posPart_eq_half (f x) (hx.map f)]
+
+/-- Auxiliary (**26II**.3): in a commutative C*-algebra the positive part
+`a⁺` of a self-adjoint element `a` is the supremum of `a` and `0`. -/
+private theorem isLUB_zero_posPart {A : Type*} [CommCStarAlgebra A]
+    [PartialOrder A] [StarOrderedRing A] (x : A) (hx : IsSelfAdjoint x) :
+    IsLUB {0, x} (x⁺) :=
+  by
+    have h := commutative_cstar_basic_3 (0 : A) x (IsSelfAdjoint.zero A) hx
+    have h2 : (2 : ℂ)⁻¹ • ((0 : A) + x + CFC.abs (0 - x)) = x⁺ := by
+      rw [zero_sub, CFC.abs_neg, zero_add, add_comm x (CFC.abs x),
+        CFC.abs_add_self x hx, two_nsmul, ← two_smul ℂ, smul_smul]
+      norm_num
+    rwa [h2] at h
+
+/-- Auxiliary (**26II**.3): in a commutative C*-algebra `a + (b - a)⁺` is the
+supremum of `a` and `b`, whenever `b - a` is self-adjoint. -/
+private theorem isLUB_pair {A : Type*} [CommCStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] (a b : A) (hba : IsSelfAdjoint (b - a)) :
+    IsLUB {a, b} (a + (b - a)⁺) :=
+  by
+    have h := commutative_cstar_basic_2 (0 : A) (b - a) a ((b - a)⁺)
+      (isLUB_zero_posPart (b - a) hba)
+    simpa using h
+
 /-- **26II** (`commutative-cstar-basic`, cstar.tex:3856, Exercise), part 4:
 an miu-map between commutative C*-algebras preserves finite suprema (and,
 dually, infima). -/
 theorem commutative_cstar_basic_4 {ℬ : Type*} [CommCStarAlgebra ℬ]
     [PartialOrder ℬ] [StarOrderedRing ℬ] (f : 𝒜 →⋆ₐ[ℂ] ℬ) (a b s : 𝒜)
     (h : IsLUB {a, b} s) : IsLUB {f a, f b} (f s) :=
-  sorry
+  by
+    have hsa : (0 : 𝒜) ≤ s - a := sub_nonneg.mpr (h.1 (Set.mem_insert _ _))
+    have hsb : (0 : 𝒜) ≤ s - b := sub_nonneg.mpr (h.1 (Set.mem_insert_of_mem _ rfl))
+    have hba : IsSelfAdjoint (b - a) := by
+      have he : b - a = (s - a) - (s - b) := by ring
+      rw [he]
+      exact (IsSelfAdjoint.of_nonneg hsa).sub (IsSelfAdjoint.of_nonneg hsb)
+    have hs : s = a + (b - a)⁺ := h.unique (isLUB_pair a b hba)
+    have hfba : IsSelfAdjoint (f b - f a) := by
+      rw [← map_sub]; exact hba.map f
+    have hfs : f s = f a + (f b - f a)⁺ := by
+      rw [hs, map_add, map_posPart f (b - a) hba, map_sub]
+    rw [hfs]
+    exact isLUB_pair (f a) (f b) hfba
 
 /-- **26III** (`riesz-decomposition-lemma`, cstar.tex:3878, Exercise), the
 Riesz decomposition lemma: for positive `a, b, c` in a commutative
@@ -1487,7 +1722,24 @@ C*-algebra with `c ≤ a + b` we have `c = a' + b'` with `0 ≤ a' ≤ a` and
 theorem riesz_decomposition_lemma (a b c : 𝒜) (ha : 0 ≤ a) (hb : 0 ≤ b)
     (hc : 0 ≤ c) (h : c ≤ a + b) :
     ∃ a' b' : 𝒜, 0 ≤ a' ∧ a' ≤ a ∧ 0 ≤ b' ∧ b' ≤ b ∧ c = a' + b' :=
-  sorry
+  by
+    have hcb : IsSelfAdjoint (c - b) :=
+      (IsSelfAdjoint.of_nonneg hc).sub (IsSelfAdjoint.of_nonneg hb)
+    have hlub := isLUB_zero_posPart (c - b) hcb
+    have hcba : c - b ≤ a := sub_le_iff_le_add.mpr h
+    have hcbc : c - b ≤ c := sub_le_self c hb
+    have hub : ∀ y : 𝒜, 0 ≤ y → c - b ≤ y → (c - b)⁺ ≤ y := by
+      intro y hy0 hy1
+      refine hlub.2 ?_
+      rintro z hz
+      simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hz
+      rcases hz with rfl | rfl
+      · exact hy0
+      · exact hy1
+    refine ⟨(c - b)⁺, c - (c - b)⁺, CFC.posPart_nonneg _, hub a ha hcba, ?_, ?_, ?_⟩
+    · exact sub_nonneg.mpr (hub c hc hcbc)
+    · exact sub_le_comm.mpr (CFC.le_posPart hcb)
+    · rw [add_sub_cancel]
 
 end Commutative
 
