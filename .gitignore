@@ -15,3 +15,7 @@
 *.blg
 *.fdb_latexmk
 *.parsectoc
+
+# Lean
+.lake/
+*.swp

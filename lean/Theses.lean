@@ -1,0 +1,32 @@
+-- Root module: imports the complete formalization of both theses.
+-- See README.md and CONVENTIONS.md.
+import Theses.Common
+import Theses.A.CStar.Basic
+import Theses.A.CStar.Positive
+import Theses.A.CStar.Representation
+import Theses.A.CStar.Matrices
+import Theses.A.CStar.TowardsVN
+import Theses.A.VN.Basic
+import Theses.A.VN.Projections
+import Theses.A.VN.Completeness
+import Theses.A.VN.Division
+import Theses.A.VN.NormalFunctionals
+import Theses.A.Proc.Measurement
+import Theses.A.Proc.Tensor
+import Theses.A.Proc.QuantumLambda
+import Theses.A.Proc.Duplicators
+import Theses.B.Dils.Stinespring
+import Theses.B.Dils.HilbertModules
+import Theses.B.Dils.SelfDualCompletion
+import Theses.B.Dils.Paschke
+import Theses.B.Dils.Kaplansky
+import Theses.B.Dils.SelfDual
+import Theses.B.Dils.Pure
+import Theses.B.Eff.EffectAlgebras
+import Theses.B.Eff.Effectus
+import Theses.B.Eff.WStarCat
+import Theses.B.Eff.StatesPredicates
+import Theses.B.Eff.Quotients
+import Theses.B.Eff.DiamondAmp
+import Theses.B.Eff.Dagger
+import Theses.B.Eff.Comparisons
