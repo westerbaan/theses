@@ -200,11 +200,38 @@ Suggested order, easiest first:
 
 ### The workflow that worked
 
-Per `sorry`: **(a)** look for the Mathlib lemma first — many statements close
-in one line; **(b)** otherwise read the thesis's own proof — in the `.tex`,
-nearly every statement point is immediately followed by a `{Proof}` point,
-and each Lean doc comment gives `file:LINE`; **(c)** exercise solutions are in
-`../asols.tex` / `../bsols.tex`.
+**The thesis's proof comes first — Mathlib is the fallback, not the default.**
+Session 2 ran it the other way round ("try Mathlib first, it often closes in one
+line") and that was wrong.  A one-line Mathlib closure proves the statement true
+and cross-checks *nothing*; errata exist only where the two arguments are
+compared.  When nine such proofs were later re-read against the authors'
+arguments, that single pass produced **four new errata**.
+
+Per `sorry`:
+
+**(a)** **Read the author's proof.**  In the `.tex`, nearly every statement
+point is immediately followed by a `{Proof}` point, and each Lean doc comment
+gives `file:LINE`.  Exercise solutions are in `../asols.tex` / `../bsols.tex`
+(mind the keying — see below).
+**(b)** **Transcribe that argument**, using Mathlib for the mechanical steps
+inside it.
+**(c)** **Only if it cannot be transcribed** — needs infrastructure Mathlib
+lacks, or is wrong — take a Mathlib route instead, and **log why**.
+
+**Respect the thesis's dependency order.**  Where the author deliberately avoids
+a big theorem because their development has not reached it, do not reach for
+Mathlib's version: the resulting proof is sound but checks none of the
+bootstrapping.  Two live examples, both flagged in PROVING-LOG.md: **9X.3**
+closed via `a*a ≥ 0`, which the thesis cannot have until **25I** (9X.5 lists even
+"`a²` is positive" as out of reach); and **11XV.3** closed via polynomial
+spectral mapping, when the author's factorisation *is* the elementary substitute
+for exactly that theorem.
+
+This is slower per `sorry`, deliberately.  If the author's argument is long and
+you cannot finish it, **park it with a note** saying how far you got — never
+substitute a Mathlib proof silently.  A one-liner remains fine when it genuinely
+*is* the author's argument, or when the doc comment says the item just records a
+Mathlib result.
 
 ⚠️ **The two solution files are keyed differently, and getting this wrong is
 silent.**  `bsols.tex` uses the LaTeX label the doc comment carries

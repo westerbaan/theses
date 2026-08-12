@@ -38,6 +38,18 @@ So the workflow per `sorry` is: find the thesis's own proof, then transcribe
 it into Lean.  When parking an item, note whether the thesis has a proof you
 couldn't transcribe or leaves it to the reader.
 
+**The author's proof takes precedence over a Mathlib shortcut.**  Reach for
+Mathlib only for the mechanical steps *inside* the author's argument, or when
+that argument genuinely cannot be transcribed — and say so when you do.  A
+one-line Mathlib closure proves the statement but cross-checks nothing, and
+cross-checking is what produces errata: re-reading nine such proofs against the
+authors' arguments yielded four new errata in one pass.
+
+This extends to **dependency order**.  Where the thesis deliberately avoids a
+theorem it has not yet reached, do not substitute Mathlib's version — the proof
+will be sound and will validate none of the bootstrapping.  See the
+"development-order divergences" under session 2 (9X.3, 11XV.3).
+
 **Record every divergence, not just repairs.**  The authors need to know which
 statements have actually been cross-checked against their arguments.  Four
 cases, all worth logging:
