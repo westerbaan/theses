@@ -410,6 +410,23 @@ private theorem le_of_re_inner {S T : H →L[ℂ] H} (hS : IsSelfAdjoint S) (hT 
   rw [hcomm]
   exact ⟨by simpa using hre, by simpa using hnn⟩
 
+/-- The diagonal values `⟪x, T x⟫` of a self-adjoint operator are real.
+(Auxiliary for **37IX**.) -/
+private theorem inner_self_im_eq_zero (S : selfAdjoint (H →L[ℂ] H)) (x : H) :
+    (⟪x, (S : H →L[ℂ] H) x⟫).im = 0 := by
+  rw [← inner_self_ofReal_re S.2 x]
+  simp
+
+/-- For a WOT-convergent net of self-adjoint operators the (real) diagonal
+values converge to those of the limit.  (Auxiliary for **37IX**.) -/
+private theorem re_diag_tendsto_of_wot {D : Set (selfAdjoint (H →L[ℂ] H))}
+    {T' : selfAdjoint (H →L[ℂ] H)}
+    (hT' : Tendsto (fun T : D => ContinuousLinearMapWOT.ofCLM ((T.1 : H →L[ℂ] H)))
+      atTop (𝓝 (ContinuousLinearMapWOT.ofCLM (T' : H →L[ℂ] H)))) (x : H) :
+    Tendsto (fun T : D => (⟪x, (T.1 : H →L[ℂ] H) x⟫).re) atTop
+      (𝓝 (⟪x, (T' : H →L[ℂ] H) x⟫).re) :=
+  (Complex.continuous_re.tendsto _).comp ((swot_tendsto_iff _ _).mp hT' x)
+
 /-- **37IX** (`hilb-suprema`, cstar.tex:6223, Proposition), part 1: an upwards
 directed set `D` of self-adjoint operators on a Hilbert space `H` with
 `sup_{T ∈ D} ⟪x, T x⟫ < ∞` for all `x ∈ H` — viewed as the net `(T)_{T ∈ D}`
@@ -421,8 +438,87 @@ theorem hilb_suprema_1 (D : Set (selfAdjoint (H →L[ℂ] H)))
       BddAbove ((fun T : selfAdjoint (H →L[ℂ] H) => ⟪x, (T : H →L[ℂ] H) x⟫) '' D)) :
     ∃ T' : selfAdjoint (H →L[ℂ] H),
       Tendsto (fun T : D => ContinuousLinearMapWOT.ofCLM ((T.1 : H →L[ℂ] H)))
-        atTop (𝓝 (ContinuousLinearMapWOT.ofCLM (T' : H →L[ℂ] H))) :=
-  sorry
+        atTop (𝓝 (ContinuousLinearMapWOT.ofCLM (T' : H →L[ℂ] H))) := by
+  classical
+  obtain ⟨d₀, hd₀⟩ := hne
+  have : Nonempty D := ⟨⟨d₀, hd₀⟩⟩
+  have : IsDirectedOrder D := directedOn_iff_isDirectedOrder.mp hdir
+  have hreal : ∀ (x : H) (S : selfAdjoint (H →L[ℂ] H)),
+      (((⟪x, (S : H →L[ℂ] H) x⟫).re : ℝ) : ℂ) = ⟪x, (S : H →L[ℂ] H) x⟫ :=
+    fun x S => inner_self_ofReal_re S.2 x
+  have hmono : ∀ x : H, Monotone fun T : D => (⟪x, (T.1 : H →L[ℂ] H) x⟫).re :=
+    fun x _ _ hST => re_inner_mono hST x
+  have hbddR : ∀ x : H, BddAbove (Set.range fun T : D => (⟪x, (T.1 : H →L[ℂ] H) x⟫).re) := by
+    intro x
+    obtain ⟨c, hc⟩ := hbdd x
+    refine ⟨c.re, ?_⟩
+    rintro _ ⟨T, rfl⟩
+    exact (RCLike.le_iff_re_im.mp (hc ⟨T.1, T.2, rfl⟩)).1
+  have htendR : ∀ x : H, Tendsto (fun T : D => (⟪x, (T.1 : H →L[ℂ] H) x⟫).re) atTop
+      (𝓝 (⨆ T : D, (⟪x, (T.1 : H →L[ℂ] H) x⟫).re)) :=
+    fun x => tendsto_atTop_ciSup (hmono x) (hbddR x)
+  have htendC : ∀ x : H, Tendsto (fun T : D => ⟪x, (T.1 : H →L[ℂ] H) x⟫) atTop
+      (𝓝 (((⨆ T : D, (⟪x, (T.1 : H →L[ℂ] H) x⟫).re : ℝ) : ℂ))) := fun x =>
+    Filter.Tendsto.congr (fun T => hreal x T.1)
+      ((Complex.continuous_ofReal.tendsto _).comp (htendR x))
+  -- the *cofinal tail* above `d₀`, on which the net is norm-bounded
+  obtain ⟨F, hFdef⟩ : ∃ F : D → selfAdjoint (H →L[ℂ] H),
+      ∀ T, F T = if (⟨d₀, hd₀⟩ : D) ≤ T then T.1 else d₀ := ⟨_, fun _ => rfl⟩
+  have hFpos : ∀ T : D, (⟨d₀, hd₀⟩ : D) ≤ T → F T = T.1 := fun T h => by
+    rw [hFdef T]; simp [h]
+  have hFneg : ∀ T : D, ¬ ((⟨d₀, hd₀⟩ : D) ≤ T) → F T = d₀ := fun T h => by
+    rw [hFdef T]; simp [h]
+  have hFev : ∀ᶠ T in (atTop : Filter D), F T = T.1 := by
+    filter_upwards [eventually_ge_atTop (⟨d₀, hd₀⟩ : D)] with T hT using hFpos T hT
+  have hFtendC : ∀ x : H, Tendsto (fun T : D => ⟪x, (F T : H →L[ℂ] H) x⟫) atTop
+      (𝓝 (((⨆ T : D, (⟪x, (T.1 : H →L[ℂ] H) x⟫).re : ℝ) : ℂ))) := by
+    intro x
+    refine (htendC x).congr' ?_
+    filter_upwards [hFev] with T hT
+    rw [hT]
+  have hFcauchy : ∀ x : H, Cauchy (atTop.map fun T : D => ⟪x, (F T : H →L[ℂ] H) x⟫) :=
+    fun x => (hFtendC x).cauchy_map
+  have hFnbdd : ∀ x : H, BddAbove (Set.range fun T : D => ‖⟪x, (F T : H →L[ℂ] H) x⟫‖) := by
+    intro x
+    obtain ⟨c, hc⟩ := hbddR x
+    refine ⟨|(⟪x, (d₀ : H →L[ℂ] H) x⟫).re| + |c|, ?_⟩
+    rintro _ ⟨T, rfl⟩
+    have hnorm : ‖⟪x, (F T : H →L[ℂ] H) x⟫‖ = |(⟪x, (F T : H →L[ℂ] H) x⟫).re| := by
+      conv_lhs => rw [← hreal x (F T)]
+      exact RCLike.norm_ofReal _
+    have hlow : (⟪x, (d₀ : H →L[ℂ] H) x⟫).re ≤ (⟪x, (F T : H →L[ℂ] H) x⟫).re := by
+      by_cases h : (⟨d₀, hd₀⟩ : D) ≤ T
+      · rw [hFpos T h]; exact re_inner_mono h x
+      · rw [hFneg T h]
+    have hup : (⟪x, (F T : H →L[ℂ] H) x⟫).re ≤ c := by
+      by_cases h : (⟨d₀, hd₀⟩ : D) ≤ T
+      · rw [hFpos T h]; exact hc (Set.mem_range_self T)
+      · rw [hFneg T h]; exact hc (Set.mem_range_self (⟨d₀, hd₀⟩ : D))
+    simp only [hnorm, abs_le]
+    have h1 := neg_abs_le (⟪x, (d₀ : H →L[ℂ] H) x⟫).re
+    have h2 := le_abs_self c
+    have h3 := abs_nonneg c
+    have h4 := abs_nonneg (⟪x, (d₀ : H →L[ℂ] H) x⟫).re
+    constructor <;> linarith
+  obtain ⟨T₀, hT₀⟩ := bh_wot_bounded_complete (fun T : D => (F T : H →L[ℂ] H))
+    hFcauchy hFnbdd
+  have hdiag : ∀ x : H, Tendsto (fun T : D => ⟪x, (F T : H →L[ℂ] H) x⟫) atTop (𝓝 ⟪x, T₀ x⟫) :=
+    (swot_tendsto_iff (fun T : D => (F T : H →L[ℂ] H)) T₀).mp hT₀
+  have hT₀val : ∀ x : H,
+      (⟪x, T₀ x⟫ : ℂ) = ((⨆ T : D, (⟪x, (T.1 : H →L[ℂ] H) x⟫).re : ℝ) : ℂ) :=
+    fun x => tendsto_nhds_unique (hdiag x) (hFtendC x)
+  have hsa : IsSelfAdjoint T₀ := by
+    rw [ContinuousLinearMap.isSelfAdjoint_iff_isSymmetric,
+      LinearMap.isSymmetric_iff_inner_map_self_real]
+    intro v
+    have h2 : (⟪T₀ v, v⟫ : ℂ) = ((⨆ T : D, (⟪v, (T.1 : H →L[ℂ] H) v⟫).re : ℝ) : ℂ) := by
+      rw [← inner_conj_symm (T₀ v) v, hT₀val v, Complex.conj_ofReal]
+    simp only [ContinuousLinearMap.coe_coe]
+    rw [h2, Complex.conj_ofReal]
+  refine ⟨⟨T₀, hsa⟩, ?_⟩
+  refine hT₀.congr' ?_
+  filter_upwards [hFev] with T hT
+  rw [hT]
 
 /-- **37IX** (`hilb-suprema`, cstar.tex:6223, Proposition), part 2: the WOT
 limit `T'` of such a directed set `D` (cf. `hilb_suprema_1`) is the supremum
@@ -434,8 +530,22 @@ theorem hilb_suprema_2 (D : Set (selfAdjoint (H →L[ℂ] H)))
     (T' : selfAdjoint (H →L[ℂ] H))
     (hT' : Tendsto (fun T : D => ContinuousLinearMapWOT.ofCLM ((T.1 : H →L[ℂ] H)))
       atTop (𝓝 (ContinuousLinearMapWOT.ofCLM (T' : H →L[ℂ] H)))) :
-    IsLUB D T' :=
-  sorry
+    IsLUB D T' := by
+  obtain ⟨d₀, hd₀⟩ := hne
+  have : Nonempty D := ⟨⟨d₀, hd₀⟩⟩
+  have : IsDirectedOrder D := directedOn_iff_isDirectedOrder.mp hdir
+  constructor
+  · intro S hS
+    rw [← Subtype.coe_le_coe]
+    refine le_of_re_inner S.2 T'.2 fun x => ?_
+    refine ge_of_tendsto (re_diag_tendsto_of_wot hT' x) ?_
+    filter_upwards [eventually_ge_atTop (⟨S, hS⟩ : D)] with T hT
+    exact re_inner_mono hT x
+  · intro S hS
+    rw [← Subtype.coe_le_coe]
+    refine le_of_re_inner T'.2 S.2 fun x => ?_
+    refine le_of_tendsto (re_diag_tendsto_of_wot hT' x) (Eventually.of_forall fun T => ?_)
+    exact re_inner_mono (hS T.2) x
 
 /-- **37IX** (`hilb-suprema`, cstar.tex:6223, Proposition), part 3: for the
 WOT limit `T'` of such a directed set `D` one has
@@ -450,8 +560,25 @@ theorem hilb_suprema_3 (D : Set (selfAdjoint (H →L[ℂ] H)))
       atTop (𝓝 (ContinuousLinearMapWOT.ofCLM (T' : H →L[ℂ] H))))
     (x : H) :
     IsLUB ((fun T : selfAdjoint (H →L[ℂ] H) => ⟪x, (T : H →L[ℂ] H) x⟫) '' D)
-      ⟪x, (T' : H →L[ℂ] H) x⟫ :=
-  sorry
+      ⟪x, (T' : H →L[ℂ] H) x⟫ := by
+  obtain ⟨d₀, hd₀⟩ := hne
+  have : Nonempty D := ⟨⟨d₀, hd₀⟩⟩
+  have : IsDirectedOrder D := directedOn_iff_isDirectedOrder.mp hdir
+  constructor
+  · rintro _ ⟨S, hS, rfl⟩
+    rw [Complex.le_def]
+    refine ⟨?_, by rw [inner_self_im_eq_zero S, inner_self_im_eq_zero T']⟩
+    refine ge_of_tendsto (re_diag_tendsto_of_wot hT' x) ?_
+    filter_upwards [eventually_ge_atTop (⟨S, hS⟩ : D)] with T hT
+    exact re_inner_mono hT x
+  · intro c hc
+    have hcim : c.im = 0 := by
+      have h := Complex.le_def.mp (hc ⟨d₀, hd₀, rfl⟩)
+      rw [← h.2, inner_self_im_eq_zero d₀]
+    rw [Complex.le_def]
+    refine ⟨?_, by rw [inner_self_im_eq_zero T', hcim]⟩
+    refine le_of_tendsto (re_diag_tendsto_of_wot hT' x) (Eventually.of_forall fun T => ?_)
+    exact (Complex.le_def.mp (hc ⟨T.1, T.2, rfl⟩)).1
 
 /-- **37XI** (cstar.tex:6281, Definition), well-definedness claim: every
 nonempty norm-bounded directed subset `D` of the self-adjoint part of B(H)
@@ -460,8 +587,24 @@ pointwise bounds `sup_{T ∈ D} ⟪x, T x⟫ < ∞`). -/
 theorem exists_isLUB_of_normBounded_directed (D : Set (selfAdjoint (H →L[ℂ] H)))
     (hne : D.Nonempty) (hdir : DirectedOn (· ≤ ·) D)
     (hbdd : ∃ C : ℝ, ∀ T ∈ D, ‖(T : H →L[ℂ] H)‖ ≤ C) :
-    ∃ s : selfAdjoint (H →L[ℂ] H), IsLUB D s :=
-  sorry
+    ∃ s : selfAdjoint (H →L[ℂ] H), IsLUB D s := by
+  obtain ⟨C, hC⟩ := hbdd
+  have hb : ∀ x : H,
+      BddAbove ((fun T : selfAdjoint (H →L[ℂ] H) => ⟪x, (T : H →L[ℂ] H) x⟫) '' D) := by
+    intro x
+    refine ⟨((C * ‖x‖ ^ 2 : ℝ) : ℂ), ?_⟩
+    rintro _ ⟨T, hT, rfl⟩
+    rw [Complex.le_def]
+    refine ⟨?_, by rw [inner_self_im_eq_zero T, Complex.ofReal_im]⟩
+    rw [Complex.ofReal_re]
+    calc (⟪x, (T : H →L[ℂ] H) x⟫).re ≤ ‖⟪x, (T : H →L[ℂ] H) x⟫‖ := Complex.re_le_norm _
+      _ ≤ ‖x‖ * ‖(T : H →L[ℂ] H) x‖ := norm_inner_le_norm _ _
+      _ ≤ ‖x‖ * (C * ‖x‖) := by
+          gcongr
+          exact ((T : H →L[ℂ] H).le_opNorm x).trans (by gcongr; exact hC T hT)
+      _ = C * ‖x‖ ^ 2 := by ring
+  obtain ⟨T', hT'⟩ := hilb_suprema_1 D hne hdir hb
+  exact ⟨T', hilb_suprema_2 D hne hdir hb T' hT'⟩
 
 /-- **37XI** (cstar.tex:6281, Definition): the supremum `⋁ D` of a nonempty
 norm-bounded directed subset `D` of the self-adjoint part of B(H), which
@@ -499,8 +642,50 @@ abbrev BHNormal (ω : (H →L[ℂ] H) → ℂ) : Prop :=
 /-- **38II** (cstar.tex:6307, Example): all vector functionals `⟪x, (·) x⟫` on
 B(H) are normal, by **37IX**. -/
 theorem vector_functional_normal (x : H) :
-    BHNormal (fun T : H →L[ℂ] H => ⟪x, T x⟫) :=
-  sorry
+    BHNormal (fun T : H →L[ℂ] H => ⟪x, T x⟫) := by
+  intro D s hne hdir hlub
+  have hb : ∀ y : H,
+      BddAbove ((fun T : selfAdjoint (H →L[ℂ] H) => ⟪y, (T : H →L[ℂ] H) y⟫) '' D) := by
+    intro y
+    refine ⟨⟪y, (s : H →L[ℂ] H) y⟫, ?_⟩
+    rintro _ ⟨T, hT, rfl⟩
+    rw [Complex.le_def]
+    exact ⟨re_inner_mono (Subtype.coe_le_coe.mpr (hlub.1 hT)) y,
+      by rw [inner_self_im_eq_zero T, inner_self_im_eq_zero s]⟩
+  obtain ⟨T', hT'⟩ := hilb_suprema_1 D hne hdir hb
+  have h3 := hilb_suprema_3 D hne hdir hb T' hT' x
+  rwa [(hilb_suprema_2 D hne hdir hb T' hT').unique hlub] at h3
+
+/-- An operator whose diagonal values are all real is self-adjoint.
+(Auxiliary for **38III**.) -/
+private theorem isSelfAdjoint_of_re_diag {T : H →L[ℂ] H}
+    (h : ∀ x : H, (((⟪x, T x⟫).re : ℝ) : ℂ) = ⟪x, T x⟫) : IsSelfAdjoint T := by
+  rw [ContinuousLinearMap.isSelfAdjoint_iff_isSymmetric,
+    LinearMap.isSymmetric_iff_inner_map_self_real]
+  intro v
+  have h2 : (⟪T v, v⟫ : ℂ) = (((⟪v, T v⟫).re : ℝ) : ℂ) := by
+    rw [← inner_conj_symm (T v) v, ← h v, Complex.conj_ofReal, Complex.ofReal_re]
+  simp only [ContinuousLinearMap.coe_coe]
+  rw [h2, Complex.conj_ofReal]
+
+/-- Multiplication by a nonnegative real is monotone for the order on `ℂ`.
+(Auxiliary for **38III**.) -/
+private theorem ofReal_mul_le_ofReal_mul {r : ℝ} (hr : 0 ≤ r) {z w : ℂ} (h : z ≤ w) :
+    (r : ℂ) * z ≤ (r : ℂ) * w := by
+  rw [Complex.le_def] at h ⊢
+  refine ⟨?_, ?_⟩
+  · rw [Complex.re_ofReal_mul, Complex.re_ofReal_mul]
+    exact mul_le_mul_of_nonneg_left h.1 hr
+  · rw [Complex.im_ofReal_mul, Complex.im_ofReal_mul, h.2]
+
+/-- Bound on the diagonal values of a bounded operator.  (Auxiliary for
+**38III**.) -/
+private theorem re_inner_le_norm_mul (T : H →L[ℂ] H) (x : H) :
+    (⟪x, T x⟫).re ≤ ‖T‖ * ‖x‖ ^ 2 := by
+  calc (⟪x, T x⟫).re ≤ ‖⟪x, T x⟫‖ := Complex.re_le_norm _
+    _ ≤ ‖x‖ * ‖T x‖ := norm_inner_le_norm _ _
+    _ ≤ ‖x‖ * (‖T‖ * ‖x‖) := by gcongr; exact T.le_opNorm _
+    _ = ‖T‖ * ‖x‖ ^ 2 := by ring
 
 /-- **38III** (`bh-normal-effects`, cstar.tex:6312, Exercise): a positive
 functional `ω : B(H) → ℂ` is normal provided it preserves suprema of directed
@@ -512,8 +697,147 @@ theorem bh_normal_effects (ω : (H →L[ℂ] H) →ₚ[ℂ] ℂ)
       IsLUB D s →
       IsLUB ((fun d : selfAdjoint (H →L[ℂ] H) => ω (d : H →L[ℂ] H)) '' D)
         (ω (s : H →L[ℂ] H))) :
-    BHNormal (⇑ω) :=
-  sorry
+    BHNormal (⇑ω) := by
+  intro D s hne hdir hlub
+  obtain ⟨d₀, hd₀⟩ := hne
+  set M : ℝ := ‖(s : H →L[ℂ] H) - (d₀ : H →L[ℂ] H)‖ + 1 with hMdef
+  have hM : 0 < M := by positivity
+  -- the affine rescaling `a ↦ M⁻¹ (a - d₀)` and its diagonal values
+  have hdiag : ∀ (r : ℝ) (a b : H →L[ℂ] H) (x : H),
+      ⟪x, (((r : ℝ) : ℂ) • (a - b)) x⟫ = ((r : ℝ) : ℂ) * (⟪x, a x⟫ - ⟪x, b x⟫) := by
+    intro r a b x
+    rw [ContinuousLinearMap.smul_apply, ContinuousLinearMap.sub_apply, inner_smul_right,
+      inner_sub_right]
+  have hdiagre : ∀ (r : ℝ) (a b : H →L[ℂ] H) (x : H),
+      (⟪x, (((r : ℝ) : ℂ) • (a - b)) x⟫).re = r * ((⟪x, a x⟫).re - (⟪x, b x⟫).re) := by
+    intro r a b x
+    rw [hdiag, Complex.re_ofReal_mul, Complex.sub_re]
+  have hsaSub : ∀ (r : ℝ) (a b : selfAdjoint (H →L[ℂ] H)),
+      IsSelfAdjoint (((r : ℝ) : ℂ) • ((a : H →L[ℂ] H) - (b : H →L[ℂ] H))) := by
+    intro r a b
+    refine isSelfAdjoint_of_re_diag fun x => ?_
+    obtain ⟨u, hu⟩ : ∃ u : ℝ, (⟪x, (a : H →L[ℂ] H) x⟫ : ℂ) = (u : ℂ) :=
+      ⟨_, (inner_self_ofReal_re a.2 x).symm⟩
+    obtain ⟨v, hv⟩ : ∃ v : ℝ, (⟪x, (b : H →L[ℂ] H) x⟫ : ℂ) = (v : ℂ) :=
+      ⟨_, (inner_self_ofReal_re b.2 x).symm⟩
+    rw [hdiag, hu, hv]
+    norm_num
+  have hsaAdd : ∀ (r : ℝ) (a b : selfAdjoint (H →L[ℂ] H)),
+      IsSelfAdjoint (((r : ℝ) : ℂ) • (a : H →L[ℂ] H) + (b : H →L[ℂ] H)) := by
+    intro r a b
+    refine isSelfAdjoint_of_re_diag fun x => ?_
+    obtain ⟨u, hu⟩ : ∃ u : ℝ, (⟪x, (a : H →L[ℂ] H) x⟫ : ℂ) = (u : ℂ) :=
+      ⟨_, (inner_self_ofReal_re a.2 x).symm⟩
+    obtain ⟨v, hv⟩ : ∃ v : ℝ, (⟪x, (b : H →L[ℂ] H) x⟫ : ℂ) = (v : ℂ) :=
+      ⟨_, (inner_self_ofReal_re b.2 x).symm⟩
+    rw [ContinuousLinearMap.add_apply, inner_add_right, ContinuousLinearMap.smul_apply,
+      inner_smul_right, hu, hv]
+    norm_num
+  set g : selfAdjoint (H →L[ℂ] H) → selfAdjoint (H →L[ℂ] H) := fun a =>
+    ⟨((M⁻¹ : ℝ) : ℂ) • ((a : H →L[ℂ] H) - (d₀ : H →L[ℂ] H)), hsaSub M⁻¹ a d₀⟩ with hgdef
+  have hMinv : (0 : ℝ) < M⁻¹ := by positivity
+  -- `g` is an order isomorphism of the self-adjoint part
+  have hgmono : ∀ a b : selfAdjoint (H →L[ℂ] H), a ≤ b ↔ g a ≤ g b := by
+    intro a b
+    constructor
+    · intro hab
+      rw [← Subtype.coe_le_coe]
+      refine le_of_re_inner (hsaSub M⁻¹ a d₀) (hsaSub M⁻¹ b d₀) fun x => ?_
+      rw [hdiagre, hdiagre]
+      have h1 := re_inner_mono (Subtype.coe_le_coe.mpr hab) x
+      nlinarith
+    · intro hab
+      rw [← Subtype.coe_le_coe]
+      refine le_of_re_inner a.2 b.2 fun x => ?_
+      have h1 := re_inner_mono (Subtype.coe_le_coe.mpr hab) x
+      rw [hdiagre, hdiagre] at h1
+      nlinarith
+  have hgsurj : ∀ t : selfAdjoint (H →L[ℂ] H), ∃ u, g u = t := by
+    intro t
+    refine ⟨⟨((M : ℝ) : ℂ) • (t : H →L[ℂ] H) + (d₀ : H →L[ℂ] H), hsaAdd M t d₀⟩, ?_⟩
+    apply Subtype.ext
+    change ((M⁻¹ : ℝ) : ℂ) • ((((M : ℝ) : ℂ) • (t : H →L[ℂ] H) + (d₀ : H →L[ℂ] H))
+      - (d₀ : H →L[ℂ] H)) = (t : H →L[ℂ] H)
+    rw [add_sub_cancel_right, smul_smul, ← Complex.ofReal_mul, inv_mul_cancel₀ hM.ne',
+      Complex.ofReal_one, one_smul]
+  -- the cofinal tail above `d₀` has the same supremum
+  have hD₀dir : DirectedOn (· ≤ ·) {d ∈ D | d₀ ≤ d} := by
+    rintro a ⟨haD, ha0⟩ b ⟨hbD, _⟩
+    obtain ⟨c, hcD, hac, hbc⟩ := hdir a haD b hbD
+    exact ⟨c, ⟨hcD, ha0.trans hac⟩, hac, hbc⟩
+  have hD₀lub : IsLUB {d ∈ D | d₀ ≤ d} s := by
+    constructor
+    · rintro a ⟨haD, _⟩
+      exact hlub.1 haD
+    · intro t ht
+      refine hlub.2 fun a haD => ?_
+      obtain ⟨c, hcD, hac, h0c⟩ := hdir a haD d₀ hd₀
+      exact hac.trans (ht ⟨hcD, h0c⟩)
+  -- the rescaled tail is a directed set of effects with supremum `g s`
+  have hEne : (g '' {d ∈ D | d₀ ≤ d}).Nonempty :=
+    ⟨g d₀, Set.mem_image_of_mem g ⟨hd₀, le_refl _⟩⟩
+  have hEdir : DirectedOn (· ≤ ·) (g '' {d ∈ D | d₀ ≤ d}) := by
+    rintro _ ⟨a, ha, rfl⟩ _ ⟨b, hb, rfl⟩
+    obtain ⟨c, hc, hac, hbc⟩ := hD₀dir a ha b hb
+    exact ⟨g c, Set.mem_image_of_mem g hc, (hgmono a c).mp hac, (hgmono b c).mp hbc⟩
+  have hEeff : ∀ T ∈ g '' {d ∈ D | d₀ ≤ d},
+      0 ≤ (T : H →L[ℂ] H) ∧ (T : H →L[ℂ] H) ≤ 1 := by
+    rintro _ ⟨a, ⟨haD, ha0⟩, rfl⟩
+    have h1 := re_inner_mono (Subtype.coe_le_coe.mpr ha0)
+    have h2 := re_inner_mono (Subtype.coe_le_coe.mpr (hlub.1 haD))
+    constructor
+    · refine le_of_re_inner (star_zero _) (hsaSub M⁻¹ a d₀) fun x => ?_
+      rw [hdiagre]
+      simp only [ContinuousLinearMap.zero_apply, inner_zero_right, Complex.zero_re]
+      nlinarith [h1 x]
+    · refine le_of_re_inner (hsaSub M⁻¹ a d₀) (star_one _) fun x => ?_
+      rw [hdiagre]
+      have h3 : (⟪x, ((s : H →L[ℂ] H) - (d₀ : H →L[ℂ] H)) x⟫).re ≤ (M - 1) * ‖x‖ ^ 2 := by
+        simpa [hMdef] using re_inner_le_norm_mul ((s : H →L[ℂ] H) - (d₀ : H →L[ℂ] H)) x
+      rw [ContinuousLinearMap.sub_apply, inner_sub_right, Complex.sub_re] at h3
+      have h4 : (⟪x, (1 : H →L[ℂ] H) x⟫).re = ‖x‖ ^ 2 := by
+        simpa using inner_self_eq_norm_sq (𝕜 := ℂ) x
+      have h5 : (0 : ℝ) ≤ ‖x‖ ^ 2 := by positivity
+      have h6 : M⁻¹ * M = 1 := inv_mul_cancel₀ hM.ne'
+      rw [h4]
+      nlinarith [h2 x]
+  have hElub : IsLUB (g '' {d ∈ D | d₀ ≤ d}) (g s) := by
+    constructor
+    · rintro _ ⟨a, ha, rfl⟩
+      exact (hgmono a s).mp (hD₀lub.1 ha)
+    · intro t ht
+      obtain ⟨u, rfl⟩ := hgsurj t
+      exact (hgmono s u).mp
+        (hD₀lub.2 fun a ha => (hgmono a u).mpr (ht (Set.mem_image_of_mem g ha)))
+  have hkey := h (g '' {d ∈ D | d₀ ≤ d}) (g s) hEne hEdir hEeff hElub
+  -- transport back along `ω (g a) = M⁻¹ (ω a - ω d₀)`
+  have hωg : ∀ a : selfAdjoint (H →L[ℂ] H),
+      ω ((g a : H →L[ℂ] H)) =
+        ((M⁻¹ : ℝ) : ℂ) * (ω (a : H →L[ℂ] H) - ω (d₀ : H →L[ℂ] H)) := by
+    intro a
+    change ω (((M⁻¹ : ℝ) : ℂ) • ((a : H →L[ℂ] H) - (d₀ : H →L[ℂ] H))) = _
+    rw [map_smul, map_sub, smul_eq_mul]
+  constructor
+  · rintro _ ⟨a, haD, rfl⟩
+    exact OrderHomClass.mono ω (Subtype.coe_le_coe.mpr (hlub.1 haD))
+  · intro c hc
+    have hub : ((M⁻¹ : ℝ) : ℂ) * (c - ω (d₀ : H →L[ℂ] H)) ∈
+        upperBounds ((fun d : selfAdjoint (H →L[ℂ] H) => ω (d : H →L[ℂ] H)) ''
+          (g '' {d ∈ D | d₀ ≤ d})) := by
+      rintro _ ⟨_, ⟨a, ⟨haD, _⟩, rfl⟩, rfl⟩
+      change ω ((g a : H →L[ℂ] H)) ≤ _
+      rw [hωg a]
+      exact ofReal_mul_le_ofReal_mul hMinv.le
+        (sub_le_sub_right (hc (Set.mem_image_of_mem _ haD)) _)
+    have h7 := hkey.2 hub
+    rw [hωg s] at h7
+    have h8 := ofReal_mul_le_ofReal_mul (le_of_lt hM) h7
+    have h9 : ∀ z : ℂ, ((M : ℝ) : ℂ) * (((M⁻¹ : ℝ) : ℂ) * z) = z := by
+      intro z
+      rw [← mul_assoc, ← Complex.ofReal_mul, mul_inv_cancel₀ hM.ne', Complex.ofReal_one,
+        one_mul]
+    rw [h9, h9] at h8
+    exact (sub_le_sub_iff_right _).mp h8
 
 /-- **38IV** (`bh-functional-lemma`, cstar.tex:6321, Lemma), part 1
 (convergence): for a sequence `x₁, x₂, …` in a Hilbert space `H` with
@@ -552,8 +876,54 @@ only if `∑_α ⟪x_α, (·) x_α⟫` converges with respect to the operator no
 some bounded functional on B(H). -/
 theorem vector_functional_convergence_1 {ι : Type*} (x : ι → H) :
     (Summable fun α => ‖x α‖ ^ 2) ↔
-      ∃ φ : (H →L[ℂ] H) →L[ℂ] ℂ, HasSum (fun α => vectorFunctionalCLM (x α)) φ :=
-  sorry
+      ∃ φ : (H →L[ℂ] H) →L[ℂ] ℂ, HasSum (fun α => vectorFunctionalCLM (x α)) φ := by
+  classical
+  have hnorm : ∀ α, ‖vectorFunctionalCLM (x α)‖ ≤ ‖x α‖ ^ 2 := by
+    intro α
+    refine ContinuousLinearMap.opNorm_le_bound _ (by positivity) fun T => ?_
+    calc ‖vectorFunctionalCLM (x α) T‖ = ‖⟪x α, T (x α)⟫‖ := rfl
+      _ ≤ ‖x α‖ * ‖T (x α)‖ := norm_inner_le_norm _ _
+      _ ≤ ‖x α‖ * (‖T‖ * ‖x α‖) := by gcongr; exact T.le_opNorm _
+      _ = ‖x α‖ ^ 2 * ‖T‖ := by ring
+  have hone : ‖(1 : H →L[ℂ] H)‖ ≤ 1 := by
+    simpa [ContinuousLinearMap.one_def] using
+      (ContinuousLinearMap.norm_id_le : ‖ContinuousLinearMap.id ℂ H‖ ≤ 1)
+  have hsum1 : ∀ G : Finset ι,
+      ((∑ α ∈ G, vectorFunctionalCLM (x α)) 1 : ℂ) = ((∑ α ∈ G, ‖x α‖ ^ 2 : ℝ) : ℂ) := by
+    intro G
+    rw [ContinuousLinearMap.sum_apply]
+    push_cast
+    refine Finset.sum_congr rfl fun α _ => ?_
+    rw [vectorFunctionalCLM_apply, ContinuousLinearMap.one_apply, inner_self_eq_norm_sq_to_K]
+    simp
+  have hle : ∀ G : Finset ι,
+      (∑ α ∈ G, ‖x α‖ ^ 2 : ℝ) ≤ ‖∑ α ∈ G, vectorFunctionalCLM (x α)‖ := by
+    intro G
+    have h1 : ‖((∑ α ∈ G, vectorFunctionalCLM (x α)) 1 : ℂ)‖ ≤
+        ‖∑ α ∈ G, vectorFunctionalCLM (x α)‖ * ‖(1 : H →L[ℂ] H)‖ :=
+      ContinuousLinearMap.le_opNorm _ _
+    rw [hsum1 G, Complex.norm_real, Real.norm_eq_abs] at h1
+    have h2 : (0 : ℝ) ≤ ∑ α ∈ G, ‖x α‖ ^ 2 := Finset.sum_nonneg fun α _ => by positivity
+    have h3 : (0 : ℝ) ≤ ‖∑ α ∈ G, vectorFunctionalCLM (x α)‖ := norm_nonneg _
+    rw [abs_of_nonneg h2] at h1
+    nlinarith
+  constructor
+  · intro hs
+    exact ⟨_, (Summable.of_norm_bounded hs hnorm).hasSum⟩
+  · rintro ⟨φ, hφ⟩
+    obtain ⟨F₀, hF₀⟩ := Filter.eventually_atTop.mp
+      (hφ.eventually (Metric.ball_mem_nhds φ one_pos))
+    refine summable_of_sum_le (c := ‖φ‖ + 1) (fun α => by positivity) fun F => ?_
+    calc (∑ α ∈ F, ‖x α‖ ^ 2) ≤ ∑ α ∈ F ∪ F₀, ‖x α‖ ^ 2 :=
+          Finset.sum_le_sum_of_subset_of_nonneg Finset.subset_union_left
+            fun α _ _ => by positivity
+      _ ≤ ‖∑ α ∈ F ∪ F₀, vectorFunctionalCLM (x α)‖ := hle _
+      _ ≤ ‖φ‖ + 1 := by
+          have hb := hF₀ (F ∪ F₀) Finset.subset_union_right
+          have hd : ‖(∑ α ∈ F ∪ F₀, vectorFunctionalCLM (x α)) - φ‖ < 1 := by
+            simpa [dist_eq_norm] using hb
+          have := norm_sub_norm_le (∑ α ∈ F ∪ F₀, vectorFunctionalCLM (x α)) φ
+          linarith
 
 /-- **38VI** (`vector-functional-convergence`, cstar.tex:6366, Exercise),
 part 2: for a net `(x_α)_α` in a Hilbert space `H` and `x ∈ H`, `x_α → x` if
@@ -718,12 +1088,114 @@ theorem sum_ketbras_2 (E : Set H) (hE : IsOrthonormalBasis E) :
     rw [hinner F x, Complex.ofReal_re] at hle
     exact hle
 
+/-- The action of a finite sum of `|e⟩⟨e|`.  (Auxiliary for **39VI**.) -/
+private theorem ketbra_sum_apply {E : Set H} (F : Finset E) (x : H) :
+    (∑ e ∈ F, ketbra (e : H) (e : H)) x = ∑ e ∈ F, ⟪(e : H), x⟫ • (e : H) := by
+  classical
+  induction F using Finset.induction with
+  | empty => simp
+  | insert e s he ih =>
+      rw [Finset.sum_insert he, Finset.sum_insert he, ContinuousLinearMap.add_apply, ih]
+      simp [ketbra]
+
+/-- The diagonal values of a finite sum of `|e⟩⟨e|`.  (Auxiliary for **39VI**.) -/
+private theorem ketbra_sum_inner {E : Set H} (F : Finset E) (x : H) :
+    ⟪x, (∑ e ∈ F, ketbra (e : H) (e : H)) x⟫ = ((∑ e ∈ F, ‖⟪(e : H), x⟫‖ ^ 2 : ℝ) : ℂ) := by
+  rw [ketbra_sum_apply F x, inner_sum]
+  push_cast
+  refine Finset.sum_congr rfl fun e _ => ?_
+  rw [inner_smul_right, ← inner_conj_symm x (e : H), Complex.mul_conj,
+    Complex.normSq_eq_norm_sq]
+  norm_cast
+
+/-- A finite sum of `|e⟩⟨e|` is self-adjoint.  (Auxiliary for **39VI**.) -/
+private theorem ketbra_sum_isSelfAdjoint {E : Set H} (F : Finset E) :
+    IsSelfAdjoint (∑ e ∈ F, ketbra (e : H) (e : H)) := by
+  rw [ContinuousLinearMap.isSelfAdjoint_iff_isSymmetric]
+  intro x y
+  simp only [ContinuousLinearMap.coe_coe, ketbra_sum_apply]
+  rw [sum_inner, inner_sum]
+  refine Finset.sum_congr rfl fun e _ => ?_
+  rw [inner_smul_left, inner_smul_right, ← inner_conj_symm x (e : H)]
+  ring
+
+/-- The finite sums of `|e⟩⟨e|` increase with the index set.  (Auxiliary for
+**39VI**.) -/
+private theorem ketbra_sum_mono {E : Set H} {F G : Finset E} (h : F ⊆ G) :
+    (∑ e ∈ F, ketbra (e : H) (e : H)) ≤ ∑ e ∈ G, ketbra (e : H) (e : H) :=
+  le_of_re_inner (ketbra_sum_isSelfAdjoint F) (ketbra_sum_isSelfAdjoint G) fun x => by
+    rw [ketbra_sum_inner, ketbra_sum_inner, Complex.ofReal_re, Complex.ofReal_re]
+    exact Finset.sum_le_sum_of_subset_of_nonneg h fun _ _ _ => by positivity
+
 /-- **39VI** (`sum-ketbras`, cstar.tex:6500, Exercise), part 3: consequently
 `ω 1 = ∑_{e ∈ E} ω (|e⟩⟨e|)` for every np-map `ω : B(H) → ℂ`. -/
 theorem sum_ketbras_3 (E : Set H) (hE : IsOrthonormalBasis E)
     (ω : NPFunctional (H →L[ℂ] H)) :
-    HasSum (fun e : E => ω (ketbra (e : H) (e : H))) (ω 1) :=
-  sorry
+    HasSum (fun e : E => ω (ketbra (e : H) (e : H))) (ω 1) := by
+  classical
+  have hmapsum : ∀ F : Finset E,
+      ω (∑ e ∈ F, ketbra (e : H) (e : H)) = ∑ e ∈ F, ω (ketbra (e : H) (e : H)) :=
+    fun F => map_sum ω.toPositiveLinearMap _ F
+  have hωnn : ∀ T : H →L[ℂ] H, 0 ≤ T → 0 ≤ ω T :=
+    fun _ hT => ω.toPositiveLinearMap.map_nonneg hT
+  have hone : IsSelfAdjoint (1 : H →L[ℂ] H) := star_one _
+  have hketnn : ∀ e : E, (0 : H →L[ℂ] H) ≤ ketbra (e : H) (e : H) := by
+    intro e
+    simpa using ketbra_sum_mono (F := (∅ : Finset E)) (G := {e}) (by simp)
+  -- the directed set of finite partial sums, in the self-adjoint part of B(H)
+  set f : Finset E → selfAdjoint (H →L[ℂ] H) := fun F =>
+    ⟨∑ e ∈ F, ketbra (e : H) (e : H), ketbra_sum_isSelfAdjoint F⟩ with hf
+  have hne : (Set.range f).Nonempty := ⟨f ∅, Set.mem_range_self _⟩
+  have hdir : DirectedOn (· ≤ ·) (Set.range f) := by
+    rintro _ ⟨F, rfl⟩ _ ⟨G, rfl⟩
+    exact ⟨f (F ∪ G), Set.mem_range_self _,
+      Subtype.coe_le_coe.mp (ketbra_sum_mono Finset.subset_union_left),
+      Subtype.coe_le_coe.mp (ketbra_sum_mono Finset.subset_union_right)⟩
+  have hlub : IsLUB (Set.range f) (⟨1, hone⟩ : selfAdjoint (H →L[ℂ] H)) := by
+    constructor
+    · rintro _ ⟨F, rfl⟩
+      exact Subtype.coe_le_coe.mp ((sum_ketbras_2 E hE).1 ⟨F, rfl⟩)
+    · intro t ht
+      refine Subtype.coe_le_coe.mp ((sum_ketbras_2 E hE).2 ?_)
+      rintro S ⟨F, rfl⟩
+      exact Subtype.coe_le_coe.mpr (ht (Set.mem_range_self F))
+  have hnormal := ω.preservesDirSups' (Set.range f) ⟨1, hone⟩ hne hdir hlub
+  -- the summands are nonnegative reals
+  have hre : ∀ e : E, ((((ω (ketbra (e : H) (e : H))).re : ℝ)) : ℂ)
+      = ω (ketbra (e : H) (e : H)) := by
+    intro e
+    have h := Complex.le_def.mp (hωnn _ (hketnn e))
+    exact Complex.conj_eq_iff_re.mp (Complex.conj_eq_iff_im.mpr h.2.symm)
+  have hnn : ∀ e : E, 0 ≤ (ω (ketbra (e : H) (e : H))).re :=
+    fun e => (Complex.le_def.mp (hωnn _ (hketnn e))).1
+  have hre1 : ((((ω (1 : H →L[ℂ] H)).re : ℝ)) : ℂ) = ω 1 := by
+    have h := Complex.le_def.mp (hωnn 1 zero_le_one)
+    exact Complex.conj_eq_iff_re.mp (Complex.conj_eq_iff_im.mpr h.2.symm)
+  -- the partial sums of the real parts have `(ω 1).re` as least upper bound
+  have hsumre : ∀ F : Finset E,
+      ((∑ e ∈ F, (ω (ketbra (e : H) (e : H))).re : ℝ) : ℂ)
+        = ω (∑ e ∈ F, ketbra (e : H) (e : H)) := by
+    intro F
+    rw [hmapsum F]
+    push_cast
+    exact Finset.sum_congr rfl fun e _ => hre e
+  have hlubR : IsLUB (Set.range fun F : Finset E => ∑ e ∈ F, (ω (ketbra (e : H) (e : H))).re)
+      ((ω (1 : H →L[ℂ] H)).re) := by
+    constructor
+    · rintro _ ⟨F, rfl⟩
+      rw [← Complex.real_le_real, hsumre F, hre1]
+      exact hnormal.1 ⟨f F, Set.mem_range_self F, rfl⟩
+    · intro c hc
+      rw [← Complex.real_le_real, hre1]
+      refine hnormal.2 ?_
+      rintro _ ⟨_, ⟨F, rfl⟩, rfl⟩
+      change ω (∑ e ∈ F, ketbra (e : H) (e : H)) ≤ (c : ℂ)
+      rw [← hsumre F, Complex.real_le_real]
+      exact hc (Set.mem_range_self F)
+  have hR := hasSum_of_isLUB_of_nonneg _ hnn hlubR
+  have h2 : HasSum (fun e : E => (((ω (ketbra (e : H) (e : H))).re : ℝ) : ℂ))
+      ((((ω (1 : H →L[ℂ] H)).re : ℝ)) : ℂ) := Complex.hasSum_ofReal.mpr hR
+  simpa only [hre, hre1] using h2
 
 /-- **39VII** (`bh-np-lemma`, cstar.tex:6521, Lemma): for a Hilbert space `H`
 with orthonormal basis `E`, a normal positive functional `ω : B(H) → ℂ`, and

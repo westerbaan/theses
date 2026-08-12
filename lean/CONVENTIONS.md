@@ -51,9 +51,13 @@ tree, with **zero genuine violations**.  Two extensions cover the exceptions:
 * parsec not a multiple of 10 → letter suffix on the *parsec*:
   `201` → **20a**, `341` → **34a**, `842` → **84b**.
 
-Two further facts worth knowing: every solution in `asols.tex` is for a
-`cstar.tex` exercise (parsecs 40–340 — there are none for `vn.tex` or
-`proc.tex`); and **there is no `aerr.tex`** — thesis A's 27 errata and addenda
+Two further facts worth knowing.  First, `asols.tex` **covers parsecs 40–340
+only** — the last solution is `parsec-340.60`.  Every one is for a `cstar.tex`
+exercise; there are none for `vn.tex` or `proc.tex`, and none for the
+`cstar.tex` parsecs **350–390** either.  So for 35VI, 36III, 37IX, 38III, 38VI,
+39VI and their neighbours there is genuinely no published solution, and a Lean
+proof there is original work rather than a transcription — worth saying so in
+the log.  Second, **there is no `aerr.tex`**: thesis A's 27 errata and addenda
 live at the *top of* `asols.tex`, keyed the same way, and should be consulted
 before filing a new erratum.  (Thesis B does have `../berr.tex`.)
 
