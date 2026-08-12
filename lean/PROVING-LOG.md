@@ -244,6 +244,50 @@ the Lean proof does instead.`)
   **27XVII**, **27XVIII**, **27XXVII**) from Mathlib, and the Riesz-ideal
   machinery of 27VIII–27XIII is left as the thesis's own (independent) route.
 
+### Session 2 — Matrices.lean, third pass
+
+Four more closed (`bax_cstar` 32XIII, `choi_2` 34XVIII.2, `cp_commutative_cod`
+34IX.1, `cstar_product_4` 34VI.1); 11 → 7.
+
+- **34VI**.1 `cstar_product_4` — **the author's solution slot is empty**:
+  `parsec-340.60` in `asols.tex` is literally `\TODO{}`.  (It is also the *last*
+  solution in the file, which is why coverage appears to stop there.)  So this
+  is proved but **not cross-checked** — there is no author argument to compare
+  against.  The Lean proof uses `weak_russo_dye_2` (20II) rather than
+  `cp_russo_dye` (34XVI) for the `lp ∞` bound, since 34XVI comes later in the
+  thesis and is out of scope at that point.
+- **34XVIII**.2 `choi_2` — the thesis applies Choi part 1 *to `M₂f`*, which
+  presupposes "`M_N` of a cp map is cp" (via `M_N(M_2) ≅ M_{2N}`), a fact absent
+  from both this development and Mathlib.  The Lean proof gets the same 2×2
+  positivity directly from complete positivity of `f` at `N = 3` (adjoining
+  `v₀ = 1`); the finish via `cstar_positive_2x2matrix` is the thesis's.
+- **32XIII** `bax_cstar` — the thesis's proof verbatim, but it glosses over one
+  thing Lean cannot: `ModuleAdjointTo` takes a *bare function*, so a private
+  lemma was needed showing an adjoint is automatically linear (by definiteness)
+  and bounded (32X), hence genuinely a `X →L[ℂ] X`.
+
+**A previous "no published solution" claim was wrong**, as suspected:
+`chilb_vector_states_2/3` *do* have a solution at `parsec-320.150` — the earlier
+report's denial was the label-search artefact.  It was read this time.  They
+remain parked for a different reason: the solution works inside the C\*-algebra
+`Bᵃ(X)`, and Mathlib has no type of adjointable operators, so `Bᵃ(X)` does not
+exist as a Lean type.  `bax_cstar` and `module_maps_cstar_identity` are now both
+proved and are exactly the analytic input such a construction needs; what
+remains is instance-building.
+
+**Parked with a verified blocker.**  `ccstar_pos_mat` (34VII) is the single
+obstruction to the chain **34VII → cp_commutative_dom → normal_russo_dye →
+russo_dye_cor**.  Mathlib has the partition of unity; what it lacks is
+`M_N(C(X)) ≅ C(X, M_N ℂ)` *as ordered* C\*-algebras — no transport of the
+`CStarMatrix` order along a base `StarAlgEquiv`, no "positive iff pointwise
+positive", no `‖A‖ = sup_x ‖A(x)‖`.  The absence of a bypass was checked, not
+assumed: factoring `A = star C * C` returns the goal to itself.
+
+Discipline note worth keeping: this pass **deliberately declined to write proofs
+citing still-`sorry`ed lemmas**.  Doing so lowers the `sorry` count while making
+the result depend on `sorryAx` — a strictly worse outcome that `lean_verify`
+would catch but the count would not.
+
 ### Session 2 — audit of the 37 first-pass proofs
 
 All 37 statements proved before the "author's proof first" policy came in were
