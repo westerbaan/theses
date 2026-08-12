@@ -1375,14 +1375,40 @@ theorem emod_punit_subsingleton (E : Type v) [EffectAlgebra E]
 space with `u ≥ 0`, then `[0,u]_V` is an effect module over `[0,1]`
 (effect modules over `[0,1]` are exactly the *convex effect algebras*). -/
 noncomputable def orderIntervalEffectModule (V : Type v) [AddCommGroup V]
-    [Module ℝ V] [PartialOrder V] [IsOrderedAddMonoid V] (u : V) (hu : 0 ≤ u) :
+    [Module ℝ V] [PartialOrder V] [IsOrderedAddMonoid V] [PosSMulMono ℝ V]
+    [SMulPosMono ℝ V] (u : V) (hu : 0 ≤ u) :
     @EffectModule I (Set.Icc (0 : V) u) _ (orderIntervalEffectAlgebra V u hu) :=
   letI := orderIntervalEffectAlgebra V u hu
-  { smul := fun r v => ⟨(r : ℝ) • (v : V), sorry⟩
-    mul_smul := sorry
-    smul_perp := sorry
-    perp_smul := sorry
-    one_smul := sorry }
+  { smul := fun r v => ⟨(r : ℝ) • (v : V), smul_nonneg r.2.1 v.2.1, by
+      calc (r : ℝ) • (v : V) ≤ (r : ℝ) • u := smul_le_smul_of_nonneg_left v.2.2 r.2.1
+        _ ≤ (1 : ℝ) • u := smul_le_smul_of_nonneg_right r.2.2 hu
+        _ = u := one_smul ℝ u⟩
+    mul_smul := by
+      intro l m a
+      exact Subtype.ext (mul_smul (l : ℝ) (m : ℝ) (a : V))
+    smul_perp := by
+      intro l a b h
+      have hab : (a : V) + b ≤ u := h
+      have hp : ((l : ℝ) • (a : V)) + (l : ℝ) • (b : V) ≤ u := by
+        rw [← smul_add]
+        calc (l : ℝ) • ((a : V) + b) ≤ (l : ℝ) • u :=
+              smul_le_smul_of_nonneg_left hab l.2.1
+          _ ≤ (1 : ℝ) • u := smul_le_smul_of_nonneg_right l.2.2 hu
+          _ = u := one_smul ℝ u
+      exact ⟨hp, Subtype.ext (smul_add (l : ℝ) (a : V) (b : V)).symm⟩
+    perp_smul := by
+      intro l m h a
+      have hlm : (l : ℝ) + m ≤ 1 := h
+      have hp : ((l : ℝ) • (a : V)) + (m : ℝ) • (a : V) ≤ u := by
+        rw [← add_smul]
+        calc ((l : ℝ) + m) • (a : V) ≤ (1 : ℝ) • (a : V) :=
+              smul_le_smul_of_nonneg_right hlm a.2.1
+          _ = (a : V) := one_smul ℝ _
+          _ ≤ u := a.2.2
+      exact ⟨hp, Subtype.ext (add_smul (l : ℝ) (m : ℝ) (a : V)).symm⟩
+    one_smul := by
+      intro a
+      exact Subtype.ext (one_smul ℝ (a : V)) }
 
 /-- **179III.2** (eff.tex:731, Examples): *representation theorem* (Gudder–
 Pulmannová): every effect module over `[0,1]` is isomorphic to the order

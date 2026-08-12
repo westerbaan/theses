@@ -318,6 +318,46 @@ prove the spine in those terms *alongside* the shipped statements, so nothing is
 restated and no statement changes.  **This has now been done in full**; see the
 next section.
 
+### Session 2 — `orderIntervalEffectModule` was also our bug
+
+The second long-standing "open decision" inherited from session 1, and the
+second one that turned out to be a mis-transcription.  Now **fully proved** —
+all five fields, axiom-clean; B/Eff 128 → 123.
+
+Recorded as "false as stated … needs `PosSMulMono ℝ V` added", i.e. as a defect
+requiring the author's approval to change a statement.  The *diagnosis* was
+right — our hypotheses related the order of `V` to `+` but never to the scalar
+action, so even the data field `r • v ∈ [0,u]` was unprovable.  The *conclusion*
+was wrong.  The source (eff.tex:737) reads:
+
+> If `V` is an **ordered real vector space** with order unit `u`, then `[0,u]`
+> is an effect module over `[0,1]`.
+
+"Ordered real vector space" already means the positive cone is closed under
+nonnegative scalars; our `[PartialOrder V] [IsOrderedAddMonoid V]` captured only
+the additive half of that.  Adding `[PosSMulMono ℝ V] [SMulPosMono ℝ V]` — the
+two monotonicity properties the cone condition yields, and which are equivalent
+to it given linearity — makes every field go through in a few lines
+(`r•v ≤ r•u ≤ 1•u = u` for membership, `smul_add`/`add_smul` for the two
+distributivity fields).
+
+**Companion gap, left open deliberately.**
+`effectModule_unitInterval_representation` — the Gudder representation theorem
+in the same Examples point — has the mirror-image problem: it *produces*
+`[PartialOrder V] [IsOrderedAddMonoid V]` and `0 ≤ u`, so it omits the same
+scalar compatibility, and asks only `0 ≤ u` where the thesis says `u` is an
+**order unit**.  Our version therefore asserts strictly *less* than the thesis
+does; it would be easier to prove and would not be the theorem.  Fixing it needs
+an `OrderUnit` predicate the file does not have, so it is flagged for decision
+rather than changed silently.
+
+**Two of two.**  Both statement-level "open decisions" carried over from session
+1 have now been re-read against the source, and **both were our transcription
+errors** — neither was a thesis defect, and neither needed approval to change.
+The remaining decisions (trivial C\*-algebra, 23VII.3, 34aVII, 72III.1b/1c)
+should be re-read the same way before being acted on: check the `file:LINE` the
+Lean doc comment carries, and suspect the transcription before the thesis.
+
 ### Session 2 — 221IV.1 was our bug, not the thesis's
 
 Recorded since session 1 as an open decision ("our statement is too strong; not

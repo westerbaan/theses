@@ -485,10 +485,26 @@ determines a lot of rework.
 Places where the honest fix is to change one of *our* statements, not done
 because the standing rule is never to change a statement without approval:
 
-1. **`orderIntervalEffectModule`** (B/Eff/EffectAlgebras.lean) — false as
-   stated: the hypotheses relate the order of `V` to `+` but never to the
-   scalar action, so even the data field `r • v ∈ [0,u]` fails (order `ℝ` by
-   the cone of a ℚ-linear functional).  Needs `PosSMulMono ℝ V` added.
+1. ~~**`orderIntervalEffectModule`**~~ — **RESOLVED**, and like 221IV.1 it was a
+   **transcription error on our side**, not a defect needing approval.  It is
+   now fixed and fully proved (all five fields, axiom-clean).  The diagnosis was
+   right — the order was related to `+` but never to the scalar action — but the
+   conclusion "needs a hypothesis the thesis doesn't have" was wrong: the source
+   (eff.tex:737) says "**if `V` is an ordered real vector space** with order unit
+   `u`", and *ordered real vector space* already means the positive cone is
+   closed under nonnegative scalars.  Our `[PartialOrder V] [IsOrderedAddMonoid V]`
+   captured only the additive half.  Adding `[PosSMulMono ℝ V] [SMulPosMono ℝ V]`
+   — the two monotonicity properties that the cone condition yields — makes all
+   five fields go through directly.
+
+   ⚠️ **Companion gap, still open**: `effectModule_unitInterval_representation`
+   (the Gudder representation theorem in the same Examples point) *produces*
+   `[PartialOrder V] [IsOrderedAddMonoid V]` and `0 ≤ u`, so it too omits the
+   scalar compatibility, and it asks only for `0 ≤ u` where the source says `u`
+   is an **order unit**.  As stated it therefore claims strictly *less* than the
+   thesis does — easier to prove, but not the theorem.  Strengthening it needs an
+   `OrderUnit` predicate that does not exist in the file yet, so it is left as a
+   decision rather than a silent change.
 2. ~~**221IV.1**~~ — **RESOLVED.**  This was a **transcription error on our
    side**, now fixed and proved.  Our uniqueness clause read
    `∀ α', h₁ ≫ α' = h₂ → α' = α`, dropping the second condition; the source
