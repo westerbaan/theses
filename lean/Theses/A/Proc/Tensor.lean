@@ -366,17 +366,252 @@ structure VNSub (S : StarSubalgebra ℂ A) (hS : IsVNSubalgebra A S) :
   val : A
   property : val ∈ S
 
-noncomputable instance (S : StarSubalgebra ℂ A) (hS : IsVNSubalgebra A S) :
-    CStarAlgebra (VNSub A S hS) := sorry
+namespace VNSub
+
+variable {S : StarSubalgebra ℂ A} {hS : IsVNSubalgebra A S}
+
+theorem val_injective :
+    Function.Injective (VNSub.val (A := A) (S := S) (hS := hS)) := by
+  rintro ⟨a, ha⟩ ⟨b, hb⟩ h
+  cases h; rfl
+
+instance : Zero (VNSub A S hS) := ⟨⟨0, zero_mem S⟩⟩
+instance : Add (VNSub A S hS) :=
+  ⟨fun a b => ⟨a.val + b.val, add_mem a.property b.property⟩⟩
+instance : Neg (VNSub A S hS) := ⟨fun a => ⟨-a.val, neg_mem a.property⟩⟩
+instance : Sub (VNSub A S hS) :=
+  ⟨fun a b => ⟨a.val - b.val, sub_mem a.property b.property⟩⟩
+instance : SMul ℕ (VNSub A S hS) := ⟨fun n a => ⟨n • a.val, nsmul_mem a.property n⟩⟩
+instance : SMul ℤ (VNSub A S hS) := ⟨fun n a => ⟨n • a.val, zsmul_mem a.property n⟩⟩
+instance : SMul ℂ (VNSub A S hS) :=
+  ⟨fun z a => ⟨z • a.val, SMulMemClass.smul_mem z a.property⟩⟩
+instance : One (VNSub A S hS) := ⟨⟨1, one_mem S⟩⟩
+instance : Mul (VNSub A S hS) :=
+  ⟨fun a b => ⟨a.val * b.val, mul_mem a.property b.property⟩⟩
+instance : Star (VNSub A S hS) := ⟨fun a => ⟨star a.val, star_mem a.property⟩⟩
+
+@[simp] theorem val_zero : (0 : VNSub A S hS).val = 0 := rfl
+@[simp] theorem val_add (a b : VNSub A S hS) : (a + b).val = a.val + b.val := rfl
+@[simp] theorem val_neg (a : VNSub A S hS) : (-a).val = -a.val := rfl
+@[simp] theorem val_sub (a b : VNSub A S hS) : (a - b).val = a.val - b.val := rfl
+@[simp] theorem val_one : (1 : VNSub A S hS).val = 1 := rfl
+@[simp] theorem val_mul (a b : VNSub A S hS) : (a * b).val = a.val * b.val := rfl
+@[simp] theorem val_star (a : VNSub A S hS) : (star a).val = star a.val := rfl
+@[simp] theorem val_smul (z : ℂ) (a : VNSub A S hS) : (z • a).val = z • a.val := rfl
+
+instance instAddCommGroup : AddCommGroup (VNSub A S hS) :=
+  Function.Injective.addCommGroup VNSub.val val_injective rfl (fun _ _ => rfl)
+    (fun _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl)
+
+instance instRing : Ring (VNSub A S hS) where
+  __ := instAddCommGroup
+  mul_assoc a b c := val_injective (mul_assoc _ _ _)
+  one_mul a := val_injective (one_mul _)
+  mul_one a := val_injective (mul_one _)
+  left_distrib a b c := val_injective (mul_add _ _ _)
+  right_distrib a b c := val_injective (add_mul _ _ _)
+  zero_mul a := val_injective (zero_mul _)
+  mul_zero a := val_injective (mul_zero _)
+
+/-- `VNSub.val` as an additive monoid homomorphism. -/
+def valAddHom : VNSub A S hS →+ A where
+  toFun := VNSub.val
+  map_zero' := rfl
+  map_add' _ _ := rfl
+
+instance instModule : Module ℂ (VNSub A S hS) :=
+  Function.Injective.module ℂ valAddHom val_injective (fun _ _ => rfl)
+
+instance instAlgebra : Algebra ℂ (VNSub A S hS) :=
+  Algebra.ofModule (fun r x y => val_injective (smul_mul_assoc r x.val y.val))
+    (fun r x y => val_injective (mul_smul_comm r x.val y.val))
+
+instance instStarRing : StarRing (VNSub A S hS) where
+  star_involutive a := val_injective (star_star a.val)
+  star_mul a b := val_injective (star_mul a.val b.val)
+  star_add a b := val_injective (star_add a.val b.val)
+
+instance instStarModule : StarModule ℂ (VNSub A S hS) where
+  star_smul r a := val_injective (star_smul r a.val)
+
+/-- `VNSub.val` as a non-unital ring homomorphism. -/
+def valNonUnitalRingHom : VNSub A S hS →ₙ+* A where
+  toFun := VNSub.val
+  map_zero' := rfl
+  map_add' _ _ := rfl
+  map_mul' _ _ := rfl
+
+instance instNormedRing : NormedRing (VNSub A S hS) :=
+  NormedRing.induced (VNSub A S hS) A valNonUnitalRingHom val_injective
+
+@[simp] theorem norm_def (a : VNSub A S hS) : ‖a‖ = ‖a.val‖ := rfl
+
+instance instNormedAlgebra : NormedAlgebra ℂ (VNSub A S hS) where
+  norm_smul_le r a := by simpa [norm_def] using (norm_smul_le r a.val)
+
+theorem isometry_val : Isometry (VNSub.val (A := A) (S := S) (hS := hS)) :=
+  AddMonoidHomClass.isometry_of_norm valAddHom (fun _ => rfl)
+
+theorem range_val :
+    Set.range (VNSub.val (A := A) (S := S) (hS := hS)) = (S : Set A) := by
+  ext a
+  constructor
+  · rintro ⟨b, rfl⟩; exact b.property
+  · intro ha; exact ⟨⟨a, ha⟩, rfl⟩
+
+instance instCompleteSpace : CompleteSpace (VNSub A S hS) := by
+  refine (isometry_val (S := S) (hS := hS)).isUniformInducing.completeSpace ?_
+  rw [range_val]
+  exact hS.isClosed.isComplete
+
+instance instCStarRing : CStarRing (VNSub A S hS) where
+  norm_mul_self_le a := CStarRing.norm_star_mul_self (x := a.val) |>.symm.le
+
+end VNSub
 
 noncomputable instance (S : StarSubalgebra ℂ A) (hS : IsVNSubalgebra A S) :
-    PartialOrder (VNSub A S hS) := sorry
+    CStarAlgebra (VNSub A S hS) where
+
+noncomputable instance (S : StarSubalgebra ℂ A) (hS : IsVNSubalgebra A S) :
+    PartialOrder (VNSub A S hS) :=
+  PartialOrder.lift VNSub.val VNSub.val_injective
+
+namespace VNSub
+
+variable {S : StarSubalgebra ℂ A} {hS : IsVNSubalgebra A S}
+
+theorem le_def (a b : VNSub A S hS) : a ≤ b ↔ a.val ≤ b.val := Iff.rfl
+
+/-- The square root of a positive element of a *closed* star subalgebra
+again lies in it: `√a = cfcₙ √ a`, and the non-unital continuous functional
+calculus of an element stays inside every closed star subalgebra
+containing it (Mathlib's `cfcₙ_mem`). -/
+theorem sqrt_mem (hcl : IsClosed (S : Set A)) (a : A) (ha : 0 ≤ a)
+    (hmem : a ∈ S) : CFC.sqrt a ∈ S := by
+  have : IsClosed (S : Set A) := hcl
+  rw [CFC.sqrt_eq_real_sqrt a ha]
+  exact cfcₙ_mem (𝕜 := ℝ) (𝕜' := ℂ) Real.sqrt hmem
+
+end VNSub
 
 instance (S : StarSubalgebra ℂ A) (hS : IsVNSubalgebra A S) :
-    StarOrderedRing (VNSub A S hS) := sorry
+    StarOrderedRing (VNSub A S hS) := by
+  refine StarOrderedRing.of_nonneg_iff' (fun {x y} hxy z => ?_) (fun x => ?_)
+  · show z.val + x.val ≤ z.val + y.val
+    exact add_le_add le_rfl (show x.val ≤ y.val from hxy)
+  · constructor
+    · intro hx
+      have hx' : (0 : A) ≤ x.val := hx
+      refine ⟨⟨CFC.sqrt x.val, VNSub.sqrt_mem hS.isClosed x.val hx' x.property⟩, ?_⟩
+      refine VNSub.val_injective ?_
+      have hsa : IsSelfAdjoint (CFC.sqrt x.val) :=
+        IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg x.val)
+      show x.val = star (CFC.sqrt x.val) * CFC.sqrt x.val
+      rw [hsa.star_eq, CFC.sqrt_mul_sqrt_self x.val hx']
+    · rintro ⟨s, rfl⟩
+      show (0 : A) ≤ star s.val * s.val
+      exact star_mul_self_nonneg s.val
+
+namespace VNSub
+
+variable {S : StarSubalgebra ℂ A} {hS : IsVNSubalgebra A S} [VonNeumannAlgebra A]
+
+/-- A self-adjoint element of `S`, viewed in `A`. -/
+def saMap (d : selfAdjoint (VNSub A S hS)) : selfAdjoint A :=
+  ⟨d.1.val, congrArg VNSub.val (show star d.1 = d.1 from d.2)⟩
+
+@[simp] theorem saMap_coe (d : selfAdjoint (VNSub A S hS)) :
+    ((saMap d : selfAdjoint A) : A) = d.1.val := rfl
+
+/-- Suprema of nonempty directed sets of self-adjoint elements are computed
+in a von Neumann subalgebra exactly as they are in `A` (42V part 4). -/
+theorem isLUB_saMap_image {D : Set (selfAdjoint (VNSub A S hS))}
+    {s : selfAdjoint (VNSub A S hS)} (hne : D.Nonempty)
+    (hdir : DirectedOn (· ≤ ·) D) (hlub : IsLUB D s) :
+    IsLUB (saMap '' D) (saMap s) := by
+  set D' : Set (selfAdjoint A) := saMap '' D with hD'
+  have hne' : D'.Nonempty := hne.image _
+  have hdir' : DirectedOn (· ≤ ·) D' := by
+    rintro _ ⟨x, hx, rfl⟩ _ ⟨z, hz, rfl⟩
+    obtain ⟨u, hu, hxu, hzu⟩ := hdir x hx z hz
+    exact ⟨saMap u, ⟨u, hu, rfl⟩, hxu, hzu⟩
+  have hbdd' : BddAbove D' := by
+    refine ⟨saMap s, ?_⟩
+    rintro _ ⟨x, hx, rfl⟩
+    exact hlub.1 hx
+  obtain ⟨s₀, hs₀⟩ :=
+    VonNeumannAlgebra.isLUB_of_bddAbove_directed D' hne' hdir' hbdd'
+  have hmem : (s₀ : A) ∈ S :=
+    hS.dirSup_mem D' s₀ (by rintro _ ⟨x, hx, rfl⟩; exact x.1.property) hne' hdir' hs₀
+  set t : VNSub A S hS := ⟨(s₀ : A), hmem⟩ with ht
+  have htsa : IsSelfAdjoint t := val_injective s₀.2
+  have hlubt : IsLUB D ⟨t, htsa⟩ := by
+    constructor
+    · intro d hd
+      exact hs₀.1 ⟨d, hd, rfl⟩
+    · intro u hu
+      have hub : saMap u ∈ upperBounds D' := by
+        rintro _ ⟨x, hx, rfl⟩
+        exact hu hx
+      exact hs₀.2 hub
+  have hst : s = ⟨t, htsa⟩ := hlub.unique hlubt
+  have hsm : saMap (⟨t, htsa⟩ : selfAdjoint (VNSub A S hS)) = s₀ := Subtype.ext rfl
+  rw [hst, hsm]
+  exact hs₀
+
+/-- Restriction of an np-functional on `A` to a von Neumann subalgebra. -/
+def restrictNP (ω : NPFunctional A) : NPFunctional (VNSub A S hS) where
+  toPositiveLinearMap :=
+    { toFun := fun a => ω a.val
+      map_add' := fun x y => map_add ω.toPositiveLinearMap _ _
+      map_smul' := fun c x => map_smul ω.toPositiveLinearMap _ _
+      monotone' := fun x y hxy => ω.toPositiveLinearMap.monotone hxy }
+  preservesDirSups' := by
+    intro D s hne hdir hlub
+    have hkey := ω.preservesDirSups' (saMap '' D) (saMap s) (hne.image _)
+      (by
+        rintro _ ⟨x, hx, rfl⟩ _ ⟨z, hz, rfl⟩
+        obtain ⟨u, hu, hxu, hzu⟩ := hdir x hx z hz
+        exact ⟨saMap u, ⟨u, hu, rfl⟩, hxu, hzu⟩)
+      (isLUB_saMap_image hne hdir hlub)
+    rw [← Set.image_comp] at hkey
+    exact hkey
+
+@[simp] theorem restrictNP_apply (ω : NPFunctional A) (a : VNSub A S hS) :
+    (restrictNP ω : NPFunctional (VNSub A S hS)) a = ω a.val := rfl
+
+end VNSub
 
 instance (S : StarSubalgebra ℂ A) (hS : IsVNSubalgebra A S)
-    [VonNeumannAlgebra A] : VonNeumannAlgebra (VNSub A S hS) := sorry
+    [VonNeumannAlgebra A] : VonNeumannAlgebra (VNSub A S hS) where
+  isLUB_of_bddAbove_directed := by
+    intro D hne hdir hbdd
+    obtain ⟨u, hu⟩ := hbdd
+    have hne' : (VNSub.saMap '' D).Nonempty := hne.image _
+    have hdir' : DirectedOn (· ≤ ·) (VNSub.saMap (S := S) (hS := hS) '' D) := by
+      rintro _ ⟨x, hx, rfl⟩ _ ⟨z, hz, rfl⟩
+      obtain ⟨v, hv, hxv, hzv⟩ := hdir x hx z hz
+      exact ⟨VNSub.saMap v, ⟨v, hv, rfl⟩, hxv, hzv⟩
+    have hbdd' : BddAbove (VNSub.saMap (S := S) (hS := hS) '' D) := by
+      refine ⟨VNSub.saMap u, ?_⟩
+      rintro _ ⟨x, hx, rfl⟩
+      exact hu hx
+    obtain ⟨s₀, hs₀⟩ :=
+      VonNeumannAlgebra.isLUB_of_bddAbove_directed _ hne' hdir' hbdd'
+    have hmem : (s₀ : A) ∈ S :=
+      hS.dirSup_mem _ s₀ (by rintro _ ⟨x, hx, rfl⟩; exact x.1.property) hne' hdir' hs₀
+    refine ⟨⟨⟨(s₀ : A), hmem⟩, VNSub.val_injective s₀.2⟩, ?_, ?_⟩
+    · intro d hd
+      exact hs₀.1 ⟨d, hd, rfl⟩
+    · intro v hv
+      have hub : VNSub.saMap v ∈ upperBounds (VNSub.saMap (S := S) (hS := hS) '' D) := by
+        rintro _ ⟨x, hx, rfl⟩
+        exact hv hx
+      exact hs₀.2 hub
+  np_faithful := by
+    intro a ha hω
+    refine VNSub.val_injective ?_
+    exact VonNeumannAlgebra.np_faithful a.val ha (fun ω => hω (VNSub.restrictNP ω))
 
 section Spatial
 

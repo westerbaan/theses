@@ -277,27 +277,370 @@ structure Corner (e : A) : Type u where
   /-- Membership in the corner: `e·val·e = val`. -/
   property : e * val * e = val
 
+/-! ### The algebraic structure of the corner
+
+Everything here is carried by `Corner.val` from `A`, except the unit, which
+is `e`.  The elementary instances below are the ingredients out of which the
+four instances demanded by 94II parts 5–8 are assembled; they are stated so
+that `Corner.val` is a (non-unital) ∗-algebra isometry onto the closed set
+`cornerSet A e`. -/
+
+namespace Corner
+
+variable {e : A}
+
+theorem val_injective : Function.Injective (Corner.val : Corner A e → A) := by
+  rintro ⟨a, ha⟩ ⟨b, hb⟩ h
+  cases h; rfl
+
+section Proj
+
+variable [hFe : Fact (IsStarProjection e)]
+
+/-- The projection hypothesis carried by the `Fact` instance. -/
+theorem proj (e : A) [hFe : Fact (IsStarProjection e)] : IsStarProjection e :=
+  hFe.out
+
+theorem mul_left (a : Corner A e) : e * a.val = a.val := by
+  have hee : e * e = e := (proj e).isIdempotentElem.eq
+  calc e * a.val = e * (e * a.val * e) := by rw [a.property]
+    _ = (e * e) * a.val * e := by noncomm_ring
+    _ = e * a.val * e := by rw [hee]
+    _ = a.val := a.property
+
+theorem mul_right (a : Corner A e) : a.val * e = a.val := by
+  have hee : e * e = e := (proj e).isIdempotentElem.eq
+  calc a.val * e = (e * a.val * e) * e := by rw [a.property]
+    _ = e * a.val * (e * e) := by noncomm_ring
+    _ = e * a.val * e := by rw [hee]
+    _ = a.val := a.property
+
+instance : Zero (Corner A e) := ⟨⟨0, by simp⟩⟩
+instance : Add (Corner A e) :=
+  ⟨fun a b => ⟨a.val + b.val, by rw [mul_add, add_mul, a.property, b.property]⟩⟩
+instance : Neg (Corner A e) := ⟨fun a => ⟨-a.val, by rw [mul_neg, neg_mul, a.property]⟩⟩
+instance : Sub (Corner A e) :=
+  ⟨fun a b => ⟨a.val - b.val, by rw [mul_sub, sub_mul, a.property, b.property]⟩⟩
+instance : SMul ℕ (Corner A e) :=
+  ⟨fun n a => ⟨n • a.val, by rw [mul_smul_comm, smul_mul_assoc, a.property]⟩⟩
+instance : SMul ℤ (Corner A e) :=
+  ⟨fun n a => ⟨n • a.val, by rw [mul_smul_comm, smul_mul_assoc, a.property]⟩⟩
+instance : SMul ℂ (Corner A e) :=
+  ⟨fun n a => ⟨n • a.val, by rw [mul_smul_comm, smul_mul_assoc, a.property]⟩⟩
+instance : One (Corner A e) :=
+  ⟨⟨e, by rw [(proj e).isIdempotentElem.eq, (proj e).isIdempotentElem.eq]⟩⟩
+instance : Mul (Corner A e) :=
+  ⟨fun a b => ⟨a.val * b.val, by
+    have h1 := mul_left a
+    have h2 := mul_right b
+    calc e * (a.val * b.val) * e = (e * a.val) * (b.val * e) := by noncomm_ring
+      _ = a.val * b.val := by rw [h1, h2]⟩⟩
+instance : Star (Corner A e) :=
+  ⟨fun a => ⟨star a.val, by
+    have hs : star e = e := (proj e).isSelfAdjoint.star_eq
+    conv_rhs => rw [← a.property]
+    rw [star_mul, star_mul, hs, mul_assoc]⟩⟩
+
+@[simp] theorem val_zero : (0 : Corner A e).val = 0 := rfl
+@[simp] theorem val_add (a b : Corner A e) : (a + b).val = a.val + b.val := rfl
+@[simp] theorem val_neg (a : Corner A e) : (-a).val = -a.val := rfl
+@[simp] theorem val_sub (a b : Corner A e) : (a - b).val = a.val - b.val := rfl
+@[simp] theorem val_one : (1 : Corner A e).val = e := rfl
+@[simp] theorem val_mul (a b : Corner A e) : (a * b).val = a.val * b.val := rfl
+@[simp] theorem val_star (a : Corner A e) : (star a).val = star a.val := rfl
+@[simp] theorem val_smul (z : ℂ) (a : Corner A e) : (z • a).val = z • a.val := rfl
+@[simp] theorem val_nsmul (n : ℕ) (a : Corner A e) : (n • a).val = n • a.val := rfl
+@[simp] theorem val_zsmul (n : ℤ) (a : Corner A e) : (n • a).val = n • a.val := rfl
+
+instance instAddCommGroup : AddCommGroup (Corner A e) :=
+  Function.Injective.addCommGroup Corner.val val_injective rfl (fun _ _ => rfl)
+    (fun _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl)
+
+instance instRing : Ring (Corner A e) where
+  __ := instAddCommGroup
+  mul_assoc a b c := val_injective (mul_assoc _ _ _)
+  one_mul a := val_injective (mul_left a)
+  mul_one a := val_injective (mul_right a)
+  left_distrib a b c := val_injective (mul_add _ _ _)
+  right_distrib a b c := val_injective (add_mul _ _ _)
+  zero_mul a := val_injective (zero_mul _)
+  mul_zero a := val_injective (mul_zero _)
+
+/-- `Corner.val` as an additive monoid homomorphism. -/
+def valAddHom : Corner A e →+ A where
+  toFun := Corner.val
+  map_zero' := rfl
+  map_add' _ _ := rfl
+
+instance instModule : Module ℂ (Corner A e) :=
+  Function.Injective.module ℂ valAddHom val_injective (fun _ _ => rfl)
+
+instance instAlgebra : Algebra ℂ (Corner A e) :=
+  Algebra.ofModule (fun r x y => val_injective (smul_mul_assoc r x.val y.val))
+    (fun r x y => val_injective (mul_smul_comm r x.val y.val))
+
+instance instStarRing : StarRing (Corner A e) where
+  star_involutive a := val_injective (star_star a.val)
+  star_mul a b := val_injective (star_mul a.val b.val)
+  star_add a b := val_injective (star_add a.val b.val)
+
+instance instStarModule : StarModule ℂ (Corner A e) where
+  star_smul r a := val_injective (star_smul r a.val)
+
+/-- `Corner.val` as a non-unital ring homomorphism.  It is *not* unital:
+`(1 : Corner A e).val = e`. -/
+def valNonUnitalRingHom : Corner A e →ₙ+* A where
+  toFun := Corner.val
+  map_zero' := rfl
+  map_add' _ _ := rfl
+  map_mul' _ _ := rfl
+
+instance instNormedRing : NormedRing (Corner A e) :=
+  NormedRing.induced (Corner A e) A valNonUnitalRingHom val_injective
+
+@[simp] theorem norm_def (a : Corner A e) : ‖a‖ = ‖a.val‖ := rfl
+
+instance instNormedAlgebra : NormedAlgebra ℂ (Corner A e) where
+  norm_smul_le r a := by simpa [norm_def] using (norm_smul_le r a.val)
+
+theorem isometry_val : Isometry (Corner.val : Corner A e → A) :=
+  AddMonoidHomClass.isometry_of_norm valAddHom (fun _ => rfl)
+
+theorem range_val : Set.range (Corner.val : Corner A e → A) = cornerSet A e := by
+  ext a
+  constructor
+  · rintro ⟨b, rfl⟩; exact b.property
+  · intro ha; exact ⟨⟨a, ha⟩, rfl⟩
+
+/-- The corner is norm-closed: it is the preimage of `{0}` under the
+continuous map `a ↦ e·a·e − a`. -/
+theorem isClosed_cornerSet : IsClosed (cornerSet A e) := by
+  have hcont : Continuous (fun a : A => e * a * e - a) := by fun_prop
+  have h : cornerSet A e = (fun a : A => e * a * e - a) ⁻¹' {0} := by
+    ext a; simp [cornerSet, sub_eq_zero]
+  rw [h]
+  exact isClosed_singleton.preimage hcont
+
+instance instCompleteSpace : CompleteSpace (Corner A e) := by
+  refine (isometry_val (e := e)).isUniformInducing.completeSpace ?_
+  rw [range_val]
+  exact isClosed_cornerSet.isComplete
+
+instance instCStarRing : CStarRing (Corner A e) where
+  norm_mul_self_le a := CStarRing.norm_star_mul_self (x := a.val) |>.symm.le
+
+end Proj
+
+end Corner
+
 /-- **94II** (`corner-vna-basic`, proc.tex:194, Exercise), part 5: the
 corner `e𝒜e` of a **projection** `e` is a C*-algebra (with the operations
 of `A` and unit `e`). -/
 noncomputable instance (e : A) [Fact (IsStarProjection e)] :
-    CStarAlgebra (Corner A e) := sorry
+    CStarAlgebra (Corner A e) where
 
 /-- **94II** (`corner-vna-basic`, proc.tex:194, Exercise), parts 5–6: the
 canonical (Loewner) partial order on the corner `e𝒜e`. -/
 noncomputable instance (e : A) [Fact (IsStarProjection e)] :
-    PartialOrder (Corner A e) := sorry
+    PartialOrder (Corner A e) :=
+  PartialOrder.lift Corner.val Corner.val_injective
+
+namespace Corner
+
+variable {e : A} [Fact (IsStarProjection e)]
+
+theorem le_def (a b : Corner A e) : a ≤ b ↔ a.val ≤ b.val := Iff.rfl
+
+/-- The square root of a positive element of the corner again lies in the
+corner: if `e·a·e = a` then `(1−e)·a·(1−e) = 0`, so for `s = √a` one has
+`‖s(1−e)‖² = ‖(1−e)·a·(1−e)‖ = 0`, i.e. `s = s·e = e·s`. -/
+theorem sqrt_mem (a : A) (ha : 0 ≤ a) (hmem : e * a * e = a) :
+    e * CFC.sqrt a * e = CFC.sqrt a := by
+  set s := CFC.sqrt a with hs
+  have hsa : IsSelfAdjoint s := IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg a)
+  have hss : s * s = a := CFC.sqrt_mul_sqrt_self a ha
+  have hee : e * e = e := (proj e).isIdempotentElem.eq
+  have hse : star e = e := (proj e).isSelfAdjoint.star_eq
+  have hkey : (1 - e) * a * (1 - e) = 0 := by
+    conv_lhs => rw [← hmem]
+    have h1 : (1 - e) * e = 0 := by noncomm_ring [hee]
+    have h2 : e * (1 - e) = 0 := by noncomm_ring [hee]
+    calc (1 - e) * (e * a * e) * (1 - e)
+        = ((1 - e) * e) * a * (e * (1 - e)) := by noncomm_ring
+      _ = 0 := by rw [h1, h2]; simp
+  have hnorm : ‖s * (1 - e)‖ = 0 := by
+    have hstar : star (s * (1 - e)) * (s * (1 - e)) = (1 - e) * a * (1 - e) := by
+      rw [star_mul, hsa.star_eq, star_sub, star_one, hse]
+      calc (1 - e) * s * (s * (1 - e)) = (1 - e) * (s * s) * (1 - e) := by
+            noncomm_ring
+        _ = (1 - e) * a * (1 - e) := by rw [hss]
+    have h2 : ‖s * (1 - e)‖ * ‖s * (1 - e)‖ = ‖(1 - e) * a * (1 - e)‖ := by
+      rw [← hstar, CStarRing.norm_star_mul_self]
+    rw [hkey, norm_zero] at h2
+    nlinarith [norm_nonneg (s * (1 - e))]
+  have hzero : s * (1 - e) = 0 := by rwa [norm_eq_zero] at hnorm
+  have hse' : s * e = s := by
+    have h := hzero
+    rw [mul_sub, mul_one, sub_eq_zero] at h
+    exact h.symm
+  have hes : e * s = s := by
+    have h := congrArg star hse'
+    rwa [star_mul, hse, hsa.star_eq] at h
+  rw [hes, hse']
+
+end Corner
 
 /-- **94II** (`corner-vna-basic`, proc.tex:194, Exercise), parts 5–6: the
 order on the corner `e𝒜e` is the star-order. -/
 instance (e : A) [Fact (IsStarProjection e)] :
-    StarOrderedRing (Corner A e) := sorry
+    StarOrderedRing (Corner A e) := by
+  refine StarOrderedRing.of_nonneg_iff' (fun {x y} hxy z => ?_) (fun x => ?_)
+  · show z.val + x.val ≤ z.val + y.val
+    exact add_le_add le_rfl (show x.val ≤ y.val from hxy)
+  · constructor
+    · intro hx
+      have hx' : (0 : A) ≤ x.val := hx
+      refine ⟨⟨CFC.sqrt x.val, Corner.sqrt_mem x.val hx' x.property⟩, ?_⟩
+      refine Corner.val_injective ?_
+      have hsa : IsSelfAdjoint (CFC.sqrt x.val) :=
+        IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg x.val)
+      show x.val = star (CFC.sqrt x.val) * CFC.sqrt x.val
+      rw [hsa.star_eq, CFC.sqrt_mul_sqrt_self x.val hx']
+    · rintro ⟨s, rfl⟩
+      show (0 : A) ≤ star s.val * s.val
+      exact star_mul_self_nonneg s.val
+
+/-- Generalisation of **94II** part 6 needed already for the von Neumann
+instance below: the supremum in `A` of a nonempty directed set of
+self-adjoint elements of the corner again lies in the corner. -/
+theorem isLUB_mem_cornerSet [VonNeumannAlgebra A] (e : A)
+    (he : IsStarProjection e) (D : Set (selfAdjoint A)) (s : selfAdjoint A)
+    (hD : ∀ d ∈ D, (d : A) ∈ cornerSet A e) (hne : D.Nonempty)
+    (hdir : DirectedOn (· ≤ ·) D) (hlub : IsLUB D s) :
+    (s : A) ∈ cornerSet A e := by
+  have h : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧ BddAbove D :=
+    ⟨hne, hdir, ⟨s, hlub.1⟩⟩
+  have hstar : star e = e := he.isSelfAdjoint.star_eq
+  have hnat := ad_normal e D h
+  rw [hstar] at hnat
+  have himg : (fun d : selfAdjoint A => e * (d : A) * e) '' D = Subtype.val '' D :=
+    Set.image_congr fun d hd => hD d hd
+  rw [himg] at hnat
+  have huniq := hnat.unique (isLUB_coe_of_isLUB h.1 (isLUB_dirSup D h))
+  have hsd : s = dirSup D h := hlub.unique (isLUB_dirSup D h)
+  show e * (s : A) * e = (s : A)
+  rw [hsd]
+  exact huniq
+
+namespace Corner
+
+variable {e : A} [Fact (IsStarProjection e)] [VonNeumannAlgebra A]
+
+/-- A self-adjoint element of the corner, viewed in `A`. -/
+def saMap (d : selfAdjoint (Corner A e)) : selfAdjoint A :=
+  ⟨d.1.val, congrArg Corner.val (show star d.1 = d.1 from d.2)⟩
+
+@[simp] theorem saMap_coe (d : selfAdjoint (Corner A e)) :
+    ((saMap d : selfAdjoint A) : A) = d.1.val := rfl
+
+/-- Suprema of nonempty directed sets of self-adjoint elements are computed
+in the corner exactly as they are in `A` (94II part 6). -/
+theorem isLUB_saMap_image {D : Set (selfAdjoint (Corner A e))}
+    {s : selfAdjoint (Corner A e)} (hne : D.Nonempty)
+    (hdir : DirectedOn (· ≤ ·) D) (hlub : IsLUB D s) :
+    IsLUB (saMap '' D) (saMap s) := by
+  set D' : Set (selfAdjoint A) := saMap '' D with hD'
+  have hne' : D'.Nonempty := hne.image _
+  have hdir' : DirectedOn (· ≤ ·) D' := by
+    rintro _ ⟨x, hx, rfl⟩ _ ⟨z, hz, rfl⟩
+    obtain ⟨u, hu, hxu, hzu⟩ := hdir x hx z hz
+    exact ⟨saMap u, ⟨u, hu, rfl⟩, hxu, hzu⟩
+  have hbdd' : BddAbove D' := by
+    refine ⟨saMap s, ?_⟩
+    rintro _ ⟨x, hx, rfl⟩
+    exact hlub.1 hx
+  obtain ⟨s₀, hs₀⟩ :=
+    VonNeumannAlgebra.isLUB_of_bddAbove_directed D' hne' hdir' hbdd'
+  have hmem : (s₀ : A) ∈ cornerSet A e := by
+    refine isLUB_mem_cornerSet e (proj e) D' s₀ ?_ hne' hdir' hs₀
+    rintro _ ⟨x, hx, rfl⟩
+    exact x.1.property
+  set t : Corner A e := ⟨(s₀ : A), hmem⟩ with ht
+  have htsa : IsSelfAdjoint t := val_injective s₀.2
+  have hlubt : IsLUB D ⟨t, htsa⟩ := by
+    constructor
+    · intro d hd
+      exact hs₀.1 ⟨d, hd, rfl⟩
+    · intro u hu
+      have hub : saMap u ∈ upperBounds D' := by
+        rintro _ ⟨x, hx, rfl⟩
+        exact hu hx
+      exact hs₀.2 hub
+  have hst : s = ⟨t, htsa⟩ := hlub.unique hlubt
+  have hsm : saMap (⟨t, htsa⟩ : selfAdjoint (Corner A e)) = s₀ := Subtype.ext rfl
+  rw [hst, hsm]
+  exact hs₀
+
+/-- Restriction of an np-functional on `A` to the corner (94II part 8). -/
+def restrictNP (e : A) [Fact (IsStarProjection e)] (ω : NPFunctional A) :
+    NPFunctional (Corner A e) where
+  toPositiveLinearMap :=
+    { toFun := fun a => ω a.val
+      map_add' := fun x y => map_add ω.toPositiveLinearMap _ _
+      map_smul' := fun c x => map_smul ω.toPositiveLinearMap _ _
+      monotone' := fun x y hxy => ω.toPositiveLinearMap.monotone hxy }
+  preservesDirSups' := by
+    intro D s hne hdir hlub
+    have hkey := ω.preservesDirSups' (saMap '' D) (saMap s) (hne.image _)
+      (by
+        rintro _ ⟨x, hx, rfl⟩ _ ⟨z, hz, rfl⟩
+        obtain ⟨u, hu, hxu, hzu⟩ := hdir x hx z hz
+        exact ⟨saMap u, ⟨u, hu, rfl⟩, hxu, hzu⟩)
+      (isLUB_saMap_image hne hdir hlub)
+    rw [← Set.image_comp] at hkey
+    exact hkey
+
+@[simp] theorem restrictNP_apply (e : A) [Fact (IsStarProjection e)]
+    (ω : NPFunctional A) (a : Corner A e) : restrictNP e ω a = ω a.val := rfl
+
+end Corner
 
 /-- **94II** (`corner-vna-basic`, proc.tex:194, Exercise), part 8
 (conclusion): the corner `e𝒜e` of a von Neumann algebra is a von Neumann
 algebra. -/
 instance (e : A) [Fact (IsStarProjection e)] [VonNeumannAlgebra A] :
-    VonNeumannAlgebra (Corner A e) := sorry
+    VonNeumannAlgebra (Corner A e) where
+  isLUB_of_bddAbove_directed := by
+    intro D hne hdir hbdd
+    obtain ⟨u, hu⟩ := hbdd
+    have hne' : (Corner.saMap '' D).Nonempty := hne.image _
+    have hdir' : DirectedOn (· ≤ ·) (Corner.saMap '' D) := by
+      rintro _ ⟨x, hx, rfl⟩ _ ⟨z, hz, rfl⟩
+      obtain ⟨v, hv, hxv, hzv⟩ := hdir x hx z hz
+      exact ⟨Corner.saMap v, ⟨v, hv, rfl⟩, hxv, hzv⟩
+    have hbdd' : BddAbove (Corner.saMap '' D) := by
+      refine ⟨Corner.saMap u, ?_⟩
+      rintro _ ⟨x, hx, rfl⟩
+      exact hu hx
+    obtain ⟨s₀, hs₀⟩ :=
+      VonNeumannAlgebra.isLUB_of_bddAbove_directed _ hne' hdir' hbdd'
+    have hmem : (s₀ : A) ∈ cornerSet A e := by
+      refine isLUB_mem_cornerSet e (Corner.proj e) _ s₀ ?_ hne' hdir' hs₀
+      rintro _ ⟨x, hx, rfl⟩
+      exact x.1.property
+    refine ⟨⟨⟨(s₀ : A), hmem⟩, Corner.val_injective s₀.2⟩, ?_, ?_⟩
+    · intro d hd
+      exact hs₀.1 ⟨d, hd, rfl⟩
+    · intro v hv
+      have hub : Corner.saMap v ∈ upperBounds (Corner.saMap '' D) := by
+        rintro _ ⟨x, hx, rfl⟩
+        exact hv hx
+      exact hs₀.2 hub
+  np_faithful := by
+    intro a ha hω
+    refine Corner.val_injective ?_
+    exact VonNeumannAlgebra.np_faithful a.val ha
+      (fun ω => hω (Corner.restrictNP e ω))
 
 /-- **94II** (`corner-vna-basic`, proc.tex:194, Exercise), part 1: for a
 projection `e`, an `a ∈ A` is of the form `e·b·e` iff `e·a·e = a` iff both
@@ -431,7 +774,8 @@ theorem corner_vna_basic_5 (e : A) [Fact (IsStarProjection e)]
     (a + b).val = a.val + b.val ∧ (a * b).val = a.val * b.val ∧
       (z • a).val = z • a.val ∧ (star a).val = star a.val ∧
       (1 : Corner A e).val = e ∧ (0 : Corner A e).val = 0 ∧
-      ‖a‖ = ‖a.val‖ ∧ (a ≤ b ↔ a.val ≤ b.val) := sorry
+      ‖a‖ = ‖a.val‖ ∧ (a ≤ b ↔ a.val ≤ b.val) :=
+  ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl, Iff.rfl⟩
 
 /-- **94II** (`corner-vna-basic`, proc.tex:194, Exercise), part 6: the
 supremum in `A` of a bounded directed set of self-adjoint elements of the
@@ -440,15 +784,9 @@ theorem corner_vna_basic_6 [VonNeumannAlgebra A] (e : A)
     (he : IsStarProjection e) (D : Set (selfAdjoint A))
     (hD : ∀ d ∈ D, (d : A) ∈ cornerSet A e)
     (h : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧ BddAbove D) :
-    (dirSup D h : A) ∈ cornerSet A e := by
+    (dirSup D h : A) ∈ cornerSet A e :=
   -- `e(·)e` is normal (44VIII), so it sends `⋁D` to `⋁ e D e = ⋁ D`
-  have hstar : star e = e := he.isSelfAdjoint.star_eq
-  have hnat := ad_normal e D h
-  rw [hstar] at hnat
-  have himg : (fun d : selfAdjoint A => e * (d : A) * e) '' D = Subtype.val '' D :=
-    Set.image_congr fun d hd => hD d hd
-  rw [himg] at hnat
-  exact hnat.unique (isLUB_val_of_isLUB h.1 (isLUB_dirSup D h))
+  isLUB_mem_cornerSet e he D (dirSup D h) hD h.1 h.2.1 (isLUB_dirSup D h)
 
 /-- **94II** (`corner-vna-basic`, proc.tex:194, Exercise), part 7: the
 inclusion `e𝒜e → 𝒜` is an ncpsu-map (existence lemma; `cornerIncl` is
@@ -473,7 +811,7 @@ np-functional. -/
 theorem corner_vna_basic_8 [VonNeumannAlgebra A] (e : A)
     [Fact (IsStarProjection e)] (ω : NPFunctional A) :
     ∃ ω' : NPFunctional (Corner A e), ∀ a : Corner A e, ω' a = ω a.val :=
-  sorry
+  ⟨Corner.restrictNP e ω, fun _ => rfl⟩
 
 /-- **94II** (`corner-vna-basic`, proc.tex:194, Exercise), part 9: the
 projection `a ↦ e·a·e : 𝒜 → e𝒜e` onto a corner is an ncpu-map
