@@ -22,8 +22,8 @@ on `W*_miu`, `W*_cp`, `W*_cpu`, and `W*_cpsu` (119V).
   the bundle `HilbertTensor H K`, choice `hilbTensor`, carrier `HT H K`,
   elementwise `x ⊗ₕ y`, and `opTensor A B` for operators (111V).
 * Corners of the spatial construction (111VII) live on the wrapper type
-  `VNSub S` of a von Neumann subalgebra `S`, with sorry-ed algebra
-  instances (as for `Corner` in `Measurement.lean`).
+  `VNSub S` of a von Neumann subalgebra `S`, whose algebra instances are
+  proved (as for `Corner` in `Measurement.lean`).
 * Maps out of the tensor (`tmap f g` for ncp-maps, `tmapM ρ σ` for
   nmiu-maps, product functionals on the predual, associators, unitors,
   braidings) are obtained by choice from sorry-ed unique-existence
