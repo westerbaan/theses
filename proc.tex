@@ -845,15 +845,15 @@ $\ceill{f(a)}\ceilr{f(b)}=0$,
 because $f(a)f(b)=f(a)\ceill{f(a)}\ceilr{f(b)}f(b)$.
 Since~$ab=0$,
 we have~$\ceill{a}\ceilr{b}=0$ by~\sref{mult-cancellation},
-and so~$\ceil{f(\ceill{a})}\ceil{f(\ceilr{a})}=0$.
+and so~$\ceil{f(\ceill{a})}\ceil{f(\ceilr{b})}=0$ (by~\sref{gardner-3}).
 Now,
-since $\ceil{f(\ceill{a})}\leq \ceill{f(a)}$
-	and $\ceil{f(\ceilr{a}}\leq \ceilr{f(a)}$
+since $\ceill{f(a)}\leq \ceil{f(\ceill{a})}$
+	and $\ceilr{f(b)}\leq \ceil{f(\ceilr{b})}$
 	by~\sref{ncp-ceill},
 we get $\ceill{f(a)}\ceilr{f(b)}
 	= \ceill{f(a)} \ceil{f(\ceill{a})}
-	\ceil{f(\ceilr{a})}
-	\ceilr{f(a)}
+	\ceil{f(\ceilr{b})}
+	\ceilr{f(b)}
 	=0$.
 \end{point}
 \begin{point}{80}{\sref{gardner-2}$\Longrightarrow$\sref{gardner-1}}%

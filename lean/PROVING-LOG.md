@@ -65,6 +65,12 @@ cases, all worth logging:
 
 ## Errata / proof repairs
 
+> **⚠️ 2026-08-13: most thesis-A entries below have since been RULED ON by the
+> author and INCORPORATED into the tex sources.**  Before acting on any
+> thesis-A entry here, check HANDOFF.md § "Resolved by the author
+> (2026-08-13)" and the errata block at the top of `../asols.tex`.  Entries
+> below are kept as the historical record and are **not** updated.
+
 Places where the thesis's own proof (or statement) turned out to be wrong,
 incomplete, or in need of a different argument, and what the formalization
 does instead.  These are the interesting findings for the authors — record
@@ -168,6 +174,7 @@ the Lean proof does instead.`)
   8II (cstar.tex:1071) explicitly admits the trivial C*-algebra.  Mathlib's
   `spectrum.nonempty` correspondingly carries a `[Nontrivial A]` hypothesis.
   Since statements may not be changed, the item is parked.
+  **[RESOLVED 2026-08-13 — 16V now assumes `𝒜 ≠ {0}`; see HANDOFF.]**
 - **General (parsec 11, 8II)** `Theses/A/CStar/Basic.lean` — several spectrum
   statements are true but *vacuous* in the trivial C*-algebra, where Mathlib's
   `NormOneClass` (and hence `spectrum.norm_le_norm_of_mem`) is unavailable:
@@ -346,6 +353,9 @@ by reading the declaration against its own prose, with no reference to the
 source at all.  Fixed.
 
 ### ⚠️ For the authors — **68IV.2 is false as printed, in two clauses**
+
+**[RESOLVED 2026-08-13 — positivity added to both clauses in vn.tex, erratum
+680.40; the Lean fix below is authorised.  See HANDOFF.]**
 
 `vn.tex:3490` (`cceil-basic`), part 2.  Central support `⌈⌈·⌉⌉` is monotone on
 **positive** elements only, and two of the three clauses omit that hypothesis:
@@ -1160,6 +1170,7 @@ together); `B/Dils/Stinespring.lean` (ℂ-valued inner product, whose convention
   `a = -2 ≤ 1 = b` but `4 ≰ 1`.  The intended hypothesis is `0 ≤ a`, which the
   immediately following item 4 already assumes; with it the proof works via
   `b² − a² = b(b−a) + (b−a)a ≥ 0`.  **Parked** — needs author approval.
+  **[RESOLVED 2026-08-13 — erratum 230.70 was already this; incorporated.]**
 - **34aVII** `Theses/A/CStar/Matrices.lean` (cstar.tex:5842) — `russo_dye` is
   **false at `N = 0`**, purely from Lean's `2/(0:ℝ) = 0`: the hypothesis
   degenerates to `‖a‖ < 1` while the conclusion says `a = 0`.  The thesis says
@@ -1182,7 +1193,8 @@ together); `B/Dils/Stinespring.lean` (ℂ-valued inner product, whose convention
   inclusion.  The thesis glosses this by reading the net "eventually".
 - **38VI**.2 `Theses/A/CStar/TowardsVN.lean:345` — the `←` direction is **false
   as stated**: a constant net `x_α = i·x` gives the same vector functional.
-  Parked.
+  Parked.  **[RESOLVED 2026-08-13 — the "if" direction is dropped from the
+  thesis; see HANDOFF.]**
 - **30IV**.2 `Theses/A/CStar/Representation.lean:417` — independent confirmation
   that the extra `‖ω‖` is spurious: Mathlib's `leftMulMapPreGNS` is *defined*
   with bound exactly `‖a‖`, so the Lean proof never mentions `‖ω‖`.

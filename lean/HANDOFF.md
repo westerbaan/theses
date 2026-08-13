@@ -436,6 +436,60 @@ files are either already convention-aware or self-consistent).  **Anyone adding
 new `CStarModule` statements — especially in B/Dils, which is untouched and
 uses it in five files — must apply the swap.**
 
+### Resolved by the author (2026-08-13) — thesis-A rulings, incorporated
+
+Bram ruled on the thesis-A findings below.  Each is **fixed in the tex
+sources** (cstar.tex / vn.tex / proc.tex), with the delta from the printed
+edition recorded in the errata block at the top of `../asols.tex` (keyed
+`parsec-N.M`); solution-text fixes were made in place with no record, since
+the solutions were never printed.  **Check that errata block, not the printed
+text, when transcribing.**  The Lean statements may be brought in line with
+the corrected sources as *authorised* changes; `file:LINE` references in doc
+comments may have shifted, so re-locate by point number.
+
+* **23VII.3** — was already covered by the pre-existing erratum 230.70
+  (formerly mis-keyed 230.50): point 3 assumes `0 ≤ a ≤ b`.  Fix the Lean
+  statement accordingly.
+* **72III.1b/1c** — likewise pre-existing erratum 720.30: the `‖ω‖` factors
+  are deleted.  Both statements are now provable as sourced.
+* **30IV.2** — the spurious `‖ω‖` was already covered by errata 300.40/300.60.
+* **16V** `spectrum-non-empty` — now hypothesises `𝒜 ≠ {0}` (erratum 160.50).
+* **16VI** — reworded: `spec(a) ⊆ {λ}` iff `a = λ` (erratum 160.60); true in
+  `{0}` too, so this form needs no nontriviality split.
+* **17VI.3** — the `inf` now runs over `λ ≥ 0`, not `λ ∈ ℝ` (erratum 170.60).
+* **22III.5** — point 5 now assumes `𝒜 ≠ {0}` (erratum 220.30); its solution
+  now cites 16V for non-emptiness of the spectrum.
+* **22VIII** — the state-existence half now assumes `𝒜 ≠ {0}` (erratum
+  220.80); the order-separating half is unchanged.
+  **The trivial C*-algebra stays admitted globally** — 8II and the categorical
+  chapters need it; only these five statements were touched.
+* **34aVII** Russo–Dye — "for some natural number `N > 0`" (erratum 341.70).
+* **37IX** — the statement gains "non-empty"; the proof now opens "wlog `𝒟`
+  has a least element `T₀`", gets boundedness by squeezing, and proves
+  self-adjointness of the limit via 25V(1) (errata 370.90, 370.100).
+  **37VII is deliberately left unchanged.**
+* **38VI.2** — the false "if" direction is **dropped**, with its hint
+  (erratum 380.60); state only `x_α → x ⟹` operator-norm convergence.
+* **61II** `ncp-ceill` — both displayed inequalities **reversed** (erratum
+  610.20), likewise the proof's last line; its sole use site 99VII also had
+  three `a`-for-`b` slips, now fixed (erratum 990.70 carries the corrected
+  paragraph).
+* **68IV.2** `cceil-basic` — positivity added to clauses 1 and 3 (erratum
+  680.40); the Lean-side fix of 2026-08-13 is authorised as-is.
+* Mechanical main-text fixes: **4VIII** (`V → ℂ`, erratum 40.80); **11XX.1**
+  (`ℝ → ℂ`, *addendum* 110.200 — the printed statement was true, just less
+  general); **12III**.3 (`z ∈ 𝒜` → `z ∈ ℂ`, folded into erratum 120.30);
+  **17III** (`[0,∞]` → `[0,∞)`, erratum 170.30); **19Ia** (missing `⁻¹`,
+  erratum 190.20); **23II** (cite `square-commuting-monotone`, erratum
+  230.60).
+* Solution texts fixed in place (no erratum blocks): 11XV.2, 11XX.2, 16V,
+  16VI, 16VII (reference 160.60→160.50, the self-adjointness gap, the `{0}`
+  branch), 17VI.6, 20aII, 22III.5, 26II.1 (plus a mis-citation
+  `230.70(2)` → `(1)` found on site), 26II.4, 30IV.1.
+* Still awaiting a ruling: the `inner-product-basic` citation in 62I's proof
+  (vn.tex, for `f(a)² ≤ f(a²)` — looks like it should be a Kadison/cp
+  inequality), and a handful of minor solution nits listed in PROVING-LOG.
+
 ### Still open
 
 **0. RESOLVED — the formalization validates the thesis's own bootstrapping.**
@@ -518,7 +572,9 @@ because the standing rule is never to change a statement without approval:
    the abstract effectus proposition.  Checking the wrong text is what let the
    mis-transcription be recorded as a "statement too strong" decision instead of
    a bug.  Always confirm the doc comment's own `file:LINE`.
-3. **The trivial C\*-algebra `{0}`** — the largest cluster, and the one worth
+3. **[RESOLVED 2026-08-13 — see "Resolved by the author" above: five local
+   fixes; `{0}` stays admitted globally.]**
+   **The trivial C\*-algebra `{0}`** — the largest cluster, and the one worth
    deciding *globally* rather than statement by statement.  Mathlib's
    `CStarAlgebra` does not extend `Nontrivial`, but the thesis explicitly
    admits `{0}` (8II), where every element is a unit and `spec(a) = ∅`.  False
@@ -531,17 +587,20 @@ because the standing rule is never to change a statement without approval:
    silently assuming it non-empty — the same missing hypothesis.
    *Decide once*: add `[Nontrivial 𝒜]` where needed, or exclude the trivial
    algebra globally.
-4. **23VII**.3 `sqrt_3` (A/CStar/Positive.lean, cstar.tex:3663) — "if
+4. **[RESOLVED 2026-08-13 — erratum 230.70 was already this; incorporated.]**
+   **23VII**.3 `sqrt_3` (A/CStar/Positive.lean, cstar.tex:3663) — "if
    `a,b ∈ sa(𝒜)` commute and `a ≤ b` then `a² ≤ b²`" is false: in `𝒜 = ℂ`,
    `a = -2 ≤ 1 = b` but `4 ≰ 1`.  Needs `0 ≤ a` — which the immediately
    following item 4 already assumes, so this looks like a slip rather than a
    real gap.  With it the proof is `b² − a² = b(b−a) + (b−a)a ≥ 0`.
-5. **34aVII** `russo_dye` (A/CStar/Matrices.lean, cstar.tex:5842) — false at
+5. **[RESOLVED 2026-08-13 — the thesis now says `N > 0`; erratum 341.70.]**
+   **34aVII** `russo_dye` (A/CStar/Matrices.lean, cstar.tex:5842) — false at
    `N = 0` purely because Lean defines `2/(0:ℝ) = 0`, making the hypothesis
    read `‖a‖ < 1` and the conclusion `a = 0`.  The thesis says "for some
    natural number `N`" and means `N ≥ 1`.  Needs `N ≠ 0`; for `N ≥ 1` it is
    immediate from the proved `sum_of_unitaries_3`.
-6. **72III**.1b and .1c (A/VN/Completeness.lean, vn.tex:3850) — **false as
+6. **[RESOLVED 2026-08-13 — erratum 720.30 was already this; incorporated.]**
+   **72III**.1b and .1c (A/VN/Completeness.lean, vn.tex:3850) — **false as
    stated**: the `‖ω‖` factor in `|ω(a*bc)| ≤ ‖ω‖‖a‖_ω‖b‖‖c‖_ω` breaks
    homogeneity, since `‖a‖_ω = ω(a*a)^½` is unnormalised and `ω ↦ tω` scales the
    two sides by `t` and `t²`.  Counterexample `𝒜 = ℂ`, `ω = t·id`, `t ∈ (0,1)`,

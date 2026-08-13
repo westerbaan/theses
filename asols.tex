@@ -10,6 +10,11 @@
 \chapter{Solutions, Addenda, Errata}
 The errata and addenda below pertain to the printed version of the thesis
 (defended May 14, 2019), which corresponds to arXiv:1804.02203v2.
+\begin{erratum}{parsec-40.80}%
+``$\left<x,\,\cdot\,\right>\colon V\to V$''
+should read
+``$\left<x,\,\cdot\,\right>\colon V\to \C$''.
+\end{erratum}
 \begin{erratum}{parsec-40.160}%
     It should be assumed that $T$ is bounded.
 \end{erratum}
@@ -34,9 +39,38 @@ In the hint for point 3,
 should read
 ``$a^n+1 = \prod_{k=1}^n a-\zeta^{2k+1}$''.
 \end{erratum}
+\begin{addendum}{parsec-110.200}
+Point~1 holds more generally for ``$f\colon X\to \C$''
+(so $\C$ instead of $\R$).
+\end{addendum}
 \begin{erratum}{parsec-120.30}
+In point~1,
 ``$(f\cdot g)'=f'\cdot g + g'\cdot f$'' should
     read ``$(f\cdot g)' = f'\cdot g + f\cdot g'$''.
+Also, in point~3,
+``$f'(z)=0$ for all~$z\in \scrA$''
+should read
+``$f'(z)=0$ for all~$z\in \C$''.
+\end{erratum}
+\begin{erratum}{parsec-160.50}
+Here the $C^*$-algebra must be $\neq \{0\}$.
+\end{erratum}
+\begin{erratum}{parsec-160.60}
+``$\spec(a)=\{\lambda\}$'' should read ``$\spec(a)\subseteq\{\lambda\}$''.
+\end{erratum}
+\begin{erratum}{parsec-170.30}
+``$t\in [0,\infty]$''
+should read
+``$t\in [0,\infty)$''.
+\end{erratum}
+\begin{erratum}{parsec-170.60}
+In point~3,
+``$\lambda \in \R$'' should read ``$\lambda \geq 0$''.
+\end{erratum}
+\begin{erratum}{parsec-190.20}
+``$\lambda^{-1}(1+b(\lambda-ab)a)$''
+should read
+``$\lambda^{-1}(1+b(\lambda-ab)^{-1}a)$''.
 \end{erratum}
 \begin{erratum}{parsec-200.30}
 Where  ``$\|f(a)\|\leq f(1)\,\|a\|\leq\|f(1)\|\,\|a\|$
@@ -45,12 +79,24 @@ is written
 one should read
 ``$\|f(a)\|\leq\|f(1)\|\,\|a\|$ by \sref{parsec-170.60}''.
 \end{erratum}
+\begin{erratum}{parsec-220.30}
+In point~5, the $C^*$-algebra must be $\neq\{0\}$.
+\end{erratum}
 \begin{erratum}{parsec-220.60}
 In the definition of~$J$,
 one should read ``$q(\Real{b})$''
 and~``$q(\Imag{b})$''
 instead of~``$\Real{b}$''
 and~``$\Imag{b}$'', respectively.
+\end{erratum}
+\begin{erratum}{parsec-220.80}
+For the first claim the $C^*$-algebra must be $\neq\{0\}$.
+(The second claim holds for~$\{0\}$ too, vacuously.)
+\end{erratum}
+\begin{erratum}{parsec-230.60}
+``$(1-b')(b'-b)$ is positive by~\sref{parsec-230.50}''
+should read
+``$(1-b')(b'-b)$ is positive by~\sref{parsec-230.40}''.
 \end{erratum}
 \begin{erratum}{parsec-230.70}
 It should be assumed that $a$ and~$b$ are
@@ -235,15 +281,51 @@ but on the contrary, that it is bounded by~$n^2\|f\|$.
 In point~6, ``$u=\sqrt{a^{-1}(a^{-1})^*}$''
 should read ``$u=a\sqrt{a^{-1}(a^{-1})^*}$''.
 \end{erratum}
+\begin{erratum}{parsec-341.70}
+Here $N>0$.
+\end{erratum}
 \begin{erratum}{parsec-370.50}
 The strong operator topology is the topology
 induced by the seminorms $T\mapsto \|Tx\|$ where~$x\in \scrH$
 (which is not always the least topology that makes
 all these seminorms continuous.)
 \end{erratum}
+\begin{erratum}{parsec-370.90}
+It should be assumed that~$\scrD$ is non-empty.
+\end{erratum}
+\begin{erratum}{parsec-370.100}
+That the net~$(T)_{T\in\scrD}$ is ``WOT-bounded''
+is unwarranted,
+because $(\,\left<x,Tx\right>\,)_{T\in\scrD}$,
+though bounded from above,
+need not be bounded from below.
+This is remedied by assuming,
+without loss of generality,
+that~$\scrD$ has a least element~$T_0$
+(replacing~$\scrD$ by~$\{\,T\in\scrD\colon T_0\leq T\,\}$
+if need be,)
+so that $(\,\left<x,Tx\right>\,)_{T\in\scrD}$
+is bounded from below by~$\left<x,T_0x\right>$.
+\end{erratum}
+\begin{erratum}{parsec-380.60}
+Drop the ``if'' part of point~2:
+it is false, but not used later on.
+\end{erratum}
 \begin{erratum}{parsec-430.20}
 The remark in point~3 that~$a_\alpha^*a_\alpha$
 is norm-bounded is unwarranted.
+\end{erratum}
+\begin{erratum}{parsec-610.20}
+Both inequalities should be reversed.
+(This is what is actually proven.)
+\end{erratum}
+\begin{erratum}{parsec-680.40}
+In point~2, on the first line,
+``subset of~$\scrA$'' should read
+``subset of positive elements of~$\scrA$'',
+and on the last line,
+``for all~$a,b\in\scrA$'' should read
+``for all positive~$a,b\in\scrA$''.
 \end{erratum}
 \begin{erratum}{parsec-720.30}
 ``$\|\omega\|$''
@@ -259,6 +341,21 @@ in point~1.
 \begin{erratum}{parsec-750.30}
 ``we have $0\leq a_{nm}\leq \frac{1}{2}$''
 should read ``we have $0\leq a_{nm}\leq 1$''.
+\end{erratum}
+\begin{erratum}{parsec-990.70}
+This paragraph should read:
+Since~$ab=0$,
+we have~$\ceill{a}\ceilr{b}=0$ by~\sref{parsec-600.80},
+and so~$\ceil{f(\ceill{a})}\ceil{f(\ceilr{b})}=0$ (by~\sref{parsec-990.20}(3)).
+Now,
+since $\ceill{f(a)}\leq \ceil{f(\ceill{a})}$
+and $\ceilr{f(b)}\leq \ceil{f(\ceilr{b})}$
+by~\sref{parsec-610.20},
+we get $\ceill{f(a)}\ceilr{f(b)}
+= \ceill{f(a)} \ceil{f(\ceill{a})}
+\ceil{f(\ceilr{b})}
+\ceilr{f(b)}
+=0$.
 \end{erratum}
 \begin{solution}{parsec-40.30}%
 Let~$\scrX$, $\scrY$ and~$\scrZ$ be normed (complex) vector spaces.
@@ -1220,7 +1317,7 @@ $a^2+\lambda$ is invertible
         for $\lambda \in (0,\infty)$.
 For this,
         note that since~$a-\sqrt{\lambda}i$ and~$a+\sqrt{\lambda}i$
-        are invertible by point~2,
+        are invertible by point~1,
         so is their product $(a-\sqrt{\lambda}i)(a+\sqrt{\lambda}i)
         = a^2+\lambda$.
 \item
@@ -1285,8 +1382,8 @@ Given~$\lambda\in\C$, we have
 using~\sref{parsec-90.30} in the last step.
         Thus~$\spec(f)=f(X)$.
     \item
-        A square matrix is invertible iff its kernel is not~$\{0\}$.
-In particilar, $A-\lambda$
+        A square matrix is invertible iff its kernel is~$\{0\}$.
+In particular, $A-\lambda$
         is not invertible iff $(A-\lambda)v=0$
         for some non-zero vector~$v\in \C^n$.
 In that case, we have $Av=\lambda v$, and so~$\lambda$
@@ -1711,33 +1808,35 @@ that the ``$\log$'' terms  will cancel.
 \end{solution}
 \begin{solution}{parsec-160.50}%
     If~$\spec(a)=\varnothing$,
-    then~$\|a\|=\sup\varnothing=\infty$ by~\sref{parsec-160.20},
-    which is absurd.
+    then~$\|a\|=\sup\varnothing=0$ by~\sref{parsec-160.20},
+    so that~$a=0$.
+    But then~$0\in\spec(a)$,
+    because~$0$ is not invertible (as~$\scrA\neq\{0\}$.)
 \end{solution}
 \begin{solution}{parsec-160.60}%
-Given~$\mu\in \C$,
-the scalar~$\lambda - \mu$ 
-is invertible in~$\scrA$
-iff it is invertible in~$\C$
-iff~$\lambda\neq \mu$.
-Hence~$\spec(\lambda)=\{\lambda\}$.
+Given~$\mu\in \C$ with~$\mu\neq\lambda$,
+the scalar~$\lambda-\mu$ is invertible in~$\scrA$.
+Hence~$\spec(\lambda)\subseteq\{\lambda\}$.
 
 For the other direction,
 suppose that~$a$ is a self-adjoint element of~$\scrA$
-    with $\spec(a)=\{\lambda\}$ for some $\lambda\in\C$.
-Then $\spec(a-\lambda)=\spec(a)-\lambda = \{0\}$.
-    Hence~$\|a-\lambda\|=\sup\{0\}=0$
+    with $\spec(a)\subseteq\{\lambda\}$.
+Then $\spec(a-\lambda)=\spec(a)-\lambda \subseteq \{0\}$,
+    so~$\|a-\lambda\|=0$
     by~\sref{parsec-160.20},
-    and so~$a=\lambda$.
+    and thus~$a=\lambda$.
 \end{solution}
 \begin{solution}{parsec-160.61}
-    Let~$a$ from~$\scrA$ be given.
-    Since~$\spec(a)$ is not empty by~\sref{parsec-160.60},
-    there is~$\lambda\in\C$ such that~$a-\lambda$ is not intertible.
+    If~$\scrA=\{0\}$, we are done; so assume~$\scrA\neq\{0\}$.
+    Let a self-adjoint~$a$ from~$\scrA$ be given.
+    Since~$\spec(a)$ is not empty by~\sref{parsec-160.50},
+    there is~$\lambda\in\C$ such that~$a-\lambda$ is not invertible.
     As~$0$ is the only non-invertible element of~$\C$,
     we get $a-\lambda = 0$, and so~$a=\lambda$.
-    Whence every element of~$\scrA$ is a scalar.
-    Thus~$\scrA=\C$ or~$\scrA=\{0\}$.
+    Whence every self-adjoint element of~$\scrA$ is a scalar,
+    and thereby every element~$a$ of~$\scrA$,
+    being~$a=\Real{a}+i\Imag{a}$, is too.
+    Thus~$\scrA=\C$.
 \end{solution}
 \begin{solution}{parsec-170.20}
     We already saw this in~\sref{parsec-90.20},
@@ -1809,7 +1908,7 @@ $\lambda -a$ and~$\lambda+a$ are positive
 iff~$-\lambda \leq a\leq \lambda$.
 
 Next,
-writing $\|a\|_o = \inf\{\lambda\in \R\colon -\lambda\leq a \leq \lambda\}$
+writing $\|a\|_o = \inf\{\lambda\geq 0\colon -\lambda\leq a \leq \lambda\}$
 we must show that~$\|a\|=\|a\|_o$.
 In~\sref{parsec-90.100},
 we already saw that~$\|a\|_o\leq \|a\|$.
@@ -1839,11 +1938,11 @@ iff~$a-\frac{1}{n}$ is positive
 iff $\spec(\,a-\frac{1}{n}\,)\equiv \spec(a)-\frac{1}{n} \subseteq [0,\infty)$
 iff $\spec(a)\subseteq [\frac{1}{n},\infty)$.
 
-Recall that~$a$ is invertibe iff~$0\notin\spec(a)$.
+Recall that~$a$ is invertible iff~$0\notin\spec(a)$.
 Surely, if~$\spec(a)\subseteq [\frac{1}{n},\infty)$,
 then~$0\notin \spec(a)$, and so~$a$ is invertible.
 For the other direction,
-suppose that~$a$ is not invertible,
+suppose that~$a$ is invertible,
 then~$0\notin \spec(a)\subseteq [0,\infty)$,
 and so (since~$\spec(a)$ is closed),
 there's $n$ such that~$\lambda\notin \spec(a)$
@@ -1938,7 +2037,7 @@ is a miu-map is obvious. To see that it's also the equaliser
 and let $\gamma\colon \scrC\to\scrA$ be a pu-map with
 $f\circ \gamma = g\circ \gamma$.
 We must show that there's a unique pu-map $h\colon \scrC\to\scrE$
-with~$e\circ h = g$.
+with~$e\circ h = \gamma$.
 Since~$e$ is injective, uniqueness is clear.
 Concerning existence, note
 that~$f(\gamma(c))=g(\gamma(c))$
@@ -2113,8 +2212,10 @@ and~$(a)$ is thus contained in a maximal order ideal, by point~2.
 \item
 Recall that $\|a\|=\sup\{\left|\lambda\right|\colon \lambda\in \spec(a)\}$
 by~\sref{parsec-160.20}.
-Let~$\lambda_1,\lambda_2,\dotsc$
-be a sequence in~$\spec(a)$
+Since~$\spec(a)$ is not empty
+by~\sref{parsec-160.50} (as~$\scrA\neq\{0\}$),
+there is a sequence~$\lambda_1,\lambda_2,\dotsc$
+in~$\spec(a)$
 such that~$\left|\lambda_1\right|\,\leq\,
 \left|\lambda_2\right|\,\leq\,
 \dotsb$ converges to~$\|a\|$.
@@ -2371,16 +2472,18 @@ is the least upper bound for~$a$ and~$-a$
 we must show
     given an upper bound~$b$ for~$a$, and~$-a$ in~$\Real{\scrA}$
 that~$\left|a\right|\leq b$.
+        Note that~$b$ is positive,
+        since~$2b=(b-a)+(b+a)\geq 0$.
         Since~$\sqrt{\,\cdot\,}$ is monotone
-        on commuting positive elements,
-        and~$a$ and~$b$ are positive, and commute (because
-        $\scrA$ is commutative),
+        on commuting positive elements
+        (and~$\scrA$ is commutative),
+        and~$\left|a\right|=\sqrt{a^2}$ and~$b=\sqrt{b^2}$,
         it suffices to show that
         $\left|a\right|^2\equiv a^2 \leq b^2$.
 In other words,
 we must show that~$b^2-a^2\equiv (b+a)(b-a)$ is positive,
 which it is,
-by~\sref{parsec-230.70}(2),
+by~\sref{parsec-230.70}(1),
 being the product of commuting positive elements.
 \item
 Note that $c+(\,\cdot\,)\colon \Real{\scrA}\to\Real\scrA$
@@ -2432,7 +2535,7 @@ As a result~$f(\left|a\right|)=\left|f(a)\right|$
 for any~$\Real\scrA$ (since $\left|a\right|=\smash{\sqrt{a^2}}$,)
 and thus~$f(a\vee b)=f(a)\vee f(b)$
 for all~$a,b\in\Real\scrA$
-(since $a\vee b=\frac{1}{2}(a+b+\left|a+b\right|)$,)
+(since $a\vee b=\frac{1}{2}(a+b+\left|a-b\right|)$,)
 and so $f(a\wedge b)=f(a)\wedge f(b)$
 for all~$a,b\in\Real\scrA$
 (since~$a\wedge b = -((-a)\vee(-b))$.)
@@ -3141,7 +3244,7 @@ which is both injective and surjective, and therefore a miu-isomorphism.
 \item
 $\left|\omega(a^*b)\right|^2
 \,\equiv\, \left|[a,b]_\omega\right|^2
-\,\leq\, [a,a]_\omega^2\,[b,b]_\omega^2
+\,\leq\, [a,a]_\omega\,[b,b]_\omega
 \,\equiv\, \omega(a^*a)\,\omega(b^*b)$.
 
 \item
@@ -3581,7 +3684,7 @@ is a Hilbert $\scrA$-module.
 The subset~$J$ of~$C[0,1]$,
 being the kernel of the map miu-map $f\mapsto f(0)\colon C[0,1]\to\C$,
 is a closed two-sided $C^*$-ideal,
-and in particilar a closed submodule of
+and in particular a closed submodule of
 the Hilbert $C[0,1]$-module $C[0,1]$ itself.
 
 It remains to be shown that $b\in J$ 

@@ -421,7 +421,7 @@ is a map $\left<\,\cdot\,,\,\cdot\,\right>\colon V\times V\to \C$%
 \index{$\left<\,\cdot\,,\,\cdot\,\right>$, inner product!$\C$-valued}
 such that,
 for all~$x,y\in V$,
-$\left<x,\,\cdot\,\right>\colon V\to V$ is linear;
+$\left<x,\,\cdot\,\right>\colon V\to \C$ is linear;
 $\left<x,x\right>\geq 0$;
 and
 $\left<x,y\right>=\overline{\left<y,x\right>}$.
@@ -1633,7 +1633,7 @@ for which~$a-\lambda$ is not invertible.
 Verify the following examples.
 \begin{enumerate}
 \item
-The spectrum of a continuous function~$f\colon X\to \R$
+The spectrum of a continuous function~$f\colon X\to \C$
 on a compact Hausdorff space~$X$
 being an element of the $C^*$-algebra $C(X)$
 is the image of~$f$, that is,
@@ -1780,7 +1780,7 @@ is holomorphic, and $f'(z)=1$ for all $z\in\C$.
 
 \item
 Let~$a\in \scrA$. The constant function $f$ given by $f(z)=a$
-for all~$z\in \C$ is holomorphic, and $f'(z)=0$ for all~$z\in \scrA$.
+for all~$z\in \C$ is holomorphic, and $f'(z)=0$ for all~$z\in \C$.
 
 \item
 Any polynomial,
@@ -2644,13 +2644,13 @@ $\sup\{\,\left|\lambda\right|\colon\, \lambda\in \spec(a)\,\}
 	which we won't need here.
 \end{point}
 \begin{point}{50}[spectrum-non-empty]{Exercise}%
-Given a self-adjoint element~$a$ of a $C^*$-algebra show that
-$\spec(a)\neq \varnothing$.
+Given a self-adjoint element~$a$ of a $C^*$-algebra~$\scrA\neq\{0\}$
+show that $\spec(a)\neq \varnothing$.
 \end{point}
 \begin{point}{60}{Exercise}%
 Given a self-adjoint element~$a$ of a $C^*$-algebra
 and~$\lambda\in\R$
-show that $\spec(a) =\{\lambda\}$ iff $a=\lambda$.
+show that $\spec(a) \subseteq\{\lambda\}$ iff $a=\lambda$.
 \end{point}
 \begin{point}{61}{Exercise}%
 Use the previous exercise to prove the following theorem.
@@ -2713,7 +2713,7 @@ where $\lambda,t\in\R$.
 \end{point}
 \begin{point}{30}[pos-spectrum]{Proposition}%
 For a self-adjoint element $a$ from a $C^*$-algebra,
-and $t\in [0,\infty]$, 
+and $t\in [0,\infty)$,
 \begin{equation*}
 \|a-t\|\,\leq\, t\qquad\iff\qquad \spec(a)\subseteq [0,2t].
 \end{equation*}%
@@ -2767,7 +2767,7 @@ Show that
  $-\lambda \leq a\leq \lambda$
 iff $\|a\|\leq \lambda$,
 for $\lambda\in [0,\infty)$.
-Conclude that $\|a\| = \inf\{ \lambda \in \R\colon 
+Conclude that $\|a\| = \inf\{ \lambda \geq 0\colon
 -\lambda \leq a\leq \lambda\}$.
 
 (In other words
@@ -2831,7 +2831,7 @@ Suppose that $\lambda-ab$ is invertible.
 Then using the equality $a(\lambda-ba)=(\lambda-ab)a$
 one sees that $(1+b(\lambda-ab)^{-1}a)(\lambda-ba)=\lambda$.
 Since similarly $(\lambda-ba)(1+b(\lambda-ab)^{-1}a)=\lambda$,
-we see that $\lambda^{-1}(1+b(\lambda-ab)a)$
+we see that $\lambda^{-1}(1+b(\lambda-ab)^{-1}a)$
 is the inverse of~$\lambda-ba$.\qed
 \end{point}
 \end{point}
@@ -3357,7 +3357,8 @@ of~$\scrA$
 with $a\in J$.
 
 \item
-Let~$a$ be a self-adjoint element of~$\scrA$.
+Let~$a$ be a self-adjoint element of~$\scrA$,
+and suppose that~$\scrA\neq\{0\}$.
 Show that  $\|a\|-a$
 or $\|a\|+a$ is not invertible
 (perhaps by considering the spectrum of~$a$.)
@@ -3464,7 +3465,7 @@ is pu, and $\ker(q)=I$, we are done.\qed
 \begin{point}{80}[states-order-separating]{Exercise}%
 \index{state of a $C^*$-algebra!order separating}%
 Show using~\sref{maximal-ideal-state} that given a self-adjoint element~$a$
-of a $C^*$-algebra~$\scrA$
+of a $C^*$-algebra~$\scrA\neq\{0\}$
 there is a state~$\omega$ with $\left|\omega (a)\right| = \|a\|$.
 Conclude that the set of states of a $C^*$-algebra
 is order separating (see~\sref{separating}).
@@ -3626,7 +3627,7 @@ $(1-b')^2= (1-b)^2 \equiv (1-b'+(b'-b))^2 = (1-b')^2+2(1-b')(b'-b)+(b'-b)^2$,
 which gives $0=2(1-b')(b'-b)+(b'-b)^2$.
 Now, since~$1-b'$ and $b'-b$ are positive,
 and commute, we see that $(1-b')(b'-b)$ is positive 
-by~\sref{ineq-square-root}, and so 
+by~\sref{square-commuting-monotone}, and so
  $0=2(1-b')(b'-b)+(b'-b)^2\geq (b'-b)^2 \geq 0$,
 which entails $(b'-b)^2=0$, and so $\|(b'-b)^2\|=\|b'-b\|^2=0$,
 yielding $b=b'$.\qed
@@ -5922,7 +5923,7 @@ Prove the following theorem.
 \index{Russo--Dye's Theorem}
 An element~$a$ of a $C^*$-algebra $\scrA$
 with $\|a\|< 1-\frac{2}{N}$
-for some natural number~$N$
+for some natural number~$N>0$
 can be written as~$a=\frac{1}{N}(u_1+\dotsb + u_N)$
 for some unitaries $u_1,\dotsc,u_N\in \scrA$.
 \end{point}
@@ -6301,7 +6302,7 @@ which is therefore bounded.\qed
 \end{point}
 \begin{point}{90}[hilb-suprema]{Proposition}%
 Let~$\scrH$ be a Hilbert space,
-and~$\scrD$ an upwards directed subset of~$\Real{\scrB(\scrH)}$
+and~$\scrD$ a non-empty upwards directed subset of~$\Real{\scrB(\scrH)}$
 with $\sup_{T\in \scrD} \left<x,Tx\right> <\infty$
 for all~$x\in \scrH$. Then
 \begin{enumerate}
@@ -6321,6 +6322,15 @@ for all~$x\in \scrH$.
 \end{enumerate}
 \spacingfix
 \begin{point}{100}{Proof}%
+Without loss of generality,
+we may assume that~$\scrD$ has a least element~$T_0$;
+for if it does not,
+pick some~$T_0$ from~$\scrD$,
+and replace~$\scrD$ by~$\{\,T\in\scrD\colon T_0\leq T\,\}$.
+(If the latter WOT-converges,
+then so does the former,
+and to the same limit.)
+
 Let~$x\in \scrH$.
 Since $\left<x,(\,\cdot\,)x\right>\colon \scrB(\scrH)\to \C$
 is positive
@@ -6329,12 +6339,18 @@ $(\left<x,Tx\right>)_{T\in\scrD}$
 is an increasing net in~$\R$, 
 bounded from above (by assumption),
 and therefore converges to~$\sup_{T\in\scrD}\left<x,Tx\right>$.
-In particular,~$(T)_{T\in\scrD}$
-is WOT-Cauchy,
-and ``WOT-bounded'',
-and thus
-(by~\sref{bh-wot-bounded-complete})
-WOT-converges to some self-adjoint~$T'$ from~$\scrB(\scrH)$.
+In particular,
+$(\left<x,Tx\right>)_{T\in\scrD}$ is Cauchy;
+and it is bounded as well,
+being squeezed between~$\left<x,T_0x\right>$
+and~$\sup_{T\in\scrD}\left<x,Tx\right>$.
+Thus, by~\sref{bh-wot-bounded-complete},
+$(T)_{T\in\scrD}$
+WOT-converges to some~$T'$ from~$\scrB(\scrH)$.
+Note that~$T'$ is self-adjoint
+by~\sref{hilb-positive-operators}(1),
+as $\left<x,T'x\right>=\lim_{T\in\scrD}\left<x,Tx\right>$
+is real for every~$x\in\scrH$.
 
 Since $(\,\left<x,Tx\right>\,)_{T\in\scrD}$
 converges both to~$\left<x,T'x\right>$,
@@ -6455,14 +6471,9 @@ converges with respect to the operator norm
 to some bounded functional on~$\scrB(\scrH)$.
 \item
 Given some~$x\in \scrH$,
-show that~$x_\alpha$ converges to~$x$
-if and only if  $\left<x_\alpha,(\,\cdot\,)x_\alpha\right>$
+show that if~$x_\alpha$ converges to~$x$,
+then $\left<x_\alpha,(\,\cdot\,)x_\alpha\right>$
 operator-norm converges to~$\left<x,(\,\cdot\,)x\right>$.
-
-(For the ``if'' part it may be convenient
-to first prove that $\left<x_\alpha,x\right>\to \left<x,x\right>$
-by considering the bounded operator
-$\ketbra{x}{x}$ on~$\scrB(\scrH)$.)
 \end{enumerate}
 \spacingfix
 \end{point}%

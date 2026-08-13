@@ -2986,9 +2986,9 @@ we have,
 for all
 $a\in\scrA$,
 \begin{equation*}
-	\ceil{f(\,\ceill{a}\,)}\,\leq\, \ceill{f(a)\,}
+	\ceill{f(a)\,}\,\leq\,\ceil{f(\,\ceill{a}\,)}
 	\qquad\text{and}\qquad
-	\ceil{f(\,\ceilr{a}\,)}\,\leq\, \ceilr{\,f(a)}.
+	\ceilr{\,f(a)}\,\leq\,\ceil{f(\,\ceilr{a}\,)}.
 \end{equation*}
 \spacingfix%
 \begin{point}{30}{Proof}%
@@ -3000,7 +3000,7 @@ we get~$\ceill{f(a)\,}\equiv \ceil{f(a)^*f(a)}
 	=\ceil{f(\ceil{a^*a})}
 	\equiv \ceil{f(\ceill{a})}$.
 
-One obtains $\ceil{f(\,\ceilr{a}\,)}\leq \ceilr{\,f(a)}$
+One obtains $\ceilr{\,f(a)}\leq\ceil{f(\,\ceilr{a}\,)}$
 along similar lines.\qed
 \end{point}
 \end{point}
@@ -3495,14 +3495,14 @@ Show that $\cceil{a}=\cceil{a^*}
 for all~$a\in\scrA$.
 \item
 Show that~$\cceil{ \bigvee D } = \bigcup_{d\in D} \cceil{d}$
-for any bounded directed subset of~$\scrA$.
+for any bounded directed subset of positive elements of~$\scrA$.
 
 Show that~$\cceil{\bigcup E} = \bigcup_{e\in E} \cceil{e}$
 for any collection of projections from~$\scrA$.
 
 Show that~$\cceil{a+b}=\cceil{\ceil{a}\cup \ceil{b}}
 =\cceil{a}\cup\cceil{b}$
-for all~$a,b\in \scrA$.
+for all positive~$a,b\in \scrA$.
 \item
 Given~$a\in\scrA$
 and a central projection~$c$ of~$\scrA$
