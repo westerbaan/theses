@@ -640,7 +640,7 @@ using the inequalities~$\left<x,y\right>+\left<y,x\right>
 \leq 2\left|\left<x,y\right>\right| \leq 2\|x\|\|y\|$.)
 \end{point}
 \begin{point}{160}[operators-cstar-identity]{Lemma}%
-For an adjointable operator~$T$ on a pre-Hilbert space~$\scrH$
+For a bounded adjointable operator~$T$ on a pre-Hilbert space~$\scrH$
 \begin{equation*}
 \|T^*T\|\ =\ \|T\|^2\qquad\text{and}\qquad\|T^*\|\ =\ \|T\|.
 \end{equation*}%
@@ -755,12 +755,12 @@ Hence~$\|y'-x\|>\|y-x\|$.\qed
 \begin{point}{60}[hilb-projection-basic]{Exercise}%
 Let~$y$ be a projection of an element~$x$ of a pre-Hilbert space~$\scrH$
 on a linear subspace~$C$.
-Show that~$y$ is a projection of~$x$ on $y\C$.
-Conclude that~$y$ is the unique projection of~$x$ on~$C$,
-and that~$\left<y,x-y\right>=0$.
-Show that~$y+c$ is the projection of~$x+c$ on~$C$
+Show that~$y$ is a projection of~$x$ on $y\C$,
+and conclude that~$\left<y,x-y\right>=0$.
+Show that~$y+c$ is a projection of~$x+c$ on~$C$
 for every~$c\in C$.
-Conclude that~$\left<y',x-y\right>\equiv\left<y',(x+y'-y)-y'\right>=0$ 
+Conclude that~$y$ is the unique projection of~$x$ on~$C$,
+and that~$\left<y',x-y\right>\equiv\left<y',(x+y'-y)-y'\right>=0$
 for every~$y'\in C$.
 \end{point}
 \begin{point}{70}[projection-theorem]{Projection Theorem}%
@@ -940,7 +940,7 @@ Given~$\varepsilon >0$
 pick $N$ such that $\|x_n - x_m\|\leq \frac{1}{2\sqrt{2}}\varepsilon$
 for all~$n,m\geq N$.
 We claim that for such~$n$
-we have $\|x_\infty -x\|\leq \varepsilon$.
+we have $\|x_\infty -x_n\|\leq \varepsilon$.
 Indeed, first note that since the sum
 \begin{equation*}
 	\sum_{i\in I} \|(x_\infty)_i - (x_n)_i \|^2
@@ -1456,7 +1456,7 @@ Show that $a-\lambda$ is invertible
 for every~$\lambda\in\C$ with~$\|a\|< \left|\lambda\right|$.
 \item
 Show that $a-b$ is invertible
-when~$b\in\scrA$ is invertible and $\|a\| < \|b\|$.
+when~$b\in\scrA$ is invertible and $\|a\| < \|b^{-1}\|^{-1}$.
 \item
 Show that $U:=\{\ b\in\scrA\colon\ \text{$b$ is invertible}\ \}$
 is an open subset of~$\scrA$.
@@ -1531,7 +1531,7 @@ Let~$a$ be an invertible element of~$\scrA$,
 and let~$b\in\scrA$ with~$\|a-b\|\leq\frac{1}{2}\|a^{-1}\|^{-1}$.
 We claim that~$b$ is invertible,
 and~$\|a^{-1}-b^{-1}\|\leq 2\|a-b\|\,\|a^{-1}\|^2$.
-Since $\|a-b\|\leq \frac{1}{2}\|a^{-1}\|$
+Since $\|a-b\|\leq \frac{1}{2}\|a^{-1}\|^{-1}$
 we have
 $\|1-a^{-1}b\|\leq \|a^{-1}\|\,\|a-b\|\leq \frac{1}{2}$.
 By~\sref{cstar-inv-continuous-1}, $a^{-1}b$ is invertible,
@@ -1586,7 +1586,7 @@ for all~$\lambda\in \C\backslash[0,\infty)$
 if and only if $a-\lambda$ is invertible
 for all~$\lambda\in \C\backslash[0,\infty)$.\\
 (Hint: show that
-$a^n+1= \prod_{k=1}^n a+\zeta^{2k+1}$
+$a^n+1= \prod_{k=1}^n a-\zeta^{2k+1}$
 where $\zeta=e^{\frac{\pi i}{n}}$.)
 \end{enumerate}%
 \spacingfix{}
@@ -1772,7 +1772,7 @@ Verify the following examples of holomorphic functions.
 \item
 If~$f$ and $g$ are holomorphic functions with $\dom(f)=\dom(g)$,
 then $f+g$ and $f\cdot g$ are holomorphic,
-and $(f+g)'=f'+g'$ and $(f\cdot g)' = f'g+g'f$.
+and $(f+g)'=f'+g'$ and $(f\cdot g)' = f'g+fg'$.
 
 \item
 The function~$f$ given by $f(z)=z$ and~$\dom(f)=\C$
@@ -2881,7 +2881,7 @@ Given~$a\in\sa{\scrA}$
 we have~$-\|a\|\leq a \leq \|a\|$,
 and $-\|a\|\,f(1)\leq f(a)\leq \|a\|\,f(1)$
 (because $f$ is positive),
-and thus~$\|f(a)\|\leq f(1)\,\|a\|\leq \|f(1)\|\,\|a\|$ 
+and thus~$\|f(a)\|\leq \|f(1)\|\,\|a\|$
 by~\sref{positive-basic-2}.
 
 For an arbitrary element $a\equiv \Real{a}+i\Imag{a}$
@@ -3413,12 +3413,12 @@ We will prove that~$q(a)=\alpha$
 by considering the order ideal
 \begin{alignat*}{3}
 	J\ := \ \{\,b\in \scrA\colon\, 
-		& \exists\lambda,\mu\in\R\,[\ 
-	\lambda (\alpha-q(a))\,\leq\, \Real{b}\,\leq\, \mu 
+		& \exists\lambda,\mu\in\R\,[\
+	\lambda (\alpha-q(a))\,\leq\, q(\Real{b})\,\leq\, \mu
 (\alpha-q(a))\ ]\,\wedge\,
 		\\
-		&\exists\lambda,\mu\in \R\,[\ 
-\lambda (\alpha-q(a))\,\leq\, \Imag{b}\,\leq\, \mu (\alpha-q(a)) \ ] \,\}.
+		&\exists\lambda,\mu\in \R\,[\
+\lambda (\alpha-q(a))\,\leq\, q(\Imag{b})\,\leq\, \mu (\alpha-q(a)) \ ] \,\}.
 \end{alignat*}
 We claim that $1\notin J$.
 Indeed, suppose not---towards a contradiction.
@@ -3660,7 +3660,7 @@ If $b,c\in \sa{\scrA}$ commute with~$a$,
 then $b\leq c$ implies $ab\leq ac$.
 
 \item
-If~$a,b\in\Real{\scrA}$ commute, and~$a\leq b$, then~$a^2\leq b^2$.
+If~$a,b\in\Real{\scrA}$ commute, and~$0\leq a\leq b$, then~$a^2\leq b^2$.
 
 \item
 The requirement in the previous item  that~$a$ and~$b$ commute is essential:
@@ -3714,9 +3714,11 @@ give an example of
 self-adjoint elements~$a$ and~$b$ of a $C^*$-algebra with
  $\left|a+b\right|\nleq \left|a\right|+ \left|b\right|$.
 
-(Hint: one may take  
+(Hint: one may take
 $a=\frac{1}{2}\left(\begin{smallmatrix}1 & 1 \\ 1 & 1\end{smallmatrix}\right)$
 and $b=-\left(\begin{smallmatrix}1 & 0 \\ 0 & 0 \end{smallmatrix}\right)$.)
+\item
+Show that $\|a\|=\|a_+\|\vee \|a_-\|$.
 \end{enumerate}
 \spacingfix%
 \end{point}
@@ -3896,7 +3898,7 @@ that they are isomorphic to $C^*$-algebras
 of continuous functions on a compact Hausdorff space,
 via the \emph{Gelfand representation}.
 \end{point}
-\begin{point}{20}{Setting}%
+\begin{point}{20}[gelfand-setting]{Setting}%
 $\scrA$ is a commutative $C^*$-algebra.
 \end{point}
 \begin{point}{30}[gelfand-representation]{Definition}%
@@ -4008,27 +4010,65 @@ Each proper Riesz ideal is contained in a maximal Riesz ideal.
 A maximal Riesz ideal~$I$ of~$\scrA$
 is a maximal order ideal.
 \begin{point}{120}{Proof}%
-Let~$J$ be a proper order ideal with $I\subseteq J$.
-We must show that $J=I$.
-Let~$a\in J$ be given;
-we must show that $a\in I$.
-Since~$\Real{a},\Imag{a}\in J$,
-it suffices to show that~$\Real{a},\Imag{a}\in I$,
-and so we might as well assume that~$a$ is self-adjoint
-to begin with.
-Similarly,
-since~$\left|a\right|\in J$,
-and it suffices to show that~$\left|a\right|\in I$,
-because then $-\left|a\right|\leq a\leq \left|a\right|$
-entails $a\in I$,
-we might as well assume that~$a$ is positive.
+Recall that~$\scrA$ is commutative
+in this setting (\sref{gelfand-setting}),
+which we'll use several times below.
 
-Note that the least ideal~$(a)$ that contains~$a$
-is also a Riesz ideal by~\sref{riesz-ideal-basic}.
-Hence  $I+(a)$ is a Riesz ideal by~\sref{riesz-ideal-basic}
-Since~$a\in J$, we have $(a)\subseteq J$,
-and so~$I+(a)\subseteq J$ is proper.
-It follows that $a\in I+(a)=I$ by maximality of~$I$.\qed
+We'll show first that for~$a,b\in\pos{\scrA}$
+with~$ab=0$ either $a\in I$ or~$b\in I$.
+To this end, consider
+the Riesz ideal~$I+(a)_m$,
+where~$(a)_m$ is the Riesz ideal generated by~$a$
+from~\sref{riesz-ideal-basic}(1).
+Since~$I$ is maximal, either~$I+(a)_m=I$
+or~$I+(a)_m=\scrA$.
+In the former case, $a\in I$,
+and so we'd be done.
+So we assume that~$I+(a)_m=\scrA$.
+In particular, $1\in I+(a)_m$,
+and so~$1=x+a'$ for some~$x\in I$ and~$a'\in (a)_m$.
+Upon taking the real part
+we see that we may assume~$x$ and~$a'$ to be self-adjoint.
+By definition of~$(a)_m$ there's $n\in \N$ with
+$\left|a'\right|\leq na$.
+Then, $1=\left|1\right|=\left|x+a'\right|
+\leq \left|x\right| + \left|a'\right|
+\leq \left|x\right| + na$,
+using that~$\sa{\scrA}$ is a Riesz space,
+see~\sref{commutative-cstar-basic}.
+By a similar reasoning for~$b$,
+we can find $y\in I\cap\Real{\scrA}$
+and~$m\in\N$ with $1\leq\left|y\right|+mb$.
+Then,
+using~\sref{sqrt}(2),
+\begin{alignat*}{3}
+1 \ \leq\ (\left|x\right| + na)(\left|y\right|+mb)
+\ &= \ \left|x\right|\left|y\right| \,+\,
+na\left|y\right|\,+\, mb\left|x\right|\,+\,nmab\\
+\ &= \ \left|x\right|\left|y\right| \,+\,
+na\left|y\right|\,+\, mb\left|x\right|
+\ \in\ I\quad \text{by \sref{riesz-ideal-ring-ideal}.}
+\end{alignat*}
+But then~$1\in I$, which is absurd.
+Thus either~$I+(a)_m=I$ and thus~$a\in I$,
+or~$I+(b)_m = I$ and thus~$b\in I$.
+
+To see that~$I$ is a maximal order ideal,
+let~$J$ be a proper order ideal with~$I\subseteq J$.
+We must show that~$J=I$.
+It suffices to show that~$J$ is a Riesz ideal
+(since~$I$ is a maximal Riesz ideal).
+Let~$a\in \Real{J}$ be given;
+we must show that~$\left|a\right|\in J$.
+Recall that $a=a_+-a_-$ and $a_+a_-=0$.
+Thus, by the previous discussion, either~$a_+\in I\subseteq J$
+or~$a_-\in I\subseteq J$.
+In fact, since~$a_+-a_- = a\in J$,
+both $a_+\in J$ and~$a_-\in J$.
+But then~$a_++a_- = \left|a\right| \in J$.
+Hence~$J$ is a Riesz ideal,
+and so~$I=J$.
+Thus~$I$ is a maximal order ideal.\qed
 \end{point}
 \end{point}
 \begin{point}{130}[riesz-ideal-miu-map]{Lemma}%
@@ -4274,7 +4314,7 @@ that contains~$a$.
 
 Given~$b\in C^*(a)$
 show that~$bc=cb$ for all~$c\in\scrA$
-with~$ac=ca$.
+with~$ac=ca$ and $a^*c=ca^*$.
 \item
 We call~$a\in\scrA$ \Define{normal}%
 \index{normal!element of a $C^*$-algebra}
@@ -4364,7 +4404,7 @@ $(a+\frac{1}{n})^\alpha \leq (b+\frac{1}{n})^\alpha$
 for all~$n$,
 because~$(a+\frac{1}{n})^\alpha$
 norm converges to~$a^\alpha$
-as~$n\to\infty$.
+as~$n\to\infty$ (see~\sref{fc-uniformly-continuous} below).
 In other words,
 it suffices to prove $a^\alpha \leq b^\alpha$
 under the additional assumption that~$a$ and~$b$ are invertible.
@@ -4383,8 +4423,48 @@ Since clearly~$0,1\in E$
 it suffices to show that~$E$ is convex.
 We'll do this by showing that~$E$
 is closed,
-and $\alpha,\beta\in E\implies \frac{1}{2}\alpha 
+and $\alpha,\beta\in E\implies \frac{1}{2}\alpha
 + \frac{1}{2}\beta \in E$.
+\begin{point}{41}[fc-uniformly-continuous]{$(a+\frac{1}{n})^\alpha$
+	converges to~$a^\alpha$}
+First note that~$a$ and all~$a+\frac{1}{n}$
+are elements of a commutative $C^*$-subalgebra~$\scrB$
+of~$\scrA$.
+We'll show, more generally,
+that given any uniformly continuous map $f\colon D\to\C$
+on some subset~$D$ of~$\C$,
+the assignment $b\mapsto f(b)$
+where~$b\in \scrB$ with~$\spec(b)\subseteq D$
+is uniformly continuous
+with respect to the norm on~$\scrA$.
+So let~$\varepsilon>0$ be given.
+Since~$f$ is uniformly continuous,
+there's $\delta>0$ with $\left|f(x)-f(y)\right|\leq\varepsilon$
+for all~$x,y\in D$ with $\left|x-y\right|\leq \delta$.
+Now, let~$a,b\in \scrB$ with
+$\spec(a),\spec(b)\subseteq D$
+and~$\left\|a-b\right\|\leq \delta$ be given. Then:
+\begin{alignat*}{3}
+\|f(a)-f(b)\|
+\ &= \ \sup_{\varphi\in \spec(\scrB)}
+\left|\,\varphi(\,f(a)\,-\,f(b)\,)\,\right|\qquad
+&&\text{by~\sref{gelfand-representation-isometry}}
+\\
+\ &=\ \sup_{\varphi\in\spec(\scrB)}\left|
+\,\varphi(f(a))\,-\,\varphi(f(b))\,\right|\qquad
+&&
+\\
+\ &=\ \sup_{\varphi\in\spec(\scrB)}\left|
+\,f(\varphi(a))\,-\,f(\varphi(b))\,\right|\qquad
+&&\text{by~\sref{functional-calculus}(4)}
+\\
+\ &\leq\ \varepsilon,
+\end{alignat*}
+because $\left|\varphi(a)-\varphi(b)\right|
+\leq \|\varphi\|\,\|a-b\|\leq \delta$,
+using here that~$\|\varphi\|\leq 1$
+(see~\sref{norm-mi-map}).
+\end{point}
 \begin{point}{50}{$E$ is closed}
 Let~$b$ be a positive and invertible element of~$\scrA$.
 A moment's thought reveals it suffices to 
@@ -4567,7 +4647,7 @@ the map $\delta_x\colon C(X)\to \C,\ f\mapsto f(x)$
 is miu,
 and that the map $X\to \spec(C(X)),\ x\mapsto \delta_x$
 is a continuous bijection
-onto a compact Hausdorff space,
+from a compact space to a Hausdorff space,
 and thus a homeomorphism.
 \end{point}
 \begin{point}{80}[injective-miu-isometry]{Exercise}%
@@ -4702,12 +4782,12 @@ for all~$a,b\in\scrA$,
 \left|\omega(a^*b)\right|^2\ \leq\ \omega(a^*a)\ \omega(b^*b).
 \end{equation*}
 \item
-Show that $\|ab\|_\omega \leq \|\omega\| \,\|a\|\,\|b\|_\omega$
+Show that $\|ab\|_\omega \leq \|a\|\,\|b\|_\omega$
 for all $a,b\in\scrA$
 (using $a^*a\leq \|a\|^2$).
 
-Show that we do \emph{not} always have 
-$\|ab\|_\omega\leq \|\omega\|\|a\|_\omega \|b\|$.
+Show that we do \emph{not} always have
+$\|ab\|_\omega\leq \|a\|_\omega \|b\|$.
 
 (Hint:
 take $a=(\begin{smallmatrix}0&0\\0&1\end{smallmatrix})$
@@ -4796,7 +4876,7 @@ with $\left<\eta_\omega(a),\eta_\omega(b)\right>
 Since given~$a\in \scrA$
 the map $b\mapsto ab,\ \scrA\to\scrA$ is
 bounded with respect to~$\|\,\cdot\,\|_\omega$
-(because $\|ab\|_\omega\leq \|\omega\|\|a\|\|b\|_\omega$
+(because $\|ab\|_\omega\leq \|a\|\|b\|_\omega$
 by~\sref{omega-norm-basic}),
 it can be uniquely extended to a bounded linear map
 $\scrH_\omega\to\scrH_\omega$
@@ -4861,8 +4941,8 @@ Given a collection~$\Omega$ of p-maps $\omega\colon \scrA\to\C$
 on a $C^*$-algebra~$\scrA$,
 let $\Define{\varrho_\Omega}\colon \scrA\to \scrB(\scrH_\Omega)$%
 \index{rhoOmega@$\varrho_\Omega$}
-be the miu-map given by~$\varrho_\Omega(a)x 
-= \sum_{\omega\in\Omega} \varrho_\omega(a)x(\omega)$,
+be the miu-map given by~$\varrho_\Omega(a)x
+= \bigoplus_{\omega\in\Omega} \varrho_\omega(a)x(\omega)$,
 where~$\Define{\scrH_\Omega}=\bigoplus_{\omega\in\Omega}\scrH_\omega$%
 \index{HOmega@$\scrH_\Omega$}
 (and $\varrho_\omega$ is as in~\sref{gns}).
@@ -5267,27 +5347,26 @@ and~$T$ is adjointable.
 \end{point}
 \begin{point}{150}[chilb-vector-states-order-separating]{Exercise}%
 Let~$X$ be a Hilbert~$\scrA$-module.
-Show that 
-the vector states%
+Show that
+the subunital vector functionals%
 \index{vector functional!for a Hilbert $\scrA$-module}
-of~$\scrB^a(X)$
+of~$\scrB^a(X)$,
+that is, the functionals $\left<x,(\,\cdot\,)x\right>$
+with~$x\in (X)_{\leq 1}:=\{\,x\in X\colon\,\|x\|\leq 1\,\}$,
 are order separating (see~\sref{separating}).
-Conclude that 
+Conclude that
 for an adjointable operator~$T$ on~$X$
 \begin{enumerate}
 \item
 $T$ is self-adjoint iff $\left<x,Tx\right>$
-is self-adjoint for all~$x\in (X)_1$;
+is self-adjoint for all~$x\in (X)_{\leq 1}$;
 \item
 $0\leq T$ iff $0\leq\left<x,Tx\right>$
-for all~$x\in (X)_1$;
+for all~$x\in (X)_{\leq 1}$;
 \item
-	$\|T\|=\sup_{x\in (X)_1}\|\left<x,Tx\right>\|$
+	$\|T\|=\sup_{x\in (X)_{\leq 1}}\|\left<x,Tx\right>\|$
 when~$T$ is self-adjoint.
 \end{enumerate}
-(Hint:~adapt the proofs
-of~\sref{hilb-vector-states-order-separating}
-and~\sref{hilb-positive-operators}.)
 \end{point}
 \begin{point}{160}{Corollary}%
 The operator
@@ -5308,7 +5387,7 @@ and so~$T^*T\geq 0$ by~\sref{hilb-positive-operators}.\qed
 Let us consider matrices over a $C^*$-algebra $\scrA$.
 \begin{enumerate}
 \item
-	Show that every $N\times M$-matrix~$A$ (over~$\scrA$)
+	Show that every $M\times N$-matrix~$A$ (over~$\scrA$)
 gives a bounded module map~$\underline{A}\colon \scrA^N\to\scrA^M$ 
 via $\underline{A}(a_1,\dotsc,a_N)= A(a_1,\dotsc,a_N)$,
 which is adjoint to~$\underline{A^*}$
@@ -5317,7 +5396,7 @@ which is adjoint to~$\underline{A^*}$
 \item
 Show that $A\mapsto \underline{A}$
 gives a linear bijection between the vector 
-space of $N\times M$-matrices 
+space of $M\times N$-matrices
 over~$\scrA$ and the vector space of adjointable bounded
 module maps~$\scrB^a(\scrA^N,\scrA^M)$.
 
@@ -5344,7 +5423,7 @@ over a $C^*$-algebra~$\scrA$.
 Show that an $N\times N$ matrix~$A$ over~$\scrA$
 is positive iff $0\leq \sum_{i,j} a_i^* A_{ij} a_j$
 for all~$a_1,\dotsc,a_N\in\scrA$.
-(Hint: use~\sref{hilb-vector-states-order-separating}.)
+(Hint: use~\sref{chilb-vector-states-order-separating}.)
 \item
 Show that the matrix $(\,\left<x_i,x_j\right>\,)_{ij}$
 is positive for all vectors $x_1,\dotsc,x_N$
@@ -5372,7 +5451,7 @@ if~$f$ is involution preserving, then so is~$M_Nf$.
 \item
 However,
 show that $M_nf$ need not be positive when~$f$ is positive,
-and that~$M_nf$ need not be bounded, when~$f$ is.
+and that~$M_nf$ is bounded by~$n^2\|f\|$ when~$f$ is bounded.
 \end{enumerate}%
 \spacingfix%
 \end{point}%
@@ -5802,7 +5881,7 @@ is the real part of some unitary~$u$,
 Show that every invertible element~$a$ of~$\scrA$ can be written
 as $a=u\sqrt{a^*a}$,
 where~$u$ is a unitary.
-(Hint: take $u=\sqrt{a^{-1}(a^{-1})^*}$.)
+(Hint: take $u=a\sqrt{a^{-1}(a^{-1})^*}$.)
 
 This is a variation on the polar decomposition
 we'll see in~\sref{polar-decomposition}.
@@ -6155,10 +6234,10 @@ So a net $(T_\alpha)_\alpha$
 \item
 	The \Define{strong operator topology (SOT)}%
 \index{SOT, strong operator topology}
-on~$\scrB(\scrH)$ is the least topology
-with respect to which $T\mapsto \|Tx\|\equiv \smash{\left<x,T^*Tx\right>^{%
+on~$\scrB(\scrH)$ is the topology induced by the seminorms
+$T\mapsto \|Tx\|\equiv \smash{\left<x,T^*Tx\right>^{%
 \nicefrac{1}{2}}}$
-is continuous for every~$x\in\scrH$.
+where~$x\in\scrH$.
 
 		So a net $(T_\alpha)_\alpha$
 		converges to~$T$

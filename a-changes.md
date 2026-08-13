@@ -1,3 +1,8 @@
+Changes between the April 2018 arXiv version of the thesis
+(arXiv:1804.02203v1) and the printed edition of March 2019,
+made after feedback from the manuscript committee.
+
+
 Major additions:
 
 * Added subsection 3.4.4 discussing hereditarily atomic von Neumann algebras, 
