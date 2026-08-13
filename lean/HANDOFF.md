@@ -141,46 +141,38 @@ file.)
 
 ## Findings for the authors
 
-The point of this exercise, beyond the Lean files, is
-[PROVING-LOG.md](PROVING-LOG.md): **~34 errata** in the theses' own proofs,
-found by trying to transcribe them.  Note how they were found: a dedicated pass
-that re-read the authors' arguments for statements already proved from Mathlib
-turned up **10 errata across two audits** — proving a statement finds nothing;
-*comparing* the two proofs is what finds things.  Session 2 added, from A/CStar:
-**17III** (`[0,∞]` should be `[0,∞)`), **17VI.6** (a "not" that inverts the
-direction being proved), **26II.1** (`a` need not be positive; a missing step),
-**26II.4** (`|a+b|` should be `|a−b|`), **30IV.1** (Cauchy–Schwarz displayed with
-squares on the right), **20aII** (`g` for `γ`), **11XX.1** (`f : X → ℝ` should be
-`→ ℂ`), **11XX.2** (a dropped negation), **11XV.2** (a self-citation), **4VIII**
-(inner product typed `V → V`); plus **23VII.3**
-false as stated (needs `0 ≤ a`); **34aVII** Russo–Dye false at `N = 0`;
-**37IX** does not follow from **37VII** (bounded-above ≠ norm-bounded for a
-directed set); **38VI.2** false in the `←` direction; three more statements
-false for the trivial C\*-algebra; and independent confirmation that the `‖ω‖`
-in **30IV.2** is spurious.  See "Open decisions" for the ones needing your
-ruling.  The substantive session-1 findings:
+The point of this exercise, beyond the Lean files, is the defects it turns up.
+Two files hold them, so an author can work top to bottom without reading the
+proving log:
 
-* **195VII** (eff.tex:3331) rests on a step that is **false**: "if `c⊙a ⊥ c⊙b`
-  then `(c/c)⊙a ⊥ (c/c)⊙b`" fails in `[0,1]` at `c = ½`, `a = b = 1`.  The
-  statement is true; the Lean proof takes a different route.
-* **16V** `spectrum-non-empty` is **false as stated** for the trivial
-  C*-algebra `{0}`, which 8II explicitly admits: there every element is a
-  unit, so `spec(a) = ∅`.  (Five more spectrum/norm statements need a
-  `subsingleton_or_nontrivial` split for the same reason.)
-* **Partial associativity is used backwards** in at least two places
-  (eff.tex:414 and the `exc-dposet` solution): from `a ⊥ (c ⋁ d)` they
-  conclude `a ⊥ c`, which the PCM axioms do not give.  Recoverable — the
-  development now has an explicit `PCM.assoc_left`.
-* **178IIIa** (bsols.tex:1645) uses one-sided distributivity, which is not an
-  effect-monoid axiom; the four-fold law of 178II leaves exactly the terms
-  being proved to vanish.
-* **221IV.6** (eff.tex:6923) never checks that the induced map is *pure*,
-  which 221II's definition of a dilation requires.
-* **186VIII.2** uses a `κ₂` form of a pullback axiom stated only for `κ₁`.
-* **189I.2** (bsols.tex:1822) swaps "total form" and "partial form".
-* **30IV.2** — the suspicious extra `‖ω‖` factor is confirmed **spurious**:
-  Mathlib's GNS construction proves `‖ab‖_ω ≤ ‖a‖‖b‖_ω` with no `‖ω‖`.
-* **11VI.2** confirmed: the bound should be `‖a‖ < ‖b⁻¹‖⁻¹`.
+* **[ERRATA.md](ERRATA.md)** — every defect in the theses, as tables grouped by
+  source file and ordered by point number, each with a one-line fix and a
+  status (`DONE` with its `parsec-N.M` erratum key, or `OPEN`).  Currently
+  **~34 thesis-A and ~20 thesis-B** items.
+* **[QUESTIONS.md](QUESTIONS.md)** — the smaller set that needs a *decision*
+  rather than a correction: a false claim whose intended repair is unclear, a
+  definition that is too weak to prove what depends on it, results the theses
+  only cite.  All thesis-B items are still open; thesis A was ruled on
+  2026-08-13.
+
+Our *own* mis-transcriptions are deliberately in neither — they need no author
+attention and live in [PROVING-LOG.md](PROVING-LOG.md).
+
+**How they were found is the part worth keeping.**  Proving a statement finds
+nothing: a proof that closes is not evidence the source is right.  Every
+erratum above came from *comparing* our proof with the author's, and two
+dedicated audits — re-reading the authors' arguments for statements **already
+proved** from Mathlib — produced 10 errata between them.  That is why the
+workflow was inverted to "transcribe the thesis's proof first, Mathlib only as
+fallback".
+
+The single most productive check is reading a declaration against the
+`file:LINE` its own doc comment carries; the second is reading it against its
+own doc-comment *prose*, which has caught a false statement carrying no source
+reference at all.  The recurring trap is the **"silent half-repair"** — a
+clause quietly corrected in one statement and not carried to its siblings,
+which has hidden two real errata (most recently `kaplansky_effects`, which
+dropped a norm bound its three siblings kept).
 
 ## How to resume
 

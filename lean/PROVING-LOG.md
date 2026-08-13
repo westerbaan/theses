@@ -495,9 +495,19 @@ through **`mn_vna_1` (49IV.1, `A/VN/Basic.lean`) — a `sorry`ed `instance`**
 `VonNeumannAlgebra (CStarMatrix (Fin N) (Fin N) 𝒜)`.  Any proof taking that
 route inherits `sorryAx` *without any visible `sorry` at the use site*, which
 is exactly the failure mode `#sorry_leaks` exists to catch.  `kaplansky_sa`,
-`kaplansky_pos` and `kaplansky_effects` avoid it entirely.  **Worth checking
-whether `B/Dils/Kaplansky.lean` actually needs the general form** — if not, the
-instance can stay unproved without cost.
+`kaplansky_pos` and `kaplansky_effects` avoid it entirely.
+
+**Checked: `B/Dils` does need the general form, so `mn_vna_1` is required, not
+optional.**  `B/Dils/Kaplansky.lean`'s 158Ia `kaplansky_bounded_approx` is
+stated for an arbitrary `b ∈ ℬ` — no self-adjointness, no positivity — and
+158II `kaplansky_hilbmod` likewise quantifies over arbitrary `x ∈ X`.  Neither
+can be served by `kaplansky_sa`/`_pos`/`_effects`.  Since the standard proof of
+the non-self-adjoint case *is* the 2×2 trick, the dependency is real.  So
+**49IV.1 `mn_vna_1` should be promoted to a proving target in its own right**:
+it is a `sorry`ed instance sitting under two `B/Dils` statements, and until it
+is discharged any proof of 158Ia/158II that goes the natural way will be
+silently vacuous.  Discharging it also removes the one live example of the
+invisible-taint class from the project.
 
 **A cheap unblock, for whoever next owns `A/VN/Basic.lean`.**  The vector-
 functional link is already there — `gnsHilb`, `gnsRep`, `gnsVec` and
