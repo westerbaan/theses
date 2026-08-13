@@ -462,7 +462,8 @@ theorem hilb_tensor_universal_property {T : Type u} [NormedAddCommGroup T]
     (hγ : IsHilbertTensorProduct γ) :
     L2Bounded γ 1 ∧
       ∀ (β : H →ₗ[ℂ] K →ₗ[ℂ] L) (bound : ℝ), L2Bounded β bound →
-        ∃! f : T →L[ℂ] L, (∀ x y, f (γ x y) = β x y) ∧ ‖f‖ ≤ bound := by
+        ∃ f : T →L[ℂ] L, (∀ x y, f (γ x y) = β x y) ∧ ‖f‖ ≤ bound ∧
+          ∀ g : T →L[ℂ] L, (∀ x y, g (γ x y) = β x y) → g = f := by
   classical
   -- `γ` is ℓ²-bounded by `1`: the defining Gram sum *is* `‖∑ γ(xᵢ,yᵢ)‖²`.
   refine ⟨⟨zero_le_one, fun n x y => ?_⟩, ?_⟩
@@ -509,12 +510,12 @@ theorem hilb_tensor_universal_property {T : Type u} [NormedAddCommGroup T]
       _ = (bound * ‖∑ k : Fin n, γ (x k) (y k)‖) ^ 2 := by
           rw [hγ.gram_sum_re n x y, mul_pow]
   refine ⟨(TensorProduct.lift β).extendOfNorm (TensorProduct.lift γ),
-    ⟨fun x y => ?_, ?_⟩, ?_⟩
+    fun x y => ?_, ?_, ?_⟩
   · have h := LinearMap.extendOfNorm_eq (f := TensorProduct.lift β)
       (e := TensorProduct.lift γ) hdense ⟨bound, hnorm⟩ (x ⊗ₜ[ℂ] y)
     simpa using h
   · exact LinearMap.opNorm_extendOfNorm_le hdense hβ.1 hnorm
-  · rintro g ⟨hg, -⟩
+  · intro g hg
     refine (LinearMap.extendOfNorm_unique hdense bound hnorm g ?_).symm
     refine TensorProduct.ext' fun x y => ?_
     simpa using hg x y
@@ -531,8 +532,8 @@ theorem hilb_tensor_unique {T T' : Type u} [NormedAddCommGroup T]
   -- through the other; the two factorisations are mutually inverse.
   obtain ⟨hb, huniv⟩ := hilb_tensor_universal_property (L := T') γ hγ
   obtain ⟨hb', huniv'⟩ := hilb_tensor_universal_property (L := T) γ' hγ'
-  obtain ⟨F, ⟨hF, hFn⟩, -⟩ := huniv γ' 1 hb'
-  obtain ⟨G, ⟨hG, hGn⟩, -⟩ := huniv' γ 1 hb
+  obtain ⟨F, hF, hFn, -⟩ := huniv γ' 1 hb'
+  obtain ⟨G, hG, hGn, -⟩ := huniv' γ 1 hb
   have hGF : G.comp F = ContinuousLinearMap.id ℂ T := by
     refine ContinuousLinearMap.ext_on hγ.dense ?_
     rintro _ ⟨x, y, rfl⟩
@@ -726,7 +727,7 @@ theorem exists_opTensor (f : H →L[ℂ] H') (g : K →L[ℂ] K') :
     linarith
   obtain ⟨hb1, huniv⟩ := hilb_tensor_universal_property (L := HT H' K')
     (hilbTensor H K).map (hilbTensor H K).isTensor
-  obtain ⟨T, ⟨hT, -⟩, -⟩ := huniv β (‖f‖ * ‖g‖) hbdd
+  obtain ⟨T, hT, -, -⟩ := huniv β (‖f‖ * ‖g‖) hbdd
   refine ⟨T, fun x y => (hT x y).trans (hβ_apply x y), fun T' hT' => ?_⟩
   refine ContinuousLinearMap.ext_on (hilbTensor H K).isTensor.dense ?_
   rintro t ⟨x, y, rfl⟩
