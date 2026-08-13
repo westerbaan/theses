@@ -76,6 +76,13 @@ clause is not derivable from the existing four.
 *Decision needed*: add a positivity clause to the definition.  Until then
 `dfn_tensor_of_hilbmod_maps` and `ba_ext_tensor_pres` are unreachable.
 
+*Re-verified 2026-08-13* against `SelfDual.lean:841`: the structure has
+`add_left`, `add_right`, `smul_complex`, `mul`, `one`, `star`, `generates`,
+`separating` — no order clause, as recorded.  One refinement: the
+**uniqueness** half of 165III does *not* need the clause — `extTensor_map_ext`
+(proved, in file) already gives it — so adding the clause leaves only the
+existence half to prove.
+
 ### B6. `exc_dm_effectus_functor` / `_monad` / `_kleisli` are too weak to be meaningful
 Our statements constrain only `.obj` — they say *some* functor/monad agrees
 with `𝒟_M` on objects, and nothing about `map`, `η` or `μ`.  `_kleisli` is

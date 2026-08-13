@@ -782,6 +782,98 @@ No other errata found in parsecs 350–390.  **Note for the record**: `asols.tex
 stops at parsec 340, so 38VI and 39VI have no published solution; the proofs of
 their neighbours here are ours, as was already the case for 38VI.2.
 
+### Session 8 — B/Eff: **196II is proved**, and the derivation calculus is avoidable there too
+
+B/Eff went **37 → 36** code `sorry`s (`StatesPredicates.lean` 11 → 10) with the
+proof of **196II** `aconvm_is_effectus` — the last open item of the
+190–196 chain, and the one the two previous passes reported as blocked on the
+derivation calculus of 193IX/193IV.  It is not blocked on it.
+
+#### The shortcut: over a divisoid, every element of `X + Y` is a *binary* mixture
+
+The thesis proves the left pullback square (eff.tex:3383–3600) by building
+`ω ∈ 𝒟_M(X+Y)` out of `α` and `β` and then showing it well defined by
+interleaving **two** derivations `Φ_i` (over `1+Y`) and `Ψ_i` (over `X+1`) into
+one `Ω_i` — two pages, resting on the syntactic description of the least
+congruence that 193IV leaves to the reader.
+
+The observation that removes all of it: the normalization the thesis already
+performs *inside* `ω` — divide the coefficients by `λ₀` and repair the deficit
+with `r = (λ₀/λ₀)ᵖ` at one designated point — applies to a **whole** formal
+combination, and then says that over an effect divisoid every element of
+`X + Y` is `mix λ x y := h(λ|κ₁x⟩ ⋁ λᵖ|κ₂y⟩)` for some `λ, x, y`
+(`AConvMCat.exists_mix`).  Given that:
+
+* **uniqueness** (`AConvMCat.coprod_jointly_injective`): if `w = mix λ x y` and
+  `w' = mix λ' x' y'` agree in `X+1` and in `1+Y`, then `λ = λ'` because the
+  mass map `X ⨿ Y ⟶ 𝒟_M(1+1)` (the cotuple of two *constant* maps — affine by
+  `MConvexComb.map_const`) factors through each leg; and the cotuples
+  `[κ₁, const κ₂y']` and `[const κ₁x, κ₂]`, again affine because constant maps
+  are, transport the two equalities back into `X ⨿ Y`, giving
+  `mix λ x y = mix λ x y' = mix λ x' y'`;
+* **existence** (`AConvMCat.coprod_exists_lift`): put the normal forms of `a`
+  and `b` side by side; their masses agree by the same factorization, so
+  `mix λ x y` is the required element;
+* **affineness of the mediating map** is *free*, and this replaces the thesis's
+  eff.tex:3592–3657: `γ` is defined pointwise by a universal property, and its
+  two legs are jointly injective by the previous item, so
+  `(id+!)(γ(h_Z p)) = α(h_Z p) = h(𝒟_M α (p)) = (id+!)(h(𝒟_M γ (p)))` (and
+  likewise for `(!+id)`) forces `γ(h_Z p) = h(𝒟_M γ (p))`.
+
+Classification: **case 2** (substantially different route, deliberately).  The
+divisoid is used in exactly one place, `MConvexComb.exists_of_div`, which *is*
+the thesis's own normalization step; everything else is the universal property
+of the coproduct plus "constant maps are affine".  Filed as two informational
+ERRATA rows against 196II, next to the two genuine slips found in its text (the
+`α`/`β` typing sentence at eff.tex:3397, and the scrambled `q₁,q₂,q₃`/`κ₁,κ₂`
+indices in point 50).
+
+#### ⚠ The recommended route (b) of the previous pass is **refuted**
+
+w23 (and the brief for this session) recommended building the explicit model
+`M × X × Y` modulo `(1,x,y) ~ (1,x,y')` and `(0,x,y) ~ (0,x',y)`, and proving
+*that* is the coproduct.  **That carrier is wrong.**  Take `M = [0,1] × [0,1]`
+(an effect divisoid, by `prodEffectDivisoid`), `X = 𝒟_M A`, `Y = 𝒟_M B` free,
+so `X ⨿ Y = 𝒟_M(A+B)` and `mix λ x y = λ ⊙ 𝒟_M κ₁(x) ⋁ λᵖ ⊙ 𝒟_M κ₂(y)`.  At
+`λ = (1,0)` this is `(x₁, 0)` on `A` and `(0, y₂)` on `B`: it forgets the second
+component of `x` and the first of `y` entirely, so `mix (1,0) x y` does not
+determine `x` even though `(1,0)` is neither `0` nor `1`.  The relation
+identifying elements of `M × X × Y` is genuinely `λ`-dependent (a "support"
+relation), and only the *surjectivity* half of the guess survives — which is
+`exists_mix`, and is all that 196II needs.  Route (a) (formalizing 193IV) was
+not needed either.
+
+#### Reusable additions
+
+`MConvexComb`: `bin_apply`, `bin_self`, `bin_eq_zero`, `bin_one`, `bin_zero`,
+`map_spec_of_list` (compute `𝒟_M f (p)(y)` over any nodup list covering the
+fibre), `map_bin` (`𝒟_M f` of a binary mixture, unconditionally),
+`mu_spec_of_subset`, `mu_bin`, `exists_map_inr` (mirror of `exists_map_inl`,
+via `Sum.swap`), `map_inl_apply_inr`, `map_inr_apply_inl`, `eq_orth_of_two`,
+`exists_left_sum`/`exists_right_sum` (the two half-masses of a combination over
+`A + B`), and **`exists_of_div`** — the divisoid normalization: a finitely
+supported family summing to `l` is `l ⊙ (–)` of a formal convex combination.
+Also `div_zero_left` and `isSumOf_div` (the `n`-ary form of 195VII).
+
+`AConvMCat`: `constHom` (+ `comp_constHom`), `hom_apply_bin`, `mix` (+
+`mix_one`, `mix_zero`, `desc_apply_mix`, `map_apply_mix`), `massMap`/`mass` (+
+`massMap_inl/inr`, `_apply`, `massMap_map`, `mass_map`, `mass_mix`),
+`coprodQuot_map_inl/inr`, `coprodQuot_massMap`, `massMap_coprodQuot`,
+`exists_inl_of_massMap`/`exists_inr_of_massMap` (194I.4's key step, isolated
+and now available in both handednesses), `coprod_inr_injective`,
+`exists_inl_of_isEmpty`/`exists_inr_of_isEmpty`,
+`terminal_carrier_subsingleton`, `exists_mix`, `coprod_jointly_injective`,
+`coprod_exists_lift`, `aconv_left_pullback`.
+
+#### A note on `CONVENTIONS.md`
+
+CONVENTIONS says "doc line = tex line of the `\begin{point}` + 1".  In
+`eff.tex` the doc comments consistently use the `\begin{point}` line itself
+(196II: doc `3381`, `\begin{point}{20}[aconvm-is-effectus]` at 3381, statement
+text at 3382; 195VII: doc `3328`, `\begin{point}{70}` at 3328).  So the
+`+ 1` rule is not universal across chapters — re-derive from the label, as
+CONVENTIONS itself instructs, rather than trusting the offset.
+
 ### Session 7 — B/Eff: 193X and 194I.3/.4; the derivation calculus of 193IX turns out to be avoidable
 
 B/Eff went **40 → 37** code `sorry`s (`StatesPredicates.lean` 14 → 11).  Zero
@@ -1104,8 +1196,31 @@ the non-self-adjoint case *is* the 2×2 trick, the dependency is real.  So
 **49IV.1 `mn_vna_1` should be promoted to a proving target in its own right**:
 it is a `sorry`ed instance sitting under two `B/Dils` statements, and until it
 is discharged any proof of 158Ia/158II that goes the natural way will be
-silently vacuous.  Discharging it also removes the one live example of the
-invisible-taint class from the project.
+silently vacuous.
+
+⚠️ **Correction (session 3).**  The claim that followed here — that `mn_vna_1`
+was "the one live example of the invisible-taint class in the project" — was
+**wrong**, and it was repeated in two commit messages before being caught.  A
+`sorry`ed *instance* is not rare; enumerate them mechanically rather than
+recalling them:
+
+```sh
+grep -rn '^instance\|^noncomputable instance' Theses/ --include=*.lean -A3 \
+  | grep -B3 'sorry' | grep instance
+```
+
+which currently finds **seven**: `mn_vna_1` and `vonNeumannAlgebra_lp_infty`
+(`A/VN/Basic.lean`), `StarOrderedRing (MatAlg n)` and `VonNeumannAlgebra
+(MatAlg n)` (`A/Proc/QuantumLambda.lean`), and the three `cornerSet` instances
+`instCStarAlgebra` / `instPartialOrder` / `instStarOrderedRing`
+(`B/Dils/Pure.lean`, each carrying a `FIXME(sorry-instance)` marker).  The
+`cornerSet` three are the highest-value of them: they sit under **8 statements
+in `Pure.lean`**, and discharging them is pure Lean infrastructure with no
+thesis dependency.
+
+Also stale, and corrected by the same pass: the session-2 `sorryAx` ranking
+listed `Ba.instCStarAlgebra` / `instPartialOrder` / `instStarOrderedRing` as
+tainting 14 declarations each.  All three are now **proved**.
 
 **A cheap unblock, for whoever next owns `A/VN/Basic.lean`.**  The vector-
 functional link is already there — `gnsHilb`, `gnsRep`, `gnsVec` and
@@ -2417,3 +2532,123 @@ revisions of this table counted the raw token, which inflated
 33, before this pass) and `Quotients.lean` (3 → really 2); no proofs were
 lost or gained by the re-count.  Of the changes above, only
 `Dagger.lean` 36 → 35 and `Comparisons.lean` 18 → 16 are new proofs.
+
+---
+
+## Session 4 — `B/Dils` (worker 26): first survey of the whole chapter
+
+Owned `Theses/B/Dils/*.lean` (75 code `sorry`s).  Result: **1 proved**, and a
+dependency-ordered map of what is and is not reachable — which is the part
+worth keeping, because the chapter turns out to hang off six unproved
+constructions rather than being merely untouched.
+
+### Proved
+
+* **140X.2** `paschke_basics_2` (`Stinespring.lean`) — "if `(𝒫,ϱ,h)` is a
+  Paschke dilation then `(𝒫, id, h)` is a Paschke dilation of `h`".
+  Transcribed from `bsols.tex`'s solution `paschke-basics`, item 2
+  (**divergence class 1 — faithful**); axiom-clean
+  (`propext, Classical.choice, Quot.sound`).  Two file-private helpers were
+  needed and added: `ncpP` (an `NCPMap` as a `→ₚ[ℂ]`, so that
+  `preservesDirSups_pmap_comp` applies) and `exists_ncpCompNMIU` (nmiu
+  followed by ncp is ncp).  `A/Proc/Measurement.lean` has the analogous
+  `exists_ncpComp`, but `Theses.A.Proc` is not on this chapter's import path
+  — the same reason the file already repeats `exists_ncpId`.
+
+### The six roots the chapter hangs off
+
+| root | file | what waits on it |
+|---|---|---|
+| **149V** `dils_selfdual` | `HilbertModules.lean:1854` — the file's *only* `sorry` | every construction of a self-dual module (150II, 154III, 164II) and every statement that must *produce* an ON basis (160II, 161II.2, 162IV) |
+| **150II** `dils_completion` | `SelfDualCompletion.lean:81` | 154III → all of `Paschke.lean`; 163II; 164II |
+| **151Ia** `selfdual_completion_univ` | `SelfDualCompletion.lean:102` | **163II both halves** (nothing else); 154III |
+| **152X** `ba_vonNeumannAlgebra` | `SelfDualCompletion.lean:448` | 153I, 154III.5 |
+| **74IV/74I** Kaplansky | `A/VN/Completeness.lean` — **both `sorry`** | all of `Kaplansky.lean`, hence 159IV, 166VI |
+| `IsVNTensor` has no order clause | `SelfDual.lean:841` | 165III, 165VI → 167I (QUESTIONS **B5**) |
+
+Ranked targets for the next worker: **149V** (the file's only `sorry`, and the
+notion the chapter is about); the **four `cornerSet` `sorry`-instances** in
+`Pure.lean` (pure Lean infrastructure — `pAp` is a C*-algebra with unit `p`,
+proc.tex 94II — which unblocks eight statements and removes the last
+invisible-taint site in `B/Dils`); then **152X**, then **150II + 151Ia**.
+
+### Parked, with the reason
+
+* **169XII `dils_filters_injective`** (filters are injective) is the keystone
+  of `Pure.lean`'s categorical cluster — `169X → 169XII → 169XI.1 → 169XI.2b`
+  and `169X + 169XII → 169XI.2a` — so a corner-free proof would unblock five
+  statements.  There is none, and the reason is worth recording so it is not
+  re-attempted blind.  The universal property gives *monicity*.  Monicity plus
+  "`p ≥ 0` and `c(p) = 0` ⟹ `p = 0`" is not enough: that half is easy (take
+  `f = id + ad_{√p}`; for `a ≥ 0` we have `0 ≤ √p a √p ≤ ‖a‖p`, so
+  `c ∘ f = c`, so `f = id` by uniqueness, so `p = 0`), but a positive map can
+  have `ker c ∩ A₊ = 0` and still not be injective — `c(x,y) = x+y` on `ℂ²`.
+  Going from monic to injective needs enough ncp-maps `C → A` to separate
+  points, i.e. rank-one `a ↦ ω(a)p`, i.e. a *normal state* on `A`; our
+  statement of 169XII assumes only `CStarAlgebra`, not `VonNeumannAlgebra`
+  (the thesis's ambient assumption for the parsec).  So 169XII really does
+  need the standard filter, as the exercise's own hint says — and the standard
+  filter needs the `cornerSet` instances.
+* **140X.3** `paschke_basics_3` — the abstract-product formulation means the
+  real work is a *tupling* lemma: from `σᵢ : NCPMap 𝒫' 𝒫ᵢ` and jointly
+  bijective nmiu `pᵢ : 𝒫 → 𝒫ᵢ`, build `σ : NCPMap 𝒫' 𝒫`.  That needs (a) the
+  inverse of `c ↦ (p₁c, p₂c)` as a linear map, (b) order *reflection*
+  (`p₁x ≥ 0 ∧ p₂x ≥ 0 ⟹ x ≥ 0`, by the `(negPart)³` argument already used in
+  `A/VN/Basic.lean` for a single injective ∗-homomorphism), (c) complete
+  positivity, which then follows elementwise because the `pᵢ` are
+  ∗-homomorphisms, and (d) normality from (b).  Left for a worker with room;
+  the author's own argument (`bsols.tex` `paschke-basics`.3) is exactly the
+  three-line categorical one and carries none of this.
+
+### Our own notes (no author action)
+
+* **Invisible `sorryAx` — the session-2 ranking is stale.**  That table lists
+  `B.Dils.Ba.instCStarAlgebra` / `instStarOrderedRing` / `instPartialOrder` at
+  14 tainted declarations each; **all three are now proved outright**
+  (`HilbertModules.lean:660/666/671`), so that taint is gone.  What is left in
+  `B/Dils` is (i) `cornerSet.instCStarAlgebra` / `instPartialOrder` /
+  `instStarOrderedRing` (`Pure.lean:53/60/67`), which taint
+  `standard_corner_dils`, `dils_stand_filter`, `paschke_corner`; and (ii) two
+  sorried *theorems used as terms inside statements*, the same failure mode one
+  level up: `existence_paschke_5` (`Paschke.lean:147`) embeds
+  `ba_vonNeumannAlgebra M.selfDual`, and `paschke_corner` (`Pure.lean:302`)
+  embeds `cornerSet_vonNeumannAlgebra A (cceil p)`.  `VonNeumannAlgebra` is a
+  `Prop`, so this is harmless mathematically, but a future proof of either
+  will report `sorryAx` and look like a leak.
+* **`dils.tex`'s line references are not stale — measured, not assumed.**  All
+  204 `**DISP** (…dils.tex:LINE)` references in the seven files were
+  re-derived from the `\begin{parsec}`/`\begin{point}` numbers: **201 resolve
+  to within ±1**, and the other three are *range* references
+  (`137I–137VII … 397–585`, `168I–168IV … 5968–6054`, `155I, 155III … 3841,
+  3859`) whose endpoints are all correct.  Zero stale references, so
+  `dils.tex` behaves like `vn.tex`, not like `A/CStar/TowardsVN.lean`.
+* **`Pure.lean`'s 23 `sorry`s are 19 statements + 4 `sorry`-instances.**  Any
+  progress table quoting 23 statements for that file is overcounting.
+* **153IV `hilbmod_adj_vector_ncp`** (`SelfDualCompletion.lean`) is the one
+  statement in the chapter that depends on nothing else in it — but its only
+  real ingredient, positivity of Gram matrices over a C*-algebra, is
+  **33II.2 `cstar_matrix_gram_nonneg`**, still `sorry` behind the known 33II.1
+  bottleneck in `A/CStar/Matrices.lean`.  Worth revisiting the moment 33II.1
+  lands.
+* **165III's uniqueness half is already reachable** (`extTensor_map_ext`, in
+  file and proved); only its existence half waits on QUESTIONS B5.  Noted in
+  the B5 row of ERRATA.
+* **140X.1** carries a further defect, found while transcribing its sibling:
+  the exercise reads "Show `(𝒜, ϱ, id)` is a Paschke dilation of an nmiu-map
+  `ϱ : 𝒜 → ℬ`", but a Paschke dilation of `φ : 𝒜 → ℬ` is a triple
+  `(𝒫, ϱ : 𝒜 → 𝒫, h : 𝒫 → ℬ)`, so the dilating algebra is `ℬ`, not `𝒜` —
+  with `𝒫 = 𝒜` the `id` would have to be a map `𝒜 → ℬ`.  Our
+  `paschke_basics_1` already had the corrected form (and is proved), which is
+  exactly the "silent half-repair" pattern in reverse: the Lean statement was
+  right and the source is wrong.  Filed in ERRATA.
+* **A stale doc comment that is now actionable.**  `Pure.lean`'s
+  `paschke_corner` (171II) carries a second instance hypothesis
+  `[Fact (IsStarProjection (cceil p))]` and explains it: "That `⌈⌈p⌉⌉` is a
+  projection too is **68III** (`exists_cceil`), still `sorry` in
+  `Theses.A.VN.Projections`, so it cannot yet be discharged … drop it once
+  68III is proved."  **68III is now proved**
+  (`A/VN/Projections.lean:3227`, with `cceil_isLeast` right below it), so the
+  hypothesis can go — either by discharging it from `cceil_isLeast` in an
+  `instance`, or by deleting it from the statement.  Not done here, because
+  deleting an instance hypothesis is a statement change and 171II is blocked
+  on the `cornerSet` instances regardless; flagged for the doc-comment sweep.

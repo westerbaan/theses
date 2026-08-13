@@ -1464,6 +1464,47 @@ private theorem exists_ncpSmul {A B : Type*} [CStarAlgebra A] [PartialOrder A]
         (smul_le_smul_iff_pos hl _ _).mpr this
       rwa [smul_smul, mul_inv_cancel₀ (by exact_mod_cast hl.ne'), one_smul] at hle
 
+/-- An ncp-map, as a positive linear map (auxiliary for
+`exists_ncpCompNMIU`). -/
+private noncomputable def ncpP {A B : Type u} [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
+    (f : NCPMap A B) : A →ₚ[ℂ] B where
+  toLinearMap := f.toCompletelyPositiveMap.toLinearMap
+  monotone' := fun x y hxy => by
+    have hcp : IsCompletelyPositiveMap f.toCompletelyPositiveMap.toLinearMap :=
+      (cp_iff _).out 1 0 |>.mp fun N M hM =>
+        f.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM
+    have h := astara_pos_basic_2_cp _ hcp (y - x) (sub_nonneg.mpr hxy)
+    rw [map_sub] at h
+    exact sub_nonneg.mp h
+
+/-- The composition of an nmiu-map with an ncp-map is an ncp-map. -/
+private theorem exists_ncpCompNMIU {A B C : Type u} [CStarAlgebra A]
+    [PartialOrder A] [StarOrderedRing A] [CStarAlgebra B] [PartialOrder B]
+    [StarOrderedRing B] [CStarAlgebra C] [PartialOrder C] [StarOrderedRing C]
+    (f : NCPMap B C) (g : NMIUMap A B) :
+    ∃ k : NCPMap A C, ∀ a, k a = f (g a) := by
+  set Lg : A →ₗ[ℂ] B :=
+    { toFun := fun a => g a
+      map_add' := fun x y => map_add g.toStarAlgHom x y
+      map_smul' := fun r x => map_smul g.toStarAlgHom r x } with hLg
+  have hLgcp : IsCompletelyPositiveMap Lg :=
+    cp_of_mi Lg (fun x y => map_mul g.toStarAlgHom x y)
+      (fun x => map_star g.toStarAlgHom x)
+  set Lf : B →ₗ[ℂ] C := f.toCompletelyPositiveMap.toLinearMap with hLf
+  have hLfcp : IsCompletelyPositiveMap Lf :=
+    (cp_iff Lf).out 1 0 |>.mp fun N M hM =>
+      f.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM
+  exact ⟨{ toCompletelyPositiveMap :=
+             { toLinearMap := Lf.comp Lg
+               map_cstarMatrix_nonneg' :=
+                 (cp_iff (Lf.comp Lg)).out 0 1 |>.mp
+                   (cp_comp Lg Lf hLgcp hLfcp) }
+           preservesDirSups' :=
+             preservesDirSups_pmap_comp (starAlgHomP g.toStarAlgHom)
+               g.preservesDirSups' (ncpP f) f.preservesDirSups' },
+    fun _ => rfl⟩
+
 /-- **140X** (`paschke-basics`, dils.tex:1204, Exercise), part 1:
 `(ℬ, ϱ, id)` is a Paschke dilation of an nmiu-map `ϱ : 𝒜 → ℬ`. -/
 theorem paschke_basics_1 (vnB : VonNeumannAlgebra ℬ) (ϱ : NMIUMap 𝒜 ℬ) :
@@ -1483,8 +1524,42 @@ Paschke dilation of `h`. -/
 theorem paschke_basics_2 (φ : 𝒜 → ℬ) (D : PaschkeTriple 𝒜 ℬ)
     (hD : IsPaschkeDilationOf D φ) :
     ∃ ι : NMIUMap D.P D.P, (∀ c, ι c = c) ∧
-      IsPaschkeDilationOf ⟨D.P, D.vn, ι, D.h⟩ ⇑D.h :=
-  sorry
+      IsPaschkeDilationOf ⟨D.P, D.vn, ι, D.h⟩ ⇑D.h := by
+  -- `bsols.tex`, solution `paschke-basics`.2, transcribed.
+  obtain ⟨idP, hidP⟩ := exists_ncpId D.P
+  refine ⟨{ toStarAlgHom := StarAlgHom.id ℂ D.P
+            preservesDirSups' := preservesDirSups_id },
+    fun _ => rfl, fun _ => rfl, ?_⟩
+  intro D' hD'
+  -- "Consider `ϱ' ∘ ϱ` and `h'`": a Paschke triple over `𝒜` again.
+  set ρE : NMIUMap 𝒜 D'.P :=
+    { toStarAlgHom := D'.ρ.toStarAlgHom.comp D.ρ.toStarAlgHom
+      preservesDirSups' :=
+        preservesDirSups_pmap_comp (starAlgHomP D.ρ.toStarAlgHom)
+          D.ρ.preservesDirSups' (starAlgHomP D'.ρ.toStarAlgHom)
+          D'.ρ.preservesDirSups' } with hρE
+  have hρEapp : ∀ a : 𝒜, ρE a = D'.ρ (D.ρ a) := fun _ => rfl
+  have hE : ∀ a : 𝒜, D'.h (ρE a) = φ a := by
+    intro a
+    rw [hρEapp, hD' (D.ρ a), hD.1 a]
+  -- "By the universal property of the original dilation, there is a unique
+  -- ncp-map `σ : 𝒫' → 𝒫` with `σ ∘ ϱ' ∘ ϱ = ϱ` and `h ∘ σ = h'`."
+  obtain ⟨σ, ⟨hσ1, hσ2⟩, hσu⟩ := hD.2 ⟨D'.P, D'.vn, ρE, D'.h⟩ hE
+  -- "`id` is the unique ncp-map with `id ∘ ϱ = ϱ` and `h ∘ id = h`; and
+  -- `σ ∘ ϱ'` is one such, so `σ ∘ ϱ' = id`."
+  obtain ⟨τ, hτ⟩ := exists_ncpCompNMIU σ D'.ρ
+  have hτid : ∀ c : D.P, σ (D'.ρ c) = c := by
+    obtain ⟨σ₀, hσ₀, hσ₀u⟩ := hD.2 D hD.1
+    have h1 : τ = idP :=
+      (hσ₀u τ ⟨fun a => by rw [hτ]; exact hσ1 a,
+          fun c => by rw [hτ, hσ2, hD' c]⟩).trans
+        (hσ₀u idP ⟨fun a => by rw [hidP], fun c => by rw [hidP]⟩).symm
+    intro c
+    rw [← hτ c, h1, hidP]
+  refine ⟨σ, ⟨hτid, hσ2⟩, ?_⟩
+  -- uniqueness: any such `σ'` mediates for the original dilation too
+  rintro σ' ⟨hσ'1, hσ'2⟩
+  exact hσu σ' ⟨fun a => by rw [hρEapp]; exact hσ'1 (D.ρ a), hσ'2⟩
 
 /-- **140X** (`paschke-basics`, dils.tex:1204, Exercise), part 3: if
 `(𝒫ᵢ, ϱᵢ, hᵢ)` is a Paschke dilation of `φᵢ : 𝒜 → ℬᵢ` (i = 1,2), then
