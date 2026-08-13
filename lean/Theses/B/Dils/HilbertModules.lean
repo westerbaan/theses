@@ -85,6 +85,18 @@ noncomputable def BInner.norm (B : BInner 𝒷 X) (x : X) : ℝ :=
 
 end BInnerDef
 
+/-- The bundled 𝒷-valued inner product of a `CStarModule` (used to compare
+`BInner`-modules with `CStarModule`s). -/
+def cstarBInner (𝒷 : Type u) (X : Type w) [CStarAlgebra 𝒷] [PartialOrder 𝒷]
+    [StarOrderedRing 𝒷] [NormedAddCommGroup X] [Module ℂ X] [SMul 𝒷 X]
+    [CStarModule 𝒷 X] : BInner 𝒷 X where
+  inner := inner 𝒷
+  inner_add_right _ _ _ := CStarModule.inner_add_right
+  inner_op_smul_right _ _ _ := CStarModule.inner_op_smul_right
+  inner_smul_right_complex _ _ _ := CStarModule.inner_smul_right_complex
+  star_inner _ _ := CStarModule.star_inner _ _
+  inner_self_nonneg _ := CStarModule.inner_self_nonneg
+
 section SelfDualDef
 
 variable (𝒷 : Type u) (X : Type v)
@@ -486,7 +498,7 @@ theorem adjointable_cstar_identity_2 (T : X →L[ℂ] Y) (S : Y →L[ℂ] X)
 As in cstar.tex 32XIII (`bax_cstar`) the missing ingredient beyond the
 ∗-algebra structure and the C*-identity (**143II**) is closedness in
 `B(X)`, stated here.  (The type `Ba 𝒷 X` with its C*-algebra structure is
-set up in `SelfDualCompletion.lean`.)
+set up below, right after **143IV**.)
 
 **143V** is the proof — not converted. -/
 theorem hilbmod_cstar [CompleteSpace X] :
@@ -494,6 +506,172 @@ theorem hilbmod_cstar [CompleteSpace X] :
   Theses.A.CStar.bax_cstar
 
 end Adjointable
+
+/-! ## The C*-algebra `𝒷ᵃ(X)` as a type
+
+The C*-structure of **143IV** (`hilbmod-cstar`, dils.tex:1580) is assembled
+here from thesis A's cstar.tex 32X/32XII/32XIII (`chilb_form_bounded`,
+`module_maps_cstar_identity`, `bax_cstar`, all proved in
+`Theses.A.CStar.Matrices`): the adjointable bounded operators form a
+ℂ-subalgebra of `B(X)` which is closed (32XIII), the adjoint is an
+involutive conjugate-linear anti-automorphism (32III), and the C*-identity
+is 32XII. -/
+
+section BaConstruction
+
+variable {𝒷 : Type u} {X : Type v}
+  [CStarAlgebra 𝒷] [PartialOrder 𝒷] [StarOrderedRing 𝒷]
+  [NormedAddCommGroup X] [NormedSpace ℂ X] [SMul 𝒷 X] [CStarModule 𝒷 X]
+
+variable (𝒷 X)
+
+/-- **143IV** (`hilbmod-cstar`, dils.tex:1580, Proposition), the algebraic
+half: the adjointable bounded operators form a unital ℂ-subalgebra of
+`B(X)` (cstar.tex 32III). -/
+def baSubalgebra : Subalgebra ℂ (X →L[ℂ] X) where
+  carrier := {T | ModuleAdjointable 𝒷 ⇑T}
+  mul_mem' := by
+    rintro a b ⟨a', ha⟩ ⟨b', hb⟩
+    refine ⟨fun y => b' (a' y), fun x y => ?_⟩
+    show inner 𝒷 (a (b x)) y = inner 𝒷 x (b' (a' y))
+    rw [ha (b x) y, hb x (a' y)]
+  one_mem' := ⟨id, fun _ _ => rfl⟩
+  add_mem' := by
+    rintro a b ⟨a', ha⟩ ⟨b', hb⟩
+    exact ⟨fun y => a' y + b' y,
+      (Theses.A.CStar.moduleAdjointTo_add_smul (𝒜 := 𝒷) _ _ _ _ 0 ha hb).1⟩
+  zero_mem' := ⟨fun _ => 0, by intro x y; simp⟩
+  algebraMap_mem' := by
+    intro c
+    refine ⟨fun y => (starRingEnd ℂ) c • y, fun x y => ?_⟩
+    show inner 𝒷 (c • x) y = inner 𝒷 x ((starRingEnd ℂ) c • y)
+    simp
+
+variable {𝒷 X}
+
+@[simp] theorem mem_baSubalgebra {T : X →L[ℂ] X} :
+    T ∈ baSubalgebra 𝒷 X ↔ ModuleAdjointable 𝒷 ⇑T := Iff.rfl
+
+/-- The adjoint of an adjointable bounded operator, as a bounded operator. -/
+private noncomputable def baAdj (T : baSubalgebra 𝒷 X) : X →L[ℂ] X :=
+  (Theses.A.CStar.exists_clm_adjointTo (T := (T : X →L[ℂ] X)) T.2.choose_spec).choose
+
+private theorem baAdj_spec (T : baSubalgebra 𝒷 X) :
+    ModuleAdjointTo 𝒷 ⇑(T : X →L[ℂ] X) ⇑(baAdj T) :=
+  (Theses.A.CStar.exists_clm_adjointTo (T := (T : X →L[ℂ] X)) T.2.choose_spec).choose_spec
+
+/-- The star operation of `𝒷ᵃ(X)`: `T ↦ T*`. -/
+private noncomputable def baStar (T : baSubalgebra 𝒷 X) : baSubalgebra 𝒷 X :=
+  ⟨baAdj T, ⟨_, Theses.A.CStar.moduleAdjointTo_symm _ _ (baAdj_spec T)⟩⟩
+
+/-- Adjoints are unique, so `baStar` is pinned down by the adjointness
+relation. -/
+private theorem baStar_eq {T : baSubalgebra 𝒷 X} {S : X →L[ℂ] X}
+    (h : ModuleAdjointTo 𝒷 ⇑(T : X →L[ℂ] X) ⇑S) :
+    ((baStar T : baSubalgebra 𝒷 X) : X →L[ℂ] X) = S :=
+  DFunLike.coe_injective
+    (Theses.A.CStar.moduleAdjointTo_unique _ _ _ (baAdj_spec T) h)
+
+noncomputable instance baInstStarRing : StarRing (baSubalgebra 𝒷 X) where
+  star := baStar
+  star_involutive T := Subtype.ext <| baStar_eq (T := baStar T) (S := T)
+    (Theses.A.CStar.moduleAdjointTo_symm _ _ (baAdj_spec T))
+  star_mul a b := Subtype.ext <| baStar_eq (T := a * b)
+    (S := (baAdj b).comp (baAdj a)) (by
+      intro x y
+      show inner 𝒷 ((a : X →L[ℂ] X) ((b : X →L[ℂ] X) x)) y
+        = inner 𝒷 x (baAdj b (baAdj a y))
+      rw [baAdj_spec a _ y, baAdj_spec b x _])
+  star_add a b := Subtype.ext <| baStar_eq (T := a + b)
+    (S := baAdj a + baAdj b)
+    ((Theses.A.CStar.moduleAdjointTo_add_smul (𝒜 := 𝒷) _ _ _ _ 0
+      (baAdj_spec a) (baAdj_spec b)).1)
+
+noncomputable instance baInstStarModule : StarModule ℂ (baSubalgebra 𝒷 X) where
+  star_smul c T := Subtype.ext <| baStar_eq (T := c • T)
+    (S := (starRingEnd ℂ) c • baAdj T)
+    ((Theses.A.CStar.moduleAdjointTo_add_smul (𝒜 := 𝒷) ⇑(T : X →L[ℂ] X)
+      ⇑(T : X →L[ℂ] X) _ _ c (baAdj_spec T) (baAdj_spec T)).2)
+
+instance baInstCStarRing : CStarRing (baSubalgebra 𝒷 X) where
+  norm_mul_self_le T := by
+    have h : ‖(baAdj T).comp (T : X →L[ℂ] X)‖ = ‖(T : X →L[ℂ] X)‖ ^ 2 :=
+      Theses.A.CStar.module_maps_cstar_identity (𝒜 := 𝒷) _ _ (baAdj_spec T)
+    have h' : ‖star T * T‖ = ‖(T : X →L[ℂ] X)‖ ^ 2 := h
+    rw [h']
+    exact le_of_eq (sq ‖(T : X →L[ℂ] X)‖).symm
+
+instance baInstCompleteSpace [CompleteSpace X] :
+    CompleteSpace (baSubalgebra 𝒷 X) :=
+  (Theses.A.CStar.bax_cstar (𝒜 := 𝒷) (X := X)).completeSpace_coe
+
+noncomputable instance baInstCStarAlgebra [CompleteSpace X] :
+    CStarAlgebra (baSubalgebra 𝒷 X) where
+
+/-- The `star` of the C*-algebra `𝒷ᵃ(X)` *is* the adjoint: `star T` is an
+adjoint of `T` in the sense of `ModuleAdjointTo`.  (Public bridge to the
+private `baAdj`; needed to reason about `𝒷ᵃ(X)` through its action on
+`X`.) -/
+theorem baSubalgebra_star_spec (T : baSubalgebra 𝒷 X) :
+    ModuleAdjointTo 𝒷 ⇑(T : X →L[ℂ] X)
+      ⇑((star T : baSubalgebra 𝒷 X) : X →L[ℂ] X) :=
+  baAdj_spec T
+
+/-- Multiplication in `𝒷ᵃ(X)` is composition of operators. -/
+theorem baSubalgebra_coe_mul_apply (S T : baSubalgebra 𝒷 X) (x : X) :
+    ((S * T : baSubalgebra 𝒷 X) : X →L[ℂ] X) x
+      = (S : X →L[ℂ] X) ((T : X →L[ℂ] X) x) := rfl
+
+/-- The vector form of an element of `𝒷ᵃ(X)` of the shape `T* T` is a Gram
+form: `⟨x, T*Tx⟩ = ⟨Tx, Tx⟩`.  (The easy half of **144I**.) -/
+theorem baSubalgebra_inner_star_mul_self [CompleteSpace X]
+    (T : baSubalgebra 𝒷 X) (x : X) :
+    inner 𝒷 x (((star T * T : baSubalgebra 𝒷 X) : X →L[ℂ] X) x)
+      = inner 𝒷 ((T : X →L[ℂ] X) x) ((T : X →L[ℂ] X) x) := by
+  rw [baSubalgebra_coe_mul_apply]
+  exact (baSubalgebra_star_spec T _ _).symm
+
+end BaConstruction
+
+section BaDef
+
+variable (𝒷 : Type u) {X : Type v}
+  [CStarAlgebra 𝒷] [PartialOrder 𝒷] [StarOrderedRing 𝒷]
+  [NormedAddCommGroup X] [Module ℂ X] [SMul 𝒷 X] [CStarModule 𝒷 X]
+
+variable (X) in
+/-- The set `𝒷ᵃ(X)` of adjointable bounded operators on a (pre-)Hilbert
+𝒷-module `X` (**143I**, dils.tex:1509), as a type. -/
+def Ba : Type v :=
+  {T : X →L[ℂ] X // ModuleAdjointable 𝒷 ⇑T}
+
+/-- The underlying bounded operator of an element of `𝒷ᵃ(X)`. -/
+def Ba.toCLM (T : Ba 𝒷 X) : X →L[ℂ] X := T.1
+
+variable [CompleteSpace X]
+
+/-- **143IV** (`hilbmod-cstar`, dils.tex:1580, Proposition), as an
+instance: `𝒷ᵃ(X)` is a C*-algebra for a Hilbert 𝒷-module `X`.  The
+structure is that of the closed ℂ-subalgebra `baSubalgebra 𝒷 X` of `B(X)`,
+to which `Ba 𝒷 X` is definitionally equal; the `NormedSpace ℂ X` needed to
+speak of the operator norm is the one determined by the `CStarModule`
+axioms (`CStarModule.normedSpaceCore`), which Mathlib deliberately does not
+register as an instance. -/
+noncomputable instance Ba.instCStarAlgebra : CStarAlgebra (Ba 𝒷 X) := by
+  letI : NormedSpace ℂ X := NormedSpace.ofCore (CStarModule.normedSpaceCore 𝒷)
+  exact inferInstanceAs (CStarAlgebra (baSubalgebra 𝒷 X))
+
+/-- The canonical (Loewner) partial order of the C*-algebra `𝒷ᵃ(X)`
+(cf. **144I**): the spectral order of its C*-structure. -/
+noncomputable instance Ba.instPartialOrder : PartialOrder (Ba 𝒷 X) :=
+  CStarAlgebra.spectralOrder (Ba 𝒷 X)
+
+/-- The canonical order of `𝒷ᵃ(X)` makes it a star-ordered ring
+(cf. **144I**). -/
+noncomputable instance Ba.instStarOrderedRing : StarOrderedRing (Ba 𝒷 X) :=
+  CStarAlgebra.spectralOrderedRing (Ba 𝒷 X)
+
+end BaDef
 
 /-! ## Parsec 1440 -/
 
@@ -504,6 +682,7 @@ variable {𝒷 : Type u} {X Y : Type v}
   [NormedAddCommGroup X] [Module ℂ X] [SMul 𝒷 X] [CStarModule 𝒷 X]
   [NormedAddCommGroup Y] [Module ℂ Y] [SMul 𝒷 Y] [CStarModule 𝒷 Y]
 
+set_option maxHeartbeats 1000000 in
 /-- **144I** (`hilbmod-ordersep`, dils.tex:1623, Proposition): the vector
 states on `𝒷ᵃ(X)` are order separating: for adjointable bounded `T`,
 `T ≥ 0` (i.e. `T = S*S`) iff `⟨x, Tx⟩ ≥ 0` for all `x ∈ X`.
@@ -511,8 +690,87 @@ states on `𝒷ᵃ(X)` are order separating: for adjointable bounded `T`,
 **144II** is the proof — not converted. -/
 theorem hilbmod_ordersep [CompleteSpace X] (T : X →L[ℂ] X)
     (hT : ModuleAdjointable 𝒷 ⇑T) :
-    IsPositiveOp 𝒷 T ↔ ∀ x : X, 0 ≤ inner 𝒷 x (T x) :=
-  sorry
+    IsPositiveOp 𝒷 T ↔ ∀ x : X, 0 ≤ inner 𝒷 x (T x) := by
+  -- the C*-algebra `𝒷ᵃ(X)` (**143IV**), with its spectral order
+  letI : NormedSpace ℂ X := NormedSpace.ofCore (CStarModule.normedSpaceCore 𝒷)
+  constructor
+  · -- `T = S*S` gives `⟨x,Tx⟩ = ⟨Sx,Sx⟩ ≥ 0`
+    rintro ⟨R, R', hRR', rfl⟩ x
+    show (0 : 𝒷) ≤ inner 𝒷 x (R' (R x))
+    rw [← hRR' x (R x)]
+    exact CStarModule.inner_self_nonneg
+  · intro hpos
+    letI : PartialOrder (baSubalgebra 𝒷 X) := CStarAlgebra.spectralOrder _
+    letI : StarOrderedRing (baSubalgebra 𝒷 X) := CStarAlgebra.spectralOrderedRing _
+    set a : baSubalgebra 𝒷 X := ⟨T, hT⟩ with ha
+    have hcoe : ((a : baSubalgebra 𝒷 X) : X →L[ℂ] X) = T := rfl
+    -- `T` is self-adjoint, by polarization — cstar.tex 32XV.1
+    have hsa : IsSelfAdjoint a := by
+      have h := (Theses.A.CStar.chilb_vector_states_1 (𝒜 := 𝒷) T
+        ((star a : baSubalgebra 𝒷 X) : X →L[ℂ] X)
+        (hcoe ▸ baSubalgebra_star_spec a)).mpr
+        (fun x _ => IsSelfAdjoint.of_nonneg (hpos x))
+      exact Subtype.ext (hcoe.trans h).symm
+    -- `T = T₊ - T₋` with `T₊T₋ = 0`, and `r := √T₋`
+    have hn0 : (0 : baSubalgebra 𝒷 X) ≤ a⁻ := CFC.negPart_nonneg a
+    have hdec : a⁺ - a⁻ = a := CFC.posPart_sub_negPart a hsa
+    have hr0 : (0 : baSubalgebra 𝒷 X) ≤ CFC.sqrt a⁻ := CFC.sqrt_nonneg _
+    have hrr : CFC.sqrt a⁻ * CFC.sqrt a⁻ = a⁻ := CFC.sqrt_mul_sqrt_self _ hn0
+    set r : baSubalgebra 𝒷 X := CFC.sqrt a⁻ with hrdef
+    have hrsa : star r = r := IsSelfAdjoint.of_nonneg hr0
+    have hnsa : star a⁻ = a⁻ := IsSelfAdjoint.of_nonneg hn0
+    set q : baSubalgebra 𝒷 X := r * r * r with hqdef
+    have hqstar : star q * q = a⁻ * a⁻ * a⁻ := by
+      rw [hqdef]
+      simp only [star_mul, hrsa]
+      rw [← hrr]; noncomm_ring
+    have hadj := baSubalgebra_star_spec (a⁻ : baSubalgebra 𝒷 X)
+    rw [hnsa] at hadj
+    have hprod : a⁻ * a * a⁻ = -(a⁻ * a⁻ * a⁻) := by
+      have h : a⁻ * (a⁺ - a⁻) * a⁻ = -(a⁻ * a⁻ * a⁻) := by
+        rw [mul_sub, CFC.negPart_mul_posPart, zero_sub, neg_mul]
+      rwa [hdec] at h
+    -- `0 ≤ ⟨T₋x, T T₋x⟩` reads `⟨x, T₋³x⟩ ≤ 0`
+    have hle : ∀ x : X, inner 𝒷 x (((a⁻ * a⁻ * a⁻ : baSubalgebra 𝒷 X) :
+        X →L[ℂ] X) x) ≤ 0 := by
+      intro x
+      have h1 := hpos (((a⁻ : baSubalgebra 𝒷 X) : X →L[ℂ] X) x)
+      rw [← hcoe, hadj, ← baSubalgebra_coe_mul_apply, ← baSubalgebra_coe_mul_apply,
+        hprod] at h1
+      have h2 : (((-(a⁻ * a⁻ * a⁻) : baSubalgebra 𝒷 X) : X →L[ℂ] X)) x
+          = -((((a⁻ * a⁻ * a⁻ : baSubalgebra 𝒷 X) : X →L[ℂ] X)) x) := rfl
+      rw [h2, CStarModule.inner_neg_right] at h1
+      exact neg_nonneg.mp h1
+    -- but `T₋³ = q*q` with `q = r³`, so `⟨qx,qx⟩ = 0` and `q = 0`
+    have hq0 : q = 0 := by
+      refine Subtype.ext (ContinuousLinearMap.ext fun x => ?_)
+      refine (CStarModule.inner_self (A := 𝒷)).mp
+        (le_antisymm ?_ CStarModule.inner_self_nonneg)
+      have hA := baSubalgebra_inner_star_mul_self q x
+      rw [hqstar] at hA
+      rw [← hA]
+      exact hle x
+    have hnn : (a⁻ : baSubalgebra 𝒷 X) * a⁻ = 0 := by
+      have hrq : (a⁻ : baSubalgebra 𝒷 X) * a⁻ = r * q := by
+        rw [hqdef, ← hrr]; noncomm_ring
+      rw [hrq, hq0, mul_zero]
+    have hnzero : (a⁻ : baSubalgebra 𝒷 X) = 0 := by
+      have hnorm : ‖(a⁻ : baSubalgebra 𝒷 X)‖ * ‖(a⁻ : baSubalgebra 𝒷 X)‖ = 0 := by
+        rw [← CStarRing.norm_star_mul_self, hnsa, hnn, norm_zero]
+      exact norm_eq_zero.mp (mul_self_eq_zero.mp hnorm)
+    -- hence `T = T₊ ≥ 0`, and `√T` exhibits `T` as `R*R`
+    have haeq : (a⁺ : baSubalgebra 𝒷 X) = a := by
+      rw [hnzero, sub_zero] at hdec; exact hdec
+    have hapos : (0 : baSubalgebra 𝒷 X) ≤ a := haeq ▸ CFC.posPart_nonneg a
+    have hs0 : (0 : baSubalgebra 𝒷 X) ≤ CFC.sqrt a := CFC.sqrt_nonneg _
+    have hss : CFC.sqrt a * CFC.sqrt a = a := CFC.sqrt_mul_sqrt_self _ hapos
+    set s : baSubalgebra 𝒷 X := CFC.sqrt a with hsdef
+    have hssa : star s = s := IsSelfAdjoint.of_nonneg hs0
+    refine ⟨((s : baSubalgebra 𝒷 X) : X →L[ℂ] X),
+      (((star s : baSubalgebra 𝒷 X)) : X →L[ℂ] X), baSubalgebra_star_spec s, ?_⟩
+    refine ContinuousLinearMap.ext fun x => ?_
+    rw [ContinuousLinearMap.comp_apply, ← baSubalgebra_coe_mul_apply, hssa, hss,
+      hcoe]
 
 /-- **144III** (dils.tex:1653, Lemma): an adjointable map between
 pre-Hilbert 𝒷-modules is 𝒷-linear (and ℂ-linear) — already stated in
@@ -1303,6 +1561,176 @@ variable {𝒷 : Type u} {X : Type v}
   [CStarAlgebra 𝒷] [PartialOrder 𝒷] [StarOrderedRing 𝒷]
   [NormedAddCommGroup X] [Module ℂ X] [SMul 𝒷 X] [CStarModule 𝒷 X]
 
+set_option maxHeartbeats 1000000 in
+/-- The analytic core of **148VII**: if the vector states coming from an
+ultranorm-dense subset `D` are nonnegative on a bounded 𝒷-linear `T`, then
+*every* vector state of `T` is.  This is **148I**/**148VI** (ultranorm
+continuity of `x ↦ ⟨x,Tx⟩`) followed by order separation of the
+np-functionals, **44XI** (`Theses.A.VN.nonneg_of_conjNP`), and needs `𝒷` to
+be a von Neumann algebra — as does the ultranorm uniformity itself
+(**146VII**, dils.tex:1889).  Together with **144I** this gives **148VII**;
+see the `FIXME(denseordersep-vonNeumann)` note below. -/
+theorem unDense_inner_nonneg [VonNeumannAlgebra 𝒷] (D : Set X)
+    (hD : UnDense (inner 𝒷) D) (T : X →L[ℂ] X)
+    (hTmod : ∀ (a : 𝒷) (x : X), T (a • x) = a • T x)
+    (hDpos : ∀ x ∈ D, 0 ≤ inner 𝒷 x (T x)) (x : X) :
+    0 ≤ inner 𝒷 x (T x) := by
+  letI : NormedSpace ℂ X := NormedSpace.ofCore (CStarModule.normedSpaceCore 𝒷)
+  set C : ℝ := ‖T‖ + 1 with hC
+  have hC0 : (0 : ℝ) ≤ C := by positivity
+  have hbdd : IsBoundedModuleMap (cstarBInner 𝒷 X) (cstarBInner 𝒷 X) C ⇑T :=
+    { add := fun x y => map_add T x y
+      smul_complex := fun c x => map_smul T c x
+      smul := hTmod
+      bound := fun x => by
+        change Real.sqrt ‖(inner 𝒷 (T x) (T x) : 𝒷)‖
+          ≤ C * Real.sqrt ‖(inner 𝒷 x x : 𝒷)‖
+        rw [← CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒷),
+          ← CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒷)]
+        have := T.le_opNorm x
+        have h0 : (0 : ℝ) ≤ ‖x‖ := norm_nonneg x
+        nlinarith }
+  have hTsem : ∀ (ω : NPFunctional 𝒷) (z : X),
+      unSeminorm ω (inner 𝒷) (T z) ≤ C * unSeminorm ω (inner 𝒷) z := fun ω z =>
+    unSeminorm_boundedModuleMap_le _ _ C hC0 _ hbdd ω z
+  -- every np-functional is nonnegative on every vector state of `T`
+  have hall : ∀ (y : X) (ω : NPFunctional 𝒷),
+      (0 : ℂ) ≤ ω (inner 𝒷 y (T y)) := by
+    intro y ω
+    set M : ℝ := unSeminorm ω (inner 𝒷) y with hM
+    set N : ℝ := unSeminorm ω (inner 𝒷) (T y) with hN
+    have hM0 : (0 : ℝ) ≤ M := unSeminorm_nonneg _ _ _
+    have hN0 : (0 : ℝ) ≤ N := unSeminorm_nonneg _ _ _
+    set K : ℝ := N + (M + 1) * C + 1 with hKdef
+    have hK : (0 : ℝ) < K := by nlinarith
+    -- approximate `⟨y,Ty⟩` by a vector state coming from `V`
+    have key : ∀ ε : ℝ, 0 < ε → ∃ z : ℂ, 0 ≤ z ∧
+        ‖(ω (inner 𝒷 y (T y)) : ℂ) - z‖ ≤ ε * K := by
+      intro ε hε
+      set ε' : ℝ := min ε 1 with hε'
+      have hε'0 : 0 < ε' := lt_min hε one_pos
+      obtain ⟨d, hdD, hd⟩ := hD y 1 (fun _ => ω) ε' hε'0
+      have ht : unSeminorm ω (inner 𝒷) (y - d) ≤ ε' := hd 0
+      have ht0 : (0 : ℝ) ≤ unSeminorm ω (inner 𝒷) (y - d) :=
+        unSeminorm_nonneg _ _ _
+      refine ⟨ω (inner 𝒷 (d) (T (d))), npFunctional_nonneg ω (hDpos d hdD), ?_⟩
+      have hsplit : (inner 𝒷 y (T y) : 𝒷)
+          = inner 𝒷 (y - d) (T y) + inner 𝒷 (d) (T (y - d))
+            + inner 𝒷 (d) (T (d)) := by
+        rw [map_sub T, CStarModule.inner_sub_right, CStarModule.inner_sub_left]
+        abel
+      have hadd1 : ω (inner 𝒷 (y - d) (T y) + inner 𝒷 (d) (T (y - d))
+            + inner 𝒷 (d) (T (d)))
+          = ω (inner 𝒷 (y - d) (T y) + inner 𝒷 (d) (T (y - d)))
+            + ω (inner 𝒷 (d) (T (d))) :=
+        map_add ω.toPositiveLinearMap _ _
+      have hadd2 : ω (inner 𝒷 (y - d) (T y)
+            + inner 𝒷 (d) (T (y - d)))
+          = ω (inner 𝒷 (y - d) (T y))
+            + ω (inner 𝒷 (d) (T (y - d))) :=
+        map_add ω.toPositiveLinearMap _ _
+      rw [hsplit, hadd1, add_sub_cancel_right, hadd2]
+      have hcs1 : ‖ω (inner 𝒷 (y - d) (T y))‖
+          ≤ unSeminorm ω (inner 𝒷) (y - d) * N :=
+        unSeminorm_inner_le ω (cstarBInner 𝒷 X) _ _
+      have hdM : unSeminorm ω (inner 𝒷) (d) ≤ M + ε' := by
+        have htri := unSeminorm_add_le ω (cstarBInner 𝒷 X) y (d - y)
+        simp only [show (cstarBInner 𝒷 X).inner = (inner 𝒷 : X → X → 𝒷)
+          from rfl, add_sub_cancel] at htri
+        have hneg : d - y = -(y - d) := by abel
+        have hsymm : unSeminorm ω (inner 𝒷 : X → X → 𝒷) (d - y)
+            = unSeminorm ω (inner 𝒷) (y - d) := by
+          rw [unSeminorm, unSeminorm, hneg, CStarModule.inner_neg_left,
+            CStarModule.inner_neg_right, neg_neg]
+        rw [hsymm] at htri
+        linarith [ht]
+      have hcs2 : ‖ω (inner 𝒷 (d) (T (y - d)))‖
+          ≤ unSeminorm ω (inner 𝒷) (d)
+              * (C * unSeminorm ω (inner 𝒷) (y - d)) := by
+        refine (unSeminorm_inner_le ω (cstarBInner 𝒷 X) _ _).trans ?_
+        exact mul_le_mul_of_nonneg_left (hTsem ω _) (unSeminorm_nonneg _ _ _)
+      have hεle : ε' ≤ ε := min_le_left _ _
+      have hε1 : ε' ≤ 1 := min_le_right _ _
+      have hdM0 : (0 : ℝ) ≤ unSeminorm ω (inner 𝒷) (d) := unSeminorm_nonneg _ _ _
+      have htε : unSeminorm ω (inner 𝒷) (y - d) ≤ ε := ht.trans hεle
+      have h1 : ‖ω (inner 𝒷 (y - d) (T y))‖ ≤ ε * N :=
+        hcs1.trans (mul_le_mul_of_nonneg_right htε hN0)
+      have h2 : ‖ω (inner 𝒷 (d) (T (y - d)))‖ ≤ ε * ((M + 1) * C) := by
+        refine hcs2.trans ?_
+        have hD : unSeminorm ω (inner 𝒷) (d) ≤ M + 1 := by linarith
+        have hCt : C * unSeminorm ω (inner 𝒷) (y - d) ≤ C * ε :=
+          mul_le_mul_of_nonneg_left htε hC0
+        calc unSeminorm ω (inner 𝒷) (d)
+              * (C * unSeminorm ω (inner 𝒷) (y - d))
+            ≤ (M + 1) * (C * unSeminorm ω (inner 𝒷) (y - d)) :=
+              mul_le_mul_of_nonneg_right hD (by positivity)
+          _ ≤ (M + 1) * (C * ε) := mul_le_mul_of_nonneg_left hCt (by linarith)
+          _ = ε * ((M + 1) * C) := by ring
+      have hεK : ε * N + ε * ((M + 1) * C) ≤ ε * K := by
+        rw [hKdef]; nlinarith
+      calc ‖ω (inner 𝒷 (y - d) (T y)) + ω (inner 𝒷 (d) (T (y - d)))‖
+          ≤ ‖ω (inner 𝒷 (y - d) (T y))‖
+              + ‖ω (inner 𝒷 (d) (T (y - d)))‖ := norm_add_le _ _
+        _ ≤ ε * K := by linarith
+    -- let `ε ↓ 0`
+    set z : ℂ := ω (inner 𝒷 y (T y)) with hz
+    have hbound : ∀ ε : ℝ, 0 < ε → |z.im| ≤ ε * K ∧ -(ε * K) ≤ z.re := by
+      intro ε hε
+      obtain ⟨w, hw, hwe⟩ := key ε hε
+      have hwre : 0 ≤ w.re := (Complex.le_def.mp hw).1
+      have hwim : w.im = 0 := (Complex.le_def.mp hw).2.symm
+      have hre : |(z - w).re| ≤ ‖z - w‖ := Complex.abs_re_le_norm _
+      have him : |(z - w).im| ≤ ‖z - w‖ := Complex.abs_im_le_norm _
+      simp only [Complex.sub_re, Complex.sub_im, hwim, sub_zero] at hre him
+      constructor
+      · linarith [him, hwe]
+      · have := abs_le.mp (hre.trans hwe)
+        linarith [this.1, hwre]
+    have him0 : z.im = 0 := by
+      by_contra hne
+      have hpos : 0 < |z.im| := abs_pos.mpr hne
+      have := (hbound (|z.im| / (2 * K)) (by positivity)).1
+      rw [div_mul_eq_mul_div, le_div_iff₀ (by positivity)] at this
+      nlinarith
+    have hre0 : 0 ≤ z.re := by
+      by_contra hne
+      have hlt : z.re < 0 := lt_of_not_ge hne
+      have hpos : 0 < -z.re := by linarith
+      have h := neg_le.mp
+        (hbound (-z.re / (2 * K)) (div_pos hpos (by positivity))).2
+      rw [div_mul_eq_mul_div, le_div_iff₀ (by positivity)] at h
+      nlinarith
+    exact Complex.le_def.mpr ⟨by simpa using hre0, by simpa using him0.symm⟩
+  -- np-functionals are order separating (**44XI**)
+  refine nonneg_of_conjNP fun ω c => ?_
+  have hrw : star c * (inner 𝒷 x (T x) : 𝒷) * c
+      = inner 𝒷 ((star c) • x) (T ((star c) • x)) := by
+    rw [hTmod, CStarModule.inner_op_smul_right, CStarModule.inner_op_smul_left,
+      star_star, mul_assoc]
+  rw [hrw]
+  exact hall _ ω
+
+/- FIXME(denseordersep-vonNeumann): **148VII** below is stated with `𝒷` only
+a C*-algebra, but the thesis's ultranorm uniformity — and hence the phrase
+"ultranorm-dense" in its statement (dils.tex:2116) — is defined only for a
+von Neumann algebra `𝒷` (**146VII**, dils.tex:1889, "Let 𝒷 be a von Neumann
+algebra").  Order separation of `𝒷`'s np-functionals (**44XI**) is what the
+proof consumes, and that is exactly the faithfulness clause of
+`VonNeumannAlgebra`; with only `[CStarAlgebra 𝒷]` there is nothing to
+separate with.  This is the same defect that was repaired in **148IV**
+(`ultranormscalar`) last session.  Once `[VonNeumannAlgebra 𝒷]` is added to
+the statement the proof is
+
+    fun D hD T hT =>
+      ⟨fun h x _ => (hilbmod_ordersep T hT).mp h x, fun h =>
+        (hilbmod_ordersep T hT).mpr
+          (unDense_inner_nonneg D hD T
+            (moduleAdjointable_linear (𝒜 := 𝒷) ⇑T hT).2.2 h)⟩
+
+(compiled and checked; `unDense_inner_nonneg` above carries the whole
+argument).  Not applied here: statements are not changed without the
+author's authorisation. -/
+
 /-- **148VII** (`hilbmod-denseordersep`, dils.tex:2116, Corollary): for a
 Hilbert 𝒷-module `X` with ultranorm-dense subset `D`, the vector states
 from `D` are order separating: for adjointable bounded `T`, `T ≥ 0` iff
@@ -1388,8 +1816,37 @@ theorem mod_parseval [VonNeumannAlgebra 𝒷] (e : ι → X)
     (he : IsONBasis 𝒷 e) (x : X) :
     UWTendsto
       (fun s : Finset ι => ∑ i ∈ s, inner 𝒷 (e i) x * inner 𝒷 x (e i))
-      atTop (inner 𝒷 x x) :=
-  sorry
+      atTop (inner 𝒷 x x) := by
+  -- `⟨eᵢ,eᵢ⟩` is a projection, so `⟨eᵢ,x⟩⟨eᵢ,eᵢ⟩ = ⟨eᵢ,x⟩`
+  have hp : ∀ i, IsStarProjection (inner 𝒷 (e i) (e i) : 𝒷) := fun i => (he.1.2 i).1
+  have hself : ∀ i, (inner 𝒷 (e i) x : 𝒷) * inner 𝒷 (e i) (e i)
+      = inner 𝒷 (e i) x := by
+    intro i
+    have hps : star (inner 𝒷 (e i) (e i) : 𝒷) = inner 𝒷 (e i) (e i) :=
+      (hp i).isSelfAdjoint
+    have h2 : (inner 𝒷 ((inner 𝒷 (e i) (e i) : 𝒷) • e i) x : 𝒷)
+        = inner 𝒷 (e i) x := by rw [mod_projelabs (e i) (hp i)]
+    rwa [CStarModule.inner_op_smul_left, hps] at h2
+  -- the Gram sum of the partial sums is the Parseval sum
+  have hkey : ∀ s : Finset ι,
+      (inner 𝒷 (∑ i ∈ s, (inner 𝒷 (e i) x : 𝒷) • e i)
+          (∑ i ∈ s, (inner 𝒷 (e i) x : 𝒷) • e i) : 𝒷)
+        = ∑ i ∈ s, (inner 𝒷 (e i) x : 𝒷) * inner 𝒷 x (e i) := by
+    intro s
+    rw [CStarModule.inner_sum_left]
+    refine Finset.sum_congr rfl fun i hi => ?_
+    rw [CStarModule.inner_sum_right, Finset.sum_eq_single_of_mem i hi]
+    · rw [CStarModule.inner_op_smul_left, CStarModule.inner_op_smul_right,
+        hself i, CStarModule.star_inner]
+    · intro j _ hji
+      rw [CStarModule.inner_op_smul_left, CStarModule.inner_op_smul_right,
+        he.1.1 i j (Ne.symm hji), mul_zero, zero_mul]
+  have h := innerprod_ultraweak (cstarBInner 𝒷 X)
+    (fun s : Finset ι => ∑ i ∈ s, (inner 𝒷 (e i) x : 𝒷) • e i)
+    (fun s : Finset ι => ∑ i ∈ s, (inner 𝒷 (e i) x : 𝒷) • e i) x x
+    (he.2.1 x) (he.2.1 x)
+  simpa only [show (cstarBInner 𝒷 X).inner = (inner 𝒷 : X → X → 𝒷) from rfl,
+    hkey] using h
 
 variable (𝒷 X) in
 /-- Norm-bounded ultranorm completeness (condition 3 of **149V**): every
