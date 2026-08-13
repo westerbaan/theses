@@ -105,8 +105,35 @@ theorem prop_complete_into_hilbert_space (V : Type v) [AddCommGroup V]
     (hpos : ∀ v : V, 0 ≤ (B v v).re) :
     ∃ (ℋ : Type v) (_ : NormedAddCommGroup ℋ) (_ : InnerProductSpace ℂ ℋ)
       (_ : CompleteSpace ℋ) (η : V →ₗ[ℂ] ℋ),
-      (∀ v w : V, (⟪η v, η w⟫ : ℂ) = B v w) ∧ DenseRange η :=
-  sorry
+      (∀ v w : V, (⟪η v, η w⟫ : ℂ) = B v w) ∧ DenseRange η := by
+  -- The author's proof (dils.tex:250) builds `ℋ` by hand from fast Cauchy
+  -- sequences, i.e. re-develops the metric completion; we instead use
+  -- Mathlib's: `B` makes `V` a *semi*-inner-product space, its separation
+  -- quotient is an inner product space, and its completion is a Hilbert
+  -- space.  (Divergence (2): the same construction, taken off the shelf.)
+  let core : PreInnerProductSpace.Core ℂ V :=
+    { inner := fun x y => B x y
+      conj_inner_symm := fun x y => (hsymm y x).symm
+      re_inner_nonneg := hpos
+      add_left := fun x y z => by simp
+      smul_left := fun x y r => by simp }
+  let _ : SeminormedAddCommGroup V :=
+    InnerProductSpace.Core.toSeminormedAddCommGroup (𝕜 := ℂ) (F := V) (c := core)
+  let _ : InnerProductSpace ℂ V := InnerProductSpace.ofCore core
+  refine ⟨UniformSpace.Completion (SeparationQuotient V), inferInstance, inferInstance,
+    inferInstance,
+    ((UniformSpace.Completion.toComplL : SeparationQuotient V →L[ℂ]
+        UniformSpace.Completion (SeparationQuotient V)).comp
+      (SeparationQuotient.mkCLM ℂ V)).toLinearMap, fun v w => ?_, ?_⟩
+  · change (⟪((SeparationQuotient.mk v : SeparationQuotient V) :
+        UniformSpace.Completion (SeparationQuotient V)),
+      ((SeparationQuotient.mk w : SeparationQuotient V) :
+        UniformSpace.Completion (SeparationQuotient V))⟫ : ℂ) = B v w
+    rw [UniformSpace.Completion.inner_coe, SeparationQuotient.inner_mk_mk]
+    rfl
+  · exact UniformSpace.Completion.denseRange_coe.comp
+      SeparationQuotient.surjective_mk.denseRange
+      (UniformSpace.Completion.continuous_coe _)
 
 /-! ## Parsec 1370: proof of Stinespring's theorem
 
@@ -143,17 +170,47 @@ noncomputable def hilbTensorMk (x : H) (y : K) : hilbTensor H K :=
 
 /-- The operator `a ⊗ b` on `hilbTensor H K`, for bounded operators
 `a : H → H` and `b : K → K` — the continuous extension of
-`TensorProduct.map`.  (Definition deferred; only its characterizing property
-`tensorCLM_mk` below is used.) -/
+`TensorProduct.map`, obtained as `TensorProduct.mapL` followed by
+`LinearMap.extendOfNorm` along the dense range into the completion.  Its
+characterizing property is `tensorCLM_mk` below. -/
 noncomputable def tensorCLM (a : H →L[ℂ] H) (b : K →L[ℂ] K) :
     hilbTensor H K →L[ℂ] hilbTensor H K :=
-  sorry
+  LinearMap.extendOfNorm
+    (((UniformSpace.Completion.toComplL :
+          TensorProduct ℂ H K →L[ℂ] hilbTensor H K).comp
+        (TensorProduct.mapL a b)).toLinearMap)
+    ((UniformSpace.Completion.toComplL :
+        TensorProduct ℂ H K →L[ℂ] hilbTensor H K).toLinearMap)
 
+set_option linter.unusedSectionVars false in
 /-- Characterizing property of `tensorCLM`:
 `(a ⊗ b) (x ⊗ y) = (a x) ⊗ (b y)`. -/
 theorem tensorCLM_mk (a : H →L[ℂ] H) (b : K →L[ℂ] K) (x : H) (y : K) :
-    tensorCLM a b (hilbTensorMk x y) = hilbTensorMk (a x) (b y) :=
-  sorry
+    tensorCLM a b (hilbTensorMk x y) = hilbTensorMk (a x) (b y) := by
+  have hdense : DenseRange
+      ⇑((UniformSpace.Completion.toComplL :
+          TensorProduct ℂ H K →L[ℂ] hilbTensor H K).toLinearMap) := by
+    simpa [UniformSpace.Completion.coe_toComplL] using
+      (UniformSpace.Completion.denseRange_coe (α := TensorProduct ℂ H K))
+  have hnorm : ∃ C : ℝ, ∀ z : TensorProduct ℂ H K,
+      ‖(((UniformSpace.Completion.toComplL :
+            TensorProduct ℂ H K →L[ℂ] hilbTensor H K).comp
+          (TensorProduct.mapL a b)).toLinearMap) z‖ ≤
+        C * ‖((UniformSpace.Completion.toComplL :
+            TensorProduct ℂ H K →L[ℂ] hilbTensor H K).toLinearMap) z‖ := by
+    refine ⟨‖a‖ * ‖b‖, fun z => ?_⟩
+    simp only [ContinuousLinearMap.coe_coe, ContinuousLinearMap.coe_comp,
+      Function.comp_apply,
+      UniformSpace.Completion.coe_toComplL, UniformSpace.Completion.norm_coe]
+    calc ‖TensorProduct.mapL a b z‖ ≤ ‖TensorProduct.mapL a b‖ * ‖z‖ :=
+          ContinuousLinearMap.le_opNorm _ _
+      _ ≤ ‖a‖ * ‖b‖ * ‖z‖ :=
+          mul_le_mul_of_nonneg_right (TensorProduct.norm_mapL_le a b) (norm_nonneg _)
+  change LinearMap.extendOfNorm _ _
+    ((UniformSpace.Completion.toComplL :
+      TensorProduct ℂ H K →L[ℂ] hilbTensor H K).toLinearMap (x ⊗ₜ[ℂ] y)) = _
+  rw [LinearMap.extendOfNorm_eq hdense hnorm]
+  rfl
 
 end HilbTensor
 
@@ -285,8 +342,137 @@ theorem dils_univlemma {ℬ 𝒞 : Type u}
     [CStarAlgebra 𝒞] [PartialOrder 𝒞] [StarOrderedRing 𝒞]
     (ϱ : NMIUMap 𝒜 ℬ) (ϱ' : NMIUMap 𝒜 𝒞) (σ : NCPMap 𝒞 ℬ)
     (h : ∀ a, σ (ϱ' a) = ϱ a) (a₁ a₂ : 𝒜) (c : 𝒞) :
-    σ (ϱ' a₁ * c * ϱ' a₂) = ϱ a₁ * σ c * ϱ a₂ :=
-  sorry
+    σ (ϱ' a₁ * c * ϱ' a₂) = ϱ a₁ * σ c * ϱ a₂ := by
+  -- dils.tex:833 (**139IV**), transcribed.
+  set f : 𝒞 →ₗ[ℂ] ℬ := σ.toCompletelyPositiveMap.toLinearMap with hf
+  have hfc : ∀ x : 𝒞, f x = σ x := fun _ => rfl
+  have hcp : IsCompletelyPositiveMap f :=
+    (cp_iff f).out 1 0 |>.mp fun N M hM =>
+      σ.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM
+  have hu : f 1 = 1 := by
+    have h1 : σ (ϱ' (1 : 𝒜)) = ϱ 1 := h 1
+    rw [show (ϱ' (1 : 𝒜)) = 1 from map_one ϱ'.toStarAlgHom,
+      show (ϱ (1 : 𝒜)) = 1 from map_one ϱ.toStarAlgHom] at h1
+    exact h1
+  have hp : IsPositiveMap f := astara_pos_basic_2_cp f hcp
+  have hi : ∀ x : 𝒞, f (star x) = star (f x) := cstar_p_implies_i f hp
+  -- `σ(ϱ'(a)* ϱ'(a)) = σ(ϱ'(a* a)) = ϱ(a* a) = ϱ(a)* ϱ(a) = σ(ϱ'(a))* σ(ϱ'(a))`,
+  -- so Choi's lemma **34XVIII**.2 applies at `ϱ'(a)`.
+  have hmulR : ∀ (a : 𝒜) (x : 𝒞), σ (x * ϱ' a) = σ x * ϱ a := by
+    intro a x
+    have hkey : f (star (ϱ' a) * ϱ' a) = star (f (ϱ' a)) * f (ϱ' a) := by
+      rw [show star (ϱ' a) * ϱ' a = ϱ' (star a * a) by
+        rw [show (ϱ' (star a * a)) = ϱ' (star a) * ϱ' a from
+            map_mul ϱ'.toStarAlgHom _ _,
+          show (ϱ' (star a)) = star (ϱ' a) from map_star ϱ'.toStarAlgHom _]]
+      rw [hfc, hfc, h, h, show (ϱ (star a * a)) = ϱ (star a) * ϱ a from
+        map_mul ϱ.toStarAlgHom _ _, show (ϱ (star a)) = star (ϱ a) from
+        map_star ϱ.toStarAlgHom _]
+    have := choi_2 f hcp hu (ϱ' a) hkey x
+    rw [hfc, hfc, hfc, h] at this
+    exact this
+  -- taking adjoints: `σ(ϱ'(a) x) = ϱ(a) σ(x)`
+  have hmulL : ∀ (a : 𝒜) (x : 𝒞), σ (ϱ' a * x) = ϱ a * σ x := by
+    intro a x
+    have h1 := hmulR (star a) (star x)
+    rw [show (ϱ' (star a)) = star (ϱ' a) from map_star ϱ'.toStarAlgHom _,
+      show (ϱ (star a)) = star (ϱ a) from map_star ϱ.toStarAlgHom _,
+      ← star_mul, ← hfc, ← hfc, hi, hi] at h1
+    have h2 := congrArg star h1
+    rw [star_star] at h2
+    rwa [star_mul, star_star, star_star, hfc] at h2
+  rw [hmulR, hmulL]
+
+/-! ### Infrastructure for **139V**
+
+The author's proof of **139V** works with formal sums `∑ᵢ ϱ(aᵢ)Vxᵢ`; we
+package these as the image of the algebraic tensor product `𝒜 ⊗ ℋ` under
+the linear map `sdMap` below, which lets the norm identity of dils.tex:895
+be stated as `‖sdMap D t‖ = ‖sdMap D' t‖` and the mediating isometry be
+obtained from `LinearMap.extendOfNorm`. -/
+
+section UnivStinespring
+
+variable {φ : 𝒜 → (H →L[ℂ] H)}
+
+/-- Auxiliary for **139V**: the linear map `𝒜 ⊗ ℋ → 𝒦`, `a ⊗ x ↦ ϱ(a)Vx`,
+of a Stinespring dilation; its range is the linear span of `ϱ(𝒜)Vℋ`. -/
+private noncomputable def sdMap (D : StinespringDilation φ) :
+    TensorProduct ℂ 𝒜 H →ₗ[ℂ] D.K :=
+  TensorProduct.lift <| LinearMap.mk₂ ℂ (fun (a : 𝒜) (x : H) => D.ρ a (D.V x))
+    (fun a b x => by
+      rw [show D.ρ (a + b) = D.ρ a + D.ρ b from map_add D.ρ.toStarAlgHom a b]
+      rfl)
+    (fun c a x => by
+      rw [show D.ρ (c • a) = c • D.ρ a from map_smul D.ρ.toStarAlgHom c a]
+      rfl)
+    (fun a x y => by rw [map_add, map_add])
+    (fun c a x => by rw [map_smul, map_smul])
+
+private theorem sdMap_tmul (D : StinespringDilation φ) (a : 𝒜) (x : H) :
+    sdMap D (a ⊗ₜ[ℂ] x) = D.ρ a (D.V x) := rfl
+
+/-- The inner product of two elementary tensors depends only on `φ`
+(dils.tex:895): `⟪ϱ(a)Vx, ϱ(b)Vy⟫ = ⟪x, φ(a*b)y⟫`. -/
+private theorem sdMap_inner_tmul (D : StinespringDilation φ) (a b : 𝒜)
+    (x y : H) :
+    (⟪sdMap D (a ⊗ₜ[ℂ] x), sdMap D (b ⊗ₜ[ℂ] y)⟫ : ℂ)
+      = ⟪x, φ (star a * b) y⟫ := by
+  rw [sdMap_tmul, sdMap_tmul, ← ContinuousLinearMap.adjoint_inner_right,
+    ← ContinuousLinearMap.star_eq_adjoint,
+    show star (D.ρ a) = D.ρ (star a) from (map_star D.ρ.toStarAlgHom a).symm,
+    show D.ρ (star a) (D.ρ b (D.V y)) = D.ρ (star a * b) (D.V y) from by
+      rw [show D.ρ (star a * b) = D.ρ (star a) * D.ρ b from
+        map_mul D.ρ.toStarAlgHom _ _]; rfl,
+    ← ContinuousLinearMap.adjoint_inner_right, D.eq]
+  rfl
+
+/-- Consequently two Stinespring dilations of the same map give the same
+inner products on `𝒜 ⊗ ℋ`. -/
+private theorem sdMap_inner_eq (D D' : StinespringDilation φ)
+    (s t : TensorProduct ℂ 𝒜 H) :
+    (⟪sdMap D s, sdMap D t⟫ : ℂ) = ⟪sdMap D' s, sdMap D' t⟫ := by
+  induction s with
+  | zero => simp
+  | add s₁ s₂ h₁ h₂ => simp only [map_add, inner_add_left, h₁, h₂]
+  | tmul a x =>
+    induction t with
+    | zero => simp
+    | add t₁ t₂ h₁ h₂ => simp only [map_add, inner_add_right, h₁, h₂]
+    | tmul b y => rw [sdMap_inner_tmul, sdMap_inner_tmul]
+
+private theorem sdMap_norm_eq (D D' : StinespringDilation φ)
+    (t : TensorProduct ℂ 𝒜 H) : ‖sdMap D' t‖ = ‖sdMap D t‖ := by
+  have h := sdMap_inner_eq D D' t t
+  have h1 : ‖sdMap D t‖ ^ 2 = ‖sdMap D' t‖ ^ 2 := by
+    rw [← @inner_self_eq_norm_sq ℂ, ← @inner_self_eq_norm_sq ℂ]
+    exact congrArg Complex.re h
+  nlinarith [norm_nonneg (sdMap D t), norm_nonneg (sdMap D' t)]
+
+private theorem sdMap_range (D : StinespringDilation φ) :
+    LinearMap.range (sdMap D) =
+      Submodule.span ℂ {k : D.K | ∃ (a : 𝒜) (x : H), k = D.ρ a (D.V x)} := by
+  rw [LinearMap.range_eq_map, ← TensorProduct.span_tmul_eq_top ℂ 𝒜 H,
+    Submodule.map_span]
+  congr 1
+  ext k
+  constructor
+  · rintro ⟨_, ⟨a, x, rfl⟩, rfl⟩
+    exact ⟨a, x, rfl⟩
+  · rintro ⟨a, x, rfl⟩
+    exact ⟨a ⊗ₜ[ℂ] x, ⟨a, x, rfl⟩, rfl⟩
+
+private theorem sdMap_denseRange {D : StinespringDilation φ}
+    (hmin : D.Minimal) : DenseRange (sdMap D) := by
+  have h : Set.range (sdMap D) = (Submodule.span ℂ
+      {k : D.K | ∃ (a : 𝒜) (x : H), k = D.ρ a (D.V x)} : Set D.K) := by
+    rw [show Set.range (sdMap D)
+      = ((LinearMap.range (sdMap D) : Submodule ℂ D.K) : Set D.K) from rfl,
+      sdMap_range]
+  rw [DenseRange, h]
+  exact hmin
+
+end UnivStinespring
 
 /-- **139V** (`dils-univ-stinespring`, dils.tex:863, Proposition): if
 `(𝒦, ϱ, V)` and `(𝒦', ϱ', V')` are normal Stinespring dilations of the same
@@ -298,8 +484,100 @@ theorem dils_univ_stinespring (φ : NCPMap 𝒜 (H →L[ℂ] H))
     (D D' : StinespringDilation ⇑φ) (hmin : D.Minimal) :
     ∃! S : D.K →L[ℂ] D'.K,
       Isometry S ∧ S.comp D.V = D'.V ∧
-        ∀ a : 𝒜, D.ρ a = conjOperator S (D'.ρ a) :=
-  sorry
+        ∀ a : 𝒜, D.ρ a = conjOperator S (D'.ρ a) := by
+  have hdense : DenseRange (sdMap D) := sdMap_denseRange hmin
+  have hbound : ∃ C : ℝ, ∀ t, ‖sdMap D' t‖ ≤ C * ‖sdMap D t‖ :=
+    ⟨1, fun t => by rw [one_mul, sdMap_norm_eq D D' t]⟩
+  -- `‖∑ᵢ ϱ(aᵢ)Vxᵢ‖ = ‖∑ᵢ ϱ'(aᵢ)V'xᵢ‖` (dils.tex:895) gives the isometry
+  set S : D.K →L[ℂ] D'.K := LinearMap.extendOfNorm (sdMap D') (sdMap D) with hSdef
+  have hSt : ∀ t, S (sdMap D t) = sdMap D' t :=
+    fun t => LinearMap.extendOfNorm_eq hdense hbound t
+  have hSnorm : ∀ k : D.K, ‖S k‖ = ‖k‖ := fun k =>
+    hdense.induction_on k (isClosed_eq (by fun_prop) (by fun_prop))
+      (fun t => by rw [hSt, sdMap_norm_eq D D' t])
+  have hSinner : ∀ k l : D.K, (⟪S k, S l⟫ : ℂ) = ⟪k, l⟫ :=
+    (LinearIsometry.mk S.toLinearMap hSnorm).inner_map_map
+  have hSadj : ∀ k : D.K, ContinuousLinearMap.adjoint S (S k) = k := by
+    intro k
+    refine ext_inner_left ℂ fun v => ?_
+    rw [ContinuousLinearMap.adjoint_inner_right, hSinner]
+  -- `SV = V'`, since `V x = ϱ(1)Vx`
+  have hV : ∀ x : H, sdMap D ((1 : 𝒜) ⊗ₜ[ℂ] x) = D.V x := by
+    intro x
+    rw [sdMap_tmul, show D.ρ (1 : 𝒜) = 1 from map_one D.ρ.toStarAlgHom]
+    rfl
+  have hV' : ∀ x : H, sdMap D' ((1 : 𝒜) ⊗ₜ[ℂ] x) = D'.V x := by
+    intro x
+    rw [sdMap_tmul, show D'.ρ (1 : 𝒜) = 1 from map_one D'.ρ.toStarAlgHom]
+    rfl
+  have hSV : S.comp D.V = D'.V := by
+    refine ContinuousLinearMap.ext fun x => ?_
+    rw [ContinuousLinearMap.comp_apply, ← hV, hSt, hV']
+  -- `S ϱ(a) = ϱ'(a) S` (dils.tex:917)
+  have hkey : ∀ (a : 𝒜) (t : TensorProduct ℂ 𝒜 H),
+      S (D.ρ a (sdMap D t)) = D'.ρ a (sdMap D' t) := by
+    intro a t
+    induction t with
+    | zero => simp
+    | add t₁ t₂ h₁ h₂ => simp only [map_add, h₁, h₂]
+    | tmul b x =>
+      rw [sdMap_tmul, sdMap_tmul,
+        show D.ρ a (D.ρ b (D.V x)) = sdMap D ((a * b) ⊗ₜ[ℂ] x) from by
+          rw [sdMap_tmul, show D.ρ (a * b) = D.ρ a * D.ρ b from
+            map_mul D.ρ.toStarAlgHom _ _]; rfl,
+        hSt, sdMap_tmul,
+        show D'.ρ (a * b) = D'.ρ a * D'.ρ b from map_mul D'.ρ.toStarAlgHom _ _]
+      rfl
+  have hintw : ∀ (a : 𝒜) (k : D.K), S (D.ρ a k) = D'.ρ a (S k) := fun a k =>
+    hdense.induction_on k (isClosed_eq (by fun_prop) (by fun_prop))
+      (fun t => by rw [hkey a t, hSt])
+  have hρ : ∀ a : 𝒜, D.ρ a = conjOperator S (D'.ρ a) := by
+    intro a
+    refine ContinuousLinearMap.ext fun k => ?_
+    change D.ρ a k = ContinuousLinearMap.adjoint S ((D'.ρ a).comp S k)
+    rw [ContinuousLinearMap.comp_apply, ← hintw a k, hSadj]
+  refine ⟨S, ⟨AddMonoidHomClass.isometry_of_norm S hSnorm, hSV, hρ⟩, ?_⟩
+  -- Uniqueness.  Any `T` as in the statement already satisfies
+  -- `T ϱ(a)Vx = ϱ'(a)V'x`, which pins it down on the dense span.
+  rintro T ⟨hTiso, hTV, hTρ⟩
+  have hTnorm : ∀ k : D.K, ‖T k‖ = ‖k‖ := fun k => by
+    simpa using hTiso.dist_eq k 0
+  have hTinner : ∀ k l : D.K, (⟪T k, T l⟫ : ℂ) = ⟪k, l⟫ :=
+    (LinearIsometry.mk T.toLinearMap hTnorm).inner_map_map
+  have hTtmul : ∀ t : TensorProduct ℂ 𝒜 H, T (sdMap D t) = sdMap D' t := by
+    intro t
+    induction t with
+    | zero => simp
+    | add t₁ t₂ h₁ h₂ => simp only [map_add, h₁, h₂]
+    | tmul b x =>
+      set y : D'.K := sdMap D' (b ⊗ₜ[ℂ] x) with hy
+      set u : D.K := sdMap D (b ⊗ₜ[ℂ] x) with hu
+      -- `u = T* y`: indeed `ϱ(b)Vx = T*ϱ'(b)T V x = T*ϱ'(b)V'x`
+      have hTu : ContinuousLinearMap.adjoint T y = u := by
+        have h1 : D.ρ b (D.V x) =
+            ContinuousLinearMap.adjoint T ((D'.ρ b) (T (D.V x))) := by
+          have := hTρ b
+          have h2 := congrArg (fun (P : D.K →L[ℂ] D.K) => P (D.V x)) this
+          simpa [conjOperator] using h2
+        rw [hu, hy, sdMap_tmul, sdMap_tmul, h1,
+          show T (D.V x) = D'.V x from by
+            rw [← hTV]; rfl]
+      -- `‖y − T u‖² = ⟪y,y⟫ − ⟪u,u⟫ = 0` by the norm identity
+      have hyy : (⟪y, y⟫ : ℂ) = ⟪u, u⟫ :=
+        sdMap_inner_eq D' D (b ⊗ₜ[ℂ] x) (b ⊗ₜ[ℂ] x)
+      have hzero : (⟪y - T u, y - T u⟫ : ℂ) = 0 := by
+        rw [inner_sub_sub_self]
+        rw [show (⟪T u, y⟫ : ℂ) = ⟪u, u⟫ from by
+              rw [← ContinuousLinearMap.adjoint_inner_right, hTu],
+          show (⟪y, T u⟫ : ℂ) = ⟪u, u⟫ from by
+              rw [← ContinuousLinearMap.adjoint_inner_left, hTu],
+          hTinner, hyy]
+        ring
+      exact (sub_eq_zero.mp (inner_self_eq_zero.mp hzero)).symm
+  refine ContinuousLinearMap.ext fun k => ?_
+  refine hdense.induction_on k (isClosed_eq (by fun_prop) (by fun_prop))
+    fun t => ?_
+  rw [hTtmul t, hSt]
 
 /-- **139IX** (`exc-chris-univ-prop`, dils.tex:945, Exercise*): the
 universal property **139V** makes the minimal Stinespring dilation a
