@@ -60,11 +60,12 @@ time the sources are edited.
 | **37IX** | "is WOT-Cauchy **and WOT-bounded**" does not follow: 37VII needs *norm*-boundedness, 37IX supplies only a bound from above (`D = {−n·1}`) | statement gains "non-empty"; proof squeezes boundedness, gets self-adjointness via 25V(1). **37VII deliberately unchanged** | DONE `370.90`/`370.100` |
 | **37IX** | omits `D ≠ ∅`, needed by parts 1 and 2 | — | DONE (as above) |
 | **37IX** | proof claims 37VII yields a *self-adjoint* limit; 37VII concludes only "some bounded operator" | — | DONE (as above) |
-| **38VI.2** | `←` direction false: a constant net `x_α = i·x` gives the same vector functional | direction dropped, with its hint | DONE `380.60` |
+| **38VI.2** | `←` direction false: a constant net `x_α = i·x` gives the same vector functional | direction dropped; our statement realigned and the surviving implication **now proved** | DONE `380.60` |
 | **44III** as cited by **44VII/44XIV** | cited as a black box, but it demands *every* `xᵢ` be an effect, while `(⋁D − d)/M` is only *eventually* one — a bounded directed set need not be bounded below | needs a cofinal-tail footnote once nets are made precise | OPEN |
 | **61II** | both displayed inequalities point the wrong way | reversed, as is the proof's last line | DONE `610.20` |
 | **68IV.2** | clauses 1 and 3 stated without positivity; central support is monotone only on positives (`D = {−1,0}`; `a=1, b=−1`) | positivity added to both | DONE `680.40` |
 | **72III.1b/1c** | spurious `‖ω‖`: `‖a‖_ω` is unnormalised, so the two sides scale as `t` and `t²` | factors deleted | DONE `720.30` |
+| **75III** | proof asserts `0 ≤ a_nm ≤ ½` | should be `0 ≤ a_nm ≤ 1` | DONE `750.30` (solution) |
 | **89I** | "`UU* = FF*` is the projection onto `closure(π(A)y)`" | must read `U*U = FF*` | OPEN |
 | **89III** | declares `Uᵢ : H → K`, then swaps the two projections and later writes `⟨x, Uᵢy⟩` as if `Uᵢ : K → H` | make the typing consistent | OPEN |
 | **99VII** | three `a`-for-`b` slips at 61II's sole use site | corrected paragraph | DONE `990.70` |

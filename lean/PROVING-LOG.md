@@ -216,6 +216,18 @@ the Lean proof does instead.`)
 
 ### Repairs to *our* formalization (not thesis errata)
 
+- **74IV.3** `Theses/A/VN/Completeness.lean` `kaplansky_effects` — **silently
+  weaker than the thesis**.  vn.tex:4335 puts `‖a_α‖ ≤ ‖b‖` in the *main*
+  claim of Kaplansky's density theorem, and the three "moreover" clauses only
+  *add* properties to those same `a_α`.  Our `kaplansky`, `kaplansky_sa` and
+  `kaplansky_pos` all carry the bound; `kaplansky_effects` had dropped it.
+  Not recoverable downstream: being an effect gives only `‖a_α‖ ≤ 1`, which is
+  strictly weaker whenever `‖b‖ < 1` — and the thesis's own proof does deliver
+  the bound.  Restored.  Another instance of the "silent half-repair" pattern:
+  a clause corrected or dropped in one sibling and not carried to the others.
+  Found by the A/VN worker reading the declaration against the `file:LINE` in
+  its own doc comment.
+
 - **195V.1** `Theses/B/Eff/StatesPredicates.lean` `unitInterval.effectDivisoid`
   — the `EffectDivisoid` class demands a *total* `div : M → M → M`, whereas the
   thesis's division is partial (meaningful only for `a ≼ b`), and every axiom
@@ -228,11 +240,19 @@ the Lean proof does instead.`)
 
 ### Suspected errata noted during statement-writing (not yet reached by proving)
 
-- **38VI.2** `Theses/A/CStar/TowardsVN.lean` — the "if" direction appears false
-  as written: vector functionals are phase-invariant, so the constant net
-  `i • x` (`x ≠ 0`) induces the same vector functional as `x` without
-  converging to it.  Stated verbatim in Lean with a doc-comment flag; confirm
-  against `berr.tex` when proving reaches it.
+- **38VI.2** `Theses/A/CStar/TowardsVN.lean` — ✅ **confirmed and fixed by the
+  author.**  The "if" direction was indeed false: vector functionals are
+  phase-invariant, so the constant net `i • x` (`x ≠ 0`) induces the same
+  vector functional as `x` without converging to it.  Erratum `parsec-380.60`
+  drops it ("it is false, but not used later on"), and cstar.tex now states
+  point 2 as a single implication.  Our statement, which had recorded the iff
+  verbatim, is realigned — **and with the false direction gone the point is
+  provable, so it is now proved.**  Parsec 380 has no published solution
+  (`asols.tex` has no `parsec-380.*` solution entry, only the erratum), so the
+  argument is ours: split the difference as `⟪y−x, Ty⟫ + ⟪x, T(y−x)⟫`, giving
+  `‖vf y − vf x‖ ≤ ‖y−x‖(‖y‖+‖x‖)` uniformly in `‖T‖ ≤ 1`, then squeeze.  This
+  is one of the statements that "survives only by accident" in reverse: it was
+  *unprovable* while the false half was attached.
 - **61II** `Theses/A/VN/Projections.lean` — thesis's displayed inequality looks
   reversed (counterexample: the trace on `M₂`); the Lean statement follows the
   direction the surrounding proof actually uses.
@@ -435,6 +455,68 @@ formalization trap recorded so it is not rediscovered:
 `@IsClosed A (ultraweak A) S` does **not** survive dot-notation or a plain
 `exact` — `A`'s norm topology gets re-synthesised — hence the three `@`-applied
 wrappers in `Basic.lean`.
+
+### Session 3 — 77I is blocked, precisely, and the block is in A/CStar
+
+`A/VN/Completeness.lean` went 25 → 21 (72III.1b, 72III.1c, 73IV, 72IV).  The
+point of the pass was 77I; it is **not reachable yet**, and the reason is now
+sharp enough to act on.
+
+The thesis's route is `𝒜 ≅ ρ_Ω(𝒜) ⊆ B(H_Ω)`.  Of its three ingredients, `ngns`
+(48VIII) is proved and the net-pushing step is elementary.  The other two are
+walls:
+
+1. **Outside A/VN.**  39IX `bh_np` (`A/CStar/TowardsVN.lean`, still `sorry`)
+   blocks *both* 76I and 76III.  Their hypotheses are usable as stated — it is
+   the **conclusion** that forces the decomposition `ω = Σ⟪xₙ,(·)xₙ⟫`, since
+   the `ε`-tail split is the whole proof.  The abstract substitute would be
+   SOT-lower-semicontinuity of `x ↦ ω(x*x)`, which is exactly what the
+   decomposition supplies, so there is no shortcut.  Mathlib has no normal
+   functionals, so no fallback either.  `bh_np` needs 39VII and 38IV.2, also
+   `sorry`, also in that file.  **Closing 38IV.2 + 39VII + 39IX is the
+   highest-leverage A/CStar item for A/VN, and it is not circular** — it is
+   chapter-1 material.
+2. **Inside A/VN.**  75VIII `vnsac`, at the bottom of the column
+   `72V → 72XI → 73VIII → 74I/74IV → 75II → 75VI → 75VIII`.  73IV is now done;
+   **72V `normal_functionals_lemma` is the real wall** — a 4-way TFAE, atomic
+   in Lean, whose (2)⇒(3) step must manufacture four *normal* functionals from
+   a vector in `H_ω`.  74I `proto_kaplansky` (Stone–Weierstraß on `ℝ ∪ {∞}`
+   through the CFC) is the best single-worker target left.
+
+A route to 77I avoiding 76I was looked for and does not appear to exist:
+making the net norm-bounded first lands on 87VIII → 87VI/87III → 86XII/86IX →
+72V, i.e. the same wall from the other side.  For the same reason **87VIII is
+not an independent target** — Banach–Steinhaus is free from Mathlib, but 87III,
+87VI and 72V are all `sorry`.
+
+**⚠️ A new taint route, of the invisible kind.**  The general
+(non-self-adjoint) Kaplansky 74IV goes through the 2×2 matrix trick, i.e.
+through **`mn_vna_1` (49IV.1, `A/VN/Basic.lean`) — a `sorry`ed `instance`**
+`VonNeumannAlgebra (CStarMatrix (Fin N) (Fin N) 𝒜)`.  Any proof taking that
+route inherits `sorryAx` *without any visible `sorry` at the use site*, which
+is exactly the failure mode `#sorry_leaks` exists to catch.  `kaplansky_sa`,
+`kaplansky_pos` and `kaplansky_effects` avoid it entirely.  **Worth checking
+whether `B/Dils/Kaplansky.lean` actually needs the general form** — if not, the
+instance can stay unproved without cost.
+
+**A cheap unblock, for whoever next owns `A/VN/Basic.lean`.**  The vector-
+functional link is already there — `gnsHilb`, `gnsRep`, `gnsVec` and
+`gnsVec_inner` are all proved, and `ξ_ω := lp.single 2 ω (gnsVec ω 1)` works —
+but **48V `varrho_Omega_normal` is `sorry`**, and `exists_faithful_normal_rep`
+hides the Hilbert space.  Proving 48V from `gnsVec_inner` is a few lines and
+would reduce 77I to exactly the two dependencies above.  No `lp`-instance
+taint: this is `lp _ 2` as a Hilbert space.
+
+**Promote the np-functional algebra.**  `Theses.NPFunctional` (in the root
+`Common.lean`) carries **no algebraic structure at all**, so the pass had to
+build `zeroNP`, `addNP` (normality of a sum proved once, inside),
+`omegaNorm_mul_le` and `omegaNorm_le_addNP(')` as file-private helpers.  72V,
+72XI, 73VIII and 87VIII all need them; they should move up.
+
+Also noted, and cheap: **88IV `carrier_vector_state` is the best entry point in
+`NormalFunctionals.lean`** — its companion `carrier_vector_state'` is already
+fully proved and builds the exact machinery needed; combine with the proved
+88II `commutant_ceil`.
 
 ### ⚠️ Session 2 — the first whole-project axiom check, and a leverage ranking
 
