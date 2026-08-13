@@ -1618,6 +1618,25 @@ theorem MConvex.IsAffine.comp {M : Type u} [EffectMonoid M]
   show g (f (sX.h p)) = sZ.h (p.map (g ∘ f))
   rw [hf p, hg (p.map f), MConvexComb.map_comp]
 
+/-- A subset of an abstract `M`-convex set that is closed under `h` is again
+an abstract `M`-convex set, and the inclusion is affine (by `rfl`). -/
+noncomputable def MConvex.restrict {M : Type u} [EffectMonoid M] {Z : Type w}
+    (sZ : MConvex M Z) (P : Z → Prop)
+    (hP : ∀ Ψ : MConvexComb M {z // P z}, P (sZ.h (Ψ.map Subtype.val))) :
+    MConvex M {z // P z} :=
+  { h := fun Ψ => ⟨sZ.h (Ψ.map Subtype.val), hP Ψ⟩
+    h_eta := fun s => Subtype.ext
+      ((congrArg sZ.h (MConvexComb.map_eta s Subtype.val)).trans (sZ.h_eta _))
+    h_mu := fun Φ => Subtype.ext
+      ((congrArg sZ.h (MConvexComb.mu_map Φ Subtype.val)).trans
+        ((sZ.h_mu _).trans
+          ((congrArg sZ.h (MConvexComb.map_comp Φ
+              (fun Ψ : MConvexComb M {z // P z} => Ψ.map Subtype.val) sZ.h)).trans
+            (congrArg sZ.h (MConvexComb.map_comp Φ
+              (fun Ψ : MConvexComb M {z // P z} =>
+                (⟨sZ.h (Ψ.map Subtype.val), hP Ψ⟩ : {z // P z}))
+              Subtype.val)).symm))) }
+
 /-- **192IV** (eff.tex:2456, Definition): an abstract `M`-convex set `(X,h)`
 is **cancellative** when `h(λ|y⟩ ⋁ λᵖ|x₁⟩) = h(λ|y⟩ ⋁ λᵖ|x₂⟩)` implies
 `x₁ = x₂`, for `λ ≠ 1`. -/
@@ -2316,11 +2335,188 @@ theorem aconv_coprod (M : Type u) [EffectMonoid M] :
 def AConvMCat.punit (M : Type u) [EffectMonoid M] : AConvMCat.{u, v} M :=
   ⟨PUnit, ⟨fun _ => PUnit.unit, fun _ => rfl, fun _ => rfl⟩⟩
 
+/-- The free abstract `M`-convex structure `μ` on `𝒟_M X` (the algebra laws
+are the monad laws `mu_eta` and `mu_mu`). -/
+noncomputable def MConvexComb.freeStr (M : Type u) [EffectMonoid M]
+    (X : Type v) : MConvex M (MConvexComb M X) :=
+  ⟨MConvexComb.mu, MConvexComb.mu_eta, MConvexComb.mu_mu⟩
+
 /-- The free abstract `M`-convex set `(𝒟_M X, μ)` on a set `X` (used in
 193X; the algebra laws are the monad laws `mu_eta` and `mu_mu`). -/
 noncomputable def AConvMCat.free (M : Type u) [EffectMonoid M] (X : Type v) :
     AConvMCat.{u, max u v} M :=
-  ⟨MConvexComb M X, ⟨MConvexComb.mu, MConvexComb.mu_eta, MConvexComb.mu_mu⟩⟩
+  ⟨MConvexComb M X, MConvexComb.freeStr M X⟩
+
+/-! ### Freeness of `𝒟_M X`, and `𝒟_M 1 = 1`
+
+`𝒟_M` is a left adjoint to the forgetful functor `AConv_M → Set` — the fact
+the thesis suggests using for 193X.  The three lemmas below are that
+adjunction in elementary form (existence, computation, uniqueness of the
+mediating map), and they are what 193X and 194I.3 are proved from. -/
+
+/-- **Freeness of `𝒟_M X`, existence half**: for an abstract `M`-convex set
+`(Z, h_Z)` and a function `f : X → Z`, the map `p ↦ h_Z(𝒟_M f (p))` is affine
+on the free convex set `(𝒟_M X, μ)`. -/
+theorem MConvexComb.freeStr_desc_isAffine {M : Type u} [EffectMonoid M]
+    {X : Type v} {Z : Type w} (sZ : MConvex M Z) (f : X → Z) :
+    MConvex.IsAffine (MConvexComb.freeStr M X) sZ (fun p => sZ.h (p.map f)) := by
+  intro Φ
+  show sZ.h ((MConvexComb.mu Φ).map f) = _
+  rw [MConvexComb.mu_map, sZ.h_mu, MConvexComb.map_comp]
+  rfl
+
+/-- **Freeness of `𝒟_M X`, uniqueness half**: an affine map out of the free
+convex set `(𝒟_M X, μ)` is determined by its values on the Diracs `η(x)`. -/
+theorem MConvexComb.freeStr_ext {M : Type u} [EffectMonoid M]
+    {X : Type v} {Z : Type w} (sZ : MConvex M Z) (k : MConvexComb M X → Z)
+    (hk : MConvex.IsAffine (MConvexComb.freeStr M X) sZ k)
+    (p : MConvexComb M X) :
+    k p = sZ.h (p.map (fun x => k (MConvexComb.eta x))) := by
+  have h := hk (p.map MConvexComb.eta)
+  rw [show (MConvexComb.freeStr M X).h (p.map MConvexComb.eta) = p from
+    MConvexComb.mu_map_eta p, MConvexComb.map_comp] at h
+  exact h
+
+/-- Functoriality of the free convex set: `𝒟_M f` is affine. -/
+theorem MConvexComb.freeStr_map_isAffine {M : Type u} [EffectMonoid M]
+    {X : Type v} {Y : Type w} (f : X → Y) :
+    MConvex.IsAffine (MConvexComb.freeStr M X) (MConvexComb.freeStr M Y)
+      (fun p => p.map f) := by
+  intro Φ
+  show (MConvexComb.mu Φ).map f = _
+  rw [MConvexComb.mu_map]
+  rfl
+
+/-- `𝒟_M f : 𝒟_M X ⟶ 𝒟_M Y` as an arrow of `AConv_M`. -/
+noncomputable def AConvMCat.freeMap (M : Type u) [EffectMonoid M]
+    {X Y : Type v} (f : X → Y) :
+    AConvMCat.free.{u, v} M X ⟶ AConvMCat.free.{u, v} M Y :=
+  ⟨fun p => p.map f, MConvexComb.freeStr_map_isAffine f⟩
+
+@[simp]
+theorem AConvMCat.freeMap_apply (M : Type u) [EffectMonoid M] {X Y : Type v}
+    (f : X → Y) (p : MConvexComb M X) :
+    (AConvMCat.freeMap M f).1 p = p.map f := rfl
+
+@[simp]
+theorem AConvMCat.freeMap_comp (M : Type u) [EffectMonoid M] {X Y Z : Type v}
+    (f : X → Y) (g : Y → Z) :
+    AConvMCat.freeMap M f ≫ AConvMCat.freeMap M g = AConvMCat.freeMap M (g ∘ f) :=
+  Subtype.ext (funext fun p => MConvexComb.map_comp p f g)
+
+@[simp]
+theorem AConvMCat.freeMap_id (M : Type u) [EffectMonoid M] {X : Type v} :
+    AConvMCat.freeMap M (_root_.id : X → X) = 𝟙 (AConvMCat.free.{u, v} M X) :=
+  Subtype.ext (funext fun p => MConvexComb.map_id p)
+
+/-- `𝒟_M` of a one-element set is a one-element set: every formal
+`M`-convex combination over `PUnit` is the Dirac one.  (This holds also for
+the trivial effect monoid `1 = 0`, where both sides are the zero function —
+cf. QUESTIONS B7.) -/
+theorem MConvexComb.eq_eta_punit {M : Type u} [EffectMonoid M]
+    (p : MConvexComb M PUnit.{v + 1}) : p = MConvexComb.eta PUnit.unit := by
+  classical
+  have hval : ∀ z : PUnit.{v + 1},
+      (MConvexComb.eta PUnit.unit : MConvexComb M PUnit.{v + 1}).toFun z =
+        (1 : M) := fun z => if_pos rfl
+  by_cases h1 : (1 : M) = 0
+  · refine MConvexComb.ext (funext fun z => ?_)
+    rw [eq_zero_of_one_eq_zero h1 (p.toFun z),
+      eq_zero_of_one_eq_zero h1
+        ((MConvexComb.eta PUnit.unit : MConvexComb M PUnit.{v + 1}).toFun z)]
+  · obtain ⟨l, hnd, hmem, hs⟩ := p.sum_one
+    have hone : p.toFun PUnit.unit = 1 := by
+      match l, hnd, hs with
+      | [], _, hs => exact absurd (PCM.isSumOf_nil_iff.mp hs) h1
+      | [_], _, hs => exact (eq_of_isSumOf_singleton hs).symm
+      | _ :: _ :: _, hnd, _ =>
+          exact absurd (List.mem_cons_self ..) (List.nodup_cons.mp hnd).1
+    exact MConvexComb.ext (funext fun z => by rw [hval z]; exact hone)
+
+/-- Every function out of a one-element abstract `M`-convex set is affine. -/
+theorem MConvexComb.punit_isAffine {M : Type u} [EffectMonoid M] {Z : Type w}
+    (sP : MConvex M PUnit.{v + 1}) (sZ : MConvex M Z) (z : Z) :
+    MConvex.IsAffine sP sZ (fun _ => z) := by
+  intro p
+  rw [MConvexComb.eq_eta_punit p, MConvexComb.map_eta]
+  exact (sZ.h_eta z).symm
+
+/-- `𝒟_M 1 = 1`: the free abstract `M`-convex set on a one-element set is
+final. -/
+noncomputable def AConvMCat.free_punit_isTerminal (M : Type u) [EffectMonoid M] :
+    IsTerminal (AConvMCat.free.{u, v} M PUnit.{v + 1}) := by
+  have hsub : ∀ p q : MConvexComb M PUnit.{v + 1}, p = q := fun p q => by
+    rw [MConvexComb.eq_eta_punit p, MConvexComb.eq_eta_punit q]
+  exact IsTerminal.ofUniqueHom
+    (fun Z => ⟨fun _ => MConvexComb.eta PUnit.unit, fun p => hsub _ _⟩)
+    (fun _ _ => Subtype.ext (funext fun _ => hsub _ _))
+
+/-- **`𝒟_M` preserves binary coproducts** (the fact behind 193X and 194I.3):
+if `X ≅ 𝒟_M A` and `Y ≅ 𝒟_M B`, then `𝒟_M (A + B)` is a coproduct of `X`
+and `Y`, with coprojections `𝒟_M κᵢ` composed with the isomorphisms. -/
+noncomputable def AConvMCat.isColimit_freeBinaryCofan {M : Type u} [EffectMonoid M]
+    {A B : Type v} {X Y : AConvMCat.{u, max u v} M}
+    (a : X ≅ AConvMCat.free M A) (b : Y ≅ AConvMCat.free M B) :
+    IsColimit (BinaryCofan.mk
+      (a.hom ≫ AConvMCat.freeMap M (Sum.inl : A → A ⊕ B))
+      (b.hom ≫ AConvMCat.freeMap M (Sum.inr : B → A ⊕ B))) := by
+  classical
+  refine BinaryCofan.IsColimit.mk _ (fun {T} f g =>
+    ⟨fun p => T.str.h (p.map (Sum.elim (fun x => (a.inv ≫ f).1 (MConvexComb.eta x))
+      (fun y => (b.inv ≫ g).1 (MConvexComb.eta y)))),
+      MConvexComb.freeStr_desc_isAffine _ _⟩) ?_ ?_ ?_
+  · intro T f g
+    refine Subtype.ext (funext fun x => ?_)
+    have h1 : T.str.h ((((a.hom.1 x : MConvexComb M A)).map (Sum.inl : A → A ⊕ B)).map
+        (Sum.elim (fun x => (a.inv ≫ f).1 (MConvexComb.eta x))
+          (fun y => (b.inv ≫ g).1 (MConvexComb.eta y))))
+        = (a.inv ≫ f).1 (a.hom.1 x) :=
+      (congrArg T.str.h (MConvexComb.map_comp (a.hom.1 x) (Sum.inl : A → A ⊕ B)
+          (Sum.elim (fun x => (a.inv ≫ f).1 (MConvexComb.eta x))
+            (fun y => (b.inv ≫ g).1 (MConvexComb.eta y))))).trans
+        (MConvexComb.freeStr_ext T.str (a.inv ≫ f).1 (a.inv ≫ f).2
+          (a.hom.1 x)).symm
+    exact h1.trans (congrArg (fun m : X ⟶ T => m.1 x) (a.hom_inv_id_assoc f))
+  · intro T f g
+    refine Subtype.ext (funext fun y => ?_)
+    have h1 : T.str.h ((((b.hom.1 y : MConvexComb M B)).map (Sum.inr : B → A ⊕ B)).map
+        (Sum.elim (fun x => (a.inv ≫ f).1 (MConvexComb.eta x))
+          (fun y => (b.inv ≫ g).1 (MConvexComb.eta y))))
+        = (b.inv ≫ g).1 (b.hom.1 y) :=
+      (congrArg T.str.h (MConvexComb.map_comp (b.hom.1 y) (Sum.inr : B → A ⊕ B)
+          (Sum.elim (fun x => (a.inv ≫ f).1 (MConvexComb.eta x))
+            (fun y => (b.inv ≫ g).1 (MConvexComb.eta y))))).trans
+        (MConvexComb.freeStr_ext T.str (b.inv ≫ g).1 (b.inv ≫ g).2
+          (b.hom.1 y)).symm
+    exact h1.trans (congrArg (fun m : Y ⟶ T => m.1 y) (b.hom_inv_id_assoc g))
+  · intro T f g m hm1 hm2
+    have hm1' : AConvMCat.freeMap M (Sum.inl : A → A ⊕ B) ≫ m = a.inv ≫ f := by
+      have h : a.hom ≫ (AConvMCat.freeMap M (Sum.inl : A → A ⊕ B) ≫ m) = f :=
+        (Category.assoc a.hom (AConvMCat.freeMap M (Sum.inl : A → A ⊕ B)) m).symm.trans hm1
+      rw [← h, Iso.inv_hom_id_assoc]
+    have hm2' : AConvMCat.freeMap M (Sum.inr : B → A ⊕ B) ≫ m = b.inv ≫ g := by
+      have h : b.hom ≫ (AConvMCat.freeMap M (Sum.inr : B → A ⊕ B) ≫ m) = g :=
+        (Category.assoc b.hom (AConvMCat.freeMap M (Sum.inr : B → A ⊕ B)) m).symm.trans hm2
+      rw [← h, Iso.inv_hom_id_assoc]
+    have hz : (fun z => m.1 (MConvexComb.eta z)) =
+        Sum.elim (fun x => (a.inv ≫ f).1 (MConvexComb.eta x))
+          (fun y => (b.inv ≫ g).1 (MConvexComb.eta y)) := by
+      funext z
+      rcases z with x | y
+      · have h : m.1 ((MConvexComb.eta x).map (Sum.inl : A → A ⊕ B))
+            = (a.inv ≫ f).1 (MConvexComb.eta x) :=
+          congrArg (fun t : AConvMCat.free M A ⟶ T => t.1 (MConvexComb.eta x)) hm1'
+        rw [MConvexComb.map_eta] at h
+        exact h
+      · have h : m.1 ((MConvexComb.eta y).map (Sum.inr : B → A ⊕ B))
+            = (b.inv ≫ g).1 (MConvexComb.eta y) :=
+          congrArg (fun t : AConvMCat.free M B ⟶ T => t.1 (MConvexComb.eta y)) hm2'
+        rw [MConvexComb.map_eta] at h
+        exact h
+    refine Subtype.ext (funext fun p => ?_)
+    have hfin := MConvexComb.freeStr_ext T.str m.1 m.2 p
+    rw [hz] at hfin
+    exact hfin
 
 /-- **193X** (`n-times-one-aconvm`, eff.tex:2954, Exercise), first half: the
 one-element convex set is the final object of `AConv_M`. -/
@@ -2329,13 +2525,375 @@ theorem n_times_one_aconvm_terminal (M : Type u) [EffectMonoid M] :
   ⟨IsTerminal.ofUniqueHom (fun _ => ⟨fun _ => PUnit.unit, fun _ => rfl⟩)
     (fun _ _ => Subtype.ext rfl)⟩
 
+/-- Two affine maps out of a free abstract `M`-convex set that agree on the
+Diracs are equal. -/
+theorem AConvMCat.free_hom_ext {M : Type u} [EffectMonoid M] {A : Type v}
+    {T : AConvMCat.{u, max u v} M} (m₁ m₂ : AConvMCat.free M A ⟶ T)
+    (h : ∀ a : A, m₁.1 (MConvexComb.eta a) = m₂.1 (MConvexComb.eta a)) :
+    m₁ = m₂ := by
+  refine Subtype.ext (funext fun p => ?_)
+  rw [MConvexComb.freeStr_ext T.str m₁.1 m₁.2 p,
+    MConvexComb.freeStr_ext T.str m₂.1 m₂.2 p]
+  exact congrArg T.str.h (congrArg p.map (funext h))
+
+/-- Helper for 194I: the coproduct of two free abstract `M`-convex sets,
+*with* its two coprojections — the form in which 193X is used in 194I.3. -/
+theorem AConvMCat.exists_binaryCoprod_iso {M : Type u} [EffectMonoid M]
+    {A B : Type v} {X Y : AConvMCat.{u, max u v} M} [HasBinaryCoproduct X Y]
+    (a : X ≅ AConvMCat.free M A) (b : Y ≅ AConvMCat.free M B) :
+    ∃ e : (X ⨿ Y) ≅ AConvMCat.free M (A ⊕ B),
+      coprod.inl ≫ e.hom = a.hom ≫ AConvMCat.freeMap M (Sum.inl : A → A ⊕ B) ∧
+      coprod.inr ≫ e.hom = b.hom ≫ AConvMCat.freeMap M (Sum.inr : B → A ⊕ B) := by
+  refine ⟨colimit.isoColimitCocone ⟨_, AConvMCat.isColimit_freeBinaryCofan a b⟩, ?_, ?_⟩
+  · exact colimit.isoColimitCocone_ι_hom _ (Discrete.mk WalkingPair.left)
+  · exact colimit.isoColimitCocone_ι_hom _ (Discrete.mk WalkingPair.right)
+
 /-- **193X** (`n-times-one-aconvm`, eff.tex:2954, Exercise), second half: in
 `AConv_M` the `n`-fold coproduct `n · 1 = 1 + ⋯ + 1` is isomorphic to
-`𝒟_M {1, …, n}`. -/
+`𝒟_M {1, …, n}`.
+
+The thesis's hint is "use that `𝒟_M`, as a left adjoint, preserves
+coproducts", and that is the proof: `𝒟_M {1,…,n}` *is* the `n`-fold coproduct
+of `𝒟_M 1 = 1`, by the freeness of `𝒟_M X` (`MConvexComb.freeStr_desc_isAffine`
+and `MConvexComb.freeStr_ext` above) — no computation with the coproduct of
+193V is needed.
+
+The `HasFiniteCoproducts` hypothesis is only there to make `∐` meaningful;
+it is discharged by `aconvalmosteffectus_coproducts.{u, u} M` (194I.1). -/
 theorem n_times_one_aconvm (M : Type u) [EffectMonoid M] (n : ℕ)
     [HasFiniteCoproducts (AConvMCat.{u, u} M)] :
     Nonempty ((∐ fun _ : Fin n => AConvMCat.punit.{u, u} M) ≅
-      AConvMCat.free M (ULift.{u} (Fin n))) := sorry
+      AConvMCat.free M (ULift.{u} (Fin n))) := by
+  classical
+  let F : AConvMCat.{u, u} M := AConvMCat.free M (ULift.{u} (Fin n))
+  let c : ∀ _ : Fin n, AConvMCat.punit.{u, u} M ⟶ F := fun i =>
+    ⟨fun _ => MConvexComb.eta (ULift.up i),
+      MConvexComb.punit_isAffine (AConvMCat.punit.{u, u} M).str F.str _⟩
+  have hcol : IsColimit (Cofan.mk F c) := by
+    refine Cofan.IsColimit.mk _ (fun t =>
+      ⟨fun p => t.pt.str.h (p.map (fun j => (t.inj j.down).1 PUnit.unit)),
+        MConvexComb.freeStr_desc_isAffine _ _⟩) ?_ ?_
+    · intro t i
+      refine Subtype.ext (funext fun _ => ?_)
+      have h1 : t.pt.str.h ((MConvexComb.eta (ULift.up i) :
+            MConvexComb M (ULift.{u} (Fin n))).map
+            (fun j : ULift.{u} (Fin n) => (t.inj j.down).1 PUnit.unit))
+          = (t.inj i).1 PUnit.unit := by
+        rw [MConvexComb.map_eta, t.pt.str.h_eta]
+      exact h1
+    · intro t m hm
+      have hz : (fun z : ULift.{u} (Fin n) => m.1 (MConvexComb.eta z)) =
+          (fun j : ULift.{u} (Fin n) => (t.inj j.down).1 PUnit.unit) := by
+        funext z
+        exact congrArg (fun w : AConvMCat.punit.{u, u} M ⟶ t.pt => w.1 PUnit.unit)
+          (hm z.down)
+      refine Subtype.ext (funext fun p => ?_)
+      have hfin := MConvexComb.freeStr_ext t.pt.str m.1 m.2 p
+      rw [hz] at hfin
+      exact hfin
+  exact ⟨colimit.isoColimitCocone ⟨_, hcol⟩⟩
+
+/-- Helper: the value of `𝒟_M f (p)` at a point `y` whose `f`-fibre is the
+single point `x₀` is `p(x₀)`. -/
+theorem MConvexComb.map_apply_of_unique_fiber {M : Type u} [EffectMonoid M]
+    {X : Type v} {Y : Type w} (p : MConvexComb M X) (f : X → Y) {y : Y} {x₀ : X}
+    (h : ∀ x, f x = y ↔ x = x₀) : (p.map f).toFun y = p.toFun x₀ := by
+  classical
+  by_cases hz : p.toFun x₀ = 0
+  · have hm : ∀ x, x ∈ ([] : List X) ↔ (p.toFun x ≠ 0 ∧ f x = y) := by
+      intro x
+      simp only [List.not_mem_nil, false_iff, not_and]
+      intro hx hfx
+      exact hx (by rw [(h x).mp hfx]; exact hz)
+    have hsp := MConvexComb.map_spec p f y [] List.nodup_nil hm
+    rw [List.map_nil, PCM.isSumOf_nil_iff] at hsp
+    rw [hsp, hz]
+  · have hm : ∀ x, x ∈ [x₀] ↔ (p.toFun x ≠ 0 ∧ f x = y) := by
+      intro x
+      rw [List.mem_singleton]
+      refine ⟨fun hx => ?_, fun hx => (h x).mp hx.2⟩
+      rw [hx]
+      exact ⟨hz, (h x₀).mpr rfl⟩
+    have hsp := MConvexComb.map_spec p f y [x₀] (List.nodup_singleton x₀) hm
+    rw [List.map_cons, List.map_nil] at hsp
+    exact eq_of_isSumOf_singleton hsp
+
+/-- Helper: every entry of a summable list is below the sum. -/
+theorem PCM.le_of_mem_isSumOf {M : Type u} [PCM M] {A : Type v} (f : A → M)
+    {l : List A} {a : A} (ha : a ∈ l) {s : M}
+    (h : PCM.IsSumOf (l.map f) s) : f a ≼ s := by
+  classical
+  have hperm : (l.map f).Perm (f a :: (l.erase a).map f) := by
+    have := (List.perm_cons_erase ha).map f
+    simpa using this
+  exact PCM.le_of_isSumOf_cons (PCM.isSumOf_perm hperm h)
+
+/-- Helper: if `𝒟_M f (p)` vanishes at `y`, then `p` vanishes on the whole
+`f`-fibre of `y`. -/
+theorem MConvexComb.eq_zero_of_map_eq_zero {M : Type u} [EffectMonoid M]
+    {X : Type v} {Y : Type w} (p : MConvexComb M X) (f : X → Y) {y : Y}
+    (h : (p.map f).toFun y = 0) {x : X} (hx : f x = y) : p.toFun x = 0 := by
+  classical
+  by_contra hne
+  obtain ⟨l, hnd, hmem, -⟩ := p.sum_one
+  have hmemfib : ∀ x' : X,
+      x' ∈ l.filter (fun x' => decide (f x' = y)) ↔ (p.toFun x' ≠ 0 ∧ f x' = y) := by
+    intro x'
+    rw [List.mem_filter, hmem x']
+    simp
+  have hsp := MConvexComb.map_spec p f y _ (List.Nodup.filter _ hnd) hmemfib
+  rw [h] at hsp
+  exact hne (eq_zero_of_le_zero
+    (PCM.le_of_mem_isSumOf p.toFun ((hmemfib x).mpr ⟨hne, hx⟩) hsp))
+
+/-- Helper: `𝒟_M` of a constant map is the Dirac distribution at its value. -/
+theorem MConvexComb.map_const {M : Type u} [EffectMonoid M] {X : Type v}
+    {Z : Type w} (p : MConvexComb M X) (z : Z) :
+    p.map (fun _ => z) = MConvexComb.eta z := by
+  classical
+  obtain ⟨l, hnd, hmem, hs⟩ := p.sum_one
+  refine MConvexComb.ext (funext fun w => ?_)
+  by_cases hw : w = z
+  · subst hw
+    have hsp := MConvexComb.map_spec p (fun _ : X => w) w l hnd
+      (fun x => by rw [hmem x]; simp)
+    rw [isSumOf_unique hsp hs]
+    exact (if_pos rfl).symm
+  · have hsp := MConvexComb.map_spec p (fun _ : X => z) w [] List.nodup_nil
+      (fun x => by
+        simp only [List.not_mem_nil, false_iff, not_and]
+        exact fun _ h => absurd h.symm hw)
+    rw [List.map_nil, PCM.isSumOf_nil_iff] at hsp
+    rw [hsp]
+    exact (if_neg hw).symm
+
+/-- Helper: a formal combination over `A + B` that vanishes on `B` is
+`𝒟_M κ₁` of a formal combination over `A`. -/
+theorem MConvexComb.exists_map_inl {M : Type u} [EffectMonoid M]
+    {A B : Type v} (p : MConvexComb M (A ⊕ B))
+    (h : ∀ b : B, p.toFun (Sum.inr b) = 0) :
+    ∃ χ : MConvexComb M A, χ.map Sum.inl = p := by
+  classical
+  obtain ⟨l, hnd, hmem, hs⟩ := p.sum_one
+  have hall : ∀ z ∈ l, ∃ a : A, z = Sum.inl a := by
+    rintro (a | b) hz
+    · exact ⟨a, rfl⟩
+    · exact absurd (h b) ((hmem _).mp hz)
+  have hll : ∀ L : List (A ⊕ B), (∀ z ∈ L, ∃ a : A, z = Sum.inl a) →
+      (L.filterMap Sum.getLeft?).map Sum.inl = L := by
+    intro L
+    induction L with
+    | nil => intro _; rfl
+    | cons z L ih =>
+        intro hz
+        obtain ⟨a, rfl⟩ := hz z List.mem_cons_self
+        rw [List.filterMap_cons]
+        simp only [Sum.getLeft?_inl, List.map_cons, List.cons.injEq, true_and]
+        exact ih fun w hw => hz w (List.mem_cons_of_mem _ hw)
+  have hl' : (l.filterMap Sum.getLeft?).map Sum.inl = l := hll l hall
+  have hinj : Function.Injective (Sum.inl : A → A ⊕ B) := fun _ _ h => by
+    simpa using h
+  have hmem' : ∀ a : A, a ∈ l.filterMap Sum.getLeft? ↔ p.toFun (Sum.inl a) ≠ 0 := by
+    intro a
+    rw [← hmem (Sum.inl a)]
+    constructor
+    · intro ha
+      rw [← hl']
+      exact List.mem_map_of_mem ha
+    · intro ha
+      rw [← hl'] at ha
+      obtain ⟨a', ha', he⟩ := List.mem_map.mp ha
+      rwa [hinj he] at ha'
+  have hsum : PCM.IsSumOf ((l.filterMap Sum.getLeft?).map
+      (fun a => p.toFun (Sum.inl a))) 1 := by
+    rw [show (l.filterMap Sum.getLeft?).map (fun a => p.toFun (Sum.inl a))
+        = ((l.filterMap Sum.getLeft?).map Sum.inl).map p.toFun from
+      (List.map_map ..).symm, hl']
+    exact hs
+  refine ⟨⟨fun a => p.toFun (Sum.inl a),
+    ⟨l.filterMap Sum.getLeft?, ?_, hmem', hsum⟩⟩, ?_⟩
+  · exact List.Nodup.of_map Sum.inl (hl' ▸ hnd)
+  · refine MConvexComb.ext (funext fun z => ?_)
+    rcases z with a | b
+    · exact MConvexComb.map_apply_of_unique_fiber _ Sum.inl
+        (fun x => ⟨fun hx => (hinj hx), fun hx => by rw [hx]⟩)
+    · have hsp := MConvexComb.map_spec (⟨fun a => p.toFun (Sum.inl a),
+        ⟨l.filterMap Sum.getLeft?, List.Nodup.of_map Sum.inl (hl' ▸ hnd),
+          hmem', hsum⟩⟩ : MConvexComb M A) Sum.inl (Sum.inr b) []
+        List.nodup_nil (fun x => by simp)
+      rw [List.map_nil, PCM.isSumOf_nil_iff] at hsp
+      rw [hsp, h b]
+
+/-- Helper for 194I.3: the thesis's computation with `1+1+1` as the set of
+triples `(a,b,c) ∈ M³` with `a ⋁ b ⋁ c = 1`.  If `A` has exactly the three
+elements `a₁,a₂,a₃` and `σ₁,σ₂ : A → B` single out `a₁` resp. `a₂` over a
+point `b₁ ∈ B`, then `𝒟_M σ₁` and `𝒟_M σ₂` are jointly injective: they
+determine the first two coordinates, and the third is the orthocomplement of
+their sum. -/
+theorem MConvexComb.jointly_injective_of_three {M : Type u} [EffectMonoid M]
+    {A : Type v} {B : Type w} {a₁ a₂ a₃ : A} {b₁ : B}
+    (hA : ∀ x : A, x = a₁ ∨ x = a₂ ∨ x = a₃)
+    (h12 : a₁ ≠ a₂) (h13 : a₁ ≠ a₃) (h23 : a₂ ≠ a₃)
+    {σ₁ σ₂ : A → B}
+    (hs₁ : ∀ x : A, σ₁ x = b₁ ↔ x = a₁) (hs₂ : ∀ x : A, σ₂ x = b₁ ↔ x = a₂)
+    {p q : MConvexComb M A}
+    (e₁ : p.map σ₁ = q.map σ₁) (e₂ : p.map σ₂ = q.map σ₂) : p = q := by
+  classical
+  -- the first two coordinates are read off from `𝒟_M σ₁` and `𝒟_M σ₂`
+  have hv₁ : p.toFun a₁ = q.toFun a₁ := by
+    rw [← MConvexComb.map_apply_of_unique_fiber p σ₁ hs₁,
+      ← MConvexComb.map_apply_of_unique_fiber q σ₁ hs₁, e₁]
+  have hv₂ : p.toFun a₂ = q.toFun a₂ := by
+    rw [← MConvexComb.map_apply_of_unique_fiber p σ₂ hs₂,
+      ← MConvexComb.map_apply_of_unique_fiber q σ₂ hs₂, e₂]
+  -- the three coordinates sum to `1`
+  have hnd : ([a₁, a₂, a₃] : List A).Nodup := by
+    simp [h12, h13, h23]
+  have hsum : ∀ r : MConvexComb M A,
+      PCM.IsSumOf (([a₁, a₂, a₃] : List A).map r.toFun) 1 := by
+    intro r
+    obtain ⟨l, hndl, hmem, hs⟩ := r.sum_one
+    refine isSumOf_map_of_support r.toFun hndl hnd (fun x hx => (hmem x).mpr hx)
+      (fun x _ => ?_) hs
+    rcases hA x with rfl | rfl | rfl <;> simp
+  -- so the third is the orthocomplement of the sum of the first two
+  have hthird : ∀ r : MConvexComb M A, ∃ hp : Perp (r.toFun a₁) (r.toFun a₂),
+      r.toFun a₃ = orth (ovee (r.toFun a₁) (r.toFun a₂) hp) := by
+    intro r
+    obtain ⟨t, ht, hpt, het⟩ := PCM.isSumOf_cons_iff.mp (hsum r)
+    obtain ⟨s, hs', hps, hes⟩ := PCM.isSumOf_cons_iff.mp ht
+    have hsv : s = r.toFun a₃ := eq_of_isSumOf_singleton hs'
+    subst hsv
+    subst hes
+    obtain ⟨hab, h', he'⟩ := PCM.assoc_left hps hpt
+    exact ⟨hab, (EffectAlgebra.orth_unique h' (he'.trans het)).symm ▸ rfl⟩
+  obtain ⟨hpp, hp3⟩ := hthird p
+  obtain ⟨hqq, hq3⟩ := hthird q
+  have hv₃ : p.toFun a₃ = q.toFun a₃ := by
+    rw [hp3, hq3, PCM.ovee_congr hv₁ hv₂ hpp hqq]
+  refine MConvexComb.ext (funext fun x => ?_)
+  rcases hA x with rfl | rfl | rfl
+  · exact hv₁
+  · exact hv₂
+  · exact hv₃
+
+/-! ### The canonical surjection `𝒟_M(X+Y) ↠ X ⨿ Y`
+
+193IX (`elements-coprod-conv`) records that every element of `X + Y` is of the
+form `h(⋁ᵢ λᵢ|κ₁xᵢ⟩ ⋁ ⋁ⱼ σⱼ|κ₂yⱼ⟩)`, i.e. that the canonical affine map
+`𝒟_M(X+Y) → X + Y` is **surjective**; it then gives an explicit description of
+when two such expressions are equal (by *derivations*), which is what the
+thesis uses for 194I.4.  That description is not formalized (see 193IV).  It
+turns out not to be needed: surjectivity alone suffices, and it can be proved
+from the universal property alone, by cutting `X + Y` down to the image of
+`𝒟_M(X+Y)` and observing that the cut-down object again receives `κ₁` and
+`κ₂`, so that the corestriction splits the inclusion. -/
+
+/-- The canonical affine map `𝒟_M(X + Y) → X ⨿ Y`, `φ ↦ h(𝒟_M[κ₁,κ₂](φ))`. -/
+noncomputable def AConvMCat.coprodQuot {M : Type u} [EffectMonoid M]
+    (X Y : AConvMCat.{u, max u v} M) [HasBinaryCoproduct X Y] :
+    AConvMCat.free M (X.carrier ⊕ Y.carrier) ⟶ X ⨿ Y :=
+  ⟨fun p => (X ⨿ Y).str.h (p.map (Sum.elim (coprod.inl : X ⟶ X ⨿ Y).1
+      (coprod.inr : Y ⟶ X ⨿ Y).1)),
+    MConvexComb.freeStr_desc_isAffine _ _⟩
+
+theorem AConvMCat.coprodQuot_eta_inl {M : Type u} [EffectMonoid M]
+    {X Y : AConvMCat.{u, max u v} M} [HasBinaryCoproduct X Y] (x : X.carrier) :
+    (AConvMCat.coprodQuot X Y).1 (MConvexComb.eta (Sum.inl x))
+      = (coprod.inl : X ⟶ X ⨿ Y).1 x := by
+  show (X ⨿ Y).str.h ((MConvexComb.eta (Sum.inl x)).map _) = _
+  rw [MConvexComb.map_eta]
+  exact (X ⨿ Y).str.h_eta _
+
+theorem AConvMCat.coprodQuot_eta_inr {M : Type u} [EffectMonoid M]
+    {X Y : AConvMCat.{u, max u v} M} [HasBinaryCoproduct X Y] (y : Y.carrier) :
+    (AConvMCat.coprodQuot X Y).1 (MConvexComb.eta (Sum.inr y))
+      = (coprod.inr : Y ⟶ X ⨿ Y).1 y := by
+  show (X ⨿ Y).str.h ((MConvexComb.eta (Sum.inr y)).map _) = _
+  rw [MConvexComb.map_eta]
+  exact (X ⨿ Y).str.h_eta _
+
+/-- **193IX** (`elements-coprod-conv`, eff.tex:2887, Remark), existence half:
+every element of `X ⨿ Y` is `h(⋁ λᵢ|κ₁xᵢ⟩ ⋁ ⋁ σⱼ|κ₂yⱼ⟩)` for some formal
+combination.  (The argument is ours: the thesis reads this off its explicit
+construction of the coproduct, while the proof below uses only the universal
+property.) -/
+theorem AConvMCat.coprodQuot_surjective {M : Type u} [EffectMonoid M]
+    (X Y : AConvMCat.{u, max u v} M) [HasBinaryCoproduct X Y] :
+    Function.Surjective (AConvMCat.coprodQuot X Y).1 := by
+  classical
+  -- the image of `𝒟_M(X+Y)` in `X ⨿ Y`
+  choose ch hch using
+    (fun s : {w : (X ⨿ Y).carrier // ∃ p, (AConvMCat.coprodQuot X Y).1 p = w} => s.2)
+  have hclosed : ∀ Ψ : MConvexComb M {w : (X ⨿ Y).carrier //
+        ∃ p, (AConvMCat.coprodQuot X Y).1 p = w},
+      ∃ p, (AConvMCat.coprodQuot X Y).1 p =
+        (X ⨿ Y).str.h (Ψ.map (fun s => (s : (X ⨿ Y).carrier))) := by
+    intro Ψ
+    refine ⟨MConvexComb.mu (Ψ.map ch), ?_⟩
+    have h2 : Ψ.map (fun s => (s : (X ⨿ Y).carrier))
+        = (Ψ.map ch).map (AConvMCat.coprodQuot X Y).1 := by
+      rw [MConvexComb.map_comp]
+      exact congrArg Ψ.map (funext fun s => (hch s).symm)
+    rw [h2]
+    exact (AConvMCat.coprodQuot X Y).2 (Ψ.map ch)
+  -- it is again an abstract `M`-convex set, and `val` is affine
+  let SObj : AConvMCat.{u, max u v} M :=
+    ⟨_, MConvex.restrict (X ⨿ Y).str
+      (fun w => ∃ p, (AConvMCat.coprodQuot X Y).1 p = w) hclosed⟩
+  let vv : SObj ⟶ X ⨿ Y := ⟨Subtype.val, fun _ => rfl⟩
+  -- the coprojections corestrict to the image
+  let k₁ : X ⟶ SObj :=
+    ⟨fun x => ⟨(coprod.inl : X ⟶ X ⨿ Y).1 x,
+        ⟨MConvexComb.eta (Sum.inl x), AConvMCat.coprodQuot_eta_inl x⟩⟩,
+      fun p => Subtype.ext (by
+        show (coprod.inl : X ⟶ X ⨿ Y).1 (X.str.h p) = (X ⨿ Y).str.h ((p.map _).map _)
+        rw [MConvexComb.map_comp]
+        exact (coprod.inl : X ⟶ X ⨿ Y).2 p)⟩
+  let k₂ : Y ⟶ SObj :=
+    ⟨fun y => ⟨(coprod.inr : Y ⟶ X ⨿ Y).1 y,
+        ⟨MConvexComb.eta (Sum.inr y), AConvMCat.coprodQuot_eta_inr y⟩⟩,
+      fun p => Subtype.ext (by
+        show (coprod.inr : Y ⟶ X ⨿ Y).1 (Y.str.h p) = (X ⨿ Y).str.h ((p.map _).map _)
+        rw [MConvexComb.map_comp]
+        exact (coprod.inr : Y ⟶ X ⨿ Y).2 p)⟩
+  have hm : coprod.desc k₁ k₂ ≫ vv = 𝟙 (X ⨿ Y) := by
+    refine coprod.hom_ext ?_ ?_
+    · rw [← Category.assoc, coprod.inl_desc, Category.comp_id]
+      exact Subtype.ext rfl
+    · rw [← Category.assoc, coprod.inr_desc, Category.comp_id]
+      exact Subtype.ext rfl
+  intro w
+  refine ⟨((coprod.desc k₁ k₂).1 w).2.choose, ?_⟩
+  rw [((coprod.desc k₁ k₂).1 w).2.choose_spec]
+  exact congrArg (fun t : (X ⨿ Y) ⟶ (X ⨿ Y) => t.1 w) hm
+
+/-- **194I.4**, first ingredient: `κ₁ : X → X + Y` is injective in `AConv_M`.
+
+⚠ Divergence from the thesis.  eff.tex:3057–3175 proves this by an induction
+over *derivations* (193IX), the longest argument of parsec 194, and one that
+needs the syntactic description of the least congruence that 193IV leaves to
+the reader.  It is unnecessary: constant maps are affine (`map_const`), so for
+non-empty `X` the cotuple `[id_X, const x₀] : X + Y → X` is a retraction of
+`κ₁`, and for empty `X` there is nothing to prove. -/
+theorem AConvMCat.coprod_inl_injective {M : Type u} [EffectMonoid M]
+    (X Y : AConvMCat.{u, max u v} M) [HasBinaryCoproduct X Y] :
+    Function.Injective (coprod.inl : X ⟶ X ⨿ Y).1 := by
+  classical
+  rcases isEmpty_or_nonempty X.carrier with hE | hN
+  · exact fun x => (hE.false x).elim
+  · obtain ⟨x₀⟩ := hN
+    have hconst : MConvex.IsAffine Y.str X.str (fun _ => x₀) := fun p => by
+      rw [MConvexComb.map_const p x₀, X.str.h_eta]
+    have hr := coprod.inl_desc (𝟙 X) (⟨fun _ => x₀, hconst⟩ : Y ⟶ X)
+    intro x x' hxx
+    have e1 : (coprod.desc (𝟙 X) (⟨fun _ => x₀, hconst⟩ : Y ⟶ X)).1
+        ((coprod.inl : X ⟶ X ⨿ Y).1 x) = x :=
+      congrArg (fun t : X ⟶ X => t.1 x) hr
+    have e2 : (coprod.desc (𝟙 X) (⟨fun _ => x₀, hconst⟩ : Y ⟶ X)).1
+        ((coprod.inl : X ⟶ X ⨿ Y).1 x') = x' :=
+      congrArg (fun t : X ⟶ X => t.1 x') hr
+    rw [← e1, ← e2, hxx]
 
 /-! ## `AConv_M` is almost an effectus (parsec 194) -/
 
@@ -2404,27 +2962,219 @@ theorem aconvalmosteffectus_terminal :
 
 /-- **194I** (`aconvalmosteffectus`, eff.tex:2979, Proposition), part 3: the
 cotuples `[κ₁,κ₂,κ₂], [κ₂,κ₁,κ₂] : 1+1+1 → 1+1` are jointly monic in
-`AConv_M`. -/
+`AConv_M`.
+
+⚠ Universe level: as for part 1, the statement is about
+`AConvMCat.{u, max u v}` — its coproducts are quotients of function spaces
+into `M`, so at `AConvMCat.{u, v}` with `v < u` the `HasFiniteCoproducts`
+hypothesis is not instantiable and the hypothesised coproducts need not be
+the ones the thesis computes with.  See PROVING-LOG.
+
+The proof is the thesis's: identify `1+1+1` with `𝒟_M{1,2,3}` and `1+1` with
+`𝒟_M{1,2}` (193X), under which the two cotuples become
+`(a,b,c) ↦ (a, b⋁c)` and `(a,b,c) ↦ (b, a⋁c)`; these are jointly *injective*
+(`MConvexComb.jointly_injective_of_three`), hence jointly monic. -/
 theorem aconvalmosteffectus_jointlyMonic
-    [HasFiniteCoproducts (AConvMCat.{u, v} M)]
-    [HasTerminal (AConvMCat.{u, v} M)] :
+    [HasFiniteCoproducts (AConvMCat.{u, max u v} M)]
+    [HasTerminal (AConvMCat.{u, max u v} M)] :
     JointlyMonic
       (coprod.desc (coprod.desc coprod.inl coprod.inr) coprod.inr :
-        ((⊤_ AConvMCat.{u, v} M) ⨿ (⊤_ AConvMCat.{u, v} M)) ⨿
-          (⊤_ AConvMCat.{u, v} M) ⟶
-        (⊤_ AConvMCat.{u, v} M) ⨿ (⊤_ AConvMCat.{u, v} M))
-      (coprod.desc (coprod.desc coprod.inr coprod.inl) coprod.inr) := sorry
+        ((⊤_ AConvMCat.{u, max u v} M) ⨿ (⊤_ AConvMCat.{u, max u v} M)) ⨿
+          (⊤_ AConvMCat.{u, max u v} M) ⟶
+        (⊤_ AConvMCat.{u, max u v} M) ⨿ (⊤_ AConvMCat.{u, max u v} M))
+      (coprod.desc (coprod.desc coprod.inr coprod.inl) coprod.inr) := by
+  classical
+  have hT : IsTerminal (AConvMCat.free.{u, max u v} M PUnit.{max u v + 1}) :=
+    AConvMCat.free_punit_isTerminal M
+  obtain ⟨e2, e2l, e2r⟩ := AConvMCat.exists_binaryCoprod_iso
+    (X := ⊤_ AConvMCat.{u, max u v} M) (Y := ⊤_ AConvMCat.{u, max u v} M)
+    (terminalIsoIsTerminal hT) (terminalIsoIsTerminal hT)
+  obtain ⟨e3, e3l, e3r⟩ :=
+    AConvMCat.exists_binaryCoprod_iso e2 (terminalIsoIsTerminal hT)
+  -- the two cotuples become `𝒟_M σ₁` and `𝒟_M σ₂` for these two maps of sets
+  have key₁ : e3.hom ≫ AConvMCat.freeMap M
+        (Sum.elim (Sum.elim Sum.inl Sum.inr) Sum.inr)
+      = coprod.desc (coprod.desc coprod.inl coprod.inr) coprod.inr ≫ e2.hom := by
+    refine coprod.hom_ext (coprod.hom_ext ?_ ?_) ?_ <;>
+      simp [reassoc_of% e3l, reassoc_of% e3r, e2l, e2r,
+        coprod.inl_desc, coprod.inr_desc]
+  have key₂ : e3.hom ≫ AConvMCat.freeMap M
+        (Sum.elim (Sum.elim Sum.inr Sum.inl) Sum.inr)
+      = coprod.desc (coprod.desc coprod.inr coprod.inl) coprod.inr ≫ e2.hom := by
+    refine coprod.hom_ext (coprod.hom_ext ?_ ?_) ?_ <;>
+      simp [reassoc_of% e3l, reassoc_of% e3r, reassoc_of% e2l, reassoc_of% e2r,
+        e2l, e2r, coprod.inl_desc, coprod.inr_desc]
+  intro W a b ha hb
+  refine (Iso.cancel_iso_hom_right a b e3).mp ?_
+  have ha' : (a ≫ e3.hom) ≫ AConvMCat.freeMap M
+        (Sum.elim (Sum.elim Sum.inl Sum.inr) Sum.inr)
+      = (b ≫ e3.hom) ≫ AConvMCat.freeMap M
+        (Sum.elim (Sum.elim Sum.inl Sum.inr) Sum.inr) := by
+    rw [Category.assoc, Category.assoc, key₁, ← Category.assoc, ← Category.assoc, ha]
+  have hb' : (a ≫ e3.hom) ≫ AConvMCat.freeMap M
+        (Sum.elim (Sum.elim Sum.inr Sum.inl) Sum.inr)
+      = (b ≫ e3.hom) ≫ AConvMCat.freeMap M
+        (Sum.elim (Sum.elim Sum.inr Sum.inl) Sum.inr) := by
+    rw [Category.assoc, Category.assoc, key₂, ← Category.assoc, ← Category.assoc, hb]
+  refine Subtype.ext (funext fun z => ?_)
+  have hz₁ : ((a ≫ e3.hom).1 z : MConvexComb M
+        ((PUnit.{max u v + 1} ⊕ PUnit.{max u v + 1}) ⊕ PUnit.{max u v + 1})).map
+        (Sum.elim (Sum.elim Sum.inl Sum.inr) Sum.inr)
+      = ((b ≫ e3.hom).1 z : MConvexComb M
+        ((PUnit.{max u v + 1} ⊕ PUnit.{max u v + 1}) ⊕ PUnit.{max u v + 1})).map
+        (Sum.elim (Sum.elim Sum.inl Sum.inr) Sum.inr) :=
+    congrArg (fun m : W ⟶ AConvMCat.free M
+      (PUnit.{max u v + 1} ⊕ PUnit.{max u v + 1}) => m.1 z) ha'
+  have hz₂ : ((a ≫ e3.hom).1 z : MConvexComb M
+        ((PUnit.{max u v + 1} ⊕ PUnit.{max u v + 1}) ⊕ PUnit.{max u v + 1})).map
+        (Sum.elim (Sum.elim Sum.inr Sum.inl) Sum.inr)
+      = ((b ≫ e3.hom).1 z : MConvexComb M
+        ((PUnit.{max u v + 1} ⊕ PUnit.{max u v + 1}) ⊕ PUnit.{max u v + 1})).map
+        (Sum.elim (Sum.elim Sum.inr Sum.inl) Sum.inr) :=
+    congrArg (fun m : W ⟶ AConvMCat.free M
+      (PUnit.{max u v + 1} ⊕ PUnit.{max u v + 1}) => m.1 z) hb'
+  exact MConvexComb.jointly_injective_of_three
+    (a₁ := Sum.inl (Sum.inl PUnit.unit)) (a₂ := Sum.inl (Sum.inr PUnit.unit))
+    (a₃ := Sum.inr PUnit.unit) (b₁ := Sum.inl PUnit.unit)
+    (fun x => by rcases x with (x | x) | x <;> simp) (by simp) (by simp) (by simp)
+    (fun x => by rcases x with (x | x) | x <;> simp)
+    (fun x => by rcases x with (x | x) | x <;> simp) hz₁ hz₂
 
 /-- **194I** (`aconvalmosteffectus`, eff.tex:3008, Proposition), part 4: the
 right pullback squares of the effectus axioms (`(κ₁; !)`-squares) hold in
 `AConv_M`; only the left squares remain open (settled in 196II when `M` is
-an effect divisoid). -/
+an effect divisoid).
+
+⚠ Universe level: `max u v`, as for parts 1 and 3; see PROVING-LOG.
+
+The thesis's argument is followed for the *existence* of the mediating map
+(if `(!+!) ∘ α = κ₁ ∘ !` then each `α(z)` has zero `Y`-mass, hence is
+`κ₁(x_z)`, and `γ = x_(–)` is affine because `κ₁` is monic), but two
+ingredients are proved differently, both times avoiding the unformalized
+derivation calculus of 193IX/193IV:
+
+* surjectivity of `𝒟_M(X+Y) → X+Y` (193IX) is obtained from the universal
+  property, see `AConvMCat.coprodQuot_surjective`;
+* injectivity of `κ₁` is obtained from the retraction `[id, const x₀]`, see
+  `AConvMCat.coprod_inl_injective`, instead of by induction over
+  derivations. -/
 theorem aconvalmosteffectus_kappaPullback
-    [HasFiniteCoproducts (AConvMCat.{u, v} M)]
-    [HasTerminal (AConvMCat.{u, v} M)] (X Y : AConvMCat.{u, v} M) :
+    [HasFiniteCoproducts (AConvMCat.{u, max u v} M)]
+    [HasTerminal (AConvMCat.{u, max u v} M)] (X Y : AConvMCat.{u, max u v} M) :
     IsPullback (terminal.from X) (coprod.inl : X ⟶ X ⨿ Y)
-      (coprod.inl : (⊤_ AConvMCat.{u, v} M) ⟶ _)
-      (coprod.map (terminal.from X) (terminal.from Y)) := sorry
+      (coprod.inl : (⊤_ AConvMCat.{u, max u v} M) ⟶ _)
+      (coprod.map (terminal.from X) (terminal.from Y)) := by
+  classical
+  have hT : IsTerminal (AConvMCat.free.{u, max u v} M PUnit.{max u v + 1}) :=
+    AConvMCat.free_punit_isTerminal M
+  obtain ⟨e2, e2l, e2r⟩ := AConvMCat.exists_binaryCoprod_iso
+    (X := ⊤_ AConvMCat.{u, max u v} M) (Y := ⊤_ AConvMCat.{u, max u v} M)
+    (terminalIsoIsTerminal hT) (terminalIsoIsTerminal hT)
+  -- `(!+!) ∘ q` is the pushforward along the collapse `X + Y → 1 + 1`
+  have hlegl : (coprod.inl : X ⟶ X ⨿ Y) ≫
+        coprod.map (terminal.from X) (terminal.from Y) ≫ e2.hom
+      = terminal.from X ≫ (terminalIsoIsTerminal hT).hom ≫
+        AConvMCat.freeMap M (Sum.inl : PUnit.{max u v + 1} → _) := by
+    rw [← Category.assoc, coprod.inl_map, Category.assoc, e2l]
+  have hlegr : (coprod.inr : Y ⟶ X ⨿ Y) ≫
+        coprod.map (terminal.from X) (terminal.from Y) ≫ e2.hom
+      = terminal.from Y ≫ (terminalIsoIsTerminal hT).hom ≫
+        AConvMCat.freeMap M (Sum.inr : PUnit.{max u v + 1} → _) := by
+    rw [← Category.assoc, coprod.inr_map, Category.assoc, e2r]
+  have hcol : AConvMCat.coprodQuot X Y ≫
+        coprod.map (terminal.from X) (terminal.from Y) ≫ e2.hom
+      = AConvMCat.freeMap M (Sum.elim (fun _ => Sum.inl PUnit.unit)
+          (fun _ => Sum.inr PUnit.unit) :
+          X.carrier ⊕ Y.carrier → PUnit.{max u v + 1} ⊕ PUnit.{max u v + 1}) := by
+    refine AConvMCat.free_hom_ext _ _ ?_
+    rintro (x | y)
+    · show (coprod.map (terminal.from X) (terminal.from Y) ≫ e2.hom).1
+          ((AConvMCat.coprodQuot X Y).1 (MConvexComb.eta (Sum.inl x))) = _
+      have hl : (coprod.map (terminal.from X) (terminal.from Y) ≫ e2.hom).1
+            ((coprod.inl : X ⟶ X ⨿ Y).1 x)
+          = ((terminal.from X ≫ (terminalIsoIsTerminal hT).hom).1 x).map
+              (Sum.inl : PUnit.{max u v + 1} → _) :=
+        congrArg (fun m : X ⟶ AConvMCat.free M
+          (PUnit.{max u v + 1} ⊕ PUnit.{max u v + 1}) => m.1 x) hlegl
+      rw [AConvMCat.coprodQuot_eta_inl, AConvMCat.freeMap_apply, MConvexComb.map_eta,
+        hl, MConvexComb.eq_eta_punit
+          ((terminal.from X ≫ (terminalIsoIsTerminal hT).hom).1 x),
+        MConvexComb.map_eta]
+      rfl
+    · show (coprod.map (terminal.from X) (terminal.from Y) ≫ e2.hom).1
+          ((AConvMCat.coprodQuot X Y).1 (MConvexComb.eta (Sum.inr y))) = _
+      have hl : (coprod.map (terminal.from X) (terminal.from Y) ≫ e2.hom).1
+            ((coprod.inr : Y ⟶ X ⨿ Y).1 y)
+          = ((terminal.from Y ≫ (terminalIsoIsTerminal hT).hom).1 y).map
+              (Sum.inr : PUnit.{max u v + 1} → _) :=
+        congrArg (fun m : Y ⟶ AConvMCat.free M
+          (PUnit.{max u v + 1} ⊕ PUnit.{max u v + 1}) => m.1 y) hlegr
+      rw [AConvMCat.coprodQuot_eta_inr, AConvMCat.freeMap_apply, MConvexComb.map_eta,
+        hl, MConvexComb.eq_eta_punit
+          ((terminal.from Y ≫ (terminalIsoIsTerminal hT).hom).1 y),
+        MConvexComb.map_eta]
+      rfl
+  refine IsPullback.mk' (coprod.inl_map _ _).symm ?_ ?_
+  · intro T φ φ' _ h2
+    exact Subtype.ext (funext fun z => AConvMCat.coprod_inl_injective X Y
+      (congrArg (fun m : T ⟶ X ⨿ Y => m.1 z) h2))
+  · intro T a b hab
+    have hchain : a ≫ (coprod.inl : (⊤_ AConvMCat.{u, max u v} M) ⟶ _) ≫ e2.hom
+        = b ≫ coprod.map (terminal.from X) (terminal.from Y) ≫ e2.hom := by
+      rw [← Category.assoc, ← Category.assoc, hab]
+    -- every `α(z)` has zero `Y`-mass, hence is `κ₁` of something
+    have hex : ∀ z : T.carrier,
+        ∃ x : X.carrier, (coprod.inl : X ⟶ X ⨿ Y).1 x = b.1 z := by
+      intro z
+      obtain ⟨φ, hφ⟩ := AConvMCat.coprodQuot_surjective X Y (b.1 z)
+      have h1 : (b ≫ coprod.map (terminal.from X) (terminal.from Y) ≫ e2.hom).1 z
+          = φ.map (Sum.elim (fun _ => Sum.inl PUnit.unit)
+              (fun _ => Sum.inr PUnit.unit) :
+              X.carrier ⊕ Y.carrier →
+                PUnit.{max u v + 1} ⊕ PUnit.{max u v + 1}) := by
+        show (coprod.map (terminal.from X) (terminal.from Y) ≫ e2.hom).1 (b.1 z) = _
+        rw [← hφ]
+        exact congrArg (fun m : AConvMCat.free M (X.carrier ⊕ Y.carrier) ⟶
+          AConvMCat.free M (PUnit.{max u v + 1} ⊕ PUnit.{max u v + 1}) =>
+          m.1 φ) hcol
+      have h2 : (a ≫ (coprod.inl : (⊤_ AConvMCat.{u, max u v} M) ⟶ _) ≫ e2.hom).1 z
+          = MConvexComb.eta (Sum.inl PUnit.unit) := by
+        rw [e2l]
+        show ((a ≫ (terminalIsoIsTerminal hT).hom).1 z).map
+          (Sum.inl : PUnit.{max u v + 1} → _) = _
+        rw [MConvexComb.eq_eta_punit ((a ≫ (terminalIsoIsTerminal hT).hom).1 z),
+          MConvexComb.map_eta]
+      have hmapφ : φ.map (Sum.elim (fun _ => Sum.inl PUnit.unit)
+          (fun _ => Sum.inr PUnit.unit) :
+          X.carrier ⊕ Y.carrier → PUnit.{max u v + 1} ⊕ PUnit.{max u v + 1})
+          = MConvexComb.eta (Sum.inl PUnit.unit) := by
+        rw [← h1, ← congrArg (fun m : T ⟶ AConvMCat.free M
+          (PUnit.{max u v + 1} ⊕ PUnit.{max u v + 1}) => m.1 z) hchain]
+        exact h2
+      have hzero : ∀ y : Y.carrier, φ.toFun (Sum.inr y) = 0 := by
+        intro y
+        refine MConvexComb.eq_zero_of_map_eq_zero φ
+          (Sum.elim (fun _ => Sum.inl PUnit.unit) (fun _ => Sum.inr PUnit.unit) :
+            X.carrier ⊕ Y.carrier → PUnit.{max u v + 1} ⊕ PUnit.{max u v + 1})
+          (y := Sum.inr PUnit.unit) ?_ (x := Sum.inr y) rfl
+        rw [hmapφ]
+        exact if_neg (by simp)
+      obtain ⟨χ, hχ⟩ := MConvexComb.exists_map_inl φ hzero
+      refine ⟨X.str.h χ, ?_⟩
+      rw [← hφ, ← hχ]
+      show (coprod.inl : X ⟶ X ⨿ Y).1 (X.str.h χ)
+        = (X ⨿ Y).str.h ((χ.map (Sum.inl : X.carrier → X.carrier ⊕ Y.carrier)).map _)
+      rw [MConvexComb.map_comp]
+      exact (coprod.inl : X ⟶ X ⨿ Y).2 χ
+    choose g hg using hex
+    have hgaff : MConvex.IsAffine T.str X.str g := by
+      intro p
+      refine AConvMCat.coprod_inl_injective X Y ?_
+      rw [hg (T.str.h p), b.2 p, (coprod.inl : X ⟶ X ⨿ Y).2 (p.map g),
+        MConvexComb.map_comp]
+      exact congrArg (X ⨿ Y).str.h (congrArg p.map (funext hg).symm)
+    exact ⟨⟨g, hgaff⟩, terminalIsTerminal.hom_ext _ _,
+      Subtype.ext (funext fun z => hg z)⟩
 
 end AlmostEffectus
 
@@ -2856,8 +3606,22 @@ theorem divisoid_div_ovee {M : Type u} [EffectMonoid M] [EffectDivisoid M]
 /-! ## `AConv_M` is an effectus for an effect divisoid `M` (parsec 196) -/
 
 /-- **196II** (`aconvm-is-effectus`, eff.tex:3381, Theorem): if `M` is an
-effect divisoid, then `AConv_M` is an effectus (in total form). -/
+effect divisoid, then `AConv_M` is an effectus (in total form).
+
+⚠ Universe level `max u v`, as for 193V and 194I: an `EffectusTotalStructure`
+carries `HasFiniteCoproducts`, and the coproducts of `AConv_M` are quotients
+of function spaces into `M`, so they exist only at `AConvMCat.{u, max u v}`.
+See PROVING-LOG.
+
+Everything except the *left* pullback square of the effectus axioms is now
+available: `aconvalmosteffectus_coproducts` (194I.1),
+`aconvalmosteffectus_terminal` (194I.2),
+`aconvalmosteffectus_jointlyMonic` (194I.3) and
+`aconvalmosteffectus_kappaPullback` (194I.4).  What is missing is the left
+square, i.e. 196II's own proof (eff.tex:3383–3600); it is left `sorry` rather
+than assembled from a `sorry`ed sub-lemma, so that no proved declaration
+depends on an unproved one. -/
 theorem aconvm_is_effectus (M : Type u) [EffectMonoid M] [EffectDivisoid M] :
-    Nonempty (EffectusTotalStructure (AConvMCat.{u, v} M)) := sorry
+    Nonempty (EffectusTotalStructure (AConvMCat.{u, max u v} M)) := sorry
 
 end Theses.B.Eff

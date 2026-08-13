@@ -316,6 +316,150 @@ theorem npFunctional_star (ω : NPFunctional A) (a : A) :
     ω (star a) = star (ω a) :=
   map_star ω.toPositiveLinearMap a
 
+/-- `|‖a‖_ω − ‖b‖_ω| ≤ ‖a − b‖_ω`: the reverse triangle inequality for the
+GNS seminorm. -/
+theorem abs_omegaNorm_sub_omegaNorm_le (ω : NPFunctional A) (a b : A) :
+    |omegaNorm A ω a - omegaNorm A ω b| ≤ omegaNorm A ω (a - b) := by
+  simp only [omegaNorm_eq_norm, map_sub]
+  exact abs_norm_sub_norm_le _ _
+
+/-- `‖bc‖_ω ≤ ‖b‖ ‖c‖_ω`: conjugate `b* b ≤ ‖b‖²·1` by `c` and apply `ω`.
+(The submultiplicativity behind **72III**.1b; cf. cstar.tex 30IV.) -/
+theorem omegaNorm_mul_le (ω : NPFunctional A) (b c : A) :
+    omegaNorm A ω (b * c) ≤ ‖b‖ * omegaNorm A ω c := by
+  have hsmul : ∀ (r : ℝ) (x : A), (r : ℝ) • x = ((r : ℂ)) • x := fun r x => by
+    rw [← IsScalarTower.algebraMap_smul ℂ r x, Complex.coe_algebraMap]
+  have hn : ‖star b * b‖ = ‖b‖ * ‖b‖ := CStarRing.norm_star_mul_self
+  have h1 : star b * b ≤ (‖b‖ * ‖b‖ : ℝ) • (1 : A) := by
+    have h := le_norm_smul_one (star_mul_self_nonneg b)
+    rwa [hn] at h
+  have h2 : star (b * c) * (b * c) ≤ (‖b‖ * ‖b‖ : ℝ) • (star c * c) := by
+    have h := star_left_conjugate_le_conjugate h1 c
+    have e1 : star c * (star b * b) * c = star (b * c) * (b * c) := by
+      rw [star_mul]; noncomm_ring
+    have e2 : star c * ((‖b‖ * ‖b‖ : ℝ) • (1 : A)) * c
+        = (‖b‖ * ‖b‖ : ℝ) • (star c * c) := by
+      rw [mul_smul_comm, smul_mul_assoc, mul_one]
+    rwa [e1, e2] at h
+  have hmap : ∀ (r : ℝ) (x : A), ω ((r : ℝ) • x) = (r : ℂ) * ω x := fun r x => by
+    rw [hsmul r x]
+    exact map_smul ω.toPositiveLinearMap (r : ℂ) x
+  have h3 : (ω (star (b * c) * (b * c))).re
+      ≤ (‖b‖ * ‖b‖) * (ω (star c * c)).re := by
+    have h := npFunctional_mono ω h2
+    rw [hmap] at h
+    have h4 := (Complex.le_def.mp h).1
+    simpa using h4
+  rw [omegaNorm, omegaNorm]
+  calc Real.sqrt (ω (star (b * c) * (b * c))).re
+      ≤ Real.sqrt ((‖b‖ * ‖b‖) * (ω (star c * c)).re) := Real.sqrt_le_sqrt h3
+    _ = ‖b‖ * Real.sqrt (ω (star c * c)).re := by
+        rw [Real.sqrt_mul (by positivity), Real.sqrt_mul_self (norm_nonneg b)]
+
+/-! ### The np-functionals form a cone
+
+`Theses.NPFunctional` (root `Common.lean`) carries no algebraic structure,
+but several proofs — **72IV**, **72V**, **72XI**, **73VIII**, **87VIII** —
+need to replace a *finite family* of np-functionals by a single one
+dominating all of them.  Positivity and linearity are inherited from
+`A →ₚ[ℂ] ℂ`; only normality has to be checked, and for a sum it is the
+standard "`sup` of a sum over a directed set is the sum of the `sup`s". -/
+
+/-- The zero np-functional. -/
+noncomputable def zeroNP : NPFunctional A where
+  toPositiveLinearMap := 0
+  preservesDirSups' := by
+    intro D s hne hdir _
+    have h : (fun d : selfAdjoint A => (0 : A →ₚ[ℂ] ℂ) (d : A)) '' D = {(0 : ℂ)} := by
+      refine Set.eq_singleton_iff_unique_mem.mpr ⟨⟨hne.choose, hne.choose_spec, rfl⟩, ?_⟩
+      rintro _ ⟨d, _, rfl⟩
+      rfl
+    rw [h]
+    exact isLUB_singleton
+
+/-- The sum of two np-functionals. -/
+noncomputable def addNP (ω₁ ω₂ : NPFunctional A) : NPFunctional A where
+  toPositiveLinearMap := ω₁.toPositiveLinearMap + ω₂.toPositiveLinearMap
+  preservesDirSups' := by
+    intro D s hne hdir hlub
+    have h₁ := ω₁.preservesDirSups' D s hne hdir hlub
+    have h₂ := ω₂.preservesDirSups' D s hne hdir hlub
+    -- both functionals are real on self-adjoint elements
+    have him₁ : ∀ d : selfAdjoint A, (ω₁ (d : A)).im = 0 := fun d =>
+      npFunctional_im_eq_zero ω₁ d.2
+    have him₂ : ∀ d : selfAdjoint A, (ω₂ (d : A)).im = 0 := fun d =>
+      npFunctional_im_eq_zero ω₂ d.2
+    refine ⟨?_, ?_⟩
+    · rintro _ ⟨d, hd, rfl⟩
+      exact add_le_add (h₁.1 ⟨d, hd, rfl⟩) (h₂.1 ⟨d, hd, rfl⟩)
+    · intro z hz
+      obtain ⟨d₀, hd₀⟩ := hne
+      have hz₀ : ω₁ (d₀ : A) + ω₂ (d₀ : A) ≤ z := hz ⟨d₀, hd₀, rfl⟩
+      have hzim : z.im = 0 := by
+        have := (Complex.le_def.mp hz₀).2
+        simp only [Complex.add_im, him₁, him₂, add_zero] at this
+        exact this.symm
+      -- `ε`-approximation of each supremum separately, then directedness
+      have ex : ∀ (ω : NPFunctional A), IsLUB ((fun d : selfAdjoint A => ω (d : A)) '' D)
+          (ω (s : A)) → ∀ ε : ℝ, 0 < ε → ∃ d ∈ D, (ω (s : A)).re - ε < (ω (d : A)).re := by
+        intro ω hω ε hε
+        by_contra hcon
+        push_neg at hcon
+        have hub : (ω (s : A)) ≤ (((ω (s : A)).re - ε : ℝ) : ℂ) := by
+          refine hω.2 ?_
+          rintro _ ⟨d, hd, rfl⟩
+          exact Complex.le_def.mpr ⟨by simpa using hcon d hd,
+            by simp [npFunctional_im_eq_zero ω d.2]⟩
+        have := (Complex.le_def.mp hub).1
+        simp at this
+        linarith
+      have hre : (ω₁ (s : A)).re + (ω₂ (s : A)).re ≤ z.re := by
+        by_contra hcon
+        push_neg at hcon
+        set ε : ℝ := ((ω₁ (s : A)).re + (ω₂ (s : A)).re - z.re) / 2 with hεdef
+        have hε : 0 < ε := by rw [hεdef]; linarith
+        obtain ⟨d₁, hd₁, hlt₁⟩ := ex ω₁ h₁ ε hε
+        obtain ⟨d₂, hd₂, hlt₂⟩ := ex ω₂ h₂ ε hε
+        obtain ⟨d, hd, hle₁, hle₂⟩ := hdir d₁ hd₁ d₂ hd₂
+        have m₁ : (ω₁ (d₁ : A)).re ≤ (ω₁ (d : A)).re :=
+          (Complex.le_def.mp (npFunctional_mono ω₁ (Subtype.coe_le_coe.mpr hle₁))).1
+        have m₂ : (ω₂ (d₂ : A)).re ≤ (ω₂ (d : A)).re :=
+          (Complex.le_def.mp (npFunctional_mono ω₂ (Subtype.coe_le_coe.mpr hle₂))).1
+        have hub : ω₁ (d : A) + ω₂ (d : A) ≤ z := hz ⟨d, hd, rfl⟩
+        have hub' := (Complex.le_def.mp hub).1
+        simp only [Complex.add_re] at hub'
+        rw [hεdef] at hlt₁ hlt₂
+        linarith
+      show ω₁ (s : A) + ω₂ (s : A) ≤ z
+      refine Complex.le_def.mpr ⟨?_, ?_⟩
+      · simpa using hre
+      · simp [him₁ s, him₂ s, hzim]
+
+@[simp] theorem zeroNP_apply (a : A) : (zeroNP : NPFunctional A) a = 0 := rfl
+
+@[simp] theorem addNP_apply (ω₁ ω₂ : NPFunctional A) (a : A) :
+    addNP ω₁ ω₂ a = ω₁ a + ω₂ a := rfl
+
+/-- `‖·‖_ω₁ ≤ ‖·‖_{ω₁+ω₂}`. -/
+theorem omegaNorm_le_addNP (ω₁ ω₂ : NPFunctional A) (a : A) :
+    omegaNorm A ω₁ a ≤ omegaNorm A (addNP ω₁ ω₂) a := by
+  rw [omegaNorm, omegaNorm]
+  refine Real.sqrt_le_sqrt ?_
+  have h : (0 : ℂ) ≤ ω₂ (star a * a) := npFunctional_nonneg ω₂ (star_mul_self_nonneg a)
+  have := (Complex.le_def.mp h).1
+  simp only [addNP_apply, Complex.add_re]
+  simpa using this
+
+/-- `‖·‖_ω₂ ≤ ‖·‖_{ω₁+ω₂}`. -/
+theorem omegaNorm_le_addNP' (ω₁ ω₂ : NPFunctional A) (a : A) :
+    omegaNorm A ω₂ a ≤ omegaNorm A (addNP ω₁ ω₂) a := by
+  rw [omegaNorm, omegaNorm]
+  refine Real.sqrt_le_sqrt ?_
+  have h : (0 : ℂ) ≤ ω₁ (star a * a) := npFunctional_nonneg ω₁ (star_mul_self_nonneg a)
+  have := (Complex.le_def.mp h).1
+  simp only [addNP_apply, Complex.add_re]
+  simpa using this
+
 /-- The "balls" `{a | ‖a - b‖_ω < ε}` of **42III** are ultrastrong
 neighbourhoods of `b` (they are among the generators of the topology). -/
 theorem ultrastrong_ball_mem_nhds (ω : NPFunctional A) (b : A) {ε : ℝ}
@@ -2552,6 +2696,27 @@ theorem exists_faithful_normal_rep (A : Type u) [CStarAlgebra A] [PartialOrder A
   ⟨gnsHilb A, inferInstance, inferInstance, inferInstance, gnsRep,
     gnsRep_injective, gnsRep_normal⟩
 
+/-- Refinement of `exists_faithful_normal_rep` recording the extra fact that
+in the direct-sum GNS representation *every* np-functional is a vector
+functional, witnessed by `ξ_ω = lp.single 2 ω (gnsVec ω 1)`.  This is what
+**48V** needs. -/
+theorem exists_faithful_normal_rep_vectors (A : Type u) [CStarAlgebra A]
+    [PartialOrder A] [StarOrderedRing A] [VonNeumannAlgebra A] :
+    ∃ (H : Type u) (_ : NormedAddCommGroup H) (_ : InnerProductSpace ℂ H)
+      (_ : CompleteSpace H) (ρ : A →⋆ₐ[ℂ] (H →L[ℂ] H)),
+      Function.Injective ⇑ρ ∧ PreservesDirSups ⇑ρ ∧
+        ∀ ω : NPFunctional A, ∃ ξ : H, ∀ a : A, ω a = ⟪ξ, ρ a ξ⟫ := by
+  classical
+  refine ⟨gnsHilb A, inferInstance, inferInstance, inferInstance, gnsRep,
+    gnsRep_injective, gnsRep_normal, fun ω =>
+      ⟨lp.single 2 ω (gnsVec ω 1), fun a => ?_⟩⟩
+  rw [lp.inner_single_left]
+  show _ = (⟪gnsVec ω 1,
+    ((gnsRep a (lp.single 2 ω (gnsVec ω 1)) : gnsHilb A) :
+      ∀ _ : NPFunctional A, _) ω⟫)
+  rw [gnsRep_apply_coe, lp.single_apply_self, gnsRep_gnsVec, gnsVec_inner,
+    star_one, one_mul, mul_one]
+
 end NGNS
 
 end NGNSConstruction
@@ -2569,6 +2734,9 @@ theorem gns_normal [VonNeumannAlgebra A] (ω : NPFunctional A) :
         PreservesDirSups ⇑ρ :=
   sorry
 
+-- as for `gnsRep_normal`, the `lp`-based `⊕_ω ℋ_ω` makes the instance defeq
+-- checks against `B(H)`'s C*-algebra structure expensive
+set_option maxHeartbeats 2000000 in
 /-- **48V** (`varrho-Omega-normal`, vn.tex:1113, Exercise): the direct-sum
 GNS representation `ρ_Ω` of any collection `Ω` of np-functionals on a von
 Neumann algebra is normal (rendered, as in **48III**, as the existence of a
@@ -2579,8 +2747,31 @@ theorem varrho_Omega_normal [VonNeumannAlgebra A]
         (lp (fun _ : ι => ℂ) 2 →L[ℂ] lp (fun _ : ι => ℂ) 2)),
       PreservesDirSups ⇑ρ ∧
         ∀ ω ∈ Ω, ∃ ξ : lp (fun _ : ι => ℂ) 2,
-          ∀ a : A, ω a = ⟪ξ, ρ a ξ⟫ :=
-  sorry
+          ∀ a : A, ω a = ⟪ξ, ρ a ξ⟫ := by
+  classical
+  -- The direct-sum GNS representation `ρ_Ω` is already available for the
+  -- *full* set of np-functionals, and it is normal, with every `ω` a vector
+  -- functional; a fortiori it serves any `Ω`.  Transport it to `ℓ²(w)` along
+  -- a Hilbert basis `w`, exactly as in `ngns`.
+  obtain ⟨H, _, _, _, ρ, -, hn, hvec⟩ := exists_faithful_normal_rep_vectors A
+  obtain ⟨w, bas, -⟩ := exists_hilbertBasis ℂ H
+  set Φ : (H →L[ℂ] H) ≃⋆ₐ[ℂ]
+      (lp (fun _ : w => ℂ) 2 →L[ℂ] lp (fun _ : w => ℂ) 2) :=
+    bas.repr.conjStarAlgEquiv with hΦ
+  set g : A →⋆ₐ[ℂ] (lp (fun _ : w => ℂ) 2 →L[ℂ] lp (fun _ : w => ℂ) 2) :=
+    Φ.toStarAlgHom.comp ρ with hg
+  have hρP : PreservesDirSups ⇑(starAlgHomP ρ) := hn
+  have hΦP : PreservesDirSups ⇑(starAlgHomP Φ.toStarAlgHom) :=
+    starAlgEquiv_preservesDirSups Φ
+  have hgn : PreservesDirSups ⇑g :=
+    preservesDirSups_pmap_comp (starAlgHomP ρ) hρP
+      (starAlgHomP Φ.toStarAlgHom) hΦP
+  refine ⟨w, g, hgn, fun ω _ => ?_⟩
+  obtain ⟨ξ, hξ⟩ := hvec ω
+  refine ⟨bas.repr ξ, fun a => ?_⟩
+  have happ : g a (bas.repr ξ) = bas.repr (ρ a ξ) := by
+    rw [hg, hΦ]; simp
+  rw [happ, LinearIsometryEquiv.inner_map_map, hξ]
 
 /-- **48VI** (`injective-nmiu-iso-on-image`, vn.tex:1120, Lemma), part 1:
 the image of an injective nmiu-map `f : A → B` between von Neumann algebras

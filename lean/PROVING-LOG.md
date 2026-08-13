@@ -505,6 +505,154 @@ blocker into: thesis A (the `vNᵒᵖ` examples), the †-effectus block 215III�
 219XVI), the `𝒟_M`/`AConv_M` subsum infrastructure, and the statements the
 thesis only cites.
 
+### Session 6 — A/VN: parsec 760 is complete; 77I is **not** unblocked
+
+**`A/VN` 132 → 128 code `sorry`s** (Basic 40 → 39, Completeness 21 → 18;
+Division 26, NormalFunctionals 19, Projections 26 untouched).  Everything
+below is axiom-clean (`propext`, `Classical.choice`, `Quot.sound`).
+`lake build` over `Theses.A.Proc.*` and `Theses.B.Dils.*` is as clean as it
+was found.
+
+| point | declaration | file |
+|---|---|---|
+| **76I** | `bh_us_complete` | Completeness.lean |
+| **76III** | `bh_bounded_uw_complete` | Completeness.lean |
+| **72III**.2 | `bstaromega_cauchy` | Completeness.lean |
+| **48V** | `varrho_Omega_normal` | Basic.lean |
+
+Plus the promotion of the np-functional cone (below) and a new public helper
+`exists_faithful_normal_rep_vectors` in `Basic.lean`.
+
+#### ⚠️ Correction — **77I is still blocked, and 76I/76III were never its only
+gate**
+
+The session-3 note "77I is blocked, precisely" lists **two** walls, and only
+the first (39IX `bh_np`, now proved) has fallen.  The thesis's proof
+(vn.tex:4813 ff.) needs `ρ_Ω(𝒜)` to be ultrastrongly **and** ultraweakly
+*closed* in `B(H_Ω)`, i.e. **75VIII `vnsac`**, twice:
+
+> "since `B(H_Ω)` is ultrastrongly complete (`bh-us-complete`), and `R` is
+> ultrastrongly **closed** in `B(H_Ω)` (see `vnsac`) …"
+
+Without closedness the ultrastrong limit `T` produced by 76I need not lie in
+`R`, and no substitute was found: `77III` (ultraweak compactness of the ball)
+is proved *from* 77I, so it cannot replace it.  So 77I sits behind the full
+column `72V → 72XI → 73VIII → 74I/74IV → 75II → 75VI → 75VIII`, exactly as
+session 3 said.  **Any brief claiming 77I follows from 76I + `ngns` + a
+net-pushing step is wrong**; the third ingredient is `vnsac`, not the
+net-pushing.
+
+#### 76I — a shorter argument than the thesis's for the final step (class 3)
+
+Steps 1–3 (pointwise norm-Cauchy → `F x := lim T_α x`; linearity; boundedness
+by contradiction from a sequence `‖xₙ‖ ≤ 2⁻ⁿ`, `‖F xₙ‖ ≥ 1` and the np-map
+`∑ₙ ⟪xₙ,(·)xₙ⟫` of 38IV.2) are the thesis's, verbatim.
+
+Step 4 is **not**.  The thesis splits `∑ₙ ‖(T−T_α)xₙ‖²` at an index `N` and
+runs an `ε/(2√2)` estimate through a third index `β`.  That is unnecessary:
+for a *finite* `G ⊆ ℕ`, `∑_{n∈G} ‖(T_α−T_β)xₙ‖² ≤ ‖T_α−T_β‖_ω² ≤ ε²` for all
+`β` in the Cauchy set, and the left side converges to `∑_{n∈G}‖(T_α−T₀)xₙ‖²`
+as `β → l`; so *every* finite partial sum of the target series is `≤ ε²`, and
+`hasSum_le_of_sum_le` finishes.  One `le_of_tendsto`, no split, no `√2`.  The
+same "finite partial sum ≤ limsup" move replaces the thesis's `∑_{n=1}^N ≥ N`
+step in the boundedness argument.
+
+#### 76III — Riesz instead of 36V (class 3, forced)
+
+The thesis gets the operator `T` from the form `[x,y] = lim ⟪x,T_α y⟫` by
+**36V** `chilb_form_representation` (self-dual Hilbert `𝒜`-modules).  36V is
+now proved, but instantiating it at `𝒜 = ℂ` means presenting `H` as a
+`CStarModule ℂ H`; as in worker 21's `exists_rho`, the Lean proof instead uses
+Mathlib's `InnerProductSpace.toDual` (Riesz), which is what 36II says 36V *is*
+for `𝒜 = ℂ`.  Everything else is the thesis's: polarisation to get the form
+from the diagonal (each `⟪u,(·)u⟫` is an np-functional, so `hcauchy` applies),
+the bound `|[x,y]| ≤ (sup‖T_α‖)‖x‖‖y‖`, and the `ε`-tail split against
+`∑ₙ‖xₙ‖² < ∞` from 39IX.
+
+#### 72III.2 `bstaromega_cauchy` — the gate for 72V's (3) ⇒ (4), now proved
+
+The thesis leaves this as an exercise with no published solution (`asols.tex`
+stops at parsec 340), and it is the step 72V's proof cites as "we see by
+`bstaromega-basic` that `(f_{k,n})_n` converges to an np-map".  Class 1 for
+the Cauchy/limit half (it is 72III.1c plus completeness of `ℂ`), and the
+*normality* of the limit — which the thesis simply asserts — is discharged as
+follows, since no argument is given:
+
+> A bounded directed `D` with `⋁D = s` need **not** be norm-bounded (it is
+> bounded above, not below: `{−10⁶·1, s}` is directed).  Replace it by the
+> cofinal `D' = {d ∈ D | d₀ ≤ d}` for any fixed `d₀ ∈ D`; `D'` is directed,
+> has the same supremum `s`, and *is* norm-bounded, by
+> `‖d‖ ≤ ‖d₀‖ + ‖s − d₀‖`.  On a norm-bounded set the operator-norm
+> convergence `bₙ*ω → f` is uniform, so `f(s) ≤ z + ε` for every upper bound
+> `z` of `f''D` and every `ε > 0`, using normality of `bₙ*ω` on `D'`.
+
+Worth telling the author: the exercise as stated ("Show that `f` is an np-map")
+hides this cofinality step, which is the only non-routine part of it.
+
+#### 48V `varrho_Omega_normal` — class 1, and it needed a stronger helper
+
+The predicted "few lines from `gnsVec_inner`" did not typecheck directly: the
+Lean statement asks for a representation on `lp (fun _ : ι => ℂ) 2`, and
+`starAlgHomP` would not unify against `gnsRep`'s concrete
+`ContinuousLinearMap.semiring` instance path on `gnsHilb A` (it does unify for
+the *opaque* `H` of `exists_faithful_normal_rep`, which is why `ngns`
+compiles).  Fixed by adding
+
+```lean
+theorem exists_faithful_normal_rep_vectors (A) … :
+    ∃ H … (ρ : A →⋆ₐ[ℂ] (H →L[ℂ] H)),
+      Function.Injective ⇑ρ ∧ PreservesDirSups ⇑ρ ∧
+        ∀ ω : NPFunctional A, ∃ ξ : H, ∀ a, ω a = ⟪ξ, ρ a ξ⟫
+```
+
+(the vector being `lp.single 2 ω (gnsVec ω 1)`, exactly as predicted) and then
+transporting along a Hilbert basis exactly as `ngns` does.  `varrho_Omega_normal`
+quantifies over an arbitrary `Ω`, and the full-`Ω` representation serves every
+subset, so `Ω` is never used — worth noting for the author, since the thesis's
+`ρ_Ω` is genuinely `Ω`-indexed.
+
+#### The np-functional cone is now public in `A/VN/Basic.lean`
+
+`zeroNP`, `addNP` (with the one-time proof that a sum of np-functionals is
+normal), `zeroNP_apply`, `addNP_apply`, `omegaNorm_le_addNP`,
+`omegaNorm_le_addNP'`, `omegaNorm_mul_le` and the new
+`abs_omegaNorm_sub_omegaNorm_le` moved out of `Completeness.lean`'s
+file-private block into `Basic.lean`, next to `npFunctional_mono` — **not**
+into `Common.lean`, which every chapter imports.  72V, 72XI, 73VIII and
+87VIII need them.
+
+#### Where 72V stands now
+
+Of the four implications in the cycle, three are within reach with what is on
+the shelf:
+
+* **(4) ⇒ (1)**: Kadison via `norm_apply_le_omegaNorm` — routine.
+* **(1) ⇒ (2)**: the thesis's rescaling `ã = δ(ε+‖a‖_ω)⁻¹a` — routine.
+* **(3) ⇒ (4)**: polarisation `4·ω(b*a) = ∑_k iᵏ ω((iᵏb+1)* a (iᵏb+1))`
+  (checked: `∑_k iᵏ = 0` and `∑_k i²ᵏ = 0` kill the three unwanted terms)
+  plus **`bstaromega_cauchy`, now proved**.  It additionally needs a positive
+  *scalar multiple* of an np-functional (for the `¼`), which the cone above
+  does not yet have — a two-line `smulNP` alongside `addNP`.
+* **(2) ⇒ (3)** is the remaining blocker: our (3) demands an explicit
+  `φ : A →ₗ[ℂ] lp (fun _ : ι => ℂ) 2` with dense range and
+  `⟪φa, φc⟫ = ω(a*c)`, plus a Riesz vector `b`.  `gnsVec ω`, `gnsVec_inner`
+  and `gnsVec_denseRange` give `φ` after transport along a Hilbert basis of
+  `PositiveLinearMap.GNS ω` (as in `ngns`); what is missing is the *extension*
+  of `f` from `A` to the completion — i.e. `f` as a `ContinuousLinearMap` on
+  `PositiveLinearMap.PreGNS ω` (a **semi**normed space) extended over
+  `UniformSpace.Completion`.  That is the piece to build next.
+
+#### The line-reference sweep was requested and is **not needed for `A/VN`**
+
+Worker 21 reported the `file:LINE` doc references as "repo-wide stale" and
+recommended a sweep.  Measured rather than assumed: of the **357**
+`vn.tex:LINE` references in `Theses/A/VN/*.lean` (287 carrying a LaTeX label,
+70 bare), **every one resolves to within ±1 line of its point**, the sole
+exceptions being the two deliberate references to the *proof* sub-points of
+86II.  So the 2026-08-13 drift did not affect `vn.tex`, or `A/VN` was written
+after it.  The finding is recorded in CONVENTIONS.md together with the check;
+the recommendation there is now "measure the file, do not assume".
+
 ### Session 4 — `A/CStar/TowardsVN.lean` is complete; 39VII is an erratum
 
 **`A/CStar/TowardsVN.lean` 5 → 0 code `sorry`s.**  38IV.2, 39VII, 39IX
@@ -633,6 +781,142 @@ label against `\begin{point}{N}[label]` in the `.tex`.
 No other errata found in parsecs 350–390.  **Note for the record**: `asols.tex`
 stops at parsec 340, so 38VI and 39VI have no published solution; the proofs of
 their neighbours here are ours, as was already the case for 38VI.2.
+
+### Session 7 — B/Eff: 193X and 194I.3/.4; the derivation calculus of 193IX turns out to be avoidable
+
+B/Eff went **40 → 37** code `sorry`s (`StatesPredicates.lean` 14 → 11).  Zero
+`sorryAx` leakage still holds, re-verified mechanically after the changes:
+**1132** non-internal `def`/`theorem`/`opaque` constants under `Theses.B.Eff`
+reach `sorryAx`, and the set of those that do is **exactly** the set of 37
+declarations that contain a literal `sorry` — nothing merely depends on one.
+Every new declaration reports `[propext, Classical.choice, Quot.sound]`.
+
+Proved: **193X** `n_times_one_aconvm`, **194I.3**
+`aconvalmosteffectus_jointlyMonic`, **194I.4**
+`aconvalmosteffectus_kappaPullback`.  Not proved: **196II**
+`aconvm_is_effectus` (see "blocked on" below).
+
+#### What made it work: freeness of `𝒟_M X`
+
+The thesis's hint for 193X is "`𝒟_M`, as a left adjoint, preserves
+coproducts".  Taken literally that is the whole proof, and it also does most of
+194I.3.  Three elementary lemmas were added next to `AConvMCat.free`:
+
+* `MConvexComb.freeStr_desc_isAffine` — `p ↦ h_Z(𝒟_M f (p))` is affine
+  (existence half of the adjunction);
+* `MConvexComb.freeStr_ext` — an affine map out of `𝒟_M X` is determined by
+  its values on the Diracs (uniqueness half), and its morphism-level form
+  `AConvMCat.free_hom_ext`;
+* `MConvexComb.eq_eta_punit` — `𝒟_M 1` is a singleton, **including for the
+  trivial effect monoid** `1 = 0` (where every combination is the zero
+  function).  This is the only place the `1 = 0` split of QUESTIONS B7 had to
+  be made; everything downstream is uniform in it.
+
+From these: `AConvMCat.free_punit_isTerminal` (`𝒟_M 1 = 1`),
+`AConvMCat.isColimit_freeBinaryCofan` (`𝒟_M(A+B)` is the coproduct of
+`𝒟_M A` and `𝒟_M B`, up to isomorphisms of the summands) and its packaged form
+`AConvMCat.exists_binaryCoprod_iso`, which returns the iso *together with* its
+two coprojection identities — the form 194I.3 needs.
+
+**193X** (class 1, faithful): `Cofan.mk (𝒟_M{1..n}) (η ∘ κᵢ)` is a colimit
+directly by freeness; `colimit.isoColimitCocone` then gives the iso.  Note the
+coproduct of 193V is never unfolded.
+
+**194I.3** (class 1, faithful to eff.tex:2979–3006): identify `1+1+1` with
+`𝒟_M{1,2,3}` and `1+1` with `𝒟_M{1,2}` by two applications of
+`exists_binaryCoprod_iso`; under that identification the two cotuples become
+`𝒟_M σ₁` and `𝒟_M σ₂` for `σ₁ = (1,2,2)`, `σ₂ = (2,1,2) : {1,2,3} → {1,2}`
+(this is the thesis's `(a,b,c) ↦ (a, b⋁c)` / `(b, a⋁c)`), and the thesis's own
+three-line argument — `a` and `b` are read off, and `c` is the orthocomplement
+of `a ⋁ b` — is `MConvexComb.jointly_injective_of_three`.  Jointly injective ⟹
+jointly monic because arrows of `AConv_M` are functions.
+
+#### 194I.4 — two ingredients proved differently (class 2), and why
+
+The thesis proves 194I.4 in two halves.  The *existence* half (eff.tex:3008–3056)
+is transcribed faithfully.  The other two ingredients are **not**, and in both
+cases the replacement is much shorter:
+
+1. **193IX (`elements-coprod-conv`) is not needed in full.**  The thesis reads
+   the surjectivity of `q : 𝒟_M(X+Y) → X+Y` off its explicit construction of
+   the coproduct, and then needs its *derivation* description — which rests on
+   the syntactic description of the least congruence that **193IV**
+   (`least-conv-cong`) leaves to the reader and that we have not formalized.
+   Surjectivity alone suffices for 194I.4, and it follows from the universal
+   property alone: cut `X+Y` down to the image `S` of `q`; `S` is closed under
+   `h` because `h(𝒟_M ι (Ψ)) = q(μ(𝒟_M ch(Ψ)))` for any choice `ch` of
+   `q`-preimages, so `S` is an object (`MConvex.restrict`), `κ₁` and `κ₂`
+   corestrict to it, and `[κ₁',κ₂'] ≫ ι = 𝟙` by `coprod.hom_ext` — so `ι` is
+   surjective.  See `AConvMCat.coprodQuot_surjective`.
+2. **Injectivity of `κ₁` needs no induction at all.**  eff.tex:3057–3175 — the
+   longest argument of parsec 194, a derivation induction with an auxiliary
+   `r_{ij}` bookkeeping device and an appeal to 178V — proves that `κ₁` is
+   injective.  But *constant maps are affine* (`MConvexComb.map_const`:
+   `𝒟_M(const z)(p) = η(z)`, because the coefficients of `p` sum to `1`), so
+   for non-empty `X` the cotuple `[𝟙_X, const x₀] : X + Y → X` is a retraction
+   of `κ₁`, making it a split mono; and for empty `X` injectivity is vacuous.
+   See `AConvMCat.coprod_inl_injective`.  Recorded in ERRATA as informational.
+
+The rest of 194I.4 is the thesis's: from `(!+!) ∘ α = κ₁ ∘ !` one gets, for
+each `z`, a `φ` with `q(φ) = α(z)` whose `Y`-mass vanishes (computed by
+composing `q` with `!+!` and the identification `1+1 ≅ 𝒟_M{1,2}`, which turns
+`(!+!) ∘ q` into the pushforward along the collapse `X+Y → {1,2}`); such a `φ`
+is `𝒟_M κ₁(χ)` (`MConvexComb.exists_map_inl`), so `α(z) = κ₁(h_X χ)`; and `γ`
+is affine because `κ₁` is monic — the thesis's own last paragraph.
+
+#### Our own repair: universe levels in 194I.3/.4 and 196II
+
+Session 5 restated 193V and 194I.1 at `AConvMCat.{u, max u v}` (the coproduct
+carrier is a quotient of `X + Y → M`, so it does not live in `Type v` when
+`v < u`) but left `aconvalmosteffectus_jointlyMonic`,
+`aconvalmosteffectus_kappaPullback` and `aconvm_is_effectus` at
+`AConvMCat.{u, v}`, recording that they "stay true as stated" because they take
+`HasFiniteCoproducts` as a *hypothesis*.  That claim was never checked, and it
+is at best unusable: at `v < u` the hypothesised coproducts need not be the
+ones the thesis computes with (the universal property would only be tested
+against the `v`-small objects), so there is nothing to transcribe.  All three
+are now stated at `AConvMCat.{u, max u v}`, matching 193V/194I.1; 194I.3/.4
+keep the instance hypotheses (they are what makes `⨿`/`⊤_` meaningful) and are
+proved under them.  **This is our transcription artefact, not a thesis
+defect.**
+
+Also checked, as the hand-off asked: `n_times_one_aconvm`'s
+`[HasFiniteCoproducts (AConvMCat.{u,u} M)]` *is* now dischargeable —
+`aconvalmosteffectus_coproducts.{u, u} M` has exactly that type (`max u u`
+normalises to `u`).  It is nevertheless **kept**, because the statement
+mentions `∐` and so cannot be written without an instance in scope, and
+because 194I.1 is stated after 193X in the file, in thesis order.  The doc
+comment now says so.
+
+#### Reusable additions
+
+`MConvex.restrict` (a subset closed under `h` is again an abstract `M`-convex
+set), `AConvMCat.freeMap` (+ `_apply`, `_comp`, `_id` simp lemmas),
+`AConvMCat.coprodQuot` (+ `_eta_inl`, `_eta_inr`, `_surjective`),
+`MConvexComb.map_apply_of_unique_fiber`, `MConvexComb.eq_zero_of_map_eq_zero`,
+`MConvexComb.map_const`, `MConvexComb.exists_map_inl`,
+`PCM.le_of_mem_isSumOf`.  `AConvMCat.free` now factors through
+`MConvexComb.freeStr`, so `(free M X).str.h` is `μ` definitionally.
+
+#### Blocked on X
+
+**196II `aconvm_is_effectus`**: blocked on the **left** pullback square of the
+effectus axioms — 196II's own proof, eff.tex:3383–3600 — and on nothing else.
+Its other four ingredients are now all proved (194I.1–.4).  That proof
+constructs, for `α : Z → X+1` and `β : Z → 1+Y` agreeing on `1+1`, a
+combination `ω ∈ 𝒟_M(X+Y)` built with the division of the effect divisoid, and
+its well-definedness is a two-page interleaving of *two* derivations
+(`Φ` from `1+Y`, `Ψ` from `X+1`) into one — so unlike 194I.4 it genuinely does
+depend on the derivation calculus of 193IX/193IV, which is unformalized.
+Two routes if it is picked up: (a) formalize 193IV's syntactic description of
+the least congruence and then transcribe; or (b) use the divisoid to build an
+*explicit model* of `X ⨿ Y` (every `⋁λᵢ|κ₁xᵢ⟩ ⋁ ⋁σⱼ|κ₂yⱼ⟩` normalises, by
+dividing by `λ = ⋁λᵢ`, to `λ|κ₁x⟩ ⋁ λᵖ|κ₂y⟩`, so the carrier should be
+`M × X × Y` modulo `(1,x,y) ~ (1,x,y')` and `(0,x,y) ~ (0,x',y)`) and read
+everything off it.  (b) looks shorter and would also give 193IX for divisoids.
+Do **not** shortcut it by splitting off a `sorry`ed left-square lemma: that
+would make 194I's consumers depend on a `sorry` and cost the zero-leakage
+property.
 
 ### Session 5 — B/Eff: 178III.1 and the `AConv_M` coproduct; and 174IV was never `sorry`
 

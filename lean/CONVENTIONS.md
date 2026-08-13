@@ -29,6 +29,39 @@ tag.  Declarations are named after the LaTeX label when there is one
 (`operator-norm-complete` → `operatorNorm_complete` / thematic Lean name),
 otherwise a descriptive name is invented.
 
+### The **label** and the **DISP number** are authoritative; the line is not
+
+`file:LINE` in a doc comment is a convenience only: it drifts whenever the
+author edits the `.tex`, and it drifts **non-uniformly** (the 2026-08-13 edits
+moved `cstar.tex` by +80 lines in parsecs 350–370, +95 in 380, +90 in 390), so
+a stale reference cannot be spotted or repaired by eye.  **Never resolve a
+reference by jumping to the line — re-derive it from the label or the point
+number**, and treat a mismatch as a stale line, never as a wrong statement.
+
+Re-deriving is mechanical, so check rather than guess.  Labels:
+
+```sh
+grep -n 'begin{point}{[0-9]*}\[the-label\]\|begin{parsec}{[0-9]*}\[the-label\]' ../vn.tex
+```
+
+Point numbers: DISP `PQ` ↦ `\begin{parsec}{P*10}` … `\begin{point}{Q*10}`.
+The convention throughout the tree is **doc line = tex line of the
+`\begin{point}`/`\begin{parsec}` + 1** (the line where the statement text
+starts); a reference to a *proof* sub-point of the cited result is legitimate
+and will not match (e.g. `86II … vn.tex:6300–6318` cites the computation
+inside 86II's proof, while the point itself is at 6264).
+
+Status as of 2026-08-13, checked mechanically rather than by recollection:
+
+* **`Theses/A/CStar/TowardsVN.lean`** — all 28 refs were stale and have been
+  re-derived (worker 21).
+* **`Theses/A/VN/*.lean`** — **not stale.**  All 287 label-carrying and all
+  70 bare `vn.tex:LINE` references resolve to within ±1 of their point, with
+  the single deliberate exception of the two 86II proof references above.  So
+  the drift is *not* uniform across the repo either: do not assume a file
+  needs the sweep, measure it.
+* The other chapters have not been measured.
+
 ### Finding an exercise's published solution
 
 The two solution files are keyed **differently**, and a wrong guess fails

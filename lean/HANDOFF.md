@@ -148,7 +148,9 @@ proving log:
 * **[ERRATA.md](ERRATA.md)** — every defect in the theses, as tables grouped by
   source file and ordered by point number, each with a one-line fix and a
   status (`DONE` with its `parsec-N.M` erratum key, or `OPEN`).  Currently
-  **~34 thesis-A and ~20 thesis-B** items.
+  **47 thesis-A and 23 thesis-B** entries (a few cover several points each).
+  Refresh the counts with
+  `awk '/^## Thesis A/,/^## Thesis B/' ERRATA.md | grep -c '^| \*\*'`.
 * **[QUESTIONS.md](QUESTIONS.md)** — the smaller set that needs a *decision*
   rather than a correction: a false claim whose intended repair is unclear, a
   definition that is too weak to prove what depends on it, results the theses

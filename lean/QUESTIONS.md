@@ -98,6 +98,12 @@ or exclude `1 = 0` from the definition (178II) once and for all?  The same
 question governs `MConvexComb`, whose `sum_one` degenerates identically — the
 `1 = 0` branch already appears in five proofs in `StatesPredicates.lean`.
 
+*Update (193X/194I.3/194I.4)*: the cost is smaller than it looked.  Isolating
+the split in one lemma — `MConvexComb.eq_eta_punit`, "`𝒟_M 1` is a singleton",
+which holds in both branches — makes the whole of 193X and 194I.3/.4 uniform in
+`1 = 0`.  So the question is now purely one of what the thesis should *say*,
+not of how much rework it costs us.
+
 ### B8. Minor: `bsols.tex`'s `onb1` solution over-assumes
 Its solution assumes self-duality, which neither the exercise nor our statement
 requires.  Harmless; noted for tidiness.
