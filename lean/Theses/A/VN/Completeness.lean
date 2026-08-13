@@ -36,6 +36,142 @@ namespace Theses.A.VN
 variable {A B : Type u} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
   [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
 
+/-- `‖bc‖_ω ≤ ‖b‖ ‖c‖_ω`: conjugate `b* b ≤ ‖b‖²·1` by `c` and apply `ω`.
+(The submultiplicativity behind **72III**.1b; cf. cstar.tex 30IV.) -/
+private theorem omegaNorm_mul_le (ω : NPFunctional A) (b c : A) :
+    omegaNorm A ω (b * c) ≤ ‖b‖ * omegaNorm A ω c := by
+  have hsmul : ∀ (r : ℝ) (x : A), (r : ℝ) • x = ((r : ℂ)) • x := fun r x => by
+    rw [← IsScalarTower.algebraMap_smul ℂ r x, Complex.coe_algebraMap]
+  have hn : ‖star b * b‖ = ‖b‖ * ‖b‖ := CStarRing.norm_star_mul_self
+  have h1 : star b * b ≤ (‖b‖ * ‖b‖ : ℝ) • (1 : A) := by
+    have h := le_norm_smul_one (star_mul_self_nonneg b)
+    rwa [hn] at h
+  have h2 : star (b * c) * (b * c) ≤ (‖b‖ * ‖b‖ : ℝ) • (star c * c) := by
+    have h := star_left_conjugate_le_conjugate h1 c
+    have e1 : star c * (star b * b) * c = star (b * c) * (b * c) := by
+      rw [star_mul]; noncomm_ring
+    have e2 : star c * ((‖b‖ * ‖b‖ : ℝ) • (1 : A)) * c
+        = (‖b‖ * ‖b‖ : ℝ) • (star c * c) := by
+      rw [mul_smul_comm, smul_mul_assoc, mul_one]
+    rwa [e1, e2] at h
+  have hmap : ∀ (r : ℝ) (x : A), ω ((r : ℝ) • x) = (r : ℂ) * ω x := fun r x => by
+    rw [hsmul r x]
+    exact map_smul ω.toPositiveLinearMap (r : ℂ) x
+  have h3 : (ω (star (b * c) * (b * c))).re
+      ≤ (‖b‖ * ‖b‖) * (ω (star c * c)).re := by
+    have h := npFunctional_mono ω h2
+    rw [hmap] at h
+    have h4 := (Complex.le_def.mp h).1
+    simpa using h4
+  rw [omegaNorm, omegaNorm]
+  calc Real.sqrt (ω (star (b * c) * (b * c))).re
+      ≤ Real.sqrt ((‖b‖ * ‖b‖) * (ω (star c * c)).re) := Real.sqrt_le_sqrt h3
+    _ = ‖b‖ * Real.sqrt (ω (star c * c)).re := by
+        rw [Real.sqrt_mul (by positivity), Real.sqrt_mul_self (norm_nonneg b)]
+
+/-! ### Auxiliary: the np-functionals form a cone
+
+`Theses.NPFunctional` carries no algebraic structure, but the proofs of
+**72IV** and **72V** need to replace a *finite family* of np-functionals by a
+single one dominating all of them.  Positivity and linearity are inherited
+from `A →ₚ[ℂ] ℂ`; only normality has to be checked, and for a sum it is the
+standard "`sup` of a sum over a directed set is the sum of the `sup`s". -/
+
+/-- The zero np-functional. -/
+private noncomputable def zeroNP : NPFunctional A where
+  toPositiveLinearMap := 0
+  preservesDirSups' := by
+    intro D s hne hdir _
+    have h : (fun d : selfAdjoint A => (0 : A →ₚ[ℂ] ℂ) (d : A)) '' D = {(0 : ℂ)} := by
+      refine Set.eq_singleton_iff_unique_mem.mpr ⟨⟨hne.choose, hne.choose_spec, rfl⟩, ?_⟩
+      rintro _ ⟨d, _, rfl⟩
+      rfl
+    rw [h]
+    exact isLUB_singleton
+
+/-- The sum of two np-functionals. -/
+private noncomputable def addNP (ω₁ ω₂ : NPFunctional A) : NPFunctional A where
+  toPositiveLinearMap := ω₁.toPositiveLinearMap + ω₂.toPositiveLinearMap
+  preservesDirSups' := by
+    intro D s hne hdir hlub
+    have h₁ := ω₁.preservesDirSups' D s hne hdir hlub
+    have h₂ := ω₂.preservesDirSups' D s hne hdir hlub
+    -- both functionals are real on self-adjoint elements
+    have him₁ : ∀ d : selfAdjoint A, (ω₁ (d : A)).im = 0 := fun d =>
+      npFunctional_im_eq_zero ω₁ d.2
+    have him₂ : ∀ d : selfAdjoint A, (ω₂ (d : A)).im = 0 := fun d =>
+      npFunctional_im_eq_zero ω₂ d.2
+    refine ⟨?_, ?_⟩
+    · rintro _ ⟨d, hd, rfl⟩
+      exact add_le_add (h₁.1 ⟨d, hd, rfl⟩) (h₂.1 ⟨d, hd, rfl⟩)
+    · intro z hz
+      obtain ⟨d₀, hd₀⟩ := hne
+      have hz₀ : ω₁ (d₀ : A) + ω₂ (d₀ : A) ≤ z := hz ⟨d₀, hd₀, rfl⟩
+      have hzim : z.im = 0 := by
+        have := (Complex.le_def.mp hz₀).2
+        simp only [Complex.add_im, him₁, him₂, add_zero] at this
+        exact this.symm
+      -- `ε`-approximation of each supremum separately, then directedness
+      have ex : ∀ (ω : NPFunctional A), IsLUB ((fun d : selfAdjoint A => ω (d : A)) '' D)
+          (ω (s : A)) → ∀ ε : ℝ, 0 < ε → ∃ d ∈ D, (ω (s : A)).re - ε < (ω (d : A)).re := by
+        intro ω hω ε hε
+        by_contra hcon
+        push_neg at hcon
+        have hub : (ω (s : A)) ≤ (((ω (s : A)).re - ε : ℝ) : ℂ) := by
+          refine hω.2 ?_
+          rintro _ ⟨d, hd, rfl⟩
+          exact Complex.le_def.mpr ⟨by simpa using hcon d hd,
+            by simp [npFunctional_im_eq_zero ω d.2]⟩
+        have := (Complex.le_def.mp hub).1
+        simp at this
+        linarith
+      have hre : (ω₁ (s : A)).re + (ω₂ (s : A)).re ≤ z.re := by
+        by_contra hcon
+        push_neg at hcon
+        set ε : ℝ := ((ω₁ (s : A)).re + (ω₂ (s : A)).re - z.re) / 2 with hεdef
+        have hε : 0 < ε := by rw [hεdef]; linarith
+        obtain ⟨d₁, hd₁, hlt₁⟩ := ex ω₁ h₁ ε hε
+        obtain ⟨d₂, hd₂, hlt₂⟩ := ex ω₂ h₂ ε hε
+        obtain ⟨d, hd, hle₁, hle₂⟩ := hdir d₁ hd₁ d₂ hd₂
+        have m₁ : (ω₁ (d₁ : A)).re ≤ (ω₁ (d : A)).re :=
+          (Complex.le_def.mp (npFunctional_mono ω₁ (Subtype.coe_le_coe.mpr hle₁))).1
+        have m₂ : (ω₂ (d₂ : A)).re ≤ (ω₂ (d : A)).re :=
+          (Complex.le_def.mp (npFunctional_mono ω₂ (Subtype.coe_le_coe.mpr hle₂))).1
+        have hub : ω₁ (d : A) + ω₂ (d : A) ≤ z := hz ⟨d, hd, rfl⟩
+        have hub' := (Complex.le_def.mp hub).1
+        simp only [Complex.add_re] at hub'
+        rw [hεdef] at hlt₁ hlt₂
+        linarith
+      show ω₁ (s : A) + ω₂ (s : A) ≤ z
+      refine Complex.le_def.mpr ⟨?_, ?_⟩
+      · simpa using hre
+      · simp [him₁ s, him₂ s, hzim]
+
+@[simp] private theorem zeroNP_apply (a : A) : zeroNP a = 0 := rfl
+
+@[simp] private theorem addNP_apply (ω₁ ω₂ : NPFunctional A) (a : A) :
+    addNP ω₁ ω₂ a = ω₁ a + ω₂ a := rfl
+
+/-- `‖·‖_ω₁ ≤ ‖·‖_{ω₁+ω₂}`. -/
+private theorem omegaNorm_le_addNP (ω₁ ω₂ : NPFunctional A) (a : A) :
+    omegaNorm A ω₁ a ≤ omegaNorm A (addNP ω₁ ω₂) a := by
+  rw [omegaNorm, omegaNorm]
+  refine Real.sqrt_le_sqrt ?_
+  have h : (0 : ℂ) ≤ ω₂ (star a * a) := npFunctional_nonneg ω₂ (star_mul_self_nonneg a)
+  have := (Complex.le_def.mp h).1
+  simp only [addNP_apply, Complex.add_re]
+  simpa using this
+
+/-- `‖·‖_ω₂ ≤ ‖·‖_{ω₁+ω₂}`. -/
+private theorem omegaNorm_le_addNP' (ω₁ ω₂ : NPFunctional A) (a : A) :
+    omegaNorm A ω₂ a ≤ omegaNorm A (addNP ω₁ ω₂) a := by
+  rw [omegaNorm, omegaNorm]
+  refine Real.sqrt_le_sqrt ?_
+  have h : (0 : ℂ) ≤ ω₁ (star a * a) := npFunctional_nonneg ω₁ (star_mul_self_nonneg a)
+  have := (Complex.le_def.mp h).1
+  simp only [addNP_apply, Complex.add_re]
+  simpa using this
+
 /-! ## Parsec 720: ultrastrongly continuous functionals
 
 **71I** (vn.tex:3783) and **72I** (vn.tex:3823): overview — nothing to
@@ -69,8 +205,12 @@ side is `t`, the right `t²`.  Cauchy–Schwarz gives the factor-free bound
 directly (cf. `norm_apply_star_mul_le`).  Same defect as **30IV**.2. -/
 theorem bstaromega_bound (ω : NPFunctional A) (a b c : A) :
     ‖ω (star a * b * c)‖ ≤
-      omegaNorm A ω a * ‖b‖ * omegaNorm A ω c :=
-  sorry
+      omegaNorm A ω a * ‖b‖ * omegaNorm A ω c := by
+  calc ‖ω (star a * b * c)‖ = ‖ω (star a * (b * c))‖ := by rw [mul_assoc]
+    _ ≤ omegaNorm A ω a * omegaNorm A ω (b * c) := norm_apply_star_mul_le ω a (b * c)
+    _ ≤ omegaNorm A ω a * (‖b‖ * omegaNorm A ω c) :=
+        mul_le_mul_of_nonneg_left (omegaNorm_mul_le ω b c) (omegaNorm_nonneg ω a)
+    _ = omegaNorm A ω a * ‖b‖ * omegaNorm A ω c := by ring
 
 /-- **72III** (`bstaromega-basic`, vn.tex:3850, Exercise), part 1c:
 `‖b*ω - b'*ω‖ ≤ ‖b-b'‖_ω (‖b‖_ω + ‖b'‖_ω)` — rendered pointwise.
@@ -80,8 +220,23 @@ there — it breaks homogeneity in `ω` for the same reason. -/
 theorem bstaromega_lipschitz (ω : NPFunctional A) (b b' : A) (a : A) :
     ‖bStarOmega A b ω a - bStarOmega A b' ω a‖ ≤
       omegaNorm A ω (b - b') *
-        (omegaNorm A ω b + omegaNorm A ω b') * ‖a‖ :=
-  sorry
+        (omegaNorm A ω b + omegaNorm A ω b') * ‖a‖ := by
+  show ‖ω (star b * a * b) - ω (star b' * a * b')‖ ≤ _
+  have e : star b * a * b - star b' * a * b'
+      = star b * a * (b - b') + star (b - b') * a * b' := by
+    rw [star_sub]; noncomm_ring
+  have hsplit : ω (star b * a * b) - ω (star b' * a * b')
+      = ω (star b * a * (b - b')) + ω (star (b - b') * a * b') := by
+    rw [← npFunctional_sub, e, npFunctional_add]
+  calc ‖ω (star b * a * b) - ω (star b' * a * b')‖
+      = ‖ω (star b * a * (b - b')) + ω (star (b - b') * a * b')‖ := by rw [hsplit]
+    _ ≤ ‖ω (star b * a * (b - b'))‖ + ‖ω (star (b - b') * a * b')‖ := norm_add_le _ _
+    _ ≤ omegaNorm A ω b * ‖a‖ * omegaNorm A ω (b - b') +
+          omegaNorm A ω (b - b') * ‖a‖ * omegaNorm A ω b' :=
+        add_le_add (bstaromega_bound ω b a (b - b'))
+          (bstaromega_bound ω (b - b') a b')
+    _ = omegaNorm A ω (b - b') * (omegaNorm A ω b + omegaNorm A ω b') * ‖a‖ := by
+        ring
 
 /-- **72III** (`bstaromega-basic`, vn.tex:3850, Exercise), part 2: if
 `(b_n)_n` is `‖·‖_ω`-Cauchy, then `(b_n * ω)_n` is Cauchy in the operator
@@ -99,8 +254,56 @@ functional `f` on a von Neumann algebra is bounded by `1` on some
 theorem us_continuous_bounded_on_ball (f : A →ₗ[ℂ] ℂ)
     (hf : @Continuous A ℂ (ultrastrong A) _ ⇑f) :
     ∃ (ω : NPFunctional A) (δ : ℝ), 0 < δ ∧
-      ∀ a : A, omegaNorm A ω a ≤ δ → ‖f a‖ ≤ 1 :=
-  sorry
+      ∀ a : A, omegaNorm A ω a ≤ δ → ‖f a‖ ≤ 1 := by
+  classical
+  -- the generating family of the ultrastrong topology and the sets of it
+  -- containing `0`
+  set G : Set (Set A) :=
+    {U : Set A | ∃ (ω : NPFunctional A) (b : A) (ε : ℝ), 0 < ε ∧
+      U = {a : A | omegaNorm A ω (a - b) < ε}} with hG
+  set T : Set (Set A) := {s : Set A | (0 : A) ∈ s ∧ s ∈ G} with hT
+  -- a finite family of basic neighbourhoods of `0` is dominated by a single
+  -- `‖·‖_ω`-ball, because np-functionals can be added
+  have key : ∀ I : Finset T, ∃ (ω : NPFunctional A) (δ : ℝ), 0 < δ ∧
+      ∀ a : A, omegaNorm A ω a ≤ δ → ∀ i ∈ I, a ∈ (i : Set A) := by
+    intro I
+    induction I using Finset.induction_on with
+    | empty => exact ⟨zeroNP, 1, one_pos, fun a _ i hi => absurd hi (Finset.notMem_empty i)⟩
+    | @insert i I _ ih =>
+      obtain ⟨ω', δ', hδ', hsub'⟩ := ih
+      obtain ⟨h0i, ω₀, b, ε, hε, hUeq⟩ := i.2
+      have hb : omegaNorm A ω₀ b < ε := by
+        rw [hUeq] at h0i
+        simpa using h0i
+      refine ⟨addNP ω' ω₀, min δ' ((ε - omegaNorm A ω₀ b) / 2), lt_min hδ' (by linarith),
+        fun a ha j hj => ?_⟩
+      have ha' : omegaNorm A ω' a ≤ δ' :=
+        le_trans (omegaNorm_le_addNP ω' ω₀ a) (le_trans ha (min_le_left _ _))
+      have ha₀ : omegaNorm A ω₀ a ≤ (ε - omegaNorm A ω₀ b) / 2 :=
+        le_trans (omegaNorm_le_addNP' ω' ω₀ a) (le_trans ha (min_le_right _ _))
+      rcases Finset.mem_insert.mp hj with rfl | hjI
+      · rw [hUeq]
+        have hchain : omegaNorm A ω₀ (a - b)
+            ≤ omegaNorm A ω₀ (a - 0) + omegaNorm A ω₀ (0 - b) := omegaNorm_sub_le ω₀ a 0 b
+        rw [sub_zero, zero_sub, omegaNorm_neg] at hchain
+        exact lt_of_le_of_lt hchain (by linarith)
+      · exact hsub' a ha' j hjI
+  -- `f` is bounded by `1` on the ultrastrongly open preimage of the unit ball
+  have hU : @IsOpen A (ultrastrong A) (⇑f ⁻¹' Metric.ball (0 : ℂ) 1) :=
+    (@continuous_def A ℂ (ultrastrong A) _ _).mp hf _ Metric.isOpen_ball
+  have h0U : (0 : A) ∈ ⇑f ⁻¹' Metric.ball (0 : ℂ) 1 := by simp
+  have hmem : (⇑f ⁻¹' Metric.ball (0 : ℂ) 1) ∈ @nhds A (ultrastrong A) 0 :=
+    @IsOpen.mem_nhds A (ultrastrong A) _ _ hU h0U
+  rw [show (ultrastrong A) = TopologicalSpace.generateFrom G from rfl,
+    TopologicalSpace.nhds_generateFrom, ← hT, iInf_subtype'] at hmem
+  obtain ⟨I, hI, V, hV, hUeq⟩ := Filter.mem_iInf.mp hmem
+  obtain ⟨ω, δ, hδ, hsub⟩ := key hI.toFinset
+  refine ⟨ω, δ, hδ, fun a ha => ?_⟩
+  have haU : a ∈ ⇑f ⁻¹' Metric.ball (0 : ℂ) 1 := by
+    rw [hUeq]
+    refine Set.mem_iInter.mpr fun i => ?_
+    exact hV i (hsub a ha i.1 (hI.mem_toFinset.mpr i.2))
+  exact le_of_lt (by simpa [Complex.dist_eq] using haU)
 
 /-- **72V** (`normal-functionals-lemma`, vn.tex:3887, Lemma): for an
 np-functional `ω` and a linear `f : A → ℂ` the following are equivalent:
@@ -267,8 +470,119 @@ convex subset `K` of a real vector space with `0 ∉ K` there is a linear
 `f : V → ℝ` with `f(x) > 0` for all `x ∈ K`. -/
 theorem hahn_banach (K : Set V) (hK : RadiallyOpen V K)
     (hconv : Convex ℝ K) (h0 : (0 : V) ∉ K) :
-    ∃ f : V →ₗ[ℝ] ℝ, ∀ x ∈ K, 0 < f x :=
-  sorry
+    ∃ f : V →ₗ[ℝ] ℝ, ∀ x ∈ K, 0 < f x := by
+  -- Divergence from vn.tex:4079: the thesis takes `K` maximal by Zorn's Lemma and
+  -- shows `V/H` is one-dimensional for `H = {x | -x, x ∉ K}`.  We instead run the
+  -- Minkowski-functional proof: `gauge C` for the translate `C = K - x₀` is
+  -- sublinear, `C = {gauge C < 1}` because `C` is radially open, and Mathlib's
+  -- algebraic Hahn–Banach (`exists_extension_of_le_sublinear`) extends the
+  -- functional `c·x₀ ↦ -c` from the line `ℝ x₀`.  No topology on `V` is used —
+  -- essential here, since 73III.3/4 show the radial topology is not a TVS.
+  rcases Set.eq_empty_or_nonempty K with rfl | ⟨x₀, hx₀⟩
+  · exact ⟨0, fun x hx => absurd hx (Set.notMem_empty x)⟩
+  have hx₀ne : x₀ ≠ 0 := fun h => h0 (h ▸ hx₀)
+  -- translate `K` so that the translate `C` contains `0`
+  set C : Set V := (fun v => x₀ + v) ⁻¹' K with hCdef
+  have hCmem : ∀ v : V, v ∈ C ↔ x₀ + v ∈ K := fun _ => Iff.rfl
+  have hC0 : (0 : V) ∈ C := by rw [hCmem]; simpa using hx₀
+  have hCconv : Convex ℝ C := hconv.translate_preimage_right x₀
+  have hCrad : RadiallyOpen V C := by
+    intro a ha v
+    obtain ⟨t, ht, h⟩ := hK (x₀ + a) ha v
+    refine ⟨t, ht, fun r hr0 hr => ?_⟩
+    rw [hCmem, show x₀ + (a + r • v) = x₀ + a + r • v by abel]
+    exact h r hr0 hr
+  -- radial openness at `0` in the directions `x` and `-x` makes `C` absorbent
+  have habs : Absorbent ℝ C := by
+    intro x
+    obtain ⟨t₁, ht₁, H₁⟩ := hCrad 0 hC0 x
+    obtain ⟨t₂, ht₂, H₂⟩ := hCrad 0 hC0 (-x)
+    have htm : 0 < min t₁ t₂ := lt_min ht₁ ht₂
+    rw [absorbs_iff_norm]
+    refine ⟨2 / min t₁ t₂, fun c hc => ?_⟩
+    have hcpos : 0 < ‖c‖ := lt_of_lt_of_le (by positivity) hc
+    have hcne : c ≠ 0 := by simpa using norm_pos_iff.mp hcpos
+    have habsc : |c⁻¹| < min t₁ t₂ := by
+      rw [abs_inv]
+      have h1 : 2 / min t₁ t₂ ≤ |c| := by simpa [Real.norm_eq_abs] using hc
+      have h2 : 0 < |c| := by simpa [Real.norm_eq_abs] using hcpos
+      rw [inv_lt_iff_one_lt_mul₀ h2]
+      rw [div_le_iff₀ htm] at h1
+      nlinarith
+    have hmemC : c⁻¹ • x ∈ C := by
+      rcases lt_or_gt_of_ne hcne with hneg | hpos
+      · have hinvneg : c⁻¹ < 0 := inv_neg''.mpr hneg
+        have h := H₂ (-c⁻¹) (by linarith) (by
+          rw [abs_of_neg hinvneg] at habsc
+          exact lt_of_lt_of_le habsc (min_le_right _ _))
+        rw [zero_add, smul_neg, neg_smul, neg_neg] at h
+        exact h
+      · have hinvpos : 0 < c⁻¹ := inv_pos.mpr hpos
+        have h := H₁ c⁻¹ hinvpos.le (by
+          rw [abs_of_pos hinvpos] at habsc
+          exact lt_of_lt_of_le habsc (min_le_left _ _))
+        rwa [zero_add] at h
+    refine Set.singleton_subset_iff.mpr ⟨c⁻¹ • x, hmemC, ?_⟩
+    change c • (c⁻¹ • x) = x
+    rw [smul_smul, mul_inv_cancel₀ hcne, one_smul]
+  -- radial openness at `v ∈ C` in the direction `v` gives `gauge C v < 1`
+  have hgauge_lt : ∀ v ∈ C, gauge C v < 1 := by
+    intro v hv
+    obtain ⟨t, ht, H⟩ := hCrad v hv v
+    set r : ℝ := min (t / 2) 1 with hrdef
+    have hr0 : 0 < r := lt_min (by linarith) one_pos
+    have hrt : r < t := lt_of_le_of_lt (min_le_left _ _) (by linarith)
+    have h1r : (0 : ℝ) < 1 + r := by linarith
+    have hmem : (1 + r) • v ∈ C := by
+      have h := H r hr0.le hrt
+      rwa [show v + r • v = (1 + r) • v by module] at h
+    have hmem' : v ∈ (1 + r)⁻¹ • C :=
+      ⟨(1 + r) • v, hmem, by
+        change (1 + r)⁻¹ • (1 + r) • v = v
+        rw [smul_smul, inv_mul_cancel₀ (ne_of_gt h1r), one_smul]⟩
+    calc gauge C v ≤ (1 + r)⁻¹ := gauge_le_of_mem (by positivity) hmem'
+      _ < 1 := inv_lt_one_of_one_lt₀ (by linarith)
+  -- `-x₀ ∉ C` because `0 ∉ K`
+  have hgauge_ge : (1 : ℝ) ≤ gauge C (-x₀) := by
+    by_contra hlt
+    have hmem : -x₀ ∈ C :=
+      setOfPred_gauge_lt_one_subset_self hCconv hC0 habs (lt_of_not_ge hlt)
+    rw [hCmem] at hmem
+    exact h0 (by simpa using hmem)
+  -- the functional `c·x₀ ↦ -c` on `ℝ x₀` is dominated by the gauge
+  set f₀ : V →ₗ.[ℝ] ℝ := LinearPMap.mkSpanSingleton x₀ (-1 : ℝ) hx₀ne with hf₀
+  have hdom : ∀ z : f₀.domain, f₀ z ≤ gauge C (z : V) := by
+    rintro ⟨z, hz⟩
+    have hz' : z ∈ (ℝ ∙ x₀) := hz
+    obtain ⟨c, rfl⟩ := Submodule.mem_span_singleton.mp hz'
+    have h : f₀ ⟨c • x₀, hz⟩ = c • (-1 : ℝ) :=
+      LinearPMap.mkSpanSingleton'_apply x₀ (-1 : ℝ) _ c hz
+    rw [h]
+    change c • (-1 : ℝ) ≤ gauge C (c • x₀)
+    rcases le_or_gt 0 c with hc | hc
+    · refine le_trans ?_ (gauge_nonneg _)
+      simp only [smul_eq_mul, mul_neg, mul_one, neg_nonpos]
+      exact hc
+    · rw [show c • x₀ = (-c) • (-x₀) by module,
+        gauge_smul_of_nonneg (by linarith : (0 : ℝ) ≤ -c)]
+      simp only [smul_eq_mul, mul_neg, mul_one]
+      nlinarith [hgauge_ge]
+  obtain ⟨g, hg₁, hg₂⟩ := exists_extension_of_le_sublinear f₀ (gauge C)
+    (fun c hc x => by rw [gauge_smul_of_nonneg hc.le]; simp)
+    (fun x y => gauge_add_le hCconv habs x y) hdom
+  have hx₀dom : x₀ ∈ f₀.domain := Submodule.mem_span_singleton_self x₀
+  have hgx₀ : g x₀ = -1 := by
+    have h := hg₁ ⟨x₀, hx₀dom⟩
+    rw [show ((⟨x₀, hx₀dom⟩ : f₀.domain) : V) = x₀ from rfl] at h
+    rw [h]
+    exact LinearPMap.mkSpanSingleton_apply ℝ ℝ hx₀ne (-1 : ℝ)
+  refine ⟨-g, fun x hx => ?_⟩
+  have hmemC : x - x₀ ∈ C := by rw [hCmem]; simpa using hx
+  have h1 : g (x - x₀) ≤ gauge C (x - x₀) := hg₂ _
+  have h2 : gauge C (x - x₀) < 1 := hgauge_lt _ hmemC
+  have h3 : g x - g x₀ = g (x - x₀) := by rw [map_sub]
+  simp only [LinearMap.neg_apply]
+  linarith
 
 end Radial
 
