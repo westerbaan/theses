@@ -192,6 +192,11 @@ noncomputable def ncpComp (g : NCPMap B C) (f : NCPMap A B) : NCPMap A C :=
 theorem ncpComp_apply (g : NCPMap B C) (f : NCPMap A B) (a : A) :
     ncpComp g f a = g (f a) := (exists_ncpComp g f).choose_spec a
 
+/-- Infrastructure: an ncp-map is positive. -/
+theorem ncpMap_nonneg (f : NCPMap A B) {a : A} (ha : 0 ≤ a) : (0 : B) ≤ f a := by
+  have h := OrderHomClass.mono f.toCompletelyPositiveMap ha
+  rwa [map_zero f.toCompletelyPositiveMap] at h
+
 /-- Infrastructure (vn.tex 63I applied to an ncp-map, needed throughout
 this chapter): an ncp-map `f` between von Neumann algebras has a least
 projection `p` with `f(p^⊥) = 0` — its **carrier** `⌈f⌉`. -/
@@ -256,6 +261,41 @@ instance factIsStarProjectionSuppProj [VonNeumannAlgebra A] (b : A) :
 instance factIsStarProjectionNcpCarrier [VonNeumannAlgebra A]
     [VonNeumannAlgebra B] (f : NCPMap A B) :
     Fact (IsStarProjection (ncpCarrier f)) := ⟨isStarProjection_ncpCarrier f⟩
+
+/-- Infrastructure (used for 101VII part 3 and 104III part 2): for positive
+`x` and positive *central* `y` with `⌈x⌉ ≤ ⌈y⌉` we have `⌈yx⌉ = ⌈x⌉`.
+(`yx = √x y √x`, so 60VII gives `⌈yx⌉ = ⌈√x ⌈y⌉ √x⌉ = ⌈⌈y⌉x⌉ = ⌈x⌉`.) -/
+theorem ceil_central_mul [VonNeumannAlgebra A] (x y : A) (hx : 0 ≤ x)
+    (hy : 0 ≤ y) (hyc : y ∈ centre A) (hle : ceil x ≤ ceil y) :
+    ceil (y * x) = ceil x := by
+  have hsx : star (CFC.sqrt x) = CFC.sqrt x :=
+    (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg x)).star_eq
+  have hcomm : CFC.sqrt x * y = y * CFC.sqrt x := hyc (CFC.sqrt x) (Set.mem_univ _)
+  have hcc : CFC.sqrt x * ceil y = ceil y * CFC.sqrt x :=
+    ceil_basic_2 y (CFC.sqrt x) hy hcomm
+  have hcx : ceil x * x = x := by
+    have h1 : x * ceil x = x := (ceil_spec hx).2.1
+    have h2 := congrArg star h1
+    rwa [star_mul, (ceil_spec hx).1.isSelfAdjoint.star_eq,
+      (IsSelfAdjoint.of_nonneg hx).star_eq] at h2
+  have hyx : ceil y * x = x := by
+    have hcc2 : ceil y * ceil x = ceil x :=
+      ((projection_below_effect (ceil y) (ceil x)
+        ⟨(ceil_spec hy).1.nonneg, (ceil_spec hy).1.le_one⟩
+        (ceil_spec hx).1).out 0 6).mp hle
+    calc ceil y * x = ceil y * (ceil x * x) := by rw [hcx]
+      _ = (ceil y * ceil x) * x := by noncomm_ring
+      _ = x := by rw [hcc2, hcx]
+  have e1 : y * x = star (CFC.sqrt x) * y * CFC.sqrt x := by
+    rw [hsx, hcomm]
+    calc y * x = y * (CFC.sqrt x * CFC.sqrt x) := by rw [CFC.sqrt_mul_sqrt_self x hx]
+      _ = y * CFC.sqrt x * CFC.sqrt x := by noncomm_ring
+  rw [e1, ceil_fundamental_1 (CFC.sqrt x) y hy, hsx, hcc]
+  congr 1
+  calc ceil y * CFC.sqrt x * CFC.sqrt x = ceil y * (CFC.sqrt x * CFC.sqrt x) := by
+        noncomm_ring
+    _ = ceil y * x := by rw [CFC.sqrt_mul_sqrt_self x hx]
+    _ = x := hyx
 
 /-! ## Parsec 940: the corner `e𝒜e` -/
 
@@ -2073,7 +2113,12 @@ theorem equivalent_examples_2 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
 `(zf)^⋄ = f^⋄` for every positive central `z` with `⌈z⌉ = 1`. -/
 theorem equivalent_examples_3 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (f h : NCPMap A B) (z : B) (hz : z ∈ centre B) (hz0 : 0 ≤ z)
-    (hz1 : ceil z = 1) (hh : ∀ x, h x = z * f x) : NCPEquiv h f := sorry
+    (hz1 : ceil z = 1) (hh : ∀ x, h x = z * f x) : NCPEquiv h f := by
+  intro e he
+  change ceil (h e) = ceil (f e)
+  rw [hh]
+  exact ceil_central_mul (f e) z (ncpMap_nonneg f he.nonneg) hz0 hz
+    (by rw [hz1]; exact (ceil_spec (ncpMap_nonneg f he.nonneg)).1.le_one)
 
 /-- **101VIII** (`diamond-composition`, proc.tex:1134, Exercise), part 1:
 `(g ∘ f)^⋄ = g^⋄ ∘ f^⋄` and `(g ∘ f)_⋄ = f_⋄ ∘ g_⋄`. -/
@@ -2211,7 +2256,11 @@ theorem centrally_similar_basic_1 [VonNeumannAlgebra A] (p q : A)
 part 2: centrally similar `p, q` have `⌈p⌉ = ⌈q⌉`. -/
 theorem centrally_similar_basic_2 [VonNeumannAlgebra A] (p q : A)
     (hp : 0 ≤ p) (hq : 0 ≤ q) (h : CentrallySimilar p q) :
-    ceil p = ceil q := sorry
+    ceil p = ceil q := by
+  -- `⌈cp⌉ = ⌈p⌉` and `⌈dq⌉ = ⌈q⌉` by `ceil_central_mul`, and `cp = dq`
+  obtain ⟨c, d, hc, hd, hc0, hd0, hcd, hpc, hqd⟩ := h
+  rw [← ceil_central_mul p c hp hc0 hc hpc, hcd,
+    ceil_central_mul q d hq hd0 hd hqd]
 
 /-- **104III** (`centrally-similar-basic`, proc.tex:1465, Exercise),
 part 2a: assuming `p ≤ B·q`, `p` and `q` are centrally similar iff `p/q`
