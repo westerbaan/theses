@@ -157,16 +157,61 @@ theorem inner_sub_left (x y z : X) :
   rw [← B.star_inner z (x - y), B.inner_sub_right, star_sub, B.star_inner,
     B.star_inner]
 
+theorem inner_op_smul_self (b : 𝒷) (x : X) :
+    B.inner (b • x) (b • x) = b * B.inner x x * star b := by
+  rw [B.inner_op_smul_right, B.inner_op_smul_left, mul_assoc]
+
 end BInner
 
-/-- **142III** (`module-CS`, dils.tex:1419, Proposition (Cauchy–Schwarz)) in
-its *mirrored* form.  Under Mathlib's convention `B.inner u v = ⟨v,u⟩` of the
-thesis (see the file header) the thesis's
-`⟨x,y⟩⟨y,x⟩ ≤ ‖⟨y,y⟩‖ ⟨x,x⟩` reads `[y,x][x,y] ≤ ‖[y,y]‖ [x,x]`, i.e. with
-the two factors of the left-hand side interchanged relative to `module_CS`
-below — exactly as in `Theses.A.CStar.chilb_cs`.  `module_CS` as transcribed
-omits that swap and is **false** (see the session report). -/
-theorem module_CS_mirrored (B : BInner 𝒷 X) (x y : X) :
+
+/-- **142II** (`module-innerprod-state`, dils.tex:1399, Definition): for a
+𝒷-valued inner product and a positive functional `f : 𝒷 → ℂ`, the
+complex-valued form `⟨x,y⟩_f = f([x,y])`. -/
+noncomputable def innerF (f : 𝒷 →ₗ[ℂ] ℂ) (B : BInner 𝒷 X) (x y : X) : ℂ :=
+  f (B.inner x y)
+
+/-- **142II** (`module-innerprod-state`, dils.tex:1399, Definition): the
+seminorm `‖x‖_f = ⟨x,x⟩_f^½`. -/
+noncomputable def seminormF (f : 𝒷 →ₗ[ℂ] ℂ) (B : BInner 𝒷 X) (x : X) : ℝ :=
+  Real.sqrt (f (B.inner x x)).re
+
+/-- **142II** (`module-innerprod-state`, dils.tex:1399, Definition),
+embedded claim: `⟨·,·⟩_f` is a complex-valued (semidefinite) inner product;
+in particular it is conjugate symmetric and positive (whence `‖·‖_f` is a
+seminorm, by cstar.tex 4XV `inner-product-basic`).
+
+**142IIa** (dils.tex:1411): discussion — nothing to formalize. -/
+theorem innerF_inner_product (f : 𝒷 →ₗ[ℂ] ℂ) (hf : IsPositiveMap f)
+    (B : BInner 𝒷 X) :
+    (∀ x y : X, innerF f B y x = starRingEnd ℂ (innerF f B x y)) ∧
+      ∀ x : X, 0 ≤ (innerF f B x x).re ∧ (innerF f B x x).im = 0 := by
+  refine ⟨fun x y => ?_, fun x => ?_⟩
+  · -- conjugate symmetry: a positive map is involution preserving (10IV)
+    show f (B.inner y x) = starRingEnd ℂ (f (B.inner x y))
+    rw [← B.star_inner x y]
+    exact cstar_p_implies_i f hf (B.inner x y)
+  · have h : (0 : ℂ) ≤ f (B.inner x x) := hf _ (B.inner_self_nonneg x)
+    rw [Complex.le_def] at h
+    refine ⟨?_, ?_⟩
+    · show (0 : ℝ) ≤ (f (B.inner x x)).re
+      simpa using h.1
+    · show (f (B.inner x x)).im = 0
+      simpa using h.2.symm
+
+/-- **142III** (`module-CS`, dils.tex:1419, Proposition (Cauchy–Schwarz)):
+for a (possibly indefinite) 𝒷-valued inner product,
+`⟨x,y⟩⟨y,x⟩ ≤ ‖⟨y,y⟩‖ ⟨x,x⟩`.
+
+**Convention.** The thesis uses *right* 𝒷-modules with `⟨x, y·b⟩ = ⟨x,y⟩ b`,
+whereas `BInner` follows Mathlib's `CStarModule` convention `[x, b•y] =
+b [x,y]`, so that `[u,v] = ⟨v,u⟩_thesis` (see the file header).  The Lean
+statement below is therefore the thesis's inequality with the two factors of
+the left-hand side interchanged, exactly as in `Theses.A.CStar.chilb_cs`.
+Stated without the swap it is *false*: for `𝒷 = M₂(ℂ)`, `X = 𝒷` with
+`[a,b] = b a*`, `x = e₁₁`, `y = e₂₁` it would assert `e₂₂ ≤ e₁₁`.
+
+**142IV** is the proof — not converted. -/
+theorem module_CS (B : BInner 𝒷 X) (x y : X) :
     B.inner y x * B.inner x y ≤ ‖B.inner y y‖ • B.inner x x := by
   set b : 𝒷 := B.inner y x with hb
   have hbs : star b = B.inner x y := B.star_inner y x
@@ -235,34 +280,6 @@ theorem module_CS_mirrored (B : BInner 𝒷 X) (x y : X) :
       exact le_of_add_le_add_left h
     rw [← hbs]
     exact le_of_smul_le_smul_left h2 hs
-noncomputable def innerF (f : 𝒷 →ₗ[ℂ] ℂ) (B : BInner 𝒷 X) (x y : X) : ℂ :=
-  f (B.inner x y)
-
-/-- **142II** (`module-innerprod-state`, dils.tex:1399, Definition): the
-seminorm `‖x‖_f = ⟨x,x⟩_f^½`. -/
-noncomputable def seminormF (f : 𝒷 →ₗ[ℂ] ℂ) (B : BInner 𝒷 X) (x : X) : ℝ :=
-  Real.sqrt (f (B.inner x x)).re
-
-/-- **142II** (`module-innerprod-state`, dils.tex:1399, Definition),
-embedded claim: `⟨·,·⟩_f` is a complex-valued (semidefinite) inner product;
-in particular it is conjugate symmetric and positive (whence `‖·‖_f` is a
-seminorm, by cstar.tex 4XV `inner-product-basic`).
-
-**142IIa** (dils.tex:1411): discussion — nothing to formalize. -/
-theorem innerF_inner_product (f : 𝒷 →ₗ[ℂ] ℂ) (hf : IsPositiveMap f)
-    (B : BInner 𝒷 X) :
-    (∀ x y : X, innerF f B y x = starRingEnd ℂ (innerF f B x y)) ∧
-      ∀ x : X, 0 ≤ (innerF f B x x).re ∧ (innerF f B x x).im = 0 :=
-  sorry
-
-/-- **142III** (`module-CS`, dils.tex:1419, Proposition (Cauchy–Schwarz)):
-for a (possibly indefinite) 𝒷-valued inner product,
-`[x,y][y,x] ≤ ‖[y,y]‖ [x,x]`.
-
-**142IV** is the proof — not converted. -/
-theorem module_CS (B : BInner 𝒷 X) (x y : X) :
-    B.inner x y * B.inner y x ≤ ‖B.inner y y‖ • B.inner x x :=
-  sorry
 
 /-- **142V** (`module-seminorm`, dils.tex:1448, Exercise), part 1:
 `‖[x,y]‖ ≤ ‖x‖‖y‖` for the seminorm `‖x‖ = ‖[x,x]‖^½`. -/
@@ -274,7 +291,7 @@ theorem module_seminorm_1 (B : BInner 𝒷 X) (x y : X) :
     have h0 : (0 : 𝒷) ≤ B.inner y x * B.inner x y := by
       rw [hyx]; exact star_mul_self_nonneg _
     have h := CStarAlgebra.norm_le_norm_of_nonneg_of_le h0
-      (module_CS_mirrored B x y)
+      (module_CS B x y)
     rwa [norm_smul, Real.norm_eq_abs, abs_of_nonneg (norm_nonneg _)] at h
   have h2 : ‖B.inner x y‖ ^ 2 = ‖B.inner y x * B.inner x y‖ := by
     rw [hyx, CStarRing.norm_star_mul_self]; ring
@@ -536,8 +553,93 @@ which is bounded by `C ≥ 0` satisfies `[Tx, Tx] ≤ C² [x, x]`.
 theorem blinear_inprod_inequality (B₁ : BInner 𝒷 X) (B₂ : BInner 𝒷 Y)
     (C : ℝ) (hC : 0 ≤ C) (T : X → Y) (hT : IsBoundedModuleMap B₁ B₂ C T)
     (x : X) :
-    B₂.inner (T x) (T x) ≤ (C ^ 2) • B₁.inner x x :=
-  sorry
+    B₂.inner (T x) (T x) ≤ (C ^ 2) • B₁.inner x x := by
+  have ha : (0 : 𝒷) ≤ B₁.inner x x := B₁.inner_self_nonneg x
+  have key : ∀ ε : ℝ, 0 < ε →
+      B₂.inner (T x) (T x) ≤ (C ^ 2) • B₁.inner x x + (C ^ 2 * ε) • (1 : 𝒷) := by
+    intro ε hε
+    set s : 𝒷 := B₁.inner x x + ε • (1 : 𝒷) with hs
+    have hsp : IsStrictlyPositive s :=
+      IsStrictlyPositive.nonneg_add ha (IsStrictlyPositive.smul hε isStrictlyPositive_one)
+    set h : 𝒷 := s ^ (-(1 / 2) : ℝ) with hh
+    set k : 𝒷 := s ^ ((1 / 2) : ℝ) with hk
+    have hhnn : (0 : 𝒷) ≤ h := CFC.rpow_nonneg
+    have hknn : (0 : 𝒷) ≤ k := CFC.rpow_nonneg
+    have hhsa : IsSelfAdjoint h := IsSelfAdjoint.of_nonneg hhnn
+    have hksa : IsSelfAdjoint k := IsSelfAdjoint.of_nonneg hknn
+    have hstar : star h = h := hhsa
+    have hconj : h * s * h = 1 := CFC.conjugate_rpow_neg_one_half s hsp
+    have hkh : k * h = 1 := by
+      rw [hk, hh, ← CFC.rpow_add hsp.isUnit]
+      norm_num
+      exact CFC.rpow_zero s
+    have hhk : h * k = 1 := by
+      rw [hk, hh, ← CFC.rpow_add hsp.isUnit]
+      norm_num
+      exact CFC.rpow_zero s
+    have hkk : k * k = s := by
+      rw [hk, ← CFC.rpow_add hsp.isUnit]
+      norm_num
+      exact CFC.rpow_one s
+    -- `‖h•x‖ ≤ 1`
+    have h1 : B₁.inner (h • x) (h • x) ≤ 1 := by
+      rw [B₁.inner_op_smul_self, hstar]
+      calc h * B₁.inner x x * h ≤ h * s * h :=
+            hhsa.conjugate_le_conjugate
+              (by rw [hs]; exact le_add_of_nonneg_right (smul_nonneg hε.le zero_le_one))
+        _ = 1 := hconj
+    have h1nn : (0 : 𝒷) ≤ B₁.inner (h • x) (h • x) := B₁.inner_self_nonneg _
+    have hnorm1 : B₁.norm (h • x) ≤ 1 := by
+      have hn : ‖B₁.inner (h • x) (h • x)‖ ≤ 1 :=
+        (CStarAlgebra.norm_le_one_iff_of_nonneg _ h1nn).mpr h1
+      rw [BInner.norm]
+      calc Real.sqrt ‖B₁.inner (h • x) (h • x)‖ ≤ Real.sqrt 1 := Real.sqrt_le_sqrt hn
+        _ = 1 := Real.sqrt_one
+    -- the bound on `T (h•x) = h • T x`
+    have hTh : T (h • x) = h • T x := hT.smul h x
+    have hz : B₂.inner (h • T x) (h • T x) = h * B₂.inner (T x) (T x) * h := by
+      rw [B₂.inner_op_smul_self, hstar]
+    have h2 : B₂.norm (h • T x) ≤ C := by
+      have hb := hT.bound (h • x)
+      rw [hTh] at hb
+      calc B₂.norm (h • T x) ≤ C * B₁.norm (h • x) := hb
+        _ ≤ C * 1 := by gcongr
+        _ = C := mul_one C
+    have h3 : ‖h * B₂.inner (T x) (T x) * h‖ ≤ C ^ 2 := by
+      rw [BInner.norm, hz] at h2
+      nlinarith [Real.sq_sqrt (norm_nonneg (h * B₂.inner (T x) (T x) * h)),
+        Real.sqrt_nonneg ‖h * B₂.inner (T x) (T x) * h‖]
+    -- `h c h ≤ C² · 1`
+    have hznn : (0 : 𝒷) ≤ h * B₂.inner (T x) (T x) * h := by
+      rw [← hz]; exact B₂.inner_self_nonneg _
+    have h4 : h * B₂.inner (T x) (T x) * h ≤ (C ^ 2) • (1 : 𝒷) := by
+      refine le_trans (hznn.isSelfAdjoint.le_algebraMap_norm_self) ?_
+      rw [Algebra.algebraMap_eq_smul_one]
+      have : (0 : 𝒷) ≤ (C ^ 2 - ‖h * B₂.inner (T x) (T x) * h‖) • (1 : 𝒷) :=
+        smul_nonneg (by linarith) zero_le_one
+      rw [sub_smul] at this
+      exact sub_nonneg.mp this
+    -- conjugate back by `k`
+    have h5 := hksa.conjugate_le_conjugate h4
+    have hlhs : k * (h * B₂.inner (T x) (T x) * h) * k = B₂.inner (T x) (T x) := by
+      calc k * (h * B₂.inner (T x) (T x) * h) * k
+          = (k * h) * B₂.inner (T x) (T x) * (h * k) := by simp only [mul_assoc]
+        _ = B₂.inner (T x) (T x) := by rw [hkh, hhk, one_mul, mul_one]
+    have hrhs : k * ((C ^ 2) • (1 : 𝒷)) * k = (C ^ 2) • B₁.inner x x + (C ^ 2 * ε) • (1 : 𝒷) := by
+      rw [mul_smul_comm, smul_mul_assoc, mul_one, hkk, hs, smul_add, smul_smul]
+    rw [hlhs, hrhs] at h5
+    exact h5
+  -- let `ε → 0`
+  have hlim : Tendsto (fun ε : ℝ => (C ^ 2) • B₁.inner x x + (C ^ 2 * ε) • (1 : 𝒷))
+      (nhdsWithin (0 : ℝ) (Set.Ioi 0)) (𝓝 ((C ^ 2) • B₁.inner x x)) := by
+    have hcont : Continuous
+        (fun ε : ℝ => (C ^ 2) • B₁.inner x x + (C ^ 2 * ε) • (1 : 𝒷)) := by fun_prop
+    have h0 := hcont.tendsto 0
+    simp only [mul_zero, zero_smul, add_zero] at h0
+    exact h0.mono_left nhdsWithin_le_nhds
+  refine ge_of_tendsto hlim ?_
+  filter_upwards [self_mem_nhdsWithin] with ε hε using key ε hε
+
 
 end BLinearBound
 
@@ -586,8 +688,33 @@ theorem exc_subbase {X : Type v} (B : Set (Set (X × X)))
     (hrefl : ∀ V ∈ B, ∀ x : X, (x, x) ∈ V)
     (hcomp : ∀ V ∈ B, ∃ W ∈ B, SetRel.comp W W ⊆ V)
     (hsymm : ∀ V ∈ B, ∃ W ∈ B, Prod.swap ⁻¹' W ⊆ V) :
-    ∃ U : UniformSpace X, @uniformity X U = Filter.generate B :=
-  sorry
+    ∃ U : UniformSpace X, @uniformity X U = Filter.generate B := by
+  choose! Wc hWcB hWcsub using hcomp
+  choose! Ws hWsB hWssub using hsymm
+  refine ⟨UniformSpace.ofCore (UniformSpace.Core.mk' (Filter.generate B) ?_ ?_ ?_), rfl⟩
+  · -- every set of the generated filter contains the diagonal
+    intro r hr x
+    obtain ⟨t, htB, htfin, htr⟩ := Filter.mem_generate_iff.mp hr
+    exact htr fun V hV => hrefl V (htB hV) x
+  · -- symmetry
+    intro r hr
+    obtain ⟨t, htB, htfin, htr⟩ := Filter.mem_generate_iff.mp hr
+    refine Filter.mem_generate_iff.mpr ⟨Ws '' t, ?_, htfin.image Ws, fun p hp => ?_⟩
+    · rintro _ ⟨V, hV, rfl⟩
+      exact hWsB V (htB hV)
+    · refine htr fun V hV => ?_
+      have hpW : p ∈ Ws V := hp _ ⟨V, hV, rfl⟩
+      exact hWssub V (htB hV) (by simpa using hpW)
+  · -- half-entourages
+    intro r hr
+    obtain ⟨t, htB, htfin, htr⟩ := Filter.mem_generate_iff.mp hr
+    refine ⟨⋂₀ (Wc '' t),
+      Filter.mem_generate_iff.mpr ⟨Wc '' t, ?_, htfin.image Wc, subset_rfl⟩, ?_⟩
+    · rintro _ ⟨V, hV, rfl⟩
+      exact hWcB V (htB hV)
+    · rintro ⟨a, c⟩ ⟨b, hab, hbc⟩
+      refine htr fun V hV => ?_
+      exact hWcsub V (htB hV) ⟨b, hab _ ⟨V, hV, rfl⟩, hbc _ ⟨V, hV, rfl⟩⟩
 
 end Uniformity
 
@@ -780,6 +907,150 @@ variable {𝒷 : Type u} {X Y : Type v}
   [AddCommGroup X] [Module ℂ X] [SMul 𝒷 X]
   [AddCommGroup Y] [Module ℂ Y] [SMul 𝒷 Y]
 
+/-! ### Auxiliary: the seminorms `‖·‖_ω` of the ultranorm uniformity
+
+By **142II** the ℂ-valued form `(x,y) ↦ ω[x,y]` of an np-functional `ω` and a
+𝒷-valued inner product `B` is a (semidefinite) inner product; the
+Cauchy–Schwarz and triangle inequalities for `‖x‖_ω = ω([x,x])^½` below are
+cstar.tex 4XV (`inner-product-basic`) for that form, written out for the
+semidefinite case (Mathlib's `InnerProductSpace` machinery needs
+definiteness).  First, the linearity, involutivity and positivity of an
+np-functional in the form in which they are used. -/
+
+omit [StarOrderedRing 𝒷] in
+private theorem np_add (ω : NPFunctional 𝒷) (a b : 𝒷) : ω (a + b) = ω a + ω b :=
+  map_add ω.toPositiveLinearMap a b
+
+omit [StarOrderedRing 𝒷] in
+private theorem np_smul (ω : NPFunctional 𝒷) (c : ℂ) (a : 𝒷) : ω (c • a) = c * ω a :=
+  map_smul ω.toPositiveLinearMap c a
+
+omit [StarOrderedRing 𝒷] in
+private theorem np_sub (ω : NPFunctional 𝒷) (a b : 𝒷) : ω (a - b) = ω a - ω b :=
+  map_sub ω.toPositiveLinearMap a b
+
+private theorem np_star (ω : NPFunctional 𝒷) (a : 𝒷) :
+    ω (star a) = starRingEnd ℂ (ω a) :=
+  map_star ω.toPositiveLinearMap a
+
+omit [StarOrderedRing 𝒷] in
+private theorem np_nonneg (ω : NPFunctional 𝒷) {a : 𝒷} (ha : 0 ≤ a) :
+    (0 : ℂ) ≤ ω a := by
+  have h : ω.toPositiveLinearMap 0 ≤ ω.toPositiveLinearMap a :=
+    ω.toPositiveLinearMap.monotone ha
+  rwa [map_zero] at h
+
+omit [StarOrderedRing 𝒷] in
+private theorem np_re_nonneg (ω : NPFunctional 𝒷) {a : 𝒷} (ha : 0 ≤ a) :
+    0 ≤ (ω a).re := by
+  simpa using (Complex.le_def.mp (np_nonneg ω ha)).1
+
+omit [StarOrderedRing 𝒷] in
+private theorem np_im_zero (ω : NPFunctional 𝒷) {a : 𝒷} (ha : 0 ≤ a) :
+    (ω a).im = 0 := by
+  simpa using ((Complex.le_def.mp (np_nonneg ω ha)).2).symm
+
+omit [StarOrderedRing 𝒷] in
+private theorem np_re_mono (ω : NPFunctional 𝒷) {a b : 𝒷} (h : a ≤ b) :
+    (ω a).re ≤ (ω b).re :=
+  (Complex.le_def.mp (ω.toPositiveLinearMap.monotone h)).1
+
+omit [StarOrderedRing 𝒷] in
+private theorem np_re_smul (ω : NPFunctional 𝒷) (r : ℝ) (a : 𝒷) :
+    (ω (r • a)).re = r * (ω a).re := by
+  rw [show (r • a) = ((r : ℝ) : ℂ) • a from (RCLike.real_smul_eq_coe_smul (K := ℂ) r a),
+    np_smul]
+  simp
+
+omit [StarOrderedRing 𝒷] [Module ℂ X] [SMul 𝒷 X] in
+theorem unSeminorm_nonneg (ω : NPFunctional 𝒷) (B : X → X → 𝒷) (x : X) :
+    0 ≤ unSeminorm ω B x := Real.sqrt_nonneg _
+
+theorem unSeminorm_sq (ω : NPFunctional 𝒷) (B : BInner 𝒷 X) (x : X) :
+    unSeminorm ω B.inner x ^ 2 = (ω (B.inner x x)).re :=
+  Real.sq_sqrt (np_re_nonneg ω (B.inner_self_nonneg x))
+
+/-- Cauchy–Schwarz for `‖·‖_ω`: `|ω[x,y]| ≤ ‖x‖_ω ‖y‖_ω`. -/
+theorem unSeminorm_inner_le (ω : NPFunctional 𝒷) (B : BInner 𝒷 X) (x y : X) :
+    ‖ω (B.inner x y)‖ ≤ unSeminorm ω B.inner x * unSeminorm ω B.inner y := by
+  have ha : 0 ≤ (ω (B.inner x x)).re := np_re_nonneg ω (B.inner_self_nonneg x)
+  have hb : 0 ≤ (ω (B.inner y y)).re := np_re_nonneg ω (B.inner_self_nonneg y)
+  have hyx : ω (B.inner y x) = starRingEnd ℂ (ω (B.inner x y)) := by
+    rw [← B.star_inner x y, np_star]
+  -- the quadratic `0 ≤ ω [x + λy, x + λy]`
+  have hquad : ∀ lam : ℂ, 0 ≤ (ω (B.inner x x)).re + 2 * (lam * ω (B.inner x y)).re
+      + Complex.normSq lam * (ω (B.inner y y)).re := by
+    intro lam
+    have hz : (0 : ℝ) ≤ (ω (B.inner (x + lam • y) (x + lam • y))).re :=
+      np_re_nonneg ω (B.inner_self_nonneg _)
+    have hexp : B.inner (x + lam • y) (x + lam • y)
+        = B.inner x x + lam • B.inner x y
+          + ((starRingEnd ℂ) lam • B.inner y x
+            + (starRingEnd ℂ lam * lam) • B.inner y y) := by
+      rw [B.inner_add_left, B.inner_add_right, B.inner_add_right,
+        B.inner_smul_right_complex, B.inner_smul_left_complex,
+        B.inner_smul_left_complex, B.inner_smul_right_complex, smul_smul, add_assoc]
+    rw [hexp, np_add, np_add, np_add, np_smul, np_smul, np_smul, hyx] at hz
+    have hbim : (ω (B.inner y y)).im = 0 := np_im_zero ω (B.inner_self_nonneg y)
+    simp only [Complex.add_re, Complex.mul_re, Complex.conj_re, Complex.conj_im,
+      Complex.normSq_apply, hbim] at hz ⊢
+    nlinarith [hz]
+  -- specialize to `λ = -t · conj ω[x,y]`
+  set c := ω (B.inner x y) with hc
+  have hspec : ∀ t : ℝ, 0 ≤ (ω (B.inner x x)).re - 2 * t * Complex.normSq c
+      + t ^ 2 * Complex.normSq c * (ω (B.inner y y)).re := by
+    intro t
+    have h := hquad (-(t : ℂ) * (starRingEnd ℂ) c)
+    have h1 : (-(t : ℂ) * (starRingEnd ℂ) c * c).re = -(t * Complex.normSq c) := by
+      rw [mul_assoc, ← Complex.normSq_eq_conj_mul_self]
+      simp
+    have h2 : Complex.normSq (-(t : ℂ) * (starRingEnd ℂ) c)
+        = t ^ 2 * Complex.normSq c := by
+      simp [Complex.normSq_apply]
+      ring
+    rw [h1, h2] at h
+    nlinarith [h]
+  have hN : 0 ≤ Complex.normSq c := Complex.normSq_nonneg c
+  have hkey : Complex.normSq c ≤ (ω (B.inner x x)).re * (ω (B.inner y y)).re := by
+    rcases eq_or_lt_of_le hN with hN0 | hN0
+    · nlinarith
+    · rcases eq_or_lt_of_le hb with hb0 | hb0
+      · exfalso
+        have h := hspec (((ω (B.inner x x)).re + 1) / (2 * Complex.normSq c))
+        rw [← hb0] at h
+        field_simp at h
+        nlinarith [h]
+      · have h := hspec ((ω (B.inner y y)).re⁻¹)
+        have hbne : (ω (B.inner y y)).re ≠ 0 := ne_of_gt hb0
+        field_simp at h
+        nlinarith [h]
+  calc ‖c‖ = Real.sqrt (Complex.normSq c) := Complex.norm_def c
+    _ ≤ Real.sqrt ((ω (B.inner x x)).re * (ω (B.inner y y)).re) := Real.sqrt_le_sqrt hkey
+    _ = unSeminorm ω B.inner x * unSeminorm ω B.inner y := by
+        rw [unSeminorm, unSeminorm, Real.sqrt_mul ha]
+
+/-- The triangle inequality for `‖·‖_ω`. -/
+theorem unSeminorm_add_le (ω : NPFunctional 𝒷) (B : BInner 𝒷 X) (x y : X) :
+    unSeminorm ω B.inner (x + y)
+      ≤ unSeminorm ω B.inner x + unSeminorm ω B.inner y := by
+  have hx := unSeminorm_nonneg ω B.inner x
+  have hy := unSeminorm_nonneg ω B.inner y
+  have hcs := unSeminorm_inner_le ω B x y
+  have hexp : (ω (B.inner (x + y) (x + y))).re
+      = (ω (B.inner x x)).re + 2 * (ω (B.inner x y)).re + (ω (B.inner y y)).re := by
+    have hyx : ω (B.inner y x) = starRingEnd ℂ (ω (B.inner x y)) := by
+      rw [← B.star_inner x y, np_star]
+    rw [B.inner_add_left, B.inner_add_right, B.inner_add_right, np_add, np_add,
+      np_add, hyx]
+    simp only [Complex.add_re, Complex.conj_re]
+    ring
+  have hre : (ω (B.inner x y)).re ≤ ‖ω (B.inner x y)‖ := Complex.re_le_norm _
+  have hsq : unSeminorm ω B.inner (x + y) ^ 2
+      ≤ (unSeminorm ω B.inner x + unSeminorm ω B.inner y) ^ 2 := by
+    rw [unSeminorm_sq, hexp, add_sq, unSeminorm_sq, unSeminorm_sq]
+    nlinarith
+  nlinarith [unSeminorm_nonneg ω B.inner (x + y)]
+
 /-- **148I** (`blinear-bounded-is-ultranorm`, dils.tex:2041, Proposition):
 a bounded 𝒷-linear map `T : X → Y` between 𝒷-modules with 𝒷-valued inner
 products is uniformly ultranorm continuous: for every `ω` and `ε > 0` there
@@ -790,8 +1061,46 @@ theorem blinear_bounded_is_ultranorm (B₁ : BInner 𝒷 X) (B₂ : BInner 𝒷 
     (C : ℝ) (T : X → Y) (hT : IsBoundedModuleMap B₁ B₂ C T)
     (ω : NPFunctional 𝒷) (ε : ℝ) (hε : 0 < ε) :
     ∃ δ > (0 : ℝ), ∀ x y : X, unSeminorm ω B₁.inner (x - y) ≤ δ →
-      unSeminorm ω B₂.inner (T x - T y) ≤ ε :=
-  sorry
+      unSeminorm ω B₂.inner (T x - T y) ≤ ε := by
+  set C' := max C 0 with hC'
+  have hC'0 : (0 : ℝ) ≤ C' := le_max_right _ _
+  have hT' : IsBoundedModuleMap B₁ B₂ C' T :=
+    { hT with
+      bound := fun x => (hT.bound x).trans
+        (mul_le_mul_of_nonneg_right (le_max_left _ _) (Real.sqrt_nonneg _)) }
+  refine ⟨ε / (C' + 1), by positivity, fun x y hxy => ?_⟩
+  have hTsub : T x - T y = T (x - y) := by
+    have h := hT.add (x - y) y
+    rw [sub_add_cancel] at h
+    rw [h]; abel
+  have hkey : unSeminorm ω B₂.inner (T (x - y)) ≤ C' * unSeminorm ω B₁.inner (x - y) := by
+    have h144 := blinear_inprod_inequality B₁ B₂ C' hC'0 T hT' (x - y)
+    have hmono := ω.toPositiveLinearMap.monotone h144
+    have hre : (ω (B₂.inner (T (x - y)) (T (x - y)))).re
+        ≤ (ω ((C' ^ 2) • B₁.inner (x - y) (x - y))).re := (Complex.le_def.mp hmono).1
+    have hlin : ∀ (c : ℂ) (a : 𝒷), ω (c • a) = c * ω a := fun c a =>
+      map_smul ω.toPositiveLinearMap c a
+    have hsmul : (ω ((C' ^ 2) • B₁.inner (x - y) (x - y))).re
+        = C' ^ 2 * (ω (B₁.inner (x - y) (x - y))).re := by
+      rw [show ((C' ^ 2 : ℝ) • B₁.inner (x - y) (x - y))
+          = ((C' ^ 2 : ℝ) : ℂ) • B₁.inner (x - y) (x - y) from
+        (RCLike.real_smul_eq_coe_smul (K := ℂ) _ _), hlin]
+      simp [-Complex.ofReal_pow]
+    rw [hsmul] at hre
+    rw [unSeminorm, unSeminorm]
+    calc Real.sqrt (ω (B₂.inner (T (x - y)) (T (x - y)))).re
+        ≤ Real.sqrt (C' ^ 2 * (ω (B₁.inner (x - y) (x - y))).re) := Real.sqrt_le_sqrt hre
+      _ = C' * Real.sqrt (ω (B₁.inner (x - y) (x - y))).re := by
+          rw [Real.sqrt_mul (sq_nonneg C'), Real.sqrt_sq hC'0]
+  rw [hTsub]
+  calc unSeminorm ω B₂.inner (T (x - y)) ≤ C' * unSeminorm ω B₁.inner (x - y) := hkey
+    _ ≤ C' * (ε / (C' + 1)) := by
+        have : (0:ℝ) ≤ unSeminorm ω B₁.inner (x - y) := Real.sqrt_nonneg _
+        nlinarith
+    _ ≤ ε := by
+        rw [mul_div_assoc']
+        rw [div_le_iff₀ (by positivity)]
+        nlinarith
 
 variable {ι : Type w} {l : Filter ι}
 
@@ -800,8 +1109,14 @@ addition is (jointly uniformly) ultranorm continuous: it preserves
 ultranorm limits. -/
 theorem ultranormcontstruct_add (B : BInner 𝒷 X) (x y : ι → X) (x₀ y₀ : X)
     (hx : UnTendsto B.inner x l x₀) (hy : UnTendsto B.inner y l y₀) :
-    UnTendsto B.inner (fun i => x i + y i) l (x₀ + y₀) :=
-  sorry
+    UnTendsto B.inner (fun i => x i + y i) l (x₀ + y₀) := by
+  intro ω
+  refine squeeze_zero (fun i => unSeminorm_nonneg ω B.inner _) (g := fun i =>
+    unSeminorm ω B.inner (x i - x₀) + unSeminorm ω B.inner (y i - y₀)) (fun i => ?_) ?_
+  · have hrw : x i + y i - (x₀ + y₀) = (x i - x₀) + (y i - y₀) := by abel
+    rw [hrw]
+    exact unSeminorm_add_le ω B _ _
+  · simpa using (hx ω).add (hy ω)
 
 /-- **148III** (`ultranormcontstruct`, dils.tex:2060, Corollary), part 2:
 for fixed `x₀`, the map `x ↦ [x₀, x] : X → 𝒷` is uniformly continuous from
@@ -809,8 +1124,27 @@ the ultranorm uniformity of `X` to the ultrastrong uniformity of `𝒷` (the
 ultranorm uniformity of `mulInner`): it preserves limits. -/
 theorem ultranormcontstruct_inner [VonNeumannAlgebra 𝒷] (B : BInner 𝒷 X)
     (x₀ : X) (x : ι → X) (xlim : X) (hx : UnTendsto B.inner x l xlim) :
-    UnTendsto (mulInner 𝒷) (fun i => B.inner x₀ (x i)) l (B.inner x₀ xlim) :=
-  sorry
+    UnTendsto (mulInner 𝒷) (fun i => B.inner x₀ (x i)) l (B.inner x₀ xlim) := by
+  intro ω
+  refine squeeze_zero (fun i => unSeminorm_nonneg ω (mulInner 𝒷) _) (g := fun i =>
+    Real.sqrt ‖B.inner x₀ x₀‖ * unSeminorm ω B.inner (x i - xlim)) (fun i => ?_) ?_
+  · have hd : B.inner x₀ (x i) - B.inner x₀ xlim = B.inner x₀ (x i - xlim) :=
+      (B.inner_sub_right x₀ (x i) xlim).symm
+    have hmul : mulInner 𝒷 (B.inner x₀ (x i - xlim)) (B.inner x₀ (x i - xlim))
+        = B.inner x₀ (x i - xlim) * B.inner (x i - xlim) x₀ := by
+      show B.inner x₀ (x i - xlim) * star (B.inner x₀ (x i - xlim)) = _
+      rw [B.star_inner]
+    have hCS := module_CS B (x i - xlim) x₀
+    have hre : (ω (mulInner 𝒷 (B.inner x₀ (x i - xlim)) (B.inner x₀ (x i - xlim)))).re
+        ≤ ‖B.inner x₀ x₀‖ * (ω (B.inner (x i - xlim) (x i - xlim))).re := by
+      rw [hmul, ← np_re_smul]
+      exact np_re_mono ω hCS
+    rw [hd, unSeminorm, unSeminorm]
+    calc Real.sqrt (ω (mulInner 𝒷 (B.inner x₀ (x i - xlim)) (B.inner x₀ (x i - xlim)))).re
+        ≤ Real.sqrt (‖B.inner x₀ x₀‖ * (ω (B.inner (x i - xlim) (x i - xlim))).re) :=
+          Real.sqrt_le_sqrt hre
+      _ = _ := Real.sqrt_mul (norm_nonneg _) _
+  · simpa using (hx ω).const_mul (Real.sqrt ‖B.inner x₀ x₀‖)
 
 /-- **148III** (`ultranormcontstruct`, dils.tex:2060, Corollary), part 3:
 for fixed `x₀`, the map `b ↦ x₀ · b : 𝒷 → X` is uniformly continuous from
@@ -819,8 +1153,28 @@ the ultrastrong uniformity of `𝒷` to the ultranorm uniformity of `X`
 theorem ultranormcontstruct_smul [VonNeumannAlgebra 𝒷] (B : BInner 𝒷 X)
     (x₀ : X) (b : ι → 𝒷) (blim : 𝒷)
     (hb : UnTendsto (mulInner 𝒷) b l blim) :
-    UnTendsto B.inner (fun i => b i • x₀) l (blim • x₀) :=
-  sorry
+    UnTendsto B.inner (fun i => b i • x₀) l (blim • x₀) := by
+  intro ω
+  refine squeeze_zero (fun i => unSeminorm_nonneg ω B.inner _) (g := fun i =>
+    Real.sqrt ‖B.inner x₀ x₀‖ * unSeminorm ω (mulInner 𝒷) (b i - blim)) (fun i => ?_) ?_
+  · have hexp : B.inner (b i • x₀ - blim • x₀) (b i • x₀ - blim • x₀)
+        = (b i - blim) * B.inner x₀ x₀ * star (b i - blim) := by
+      simp only [B.inner_sub_left, B.inner_sub_right, B.inner_op_smul_left,
+        B.inner_op_smul_right, star_sub, sub_mul, mul_sub, mul_assoc]
+    have hsa : IsSelfAdjoint (B.inner x₀ x₀) := B.star_inner x₀ x₀
+    have hconj : (b i - blim) * B.inner x₀ x₀ * star (b i - blim)
+        ≤ ‖B.inner x₀ x₀‖ • ((b i - blim) * star (b i - blim)) :=
+      CStarAlgebra.star_right_conjugate_le_norm_smul hsa
+    have hre : (ω (B.inner (b i • x₀ - blim • x₀) (b i • x₀ - blim • x₀))).re
+        ≤ ‖B.inner x₀ x₀‖ * (ω (mulInner 𝒷 (b i - blim) (b i - blim))).re := by
+      rw [hexp, ← np_re_smul]
+      exact np_re_mono ω hconj
+    rw [unSeminorm, unSeminorm]
+    calc Real.sqrt (ω (B.inner (b i • x₀ - blim • x₀) (b i • x₀ - blim • x₀))).re
+        ≤ Real.sqrt (‖B.inner x₀ x₀‖ * (ω (mulInner 𝒷 (b i - blim) (b i - blim))).re) :=
+          Real.sqrt_le_sqrt hre
+      _ = _ := Real.sqrt_mul (norm_nonneg _) _
+  · simpa using (hb ω).const_mul (Real.sqrt ‖B.inner x₀ x₀‖)
 
 /-- **148IV** (`ultranormscalar`, dils.tex:2072, Exercise): for fixed
 `b ∈ 𝒷`, the map `x ↦ x·b` (mirrored: `b • x`) is ultranorm continuous:
@@ -837,8 +1191,41 @@ theorem ultranormscalar (B : BInner 𝒷 X) (b : 𝒷) (x : ι → X) (xlim : X)
 **148VI** is the proof — not converted. -/
 theorem innerprod_ultraweak (B : BInner 𝒷 X) (x y : ι → X) (xlim ylim : X)
     (hx : UnTendsto B.inner x l xlim) (hy : UnTendsto B.inner y l ylim) :
-    UWTendsto (fun i => B.inner (x i) (y i)) l (B.inner xlim ylim) :=
-  sorry
+    UWTendsto (fun i => B.inner (x i) (y i)) l (B.inner xlim ylim) := by
+  rw [uwTendsto_iff]
+  intro ω
+  rw [← tendsto_sub_nhds_zero_iff]
+  refine squeeze_zero_norm (a := fun i =>
+    unSeminorm ω B.inner (x i - xlim)
+        * (unSeminorm ω B.inner ylim + unSeminorm ω B.inner (y i - ylim))
+      + unSeminorm ω B.inner xlim * unSeminorm ω B.inner (y i - ylim)) (fun i => ?_) ?_
+  · have hsplit : B.inner (x i) (y i) - B.inner xlim ylim
+        = B.inner (x i - xlim) (y i) + B.inner xlim (y i - ylim) := by
+      rw [B.inner_sub_left, B.inner_sub_right]
+      abel
+    have hy' : unSeminorm ω B.inner (y i)
+        ≤ unSeminorm ω B.inner ylim + unSeminorm ω B.inner (y i - ylim) := by
+      have hrw : y i = ylim + (y i - ylim) := by abel
+      calc unSeminorm ω B.inner (y i)
+          = unSeminorm ω B.inner (ylim + (y i - ylim)) := by rw [← hrw]
+        _ ≤ _ := unSeminorm_add_le ω B _ _
+    calc ‖ω (B.inner (x i) (y i)) - ω (B.inner xlim ylim)‖
+        = ‖ω (B.inner (x i - xlim) (y i)) + ω (B.inner xlim (y i - ylim))‖ := by
+          rw [← np_add, ← hsplit, np_sub]
+      _ ≤ ‖ω (B.inner (x i - xlim) (y i))‖ + ‖ω (B.inner xlim (y i - ylim))‖ :=
+          norm_add_le _ _
+      _ ≤ unSeminorm ω B.inner (x i - xlim) * unSeminorm ω B.inner (y i)
+            + unSeminorm ω B.inner xlim * unSeminorm ω B.inner (y i - ylim) :=
+          add_le_add (unSeminorm_inner_le ω B _ _) (unSeminorm_inner_le ω B _ _)
+      _ ≤ _ := by
+          have h1 := unSeminorm_nonneg ω B.inner (x i - xlim)
+          nlinarith [unSeminorm_nonneg ω B.inner (y i)]
+  · have h0 : Tendsto (fun i => unSeminorm ω B.inner (x i - xlim)
+        * (unSeminorm ω B.inner ylim + unSeminorm ω B.inner (y i - ylim))
+      + unSeminorm ω B.inner xlim * unSeminorm ω B.inner (y i - ylim)) l
+        (𝓝 (0 * (unSeminorm ω B.inner ylim + 0) + unSeminorm ω B.inner xlim * 0)) :=
+      ((hx ω).mul (tendsto_const_nhds.add (hy ω))).add (tendsto_const_nhds.mul (hy ω))
+    simpa using h0
 
 end UltranormContinuity
 

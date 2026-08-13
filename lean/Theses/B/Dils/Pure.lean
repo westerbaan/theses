@@ -40,30 +40,62 @@ a projection, or with `⌊a⌋` for an effect `a`; cf. proc.tex 94I). -/
 def cornerSet (p : A) : Type u :=
   {a : A // p * a * p = a}
 
-/-- `pAp` is a C*-algebra with unit `p` (for a projection `p`; cf.
-proc.tex 94II `corner-vna-basic`).  FIXME(sorry-instance): deferred; the
-instance is stated unconditionally but is only meaningful for projections
-`p`. -/
-noncomputable instance cornerSet.instCStarAlgebra (p : A) :
+/-- `pAp` is a C*-algebra with unit `p` **for a projection `p`** (cf.
+proc.tex 94II `corner-vna-basic`).
+
+The projection hypothesis is not decoration: for a non-idempotent `p` the
+set `{a | p·a·p = a}` is not closed under multiplication (`p(ab)p =
+p²ap·pbp²`), so `cornerSet A p` carries no ring structure whatsoever and
+the instance is *false* as an unconditional statement.  It is therefore
+guarded by `[Fact (IsStarProjection p)]`, which for the `⌊a⌋`, `⌈a⌉` of
+this chapter is discharged automatically by `fact_isStarProjection_floor`
+and `fact_isStarProjection_ceil` below.  FIXME(sorry-instance): deferred. -/
+noncomputable instance cornerSet.instCStarAlgebra (p : A)
+    [Fact (IsStarProjection p)] :
     CStarAlgebra (cornerSet A p) :=
   sorry
 
-/-- The canonical order on `pAp`.  FIXME(sorry-instance): deferred. -/
-noncomputable instance cornerSet.instPartialOrder (p : A) :
+/-- The canonical order on `pAp` (for a projection `p`, cf.
+`cornerSet.instCStarAlgebra`).  FIXME(sorry-instance): deferred. -/
+noncomputable instance cornerSet.instPartialOrder (p : A)
+    [Fact (IsStarProjection p)] :
     PartialOrder (cornerSet A p) :=
   sorry
 
-/-- The canonical order of `pAp` makes it star-ordered.
-FIXME(sorry-instance): deferred. -/
-noncomputable instance cornerSet.instStarOrderedRing (p : A) :
+/-- The canonical order of `pAp` makes it star-ordered (for a projection
+`p`, cf. `cornerSet.instCStarAlgebra`).  FIXME(sorry-instance): deferred. -/
+noncomputable instance cornerSet.instStarOrderedRing (p : A)
+    [Fact (IsStarProjection p)] :
     StarOrderedRing (cornerSet A p) :=
   sorry
 
 /-- `pAp` is a von Neumann algebra when `A` is (and `p` is a projection;
 cf. proc.tex 94II).  Deferred like the instances above. -/
-theorem cornerSet_vonNeumannAlgebra [VonNeumannAlgebra A] (p : A) :
+theorem cornerSet_vonNeumannAlgebra [VonNeumannAlgebra A] (p : A)
+    [Fact (IsStarProjection p)] :
     VonNeumannAlgebra (cornerSet A p) :=
   sorry
+
+/-- `⌊b⌋` is a projection (**56VI**; the junk value off the effects is `0`),
+so the corner `⌊b⌋A⌊b⌋` gets the structure above without further ado. -/
+instance fact_isStarProjection_floor [VonNeumannAlgebra A] (b : A) :
+    Fact (IsStarProjection (floor b)) := by
+  refine ⟨?_⟩
+  by_cases hb : b ∈ effects A
+  · exact (floor_spec hb).1
+  · simp only [floor, hb, dite_false]
+    exact IsStarProjection.zero A
+
+/-- `⌈b⌉` is a projection (**56I**/**59I**; the junk value off the positive
+cone is `0`), so the corner `⌈b⌉A⌈b⌉` gets the structure above without
+further ado. -/
+instance fact_isStarProjection_ceil [VonNeumannAlgebra A] (b : A) :
+    Fact (IsStarProjection (ceil b)) := by
+  refine ⟨?_⟩
+  by_cases hb : (0 : A) ≤ b
+  · exact (ceil_spec hb).1
+  · simp only [ceil, hb, dite_false]
+    exact IsStarProjection.zero A
 
 end CornerSet
 
@@ -250,9 +282,17 @@ variable {A B : Type u}
 `p` in a von Neumann algebra `A`, a Paschke dilation of the standard
 corner `h_p : A → pAp` is `(⌈⌈p⌉⌉A, h_{⌈⌈p⌉⌉}, h'_p)`, where `⌈⌈p⌉⌉` is
 the central carrier of `p`, `h_{⌈⌈p⌉⌉}` the standard corner for `⌈⌈p⌉⌉`,
-and `h'_p` the restriction of `h_p` to `⌈⌈p⌉⌉A`. -/
+and `h'_p` the restriction of `h_p` to `⌈⌈p⌉⌉A`.
+
+The hypothesis `IsStarProjection p` of the thesis is carried as an instance
+`[Fact (IsStarProjection p)]`, which is what the corner `pAp` needs to be an
+algebra at all (see `cornerSet.instCStarAlgebra`).  That `⌈⌈p⌉⌉` is a
+projection too is **68III** (`exists_cceil`), still `sorry` in
+`Theses.A.VN.Projections`, so it cannot yet be discharged and appears as a
+second instance hypothesis; drop it once 68III is proved. -/
 theorem paschke_corner [VonNeumannAlgebra A] (p : A)
-    (hp : IsStarProjection p) (hp' : NCPMap A (cornerSet A p))
+    [Fact (IsStarProjection p)] [Fact (IsStarProjection (cceil p))]
+    (hp' : NCPMap A (cornerSet A p))
     (hval : ∀ a : A, (hp' a).1 = p * a * p) :
     ∃ (ρ : NMIUMap A (cornerSet A (cceil p)))
       (h : NCPMap (cornerSet A (cceil p)) (cornerSet A p)),

@@ -45,44 +45,6 @@ variable {𝒷 : Type u} {X : Type v}
   [CStarAlgebra 𝒷] [PartialOrder 𝒷] [StarOrderedRing 𝒷]
   [NormedAddCommGroup X] [NormedSpace ℂ X] [SMul 𝒷 X] [CStarModule 𝒷 X]
 
-/-- Definiteness of the 𝒷-valued inner product, in the second argument.
-(A copy of the `private` `Theses.A.CStar.eq_of_inner_right_eq`.) -/
-private theorem eq_of_binner_right {a b : X}
-    (h : ∀ x : X, inner 𝒷 x a = inner 𝒷 x b) : a = b := by
-  have h0 : inner 𝒷 (a - b) (a - b) = (0 : 𝒷) := by
-    rw [CStarModule.inner_sub_right, h (a - b), sub_self]
-  exact sub_eq_zero.mp (CStarModule.inner_self.mp h0)
-
-/-- A map adjoint to a bounded module map is automatically linear and
-bounded (cstar.tex 32X), hence may be taken to be a bounded operator. -/
-private theorem exists_clm_adjoint {T : X →L[ℂ] X}
-    (h : ModuleAdjointable 𝒷 ⇑T) :
-    ∃ S : X →L[ℂ] X, ModuleAdjointTo 𝒷 ⇑T ⇑S := by
-  obtain ⟨S, hS⟩ := h
-  have hS' : ∀ x y : X, inner 𝒷 (T x) y = inner 𝒷 x (S y) := hS
-  have hadd : ∀ y z, S (y + z) = S y + S z := fun y z =>
-    eq_of_binner_right (𝒷 := 𝒷) fun x => by
-      simp only [← hS', CStarModule.inner_add_right]
-  have hsmul : ∀ (c : ℂ) (y : X), S (c • y) = c • S y := fun c y =>
-    eq_of_binner_right (𝒷 := 𝒷) fun x => by
-      simp only [← hS', CStarModule.inner_smul_right_complex]
-  set Sl : X →ₗ[ℂ] X :=
-    { toFun := S, map_add' := hadd, map_smul' := fun c y => hsmul c y } with hSl
-  have hpos : (0 : ℝ) < ‖T‖ + 1 := by positivity
-  have hbound : ∀ y : X, ‖Sl y‖ ≤ (‖T‖ + 1) * ‖y‖ := by
-    refine (Theses.A.CStar.chilb_form_bounded (𝒜 := 𝒷) Sl (‖T‖ + 1) hpos).mpr ?_
-    intro x y
-    show ‖inner 𝒷 y (S x)‖ ≤ _
-    rw [← hS' y x]
-    calc ‖inner 𝒷 (T y) x‖ ≤ ‖T y‖ * ‖x‖ := CStarModule.norm_inner_le X
-      _ ≤ (‖T‖ + 1) * ‖y‖ * ‖x‖ := by
-          have h1 : ‖T y‖ ≤ (‖T‖ + 1) * ‖y‖ := by
-            have h2 := T.le_opNorm y
-            have h3 : (0 : ℝ) ≤ ‖y‖ := norm_nonneg y
-            nlinarith
-          exact mul_le_mul_of_nonneg_right h1 (norm_nonneg x)
-  exact ⟨Sl.mkContinuous (‖T‖ + 1) hbound, hS⟩
-
 variable (𝒷 X)
 
 /-- **143IV** (`hilbmod-cstar`, dils.tex:1580, Proposition), the algebraic
@@ -114,11 +76,11 @@ variable {𝒷 X}
 
 /-- The adjoint of an adjointable bounded operator, as a bounded operator. -/
 private noncomputable def baAdj (T : baSubalgebra 𝒷 X) : X →L[ℂ] X :=
-  (exists_clm_adjoint (T := (T : X →L[ℂ] X)) T.2).choose
+  (Theses.A.CStar.exists_clm_adjointTo (T := (T : X →L[ℂ] X)) T.2.choose_spec).choose
 
 private theorem baAdj_spec (T : baSubalgebra 𝒷 X) :
     ModuleAdjointTo 𝒷 ⇑(T : X →L[ℂ] X) ⇑(baAdj T) :=
-  (exists_clm_adjoint (T := (T : X →L[ℂ] X)) T.2).choose_spec
+  (Theses.A.CStar.exists_clm_adjointTo (T := (T : X →L[ℂ] X)) T.2.choose_spec).choose_spec
 
 /-- The star operation of `𝒷ᵃ(X)`: `T ↦ T*`. -/
 private noncomputable def baStar (T : baSubalgebra 𝒷 X) : baSubalgebra 𝒷 X :=
@@ -328,8 +290,55 @@ dual is adjointable. -/
 theorem hilbmod_adjoint_exists [CompleteSpace X] [CompleteSpace Y]
     (hX : SelfDual 𝒷 X) (T : X →L[ℂ] Y)
     (hmod : ∀ (b : 𝒷) (x : X), T (b • x) = b • T x) :
-    ∃ S : Y →L[ℂ] X, ModuleAdjointTo 𝒷 ⇑T ⇑S :=
-  sorry
+    ∃ S : Y →L[ℂ] X, ModuleAdjointTo 𝒷 ⇑T ⇑S := by
+  let _ : NormedSpace ℂ X := NormedSpace.ofCore (CStarModule.normedSpaceCore 𝒷)
+  let _ : NormedSpace ℂ Y := NormedSpace.ofCore (CStarModule.normedSpaceCore 𝒷)
+  -- for each `y` the functional `τ_y = ⟨y, T ·⟩` is bounded and 𝒷-linear,
+  -- so self-duality of `X` represents it as `⟨t, ·⟩`
+  have hτ : ∀ y : Y, ∃ t : X, ∀ x : X, inner 𝒷 y (T x) = inner 𝒷 t x := by
+    intro y
+    refine hX { toFun := fun x => inner 𝒷 y (T x), map_add' := ?_, map_smul' := ?_ }
+      (fun b x => ?_) ⟨‖y‖ * ‖T‖, fun x => ?_⟩
+    · intro x x'
+      simp [CStarModule.inner_add_right]
+    · intro c x
+      simp [CStarModule.inner_smul_right_complex]
+    · show inner 𝒷 y (T (b • x)) = b * inner 𝒷 y (T x)
+      rw [hmod, CStarModule.inner_op_smul_right]
+    · show ‖inner 𝒷 y (T x)‖ ≤ ‖y‖ * ‖T‖ * ‖x‖
+      calc ‖inner 𝒷 y (T x)‖ ≤ ‖y‖ * ‖T x‖ := CStarModule.norm_inner_le Y
+        _ ≤ ‖y‖ * (‖T‖ * ‖x‖) :=
+            mul_le_mul_of_nonneg_left (T.le_opNorm x) (norm_nonneg y)
+        _ = ‖y‖ * ‖T‖ * ‖x‖ := by ring
+  choose S hS using hτ
+  -- `S` is the adjoint of `T`
+  have hadj : ∀ (x : X) (y : Y), inner 𝒷 (T x) y = inner 𝒷 x (S y) := by
+    intro x y
+    rw [← CStarModule.star_inner (A := 𝒷) y (T x), hS y x,
+      CStarModule.star_inner]
+  -- hence linear and bounded
+  have hadd : ∀ y y' : Y, S (y + y') = S y + S y' := fun y y' =>
+    eq_of_inner_right_eq (𝒜 := 𝒷) fun x => by
+      simp only [← hadj, CStarModule.inner_add_right]
+  have hsmul : ∀ (c : ℂ) (y : Y), S (c • y) = c • S y := fun c y =>
+    eq_of_inner_right_eq (𝒜 := 𝒷) fun x => by
+      simp only [← hadj, CStarModule.inner_smul_right_complex]
+  set Sl : Y →ₗ[ℂ] X :=
+    { toFun := S, map_add' := hadd, map_smul' := fun c y => hsmul c y } with hSl
+  have hpos : (0 : ℝ) < ‖T‖ + 1 := by positivity
+  have hbound : ∀ y : Y, ‖Sl y‖ ≤ (‖T‖ + 1) * ‖y‖ := by
+    refine (Theses.A.CStar.chilb_form_bounded (𝒜 := 𝒷) Sl (‖T‖ + 1) hpos).mpr ?_
+    intro y x
+    show ‖inner 𝒷 x (S y)‖ ≤ _
+    rw [← hadj x y]
+    calc ‖inner 𝒷 (T x) y‖ ≤ ‖T x‖ * ‖y‖ := CStarModule.norm_inner_le Y
+      _ ≤ (‖T‖ + 1) * ‖x‖ * ‖y‖ := by
+          have h1 : ‖T x‖ ≤ (‖T‖ + 1) * ‖x‖ := by
+            have h2 := T.le_opNorm x
+            have h3 : (0 : ℝ) ≤ ‖x‖ := norm_nonneg x
+            nlinarith
+          exact mul_le_mul_of_nonneg_right h1 (norm_nonneg y)
+  exact ⟨Sl.mkContinuous (‖T‖ + 1) hbound, hadj⟩
 
 end SelfDualBa
 
