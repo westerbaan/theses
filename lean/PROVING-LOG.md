@@ -362,6 +362,52 @@ formalization trap recorded so it is not rediscovered:
 `exact` — `A`'s norm topology gets re-synthesised — hence the three `@`-applied
 wrappers in `Basic.lean`.
 
+### ⚠️ Session 2 — the first whole-project axiom check, and a leverage ranking
+
+`Theses/AxiomCheck.lean` finally ran over the entire tree (it needs a green
+`lake build Theses`, which concurrent editing had prevented all session):
+
+```
+checked 2973 declarations under `Theses`
+690 are themselves `sorry`; 200 depend on a `sorry`      (exit code 1)
+```
+
+690 sorried *declarations* against ~705 `sorry` tokens — consistent, since some
+proofs contain more than one.  The 200 indirect leaks break down as
+**A/Proc 163, B/Dils 27, A/VN 8, B/Eff 2**, of which 38 are auto-generated
+structure declarations and the rest hand-written.
+
+**The valuable output is not the total but the ranking.**  Almost all of that
+taint traces to a dozen sorried *definitions and instances*:
+
+| root `sorry` | declarations tainted |
+|---|---|
+| `A.Proc.vnTensorProduct_nonempty` | **81** |
+| `A.Proc.exists_tmapM` | 23 |
+| `A.Proc.nmiuId` | 22 |
+| `B.Dils.Ba.instCStarAlgebra` / `instStarOrderedRing` / `instPartialOrder` | 14 each |
+| `A.Proc.instStarOrderedRingCorner` | 14 |
+| `A.Proc.exists_ncpComp` | 11 |
+| `A.Proc.hilbertTensor_nonempty` | 6 |
+| `A.VN.exists_carrier` | 4 |
+| `A.VN.exists_div` | 3 |
+
+Six declarations account for ~157 of A/Proc's 163 leaks; three instances account
+for essentially all of B/Dils's 27.  **This is a work-ordering tool**: proving
+`vnTensorProduct_nonempty` is worth more than any number of ordinary statements
+in that chapter, because until it holds, everything above it is unproved
+regardless of what the `sorry` count says.
+
+Note the shape of the leaks.  These are not proofs citing sorried lemmas — that
+rule was never violated.  They are **definitions and instances whose *types*
+mention a sorried construction**, so every statement about them inherits
+`sorryAx` structurally and invisibly.  `grep` cannot see it and a green build
+cannot see it; only an axiom walk can.
+
+Run it with `lake build Theses && lake env lean Theses/AxiomCheck.lean`.  It
+exits non-zero while any *hand-written* declaration leaks indirectly
+(auto-generated noise is labelled and ignored), which makes it CI-able.
+
 ### ⚠️ Session 2 — the `sorry` count overstates progress in B/Eff's upper chain
 
 **The single most important finding of this session, and it is not an erratum.**
