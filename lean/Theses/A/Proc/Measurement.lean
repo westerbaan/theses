@@ -14,7 +14,11 @@ contraposition (`f^⋄`/`f_⋄`), rigidity, ⋄-self-adjointness and
   that subset).  The C*/von Neumann algebra structure on `Corner A e`
   (with unit `e`, 94II parts 5–8) is *asserted* by `sorry`-ed instances;
   the coherence with the operations of `A` is pinned down by the sorry-ed
-  parts of `corner_vna_basic`.
+  parts of `corner_vna_basic`.  Those instances hold only when `e` is a
+  **projection** (94I forms corners of projections only), which is carried
+  through instance resolution as `[Fact (IsStarProjection e)]`; for the
+  indices `⌈p⌉`, `⌊p⌋`, `⌈d⌉ᵣ` and `⌈f⌉` that occur in this chapter the
+  `Fact` is discharged once and for all just above `cornerSet`.
 * Maps into/out of corners (the standard corner `π_p`, the standard filter
   `c_p`, `Ad_a`-style maps, `[f]`, `⟨f⟩`) are obtained by *choice* from
   sorry-ed existence lemmas (`exists_...`), following the pattern of
@@ -50,9 +54,14 @@ section NormalityAux
 /-! ### Auxiliary: normality of the identity and of composites
 
 These are the routine facts behind `exists_ncpId`, `exists_ncpComp`,
-`nmiuId` and `nmiuComp`.  `isLUB_val_of_isLUB` / `isLUB_of_isLUB_val`
-duplicate private lemmas of `Theses/A/VN/Projections.lean`
-(`isLUB_coe_of_isLUB`, `isLUB_sa_of_isLUB`), which are not exported. -/
+`nmiuId` and `nmiuComp`.  `isLUB_val_of_isLUB` / `isLUB_of_isLUB_val` are
+*generalisations* of `Theses.A.VN.isLUB_coe_of_isLUB` /
+`Theses.A.VN.isLUB_sa_of_isLUB`: those are stated inside a
+`variable [VonNeumannAlgebra A]` section of `Theses/A/VN/Projections.lean`
+(Lean's `unusedSectionVars` linter flags the hypothesis as unused there),
+whereas `exists_ncpId` and `exists_ncpComp` need them for plain
+C*-algebras.  Once `omit [VonNeumannAlgebra A] in` is added upstream these
+can be deleted in favour of the originals. -/
 
 variable {A' B' C' : Type*}
   [NonUnitalRing A'] [StarRing A'] [PartialOrder A'] [StarOrderedRing A']
@@ -121,8 +130,10 @@ theorem preservesDirSups_comp {f : A' → B'} {g : B' → C'}
 end NormalityAux
 
 /-- A positive linear map between C*-algebras preserves self-adjointness
-(via `a = a⁺ - a⁻`).  Duplicates the private
-`isSelfAdjoint_map_of_positive` of `Theses/A/VN/Projections.lean`. -/
+(via `a = a⁺ - a⁻`).  Generalises `Theses.A.VN.isSelfAdjoint_map_of_positive`,
+which is stated inside a `variable [VonNeumannAlgebra A] [VonNeumannAlgebra B]`
+section (both hypotheses unused, as Lean's linter reports) and so cannot be
+applied in `exists_ncpComp`, where `A`, `B`, `C` are plain C*-algebras. -/
 theorem isSelfAdjoint_map_of_pos {A' B' : Type*}
     [CStarAlgebra A'] [PartialOrder A'] [StarOrderedRing A']
     [CStarAlgebra B'] [PartialOrder B'] [StarOrderedRing B']
@@ -197,6 +208,56 @@ projection `p` with `f(p^⊥) = 0`), by choice from `exists_ncpCarrier`. -/
 noncomputable def ncpCarrier [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (f : NCPMap A B) : A := (exists_ncpCarrier f).choose
 
+/-! ### Infrastructure: projection-hood of `⌈·⌉`, `⌊·⌋`, `⌈·⌉ᵣ` and `⌈f⌉`
+
+The corner `e𝒜e` is only a von Neumann algebra when `e` is a *projection*
+(94I/94II), so the instances on `Corner A e` below are stated under
+`[Fact (IsStarProjection e)]`.  The indices that actually occur in this
+chapter — `⌈p⌉`, `⌊p⌋`, `⌈d⌉ᵣ` and `⌈f⌉` — are projections
+*unconditionally* (`ceil`/`floor` have junk value `0` off their domain, and
+`0` is a projection), so the corresponding `Fact` instances are supplied
+here once and for all. -/
+
+/-- `⌈b⌉` is a projection for **every** `b : A`: for positive `b` this is
+`ceil_spec`, and off the positive cone `⌈b⌉` is the junk value `0`. -/
+theorem isStarProjection_ceil [VonNeumannAlgebra A] (b : A) :
+    IsStarProjection (ceil b) := by
+  by_cases hb : 0 ≤ b
+  · exact (ceil_spec hb).1
+  · simp only [ceil, dif_neg hb]
+    exact IsStarProjection.zero A
+
+/-- `⌊b⌋` is a projection for **every** `b : A` (junk value `0` off the
+effects). -/
+theorem isStarProjection_floor [VonNeumannAlgebra A] (b : A) :
+    IsStarProjection (floor b) := by
+  by_cases hb : b ∈ effects A
+  · exact (floor_spec hb).1
+  · simp only [floor, dif_neg hb]
+    exact IsStarProjection.zero A
+
+/-- The support projection `⌈b⌉ᵣ = ⌈b*b⌉` is a projection. -/
+theorem isStarProjection_suppProj [VonNeumannAlgebra A] (b : A) :
+    IsStarProjection (suppProj b) := isStarProjection_ceil _
+
+/-- The carrier `⌈f⌉` of an ncp-map is a projection. -/
+theorem isStarProjection_ncpCarrier [VonNeumannAlgebra A]
+    [VonNeumannAlgebra B] (f : NCPMap A B) : IsStarProjection (ncpCarrier f) :=
+  (exists_ncpCarrier f).choose_spec.1.1
+
+instance factIsStarProjectionCeil [VonNeumannAlgebra A] (b : A) :
+    Fact (IsStarProjection (ceil b)) := ⟨isStarProjection_ceil b⟩
+
+instance factIsStarProjectionFloor [VonNeumannAlgebra A] (b : A) :
+    Fact (IsStarProjection (floor b)) := ⟨isStarProjection_floor b⟩
+
+instance factIsStarProjectionSuppProj [VonNeumannAlgebra A] (b : A) :
+    Fact (IsStarProjection (suppProj b)) := ⟨isStarProjection_suppProj b⟩
+
+instance factIsStarProjectionNcpCarrier [VonNeumannAlgebra A]
+    [VonNeumannAlgebra B] (f : NCPMap A B) :
+    Fact (IsStarProjection (ncpCarrier f)) := ⟨isStarProjection_ncpCarrier f⟩
+
 /-! ## Parsec 940: the corner `e𝒜e` -/
 
 variable (A) in
@@ -217,22 +278,26 @@ structure Corner (e : A) : Type u where
   property : e * val * e = val
 
 /-- **94II** (`corner-vna-basic`, proc.tex:194, Exercise), part 5: the
-corner `e𝒜e` is a C*-algebra (with the operations of `A` and unit `e`). -/
-noncomputable instance (e : A) : CStarAlgebra (Corner A e) := sorry
+corner `e𝒜e` of a **projection** `e` is a C*-algebra (with the operations
+of `A` and unit `e`). -/
+noncomputable instance (e : A) [Fact (IsStarProjection e)] :
+    CStarAlgebra (Corner A e) := sorry
 
 /-- **94II** (`corner-vna-basic`, proc.tex:194, Exercise), parts 5–6: the
 canonical (Loewner) partial order on the corner `e𝒜e`. -/
-noncomputable instance (e : A) : PartialOrder (Corner A e) := sorry
+noncomputable instance (e : A) [Fact (IsStarProjection e)] :
+    PartialOrder (Corner A e) := sorry
 
 /-- **94II** (`corner-vna-basic`, proc.tex:194, Exercise), parts 5–6: the
 order on the corner `e𝒜e` is the star-order. -/
-instance (e : A) : StarOrderedRing (Corner A e) := sorry
+instance (e : A) [Fact (IsStarProjection e)] :
+    StarOrderedRing (Corner A e) := sorry
 
 /-- **94II** (`corner-vna-basic`, proc.tex:194, Exercise), part 8
 (conclusion): the corner `e𝒜e` of a von Neumann algebra is a von Neumann
 algebra. -/
-instance (e : A) [VonNeumannAlgebra A] : VonNeumannAlgebra (Corner A e) :=
-  sorry
+instance (e : A) [Fact (IsStarProjection e)] [VonNeumannAlgebra A] :
+    VonNeumannAlgebra (Corner A e) := sorry
 
 /-- **94II** (`corner-vna-basic`, proc.tex:194, Exercise), part 1: for a
 projection `e`, an `a ∈ A` is of the form `e·b·e` iff `e·a·e = a` iff both
@@ -361,7 +426,7 @@ theorem corner_vna_basic_4 [VonNeumannAlgebra A] (e : A)
 /-- **94II** (`corner-vna-basic`, proc.tex:194, Exercise), part 5,
 coherence: the (asserted) C*-algebra structure of `Corner A e` is given by
 the operations and norm of `A`, with `e` as unit. -/
-theorem corner_vna_basic_5 (e : A) (he : IsStarProjection e)
+theorem corner_vna_basic_5 (e : A) [Fact (IsStarProjection e)]
     (a b : Corner A e) (z : ℂ) :
     (a + b).val = a.val + b.val ∧ (a * b).val = a.val * b.val ∧
       (z • a).val = z • a.val ∧ (star a).val = star a.val ∧
@@ -388,38 +453,44 @@ theorem corner_vna_basic_6 [VonNeumannAlgebra A] (e : A)
 /-- **94II** (`corner-vna-basic`, proc.tex:194, Exercise), part 7: the
 inclusion `e𝒜e → 𝒜` is an ncpsu-map (existence lemma; `cornerIncl` is
 obtained from it by choice). -/
-theorem exists_cornerIncl [VonNeumannAlgebra A] (e : A) :
+theorem exists_cornerIncl [VonNeumannAlgebra A] (e : A)
+    [Fact (IsStarProjection e)] :
     ∃ f : NCPSUMap (Corner A e) A, ∀ a : Corner A e, f.toNCPMap a = a.val :=
   sorry
 
 /-- The inclusion `e𝒜e → 𝒜` as an ncpsu-map (94II part 7). -/
-noncomputable def cornerIncl [VonNeumannAlgebra A] (e : A) :
+noncomputable def cornerIncl [VonNeumannAlgebra A] (e : A)
+    [Fact (IsStarProjection e)] :
     NCPSUMap (Corner A e) A := (exists_cornerIncl e).choose
 
-theorem cornerIncl_apply [VonNeumannAlgebra A] (e : A) (a : Corner A e) :
+theorem cornerIncl_apply [VonNeumannAlgebra A] (e : A)
+    [Fact (IsStarProjection e)] (a : Corner A e) :
     (cornerIncl e).toNCPMap a = a.val := (exists_cornerIncl e).choose_spec a
 
 /-- **94II** (`corner-vna-basic`, proc.tex:194, Exercise), part 8: the
 restriction of an np-functional on `𝒜` to the corner `e𝒜e` is an
 np-functional. -/
 theorem corner_vna_basic_8 [VonNeumannAlgebra A] (e : A)
-    (he : IsStarProjection e) (ω : NPFunctional A) :
+    [Fact (IsStarProjection e)] (ω : NPFunctional A) :
     ∃ ω' : NPFunctional (Corner A e), ∀ a : Corner A e, ω' a = ω a.val :=
   sorry
 
 /-- **94II** (`corner-vna-basic`, proc.tex:194, Exercise), part 9: the
 projection `a ↦ e·a·e : 𝒜 → e𝒜e` onto a corner is an ncpu-map
 (existence lemma; `cornerProjMap` is obtained from it by choice). -/
-theorem exists_cornerProjMap [VonNeumannAlgebra A] (e : A) :
+theorem exists_cornerProjMap [VonNeumannAlgebra A] (e : A)
+    [Fact (IsStarProjection e)] :
     ∃ π : NCPUMap A (Corner A e), ∀ a : A, (π.toNCPMap a).val = e * a * e :=
   sorry
 
 /-- The projection `a ↦ e·a·e : 𝒜 → e𝒜e` onto a corner as an ncpu-map
 (94II part 9). -/
-noncomputable def cornerProjMap [VonNeumannAlgebra A] (e : A) :
+noncomputable def cornerProjMap [VonNeumannAlgebra A] (e : A)
+    [Fact (IsStarProjection e)] :
     NCPUMap A (Corner A e) := (exists_cornerProjMap e).choose
 
-theorem cornerProjMap_apply [VonNeumannAlgebra A] (e : A) (a : A) :
+theorem cornerProjMap_apply [VonNeumannAlgebra A] (e : A)
+    [Fact (IsStarProjection e)] (a : A) :
     ((cornerProjMap e).toNCPMap a).val = e * a * e :=
   (exists_cornerProjMap e).choose_spec a
 
@@ -427,7 +498,7 @@ theorem cornerProjMap_apply [VonNeumannAlgebra A] (e : A) (a : A) :
 np-functional `ω'` on `e𝒜e` is the restriction of the np-functional
 `ω'(e(·)e)` on `𝒜`. -/
 theorem corner_vna_basic_10 [VonNeumannAlgebra A] (e : A)
-    (he : IsStarProjection e) (ω' : NPFunctional (Corner A e)) :
+    [Fact (IsStarProjection e)] (ω' : NPFunctional (Corner A e)) :
     ∃ ω : NPFunctional A,
       (∀ a : A, ω a = ω' ((cornerProjMap e).toNCPMap a)) ∧
       (∀ a : Corner A e, ω' a = ω a.val) := sorry
@@ -436,7 +507,7 @@ theorem corner_vna_basic_10 [VonNeumannAlgebra A] (e : A)
 (continued): the ultraweak and ultrastrong topologies of the corner
 `e𝒜e` coincide with those induced from `𝒜`. -/
 theorem corner_vna_basic_10' [VonNeumannAlgebra A] (e : A)
-    (he : IsStarProjection e) :
+    [Fact (IsStarProjection e)] :
     ultraweak (Corner A e) =
         TopologicalSpace.induced (Corner.val) (ultraweak A) ∧
       ultrastrong (Corner A e) =
@@ -495,30 +566,73 @@ theorem ad_ncp_1 [VonNeumannAlgebra A] (a p q : A)
 `a* p a ≤ q`, then `a*(·)a` gives an ncp-map `p𝒜p → q𝒜q` (existence
 lemma; `adNCP` is obtained from it by choice). -/
 theorem exists_adNCP [VonNeumannAlgebra A] (a p q : A)
-    (hp : IsStarProjection p) (hq : IsStarProjection q)
+    [Fact (IsStarProjection p)] [Fact (IsStarProjection q)]
     (h : star a * p * a ≤ q) :
     ∃ f : NCPMap (Corner A p) (Corner A q),
       ∀ b : Corner A p, (f b).val = star a * b.val * a := sorry
 
 /-- The ncp-map `a*(·)a : p𝒜p → q𝒜q` of 94III part 2. -/
 noncomputable def adNCP [VonNeumannAlgebra A] (a p q : A)
-    (hp : IsStarProjection p) (hq : IsStarProjection q)
+    [Fact (IsStarProjection p)] [Fact (IsStarProjection q)]
     (h : star a * p * a ≤ q) : NCPMap (Corner A p) (Corner A q) :=
-  (exists_adNCP a p q hp hq h).choose
+  (exists_adNCP a p q h).choose
 
 /-- Infrastructure (used for 95II and 103II): for `a·q = a` the map
 `a*(·)a : 𝒜 → q𝒜q` is an ncp-map; by choice `adToCorner`. -/
-theorem exists_adToCorner [VonNeumannAlgebra A] (a q : A) (h : a * q = a) :
+theorem exists_adToCorner [VonNeumannAlgebra A] (a q : A)
+    [Fact (IsStarProjection q)] (h : a * q = a) :
     ∃ f : NCPMap A (Corner A q), ∀ b : A, (f b).val = star a * b * a := sorry
 
 /-- The ncp-map `a*(·)a : 𝒜 → q𝒜q` (for `a·q = a`). -/
-noncomputable def adToCorner [VonNeumannAlgebra A] (a q : A) (h : a * q = a) :
+noncomputable def adToCorner [VonNeumannAlgebra A] (a q : A)
+    [Fact (IsStarProjection q)] (h : a * q = a) :
     NCPMap A (Corner A q) := (exists_adToCorner a q h).choose
 
 /-- Infrastructure (used for 101VII and 103II): `a*(·)a : 𝒜 → 𝒜` is an
 ncp-map; by choice `adSelf`. -/
 theorem exists_adSelf [VonNeumannAlgebra A] (a : A) :
-    ∃ f : NCPMap A A, ∀ b : A, f b = star a * b * a := sorry
+    ∃ f : NCPMap A A, ∀ b : A, f b = star a * b * a := by
+  classical
+  refine ⟨{ toCompletelyPositiveMap :=
+              { toFun := fun b => star a * b * a
+                map_add' := fun x y => by noncomm_ring
+                map_smul' := fun c x => by
+                  simp [mul_smul_comm, smul_mul_assoc]
+                map_cstarMatrix_nonneg' := fun k M hM => ?_ }
+            preservesDirSups' := ?_ }, fun _ => rfl⟩
+  · -- `M ↦ (a* Mᵢⱼ a)ᵢⱼ` is conjugation by the diagonal matrix `diag(a)`
+    set D : CStarMatrix (Fin k) (Fin k) A :=
+      CStarMatrix.ofMatrix (Matrix.diagonal fun _ => a) with hD
+    have hDapp : ∀ i j, D i j = if i = j then a else 0 := fun i j => rfl
+    have hkey : M.map (fun b => star a * b * a) = star D * M * D := by
+      ext i j
+      rw [CStarMatrix.map_apply, CStarMatrix.mul_apply]
+      have h₁ : ∀ l, (star D * M) i l = star a * M i l := by
+        intro l
+        rw [CStarMatrix.mul_apply]
+        rw [Finset.sum_eq_single i]
+        · rw [CStarMatrix.star_apply, hDapp, if_pos rfl]
+        · intro b _ hb
+          rw [CStarMatrix.star_apply, hDapp, if_neg hb, star_zero, zero_mul]
+        · intro h; exact absurd (Finset.mem_univ i) h
+      simp only [h₁]
+      rw [Finset.sum_eq_single j]
+      · rw [hDapp, if_pos rfl]
+      · intro b _ hb
+        rw [hDapp, if_neg hb, mul_zero]
+      · intro h; exact absurd (Finset.mem_univ j) h
+    have hgoal : (0 : CStarMatrix (Fin k) (Fin k) A) ≤ star D * M * D :=
+      star_left_conjugate_nonneg hM D
+    rw [← hkey] at hgoal
+    exact hgoal
+  · -- normality is 44VIII (`ad_normal`)
+    intro D s hne hdir hlub
+    have hbdd : BddAbove D := ⟨s, hlub.1⟩
+    have h : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧ BddAbove D := ⟨hne, hdir, hbdd⟩
+    have hs : s = dirSup D h := hlub.unique (isLUB_dirSup D h)
+    have := ad_normal a D h
+    rw [← hs] at this
+    exact this
 
 /-- The ncp-map `a*(·)a : 𝒜 → 𝒜`. -/
 noncomputable def adSelf [VonNeumannAlgebra A] (a : A) : NCPMap A A :=
@@ -550,7 +664,8 @@ def IsCornerMap (π : NCPMap A C) : Prop :=
 `p` and a partial isometry `u` with `⌊p⌋ = u u*`, the map
 `π(a) = u* a u : 𝒜 → u*u 𝒜 u*u` is a corner of `p`. -/
 theorem prop_corner [VonNeumannAlgebra A] (p u : A) (hp : p ∈ effects A)
-    (hu : IsPartialIsometry A u) (h : floor p = u * star u)
+    (hu : IsPartialIsometry A u) [Fact (IsStarProjection (star u * u))]
+    (h : floor p = u * star u)
     (h' : u * (star u * u) = u) :
     IsCornerOf p (adToCorner u (star u * u) h') := sorry
 
@@ -718,7 +833,7 @@ theorem corners_composition [VonNeumannAlgebra A] [VonNeumannAlgebra B]
 `f(1) ≤ p`, there is a unique ncp-map `g : e𝒜e → ⌈p⌉ℬ⌈p⌉` with
 `c_p ∘ g ∘ π_e = f`; it is given by `g(a) = √p \ f(a) / √p`. -/
 theorem filter_corner [VonNeumannAlgebra A] [VonNeumannAlgebra B]
-    (f : NCPMap A B) (e : A) (he : IsStarProjection e)
+    (f : NCPMap A B) (e : A) [Fact (IsStarProjection e)]
     (hce : ncpCarrier f ≤ e) (p : B) (hp : 0 ≤ p) (hfp : f 1 ≤ p) :
     ∃! g : NCPMap (Corner A e) (Corner B (ceil p)),
       ∀ a : A, f a = stdFilter p (g ((cornerProjMap e).toNCPMap a)) := sorry
@@ -726,7 +841,7 @@ theorem filter_corner [VonNeumannAlgebra A] [VonNeumannAlgebra B]
 /-- **98VII** (`filter-corner`, proc.tex:642, Theorem), formula: the unique
 `g` above is given by `g(a) = √p \ f(a) / √p`. -/
 theorem filter_corner_formula [VonNeumannAlgebra A] [VonNeumannAlgebra B]
-    (f : NCPMap A B) (e : A) (he : IsStarProjection e)
+    (f : NCPMap A B) (e : A) [Fact (IsStarProjection e)]
     (hce : ncpCarrier f ≤ e) (p : B) (hp : 0 ≤ p) (hfp : f 1 ≤ p)
     (g : NCPMap (Corner A e) (Corner B (ceil p)))
     (hg : ∀ a : A, f a = stdFilter p (g ((cornerProjMap e).toNCPMap a))) :
@@ -959,7 +1074,7 @@ theorem equivalent_examples_1 [VonNeumannAlgebra A] (a : A) :
 projection `s` are contraposed (the filter of a projection being the
 inclusion). -/
 theorem equivalent_examples_1' [VonNeumannAlgebra A] (s : A)
-    (hs : IsStarProjection s) :
+    [Fact (IsStarProjection s)] :
     Contraposed (cornerProjMap s).toNCPMap (cornerIncl s).toNCPMap := sorry
 
 /-- **101VII** (`equivalent-examples`, proc.tex:1102, Examples), part 2: an

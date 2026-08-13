@@ -289,17 +289,17 @@ nmiu-map `h : 𝒟 → 𝒜 ⊗ 𝒞` factors as `(ι ⊗ id) ∘ h̃` through
 `(f ⊗ id) ∘ h = (g ⊗ id) ∘ h` agree on `𝒜̃`. -/
 theorem equaliser_lemma [VonNeumannAlgebra A] [VonNeumannAlgebra C]
     [VonNeumannAlgebra D] (h : NMIUMap D (VNT A C)) :
-    ∃ (S : StarSubalgebra ℂ A) (G : Set A), IsVNSubalgebra A S ∧
+    ∃ (S : StarSubalgebra ℂ A) (hS : IsVNSubalgebra A S) (G : Set A),
       S = wstar A G ∧ #G ≤ #D * (2 : Cardinal.{u}) ^ #C ∧
-      ∃ (ι : NMIUMap (VNSub A S) A)
-        (ht : NMIUMap D (VNT (VNSub A S) C)),
-        (∀ x : VNSub A S, ι x = x.val) ∧
+      ∃ (ι : NMIUMap (VNSub A S hS) A)
+        (ht : NMIUMap D (VNT (VNSub A S hS) C)),
+        (∀ x : VNSub A S hS, ι x = x.val) ∧
         (∀ d : D, h d = tmapM ι (nmiuId C) (ht d)) ∧
         ∀ (B : Type u) [CStarAlgebra B] [PartialOrder B]
           [StarOrderedRing B] [VonNeumannAlgebra B] (f g : NMIUMap A B),
           (∀ d : D, tmapM f (nmiuId C) (h d) =
             tmapM g (nmiuId C) (h d)) →
-          ∀ x : VNSub A S, f (ι x) = g (ι x) := sorry
+          ∀ x : VNSub A S hS, f (ι x) = g (ι x) := sorry
 
 /-- **125VI** (`tensor-equalisers`, proc.tex:4972, Proposition),
 definition part: `e : ℰ → 𝒜` is an **equaliser** of nmiu-maps
@@ -512,9 +512,10 @@ nmiu-map `s : 𝒜 → 𝒞 ⊗ ℬ` there is a von Neumann subalgebra
 theorem tensor_map_factorisation [VonNeumannAlgebra A]
     [VonNeumannAlgebra B] [VonNeumannAlgebra C]
     (s : NMIUMap A (VNT C B)) :
-    ∃ S : StarSubalgebra ℂ C, IsVNSubalgebra C S ∧
+    ∃ (S : StarSubalgebra ℂ C) (hS : IsVNSubalgebra C S),
       Set.range ⇑s ⊆ (tensorSub B S : Set (VNT C B)) ∧
-      ∃ (ι : NMIUMap (VNSub C S) C) (st : NMIUMap A (VNT (VNSub C S) B)),
+      ∃ (ι : NMIUMap (VNSub C S hS) C)
+        (st : NMIUMap A (VNT (VNSub C S hS) B)),
         (∀ x, ι x = x.val) ∧
         (∀ a : A, s a = tmapM ι (nmiuId B) (st a)) ∧
         TensorBSurjective st := sorry

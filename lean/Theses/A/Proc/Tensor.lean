@@ -249,7 +249,17 @@ noncomputable def htmul (x : H) (y : K) : HT H K := (hilbTensor H K).map x y
 theorem hilb_tensor_basic_1 {T : Type u} [NormedAddCommGroup T]
     [InnerProductSpace ℂ T] [CompleteSpace T] (γ : H →ₗ[ℂ] K →ₗ[ℂ] T)
     (hγ : IsHilbertTensorProduct γ) (x : H) (y : K) :
-    ‖γ x y‖ = ‖x‖ * ‖y‖ := sorry
+    ‖γ x y‖ = ‖x‖ * ‖y‖ := by
+  -- `‖γ(x,y)‖² = ⟪γ(x,y),γ(x,y)⟫ = ⟪x,x⟫⟪y,y⟫ = ‖x‖²‖y‖²`
+  have h := hγ.inner_mul x x y y
+  have hsq : ‖γ x y‖ ^ 2 = (‖x‖ * ‖y‖) ^ 2 := by
+    have hc : ((‖γ x y‖ ^ 2 : ℝ) : ℂ) = (((‖x‖ * ‖y‖) ^ 2 : ℝ) : ℂ) := by
+      push_cast
+      simpa [inner_self_eq_norm_sq_to_K, mul_pow] using h
+    exact_mod_cast hc
+  calc ‖γ x y‖ = Real.sqrt (‖γ x y‖ ^ 2) := (Real.sqrt_sq (norm_nonneg _)).symm
+    _ = Real.sqrt ((‖x‖ * ‖y‖) ^ 2) := by rw [hsq]
+    _ = ‖x‖ * ‖y‖ := Real.sqrt_sq (by positivity)
 
 /-- **109IV** (`hilb-tensor-basic`, proc.tex:2145, Proposition), part 2:
 for orthonormal bases `ℰ` of `ℋ` and `ℱ` of `𝒦` the set
@@ -303,7 +313,7 @@ theorem): the entrywise (Hadamard) product of positive `N×N`-matrices
 over `ℂ` is positive. -/
 theorem schur (N : ℕ) (a b : Matrix (Fin N) (Fin N) ℂ)
     (ha : a.PosSemidef) (hb : b.PosSemidef) :
-    (Matrix.hadamard a b).PosSemidef := sorry
+    (Matrix.hadamard a b).PosSemidef := ha.hadamard hb
 
 /-- **111IV** (`mult-completely-monotone`, proc.tex:2428, Exercise): for
 positive matrices `a ≤ ã` and `b ≤ b̃` over `ℂ` (of the same dimensions)
@@ -312,7 +322,17 @@ theorem mult_completely_monotone (N : ℕ)
     (a a' b b' : Matrix (Fin N) (Fin N) ℂ) (ha : a.PosSemidef)
     (hb : b.PosSemidef) (hab : (a' - a).PosSemidef)
     (hbb : (b' - b).PosSemidef) :
-    (Matrix.hadamard a' b' - Matrix.hadamard a b).PosSemidef := sorry
+    (Matrix.hadamard a' b' - Matrix.hadamard a b).PosSemidef := by
+  -- `a'⊙b' - a⊙b = a⊙(b'-b) + (a'-a)⊙b + (a'-a)⊙(b'-b)`, and each
+  -- summand is positive by Schur (111II).
+  have hsplit : Matrix.hadamard a' b' - Matrix.hadamard a b =
+      Matrix.hadamard a (b' - b) + Matrix.hadamard (a' - a) b +
+        Matrix.hadamard (a' - a) (b' - b) := by
+    ext i j
+    simp only [Matrix.hadamard_apply, Matrix.sub_apply, Matrix.add_apply]
+    ring
+  rw [hsplit]
+  exact ((ha.hadamard hbb).add (hab.hadamard hb)).add (hab.hadamard hbb)
 
 /-- **111V** (`hilb-tensor-functor`, proc.tex:2436, Proposition): for
 bounded linear maps `A : ℋ → ℋ'` and `B : 𝒦 → 𝒦'` there is a unique
@@ -337,21 +357,26 @@ tensor product) -/
 
 variable (A) in
 /-- Wrapper: a von Neumann subalgebra `S ⊆ A` bundled as an algebra in its
-own right, with sorry-ed instances (cf. `Corner` in `Measurement.lean`). -/
-structure VNSub (S : StarSubalgebra ℂ A) : Type u where
+own right, with sorry-ed instances (cf. `Corner` in `Measurement.lean`).
+The witness `hS : IsVNSubalgebra A S` (42V, `A/VN/Basic.lean`) is carried
+as an index: a bare `StarSubalgebra ℂ A` need not be norm-closed, hence
+need not be complete, hence need not be a C*-algebra at all. -/
+structure VNSub (S : StarSubalgebra ℂ A) (hS : IsVNSubalgebra A S) :
+    Type u where
   val : A
   property : val ∈ S
 
-noncomputable instance (S : StarSubalgebra ℂ A) : CStarAlgebra (VNSub A S) :=
-  sorry
+noncomputable instance (S : StarSubalgebra ℂ A) (hS : IsVNSubalgebra A S) :
+    CStarAlgebra (VNSub A S hS) := sorry
 
-noncomputable instance (S : StarSubalgebra ℂ A) : PartialOrder (VNSub A S) :=
-  sorry
+noncomputable instance (S : StarSubalgebra ℂ A) (hS : IsVNSubalgebra A S) :
+    PartialOrder (VNSub A S hS) := sorry
 
-instance (S : StarSubalgebra ℂ A) : StarOrderedRing (VNSub A S) := sorry
+instance (S : StarSubalgebra ℂ A) (hS : IsVNSubalgebra A S) :
+    StarOrderedRing (VNSub A S hS) := sorry
 
-instance (S : StarSubalgebra ℂ A) [VonNeumannAlgebra A] :
-    VonNeumannAlgebra (VNSub A S) := sorry
+instance (S : StarSubalgebra ℂ A) (hS : IsVNSubalgebra A S)
+    [VonNeumannAlgebra A] : VonNeumannAlgebra (VNSub A S hS) := sorry
 
 section Spatial
 
@@ -368,10 +393,11 @@ theorem special_tensor (SA : StarSubalgebra ℂ (H →L[ℂ] H))
     (SB : StarSubalgebra ℂ (K →L[ℂ] K))
     (hSA : IsVNSubalgebra (H →L[ℂ] H) SA)
     (hSB : IsVNSubalgebra (K →L[ℂ] K) SB) :
-    ∃ γ : VNSub (H →L[ℂ] H) SA →ₗ[ℂ] VNSub (K →L[ℂ] K) SB →ₗ[ℂ]
+    ∃ γ : VNSub (H →L[ℂ] H) SA hSA →ₗ[ℂ] VNSub (K →L[ℂ] K) SB hSB →ₗ[ℂ]
         VNSub (HT H K →L[ℂ] HT H K)
           (wstar (HT H K →L[ℂ] HT H K)
-            {x | ∃ a ∈ SA, ∃ b ∈ SB, x = opTensor a b}),
+            {x | ∃ a ∈ SA, ∃ b ∈ SB, x = opTensor a b})
+          (isVNSubalgebra_wstar _).1,
       (∀ a b, (γ a b).val = opTensor a.val b.val) ∧ IsTensorProduct γ :=
   sorry
 
