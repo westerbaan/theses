@@ -20,9 +20,12 @@ contraposition (`f^⋄`/`f_⋄`), rigidity, ⋄-self-adjointness and
   `Fact` is discharged once and for all just above `cornerSet`.
 * Maps into/out of corners (the standard corner `π_p`, the standard filter
   `c_p`, `Ad_a`-style maps, `[f]`, `⟨f⟩`) are obtained by *choice* from
-  sorry-ed existence lemmas (`exists_...`), following the pattern of
+  existence lemmas (`exists_...`), following the pattern of
   `Theses/B/Eff/WStarCat.lean`; their defining formulas are the
-  corresponding `..._apply`/`..._spec` theorems.
+  corresponding `..._apply`/`..._spec` theorems.  Most of those existence
+  lemmas are now proved; `exists_sqBracket` is the notable one still `sorry`,
+  as is `exists_diamondDown` — and while an `exists_` lemma is `sorry`, every
+  statement about the map it defines is vacuous.
 * The universal properties are Prop-valued structures `IsCornerOf` (95I)
   and `IsFilter` (96I) quantifying over all von Neumann algebras in the
   same universe `u`.  A **corner** map simpliciter (`IsCornerMap`) is a
