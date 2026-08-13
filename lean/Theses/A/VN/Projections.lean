@@ -613,7 +613,7 @@ variable [VonNeumannAlgebra A]
 
 /-- Auxiliary: an `IsLUB` in `sa(A)` is an `IsLUB` in `A` (upper bounds of a
 nonempty set of self-adjoint elements are automatically self-adjoint). -/
-private theorem isLUB_coe_of_isLUB {D : Set (selfAdjoint A)} {s : selfAdjoint A}
+theorem isLUB_coe_of_isLUB {D : Set (selfAdjoint A)} {s : selfAdjoint A}
     (hne : D.Nonempty) (h : IsLUB D s) :
     IsLUB (Subtype.val '' D) ((s : selfAdjoint A) : A) := by
   obtain ⟨d₀, hd₀⟩ := hne
@@ -1470,7 +1470,7 @@ private theorem star_mul_self_absorb_iff (a : A) {p : A}
 
 /-- An `IsLUB` in `A` of a set of self-adjoint elements is an `IsLUB` in
 `sa(A)` (converse of `isLUB_coe_of_isLUB`). -/
-private theorem isLUB_sa_of_isLUB {D : Set (selfAdjoint A)} {s : selfAdjoint A}
+theorem isLUB_sa_of_isLUB {D : Set (selfAdjoint A)} {s : selfAdjoint A}
     (h : IsLUB (Subtype.val '' D) ((s : selfAdjoint A) : A)) : IsLUB D s := by
   refine ⟨fun d hd => Subtype.coe_le_coe.mp (h.1 ⟨d, hd, rfl⟩), fun v hv => ?_⟩
   refine Subtype.coe_le_coe.mp (h.2 ?_)
@@ -2188,7 +2188,7 @@ theorem ceil_functionals (a b : A) (ha : 0 ≤ a) (hb : 0 ≤ b) :
     exact (conj_ortho_eq_zero_iff
       ⟨(ceil_spec ha).1.nonneg, (ceil_spec ha).1.le_one⟩ (ceil_spec hb).1).mp hzero
 
-private theorem isSelfAdjoint_map_of_positive (f : A →ₚ[ℂ] B) {x : A}
+theorem isSelfAdjoint_map_of_positive (f : A →ₚ[ℂ] B) {x : A}
     (hx : IsSelfAdjoint x) : IsSelfAdjoint (f x) := by
   have hsplit : posPart x - negPart x = x := CFC.posPart_sub_negPart x hx
   have hz : (f (0 : A) : B) = 0 := map_zero f

@@ -64,7 +64,7 @@ private theorem eq_of_inner_left_eq {W : Type*} [NormedAddCommGroup W]
   exact sub_eq_zero.mp (CStarModule.inner_self.mp h0)
 
 /-- Definiteness of the 𝒜-valued inner product, in the second argument. -/
-private theorem eq_of_inner_right_eq {W : Type*} [NormedAddCommGroup W]
+theorem eq_of_inner_right_eq {W : Type*} [NormedAddCommGroup W]
     [Module ℂ W] [SMul 𝒜 W] [CStarModule 𝒜 W] {a b : W}
     (h : ∀ x : W, inner 𝒜 x a = inner 𝒜 x b) : a = b := by
   have h0 : inner 𝒜 (a - b) (a - b) = (0 : 𝒜) := by
@@ -301,7 +301,7 @@ theorem module_maps_cstar_identity (T S : X →L[ℂ] X)
 
 /-- A map adjoint to a bounded module map is automatically linear and bounded
 (by **32X**), so it may be taken to be a continuous linear map. -/
-private theorem exists_clm_adjointTo {T : X →L[ℂ] X} {S : X → X}
+theorem exists_clm_adjointTo {T : X →L[ℂ] X} {S : X → X}
     (h : ModuleAdjointTo 𝒜 ⇑T S) : ∃ S' : X →L[ℂ] X, ModuleAdjointTo 𝒜 ⇑T ⇑S' := by
   have h' : ∀ x y : X, inner 𝒜 (T x) y = inner 𝒜 x (S y) := h
   have hbound : ∀ y x : X, ‖inner 𝒜 x (S y)‖ ≤ ‖T‖ * ‖x‖ * ‖y‖ := by
