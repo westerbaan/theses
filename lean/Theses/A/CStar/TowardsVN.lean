@@ -954,19 +954,49 @@ theorem vector_functional_convergence_1 {ι : Type*} (x : ι → H) :
           have := norm_sub_norm_le (∑ α ∈ F ∪ F₀, vectorFunctionalCLM (x α)) φ
           linarith
 
-/-- **38VI** (`vector-functional-convergence`, cstar.tex:6366, Exercise),
-part 2: for a net `(x_α)_α` in a Hilbert space `H` and `x ∈ H`, `x_α → x` if
-and only if `⟪x_α, (·) x_α⟫` operator-norm converges to `⟪x, (·) x⟫`.
+/-- **38VI** (`vector-functional-convergence`, cstar.tex:6461, Exercise),
+part 2: for a net `(x_α)_α` in a Hilbert space `H` and `x ∈ H`, if `x_α → x`
+then `⟪x_α, (·) x_α⟫` operator-norm converges to `⟪x, (·) x⟫`.
 
-(Note: the "if" direction as literally stated in the thesis fails for phases —
-the constant net `x_α = i • x` with `x ≠ 0` induces the same vector functional
-as `x` — so, as stated, this direction presumably intends convergence up to
-phase; we nonetheless record the thesis's claim verbatim.) -/
+(The converse was stated in an earlier version of the thesis and is false: the
+constant net `x_α = i • x` with `x ≠ 0` induces the same vector functional as
+`x`.  Erratum `parsec-380.60` drops it, together with its hint; the direction
+below is the only one used later on.) -/
 theorem vector_functional_convergence_2 {ι : Type*} {l : Filter ι} [l.NeBot]
-    (x : ι → H) (x₀ : H) :
-    Tendsto x l (𝓝 x₀) ↔
-      Tendsto (fun α => vectorFunctionalCLM (x α)) l (𝓝 (vectorFunctionalCLM x₀)) :=
-  sorry
+    (x : ι → H) (x₀ : H) (hx : Tendsto x l (𝓝 x₀)) :
+    Tendsto (fun α => vectorFunctionalCLM (x α)) l (𝓝 (vectorFunctionalCLM x₀)) := by
+  -- The thesis publishes no solution for parsec 380, so this argument is ours.
+  -- The estimate is the polarisation-free one: split the difference of the two
+  -- vector functionals as `⟪y-x, T y⟫ + ⟪x, T (y-x)⟫`, so that it is bounded by
+  -- `‖y - x‖ (‖y‖ + ‖x‖)` uniformly in `‖T‖ ≤ 1`.
+  have key : ∀ y : H, ‖vectorFunctionalCLM y - vectorFunctionalCLM x₀‖
+      ≤ ‖y - x₀‖ * (‖y‖ + ‖x₀‖) := by
+    intro y
+    refine ContinuousLinearMap.opNorm_le_bound _ (by positivity) fun T => ?_
+    have hsplit : (vectorFunctionalCLM y - vectorFunctionalCLM x₀) T
+        = ⟪y - x₀, T y⟫ + ⟪x₀, T (y - x₀)⟫ := by
+      simp only [ContinuousLinearMap.sub_apply, vectorFunctionalCLM_apply,
+        inner_sub_left, map_sub, inner_sub_right]
+      ring
+    rw [hsplit]
+    have b1 : ‖⟪y - x₀, T y⟫‖ ≤ ‖y - x₀‖ * (‖T‖ * ‖y‖) :=
+      (norm_inner_le_norm _ _).trans <|
+        mul_le_mul_of_nonneg_left (T.le_opNorm y) (norm_nonneg _)
+    have b2 : ‖⟪x₀, T (y - x₀)⟫‖ ≤ ‖x₀‖ * (‖T‖ * ‖y - x₀‖) :=
+      (norm_inner_le_norm _ _).trans <|
+        mul_le_mul_of_nonneg_left (T.le_opNorm _) (norm_nonneg _)
+    calc ‖⟪y - x₀, T y⟫ + ⟪x₀, T (y - x₀)⟫‖
+        ≤ ‖⟪y - x₀, T y⟫‖ + ‖⟪x₀, T (y - x₀)⟫‖ := norm_add_le _ _
+      _ ≤ ‖y - x₀‖ * (‖T‖ * ‖y‖) + ‖x₀‖ * (‖T‖ * ‖y - x₀‖) := add_le_add b1 b2
+      _ = ‖y - x₀‖ * (‖y‖ + ‖x₀‖) * ‖T‖ := by ring
+  -- `‖x_α - x₀‖ → 0` while `‖x_α‖ + ‖x₀‖ → 2‖x₀‖`, so the bound tends to `0`.
+  rw [tendsto_iff_norm_sub_tendsto_zero]
+  refine squeeze_zero (fun α => norm_nonneg _) (fun α => key (x α)) ?_
+  have h1 : Tendsto (fun α => ‖x α - x₀‖) l (𝓝 0) :=
+    tendsto_iff_norm_sub_tendsto_zero.mp hx
+  have h2 : Tendsto (fun α => ‖x α‖ + ‖x₀‖) l (𝓝 (‖x₀‖ + ‖x₀‖)) :=
+    (hx.norm).add tendsto_const_nhds
+  simpa using h1.mul h2
 
 /-! ## Parsec 390: Orthonormal bases and the normality theorem for B(H)
 

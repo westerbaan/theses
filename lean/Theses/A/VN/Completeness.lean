@@ -649,12 +649,14 @@ theorem kaplansky_pos (S : StarSubalgebra ℂ A) (hS : IsClosed (S : Set A))
 
 /-- **74IV** (`kaplansky`, vn.tex:4336, Kaplansky's Density Theorem),
 part 3: if moreover `b` is an effect, the `a_α` can be chosen to be
-effects. -/
+effects (retaining `‖a_α‖ ≤ ‖b‖` from the main claim, which the "moreover"
+clauses only add to — note this is strictly stronger than `‖a_α‖ ≤ 1`, which
+is all that being an effect gives). -/
 theorem kaplansky_effects (S : StarSubalgebra ℂ A)
     (hS : IsClosed (S : Set A)) (b : A)
     (hb : b ∈ @closure A (ultrastrong A) S) (heff : b ∈ effects A) :
     ∃ (ι : Type u) (l : Filter ι), l.NeBot ∧ ∃ a : ι → A,
-      (∀ i, a i ∈ S ∧ a i ∈ effects A) ∧ USTendsto a l b :=
+      (∀ i, a i ∈ S ∧ ‖a i‖ ≤ ‖b‖ ∧ a i ∈ effects A) ∧ USTendsto a l b :=
   sorry
 
 /-- **74VI** (`dense-subalgebra`, vn.tex:4421, Corollary): given `ε > 0`
