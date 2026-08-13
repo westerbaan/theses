@@ -788,13 +788,188 @@ theorem corner_vna_basic_6 [VonNeumannAlgebra A] (e : A)
   -- `e(·)e` is normal (44VIII), so it sends `⋁D` to `⋁ e D e = ⋁ D`
   isLUB_mem_cornerSet e he D (dirSup D h) hD h.1 h.2.1 (isLUB_dirSup D h)
 
+namespace Corner
+
+variable {e : A} [Fact (IsStarProjection e)]
+
+/-- `Corner.val` as a non-unital ∗-algebra homomorphism. -/
+def valStarHom : Corner A e →⋆ₙₐ[ℂ] A where
+  toFun := Corner.val
+  map_zero' := rfl
+  map_add' _ _ := rfl
+  map_mul' _ _ := rfl
+  map_smul' _ _ := rfl
+  map_star' _ := rfl
+
+@[simp] theorem valStarHom_apply (a : Corner A e) : valStarHom a = a.val := rfl
+
+theorem map_eq_mapₙₐ (k : ℕ) (M : CStarMatrix (Fin k) (Fin k) (Corner A e)) :
+    M.map (Corner.val) = CStarMatrix.mapₙₐ (valStarHom (e := e)) M := by
+  ext i j; rfl
+
+theorem map_val_injective (k : ℕ) :
+    Function.Injective
+      (fun M : CStarMatrix (Fin k) (Fin k) (Corner A e) => M.map (Corner.val)) :=
+  CStarMatrix.map_injective val_injective
+
+/-- The diagonal matrix `diag(e, …, e)`, a projection of `M_k(A)`. -/
+def diagProj (e : A) (k : ℕ) : CStarMatrix (Fin k) (Fin k) A :=
+  CStarMatrix.ofMatrix (Matrix.diagonal fun _ => e)
+
+theorem diagProj_apply (e : A) (k : ℕ) (i j : Fin k) :
+    diagProj e k i j = if i = j then e else 0 := rfl
+
+theorem isStarProjection_diagProj (k : ℕ) :
+    IsStarProjection (diagProj e k) := by
+  have hsa : star e = e := (proj e).isSelfAdjoint.star_eq
+  have hee : e * e = e := (proj e).isIdempotentElem.eq
+  constructor
+  · show diagProj e k * diagProj e k = diagProj e k
+    ext i j
+    rw [CStarMatrix.mul_apply, diagProj_apply]
+    rw [Finset.sum_eq_single i]
+    · rw [diagProj_apply, diagProj_apply, if_pos rfl]
+      by_cases h : i = j
+      · subst h; simp [hee]
+      · rw [if_neg h, mul_zero]
+    · intro b _ hb
+      rw [diagProj_apply, if_neg (Ne.symm hb), zero_mul]
+    · intro h; exact absurd (Finset.mem_univ i) h
+  · show star (diagProj e k) = diagProj e k
+    ext i j
+    rw [CStarMatrix.star_apply, diagProj_apply, diagProj_apply]
+    by_cases h : i = j
+    · subst h; simp [hsa]
+    · rw [if_neg (Ne.symm h), if_neg h, star_zero]
+
+theorem diagProj_conj (k : ℕ) (M : CStarMatrix (Fin k) (Fin k) (Corner A e)) :
+    diagProj e k * (M.map Corner.val) * diagProj e k = M.map Corner.val := by
+  ext i j
+  rw [CStarMatrix.mul_apply, CStarMatrix.map_apply]
+  have h₁ : ∀ l, (diagProj e k * M.map Corner.val) i l = e * (M i l).val := by
+    intro l
+    rw [CStarMatrix.mul_apply, Finset.sum_eq_single i]
+    · rw [diagProj_apply, if_pos rfl, CStarMatrix.map_apply]
+    · intro b _ hb
+      rw [diagProj_apply, if_neg (Ne.symm hb), zero_mul]
+    · intro h; exact absurd (Finset.mem_univ i) h
+  simp only [h₁]
+  rw [Finset.sum_eq_single j]
+  · rw [diagProj_apply, if_pos rfl]
+    exact (M i j).property
+  · intro b _ hb
+    rw [diagProj_apply, if_neg hb, mul_zero]
+  · intro h; exact absurd (Finset.mem_univ j) h
+
+/-- Positivity in `M_k(e𝒜e)` is positivity in `M_k(𝒜)`. -/
+theorem nonneg_map_val_iff (k : ℕ) (M : CStarMatrix (Fin k) (Fin k) (Corner A e)) :
+    0 ≤ M.map Corner.val ↔ 0 ≤ M := by
+  letI : NonUnitalContinuousFunctionalCalculus ℝ
+      (CStarMatrix (Fin k) (Fin k) A) IsSelfAdjoint :=
+    IsSelfAdjoint.instNonUnitalContinuousFunctionalCalculus
+  letI : NonnegSpectrumClass ℝ (CStarMatrix (Fin k) (Fin k) A) :=
+    CStarAlgebra.instNonnegSpectrumClass
+  letI : NonUnitalContinuousFunctionalCalculus ℝ
+      (CStarMatrix (Fin k) (Fin k) (Corner A e)) IsSelfAdjoint :=
+    IsSelfAdjoint.instNonUnitalContinuousFunctionalCalculus
+  letI : NonnegSpectrumClass ℝ (CStarMatrix (Fin k) (Fin k) (Corner A e)) :=
+    CStarAlgebra.instNonnegSpectrumClass
+  constructor
+  · intro h
+    -- `√(M.map val)` again has entries in the corner
+    set Q := CFC.sqrt (M.map Corner.val) with hQ
+    have hQmem : diagProj e k * Q * diagProj e k = Q := by
+      haveI : Fact (IsStarProjection (diagProj e k)) :=
+        ⟨isStarProjection_diagProj k⟩
+      exact Corner.sqrt_mem (M.map Corner.val) h (diagProj_conj k M)
+    have hentry : ∀ i j, e * Q i j * e = Q i j := by
+      intro i j
+      have := congrFun (congrFun hQmem i) j
+      rw [CStarMatrix.mul_apply] at this
+      have h₁ : ∀ l, (diagProj e k * Q) i l = e * Q i l := by
+        intro l
+        rw [CStarMatrix.mul_apply, Finset.sum_eq_single i]
+        · rw [diagProj_apply, if_pos rfl]
+        · intro b _ hb
+          rw [diagProj_apply, if_neg (Ne.symm hb), zero_mul]
+        · intro hc; exact absurd (Finset.mem_univ i) hc
+      simp only [h₁] at this
+      rw [Finset.sum_eq_single j] at this
+      · rwa [diagProj_apply, if_pos rfl] at this
+      · intro b _ hb
+        rw [diagProj_apply, if_neg hb, mul_zero]
+      · intro hc; exact absurd (Finset.mem_univ j) hc
+    set N : CStarMatrix (Fin k) (Fin k) (Corner A e) :=
+      CStarMatrix.ofMatrix (Matrix.of fun i j => (⟨Q i j, hentry i j⟩ : Corner A e))
+      with hN
+    have hNmap : N.map Corner.val = Q := by ext i j; rfl
+    have hMN : M = star N * N := by
+      refine map_val_injective k ?_
+      show M.map Corner.val = (star N * N).map Corner.val
+      rw [map_eq_mapₙₐ (M := star N * N), map_mul, map_star, ← map_eq_mapₙₐ, hNmap]
+      rw [hQ]
+      have hsa : IsSelfAdjoint (CFC.sqrt (M.map Corner.val)) :=
+        IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg _)
+      rw [hsa.star_eq, CFC.sqrt_mul_sqrt_self _ h]
+    rw [hMN]
+    exact star_mul_self_nonneg N
+  · intro h
+    set N := CFC.sqrt M with hN
+    have hsa : IsSelfAdjoint N := IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg M)
+    have hMN : M = star N * N := by
+      rw [hsa.star_eq, hN, CFC.sqrt_mul_sqrt_self M h]
+    rw [hMN, map_eq_mapₙₐ, map_mul, map_star, ← map_eq_mapₙₐ]
+    exact star_mul_self_nonneg _
+
+/-- `e ≤ 1` for a projection `e`. -/
+theorem le_one : e ≤ 1 := by
+  have hee : e * e = e := (proj e).isIdempotentElem.eq
+  have hse : star e = e := (proj e).isSelfAdjoint.star_eq
+  have h : star (1 - e) * (1 - e) = 1 - e := by
+    rw [star_sub, star_one, hse]
+    noncomm_ring [hee]
+  have := star_mul_self_nonneg (1 - e)
+  rw [h] at this
+  exact sub_nonneg.mp this
+
+/-- If the image under `val` of `T ⊆ e𝒜e` has least upper bound `x.val` in
+`𝒜`, then `x` is a least upper bound of `T` in `e𝒜e`. -/
+theorem isLUB_of_isLUB_image_val {T : Set (Corner A e)} {x : Corner A e}
+    (h : IsLUB (Corner.val '' T) x.val) : IsLUB T x := by
+  constructor
+  · intro t ht
+    exact h.1 ⟨t, ht, rfl⟩
+  · intro u hu
+    refine h.2 ?_
+    rintro _ ⟨t, ht, rfl⟩
+    exact hu ht
+
+end Corner
+
 /-- **94II** (`corner-vna-basic`, proc.tex:194, Exercise), part 7: the
 inclusion `e𝒜e → 𝒜` is an ncpsu-map (existence lemma; `cornerIncl` is
 obtained from it by choice). -/
 theorem exists_cornerIncl [VonNeumannAlgebra A] (e : A)
     [Fact (IsStarProjection e)] :
-    ∃ f : NCPSUMap (Corner A e) A, ∀ a : Corner A e, f.toNCPMap a = a.val :=
-  sorry
+    ∃ f : NCPSUMap (Corner A e) A, ∀ a : Corner A e, f.toNCPMap a = a.val := by
+
+  refine ⟨{ toNCPMap :=
+              { toCompletelyPositiveMap :=
+                  { toFun := fun a => a.val
+                    map_add' := fun _ _ => rfl
+                    map_smul' := fun _ _ => rfl
+                    map_cstarMatrix_nonneg' := fun k M hM => ?_ }
+                preservesDirSups' := ?_ }
+            subunital' := ?_ }, fun _ => rfl⟩
+  · exact (Corner.nonneg_map_val_iff k M).mpr hM
+  · intro D s hne hdir hlub
+    have h1 := Corner.isLUB_saMap_image hne hdir hlub
+    have h2 := isLUB_coe_of_isLUB (hne.image _) h1
+    rw [← Set.image_comp] at h2
+    exact h2
+  · show (1 : Corner A e).val ≤ (1 : A)
+    exact Corner.le_one
+
 
 /-- The inclusion `e𝒜e → 𝒜` as an ncpsu-map (94II part 7). -/
 noncomputable def cornerIncl [VonNeumannAlgebra A] (e : A)
@@ -818,8 +993,62 @@ projection `a ↦ e·a·e : 𝒜 → e𝒜e` onto a corner is an ncpu-map
 (existence lemma; `cornerProjMap` is obtained from it by choice). -/
 theorem exists_cornerProjMap [VonNeumannAlgebra A] (e : A)
     [Fact (IsStarProjection e)] :
-    ∃ π : NCPUMap A (Corner A e), ∀ a : A, (π.toNCPMap a).val = e * a * e :=
-  sorry
+    ∃ π : NCPUMap A (Corner A e), ∀ a : A, (π.toNCPMap a).val = e * a * e := by
+
+  have hee : e * e = e := (Corner.proj e).isIdempotentElem.eq
+  have hse : star e = e := (Corner.proj e).isSelfAdjoint.star_eq
+  have hmem : ∀ a : A, e * (e * a * e) * e = e * a * e := by
+    intro a
+    calc e * (e * a * e) * e = (e * e) * a * (e * e) := by noncomm_ring
+      _ = e * a * e := by rw [hee]
+  refine ⟨{ toNCPMap :=
+              { toCompletelyPositiveMap :=
+                  { toFun := fun a => ⟨e * a * e, hmem a⟩
+                    map_add' := fun x y => Corner.val_injective (by
+                      show e * (x + y) * e = e * x * e + e * y * e
+                      noncomm_ring)
+                    map_smul' := fun c x => Corner.val_injective (by
+                      simp [mul_smul_comm, smul_mul_assoc])
+                    map_cstarMatrix_nonneg' := fun k M hM => ?_ }
+                preservesDirSups' := ?_ }
+            unital' := ?_ }, fun _ => rfl⟩
+  · refine (Corner.nonneg_map_val_iff k _).mp ?_
+    have hmap : (CStarMatrix.map M fun a => (⟨e * a * e, hmem a⟩ : Corner A e)).map
+        Corner.val = star (Corner.diagProj e k) * M * Corner.diagProj e k := by
+      ext i j
+      rw [CStarMatrix.map_apply, CStarMatrix.map_apply, CStarMatrix.mul_apply]
+      have h₁ : ∀ l, (star (Corner.diagProj e k) * M) i l = e * M i l := by
+        intro l
+        rw [CStarMatrix.mul_apply, Finset.sum_eq_single i]
+        · rw [CStarMatrix.star_apply, Corner.diagProj_apply, if_pos rfl, hse]
+        · intro b _ hb
+          rw [CStarMatrix.star_apply, Corner.diagProj_apply, if_neg hb, star_zero,
+            zero_mul]
+        · intro hc; exact absurd (Finset.mem_univ i) hc
+      simp only [h₁]
+      rw [Finset.sum_eq_single j]
+      · rw [Corner.diagProj_apply, if_pos rfl]
+      · intro b _ hb
+        rw [Corner.diagProj_apply, if_neg hb, mul_zero]
+      · intro hc; exact absurd (Finset.mem_univ j) hc
+    have key : (0 : CStarMatrix (Fin k) (Fin k) A) ≤
+        star (Corner.diagProj e k) * M * Corner.diagProj e k :=
+      star_left_conjugate_nonneg hM (Corner.diagProj e k)
+    rw [← hmap] at key
+    exact key
+  · intro D s hne hdir hlub
+    refine Corner.isLUB_of_isLUB_image_val ?_
+    have hbdd : BddAbove D := ⟨s, hlub.1⟩
+    have h : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧ BddAbove D := ⟨hne, hdir, hbdd⟩
+    have hs : s = dirSup D h := hlub.unique (isLUB_dirSup D h)
+    have hnat := ad_normal e D h
+    rw [hse, ← hs] at hnat
+    rw [← Set.image_comp]
+    exact hnat
+  · refine Corner.val_injective ?_
+    show e * 1 * e = e
+    rw [mul_one, hee]
+
 
 /-- The projection `a ↦ e·a·e : 𝒜 → e𝒜e` onto a corner as an ncpu-map
 (94II part 9). -/
