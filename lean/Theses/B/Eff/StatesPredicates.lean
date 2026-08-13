@@ -414,6 +414,26 @@ theorem isSumOf_map_of_support {X : Type v} {M : Type u} [PCM M] (u : X → M)
   exact (isSumOf_map_filter u _ (hz l')).mp
     (PCM.isSumOf_perm (List.Perm.map u hperm) h1)
 
+open Classical in
+/-- Helper: enlarging the (repetition-free) index list by indices where the
+summand vanishes does not change the sum.  (Unlike `isSumOf_map_of_support`
+this does not require the two lists to contain the *whole* support of `u`,
+only that they agree where `u` is non-zero.) -/
+theorem isSumOf_map_of_subset {X : Type v} {M : Type u} [PCM M] (u : X → M)
+    {l l' : List X} (hnd : l.Nodup) (hnd' : l'.Nodup)
+    (hsub : ∀ x ∈ l, x ∈ l') (hz : ∀ x ∈ l', x ∉ l → u x = 0) {S : M}
+    (h : PCM.IsSumOf (l.map u) S) : PCM.IsSumOf (l'.map u) S := by
+  have hz' : ∀ x ∈ l', (decide (x ∈ l)) = false → u x = 0 := by
+    intro x hx hd
+    exact hz x hx (by simpa using hd)
+  refine (isSumOf_map_filter u (fun x => decide (x ∈ l)) hz').mp ?_
+  have hperm : (l'.filter (fun x => decide (x ∈ l))).Perm l :=
+    (List.perm_ext_iff_of_nodup (List.Nodup.filter _ hnd') hnd).mpr (by
+      intro x
+      simp only [List.mem_filter, decide_eq_true_eq]
+      exact ⟨fun hx => hx.2, fun hx => ⟨hsub x hx, hx⟩⟩)
+  exact PCM.isSumOf_perm (List.Perm.map u hperm.symm) h
+
 /-- Helper: a sum of sums is the sum of the concatenation. -/
 theorem isSumOf_flatMap {A : Type v} {M : Type u} [PCM M] (L : A → List M)
     (r : A → M) {la : List A} (hr : ∀ a ∈ la, PCM.IsSumOf (L a) (r a)) {S : M}
@@ -1124,6 +1144,296 @@ theorem mu_mu {X : Type v}
   exact isSumOf_unique h8 h9
 
 open Classical in
+/-- **192III.1** (`exc-dm-effectus`, bsols.tex:2013): naturality of `η`:
+`𝒟_M f ∘ η_X = η_Y ∘ f`. -/
+theorem map_eta {X : Type v} {Y : Type w} (x : X) (f : X → Y) :
+    (eta x : MConvexComb M X).map f = eta (f x) := by
+  refine MConvexComb.ext (funext fun z => ?_)
+  have hval : ∀ x' : X, (eta x : MConvexComb M X).toFun x' =
+      if x' = x then (1 : M) else 0 := fun _ => rfl
+  by_cases h1 : (1 : M) = 0
+  · rw [eq_zero_of_one_eq_zero h1 (((eta x : MConvexComb M X).map f).toFun z),
+      eq_zero_of_one_eq_zero h1 ((eta (f x) : MConvexComb M Y).toFun z)]
+  by_cases hz : z = f x
+  · -- the fibre of `f` over `z = f x` meets the support of `η(x)` in `x` only
+    have hm : ∀ x' : X, x' ∈ [x] ↔
+        ((eta x : MConvexComb M X).toFun x' ≠ 0 ∧ f x' = z) := by
+      intro x'
+      rw [List.mem_singleton, hval x']
+      constructor
+      · rintro rfl; rw [if_pos rfl, hz]; exact ⟨h1, rfl⟩
+      · rintro ⟨h0, -⟩
+        by_contra hne
+        rw [if_neg hne] at h0
+        exact h0 rfl
+    have h := map_spec (eta x : MConvexComb M X) f z [x] (List.nodup_singleton x) hm
+    rw [List.map_cons, List.map_nil, hval x, if_pos rfl] at h
+    show ((eta x : MConvexComb M X).map f).toFun z = _
+    rw [eq_of_isSumOf_singleton h]
+    show (1 : M) = if z = f x then (1 : M) else 0
+    rw [if_pos hz]
+  · -- and is empty when `z ≠ f x`
+    have hm : ∀ x' : X, x' ∈ ([] : List X) ↔
+        ((eta x : MConvexComb M X).toFun x' ≠ 0 ∧ f x' = z) := by
+      intro x'
+      rw [hval x']
+      constructor
+      · intro hx'; simp at hx'
+      · rintro ⟨h0, hfx⟩
+        by_cases hne : x' = x
+        · subst hne; exact absurd hfx.symm hz
+        · rw [if_neg hne] at h0; exact absurd rfl h0
+    have h := map_spec (eta x : MConvexComb M X) f z [] List.nodup_nil hm
+    rw [List.map_nil] at h
+    show ((eta x : MConvexComb M X).map f).toFun z = _
+    rw [PCM.isSumOf_nil_iff.mp h]
+    show (0 : M) = if z = f x then (1 : M) else 0
+    rw [if_neg hz]
+
+open Classical in
+/-- **192III.2** (`exc-dm-effectus`, bsols.tex:2026): naturality of `μ`:
+`𝒟_M f ∘ μ_X = μ_Y ∘ 𝒟_M 𝒟_M f`.  (The author's proof: expand `μ`, exchange
+the two sums, contract the inner one to `(𝒟_M f)(φ)(y)`, and regroup the
+outer one along the fibres of `φ ↦ 𝒟_M f (φ)`.) -/
+theorem mu_map {X : Type v} {Y : Type w}
+    (Φ : MConvexComb M (MConvexComb M X)) (f : X → Y) :
+    (mu Φ).map f = mu (Φ.map fun φ => φ.map f) := by
+  refine MConvexComb.ext (funext fun y => ?_)
+  obtain ⟨LΦ, hndΦ, hmemΦ, hsumΦ⟩ := Φ.sum_one
+  choose supp hsuppnd hsuppmem hsuppsum using
+    (fun φ : MConvexComb M X => φ.sum_one)
+  -- `A φ` enumerates the part of the support of `φ` lying over `y`
+  obtain ⟨A, hndA, hmemA⟩ : ∃ A : MConvexComb M X → List X,
+      (∀ φ, (A φ).Nodup) ∧
+      (∀ (φ : MConvexComb M X) (x : X),
+        x ∈ A φ ↔ (φ.toFun x ≠ 0 ∧ f x = y)) :=
+    ⟨fun φ => (supp φ).filter (fun x => decide (f x = y)),
+     fun φ => List.Nodup.filter _ (hsuppnd φ), fun φ x => by
+       simp only [List.mem_filter, decide_eq_true_eq]
+       rw [hsuppmem φ x]⟩
+  -- and `LX` collects them all
+  obtain ⟨LX, hndX, hmemX, hsubX⟩ : ∃ L : List X, L.Nodup ∧
+      (∀ x ∈ L, f x = y) ∧ (∀ φ ∈ LΦ, ∀ x ∈ A φ, x ∈ L) :=
+    ⟨(LΦ.flatMap A).dedup, List.nodup_dedup _, by
+      intro x hx
+      rw [List.mem_dedup, List.mem_flatMap] at hx
+      obtain ⟨φ, -, hxφ⟩ := hx
+      exact ((hmemA φ x).mp hxφ).2,
+     fun φ hφ x hx =>
+       List.mem_dedup.mpr (List.mem_flatMap.mpr ⟨φ, hφ, hx⟩)⟩
+  -- over `LX`, each `φ` sums to `(𝒟_M f)(φ)(y)`
+  have key : ∀ φ ∈ LΦ, PCM.IsSumOf (LX.map φ.toFun) ((φ.map f).toFun y) := by
+    intro φ hφ
+    refine isSumOf_map_of_subset φ.toFun (hndA φ) hndX (hsubX φ hφ) ?_
+      (map_spec φ f y (A φ) (hndA φ) (hmemA φ))
+    intro x hx hnx
+    by_contra h0
+    exact hnx ((hmemA φ x).mpr ⟨h0, hmemX x hx⟩)
+  -- the left-hand side is the sum of `μ(Φ)` over `LX`
+  have h1 : PCM.IsSumOf (LX.map (mu Φ).toFun) (((mu Φ).map f).toFun y) := by
+    obtain ⟨L1, hnd1, hmem1, -⟩ := (mu Φ).sum_one
+    have hB : ∀ x, x ∈ L1.filter (fun x => decide (f x = y)) ↔
+        ((mu Φ).toFun x ≠ 0 ∧ f x = y) := by
+      intro x
+      simp only [List.mem_filter, decide_eq_true_eq]
+      rw [hmem1 x]
+    refine isSumOf_map_of_subset (mu Φ).toFun (List.Nodup.filter _ hnd1) hndX
+      ?_ ?_ (map_spec (mu Φ) f y _ (List.Nodup.filter _ hnd1) hB)
+    · -- `μ(Φ)(x) ≠ 0` forces some `φ ∈ LΦ` with `φ(x) ≠ 0`, whence `x ∈ LX`
+      intro x hx
+      obtain ⟨hx0, hxy⟩ := (hB x).mp hx
+      by_contra hnot
+      refine hx0 (isSumOf_eq_zero ?_ (mu_spec Φ x LΦ hndΦ hmemΦ))
+      intro a ha
+      obtain ⟨φ, hφ, rfl⟩ := List.mem_map.mp ha
+      have hzz : φ.toFun x = 0 := by
+        by_contra h0
+        exact hnot (hsubX φ hφ x ((hmemA φ x).mpr ⟨h0, hxy⟩))
+      rw [hzz, (exc_emonzero (Φ.toFun φ)).1]
+    · intro x hx hnx
+      by_contra h0
+      exact hnx ((hB x).mpr ⟨h0, hmemX x hx⟩)
+  -- expand each `μ(Φ)(x)` and flatten
+  have h2 : ∀ x ∈ LX, PCM.IsSumOf (LΦ.map fun φ => Φ.toFun φ * φ.toFun x)
+      ((mu Φ).toFun x) := fun x _ => mu_spec Φ x LΦ hndΦ hmemΦ
+  have h3 : PCM.IsSumOf
+      (LX.flatMap fun x => LΦ.map fun φ => Φ.toFun φ * φ.toFun x)
+      (((mu Φ).map f).toFun y) := isSumOf_flatMap _ _ h2 h1
+  -- Fubini
+  have h4 : PCM.IsSumOf
+      (LΦ.flatMap fun φ => LX.map fun x => Φ.toFun φ * φ.toFun x)
+      (((mu Φ).map f).toFun y) :=
+    PCM.isSumOf_perm
+      (flatMap_map_comm LX LΦ (fun x φ => Φ.toFun φ * φ.toFun x)) h3
+  -- the rows contract to `Φ(φ) ⊙ (𝒟_M f)(φ)(y)`
+  have h5 : ∀ φ ∈ LΦ, PCM.IsSumOf (LX.map fun x => Φ.toFun φ * φ.toFun x)
+      (Φ.toFun φ * (φ.map f).toFun y) := by
+    intro φ hφ
+    have h := isSumOf_mul_left (Φ.toFun φ) (key φ hφ)
+    rwa [List.map_map] at h
+  have h6 : PCM.IsSumOf (LΦ.map fun φ => Φ.toFun φ * (φ.map f).toFun y)
+      (((mu Φ).map f).toFun y) := isSumOf_of_flatMap _ _ h5 h4
+  -- grouping along the fibres of `φ ↦ 𝒟_M f (φ)`
+  obtain ⟨Lq, hndq, hmemq⟩ : ∃ L : List (MConvexComb M Y), L.Nodup ∧
+      ∀ φ ∈ LΦ, φ.map f ∈ L :=
+    ⟨(LΦ.map fun φ => φ.map f).dedup, List.nodup_dedup _, fun φ hφ =>
+      List.mem_dedup.mpr (List.mem_map.mpr ⟨φ, hφ, rfl⟩)⟩
+  have hfibmem : ∀ (q : MConvexComb M Y) (φ : MConvexComb M X),
+      φ ∈ LΦ.filter (fun φ => decide (φ.map f = q)) ↔
+        (Φ.toFun φ ≠ 0 ∧ φ.map f = q) := by
+    intro q φ
+    rw [List.mem_filter, hmemΦ φ]
+    simp
+  have h7 : ∀ q ∈ Lq, PCM.IsSumOf
+      ((LΦ.filter (fun φ => decide (φ.map f = q))).map
+        fun φ => Φ.toFun φ * (φ.map f).toFun y)
+      ((Φ.map fun φ => φ.map f).toFun q * q.toFun y) := by
+    intro q _
+    have hmap : PCM.IsSumOf
+        ((LΦ.filter (fun φ => decide (φ.map f = q))).map Φ.toFun)
+        ((Φ.map fun φ => φ.map f).toFun q) :=
+      map_spec Φ (fun φ => φ.map f) q _ (List.Nodup.filter _ hndΦ) (hfibmem q)
+    have h := isSumOf_mul_right (q.toFun y) hmap
+    rw [List.map_map] at h
+    have heq : ((LΦ.filter (fun φ => decide (φ.map f = q))).map
+        fun φ => Φ.toFun φ * (φ.map f).toFun y)
+        = ((LΦ.filter (fun φ => decide (φ.map f = q))).map
+        fun φ => Φ.toFun φ * q.toFun y) := by
+      refine List.map_congr_left fun φ hφ => ?_
+      rw [((hfibmem q φ).mp hφ).2]
+    rw [heq]
+    exact h
+  have h8 : PCM.IsSumOf
+      (Lq.map fun q => (Φ.map fun φ => φ.map f).toFun q * q.toFun y)
+      (((mu Φ).map f).toFun y) :=
+    isSumOf_map_fiber (fun φ => Φ.toFun φ * (φ.map f).toFun y)
+      (fun φ => φ.map f)
+      (fun q => (Φ.map fun φ => φ.map f).toFun q * q.toFun y)
+      hndq hmemq h7 h6
+  -- and the same list computes the right-hand side
+  have h9 : PCM.IsSumOf
+      (Lq.map fun q => (Φ.map fun φ => φ.map f).toFun q * q.toFun y)
+      ((mu (Φ.map fun φ => φ.map f)).toFun y) := by
+    obtain ⟨L3, hnd3, hmem3, -⟩ := (Φ.map fun φ => φ.map f).sum_one
+    refine isSumOf_map_of_support _ hnd3 hndq ?_ ?_
+      (mu_spec (Φ.map fun φ => φ.map f) y L3 hnd3 hmem3)
+    · intro q hq
+      refine (hmem3 q).mpr fun h0 => hq ?_
+      rw [h0, (exc_emonzero (q.toFun y)).2]
+    · intro q hq
+      have hne : (Φ.map fun φ => φ.map f).toFun q ≠ 0 := by
+        intro h0; exact hq (by rw [h0, (exc_emonzero (q.toFun y)).2])
+      by_contra hnot
+      refine hne ?_
+      have hmap : PCM.IsSumOf
+          ((LΦ.filter (fun φ => decide (φ.map f = q))).map Φ.toFun)
+          ((Φ.map fun φ => φ.map f).toFun q) :=
+        map_spec Φ (fun φ => φ.map f) q _ (List.Nodup.filter _ hndΦ) (hfibmem q)
+      have hnil : LΦ.filter (fun φ => decide (φ.map f = q)) = [] := by
+        refine List.eq_nil_iff_forall_not_mem.mpr fun φ hφ => ?_
+        have hφ' := (hfibmem q φ).mp hφ
+        exact hnot (hφ'.2 ▸ hmemq φ ((hmemΦ φ).mpr hφ'.1))
+      rw [hnil, List.map_nil, PCM.isSumOf_nil_iff] at hmap
+      exact hmap
+  exact isSumOf_unique h8 h9
+
+open Classical in
+/-- **192III.2** (`exc-dm-effectus`, bsols.tex:2075): the right unit law of
+the monad `𝒟_M`: `μ ∘ 𝒟_M η = id`. -/
+theorem mu_map_eta {X : Type v} (p : MConvexComb M X) :
+    mu (p.map eta) = p := by
+  refine MConvexComb.ext (funext fun z => ?_)
+  by_cases h1 : (1 : M) = 0
+  · rw [eq_zero_of_one_eq_zero h1 ((mu (p.map eta)).toFun z),
+      eq_zero_of_one_eq_zero h1 (p.toFun z)]
+  have hval : ∀ x x' : X, (eta x : MConvexComb M X).toFun x' =
+      if x' = x then (1 : M) else 0 := fun _ _ => rfl
+  -- `η` is injective (as `1 ≠ 0`)
+  have hinj : Function.Injective (eta : X → MConvexComb M X) := by
+    intro x x' hxx
+    by_contra hne
+    have h : (eta x : MConvexComb M X).toFun x =
+        (eta x' : MConvexComb M X).toFun x :=
+      congrArg (fun q => MConvexComb.toFun q x) hxx
+    rw [hval x x, hval x' x, if_pos rfl, if_neg hne] at h
+    exact h1 h
+  obtain ⟨Lp, hndp, hmemp, -⟩ := p.sum_one
+  -- `(𝒟_M η)(p)(η x) = p(x)`
+  have hmapval : ∀ x ∈ Lp,
+      (p.map (eta : X → MConvexComb M X)).toFun (eta x) = p.toFun x := by
+    intro x hx
+    have hm : ∀ x' : X, x' ∈ [x] ↔
+        (p.toFun x' ≠ 0 ∧ (eta x' : MConvexComb M X) = eta x) := by
+      intro x'
+      rw [List.mem_singleton]
+      constructor
+      · intro h
+        rw [h]
+        exact ⟨(hmemp x).mp hx, rfl⟩
+      · exact fun h => hinj h.2
+    have h := map_spec p eta (eta x) [x] (List.nodup_singleton x) hm
+    rw [List.map_cons, List.map_nil] at h
+    exact eq_of_isSumOf_singleton h
+  -- the sum defining `μ` may be taken over `η(Lp)`
+  have hndL : (Lp.map eta).Nodup := List.Nodup.map hinj hndp
+  have h1' : PCM.IsSumOf
+      ((Lp.map eta).map fun φ => (p.map eta).toFun φ * φ.toFun z)
+      ((mu (p.map eta)).toFun z) := by
+    obtain ⟨L1, hnd1, hmem1, -⟩ := (p.map (eta : X → MConvexComb M X)).sum_one
+    refine isSumOf_map_of_support _ hnd1 hndL ?_ ?_
+      (mu_spec (p.map (eta : X → MConvexComb M X)) z L1 hnd1 hmem1)
+    · intro φ hφ
+      refine (hmem1 φ).mpr fun h0 => hφ ?_
+      rw [h0, (exc_emonzero (φ.toFun z)).2]
+    · intro φ hφ
+      have hne : (p.map eta).toFun φ ≠ 0 := by
+        intro h0; exact hφ (by rw [h0, (exc_emonzero (φ.toFun z)).2])
+      -- a non-zero value of `𝒟_M η (p)` forces a non-empty fibre
+      have hfib : ∀ x, x ∈ Lp.filter (fun x => decide ((eta x : MConvexComb M X) = φ))
+          ↔ (p.toFun x ≠ 0 ∧ (eta x : MConvexComb M X) = φ) := by
+        intro x
+        rw [List.mem_filter, hmemp x]
+        simp
+      by_contra hnot
+      refine hne ?_
+      have hmap := map_spec p eta φ _ (List.Nodup.filter _ hndp) hfib
+      have hnil : Lp.filter (fun x => decide ((eta x : MConvexComb M X) = φ))
+          = [] := by
+        refine List.eq_nil_iff_forall_not_mem.mpr fun x hx => ?_
+        obtain ⟨hx0, hxφ⟩ := (hfib x).mp hx
+        exact hnot (hxφ ▸ List.mem_map.mpr ⟨x, (hmemp x).mpr hx0, rfl⟩)
+      rw [hnil, List.map_nil, PCM.isSumOf_nil_iff] at hmap
+      exact hmap
+  -- each term is `p(x)` at `x = z` and `0` elsewhere
+  have heq : ((Lp.map eta).map fun φ => (p.map eta).toFun φ * φ.toFun z)
+      = Lp.map fun x => if z = x then p.toFun x else 0 := by
+    rw [List.map_map]
+    refine List.map_congr_left fun x hx => ?_
+    show (p.map eta).toFun (eta x) * (eta x : MConvexComb M X).toFun z = _
+    rw [hmapval x hx, hval x z]
+    by_cases hzx : z = x
+    · rw [if_pos hzx, if_pos hzx, EffectMonoid.mul_one]
+    · rw [if_neg hzx, if_neg hzx, (exc_emonzero (p.toFun x)).1]
+  rw [heq] at h1'
+  -- and that list sums to `p(z)`
+  have h2' : PCM.IsSumOf (Lp.map fun x => if z = x then p.toFun x else 0)
+      (p.toFun z) := by
+    refine isSumOf_map_of_support (fun x => if z = x then p.toFun x else 0)
+      (List.nodup_singleton z) hndp ?_ ?_ ?_
+    · intro x hx
+      by_cases hzx : z = x
+      · rw [List.mem_singleton]; exact hzx.symm
+      · rw [if_neg hzx] at hx; exact absurd rfl hx
+    · intro x hx
+      by_cases hzx : z = x
+      · refine (hmemp x).mpr ?_
+        rw [if_pos hzx] at hx; exact hx
+      · rw [if_neg hzx] at hx; exact absurd rfl hx
+    · rw [List.map_cons, List.map_nil, if_pos rfl]
+      exact isSumOf_singleton (p.toFun z)
+  exact isSumOf_unique h1' h2'
+
+open Classical in
 /-- Helper for `bin` (192II): the function which is `1` at `x` when `x = y`,
 and otherwise `λ` at `x` and `λᵖ` at `y`, is a formal convex combination.
 (Four cases: `x = y`, `λ = 0`, `λᵖ = 0`, and the generic one; the degenerate
@@ -1231,7 +1541,38 @@ theorem exc_dm_effectus_functor :
 `(𝒟_M, η, μ)` is a monad on `Set`. -/
 theorem exc_dm_effectus_monad :
     ∃ T : Monad (Type u), ∀ X : Type u,
-      T.toFunctor.obj X = MConvexComb M X := sorry
+      T.toFunctor.obj X = MConvexComb M X := by
+  refine ⟨{ toFunctor :=
+              { obj := fun X => MConvexComb M X
+                map := fun {_ _} f => TypeCat.ofHom fun p => p.map (TypeCat.Hom.hom f)
+                map_id := fun X => by
+                  ext p
+                  exact MConvexComb.map_id p
+                map_comp := fun f g => by
+                  ext p
+                  exact (MConvexComb.map_comp p (⇑(TypeCat.Hom.hom f))
+                    (⇑(TypeCat.Hom.hom g))).symm }
+            η := { app := fun X =>
+                     TypeCat.ofHom (MConvexComb.eta : X → MConvexComb M X)
+                   naturality := fun X Y f => by
+                     ext x
+                     exact (MConvexComb.map_eta x (⇑(TypeCat.Hom.hom f))).symm }
+            μ := { app := fun X =>
+                     TypeCat.ofHom
+                       (MConvexComb.mu :
+                         MConvexComb M (MConvexComb M X) → MConvexComb M X)
+                   naturality := fun X Y f => by
+                     ext Φ
+                     exact (MConvexComb.mu_map Φ (⇑(TypeCat.Hom.hom f))).symm }
+            assoc := fun X => by
+              ext Φ
+              exact (MConvexComb.mu_mu Φ).symm
+            left_unit := fun X => by
+              ext p
+              exact MConvexComb.mu_eta p
+            right_unit := fun X => by
+              ext p
+              exact MConvexComb.mu_map_eta p }, fun _ => rfl⟩
 
 /-- **192III.3** (`exc-dm-effectus`, eff.tex:2410, Exercise\*): the Kleisli
 category of `𝒟_M` is an effectus (in total form) with scalars `M`. -/
@@ -1475,7 +1816,31 @@ quotient map is `M`-affine. -/
 theorem aconv_cong_quotient (st : MConvex M X) (r : Setoid X)
     (hc : st.IsCongruence r) :
     ∃ st' : MConvex M (Quotient r),
-      st.IsAffine st' (Quotient.mk r) := sorry
+      st.IsAffine st' (Quotient.mk r) := by
+  obtain ⟨h', hh'⟩ := (aconv_cong_iff st r).mp hc
+  refine ⟨⟨h', ?_, ?_⟩, fun p => (hh' p).symm⟩
+  · -- `h_∼ ∘ η ∘ q = h_∼ ∘ 𝒟_M q ∘ η = q ∘ h ∘ η = q`, by naturality of `η`
+    refine Quotient.ind fun x => ?_
+    rw [← MConvexComb.map_eta x (Quotient.mk r), hh' (MConvexComb.eta x),
+      st.h_eta]
+  · -- `h_∼ ∘ μ = h_∼ ∘ 𝒟_M h_∼` after precomposing with the surjection
+    -- `𝒟_M 𝒟_M q`, by naturality of `μ`
+    intro Φ
+    obtain ⟨Ψ, hΨ⟩ := (aconv_cong_surjective (M := M) r).2 Φ
+    have hΨ' : Ψ.map (fun p : MConvexComb M X => p.map (Quotient.mk r)) = Φ :=
+      hΨ
+    subst hΨ'
+    have hL : MConvexComb.mu
+        (Ψ.map fun p : MConvexComb M X => p.map (Quotient.mk r)) =
+        (MConvexComb.mu Ψ).map (Quotient.mk r) :=
+      (MConvexComb.mu_map Ψ (Quotient.mk r)).symm
+    have hR : (Ψ.map fun p : MConvexComb M X => p.map (Quotient.mk r)).map h' =
+        (Ψ.map st.h).map (Quotient.mk r) := by
+      rw [MConvexComb.map_comp, MConvexComb.map_comp]
+      congr 1
+      funext p
+      exact hh' p
+    rw [hL, hR, hh' (MConvexComb.mu Ψ), hh' (Ψ.map st.h), st.h_mu Ψ]
 
 /-- **193III** (`affine-kernel-cong`, eff.tex:2726, Exercise): the kernel
 `{(x,y) : f(x) = f(y)}` of an affine map `f` between abstract `M`-convex

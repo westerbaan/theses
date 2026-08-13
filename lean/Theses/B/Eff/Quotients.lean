@@ -626,6 +626,38 @@ theorem compr_basics_1 {p : Pred X} {π : W ⟶ X} (h : IsComprehension p π)
       have hk' : (k ≫ θ) ≫ π = g := by rw [Category.assoc]; exact hk
       rw [← huniq _ hk', Category.assoc, IsIso.hom_inv_id, Category.comp_id]
 
+/-- Helper (the mirror image of `compr_basics_1`, used in 221IV.2):
+postcomposing a comprehension for `p` with an isomorphism `θ` yields a
+comprehension for `p ∘ θ⁻¹`. -/
+theorem isComprehension_comp_iso {p : Pred X} {π : W ⟶ X}
+    (h : IsComprehension p π) (θ : X ⟶ Z) [IsIso θ] :
+    IsComprehension (inv θ ≫ p) (π ≫ θ) := by
+  have hθ : IsTotal θ := iso_isTotal θ
+  have hθ' : IsTotal (inv θ) := iso_isTotal (inv θ)
+  refine ⟨?_, ?_⟩
+  · calc (π ≫ θ) ≫ (inv θ ≫ p)
+        = (π ≫ (θ ≫ inv θ)) ≫ p := by simp only [Category.assoc]
+      _ = π ≫ truth X := by
+          rw [IsIso.hom_inv_id, Category.comp_id]; exact h.1
+      _ = (π ≫ θ) ≫ truth Z := by
+          rw [Category.assoc, show θ ≫ truth Z = truth X from hθ]
+  · intro V g hg
+    have hg' : (g ≫ inv θ) ≫ p = (g ≫ inv θ) ≫ truth X := by
+      rw [Category.assoc, Category.assoc,
+        show inv θ ≫ truth X = truth Z from hθ']
+      exact hg
+    obtain ⟨g', hg'eq, huniq⟩ := h.2 (g ≫ inv θ) hg'
+    refine ⟨g', ?_, ?_⟩
+    · show g' ≫ (π ≫ θ) = g
+      rw [← Category.assoc, hg'eq, Category.assoc, IsIso.inv_hom_id,
+        Category.comp_id]
+    · intro k hk
+      replace hk : k ≫ (π ≫ θ) = g := hk
+      refine huniq k ?_
+      show k ≫ π = g ≫ inv θ
+      rw [← hk, Category.assoc, Category.assoc, IsIso.hom_inv_id,
+        Category.comp_id]
+
 /-- **199VII.2** (`compr-basics`, eff.tex:3991, Exercise): any two
 comprehensions for `p` differ by a unique isomorphism. -/
 theorem compr_basics_2 {p : Pred X} {π₁ : W ⟶ X} {π₂ : W' ⟶ X}

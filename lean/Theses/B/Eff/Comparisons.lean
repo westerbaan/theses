@@ -366,7 +366,74 @@ def ExactAt {X Y Z : C} (f : X ⟶ Y) (g : Y ⟶ Z) : Prop :=
 exact at the middle object iff `imᵖ f = ⌈1 ∘ g⌉`. -/
 theorem exactAt_iff [DaggerPrimeEffectus C] {X Y Z : C} (f : X ⟶ Y)
     (g : Y ⟶ Z) :
-    ExactAt f g ↔ orth (imPred f) = ceilPred (g ≫ truth Z) := sorry
+    ExactAt f g ↔ orth (imPred f) = ceilPred (g ≫ truth Z) := by
+  -- `⌊(1∘g)ᵖ⌋ = ⌈1∘g⌉ᵖ`, so the standard kernel of `g` has image `⌈1∘g⌉ᵖ`
+  have hfloor : floorPred (orth (g ≫ truth Z)) = orth (ceilPred (g ≫ truth Z)) := by
+    show _ = orth (orth (floorPred (orth (g ≫ truth Z))))
+    rw [eabasics_orth_orth]
+  constructor
+  · rintro ⟨Q, K, K', cf, k, k', hcf, hk, hk', ⟨u, hu⟩, ⟨v, hv⟩⟩
+    -- a cokernel of `f` is a quotient for `im f`, so `1 ∘ cf = (im f)ᵖ`
+    obtain ⟨θ, hθ, hcomm⟩ :=
+      isCokernel_unique (effectus_cokernels f (isQuotient_quotMap (imPred f))) hcf
+    haveI := hθ
+    have hcfq : IsQuotient (imPred f) cf := by
+      rw [← hcomm]; exact quotient_basics_1 (isQuotient_quotMap _) θ
+    have hcft : cf ≫ truth Q = orth (imPred f) := quotient_basics_5 hcfq
+    -- and a kernel of `cf` is a comprehension for `(1∘cf)ᵖ = im f`
+    obtain ⟨θ₁, hθ₁, hcomm₁⟩ :=
+      isKernel_unique hk (effectus_kernels cf (isComprehension_comprMap _))
+    haveI := hθ₁
+    have himk : imPred k = imPred f := by
+      rw [← hcomm₁,
+        (im_ineq (comprMap (orth (cf ≫ truth Q))) θ₁).2 θ₁ inferInstance]
+      show floorPred (orth (cf ≫ truth Q)) = _
+      rw [hcft, eabasics_orth_orth]
+      exact (img_of_compr (imPred f)).1.mp (isSharp_imPred C f)
+    obtain ⟨θ₂, hθ₂, hcomm₂⟩ :=
+      isKernel_unique hk' (effectus_kernels g (isComprehension_comprMap _))
+    haveI := hθ₂
+    have himk' : imPred k' = orth (ceilPred (g ≫ truth Z)) := by
+      rw [← hcomm₂,
+        (im_ineq (comprMap (orth (g ≫ truth Z))) θ₂).2 θ₂ inferInstance]
+      exact hfloor
+    -- `k ≈ k'` gives `im k = im k'`
+    have h1 : imPred k ≼ imPred k' := by
+      have h := (im_ineq k' u).1
+      rwa [hu] at h
+    have h2 : imPred k' ≼ imPred k := by
+      have h := (im_ineq k v).1
+      rwa [hv] at h
+    have hkey : imPred f = orth (ceilPred (g ≫ truth Z)) := by
+      rw [← himk, ← himk']
+      exact eabasics_le_antisymm h1 h2
+    rw [hkey, eabasics_orth_orth]
+  · intro h
+    -- conversely, take the standard cokernel and kernels
+    refine ⟨quotObj (imPred f), comprObj (orth (quotMap (imPred f) ≫
+        truth (quotObj (imPred f)))), comprObj (orth (g ≫ truth Z)),
+      quotMap (imPred f), comprMap _, comprMap _,
+      effectus_cokernels f (isQuotient_quotMap (imPred f)),
+      effectus_kernels _ (isComprehension_comprMap _),
+      effectus_kernels g (isComprehension_comprMap _), ?_, ?_⟩ <;>
+    · -- both kernels are comprehensions for `im f`, hence isomorphic
+      have him : imPred (comprMap (orth (quotMap (imPred f) ≫
+          truth (quotObj (imPred f))))) = imPred f := by
+        show floorPred _ = _
+        rw [quotient_basics_5 (isQuotient_quotMap (imPred f)),
+          eabasics_orth_orth]
+        exact (img_of_compr (imPred f)).1.mp (isSharp_imPred C f)
+      have him' : imPred (comprMap (orth (g ≫ truth Z))) = imPred f := by
+        show floorPred (orth (g ≫ truth Z)) = _
+        rw [hfloor, ← h, eabasics_orth_orth]
+      obtain ⟨θ, hθ, hcomm, -⟩ :=
+        compr_basics_2 (him ▸ isComprehension_imPred (isComprehension_comprMap _))
+          (him' ▸ isComprehension_imPred (isComprehension_comprMap _))
+      haveI := hθ
+      first
+        | exact ⟨θ, hcomm⟩
+        | exact ⟨inv θ, by rw [← hcomm, ← Category.assoc, IsIso.inv_hom_id,
+            Category.id_comp]⟩
 
 /-- Helper for 227V: the thesis's computation `π^□(π_⋄(s)) =
 ⌈(s ∘ π†)ᵖ ∘ π⌉ᵖ = ⌈(s ∘ π† ∘ π)ᵖ⌉ᵖ = s`, isolated from the particular
