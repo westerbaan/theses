@@ -1696,11 +1696,21 @@ inductive IsPure :
 von Neumann algebras is pure. -/
 theorem isPure_of_iso [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (f : NCPMap A B) (g : NCPMap B A) (hgf : ∀ a, g (f a) = a)
-    (hfg : ∀ b, f (g b) = b) : IsPure f := sorry
+    (hfg : ∀ b, f (g b) = b) : IsPure f := by
+  -- An ncp-isomorphism is a *filter*: for `h : X → B` the (unique) `k` with
+  -- `h = f ∘ k` is `g ∘ h`; the hypothesis `h 1 ≤ f 1` is not needed.
+  refine IsPure.filter ⟨?_⟩
+  intro X _ _ _ _ h _
+  refine ⟨ncpComp g h, fun x => ?_, fun k hk => ?_⟩
+  · rw [ncpComp_apply, hfg]
+  · refine DFunLike.ext _ _ fun x => ?_
+    rw [ncpComp_apply, hk x, hgf]
 
 /-- **100II** (proc.tex:931, Exercise), part 2: the identity map on a von
 Neumann algebra is pure. -/
-theorem isPure_id [VonNeumannAlgebra A] : IsPure (ncpId A) := sorry
+theorem isPure_id [VonNeumannAlgebra A] : IsPure (ncpId A) :=
+  isPure_of_iso (ncpId A) (ncpId A) (fun a => by rw [ncpId_apply, ncpId_apply])
+    (fun a => by rw [ncpId_apply, ncpId_apply])
 
 /-- **100II** (proc.tex:931, Exercise), part 3: the map `a*(·)a : 𝒜 → 𝒜`
 is pure, for any element `a` of a von Neumann algebra `𝒜`. -/
@@ -2070,7 +2080,12 @@ theorem exists_chevron [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (f : NCPMap A B) :
     ∃ g : NCPMap (Corner A (ncpCarrier f)) (Corner B (ceil (f 1))),
       ∀ a : Corner A (ncpCarrier f),
-        (g a).val = ceil (f 1) * f a.val * ceil (f 1) := sorry
+        (g a).val = ceil (f 1) * f a.val * ceil (f 1) := by
+  -- `⟨f⟩ = π_{⌈f(1)⌉} ∘ f ∘ c_{⌈f⌉}` (105III part 1): a composite of ncp-maps,
+  -- the filter of the projection `⌈f⌉` being the inclusion `cornerIncl`.
+  refine ⟨ncpComp (cornerProjMap (ceil (f 1))).toNCPMap
+    (ncpComp f (cornerIncl (ncpCarrier f)).toNCPMap), fun a => ?_⟩
+  rw [ncpComp_apply, ncpComp_apply, cornerIncl_apply, cornerProjMap_apply]
 
 /-- **105II** (`chevron-f`, proc.tex:1690, Definition): the ncp-map
 `⟨f⟩ : ⌈f⌉𝒜⌈f⌉ → ⌈f(1)⌉ℬ⌈f(1)⌉` with
@@ -2261,8 +2276,28 @@ requires the Borel functional calculus `p ↦ g(p)`, which Mathlib's `cfc`
 (continuous only) does not provide; it is not formalized. -/
 theorem sequential_product_counterexample_4 :
     ∃ g : ℝ → ℂ, Measurable g ∧ (∀ l : ℝ, l ∈ Set.Icc (0:ℝ) 1 → ‖g l‖ = 1) ∧
-      g (1/2) ≠ 1 ∧ ∀ l : ℝ, l ∈ Set.Icc (0:ℝ) 1 → g (l ^ 2) = g l ^ 2 :=
-  sorry
+      g (1/2) ≠ 1 ∧ ∀ l : ℝ, l ∈ Set.Icc (0:ℝ) 1 → g (l ^ 2) = g l ^ 2 := by
+  -- `g(λ) = λ^{iπ/log 2} = exp(i·(π/log 2)·log λ)`: the functional equation
+  -- `g(λ²) = g(λ)²` is `log(λ²) = 2 log λ` (which Mathlib's `Real.log_pow`
+  -- gives for *every* real `λ`, junk value `log 0 = 0` included), and
+  -- `g(½) = exp(-iπ) = -1 ≠ 1`.
+  refine ⟨fun l => Complex.exp ((((Real.pi / Real.log 2) * Real.log l : ℝ) : ℂ)
+      * Complex.I), ?_, fun l _ => Complex.norm_exp_ofReal_mul_I _, ?_, ?_⟩
+  · fun_prop
+  · have h2 : Real.log 2 ≠ 0 := by positivity
+    have hlog : Real.pi / Real.log 2 * Real.log (1 / 2) = -Real.pi := by
+      rw [one_div, Real.log_inv]; field_simp
+    change Complex.exp _ ≠ 1
+    rw [hlog]
+    push_cast
+    rw [neg_mul, Complex.exp_neg, Complex.exp_pi_mul_I]
+    norm_num
+  · intro l _
+    change Complex.exp _ = Complex.exp _ ^ 2
+    rw [show ((Real.pi / Real.log 2 * Real.log (l ^ 2) : ℝ) : ℂ)
+        = ((2 : ℕ) : ℂ) * ((Real.pi / Real.log 2 * Real.log l : ℝ) : ℂ) by
+      rw [Real.log_pow]; push_cast; ring]
+    rw [mul_assoc, Complex.exp_nat_mul]
 
 /- **106IV** (`fourth-axiom`, proc.tex:1901, Problem): open problem (is
 axiom (D) redundant?) — not formalizable as a theorem; skipped.
