@@ -1772,9 +1772,9 @@ theorem dils_abstract_basics_6 {Q : C} {p : Pred X} {ξ : X ⟶ Q}
     apply (cancel_epi ξ).mp
     rw [← Category.assoc, hh'', hfac]
   refine ⟨h'', hh'', hsϱ, htϱ, ?_, hfacQ, ?_⟩
-  · -- purity of `h''`: it is the total-part of the pure map `h`… we reuse
-    -- purity of `h` via the factorization `h = ξ ≫ h''`
-    sorry
+  · -- purity of `h''`: pure maps divide on the left by quotients, applied to
+    -- `ξ ≫ h'' = h` (the thesis leaves this step implicit, eff.tex:6923)
+    exact isPure_of_isQuotient_comp hξ (by rw [hh'']; exact hph)
   · intro P' ϱ' h' hsϱ' htϱ' hfac'
     have hfac'' : (ξ ≫ h') ≫ ϱ' = ξ ≫ f := by
       rw [Category.assoc, hfac']

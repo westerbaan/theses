@@ -935,13 +935,207 @@ class DPoset (E : Type u) extends PartialOrder E, OrderTop E where
   sub_sub_eq : ∀ {a b c : E} (hab : a ≤ b) (hbc : b ≤ c),
     sub (sub c a (hab.trans hbc)) (sub c b hbc) (sub_antitone hab hbc) = sub b a hab
 
+namespace DPoset
+
+variable {E : Type u} [DPoset E]
+
+/-- Helper for 176III: `a ⊖ b` does not depend on the proof of `b ≤ a`, so it
+is a congruence in both of its element arguments. -/
+theorem sub_congr {a b a' b' : E} (ha : a = a') (hb : b = b')
+    {h : b ≤ a} {h' : b' ≤ a'} : sub a b h = sub a' b' h' := by
+  subst ha; subst hb; rfl
+
+/-- Helper for 176III: `(1 ⊖ b) ⊖ (c ⊖ b) = 1 ⊖ c` for `b ≤ c` (two
+applications of (D3)/(D4)). -/
+theorem sub_top_sub {b c : E} (hc : b ≤ c) :
+    ∃ hle : sub c b hc ≤ sub ⊤ b (hc.trans le_top),
+      sub (sub ⊤ b (hc.trans le_top)) (sub c b hc) hle = sub ⊤ c le_top := by
+  have e1 : sub (sub ⊤ b (hc.trans le_top)) (sub ⊤ c le_top)
+      (sub_antitone hc le_top) = sub c b hc := sub_sub_eq hc le_top
+  have hle : sub c b hc ≤ sub ⊤ b (hc.trans le_top) := by
+    rw [← e1]; exact sub_le _
+  exact ⟨hle, (sub_congr rfl e1.symm).trans (sub_sub (sub_antitone hc le_top))⟩
+
+/-- **176III**: `⊖` is cancellative in its first argument — this is what makes
+`a ⋁ b = c ⇔ c ⊖ b = a` at most single-valued. -/
+theorem sub_left_cancel {b c₁ c₂ : E} (h₁ : b ≤ c₁) (h₂ : b ≤ c₂)
+    (h : sub c₁ b h₁ = sub c₂ b h₂) : c₁ = c₂ := by
+  obtain ⟨hle₁, e₁⟩ := sub_top_sub h₁
+  obtain ⟨hle₂, e₂⟩ := sub_top_sub h₂
+  have key : sub ⊤ c₁ le_top = sub ⊤ c₂ le_top := by
+    rw [← e₁, ← e₂]; exact sub_congr rfl h
+  calc c₁ = sub ⊤ (sub ⊤ c₁ le_top) (sub_le le_top) := (sub_sub le_top).symm
+    _ = sub ⊤ (sub ⊤ c₂ le_top) (sub_le le_top) := sub_congr rfl key
+    _ = c₂ := sub_sub le_top
+
+/-- **176III**: the definedness relation of the effect algebra structure on a
+D-poset: `a ⊥ b` when `a = c ⊖ b` for some `c ≥ b`. -/
+def DPerp (a b : E) : Prop := ∃ (c : E) (h : b ≤ c), sub c b h = a
+
+/-- **176III**: the partial sum `a ⋁ b` of a D-poset. -/
+noncomputable def dovee (a b : E) (h : DPerp a b) : E := h.choose
+
+theorem le_dovee {a b : E} (h : DPerp a b) : b ≤ dovee a b h := h.choose_spec.choose
+
+theorem sub_dovee {a b : E} (h : DPerp a b) :
+    sub (dovee a b h) b (le_dovee h) = a := h.choose_spec.choose_spec
+
+/-- `a ⋁ b` is the unique `c ≥ b` with `c ⊖ b = a`. -/
+theorem dovee_eq {a b c : E} (hab : DPerp a b) (h : b ≤ c) (e : sub c b h = a) :
+    dovee a b hab = c :=
+  sub_left_cancel (le_dovee hab) h ((sub_dovee hab).trans e.symm)
+
+theorem le_left_dovee {a b : E} (h : DPerp a b) : a ≤ dovee a b h := by
+  have hh := sub_le (le_dovee h)
+  rwa [sub_dovee h] at hh
+
+theorem sub_dovee_left {a b : E} (h : DPerp a b) :
+    sub (dovee a b h) a (le_left_dovee h) = b :=
+  (sub_congr rfl (sub_dovee h).symm).trans (sub_sub (le_dovee h))
+
+theorem dperp_comm {a b : E} (h : DPerp a b) : DPerp b a :=
+  ⟨dovee a b h, le_left_dovee h, sub_dovee_left h⟩
+
+theorem dovee_comm {a b : E} (h : DPerp a b) :
+    dovee a b h = dovee b a (dperp_comm h) :=
+  (dovee_eq (dperp_comm h) (le_left_dovee h) (sub_dovee_left h)).symm
+
+/-- Abbreviation for the proof `a ≤ (a ⋁ b) ⋁ c` used throughout the proof of
+partial associativity (176III). -/
+theorem le_dovee_dovee {a b c : E} (hab : DPerp a b)
+    (h : DPerp (dovee a b hab) c) : a ≤ dovee (dovee a b hab) c h :=
+  (le_left_dovee hab).trans (le_left_dovee h)
+
+/-- The key computation of partial associativity (176III): applying (D4) to
+`a ≤ a ⋁ b ≤ (a ⋁ b) ⋁ c` gives `(((a ⋁ b) ⋁ c) ⊖ a) ⊖ c = b`. -/
+theorem sub_dovee_dovee_sub {a b c : E} (hab : DPerp a b)
+    (h : DPerp (dovee a b hab) c) :
+    ∃ hle : c ≤ sub (dovee (dovee a b hab) c h) a (le_dovee_dovee hab h),
+      sub (sub (dovee (dovee a b hab) c h) a (le_dovee_dovee hab h)) c hle = b := by
+  have hvu : sub (dovee (dovee a b hab) c h) (dovee a b hab) (le_left_dovee h) = c :=
+    sub_dovee_left h
+  have hua : sub (dovee a b hab) a (le_left_dovee hab) = b := sub_dovee_left hab
+  have hle : c ≤ sub (dovee (dovee a b hab) c h) a (le_dovee_dovee hab h) := by
+    have hh := sub_antitone (le_left_dovee hab) (le_left_dovee h)
+    rwa [hvu] at hh
+  refine ⟨hle, ?_⟩
+  calc sub (sub (dovee (dovee a b hab) c h) a (le_dovee_dovee hab h)) c hle
+      = sub (sub (dovee (dovee a b hab) c h) a (le_dovee_dovee hab h))
+          (sub (dovee (dovee a b hab) c h) (dovee a b hab) (le_left_dovee h))
+          (sub_antitone (le_left_dovee hab) (le_left_dovee h)) := sub_congr rfl hvu.symm
+    _ = sub (dovee a b hab) a (le_left_dovee hab) :=
+        sub_sub_eq (le_left_dovee hab) (le_left_dovee h)
+    _ = b := hua
+
+theorem dperp_of_dovee_dperp {a b c : E} (hab : DPerp a b)
+    (h : DPerp (dovee a b hab) c) : DPerp b c :=
+  ⟨_, (sub_dovee_dovee_sub hab h).choose, (sub_dovee_dovee_sub hab h).choose_spec⟩
+
+theorem dovee_bc {a b c : E} (hab : DPerp a b) (h : DPerp (dovee a b hab) c) :
+    dovee b c (dperp_of_dovee_dperp hab h)
+      = sub (dovee (dovee a b hab) c h) a (le_dovee_dovee hab h) :=
+  dovee_eq _ (sub_dovee_dovee_sub hab h).choose (sub_dovee_dovee_sub hab h).choose_spec
+
+theorem dperp_dovee_of_dovee_dperp {a b c : E} (hab : DPerp a b)
+    (h : DPerp (dovee a b hab) c) :
+    DPerp a (dovee b c (dperp_of_dovee_dperp hab h)) := by
+  refine ⟨dovee (dovee a b hab) c h, ?_, ?_⟩
+  · rw [dovee_bc hab h]; exact sub_le _
+  · exact (sub_congr rfl (dovee_bc hab h)).trans (sub_sub (le_dovee_dovee hab h))
+
+theorem dovee_assoc {a b c : E} (hab : DPerp a b)
+    (h : DPerp (dovee a b hab) c) :
+    dovee (dovee a b hab) c h
+      = dovee a (dovee b c (dperp_of_dovee_dperp hab h))
+          (dperp_dovee_of_dovee_dperp hab h) :=
+  (dovee_eq _ (by rw [dovee_bc hab h]; exact sub_le _)
+    ((sub_congr rfl (dovee_bc hab h)).trans (sub_sub (le_dovee_dovee hab h)))).symm
+
+
+/-- **176III**: `1 ⊖ 1` is the least element. -/
+theorem dzero_le (x : E) : sub (⊤ : E) ⊤ le_rfl ≤ x := by
+  have e : sub (⊤ : E) (sub ⊤ x le_top) (sub_le le_top) = x := sub_sub le_top
+  have hle := sub_antitone (le_top : sub (⊤ : E) x le_top ≤ ⊤) (le_refl (⊤ : E))
+  rwa [e] at hle
+
+/-- **176III**: `x ⊖ (1 ⊖ 1) = x` (the zero law, via (D4)). -/
+theorem dsub_zero (x : E) : sub x (sub (⊤ : E) ⊤ le_rfl) (dzero_le x) = x := by
+  have e : sub (⊤ : E) (sub ⊤ x le_top) (sub_le le_top) = x := sub_sub le_top
+  calc sub x (sub (⊤ : E) ⊤ le_rfl) (dzero_le x)
+      = sub (sub (⊤ : E) (sub ⊤ x le_top) (sub_le le_top))
+          (sub (⊤ : E) ⊤ (le_refl (⊤ : E)))
+          (sub_antitone (le_top : sub (⊤ : E) x le_top ≤ ⊤) (le_refl (⊤ : E))) :=
+        sub_congr e.symm rfl
+    _ = sub (⊤ : E) (sub ⊤ x le_top) le_top :=
+        sub_sub_eq (le_top : sub (⊤ : E) x le_top ≤ ⊤) (le_refl (⊤ : E))
+    _ = x := e
+
+theorem dzero_perp (x : E) : DPerp (sub (⊤ : E) ⊤ le_rfl) x :=
+  dperp_comm ⟨x, dzero_le x, dsub_zero x⟩
+
+theorem dzero_dovee (x : E) (h : DPerp (sub (⊤ : E) ⊤ le_rfl) x) :
+    dovee _ x h = x := by
+  rw [dovee_comm h]
+  exact dovee_eq _ (dzero_le x) (dsub_zero x)
+
+theorem dperp_orth (a : E) : DPerp a (sub (⊤ : E) a le_top) :=
+  ⟨⊤, le_top, sub_sub le_top⟩
+
+theorem dovee_orth (a : E) (h : DPerp a (sub (⊤ : E) a le_top)) :
+    dovee a _ h = ⊤ :=
+  dovee_eq _ le_top (sub_sub le_top)
+
+theorem dorth_unique {a b : E} (h : DPerp a b) (e : dovee a b h = ⊤) :
+    b = sub (⊤ : E) a le_top := by
+  have hab : sub (⊤ : E) b le_top = a :=
+    (sub_congr e rfl).symm.trans (sub_dovee h)
+  exact ((sub_congr rfl hab).symm.trans (sub_sub (le_top : b ≤ ⊤))).symm
+
+theorem deq_zero_of_dperp_top {a : E} (h : DPerp a ⊤) :
+    a = sub (⊤ : E) ⊤ le_rfl := by
+  obtain ⟨c, hc, e⟩ := h
+  exact e.symm.trans (sub_congr (le_antisymm le_top hc) rfl)
+
+end DPoset
+
+/-- **176III** (eff.tex:448, Exercise\* continued): the effect algebra
+structure carried by a D-poset (`a ⋁ b = c ⇔ c ⊖ b = a`, `0 = 1 ⊖ 1`,
+`aᵖ = 1 ⊖ a`). -/
+noncomputable def dposetEffectAlgebra (E : Type u) [DPoset E] : EffectAlgebra E where
+  zero := DPoset.sub (⊤ : E) ⊤ le_rfl
+  one := ⊤
+  Perp := DPoset.DPerp
+  ovee := DPoset.dovee
+  perp_comm := DPoset.dperp_comm
+  ovee_comm := DPoset.dovee_comm
+  perp_of_ovee_perp := DPoset.dperp_of_dovee_dperp
+  perp_ovee_of_ovee_perp := DPoset.dperp_dovee_of_dovee_dperp
+  ovee_assoc := DPoset.dovee_assoc
+  zero_perp := DPoset.dzero_perp
+  zero_ovee := fun a => DPoset.dzero_dovee a _
+  orth := fun a => DPoset.sub (⊤ : E) a le_top
+  perp_orth := DPoset.dperp_orth
+  ovee_orth := fun a => DPoset.dovee_orth a _
+  orth_unique := DPoset.dorth_unique
+  eq_zero_of_perp_one := DPoset.deq_zero_of_dperp_top
+
 /-- **176III** (eff.tex:448, Exercise\* continued): a D-poset `E` carries an
 effect algebra structure (`a ⋁ b = c ⇔ c ⊖ b = a`, `aᵖ = 1 ⊖ a`) whose
 order and difference agree with the given ones. -/
 theorem exc_dposet_ea (E : Type u) [DPoset E] :
     ∃ ea : EffectAlgebra E,
       (∀ a b : E, @PCM.le E ea.toPCM a b ↔ a ≤ b) ∧
-      (∀ a : E, @EffectAlgebra.orth E ea a = DPoset.sub ⊤ a le_top) := sorry
+      (∀ a : E, @EffectAlgebra.orth E ea a = DPoset.sub ⊤ a le_top) := by
+  refine ⟨dposetEffectAlgebra E, fun a b => ?_, fun _ => rfl⟩
+  constructor
+  · rintro ⟨c, hc, e⟩
+    have hle : a ≤ DPoset.dovee a c hc := DPoset.le_left_dovee hc
+    have e' : DPoset.dovee a c hc = b := e
+    rwa [e'] at hle
+  · intro hab
+    exact ⟨DPoset.sub b a hab,
+      ⟨b, DPoset.sub_le hab, DPoset.sub_sub hab⟩,
+      DPoset.dovee_eq _ (DPoset.sub_le hab) (DPoset.sub_sub hab)⟩
 
 section EAMorphism
 
@@ -1545,10 +1739,59 @@ def effectModuleBool (E : Type v) [EffectAlgebra E] : EffectModule Bool E where
       exact absurd h' (by decide)
   one_smul := by intro a; rfl
 
+/-- Helper for 179III.1: the effect module structure over `2` on an effect
+algebra is unique — `1 • a = a` by the module axioms and `0 • a = 0` because
+`0 • a ⋁ 0 • a = 0 • a`. -/
+theorem effectModule_bool_smul {E : Type v} [EffectAlgebra E]
+    [EffectModule Bool E] (l : Bool) (a : E) : l • a = if l then a else 0 := by
+  have hpf : Perp (false : Bool) (false : Bool) := rfl
+  cases l
+  · obtain ⟨h', e⟩ := EffectModule.perp_smul (M := Bool) (E := E)
+      (l := false) (m := false) hpf a
+    have e' : ovee ((false : Bool) • a) ((false : Bool) • a) h' = (false : Bool) • a := by
+      rw [e]; rfl
+    show (false : Bool) • a = (0 : E)
+    exact eabasics_cancellation (c := (false : Bool) • a) h'
+      (PCM.zero_perp _) (e'.trans (PCM.zero_ovee _).symm)
+  · show (true : Bool) • a = a
+    exact EffectModule.one_smul a
+
 /-- **179III.1** (eff.tex:722, Examples): `EA ≅ EMod₂` — the category of
 effect algebras is equivalent to that of effect modules over `2`. -/
 theorem ea_equiv_emod_two :
-    Nonempty (EACat.{u} ≌ EModCat.{0, u} Bool) := sorry
+    Nonempty (EACat.{u} ≌ EModCat.{0, u} Bool) :=
+  -- every effect algebra is a `2`-effect module, and every effect algebra
+  -- homomorphism is `2`-linear because it preserves `0`
+  let F : EACat.{u} ⥤ EModCat.{0, u} Bool :=
+    { obj := fun E => @EModCat.mk Bool _ E.carrier E.str (effectModuleBool E.carrier)
+      map := fun {A B} f =>
+        @EffectModuleHom.mk Bool A.carrier B.carrier _ A.str B.str
+          (effectModuleBool A.carrier) (effectModuleBool B.carrier) f
+          (fun l _ => by
+            cases l
+            · exact exc_eamorphism_map_zero f
+            · rfl)
+      map_id := fun _ => rfl
+      map_comp := fun _ _ => rfl }
+  -- the forgetful functor the other way
+  let G : EModCat.{0, u} Bool ⥤ EACat.{u} :=
+    { obj := fun E => ⟨E.carrier⟩
+      map := fun f => f.toEAHom
+      map_id := fun _ => rfl
+      map_comp := fun _ _ => rfl }
+  -- `G ⋙ F` is the identity on the underlying effect algebra, and the
+  -- `2`-action is uniquely determined, so the identity map is an isomorphism
+  let ε : ∀ E : EModCat.{0, u} Bool, (G ⋙ F).obj E ≅ E := fun E =>
+    { hom := @EffectModuleHom.mk Bool E.carrier E.carrier _ E.eaStr E.eaStr
+        (effectModuleBool E.carrier) E.modStr (EAHom.id E.carrier)
+        (fun l a => (effectModule_bool_smul l a).symm)
+      inv := @EffectModuleHom.mk Bool E.carrier E.carrier _ E.eaStr E.eaStr
+        E.modStr (effectModuleBool E.carrier) (EAHom.id E.carrier)
+        (fun l a => effectModule_bool_smul l a)
+      hom_inv_id := rfl
+      inv_hom_id := rfl }
+  ⟨CategoryTheory.Equivalence.mk F G (Iso.refl _)
+    (NatIso.ofComponents ε (fun _ => rfl))⟩
 
 /-- The one-element effect monoid `1` (179III.1). -/
 instance : EffectMonoid PUnit :=

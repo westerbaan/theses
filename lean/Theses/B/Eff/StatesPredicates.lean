@@ -1652,12 +1652,298 @@ theorem convex_subset_mconvex {V : Type u} [AddCommGroup V] [Module ℝ V]
 abstract `2`-convex set (in fact semilattices are *exactly* the abstract
 `2`-convex sets). -/
 theorem semilattice_two_convex (L : Type u) [SemilatticeSup L] :
-    Nonempty (MConvex Bool L) := sorry
+    Nonempty (MConvex Bool L) := by
+  classical
+  -- Over `M = 2` the only summable family of non-zero scalars is a single
+  -- `1`, so every formal `2`-convex combination is a Dirac distribution.
+  have hdirac : ∀ (X : Type u) (p : MConvexComb Bool X),
+      ∃ x : X, p = MConvexComb.eta x := by
+    intro X p
+    obtain ⟨l, hnd, hmem, hsum⟩ := p.sum_one
+    have h0 : (0 : Bool) = false := rfl
+    have hone : ∀ y : X, y ∈ l → p.toFun y = true := by
+      intro y hy
+      rcases Bool.eq_false_or_eq_true (p.toFun y) with hb | hb
+      · exact hb
+      · exact absurd (hb.trans h0.symm) ((hmem y).mp hy)
+    -- the support list is a singleton
+    have hsingle : ∃ a : X, l = [a] := by
+      match l, hnd, hmem, hsum with
+      | [], _, _, hsum =>
+        rw [List.map_nil, PCM.isSumOf_nil_iff] at hsum
+        exact absurd hsum.symm (by decide)
+      | a :: t, _, hmem', hsum =>
+        rw [List.map_cons, PCM.isSumOf_cons_iff] at hsum
+        obtain ⟨s, hs, hperp, he⟩ := hsum
+        have hpa : p.toFun a = true := hone a (List.mem_cons_self ..)
+        have hs0 : s = false := by
+          have : p.toFun a ⊓ s = ⊥ := hperp
+          rw [hpa] at this
+          revert this; cases s <;> simp [show (⊥ : Bool) = false from rfl]
+        subst hs0
+        refine ⟨a, ?_⟩
+        match t, hs with
+        | [], _ => rfl
+        | b :: t', hs =>
+          rw [List.map_cons, PCM.isSumOf_cons_iff] at hs
+          obtain ⟨s', _, _, he'⟩ := hs
+          have hpb : p.toFun b = true := hone b (List.mem_cons_of_mem _
+            (List.mem_cons_self ..))
+          have hcon : p.toFun b ⊔ s' = false := he'
+          rw [hpb] at hcon
+          exact absurd hcon (by simp)
+    obtain ⟨a, rfl⟩ := hsingle
+    refine ⟨a, MConvexComb.ext (funext fun y => ?_)⟩
+    show p.toFun y = if y = a then (1 : Bool) else 0
+    by_cases hy : y = a
+    · subst hy; rw [if_pos rfl]; exact hone y (List.mem_cons_self ..)
+    · rw [if_neg hy]
+      by_contra hcon
+      exact hy (List.mem_singleton.mp ((hmem y).mpr hcon))
+  -- `η` is injective (as `1 ≠ 0` in `2`), so `h p := the `x` with `p = η x``
+  -- inverts `η`, and the algebra laws are then formal
+  have hinj : ∀ x y : L, (MConvexComb.eta x : MConvexComb Bool L) =
+      MConvexComb.eta y → x = y := by
+    intro x y hxy
+    by_contra hne
+    have hval := congrArg (fun q : MConvexComb Bool L => q.toFun x) hxy
+    have hL : (MConvexComb.eta x : MConvexComb Bool L).toFun x = 1 := by
+      show (if x = x then (1 : Bool) else 0) = 1
+      rw [if_pos rfl]
+    have hR : (MConvexComb.eta y : MConvexComb Bool L).toFun x = 0 := by
+      show (if x = y then (1 : Bool) else 0) = 0
+      rw [if_neg hne]
+    rw [hL, hR] at hval
+    exact absurd hval (by decide)
+  have heta : ∀ x : L, (hdirac L (MConvexComb.eta x)).choose = x := fun x =>
+    (hinj _ _ (hdirac L (MConvexComb.eta x)).choose_spec.symm)
+  refine ⟨⟨fun p => (hdirac L p).choose, heta, fun Φ => ?_⟩⟩
+  -- `Φ = η(φ)`, so `μ Φ = φ` and `𝒟(h)(Φ) = η(h φ)`
+  obtain ⟨φ, hφ⟩ := hdirac _ Φ
+  subst hφ
+  rw [MConvexComb.mu_eta, MConvexComb.map_eta, heta]
+
+/-- Helper for 192V.3: in `[0,1]` a finite partial sum vanishes iff all its
+summands do (it is the real sum of non-negative reals). -/
+theorem unitInterval_isSumOf_eq_zero_iff {l : List I} {s : I}
+    (h : PCM.IsSumOf l s) : s = 0 ↔ ∀ a ∈ l, a = 0 := by
+  have hI0 : ((0 : I) : ℝ) = 0 := rfl
+  induction h with
+  | nil => simp
+  | @cons a l s hl hp ih =>
+    have hcoe : ((ovee a s hp : I) : ℝ) = (a : ℝ) + (s : ℝ) := rfl
+    constructor
+    · intro h0
+      have hc : (a : ℝ) + (s : ℝ) = 0 := by
+        rw [← hcoe, h0, hI0]
+      have ha : a = 0 := Subtype.ext (by rw [hI0]; linarith [a.2.1, s.2.1])
+      have hs : s = 0 := Subtype.ext (by rw [hI0]; linarith [a.2.1, s.2.1])
+      intro b hb
+      rcases List.mem_cons.mp hb with rfl | hb
+      · exact ha
+      · exact ih.mp hs b hb
+    · intro hall
+      have ha : a = 0 := hall a (List.mem_cons_self ..)
+      have hs : s = 0 := ih.mpr fun b hb => hall b (List.mem_cons_of_mem _ hb)
+      refine Subtype.ext ?_
+      rw [hcoe, ha, hs, hI0]
+      ring
+
+/-- Helper for 192V.3: `[0,1]` has no zero divisors. -/
+theorem unitInterval_mul_eq_zero {a b : I} (h : a * b = 0) : a = 0 ∨ b = 0 := by
+  have hI0 : ((0 : I) : ℝ) = 0 := rfl
+  have hc : (a : ℝ) * (b : ℝ) = 0 := by
+    have hv := congrArg Subtype.val h
+    rwa [show ((a * b : I) : ℝ) = (a : ℝ) * (b : ℝ) from rfl, hI0] at hv
+  rcases mul_eq_zero.mp hc with h0 | h0
+  · exact Or.inl (Subtype.ext (by rw [h0, hI0]))
+  · exact Or.inr (Subtype.ext (by rw [h0, hI0]))
+
+/-- Helper for 192V.3: the join `⋁ (a :: l)` of a non-empty list in a
+join-semilattice. -/
+def listJoin {L : Type u} [SemilatticeSup L] (a : L) (l : List L) : L :=
+  l.foldr (· ⊔ ·) a
+
+/-- `⋁ (a :: l)` is the least upper bound of `a :: l`. -/
+theorem listJoin_le_iff {L : Type u} [SemilatticeSup L] (a : L) (l : List L)
+    (x : L) : listJoin a l ≤ x ↔ ∀ y ∈ a :: l, y ≤ x := by
+  induction l with
+  | nil => simp [listJoin]
+  | cons b t ih =>
+    show b ⊔ listJoin a t ≤ x ↔ _
+    rw [sup_le_iff, ih]
+    constructor
+    · rintro ⟨hb, hall⟩ y hy
+      rcases List.mem_cons.mp hy with rfl | hy
+      · exact hall y (List.mem_cons_self ..)
+      · rcases List.mem_cons.mp hy with rfl | hy
+        · exact hb
+        · exact hall y (List.mem_cons_of_mem _ hy)
+    · intro hall
+      refine ⟨hall b (List.mem_cons_of_mem _ (List.mem_cons_self ..)), fun y hy => ?_⟩
+      rcases List.mem_cons.mp hy with rfl | hy
+      · exact hall y (List.mem_cons_self ..)
+      · exact hall y (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hy))
+
+/-- Every member of `a :: l` is below `⋁ (a :: l)`. -/
+theorem le_listJoin {L : Type u} [SemilatticeSup L] (a : L) (l : List L)
+    {x : L} (h : x ∈ a :: l) : x ≤ listJoin a l :=
+  (listJoin_le_iff a l (listJoin a l)).mp le_rfl x h
+
+/-- `⋁ (a :: l)` only depends on the set of members of `a :: l`. -/
+theorem listJoin_congr {L : Type u} [SemilatticeSup L] {a b : L}
+    {l m : List L} (h : ∀ x : L, x ∈ a :: l ↔ x ∈ b :: m) :
+    listJoin a l = listJoin b m :=
+  le_antisymm ((listJoin_le_iff _ _ _).mpr fun y hy => le_listJoin b m ((h y).mp hy))
+    ((listJoin_le_iff _ _ _).mpr fun y hy => le_listJoin a l ((h y).mpr hy))
 
 /-- **192V.3** (eff.tex:2581, Examples): every semilattice is also an
 abstract `[0,1]`-convex set with `h(⋁ᵢ λᵢ|xᵢ⟩) = ⋁_{i : λᵢ ≠ 0} xᵢ`. -/
 theorem semilattice_unitInterval_convex (L : Type u) [SemilatticeSup L] :
-    Nonempty (MConvex I L) := sorry
+    Nonempty (MConvex I L) := by
+  classical
+  have hI0 : ((0 : I) : ℝ) = 0 := rfl
+  have hI1 : ((1 : I) : ℝ) = 1 := rfl
+  have hIne : (1 : I) ≠ 0 := fun hc => by
+    have hv := congrArg Subtype.val hc
+    rw [hI1, hI0] at hv
+    norm_num at hv
+  -- the support of a formal `[0,1]`-convex combination is a non-empty list
+  have hsupp : ∀ (Y : Type u) (p : MConvexComb I Y), ∃ al : Y × List Y,
+      (al.1 :: al.2).Nodup ∧ ∀ x : Y, x ∈ al.1 :: al.2 ↔ p.toFun x ≠ 0 := by
+    intro Y p
+    obtain ⟨l, hnd, hmem, hsum⟩ := p.sum_one
+    match l, hnd, hmem, hsum with
+    | [], _, _, hsum =>
+      rw [List.map_nil, PCM.isSumOf_nil_iff] at hsum
+      exact absurd hsum hIne
+    | a :: t, hnd, hmem, _ => exact ⟨(a, t), hnd, hmem⟩
+  let sel : ∀ Y : Type u, MConvexComb I Y → Y × List Y :=
+    fun Y p => (hsupp Y p).choose
+  have hselnd : ∀ (Y : Type u) (p : MConvexComb I Y),
+      ((sel Y p).1 :: (sel Y p).2).Nodup := fun Y p => (hsupp Y p).choose_spec.1
+  have hsel : ∀ (Y : Type u) (p : MConvexComb I Y) (x : Y),
+      x ∈ (sel Y p).1 :: (sel Y p).2 ↔ p.toFun x ≠ 0 :=
+    fun Y p => (hsupp Y p).choose_spec.2
+  -- `H p` is the join of the support of `p`
+  let H : MConvexComb I L → L := fun p => listJoin (sel L p).1 (sel L p).2
+  have hH : ∀ (p : MConvexComb I L) (a : L) (l : List L),
+      (∀ x : L, x ∈ a :: l ↔ p.toFun x ≠ 0) → H p = listJoin a l :=
+    fun p a l hal => listJoin_congr fun x => (hsel L p x).trans (hal x).symm
+  refine ⟨⟨H, fun x => ?_, fun Φ => ?_⟩⟩
+  · -- `η x` is supported on `{x}`
+    have hsp : ∀ y : L, y ∈ [x] ↔ (MConvexComb.eta x : MConvexComb I L).toFun y ≠ 0 := by
+      intro y
+      show y ∈ [x] ↔ (if y = x then (1 : I) else 0) ≠ 0
+      rw [List.mem_singleton]
+      by_cases hy : y = x
+      · rw [if_pos hy]
+        exact ⟨fun _ => hIne, fun _ => hy⟩
+      · rw [if_neg hy]
+        exact ⟨fun h => absurd h hy, fun h => absurd rfl h⟩
+    show H (MConvexComb.eta x) = x
+    rw [hH (MConvexComb.eta x) x [] hsp]
+    rfl
+  · -- support of `μ Φ` and of `𝒟(H)(Φ)`, computed from the support of `Φ`
+    set b := (sel _ Φ).1 with hbdef
+    set m := (sel _ Φ).2 with hmdef
+    have hΦmem : ∀ φ : MConvexComb I L, φ ∈ b :: m ↔ Φ.toFun φ ≠ 0 := hsel _ Φ
+    let supp : MConvexComb I L → List L := fun φ => (sel L φ).1 :: (sel L φ).2
+    have hsuppmem : ∀ (φ : MConvexComb I L) (x : L), x ∈ supp φ ↔ φ.toFun x ≠ 0 :=
+      fun φ => hsel L φ
+    have hsuppjoin : ∀ φ : MConvexComb I L, H φ = listJoin (sel L φ).1 (sel L φ).2 :=
+      fun _ => rfl
+    -- (1) `(μ Φ) x ≠ 0` iff `x` lies in the support of some `φ` in `supp Φ`
+    have hmu : ∀ x : L, (MConvexComb.mu Φ).toFun x ≠ 0 ↔
+        ∃ φ ∈ b :: m, φ.toFun x ≠ 0 := by
+      intro x
+      have hs := MConvexComb.mu_spec Φ x (b :: m) (hselnd _ Φ) hΦmem
+      have hz := unitInterval_isSumOf_eq_zero_iff hs
+      constructor
+      · intro hne
+        by_contra hcon
+        push_neg at hcon
+        refine hne (hz.mpr ?_)
+        rintro c hc
+        obtain ⟨φ, hφ, rfl⟩ := List.mem_map.mp hc
+        show Φ.toFun φ * φ.toFun x = 0
+        rw [hcon φ hφ]
+        exact (exc_emonzero _).1
+      · rintro ⟨φ, hφ, hx⟩ h0
+        have hprod := (hz.mp h0) (Φ.toFun φ * φ.toFun x) (List.mem_map_of_mem hφ)
+        rcases unitInterval_mul_eq_zero hprod with h1 | h1
+        · exact (hΦmem φ).mp hφ h1
+        · exact hx h1
+    -- (2) `(𝒟(H) Φ) z ≠ 0` iff `z = H φ` for some `φ` in `supp Φ`
+    have hmap : ∀ z : L, (Φ.map H).toFun z ≠ 0 ↔ ∃ φ ∈ b :: m, H φ = z := by
+      intro z
+      have hfil : ∀ φ : MConvexComb I L,
+          φ ∈ (b :: m).filter (fun φ => decide (H φ = z)) ↔
+            (Φ.toFun φ ≠ 0 ∧ H φ = z) := by
+        intro φ
+        rw [List.mem_filter, hΦmem φ]
+        simp
+      have hs := MConvexComb.map_spec Φ H z _ ((hselnd _ Φ).filter _) hfil
+      have hz := unitInterval_isSumOf_eq_zero_iff hs
+      constructor
+      · intro hne
+        by_contra hcon
+        push_neg at hcon
+        refine hne (hz.mpr ?_)
+        rintro c hc
+        obtain ⟨φ, hφ, rfl⟩ := List.mem_map.mp hc
+        exact absurd ((hfil φ).mp hφ).2 (hcon φ ((hΦmem φ).mpr ((hfil φ).mp hφ).1))
+      · rintro ⟨φ, hφ, hz'⟩ h0
+        exact ((hΦmem φ).mp hφ)
+          ((hz.mp h0) _ (List.mem_map_of_mem ((hfil φ).mpr ⟨(hΦmem φ).mp hφ, hz'⟩)))
+    -- the support of `μ Φ` is the union of the supports of the `φ`s
+    have hcons : (b :: m).flatMap supp =
+        (sel L b).1 :: ((sel L b).2 ++ m.flatMap supp) := by
+      rw [List.flatMap_cons]
+      rfl
+    have hbig : ∀ x : L,
+        x ∈ (sel L b).1 :: ((sel L b).2 ++ m.flatMap supp) ↔
+          (MConvexComb.mu Φ).toFun x ≠ 0 := by
+      intro x
+      rw [← hcons, List.mem_flatMap, hmu x]
+      exact exists_congr fun φ => and_congr_right fun _ => hsuppmem φ x
+    have hHmu : H (MConvexComb.mu Φ) =
+        listJoin (sel L b).1 ((sel L b).2 ++ m.flatMap supp) := hH _ _ _ hbig
+    have hHmap : H (Φ.map H) = listJoin (H b) (m.map H) := by
+      refine hH (Φ.map H) (H b) (m.map H) fun z => ?_
+      rw [hmap z]
+      constructor
+      · intro hz
+        rcases List.mem_cons.mp hz with hz1 | hz1
+        · exact ⟨b, List.mem_cons_self .., hz1.symm⟩
+        · obtain ⟨φ, hφ, hφz⟩ := List.mem_map.mp hz1
+          exact ⟨φ, List.mem_cons_of_mem _ hφ, hφz⟩
+      · rintro ⟨φ, hφ, hφz⟩
+        rcases List.mem_cons.mp hφ with hφ1 | hφ1
+        · exact List.mem_cons.mpr (Or.inl (by rw [← hφz, hφ1]))
+        · exact List.mem_cons_of_mem _ (hφz ▸ List.mem_map_of_mem hφ1)
+    -- the join of the union is the join of the joins
+    rw [hHmu, hHmap]
+    refine le_antisymm ((listJoin_le_iff _ _ _).mpr fun y hy => ?_)
+      ((listJoin_le_iff _ _ _).mpr fun y hy => ?_)
+    · obtain ⟨φ, hφ, hyφ⟩ := (hmu y).mp ((hbig y).mp hy)
+      refine le_trans (le_listJoin (sel L φ).1 (sel L φ).2 ((hsuppmem φ y).mpr hyφ)) ?_
+      rw [← hsuppjoin φ]
+      refine le_listJoin (H b) (m.map H) ?_
+      rcases List.mem_cons.mp hφ with hφ1 | hφ1
+      · exact List.mem_cons.mpr (Or.inl (by rw [hφ1]))
+      · exact List.mem_cons_of_mem _ (List.mem_map_of_mem hφ1)
+    · have hy' : ∃ φ ∈ b :: m, H φ = y := by
+        rcases List.mem_cons.mp hy with hy1 | hy1
+        · exact ⟨b, List.mem_cons_self .., hy1.symm⟩
+        · obtain ⟨φ, hφ, hφy⟩ := List.mem_map.mp hy1
+          exact ⟨φ, List.mem_cons_of_mem _ hφ, hφy⟩
+      obtain ⟨φ, hφ, hφy⟩ := hy'
+      rw [← hφy, hsuppjoin φ]
+      refine (listJoin_le_iff _ _ _).mpr fun z hz => ?_
+      exact le_listJoin _ _ ((hbig z).mpr
+        ((hmu z).mpr ⟨φ, hφ, (hsuppmem φ z).mp hz⟩))
+
 
 /-- **192V.4** (eff.tex:2591, Examples): every cancellative abstract
 `[0,1]`-convex set is isomorphic (by an affine bijection) to a convex subset
@@ -1865,7 +2151,30 @@ derivations, which is not formalized here.) -/
 theorem least_conv_cong (st : MConvex M X) (R : X → X → Prop) :
     ∃ r : Setoid X, st.IsCongruence r ∧ (∀ x y, R x y → r.r x y) ∧
       ∀ r' : Setoid X, st.IsCongruence r' → (∀ x y, R x y → r'.r x y) →
-        ∀ x y, r.r x y → r'.r x y := sorry
+        ∀ x y, r.r x y → r'.r x y := by
+  classical
+  -- The intersection of all congruences containing `R` (the family is
+  -- non-empty: the total relation is one).  Congruences are closed under
+  -- arbitrary intersections because a smaller congruence `r` makes `𝒟_M(q_r)`
+  -- refine `𝒟_M(q_{r'})` for every larger `r'`.
+  set P : Setoid X → Prop :=
+    fun r' => st.IsCongruence r' ∧ ∀ x y, R x y → r'.r x y with hP
+  let r : Setoid X :=
+    { r := fun x y => ∀ r' : Setoid X, P r' → r'.r x y
+      iseqv :=
+        ⟨fun x r' _ => r'.refl x, fun h r' hr' => r'.symm (h r' hr'),
+          fun h₁ h₂ r' hr' => r'.trans (h₁ r' hr') (h₂ r' hr')⟩ }
+  have hmono : ∀ (r' : Setoid X), P r' → ∀ x y, r.r x y → r'.r x y :=
+    fun r' hr' _ _ h => h r' hr'
+  refine ⟨r, ?_, fun x y hxy r' hr' => hr'.2 x y hxy, fun r' h₁ h₂ => hmono r' ⟨h₁, h₂⟩⟩
+  intro φ ψ hq
+  refine Quotient.sound (fun r' hr' => ?_)
+  -- the canonical map `k : X/r → X/r'`
+  let k : Quotient r → Quotient r' :=
+    Quotient.lift (Quotient.mk r') fun a b hab => Quotient.sound (hmono r' hr' a b hab)
+  have hk : ∀ p : MConvexComb M X, p.map (Quotient.mk r') = (p.map (Quotient.mk r)).map k :=
+    fun p => by rw [MConvexComb.map_comp]; rfl
+  exact Quotient.exact (hr'.1 φ ψ (by rw [hk φ, hk ψ, hq]))
 
 end Congruence
 

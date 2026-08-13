@@ -873,6 +873,102 @@ theorem compr_total [HasQuotients C] {W X : C} {p : Pred X} {π : W ⟶ X}
     exact h4
   exact eabasics_le_antisymm (pred_le_truth _) h3
 
+
+/-- Helper (quotients cancel on the left; needed for 221IV.6, eff.tex:6923):
+if `ξ` and `ξ ≫ η` are quotients, then so is `η` — namely a quotient for
+`(1 ∘ η)ᵖ`. -/
+theorem isQuotient_of_comp_left {X Q R : C} {p₀ p : Pred X}
+    {ξ : X ⟶ Q} {η : Q ⟶ R} (hξ : IsQuotient p₀ ξ)
+    (hcomp : IsQuotient p (ξ ≫ η)) :
+    IsQuotient (orth (η ≫ truth R)) η := by
+  haveI : Epi ξ := quotient_basics_6 hξ
+  refine ⟨?_, ?_⟩
+  · rw [eabasics_orth_orth]
+    exact pcm_preorder_refl _
+  · intro Y f hf
+    rw [eabasics_orth_orth] at hf
+    -- `1 ∘ (ξ ≫ f) ≤ 1 ∘ (ξ ≫ η) ≤ pᵖ`
+    have hle : ((ξ ≫ f) ≫ truth Y) ≼ orth p := by
+      refine pcm_preorder_trans ?_ hcomp.1
+      rw [Category.assoc, Category.assoc]
+      exact comp_le_comp ξ hf
+    obtain ⟨f', hf', hu⟩ := hcomp.2 (ξ ≫ f) hle
+    refine ⟨f', ?_, ?_⟩
+    · refine (cancel_epi ξ).mp ?_
+      rw [← Category.assoc]
+      exact hf'
+    · intro g hg
+      exact hu g (show (ξ ≫ η) ≫ g = ξ ≫ f by rw [Category.assoc, hg])
+
+/-- Helper (comprehensions cancel on the right; the dual of
+`isQuotient_of_comp_left`): if `π` and `κ ≫ π` are comprehensions — say `π`
+for `r` and `κ ≫ π` for `q` — then `κ` is a comprehension for `π ≫ q`. -/
+theorem isComprehension_of_comp_right [HasQuotients C] {W Z X : C}
+    {r q : Pred X} {κ : W ⟶ Z} {π : Z ⟶ X} (hπ : IsComprehension r π)
+    (hcomp : IsComprehension q (κ ≫ π)) : IsComprehension (π ≫ q) κ := by
+  have hπt : IsTotal π := compr_total hπ
+  haveI : Mono π := compr_basics_5 hπ
+  haveI : Mono (κ ≫ π) := compr_basics_5 hcomp
+  haveI : Mono κ := mono_of_mono κ π
+  refine ⟨?_, ?_⟩
+  · rw [← Category.assoc, hcomp.1, Category.assoc, hπt]
+  · intro V g hg
+    have hg' : (g ≫ π) ≫ q = (g ≫ π) ≫ truth X := by
+      rw [Category.assoc, Category.assoc, hπt]
+      exact hg
+    obtain ⟨h, hh, hu⟩ := hcomp.2 (g ≫ π) hg'
+    refine ⟨h, ?_, ?_⟩
+    · refine (cancel_mono π).mp ?_
+      rw [Category.assoc]
+      exact hh
+    · intro k hk
+      exact hu k (show k ≫ κ ≫ π = g ≫ π by rw [← Category.assoc, hk])
+
+/-- Helper (**pure maps divide on the left by quotients**): if `ξ` is a
+quotient and `ξ ≫ g` is pure, then `g` is pure.  The thesis uses this
+tacitly in the proof of 221IV.6 (eff.tex:6923), where it asserts that the
+factor `h''` of the pure map `h = h'' ∘ ξ` is again pure. -/
+theorem isPure_of_isQuotient_comp [HasQuotients C] {X Q Y : C} {p₀ : Pred X}
+    {ξ : X ⟶ Q} (hξ : IsQuotient p₀ ξ) {g : Q ⟶ Y}
+    (hpure : IsPure (ξ ≫ g)) : IsPure g := by
+  haveI : Epi ξ := quotient_basics_6 hξ
+  obtain ⟨Q', ξ', π, p, q, hξ', hπ, he⟩ := hpure
+  have hπt : IsTotal π := compr_total hπ
+  -- `1 ∘ ξ' = 1 ∘ ξ ∘ g ≤ 1 ∘ ξ ≤ p₀ᵖ`, so `ξ'` factors through `ξ`
+  have hle : (ξ' ≫ truth Q') ≼ orth p₀ := by
+    have e : ξ' ≫ truth Q' = ξ ≫ (g ≫ truth Y) := by
+      rw [← Category.assoc, he, Category.assoc, hπt]
+    rw [e]
+    exact pcm_preorder_trans (comp_le_comp ξ (pred_le_truth _)) hξ.1
+  obtain ⟨η, hη, -⟩ := hξ.2 ξ' hle
+  have hgη : η ≫ π = g := by
+    refine (cancel_epi ξ).mp ?_
+    rw [← Category.assoc, hη, ← he]
+  exact ⟨Q', η, π, orth (η ≫ truth Q'), q,
+    isQuotient_of_comp_left hξ (by rw [hη]; exact hξ'), hπ, hgη.symm⟩
+
+/-- Helper (**pure maps divide on the right by comprehensions**): if `π` is
+a comprehension and `f ≫ π` is pure, then `f` is pure.  (The dual of
+`isPure_of_isQuotient_comp`; the same gap arises in the proof of 224III.) -/
+theorem isPure_of_comp_isComprehension [HasQuotients C] {X Z Y : C}
+    {r : Pred Y} {f : X ⟶ Z} {π : Z ⟶ Y} (hπ : IsComprehension r π)
+    (hpure : IsPure (f ≫ π)) : IsPure f := by
+  have hπt : IsTotal π := compr_total hπ
+  haveI : Mono π := compr_basics_5 hπ
+  obtain ⟨Q, ξ, π', p, q, hξ, hπ', he⟩ := hpure
+  haveI : Epi ξ := quotient_basics_6 hξ
+  -- `π'` satisfies the defining equation of the comprehension `π`
+  have hπ'r : π' ≫ r = π' ≫ truth Y := by
+    refine (cancel_epi ξ).mp ?_
+    rw [← Category.assoc, ← Category.assoc, ← he, Category.assoc, hπ.1,
+      ← Category.assoc]
+  obtain ⟨κ, hκ, -⟩ := hπ.2 π' hπ'r
+  have hfκ : ξ ≫ κ = f := by
+    refine (cancel_mono π).mp ?_
+    rw [Category.assoc, hκ, ← he]
+  exact ⟨Q, ξ, κ, p, π ≫ q, hξ,
+    isComprehension_of_comp_right hπ (by rw [hκ]; exact hπ'), hfκ.symm⟩
+
 /-! ## Sharp predicates, floor and ceiling (parsecs 203–204) -/
 
 /-- **203I.1** (eff.tex:4185, Definition): a predicate is (image) **sharp**
