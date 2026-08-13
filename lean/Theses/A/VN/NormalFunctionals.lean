@@ -18,6 +18,7 @@ the topologies, and `Theses/A/VN/Projections.lean` for `ceil`, `carrier`,
 `cceil`, `commutant` and `projSup`.
 -/
 import Theses.A.VN.Division
+import Theses.A.CStar.Matrices
 
 open scoped ComplexOrder ComplexInnerProductSpace CStarAlgebra ENNReal
 open Filter Topology Theses Theses.A.CStar
@@ -34,12 +35,162 @@ variable {A B : Type u} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
 **85I** (vn.tex:6233) and **86I** (vn.tex:6259): overview — nothing to
 formalize. -/
 
+/-- `(y + ziz)*(y + zi) = y² + z²` for self-adjoint `y` and real `z`; the
+computation behind the trick in the proof of **86II** (vn.tex:6310). -/
+private theorem pfc_aux (y : A) (hy : IsSelfAdjoint y) (z : ℝ) :
+    star (y + ((z * Complex.I)) • (1 : A)) * (y + ((z * Complex.I)) • (1 : A))
+      = y * y + ((z ^ 2 : ℝ) : ℂ) • (1 : A) := by
+  simp [hy.star_eq, smul_smul, mul_add, add_mul]
+  ring_nf
+  simp [Complex.I_sq]
+
+/-- The normalized case (`f(1) = 1`, `‖f‖ ≤ 1`) of the hard direction of
+**86II** (vn.tex:6300–6318): a unital contraction is positive on `[0,1]`. -/
+private theorem pfc_key (g : A →L[ℂ] ℂ) (hg1 : g 1 = 1) (hgn : ‖g‖ ≤ 1)
+    (b : A) (hb0 : 0 ≤ b) (hb1 : b ≤ 1) : 0 ≤ g b := by
+  rcases subsingleton_or_nontrivial A with hA | hA
+  · exact absurd (hg1 ▸ congrArg g (Subsingleton.elim (1 : A) 0) ▸ g.map_zero)
+      (by norm_num)
+  have hbsa : IsSelfAdjoint b := .of_nonneg hb0
+  set r : ℝ := (g b).re with hr
+  set t : ℝ := (g b).im with ht
+  set y : A := b - (r : ℂ) • (1 : A) with hy
+  have hysa : IsSelfAdjoint y := by
+    simp [hy, IsSelfAdjoint, star_sub, hbsa.star_eq]
+  -- the author's trick: the family `bₙ := (b - ℜ f(b)) + n i ℑ f(b)`
+  have hkey : ∀ n : ℕ, ((2 * n + 1 : ℝ)) * t ^ 2 ≤ ‖y‖ ^ 2 := by
+    intro n
+    set z : ℝ := n * t with hz
+    set bn : A := y + ((z * Complex.I)) • (1 : A) with hbn
+    have hgbn : g bn = ((n + 1 : ℝ) * t : ℝ) * Complex.I := by
+      simp only [hbn, hy, map_add, map_sub, map_smul, hg1, smul_eq_mul, mul_one]
+      refine Complex.ext ?_ ?_ <;> simp [hr, ht, hz] <;> ring
+    have hnorm2 : ‖bn‖ ^ 2 ≤ ‖y‖ ^ 2 + z ^ 2 := by
+      have h1 : ‖bn‖ ^ 2 = ‖star bn * bn‖ := by
+        rw [CStarRing.norm_star_mul_self]; ring
+      rw [h1, pfc_aux y hysa z]
+      calc ‖y * y + ((z ^ 2 : ℝ) : ℂ) • (1 : A)‖
+          ≤ ‖y * y‖ + ‖((z ^ 2 : ℝ) : ℂ) • (1 : A)‖ := norm_add_le _ _
+        _ ≤ ‖y‖ ^ 2 + z ^ 2 := by
+            gcongr
+            · rw [sq]; exact norm_mul_le _ _
+            · simp [norm_smul]
+    have hle : ‖g bn‖ ≤ ‖bn‖ := by
+      calc ‖g bn‖ ≤ ‖g‖ * ‖bn‖ := g.le_opNorm bn
+        _ ≤ 1 * ‖bn‖ := by gcongr
+        _ = ‖bn‖ := one_mul _
+    have hgn2 : ‖g bn‖ = ((n : ℝ) + 1) * |t| := by
+      rw [hgbn, norm_mul, Complex.norm_I, mul_one, Complex.norm_real,
+        Real.norm_eq_abs, abs_mul,
+        abs_of_nonneg (by positivity : (0 : ℝ) ≤ (n : ℝ) + 1)]
+    have hz2 : z ^ 2 = (n : ℝ) ^ 2 * t ^ 2 := by rw [hz]; ring
+    have hle' : ((n : ℝ) + 1) * |t| ≤ ‖bn‖ := hgn2 ▸ hle
+    have hsq : (((n : ℝ) + 1) * |t|) ^ 2 ≤ ‖bn‖ ^ 2 :=
+      pow_le_pow_left₀ (by positivity) hle' 2
+    rw [mul_pow, sq_abs] at hsq
+    nlinarith [Nat.cast_nonneg (α := ℝ) n]
+  have ht0 : t = 0 := by
+    by_contra htne
+    have ht2 : 0 < t ^ 2 := by positivity
+    obtain ⟨n, hn⟩ := exists_nat_gt (‖y‖ ^ 2 / t ^ 2)
+    have hk := hkey n
+    rw [div_lt_iff₀ ht2] at hn
+    nlinarith [Nat.cast_nonneg (α := ℝ) n]
+  have hgbr : g b = (r : ℂ) := by
+    refine Complex.ext ?_ ?_ <;> simp [hr, ← ht, ht0]
+  -- `‖1 - g(b)‖ = ‖g(1 - b)‖ ≤ 1` forces `ℜ g(b) ≥ 0`
+  have h1b : (0 : A) ≤ 1 - b := sub_nonneg.mpr hb1
+  have h1b1 : ‖(1 : A) - b‖ ≤ 1 :=
+    (CStarAlgebra.norm_le_one_iff_of_nonneg _ h1b).mpr (sub_le_self 1 hb0)
+  have hbound : ‖(1 : ℂ) - (r : ℂ)‖ ≤ 1 := by
+    have hop := g.le_opNorm ((1 : A) - b)
+    rw [map_sub, hg1, hgbr] at hop
+    calc ‖(1 : ℂ) - (r : ℂ)‖ ≤ ‖g‖ * ‖(1 : A) - b‖ := hop
+      _ ≤ 1 * 1 := by gcongr
+      _ = 1 := one_mul 1
+  have hr0 : 0 ≤ r := by
+    rw [show (1 : ℂ) - (r : ℂ) = ((1 - r : ℝ) : ℂ) by push_cast; ring,
+      Complex.norm_real, Real.norm_eq_abs] at hbound
+    cases abs_le.mp hbound with
+    | intro h1 _ => linarith
+  rw [hgbr]
+  simpa [Complex.le_def] using hr0
+
 /-- **86II** (`positive-functional-criterion`, vn.tex:6265, Lemma): a
 (bounded) linear functional `f` on a C*-algebra is positive iff
 `‖f‖ ≤ f(1)`. -/
 theorem positive_functional_criterion (f : A →L[ℂ] ℂ) :
-    (∀ a : A, 0 ≤ a → 0 ≤ f a) ↔ ((f 1).im = 0 ∧ ‖f‖ ≤ (f 1).re) :=
-  sorry
+    (∀ a : A, 0 ≤ a → 0 ≤ f a) ↔ ((f 1).im = 0 ∧ ‖f‖ ≤ (f 1).re) := by
+  constructor
+  · -- `f` positive ⟹ `‖f‖ ≤ f(1)`; by `cp-commutative` + `cp-russo-dye`
+    intro hpos
+    have h1 : (0 : ℂ) ≤ f 1 := hpos 1 zero_le_one
+    refine ⟨((Complex.le_def.mp h1).2).symm, ?_⟩
+    have hre : (0 : ℝ) ≤ (f 1).re := (Complex.le_def.mp h1).1
+    have hnf : ‖f 1‖ = (f 1).re := (Complex.re_eq_norm.mpr h1).symm
+    refine ContinuousLinearMap.opNorm_le_bound _ hre fun a => ?_
+    calc ‖f a‖ ≤ ‖f 1‖ * ‖a‖ :=
+          cp_russo_dye f.toLinearMap (cp_commutative_cod _ hpos) a
+      _ = (f 1).re * ‖a‖ := by rw [hnf]
+  · -- `‖f‖ ≤ f(1)` ⟹ `f` positive; normalize and apply `pfc_key`
+    rintro ⟨him, hnorm⟩ a ha
+    set c : ℝ := (f 1).re with hc
+    have hc0 : (0 : ℝ) ≤ c := le_trans (norm_nonneg f) hnorm
+    rcases eq_or_lt_of_le hc0 with hce | hcp
+    · have hz : ‖f‖ = 0 := le_antisymm (hce ▸ hnorm) (norm_nonneg f)
+      simp [norm_eq_zero.mp hz]
+    · have hf1 : f 1 = (c : ℂ) := Complex.ext (by simp [hc]) (by simp [him])
+      set g : A →L[ℂ] ℂ := (c⁻¹ : ℂ) • f with hg
+      have hg1 : g 1 = 1 := by
+        rw [hg]
+        simp only [ContinuousLinearMap.smul_apply, smul_eq_mul, hf1]
+        field_simp
+      have hgn : ‖g‖ ≤ 1 := by
+        rw [hg, norm_smul, norm_inv, Complex.norm_real, Real.norm_eq_abs,
+          abs_of_nonneg hc0, inv_mul_le_one₀ hcp]
+        exact hnorm
+      have hfg : ∀ x : A, f x = (c : ℂ) * g x := by
+        intro x
+        rw [hg]
+        simp only [ContinuousLinearMap.smul_apply, smul_eq_mul]
+        field_simp
+      rcases eq_or_ne a 0 with rfl | hane
+      · simp
+      have hna : (0 : ℝ) < ‖a‖ := norm_pos_iff.mpr hane
+      set b : A := ((‖a‖⁻¹ : ℝ) : ℂ) • a with hb
+      have hb0 : 0 ≤ b := cstar_positive_1 a ha _ (by positivity)
+      have hbn : ‖b‖ = 1 := by
+        rw [hb, norm_smul, Complex.norm_real, Real.norm_eq_abs,
+          abs_of_nonneg (by positivity : (0 : ℝ) ≤ ‖a‖⁻¹)]
+        field_simp
+      have hb1 : b ≤ 1 :=
+        (CStarAlgebra.norm_le_one_iff_of_nonneg b hb0).mp hbn.le
+      have hgb : 0 ≤ g b := pfc_key g hg1 hgn b hb0 hb1
+      have hga : g a = (‖a‖ : ℂ) * g b := by
+        rw [hb, map_smul, smul_eq_mul, ← mul_assoc,
+          show ((‖a‖ : ℂ)) * (((‖a‖⁻¹ : ℝ)) : ℂ) = 1 by
+            push_cast; field_simp, one_mul]
+      rw [hfg a, hga]
+      have hcc : (0 : ℂ) ≤ (c : ℂ) := by simpa [Complex.le_def] using hc0
+      have hnn : (0 : ℂ) ≤ (‖a‖ : ℂ) := by
+        simp [Complex.le_def, hna.le]
+      exact mul_nonneg hcc (mul_nonneg hnn hgb)
+
+/-- `‖u f(u*u)‖² = ‖f(u*u) u*u f(u*u)‖`, the C*-identity computation used in
+the proof of **86VI**. -/
+private theorem vbep_norm (u : A) (h : ℝ → ℝ) (hc : Continuous h) :
+    ‖u * cfc h (star u * u)‖ * ‖u * cfc h (star u * u)‖
+      = ‖cfc (fun t => h t * t * h t) (star u * u)‖ := by
+  have hp0 : (0 : A) ≤ star u * u := star_mul_self_nonneg u
+  have hpsa : IsSelfAdjoint (star u * u) := .of_nonneg hp0
+  have hbsa : IsSelfAdjoint (cfc h (star u * u)) := cfc_predicate h _
+  rw [← CStarRing.norm_star_mul_self]
+  congr 1
+  rw [star_mul, hbsa.star_eq, mul_assoc, ← mul_assoc (star u), ← mul_assoc,
+    cfc_mul (fun t : ℝ => h t * t) h (star u * u)
+      (by fun_prop) hc.continuousOn,
+    cfc_mul h (fun t : ℝ => t) (star u * u) hc.continuousOn (by fun_prop),
+    cfc_id' (R := ℝ) (a := star u * u) hpsa]
 
 /-- **86VI** (`vn-ball-extreme-point`, vn.tex:6320, Lemma): an extreme
 point `u` of the unit ball of a C*-algebra is a partial isometry (i.e.
@@ -48,8 +199,243 @@ Remark: the converse also holds but is not needed — not converted.) -/
 theorem vn_ball_extreme_point (u : A)
     (hu : u ∈ Set.extremePoints ℝ (Metric.closedBall (0 : A) 1)) :
     IsStarProjection (star u * u) ∧
-      ∀ a : A, (1 - u * star u) * a * (1 - star u * u) = 0 :=
-  sorry
+      ∀ a : A, (1 - u * star u) * a * (1 - star u * u) = 0 := by
+  have hu1 : ‖u‖ ≤ 1 := by simpa using hu.1
+  have hext : ∀ v w : A, ‖v‖ ≤ 1 → ‖w‖ ≤ 1 → v + w = u + u → v = u := by
+    intro v w hv hw hvw
+    refine hu.2 (mem_closedBall_zero_iff.mpr hv) (mem_closedBall_zero_iff.mpr hw)
+      ⟨2⁻¹, 2⁻¹, by norm_num, by norm_num, by norm_num, ?_⟩
+    rw [← smul_add, hvw, ← two_smul ℝ u, smul_smul]
+    norm_num
+  set p : A := star u * u with hp
+  have hp0 : (0 : A) ≤ p := star_mul_self_nonneg u
+  have hpsa : IsSelfAdjoint p := .of_nonneg hp0
+  have hpn : ‖p‖ ≤ 1 := by
+    rw [hp, CStarRing.norm_star_mul_self]
+    nlinarith [norm_nonneg u]
+  have hspec01 : ∀ t ∈ spectrum ℝ p, 0 ≤ t ∧ t ≤ 1 := by
+    intro t htp
+    have h0 := spectrum_nonneg_of_nonneg hp0 htp
+    refine ⟨h0, ?_⟩
+    rcases subsingleton_or_nontrivial A with hA | hA
+    · exact absurd htp (by simp)
+    · have hn := spectrum.norm_le_norm_of_mem htp
+      rw [Real.norm_eq_abs, abs_of_nonneg h0] at hn
+      linarith
+  -- Part 1: `u*u` is a projection
+  have hpp : p * p = p := by
+    by_contra hne
+    rcases subsingleton_or_nontrivial A with hA | hA
+    · exact hne (Subsingleton.elim _ _)
+    have hex : ∃ l ∈ spectrum ℝ p, l ≠ 0 ∧ l ≠ 1 := by
+      by_contra hall
+      push_neg at hall
+      refine hne ?_
+      have hsq : (spectrum ℝ p).EqOn (fun t : ℝ => t * t) (fun t : ℝ => t) := by
+        intro x hx
+        rcases eq_or_ne x 0 with h | h
+        · simp [h]
+        · simp only [hall x hx h]; norm_num
+      calc p * p = cfc (fun t : ℝ => t * t) p := by
+            rw [cfc_mul (fun t : ℝ => t) (fun t : ℝ => t) p (by fun_prop) (by fun_prop),
+              cfc_id' (R := ℝ) (a := p) hpsa]
+        _ = cfc (fun t : ℝ => t) p := cfc_congr hsq
+        _ = p := cfc_id' (R := ℝ) (a := p) hpsa
+    obtain ⟨l, hl, hl0, hl1⟩ := hex
+    have hlnn : 0 ≤ l := (hspec01 l hl).1
+    have hlpos : 0 < l := hlnn.lt_of_ne (Ne.symm hl0)
+    have hllt : l < 1 := (hspec01 l hl).2.lt_of_ne hl1
+    set m : ℝ := (1 + l) / 2 with hm
+    have hm1 : m < 1 := by rw [hm]; linarith
+    have hm0 : 0 < m := by rw [hm]; linarith
+    set rr : ℝ := min (l / 2) ((1 - l) / 2) with hrr
+    have hrpos : 0 < rr := lt_min (by linarith) (by linarith)
+    set ε : ℝ := (1 - m) / 2 with he
+    have hepos : 0 < ε := by rw [he]; linarith
+    have heps1 : ε < 1 := by rw [he]; linarith
+    set g : ℝ → ℝ := fun t => ε * max 0 (1 - |t - l| / rr) with hg
+    have hgc : Continuous g := by fun_prop
+    have hg0 : ∀ t, 0 ≤ g t := fun t => mul_nonneg hepos.le (le_max_left _ _)
+    have hgle : ∀ t, g t ≤ ε := by
+      intro t
+      have h1 : max 0 (1 - |t - l| / rr) ≤ 1 :=
+        max_le (by norm_num)
+          (by have : 0 ≤ |t - l| / rr := by positivity
+              linarith)
+      nlinarith [hepos.le]
+    have hgl : g l = ε := by simp [hg]
+    have hgsupp : ∀ t, g t ≠ 0 → |t - l| < rr := by
+      intro t ht
+      by_contra hcon
+      push_neg at hcon
+      refine ht ?_
+      have h1 : 1 - |t - l| / rr ≤ 0 := by
+        have : 1 ≤ |t - l| / rr := (one_le_div hrpos).mpr hcon
+        linarith
+      simp [hg, max_eq_left h1]
+    have hkey : ∀ t, 0 ≤ t → t ≤ 1 → t * ((1 + g t) * (1 + g t)) ≤ 1 := by
+      intro t ht0 ht1
+      rcases eq_or_ne (g t) 0 with h | h
+      · rw [h]; simpa using ht1
+      · have hlt := abs_lt.mp (hgsupp t h)
+        have htm : t ≤ m := by
+          have h2 : rr ≤ (1 - l) / 2 := min_le_right _ _
+          rw [hm]; linarith [hlt.2]
+        have hge := hgle t
+        have hg0t := hg0 t
+        have h1 : (1 + g t) * (1 + g t) ≤ (1 + ε) * (1 + ε) := by nlinarith
+        have h2 : t * ((1 + g t) * (1 + g t)) ≤ m * ((1 + ε) * (1 + ε)) := by
+          nlinarith [hepos.le]
+        have h3 : m * ((1 + ε) * (1 + ε)) ≤ 1 := by
+          rw [he]; nlinarith [sq_nonneg (m - 1)]
+        linarith
+    set a : A := cfc g p with ha
+    -- `‖u(1 ± a)‖ ≤ 1`
+    have hplus : cfc (fun t : ℝ => 1 + g t) p = 1 + a := by
+      rw [cfc_const_add (1 : ℝ) g p hgc.continuousOn hpsa, map_one, ha]
+    have hminus : cfc (fun t : ℝ => 1 - g t) p = 1 - a := by
+      rw [cfc_sub (fun _ : ℝ => (1 : ℝ)) g p continuousOn_const hgc.continuousOn,
+        cfc_const_one ℝ (a := p) hpsa, ha]
+    have hn1 : ‖u * (1 + a)‖ ≤ 1 := by
+      have hh := vbep_norm u (fun t : ℝ => 1 + g t) (by fun_prop)
+      rw [← hp, hplus] at hh
+      have hb : ‖cfc (fun t : ℝ => (1 + g t) * t * (1 + g t)) p‖ ≤ 1 := by
+        refine norm_cfc_le zero_le_one fun t htp => ?_
+        obtain ⟨ht0, ht1⟩ := hspec01 t htp
+        have hgt := hg0 t
+        rw [Real.norm_eq_abs, abs_of_nonneg (by positivity)]
+        calc (1 + g t) * t * (1 + g t) = t * ((1 + g t) * (1 + g t)) := by ring
+          _ ≤ 1 := hkey t ht0 ht1
+      nlinarith [norm_nonneg (u * (1 + a))]
+    have hn2 : ‖u * (1 - a)‖ ≤ 1 := by
+      have hh := vbep_norm u (fun t : ℝ => 1 - g t) (by fun_prop)
+      rw [← hp, hminus] at hh
+      have hb : ‖cfc (fun t : ℝ => (1 - g t) * t * (1 - g t)) p‖ ≤ 1 := by
+        refine norm_cfc_le zero_le_one fun t htp => ?_
+        obtain ⟨ht0, ht1⟩ := hspec01 t htp
+        have hgt := hg0 t
+        have hgt' := hgle t
+        have h1g : 0 ≤ 1 - g t := by linarith
+        have h1g' : 1 - g t ≤ 1 := by linarith
+        rw [Real.norm_eq_abs, abs_of_nonneg (by positivity)]
+        exact mul_le_one₀ (mul_le_one₀ h1g' ht0 ht1) h1g h1g'
+      nlinarith [norm_nonneg (u * (1 - a))]
+    have hua : u * a = 0 := by
+      have hE := hext (u * (1 + a)) (u * (1 - a)) hn1 hn2 (by noncomm_ring)
+      have h2 : u + u * a = u := by
+        rw [mul_add, mul_one] at hE; exact hE
+      simpa using h2
+    have hpa : p * a = 0 := by rw [hp, mul_assoc, hua, mul_zero]
+    have hcfcpa : cfc (fun t : ℝ => t * g t) p = 0 := by
+      rw [cfc_mul (fun t : ℝ => t) g p (by fun_prop) hgc.continuousOn,
+        cfc_id' (R := ℝ) (a := p) hpsa, ha] at *
+      exact hpa
+    have hmem : l * g l ∈ spectrum ℝ (0 : A) := by
+      rw [← hcfcpa, cfc_map_spectrum (fun t : ℝ => t * g t) p hpsa (by fun_prop)]
+      exact Set.mem_image_of_mem _ hl
+    rw [spectrum.zero_eq] at hmem
+    simp only [Set.mem_singleton_iff, hgl] at hmem
+    nlinarith
+  refine ⟨⟨hpp, hpsa⟩, ?_⟩
+  -- Part 2: `(uu*)^⊥ A (u*u)^⊥ = 0`
+  intro x
+  have hup : u * p = u := by
+    have h0 : star (u - u * p) * (u - u * p) = 0 := by
+      have e1 : star (u - u * p) = star u - p * star u := by
+        rw [star_sub, star_mul, hpsa.star_eq]
+      rw [e1]
+      calc (star u - p * star u) * (u - u * p)
+          = star u * u - (star u * u) * p - p * (star u * u)
+              + p * (star u * u) * p := by noncomm_ring
+        _ = p - p * p - p * p + p * p * p := by rw [← hp]
+        _ = 0 := by simp [hpp]
+    have h1 : ‖u - u * p‖ * ‖u - u * p‖ = 0 := by
+      rw [← CStarRing.norm_star_mul_self, h0, norm_zero]
+    exact (sub_eq_zero.mp (norm_eq_zero.mp (mul_self_eq_zero.mp h1))).symm
+  have hpu : p * star u = star u := by
+    have h := congrArg star hup
+    rwa [star_mul, hpsa.star_eq] at h
+  set e : A := u * star u with he
+  have hue : star u * (1 - e) = 0 := by
+    rw [he, mul_sub, mul_one, ← mul_assoc, ← hp, hpu, sub_self]
+  set q : A := 1 - p with hq
+  have hqsa : IsSelfAdjoint q := by
+    rw [hq]; simp [IsSelfAdjoint, star_sub, hpsa.star_eq]
+  have hqq : q * q = q := by
+    rw [hq]
+    calc (1 - p) * (1 - p) = 1 - p - p + p * p := by noncomm_ring
+      _ = 1 - p := by rw [hpp]; abel
+  by_cases hb : (1 - e) * x * q = 0
+  · exact hb
+  exfalso
+  set b : A := (1 - e) * x * q with hbdef
+  have hbn : 0 < ‖b‖ := norm_pos_iff.mpr hb
+  have hbq : b * q = b := by rw [hbdef, mul_assoc ((1 - e) * x) q q, hqq]
+  have hub : star u * b = 0 := by
+    rw [hbdef, ← mul_assoc, ← mul_assoc, hue, zero_mul, zero_mul]
+  set c : A := ((‖b‖⁻¹ : ℝ) : ℂ) • b with hc
+  have hcn : ‖c‖ = 1 := by
+    rw [hc, norm_smul, Complex.norm_real, Real.norm_eq_abs,
+      abs_of_nonneg (by positivity : (0 : ℝ) ≤ ‖b‖⁻¹)]
+    field_simp
+  have hcq : c * q = c := by rw [hc, smul_mul_assoc, hbq]
+  have hucz : star u * c = 0 := by rw [hc, mul_smul_comm, hub, smul_zero]
+  have hcu : star c * u = 0 := by
+    have h := congrArg star hucz
+    rwa [star_mul, star_star, star_zero] at h
+  have h1 : star c * c ≤ 1 := by
+    have hnn : (0 : A) ≤ star c * c := star_mul_self_nonneg c
+    refine (CStarAlgebra.norm_le_one_iff_of_nonneg _ hnn).mp ?_
+    rw [CStarRing.norm_star_mul_self, hcn]; norm_num
+  have h2 : star q * (star c * c) * q = star c * c := by
+    rw [hqsa.star_eq]
+    calc q * (star c * c) * q = star (c * q) * (c * q) := by
+          rw [star_mul, hqsa.star_eq]; noncomm_ring
+      _ = star c * c := by rw [hcq]
+  have hcc : star c * c ≤ q := by
+    rw [← h2]
+    calc star q * (star c * c) * q ≤ star q * 1 * q :=
+          star_left_conjugate_le_conjugate h1 q
+      _ = q := by rw [mul_one, hqsa.star_eq, hqq]
+  have hsum : ∀ s : A, star u * s = 0 → star s * u = 0 →
+      star (u + s) * (u + s) = p + star s * s := by
+    intro s hs1 hs2
+    rw [star_add]
+    calc (star u + star s) * (u + s)
+        = star u * u + star u * s + (star s * u + star s * s) := by noncomm_ring
+      _ = p + star s * s := by rw [hs1, hs2, ← hp]; abel
+  have hnormle : ∀ s : A, star u * s = 0 → star s * u = 0 → star s * s ≤ q →
+      ‖u + s‖ ≤ 1 := by
+    intro s hs1 hs2 hs3
+    have hnn : (0 : A) ≤ star (u + s) * (u + s) := star_mul_self_nonneg _
+    have hle : star (u + s) * (u + s) ≤ 1 := by
+      rw [hsum s hs1 hs2]
+      have h4 : p + star s * s ≤ p + q := add_le_add_right hs3 p
+      rw [hq] at h4
+      calc p + star s * s ≤ p + (1 - p) := h4
+        _ = 1 := by abel
+    have h := (CStarAlgebra.norm_le_one_iff_of_nonneg _ hnn).mpr hle
+    rw [CStarRing.norm_star_mul_self] at h
+    nlinarith [norm_nonneg (u + s)]
+  have hA : ‖u + c‖ ≤ 1 := hnormle c hucz hcu hcc
+  have hB : ‖u + (-c)‖ ≤ 1 := by
+    refine hnormle (-c) (by rw [mul_neg, hucz, neg_zero]) ?_ ?_
+    · rw [star_neg, neg_mul, hcu, neg_zero]
+    · rw [star_neg, neg_mul, mul_neg, neg_neg]; exact hcc
+  have hfin := hext (u + c) (u + (-c)) hA hB (by abel)
+  have hc0 : c = 0 := by simpa using hfin
+  rw [hc0] at hcn
+  simp at hcn
+
+
+omit [PartialOrder A] [StarOrderedRing A] in
+/-- norm of a star projection is ≤ 1. -/
+private theorem norm_starProjection_le_one {e : A} (he : IsStarProjection e) :
+    ‖e‖ ≤ 1 := by
+  have h : ‖e‖ * ‖e‖ = ‖e‖ := by
+    rw [← CStarRing.norm_star_mul_self, he.isSelfAdjoint.star_eq,
+      he.isIdempotentElem.eq]
+  nlinarith [norm_nonneg e]
 
 section VNA
 
@@ -84,8 +470,39 @@ theorem functional_norm (f : A →L[ℂ] ℂ)
     (hf : @Continuous A ℂ (ultraweak A) _ ⇑f) (u : A)
     (hu : IsPartialIsometry A u) (hpos : ∀ a : A, 0 ≤ a → 0 ≤ f (u * a))
     (heq : ∀ a : A, f a = f (u * star u * a)) :
-    f u = (‖f‖ : ℂ) :=
-  sorry
+    f u = (‖f‖ : ℂ) := by
+  have hpr : IsStarProjection (star u * u) := by
+    rw [hu.1, suppProj]
+    exact (ceil_spec (star_mul_self_nonneg u)).1
+  have hun : ‖u‖ ≤ 1 := by
+    have h1 : ‖u‖ * ‖u‖ ≤ 1 := by
+      rw [← CStarRing.norm_star_mul_self]
+      exact norm_starProjection_le_one hpr
+    nlinarith [norm_nonneg u]
+  set g : A →L[ℂ] ℂ := f.comp (ContinuousLinearMap.mul ℂ A u) with hg
+  have hg1 : g 1 = f u := by simp [hg]
+  have hgpos : ∀ a : A, 0 ≤ a → 0 ≤ g a := by
+    intro a ha; simpa [hg] using hpos a ha
+  obtain ⟨him, hle⟩ := (positive_functional_criterion g).mp hgpos
+  rw [hg1] at him hle
+  have hfg : ‖f‖ ≤ ‖g‖ := by
+    refine ContinuousLinearMap.opNorm_le_bound _ (norm_nonneg g) fun a => ?_
+    have hfa : f a = g (star u * a) := by
+      rw [hg]; simp only [ContinuousLinearMap.coe_comp', Function.comp_apply,
+        ContinuousLinearMap.mul_apply', ← mul_assoc]
+      exact heq a
+    calc ‖f a‖ = ‖g (star u * a)‖ := by rw [hfa]
+      _ ≤ ‖g‖ * ‖star u * a‖ := g.le_opNorm _
+      _ ≤ ‖g‖ * (‖star u‖ * ‖a‖) := by gcongr; exact norm_mul_le _ _
+      _ ≤ ‖g‖ * (1 * ‖a‖) := by gcongr; simpa using hun
+      _ = ‖g‖ * ‖a‖ := by ring
+  have hrev : (f u).re ≤ ‖f‖ := by
+    calc (f u).re ≤ ‖f u‖ := Complex.re_le_norm _
+      _ ≤ ‖f‖ * ‖u‖ := f.le_opNorm u
+      _ ≤ ‖f‖ * 1 := by gcongr
+      _ = ‖f‖ := mul_one _
+  have hres : (f u).re = ‖f‖ := le_antisymm hrev (le_trans hfg hle)
+  exact Complex.ext (by simpa using hres) (by simpa using him)
 
 /-! ## Parsec 870: the predual -/
 
@@ -170,8 +587,74 @@ theorem carrier_vector_state (S : StarSubalgebra ℂ (H →L[ℂ] H)) (x : H) :
 theorem carrier_vector_state' (S : StarSubalgebra ℂ (H →L[ℂ] H)) (x : H) :
     closure {y : H | ∃ T ∈ commutant (H →L[ℂ] H)
         (commutant (H →L[ℂ] H) S), y = T x} =
-      closure {y : H | ∃ T ∈ S, y = T x} :=
-  sorry
+      closure {y : H | ∃ T ∈ S, y = T x} := by
+  -- the cyclic subspace `S x` and its closure `M`
+  set L : S →ₗ[ℂ] H :=
+    { toFun := fun T => (T : H →L[ℂ] H) x
+      map_add' := fun T T' => rfl
+      map_smul' := fun c T => rfl } with hL
+  set Vsub : Submodule ℂ H := LinearMap.range L with hV
+  have hVset : (Vsub : Set H) = {y : H | ∃ T ∈ S, y = T x} := by
+    ext y
+    constructor
+    · rintro ⟨T, rfl⟩; exact ⟨(T : H →L[ℂ] H), T.2, rfl⟩
+    · rintro ⟨T, hT, rfl⟩; exact ⟨⟨T, hT⟩, rfl⟩
+  set M : Submodule ℂ H := Vsub.topologicalClosure with hM
+  have hMclosed : IsClosed (M : Set H) := Vsub.isClosed_topologicalClosure
+  have : CompleteSpace M := hMclosed.completeSpace_coe
+  have hMset : (M : Set H) = closure {y : H | ∃ T ∈ S, y = T x} := by
+    rw [hM, Submodule.topologicalClosure_coe, hVset]
+  have hxM : x ∈ M := by
+    refine Vsub.le_topologicalClosure ?_
+    exact ⟨1, by simp [hL]⟩
+  -- `M` is invariant under `S`
+  have hinv : ∀ T ∈ S, ∀ z ∈ M, T z ∈ M := by
+    intro T hT z hz
+    have hcl : IsClosed {w : H | T w ∈ M} := hMclosed.preimage T.continuous
+    have hsub : (Vsub : Set H) ⊆ {w : H | T w ∈ M} := by
+      rintro _ ⟨T', rfl⟩
+      refine Vsub.le_topologicalClosure ⟨⟨T * (T' : H →L[ℂ] H), mul_mem hT T'.2⟩, rfl⟩
+    have : (M : Set H) ⊆ {w : H | T w ∈ M} := by
+      rw [hM, Submodule.topologicalClosure_coe]
+      exact closure_minimal hsub hcl
+    exact this hz
+  -- `Mᗮ` is invariant under `S`
+  have hinvo : ∀ T ∈ S, ∀ z ∈ Mᗮ, T z ∈ Mᗮ := by
+    intro T hT z hz
+    rw [Submodule.mem_orthogonal]
+    intro m hm
+    have hadj : ContinuousLinearMap.adjoint T ∈ S := by
+      rw [← ContinuousLinearMap.star_eq_adjoint]
+      exact star_mem_iff.mpr hT
+    have h1 : (inner ℂ ((ContinuousLinearMap.adjoint T) m) z : ℂ) = inner ℂ m (T z) :=
+      ContinuousLinearMap.adjoint_inner_left T z m
+    rw [← h1]
+    exact (Submodule.mem_orthogonal M z).mp hz _ (hinv _ hadj m hm)
+  -- the projection onto `M` lies in `S□`
+  have hPcomm : M.starProjection ∈ commutant (H →L[ℂ] H) S := by
+    intro T hT
+    ext z
+    have hz1 : M.starProjection z ∈ M := M.starProjection_apply_mem z
+    have hz2 : z - M.starProjection z ∈ Mᗮ := Submodule.sub_starProjection_mem_orthogonal z
+    have e1 : T z = T (M.starProjection z) + T (z - M.starProjection z) := by
+      rw [← map_add]; congr 1; abel
+    simp only [ContinuousLinearMap.mul_apply]
+    rw [e1, map_add,
+      (Submodule.starProjection_eq_self_iff).mpr (hinv T hT _ hz1),
+      (Submodule.starProjection_apply_eq_zero_iff M).mpr (hinvo T hT _ hz2), add_zero]
+  -- conclusion
+  apply le_antisymm
+  · refine closure_minimal ?_ hMclosed |>.trans (le_of_eq hMset)
+    rintro _ ⟨R, hR, rfl⟩
+    have hcomm := hR _ hPcomm
+    have : R x = M.starProjection (R x) := by
+      conv_lhs => rw [← (Submodule.starProjection_eq_self_iff).mpr hxM]
+      exact congrArg (fun (T : H →L[ℂ] H) => T x) hcomm.symm
+    rw [this]
+    exact M.starProjection_apply_mem _
+  · refine closure_mono ?_
+    rintro _ ⟨T, hT, rfl⟩
+    exact ⟨T, fun m hm => (hm T hT).symm, rfl⟩
 
 /-- **88V** (`proto-double-commutant`, vn.tex:6737): for a unital
 ∗-subalgebra `S` of `B(H)`, the double commutant `S^□□` is contained in
