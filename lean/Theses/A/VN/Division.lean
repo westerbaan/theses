@@ -64,6 +64,55 @@ pseudoinvertible). -/
 noncomputable def pinv (a : A) : A :=
   if h : Pseudoinvertible A a then h.choose else 0
 
+/-- The defining property of `a^{∼1}` (for pseudoinvertible `a`). -/
+theorem pinv_spec {a : A} (h : Pseudoinvertible A a) :
+    IsPseudoinverse A a (pinv a) := by
+  rw [pinv, dif_pos h]
+  exact h.choose_spec
+
+/-- Auxiliary: `⌊a*⌉ = ⌈a⌋`. -/
+theorem rangeProj_star (a : A) : rangeProj (star a) = suppProj a := by
+  rw [rangeProj, suppProj, star_star]
+
+/-- Auxiliary: `⌈a*⌋ = ⌊a⌉`. -/
+theorem suppProj_star (a : A) : suppProj (star a) = rangeProj a := by
+  rw [rangeProj, suppProj, star_star]
+
+/-- Auxiliary: `⌈p⌋ = p` for a projection `p`. -/
+theorem suppProj_of_isStarProjection {p : A} (hp : IsStarProjection p) :
+    suppProj p = p := by
+  rw [suppProj, hp.isSelfAdjoint.star_eq, hp.isIdempotentElem.eq,
+    ceil_of_isStarProjection hp]
+
+/-- Auxiliary: `⌊p⌉ = p` for a projection `p`. -/
+theorem rangeProj_of_isStarProjection {p : A} (hp : IsStarProjection p) :
+    rangeProj p = p := by
+  rw [rangeProj, hp.isSelfAdjoint.star_eq, hp.isIdempotentElem.eq,
+    ceil_of_isStarProjection hp]
+
+/-- Auxiliary: `⌈xy⌋ ≤ ⌈y⌋`. -/
+theorem suppProj_mul_le (x y : A) : suppProj (x * y) ≤ suppProj y :=
+  (ceill_basic_1 (x * y)).2
+    ⟨(ceill_basic_1 y).1.1, by rw [mul_assoc, (ceill_basic_1 y).1.2]⟩
+
+/-- Auxiliary: `⌊xy⌉ ≤ ⌊x⌉`. -/
+theorem rangeProj_mul_le (x y : A) : rangeProj (x * y) ≤ rangeProj x :=
+  (ceill_basic_2 (x * y)).2
+    ⟨(ceill_basic_2 x).1.1, by rw [← mul_assoc, (ceill_basic_2 x).1.2]⟩
+
+/-- **60VIII** (`mult-cancellation`), left-handed version: `bc₁ = bc₂` with
+`⌊c₁⌉, ⌊c₂⌉ ≤ ⌈b⌋` forces `c₁ = c₂`. -/
+theorem mult_cancellation_left (b c₁ c₂ : A)
+    (h₁ : rangeProj c₁ ≤ suppProj b) (h₂ : rangeProj c₂ ≤ suppProj b)
+    (h : b * c₁ = b * c₂) : c₁ = c₂ := by
+  have hs : star c₁ = star c₂ :=
+    mult_cancellation_2 (star b) (star c₁) (star c₂)
+      (by rw [suppProj_star, rangeProj_star]; exact h₁)
+      (by rw [suppProj_star, rangeProj_star]; exact h₂)
+      (by rw [← star_mul, ← star_mul, h])
+  have hst := congrArg star hs
+  rwa [star_star, star_star] at hst
+
 variable (A) in
 /-- **79I** (`dfn-pseudoinverse`, vn.tex:5090, Definition): `u` is a
 **partial isometry** when `u*` is its pseudoinverse. -/
@@ -84,8 +133,67 @@ theorem pseudoinverse_equivalents (a t : A) :
        t * a * t = t ∧ suppProj a ≤ rangeProj t ∧
          rangeProj a ≤ suppProj t,
        IsPseudoinverse A a t,
-       IsPseudoinverse A t a] :=
-  sorry
+       IsPseudoinverse A t a] := by
+  -- (3), (4), (6) are (1), (2), (5) with `a` and `t` interchanged, so it is
+  -- enough to prove (1)→(2)→(5)→(1) for all `x`, `y` — which is the author's
+  -- argument, `mult-cancellation` (**60VIII**) throughout.
+  have L1 : ∀ x y : A, IsStarProjection (y * x) → suppProj y = rangeProj x →
+      x * y * x = x ∧ suppProj y ≤ rangeProj x ∧ rangeProj y ≤ suppProj x := by
+    intro x y hp hq
+    have hsy := (ceill_basic_1 y).1
+    -- `⌊y⌉ = ⌊y⌈y⌋⌉ = ⌊y⌊x⌉⌉ = ⌊yx⌉ = yx = ⌈yx⌋ ≤ ⌈x⌋`
+    have h3 : rangeProj y ≤ suppProj x := by
+      have e1 : rangeProj y = y * x := by
+        conv_lhs => rw [← hsy.2]
+        rw [hq, ← (ceil_fundamental_2 y x).2, rangeProj_of_isStarProjection hp]
+      rw [e1, ← suppProj_of_isStarProjection hp]
+      exact suppProj_mul_le y x
+    refine ⟨?_, le_of_eq hq, h3⟩
+    -- `y(xyx) = (yx)(yx) = yx = yx`, and cancel `y` on the left
+    refine mult_cancellation_left y (x * y * x) x
+      (le_trans (le_trans (rangeProj_mul_le (x * y) x) (rangeProj_mul_le x y))
+        (le_of_eq hq.symm))
+      (le_of_eq hq.symm) ?_
+    calc y * (x * y * x) = y * x * (y * x) := by noncomm_ring
+      _ = y * x := hp.isIdempotentElem.eq
+  have L2 : ∀ x y : A, x * y * x = x → suppProj y ≤ rangeProj x →
+      rangeProj y ≤ suppProj x → IsPseudoinverse A x y := by
+    intro x y h1 h2 h3
+    have hsx := (ceill_basic_1 x).1
+    have hrx := (ceill_basic_2 x).1
+    -- `yx = ⌈x⌋`: cancel `x` on the left in `x(yx) = x = x⌈x⌋`
+    have e1 : y * x = suppProj x := by
+      refine mult_cancellation_left x (y * x) (suppProj x)
+        (le_trans (rangeProj_mul_le y x) h3)
+        (le_of_eq (rangeProj_of_isStarProjection hsx.1)) ?_
+      rw [← mul_assoc, h1, hsx.2]
+    -- `xy = ⌊x⌉`: cancel `x` on the right in `(xy)x = x = ⌊x⌉x`
+    have e2 : x * y = rangeProj x := by
+      refine mult_cancellation_2 x (x * y) (rangeProj x)
+        (le_trans (suppProj_mul_le x y) h2)
+        (le_of_eq (suppProj_of_isStarProjection hrx.1)) ?_
+      rw [h1, hrx.2]
+    have e3 : suppProj y = rangeProj x := by
+      refine le_antisymm h2 ?_
+      have hle : suppProj (x * y) ≤ suppProj y := suppProj_mul_le x y
+      rwa [e2, suppProj_of_isStarProjection hrx.1] at hle
+    have e4 : rangeProj y = suppProj x := by
+      refine le_antisymm h3 ?_
+      have hle : rangeProj (y * x) ≤ rangeProj y := rangeProj_mul_le y x
+      rwa [e1, rangeProj_of_isStarProjection hsx.1] at hle
+    exact ⟨e1, by rw [e1, ← e4], by rw [e2, ← e3], e2⟩
+  have L3 : ∀ x y : A, IsPseudoinverse A x y →
+      IsStarProjection (y * x) ∧ suppProj y = rangeProj x := fun x y h =>
+    ⟨by rw [h.1]; exact (ceill_basic_1 x).1.1, h.2.2.1.symm.trans h.2.2.2⟩
+  tfae_have 1 → 2 := fun h => L1 a t h.1 h.2
+  tfae_have 2 → 5 := fun h => L2 a t h.1 h.2.1 h.2.2
+  tfae_have 5 → 1 := fun h => L3 a t h
+  tfae_have 3 → 4 := fun h => L1 t a h.1 h.2
+  tfae_have 4 → 6 := fun h => L2 t a h.1 h.2.1 h.2.2
+  tfae_have 6 → 3 := fun h => L3 t a h
+  tfae_have 5 → 6 := fun h => ⟨h.2.2.1, h.2.2.2, h.1, h.2.1⟩
+  tfae_have 6 → 5 := fun h => ⟨h.2.2.1, h.2.2.2, h.1, h.2.1⟩
+  tfae_finish
 
 /-- **79IV** (`partial-isometry-equivalents`, vn.tex:5172, Exercise): `u`
 is a partial isometry iff `u*u` is a projection iff `uu*u = u` iff `uu*`
@@ -96,23 +204,135 @@ theorem partial_isometry_equivalents (u : A) :
        IsStarProjection (star u * u),
        u * star u * u = u,
        IsStarProjection (u * star u),
-       star u * u * star u = star u] :=
-  sorry
+       star u * u * star u = star u] := by
+  -- the crux is `⟹`: if `p = v*v` is a projection then `(v − vp)*(v − vp) = 0`
+  have key : ∀ v : A, IsStarProjection (star v * v) → v * star v * v = v := by
+    intro v hp
+    have hz : star (v - v * (star v * v)) * (v - v * (star v * v)) = 0 := by
+      have hps : star (star v * v) = star v * v := hp.isSelfAdjoint.star_eq
+      have hpp : (star v * v) * (star v * v) = star v * v := hp.isIdempotentElem.eq
+      calc star (v - v * (star v * v)) * (v - v * (star v * v))
+          = (star v - (star v * v) * star v) * (v - v * (star v * v)) := by
+            rw [star_sub, star_mul, hps]
+        _ = (star v * v) - (star v * v) * (star v * v)
+              - ((star v * v) * (star v * v)
+                - ((star v * v) * (star v * v)) * (star v * v)) := by noncomm_ring
+        _ = 0 := by simp only [hpp]; abel
+    have hv := (CStarRing.star_mul_self_eq_zero_iff _).mp hz
+    rw [sub_eq_zero] at hv
+    conv_rhs => rw [hv]
+    noncomm_ring
+  have hproj : ∀ v : A, v * star v * v = v → IsStarProjection (star v * v) := by
+    intro v h
+    refine ⟨?_, ?_⟩
+    · show star v * v * (star v * v) = star v * v
+      calc star v * v * (star v * v) = star v * (v * star v * v) := by noncomm_ring
+        _ = star v * v := by rw [h]
+    · show star (star v * v) = star v * v
+      rw [star_mul, star_star]
+  have hproj2 : ∀ v : A, v * star v * v = v → IsStarProjection (v * star v) := by
+    intro v h
+    refine ⟨?_, ?_⟩
+    · show v * star v * (v * star v) = v * star v
+      calc v * star v * (v * star v) = v * star v * v * star v := by noncomm_ring
+        _ = v * star v := by rw [h]
+    · show star (v * star v) = v * star v
+      rw [star_mul, star_star]
+  have hflip : ∀ v : A, v * star v * v = v → star v * v * star v = star v := by
+    intro v h
+    have hs := congrArg star h
+    simp only [star_mul, star_star] at hs
+    first
+      | exact hs
+      | (rw [← mul_assoc] at hs; exact hs)
+  tfae_have 1 → 2 := fun h => h.1 ▸ (ceill_basic_1 u).1.1
+  tfae_have 2 → 3 := key u
+  tfae_have 3 → 4 := hproj2 u
+  tfae_have 4 → 5 := by
+    intro h
+    have h' : IsStarProjection (star (star u) * star u) := by rwa [star_star]
+    have hk := key (star u) h'
+    rwa [star_star] at hk
+  tfae_have 5 → 3 := by
+    intro h
+    have hs := hflip (star u) (by rwa [star_star])
+    rwa [star_star] at hs
+  tfae_have 3 → 1 := by
+    intro h
+    have h2 : IsStarProjection (star u * u) := hproj u h
+    have h4 : IsStarProjection (u * star u) := hproj2 u h
+    have hs : suppProj u = star u * u := by
+      rw [suppProj, ceil_of_isStarProjection h2]
+    have hr : rangeProj u = u * star u := by
+      rw [rangeProj, ceil_of_isStarProjection h4]
+    exact ⟨hs.symm, by rw [rangeProj_star, hs], by rw [suppProj_star, hr],
+      hr.symm⟩
+  tfae_finish
 
 /-- **79V** (`pseudoinverse-basic`, vn.tex:5183, Exercise), part 1: `a` is
 pseudoinvertible iff `a*` is, and then `(a*)^{∼1} = (a^{∼1})*`. -/
 theorem pseudoinverse_basic_1 (a : A) :
     (Pseudoinvertible A a ↔ Pseudoinvertible A (star a)) ∧
-      (Pseudoinvertible A a → pinv (star a) = star (pinv a)) :=
-  sorry
+      (Pseudoinvertible A a → pinv (star a) = star (pinv a)) := by
+  -- the four defining equations of `IsPseudoinverse` are permuted by `(·)*`
+  have hstar : ∀ x y : A, IsPseudoinverse A x y →
+      IsPseudoinverse A (star x) (star y) := by
+    intro x y h
+    obtain ⟨h1, h2, h3, h4⟩ := h
+    refine ⟨?_, ?_, ?_, ?_⟩
+    · rw [← star_mul, h4, suppProj_star]
+      exact (ceill_basic_2 x).1.1.isSelfAdjoint.star_eq
+    · rw [← star_mul, h3, rangeProj_star]
+      exact (ceill_basic_1 y).1.1.isSelfAdjoint.star_eq
+    · rw [← star_mul, h2, suppProj_star]
+      exact (ceill_basic_2 y).1.1.isSelfAdjoint.star_eq
+    · rw [← star_mul, h1, rangeProj_star]
+      exact (ceill_basic_1 x).1.1.isSelfAdjoint.star_eq
+  have hiff : Pseudoinvertible A a ↔ Pseudoinvertible A (star a) := by
+    constructor
+    · rintro ⟨t, ht⟩; exact ⟨star t, hstar a t ht⟩
+    · rintro ⟨t, ht⟩
+      refine ⟨star t, ?_⟩
+      have := hstar (star a) t ht
+      rwa [star_star] at this
+  refine ⟨hiff, fun h => ?_⟩
+  exact isPseudoinverse_unique (star a) _ _ (pinv_spec (hiff.mp h))
+    (hstar a (pinv a) (pinv_spec h))
 
 /-- **79V** (`pseudoinverse-basic`, vn.tex:5183, Exercise), part 2: if `a`,
 `b` are pseudoinvertible and `⌊b⌉ = ⌈a⌋`, then `ab` is pseudoinvertible
 with `(ab)^{∼1} = b^{∼1}a^{∼1}`. -/
 theorem pseudoinverse_basic_2 (a b : A) (ha : Pseudoinvertible A a)
     (hb : Pseudoinvertible A b) (hab : rangeProj b = suppProj a) :
-    Pseudoinvertible A (a * b) ∧ pinv (a * b) = pinv b * pinv a :=
-  sorry
+    Pseudoinvertible A (a * b) ∧ pinv (a * b) = pinv b * pinv a := by
+  obtain ⟨hs1, hs2, hs3, hs4⟩ := pinv_spec ha
+  obtain ⟨ht1, ht2, ht3, ht4⟩ := pinv_spec hb
+  set s : A := pinv a with hsdef
+  set t : A := pinv b with htdef
+  have hsa := (ceill_basic_1 a).1
+  have hrb := (ceill_basic_2 b).1
+  -- `⌊ab⌉ = ⌊a⌊b⌉⌉ = ⌊a⌈a⌋⌉ = ⌊a⌉` and dually `⌈ab⌋ = ⌈b⌋`
+  have hrab : rangeProj (a * b) = rangeProj a := by
+    rw [(ceil_fundamental_2 a b).2, hab, hsa.2]
+  have hsab : suppProj (a * b) = suppProj b := by
+    rw [(ceil_fundamental_2 a b).1, ← hab, hrb.2]
+  -- `(ab)(ts)(ab) = a⌊b⌉⌈a⌋b = a⌈a⌋b = ab`
+  have hmain : a * b * (t * s) * (a * b) = a * b := by
+    calc a * b * (t * s) * (a * b) = a * (b * t) * (s * a) * b := by noncomm_ring
+      _ = a * suppProj a * suppProj a * b := by rw [ht4, hs1, hab]
+      _ = a * b := by rw [hsa.2, hsa.2]
+  have hpseudo : IsPseudoinverse A (a * b) (t * s) := by
+    have hcond : a * b * (t * s) * (a * b) = a * b ∧
+        suppProj (t * s) ≤ rangeProj (a * b) ∧
+        rangeProj (t * s) ≤ suppProj (a * b) := by
+      refine ⟨hmain, ?_, ?_⟩
+      · rw [hrab]
+        exact le_trans (suppProj_mul_le t s) (le_of_eq (hs3.symm.trans hs4))
+      · rw [hsab]
+        exact le_trans (rangeProj_mul_le t s) (le_of_eq (ht2.symm.trans ht1))
+    exact ((pseudoinverse_equivalents (a * b) (t * s)).out 1 4).mp hcond
+  exact ⟨⟨t * s, hpseudo⟩,
+    isPseudoinverse_unique (a * b) _ _ (pinv_spec ⟨t * s, hpseudo⟩) hpseudo⟩
 
 /-- **79V** (`pseudoinverse-basic`, vn.tex:5183, Exercise), part 3: `a` is
 pseudoinvertible iff `a*a` is, and then `a^{∼1} = (a*a)^{∼1}a*` and
@@ -247,14 +467,6 @@ theorem div_spec (a b : A) (h : ∃ c : A, a = c * b) :
 theorem div_eq {a b c : A} (h1 : a = c * b) (h2 : c * rangeProj b = c) :
     div a b = c :=
   (exists_div a b ⟨c, h1⟩).unique (div_spec a b ⟨c, h1⟩) ⟨h1, h2⟩
-
-/-- Auxiliary: `⌊a*⌉ = ⌈a⌋`. -/
-theorem rangeProj_star (a : A) : rangeProj (star a) = suppProj a := by
-  rw [rangeProj, suppProj, star_star]
-
-/-- Auxiliary: `⌈a*⌋ = ⌊a⌉`. -/
-theorem suppProj_star (a : A) : suppProj (star a) = rangeProj a := by
-  rw [rangeProj, suppProj, star_star]
 
 /-- The defining property of `b∖a` (for `a ∈ bA`). -/
 theorem ldiv_spec (b a : A) (h : ∃ c : A, a = b * c) :

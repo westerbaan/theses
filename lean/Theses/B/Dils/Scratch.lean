@@ -40,7 +40,7 @@ noncomputable def stForm (φ : 𝒜 →ₗ[ℂ] (H →L[ℂ] H)) :
         intro c a
         refine LinearMap.ext fun x => ?_
         refine TensorProduct.ext' fun b y => ?_
-        simp [smul_mul_assoc] }
+        simp }
 
 omit [PartialOrder 𝒜] [StarOrderedRing 𝒜] [CompleteSpace H] in
 theorem stForm_tmul (φ : 𝒜 →ₗ[ℂ] (H →L[ℂ] H)) (a b : 𝒜) (x y : H) :
@@ -69,6 +69,7 @@ theorem stForm_sum (φ : 𝒜 →ₗ[ℂ] (H →L[ℂ] H)) {m n : ℕ}
   simp only [LinearMap.sum_apply, map_sum, stForm_tmul]
   exact Finset.sum_comm
 
+omit [PartialOrder 𝒜] [StarOrderedRing 𝒜] in
 /-- The key positivity computation of dils.tex:415: for a completely positive
 `φ`, `0 ≤ ∑ᵢⱼ ⟪xᵢ, φ(aᵢ* aⱼ) xⱼ⟫`.  (The thesis phrases this via `M_n φ`
 acting on `ℋ^{⊕n}`; complete positivity is *defined* in this formalization,
@@ -96,13 +97,13 @@ theorem cp_inner_nonneg (φ : 𝒜 →ₗ[ℂ] (H →L[ℂ] H))
     rwa [vectorFunctional_apply] at h3
   have hcomp : (⟪u, (∑ i, ∑ j, star (b i) * φ (star (a i) * a j) * b j) u⟫ : ℂ)
       = ∑ i, ∑ j, (⟪x i, φ (star (a i) * a j) (x j)⟫ : ℂ) := by
-    simp only [ContinuousLinearMap.sum_apply, inner_sum]
+    simp only [sum_apply, inner_sum]
     refine Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => ?_
-    rw [ContinuousLinearMap.mul_apply, ContinuousLinearMap.mul_apply,
-      ContinuousLinearMap.star_eq_adjoint,
+    rw [mul_apply_eq_comp, mul_apply_eq_comp, ContinuousLinearMap.star_eq_adjoint,
       ContinuousLinearMap.adjoint_inner_right, hbu, hbu]
   rwa [hcomp] at h2
 
+omit [PartialOrder 𝒜] [StarOrderedRing 𝒜] in
 /-- Positivity of `[·,·]` (dils.tex:415). -/
 theorem stForm_nonneg (φ : 𝒜 →ₗ[ℂ] (H →L[ℂ] H))
     (hφ : IsCompletelyPositiveMap φ) (t : TensorProduct ℂ 𝒜 H) :
@@ -158,6 +159,7 @@ theorem rho0_mul (b b' : 𝒜) :
   rw [rho0_tmul]
   rw [LinearMap.comp_apply, rho0_tmul, rho0_tmul, mul_assoc]
 
+omit [PartialOrder 𝒜] [StarOrderedRing 𝒜] [CompleteSpace H] in
 /-- The adjointness computation of dils.tex:495:
 `[ϱ₀(b*) s, t] = [s, ϱ₀(b) t]`. -/
 theorem stForm_rho0_adj (φ : 𝒜 →ₗ[ℂ] (H →L[ℂ] H)) (b : 𝒜)
@@ -169,7 +171,7 @@ theorem stForm_rho0_adj (φ : 𝒜 →ₗ[ℂ] (H →L[ℂ] H)) (b : 𝒜)
   | tmul a x =>
     induction t with
     | zero => simp
-    | add t₁ t₂ h₁ h₂ => simp only [map_add, LinearMap.add_apply, h₁, h₂]
+    | add t₁ t₂ h₁ h₂ => simp only [map_add, h₁, h₂]
     | tmul d y =>
       rw [rho0_tmul, rho0_tmul, stForm_tmul, stForm_tmul, star_mul, star_star,
         mul_assoc]
@@ -215,7 +217,7 @@ theorem stForm_rho0_le (φ : 𝒜 →ₗ[ℂ] (H →L[ℂ] H))
   rw [Finset.mul_sum, ← Finset.sum_sub_distrib]
   refine Finset.sum_congr rfl fun j _ => ?_
   rw [hentry]
-  simp [inner_sub_right, inner_smul_right]
+  simp
 
 /-- The construction underlying **135IV** and its part 1: the Stinespring
 dilation of a cp-map `φ`, together with the fact that `V` is an isometry
@@ -269,8 +271,7 @@ theorem stinespring_aux (φ : 𝒜 →ₗ[ℂ] (H →L[ℂ] H))
   have hone : ϱ 1 = 1 := hext _ _ fun t => by rw [hϱ, rho0_one]; rfl
   have hmul : ∀ b b' : 𝒜, ϱ (b * b') = ϱ b * ϱ b' := fun b b' =>
     hext _ _ fun t => by
-      rw [hϱ, rho0_mul, LinearMap.comp_apply, ContinuousLinearMap.mul_apply,
-        hϱ, hϱ]
+      rw [hϱ, rho0_mul, LinearMap.comp_apply, mul_apply_eq_comp, hϱ, hϱ]
   have hzero : ϱ 0 = 0 := hext _ _ fun t => by
     rw [hϱ, show rho0 (H := H) (0 : 𝒜) = 0 from by
       refine TensorProduct.ext' fun a x => ?_
@@ -402,7 +403,7 @@ private noncomputable def adPos (a : 𝒜) : 𝒜 →ₚ[ℂ] 𝒜 where
   toLinearMap :=
     { toFun := fun b => star a * b * a
       map_add' := fun x y => by noncomm_ring
-      map_smul' := fun c x => by simp [mul_smul_comm, smul_mul_assoc] }
+      map_smul' := fun c x => by simp }
   monotone' := fun _ _ hxy => star_left_conjugate_le_conjugate hxy a
 
 private theorem adPos_apply (a b : 𝒜) : adPos a b = star a * b * a := rfl
@@ -420,7 +421,6 @@ private theorem adPos_normal [VonNeumannAlgebra 𝒜] (a : 𝒜) :
 /-- **135IV**, part 2 (dils.tex:555): the Stinespring representation of a
 *normal* cp-map on a von Neumann algebra is normal, together with the
 minimality of the dilation (used for **139I**). -/
-set_option maxHeartbeats 1000000 in
 theorem stinespring_normal_aux [VonNeumannAlgebra 𝒜]
     (φ : 𝒜 →ₗ[ℂ] (H →L[ℂ] H)) (hφ : IsCompletelyPositiveMap φ)
     (hn : PreservesDirSups ⇑φ) :
@@ -429,7 +429,7 @@ theorem stinespring_normal_aux [VonNeumannAlgebra 𝒜]
       (∀ a : 𝒜, φ a = conjOperator V (ϱ a)) ∧
       Dense (Submodule.span ℂ
         {k : 𝒦 | ∃ (a : 𝒜) (x : H), k = ϱ a (V x)} : Set 𝒦) := by
-  obtain ⟨𝒦, _, _, _, ϱ, V, heq, -, hmin, hsep, hvec⟩ := stinespring_aux φ hφ
+  obtain ⟨𝒦, hn1, hn2, hn3, ϱ, V, heq, -, hmin, hsep, hvec⟩ := stinespring_aux φ hφ
   have hp : IsPositiveMap φ := astara_pos_basic_2_cp φ hφ
   have hnormal : PreservesDirSups ⇑ϱ := by
     refine starAlgHom_preservesDirSups_of_vectors ϱ
@@ -437,10 +437,44 @@ theorem stinespring_normal_aux [VonNeumannAlgebra 𝒜]
     · rintro R hR
       exact hsep R fun a x => hR _ ⟨a, x, rfl⟩
     · rintro y ⟨a, x, rfl⟩
-      refine ⟨compNP (adPos a) (adPos_normal a)
-        (compNP (toPos φ hp) hn (vectorNP x)), fun b => ?_⟩
-      sorry
-  exact ⟨𝒦, ‹_›, ‹_›, ‹_›, ⟨ϱ, hnormal⟩, V, heq, hmin⟩
+      exact ⟨compNP (adPos a) (adPos_normal a)
+        (compNP (toPos φ hp) hn (vectorNP x)), fun b => hvec a x b⟩
+  refine ⟨𝒦, hn1, hn2, hn3, ⟨ϱ, hnormal⟩, V, ?_, ?_⟩
+  · exact heq
+  · exact hmin
+
+theorem stinespring_T (φ : 𝒜 →ₗ[ℂ] (H →L[ℂ] H)) (hφ : IsCompletelyPositiveMap φ) :
+    ∃ (𝒦 : Type u) (_ : NormedAddCommGroup 𝒦) (_ : InnerProductSpace ℂ 𝒦)
+      (_ : CompleteSpace 𝒦) (ϱ : MIUMap 𝒜 (𝒦 →L[ℂ] 𝒦)) (V : H →L[ℂ] 𝒦),
+      ∀ a : 𝒜, φ a = conjOperator V (ϱ a) := by
+  obtain ⟨𝒦, h1, h2, h3, ϱ, V, heq, -, -, -, -⟩ := stinespring_aux φ hφ
+  exact ⟨𝒦, h1, h2, h3, ϱ, V, heq⟩
+
+theorem stinespring_unital_T (φ : 𝒜 →ₗ[ℂ] (H →L[ℂ] H))
+    (hφ : IsCompletelyPositiveMap φ) (hu : φ 1 = 1) :
+    ∃ (𝒦 : Type u) (_ : NormedAddCommGroup 𝒦) (_ : InnerProductSpace ℂ 𝒦)
+      (_ : CompleteSpace 𝒦) (ϱ : MIUMap 𝒜 (𝒦 →L[ℂ] 𝒦)) (V : H →L[ℂ] 𝒦),
+      Isometry V ∧ ∀ a : 𝒜, φ a = conjOperator V (ϱ a) := by
+  obtain ⟨𝒦, h1, h2, h3, ϱ, V, heq, hiso, -, -, -⟩ := stinespring_aux φ hφ
+  exact ⟨𝒦, h1, h2, h3, ϱ, V, hiso hu, heq⟩
+
+theorem stinespring_normal_T [VonNeumannAlgebra 𝒜] (φ : 𝒜 →ₗ[ℂ] (H →L[ℂ] H))
+    (hφ : IsCompletelyPositiveMap φ) (hn : PreservesDirSups ⇑φ) :
+    ∃ (𝒦 : Type u) (_ : NormedAddCommGroup 𝒦) (_ : InnerProductSpace ℂ 𝒦)
+      (_ : CompleteSpace 𝒦) (ϱ : NMIUMap 𝒜 (𝒦 →L[ℂ] 𝒦)) (V : H →L[ℂ] 𝒦),
+      ∀ a : 𝒜, φ a = conjOperator V (ϱ a) := by
+  obtain ⟨𝒦, h1, h2, h3, ϱ, V, heq, -⟩ := stinespring_normal_aux φ hφ hn
+  exact ⟨𝒦, h1, h2, h3, ϱ, V, heq⟩
+
+theorem exists_minimal_T [VonNeumannAlgebra 𝒜] (φ : NCPMap 𝒜 (H →L[ℂ] H)) :
+    ∃ D : StinespringDilation ⇑φ, D.Minimal := by
+  set f : 𝒜 →ₗ[ℂ] (H →L[ℂ] H) := φ.toCompletelyPositiveMap.toLinearMap with hf
+  have hcp : IsCompletelyPositiveMap f :=
+    (cp_iff f).out 1 0 |>.mp fun N M hM =>
+      φ.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM
+  have hnn : PreservesDirSups ⇑f := φ.preservesDirSups'
+  obtain ⟨𝒦, h1, h2, h3, ϱ, V, heq, hmin⟩ := stinespring_normal_aux f hcp hnn
+  exact ⟨⟨𝒦, ϱ, V, heq⟩, hmin⟩
 
 end Scratch
 
