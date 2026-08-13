@@ -73,31 +73,49 @@ machines.
 
 ## Progress
 
-**Session 2 result: 947 → 839 code `sorry`s (108 proved).  All of A/CStar was
-worked; every other chapter is untouched.  `A/CStar/Basic.lean` is complete.**
+**Session 3 result: 1402 → 458 code `sorry`s overall (944 proved, 67%).**
+Four files are complete: `A/CStar/Basic`, `A/CStar/TowardsVN`,
+`B/Eff/Quotients`, `B/Eff/WStarCat`.
 
-| chapter | file | after s1 | now |
+| chapter | start | now | proved |
 |---|---|---|---|
-| **A/CStar** | | **170** | **62** |
-| | Basic.lean | 11 | **0 — complete** |
-| | Positive.lean | 63 | 33 |
-| | Matrices.lean | 55 | 11 |
-| | TowardsVN.lean | 27 | 7 |
-| | Representation.lean | 17 | 11 |
-| B/Eff | (8 files) | 129 | 129 — untouched |
-| A/VN | (5 files) | 276 | 276 — untouched |
-| A/Proc | (4 files) | 233 | 233 — untouched |
-| B/Dils | (7 files) | 139 | 139 — untouched |
+| **B/Eff** | 450 | **37** | 92% |
+| **A/CStar** | 304 | **41** | 87% |
+| **A/VN** | 276 | **128** | 54% |
+| **B/Dils** | 139 | **75** | 46% |
+| **A/Proc** | 233 | **177** | 24% |
+| **total** | **1402** | **458** | **67%** |
 
-`lake build` succeeds (8738 jobs, exit 0); `sorry` + style-linter warnings only.
+Refresh with:
 
-Session 2 was run as three parallel workers (Positive / Matrices /
-TowardsVN+Representation) plus the main session on Basic.lean, all using the
-Lean MCP for goal states.  That worked well; see "Parallelism" below for the
-one thing that bit us (a worker could not compile-check `Representation.lean`
-for the whole run because its imports were being edited concurrently, and had
-to develop against Mathlib in a scratch file — its proofs were confirmed only
-by the post-run rebuild).
+```sh
+for d in A/CStar A/VN A/Proc B/Dils B/Eff; do
+  t=0; for f in Theses/$d/*.lean; do
+    n=$(grep -o '\bsorry\b' $f | wc -l); m=$(grep -o '`sorry`' $f | wc -l)
+    t=$((t+n-m)); done; echo "$d: $t"; done
+```
+
+(Excludes the two tooling `sorry`s in `AxiomCheck.lean`.  The baseline is the
+statements-only commit `8d6f684`; earlier notes say 1401, counted slightly
+differently.)
+
+**A/Proc and most of B/Dils are cold because of sequencing, not difficulty** —
+they sit at the end of the import chain `A/CStar → A/VN → {A/Proc, B/Dils}` and
+no worker has been sent at them.  The real frontier is **A/VN**, where 72V is
+the wall.
+
+`lake build` succeeds; `sorry` + style-linter warnings only.
+
+Session 3 ran two workers at a time, one per independent chain (the A chain,
+and B/Eff which imports only `Theses.Common`).  See "Parallelism" below.
+
+**A git trap worth knowing.** `git commit` commits the *index*, not the paths
+you just named to `git add` — so when a worker has staged its own files,
+`git add <my files> && git commit` silently sweeps the worker's staged work
+into your commit under your message.  This happened in `bbe9ab6`, which
+carries 798 lines of `B/Eff/StatesPredicates.lean` its message does not
+mention (193X, 194I.3, 194I.4 — all verified clean afterwards).  Check
+`git status` before committing, or use `git commit -- <paths>`.
 
 <details>
 <summary>Session 1 result: 1401 → 947 code `sorry`s (454 proved, 32%)</summary>
