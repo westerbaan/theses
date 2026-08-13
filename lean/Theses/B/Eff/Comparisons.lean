@@ -79,12 +79,89 @@ theorem isPure_zero {X Y : C} : IsPure (0 : X ⟶ Y) :=
   ⟨⊥_ C, 0, 0, 1, 0, quotient_basics_4 _, compr_basics_4 _,
     (FinPAC.zero_comp _).symm⟩
 
+/-- Helper for 224III (the first computation of eff.tex:7169): in a
+†-effectus `f† ∘ f = asrt_{p&p}` where `p = 1 ∘ f`, since
+`f = π_{im f} ∘ α ∘ ζ_{⌈p⌉} ∘ asrt_p` and
+`f† = asrt_p ∘ π_{⌈p⌉} ∘ α⁻¹ ∘ ζ_{im f}` (`isDaggerOf_dag`), and
+`asrt_p ∘ asrt_{⌈p⌉} ∘ asrt_p = asrt_p² ` by `asrt-absorp-rule`. -/
+theorem dag_comp_dag_self (d : DaggerEffectus C) {P Q : PureCat C} (f : P ⟶ Q) :
+    f.1 ≫ (d.daggerCat.dag f).1 =
+      asrt (andThen (f.1 ≫ truth Q.base) (f.1 ≫ truth Q.base)) := by
+  obtain ⟨α, hf, hg⟩ := isDaggerOf_dag d f
+  have habs : asrt (f.1 ≫ truth Q.base) ≫
+      asrt (ceilPred (f.1 ≫ truth Q.base)) = asrt (f.1 ≫ truth Q.base) :=
+    (asrt_absorp_rule (asrt (f.1 ≫ truth Q.base))
+      (isSharp_ceil (f.1 ≫ truth Q.base)) (isSharp_one P.base)).1.mp
+      (by rw [imPred_asrt]; exact pcm_preorder_refl _)
+  have key : f.1 ≫ (d.daggerCat.dag f).1 =
+      (asrt (f.1 ≫ truth Q.base) ≫
+        zetaMap (ceilPred (f.1 ≫ truth Q.base)) (isSharp_ceil _) ≫ α.hom ≫
+        comprMap (imPred f.1)) ≫
+      (zetaMap (imPred f.1) (isSharp_imPred C f.1) ≫ α.inv ≫
+        comprMap (ceilPred (f.1 ≫ truth Q.base)) ≫
+        asrt (f.1 ≫ truth Q.base)) := by
+    rw [← hf, ← hg]
+  rw [key]
+  simp only [Category.assoc]
+  rw [← Category.assoc (comprMap (imPred f.1))
+      (zetaMap (imPred f.1) (isSharp_imPred C f.1)) _,
+    (zetaMap_spec (imPred f.1) (isSharp_imPred C f.1)).2.1, Category.id_comp,
+    ← Category.assoc α.hom α.inv _, α.hom_inv_id, Category.id_comp,
+    ← Category.assoc (zetaMap (ceilPred (f.1 ≫ truth Q.base)) (isSharp_ceil _))
+      (comprMap (ceilPred (f.1 ≫ truth Q.base))) _,
+    (zetaMap_spec (ceilPred (f.1 ≫ truth Q.base)) (isSharp_ceil _)).2.2,
+    ← Category.assoc, habs, andthen_square_rule]
+
 /-- **224III.1** (eff.tex:7162, Proposition): in `Pure C` for a †-effectus
 `C`, a map is †-mono iff it is a comprehension. -/
 theorem pure_dagMono_iff_compr (d : DaggerEffectus C)
     {P Q : PureCat C} (f : P ⟶ Q) :
     letI := d.daggerCat
-    (DaggerCat.DagMono f ↔ ∃ p : Pred Q.base, IsComprehension p f.1) := sorry
+    (DaggerCat.DagMono f ↔ ∃ p : Pred Q.base, IsComprehension p f.1) := by
+  show (f ≫ d.daggerCat.dag f = 𝟙 P) ↔ ∃ p : Pred Q.base, IsComprehension p f.1
+  constructor
+  · intro hm
+    -- `id = f† ∘ f = asrt_{p&p}`, so `p & p = 1 = 1 & 1`, whence `p = 1` (216III)
+    have h1 : asrt (andThen (f.1 ≫ truth Q.base) (f.1 ≫ truth Q.base)) =
+        𝟙 P.base := (dag_comp_dag_self d f).symm.trans (congrArg Subtype.val hm)
+    have h2 : andThen (f.1 ≫ truth Q.base) (f.1 ≫ truth Q.base) = 1 := by
+      have h := (asrt_spec (andThen (f.1 ≫ truth Q.base)
+        (f.1 ≫ truth Q.base))).2
+      rw [h1, Category.id_comp] at h
+      exact h.symm
+    have h3 : andThen (1 : Pred P.base) (1 : Pred P.base) = 1 := by
+      show asrt (1 : Pred P.base) ≫ (1 : Pred P.base) = 1
+      rw [asrt_one, Category.id_comp]
+    have hr : f.1 ≫ truth Q.base = 1 :=
+      (dagger_eff_square_root d (1 : Pred P.base)).unique h2 h3
+    -- so `f = π_{im f} ∘ β ∘ ζ_1` with `ζ_1` an iso: a comprehension
+    obtain ⟨β, hβ⟩ := standard_form_of_eq f.2 (isSharp_one P.base)
+      (isSharp_imPred C f.1) (by rw [hr]; exact ceil_of_isSharp (isSharp_one _))
+      rfl
+    have hasrt1 : asrt (f.1 ≫ truth Q.base) = 𝟙 P.base := by
+      rw [hr]; exact asrt_one P.base
+    rw [hasrt1, Category.id_comp] at hβ
+    obtain ⟨-, hπζ1, hζπ1⟩ := zetaMap_spec (1 : Pred P.base) (isSharp_one _)
+    haveI : IsIso (zetaMap (1 : Pred P.base) (isSharp_one _)) :=
+      ⟨comprMap (1 : Pred P.base), by rw [hζπ1, asrt_one], hπζ1⟩
+    refine ⟨imPred f.1, ?_⟩
+    have hc : IsComprehension (imPred f.1)
+        (zetaMap (1 : Pred P.base) (isSharp_one P.base) ≫ β.hom ≫
+          comprMap (imPred f.1)) := by
+      rw [← Category.assoc]
+      exact compr_basics_1 (isComprehension_comprMap (imPred f.1))
+        (zetaMap (1 : Pred P.base) (isSharp_one P.base) ≫ β.hom)
+    rwa [← hβ] at hc
+  · rintro ⟨p, hp⟩
+    -- comprehensions are total, so `f† ∘ f = asrt_{1 & 1} = asrt_1 = id`
+    have h3 : andThen (f.1 ≫ truth Q.base) (f.1 ≫ truth Q.base) = 1 := by
+      have ht : f.1 ≫ truth Q.base = (1 : Pred P.base) := compr_total hp
+      rw [ht]
+      show asrt (1 : Pred P.base) ≫ (1 : Pred P.base) = 1
+      rw [asrt_one, Category.id_comp]
+    refine Subtype.ext ?_
+    show f.1 ≫ (d.daggerCat.dag f).1 = 𝟙 P.base
+    rw [dag_comp_dag_self d f, h3, asrt_one]
 
 /-- **224III.1** (eff.tex:7162, Proposition), dually: a map of `Pure C` is
 †-epi iff it is a quotient for a sharp predicate. -/
@@ -92,14 +169,145 @@ theorem pure_dagEpi_iff_quot (d : DaggerEffectus C)
     {P Q : PureCat C} (f : P ⟶ Q) :
     letI := d.daggerCat
     (DaggerCat.DagEpi f ↔
-      ∃ s : Pred P.base, IsSharp s ∧ IsQuotient s f.1) := sorry
+      ∃ s : Pred P.base, IsSharp s ∧ IsQuotient s f.1) := by
+  show (d.daggerCat.dag f ≫ f = 𝟙 Q) ↔
+    ∃ s : Pred P.base, IsSharp s ∧ IsQuotient s f.1
+  constructor
+  · intro he
+    -- `f` is †-epi iff `f†` is †-mono, hence (224III.1) a comprehension
+    have hm : @DaggerCat.DagMono _ _ d.daggerCat _ _ (d.daggerCat.dag f) := by
+      show d.daggerCat.dag f ≫ d.daggerCat.dag (d.daggerCat.dag f) = 𝟙 Q
+      rw [d.daggerCat.dag_dag]; exact he
+    obtain ⟨p, hp⟩ := (pure_dagMono_iff_compr d (d.daggerCat.dag f)).mp hm
+    have ht : IsSharp (imPred (d.daggerCat.dag f).1) := isSharp_imPred C _
+    obtain ⟨θ, hθ, hθc, -⟩ := compr_basics_2 (isComprehension_imPred hp)
+      (isComprehension_comprMap (imPred (d.daggerCat.dag f).1))
+    haveI := hθ
+    -- so `f = f†† = (θ ∘ π_t)† = ζ_t ∘ θ⁻¹` is a quotient for `tᵖ`
+    obtain ⟨Θ, hΘ⟩ : ∃ h : Q ⟶
+        PureCat.of (comprObj (imPred (d.daggerCat.dag f).1)),
+      h = ⟨θ, isPure_of_isQuotient (quotient_basics_3 θ)⟩ := ⟨_, rfl⟩
+    obtain ⟨Pt, hPt⟩ : ∃ h :
+        (PureCat.of (comprObj (imPred (d.daggerCat.dag f).1)) : PureCat C) ⟶ P,
+      h = ⟨comprMap (imPred (d.daggerCat.dag f).1),
+        isPure_comprehension C (isComprehension_comprMap _)⟩ := ⟨_, rfl⟩
+    have hEq : d.daggerCat.dag f = Θ ≫ Pt := by
+      refine Subtype.ext ?_
+      rw [hΘ, hPt]
+      exact hθc.symm
+    have hdΘ : d.daggerCat.dag Θ =
+        ⟨inv θ, isPure_of_isQuotient (quotient_basics_3 (inv θ))⟩ := by
+      rw [hΘ]
+      have h := dagger_of_iso d (P := Q)
+        (Q := PureCat.of (comprObj (imPred (d.daggerCat.dag f).1)))
+        ⟨⟨θ, isPure_of_isQuotient (quotient_basics_3 θ)⟩,
+          ⟨inv θ, isPure_of_isQuotient (quotient_basics_3 (inv θ))⟩,
+          Subtype.ext (IsIso.hom_inv_id θ), Subtype.ext (IsIso.inv_hom_id θ)⟩
+      exact h
+    have hdPt : d.daggerCat.dag Pt =
+        ⟨zetaMap (imPred (d.daggerCat.dag f).1) ht,
+          isPure_of_isQuotient
+            (zetaMap_spec (imPred (d.daggerCat.dag f).1) ht).1⟩ := by
+      rw [hPt]; exact dagger_of_compr d ht
+    have hfeq : f.1 = zetaMap (imPred (d.daggerCat.dag f).1) ht ≫ inv θ := by
+      have h := congrArg d.daggerCat.dag hEq
+      rw [d.daggerCat.dag_comp, d.daggerCat.dag_dag, hdΘ, hdPt] at h
+      exact congrArg Subtype.val h
+    refine ⟨orth (imPred (d.daggerCat.dag f).1),
+      DiamondEffectus.orth_sharp ht, ?_⟩
+    rw [hfeq]
+    exact quotient_basics_1
+      (zetaMap_spec (imPred (d.daggerCat.dag f).1) ht).1 (inv θ)
+  · rintro ⟨s, hs, hq⟩
+    -- `f = ζ_{sᵖ} ∘ θ⁻¹`, so `f† = θ⁻¹ ∘ π_{sᵖ}` is a comprehension
+    have hos : IsSharp (orth s) := DiamondEffectus.orth_sharp hs
+    have hzq : IsQuotient s (zetaMap (orth s) hos) := by
+      have h := (zetaMap_spec (orth s) hos).1
+      rwa [eabasics_orth_orth] at h
+    obtain ⟨θ, hθ, hθc, -⟩ := quotient_basics_2 hq hzq
+    haveI := hθ
+    obtain ⟨Zs, hZs⟩ : ∃ h : P ⟶ PureCat.of (comprObj (orth s)),
+      h = ⟨zetaMap (orth s) hos,
+        isPure_of_isQuotient (zetaMap_spec (orth s) hos).1⟩ := ⟨_, rfl⟩
+    obtain ⟨Θ, hΘ⟩ : ∃ h : (PureCat.of (comprObj (orth s)) : PureCat C) ⟶ Q,
+      h = ⟨θ, isPure_of_isQuotient (quotient_basics_3 θ)⟩ := ⟨_, rfl⟩
+    have hEq : f = Zs ≫ Θ := by
+      refine Subtype.ext ?_
+      rw [hZs, hΘ]
+      exact hθc.symm
+    have hdZs : d.daggerCat.dag Zs =
+        ⟨comprMap (orth s),
+          isPure_comprehension C (isComprehension_comprMap _)⟩ := by
+      rw [hZs]; exact dagger_of_zeta d hos
+    have hdΘ : d.daggerCat.dag Θ =
+        ⟨inv θ, isPure_of_isQuotient (quotient_basics_3 (inv θ))⟩ := by
+      rw [hΘ]
+      have h := dagger_of_iso d (P := PureCat.of (comprObj (orth s))) (Q := Q)
+        ⟨⟨θ, isPure_of_isQuotient (quotient_basics_3 θ)⟩,
+          ⟨inv θ, isPure_of_isQuotient (quotient_basics_3 (inv θ))⟩,
+          Subtype.ext (IsIso.hom_inv_id θ), Subtype.ext (IsIso.inv_hom_id θ)⟩
+      exact h
+    have hdf : (d.daggerCat.dag f).1 = inv θ ≫ comprMap (orth s) := by
+      have h := congrArg d.daggerCat.dag hEq
+      rw [d.daggerCat.dag_comp, hdZs, hdΘ] at h
+      exact congrArg Subtype.val h
+    have hm : @DaggerCat.DagMono _ _ d.daggerCat _ _ (d.daggerCat.dag f) := by
+      refine (pure_dagMono_iff_compr d (d.daggerCat.dag f)).mpr ⟨orth s, ?_⟩
+      rw [hdf]
+      exact compr_basics_1 (isComprehension_comprMap (orth s)) (inv θ)
+    have hm2 : d.daggerCat.dag f ≫
+      d.daggerCat.dag (d.daggerCat.dag f) = 𝟙 Q := hm
+    rwa [d.daggerCat.dag_dag] at hm2
 
 /-- **224III.2** (eff.tex:7162, Proposition): the †-partial isometries of
 `Pure C` are exactly the pristine maps. -/
 theorem pure_dagPartialIsometry_iff_pristine (d : DaggerEffectus C)
     {P Q : PureCat C} (f : P ⟶ Q) :
     letI := d.daggerCat
-    (DaggerCat.DagPartialIsometry f ↔ Pristine f.1) := sorry
+    (DaggerCat.DagPartialIsometry f ↔ Pristine f.1) := by
+  show (∃ (Z : PureCat C) (e : P ⟶ Z) (m : Z ⟶ Q),
+      @DaggerCat.DagEpi _ _ d.daggerCat _ _ e ∧
+      @DaggerCat.DagMono _ _ d.daggerCat _ _ m ∧ f = e ≫ m) ↔ Pristine f.1
+  constructor
+  · rintro ⟨Z, e, m, he, hm, rfl⟩
+    -- `1 ∘ (m ∘ e) = 1 ∘ e = sᵖ` is sharp, as `m` is total
+    obtain ⟨s, hs, hqe⟩ := (pure_dagEpi_iff_quot d e).mp he
+    obtain ⟨q, hcm⟩ := (pure_dagMono_iff_compr d m).mp hm
+    refine ⟨(e ≫ m).2, ?_⟩
+    have h1 : (e ≫ m).1 ≫ truth Q.base = orth s := by
+      show (e.1 ≫ m.1) ≫ truth Q.base = orth s
+      rw [Category.assoc,
+        show m.1 ≫ truth Q.base = truth Z.base from compr_total hcm]
+      exact quotient_basics_5 hqe
+    rw [h1]
+    exact DiamondEffectus.orth_sharp hs
+  · rintro ⟨-, hp⟩
+    -- `1 ∘ f` sharp, so `asrt_{1∘f} ∘ ζ_{1∘f} = ζ_{1∘f}` and the standard
+    -- form reads `f = π_{im f} ∘ β ∘ ζ_{1∘f}`
+    obtain ⟨β, hβ⟩ := standard_form_of_eq f.2 hp (isSharp_imPred C f.1)
+      (ceil_of_isSharp hp) rfl
+    obtain ⟨hqp, hπζ, hζπ⟩ := zetaMap_spec (f.1 ≫ truth Q.base) hp
+    have haz : asrt (f.1 ≫ truth Q.base) ≫ zetaMap (f.1 ≫ truth Q.base) hp =
+        zetaMap (f.1 ≫ truth Q.base) hp := by
+      rw [← hζπ, Category.assoc, hπζ, Category.comp_id]
+    rw [← Category.assoc, haz] at hβ
+    have hepure : IsPure (zetaMap (f.1 ≫ truth Q.base) hp ≫ β.hom) :=
+      upm_closed_pure (isPure_of_isQuotient hqp)
+        (isPure_of_isQuotient (quotient_basics_3 β.hom))
+    refine ⟨PureCat.of (comprObj (imPred f.1)),
+      ⟨zetaMap (f.1 ≫ truth Q.base) hp ≫ β.hom, hepure⟩,
+      ⟨comprMap (imPred f.1),
+        isPure_comprehension C (isComprehension_comprMap _)⟩, ?_, ?_, ?_⟩
+    · exact (pure_dagEpi_iff_quot d _).mpr
+        ⟨orth (f.1 ≫ truth Q.base), DiamondEffectus.orth_sharp hp,
+          quotient_basics_1 hqp β.hom⟩
+    · exact (pure_dagMono_iff_compr d _).mpr
+        ⟨imPred f.1, isComprehension_comprMap _⟩
+    · refine Subtype.ext ?_
+      show f.1 = (zetaMap (f.1 ≫ truth Q.base) hp ≫ β.hom) ≫
+        comprMap (imPred f.1)
+      rw [Category.assoc]
+      exact hβ
 
 /-- **224III** (eff.tex:7173, Proposition): `Pure C` is a †-kernel
 category: the †-kernel of `f` is given by the comprehension
@@ -112,7 +320,82 @@ theorem pure_daggerKernelCategory (d : DaggerEffectus C)
       IsComprehension (orth (f.1 ≫ truth Q.base)) k.1 ∧
       k.1 ≫ f.1 = 0 ∧
       ∀ ⦃Z : PureCat C⦄ (g : Z ⟶ P), g.1 ≫ f.1 = 0 →
-        ∃! g' : Z ⟶ W, g' ≫ k = g := sorry
+        ∃! g' : Z ⟶ W, g' ≫ k = g := by
+  haveI := dagger_thm_necessity d
+  set p := f.1 ≫ truth Q.base with hpdef
+  have hk : IsPure (comprMap (orth p)) :=
+    isPure_comprehension C (isComprehension_comprMap _)
+  have hks : IsSharp (imPred (comprMap (orth p))) := isSharp_imPred C _
+  refine ⟨PureCat.of (comprObj (orth p)), ⟨comprMap (orth p), hk⟩, ?_,
+    isComprehension_comprMap _, ?_, ?_⟩
+  · exact (pure_dagMono_iff_compr d _).mpr ⟨_, isComprehension_comprMap _⟩
+  · -- `pᵖ ∘ π_{pᵖ} = 1 ∘ π_{pᵖ}`, so `1 ∘ f ∘ π_{pᵖ} = 0` and `f ∘ π_{pᵖ} = 0`
+    refine EffectusPartialForm.eq_zero_of_one_zero ?_
+    show (comprMap (orth p) ≫ f.1) ≫ truth Q.base = 0
+    rw [Category.assoc, ← hpdef]
+    have h := compr_basics_6 (isComprehension_comprMap (orth p))
+    rwa [eabasics_orth_orth] at h
+  · intro Z g hg
+    -- `1 ∘ f ∘ g = 0`, so `g` factors through `π_{pᵖ}`, whence `im g ≤ im π_{pᵖ}`
+    have hgp : g.1 ≫ p = 0 := by rw [hpdef, ← Category.assoc, hg, FinPAC.zero_comp]
+    have hgo : g.1 ≫ orth p = g.1 ≫ truth P.base := by
+      refine (comp_orth_eq_zero_iff g.1 (orth p)).mp ?_
+      rw [eabasics_orth_orth]; exact hgp
+    obtain ⟨g0, hg0, -⟩ := (isComprehension_comprMap (orth p)).2 g.1 hgo
+    have himg : imPred g.1 ≼ imPred (comprMap (orth p)) := by
+      rw [← hg0]
+      exact (im_ineq (comprMap (orth p)) g0).1
+    have habs : g.1 ≫ asrt (imPred (comprMap (orth p))) = g.1 :=
+      (asrt_absorp_rule g.1 hks (isSharp_one Z.base)).1.mp himg
+    -- `π_{pᵖ}` is pristine, so `π_{pᵖ}† ∘ π_{pᵖ} = asrt_{im π_{pᵖ}}`
+    have hkpr : Pristine (comprMap (orth p)) := by
+      refine ⟨hk, ?_⟩
+      rw [show comprMap (orth p) ≫ truth P.base = truth (comprObj (orth p)) from
+        compr_total (isComprehension_comprMap _)]
+      exact isSharp_one _
+    have hsq : andThen (imPred (comprMap (orth p))) (imPred (comprMap (orth p))) =
+        imPred (comprMap (orth p)) := by
+      have h := asrt_ceil_comp (imPred (comprMap (orth p)))
+      rwa [ceil_of_isSharp hks] at h
+    have hdd : (d.daggerCat.dag
+          (⟨comprMap (orth p), hk⟩ :
+            PureCat.of (comprObj (orth p)) ⟶ P)).1 ≫
+        truth (comprObj (orth p)) = imPred (comprMap (orth p)) := by
+      rw [dag_eq_pureDagger d _]
+      exact pristine_dagger_truth hkpr
+    have hkk : (d.daggerCat.dag
+          (⟨comprMap (orth p), hk⟩ :
+            PureCat.of (comprObj (orth p)) ⟶ P)).1 ≫ comprMap (orth p) =
+        asrt (imPred (comprMap (orth p))) := by
+      have h := dag_comp_dag_self d (d.daggerCat.dag
+        (⟨comprMap (orth p), hk⟩ : PureCat.of (comprObj (orth p)) ⟶ P))
+      rw [d.daggerCat.dag_dag] at h
+      refine h.trans ?_
+      congr 1
+      show andThen ((d.daggerCat.dag
+          (⟨comprMap (orth p), hk⟩ :
+            PureCat.of (comprObj (orth p)) ⟶ P)).1 ≫ truth (comprObj (orth p)))
+        ((d.daggerCat.dag
+          (⟨comprMap (orth p), hk⟩ :
+            PureCat.of (comprObj (orth p)) ⟶ P)).1 ≫
+            truth (comprObj (orth p))) = imPred (comprMap (orth p))
+      rw [hdd, hsq]
+    refine ⟨g ≫ d.daggerCat.dag ⟨comprMap (orth p), hk⟩, ?_, ?_⟩
+    · refine Subtype.ext ?_
+      show (g.1 ≫ (d.daggerCat.dag
+        (⟨comprMap (orth p), hk⟩ :
+          PureCat.of (comprObj (orth p)) ⟶ P)).1) ≫ comprMap (orth p) = g.1
+      rw [Category.assoc, hkk, habs]
+    · intro g'' hg''
+      haveI : Mono (comprMap (orth p)) :=
+        compr_basics_5 (isComprehension_comprMap (orth p))
+      refine Subtype.ext ((cancel_mono (comprMap (orth p))).mp ?_)
+      have e1 : g''.1 ≫ comprMap (orth p) = g.1 := congrArg Subtype.val hg''
+      rw [e1]
+      show g.1 = (g.1 ≫ (d.daggerCat.dag
+        (⟨comprMap (orth p), hk⟩ :
+          PureCat.of (comprObj (orth p)) ⟶ P)).1) ≫ comprMap (orth p)
+      rw [Category.assoc, hkk, habs]
 
 end PureDaggerKernel
 
@@ -210,7 +493,7 @@ theorem pred_sea_s1_s2_s3 [AndThenEffectus C] [DaggerPrimeEffectus C]
     exact ((asrt_absorp_rule p (isSharp_one (effObj C)) (isSharp_one X)).2).mp
       (pred_le_truth _)
   · -- (S3): the thesis (eff.tex:7415) applies the dagger to
-    -- `asrt_q ∘ asrt_p = 0 = asrt_0`.  We avoid `pureDagger` (still `sorry`)
+    -- `asrt_q ∘ asrt_p = 0 = asrt_0`.  We avoid `pureDagger`
     -- and argue instead with the `asrt_sq` axiom of a †-effectus together
     -- with the uniqueness of square roots; see the errata note.
     intro p q h

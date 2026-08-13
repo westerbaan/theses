@@ -2417,14 +2417,110 @@ theorem ncp_union_1 (f : A →ₚ[ℂ] B) (hf : PreservesDirSups ⇑f) (p q : A)
 `⌈f(⋃P)⌉ = ⋃_{p∈P} ⌈f(p)⌉` for every set `P` of projections. -/
 theorem ncp_union_2 (f : A →ₚ[ℂ] B) (hf : PreservesDirSups ⇑f) (P : Set A)
     (hP : ∀ p ∈ P, IsStarProjection p) :
-    ceil (f (projSup P)) = projSup ((fun p => ceil (f p)) '' P) :=
-  sorry
+    ceil (f (projSup P)) = projSup ((fun p => ceil (f p)) '' P) := by
+  -- Write `r` for the right-hand side.  The set `D` of projections `q` with
+  -- `⌈f(q)⌉ ≤ r` contains `P`, is closed under binary joins by **60IX**.1, and
+  -- contains its own directed supremum because `f` is normal (**59V**).  Hence
+  -- `⋃P ≤ ⋁D ∈ D`, which gives `⌈f(⋃P)⌉ ≤ r`.
+  classical
+  have hz : (f (0 : A) : B) = 0 := map_zero f
+  have hfnn : ∀ a : A, 0 ≤ a → (0 : B) ≤ f a := fun a ha => by
+    have h : (f (0 : A) : B) ≤ f a := f.monotone ha
+    rwa [hz] at h
+  have hRproj : ∀ x ∈ ((fun p => ceil (f p)) '' P), IsStarProjection x := by
+    rintro _ ⟨p, hp, rfl⟩
+    exact (ceil_spec (hfnn _ (hP p hp).nonneg)).1
+  obtain ⟨hrproj, hrub, hrleast⟩ := projSup_spec hRproj
+  obtain ⟨hsproj, hsub, hsleast⟩ := projSup_spec hP
+  refine le_antisymm ?_ (hrleast _ (ceil_spec (hfnn _ hsproj.nonneg)).1 ?_)
+  · set D : Set A := {q : A | IsStarProjection q ∧
+      ceil (f q) ≤ projSup ((fun p => ceil (f p)) '' P)} with hDdef
+    have hDproj : ∀ q ∈ D, IsStarProjection q := fun _ hq => hq.1
+    have hPD : P ⊆ D := fun p hp => ⟨hP p hp, hrub _ ⟨p, hp, rfl⟩⟩
+    have hne : D.Nonempty :=
+      ⟨0, IsStarProjection.zero A, by rw [hz, ceil_zero]; exact hrproj.nonneg⟩
+    have hdir : DirectedOn (· ≤ ·) D := by
+      rintro x ⟨hx, hxle⟩ y ⟨hy, hyle⟩
+      have hxy : ∀ p ∈ ({x, y} : Set A), IsStarProjection p := by
+        rintro p (rfl | rfl)
+        exacts [hx, hy]
+      obtain ⟨hjp, hjub, -⟩ := projSup_spec hxy
+      refine ⟨projSup {x, y}, ⟨hjp, ?_⟩, hjub _ (by left; rfl), hjub _ (by right; rfl)⟩
+      rw [ncp_union_1 f hf x y hx hy]
+      refine (projSup_spec ?_).2.2 _ hrproj ?_
+      · rintro p (rfl | rfl)
+        exacts [(ceil_spec (hfnn _ hx.nonneg)).1, (ceil_spec (hfnn _ hy.nonneg)).1]
+      · rintro p (rfl | rfl)
+        exacts [hxle, hyle]
+    set D' : Set (selfAdjoint A) := {d : selfAdjoint A | (d : A) ∈ D} with hD'def
+    have hval : Subtype.val '' D' = D := by
+      ext x
+      exact ⟨by rintro ⟨d, hd, rfl⟩; exact hd,
+        fun hx => ⟨⟨x, (hDproj x hx).isSelfAdjoint⟩, hx, rfl⟩⟩
+    obtain ⟨d₀, hd₀⟩ := id hne
+    have hne' : D'.Nonempty := ⟨⟨d₀, (hDproj d₀ hd₀).isSelfAdjoint⟩, hd₀⟩
+    have hdir' : DirectedOn (· ≤ ·) D' := by
+      intro x hx y hy
+      obtain ⟨c, hc, hxc, hyc⟩ := hdir _ hx _ hy
+      exact ⟨⟨c, (hDproj c hc).isSelfAdjoint⟩, hc, hxc, hyc⟩
+    have hbdd' : BddAbove D' :=
+      ⟨⟨1, IsSelfAdjoint.one A⟩, fun d hd => (hDproj _ hd).le_one⟩
+    have h3 : D'.Nonempty ∧ DirectedOn (· ≤ ·) D' ∧ BddAbove D' := ⟨hne', hdir', hbdd'⟩
+    have hlubSA : IsLUB D' (dirSup D' h3) := isLUB_dirSup D' h3
+    set t : A := ((dirSup D' h3 : selfAdjoint A) : A) with htdef
+    have hlub : IsLUB D t := by
+      rw [← hval]; exact isLUB_coe_of_isLUB hne' hlubSA
+    have htproj : IsStarProjection t :=
+      vna_directed_supremum_projections D t hDproj hne hdir hlub
+    have hfimg : IsLUB (⇑f '' D) (f t) := by
+      have h := hf D' (dirSup D' h3) hne' hdir' hlubSA
+      rwa [show (fun d : selfAdjoint A => f (d : A)) '' D' = ⇑f '' D by
+        rw [← hval, Set.image_image]] at h
+    have hdirf : DirectedOn (· ≤ ·) (⇑f '' D) := by
+      rintro _ ⟨x, hx, rfl⟩ _ ⟨y, hy, rfl⟩
+      obtain ⟨c, hc, hxc, hyc⟩ := hdir x hx y hy
+      exact ⟨f c, ⟨c, hc, rfl⟩, f.monotone hxc, f.monotone hyc⟩
+    have hceilt : ceil (f t) ≤ projSup ((fun p => ceil (f p)) '' P) := by
+      rw [ceil_isLUB_aux (D := ⇑f '' D)
+        (by rintro _ ⟨d, hd, rfl⟩; exact hfnn _ (hDproj d hd).nonneg)
+        ⟨f d₀, d₀, hd₀, rfl⟩ hdirf hfimg]
+      refine (projSup_spec ?_).2.2 _ hrproj ?_
+      · rintro _ ⟨_, ⟨d, hd, rfl⟩, rfl⟩
+        exact (ceil_spec (hfnn _ (hDproj d hd).nonneg)).1
+      · rintro _ ⟨_, ⟨d, hd, rfl⟩, rfl⟩
+        exact hd.2
+    refine le_trans (ceil_mono (hfnn _ hsproj.nonneg) (f.monotone ?_)) hceilt
+    exact hsleast t htproj fun p hp => hlub.1 (hPD hp)
+  · rintro _ ⟨p, hp, rfl⟩
+    exact ceil_mono (hfnn _ (hP p hp).nonneg) (f.monotone (hsub p hp))
 
 /-- **60IX** (`ncp-union`, vn.tex:2942, Exercise), part 3: there is a
 greatest projection `e` with `f(e) = 0`. -/
 theorem ncp_union_3 (f : A →ₚ[ℂ] B) (hf : PreservesDirSups ⇑f) :
-    ∃ e : A, IsGreatest {p : A | IsStarProjection p ∧ f p = 0} e :=
-  sorry
+    ∃ e : A, IsGreatest {p : A | IsStarProjection p ∧ f p = 0} e := by
+  -- take `e = ⋃E` with `E` the set of projections killed by `f`; by part 2,
+  -- `⌈f(e)⌉ = ⋃_{p∈E} ⌈f(p)⌉ = 0`, so `f(e) = 0`
+  classical
+  set E : Set A := {p : A | IsStarProjection p ∧ f p = 0} with hEdef
+  have hE : ∀ p ∈ E, IsStarProjection p := fun _ hp => hp.1
+  obtain ⟨heproj, heub, -⟩ := projSup_spec hE
+  refine ⟨projSup E, ⟨heproj, ?_⟩, fun p hp => heub p hp⟩
+  have himg : ∀ x ∈ ((fun p => ceil (f p)) '' E), IsStarProjection x := by
+    rintro _ ⟨p, hp, rfl⟩
+    show IsStarProjection (ceil (f p))
+    rw [hp.2, ceil_zero]
+    exact IsStarProjection.zero B
+  have hzero : projSup ((fun p => ceil (f p)) '' E) = 0 := by
+    refine projSup_eq himg (IsStarProjection.zero B) ?_ fun q hq _ => hq.nonneg
+    rintro _ ⟨p, hp, rfl⟩
+    show ceil (f p) ≤ 0
+    rw [hp.2, ceil_zero]
+  have h := ncp_union_2 f hf E hE
+  rw [hzero] at h
+  have hfe : (0 : B) ≤ f (projSup E) := by
+    have h0 : (f (0 : A) : B) ≤ f (projSup E) := f.monotone heproj.nonneg
+    rwa [map_zero f] at h0
+  exact (ceil_basic_3 _ hfe).mpr h
 
 /-! ## Parsec 610
 
@@ -2457,8 +2553,15 @@ theorem ncpsu_floor (f : NCPSUMap A B) (a : A) (ha : a ∈ effects A) :
 `f(p^⊥) = 0`. -/
 theorem exists_carrier (f : A →ₚ[ℂ] B) (hf : PreservesDirSups ⇑f) :
     ∃! p : A, IsStarProjection p ∧ f (1 - p) = 0 ∧
-      ∀ q : A, IsStarProjection q → f (1 - q) = 0 → p ≤ q :=
-  sorry
+      ∀ q : A, IsStarProjection q → f (1 - q) = 0 → p ≤ q := by
+  -- the carrier is `e^⊥` for `e` the greatest projection with `f(e) = 0`
+  -- (**60IX**.3)
+  obtain ⟨e, ⟨heproj, hfe⟩, hegreat⟩ := ncp_union_3 f hf
+  refine ⟨1 - e, ⟨heproj.one_sub, by rwa [sub_sub_cancel],
+    fun q hq hq0 => sub_le_comm.mp (hegreat ⟨hq.one_sub, hq0⟩)⟩, ?_⟩
+  rintro p ⟨hp, hp0, hpleast⟩
+  exact le_antisymm (hpleast _ heproj.one_sub (by rwa [sub_sub_cancel]))
+    (sub_le_comm.mp (hegreat ⟨hp.one_sub, hp0⟩))
 
 /-- **63I** (`carrier`, vn.tex:3043, Definition): the **carrier** `⌈f⌉` of
 an np-map `f : A → B` between von Neumann algebras: the least projection
@@ -2471,41 +2574,157 @@ np-functionals: the carrier `⌈ω⌉` of `ω : A → ℂ`. -/
 noncomputable def npCarrier (ω : NPFunctional A) : A :=
   carrier ω.toPositiveLinearMap ω.preservesDirSups'
 
+/-- The defining property of `⌈f⌉`: it is the least projection `p` with
+`f(p^⊥) = 0`. -/
+theorem carrier_spec (f : A →ₚ[ℂ] B) (hf : PreservesDirSups ⇑f) :
+    IsStarProjection (carrier f hf) ∧ f (1 - carrier f hf) = 0 ∧
+      ∀ q : A, IsStarProjection q → f (1 - q) = 0 → carrier f hf ≤ q :=
+  (exists_carrier f hf).choose_spec.1
+
+theorem carrier_eq (f : A →ₚ[ℂ] B) (hf : PreservesDirSups ⇑f) {p : A}
+    (hp : IsStarProjection p) (h0 : f (1 - p) = 0)
+    (hleast : ∀ q : A, IsStarProjection q → f (1 - q) = 0 → p ≤ q) :
+    carrier f hf = p :=
+  (exists_carrier f hf).unique (carrier_spec f hf) ⟨hp, h0, hleast⟩
+
+/-- Auxiliary: an np-map is positive, so it sends positive elements to
+positive elements. -/
+private theorem pmap_nonneg (f : A →ₚ[ℂ] B) {a : A} (ha : 0 ≤ a) : (0 : B) ≤ f a := by
+  have h : (f (0 : A) : B) ≤ f a := f.monotone ha
+  rwa [map_zero f] at h
+
+/-- Auxiliary: `f(q^⊥) = 0` for `⌈f⌉ ≤ q`. -/
+private theorem map_ortho_eq_zero_of_carrier_le (f : A →ₚ[ℂ] B)
+    (hf : PreservesDirSups ⇑f) {q : A} (hq : 0 ≤ 1 - q)
+    (h : (1 : A) - q ≤ 1 - carrier f hf) : f (1 - q) = 0 :=
+  le_antisymm (by
+    have h2 : (f (1 - q) : B) ≤ f (1 - carrier f hf) := f.monotone h
+    rwa [(carrier_spec f hf).2.1] at h2) (pmap_nonneg f hq)
+
 /-- **63II** (`carrier-basic`, vn.tex:3054, Exercise), part 1:
 `⌈λf⌉ = ⌈f⌉` for `λ > 0` (the scaled map given pointwise). -/
 theorem carrier_basic_1 (f g : A →ₚ[ℂ] B) (hf : PreservesDirSups ⇑f)
     (hg : PreservesDirSups ⇑g) (l : ℝ) (hl : 0 < l)
     (h : ∀ a, g a = (l : ℂ) • f a) :
-    carrier g hg = carrier f hf :=
-  sorry
+    carrier g hg = carrier f hf := by
+  have hlne : ((l : ℂ)) ≠ 0 := by
+    simpa using hl.ne'
+  have hiff : ∀ a : A, g a = 0 ↔ f a = 0 := fun a => by
+    rw [h a, smul_eq_zero]
+    simp [hlne]
+  exact carrier_eq g hg (carrier_spec f hf).1
+    ((hiff _).mpr (carrier_spec f hf).2.1)
+    fun q hq hq0 => (carrier_spec f hf).2.2 q hq ((hiff _).mp hq0)
 
 /-- **63II** (`carrier-basic`, vn.tex:3054, Exercise), part 2:
 `⌈f + g⌉ = ⌈f⌉ ∪ ⌈g⌉` (the sum given pointwise). -/
 theorem carrier_basic_2 (f g h : A →ₚ[ℂ] B) (hf : PreservesDirSups ⇑f)
     (hg : PreservesDirSups ⇑g) (hh : PreservesDirSups ⇑h)
     (hsum : ∀ a, h a = f a + g a) :
-    carrier h hh = projSup {carrier f hf, carrier g hg} :=
-  sorry
+    carrier h hh = projSup {carrier f hf, carrier g hg} := by
+  have hP : ∀ p ∈ ({carrier f hf, carrier g hg} : Set A), IsStarProjection p := by
+    rintro p (rfl | rfl)
+    exacts [(carrier_spec f hf).1, (carrier_spec g hg).1]
+  obtain ⟨hsproj, hsub, hsleast⟩ := projSup_spec hP
+  refine carrier_eq h hh hsproj ?_ ?_
+  · have hnn : (0 : A) ≤ 1 - projSup {carrier f hf, carrier g hg} :=
+      hsproj.one_sub.nonneg
+    rw [hsum]
+    rw [map_ortho_eq_zero_of_carrier_le f hf hnn
+        (sub_le_sub_left (hsub _ (by left; rfl)) 1),
+      map_ortho_eq_zero_of_carrier_le g hg hnn
+        (sub_le_sub_left (hsub _ (by right; rfl)) 1), add_zero]
+  · intro q hq hq0
+    rw [hsum] at hq0
+    have hfq : (0 : B) ≤ f (1 - q) := pmap_nonneg f hq.one_sub.nonneg
+    have hgq : (0 : B) ≤ g (1 - q) := pmap_nonneg g hq.one_sub.nonneg
+    have hf0 : f (1 - q) = 0 := by
+      refine le_antisymm ?_ hfq
+      have : (f (1 - q) : B) = -g (1 - q) := by
+        rw [eq_neg_iff_add_eq_zero]; exact hq0
+      rw [this, neg_nonpos]
+      exact hgq
+    have hg0 : g (1 - q) = 0 := by
+      rw [hf0, zero_add] at hq0; exact hq0
+    refine hsleast q hq ?_
+    rintro p (rfl | rfl)
+    exacts [(carrier_spec f hf).2.2 q hq hf0, (carrier_spec g hg).2.2 q hq hg0]
 
 /-- **63II** (`carrier-basic`, vn.tex:3054, Exercise), part 3: `⌈f⌉ = 1` iff
 `f` is faithful. -/
 theorem carrier_basic_3 (f : A →ₚ[ℂ] B) (hf : PreservesDirSups ⇑f) :
-    carrier f hf = 1 ↔ ∀ a : A, 0 ≤ a → f a = 0 → a = 0 :=
-  sorry
+    carrier f hf = 1 ↔ ∀ a : A, 0 ≤ a → f a = 0 → a = 0 := by
+  constructor
+  · intro h a ha hfa
+    -- `f(⌈a⌉) = 0` by **60V**, so `⌈f⌉ ≤ ⌈a⌉^⊥ = 1 - ⌈a⌉`, i.e. `⌈a⌉ = 0`
+    have hc : ceil (f (ceil a)) = 0 := by
+      rw [← ncp_ceil f hf a ha, hfa, ceil_zero]
+    have hfc : (f (ceil a) : B) = 0 :=
+      (ceil_basic_3 _ (pmap_nonneg f (ceil_spec ha).1.nonneg)).mpr hc
+    have hle : carrier f hf ≤ 1 - ceil a :=
+      (carrier_spec f hf).2.2 _ (ceil_spec ha).1.one_sub (by rwa [sub_sub_cancel])
+    rw [h] at hle
+    have : ceil a ≤ 0 := by
+      have h2 := sub_le_sub_left hle 1
+      simpa using h2
+    have hz : ceil a = 0 := le_antisymm this (ceil_spec ha).1.nonneg
+    exact (ceil_basic_3 a ha).mpr hz
+  · intro hfaith
+    have h0 : (1 : A) - carrier f hf = 0 :=
+      hfaith _ (carrier_spec f hf).1.one_sub.nonneg (carrier_spec f hf).2.1
+    exact (sub_eq_zero.mp h0).symm
 
 /-- **63II** (`carrier-basic`, vn.tex:3054, Exercise), part 4: for
 multiplicative `f`: `⌈f⌉ = 1` iff `f` is injective. -/
 theorem carrier_basic_4 (f : A →ₚ[ℂ] B) (hf : PreservesDirSups ⇑f)
     (hmul : ∀ a b : A, f (a * b) = f a * f b) :
-    carrier f hf = 1 ↔ Function.Injective ⇑f :=
-  sorry
+    carrier f hf = 1 ↔ Function.Injective ⇑f := by
+  rw [carrier_basic_3]
+  constructor
+  · intro hfaith a b hab
+    -- `f(c) = 0` for `c = a - b`, so `f(c*c) = f(c*)f(c) = 0`, so `c*c = 0`
+    have hc : (f (a - b) : B) = 0 := by rw [map_sub]; exact sub_eq_zero.mpr hab
+    have h2 : (f (star (a - b) * (a - b)) : B) = 0 := by
+      rw [hmul, hc, mul_zero]
+    have := hfaith _ (star_mul_self_nonneg (a - b)) h2
+    exact sub_eq_zero.mp (CStarRing.star_mul_self_eq_zero_iff (a - b) |>.mp this)
+  · intro hinj a _ hfa
+    exact hinj (by rw [hfa, map_zero f])
 
 /-- **63III** (vn.tex:3074, Exercise), part 1: `⌈a*(·)a⌉ = ⌈aa*⌉ = ⌊a⌉` for
 the np-map `a*(·)a : A → A`. -/
 theorem carrier_ad (a : A) (g : A →ₚ[ℂ] A) (hg : PreservesDirSups ⇑g)
     (h : ∀ b, g b = star a * b * a) :
-    carrier g hg = rangeProj a :=
-  sorry
+    carrier g hg = rangeProj a := by
+  obtain ⟨hrproj, hra⟩ := (ceill_basic_2 a).1
+  have hrrnn : (0 : A) ≤ a * star a := by
+    have h' := star_mul_self_nonneg (star a)
+    rwa [star_star] at h'
+  refine carrier_eq g hg hrproj ?_ ?_
+  · rw [h]
+    have : ((1 : A) - rangeProj a) * a = 0 := by rw [sub_mul, one_mul, hra, sub_self]
+    rw [show star a * (1 - rangeProj a) * a = star a * ((1 - rangeProj a) * a) by
+      noncomm_ring, this, mul_zero]
+  · intro q hq hq0
+    rw [h] at hq0
+    -- `a* q^⊥ a = (q^⊥a)*(q^⊥a) = 0`, so `q^⊥a = 0`, i.e. `qa = a`
+    have hstar : star ((1 : A) - q) = 1 - q := hq.one_sub.isSelfAdjoint.star_eq
+    have hzero : ((1 : A) - q) * a = 0 := by
+      refine (CStarRing.star_mul_self_eq_zero_iff (((1 : A) - q) * a)).mp ?_
+      rw [star_mul, hstar]
+      calc star a * (1 - q) * ((1 - q) * a)
+          = star a * ((1 - q) * (1 - q)) * a := by noncomm_ring
+        _ = star a * (1 - q) * a := by rw [hq.one_sub.isIdempotentElem.eq]
+        _ = 0 := hq0
+    have hqa : q * a = a := by
+      have := sub_eq_zero.mp (by rw [sub_mul, one_mul] at hzero; exact hzero)
+      exact this.symm
+    refine (ceil_le_iff hrrnn hq).mpr ?_
+    have hsq : star a * q = star a := by
+      have h' := congrArg star hqa
+      rwa [star_mul, hq.isSelfAdjoint.star_eq] at h'
+    calc a * star a * q = a * (star a * q) := by noncomm_ring
+      _ = a * star a := by rw [hsq]
 
 /-- **63III** (vn.tex:3074, Exercise), part 2: for a bounded operator
 `T : H → K` between Hilbert spaces, the carrier of
@@ -2525,8 +2744,51 @@ unit vector `x` of a Hilbert space, the vector functional taken on all of
 theorem carrier_vector_functional {H : Type*} [NormedAddCommGroup H]
     [InnerProductSpace ℂ H] [CompleteSpace H] (x : H) (hx : ‖x‖ = 1)
     (ω : NPFunctional (H →L[ℂ] H)) (hω : ∀ T : H →L[ℂ] H, ω T = ⟪x, T x⟫) :
-    npCarrier ω = ketbra x x :=
-  sorry
+    npCarrier ω = ketbra x x := by
+  -- `|x⟩⟨x|` kills `ω` on its orthocomplement, and any projection `q` with
+  -- `ω(q^⊥) = 0` satisfies `‖q^⊥x‖² = 0`, i.e. `qx = x`, hence
+  -- `q|x⟩⟨x| = |x⟩⟨x|`
+  have hxx : ⟪x, x⟫ = 1 := by
+    rw [inner_self_eq_norm_sq_to_K, hx]
+    norm_num
+  have hkb : ∀ z : H, (ketbra x x) z = ⟪x, z⟫ • x := fun _ => rfl
+  have hsa : IsSelfAdjoint (ketbra x x) := by
+    have h : (ketbra x x) = ContinuousLinearMap.adjoint (ketbra x x) := by
+      rw [ContinuousLinearMap.eq_adjoint_iff]
+      intro u v
+      rw [hkb, hkb, inner_smul_left, inner_smul_right, ← inner_conj_symm x u]
+      simp [mul_comm]
+    exact h.symm
+  have hidem : IsIdempotentElem (ketbra x x) := by
+    ext z
+    simp only [ContinuousLinearMap.mul_apply, hkb, inner_smul_right, hxx, mul_one]
+  have hproj : IsStarProjection (ketbra x x) := ⟨hidem, hsa⟩
+  refine carrier_eq ω.toPositiveLinearMap ω.preservesDirSups' hproj ?_ ?_
+  · have h : (ω (1 - ketbra x x) : ℂ) = 0 := by
+      rw [hω]
+      simp only [ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply, hkb,
+        inner_sub_right, inner_smul_right, hxx, mul_one, sub_self]
+    exact h
+  · intro q hq hq0
+    have h0 : ⟪x, ((1 : H →L[ℂ] H) - q) x⟫ = 0 := by
+      rw [← hω]; exact hq0
+    have hadj : ContinuousLinearMap.adjoint ((1 : H →L[ℂ] H) - q) = (1 : H →L[ℂ] H) - q :=
+      hq.one_sub.isSelfAdjoint
+    have h1 : ⟪((1 : H →L[ℂ] H) - q) x, ((1 : H →L[ℂ] H) - q) x⟫ = 0 := by
+      have hstep := ContinuousLinearMap.adjoint_inner_right
+        ((1 : H →L[ℂ] H) - q) x (((1 : H →L[ℂ] H) - q) x)
+      rw [hadj] at hstep
+      rw [← hstep, show ((1 : H →L[ℂ] H) - q) (((1 : H →L[ℂ] H) - q) x)
+        = (((1 : H →L[ℂ] H) - q) * ((1 : H →L[ℂ] H) - q)) x from rfl,
+        hq.one_sub.isIdempotentElem.eq]
+      exact h0
+    have hzx : ((1 : H →L[ℂ] H) - q) x = 0 := inner_self_eq_zero.mp h1
+    have hqx : q x = x := by
+      rw [ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply, sub_eq_zero] at hzx
+      exact hzx.symm
+    refine ((projection_below_effect q _ ⟨hq.nonneg, hq.le_one⟩ hproj).out 0 6).mpr ?_
+    ext z
+    simp only [ContinuousLinearMap.mul_apply, hkb, map_smul, hqx]
 
 end Functionals
 
@@ -2547,8 +2809,56 @@ variable [VonNeumannAlgebra A] [VonNeumannAlgebra B]
 theorem carrier_fundamental (f : A →ₚ[ℂ] B) (hf : PreservesDirSups ⇑f)
     (a : A) :
     f a = f (carrier f hf * a) ∧ f a = f (a * carrier f hf) ∧
-      f a = f (carrier f hf * a * carrier f hf) :=
-  sorry
+      f a = f (carrier f hf * a * carrier f hf) := by
+  -- **63IV**'s argument run through the np-functionals of `B` (which are
+  -- separating), rather than through the states of `B`: for an np-functional
+  -- `ω` on `B` the composite `g = ω ∘ f` kills `p^⊥ = 1 - ⌈f⌉`, hence
+  -- `|g(p^⊥x)|² ≤ g((p^⊥)²)·g(x*x) = 0` by Kadison's inequality.
+  set p : A := carrier f hf with hpdef
+  have hpproj : IsStarProjection p := (carrier_spec f hf).1
+  have hf0 : f (1 - p) = 0 := (carrier_spec f hf).2.1
+  have hosa : star ((1 : A) - p) = 1 - p := hpproj.one_sub.isSelfAdjoint.star_eq
+  have hoo : ((1 : A) - p) * (1 - p) = 1 - p := hpproj.one_sub.isIdempotentElem.eq
+  -- for every np-functional `ω` on `B`, `ω(f(p^⊥ x)) = 0 = ω(f(x p^⊥))`
+  have hzero : ∀ (g : NPFunctional A) (y : A),
+      ((‖g y‖ : ℂ)) ^ 2 ≤ 0 → g y = 0 := by
+    intro g y hcs
+    have hle : ((‖g y‖ ^ 2 : ℝ) : ℂ) ≤ 0 := by push_cast; exact hcs
+    have h2 : (‖g y‖ : ℝ) ^ 2 ≤ 0 := by
+      exact_mod_cast Complex.real_le_real.mp (by simpa using hle)
+    have hnn : (0 : ℝ) ≤ ‖g y‖ := norm_nonneg _
+    have : ‖g y‖ = 0 := by nlinarith
+    exact norm_eq_zero.mp this
+  have hgp : ∀ ω : NPFunctional B,
+      (compNP f hf ω) (star ((1 : A) - p) * (1 - p)) = 0 := by
+    intro ω
+    rw [hosa, hoo]
+    show ω (f (1 - p)) = 0
+    rw [hf0]
+    exact map_zero ω.toPositiveLinearMap
+  have hleft : ∀ (ω : NPFunctional B) (x : A), ω (f (((1 : A) - p) * x)) = 0 := by
+    intro ω x
+    have hcs := npFunctional_cauchy_schwarz (compNP f hf ω) ((1 : A) - p) x
+    rw [hgp ω, zero_mul, hosa] at hcs
+    exact hzero (compNP f hf ω) _ hcs
+  have hright : ∀ (ω : NPFunctional B) (x : A), ω (f (x * ((1 : A) - p))) = 0 := by
+    intro ω x
+    have hcs := npFunctional_cauchy_schwarz (compNP f hf ω) (star x) ((1 : A) - p)
+    rw [hgp ω, mul_zero, star_star] at hcs
+    exact hzero (compNP f hf ω) _ hcs
+  have hL : ∀ x : A, (f x : B) = f (p * x) := by
+    intro x
+    refine sub_eq_zero.mp (np_separating _ fun ω => ?_)
+    have h := hleft ω x
+    rw [sub_mul, one_mul, map_sub] at h
+    exact h
+  have hR : ∀ x : A, (f x : B) = f (x * p) := by
+    intro x
+    refine sub_eq_zero.mp (np_separating _ fun ω => ?_)
+    have h := hright ω x
+    rw [mul_sub, mul_one, map_sub] at h
+    exact h
+  exact ⟨hL a, hR a, by rw [← hR (p * a), ← hL a]⟩
 
 /-! ## Parsec 640 -/
 
@@ -2736,26 +3046,148 @@ theorem central_projections_sums_2 {ι : Type*} (c : ι → A)
 
 /-! ## Parsec 680: central support -/
 
+/-- **68I** (`cceil-fundamental`, vn.tex:3437, Proposition), the content: for
+a projection `e` of a von Neumann algebra, `⋃_{a∈A} ⌈a* e a⌉` is the least
+central projection above `e`.  This is the author's proof: centrality comes
+from `⌈ce b⌋ = ⌈b* c b⌉ = ⋃_a ⌈b* ⌈a* e a⌉ b⌉ = ⋃_a ⌈(ab)* e (ab)⌉ ≤ c`
+(**60IX**.2 and **60VII**.1), and minimality from `e ≤ q ⟹ eaq = eqa = ea`. -/
+private theorem isLeast_centralAbove {e : A} (he : IsStarProjection e) :
+    IsLeast {p : A | IsStarProjection p ∧ IsCentral A p ∧ e ≤ p}
+      (projSup {x : A | ∃ a : A, x = ceil (star a * e * a)}) := by
+  classical
+  set S : Set A := {x : A | ∃ a : A, x = ceil (star a * e * a)} with hSdef
+  have hSnn : ∀ a : A, (0 : A) ≤ star a * e * a := fun a =>
+    star_left_conjugate_nonneg he.nonneg a
+  have hSproj : ∀ x ∈ S, IsStarProjection x := by
+    rintro _ ⟨a, rfl⟩
+    exact (ceil_spec (hSnn a)).1
+  obtain ⟨hcproj, hcub, hcleast⟩ := projSup_spec hSproj
+  set c : A := projSup S with hcdef
+  have hec : e ≤ c :=
+    hcub e ⟨1, by rw [star_one, one_mul, mul_one, ceil_of_isStarProjection he]⟩
+  -- the key step: `⌈cb⌋ ≤ c`, i.e. `cbc = cb`
+  have hkey : ∀ b : A, c * b * c = c * b := by
+    intro b
+    have e1 : star (c * b) * (c * b) = star b * c * b := by
+      rw [star_mul, hcproj.isSelfAdjoint.star_eq]
+      calc star b * c * (c * b) = star b * (c * c) * b := by noncomm_ring
+        _ = star b * c * b := by rw [hcproj.isIdempotentElem.eq]
+    have h2 := ncp_union_2 (conjPMap b) (conjPMap_preservesDirSups b) S hSproj
+    have himgproj : ∀ x ∈ ((fun p => ceil ((conjPMap b) p)) '' S),
+        IsStarProjection x := by
+      rintro _ ⟨p, hp, rfl⟩
+      exact (ceil_spec (star_left_conjugate_nonneg (hSproj p hp).nonneg b)).1
+    have himgS : ∀ x ∈ ((fun p => ceil ((conjPMap b) p)) '' S), x ∈ S := by
+      rintro _ ⟨_, ⟨a, rfl⟩, rfl⟩
+      refine ⟨a * b, ?_⟩
+      show ceil (star b * ceil (star a * e * a) * b) = ceil (star (a * b) * e * (a * b))
+      rw [← ceil_fundamental_1 b (star a * e * a) (hSnn a), star_mul]
+      congr 1
+      noncomm_ring
+    have h3 : suppProj (c * b) ≤ c := by
+      rw [suppProj, e1]
+      refine le_of_eq_of_le (?_ : ceil (star b * c * b) = _)
+        ((projSup_spec himgproj).2.2 c hcproj fun x hx => hcub x (himgS x hx))
+      exact h2
+    exact mul_eq_of_suppProj_le hcproj h3
+  refine ⟨⟨hcproj, fun b => ?_, hec⟩, ?_⟩
+  · -- `bc = cbc = cb`
+    have h4 : c * b * c = b * c := by
+      have h := congrArg star (hkey (star b))
+      simp only [star_mul, star_star, hcproj.isSelfAdjoint.star_eq] at h
+      rw [← mul_assoc] at h
+      exact h
+    rw [← hkey b, h4]
+  · rintro q ⟨hq, hqc, heq⟩
+    refine hcleast q hq ?_
+    rintro _ ⟨a, rfl⟩
+    refine (ceil_le_iff (hSnn a) hq).mpr ?_
+    have heq' : e * q = e := proj_mul_of_le he hq heq
+    calc star a * e * a * q = star a * e * (a * q) := by noncomm_ring
+      _ = star a * e * (q * a) := by rw [hqc a]
+      _ = star a * (e * q) * a := by noncomm_ring
+      _ = star a * e * a := by rw [heq']
+
 /-- **68III** (`central support`, vn.tex:3472, Definition),
 well-definedness: every element `a` of a von Neumann algebra has a least
 central projection `p` with `pa = a`. -/
 theorem exists_cceil (a : A) :
     ∃! p : A, IsStarProjection p ∧ IsCentral A p ∧ p * a = a ∧
-      ∀ q : A, IsStarProjection q → IsCentral A q → q * a = a → p ≤ q :=
-  sorry
+      ∀ q : A, IsStarProjection q → IsCentral A q → q * a = a → p ≤ q := by
+  -- take the least central projection above `⌊a⌉` (**68I**); it absorbs `a`
+  -- because `⌊a⌉a = a`, and a central projection `q` with `qa = a` dominates
+  -- `⌊a⌉ = ⌈aa*⌉` because `q(aa*) = aa*`
+  obtain ⟨hrproj, hra⟩ := (ceill_basic_2 a).1
+  obtain ⟨⟨hcproj, hccentral, hrc⟩, hcleast⟩ := isLeast_centralAbove hrproj
+  set c : A := projSup {x : A | ∃ b : A, x = ceil (star b * rangeProj a * b)} with hcdef
+  have hcr : c * rangeProj a = rangeProj a := by
+    have h := congrArg star (proj_mul_of_le hrproj hcproj hrc)
+    rwa [star_mul, hrproj.isSelfAdjoint.star_eq, hcproj.isSelfAdjoint.star_eq] at h
+  have hca : c * a = a := by
+    calc c * a = c * (rangeProj a * a) := by rw [hra]
+      _ = c * rangeProj a * a := by noncomm_ring
+      _ = rangeProj a * a := by rw [hcr]
+      _ = a := hra
+  have hleast : ∀ q : A, IsStarProjection q → IsCentral A q → q * a = a → c ≤ q := by
+    intro q hq hqc hqa
+    refine hcleast ⟨hq, hqc, ?_⟩
+    have hnn : (0 : A) ≤ a * star a := by
+      have h := star_mul_self_nonneg (star a)
+      rwa [star_star] at h
+    refine (ceil_le_iff hnn hq).mpr ?_
+    calc a * star a * q = q * (a * star a) := (hqc _).symm
+      _ = q * a * star a := by noncomm_ring
+      _ = a * star a := by rw [hqa]
+  refine ⟨c, ⟨hcproj, hccentral, hca, hleast⟩, ?_⟩
+  rintro p ⟨hp, hpc, hpa, hpleast⟩
+  exact le_antisymm (hpleast c hcproj hccentral hca) (hleast p hp hpc hpa)
 
 /-- **68III** (`central support`, vn.tex:3472, Definition): the **central
 support** `⌈⌈a⌉⌉` of `a`: the least central projection `p` with
 `pa = a`. -/
 noncomputable def cceil (a : A) : A := (exists_cceil a).choose
 
+/-- The defining property of `⌈⌈a⌉⌉`: it is the least central projection `p`
+with `pa = a`. -/
+theorem cceil_isLeast (a : A) :
+    IsLeast {p : A | IsStarProjection p ∧ IsCentral A p ∧ p * a = a} (cceil a) := by
+  obtain ⟨h1, h2, h3, h4⟩ := (exists_cceil a).choose_spec.1
+  exact ⟨⟨h1, h2, h3⟩, fun q hq => h4 q hq.1 hq.2.1 hq.2.2⟩
+
+/-- Auxiliary: for projections, `e ≤ p` iff `pe = e`. -/
+private theorem proj_le_iff_mul_left {e p : A} (he : IsStarProjection e)
+    (hp : IsStarProjection p) : e ≤ p ↔ p * e = e :=
+  (projection_below_effect p e ⟨hp.nonneg, hp.le_one⟩ he).out 0 6
+
+/-- Auxiliary: for projections, `e ≤ p` iff `ep = e`. -/
+private theorem proj_le_iff_mul_right {e p : A} (he : IsStarProjection e)
+    (hp : IsStarProjection p) : e ≤ p ↔ e * p = e :=
+  (projection_below_effect p e ⟨hp.nonneg, hp.le_one⟩ he).out 0 7
+
+/-- Auxiliary: two elements absorbed by the same central projections have the
+same central support. -/
+private theorem cceil_congr {x y : A}
+    (h : ∀ p : A, IsStarProjection p → IsCentral A p → (p * x = x ↔ p * y = y)) :
+    cceil x = cceil y := by
+  obtain ⟨⟨h1, h2, h3⟩, h4⟩ := cceil_isLeast y
+  exact (cceil_isLeast x).unique
+    ⟨⟨h1, h2, (h _ h1 h2).mpr h3⟩,
+      fun q hq => h4 ⟨hq.1, hq.2.1, (h _ hq.1 hq.2.1).mp hq.2.2⟩⟩
+
 /-- **68I** (`cceil-fundamental`, vn.tex:3437, Proposition): for a
 projection `e`, `⌈⌈e⌉⌉ = ⋃_{a∈A} ⌈a* e a⌉` is the least central projection
 above `e`. -/
 theorem cceil_fundamental (e : A) (he : IsStarProjection e) :
     IsLeast {p : A | IsStarProjection p ∧ IsCentral A p ∧ e ≤ p} (cceil e) ∧
-      cceil e = projSup {x : A | ∃ a : A, x = ceil (star a * e * a)} :=
-  sorry
+      cceil e = projSup {x : A | ∃ a : A, x = ceil (star a * e * a)} := by
+  have hset : {p : A | IsStarProjection p ∧ IsCentral A p ∧ e ≤ p}
+      = {p : A | IsStarProjection p ∧ IsCentral A p ∧ p * e = e} := by
+    ext p
+    exact ⟨fun h => ⟨h.1, h.2.1, (proj_le_iff_mul_left he h.1).mp h.2.2⟩,
+      fun h => ⟨h.1, h.2.1, (proj_le_iff_mul_left he h.1).mpr h.2.2⟩⟩
+  have h1 : IsLeast {p : A | IsStarProjection p ∧ IsCentral A p ∧ e ≤ p} (cceil e) := by
+    rw [hset]; exact cceil_isLeast e
+  exact ⟨h1, h1.unique (isLeast_centralAbove he)⟩
 
 /-- **68III** (`central support`, vn.tex:3472, Definition), embedded claims:
 `⌈⌈a⌉⌉ = ⌈⌈⌈a⌋⌉⌉ = ⌈⌈⌊a⌉⌉⌉`, and for a central projection `c`:
@@ -2763,15 +3195,94 @@ theorem cceil_fundamental (e : A) (he : IsStarProjection e) :
 theorem cceil_eq_cceil_supp (a : A) :
     cceil a = cceil (suppProj a) ∧ cceil a = cceil (rangeProj a) ∧
       ∀ c : A, IsStarProjection c → IsCentral A c →
-        ((cceil a ≤ c ↔ a * c = a) ∧ (cceil a ≤ c ↔ c * a = a)) :=
-  sorry
+        ((cceil a ≤ c ↔ a * c = a) ∧ (cceil a ≤ c ↔ c * a = a)) := by
+  -- For a central projection `p`, `pa = a` iff `⌈a⌋ ≤ p` iff `⌊a⌉ ≤ p`; the
+  -- three claims all follow from this one equivalence.
+  have hssnn : (0 : A) ≤ star a * a := star_mul_self_nonneg a
+  have hrrnn : (0 : A) ≤ a * star a := by
+    have h := star_mul_self_nonneg (star a)
+    rwa [star_star] at h
+  obtain ⟨hsproj, hsa⟩ := (ceill_basic_1 a).1
+  obtain ⟨hrproj, hra⟩ := (ceill_basic_2 a).1
+  have hsupp : ∀ p : A, IsStarProjection p → IsCentral A p →
+      (p * a = a ↔ p * suppProj a = suppProj a) := by
+    intro p hp hpc
+    constructor
+    · intro h
+      refine (proj_le_iff_mul_left hsproj hp).mp ((ceil_le_iff hssnn hp).mpr ?_)
+      calc star a * a * p = star a * (a * p) := by noncomm_ring
+        _ = star a * (p * a) := by rw [hpc a]
+        _ = star a * a := by rw [h]
+    · intro h
+      have hle : suppProj a ≤ p := (proj_le_iff_mul_left hsproj hp).mpr h
+      rw [hpc a]
+      exact mul_eq_of_suppProj_le hp hle
+  have hrange : ∀ p : A, IsStarProjection p → IsCentral A p →
+      (p * a = a ↔ p * rangeProj a = rangeProj a) := by
+    intro p hp hpc
+    constructor
+    · intro h
+      refine (proj_le_iff_mul_left hrproj hp).mp
+        ((ceil_le_iff hrrnn hp).mpr ?_)
+      calc a * star a * p = p * (a * star a) := (hpc _).symm
+        _ = p * a * star a := by noncomm_ring
+        _ = a * star a := by rw [h]
+    · intro h
+      calc p * a = p * (rangeProj a * a) := by rw [hra]
+        _ = p * rangeProj a * a := by noncomm_ring
+        _ = rangeProj a * a := by rw [h]
+        _ = a := hra
+  refine ⟨cceil_congr hsupp, cceil_congr hrange, fun c hc hcentral => ?_⟩
+  have hkey : cceil a ≤ c ↔ c * a = a := by
+    constructor
+    · intro h
+      calc c * a = c * (cceil a * a) := by rw [(cceil_isLeast a).1.2.2]
+        _ = c * cceil a * a := by noncomm_ring
+        _ = cceil a * a := by rw [(proj_le_iff_mul_left (cceil_isLeast a).1.1 hc).mp h]
+        _ = a := (cceil_isLeast a).1.2.2
+    · exact fun h => (cceil_isLeast a).2 ⟨hc, hcentral, h⟩
+  exact ⟨by rw [hkey, hcentral a], hkey⟩
 
 /-- **68IV** (`cceil-basic`, vn.tex:3490, Exercise), part 1:
 `⌈⌈a⌉⌉ = ⌈⌈a*⌉⌉ = ⌈⌈a*a⌉⌉ = ⌈⌈aa*⌉⌉`. -/
 theorem cceil_basic_1 (a : A) :
     cceil a = cceil (star a) ∧ cceil a = cceil (star a * a) ∧
-      cceil a = cceil (a * star a) :=
-  sorry
+      cceil a = cceil (a * star a) := by
+  have hssnn : (0 : A) ≤ star a * a := star_mul_self_nonneg a
+  have hrrnn : (0 : A) ≤ a * star a := by
+    have h := star_mul_self_nonneg (star a)
+    rwa [star_star] at h
+  obtain ⟨hsproj, hsa⟩ := (ceill_basic_1 a).1
+  obtain ⟨hrproj, hra⟩ := (ceill_basic_2 a).1
+  refine ⟨cceil_congr ?_, cceil_congr ?_, cceil_congr ?_⟩
+  · intro p hp hpc
+    constructor <;> intro h
+    · have h' := congrArg star h
+      rwa [star_mul, hp.isSelfAdjoint.star_eq, ← hpc (star a)] at h'
+    · have h' := congrArg star h
+      rw [star_mul, star_star, hp.isSelfAdjoint.star_eq] at h'
+      rw [hpc a]
+      exact h'
+  · intro p hp hpc
+    constructor <;> intro h
+    · calc p * (star a * a) = p * star a * a := by noncomm_ring
+        _ = star a * p * a := by rw [hpc (star a)]
+        _ = star a * (p * a) := by noncomm_ring
+        _ = star a * a := by rw [h]
+    · have hle : suppProj a ≤ p :=
+        (ceil_le_iff hssnn hp).mpr (by rw [← hpc (star a * a)]; exact h)
+      rw [hpc a]
+      exact mul_eq_of_suppProj_le hp hle
+  · intro p hp hpc
+    constructor <;> intro h
+    · calc p * (a * star a) = p * a * star a := by noncomm_ring
+        _ = a * star a := by rw [h]
+    · have hle : rangeProj a ≤ p :=
+        (ceil_le_iff hrrnn hp).mpr (by rw [← hpc (a * star a)]; exact h)
+      calc p * a = p * (rangeProj a * a) := by rw [hra]
+        _ = p * rangeProj a * a := by noncomm_ring
+        _ = rangeProj a * a := by rw [(proj_le_iff_mul_left hrproj hp).mp hle]
+        _ = a := hra
 
 /-- **68IV** (`cceil-basic`, vn.tex:3490, Exercise), part 2:
 `⌈⌈⋁D⌉⌉ = ⋃_{d∈D} ⌈⌈d⌉⌉` for bounded directed `D`;
@@ -2793,8 +3304,88 @@ theorem cceil_basic_3 (a b c : A) (hc : IsStarProjection c)
     (hcentral : IsCentral A c) :
     cceil a * c = cceil (a * c) ∧
       cceil a * cceil b = cceil (a * cceil b) ∧
-      cceil a * cceil b = projInf {cceil a, cceil b} :=
-  sorry
+      cceil a * cceil b = projInf {cceil a, cceil b} := by
+  -- `⌈⌈x⌉⌉y` is the least central projection absorbing `xy`: for a central
+  -- projection `q` with `q(xy) = xy`, the central projection `1 - y(1-q)`
+  -- absorbs `x`, hence dominates `⌈⌈x⌉⌉`, which gives `⌈⌈x⌉⌉y(1-q) = 0`.
+  have key : ∀ x y : A, IsStarProjection y → IsCentral A y →
+      cceil x * y = cceil (x * y) := by
+    intro x y hy hyc
+    obtain ⟨⟨hpproj, hpc, hpx⟩, hpleast⟩ := cceil_isLeast x
+    have hprod : IsStarProjection (cceil x * y) := hpproj.mul hy (hyc (cceil x)).symm
+    have hprodc : IsCentral A (cceil x * y) := by
+      intro z
+      calc cceil x * y * z = cceil x * (y * z) := by noncomm_ring
+        _ = cceil x * (z * y) := by rw [hyc z]
+        _ = cceil x * z * y := by noncomm_ring
+        _ = z * cceil x * y := by rw [hpc z]
+        _ = z * (cceil x * y) := by noncomm_ring
+    have hIL : IsLeast {p : A | IsStarProjection p ∧ IsCentral A p ∧ p * (x * y) = x * y}
+        (cceil x * y) := by
+      refine ⟨⟨hprod, hprodc, ?_⟩, ?_⟩
+      · calc cceil x * y * (x * y) = cceil x * (y * x) * y := by noncomm_ring
+          _ = cceil x * (x * y) * y := by rw [hyc x]
+          _ = cceil x * x * (y * y) := by noncomm_ring
+          _ = x * y := by rw [hpx, hy.isIdempotentElem.eq]
+      · rintro q ⟨hq, hqc, hqxy⟩
+        set t : A := y * (1 - q) with htdef
+        have hcomm : Commute y ((1 : A) - q) :=
+          show y * (1 - q) = (1 - q) * y by
+            rw [mul_sub, sub_mul, mul_one, one_mul, hqc y]
+        have htproj : IsStarProjection t := hy.mul hq.one_sub hcomm
+        have htc : IsCentral A t := by
+          intro z
+          calc y * (1 - q) * z = y * ((1 - q) * z) := by noncomm_ring
+            _ = y * (z * (1 - q)) := by
+                rw [show ((1 : A) - q) * z = z * (1 - q) by
+                  rw [sub_mul, mul_sub, one_mul, mul_one, hqc z]]
+            _ = y * z * (1 - q) := by noncomm_ring
+            _ = z * y * (1 - q) := by rw [hyc z]
+            _ = z * (y * (1 - q)) := by noncomm_ring
+        have htx : t * x = 0 := by
+          have h1 : y * q * x = x * y := by
+            rw [hyc q, mul_assoc, hyc x, hqxy]
+          calc y * (1 - q) * x = y * x - y * q * x := by noncomm_ring
+            _ = x * y - x * y := by rw [hyc x, h1]
+            _ = 0 := sub_self _
+        have hrx : ((1 : A) - t) * x = x := by rw [sub_mul, one_mul, htx, sub_zero]
+        have hle : cceil x ≤ 1 - t := hpleast ⟨htproj.one_sub, by
+          intro z
+          have h := htc z
+          rw [sub_mul, mul_sub, one_mul, mul_one, h], hrx⟩
+        have hzero : cceil x * t = 0 := by
+          have h := (proj_le_iff_mul_right hpproj htproj.one_sub).mp hle
+          rw [mul_sub, mul_one] at h
+          exact sub_eq_self.mp h
+        refine (proj_le_iff_mul_right hprod hq).mpr ?_
+        have h2 : cceil x * y * (1 - q) = 0 := by
+          rw [mul_assoc]; exact hzero
+        rw [mul_sub, mul_one, sub_eq_zero] at h2
+        exact h2.symm
+    exact hIL.unique (cceil_isLeast (x * y))
+  refine ⟨key a c hc hcentral,
+    key a (cceil b) (cceil_isLeast b).1.1 (cceil_isLeast b).1.2.1, ?_⟩
+  have hpa := (cceil_isLeast a).1
+  have hpb := (cceil_isLeast b).1
+  have hprod : IsStarProjection (cceil a * cceil b) :=
+    hpa.1.mul hpb.1 (hpb.2.1 (cceil a)).symm
+  refine (projInf_eq ?_ hprod ?_ ?_).symm
+  · rintro p (rfl | rfl)
+    exacts [hpa.1, hpb.1]
+  · rintro p (rfl | rfl)
+    · refine (proj_le_iff_mul_right hprod hpa.1).mpr ?_
+      calc cceil a * cceil b * cceil a = cceil a * (cceil b * cceil a) := by noncomm_ring
+        _ = cceil a * (cceil a * cceil b) := by rw [hpb.2.1 (cceil a)]
+        _ = cceil a * cceil a * cceil b := by noncomm_ring
+        _ = cceil a * cceil b := by rw [hpa.1.isIdempotentElem.eq]
+    · refine (proj_le_iff_mul_right hprod hpb.1).mpr ?_
+      calc cceil a * cceil b * cceil b = cceil a * (cceil b * cceil b) := by noncomm_ring
+        _ = cceil a * cceil b := by rw [hpb.1.isIdempotentElem.eq]
+  · intro q hq hle
+    refine (proj_le_iff_mul_left hq hprod).mpr ?_
+    calc cceil a * cceil b * q = cceil a * (cceil b * q) := by noncomm_ring
+      _ = cceil a * q := by rw [(proj_le_iff_mul_left hq hpb.1).mp (hle _ (by right; rfl))]
+      _ = q := (proj_le_iff_mul_left hq hpa.1).mp (hle _ (by left; rfl))
 
 /-! ## Parsec 690: central carrier -/
 
@@ -2810,8 +3401,37 @@ a central *effect* `c`: `f(c^⊥) = 0` iff `⌈f⌉ ≤ c` iff `⌈⌈f⌉⌉ �
 theorem cceilMap_least (f : A →ₚ[ℂ] B) (hf : PreservesDirSups ⇑f) (c : A)
     (hc : c ∈ effects A) (hcentral : IsCentral A c) :
     (f (1 - c) = 0 ↔ carrier f hf ≤ c) ∧
-      (carrier f hf ≤ c ↔ cceilMap f hf ≤ c) :=
-  sorry
+      (carrier f hf ≤ c ↔ cceilMap f hf ≤ c) := by
+  -- everything goes through `⌊c⌋ = ⌈c^⊥⌉^⊥`, the greatest projection below
+  -- `c`, which is central because `c` is
+  have hcompl : (1 : A) - c ∈ effects A := effect_orthosupplement c hc
+  have hceilproj : IsStarProjection (ceil (1 - c)) := (ceil_spec hcompl.1).1
+  have hfloor : floor c = 1 - ceil (1 - c) := floor_eq_one_sub_ceil hc
+  have hfloorproj : IsStarProjection (floor c) := (floor_spec hc).1
+  have hcarrier := carrier_spec f hf
+  have hfc : IsCentral A (floor c) := by
+    intro b
+    have hb : b * ((1 : A) - c) = (1 - c) * b := by
+      rw [mul_sub, sub_mul, mul_one, one_mul, hcentral b]
+    have hcomm := ceil_basic_2 (1 - c) b hcompl.1 hb
+    rw [hfloor, sub_mul, mul_sub, one_mul, mul_one, hcomm]
+  refine ⟨⟨fun h => ?_, fun h =>
+    map_ortho_eq_zero_of_carrier_le f hf hcompl.1 (sub_le_sub_left h 1)⟩,
+    ⟨fun h => ?_, fun h => ?_⟩⟩
+  · have h1 : ceil (f (ceil (1 - c))) = 0 := by
+      rw [← ncp_ceil f hf _ hcompl.1, h, ceil_zero]
+    have h2 : (f (ceil (1 - c)) : B) = 0 :=
+      (ceil_basic_3 _ (pmap_nonneg f hceilproj.nonneg)).mpr h1
+    refine le_trans ?_ (floor_le hc)
+    rw [hfloor]
+    exact hcarrier.2.2 _ hceilproj.one_sub (by rwa [sub_sub_cancel])
+  · have hle : carrier f hf ≤ floor c := (floor_isGreatest hc).2 ⟨hcarrier.1, h⟩
+    refine le_trans ?_ (floor_le hc)
+    exact (cceil_isLeast (carrier f hf)).2
+      ⟨hfloorproj, hfc, (proj_le_iff_mul_left hcarrier.1 hfloorproj).mp hle⟩
+  · exact le_trans ((proj_le_iff_mul_left hcarrier.1
+      (cceil_isLeast (carrier f hf)).1.1).mpr
+      (cceil_isLeast (carrier f hf)).1.2.2) h
 
 /-- **69II** (`prop:weakly-closed-ideal`, vn.tex:3539, Proposition): every
 two-sided ideal `D` of a von Neumann algebra that is closed under bounded
@@ -2835,8 +3455,54 @@ taken through any positive-map avatar `g` of `f`.) -/
 theorem carrier_miu (f : NMIUMap A B) (g : A →ₚ[ℂ] B)
     (hg : PreservesDirSups ⇑g) (heq : ∀ a, g a = f a) :
     IsCentral A (carrier g hg) ∧
-      ∀ a : A, f a = 0 ↔ carrier g hg * a = 0 :=
-  sorry
+      ∀ a : A, f a = 0 ↔ carrier g hg * a = 0 := by
+  -- `e = ⌈f⌉^⊥` absorbs the kernel of `f` on the right (`f(x) = 0` forces
+  -- `g(⌈x⌋) = 0` by **60V**, so `⌈x⌋ ≤ e`); applied to `x = eb` this gives
+  -- `ebe = eb`, and applied to `x = eb*` (after taking adjoints) `ebe = be`
+  have hmul : ∀ x y : A, (f (x * y) : B) = f x * f y := fun x y => map_mul f.toStarAlgHom x y
+  have hstar : ∀ x : A, (f (star x) : B) = star (f x) := fun x => map_star f.toStarAlgHom x
+  set p : A := carrier g hg with hpdef
+  have hpproj : IsStarProjection p := (carrier_spec g hg).1
+  have heproj : IsStarProjection ((1 : A) - p) := hpproj.one_sub
+  have hkey : ∀ x : A, (f x : B) = 0 → x * ((1 : A) - p) = x := by
+    intro x hx
+    have h1 : (g (star x * x) : B) = 0 := by
+      rw [heq, hmul, hx, mul_zero]
+    have h2 : ceil (g (suppProj x)) = 0 := by
+      rw [suppProj, ← ncp_ceil g hg _ (star_mul_self_nonneg x), h1, ceil_zero]
+    have h3 : (g (suppProj x) : B) = 0 :=
+      (ceil_basic_3 _ (pmap_nonneg g (ceill_basic_1 x).1.1.nonneg)).mpr h2
+    have h4 : p ≤ 1 - suppProj x :=
+      (carrier_spec g hg).2.2 _ (ceill_basic_1 x).1.1.one_sub (by rwa [sub_sub_cancel])
+    exact mul_eq_of_suppProj_le heproj (le_sub_comm.mp h4)
+  have hfe : (f ((1 : A) - p) : B) = 0 := by rw [← heq]; exact (carrier_spec g hg).2.1
+  have hebe : ∀ b : A, ((1 : A) - p) * b * (1 - p) = (1 - p) * b := by
+    intro b
+    refine hkey (((1 : A) - p) * b) ?_
+    rw [hmul, hfe, zero_mul]
+  have hcentral : IsCentral A ((1 : A) - p) := by
+    intro b
+    have h := congrArg star (hebe (star b))
+    simp only [star_mul, star_star, heproj.isSelfAdjoint.star_eq] at h
+    calc ((1 : A) - p) * b = (1 - p) * b * (1 - p) := (hebe b).symm
+      _ = (1 - p) * (b * (1 - p)) := by noncomm_ring
+      _ = b * (1 - p) := h
+  have hpcentral : IsCentral A p := by
+    intro b
+    have h := hcentral b
+    rw [sub_mul, mul_sub, one_mul, mul_one] at h
+    exact sub_right_inj.mp h
+  refine ⟨hpcentral, fun a => ?_⟩
+  · constructor
+    · intro ha
+      have hae : a * ((1 : A) - p) = a := hkey a ha
+      rw [mul_sub, mul_one, sub_eq_self] at hae
+      rw [hpcentral a, hae]
+    · intro ha
+      have hea : ((1 : A) - p) * a = a := by rw [sub_mul, one_mul, ha, sub_zero]
+      calc (f a : B) = f (((1 : A) - p) * a) := by rw [hea]
+        _ = f ((1 : A) - p) * f a := hmul _ _
+        _ = 0 := by rw [hfe, zero_mul]
 
 /-- **69IVa** (`nmiu-factors`, vn.tex:3619, Exercise): an nmiu-map
 `f : A → B` factors through the corner `⌈⌈f⌉⌉A` as an nmiu-surjection
@@ -2845,8 +3511,23 @@ theorem carrier_miu (f : NMIUMap A B) (g : A →ₚ[ℂ] B)
 theorem nmiu_factors (f : NMIUMap A B) (g : A →ₚ[ℂ] B)
     (hg : PreservesDirSups ⇑g) (heq : ∀ a, g a = f a) (a b : A) :
     f a = f (carrier g hg * a) ∧
-      (f a = f b ↔ carrier g hg * a = carrier g hg * b) :=
-  sorry
+      (f a = f b ↔ carrier g hg * a = carrier g hg * b) := by
+  -- `f(a) = f(⌈f⌉a)` is **63VI**; the second claim is **69IV** applied to
+  -- `a - b`
+  have hker := (carrier_miu f g hg heq).2
+  have hsub : ∀ x y : A, (f (x - y) : B) = f x - f y := fun x y =>
+    map_sub f.toStarAlgHom x y
+  refine ⟨by rw [← heq, ← heq]; exact (carrier_fundamental g hg a).1, ?_, ?_⟩
+  · intro h
+    have h0 : (f (a - b) : B) = 0 := by rw [hsub]; exact sub_eq_zero.mpr h
+    have h1 := (hker (a - b)).mp h0
+    rw [mul_sub, sub_eq_zero] at h1
+    exact h1
+  · intro h
+    have h0 : carrier g hg * (a - b) = 0 := by rw [mul_sub, h, sub_self]
+    have h1 := (hker (a - b)).mpr h0
+    rw [hsub, sub_eq_zero] at h1
+    exact h1
 
 /-- **69IVb** (`nmiu-image`, vn.tex:3637): the image of an nmiu-map
 `f : A → B` between von Neumann algebras is a von Neumann subalgebra of
