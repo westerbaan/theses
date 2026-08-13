@@ -29,7 +29,146 @@ universe u v w
 
 namespace Theses.B.Dils
 
-/-! ## The C*-algebra `𝒷ᵃ(X)` as a type -/
+/-! ## The C*-algebra `𝒷ᵃ(X)` as a type
+
+The C*-structure of **143IV** (`hilbmod-cstar`, dils.tex:1580) is assembled
+here from thesis A's cstar.tex 32X/32XII/32XIII (`chilb_form_bounded`,
+`module_maps_cstar_identity`, `bax_cstar`, all proved in
+`Theses.A.CStar.Matrices`): the adjointable bounded operators form a
+ℂ-subalgebra of `B(X)` which is closed (32XIII), the adjoint is an
+involutive conjugate-linear anti-automorphism (32III), and the C*-identity
+is 32XII. -/
+
+section BaConstruction
+
+variable {𝒷 : Type u} {X : Type v}
+  [CStarAlgebra 𝒷] [PartialOrder 𝒷] [StarOrderedRing 𝒷]
+  [NormedAddCommGroup X] [NormedSpace ℂ X] [SMul 𝒷 X] [CStarModule 𝒷 X]
+
+/-- Definiteness of the 𝒷-valued inner product, in the second argument.
+(A copy of the `private` `Theses.A.CStar.eq_of_inner_right_eq`.) -/
+private theorem eq_of_binner_right {a b : X}
+    (h : ∀ x : X, inner 𝒷 x a = inner 𝒷 x b) : a = b := by
+  have h0 : inner 𝒷 (a - b) (a - b) = (0 : 𝒷) := by
+    rw [CStarModule.inner_sub_right, h (a - b), sub_self]
+  exact sub_eq_zero.mp (CStarModule.inner_self.mp h0)
+
+/-- A map adjoint to a bounded module map is automatically linear and
+bounded (cstar.tex 32X), hence may be taken to be a bounded operator. -/
+private theorem exists_clm_adjoint {T : X →L[ℂ] X}
+    (h : ModuleAdjointable 𝒷 ⇑T) :
+    ∃ S : X →L[ℂ] X, ModuleAdjointTo 𝒷 ⇑T ⇑S := by
+  obtain ⟨S, hS⟩ := h
+  have hS' : ∀ x y : X, inner 𝒷 (T x) y = inner 𝒷 x (S y) := hS
+  have hadd : ∀ y z, S (y + z) = S y + S z := fun y z =>
+    eq_of_binner_right (𝒷 := 𝒷) fun x => by
+      simp only [← hS', CStarModule.inner_add_right]
+  have hsmul : ∀ (c : ℂ) (y : X), S (c • y) = c • S y := fun c y =>
+    eq_of_binner_right (𝒷 := 𝒷) fun x => by
+      simp only [← hS', CStarModule.inner_smul_right_complex]
+  set Sl : X →ₗ[ℂ] X :=
+    { toFun := S, map_add' := hadd, map_smul' := fun c y => hsmul c y } with hSl
+  have hpos : (0 : ℝ) < ‖T‖ + 1 := by positivity
+  have hbound : ∀ y : X, ‖Sl y‖ ≤ (‖T‖ + 1) * ‖y‖ := by
+    refine (Theses.A.CStar.chilb_form_bounded (𝒜 := 𝒷) Sl (‖T‖ + 1) hpos).mpr ?_
+    intro x y
+    show ‖inner 𝒷 y (S x)‖ ≤ _
+    rw [← hS' y x]
+    calc ‖inner 𝒷 (T y) x‖ ≤ ‖T y‖ * ‖x‖ := CStarModule.norm_inner_le X
+      _ ≤ (‖T‖ + 1) * ‖y‖ * ‖x‖ := by
+          have h1 : ‖T y‖ ≤ (‖T‖ + 1) * ‖y‖ := by
+            have h2 := T.le_opNorm y
+            have h3 : (0 : ℝ) ≤ ‖y‖ := norm_nonneg y
+            nlinarith
+          exact mul_le_mul_of_nonneg_right h1 (norm_nonneg x)
+  exact ⟨Sl.mkContinuous (‖T‖ + 1) hbound, hS⟩
+
+variable (𝒷 X)
+
+/-- **143IV** (`hilbmod-cstar`, dils.tex:1580, Proposition), the algebraic
+half: the adjointable bounded operators form a unital ℂ-subalgebra of
+`B(X)` (cstar.tex 32III). -/
+def baSubalgebra : Subalgebra ℂ (X →L[ℂ] X) where
+  carrier := {T | ModuleAdjointable 𝒷 ⇑T}
+  mul_mem' := by
+    rintro a b ⟨a', ha⟩ ⟨b', hb⟩
+    refine ⟨fun y => b' (a' y), fun x y => ?_⟩
+    show inner 𝒷 (a (b x)) y = inner 𝒷 x (b' (a' y))
+    rw [ha (b x) y, hb x (a' y)]
+  one_mem' := ⟨id, fun _ _ => rfl⟩
+  add_mem' := by
+    rintro a b ⟨a', ha⟩ ⟨b', hb⟩
+    exact ⟨fun y => a' y + b' y,
+      (Theses.A.CStar.moduleAdjointTo_add_smul (𝒜 := 𝒷) _ _ _ _ 0 ha hb).1⟩
+  zero_mem' := ⟨fun _ => 0, by intro x y; simp⟩
+  algebraMap_mem' := by
+    intro c
+    refine ⟨fun y => (starRingEnd ℂ) c • y, fun x y => ?_⟩
+    show inner 𝒷 (c • x) y = inner 𝒷 x ((starRingEnd ℂ) c • y)
+    simp
+
+variable {𝒷 X}
+
+@[simp] theorem mem_baSubalgebra {T : X →L[ℂ] X} :
+    T ∈ baSubalgebra 𝒷 X ↔ ModuleAdjointable 𝒷 ⇑T := Iff.rfl
+
+/-- The adjoint of an adjointable bounded operator, as a bounded operator. -/
+private noncomputable def baAdj (T : baSubalgebra 𝒷 X) : X →L[ℂ] X :=
+  (exists_clm_adjoint (T := (T : X →L[ℂ] X)) T.2).choose
+
+private theorem baAdj_spec (T : baSubalgebra 𝒷 X) :
+    ModuleAdjointTo 𝒷 ⇑(T : X →L[ℂ] X) ⇑(baAdj T) :=
+  (exists_clm_adjoint (T := (T : X →L[ℂ] X)) T.2).choose_spec
+
+/-- The star operation of `𝒷ᵃ(X)`: `T ↦ T*`. -/
+private noncomputable def baStar (T : baSubalgebra 𝒷 X) : baSubalgebra 𝒷 X :=
+  ⟨baAdj T, ⟨_, Theses.A.CStar.moduleAdjointTo_symm _ _ (baAdj_spec T)⟩⟩
+
+/-- Adjoints are unique, so `baStar` is pinned down by the adjointness
+relation. -/
+private theorem baStar_eq {T : baSubalgebra 𝒷 X} {S : X →L[ℂ] X}
+    (h : ModuleAdjointTo 𝒷 ⇑(T : X →L[ℂ] X) ⇑S) :
+    ((baStar T : baSubalgebra 𝒷 X) : X →L[ℂ] X) = S :=
+  DFunLike.coe_injective
+    (Theses.A.CStar.moduleAdjointTo_unique _ _ _ (baAdj_spec T) h)
+
+noncomputable instance baInstStarRing : StarRing (baSubalgebra 𝒷 X) where
+  star := baStar
+  star_involutive T := Subtype.ext <| baStar_eq (T := baStar T) (S := T)
+    (Theses.A.CStar.moduleAdjointTo_symm _ _ (baAdj_spec T))
+  star_mul a b := Subtype.ext <| baStar_eq (T := a * b)
+    (S := (baAdj b).comp (baAdj a)) (by
+      intro x y
+      show inner 𝒷 ((a : X →L[ℂ] X) ((b : X →L[ℂ] X) x)) y
+        = inner 𝒷 x (baAdj b (baAdj a y))
+      rw [baAdj_spec a _ y, baAdj_spec b x _])
+  star_add a b := Subtype.ext <| baStar_eq (T := a + b)
+    (S := baAdj a + baAdj b)
+    ((Theses.A.CStar.moduleAdjointTo_add_smul (𝒜 := 𝒷) _ _ _ _ 0
+      (baAdj_spec a) (baAdj_spec b)).1)
+
+noncomputable instance baInstStarModule : StarModule ℂ (baSubalgebra 𝒷 X) where
+  star_smul c T := Subtype.ext <| baStar_eq (T := c • T)
+    (S := (starRingEnd ℂ) c • baAdj T)
+    ((Theses.A.CStar.moduleAdjointTo_add_smul (𝒜 := 𝒷) ⇑(T : X →L[ℂ] X)
+      ⇑(T : X →L[ℂ] X) _ _ c (baAdj_spec T) (baAdj_spec T)).2)
+
+instance baInstCStarRing : CStarRing (baSubalgebra 𝒷 X) where
+  norm_mul_self_le T := by
+    have h : ‖(baAdj T).comp (T : X →L[ℂ] X)‖ = ‖(T : X →L[ℂ] X)‖ ^ 2 :=
+      Theses.A.CStar.module_maps_cstar_identity (𝒜 := 𝒷) _ _ (baAdj_spec T)
+    have h' : ‖star T * T‖ = ‖(T : X →L[ℂ] X)‖ ^ 2 := h
+    rw [h']
+    exact le_of_eq (sq ‖(T : X →L[ℂ] X)‖).symm
+
+instance baInstCompleteSpace [CompleteSpace X] :
+    CompleteSpace (baSubalgebra 𝒷 X) :=
+  (Theses.A.CStar.bax_cstar (𝒜 := 𝒷) (X := X)).completeSpace_coe
+
+noncomputable instance baInstCStarAlgebra [CompleteSpace X] :
+    CStarAlgebra (baSubalgebra 𝒷 X) where
+
+end BaConstruction
 
 section BaDef
 
@@ -49,21 +188,25 @@ def Ba.toCLM (T : Ba 𝒷 X) : X →L[ℂ] X := T.1
 variable [CompleteSpace X]
 
 /-- **143IV** (`hilbmod-cstar`, dils.tex:1580, Proposition), as an
-instance: `𝒷ᵃ(X)` is a C*-algebra for a Hilbert 𝒷-module `X`.
-FIXME(sorry-instance): the C*-structure (composition, adjoint as involution,
-operator norm, closedness `hilbmod_cstar`) is deferred. -/
-noncomputable instance Ba.instCStarAlgebra : CStarAlgebra (Ba 𝒷 X) :=
-  sorry
+instance: `𝒷ᵃ(X)` is a C*-algebra for a Hilbert 𝒷-module `X`.  The
+structure is that of the closed ℂ-subalgebra `baSubalgebra 𝒷 X` of `B(X)`,
+to which `Ba 𝒷 X` is definitionally equal; the `NormedSpace ℂ X` needed to
+speak of the operator norm is the one determined by the `CStarModule`
+axioms (`CStarModule.normedSpaceCore`), which Mathlib deliberately does not
+register as an instance. -/
+noncomputable instance Ba.instCStarAlgebra : CStarAlgebra (Ba 𝒷 X) := by
+  letI : NormedSpace ℂ X := NormedSpace.ofCore (CStarModule.normedSpaceCore 𝒷)
+  exact inferInstanceAs (CStarAlgebra (baSubalgebra 𝒷 X))
 
 /-- The canonical (Loewner) partial order of the C*-algebra `𝒷ᵃ(X)`
-(cf. **144I**).  FIXME(sorry-instance): deferred. -/
+(cf. **144I**): the spectral order of its C*-structure. -/
 noncomputable instance Ba.instPartialOrder : PartialOrder (Ba 𝒷 X) :=
-  sorry
+  CStarAlgebra.spectralOrder (Ba 𝒷 X)
 
 /-- The canonical order of `𝒷ᵃ(X)` makes it a star-ordered ring
-(cf. **144I**).  FIXME(sorry-instance): deferred. -/
+(cf. **144I**). -/
 noncomputable instance Ba.instStarOrderedRing : StarOrderedRing (Ba 𝒷 X) :=
-  sorry
+  CStarAlgebra.spectralOrderedRing (Ba 𝒷 X)
 
 end BaDef
 

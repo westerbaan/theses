@@ -45,10 +45,107 @@ variable {A B C : Type u}
 
 /-! ## Infrastructure: identity and composition of ncp-maps, carriers -/
 
+section NormalityAux
+
+/-! ### Auxiliary: normality of the identity and of composites
+
+These are the routine facts behind `exists_ncpId`, `exists_ncpComp`,
+`nmiuId` and `nmiuComp`.  `isLUB_val_of_isLUB` / `isLUB_of_isLUB_val`
+duplicate private lemmas of `Theses/A/VN/Projections.lean`
+(`isLUB_coe_of_isLUB`, `isLUB_sa_of_isLUB`), which are not exported. -/
+
+variable {A' B' C' : Type*}
+  [NonUnitalRing A'] [StarRing A'] [PartialOrder A'] [StarOrderedRing A']
+  [NonUnitalRing B'] [StarRing B'] [PartialOrder B'] [StarOrderedRing B']
+  [NonUnitalRing C'] [StarRing C'] [PartialOrder C'] [StarOrderedRing C']
+
+/-- The supremum of a nonempty set of self-adjoint elements computed in
+`sa(A)` is its supremum in `A`. -/
+theorem isLUB_val_of_isLUB {D : Set (selfAdjoint A')} {s : selfAdjoint A'}
+    (hne : D.Nonempty) (h : IsLUB D s) :
+    IsLUB (Subtype.val '' D) ((s : selfAdjoint A') : A') := by
+  obtain ⟨d₀, hd₀⟩ := hne
+  refine ⟨?_, fun u hu => ?_⟩
+  · rintro _ ⟨d, hd, rfl⟩
+    exact Subtype.coe_le_coe.mpr (h.1 hd)
+  · have hu0 : ((d₀ : selfAdjoint A') : A') ≤ u := hu ⟨d₀, hd₀, rfl⟩
+    have husa : IsSelfAdjoint u := by
+      have hd : IsSelfAdjoint (u - ((d₀ : selfAdjoint A') : A')) :=
+        IsSelfAdjoint.of_nonneg (sub_nonneg.mpr hu0)
+      simpa using hd.add d₀.2
+    have hub : (⟨u, husa⟩ : selfAdjoint A') ∈ upperBounds D :=
+      fun e he => hu ⟨e, he, rfl⟩
+    exact h.2 hub
+
+/-- Converse of `isLUB_val_of_isLUB`. -/
+theorem isLUB_of_isLUB_val {D : Set (selfAdjoint A')} {s : selfAdjoint A'}
+    (h : IsLUB (Subtype.val '' D) ((s : selfAdjoint A') : A')) : IsLUB D s := by
+  refine ⟨fun d hd => Subtype.coe_le_coe.mp (h.1 ⟨d, hd, rfl⟩), fun v hv => ?_⟩
+  refine Subtype.coe_le_coe.mp (h.2 ?_)
+  rintro _ ⟨d, hd, rfl⟩
+  exact Subtype.coe_le_coe.mpr (hv hd)
+
+/-- The identity is normal. -/
+theorem preservesDirSups_id : PreservesDirSups (fun a : A' => a) := by
+  intro D s hne _ hlub
+  exact isLUB_val_of_isLUB hne hlub
+
+/-- A composite of normal maps is normal, provided the inner one preserves
+self-adjointness and is monotone (as every positive map is). -/
+theorem preservesDirSups_comp {f : A' → B'} {g : B' → C'}
+    (hsa : ∀ x : A', IsSelfAdjoint x → IsSelfAdjoint (f x))
+    (hmono : ∀ x y : A', x ≤ y → f x ≤ f y)
+    (hf : PreservesDirSups f) (hg : PreservesDirSups g) :
+    PreservesDirSups (fun a => g (f a)) := by
+  intro D s hne hdir hlub
+  set G : Set (selfAdjoint B') :=
+    (fun d : selfAdjoint A' => (⟨f (d : A'), hsa _ d.2⟩ : selfAdjoint B')) '' D
+    with hG
+  have hval : Subtype.val '' G = (fun d : selfAdjoint A' => f (d : A')) '' D := by
+    rw [hG, ← Set.image_comp]; rfl
+  have hlubG : IsLUB G (⟨f (s : A'), hsa _ s.2⟩ : selfAdjoint B') := by
+    refine isLUB_of_isLUB_val ?_
+    rw [hval]
+    exact hf D s hne hdir hlub
+  have hGne : G.Nonempty := hne.image _
+  have hGdir : DirectedOn (· ≤ ·) G := by
+    rintro _ ⟨x, hx, rfl⟩ _ ⟨y, hy, rfl⟩
+    obtain ⟨z, hz, hxz, hyz⟩ := hdir x hx y hy
+    exact ⟨_, ⟨z, hz, rfl⟩,
+      Subtype.coe_le_coe.mp (hmono _ _ (Subtype.coe_le_coe.mpr hxz)),
+      Subtype.coe_le_coe.mp (hmono _ _ (Subtype.coe_le_coe.mpr hyz))⟩
+  have hkey := hg G _ hGne hGdir hlubG
+  rw [hG, ← Set.image_comp] at hkey
+  exact hkey
+
+end NormalityAux
+
+/-- A positive linear map between C*-algebras preserves self-adjointness
+(via `a = a⁺ - a⁻`).  Duplicates the private
+`isSelfAdjoint_map_of_positive` of `Theses/A/VN/Projections.lean`. -/
+theorem isSelfAdjoint_map_of_pos {A' B' : Type*}
+    [CStarAlgebra A'] [PartialOrder A'] [StarOrderedRing A']
+    [CStarAlgebra B'] [PartialOrder B'] [StarOrderedRing B']
+    (f : A' →ₚ[ℂ] B') {x : A'} (hx : IsSelfAdjoint x) : IsSelfAdjoint (f x) := by
+  have hsplit : posPart x - negPart x = x := CFC.posPart_sub_negPart x hx
+  have hz : (f (0 : A') : B') = 0 := map_zero f
+  have h1 : (0 : B') ≤ f (posPart x) := by
+    have h : (f (0 : A') : B') ≤ f (posPart x) := f.monotone (CFC.posPart_nonneg x)
+    rwa [hz] at h
+  have h2 : (0 : B') ≤ f (negPart x) := by
+    have h : (f (0 : A') : B') ≤ f (negPart x) := f.monotone (CFC.negPart_nonneg x)
+    rwa [hz] at h
+  have := (IsSelfAdjoint.of_nonneg h1).sub (IsSelfAdjoint.of_nonneg h2)
+  rwa [← map_sub, hsplit] at this
+
 /-- Infrastructure: the identity map is an ncp-map (cf. 100II part 2);
 stated as an existence lemma from which `ncpId` is obtained by choice. -/
 theorem exists_ncpId (A : Type u) [CStarAlgebra A] [PartialOrder A]
-    [StarOrderedRing A] : ∃ f : NCPMap A A, ∀ a : A, f a = a := sorry
+    [StarOrderedRing A] : ∃ f : NCPMap A A, ∀ a : A, f a = a := by
+  refine ⟨{ toCompletelyPositiveMap :=
+              { toLinearMap := LinearMap.id
+                map_cstarMatrix_nonneg' := fun k M hM => by simpa using hM }
+            preservesDirSups' := preservesDirSups_id }, fun a => rfl⟩
 
 /-- The identity ncp-map. -/
 noncomputable def ncpId (A : Type u) [CStarAlgebra A] [PartialOrder A]
@@ -59,7 +156,24 @@ theorem ncpId_apply (a : A) : ncpId A a = a := (exists_ncpId A).choose_spec a
 /-- Infrastructure: ncp-maps are closed under composition; stated as an
 existence lemma from which `ncpComp` is obtained by choice. -/
 theorem exists_ncpComp (g : NCPMap B C) (f : NCPMap A B) :
-    ∃ h : NCPMap A C, ∀ a : A, h a = g (f a) := sorry
+    ∃ h : NCPMap A C, ∀ a : A, h a = g (f a) := by
+  have hmono : ∀ x y : A, x ≤ y → f x ≤ f y := fun x y h =>
+    OrderHomClass.mono f.toCompletelyPositiveMap h
+  have hsa : ∀ x : A, IsSelfAdjoint x → IsSelfAdjoint (f x) := fun x hx =>
+    isSelfAdjoint_map_of_pos (PositiveLinearMap.ofClass f.toCompletelyPositiveMap) hx
+  refine ⟨{ toCompletelyPositiveMap :=
+              { toLinearMap :=
+                  (g.toCompletelyPositiveMap.toLinearMap).comp
+                    f.toCompletelyPositiveMap.toLinearMap
+                map_cstarMatrix_nonneg' := fun k M hM => by
+                  have h1 : (0 : CStarMatrix (Fin k) (Fin k) B) ≤
+                      M.map f.toCompletelyPositiveMap.toLinearMap :=
+                    f.toCompletelyPositiveMap.map_cstarMatrix_nonneg' k M hM
+                  have h2 := g.toCompletelyPositiveMap.map_cstarMatrix_nonneg' k _ h1
+                  exact h2 }
+            preservesDirSups' := by
+              exact preservesDirSups_comp (f := ⇑f) (g := ⇑g) hsa hmono
+                f.preservesDirSups' g.preservesDirSups' }, fun a => rfl⟩
 
 /-- Composition `g ∘ f` of ncp-maps. -/
 noncomputable def ncpComp (g : NCPMap B C) (f : NCPMap A B) : NCPMap A C :=
@@ -74,7 +188,9 @@ projection `p` with `f(p^⊥) = 0` — its **carrier** `⌈f⌉`. -/
 theorem exists_ncpCarrier [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (f : NCPMap A B) :
     ∃! p : A, IsStarProjection p ∧ f (1 - p) = 0 ∧
-      ∀ q : A, IsStarProjection q → f (1 - q) = 0 → p ≤ q := sorry
+      ∀ q : A, IsStarProjection q → f (1 - q) = 0 → p ≤ q :=
+  exists_carrier (PositiveLinearMap.ofClass f.toCompletelyPositiveMap)
+    f.preservesDirSups'
 
 /-- The carrier `⌈f⌉` of an ncp-map between von Neumann algebras (least
 projection `p` with `f(p^⊥) = 0`), by choice from `exists_ncpCarrier`. -/
@@ -124,7 +240,47 @@ the support and range projections `⌈a⌉ᵣ, ⌈a⌉ₗ` lie below `e`. -/
 theorem corner_vna_basic_1 [VonNeumannAlgebra A] (e a : A)
     (he : IsStarProjection e) :
     ((∃ b : A, a = e * b * e) ↔ a ∈ cornerSet A e) ∧
-      (a ∈ cornerSet A e ↔ suppProj a ≤ e ∧ rangeProj a ≤ e) := sorry
+      (a ∈ cornerSet A e ↔ suppProj a ≤ e ∧ rangeProj a ≤ e) := by
+  have hee : e * e = e := he.isIdempotentElem.eq
+  have hmem : ∀ x : A, e * x * e = x → e * x = x ∧ x * e = x := by
+    intro x hx
+    refine ⟨?_, ?_⟩
+    · calc e * x = e * (e * x * e) := by rw [hx]
+        _ = e * e * x * e := by noncomm_ring
+        _ = x := by rw [hee, hx]
+    · calc x * e = e * x * e * e := by rw [hx]
+        _ = e * x * (e * e) := by noncomm_ring
+        _ = x := by rw [hee, hx]
+  constructor
+  · constructor
+    · rintro ⟨b, rfl⟩
+      show e * (e * b * e) * e = e * b * e
+      calc e * (e * b * e) * e = (e * e) * b * (e * e) := by noncomm_ring
+        _ = e * b * e := by rw [hee]
+    · intro ha; exact ⟨a, ha.symm⟩
+  · constructor
+    · intro ha
+      obtain ⟨h1, h2⟩ := hmem a ha
+      exact ⟨(ceill_basic_1 a).2 ⟨he, h2⟩, (ceill_basic_2 a).2 ⟨he, h1⟩⟩
+    · rintro ⟨hs, hr⟩
+      have hsp : IsStarProjection (suppProj a) := (ceill_basic_1 a).1.1
+      have hrp : IsStarProjection (rangeProj a) := (ceill_basic_2 a).1.1
+      have hse : suppProj a * e = suppProj a :=
+        ((projection_below_effect e (suppProj a) ⟨he.nonneg, he.le_one⟩ hsp).out 0 7).mp hs
+      have hre : e * rangeProj a = rangeProj a :=
+        ((projection_below_effect e (rangeProj a) ⟨he.nonneg, he.le_one⟩ hrp).out 0 6).mp hr
+      have hae : a * e = a := by
+        calc a * e = a * suppProj a * e := by rw [(ceill_basic_1 a).1.2]
+          _ = a * (suppProj a * e) := by noncomm_ring
+          _ = a * suppProj a := by rw [hse]
+          _ = a := (ceill_basic_1 a).1.2
+      have hea : e * a = a := by
+        calc e * a = e * (rangeProj a * a) := by rw [(ceill_basic_2 a).1.2]
+          _ = (e * rangeProj a) * a := by noncomm_ring
+          _ = rangeProj a * a := by rw [hre]
+          _ = a := (ceill_basic_2 a).1.2
+      show e * a * e = a
+      rw [hea, hae]
 
 /-- **94II** (`corner-vna-basic`, proc.tex:194, Exercise), part 2: the
 corner `e𝒜e` is closed under addition, scalar multiplication,
@@ -132,18 +288,75 @@ multiplication and involution. -/
 theorem corner_vna_basic_2 (e : A) (he : IsStarProjection e) (a b : A)
     (ha : a ∈ cornerSet A e) (hb : b ∈ cornerSet A e) (z : ℂ) :
     a + b ∈ cornerSet A e ∧ z • a ∈ cornerSet A e ∧
-      a * b ∈ cornerSet A e ∧ star a ∈ cornerSet A e := sorry
+      a * b ∈ cornerSet A e ∧ star a ∈ cornerSet A e := by
+  have hee : e * e = e := he.isIdempotentElem.eq
+  have ha' : e * a * e = a := ha
+  have hb' : e * b * e = b := hb
+  have hea : e * a = a := by
+    calc e * a = e * (e * a * e) := by rw [ha']
+      _ = e * e * a * e := by noncomm_ring
+      _ = a := by rw [hee, ha']
+  have hbe : b * e = b := by
+    calc b * e = e * b * e * e := by rw [hb']
+      _ = e * b * (e * e) := by noncomm_ring
+      _ = b := by rw [hee, hb']
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · show e * (a + b) * e = a + b
+    rw [mul_add, add_mul, ha', hb']
+  · show e * (z • a) * e = z • a
+    rw [mul_smul_comm, smul_mul_assoc, ha']
+  · show e * (a * b) * e = a * b
+    calc e * (a * b) * e = (e * a) * (b * e) := by noncomm_ring
+      _ = a * b := by rw [hea, hbe]
+  · show e * star a * e = star a
+    have := congrArg star ha'
+    rw [star_mul, star_mul, he.isSelfAdjoint.star_eq] at this
+    calc e * star a * e = e * (star a * e) := by noncomm_ring
+      _ = star a := this
 
 /-- **94II** (`corner-vna-basic`, proc.tex:194, Exercise), part 3: `e` is
 a unit for the corner `e𝒜e`. -/
 theorem corner_vna_basic_3 (e : A) (he : IsStarProjection e) (a : A)
-    (ha : a ∈ cornerSet A e) : e * a = a ∧ a * e = a := sorry
+    (ha : a ∈ cornerSet A e) : e * a = a ∧ a * e = a := by
+  have hee : e * e = e := he.isIdempotentElem.eq
+  have ha' : e * a * e = a := ha
+  refine ⟨?_, ?_⟩
+  · calc e * a = e * (e * a * e) := by rw [ha']
+      _ = e * e * a * e := by noncomm_ring
+      _ = a := by rw [hee, ha']
+  · calc a * e = e * a * e * e := by rw [ha']
+      _ = e * a * (e * e) := by noncomm_ring
+      _ = a := by rw [hee, ha']
 
 /-- **94II** (`corner-vna-basic`, proc.tex:194, Exercise), part 4: the
 corner `e𝒜e` is norm closed and ultraweakly closed. -/
 theorem corner_vna_basic_4 [VonNeumannAlgebra A] (e : A)
     (he : IsStarProjection e) :
-    IsClosed (cornerSet A e) ∧ IsClosed[ultraweak A] (cornerSet A e) := sorry
+    IsClosed (cornerSet A e) ∧ IsClosed[ultraweak A] (cornerSet A e) := by
+  have hstar : star e = e := he.isSelfAdjoint.star_eq
+  refine ⟨isClosed_eq (by fun_prop) continuous_id, ?_⟩
+  -- `e𝒜e` is cut out by the np-functionals: `eae = a` iff `ω(eae) = ω(a)`
+  -- for every np-functional `ω` (the np-functionals are separating, 44XI),
+  -- and `a ↦ ω(eae)` is again an np-functional (`conjNP`), hence
+  -- ultraweakly continuous.
+  have hset : cornerSet A e =
+      ⋂ ω : NPFunctional A, (fun a : A => (conjNP e ω) a - ω a) ⁻¹' {0} := by
+    ext a
+    simp only [Set.mem_iInter, Set.mem_preimage, Set.mem_singleton_iff,
+      conjNP_apply, hstar]
+    constructor
+    · intro ha ω
+      rw [show e * a * e = a from ha, sub_self]
+    · intro h
+      have h0 : e * a * e - a = 0 :=
+        np_separating _ fun ω => by rw [npFunctional_sub]; exact h ω
+      exact sub_eq_zero.mp h0
+  rw [hset]
+  letI : TopologicalSpace A := ultraweak A
+  refine isClosed_iInter fun ω => ?_
+  exact isClosed_singleton.preimage
+    ((continuous_ultraweak_npFunctional (conjNP e ω)).sub
+      (continuous_ultraweak_npFunctional ω))
 
 /-- **94II** (`corner-vna-basic`, proc.tex:194, Exercise), part 5,
 coherence: the (asserted) C*-algebra structure of `Corner A e` is given by
@@ -162,7 +375,15 @@ theorem corner_vna_basic_6 [VonNeumannAlgebra A] (e : A)
     (he : IsStarProjection e) (D : Set (selfAdjoint A))
     (hD : ∀ d ∈ D, (d : A) ∈ cornerSet A e)
     (h : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧ BddAbove D) :
-    (dirSup D h : A) ∈ cornerSet A e := sorry
+    (dirSup D h : A) ∈ cornerSet A e := by
+  -- `e(·)e` is normal (44VIII), so it sends `⋁D` to `⋁ e D e = ⋁ D`
+  have hstar : star e = e := he.isSelfAdjoint.star_eq
+  have hnat := ad_normal e D h
+  rw [hstar] at hnat
+  have himg : (fun d : selfAdjoint A => e * (d : A) * e) '' D = Subtype.val '' D :=
+    Set.image_congr fun d hd => hD d hd
+  rw [himg] at hnat
+  exact hnat.unique (isLUB_val_of_isLUB h.1 (isLUB_dirSup D h))
 
 /-- **94II** (`corner-vna-basic`, proc.tex:194, Exercise), part 7: the
 inclusion `e𝒜e → 𝒜` is an ncpsu-map (existence lemma; `cornerIncl` is
@@ -227,7 +448,48 @@ theorem corner_vna_basic_10' [VonNeumannAlgebra A] (e : A)
 theorem ad_ncp_1 [VonNeumannAlgebra A] (a p q : A)
     (hp : IsStarProjection p) (hq : IsStarProjection q)
     (h : star a * p * a ≤ q) (b : A) (hb : b ∈ cornerSet A p) :
-    star a * b * a ∈ cornerSet A q := sorry
+    star a * b * a ∈ cornerSet A q := by
+  have hb' : p * b * p = b := hb
+  have hrp : IsStarProjection (1 - q) := hq.one_sub
+  -- step 1: `p a q^⊥ = 0`
+  have hconj := star_left_conjugate_le_conjugate h (1 - q)
+  rw [hrp.isSelfAdjoint.star_eq,
+    show (1 - q) * q * (1 - q) = 0 by
+      rw [sub_mul, one_mul, hq.isIdempotentElem.eq, sub_self, zero_mul]] at hconj
+  have hnn : (0 : A) ≤ (1 - q) * (star a * p * a) * (1 - q) := by
+    have h0 := star_left_conjugate_nonneg hp.nonneg (a * (1 - q))
+    rw [star_mul, hrp.isSelfAdjoint.star_eq] at h0
+    calc (0 : A) ≤ (1 - q) * star a * p * (a * (1 - q)) := h0
+      _ = (1 - q) * (star a * p * a) * (1 - q) := by noncomm_ring
+  have hzero : (1 - q) * (star a * p * a) * (1 - q) = 0 := le_antisymm hconj hnn
+  have hpar : p * a * (1 - q) = 0 := by
+    refine CStarRing.star_mul_self_eq_zero_iff _ |>.mp ?_
+    calc star (p * a * (1 - q)) * (p * a * (1 - q))
+        = (1 - q) * star a * (p * p) * (a * (1 - q)) := by
+          rw [star_mul, star_mul, hrp.isSelfAdjoint.star_eq,
+            hp.isSelfAdjoint.star_eq]; noncomm_ring
+      _ = (1 - q) * (star a * p * a) * (1 - q) := by
+          rw [hp.isIdempotentElem.eq]; noncomm_ring
+      _ = 0 := hzero
+  -- step 2: `pa = paq` and `a*p = q a*p`, whence `a* b a` sits in `q𝒜q`
+  have hpa : p * a = p * a * q := by
+    rw [mul_sub, mul_one, sub_eq_zero] at hpar
+    exact hpar
+  have hap : star a * p = q * (star a * p) := by
+    have hs := congrArg star hpa
+    calc star a * p = star (p * a) := by
+          rw [star_mul, hp.isSelfAdjoint.star_eq]
+      _ = star (p * a * q) := hs
+      _ = q * (star a * p) := by
+          rw [star_mul, star_mul, hq.isSelfAdjoint.star_eq,
+            hp.isSelfAdjoint.star_eq]
+  show q * (star a * b * a) * q = star a * b * a
+  symm
+  calc star a * b * a = star a * (p * b * p) * a := by rw [hb']
+    _ = (star a * p) * b * (p * a) := by noncomm_ring
+    _ = (q * (star a * p)) * b * (p * a * q) := by rw [← hap, ← hpa]
+    _ = q * (star a * (p * b * p) * a) * q := by noncomm_ring
+    _ = q * (star a * b * a) * q := by rw [hb']
 
 /-- **94III** (`ad-ncp`, proc.tex:247, Exercise), part 2: if
 `a* p a ≤ q`, then `a*(·)a` gives an ncp-map `p𝒜p → q𝒜q` (existence

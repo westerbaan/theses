@@ -57,7 +57,12 @@ variable {A₁ : Type u} {B₁ : Type v} {C₁ : Type w}
 noncomputable def nmiuComp (g : NMIUMap B₁ C₁) (f : NMIUMap A₁ B₁) :
     NMIUMap A₁ C₁ :=
   { toStarAlgHom := g.toStarAlgHom.comp f.toStarAlgHom
-    preservesDirSups' := sorry }
+    preservesDirSups' := by
+      refine preservesDirSups_comp (f := ⇑f) (g := ⇑g) (fun x hx => ?_)
+        (fun x y h => OrderHomClass.mono f.toStarAlgHom h)
+        f.preservesDirSups' g.preservesDirSups'
+      show IsSelfAdjoint (f.toStarAlgHom x)
+      rw [IsSelfAdjoint, ← map_star, hx.star_eq] }
 
 end NmiuComp
 

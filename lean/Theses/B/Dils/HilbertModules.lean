@@ -114,9 +114,127 @@ variable {𝒷 : Type u} {X : Type v}
   [CStarAlgebra 𝒷] [PartialOrder 𝒷] [StarOrderedRing 𝒷]
   [AddCommGroup X] [Module ℂ X] [SMul 𝒷 X]
 
-/-- **142II** (`module-innerprod-state`, dils.tex:1399, Definition): for a
-𝒷-valued inner product and a positive functional `f : 𝒷 → ℂ`, the
-complex-valued form `⟨x,y⟩_f = f([x,y])`. -/
+/-! ### Elementary consequences of the `BInner` axioms
+
+`BInner` bundles only right-additivity, right-𝒷-linearity, right-ℂ-linearity,
+conjugate symmetry and positivity; the corresponding left-hand rules follow
+by conjugate symmetry, exactly as in Mathlib's `CStarModule`. -/
+
+namespace BInner
+
+variable (B : BInner 𝒷 X)
+
+theorem inner_add_left (x y z : X) :
+    B.inner (x + y) z = B.inner x z + B.inner y z := by
+  rw [← B.star_inner z (x + y), B.inner_add_right, star_add, B.star_inner,
+    B.star_inner]
+
+theorem inner_op_smul_left (b : 𝒷) (x y : X) :
+    B.inner (b • x) y = B.inner x y * star b := by
+  rw [← B.star_inner y (b • x), B.inner_op_smul_right, star_mul, B.star_inner]
+
+theorem inner_smul_left_complex (c : ℂ) (x y : X) :
+    B.inner (c • x) y = (starRingEnd ℂ) c • B.inner x y := by
+  rw [← B.star_inner y (c • x), B.inner_smul_right_complex, star_smul,
+    B.star_inner]
+  rfl
+
+theorem inner_zero_right (x : X) : B.inner x 0 = 0 := by
+  have := B.inner_add_right x 0 0
+  simpa using this.symm
+
+theorem inner_zero_left (x : X) : B.inner 0 x = 0 := by
+  rw [← B.star_inner x 0, B.inner_zero_right, star_zero]
+
+theorem inner_sub_right (x y z : X) :
+    B.inner x (y - z) = B.inner x y - B.inner x z := by
+  rw [sub_eq_add_neg, B.inner_add_right, ← neg_one_smul ℂ z,
+    B.inner_smul_right_complex]
+  simp [sub_eq_add_neg]
+
+theorem inner_sub_left (x y z : X) :
+    B.inner (x - y) z = B.inner x z - B.inner y z := by
+  rw [← B.star_inner z (x - y), B.inner_sub_right, star_sub, B.star_inner,
+    B.star_inner]
+
+end BInner
+
+/-- **142III** (`module-CS`, dils.tex:1419, Proposition (Cauchy–Schwarz)) in
+its *mirrored* form.  Under Mathlib's convention `B.inner u v = ⟨v,u⟩` of the
+thesis (see the file header) the thesis's
+`⟨x,y⟩⟨y,x⟩ ≤ ‖⟨y,y⟩‖ ⟨x,x⟩` reads `[y,x][x,y] ≤ ‖[y,y]‖ [x,x]`, i.e. with
+the two factors of the left-hand side interchanged relative to `module_CS`
+below — exactly as in `Theses.A.CStar.chilb_cs`.  `module_CS` as transcribed
+omits that swap and is **false** (see the session report). -/
+theorem module_CS_mirrored (B : BInner 𝒷 X) (x y : X) :
+    B.inner y x * B.inner x y ≤ ‖B.inner y y‖ • B.inner x x := by
+  set b : 𝒷 := B.inner y x with hb
+  have hbs : star b = B.inner x y := B.star_inner y x
+  have hrs : ∀ (r : ℝ) (a : 𝒷), ((r : ℂ)) • a = r • a := fun r a =>
+    (RCLike.real_smul_eq_coe_smul (K := ℂ) r a).symm
+  have hpos : (0 : 𝒷) ≤ b * star b := by
+    simpa using star_mul_self_nonneg (star b)
+  have hsa : IsSelfAdjoint (B.inner y y) := B.star_inner y y
+  -- `0 ≤ [b·y - t·x, b·y - t·x] = b[y,y]b* - 2t·bb* + t²·[x,x]`
+  have hexp : ∀ t : ℝ,
+      (2 * t) • (b * star b) ≤
+        b * B.inner y y * star b + (t ^ 2) • B.inner x x := by
+    intro t
+    have h0 := B.inner_self_nonneg (b • y - ((t : ℝ) : ℂ) • x)
+    have hz : B.inner (b • y - ((t : ℝ) : ℂ) • x) (b • y - ((t : ℝ) : ℂ) • x)
+        = (b * B.inner y y * star b + (t ^ 2) • B.inner x x)
+          - (2 * t) • (b * star b) := by
+      simp only [B.inner_sub_right, B.inner_sub_left, B.inner_op_smul_left,
+        B.inner_op_smul_right, B.inner_smul_left_complex,
+        B.inner_smul_right_complex, Complex.conj_ofReal, smul_smul, hrs,
+        ← hb, ← hbs, ← Complex.ofReal_mul, smul_mul_assoc, mul_smul_comm]
+      rw [show (t * t : ℝ) = t ^ 2 by ring, two_mul, add_smul]
+      abel
+    rw [hz] at h0
+    exact sub_nonneg.mp h0
+  rcases eq_or_lt_of_le (norm_nonneg (B.inner y y)) with hs | hs
+  · -- degenerate case `[y,y] = 0`: then `bb* ≤ ε[x,x]` for every `ε > 0`
+    have hyy : B.inner y y = 0 := by
+      rwa [eq_comm, norm_eq_zero] at hs
+    have hbound : ∀ ε : ℝ, 0 < ε → ‖b * star b‖ ≤ ‖B.inner x x‖ * ε := by
+      intro ε hε
+      have h1 := hexp (2 * ε)
+      rw [hyy] at h1
+      simp only [mul_zero, zero_mul, zero_add] at h1
+      have h2 := CStarAlgebra.norm_le_norm_of_nonneg_of_le
+        (a := (2 * (2 * ε)) • (b * star b)) (by positivity) h1
+      rw [norm_smul, norm_smul] at h2
+      simp only [Real.norm_eq_abs,
+        abs_of_nonneg (by positivity : (0:ℝ) ≤ 2 * (2 * ε)),
+        abs_of_nonneg (by positivity : (0:ℝ) ≤ (2 * ε) ^ 2)] at h2
+      nlinarith [norm_nonneg (b * star b), norm_nonneg (B.inner x x)]
+    have hzero : ‖b * star b‖ ≤ 0 := by
+      refine le_of_forall_pos_le_add fun ε hε => ?_
+      have hden : (0 : ℝ) < ‖B.inner x x‖ + 1 := by positivity
+      have := hbound (ε / (‖B.inner x x‖ + 1)) (by positivity)
+      rw [mul_div_assoc'] at this
+      have hle : ‖B.inner x x‖ * ε / (‖B.inner x x‖ + 1) ≤ ε := by
+        rw [div_le_iff₀ hden]
+        nlinarith [norm_nonneg (B.inner x x), hε.le]
+      linarith
+    have hbb : b * star b = 0 :=
+      norm_eq_zero.mp (le_antisymm hzero (norm_nonneg _))
+    rw [← hbs, hbb, ← hs, zero_smul]
+  · -- generic case: put `t = ‖[y,y]‖ > 0` and divide by it
+    have hconj : b * B.inner y y * star b ≤ ‖B.inner y y‖ • (b * star b) :=
+      CStarAlgebra.star_right_conjugate_le_norm_smul hsa
+    have h := (hexp ‖B.inner y y‖).trans
+      (add_le_add hconj (le_refl ((‖B.inner y y‖ ^ 2) • B.inner x x)))
+    have hsplit : (2 * ‖B.inner y y‖) • (b * star b)
+        = ‖B.inner y y‖ • (b * star b) + ‖B.inner y y‖ • (b * star b) := by
+      rw [two_mul, add_smul]
+    rw [hsplit] at h
+    have h2 : ‖B.inner y y‖ • (b * star b)
+        ≤ ‖B.inner y y‖ • (‖B.inner y y‖ • B.inner x x) := by
+      rw [smul_smul, ← pow_two]
+      exact le_of_add_le_add_left h
+    rw [← hbs]
+    exact le_of_smul_le_smul_left h2 hs
 noncomputable def innerF (f : 𝒷 →ₗ[ℂ] ℂ) (B : BInner 𝒷 X) (x y : X) : ℂ :=
   f (B.inner x y)
 
@@ -149,8 +267,25 @@ theorem module_CS (B : BInner 𝒷 X) (x y : X) :
 /-- **142V** (`module-seminorm`, dils.tex:1448, Exercise), part 1:
 `‖[x,y]‖ ≤ ‖x‖‖y‖` for the seminorm `‖x‖ = ‖[x,x]‖^½`. -/
 theorem module_seminorm_1 (B : BInner 𝒷 X) (x y : X) :
-    ‖B.inner x y‖ ≤ B.norm x * B.norm y :=
-  sorry
+    ‖B.inner x y‖ ≤ B.norm x * B.norm y := by
+  -- `‖[x,y]‖² = ‖[y,x][x,y]‖ ≤ ‖ ‖[y,y]‖ [x,x] ‖ = ‖x‖²‖y‖²`
+  have hyx : B.inner y x = star (B.inner x y) := (B.star_inner x y).symm
+  have h1 : ‖B.inner y x * B.inner x y‖ ≤ ‖B.inner y y‖ * ‖B.inner x x‖ := by
+    have h0 : (0 : 𝒷) ≤ B.inner y x * B.inner x y := by
+      rw [hyx]; exact star_mul_self_nonneg _
+    have h := CStarAlgebra.norm_le_norm_of_nonneg_of_le h0
+      (module_CS_mirrored B x y)
+    rwa [norm_smul, Real.norm_eq_abs, abs_of_nonneg (norm_nonneg _)] at h
+  have h2 : ‖B.inner x y‖ ^ 2 = ‖B.inner y x * B.inner x y‖ := by
+    rw [hyx, CStarRing.norm_star_mul_self]; ring
+  have h3 : ‖B.inner x y‖ ^ 2 ≤ (B.norm x * B.norm y) ^ 2 := by
+    rw [h2, mul_pow]
+    simp only [BInner.norm, Real.sq_sqrt (norm_nonneg _)]
+    rw [mul_comm]
+    exact h1
+  have hnx : 0 ≤ B.norm x := Real.sqrt_nonneg _
+  have hny : 0 ≤ B.norm y := Real.sqrt_nonneg _
+  nlinarith [norm_nonneg (B.inner x y), mul_nonneg hnx hny]
 
 /-- **142V** (`module-seminorm`, dils.tex:1448, Exercise), part 2:
 `‖x‖ = ‖[x,x]‖^½` is a seminorm with `‖x·b‖ ≤ ‖x‖‖b‖`.
@@ -160,8 +295,65 @@ quantitative statements appear as **148I**–**148V** below. -/
 theorem module_seminorm_2 (B : BInner 𝒷 X) (x y : X) (c : ℂ) (b : 𝒷) :
     B.norm (x + y) ≤ B.norm x + B.norm y ∧
       B.norm (c • x) = ‖c‖ * B.norm x ∧
-      B.norm (b • x) ≤ B.norm x * ‖b‖ :=
-  sorry
+      B.norm (b • x) ≤ B.norm x * ‖b‖ := by
+  have hnx : 0 ≤ B.norm x := Real.sqrt_nonneg _
+  have hny : 0 ≤ B.norm y := Real.sqrt_nonneg _
+  refine ⟨?_, ?_, ?_⟩
+  · -- triangle inequality, via `‖[x,y]‖ ≤ ‖x‖‖y‖`
+    have hexp : B.inner (x + y) (x + y) =
+        B.inner x x + B.inner x y + B.inner y x + B.inner y y := by
+      rw [B.inner_add_right, B.inner_add_left, B.inner_add_left]
+      abel
+    have hyx : ‖B.inner y x‖ = ‖B.inner x y‖ := by
+      rw [← B.star_inner x y, norm_star]
+    have hxx : ‖B.inner x x‖ = B.norm x ^ 2 := by
+      simp [BInner.norm, Real.sq_sqrt (norm_nonneg _)]
+    have hyy : ‖B.inner y y‖ = B.norm y ^ 2 := by
+      simp [BInner.norm, Real.sq_sqrt (norm_nonneg _)]
+    have hb : ‖B.inner (x + y) (x + y)‖ ≤ (B.norm x + B.norm y) ^ 2 := by
+      rw [hexp]
+      have h1 : ‖B.inner x x + B.inner x y + B.inner y x + B.inner y y‖ ≤
+          ‖B.inner x x‖ + ‖B.inner x y‖ + ‖B.inner y x‖ + ‖B.inner y y‖ :=
+        calc ‖B.inner x x + B.inner x y + B.inner y x + B.inner y y‖
+            ≤ ‖B.inner x x + B.inner x y + B.inner y x‖ + ‖B.inner y y‖ :=
+              norm_add_le _ _
+          _ ≤ (‖B.inner x x + B.inner x y‖ + ‖B.inner y x‖) + ‖B.inner y y‖ := by
+              gcongr; exact norm_add_le _ _
+          _ ≤ ((‖B.inner x x‖ + ‖B.inner x y‖) + ‖B.inner y x‖)
+                + ‖B.inner y y‖ := by
+              gcongr; exact norm_add_le _ _
+      have h2 := module_seminorm_1 B x y
+      rw [hyx] at h1
+      nlinarith [h1, h2, hxx, hyy]
+    have := Real.sqrt_le_sqrt hb
+    rwa [Real.sqrt_sq (by positivity)] at this
+  · -- `[cx,cx] = |c|² [x,x]`
+    have hconj : (starRingEnd ℂ) c * c = ((‖c‖ ^ 2 : ℝ) : ℂ) := by
+      rw [RCLike.conj_mul]; norm_cast
+    have hexp : B.inner (c • x) (c • x) =
+        ((‖c‖ ^ 2 : ℝ) : ℂ) • B.inner x x := by
+      rw [B.inner_smul_left_complex, B.inner_smul_right_complex, smul_smul,
+        hconj]
+    show Real.sqrt ‖B.inner (c • x) (c • x)‖ = ‖c‖ * Real.sqrt ‖B.inner x x‖
+    rw [hexp, norm_smul, Complex.norm_real, Real.norm_eq_abs,
+      abs_of_nonneg (by positivity : (0:ℝ) ≤ ‖c‖ ^ 2),
+      Real.sqrt_mul (by positivity), Real.sqrt_sq (norm_nonneg c)]
+  · -- `[bx,bx] = b[x,x]b*`, so `‖bx‖² ≤ ‖x‖²‖b‖²`
+    have hxx : ‖B.inner x x‖ = B.norm x ^ 2 := by
+      simp [BInner.norm, Real.sq_sqrt (norm_nonneg _)]
+    have hexp : B.inner (b • x) (b • x) = b * B.inner x x * star b := by
+      rw [B.inner_op_smul_left, B.inner_op_smul_right]
+    have hb : ‖B.inner (b • x) (b • x)‖ ≤ (B.norm x * ‖b‖) ^ 2 := by
+      rw [hexp]
+      have h1 : ‖b * B.inner x x * star b‖ ≤ ‖b‖ * ‖B.inner x x‖ * ‖b‖ := by
+        refine (norm_mul_le _ _).trans ?_
+        rw [norm_star]
+        exact mul_le_mul_of_nonneg_right (norm_mul_le _ _) (norm_nonneg b)
+      have h2 : (B.norm x * ‖b‖) ^ 2 = ‖b‖ * ‖B.inner x x‖ * ‖b‖ := by
+        rw [mul_pow, hxx]; ring
+      rw [h2]; exact h1
+    have := Real.sqrt_le_sqrt hb
+    rwa [Real.sqrt_sq (by positivity)] at this
 
 /-- **142VII** (dils.tex:1468, Definition): a **𝒷-sesquilinear form** on a
 𝒷-module `V`: a map `B : V × V → 𝒷` which is 𝒷-linear in the second
@@ -188,8 +380,23 @@ theorem hilbmod_polarization (B : X → X → 𝒷) (hB : IsBSesquilinear B)
     (x y : X) :
     B x y = (4 : ℂ)⁻¹ •
       ∑ k ∈ Finset.range 4,
-        Complex.I ^ k • B (Complex.I ^ k • x + y) (Complex.I ^ k • x + y) :=
-  sorry
+        Complex.I ^ k • B (Complex.I ^ k • x + y) (Complex.I ^ k • x + y) := by
+  -- expand `B(cx+y, cx+y)`; the author's table of the sixteen resulting terms
+  have key : ∀ c : ℂ, B (c • x + y) (c • x + y) =
+      (starRingEnd ℂ c * c) • B x x + (starRingEnd ℂ c) • B x y
+        + c • B y x + B y y := by
+    intro c
+    rw [hB.add_left, hB.add_right, hB.add_right, hB.smul_left_complex,
+      hB.smul_left_complex, hB.smul_right_complex, hB.smul_right_complex,
+      smul_smul]
+    abel
+  simp only [Finset.sum_range_succ, Finset.sum_range_zero, zero_add, key,
+    pow_zero, pow_one, map_one, one_mul, one_smul, smul_add, smul_smul]
+  have hI2 : Complex.I ^ 2 = -1 := Complex.I_sq
+  have hI3 : Complex.I ^ 3 = -Complex.I := by
+    rw [pow_succ, hI2, neg_one_mul]
+  have hc1 : starRingEnd ℂ Complex.I = -Complex.I := Complex.conj_I
+  match_scalars <;> simp [hI2, hI3, hc1, Complex.ext_iff] <;> ring
 
 end CauchySchwarz
 
@@ -223,7 +430,7 @@ for a linear map `T : X → Y` between pre-Hilbert 𝒷-modules and `B > 0`:
 theorem adjointable_cstar_identity_1 (T : X →ₗ[ℂ] Y) (B : ℝ) (hB : 0 < B) :
     (∀ x : X, ‖T x‖ ≤ B * ‖x‖) ↔
       ∀ (x : X) (y : Y), ‖inner 𝒷 y (T x)‖ ≤ B * ‖y‖ * ‖x‖ :=
-  sorry
+  Theses.A.CStar.chilb_form_bounded T B hB
 
 /-- **143II** (`adjointable-cstar-identity`, dils.tex:1532, Lemma), part 2:
 for bounded adjointable `T` (with adjoint `S`): `‖T*‖ = ‖T‖` and
@@ -232,8 +439,30 @@ for bounded adjointable `T` (with adjoint `S`): `‖T*‖ = ‖T‖` and
 **143III** is the proof — not converted. -/
 theorem adjointable_cstar_identity_2 (T : X →L[ℂ] Y) (S : Y →L[ℂ] X)
     (h : ModuleAdjointTo 𝒷 ⇑T ⇑S) :
-    ‖S‖ = ‖T‖ ∧ ‖S.comp T‖ = ‖T‖ ^ 2 :=
-  sorry
+    ‖S‖ = ‖T‖ ∧ ‖S.comp T‖ = ‖T‖ ^ 2 := by
+  refine ⟨Theses.A.CStar.chilb_form_bounded_adjoint T S h, le_antisymm ?_ ?_⟩
+  · calc ‖S.comp T‖ ≤ ‖S‖ * ‖T‖ := S.opNorm_comp_le T
+      _ = ‖T‖ ^ 2 := by
+          rw [Theses.A.CStar.chilb_form_bounded_adjoint T S h]; ring
+  · -- `‖Tx‖² = ‖⟨Tx,Tx⟩‖ = ‖⟨x, S(Tx)⟩‖ ≤ ‖x‖ ‖S T‖ ‖x‖`
+    have key : ∀ x : X, ‖T x‖ ≤ Real.sqrt ‖S.comp T‖ * ‖x‖ := by
+      intro x
+      have h1 : ‖T x‖ ^ 2 ≤ ‖S.comp T‖ * ‖x‖ ^ 2 := by
+        rw [CStarModule.norm_sq_eq (A := 𝒷) (x := T x), h x (T x)]
+        calc ‖inner 𝒷 x (S (T x))‖ ≤ ‖x‖ * ‖S (T x)‖ :=
+              CStarModule.norm_inner_le X
+          _ ≤ ‖x‖ * (‖S.comp T‖ * ‖x‖) := by
+              gcongr
+              exact (S.comp T).le_opNorm x
+          _ = ‖S.comp T‖ * ‖x‖ ^ 2 := by ring
+      have h2 := Real.sqrt_le_sqrt h1
+      rwa [Real.sqrt_sq (norm_nonneg _), Real.sqrt_mul (norm_nonneg _),
+        Real.sqrt_sq (norm_nonneg _)] at h2
+    have hT : ‖T‖ ≤ Real.sqrt ‖S.comp T‖ :=
+      T.opNorm_le_bound (Real.sqrt_nonneg _) key
+    calc ‖T‖ ^ 2 ≤ (Real.sqrt ‖S.comp T‖) ^ 2 :=
+          pow_le_pow_left₀ (norm_nonneg T) hT 2
+      _ = ‖S.comp T‖ := Real.sq_sqrt (norm_nonneg _)
 
 /-- **143IV** (`hilbmod-cstar`, dils.tex:1580, Proposition): for a Hilbert
 𝒷-module `X` the adjointable bounded operators `𝒷ᵃ(X)` form a C*-algebra.
@@ -245,7 +474,7 @@ set up in `SelfDualCompletion.lean`.)
 **143V** is the proof — not converted. -/
 theorem hilbmod_cstar [CompleteSpace X] :
     IsClosed {T : X →L[ℂ] X | ModuleAdjointable 𝒷 ⇑T} :=
-  sorry
+  Theses.A.CStar.bax_cstar
 
 end Adjointable
 
@@ -447,15 +676,40 @@ theorem dils_uniform_spaces_basics_1 :
     (∀ F G : Filter X, Cauchy F → Cauchy G → FilterEquiv F G →
       FilterEquiv G F) ∧
     (∀ F G H : Filter X, Cauchy F → Cauchy G → Cauchy H →
-      FilterEquiv F G → FilterEquiv G H → FilterEquiv F H) :=
-  sorry
+      FilterEquiv F G → FilterEquiv G H → FilterEquiv F H) := by
+  refine ⟨fun F hF V hV => ?_, fun F G _ _ h V hV => ?_,
+    fun F G H _ hG _ hFG hGH V hV => ?_⟩
+  · -- reflexivity: `F ×ˢ F ≤ 𝓤 X` is exactly Cauchyness
+    obtain ⟨s, hs, t, ht, hst⟩ := Filter.mem_prod_iff.mp (hF.2 hV)
+    exact ⟨s, hs, t, ht, hst⟩
+  · -- symmetry: use that `𝓤 X` is invariant under `Prod.swap`
+    obtain ⟨s, hs, t, ht, hst⟩ := h _ (symm_le_uniformity hV)
+    refine ⟨t, ht, s, hs, ?_⟩
+    rintro ⟨a, b⟩ ⟨ha, hb⟩
+    exact hst (Set.mk_mem_prod hb ha)
+  · -- transitivity: split `V` as `W ○ W` and use a point of the middle filter
+    obtain ⟨W, hW, hWV⟩ := comp_mem_uniformity_sets hV
+    obtain ⟨s, hs, t₁, ht₁, hst⟩ := hFG W hW
+    obtain ⟨t₂, ht₂, u, hu, htu⟩ := hGH W hW
+    obtain ⟨y, hy₁, hy₂⟩ := hG.1.nonempty_of_mem (Filter.inter_mem ht₁ ht₂)
+    refine ⟨s, hs, u, hu, ?_⟩
+    rintro ⟨a, b⟩ ⟨ha, hb⟩
+    exact hWV ⟨y, hst (Set.mk_mem_prod ha hy₁), htu (Set.mk_mem_prod hy₂ hb)⟩
 
 /-- **147II** (`dils-uniform-spaces-basics`, dils.tex:1982, Exercise), part
 2: equivalent Cauchy filters have the same limits. -/
 theorem dils_uniform_spaces_basics_2 (F G : Filter X) (hF : Cauchy F)
     (hG : Cauchy G) (h : FilterEquiv F G) (x : X) (hFx : F ≤ 𝓝 x) :
-    G ≤ 𝓝 x :=
-  sorry
+    G ≤ 𝓝 x := by
+  rw [nhds_eq_comap_uniformity, ← Filter.map_le_iff_le_comap]
+  rw [nhds_eq_comap_uniformity, ← Filter.map_le_iff_le_comap] at hFx
+  intro V hV
+  -- split `V = W ○ W`; `F` is `W`-close to `x` and `G` is `W`-close to `F`
+  obtain ⟨W, hW, hWV⟩ := comp_mem_uniformity_sets hV
+  obtain ⟨s, hs, t, ht, hst⟩ := h W hW
+  obtain ⟨y, hy₁, hy₂⟩ := hF.1.nonempty_of_mem (Filter.inter_mem hs (hFx hW))
+  refine Filter.mem_map.mpr (Filter.mem_of_superset ht fun z hz => ?_)
+  exact hWV ⟨y, hy₂, hst (Set.mk_mem_prod hy₁ hz)⟩
 
 /-- **147II** (`dils-uniform-spaces-basics`, dils.tex:1982, Exercise), part
 3: limits are unique in a Hausdorff uniform space (Mathlib:
@@ -463,7 +717,7 @@ theorem dils_uniform_spaces_basics_2 (F G : Filter X) (hF : Cauchy F)
 theorem dils_uniform_spaces_basics_3 [T2Space X] {ι : Type w} (l : Filter ι)
     [l.NeBot] (x : ι → X) (a b : X) (ha : Tendsto x l (𝓝 a))
     (hb : Tendsto x l (𝓝 b)) : a = b :=
-  sorry
+  tendsto_nhds_unique ha hb
 
 /-- **147II** (`dils-uniform-spaces-basics`, dils.tex:1982, Exercise), part
 4: continuous maps preserve limits of nets (Mathlib:
@@ -471,7 +725,7 @@ theorem dils_uniform_spaces_basics_3 [T2Space X] {ι : Type w} (l : Filter ι)
 theorem dils_uniform_spaces_basics_4 (f : X → Y) (hf : Continuous f)
     {ι : Type w} (l : Filter ι) (x : ι → X) (a : X)
     (ha : Tendsto x l (𝓝 a)) : Tendsto (f ∘ x) l (𝓝 (f a)) :=
-  sorry
+  (hf.tendsto a).comp ha
 
 /-- **147II** (`dils-uniform-spaces-basics`, dils.tex:1982, Exercise), part
 5: uniformly continuous maps send Cauchy filters to Cauchy filters and
@@ -479,15 +733,22 @@ preserve equivalence (Mathlib: `Cauchy.map`). -/
 theorem dils_uniform_spaces_basics_5 (f : X → Y) (hf : UniformContinuous f) :
     (∀ F : Filter X, Cauchy F → Cauchy (F.map f)) ∧
     (∀ F G : Filter X, Cauchy F → Cauchy G → FilterEquiv F G →
-      FilterEquiv (F.map f) (G.map f)) :=
-  sorry
+      FilterEquiv (F.map f) (G.map f)) := by
+  refine ⟨fun F hF => hF.map hf, fun F G _ _ h V hV => ?_⟩
+  -- `(f × f)⁻¹ V` is an entourage of `X`, and images of witnesses work
+  obtain ⟨s, hs, t, ht, hst⟩ := h _ (hf hV)
+  refine ⟨f '' s, Filter.image_mem_map hs, f '' t, Filter.image_mem_map ht, ?_⟩
+  rintro ⟨a, b⟩ ⟨⟨a', ha', rfl⟩, ⟨b', hb', rfl⟩⟩
+  exact hst (Set.mk_mem_prod ha' hb')
 
 /-- **147II** (`dils-uniform-spaces-basics`, dils.tex:1982, Exercise), part
 6: for a dense `D ⊆ X`, every point is the limit of a Cauchy filter living
 on `D`. -/
 theorem dils_uniform_spaces_basics_6 (D : Set X) (hD : Dense D) (x : X) :
-    ∃ F : Filter X, F.NeBot ∧ D ∈ F ∧ Cauchy F ∧ F ≤ 𝓝 x :=
-  sorry
+    ∃ F : Filter X, F.NeBot ∧ D ∈ F ∧ Cauchy F ∧ F ≤ 𝓝 x := by
+  have hne : (𝓝[D] x).NeBot := mem_closure_iff_nhdsWithin_neBot.mp (hD x)
+  exact ⟨𝓝[D] x, hne, self_mem_nhdsWithin,
+    cauchy_nhds.mono nhdsWithin_le_nhds, nhdsWithin_le_nhds⟩
 
 /-- **147II** (`dils-uniform-spaces-basics`, dils.tex:1982, Exercise), part
 7: continuous maps into a Hausdorff space agreeing on a dense set are equal
@@ -495,7 +756,7 @@ theorem dils_uniform_spaces_basics_6 (D : Set X) (hD : Dense D) (x : X) :
 theorem dils_uniform_spaces_basics_7 [T2Space Y] (f g : X → Y)
     (hf : Continuous f) (hg : Continuous g) (D : Set X) (hD : Dense D)
     (h : Set.EqOn f g D) : f = g :=
-  sorry
+  hf.ext_on hD hg h
 
 /-- **147III** (`dils-product-uniformity`, dils.tex:2021, Exercise): the
 product uniformity (Mathlib: `Pi.uniformSpace`) makes the projections
@@ -506,7 +767,7 @@ theorem dils_product_uniformity {ι : Type w} {Z : ι → Type v}
     [∀ i, UniformSpace (Z i)] (f : X → ∀ i, Z i) :
     (∀ i, UniformContinuous fun z : ∀ i, Z i => z i) ∧
       (UniformContinuous f ↔ ∀ i, UniformContinuous fun x => f x i) :=
-  sorry
+  ⟨fun i => Pi.uniformContinuous_proj Z i, uniformContinuous_pi⟩
 
 end UniformBasics
 
@@ -651,8 +912,18 @@ variable {𝒷}
 /-- **149III** (`mod-projelabs`, dils.tex:2216, Exercise): if `⟨e,e⟩` is a
 projection, then `e⟨e,e⟩ = e` (mirrored: `⟨e,e⟩ • e = e`). -/
 theorem mod_projelabs (e : X) (he : IsStarProjection (inner 𝒷 e e)) :
-    inner 𝒷 e e • e = e :=
-  sorry
+    inner 𝒷 e e • e = e := by
+  set p : 𝒷 := inner 𝒷 e e with hp
+  have hpp : p * p = p := he.isIdempotentElem
+  have hps : star p = p := he.isSelfAdjoint
+  -- `⟨pe - e, pe - e⟩ = (p-1)p(p-1) = 0`, so `pe - e = 0`
+  have hzero : inner 𝒷 (p • e - e) (p • e - e) = (0 : 𝒷) := by
+    simp only [CStarModule.inner_sub_left, CStarModule.inner_sub_right,
+      CStarModule.inner_op_smul_left, CStarModule.inner_op_smul_right, ← hp,
+      hps, hpp, mul_zero, sub_zero]
+    simp
+  have := CStarModule.inner_self (A := 𝒷) (x := p • e - e) |>.mp hzero
+  rwa [sub_eq_zero] at this
 
 /-- **149IV** (`mod-parseval`, dils.tex:2225, Exercise (Parseval's
 identity)): for an orthonormal basis `(eᵢ)` of a pre-Hilbert 𝒷-module over

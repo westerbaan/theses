@@ -197,7 +197,37 @@ attribute [instance] HilbertTensor.nacg HilbertTensor.ips
 variable (H K) in
 /-- **109III** (proc.tex:2117, Exercise), part 3: any pair of Hilbert
 spaces has a tensor product (via orthonormal bases and part 1). -/
-theorem hilbertTensor_nonempty : Nonempty (HilbertTensor H K) := sorry
+theorem hilbertTensor_nonempty : Nonempty (HilbertTensor H K) := by
+  classical
+  -- The completion of the algebraic tensor product `H ⊗[ℂ] K`, which
+  -- Mathlib equips with the inner product `⟪x ⊗ y, x' ⊗ y'⟫ = ⟪x,x'⟫⟪y,y'⟫`.
+  set T := UniformSpace.Completion (H ⊗[ℂ] K)
+  set γ : H →ₗ[ℂ] K →ₗ[ℂ] T :=
+    LinearMap.compr₂ (TensorProduct.mk ℂ H K)
+      (UniformSpace.Completion.toComplₗᵢ (𝕜 := ℂ)).toLinearMap with hγ
+  have hγ_apply : ∀ (x : H) (y : K), γ x y = ((x ⊗ₜ[ℂ] y : H ⊗[ℂ] K) : T) := by
+    intro x y; rfl
+  refine ⟨{ space := T, map := γ, isTensor := ⟨?_, ?_⟩ }⟩
+  · -- the span of the pure tensors contains the (dense) image of `H ⊗ K`
+    have hsub : Set.range ((↑) : (H ⊗[ℂ] K) → T) ⊆
+        (Submodule.span ℂ {t : T | ∃ x y, t = γ x y} : Set T) := by
+      rintro _ ⟨z, rfl⟩
+      induction z with
+      | zero =>
+          have hz : ((0 : H ⊗[ℂ] K) : T) = 0 := UniformSpace.Completion.coe_zero
+          rw [hz]
+          exact Submodule.zero_mem _
+      | tmul x y =>
+          exact Submodule.subset_span ⟨x, y, (hγ_apply x y).symm⟩
+      | add z w hz hw =>
+          have hadd : ((z + w : H ⊗[ℂ] K) : T) = (z : T) + (w : T) :=
+            UniformSpace.Completion.coe_add z w
+          rw [hadd]
+          exact Submodule.add_mem _ hz hw
+    exact UniformSpace.Completion.denseRange_coe.mono hsub
+  · intro x x' y y'
+    rw [hγ_apply, hγ_apply, UniformSpace.Completion.inner_coe,
+      TensorProduct.inner_tmul]
 
 variable (H K) in
 /-- **110VI** (proc.tex:2349, Notation): a chosen tensor product
@@ -1083,7 +1113,7 @@ variable (A) in
 /-- The identity nmiu-map (infrastructure for 119V). -/
 noncomputable def nmiuId : NMIUMap A A :=
   { toStarAlgHom := StarAlgHom.id ℂ A
-    preservesDirSups' := sorry }
+    preservesDirSups' := preservesDirSups_id }
 
 /-- **119V** (`vn-smc`, proc.tex:4087, Theorem), naturality: the
 associators form a natural transformation, i.e.
