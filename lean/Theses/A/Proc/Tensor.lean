@@ -117,7 +117,21 @@ theorem prod_functional_unique [VonNeumannAlgebra A₁]
     (hc₁ : @Continuous C₁ ℂ (ultraweak C₁) _ ⇑h₁)
     (hc₂ : @Continuous C₁ ℂ (ultraweak C₁) _ ⇑h₂)
     (he₁ : ∀ (a : A₁) (b : B₁), h₁ (γ a b) = f a * g b)
-    (he₂ : ∀ (a : A₁) (b : B₁), h₂ (γ a b) = f a * g b) : h₁ = h₂ := sorry
+    (he₂ : ∀ (a : A₁) (b : B₁), h₂ (γ a b) = f a * g b) : h₁ = h₂ := by
+  letI : TopologicalSpace C₁ := ultraweak C₁
+  -- `h₁` and `h₂` agree on the range of `γ`, hence (being linear) on its
+  -- span, which is ultraweakly dense by condition (1) of 108II.
+  have hspan : Set.EqOn ⇑h₁ ⇑h₂
+      (Submodule.span ℂ {t : C₁ | ∃ a b, t = γ a b} : Set C₁) := by
+    intro t ht
+    induction ht using Submodule.span_induction with
+    | mem u hu =>
+        obtain ⟨a, b, rfl⟩ := hu
+        exact (he₁ a b).trans (he₂ a b).symm
+    | zero => simp
+    | add u v _ _ hu hv => simp [map_add, hu, hv]
+    | smul c u _ hu => simp [map_smul, hu]
+  exact DFunLike.coe_injective (Continuous.ext_on hγ.dense hc₁ hc₂ hspan)
 
 /-- The chosen product np-functional `γ(σ,τ)` of a tensor product (from
 field `prod_exists` of `IsTensorProduct`, by choice). -/
@@ -378,7 +392,45 @@ theorem hilb_tensor_unique {T T' : Type u} [NormedAddCommGroup T]
     [InnerProductSpace ℂ T'] [CompleteSpace T']
     (γ : H →ₗ[ℂ] K →ₗ[ℂ] T) (γ' : H →ₗ[ℂ] K →ₗ[ℂ] T')
     (hγ : IsHilbertTensorProduct γ) (hγ' : IsHilbertTensorProduct γ') :
-    ∃! φ : T ≃ₗᵢ[ℂ] T', ∀ x y, φ (γ x y) = γ' x y := sorry
+    ∃! φ : T ≃ₗᵢ[ℂ] T', ∀ x y, φ (γ x y) = γ' x y := by
+  -- Both `γ` and `γ'` are `ℓ²`-bounded by `1` (110III), so each factors
+  -- through the other; the two factorisations are mutually inverse.
+  obtain ⟨hb, huniv⟩ := hilb_tensor_universal_property (L := T') γ hγ
+  obtain ⟨hb', huniv'⟩ := hilb_tensor_universal_property (L := T) γ' hγ'
+  obtain ⟨F, ⟨hF, hFn⟩, -⟩ := huniv γ' 1 hb'
+  obtain ⟨G, ⟨hG, hGn⟩, -⟩ := huniv' γ 1 hb
+  have hGF : G.comp F = ContinuousLinearMap.id ℂ T := by
+    refine ContinuousLinearMap.ext_on hγ.dense ?_
+    rintro _ ⟨x, y, rfl⟩
+    simp [hF x y, hG x y]
+  have hFG : F.comp G = ContinuousLinearMap.id ℂ T' := by
+    refine ContinuousLinearMap.ext_on hγ'.dense ?_
+    rintro _ ⟨x, y, rfl⟩
+    simp [hF x y, hG x y]
+  have hGFa : ∀ t : T, G (F t) = t := fun t =>
+    congrArg (fun L : T →L[ℂ] T => L t) hGF
+  have hFGa : ∀ t : T', F (G t) = t := fun t =>
+    congrArg (fun L : T' →L[ℂ] T' => L t) hFG
+  -- `‖F‖ ≤ 1` and `‖G‖ ≤ 1` together with `G ∘ F = id` force `F` isometric.
+  have hnorm : ∀ t : T, ‖F t‖ = ‖t‖ := by
+    intro t
+    refine le_antisymm ?_ ?_
+    · simpa using F.le_opNorm t |>.trans (by
+        simpa using mul_le_mul_of_nonneg_right hFn (norm_nonneg t))
+    · calc ‖t‖ = ‖G (F t)‖ := by rw [hGFa t]
+        _ ≤ ‖G‖ * ‖F t‖ := G.le_opNorm _
+        _ ≤ 1 * ‖F t‖ := by gcongr
+        _ = ‖F t‖ := one_mul _
+  set e : T ≃ₗ[ℂ] T' :=
+    { toFun := F, map_add' := F.map_add, map_smul' := F.map_smul,
+      invFun := G, left_inv := hGFa, right_inv := hFGa } with he
+  refine ⟨⟨e, hnorm⟩, fun x y => hF x y, fun φ hφ => ?_⟩
+  refine LinearIsometryEquiv.ext fun t => ?_
+  have : (φ.toLinearIsometry.toContinuousLinearMap : T →L[ℂ] T') = F := by
+    refine ContinuousLinearMap.ext_on hγ.dense ?_
+    rintro _ ⟨x, y, rfl⟩
+    simpa using (hφ x y).trans (hF x y).symm
+  exact congrArg (fun L : T →L[ℂ] T' => L t) this
 
 /-! ## Parsec 1110: Schur's product theorem; the spatial tensor product -/
 
