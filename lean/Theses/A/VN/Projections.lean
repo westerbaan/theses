@@ -2522,6 +2522,13 @@ theorem ncp_union_3 (f : A →ₚ[ℂ] B) (hf : PreservesDirSups ⇑f) :
     rwa [map_zero f] at h0
   exact (ceil_basic_3 _ hfe).mpr h
 
+/-- **60IX**.2 specialised to conjugation, the form in which it is used
+repeatedly: `⌈b*(⋃P)b⌉ = ⋃_{p∈P} ⌈b* p b⌉` for a set `P` of projections. -/
+theorem ceil_conj_projSup (b : A) (P : Set A) (hP : ∀ p ∈ P, IsStarProjection p) :
+    ceil (star b * projSup P * b)
+      = projSup ((fun p => ceil (star b * p * b)) '' P) :=
+  ncp_union_2 (conjPMap b) (conjPMap_preservesDirSups b) P hP
+
 /-! ## Parsec 610
 
 **61I** (vn.tex:2967): the equation `⌈f(⌈a⌋)⌉ = ⌈f(a)⌋` fails for np-maps —

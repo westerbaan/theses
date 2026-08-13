@@ -53,7 +53,9 @@ the pseudoinverse is unique when it exists (by **60VIII**,
 `mult_cancellation`). -/
 theorem isPseudoinverse_unique (a t t' : A) (h : IsPseudoinverse A a t)
     (h' : IsPseudoinverse A a t') : t = t' :=
-  sorry
+  -- `ta = ⌈a⌋ = t'a` and `⌈t⌋ = ⌊a⌉ = ⌈t'⌋`, so **60VIII** applies
+  mult_cancellation_2 a t t' (le_of_eq (h.2.2.1.symm.trans h.2.2.2))
+    (le_of_eq (h'.2.2.1.symm.trans h'.2.2.2)) (h.1.trans h'.1.symm)
 
 open scoped Classical in
 /-- **79I** (`dfn-pseudoinverse`, vn.tex:5090, Definition): the
@@ -210,8 +212,18 @@ theorem approximate_pseudoinverse (a : A) :
 /-- **81I** (`division`, vn.tex:5342, Definition), well-definedness (via
 **60VIII**): for `a ∈ Ab` there is a unique `c ∈ A⌊b⌉` with `a = cb`. -/
 theorem exists_div (a b : A) (h : ∃ c : A, a = c * b) :
-    ∃! c : A, a = c * b ∧ c * rangeProj b = c :=
-  sorry
+    ∃! c : A, a = c * b ∧ c * rangeProj b = c := by
+  -- existence: replace a witness `c₀` by `c₀⌊b⌉`; uniqueness is **60VIII**,
+  -- since `c⌊b⌉ = c` forces `⌈c⌋ ≤ ⌊b⌉`
+  obtain ⟨c₀, hc₀⟩ := h
+  obtain ⟨hrb, hrba⟩ := (ceill_basic_2 b).1
+  refine ⟨c₀ * rangeProj b, ⟨by rw [mul_assoc, hrba, hc₀],
+    by rw [mul_assoc, hrb.isIdempotentElem.eq]⟩, ?_⟩
+  rintro c ⟨hcb, hcr⟩
+  refine mult_cancellation_2 b c (c₀ * rangeProj b)
+    ((ceill_basic_1 c).2 ⟨hrb, hcr⟩)
+    ((ceill_basic_1 _).2 ⟨hrb, by rw [mul_assoc, hrb.isIdempotentElem.eq]⟩) ?_
+  rw [mul_assoc, hrba, ← hc₀, ← hcb]
 
 open scoped Classical in
 /-- **81I** (`division`, vn.tex:5342, Definition): the quotient `a/b`: the
@@ -225,17 +237,79 @@ unique `c ∈ ⌈b⌋A` with `a = bc`, for `a ∈ bA` (junk value `0`
 otherwise). -/
 noncomputable def ldiv (b a : A) : A := star (div (star a) (star b))
 
+/-- The defining property of `a/b` (for `a ∈ Ab`). -/
+theorem div_spec (a b : A) (h : ∃ c : A, a = c * b) :
+    a = div a b * b ∧ div a b * rangeProj b = div a b := by
+  rw [div, dif_pos h]
+  exact (exists_div a b h).choose_spec.1
+
+/-- `a/b` is characterised by its defining property. -/
+theorem div_eq {a b c : A} (h1 : a = c * b) (h2 : c * rangeProj b = c) :
+    div a b = c :=
+  (exists_div a b ⟨c, h1⟩).unique (div_spec a b ⟨c, h1⟩) ⟨h1, h2⟩
+
+/-- Auxiliary: `⌊a*⌉ = ⌈a⌋`. -/
+theorem rangeProj_star (a : A) : rangeProj (star a) = suppProj a := by
+  rw [rangeProj, suppProj, star_star]
+
+/-- Auxiliary: `⌈a*⌋ = ⌊a⌉`. -/
+theorem suppProj_star (a : A) : suppProj (star a) = rangeProj a := by
+  rw [rangeProj, suppProj, star_star]
+
+/-- The defining property of `b∖a` (for `a ∈ bA`). -/
+theorem ldiv_spec (b a : A) (h : ∃ c : A, a = b * c) :
+    a = b * ldiv b a ∧ suppProj b * ldiv b a = ldiv b a := by
+  obtain ⟨c, hc⟩ := h
+  obtain ⟨h1, h2⟩ := div_spec (star a) (star b) ⟨star c, by rw [hc, star_mul]⟩
+  have hsb : star (suppProj b) = suppProj b :=
+    (ceill_basic_1 b).1.1.isSelfAdjoint.star_eq
+  constructor
+  · have hst := congrArg star h1
+    rw [star_star, star_mul, star_star] at hst
+    exact hst
+  · have hst := congrArg star h2
+    rw [star_mul, rangeProj_star, hsb] at hst
+    exact hst
+
+/-- `b∖a` is characterised by its defining property. -/
+theorem ldiv_eq {a b c : A} (h1 : a = b * c) (h2 : suppProj b * c = c) :
+    ldiv b a = c := by
+  have hsb : star (suppProj b) = suppProj b :=
+    (ceill_basic_1 b).1.1.isSelfAdjoint.star_eq
+  have h1' : star a = star c * star b := by rw [h1, star_mul]
+  have h2' : star c * rangeProj (star b) = star c := by
+    rw [rangeProj_star, ← hsb, ← star_mul, h2]
+  show star (div (star a) (star b)) = c
+  rw [div_eq h1' h2', star_star]
+
 /-- **81II** (vn.tex:5358, Exercise), part 1: `c/b ∈ ⌊c⌉A⌊b⌉` for
 `c ∈ bA`… (thesis: for every element `c` of `Ab`). -/
 theorem division_basic_1 (b c : A) (h : ∃ d : A, c = d * b) :
-    rangeProj c * div c b = div c b ∧ div c b * rangeProj b = div c b :=
-  sorry
+    rangeProj c * div c b = div c b ∧ div c b * rangeProj b = div c b := by
+  -- `⌊c⌉ = ⌊(c/b)b⌉ = ⌊(c/b)⌊b⌉⌉ = ⌊c/b⌉` by **60VII**.2, and `⌊d⌉d = d`
+  obtain ⟨hcb, hcr⟩ := div_spec c b h
+  refine ⟨?_, hcr⟩
+  have hrc : rangeProj c = rangeProj (div c b) := by
+    conv_lhs => rw [hcb]
+    rw [(ceil_fundamental_2 (div c b) b).2, hcr]
+  rw [hrc]
+  exact (ceill_basic_2 (div c b)).1.2
 
 /-- **81II** (vn.tex:5358, Exercise), part 2: `(ab)/b = a⌊b⌉` and
 `b∖(ba) = ⌈b⌋a`. -/
 theorem division_basic_2 (a b : A) :
-    div (a * b) b = a * rangeProj b ∧ ldiv b (b * a) = suppProj b * a :=
-  sorry
+    div (a * b) b = a * rangeProj b ∧ ldiv b (b * a) = suppProj b * a := by
+  obtain ⟨hrb, hrba⟩ := (ceill_basic_2 b).1
+  have hmain : ∀ x y : A, div (x * y) y = x * rangeProj y := by
+    intro x y
+    obtain ⟨hry, hrya⟩ := (ceill_basic_2 y).1
+    exact div_eq (by rw [mul_assoc, hrya])
+      (by rw [mul_assoc, hry.isIdempotentElem.eq])
+  refine ⟨hmain a b, ?_⟩
+  have hsb : star (suppProj b) = suppProj b :=
+    (ceill_basic_1 b).1.1.isSelfAdjoint.star_eq
+  show star (div (star (b * a)) (star b)) = suppProj b * a
+  rw [star_mul, hmain (star a) (star b), rangeProj_star, star_mul, hsb, star_star]
 
 /-- **81II** (vn.tex:5358, Exercise), part 3: for `c ∈ aAb`:
 `a∖c ∈ Ab`, `c/b ∈ aA`, and `(a∖c)/b = a∖(c/b) =: a∖c/b` is the unique
@@ -244,23 +318,89 @@ theorem division_basic_3 (a b c : A) (h : ∃ d : A, c = a * d * b) :
     (∃ d : A, ldiv a c = d * b) ∧ (∃ d : A, div c b = a * d) ∧
       div (ldiv a c) b = ldiv a (div c b) ∧
       (∃! d : A, c = a * d * b ∧ suppProj a * d = d ∧
-        d * rangeProj b = d) :=
-  sorry
+        d * rangeProj b = d) :=  by
+  -- everything is read off from the two explicit descriptions
+  -- `a∖c = (⌈a⌋d)b` and `c/b = a(d⌊b⌉)`
+  obtain ⟨d, hd⟩ := h
+  obtain ⟨hsa, hsaa⟩ := (ceill_basic_1 a).1
+  obtain ⟨hrb, hrbb⟩ := (ceill_basic_2 b).1
+  have hl : ldiv a c = suppProj a * d * b := by
+    refine ldiv_eq (by rw [hd, ← mul_assoc, ← mul_assoc, hsaa]) ?_
+    rw [← mul_assoc, ← mul_assoc, hsa.isIdempotentElem.eq]
+  have habs : a * (suppProj a * d * rangeProj b) * b = a * d * b := by
+    calc a * (suppProj a * d * rangeProj b) * b
+        = a * suppProj a * d * (rangeProj b * b) := by noncomm_ring
+      _ = a * d * b := by rw [hsaa, hrbb]
+  have hidem : suppProj a * d * rangeProj b * rangeProj b
+      = suppProj a * d * rangeProj b := by
+    calc suppProj a * d * rangeProj b * rangeProj b
+        = suppProj a * d * (rangeProj b * rangeProj b) := by noncomm_ring
+      _ = suppProj a * d * rangeProj b := by rw [hrb.isIdempotentElem.eq]
+  have hr : div c b = a * (d * rangeProj b) := by
+    refine div_eq ?_ ?_
+    · rw [hd]
+      calc a * d * b = a * d * (rangeProj b * b) := by rw [hrbb]
+        _ = a * (d * rangeProj b) * b := by noncomm_ring
+    · calc a * (d * rangeProj b) * rangeProj b
+          = a * (d * (rangeProj b * rangeProj b)) := by noncomm_ring
+        _ = a * (d * rangeProj b) := by rw [hrb.isIdempotentElem.eq]
+  refine ⟨⟨suppProj a * d, hl⟩, ⟨d * rangeProj b, hr⟩, ?_, ?_⟩
+  · rw [hl, hr, (division_basic_2 (suppProj a * d) b).1,
+      (division_basic_2 (d * rangeProj b) a).2, mul_assoc]
+  · refine ⟨suppProj a * d * rangeProj b, ⟨?_, ?_, hidem⟩, ?_⟩
+    · rw [hd, habs]
+    · rw [← mul_assoc, ← mul_assoc, hsa.isIdempotentElem.eq]
+    · -- uniqueness: cancel `b` on the right (**60VIII**), then `a` on the left
+      rintro e ⟨he, hea, heb⟩
+      have hcancelb : a * e = a * (suppProj a * d * rangeProj b) := by
+        refine mult_cancellation_2 b (a * e) (a * (suppProj a * d * rangeProj b))
+          ((ceill_basic_1 _).2 ⟨hrb, by rw [mul_assoc, heb]⟩)
+          ((ceill_basic_1 _).2 ⟨hrb, by rw [mul_assoc, hidem]⟩) ?_
+        rw [← he, hd, habs]
+      have hstar := congrArg star hcancelb
+      rw [star_mul, star_mul] at hstar
+      have hkey : star e = star (suppProj a * d * rangeProj b) := by
+        refine mult_cancellation_2 (star a) (star e)
+          (star (suppProj a * d * rangeProj b)) ?_ ?_ hstar
+        · rw [suppProj_star, rangeProj_star]
+          exact (ceill_basic_2 e).2 ⟨hsa, hea⟩
+        · rw [suppProj_star, rangeProj_star]
+          refine (ceill_basic_2 _).2 ⟨hsa, ?_⟩
+          rw [← mul_assoc, ← mul_assoc, hsa.isIdempotentElem.eq]
+      have := congrArg star hkey
+      rwa [star_star, star_star] at this
 
 /-- **81II** (vn.tex:5358, Exercise), part 4: for `c ∈ Ab` and `d ∈ aA`:
 `dc ∈ aAb` and `a∖(dc)/b = (a∖d)(c/b)`. -/
 theorem division_basic_4 (a b c d : A) (hc : ∃ x : A, c = x * b)
     (hd : ∃ x : A, d = a * x) :
     (∃ x : A, d * c = a * x * b) ∧
-      ldiv a (div (d * c) b) = ldiv a d * div c b :=
-  sorry
+      ldiv a (div (d * c) b) = ldiv a d * div c b := by
+  obtain ⟨hc1, hc2⟩ := div_spec c b hc
+  obtain ⟨hd1, hd2⟩ := ldiv_spec a d hd
+  obtain ⟨x, hx⟩ := hc
+  obtain ⟨y, hy⟩ := hd
+  refine ⟨⟨y * x, by rw [hx, hy]; noncomm_ring⟩, ?_⟩
+  -- `(dc)/b = d(c/b)`, and then `a∖(d(c/b)) = (a∖d)(c/b)`
+  have h1 : div (d * c) b = d * div c b :=
+    div_eq (by conv_lhs => rw [hc1]
+               noncomm_ring)
+      (by rw [mul_assoc, hc2])
+  rw [h1]
+  refine ldiv_eq ?_ ?_
+  · conv_lhs => rw [hd1]
+    noncomm_ring
+  · rw [← mul_assoc, hd2]
 
 /-- **81II** (vn.tex:5358, Exercise), part 5: for `c ∈ Ab`: `c* ∈ b*A` and
 `b*∖c* = (c/b)*`. -/
 theorem division_basic_5 (b c : A) (h : ∃ x : A, c = x * b) :
     (∃ x : A, star c = star b * x) ∧
-      ldiv (star b) (star c) = star (div c b) :=
-  sorry
+      ldiv (star b) (star c) = star (div c b) := by
+  obtain ⟨x, hx⟩ := h
+  refine ⟨⟨star x, by rw [hx, star_mul]⟩, ?_⟩
+  show star (div (star (star c)) (star (star b))) = star (div c b)
+  rw [star_star, star_star]
 
 /-- **81III** (`proto-douglas`, vn.tex:5395, Lemma), part 1: if
 `a*a ≤ b*b` then `a ∈ Ab`, and the series `∑ₙ atₙ` (for an approximate
