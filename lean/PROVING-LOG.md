@@ -488,6 +488,11 @@ axiom, which uses the `ζ` of 211VII in place of the dagger `m†` — the same 
 without needing the dagger development.  Three `eff.tex` errata rows came out of
 the comparison (208III, 226II, 226VII) — see ERRATA.md.
 
+> ⚠ **The paragraph below is wrong; see session 5.**  174IV `PCM.isSumOf_perm`
+> has been proved since session 1 and 178V is proved as well — the DISP search
+> that produced this claim hit 174IV's doc comment, which was misfiled on the
+> helper `isSumOf_swap`.  178III.1 is now proved too.
+
 **Sharpest remaining blocker: 174IV.**  178III.1
 `unitInterval_effectMonoid_unique` (asserted without proof at eff.tex:636) has a
 clear Cauchy-functional-equation argument, but its very first step
@@ -500,7 +505,272 @@ blocker into: thesis A (the `vNᵒᵖ` examples), the †-effectus block 215III�
 219XVI), the `𝒟_M`/`AConv_M` subsum infrastructure, and the statements the
 thesis only cites.
 
+### Session 4 — `A/CStar/TowardsVN.lean` is complete; 39VII is an erratum
+
+**`A/CStar/TowardsVN.lean` 5 → 0 code `sorry`s.**  38IV.2, 39VII, 39IX
+(`bh_np`), 35VI `hellinger_toeplitz` and 36V `chilb_form_representation` are all
+proved and axiom-clean (`propext, Classical.choice, Quot.sound` only), which
+removes the A/CStar half of the 77I block recorded in the next section.
+
+**Import change.** `TowardsVN.lean` now imports `Theses.A.CStar.Representation`
+(hence `Positive`, `Basic`) instead of only `Theses.Common`.  This adds nothing
+to the downstream closure — `A/VN/Basic.lean` already imported both — and buys
+two things the file previously had to do without: `ketbra` (**4XIX**) and its
+norm, which the file was *re-declaring privately*, and **30IV.1**
+`omega_norm_basic_1`, i.e. the thesis's own **Kadison inequality**, which 39VII's
+proof cites by name.  The private duplicate `ketbra` is deleted.
+
+#### ⚠️ 39VII (`bh-np-lemma`, cstar.tex:6611) — the double sum is not an
+unordered sum, and as printed the statement is false
+
+The thesis writes `ω(A) = ∑_{e,e'∈E} ⟪e, A e'⟫ ω(|e⟩⟨e'|)`.  Its own convention
+for a sum over an index set is fixed in **6II**'s proof (`cstar.tex:880`): "given
+`ε>0` find a finite `G ⊆ I` with `|∑_{i∈F}…| ≤ ε` for all finite `F ⊆ I∖G`" —
+i.e. unordered/unconditional summability, which is Lean's `HasSum`, and which for
+scalars is equivalent to *absolute* summability.  Under that reading the
+statement is **false**.
+
+Counterexample (ours).  Take `H = ℓ²(ℕ)` with `E` the standard basis and
+`ω = ⟪x, (·) x⟫`, a normal p-map by **38II**.  Then
+`ω(|eᵢ⟩⟨e_j|) = xᵢ x_j` and the `(i,j)` term is `A_{ij} xᵢ x_j`, so
+unconditional summability would force `∑_{i,j} |A_{ij}| xᵢ x_j < ∞`.  Let `A` be
+block diagonal with `N_k × N_k` **discrete-Fourier** blocks — unitary, so
+`‖A‖ = 1`, and every entry of modulus `N_k^{-1/2}` — and let `x` be constant
+`c_k` on block `k`.  Then `∑ᵢ xᵢ² = ∑_k N_k c_k²` while
+`∑_{i,j}|A_{ij}| xᵢ x_j = ∑_k N_k² · N_k^{-1/2} · c_k² = ∑_k N_k^{3/2} c_k²`, a
+factor `√N_k` larger term by term.  Choosing `N_k = k⁸` and `c_k² = k^{-10}`
+gives `∑ᵢ xᵢ² = ∑_k k^{-2} < ∞` but `∑_k k^{12}·k^{-10} = ∑_k k² = ∞`.
+(DFT blocks, not Hadamard, so that every `N_k` is allowed.)
+
+The thesis's *proof* proves something else, and something true: it shows
+`ω(A − PAP) → 0` for `P = ∑_{e∈F} |e⟩⟨e|`, i.e. convergence of the **square**
+partial sums `∑_{e,e'∈F}` along finite `F ⊆ E`.  That is also exactly the form
+39IX uses (to conclude `ω = ω'` from agreement on the `|e⟩⟨e'|`).  Our Lean
+statement is therefore **realigned** to
+
+```lean
+Tendsto (fun F : Finset E => ∑ e ∈ F, ∑ e' ∈ F, ⟪e, A e'⟫ * ω (ketbra e e'))
+  atTop (𝓝 (ω A))
+```
+
+and proved.  ERRATA.md carries the row; the doc comment carries the
+counterexample.  (An *iterated* sum `∑_e (∑_{e'} …)` is also true — the inner sum
+is `⟪e, Aϱe⟫` and the outer is `tr(Aϱ)` with `ϱ` trace class — but it needs `ϱ`,
+which is 39IX's own content, so it is not the right restatement here.)
+
+#### Divergences
+
+* **38IV.2** `bh_functional_lemma_2` — **transcribed** (class 1/3).  The thesis
+  reduces to directed sets of *effects* by **38III** so that the terms
+  `⟪xₙ, T xₙ⟫` are nonnegative, then interchanges `⋁_{T∈𝒟}` with `⋁_N`.  We do
+  exactly that, via `bh_normal_effects`; the one deviation is that the inner
+  supremum over partial sums is handled as a **limit** (`tsum_le_of_sum_le`,
+  `tendsto_atTop_isLUB` on the directed index type, `tendsto_finsetSum`) rather
+  than as a supremum, since `ℂ` with `ComplexOrder` is not a lattice.  The
+  positivity supplied by the reduction to effects is still needed: it is what
+  makes a finite partial sum bounded by the total.
+* **39VII** `bh_np_lemma` — **transcribed** apart from the restatement above.
+  `P A P = ∑_{e,e'∈F} ⟪e,Ae'⟫|e⟩⟨e'|`, `P² = P`, `‖P‖ ≤ 1`,
+  `A − PAP = P^⊥A + PAP^⊥`, Kadison (30IV.1) twice, and
+  `ω(P^⊥) = ω(1) − ∑_{e∈F} ω(|e⟩⟨e|) → 0` by **39VI**.3 — all as printed.
+* **39IX** `bh_np` — **transcribed, with one substitution** (class 3).  The
+  thesis gets `ϱ` from **36V** `chilb-form-representation`; 36V is still `sorry`
+  here, and for `𝒜 = ℂ` it *is* Riesz representation (which is how **36II**
+  justifies self-duality of a Hilbert space), so `exists_rho` builds `ϱ` from
+  Mathlib's `InnerProductSpace.toDual` instead.  Positivity of `ϱ`, `√ϱ`,
+  `ω(1) = ∑_e ‖√ϱ e‖²` via 39VI.3, and the final identification via 39VII are the
+  thesis's own steps.  Two further deviations, both forced by our statement:
+  * the thesis proves `ω(|x⟩⟨x|) = ω'(|x⟩⟨x|)` and extends **by polarisation**;
+    the same computation gives `ω(|u⟩⟨v|) = ⟪√ϱ v, √ϱ u⟫ = ω'(|u⟩⟨v|)` for all
+    `u, v` directly (it is just Parseval, 39IV.3, applied to `√ϱ v, √ϱ u`), so
+    polarisation is not needed;
+  * our statement asks for a sequence `x : ℕ → H`, whereas the thesis's family is
+    indexed by the basis `E` and it merely remarks parenthetically that "`√ϱ e`
+    is non-zero for at most countably many `e`".  That remark is discharged
+    explicitly: `Summable.countable_support` on `∑ ‖√ϱ e‖²`, an injection
+    `supp → ℕ`, and `Function.extend` to pad with zeros, transported with
+    `Function.Injective.hasSum_iff` + `hasSum_subtype_iff_of_support_subset`.
+
+#### Parsecs 350–360: 35VI and 36V, and one mis-transcription of ours
+
+Both were transcribed from the thesis's own proofs.
+
+* **35VI** `hellinger_toeplitz` — faithful.  For each `y`, `⟨T*y, ·⟩ : X → 𝒜`
+  is bounded by `‖T*y‖` (32VI); `sup_{‖y‖≤1} ‖⟨y, Tx⟩‖ ≤ ‖Tx‖ < ∞` pointwise,
+  so **35II** (uniform boundedness) gives a uniform `B`; then `‖Tx‖² =
+  ‖⟨Tx,Tx⟩‖ ≤ B‖Tx‖‖x‖` (the nontrivial half of **32X**, inlined here because
+  `TowardsVN.lean` sits below `Matrices.lean` in our file order).  One Lean-only
+  wrinkle: Mathlib deliberately does **not** register `NormedSpace ℂ E` for a
+  `CStarModule` (it wants to be free to replace the topology), so `banach_
+  steinhaus` is unusable until the instance is supplied `letI`-style from
+  `CStarModule.normedSpaceCore`.
+* ⚠️ **36V** `chilb_form_representation` — **our statement was missing
+  completeness**, and is now fixed (`[CompleteSpace X]` added).  The source says
+  "self-dual **Hilbert** 𝒜-modules", and 32I defines a Hilbert 𝒜-module to be a
+  pre-Hilbert module *complete* in its norm; our `CStarModule` hypotheses give
+  only the pre-Hilbert structure.  This is not cosmetic: the thesis's proof gets
+  boundedness of `T` and `S` from 35VI, which **35IX** shows is false without
+  completeness.  One of `X`, `Y` suffices, so only `[CompleteSpace X]` is added.
+  (Checked the siblings, per the half-repair rule: 36I `SelfDual` is a
+  predicate and needs nothing; 36III `selfDual_pi` is about `𝒜^N`, which is
+  complete anyway, and is already proved without the hypothesis — i.e. slightly
+  stronger than the thesis, which is harmless.)
+
+  With that, the proof is the thesis's: represent `[x,·]` by `T x` (self-duality
+  of `Y`) and `[·,y]*` by `S y` (self-duality of `X`), get linearity and
+  𝒜-linearity of both from definiteness of the inner product, note `S` and `T`
+  are adjoint, and apply 35VI.
+
+#### Doc-comment line references in this file were ~80–95 lines stale
+
+Every `cstar.tex:LINE` in `TowardsVN.lean` predated the author's 2026-08-13 edits
+(e.g. `bh-np-lemma` 6521 → **6611**), and the drift is *not* uniform (+80 in
+parsec 350–370, +95 in 380, +90 in 390), so it cannot be corrected by eye.  All
+28 of them are now re-derived from the labels and fixed.  **Other files very
+likely have the same drift** — worth a mechanical sweep: match each doc comment's
+label against `\begin{point}{N}[label]` in the `.tex`.
+
+No other errata found in parsecs 350–390.  **Note for the record**: `asols.tex`
+stops at parsec 340, so 38VI and 39VI have no published solution; the proofs of
+their neighbours here are ours, as was already the case for 38VI.2.
+
+### Session 5 — B/Eff: 178III.1 and the `AConv_M` coproduct; and 174IV was never `sorry`
+
+B/Eff went **43 → 40** code `sorry`s.  Zero `sorryAx` leakage still holds:
+1248 non-internal declarations under `Theses.B.Eff`, exactly 40 of them
+`sorry`, none merely depending on one.  All three new theorems and the moved
+helper report `[propext, Classical.choice, Quot.sound]`.
+
+**First, a correction to the session-3 hand-off, because it cost this session
+its stated priority.**  Session 3 recorded *"174IV `PCM.isSumOf_perm` is the
+highest-leverage `sorry` left in `EffectAlgebras.lean`; it blocks 178III.1 and
+178V."*  **174IV has been proved since session 1** (commit `634cd1f`), and
+**178V `emond_lemma_for_conv` is proved too** — it *uses* 174IV.  The cause is
+worth knowing: the doc comment carrying "**174IV** (eff.tex:223)" was attached
+to the *helper* `PCM.isSumOf_swap`, and `PCM.isSumOf_perm` — the actual 174IV —
+carried **no doc comment at all**, so a DISP-number search found only a helper
+sitting next to a proof it did not belong to.  Fixed: 174IV's doc comment now
+sits on `isSumOf_perm`, and `isSumOf_swap` is labelled a helper.  *Moral: when
+a hand-off says "X is still `sorry`", check the declaration, not the
+doc comment.*
+
+#### 178III.1 `unitInterval_effectMonoid_unique` — proved; the argument is ours
+
+eff.tex:636 asserts "(This is the only way to turn `[0,1]` into an effect
+monoid)" with a citation to `basmsc` prop. 41 and no proof, so there was
+nothing to transcribe.  The Lean proof:
+
+1. transport the hypothesis `em.toEffectAlgebra = unitInterval.effectAlgebra`
+   by `rw`, so that `⊥` and `⋁` become the standard `x + y ≤ 1` / `x + y`
+   while `⊙` stays an unknown binary operation;
+2. one-sided distributivity (`emon_mul_ovee`, below) makes `y ↦ a ⊙ y`
+   additive on defined sums, and it is nonnegative, hence monotone;
+3. induction gives `a ⊙ (n·y) = n·(a ⊙ y)`, so `a ⊙ (k/n) = a·k/n`;
+4. squeezing with `k = ⌊n·y⌋` gives the **lower** bound `a·y − 1/n ≤ a ⊙ y`;
+   the upper bound is free from `(a ⊙ y) + (a ⊙ yᵖ) = a ⊙ 1 = a`.
+
+Step 4's asymmetry is the only cleverness: doing the ceiling side directly
+needs `min(⌊ny⌋+1, n)` to stay inside `[0,1]`, and the orthocomplement trick
+removes that case split entirely.  Since nobody had checked the statement, it
+was worth being suspicious — but no defect: it is true as asserted.
+
+**By-product, and it vindicates the thesis's own solution to 178IIIa after the
+fact.**  `emon_mul_ovee` (`c ⊥ d ⟹ a⊙c ⊥ a⊙d` and `(a⊙c) ⋁ (a⊙d) = a⊙(c⋁d)`)
+is *not* an effect-monoid axiom — 178II only gives the four-fold law — but it
+follows from that law once `0 ⊙ x = 0` is known.  The `exc-emonzero` solution
+in `bsols.tex` uses one-sided distributivity to *prove* `a ⊙ 0 = 0`, which is
+therefore circular rather than merely under-justified (ERRATA row sharpened).
+The lemma existed **twice** in the tree (`EffectAlgebras` had none,
+`StatesPredicates.lean:109` had it) — one of the duplicate helpers HANDOFF
+predicted.  Consolidated into `EffectAlgebras.lean` next to `exc_emonzero`,
+keeping the `StatesPredicates` orientation so its four use sites are
+unaffected.
+
+*File order*: `unitInterval_effectMonoid_unique` (178III.1) needs
+`exc_emonzero` (178IIIa), which the thesis states *after* it, so the theorem
+now sits after 178IIIa with a pointer comment at its numbering slot — the same
+device session 3 used for 208III.
+
+#### 193V `aconv_coprod` and 194I.1 `aconvalmosteffectus_coproducts` — proved
+
+Both transcribe eff.tex:2806–2890 directly (class 1): the coproduct is the
+quotient of the free convex set `𝒟_M(X+Y)` by the least congruence relating
+`𝒟_M κ₁ φ` to `η(κ₁(h_X φ))` (and likewise for `κ₂`); the mediating map is
+`h_Z ∘ 𝒟_M[f,g]`, which is affine and whose kernel is a congruence containing
+those pairs; uniqueness is the thesis's "turn the wheel" computation
+`k' ∘ q = k' ∘ q ∘ μ ∘ 𝒟_M η = h_Z ∘ 𝒟_M[f,g]`.  Everything it needs was
+already proved in the file (193II.1–3, 193III, 193IV, and the full monad
+structure `map_comp`/`map_eta`/`mu_map`/`mu_map_eta`/`mu_mu`).
+
+**Our own statement was wrong, in a way only Lean sees — universe levels.**
+`aconv_coprod` was stated as `HasBinaryCoproducts (AConvMCat.{u, v} M)`.  The
+coproduct's carrier is a quotient of `𝒟_M(X+Y)`, i.e. of `X+Y → M`, which
+lives in `Type (max u v)`; for `v < u` no object of `AConvMCat.{u, v} M` can
+carry it — already `1 + 1 ≅ 𝒟_M{1,2}` has as many elements as `M`.  Both this
+and `aconvalmosteffectus_coproducts` are now stated at
+`AConvMCat.{u, max u v}`, which is the general true form and specialises to
+the `{u, u}` that `n_times_one_aconvm` already used.  (`_terminal` is
+unaffected — `PUnit` is small.  `_jointlyMonic` and `_kappaPullback` take
+`HasFiniteCoproducts` as a *hypothesis*, so they stay true as stated; but that
+hypothesis is only instantiable at `v ≥ u`.)  This is our transcription error,
+not a thesis defect.
+
+**Thesis defect found in the comparison (ERRATA, 194I).**  The thesis's proof
+opens "As `𝒟_M ∅ = ∅`, the empty set is trivially also an abstract `M`-convex
+set and in fact the initial object of `AConv_M`".  That fails for the
+**trivial** effect monoid (`1 = 0`): a formal convex combination must sum to
+`1`, so when `1 = 0` the *empty* combination qualifies and `𝒟_M ∅` is a
+singleton — there is no `h : 𝒟_M ∅ → ∅`, and `∅` is not an object of
+`AConv_M`.  The proposition survives, because for `1 = 0` every abstract
+`M`-convex set is a singleton (`x = h(η x) = h(η y) = y`) so `AConv_M` is the
+terminal category and `1` is initial; the Lean proof splits on `1 = 0`
+accordingly.
+
+#### What is left, and where it is blocked
+
+Two doc-comment repairs made in passing (both were factually stale, not
+statements): the `AConv_M` category instance and `AConvMCat.free` no longer
+claim their obligations are `sorry`-ed.
+
+**The †-effectus block is blocked on more than 219XVI.**  The hand-off called
+219XVI (`dagger-is-functor`) "the gateway"; checked against eff.tex it is not a
+one-lemma gap.  219XVI's proof works "in setting `dagger-setting`" (219II,
+eff.tex:5980), which introduces **four isomorphisms** `χ, ω, β, α` — each
+obtained from a standard-form/quotient/comprehension uniqueness argument that
+itself needs an image computation — and then chains **six** further results:
+219III (`f ∘ g` in standard form), 219V `dagger-of-fg`, 219VII
+`dagger-iso-beta2`, 219IX `dagger-iso-alpha2`, 219X `dagger-iso-zeta2`, 219XIII
+`dagger-iso-omega2` and 219XIV `dagger-iso-chi2`.  **None of the seven is
+formalized** — `Dagger.lean`'s own header says so explicitly ("Not separately
+formalized: … the Setting 219II with its internal lemmas … represented here by
+the standalone 219XI and 219XVI").  219XI `dagger_iso_mu` *is* proved, and it
+is what 219XIV rests on, so the block is genuinely reachable — but it is a
+~7-lemma, several-hundred-line job, not a gateway.  `bsols.tex` has solutions
+for 219IX and 219X (keyed `dagger-iso-alpha2`, `dagger-iso-zeta2`); 219VII and
+219XIII have inline proofs; 219XIV has the longest.  Downstream of it:
+`dagger_thm_sufficiency` (220II, whose own argument is short and mostly
+transcribable once 219XVI lands), `dagger_theorem` (215III, which is then
+`dagger_thm_necessity` + 220II), and `snake_lemma` (228II).
+
+⚠ Do **not** shortcut `dagger_theorem` by `⟨dagger_thm_necessity, fun _ =>
+dagger_thm_sufficiency⟩`: that would make a proved declaration depend on a
+`sorry`ed one and destroy the zero-leakage property for one cosmetic
+`sorry`.
+
+The `𝒟_M`/`AConv_M` group is now the most self-contained remaining block:
+194I.3 `aconvalmosteffectus_jointlyMonic` and 194I.4
+`aconvalmosteffectus_kappaPullback` both argue through the *explicit*
+description of coproduct elements — 193IX (`elements-coprod-conv`) and the
+`n · 1 ≅ 𝒟_M{1,…,n}` of 193X — and 193IX is deliberately not formalized (only
+its existence statements are).  So the next step there is 193X
+`n_times_one_aconvm`, whose hint is "`𝒟_M`, as a left adjoint, preserves
+coproducts"; with 193V now available that is the natural continuation.
+
 ### Session 3 — 77I is blocked, precisely, and the block is in A/CStar
+
+> **Superseded in part (session 4):** the A/CStar half of this block — 38IV.2,
+> 39VII, 39IX `bh_np` — is now proved.  76I and 76III should be reachable; the
+> A/VN half (72V `normal_functionals_lemma`, 75VIII `vnsac`) stands.
 
 `A/VN/Completeness.lean` went 25 → 21 (72III.1b, 72III.1c, 73IV, 72IV).  The
 point of the pass was 77I; it is **not reachable yet**, and the reason is now

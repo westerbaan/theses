@@ -86,7 +86,19 @@ This is our transcription, not a thesis defect.  *Decision needed*: restate to
 pin `map`/`η`/`μ` (we would then prove them — the intended witness already
 exists).
 
-### B7. Minor: `bsols.tex`'s `onb1` solution over-assumes
+### B7. 194I — is the trivial effect monoid (`1 = 0`) admitted?
+`eff.tex:2974`.  The proof says "As `𝒟_M ∅ = ∅`, the empty set is … the initial
+object of `AConv_M`".  When `1 = 0` the empty formal combination sums to `1`, so
+`𝒟_M ∅` is a *singleton* and `∅` is not an abstract `M`-convex set at all.  The
+proposition still holds (for `1 = 0` every object is a singleton, so `1` is
+initial) and our Lean proof splits on it.
+
+*Decision needed*: keep effect monoids possibly trivial and add the case split,
+or exclude `1 = 0` from the definition (178II) once and for all?  The same
+question governs `MConvexComb`, whose `sum_one` degenerates identically — the
+`1 = 0` branch already appears in five proofs in `StatesPredicates.lean`.
+
+### B8. Minor: `bsols.tex`'s `onb1` solution over-assumes
 Its solution assumes self-duality, which neither the exercise nor our statement
 requires.  Harmless; noted for tidiness.
 

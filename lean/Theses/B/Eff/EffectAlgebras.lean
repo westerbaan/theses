@@ -210,9 +210,8 @@ theorem PCM.isSumOf_cons_iff {M : Type u} [PCM M] {a : M} {l : List M} {s : M} :
   · rintro ⟨t, hl, hp, rfl⟩
     exact PCM.IsSumOf.cons hl hp
 
-/-- **174IV** (eff.tex:223): in a PCM a sum depends only on which elements
-occur (and how often), not on their order: if `x₁ ⋁ ⋯ ⋁ xₙ` exists, then so
-does the sum over any permutation, with the same value. -/
+/-- Helper for **174IV**: transposing the first two summands (this is where
+`PCM.assoc_left` and partial commutativity do the work). -/
 theorem PCM.isSumOf_swap {M : Type u} [PCM M] {a b : M} {l : List M} {s : M}
     (hs : PCM.IsSumOf (a :: b :: l) s) : PCM.IsSumOf (b :: a :: l) s := by
   rw [PCM.isSumOf_cons_iff] at hs
@@ -231,6 +230,12 @@ theorem PCM.isSumOf_swap {M : Type u} [PCM M] {a b : M} {l : List M} {s : M}
   rw [← key]
   exact PCM.IsSumOf.cons (PCM.IsSumOf.cons hl _) _
 
+/-- **174IV** (eff.tex:223, stated there without proof): in a PCM a sum
+depends only on which elements occur (and how often), not on their order: if
+`x₁ ⋁ ⋯ ⋁ xₙ` exists, then so does the sum over any permutation of the list,
+with the same value.  (Generalized/permutation associativity.  The argument
+is ours: induction over `List.Perm`, the transposition case being
+`PCM.isSumOf_swap`.) -/
 theorem PCM.isSumOf_perm {M : Type u} [PCM M] {l l' : List M} {s : M}
     (hp : l.Perm l') (hs : PCM.IsSumOf l s) : PCM.IsSumOf l' s := by
   induction hp generalizing s with
@@ -1496,12 +1501,9 @@ noncomputable instance unitInterval.effectMonoid : EffectMonoid I :=
         simp only [hO, Set.Icc.coe_mul]
         ring }
 
-/-- **178III.1** (`eff-monoid-examples`, eff.tex:636, Examples): the usual
-product is the *only* way to turn the effect algebra `[0,1]` into an effect
-monoid. -/
-theorem unitInterval_effectMonoid_unique (em : EffectMonoid I)
-    (h : em.toEffectAlgebra = unitInterval.effectAlgebra) :
-    ∀ a b : I, em.toMul.mul a b = a * b := sorry
+/- **178III.1** (`eff-monoid-examples`, eff.tex:636, Examples), uniqueness:
+`unitInterval_effectMonoid_unique` belongs here, but its proof needs
+`exc_emonzero` (178IIIa) and hence is stated below, after that exercise. -/
 
 /-- **178III.2** (`eff-monoid-examples`, eff.tex:640, Examples): every finite
 effect monoid comes from a Boolean algebra as in `booleanEffectMonoid` — and
@@ -1565,6 +1567,190 @@ theorem exc_emonzero {M : Type u} [EffectMonoid M] (a : M) :
   rw [PCM.isSumOf_cons_iff] at ht3
   obtain ⟨t4, ht4, hp4, he4⟩ := ht3
   exact (eabasics_positivity hp4 he4).1
+
+/-- Helper (one-sided distributivity): in an effect monoid `c ⊥ d` implies
+`a ⊙ c ⊥ a ⊙ d` and `(a ⊙ c) ⋁ (a ⊙ d) = a ⊙ (c ⋁ d)`.  This is *not* an
+axiom — 178II only gives the four-fold law — but it follows from it once
+`0 ⊙ x = 0` is known (178IIIa), by instantiating at `(a ⋁ 0) ⊙ (c ⋁ d)`.
+(The `exc-emonzero` solution in `bsols.tex` uses one-sided distributivity to
+*prove* `a ⊙ 0 = 0`, which is circular; see PROVING-LOG.) -/
+theorem emon_mul_ovee {M : Type u} [EffectMonoid M] (a : M) {c d : M}
+    (hcd : Perp c d) :
+    ∃ h : Perp (a * c) (a * d), a * ovee c d hcd = ovee (a * c) (a * d) h := by
+  have hd := EffectMonoid.distrib (PCM.perp_zero a) hcd
+  rw [PCM.ovee_zero a (PCM.perp_zero a), (exc_emonzero c).2, (exc_emonzero d).2] at hd
+  -- `hd : IsSumOf [a⊙c, 0, a⊙d, 0] (a ⊙ (c ⋁ d))`; peel the four summands off
+  rw [PCM.isSumOf_cons_iff] at hd
+  obtain ⟨t1, ht1, hp1, he1⟩ := hd
+  rw [PCM.isSumOf_cons_iff] at ht1
+  obtain ⟨t2, ht2, hp2, he2⟩ := ht1
+  rw [PCM.isSumOf_cons_iff] at ht2
+  obtain ⟨t3, ht3, hp3, he3⟩ := ht2
+  rw [PCM.isSumOf_cons_iff] at ht3
+  obtain ⟨t4, ht4, hp4, he4⟩ := ht3
+  rw [PCM.isSumOf_nil_iff] at ht4
+  subst ht4
+  rw [PCM.zero_ovee] at he4
+  subst he4
+  rw [PCM.ovee_zero _ hp3] at he3
+  subst he3
+  rw [PCM.zero_ovee] at he2
+  subst he2
+  exact ⟨hp1, he1.symm⟩
+
+/-- Helper for 178III.1 (Cauchy's functional equation on `[0,1]`): a map
+`m : [0,1] × [0,1] → ℝ` that is nonnegative, satisfies `m x 1 = x` and is
+additive in its second argument on defined sums is the product.
+
+The proof is the standard one: additivity plus nonnegativity make `y ↦ m x y`
+monotone, an induction gives `m x (n·y) = n · m x y`, hence `m x (k/n) =
+x · k/n`, and monotonicity squeezes an arbitrary `y` between `⌊ny⌋/n` and `y`.
+Only the *lower* bound `x·y - 1/n ≤ m x y` is proved by squeezing; the upper
+bound comes for free from `m x y + m x (1-y) = m x 1 = x`. -/
+private theorem unitInterval_cauchy (m : I → I → ℝ)
+    (hnn : ∀ x y : I, 0 ≤ m x y)
+    (hone : ∀ x : I, m x 1 = (x : ℝ))
+    (hadd : ∀ (x y z w : I), (y : ℝ) + (z : ℝ) = (w : ℝ) → m x w = m x y + m x z) :
+    ∀ x y : I, m x y = (x : ℝ) * (y : ℝ) := by
+  intro a b
+  -- additivity + nonnegativity ⟹ monotone
+  have hmono : ∀ x y : I, (x : ℝ) ≤ (y : ℝ) → m a x ≤ m a y := by
+    intro x y hxy
+    have hd0 : (0 : ℝ) ≤ (y : ℝ) - (x : ℝ) := by linarith
+    have hd1 : (y : ℝ) - (x : ℝ) ≤ 1 := by linarith [x.2.1, y.2.2]
+    have := hadd a x ⟨(y : ℝ) - (x : ℝ), hd0, hd1⟩ y (by simp)
+    have h2 := hnn a ⟨(y : ℝ) - (x : ℝ), hd0, hd1⟩
+    linarith
+  -- `n`-fold sums: `m a (n·x) = n · m a x`
+  have hnat : ∀ (n : ℕ) (x w : I), (n : ℝ) * (x : ℝ) = (w : ℝ) → m a w = n * m a x := by
+    intro n
+    induction n with
+    | zero =>
+      intro x w hw
+      have hw0 : (w : ℝ) = 0 := by simpa using hw.symm
+      have : w = (0 : I) := Subtype.ext (by simpa using hw0)
+      subst this
+      have := hadd a 0 0 0 (by norm_num)
+      push_cast
+      linarith
+    | succ n ih =>
+      intro x w hw
+      have hx0 : (0 : ℝ) ≤ (x : ℝ) := x.2.1
+      have hu0 : (0 : ℝ) ≤ (n : ℝ) * (x : ℝ) := by positivity
+      have hu1 : (n : ℝ) * (x : ℝ) ≤ 1 := by
+        have : (n : ℝ) * (x : ℝ) ≤ ((n : ℝ) + 1) * (x : ℝ) := by nlinarith
+        have hw1 : (w : ℝ) ≤ 1 := w.2.2
+        push_cast at hw
+        linarith
+      have hsum : ((⟨(n : ℝ) * (x : ℝ), hu0, hu1⟩ : I) : ℝ) + (x : ℝ) = (w : ℝ) := by
+        push_cast at hw ⊢; linarith
+      have h1 := hadd a ⟨(n : ℝ) * (x : ℝ), hu0, hu1⟩ x w hsum
+      have h2 := ih x ⟨(n : ℝ) * (x : ℝ), hu0, hu1⟩ rfl
+      push_cast
+      rw [h1, h2]; ring
+  -- hence `m a (k/n) = a · k/n`
+  have hfrac : ∀ (k n : ℕ) (x : I), 0 < n → (x : ℝ) = (k : ℝ) / (n : ℝ) →
+      m a x = (a : ℝ) * ((k : ℝ) / (n : ℝ)) := by
+    intro k n x hn hx
+    have hn' : (0 : ℝ) < (n : ℝ) := by exact_mod_cast hn
+    have he0 : (0 : ℝ) ≤ 1 / (n : ℝ) := by positivity
+    have he1 : 1 / (n : ℝ) ≤ 1 := by
+      rw [div_le_one hn']; exact_mod_cast hn
+    set e : I := ⟨1 / (n : ℝ), he0, he1⟩ with he
+    have h1 : m a 1 = (n : ℝ) * m a e := by
+      refine hnat n e 1 ?_
+      show (n : ℝ) * (1 / (n : ℝ)) = ((1 : I) : ℝ)
+      rw [show ((1 : I) : ℝ) = 1 from rfl]
+      field_simp
+    have h2 : m a e = (a : ℝ) / (n : ℝ) := by
+      rw [hone] at h1
+      field_simp at h1 ⊢
+      linarith
+    have h3 : m a x = (k : ℝ) * m a e := by
+      refine hnat k e x ?_
+      rw [hx]; show (k : ℝ) * (1 / (n : ℝ)) = (k : ℝ) / (n : ℝ)
+      field_simp
+    rw [h3, h2]; ring
+  -- lower bound, by squeezing with `k = ⌊n·x⌋`
+  have hlow : ∀ (x : I) (n : ℕ), 0 < n → (a : ℝ) * (x : ℝ) - 1 / (n : ℝ) ≤ m a x := by
+    intro x n hn
+    have hn' : (0 : ℝ) < (n : ℝ) := by exact_mod_cast hn
+    set k : ℕ := ⌊(n : ℝ) * (x : ℝ)⌋₊ with hk
+    have hnx0 : (0 : ℝ) ≤ (n : ℝ) * (x : ℝ) := mul_nonneg hn'.le x.2.1
+    have hk1 : (k : ℝ) ≤ (n : ℝ) * (x : ℝ) := Nat.floor_le hnx0
+    have hk2 : (n : ℝ) * (x : ℝ) < (k : ℝ) + 1 := Nat.lt_floor_add_one _
+    have hkn : (k : ℝ) ≤ (n : ℝ) := by nlinarith [x.2.2]
+    have hy0 : (0 : ℝ) ≤ (k : ℝ) / (n : ℝ) := by positivity
+    have hy1 : (k : ℝ) / (n : ℝ) ≤ 1 := by rw [div_le_one hn']; exact hkn
+    have hval := hfrac k n ⟨(k : ℝ) / (n : ℝ), hy0, hy1⟩ hn rfl
+    have hle : ((⟨(k : ℝ) / (n : ℝ), hy0, hy1⟩ : I) : ℝ) ≤ (x : ℝ) := by
+      show (k : ℝ) / (n : ℝ) ≤ (x : ℝ)
+      rw [div_le_iff₀ hn']; nlinarith
+    have := hmono _ _ hle
+    rw [hval] at this
+    have ha0 : (0 : ℝ) ≤ (a : ℝ) := a.2.1
+    have ha1 : (a : ℝ) ≤ 1 := a.2.2
+    have hgap : (x : ℝ) - 1 / (n : ℝ) ≤ (k : ℝ) / (n : ℝ) := by
+      rw [sub_le_iff_le_add, show (k : ℝ) / (n : ℝ) + 1 / (n : ℝ)
+        = ((k : ℝ) + 1) / (n : ℝ) by ring, le_div_iff₀ hn']
+      nlinarith
+    nlinarith
+  have hge : ∀ x : I, (a : ℝ) * (x : ℝ) ≤ m a x := by
+    intro x
+    refine le_of_forall_pos_le_add ?_
+    intro ε hε
+    obtain ⟨n, hn⟩ := exists_nat_one_div_lt hε
+    have hnpos : 0 < n + 1 := Nat.succ_pos n
+    have := hlow x (n + 1) hnpos
+    push_cast at this hn
+    linarith
+  -- upper bound: `m a b = a - m a bᵖ ≤ a - a·(1-b) = a·b`
+  have hb0 : (0 : ℝ) ≤ 1 - (b : ℝ) := by linarith [b.2.2]
+  have hb1 : 1 - (b : ℝ) ≤ 1 := by linarith [b.2.1]
+  have hsplit := hadd a b ⟨1 - (b : ℝ), hb0, hb1⟩ 1
+    (by show (b : ℝ) + (1 - (b : ℝ)) = ((1 : I) : ℝ); simp)
+  rw [hone] at hsplit
+  have hgeb := hge b
+  have hgec := hge ⟨1 - (b : ℝ), hb0, hb1⟩
+  show m a b = (a : ℝ) * (b : ℝ)
+  have hco : ((⟨1 - (b : ℝ), hb0, hb1⟩ : I) : ℝ) = 1 - (b : ℝ) := rfl
+  rw [hco] at hgec
+  nlinarith
+
+/-- **178III.1** (`eff-monoid-examples`, eff.tex:636, Examples): the usual
+product is the *only* way to turn the effect algebra `[0,1]` into an effect
+monoid.
+
+⚠ The thesis states this without proof, citing `basmsc` prop. 41, so the
+argument below is ours: `y ↦ a ⊙ y` is additive (`emon_mul_ovee`) with
+`a ⊙ 1 = a`, and Cauchy's functional equation with monotonicity forces
+`a ⊙ y = a · y` (`unitInterval_cauchy`). -/
+theorem unitInterval_effectMonoid_unique (em : EffectMonoid I)
+    (h : em.toEffectAlgebra = unitInterval.effectAlgebra) :
+    ∀ a b : I, em.toMul.mul a b = a * b := by
+  -- transport `em`'s unit law and one-sided distributivity along `h`, so that
+  -- `⊥` and `⋁` become the *standard* ones while `⊙` stays unknown
+  have hone := @EffectMonoid.mul_one I em
+  have hdist := @emon_mul_ovee I em
+  rw [h] at hone hdist
+  have hadd : ∀ (x y z w : I), (y : ℝ) + (z : ℝ) = (w : ℝ) →
+      ((em.toMul.mul x w : I) : ℝ)
+        = ((em.toMul.mul x y : I) : ℝ) + ((em.toMul.mul x z : I) : ℝ) := by
+    intro x y z w hw
+    have hcd : Perp y z := by
+      show (y : ℝ) + (z : ℝ) ≤ 1
+      rw [hw]; exact w.2.2
+    obtain ⟨hp, he⟩ := hdist x hcd
+    have hwe : ovee y z hcd = w :=
+      Subtype.ext (by show (y : ℝ) + (z : ℝ) = (w : ℝ); exact hw)
+    rw [hwe] at he
+    exact congrArg Subtype.val he
+  intro a b
+  have key := unitInterval_cauchy (fun x y => ((em.toMul.mul x y : I) : ℝ))
+    (fun x y => (em.toMul.mul x y).2.1) (fun x => congrArg _ (hone x)) hadd a b
+  refine Subtype.ext ?_
+  rw [Set.Icc.coe_mul]
+  exact key
 
 /-- Helper: the head of a list is below its sum. -/
 theorem PCM.le_of_isSumOf_cons {M : Type u} [PCM M] {a : M} {l : List M} {s : M}

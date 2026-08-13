@@ -104,30 +104,9 @@ theorem isSumOf_prod {M N : Type u} [EffectAlgebra M] [EffectAlgebra N]
         cases h₂ with
         | cons hl₂ hp₂ => exact PCM.IsSumOf.cons (ih hl₁ hl₂) ⟨hp₁, hp₂⟩
 
-/-- Helper: multiplication in an effect monoid distributes over a partial
-sum in its right argument (the special case `b = d = 0` of `distrib`). -/
-theorem emon_mul_ovee {M : Type u} [EffectMonoid M] (x : M) {p q : M}
-    (hpq : Perp p q) :
-    ∃ h' : Perp (x * p) (x * q),
-      x * ovee p q hpq = ovee (x * p) (x * q) h' := by
-  have hd := EffectMonoid.distrib (PCM.perp_zero x) hpq
-  rw [PCM.ovee_zero x (PCM.perp_zero x), (exc_emonzero p).2,
-    (exc_emonzero q).2] at hd
-  obtain ⟨t1, h1, hp1, e1⟩ := PCM.isSumOf_cons_iff.mp hd
-  obtain ⟨t2, h2, hp2, e2⟩ := PCM.isSumOf_cons_iff.mp h1
-  obtain ⟨t3, h3, hp3, e3⟩ := PCM.isSumOf_cons_iff.mp h2
-  obtain ⟨t4, h4, hp4, e4⟩ := PCM.isSumOf_cons_iff.mp h3
-  have ht4 : t4 = 0 := PCM.isSumOf_nil_iff.mp h4
-  have ht3 : t3 = 0 := by rw [← e4, PCM.zero_ovee' t4 hp4]; exact ht4
-  have ht2 : t2 = x * q := by
-    rw [← e3, PCM.ovee_congr rfl ht3 hp3 (PCM.perp_zero (x * q))]
-    exact PCM.ovee_zero _ _
-  have ht1 : t1 = x * q := by
-    rw [← e2, PCM.zero_ovee' t2 hp2]; exact ht2
-  have hp' : Perp (x * p) (x * q) := by rw [← ht1]; exact hp1
-  refine ⟨hp', ?_⟩
-  rw [← e1]
-  exact PCM.ovee_congr rfl ht1 hp1 hp'
+/- (`emon_mul_ovee` — one-sided distributivity of `⊙` over `⋁` — used to be
+duplicated here; it now lives in `EffectAlgebras.lean` next to
+`exc_emonzero`, with the same statement.) -/
 
 /-- Helper: `0 ≼ a` in any PCM. -/
 theorem pcm_zero_le {M : Type u} [PCM M] (a : M) : (0 : M) ≼ a :=
@@ -1657,8 +1636,7 @@ structure AConvMCat (M : Type u) [EffectMonoid M] : Type (max u (v + 1)) where
 instance (M : Type u) [EffectMonoid M] : CoeSort (AConvMCat.{u, v} M) (Type v) :=
   ⟨AConvMCat.carrier⟩
 
-/-- The category structure of `AConv_M` (192IV; that identities and
-compositions are affine is `sorry`-ed). -/
+/-- The category structure of `AConv_M` (192IV). -/
 noncomputable instance (M : Type u) [EffectMonoid M] :
     Category.{v} (AConvMCat.{u, v} M) where
   Hom X Y := { f : X.carrier → Y.carrier // MConvex.IsAffine X.str Y.str f }
@@ -2207,16 +2185,139 @@ end Congruence
 
 /-- **193V** (`aconv-coprod`, eff.tex:2778, Proposition): `AConv_M` has
 binary coproducts (constructed as a quotient of `𝒟_M(X + Y)` by the least
-congruence making `η ∘ κ₁` and `η ∘ κ₂` affine). -/
+congruence making `η ∘ κ₁` and `η ∘ κ₂` affine).
+
+⚠ Universe level: the coproduct carrier is a quotient of `𝒟_M(X + Y)`, whose
+underlying type is `X + Y → M`, so it lands in `Type (max u v)` and **not** in
+`Type v`.  The statement is therefore about `AConvMCat.{u, max u v}`; at
+`AConvMCat.{u, v}` with `v < u` it is *false* (already `1 + 1 ≅ 𝒟_M {1,2}`
+has as many elements as `M`).  See PROVING-LOG. -/
 theorem aconv_coprod (M : Type u) [EffectMonoid M] :
-    HasBinaryCoproducts (AConvMCat.{u, v} M) := sorry
+    HasBinaryCoproducts (AConvMCat.{u, max u v} M) := by
+  classical
+  have : ∀ {X Y : AConvMCat.{u, max u v} M}, HasColimit (pair X Y) := by
+    intro X Y
+    -- the free abstract `M`-convex set on `X + Y`
+    let D : MConvex M (MConvexComb M (X.carrier ⊕ Y.carrier)) :=
+      ⟨MConvexComb.mu, MConvexComb.mu_eta, MConvexComb.mu_mu⟩
+    -- the relation of eff.tex:2790, whose least congruence makes `η∘κᵢ` affine
+    let R : MConvexComb M (X.carrier ⊕ Y.carrier) →
+        MConvexComb M (X.carrier ⊕ Y.carrier) → Prop := fun a b =>
+      (∃ χ : MConvexComb M X.carrier,
+        a = χ.map Sum.inl ∧ b = MConvexComb.eta (Sum.inl (X.str.h χ))) ∨
+      (∃ χ : MConvexComb M Y.carrier,
+        a = χ.map Sum.inr ∧ b = MConvexComb.eta (Sum.inr (Y.str.h χ)))
+    obtain ⟨r, hrc, hrR, hrleast⟩ := least_conv_cong D R
+    obtain ⟨stC, hqaff⟩ := aconv_cong_quotient D r hrc
+    let Cobj : AConvMCat.{u, max u v} M := ⟨Quotient r, stC⟩
+    -- the coprojections `cᵢ = q ∘ η ∘ κᵢ` are affine (eff.tex:2806)
+    have hc1 : MConvex.IsAffine X.str stC
+        (fun x => Quotient.mk r (MConvexComb.eta (Sum.inl x))) := by
+      intro p
+      have h1 : Quotient.mk r (p.map Sum.inl)
+          = Quotient.mk r (MConvexComb.eta (Sum.inl (X.str.h p))) :=
+        Quotient.sound (hrR _ _ (Or.inl ⟨p, rfl, rfl⟩))
+      have h2 := hqaff ((p.map Sum.inl).map MConvexComb.eta)
+      rw [show D.h ((p.map Sum.inl).map MConvexComb.eta) = p.map Sum.inl from
+        MConvexComb.mu_map_eta _] at h2
+      show Quotient.mk r (MConvexComb.eta (Sum.inl (X.str.h p))) = _
+      rw [← h1, h2, MConvexComb.map_comp, MConvexComb.map_comp]
+      rfl
+    have hc2 : MConvex.IsAffine Y.str stC
+        (fun y => Quotient.mk r (MConvexComb.eta (Sum.inr y))) := by
+      intro p
+      have h1 : Quotient.mk r (p.map Sum.inr)
+          = Quotient.mk r (MConvexComb.eta (Sum.inr (Y.str.h p))) :=
+        Quotient.sound (hrR _ _ (Or.inr ⟨p, rfl, rfl⟩))
+      have h2 := hqaff ((p.map Sum.inr).map MConvexComb.eta)
+      rw [show D.h ((p.map Sum.inr).map MConvexComb.eta) = p.map Sum.inr from
+        MConvexComb.mu_map_eta _] at h2
+      show Quotient.mk r (MConvexComb.eta (Sum.inr (Y.str.h p))) = _
+      rw [← h1, h2, MConvexComb.map_comp, MConvexComb.map_comp]
+      rfl
+    let c₁ : X ⟶ Cobj := ⟨fun x => Quotient.mk r (MConvexComb.eta (Sum.inl x)), hc1⟩
+    let c₂ : Y ⟶ Cobj := ⟨fun y => Quotient.mk r (MConvexComb.eta (Sum.inr y)), hc2⟩
+    -- `h_Z ∘ 𝒟_M[f,g]` is affine (eff.tex:2830) …
+    have hFaff : ∀ (Z : AConvMCat.{u, max u v} M)
+        (e : X.carrier ⊕ Y.carrier → Z.carrier),
+        MConvex.IsAffine D Z.str (fun p => Z.str.h (p.map e)) := by
+      intro Z e Φ
+      show Z.str.h ((MConvexComb.mu Φ).map e) = _
+      rw [MConvexComb.mu_map, Z.str.h_mu, MConvexComb.map_comp]
+      rfl
+    -- … and its kernel is a congruence containing `R`, hence contains `∼`
+    have hFker : ∀ (Z : AConvMCat.{u, max u v} M) (f : X ⟶ Z) (g : Y ⟶ Z)
+        (a b : MConvexComb M (X.carrier ⊕ Y.carrier)), r.r a b →
+        Z.str.h (a.map (Sum.elim f.1 g.1)) = Z.str.h (b.map (Sum.elim f.1 g.1)) := by
+      intro Z f g a b hab
+      refine hrleast (Setoid.ker fun p => Z.str.h (p.map (Sum.elim f.1 g.1)))
+        (affine_kernel_cong D Z.str _ (hFaff Z (Sum.elim f.1 g.1))) ?_ a b hab
+      rintro a' b' (⟨χ, rfl, rfl⟩ | ⟨χ, rfl, rfl⟩)
+      · show Z.str.h _ = Z.str.h _
+        rw [MConvexComb.map_comp, MConvexComb.map_eta]
+        show Z.str.h (χ.map (Sum.elim f.1 g.1 ∘ Sum.inl)) = _
+        rw [Z.str.h_eta]
+        exact (f.2 χ).symm
+      · show Z.str.h _ = Z.str.h _
+        rw [MConvexComb.map_comp, MConvexComb.map_eta]
+        show Z.str.h (χ.map (Sum.elim f.1 g.1 ∘ Sum.inr)) = _
+        rw [Z.str.h_eta]
+        exact (g.2 χ).symm
+    -- so `h_Z ∘ 𝒟_M[f,g]` descends to the mediating map `k` (eff.tex:2856)
+    have hdesc : ∀ (Z : AConvMCat.{u, max u v} M) (f : X ⟶ Z) (g : Y ⟶ Z),
+        ∃ k : Cobj ⟶ Z, ∀ p,
+          k.1 (Quotient.mk r p) = Z.str.h (p.map (Sum.elim f.1 g.1)) := by
+      intro Z f g
+      refine ⟨⟨Quotient.lift (fun p => Z.str.h (p.map (Sum.elim f.1 g.1)))
+        (fun a b hab => hFker Z f g a b hab), ?_⟩, fun p => rfl⟩
+      intro P
+      obtain ⟨P₀, hP₀⟩ := (aconv_cong_surjective (M := M) r).1 P
+      have hP₀' : P₀.map (Quotient.mk r) = P := hP₀
+      subst hP₀'
+      rw [← hqaff P₀, MConvexComb.map_comp]
+      exact hFaff Z (Sum.elim f.1 g.1) P₀
+    -- uniqueness: `k' ∘ q = k' ∘ q ∘ μ ∘ 𝒟_M η = h_Z ∘ 𝒟_M[f,g]` (eff.tex:2876)
+    have huniq : ∀ (Z : AConvMCat.{u, max u v} M) (f : X ⟶ Z) (g : Y ⟶ Z)
+        (m : Cobj ⟶ Z), c₁ ≫ m = f → c₂ ≫ m = g →
+        ∀ p, m.1 (Quotient.mk r p) = Z.str.h (p.map (Sum.elim f.1 g.1)) := by
+      intro Z f g m hm1 hm2 z
+      have he : ((m.1 ∘ Quotient.mk r) ∘ MConvexComb.eta) = Sum.elim f.1 g.1 := by
+        funext s
+        cases s with
+        | inl x => exact congrArg (fun t : X ⟶ Z => t.1 x) hm1
+        | inr y => exact congrArg (fun t : Y ⟶ Z => t.1 y) hm2
+      have h1 : Quotient.mk r z
+          = stC.h ((z.map MConvexComb.eta).map (Quotient.mk r)) := by
+        have := hqaff (z.map MConvexComb.eta)
+        rwa [show D.h (z.map MConvexComb.eta) = z from
+          MConvexComb.mu_map_eta _] at this
+      rw [h1, m.2, MConvexComb.map_comp, MConvexComb.map_comp, he]
+    refine HasColimit.mk ⟨BinaryCofan.mk c₁ c₂, BinaryCofan.IsColimit.mk _
+      (fun {Z} f g => (hdesc Z f g).choose) ?_ ?_ ?_⟩
+    · intro Z f g
+      refine Subtype.ext (funext fun x => ?_)
+      have hx := (hdesc Z f g).choose_spec (MConvexComb.eta (Sum.inl x))
+      show (hdesc Z f g).choose.1 (Quotient.mk r (MConvexComb.eta (Sum.inl x))) = f.1 x
+      rw [hx, MConvexComb.map_eta, Z.str.h_eta]
+      rfl
+    · intro Z f g
+      refine Subtype.ext (funext fun y => ?_)
+      have hy := (hdesc Z f g).choose_spec (MConvexComb.eta (Sum.inr y))
+      show (hdesc Z f g).choose.1 (Quotient.mk r (MConvexComb.eta (Sum.inr y))) = g.1 y
+      rw [hy, MConvexComb.map_eta, Z.str.h_eta]
+      rfl
+    · intro Z f g m hm1 hm2
+      refine Subtype.ext (funext fun z => ?_)
+      refine Quotient.inductionOn z fun p => ?_
+      rw [huniq Z f g m hm1 hm2 p, (hdesc Z f g).choose_spec p]
+  exact hasBinaryCoproducts_of_hasColimit_pair _
 
 /-- The one-element abstract `M`-convex set `1` (193X). -/
 def AConvMCat.punit (M : Type u) [EffectMonoid M] : AConvMCat.{u, v} M :=
   ⟨PUnit, ⟨fun _ => PUnit.unit, fun _ => rfl, fun _ => rfl⟩⟩
 
 /-- The free abstract `M`-convex set `(𝒟_M X, μ)` on a set `X` (used in
-193X; the algebra laws are the monad laws, `sorry`-ed). -/
+193X; the algebra laws are the monad laws `mu_eta` and `mu_mu`). -/
 noncomputable def AConvMCat.free (M : Type u) [EffectMonoid M] (X : Type v) :
     AConvMCat.{u, max u v} M :=
   ⟨MConvexComb M X, ⟨MConvexComb.mu, MConvexComb.mu_eta, MConvexComb.mu_mu⟩⟩
@@ -2244,9 +2345,56 @@ variable (M : Type u) [EffectMonoid M]
 
 /-- **194I** (`aconvalmosteffectus`, eff.tex:2968, Proposition), part 1:
 `AConv_M` has finite coproducts (binary ones by 193V; the empty set is the
-initial object). -/
+initial object).
+
+⚠ Two caveats, both recorded in PROVING-LOG.  (i) The universe level is
+`max u v`, for the reason given at `aconv_coprod`.  (ii) "the empty set is the
+initial object" fails for the **trivial** effect monoid `M` (`1 = 0`): there
+`𝒟_M ∅` is a *singleton*, so `∅` carries no `h : 𝒟_M ∅ → ∅` and is not an
+object of `AConv_M` at all.  `AConv_M` is then equivalent to the one-object,
+one-arrow category and `1` is initial, so the proposition itself survives —
+the proof below splits on `1 = 0`. -/
 theorem aconvalmosteffectus_coproducts :
-    HasFiniteCoproducts (AConvMCat.{u, v} M) := sorry
+    HasFiniteCoproducts (AConvMCat.{u, max u v} M) := by
+  classical
+  have := aconv_coprod.{u, v} M
+  have hinit : HasInitial (AConvMCat.{u, max u v} M) := by
+    by_cases h1 : (1 : M) = 0
+    · -- `1 = 0`: every abstract `M`-convex set is a singleton, so `1` is initial
+      have hcombeq : ∀ (Z : Type (max u v)) (p q : MConvexComb M Z), p = q := fun Z p q =>
+        MConvexComb.ext (funext fun z => by
+          rw [eq_zero_of_one_eq_zero h1 (p.toFun z), eq_zero_of_one_eq_zero h1 (q.toFun z)])
+      have hsub : ∀ (W : AConvMCat.{u, max u v} M) (x y : W.carrier), x = y := by
+        intro W x y
+        rw [← W.str.h_eta x, ← W.str.h_eta y,
+          hcombeq _ (MConvexComb.eta x) (MConvexComb.eta y)]
+      have hne : ∀ W : AConvMCat.{u, max u v} M, Nonempty W.carrier := by
+        intro W
+        refine ⟨W.str.h ⟨fun _ => 0, [], List.nodup_nil, fun x => by simp, ?_⟩⟩
+        rw [List.map_nil, PCM.isSumOf_nil_iff]
+        exact h1
+      refine (IsInitial.ofUniqueHom (X := AConvMCat.punit.{u, max u v} M)
+        (fun W => ?_) (fun W m => ?_)).hasInitial
+      · exact Subtype.mk (fun _ => (hne W).some) (fun p => hsub W _ _)
+      · exact Subtype.ext (funext fun _ => hsub W _ _)
+    · -- `1 ≠ 0`: `𝒟_M` of an empty type is empty, so `∅` is an object, and initial
+      have hemp : ∀ Z : Type (max u v), IsEmpty Z → IsEmpty (MConvexComb M Z) := by
+        intro Z hZ
+        refine ⟨fun p => ?_⟩
+        obtain ⟨l, -, -, hs⟩ := p.sum_one
+        cases l with
+        | nil => rw [List.map_nil, PCM.isSumOf_nil_iff] at hs; exact h1 hs
+        | cons a t => exact (hZ.false a).elim
+      have h0 : IsEmpty (MConvexComb M (PEmpty.{max u v + 1})) := hemp _ inferInstance
+      have h00 : IsEmpty (MConvexComb M (MConvexComb M (PEmpty.{max u v + 1}))) :=
+        hemp _ h0
+      let E : AConvMCat.{u, max u v} M :=
+        ⟨PEmpty, ⟨fun p => (h0.false p).elim, fun x => x.elim,
+          fun Φ => (h00.false Φ).elim⟩⟩
+      refine (IsInitial.ofUniqueHom (X := E) (fun W => ?_) (fun W m => ?_)).hasInitial
+      · exact Subtype.mk (fun x => x.elim) (fun p => (h0.false p).elim)
+      · exact Subtype.ext (funext fun x => x.elim)
+  exact hasFiniteCoproducts_of_has_binary_and_initial
 
 /-- **194I** (`aconvalmosteffectus`, eff.tex:2968, Proposition), part 2:
 `AConv_M` has a final object (the one-element convex set, 193X). -/
