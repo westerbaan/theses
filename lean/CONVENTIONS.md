@@ -74,9 +74,26 @@ stated is a *more* valuable result than proving it.  Test against the failure
 modes this project has already hit: falsity in the trivial algebra `{0}`
 (Mathlib's `CStarAlgebra` does not extend `Nontrivial` — see 16V, 16VI, 22III.5);
 degeneracy at `N = 0` or an empty index (Lean's `2/(0:ℝ) = 0` made 34aVII false);
-and hypotheses the author uses but never states (26II.1, 37IX).  Second, **there is no `aerr.tex`**: thesis A's 27 errata and addenda
-live at the *top of* `asols.tex`, keyed the same way, and should be consulted
-before filing a new erratum.  (Thesis B does have `../berr.tex`.)
+and hypotheses the author uses but never states (26II.1, 37IX).
+
+Second, **there is no `aerr.tex`**: thesis A's errata and addenda live at the
+*top of* `asols.tex`, keyed the same way, and should be consulted before filing
+a new erratum.  (Thesis B does have `../berr.tex`.)  As of 2026-08-13 there are
+**42** of them, up from 27 — the author acted on a batch of our findings — and
+unlike the solutions they are *not* confined to parsecs 40–340: they run to
+`parsec-990.70`.  So for a point past 340 the right expectation is "no
+solution, but quite possibly an erratum": check anyway.
+
+Re-verified 2026-08-13, mechanically rather than by recollection:
+
+```sh
+grep -o 'begin{solution}{parsec-[0-9.]*}' ../asols.tex | sed 's/.*parsec-//; s/}//' \
+  | cut -d. -f1 | sort -n -u    # -> 40 … 340, nothing beyond
+```
+
+Solution parsecs are 40, 50, 70, 80, 90, 110–170, 201, 210–300, 320, 330, 340 —
+note the **gaps inside the covered range too** (no 60, 100, 150, 180, 190, 310),
+so "no match" is not evidence of a wrong key even below 340.
 
 ## File layout
 

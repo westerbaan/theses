@@ -36,7 +36,7 @@ Do not re-derive the mathematics — the theses contain it.
      solutions**, which reads exactly like "there is no solution".  List what
      exists with `grep -o 'solution}{[^}]*}' ../asols.tex`.
 3. **Known errata — check these before filing anything new.**  Thesis B has
-   `../berr.tex`.  **Thesis A has no `aerr.tex`**: its 27 errata/addenda live at
+   `../berr.tex`.  **Thesis A has no `aerr.tex`**: its 42 errata/addenda live at
    the *top of* `../asols.tex`, keyed the same `parsec-N.M` way.  (Checking
    there first would have saved this project one duplicate finding: the 11XV.3
    sign error is already recorded at `asols.tex:30–34`.)
