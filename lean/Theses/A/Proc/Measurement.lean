@@ -297,6 +297,60 @@ theorem ceil_central_mul [VonNeumannAlgebra A] (x y : A) (hx : 0 ≤ x)
     _ = ceil y * x := by rw [CFC.sqrt_mul_sqrt_self x hx]
     _ = x := hyx
 
+/-- Infrastructure (used for 105II): `⌈f(x)⌉ ≤ ⌈f(1)⌉` for positive `x`,
+because `‖x‖⁻¹x` is an effect and so `‖x‖⁻¹f(x) ≤ f(1)`. -/
+theorem ceil_le_ceil_one [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    (f : NCPMap A B) (x : A) (hx : 0 ≤ x) : ceil (f x) ≤ ceil (f 1) := by
+  have hz : (f (0 : A) : B) = 0 := map_zero f.toCompletelyPositiveMap
+  rcases eq_or_ne x 0 with rfl | hne
+  · rw [hz, ceil_zero]
+    exact (isStarProjection_ceil (f 1)).nonneg
+  · have hn : (0 : ℝ) < ‖x‖ := norm_pos_iff.mpr hne
+    set l : ℝ := ‖x‖⁻¹ with hldef
+    have hl : 0 < l := inv_pos.mpr hn
+    have hb0 : (0 : A) ≤ ((l : ℝ) : ℂ) • x := by
+      rw [Complex.coe_smul]; exact smul_nonneg hl.le hx
+    have hb1 : ((l : ℝ) : ℂ) • x ≤ 1 := by
+      refine (CStarAlgebra.norm_le_one_iff_of_nonneg _ hb0).mp ?_
+      rw [norm_smul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hl, hldef,
+        inv_mul_cancel₀ (ne_of_gt hn)]
+    have hfle : f (((l : ℝ) : ℂ) • x) ≤ f 1 :=
+      OrderHomClass.mono f.toCompletelyPositiveMap hb1
+    have hfsm : (f (((l : ℝ) : ℂ) • x) : B) = ((l : ℝ) : ℂ) • f x :=
+      map_smul f.toCompletelyPositiveMap.toLinearMap _ _
+    rw [hfsm] at hfle
+    have hnn : (0 : B) ≤ ((l : ℝ) : ℂ) • f x := by
+      rw [Complex.coe_smul]; exact smul_nonneg hl.le (ncpMap_nonneg f hx)
+    have hmono := ceil_mono hnn hfle
+    rwa [Complex.coe_smul, ceil_smul (ncpMap_nonneg f hx) hl] at hmono
+
+/-- Infrastructure (used for 105II): `⌈f(1)⌉f(a)⌈f(1)⌉ = f(a)` for **every**
+`a` — for positive `a` by `ceil_le_ceil_one` and 59III, and in general
+because both sides are `ℂ`-linear and the positive elements span. -/
+theorem ceilOne_conj [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    (f : NCPMap A B) (a : A) : ceil (f 1) * f a * ceil (f 1) = f a := by
+  have he : IsStarProjection (ceil (f 1)) := isStarProjection_ceil _
+  have hz : (f (0 : A) : B) = 0 := map_zero f.toCompletelyPositiveMap
+  have hadd : ∀ y z : A, (f (y + z) : B) = f y + f z := fun y z =>
+    map_add f.toCompletelyPositiveMap.toLinearMap y z
+  have hsm : ∀ (c : ℂ) (y : A), (f (c • y) : B) = c • f y := fun c y =>
+    map_smul f.toCompletelyPositiveMap.toLinearMap c y
+  have hpos : ∀ x : A, 0 ≤ x → ceil (f 1) * f x * ceil (f 1) = f x := by
+    intro x hx
+    have h := ceil_le_ceil_one f x hx
+    have h1 : ceil (f 1) * f x = f x :=
+      ((ceil_basic_1 (f x) (ceil (f 1)) (ncpMap_nonneg f hx) he).out 2 0).mp h
+    have h2 : f x * ceil (f 1) = f x :=
+      ((ceil_basic_1 (f x) (ceil (f 1)) (ncpMap_nonneg f hx) he).out 2 1).mp h
+    rw [h1, h2]
+  have hmem : a ∈ Submodule.span ℂ {y : A | 0 ≤ y} := by
+    rw [CStarAlgebra.span_nonneg]; trivial
+  induction hmem using Submodule.span_induction with
+  | mem y hy => exact hpos y hy
+  | zero => rw [hz, mul_zero, zero_mul]
+  | add y z _ _ ihy ihz => rw [hadd, mul_add, add_mul, ihy, ihz]
+  | smul c y _ ih => rw [hsm, mul_smul_comm, smul_mul_assoc, ih]
+
 /-! ## Parsec 940: the corner `e𝒜e` -/
 
 variable (A) in
@@ -2060,7 +2114,10 @@ theorem diamond_suprema_1 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
 `f^⋄(⋃E) = ⋃_{e∈E} f^⋄(e)` for every set of projections `E`. -/
 theorem diamond_suprema_2 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (f : NCPMap A B) (E : Set A) (hE : ∀ e ∈ E, IsStarProjection e) :
-    diamondUp f (projSup E) = projSup (diamondUp f '' E) := sorry
+    diamondUp f (projSup E) = projSup (diamondUp f '' E) :=
+  -- literally 60IX part 2 (`ncp_union_2`) for the np-map underlying `f`
+  ncp_union_2 (PositiveLinearMap.ofClass f.toCompletelyPositiveMap)
+    f.preservesDirSups' E hE
 
 /-- **101V** (proc.tex:1085, Exercise), definition part: ncp-maps `f, g`
 are **equivalent** when `f^⋄ = g^⋄`. -/
@@ -2379,7 +2436,34 @@ theorem chevron_unique [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     ∀ g : NCPMap (Corner A (ncpCarrier f)) (Corner B (ceil (f 1))),
       (∀ a : A,
         f a = (g ((cornerProjMap (ncpCarrier f)).toNCPMap a)).val) →
-      g = chevron f := sorry
+      g = chevron f := by
+  -- `⟨f⟩(π_{⌈f⌉}a) = ⌈f(1)⌉f(⌈f⌉a⌈f⌉)⌈f(1)⌉ = ⌈f(1)⌉f(a)⌈f(1)⌉ = f(a)`, by
+  -- 63VI and `ceilOne_conj`; uniqueness because `π_{⌈f⌉}` is surjective
+  have hch : ∀ x : Corner A (ncpCarrier f),
+      (chevron f x).val = ceil (f 1) * f x.val * ceil (f 1) :=
+    (exists_chevron f).choose_spec
+  have hcarr : carrier (PositiveLinearMap.ofClass f.toCompletelyPositiveMap)
+      f.preservesDirSups' = ncpCarrier f := rfl
+  have hfund : ∀ a : A, (f a : B) = f (ncpCarrier f * a * ncpCarrier f) := by
+    intro a
+    have h := (carrier_fundamental
+      (PositiveLinearMap.ofClass f.toCompletelyPositiveMap)
+      f.preservesDirSups' a).2.2
+    rwa [hcarr] at h
+  have hmain : ∀ a : A,
+      f a = (chevron f ((cornerProjMap (ncpCarrier f)).toNCPMap a)).val := by
+    intro a
+    rw [hch, cornerProjMap_apply, ← hfund, ceilOne_conj]
+  refine ⟨hmain, fun g hg => ?_⟩
+  refine DFunLike.ext _ _ fun b => ?_
+  have hsurj : (cornerProjMap (ncpCarrier f)).toNCPMap b.val = b :=
+    Corner.val_injective (by rw [cornerProjMap_apply]; exact b.property)
+  refine Corner.val_injective ?_
+  calc (g b).val = (g ((cornerProjMap (ncpCarrier f)).toNCPMap b.val)).val := by
+        rw [hsurj]
+    _ = f b.val := (hg _).symm
+    _ = (chevron f ((cornerProjMap (ncpCarrier f)).toNCPMap b.val)).val := hmain _
+    _ = (chevron f b).val := by rw [hsurj]
 
 /-- **105III** (`chevron-f-basic`, proc.tex:1717, Exercise), parts 1–2:
 `⟨f⟩ = π_{⌈f(1)⌉} ∘ f ∘ c_{⌈f⌉}` (the defining formula of `chevron`) and
