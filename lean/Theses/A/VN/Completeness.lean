@@ -380,15 +380,87 @@ theorem us_continuous_bounded_on_ball (f : A →ₗ[ℂ] ℂ)
     exact hV i (hsub a ha i.1 (hI.mem_toFinset.mpr i.2))
   exact le_of_lt (by simpa [Complex.dist_eq] using haU)
 
+/-! ### Auxiliary material for **72V**
+
+`‖·‖_ω` is literally the norm of the GNS pre-Hilbert space
+`PositiveLinearMap.PreGNS ω`, so it is homogeneous; and `gnsVec ω` is the
+(linear, isometric, dense-range) canonical map of `A` into the GNS Hilbert
+space `ℋ_ω = PositiveLinearMap.GNS ω`, which is the thesis's `ℋ_ω`. -/
+
+omit [VonNeumannAlgebra A] in
+/-- `‖c • a‖_ω = |c| ‖a‖_ω`. -/
+theorem omegaNorm_smul (ω : NPFunctional A) (c : ℂ) (a : A) :
+    omegaNorm A ω (c • a) = ‖c‖ * omegaNorm A ω a := by
+  simp only [omegaNorm_eq_norm, map_smul, norm_smul]
+
+/-- `gnsVec ω` bundled as a linear map `A →ₗ[ℂ] ℋ_ω`. -/
+noncomputable def gnsVecₗ (ω : NPFunctional A) :
+    A →ₗ[ℂ] ω.toPositiveLinearMap.GNS where
+  toFun := gnsVec ω
+  map_add' a b := by
+    simp only [gnsVec, map_add]
+    exact UniformSpace.Completion.coe_add _ _
+  map_smul' c a := by
+    simp only [gnsVec, map_smul, RingHom.id_apply]
+    exact UniformSpace.Completion.coe_smul _ _
+
+omit [VonNeumannAlgebra A] in
+@[simp] theorem gnsVecₗ_apply (ω : NPFunctional A) (a : A) :
+    gnsVecₗ ω a = gnsVec ω a := rfl
+
+omit [VonNeumannAlgebra A] in
+/-- `gnsVec ω : A → ℋ_ω` is isometric for `‖·‖_ω`. -/
+theorem gnsVec_norm (ω : NPFunctional A) (a : A) :
+    ‖gnsVec ω a‖ = omegaNorm A ω a := by
+  rw [gnsVec, UniformSpace.Completion.norm_coe, omegaNorm_eq_norm]
+
+omit [VonNeumannAlgebra A] in
 /-- **72V** (`normal-functionals-lemma`, vn.tex:3887, Lemma): for an
 np-functional `ω` and a linear `f : A → ℂ` the following are equivalent:
 (1) `|f(a)| ≤ B` on some `‖·‖_ω`-ball of radius `δ > 0`;
 (2) `|f(a)| ≤ B ‖a‖_ω` for some `B > 0`;
 (3) `f = [b, ·]_ω` for some `b` in the Hilbert space completion `H_ω` of
 `A` for the inner product `[a, c]_ω = ω(a* c)` (rendered by an existential
-completion `φ : A → H`);
-(4) `f = f₀ + i f₁ - f₂ - i f₃` for np-functionals `f_k` dominated by
-`B·ω` on the positive cone. -/
+completion `φ : A → H`).
+
+**Erratum (ours).**  vn.tex:3887 lists a fourth equivalent condition,
+
+> (4) `f = f₀ + i f₁ - f₂ - i f₃` where the `f_k` are np-maps for which
+> there is `B > 0` with `f_k(a) ≤ B ω(a)` for all `a ∈ A⁺` and all `k`,
+
+and it is **not** equivalent to (1)–(3): it is strictly stronger.  It is the
+domination clause that is wrong, and the defect is in the last paragraph of
+the proof at vn.tex:3981, which asserts `(c*ω)(a) ≡ ω(c* a c) ≤ ‖c‖_ω ω(a)`
+for `a ∈ A⁺`.  That inequality is not even homogeneous in `ω` (replacing `ω`
+by `tω` scales the left side by `t` and the right by `t^{3/2}` — the same
+defect as the two errata on **72III** above), and no rescaling repairs it:
+`ω(c* a c) ≤ C ω(a)` is false for `C = ‖c‖²` and false for every constant.
+
+Counterexample (`normal_functionals_lemma_four_counterexample` below).  Take
+`A = B(H)` with `H` of dimension `≥ 2`, `ξ ⊥ η` unit vectors,
+`ω = ⟪ξ, (·) ξ⟫` and `f = ⟪η, (·) ξ⟫`.  Then `‖a‖_ω = ‖aξ‖`, so
+`|f(a)| ≤ ‖a‖_ω` and (2) holds with `B = 1` (hence (1) and (3) too).  But
+let `y = |ξ⟩⟨η|` and `p = y* y = |η⟩⟨η|`.  Then `ω(p) = ‖yξ‖² = 0`, so any
+np-map `g ≤ B ω` on `A⁺` has `g(p) = 0`, whence `‖y‖_g ≡ g(y* y)^½ = 0` and,
+by Cauchy–Schwarz (Kadison), `g(y* z) = 0` for **every** `z`; in particular
+`g(p x) = 0` for every `x`.  A decomposition as in (4) would therefore force
+`f(p x) = 0` for all `x`, while for `x = |η⟩⟨ξ|` one has `x ξ = η` and so
+`f(p x) = ⟪η, p η⟫ = ⟪y η, y η⟫ = ‖ξ‖² = 1`.
+
+So the ω-bounded functionals are *not* spanned by the ω-dominated np-maps:
+in the example the latter are exactly `ℝ≥0 · ω`, a one-dimensional cone,
+while the former form a two-dimensional space.  This is not repairable by a
+different pointwise condition on the `f_k` either — the same argument kills
+`|f_k(a)| ≤ B‖a‖_ω` and `f_k(a* a) ≤ B ω(a* a)`.
+
+What survives, and what the thesis actually uses in **72XI**, are the two
+one-way implications, proved separately below:
+`normal_functionals_lemma_of_dominated` ((4) ⇒ (1), the thesis's argument at
+vn.tex:3914, unchanged) and `normal_functionals_decomposition` ((3) ⇒ (4)
+*minus* the domination clause, the thesis's argument at vn.tex:3955, whose
+polarisation and Cauchy-limit steps are correct).  In **72XI** the
+domination is recovered against the *new* np-map `ω' = Σ_k f_k`, not against
+the given `ω`, which is all that corollary needs. -/
 theorem normal_functionals_lemma (ω : NPFunctional A) (f : A →ₗ[ℂ] ℂ) :
     List.TFAE
       [∃ δ B : ℝ, 0 < δ ∧ 0 < B ∧
@@ -397,12 +469,416 @@ theorem normal_functionals_lemma (ω : NPFunctional A) (f : A →ₗ[ℂ] ℂ) :
        ∃ (ι : Type u) (φ : A →ₗ[ℂ] lp (fun _ : ι => ℂ) 2),
         DenseRange ⇑φ ∧
         (∀ a c : A, ⟪φ a, φ c⟫ = ω (star a * c)) ∧
-        ∃ b : lp (fun _ : ι => ℂ) 2, ∀ a : A, f a = ⟪b, φ a⟫,
-       ∃ (g : Fin 4 → NPFunctional A) (B : ℝ), 0 < B ∧
-        (∀ a : A, f a = g 0 a + Complex.I * g 1 a - g 2 a -
-          Complex.I * g 3 a) ∧
-        ∀ (k : Fin 4) (a : A), 0 ≤ a → (g k a).re ≤ B * (ω a).re] :=
-  sorry
+        ∃ b : lp (fun _ : ι => ℂ) 2, ∀ a : A, f a = ⟪b, φ a⟫] := by
+  -- (1) ⇒ (2) is the thesis's rescaling `ã = δ(ε + ‖a‖_ω)⁻¹ a` (vn.tex:3930).
+  tfae_have 1 → 2 := by
+    rintro ⟨δ, B, hδ, hB, h⟩
+    refine ⟨B / δ, by positivity, fun a => le_of_forall_sub_le fun ε hε => ?_⟩
+    set s : ℝ := omegaNorm A ω a with hs
+    have hs0 : 0 ≤ s := omegaNorm_nonneg ω a
+    set η : ℝ := ε * δ / B with hη
+    have hη0 : 0 < η := by rw [hη]; positivity
+    set t : ℝ := δ / (η + s) with ht
+    have ht0 : 0 < t := by rw [ht]; positivity
+    have hball : omegaNorm A ω ((t : ℂ) • a) ≤ δ := by
+      rw [omegaNorm_smul, Complex.norm_real, Real.norm_of_nonneg ht0.le, ht, ← hs,
+        div_mul_eq_mul_div, div_le_iff₀ (by positivity)]
+      nlinarith
+    have hfa : t * ‖f a‖ ≤ B := by
+      have hx := h _ hball
+      rwa [map_smul, smul_eq_mul, norm_mul, Complex.norm_real,
+        Real.norm_of_nonneg ht0.le] at hx
+    rw [ht, div_mul_eq_mul_div, div_le_iff₀ (by positivity)] at hfa
+    have hBη : B * η = ε * δ := by rw [hη]; field_simp
+    have key : δ * (‖f a‖ - ε) ≤ δ * (B / δ * s) := by
+      have hrw : δ * (B / δ * s) = B * s := by field_simp
+      rw [hrw]
+      nlinarith
+    exact le_of_mul_le_mul_left key hδ
+  -- (2) ⇒ (3): `f` extends to a bounded functional on the GNS completion
+  -- `ℋ_ω`, Riesz gives the vector, and a Hilbert basis transports `ℋ_ω` to
+  -- `ℓ²(w)` (vn.tex:3943; the transport is ours, the thesis leaves `ℋ_ω`
+  -- abstract).
+  tfae_have 2 → 3 := by
+    rintro ⟨B, hB, hf⟩
+    have hbound : ∀ a : A, ‖f a‖ ≤ B * ‖gnsVecₗ ω a‖ := by
+      intro a; rw [gnsVecₗ_apply, gnsVec_norm]; exact hf a
+    have hdense : DenseRange ⇑(gnsVecₗ ω) := gnsVec_denseRange ω
+    obtain ⟨w, bas, -⟩ := exists_hilbertBasis ℂ ω.toPositiveLinearMap.GNS
+    refine ⟨w, bas.repr.toLinearEquiv.toLinearMap ∘ₗ gnsVecₗ ω, ?_, ?_, ?_⟩
+    · exact bas.repr.surjective.denseRange.comp hdense bas.repr.continuous
+    · intro a c
+      change (⟪bas.repr (gnsVec ω a), bas.repr (gnsVec ω c)⟫ : ℂ) = _
+      rw [LinearIsometryEquiv.inner_map_map]
+      exact gnsVec_inner ω a c
+    · set F : ω.toPositiveLinearMap.GNS →L[ℂ] ℂ :=
+        f.extendOfNorm (gnsVecₗ ω) with hFdef
+      have hFe : ∀ a : A, F (gnsVecₗ ω a) = f a := fun a =>
+        LinearMap.extendOfNorm_eq hdense ⟨B, hbound⟩ a
+      refine ⟨bas.repr ((InnerProductSpace.toDual ℂ _).symm F), fun a => ?_⟩
+      change _ = (⟪bas.repr ((InnerProductSpace.toDual ℂ _).symm F),
+        bas.repr (gnsVec ω a)⟫ : ℂ)
+      rw [LinearIsometryEquiv.inner_map_map, InnerProductSpace.toDual_symm_apply]
+      exact (hFe a).symm
+  -- (3) ⇒ (1) is Cauchy–Schwarz in `ℓ²(ι)`: `‖φ a‖ = ‖a‖_ω`.
+  tfae_have 3 → 1 := by
+    rintro ⟨ι, φ, -, hinner, b, hb⟩
+    have hnorm : ∀ a : A, ‖φ a‖ = omegaNorm A ω a := by
+      intro a
+      have h2 : (ω (star a * a)).re = ‖φ a‖ ^ 2 := by
+        rw [← hinner a a]
+        simpa using inner_self_eq_norm_sq (𝕜 := ℂ) (φ a)
+      rw [omegaNorm, h2, Real.sqrt_sq (norm_nonneg _)]
+    refine ⟨1, ‖b‖ + 1, one_pos, by positivity, fun a ha => ?_⟩
+    calc ‖f a‖ = ‖(⟪b, φ a⟫ : ℂ)‖ := by rw [hb]
+      _ ≤ ‖b‖ * ‖φ a‖ := norm_inner_le_norm _ _
+      _ ≤ ‖b‖ * 1 := by
+          rw [hnorm]; exact mul_le_mul_of_nonneg_left ha (norm_nonneg b)
+      _ ≤ ‖b‖ + 1 := by nlinarith [norm_nonneg b]
+  tfae_finish
+
+omit [VonNeumannAlgebra A] in
+/-- **72V**, the implication (4) ⇒ (1) of vn.tex:3887 (proof at vn.tex:3914):
+a linear functional that decomposes into np-maps *dominated by* `B·ω` is
+bounded on the unit `‖·‖_ω`-ball.  This half of the thesis's fourth clause is
+correct; the converse is not — see the erratum on
+`normal_functionals_lemma`. -/
+theorem normal_functionals_lemma_of_dominated (ω : NPFunctional A)
+    (f : A →ₗ[ℂ] ℂ) (g : Fin 4 → NPFunctional A) (B : ℝ) (hB : 0 < B)
+    (hf : ∀ a : A, f a = g 0 a + Complex.I * g 1 a - g 2 a - Complex.I * g 3 a)
+    (hdom : ∀ (k : Fin 4) (a : A), 0 ≤ a → (g k a).re ≤ B * (ω a).re) :
+    ∃ δ B' : ℝ, 0 < δ ∧ 0 < B' ∧
+      ∀ a : A, omegaNorm A ω a ≤ δ → ‖f a‖ ≤ B' := by
+  -- `‖a‖_{f_k} ≤ √B ‖a‖_ω`, since `f_k(a* a) ≤ B ω(a* a)`
+  have hk : ∀ (k : Fin 4) (a : A),
+      omegaNorm A (g k) a ≤ Real.sqrt B * omegaNorm A ω a := by
+    intro k a
+    rw [omegaNorm, omegaNorm, ← Real.sqrt_mul hB.le]
+    exact Real.sqrt_le_sqrt (hdom k _ (star_mul_self_nonneg a))
+  -- Kadison: `|f_k(a)| ≤ ‖a‖_{f_k} f_k(1)^½ ≤ √B f_k(1)^½ ‖a‖_ω`
+  have hgk : ∀ (k : Fin 4) (a : A),
+      ‖g k a‖ ≤ Real.sqrt B * Real.sqrt ((g k 1).re) * omegaNorm A ω a := by
+    intro k a
+    calc ‖g k a‖ ≤ omegaNorm A (g k) a * Real.sqrt ((g k 1).re) :=
+          norm_apply_le_omegaNorm (g k) a
+      _ ≤ Real.sqrt B * omegaNorm A ω a * Real.sqrt ((g k 1).re) :=
+          mul_le_mul_of_nonneg_right (hk k a) (Real.sqrt_nonneg _)
+      _ = _ := by ring
+  set C : ℝ := Real.sqrt B * Real.sqrt ((g 0 1).re) +
+    Real.sqrt B * Real.sqrt ((g 1 1).re) + Real.sqrt B * Real.sqrt ((g 2 1).re) +
+    Real.sqrt B * Real.sqrt ((g 3 1).re) with hCdef
+  have hC0 : 0 ≤ C := by rw [hCdef]; positivity
+  refine ⟨1, C + 1, one_pos, by linarith, fun a ha => ?_⟩
+  have hb : ∀ k : Fin 4, ‖g k a‖ ≤ Real.sqrt B * Real.sqrt ((g k 1).re) := by
+    intro k
+    refine (hgk k a).trans ?_
+    have h1 : (0 : ℝ) ≤ Real.sqrt B * Real.sqrt ((g k 1).re) := by positivity
+    nlinarith [omegaNorm_nonneg ω a]
+  have e1 := norm_sub_le (g 0 a + Complex.I * g 1 a - g 2 a) (Complex.I * g 3 a)
+  have e2 := norm_sub_le (g 0 a + Complex.I * g 1 a) (g 2 a)
+  have e3 := norm_add_le (g 0 a) (Complex.I * g 1 a)
+  have hI1 : ‖Complex.I * g 1 a‖ = ‖g 1 a‖ := by simp
+  have hI3 : ‖Complex.I * g 3 a‖ = ‖g 3 a‖ := by simp
+  rw [hf a]
+  have b0 := hb 0
+  have b1 := hb 1
+  have b2 := hb 2
+  have b3 := hb 3
+  rw [hCdef]
+  linarith
+
+/-- The vectors `½(iᵏ b + 1)` of the polarisation identity. -/
+private noncomputable def polVec (b : A) (k : Fin 4) : A :=
+  (2 : ℂ)⁻¹ • (Complex.I ^ (k : ℕ) • b + 1)
+
+omit [PartialOrder A] [StarOrderedRing A] [VonNeumannAlgebra A] in
+/-- **Polarisation** (**44II**, `mult-polarization`, vn.tex:643, cited in
+72V's proof at vn.tex:3970):
+`b* a = Σₖ iᵏ (½(iᵏb+1))* a (½(iᵏb+1))`.  (The thesis writes it as
+`¼ Σₖ iᵏ (iᵏb+1)* a (iᵏb+1)`; halving `b+1` absorbs the `¼`, which is what
+lets the summands stay np-*functionals* — there is no positive scalar
+multiple on the np-cone in `Theses/A/VN/Basic.lean`.) -/
+private theorem polarisation_four (b a : A) :
+    ∑ k : Fin 4, Complex.I ^ (k : ℕ) • (star (polVec b k) * a * polVec b k)
+      = star b * a := by
+  have hI2 : Complex.I ^ 2 = -1 := Complex.I_sq
+  have hI3 : Complex.I ^ 3 = -Complex.I := by rw [pow_succ, hI2]; ring
+  have hv3 : ((3 : Fin 4) : ℕ) = 3 := rfl
+  simp only [polVec, Fin.sum_univ_four, Fin.isValue, Fin.val_zero, Fin.val_one,
+    Fin.val_two, hv3, pow_zero, pow_one, hI2, hI3, star_smul, star_add, star_one,
+    smul_add, add_mul, mul_add, smul_mul_assoc, mul_smul_comm, smul_smul]
+  norm_num [Complex.ext_iff]
+  match_scalars <;> ring_nf <;> (try simp only [Complex.I_sq]) <;> (try ring)
+
+/-- **72V**, the implication (3) ⇒ (4) of vn.tex:3887 (proof at vn.tex:3955),
+*minus its domination clause*: an `ω`-bounded linear functional is a
+combination `f₀ + i f₁ − f₂ − i f₃` of np-functionals.
+
+The thesis's argument, unchanged apart from the two adjustments forced on us:
+a `‖·‖_ω`-Cauchy sequence `b₁, b₂, …` in `A` approximating the Riesz vector
+`b ∈ ℋ_ω`, polarisation, and `bstaromega_cauchy` (**72III**.2) for the
+limits.  The *domination* `f_k ≤ B ω` claimed in vn.tex:3981 is **omitted**
+because it is false — see the erratum on `normal_functionals_lemma`. -/
+theorem normal_functionals_decomposition (ω : NPFunctional A) (f : A →ₗ[ℂ] ℂ)
+    (hbdd : ∃ B : ℝ, 0 < B ∧ ∀ a : A, ‖f a‖ ≤ B * omegaNorm A ω a) :
+    ∃ g : Fin 4 → NPFunctional A, ∀ a : A,
+      f a = g 0 a + Complex.I * g 1 a - g 2 a - Complex.I * g 3 a := by
+  classical
+  obtain ⟨B, hB, hf⟩ := hbdd
+  -- `f` extends to `ℋ_ω` and Riesz gives the vector `b₀`
+  have hbound : ∀ a : A, ‖f a‖ ≤ B * ‖gnsVecₗ ω a‖ := by
+    intro a; rw [gnsVecₗ_apply, gnsVec_norm]; exact hf a
+  have hdense : DenseRange ⇑(gnsVecₗ ω) := gnsVec_denseRange ω
+  set F : ω.toPositiveLinearMap.GNS →L[ℂ] ℂ :=
+    f.extendOfNorm (gnsVecₗ ω) with hFdef
+  have hFe : ∀ a : A, F (gnsVec ω a) = f a := fun a =>
+    LinearMap.extendOfNorm_eq hdense ⟨B, hbound⟩ a
+  set b₀ : ω.toPositiveLinearMap.GNS :=
+    (InnerProductSpace.toDual ℂ _).symm F with hb₀def
+  have hb₀ : ∀ a : A, f a = ⟪b₀, gnsVec ω a⟫ := by
+    intro a
+    rw [hb₀def, InnerProductSpace.toDual_symm_apply, hFe]
+  -- a sequence in `A` converging to `b₀` in `ℋ_ω`
+  have hex : ∀ n : ℕ, ∃ c : A, ‖gnsVec ω c - b₀‖ < 1 / (n + 1) := by
+    intro n
+    obtain ⟨c, hc⟩ := hdense.exists_dist_lt b₀ (ε := 1 / (n + 1)) (by positivity)
+    exact ⟨c, by rwa [← dist_eq_norm, dist_comm]⟩
+  choose c hc using hex
+  have hctend : Tendsto (fun n => gnsVec ω (c n)) atTop (𝓝 b₀) := by
+    rw [tendsto_iff_dist_tendsto_zero]
+    refine squeeze_zero (fun n => dist_nonneg) (fun n => ?_)
+      tendsto_one_div_add_atTop_nhds_zero_nat
+    rw [dist_eq_norm]
+    exact (hc n).le
+  -- `(c n)` is `‖·‖_ω`-Cauchy
+  have hcauchy0 : Tendsto (fun p : ℕ × ℕ => omegaNorm A ω (c p.1 - c p.2))
+      (atTop ×ˢ atTop) (𝓝 0) := by
+    refine squeeze_zero' (Eventually.of_forall fun p => omegaNorm_nonneg ω _)
+      (Eventually.of_forall fun p => ?_)
+      (g := fun p : ℕ × ℕ => 1 / ((p.1 : ℝ) + 1) + 1 / ((p.2 : ℝ) + 1)) ?_
+    · have hlin : gnsVec ω (c p.1 - c p.2) = gnsVec ω (c p.1) - gnsVec ω (c p.2) := by
+        simpa using (gnsVecₗ ω).map_sub (c p.1) (c p.2)
+      rw [← gnsVec_norm, hlin]
+      calc ‖gnsVec ω (c p.1) - gnsVec ω (c p.2)‖
+          ≤ ‖gnsVec ω (c p.1) - b₀‖ + ‖b₀ - gnsVec ω (c p.2)‖ :=
+            norm_sub_le_norm_sub_add_norm_sub _ _ _
+        _ ≤ 1 / ((p.1 : ℝ) + 1) + 1 / ((p.2 : ℝ) + 1) := by
+            have h2 : ‖b₀ - gnsVec ω (c p.2)‖ = ‖gnsVec ω (c p.2) - b₀‖ :=
+              norm_sub_rev _ _
+            rw [h2]
+            exact add_le_add (hc p.1).le (hc p.2).le
+    · have h1 : Tendsto (fun n : ℕ => 1 / ((n : ℝ) + 1)) atTop (𝓝 0) :=
+        tendsto_one_div_add_atTop_nhds_zero_nat
+      simpa using (h1.comp tendsto_fst).add
+        (h1.comp (tendsto_snd (f := (atTop : Filter ℕ)) (g := (atTop : Filter ℕ))))
+  -- hence so is each `½(iᵏ c n + 1)`, and `72III`.2 provides the limits
+  have hall : ∀ k : Fin 4, ∃ G : NPFunctional A, ∀ ε : ℝ, 0 < ε → ∃ N,
+      ∀ n ≥ N, ∀ a : A,
+        ‖bStarOmega A (polVec (c n) k) ω a - G a‖ ≤ ε * ‖a‖ := by
+    intro k
+    refine bstaromega_cauchy ω (fun n => polVec (c n) k) ?_
+    have hsub : ∀ p : ℕ × ℕ, polVec (c p.1) k - polVec (c p.2) k
+        = ((2 : ℂ)⁻¹ * Complex.I ^ (k : ℕ)) • (c p.1 - c p.2) := by
+      intro p
+      simp only [polVec, smul_sub, smul_add, smul_smul]
+      abel
+    have heq : ∀ p : ℕ × ℕ,
+        omegaNorm A ω (polVec (c p.1) k - polVec (c p.2) k)
+          = ‖((2 : ℂ)⁻¹ * Complex.I ^ (k : ℕ))‖ * omegaNorm A ω (c p.1 - c p.2) := by
+      intro p; rw [hsub p, omegaNorm_smul]
+    simp only [heq]
+    simpa using hcauchy0.const_mul ‖((2 : ℂ)⁻¹ * Complex.I ^ (k : ℕ))‖
+  choose G hG using hall
+  -- the convergence `(iᵏcₙ+1)*ω → f_k` is pointwise
+  have hconv : ∀ (k : Fin 4) (a : A),
+      Tendsto (fun n => bStarOmega A (polVec (c n) k) ω a) atTop (𝓝 (G k a)) := by
+    intro k a
+    refine Metric.tendsto_atTop.mpr fun ε hε => ?_
+    obtain ⟨N, hN⟩ := hG k (ε / (‖a‖ + 1)) (by positivity)
+    refine ⟨N, fun n hn => ?_⟩
+    rw [dist_eq_norm]
+    refine lt_of_le_of_lt (hN n hn a) ?_
+    rw [div_mul_eq_mul_div, div_lt_iff₀ (by positivity)]
+    nlinarith [norm_nonneg a, norm_nonneg (a : A)]
+  refine ⟨G, fun a => ?_⟩
+  -- `f a = lim ω(cₙ* a) = lim Σₖ iᵏ (½(iᵏcₙ+1))*ω (a) = Σₖ iᵏ f_k(a)`
+  have hlim1 : Tendsto (fun n => (ω (star (c n) * a) : ℂ)) atTop (𝓝 (f a)) := by
+    have hconst : Tendsto (fun _ : ℕ => gnsVec ω a) atTop (𝓝 (gnsVec ω a)) :=
+      tendsto_const_nhds
+    have h := Filter.Tendsto.inner (𝕜 := ℂ) hctend hconst
+    rw [← hb₀ a] at h
+    simpa only [gnsVec_inner] using h
+  have hpol : ∀ n : ℕ, (ω (star (c n) * a) : ℂ)
+      = bStarOmega A (polVec (c n) 0) ω a
+        + Complex.I * bStarOmega A (polVec (c n) 1) ω a
+        - bStarOmega A (polVec (c n) 2) ω a
+        - Complex.I * bStarOmega A (polVec (c n) 3) ω a := by
+    intro n
+    simp only [bStarOmega]
+    have hsmul : ∀ (z : ℂ) (x : A), (ω (z • x) : ℂ) = z * ω x := fun z x => by
+      have hz := map_smul ω.toPositiveLinearMap z x
+      simp only [smul_eq_mul] at hz
+      exact hz
+    have hv3 : ((3 : Fin 4) : ℕ) = 3 := rfl
+    have h := congrArg (fun x : A => (ω x : ℂ)) (polarisation_four (c n) a)
+    simp only [Fin.sum_univ_four, Fin.isValue, Fin.val_zero, Fin.val_one,
+      Fin.val_two, hv3, pow_zero, pow_one] at h
+    rw [← h, npFunctional_add, npFunctional_add, npFunctional_add,
+      hsmul, hsmul, hsmul, hsmul]
+    have hI2 : Complex.I ^ 2 = -1 := Complex.I_sq
+    have hI3 : Complex.I ^ 3 = -Complex.I := by rw [pow_succ, hI2]; ring
+    rw [hI2, hI3]
+    ring
+  have hlim2 : Tendsto (fun n => (ω (star (c n) * a) : ℂ)) atTop
+      (𝓝 (G 0 a + Complex.I * G 1 a - G 2 a - Complex.I * G 3 a)) := by
+    simp only [hpol]
+    exact (((hconv 0 a).add (((hconv 1 a)).const_mul Complex.I)).sub
+      (hconv 2 a)).sub ((hconv 3 a).const_mul Complex.I)
+  exact tendsto_nhds_unique hlim1 hlim2
+
+/-! ### The counterexample to **72V**.(4)
+
+See the erratum on `normal_functionals_lemma`.  On `B(H)` with `dim H ≥ 2`,
+the vector functional `ω = ⟪ξ, (·) ξ⟫` and the functional
+`f = ⟪η, (·) ξ⟫` (for orthonormal `ξ, η`) satisfy `|f(a)| ≤ ‖a‖_ω` — so all
+three conditions of `normal_functionals_lemma` hold — while `f` admits no
+decomposition into np-maps dominated by any multiple of `ω`. -/
+
+section Counterexample
+
+variable {H : Type u} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+  [CompleteSpace H]
+
+/-- `f = ⟪η, (·) ξ⟫` as a linear functional on `B(H)`. -/
+noncomputable def vectorPairFunctional (ξ η : H) : (H →L[ℂ] H) →ₗ[ℂ] ℂ where
+  toFun a := ⟪η, a ξ⟫
+  map_add' a b := by simp
+  map_smul' c a := by simp
+
+omit [CompleteSpace H] in
+@[simp] theorem vectorPairFunctional_apply (ξ η : H) (a : H →L[ℂ] H) :
+    vectorPairFunctional ξ η a = ⟪η, a ξ⟫ := rfl
+
+/-- `‖a‖_ω = ‖a ξ‖` for the vector functional `ω = ⟪ξ, (·) ξ⟫` on `B(H)`. -/
+theorem omegaNorm_vectorNP (ξ : H) (a : H →L[ℂ] H) :
+    omegaNorm (H →L[ℂ] H) (vectorNP ξ) a = ‖a ξ‖ := by
+  have h : ((vectorNP ξ) (star a * a)).re = ‖a ξ‖ ^ 2 := by
+    have h1 : ((vectorNP ξ) (star a * a) : ℂ) = ⟪a ξ, a ξ⟫ := by
+      change (⟪ξ, (star a * a) ξ⟫ : ℂ) = _
+      rw [ContinuousLinearMap.star_eq_adjoint]
+      change (⟪ξ, ContinuousLinearMap.adjoint a (a ξ)⟫ : ℂ) = _
+      rw [ContinuousLinearMap.adjoint_inner_right]
+    rw [h1]
+    simpa using inner_self_eq_norm_sq (𝕜 := ℂ) (a ξ)
+  rw [omegaNorm, h, Real.sqrt_sq (norm_nonneg _)]
+
+/-- **Counterexample to 72V.(4)** (ours).  For orthonormal `ξ, η` in a
+Hilbert space `H`, the functional `f = ⟪η, (·) ξ⟫` on `B(H)` satisfies
+condition (2) of `normal_functionals_lemma` with respect to the np-functional
+`ω = ⟪ξ, (·) ξ⟫` (hence conditions (1) and (3) as well), but it is **not** a
+combination `f₀ + i f₁ - f₂ - i f₃` of np-maps dominated by any `B·ω` on the
+positive cone.  So vn.tex:3887's fourth clause is strictly stronger than the
+other three. -/
+theorem normal_functionals_lemma_four_counterexample
+    (ξ η : H) (hξ : ‖ξ‖ = 1) (hη : ‖η‖ = 1) (horth : (⟪ξ, η⟫ : ℂ) = 0) :
+    (∀ a : H →L[ℂ] H,
+        ‖vectorPairFunctional ξ η a‖ ≤ 1 *
+          omegaNorm (H →L[ℂ] H) (vectorNP ξ) a) ∧
+      ¬ ∃ (g : Fin 4 → NPFunctional (H →L[ℂ] H)) (B : ℝ), 0 < B ∧
+        (∀ a : H →L[ℂ] H, vectorPairFunctional ξ η a =
+          g 0 a + Complex.I * g 1 a - g 2 a - Complex.I * g 3 a) ∧
+        ∀ (k : Fin 4) (a : H →L[ℂ] H), 0 ≤ a →
+          (g k a).re ≤ B * ((vectorNP ξ) a).re := by
+  classical
+  set y : H →L[ℂ] H := ketbra ξ η with hy
+  have hyapp : ∀ u : H, y u = (⟪η, u⟫ : ℂ) • ξ := fun u => rfl
+  set x : H →L[ℂ] H := ketbra η ξ with hx
+  have hxapp : ∀ u : H, x u = (⟪ξ, u⟫ : ℂ) • η := fun u => rfl
+  set p : H →L[ℂ] H := star y * y with hp
+  -- `⟪u, p v⟫ = ⟪y u, y v⟫`
+  have hpinner : ∀ u v : H, (⟪u, p v⟫ : ℂ) = ⟪y u, y v⟫ := by
+    intro u v
+    rw [hp, ContinuousLinearMap.star_eq_adjoint]
+    change (⟪u, ContinuousLinearMap.adjoint y (y v)⟫ : ℂ) = _
+    rw [ContinuousLinearMap.adjoint_inner_right]
+  refine ⟨fun a => ?_, ?_⟩
+  · rw [one_mul, omegaNorm_vectorNP, vectorPairFunctional_apply]
+    calc ‖(⟪η, a ξ⟫ : ℂ)‖ ≤ ‖η‖ * ‖a ξ‖ := norm_inner_le_norm _ _
+      _ = ‖a ξ‖ := by rw [hη, one_mul]
+  rintro ⟨g, B, hB, hdec, hdom⟩
+  -- `ω(p) = ‖y ξ‖² = 0`, because `y ξ = ⟪η, ξ⟫ • ξ = 0`
+  have hyξ : y ξ = 0 := by
+    rw [hyapp, ← inner_conj_symm, horth]
+    simp
+  have hωp : ((vectorNP ξ) p).re = 0 := by
+    change (⟪ξ, p ξ⟫ : ℂ).re = 0
+    rw [hpinner, hyξ]
+    simp
+  have hp0 : (0 : H →L[ℂ] H) ≤ p := star_mul_self_nonneg y
+  -- hence every `f_k` kills `p`, and so, by Cauchy–Schwarz, kills `y* z`
+  have hgp : ∀ k : Fin 4, omegaNorm (H →L[ℂ] H) (g k) y = 0 := by
+    intro k
+    have hle : (g k p).re ≤ 0 := by
+      have := hdom k p hp0
+      rw [hωp, mul_zero] at this
+      exact this
+    have hge : (0 : ℝ) ≤ (g k p).re :=
+      (Complex.le_def.mp (npFunctional_nonneg (g k) hp0)).1
+    have : (g k (star y * y)).re = 0 := by rw [← hp]; linarith
+    rw [omegaNorm, this, Real.sqrt_zero]
+  have hkill : ∀ (k : Fin 4) (z : H →L[ℂ] H), g k (star y * z) = 0 := by
+    intro k z
+    have h := norm_apply_star_mul_le (g k) y z
+    rw [hgp k, zero_mul] at h
+    exact norm_eq_zero.mp (le_antisymm h (norm_nonneg _))
+  -- so `f (p * x) = 0`, while `f (p * x) = ‖y η‖² = ‖ξ‖² = 1`
+  have hfzero : vectorPairFunctional ξ η (star y * (y * x)) = 0 := by
+    rw [hdec, hkill 0, hkill 1, hkill 2, hkill 3]
+    ring
+  have hyη : y η = ξ := by
+    rw [hyapp, inner_self_eq_norm_sq_to_K, hη]
+    simp
+  have hxξ : x ξ = η := by
+    rw [hxapp, inner_self_eq_norm_sq_to_K, hξ]
+    simp
+  have hfone : vectorPairFunctional ξ η (star y * (y * x)) = 1 := by
+    rw [vectorPairFunctional_apply]
+    have hassoc : star y * (y * x) = p * x := by rw [hp, mul_assoc]
+    rw [hassoc]
+    change (⟪η, p (x ξ)⟫ : ℂ) = 1
+    rw [hxξ, hpinner, hyη, inner_self_eq_norm_sq_to_K, hξ]
+    norm_num
+  rw [hfzero] at hfone
+  exact zero_ne_one hfone
+
+/-- The counterexample is inhabited (`H = ℂ²`, `ξ, η` the standard basis),
+so the four conditions of vn.tex:3887 are genuinely *not* equivalent:
+condition (2) holds here and condition (4) fails. -/
+theorem normal_functionals_lemma_four_not_equivalent :
+    ∃ (ω : NPFunctional
+        (EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2)))
+      (f : (EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2)) →ₗ[ℂ] ℂ),
+      (∀ a : EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2),
+          ‖f a‖ ≤ 1 * omegaNorm _ ω a) ∧
+      ¬ ∃ (g : Fin 4 → NPFunctional
+            (EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2)))
+          (B : ℝ), 0 < B ∧
+          (∀ a : EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2),
+            f a = g 0 a + Complex.I * g 1 a - g 2 a - Complex.I * g 3 a) ∧
+          ∀ (k : Fin 4) (a : EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2)),
+            0 ≤ a → (g k a).re ≤ B * (ω a).re := by
+  classical
+  set ξ : EuclideanSpace ℂ (Fin 2) := EuclideanSpace.single 0 1 with hξdef
+  set η : EuclideanSpace ℂ (Fin 2) := EuclideanSpace.single 1 1 with hηdef
+  have hξ : ‖ξ‖ = 1 := by rw [hξdef]; simp
+  have hη : ‖η‖ = 1 := by rw [hηdef]; simp
+  have horth : (⟪ξ, η⟫ : ℂ) = 0 := by
+    rw [hξdef, hηdef, EuclideanSpace.inner_single_left]
+    simp
+  exact ⟨vectorNP ξ, vectorPairFunctional ξ η,
+    normal_functionals_lemma_four_counterexample ξ η hξ hη horth⟩
+
+end Counterexample
 
 /-- **72XI** (`luws`, vn.tex:3989, Corollary): for a linear functional
 `f : A → ℂ` on a von Neumann algebra the following are equivalent:
