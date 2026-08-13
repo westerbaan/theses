@@ -12,9 +12,8 @@ contraposition (`f^⋄`/`f_⋄`), rigidity, ⋄-self-adjointness and
   `cornerSet A e = {a | e·a·e = a}` of `A` (for element-level statements),
   and as a bundled type `Corner A e` (a one-field structure wrapper around
   that subset).  The C*/von Neumann algebra structure on `Corner A e`
-  (with unit `e`, 94II parts 5–8) is *asserted* by `sorry`-ed instances;
-  the coherence with the operations of `A` is pinned down by the sorry-ed
-  parts of `corner_vna_basic`.  Those instances hold only when `e` is a
+  (with unit `e`, 94II parts 5–8) is **proved**; the coherence with the
+  operations of `A` is pinned down by `corner_vna_basic`.  Those instances hold only when `e` is a
   **projection** (94I forms corners of projections only), which is carried
   through instance resolution as `[Fact (IsStarProjection e)]`; for the
   indices `⌈p⌉`, `⌊p⌋`, `⌈d⌉ᵣ` and `⌈f⌉` that occur in this chapter the
@@ -270,7 +269,8 @@ def cornerSet (e : A) : Set A := {a : A | e * a * e = a}
 variable (A) in
 /-- **94I** (proc.tex:176, Definition), bundled form: the corner `e𝒜e` as
 a type of its own.  By **94II** (parts 5–8) it is a von Neumann algebra
-with unit `e`; those instances are asserted below with `sorry`. -/
+with unit `e`; those instances are proved below, guarded by
+`[Fact (IsStarProjection e)]` (94I forms corners of projections only). -/
 structure Corner (e : A) : Type u where
   /-- The underlying element of `A`. -/
   val : A

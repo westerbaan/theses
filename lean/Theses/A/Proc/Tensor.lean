@@ -357,7 +357,7 @@ tensor product) -/
 
 variable (A) in
 /-- Wrapper: a von Neumann subalgebra `S ⊆ A` bundled as an algebra in its
-own right, with sorry-ed instances (cf. `Corner` in `Measurement.lean`).
+own right, with proved instances (cf. `Corner` in `Measurement.lean`).
 The witness `hS : IsVNSubalgebra A S` (42V, `A/VN/Basic.lean`) is carried
 as an index: a bare `StarSubalgebra ℂ A` need not be norm-closed, hence
 need not be complete, hence need not be a C*-algebra at all. -/
