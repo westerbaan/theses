@@ -1295,6 +1295,69 @@ private theorem conjSA_isLUB [VonNeumannAlgebra A] (a : A)
     rintro _ ⟨e, he, rfl⟩
     exact Subtype.coe_le_coe.mpr (hv he)
 
+/-- Transfer of an infimum from `sa(A)` to `A`: a lower bound in `A` of a
+nonempty set of self-adjoint elements is automatically self-adjoint. -/
+theorem isGLB_coe_of_isGLB {F : Set (selfAdjoint A)} {i : selfAdjoint A}
+    (hne : F.Nonempty) (h : IsGLB F i) :
+    IsGLB (Subtype.val '' F) ((i : selfAdjoint A) : A) := by
+  obtain ⟨d₀, hd₀⟩ := hne
+  refine ⟨?_, fun u hu => ?_⟩
+  · rintro _ ⟨d, hd, rfl⟩
+    exact Subtype.coe_le_coe.mpr (h.1 hd)
+  · have hu0 : u ≤ ((d₀ : selfAdjoint A) : A) := hu ⟨d₀, hd₀, rfl⟩
+    have husa : IsSelfAdjoint u := by
+      have hd : IsSelfAdjoint (((d₀ : selfAdjoint A) : A) - u) :=
+        IsSelfAdjoint.of_nonneg (sub_nonneg.mpr hu0)
+      simpa using d₀.2.sub hd
+    have hlb : (⟨u, husa⟩ : selfAdjoint A) ∈ lowerBounds F :=
+      fun e he => hu ⟨e, he, rfl⟩
+    exact h.2 hlb
+
+private theorem conjSA_neg (a : A) (d : selfAdjoint A) :
+    conjSA a (-d) = -conjSA a d := by
+  refine Subtype.ext ?_
+  show star a * ((-d : selfAdjoint A) : A) * a = -((conjSA a d : selfAdjoint A) : A)
+  simp [conjSA_coe]
+
+/-- **44VIII** (`ad-normal`, vn.tex:704) in the "variation" used in the proof
+of **56VI**: conjugation `d ↦ a* d a` also preserves the *infima* of
+nonempty filtered (downwards directed) sets of self-adjoint elements.
+Obtained from `ad_normal` by the substitution `x ↦ -x`, exactly as
+`infima_in_vna` obtains infima from suprema. -/
+theorem ad_normal_inf [VonNeumannAlgebra A] (a : A) {F : Set (selfAdjoint A)}
+    {i : selfAdjoint A} (hne : F.Nonempty) (hdir : DirectedOn (· ≥ ·) F)
+    (hglb : IsGLB F i) :
+    IsGLB ((fun x : A => star a * x * a) '' (Subtype.val '' F))
+      (star a * ((i : selfAdjoint A) : A) * a) := by
+  -- `-F` is nonempty, directed upwards, and has `-i` as supremum
+  have hne' : (-F).Nonempty := hne.neg
+  have hdir' : DirectedOn (· ≤ ·) (-F) := by
+    rintro x hx y hy
+    rw [Set.mem_neg] at hx hy
+    obtain ⟨c, hc, hcx, hcy⟩ := hdir _ hx _ hy
+    exact ⟨-c, by simpa using hc, le_neg.mpr hcx, le_neg.mpr hcy⟩
+  have hlub' : IsLUB (-F) (-i) := hglb.neg
+  have hA := conjSA_isLUB a hne' hdir' hlub'
+  -- rewrite `conjSA a '' (-F) = -(conjSA a '' F)` and `conjSA a (-i) = -conjSA a i`
+  have himg : conjSA a '' (-F) = -(conjSA a '' F) := by
+    ext x
+    simp only [Set.mem_image, Set.mem_neg]
+    constructor
+    · rintro ⟨d, hd, hx⟩
+      exact ⟨-d, hd, by rw [conjSA_neg, hx]⟩
+    · rintro ⟨d, hd, hx⟩
+      refine ⟨-d, by simpa using hd, ?_⟩
+      rw [conjSA_neg, hx, neg_neg]
+  rw [himg, conjSA_neg] at hA
+  have hglbSA : IsGLB (conjSA a '' F) (conjSA a i) := by
+    simpa using hA.neg
+  have hcoe := isGLB_coe_of_isGLB (hne.image _) hglbSA
+  rw [conjSA_coe] at hcoe
+  have hset : Subtype.val '' (conjSA a '' F)
+      = (fun x : A => star a * x * a) '' (Subtype.val '' F) := by
+    rw [← Set.image_comp, ← Set.image_comp]; rfl
+  rwa [hset] at hcoe
+
 end AdNormal
 
 /-- **72III**.1a (`bstaromega-basic`, vn.tex:3850) as far as it is needed
@@ -1516,6 +1579,39 @@ theorem vna_supremum_commutes [VonNeumannAlgebra A]
     rw [hc _ d.2]
   rw [heq] at h2
   exact tendsto_nhds_unique h2 h1
+
+/-- **44XIII** (`vna-supremum-commutes`, vn.tex:787) in the "variation" used
+in the proof of **56VI**.80: if `a` commutes with every member of a nonempty
+filtered (downwards directed) set `F` of self-adjoint elements which is
+bounded below, then `a` commutes with `⋀F`.  Obtained from
+`vna_supremum_commutes` by `x ↦ -x`. -/
+theorem vna_infimum_commutes [VonNeumannAlgebra A] {F : Set (selfAdjoint A)}
+    {i : selfAdjoint A} (hne : F.Nonempty) (hdir : DirectedOn (· ≥ ·) F)
+    (hglb : IsGLB F i) (a : A) (hc : ∀ d ∈ F, a * (d : A) = (d : A) * a) :
+    a * ((i : selfAdjoint A) : A) = ((i : selfAdjoint A) : A) * a := by
+  have hne' : (-F).Nonempty := hne.neg
+  have hdir' : DirectedOn (· ≤ ·) (-F) := by
+    rintro x hx y hy
+    rw [Set.mem_neg] at hx hy
+    obtain ⟨c, hc', hcx, hcy⟩ := hdir _ hx _ hy
+    exact ⟨-c, by simpa using hc', le_neg.mpr hcx, le_neg.mpr hcy⟩
+  have hlub' : IsLUB (-F) (-i) := hglb.neg
+  have h3 : (-F).Nonempty ∧ DirectedOn (· ≤ ·) (-F) ∧ BddAbove (-F) :=
+    ⟨hne', hdir', ⟨-i, hlub'.1⟩⟩
+  have hsup : dirSup (-F) h3 = -i := (isLUB_dirSup (-F) h3).unique hlub'
+  have hkey := vna_supremum_commutes (-F) h3 a (by
+    rintro d hd
+    rw [Set.mem_neg] at hd
+    have := hc _ hd
+    have hd' : ((d : selfAdjoint A) : A) = -((-d : selfAdjoint A) : A) := by
+      simp
+    rw [hd']
+    rw [mul_neg, neg_mul, this])
+  rw [hsup] at hkey
+  have hneg : ((-i : selfAdjoint A) : A) = -((i : selfAdjoint A) : A) := by
+    simp
+  rw [hneg, mul_neg, neg_mul, neg_inj] at hkey
+  exact hkey
 
 /-- **44XIV** (`vna-supremum-uslimit`, vn.tex:791): for a bounded directed
 set `D` of self-adjoint elements, `(⋁D − d)² → 0` ultraweakly, i.e. the net

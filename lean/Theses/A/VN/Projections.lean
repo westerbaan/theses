@@ -68,6 +68,47 @@ theorem sq_mem_effects {a : A} (ha : a ∈ effects A) : a ^ 2 ∈ effects A := b
   refine ⟨h2 ▸ ?_, h2 ▸ (mul_self_le_self ha).trans ha.2⟩
   simpa [(IsSelfAdjoint.of_nonneg ha.1).star_eq] using star_mul_self_nonneg a
 
+/-- `1 ≥ b ≥ b² ≥ b⁴ ≥ ⋯ ≥ 0` (the opening line of the proof of **56VI**):
+the powers of an effect decrease.  `b^{n+1} ≤ b^n` is `b ≤ 1` conjugated by
+`b^k` when `n = 2k`, and `b² ≤ b` conjugated by `b^k` when `n = 2k+1`. -/
+theorem pow_antitone_of_mem_effects {b : A} (hb : b ∈ effects A) :
+    Antitone (fun n : ℕ => b ^ n) := by
+  refine antitone_nat_of_succ_le fun n => ?_
+  have hsa : ∀ k : ℕ, star (b ^ k) = b ^ k := fun k =>
+    ((IsSelfAdjoint.of_nonneg hb.1).pow k).star_eq
+  have hcat : ∀ i j : ℕ, b ^ i * b * b ^ j = b ^ (i + 1 + j) := fun i j => by
+    rw [← pow_succ, ← pow_add]
+  have hcat2 : ∀ i j : ℕ, b ^ i * (b * b) * b ^ j = b ^ (i + 2 + j) := fun i j => by
+    rw [← sq, ← pow_add, ← pow_add]
+  rcases Nat.even_or_odd n with ⟨k, hk⟩ | ⟨k, hk⟩
+  · -- `n = 2k`: `b^{2k+1} = b^k b b^k ≤ b^k 1 b^k = b^{2k}`
+    have h := star_left_conjugate_le_conjugate hb.2 (b ^ k)
+    rw [hsa k, mul_one] at h
+    calc b ^ (n + 1) = b ^ k * b * b ^ k := by rw [hcat, hk]; congr 1; omega
+      _ ≤ b ^ k * b ^ k := h
+      _ = b ^ n := by rw [← pow_add, hk]
+  · -- `n = 2k+1`: `b^{2k+2} = b^k b² b^k ≤ b^k b b^k = b^{2k+1}`
+    have h := star_left_conjugate_le_conjugate (mul_self_le_self hb) (b ^ k)
+    rw [hsa k] at h
+    calc b ^ (n + 1) = b ^ k * (b * b) * b ^ k := by
+          rw [hcat2, hk]; congr 1; omega
+      _ ≤ b ^ k * b * b ^ k := h
+      _ = b ^ n := by rw [hcat, hk]; congr 1; omega
+
+/-- Powers of an effect are effects. -/
+theorem pow_mem_effects {b : A} (hb : b ∈ effects A) (n : ℕ) :
+    b ^ n ∈ effects A := by
+  refine ⟨?_, by simpa using pow_antitone_of_mem_effects hb (Nat.zero_le n)⟩
+  rcases Nat.even_or_odd n with ⟨k, hk⟩ | ⟨k, hk⟩
+  · have h : (0 : A) ≤ star (b ^ k) * (b ^ k) := star_mul_self_nonneg _
+    rw [((IsSelfAdjoint.of_nonneg hb.1).pow k).star_eq, ← pow_add] at h
+    rwa [hk]
+  · have h := star_left_conjugate_nonneg hb.1 (b ^ k)
+    rw [((IsSelfAdjoint.of_nonneg hb.1).pow k).star_eq] at h
+    have he : b ^ k * b * b ^ k = b ^ n := by
+      rw [← pow_succ, ← pow_add, hk]; congr 1; omega
+    rwa [he] at h
+
 /-- For `0 ≤ b` and any `c`, `b c = 0` iff `√b c = 0`: multiply on the left
 by `c*` and use the C*-identity. -/
 theorem sqrt_mul_eq_zero_iff {b : A} (hb : 0 ≤ b) (c : A) :
@@ -896,8 +937,121 @@ theorem floor_isGreatest {b : A} (hb : b ∈ effects A) :
 projection below the effect `b`, and equals `⋀ₙ b^{2ⁿ}`. -/
 theorem vna_floor (b : A) (hb : b ∈ effects A) :
     IsGreatest {p : A | IsStarProjection p ∧ p ≤ b} (floor b) ∧
-      IsGLB (Set.range fun n : ℕ => b ^ (2 ^ n)) (floor b) :=
-  sorry
+      IsGLB (Set.range fun n : ℕ => b ^ (2 ^ n)) (floor b) := by
+  refine ⟨floor_isGreatest hb, ?_⟩
+  -- **56VI**.70: the filtered set `1 ≥ b ≥ b² ≥ b⁴ ≥ ⋯ ≥ 0` and its infimum
+  -- `q = ⋀ₙ b^{2ⁿ}` (`infima_in_vna`, **43Ia**)
+  set E : ℕ → selfAdjoint A := fun n =>
+    ⟨b ^ 2 ^ n, IsSelfAdjoint.of_nonneg (pow_mem_effects hb (2 ^ n)).1⟩ with hE
+  have hEanti : Antitone E := fun m n hmn =>
+    Subtype.coe_le_coe.mp
+      (pow_antitone_of_mem_effects hb (Nat.pow_le_pow_right (by norm_num) hmn))
+  set F : Set (selfAdjoint A) := Set.range E with hF
+  have hne : F.Nonempty := ⟨E 0, 0, rfl⟩
+  have hdir : DirectedOn (· ≥ ·) F := by
+    rintro _ ⟨m, rfl⟩ _ ⟨n, rfl⟩
+    exact ⟨E (max m n), ⟨max m n, rfl⟩, hEanti (le_max_left _ _),
+      hEanti (le_max_right _ _)⟩
+  have hbdd : BddBelow F := by
+    refine ⟨0, ?_⟩
+    rintro _ ⟨n, rfl⟩
+    exact Subtype.coe_le_coe.mp (pow_mem_effects hb (2 ^ n)).1
+  obtain ⟨p, hglbSA⟩ := infima_in_vna F hne hdir hbdd
+  set q : A := ((p : selfAdjoint A) : A) with hq
+  have hrange : Subtype.val '' F = Set.range (fun n : ℕ => b ^ 2 ^ n) := by
+    rw [hF, ← Set.range_comp]; rfl
+  have hglb : IsGLB (Set.range fun n : ℕ => b ^ 2 ^ n) q := by
+    rw [← hrange]; exact isGLB_coe_of_isGLB hne hglbSA
+  have hqle : ∀ n : ℕ, q ≤ b ^ 2 ^ n := fun n => hglb.1 ⟨n, rfl⟩
+  have hq0 : (0 : A) ≤ q := hglb.2 (by
+    rintro _ ⟨n, rfl⟩; exact (pow_mem_effects hb (2 ^ n)).1)
+  have hqb : q ≤ b := by simpa using hqle 0
+  have hqeff : q ∈ effects A := ⟨hq0, hqb.trans hb.2⟩
+  -- **56VI**.80: `b` commutes with `q` (a variation on **44XIII**)
+  have hcomm : b * q = q * b :=
+    vna_infimum_commutes hne hdir hglbSA b (by
+      rintro _ ⟨n, rfl⟩
+      exact ((Commute.refl b).pow_right (2 ^ n)).eq)
+  -- and therefore so does `√q` (`sqrt`, cstar.tex **23VII**)
+  have hsq0 : (0 : A) ≤ CFC.sqrt q := CFC.sqrt_nonneg q
+  have hsqb : Commute (CFC.sqrt q) b := ((sqrt_commute q hq0 b hcomm).1).symm
+  have hsqpow : ∀ k : ℕ, CFC.sqrt q * b ^ k = b ^ k * CFC.sqrt q := fun k =>
+    (hsqb.pow_right k).eq
+  have hsqsq : CFC.sqrt q * CFC.sqrt q = q := CFC.sqrt_mul_sqrt_self q hq0
+  have hbsa : ∀ k : ℕ, star (b ^ k) = b ^ k := fun k =>
+    ((IsSelfAdjoint.of_nonneg hb.1).pow k).star_eq
+  -- `q ≤ b^{2^m} q b^{2^m}` — the inner application of `ad_normal_inf`:
+  -- `b^{2^m} q b^{2^m} = ⋀ₙ b^{2^m} b^{2ⁿ} b^{2^m}` and `q ≤ b^{2^m+2ⁿ+2^m}`
+  have hstep : ∀ m : ℕ, q ≤ b ^ 2 ^ m * q * b ^ 2 ^ m := by
+    intro m
+    have hAD := ad_normal_inf (b ^ 2 ^ m) hne hdir hglbSA
+    simp only [hbsa] at hAD
+    rw [hrange] at hAD
+    refine hAD.2 ?_
+    rintro _ ⟨_, ⟨n, rfl⟩, rfl⟩
+    have hprod : b ^ 2 ^ m * b ^ 2 ^ n * b ^ 2 ^ m = b ^ (2 ^ m + 2 ^ n + 2 ^ m) := by
+      rw [← pow_add, ← pow_add]
+    have hexp : 2 ^ m + 2 ^ n + 2 ^ m ≤ 2 ^ (max (m + 1) n + 1) := by
+      have h1 : 2 ^ (m + 1) ≤ 2 ^ max (m + 1) n :=
+        Nat.pow_le_pow_right (by norm_num) (le_max_left _ _)
+      have h2 : 2 ^ n ≤ 2 ^ max (m + 1) n :=
+        Nat.pow_le_pow_right (by norm_num) (le_max_right _ _)
+      have h3 : 2 ^ (m + 1) = 2 ^ m + 2 ^ m := by rw [pow_succ]; ring
+      have h4 : 2 ^ (max (m + 1) n + 1) = 2 ^ max (m + 1) n + 2 ^ max (m + 1) n := by
+        rw [pow_succ]; ring
+      omega
+    calc q ≤ b ^ 2 ^ (max (m + 1) n + 1) := hqle _
+      _ ≤ b ^ (2 ^ m + 2 ^ n + 2 ^ m) := pow_antitone_of_mem_effects hb hexp
+      _ = b ^ 2 ^ m * b ^ 2 ^ n * b ^ 2 ^ m := hprod.symm
+  -- **56VI**.90: `q² = q`.  `q² ≤ q` because `q ≤ 1`; for `q ≤ q²` use the
+  -- outer application of `ad_normal_inf`, to the shifted chain `(b^{2^{m+1}})ₘ`
+  set G : Set (selfAdjoint A) := Set.range (fun m : ℕ => E (m + 1)) with hG
+  have hGne : G.Nonempty := ⟨E 1, 0, rfl⟩
+  have hGdir : DirectedOn (· ≥ ·) G := by
+    rintro _ ⟨m, rfl⟩ _ ⟨n, rfl⟩
+    exact ⟨E (max m n + 1), ⟨max m n, rfl⟩, hEanti (by omega), hEanti (by omega)⟩
+  have hGglb : IsGLB G p := by
+    refine ⟨?_, fun v hv => hglbSA.2 ?_⟩
+    · rintro _ ⟨m, rfl⟩
+      exact hglbSA.1 ⟨m + 1, rfl⟩
+    · rintro _ ⟨n, rfl⟩
+      exact le_trans (hv ⟨n, rfl⟩) (hEanti (Nat.le_succ n))
+  have hqq : q ≤ q * q := by
+    have hAD := ad_normal_inf (CFC.sqrt q) hGne hGdir hGglb
+    simp only [(IsSelfAdjoint.of_nonneg hsq0).star_eq] at hAD
+    rw [conj_sqrt_self hq0] at hAD
+    refine hAD.2 ?_
+    rintro _ ⟨_, ⟨_, ⟨m, rfl⟩, rfl⟩, rfl⟩
+    -- `√q b^{2^{m+1}} √q = b^{2^m} q b^{2^m} ≥ q`
+    have hsplit : b ^ 2 ^ (m + 1) = b ^ 2 ^ m * b ^ 2 ^ m := by
+      rw [← pow_add]; congr 1; rw [pow_succ]; ring
+    have : CFC.sqrt q * b ^ 2 ^ (m + 1) * CFC.sqrt q
+        = b ^ 2 ^ m * q * b ^ 2 ^ m := by
+      calc CFC.sqrt q * b ^ 2 ^ (m + 1) * CFC.sqrt q
+          = CFC.sqrt q * b ^ 2 ^ m * (b ^ 2 ^ m * CFC.sqrt q) := by
+            rw [hsplit]; noncomm_ring
+        _ = b ^ 2 ^ m * CFC.sqrt q * (CFC.sqrt q * b ^ 2 ^ m) := by
+            rw [hsqpow (2 ^ m)]
+        _ = b ^ 2 ^ m * (CFC.sqrt q * CFC.sqrt q) * b ^ 2 ^ m := by noncomm_ring
+        _ = b ^ 2 ^ m * q * b ^ 2 ^ m := by rw [hsqsq]
+    show q ≤ CFC.sqrt q * ((E (m + 1) : selfAdjoint A) : A) * CFC.sqrt q
+    rw [hE]
+    exact this ▸ hstep m
+  have hqproj : IsStarProjection q :=
+    ⟨le_antisymm (mul_self_le_self hqeff) hqq, p.2⟩
+  -- **56VI**.100: `q` is the greatest projection below `b`, i.e. `q = ⌊b⌋`
+  have hfb : ∀ k : ℕ, floor b * b ^ k = floor b := by
+    intro k
+    induction k with
+    | zero => simp
+    | succ n ih => rw [pow_succ, ← mul_assoc, ih, (floor_spec hb).2.1]
+  have hfloorq : floor b ≤ q := hglb.2 (by
+    rintro _ ⟨n, rfl⟩
+    exact ((projection_below_effect (b ^ 2 ^ n) (floor b)
+      (pow_mem_effects hb (2 ^ n)) (floor_spec hb).1).out 0 7).mpr (hfb _))
+  have hqf : q = floor b :=
+    le_antisymm ((floor_isGreatest hb).2 ⟨hqproj, hqb⟩) hfloorq
+  rwa [hqf] at hglb
 
 /-- **56VI** (`vna-floor`, vn.tex:2419, Proposition), moreover: whatever
 commutes with `b` commutes with `⌊b⌋`. -/
@@ -1261,19 +1415,269 @@ theorem projInf_eq {P : Set A} (hP : ∀ p ∈ P, IsStarProjection p) {s : A}
     projInf P = s :=
   (exists_projInf P hP).unique (projInf_spec hP) ⟨hs, hlb, hgreatest⟩
 
+/-! ### Auxiliary: the ceiling calculus
+
+Everything in **56XVII**, **59III**–**59VI** is read off the defining property of `⌈a⌉`
+(the least projection `p` with `ap = a`, `ceil_spec`) through the two
+elementary equivalences
+
+  `a p = a  ↔  a p^⊥ = 0`   and   `x c = 0  ↔  c* x c = 0`  (`x ≥ 0`),
+
+the second being `conj_sa_eq_zero_iff`.  The one genuinely nontrivial input
+is `ceil_mul_eq_zero` (`bc = 0 ⟹ ⌈b⌉c = 0`), which uses the supremum
+formula **56I** together with **44VIII** (`ad_normal`). -/
+
+/-- `⌈0⌉ = 0`. -/
+theorem ceil_zero : ceil (0 : A) = 0 :=
+  ceil_eq_of_isLeast le_rfl (IsStarProjection.zero A) (by simp)
+    fun q hq _ => hq.nonneg
+
+/-- Two positive elements with the same "absorbing" projections have the
+same ceiling. -/
+private theorem ceil_congr {x y : A} (hx : 0 ≤ x) (hy : 0 ≤ y)
+    (h : ∀ p : A, IsStarProjection p → (x * p = x ↔ y * p = y)) :
+    ceil x = ceil y := by
+  obtain ⟨hx1, hx2, hx3⟩ := ceil_spec hx
+  obtain ⟨hy1, hy2, hy3⟩ := ceil_spec hy
+  exact le_antisymm (hx3 _ hy1 ((h _ hy1).mpr hy2)) (hy3 _ hx1 ((h _ hx1).mp hx2))
+
+/-- `⌈λa⌉ = ⌈a⌉` for `λ > 0` (**59III**.4, first half). -/
+theorem ceil_smul {a : A} (ha : 0 ≤ a) {l : ℝ} (hl : 0 < l) :
+    ceil (l • a) = ceil a := by
+  refine ceil_congr (smul_nonneg hl.le ha) ha fun p _ => ?_
+  rw [smul_mul_assoc]
+  refine ⟨fun h => ?_, fun h => by rw [h]⟩
+  have h2 := congrArg (fun z : A => (l⁻¹ : ℝ) • z) h
+  simpa [smul_smul, inv_mul_cancel₀ (ne_of_gt hl)] using h2
+
+/-- `a p = a` iff `a p^⊥ = 0`. -/
+private theorem mul_eq_iff_mul_ortho_eq_zero (a p : A) :
+    a * p = a ↔ a * (1 - p) = 0 := by
+  rw [mul_sub, mul_one, sub_eq_zero, eq_comm]
+
+/-- For `0 ≤ x` and a projection `p`: `x* x p = x* x` iff `x p = x`
+(the C*-identity `‖x p^⊥‖² = ‖p^⊥ x* x p^⊥‖`). -/
+private theorem star_mul_self_absorb_iff (a : A) {p : A}
+    (hp : IsStarProjection p) :
+    star a * a * p = star a * a ↔ a * p = a := by
+  rw [mul_eq_iff_mul_ortho_eq_zero, mul_eq_iff_mul_ortho_eq_zero,
+    ← conj_sa_eq_zero_iff (star_mul_self_nonneg a) hp.one_sub.isSelfAdjoint,
+    ← CStarRing.star_mul_self_eq_zero_iff (a * (1 - p))]
+  rw [star_mul, hp.one_sub.isSelfAdjoint.star_eq]
+  constructor <;> intro h
+  · rw [← h]; noncomm_ring
+  · rw [← h]; noncomm_ring
+
+/-- An `IsLUB` in `A` of a set of self-adjoint elements is an `IsLUB` in
+`sa(A)` (converse of `isLUB_coe_of_isLUB`). -/
+private theorem isLUB_sa_of_isLUB {D : Set (selfAdjoint A)} {s : selfAdjoint A}
+    (h : IsLUB (Subtype.val '' D) ((s : selfAdjoint A) : A)) : IsLUB D s := by
+  refine ⟨fun d hd => Subtype.coe_le_coe.mp (h.1 ⟨d, hd, rfl⟩), fun v hv => ?_⟩
+  refine Subtype.coe_le_coe.mp (h.2 ?_)
+  rintro _ ⟨d, hd, rfl⟩
+  exact Subtype.coe_le_coe.mpr (hv hd)
+
+/-- **The** calculation rule behind **59IV** and **60VIII**: if `bc = 0`
+for positive `b`, then already `⌈b⌉c = 0`.
+
+For an effect `b` this is **44VIII** (`ad_normal`) applied to the chain
+`b^{1/2ⁿ}` whose supremum is `⌈b⌉` (**56I**): `bc = 0` gives
+`b^{1/2ⁿ}c = 0` for every `n` (by `sqrt_mul_eq_zero_iff`), hence
+`c*⌈b⌉c = ⋁ₙ c* b^{1/2ⁿ} c = 0`, and `c*⌈b⌉c = (⌈b⌉c)*(⌈b⌉c)`. -/
+theorem ceil_mul_eq_zero {b : A} (hb : 0 ≤ b) {c : A} (h : b * c = 0) :
+    ceil b * c = 0 := by
+  -- reduce to the case of an effect by the rescaling of **59I**
+  suffices hkey : ∀ b' : A, b' ∈ effects A → b' * c = 0 → ceil b' * c = 0 by
+    rcases eq_or_ne b 0 with rfl | hbne
+    · rw [ceil_zero, zero_mul]
+    have hn : (0 : ℝ) < ‖b‖ := norm_pos_iff.mpr hbne
+    have hb'nn : (0 : A) ≤ (‖b‖⁻¹ : ℝ) • b := smul_nonneg (by positivity) hb
+    have hb'eff : (‖b‖⁻¹ : ℝ) • b ∈ effects A := by
+      refine ⟨hb'nn, (CStarAlgebra.norm_le_one_iff_of_nonneg _ hb'nn).mp ?_⟩
+      rw [norm_smul, Real.norm_eq_abs, abs_of_pos (by positivity),
+        inv_mul_cancel₀ (ne_of_gt hn)]
+    have hb'c : ((‖b‖⁻¹ : ℝ) • b) * c = 0 := by
+      rw [smul_mul_assoc, h, smul_zero]
+    rw [← ceil_smul hb (inv_pos.mpr hn)]
+    exact hkey _ hb'eff hb'c
+  clear h hb
+  intro b hb h
+  -- `b^{1/2ⁿ} c = 0` for every `n`
+  have hzero : ∀ n : ℕ, sqrtIter b n * c = 0 := by
+    intro n
+    induction n with
+    | zero => exact h
+    | succ n ih =>
+        rw [sqrtIter_succ]
+        exact (sqrt_mul_eq_zero_iff (sqrtIter_mem_effects hb n).1 c).mpr ih
+  -- the chain and its supremum `⌈b⌉` in `sa(A)`
+  set E : ℕ → selfAdjoint A := fun n =>
+    ⟨sqrtIter b n, IsSelfAdjoint.of_nonneg (sqrtIter_mem_effects hb n).1⟩ with hE
+  have hEmono : Monotone E := fun m n hmn =>
+    Subtype.coe_le_coe.mp (sqrtIter_monotone hb hmn)
+  set D : Set (selfAdjoint A) := Set.range E with hD
+  have hne : D.Nonempty := ⟨E 0, 0, rfl⟩
+  have hdir : DirectedOn (· ≤ ·) D := by
+    rintro _ ⟨m, rfl⟩ _ ⟨n, rfl⟩
+    exact ⟨E (max m n), ⟨max m n, rfl⟩, hEmono (le_max_left _ _),
+      hEmono (le_max_right _ _)⟩
+  have hbdd : BddAbove D := by
+    refine ⟨⟨1, IsSelfAdjoint.one A⟩, ?_⟩
+    rintro _ ⟨n, rfl⟩
+    exact Subtype.coe_le_coe.mp (sqrtIter_mem_effects hb n).2
+  have h3 : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧ BddAbove D := ⟨hne, hdir, hbdd⟩
+  set s : selfAdjoint A := ⟨ceil b, (ceil_spec hb.1).1.isSelfAdjoint⟩ with hs
+  have hval : Subtype.val '' D = Set.range (sqrtIter b) := by
+    rw [hD, ← Set.range_comp]; rfl
+  have hlub : IsLUB D s := by
+    refine isLUB_sa_of_isLUB ?_
+    rw [hval]
+    exact vna_ceil_sup b hb
+  have hdirSup : dirSup D h3 = s := (isLUB_dirSup D h3).unique hlub
+  -- **44VIII**: `c* ⌈b⌉ c = ⋁ₙ c* b^{1/2ⁿ} c = 0`
+  have hAD := ad_normal c D h3
+  rw [hdirSup] at hAD
+  have hzeroSup : star c * ceil b * c = 0 := by
+    refine le_antisymm (hAD.2 ?_) ?_
+    · rintro _ ⟨d, ⟨n, rfl⟩, rfl⟩
+      show star c * sqrtIter b n * c ≤ 0
+      rw [mul_assoc, hzero n, mul_zero]
+    · have h0 : star c * ((E 0 : selfAdjoint A) : A) * c
+          ≤ star c * ((s : selfAdjoint A) : A) * c := hAD.1 ⟨E 0, ⟨0, rfl⟩, rfl⟩
+      have he0 : ((E 0 : selfAdjoint A) : A) = b := rfl
+      rw [he0, mul_assoc, h, mul_zero] at h0
+      exact h0
+  -- `c* ⌈b⌉ c = (⌈b⌉c)* (⌈b⌉c)`
+  refine (CStarRing.star_mul_self_eq_zero_iff (ceil b * c)).mp ?_
+  rw [star_mul, (ceil_spec hb.1).1.isSelfAdjoint.star_eq]
+  calc star c * ceil b * (ceil b * c)
+      = star c * (ceil b * ceil b) * c := by noncomm_ring
+    _ = star c * ceil b * c := by rw [(ceil_spec hb.1).1.isIdempotentElem.eq]
+    _ = 0 := hzeroSup
+
+/-- **59III**.1 in the form the ceiling calculus needs: for positive `a`
+and a projection `p`, `⌈a⌉ ≤ p` iff `ap = a`. -/
+theorem ceil_le_iff {a : A} (ha : 0 ≤ a) {p : A} (hp : IsStarProjection p) :
+    ceil a ≤ p ↔ a * p = a := by
+  obtain ⟨h1, h2, h3⟩ := ceil_spec ha
+  refine ⟨fun h => ?_, fun h => h3 p hp h⟩
+  have hcp : ceil a * p = ceil a :=
+    ((projection_below_effect p (ceil a) ⟨hp.nonneg, hp.le_one⟩ h1).out 0 7).mp h
+  calc a * p = a * ceil a * p := by rw [h2]
+    _ = a * (ceil a * p) := by noncomm_ring
+    _ = a * ceil a := by rw [hcp]
+    _ = a := h2
+
+/-- `⌈·⌉` is monotone on the positive cone: `0 ≤ a ≤ b` gives
+`⌈a⌉ ≤ ⌈b⌉`, because `0 ≤ ⌈b⌉^⊥ a ⌈b⌉^⊥ ≤ ⌈b⌉^⊥ b ⌈b⌉^⊥ = 0`. -/
+theorem ceil_mono {a b : A} (ha : 0 ≤ a) (hab : a ≤ b) : ceil a ≤ ceil b := by
+  have hb : (0 : A) ≤ b := ha.trans hab
+  obtain ⟨h1, h2, -⟩ := ceil_spec hb
+  have hsa := h1.one_sub.isSelfAdjoint
+  refine (ceil_spec ha).2.2 _ h1 ?_
+  rw [mul_eq_iff_mul_ortho_eq_zero, ← conj_sa_eq_zero_iff ha hsa]
+  have hzb : (1 - ceil b) * b * (1 - ceil b) = 0 := by
+    rw [conj_sa_eq_zero_iff hb hsa, ← mul_eq_iff_mul_ortho_eq_zero]
+    exact h2
+  have hle : (1 - ceil b) * a * (1 - ceil b) ≤ (1 - ceil b) * b * (1 - ceil b) := by
+    have h := star_left_conjugate_le_conjugate hab (1 - ceil b)
+    rwa [hsa.star_eq] at h
+  have hnn : (0 : A) ≤ (1 - ceil b) * a * (1 - ceil b) := by
+    have h := star_left_conjugate_nonneg ha (1 - ceil b)
+    rwa [hsa.star_eq] at h
+  exact le_antisymm (hzb ▸ hle) hnn
+
+/-- **44VIII** (`ad_normal`) in the shape used for suprema of ceilings: if
+`s = ⋁D` for a nonempty directed set `D` of self-adjoint elements and
+`c d c = 0` for every `d ∈ D` (with `c` self-adjoint), then `c s c = 0`. -/
+private theorem conj_eq_zero_of_isLUB {D : Set A} {s c : A}
+    (hsa : ∀ d ∈ D, IsSelfAdjoint d) (hne : D.Nonempty)
+    (hdir : DirectedOn (· ≤ ·) D) (hlub : IsLUB D s) (hc : IsSelfAdjoint c)
+    (h : ∀ d ∈ D, c * d * c = 0) : c * s * c = 0 := by
+  obtain ⟨d₀, hd₀⟩ := hne
+  have hssa : IsSelfAdjoint s := by
+    have hd : IsSelfAdjoint (s - d₀) := IsSelfAdjoint.of_nonneg (sub_nonneg.mpr (hlub.1 hd₀))
+    simpa using hd.add (hsa d₀ hd₀)
+  -- transport `D` to `sa(A)`
+  set D' : Set (selfAdjoint A) := {x : selfAdjoint A | (x : A) ∈ D} with hD'
+  have hval : Subtype.val '' D' = D := by
+    ext x
+    constructor
+    · rintro ⟨y, hy, rfl⟩; exact hy
+    · intro hx; exact ⟨⟨x, hsa x hx⟩, hx, rfl⟩
+  have hne' : D'.Nonempty := ⟨⟨d₀, hsa d₀ hd₀⟩, hd₀⟩
+  have hdir' : DirectedOn (· ≤ ·) D' := by
+    intro x hx y hy
+    obtain ⟨z, hz, hxz, hyz⟩ := hdir _ hx _ hy
+    exact ⟨⟨z, hsa z hz⟩, hz, hxz, hyz⟩
+  set s' : selfAdjoint A := ⟨s, hssa⟩ with hs'
+  have hlub' : IsLUB D' s' := by
+    refine isLUB_sa_of_isLUB ?_
+    rw [hval]; exact hlub
+  have hbdd : BddAbove D' := ⟨s', hlub'.1⟩
+  have h3 : D'.Nonempty ∧ DirectedOn (· ≤ ·) D' ∧ BddAbove D' := ⟨hne', hdir', hbdd⟩
+  have hdirSup : dirSup D' h3 = s' := (isLUB_dirSup D' h3).unique hlub'
+  have hAD := ad_normal c D' h3
+  rw [hdirSup, hc.star_eq] at hAD
+  refine le_antisymm (hAD.2 ?_) ?_
+  · rintro _ ⟨d, hd, rfl⟩
+    exact le_of_eq (h _ hd)
+  · have h0 : c * ((⟨d₀, hsa d₀ hd₀⟩ : selfAdjoint A) : A) * c ≤ c * s * c :=
+      hAD.1 ⟨⟨d₀, hsa d₀ hd₀⟩, hd₀, rfl⟩
+    rw [show ((⟨d₀, hsa d₀ hd₀⟩ : selfAdjoint A) : A) = d₀ from rfl, h _ hd₀] at h0
+    exact h0
+
+/-- **56XVII**/**59V** (`ceil-supremum`/`ceil-suprema`, vn.tex:2554/2768),
+the common content: `⌈⋁D⌉ = ⋃_{d∈D}⌈d⌉` for a nonempty directed set `D` of
+positive elements with supremum `s`.  `⊇` is monotonicity of `⌈·⌉`; `⊆` is
+**44VIII**: writing `r` for the right-hand side, `r^⊥ d r^⊥ = 0` for every
+`d ∈ D`, hence `r^⊥ s r^⊥ = 0`, i.e. `⌈s⌉ ≤ r`. -/
+private theorem ceil_isLUB_aux {D : Set A} {s : A} (hD : ∀ d ∈ D, 0 ≤ d)
+    (hne : D.Nonempty) (hdir : DirectedOn (· ≤ ·) D) (hs : IsLUB D s) :
+    ceil s = projSup (ceil '' D) := by
+  obtain ⟨d₀, hd₀⟩ := hne
+  have hs0 : (0 : A) ≤ s := (hD d₀ hd₀).trans (hs.1 hd₀)
+  have hP : ∀ p ∈ ceil '' D, IsStarProjection p := by
+    rintro _ ⟨d, hd, rfl⟩
+    exact (ceil_spec (hD d hd)).1
+  refine (projSup_eq hP (ceil_spec hs0).1 ?_ ?_).symm
+  · rintro _ ⟨d, hd, rfl⟩
+    exact ceil_mono (hD d hd) (hs.1 hd)
+  · intro q hq hle
+    refine (ceil_spec hs0).2.2 q hq ?_
+    rw [mul_eq_iff_mul_ortho_eq_zero, ← conj_sa_eq_zero_iff hs0 hq.one_sub.isSelfAdjoint]
+    refine conj_eq_zero_of_isLUB (fun d hd => IsSelfAdjoint.of_nonneg (hD d hd))
+      ⟨d₀, hd₀⟩ hdir hs hq.one_sub.isSelfAdjoint fun d hd => ?_
+    rw [conj_sa_eq_zero_iff (hD d hd) hq.one_sub.isSelfAdjoint,
+      ← mul_eq_iff_mul_ortho_eq_zero]
+    exact (ceil_le_iff (hD d hd) hq).mp (hle _ ⟨d, hd, rfl⟩)
+
 /-- **56XVII** (`ceil-supremum`, vn.tex:2554, Exercise), part 1:
 `⌈⋁D⌉ = ⋃_{d∈D} ⌈d⌉` for a directed set `D` of effects. -/
 theorem ceil_supremum_1 (D : Set A) (s : A) (hD : ∀ d ∈ D, d ∈ effects A)
     (hne : D.Nonempty) (hdir : DirectedOn (· ≤ ·) D) (hs : IsLUB D s) :
     ceil s = projSup (ceil '' D) :=
-  sorry
+  ceil_isLUB_aux (fun d hd => (hD d hd).1) hne hdir hs
 
 /-- **56XVII** (`ceil-supremum`, vn.tex:2554, Exercise), part 2:
 `⌊⋀D⌋ = ⋂_{d∈D} ⌊d⌋` for a filtered set `D` of effects. -/
 theorem ceil_supremum_2 (D : Set A) (s : A) (hD : ∀ d ∈ D, d ∈ effects A)
     (hne : D.Nonempty) (hdir : DirectedOn (· ≥ ·) D) (hs : IsGLB D s) :
-    floor s = projInf (floor '' D) :=
-  sorry
+    floor s = projInf (floor '' D) := by
+  -- no `ad_normal` needed here: `⌊·⌋` is characterized order-theoretically
+  obtain ⟨d₀, hd₀⟩ := hne
+  have hseff : s ∈ effects A :=
+    ⟨hs.2 fun d hd => (hD d hd).1, (hs.1 hd₀).trans (hD d₀ hd₀).2⟩
+  have hP : ∀ p ∈ floor '' D, IsStarProjection p := by
+    rintro _ ⟨d, hd, rfl⟩
+    exact (floor_spec (hD d hd)).1
+  refine (projInf_eq hP (floor_spec hseff).1 ?_ ?_).symm
+  · rintro _ ⟨d, hd, rfl⟩
+    exact (floor_isGreatest (hD d hd)).2
+      ⟨(floor_spec hseff).1, (floor_le hseff).trans (hs.1 hd)⟩
+  · intro q hq hle
+    refine (floor_isGreatest hseff).2 ⟨hq, hs.2 fun d hd => ?_⟩
+    exact (hle _ ⟨d, hd, rfl⟩).trans (floor_le (hD d hd))
 
 /-- **56XVII** (`ceil-supremum`, vn.tex:2554, Exercise), part 3: `⌈·⌉` does
 not preserve filtered infima and `⌊·⌋` does not preserve directed suprema
@@ -1408,8 +1812,10 @@ formalize. -/
 /-- **59I** (`ceill`, vn.tex:2684, Notation), consistency of the extension:
 `⌈b⌉ = ⌈‖b‖⁻¹ b⌉` for positive nonzero `b`. -/
 theorem ceil_scale (b : A) (hb : 0 ≤ b) (hne : b ≠ 0) :
-    ceil b = ceil ((‖b‖⁻¹ : ℂ) • b) :=
-  sorry
+    ceil b = ceil ((‖b‖⁻¹ : ℂ) • b) := by
+  have hn : (0 : ℝ) < ‖b‖ := norm_pos_iff.mpr hne
+  rw [← Complex.ofReal_inv, Complex.coe_smul]
+  exact (ceil_smul hb (inv_pos.mpr hn)).symm
 
 /-- **59I** (`ceill`, vn.tex:2684, Notation): the **support projection**
 `⌈b⌋ = ⌈b* b⌉` of an element `b` of a von Neumann algebra. -/
@@ -1423,39 +1829,123 @@ noncomputable def rangeProj (b : A) : A := ceil (b * star b)
 `a` and a projection `p`: `pa = a` iff `ap = a` iff `⌈a⌉ ≤ p`; so `⌈a⌉` is
 the least projection `p` with `ap = a`. -/
 theorem ceil_basic_1 (a p : A) (ha : 0 ≤ a) (hp : IsStarProjection p) :
-    List.TFAE [p * a = a, a * p = a, ceil a ≤ p] :=
-  sorry
+    List.TFAE [p * a = a, a * p = a, ceil a ≤ p] := by
+  obtain ⟨hc1, hc2, hc3⟩ := ceil_spec ha
+  have hasa : star a = a := (IsSelfAdjoint.of_nonneg ha).star_eq
+  tfae_have 1 → 2 := by
+    intro h
+    have h' := congrArg star h
+    rwa [star_mul, hp.isSelfAdjoint.star_eq, hasa] at h'
+  tfae_have 2 → 3 := fun h => hc3 p hp h
+  tfae_have 3 → 1 := by
+    intro h
+    -- `⌈a⌉ ≤ p` gives `p⌈a⌉ = ⌈a⌉`, and `⌈a⌉a = a` is `a⌈a⌉ = a` starred
+    have h1 : ceil a * p = ceil a :=
+      ((projection_below_effect p (ceil a) ⟨hp.nonneg, hp.le_one⟩ hc1).out 0 7).mp h
+    have h2 : p * ceil a = ceil a := by
+      have h' := congrArg star h1
+      rwa [star_mul, hp.isSelfAdjoint.star_eq, hc1.isSelfAdjoint.star_eq] at h'
+    have h3 : ceil a * a = a := by
+      have h' := congrArg star hc2
+      rwa [star_mul, hc1.isSelfAdjoint.star_eq, hasa] at h'
+    calc p * a = p * (ceil a * a) := by rw [h3]
+      _ = p * ceil a * a := by noncomm_ring
+      _ = a := by rw [h2, h3]
+  tfae_finish
 
 /-- **59III** (`ceil-basic`, vn.tex:2728, Exercise), part 2:
 `⌈a⌉a = a⌈a⌉`, and in fact whatever commutes with positive `a` commutes
 with `⌈a⌉`. -/
 theorem ceil_basic_2 (a b : A) (ha : 0 ≤ a) (h : b * a = a * b) :
     b * ceil a = ceil a * b :=
-  sorry
+  vna_ceil_comm a ha b h
 
 /-- **59III** (`ceil-basic`, vn.tex:2728, Exercise), part 3: `a = 0` iff
 `⌈a⌉ = 0` for positive `a`. -/
-theorem ceil_basic_3 (a : A) (ha : 0 ≤ a) : a = 0 ↔ ceil a = 0 :=
-  sorry
+theorem ceil_basic_3 (a : A) (ha : 0 ≤ a) : a = 0 ↔ ceil a = 0 := by
+  refine ⟨fun h => by rw [h, ceil_zero], fun h => ?_⟩
+  have h2 := (ceil_spec ha).2.1
+  rwa [h, mul_zero, eq_comm] at h2
 
 /-- **59III** (`ceil-basic`, vn.tex:2728, Exercise), part 4:
 `⌈a⌉ = ⌈λa⌉` for `λ > 0`, and `⌈a + b⌉ = ⌈a⌉ ∪ ⌈b⌉` for positive `a`,
 `b`. -/
 theorem ceil_basic_4 (a b : A) (ha : 0 ≤ a) (hb : 0 ≤ b) (l : ℝ)
     (hl : 0 < l) :
-    ceil ((l : ℂ) • a) = ceil a ∧ ceil (a + b) = projSup {ceil a, ceil b} :=
-  sorry
+    ceil ((l : ℂ) • a) = ceil a ∧ ceil (a + b) = projSup {ceil a, ceil b} := by
+  refine ⟨by rw [Complex.coe_smul]; exact ceil_smul ha hl, ?_⟩
+  have hab : (0 : A) ≤ a + b := add_nonneg ha hb
+  have hP : ∀ p ∈ ({ceil a, ceil b} : Set A), IsStarProjection p := by
+    rintro p (rfl | rfl)
+    · exact (ceil_spec ha).1
+    · exact (ceil_spec hb).1
+  -- for a projection `p`: `(a+b)p = a+b ↔ ap = a ∧ bp = b`, because
+  -- `p^⊥(a+b)p^⊥ = p^⊥ap^⊥ + p^⊥bp^⊥` is a sum of two positives
+  have hsplit : ∀ p : A, IsStarProjection p →
+      ((a + b) * p = a + b ↔ (a * p = a ∧ b * p = b)) := by
+    intro p hp
+    have hpsa := hp.one_sub.isSelfAdjoint
+    rw [mul_eq_iff_mul_ortho_eq_zero, mul_eq_iff_mul_ortho_eq_zero,
+      mul_eq_iff_mul_ortho_eq_zero, ← conj_sa_eq_zero_iff hab hpsa,
+      ← conj_sa_eq_zero_iff ha hpsa, ← conj_sa_eq_zero_iff hb hpsa]
+    have hexpand : (1 - p) * (a + b) * (1 - p)
+        = (1 - p) * a * (1 - p) + (1 - p) * b * (1 - p) := by noncomm_ring
+    have hA : (0 : A) ≤ (1 - p) * a * (1 - p) := by
+      have h := star_left_conjugate_nonneg ha (1 - p)
+      rwa [hpsa.star_eq] at h
+    have hB : (0 : A) ≤ (1 - p) * b * (1 - p) := by
+      have h := star_left_conjugate_nonneg hb (1 - p)
+      rwa [hpsa.star_eq] at h
+    rw [hexpand]
+    refine ⟨fun h => ⟨?_, ?_⟩, fun h => by rw [h.1, h.2, add_zero]⟩
+    · refine le_antisymm ?_ hA
+      have he : (1 - p) * a * (1 - p) = -((1 - p) * b * (1 - p)) := by
+        rw [eq_neg_iff_add_eq_zero]; exact h
+      rw [he, neg_nonpos]; exact hB
+    · refine le_antisymm ?_ hB
+      have he : (1 - p) * b * (1 - p) = -((1 - p) * a * (1 - p)) := by
+        rw [eq_neg_iff_add_eq_zero, add_comm]; exact h
+      rw [he, neg_nonpos]; exact hA
+  obtain ⟨hs1, hs2, hs3⟩ := ceil_spec hab
+  obtain ⟨hab1, hab2⟩ := (hsplit _ hs1).mp hs2
+  refine (projSup_eq hP hs1 ?_ ?_).symm
+  · rintro p (rfl | rfl)
+    · exact (ceil_spec ha).2.2 _ hs1 hab1
+    · exact (ceil_spec hb).2.2 _ hs1 hab2
+  · intro q hq hle
+    refine hs3 q hq ((hsplit q hq).mpr ⟨?_, ?_⟩)
+    · exact ((ceil_basic_1 a q ha hq).out 2 1).mp (hle _ (by left; rfl))
+    · exact ((ceil_basic_1 b q hb hq).out 2 1).mp (hle _ (by right; rfl))
 
 /-- **59III** (`ceil-basic`, vn.tex:2728, Exercise), part 5: `⌈a²⌉ = ⌈a⌉`
 for positive `a`. -/
-theorem ceil_basic_5 (a : A) (ha : 0 ≤ a) : ceil (a ^ 2) = ceil a :=
-  sorry
+theorem ceil_basic_5 (a : A) (ha : 0 ≤ a) : ceil (a ^ 2) = ceil a := by
+  have hsa : star a = a := (IsSelfAdjoint.of_nonneg ha).star_eq
+  have hsq : a ^ 2 = star a * a := by rw [hsa, sq]
+  have h2 : (0 : A) ≤ a ^ 2 := hsq ▸ star_mul_self_nonneg a
+  refine ceil_congr h2 ha fun p hp => ?_
+  rw [hsq]
+  exact star_mul_self_absorb_iff a hp
 
 /-- **59IV** (`ceil-pos-part`, vn.tex:2756, Exercise), part 1:
 `⌈a₊⌉⌈a₋⌉ = 0` for self-adjoint `a`. -/
 theorem ceil_pos_part_1 (a : A) (ha : IsSelfAdjoint a) :
-    ceil (posPart a) * ceil (negPart a) = 0 :=
-  sorry
+    ceil (posPart a) * ceil (negPart a) = 0 := by
+  -- `a₊a₋ = 0` (`cstar-pos-neg-part`), so `⌈a₊⌉a₋ = 0` and then
+  -- `⌈a₊⌉⌈a₋⌉ = 0`, by `ceil_mul_eq_zero` twice
+  have h1 : ceil (posPart a) * negPart a = 0 :=
+    ceil_mul_eq_zero (CFC.posPart_nonneg a) (CFC.posPart_mul_negPart a)
+  have h2 : negPart a * ceil (posPart a) = 0 := by
+    have h := congrArg star h1
+    rw [star_mul, (IsSelfAdjoint.of_nonneg (CFC.negPart_nonneg a)).star_eq,
+      (ceil_spec (CFC.posPart_nonneg a)).1.isSelfAdjoint.star_eq, star_zero] at h
+    exact h
+  have h3 : ceil (negPart a) * ceil (posPart a) = 0 :=
+    ceil_mul_eq_zero (CFC.negPart_nonneg a) h2
+  have h := congrArg star h3
+  rw [star_mul, (ceil_spec (CFC.negPart_nonneg a)).1.isSelfAdjoint.star_eq,
+    (ceil_spec (CFC.posPart_nonneg a)).1.isSelfAdjoint.star_eq, star_zero] at h
+  exact h
 
 /-- **59IV** (`ceil-pos-part`, vn.tex:2756, Exercise), part 2:
 `⌈a₊⌉a = a⌈a₊⌉ = a₊` and `⌈a₋⌉a = a⌈a₋⌉ = -a₋` for self-adjoint `a`. -/
@@ -1463,8 +1953,36 @@ theorem ceil_pos_part_2 (a : A) (ha : IsSelfAdjoint a) :
     ceil (posPart a) * a = posPart a ∧
       a * ceil (posPart a) = posPart a ∧
       ceil (negPart a) * a = -negPart a ∧
-      a * ceil (negPart a) = -negPart a :=
-  sorry
+      a * ceil (negPart a) = -negPart a := by
+  have hp0 := CFC.posPart_nonneg a
+  have hn0 := CFC.negPart_nonneg a
+  have hsplit : posPart a - negPart a = a := CFC.posPart_sub_negPart a ha
+  -- `⌈a₊⌉a₊ = a₊`, `⌈a₊⌉a₋ = 0` and dually
+  have e1 : ceil (posPart a) * posPart a = posPart a :=
+    ((ceil_basic_1 (posPart a) _ hp0 (ceil_spec hp0).1).out 2 0).mp le_rfl
+  have e2 : ceil (negPart a) * negPart a = negPart a :=
+    ((ceil_basic_1 (negPart a) _ hn0 (ceil_spec hn0).1).out 2 0).mp le_rfl
+  have e3 : ceil (posPart a) * negPart a = 0 :=
+    ceil_mul_eq_zero hp0 (CFC.posPart_mul_negPart a)
+  have e4 : ceil (negPart a) * posPart a = 0 :=
+    ceil_mul_eq_zero hn0 (CFC.negPart_mul_posPart a)
+  have star_ceil_pos := (ceil_spec hp0).1.isSelfAdjoint.star_eq
+  have star_ceil_neg := (ceil_spec hn0).1.isSelfAdjoint.star_eq
+  have hpsa : star (posPart a) = posPart a := (IsSelfAdjoint.of_nonneg hp0).star_eq
+  have hnsa : star (negPart a) = negPart a := (IsSelfAdjoint.of_nonneg hn0).star_eq
+  have l1 : ceil (posPart a) * a = posPart a := by
+    calc ceil (posPart a) * a
+        = ceil (posPart a) * (posPart a - negPart a) := by rw [hsplit]
+      _ = posPart a := by rw [mul_sub, e1, e3, sub_zero]
+  have l3 : ceil (negPart a) * a = -negPart a := by
+    calc ceil (negPart a) * a
+        = ceil (negPart a) * (posPart a - negPart a) := by rw [hsplit]
+      _ = -negPart a := by rw [mul_sub, e2, e4, zero_sub]
+  refine ⟨l1, ?_, l3, ?_⟩
+  · have h := congrArg star l1
+    rwa [star_mul, ha.star_eq, star_ceil_pos, hpsa] at h
+  · have h := congrArg star l3
+    rwa [star_mul, ha.star_eq, star_ceil_neg, star_neg, hnsa] at h
 
 /-- **59V** (`ceil-suprema`, vn.tex:2768, Exercise):
 `⌈⋁D⌉ = ⋃_{d∈D} ⌈d⌉` for a bounded directed set `D` of *positive*
@@ -1472,31 +1990,53 @@ elements. -/
 theorem ceil_suprema (D : Set A) (s : A) (hD : ∀ d ∈ D, 0 ≤ d)
     (hne : D.Nonempty) (hdir : DirectedOn (· ≤ ·) D) (hs : IsLUB D s) :
     ceil s = projSup (ceil '' D) :=
-  sorry
+  ceil_isLUB_aux hD hne hdir hs
 
 /-- **59VI** (`ceill-basic`, vn.tex:2773, Exercise), part 1: the support
 `⌈a⌋ = ⌈a* a⌉` is the least projection `p` with `ap = a`. -/
 theorem ceill_basic_1 (a : A) :
-    IsLeast {p : A | IsStarProjection p ∧ a * p = a} (suppProj a) :=
-  sorry
+    IsLeast {p : A | IsStarProjection p ∧ a * p = a} (suppProj a) := by
+  obtain ⟨h1, h2, h3⟩ := ceil_spec (star_mul_self_nonneg a)
+  refine ⟨⟨h1, (star_mul_self_absorb_iff a h1).mp h2⟩, ?_⟩
+  rintro q ⟨hq, hqa⟩
+  exact h3 q hq ((star_mul_self_absorb_iff a hq).mpr hqa)
 
 /-- **59VI** (`ceill-basic`, vn.tex:2773, Exercise), part 2: the range
 `⌊a⌉ = ⌈a a*⌉` is the least projection `p` with `pa = a`. -/
 theorem ceill_basic_2 (a : A) :
-    IsLeast {p : A | IsStarProjection p ∧ p * a = a} (rangeProj a) :=
-  sorry
+    IsLeast {p : A | IsStarProjection p ∧ p * a = a} (rangeProj a) := by
+  have hstar : ∀ p : A, IsStarProjection p → (p * a = a ↔ star a * p = star a) := by
+    intro p hp
+    constructor <;> intro h
+    · have h' := congrArg star h
+      rwa [star_mul, hp.isSelfAdjoint.star_eq] at h'
+    · have h' := congrArg star h
+      rwa [star_mul, hp.isSelfAdjoint.star_eq, star_star] at h'
+  have hrw : rangeProj a = suppProj (star a) := by
+    rw [rangeProj, suppProj, star_star]
+  obtain ⟨⟨h1, h2⟩, h3⟩ := ceill_basic_1 (star a)
+  rw [hrw]
+  refine ⟨⟨h1, (hstar _ h1).mpr h2⟩, ?_⟩
+  rintro q ⟨hq, hqa⟩
+  exact h3 ⟨hq, (hstar q hq).mp hqa⟩
 
 /-- **59VI** (`ceill-basic`, vn.tex:2773, Exercise), part 3:
 `⌈a*⌋ = ⌊a⌉` and `⌊a*⌉ = ⌈a⌋`. -/
 theorem ceill_basic_3 (a : A) :
-    suppProj (star a) = rangeProj a ∧ rangeProj (star a) = suppProj a :=
-  sorry
+    suppProj (star a) = rangeProj a ∧ rangeProj (star a) = suppProj a := by
+  constructor
+  · rw [suppProj, rangeProj, star_star]
+  · rw [rangeProj, suppProj, star_star]
 
 /-- **59VI** (`ceill-basic`, vn.tex:2773, Exercise), part 4:
 `⌈ab⌋ ≤ ⌈b⌋` and `⌊ab⌉ ≤ ⌊a⌉`. -/
 theorem ceill_basic_4 (a b : A) :
-    suppProj (a * b) ≤ suppProj b ∧ rangeProj (a * b) ≤ rangeProj a :=
-  sorry
+    suppProj (a * b) ≤ suppProj b ∧ rangeProj (a * b) ≤ rangeProj a := by
+  constructor
+  · refine (ceill_basic_1 (a * b)).2 ⟨(ceill_basic_1 b).1.1, ?_⟩
+    rw [mul_assoc, (ceill_basic_1 b).1.2]
+  · refine (ceill_basic_2 (a * b)).2 ⟨(ceill_basic_2 a).1.1, ?_⟩
+    rw [← mul_assoc, (ceill_basic_2 a).1.2]
 
 end CeilFloor
 
@@ -1526,39 +2066,277 @@ section Functionals
 
 variable [VonNeumannAlgebra A] [VonNeumannAlgebra B]
 
+/-- Kadison's inequality (`omega-norm-basic`, cstar.tex **30IV**.1) for an
+np-functional: `|ω(a* b)|² ≤ ω(a* a)·ω(b* b)`. -/
+private theorem npFunctional_cauchy_schwarz (ω : NPFunctional A) (a b : A) :
+    ((‖ω (star a * b)‖ : ℂ)) ^ 2 ≤ ω (star a * a) * ω (star b * b) :=
+  omega_norm_basic_1 ω.toPositiveLinearMap.toLinearMap
+    (fun _ hx => npFunctional_nonneg ω hx) a b
+
+private theorem npFunctional_smul_real (ω : NPFunctional A) (r : ℝ) (x : A) :
+    ω (r • x) = (r : ℂ) * ω x := by
+  rw [← Complex.coe_smul]
+  exact map_smul ω.toPositiveLinearMap _ _
+
+/-- Kadison's inequality in the form **60I** uses it: `ω(a) = 0` forces
+`ω(√a) = 0`, because `ω(√a)² ≤ ω(1)·ω(a)`. -/
+private theorem npFunctional_sqrt_eq_zero {x : A} (hx : 0 ≤ x)
+    (ω : NPFunctional A) (h : ω x = 0) : ω (CFC.sqrt x) = 0 := by
+  have hcs := npFunctional_cauchy_schwarz ω 1 (CFC.sqrt x)
+  rw [star_one, one_mul, mul_one,
+    (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg x)).star_eq,
+    CFC.sqrt_mul_sqrt_self x hx, h, mul_zero] at hcs
+  have hnn : (0 : ℝ) ≤ ‖ω (CFC.sqrt x)‖ := norm_nonneg _
+  have hle : ((‖ω (CFC.sqrt x)‖ ^ 2 : ℝ) : ℂ) ≤ 0 := by push_cast; exact hcs
+  have h2 : (‖ω (CFC.sqrt x)‖ : ℝ) ^ 2 ≤ 0 := by
+    exact_mod_cast Complex.real_le_real.mp (by simpa using hle)
+  have : ‖ω (CFC.sqrt x)‖ = 0 := by nlinarith
+  exact norm_eq_zero.mp this
+
 /-- **60I** (`ceil-functionals-lemma`, vn.tex:2817, Lemma): for positive `a`
 and an np-functional `ω`: `ω(a) = 0` iff `ω(⌈a⌉) = 0`. -/
 theorem ceil_functionals_lemma (a : A) (ha : 0 ≤ a) (ω : NPFunctional A) :
-    ω a = 0 ↔ ω (ceil a) = 0 :=
-  sorry
+    ω a = 0 ↔ ω (ceil a) = 0 := by
+  -- 60I.20: the claim reduces to the case of an effect by rescaling
+  suffices hkey : ∀ b : A, b ∈ effects A → (ω b = 0 ↔ ω (ceil b) = 0) by
+    rcases eq_or_ne a 0 with rfl | hane
+    · rw [ceil_zero]
+    have hn : (0 : ℝ) < ‖a‖ := norm_pos_iff.mpr hane
+    have hnn : (0 : A) ≤ (‖a‖⁻¹ : ℝ) • a := smul_nonneg (by positivity) ha
+    have heff : (‖a‖⁻¹ : ℝ) • a ∈ effects A := by
+      refine ⟨hnn, (CStarAlgebra.norm_le_one_iff_of_nonneg _ hnn).mp ?_⟩
+      rw [norm_smul, Real.norm_eq_abs, abs_of_pos (by positivity),
+        inv_mul_cancel₀ (ne_of_gt hn)]
+    have hceq : ceil ((‖a‖⁻¹ : ℝ) • a) = ceil a := ceil_smul ha (inv_pos.mpr hn)
+    have hkey' := hkey _ heff
+    rw [hceq, npFunctional_smul_real, mul_eq_zero] at hkey'
+    have hne0 : ((‖a‖⁻¹ : ℝ) : ℂ) ≠ 0 := by
+      simpa using (ne_of_gt (inv_pos.mpr hn))
+    rw [or_iff_right hne0] at hkey'
+    exact hkey'
+  intro b hb
+  constructor
+  · -- 60I.20: `ω(b^{1/2ⁿ}) = 0` for all `n` (Kadison), and `⌈b⌉ = ⋁ₙ b^{1/2ⁿ}`
+    intro h
+    have hzero : ∀ n : ℕ, ω (sqrtIter b n) = 0 := by
+      intro n
+      induction n with
+      | zero => exact h
+      | succ n ih =>
+          rw [sqrtIter_succ]
+          exact npFunctional_sqrt_eq_zero (sqrtIter_mem_effects hb n).1 ω ih
+    -- normality of `ω` turns the supremum into a supremum
+    set E : ℕ → selfAdjoint A := fun n =>
+      ⟨sqrtIter b n, IsSelfAdjoint.of_nonneg (sqrtIter_mem_effects hb n).1⟩ with hE
+    have hEmono : Monotone E := fun m n hmn =>
+      Subtype.coe_le_coe.mp (sqrtIter_monotone hb hmn)
+    set D : Set (selfAdjoint A) := Set.range E with hD
+    have hne : D.Nonempty := ⟨E 0, 0, rfl⟩
+    have hdir : DirectedOn (· ≤ ·) D := by
+      rintro _ ⟨m, rfl⟩ _ ⟨n, rfl⟩
+      exact ⟨E (max m n), ⟨max m n, rfl⟩, hEmono (le_max_left _ _),
+        hEmono (le_max_right _ _)⟩
+    set s : selfAdjoint A := ⟨ceil b, (ceil_spec hb.1).1.isSelfAdjoint⟩ with hs
+    have hval : Subtype.val '' D = Set.range (sqrtIter b) := by
+      rw [hD, ← Set.range_comp]; rfl
+    have hlub : IsLUB D s := by
+      refine isLUB_sa_of_isLUB ?_
+      rw [hval]
+      exact vna_ceil_sup b hb
+    have hnorm := ω.preservesDirSups' D s hne hdir hlub
+    refine le_antisymm ?_ (npFunctional_nonneg ω (ceil_spec hb.1).1.nonneg)
+    refine hnorm.2 ?_
+    rintro _ ⟨d, ⟨n, rfl⟩, rfl⟩
+    exact le_of_eq (hzero n)
+  · -- `b ≤ ⌈b⌉`, so `0 ≤ ω(b) ≤ ω(⌈b⌉) = 0`
+    intro h
+    refine le_antisymm ?_ (npFunctional_nonneg ω hb.1)
+    have := npFunctional_mono ω (vna_ceil b hb).1.2
+    rwa [h] at this
 
 /-- **60III** (`ceil-functionals`, vn.tex:2855, Proposition): for positive
 `a`, `b`: `⌈a⌉ ≤ ⌈b⌉` iff every np-functional vanishing on `b` vanishes on
 `a`. -/
 theorem ceil_functionals (a b : A) (ha : 0 ≤ a) (hb : 0 ≤ b) :
     ceil a ≤ ceil b ↔
-      ∀ ω : NPFunctional A, ω b = 0 → ω a = 0 :=
-  sorry
+      ∀ ω : NPFunctional A, ω b = 0 → ω a = 0 := by
+  constructor
+  · -- 60III.40: `0 ≤ ω(⌈a⌉) ≤ ω(⌈b⌉) = 0`, twice **60I**
+    intro h ω hωb
+    have h1 : ω (ceil b) = 0 := (ceil_functionals_lemma b hb ω).mp hωb
+    have h2 : ω (ceil a) = 0 := by
+      refine le_antisymm ?_ (npFunctional_nonneg ω (ceil_spec ha).1.nonneg)
+      have hm := npFunctional_mono ω h
+      rwa [h1] at hm
+    exact (ceil_functionals_lemma a ha ω).mpr h2
+  · -- 60III.40: it suffices that `⌈b⌉^⊥⌈a⌉⌈b⌉^⊥ = 0`; test against `ω(r·r)`
+    intro h
+    have hrp : IsStarProjection ((1 : A) - ceil b) := (ceil_spec hb).1.one_sub
+    have hrsa : star ((1 : A) - ceil b) = 1 - ceil b := hrp.isSelfAdjoint.star_eq
+    have hbr : (1 - ceil b) * b * (1 - ceil b) = 0 := by
+      have hb0 : b * (1 - ceil b) = 0 := by
+        rw [mul_sub, mul_one, (ceil_spec hb).2.1, sub_self]
+      rw [mul_assoc, hb0, mul_zero]
+    have hzero : (1 - ceil b) * ceil a * (1 - ceil b) = 0 := by
+      refine np_separating _ fun ω => ?_
+      have hωb : conjNP (1 - ceil b) ω b = 0 := by
+        rw [conjNP_apply, hrsa, hbr]
+        exact npFunctional_zero ω
+      have hωa := (ceil_functionals_lemma a ha (conjNP (1 - ceil b) ω)).mp
+        (h (conjNP (1 - ceil b) ω) hωb)
+      rwa [conjNP_apply, hrsa] at hωa
+    exact (conj_ortho_eq_zero_iff
+      ⟨(ceil_spec ha).1.nonneg, (ceil_spec ha).1.le_one⟩ (ceil_spec hb).1).mp hzero
+
+private theorem isSelfAdjoint_map_of_positive (f : A →ₚ[ℂ] B) {x : A}
+    (hx : IsSelfAdjoint x) : IsSelfAdjoint (f x) := by
+  have hsplit : posPart x - negPart x = x := CFC.posPart_sub_negPart x hx
+  have hz : (f (0 : A) : B) = 0 := map_zero f
+  have h1 : (0 : B) ≤ f (posPart x) := by
+    have h : (f (0 : A) : B) ≤ f (posPart x) := f.monotone (CFC.posPart_nonneg x)
+    rwa [hz] at h
+  have h2 : (0 : B) ≤ f (negPart x) := by
+    have h : (f (0 : A) : B) ≤ f (negPart x) := f.monotone (CFC.negPart_nonneg x)
+    rwa [hz] at h
+  have := (IsSelfAdjoint.of_nonneg h1).sub (IsSelfAdjoint.of_nonneg h2)
+  rwa [← map_sub, hsplit] at this
+
+/-- The composite of an np-map `f : A → B` with an np-functional on `B` is
+an np-functional on `A`. -/
+private noncomputable def compNP (f : A →ₚ[ℂ] B) (hf : PreservesDirSups ⇑f)
+    (ω : NPFunctional B) : NPFunctional A where
+  toPositiveLinearMap :=
+    { toFun := fun x => ω (f x)
+      map_add' := fun x y => by
+        rw [map_add]; exact map_add ω.toPositiveLinearMap _ _
+      map_smul' := fun c x => by
+        rw [map_smul]; exact map_smul ω.toPositiveLinearMap _ _
+      monotone' := fun x y hxy => npFunctional_mono ω (f.monotone hxy) }
+  preservesDirSups' := by
+    intro D s hne hdir hlub
+    have hsa : ∀ d : selfAdjoint A, IsSelfAdjoint (f (d : A)) := fun d =>
+      isSelfAdjoint_map_of_positive f d.2
+    set G : Set (selfAdjoint B) :=
+      (fun d : selfAdjoint A => (⟨f (d : A), hsa d⟩ : selfAdjoint B)) '' D with hG
+    have hval : Subtype.val '' G = (fun d : selfAdjoint A => f (d : A)) '' D := by
+      rw [hG, ← Set.image_comp]; rfl
+    have hlubG : IsLUB G (⟨f (s : A), hsa s⟩ : selfAdjoint B) := by
+      refine isLUB_sa_of_isLUB ?_
+      rw [hval]
+      exact hf D s hne hdir hlub
+    have hGne : G.Nonempty := hne.image _
+    have hGdir : DirectedOn (· ≤ ·) G := by
+      rintro _ ⟨x, hx, rfl⟩ _ ⟨y, hy, rfl⟩
+      obtain ⟨z, hz, hxz, hyz⟩ := hdir x hx y hy
+      exact ⟨_, ⟨z, hz, rfl⟩,
+        Subtype.coe_le_coe.mp (f.monotone (Subtype.coe_le_coe.mpr hxz)),
+        Subtype.coe_le_coe.mp (f.monotone (Subtype.coe_le_coe.mpr hyz))⟩
+    have hkey := ω.preservesDirSups' G _ hGne hGdir hlubG
+    rw [hG, ← Set.image_comp] at hkey
+    exact hkey
+
+@[simp] private theorem compNP_apply (f : A →ₚ[ℂ] B) (hf : PreservesDirSups ⇑f)
+    (ω : NPFunctional B) (x : A) : compNP f hf ω x = ω (f x) := rfl
 
 /-- **60V** (`ncp-ceil`, vn.tex:2893, Proposition): for an np-map
 `f : A → B` between von Neumann algebras and positive `a`:
 `⌈f(a)⌉ = ⌈f(⌈a⌉)⌉`. -/
 theorem ncp_ceil (f : A →ₚ[ℂ] B) (hf : PreservesDirSups ⇑f) (a : A)
-    (ha : 0 ≤ a) : ceil (f a) = ceil (f (ceil a)) :=
-  sorry
+    (ha : 0 ≤ a) : ceil (f a) = ceil (f (ceil a)) := by
+  -- 60VI: by **60III** it suffices that `ω(f(a)) = 0 ↔ ω(f(⌈a⌉)) = 0`, and
+  -- that is **60I** for the np-functional `ω ∘ f`
+  have hz : (f (0 : A) : B) = 0 := map_zero f
+  have hfa : (0 : B) ≤ f a := by
+    have h : (f (0 : A) : B) ≤ f a := f.monotone ha
+    rwa [hz] at h
+  have hfc : (0 : B) ≤ f (ceil a) := by
+    have h : (f (0 : A) : B) ≤ f (ceil a) := f.monotone (ceil_spec ha).1.nonneg
+    rwa [hz] at h
+  refine le_antisymm ((ceil_functionals _ _ hfa hfc).mpr fun ω hω => ?_)
+    ((ceil_functionals _ _ hfc hfa).mpr fun ω hω => ?_)
+  · exact (ceil_functionals_lemma a ha (compNP f hf ω)).mpr hω
+  · exact (ceil_functionals_lemma a ha (compNP f hf ω)).mp hω
+
+/-- Conjugation `x ↦ c* x c` as a positive linear map (`ad_normal`, **44VIII**,
+says it is normal). -/
+private noncomputable def conjPMap (c : A) : A →ₚ[ℂ] A where
+  toFun := fun x => star c * x * c
+  map_add' := fun x y => by noncomm_ring
+  map_smul' := fun r x => by
+    simp only [RingHom.id_apply, mul_smul_comm, smul_mul_assoc]
+  monotone' := fun _ _ h => star_left_conjugate_le_conjugate h c
+
+private theorem conjPMap_preservesDirSups (c : A) :
+    PreservesDirSups ⇑(conjPMap c) := by
+  intro D s hne hdir hlub
+  have h3 : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧ BddAbove D := ⟨hne, hdir, ⟨s, hlub.1⟩⟩
+  have hs : dirSup D h3 = s := (isLUB_dirSup D h3).unique hlub
+  have hAD := ad_normal c D h3
+  rw [hs] at hAD
+  exact hAD
 
 /-- **60VII** (`ceil-fundamental`, vn.tex:2906, Exercise), part 1:
 `⌈a* b a⌉ = ⌈a* ⌈b⌉ a⌉` for `b ≥ 0`. -/
 theorem ceil_fundamental_1 (a b : A) (hb : 0 ≤ b) :
     ceil (star a * b * a) = ceil (star a * ceil b * a) :=
-  sorry
+  ncp_ceil (conjPMap a) (conjPMap_preservesDirSups a) b hb
 
 /-- **60VII** (`ceil-fundamental`, vn.tex:2906, Exercise), part 2:
 `⌈ab⌋ = ⌈⌈a⌋b⌋` and `⌊ab⌉ = ⌊a⌊b⌉⌉`. -/
 theorem ceil_fundamental_2 (a b : A) :
     suppProj (a * b) = suppProj (suppProj a * b) ∧
-      rangeProj (a * b) = rangeProj (a * rangeProj b) :=
-  sorry
+      rangeProj (a * b) = rangeProj (a * rangeProj b) := by
+  have hsa := (ceill_basic_1 a).1.1
+  have hrb := (ceill_basic_2 b).1.1
+  constructor
+  · -- `⌈ab⌋ = ⌈b*(a*a)b⌉ = ⌈b*⌈a*a⌉b⌉ = ⌈b*⌈a⌋⌈a⌋b⌉ = ⌈⌈a⌋b⌋`
+    have h1 : star (a * b) * (a * b) = star b * (star a * a) * b := by
+      rw [star_mul]; noncomm_ring
+    have h2 : star (suppProj a * b) * (suppProj a * b) = star b * suppProj a * b := by
+      rw [star_mul, hsa.isSelfAdjoint.star_eq]
+      calc star b * suppProj a * (suppProj a * b)
+          = star b * (suppProj a * suppProj a) * b := by noncomm_ring
+        _ = star b * suppProj a * b := by rw [hsa.isIdempotentElem.eq]
+    rw [suppProj, suppProj, h1, h2]
+    exact ceil_fundamental_1 b (star a * a) (star_mul_self_nonneg a)
+  · -- the same computation for `⌊·⌉`, conjugating by `a*`
+    have hnn : (0 : A) ≤ b * star b := by simpa using star_mul_self_nonneg (star b)
+    have h1 : (a * b) * star (a * b) = star (star a) * (b * star b) * star a := by
+      rw [star_mul, star_star]; noncomm_ring
+    have h2 : (a * rangeProj b) * star (a * rangeProj b)
+        = star (star a) * rangeProj b * star a := by
+      rw [star_mul, star_star, hrb.isSelfAdjoint.star_eq]
+      calc a * rangeProj b * (rangeProj b * star a)
+          = a * (rangeProj b * rangeProj b) * star a := by noncomm_ring
+        _ = a * rangeProj b * star a := by rw [hrb.isIdempotentElem.eq]
+    rw [rangeProj, rangeProj, h1, h2]
+    exact ceil_fundamental_1 (star a) (b * star b) hnn
+
+/-- Auxiliary: `p ≤ q` gives `pq = p`, for projections. -/
+private theorem proj_mul_of_le {p q : A} (hp : IsStarProjection p)
+    (hq : IsStarProjection q) (h : p ≤ q) : p * q = p :=
+  ((projection_below_effect q p ⟨hq.nonneg, hq.le_one⟩ hp).out 0 7).mp h
+
+/-- Auxiliary: for projections, `p ≤ q^⊥` iff `pq = 0`. -/
+private theorem proj_le_one_sub_iff {p q : A} (hp : IsStarProjection p)
+    (hq : IsStarProjection q) : p ≤ 1 - q ↔ p * q = 0 := by
+  have h := (projection_below_effect (1 - q) p
+    ⟨hq.one_sub.nonneg, hq.one_sub.le_one⟩ hp).out 0 8
+  rwa [sub_sub_cancel] at h
+
+/-- Auxiliary: `⌈x⌋ ≤ q` gives `xq = x` (**59VI**.1). -/
+private theorem mul_eq_of_suppProj_le {x q : A} (hq : IsStarProjection q)
+    (h : suppProj x ≤ q) : x * q = x := by
+  obtain ⟨h1, h2⟩ := (ceill_basic_1 x).1
+  calc x * q = x * suppProj x * q := by rw [h2]
+    _ = x * (suppProj x * q) := by noncomm_ring
+    _ = x * suppProj x := by rw [proj_mul_of_le h1 hq h]
+    _ = x := h2
+
+/-- Auxiliary: `⌈x⌋ = 0` iff `x = 0`. -/
+private theorem suppProj_eq_zero_iff {x : A} : suppProj x = 0 ↔ x = 0 := by
+  rw [suppProj, ← ceil_basic_3 _ (star_mul_self_nonneg x),
+    CStarRing.star_mul_self_eq_zero_iff]
 
 /-- **60VIII** (`mult-cancellation`, vn.tex:2921, Exercise), part 1:
 `cb = 0` iff `⌈c⌋⌊b⌉ = 0` iff `⌈c⌋ ≤ ⌊b⌉^⊥`. -/
@@ -1566,31 +2344,140 @@ theorem mult_cancellation_1 (b c : A) :
     List.TFAE
       [c * b = 0,
        suppProj c * rangeProj b = 0,
-       suppProj c ≤ 1 - rangeProj b] :=
-  sorry
+       suppProj c ≤ 1 - rangeProj b] := by
+  have hsc := (ceill_basic_1 c).1.1
+  have hrb := (ceill_basic_2 b).1.1
+  tfae_have 1 → 2 := by
+    intro h
+    -- `c*c b = 0`, so `⌈c⌋b = 0`, so `(bb*)⌈c⌋ = 0`, so `⌊b⌉⌈c⌋ = 0`
+    have h1 : (star c * c) * b = 0 := by rw [mul_assoc, h, mul_zero]
+    have h2 : suppProj c * b = 0 := ceil_mul_eq_zero (star_mul_self_nonneg c) h1
+    have h3 : (b * star b) * suppProj c = 0 := by
+      have h' := congrArg star (by rw [← mul_assoc, h2, zero_mul] :
+        suppProj c * (b * star b) = 0)
+      rwa [star_mul, star_mul, star_star, hsc.isSelfAdjoint.star_eq, star_zero] at h'
+    have h4 : rangeProj b * suppProj c = 0 := by
+      have hnn : (0 : A) ≤ b * star b := by
+        simpa using star_mul_self_nonneg (star b)
+      have := ceil_mul_eq_zero hnn h3
+      rwa [← rangeProj] at this
+    have h' := congrArg star h4
+    rwa [star_mul, hsc.isSelfAdjoint.star_eq, hrb.isSelfAdjoint.star_eq,
+      star_zero] at h'
+  tfae_have 2 → 3 := fun h => (proj_le_one_sub_iff hsc hrb).mpr h
+  tfae_have 3 → 1 := by
+    intro h
+    have h2 : suppProj c * rangeProj b = 0 := (proj_le_one_sub_iff hsc hrb).mp h
+    calc c * b = (c * suppProj c) * (rangeProj b * b) := by
+          rw [(ceill_basic_1 c).1.2, (ceill_basic_2 b).1.2]
+      _ = c * (suppProj c * rangeProj b) * b := by noncomm_ring
+      _ = 0 := by rw [h2, mul_zero, zero_mul]
+  tfae_finish
 
 /-- **60VIII** (`mult-cancellation`, vn.tex:2921, Exercise), part 2:
 `c₁b = c₂b → c₁ = c₂` when `⌈cᵢ⌋ ≤ ⌊b⌉`. -/
 theorem mult_cancellation_2 (b c₁ c₂ : A)
     (h₁ : suppProj c₁ ≤ rangeProj b) (h₂ : suppProj c₂ ≤ rangeProj b)
-    (h : c₁ * b = c₂ * b) : c₁ = c₂ :=
-  sorry
+    (h : c₁ * b = c₂ * b) : c₁ = c₂ := by
+  have hrb := (ceill_basic_2 b).1.1
+  set c : A := c₁ - c₂ with hc
+  have hcb : c * b = 0 := by rw [hc, sub_mul, h, sub_self]
+  -- `⌈c⌋ ≤ ⌊b⌉` because `c⌊b⌉ = c`
+  have hcr : c * rangeProj b = c := by
+    rw [hc, sub_mul, mul_eq_of_suppProj_le hrb h₁, mul_eq_of_suppProj_le hrb h₂]
+  have hle : suppProj c ≤ rangeProj b := (ceill_basic_1 c).2 ⟨hrb, hcr⟩
+  have hzero : suppProj c * rangeProj b = 0 :=
+    ((mult_cancellation_1 b c).out 0 1).mp hcb
+  have : suppProj c = 0 := by
+    rw [← proj_mul_of_le (ceill_basic_1 c).1.1 hrb hle, hzero]
+  have := suppProj_eq_zero_iff.mp this
+  rwa [hc, sub_eq_zero] at this
 
 /-- **60VIII** (`mult-cancellation`, vn.tex:2921, Exercise), part 3:
 `b* c₁ b = b* c₂ b → c₁ = c₂` for `c₁, c₂ ∈ ⌊b⌉A⌊b⌉`. -/
 theorem mult_cancellation_3 (b c₁ c₂ : A)
     (h₁ : rangeProj b * c₁ * rangeProj b = c₁)
     (h₂ : rangeProj b * c₂ * rangeProj b = c₂)
-    (h : star b * c₁ * b = star b * c₂ * b) : c₁ = c₂ :=
-  sorry
+    (h : star b * c₁ * b = star b * c₂ * b) : c₁ = c₂ := by
+  have hrb := (ceill_basic_2 b).1.1
+  have hrbb : rangeProj b * b = b := (ceill_basic_2 b).1.2
+  set c : A := c₁ - c₂ with hc
+  have hcc : rangeProj b * c * rangeProj b = c := by
+    rw [hc, mul_sub, sub_mul, h₁, h₂]
+  have hbcb : star b * c * b = 0 := by
+    rw [hc, mul_sub, sub_mul, h, sub_self]
+  -- first `cb = 0`: `⌊b⌉⌊cb⌉ = 0` by part 1 applied to `b*·(cb)`
+  have hcb : c * b = 0 := by
+    have hstep : suppProj (star b) * rangeProj (c * b) = 0 :=
+      ((mult_cancellation_1 (c * b) (star b)).out 0 1).mp (by
+        rw [← mul_assoc]; exact hbcb)
+    rw [(ceill_basic_3 b).1] at hstep
+    calc c * b = rangeProj b * c * rangeProj b * b := by rw [hcc]
+      _ = rangeProj b * (c * b) := by rw [mul_assoc, mul_assoc, hrbb]
+      _ = rangeProj b * (rangeProj (c * b) * (c * b)) := by
+          rw [(ceill_basic_2 (c * b)).1.2]
+      _ = (rangeProj b * rangeProj (c * b)) * (c * b) := by noncomm_ring
+      _ = 0 := by rw [hstep, zero_mul]
+  -- then `⌈c⌋ ≤ ⌊b⌉` and part 1 give `⌈c⌋ = 0`
+  have hcr : c * rangeProj b = c := by
+    calc c * rangeProj b = rangeProj b * c * rangeProj b * rangeProj b := by rw [hcc]
+      _ = rangeProj b * c * rangeProj b := by
+          rw [mul_assoc, hrb.isIdempotentElem.eq]
+      _ = c := hcc
+  have hle : suppProj c ≤ rangeProj b := (ceill_basic_1 c).2 ⟨hrb, hcr⟩
+  have hzero : suppProj c * rangeProj b = 0 :=
+    ((mult_cancellation_1 b c).out 0 1).mp hcb
+  have hs0 : suppProj c = 0 := by
+    rw [← proj_mul_of_le (ceill_basic_1 c).1.1 hrb hle, hzero]
+  have := suppProj_eq_zero_iff.mp hs0
+  rwa [hc, sub_eq_zero] at this
 
 /-- **60IX** (`ncp-union`, vn.tex:2942, Exercise), part 1:
 `⌈f(p ∪ q)⌉ = ⌈f(p)⌉ ∪ ⌈f(q)⌉` for an np-map `f` and projections `p`,
 `q`. -/
 theorem ncp_union_1 (f : A →ₚ[ℂ] B) (hf : PreservesDirSups ⇑f) (p q : A)
     (hp : IsStarProjection p) (hq : IsStarProjection q) :
-    ceil (f (projSup {p, q})) = projSup {ceil (f p), ceil (f q)} :=
-  sorry
+    ceil (f (projSup {p, q})) = projSup {ceil (f p), ceil (f q)} := by
+  -- the hint: `p ∪ q = ⌈½p + ½q⌉` (**56XIII**.2), so `⌈f(p∪q)⌉ = ⌈f(½p+½q)⌉`
+  -- by **60V**, and `⌈½f(p) + ½f(q)⌉ = ⌈f p⌉ ∪ ⌈f q⌉` by **59III**.4
+  have hpe : p ∈ effects A := ⟨hp.nonneg, hp.le_one⟩
+  have hqe : q ∈ effects A := ⟨hq.nonneg, hq.le_one⟩
+  set c : A := ((2⁻¹ : ℝ) : ℂ) • p + (((1 - 2⁻¹ : ℝ)) : ℂ) • q with hc
+  have hleast := (ceil_floor_basic_2 p q hpe hqe 2⁻¹ (by norm_num) (by norm_num)).2
+  rw [ceil_of_isStarProjection hp, ceil_of_isStarProjection hq] at hleast
+  have hPproj : ∀ r ∈ ({p, q} : Set A), IsStarProjection r := by
+    rintro r (rfl | rfl)
+    · exact hp
+    · exact hq
+  have hsup : projSup ({p, q} : Set A) = ceil c := by
+    refine projSup_eq hPproj hleast.1.1 ?_ ?_
+    · rintro r (rfl | rfl)
+      · exact hleast.1.2.1
+      · exact hleast.1.2.2
+    · intro r hr hle
+      exact hleast.2 ⟨hr, hle _ (by left; rfl), hle _ (by right; rfl)⟩
+  have hcnn : (0 : A) ≤ c := by
+    rw [hc, Complex.coe_smul, Complex.coe_smul]
+    exact add_nonneg (smul_nonneg (by norm_num) hp.nonneg)
+      (smul_nonneg (by norm_num) hq.nonneg)
+  have hfp : (0 : B) ≤ f p := by
+    have hz : (f (0 : A) : B) = 0 := map_zero f
+    have h : (f (0 : A) : B) ≤ f p := f.monotone hp.nonneg
+    rwa [hz] at h
+  have hfq : (0 : B) ≤ f q := by
+    have hz : (f (0 : A) : B) = 0 := map_zero f
+    have h : (f (0 : A) : B) ≤ f q := f.monotone hq.nonneg
+    rwa [hz] at h
+  have hfc : f c = ((2⁻¹ : ℝ) : ℂ) • f p + (((1 - 2⁻¹ : ℝ)) : ℂ) • f q := by
+    rw [hc, map_add, map_smul, map_smul]
+  rw [hsup, ← ncp_ceil f hf c hcnn, hfc]
+  have h5 := (ceil_basic_4 (f p) (f q) hfp hfq 2⁻¹ (by norm_num)).1
+  have h6 := (ceil_basic_4 (f q) (f p) hfq hfp (1 - 2⁻¹) (by norm_num)).1
+  have hsum : ceil (((2⁻¹ : ℝ) : ℂ) • f p + (((1 - 2⁻¹ : ℝ)) : ℂ) • f q)
+      = projSup {ceil (((2⁻¹ : ℝ) : ℂ) • f p), ceil ((((1 - 2⁻¹ : ℝ)) : ℂ) • f q)} :=
+    (ceil_basic_4 _ _ (by rw [Complex.coe_smul]; exact smul_nonneg (by norm_num) hfp)
+      (by rw [Complex.coe_smul]; exact smul_nonneg (by norm_num) hfq) 1 one_pos).2
+  rw [hsum, h5, h6]
 
 /-- **60IX** (`ncp-union`, vn.tex:2942, Exercise), part 2:
 `⌈f(⋃P)⌉ = ⋃_{p∈P} ⌈f(p)⌉` for every set `P` of projections. -/
