@@ -456,6 +456,50 @@ formalization trap recorded so it is not rediscovered:
 `exact` — `A`'s norm topology gets re-synthesised — hence the three `@`-applied
 wrappers in `Basic.lean`.
 
+### Session 3 — B/Eff is now free of `sorryAx` leakage, and 177Ia is not
+load-bearing
+
+B/Eff went 50 → 43 code `sorry`s, but the result worth recording is the axiom
+check: **1322 declarations, 43 themselves `sorry`, zero depending on one** —
+including the auto-generated declarations that used to make up the residue.
+Verified by running the `#sorry_leaks` walk scoped to B/Eff's modules (the
+whole-project version cannot run while another worker has the A chain open).
+
+**177Ia was the last leak, and it is now bypassed.**  `isSharp_ovee` was
+`ea_modularity_prop`'s only consumer, and `diamond_oml_subEA` inherited
+`sorryAx` through it.  Both are now proved *without* modularity:
+`s ⋁ t = im[π_s, π_t]` is a supremum among **all** predicates by 204V, and
+conversely `s` and `t` both vanish on `π_{(s∨t)ᵖ}`, hence so does `s ⋁ t`.  Two
+reusable helpers fell out — `le_iff_compr_orth_comp_eq_zero`, and `ovee_le_of_le`
+("the predicates below a sharp `j` are closed under `⋁`").  `ea_modularity_prop`
+is now referenced nowhere in the tree.  **The author ruling on 177Ia (QUESTIONS
+B4) is still wanted, but nothing waits on it.**
+
+Proved: **208III.2 `diamond_oml`** (Cho — `SPred X` is an orthomodular lattice),
+**208VII** the `OMLatGal` functor and **213VI** `exc_prod_sharp_maps`, all three
+previously parked as blocked on 208III; plus **226II `homology_lemma`**,
+**226V.3 `homological_exact`**, **226V + 226VII `homological_category`** (the
+whole "a †-effectus is a pointed homological category" theorem), and
+**190II.5 `predMap_functor`**.
+
+Divergences: class (1) for 208VII, 213VI, 226V.3, 226V parts 1–2, 190II.5;
+class (2) for `isSharp_ovee`, 208III.2 and 226II; class (3) for the homology
+axiom, which uses the `ζ` of 211VII in place of the dagger `m†` — the same map,
+without needing the dagger development.  Three `eff.tex` errata rows came out of
+the comparison (208III, 226II, 226VII) — see ERRATA.md.
+
+**Sharpest remaining blocker: 174IV.**  178III.1
+`unitInterval_effectMonoid_unique` (asserted without proof at eff.tex:636) has a
+clear Cauchy-functional-equation argument, but its very first step
+`a ⊙ (1/n) = a/n` needs the `n`-fold partial sum, i.e. **174IV
+`PCM.isSumOf_perm`** (generalized associativity) — itself stated without proof
+at eff.tex:223 and still `sorry`.  174IV also blocks 178V, which makes it the
+highest-leverage `sorry` left in `EffectAlgebras.lean`.  The other 42 group by
+blocker into: thesis A (the `vNᵒᵖ` examples), the †-effectus block 215III–220
+(the Snake Lemma, which after this pass needs nothing from 226–227 — only
+219XVI), the `𝒟_M`/`AConv_M` subsum infrastructure, and the statements the
+thesis only cites.
+
 ### Session 3 — 77I is blocked, precisely, and the block is in A/CStar
 
 `A/VN/Completeness.lean` went 25 → 21 (72III.1b, 72III.1c, 73IV, 72IV).  The

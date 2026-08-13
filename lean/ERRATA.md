@@ -92,8 +92,11 @@ time the sources are edited.
 | **192V.3.3** | "semilattices are exactly abstract 2-convex sets" is **false**: by Def. 192II the support uses the *partial* sum and `1 ⋁ 1` is undefined in `2`, so `𝒟_2 ≅ Id` and they are just sets | holds for the non-empty-finite-powerset monad; see QUESTIONS.md B1 | OPEN |
 | **195VII** | rests on a false step: "if `c⊙a ⊥ c⊙b` then `(c/c)⊙a ⊥ (c/c)⊙b`" fails in `[0,1]` at `c = ½`, `a = b = 1` | statement is true; our proof takes another route | OPEN |
 | **eff.tex:414 and the `exc-dposet` solution** | **partial associativity used backwards**: from `a ⊥ (c ⋁ d)` they conclude `a ⊥ c`, which the PCM axioms do not give | recoverable; we added `PCM.assoc_left` | OPEN |
+| **208III** | the proof takes `s ⋁ t = s ∨ t` from `ea-modularity-prop` (177Ia, gapped) and orthomodularity from `orth-ea-is-orthomodular` (177VI, which also rests on 177Ia) | both detours are avoidable: sharpness alone gives `s ⋁ t ≤ s ∨ t` (a predicate is `≤` a sharp `j` iff it vanishes on `π_{jᵖ}`), and the orthomodular law follows from `ovee_le_of_le` + 208IX/208XII — formalized this way, which is what removed the last `sorryAx` leak from B/Eff | OPEN |
 | **221II** | in the definition of a dilation, the mediating map is typed `h' : X → P` | must be `X → P'`, or `ϱ' ∘ h'` does not typecheck | OPEN |
 | **221IV.6** | never checks that the mediating map is *pure*, though 221II requires it | true; we have now proved it | OPEN |
+| **226II** | the proof builds a pristine `l` and computes `asrt_{s&tᵖ}² = asrt_{s&tᵖ}` to show `s & tᵖ` is sharp — but the hypothesis gives `tᵖ ≤ s`, so **213V** yields `s & tᵖ = tᵖ` in one step | cite `simple-andthen-absorption` instead; the rest of 226II then needs no dagger at all | OPEN (nit, but it shortens a page) |
+| **226VII** | uses `m†` and "comprehensions are †-mono" / "`m†` is sharp" | the `ζ` of 211VII does the same job without the dagger development | OPEN (nit) |
 | **227III.1** | exactness at `B` given as `IM^⊥ f = ⌈1∘f⌉` — does not mention `g` at all | must be `⌈1∘g⌉`; our corrected form is proved and the printed one is false | OPEN |
 
 ## Thesis B — `dils.tex` / `bsols.tex`

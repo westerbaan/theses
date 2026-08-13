@@ -55,8 +55,16 @@ binary infima, which a general effect algebra does not have.
 
 The result itself is attributed to Dvurečenskij–Pulmannová 1.8.2.  *Decision
 needed*: is that citation the intended justification (in which case we park it
-permanently), or is a direct proof expected?  This is the **only** remaining
-source of `sorryAx` leakage in B/Eff (2 declarations).
+permanently), or is a direct proof expected?
+
+**Update — B4 no longer blocks anything.**  It was the last source of `sorryAx`
+leakage in B/Eff: `isSharp_ovee` was 177Ia's only consumer, and
+`diamond_oml_subEA` inherited the leak through it.  Both are now proved
+*without* modularity, so **no declaration in B/Eff depends on `sorryAx`** —
+verified by walking all 1322 of them.  177Ia is still an unproved statement in
+our tree and the question above still stands, but nothing waits on the answer.
+See also the 208III row in ERRATA.md: the thesis's own proof of 208III routes
+through 177Ia twice, and both detours turn out to be avoidable.
 
 ### B5. `IsVNTensor` is too weak for 165III
 `dils.tex:5433`.  Our axiomatization of the von Neumann tensor product
