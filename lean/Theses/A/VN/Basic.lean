@@ -1295,6 +1295,33 @@ private theorem conjSA_isLUB [VonNeumannAlgebra A] (a : A)
     rintro _ ⟨e, he, rfl⟩
     exact Subtype.coe_le_coe.mpr (hv he)
 
+/-- Auxiliary: an `IsLUB` in `sa(A)` is an `IsLUB` in `A` (upper bounds of a
+nonempty set of self-adjoint elements are automatically self-adjoint). -/
+theorem isLUB_coe_of_isLUB {D : Set (selfAdjoint A)} {s : selfAdjoint A}
+    (hne : D.Nonempty) (h : IsLUB D s) :
+    IsLUB (Subtype.val '' D) ((s : selfAdjoint A) : A) := by
+  obtain ⟨d₀, hd₀⟩ := hne
+  refine ⟨?_, fun u hu => ?_⟩
+  · rintro _ ⟨d, hd, rfl⟩
+    exact Subtype.coe_le_coe.mpr (h.1 hd)
+  · have hu0 : ((d₀ : selfAdjoint A) : A) ≤ u := hu ⟨d₀, hd₀, rfl⟩
+    have husa : IsSelfAdjoint u := by
+      have hd : IsSelfAdjoint (u - ((d₀ : selfAdjoint A) : A)) :=
+        IsSelfAdjoint.of_nonneg (sub_nonneg.mpr hu0)
+      simpa using hd.add d₀.2
+    have hub : (⟨u, husa⟩ : selfAdjoint A) ∈ upperBounds D :=
+      fun e he => hu ⟨e, he, rfl⟩
+    exact h.2 hub
+
+/-- An `IsLUB` in `A` of a set of self-adjoint elements is an `IsLUB` in
+`sa(A)` (converse of `isLUB_coe_of_isLUB`). -/
+theorem isLUB_sa_of_isLUB {D : Set (selfAdjoint A)} {s : selfAdjoint A}
+    (h : IsLUB (Subtype.val '' D) ((s : selfAdjoint A) : A)) : IsLUB D s := by
+  refine ⟨fun d hd => Subtype.coe_le_coe.mp (h.1 ⟨d, hd, rfl⟩), fun v hv => ?_⟩
+  refine Subtype.coe_le_coe.mp (h.2 ?_)
+  rintro _ ⟨d, hd, rfl⟩
+  exact Subtype.coe_le_coe.mpr (hv hd)
+
 /-- Transfer of an infimum from `sa(A)` to `A`: a lower bound in `A` of a
 nonempty set of self-adjoint elements is automatically self-adjoint. -/
 theorem isGLB_coe_of_isGLB {F : Set (selfAdjoint A)} {i : selfAdjoint A}
@@ -1828,6 +1855,82 @@ theorem vn_products_ncpsu {B : Type*} [CStarAlgebra B] [PartialOrder B]
 
 end Products
 
+/-! ### Positive maps and self-adjoint elements (auxiliary)
+
+These are stated for arbitrary universes because both this file (**48II**,
+**48VIII**) and the later chapters need them for plain C*-algebras. -/
+
+section PositiveMaps
+
+variable {A B : Type*} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
+  [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
+
+/-- A positive linear map sends self-adjoint elements to self-adjoint
+elements (cstar.tex 10IV, `cstar-p-implies-i`, in the form used here). -/
+theorem isSelfAdjoint_map_of_positive (f : A →ₚ[ℂ] B) {x : A}
+    (hx : IsSelfAdjoint x) : IsSelfAdjoint (f x) := by
+  have hsplit : posPart x - negPart x = x := CFC.posPart_sub_negPart x hx
+  have hz : (f (0 : A) : B) = 0 := map_zero f
+  have h1 : (0 : B) ≤ f (posPart x) := by
+    have h : (f (0 : A) : B) ≤ f (posPart x) := f.monotone (CFC.posPart_nonneg x)
+    rwa [hz] at h
+  have h2 : (0 : B) ≤ f (negPart x) := by
+    have h : (f (0 : A) : B) ≤ f (negPart x) := f.monotone (CFC.negPart_nonneg x)
+    rwa [hz] at h
+  have := (IsSelfAdjoint.of_nonneg h1).sub (IsSelfAdjoint.of_nonneg h2)
+  rwa [← map_sub, hsplit] at this
+
+/-- The image in `sa(B)` of a set `D ⊆ sa(A)` under a positive linear map
+`f`. -/
+private def imageSA (f : A →ₚ[ℂ] B) (D : Set (selfAdjoint A)) :
+    Set (selfAdjoint B) :=
+  (fun d : selfAdjoint A =>
+    (⟨f (d : A), isSelfAdjoint_map_of_positive f d.2⟩ : selfAdjoint B)) '' D
+
+private theorem coe_imageSA (f : A →ₚ[ℂ] B) (D : Set (selfAdjoint A)) :
+    Subtype.val '' imageSA f D = (fun d : selfAdjoint A => f (d : A)) '' D := by
+  rw [imageSA, ← Set.image_comp]; rfl
+
+private theorem imageSA_nonempty (f : A →ₚ[ℂ] B) {D : Set (selfAdjoint A)}
+    (hne : D.Nonempty) : (imageSA f D).Nonempty :=
+  hne.image _
+
+private theorem imageSA_directedOn (f : A →ₚ[ℂ] B) {D : Set (selfAdjoint A)}
+    (hdir : DirectedOn (· ≤ ·) D) : DirectedOn (· ≤ ·) (imageSA f D) := by
+  rintro _ ⟨x, hx, rfl⟩ _ ⟨y, hy, rfl⟩
+  obtain ⟨z, hz, hxz, hyz⟩ := hdir x hx y hy
+  exact ⟨_, ⟨z, hz, rfl⟩,
+    Subtype.coe_le_coe.mp (f.monotone (Subtype.coe_le_coe.mpr hxz)),
+    Subtype.coe_le_coe.mp (f.monotone (Subtype.coe_le_coe.mpr hyz))⟩
+
+/-- The composite of an np-map `f : A → B` with an np-functional on `B` is
+an np-functional on `A`.  (This is the easy half of **48II**.) -/
+noncomputable def compNP (f : A →ₚ[ℂ] B) (hf : PreservesDirSups ⇑f)
+    (ω : NPFunctional B) : NPFunctional A where
+  toPositiveLinearMap :=
+    { toFun := fun x => ω (f x)
+      map_add' := fun x y => by
+        rw [map_add]; exact map_add ω.toPositiveLinearMap _ _
+      map_smul' := fun c x => by
+        rw [map_smul]; exact map_smul ω.toPositiveLinearMap _ _
+      monotone' := fun x y hxy => npFunctional_mono ω (f.monotone hxy) }
+  preservesDirSups' := by
+    intro D s hne hdir hlub
+    have hlubG : IsLUB (imageSA f D)
+        (⟨f (s : A), isSelfAdjoint_map_of_positive f s.2⟩ : selfAdjoint B) := by
+      refine isLUB_sa_of_isLUB ?_
+      rw [coe_imageSA]
+      exact hf D s hne hdir hlub
+    have hkey := ω.preservesDirSups' _ _ (imageSA_nonempty f hne)
+      (imageSA_directedOn f hdir) hlubG
+    rw [imageSA, ← Set.image_comp] at hkey
+    exact hkey
+
+@[simp] theorem compNP_apply (f : A →ₚ[ℂ] B) (hf : PreservesDirSups ⇑f)
+    (ω : NPFunctional B) (x : A) : compNP f hf ω x = ω (f x) := rfl
+
+end PositiveMaps
+
 section Elementary
 
 variable {A B : Type u} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
@@ -1859,8 +1962,599 @@ all `ω ∈ Ω`. -/
 theorem normal_faithful [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (Ω : Set (NPFunctional B)) (hΩ : FaithfulCollection Ω) (f : A →ₚ[ℂ] B) :
     PreservesDirSups ⇑f ↔
-      ∀ ω ∈ Ω, PreservesDirSups fun a => ω (f a) :=
-  sorry
+      ∀ ω ∈ Ω, PreservesDirSups fun a => ω (f a) := by
+  refine ⟨fun hf ω _ => (compNP f hf ω).preservesDirSups', fun h => ?_⟩
+  intro D s hne hdir hlub
+  -- the image `G ⊆ sa(B)` of `D` is nonempty, directed and bounded by `f s`
+  set G : Set (selfAdjoint B) := imageSA f D with hG
+  have hfs : IsSelfAdjoint (f (s : A)) := isSelfAdjoint_map_of_positive f s.2
+  have hub : (⟨f (s : A), hfs⟩ : selfAdjoint B) ∈ upperBounds G := by
+    rintro _ ⟨d, hd, rfl⟩
+    exact Subtype.coe_le_coe.mp (f.monotone (Subtype.coe_le_coe.mpr (hlub.1 hd)))
+  have hGne : G.Nonempty := imageSA_nonempty f hne
+  have hGdir : DirectedOn (· ≤ ·) G := imageSA_directedOn f hdir
+  have hGdata : G.Nonempty ∧ DirectedOn (· ≤ ·) G ∧ BddAbove G :=
+    ⟨hGne, hGdir, ⟨_, hub⟩⟩
+  set u : selfAdjoint B := dirSup G hGdata with hu
+  have hlubG : IsLUB G u := isLUB_dirSup G hGdata
+  -- every `ω ∈ Ω` cannot tell `⋁ G` from `f (⋁ D)`
+  have hsets : (fun d : selfAdjoint B => ((d : B))) '' G
+      = (fun d : selfAdjoint A => f (d : A)) '' D := coe_imageSA f D
+  have hzero : (f (s : A)) - (u : B) = 0 := by
+    refine hΩ _ (sub_nonneg.mpr (Subtype.coe_le_coe.mpr (hlubG.2 hub))) ?_
+    intro ω hωΩ
+    have h1 : IsLUB ((fun d : selfAdjoint B => (ω (d : B) : ℂ)) '' G) (ω (u : B)) :=
+      ω.preservesDirSups' G u hGne hGdir hlubG
+    have h2 : IsLUB ((fun d : selfAdjoint A => (ω (f (d : A)) : ℂ)) '' D)
+        (ω (f (s : A))) := h ω hωΩ D s hne hdir hlub
+    have h3 : (fun d : selfAdjoint B => (ω (d : B) : ℂ)) '' G
+        = (fun d : selfAdjoint A => (ω (f (d : A)) : ℂ)) '' D := by
+      rw [hG, imageSA, ← Set.image_comp]; rfl
+    rw [h3] at h1
+    rw [npFunctional_sub, h1.unique h2, sub_self]
+  have hfsu : f (s : A) = (u : B) := sub_eq_zero.mp hzero
+  refine ⟨?_, fun t ht => ?_⟩
+  · rintro _ ⟨d, hd, rfl⟩
+    exact f.monotone (Subtype.coe_le_coe.mpr (hlub.1 hd))
+  · rw [hfsu]
+    have htG : ∀ g ∈ G, ((g : B)) ≤ t := by
+      rintro _ ⟨d, hd, rfl⟩
+      exact ht ⟨d, hd, rfl⟩
+    obtain ⟨g₀, hg₀⟩ := hGne
+    have htsa : IsSelfAdjoint t := by
+      have hd : IsSelfAdjoint (t - ((g₀ : selfAdjoint B) : B)) :=
+        IsSelfAdjoint.of_nonneg (sub_nonneg.mpr (htG g₀ hg₀))
+      simpa using hd.add g₀.2
+    exact Subtype.coe_le_coe.mpr
+      (hlubG.2 (fun g hg => Subtype.coe_le_coe.mp (htG g hg)) :
+        u ≤ (⟨t, htsa⟩ : selfAdjoint B))
+
+section NGNSConstruction
+
+variable {C : Type u} [CStarAlgebra C] [PartialOrder C] [StarOrderedRing C]
+variable {H : Type u} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+  [CompleteSpace H]
+
+section StarAlgHomAux
+
+/-- A ∗-homomorphism between C*-algebras is positive. -/
+theorem starAlgHom_nonneg (φ : A →⋆ₐ[ℂ] C) {x : A} (hx : 0 ≤ x) : 0 ≤ φ x := by
+  have hs : CFC.sqrt x * CFC.sqrt x = x := CFC.sqrt_mul_sqrt_self x hx
+  have hsa : IsSelfAdjoint (CFC.sqrt x) := IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg x)
+  have h : φ x = star (φ (CFC.sqrt x)) * φ (CFC.sqrt x) := by
+    rw [← map_star, hsa.star_eq, ← map_mul, hs]
+  rw [h]
+  exact star_mul_self_nonneg _
+
+/-- A ∗-homomorphism between C*-algebras is monotone. -/
+theorem starAlgHom_mono (φ : A →⋆ₐ[ℂ] C) {x y : A} (hxy : x ≤ y) : φ x ≤ φ y := by
+  have h := starAlgHom_nonneg φ (sub_nonneg.mpr hxy)
+  rw [map_sub] at h
+  exact sub_nonneg.mp h
+
+/-- A ∗-homomorphism between C*-algebras, viewed as a positive linear map. -/
+noncomputable def starAlgHomP (φ : A →⋆ₐ[ℂ] C) : A →ₚ[ℂ] C where
+  toFun := φ
+  map_add' := map_add φ
+  map_smul' := map_smul φ
+  monotone' := fun _ _ h => starAlgHom_mono φ h
+
+@[simp] theorem starAlgHomP_apply (φ : A →⋆ₐ[ℂ] C) (x : A) : starAlgHomP φ x = φ x := rfl
+
+omit [PartialOrder A] [StarOrderedRing A] in
+/-- Auxiliary: a self-adjoint element with vanishing cube is zero.
+(cstar.tex 30X uses this; the Mathlib-side proof there is `private`.) -/
+theorem eq_zero_of_pow_three_eq_zero {y : A} (hy : IsSelfAdjoint y) (h : y ^ 3 = 0) :
+    y = 0 := by
+  have h4 : y ^ 2 * y ^ 2 = 0 := by
+    have he : y ^ 2 * y ^ 2 = y * y ^ 3 := by noncomm_ring
+    rw [he, h, mul_zero]
+  have h2 : y ^ 2 = 0 := by
+    have hn : ‖y ^ 2‖ * ‖y ^ 2‖ = 0 := by
+      rw [← CStarRing.norm_star_mul_self, (hy.pow 2).star_eq, h4, norm_zero]
+    exact norm_eq_zero.mp (by nlinarith [norm_nonneg (y ^ 2)])
+  have hn : ‖y‖ * ‖y‖ = 0 := by
+    rw [← CStarRing.norm_star_mul_self, hy.star_eq, ← sq, h2, norm_zero]
+  exact norm_eq_zero.mp (by nlinarith [norm_nonneg y])
+
+/-- **48VI**.2 in its general C*-form: an *injective* ∗-homomorphism between
+C*-algebras reflects the order (hence is an order embedding). -/
+theorem starAlgHom_le_iff (φ : A →⋆ₐ[ℂ] C) (hφ : Function.Injective φ) {x y : A} :
+    φ x ≤ φ y ↔ x ≤ y := by
+  refine ⟨fun h => ?_, fun h => starAlgHom_mono φ h⟩
+  set z : A := y - x with hz
+  have hφz : (0 : C) ≤ φ z := by rw [hz, map_sub]; exact sub_nonneg.mpr h
+  have hzsa : IsSelfAdjoint z := by
+    have h1 : φ (star z) = φ z := by rw [map_star, (IsSelfAdjoint.of_nonneg hφz).star_eq]
+    exact hφ h1
+  have hn0 : negPart z = 0 := by
+    have hnn : (0 : A) ≤ negPart z := CFC.negPart_nonneg z
+    have hcube : (0 : A) ≤ negPart z ^ 3 := CStarAlgebra.pow_nonneg hnn 3
+    have hnsa : IsSelfAdjoint (negPart z) := IsSelfAdjoint.of_nonneg hnn
+    have hconj : negPart z * z * negPart z = -(negPart z ^ 3) := by
+      have hd : posPart z - negPart z = z := CFC.posPart_sub_negPart z hzsa
+      have hnp : negPart z * posPart z = 0 := CFC.negPart_mul_posPart z
+      calc negPart z * z * negPart z
+          = negPart z * (posPart z - negPart z) * negPart z := by rw [hd]
+        _ = negPart z * posPart z * negPart z - negPart z ^ 3 := by noncomm_ring
+        _ = -(negPart z ^ 3) := by rw [hnp, zero_mul, zero_sub]
+    have hle : φ (negPart z ^ 3) ≤ 0 := by
+      have hpos : (0 : C) ≤ star (φ (negPart z)) * φ z * φ (negPart z) :=
+        star_left_conjugate_nonneg hφz _
+      rw [← map_star, hnsa.star_eq] at hpos
+      have hrw : φ (negPart z) * φ z * φ (negPart z) = -φ (negPart z ^ 3) := by
+        rw [← map_mul, ← map_mul, hconj, map_neg]
+      rw [hrw] at hpos
+      exact neg_nonneg.mp hpos
+    have hzero : φ (negPart z ^ 3) = 0 :=
+      le_antisymm hle (starAlgHom_nonneg φ hcube)
+    have h3 : negPart z ^ 3 = 0 := by
+      have := hφ (by rw [hzero, map_zero] : φ (negPart z ^ 3) = φ 0)
+      exact this
+    exact eq_zero_of_pow_three_eq_zero hnsa h3
+  have hzpos : (0 : A) ≤ z := by
+    have hd : posPart z - negPart z = z := CFC.posPart_sub_negPart z hzsa
+    rw [hn0, sub_zero] at hd
+    rw [← hd]
+    exact CFC.posPart_nonneg z
+  rw [hz] at hzpos
+  exact sub_nonneg.mp hzpos
+
+
+/-- Composition of normal positive maps is normal. -/
+theorem preservesDirSups_pmap_comp (f : A →ₚ[ℂ] B) (hf : PreservesDirSups ⇑f)
+    (g : B →ₚ[ℂ] C) (hg : PreservesDirSups ⇑g) :
+    PreservesDirSups (fun a => g (f a)) := by
+  intro D s hne hdir hlub
+  set G : Set (selfAdjoint B) :=
+    (fun d : selfAdjoint A =>
+      (⟨f (d : A), isSelfAdjoint_map_of_positive f d.2⟩ : selfAdjoint B)) '' D with hG
+  have hval : Subtype.val '' G = (fun d : selfAdjoint A => f (d : A)) '' D := by
+    rw [hG, ← Set.image_comp]; rfl
+  have hlubG : IsLUB G
+      (⟨f (s : A), isSelfAdjoint_map_of_positive f s.2⟩ : selfAdjoint B) := by
+    refine isLUB_sa_of_isLUB ?_
+    rw [hval]
+    exact hf D s hne hdir hlub
+  have hGne : G.Nonempty := hne.image _
+  have hGdir : DirectedOn (· ≤ ·) G := by
+    rintro _ ⟨x, hx, rfl⟩ _ ⟨y, hy, rfl⟩
+    obtain ⟨z, hz, hxz, hyz⟩ := hdir x hx y hy
+    exact ⟨_, ⟨z, hz, rfl⟩,
+      Subtype.coe_le_coe.mp (f.monotone (Subtype.coe_le_coe.mpr hxz)),
+      Subtype.coe_le_coe.mp (f.monotone (Subtype.coe_le_coe.mpr hyz))⟩
+  have hkey := hg G _ hGne hGdir hlubG
+  rw [hG, ← Set.image_comp] at hkey
+  exact hkey
+
+/-- A ∗-isomorphism between C*-algebras is normal: it is an order
+isomorphism, so it carries suprema to suprema. -/
+theorem starAlgEquiv_preservesDirSups (Φ : A ≃⋆ₐ[ℂ] C) : PreservesDirSups ⇑Φ := by
+  intro D s hne hdir hlub
+  refine ⟨?_, fun t ht => ?_⟩
+  · rintro _ ⟨d, hd, rfl⟩
+    exact starAlgHom_mono Φ.toStarAlgHom (Subtype.coe_le_coe.mpr (hlub.1 hd))
+  · have hcoe := isLUB_coe_of_isLUB hne hlub
+    have hsym : ((s : selfAdjoint A) : A) ≤ Φ.symm t := by
+      refine hcoe.2 ?_
+      rintro _ ⟨d, hd, rfl⟩
+      have h := starAlgHom_mono Φ.symm.toStarAlgHom (ht ⟨d, hd, rfl⟩)
+      simpa using h
+    have h := starAlgHom_mono Φ.toStarAlgHom hsym
+    simpa using h
+
+end StarAlgHomAux
+
+section HilbertRep
+
+/-- A ∗-representation of a C*-algebra on a Hilbert space is a contraction:
+`‖ϱ(a)x‖ ≤ ‖a‖‖x‖`.  (From `a*a ≤ ‖a‖²·1` and positivity of `ϱ`.) -/
+theorem starAlgHom_apply_norm_le (φ : A →⋆ₐ[ℂ] (H →L[ℂ] H)) (a : A) (z : H) :
+    ‖φ a z‖ ≤ ‖a‖ * ‖z‖ := by
+  have h1 : star a * a ≤ algebraMap ℝ A (‖a‖ ^ 2) :=
+    CStarAlgebra.star_mul_le_algebraMap_norm_sq
+  have h2 : φ (algebraMap ℝ A (‖a‖ ^ 2)) = algebraMap ℝ (H →L[ℂ] H) (‖a‖ ^ 2) := by
+    rw [IsScalarTower.algebraMap_apply ℝ ℂ A, AlgHomClass.commutes,
+      ← IsScalarTower.algebraMap_apply ℝ ℂ (H →L[ℂ] H)]
+  have h3 : φ (star a * a) ≤ algebraMap ℝ (H →L[ℂ] H) (‖a‖ ^ 2) := by
+    rw [← h2]; exact starAlgHom_mono φ h1
+  have h4 : (⟪z, φ (star a * a) z⟫) ≤ ⟪z, (algebraMap ℝ (H →L[ℂ] H) (‖a‖ ^ 2)) z⟫ := by
+    simpa using npFunctional_mono (vectorNP z) h3
+  have hl : (⟪z, φ (star a * a) z⟫) = ((‖φ a z‖ ^ 2 : ℝ) : ℂ) := by
+    rw [map_mul, map_star]
+    show ⟪z, (ContinuousLinearMap.adjoint (φ a)) (φ a z)⟫ = _
+    rw [ContinuousLinearMap.adjoint_inner_right, inner_self_eq_norm_sq_to_K]
+    norm_cast
+  have hr : (⟪z, (algebraMap ℝ (H →L[ℂ] H) (‖a‖ ^ 2)) z⟫)
+      = (((‖a‖ ^ 2 * ‖z‖ ^ 2 : ℝ)) : ℂ) := by
+    rw [IsScalarTower.algebraMap_apply ℝ ℂ (H →L[ℂ] H), Algebra.algebraMap_eq_smul_one]
+    rw [smul_apply, ContinuousLinearMap.one_apply, inner_smul_right,
+      inner_self_eq_norm_sq_to_K]
+    push_cast
+    rfl
+  rw [hl, hr, Complex.real_le_real] at h4
+  have hsq : ‖φ a z‖ ^ 2 ≤ (‖a‖ * ‖z‖) ^ 2 := by rw [mul_pow]; exact h4
+  exact le_of_pow_le_pow_left₀ (by norm_num) (by positivity) hsq
+
+/-- If a set `S` of vectors of `H` is "separating for operators" — only the
+zero operator kills all of `S` — then the vector functionals it induces form
+a faithful collection of np-functionals on `B(H)`.  (For `T ≥ 0`,
+`⟪y,Ty⟫ = ‖√T y‖²`.) -/
+theorem faithfulCollection_vectorNP (S : Set H)
+    (hzero : ∀ R : H →L[ℂ] H, (∀ y ∈ S, R y = 0) → R = 0) :
+    FaithfulCollection (A := H →L[ℂ] H) {ν | ∃ y ∈ S, ν = vectorNP y} := by
+  intro T hT h
+  have hR : CFC.sqrt T * CFC.sqrt T = T := CFC.sqrt_mul_sqrt_self T hT
+  have hRsa : IsSelfAdjoint (CFC.sqrt T) := IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg T)
+  have hRadj : ContinuousLinearMap.adjoint (CFC.sqrt T) = CFC.sqrt T := hRsa.star_eq
+  have hkill : ∀ y ∈ S, CFC.sqrt T y = 0 := by
+    intro y hy
+    have h0 : (vectorNP y : NPFunctional (H →L[ℂ] H)) T = 0 := h _ ⟨y, hy, rfl⟩
+    rw [vectorNP_apply, ← hR, ContinuousLinearMap.mul_apply] at h0
+    have hstep : ContinuousLinearMap.adjoint (CFC.sqrt T) (CFC.sqrt T y)
+        = CFC.sqrt T (CFC.sqrt T y) := by rw [hRadj]
+    have h1 : (⟪CFC.sqrt T y, CFC.sqrt T y⟫) = 0 := by
+      rw [← h0, ← hstep, ContinuousLinearMap.adjoint_inner_right]
+    exact inner_self_eq_zero.mp h1
+  rw [← hR, hzero _ hkill, mul_zero]
+
+variable [VonNeumannAlgebra A]
+
+/-- **48II**-driven normality criterion for a ∗-representation
+`ϱ : A → B(H)` of a von Neumann algebra: if a set `S` of vectors separates
+the operators on `H`, and every `y ∈ S` makes `a ↦ ⟪y, ϱ(a)y⟫` an
+np-functional on `A`, then `ϱ` is normal. -/
+theorem starAlgHom_preservesDirSups_of_vectors (ρ : A →⋆ₐ[ℂ] (H →L[ℂ] H)) (S : Set H)
+    (hzero : ∀ R : H →L[ℂ] H, (∀ y ∈ S, R y = 0) → R = 0)
+    (hnp : ∀ y ∈ S, ∃ ω : NPFunctional A, ∀ a : A, (⟪y, ρ a y⟫) = ω a) :
+    PreservesDirSups ⇑ρ := by
+  refine (normal_faithful _ (faithfulCollection_vectorNP S hzero) (starAlgHomP ρ)).mpr ?_
+  rintro ν ⟨y, hy, rfl⟩
+  obtain ⟨ω, hω⟩ := hnp y hy
+  have heq : (fun a : A => (vectorNP y (starAlgHomP ρ a) : ℂ)) = fun a : A => (ω a : ℂ) := by
+    funext a
+    rw [starAlgHomP_apply, vectorNP_apply]
+    exact hω a
+  rw [heq]
+  exact ω.preservesDirSups'
+
+end HilbertRep
+
+section GNSSum
+
+variable (A) in
+/-- The Hilbert space `ℋ_Ω = ⊕_ω ℋ_ω` of the normal Gelfand–Naimark
+construction (**48VIII**): the `ℓ²`-direct sum of the GNS spaces of *all*
+np-functionals on `A`. -/
+abbrev gnsHilb : Type u := lp (fun ω : NPFunctional A => ω.toPositiveLinearMap.GNS) 2
+
+private theorem rpow_two_toReal (x : ℝ) : x ^ (2 : ℝ≥0∞).toReal = x ^ 2 := by
+  rw [show (2 : ℝ≥0∞).toReal = ((2 : ℕ) : ℝ) by norm_num, Real.rpow_natCast]
+
+/-- The pointwise (diagonal) action of `a` on `⊕_ω ℋ_ω`. -/
+private noncomputable def gnsDiagFun (a : A) (y : gnsHilb A) :
+    ∀ ω : NPFunctional A, ω.toPositiveLinearMap.GNS :=
+  fun ω => ω.toPositiveLinearMap.gnsStarAlgHom a ((y : ∀ ω : NPFunctional A, _) ω)
+
+private theorem gnsDiag_memlp (a : A) (y : gnsHilb A) : Memℓp (gnsDiagFun a y) 2 := by
+  refine memℓp_gen ?_
+  have hy : Summable (fun ω : NPFunctional A =>
+      ‖(y : ∀ ω : NPFunctional A, _) ω‖ ^ (2 : ℝ≥0∞).toReal) :=
+    (lp.hasSum_norm (by norm_num) y).summable
+  refine Summable.of_nonneg_of_le (fun _ => Real.rpow_nonneg (norm_nonneg _) _)
+    (fun ω => ?_) (hy.mul_left (‖a‖ ^ 2))
+  rw [rpow_two_toReal, rpow_two_toReal]
+  simp only [gnsDiagFun]
+  have h := starAlgHom_apply_norm_le (ω.toPositiveLinearMap.gnsStarAlgHom) a
+    ((y : ∀ ω : NPFunctional A, _) ω)
+  have h3 := pow_le_pow_left₀ (norm_nonneg _) h 2
+  rwa [mul_pow] at h3
+
+/-- The diagonal action of `a` on `⊕_ω ℋ_ω` as a linear map. -/
+private noncomputable def gnsDiagLin (a : A) : gnsHilb A →ₗ[ℂ] gnsHilb A where
+  toFun y := ⟨gnsDiagFun a y, gnsDiag_memlp a y⟩
+  map_add' y z := by
+    refine Subtype.ext (funext fun ω => ?_)
+    show gnsDiagFun a (y + z) ω = gnsDiagFun a y ω + gnsDiagFun a z ω
+    simp [gnsDiagFun]
+  map_smul' c y := by
+    refine Subtype.ext (funext fun ω => ?_)
+    show gnsDiagFun a (c • y) ω = c • gnsDiagFun a y ω
+    simp [gnsDiagFun]
+
+private theorem gnsDiagLin_apply_coe (a : A) (y : gnsHilb A) (ω : NPFunctional A) :
+    ((gnsDiagLin a y : gnsHilb A) : ∀ ω : NPFunctional A, _) ω
+      = ω.toPositiveLinearMap.gnsStarAlgHom a ((y : ∀ ω : NPFunctional A, _) ω) := rfl
+
+private theorem gnsDiagLin_norm_le (a : A) (y : gnsHilb A) :
+    ‖gnsDiagLin a y‖ ≤ ‖a‖ * ‖y‖ := by
+  have hp : (0:ℝ) < (2 : ℝ≥0∞).toReal := by norm_num
+  have hsum1 := lp.hasSum_norm hp (gnsDiagLin a y)
+  have hsum2 := lp.hasSum_norm hp y
+  have hle : ∀ ω : NPFunctional A,
+      ‖((gnsDiagLin a y : gnsHilb A) : ∀ ω : NPFunctional A, _) ω‖ ^ (2 : ℝ≥0∞).toReal
+        ≤ ‖a‖ ^ 2 * ‖(y : ∀ ω : NPFunctional A, _) ω‖ ^ (2 : ℝ≥0∞).toReal := by
+    intro ω
+    rw [rpow_two_toReal, rpow_two_toReal, gnsDiagLin_apply_coe]
+    have h := starAlgHom_apply_norm_le (ω.toPositiveLinearMap.gnsStarAlgHom) a
+      ((y : ∀ ω : NPFunctional A, _) ω)
+    have h3 := pow_le_pow_left₀ (norm_nonneg _) h 2
+    rwa [mul_pow] at h3
+  have hkey : ‖gnsDiagLin a y‖ ^ (2 : ℝ≥0∞).toReal
+      ≤ ‖a‖ ^ 2 * ‖y‖ ^ (2 : ℝ≥0∞).toReal := by
+    rw [← hsum1.tsum_eq, ← hsum2.tsum_eq, ← tsum_mul_left]
+    exact hsum1.summable.tsum_le_tsum hle (hsum2.summable.mul_left _)
+  rw [rpow_two_toReal, rpow_two_toReal] at hkey
+  have hsq : ‖gnsDiagLin a y‖ ^ 2 ≤ (‖a‖ * ‖y‖) ^ 2 := by rw [mul_pow]; exact hkey
+  exact le_of_pow_le_pow_left₀ (by norm_num) (by positivity) hsq
+
+/-- The diagonal action of `a` on `⊕_ω ℋ_ω` as a bounded operator. -/
+private noncomputable def gnsDiag (a : A) : gnsHilb A →L[ℂ] gnsHilb A :=
+  LinearMap.mkContinuous (gnsDiagLin a) ‖a‖ (gnsDiagLin_norm_le a)
+
+@[simp] private theorem gnsDiag_apply_coe (a : A) (y : gnsHilb A) (ω : NPFunctional A) :
+    ((gnsDiag a y : gnsHilb A) : ∀ ω : NPFunctional A, _) ω
+      = ω.toPositiveLinearMap.gnsStarAlgHom a ((y : ∀ ω : NPFunctional A, _) ω) := rfl
+
+private theorem gnsHilb_ext {y z : gnsHilb A}
+    (h : ∀ ω : NPFunctional A, (y : ∀ ω : NPFunctional A, _) ω
+      = (z : ∀ ω : NPFunctional A, _) ω) : y = z :=
+  Subtype.ext (funext h)
+
+/-- **48V** (`varrho-Omega-normal`, vn.tex:1113): the direct-sum GNS
+representation `ϱ_Ω : A → B(⊕_ω ℋ_ω)` over *all* np-functionals of `A`. -/
+noncomputable def gnsRep : A →⋆ₐ[ℂ] (gnsHilb A →L[ℂ] gnsHilb A) where
+  toFun := gnsDiag
+  map_one' := by
+    refine ContinuousLinearMap.ext fun y => gnsHilb_ext fun ω => ?_
+    simp
+  map_mul' a b := by
+    refine ContinuousLinearMap.ext fun y => gnsHilb_ext fun ω => ?_
+    simp
+  map_zero' := by
+    refine ContinuousLinearMap.ext fun y => gnsHilb_ext fun ω => ?_
+    simp
+  map_add' a b := by
+    refine ContinuousLinearMap.ext fun y => gnsHilb_ext fun ω => ?_
+    simp
+  commutes' r := by
+    refine ContinuousLinearMap.ext fun y => gnsHilb_ext fun ω => ?_
+    simp [Algebra.algebraMap_eq_smul_one]
+  map_star' a := by
+    refine (ContinuousLinearMap.eq_adjoint_iff _ _).mpr fun x y => ?_
+    rw [lp.inner_eq_tsum, lp.inner_eq_tsum]
+    refine tsum_congr fun ω => ?_
+    show (⟪ω.toPositiveLinearMap.gnsStarAlgHom (star a) _, _⟫) = _
+    rw [map_star]
+    exact ContinuousLinearMap.adjoint_inner_left _ _ _
+
+@[simp] theorem gnsRep_apply_coe (a : A) (y : gnsHilb A) (ω : NPFunctional A) :
+    ((gnsRep a y : gnsHilb A) : ∀ ω : NPFunctional A, _) ω
+      = ω.toPositiveLinearMap.gnsStarAlgHom a ((y : ∀ ω : NPFunctional A, _) ω) := rfl
+
+/-- The canonical vector `η_ω(b) ∈ ℋ_ω`. -/
+noncomputable def gnsVec (ω : NPFunctional A) (b : A) : ω.toPositiveLinearMap.GNS :=
+  ((ω.toPositiveLinearMap.toPreGNS b : ω.toPositiveLinearMap.PreGNS) :
+    ω.toPositiveLinearMap.GNS)
+
+theorem gnsVec_norm_sq (ω : NPFunctional A) (b : A) :
+    ((‖gnsVec ω b‖ ^ 2 : ℝ) : ℂ) = ω (star b * b) := by
+  rw [gnsVec, UniformSpace.Completion.norm_coe]
+  exact_mod_cast PositiveLinearMap.preGNS_norm_sq ω.toPositiveLinearMap _
+
+theorem gnsRep_gnsVec (a b : A) (ω : NPFunctional A) :
+    ω.toPositiveLinearMap.gnsStarAlgHom a (gnsVec ω b) = gnsVec ω (a * b) :=
+  Theses.A.CStar.gns_starAlgHom_apply ω.toPositiveLinearMap a b
+
+theorem gnsVec_inner (ω : NPFunctional A) (b c : A) :
+    (⟪gnsVec ω b, gnsVec ω c⟫) = ω (star b * c) :=
+  UniformSpace.Completion.inner_coe _ _
+
+theorem gnsVec_denseRange (ω : NPFunctional A) : DenseRange (gnsVec ω) := by
+  have h : Set.range (gnsVec ω)
+      = Set.range ((↑) : ω.toPositiveLinearMap.PreGNS → ω.toPositiveLinearMap.GNS) := by
+    ext x
+    constructor
+    · rintro ⟨b, rfl⟩; exact ⟨ω.toPositiveLinearMap.toPreGNS b, rfl⟩
+    · rintro ⟨z, rfl⟩; exact ⟨ω.toPositiveLinearMap.ofPreGNS z, rfl⟩
+  show Dense (Set.range (gnsVec ω))
+  rw [h]
+  exact UniformSpace.Completion.denseRange_coe
+
+open scoped Classical in
+/-- The "elementary" vectors `η_ω(b)` of `⊕_ω ℋ_ω`, sitting in a single
+summand.  They separate the operators on `⊕_ω ℋ_ω`, and their vector
+functionals pull back along `ϱ_Ω` to the np-functionals `b*ω`. -/
+def gnsElemVecs : Set (gnsHilb A) :=
+  {y | ∃ (ω : NPFunctional A) (b : A), y = lp.single 2 ω (gnsVec ω b)}
+
+theorem gnsElemVecs_separating (R : gnsHilb A →L[ℂ] gnsHilb A)
+    (h : ∀ y ∈ gnsElemVecs (A := A), R y = 0) : R = 0 := by
+  classical
+  have hsingle : ∀ (ω : NPFunctional A) (z : ω.toPositiveLinearMap.GNS),
+      R (lp.single 2 ω z) = 0 := by
+    intro ω
+    have hcont : Continuous fun z : ω.toPositiveLinearMap.GNS => R (lp.single 2 ω z) :=
+      R.continuous.comp
+        (lp.singleContinuousLinearMap ℂ
+          (fun ω : NPFunctional A => ω.toPositiveLinearMap.GNS) 2 ω).continuous
+    have hdense : Dense (Set.range (gnsVec ω)) := gnsVec_denseRange ω
+    have hfun := Continuous.ext_on hdense hcont continuous_const
+      (fun x hx => by obtain ⟨b, rfl⟩ := hx; exact h _ ⟨ω, b, rfl⟩)
+    exact fun z => congrFun hfun z
+  refine ContinuousLinearMap.ext fun y => ?_
+  have hs : HasSum (fun ω : NPFunctional A =>
+      lp.single 2 ω ((y : ∀ ω : NPFunctional A, _) ω)) y :=
+    lp.hasSum_single (by norm_num) y
+  have hmap := hs.mapL R
+  have h0 : HasSum (fun _ : NPFunctional A => (0 : gnsHilb A)) (R y) := by
+    refine hmap.congr_fun fun ω => ?_
+    exact (hsingle ω ((y : ∀ ω : NPFunctional A, _) ω)).symm
+  simpa using (hasSum_zero.unique h0).symm
+
+variable [VonNeumannAlgebra A]
+
+theorem gnsRep_injective : Function.Injective (gnsRep (A := A)) := by
+  classical
+  have hker : ∀ a : A, gnsRep a = 0 → a = 0 := by
+    intro a ha
+    have h1 : ∀ ω : NPFunctional A, gnsVec ω a = 0 := by
+      intro ω
+      have h := congrArg
+        (fun T : gnsHilb A →L[ℂ] gnsHilb A =>
+          ((T (lp.single 2 ω (gnsVec ω 1)) : gnsHilb A) : ∀ _ : NPFunctional A, _) ω) ha
+      simp only [gnsRep_apply_coe, lp.single_apply_self] at h
+      rw [gnsRep_gnsVec, mul_one] at h
+      simpa using h
+    refine (CStarRing.star_mul_self_eq_zero_iff a).mp ?_
+    refine VonNeumannAlgebra.np_faithful _ (star_mul_self_nonneg a) fun ω => ?_
+    rw [← gnsVec_norm_sq ω a, h1 ω]
+    simp
+  intro a b hab
+  have h : gnsRep (a - b) = 0 := by rw [map_sub, hab, sub_self]
+  exact sub_eq_zero.mp (hker _ h)
+
+-- the `lp`-based Hilbert space `⊕_ω ℋ_ω` makes the (routine) instance
+-- defeq checks against `B(H)`'s C*-algebra structure expensive
+set_option maxHeartbeats 2000000 in
+theorem gnsRep_normal : PreservesDirSups ⇑(gnsRep (A := A)) := by
+  classical
+  refine starAlgHom_preservesDirSups_of_vectors gnsRep (gnsElemVecs (A := A))
+    gnsElemVecs_separating ?_
+  rintro _ ⟨ω, b, rfl⟩
+  refine ⟨conjNP b ω, fun a => ?_⟩
+  rw [lp.inner_single_left]
+  show (⟪gnsVec ω b, ((gnsRep a (lp.single 2 ω (gnsVec ω b)) : gnsHilb A) :
+    ∀ _ : NPFunctional A, _) ω⟫) = _
+  rw [gnsRep_apply_coe, lp.single_apply_self, gnsRep_gnsVec, gnsVec_inner,
+    conjNP_apply, mul_assoc]
+
+
+end GNSSum
+
+section VNRange
+
+variable [VonNeumannAlgebra A] [VonNeumannAlgebra C]
+
+/-- **48VI**.1 in its general form: the image of an injective normal
+∗-homomorphism between von Neumann algebras is a von Neumann subalgebra. -/
+theorem isVNSubalgebra_range (φ : A →⋆ₐ[ℂ] C) (hφ : Function.Injective φ)
+    (hn : PreservesDirSups ⇑φ) : IsVNSubalgebra C φ.range := by
+  classical
+  have hnorm : ∀ x : A, ‖φ x‖ = ‖x‖ := NonUnitalStarAlgHom.norm_map φ hφ
+  have hiso : Isometry (φ : A → C) := NonUnitalStarAlgHom.isometry φ hφ
+  have hrange : ((φ.range : StarSubalgebra ℂ C) : Set C) = Set.range (φ : A → C) := by
+    ext x
+    exact ⟨fun hx => hx, fun hx => hx⟩
+  have hsaMap : ∀ x : selfAdjoint A, IsSelfAdjoint (φ (x : A)) := fun x => by
+    show star (φ (x : A)) = φ (x : A)
+    rw [← map_star, x.2.star_eq]
+  set saMap : selfAdjoint A → selfAdjoint C := fun x => ⟨φ (x : A), hsaMap x⟩ with hsaMapDef
+  refine ⟨?_, ?_⟩
+  · rw [hrange]
+    exact (hiso.isUniformInducing.isComplete_range).isClosed
+  intro D s hDsub hne hdir hlub
+  -- every member of `D` comes from a self-adjoint element of `A`
+  have hpull : ∀ d ∈ D, ∃ x : selfAdjoint A, saMap x = d := by
+    intro d hd
+    have hmem : (d : C) ∈ (φ.range : Set C) := hDsub d hd
+    rw [hrange] at hmem
+    obtain ⟨c, hc⟩ := hmem
+    have hcsa : IsSelfAdjoint c := by
+      refine hφ ?_
+      rw [map_star, hc, d.2.star_eq]
+    exact ⟨⟨c, hcsa⟩, Subtype.ext hc⟩
+  -- pass to the cofinal tail above a fixed `d₀ ∈ D`
+  obtain ⟨d₀, hd₀⟩ := hne
+  set Dt : Set (selfAdjoint C) := {d | d ∈ D ∧ d₀ ≤ d} with hDtDef
+  have hDtne : Dt.Nonempty := ⟨d₀, hd₀, le_refl _⟩
+  have hDtdir : DirectedOn (· ≤ ·) Dt := by
+    rintro x ⟨hxD, hx0⟩ y ⟨hyD, _⟩
+    obtain ⟨z, hzD, hxz, hyz⟩ := hdir x hxD y hyD
+    exact ⟨z, ⟨hzD, le_trans hx0 hxz⟩, hxz, hyz⟩
+  have hDtlub : IsLUB Dt s := by
+    refine ⟨fun d hd => hlub.1 hd.1, fun u hu => hlub.2 fun d hd => ?_⟩
+    obtain ⟨z, hzD, hdz, h0z⟩ := hdir d hd d₀ hd₀
+    exact le_trans hdz (hu ⟨hzD, h0z⟩)
+  -- the pullback of the tail
+  set D' : Set (selfAdjoint A) := saMap ⁻¹' Dt with hD'Def
+  have himg : saMap '' D' = Dt := by
+    refine Set.Subset.antisymm (Set.image_preimage_subset _ _) fun d hd => ?_
+    obtain ⟨x, hx⟩ := hpull d hd.1
+    exact ⟨x, by rw [hD'Def]; simpa [hx] using hd, hx⟩
+  have hd₀t : d₀ ∈ Dt := ⟨hd₀, le_refl _⟩
+  have hD'ne : D'.Nonempty := by
+    obtain ⟨x, hx⟩ := hpull d₀ hd₀
+    exact ⟨x, by rw [hD'Def]; simpa [hx] using hd₀t⟩
+  have hD'dir : DirectedOn (· ≤ ·) D' := by
+    intro x hx y hy
+    obtain ⟨d, hdD, hxd, hyd⟩ := hDtdir (saMap x) hx (saMap y) hy
+    obtain ⟨z, hz⟩ := hpull d hdD.1
+    refine ⟨z, by rw [hD'Def]; simpa [hz] using hdD, ?_, ?_⟩
+    · exact Subtype.coe_le_coe.mp
+        ((starAlgHom_le_iff φ hφ).mp (Subtype.coe_le_coe.mpr (hz ▸ hxd)))
+    · exact Subtype.coe_le_coe.mp
+        ((starAlgHom_le_iff φ hφ).mp (Subtype.coe_le_coe.mpr (hz ▸ hyd)))
+  -- the pullback is norm bounded, hence order bounded
+  set M : ℝ := ‖(s : C) - (d₀ : C)‖ + ‖(d₀ : C)‖ with hMDef
+  have hM0 : 0 ≤ M := by positivity
+  have hD'bdd : BddAbove D' := by
+    have hsa : IsSelfAdjoint (algebraMap ℂ A ((M : ℝ) : ℂ)) :=
+      IsSelfAdjoint.of_nonneg (Theses.A.CStar.algebraMap_ofReal_nonneg hM0)
+    refine ⟨⟨algebraMap ℂ A ((M : ℝ) : ℂ), hsa⟩, fun x hx => ?_⟩
+    have hd : saMap x ∈ Dt := hx
+    have h1 : (0 : C) ≤ (saMap x : C) - (d₀ : C) :=
+      sub_nonneg.mpr (Subtype.coe_le_coe.mpr hd.2)
+    have h2 : (saMap x : C) - (d₀ : C) ≤ (s : C) - (d₀ : C) :=
+      sub_le_sub_right (Subtype.coe_le_coe.mpr (hDtlub.1 hd)) _
+    have h3 : ‖(saMap x : C) - (d₀ : C)‖ ≤ ‖(s : C) - (d₀ : C)‖ :=
+      CStarAlgebra.norm_le_norm_of_nonneg_of_le h1 h2
+    have h4 : ‖(saMap x : C)‖ ≤ M := by
+      have := norm_add_le ((saMap x : C) - (d₀ : C)) ((d₀ : C))
+      simp only [sub_add_cancel] at this
+      exact le_trans this (by rw [hMDef]; gcongr)
+    have h5 : ‖(x : A)‖ ≤ M := by rw [← hnorm]; exact h4
+    refine Subtype.coe_le_coe.mp ?_
+    refine le_trans ?_ (Theses.A.CStar.algebraMap_ofReal_mono h5)
+    have := IsSelfAdjoint.le_algebraMap_norm_self x.2
+    rwa [Theses.A.CStar.algebraMap_real_eq] at this
+  -- the supremum of the pullback maps onto `s`
+  set t : selfAdjoint A := dirSup D' ⟨hD'ne, hD'dir, hD'bdd⟩ with htDef
+  have htlub : IsLUB D' t := isLUB_dirSup D' ⟨hD'ne, hD'dir, hD'bdd⟩
+  have hkey := hn D' t hD'ne hD'dir htlub
+  have hsets : (fun x : selfAdjoint A => φ (x : A)) '' D' = Subtype.val '' Dt := by
+    rw [← himg, ← Set.image_comp]
+    rfl
+  rw [hsets] at hkey
+  have hslub : IsLUB (Subtype.val '' Dt) ((s : selfAdjoint C) : C) :=
+    isLUB_coe_of_isLUB hDtne hDtlub
+  have hst : φ (t : A) = (s : C) := hkey.unique hslub
+  show (s : C) ∈ (φ.range : Set C)
+  rw [hrange, ← hst]
+  exact ⟨(t : A), rfl⟩
+
+end VNRange
+
+
+
+
+section NGNS
+
+/-- The concrete output of the direct-sum GNS construction: every von
+Neumann algebra has a faithful *normal* representation on a Hilbert space.
+(Stated with the Hilbert space existentially quantified so that the transport
+to `ℓ²(ι)` below never has to unfold `⊕_ω ℋ_ω`.) -/
+theorem exists_faithful_normal_rep (A : Type u) [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [VonNeumannAlgebra A] :
+    ∃ (H : Type u) (_ : NormedAddCommGroup H) (_ : InnerProductSpace ℂ H)
+      (_ : CompleteSpace H) (ρ : A →⋆ₐ[ℂ] (H →L[ℂ] H)),
+      Function.Injective ⇑ρ ∧ PreservesDirSups ⇑ρ :=
+  ⟨gnsHilb A, inferInstance, inferInstance, inferInstance, gnsRep,
+    gnsRep_injective, gnsRep_normal⟩
+
+end NGNS
+
+end NGNSConstruction
 
 /-- **48III** (vn.tex:1091, Proposition): the GNS representation
 `ρ_ω : A → B(H_ω)` of an np-functional `ω` on a von Neumann algebra is
@@ -1894,7 +2588,7 @@ is a von Neumann subalgebra of `B`. -/
 theorem injective_nmiu_iso_on_image_1 [VonNeumannAlgebra A]
     [VonNeumannAlgebra B] (f : NMIUMap A B) (hf : Function.Injective f) :
     IsVNSubalgebra B f.toStarAlgHom.range :=
-  sorry
+  isVNSubalgebra_range f.toStarAlgHom hf f.preservesDirSups'
 
 /-- **48VI** (`injective-nmiu-iso-on-image`, vn.tex:1120, Lemma), part 2: an
 injective nmiu-map `f` restricts to an nmiu-isomorphism onto its image; in
@@ -1903,7 +2597,7 @@ normal). -/
 theorem injective_nmiu_iso_on_image_2 [VonNeumannAlgebra A]
     [VonNeumannAlgebra B] (f : NMIUMap A B) (hf : Function.Injective f)
     (a b : A) : f a ≤ f b ↔ a ≤ b :=
-  sorry
+  starAlgHom_le_iff f.toStarAlgHom hf
 
 /-- **48VIII** (`ngns`, vn.tex:1144, Theorem (normal Gelfand–Naimark)):
 every von Neumann algebra is nmiu-isomorphic to a von Neumann algebra of
@@ -1913,8 +2607,22 @@ theorem ngns (A : Type u) [CStarAlgebra A] [PartialOrder A]
     [StarOrderedRing A] [VonNeumannAlgebra A] :
     ∃ (ι : Type u) (f : NMIUMap A
         (lp (fun _ : ι => ℂ) 2 →L[ℂ] lp (fun _ : ι => ℂ) 2)),
-      Function.Injective f ∧ IsVNSubalgebra _ f.toStarAlgHom.range :=
-  sorry
+      Function.Injective f ∧ IsVNSubalgebra _ f.toStarAlgHom.range := by
+  obtain ⟨H, _, _, _, ρ, hinj, hn⟩ := exists_faithful_normal_rep A
+  obtain ⟨w, bas, -⟩ := exists_hilbertBasis ℂ H
+  set Φ : (H →L[ℂ] H) ≃⋆ₐ[ℂ]
+      (lp (fun _ : w => ℂ) 2 →L[ℂ] lp (fun _ : w => ℂ) 2) :=
+    bas.repr.conjStarAlgEquiv with hΦ
+  set g : A →⋆ₐ[ℂ] (lp (fun _ : w => ℂ) 2 →L[ℂ] lp (fun _ : w => ℂ) 2) :=
+    Φ.toStarAlgHom.comp ρ with hg
+  have hρP : PreservesDirSups ⇑(starAlgHomP ρ) := hn
+  have hΦP : PreservesDirSups ⇑(starAlgHomP Φ.toStarAlgHom) :=
+    starAlgEquiv_preservesDirSups Φ
+  have hginj : Function.Injective ⇑g := fun x y hxy => hinj (Φ.injective hxy)
+  have hgn : PreservesDirSups ⇑g :=
+    preservesDirSups_pmap_comp (starAlgHomP ρ) hρP (starAlgHomP Φ.toStarAlgHom) hΦP
+  exact ⟨w, ⟨g, hgn⟩, hginj, isVNSubalgebra_range g hginj hgn⟩
+
 
 /-! ## Parsec 490: matrices over a von Neumann algebra
 

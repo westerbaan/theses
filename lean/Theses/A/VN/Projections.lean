@@ -611,23 +611,9 @@ private theorem sqrtIter_comm_sqrtIter {b : A} (hb : b ∈ effects A) (m n : ℕ
 
 variable [VonNeumannAlgebra A]
 
-/-- Auxiliary: an `IsLUB` in `sa(A)` is an `IsLUB` in `A` (upper bounds of a
-nonempty set of self-adjoint elements are automatically self-adjoint). -/
-theorem isLUB_coe_of_isLUB {D : Set (selfAdjoint A)} {s : selfAdjoint A}
-    (hne : D.Nonempty) (h : IsLUB D s) :
-    IsLUB (Subtype.val '' D) ((s : selfAdjoint A) : A) := by
-  obtain ⟨d₀, hd₀⟩ := hne
-  refine ⟨?_, fun u hu => ?_⟩
-  · rintro _ ⟨d, hd, rfl⟩
-    exact Subtype.coe_le_coe.mpr (h.1 hd)
-  · have hu0 : ((d₀ : selfAdjoint A) : A) ≤ u := hu ⟨d₀, hd₀, rfl⟩
-    have husa : IsSelfAdjoint u := by
-      have hd : IsSelfAdjoint (u - ((d₀ : selfAdjoint A) : A)) :=
-        IsSelfAdjoint.of_nonneg (sub_nonneg.mpr hu0)
-      simpa using hd.add d₀.2
-    have hub : (⟨u, husa⟩ : selfAdjoint A) ∈ upperBounds D :=
-      fun e he => hu ⟨e, he, rfl⟩
-    exact h.2 hub
+/-! `isLUB_coe_of_isLUB` (an `IsLUB` in `sa(A)` is an `IsLUB` in `A`) now
+lives in `Theses/A/VN/Basic.lean`, next to its `IsGLB` mirror, because the
+normal Gelfand–Naimark construction of parsec 480 needs it. -/
 
 /-- Auxiliary: `√x·x·√x = x²`. -/
 private theorem conj_sqrt_self {x : A} (hx : 0 ≤ x) :
@@ -1468,14 +1454,8 @@ private theorem star_mul_self_absorb_iff (a : A) {p : A}
   · rw [← h]; noncomm_ring
   · rw [← h]; noncomm_ring
 
-/-- An `IsLUB` in `A` of a set of self-adjoint elements is an `IsLUB` in
-`sa(A)` (converse of `isLUB_coe_of_isLUB`). -/
-theorem isLUB_sa_of_isLUB {D : Set (selfAdjoint A)} {s : selfAdjoint A}
-    (h : IsLUB (Subtype.val '' D) ((s : selfAdjoint A) : A)) : IsLUB D s := by
-  refine ⟨fun d hd => Subtype.coe_le_coe.mp (h.1 ⟨d, hd, rfl⟩), fun v hv => ?_⟩
-  refine Subtype.coe_le_coe.mp (h.2 ?_)
-  rintro _ ⟨d, hd, rfl⟩
-  exact Subtype.coe_le_coe.mpr (hv hd)
+/-! `isLUB_sa_of_isLUB` (the converse of `isLUB_coe_of_isLUB`) now lives in
+`Theses/A/VN/Basic.lean` for the same reason. -/
 
 /-- **The** calculation rule behind **59IV** and **60VIII**: if `bc = 0`
 for positive `b`, then already `⌈b⌉c = 0`.
@@ -2188,55 +2168,9 @@ theorem ceil_functionals (a b : A) (ha : 0 ≤ a) (hb : 0 ≤ b) :
     exact (conj_ortho_eq_zero_iff
       ⟨(ceil_spec ha).1.nonneg, (ceil_spec ha).1.le_one⟩ (ceil_spec hb).1).mp hzero
 
-theorem isSelfAdjoint_map_of_positive (f : A →ₚ[ℂ] B) {x : A}
-    (hx : IsSelfAdjoint x) : IsSelfAdjoint (f x) := by
-  have hsplit : posPart x - negPart x = x := CFC.posPart_sub_negPart x hx
-  have hz : (f (0 : A) : B) = 0 := map_zero f
-  have h1 : (0 : B) ≤ f (posPart x) := by
-    have h : (f (0 : A) : B) ≤ f (posPart x) := f.monotone (CFC.posPart_nonneg x)
-    rwa [hz] at h
-  have h2 : (0 : B) ≤ f (negPart x) := by
-    have h : (f (0 : A) : B) ≤ f (negPart x) := f.monotone (CFC.negPart_nonneg x)
-    rwa [hz] at h
-  have := (IsSelfAdjoint.of_nonneg h1).sub (IsSelfAdjoint.of_nonneg h2)
-  rwa [← map_sub, hsplit] at this
-
-/-- The composite of an np-map `f : A → B` with an np-functional on `B` is
-an np-functional on `A`. -/
-private noncomputable def compNP (f : A →ₚ[ℂ] B) (hf : PreservesDirSups ⇑f)
-    (ω : NPFunctional B) : NPFunctional A where
-  toPositiveLinearMap :=
-    { toFun := fun x => ω (f x)
-      map_add' := fun x y => by
-        rw [map_add]; exact map_add ω.toPositiveLinearMap _ _
-      map_smul' := fun c x => by
-        rw [map_smul]; exact map_smul ω.toPositiveLinearMap _ _
-      monotone' := fun x y hxy => npFunctional_mono ω (f.monotone hxy) }
-  preservesDirSups' := by
-    intro D s hne hdir hlub
-    have hsa : ∀ d : selfAdjoint A, IsSelfAdjoint (f (d : A)) := fun d =>
-      isSelfAdjoint_map_of_positive f d.2
-    set G : Set (selfAdjoint B) :=
-      (fun d : selfAdjoint A => (⟨f (d : A), hsa d⟩ : selfAdjoint B)) '' D with hG
-    have hval : Subtype.val '' G = (fun d : selfAdjoint A => f (d : A)) '' D := by
-      rw [hG, ← Set.image_comp]; rfl
-    have hlubG : IsLUB G (⟨f (s : A), hsa s⟩ : selfAdjoint B) := by
-      refine isLUB_sa_of_isLUB ?_
-      rw [hval]
-      exact hf D s hne hdir hlub
-    have hGne : G.Nonempty := hne.image _
-    have hGdir : DirectedOn (· ≤ ·) G := by
-      rintro _ ⟨x, hx, rfl⟩ _ ⟨y, hy, rfl⟩
-      obtain ⟨z, hz, hxz, hyz⟩ := hdir x hx y hy
-      exact ⟨_, ⟨z, hz, rfl⟩,
-        Subtype.coe_le_coe.mp (f.monotone (Subtype.coe_le_coe.mpr hxz)),
-        Subtype.coe_le_coe.mp (f.monotone (Subtype.coe_le_coe.mpr hyz))⟩
-    have hkey := ω.preservesDirSups' G _ hGne hGdir hlubG
-    rw [hG, ← Set.image_comp] at hkey
-    exact hkey
-
-@[simp] private theorem compNP_apply (f : A →ₚ[ℂ] B) (hf : PreservesDirSups ⇑f)
-    (ω : NPFunctional B) (x : A) : compNP f hf ω x = ω (f x) := rfl
+/-! `isSelfAdjoint_map_of_positive` and `compNP` (with `compNP_apply`) now
+live in `Theses/A/VN/Basic.lean`: the normal Gelfand–Naimark construction of
+parsec 480 needs them, and `compNP` *is* the easy half of **48II**. -/
 
 /-- **60V** (`ncp-ceil`, vn.tex:2893, Proposition): for an np-map
 `f : A → B` between von Neumann algebras and positive `a`:
