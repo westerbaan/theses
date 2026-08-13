@@ -281,8 +281,86 @@ on a self-dual Hilbert 𝒷-module every bounded 𝒷-sesquilinear form is
 theorem hilbmod_sesquilinear_forms [CompleteSpace X] (hX : SelfDual 𝒷 X)
     (r : ℝ) (B : X → X → 𝒷) (hB : IsBoundedBSesq r B) :
     ∃! T : X →L[ℂ] X, ModuleAdjointable 𝒷 ⇑T ∧
-      ∀ x y : X, B x y = inner 𝒷 x (T y) :=
-  sorry
+      ∀ x y : X, B x y = inner 𝒷 x (T y) := by
+  let _ : NormedSpace ℂ X := NormedSpace.ofCore (CStarModule.normedSpaceCore 𝒷)
+  obtain ⟨hsesq, hbd⟩ := hB
+  -- only `SMul 𝒷 X` is assumed, so `1 • y = y` has to be derived
+  have hone : ∀ y : X, (1 : 𝒷) • y = y := fun y =>
+    eq_of_inner_right_eq (𝒜 := 𝒷) fun x => by
+      rw [CStarModule.inner_op_smul_right, one_mul]
+  have hleft : ∀ (β : 𝒷) (x y : X), B (β • x) y = B x y * star β := fun β x y => by
+    have h := hsesq.smul_op β 1 x y
+    rwa [hone, one_mul] at h
+  have hright : ∀ (b : 𝒷) (x y : X), B x (b • y) = b * B x y := fun b x y => by
+    have h := hsesq.smul_op 1 b x y
+    rwa [hone, star_one, mul_one] at h
+  -- self-duality, packaged as a representation theorem for bounded 𝒷-linear
+  -- functionals given by their components
+  have hrep : ∀ (C : ℝ) (F : X → 𝒷), (∀ x x' : X, F (x + x') = F x + F x') →
+      (∀ (c : ℂ) (x : X), F (c • x) = c • F x) →
+      (∀ (b : 𝒷) (x : X), F (b • x) = b * F x) →
+      (∀ x : X, ‖F x‖ ≤ C * ‖x‖) → ∃ t : X, ∀ x : X, F x = inner 𝒷 t x := by
+    intro C F hadd hsmul hmod hbound
+    exact hX { toFun := F, map_add' := hadd, map_smul' := hsmul } hmod ⟨C, hbound⟩
+  -- (a) `x ↦ B(x,y)*` is bounded and 𝒷-linear, so `B(x,y) = ⟨x, t_y⟩`
+  have hA : ∀ y : X, ∃ t : X, ∀ x : X, B x y = inner 𝒷 x t := by
+    intro y
+    obtain ⟨t, ht⟩ := hrep (r * ‖y‖) (fun x => star (B x y))
+      (fun x x' => by rw [hsesq.add_left, star_add])
+      (fun c x => by rw [hsesq.smul_left_complex, star_smul]; simp)
+      (fun b x => by rw [hleft, star_mul, star_star])
+      (fun x => by
+        rw [norm_star]
+        calc ‖B x y‖ ≤ r * ‖x‖ * ‖y‖ := hbd x y
+          _ = r * ‖y‖ * ‖x‖ := by ring)
+    exact ⟨t, fun x => by
+      rw [← CStarModule.star_inner (A := 𝒷) t x, ← ht x, star_star]⟩
+  -- (b) `x ↦ B(y,x)` is bounded and 𝒷-linear, so `B(y,x) = ⟨s_y, x⟩`
+  have hBrep : ∀ y : X, ∃ s : X, ∀ x : X, B y x = inner 𝒷 s x := fun y =>
+    hrep (r * ‖y‖) (fun x => B y x) (fun x x' => hsesq.add_right y x x')
+      (fun c x => hsesq.smul_right_complex c y x) (fun b x => hright b y x)
+      (fun x => by
+        calc ‖B y x‖ ≤ r * ‖y‖ * ‖x‖ := hbd y x
+          _ = r * ‖y‖ * ‖x‖ := rfl)
+  choose T0 hT0 using hA
+  choose S hS using hBrep
+  -- `T0` is ℂ-linear, by definiteness of the inner product
+  have hTadd : ∀ y y' : X, T0 (y + y') = T0 y + T0 y' := fun y y' =>
+    eq_of_inner_right_eq (𝒜 := 𝒷) fun x => by
+      rw [← hT0, CStarModule.inner_add_right, ← hT0, ← hT0, hsesq.add_right]
+  have hTsmul : ∀ (c : ℂ) (y : X), T0 (c • y) = c • T0 y := fun c y =>
+    eq_of_inner_right_eq (𝒜 := 𝒷) fun x => by
+      rw [← hT0, CStarModule.inner_smul_right_complex, ← hT0,
+        hsesq.smul_right_complex]
+  -- `‖T0 x‖² = ‖⟨T0 x, T0 x⟩‖ = ‖B (T0 x, x)‖ ≤ r ‖T0 x‖ ‖x‖`
+  set r' : ℝ := max r 0 with hr'
+  have hr'0 : (0 : ℝ) ≤ r' := le_max_right _ _
+  have hTbound : ∀ x : X, ‖T0 x‖ ≤ r' * ‖x‖ := by
+    intro x
+    have hsq : ‖T0 x‖ ^ 2 = ‖(inner 𝒷 (T0 x) (T0 x) : 𝒷)‖ := by
+      rw [CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒷) (x := T0 x),
+        Real.sq_sqrt (norm_nonneg _)]
+    have hle : ‖T0 x‖ ^ 2 ≤ r' * (‖T0 x‖ * ‖x‖) := by
+      rw [hsq, ← hT0 x (T0 x)]
+      calc ‖B (T0 x) x‖ ≤ r * ‖T0 x‖ * ‖x‖ := hbd _ _
+        _ ≤ r' * (‖T0 x‖ * ‖x‖) := by
+            have : r * (‖T0 x‖ * ‖x‖) ≤ r' * (‖T0 x‖ * ‖x‖) :=
+              mul_le_mul_of_nonneg_right (le_max_left _ _)
+                (mul_nonneg (norm_nonneg _) (norm_nonneg _))
+            linarith [this, mul_assoc r ‖T0 x‖ ‖x‖]
+    rcases eq_or_lt_of_le (norm_nonneg (T0 x)) with h0 | h0
+    · rw [← h0]; positivity
+    · nlinarith [norm_nonneg x]
+  set Tl : X →ₗ[ℂ] X :=
+    { toFun := T0, map_add' := hTadd, map_smul' := fun c y => hTsmul c y } with hTl
+  refine ⟨Tl.mkContinuous r' hTbound, ⟨⟨S, fun x y => ?_⟩, fun x y => hT0 y x⟩,
+    fun T' hT' => ?_⟩
+  · change inner 𝒷 (T0 x) y = inner 𝒷 x (S y)
+    rw [← CStarModule.star_inner (A := 𝒷) y (T0 x), ← hT0 x y, hS y x,
+      CStarModule.star_inner]
+  · ext y
+    exact eq_of_inner_right_eq (𝒜 := 𝒷) fun x =>
+      (hT'.2 x y).symm.trans (hT0 y x)
 
 /-- **152VIII** (`hilbmod-adjoint-exists`, dils.tex:3388, Exercise): a
 bounded 𝒷-linear map `T : X → Y` between Hilbert 𝒷-modules with `X` self
@@ -367,8 +445,137 @@ theorem hilmod_fixed_on_V_eq [VonNeumannAlgebra 𝒷] (B : BInner 𝒷 V)
     (hT : ModuleAdjointable 𝒷 ⇑T) (hS : ModuleAdjointable 𝒷 ⇑S)
     (h : ∀ v : V, inner 𝒷 (E.η v) (T (E.η v)) =
       inner 𝒷 (E.η v) (S (E.η v))) :
-    T = S :=
-  sorry
+    T = S := by
+  set U : E.X →L[ℂ] E.X := T - S with hU
+  obtain ⟨T', hT'⟩ := hT
+  obtain ⟨S', hS'⟩ := hS
+  -- `U = T - S` is adjointable, hence 𝒷-linear
+  have hUadj : ModuleAdjointable 𝒷 ⇑U := by
+    refine ⟨fun y => T' y - S' y, fun x y => ?_⟩
+    change inner 𝒷 (T x - S x) y = inner 𝒷 x (T' y - S' y)
+    rw [CStarModule.inner_sub_left, CStarModule.inner_sub_right, hT' x y, hS' x y]
+  obtain ⟨-, -, hUmod⟩ := moduleAdjointable_linear (𝒜 := 𝒷) ⇑U hUadj
+  -- `U` is bounded as a module map, hence `‖U z‖_ω ≤ C ‖z‖_ω`
+  set C : ℝ := ‖U‖ + 1 with hC
+  have hC0 : (0 : ℝ) ≤ C := by positivity
+  have hbdd : IsBoundedModuleMap (cstarBInner 𝒷 E.X) (cstarBInner 𝒷 E.X) C ⇑U :=
+    { add := fun x y => map_add U x y
+      smul_complex := fun c x => map_smul U c x
+      smul := hUmod
+      bound := fun x => by
+        change Real.sqrt ‖(inner 𝒷 (U x) (U x) : 𝒷)‖
+          ≤ C * Real.sqrt ‖(inner 𝒷 x x : 𝒷)‖
+        rw [← CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒷),
+          ← CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒷)]
+        have := U.le_opNorm x
+        have h0 : (0 : ℝ) ≤ ‖x‖ := norm_nonneg x
+        nlinarith }
+  have hUsem : ∀ (ω : NPFunctional 𝒷) (z : E.X),
+      unSeminorm ω (inner 𝒷) (U z) ≤ C * unSeminorm ω (inner 𝒷) z := fun ω z =>
+    unSeminorm_boundedModuleMap_le _ _ C hC0 _ hbdd ω z
+  -- on the dense image `U` has vanishing diagonal
+  have hdense : ∀ v : V, (inner 𝒷 (E.η v) (U (E.η v)) : 𝒷) = 0 := fun v => by
+    change inner 𝒷 (E.η v) (T (E.η v) - S (E.η v)) = 0
+    rw [CStarModule.inner_sub_right, h v, sub_self]
+  -- hence everywhere, by ultranorm density and Cauchy-Schwarz for `‖·‖_ω`
+  have hdiag : ∀ x : E.X, (inner 𝒷 x (U x) : 𝒷) = 0 := by
+    intro x
+    refine np_separating _ fun ω => ?_
+    set M : ℝ := unSeminorm ω (inner 𝒷) x with hM
+    set N : ℝ := unSeminorm ω (inner 𝒷) (U x) with hN
+    have hM0 : (0 : ℝ) ≤ M := unSeminorm_nonneg _ _ _
+    have hN0 : (0 : ℝ) ≤ N := unSeminorm_nonneg _ _ _
+    have key : ∀ ε : ℝ, 0 < ε → ‖ω (inner 𝒷 x (U x))‖ ≤ ε * (N + (M + 1) * C) := by
+      intro ε hε
+      set ε' : ℝ := min ε 1 with hε'
+      have hε'0 : 0 < ε' := lt_min hε one_pos
+      obtain ⟨d, ⟨v, rfl⟩, hd⟩ :=
+        E.dense x 1 (fun _ => ω) ε' hε'0
+      have ht : unSeminorm ω (inner 𝒷) (x - E.η v) ≤ ε' := hd 0
+      have ht0 : (0 : ℝ) ≤ unSeminorm ω (inner 𝒷) (x - E.η v) :=
+        unSeminorm_nonneg _ _ _
+      -- `⟨x,Ux⟩ = ⟨x-d, Ux⟩ + ⟨d, U(x-d)⟩ + ⟨d, Ud⟩`, and the last term is `0`
+      have hsplit : (inner 𝒷 x (U x) : 𝒷)
+          = inner 𝒷 (x - E.η v) (U x) + inner 𝒷 (E.η v) (U (x - E.η v))
+            + inner 𝒷 (E.η v) (U (E.η v)) := by
+        rw [map_sub U, CStarModule.inner_sub_right, CStarModule.inner_sub_left]
+        abel
+      have hadd : ω (inner 𝒷 (x - E.η v) (U x) + inner 𝒷 (E.η v) (U (x - E.η v)))
+          = ω (inner 𝒷 (x - E.η v) (U x))
+            + ω (inner 𝒷 (E.η v) (U (x - E.η v))) :=
+        map_add ω.toPositiveLinearMap _ _
+      rw [hsplit, hdense v, add_zero, hadd]
+      -- the two Cauchy-Schwarz estimates
+      have hcs1 : ‖ω (inner 𝒷 (x - E.η v) (U x))‖
+          ≤ unSeminorm ω (inner 𝒷) (x - E.η v) * N :=
+        unSeminorm_inner_le ω (cstarBInner 𝒷 E.X) _ _
+      have hdM : unSeminorm ω (inner 𝒷) (E.η v) ≤ M + ε' := by
+        have htri := unSeminorm_add_le ω (cstarBInner 𝒷 E.X) x (E.η v - x)
+        simp only [show (cstarBInner 𝒷 E.X).inner = (inner 𝒷 : E.X → E.X → 𝒷)
+          from rfl, add_sub_cancel] at htri
+        have hneg : E.η v - x = -(x - E.η v) := by abel
+        have hsymm : unSeminorm ω (inner 𝒷 : E.X → E.X → 𝒷) (E.η v - x)
+            = unSeminorm ω (inner 𝒷) (x - E.η v) := by
+          rw [unSeminorm, unSeminorm, hneg, CStarModule.inner_neg_left,
+            CStarModule.inner_neg_right, neg_neg]
+        rw [hsymm] at htri
+        linarith [ht]
+      have hcs2 : ‖ω (inner 𝒷 (E.η v) (U (x - E.η v)))‖
+          ≤ unSeminorm ω (inner 𝒷) (E.η v) * (C * unSeminorm ω (inner 𝒷) (x - E.η v)) := by
+        refine (unSeminorm_inner_le ω (cstarBInner 𝒷 E.X) _ _).trans ?_
+        exact mul_le_mul_of_nonneg_left (hUsem ω _) (unSeminorm_nonneg _ _ _)
+      have hεle : ε' ≤ ε := min_le_left _ _
+      have hε1 : ε' ≤ 1 := min_le_right _ _
+      have hdM0 : (0 : ℝ) ≤ unSeminorm ω (inner 𝒷) (E.η v) := unSeminorm_nonneg _ _ _
+      have htε : unSeminorm ω (inner 𝒷) (x - E.η v) ≤ ε := ht.trans hεle
+      have h1 : ‖ω (inner 𝒷 (x - E.η v) (U x))‖ ≤ ε * N :=
+        hcs1.trans (mul_le_mul_of_nonneg_right htε hN0)
+      have h2 : ‖ω (inner 𝒷 (E.η v) (U (x - E.η v)))‖ ≤ ε * ((M + 1) * C) := by
+        refine hcs2.trans ?_
+        have hD : unSeminorm ω (inner 𝒷) (E.η v) ≤ M + 1 := by linarith
+        have hCt : C * unSeminorm ω (inner 𝒷) (x - E.η v) ≤ C * ε :=
+          mul_le_mul_of_nonneg_left htε hC0
+        calc unSeminorm ω (inner 𝒷) (E.η v) * (C * unSeminorm ω (inner 𝒷) (x - E.η v))
+            ≤ (M + 1) * (C * unSeminorm ω (inner 𝒷) (x - E.η v)) :=
+              mul_le_mul_of_nonneg_right hD (by positivity)
+          _ ≤ (M + 1) * (C * ε) := mul_le_mul_of_nonneg_left hCt (by linarith)
+          _ = ε * ((M + 1) * C) := by ring
+      calc ‖ω (inner 𝒷 (x - E.η v) (U x)) + ω (inner 𝒷 (E.η v) (U (x - E.η v)))‖
+          ≤ ‖ω (inner 𝒷 (x - E.η v) (U x))‖
+              + ‖ω (inner 𝒷 (E.η v) (U (x - E.η v)))‖ := norm_add_le _ _
+        _ ≤ ε * (N + (M + 1) * C) := by linarith
+    -- letting `ε ↓ 0`
+    by_contra hne
+    have hpos : 0 < ‖ω (inner 𝒷 x (U x))‖ := norm_pos_iff.mpr hne
+    have hK : (0 : ℝ) < N + (M + 1) * C + 1 := by nlinarith
+    have := key (‖ω (inner 𝒷 x (U x))‖ / (2 * (N + (M + 1) * C + 1)))
+      (by positivity)
+    rw [div_mul_eq_mul_div, le_div_iff₀ (by positivity)] at this
+    nlinarith
+  -- polarization: a sesquilinear form with vanishing diagonal vanishes
+  have hsesq : IsBSesquilinear (fun x y : E.X => (inner 𝒷 x (U y) : 𝒷)) :=
+    { add_left := fun x y z => by
+        simp only [CStarModule.inner_add_left]
+      add_right := fun x y z => by
+        simp only [map_add U, CStarModule.inner_add_right]
+      smul_op := fun β b x y => by
+        simp only [hUmod, CStarModule.inner_op_smul_left,
+          CStarModule.inner_op_smul_right, mul_assoc]
+      smul_left_complex := fun c x y => by
+        simp only [CStarModule.inner_smul_left_complex]
+        rfl
+      smul_right_complex := fun c x y => by
+        simp only [map_smul U, CStarModule.inner_smul_right_complex] }
+  have hzero : ∀ x y : E.X, (inner 𝒷 x (U y) : 𝒷) = 0 := by
+    intro x y
+    rw [hilbmod_polarization _ hsesq x y]
+    simp only [hdiag, smul_zero, Finset.sum_const_zero]
+  have hUz : U = 0 := by
+    ext y
+    refine eq_of_inner_right_eq (𝒜 := 𝒷) fun x => ?_
+    rw [hzero x y]
+    simp
+  rwa [hU, sub_eq_zero] at hUz
 
 end FixedOnV
 

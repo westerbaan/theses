@@ -43,6 +43,111 @@ variable {ℬ : Type u} {X : Type v}
   [CStarAlgebra ℬ] [PartialOrder ℬ] [StarOrderedRing ℬ]
   [NormedAddCommGroup X] [NormedSpace ℂ X] [SMul ℬ X] [CStarModule ℬ X]
 
+/-! ### Elementary properties of the module action
+
+`CStarModule ℬ X` assumes only `SMul ℬ X`; the module laws for that action
+are consequences of the axioms, by definiteness of the inner product (the
+same derivation as `Theses.A.CStar.moduleAdjointable_linear`).  Together
+with `norm_op_smul_le` these are exactly what is needed to *define* the
+operator `|x⟩⟨y| : z ↦ ⟨y,z⟩ • x` of **159II** as a
+`LinearMap.mkContinuous`; see the note before `mketbra` below for why that
+definition cannot be written down at the present signature. -/
+
+theorem op_add_smul (a b : ℬ) (x : X) : (a + b) • x = a • x + b • x :=
+  eq_of_inner_right_eq (𝒜 := ℬ) fun z => by
+    rw [CStarModule.inner_op_smul_right, CStarModule.inner_add_right,
+      CStarModule.inner_op_smul_right, CStarModule.inner_op_smul_right, add_mul]
+
+theorem op_mul_smul (a b : ℬ) (x : X) : (a * b) • x = a • (b • x) :=
+  eq_of_inner_right_eq (𝒜 := ℬ) fun z => by
+    rw [CStarModule.inner_op_smul_right, CStarModule.inner_op_smul_right,
+      CStarModule.inner_op_smul_right, mul_assoc]
+
+theorem op_smul_complex_smul (c : ℂ) (a : ℬ) (x : X) :
+    (c • a) • x = c • (a • x) :=
+  eq_of_inner_right_eq (𝒜 := ℬ) fun z => by
+    rw [CStarModule.inner_op_smul_right, CStarModule.inner_smul_right_complex,
+      CStarModule.inner_op_smul_right, smul_mul_assoc]
+
+theorem norm_op_smul_le (a : ℬ) (x : X) : ‖a • x‖ ≤ ‖a‖ * ‖x‖ := by
+  have hinner : (inner ℬ (a • x) (a • x) : ℬ) = a * inner ℬ x x * star a := by
+    rw [CStarModule.inner_op_smul_right, CStarModule.inner_op_smul_left,
+      mul_assoc]
+  have hsq : ‖a • x‖ ^ 2 ≤ (‖a‖ * ‖x‖) ^ 2 := by
+    rw [CStarModule.norm_sq_eq (A := ℬ), hinner]
+    calc ‖a * inner ℬ x x * star a‖ ≤ ‖a‖ * ‖(inner ℬ x x : ℬ)‖ * ‖star a‖ :=
+          (norm_mul_le _ _).trans
+            (mul_le_mul_of_nonneg_right (norm_mul_le _ _) (norm_nonneg _))
+      _ = (‖a‖ * ‖x‖) ^ 2 := by
+          rw [norm_star, ← CStarModule.norm_sq_eq (A := ℬ)]; ring
+  have h1 : (0 : ℝ) ≤ ‖a • x‖ := norm_nonneg _
+  have h2 : (0 : ℝ) ≤ ‖a‖ * ‖x‖ := mul_nonneg (norm_nonneg _) (norm_nonneg _)
+  nlinarith
+
+/-! ### FIXME(mketbra-signature)
+
+`mketbra` below elaborates to
+`{X} → [NormedAddCommGroup X] → [NormedSpace ℂ X] → X → X → X →L[ℂ] X`:
+because its body is `sorry`, variable inclusion drops `ℬ` and every
+instance mentioning it, so the declared operator **does not depend on ℬ at
+all** and therefore cannot be defined — `z ↦ ⟨y,z⟩ • x` needs the
+ℬ-valued inner product.  (`mketbra_apply` does mention `ℬ`, so it pins
+`mketbra` down and is consistent; it is only the *definition* that is
+impossible.)
+
+Repairing this means making `ℬ` an argument (`variable (ℬ)` in this
+section, i.e. `mketbra ℬ x y`), which rewrites the ten downstream
+statements that mention `mketbra`, so it is left to whoever owns the
+statements.  Once `ℬ` is an argument, **159II** and both halves of
+**159III** all go through; the following four declarations have been
+checked to compile (with `mketbra ℬ` substituted throughout the statements
+of the last three):
+
+    noncomputable def mketbra (x y : X) : X →L[ℂ] X :=
+      LinearMap.mkContinuous
+        { toFun := fun z => inner ℬ y z • x
+          map_add' := fun z z' => by
+            rw [CStarModule.inner_add_right, op_add_smul]
+          map_smul' := fun c z => by
+            rw [CStarModule.inner_smul_right_complex, op_smul_complex_smul,
+              RingHom.id_apply] }
+        (‖y‖ * ‖x‖) fun z => by
+          calc ‖(inner ℬ y z : ℬ) • x‖ ≤ ‖(inner ℬ y z : ℬ)‖ * ‖x‖ :=
+                norm_op_smul_le _ _
+            _ ≤ ‖y‖ * ‖z‖ * ‖x‖ :=
+                mul_le_mul_of_nonneg_right (CStarModule.norm_inner_le X)
+                  (norm_nonneg _)
+            _ = ‖y‖ * ‖x‖ * ‖z‖ := by ring
+
+    theorem mketbra_apply (x y z : X) : mketbra x y z = inner ℬ y z • x := rfl
+
+    theorem mketbra_adjointable (x y : X) :
+        ModuleAdjointTo ℬ (⇑(mketbra x y) : X → X) ⇑(mketbra y x) := by
+      intro z w
+      rw [mketbra_apply, mketbra_apply, CStarModule.inner_op_smul_left,
+        CStarModule.inner_op_smul_right, CStarModule.star_inner]
+
+    theorem mketbra_rules … := by     -- statement unchanged apart from `ℬ`
+      obtain ⟨-, hTc, hTm⟩ := moduleAdjointable_linear (𝒜 := ℬ) ⇑T ⟨_, hT⟩
+      refine ⟨?_, ?_, ⟨?_, mketbra_adjointable ℬ e e⟩, ?_, ?_⟩
+      · ext z
+        show (inner ℬ y z : ℬ) • (b • x) = (inner ℬ (star b • y) z : ℬ) • x
+        rw [CStarModule.inner_op_smul_left, star_star, op_mul_smul]
+      · ext z
+        show (inner ℬ y ((inner ℬ w z : ℬ) • v) : ℬ) • x
+          = (inner ℬ w z : ℬ) • ((inner ℬ y v : ℬ) • x)
+        rw [CStarModule.inner_op_smul_right, op_mul_smul]
+      · ext z
+        show (inner ℬ e ((inner ℬ e z : ℬ) • e) : ℬ) • e = (inner ℬ e z : ℬ) • e
+        rw [CStarModule.inner_op_smul_right, op_mul_smul, mod_projelabs e he]
+      · ext z
+        show T ((inner ℬ y z : ℬ) • x) = (inner ℬ y z : ℬ) • T x
+        rw [hTm]
+      · ext z
+        show (inner ℬ y (T' z) : ℬ) • x = (inner ℬ (T y) z : ℬ) • x
+        rw [hT y z]
+-/
+
 /-- **159II** (dils.tex:4292, Definition): for `x, y` in a Hilbert
 ℬ-module `X`, the bounded operator `|x⟩⟨y| : z ↦ x⟨y,z⟩` (mirrored:
 `⟨y,z⟩ • x`; in the literature `θ_{x,y}`, **159IIa**).  (Definition

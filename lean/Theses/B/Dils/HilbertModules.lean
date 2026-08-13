@@ -665,6 +665,42 @@ theorem hilbmod_vectstates_cp [VonNeumannAlgebra 𝒷] [CompleteSpace X]
       star (b i) * inner 𝒷 x (((S i).comp (T j)) x) * b j :=
   sorry
 
+/-- **145I** (`hilbmod-vectstates-cp`, dils.tex:1706, Proposition), with the
+inner product's arguments in the order the mirroring convention dictates.
+
+**Convention.**  Mathlib's `inner` is the mirror image of the thesis's:
+`⟪u, v⟫_Mathlib = ⟨v, u⟩_thesis` (this file's header).  The thesis's
+`∑ᵢⱼ bᵢ* ⟨x, Tᵢ*Tⱼ x⟩ bⱼ ≥ 0` therefore mirrors to
+`∑ᵢⱼ star (bᵢ) * ⟪Sᵢ(Tⱼ x), x⟫ * bⱼ ≥ 0` — the inner product's *arguments*
+are interchanged.  `hilbmod_vectstates_cp` above has them the other way
+round, i.e. `⟪x, Sᵢ(Tⱼ x)⟫`, and in that form the statement is **false**:
+taking `𝒷 = M₂(ℂ)` and `X = 𝒷` over itself (`⟪u,v⟫ = v u*`, `yᵢ := Tᵢ x`)
+it reads `∑ᵢⱼ bᵢ* yⱼ yᵢ* bⱼ ≥ 0`, and random `y₁,y₂,b₁,b₂ ∈ M₂(ℂ)` make the
+left-hand side (always self-adjoint) indefinite.  The correct form is the
+Gram matrix `∑ᵢⱼ bᵢ* ⟪Tⱼ x, Tᵢ x⟫ bⱼ = ⟪v, v⟫` for
+`v = ∑ₖ star (bₖ) • Tₖ x`, which is what is proved here. -/
+theorem hilbmod_vectstates_cp_mirrored [VonNeumannAlgebra 𝒷] [CompleteSpace X]
+    (x : X) (n : ℕ) (T S : Fin n → (X →L[ℂ] X))
+    (hTS : ∀ i, ModuleAdjointTo 𝒷 ⇑(T i) ⇑(S i)) (b : Fin n → 𝒷) :
+    0 ≤ ∑ i, ∑ j,
+      star (b i) * inner 𝒷 (((S i).comp (T j)) x) x * b j := by
+  -- `⟪Sᵢ(Tⱼ x), x⟫ = ⟪Tⱼ x, Tᵢ x⟫`
+  have hadj : ∀ i j : Fin n,
+      inner 𝒷 (((S i).comp (T j)) x) x = inner 𝒷 (T j x) (T i x) := fun i j =>
+    moduleAdjointTo_symm (𝒜 := 𝒷) _ _ (hTS i) (T j x) x
+  set v : X := ∑ k, star (b k) • T k x with hv
+  have hvv : (inner 𝒷 v v : 𝒷)
+      = ∑ i, ∑ j, star (b j) * inner 𝒷 (T i x) (T j x) * b i := by
+    rw [hv, CStarModule.inner_sum_left]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [CStarModule.inner_sum_right]
+    refine Finset.sum_congr rfl fun j _ => ?_
+    rw [CStarModule.inner_op_smul_left, CStarModule.inner_op_smul_right,
+      star_star, mul_assoc]
+  have hpos : (0 : 𝒷) ≤ inner 𝒷 v v := CStarModule.inner_self_nonneg
+  rw [hvv, Finset.sum_comm] at hpos
+  simpa only [hadj] using hpos
+
 end VectStatesCP
 
 /-! ## Parsec 1460: the ultranorm uniformity
@@ -1051,6 +1087,29 @@ theorem unSeminorm_add_le (ω : NPFunctional 𝒷) (B : BInner 𝒷 X) (x y : X)
     nlinarith
   nlinarith [unSeminorm_nonneg ω B.inner (x + y)]
 
+/-- The seminorm form of **144V** (`blinear-inprod-inequality`), which is
+what the proof of **148I** below computes: applying an np-functional `ω` to
+`[Tx,Tx] ≤ C²[x,x]` gives `‖Tx‖_ω ≤ C ‖x‖_ω`. -/
+theorem unSeminorm_boundedModuleMap_le (B₁ : BInner 𝒷 X) (B₂ : BInner 𝒷 Y)
+    (C : ℝ) (hC : 0 ≤ C) (T : X → Y) (hT : IsBoundedModuleMap B₁ B₂ C T)
+    (ω : NPFunctional 𝒷) (x : X) :
+    unSeminorm ω B₂.inner (T x) ≤ C * unSeminorm ω B₁.inner x := by
+  have h144 := blinear_inprod_inequality B₁ B₂ C hC T hT x
+  have hmono := ω.toPositiveLinearMap.monotone h144
+  have hre : (ω (B₂.inner (T x) (T x))).re ≤ (ω ((C ^ 2) • B₁.inner x x)).re :=
+    (Complex.le_def.mp hmono).1
+  have hsmul : (ω ((C ^ 2) • B₁.inner x x)).re
+      = C ^ 2 * (ω (B₁.inner x x)).re := by
+    rw [show ((C ^ 2 : ℝ) • B₁.inner x x) = ((C ^ 2 : ℝ) : ℂ) • B₁.inner x x from
+      (RCLike.real_smul_eq_coe_smul (K := ℂ) _ _), np_smul]
+    simp [-Complex.ofReal_pow]
+  rw [hsmul] at hre
+  rw [unSeminorm, unSeminorm]
+  calc Real.sqrt (ω (B₂.inner (T x) (T x))).re
+      ≤ Real.sqrt (C ^ 2 * (ω (B₁.inner x x)).re) := Real.sqrt_le_sqrt hre
+    _ = C * Real.sqrt (ω (B₁.inner x x)).re := by
+        rw [Real.sqrt_mul (sq_nonneg C), Real.sqrt_sq hC]
+
 /-- **148I** (`blinear-bounded-is-ultranorm`, dils.tex:2041, Proposition):
 a bounded 𝒷-linear map `T : X → Y` between 𝒷-modules with 𝒷-valued inner
 products is uniformly ultranorm continuous: for every `ω` and `ε > 0` there
@@ -1179,10 +1238,19 @@ theorem ultranormcontstruct_smul [VonNeumannAlgebra 𝒷] (B : BInner 𝒷 X)
 /-- **148IV** (`ultranormscalar`, dils.tex:2072, Exercise): for fixed
 `b ∈ 𝒷`, the map `x ↦ x·b` (mirrored: `b • x`) is ultranorm continuous:
 it preserves ultranorm limits. -/
-theorem ultranormscalar (B : BInner 𝒷 X) (b : 𝒷) (x : ι → X) (xlim : X)
-    (hx : UnTendsto B.inner x l xlim) :
-    UnTendsto B.inner (fun i => b • x i) l (b • xlim) :=
-  sorry
+theorem ultranormscalar [VonNeumannAlgebra 𝒷] (B : BInner 𝒷 X) (b : 𝒷)
+    (x : ι → X) (xlim : X) (hx : UnTendsto B.inner x l xlim) :
+    UnTendsto B.inner (fun i => b • x i) l (b • xlim) := by
+  intro ω
+  have key : ∀ i, unSeminorm ω B.inner (b • x i - b • xlim)
+      = unSeminorm (conjNP (star b) ω) B.inner (x i - xlim) := by
+    intro i
+    have hexp : B.inner (b • x i - b • xlim) (b • x i - b • xlim)
+        = star (star b) * B.inner (x i - xlim) (x i - xlim) * star b := by
+      simp only [B.inner_sub_left, B.inner_sub_right, B.inner_op_smul_left,
+        B.inner_op_smul_right, star_star, sub_mul, mul_sub, mul_assoc]
+    rw [unSeminorm, unSeminorm, hexp, ← conjNP_apply (star b) ω]
+  simpa only [key] using hx (conjNP (star b) ω)
 
 /-- **148V** (`innerprod-ultraweak`, dils.tex:2078, Proposition): if
 `x_α → x` and `y_α → y` in the ultranorm uniformity, then
