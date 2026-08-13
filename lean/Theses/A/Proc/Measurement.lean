@@ -1352,7 +1352,84 @@ theorem prop_corner [VonNeumannAlgebra A] (p u : A) (hp : p ∈ effects A)
     (hu : IsPartialIsometry A u) [Fact (IsStarProjection (star u * u))]
     (h : floor p = u * star u)
     (h' : u * (star u * u) = u) :
-    IsCornerOf p (adToCorner u (star u * u) h') := sorry
+    IsCornerOf p (adToCorner u (star u * u) h') := by
+  -- The author's proof (proc.tex:290), with one substitution: the last step
+  -- ("`f(a) = f(uu* a uu*)` by `cp-comprehension`") is run through
+  -- `carrier_fundamental` (63VI) instead of `cp_comprehension` (63IV), which
+  -- is still `sorry` in `A/VN`; the two say the same thing here, since
+  -- `f((uu*)^⊥) = 0` makes `⌈f⌉ ≤ uu*`.
+  have hpi : ∀ b : A, ((adToCorner u (star u * u) h') b).val = star u * b * u :=
+    (exists_adToCorner u (star u * u) h').choose_spec
+  have hq5 : star u * u * star u = star u :=
+    ((partial_isometry_equivalents u).out 0 4).mp hu
+  have hqproj : IsStarProjection (u * star u) :=
+    ((partial_isometry_equivalents u).out 0 3).mp hu
+  have h1p : (0 : A) ≤ 1 - p := sub_nonneg.mpr hp.2
+  have hceil1p : ceil (1 - p) = 1 - u * star u := by
+    rw [← (ceil_floor_basic_1 p hp).2, h]
+  -- `u*(uu*)^⊥u = 0`, so `⌈u* p^⊥ u⌉ = ⌈u*⌈p^⊥⌉u⌉ = 0` and `u* p^⊥ u = 0`
+  have key0 : star u * (1 - u * star u) * u = 0 := by
+    have e : star u * (1 - u * star u) * u = star u * u - (star u * u * star u) * u := by
+      noncomm_ring
+    rw [e, hq5, sub_self]
+  have hval : star u * (1 - p) * u = 0 := by
+    refine (ceil_basic_3 _ (star_left_conjugate_nonneg h1p u)).mpr ?_
+    rw [ceil_fundamental_1 u (1 - p) h1p, hceil1p, key0, ceil_zero]
+  refine ⟨Corner.val_injective (by rw [hpi]; exact hval), ?_⟩
+  intro B _ _ _ _ f hf0
+  set F : A →ₚ[ℂ] B := PositiveLinearMap.ofClass f.toCompletelyPositiveMap with hF
+  have hFapp : ∀ a : A, F a = f a := fun _ => rfl
+  have hFn : PreservesDirSups ⇑F := f.preservesDirSups'
+  have hFnn : ∀ a : A, 0 ≤ a → (0 : B) ≤ F a := by
+    intro a ha
+    have hz : (F (0 : A) : B) = 0 := map_zero F
+    have h0 : (F (0 : A) : B) ≤ F a := F.monotone ha
+    rwa [hz] at h0
+  -- `⌈f((uu*)^⊥)⌉ = ⌈f(⌈p^⊥⌉)⌉ = ⌈f(p^⊥)⌉ = 0`, so `f` kills `(uu*)^⊥`
+  have hfq : F (1 - u * star u) = 0 := by
+    have h1 : ceil (F (1 - p)) = ceil (F (ceil (1 - p))) := ncp_ceil F hFn (1 - p) h1p
+    rw [hFapp (1 - p), hf0, ceil_zero, hceil1p] at h1
+    exact (ceil_basic_3 _ (hFnn _ hqproj.one_sub.nonneg)).mpr h1.symm
+  -- hence `⌈f⌉ ≤ uu*`, and therefore `f(a) = f(uu* a uu*)`
+  have hcle : carrier F hFn ≤ u * star u := (carrier_spec F hFn).2.2 _ hqproj hfq
+  have hcproj : IsStarProjection (carrier F hFn) := (carrier_spec F hFn).1
+  have hcq : carrier F hFn * (u * star u) = carrier F hFn :=
+    ((projection_below_effect (u * star u) (carrier F hFn)
+      ⟨hqproj.nonneg, hqproj.le_one⟩ hcproj).out 0 7).mp hcle
+  have hqc : (u * star u) * carrier F hFn = carrier F hFn := by
+    have hs := congrArg star hcq
+    rwa [star_mul, hqproj.isSelfAdjoint.star_eq, hcproj.isSelfAdjoint.star_eq] at hs
+  have hconj : ∀ a : A, F a = F (u * star u * a * (u * star u)) := by
+    intro a
+    have e1 := (carrier_fundamental F hFn a).2.2
+    have e2 := (carrier_fundamental F hFn (u * star u * a * (u * star u))).2.2
+    rw [e2, show carrier F hFn * (u * star u * a * (u * star u)) * carrier F hFn
+        = (carrier F hFn * (u * star u)) * a * ((u * star u) * carrier F hFn) by
+      noncomm_ring, hcq, hqc, ← e1]
+  -- existence: `g = f ∘ ζ` with `ζ(a) = u a u*`; uniqueness: `π` is surjective
+  set zeta : NCPMap (Corner A (star u * u)) A :=
+    ncpComp (adSelf (star u)) (cornerIncl (star u * u)).toNCPMap with hzetadef
+  have hzeta : ∀ b : Corner A (star u * u),
+      zeta b = star (star u) * b.val * star u := by
+    intro b
+    rw [hzetadef, ncpComp_apply, cornerIncl_apply, adSelf_apply]
+  have hfac : ∀ a : A, f a = ncpComp f zeta ((adToCorner u (star u * u) h') a) := by
+    intro a
+    rw [ncpComp_apply, hzeta, hpi, star_star,
+      show u * (star u * a * u) * star u = u * star u * a * (u * star u) by noncomm_ring]
+    exact hconj a
+  refine ⟨ncpComp f zeta, hfac, fun g hg => ?_⟩
+  refine DFunLike.ext _ _ fun b => ?_
+  have hsurj : (adToCorner u (star u * u) h') (u * b.val * star u) = b := by
+    refine Corner.val_injective ?_
+    rw [hpi]
+    calc star u * (u * b.val * star u) * u
+        = (star u * u) * b.val * (star u * u) := by noncomm_ring
+      _ = b.val := b.property
+  calc g b = g ((adToCorner u (star u * u) h') (u * b.val * star u)) := by rw [hsurj]
+    _ = f (u * b.val * star u) := (hg _).symm
+    _ = ncpComp f zeta ((adToCorner u (star u * u) h') (u * b.val * star u)) := hfac _
+    _ = ncpComp f zeta b := by rw [hsurj]
 
 /-! ## Parsec 960: filters -/
 
@@ -1507,6 +1584,83 @@ theorem stdCorner_apply [VonNeumannAlgebra A] (p : A) (a : A) :
     ((stdCorner p).toNCPMap a).val = floor p * a * floor p :=
   cornerProjMap_apply (floor p) a
 
+/-- Infrastructure for 98IV/98V (the two sides of `corners-floor`): an
+ncp-map kills `p^⊥` iff it kills `⌊p⌋^⊥`.  Left to right is 60V
+(`⌈f(p^⊥)⌉ = ⌈f(⌈p^⊥⌉)⌉` and `⌈p^⊥⌉ = ⌊p⌋^⊥`), right to left is
+`p^⊥ ≤ ⌊p⌋^⊥` and positivity. -/
+theorem map_perp_iff_floor [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    (p : A) (hp : p ∈ effects A) (f : NCPMap A B) :
+    f (1 - p) = 0 ↔ f (1 - floor p) = 0 := by
+  have hfl : IsStarProjection (floor p) := isStarProjection_floor p
+  have h1p : (0 : A) ≤ 1 - p := sub_nonneg.mpr hp.2
+  set F : A →ₚ[ℂ] B := PositiveLinearMap.ofClass f.toCompletelyPositiveMap with hF
+  have hFapp : ∀ a : A, F a = f a := fun _ => rfl
+  have hFn : PreservesDirSups ⇑F := f.preservesDirSups'
+  have hFnn : ∀ a : A, 0 ≤ a → (0 : B) ≤ F a := by
+    intro a ha
+    have hz : (F (0 : A) : B) = 0 := map_zero F
+    have h0 : (F (0 : A) : B) ≤ F a := F.monotone ha
+    rwa [hz] at h0
+  constructor
+  · intro h0
+    have h1 : ceil (F (1 - p)) = ceil (F (ceil (1 - p))) := ncp_ceil F hFn (1 - p) h1p
+    rw [hFapp (1 - p), h0, ceil_zero, ((ceil_floor_basic_1 p hp).2).symm] at h1
+    exact (ceil_basic_3 _ (hFnn _ hfl.one_sub.nonneg)).mpr h1.symm
+  · intro h0
+    refine le_antisymm ?_ (hFnn _ h1p)
+    have h2 : (F (1 - p) : B) ≤ (F (1 - floor p) : B) :=
+      F.monotone (sub_le_sub_left (floor_le hp) 1)
+    rwa [show (F (1 - floor p) : B) = f (1 - floor p) from rfl, h0] at h2
+
+/-- Infrastructure for 98IV (`corner-basic`): the standard corner
+`π_p(a) = ⌊p⌋a⌊p⌋` *is* a corner of `p` — 95II with `u = ⌊p⌋`, rendered
+directly on `⌊p⌋𝒜⌊p⌋` (so as to avoid transporting along
+`⌊p⌋*⌊p⌋ = ⌊p⌋`).  The proof is the one of 95II. -/
+theorem isCornerOf_stdCorner [VonNeumannAlgebra A] (p : A)
+    (hp : p ∈ effects A) : IsCornerOf p (stdCorner p).toNCPMap := by
+  have hfl : IsStarProjection (floor p) := isStarProjection_floor p
+  have hflp : floor p * p = floor p := (floor_spec hp).2.1
+  have hpi : ∀ a : A, ((stdCorner p).toNCPMap a).val = floor p * a * floor p :=
+    stdCorner_apply p
+  refine ⟨Corner.val_injective ?_, ?_⟩
+  · rw [hpi]
+    change floor p * (1 - p) * floor p = (0 : A)
+    rw [mul_sub, mul_one, hflp, sub_self, zero_mul]
+  intro B _ _ _ _ f hf0
+  set F : A →ₚ[ℂ] B := PositiveLinearMap.ofClass f.toCompletelyPositiveMap with hF
+  have hFn : PreservesDirSups ⇑F := f.preservesDirSups'
+  have hfq : F (1 - floor p) = 0 := (map_perp_iff_floor p hp f).mp hf0
+  -- `⌈f⌉ ≤ ⌊p⌋`, so `f(a) = f(⌊p⌋a⌊p⌋)` by 63VI
+  have hcle : carrier F hFn ≤ floor p := (carrier_spec F hFn).2.2 _ hfl hfq
+  have hcproj : IsStarProjection (carrier F hFn) := (carrier_spec F hFn).1
+  have hcq : carrier F hFn * floor p = carrier F hFn :=
+    ((projection_below_effect (floor p) (carrier F hFn)
+      ⟨hfl.nonneg, hfl.le_one⟩ hcproj).out 0 7).mp hcle
+  have hqc : floor p * carrier F hFn = carrier F hFn := by
+    have hs := congrArg star hcq
+    rwa [star_mul, hfl.isSelfAdjoint.star_eq, hcproj.isSelfAdjoint.star_eq] at hs
+  have hconj : ∀ a : A, F a = F (floor p * a * floor p) := by
+    intro a
+    have e1 := (carrier_fundamental F hFn a).2.2
+    have e2 := (carrier_fundamental F hFn (floor p * a * floor p)).2.2
+    rw [e2, show carrier F hFn * (floor p * a * floor p) * carrier F hFn
+        = (carrier F hFn * floor p) * a * (floor p * carrier F hFn) by
+      noncomm_ring, hcq, hqc, ← e1]
+  have hfac : ∀ a : A, f a = ncpComp f (cornerIncl (floor p)).toNCPMap
+      ((stdCorner p).toNCPMap a) := by
+    intro a
+    rw [ncpComp_apply, cornerIncl_apply, hpi]
+    exact hconj a
+  refine ⟨ncpComp f (cornerIncl (floor p)).toNCPMap, hfac, fun g hg => ?_⟩
+  refine DFunLike.ext _ _ fun b => ?_
+  have hsurj : (stdCorner p).toNCPMap b.val = b :=
+    Corner.val_injective (by rw [hpi]; exact b.property)
+  calc g b = g ((stdCorner p).toNCPMap b.val) := by rw [hsurj]
+    _ = f b.val := (hg _).symm
+    _ = ncpComp f (cornerIncl (floor p)).toNCPMap
+          ((stdCorner p).toNCPMap b.val) := hfac _
+    _ = ncpComp f (cornerIncl (floor p)).toNCPMap b := by rw [hsurj]
+
 /-- **98II** (`filter-basic`, proc.tex:577, Exercise), part 1: for a filter
 `c : C → 𝒜` with `p := c(1)` there is a unique ncp-map
 `α : C → ⌈p⌉𝒜⌈p⌉` with `c = c_p ∘ α`, and this `α` is a unital
@@ -1552,7 +1706,29 @@ theorem corner_basic_1 [VonNeumannAlgebra A] [VonNeumannAlgebra C]
       (∃ β' : NCPMap C (Corner A (floor p)),
         (∀ x, β' (β x) = x) ∧ ∀ y, β (β' y) = y) ∧
       (∀ β₂ : NCPMap (Corner A (floor p)) C,
-        (∀ a : A, π a = β₂ ((stdCorner p).toNCPMap a)) → β₂ = β) := sorry
+        (∀ a : A, π a = β₂ ((stdCorner p).toNCPMap a)) → β₂ = β) := by
+  -- Two corners of the same effect are initial among the same maps, hence
+  -- canonically isomorphic; `π_p` is a corner of `p` by `isCornerOf_stdCorner`.
+  have hρ : IsCornerOf p (stdCorner p).toNCPMap := isCornerOf_stdCorner p hp
+  obtain ⟨β, hβ, hβu⟩ := hρ.universal C π hπ.map_perp
+  obtain ⟨α, hα, -⟩ := hπ.universal (Corner A (floor p))
+    (stdCorner p).toNCPMap hρ.map_perp
+  have hβα : ncpComp β α = ncpId C := by
+    obtain ⟨_, _, hun⟩ := hπ.universal C π hπ.map_perp
+    rw [hun (ncpComp β α) (fun a => by rw [ncpComp_apply, ← hα, ← hβ]),
+      hun (ncpId C) (fun a => by rw [ncpId_apply])]
+  have hαβ : ncpComp α β = ncpId (Corner A (floor p)) := by
+    obtain ⟨_, _, hun⟩ := hρ.universal (Corner A (floor p))
+      (stdCorner p).toNCPMap hρ.map_perp
+    rw [hun (ncpComp α β) (fun a => by rw [ncpComp_apply, ← hβ, ← hα]),
+      hun (ncpId _) (fun a => by rw [ncpId_apply])]
+  refine ⟨β, hβ, ?_, ⟨α, fun x => ?_, fun y => ?_⟩, hβu⟩
+  · rw [← (stdCorner p).unital', ← hβ, hu]
+  · have hx := congrArg
+      (fun (k : NCPMap (Corner A (floor p)) (Corner A (floor p))) => k x) hαβ
+    simpa [ncpComp_apply, ncpId_apply] using hx
+  · have hy := congrArg (fun (k : NCPMap C C) => k y) hβα
+    simpa [ncpComp_apply, ncpId_apply] using hy
 
 /-- **98IV** (`corner-basic`, proc.tex:608, Exercise), part 2: a corner is
 surjective, and epi in `W*_cp`. -/
@@ -1562,7 +1738,20 @@ theorem corner_basic_2 [VonNeumannAlgebra A] [VonNeumannAlgebra C]
     Function.Surjective ⇑π ∧
       ∀ (B : Type u) [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
         [VonNeumannAlgebra B] (g h : NCPMap C B),
-        (∀ a, g (π a) = h (π a)) → g = h := sorry
+        (∀ a, g (π a) = h (π a)) → g = h := by
+  -- surjectivity: `π = β ∘ π_p` with `β` invertible and `π_p` surjective;
+  -- epi: `g ∘ π` factors through `π` uniquely, and both `g` and `h` do it
+  obtain ⟨β, hβ, -, ⟨β', -, hββ'⟩, -⟩ := corner_basic_1 p hp π hπ hu
+  refine ⟨fun c => ⟨(β' c).val, ?_⟩, ?_⟩
+  · have hsurj : (stdCorner p).toNCPMap (β' c).val = β' c :=
+      Corner.val_injective (by rw [stdCorner_apply]; exact (β' c).property)
+    rw [hβ, hsurj, hββ']
+  · intro B _ _ _ _ g h hgh
+    obtain ⟨k, -, hun⟩ := hπ.universal B (ncpComp g π) (by
+      rw [ncpComp_apply, hπ.map_perp]
+      exact map_zero g.toCompletelyPositiveMap)
+    rw [hun g (fun a => by rw [ncpComp_apply]),
+      hun h (fun a => by rw [ncpComp_apply, hgh])]
 
 /-- **98V** (`corners-floor`, proc.tex:622, Exercise): an ncpu-map `π` is a
 corner for an effect `p` iff it is a corner for `⌊p⌋`; in which case
@@ -1570,7 +1759,43 @@ corner for an effect `p` iff it is a corner for `⌊p⌋`; in which case
 theorem corners_floor [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (p : A) (hp : p ∈ effects A) (π : NCPMap A B) (hu : π 1 = 1) :
     (IsCornerOf p π ↔ IsCornerOf (floor p) π) ∧
-      (IsCornerOf p π → ncpCarrier π = floor p) := sorry
+      (IsCornerOf p π → ncpCarrier π = floor p) := by
+  -- the two universal properties quantify over the *same* maps, by
+  -- `map_perp_iff_floor`; and `⌈π⌉ = ⌊p⌋` because `π = β ∘ π_p` with `β`
+  -- injective, so `π(e^⊥) = 0` iff `⌊p⌋e^⊥⌊p⌋ = 0` iff `⌊p⌋ ≤ e`
+  have hfl : IsStarProjection (floor p) := isStarProjection_floor p
+  have hcspec : IsStarProjection (ncpCarrier π) ∧ π (1 - ncpCarrier π) = 0 ∧
+      ∀ q : A, IsStarProjection q → π (1 - q) = 0 → ncpCarrier π ≤ q :=
+    (exists_ncpCarrier π).choose_spec.1
+  refine ⟨⟨fun h => ⟨(map_perp_iff_floor p hp π).mp h.map_perp,
+      fun D _ _ _ _ f hf => h.universal D f ((map_perp_iff_floor p hp f).mpr hf)⟩,
+    fun h => ⟨(map_perp_iff_floor p hp π).mpr h.map_perp,
+      fun D _ _ _ _ f hf => h.universal D f ((map_perp_iff_floor p hp f).mp hf)⟩⟩,
+    fun h => ?_⟩
+  obtain ⟨β, hβ, -, ⟨β', hβ'β, -⟩, -⟩ := corner_basic_1 p hp π h hu
+  refine le_antisymm (hcspec.2.2 _ hfl ((map_perp_iff_floor p hp π).mp h.map_perp)) ?_
+  have he : IsStarProjection (ncpCarrier π) := hcspec.1
+  have hinj : Function.Injective ⇑β := fun x y hxy => by rw [← hβ'β x, ← hβ'β y, hxy]
+  have hstd : (stdCorner p).toNCPMap (1 - ncpCarrier π) = 0 := by
+    refine hinj ?_
+    rw [← hβ, hcspec.2.1]
+    exact (map_zero β.toCompletelyPositiveMap).symm
+  have hval : floor p * (1 - ncpCarrier π) * floor p = 0 := by
+    have hc := congrArg Corner.val hstd
+    rwa [stdCorner_apply] at hc
+  have hz : (1 - ncpCarrier π) * floor p = 0 := by
+    refine (CStarRing.star_mul_self_eq_zero_iff _).mp ?_
+    rw [star_mul, hfl.isSelfAdjoint.star_eq, he.one_sub.isSelfAdjoint.star_eq]
+    calc floor p * (1 - ncpCarrier π) * ((1 - ncpCarrier π) * floor p)
+        = floor p * ((1 - ncpCarrier π) * (1 - ncpCarrier π)) * floor p := by
+          noncomm_ring
+      _ = floor p * (1 - ncpCarrier π) * floor p := by
+          rw [he.one_sub.isIdempotentElem.eq]
+      _ = 0 := hval
+  refine ((projection_below_effect (ncpCarrier π) (floor p)
+    ⟨he.nonneg, he.le_one⟩ hfl).out 0 6).mpr ?_
+  rw [sub_mul, one_mul, sub_eq_zero] at hz
+  exact hz.symm
 
 /-- **98VI** (`corners-composition`, proc.tex:631, Exercise): the
 composition of corners is again a corner. -/
