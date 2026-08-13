@@ -129,6 +129,49 @@ theorem preservesDirSups_comp {f : A' → B'} {g : B' → C'}
   rw [hG, ← Set.image_comp] at hkey
   exact hkey
 
+omit [StarOrderedRing A'] in
+/-- A pointwise sum of normal monotone maps is normal.  (Needed for
+`exists_ncpAdd`, hence for 102III.)  The upper-bound half is immediate;
+for the least-upper-bound half, given an upper bound `u` of
+`{f d + g d | d ∈ D}` and `d₁, d₂ ∈ D`, pick `d₃ ≥ d₁, d₂`: then
+`f d₁ + g d₂ ≤ f d₃ + g d₃ ≤ u`, so `u - g d₂` bounds `f''D`, giving
+`f s ≤ u - g d₂`; hence `u - f s` bounds `g''D`, giving `g s ≤ u - f s`. -/
+theorem preservesDirSups_add {f g : A' → B'}
+    (hfm : ∀ x y : A', x ≤ y → f x ≤ f y) (hgm : ∀ x y : A', x ≤ y → g x ≤ g y)
+    (hf : PreservesDirSups f) (hg : PreservesDirSups g) :
+    PreservesDirSups (fun a => f a + g a) := by
+  intro D s hne hdir hlub
+  have hF := hf D s hne hdir hlub
+  have hG := hg D s hne hdir hlub
+  constructor
+  · rintro _ ⟨d, hd, rfl⟩
+    exact add_le_add (hF.1 ⟨d, hd, rfl⟩) (hG.1 ⟨d, hd, rfl⟩)
+  · intro u hu
+    have hkey : ∀ d₂ ∈ D,
+        f ((s : selfAdjoint A') : A') + g ((d₂ : selfAdjoint A') : A') ≤ u := by
+      intro d₂ hd₂
+      have hb : (u - g ((d₂ : selfAdjoint A') : A')) ∈
+          upperBounds ((fun d : selfAdjoint A' => f (d : A')) '' D) := by
+        rintro _ ⟨d₁, hd₁, rfl⟩
+        obtain ⟨d₃, hd₃, h13, h23⟩ := hdir d₁ hd₁ d₂ hd₂
+        have h1 : f ((d₁ : selfAdjoint A') : A') ≤ f ((d₃ : selfAdjoint A') : A') :=
+          hfm _ _ (Subtype.coe_le_coe.mpr h13)
+        have h2 : g ((d₂ : selfAdjoint A') : A') ≤ g ((d₃ : selfAdjoint A') : A') :=
+          hgm _ _ (Subtype.coe_le_coe.mpr h23)
+        have h3 : f ((d₃ : selfAdjoint A') : A') + g ((d₃ : selfAdjoint A') : A') ≤ u :=
+          hu ⟨d₃, hd₃, rfl⟩
+        rw [le_sub_iff_add_le]
+        exact le_trans (add_le_add h1 h2) h3
+      have h := hF.2 hb
+      rwa [le_sub_iff_add_le] at h
+    have hb2 : (u - f ((s : selfAdjoint A') : A')) ∈
+        upperBounds ((fun d : selfAdjoint A' => g (d : A')) '' D) := by
+      rintro _ ⟨d₂, hd₂, rfl⟩
+      rw [le_sub_iff_add_le, add_comm]
+      exact hkey d₂ hd₂
+    have h := hG.2 hb2
+    rwa [le_sub_iff_add_le, add_comm] at h
+
 end NormalityAux
 
 /-- A positive linear map between C*-algebras preserves self-adjointness
@@ -194,6 +237,31 @@ noncomputable def ncpComp (g : NCPMap B C) (f : NCPMap A B) : NCPMap A C :=
 
 theorem ncpComp_apply (g : NCPMap B C) (f : NCPMap A B) (a : A) :
     ncpComp g f a = g (f a) := (exists_ncpComp g f).choose_spec a
+
+/-- Infrastructure (needed for 102III): ncp-maps are closed under pointwise
+addition.  `NCPMap` carries no algebraic instances, so — as for `ncpComp` —
+this is stated as an existence lemma. -/
+theorem exists_ncpAdd (f g : NCPMap A B) :
+    ∃ h : NCPMap A B, ∀ a : A, h a = f a + g a := by
+  have hfm : ∀ x y : A, x ≤ y → (f x : B) ≤ f y := fun x y h =>
+    OrderHomClass.mono f.toCompletelyPositiveMap h
+  have hgm : ∀ x y : A, x ≤ y → (g x : B) ≤ g y := fun x y h =>
+    OrderHomClass.mono g.toCompletelyPositiveMap h
+  refine ⟨{ toCompletelyPositiveMap :=
+              { toLinearMap := f.toCompletelyPositiveMap.toLinearMap
+                  + g.toCompletelyPositiveMap.toLinearMap
+                map_cstarMatrix_nonneg' := fun k M hM => ?_ }
+            preservesDirSups' := ?_ }, fun _ => rfl⟩
+  · have hsplit : M.map ⇑(f.toCompletelyPositiveMap.toLinearMap
+        + g.toCompletelyPositiveMap.toLinearMap)
+        = M.map ⇑f.toCompletelyPositiveMap.toLinearMap
+          + M.map ⇑g.toCompletelyPositiveMap.toLinearMap := by
+      ext i j
+      rfl
+    rw [hsplit]
+    exact add_nonneg (f.toCompletelyPositiveMap.map_cstarMatrix_nonneg' k M hM)
+      (g.toCompletelyPositiveMap.map_cstarMatrix_nonneg' k M hM)
+  · exact preservesDirSups_add hfm hgm f.preservesDirSups' g.preservesDirSups'
 
 /-- Infrastructure: an ncp-map is positive. -/
 theorem ncpMap_nonneg (f : NCPMap A B) {a : A} (ha : 0 ≤ a) : (0 : B) ≤ f a := by
@@ -1423,6 +1491,22 @@ noncomputable def adSelf [VonNeumannAlgebra A] (a : A) : NCPMap A A :=
 theorem adSelf_apply [VonNeumannAlgebra A] (a b : A) :
     adSelf a b = star a * b * a := (exists_adSelf a).choose_spec b
 
+/-- Infrastructure (needed for 102III): a nonnegative real multiple of an
+ncp-map is an ncp-map.  Rather than checking complete positivity and
+normality of `l·f` directly, `l·f` is *realised* as `Ad_{√l} ∘ f`, i.e. as
+`ncpComp (adSelf (√l·1)) f`, so that both obligations come for free from
+`exists_adSelf` and `exists_ncpComp`.  (Cf. the independent, direct
+construction in `Theses/B/Dils/Stinespring.lean`, which is `private`
+there; the two should eventually be consolidated.) -/
+theorem exists_ncpSmul [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    (f : NCPMap A B) {l : ℝ} (hl : 0 ≤ l) :
+    ∃ h : NCPMap A B, ∀ a : A, h a = ((l : ℝ) : ℂ) • f a := by
+  refine ⟨ncpComp (adSelf (algebraMap ℂ B ((Real.sqrt l : ℝ) : ℂ))) f, fun a => ?_⟩
+  rw [ncpComp_apply, adSelf_apply, ← algebraMap_star_comm]
+  simp only [Complex.star_def, Complex.conj_ofReal, Algebra.algebraMap_eq_smul_one,
+    smul_mul_assoc, mul_smul_comm, one_mul, mul_one, smul_smul, ← Complex.ofReal_mul]
+  rw [Real.mul_self_sqrt hl]
+
 /-! ## Parsec 950: corners (universal property) -/
 
 /-- **95I** (`corner`, proc.tex:263, Definition): a **corner** of an effect
@@ -1545,7 +1629,17 @@ von Neumann algebras is positive. -/
 theorem ncp_uwlim [VonNeumannAlgebra A] [VonNeumannAlgebra B] {ι : Type*}
     (l : Filter ι) [l.NeBot] (f : ι → (A →ₚ[ℂ] B)) (g : A →ₗ[ℂ] B)
     (hlim : ∀ a : A, UWTendsto (fun i => f i a) l (g a)) :
-    ∀ a : A, 0 ≤ a → 0 ≤ g a := sorry
+    ∀ a : A, 0 ≤ a → 0 ≤ g a := by
+  -- the author's argument (proc.tex:381): `g(a)` is the ultraweak limit of
+  -- the positive elements `f_α(a)`, and the positive cone is ultraweakly
+  -- closed by **44XI** (`vn-positive-basic`, part 2)
+  intro a ha
+  have hclosed : @IsClosed B (ultraweak B) {b : B | 0 ≤ b} := vn_positive_basic_2.1
+  have hev : ∀ᶠ i in l, (f i a : B) ∈ {b : B | 0 ≤ b} := by
+    filter_upwards with i
+    have h : ((f i) (0 : A) : B) ≤ (f i) a := (f i).monotone ha
+    rwa [map_zero (f i)] at h
+  exact @IsClosed.mem_of_tendsto B (ultraweak B) ι _ _ _ l _ hclosed (hlim a) hev
 
 /-- **96III** (`ncp-uwlim`, proc.tex:363, Lemma), part 1: the limit is
 completely positive provided the `f_α` are. -/
@@ -2502,7 +2596,78 @@ theorem rigid_ncp_extreme [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (f : NCPMap A B) (hf : IsRigid f) (l : ℝ) (hl0 : 0 < l) (hl1 : l < 1)
     (g₁ g₂ : NCPMap A B) (h₁ : g₁ 1 = f 1) (h₂ : g₂ 1 = f 1)
     (hconv : ∀ a, f a = (l : ℂ) • g₁ a + ((1 - l : ℝ) : ℂ) • g₂ a) :
-    g₁ = f ∧ g₂ = f := sorry
+    g₁ = f ∧ g₂ = f := by
+  -- the author's proof (proc.tex:1219), transcribed; the only Lean-side
+  -- addition is `exists_ncpAdd`/`exists_ncpSmul`, since `NCPMap` has no
+  -- `+` or `•`.  Note `h₂` is not used: `g₂ 1 = f 1` already follows from
+  -- `hconv` at `1` together with `h₁`.
+  have hm0 : (0 : ℝ) < 1 - l := sub_pos.mpr hl1
+  have hsm : ∀ (x : B) (r : ℝ), 0 ≤ x → 0 < r → ceil (((r : ℝ) : ℂ) • x) = ceil x :=
+    fun x r hx hr => (ceil_basic_4 x x hx hx r hr).1
+  have hnn : ∀ (x : B) (r : ℝ), 0 ≤ x → 0 ≤ r → (0 : B) ≤ ((r : ℝ) : ℂ) • x := by
+    intro x r hx hr
+    rw [Complex.coe_smul]; exact smul_nonneg hr hx
+  -- `f^⋄(p) = g₁^⋄(p) ∪ g₂^⋄(p)`, by `diamond-sum` (101IX) and
+  -- `equivalent-examples` (here in the form `⌈λa⌉ = ⌈a⌉`, 59III.4)
+  have hsum : ∀ p : A, IsStarProjection p →
+      ceil (f p) = projSup ({ceil (g₁ p), ceil (g₂ p)} : Set B) := by
+    intro p hp
+    have k1 : (0 : B) ≤ g₁ p := ncpMap_nonneg g₁ hp.nonneg
+    have k2 : (0 : B) ≤ g₂ p := ncpMap_nonneg g₂ hp.nonneg
+    rw [hconv p, (ceil_basic_4 _ _ (hnn _ l k1 hl0.le) (hnn _ (1 - l) k2 hm0.le) 1 one_pos).2,
+      hsm _ l k1 hl0, hsm _ (1 - l) k2 hm0]
+  -- "and in particular `g₁^⋄(s) ≤ f^⋄(s)`"
+  have hg₁le : ∀ p : A, IsStarProjection p → ceil (g₁ p) ≤ ceil (f p) := by
+    intro p hp
+    rw [hsum p hp]
+    exact (projSup_spec (P := ({ceil (g₁ p), ceil (g₂ p)} : Set B))
+      (by rintro q (rfl | rfl) <;> exact isStarProjection_ceil _)).2.1 _ (by left; rfl)
+  -- "Then for `h := λ g₁ + λ^⊥ f` we have `h(1) = f(1)` and `h^⋄ = f^⋄`"
+  obtain ⟨k₁, hk₁⟩ := exists_ncpSmul g₁ hl0.le
+  obtain ⟨k₂, hk₂⟩ := exists_ncpSmul f hm0.le
+  obtain ⟨h, hh⟩ := exists_ncpAdd k₁ k₂
+  have hha : ∀ a : A, (h a : B) = (l : ℂ) • g₁ a + ((1 - l : ℝ) : ℂ) • f a := by
+    intro a; rw [hh, hk₁, hk₂]
+  have hone : (h 1 : B) = f 1 := by
+    rw [hha, h₁, ← add_smul,
+      show ((l : ℝ) : ℂ) + ((1 - l : ℝ) : ℂ) = 1 by push_cast; ring, one_smul]
+  have hceil : ∀ p : A, IsStarProjection p → ceil (f p) = ceil (h p) := by
+    intro p hp
+    have k1 : (0 : B) ≤ g₁ p := ncpMap_nonneg g₁ hp.nonneg
+    have kf : (0 : B) ≤ f p := ncpMap_nonneg f hp.nonneg
+    rw [hha, (ceil_basic_4 _ _ (hnn _ l k1 hl0.le) (hnn _ (1 - l) kf hm0.le) 1 one_pos).2,
+      hsm _ l k1 hl0, hsm _ (1 - l) kf hm0]
+    have hP : ∀ q ∈ ({ceil (g₁ p), ceil (f p)} : Set B), IsStarProjection q := by
+      rintro q (rfl | rfl) <;> exact isStarProjection_ceil _
+    refine le_antisymm ((projSup_spec hP).2.1 _ (by right; rfl)) ?_
+    exact (projSup_pair_le_iff (isStarProjection_ceil _) (isStarProjection_ceil _)
+      (isStarProjection_ceil _)).mpr ⟨hg₁le p hp, le_rfl⟩
+  -- "so that `λ g₁ + λ^⊥ f ≡ h = f = λ g₁ + λ^⊥ g₂` by rigidity of `f`"
+  have hhf : h = f := hf h hone hceil
+  have hfeq : ∀ a : A, (f a : B) = (l : ℂ) • g₁ a + ((1 - l : ℝ) : ℂ) • f a := by
+    intro a; rw [← hha a, hhf]
+  -- "and thus `f = g₂`"; `f = g₁` then follows by cancelling `λ ≠ 0`
+  -- (the author instead repeats the argument with the roles swapped)
+  have hg₂ : g₂ = f := by
+    refine DFunLike.ext _ _ fun a => ?_
+    have e : ((1 - l : ℝ) : ℂ) • (g₂ a : B) = ((1 - l : ℝ) : ℂ) • f a :=
+      add_left_cancel ((hconv a).symm.trans (hfeq a))
+    have hne : ((1 - l : ℝ) : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (ne_of_gt hm0)
+    have e' := congrArg (fun x : B => (((1 - l : ℝ) : ℂ))⁻¹ • x) e
+    simp only [smul_smul, inv_mul_cancel₀ hne, one_smul] at e'
+    exact e'
+  have hg₁ : g₁ = f := by
+    refine DFunLike.ext _ _ fun a => ?_
+    have e0 : ((l : ℝ) : ℂ) • (f a : B) + ((1 - l : ℝ) : ℂ) • f a
+        = (l : ℂ) • g₁ a + ((1 - l : ℝ) : ℂ) • f a := by
+      rw [← hfeq a, ← add_smul,
+        show ((l : ℝ) : ℂ) + ((1 - l : ℝ) : ℂ) = 1 by push_cast; ring, one_smul]
+    have e : ((l : ℝ) : ℂ) • (f a : B) = ((l : ℝ) : ℂ) • g₁ a := add_right_cancel e0
+    have hne : ((l : ℝ) : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (ne_of_gt hl0)
+    have e' := congrArg (fun x : B => (((l : ℝ) : ℂ))⁻¹ • x) e
+    simp only [smul_smul, inv_mul_cancel₀ hne, one_smul] at e'
+    exact e'.symm
+  exact ⟨hg₁, hg₂⟩
 
 /-- **102V** (`nmiu-rigid`, proc.tex:1241, Proposition): an nmiu-map
 between von Neumann algebras is rigid (stated for an ncp-map `f` that
@@ -2585,7 +2750,60 @@ part 1: if `p` and `q` are centrally similar then everything commuting
 with `p` commutes with `q`; in particular `pq = qp`. -/
 theorem centrally_similar_basic_1 [VonNeumannAlgebra A] (p q : A)
     (hp : 0 ≤ p) (hq : 0 ≤ q) (h : CentrallySimilar p q) :
-    (∀ a : A, a * p = p * a → a * q = q * a) ∧ p * q = q * p := sorry
+    (∀ a : A, a * p = p * a → a * q = q * a) ∧ p * q = q * p := by
+  -- Exercise, no author argument.  If `a` commutes with `p` then it commutes
+  -- with `cp = dq`, and since `d` is central this says `d(aq − qa) = 0`,
+  -- hence also `(aq − qa)d = 0`; passing to the carrier gives
+  -- `⌈d⌉(aq − qa) = 0 = (aq − qa)⌈d⌉`.  Because `⌈q⌉ ≤ ⌈d⌉` we have
+  -- `⌈d⌉q = q = q⌈d⌉`, so those two read `⌈d⌉aq = qa` and `aq = qa⌈d⌉`;
+  -- multiplying the second by `⌈d⌉` on the left turns it into `⌈d⌉aq = aq`.
+  -- (Note `0 ≤ p` is not needed.)
+  obtain ⟨c, d, hc, hd, hc0, hd0, hcd, hpc, hqd⟩ := h
+  have hqsa : IsSelfAdjoint q := IsSelfAdjoint.of_nonneg hq
+  have hdsa : IsSelfAdjoint d := IsSelfAdjoint.of_nonneg hd0
+  have hcdproj : IsStarProjection (ceil d) := (ceil_spec hd0).1
+  have h1 : ceil q * ceil d = ceil q :=
+    ((ceil_spec hq).1.le_iff_mul_eq_left hcdproj).mp hqd
+  have h2 : q * ceil q = q := (ceil_spec hq).2.1
+  have hr : q * ceil d = q := by
+    conv_lhs => rw [← h2]
+    rw [mul_assoc, h1, h2]
+  have hl : ceil d * q = q := by
+    have hs := congrArg star hr
+    rwa [star_mul, hcdproj.isSelfAdjoint.star_eq, hqsa.star_eq] at hs
+  have key : ∀ a : A, a * p = p * a → a * q = q * a := by
+    intro a hap
+    have hacp : a * (c * p) = c * p * a := by
+      calc a * (c * p) = (a * c) * p := (mul_assoc _ _ _).symm
+        _ = (c * a) * p := by rw [hc a (Set.mem_univ a)]
+        _ = c * (a * p) := mul_assoc _ _ _
+        _ = c * (p * a) := by rw [hap]
+        _ = c * p * a := (mul_assoc _ _ _).symm
+    rw [hcd] at hacp
+    have hdx : d * (a * q - q * a) = 0 := by
+      have e1 : a * (d * q) = d * (a * q) := by
+        rw [← mul_assoc, hd a (Set.mem_univ a), mul_assoc]
+      rw [e1, mul_assoc] at hacp
+      rw [mul_sub, hacp, sub_self]
+    have hxd : (a * q - q * a) * d = 0 := by
+      rw [hd _ (Set.mem_univ _)]; exact hdx
+    have hcx : ceil d * (a * q - q * a) = 0 := ceil_mul_eq_zero hd0 hdx
+    have hxc : (a * q - q * a) * ceil d = 0 := by
+      have hs := congrArg star hxd
+      rw [star_mul, hdsa.star_eq, star_zero] at hs
+      have h3 := ceil_mul_eq_zero hd0 hs
+      have h4 := congrArg star h3
+      rwa [star_mul, star_star, hcdproj.isSelfAdjoint.star_eq, star_zero] at h4
+    have e1 : a * q = q * a * ceil d := by
+      rw [sub_mul, mul_assoc a q (ceil d), hr] at hxc
+      exact sub_eq_zero.mp hxc
+    have e2 : ceil d * (a * q) = q * a := by
+      rw [mul_sub, ← mul_assoc (ceil d) q a, hl] at hcx
+      exact sub_eq_zero.mp hcx
+    have e3 : ceil d * (a * q) = a * q := by
+      rw [e1, ← mul_assoc, ← mul_assoc, hl]
+    exact e3.symm.trans e2
+  exact ⟨key, key p rfl⟩
 
 /-- **104III** (`centrally-similar-basic`, proc.tex:1465, Exercise),
 part 2: centrally similar `p, q` have `⌈p⌉ = ⌈q⌉`. -/
@@ -2597,10 +2815,75 @@ theorem centrally_similar_basic_2 [VonNeumannAlgebra A] (p q : A)
   rw [← ceil_central_mul p c hp hc0 hc hpc, hcd,
     ceil_central_mul q d hq hd0 hd hqd]
 
+/-- Infrastructure: `⌈1⌉ = 1`. -/
+theorem ceil_one [VonNeumannAlgebra A] : ceil (1 : A) = 1 := by
+  have h := (ceil_spec (zero_le_one (α := A))).2.1
+  rwa [one_mul] at h
+
+/-- **104III**.2a, obstruction: central similarity to `1` forces `⌈p⌉ = 1`.
+Immediate from part 2 (`centrally_similar_basic_2`) and `ceil_one`. -/
+theorem centrally_similar_one_carrier [VonNeumannAlgebra A] (p : A)
+    (hp : 0 ≤ p) (h : CentrallySimilar p 1) : ceil p = 1 := by
+  have h2 := centrally_similar_basic_2 p 1 hp zero_le_one h
+  rwa [ceil_one] at h2
+
+/-- **104III**.2a, obstruction (projection form): a *central projection* `e`
+is centrally similar to `1` only if `e = 1`.  So the printed claim "`p` is
+centrally similar to `1` iff `p` is central" would force every central
+projection of every von Neumann algebra to be `1`. -/
+theorem centrally_similar_one_of_isStarProjection [VonNeumannAlgebra A] (e : A)
+    (he : IsStarProjection e) (h : CentrallySimilar e 1) : e = 1 := by
+  have hce : ceil e = e := by
+    refine le_antisymm ((ceil_spec he.nonneg).2.2 e he he.isIdempotentElem.eq) ?_
+    exact (he.le_iff_mul_eq_left (ceil_spec he.nonneg).1).mpr (ceil_spec he.nonneg).2.1
+  rw [← hce]
+  exact centrally_similar_one_carrier e he.nonneg h
+
+/-- **104III**.2a, obstruction to the *third* claim: every projection is
+centrally similar to its own square (`e² = e`, so `c = d = 1` works).  So
+"`p` is centrally similar to `p²` iff `p` is central" would force every
+projection of every von Neumann algebra to be central — false already in
+`M₂(ℂ)` at `e = diag(1,0)`.  Together with
+`centrally_similar_basic_2a_counterexample` this refutes all three claims
+of 2a; the common repair is the faithfulness hypothesis `⌈p⌉ = ⌈q⌉ = 1`
+that 104VII states explicitly. -/
+theorem centrally_similar_sq_of_isStarProjection [VonNeumannAlgebra A] (e : A)
+    (he : IsStarProjection e) : CentrallySimilar e (e ^ 2) := by
+  have hsq : e ^ 2 = e := by rw [sq, he.isIdempotentElem.eq]
+  refine ⟨1, 1, fun m _ => by rw [one_mul, mul_one],
+    fun m _ => by rw [one_mul, mul_one], zero_le_one, zero_le_one,
+    by rw [hsq], ?_, ?_⟩
+  · rw [ceil_one]; exact (ceil_spec he.nonneg).1.le_one
+  · rw [hsq, ceil_one]; exact (ceil_spec he.nonneg).1.le_one
+
+/-- **104III** (`centrally-similar-basic`, proc.tex:1465, Exercise), part 2a
+is **FALSE as printed** in its first two claims; this is the counterexample.
+Take `𝒜 = ℂ`, `p = 0`, `q = 1`, `B = 1`.  Then `p ≤ B·q`, `p/q = 0` is
+central and `p` itself is central, yet `p` and `q` are *not* centrally
+similar — by part 2 they would have to satisfy `⌈p⌉ = ⌈q⌉`, i.e. `0 = 1`.
+The missing hypothesis is `⌈p⌉ = ⌈q⌉` (equivalently: assume `q ≤ B'·p` as
+well as `p ≤ B·q`); see `ERRATA.md`.  `p = 0` is only the smallest witness —
+`p = (1,0)` and `q = (1,1)` in `ℂ²` fail the same way, and by
+`centrally_similar_one_of_isStarProjection` *every* central projection
+`≠ 1` is a witness, so this is not a degeneracy at `0`. -/
+theorem centrally_similar_basic_2a_counterexample :
+    (0 : ℂ) ∈ centre ℂ ∧ (0 : ℂ) ≤ ((1 : ℝ) : ℂ) • (1 : ℂ) ∧
+      div (0 : ℂ) 1 ∈ centre ℂ ∧ ¬ CentrallySimilar (0 : ℂ) 1 := by
+  have hd : div (0 : ℂ) 1 = 0 := div_eq (by simp) (by simp)
+  refine ⟨fun m _ => by ring, by norm_num,
+    by rw [hd]; exact fun m _ => by ring, fun h => ?_⟩
+  have h0 := centrally_similar_one_carrier (0 : ℂ) le_rfl h
+  rw [ceil_zero] at h0
+  exact zero_ne_one h0
+
 /-- **104III** (`centrally-similar-basic`, proc.tex:1465, Exercise),
 part 2a: assuming `p ≤ B·q`, `p` and `q` are centrally similar iff `p/q`
 is central; `p` is centrally similar to `1` iff `p` is central; and `p` is
-centrally similar to `p²` iff `p` is central. -/
+centrally similar to `p²` iff `p` is central.  **Parked: the first two
+claims are false as printed** — see
+`centrally_similar_basic_2a_counterexample` just above and the 104III row
+of `ERRATA.md`.  The statement is left untouched pending the author's
+ruling. -/
 theorem centrally_similar_basic_2a [VonNeumannAlgebra A] (p q : A)
     (hp : 0 ≤ p) (hq : 0 ≤ q) (bound : ℝ) (hb : p ≤ (bound : ℂ) • q) :
     (CentrallySimilar p q ↔ div p q ∈ centre A) ∧
