@@ -563,10 +563,51 @@ theorem hilbmod_ad_ncp [VonNeumannAlgebra 𝒷] [CompleteSpace X]
 
 end BaVN
 
+section AdjVector
+
+variable {𝒜 : Type u} [CStarAlgebra 𝒜] [PartialOrder 𝒜] [StarOrderedRing 𝒜]
+  {n : ℕ}
+
+set_option linter.unusedSectionVars false
+
+/-- The functional `P ↦ ∑ᵢⱼ cᵢ* Pᵢⱼ cⱼ` whose positivity for all `c`
+characterises positivity of a matrix (**33II**.1
+`cstar_matrix_positive_iff`); packaged as an additive map so that it can be
+pushed through finite sums of matrices. -/
+private def conjFun (c : Fin n → 𝒜) : CStarMatrix (Fin n) (Fin n) 𝒜 →+ 𝒜 where
+  toFun P := ∑ i, ∑ j, star (c i) * P i j * c j
+  map_zero' := by simp
+  map_add' P Q := by
+    simp only [CStarMatrix.add_apply, mul_add, add_mul, Finset.sum_add_distrib]
+
+private theorem conjFun_apply (c : Fin n → 𝒜) (P : CStarMatrix (Fin n) (Fin n) 𝒜) :
+    conjFun c P = ∑ i, ∑ j, star (c i) * P i j * c j := rfl
+
+/-- `∑ᵢⱼ Gᵢ* d Hⱼ = (∑ᵢ Gᵢ)* d (∑ⱼ Hⱼ)`. -/
+private theorem sum_star_mul_mul_sum {ι κ : Type*} [Fintype ι] [Fintype κ]
+    (G : ι → 𝒜) (H : κ → 𝒜) (d : 𝒜) :
+    ∑ i, ∑ j, star (G i) * d * H j = star (∑ i, G i) * d * ∑ j, H j := by
+  rw [star_sum, Finset.sum_mul, Finset.sum_mul]
+  exact Finset.sum_congr rfl fun i _ => (Finset.mul_sum _ _ _).symm
+
+/-- `∑ₖₗ zₖ* zₗ = (∑ₖ zₖ)* (∑ₗ zₗ)`, hence positive. -/
+private theorem sum_star_mul_sum' {ι : Type*} [Fintype ι] (z : ι → 𝒜) :
+    ∑ k, ∑ l, star (z k) * z l = star (∑ k, z k) * ∑ l, z l := by
+  rw [star_sum, Finset.sum_mul]
+  exact Finset.sum_congr rfl fun k _ => (Finset.mul_sum _ _ _).symm
+
 /-- **153IV** (`hilbmod-adj-vector-ncp`, dils.tex:3517, Exercise): for a
 C*-algebra `𝒜` (here: von Neumann algebra, so that normality makes sense)
 and `a₁, …, aₙ ∈ 𝒜`, the map `φ : 𝒜 → Mₙ𝒜`, `φ(d) = (aᵢ* d aⱼ)ᵢⱼ`, is an
-ncp-map. -/
+ncp-map.
+
+The author's solution routes through **153I** `hilbmod_ad_ncp` (`φ = ad_T`
+for the row vector `T : 𝒜ⁿ → 𝒜`, `(bᵢ)ᵢ ↦ ∑ᵢ bᵢaᵢ`), which is still open
+here — it waits on **152X**.  So this is a direct argument instead: by
+**33II**.1 both claims reduce to the scalar identity
+`∑ᵢⱼ cᵢ* φ(d)ᵢⱼ cⱼ = v* d v` with `v = ∑ᵢ aᵢcᵢ`, after which complete
+positivity is the observation that the corresponding double sum is a square
+`w* w`, and normality is **44VIII** `ad_normal` for `v`. -/
 theorem hilbmod_adj_vector_ncp {𝒜 : Type u} [CStarAlgebra 𝒜]
     [PartialOrder 𝒜] [StarOrderedRing 𝒜] [VonNeumannAlgebra 𝒜] {n : ℕ}
     [PartialOrder (CStarMatrix (Fin n) (Fin n) 𝒜)]
@@ -574,7 +615,103 @@ theorem hilbmod_adj_vector_ncp {𝒜 : Type u} [CStarAlgebra 𝒜]
     (a : Fin n → 𝒜) :
     ∃ φ : 𝒜 →ₗ[ℂ] CStarMatrix (Fin n) (Fin n) 𝒜,
       (∀ (d : 𝒜) (i j : Fin n), φ d i j = star (a i) * d * a j) ∧
-      IsCompletelyPositiveMap φ ∧ PreservesDirSups ⇑φ :=
-  sorry
+      IsCompletelyPositiveMap φ ∧ PreservesDirSups ⇑φ := by
+  classical
+  set φ : 𝒜 →ₗ[ℂ] CStarMatrix (Fin n) (Fin n) 𝒜 :=
+    { toFun := fun d => CStarMatrix.ofMatrix (Matrix.of fun i j => star (a i) * d * a j)
+      map_add' := by
+        intro x y; ext i j
+        show star (a i) * (x + y) * a j = star (a i) * x * a j + star (a i) * y * a j
+        noncomm_ring
+      map_smul' := by
+        intro r x; ext i j
+        show star (a i) * (r • x) * a j = r • (star (a i) * x * a j)
+        rw [mul_smul_comm, smul_mul_assoc] } with hφdef
+  have hentry : ∀ (d : 𝒜) (i j : Fin n), φ d i j = star (a i) * d * a j := fun _ _ _ => rfl
+  -- `φ(d)` conjugated by two matrices collapses to a single `ad`-expression
+  have hgen : ∀ (M N : CStarMatrix (Fin n) (Fin n) 𝒜) (c : Fin n → 𝒜) (d : 𝒜),
+      conjFun c (star M * φ d * N)
+        = star (∑ i, ∑ s, a s * (M s i * c i)) * d * ∑ j, ∑ t, a t * (N t j * c j) := by
+    intro M N c d
+    have hij : ∀ i j : Fin n, star (c i) * (star M * φ d * N) i j * c j
+        = star (∑ s, a s * (M s i * c i)) * d * ∑ t, a t * (N t j * c j) := by
+      intro i j
+      have hA : star (c i) * (star M * φ d * N) i j * c j
+          = ∑ s, ∑ t, star (a s * (M s i * c i)) * d * (a t * (N t j * c j)) := by
+        rw [mul_assoc (star M) (φ d) N, CStarMatrix.mul_apply, Finset.mul_sum, Finset.sum_mul]
+        refine Finset.sum_congr rfl fun s _ => ?_
+        rw [CStarMatrix.star_apply, CStarMatrix.mul_apply, Finset.mul_sum, Finset.mul_sum,
+          Finset.sum_mul]
+        refine Finset.sum_congr rfl fun t _ => ?_
+        rw [hentry]
+        simp only [star_mul]
+        noncomm_ring
+      rw [hA]
+      exact sum_star_mul_mul_sum _ _ d
+    rw [conjFun_apply]
+    simp only [hij]
+    exact sum_star_mul_mul_sum _ _ d
+  -- the special case `M = N = 1`: `∑ᵢⱼ cᵢ* φ(d)ᵢⱼ cⱼ = v* d v` with `v = ∑ᵢ aᵢcᵢ`
+  have hcollapse : ∀ (c : Fin n → 𝒜) (d : 𝒜),
+      conjFun c (φ d) = star (∑ i, a i * c i) * d * ∑ j, a j * c j := by
+    intro c d
+    have hij : ∀ i j : Fin n, star (c i) * φ d i j * c j
+        = star (a i * c i) * d * (a j * c j) := by
+      intro i j; rw [hentry]; simp only [star_mul]; noncomm_ring
+    rw [conjFun_apply]
+    simp only [hij]
+    exact sum_star_mul_mul_sum _ _ d
+  refine ⟨φ, hentry, ?_, ?_⟩
+  · -- complete positivity
+    intro m x B
+    refine (cstar_matrix_positive_iff _).mpr fun c => ?_
+    set V : Fin m → 𝒜 := fun k => ∑ i, ∑ s, a s * ((B k) s i * c i) with hV
+    have hpush : ∑ i, ∑ j,
+        star (c i) * (∑ k, ∑ l, star (B k) * φ (star (x k) * x l) * B l) i j * c j
+        = ∑ k, ∑ l, star (x k * V k) * (x l * V l) := by
+      rw [← conjFun_apply, map_sum]
+      refine Finset.sum_congr rfl fun k _ => ?_
+      rw [map_sum]
+      refine Finset.sum_congr rfl fun l _ => ?_
+      rw [hgen (B k) (B l) c (star (x k) * x l)]
+      simp only [star_mul]
+      noncomm_ring
+    rw [hpush, sum_star_mul_sum']
+    exact star_mul_self_nonneg _
+  · -- normality
+    intro D s hne hdir hlub
+    have hbdd : BddAbove D := ⟨s, hlub.1⟩
+    have hDh : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧ BddAbove D := ⟨hne, hdir, hbdd⟩
+    have hs : s = dirSup D hDh := hlub.unique (isLUB_dirSup D hDh)
+    -- `φ` is positive, hence monotone
+    have hpos : ∀ e : 𝒜, 0 ≤ e → 0 ≤ φ e := by
+      intro e he
+      refine (cstar_matrix_positive_iff _).mpr fun c => ?_
+      rw [← conjFun_apply, hcollapse]
+      exact star_left_conjugate_nonneg he _
+    have hmono : ∀ e e' : 𝒜, e ≤ e' → φ e ≤ φ e' := by
+      intro e e' h
+      rw [← sub_nonneg] at h ⊢
+      rw [← map_sub]
+      exact hpos _ h
+    refine ⟨?_, ?_⟩
+    · rintro _ ⟨d, hd, rfl⟩
+      exact hmono _ _ (Subtype.coe_le_coe.mpr (hlub.1 hd))
+    · intro Mub hMub
+      rw [← sub_nonneg]
+      refine (cstar_matrix_positive_iff _).mpr fun c => ?_
+      set v : 𝒜 := ∑ i, a i * c i with hv
+      have hub : star v * ↑(dirSup D hDh) * v ≤ conjFun c Mub := by
+        refine (ad_normal v D hDh).2 ?_
+        rintro _ ⟨d, hd, rfl⟩
+        have h0 : (0 : CStarMatrix (Fin n) (Fin n) 𝒜) ≤ Mub - φ ↑d :=
+          sub_nonneg.mpr (hMub ⟨d, hd, rfl⟩)
+        have h1 := (cstar_matrix_positive_iff _).mp h0 c
+        rw [← conjFun_apply, map_sub, hcollapse] at h1
+        exact sub_nonneg.mp h1
+      rw [← conjFun_apply, map_sub, hcollapse, ← hv, ← hs] at *
+      exact sub_nonneg.mpr hub
+
+end AdjVector
 
 end Theses.B.Dils

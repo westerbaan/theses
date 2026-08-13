@@ -9,12 +9,14 @@ lines 5966–6550.
   parsec 1710:  the Paschke dilation of a corner; pure ⟺ ϱ surjective
   parsec 1720:  ncp-extreme maps
 
-Statements only; every proof is `sorry`.  All von Neumann algebras live in
-one universe `u`.  The corner algebras `pAp` appear as the type
-`cornerSet A p` (a subtype), whose C*-structure — a genuine result of the
-thesis with unit `p` — is provided as `sorry`-instances.  Corners and
-filters (proc.tex parsecs 950–980 of thesis A, not yet formalized) are
-defined here from scratch following **169II** and **169VIII**.
+All von Neumann algebras live in one universe `u`.  The corner algebras
+`pAp` appear as the type `cornerSet A p` (a subtype); their C*-, order- and
+von Neumann structure — proc.tex **94II**, with unit `p` — is *proved*
+below rather than asserted.  Corners and filters (proc.tex parsecs 950–980
+of thesis A) are defined here from scratch following **169II** and
+**169VIII**; `Theses/A/Proc/Measurement.lean` has since acquired a parallel
+development, which should be merged with this one once `Theses.A.Proc` is
+on this chapter's import path.
 -/
 import Theses.B.Dils.SelfDual
 
@@ -40,41 +42,377 @@ a projection, or with `⌊a⌋` for an effect `a`; cf. proc.tex 94I). -/
 def cornerSet (p : A) : Type u :=
   {a : A // p * a * p = a}
 
-/-- `pAp` is a C*-algebra with unit `p` **for a projection `p`** (cf.
-proc.tex 94II `corner-vna-basic`).
+/-! ### The algebraic structure of `pAp`
+
+Every operation below is carried by `Subtype.val` from `A`, except the
+unit, which is `p`.  These are the ingredients out of which the three
+instances of proc.tex **94II** parts 5–6 — and the von Neumann structure of
+part 8 — are assembled; they are arranged so that `Subtype.val` is a
+non-unital ∗-algebra isometry onto the norm-closed set `{a | p·a·p = a}`.
 
 The projection hypothesis is not decoration: for a non-idempotent `p` the
 set `{a | p·a·p = a}` is not closed under multiplication (`p(ab)p =
 p²ap·pbp²`), so `cornerSet A p` carries no ring structure whatsoever and
-the instance is *false* as an unconditional statement.  It is therefore
+the instances are *false* as unconditional statements.  They are therefore
 guarded by `[Fact (IsStarProjection p)]`, which for the `⌊a⌋`, `⌈a⌉` of
 this chapter is discharged automatically by `fact_isStarProjection_floor`
-and `fact_isStarProjection_ceil` below.  FIXME(sorry-instance): deferred. -/
+and `fact_isStarProjection_ceil` below.
+
+`Theses/A/Proc/Measurement.lean` carries the *same* construction for its
+own bundled corner type `Theses.A.Proc.Corner A e`; the two should be
+merged once `Theses.A.Proc` is on this chapter's import path. -/
+
+namespace cornerSet
+
+set_option linter.unusedSectionVars false
+
+variable {A}
+
+theorem val_injective {p : A} :
+    Function.Injective (Subtype.val : cornerSet A p → A) :=
+  fun _ _ h => Subtype.ext h
+
+/-- The corner is norm-closed: it is the zero set of the continuous map
+`a ↦ p·a·p − a`. -/
+theorem isClosed_setOf (p : A) : IsClosed {a : A | p * a * p = a} := by
+  have hcont : Continuous (fun a : A => p * a * p - a) := by fun_prop
+  have h : {a : A | p * a * p = a} = (fun a : A => p * a * p - a) ⁻¹' {0} := by
+    ext a; simp [sub_eq_zero]
+  rw [h]
+  exact isClosed_singleton.preimage hcont
+
+theorem range_val (p : A) :
+    Set.range (Subtype.val : cornerSet A p → A) = {a : A | p * a * p = a} := by
+  ext a
+  exact ⟨fun ⟨b, hb⟩ => hb ▸ b.2, fun ha => ⟨⟨a, ha⟩, rfl⟩⟩
+
+section Proj
+
+variable {p : A} [hFp : Fact (IsStarProjection p)]
+
+/-- The projection hypothesis carried by the `Fact` instance. -/
+theorem proj (p : A) [hFp : Fact (IsStarProjection p)] : IsStarProjection p :=
+  hFp.out
+
+theorem mul_left (a : cornerSet A p) : p * a.1 = a.1 := by
+  have hpp : p * p = p := (proj p).isIdempotentElem.eq
+  calc p * a.1 = p * (p * a.1 * p) := by rw [a.2]
+    _ = (p * p) * a.1 * p := by noncomm_ring
+    _ = p * a.1 * p := by rw [hpp]
+    _ = a.1 := a.2
+
+theorem mul_right (a : cornerSet A p) : a.1 * p = a.1 := by
+  have hpp : p * p = p := (proj p).isIdempotentElem.eq
+  calc a.1 * p = (p * a.1 * p) * p := by rw [a.2]
+    _ = p * a.1 * (p * p) := by noncomm_ring
+    _ = p * a.1 * p := by rw [hpp]
+    _ = a.1 := a.2
+
+instance : Zero (cornerSet A p) := ⟨⟨0, by simp⟩⟩
+instance : Add (cornerSet A p) :=
+  ⟨fun a b => ⟨a.1 + b.1, by rw [mul_add, add_mul, a.2, b.2]⟩⟩
+instance : Neg (cornerSet A p) := ⟨fun a => ⟨-a.1, by rw [mul_neg, neg_mul, a.2]⟩⟩
+instance : Sub (cornerSet A p) :=
+  ⟨fun a b => ⟨a.1 - b.1, by rw [mul_sub, sub_mul, a.2, b.2]⟩⟩
+instance : SMul ℕ (cornerSet A p) :=
+  ⟨fun n a => ⟨n • a.1, by rw [mul_smul_comm, smul_mul_assoc, a.2]⟩⟩
+instance : SMul ℤ (cornerSet A p) :=
+  ⟨fun n a => ⟨n • a.1, by rw [mul_smul_comm, smul_mul_assoc, a.2]⟩⟩
+instance : SMul ℂ (cornerSet A p) :=
+  ⟨fun z a => ⟨z • a.1, by rw [mul_smul_comm, smul_mul_assoc, a.2]⟩⟩
+instance : One (cornerSet A p) :=
+  ⟨⟨p, by rw [(proj p).isIdempotentElem.eq, (proj p).isIdempotentElem.eq]⟩⟩
+instance : Mul (cornerSet A p) :=
+  ⟨fun a b => ⟨a.1 * b.1, by
+    have h1 := mul_left a
+    have h2 := mul_right b
+    calc p * (a.1 * b.1) * p = (p * a.1) * (b.1 * p) := by noncomm_ring
+      _ = a.1 * b.1 := by rw [h1, h2]⟩⟩
+instance : Star (cornerSet A p) :=
+  ⟨fun a => ⟨star a.1, by
+    have hs : star p = p := (proj p).isSelfAdjoint.star_eq
+    conv_rhs => rw [← a.2]
+    rw [star_mul, star_mul, hs, mul_assoc]⟩⟩
+
+@[simp] theorem val_zero : (0 : cornerSet A p).1 = 0 := rfl
+@[simp] theorem val_add (a b : cornerSet A p) : (a + b).1 = a.1 + b.1 := rfl
+@[simp] theorem val_neg (a : cornerSet A p) : (-a).1 = -a.1 := rfl
+@[simp] theorem val_sub (a b : cornerSet A p) : (a - b).1 = a.1 - b.1 := rfl
+@[simp] theorem val_one : (1 : cornerSet A p).1 = p := rfl
+@[simp] theorem val_mul (a b : cornerSet A p) : (a * b).1 = a.1 * b.1 := rfl
+@[simp] theorem val_star (a : cornerSet A p) : (star a).1 = star a.1 := rfl
+@[simp] theorem val_smul (z : ℂ) (a : cornerSet A p) : (z • a).1 = z • a.1 := rfl
+@[simp] theorem val_nsmul (n : ℕ) (a : cornerSet A p) : (n • a).1 = n • a.1 := rfl
+@[simp] theorem val_zsmul (n : ℤ) (a : cornerSet A p) : (n • a).1 = n • a.1 := rfl
+
+instance instAddCommGroup : AddCommGroup (cornerSet A p) :=
+  Function.Injective.addCommGroup (Subtype.val : cornerSet A p → A) val_injective
+    rfl (fun _ _ => rfl) (fun _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl)
+    (fun _ _ => rfl)
+
+instance instRing : Ring (cornerSet A p) where
+  __ := instAddCommGroup
+  mul_assoc _ _ _ := val_injective (mul_assoc _ _ _)
+  one_mul a := val_injective (mul_left a)
+  mul_one a := val_injective (mul_right a)
+  left_distrib _ _ _ := val_injective (mul_add _ _ _)
+  right_distrib _ _ _ := val_injective (add_mul _ _ _)
+  zero_mul _ := val_injective (zero_mul _)
+  mul_zero _ := val_injective (mul_zero _)
+
+/-- `Subtype.val` on the corner as an additive monoid homomorphism. -/
+def valAddHom : cornerSet A p →+ A where
+  toFun := Subtype.val
+  map_zero' := rfl
+  map_add' _ _ := rfl
+
+noncomputable instance instModule : Module ℂ (cornerSet A p) :=
+  Function.Injective.module ℂ valAddHom val_injective (fun _ _ => rfl)
+
+noncomputable instance instAlgebra : Algebra ℂ (cornerSet A p) :=
+  Algebra.ofModule (fun r x y => val_injective (smul_mul_assoc r x.1 y.1))
+    (fun r x y => val_injective (mul_smul_comm r x.1 y.1))
+
+instance instStarRing : StarRing (cornerSet A p) where
+  star_involutive a := val_injective (star_star a.1)
+  star_mul a b := val_injective (star_mul a.1 b.1)
+  star_add a b := val_injective (star_add a.1 b.1)
+
+instance instStarModule : StarModule ℂ (cornerSet A p) where
+  star_smul r a := val_injective (star_smul r a.1)
+
+/-- `Subtype.val` on the corner as a non-unital ring homomorphism.  It is
+*not* unital: `(1 : cornerSet A p).1 = p`. -/
+def valNonUnitalRingHom : cornerSet A p →ₙ+* A where
+  toFun := Subtype.val
+  map_zero' := rfl
+  map_add' _ _ := rfl
+  map_mul' _ _ := rfl
+
+instance instNormedRing : NormedRing (cornerSet A p) :=
+  NormedRing.induced (cornerSet A p) A valNonUnitalRingHom val_injective
+
+@[simp] theorem norm_def (a : cornerSet A p) : ‖a‖ = ‖a.1‖ := rfl
+
+noncomputable instance instNormedAlgebra : NormedAlgebra ℂ (cornerSet A p) where
+  norm_smul_le r a := by simpa [norm_def] using (norm_smul_le r a.1)
+
+theorem isometry_val : Isometry (Subtype.val : cornerSet A p → A) :=
+  AddMonoidHomClass.isometry_of_norm valAddHom (fun _ => rfl)
+
+instance instCompleteSpace : CompleteSpace (cornerSet A p) := by
+  refine (isometry_val (p := p)).isUniformInducing.completeSpace ?_
+  rw [range_val]
+  exact (isClosed_setOf p).isComplete
+
+instance instCStarRing : CStarRing (cornerSet A p) where
+  norm_mul_self_le a := CStarRing.norm_star_mul_self (x := a.1) |>.symm.le
+
+/-- The square root of a positive element of the corner lies again in the
+corner: if `p·a·p = a` then `(1−p)·a·(1−p) = 0`, so for `s = √a` one has
+`‖s(1−p)‖² = ‖(1−p)·a·(1−p)‖ = 0`, i.e. `s = s·p = p·s`. -/
+theorem sqrt_mem (a : A) (ha : 0 ≤ a) (hmem : p * a * p = a) :
+    p * CFC.sqrt a * p = CFC.sqrt a := by
+  set s := CFC.sqrt a with hs
+  have hsa : IsSelfAdjoint s := IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg a)
+  have hss : s * s = a := CFC.sqrt_mul_sqrt_self a ha
+  have hpp : p * p = p := (proj p).isIdempotentElem.eq
+  have hsp : star p = p := (proj p).isSelfAdjoint.star_eq
+  have hkey : (1 - p) * a * (1 - p) = 0 := by
+    conv_lhs => rw [← hmem]
+    have h1 : (1 - p) * p = 0 := by noncomm_ring [hpp]
+    have h2 : p * (1 - p) = 0 := by noncomm_ring [hpp]
+    calc (1 - p) * (p * a * p) * (1 - p)
+        = ((1 - p) * p) * a * (p * (1 - p)) := by noncomm_ring
+      _ = 0 := by rw [h1, h2]; simp
+  have hnorm : ‖s * (1 - p)‖ = 0 := by
+    have hstar : star (s * (1 - p)) * (s * (1 - p)) = (1 - p) * a * (1 - p) := by
+      rw [star_mul, hsa.star_eq, star_sub, star_one, hsp]
+      calc (1 - p) * s * (s * (1 - p)) = (1 - p) * (s * s) * (1 - p) := by
+            noncomm_ring
+        _ = (1 - p) * a * (1 - p) := by rw [hss]
+    have h2 : ‖s * (1 - p)‖ * ‖s * (1 - p)‖ = ‖(1 - p) * a * (1 - p)‖ := by
+      rw [← hstar, CStarRing.norm_star_mul_self]
+    rw [hkey, norm_zero] at h2
+    nlinarith [norm_nonneg (s * (1 - p))]
+  have hzero : s * (1 - p) = 0 := by rwa [norm_eq_zero] at hnorm
+  have hsp' : s * p = s := by
+    have h := hzero
+    rw [mul_sub, mul_one, sub_eq_zero] at h
+    exact h.symm
+  have hps : p * s = s := by
+    have h := congrArg star hsp'
+    rwa [star_mul, hsp, hsa.star_eq] at h
+  rw [hps, hsp']
+
+end Proj
+
+end cornerSet
+
+/-- **94II** part 5 (proc.tex `corner-vna-basic`): `pAp` is a C*-algebra
+with unit `p` **for a projection `p`**, with the operations and the norm
+inherited from `A`. -/
 noncomputable instance cornerSet.instCStarAlgebra (p : A)
     [Fact (IsStarProjection p)] :
-    CStarAlgebra (cornerSet A p) :=
-  sorry
+    CStarAlgebra (cornerSet A p) where
 
-/-- The canonical order on `pAp` (for a projection `p`, cf.
-`cornerSet.instCStarAlgebra`).  FIXME(sorry-instance): deferred. -/
+/-- **94II** parts 5–6: the canonical (Loewner) order on `pAp` is the one
+inherited from `A`. -/
 noncomputable instance cornerSet.instPartialOrder (p : A)
     [Fact (IsStarProjection p)] :
     PartialOrder (cornerSet A p) :=
-  sorry
+  PartialOrder.lift (Subtype.val : cornerSet A p → A) cornerSet.val_injective
 
-/-- The canonical order of `pAp` makes it star-ordered (for a projection
-`p`, cf. `cornerSet.instCStarAlgebra`).  FIXME(sorry-instance): deferred. -/
-noncomputable instance cornerSet.instStarOrderedRing (p : A)
+/-- **94II** parts 5–6: that order is the star-order of the C*-algebra
+`pAp` — the point being that `√a` lies in the corner whenever `a` does
+(`cornerSet.sqrt_mem`). -/
+instance cornerSet.instStarOrderedRing (p : A)
     [Fact (IsStarProjection p)] :
-    StarOrderedRing (cornerSet A p) :=
-  sorry
+    StarOrderedRing (cornerSet A p) := by
+  refine StarOrderedRing.of_nonneg_iff' (fun {x y} hxy z => ?_) (fun x => ?_)
+  · change z.1 + x.1 ≤ z.1 + y.1
+    exact add_le_add le_rfl (show x.1 ≤ y.1 from hxy)
+  · constructor
+    · intro hx
+      have hx' : (0 : A) ≤ x.1 := hx
+      refine ⟨⟨CFC.sqrt x.1, cornerSet.sqrt_mem x.1 hx' x.2⟩, ?_⟩
+      refine cornerSet.val_injective ?_
+      have hsa : IsSelfAdjoint (CFC.sqrt x.1) :=
+        IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg x.1)
+      change x.1 = star (CFC.sqrt x.1) * CFC.sqrt x.1
+      rw [hsa.star_eq, CFC.sqrt_mul_sqrt_self x.1 hx']
+    · rintro ⟨s, rfl⟩
+      change (0 : A) ≤ star s.1 * s.1
+      exact star_mul_self_nonneg s.1
 
-/-- `pAp` is a von Neumann algebra when `A` is (and `p` is a projection;
-cf. proc.tex 94II).  Deferred like the instances above. -/
+theorem cornerSet.le_def {p : A} [Fact (IsStarProjection p)]
+    (a b : cornerSet A p) : a ≤ b ↔ a.1 ≤ b.1 := Iff.rfl
+
+namespace cornerSet
+
+set_option linter.unusedSectionVars false
+
+variable {A}
+variable {p : A} [Fact (IsStarProjection p)] [VonNeumannAlgebra A]
+
+/-- A self-adjoint element of the corner, viewed in `A`. -/
+def saMap (d : selfAdjoint (cornerSet A p)) : selfAdjoint A :=
+  ⟨d.1.1, congrArg Subtype.val (show star d.1 = d.1 from d.2)⟩
+
+@[simp] theorem saMap_coe (d : selfAdjoint (cornerSet A p)) :
+    ((saMap d : selfAdjoint A) : A) = d.1.1 := rfl
+
+/-- **94II** part 6: the supremum in `A` of a nonempty directed set of
+self-adjoint elements of the corner lies again in the corner — because
+`a ↦ p·a·p` is normal (**44VIII** `ad_normal`) and fixes the set. -/
+theorem isLUB_mem (D : Set (selfAdjoint A)) (s : selfAdjoint A)
+    (hD : ∀ d ∈ D, p * (d : A) * p = (d : A)) (hne : D.Nonempty)
+    (hdir : DirectedOn (· ≤ ·) D) (hlub : IsLUB D s) :
+    p * (s : A) * p = (s : A) := by
+  have h : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧ BddAbove D :=
+    ⟨hne, hdir, ⟨s, hlub.1⟩⟩
+  have hstar : star p = p := (proj p).isSelfAdjoint.star_eq
+  have hnat := ad_normal p D h
+  rw [hstar] at hnat
+  have himg : (fun d : selfAdjoint A => p * (d : A) * p) '' D = Subtype.val '' D :=
+    Set.image_congr fun d hd => hD d hd
+  rw [himg] at hnat
+  have huniq := hnat.unique (isLUB_coe_of_isLUB h.1 (isLUB_dirSup D h))
+  have hsd : s = dirSup D h := hlub.unique (isLUB_dirSup D h)
+  rw [hsd]
+  exact huniq
+
+/-- Restriction of an np-functional on `A` to the corner (**94II** part 8). -/
+noncomputable def restrictNP (p : A) [Fact (IsStarProjection p)] (ω : NPFunctional A) :
+    NPFunctional (cornerSet A p) where
+  toPositiveLinearMap :=
+    { toFun := fun a => ω a.1
+      map_add' := fun _ _ => map_add ω.toPositiveLinearMap _ _
+      map_smul' := fun _ _ => map_smul ω.toPositiveLinearMap _ _
+      monotone' := fun _ _ hxy => ω.toPositiveLinearMap.monotone hxy }
+  preservesDirSups' := by
+    intro D s hne hdir hlub
+    have hlub' : IsLUB (saMap '' D) (saMap s) := by
+      have hne' : (saMap '' D).Nonempty := hne.image _
+      have hdir' : DirectedOn (· ≤ ·) (saMap '' D) := by
+        rintro _ ⟨x, hx, rfl⟩ _ ⟨z, hz, rfl⟩
+        obtain ⟨u, hu, hxu, hzu⟩ := hdir x hx z hz
+        exact ⟨saMap u, ⟨u, hu, rfl⟩, hxu, hzu⟩
+      have hbdd' : BddAbove (saMap '' D) := by
+        refine ⟨saMap s, ?_⟩
+        rintro _ ⟨x, hx, rfl⟩
+        exact hlub.1 hx
+      obtain ⟨s₀, hs₀⟩ :=
+        VonNeumannAlgebra.isLUB_of_bddAbove_directed _ hne' hdir' hbdd'
+      have hmem : p * (s₀ : A) * p = (s₀ : A) := by
+        refine isLUB_mem _ s₀ ?_ hne' hdir' hs₀
+        rintro _ ⟨x, hx, rfl⟩
+        exact x.1.2
+      set t : cornerSet A p := ⟨(s₀ : A), hmem⟩ with ht
+      have htsa : IsSelfAdjoint t := val_injective s₀.2
+      have hlubt : IsLUB D ⟨t, htsa⟩ := by
+        refine ⟨fun d hd => hs₀.1 ⟨d, hd, rfl⟩, fun u hu => ?_⟩
+        have hub : saMap u ∈ upperBounds (saMap '' D) := by
+          rintro _ ⟨x, hx, rfl⟩
+          exact hu hx
+        exact hs₀.2 hub
+      have hst : s = ⟨t, htsa⟩ := hlub.unique hlubt
+      have hsm : saMap (⟨t, htsa⟩ : selfAdjoint (cornerSet A p)) = s₀ :=
+        Subtype.ext rfl
+      rw [hst, hsm]
+      exact hs₀
+    have hkey := ω.preservesDirSups' (saMap '' D) (saMap s) (hne.image _)
+      (by
+        rintro _ ⟨x, hx, rfl⟩ _ ⟨z, hz, rfl⟩
+        obtain ⟨u, hu, hxu, hzu⟩ := hdir x hx z hz
+        exact ⟨saMap u, ⟨u, hu, rfl⟩, hxu, hzu⟩)
+      hlub'
+    rw [← Set.image_comp] at hkey
+    exact hkey
+
+@[simp] theorem restrictNP_apply (p : A) [Fact (IsStarProjection p)]
+    (ω : NPFunctional A) (a : cornerSet A p) : restrictNP p ω a = ω a.1 := rfl
+
+end cornerSet
+
+/-- **94II** part 8 (proc.tex `corner-vna-basic`): `pAp` is a von Neumann
+algebra when `A` is (and `p` is a projection).  Suprema are computed as in
+`A` (part 6), and the np-functionals of `pAp` include the restrictions of
+those of `A`, which already separate. -/
 theorem cornerSet_vonNeumannAlgebra [VonNeumannAlgebra A] (p : A)
     [Fact (IsStarProjection p)] :
-    VonNeumannAlgebra (cornerSet A p) :=
-  sorry
+    VonNeumannAlgebra (cornerSet A p) where
+  isLUB_of_bddAbove_directed := by
+    intro D hne hdir hbdd
+    obtain ⟨u, hu⟩ := hbdd
+    have hne' : (cornerSet.saMap '' D).Nonempty := hne.image _
+    have hdir' : DirectedOn (· ≤ ·) (cornerSet.saMap '' D) := by
+      rintro _ ⟨x, hx, rfl⟩ _ ⟨z, hz, rfl⟩
+      obtain ⟨v, hv, hxv, hzv⟩ := hdir x hx z hz
+      exact ⟨cornerSet.saMap v, ⟨v, hv, rfl⟩, hxv, hzv⟩
+    have hbdd' : BddAbove (cornerSet.saMap '' D) := by
+      refine ⟨cornerSet.saMap u, ?_⟩
+      rintro _ ⟨x, hx, rfl⟩
+      exact hu hx
+    obtain ⟨s₀, hs₀⟩ :=
+      VonNeumannAlgebra.isLUB_of_bddAbove_directed _ hne' hdir' hbdd'
+    have hmem : p * (s₀ : A) * p = (s₀ : A) := by
+      refine cornerSet.isLUB_mem _ s₀ ?_ hne' hdir' hs₀
+      rintro _ ⟨x, hx, rfl⟩
+      exact x.1.2
+    refine ⟨⟨⟨(s₀ : A), hmem⟩, cornerSet.val_injective s₀.2⟩, ?_, ?_⟩
+    · intro d hd
+      exact hs₀.1 ⟨d, hd, rfl⟩
+    · intro v hv
+      have hub : cornerSet.saMap v ∈ upperBounds (cornerSet.saMap '' D) := by
+        rintro _ ⟨x, hx, rfl⟩
+        exact hv hx
+      exact hs₀.2 hub
+  np_faithful := by
+    intro a ha hω
+    refine cornerSet.val_injective ?_
+    exact VonNeumannAlgebra.np_faithful a.1 ha
+      (fun ω => hω (cornerSet.restrictNP p ω))
 
 /-- `⌊b⌋` is a projection (**56VI**; the junk value off the effects is `0`),
 so the corner `⌊b⌋A⌊b⌋` gets the structure above without further ado. -/
@@ -96,6 +434,13 @@ instance fact_isStarProjection_ceil [VonNeumannAlgebra A] (b : A) :
   · exact (ceil_spec hb).1
   · simp only [ceil, hb, dite_false]
     exact IsStarProjection.zero A
+
+/-- `⌈⌈b⌉⌉` is a projection (**68III** `cceil_isLeast`: the central support
+is by definition the least *central projection* absorbing `b`), so the
+corner `⌈⌈b⌉⌉A⌈⌈b⌉⌉` gets the structure above without further ado. -/
+instance fact_isStarProjection_cceil [VonNeumannAlgebra A] (b : A) :
+    Fact (IsStarProjection (cceil b)) :=
+  ⟨(cceil_isLeast b).1.1⟩
 
 end CornerSet
 
@@ -287,11 +632,10 @@ and `h'_p` the restriction of `h_p` to `⌈⌈p⌉⌉A`.
 The hypothesis `IsStarProjection p` of the thesis is carried as an instance
 `[Fact (IsStarProjection p)]`, which is what the corner `pAp` needs to be an
 algebra at all (see `cornerSet.instCStarAlgebra`).  That `⌈⌈p⌉⌉` is a
-projection too is **68III** (`exists_cceil`), still `sorry` in
-`Theses.A.VN.Projections`, so it cannot yet be discharged and appears as a
-second instance hypothesis; drop it once 68III is proved. -/
+projection too is **68III**, now proved in `Theses.A.VN.Projections`, so it
+is supplied by `fact_isStarProjection_cceil` rather than assumed. -/
 theorem paschke_corner [VonNeumannAlgebra A] (p : A)
-    [Fact (IsStarProjection p)] [Fact (IsStarProjection (cceil p))]
+    [Fact (IsStarProjection p)]
     (hp' : NCPMap A (cornerSet A p))
     (hval : ∀ a : A, (hp' a).1 = p * a * p) :
     ∃ (ρ : NMIUMap A (cornerSet A (cceil p)))
