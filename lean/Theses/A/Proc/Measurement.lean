@@ -1145,7 +1145,64 @@ theorem exists_adNCP [VonNeumannAlgebra A] (a p q : A)
     [Fact (IsStarProjection p)] [Fact (IsStarProjection q)]
     (h : star a * p * a ≤ q) :
     ∃ f : NCPMap (Corner A p) (Corner A q),
-      ∀ b : Corner A p, (f b).val = star a * b.val * a := sorry
+      ∀ b : Corner A p, (f b).val = star a * b.val * a := by
+  have hmem : ∀ b : Corner A p, q * (star a * b.val * a) * q = star a * b.val * a :=
+    fun b => ad_ncp_1 a p q (Corner.proj p) (Corner.proj q) h b.val b.property
+  refine ⟨{ toCompletelyPositiveMap :=
+              { toFun := fun b => ⟨star a * b.val * a, hmem b⟩
+                map_add' := fun x y => Corner.val_injective (by
+                  show star a * (x.val + y.val) * a
+                      = star a * x.val * a + star a * y.val * a
+                  noncomm_ring)
+                map_smul' := fun c x => Corner.val_injective (by
+                  show star a * (c • x.val) * a = c • (star a * x.val * a)
+                  simp [mul_smul_comm, smul_mul_assoc])
+                map_cstarMatrix_nonneg' := fun k M hM => ?_ }
+            preservesDirSups' := ?_ }, fun _ => rfl⟩
+  · refine (Corner.nonneg_map_val_iff k _).mp ?_
+    set D : CStarMatrix (Fin k) (Fin k) A :=
+      CStarMatrix.ofMatrix (Matrix.diagonal fun _ => a) with hD
+    have hDapp : ∀ i j, D i j = if i = j then a else 0 := fun i j => rfl
+    have hkey : (CStarMatrix.map M fun b : Corner A p =>
+        (⟨star a * b.val * a, hmem b⟩ : Corner A q)).map Corner.val
+        = star D * (M.map Corner.val) * D := by
+      ext i j
+      rw [CStarMatrix.map_apply, CStarMatrix.map_apply, CStarMatrix.mul_apply]
+      have h₁ : ∀ l, (star D * M.map Corner.val) i l = star a * (M i l).val := by
+        intro l
+        rw [CStarMatrix.mul_apply, Finset.sum_eq_single i]
+        · rw [CStarMatrix.star_apply, hDapp, if_pos rfl, CStarMatrix.map_apply]
+        · intro b _ hb
+          rw [CStarMatrix.star_apply, hDapp, if_neg hb, star_zero, zero_mul]
+        · intro hc; exact absurd (Finset.mem_univ i) hc
+      simp only [h₁]
+      rw [Finset.sum_eq_single j]
+      · rw [hDapp, if_pos rfl]
+      · intro b _ hb
+        rw [hDapp, if_neg hb, mul_zero]
+      · intro hc; exact absurd (Finset.mem_univ j) hc
+    have hMval : (0 : CStarMatrix (Fin k) (Fin k) A) ≤ M.map Corner.val :=
+      (Corner.nonneg_map_val_iff k M).mpr hM
+    have key : (0 : CStarMatrix (Fin k) (Fin k) A)
+        ≤ star D * (M.map Corner.val) * D := star_left_conjugate_nonneg hMval D
+    rw [← hkey] at key
+    exact key
+  · intro D s hne hdir hlub
+    refine Corner.isLUB_of_isLUB_image_val ?_
+    have h1 := Corner.isLUB_saMap_image hne hdir hlub
+    have hbdd : BddAbove (Corner.saMap '' D) := ⟨Corner.saMap s, h1.1⟩
+    have hh : (Corner.saMap '' D).Nonempty ∧
+        DirectedOn (· ≤ ·) (Corner.saMap '' D) ∧ BddAbove (Corner.saMap '' D) := by
+      refine ⟨hne.image _, ?_, hbdd⟩
+      rintro _ ⟨x, hx, rfl⟩ _ ⟨z, hz, rfl⟩
+      obtain ⟨u, hu, hxu, hzu⟩ := hdir x hx z hz
+      exact ⟨Corner.saMap u, ⟨u, hu, rfl⟩, hxu, hzu⟩
+    have hs : Corner.saMap s = dirSup _ hh := h1.unique (isLUB_dirSup _ hh)
+    have hnat := ad_normal a (Corner.saMap '' D) hh
+    rw [← hs] at hnat
+    rw [← Set.image_comp] at hnat
+    rw [← Set.image_comp]
+    exact hnat
 
 /-- The ncp-map `a*(·)a : p𝒜p → q𝒜q` of 94III part 2. -/
 noncomputable def adNCP [VonNeumannAlgebra A] (a p q : A)
@@ -1157,7 +1214,59 @@ noncomputable def adNCP [VonNeumannAlgebra A] (a p q : A)
 `a*(·)a : 𝒜 → q𝒜q` is an ncp-map; by choice `adToCorner`. -/
 theorem exists_adToCorner [VonNeumannAlgebra A] (a q : A)
     [Fact (IsStarProjection q)] (h : a * q = a) :
-    ∃ f : NCPMap A (Corner A q), ∀ b : A, (f b).val = star a * b * a := sorry
+    ∃ f : NCPMap A (Corner A q), ∀ b : A, (f b).val = star a * b * a := by
+  have hsq : star q = q := (Corner.proj q).isSelfAdjoint.star_eq
+  have hqa : q * star a = star a := by
+    have := congrArg star h
+    rwa [star_mul, hsq] at this
+  have hmem : ∀ b : A, q * (star a * b * a) * q = star a * b * a := by
+    intro b
+    calc q * (star a * b * a) * q = (q * star a) * b * (a * q) := by noncomm_ring
+      _ = star a * b * a := by rw [hqa, h]
+  refine ⟨{ toCompletelyPositiveMap :=
+              { toFun := fun b => ⟨star a * b * a, hmem b⟩
+                map_add' := fun x y => Corner.val_injective (by
+                  show star a * (x + y) * a = star a * x * a + star a * y * a
+                  noncomm_ring)
+                map_smul' := fun c x => Corner.val_injective (by
+                  show star a * (c • x) * a = c • (star a * x * a)
+                  simp [mul_smul_comm, smul_mul_assoc])
+                map_cstarMatrix_nonneg' := fun k M hM => ?_ }
+            preservesDirSups' := ?_ }, fun _ => rfl⟩
+  · refine (Corner.nonneg_map_val_iff k _).mp ?_
+    set D : CStarMatrix (Fin k) (Fin k) A :=
+      CStarMatrix.ofMatrix (Matrix.diagonal fun _ => a) with hD
+    have hDapp : ∀ i j, D i j = if i = j then a else 0 := fun i j => rfl
+    have hkey : (CStarMatrix.map M fun b => (⟨star a * b * a, hmem b⟩ : Corner A q)).map
+        Corner.val = star D * M * D := by
+      ext i j
+      rw [CStarMatrix.map_apply, CStarMatrix.map_apply, CStarMatrix.mul_apply]
+      have h₁ : ∀ l, (star D * M) i l = star a * M i l := by
+        intro l
+        rw [CStarMatrix.mul_apply, Finset.sum_eq_single i]
+        · rw [CStarMatrix.star_apply, hDapp, if_pos rfl]
+        · intro b _ hb
+          rw [CStarMatrix.star_apply, hDapp, if_neg hb, star_zero, zero_mul]
+        · intro hc; exact absurd (Finset.mem_univ i) hc
+      simp only [h₁]
+      rw [Finset.sum_eq_single j]
+      · rw [hDapp, if_pos rfl]
+      · intro b _ hb
+        rw [hDapp, if_neg hb, mul_zero]
+      · intro hc; exact absurd (Finset.mem_univ j) hc
+    have key : (0 : CStarMatrix (Fin k) (Fin k) A) ≤ star D * M * D :=
+      star_left_conjugate_nonneg hM D
+    rw [← hkey] at key
+    exact key
+  · intro D s hne hdir hlub
+    refine Corner.isLUB_of_isLUB_image_val ?_
+    have hbdd : BddAbove D := ⟨s, hlub.1⟩
+    have hh : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧ BddAbove D := ⟨hne, hdir, hbdd⟩
+    have hs : s = dirSup D hh := hlub.unique (isLUB_dirSup D hh)
+    have hnat := ad_normal a D hh
+    rw [← hs] at hnat
+    rw [← Set.image_comp]
+    exact hnat
 
 /-- The ncp-map `a*(·)a : 𝒜 → q𝒜q` (for `a·q = a`). -/
 noncomputable def adToCorner [VonNeumannAlgebra A] (a q : A)
