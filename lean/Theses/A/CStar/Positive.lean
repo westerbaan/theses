@@ -279,17 +279,54 @@ may fail (e.g. `[[0,1],[0,0]]`); the general formula
 `sup |spec(a)| = limsup ‖aⁿ‖^{1/n}` is not needed here.  Not converted. -/
 
 /-- **16V** (`spectrum-non-empty`, cstar.tex:2646, Exercise): the spectrum of
-a self-adjoint element of a C*-algebra is non-empty.  (Mathlib proves this
-for arbitrary elements: `spectrum.nonempty`.) -/
-theorem spectrum_nonempty (a : 𝒜) (ha : IsSelfAdjoint a) :
+a self-adjoint element of a C*-algebra `𝒜 ≠ {0}` is non-empty.  (Mathlib
+proves this for arbitrary elements: `spectrum.nonempty`.)
+
+The hypothesis `𝒜 ≠ {0}` — here `[Nontrivial 𝒜]` — is **erratum 160.50**;
+without it the statement is false for the trivial C*-algebra, where every
+element is invertible and so `spec(a) = ∅`. -/
+theorem spectrum_nonempty [Nontrivial 𝒜] (a : 𝒜) (ha : IsSelfAdjoint a) :
     (spectrum ℂ a).Nonempty :=
-  sorry
+  spectrum.nonempty a
 
 /-- **16VI** (cstar.tex:2650, Exercise): for self-adjoint `a` and `λ ∈ ℝ`:
-`spec(a) = {λ}` iff `a = λ`. -/
+`spec(a) ⊆ {λ}` iff `a = λ`.
+
+The printed statement had `spec(a) = {λ}`; **erratum 160.60** weakens it to
+`spec(a) ⊆ {λ}`, which makes the exercise true for the trivial C*-algebra as
+well (there `spec(a) = ∅ ⊆ {λ}` and `a = 0 = λ`), so no nontriviality split
+is needed. -/
 theorem spectrum_eq_singleton_iff (a : 𝒜) (ha : IsSelfAdjoint a) (lam : ℝ) :
-    spectrum ℂ a = {(lam : ℂ)} ↔ a = algebraMap ℂ 𝒜 (lam : ℂ) :=
-  sorry
+    spectrum ℂ a ⊆ {(lam : ℂ)} ↔ a = algebraMap ℂ 𝒜 (lam : ℂ) :=
+  by
+    have hlam : IsSelfAdjoint (algebraMap ℂ 𝒜 (lam : ℂ)) := by
+      rw [IsSelfAdjoint, ← algebraMap_star_comm, Complex.star_def,
+        Complex.conj_ofReal]
+    have hb : IsSelfAdjoint (a - algebraMap ℂ 𝒜 (lam : ℂ)) := ha.sub hlam
+    constructor
+    · intro h
+      -- `spec(a - λ) = spec(a) - {λ} ⊆ {0}`, so the spectral radius of the
+      -- self-adjoint element `a - λ` — its norm, by **16III** — vanishes.
+      have hspec : ∀ z ∈ spectrum ℂ (a - algebraMap ℂ 𝒜 (lam : ℂ)), z = 0 := by
+        intro z hz
+        rw [← spectrum.sub_singleton_eq] at hz
+        obtain ⟨w, hw, s, hs, rfl⟩ := hz
+        rw [Set.mem_singleton_iff] at hs
+        obtain rfl : s = (lam : ℂ) := hs
+        obtain rfl : w = (lam : ℂ) := h hw
+        simp
+      have hr : spectralRadius ℂ (a - algebraMap ℂ 𝒜 (lam : ℂ)) ≤ 0 := by
+        refine iSup₂_le fun z hz => ?_
+        simp [hspec z hz]
+      rw [hb.spectralRadius_eq_nnnorm, nonpos_iff_eq_zero, ENNReal.coe_eq_zero,
+        nnnorm_eq_zero, sub_eq_zero] at hr
+      exact hr
+    · rintro rfl z hz
+      rw [Set.mem_singleton_iff]
+      by_contra hne
+      refine spectrum.mem_iff.mp hz ?_
+      rw [← map_sub]
+      exact ((sub_ne_zero.mpr hne).isUnit).map (algebraMap ℂ 𝒜)
 
 /-- **16VII** (cstar.tex:2658, Theorem (Gelfand–Mazur for C*-algebras)):
 if every non-zero element of a C*-algebra `𝒜` is invertible, then `𝒜 = ℂ`
@@ -1177,44 +1214,31 @@ theorem positive_basic_2_3a (a : 𝒜) (ha : IsSelfAdjoint a) (lam : ℝ)
         rwa [sub_nonneg] at h2
 
 /-- **17VI** (`positive-basic-2`, cstar.tex:2756, Exercise), part 3b:
-`‖a‖ = inf { λ ∈ ℝ : -λ ≤ a ≤ λ }` for self-adjoint `a` (so `sa(𝒜)` is a
-complete Archimedean order unit space). -/
+`‖a‖ = inf { λ ≥ 0 : -λ ≤ a ≤ λ }` for self-adjoint `a` (so `sa(𝒜)` is a
+complete Archimedean order unit space).
+
+The infimum runs over `λ ≥ 0`, not over all `λ ∈ ℝ`: that is **erratum
+170.60**.  With the range restricted, the set is `[‖a‖, ∞)` in *every*
+C*-algebra, the trivial one included, so — unlike the printed form — this
+needs no `Subsingleton`/`Nontrivial` case split. -/
 theorem positive_basic_2_3b (a : 𝒜) (ha : IsSelfAdjoint a) :
-    ‖a‖ = sInf {lam : ℝ |
+    ‖a‖ = sInf {lam : ℝ | 0 ≤ lam ∧
       -(algebraMap ℂ 𝒜 (lam : ℂ)) ≤ a ∧ a ≤ algebraMap ℂ 𝒜 (lam : ℂ)} :=
   by
-    rcases subsingleton_or_nontrivial 𝒜 with hs | hn
-    · have hset : {lam : ℝ |
-          -(algebraMap ℂ 𝒜 (lam : ℂ)) ≤ a ∧ a ≤ algebraMap ℂ 𝒜 (lam : ℂ)} = Set.univ :=
-        Set.eq_univ_of_forall fun lam =>
-          ⟨le_of_eq (Subsingleton.elim _ _), le_of_eq (Subsingleton.elim _ _)⟩
-      rw [hset, Real.sInf_univ, Subsingleton.elim a (0 : 𝒜), norm_zero]
-    · have hset : {lam : ℝ |
-          -(algebraMap ℂ 𝒜 (lam : ℂ)) ≤ a ∧ a ≤ algebraMap ℂ 𝒜 (lam : ℂ)} = Set.Ici ‖a‖ := by
-        ext lam
-        simp only [Set.mem_setOf_eq, Set.mem_Ici]
-        constructor
-        · rintro ⟨h1, h2⟩
-          have h3 : (0 : 𝒜) ≤ algebraMap ℂ 𝒜 (lam : ℂ) - -(algebraMap ℂ 𝒜 (lam : ℂ)) :=
-            sub_nonneg.mpr (h1.trans h2)
-          have h4 : algebraMap ℂ 𝒜 (lam : ℂ) - -(algebraMap ℂ 𝒜 (lam : ℂ))
-              = algebraMap ℂ 𝒜 (((lam + lam : ℝ)) : ℂ) := by
-            rw [sub_neg_eq_add, ← map_add, Complex.ofReal_add]
-          rw [h4] at h3
-          have h5 := (nonneg_iff_spectrum_ofReal_nonneg _
-            (isSelfAdjoint_algebraMap_ofReal' (lam + lam))).mp h3
-          have h6 : (((lam + lam : ℝ)) : ℂ) ∈
-              spectrum ℂ (algebraMap ℂ 𝒜 (((lam + lam : ℝ)) : ℂ)) := by
-            rw [spectrum.scalar_eq]; rfl
-          obtain ⟨r, hr, hre⟩ := h5 h6
-          have h7 : lam + lam = r := by exact_mod_cast hre
-          have hlam : 0 ≤ lam := by linarith
-          exact (positive_basic_2_3a a ha lam hlam).mp ⟨h1, h2⟩
-        · intro h
-          exact (positive_basic_2_3a a ha ‖a‖ (norm_nonneg a)).mpr le_rfl |>.imp
-            (fun hx => le_trans (neg_le_neg (algebraMap_ofReal_mono h)) hx)
-            (fun hx => le_trans hx (algebraMap_ofReal_mono h))
-      rw [hset, csInf_Ici]
+    have hset : {lam : ℝ | 0 ≤ lam ∧
+        -(algebraMap ℂ 𝒜 (lam : ℂ)) ≤ a ∧ a ≤ algebraMap ℂ 𝒜 (lam : ℂ)}
+          = Set.Ici ‖a‖ := by
+      ext lam
+      simp only [Set.mem_setOf_eq, Set.mem_Ici]
+      constructor
+      · rintro ⟨h0, h1, h2⟩
+        exact (positive_basic_2_3a a ha lam h0).mp ⟨h1, h2⟩
+      · intro h
+        refine ⟨le_trans (norm_nonneg a) h, ?_⟩
+        exact (positive_basic_2_3a a ha ‖a‖ (norm_nonneg a)).mpr le_rfl |>.imp
+          (fun hx => le_trans (neg_le_neg (algebraMap_ofReal_mono h)) hx)
+          (fun hx => le_trans hx (algebraMap_ofReal_mono h))
+    rw [hset, csInf_Ici]
 
 
 /-- **17VI** (`positive-basic-2`, cstar.tex:2756, Exercise), part 3c:
@@ -1856,12 +1880,51 @@ theorem order_ideal_basic_4 (a : 𝒜) (ha : IsSelfAdjoint a) (hu : ¬IsUnit a) 
     ∃ J : Submodule ℂ 𝒜, IsMaximalOrderIdeal J ∧ a ∈ J :=
   sorry
 
+/-- Auxiliary for **22III**.5: in a C*-algebra `≠ {0}` the spectral radius of
+a self-adjoint `a` is attained, so `‖a‖` or `-‖a‖` lies in `spec(a)`.
+
+Derived from the thesis's own ingredients — non-emptiness of the spectrum
+(**16V**), compactness, `‖a‖ = sup |spec(a)|` (**16III**) and the reality of
+`spec(a)` (**11XV**.1) — rather than from Mathlib's
+`CStarAlgebra.norm_or_neg_norm_mem_spectrum`, which rests on the continuous
+functional calculus and so would import parsec-280 content into parsec 220. -/
+private theorem norm_or_neg_norm_mem_spectrum' [Nontrivial 𝒜] (a : 𝒜)
+    (ha : IsSelfAdjoint a) :
+    ((‖a‖ : ℝ) : ℂ) ∈ spectrum ℂ a ∨ ((-‖a‖ : ℝ) : ℂ) ∈ spectrum ℂ a :=
+  by
+    obtain ⟨z, hz, hzr⟩ :=
+      spectrum.exists_nnnorm_eq_spectralRadius_of_nonempty (spectrum_nonempty a ha)
+    rw [ha.spectralRadius_eq_nnnorm, ENNReal.coe_inj] at hzr
+    have hz' : ‖z‖ = ‖a‖ := congrArg NNReal.toReal hzr
+    have hre : z = (z.re : ℂ) := ha.mem_spectrum_eq_re hz
+    have habs : |z.re| = ‖a‖ := by
+      rw [← hz']
+      conv_rhs => rw [hre]
+      rw [Complex.norm_real, Real.norm_eq_abs]
+    rcases abs_eq (norm_nonneg a) |>.mp habs with h | h
+    · exact Or.inl (by rwa [← h, ← hre])
+    · exact Or.inr (by rwa [← h, ← hre])
+
 /-- **22III** (`order-ideal-basic`, cstar.tex:3324, Exercise), part 5: for
-self-adjoint `a`, `‖a‖ - a` or `‖a‖ + a` is not invertible. -/
-theorem order_ideal_basic_5 (a : 𝒜) (ha : IsSelfAdjoint a) :
+self-adjoint `a` in a C*-algebra `≠ {0}`, `‖a‖ - a` or `‖a‖ + a` is not
+invertible.
+
+The hypothesis `𝒜 ≠ {0}` — here `[Nontrivial 𝒜]` — is **erratum 220.30**; in
+the trivial C*-algebra every element is invertible, so both disjuncts fail.
+The corrected solution cites **16V** for the non-emptiness of `spec(a)`,
+which is exactly where the hypothesis is used below. -/
+theorem order_ideal_basic_5 [Nontrivial 𝒜] (a : 𝒜) (ha : IsSelfAdjoint a) :
     ¬IsUnit (algebraMap ℂ 𝒜 (‖a‖ : ℂ) - a) ∨
       ¬IsUnit (algebraMap ℂ 𝒜 (‖a‖ : ℂ) + a) :=
-  sorry
+  by
+    rcases norm_or_neg_norm_mem_spectrum' a ha with h | h
+    · exact Or.inl (spectrum.mem_iff.mp h)
+    · refine Or.inr ?_
+      have he : algebraMap ℂ 𝒜 (‖a‖ : ℂ) + a
+          = -(algebraMap ℂ 𝒜 ((-‖a‖ : ℝ) : ℂ) - a) := by
+        rw [Complex.ofReal_neg, map_neg]; abel
+      rw [he, IsUnit.neg_iff]
+      exact spectrum.mem_iff.mp h
 
 /-- **22IV** (`maximal-ideal-state`, cstar.tex:3367, Lemma): for every
 maximal order ideal `I` of a C*-algebra `𝒜` there is a state `ω : 𝒜 → ℂ`
@@ -1871,8 +1934,13 @@ theorem maximal_ideal_state (I : Submodule ℂ 𝒜) (hI : IsMaximalOrderIdeal I
   sorry
 
 /-- **22VIII** (`states-order-separating`, cstar.tex:3464, Exercise), part 1:
-for every self-adjoint `a` there is a state `ω` with `|ω(a)| = ‖a‖`. -/
-theorem states_order_separating_1 (a : 𝒜) (ha : IsSelfAdjoint a) :
+for every self-adjoint `a` of a C*-algebra `≠ {0}` there is a state `ω` with
+`|ω(a)| = ‖a‖`.
+
+The hypothesis `𝒜 ≠ {0}` — here `[Nontrivial 𝒜]` — is **erratum 220.80**: the
+trivial C*-algebra has no states at all.  Part 2 below (order separation) is
+*not* touched by the erratum; it holds for `{0}` vacuously. -/
+theorem states_order_separating_1 [Nontrivial 𝒜] (a : 𝒜) (ha : IsSelfAdjoint a) :
     ∃ ω : 𝒜 →ₗ[ℂ] ℂ, IsState ω ∧ ‖ω a‖ = ‖a‖ :=
   sorry
 
@@ -2417,10 +2485,25 @@ theorem sqrt_2 (a : 𝒜) (ha : 0 ≤ a) (b c : 𝒜) (hb : IsSelfAdjoint b)
     exact h
 
 /-- **23VII** (`sqrt`, cstar.tex:3637, Exercise), part 3: for commuting
-self-adjoint `a ≤ b`: `a² ≤ b²`. -/
-theorem sqrt_3 (a b : 𝒜) (ha : IsSelfAdjoint a) (hb : IsSelfAdjoint b)
+self-adjoint `a, b` with `0 ≤ a ≤ b`: `a² ≤ b²`.
+
+The hypothesis `0 ≤ a` is **erratum 230.70** (which was for a while mis-keyed
+230.50): without it the statement is false already in `𝒜 = ℂ`, where
+`a = -2 ≤ 1 = b` but `4 ≰ 1`. -/
+theorem sqrt_3 (a b : 𝒜) (ha : 0 ≤ a) (hb : IsSelfAdjoint b)
     (hab : a * b = b * a) (h : a ≤ b) : a ^ 2 ≤ b ^ 2 :=
-  sorry
+  by
+    -- the thesis's argument: `b² − a² = b(b−a) + (b−a)a`, and both summands
+    -- are products of commuting positive elements, hence positive by part 1.
+    have hb0 : (0 : 𝒜) ≤ b := ha.trans h
+    have hba : (0 : 𝒜) ≤ b - a := sub_nonneg.mpr h
+    have h1 : (0 : 𝒜) ≤ b * (b - a) :=
+      mul_nonneg_of_commute hb0 hba (by rw [mul_sub, sub_mul, hab])
+    have h2 : (0 : 𝒜) ≤ (b - a) * a :=
+      mul_nonneg_of_commute hba ha (by rw [sub_mul, mul_sub, hab])
+    have he : b * (b - a) + (b - a) * a = b ^ 2 - a ^ 2 := by noncomm_ring
+    rw [← sub_nonneg, ← he]
+    exact add_nonneg h1 h2
 
 /-- **23VII** (`sqrt`, cstar.tex:3637, Exercise), part 4: commutativity is
 essential in part 3 — the square is not monotone on the positive elements
@@ -2428,7 +2511,53 @@ essential in part 3 — the square is not monotone on the positive elements
 theorem sqrt_4 :
     ∃ a b : EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2),
       0 ≤ a ∧ 0 ≤ b ∧ a ≤ b ∧ ¬(a ^ 2 ≤ b ^ 2) :=
-  sorry
+  by
+    -- The thesis's hint with the entries cleared of denominators:
+    -- `a = [[1,0],[0,0]]` and `b = a + [[1,1],[1,1]] = [[2,1],[1,1]]`.
+    -- Then `b² - a² = [[4,3],[3,2]]`, which has determinant `-1`.
+    have hpos : ∀ M : Matrix (Fin 2) (Fin 2) ℂ,
+        (0 : EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2)) ≤
+          Matrix.toEuclideanCLM (𝕜 := ℂ) (star M * M) := by
+      intro M
+      rw [map_mul, map_star]
+      exact star_mul_self_nonneg _
+    have hA : (!![1, 0; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ)
+        = star (!![1, 0; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ) * !![1, 0; 0, 0] := by
+      ext i j
+      fin_cases i <;> fin_cases j <;>
+        simp [Matrix.mul_apply, Fin.sum_univ_succ, Matrix.star_eq_conjTranspose,
+          Matrix.conjTranspose_apply]
+    have hD : (!![2, 1; 1, 1] : Matrix (Fin 2) (Fin 2) ℂ) - !![1, 0; 0, 0]
+        = star (!![1, 1; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ) * !![1, 1; 0, 0] := by
+      ext i j
+      fin_cases i <;> fin_cases j <;>
+        simp [Matrix.mul_apply, Fin.sum_univ_succ, Matrix.star_eq_conjTranspose,
+          Matrix.conjTranspose_apply] <;> norm_num
+    have ha : (0 : EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2)) ≤
+        Matrix.toEuclideanCLM (𝕜 := ℂ) (!![1, 0; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ) := by
+      rw [hA]; exact hpos _
+    have hab :
+        Matrix.toEuclideanCLM (𝕜 := ℂ) (!![1, 0; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ) ≤
+          Matrix.toEuclideanCLM (𝕜 := ℂ) (!![2, 1; 1, 1] : Matrix (Fin 2) (Fin 2) ℂ) := by
+      rw [← sub_nonneg, ← map_sub, hD]
+      exact hpos _
+    refine ⟨_, _, ha, ha.trans hab, hab, ?_⟩
+    intro hle
+    have hsq : ∀ M : Matrix (Fin 2) (Fin 2) ℂ,
+        Matrix.toEuclideanCLM (𝕜 := ℂ) M ^ 2 = Matrix.toEuclideanCLM (𝕜 := ℂ) (M * M) := by
+      intro M; rw [sq, ← map_mul]
+    have hC : (!![2, 1; 1, 1] : Matrix (Fin 2) (Fin 2) ℂ) * !![2, 1; 1, 1]
+        - (!![1, 0; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ) * !![1, 0; 0, 0] = !![4, 3; 3, 2] := by
+      ext i j
+      fin_cases i <;> fin_cases j <;>
+        simp [Matrix.mul_apply, Fin.sum_univ_succ] <;> norm_num
+    rw [hsq, hsq, ← sub_nonneg, ← map_sub, hC] at hle
+    have hq := ((ContinuousLinearMap.isPositive_iff _).mp
+      ((ContinuousLinearMap.nonneg_iff_isPositive _).mp hle)).2
+      (WithLp.toLp 2 ![3, -4] : EuclideanSpace ℂ (Fin 2))
+    -- but `⟪(b²-a²) x, x⟫ = -4` at `x = (3, -4)`
+    simp only [PiLp.inner_apply, Fin.sum_univ_succ] at hq
+    norm_num [Complex.le_def] at hq
 
 /-! ## Parsec 240: positive and negative parts
 

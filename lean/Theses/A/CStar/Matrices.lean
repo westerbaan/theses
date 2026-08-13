@@ -1594,14 +1594,42 @@ theorem sum_of_unitaries_3 (a : 𝒜) (N : ℕ) (hN : ‖a‖ < N) :
   abel
 
 /-- **34aVII** (`russo-dye`, cstar.tex:5842, Theorem (Russo–Dye)): every
-element `a` of a C*-algebra with `‖a‖ < 1 - 2/N` for some natural number `N`
-can be written as `a = (u₁ + ⋯ + u_N)/N` for some unitaries `u₁, …, u_N`.
-(Hence the convex combinations of unitaries are norm dense in the closed
-unit ball.) -/
-theorem russo_dye (a : 𝒜) (N : ℕ) (hN : ‖a‖ < 1 - 2 / N) :
+element `a` of a C*-algebra with `‖a‖ < 1 - 2/N` for some natural number
+`N > 0` can be written as `a = (u₁ + ⋯ + u_N)/N` for some unitaries
+`u₁, …, u_N`.  (Hence the convex combinations of unitaries are norm dense in
+the closed unit ball.)
+
+`N > 0` is **erratum 341.70**.  It is needed in Lean for a reason of pure
+notation — `2 / (0 : ℝ) = 0`, so at `N = 0` the hypothesis would degenerate
+to `‖a‖ < 1` and the conclusion to `a = 0` — and the erratum makes the
+thesis's intent ("for some natural number `N`", meaning `N ≥ 1`) explicit. -/
+theorem russo_dye (a : 𝒜) (N : ℕ) (hN0 : 0 < N) (hN : ‖a‖ < 1 - 2 / N) :
     ∃ u : Fin N → 𝒜, (∀ i, u i ∈ unitary 𝒜) ∧
       a = ((N : ℂ))⁻¹ • ∑ i, u i :=
-  sorry
+  by
+    -- `N ≤ 2` is vacuous: there `1 - 2/N ≤ 0 ≤ ‖a‖`.
+    have hN3 : 3 ≤ N := by
+      by_contra hlt
+      push_neg at hlt
+      interval_cases N <;>
+        · norm_num at hN
+          linarith [norm_nonneg a]
+    obtain ⟨M, rfl⟩ : ∃ M : ℕ, N = M + 2 := ⟨N - 2, by omega⟩
+    have hcast : ((M + 2 : ℕ) : ℝ) = (M : ℝ) + 2 := by push_cast; ring
+    have hpos : (0 : ℝ) < (M : ℝ) + 2 := by positivity
+    rw [hcast] at hN
+    -- `‖Na‖ = N‖a‖ < N - 2 = M`, so **34aVI**.3 writes `Na` as a sum of
+    -- `M + 2 = N` unitaries.
+    have hkey : ‖a‖ * ((M : ℝ) + 2) < (M : ℝ) :=
+      calc ‖a‖ * ((M : ℝ) + 2) < (1 - 2 / ((M : ℝ) + 2)) * ((M : ℝ) + 2) :=
+            mul_lt_mul_of_pos_right hN hpos
+        _ = (M : ℝ) := by field_simp; ring
+    have hb : ‖((M + 2 : ℕ) : ℂ) • a‖ < (M : ℕ) := by
+      rw [norm_smul, Complex.norm_natCast, hcast]
+      linarith [hkey]
+    obtain ⟨u, hu, hsum⟩ := sum_of_unitaries_3 (((M + 2 : ℕ) : ℂ) • a) M hb
+    have hne : ((M + 2 : ℕ) : ℂ) ≠ 0 := Nat.cast_ne_zero.mpr (by omega)
+    exact ⟨u, hu, by rw [← hsum, smul_smul, inv_mul_cancel₀ hne, one_smul]⟩
 
 /-- **34aVIII** (`russo-dye-cor`, cstar.tex:5850, Corollary): the operator
 norm of a positive map `f : 𝒜 → ℬ` between C*-algebras is `‖f‖ = ‖f(1)‖`,

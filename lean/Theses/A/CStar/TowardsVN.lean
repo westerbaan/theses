@@ -105,7 +105,36 @@ self-dual. -/
 theorem selfDual_pi (𝒜 : Type*) [CStarAlgebra 𝒜] [PartialOrder 𝒜]
     [StarOrderedRing 𝒜] (N : ℕ) :
     SelfDual 𝒜 (WithCStarModule 𝒜 (Fin N → 𝒜)) :=
-  sorry
+  by
+    intro r hr
+    -- the standard "basis" `e i = (0, …, 1, …, 0)` of `𝒜^N`
+    set e : Fin N → WithCStarModule 𝒜 (Fin N → 𝒜) :=
+      fun i => (WithCStarModule.equiv 𝒜 _).symm (Pi.single i 1) with he
+    refine ⟨(WithCStarModule.equiv 𝒜 _).symm fun i => star (r (e i)), fun x => ?_⟩
+    have hdecomp : ∑ i, (x i) • e i = x := by
+      ext j
+      have hsum : (∑ i, (x i) • e i) j = ∑ i, ((x i) • e i) j := by
+        have h := map_sum (WithCStarModule.linearEquiv ℂ 𝒜 (Fin N → 𝒜))
+          (fun i => (x i) • e i) Finset.univ
+        calc (∑ i, (x i) • e i) j
+            = (WithCStarModule.linearEquiv ℂ 𝒜 (Fin N → 𝒜) (∑ i, (x i) • e i)) j := rfl
+          _ = (∑ i, WithCStarModule.linearEquiv ℂ 𝒜 (Fin N → 𝒜) ((x i) • e i)) j := by
+              rw [h]
+          _ = ∑ i, ((x i) • e i) j := Finset.sum_apply _ _ _
+      rw [hsum]
+      simp only [he, WithCStarModule.smul_apply, WithCStarModule.equiv_symm_pi_apply,
+        Pi.single_apply, smul_eq_mul, mul_ite, mul_one, mul_zero]
+      rw [Finset.sum_eq_single j (fun b _ hb => by simp [Ne.symm hb])
+        (fun h => absurd (Finset.mem_univ j) h)]
+      simp
+    calc r x = r (∑ i, (x i) • e i) := by rw [hdecomp]
+      _ = ∑ i, (x i) * r (e i) := by
+          rw [map_sum]
+          exact Finset.sum_congr rfl fun i _ => hr.1 _ _
+      _ = inner 𝒜 ((WithCStarModule.equiv 𝒜 _).symm fun i => star (r (e i))) x := by
+          rw [WithCStarModule.pi_inner]
+          exact Finset.sum_congr rfl fun i _ => by
+            simp [WithCStarModule.inner_def]
 
 variable (𝒜) in
 /-- **36IV** (`chilb-form`, cstar.tex:6027, Definition): a *(bounded) form* on
