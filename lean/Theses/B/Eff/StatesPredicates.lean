@@ -3605,6 +3605,1022 @@ theorem divisoid_div_ovee {M : Type u} [EffectMonoid M] [EffectDivisoid M]
 
 /-! ## `AConv_M` is an effectus for an effect divisoid `M` (parsec 196) -/
 
+/-! ### Machinery for 196II: binary mixtures `λ|κ₁x⟩ ⋁ λᵖ|κ₂y⟩`
+
+The proof of 196II below needs to compute with the elements of `X + Y`.  The
+thesis does this with the *derivations* of 193IX/193IV, which are not
+formalized; instead we show (`AConvMCat.exists_mix`) that over an effect
+divisoid **every** element of `X + Y` is already a *binary* mixture
+`λ|κ₁x⟩ ⋁ λᵖ|κ₂y⟩`, which is what the divisoid buys and all that 196II uses.
+The lemmas below build up to that. -/
+
+namespace MConvexComb
+
+variable {M : Type u} [EffectMonoid M]
+
+open Classical in
+/-- The values of the binary combination `bin l x y` when `x ≠ y`. -/
+theorem bin_apply {X : Type v} (l : M) {x y : X} (hxy : x ≠ y) (z : X) :
+    (bin l x y).toFun z = if z = x then l else if z = y then orth l else 0 := by
+  show (if x = y then (if z = x then (1 : M) else 0)
+    else if z = x then l else if z = y then orth l else 0) = _
+  rw [if_neg hxy]
+
+open Classical in
+/-- `bin l x x = η x`. -/
+theorem bin_self {X : Type v} (l : M) (x : X) : bin l x x = eta x := by
+  refine MConvexComb.ext (funext fun z => ?_)
+  show (if x = x then (if z = x then (1 : M) else 0)
+    else if z = x then l else if z = x then orth l else 0) = _
+  rw [if_pos rfl]
+  rfl
+
+open Classical in
+/-- The support of `bin l x y` is contained in `{x, y}`. -/
+theorem bin_eq_zero {X : Type v} (l : M) (x y z : X) (hzx : z ≠ x) (hzy : z ≠ y) :
+    (bin l x y).toFun z = 0 := by
+  by_cases hxy : x = y
+  · subst hxy
+    rw [bin_self]
+    show (if z = x then (1 : M) else 0) = 0
+    rw [if_neg hzx]
+  · rw [bin_apply l hxy z, if_neg hzx, if_neg hzy]
+
+open Classical in
+/-- `bin 1 a b = η a`. -/
+theorem bin_one {X : Type v} (a b : X) : bin (1 : M) a b = eta a := by
+  by_cases hab : a = b
+  · subst hab; exact bin_self 1 a
+  refine MConvexComb.ext (funext fun z => ?_)
+  rw [bin_apply (1 : M) hab z, eabasics_orth_one]
+  show _ = if z = a then (1 : M) else 0
+  by_cases hz : z = a
+  · rw [if_pos hz, if_pos hz]
+  · rw [if_neg hz, if_neg hz]
+    by_cases hz2 : z = b
+    · rw [if_pos hz2]
+    · rw [if_neg hz2]
+
+open Classical in
+/-- `bin 0 a b = η b`. -/
+theorem bin_zero {X : Type v} (a b : X) : bin (0 : M) a b = eta b := by
+  by_cases hab : a = b
+  · subst hab; exact bin_self 0 a
+  refine MConvexComb.ext (funext fun z => ?_)
+  rw [bin_apply (0 : M) hab z, eabasics_orth_zero]
+  show _ = if z = b then (1 : M) else 0
+  by_cases hz : z = a
+  · rw [if_pos hz, if_neg (by rw [hz]; exact hab)]
+  · rw [if_neg hz]
+
+/-- Variant of `map_spec`: the value of `𝒟_M f (p)` at `y` may be computed
+over any repetition-free list of elements of the fibre of `y` containing the
+whole support of `p` in that fibre. -/
+theorem map_spec_of_list {X : Type v} {Y : Type w} (p : MConvexComb M X)
+    (f : X → Y) (y : Y) (L : List X) (hnd : L.Nodup)
+    (hL : ∀ x ∈ L, f x = y)
+    (hsupp : ∀ x, p.toFun x ≠ 0 → f x = y → x ∈ L) :
+    PCM.IsSumOf (L.map p.toFun) ((p.map f).toFun y) := by
+  classical
+  have hmem' : ∀ x, x ∈ L.filter (fun x => decide (p.toFun x ≠ 0)) ↔
+      (p.toFun x ≠ 0 ∧ f x = y) := by
+    intro x
+    rw [List.mem_filter]
+    simp only [decide_eq_true_eq]
+    exact ⟨fun h => ⟨h.2, hL x h.1⟩, fun h => ⟨hsupp x h.1 h.2, h.1⟩⟩
+  have h1 := map_spec p f y _ (List.Nodup.filter _ hnd) hmem'
+  refine isSumOf_map_of_subset p.toFun (List.Nodup.filter _ hnd) hnd
+    (fun x hx => List.mem_of_mem_filter hx) (fun x hx hnx => ?_) h1
+  by_contra h0
+  exact hnx (List.mem_filter.mpr ⟨hx, by simpa using h0⟩)
+
+open Classical in
+/-- The pushforward of a binary combination is a binary combination. -/
+theorem map_bin {X : Type v} {Y : Type w} (l : M) (x y : X) (f : X → Y) :
+    (bin l x y).map f = bin l (f x) (f y) := by
+  by_cases hxy : x = y
+  · subst hxy
+    rw [bin_self, map_eta, bin_self]
+  have hvx : (bin l x y).toFun x = l := by rw [bin_apply l hxy, if_pos rfl]
+  have hvy : (bin l x y).toFun y = orth l := by
+    rw [bin_apply l hxy, if_neg (fun h : y = x => hxy h.symm), if_pos rfl]
+  refine MConvexComb.ext (funext fun z => ?_)
+  by_cases hfxy : f x = f y
+  · -- both coefficients land on the same point of `Y`
+    have hR : bin l (f x) (f y) = (eta (f x) : MConvexComb M Y) := by
+      rw [← hfxy, bin_self]
+    rw [hR]
+    by_cases hz : z = f x
+    · subst hz
+      have h := map_spec_of_list (bin l x y) f (f x) [x, y] (by simp [hxy])
+        (fun w hw => by
+          rcases List.mem_cons.mp hw with rfl | hw
+          · rfl
+          · rw [List.mem_singleton.mp hw]; exact hfxy.symm)
+        (fun w hw _ => by
+          by_cases hwx : w = x
+          · exact List.mem_cons.mpr (Or.inl hwx)
+          by_cases hwy : w = y
+          · exact List.mem_cons.mpr (Or.inr (List.mem_singleton.mpr hwy))
+          · exact absurd (bin_eq_zero l x y w hwx hwy) hw)
+      rw [List.map_cons, List.map_cons, List.map_nil, hvx, hvy] at h
+      have h2 := isSumOf_pair l (orth l) (EffectAlgebra.perp_orth l)
+      rw [EffectAlgebra.ovee_orth l] at h2
+      rw [isSumOf_unique h h2]
+      show (1 : M) = if f x = f x then (1 : M) else 0
+      rw [if_pos rfl]
+    · have h := map_spec_of_list (bin l x y) f z [] List.nodup_nil
+        (fun w hw => absurd hw (List.not_mem_nil))
+        (fun w hw hfw => by
+          by_cases hwx : w = x
+          · subst hwx; exact absurd hfw.symm hz
+          by_cases hwy : w = y
+          · subst hwy; exact absurd (hfxy.trans hfw).symm hz
+          · exact absurd (bin_eq_zero l x y w hwx hwy) hw)
+      rw [List.map_nil, PCM.isSumOf_nil_iff] at h
+      rw [h]
+      show (0 : M) = if z = f x then (1 : M) else 0
+      rw [if_neg hz]
+  · rw [bin_apply l hfxy z]
+    by_cases hz : z = f x
+    · subst hz
+      have h := map_spec_of_list (bin l x y) f (f x) [x] (List.nodup_singleton x)
+        (fun w hw => by rw [List.mem_singleton.mp hw])
+        (fun w hw hfw => by
+          by_cases hwx : w = x
+          · exact List.mem_singleton.mpr hwx
+          by_cases hwy : w = y
+          · exact absurd ((hwy ▸ hfw : f y = f x)) (fun hh => hfxy hh.symm)
+          · exact absurd (bin_eq_zero l x y w hwx hwy) hw)
+      rw [List.map_cons, List.map_nil, hvx] at h
+      rw [eq_of_isSumOf_singleton h, if_pos rfl]
+    · by_cases hz2 : z = f y
+      · subst hz2
+        have h := map_spec_of_list (bin l x y) f (f y) [y] (List.nodup_singleton y)
+          (fun w hw => by rw [List.mem_singleton.mp hw])
+          (fun w hw hfw => by
+            by_cases hwy : w = y
+            · exact List.mem_singleton.mpr hwy
+            by_cases hwx : w = x
+            · exact absurd ((hwx ▸ hfw : f x = f y)) hfxy
+            · exact absurd (bin_eq_zero l x y w hwx hwy) hw)
+        rw [List.map_cons, List.map_nil, hvy] at h
+        rw [eq_of_isSumOf_singleton h, if_neg hz, if_pos rfl]
+      · have h := map_spec_of_list (bin l x y) f z [] List.nodup_nil
+          (fun w hw => absurd hw (List.not_mem_nil))
+          (fun w hw hfw => by
+            by_cases hwx : w = x
+            · exact absurd (hwx ▸ hfw : f x = z) (fun hh => hz hh.symm)
+            by_cases hwy : w = y
+            · exact absurd (hwy ▸ hfw : f y = z) (fun hh => hz2 hh.symm)
+            · exact absurd (bin_eq_zero l x y w hwx hwy) hw)
+        rw [List.map_nil, PCM.isSumOf_nil_iff] at h
+        rw [h, if_neg hz, if_neg hz2]
+
+/-- Variant of `mu_spec`: the value of `μ(Φ)` may be computed over any
+repetition-free list containing the support of `Φ`. -/
+theorem mu_spec_of_subset {X : Type v} (Φ : MConvexComb M (MConvexComb M X))
+    (x : X) (l : List (MConvexComb M X)) (hnd : l.Nodup)
+    (hsupp : ∀ φ, Φ.toFun φ ≠ 0 → φ ∈ l) :
+    PCM.IsSumOf (l.map fun φ => Φ.toFun φ * φ.toFun x) ((mu Φ).toFun x) := by
+  classical
+  obtain ⟨L, hndL, hmemL, -⟩ := Φ.sum_one
+  refine isSumOf_map_of_support _ hndL hnd ?_ ?_ (mu_spec Φ x L hndL hmemL)
+  · intro φ hφ
+    refine (hmemL φ).mpr fun h0 => hφ ?_
+    show Φ.toFun φ * φ.toFun x = 0
+    rw [h0, (exc_emonzero (φ.toFun x)).2]
+  · intro φ hφ
+    refine hsupp φ fun h0 => hφ ?_
+    show Φ.toFun φ * φ.toFun x = 0
+    rw [h0, (exc_emonzero (φ.toFun x)).2]
+
+open Classical in
+/-- `μ` of a binary combination of two distributions is their `λ`-mixture. -/
+theorem mu_bin {X : Type v} (l : M) (P Q : MConvexComb M X) (x : X) :
+    PCM.IsSumOf [l * P.toFun x, orth l * Q.toFun x] ((mu (bin l P Q)).toFun x) := by
+  by_cases hPQ : P = Q
+  · subst hPQ
+    rw [bin_self, mu_eta]
+    obtain ⟨h', he⟩ := emon_ovee_mul (P.toFun x) (EffectAlgebra.perp_orth l)
+    rw [EffectAlgebra.ovee_orth l, EffectMonoid.one_mul] at he
+    have hp2 := isSumOf_pair (l * P.toFun x) (orth l * P.toFun x) h'
+    rwa [← he] at hp2
+  · have h := mu_spec_of_subset (bin l P Q) x [P, Q] (by simp [hPQ]) (fun φ hφ => by
+      by_cases hP : φ = P
+      · exact List.mem_cons.mpr (Or.inl hP)
+      by_cases hQ : φ = Q
+      · exact List.mem_cons.mpr (Or.inr (List.mem_singleton.mpr hQ))
+      · exact absurd (bin_eq_zero l P Q φ hP hQ) hφ)
+    rw [List.map_cons, List.map_cons, List.map_nil, bin_apply l hPQ P, if_pos rfl,
+      bin_apply l hPQ Q, if_neg (fun hh : Q = P => hPQ hh.symm), if_pos rfl] at h
+    exact h
+
+/-- A formal combination over `A + B` that vanishes on `A` is `𝒟_M κ₂` of a
+formal combination over `B` (the mirror image of `exists_map_inl`). -/
+theorem exists_map_inr {A B : Type v} (p : MConvexComb M (A ⊕ B))
+    (h : ∀ a : A, p.toFun (Sum.inl a) = 0) :
+    ∃ ψ : MConvexComb M B, ψ.map Sum.inr = p := by
+  have hval : ∀ a : A, (p.map Sum.swap).toFun (Sum.inr a) = 0 := by
+    intro a
+    rw [MConvexComb.map_apply_of_unique_fiber p Sum.swap
+      (x₀ := Sum.inl a) (fun w => by rcases w with b | b <;> simp)]
+    exact h a
+  obtain ⟨χ, hχ⟩ := MConvexComb.exists_map_inl (p.map Sum.swap) hval
+  refine ⟨χ, ?_⟩
+  have h2 : (χ.map (Sum.inl : B → B ⊕ A)).map Sum.swap = (p.map Sum.swap).map Sum.swap := by
+    rw [hχ]
+  rw [MConvexComb.map_comp, MConvexComb.map_comp] at h2
+  have h3 : (Sum.swap ∘ (Sum.inl : B → B ⊕ A)) = (Sum.inr : B → A ⊕ B) := rfl
+  have h4 : (Sum.swap ∘ (Sum.swap : A ⊕ B → B ⊕ A)) = id := by
+    funext w; rcases w with a | b <;> rfl
+  rw [h3, h4, MConvexComb.map_id] at h2
+  exact h2
+
+end MConvexComb
+
+section Divisoid
+
+variable {M : Type u} [EffectMonoid M] [EffectDivisoid M]
+
+/-- `0/c = 0`. -/
+theorem div_zero_left (c : M) : div (0 : M) c = 0 :=
+  (EffectDivisoid.div_unique (pcm_zero_le c) (pcm_zero_le _)
+    (exc_emonzero c).1).symm
+
+/-- Division by a fixed `c` preserves finite partial sums (the `n`-ary form
+of 195VII). -/
+theorem isSumOf_div : ∀ {l : List M} {s : M}, PCM.IsSumOf l s → ∀ {c : M}, s ≼ c →
+    PCM.IsSumOf (l.map (fun a => div a c)) (div s c) := by
+  intro l s h
+  induction h with
+  | nil =>
+      intro c _
+      rw [List.map_nil, div_zero_left c]
+      exact PCM.IsSumOf.nil
+  | @cons a l t hl hp ih =>
+      intro c hsc
+      have hac : a ≼ c := pcm_preorder_trans ⟨t, hp, rfl⟩ hsc
+      have htc : t ≼ c :=
+        pcm_preorder_trans ⟨a, PCM.perp_comm hp, (PCM.ovee_comm hp).symm⟩ hsc
+      obtain ⟨h', he⟩ := divisoid_div_ovee hp hsc
+      rw [List.map_cons, he]
+      exact PCM.IsSumOf.cons (ih htc) h'
+
+open Classical in
+/-- **The normalization lemma for effect divisoids**: a finitely supported
+family `f : A → M` whose values sum to `l` is `l ⊙ (–)` of a formal convex
+combination `χ`.  The naive `χ(a) = f(a)/l` sums to `l/l`, which need not be
+`1`; the deficit `(l/l)ᵖ` is put at a chosen point `a₀` (this is the thesis's
+correction term `r` in the proof of 196II), and it is invisible after
+multiplying by `l` because `l ⊙ (l/l)ᵖ = 0`. -/
+theorem MConvexComb.exists_of_div {A : Type v} (f : A → M) (a₀ : A) (l : M)
+    (L : List A) (hnd : L.Nodup) (hsupp : ∀ a, f a ≠ 0 → a ∈ L)
+    (hsum : PCM.IsSumOf (L.map f) l) :
+    ∃ χ : MConvexComb M A, ∀ a, l * χ.toFun a = f a := by
+  classical
+  have hle : ∀ a, f a ≼ l := fun a => by
+    by_cases ha : f a = 0
+    · rw [ha]; exact pcm_zero_le l
+    · exact isSumOf_le_of_mem (List.mem_map_of_mem (hsupp a ha)) hsum
+  let e : M := div l l
+  let d : A → M := fun a => div (f a) l
+  have hdle : ∀ a, d a ≼ e := fun a => EffectDivisoid.div_le (hle a)
+  have hperp : Perp (d a₀) (orth e) :=
+    eabasics_perp_iff_le_orth.mpr (by rw [eabasics_orth_orth]; exact hdle a₀)
+  let u : A → M := fun a => if a = a₀ then ovee (d a₀) (orth e) hperp else d a
+  have hu₀ : u a₀ = ovee (d a₀) (orth e) hperp := if_pos rfl
+  have hune : ∀ a, a ≠ a₀ → u a = d a := fun a h => if_neg h
+  -- the divided family sums to `e = l/l`
+  have hde : PCM.IsSumOf (L.map d) e := by
+    have h := isSumOf_div hsum (pcm_preorder_refl l)
+    rwa [List.map_map] at h
+  -- split off `a₀`
+  have hndR : (L.erase a₀).Nodup := List.Nodup.erase _ hnd
+  have hnotmem : a₀ ∉ L.erase a₀ := List.Nodup.not_mem_erase hnd
+  obtain ⟨t, hRt, hpt, hovt⟩ : ∃ t, PCM.IsSumOf ((L.erase a₀).map d) t ∧
+      ∃ hp : Perp (d a₀) t, ovee (d a₀) t hp = e := by
+    by_cases hmem : a₀ ∈ L
+    · have h2 := PCM.isSumOf_perm (List.Perm.map d (List.perm_cons_erase hmem)) hde
+      rw [List.map_cons] at h2
+      obtain ⟨t, ht, hp, he⟩ := PCM.isSumOf_cons_iff.mp h2
+      exact ⟨t, ht, hp, he⟩
+    · have hd0 : d a₀ = 0 := by
+        show div (f a₀) l = 0
+        rw [show f a₀ = 0 from by by_contra h0; exact hmem (hsupp a₀ h0), div_zero_left]
+      refine ⟨e, by rw [List.erase_of_not_mem hmem]; exact hde, ?_⟩
+      rw [hd0]
+      exact ⟨PCM.zero_perp e, PCM.zero_ovee' e _⟩
+  -- reassociate `(d a₀ ⋁ t) ⋁ eᵖ = 1` into `(d a₀ ⋁ eᵖ) ⋁ t = 1`
+  have hpe : Perp (orth e) (ovee (d a₀) t hpt) := by
+    rw [hovt]; exact PCM.perp_comm (EffectAlgebra.perp_orth e)
+  obtain ⟨hpo, hpo2, heq⟩ := PCM.assoc_left hpt hpe
+  have hone : ovee (orth e) (ovee (d a₀) t hpt) hpe = 1 := by
+    rw [PCM.ovee_congr rfl hovt hpe
+      (show Perp (orth e) e from PCM.perp_comm (EffectAlgebra.perp_orth e)),
+      PCM.ovee_comm]
+    exact EffectAlgebra.ovee_orth e
+  have hua : u a₀ = ovee (orth e) (d a₀) hpo := by
+    rw [hu₀, PCM.ovee_comm hperp]
+  have hpu : Perp (u a₀) t := by rw [hua]; exact hpo2
+  have hval : ovee (u a₀) t hpu = 1 := by
+    rw [PCM.ovee_congr hua rfl hpu hpo2, heq, hone]
+  have hsumT : PCM.IsSumOf ((a₀ :: L.erase a₀).map u) 1 := by
+    rw [List.map_cons,
+      show (L.erase a₀).map u = (L.erase a₀).map d from
+        List.map_congr_left (fun a ha => hune a (fun h => hnotmem (h ▸ ha))),
+      ← hval]
+    exact PCM.IsSumOf.cons hRt hpu
+  have hndT : (a₀ :: L.erase a₀).Nodup := List.nodup_cons.mpr ⟨hnotmem, hndR⟩
+  have husupp : ∀ a, u a ≠ 0 → a ∈ a₀ :: L.erase a₀ := by
+    intro a ha
+    by_cases haa : a = a₀
+    · exact List.mem_cons.mpr (Or.inl haa)
+    · refine List.mem_cons.mpr (Or.inr ((List.Nodup.mem_erase_iff hnd).mpr ⟨haa, ?_⟩))
+      refine hsupp a fun h0 => ha ?_
+      rw [hune a haa]
+      show div (f a) l = 0
+      rw [h0, div_zero_left]
+  refine ⟨⟨u, ⟨(a₀ :: L.erase a₀).filter (fun a => decide (u a ≠ 0)),
+    List.Nodup.filter _ hndT, ?_, ?_⟩⟩, ?_⟩
+  · intro a
+    rw [List.mem_filter]
+    exact ⟨fun h => by simpa using h.2, fun h => ⟨husupp a h, by simpa using h⟩⟩
+  · exact (isSumOf_map_filter u _ (fun a _ h => by simpa using h)).mpr hsumT
+  · intro a
+    show l * u a = f a
+    by_cases haa : a = a₀
+    · subst haa
+      rw [hu₀]
+      obtain ⟨h', he'⟩ := emon_mul_ovee l hperp
+      rw [he']
+      have hld : l * d a = f a := EffectDivisoid.mul_div (hle a)
+      have hlo : l * orth e = 0 := by
+        obtain ⟨h2, he2⟩ := emon_mul_ovee l (EffectAlgebra.perp_orth e)
+        rw [EffectAlgebra.ovee_orth e, EffectMonoid.mul_one] at he2
+        have hself : l * e = l := EffectDivisoid.mul_div (pcm_preorder_refl l)
+        have hA : ovee (l * orth e) (l * e) (PCM.perp_comm h2) = l := by
+          rw [PCM.ovee_comm (PCM.perp_comm h2)]
+          exact he2.symm
+        have hB : ovee (0 : M) (l * e) (PCM.zero_perp _) = l := by
+          rw [PCM.zero_ovee' (l * e) (PCM.zero_perp _)]
+          exact hself
+        exact eabasics_cancellation (PCM.perp_comm h2) (PCM.zero_perp _)
+          (hA.trans hB.symm)
+      rw [PCM.ovee_congr hld hlo h' (show Perp (f a) 0 from PCM.perp_zero _),
+        PCM.ovee_zero]
+    · rw [hune a haa]
+      exact EffectDivisoid.mul_div (hle a)
+
+end Divisoid
+
+namespace MConvexComb
+
+variable {M : Type u} [EffectMonoid M]
+
+/-- `𝒟_M κ₂ (ψ)` vanishes on the left summand. -/
+theorem map_inr_apply_inl {A B : Type v} (ψ : MConvexComb M B) (a : A) :
+    (ψ.map (Sum.inr : B → A ⊕ B)).toFun (Sum.inl a) = 0 := by
+  have h := map_spec_of_list ψ (Sum.inr : B → A ⊕ B) (Sum.inl a) []
+    List.nodup_nil (fun w hw => absurd hw (List.not_mem_nil))
+    (fun w _ hw => absurd hw (by simp))
+  rw [List.map_nil, PCM.isSumOf_nil_iff] at h
+  exact h
+
+/-- `𝒟_M κ₁ (χ)` vanishes on the right summand. -/
+theorem map_inl_apply_inr {A B : Type v} (χ : MConvexComb M A) (b : B) :
+    (χ.map (Sum.inl : A → A ⊕ B)).toFun (Sum.inr b) = 0 := by
+  have h := map_spec_of_list χ (Sum.inl : A → A ⊕ B) (Sum.inr b) []
+    List.nodup_nil (fun w hw => absurd hw (List.not_mem_nil))
+    (fun w _ hw => absurd hw (by simp))
+  rw [List.map_nil, PCM.isSumOf_nil_iff] at h
+  exact h
+
+/-- On a two-element set the second coefficient is the orthosupplement of the
+first. -/
+theorem eq_orth_of_two {A : Type v} (p : MConvexComb M A) {a b : A}
+    (hab : a ≠ b) (hall : ∀ z : A, z = a ∨ z = b) :
+    p.toFun b = orth (p.toFun a) := by
+  classical
+  obtain ⟨L, hndL, hmemL, hsL⟩ := p.sum_one
+  have hsum : PCM.IsSumOf (([a, b] : List A).map p.toFun) 1 :=
+    isSumOf_map_of_support p.toFun hndL (by simp [hab])
+      (fun x hx => (hmemL x).mpr hx)
+      (fun x _ => by rcases hall x with rfl | rfl <;> simp) hsL
+  rw [List.map_cons, List.map_cons, List.map_nil] at hsum
+  obtain ⟨t, ht, hp, he⟩ := PCM.isSumOf_cons_iff.mp hsum
+  have htb : t = p.toFun b := eq_of_isSumOf_singleton ht
+  subst htb
+  exact EffectAlgebra.orth_unique hp he
+
+/-- The mass of the left summand: a repetition-free list of the left-hand
+support, together with the fact that the corresponding values sum to the
+`𝒟_M g`-mass of the left point. -/
+theorem exists_left_sum {A B : Type v} {W : Type w} (p : MConvexComb M (A ⊕ B))
+    (g : A ⊕ B → W) (w : W) (hgl : ∀ a : A, g (Sum.inl a) = w)
+    (hgr : ∀ b : B, g (Sum.inr b) ≠ w) :
+    ∃ LA : List A, LA.Nodup ∧ (∀ a, p.toFun (Sum.inl a) ≠ 0 → a ∈ LA) ∧
+      PCM.IsSumOf (LA.map fun a => p.toFun (Sum.inl a)) ((p.map g).toFun w) := by
+  classical
+  obtain ⟨L, hnd, hmem, -⟩ := p.sum_one
+  set L₁ : List (A ⊕ B) := L.filter (fun z => z.isLeft) with hL₁
+  have hleft : ∀ z ∈ L₁, ∃ a : A, z = Sum.inl a := by
+    intro z hz
+    rcases z with a | b
+    · exact ⟨a, rfl⟩
+    · rw [hL₁, List.mem_filter] at hz
+      exact absurd hz.2 (by simp)
+  have hll : ∀ K : List (A ⊕ B), (∀ z ∈ K, ∃ a : A, z = Sum.inl a) →
+      (K.filterMap Sum.getLeft?).map Sum.inl = K := by
+    intro K
+    induction K with
+    | nil => intro _; rfl
+    | cons z K ih =>
+        intro hz
+        obtain ⟨a, rfl⟩ := hz z List.mem_cons_self
+        rw [List.filterMap_cons]
+        simp only [Sum.getLeft?_inl, List.map_cons, List.cons.injEq, true_and]
+        exact ih fun v hv => hz v (List.mem_cons_of_mem _ hv)
+  have hmap : (L₁.filterMap Sum.getLeft?).map Sum.inl = L₁ := hll L₁ hleft
+  have hnd₁ : L₁.Nodup := List.Nodup.filter _ hnd
+  have hinj : Function.Injective (Sum.inl : A → A ⊕ B) := fun _ _ h => by simpa using h
+  refine ⟨L₁.filterMap Sum.getLeft?, List.Nodup.of_map Sum.inl (hmap ▸ hnd₁),
+    ?_, ?_⟩
+  · intro a ha
+    have h1 : Sum.inl a ∈ L₁ := by
+      rw [hL₁, List.mem_filter]
+      exact ⟨(hmem _).mpr ha, by simp⟩
+    rw [← hmap] at h1
+    obtain ⟨a', ha', he⟩ := List.mem_map.mp h1
+    rwa [hinj he] at ha'
+  · have h := map_spec_of_list p g w L₁ hnd₁
+      (fun z hz => by obtain ⟨a, rfl⟩ := hleft z hz; exact hgl a)
+      (fun z hz hgz => by
+        rcases z with a | b
+        · rw [hL₁, List.mem_filter]
+          exact ⟨(hmem _).mpr hz, by simp⟩
+        · exact absurd hgz (hgr b))
+    rw [← hmap, List.map_map] at h
+    exact h
+
+/-- The mirror image of `exists_left_sum`. -/
+theorem exists_right_sum {A B : Type v} {W : Type w} (p : MConvexComb M (A ⊕ B))
+    (g : A ⊕ B → W) (w : W) (hgr : ∀ b : B, g (Sum.inr b) = w)
+    (hgl : ∀ a : A, g (Sum.inl a) ≠ w) :
+    ∃ LB : List B, LB.Nodup ∧ (∀ b, p.toFun (Sum.inr b) ≠ 0 → b ∈ LB) ∧
+      PCM.IsSumOf (LB.map fun b => p.toFun (Sum.inr b)) ((p.map g).toFun w) := by
+  have hswap : ∀ b : B, (p.map (Sum.swap : A ⊕ B → B ⊕ A)).toFun (Sum.inl b)
+      = p.toFun (Sum.inr b) := fun b =>
+    map_apply_of_unique_fiber p Sum.swap (x₀ := Sum.inr b)
+      (fun z => by rcases z with a | b' <;> simp)
+  obtain ⟨LB, hnd, hsupp, hsum⟩ := exists_left_sum (p.map (Sum.swap : A ⊕ B → B ⊕ A))
+    (g ∘ (Sum.swap : B ⊕ A → A ⊕ B)) w (fun b => hgr b) (fun a => hgl a)
+  refine ⟨LB, hnd, fun b hb => hsupp b (by rw [hswap b]; exact hb), ?_⟩
+  have hcomp : (p.map (Sum.swap : A ⊕ B → B ⊕ A)).map (g ∘ (Sum.swap : B ⊕ A → A ⊕ B))
+      = p.map g := by
+    rw [map_comp]
+    exact congrArg p.map (funext fun z => by rcases z with a | b <;> rfl)
+  rw [hcomp] at hsum
+  rw [show (LB.map fun b => p.toFun (Sum.inr b))
+      = LB.map fun b => (p.map (Sum.swap : A ⊕ B → B ⊕ A)).toFun (Sum.inl b) from
+    List.map_congr_left (fun b _ => (hswap b).symm)]
+  exact hsum
+
+end MConvexComb
+
+/-! ## The `M × X × Y` picture of `X ⨿ Y` for an effect divisoid -/
+
+namespace AConvMCat
+
+variable {M : Type u} [EffectMonoid M]
+
+/-- The constant map to `w : W` is affine (`𝒟_M` of a constant map is a
+Dirac at its value). -/
+noncomputable def constHom (Z W : AConvMCat.{u, v} M) (w : W.carrier) : Z ⟶ W :=
+  ⟨fun _ => w, fun p => by rw [MConvexComb.map_const p w, W.str.h_eta]⟩
+
+@[simp]
+theorem comp_constHom {Z Z' W : AConvMCat.{u, v} M} (f : Z ⟶ Z') (w : W.carrier) :
+    f ≫ constHom Z' W w = constHom Z W w := Subtype.ext rfl
+
+/-- An affine map takes a binary mixture to a binary mixture. -/
+theorem hom_apply_bin {Z W : AConvMCat.{u, v} M} (f : Z ⟶ W) (l : M)
+    (a b : Z.carrier) :
+    f.1 (Z.str.h (MConvexComb.bin l a b))
+      = W.str.h (MConvexComb.bin l (f.1 a) (f.1 b)) := by
+  rw [f.2 (MConvexComb.bin l a b), MConvexComb.map_bin]
+
+section Mix
+
+variable (X Y : AConvMCat.{u, max u v} M) [HasBinaryCoproduct X Y]
+
+/-- The mixture `λ|κ₁x⟩ ⋁ λᵖ|κ₂y⟩ ∈ X ⨿ Y`. -/
+noncomputable def mix (l : M) (x : X.carrier) (y : Y.carrier) : (X ⨿ Y).carrier :=
+  (X ⨿ Y).str.h (MConvexComb.bin l ((coprod.inl : X ⟶ X ⨿ Y).1 x)
+    ((coprod.inr : Y ⟶ X ⨿ Y).1 y))
+
+/-- The mass map `X ⨿ Y ⟶ 𝒟_M(1+1)`: `κ₁x ↦ η(κ₁•)` and `κ₂y ↦ η(κ₂•)`. -/
+noncomputable def massMap :
+    X ⨿ Y ⟶ AConvMCat.free M (PUnit.{max u v + 1} ⊕ PUnit.{max u v + 1}) :=
+  coprod.desc (constHom X _ (MConvexComb.eta (Sum.inl PUnit.unit)))
+    (constHom Y _ (MConvexComb.eta (Sum.inr PUnit.unit)))
+
+theorem massMap_inl :
+    (coprod.inl : X ⟶ X ⨿ Y) ≫ massMap X Y
+      = constHom X _ (MConvexComb.eta (Sum.inl PUnit.unit)) :=
+  coprod.inl_desc _ _
+
+theorem massMap_inr :
+    (coprod.inr : Y ⟶ X ⨿ Y) ≫ massMap X Y
+      = constHom Y _ (MConvexComb.eta (Sum.inr PUnit.unit)) :=
+  coprod.inr_desc _ _
+
+theorem massMap_inl_apply (x : X.carrier) :
+    (massMap X Y).1 ((coprod.inl : X ⟶ X ⨿ Y).1 x)
+      = MConvexComb.eta (Sum.inl PUnit.unit) :=
+  congrArg (fun m : X ⟶ AConvMCat.free M
+    (PUnit.{max u v + 1} ⊕ PUnit.{max u v + 1}) => m.1 x) (massMap_inl X Y)
+
+theorem massMap_inr_apply (y : Y.carrier) :
+    (massMap X Y).1 ((coprod.inr : Y ⟶ X ⨿ Y).1 y)
+      = MConvexComb.eta (Sum.inr PUnit.unit) :=
+  congrArg (fun m : Y ⟶ AConvMCat.free M
+    (PUnit.{max u v + 1} ⊕ PUnit.{max u v + 1}) => m.1 y) (massMap_inr X Y)
+
+/-- The mass of an element of `X ⨿ Y`: its `1+1`-coefficient at the left
+point. -/
+noncomputable def mass (w : (X ⨿ Y).carrier) : M :=
+  ((massMap X Y).1 w).toFun (Sum.inl PUnit.unit)
+
+theorem massMap_mix (l : M) (x : X.carrier) (y : Y.carrier) :
+    (massMap X Y).1 (mix X Y l x y)
+      = MConvexComb.bin l (Sum.inl PUnit.unit) (Sum.inr PUnit.unit) := by
+  have h1 : (massMap X Y).1 ((coprod.inl : X ⟶ X ⨿ Y).1 x)
+      = MConvexComb.eta (Sum.inl PUnit.unit) :=
+    congrArg (fun m : X ⟶ AConvMCat.free M
+      (PUnit.{max u v + 1} ⊕ PUnit.{max u v + 1}) => m.1 x) (massMap_inl X Y)
+  have h2 : (massMap X Y).1 ((coprod.inr : Y ⟶ X ⨿ Y).1 y)
+      = MConvexComb.eta (Sum.inr PUnit.unit) :=
+    congrArg (fun m : Y ⟶ AConvMCat.free M
+      (PUnit.{max u v + 1} ⊕ PUnit.{max u v + 1}) => m.1 y) (massMap_inr X Y)
+  rw [mix, hom_apply_bin, h1, h2]
+  show MConvexComb.mu (MConvexComb.bin l (MConvexComb.eta _) (MConvexComb.eta _)) = _
+  rw [← MConvexComb.map_bin, MConvexComb.mu_map_eta]
+
+theorem mass_mix (l : M) (x : X.carrier) (y : Y.carrier) :
+    mass X Y (mix X Y l x y) = l := by
+  rw [mass, massMap_mix, MConvexComb.bin_apply l (by simp), if_pos rfl]
+
+theorem massMap_map {X' Y' : AConvMCat.{u, max u v} M} [HasBinaryCoproduct X' Y']
+    (f : X ⟶ X') (g : Y ⟶ Y') :
+    coprod.map f g ≫ massMap X' Y' = massMap X Y := by
+  refine coprod.hom_ext ?_ ?_
+  · rw [← Category.assoc, coprod.inl_map, Category.assoc, massMap_inl, massMap_inl]
+    exact comp_constHom f _
+  · rw [← Category.assoc, coprod.inr_map, Category.assoc, massMap_inr, massMap_inr]
+    exact comp_constHom g _
+
+theorem mass_map {X' Y' : AConvMCat.{u, max u v} M} [HasBinaryCoproduct X' Y']
+    (f : X ⟶ X') (g : Y ⟶ Y') (w : (X ⨿ Y).carrier) :
+    mass X' Y' ((coprod.map f g).1 w) = mass X Y w :=
+  congrArg (fun m : (X ⨿ Y) ⟶ AConvMCat.free M
+    (PUnit.{max u v + 1} ⊕ PUnit.{max u v + 1}) =>
+      (m.1 w).toFun (Sum.inl PUnit.unit)) (massMap_map X Y f g)
+
+theorem massMap_map_apply {X' Y' : AConvMCat.{u, max u v} M} [HasBinaryCoproduct X' Y']
+    (f : X ⟶ X') (g : Y ⟶ Y') (w : (X ⨿ Y).carrier) :
+    (massMap X' Y').1 ((coprod.map f g).1 w) = (massMap X Y).1 w :=
+  congrArg (fun m : (X ⨿ Y) ⟶ AConvMCat.free M
+    (PUnit.{max u v + 1} ⊕ PUnit.{max u v + 1}) => m.1 w) (massMap_map X Y f g)
+
+/-- The image of a mixture under a cotuple. -/
+theorem desc_apply_mix {W : AConvMCat.{u, max u v} M} (a : X ⟶ W) (b : Y ⟶ W)
+    (l : M) (x : X.carrier) (y : Y.carrier) :
+    (coprod.desc a b).1 (mix X Y l x y)
+      = W.str.h (MConvexComb.bin l (a.1 x) (b.1 y)) := by
+  have h1 : (coprod.desc a b).1 ((coprod.inl : X ⟶ X ⨿ Y).1 x) = a.1 x :=
+    congrArg (fun m : X ⟶ W => m.1 x) (coprod.inl_desc a b)
+  have h2 : (coprod.desc a b).1 ((coprod.inr : Y ⟶ X ⨿ Y).1 y) = b.1 y :=
+    congrArg (fun m : Y ⟶ W => m.1 y) (coprod.inr_desc a b)
+  rw [mix, hom_apply_bin, h1, h2]
+
+/-- The image of a mixture under `f + g`. -/
+theorem map_apply_mix {X' Y' : AConvMCat.{u, max u v} M} [HasBinaryCoproduct X' Y']
+    (f : X ⟶ X') (g : Y ⟶ Y') (l : M) (x : X.carrier) (y : Y.carrier) :
+    (coprod.map f g).1 (mix X Y l x y) = mix X' Y' l (f.1 x) (g.1 y) := by
+  have h1 : (coprod.map f g).1 ((coprod.inl : X ⟶ X ⨿ Y).1 x)
+      = (coprod.inl : X' ⟶ X' ⨿ Y').1 (f.1 x) :=
+    congrArg (fun m : X ⟶ X' ⨿ Y' => m.1 x) (coprod.inl_map f g)
+  have h2 : (coprod.map f g).1 ((coprod.inr : Y ⟶ X ⨿ Y).1 y)
+      = (coprod.inr : Y' ⟶ X' ⨿ Y').1 (g.1 y) :=
+    congrArg (fun m : Y ⟶ X' ⨿ Y' => m.1 y) (coprod.inr_map f g)
+  rw [mix, hom_apply_bin, h1, h2]
+  rfl
+
+/-- `κ₁ x` is the mixture with `λ = 1`. -/
+theorem mix_one (x : X.carrier) (y : Y.carrier) :
+    mix X Y 1 x y = (coprod.inl : X ⟶ X ⨿ Y).1 x := by
+  rw [mix, MConvexComb.bin_one]
+  exact (X ⨿ Y).str.h_eta _
+
+/-- `κ₂ y` is the mixture with `λ = 0`. -/
+theorem mix_zero (x : X.carrier) (y : Y.carrier) :
+    mix X Y 0 x y = (coprod.inr : Y ⟶ X ⨿ Y).1 y := by
+  rw [mix, MConvexComb.bin_zero]
+  exact (X ⨿ Y).str.h_eta _
+
+/-- `q(𝒟_M κ₁ (χ)) = κ₁(h_X χ)`. -/
+theorem coprodQuot_map_inl (χ : MConvexComb M X.carrier) :
+    (coprodQuot X Y).1 (χ.map Sum.inl)
+      = (coprod.inl : X ⟶ X ⨿ Y).1 (X.str.h χ) := by
+  show (X ⨿ Y).str.h ((χ.map Sum.inl).map _) = _
+  rw [MConvexComb.map_comp]
+  exact ((coprod.inl : X ⟶ X ⨿ Y).2 χ).symm
+
+/-- `q(𝒟_M κ₂ (ψ)) = κ₂(h_Y ψ)`. -/
+theorem coprodQuot_map_inr (ψ : MConvexComb M Y.carrier) :
+    (coprodQuot X Y).1 (ψ.map Sum.inr)
+      = (coprod.inr : Y ⟶ X ⨿ Y).1 (Y.str.h ψ) := by
+  show (X ⨿ Y).str.h ((ψ.map Sum.inr).map _) = _
+  rw [MConvexComb.map_comp]
+  exact ((coprod.inr : Y ⟶ X ⨿ Y).2 ψ).symm
+
+/-- The mass map computed on the canonical surjection: `mass ∘ q` is the
+pushforward along the collapse `X + Y → 1 + 1`. -/
+theorem coprodQuot_massMap :
+    coprodQuot X Y ≫ massMap X Y
+      = AConvMCat.freeMap M (Sum.elim (fun _ => Sum.inl PUnit.unit)
+          (fun _ => Sum.inr PUnit.unit) :
+          X.carrier ⊕ Y.carrier → PUnit.{max u v + 1} ⊕ PUnit.{max u v + 1}) := by
+  refine AConvMCat.free_hom_ext _ _ ?_
+  rintro (x | y)
+  · have h1 : (massMap X Y).1 ((coprod.inl : X ⟶ X ⨿ Y).1 x)
+        = MConvexComb.eta (Sum.inl PUnit.unit) :=
+      congrArg (fun m : X ⟶ AConvMCat.free M
+        (PUnit.{max u v + 1} ⊕ PUnit.{max u v + 1}) => m.1 x) (massMap_inl X Y)
+    show (massMap X Y).1 ((coprodQuot X Y).1 (MConvexComb.eta (Sum.inl x))) = _
+    rw [coprodQuot_eta_inl, h1, AConvMCat.freeMap_apply, MConvexComb.map_eta]
+    rfl
+  · have h2 : (massMap X Y).1 ((coprod.inr : Y ⟶ X ⨿ Y).1 y)
+        = MConvexComb.eta (Sum.inr PUnit.unit) :=
+      congrArg (fun m : Y ⟶ AConvMCat.free M
+        (PUnit.{max u v + 1} ⊕ PUnit.{max u v + 1}) => m.1 y) (massMap_inr X Y)
+    show (massMap X Y).1 ((coprodQuot X Y).1 (MConvexComb.eta (Sum.inr y))) = _
+    rw [coprodQuot_eta_inr, h2, AConvMCat.freeMap_apply, MConvexComb.map_eta]
+    rfl
+
+theorem massMap_coprodQuot (φ : MConvexComb M (X.carrier ⊕ Y.carrier)) :
+    (massMap X Y).1 ((coprodQuot X Y).1 φ)
+      = φ.map (Sum.elim (fun _ => Sum.inl PUnit.unit) (fun _ => Sum.inr PUnit.unit) :
+          X.carrier ⊕ Y.carrier → PUnit.{max u v + 1} ⊕ PUnit.{max u v + 1}) :=
+  congrArg (fun m : AConvMCat.free M (X.carrier ⊕ Y.carrier) ⟶
+    AConvMCat.free M (PUnit.{max u v + 1} ⊕ PUnit.{max u v + 1}) => m.1 φ)
+    (coprodQuot_massMap X Y)
+
+/-- **194I.4's key step, isolated**: an element of `X ⨿ Y` whose mass is the
+left point is `κ₁` of an element of `X`. -/
+theorem exists_inl_of_massMap (w : (X ⨿ Y).carrier)
+    (h : (massMap X Y).1 w = MConvexComb.eta (Sum.inl PUnit.unit)) :
+    ∃ x : X.carrier, (coprod.inl : X ⟶ X ⨿ Y).1 x = w := by
+  classical
+  obtain ⟨φ, hφ⟩ := coprodQuot_surjective X Y w
+  have hmass := massMap_coprodQuot X Y φ
+  rw [hφ, h] at hmass
+  have hzero : ∀ y : Y.carrier, φ.toFun (Sum.inr y) = 0 := by
+    intro y
+    refine MConvexComb.eq_zero_of_map_eq_zero φ
+      (Sum.elim (fun _ => Sum.inl PUnit.unit) (fun _ => Sum.inr PUnit.unit) :
+        X.carrier ⊕ Y.carrier → PUnit.{max u v + 1} ⊕ PUnit.{max u v + 1})
+      (y := Sum.inr PUnit.unit) ?_ (x := Sum.inr y) rfl
+    rw [← hmass]
+    exact if_neg (by simp)
+  obtain ⟨χ, hχ⟩ := MConvexComb.exists_map_inl φ hzero
+  exact ⟨X.str.h χ, by rw [← hφ, ← hχ, coprodQuot_map_inl]⟩
+
+/-- The mirror image of `exists_inl_of_massMap`. -/
+theorem exists_inr_of_massMap (w : (X ⨿ Y).carrier)
+    (h : (massMap X Y).1 w = MConvexComb.eta (Sum.inr PUnit.unit)) :
+    ∃ y : Y.carrier, (coprod.inr : Y ⟶ X ⨿ Y).1 y = w := by
+  classical
+  obtain ⟨φ, hφ⟩ := coprodQuot_surjective X Y w
+  have hmass := massMap_coprodQuot X Y φ
+  rw [hφ, h] at hmass
+  have hzero : ∀ x : X.carrier, φ.toFun (Sum.inl x) = 0 := by
+    intro x
+    refine MConvexComb.eq_zero_of_map_eq_zero φ
+      (Sum.elim (fun _ => Sum.inl PUnit.unit) (fun _ => Sum.inr PUnit.unit) :
+        X.carrier ⊕ Y.carrier → PUnit.{max u v + 1} ⊕ PUnit.{max u v + 1})
+      (y := Sum.inl PUnit.unit) ?_ (x := Sum.inl x) rfl
+    rw [← hmass]
+    exact if_neg (by simp)
+  obtain ⟨ψ, hψ⟩ := MConvexComb.exists_map_inr φ hzero
+  exact ⟨Y.str.h ψ, by rw [← hφ, ← hψ, coprodQuot_map_inr]⟩
+
+/-- `κ₂ : Y → X ⨿ Y` is injective (the mirror image of
+`AConvMCat.coprod_inl_injective`; same proof, the retraction being the cotuple
+`[const y₀, id]`). -/
+theorem coprod_inr_injective : Function.Injective (coprod.inr : Y ⟶ X ⨿ Y).1 := by
+  classical
+  rcases isEmpty_or_nonempty Y.carrier with hE | hN
+  · exact fun y => (hE.false y).elim
+  · obtain ⟨y₀⟩ := hN
+    have hr := coprod.inr_desc (constHom X Y y₀) (𝟙 Y)
+    intro y y' hyy
+    have e1 : (coprod.desc (constHom X Y y₀) (𝟙 Y)).1
+        ((coprod.inr : Y ⟶ X ⨿ Y).1 y) = y :=
+      congrArg (fun t : Y ⟶ Y => t.1 y) hr
+    have e2 : (coprod.desc (constHom X Y y₀) (𝟙 Y)).1
+        ((coprod.inr : Y ⟶ X ⨿ Y).1 y') = y' :=
+      congrArg (fun t : Y ⟶ Y => t.1 y') hr
+    rw [← e1, ← e2, hyy]
+
+/-- If `X` is empty then `κ₂ : Y → X ⨿ Y` is surjective. -/
+theorem exists_inr_of_isEmpty (hX : IsEmpty X.carrier) (w : (X ⨿ Y).carrier) :
+    ∃ y : Y.carrier, (coprod.inr : Y ⟶ X ⨿ Y).1 y = w := by
+  obtain ⟨φ, hφ⟩ := coprodQuot_surjective X Y w
+  obtain ⟨ψ, hψ⟩ := MConvexComb.exists_map_inr φ (fun x => (hX.false x).elim)
+  exact ⟨Y.str.h ψ, by rw [← hφ, ← hψ, coprodQuot_map_inr]⟩
+
+/-- If `Y` is empty then `κ₁ : X → X ⨿ Y` is surjective. -/
+theorem exists_inl_of_isEmpty (hY : IsEmpty Y.carrier) (w : (X ⨿ Y).carrier) :
+    ∃ x : X.carrier, (coprod.inl : X ⟶ X ⨿ Y).1 x = w := by
+  obtain ⟨φ, hφ⟩ := coprodQuot_surjective X Y w
+  obtain ⟨χ, hχ⟩ := MConvexComb.exists_map_inl φ (fun y => (hY.false y).elim)
+  exact ⟨X.str.h χ, by rw [← hφ, ← hχ, coprodQuot_map_inl]⟩
+
+/-- **The normal form for `X ⨿ Y` over an effect divisoid**: every element of
+`X ⨿ Y` is a *binary* mixture `λ|κ₁x⟩ ⋁ λᵖ|κ₂y⟩`.
+
+This is where the divisoid is used, and it is the only place: a general
+element is `q(φ)` for a formal combination `φ` over `X + Y`
+(`coprodQuot_surjective`, 193IX), and `φ` is normalized by dividing its
+left-hand part by its total left mass `λ` and its right-hand part by `λᵖ`
+(`MConvexComb.exists_of_div`, where the deficits `(λ/λ)ᵖ` and `(λᵖ/λᵖ)ᵖ` are
+absorbed at the chosen points `x₀`, `y₀`).  Compare the thesis's `r` in the
+proof of 196II. -/
+theorem exists_mix [EffectDivisoid M] (x₀ : X.carrier) (y₀ : Y.carrier)
+    (w : (X ⨿ Y).carrier) :
+    ∃ (l : M) (x : X.carrier) (y : Y.carrier), w = mix X Y l x y := by
+  classical
+  obtain ⟨φ, hφ⟩ := coprodQuot_surjective X Y w
+  let g : X.carrier ⊕ Y.carrier → PUnit.{max u v + 1} ⊕ PUnit.{max u v + 1} :=
+    Sum.elim (fun _ => Sum.inl PUnit.unit) (fun _ => Sum.inr PUnit.unit)
+  obtain ⟨LA, hndA, hsuppA, hsumA⟩ := MConvexComb.exists_left_sum φ g
+    (Sum.inl PUnit.unit) (fun _ => rfl) (fun _ hh => by
+      have h0 : (Sum.inr PUnit.unit : PUnit.{max u v + 1} ⊕ PUnit.{max u v + 1})
+        = Sum.inl PUnit.unit := hh
+      simp at h0)
+  obtain ⟨LB, hndB, hsuppB, hsumB⟩ := MConvexComb.exists_right_sum φ g
+    (Sum.inr PUnit.unit) (fun _ => rfl) (fun _ hh => by
+      have h0 : (Sum.inl PUnit.unit : PUnit.{max u v + 1} ⊕ PUnit.{max u v + 1})
+        = Sum.inr PUnit.unit := hh
+      simp at h0)
+  have horth : (φ.map g).toFun (Sum.inr PUnit.unit)
+      = orth ((φ.map g).toFun (Sum.inl PUnit.unit)) :=
+    MConvexComb.eq_orth_of_two _ (by simp) (fun z => by
+      rcases z with a | a
+      · exact Or.inl (by cases a; rfl)
+      · exact Or.inr (by cases a; rfl))
+  rw [horth] at hsumB
+  obtain ⟨χ, hχ⟩ := MConvexComb.exists_of_div (fun x => φ.toFun (Sum.inl x)) x₀
+    _ LA hndA hsuppA hsumA
+  obtain ⟨ψ, hψ⟩ := MConvexComb.exists_of_div (fun y => φ.toFun (Sum.inr y)) y₀
+    _ LB hndB hsuppB hsumB
+  refine ⟨(φ.map g).toFun (Sum.inl PUnit.unit), X.str.h χ, Y.str.h ψ, ?_⟩
+  set l : M := (φ.map g).toFun (Sum.inl PUnit.unit) with hl
+  have hkey : φ = MConvexComb.mu
+      (MConvexComb.bin l (χ.map Sum.inl) (ψ.map Sum.inr)) := by
+    refine MConvexComb.ext (funext fun z => ?_)
+    rcases z with x | y
+    · have h := MConvexComb.mu_bin l (χ.map Sum.inl) (ψ.map Sum.inr) (Sum.inl x)
+      rw [MConvexComb.map_apply_of_unique_fiber χ Sum.inl
+          (fun z => ⟨fun hz => by simpa using hz, fun hz => by rw [hz]⟩),
+        MConvexComb.map_inr_apply_inl ψ x, (exc_emonzero (orth l)).1, hχ x] at h
+      have h2 : PCM.IsSumOf [φ.toFun (Sum.inl x), (0 : M)] (φ.toFun (Sum.inl x)) := by
+        have h3 := isSumOf_pair (φ.toFun (Sum.inl x)) 0 (PCM.perp_zero _)
+        rwa [PCM.ovee_zero] at h3
+      exact isSumOf_unique h2 h
+    · have h := MConvexComb.mu_bin l (χ.map Sum.inl) (ψ.map Sum.inr) (Sum.inr y)
+      rw [MConvexComb.map_apply_of_unique_fiber ψ Sum.inr
+          (fun z => ⟨fun hz => by simpa using hz, fun hz => by rw [hz]⟩),
+        MConvexComb.map_inl_apply_inr χ y, (exc_emonzero l).1, hψ y] at h
+      have h2 : PCM.IsSumOf [(0 : M), φ.toFun (Sum.inr y)] (φ.toFun (Sum.inr y)) :=
+        isSumOf_zero_cons.mpr (isSumOf_singleton _)
+      exact isSumOf_unique h2 h
+  rw [← hφ, hkey]
+  refine Eq.trans
+    (hom_apply_bin (coprodQuot X Y) l (χ.map Sum.inl) (ψ.map Sum.inr)) ?_
+  rw [coprodQuot_map_inl, coprodQuot_map_inr]
+  rfl
+
+end Mix
+
+end AConvMCat
+
+/-! ### 196II: the left pullback square -/
+
+section LeftSquare
+
+variable {M : Type u} [EffectMonoid M] [EffectDivisoid M]
+  [HasFiniteCoproducts (AConvMCat.{u, max u v} M)]
+  [HasTerminal (AConvMCat.{u, max u v} M)]
+
+namespace AConvMCat
+
+/-- The final object of `AConv_M` has exactly one element (it is isomorphic to
+`𝒟_M 1`, which is a singleton by `MConvexComb.eq_eta_punit`). -/
+theorem terminal_carrier_subsingleton
+    (t t' : (⊤_ AConvMCat.{u, max u v} M).carrier) : t = t' := by
+  have hT : IsTerminal (AConvMCat.free.{u, max u v} M PUnit.{max u v + 1}) :=
+    AConvMCat.free_punit_isTerminal M
+  set e := terminalIsoIsTerminal hT with he
+  have h1 : ∀ z : (⊤_ AConvMCat.{u, max u v} M).carrier, e.inv.1 (e.hom.1 z) = z :=
+    fun z => congrArg (fun m : (⊤_ AConvMCat.{u, max u v} M) ⟶
+      (⊤_ AConvMCat.{u, max u v} M) => m.1 z) e.hom_inv_id
+  rw [← h1 t, ← h1 t', MConvexComb.eq_eta_punit (e.hom.1 t),
+    MConvexComb.eq_eta_punit (e.hom.1 t')]
+
+variable (X Y : AConvMCat.{u, max u v} M)
+
+/-- **196II, the uniqueness half**: `(id+!)` and `(!+id)` are jointly injective
+on `X ⨿ Y`.
+
+The argument avoids the derivation calculus: by the normal form
+(`AConvMCat.exists_mix`) both elements are binary mixtures `λ|κ₁x⟩ ⋁ λᵖ|κ₂y⟩`,
+their `λ`s agree because the mass map factors through both legs, and the
+`x`- and `y`-parts are transported back into `X ⨿ Y` along the cotuples
+`[κ₁, const κ₂y']` and `[const κ₁x, κ₂]` — which are maps of `AConv_M`
+because constant maps are affine. -/
+theorem coprod_jointly_injective {w w' : (X ⨿ Y).carrier}
+    (h1 : (coprod.map (𝟙 X) (terminal.from Y)).1 w
+      = (coprod.map (𝟙 X) (terminal.from Y)).1 w')
+    (h2 : (coprod.map (terminal.from X) (𝟙 Y)).1 w
+      = (coprod.map (terminal.from X) (𝟙 Y)).1 w') : w = w' := by
+  classical
+  rcases isEmpty_or_nonempty X.carrier with hX | ⟨⟨x₀⟩⟩
+  · -- `X` empty: everything is `κ₂ y`, and `κ₂` is injective into `1 ⨿ Y`
+    obtain ⟨y, rfl⟩ := exists_inr_of_isEmpty X Y hX w
+    obtain ⟨y', rfl⟩ := exists_inr_of_isEmpty X Y hX w'
+    have e : ∀ z : Y.carrier, (coprod.map (terminal.from X) (𝟙 Y)).1
+        ((coprod.inr : Y ⟶ X ⨿ Y).1 z)
+        = (coprod.inr : Y ⟶ (⊤_ AConvMCat.{u, max u v} M) ⨿ Y).1 z := fun z =>
+      congrArg (fun m : Y ⟶ (⊤_ AConvMCat.{u, max u v} M) ⨿ Y => m.1 z)
+        (coprod.inr_map (terminal.from X) (𝟙 Y))
+    rw [e y, e y'] at h2
+    rw [coprod_inr_injective _ Y h2]
+  rcases isEmpty_or_nonempty Y.carrier with hY | ⟨⟨y₀⟩⟩
+  · -- `Y` empty: everything is `κ₁ x`, and `κ₁` is injective into `X ⨿ 1`
+    obtain ⟨x, rfl⟩ := exists_inl_of_isEmpty X Y hY w
+    obtain ⟨x', rfl⟩ := exists_inl_of_isEmpty X Y hY w'
+    have e : ∀ z : X.carrier, (coprod.map (𝟙 X) (terminal.from Y)).1
+        ((coprod.inl : X ⟶ X ⨿ Y).1 z)
+        = (coprod.inl : X ⟶ X ⨿ (⊤_ AConvMCat.{u, max u v} M)).1 z := fun z =>
+      congrArg (fun m : X ⟶ X ⨿ (⊤_ AConvMCat.{u, max u v} M) => m.1 z)
+        (coprod.inl_map (𝟙 X) (terminal.from Y))
+    rw [e x, e x'] at h1
+    rw [AConvMCat.coprod_inl_injective X _ h1]
+  -- the main case: both non-empty, so the normal form applies
+  obtain ⟨l, x, y, rfl⟩ := exists_mix X Y x₀ y₀ w
+  obtain ⟨l', x', y', rfl⟩ := exists_mix X Y x₀ y₀ w'
+  -- the two `λ`s agree, because the mass map factors through the left leg
+  have hll : l = l' := by
+    have hm : mass X (⊤_ AConvMCat.{u, max u v} M)
+          ((coprod.map (𝟙 X) (terminal.from Y)).1 (mix X Y l x y))
+        = mass X (⊤_ AConvMCat.{u, max u v} M)
+          ((coprod.map (𝟙 X) (terminal.from Y)).1 (mix X Y l' x' y')) := by
+      rw [h1]
+    rwa [mass_map X Y (𝟙 X) (terminal.from Y), mass_map X Y (𝟙 X) (terminal.from Y),
+      mass_mix, mass_mix] at hm
+  subst hll
+  -- transport the two component equalities back into `X ⨿ Y`
+  have hy : mix X Y l x y = mix X Y l x y' := by
+    have hd := congrArg (coprod.desc (constHom (⊤_ AConvMCat.{u, max u v} M) (X ⨿ Y)
+      ((coprod.inl : X ⟶ X ⨿ Y).1 x)) (coprod.inr : Y ⟶ X ⨿ Y)).1 h2
+    rw [map_apply_mix, map_apply_mix, desc_apply_mix, desc_apply_mix] at hd
+    rw [mix, mix]
+    exact hd
+  have hx : mix X Y l x y' = mix X Y l x' y' := by
+    have hd := congrArg (coprod.desc (coprod.inl : X ⟶ X ⨿ Y)
+      (constHom (⊤_ AConvMCat.{u, max u v} M) (X ⨿ Y)
+        ((coprod.inr : Y ⟶ X ⨿ Y).1 y'))).1 h1
+    rw [map_apply_mix, map_apply_mix, desc_apply_mix, desc_apply_mix] at hd
+    rw [mix, mix]
+    exact hd
+  rw [hy, hx]
+
+/-- **196II, the existence half**: a compatible pair of elements of `X ⨿ 1`
+and `1 ⨿ Y` comes from an element of `X ⨿ Y`. -/
+theorem coprod_exists_lift {a : (X ⨿ (⊤_ AConvMCat.{u, max u v} M)).carrier}
+    {b : ((⊤_ AConvMCat.{u, max u v} M) ⨿ Y).carrier}
+    (h : (coprod.map (terminal.from X) (𝟙 (⊤_ AConvMCat.{u, max u v} M))).1 a
+      = (coprod.map (𝟙 (⊤_ AConvMCat.{u, max u v} M)) (terminal.from Y)).1 b) :
+    ∃ w : (X ⨿ Y).carrier,
+      (coprod.map (𝟙 X) (terminal.from Y)).1 w = a ∧
+      (coprod.map (terminal.from X) (𝟙 Y)).1 w = b := by
+  classical
+  rcases isEmpty_or_nonempty X.carrier with hX | ⟨⟨x₀⟩⟩
+  · -- `X` empty: `a = κ₂ t`, so `b` has mass `κ₂` and is `κ₂ y`
+    obtain ⟨t, rfl⟩ := exists_inr_of_isEmpty X _ hX a
+    have hb : (massMap (⊤_ AConvMCat.{u, max u v} M) Y).1 b
+        = MConvexComb.eta (Sum.inr PUnit.unit) := by
+      rw [← massMap_map_apply (⊤_ AConvMCat.{u, max u v} M) Y
+        (𝟙 (⊤_ AConvMCat.{u, max u v} M)) (terminal.from Y) b, ← h,
+        massMap_map_apply X (⊤_ AConvMCat.{u, max u v} M) (terminal.from X)
+          (𝟙 (⊤_ AConvMCat.{u, max u v} M)), massMap_inr_apply]
+    obtain ⟨y, rfl⟩ := exists_inr_of_massMap _ Y b hb
+    refine ⟨(coprod.inr : Y ⟶ X ⨿ Y).1 y, ?_, ?_⟩
+    · have e : (coprod.map (𝟙 X) (terminal.from Y)).1 ((coprod.inr : Y ⟶ X ⨿ Y).1 y)
+          = (coprod.inr : (⊤_ AConvMCat.{u, max u v} M) ⟶
+              X ⨿ (⊤_ AConvMCat.{u, max u v} M)).1 ((terminal.from Y).1 y) :=
+        congrArg (fun m : Y ⟶ X ⨿ (⊤_ AConvMCat.{u, max u v} M) => m.1 y)
+          (coprod.inr_map (𝟙 X) (terminal.from Y))
+      rw [e, terminal_carrier_subsingleton ((terminal.from Y).1 y) t]
+    · exact congrArg (fun m : Y ⟶ (⊤_ AConvMCat.{u, max u v} M) ⨿ Y => m.1 y)
+        (coprod.inr_map (terminal.from X) (𝟙 Y))
+  rcases isEmpty_or_nonempty Y.carrier with hY | ⟨⟨y₀⟩⟩
+  · -- `Y` empty: `b = κ₁ t`, so `a` has mass `κ₁` and is `κ₁ x`
+    obtain ⟨t, rfl⟩ := exists_inl_of_isEmpty _ Y hY b
+    have ha : (massMap X (⊤_ AConvMCat.{u, max u v} M)).1 a
+        = MConvexComb.eta (Sum.inl PUnit.unit) := by
+      rw [← massMap_map_apply X (⊤_ AConvMCat.{u, max u v} M) (terminal.from X)
+        (𝟙 (⊤_ AConvMCat.{u, max u v} M)) a, h,
+        massMap_map_apply (⊤_ AConvMCat.{u, max u v} M) Y
+          (𝟙 (⊤_ AConvMCat.{u, max u v} M)) (terminal.from Y), massMap_inl_apply]
+    obtain ⟨x, rfl⟩ := exists_inl_of_massMap X _ a ha
+    refine ⟨(coprod.inl : X ⟶ X ⨿ Y).1 x, ?_, ?_⟩
+    · exact congrArg (fun m : X ⟶ X ⨿ (⊤_ AConvMCat.{u, max u v} M) => m.1 x)
+        (coprod.inl_map (𝟙 X) (terminal.from Y))
+    · have e : (coprod.map (terminal.from X) (𝟙 Y)).1 ((coprod.inl : X ⟶ X ⨿ Y).1 x)
+          = (coprod.inl : (⊤_ AConvMCat.{u, max u v} M) ⟶
+              (⊤_ AConvMCat.{u, max u v} M) ⨿ Y).1 ((terminal.from X).1 x) :=
+        congrArg (fun m : X ⟶ (⊤_ AConvMCat.{u, max u v} M) ⨿ Y => m.1 x)
+          (coprod.inl_map (terminal.from X) (𝟙 Y))
+      rw [e, terminal_carrier_subsingleton ((terminal.from X).1 x) t]
+  -- the main case: normal forms on both sides, with the same `λ`
+  obtain ⟨t₀⟩ : Nonempty (⊤_ AConvMCat.{u, max u v} M).carrier :=
+    ⟨(terminal.from X).1 x₀⟩
+  obtain ⟨la, x, s, rfl⟩ := exists_mix X _ x₀ t₀ a
+  obtain ⟨lb, s', y, rfl⟩ := exists_mix _ Y t₀ y₀ b
+  have hlab : la = lb := by
+    have hm := congrArg (mass (⊤_ AConvMCat.{u, max u v} M)
+      (⊤_ AConvMCat.{u, max u v} M)) h
+    rwa [mass_map X (⊤_ AConvMCat.{u, max u v} M) (terminal.from X)
+        (𝟙 (⊤_ AConvMCat.{u, max u v} M)),
+      mass_map (⊤_ AConvMCat.{u, max u v} M) Y (𝟙 (⊤_ AConvMCat.{u, max u v} M))
+        (terminal.from Y), mass_mix, mass_mix] at hm
+  subst hlab
+  refine ⟨mix X Y la x y, ?_, ?_⟩
+  · rw [map_apply_mix, terminal_carrier_subsingleton ((terminal.from Y).1 y) s]
+    rfl
+  · rw [map_apply_mix, terminal_carrier_subsingleton ((terminal.from X).1 x) s']
+    rfl
+
+/-- **196II** (`aconvm-is-effectus`, eff.tex:3381), the left pullback square of
+the effectus axioms in `AConv_M`. -/
+theorem aconv_left_pullback (X Y : AConvMCat.{u, max u v} M) :
+    IsPullback (coprod.map (𝟙 X) (terminal.from Y))
+      (coprod.map (terminal.from X) (𝟙 Y))
+      (coprod.map (terminal.from X) (𝟙 (⊤_ AConvMCat.{u, max u v} M)))
+      (coprod.map (𝟙 (⊤_ AConvMCat.{u, max u v} M)) (terminal.from Y)) := by
+  classical
+  refine IsPullback.mk' ?_ ?_ ?_
+  · rw [coprod.map_map, coprod.map_map, Category.id_comp, Category.comp_id,
+      Category.comp_id, Category.id_comp]
+  · intro T φ φ' h1 h2
+    refine Subtype.ext (funext fun z => coprod_jointly_injective X Y ?_ ?_)
+    · exact congrArg (fun m : T ⟶ X ⨿ (⊤_ AConvMCat.{u, max u v} M) => m.1 z) h1
+    · exact congrArg (fun m : T ⟶ (⊤_ AConvMCat.{u, max u v} M) ⨿ Y => m.1 z) h2
+  · intro T a b hab
+    have hex : ∀ z : T.carrier, ∃ w : (X ⨿ Y).carrier,
+        (coprod.map (𝟙 X) (terminal.from Y)).1 w = a.1 z ∧
+        (coprod.map (terminal.from X) (𝟙 Y)).1 w = b.1 z := fun z =>
+      coprod_exists_lift X Y
+        (congrArg (fun m : T ⟶ (⊤_ AConvMCat.{u, max u v} M) ⨿
+          (⊤_ AConvMCat.{u, max u v} M) => m.1 z) hab)
+    choose γ hγ₁ hγ₂ using hex
+    -- `γ` is affine *because* the two legs are jointly injective: both
+    -- `γ(h_T p)` and `h(𝒟_M γ (p))` are sent to `h(𝒟_M α (p))` and
+    -- `h(𝒟_M β (p))` by the two legs.  (This replaces the thesis's
+    -- eff.tex:3592–3657.)
+    have haff : MConvex.IsAffine T.str (X ⨿ Y).str γ := by
+      intro p
+      have hc1 : (p.map γ).map (coprod.map (𝟙 X) (terminal.from Y)).1 = p.map a.1 := by
+        rw [MConvexComb.map_comp]
+        exact congrArg (fun f => p.map f) (funext hγ₁)
+      have hc2 : (p.map γ).map (coprod.map (terminal.from X) (𝟙 Y)).1 = p.map b.1 := by
+        rw [MConvexComb.map_comp]
+        exact congrArg (fun f => p.map f) (funext hγ₂)
+      refine coprod_jointly_injective X Y ?_ ?_
+      · rw [hγ₁ (T.str.h p), a.2 p,
+          (coprod.map (𝟙 X) (terminal.from Y)).2 (p.map γ), hc1]
+      · rw [hγ₂ (T.str.h p), b.2 p,
+          (coprod.map (terminal.from X) (𝟙 Y)).2 (p.map γ), hc2]
+    exact ⟨⟨γ, haff⟩, Subtype.ext (funext hγ₁), Subtype.ext (funext hγ₂)⟩
+
+end AConvMCat
+
+end LeftSquare
+
 /-- **196II** (`aconvm-is-effectus`, eff.tex:3381, Theorem): if `M` is an
 effect divisoid, then `AConv_M` is an effectus (in total form).
 
@@ -3613,15 +4629,34 @@ carries `HasFiniteCoproducts`, and the coproducts of `AConv_M` are quotients
 of function spaces into `M`, so they exist only at `AConvMCat.{u, max u v}`.
 See PROVING-LOG.
 
-Everything except the *left* pullback square of the effectus axioms is now
-available: `aconvalmosteffectus_coproducts` (194I.1),
-`aconvalmosteffectus_terminal` (194I.2),
-`aconvalmosteffectus_jointlyMonic` (194I.3) and
-`aconvalmosteffectus_kappaPullback` (194I.4).  What is missing is the left
-square, i.e. 196II's own proof (eff.tex:3383–3600); it is left `sorry` rather
-than assembled from a `sorry`ed sub-lemma, so that no proved declaration
-depends on an unproved one. -/
+The four other ingredients are 194I.1–.4 (`aconvalmosteffectus_coproducts`,
+`_terminal`, `_jointlyMonic`, `_kappaPullback`); the left pullback square is
+`AConvMCat.aconv_left_pullback` above.
+
+⚠ Divergence from the thesis (eff.tex:3383–3657).  The thesis proves the left
+square by interleaving two *derivations* (193IX/193IV) into one, which needs
+the syntactic description of the least congruence that 193IV leaves to the
+reader.  That is avoided here: over an effect divisoid every element of
+`X + Y` is a **binary** mixture `λ|κ₁x⟩ ⋁ λᵖ|κ₂y⟩` (`AConvMCat.exists_mix`,
+proved by dividing a general combination by its left mass `λ`, exactly the
+thesis's own normalization step), and the rest is then two applications of the
+fact that constant maps are affine.  Affineness of the mediating map `γ`
+(eff.tex:3592–3657) is likewise free: `γ` is *defined* by a universal
+property, so it is affine because its two legs are jointly injective. -/
 theorem aconvm_is_effectus (M : Type u) [EffectMonoid M] [EffectDivisoid M] :
-    Nonempty (EffectusTotalStructure (AConvMCat.{u, max u v} M)) := sorry
+    Nonempty (EffectusTotalStructure (AConvMCat.{u, max u v} M)) := by
+  letI hfc : HasFiniteCoproducts (AConvMCat.{u, max u v} M) :=
+    aconvalmosteffectus_coproducts.{u, v} M
+  letI hter : HasTerminal (AConvMCat.{u, max u v} M) :=
+    aconvalmosteffectus_terminal.{u, max u v} M
+  exact ⟨{ hasFiniteCoproducts := hfc
+           hasTerminal := hter
+           effectus :=
+             { isPullback_plus := fun X Y => AConvMCat.aconv_left_pullback X Y
+               isPullback_kappa := fun X Y =>
+                 aconvalmosteffectus_kappaPullback.{u, v} M X Y
+               jointlyMonic_cotuples :=
+                 aconvalmosteffectus_jointlyMonic.{u, v} M } }⟩
+
 
 end Theses.B.Eff

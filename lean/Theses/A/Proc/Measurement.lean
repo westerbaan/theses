@@ -2082,13 +2082,114 @@ map `f^⋄ : Proj(𝒜) → Proj(ℬ)`, `f^⋄(e) = ⌈f(e)⌉` (here defined on
 noncomputable def diamondUp [VonNeumannAlgebra B] (f : NCPMap A B)
     (e : A) : B := ceil (f e)
 
+/-! ### Infrastructure for parsec 1010
+
+Three elementary facts about the orthocomplement, and the one computational
+ingredient of 101II: for positive `b` and a projection `e` the conditions
+`⌈b⌉ ≤ e^⊥` and `e b e = 0` agree (the author's "`ef(s^⊥)e=0` iff
+`⌈f(s^⊥)⌉ ≤ e^⊥`", proc.tex:1063). -/
+
+/-- Orthogonality of two elements of `[0,1]` is symmetric. -/
+theorem perp_symm {a b : A} : a ≤ 1 - b ↔ b ≤ 1 - a := by
+  constructor <;> intro h <;> rw [← sub_nonneg] at h ⊢ <;>
+    · convert h using 1
+      abel
+
+/-- Two projections that are below the same orthocomplements are equal. -/
+theorem starProj_eq_of_perp_iff {a b : A}
+    (h : ∀ t : A, IsStarProjection t → (a ≤ 1 - t ↔ b ≤ 1 - t))
+    (ha : IsStarProjection a) (hb : IsStarProjection b) : a = b := by
+  have h1 : b ≤ a := by
+    have hx := (h (1 - a) ha.one_sub).mp (sub_sub_cancel 1 a).ge
+    rwa [sub_sub_cancel] at hx
+  have h2 : a ≤ b := by
+    have hx := (h (1 - b) hb.one_sub).mpr (sub_sub_cancel 1 b).ge
+    rwa [sub_sub_cancel] at hx
+  exact le_antisymm h2 h1
+
+/-- The supremum of two projections is below a projection `q` iff both are. -/
+theorem projSup_pair_le_iff [VonNeumannAlgebra A] {a b q : A}
+    (ha : IsStarProjection a) (hb : IsStarProjection b) (hq : IsStarProjection q) :
+    projSup ({a, b} : Set A) ≤ q ↔ a ≤ q ∧ b ≤ q := by
+  have hP : ∀ p ∈ ({a, b} : Set A), IsStarProjection p := by
+    rintro p (rfl | rfl) <;> assumption
+  obtain ⟨-, hub, hleast⟩ := projSup_spec hP
+  refine ⟨fun h => ⟨le_trans (hub a (by left; rfl)) h,
+      le_trans (hub b (by right; rfl)) h⟩, fun h => hleast q hq ?_⟩
+  rintro p (rfl | rfl)
+  · exact h.1
+  · exact h.2
+
+/-- For positive `b` and a projection `e`: `⌈b⌉ ≤ e^⊥` iff `e b e = 0`
+(proc.tex:1063).  Left to right is 59III (`ceil-basic`); right to left
+factors `ebe = (√b e)*(√b e)`. -/
+theorem ceil_le_perp_iff [VonNeumannAlgebra B] {b e : B} (hb : 0 ≤ b)
+    (he : IsStarProjection e) : ceil b ≤ 1 - e ↔ e * b * e = 0 := by
+  constructor
+  · intro h
+    have h1 : b * (1 - e) = b := ((ceil_basic_1 b (1 - e) hb he.one_sub).out 2 1).mp h
+    rw [mul_sub, mul_one, sub_eq_self] at h1
+    rw [mul_assoc, h1, mul_zero]
+  · intro h
+    have hs : star (CFC.sqrt b) = CFC.sqrt b :=
+      (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg b)).star_eq
+    have hz : CFC.sqrt b * e = 0 := by
+      refine (CStarRing.star_mul_self_eq_zero_iff _).mp ?_
+      rw [star_mul, hs, he.isSelfAdjoint.star_eq]
+      calc e * CFC.sqrt b * (CFC.sqrt b * e)
+          = e * (CFC.sqrt b * CFC.sqrt b) * e := by noncomm_ring
+        _ = e * b * e := by rw [CFC.sqrt_mul_sqrt_self b hb]
+        _ = 0 := h
+    have hbe : b * e = 0 := by
+      rw [← CFC.sqrt_mul_sqrt_self b hb, mul_assoc, hz, mul_zero]
+    refine ((ceil_basic_1 b (1 - e) hb he.one_sub).out 1 2).mp ?_
+    rw [mul_sub, mul_one, hbe, sub_zero]
+
+/-- Infrastructure for 101VII part 1: for projections `s`, `t` and any `x`,
+`t (x* s x) t = 0` iff `s x t = 0`, because `t x* s x t = (sxt)*(sxt)`. -/
+theorem conj_perp_eq_zero_iff {s t x : A} (hs : IsStarProjection s)
+    (ht : IsStarProjection t) :
+    t * (star x * s * x) * t = 0 ↔ s * x * t = 0 := by
+  have h : star (s * x * t) * (s * x * t) = t * (star x * s * x) * t := by
+    rw [star_mul, star_mul, ht.isSelfAdjoint.star_eq, hs.isSelfAdjoint.star_eq]
+    calc t * (star x * s) * (s * x * t) = t * star x * (s * s) * x * t := by
+          noncomm_ring
+      _ = t * (star x * s * x) * t := by
+          rw [hs.isIdempotentElem.eq]; noncomm_ring
+  rw [← h]
+  exact CStarRing.star_mul_self_eq_zero_iff _
+
+/-- Infrastructure for 101VII part 1: `s x t = 0` iff `t x* s = 0`, for
+projections `s`, `t`. -/
+theorem mul_triple_eq_zero_iff_star {s t x : A} (hs : IsStarProjection s)
+    (ht : IsStarProjection t) : s * x * t = 0 ↔ t * star x * s = 0 := by
+  constructor <;> intro h <;>
+    · have h' := congrArg star h
+      simpa [star_mul, mul_assoc, hs.isSelfAdjoint.star_eq,
+        ht.isSelfAdjoint.star_eq] using h'
+
 /-- **101II** (proc.tex:1048, Proposition), well-definedness: for an
 ncp-map `f : 𝒜 → ℬ` and a projection `e` of `ℬ` there is a least
 projection `p` of `𝒜` with `⌈f(p^⊥)⌉ ≤ e^⊥`. -/
 theorem exists_diamondDown [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (f : NCPMap A B) (e : B) (he : IsStarProjection e) :
     ∃! p : A, IsStarProjection p ∧ ceil (f (1 - p)) ≤ 1 - e ∧
-      ∀ q : A, IsStarProjection q → ceil (f (1 - q)) ≤ 1 - e → p ≤ q := sorry
+      ∀ q : A, IsStarProjection q → ceil (f (1 - q)) ≤ 1 - e → p ≤ q := by
+  -- The author's proof (proc.tex:1060): `f_⋄(e)` is the carrier of the
+  -- ncp-map `e f(·) e`, using `ef(s^⊥)e = 0  ⟺  ⌈f(s^⊥)⌉ ≤ e^⊥`.
+  have happ : ∀ a : A, ncpComp (adSelf e) f a = e * f a * e := by
+    intro a
+    rw [ncpComp_apply, adSelf_apply, he.isSelfAdjoint.star_eq]
+  have hiff : ∀ q : A, IsStarProjection q →
+      (ncpComp (adSelf e) f (1 - q) = 0 ↔ ceil (f (1 - q)) ≤ 1 - e) := by
+    intro q hq
+    rw [happ]
+    exact (ceil_le_perp_iff (ncpMap_nonneg f (sub_nonneg.mpr hq.le_one)) he).symm
+  obtain ⟨p, ⟨hp, hp0, hpl⟩, -⟩ := exists_ncpCarrier (ncpComp (adSelf e) f)
+  refine ⟨p, ⟨hp, (hiff p hp).mp hp0,
+    fun q hq hq' => hpl q hq ((hiff q hq).mpr hq')⟩, ?_⟩
+  rintro r ⟨hr, hr1, hrl⟩
+  exact le_antisymm (hrl p hp ((hiff p hp).mp hp0)) (hpl r hr ((hiff r hr).mpr hr1))
 
 open scoped Classical in
 /-- **101II** (proc.tex:1048, Proposition): the map
@@ -2098,20 +2199,69 @@ noncomputable def diamondDown [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (f : NCPMap A B) (e : B) : A :=
   if he : IsStarProjection e then (exists_diamondDown f e he).choose else 0
 
+/-- The defining property of `f_⋄(e)`, for a projection `e`. -/
+theorem diamondDown_spec [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    (f : NCPMap A B) {e : B} (he : IsStarProjection e) :
+    IsStarProjection (diamondDown f e) ∧
+      ceil (f (1 - diamondDown f e)) ≤ 1 - e ∧
+      ∀ q : A, IsStarProjection q → ceil (f (1 - q)) ≤ 1 - e →
+        diamondDown f e ≤ q := by
+  rw [diamondDown, dif_pos he]
+  exact (exists_diamondDown f e he).choose_spec.1
+
+/-- `f^⋄(e)` is a projection. -/
+theorem isStarProjection_diamondUp [VonNeumannAlgebra B] (f : NCPMap A B)
+    (e : A) : IsStarProjection (diamondUp f e) := isStarProjection_ceil _
+
+/-- `f_⋄(1) = ⌈f⌉`: for `e = 1` the condition `⌈f(p^⊥)⌉ ≤ 1^⊥` reads
+`f(p^⊥) = 0`, so 101II specialises to the carrier of 63I. -/
+theorem diamondDown_one [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    (f : NCPMap A B) : diamondDown f 1 = ncpCarrier f := by
+  have hiff : ∀ q : A, IsStarProjection q →
+      (ceil (f (1 - q)) ≤ 1 - 1 ↔ f (1 - q) = 0) := by
+    intro q hq
+    have hnn := ncpMap_nonneg f (sub_nonneg.mpr hq.le_one)
+    rw [sub_self]
+    exact ⟨fun hle => (ceil_basic_3 _ hnn).mpr
+        (le_antisymm hle (isStarProjection_ceil _).nonneg),
+      fun h0 => by rw [h0, ceil_zero]⟩
+  obtain ⟨hp, hple, hpl⟩ := diamondDown_spec f (IsStarProjection.one (R := B))
+  have hspec : IsStarProjection (ncpCarrier f) ∧ f (1 - ncpCarrier f) = 0 ∧
+      ∀ q : A, IsStarProjection q → f (1 - q) = 0 → ncpCarrier f ≤ q :=
+    (exists_ncpCarrier f).choose_spec.1
+  exact le_antisymm (hpl _ hspec.1 ((hiff _ hspec.1).mpr hspec.2.1))
+    (hspec.2.2 _ hp ((hiff _ hp).mp hple))
+
 /-- **101II** (proc.tex:1048, Proposition), formula: `f_⋄(e)` is the
 carrier of the ncp-map `e f(·) e`, i.e. the least projection `p` with
 `e·f(p^⊥)·e = 0`. -/
 theorem diamondDown_carrier [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (f : NCPMap A B) (e : B) (he : IsStarProjection e) :
     IsLeast {p : A | IsStarProjection p ∧ e * f (1 - p) * e = 0}
-      (diamondDown f e) := sorry
+      (diamondDown f e) := by
+  obtain ⟨hp, hple, hpl⟩ := diamondDown_spec f he
+  have hcv : ∀ q : A, IsStarProjection q →
+      (ceil (f (1 - q)) ≤ 1 - e ↔ e * f (1 - q) * e = 0) := fun q hq =>
+    ceil_le_perp_iff (ncpMap_nonneg f (sub_nonneg.mpr hq.le_one)) he
+  exact ⟨⟨hp, (hcv _ hp).mp hple⟩, fun q hq => hpl q hq.1 ((hcv q hq.1).mpr hq.2)⟩
 
 /-- **101IV** (`diamond-suprema`, proc.tex:1071, Exercise), part 1: the
 Galois-type correspondence `f^⋄(s) ≤ t^⊥ ⟺ f_⋄(t) ≤ s^⊥`. -/
 theorem diamond_suprema_1 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (f : NCPMap A B) (s : A) (t : B) (hs : IsStarProjection s)
     (ht : IsStarProjection t) :
-    diamondUp f s ≤ 1 - t ↔ diamondDown f t ≤ 1 - s := sorry
+    diamondUp f s ≤ 1 - t ↔ diamondDown f t ≤ 1 - s := by
+  obtain ⟨-, hple, hpl⟩ := diamondDown_spec f ht
+  constructor
+  · intro h
+    refine hpl (1 - s) hs.one_sub ?_
+    rwa [sub_sub_cancel]
+  · intro h
+    have hmono : ceil (f (1 - (1 - s))) ≤ ceil (f (1 - diamondDown f t)) :=
+      ceil_mono (ncpMap_nonneg f (by rw [sub_sub_cancel]; exact hs.nonneg))
+        (OrderHomClass.mono f.toCompletelyPositiveMap (sub_le_sub_left h 1))
+    rw [sub_sub_cancel] at hmono
+    exact le_trans hmono hple
 
 /-- **101IV** (`diamond-suprema`, proc.tex:1071, Exercise), part 2:
 `f^⋄(⋃E) = ⋃_{e∈E} f^⋄(e)` for every set of projections `E`. -/
@@ -2131,7 +2281,17 @@ def NCPEquiv [VonNeumannAlgebra B] (f g : NCPMap A B) : Prop :=
 theorem ncpEquiv_iff [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (f g : NCPMap A B) :
     NCPEquiv f g ↔
-      ∀ e : B, IsStarProjection e → diamondDown f e = diamondDown g e := sorry
+      ∀ e : B, IsStarProjection e → diamondDown f e = diamondDown g e := by
+  -- both sides say that the two Galois connections of 101IV.1 agree
+  constructor
+  · intro h e he
+    refine starProj_eq_of_perp_iff (fun t ht => ?_) (diamondDown_spec f he).1
+      (diamondDown_spec g he).1
+    rw [← diamond_suprema_1 f t e ht he, ← diamond_suprema_1 g t e ht he, h t ht]
+  · intro h s hs
+    refine starProj_eq_of_perp_iff (fun t ht => ?_) (isStarProjection_diamondUp f s)
+      (isStarProjection_diamondUp g s)
+    rw [diamond_suprema_1 f s t hs ht, diamond_suprema_1 g s t hs ht, h t ht]
 
 /-- **101VI** (`contraposed`, proc.tex:1091): ncp-maps `f : 𝒜 → ℬ` and
 `g : ℬ → 𝒜` are **contraposed** when
@@ -2141,6 +2301,27 @@ def Contraposed [VonNeumannAlgebra A] [VonNeumannAlgebra B]
   ∀ s t, IsStarProjection s → IsStarProjection t →
     (diamondUp f s ≤ 1 - t ↔ diamondUp g t ≤ 1 - s)
 
+/-- Contraposition is a symmetric relation (immediately from the
+definition). -/
+theorem contraposed_symm [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    (f : NCPMap A B) (g : NCPMap B A) : Contraposed f g ↔ Contraposed g f :=
+  ⟨fun h s t hs ht => (h t s ht hs).symm, fun h s t hs ht => (h t s ht hs).symm⟩
+
+/-- **101VI** (`contraposed`, proc.tex:1091), the workhorse: `f^⋄ = g_⋄`
+iff `f` and `g` are contraposed. -/
+theorem contraposed_iff_diamond [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    (f : NCPMap A B) (g : NCPMap B A) :
+    (∀ s, IsStarProjection s → diamondUp f s = diamondDown g s) ↔
+      Contraposed f g := by
+  constructor
+  · intro h s t hs ht
+    rw [diamond_suprema_1 g t s ht hs, ← h s hs]
+  · intro h s hs
+    refine starProj_eq_of_perp_iff (fun t ht => ?_) (isStarProjection_diamondUp f s)
+      (diamondDown_spec g hs).1
+    rw [← diamond_suprema_1 g t s ht hs]
+    exact h s t hs ht
+
 /-- **101VI** (`contraposed`, proc.tex:1091): `f^⋄ = g_⋄` iff `f_⋄ = g^⋄`
 iff `f` and `g` are contraposed. -/
 theorem contraposed_iff [VonNeumannAlgebra A] [VonNeumannAlgebra B]
@@ -2148,12 +2329,30 @@ theorem contraposed_iff [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     ((∀ s, IsStarProjection s → diamondUp f s = diamondDown g s) ↔
         (∀ t, IsStarProjection t → diamondUp g t = diamondDown f t)) ∧
       ((∀ s, IsStarProjection s → diamondUp f s = diamondDown g s) ↔
-        Contraposed f g) := sorry
+        Contraposed f g) :=
+  ⟨(contraposed_iff_diamond f g).trans
+      ((contraposed_symm f g).trans (contraposed_iff_diamond g f).symm),
+    contraposed_iff_diamond f g⟩
 
 /-- **101VII** (`equivalent-examples`, proc.tex:1102, Examples), part 1:
 the maps `a*(·)a` and `a(·)a*` on a von Neumann algebra are contraposed. -/
 theorem equivalent_examples_1 [VonNeumannAlgebra A] (a : A) :
-    Contraposed (adSelf a) (adSelf (star a)) := sorry
+    Contraposed (adSelf a) (adSelf (star a)) := by
+  -- both `⌈a* s a⌉ ≤ t^⊥` and `⌈a t a*⌉ ≤ s^⊥` say `s a t = 0`
+  intro s t hs ht
+  have e1 : diamondUp (adSelf a) s = ceil (star a * s * a) := by
+    show ceil (adSelf a s) = _
+    rw [adSelf_apply]
+  have e2 : diamondUp (adSelf (star a)) t = ceil (star (star a) * t * star a) := by
+    show ceil (adSelf (star a) t) = _
+    rw [adSelf_apply]
+  have h1 : diamondUp (adSelf a) s ≤ 1 - t ↔ s * a * t = 0 := by
+    rw [e1, ceil_le_perp_iff (star_left_conjugate_nonneg hs.nonneg a) ht]
+    exact conj_perp_eq_zero_iff hs ht
+  have h2 : diamondUp (adSelf (star a)) t ≤ 1 - s ↔ s * a * t = 0 := by
+    rw [e2, ceil_le_perp_iff (star_left_conjugate_nonneg ht.nonneg (star a)) hs,
+      conj_perp_eq_zero_iff ht hs, ← mul_triple_eq_zero_iff_star hs ht]
+  rw [h1, h2]
 
 /-- **101VII** (`equivalent-examples`, proc.tex:1102, Examples), part 1
 (continued): the standard corner `π_s` and the standard filter `c_s` of a
@@ -2187,14 +2386,32 @@ theorem diamond_composition_1 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (∀ e : A, IsStarProjection e →
         diamondUp (ncpComp g f) e = diamondUp g (diamondUp f e)) ∧
       ∀ e : C, IsStarProjection e →
-        diamondDown (ncpComp g f) e = diamondDown f (diamondDown g e) := sorry
+        diamondDown (ncpComp g f) e = diamondDown f (diamondDown g e) := by
+  -- part 1 *is* `ncp_ceil` (60V); part 2 follows through the Galois
+  -- connection 101IV.1, as the author indicates
+  have hup : ∀ e : A, IsStarProjection e →
+      diamondUp (ncpComp g f) e = diamondUp g (diamondUp f e) := by
+    intro e he
+    show ceil (ncpComp g f e) = ceil (g (ceil (f e)))
+    rw [ncpComp_apply]
+    exact ncp_ceil (PositiveLinearMap.ofClass g.toCompletelyPositiveMap)
+      g.preservesDirSups' (f e) (ncpMap_nonneg f he.nonneg)
+  refine ⟨hup, fun e he => ?_⟩
+  refine starProj_eq_of_perp_iff (fun s hs => ?_) (diamondDown_spec _ he).1
+    (diamondDown_spec f (diamondDown_spec g he).1).1
+  rw [← diamond_suprema_1 (ncpComp g f) s e hs he, hup s hs,
+    diamond_suprema_1 g (diamondUp f s) e (isStarProjection_diamondUp f s) he,
+    perp_symm, diamond_suprema_1 f s (diamondDown g e) hs (diamondDown_spec g he).1]
 
 /-- **101VIII** (`diamond-composition`, proc.tex:1134, Exercise), part 2:
 equivalence of ncp-maps is preserved under composition. -/
 theorem diamond_composition_2 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     [VonNeumannAlgebra C] (f f' : NCPMap A B) (g g' : NCPMap B C)
     (hf : NCPEquiv f f') (hg : NCPEquiv g g') :
-    NCPEquiv (ncpComp g f) (ncpComp g' f') := sorry
+    NCPEquiv (ncpComp g f) (ncpComp g' f') := by
+  intro e he
+  rw [(diamond_composition_1 f g).1 e he, (diamond_composition_1 f' g').1 e he,
+    hf e he, hg _ (isStarProjection_diamondUp f' e)]
 
 /-- **101VIII** (`diamond-composition`, proc.tex:1134, Exercise), part 3:
 contraposition is preserved under composition (with reversal). -/
@@ -2202,7 +2419,12 @@ theorem diamond_composition_3 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     [VonNeumannAlgebra C] (f : NCPMap A B) (f' : NCPMap B A)
     (g : NCPMap B C) (g' : NCPMap C B) (hf : Contraposed f f')
     (hg : Contraposed g g') :
-    Contraposed (ncpComp g f) (ncpComp f' g') := sorry
+    Contraposed (ncpComp g f) (ncpComp f' g') := by
+  refine (contraposed_iff_diamond _ _).mp fun s hs => ?_
+  rw [(diamond_composition_1 f g).1 s hs, (diamond_composition_1 g' f').2 s hs,
+    (contraposed_iff_diamond f f').mpr hf s hs,
+    (contraposed_iff_diamond g g').mpr hg _
+      (diamondDown_spec f' hs).1]
 
 /-- **101IX** (`diamond-sum`, proc.tex:1162, Proposition):
 `(f+g)^⋄(s) = f^⋄(s) ∪ g^⋄(s)` and `(f+g)_⋄(t) = f_⋄(t) ∪ g_⋄(t)`
@@ -2213,13 +2435,57 @@ theorem diamond_sum [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (∀ s : A, IsStarProjection s →
         diamondUp h s = projSup {diamondUp f s, diamondUp g s}) ∧
       ∀ t : B, IsStarProjection t →
-        diamondDown h t = projSup {diamondDown f t, diamondDown g t} := sorry
+        diamondDown h t = projSup {diamondDown f t, diamondDown g t} := by
+  -- the author's argument (proc.tex:1172): part 1 is `ceil-basic`, part 2
+  -- runs the Galois connection 101IV.1 on both sides
+  have hup : ∀ s : A, IsStarProjection s →
+      diamondUp h s = projSup ({diamondUp f s, diamondUp g s} : Set B) := by
+    intro s hs
+    show ceil (h s) = _
+    rw [hh s]
+    exact (ceil_basic_4 (f s) (g s) (ncpMap_nonneg f hs.nonneg)
+      (ncpMap_nonneg g hs.nonneg) 1 one_pos).2
+  refine ⟨hup, fun t ht => ?_⟩
+  have hPf := diamondDown_spec f ht
+  have hPg := diamondDown_spec g ht
+  refine starProj_eq_of_perp_iff (fun s hs => ?_) (diamondDown_spec h ht).1
+    (projSup_spec (P := ({diamondDown f t, diamondDown g t} : Set A))
+      (by rintro p (rfl | rfl); exacts [hPf.1, hPg.1])).1
+  rw [← diamond_suprema_1 h s t hs ht, hup s hs,
+    projSup_pair_le_iff (isStarProjection_diamondUp f s)
+      (isStarProjection_diamondUp g s) ht.one_sub,
+    projSup_pair_le_iff hPf.1 hPg.1 hs.one_sub,
+    diamond_suprema_1 f s t hs ht, diamond_suprema_1 g s t hs ht]
 
 /-- **101XI** (`carrier-f-dagger-f`, proc.tex:1187, Lemma): for contraposed
 `f : 𝒜 → ℬ` and `g : ℬ → 𝒜` we have `⌈f⌉ = ⌈g ∘ f⌉`. -/
 theorem carrier_f_dagger_f [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (f : NCPMap A B) (g : NCPMap B A) (h : Contraposed f g) :
-    ncpCarrier f = ncpCarrier (ncpComp g f) := sorry
+    ncpCarrier f = ncpCarrier (ncpComp g f) := by
+  -- the author's chain (proc.tex:1192):
+  -- `⌈gf⌉ = (gf)_⋄(1) = f_⋄(g_⋄(1)) = g^⋄(⌈g⌉) = g^⋄(1) = f_⋄(1) = ⌈f⌉`
+  have hgd : ∀ t : B, IsStarProjection t → diamondUp g t = diamondDown f t :=
+    (contraposed_iff_diamond g f).mpr ((contraposed_symm f g).mp h)
+  have hspec : IsStarProjection (ncpCarrier g) ∧ g (1 - ncpCarrier g) = 0 ∧
+      ∀ q : B, IsStarProjection q → g (1 - q) = 0 → ncpCarrier g ≤ q :=
+    (exists_ncpCarrier g).choose_spec.1
+  have hg1 : (g 1 : A) = g (ncpCarrier g) := by
+    have hadd : ∀ y z : B, (g (y + z) : A) = g y + g z := fun y z =>
+      map_add g.toCompletelyPositiveMap.toLinearMap y z
+    have hsum := hadd (ncpCarrier g) (1 - (ncpCarrier g : B))
+    rw [show (ncpCarrier g : B) + (1 - ncpCarrier g) = 1 by abel, hspec.2.1,
+      add_zero] at hsum
+    exact hsum
+  calc ncpCarrier f = diamondDown f 1 := (diamondDown_one f).symm
+    _ = diamondUp g 1 := (hgd 1 (IsStarProjection.one (R := B))).symm
+    _ = diamondUp g (ncpCarrier g) := by
+        show ceil (g 1) = ceil (g (ncpCarrier g))
+        rw [hg1]
+    _ = diamondDown f (ncpCarrier g) := hgd _ hspec.1
+    _ = diamondDown f (diamondDown g 1) := by rw [diamondDown_one]
+    _ = diamondDown (ncpComp g f) 1 :=
+        ((diamond_composition_1 f g).2 1 (IsStarProjection.one (R := A))).symm
+    _ = ncpCarrier (ncpComp g f) := diamondDown_one _
 
 /-! ## Parsec 1020: rigidity -/
 
@@ -2282,19 +2548,28 @@ theorem purely_positive_examples_2 [VonNeumannAlgebra A] (a : A)
 /-- **103III** (`purely-positive-basic`, proc.tex:1425, Exercise), part 1:
 `⌈f⌉ = ⌈f(1)⌉` for a ⋄-self-adjoint `f`. -/
 theorem purely_positive_basic_1 [VonNeumannAlgebra A] (f : NCPMap A A)
-    (hf : IsDiamondSelfAdjoint f) : ncpCarrier f = ceil (f 1) := sorry
+    (hf : IsDiamondSelfAdjoint f) : ncpCarrier f = ceil (f 1) := by
+  -- `⌈f⌉ = f_⋄(1) = f^⋄(1) = ⌈f(1)⌉`; only `f^⋄ = f_⋄` is used
+  have hd : diamondUp f 1 = diamondDown f 1 :=
+    (contraposed_iff_diamond f f).mpr hf.2 1 (IsStarProjection.one (R := A))
+  rw [← diamondDown_one f, ← hd]
+  rfl
 
 /-- **103III** (`purely-positive-basic`, proc.tex:1425, Exercise), part 2:
 if `f` is ⋄-self-adjoint then so is `f ∘ f`, and `⌈f∘f⌉ = ⌈f⌉`. -/
 theorem purely_positive_basic_2 [VonNeumannAlgebra A] (f : NCPMap A A)
     (hf : IsDiamondSelfAdjoint f) :
     IsDiamondSelfAdjoint (ncpComp f f) ∧
-      ncpCarrier (ncpComp f f) = ncpCarrier f := sorry
+      ncpCarrier (ncpComp f f) = ncpCarrier f :=
+  ⟨⟨IsPure.comp hf.1 hf.1, diamond_composition_3 f f f f hf.2 hf.2⟩,
+    (carrier_f_dagger_f f f hf.2).symm⟩
 
 /-- **103III** (`purely-positive-basic`, proc.tex:1425, Exercise), part 3:
 a ⋄-positive map is ⋄-self-adjoint. -/
 theorem purely_positive_basic_3 [VonNeumannAlgebra A] (f : NCPMap A A)
-    (hf : IsDiamondPositive f) : IsDiamondSelfAdjoint f := sorry
+    (hf : IsDiamondPositive f) : IsDiamondSelfAdjoint f := by
+  obtain ⟨g, hg, rfl⟩ := hf
+  exact (purely_positive_basic_2 g hg).1
 
 /-! ## Parsec 1040: central similarity -/
 

@@ -843,6 +843,14 @@ relation), and only the *surjectivity* half of the guess survives — which is
 `exists_mix`, and is all that 196II needs.  Route (a) (formalizing 193IV) was
 not needed either.
 
+#### Verification
+
+`lake build` of all eight B/Eff modules is clean; `StatesPredicates.lean` now
+has **10** `sorry`s (B/Eff **36**).  Zero `sorryAx` leakage re-verified with
+`#sorry_leaks` restricted to `Theses.B.Eff`: **1312 declarations checked, 36 are
+themselves `sorry`, 0 depend on one.**  Every new declaration reports
+`[propext, Classical.choice, Quot.sound]`.
+
 #### Reusable additions
 
 `MConvexComb`: `bin_apply`, `bin_self`, `bin_eq_zero`, `bin_one`, `bin_zero`,
