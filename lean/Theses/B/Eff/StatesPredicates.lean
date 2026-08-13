@@ -1215,7 +1215,17 @@ variable (M : Type u) [EffectMonoid M]
 /-- **192III.1** (`exc-dm-effectus`, eff.tex:2380, Exercise\*): `𝒟_M` is a
 functor `Set → Set` (with the action of `map`). -/
 theorem exc_dm_effectus_functor :
-    ∃ F : Type u ⥤ Type u, ∀ X : Type u, F.obj X = MConvexComb M X := sorry
+    ∃ F : Type u ⥤ Type u, ∀ X : Type u, F.obj X = MConvexComb M X :=
+  ⟨{ obj := fun X => MConvexComb M X
+     map := fun {_ _} f => TypeCat.ofHom fun p => p.map (TypeCat.Hom.hom f)
+     map_id := fun X => by
+       ext p
+       exact MConvexComb.map_id p
+     map_comp := fun f g => by
+       ext p
+       exact (MConvexComb.map_comp p (⇑(TypeCat.Hom.hom f))
+         (⇑(TypeCat.Hom.hom g))).symm },
+   fun _ => rfl⟩
 
 /-- **192III.2** (`exc-dm-effectus`, eff.tex:2397, Exercise\*):
 `(𝒟_M, η, μ)` is a monad on `Set`. -/
