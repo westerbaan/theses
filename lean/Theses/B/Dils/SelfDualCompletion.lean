@@ -449,18 +449,106 @@ theorem ba_vonNeumannAlgebra [VonNeumannAlgebra 𝒷] [CompleteSpace X]
 
 /-! ## Parsec 1530: `ad_T` -/
 
+/-- Positivity in `𝒷ᵃ(X)` from the vector states: if `⟨x, Zx⟩ ≥ 0` for all
+`x`, then `0 ≤ Z` in the C*-order of `𝒷ᵃ(X)`.  This is **144I**
+`hilbmod_ordersep` transported from `IsPositiveOp` to the type `Ba 𝒷 X`
+(adjoints being unique, `R* = R'` and so `Z = R* R ≥ 0`). -/
+private theorem ba_nonneg_of_vector [CompleteSpace X] (Z : Ba 𝒷 X)
+    (h : ∀ x : X, 0 ≤ inner 𝒷 x (Z.1 x)) : 0 ≤ Z := by
+  let _ : NormedSpace ℂ X := NormedSpace.ofCore (CStarModule.normedSpaceCore 𝒷)
+  obtain ⟨R, R', hRR', hZ⟩ := (hilbmod_ordersep Z.1 Z.2).mpr h
+  let r : Ba 𝒷 X := ⟨R, ⟨R', hRR'⟩⟩
+  have hstar : ((star r : Ba 𝒷 X)).1 = R' := by
+    have h1 : ModuleAdjointTo 𝒷 (⇑R : X → X) ⇑((star r : Ba 𝒷 X)).1 :=
+      baSubalgebra_star_spec r
+    exact DFunLike.coe_injective
+      (moduleAdjointTo_unique (𝒜 := 𝒷) (⇑R) _ _ h1 hRR')
+  have hzz : Z = (star r * r : Ba 𝒷 X) := by
+    refine Subtype.ext (ContinuousLinearMap.ext fun x => ?_)
+    change Z.1 x = ((star r : Ba 𝒷 X)).1 ((r : Ba 𝒷 X).1 x)
+    rw [hZ, hstar]
+    rfl
+  rw [hzz]
+  exact star_mul_self_nonneg r
+
 /-- **153I** (`hilbmod-ad-ncp`, dils.tex:3487, Proposition), part 1: for an
 adjointable bounded module map `T : X → Y` (with adjoint `T'`) between
 Hilbert 𝒷-modules, the map `ad_T : 𝒷ᵃ(Y) → 𝒷ᵃ(X)`, `ad_T(S) = T* S T`,
 is completely positive.
 
-**153II** is the proof — not converted. -/
+**153II** is the author's proof, transcribed here for part 1. -/
 theorem hilbmod_ad_cp [CompleteSpace X] [CompleteSpace Y]
     (T : X →L[ℂ] Y) (T' : Y →L[ℂ] X) (hT : ModuleAdjointTo 𝒷 ⇑T ⇑T') :
     ∃ ad : Ba 𝒷 Y →ₗ[ℂ] Ba 𝒷 X,
       (∀ S : Ba 𝒷 Y, (ad S).1 = T'.comp (S.1.comp T)) ∧
-      IsCompletelyPositiveMap ad :=
-  sorry
+      IsCompletelyPositiveMap ad := by
+  -- dils.tex:3495 (**153II**), transcribed: `∑ᵢⱼ Bⱼ* T* Aⱼ* Aᵢ T Bᵢ =
+  -- (∑ᵢ Aᵢ T Bᵢ)* (∑ⱼ Aⱼ T Bⱼ) ≥ 0`, checked on vector states (**144I**).
+  let _ : NormedSpace ℂ X := NormedSpace.ofCore (CStarModule.normedSpaceCore 𝒷)
+  let _ : NormedSpace ℂ Y := NormedSpace.ofCore (CStarModule.normedSpaceCore 𝒷)
+  have hTsymm : ModuleAdjointTo 𝒷 (⇑T' : Y → X) ⇑T :=
+    moduleAdjointTo_unique (𝒜 := 𝒷) _ _ _ (moduleAdjointTo_symm (𝒜 := 𝒷) _ _ hT)
+      (moduleAdjointTo_symm (𝒜 := 𝒷) _ _ hT) ▸
+      moduleAdjointTo_symm (𝒜 := 𝒷) _ _ hT
+  -- `T' ∘ S ∘ T` is adjointable, with adjoint `T' ∘ S* ∘ T`
+  have hmem : ∀ S : Ba 𝒷 Y, ModuleAdjointable 𝒷 ⇑(T'.comp (S.1.comp T)) := by
+    intro S
+    obtain ⟨S', hS'⟩ := S.2
+    refine ⟨fun x => T' (S' (T x)), fun x x' => ?_⟩
+    change inner 𝒷 (T' (S.1 (T x))) x' = inner 𝒷 x (T' (S' (T x')))
+    rw [hTsymm (S.1 (T x)) x', hS' (T x) (T x'), ← hT x (S' (T x'))]
+  set ad : Ba 𝒷 Y →ₗ[ℂ] Ba 𝒷 X :=
+    { toFun := fun S => ⟨T'.comp (S.1.comp T), hmem S⟩
+      map_add' := fun S S' => Subtype.ext (by
+        refine ContinuousLinearMap.ext fun x => ?_
+        change T' ((S + S').1 (T x)) = T' (S.1 (T x)) + T' (S'.1 (T x))
+        change T' (S.1 (T x) + S'.1 (T x)) = _
+        rw [map_add])
+      map_smul' := fun c S => Subtype.ext (by
+        refine ContinuousLinearMap.ext fun x => ?_
+        change T' ((c • S).1 (T x)) = c • T' (S.1 (T x))
+        change T' (c • S.1 (T x)) = _
+        rw [map_smul]) } with had
+  refine ⟨ad, fun S => rfl, ?_⟩
+  intro n A B
+  -- the vector-state computation of dils.tex:3495
+  refine ba_nonneg_of_vector _ fun x => ?_
+  set C : Fin n → Y := fun i => (A i).1 (T ((B i).1 x)) with hC
+  -- the coercion `𝒷ᵃ(X) → B(X)` is additive, so it commutes with the sums
+  let val : Ba 𝒷 X →+ (X →L[ℂ] X) :=
+    { toFun := fun S => S.1, map_zero' := rfl, map_add' := fun _ _ => rfl }
+  have hvalSum : ∀ f : Fin n → Fin n → Ba 𝒷 X,
+      ((∑ i, ∑ j, f i j : Ba 𝒷 X)).1 x = ∑ i, ∑ j, ((f i j).1 x) := by
+    intro f
+    have h : ((∑ i, ∑ j, f i j : Ba 𝒷 X)).1 = ∑ i, ∑ j, (f i j).1 := by
+      change val _ = _
+      rw [map_sum]
+      exact Finset.sum_congr rfl fun i _ => map_sum val _ _
+    rw [h]
+    simp
+  -- `⟨x, Bᵢ* T* Aᵢ* Aⱼ T Bⱼ x⟩ = ⟨AᵢTBᵢx, AⱼTBⱼx⟩`
+  have hterm : ∀ i j : Fin n,
+      (inner 𝒷 x
+        (((star (B i) * ad (star (A i) * A j) * B j : Ba 𝒷 X)).1 x) : 𝒷)
+        = inner 𝒷 (C i) (C j) := by
+    intro i j
+    have hBi : ModuleAdjointTo 𝒷 (⇑((B i).1) : X → X)
+        ⇑((star (B i) : Ba 𝒷 X)).1 := baSubalgebra_star_spec (B i)
+    have hAi : ModuleAdjointTo 𝒷 (⇑((A i).1) : Y → Y)
+        ⇑((star (A i) : Ba 𝒷 Y)).1 := baSubalgebra_star_spec (A i)
+    change (inner 𝒷 x
+      (((star (B i) : Ba 𝒷 X)).1
+        (T' (((star (A i) : Ba 𝒷 Y)).1 ((A j).1 (T ((B j).1 x)))))) : 𝒷) = _
+    rw [← hBi x _, ← hT ((B i).1 x) _, ← hAi (T ((B i).1 x)) _]
+  rw [hvalSum]
+  simp only [CStarModule.inner_sum_right, hterm]
+  -- `∑ᵢⱼ ⟨Cᵢ,Cⱼ⟩ = ⟨∑ᵢ Cᵢ, ∑ⱼ Cⱼ⟩ ≥ 0`
+  have hgram : ∑ i, ∑ j, (inner 𝒷 (C i) (C j) : 𝒷)
+      = inner 𝒷 (∑ i, C i) (∑ j, C j) := by
+    rw [CStarModule.inner_sum_left]
+    exact Finset.sum_congr rfl fun i _ => (CStarModule.inner_sum_right).symm
+  rw [hgram]
+  exact CStarModule.inner_self_nonneg
 
 /-- **153I** (`hilbmod-ad-ncp`, dils.tex:3487, Proposition), part 2: if `X`
 and `Y` are moreover self-dual, then `ad_T` is normal, i.e. an ncp-map.

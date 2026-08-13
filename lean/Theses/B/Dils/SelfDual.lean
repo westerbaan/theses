@@ -392,8 +392,98 @@ theorem onb1 [VonNeumannAlgebra ℬ] [CompleteSpace X] {ι : Type v}
     (e : ι → X) (he : IsONBasis ℬ e) (u : ι → ℬ)
     (hpi : ∀ i, IsStarProjection (star (u i) * u i))
     (hu : ∀ i, u i * star (u i) = inner ℬ (e i) (e i)) :
-    IsONBasis ℬ fun i => star (u i) • e i :=
-  sorry
+    IsONBasis ℬ fun i => star (u i) • e i := by
+  -- `bsols.tex`, solution `onb1`, first part, transcribed.
+  obtain ⟨⟨heorth, heproj⟩, hebasis, hel2⟩ := he
+  -- `⟨eᵢuᵢ, eⱼuⱼ⟩ = uⱼ* ⟨eᵢ,eⱼ⟩ uᵢ` (mirrored)
+  have hinner : ∀ i j : ι, (inner ℬ (star (u i) • e i) (star (u j) • e j) : ℬ)
+      = star (u j) * inner ℬ (e i) (e j) * u i := by
+    intro i j
+    rw [CStarModule.inner_op_smul_right, CStarModule.inner_op_smul_left,
+      star_star, mul_assoc]
+  -- `⟨eᵢuᵢ, eᵢuᵢ⟩ = uᵢ*uᵢ`, a projection
+  have hdiag : ∀ i : ι, (inner ℬ (star (u i) • e i) (star (u i) • e i) : ℬ)
+      = star (u i) * u i := by
+    intro i
+    rw [hinner i i, ← hu i]
+    have h := (hpi i).isIdempotentElem
+    calc star (u i) * (u i * star (u i)) * u i
+        = (star (u i) * u i) * (star (u i) * u i) := by noncomm_ring
+      _ = star (u i) * u i := h
+  -- `⟨eᵢ,x⟩⟨eᵢ,eᵢ⟩ = ⟨eᵢ,x⟩` (mirrored), from **149III**
+  have hself : ∀ (i : ι) (x : X), (inner ℬ (e i) x : ℬ) * inner ℬ (e i) (e i)
+      = inner ℬ (e i) x := by
+    intro i x
+    have hps : star (inner ℬ (e i) (e i) : ℬ) = inner ℬ (e i) (e i) :=
+      (heproj i).1.isSelfAdjoint
+    have h2 : (inner ℬ ((inner ℬ (e i) (e i) : ℬ) • e i) x : ℬ)
+        = inner ℬ (e i) x := by rw [mod_projelabs (e i) (heproj i).1]
+    rwa [CStarModule.inner_op_smul_left, hps] at h2
+  -- the two families have the same partial sums
+  have hterm : ∀ (x : X) (i : ι),
+      (inner ℬ (star (u i) • e i) x : ℬ) • (star (u i) • e i)
+        = (inner ℬ (e i) x : ℬ) • e i := by
+    intro x i
+    rw [CStarModule.inner_op_smul_left, star_star, ← op_mul_smul, mul_assoc,
+      hu i, hself i x]
+  refine ⟨⟨fun i j hij => by rw [hinner i j, heorth i j hij, mul_zero, zero_mul],
+    fun i => ⟨?_, ?_⟩⟩, fun x => ?_, fun b hb => ?_⟩
+  · rw [hdiag i]; exact hpi i
+  · -- `uᵢ*uᵢ ≠ 0`, for otherwise `uᵢ = 0` and `⟨eᵢ,eᵢ⟩ = uᵢuᵢ* = 0`
+    rw [hdiag i]
+    intro h0
+    have hun : ‖u i‖ * ‖u i‖ = 0 := by
+      rw [← CStarRing.norm_star_mul_self, h0, norm_zero]
+    have hu0 : u i = 0 := norm_eq_zero.mp (mul_self_eq_zero.mp hun)
+    exact (heproj i).2 (by rw [← hu i, hu0]; simp)
+  · -- basis expansion: term by term the same as for `(eᵢ)`
+    have hfun : (fun s : Finset ι =>
+        ∑ i ∈ s, (inner ℬ (star (u i) • e i) x : ℬ) • (star (u i) • e i))
+        = fun s : Finset ι => ∑ i ∈ s, (inner ℬ (e i) x : ℬ) • e i := by
+      funext s
+      exact Finset.sum_congr rfl fun i _ => hterm x i
+    rw [hfun]
+    exact hebasis x
+  · -- `∑ᵢ bᵢ(eᵢuᵢ) = ∑ᵢ (bᵢuᵢ*)eᵢ`, and `(bᵢuᵢ*)` is again ℓ²-summable
+    obtain ⟨M, hM⟩ := hb
+    have hple : ∀ i : ι, star (u i) * u i ≤ 1 := by
+      intro i
+      refine sub_nonneg.mp ?_
+      have hidem : (star (u i) * u i) * (star (u i) * u i) = star (u i) * u i :=
+        (hpi i).isIdempotentElem
+      have hsa : star (star (u i) * u i) = star (u i) * u i :=
+        (hpi i).isSelfAdjoint
+      have hsq : (1 - star (u i) * u i) * (1 - star (u i) * u i)
+          = 1 - star (u i) * u i := by
+        simp only [sub_mul, mul_sub, one_mul, mul_one, hidem]
+        abel
+      have : (1 : ℬ) - star (u i) * u i
+          = star ((1 : ℬ) - star (u i) * u i) * (1 - star (u i) * u i) := by
+        rw [star_sub, star_one, hsa, hsq]
+      rw [this]
+      exact star_mul_self_nonneg _
+    have hl2 : L2Summable ℬ fun i => b i * star (u i) := by
+      refine ⟨M, fun s => ?_⟩
+      have hcalc : ∀ i : ι, (b i * star (u i)) * star (b i * star (u i))
+          = b i * (star (u i) * u i) * star (b i) := by
+        intro i; rw [star_mul, star_star]; noncomm_ring
+      have hle : ∑ i ∈ s, (b i * star (u i)) * star (b i * star (u i))
+          ≤ ∑ i ∈ s, b i * star (b i) := by
+        refine Finset.sum_le_sum fun i _ => ?_
+        rw [hcalc i]
+        have := star_right_conjugate_le_conjugate (hple i) (b i)
+        rwa [mul_one] at this
+      have hnn : (0 : ℬ) ≤ ∑ i ∈ s, (b i * star (u i)) * star (b i * star (u i)) :=
+        Finset.sum_nonneg fun i _ => mul_star_self_nonneg _
+      exact le_trans (CStarAlgebra.norm_le_norm_of_nonneg_of_le hnn hle) (hM s)
+    obtain ⟨x, hx⟩ := hel2 _ hl2
+    refine ⟨x, ?_⟩
+    have hfun : (fun s : Finset ι => ∑ i ∈ s, b i • (star (u i) • e i))
+        = fun s : Finset ι => ∑ i ∈ s, (b i * star (u i)) • e i := by
+      funext s
+      exact Finset.sum_congr rfl fun i _ => (op_mul_smul _ _ _).symm
+    rw [hfun]
+    exact hx
 
 /-- Murray–von Neumann equivalence `p ∼ q` of projections: `u* u = p` and
 `u u* = q` for some partial isometry `u` (**161IV**; cf. vn.tex 83II

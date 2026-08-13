@@ -353,8 +353,107 @@ theorem ncp_extreme_paschke [VonNeumannAlgebra A] [VonNeumannAlgebra B]
 nmiu-map (as an ncp-map) is ncp-extreme. -/
 theorem nmiu_ncp_extreme (ϱ : NMIUMap A B) (φ : NCPMap A B)
     (hφ : ∀ a, φ a = ϱ a) :
-    NCPExtreme φ :=
-  sorry
+    NCPExtreme φ := by
+  -- The author's proof (**172IX**) is: `(ℬ, ϱ, id)` is a Paschke dilation of
+  -- `ϱ` and `id` is injective, so **172III** `ncp_extreme_paschke` applies.
+  -- That theorem is still `sorry`, so we argue directly instead, by strict
+  -- convexity of `b ↦ b* b` together with Choi's inequality **34XVIII**.1.
+  intro l hl0 hl1 φ₁ φ₂ h1 h2 hsum
+  -- Kadison–Schwarz for a unital ncp-map (**34XVIII**.1 `choi_1`).
+  have kad : ∀ ψ : NCPMap A B, ψ 1 = 1 → ∀ a : A,
+      star (ψ a) * ψ a ≤ ψ (star a * a) := by
+    intro ψ hu a
+    set f : A →ₗ[ℂ] B := ψ.toCompletelyPositiveMap.toLinearMap with hf
+    have hcp : IsCompletelyPositiveMap f :=
+      (cp_iff f).out 1 0 |>.mp fun N M hM =>
+        ψ.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM
+    exact choi_1 f hcp hu a
+  have hϱ1 : φ (1 : A) = 1 := by rw [hφ]; exact map_one ϱ.toStarAlgHom
+  have hu1 : φ₁ (1 : A) = 1 := by rw [h1, hϱ1]
+  have hu2 : φ₂ (1 : A) = 1 := by rw [h2, hϱ1]
+  set L : ℂ := (l : ℂ) with hLdef
+  have hNL : ((1 - l : ℝ) : ℂ) = 1 - L := by rw [hLdef]; push_cast; ring
+  -- The heart: `φ₁` and `φ₂` agree.
+  have key : ∀ a : A, φ₁ a = φ₂ a := by
+    intro a
+    set b₁ := φ₁ a with hb1
+    set b₂ := φ₂ a with hb2
+    set d₁ := φ₁ (star a * a) - star b₁ * b₁ with hd1def
+    set d₂ := φ₂ (star a * a) - star b₂ * b₂ with hd2def
+    set e := star (b₁ - b₂) * (b₁ - b₂) with hedef
+    have hd1 : 0 ≤ d₁ := sub_nonneg.mpr (kad φ₁ hu1 a)
+    have hd2 : 0 ≤ d₂ := sub_nonneg.mpr (kad φ₂ hu2 a)
+    have he : (0 : B) ≤ e := star_mul_self_nonneg _
+    -- `ϱ` is multiplicative and involution preserving
+    have hmul : φ (star a * a) = star (φ a) * φ a := by
+      have hm : ϱ (star a * a) = ϱ (star a) * ϱ a := map_mul ϱ.toStarAlgHom _ _
+      have hst : ϱ (star a) = star (ϱ a) := map_star ϱ.toStarAlgHom a
+      rw [hφ, hm, hst, hφ a]
+    have hsa : φ a = L • b₁ + (1 - L) • b₂ := by
+      rw [hsum a, hNL, hb1, hb2]
+    have hs2 : φ (star a * a) = L • φ₁ (star a * a) + (1 - L) • φ₂ (star a * a) := by
+      rw [hsum (star a * a), hNL]
+    -- strict convexity of `b ↦ b* b`
+    have hid : L • (star b₁ * b₁) + (1 - L) • (star b₂ * b₂)
+        - (L * (1 - L)) • e
+        = star (L • b₁ + (1 - L) • b₂) * (L • b₁ + (1 - L) • b₂) := by
+      have hLs : star L = L := by rw [hLdef]; exact Complex.conj_ofReal l
+      simp only [hedef, star_add, star_smul, star_sub, hLs, star_one,
+        smul_mul_assoc, mul_smul_comm, mul_sub, sub_mul, add_mul, mul_add,
+        smul_sub, smul_add, sub_smul]
+      match_scalars <;> ring
+    have hbal : L • φ₁ (star a * a) + (1 - L) • φ₂ (star a * a)
+        = L • (star b₁ * b₁) + (1 - L) • (star b₂ * b₂) - (L * (1 - L)) • e := by
+      rw [hid, ← hsa, ← hs2, hmul]
+    have hzero : L • d₁ + (1 - L) • d₂ + (L * (1 - L)) • e = 0 := by
+      have hrw : L • d₁ + (1 - L) • d₂ + (L * (1 - L)) • e
+          = (L • φ₁ (star a * a) + (1 - L) • φ₂ (star a * a))
+            - (L • (star b₁ * b₁) + (1 - L) • (star b₂ * b₂)
+                - (L * (1 - L)) • e) := by
+        rw [hd1def, hd2def]; module
+      rw [hrw, hbal, sub_self]
+    -- all three summands are positive, so all three vanish
+    have hp1 : (0 : B) ≤ L • d₁ := cstar_positive_1 _ hd1 l hl0.le
+    have hp2 : (0 : B) ≤ (1 - L) • d₂ := by
+      rw [← hNL]; exact cstar_positive_1 _ hd2 (1 - l) (by linarith)
+    have hp3 : (0 : B) ≤ (L * (1 - L)) • e := by
+      have hc : L * (1 - L) = ((l * (1 - l) : ℝ) : ℂ) := by
+        rw [hLdef]; push_cast; ring
+      rw [hc]
+      exact cstar_positive_1 _ he _ (by nlinarith)
+    have hz : (L * (1 - L)) • e = 0 := by
+      refine le_antisymm ?_ hp3
+      have : (L * (1 - L)) • e ≤ L • d₁ + (1 - L) • d₂ + (L * (1 - L)) • e := by
+        have := add_le_add hp1 hp2
+        rw [add_zero] at this
+        simpa using add_le_add_right this ((L * (1 - L)) • e)
+      rwa [hzero] at this
+    have hcne : L * (1 - L) ≠ 0 := by
+      have h1' : L ≠ 0 := by
+        rw [hLdef]; exact_mod_cast ne_of_gt hl0
+      have h2' : (1 : ℂ) - L ≠ 0 := by
+        rw [← hNL]
+        exact_mod_cast ne_of_gt (show (0 : ℝ) < 1 - l by linarith)
+      exact mul_ne_zero h1' h2'
+    have he0 : e = 0 := by
+      have h := congrArg (fun x : B => (L * (1 - L))⁻¹ • x) hz
+      simp only [smul_smul, inv_mul_cancel₀ hcne, one_smul, smul_zero] at h
+      exact h
+    have hnorm : ‖b₁ - b₂‖ * ‖b₁ - b₂‖ = 0 := by
+      rw [← CStarRing.norm_star_mul_self, ← hedef, he0, norm_zero]
+    have : b₁ - b₂ = 0 := by
+      have := mul_self_eq_zero.mp hnorm
+      exact norm_eq_zero.mp this
+    exact sub_eq_zero.mp this
+  refine ⟨fun a => ?_, fun a => ?_⟩
+  · have hs := hsum a
+    rw [← key a, hNL, ← add_smul] at hs
+    rw [hs, hLdef]
+    rw [show (l : ℂ) + (1 - (l : ℂ)) = 1 by ring, one_smul]
+  · have hs := hsum a
+    rw [key a, hNL, ← add_smul] at hs
+    rw [hs, hLdef]
+    rw [show (l : ℂ) + (1 - (l : ℂ)) = 1 by ring, one_smul]
 
 /-- **172X** (dils.tex:6520, Theorem): every pure ncp-map is
 ncp-extreme. -/
