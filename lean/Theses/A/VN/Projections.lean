@@ -3285,16 +3285,26 @@ theorem cceil_basic_1 (a : A) :
         _ = a := hra
 
 /-- **68IV** (`cceil-basic`, vn.tex:3490, Exercise), part 2:
-`⌈⌈⋁D⌉⌉ = ⋃_{d∈D} ⌈⌈d⌉⌉` for bounded directed `D`;
+`⌈⌈⋁D⌉⌉ = ⋃_{d∈D} ⌈⌈d⌉⌉` for bounded directed `D` of *positive* elements;
 `⌈⌈⋃E⌉⌉ = ⋃_{e∈E} ⌈⌈e⌉⌉` for sets of projections `E`; and
-`⌈⌈a+b⌉⌉ = ⌈⌈a⌉⌉ ∪ ⌈⌈b⌉⌉` for positive `a`, `b`. -/
+`⌈⌈a+b⌉⌉ = ⌈⌈⌈a⌉ ∪ ⌈b⌉⌉⌉ = ⌈⌈a⌉⌉ ∪ ⌈⌈b⌉⌉` for positive `a`, `b`.
+
+**Erratum (author).**  vn.tex:3497 states the first clause "for any bounded
+directed subset of `𝒜`" and the third "for all `a,b ∈ 𝒜`", both without
+positivity, and both are then **false**: central support is monotone on
+*positive* elements only.  For the first take `D = {−1, 0}`, which is directed
+and bounded with `⋁D = 0`, so `⌈⌈⋁D⌉⌉ = 0` while `⌈⌈−1⌉⌉ ∪ ⌈⌈0⌉⌉ = 1`; for the
+third take `a = 1`, `b = −1`, giving `⌈⌈0⌉⌉ = 0` against `1`.  Both clauses need
+positivity, which is what is assumed here. -/
 theorem cceil_basic_2 (D : Set (selfAdjoint A)) (s : selfAdjoint A)
     (hne : D.Nonempty) (hdir : DirectedOn (· ≤ ·) D) (hs : IsLUB D s)
+    (hDpos : ∀ d ∈ D, 0 ≤ (d : A))
     (E : Set A) (hE : ∀ e ∈ E, IsStarProjection e) (a b : A) (ha : 0 ≤ a)
     (hb : 0 ≤ b) :
     cceil (s : A) = projSup ((fun d : selfAdjoint A => cceil (d : A)) '' D) ∧
       cceil (projSup E) = projSup (cceil '' E) ∧
-      cceil (a + b) = projSup {cceil a, cceil b} :=
+      cceil (a + b) = cceil (projSup {ceil a, ceil b}) ∧
+      cceil (projSup {ceil a, ceil b}) = projSup {cceil a, cceil b} :=
   sorry
 
 /-- **68IV** (`cceil-basic`, vn.tex:3490, Exercise), part 3:

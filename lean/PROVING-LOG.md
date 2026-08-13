@@ -318,6 +318,36 @@ prove the spine in those terms *alongside* the shipped statements, so nothing is
 restated and no statement changes.  **This has now been done in full**; see the
 next section.
 
+### ⚠️ For the authors — **68IV.2 is false as printed, in two clauses**
+
+`vn.tex:3490` (`cceil-basic`), part 2.  Central support `⌈⌈·⌉⌉` is monotone on
+**positive** elements only, and two of the three clauses omit that hypothesis:
+
+- "Show that `⌈⌈⋁D⌉⌉ = ⋃_{d∈D} ⌈⌈d⌉⌉` **for any bounded directed subset of `𝒜`**"
+  (vn.tex:3497).  Counterexample in any nontrivial `𝒜`: `D = {−1, 0}` is
+  directed and bounded with `⋁D = 0`, so the left side is `⌈⌈0⌉⌉ = 0` while the
+  right is `⌈⌈−1⌉⌉ ∪ ⌈⌈0⌉⌉ = 1`.
+- "Show that `⌈⌈a+b⌉⌉ = ⌈⌈⌈a⌉ ∪ ⌈b⌉⌉⌉ = ⌈⌈a⌉⌉ ∪ ⌈⌈b⌉⌉` **for all `a,b ∈ 𝒜`**"
+  (vn.tex:3504).  Same defect: `a = 1`, `b = −1` gives `⌈⌈0⌉⌉ = 0` against `1`.
+
+Both need `0 ≤ ·`.  The middle clause (about a collection of projections) is
+fine.  **Suggested fix for the thesis**: add "of positive elements" to the first
+and "for all positive `a,b ∈ 𝒜`" to the third.
+
+**Our transcription was also at fault, and instructively so.**  The original Lean
+statement had *silently repaired* the third clause — it carried `0 ≤ a`, `0 ≤ b`
+that the source lacks — while leaving the first clause faithful and therefore
+false, and it had *dropped* the middle term `⌈⌈⌈a⌉ ∪ ⌈b⌉⌉⌉` of the third clause's
+three-way equality.  So one transcriber noticed the author's missing hypothesis,
+fixed it in one place, did not carry the fix across, and lost a conjunct while
+doing so — leaving no trace of any of it.  Both defects are now corrected and the
+erratum is documented on the declaration itself.
+
+The general lesson, which the `Examples`/`Remark` sweep would systematise: a
+silent half-repair is invisible to `grep`, to the build, and to the axiom
+checker.  Only a line-by-line comparison against the `file:LINE` in the doc
+comment finds it.
+
 ### Session 2 — A/VN, third pass: the 44XI chain and parsecs 560–580
 
 226 → 205 (Basic 48→44, Projections 88→72, Completeness 26→25).  Build green;
