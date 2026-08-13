@@ -1,8 +1,9 @@
 # Handoff — state of the formalization
 
 Written at the end of the first proving session.  Read this together with
-[PROVING-LOG.md](PROVING-LOG.md) (errata + parked items) and
-[CONVENTIONS.md](CONVENTIONS.md) (numbering + naming).
+[QUESTIONS.md](QUESTIONS.md) (**everything awaiting an author decision** — start
+there if you are an author), [PROVING-LOG.md](PROVING-LOG.md) (errata + parked
+items) and [CONVENTIONS.md](CONVENTIONS.md) (numbering + naming).
 
 ## What exists
 

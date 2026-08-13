@@ -1,5 +1,10 @@
 # Proving log
 
+> Items needing an **author decision** are collected in
+> [QUESTIONS.md](QUESTIONS.md).  This file is the full record — errata we
+> merely noted, mis-transcriptions we fixed ourselves, parked items, and
+> divergences from the theses' own proofs.
+
 Running log of the effort to replace the `sorry`s in this formalization by
 real proofs.  **Statements are never changed** — if a statement is wrong,
 un-provable as stated, or needs infrastructure we don't have, it is *parked*
