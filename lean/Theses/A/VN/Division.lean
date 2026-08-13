@@ -90,6 +90,12 @@ theorem rangeProj_of_isStarProjection {p : A} (hp : IsStarProjection p) :
   rw [rangeProj, hp.isSelfAdjoint.star_eq, hp.isIdempotentElem.eq,
     ceil_of_isStarProjection hp]
 
+/-- Auxiliary: `⌈x⌋ = ⌈x⌉` for positive `x` — both are the least projection
+`q` with `xq = x`. -/
+theorem suppProj_of_nonneg {x : A} (hx : 0 ≤ x) : suppProj x = ceil x := by
+  obtain ⟨h1, h2, h3⟩ := ceil_spec hx
+  exact (ceill_basic_1 x).unique ⟨⟨h1, h2⟩, fun q hq => h3 q hq.1 hq.2⟩
+
 /-- Auxiliary: `⌈xy⌋ ≤ ⌈y⌋`. -/
 theorem suppProj_mul_le (x y : A) : suppProj (x * y) ≤ suppProj y :=
   (ceill_basic_1 (x * y)).2
@@ -341,8 +347,40 @@ theorem pseudoinverse_basic_3 (a : A) :
     (Pseudoinvertible A a ↔ Pseudoinvertible A (star a * a)) ∧
       (Pseudoinvertible A a →
         pinv a = pinv (star a * a) * star a ∧
-          pinv (star a * a) = pinv a * star (pinv a)) :=
-  sorry
+          pinv (star a * a) = pinv a * star (pinv a)) := by
+  -- `⟹` is **79V**.1 + **79V**.2 applied to `a* · a`; `⟸` is the explicit
+  -- candidate `u a*` for `u` a pseudoinverse of `a*a`
+  have hsupp : suppProj (star a * a) = suppProj a :=
+    suppProj_of_nonneg (star_mul_self_nonneg a)
+  have hback : ∀ u : A, IsPseudoinverse A (star a * a) u →
+      IsPseudoinverse A a (u * star a) := by
+    intro u hu
+    obtain ⟨hu1, hu2, -, -⟩ := hu
+    have hcond : a * (u * star a) * a = a ∧
+        suppProj (u * star a) ≤ rangeProj a ∧
+        rangeProj (u * star a) ≤ suppProj a := by
+      refine ⟨?_, ?_, ?_⟩
+      · calc a * (u * star a) * a = a * (u * (star a * a)) := by noncomm_ring
+          _ = a * suppProj a := by rw [hu1, hsupp]
+          _ = a := (ceill_basic_1 a).1.2
+      · calc suppProj (u * star a) ≤ suppProj (star a) := suppProj_mul_le u (star a)
+          _ = rangeProj a := suppProj_star a
+      · calc rangeProj (u * star a) ≤ rangeProj u := rangeProj_mul_le u (star a)
+          _ = suppProj (star a * a) := hu2.symm.trans hu1
+          _ = suppProj a := hsupp
+    exact ((pseudoinverse_equivalents a (u * star a)).out 1 4).mp hcond
+  have hfwd : Pseudoinvertible A a → Pseudoinvertible A (star a * a) ∧
+      pinv (star a * a) = pinv a * pinv (star a) := fun h =>
+    pseudoinverse_basic_2 (star a) a ((pseudoinverse_basic_1 a).1.mp h) h
+      (suppProj_star a).symm
+  have hiff : Pseudoinvertible A a ↔ Pseudoinvertible A (star a * a) := by
+    refine ⟨fun h => (hfwd h).1, ?_⟩
+    rintro ⟨u, hu⟩
+    exact ⟨u * star a, hback u hu⟩
+  refine ⟨hiff, fun h => ⟨?_, ?_⟩⟩
+  · exact isPseudoinverse_unique a _ _ (pinv_spec h)
+      (hback (pinv (star a * a)) (pinv_spec (hiff.mp h)))
+  · rw [(hfwd h).2, (pseudoinverse_basic_1 a).2 h]
 
 /-- **79VI** (`pseudoinverse-basic-2`, vn.tex:5203, Exercise), part 1: a
 positive `a` is pseudoinvertible iff `at = ⌈a⌉` for some positive `t`
