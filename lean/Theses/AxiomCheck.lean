@@ -76,10 +76,23 @@ private partial def sorryRoots (directs : NameSet) (n : Name) :
   modify (·.insert n acc)
   return acc
 
+/-- Is `n` hand-written, i.e. does it come from a `theorem`/`def`/… in some
+source file?  Auto-generated declarations (`.rec`, `.casesOn`, `.injEq`, the
+structure eliminators, …) have no declaration range; they are noise in the
+indirect-leak report, since they inherit `sorryAx` from the *type* of the
+structure they belong to. -/
+private def isHandWritten (n : Name) : CommandElabM Bool :=
+  return (← findDeclarationRanges? n).isSome
+
 /--
 `#sorry_leaks` lists every declaration under the `Theses` namespace whose
 axioms include `sorryAx`, split into declarations that are themselves `sorry`
 and declarations that merely depend on one (with the `sorry`s they rest on).
+
+It **fails** (non-zero exit code) if any *hand-written* declaration is an
+indirect leak: a `sorry` of one's own is expected and fine, but a declaration
+that looks proved and silently rests on one is the bug class this tool exists
+to catch.  Suitable for CI as `lake env lean Theses/AxiomCheck.lean`.
 -/
 elab "#sorry_leaks" : command => do
   let env ← getEnv
@@ -103,16 +116,26 @@ elab "#sorry_leaks" : command => do
   msg := msg ++ m!"\n=== declarations that ARE `sorry` ({direct.size}) ===\n"
   for n in direct do
     msg := msg ++ m!"  {n}\n"
+  let mut handWritten : Array Name := #[]
   msg := msg ++
     m!"\n=== declarations that DEPEND on a `sorry` ({indirect.size}) ===\n"
   for n in indirect do
     let roots ← (sorryRoots directSet n).run' {}
     let rs := roots.toList
+    let hw ← isHandWritten n
+    if hw then handWritten := handWritten.push n
+    let tag := if hw then m!"  {n}" else m!"  {n}  (auto-generated)"
     if rs.isEmpty then
-      msg := msg ++ m!"  {n}\n"
+      msg := msg ++ tag ++ m!"\n"
     else
-      msg := msg ++ m!"  {n}\n      via: {rs}\n"
+      msg := msg ++ tag ++ m!"\n      via: {rs}\n"
+  msg := msg ++
+    m!"\nof these, {handWritten.size} are hand-written (the rest are " ++
+    m!"auto-generated declarations inheriting `sorryAx` from a type)\n"
   logInfo msg
+  unless handWritten.isEmpty do
+    logError m!"{handWritten.size} hand-written declaration(s) depend on a \
+      `sorry` without being one:\n{handWritten.toList}"
 
 end Theses.AxiomCheck
 

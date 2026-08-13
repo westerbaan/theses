@@ -84,12 +84,6 @@ parsecs 215–223). -/
 theorem isSharp_imPred {X Y : C} (f : X ⟶ Y) : IsSharp (imPred f) :=
   ⟨_, _, isImage_imPred f⟩
 
-/-- Quotients are pure (an immediate consequence of 199VII.3 and 201II;
-used to regard `ζ_s` as a morphism of `Pure C`). -/
-theorem isPure_quotient {X Q : C} {p : Pred X} {ξ : X ⟶ Q}
-    (h : IsQuotient p ξ) : IsPure ξ :=
-  ⟨Q, ξ, 𝟙 Q, p, 1, h, compr_basics_3 _, (Category.comp_id _).symm⟩
-
 /-- Comprehensions are pure (an immediate consequence of 197V.3 and 201II;
 used to regard `π_s` as a morphism of `Pure C`). -/
 theorem isPure_comprehension {W X : C} {p : Pred X} {π : W ⟶ X}
@@ -187,7 +181,7 @@ theorem asrt_iso (hsqrt : ∀ {Z : C} (p : Pred Z), ∃ q, andThen q q = p)
 †-effectus `ζ_s† = π_s` (for the corresponding pair of 211IX). -/
 theorem dagger_of_zeta (d : DaggerEffectus C) {s : Pred X} (hs : IsSharp s) :
     d.daggerCat.dag (X := PureCat.of X) (Y := PureCat.of (comprObj s))
-        ⟨zetaMap s hs, isPure_quotient C (zetaMap_spec s hs).1⟩ =
+        ⟨zetaMap s hs, isPure_of_isQuotient (zetaMap_spec s hs).1⟩ =
       ⟨comprMap s, isPure_comprehension C (isComprehension_comprMap s)⟩ :=
   sorry
 

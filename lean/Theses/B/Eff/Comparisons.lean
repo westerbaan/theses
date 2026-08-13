@@ -400,10 +400,10 @@ theorem snake_lemma {A B C₃ A' B' C₃' : C}
         pureDagger (comprMap (orth (c ≫ truth C₃')))
           (isPure_comprehension C (isComprehension_comprMap _))
       letI hbar := pureDagger (quotMap (imPred a))
-          (isPure_quotient C (isQuotient_quotMap _)) ≫ h ≫
+          (isPure_of_isQuotient (isQuotient_quotMap _)) ≫ h ≫
         quotMap (imPred b)
       letI kbar := pureDagger (quotMap (imPred b))
-          (isPure_quotient C (isQuotient_quotMap _)) ≫ k ≫
+          (isPure_of_isQuotient (isQuotient_quotMap _)) ≫ k ≫
         quotMap (imPred c)
       ExactAt fbar gbar ∧ ExactAt gbar d ∧ ExactAt d hbar ∧
         ExactAt hbar kbar := sorry

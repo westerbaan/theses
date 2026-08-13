@@ -36,7 +36,7 @@ open scoped unitInterval
 
 namespace Theses.B.Eff
 
-universe u v w
+universe u v w t
 
 /-! ### Helper lemmas on iterated partial sums in a PCM -/
 
@@ -158,10 +158,338 @@ theorem emon_mul_le_mul_left {M : Type u} [EffectMonoid M] (x : M) {c d : M}
     | cons hl hp => exact ⟨_, hp, rfl⟩
   exact key _ hd
 
-/-- Helper: `a ⊙ b ≼ a` in an effect monoid. -/
-theorem emon_mul_le_left {M : Type u} [EffectMonoid M] (x y : M) : x * y ≼ x := by
-  have h := emon_mul_le_mul_left x (ea_le_one y)
-  rwa [EffectMonoid.mul_one] at h
+/-- Helper: the sum of a list is uniquely determined by the list. -/
+theorem isSumOf_unique {M : Type u} [PCM M] {l : List M} {s t : M}
+    (hs : PCM.IsSumOf l s) (ht : PCM.IsSumOf l t) : s = t := by
+  induction hs generalizing t with
+  | nil => exact (PCM.isSumOf_nil_iff.mp ht).symm
+  | @cons a l s hl hp ih =>
+      obtain ⟨t', ht', hp', rfl⟩ := PCM.isSumOf_cons_iff.mp ht
+      exact PCM.ovee_congr rfl (ih ht') hp hp'
+
+/-- Helper: prefixing a zero does not change a sum. -/
+theorem isSumOf_zero_cons {M : Type u} [PCM M] {l : List M} {s : M} :
+    PCM.IsSumOf (0 :: l) s ↔ PCM.IsSumOf l s := by
+  constructor
+  · intro h
+    obtain ⟨t, ht, hp, rfl⟩ := PCM.isSumOf_cons_iff.mp h
+    rwa [PCM.zero_ovee' t hp]
+  · intro h
+    have h2 := PCM.IsSumOf.cons h (PCM.zero_perp s)
+    rwa [PCM.zero_ovee' s (PCM.zero_perp s)] at h2
+
+/-- Helper: a sum over a concatenation splits into the two partial sums. -/
+theorem isSumOf_split {M : Type u} [PCM M] {l₁ l₂ : List M} {s : M}
+    (h : PCM.IsSumOf (l₁ ++ l₂) s) :
+    ∃ (s₁ s₂ : M) (_ : PCM.IsSumOf l₁ s₁) (_ : PCM.IsSumOf l₂ s₂)
+      (hp : Perp s₁ s₂), ovee s₁ s₂ hp = s := by
+  induction l₁ generalizing s with
+  | nil =>
+      exact ⟨0, s, PCM.IsSumOf.nil, h, PCM.zero_perp s, PCM.zero_ovee' s _⟩
+  | cons a l ih =>
+      rw [List.cons_append, PCM.isSumOf_cons_iff] at h
+      obtain ⟨t, ht, hpat, rfl⟩ := h
+      obtain ⟨s₁, s₂, h₁, h₂, hp, rfl⟩ := ih ht
+      obtain ⟨has₁, h', he⟩ := PCM.assoc_left hp hpat
+      exact ⟨ovee a s₁ has₁, s₂, PCM.IsSumOf.cons h₁ has₁, h₂, h', he⟩
+
+/-- Helper: an element of a summable list is below its sum. -/
+theorem isSumOf_le_of_mem {M : Type u} [PCM M] {l : List M} {a s : M}
+    (ha : a ∈ l) (h : PCM.IsSumOf l s) : a ≼ s := by
+  obtain ⟨L₁, L₂, rfl⟩ := List.append_of_mem ha
+  obtain ⟨s₁, s₂, h₁, h₂, hp, rfl⟩ := isSumOf_split h
+  refine pcm_preorder_trans (PCM.le_of_isSumOf_cons h₂) ?_
+  exact ⟨s₁, PCM.perp_comm hp, (PCM.ovee_comm hp).symm⟩
+
+/-- Helper: `a ≼ 0` forces `a = 0` in an effect algebra. -/
+theorem eq_zero_of_le_zero {E : Type u} [EffectAlgebra E] {a : E} (h : a ≼ 0) :
+    a = 0 := by
+  obtain ⟨c, hc, hac⟩ := h
+  exact (eabasics_positivity hc hac).1
+
+/-- Helper: a sublist of a summable list is itself summable, with a smaller
+sum. -/
+theorem isSumOf_sublist {M : Type u} [EffectAlgebra M] {l' l : List M}
+    (hsub : l'.Sublist l) {s : M} (h : PCM.IsSumOf l s) :
+    ∃ s', PCM.IsSumOf l' s' ∧ s' ≼ s := by
+  induction hsub generalizing s with
+  | slnil => exact ⟨0, PCM.IsSumOf.nil, pcm_zero_le s⟩
+  | cons a hsub ih =>
+      obtain ⟨t, ht, hp, rfl⟩ := PCM.isSumOf_cons_iff.mp h
+      obtain ⟨s', hs', hle⟩ := ih ht
+      exact ⟨s', hs', pcm_preorder_trans hle ⟨a, PCM.perp_comm hp, (PCM.ovee_comm hp).symm⟩⟩
+  | cons_cons a hsub ih =>
+      obtain ⟨t, ht, hp, rfl⟩ := PCM.isSumOf_cons_iff.mp h
+      obtain ⟨s', hs', hle⟩ := ih ht
+      have hps' : Perp a s' := eabasics_perp_iff_le_orth.mpr
+        (pcm_preorder_trans (eabasics_perp_iff_le_orth.mp hp)
+          (eabasics_le_iff_orth_le.mp hle))
+      refine ⟨ovee a s' hps', PCM.IsSumOf.cons hs' hps', ?_⟩
+      obtain ⟨hs'a, hle2⟩ := eabasics_le_perp_compat hle (PCM.perp_comm hp)
+      rw [PCM.ovee_comm hps', PCM.ovee_comm hp]
+      exact hle2
+
+/-- Helper: terms of a sum whose value is `0` may be dropped. -/
+theorem isSumOf_map_filter {X : Type v} {M : Type u} [PCM M] (p : X → M)
+    (q : X → Bool) :
+    ∀ {l : List X}, (∀ x ∈ l, q x = false → p x = 0) → ∀ {s : M},
+      (PCM.IsSumOf ((l.filter q).map p) s ↔ PCM.IsSumOf (l.map p) s) := by
+  intro l
+  induction l with
+  | nil => intro _ s; simp
+  | cons a l ih =>
+      intro hz s
+      have hz' : ∀ x ∈ l, q x = false → p x = 0 :=
+        fun x hx => hz x (List.mem_cons_of_mem a hx)
+      rw [List.filter_cons]
+      by_cases h : q a = true
+      · rw [if_pos h, List.map_cons, List.map_cons]
+        constructor
+        · intro hs
+          obtain ⟨t, ht, hp, rfl⟩ := PCM.isSumOf_cons_iff.mp hs
+          exact PCM.IsSumOf.cons ((ih hz').mp ht) hp
+        · intro hs
+          obtain ⟨t, ht, hp, rfl⟩ := PCM.isSumOf_cons_iff.mp hs
+          exact PCM.IsSumOf.cons ((ih hz').mpr ht) hp
+      · have hpa : p a = 0 := hz a List.mem_cons_self (by simpa using h)
+        rw [if_neg h, List.map_cons, hpa, isSumOf_zero_cons]
+        exact ih hz'
+
+open Classical in
+/-- Helper: a sum can be computed by grouping the terms into the fibres of a
+map `f`, provided the fibre sums are known. -/
+theorem isSumOf_map_fiber {X : Type v} {Y : Type w} {M : Type u} [PCM M]
+    (p : X → M) (f : X → Y) (s : Y → M) :
+    ∀ {lY : List Y}, lY.Nodup → ∀ {L : List X}, (∀ x ∈ L, f x ∈ lY) →
+      (∀ y ∈ lY, PCM.IsSumOf ((L.filter (fun x => decide (f x = y))).map p) (s y)) →
+      ∀ {S : M}, PCM.IsSumOf (L.map p) S → PCM.IsSumOf (lY.map s) S := by
+  intro lY
+  induction lY with
+  | nil =>
+      intro _ L hmem _ S hS
+      have hL : L = [] :=
+        List.eq_nil_iff_forall_not_mem.mpr fun x hx => by simpa using hmem x hx
+      subst hL
+      rw [List.map_nil, PCM.isSumOf_nil_iff] at hS
+      subst hS
+      exact PCM.IsSumOf.nil
+  | cons y lY ih =>
+      intro hnd L hmem hs S hS
+      have hperm : ((L.filter (fun x => decide (f x = y))) ++
+          (L.filter (fun x => !decide (f x = y)))).Perm L :=
+        List.filter_append_perm _ _
+      have hS' : PCM.IsSumOf (((L.filter (fun x => decide (f x = y))) ++
+          (L.filter (fun x => !decide (f x = y)))).map p) S :=
+        PCM.isSumOf_perm (List.Perm.map p hperm).symm hS
+      rw [List.map_append] at hS'
+      obtain ⟨s₁, s₂, h₁, h₂, hp, hovee⟩ := isSumOf_split hS'
+      have hsy : s₁ = s y := isSumOf_unique h₁ (hs y List.mem_cons_self)
+      subst hsy
+      have hmemB : ∀ x ∈ L.filter (fun x => !decide (f x = y)), f x ∈ lY := by
+        intro x hx
+        rw [List.mem_filter] at hx
+        have h1 := hmem x hx.1
+        have h2 : f x ≠ y := by simpa using hx.2
+        exact (List.mem_cons.mp h1).resolve_left h2
+      have hsB : ∀ y' ∈ lY, PCM.IsSumOf
+          (((L.filter (fun x => !decide (f x = y))).filter
+            (fun x => decide (f x = y'))).map p) (s y') := by
+        intro y' hy'
+        have hne : y' ≠ y := by
+          rintro rfl
+          exact (List.nodup_cons.mp hnd).1 hy'
+        have he : (L.filter (fun x => !decide (f x = y))).filter
+            (fun x => decide (f x = y')) = L.filter (fun x => decide (f x = y')) := by
+          rw [List.filter_filter]
+          refine List.filter_congr ?_
+          intro x _
+          by_cases hx : f x = y'
+          · simp [hx, hne]
+          · simp [hx]
+        rw [he]
+        exact hs y' (List.mem_cons_of_mem y hy')
+      have hIH := ih (List.nodup_cons.mp hnd).2 hmemB hsB h₂
+      rw [List.map_cons, ← hovee]
+      exact PCM.IsSumOf.cons hIH hp
+
+/-- Helper: a list dominated termwise by a summable list is itself summable. -/
+theorem isSumOf_of_forall₂_le {M : Type u} [EffectAlgebra M] {l' l : List M}
+    (hle : List.Forall₂ (· ≼ ·) l' l) {s : M} (h : PCM.IsSumOf l s) :
+    ∃ s', PCM.IsSumOf l' s' ∧ s' ≼ s := by
+  induction hle generalizing s with
+  | nil => exact ⟨0, PCM.IsSumOf.nil, pcm_zero_le s⟩
+  | @cons a' a l' l hab _ ih =>
+      obtain ⟨t, ht, hp, rfl⟩ := PCM.isSumOf_cons_iff.mp h
+      obtain ⟨s'', hs'', hle''⟩ := ih ht
+      have hpas : Perp a s'' := eabasics_perp_iff_le_orth.mpr
+        (pcm_preorder_trans (eabasics_perp_iff_le_orth.mp hp)
+          (eabasics_le_iff_orth_le.mp hle''))
+      have hpa's : Perp a' s'' := eabasics_perp_iff_le_orth.mpr
+        (pcm_preorder_trans hab (eabasics_perp_iff_le_orth.mp hpas))
+      refine ⟨ovee a' s'' hpa's, PCM.IsSumOf.cons hs'' hpa's, ?_⟩
+      obtain ⟨h1, hle1⟩ := eabasics_le_perp_compat hab hpas
+      obtain ⟨h2, hle2⟩ := eabasics_le_perp_compat hle'' (PCM.perp_comm hp)
+      refine pcm_preorder_trans hle1 ?_
+      rw [PCM.ovee_comm hpas, PCM.ovee_comm hp]
+      exact hle2
+
+/-- Helper: a sum all of whose terms are `0` is `0`. -/
+theorem isSumOf_eq_zero {M : Type u} [PCM M] {l : List M} (h : ∀ a ∈ l, a = 0)
+    {s : M} (hs : PCM.IsSumOf l s) : s = 0 := by
+  induction l generalizing s with
+  | nil => exact PCM.isSumOf_nil_iff.mp hs
+  | cons a l ih =>
+      obtain ⟨t, ht, hp, rfl⟩ := PCM.isSumOf_cons_iff.mp hs
+      have ha : a = 0 := h a List.mem_cons_self
+      have ht0 : t = 0 := ih (fun b hb => h b (List.mem_cons_of_mem a hb)) ht
+      subst ha; subst ht0
+      exact PCM.zero_ovee' 0 hp
+
+/-- Helper: multiplication in an effect monoid distributes over a finite
+partial sum. -/
+theorem isSumOf_mul_left {M : Type u} [EffectMonoid M] (x : M) {l : List M}
+    {s : M} (h : PCM.IsSumOf l s) :
+    PCM.IsSumOf (l.map fun a => x * a) (x * s) := by
+  induction h with
+  | nil => rw [List.map_nil, (exc_emonzero x).1]; exact PCM.IsSumOf.nil
+  | @cons a l t hl hp ih =>
+      obtain ⟨h', he⟩ := emon_mul_ovee x hp
+      rw [List.map_cons, he]
+      exact PCM.IsSumOf.cons ih h'
+
+/-- Helper: multiplication in an effect monoid distributes over a partial sum
+in its *left* argument (the mirror image of `emon_mul_ovee`). -/
+theorem emon_ovee_mul {M : Type u} [EffectMonoid M] (x : M) {p q : M}
+    (hpq : Perp p q) :
+    ∃ h' : Perp (p * x) (q * x),
+      ovee p q hpq * x = ovee (p * x) (q * x) h' := by
+  have hd := EffectMonoid.distrib hpq (PCM.perp_zero x)
+  rw [PCM.ovee_zero x (PCM.perp_zero x), (exc_emonzero p).1,
+    (exc_emonzero q).1] at hd
+  obtain ⟨t1, h1, hp1, e1⟩ := PCM.isSumOf_cons_iff.mp hd
+  obtain ⟨t2, h2, hp2, e2⟩ := PCM.isSumOf_cons_iff.mp h1
+  obtain ⟨t3, h3, hp3, e3⟩ := PCM.isSumOf_cons_iff.mp h2
+  obtain ⟨t4, h4, hp4, e4⟩ := PCM.isSumOf_cons_iff.mp h3
+  have ht4 : t4 = 0 := PCM.isSumOf_nil_iff.mp h4
+  have ht3 : t3 = 0 := by rw [← e4, PCM.zero_ovee' t4 hp4]; exact ht4
+  have ht2 : t2 = 0 := by rw [← e3, PCM.zero_ovee' t3 hp3]; exact ht3
+  have ht1 : t1 = q * x := by
+    rw [← e2, PCM.ovee_congr rfl ht2 hp2 (PCM.perp_zero (q * x))]
+    exact PCM.ovee_zero _ _
+  have hp' : Perp (p * x) (q * x) := by rw [← ht1]; exact hp1
+  refine ⟨hp', ?_⟩
+  rw [← e1]
+  exact PCM.ovee_congr rfl ht1 hp1 hp'
+
+/-- Helper: multiplication in an effect monoid distributes over a finite
+partial sum in its left argument. -/
+theorem isSumOf_mul_right {M : Type u} [EffectMonoid M] (x : M) {l : List M}
+    {s : M} (h : PCM.IsSumOf l s) :
+    PCM.IsSumOf (l.map fun a => a * x) (s * x) := by
+  induction h with
+  | nil => rw [List.map_nil, (exc_emonzero x).2]; exact PCM.IsSumOf.nil
+  | @cons a l t hl hp ih =>
+      obtain ⟨h', he⟩ := emon_ovee_mul x hp
+      rw [List.map_cons, he]
+      exact PCM.IsSumOf.cons ih h'
+
+open Classical in
+/-- Helper: a sum of a finitely supported family does not depend on the chosen
+(repetition-free) list of indices containing its support. -/
+theorem isSumOf_map_of_support {X : Type v} {M : Type u} [PCM M] (u : X → M)
+    {l l' : List X} (hnd : l.Nodup) (hnd' : l'.Nodup)
+    (hs : ∀ x, u x ≠ 0 → x ∈ l) (hs' : ∀ x, u x ≠ 0 → x ∈ l') {S : M}
+    (h : PCM.IsSumOf (l.map u) S) : PCM.IsSumOf (l'.map u) S := by
+  have hz : ∀ L : List X, ∀ x ∈ L, (decide (u x ≠ 0)) = false → u x = 0 := by
+    intro L x _ hd; simpa using hd
+  have h1 : PCM.IsSumOf ((l.filter (fun x => decide (u x ≠ 0))).map u) S :=
+    (isSumOf_map_filter u _ (hz l)).mpr h
+  have hperm : (l.filter (fun x => decide (u x ≠ 0))).Perm
+      (l'.filter (fun x => decide (u x ≠ 0))) :=
+    (List.perm_ext_iff_of_nodup (List.Nodup.filter _ hnd)
+      (List.Nodup.filter _ hnd')).mpr (by
+        intro x
+        simp only [List.mem_filter, decide_eq_true_eq]
+        exact ⟨fun hx => ⟨hs' x hx.2, hx.2⟩, fun hx => ⟨hs x hx.2, hx.2⟩⟩)
+  exact (isSumOf_map_filter u _ (hz l')).mp
+    (PCM.isSumOf_perm (List.Perm.map u hperm) h1)
+
+/-- Helper: a sum of sums is the sum of the concatenation. -/
+theorem isSumOf_flatMap {A : Type v} {M : Type u} [PCM M] (L : A → List M)
+    (r : A → M) {la : List A} (hr : ∀ a ∈ la, PCM.IsSumOf (L a) (r a)) {S : M}
+    (hS : PCM.IsSumOf (la.map r) S) : PCM.IsSumOf (la.flatMap L) S := by
+  induction la generalizing S with
+  | nil =>
+      rw [List.map_nil, PCM.isSumOf_nil_iff] at hS
+      subst hS
+      exact PCM.IsSumOf.nil
+  | cons a la ih =>
+      rw [List.map_cons] at hS
+      obtain ⟨t, ht, hp, rfl⟩ := PCM.isSumOf_cons_iff.mp hS
+      rw [List.flatMap_cons]
+      exact isSumOf_append (hr a List.mem_cons_self)
+        (ih (fun b hb => hr b (List.mem_cons_of_mem a hb)) ht) hp
+
+/-- Helper: the converse of `isSumOf_flatMap`. -/
+theorem isSumOf_of_flatMap {A : Type v} {M : Type u} [PCM M] (L : A → List M)
+    (r : A → M) {la : List A} (hr : ∀ a ∈ la, PCM.IsSumOf (L a) (r a)) {S : M}
+    (hS : PCM.IsSumOf (la.flatMap L) S) : PCM.IsSumOf (la.map r) S := by
+  induction la generalizing S with
+  | nil =>
+      rw [List.flatMap_nil, PCM.isSumOf_nil_iff] at hS
+      subst hS
+      exact PCM.IsSumOf.nil
+  | cons a la ih =>
+      rw [List.flatMap_cons] at hS
+      obtain ⟨s₁, s₂, h₁, h₂, hp, rfl⟩ := isSumOf_split hS
+      have e : s₁ = r a := isSumOf_unique h₁ (hr a List.mem_cons_self)
+      subst e
+      rw [List.map_cons]
+      exact PCM.IsSumOf.cons (ih (fun b hb => hr b (List.mem_cons_of_mem a hb)) h₂) hp
+
+/-- Helper: `flatMap` distributes over pointwise concatenation, up to a
+permutation. -/
+theorem flatMap_append_perm {A : Type v} {B : Type w} (l : List A)
+    (f g : A → List B) :
+    (l.flatMap fun a => f a ++ g a).Perm (l.flatMap f ++ l.flatMap g) := by
+  induction l with
+  | nil => simp
+  | cons a l ih =>
+      rw [List.flatMap_cons, List.flatMap_cons, List.flatMap_cons]
+      have e1 : (f a ++ g a) ++ (l.flatMap f ++ l.flatMap g)
+          = f a ++ ((g a ++ l.flatMap f) ++ l.flatMap g) := by
+        simp only [List.append_assoc]
+      have e2 : f a ++ ((l.flatMap f ++ g a) ++ l.flatMap g)
+          = (f a ++ l.flatMap f) ++ (g a ++ l.flatMap g) := by
+        simp only [List.append_assoc]
+      have s2 : ((f a ++ g a) ++ (l.flatMap f ++ l.flatMap g)).Perm
+          ((f a ++ l.flatMap f) ++ (g a ++ l.flatMap g)) := by
+        rw [e1, ← e2]
+        exact List.Perm.append_left _ (List.Perm.append_right _ List.perm_append_comm)
+      exact (List.Perm.append_left _ ih).trans s2
+
+/-- Helper: `flatMap` of singletons is `map`. -/
+theorem flatMap_singleton_map {B : Type w} {C : Type v} (lb : List B) (c : B → C) :
+    (lb.flatMap fun b => [c b]) = lb.map c := by
+  induction lb with
+  | nil => rfl
+  | cons b lb ih => rw [List.flatMap_cons, List.map_cons, ih]; rfl
+
+/-- Helper (Fubini): the two ways of enumerating a finite "matrix" of terms
+give permutations of one another. -/
+theorem flatMap_map_comm {A : Type v} {B : Type w} {C : Type t} (la : List A)
+    (lb : List B) (F : A → B → C) :
+    (la.flatMap fun a => lb.map (F a)).Perm
+      (lb.flatMap fun b => la.map fun a => F a b) := by
+  induction la with
+  | nil => simp
+  | cons a la ih =>
+      have h1 := flatMap_append_perm lb (fun b => [F a b])
+        (fun b => la.map fun a' => F a' b)
+      rw [flatMap_singleton_map] at h1
+      refine List.Perm.trans ?_ h1.symm
+      rw [List.flatMap_cons]
+      exact List.Perm.append_left _ ih
 
 /-! ## Predicates, states and scalars (parsec 190) -/
 
@@ -380,6 +708,7 @@ noncomputable def eta {X : Type v} (x : X) : MConvexComb M X :=
         rw [hl]
         exact isSumOf_singleton 1⟩
 
+open Classical in
 /-- FIXME(choice): the pushforward `𝒟_M f` of a formal convex combination
 along `f : X → Y` — `(𝒟_M f)(p)(y) = ⋁_{x : f(x) = y} p(x)` (192III.1) —
 exists (the partial sums exist because subsums of `1` exist); stated as an
@@ -388,7 +717,56 @@ theorem exists_map {X : Type v} {Y : Type w} (p : MConvexComb M X)
     (f : X → Y) :
     ∃ q : MConvexComb M Y, ∀ (y : Y) (l : List X), l.Nodup →
       (∀ x, x ∈ l ↔ (p.toFun x ≠ 0 ∧ f x = y)) →
-      PCM.IsSumOf (l.map p.toFun) (q.toFun y) := sorry
+      PCM.IsSumOf (l.map p.toFun) (q.toFun y) := by
+  obtain ⟨l₀, hnd₀, hmem₀, hsum₀⟩ := p.sum_one
+  -- each fibre of `f` over `y` has a sum, being a sublist of a summable list
+  have hfib : ∀ y : Y, ∃ s : M,
+      PCM.IsSumOf ((l₀.filter (fun x => decide (f x = y))).map p.toFun) s := by
+    intro y
+    obtain ⟨s, hs, -⟩ :=
+      isSumOf_sublist (List.Sublist.map p.toFun List.filter_sublist) hsum₀
+    exact ⟨s, hs⟩
+  choose g hg using hfib
+  have hmemfib : ∀ (y : Y) (x : X),
+      x ∈ l₀.filter (fun x => decide (f x = y)) ↔ (p.toFun x ≠ 0 ∧ f x = y) := by
+    intro y x
+    rw [List.mem_filter, hmem₀ x]
+    simp
+  -- the specification holds for every list with the right members
+  have hspec : ∀ (y : Y) (l : List X), l.Nodup →
+      (∀ x, x ∈ l ↔ (p.toFun x ≠ 0 ∧ f x = y)) →
+      PCM.IsSumOf (l.map p.toFun) (g y) := by
+    intro y l hnd hm
+    have hperm : (l₀.filter (fun x => decide (f x = y))).Perm l :=
+      (List.perm_ext_iff_of_nodup (List.Nodup.filter _ hnd₀) hnd).mpr
+        fun x => by rw [hmemfib y x, hm x]
+    exact PCM.isSumOf_perm (List.Perm.map p.toFun hperm) (hg y)
+  -- a `y` with a non-zero fibre sum lies in the image of the support of `p`
+  have hzero : ∀ y : Y, g y ≠ 0 → y ∈ l₀.map f := by
+    intro y hy
+    by_contra hmem
+    refine hy ?_
+    have hnil : l₀.filter (fun x => decide (f x = y)) = [] := by
+      refine List.eq_nil_iff_forall_not_mem.mpr fun x hx => ?_
+      rw [List.mem_filter] at hx
+      exact hmem (List.mem_map.mpr ⟨x, hx.1, by simpa using hx.2⟩)
+    have h := hg y
+    rw [hnil, List.map_nil, PCM.isSumOf_nil_iff] at h
+    exact h
+  refine ⟨⟨g, ⟨((l₀.map f).dedup).filter (fun y => decide (g y ≠ 0)), ?_, ?_, ?_⟩⟩, hspec⟩
+  · exact List.Nodup.filter _ (List.nodup_dedup _)
+  · intro y
+    rw [List.mem_filter]
+    exact ⟨fun h => by simpa using h.2,
+      fun h => ⟨List.mem_dedup.mpr (hzero y h), by simpa using h⟩⟩
+  · refine (isSumOf_map_filter g (fun y => decide (g y ≠ 0)) ?_).mpr ?_
+    · intro y _ h
+      simpa using h
+    · refine isSumOf_map_fiber p.toFun f g (List.nodup_dedup _) ?_ ?_ hsum₀
+      · intro x hx
+        exact List.mem_dedup.mpr (List.mem_map.mpr ⟨x, hx, rfl⟩)
+      · intro y _
+        exact hg y
 
 /-- **192III.1** (`exc-dm-effectus`, eff.tex:2386): the functorial action
 `𝒟_M f` of `𝒟_M` on `f : X → Y`. -/
@@ -430,19 +808,320 @@ theorem map_id {X : Type v} (p : MConvexComb M X) :
     show (exists_map p _root_.id).choose.toFun y = p.toFun y
     exact eq_of_isSumOf_singleton h
 
+/-- The specification of `map`, in the form in which it is used. -/
+theorem map_spec {X : Type v} {Y : Type w} (p : MConvexComb M X) (f : X → Y)
+    (y : Y) (l : List X) (hnd : l.Nodup)
+    (hm : ∀ x, x ∈ l ↔ (p.toFun x ≠ 0 ∧ f x = y)) :
+    PCM.IsSumOf (l.map p.toFun) ((p.map f).toFun y) :=
+  (exists_map p f).choose_spec y l hnd hm
+
+open Classical in
+/-- **192III.1**: functoriality of `𝒟_M`: pushing forward along `f` and then
+along `g` is pushing forward along `g ∘ f`. -/
+theorem map_comp {X : Type v} {Y : Type w} {Z : Type t} (p : MConvexComb M X)
+    (f : X → Y) (g : Y → Z) : (p.map f).map g = p.map (g ∘ f) := by
+  refine MConvexComb.ext (funext fun z => ?_)
+  obtain ⟨l₀, hnd₀, hmem₀, hsum₀⟩ := p.sum_one
+  obtain ⟨lY₁, hndY₁, hmemY₁, -⟩ := (p.map f).sum_one
+  have hmemL : ∀ x, x ∈ l₀.filter (fun x => decide (g (f x) = z)) ↔
+      (p.toFun x ≠ 0 ∧ (g ∘ f) x = z) := by
+    intro x
+    rw [List.mem_filter, hmem₀ x]
+    simp [Function.comp_apply]
+  have hLsum : PCM.IsSumOf ((l₀.filter (fun x => decide (g (f x) = z))).map p.toFun)
+      ((p.map (g ∘ f)).toFun z) :=
+    map_spec p (g ∘ f) z _ (List.Nodup.filter _ hnd₀) hmemL
+  have hmemlY : ∀ y, y ∈ lY₁.filter (fun y => decide (g y = z)) ↔
+      ((p.map f).toFun y ≠ 0 ∧ g y = z) := by
+    intro y
+    rw [List.mem_filter, hmemY₁ y]
+    simp
+  have hfibmem : ∀ (y : Y) (x : X),
+      x ∈ l₀.filter (fun x => decide (f x = y)) ↔ (p.toFun x ≠ 0 ∧ f x = y) := by
+    intro y x
+    rw [List.mem_filter, hmem₀ x]
+    simp
+  -- over each `y` with `g y = z`, the fibre of `f` inside `L` is the whole fibre
+  have hfib : ∀ y ∈ lY₁.filter (fun y => decide (g y = z)),
+      PCM.IsSumOf (((l₀.filter (fun x => decide (g (f x) = z))).filter
+        (fun x => decide (f x = y))).map p.toFun) ((p.map f).toFun y) := by
+    intro y hy
+    have hgy : g y = z := ((hmemlY y).mp hy).2
+    have he : (l₀.filter (fun x => decide (g (f x) = z))).filter
+        (fun x => decide (f x = y)) = l₀.filter (fun x => decide (f x = y)) := by
+      rw [List.filter_filter]
+      refine List.filter_congr ?_
+      intro x _
+      by_cases hx : f x = y
+      · simp [hx, hgy]
+      · simp [hx]
+    rw [he]
+    exact map_spec p f y _ (List.Nodup.filter _ hnd₀) (hfibmem y)
+  -- and `f x` is then one of those `y`, as `p x ≠ 0` forces `(𝒟_M f)(p)(f x) ≠ 0`
+  have hmapmem : ∀ x ∈ l₀.filter (fun x => decide (g (f x) = z)),
+      f x ∈ lY₁.filter (fun y => decide (g y = z)) := by
+    intro x hx
+    have hx' := (hmemL x).mp hx
+    have hsp : PCM.IsSumOf ((l₀.filter (fun x' => decide (f x' = f x))).map p.toFun)
+        ((p.map f).toFun (f x)) :=
+      map_spec p f (f x) _ (List.Nodup.filter _ hnd₀) (hfibmem (f x))
+    refine (hmemlY (f x)).mpr ⟨?_, hx'.2⟩
+    intro hz0
+    refine hx'.1 (eq_zero_of_le_zero ?_)
+    have hxmem : x ∈ l₀.filter (fun x' => decide (f x' = f x)) :=
+      (hfibmem (f x) x).mpr ⟨hx'.1, rfl⟩
+    have hle := isSumOf_le_of_mem (List.mem_map.mpr ⟨x, hxmem, rfl⟩) hsp
+    rwa [hz0] at hle
+  have hkey := isSumOf_map_fiber p.toFun f (p.map f).toFun
+    (List.Nodup.filter _ hndY₁) hmapmem hfib hLsum
+  exact isSumOf_unique
+    (map_spec (p.map f) g z _ (List.Nodup.filter _ hndY₁) hmemlY) hkey
+
+open Classical in
 /-- FIXME(choice): the monad multiplication
 `μ(Φ)(x) = ⋁_φ Φ(φ) ⊙ φ(x)` (192III.2) exists; stated as an existence
 lemma from which `mu` is obtained by choice. -/
 theorem exists_mu {X : Type v} (Φ : MConvexComb M (MConvexComb M X)) :
     ∃ q : MConvexComb M X, ∀ (x : X) (l : List (MConvexComb M X)),
       l.Nodup → (∀ φ, φ ∈ l ↔ Φ.toFun φ ≠ 0) →
-      PCM.IsSumOf (l.map fun φ => Φ.toFun φ * φ.toFun x) (q.toFun x) := sorry
+      PCM.IsSumOf (l.map fun φ => Φ.toFun φ * φ.toFun x) (q.toFun x) := by
+  obtain ⟨lΦ, hndΦ, hmemΦ, hsumΦ⟩ := Φ.sum_one
+  choose supp hsuppnd hsuppmem hsuppsum using
+    (fun φ : MConvexComb M X => φ.sum_one)
+  -- the pointwise sums exist, being dominated by the summable list `lΦ.map Φ`
+  have hdom : ∀ (x : X) (L : List (MConvexComb M X)), List.Forall₂ (· ≼ ·)
+      (L.map fun φ => Φ.toFun φ * φ.toFun x) (L.map Φ.toFun) := by
+    intro x L
+    induction L with
+    | nil => exact List.Forall₂.nil
+    | cons φ L ih => exact List.Forall₂.cons (emon_mul_le_self _ _) ih
+  have hex : ∀ x : X, ∃ s : M,
+      PCM.IsSumOf (lΦ.map fun φ => Φ.toFun φ * φ.toFun x) s := by
+    intro x
+    obtain ⟨s, hs, -⟩ := isSumOf_of_forall₂_le (hdom x lΦ) hsumΦ
+    exact ⟨s, hs⟩
+  choose q hq using hex
+  -- the specification, for any repetition-free enumeration of the support
+  have hspec : ∀ (x : X) (l : List (MConvexComb M X)), l.Nodup →
+      (∀ φ, φ ∈ l ↔ Φ.toFun φ ≠ 0) →
+      PCM.IsSumOf (l.map fun φ => Φ.toFun φ * φ.toFun x) (q x) := by
+    intro x l hnd hm
+    have hperm : lΦ.Perm l :=
+      (List.perm_ext_iff_of_nodup hndΦ hnd).mpr fun φ => by rw [hmemΦ φ, hm φ]
+    exact PCM.isSumOf_perm (List.Perm.map _ hperm) (hq x)
+  -- a repetition-free list of indices containing the support of `q`
+  have hmemX : ∀ (φ : MConvexComb M X) (x : X), φ ∈ lΦ → φ.toFun x ≠ 0 →
+      x ∈ (lΦ.flatMap supp).dedup := by
+    intro φ x hφ hx
+    exact List.mem_dedup.mpr (List.mem_flatMap.mpr ⟨φ, hφ, (hsuppmem φ x).mpr hx⟩)
+  have hqsupp : ∀ x : X, q x ≠ 0 → x ∈ (lΦ.flatMap supp).dedup := by
+    intro x hx
+    by_contra hmem
+    refine hx (isSumOf_eq_zero ?_ (hq x))
+    intro a ha
+    obtain ⟨φ, hφ, rfl⟩ := List.mem_map.mp ha
+    have hφx : φ.toFun x = 0 := by
+      by_contra h0
+      exact hmem (hmemX φ x hφ h0)
+    rw [hφx, (exc_emonzero (Φ.toFun φ)).1]
+  -- the row sums: `⋁ₓ Φ(φ) ⊙ φ(x) = Φ(φ) ⊙ 1 = Φ(φ)`
+  have hrow : ∀ φ ∈ lΦ, PCM.IsSumOf
+      (((lΦ.flatMap supp).dedup).map fun x => Φ.toFun φ * φ.toFun x)
+      (Φ.toFun φ) := by
+    intro φ hφ
+    have h1 : PCM.IsSumOf (((lΦ.flatMap supp).dedup).map φ.toFun) 1 :=
+      isSumOf_map_of_support φ.toFun (hsuppnd φ) (List.nodup_dedup _)
+        (fun x hx => (hsuppmem φ x).mpr hx) (fun x hx => hmemX φ x hφ hx)
+        (hsuppsum φ)
+    have h2 := isSumOf_mul_left (Φ.toFun φ) h1
+    rw [List.map_map, EffectMonoid.mul_one] at h2
+    exact h2
+  -- and now Fubini: summing the matrix `Φ(φ) ⊙ φ(x)` by rows gives `1`
+  have hflat : PCM.IsSumOf
+      (lΦ.flatMap fun φ => ((lΦ.flatMap supp).dedup).map fun x => Φ.toFun φ * φ.toFun x)
+      1 := isSumOf_flatMap _ Φ.toFun hrow hsumΦ
+  have hflat2 : PCM.IsSumOf
+      (((lΦ.flatMap supp).dedup).flatMap fun x => lΦ.map fun φ => Φ.toFun φ * φ.toFun x)
+      1 := PCM.isSumOf_perm (flatMap_map_comm lΦ _ (fun φ x => Φ.toFun φ * φ.toFun x)) hflat
+  have hsumX : PCM.IsSumOf (((lΦ.flatMap supp).dedup).map q) 1 :=
+    isSumOf_of_flatMap _ q (fun x _ => hq x) hflat2
+  refine ⟨⟨q, ⟨((lΦ.flatMap supp).dedup).filter (fun x => decide (q x ≠ 0)),
+    ?_, ?_, ?_⟩⟩, hspec⟩
+  · exact List.Nodup.filter _ (List.nodup_dedup _)
+  · intro x
+    rw [List.mem_filter]
+    exact ⟨fun h => by simpa using h.2, fun h => ⟨hqsupp x h, by simpa using h⟩⟩
+  · refine (isSumOf_map_filter q (fun x => decide (q x ≠ 0)) ?_).mpr hsumX
+    intro x _ h
+    simpa using h
 
 /-- **192III.2** (`exc-dm-effectus`, eff.tex:2397): the multiplication
 `μ : 𝒟_M 𝒟_M X → 𝒟_M X`. -/
 noncomputable def mu {X : Type v} (Φ : MConvexComb M (MConvexComb M X)) :
     MConvexComb M X :=
   (exists_mu Φ).choose
+
+/-- The specification of `mu`, in the form in which it is used. -/
+theorem mu_spec {X : Type v} (Φ : MConvexComb M (MConvexComb M X)) (x : X)
+    (l : List (MConvexComb M X)) (hnd : l.Nodup)
+    (hm : ∀ φ, φ ∈ l ↔ Φ.toFun φ ≠ 0) :
+    PCM.IsSumOf (l.map fun φ => Φ.toFun φ * φ.toFun x) ((mu Φ).toFun x) :=
+  (exists_mu Φ).choose_spec x l hnd hm
+
+open Classical in
+/-- **192III.2**: the left unit law of the monad `𝒟_M`: `μ ∘ η = id`. -/
+theorem mu_eta {X : Type v} (p : MConvexComb M X) : mu (eta p) = p := by
+  refine MConvexComb.ext (funext fun x => ?_)
+  by_cases h1 : (1 : M) = 0
+  · rw [eq_zero_of_one_eq_zero h1 ((mu (eta p)).toFun x),
+      eq_zero_of_one_eq_zero h1 (p.toFun x)]
+  · have hm : ∀ φ, φ ∈ [p] ↔
+        (eta p : MConvexComb M (MConvexComb M X)).toFun φ ≠ 0 := by
+      intro φ
+      rw [List.mem_singleton]
+      show φ = p ↔ (if φ = p then (1 : M) else 0) ≠ 0
+      constructor
+      · rintro rfl; rw [if_pos rfl]; exact h1
+      · intro h; by_contra hne; rw [if_neg hne] at h; exact h rfl
+    have h := mu_spec (eta p) x [p] (List.nodup_singleton p) hm
+    rw [List.map_cons, List.map_nil] at h
+    have hval : (eta p : MConvexComb M (MConvexComb M X)).toFun p = 1 := by
+      show (if p = p then (1 : M) else 0) = 1
+      rw [if_pos rfl]
+    rw [hval, EffectMonoid.one_mul] at h
+    exact eq_of_isSumOf_singleton h
+
+open Classical in
+/-- **192III.2**: the associativity law of the monad `𝒟_M`:
+`μ ∘ μ = μ ∘ 𝒟_M μ`. -/
+theorem mu_mu {X : Type v}
+    (Φ : MConvexComb M (MConvexComb M (MConvexComb M X))) :
+    mu (mu Φ) = mu (Φ.map mu) := by
+  refine MConvexComb.ext (funext fun x => ?_)
+  obtain ⟨LΨ, hndΨ, hmemΨ, hsumΨ⟩ := Φ.sum_one
+  choose supp hsuppnd hsuppmem hsuppsum using
+    (fun Ψ : MConvexComb M (MConvexComb M X) => Ψ.sum_one)
+  obtain ⟨Lψ, hndψ, hmemψ⟩ : ∃ L : List (MConvexComb M X), L.Nodup ∧
+      ∀ Ψ ∈ LΨ, ∀ ψ, Ψ.toFun ψ ≠ 0 → ψ ∈ L :=
+    ⟨(LΨ.flatMap supp).dedup, List.nodup_dedup _, fun Ψ hΨ ψ hψ =>
+      List.mem_dedup.mpr (List.mem_flatMap.mpr ⟨Ψ, hΨ, (hsuppmem Ψ ψ).mpr hψ⟩)⟩
+  obtain ⟨Lχ, hndχ, hmemχ⟩ : ∃ L : List (MConvexComb M X), L.Nodup ∧
+      ∀ Ψ ∈ LΨ, mu Ψ ∈ L :=
+    ⟨(LΨ.map mu).dedup, List.nodup_dedup _, fun Ψ hΨ =>
+      List.mem_dedup.mpr (List.mem_map.mpr ⟨Ψ, hΨ, rfl⟩)⟩
+  -- the outer sum of the left-hand side, over `Lψ`
+  have h1 : PCM.IsSumOf (Lψ.map fun ψ => (mu Φ).toFun ψ * ψ.toFun x)
+      ((mu (mu Φ)).toFun x) := by
+    obtain ⟨L1, hnd1, hmem1, -⟩ := (mu Φ).sum_one
+    refine isSumOf_map_of_support _ hnd1 hndψ ?_ ?_
+      (mu_spec (mu Φ) x L1 hnd1 hmem1)
+    · intro ψ hψ
+      refine (hmem1 ψ).mpr fun h0 => hψ ?_
+      rw [h0, (exc_emonzero (ψ.toFun x)).2]
+    · intro ψ hψ
+      have hne : (mu Φ).toFun ψ ≠ 0 := by
+        intro h0; exact hψ (by rw [h0, (exc_emonzero (ψ.toFun x)).2])
+      by_contra hnot
+      refine hne (isSumOf_eq_zero ?_ (mu_spec Φ ψ LΨ hndΨ hmemΨ))
+      intro a ha
+      obtain ⟨Ψ, hΨ, rfl⟩ := List.mem_map.mp ha
+      have hz : Ψ.toFun ψ = 0 := by
+        by_contra h0
+        exact hnot (hmemψ Ψ hΨ ψ h0)
+      rw [hz, (exc_emonzero (Φ.toFun Ψ)).1]
+  -- expanding each term and flattening
+  have h2 : ∀ ψ ∈ Lψ, PCM.IsSumOf
+      (LΨ.map fun Ψ => (Φ.toFun Ψ * Ψ.toFun ψ) * ψ.toFun x)
+      ((mu Φ).toFun ψ * ψ.toFun x) := by
+    intro ψ _
+    have h := isSumOf_mul_right (ψ.toFun x) (mu_spec Φ ψ LΨ hndΨ hmemΨ)
+    rwa [List.map_map] at h
+  have h3 : PCM.IsSumOf
+      (Lψ.flatMap fun ψ => LΨ.map fun Ψ => (Φ.toFun Ψ * Ψ.toFun ψ) * ψ.toFun x)
+      ((mu (mu Φ)).toFun x) := isSumOf_flatMap _ _ h2 h1
+  -- Fubini
+  have h4 : PCM.IsSumOf
+      (LΨ.flatMap fun Ψ => Lψ.map fun ψ => (Φ.toFun Ψ * Ψ.toFun ψ) * ψ.toFun x)
+      ((mu (mu Φ)).toFun x) :=
+    PCM.isSumOf_perm
+      (flatMap_map_comm Lψ LΨ (fun ψ Ψ => (Φ.toFun Ψ * Ψ.toFun ψ) * ψ.toFun x)) h3
+  -- the rows, using associativity of `⊙`
+  have h5 : ∀ Ψ ∈ LΨ, PCM.IsSumOf
+      (Lψ.map fun ψ => (Φ.toFun Ψ * Ψ.toFun ψ) * ψ.toFun x)
+      (Φ.toFun Ψ * (mu Ψ).toFun x) := by
+    intro Ψ hΨ
+    have hin : PCM.IsSumOf (Lψ.map fun ψ => Ψ.toFun ψ * ψ.toFun x)
+        ((mu Ψ).toFun x) := by
+      obtain ⟨L2, hnd2, hmem2, -⟩ := Ψ.sum_one
+      refine isSumOf_map_of_support _ hnd2 hndψ ?_ ?_ (mu_spec Ψ x L2 hnd2 hmem2)
+      · intro ψ hψ
+        refine (hmem2 ψ).mpr fun h0 => hψ ?_
+        rw [h0, (exc_emonzero (ψ.toFun x)).2]
+      · intro ψ hψ
+        refine hmemψ Ψ hΨ ψ fun h0 => hψ ?_
+        rw [h0, (exc_emonzero (ψ.toFun x)).2]
+    have h := isSumOf_mul_left (Φ.toFun Ψ) hin
+    rw [List.map_map] at h
+    have heq : (Lψ.map fun ψ => (Φ.toFun Ψ * Ψ.toFun ψ) * ψ.toFun x)
+        = (Lψ.map fun ψ => Φ.toFun Ψ * (Ψ.toFun ψ * ψ.toFun x)) :=
+      List.map_congr_left fun ψ _ => EffectMonoid.mul_assoc _ _ _
+    rw [heq]
+    exact h
+  have h6 : PCM.IsSumOf (LΨ.map fun Ψ => Φ.toFun Ψ * (mu Ψ).toFun x)
+      ((mu (mu Φ)).toFun x) := isSumOf_of_flatMap _ _ h5 h4
+  -- grouping by the fibres of `μ`
+  have hfibmem : ∀ (χ : MConvexComb M X) (Ψ : MConvexComb M (MConvexComb M X)),
+      Ψ ∈ LΨ.filter (fun Ψ => decide (mu Ψ = χ)) ↔ (Φ.toFun Ψ ≠ 0 ∧ mu Ψ = χ) := by
+    intro χ Ψ
+    rw [List.mem_filter, hmemΨ Ψ]
+    simp
+  have h7 : ∀ χ ∈ Lχ, PCM.IsSumOf
+      ((LΨ.filter (fun Ψ => decide (mu Ψ = χ))).map
+        fun Ψ => Φ.toFun Ψ * (mu Ψ).toFun x)
+      ((Φ.map mu).toFun χ * χ.toFun x) := by
+    intro χ _
+    have hmap : PCM.IsSumOf ((LΨ.filter (fun Ψ => decide (mu Ψ = χ))).map Φ.toFun)
+        ((Φ.map mu).toFun χ) :=
+      map_spec Φ mu χ _ (List.Nodup.filter _ hndΨ) (hfibmem χ)
+    have h := isSumOf_mul_right (χ.toFun x) hmap
+    rw [List.map_map] at h
+    have heq : ((LΨ.filter (fun Ψ => decide (mu Ψ = χ))).map
+        fun Ψ => Φ.toFun Ψ * (mu Ψ).toFun x)
+        = ((LΨ.filter (fun Ψ => decide (mu Ψ = χ))).map
+        fun Ψ => Φ.toFun Ψ * χ.toFun x) := by
+      refine List.map_congr_left fun Ψ hΨ => ?_
+      rw [((hfibmem χ Ψ).mp hΨ).2]
+    rw [heq]
+    exact h
+  have h8 : PCM.IsSumOf (Lχ.map fun χ => (Φ.map mu).toFun χ * χ.toFun x)
+      ((mu (mu Φ)).toFun x) :=
+    isSumOf_map_fiber (fun Ψ => Φ.toFun Ψ * (mu Ψ).toFun x) mu
+      (fun χ => (Φ.map mu).toFun χ * χ.toFun x) hndχ hmemχ h7 h6
+  -- and the same list computes the right-hand side
+  have h9 : PCM.IsSumOf (Lχ.map fun χ => (Φ.map mu).toFun χ * χ.toFun x)
+      ((mu (Φ.map mu)).toFun x) := by
+    obtain ⟨L3, hnd3, hmem3, -⟩ := (Φ.map mu).sum_one
+    refine isSumOf_map_of_support _ hnd3 hndχ ?_ ?_
+      (mu_spec (Φ.map mu) x L3 hnd3 hmem3)
+    · intro χ hχ
+      refine (hmem3 χ).mpr fun h0 => hχ ?_
+      rw [h0, (exc_emonzero (χ.toFun x)).2]
+    · intro χ hχ
+      have hne : (Φ.map mu).toFun χ ≠ 0 := by
+        intro h0; exact hχ (by rw [h0, (exc_emonzero (χ.toFun x)).2])
+      by_contra hnot
+      refine hne ?_
+      have hmap : PCM.IsSumOf
+          ((LΨ.filter (fun Ψ => decide (mu Ψ = χ))).map Φ.toFun)
+          ((Φ.map mu).toFun χ) :=
+        map_spec Φ mu χ _ (List.Nodup.filter _ hndΨ) (hfibmem χ)
+      have hnil : LΨ.filter (fun Ψ => decide (mu Ψ = χ)) = [] := by
+        refine List.eq_nil_iff_forall_not_mem.mpr fun Ψ hΨ => ?_
+        have hΨ' := (hfibmem χ Ψ).mp hΨ
+        exact hnot (hΨ'.2 ▸ hmemχ Ψ ((hmemΨ Ψ).mpr hΨ'.1))
+      rw [hnil, List.map_nil, PCM.isSumOf_nil_iff] at hmap
+      exact hmap
+  exact isSumOf_unique h8 h9
 
 open Classical in
 /-- Helper for `bin` (192II): the function which is `1` at `x` when `x = y`,
@@ -571,6 +1250,17 @@ def MConvex.IsAffine {M : Type u} [EffectMonoid M] {X : Type v} {Y : Type w}
     (sX : MConvex M X) (sY : MConvex M Y) (f : X → Y) : Prop :=
   ∀ p : MConvexComb M X, f (sX.h p) = sY.h (p.map f)
 
+/-- Composites of `M`-affine maps are `M`-affine (functoriality of `𝒟_M`). -/
+theorem MConvex.IsAffine.comp {M : Type u} [EffectMonoid M]
+    {X : Type v} {Y : Type w} {Z : Type t}
+    {sX : MConvex M X} {sY : MConvex M Y} {sZ : MConvex M Z}
+    {f : X → Y} {g : Y → Z}
+    (hf : MConvex.IsAffine sX sY f) (hg : MConvex.IsAffine sY sZ g) :
+    MConvex.IsAffine sX sZ (g ∘ f) := by
+  intro p
+  show g (f (sX.h p)) = sZ.h (p.map (g ∘ f))
+  rw [hf p, hg (p.map f), MConvexComb.map_comp]
+
 /-- **192IV** (eff.tex:2456, Definition): an abstract `M`-convex set `(X,h)`
 is **cancellative** when `h(λ|y⟩ ⋁ λᵖ|x₁⟩) = h(λ|y⟩ ⋁ λᵖ|x₂⟩)` implies
 `x₁ = x₂`, for `λ ≠ 1`. -/
@@ -595,7 +1285,7 @@ noncomputable instance (M : Type u) [EffectMonoid M] :
     Category.{v} (AConvMCat.{u, v} M) where
   Hom X Y := { f : X.carrier → Y.carrier // MConvex.IsAffine X.str Y.str f }
   id X := ⟨_root_.id, fun p => by rw [MConvexComb.map_id]; rfl⟩
-  comp f g := ⟨g.1 ∘ f.1, sorry⟩
+  comp f g := ⟨g.1 ∘ f.1, f.2.comp g.2⟩
   id_comp _ := Subtype.ext rfl
   comp_id _ := Subtype.ext rfl
   assoc _ _ _ := Subtype.ext rfl
@@ -780,7 +1470,7 @@ def AConvMCat.punit (M : Type u) [EffectMonoid M] : AConvMCat.{u, v} M :=
 193X; the algebra laws are the monad laws, `sorry`-ed). -/
 noncomputable def AConvMCat.free (M : Type u) [EffectMonoid M] (X : Type v) :
     AConvMCat.{u, max u v} M :=
-  ⟨MConvexComb M X, ⟨MConvexComb.mu, sorry, sorry⟩⟩
+  ⟨MConvexComb M X, ⟨MConvexComb.mu, MConvexComb.mu_eta, MConvexComb.mu_mu⟩⟩
 
 /-- **193X** (`n-times-one-aconvm`, eff.tex:2954, Exercise), first half: the
 one-element convex set is the final object of `AConv_M`. -/
@@ -881,11 +1571,11 @@ theorem exc_divisoid_basics_1 (a b : M) :
       (pcm_zero_le _) (exc_emonzero (0 : M)).1).symm
   · -- `(a/a) ⊙ (a/a) ≼ a/a` and `a ⊙ (a/a) ⊙ (a/a) = a ⊙ (a/a) = a`.
     refine EffectDivisoid.div_unique (pcm_preorder_refl a)
-      (emon_mul_le_left _ _) ?_
+      (emon_mul_le_self _ _) ?_
     rw [← EffectMonoid.mul_assoc, hself a, hself a]
   · -- `(a/a) ⊙ b ≼ a/a` and `a ⊙ (a/a) ⊙ b = a ⊙ b`.
-    refine (EffectDivisoid.div_unique (emon_mul_le_left a b)
-      (emon_mul_le_left _ _) ?_).symm
+    refine (EffectDivisoid.div_unique (emon_mul_le_self a b)
+      (emon_mul_le_self _ _) ?_).symm
     rw [← EffectMonoid.mul_assoc, hself a]
 
 /-- **195IV.2** (`exc-divisoid-basics`, eff.tex:3233, Exercise): for
@@ -894,7 +1584,7 @@ theorem exc_divisoid_basics_2 {a b c : M} (hab : a ≼ b) (hbc : b ≼ c) :
     div b c * div a b = div a c := by
   -- `(b/c) ⊙ (a/b) ≼ b/c ≼ c/c` and `c ⊙ (b/c) ⊙ (a/b) = b ⊙ (a/b) = a`.
   refine EffectDivisoid.div_unique (pcm_preorder_trans hab hbc)
-    (pcm_preorder_trans (emon_mul_le_left _ _) (EffectDivisoid.div_le hbc)) ?_
+    (pcm_preorder_trans (emon_mul_le_self _ _) (EffectDivisoid.div_le hbc)) ?_
   rw [← EffectMonoid.mul_assoc, EffectDivisoid.mul_div hbc,
     EffectDivisoid.mul_div hab]
 

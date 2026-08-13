@@ -40,11 +40,6 @@ variable {C : Type u} [Category.{v} C] [HasFiniteCoproducts C]
 theorem zero_le_hom {X Y : C} (f : X ⟶ Y) : (0 : X ⟶ Y) ≼ f :=
   ⟨f, PCM.zero_perp f, PCM.zero_ovee f⟩
 
-/-- A predicate below `0` is `0`. -/
-theorem eq_zero_of_le_zero {X : C} {p : Pred X} (h : p ≼ 0) : p = 0 := by
-  obtain ⟨c, hc, e⟩ := h
-  exact (eabasics_positivity hc e).1
-
 /-- Every predicate is below the truth predicate. -/
 theorem pred_le_truth {X : C} (p : Pred X) : p ≼ truth X :=
   ⟨orth p, EffectAlgebra.perp_orth p, EffectAlgebra.ovee_orth p⟩
