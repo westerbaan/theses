@@ -318,6 +318,33 @@ prove the spine in those terms *alongside* the shipped statements, so nothing is
 restated and no statement changes.  **This has now been done in full**; see the
 next section.
 
+### ⚠️ For the authors — **72III.1b and 1c carry a spurious `‖ω‖`**
+
+`vn.tex:3850` (`bstaromega-basic`), part 1.  Both bounds are printed with a
+leading `‖ω‖` (= `ω(1)`), and that factor must not be there: `‖a‖_ω = ω(a*a)^½`
+is **unnormalised**, so replacing `ω` by `tω` scales the left side by `t` and the
+right by `t²`.  Counterexample `𝒜 = ℂ`, `ω = t·id` with `0 < t < 1`,
+`a = b = c = 1`: the left side is `t`, the right `t²`.  Cauchy–Schwarz gives the
+factor-free bound directly.
+
+**This is the third appearance of the same slip**, after **30IV**.2 (where the
+extra `‖ω‖` was independently confirmed spurious — Mathlib's `leftMulMapPreGNS`
+is *defined* with bound exactly `‖a‖`) and the earlier report of this same pair.
+A spurious `‖ω‖` on a `‖·‖_ω` estimate is evidently a recurring authorial habit;
+**every such bound in both theses is worth re-checking**.  Our statements are
+corrected and the errata recorded on the declarations; 72V and 72XI lean on them.
+
+### For the record — **88IV `carrier_vector_state` was ours**
+
+`NormalFunctionals.lean`.  vn.tex:6730 *and our own doc comment* both say
+`⋃_{a∈S} ⌈|ax⟩⟨ax|⌉`, but the Lean term had dropped the `⌈·⌉`, reading
+`projSup {p | ∃ T ∈ S, p = ketbra (T x) (T x)}`.  That set contains
+non-projections (take `2•1 ∈ S`), so `projSup` returns its junk value `0` for
+every `x ≠ 0` while the left-hand side does not — false, and not the thesis's
+fault.  Note the doc comment was *right* the whole time: the defect was visible
+by reading the declaration against its own prose, with no reference to the
+source at all.  Fixed.
+
 ### ⚠️ For the authors — **68IV.2 is false as printed, in two clauses**
 
 `vn.tex:3490` (`cceil-basic`), part 2.  Central support `⌈⌈·⌉⌉` is monotone on

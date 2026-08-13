@@ -59,18 +59,27 @@ theorem bstaromega_np (b : A) (ω : NPFunctional A) :
   ⟨conjNP b ω, funext fun a => conjNP_apply b ω a⟩
 
 /-- **72III** (`bstaromega-basic`, vn.tex:3850, Exercise), part 1b:
-`|ω(a* b c)| ≤ ‖ω‖ ‖a‖_ω ‖b‖ ‖c‖_ω` (with `‖ω‖ = ω(1)` for the positive
-functional `ω`). -/
+`|ω(a* b c)| ≤ ‖a‖_ω ‖b‖ ‖c‖_ω`.
+
+**Erratum (author).**  vn.tex:3850 writes this bound with a leading `‖ω‖`
+(= `ω(1)`).  That factor must not be there: `‖a‖_ω = ω(a*a)^½` is unnormalised,
+so replacing `ω` by `tω` scales the left side by `t` and the right by `t²`.
+Counterexample `𝒜 = ℂ`, `ω = t·id` with `0 < t < 1`, `a = b = c = 1`: the left
+side is `t`, the right `t²`.  Cauchy–Schwarz gives the factor-free bound
+directly (cf. `norm_apply_star_mul_le`).  Same defect as **30IV**.2. -/
 theorem bstaromega_bound (ω : NPFunctional A) (a b c : A) :
     ‖ω (star a * b * c)‖ ≤
-      (ω 1).re * omegaNorm A ω a * ‖b‖ * omegaNorm A ω c :=
+      omegaNorm A ω a * ‖b‖ * omegaNorm A ω c :=
   sorry
 
 /-- **72III** (`bstaromega-basic`, vn.tex:3850, Exercise), part 1c:
-`‖b*ω - b'*ω‖ ≤ ‖ω‖ ‖b-b'‖_ω (‖b‖_ω + ‖b'‖_ω)` — rendered pointwise. -/
+`‖b*ω - b'*ω‖ ≤ ‖b-b'‖_ω (‖b‖_ω + ‖b'‖_ω)` — rendered pointwise.
+
+**Erratum (author).**  As in part 1b, vn.tex:3850's leading `‖ω‖` must not be
+there — it breaks homogeneity in `ω` for the same reason. -/
 theorem bstaromega_lipschitz (ω : NPFunctional A) (b b' : A) (a : A) :
     ‖bStarOmega A b ω a - bStarOmega A b' ω a‖ ≤
-      (ω 1).re * omegaNorm A ω (b - b') *
+      omegaNorm A ω (b - b') *
         (omegaNorm A ω b + omegaNorm A ω b') * ‖a‖ :=
   sorry
 

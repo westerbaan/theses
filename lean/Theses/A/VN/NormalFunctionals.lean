@@ -646,7 +646,7 @@ the carrier of the vector functional restricted to `S^□`, needs the
 relative carrier and is subsumed by the `IsLeast` formulation.) -/
 theorem carrier_vector_state (S : StarSubalgebra ℂ (H →L[ℂ] H)) (x : H) :
     commutantCeil (H →L[ℂ] H) S (ceil (ketbra x x)) =
-        projSup {p : H →L[ℂ] H | ∃ T ∈ S, p = ketbra (T x) (T x)} ∧
+        projSup {p : H →L[ℂ] H | ∃ T ∈ S, p = ceil (ketbra (T x) (T x))} ∧
       {y : H | commutantCeil (H →L[ℂ] H) S (ceil (ketbra x x)) y = y} =
         closure {y : H | ∃ T ∈ S, y = T x} :=
   sorry
