@@ -486,9 +486,9 @@ comments may have shifted, so re-locate by point number.
   16VI, 16VII (reference 160.60→160.50, the self-adjointness gap, the `{0}`
   branch), 17VI.6, 20aII, 22III.5, 26II.1 (plus a mis-citation
   `230.70(2)` → `(1)` found on site), 26II.4, 30IV.1.
-* Still awaiting a ruling: the `inner-product-basic` citation in 62I's proof
-  (vn.tex, for `f(a)² ≤ f(a²)` — looks like it should be a Kadison/cp
-  inequality), and a handful of minor solution nits listed in PROVING-LOG.
+* **62I** — its proof's citation of `inner-product-basic` for
+  `f(a)² ≤ f(a²)` is corrected to `cp-cs` (erratum 620.20).
+* Still open: a handful of minor solution nits listed in PROVING-LOG.
 
 ### Still open
 
