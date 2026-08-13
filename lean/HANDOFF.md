@@ -1,9 +1,11 @@
 # Handoff — state of the formalization
 
 Written at the end of the first proving session.  Read this together with
-[QUESTIONS.md](QUESTIONS.md) (**everything awaiting an author decision** — start
-there if you are an author), [PROVING-LOG.md](PROVING-LOG.md) (errata + parked
-items) and [CONVENTIONS.md](CONVENTIONS.md) (numbering + naming).
+[QUESTIONS.md](QUESTIONS.md) (**everything awaiting an author decision**) and
+[ERRATA.md](ERRATA.md) (**every defect found in the theses**, ordered by point
+number for processing) — start with those two if you are an author — plus
+[PROVING-LOG.md](PROVING-LOG.md) (the full record, including our own
+mis-transcriptions) and [CONVENTIONS.md](CONVENTIONS.md) (numbering + naming).
 
 ## What exists
 

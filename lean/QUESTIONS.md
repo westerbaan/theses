@@ -4,8 +4,8 @@ Everything in this file needs a decision from an author.  Nothing here is a
 Lean problem: each item is either a defect in a thesis statement, or a choice
 about how faithfully our statement should track the thesis.
 
-Findings that need **no** decision — errata we simply recorded, and
-mis-transcriptions we fixed on our side — live in
+Findings that need **no** decision live elsewhere: thesis defects to be
+corrected are in [ERRATA.md](ERRATA.md), and our own mis-transcriptions in
 [PROVING-LOG.md](PROVING-LOG.md).  Resolved questions are at the bottom.
 
 Conventions: **DISP** is the display number (e.g. `192V.3`); erratum keys are

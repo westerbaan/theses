@@ -1,9 +1,11 @@
 # Proving log
 
-> Items needing an **author decision** are collected in
-> [QUESTIONS.md](QUESTIONS.md).  This file is the full record — errata we
-> merely noted, mis-transcriptions we fixed ourselves, parked items, and
-> divergences from the theses' own proofs.
+> Two derived files are easier to act on than this one:
+> [ERRATA.md](ERRATA.md) lists **every defect found in the theses**, ordered by
+> point number, and [QUESTIONS.md](QUESTIONS.md) lists **everything awaiting an
+> author decision**.  This file is the full record behind them — errata with
+> their working, our own mis-transcriptions, parked items, and divergences from
+> the theses' own proofs.
 
 Running log of the effort to replace the `sorry`s in this formalization by
 real proofs.  **Statements are never changed** — if a statement is wrong,
