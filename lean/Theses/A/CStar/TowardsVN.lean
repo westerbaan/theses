@@ -1,6 +1,6 @@
 /-
 Thesis A (Abraham Westerbaan, *The Category of Von Neumann Algebras*,
-arXiv:1804.02203), chapter 1: C*-algebras — cstar.tex, lines 5873–6652.
+arXiv:1804.02203), chapter 1: C*-algebras — cstar.tex, lines 5953–6742.
 
   §Towards von Neumann Algebras
     Directed Suprema    (parsec 350: uniform boundedness, Hellinger–Toeplitz;
@@ -13,10 +13,11 @@ arXiv:1804.02203), chapter 1: C*-algebras — cstar.tex, lines 5873–6652.
                          vector functionals)
     parsec 400: closing remarks (nothing to formalize).
 
-Statements only; every proof is `sorry`.  See CONVENTIONS.md for the
+All statements of parsecs 350–400 are proved.  See CONVENTIONS.md for the
 numbering (**35II** = parsec 350, point 20) and naming conventions.
 -/
 import Theses.Common
+import Theses.A.CStar.Representation
 
 open scoped ComplexOrder ComplexInnerProductSpace lp
 open Filter Topology
@@ -25,7 +26,7 @@ namespace Theses.A.CStar
 
 /-! ## Parsec 350: Directed suprema — uniform boundedness and Hellinger–Toeplitz
 
-**35I** (cstar.tex:5875): introduction — B(H) has suprema of norm-bounded
+**35I** (cstar.tex:5955): introduction — B(H) has suprema of norm-bounded
 directed sets of self-adjoint operators, the vector functionals preserve them,
 and every functional preserving them is a sum of vector functionals (39IX
 below).  Nothing to formalize. -/
@@ -35,7 +36,7 @@ section UniformBoundedness
 variable {𝒳 𝒴 : Type*} [NormedAddCommGroup 𝒳] [NormedSpace ℂ 𝒳]
   [NormedAddCommGroup 𝒴] [NormedSpace ℂ 𝒴]
 
-/-- **35II** (`pub`, cstar.tex:5903, Theorem (Uniform Boundedness)): a family
+/-- **35II** (`pub`, cstar.tex:5983, Theorem (Uniform Boundedness)): a family
 `F` of bounded linear maps from a complete normed vector space `𝒳` to a normed
 vector space `𝒴` is bounded, `sup_T ‖T‖ < ∞`, provided that `sup_T ‖T x‖ < ∞`
 for every `x ∈ 𝒳`.  Mathlib: `banach_steinhaus`. -/
@@ -56,7 +57,7 @@ variable {X Y : Type*}
   [NormedAddCommGroup X] [Module ℂ X] [SMul 𝒜 X] [CStarModule 𝒜 X]
   [NormedAddCommGroup Y] [Module ℂ Y] [SMul 𝒜 Y] [CStarModule 𝒜 Y]
 
-/-- **35VI** (`hellinger-toeplitz`, cstar.tex:5958, Theorem): an adjointable
+/-- **35VI** (`hellinger-toeplitz`, cstar.tex:6038, Theorem): an adjointable
 map `T : X → Y` between pre-Hilbert 𝒜-modules (here: `CStarModule`s over a
 C*-algebra `𝒜`) is bounded — together with its adjoint — as soon as either `X`
 or `Y` is complete (by symmetry we state the case that the domain `X` is
@@ -65,14 +66,88 @@ Hellinger–Toeplitz theorem (**35VIII**); Mathlib:
 `LinearMap.IsSymmetric.continuous`. -/
 theorem hellinger_toeplitz [CompleteSpace X] (T : X →ₗ[ℂ] Y) (S : Y →ₗ[ℂ] X)
     (adj : ∀ (x : X) (y : Y), inner 𝒜 (T x) y = inner 𝒜 x (S y)) :
-    Continuous (⇑T) ∧ Continuous (⇑S) :=
-  sorry
+    Continuous (⇑T) ∧ Continuous (⇑S) := by
+  -- Mathlib deliberately does not register `NormedSpace ℂ X` for a `CStarModule`
+  -- (it wants to be able to replace the topology); the norm axiom is available
+  -- as `CStarModule.normedSpaceCore`, and for the *given* norm on `X` it gives
+  -- exactly the missing instance.
+  letI : NormSMulClass ℂ X :=
+    ⟨fun c x => (CStarModule.normedSpaceCore 𝒜 (E := X)).norm_smul c x⟩
+  letI : NormSMulClass ℂ Y :=
+    ⟨fun c y => (CStarModule.normedSpaceCore 𝒜 (E := Y)).norm_smul c y⟩
+  letI : NormedSpace ℂ X := { norm_smul_le := fun c x => le_of_eq (norm_smul c x) }
+  letI : NormedSpace ℂ Y := { norm_smul_le := fun c y => le_of_eq (norm_smul c y) }
+  -- for each `y`, the map `⟨T* y, ·⟩ = ⟨y, T ·⟩ : X → 𝒜` is bounded, by 32VI
+  set φ : Y → (X →L[ℂ] 𝒜) := fun y =>
+    LinearMap.mkContinuous
+      { toFun := fun x => inner 𝒜 (S y) x
+        map_add' := fun _ _ => CStarModule.inner_add_right
+        map_smul' := fun _ _ => CStarModule.inner_smul_right_complex }
+      ‖S y‖ (fun _ => CStarModule.norm_inner_le X) with hφdef
+  have hφ : ∀ (y : Y) (x : X), φ y x = inner 𝒜 (S y) x := fun _ _ => rfl
+  have hswap : ∀ (y : Y) (x : X), ‖(φ y x : 𝒜)‖ = ‖inner 𝒜 (T x) y‖ := by
+    intro y x
+    rw [hφ, ← CStarModule.star_inner (A := 𝒜) x (S y), ← adj x y, norm_star]
+  -- uniform boundedness over the unit ball of `Y` (35II)
+  have hbdd : ∀ x : X, BddAbove (Set.range fun y : {y : Y // ‖y‖ ≤ 1} => ‖φ y.1 x‖) := by
+    intro x
+    refine ⟨‖T x‖, ?_⟩
+    rintro _ ⟨y, rfl⟩
+    show ‖φ (y : Y) x‖ ≤ ‖T x‖
+    rw [hswap]
+    calc ‖inner 𝒜 (T x) (y : Y)‖ ≤ ‖T x‖ * ‖(y : Y)‖ := CStarModule.norm_inner_le Y
+      _ ≤ ‖T x‖ * 1 := by gcongr; exact y.2
+      _ = ‖T x‖ := mul_one _
+  obtain ⟨B, hB⟩ := pub (fun y : {y : Y // ‖y‖ ≤ 1} => φ y.1) hbdd
+  have hB' : ∀ y : {y : Y // ‖y‖ ≤ 1}, ‖φ y.1‖ ≤ B := fun y => hB (Set.mem_range_self y)
+  have hB0 : 0 ≤ B := le_trans (norm_nonneg _) (hB' ⟨0, by simp⟩)
+  -- hence `‖⟨y, T x⟩‖ ≤ B ‖y‖ ‖x‖` for all `x`, `y`
+  have hform : ∀ (x : X) (y : Y), ‖inner 𝒜 (T x) y‖ ≤ B * ‖y‖ * ‖x‖ := by
+    intro x y
+    rcases eq_or_ne y 0 with rfl | hy
+    · simp [mul_nonneg, hB0]
+    · have hy0 : 0 < ‖y‖ := norm_pos_iff.mpr hy
+      set y' : Y := (((‖y‖⁻¹ : ℝ) : ℂ)) • y with hy'
+      have hn : ‖y'‖ ≤ 1 := by
+        rw [hy', norm_smul]
+        simp [abs_of_nonneg hy0.le, inv_mul_cancel₀ hy0.ne']
+      have hyy : ((‖y‖ : ℂ)) • y' = y := by
+        rw [hy', smul_smul, ← Complex.ofReal_mul, mul_inv_cancel₀ hy0.ne',
+          Complex.ofReal_one, one_smul]
+      have h1 : ‖inner 𝒜 (T x) y'‖ ≤ B * ‖x‖ := by
+        rw [← hswap]
+        exact le_trans ((φ y').le_opNorm x)
+          (mul_le_mul_of_nonneg_right (hB' ⟨y', hn⟩) (norm_nonneg x))
+      calc ‖inner 𝒜 (T x) y‖ = ‖((‖y‖ : ℂ)) • inner 𝒜 (T x) y'‖ := by
+            rw [← CStarModule.inner_smul_right_complex, hyy]
+        _ = ‖y‖ * ‖inner 𝒜 (T x) y'‖ := by
+            rw [norm_smul]; simp
+        _ ≤ ‖y‖ * (B * ‖x‖) := by gcongr
+        _ = B * ‖y‖ * ‖x‖ := by ring
+  -- and `‖T x‖² = ‖⟨T x, T x⟩‖ ≤ B ‖T x‖ ‖x‖` gives `‖T x‖ ≤ B ‖x‖` (32X)
+  have hTb : ∀ x : X, ‖T x‖ ≤ B * ‖x‖ := by
+    intro x
+    have h1 := hform x (T x)
+    rw [← CStarModule.norm_sq_eq (A := 𝒜) (x := T x)] at h1
+    rcases eq_or_lt_of_le (norm_nonneg (T x)) with h0 | h0
+    · rw [← h0]; positivity
+    · nlinarith [norm_nonneg x]
+  have hSb : ∀ y : Y, ‖S y‖ ≤ B * ‖y‖ := by
+    intro y
+    have h1 : ‖inner 𝒜 (S y) (S y)‖ ≤ B * ‖y‖ * ‖S y‖ := by
+      rw [← adj (S y) y]
+      exact hform (S y) y
+    rw [← CStarModule.norm_sq_eq (A := 𝒜) (x := S y)] at h1
+    rcases eq_or_lt_of_le (norm_nonneg (S y)) with h0 | h0
+    · rw [← h0]; positivity
+    · nlinarith [norm_nonneg y]
+  exact ⟨(T.mkContinuous B hTb).continuous, (S.mkContinuous B hSb).continuous⟩
 
-/-! **35VIII** (cstar.tex:5989, Remark): the Hellinger–Toeplitz theorem —
+/-! **35VIII** (cstar.tex:6069, Remark): the Hellinger–Toeplitz theorem —
 every symmetric operator on a Hilbert space is bounded — is the special case
 of **35VI** noted in its doc comment; not converted separately.
 
-**35IX** (`hellinger-toeplitz-needs-complete`, cstar.tex:5997, Example):
+**35IX** (`hellinger-toeplitz-needs-complete`, cstar.tex:6077, Example):
 completeness may not be dropped in **35VI**: on the incomplete inner product
 space `c₀₀` of finitely supported sequences, `T α = (n αₙ)ₙ` is symmetric but
 unbounded.  Skipped: stating the counterexample requires either constructing
@@ -91,14 +166,14 @@ def IsBoundedModuleMap (T : X →ₗ[ℂ] Y) : Prop :=
   (∀ (a : 𝒜) (x : X), T (a • x) = a • T x) ∧ Continuous (⇑T)
 
 variable (𝒜 X) in
-/-- **36I** (`self-dual`, cstar.tex:6011, Definition): a Hilbert 𝒜-module `X`
+/-- **36I** (`self-dual`, cstar.tex:6091, Definition): a Hilbert 𝒜-module `X`
 is *self-dual* when every bounded module map `r : X → 𝒜` is of the form
 `⟪y, ·⟫` for some `y ∈ X`.  (**36II**: by Riesz' representation theorem —
 Mathlib's `InnerProductSpace.toDual` — every Hilbert space is self-dual.) -/
 def SelfDual : Prop :=
   ∀ r : X →ₗ[ℂ] 𝒜, IsBoundedModuleMap 𝒜 r → ∃ y : X, ∀ x : X, r x = inner 𝒜 y x
 
-/-- **36III** (cstar.tex:6022, Exercise): for a C*-algebra `𝒜` the Hilbert
+/-- **36III** (cstar.tex:6102, Exercise): for a C*-algebra `𝒜` the Hilbert
 𝒜-module `𝒜^N` of `N`-tuples (Mathlib: the type synonym
 `WithCStarModule 𝒜 (Fin N → 𝒜)`, notation `C⋆ᵐᵒᵈ(𝒜, Fin N → 𝒜)`) is
 self-dual. -/
@@ -137,7 +212,7 @@ theorem selfDual_pi (𝒜 : Type*) [CStarAlgebra 𝒜] [PartialOrder 𝒜]
             simp [WithCStarModule.inner_def]
 
 variable (𝒜) in
-/-- **36IV** (`chilb-form`, cstar.tex:6027, Definition): a *(bounded) form* on
+/-- **36IV** (`chilb-form`, cstar.tex:6107, Definition): a *(bounded) form* on
 Hilbert 𝒜-modules `X` and `Y` is a map `[·,·] : X × Y → 𝒜` such that
 `[x, ·] : Y → 𝒜` and `[·, y]* : X → 𝒜` are (bounded) module maps for all
 `x ∈ X` and `y ∈ Y`.  (Since `B` is a bare function, the module-map conditions
@@ -148,29 +223,146 @@ structure IsBoundedForm (B : X → Y → 𝒜) : Prop where
   bddModuleMap_left_star : ∀ y : Y,
     ∃ r : X →ₗ[ℂ] 𝒜, IsBoundedModuleMap 𝒜 r ∧ ∀ x : X, r x = star (B x y)
 
-/-- **36V** (`chilb-form-representation`, cstar.tex:6038, Proposition): for
+/-- Additivity of the 𝒜-valued inner product in its first argument.
+(Auxiliary for **36V**.) -/
+private theorem inner_add_left' (a b c : X) :
+    inner 𝒜 (a + b) c = inner 𝒜 a c + inner 𝒜 b c := by
+  rw [← CStarModule.star_inner (A := 𝒜), CStarModule.inner_add_right, star_add,
+    CStarModule.star_inner, CStarModule.star_inner]
+
+/-- Conjugate-homogeneity of the 𝒜-valued inner product in its first argument.
+(Auxiliary for **36V**.) -/
+private theorem inner_smul_left' (z : ℂ) (a c : X) :
+    inner 𝒜 (z • a) c = (starRingEnd ℂ) z • inner 𝒜 a c := by
+  rw [← CStarModule.star_inner (A := 𝒜), CStarModule.inner_smul_right_complex, star_smul,
+    CStarModule.star_inner]
+  rfl
+
+/-- Definiteness: the 𝒜-valued inner product separates the points of a
+pre-Hilbert 𝒜-module.  (Auxiliary for **36V**.) -/
+private theorem ext_inner_left' {a b : X} (h : ∀ c : X, inner 𝒜 a c = inner 𝒜 b c) :
+    a = b := by
+  have hsub : ∀ c : X, inner 𝒜 (a - b) c = 0 := by
+    intro c
+    have h1 : a - b = a + ((-1 : ℂ) • b) := by
+      rw [neg_one_smul]; exact (sub_eq_add_neg a b)
+    rw [h1, inner_add_left' (𝒜 := 𝒜), inner_smul_left' (𝒜 := 𝒜), h c]
+    simp
+  exact sub_eq_zero.mp (CStarModule.inner_self.mp (hsub (a - b)))
+
+/-- **36V** (`chilb-form-representation`, cstar.tex:6118, Proposition): for
 every bounded form `[·,·] : X × Y → 𝒜` on self-dual Hilbert 𝒜-modules `X` and
 `Y` there is a unique adjointable bounded module map `T : X → Y` with
-`[x, y] = ⟪T x, y⟫` for all `x ∈ X`, `y ∈ Y`. -/
-theorem chilb_form_representation (hX : SelfDual 𝒜 X) (hY : SelfDual 𝒜 Y)
+`[x, y] = ⟪T x, y⟫` for all `x ∈ X`, `y ∈ Y`.
+
+**Completeness restored.**  The source says *Hilbert* 𝒜-modules, and a Hilbert
+𝒜-module is by definition (cstar.tex 32I) a pre-Hilbert module that is
+*complete*; our `CStarModule` hypotheses only give the pre-Hilbert structure.
+The thesis's proof genuinely needs it — it obtains boundedness of `T` and `S`
+from **35VI**, which is false without completeness (**35IX**) — so
+`[CompleteSpace X]` is added here.  One of the two suffices, by 35VI. -/
+theorem chilb_form_representation [CompleteSpace X]
+    (hX : SelfDual 𝒜 X) (hY : SelfDual 𝒜 Y)
     {B : X → Y → 𝒜} (hB : IsBoundedForm 𝒜 B) :
     ∃! T : X →ₗ[ℂ] Y, IsBoundedModuleMap 𝒜 T ∧
       (∃ S : Y →ₗ[ℂ] X, ∀ (x : X) (y : Y), inner 𝒜 (T x) y = inner 𝒜 x (S y)) ∧
-      ∀ (x : X) (y : Y), B x y = inner 𝒜 (T x) y :=
-  sorry
+      ∀ (x : X) (y : Y), B x y = inner 𝒜 (T x) y := by
+  classical
+  -- `[x, ·]` is a bounded module map `Y → 𝒜`, so self-duality of `Y` represents it
+  have hTex : ∀ x : X, ∃ t : Y, ∀ y : Y, B x y = inner 𝒜 t y := by
+    intro x
+    obtain ⟨r, hr, hrB⟩ := hB.bddModuleMap_right x
+    obtain ⟨t, ht⟩ := hY r hr
+    exact ⟨t, fun y => by rw [← hrB, ht]⟩
+  have hSex : ∀ y : Y, ∃ s : X, ∀ x : X, star (B x y) = inner 𝒜 s x := by
+    intro y
+    obtain ⟨r, hr, hrB⟩ := hB.bddModuleMap_left_star y
+    obtain ⟨s, hs⟩ := hX r hr
+    exact ⟨s, fun x => by rw [← hrB, hs]⟩
+  choose T₀ hT₀ using hTex
+  choose S₀ hS₀ using hSex
+  -- the form is additive/conjugate-homogeneous/𝒜-linear in its first argument …
+  have hBleft : ∀ y : Y, ∃ r : X →ₗ[ℂ] 𝒜, IsBoundedModuleMap 𝒜 r ∧
+      ∀ x : X, r x = star (B x y) := hB.bddModuleMap_left_star
+  -- … which transfers to `T₀` through the definiteness of the inner product
+  have hTadd : ∀ x x' : X, T₀ (x + x') = T₀ x + T₀ x' := by
+    intro x x'
+    refine ext_inner_left' (𝒜 := 𝒜) fun y => ?_
+    obtain ⟨r, -, hrB⟩ := hBleft y
+    have hB' : B (x + x') y = B x y + B x' y := by
+      have h := congrArg star (map_add r x x')
+      rw [hrB, hrB, hrB, star_add, star_star, star_star, star_star] at h
+      exact h
+    rw [inner_add_left' (𝒜 := 𝒜), ← hT₀, ← hT₀, ← hT₀]
+    exact hB'
+  have hTsmul : ∀ (c : ℂ) (x : X), T₀ (c • x) = c • T₀ x := by
+    intro c x
+    refine ext_inner_left' (𝒜 := 𝒜) fun y => ?_
+    obtain ⟨r, -, hrB⟩ := hBleft y
+    have h := congrArg star (map_smul r c x)
+    rw [hrB, hrB, star_star] at h
+    rw [inner_smul_left' (𝒜 := 𝒜), ← hT₀, ← hT₀, h, star_smul, star_star]
+    rfl
+  set T : X →ₗ[ℂ] Y := { toFun := T₀, map_add' := hTadd, map_smul' := hTsmul } with hTdef
+  have hTapp : ∀ x : X, T x = T₀ x := fun _ => rfl
+  -- the same for `S₀`, using that `[x, ·]` is linear
+  have hBright : ∀ x : X, ∃ r : Y →ₗ[ℂ] 𝒜, IsBoundedModuleMap 𝒜 r ∧
+      ∀ y : Y, r y = B x y := hB.bddModuleMap_right
+  have hSadd : ∀ y y' : Y, S₀ (y + y') = S₀ y + S₀ y' := by
+    intro y y'
+    refine ext_inner_left' (𝒜 := 𝒜) fun x => ?_
+    obtain ⟨r, -, hrB⟩ := hBright x
+    have hB' : B x (y + y') = B x y + B x y' := by
+      rw [← hrB, ← hrB, ← hrB, map_add]
+    rw [inner_add_left' (𝒜 := 𝒜), ← hS₀ y x, ← hS₀ y' x, ← hS₀ (y + y') x, hB', star_add]
+  have hSsmul : ∀ (c : ℂ) (y : Y), S₀ (c • y) = c • S₀ y := by
+    intro c y
+    refine ext_inner_left' (𝒜 := 𝒜) fun x => ?_
+    obtain ⟨r, -, hrB⟩ := hBright x
+    have hB' : B x (c • y) = c • B x y := by rw [← hrB, ← hrB, map_smul]
+    rw [inner_smul_left' (𝒜 := 𝒜), ← hS₀ y x, ← hS₀ (c • y) x, hB', star_smul]
+    rfl
+  set S : Y →ₗ[ℂ] X := { toFun := S₀, map_add' := hSadd, map_smul' := hSsmul } with hSdef
+  have hSapp : ∀ y : Y, S y = S₀ y := fun _ => rfl
+  -- `T` and `S` are adjoint …
+  have hadj : ∀ (x : X) (y : Y), inner 𝒜 (T x) y = inner 𝒜 x (S y) := by
+    intro x y
+    rw [hTapp, hSapp, ← hT₀, ← CStarModule.star_inner (A := 𝒜) (S₀ y) x, ← hS₀, star_star]
+  -- … hence bounded, by **35VI**
+  have hcont := hellinger_toeplitz (𝒜 := 𝒜) T S hadj
+  have hTmod : ∀ (a : 𝒜) (x : X), T (a • x) = a • T x := by
+    intro a x
+    refine ext_inner_left' (𝒜 := 𝒜) fun y => ?_
+    obtain ⟨r, hr, hrB⟩ := hBleft y
+    have h := congrArg star (hr.1 a x)
+    rw [hrB, hrB, star_star] at h
+    have hB' : B (a • x) y = B x y * star a := by
+      rw [h, smul_eq_mul, star_mul, star_star]
+    have hsm : inner 𝒜 (a • T₀ x) y = inner 𝒜 (T₀ x) y * star a := by
+      rw [← CStarModule.star_inner (A := 𝒜) y (a • T₀ x),
+        CStarModule.inner_op_smul_right, star_mul,
+        CStarModule.star_inner (A := 𝒜) y (T₀ x)]
+    rw [hTapp, hTapp, ← hT₀, hsm, ← hT₀]
+    exact hB'
+  refine ⟨T, ⟨⟨hTmod, hcont.1⟩, ⟨S, hadj⟩, fun x y => by rw [hTapp]; exact hT₀ x y⟩, ?_⟩
+  rintro T' ⟨-, -, hT'⟩
+  refine LinearMap.ext fun x => ?_
+  refine ext_inner_left' (𝒜 := 𝒜) fun y => ?_
+  rw [← hT' x y, hTapp]
+  exact hT₀ x y
 
 end HilbertModules
 
 /-! ## Parsec 370: The weak operator topology and directed suprema in B(H)
 
-**37I** (cstar.tex:6066): "another consequence of 35II is this" — nothing to
+**37I** (cstar.tex:6146): "another consequence of 35II is this" — nothing to
 formalize. -/
 
 section BH
 
 variable {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
 
-/-- **37II** (`hilb-weakly-bounded-complete`, cstar.tex:6070, Proposition):
+/-- **37II** (`hilb-weakly-bounded-complete`, cstar.tex:6150, Proposition):
 given a net `(y_α)_α` in a Hilbert space `H` for which `⟪y_α, x⟫` is Cauchy
 *and bounded* for every `x ∈ H`, there is a unique `y ∈ H` with
 `⟪y, x⟫ = lim_α ⟪y_α, x⟫` for all `x ∈ H`.  (**37IV**, Remark, not converted:
@@ -213,7 +405,7 @@ theorem hilb_weakly_bounded_complete {ι : Type*} {l : Filter ι} [l.NeBot]
     rw [InnerProductSpace.toDual_symm_apply]
     exact tendsto_nhds_unique (hz x) (hφ x)
 
-/-! **37V** (`swot`, cstar.tex:6140, Definition):
+/-! **37V** (`swot`, cstar.tex:6220, Definition):
 
 1. the *weak operator topology (WOT)* on B(H) is the least topology making
    `T ↦ ⟪x, T x⟫ : B(H) → ℂ` continuous for every `x ∈ H`.  In Mathlib the
@@ -244,7 +436,7 @@ private theorem inner_polarization (S : H →L[ℂ] H) (x y : H) : ⟪y, S x⟫ 
   rw [Complex.I_sq]
   ring
 
-/-- **37V** (`swot`, cstar.tex:6140, Definition), part 1, embedded claim: a
+/-- **37V** (`swot`, cstar.tex:6220, Definition), part 1, embedded claim: a
 net `(T_α)_α` converges to `T` in B(H) with respect to the weak operator
 topology (Mathlib: `H →WOT[ℂ] H`) if and only if `⟪x, T_α x⟫ → ⟪x, T x⟫` for
 every `x ∈ H` (the thesis's diagonal condition; equivalent to Mathlib's
@@ -269,7 +461,7 @@ theorem swot_tendsto_iff {ι : Type*} {l : Filter ι} (T : ι → H →L[ℂ] H)
       ((h (x + Complex.I • y)).const_mul Complex.I)).sub
       ((h (x - Complex.I • y)).const_mul Complex.I)).div_const 4
 
-/-- **37VII** (`bh-wot-bounded-complete`, cstar.tex:6180, Lemma): if
+/-- **37VII** (`bh-wot-bounded-complete`, cstar.tex:6260, Lemma): if
 `(T_α)_α` is a net of bounded operators on a Hilbert space `H` such that
 `⟪x, T_α x⟫` is Cauchy and bounded for every `x ∈ H`, then `(T_α)_α`
 WOT-converges to some bounded operator `T ∈ B(H)`. -/
@@ -456,7 +648,7 @@ private theorem re_diag_tendsto_of_wot {D : Set (selfAdjoint (H →L[ℂ] H))}
       (𝓝 (⟪x, (T' : H →L[ℂ] H) x⟫).re) :=
   (Complex.continuous_re.tendsto _).comp ((swot_tendsto_iff _ _).mp hT' x)
 
-/-- **37IX** (`hilb-suprema`, cstar.tex:6223, Proposition), part 1: an upwards
+/-- **37IX** (`hilb-suprema`, cstar.tex:6303, Proposition), part 1: an upwards
 directed set `D` of self-adjoint operators on a Hilbert space `H` with
 `sup_{T ∈ D} ⟪x, T x⟫ < ∞` for all `x ∈ H` — viewed as the net `(T)_{T ∈ D}`
 indexed by itself — converges in the weak operator topology to some
@@ -549,7 +741,7 @@ theorem hilb_suprema_1 (D : Set (selfAdjoint (H →L[ℂ] H)))
   filter_upwards [hFev] with T hT
   rw [hT]
 
-/-- **37IX** (`hilb-suprema`, cstar.tex:6223, Proposition), part 2: the WOT
+/-- **37IX** (`hilb-suprema`, cstar.tex:6303, Proposition), part 2: the WOT
 limit `T'` of such a directed set `D` (cf. `hilb_suprema_1`) is the supremum
 of `D` among the self-adjoint operators. -/
 theorem hilb_suprema_2 (D : Set (selfAdjoint (H →L[ℂ] H)))
@@ -576,7 +768,7 @@ theorem hilb_suprema_2 (D : Set (selfAdjoint (H →L[ℂ] H)))
     refine le_of_tendsto (re_diag_tendsto_of_wot hT' x) (Eventually.of_forall fun T => ?_)
     exact re_inner_mono (hS T.2) x
 
-/-- **37IX** (`hilb-suprema`, cstar.tex:6223, Proposition), part 3: for the
+/-- **37IX** (`hilb-suprema`, cstar.tex:6303, Proposition), part 3: for the
 WOT limit `T'` of such a directed set `D` one has
 `⟪x, T' x⟫ = sup_{T ∈ D} ⟪x, T x⟫` for all `x ∈ H` (stated as an `IsLUB` in ℂ
 with the order from `ComplexOrder`). -/
@@ -609,7 +801,7 @@ theorem hilb_suprema_3 (D : Set (selfAdjoint (H →L[ℂ] H)))
     refine le_of_tendsto (re_diag_tendsto_of_wot hT' x) (Eventually.of_forall fun T => ?_)
     exact (Complex.le_def.mp (hc ⟨T.1, T.2, rfl⟩)).1
 
-/-- **37XI** (cstar.tex:6281, Definition), well-definedness claim: every
+/-- **37XI** (cstar.tex:6376, Definition), well-definedness claim: every
 nonempty norm-bounded directed subset `D` of the self-adjoint part of B(H)
 has a supremum there (this repackages **37IX**: norm-boundedness gives the
 pointwise bounds `sup_{T ∈ D} ⟪x, T x⟫ < ∞`). -/
@@ -635,7 +827,7 @@ theorem exists_isLUB_of_normBounded_directed (D : Set (selfAdjoint (H →L[ℂ] 
   obtain ⟨T', hT'⟩ := hilb_suprema_1 D hne hdir hb
   exact ⟨T', hilb_suprema_2 D hne hdir hb T' hT'⟩
 
-/-- **37XI** (cstar.tex:6281, Definition): the supremum `⋁ D` of a nonempty
+/-- **37XI** (cstar.tex:6376, Definition): the supremum `⋁ D` of a nonempty
 norm-bounded directed subset `D` of the self-adjoint part of B(H), which
 exists by **37IX** (`exists_isLUB_of_normBounded_directed`). -/
 noncomputable def bhSup (D : Set (selfAdjoint (H →L[ℂ] H)))
@@ -644,7 +836,7 @@ noncomputable def bhSup (D : Set (selfAdjoint (H →L[ℂ] H)))
     selfAdjoint (H →L[ℂ] H) :=
   (exists_isLUB_of_normBounded_directed D h.1 h.2.1 h.2.2).choose
 
-/-- **37XI** (cstar.tex:6281, Definition): `⋁ D` is the least upper bound of
+/-- **37XI** (cstar.tex:6376, Definition): `⋁ D` is the least upper bound of
 `D`. -/
 theorem isLUB_bhSup (D : Set (selfAdjoint (H →L[ℂ] H)))
     (h : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧
@@ -654,7 +846,7 @@ theorem isLUB_bhSup (D : Set (selfAdjoint (H →L[ℂ] H)))
 
 /-! ## Parsec 380: Normal functionals on B(H) -/
 
-/-- **38I** (`bh-normal`, cstar.tex:6292, Definition): a positive functional
+/-- **38I** (`bh-normal`, cstar.tex:6387, Definition): a positive functional
 `ω : B(H) → ℂ` is *normal* when `ω (⋁ D) = ⋁_{T ∈ D} ω T` for every bounded
 directed subset `D` of the self-adjoint part of B(H).  This is precisely
 `Theses.PreservesDirSups` from `Theses.Common` (specialized to `A = B(H)`,
@@ -662,13 +854,13 @@ where every nonempty bounded directed set of self-adjoint elements actually
 has a supremum, by **37IX**); the *normal positive functionals* on B(H) are
 `Theses.NPFunctional (H →L[ℂ] H)`.
 
-**38Ia** (`bh-normal-abbreviation`, cstar.tex:6300, Notation): "n" abbreviates
+**38Ia** (`bh-normal-abbreviation`, cstar.tex:6395, Notation): "n" abbreviates
 "normal": np-map, npu-map, … — cf. `Theses.NPFunctional`; not converted
 separately. -/
 abbrev BHNormal (ω : (H →L[ℂ] H) → ℂ) : Prop :=
   PreservesDirSups ω
 
-/-- **38II** (cstar.tex:6307, Example): all vector functionals `⟪x, (·) x⟫` on
+/-- **38II** (cstar.tex:6402, Example): all vector functionals `⟪x, (·) x⟫` on
 B(H) are normal, by **37IX**. -/
 theorem vector_functional_normal (x : H) :
     BHNormal (fun T : H →L[ℂ] H => ⟪x, T x⟫) := by
@@ -716,7 +908,7 @@ private theorem re_inner_le_norm_mul (T : H →L[ℂ] H) (x : H) :
     _ ≤ ‖x‖ * (‖T‖ * ‖x‖) := by gcongr; exact T.le_opNorm _
     _ = ‖T‖ * ‖x‖ ^ 2 := by ring
 
-/-- **38III** (`bh-normal-effects`, cstar.tex:6312, Exercise): a positive
+/-- **38III** (`bh-normal-effects`, cstar.tex:6407, Exercise): a positive
 functional `ω : B(H) → ℂ` is normal provided it preserves suprema of directed
 sets of *effects* (self-adjoint `T` with `0 ≤ T ≤ 1`). -/
 theorem bh_normal_effects (ω : (H →L[ℂ] H) →ₚ[ℂ] ℂ)
@@ -868,7 +1060,24 @@ theorem bh_normal_effects (ω : (H →L[ℂ] H) →ₚ[ℂ] ℂ)
     rw [h9, h9] at h8
     exact (sub_le_sub_iff_right _).mp h8
 
-/-- **38IV** (`bh-functional-lemma`, cstar.tex:6321, Lemma), part 1
+/-- Monotonicity of the diagonal values, as an inequality in `ℂ` (the
+`ComplexOrder`).  Note that `S ≤ T` does not force `S` and `T` themselves to be
+self-adjoint — only their difference — so this is not a corollary of
+`re_inner_mono`.  (Auxiliary for **38IV**.) -/
+private theorem inner_le_inner_of_le {S T : H →L[ℂ] H} (h : S ≤ T) (y : H) :
+    (⟪y, S y⟫ : ℂ) ≤ ⟪y, T y⟫ := by
+  have h0 : (0 : H →L[ℂ] H) ≤ T - S := sub_nonneg.mpr h
+  have hp := (ContinuousLinearMap.isPositive_iff_complex (T - S)).mp
+    ((ContinuousLinearMap.nonneg_iff_isPositive _).mp h0) y
+  have hswap : (⟪y, (T - S) y⟫ : ℂ) = ⟪(T - S) y, y⟫ := by
+    rw [← inner_conj_symm y ((T - S) y), ← hp.1, Complex.conj_ofReal, hp.1]
+  have hnn : (0 : ℂ) ≤ ⟪y, (T - S) y⟫ := by
+    rw [hswap, ← hp.1, ← Complex.ofReal_zero, Complex.real_le_real]
+    exact hp.2
+  rw [ContinuousLinearMap.sub_apply, inner_sub_right] at hnn
+  exact sub_nonneg.mp hnn
+
+/-- **38IV** (`bh-functional-lemma`, cstar.tex:6416, Lemma), part 1
 (convergence): for a sequence `x₁, x₂, …` in a Hilbert space `H` with
 `∑ₙ ‖xₙ‖² < ∞` and any `T ∈ B(H)`, the sum `∑ₙ ⟪xₙ, T xₙ⟫` converges. -/
 theorem bh_functional_lemma_1 (x : ℕ → H) (hx : Summable fun n => ‖x n‖ ^ 2)
@@ -879,14 +1088,102 @@ theorem bh_functional_lemma_1 (x : ℕ → H) (hx : Summable fun n => ‖x n‖ 
     _ ≤ ‖x n‖ * (‖T‖ * ‖x n‖) := by gcongr; exact T.le_opNorm _
     _ = ‖T‖ * ‖x n‖ ^ 2 := by ring
 
-/-- **38IV** (`bh-functional-lemma`, cstar.tex:6321, Lemma), part 2: every
+/-- **38IV** (`bh-functional-lemma`, cstar.tex:6416, Lemma), part 2: every
 sequence `x₁, x₂, …` in a Hilbert space `H` with `∑ₙ ‖xₙ‖² < ∞` gives an
 np-map (normal positive functional) `ω : B(H) → ℂ` defined by
 `ω T = ∑ₙ ⟪xₙ, T xₙ⟫`. -/
 theorem bh_functional_lemma_2 (x : ℕ → H) (hx : Summable fun n => ‖x n‖ ^ 2) :
     ∃ ω : NPFunctional (H →L[ℂ] H),
-      ∀ T : H →L[ℂ] H, ω T = ∑' n, ⟪x n, T (x n)⟫ :=
-  sorry
+      ∀ T : H →L[ℂ] H, ω T = ∑' n, ⟪x n, T (x n)⟫ := by
+  classical
+  have hsum : ∀ T : H →L[ℂ] H, Summable fun n => ⟪x n, T (x n)⟫ :=
+    fun T => bh_functional_lemma_1 x hx T
+  refine ⟨⟨{ toFun := fun T => ∑' n, ⟪x n, T (x n)⟫
+             map_add' := fun S T => by
+               rw [← (hsum S).tsum_add (hsum T)]
+               exact tsum_congr fun n => by simp [inner_add_right]
+             map_smul' := fun c T => by
+               rw [RingHom.id_apply, smul_eq_mul, ← tsum_mul_left]
+               exact tsum_congr fun n => by simp [inner_smul_right]
+             monotone' := fun S T hST =>
+               (hsum S).tsum_le_tsum (fun n => inner_le_inner_of_le hST (x n)) (hsum T) },
+      ?_⟩, fun T => rfl⟩
+  -- Normality.  Following the thesis, we reduce to directed sets of *effects*
+  -- (**38III**), which makes every diagonal value `⟪xₙ, T xₙ⟫` nonnegative, and
+  -- then interchange the two suprema.
+  refine bh_normal_effects _ ?_
+  intro D s hne hdir heff hlub
+  haveI : Nonempty D := hne.to_subtype
+  haveI : IsDirectedOrder D := directedOn_iff_isDirectedOrder.mp hdir
+  set r : ℕ → selfAdjoint (H →L[ℂ] H) → ℝ :=
+    fun n T => (⟪x n, (T : H →L[ℂ] H) (x n)⟫).re with hr
+  have hreal : ∀ (n : ℕ) (T : selfAdjoint (H →L[ℂ] H)),
+      ((r n T : ℝ) : ℂ) = ⟪x n, (T : H →L[ℂ] H) (x n)⟫ :=
+    fun n T => inner_self_ofReal_re T.2 (x n)
+  have hsumr : ∀ T : selfAdjoint (H →L[ℂ] H), Summable fun n => r n T := fun T =>
+    (hsum (T : H →L[ℂ] H)).map Complex.reCLM Complex.reCLM.continuous
+  have htsum : ∀ T : selfAdjoint (H →L[ℂ] H),
+      ((∑' n, r n T : ℝ) : ℂ) = ∑' n, ⟪x n, (T : H →L[ℂ] H) (x n)⟫ := fun T => by
+    rw [Complex.ofReal_tsum]
+    exact tsum_congr fun n => hreal n T
+  -- the elements of `D`, and hence their supremum, are positive
+  have hnnD : ∀ T ∈ D, ∀ n, 0 ≤ r n T := by
+    intro T hT n
+    simpa using re_inner_mono (heff T hT).1 (x n)
+  have hnns : ∀ n, 0 ≤ r n s := by
+    obtain ⟨d₀, hd₀⟩ := hne
+    intro n
+    exact (hnnD d₀ hd₀ n).trans (re_inner_mono (Subtype.coe_le_coe.mpr (hlub.1 hd₀)) (x n))
+  -- each vector functional is normal (**38II**); transported to `ℝ`
+  have hLR : ∀ n : ℕ, IsLUB (Set.range fun T : D => r n T.1) (r n s) := by
+    intro n
+    have h := vector_functional_normal (x n) D s hne hdir hlub
+    constructor
+    · rintro _ ⟨T, rfl⟩
+      exact (Complex.le_def.mp (h.1 ⟨T.1, T.2, rfl⟩)).1
+    · intro cr hcr
+      have hub : ((cr : ℝ) : ℂ) ∈ upperBounds
+          ((fun d : selfAdjoint (H →L[ℂ] H) => ⟪x n, (d : H →L[ℂ] H) (x n)⟫) '' D) := by
+        rintro _ ⟨d, hd, rfl⟩
+        show (⟪x n, (d : H →L[ℂ] H) (x n)⟫ : ℂ) ≤ ((cr : ℝ) : ℂ)
+        rw [← hreal n d, Complex.real_le_real]
+        exact hcr ⟨⟨d, hd⟩, rfl⟩
+      have h2 : (⟪x n, (s : H →L[ℂ] H) (x n)⟫ : ℂ) ≤ ((cr : ℝ) : ℂ) := h.2 hub
+      rw [← hreal n s, Complex.real_le_real] at h2
+      exact h2
+  have hmonoR : ∀ n : ℕ, Monotone fun T : D => r n T.1 := fun n _ _ hST =>
+    re_inner_mono (Subtype.coe_le_coe.mpr (Subtype.coe_le_coe.mpr hST)) (x n)
+  have htend : ∀ n : ℕ, Tendsto (fun T : D => r n T.1) atTop (𝓝 (r n s)) := fun n =>
+    tendsto_atTop_isLUB (hmonoR n) (hLR n)
+  constructor
+  · rintro _ ⟨d, hd, rfl⟩
+    exact (hsum _).tsum_le_tsum
+      (fun n => inner_le_inner_of_le (Subtype.coe_le_coe.mpr (hlub.1 hd)) (x n)) (hsum _)
+  · intro c hc
+    -- `c` dominates the (real) values `ω d` for `d ∈ D`, hence is itself real
+    obtain ⟨d₀, hd₀⟩ := hne
+    have hcre : ∀ d ∈ D, (∑' n, r n d) ≤ c.re := by
+      intro d hd
+      have h := hc ⟨d, hd, rfl⟩
+      change (∑' n, ⟪x n, (d : H →L[ℂ] H) (x n)⟫) ≤ c at h
+      rw [← htsum d] at h
+      exact (Complex.le_def.mp h).1
+    have hcim : c.im = 0 := by
+      have h := hc ⟨d₀, hd₀, rfl⟩
+      change (∑' n, ⟪x n, (d₀ : H →L[ℂ] H) (x n)⟫) ≤ c at h
+      rw [← htsum d₀] at h
+      simpa using (Complex.le_def.mp h).2.symm
+    show (∑' n, ⟪x n, (s : H →L[ℂ] H) (x n)⟫) ≤ c
+    rw [← htsum s, ← Complex.re_add_im c, hcim]
+    simp only [Complex.ofReal_zero, zero_mul, add_zero, Complex.real_le_real]
+    -- the interchange of suprema: each finite partial sum of the `r n s` is a
+    -- limit of the corresponding partial sums along `D`, and those are bounded
+    -- by `c.re`
+    refine (hsumr s).tsum_le_of_sum_le fun F => ?_
+    refine le_of_tendsto (tendsto_finsetSum F fun n _ => htend n) (Eventually.of_forall ?_)
+    intro T
+    refine le_trans ?_ (hcre T.1 T.2)
+    exact (hsumr T.1).sum_le_tsum F (fun n _ => hnnD T.1 T.2 n)
 
 /-- The vector functional `⟪x, (·) x⟫ : B(H) → ℂ` bundled as a continuous
 linear functional (auxiliary for **38VI**). -/
@@ -899,7 +1196,7 @@ theorem vectorFunctionalCLM_apply (x : H) (T : H →L[ℂ] H) :
     vectorFunctionalCLM x T = ⟪x, T x⟫ :=
   rfl
 
-/-- **38VI** (`vector-functional-convergence`, cstar.tex:6366, Exercise),
+/-- **38VI** (`vector-functional-convergence`, cstar.tex:6461, Exercise),
 part 1: for a family `(x_α)_α` in a Hilbert space `H`, `∑_α ‖x_α‖² < ∞` if and
 only if `∑_α ⟪x_α, (·) x_α⟫` converges with respect to the operator norm to
 some bounded functional on B(H). -/
@@ -1000,10 +1297,10 @@ theorem vector_functional_convergence_2 {ι : Type*} {l : Filter ι} [l.NeBot]
 
 /-! ## Parsec 390: Orthonormal bases and the normality theorem for B(H)
 
-**39I** (cstar.tex:6392): introduction to the final project — every normal
+**39I** (cstar.tex:6482): introduction to the final project — every normal
 positive functional on B(H) is `∑ₙ ⟪xₙ, (·) xₙ⟫`; nothing to formalize. -/
 
-/-- **39II** (cstar.tex:6403, Definition): a subset `E` of a Hilbert space is
+/-- **39II** (cstar.tex:6493, Definition): a subset `E` of a Hilbert space is
 *orthonormal* if `⟪e, e'⟫ = 0` for distinct `e, e' ∈ E` and `⟪e, e⟫ = 1` for
 `e ∈ E` (Mathlib: `Orthonormal ℂ ((↑) : E → H)`); a *maximal* orthonormal
 subset is called an *orthonormal basis* (cf. Mathlib's `HilbertBasis`, and
@@ -1013,7 +1310,7 @@ def IsOrthonormalBasis (E : Set H) : Prop :=
   Orthonormal ℂ ((↑) : E → H) ∧
     ∀ E' : Set H, E ⊆ E' → Orthonormal ℂ ((↑) : E' → H) → E' = E
 
-/-- **39IV** (`orthonormal`, cstar.tex:6427, Proposition), part 1 (Bessel's
+/-- **39IV** (`orthonormal`, cstar.tex:6517, Proposition), part 1 (Bessel's
 inequality): for an orthonormal subset `E` of a Hilbert space `H` and `x ∈ H`,
 `∑_{e ∈ E} |⟪e, x⟫|² ≤ ‖x‖²` (the sum in particular converges).  Mathlib:
 `Orthonormal.tsum_inner_products_le`. -/
@@ -1022,7 +1319,7 @@ theorem orthonormal_1 (E : Set H) (hE : Orthonormal ℂ ((↑) : E → H)) (x : 
       ∑' e : E, ‖⟪(e : H), x⟫‖ ^ 2 ≤ ‖x‖ ^ 2 :=
   ⟨hE.inner_products_summable x, hE.tsum_inner_products_le x⟩
 
-/-- **39IV** (`orthonormal`, cstar.tex:6427, Proposition), part 2: for an
+/-- **39IV** (`orthonormal`, cstar.tex:6517, Proposition), part 2: for an
 orthonormal subset `E` and `x ∈ H`, the sum `∑_{e ∈ E} ⟪e, x⟫ e` converges in
 `H`. -/
 theorem orthonormal_2 (E : Set H) (hE : Orthonormal ℂ ((↑) : E → H)) (x : H) :
@@ -1033,7 +1330,7 @@ theorem orthonormal_2 (E : Set H) (hE : Orthonormal ℂ ((↑) : E → H)) (x : 
   simp only [LinearIsometry.toSpanSingleton_apply] at hs
   exact ⟨_, hs.hasSum⟩
 
-/-- **39IV** (`orthonormal`, cstar.tex:6427, Proposition), part 3: if `E` is a
+/-- **39IV** (`orthonormal`, cstar.tex:6517, Proposition), part 3: if `E` is a
 maximal orthonormal subset (an orthonormal basis), then
 `∑_{e ∈ E} ⟪e, x⟫ e = x` for every `x ∈ H`. -/
 theorem orthonormal_3 (E : Set H) (hE : IsOrthonormalBasis E) (x : H) :
@@ -1045,7 +1342,7 @@ theorem orthonormal_3 (E : Set H) (hE : IsOrthonormalBasis E) (x : H) :
   have hb := (HilbertBasis.mkOfOrthogonalEqBot hE.1 hsp).hasSum_repr x
   simpa [HilbertBasis.repr_apply_apply, HilbertBasis.coe_mkOfOrthogonalEqBot] using hb
 
-/-- **39IV** (`orthonormal`, cstar.tex:6427, Proposition), part 4 (Parseval's
+/-- **39IV** (`orthonormal`, cstar.tex:6517, Proposition), part 4 (Parseval's
 identity): if `E` is an orthonormal basis, then
 `∑_{e ∈ E} |⟪e, x⟫|² = ‖x‖²` for every `x ∈ H`. -/
 theorem orthonormal_4 (E : Set H) (hE : IsOrthonormalBasis E) (x : H) :
@@ -1062,13 +1359,10 @@ theorem orthonormal_4 (E : Set H) (hE : IsOrthonormalBasis E) (x : H) :
   simp only [key] at h
   exact_mod_cast h
 
-/-- The rank-one operator `|x⟩⟨y| : z ↦ ⟪y, z⟫ • x` (**4XIX**, `ketbra`,
-cstar.tex:671; re-declared privately from `Theses.A.CStar.Basic`, which this
-file does not import). -/
-private noncomputable def ketbra (x y : H) : H →L[ℂ] H :=
-  (innerSL ℂ y).smulRight x
+/-! The rank-one operator `|x⟩⟨y| : z ↦ ⟪y, z⟫ • x` is **4XIX** (`ketbra`,
+cstar.tex:671), defined in `Theses.A.CStar.Basic` and imported here. -/
 
-/-- **39VI** (`sum-ketbras`, cstar.tex:6500, Exercise), part 1: for an
+/-- **39VI** (`sum-ketbras`, cstar.tex:6590, Exercise), part 1: for an
 orthonormal basis `E` of a Hilbert space `H`, `∑_{e ∈ E} |e⟩⟨e|` converges to
 `1` in the weak operator topology. -/
 theorem sum_ketbras_1 (E : Set H) (hE : IsOrthonormalBasis E) :
@@ -1089,7 +1383,7 @@ theorem sum_ketbras_1 (E : Set H) (hE : IsOrthonormalBasis E) :
   have h := (orthonormal_3 E hE x).mapL (innerSL ℂ y)
   simpa [key, inner_sum, ContinuousLinearMapWOT.ofCLM_apply, HasSum] using h
 
-/-- **39VI** (`sum-ketbras`, cstar.tex:6500, Exercise), part 2:
+/-- **39VI** (`sum-ketbras`, cstar.tex:6590, Exercise), part 2:
 `∑_{e ∈ E} |e⟩⟨e| = 1` also in the sense that the directed set of partial sums
 `∑_{e ∈ F} |e⟩⟨e|` over finite `F ⊆ E` has `1` as its supremum in B(H). -/
 theorem sum_ketbras_2 (E : Set H) (hE : IsOrthonormalBasis E) :
@@ -1186,7 +1480,95 @@ private theorem ketbra_sum_mono {E : Set H} {F G : Finset E} (h : F ⊆ G) :
     rw [ketbra_sum_inner, ketbra_sum_inner, Complex.ofReal_re, Complex.ofReal_re]
     exact Finset.sum_le_sum_of_subset_of_nonneg h fun _ _ _ => by positivity
 
-/-- **39VI** (`sum-ketbras`, cstar.tex:6500, Exercise), part 3: consequently
+/-- The finite sums of `|e⟩⟨e|` are positive.  (Auxiliary for **39VII**.) -/
+private theorem ketbra_sum_nonneg {E : Set H} (F : Finset E) :
+    (0 : H →L[ℂ] H) ≤ ∑ e ∈ F, ketbra (e : H) (e : H) := by
+  simpa using ketbra_sum_mono (F := (∅ : Finset E)) (G := F) (by simp)
+
+/-- The finite sums of `|e⟩⟨e|` over an orthonormal set are below `1` (Bessel).
+(Auxiliary for **39VII**.) -/
+private theorem ketbra_sum_le_one {E : Set H} (hE : Orthonormal ℂ ((↑) : E → H))
+    (F : Finset E) : (∑ e ∈ F, ketbra (e : H) (e : H)) ≤ 1 :=
+  le_of_re_inner (ketbra_sum_isSelfAdjoint F) (star_one _) fun x => by
+    rw [ketbra_sum_inner F x, Complex.ofReal_re]
+    have h : (⟪x, (1 : H →L[ℂ] H) x⟫).re = ‖x‖ ^ 2 := by
+      simpa using inner_self_eq_norm_sq (𝕜 := ℂ) x
+    rw [h]
+    exact hE.sum_inner_products_le x
+
+/-- Consequently `‖∑_{e ∈ F} |e⟩⟨e|‖ ≤ 1`.  (Auxiliary for **39VII**.) -/
+private theorem ketbra_sum_norm_le_one {E : Set H} (hE : Orthonormal ℂ ((↑) : E → H))
+    (F : Finset E) : ‖∑ e ∈ F, ketbra (e : H) (e : H)‖ ≤ 1 := by
+  refine le_trans (CStarAlgebra.norm_le_norm_of_nonneg_of_le (ketbra_sum_nonneg F)
+    (ketbra_sum_le_one hE F)) ?_
+  simpa [ContinuousLinearMap.one_def] using
+    (ContinuousLinearMap.norm_id_le : ‖ContinuousLinearMap.id ℂ H‖ ≤ 1)
+
+/-- The sandwich `P A P` of an operator between the projections
+`P = ∑_{e ∈ F} |e⟩⟨e|` expands as `∑_{e, e' ∈ F} ⟪e, A e'⟫ |e⟩⟨e'|`.  This is
+the identity opening the thesis's proof of **39VII**. -/
+private theorem ketbra_sum_sandwich {E : Set H} (F : Finset E) (A : H →L[ℂ] H) :
+    (∑ e ∈ F, ketbra (e : H) (e : H)) * A * (∑ e ∈ F, ketbra (e : H) (e : H))
+      = ∑ e ∈ F, ∑ e' ∈ F, (⟪(e : H), A (e' : H)⟫ : ℂ) • ketbra (e : H) (e' : H) := by
+  ext z
+  have hL : ((∑ e ∈ F, ketbra (e : H) (e : H)) * A * (∑ e ∈ F, ketbra (e : H) (e : H))) z
+      = ∑ e ∈ F, ∑ e' ∈ F, ((⟪(e' : H), z⟫ * ⟪(e : H), A (e' : H)⟫ : ℂ)) • (e : H) := by
+    change (∑ e ∈ F, ketbra (e : H) (e : H)) (A ((∑ e ∈ F, ketbra (e : H) (e : H)) z)) = _
+    rw [ketbra_sum_apply, ketbra_sum_apply, map_sum]
+    refine Finset.sum_congr rfl fun e _ => ?_
+    rw [inner_sum, Finset.sum_smul]
+    refine Finset.sum_congr rfl fun e' _ => ?_
+    rw [map_smul, inner_smul_right]
+  have hR : (∑ e ∈ F, ∑ e' ∈ F, (⟪(e : H), A (e' : H)⟫ : ℂ) • ketbra (e : H) (e' : H)) z
+      = ∑ e ∈ F, ∑ e' ∈ F, ((⟪(e : H), A (e' : H)⟫ * ⟪(e' : H), z⟫ : ℂ)) • (e : H) := by
+    rw [sum_apply]
+    refine Finset.sum_congr rfl fun e _ => ?_
+    rw [sum_apply]
+    refine Finset.sum_congr rfl fun e' _ => ?_
+    simp [ketbra, smul_smul]
+  rw [hL, hR]
+  exact Finset.sum_congr rfl fun e _ => Finset.sum_congr rfl fun e' _ => by rw [mul_comm]
+
+/-- `P = ∑_{e ∈ F} |e⟩⟨e|` is idempotent when `E` is orthonormal — it is the
+orthogonal projection onto the span of `F`.  (Auxiliary for **39VII**.) -/
+private theorem ketbra_sum_idem {E : Set H} (hE : Orthonormal ℂ ((↑) : E → H))
+    (F : Finset E) :
+    (∑ e ∈ F, ketbra (e : H) (e : H)) * (∑ e ∈ F, ketbra (e : H) (e : H))
+      = ∑ e ∈ F, ketbra (e : H) (e : H) := by
+  classical
+  have h := ketbra_sum_sandwich F (1 : H →L[ℂ] H)
+  rw [mul_one] at h
+  rw [h]
+  refine Finset.sum_congr rfl fun e he => ?_
+  have hite : ∀ e' : E, (⟪(e : H), (1 : H →L[ℂ] H) (e' : H)⟫ : ℂ) • ketbra (e : H) (e' : H)
+      = if e' = e then ketbra (e : H) (e : H) else 0 := by
+    intro e'
+    rw [IsOneApplyEqSelf.one_apply_eq_self, orthonormal_iff_ite.mp hE e e']
+    by_cases hee : e' = e
+    · subst hee; simp
+    · simp [Ne.symm hee, hee]
+  simp only [hite]
+  exact Finset.sum_ite_eq' F e (fun _ => ketbra (e : H) (e : H)) ▸ by simp [he]
+
+/-- Kadison's inequality (**30IV**.1, `omega_norm_basic_1`) for a normal
+positive functional on B(H), stated with real parts.  (Auxiliary for
+**39VII**.) -/
+private theorem npf_kadison (ω : NPFunctional (H →L[ℂ] H)) (a b : H →L[ℂ] H) :
+    ‖ω (star a * b)‖ ^ 2 ≤ (ω (star a * a)).re * (ω (star b * b)).re := by
+  have hpos : IsPositiveMap (ω.toPositiveLinearMap.toLinearMap) :=
+    fun t ht => ω.toPositiveLinearMap.map_nonneg ht
+  have hcoe : ∀ t : H →L[ℂ] H, ω.toPositiveLinearMap.toLinearMap t = ω t := fun _ => rfl
+  have h := omega_norm_basic_1 _ hpos a b
+  simp only [hcoe] at h
+  have hA : (0 : ℂ) ≤ ω (star a * a) := ω.toPositiveLinearMap.map_nonneg (star_mul_self_nonneg a)
+  have hB : (0 : ℂ) ≤ ω (star b * b) := ω.toPositiveLinearMap.map_nonneg (star_mul_self_nonneg b)
+  have hAim : (ω (star a * a)).im = 0 := by simpa using (Complex.le_def.mp hA).2.symm
+  have hBim : (ω (star b * b)).im = 0 := by simpa using (Complex.le_def.mp hB).2.symm
+  have hre := (Complex.le_def.mp h).1
+  rwa [Complex.mul_re, hAim, hBim, mul_zero, sub_zero, ← Complex.ofReal_pow,
+    Complex.ofReal_re] at hre
+
+/-- **39VI** (`sum-ketbras`, cstar.tex:6590, Exercise), part 3: consequently
 `ω 1 = ∑_{e ∈ E} ω (|e⟩⟨e|)` for every np-map `ω : B(H) → ℂ`. -/
 theorem sum_ketbras_3 (E : Set H) (hE : IsOrthonormalBasis E)
     (ω : NPFunctional (H →L[ℂ] H)) :
@@ -1256,17 +1638,273 @@ theorem sum_ketbras_3 (E : Set H) (hE : IsOrthonormalBasis E)
       ((((ω (1 : H →L[ℂ] H)).re : ℝ)) : ℂ) := Complex.hasSum_ofReal.mpr hR
   simpa only [hre, hre1] using h2
 
-/-- **39VII** (`bh-np-lemma`, cstar.tex:6521, Lemma): for a Hilbert space `H`
+/-- **39VII** (`bh-np-lemma`, cstar.tex:6611, Lemma): for a Hilbert space `H`
 with orthonormal basis `E`, a normal positive functional `ω : B(H) → ℂ`, and
-`A ∈ B(H)`, `ω A = ∑_{e, e' ∈ E} ⟪e, A e'⟫ ω (|e⟩⟨e'|)`. -/
+`A ∈ B(H)`, `ω A = ∑_{e, e' ∈ E} ⟪e, A e'⟫ ω (|e⟩⟨e'|)`.
+
+⚠️ **The double sum must be read as the limit of the square partial sums**
+`∑_{e, e' ∈ F}` over finite `F ⊆ E` — which is exactly what the thesis's proof
+establishes — and *not* as an unordered sum over `E × E`, which is what the
+thesis's own convention for `∑_{i ∈ I}` (6II) would dictate and which is
+**false**.  See ERRATA.md (39VII): already for a vector functional
+`ω = ⟪x, (·) x⟫` on `ℓ²` the family `(⟪e, A e'⟫ ω(|e⟩⟨e'|))_{e,e'}` need not be
+absolutely — hence, in `ℂ`, not unconditionally — summable; take `A` block
+diagonal with `N×N` discrete-Fourier blocks (unitary, all entries of modulus
+`N^{-1/2}`) of sizes `N_k = k⁸` and `x` constant `c_k` on the `k`-th block with
+`N_k c_k² = k⁻²`, so that `∑ ‖x‖² < ∞` while
+`∑ |A_{ee'}| |x_e| |x_{e'}| = ∑_k N_k^{3/2} c_k² = ∑_k k² = ∞`.  The square
+limit below is the form 39IX uses. -/
 theorem bh_np_lemma (E : Set H) (hE : IsOrthonormalBasis E)
     (ω : NPFunctional (H →L[ℂ] H)) (A : H →L[ℂ] H) :
-    HasSum
-      (fun p : E × E => ⟪(p.1 : H), A (p.2 : H)⟫ * ω (ketbra (p.1 : H) (p.2 : H)))
-      (ω A) :=
-  sorry
+    Tendsto (fun F : Finset E =>
+        ∑ e ∈ F, ∑ e' ∈ F, ⟪(e : H), A (e' : H)⟫ * ω (ketbra (e : H) (e' : H)))
+      atTop (𝓝 (ω A)) := by
+  classical
+  -- linearity and positivity of `ω`, phrased for its `NPFunctional` coercion
+  have hω_add : ∀ S T : H →L[ℂ] H, ω (S + T) = ω S + ω T :=
+    fun S T => map_add ω.toPositiveLinearMap S T
+  have hω_sub : ∀ S T : H →L[ℂ] H, ω (S - T) = ω S - ω T :=
+    fun S T => map_sub ω.toPositiveLinearMap S T
+  have hω_sum : ∀ (F : Finset E) (f : E → H →L[ℂ] H), ω (∑ i ∈ F, f i) = ∑ i ∈ F, ω (f i) :=
+    fun F f => map_sum ω.toPositiveLinearMap f F
+  have hω_smul : ∀ (c : ℂ) (T : H →L[ℂ] H), ω (c • T) = c * ω T := fun c T => by
+    rw [← smul_eq_mul]; exact map_smul ω.toPositiveLinearMap c T
+  have hnn : ∀ T : H →L[ℂ] H, 0 ≤ T → (0 : ℂ) ≤ ω T :=
+    fun _ hT => ω.toPositiveLinearMap.map_nonneg hT
+  have hω1 : (0 : ℝ) ≤ (ω 1).re := (Complex.le_def.mp (hnn 1 zero_le_one)).1
+  set P : Finset E → (H →L[ℂ] H) := fun F => ∑ e ∈ F, ketbra (e : H) (e : H) with hPdef
+  have hPapp : ∀ F : Finset E, P F = ∑ e ∈ F, ketbra (e : H) (e : H) := fun _ => rfl
+  set Q : Finset E → (H →L[ℂ] H) := fun F => 1 - P F with hQdef
+  have hQapp : ∀ F : Finset E, Q F = 1 - P F := fun _ => rfl
+  -- `ω (P A P)` is the square partial sum
+  have hdouble : ∀ F : Finset E, ω (P F * A * P F)
+      = ∑ e ∈ F, ∑ e' ∈ F, ⟪(e : H), A (e' : H)⟫ * ω (ketbra (e : H) (e' : H)) := by
+    intro F
+    rw [hPapp F, ketbra_sum_sandwich F A, hω_sum]
+    exact Finset.sum_congr rfl fun e _ => by
+      rw [hω_sum]; exact Finset.sum_congr rfl fun e' _ => hω_smul _ _
+  -- `P F` is a self-adjoint idempotent of norm at most one, hence so is `Q F`
+  have hPsa : ∀ F : Finset E, star (P F) = P F := fun F => ketbra_sum_isSelfAdjoint F
+  have hPP : ∀ F : Finset E, P F * P F = P F := fun F => by
+    rw [hPapp F]; exact ketbra_sum_idem hE.1 F
+  have hPnorm : ∀ F : Finset E, ‖P F‖ ≤ 1 := fun F => ketbra_sum_norm_le_one hE.1 F
+  have hQsa : ∀ F : Finset E, star (Q F) = Q F := fun F => by
+    rw [hQapp F, star_sub, star_one, hPsa F]
+  have hQQ : ∀ F : Finset E, star (Q F) * Q F = Q F := fun F => by
+    rw [hQsa F, hQapp F]
+    have h : (1 - P F) * (1 - P F) = 1 - P F - P F + P F * P F := by noncomm_ring
+    rw [h, hPP F]
+    abel
+  -- `ω a ≤ ‖a‖ ω 1` for self-adjoint `a`
+  have hbound : ∀ a : H →L[ℂ] H, IsSelfAdjoint a → (ω a).re ≤ ‖a‖ * (ω 1).re := by
+    intro a ha
+    have h1 : a ≤ algebraMap ℝ (H →L[ℂ] H) ‖a‖ := ha.le_algebraMap_norm_self
+    have h2 : (0 : ℂ) ≤ ω (algebraMap ℝ (H →L[ℂ] H) ‖a‖ - a) := hnn _ (sub_nonneg.mpr h1)
+    have h3 : ω (algebraMap ℝ (H →L[ℂ] H) ‖a‖) = ((‖a‖ : ℝ) : ℂ) * ω 1 := by
+      rw [algebraMap_real_eq, Algebra.algebraMap_eq_smul_one, hω_smul]
+    rw [hω_sub, h3] at h2
+    have h4 := (Complex.le_def.mp h2).1
+    simp only [Complex.sub_re, Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im,
+      zero_mul, sub_zero, Complex.zero_re] at h4
+    linarith
+  -- the two ingredients of the thesis's Kadison estimate
+  have hAA : ((ω (star A * A)).re) ≤ ‖A‖ ^ 2 * (ω 1).re := by
+    have h := hbound _ (IsSelfAdjoint.star_mul_self A)
+    rw [CStarRing.norm_star_mul_self] at h
+    calc (ω (star A * A)).re ≤ ‖A‖ * ‖A‖ * (ω 1).re := h
+      _ = ‖A‖ ^ 2 * (ω 1).re := by ring
+  have hPAAP : ∀ F : Finset E,
+      (ω (star (star A * P F) * (star A * P F))).re ≤ ‖A‖ ^ 2 * (ω 1).re := by
+    intro F
+    have h := hbound _ (IsSelfAdjoint.star_mul_self (star A * P F))
+    rw [CStarRing.norm_star_mul_self] at h
+    have hn : ‖star A * P F‖ ≤ ‖A‖ := by
+      refine le_trans (norm_mul_le _ _) ?_
+      rw [norm_star]
+      calc ‖A‖ * ‖P F‖ ≤ ‖A‖ * 1 := by gcongr; exact hPnorm F
+        _ = ‖A‖ := mul_one _
+    have hsq : ‖star A * P F‖ * ‖star A * P F‖ ≤ ‖A‖ ^ 2 :=
+      (mul_le_mul hn hn (norm_nonneg _) (norm_nonneg _)).trans (le_of_eq (sq ‖A‖).symm)
+    exact le_trans h (mul_le_mul_of_nonneg_right hsq hω1)
+  -- the tail `ω (Q F)` tends to `0`, by **39VI**.3
+  have hQre : ∀ F : Finset E,
+      (ω (Q F)).re = (ω 1).re - ∑ e ∈ F, (ω (ketbra (e : H) (e : H))).re := by
+    intro F
+    rw [hQapp F, hω_sub, hPapp F, hω_sum, Complex.sub_re, Complex.re_sum]
+  have hQnn : ∀ F : Finset E, 0 ≤ (ω (Q F)).re := by
+    intro F
+    refine (Complex.le_def.mp (hnn _ ?_)).1
+    rw [hQapp F, sub_nonneg, hPapp F]
+    exact ketbra_sum_le_one hE.1 F
+  have hQtend : Tendsto (fun F : Finset E => (ω (Q F)).re) atTop (𝓝 0) := by
+    have h2 : Tendsto (fun F : Finset E => ∑ e ∈ F, (ω (ketbra (e : H) (e : H))).re) atTop
+        (𝓝 ((ω 1).re)) := (sum_ketbras_3 E hE ω).map Complex.reCLM Complex.reCLM.continuous
+    have h3 : Tendsto (fun F : Finset E =>
+        (ω 1).re - ∑ e ∈ F, (ω (ketbra (e : H) (e : H))).re) atTop (𝓝 ((ω 1).re - (ω 1).re)) :=
+      tendsto_const_nhds.sub h2
+    rw [sub_self] at h3
+    exact h3.congr fun F => (hQre F).symm
+  -- assemble the estimate `|ω A − ω (P A P)| ≤ 2 √(‖A‖² ω 1) √(ω (Q F))`
+  have hsplit : ∀ F : Finset E,
+      A - P F * A * P F = star (Q F) * A + star (star A * P F) * Q F := by
+    intro F
+    rw [hQsa F, hQapp F]
+    have hst : star (star A * P F) = P F * A := by rw [star_mul, star_star, hPsa F]
+    rw [hst]
+    noncomm_ring
+  have hsqrt : ∀ u v t : ℝ, 0 ≤ u → 0 ≤ t → t ^ 2 ≤ u * v →
+      t ≤ Real.sqrt u * Real.sqrt v := by
+    intro u v t hu ht h
+    rw [← Real.sqrt_mul hu]
+    calc t = Real.sqrt (t ^ 2) := (Real.sqrt_sq ht).symm
+      _ ≤ Real.sqrt (u * v) := Real.sqrt_le_sqrt h
+  have hkey : ∀ F : Finset E,
+      ‖(∑ e ∈ F, ∑ e' ∈ F, ⟪(e : H), A (e' : H)⟫ * ω (ketbra (e : H) (e' : H))) - ω A‖
+        ≤ 2 * (Real.sqrt (‖A‖ ^ 2 * (ω 1).re) * Real.sqrt ((ω (Q F)).re)) := by
+    intro F
+    rw [← hdouble F]
+    have hdiff : ω (P F * A * P F) - ω A
+        = -(ω (star (Q F) * A) + ω (star (star A * P F) * Q F)) := by
+      rw [← hω_add, ← hsplit F, hω_sub]
+      ring
+    rw [hdiff, norm_neg]
+    -- `|ω (Q* A)| ≤ √(ω Q) √(‖A‖² ω 1)`
+    have e1 : ‖ω (star (Q F) * A)‖
+        ≤ Real.sqrt ((ω (Q F)).re) * Real.sqrt (‖A‖ ^ 2 * (ω 1).re) := by
+      refine hsqrt _ _ _ (hQnn F) (norm_nonneg _) ?_
+      have hk := npf_kadison ω (Q F) A
+      rw [hQQ F] at hk
+      exact hk.trans (mul_le_mul_of_nonneg_left hAA (hQnn F))
+    -- `|ω ((A* P)* Q)| ≤ √(‖A‖² ω 1) √(ω Q)`
+    have e2 : ‖ω (star (star A * P F) * Q F)‖
+        ≤ Real.sqrt (‖A‖ ^ 2 * (ω 1).re) * Real.sqrt ((ω (Q F)).re) := by
+      refine hsqrt _ _ _ (by positivity) (norm_nonneg _) ?_
+      have hk := npf_kadison ω (star A * P F) (Q F)
+      rw [hQQ F] at hk
+      exact hk.trans (mul_le_mul_of_nonneg_right (hPAAP F) (hQnn F))
+    calc ‖ω (star (Q F) * A) + ω (star (star A * P F) * Q F)‖
+        ≤ ‖ω (star (Q F) * A)‖ + ‖ω (star (star A * P F) * Q F)‖ := norm_add_le _ _
+      _ ≤ Real.sqrt ((ω (Q F)).re) * Real.sqrt (‖A‖ ^ 2 * (ω 1).re)
+            + Real.sqrt (‖A‖ ^ 2 * (ω 1).re) * Real.sqrt ((ω (Q F)).re) := add_le_add e1 e2
+      _ = 2 * (Real.sqrt (‖A‖ ^ 2 * (ω 1).re) * Real.sqrt ((ω (Q F)).re)) := by ring
+  rw [tendsto_iff_norm_sub_tendsto_zero]
+  refine squeeze_zero (fun F => norm_nonneg _) hkey ?_
+  have hs0 : Tendsto (fun F : Finset E => Real.sqrt ((ω (Q F)).re)) atTop (𝓝 (Real.sqrt 0)) :=
+    (Real.continuous_sqrt.tendsto 0).comp hQtend
+  rw [Real.sqrt_zero] at hs0
+  have hs1 := (hs0.const_mul (Real.sqrt (‖A‖ ^ 2 * (ω 1).re))).const_mul (2 : ℝ)
+  rw [mul_zero, mul_zero] at hs1
+  exact hs1
 
-/-- **39IX** (`bh-np`, cstar.tex:6567, Theorem): every normal positive
+/-- The action of `|x⟩⟨y|`.  (Auxiliary for **39IX**.) -/
+private theorem ketbra_apply' (a b u : H) : ketbra a b u = ⟪b, u⟫ • a := rfl
+
+/-- `|x⟩⟨y|* = |y⟩⟨x|` (**4XIX**.2).  (Auxiliary for **39IX**.) -/
+private theorem ketbra_star (x y : H) : star (ketbra x y) = ketbra y x := by
+  rw [ContinuousLinearMap.star_eq_adjoint]
+  refine ((ContinuousLinearMap.eq_adjoint_iff (ketbra y x) (ketbra x y)).mpr ?_).symm
+  intro u v
+  simp only [ketbra_apply', inner_smul_left, inner_smul_right]
+  rw [← inner_conj_symm u x]
+  ring
+
+/-- `|x⟩⟨z|` is additive in `x`.  (Auxiliary for **39IX**.) -/
+private theorem ketbra_add_left (x y z : H) : ketbra (x + y) z = ketbra x z + ketbra y z := by
+  ext w; simp only [ketbra_apply', ContinuousLinearMap.add_apply, smul_add]
+
+/-- `|x⟩⟨z|` is homogeneous in `x`.  (Auxiliary for **39IX**.) -/
+private theorem ketbra_smul_left (c : ℂ) (x z : H) : ketbra (c • x) z = c • ketbra x z := by
+  ext w
+  simp only [ketbra_apply', ContinuousLinearMap.smul_apply]
+  exact smul_comm _ _ _
+
+/-- `|x⟩⟨x| ≥ 0`.  (Auxiliary for **39IX**.) -/
+private theorem ketbra_self_nonneg (x : H) : (0 : H →L[ℂ] H) ≤ ketbra x x := by
+  rw [ContinuousLinearMap.nonneg_iff_isPositive, ContinuousLinearMap.isPositive_iff_complex]
+  intro z
+  have h : (⟪(ketbra x x) z, z⟫ : ℂ) = ((Complex.normSq ⟪x, z⟫ : ℝ) : ℂ) := by
+    simp only [ketbra_apply', inner_smul_left]
+    exact Complex.normSq_eq_conj_mul_self.symm
+  rw [h]
+  exact ⟨by simp, by simp [Complex.normSq_nonneg]⟩
+
+/-- **39IX**, first step: for a positive functional `ω` on `B(H)` there is a
+positive `ϱ ∈ B(H)` with `ω |y⟩⟨x| = ⟪x, ϱ y⟫`.
+
+The thesis obtains `ϱ` from **36V** (`chilb-form-representation`), applied to
+the bounded form `(x, y) ↦ ω |y⟩⟨x|` on the self-dual Hilbert ℂ-module `H`.
+36V is now proved above, but for `𝒜 = ℂ` it *is* the Riesz representation
+theorem — which is exactly how **36II** justifies self-duality of a Hilbert
+space — so we go through Riesz (Mathlib's `InnerProductSpace.toDual`) directly,
+which avoids threading `SelfDual ℂ H` and the bounded-form packaging through
+for no gain.  Positivity of `ϱ` is the thesis's own argument
+(`hilb-positive-operators`): `⟪x, ϱ x⟫ = ω |x⟩⟨x| ≥ 0`. -/
+private theorem exists_rho (ω : NPFunctional (H →L[ℂ] H)) :
+    ∃ ϱ : H →L[ℂ] H, 0 ≤ ϱ ∧ ∀ x y : H, ω (ketbra y x) = ⟪x, ϱ y⟫ := by
+  obtain ⟨C, hC⟩ := ω.toPositiveLinearMap.exists_norm_apply_le
+  have hstar : ∀ T : H →L[ℂ] H, ω (star T) = star (ω T) :=
+    cstar_p_implies_i ω.toPositiveLinearMap.toLinearMap
+      (fun a ha => ω.toPositiveLinearMap.map_nonneg ha)
+  have hrep : ∀ y : H, ∃ u : H, ∀ x : H, ω (ketbra y x) = ⟪x, u⟫ := by
+    intro y
+    have hb : ∀ x : H, ‖ω (ketbra x y)‖ ≤ ((C : ℝ) * ‖y‖) * ‖x‖ := by
+      intro x
+      refine le_trans (hC _) ?_
+      rw [ketbra_norm]
+      nlinarith [norm_nonneg x, norm_nonneg y, C.2]
+    let f : H →ₗ[ℂ] ℂ :=
+      { toFun := fun x => ω (ketbra x y)
+        map_add' := fun a b => by
+          rw [ketbra_add_left]; exact map_add ω.toPositiveLinearMap _ _
+        map_smul' := fun c a => by
+          rw [ketbra_smul_left]; exact map_smul ω.toPositiveLinearMap _ _ }
+    refine ⟨(InnerProductSpace.toDual ℂ H).symm (f.mkContinuous ((C : ℝ) * ‖y‖) hb),
+      fun x => ?_⟩
+    have hg : ⟪(InnerProductSpace.toDual ℂ H).symm (f.mkContinuous ((C : ℝ) * ‖y‖) hb), x⟫
+        = ω (ketbra x y) := InnerProductSpace.toDual_symm_apply
+    rw [← inner_conj_symm x, hg, ← ketbra_star x y, hstar]
+    rfl
+  choose ϱ₀ hϱ₀ using hrep
+  have hadd : ∀ y z : H, ϱ₀ (y + z) = ϱ₀ y + ϱ₀ z := by
+    intro y z
+    refine ext_inner_left ℂ fun v => ?_
+    rw [← hϱ₀, inner_add_right, ← hϱ₀, ← hϱ₀, ketbra_add_left]
+    exact map_add ω.toPositiveLinearMap _ _
+  have hsmul : ∀ (c : ℂ) (y : H), ϱ₀ (c • y) = c • ϱ₀ y := by
+    intro c y
+    refine ext_inner_left ℂ fun v => ?_
+    rw [← hϱ₀, inner_smul_right, ← hϱ₀, ketbra_smul_left]
+    exact map_smul ω.toPositiveLinearMap _ _
+  have hbdd : ∀ y : H, ‖ϱ₀ y‖ ≤ (C : ℝ) * ‖y‖ := by
+    intro y
+    have h1 : ‖(⟪ϱ₀ y, ϱ₀ y⟫ : ℂ)‖ ≤ (C : ℝ) * ‖y‖ * ‖ϱ₀ y‖ := by
+      rw [← hϱ₀ y (ϱ₀ y)]
+      refine le_trans (hC _) ?_
+      rw [ketbra_norm]
+      nlinarith [norm_nonneg (ϱ₀ y), norm_nonneg y, C.2]
+    rw [inner_self_eq_norm_sq_to_K, norm_pow] at h1
+    simp only [RCLike.norm_ofReal, abs_norm] at h1
+    rcases eq_or_lt_of_le (norm_nonneg (ϱ₀ y)) with h0 | h0
+    · rw [← h0]; positivity
+    · refine le_of_mul_le_mul_right ?_ h0
+      nlinarith
+  set ϱL : H →L[ℂ] H :=
+    LinearMap.mkContinuous { toFun := ϱ₀, map_add' := hadd, map_smul' := hsmul }
+      (C : ℝ) hbdd with hϱL
+  have hϱLapp : ∀ y : H, ϱL y = ϱ₀ y := fun _ => rfl
+  refine ⟨ϱL, ?_, fun x y => by rw [hϱLapp, hϱ₀]⟩
+  rw [ContinuousLinearMap.nonneg_iff_isPositive, ContinuousLinearMap.isPositive_iff_complex]
+  intro z
+  have hval : (0 : ℂ) ≤ ω (ketbra z z) := ω.toPositiveLinearMap.map_nonneg (ketbra_self_nonneg z)
+  have him : (ω (ketbra z z)).im = 0 := by simpa using (Complex.le_def.mp hval).2.symm
+  have h : (⟪ϱL z, z⟫ : ℂ) = ω (ketbra z z) := by
+    rw [hϱLapp, ← inner_conj_symm (ϱ₀ z) z, ← hϱ₀ z z]
+    exact Complex.conj_eq_iff_im.mpr him
+  rw [h]
+  exact ⟨(Complex.conj_eq_iff_re.mp (Complex.conj_eq_iff_im.mpr him)),
+    (Complex.le_def.mp hval).1⟩
+
+/-- **39IX** (`bh-np`, cstar.tex:6657, Theorem): every normal positive
 functional `ω : B(H) → ℂ` on a Hilbert space `H` is of the form
 `ω = ∑ₙ ⟪xₙ, (·) xₙ⟫` for some sequence `x₁, x₂, … ∈ H` with
 `∑ₙ ‖xₙ‖² = ‖ω‖` (for a positive functional `‖ω‖ = ω 1`, which is how the
@@ -1274,12 +1912,122 @@ norm condition is stated here). -/
 theorem bh_np (ω : NPFunctional (H →L[ℂ] H)) :
     ∃ x : ℕ → H,
       (∀ T : H →L[ℂ] H, HasSum (fun n => ⟪x n, T (x n)⟫) (ω T)) ∧
-      HasSum (fun n => ((‖x n‖ ^ 2 : ℝ) : ℂ)) (ω 1) :=
-  sorry
+      HasSum (fun n => ((‖x n‖ ^ 2 : ℝ) : ℂ)) (ω 1) := by
+  classical
+  obtain ⟨ϱ, hϱnn, hϱ⟩ := exists_rho ω
+  -- an orthonormal basis of `H` (**39III**)
+  obtain ⟨E, hEon, hEmax⟩ : ∃ E : Set H, Orthonormal ℂ ((↑) : E → H) ∧
+      ∀ E' : Set H, E ⊆ E' → Orthonormal ℂ ((↑) : E' → H) → E' = E := by
+    obtain ⟨w, -, hw, hmax⟩ := exists_maximal_orthonormal (𝕜 := ℂ) (E := H)
+      (s := (∅ : Set H)) (by simp)
+    exact ⟨w, hw, fun E' h h' => hmax E' h h'⟩
+  have hE : IsOrthonormalBasis E := ⟨hEon, hEmax⟩
+  have hω1real : ((((ω 1).re : ℝ)) : ℂ) = ω 1 := by
+    have h : (0 : ℂ) ≤ ω 1 := ω.toPositiveLinearMap.map_nonneg zero_le_one
+    exact Complex.conj_eq_iff_re.mp (Complex.conj_eq_iff_im.mpr (by
+      simpa using (Complex.le_def.mp h).2.symm))
+  -- `R = √ϱ`, and the family `y e = √ϱ e` indexed by the basis
+  set R : H →L[ℂ] H := CFC.sqrt ϱ with hRdef
+  have hRsa : IsSelfAdjoint R := .of_nonneg (CFC.sqrt_nonneg ϱ)
+  have hRR : R * R = ϱ := CFC.sqrt_mul_sqrt_self ϱ hϱnn
+  have hRsym : ∀ u v : H, (⟪R u, v⟫ : ℂ) = ⟪u, R v⟫ :=
+    ContinuousLinearMap.isSelfAdjoint_iff_isSymmetric.mp hRsa
+  have hRRapp : ∀ u : H, R (R u) = ϱ u := fun u => by
+    have := congrArg (fun T : H →L[ℂ] H => T u) hRR
+    simpa using this
+  set y : E → H := fun e => R (e : H) with hydef
+  -- Parseval: `∑_{e ∈ E} ⟪a, e⟫ ⟪e, b⟫ = ⟪a, b⟫` (**39IV**.3)
+  have hparseval : ∀ a b : H,
+      HasSum (fun e : E => (⟪(e : H), b⟫ : ℂ) * ⟪a, (e : H)⟫) ⟪a, b⟫ := by
+    intro a b
+    have h := (orthonormal_3 E hE b).mapL (innerSL ℂ a)
+    simpa [inner_smul_right] using h
+  -- the thesis's computation `ω |u⟩⟨v| = ⟪√ϱ v, √ϱ u⟫ = ∑_e ⟪y e, |u⟩⟨v| (y e)⟫`
+  have hkey : ∀ u v : H,
+      HasSum (fun e : E => (⟪y e, ketbra u v (y e)⟫ : ℂ)) (ω (ketbra u v)) := by
+    intro u v
+    have hval : (ω (ketbra u v) : ℂ) = ⟪R v, R u⟫ := by
+      rw [hϱ v u, ← hRRapp u, hRsym]
+    rw [hval]
+    refine (hparseval (R v) (R u)).congr_fun fun e => ?_
+    rw [ketbra_apply', inner_smul_right, hydef]
+    simp only
+    rw [← hRsym (e : H) u, hRsym v (e : H)]
+    ring
+  -- `∑_{e ∈ E} ‖y e‖² = ω 1`, by **39VI**.3
+  have hnormval : ∀ e : E, (((‖y e‖ ^ 2 : ℝ) : ℂ)) = ω (ketbra (e : H) (e : H)) := by
+    intro e
+    have h := hϱ (e : H) (e : H)
+    rw [h, ← hRRapp (e : H), ← hRsym, hydef]
+    simp only
+    rw [inner_self_eq_norm_sq_to_K]
+    norm_cast
+  have hnormE : HasSum (fun e : E => (((‖y e‖ ^ 2 : ℝ) : ℂ))) (ω 1) :=
+    (sum_ketbras_3 E hE ω).congr_fun fun e => hnormval e
+  -- pass from the basis `E` to a sequence, by countability of the support
+  have hsummableE : Summable fun e : E => ‖y e‖ ^ 2 :=
+    (Complex.hasSum_ofReal.mp (by rw [hω1real]; exact hnormE)).summable
+  have hsupp : (Function.support y).Countable := by
+    have h : (Function.support fun e : E => ‖y e‖ ^ 2).Countable :=
+      hsummableE.countable_support
+    refine h.mono ?_
+    intro e he
+    simp only [Function.mem_support, ne_eq, pow_eq_zero_iff, norm_eq_zero] at he ⊢
+    simp [he]
+  obtain ⟨j, hj⟩ := Set.countable_iff_exists_injective.mp hsupp
+  set x : ℕ → H := Function.extend j (fun e : Function.support y => y (e : E)) 0 with hxdef
+  have hxout : ∀ n : ℕ, n ∉ Set.range j → x n = 0 := by
+    intro n hn
+    rw [hxdef, Function.extend_apply' _ _ _ (by simpa [Set.mem_range] using hn)]
+    rfl
+  have hxj : ∀ e : Function.support y, x (j e) = y (e : E) := fun e =>
+    hj.extend_apply _ _ e
+  have htrans : ∀ (g : H → ℂ), g 0 = 0 → ∀ c : ℂ,
+      HasSum (fun e : E => g (y e)) c → HasSum (fun n : ℕ => g (x n)) c := by
+    intro g hg0 c hc
+    have hsub : Function.support (fun e : E => g (y e)) ⊆ Function.support y := by
+      intro e he
+      simp only [Function.mem_support] at he ⊢
+      intro h
+      exact he (by rw [h, hg0])
+    have h1 : HasSum ((fun e : E => g (y e)) ∘ (Subtype.val : Function.support y → E)) c :=
+      (hasSum_subtype_iff_of_support_subset hsub).mpr hc
+    refine (hj.hasSum_iff (f := fun n : ℕ => g (x n)) ?_).mp ?_
+    · intro n hn
+      rw [hxout n hn]; exact hg0
+    · refine h1.congr_fun fun e => ?_
+      simp only [Function.comp_apply]
+      rw [hxj e]
+  -- the sequence and the functional it induces (**38IV**.2)
+  have hnormN : HasSum (fun n : ℕ => (((‖x n‖ ^ 2 : ℝ) : ℂ))) (ω 1) :=
+    htrans (fun v => (((‖v‖ ^ 2 : ℝ) : ℂ))) (by simp) _ hnormE
+  have hsummableN : Summable fun n : ℕ => ‖x n‖ ^ 2 :=
+    (Complex.hasSum_ofReal.mp (by rw [hω1real]; exact hnormN)).summable
+  obtain ⟨ω', hω'⟩ := bh_functional_lemma_2 x hsummableN
+  have hω'sum : ∀ T : H →L[ℂ] H, HasSum (fun n => ⟪x n, T (x n)⟫) (ω' T) := by
+    intro T
+    rw [hω' T]
+    exact (bh_functional_lemma_1 x hsummableN T).hasSum
+  -- `ω'` and `ω` agree on the rank-one operators …
+  have hketeq : ∀ u v : H, ω' (ketbra u v) = ω (ketbra u v) := by
+    intro u v
+    exact (hω'sum (ketbra u v)).unique
+      (htrans (fun w => ⟪w, ketbra u v w⟫) (by simp) _ (hkey u v))
+  -- … hence everywhere, by **39VII**
+  have heq : ∀ A : H →L[ℂ] H, ω' A = ω A := by
+    intro A
+    refine tendsto_nhds_unique (f := fun F : Finset E =>
+      ∑ e ∈ F, ∑ e' ∈ F, ⟪(e : H), A (e' : H)⟫ * ω' (ketbra (e : H) (e' : H)))
+      (bh_np_lemma E hE ω' A) ?_
+    refine (bh_np_lemma E hE ω A).congr fun F => ?_
+    exact Finset.sum_congr rfl fun e _ => Finset.sum_congr rfl fun e' _ => by rw [hketeq]
+  refine ⟨x, fun T => ?_, hnormN⟩
+  rw [← heq T]
+  exact hω'sum T
 
 end BH
 
-/-! **40I** (cstar.tex:6625): closing remarks of the chapter — nothing to
+/-! **40I** (cstar.tex:6715): closing remarks of the chapter — nothing to
 formalize. -/
 
 end Theses.A.CStar
