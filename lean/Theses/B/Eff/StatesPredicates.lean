@@ -609,7 +609,34 @@ map `Pred f` is an effect module homomorphism, and `Pred` is in fact a
 functor `Tot C → EMod_M^op` (the substitution functor). -/
 theorem predMap_functor :
     ∃ F : Tot C ⥤ (EModCat.{v, v} (Scal C))ᵒᵖ,
-      ∀ X : Tot C, (F.obj X).unop.carrier = Pred X.base := sorry
+      ∀ X : Tot C, (F.obj X).unop.carrier = Pred X.base := by
+  -- effect module homomorphisms are determined by their underlying function
+  have emext : ∀ {E F : Type v} [EffectAlgebra E] [EffectAlgebra F]
+      [EffectModule (Scal C) E] [EffectModule (Scal C) F]
+      (f g : EffectModuleHom (Scal C) E F), f.toFun = g.toFun → f = g := by
+    intro E F _ _ _ _ f g
+    obtain ⟨⟨⟨f₁, -, -⟩, -⟩, -⟩ := f
+    obtain ⟨⟨⟨g₁, -, -⟩, -⟩, -⟩ := g
+    intro h
+    dsimp only at h
+    subst h
+    rfl
+  -- `Pred f = (– ∘ f)` is an effect module map for total `f`: it preserves
+  -- `1` (totality), partial sums (`FinPAC.ovee_comp`) and scalars
+  -- (associativity)
+  refine ⟨{ obj := fun X => Opposite.op (EModCat.of (Scal C) (Pred X.base))
+            map := fun {X Y} f => Quiver.Hom.op
+              ({ toFun := fun p => f.1 ≫ p
+                 perp_map := fun {a b} h => (FinPAC.ovee_comp h f.1).choose
+                 ovee_map := fun {a b} h => (FinPAC.ovee_comp h f.1).choose_spec
+                 map_one := f.2
+                 map_smul := fun l p => (Category.assoc f.1 p l).symm } :
+                EffectModuleHom (Scal C) (Pred Y.base) (Pred X.base))
+            map_id := fun X => congrArg Quiver.Hom.op
+              (emext _ _ (funext fun p => Category.id_comp p))
+            map_comp := fun {X Y Z} f g => congrArg Quiver.Hom.op
+              (emext _ _ (funext fun p => Category.assoc f.1 g.1 p)) },
+    fun X => rfl⟩
 
 /-- **190II.6** (`dfn-mandso`, eff.tex:2118, Definition): a **substate** of
 `X` is a map `ω : 1 ⟶ X`. -/

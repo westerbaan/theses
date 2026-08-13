@@ -528,7 +528,41 @@ variable [AndThenEffectus C]
 `s & t` is sharp. -/
 theorem homology_lemma [DaggerPrimeEffectus C] {X : C} {s t : Pred X}
     (hs : IsSharp s) (ht : IsSharp t) (h : orth s ≼ t) :
-    IsSharp (andThen s t) := sorry
+    IsSharp (andThen s t) := by
+  -- `sᵖ ≤ t` is `tᵖ ≤ s`, so `s & tᵖ = tᵖ` by the absorption rule 213V
+  have hts : orth t ≼ s := by
+    have h' := eabasics_le_iff_orth_le.mp h
+    rwa [eabasics_orth_orth] at h'
+  have habs : asrt s ≫ orth t = orth t := (simple_andthen_absorption hs).mp hts
+  -- (S1): `(s & t) ⋁ (s & tᵖ) = s & 1 = s`, so `s & t ⊥ tᵖ`, i.e. `s & t ≤ t`
+  obtain ⟨hperp, -⟩ := FinPAC.ovee_comp (EffectAlgebra.perp_orth t) (asrt s)
+  rw [habs] at hperp
+  have hle_t : andThen s t ≼ t := by
+    have h' := eabasics_perp_iff_le_orth.mp hperp
+    rwa [eabasics_orth_orth] at h'
+  -- `s & t ≤ s & 1 = s`
+  have hle_s : andThen s t ≼ s := by
+    have h' := comp_le_comp (asrt s) (pred_le_truth t)
+    rwa [(asrt_spec s).2] at h'
+  -- the infimum `m = s ∧ t` in `SPred X` (208IX)
+  obtain ⟨m, hms, hmt, hmax⟩ :
+      ∃ m : SPred X, m.1 ≼ s ∧ m.1 ≼ t ∧
+        ∀ r : SPred X, r.1 ≼ s → r.1 ≼ t → r.1 ≼ m.1 :=
+    ⟨_, spred_infimum ⟨s, hs⟩ ⟨t, ht⟩⟩
+  -- `⌈s & t⌉` is a sharp lower bound of `s` and `t`, hence below `m`
+  have hcm : ceilPred (andThen s t) ≼ m.1 := by
+    refine hmax ⟨ceilPred (andThen s t), isSharp_ceil _⟩ ?_ ?_
+    · have h' := ceil_mono hle_s; rwa [ceil_of_isSharp hs] at h'
+    · have h' := ceil_mono hle_t; rwa [ceil_of_isSharp ht] at h'
+  -- conversely `m = s & m ≤ s & t`, again by 213V
+  have hmst : m.1 ≼ andThen s t := by
+    have h' := comp_le_comp (asrt s) hmt
+    rwa [show asrt s ≫ m.1 = m.1 from (simple_andthen_absorption hs).mp hms] at h'
+  -- so `⌈s & t⌉ ≤ m ≤ s & t ≤ ⌈s & t⌉`
+  have hfix : ceilPred (andThen s t) = andThen s t :=
+    eabasics_le_antisymm (pcm_preorder_trans hcm hmst) (le_ceil _)
+  rw [← hfix]
+  exact isSharp_ceil _
 
 /-- **226IV.1** (eff.tex:7483, Definition): the preorder on kernels:
 `n ≤ m` when `n` factors through `m` (Grandis; `n ≈ m` when both `n ≤ m`
@@ -617,7 +651,44 @@ theorem homological_cokernels [DaggerPrimeEffectus C] {X Y : C}
 /-- **226V.3** (eff.tex:7523, Theorem): a map is exact iff it is
 pristine. -/
 theorem homological_exact [DaggerPrimeEffectus C] {X Y : C} (f : X ⟶ Y) :
-    IsExactMap f ↔ Pristine f := sorry
+    IsExactMap f ↔ Pristine f := by
+  constructor
+  · -- `f = cok(ker f) ∘ g ∘ ker(cok f)` with `g` iso: the outer maps are a
+    -- quotient for a sharp predicate and a comprehension (226V.1/2), so `f`
+    -- is pure and `1 ∘ f = 1 ∘ cok(ker f) = sᵖ` is sharp.
+    rintro ⟨W, Q, K, Q', kf, ckf, cf, kcf, g, hkf, hck, hcf, hkcf, hg, hform⟩
+    haveI := hg
+    obtain ⟨s, hs, hq⟩ := (homological_cokernels ckf).mp ⟨W, kf, hck⟩
+    obtain ⟨p, hp⟩ := (homological_kernels kcf).mp ⟨Q', cf, hkcf⟩
+    have htot : (g ≫ kcf) ≫ truth Y = truth Q := by
+      rw [Category.assoc, compr_total hp]
+      exact iso_isTotal g
+    refine ⟨⟨Q, ckf, g ≫ kcf, s, p, hq, compr_basics_1 hp g, hform⟩, ?_⟩
+    · have h1 : f ≫ truth Y = orth s := by
+        rw [hform, Category.assoc, htot, quotient_basics_5 hq]
+      rw [h1]
+      exact DiamondEffectus.orth_sharp hs
+  · -- conversely, a pristine `h` is `π_{im h} ∘ α ∘ ζ_{1∘h}` (218VI), and
+    -- `ζ_{1∘h}` is a cokernel of `ker f = π_{(1∘f)ᵖ}` while `π_{im f}` is a
+    -- kernel of `cok f = ξ_{im f}`.
+    intro hpr
+    obtain ⟨α, hform⟩ := standard_form_pristine hpr
+    have hos : IsSharp (orth (f ≫ truth Y)) :=
+      DiamondEffectus.orth_sharp hpr.2
+    refine ⟨comprObj (orth (f ≫ truth Y)), comprObj (f ≫ truth Y),
+      comprObj (imPred f), quotObj (imPred f),
+      comprMap (orth (f ≫ truth Y)), zetaMap (f ≫ truth Y) hpr.2,
+      quotMap (imPred f), comprMap (imPred f), α.hom,
+      effectus_kernels f (isComprehension_comprMap _), ?_,
+      effectus_cokernels f (isQuotient_quotMap _), ?_, inferInstance, hform⟩
+    · -- `im π_{(1∘f)ᵖ} = (1∘f)ᵖ` and `ζ_{1∘f}` is a quotient for it
+      refine effectus_cokernels _ ?_
+      rw [(img_of_compr (orth (f ≫ truth Y))).2 _ hos]
+      exact (zetaMap_spec (f ≫ truth Y) hpr.2).1
+    · -- `1 ∘ ξ_{im f} = (im f)ᵖ`, so its kernel is a comprehension for `im f`
+      refine effectus_kernels _ ?_
+      rw [quotient_basics_5 (isQuotient_quotMap (imPred f)), eabasics_orth_orth]
+      exact isComprehension_comprMap _
 
 /-- **226V** (eff.tex:7523, Theorem): a †-effectus is a pointed
 homological category: kernels and cokernels are closed under composition,
@@ -635,7 +706,73 @@ theorem homological_category [DaggerPrimeEffectus C] :
       (_ : ∃ (Y : C) (g : A ⟶ Y), IsKernel g m)
       (_ : ∃ (Z : C) (g : Z ⟶ A), IsCokernel g q)
       (_ : ∀ (K : C) (kq : K ⟶ A), IsKernel q kq → KernelLE kq m),
-        IsExactMap (m ≫ q)) := sorry
+        IsExactMap (m ≫ q)) := by
+  refine ⟨?_, ?_, ?_⟩
+  · -- kernels are comprehensions (226V.1), and comprehensions compose (211XI)
+    intro W X Y Z m₁ m₂ h₁ h₂
+    obtain ⟨g, hg⟩ := h₁
+    obtain ⟨p, hp⟩ := (homological_kernels m₁).mp ⟨Z, g, hg⟩
+    obtain ⟨q, hq⟩ := (homological_kernels m₂).mp h₂
+    obtain ⟨r, hr⟩ := upm_closed_compr hp hq
+    exact ⟨effObj C, orth r, (compr_is_kernel r (m₁ ≫ m₂)).mp hr⟩
+  · -- cokernels are quotients for sharp predicates (226V.2), and quotients
+    -- compose (197VII); the predicate `(ζ₁ ∘ s₂ᵖ)ᵖ` of the composite is
+    -- sharp because `ζ₁` is a sharp map
+    intro X Y Z W' q₁ q₂ h₁ h₂
+    obtain ⟨g, hg⟩ := h₁
+    obtain ⟨s₁, hs₁, hq₁⟩ := (homological_cokernels q₁).mp ⟨W', g, hg⟩
+    obtain ⟨s₂, hs₂, hq₂⟩ := (homological_cokernels q₂).mp h₂
+    have hq₁' : IsQuotient (orth (orth s₁)) q₁ := by rwa [eabasics_orth_orth]
+    have hq₂' : IsQuotient (orth (orth s₂)) q₂ := by rwa [eabasics_orth_orth]
+    have hsharp : IsSharp (orth (q₁ ≫ orth s₂)) :=
+      DiamondEffectus.orth_sharp
+        (DaggerPrimeEffectus.quot_sharp hs₁ hq₁ _ (DiamondEffectus.orth_sharp hs₂))
+    exact ⟨_, comprMap _,
+      (exc_cokernels hsharp (q₁ ≫ q₂)).mp (quotients_composition hq₁' hq₂')⟩
+  · -- the homology axiom (226VII)
+    intro M A Q m q hm hq hker
+    obtain ⟨r, hmr⟩ := (homological_kernels m).mp hm
+    obtain ⟨s₀, hs₀, hq₀⟩ := (homological_cokernels q).mp hq
+    -- `1 ∘ q = s₀ᵖ` is sharp, and `m` is a comprehension for the sharp `im m`
+    have hps : IsSharp (q ≫ truth Q) := by
+      rw [quotient_basics_5 hq₀]; exact DiamondEffectus.orth_sharp hs₀
+    have hmim : IsComprehension (imPred m) m := isComprehension_imPred hmr
+    have hims : IsSharp (imPred m) := isSharp_imPred C m
+    -- `ker q ≤ m` gives `im (ker q) = (1 ∘ q)ᵖ ≤ im m`, i.e. `imᵖ m ≤ 1 ∘ q`
+    obtain ⟨f, hf⟩ := hker (comprObj (orth (q ≫ truth Q)))
+      (comprMap (orth (q ≫ truth Q)))
+      (effectus_kernels q (isComprehension_comprMap _))
+    have hle : orth (imPred m) ≼ q ≫ truth Q := by
+      have h1 : imPred (comprMap (orth (q ≫ truth Q))) ≼ imPred m := by
+        rw [← hf]; exact (im_ineq m f).1
+      rw [(img_of_compr (orth (q ≫ truth Q))).2 _
+        (DiamondEffectus.orth_sharp hps)] at h1
+      have h2 := eabasics_le_iff_orth_le.mp h1
+      rwa [eabasics_orth_orth] at h2
+    -- 226II: `(im m) & (1 ∘ q)` is sharp
+    have hsharp := homology_lemma hims hps hle
+    -- `ζ` for the comprehension `m` (211VII); it is a sharp map, and it is
+    -- the map the thesis writes as `m†`
+    obtain ⟨ζ, ⟨hζq, hmζ, hζm⟩, -⟩ := prop_corr_zeta_pi_compr hims hmim
+    have hζsharp : SharpMap ζ :=
+      DaggerPrimeEffectus.quot_sharp (DiamondEffectus.orth_sharp hims) hζq
+    refine (homological_exact (m ≫ q)).mpr
+      ⟨upm_closed_pure (isPure_comprehension C hmr) (isPure_of_isQuotient hq₀), ?_⟩
+    have hw : ζ ≫ ((m ≫ q) ≫ truth Q) = andThen (imPred m) (q ≫ truth Q) := by
+      show ζ ≫ ((m ≫ q) ≫ truth Q) = asrt (imPred m) ≫ (q ≫ truth Q)
+      rw [← Category.assoc, ← Category.assoc, hζm, Category.assoc]
+    have key : ceilPred ((m ≫ q) ≫ truth Q) = (m ≫ q) ≫ truth Q := by
+      calc ceilPred ((m ≫ q) ≫ truth Q)
+          = (m ≫ ζ) ≫ ceilPred ((m ≫ q) ≫ truth Q) := by
+            rw [hmζ, Category.id_comp]
+        _ = m ≫ ceilPred (ζ ≫ ((m ≫ q) ≫ truth Q)) := by
+            rw [Category.assoc, (sharp_ceil ζ).mp hζsharp]
+        _ = (m ≫ ζ) ≫ ((m ≫ q) ≫ truth Q) := by
+            rw [hw, ceil_of_isSharp hsharp, ← hw]
+            simp only [Category.assoc]
+        _ = (m ≫ q) ≫ truth Q := by rw [hmζ, Category.id_comp]
+    rw [← key]
+    exact isSharp_ceil _
 
 /-- **227II.1** (eff.tex:7586, Definition): a composable pair
 `A → f → B → g → C` is **exact at** `B` when `ker (cok f) ≈ ker g`.  (In a
