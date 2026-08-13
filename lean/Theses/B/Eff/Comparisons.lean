@@ -265,18 +265,71 @@ def IsExactMap {X Y : C} (f : X ⟶ Y) : Prop :=
     IsKernel f kf ∧ IsCokernel kf ckf ∧ IsCokernel f cf ∧ IsKernel cf kcf ∧
       IsIso g ∧ f = ckf ≫ g ≫ kcf
 
+/-- Kernels are unique up to isomorphism (the standard argument, needed for
+226V.1). -/
+theorem isKernel_unique {W W' X Y : C} {g : X ⟶ Y} {k : W ⟶ X} {k' : W' ⟶ X}
+    (h : IsKernel g k) (h' : IsKernel g k') :
+    ∃ θ : W ⟶ W', IsIso θ ∧ θ ≫ k' = k := by
+  obtain ⟨θ, hθ, -⟩ := h'.2 k h.1
+  obtain ⟨θ', hθ', -⟩ := h.2 k' h'.1
+  refine ⟨θ, ⟨⟨θ', ?_, ?_⟩⟩, hθ⟩
+  · obtain ⟨u, -, huu⟩ := h.2 k h.1
+    rw [huu (θ ≫ θ') (by show (θ ≫ θ') ≫ k = k; rw [Category.assoc, hθ', hθ]),
+      huu (𝟙 W) (Category.id_comp _)]
+  · obtain ⟨u, -, huu⟩ := h'.2 k' h'.1
+    rw [huu (θ' ≫ θ) (by show (θ' ≫ θ) ≫ k' = k'; rw [Category.assoc, hθ, hθ']),
+      huu (𝟙 W') (Category.id_comp _)]
+
+/-- Cokernels are unique up to isomorphism (needed for 226V.2). -/
+theorem isCokernel_unique {X Y Q Q' : C} {g : X ⟶ Y} {c : Y ⟶ Q} {c' : Y ⟶ Q'}
+    (h : IsCokernel g c) (h' : IsCokernel g c') :
+    ∃ θ : Q ⟶ Q', IsIso θ ∧ c ≫ θ = c' := by
+  obtain ⟨θ, hθ, -⟩ := h.2 c' h'.1
+  obtain ⟨θ', hθ', -⟩ := h'.2 c h.1
+  refine ⟨θ, ⟨⟨θ', ?_, ?_⟩⟩, hθ⟩
+  · obtain ⟨u, -, huu⟩ := h.2 c h.1
+    rw [huu (θ ≫ θ') (by show c ≫ θ ≫ θ' = c; rw [← Category.assoc, hθ, hθ']),
+      huu (𝟙 Q) (Category.comp_id _)]
+  · obtain ⟨u, -, huu⟩ := h'.2 c' h'.1
+    rw [huu (θ' ≫ θ) (by show c' ≫ θ' ≫ θ = c'; rw [← Category.assoc, hθ', hθ]),
+      huu (𝟙 Q') (Category.comp_id _)]
+
 /-- **226V.1** (eff.tex:7523, Theorem): in a †-effectus (in partial form)
 a map is a kernel iff it is a comprehension. -/
 theorem homological_kernels [DaggerPrimeEffectus C] {W X : C} (f : W ⟶ X) :
     (∃ (Y : C) (g : X ⟶ Y), IsKernel g f) ↔
-      ∃ p : Pred X, IsComprehension p f := sorry
+      ∃ p : Pred X, IsComprehension p f := by
+  constructor
+  · -- a kernel of `g` is isomorphic to the comprehension for `(1∘g)ᵖ` (200III)
+    rintro ⟨Y, g, hk⟩
+    obtain ⟨θ, hθ, hcomm⟩ :=
+      isKernel_unique hk (effectus_kernels g (isComprehension_comprMap _))
+    haveI := hθ
+    refine ⟨orth (g ≫ truth Y), ?_⟩
+    rw [← hcomm]
+    exact compr_basics_1 (isComprehension_comprMap _) θ
+  · -- a comprehension for `p` is a kernel of `pᵖ` (200V)
+    rintro ⟨p, hp⟩
+    exact ⟨effObj C, orth p, (compr_is_kernel p f).mp hp⟩
 
 /-- **226V.2** (eff.tex:7523, Theorem): a map is a cokernel iff it is a
 quotient for a sharp predicate. -/
 theorem homological_cokernels [DaggerPrimeEffectus C] {X Y : C}
     (f : X ⟶ Y) :
     (∃ (Z : C) (g : Z ⟶ X), IsCokernel g f) ↔
-      ∃ s : Pred X, IsSharp s ∧ IsQuotient s f := sorry
+      ∃ s : Pred X, IsSharp s ∧ IsQuotient s f := by
+  constructor
+  · -- a cokernel of `g` is isomorphic to the quotient for `im g` (205II)
+    rintro ⟨Z, g, hc⟩
+    obtain ⟨θ, hθ, hcomm⟩ :=
+      isCokernel_unique (effectus_cokernels g (isQuotient_quotMap _)) hc
+    haveI := hθ
+    refine ⟨imPred g, isSharp_imPred C g, ?_⟩
+    rw [← hcomm]
+    exact quotient_basics_1 (isQuotient_quotMap _) θ
+  · -- a quotient for a sharp `s` is a cokernel of `π_s` (205IV)
+    rintro ⟨s, hs, hq⟩
+    exact ⟨comprObj s, comprMap s, (exc_cokernels hs f).mp hq⟩
 
 /-- **226V.3** (eff.tex:7523, Theorem): a map is exact iff it is
 pristine. -/
@@ -315,18 +368,94 @@ theorem exactAt_iff [DaggerPrimeEffectus C] {X Y Z : C} (f : X ⟶ Y)
     (g : Y ⟶ Z) :
     ExactAt f g ↔ orth (imPred f) = ceilPred (g ≫ truth Z) := sorry
 
+/-- Helper for 227V: the thesis's computation `π^□(π_⋄(s)) =
+⌈(s ∘ π†)ᵖ ∘ π⌉ᵖ = ⌈(s ∘ π† ∘ π)ᵖ⌉ᵖ = s`, isolated from the particular
+`π`: it needs only that `π` is total, that its "dagger" `g` is a sharp map
+with `π ∘ g = id` (in diagrammatic order `π ≫ g = 𝟙`), and that
+`π_⋄ = g^⋄`. -/
+theorem boxPull_diaPush_of_sharp_section {W X : C} {f : W ⟶ X} {g : X ⟶ W}
+    (htot : IsTotal f) (hg : SharpMap g) (hfg : f ≫ g = 𝟙 W)
+    (hadj : diaPush f = diaPull g) (s : SPred W) :
+    boxPull f (diaPush f s) = s := by
+  have h1 : (diaPush f s).1 = g ≫ s.1 := by
+    rw [hadj]; exact ceil_of_isSharp (hg s.1 s.2)
+  apply Subtype.ext
+  show orth (ceilPred (f ≫ orth (diaPush f s).1)) = s.1
+  rw [h1, total_comp_orth htot, ← Category.assoc, hfg, Category.id_comp,
+    ceil_of_isSharp (DiamondEffectus.orth_sharp s.2), eabasics_orth_orth]
+
+/-- Helper for 227V, the dual of `boxPull_diaPush_of_sharp_section`: the
+thesis's `ζ_⋄(ζ^□(s)) = ⌈(⌈sᵖ⌉ ∘ ζ ∘ ζ†)ᵖ⌉ = s`. -/
+theorem diaPush_boxPull_of_sharp_retract {X W : C} {f : X ⟶ W} {g : W ⟶ X}
+    (htot : IsTotal g) (hf : SharpMap f) (hgf : g ≫ f = 𝟙 W)
+    (hadj : diaPush f = diaPull g) (t : SPred W) :
+    diaPush f (boxPull f t) = t := by
+  have h1 : (boxPull f t).1 = orth (f ≫ orth t.1) := by
+    show orth (ceilPred (f ≫ orth t.1)) = _
+    rw [ceil_of_isSharp (hf _ (DiamondEffectus.orth_sharp t.2))]
+  apply Subtype.ext
+  rw [hadj]
+  show ceilPred (g ≫ (boxPull f t).1) = t.1
+  rw [h1, total_comp_orth htot, ← Category.assoc, hgf, Category.id_comp,
+    eabasics_orth_orth, ceil_of_isSharp t.2]
+
 /-- **227V** (`diamondboxlemma`, eff.tex:7653, Lemma), first half: in a
 †-effectus, `π^□ ∘ π_⋄ = id` for any comprehension `π`. -/
 theorem diamondboxlemma_compr [DaggerPrimeEffectus C] {W X : C}
     {p : Pred X} {π : W ⟶ X} (hπ : IsComprehension p π) (s : SPred W) :
-    boxPull π (diaPush π s) = s := sorry
+    boxPull π (diaPush π s) = s := by
+  -- `π = β ∘ π_{⌊p⌋}` for an iso `β`, and `π†` is `β⁻¹ ∘ ζ_{⌊p⌋}`
+  obtain ⟨θ, hθiso, hθ, -⟩ := compr_basics_2 hπ (isComprehension_comprMap p)
+  obtain ⟨α, hαiso, hα⟩ := floor_basics_2 p
+  haveI := hθiso
+  haveI := hαiso
+  haveI : IsIso (θ ≫ α) := inferInstance
+  have hfs : IsSharp (floorPred p) := isSharp_floor p
+  obtain ⟨hq', hπζ', -⟩ := zetaMap_spec (floorPred p) hfs
+  have hπeq : π = (θ ≫ α) ≫ comprMap (floorPred p) := by
+    rw [Category.assoc, hα, hθ]
+  refine boxPull_diaPush_of_sharp_section (g := zetaMap (floorPred p) hfs ≫
+      inv (θ ≫ α)) (compr_total hπ) ?_ ?_ ?_ s
+  · intro q hq
+    rw [Category.assoc]
+    exact DaggerPrimeEffectus.quot_sharp (DiamondEffectus.orth_sharp hfs) hq'
+      _ (iso_diamond_adjoint_1 (inv (θ ≫ α)) hq)
+  · rw [hπeq]
+    simp only [Category.assoc]
+    rw [← Category.assoc (comprMap (floorPred p)), hπζ', Category.id_comp,
+      ← Category.assoc, IsIso.hom_inv_id]
+  · funext u
+    rw [hπeq, diaPush_comp, diaPull_comp,
+      (exc_diamond_adj_1 (comprMap (floorPred p)) (zetaMap (floorPred p) hfs)).mp
+        (quotcompr_diamond_adjoint hfs),
+      (exc_diamond_adj_1 (θ ≫ α) (inv (θ ≫ α))).mp
+        (iso_diamond_adjoint_2 (θ ≫ α)).2.2]
 
 /-- **227V** (`diamondboxlemma`, eff.tex:7653, Lemma), second half:
 `ζ_⋄ ∘ ζ^□ = id` for any sharp quotient `ζ`. -/
 theorem diamondboxlemma_quot [DaggerPrimeEffectus C] {X W : C}
     {s₀ : Pred X} (hs : IsSharp s₀) {ζ : X ⟶ W}
     (hζ : IsQuotient s₀ ζ) (t : SPred W) :
-    diaPush ζ (boxPull ζ t) = t := sorry
+    diaPush ζ (boxPull ζ t) = t := by
+  -- `ζ = ζ_{s₀ᵖ} ∘ β` for an iso `β`, and `ζ†` is `π_{s₀ᵖ} ∘ β⁻¹`
+  have hs' : IsSharp (orth s₀) := DiamondEffectus.orth_sharp hs
+  obtain ⟨hq', hπζ', -⟩ := zetaMap_spec (orth s₀) hs'
+  have hq'' : IsQuotient s₀ (zetaMap (orth s₀) hs') := by
+    rwa [eabasics_orth_orth] at hq'
+  obtain ⟨β, hβiso, hβ, -⟩ := quotient_basics_2 hζ hq''
+  haveI := hβiso
+  refine diaPush_boxPull_of_sharp_retract (g := inv β ≫ comprMap (orth s₀))
+    (isTotal_comp (iso_isTotal (inv β))
+      (compr_total (isComprehension_comprMap (orth s₀))))
+    (DaggerPrimeEffectus.quot_sharp hs hζ) ?_ ?_ t
+  · rw [← hβ]
+    simp only [Category.assoc]
+    rw [← Category.assoc (comprMap (orth s₀)), hπζ', Category.id_comp,
+      IsIso.inv_hom_id]
+  · funext u
+    rw [← hβ, diaPush_comp, diaPull_comp,
+      ← (quotcompr_diamond_adjoint hs' (X := X)),
+      (exc_diamond_adj_1 β (inv β)).mp (iso_diamond_adjoint_2 β).2.2]
 
 end Homological
 

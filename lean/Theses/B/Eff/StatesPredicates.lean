@@ -1429,7 +1429,24 @@ theorem aconv_cong_surjective (r : Setoid X) :
       (fun p : MConvexComb M X => p.map (Quotient.mk r)) ∧
     Function.Surjective
       (fun P : MConvexComb M (MConvexComb M X) =>
-        P.map (fun p => p.map (Quotient.mk r))) := sorry
+        P.map (fun p => p.map (Quotient.mk r))) := by
+  -- the author's proof: `𝒟_M` (and `𝒟_M 𝒟_M`) of a section of `q` is a
+  -- section of `𝒟_M q` (resp. `𝒟_M 𝒟_M q`)
+  have hsec : (Quotient.mk r ∘ Quotient.out : Quotient r → Quotient r) =
+      _root_.id := funext fun z => z.out_eq
+  have key : ∀ q : MConvexComb M (Quotient r),
+      (q.map Quotient.out).map (Quotient.mk r) = q := by
+    intro q
+    rw [MConvexComb.map_comp, hsec, MConvexComb.map_id]
+  refine ⟨fun q => ⟨q.map Quotient.out, key q⟩, fun Q => ⟨Q.map
+    (fun q => q.map Quotient.out), ?_⟩⟩
+  show (Q.map fun q => q.map Quotient.out).map
+    (fun p : MConvexComb M X => p.map (Quotient.mk r)) = Q
+  rw [MConvexComb.map_comp,
+    show ((fun p : MConvexComb M X => p.map (Quotient.mk r)) ∘
+      fun q : MConvexComb M (Quotient r) => q.map Quotient.out) = _root_.id from
+      funext key,
+    MConvexComb.map_id]
 
 /-- **193II.2** (`aconv-cong`, eff.tex:2705, Exercise): `∼` is a congruence
 iff the convex structure `h` descends to `X/∼` — there is (a necessarily
@@ -1438,7 +1455,19 @@ theorem aconv_cong_iff (st : MConvex M X) (r : Setoid X) :
     st.IsCongruence r ↔
       ∃ h' : MConvexComb M (Quotient r) → Quotient r,
         ∀ p : MConvexComb M X,
-          h' (p.map (Quotient.mk r)) = Quotient.mk r (st.h p) := sorry
+          h' (p.map (Quotient.mk r)) = Quotient.mk r (st.h p) := by
+  constructor
+  · -- `h_∼` exists by the congruence property along the section of `q`
+    intro hc
+    refine ⟨fun P => Quotient.mk r (st.h (P.map Quotient.out)), fun p => ?_⟩
+    refine hc _ p ?_
+    rw [MConvexComb.map_comp,
+      show (Quotient.mk r ∘ Quotient.out : Quotient r → Quotient r) = _root_.id
+        from funext fun z => z.out_eq,
+      MConvexComb.map_id]
+  · -- conversely `q ∘ h` factors through `𝒟_M q`, which is the congruence
+    rintro ⟨h', hh'⟩ φ ψ hq
+    rw [← hh' φ, ← hh' ψ, hq]
 
 /-- **193II.3** (`aconv-cong`, eff.tex:2714, Exercise): for a congruence
 `∼`, the quotient `(X/∼, h_∼)` is an abstract `M`-convex set and the
@@ -1453,7 +1482,16 @@ theorem aconv_cong_quotient (st : MConvex M X) (r : Setoid X)
 sets is a congruence. -/
 theorem affine_kernel_cong {Y : Type v} (st : MConvex M X)
     (st' : MConvex M Y) (f : X → Y) (hf : st.IsAffine st' f) :
-    st.IsCongruence (Setoid.ker f) := sorry
+    st.IsCongruence (Setoid.ker f) := by
+  intro φ ψ hq
+  -- `f = f_∼ ∘ q`, so `𝒟_M f (φ) = 𝒟_M f (ψ)`, and `f` is affine
+  have key : ∀ p : MConvexComb M X, p.map f =
+      (p.map (Quotient.mk (Setoid.ker f))).map
+        (Quotient.lift f fun _ _ h => h) := by
+    intro p; rw [MConvexComb.map_comp]; rfl
+  refine Quotient.sound ?_
+  change f (st.h φ) = f (st.h ψ)
+  rw [hf φ, hf ψ, key φ, key ψ, hq]
 
 /-- **193IV** (`least-conv-cong`, eff.tex:2732, Exercise): every relation
 `R ⊆ X²` on an abstract `M`-convex set is contained in a least congruence.
@@ -1485,7 +1523,9 @@ noncomputable def AConvMCat.free (M : Type u) [EffectMonoid M] (X : Type v) :
 /-- **193X** (`n-times-one-aconvm`, eff.tex:2954, Exercise), first half: the
 one-element convex set is the final object of `AConv_M`. -/
 theorem n_times_one_aconvm_terminal (M : Type u) [EffectMonoid M] :
-    Nonempty (IsTerminal (AConvMCat.punit.{u, v} M)) := sorry
+    Nonempty (IsTerminal (AConvMCat.punit.{u, v} M)) :=
+  ⟨IsTerminal.ofUniqueHom (fun _ => ⟨fun _ => PUnit.unit, fun _ => rfl⟩)
+    (fun _ _ => Subtype.ext rfl)⟩
 
 /-- **193X** (`n-times-one-aconvm`, eff.tex:2954, Exercise), second half: in
 `AConv_M` the `n`-fold coproduct `n · 1 = 1 + ⋯ + 1` is isomorphic to
@@ -1510,7 +1550,8 @@ theorem aconvalmosteffectus_coproducts :
 /-- **194I** (`aconvalmosteffectus`, eff.tex:2968, Proposition), part 2:
 `AConv_M` has a final object (the one-element convex set, 193X). -/
 theorem aconvalmosteffectus_terminal :
-    HasTerminal (AConvMCat.{u, v} M) := sorry
+    HasTerminal (AConvMCat.{u, v} M) :=
+  (n_times_one_aconvm_terminal.{u, v} M).some.hasTerminal
 
 /-- **194I** (`aconvalmosteffectus`, eff.tex:2979, Proposition), part 3: the
 cotuples `[κ₁,κ₂,κ₂], [κ₂,κ₁,κ₂] : 1+1+1 → 1+1` are jointly monic in

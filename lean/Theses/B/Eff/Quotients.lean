@@ -112,6 +112,15 @@ theorem comp_orth_eq_zero_iff {W X : C} (f : W ⟶ X) (p : Pred X) :
       rw [PCM.zero_ovee, ← PCM.ovee_comm]; exact e2
     exact eabasics_cancellation (PCM.perp_comm hpq) (PCM.zero_perp _) e3
 
+/-- A total map commutes with orthocomplementation of predicates:
+`pᵖ ∘ f = (p ∘ f)ᵖ` when `f` is total. -/
+theorem total_comp_orth {W X : C} {f : W ⟶ X} (hf : IsTotal f) (p : Pred X) :
+    f ≫ orth p = orth (f ≫ p) := by
+  obtain ⟨h', e⟩ := FinPAC.ovee_comp (EffectAlgebra.perp_orth p) f
+  refine EffectAlgebra.orth_unique h' ?_
+  rw [← e, EffectAlgebra.ovee_orth]
+  exact hf
+
 /-! ## Effectuses with quotients (parsec 197) -/
 
 /-- **197II** (`dfn-quotient`, eff.tex:3670, Definition): a map

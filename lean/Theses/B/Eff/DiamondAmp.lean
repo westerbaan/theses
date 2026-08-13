@@ -196,6 +196,14 @@ theorem ceil_of_isSharp {X : C} {s : Pred X} (hs : IsSharp s) : ceilPred s = s :
   show orth (floorPred (orth s)) = s
   rw [h, eabasics_orth_orth]
 
+/-- The ceiling is the least sharp predicate above `p`: for sharp `q`,
+`⌈p⌉ ≤ q` iff `p ≤ q`. -/
+theorem ceil_le_iff_of_isSharp {X : C} {p q : Pred X} (hq : IsSharp q) :
+    ceilPred p ≼ q ↔ p ≼ q := by
+  refine ⟨fun h => pcm_preorder_trans (le_ceil p) h, fun h => ?_⟩
+  have h2 := ceil_mono h
+  rwa [ceil_of_isSharp hq] at h2
+
 /-- The value of the sharp orthocomplement. -/
 theorem spred_orth_val (s : SPred X) : (SPred.orth s).1 = orth s.1 := rfl
 

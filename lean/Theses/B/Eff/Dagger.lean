@@ -539,7 +539,69 @@ theorem eqToHom_comprMap_assoc {s t : Pred X} (e : s = t) {W : C} (f : X ⟶ W) 
 /-- **218II** (`quotcompr-diamond-adjoint`, eff.tex:5774, Lemma): in a
 †'-effectus, `π_s` is ⋄-adjoint to `ζ_s`. -/
 theorem quotcompr_diamond_adjoint [DaggerPrimeEffectus C] {s : Pred X}
-    (hs : IsSharp s) : DiamondAdjoint (comprMap s) (zetaMap s hs) := sorry
+    (hs : IsSharp s) : DiamondAdjoint (comprMap s) (zetaMap s hs) := by
+  obtain ⟨hquot, hπζ, hζπ⟩ := zetaMap_spec s hs
+  have hπtot : IsTotal (comprMap s) := compr_total (isComprehension_comprMap s)
+  have hζsharp : SharpMap (zetaMap s hs) :=
+    DaggerPrimeEffectus.quot_sharp (DiamondEffectus.orth_sharp hs) hquot
+  have hasa : diaPull (asrt s) = diaPush (asrt s) :=
+    diamond_squares_2 (asrt_spec s).1
+  -- the ⋄-self-adjointness of `asrt_s`, in elementary form
+  have hswap : ∀ w r : Pred X, IsSharp w → IsSharp r →
+      (asrt s ≫ w) ≼ orth r → (asrt s ≫ r) ≼ orth w := by
+    intro w r hw hr h
+    have hadj := diamond_adjunction (asrt s) ⟨w, hw⟩ ⟨r, hr⟩
+    rw [← hasa] at hadj
+    have h1 : ceilPred (asrt s ≫ w) ≼ orth r :=
+      (ceil_le_iff_of_isSharp (DiamondEffectus.orth_sharp hr)).mpr h
+    exact (ceil_le_iff_of_isSharp (DiamondEffectus.orth_sharp hw)).mp
+      (hadj.mp h1)
+  -- the Galois form of the statement, as in the thesis
+  have galois : ∀ (t : Pred (comprObj s)) (u : Pred X), IsSharp t → IsSharp u →
+      ((zetaMap s hs ≫ t) ≼ orth u ↔ (comprMap s ≫ u) ≼ orth t) := by
+    intro t u ht hu
+    constructor
+    · -- `t = t ∘ ζ_s ∘ π_s ≤ u^⊥ ∘ π_s = (u ∘ π_s)^⊥`
+      intro h
+      have h1 : t ≼ (comprMap s ≫ orth u) := by
+        have h2 := comp_le_comp (comprMap s) h
+        rwa [← Category.assoc, hπζ, Category.id_comp] at h2
+      rw [total_comp_orth hπtot] at h1
+      exact le_orth_comm.mp h1
+    · intro h
+      have hvs : IsSharp (zetaMap s hs ≫ orth t) :=
+        hζsharp _ (DiamondEffectus.orth_sharp ht)
+      -- `u ∘ asrt_s = u ∘ π_s ∘ ζ_s ≤ t^⊥ ∘ ζ_s`
+      have h1 : (asrt s ≫ u) ≼ orth (orth (zetaMap s hs ≫ orth t)) := by
+        rw [eabasics_orth_orth, ← hζπ, Category.assoc]
+        exact comp_le_comp _ h
+      -- hence `(t^⊥ ∘ ζ_s)^⊥ ∘ asrt_s ≤ u^⊥`
+      have h2 : (asrt s ≫ orth (zetaMap s hs ≫ orth t)) ≼ orth u :=
+        hswap u (orth (zetaMap s hs ≫ orth t)) hu
+          (DiamondEffectus.orth_sharp hvs) h1
+      -- and `t ∘ ζ_s = (t^⊥ ∘ ζ_s ∘ π_s)^⊥ ∘ ζ_s = (t^⊥ ∘ ζ_s)^⊥ ∘ asrt_s`
+      have h3 : zetaMap s hs ≫ t = asrt s ≫ orth (zetaMap s hs ≫ orth t) := by
+        rw [← hζπ, Category.assoc, total_comp_orth hπtot, ← Category.assoc,
+          hπζ, Category.id_comp, eabasics_orth_orth]
+      rw [h3]; exact h2
+  -- uniqueness of adjoints: `π_s^⋄(u)` and `(ζ_s)_⋄(u)` have the same
+  -- sharp upper bounds, hence are equal
+  funext u
+  have key : ∀ t : SPred (comprObj s),
+      ((diaPush (zetaMap s hs) u).1 ≼ orth t.1 ↔
+        (diaPull (comprMap s) u).1 ≼ orth t.1) := by
+    intro t
+    rw [(diamond_adjunction (zetaMap s hs) t u).symm]
+    show ceilPred (zetaMap s hs ≫ t.1) ≼ orth u.1 ↔
+      ceilPred (comprMap s ≫ u.1) ≼ orth t.1
+    rw [ceil_le_iff_of_isSharp (DiamondEffectus.orth_sharp u.2),
+      ceil_le_iff_of_isSharp (DiamondEffectus.orth_sharp t.2)]
+    exact galois t.1 u.1 t.2 u.2
+  have hA := key (diaPull (comprMap s) u).orth
+  have hB := key (diaPush (zetaMap s hs) u).orth
+  rw [spred_orth_val, eabasics_orth_orth] at hA hB
+  exact Subtype.ext (eabasics_le_antisymm (hB.mp (pcm_preorder_refl _))
+    (hA.mpr (pcm_preorder_refl _)))
 
 /-- **218IV** (`dfn-pristine`, eff.tex:5805, Definition): a map `f` in an
 &-effectus is **pristine** when it is pure and `1 ∘ f` is sharp.
@@ -582,12 +644,72 @@ theorem standard_form_pristine {h : X ⟶ Y} (hp : Pristine h) :
           rw [zetaMap_eqToHom hp.2 (isSharp_ceil _) hc.symm]
     _ = _ := by simp only [Category.assoc]
 
+/-- Helper for 218VII (the first computation of eff.tex:5854): in a
+†'-effectus `asrt_p ∘ π_s = π_s ∘ asrt_{p ∘ π_s}` for sharp `s` and
+`p ≤ s`. (The mirror image of 216X.) -/
+theorem compr_through_asrt [DaggerPrimeEffectus C] {s : Pred Y}
+    (hs : IsSharp s) {p : Pred Y} (hle : p ≼ s) :
+    comprMap s ≫ asrt p = asrt (comprMap s ≫ p) ≫ comprMap s := by
+  obtain ⟨-, hπζ, hζπ⟩ := zetaMap_spec s hs
+  -- `im asrt_p = ⌈p⌉ ≤ s`, so `asrt_p ∘ asrt_s = asrt_p`
+  have ha : asrt p ≫ asrt s = asrt p := by
+    refine (asrt_absorp_rule (asrt p) hs hs).1.mp ?_
+    rw [imPred_asrt]
+    have h := ceil_mono hle
+    rwa [ceil_of_isSharp hs] at h
+  -- `1 ∘ p = p ≤ s`, so `p ∘ asrt_s = p`
+  have hb : asrt s ≫ p = p := by
+    refine (asrt_absorp_rule p (isSharp_one (effObj C)) hs).2.mp ?_
+    rw [truth_effObj_eq_id, Category.comp_id]
+    exact hle
+  -- 216X at the predicate `p ∘ π_s`
+  have hz := zeta_through_asrt
+    (fun p => (DaggerPrimeEffectus.sqrt_existsUnique p).exists) hs
+    (quotcompr_diamond_adjoint hs) (comprMap s ≫ p)
+  rw [← Category.assoc, hζπ, hb] at hz
+  calc comprMap s ≫ asrt p
+      = comprMap s ≫ asrt p ≫ asrt s := by rw [ha]
+    _ = comprMap s ≫ asrt p ≫ zetaMap s hs ≫ comprMap s := by rw [hζπ]
+    _ = comprMap s ≫ (zetaMap s hs ≫ asrt (comprMap s ≫ p)) ≫ comprMap s := by
+        rw [hz]; simp only [Category.assoc]
+    _ = (comprMap s ≫ zetaMap s hs) ≫ asrt (comprMap s ≫ p) ≫ comprMap s := by
+        simp only [Category.assoc]
+    _ = asrt (comprMap s ≫ p) ≫ comprMap s := by
+        rw [hπζ, Category.id_comp]
+
 /-- **218VII** (`pristine-asrt`, eff.tex:5832, Proposition): in a
 †'-effectus, for a pristine `h` and predicate `p ≤ im h`:
 `asrt_p ∘ h = h ∘ asrt_{p ∘ h}`. -/
 theorem pristine_asrt [DaggerPrimeEffectus C] {h : X ⟶ Y} (hp : Pristine h)
     {p : Pred Y} (hle : p ≼ imPred h) :
-    h ≫ asrt p = asrt (h ≫ p) ≫ h := sorry
+    h ≫ asrt p = asrt (h ≫ p) ≫ h := by
+  have hsqrt : ∀ {Z : C} (p : Pred Z), ∃ q, andThen q q = p := fun p =>
+    (DaggerPrimeEffectus.sqrt_existsUnique p).exists
+  obtain ⟨α, hform⟩ := standard_form_pristine hp
+  -- `asrt_p ∘ π_s = π_s ∘ asrt_{p ∘ π_s}`
+  have hπ := compr_through_asrt (isSharp_imPred C h) hle
+  -- `asrt_q ∘ α = α ∘ asrt_{q ∘ α}` and `asrt_r ∘ ζ_t = ζ_t ∘ asrt_{r ∘ ζ_t}`
+  have hα := asrt_iso hsqrt α.hom (comprMap (imPred h) ≫ p)
+  have hζ := zeta_through_asrt hsqrt hp.2
+    (quotcompr_diamond_adjoint hp.2)
+    (α.hom ≫ comprMap (imPred h) ≫ p)
+  calc h ≫ asrt p
+      = zetaMap (h ≫ truth Y) hp.2 ≫ α.hom ≫ comprMap (imPred h) ≫ asrt p := by
+        conv_lhs => rw [hform]
+        simp only [Category.assoc]
+    _ = zetaMap (h ≫ truth Y) hp.2 ≫ α.hom ≫
+          asrt (comprMap (imPred h) ≫ p) ≫ comprMap (imPred h) := by rw [hπ]
+    _ = zetaMap (h ≫ truth Y) hp.2 ≫
+          asrt (α.hom ≫ comprMap (imPred h) ≫ p) ≫
+            α.hom ≫ comprMap (imPred h) := by
+        rw [← Category.assoc α.hom, hα]; simp only [Category.assoc]
+    _ = asrt (zetaMap (h ≫ truth Y) hp.2 ≫ α.hom ≫ comprMap (imPred h) ≫ p) ≫
+          zetaMap (h ≫ truth Y) hp.2 ≫ α.hom ≫ comprMap (imPred h) := by
+        rw [← Category.assoc (zetaMap (h ≫ truth Y) hp.2), hζ]
+        simp only [Category.assoc]
+    _ = asrt (h ≫ p) ≫ h := by
+        conv_rhs => rw [hform]
+        simp only [Category.assoc]
 
 /-- **218IX.1** (`asrt-pristine-reverse`, eff.tex:5881, Exercise): if
 `h = π_{im h} ∘ α ∘ ζ_{1∘h}` is pristine, then
@@ -706,7 +828,14 @@ theorem asrt_pristine_reverse_4 [DaggerPrimeEffectus C] {h : X ⟶ Y}
 `p ≤ 1 ∘ h` then `asrt_{p ∘ h†} ∘ h = h ∘ asrt_p` for pristine `h`. -/
 theorem asrt_pristine_reverse_5 [DaggerPrimeEffectus C] {h : X ⟶ Y}
     (hp : Pristine h) {p : Pred X} (hle : p ≼ (h ≫ truth Y)) :
-    h ≫ asrt (pureDagger h hp.1 ≫ p) = asrt p ≫ h := sorry
+    h ≫ asrt (pureDagger h hp.1 ≫ p) = asrt p ≫ h := by
+  -- `p ≤ 1 ∘ h` gives `p ∘ asrt_{1∘h} = p` by `asrt-absorp-rule`
+  have hb : asrt (h ≫ truth Y) ≫ p = p :=
+    (asrt_absorp_rule p (isSharp_one (effObj C)) hp.2).2.mp
+      (by rw [truth_effObj_eq_id, Category.comp_id]; exact hle)
+  -- 218VII at the predicate `p ∘ h†`, which is below `im h` by 218IX.4
+  have h1 := pristine_asrt hp (asrt_pristine_reverse_4 hp p)
+  rwa [← Category.assoc, asrt_pristine_reverse_3 hp, hb] at h1
 
 /-- **218X** (`prist-asrt-decomp`, eff.tex:5898, Proposition), first half:
 in a †'-effectus every pure map `f` decomposes uniquely as
@@ -809,7 +938,43 @@ theorem prist_asrt_decomp_dagger [DaggerPrimeEffectus C] {f : X ⟶ Y}
 †'-effectus, `f†† = f` for every pure `f`. -/
 theorem dagger_idempotent [DaggerPrimeEffectus C] {f : X ⟶ Y}
     (hf : IsPure f) :
-    pureDagger (pureDagger f hf) (isPure_pureDagger hf) = f := sorry
+    pureDagger (pureDagger f hf) (isPure_pureDagger hf) = f := by
+  -- `f = h ∘ asrt_{1∘f}` with `h` pristine and `1 ∘ h = ⌈1∘f⌉` (218X)
+  obtain ⟨h, ⟨hh, h1, hd⟩, -⟩ := prist_asrt_decomp hf
+  have hdag : pureDagger f hf = pureDagger h hh.1 ≫ asrt (f ≫ truth Y) :=
+    prist_asrt_decomp_dagger hf hh h1 hd
+  -- `h†` is pristine, with `1 ∘ h† = im h` and `im h† = 1 ∘ h`
+  have e1 : pureDagger h hh.1 ≫ truth X = imPred h := pristine_dagger_truth hh
+  have e2 : imPred (pureDagger h hh.1) = h ≫ truth Y := pristine_dagger_imPred hh
+  have hh' : Pristine (pureDagger h hh.1) :=
+    ⟨isPure_pureDagger hh.1, by rw [e1]; exact isSharp_imPred C h⟩
+  -- `1 ∘ f† = (1∘f) ∘ h†`
+  have htr : pureDagger f hf ≫ truth X =
+      pureDagger h hh.1 ≫ f ≫ truth Y := by
+    rw [hdag, Category.assoc, (asrt_spec (f ≫ truth Y)).2]
+  -- `⌈1 ∘ f†⌉ = ⌈im h† ∘ h†⌉ = ⌈1 ∘ h†⌉ = 1 ∘ h†`, so `h†` is the pristine
+  -- part of `f†`
+  have hceil : pureDagger h hh.1 ≫ truth X =
+      ceilPred (pureDagger f hf ≫ truth X) := by
+    have key : ceilPred (pureDagger h hh.1 ≫ f ≫ truth Y) = imPred h := by
+      set k := pureDagger h hh.1 with hk
+      rw [← ceiling_within_ceiling (f ≫ truth Y) k, ← h1, ← e2,
+        (isImage_imPred k).1, e1]
+      exact ceil_of_isSharp (isSharp_imPred C h)
+    rw [htr, key, e1]
+  -- `f† = asrt_{1∘f} ∘ h† = h† ∘ asrt_{1∘f†}` by 218VII
+  have hd' : pureDagger f hf =
+      asrt (pureDagger f hf ≫ truth X) ≫ pureDagger h hh.1 := by
+    have hle : (f ≫ truth Y) ≼ imPred (pureDagger h hh.1) := by
+      rw [e2, h1]; exact le_ceil _
+    rw [htr]
+    exact hdag.trans (pristine_asrt hh' hle)
+  -- hence `f†† = h†† ∘ asrt_{1∘f†} = h ∘ asrt_{(1∘f)∘h†}`
+  have hddag := prist_asrt_decomp_dagger (isPure_pureDagger hf) hh' hceil hd'
+  rw [hddag, asrt_pristine_reverse_2 hh, htr]
+  -- and `asrt_{(1∘f)∘h†} ∘ h = h ∘ asrt_{1∘f} = f` by 218IX.5
+  rw [asrt_pristine_reverse_5 hh (by rw [h1]; exact le_ceil _)]
+  exact hd.symm
 
 /-! ## Functoriality of the dagger (parsecs 219–220) -/
 
