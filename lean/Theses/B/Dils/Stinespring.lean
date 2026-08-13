@@ -428,12 +428,106 @@ theorem paschke_unique_up_to_iso (φ : 𝒜 → ℬ) (D₁ D₂ : PaschkeTriple 
         ∀ c, D₂.h (ϑ c) = D₁.h c :=
   sorry
 
+/-! ### Infrastructure: the identity ncp-map
+
+`Theses.A.Proc.Measurement` has these (as `isLUB_val_of_isLUB`,
+`preservesDirSups_id`, `exists_ncpId`), but `Theses.A.Proc` is not in this
+chapter's import path, so the three short proofs are repeated here. -/
+
+/-- The supremum of a nonempty set of self-adjoint elements computed in
+`sa(A)` is its supremum in `A`. -/
+private theorem isLUB_val_of_isLUB {A : Type*} [CStarAlgebra A]
+    [PartialOrder A] [StarOrderedRing A] {D : Set (selfAdjoint A)}
+    {s : selfAdjoint A} (hne : D.Nonempty) (h : IsLUB D s) :
+    IsLUB (Subtype.val '' D) ((s : selfAdjoint A) : A) := by
+  obtain ⟨d₀, hd₀⟩ := hne
+  refine ⟨?_, fun u hu => ?_⟩
+  · rintro _ ⟨d, hd, rfl⟩
+    exact Subtype.coe_le_coe.mpr (h.1 hd)
+  · have hu0 : ((d₀ : selfAdjoint A) : A) ≤ u := hu ⟨d₀, hd₀, rfl⟩
+    have husa : IsSelfAdjoint u := by
+      have hd : IsSelfAdjoint (u - ((d₀ : selfAdjoint A) : A)) :=
+        IsSelfAdjoint.of_nonneg (sub_nonneg.mpr hu0)
+      simpa using hd.add d₀.2
+    have hub : (⟨u, husa⟩ : selfAdjoint A) ∈ upperBounds D :=
+      fun e he => hu ⟨e, he, rfl⟩
+    exact h.2 hub
+
+/-- The identity map is normal. -/
+private theorem preservesDirSups_id {A : Type*} [CStarAlgebra A]
+    [PartialOrder A] [StarOrderedRing A] :
+    PreservesDirSups (fun a : A => a) := fun _ _ hne _ hlub =>
+  isLUB_val_of_isLUB hne hlub
+
+/-- The identity map is an ncp-map. -/
+private theorem exists_ncpId (A : Type*) [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] : ∃ f : NCPMap A A, ∀ a : A, f a = a :=
+  ⟨{ toCompletelyPositiveMap :=
+       { toLinearMap := LinearMap.id
+         map_cstarMatrix_nonneg' := fun _ _ hM => by simpa using hM }
+     preservesDirSups' := preservesDirSups_id }, fun _ => rfl⟩
+
+/-- Multiplication by a positive real is an order isomorphism of a
+C*-algebra (auxiliary for `exists_ncpSmul`). -/
+private theorem smul_le_smul_iff_pos {A : Type*} [CStarAlgebra A]
+    [PartialOrder A] [StarOrderedRing A] {l : ℝ} (hl : 0 < l) (x y : A) :
+    (l : ℂ) • x ≤ (l : ℂ) • y ↔ x ≤ y := by
+  have main : ∀ (m : ℝ), 0 ≤ m → ∀ u v : A, u ≤ v → (m : ℂ) • u ≤ (m : ℂ) • v := by
+    intro m hm u v huv
+    have h0 : (0 : A) ≤ (m : ℂ) • (v - u) :=
+      cstar_positive_1 _ (sub_nonneg.mpr huv) m hm
+    rw [smul_sub] at h0
+    rwa [← sub_nonneg]
+  refine ⟨fun h => ?_, main l hl.le x y⟩
+  have h' := main l⁻¹ (inv_nonneg.mpr hl.le) _ _ h
+  rwa [smul_smul, smul_smul, ← Complex.ofReal_mul, inv_mul_cancel₀ hl.ne',
+    Complex.ofReal_one, one_smul, one_smul] at h'
+
+/-- A positive real multiple of an ncp-map is an ncp-map. -/
+private theorem exists_ncpSmul {A B : Type*} [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
+    (f : NCPMap A B) {l : ℝ} (hl : 0 < l) :
+    ∃ g : NCPMap A B, ∀ a, g a = (l : ℂ) • f a := by
+  refine ⟨{ toCompletelyPositiveMap :=
+              { toLinearMap := (l : ℂ) • (f.toCompletelyPositiveMap.toLinearMap)
+                map_cstarMatrix_nonneg' := fun k M hM => ?_ }
+            preservesDirSups' := ?_ }, fun _ => rfl⟩
+  · have h1 : (0 : CStarMatrix (Fin k) (Fin k) B)
+        ≤ M.map f.toCompletelyPositiveMap.toLinearMap :=
+      f.toCompletelyPositiveMap.map_cstarMatrix_nonneg' k M hM
+    have h2 : M.map ((l : ℂ) • f.toCompletelyPositiveMap.toLinearMap)
+        = (l : ℂ) • M.map f.toCompletelyPositiveMap.toLinearMap := rfl
+    rw [h2]
+    exact cstar_positive_1 _ h1 l hl.le
+  · intro D s hne hdir hlub
+    have h := f.preservesDirSups' D s hne hdir hlub
+    constructor
+    · rintro _ ⟨d, hd, rfl⟩
+      exact (smul_le_smul_iff_pos hl _ _).mpr (h.1 ⟨d, hd, rfl⟩)
+    · intro u hu
+      have hu' : (l : ℂ)⁻¹ • u ∈ upperBounds ((fun d : selfAdjoint A => f d) '' D) := by
+        rintro _ ⟨d, hd, rfl⟩
+        have := hu ⟨d, hd, rfl⟩
+        have hle : (l : ℂ) • (f d) ≤ (l : ℂ) • ((l : ℂ)⁻¹ • u) := by
+          rwa [smul_smul, mul_inv_cancel₀ (by exact_mod_cast hl.ne'), one_smul]
+        exact (smul_le_smul_iff_pos hl _ _).mp hle
+      have := h.2 hu'
+      have hle : (l : ℂ) • f s ≤ (l : ℂ) • ((l : ℂ)⁻¹ • u) :=
+        (smul_le_smul_iff_pos hl _ _).mpr this
+      rwa [smul_smul, mul_inv_cancel₀ (by exact_mod_cast hl.ne'), one_smul] at hle
+
 /-- **140X** (`paschke-basics`, dils.tex:1204, Exercise), part 1:
 `(ℬ, ϱ, id)` is a Paschke dilation of an nmiu-map `ϱ : 𝒜 → ℬ`. -/
 theorem paschke_basics_1 (vnB : VonNeumannAlgebra ℬ) (ϱ : NMIUMap 𝒜 ℬ) :
     ∃ h : NCPMap ℬ ℬ, (∀ b, h b = b) ∧
-      IsPaschkeDilationOf ⟨ℬ, vnB, ϱ, h⟩ ⇑ϱ :=
-  sorry
+      IsPaschkeDilationOf ⟨ℬ, vnB, ϱ, h⟩ ⇑ϱ := by
+  obtain ⟨idB, hid⟩ := exists_ncpId ℬ
+  -- `bsols.tex`, solution `paschke-basics`.1: "clearly `σ ≡ h'` fits the bill"
+  refine ⟨idB, hid, fun a => hid _, fun D' hD' => ⟨D'.h, ⟨hD', fun c => hid _⟩, ?_⟩⟩
+  rintro σ ⟨-, hσ⟩
+  refine DFunLike.ext _ _ fun c => ?_
+  have h := hσ c
+  rwa [hid] at h
 
 /-- **140X** (`paschke-basics`, dils.tex:1204, Exercise), part 2: if
 `(𝒫, ϱ, h)` is a Paschke dilation (of some map), then `(𝒫, id, h)` is a
@@ -479,8 +573,29 @@ a Paschke dilation of `λφ`.
 theorem paschke_basics_4 (φ : 𝒜 → ℬ) (D : PaschkeTriple 𝒜 ℬ)
     (hD : IsPaschkeDilationOf D φ) (l : ℝ) (hl : 0 < l) :
     ∃ h' : NCPMap D.P ℬ, (∀ c, h' c = (l : ℂ) • D.h c) ∧
-      IsPaschkeDilationOf ⟨D.P, D.vn, D.ρ, h'⟩ (fun a => (l : ℂ) • φ a) :=
-  sorry
+      IsPaschkeDilationOf ⟨D.P, D.vn, D.ρ, h'⟩ (fun a => (l : ℂ) • φ a) := by
+  -- `bsols.tex`, solution `paschke-basics`.4
+  have hlne : ((l : ℂ)) ≠ 0 := by exact_mod_cast hl.ne'
+  obtain ⟨h', hh'⟩ := exists_ncpSmul D.h hl
+  refine ⟨h', hh', fun a => by rw [hh', hD.1 a], fun D' hD' => ?_⟩
+  -- "then `λ⁻¹ h' ∘ ϱ' = φ`", so the original universal property applies
+  obtain ⟨k, hk⟩ := exists_ncpSmul D'.h (inv_pos.mpr hl)
+  have hk' : ∀ c, D'.h c = (l : ℂ) • k c := by
+    intro c
+    rw [hk, smul_smul, Complex.ofReal_inv, mul_inv_cancel₀ hlne, one_smul]
+  have hD'' : ∀ a, k (D'.ρ a) = φ a := by
+    intro a
+    rw [hk, hD' a, smul_smul, Complex.ofReal_inv, inv_mul_cancel₀ hlne, one_smul]
+  obtain ⟨σ, ⟨hσ1, hσ2⟩, hσu⟩ :=
+    hD.2 ⟨D'.P, D'.vn, D'.ρ, k⟩ hD''
+  refine ⟨σ, ⟨hσ1, fun c => ?_⟩, ?_⟩
+  · rw [hh', hσ2 c, ← hk' c]
+  · rintro τ ⟨hτ1, hτ2⟩
+    refine hσu τ ⟨hτ1, fun c => ?_⟩
+    have h := hτ2 c
+    rw [hh'] at h
+    change D.h (τ c) = k c
+    rw [hk, ← h, smul_smul, Complex.ofReal_inv, inv_mul_cancel₀ hlne, one_smul]
 
 end Paschke
 

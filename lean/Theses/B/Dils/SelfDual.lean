@@ -50,8 +50,7 @@ are consequences of the axioms, by definiteness of the inner product (the
 same derivation as `Theses.A.CStar.moduleAdjointable_linear`).  Together
 with `norm_op_smul_le` these are exactly what is needed to *define* the
 operator `|x⟩⟨y| : z ↦ ⟨y,z⟩ • x` of **159II** as a
-`LinearMap.mkContinuous`; see the note before `mketbra` below for why that
-definition cannot be written down at the present signature. -/
+`LinearMap.mkContinuous`. -/
 
 theorem op_add_smul (a b : ℬ) (x : X) : (a + b) • x = a • x + b • x :=
   eq_of_inner_right_eq (𝒜 := ℬ) fun z => by
@@ -84,89 +83,47 @@ theorem norm_op_smul_le (a : ℬ) (x : X) : ‖a • x‖ ≤ ‖a‖ * ‖x‖ 
   have h2 : (0 : ℝ) ≤ ‖a‖ * ‖x‖ := mul_nonneg (norm_nonneg _) (norm_nonneg _)
   nlinarith
 
-/-! ### FIXME(mketbra-signature)
-
-`mketbra` below elaborates to
-`{X} → [NormedAddCommGroup X] → [NormedSpace ℂ X] → X → X → X →L[ℂ] X`:
-because its body is `sorry`, variable inclusion drops `ℬ` and every
-instance mentioning it, so the declared operator **does not depend on ℬ at
-all** and therefore cannot be defined — `z ↦ ⟨y,z⟩ • x` needs the
-ℬ-valued inner product.  (`mketbra_apply` does mention `ℬ`, so it pins
-`mketbra` down and is consistent; it is only the *definition* that is
-impossible.)
-
-Repairing this means making `ℬ` an argument (`variable (ℬ)` in this
-section, i.e. `mketbra ℬ x y`), which rewrites the ten downstream
-statements that mention `mketbra`, so it is left to whoever owns the
-statements.  Once `ℬ` is an argument, **159II** and both halves of
-**159III** all go through; the following four declarations have been
-checked to compile (with `mketbra ℬ` substituted throughout the statements
-of the last three):
-
-    noncomputable def mketbra (x y : X) : X →L[ℂ] X :=
-      LinearMap.mkContinuous
-        { toFun := fun z => inner ℬ y z • x
-          map_add' := fun z z' => by
-            rw [CStarModule.inner_add_right, op_add_smul]
-          map_smul' := fun c z => by
-            rw [CStarModule.inner_smul_right_complex, op_smul_complex_smul,
-              RingHom.id_apply] }
-        (‖y‖ * ‖x‖) fun z => by
-          calc ‖(inner ℬ y z : ℬ) • x‖ ≤ ‖(inner ℬ y z : ℬ)‖ * ‖x‖ :=
-                norm_op_smul_le _ _
-            _ ≤ ‖y‖ * ‖z‖ * ‖x‖ :=
-                mul_le_mul_of_nonneg_right (CStarModule.norm_inner_le X)
-                  (norm_nonneg _)
-            _ = ‖y‖ * ‖x‖ * ‖z‖ := by ring
-
-    theorem mketbra_apply (x y z : X) : mketbra x y z = inner ℬ y z • x := rfl
-
-    theorem mketbra_adjointable (x y : X) :
-        ModuleAdjointTo ℬ (⇑(mketbra x y) : X → X) ⇑(mketbra y x) := by
-      intro z w
-      rw [mketbra_apply, mketbra_apply, CStarModule.inner_op_smul_left,
-        CStarModule.inner_op_smul_right, CStarModule.star_inner]
-
-    theorem mketbra_rules … := by     -- statement unchanged apart from `ℬ`
-      obtain ⟨-, hTc, hTm⟩ := moduleAdjointable_linear (𝒜 := ℬ) ⇑T ⟨_, hT⟩
-      refine ⟨?_, ?_, ⟨?_, mketbra_adjointable ℬ e e⟩, ?_, ?_⟩
-      · ext z
-        show (inner ℬ y z : ℬ) • (b • x) = (inner ℬ (star b • y) z : ℬ) • x
-        rw [CStarModule.inner_op_smul_left, star_star, op_mul_smul]
-      · ext z
-        show (inner ℬ y ((inner ℬ w z : ℬ) • v) : ℬ) • x
-          = (inner ℬ w z : ℬ) • ((inner ℬ y v : ℬ) • x)
-        rw [CStarModule.inner_op_smul_right, op_mul_smul]
-      · ext z
-        show (inner ℬ e ((inner ℬ e z : ℬ) • e) : ℬ) • e = (inner ℬ e z : ℬ) • e
-        rw [CStarModule.inner_op_smul_right, op_mul_smul, mod_projelabs e he]
-      · ext z
-        show T ((inner ℬ y z : ℬ) • x) = (inner ℬ y z : ℬ) • T x
-        rw [hTm]
-      · ext z
-        show (inner ℬ y (T' z) : ℬ) • x = (inner ℬ (T y) z : ℬ) • x
-        rw [hT y z]
--/
-
+variable (ℬ) in
 /-- **159II** (dils.tex:4292, Definition): for `x, y` in a Hilbert
 ℬ-module `X`, the bounded operator `|x⟩⟨y| : z ↦ x⟨y,z⟩` (mirrored:
-`⟨y,z⟩ • x`; in the literature `θ_{x,y}`, **159IIa**).  (Definition
-deferred; only the characterizing property `mketbra_apply` is used.) -/
-noncomputable def mketbra (x y : X) : X →L[ℂ] X :=
-  sorry
+`⟨y,z⟩ • x`; in the literature `θ_{x,y}`, **159IIa**).
 
+The algebra `ℬ` is an explicit argument: `CStarModule ℬ X` is what supplies
+the ℬ-valued inner product `⟨y,z⟩`, and it cannot be inferred from `x, y :
+X` alone. -/
+noncomputable def mketbra (x y : X) : X →L[ℂ] X :=
+  LinearMap.mkContinuous
+    { toFun := fun z => inner ℬ y z • x
+      map_add' := fun z z' => by
+        rw [CStarModule.inner_add_right, op_add_smul]
+      map_smul' := fun c z => by
+        rw [CStarModule.inner_smul_right_complex, op_smul_complex_smul,
+          RingHom.id_apply] }
+    (‖y‖ * ‖x‖) fun z => by
+      calc ‖(inner ℬ y z : ℬ) • x‖ ≤ ‖(inner ℬ y z : ℬ)‖ * ‖x‖ :=
+            norm_op_smul_le _ _
+        _ ≤ ‖y‖ * ‖z‖ * ‖x‖ :=
+            mul_le_mul_of_nonneg_right (CStarModule.norm_inner_le X)
+              (norm_nonneg _)
+        _ = ‖y‖ * ‖x‖ * ‖z‖ := by ring
+
+variable (ℬ) in
 /-- **159II** (dils.tex:4292, Definition), characterizing property:
 `|x⟩⟨y| z = ⟨y,z⟩ • x`. -/
 theorem mketbra_apply (x y z : X) :
-    mketbra x y z = inner ℬ y z • x :=
-  sorry
+    mketbra ℬ x y z = inner ℬ y z • x :=
+  rfl
 
+variable (ℬ) in
 /-- **159III** (`hilbmodketbrarules`, dils.tex:4302): `|x⟩⟨y|` is
 adjointable, with adjoint `|y⟩⟨x|`. -/
 theorem mketbra_adjointable (x y : X) :
-    ModuleAdjointTo ℬ (⇑(mketbra x y) : X → X) ⇑(mketbra y x) :=
-  sorry
+    ModuleAdjointTo ℬ (⇑(mketbra ℬ x y) : X → X) ⇑(mketbra ℬ y x) := by
+  intro z w
+  rw [mketbra_apply, mketbra_apply, CStarModule.inner_op_smul_left,
+    CStarModule.inner_op_smul_right, CStarModule.star_inner]
 
+variable (ℬ) in
 /-- **159III** (`hilbmodketbrarules`, dils.tex:4302): the calculus of the
 `|x⟩⟨y|`: `|xb⟩⟨y| = |x⟩⟨yb*|` (mirrored) and
 `|x⟩⟨y| |v⟩⟨w| = |x⟨y,v⟩⟩⟨w|`; if `⟨e,e⟩` is a projection then `|e⟩⟨e|`
@@ -175,13 +132,30 @@ adjointable `T`. -/
 theorem mketbra_rules (x y v w e : X) (b : ℬ)
     (T T' : X →L[ℂ] X) (hT : ModuleAdjointTo ℬ ⇑T ⇑T')
     (he : IsStarProjection (inner ℬ e e)) :
-    mketbra (b • x) y = mketbra x (star b • y) ∧
-    (mketbra x y).comp (mketbra v w) = mketbra (inner ℬ y v • x) w ∧
-    ((mketbra e e).comp (mketbra e e) = mketbra e e ∧
-      ModuleAdjointTo ℬ (⇑(mketbra e e) : X → X) ⇑(mketbra e e)) ∧
-    T.comp (mketbra x y) = mketbra (T x) y ∧
-    (mketbra x y).comp T' = mketbra x (T y) :=
-  sorry
+    mketbra ℬ (b • x) y = mketbra ℬ x (star b • y) ∧
+    (mketbra ℬ x y).comp (mketbra ℬ v w) = mketbra ℬ (inner ℬ y v • x) w ∧
+    ((mketbra ℬ e e).comp (mketbra ℬ e e) = mketbra ℬ e e ∧
+      ModuleAdjointTo ℬ (⇑(mketbra ℬ e e) : X → X) ⇑(mketbra ℬ e e)) ∧
+    T.comp (mketbra ℬ x y) = mketbra ℬ (T x) y ∧
+    (mketbra ℬ x y).comp T' = mketbra ℬ x (T y) := by
+  obtain ⟨-, hTc, hTm⟩ := moduleAdjointable_linear (𝒜 := ℬ) ⇑T ⟨_, hT⟩
+  refine ⟨?_, ?_, ⟨?_, mketbra_adjointable ℬ e e⟩, ?_, ?_⟩
+  · ext z
+    change (inner ℬ y z : ℬ) • (b • x) = (inner ℬ (star b • y) z : ℬ) • x
+    rw [CStarModule.inner_op_smul_left, star_star, op_mul_smul]
+  · ext z
+    change (inner ℬ y ((inner ℬ w z : ℬ) • v) : ℬ) • x
+      = (inner ℬ w z : ℬ) • ((inner ℬ y v : ℬ) • x)
+    rw [CStarModule.inner_op_smul_right, op_mul_smul]
+  · ext z
+    change (inner ℬ e ((inner ℬ e z : ℬ) • e) : ℬ) • e = (inner ℬ e z : ℬ) • e
+    rw [CStarModule.inner_op_smul_right, op_mul_smul, mod_projelabs e he]
+  · ext z
+    change T ((inner ℬ y z : ℬ) • x) = (inner ℬ y z : ℬ) • T x
+    rw [hTm]
+  · ext z
+    change (inner ℬ y (T' z) : ℬ) • x = (inner ℬ (T y) z : ℬ) • x
+    rw [hT y z]
 
 variable [CompleteSpace X]
 
@@ -197,7 +171,7 @@ theorem ketbra_ultraweakly_dense [VonNeumannAlgebra ℬ]
     (T : Ba ℬ X) :
     ∃ approx : Finset ι → Ba ℬ X,
       (∀ s, approx s ∈ Submodule.span ℂ
-        {S : Ba ℬ X | ∃ (i j : ι) (b : ℬ), S.1 = mketbra (b • e i) (e j)}) ∧
+        {S : Ba ℬ X | ∃ (i j : ι) (b : ℬ), S.1 = mketbra ℬ (b • e i) (e j)}) ∧
       UWTendsto approx atTop T :=
   sorry
 
@@ -210,8 +184,8 @@ theorem ketbra_ultranorm_continuous [VonNeumannAlgebra ℬ]
     (hX : SelfDual ℬ X) {ι : Type v} {l : Filter ι} (x : ι → X) (x₀ : X)
     (hbdd : ∃ M : ℝ, ∀ i, ‖x i‖ ≤ M)
     (hx : UnTendsto (inner ℬ) x l x₀) (y : X)
-    (K : ι → Ba ℬ X) (hK : ∀ i, (K i).1 = mketbra (x i) y)
-    (K₀ : Ba ℬ X) (hK₀ : K₀.1 = mketbra x₀ y) :
+    (K : ι → Ba ℬ X) (hK : ∀ i, (K i).1 = mketbra ℬ (x i) y)
+    (K₀ : Ba ℬ X) (hK₀ : K₀.1 = mketbra ℬ x₀ y) :
     UWTendsto K l K₀ :=
   sorry
 
@@ -280,8 +254,40 @@ theorem hilbmod_projthm_1 [VonNeumannAlgebra ℬ] [CompleteSpace X]
     (∀ x ∈ orthoCompl ℬ V, ∀ y ∈ orthoCompl ℬ V, x + y ∈ orthoCompl ℬ V) ∧
     (∀ (b : ℬ), ∀ x ∈ orthoCompl ℬ V, b • x ∈ orthoCompl ℬ V) ∧
     (∀ (c : ℂ), ∀ x ∈ orthoCompl ℬ V, c • x ∈ orthoCompl ℬ V) ∧
-    unClosure ℬ (inner ℬ) (orthoCompl ℬ V) = orthoCompl ℬ V :=
-  sorry
+    unClosure ℬ (inner ℬ) (orthoCompl ℬ V) = orthoCompl ℬ V := by
+  -- "It is easy to see `V^⊥` is a submodule of `X`" (dils.tex:4506)
+  refine ⟨fun v _ => CStarModule.inner_zero_left, ?_, ?_, ?_, ?_⟩
+  · intro x hx y hy v hv
+    rw [CStarModule.inner_add_left, hx v hv, hy v hv, add_zero]
+  · intro b x hx v hv
+    rw [CStarModule.inner_op_smul_left, hx v hv, zero_mul]
+  · intro c x hx v hv
+    rw [CStarModule.inner_smul_left_complex, hx v hv, smul_zero]
+  -- "To show `V^⊥` is ultranorm closed … `⟨v, unlim xα⟩ = uslim ⟨v, xα⟩ = 0`"
+  refine Set.eq_of_subset_of_subset (fun x hx v hv => ?_) (fun x hx n ωs ε hε => ?_)
+  · -- every np-functional kills `⟨x,v⟩`, so it is `0` (**44XI**)
+    refine np_separating _ fun ω => ?_
+    set C : ℝ := unSeminorm ω (cstarBInner ℬ X).inner v with hCdef
+    have hC : 0 ≤ C := unSeminorm_nonneg ω _ v
+    -- `|ω⟨x,v⟩| = |ω⟨x−d,v⟩| ≤ ‖x−d‖_ω ‖v‖_ω ≤ ε C` for every `ε > 0`
+    have key : ∀ ε : ℝ, 0 < ε → ‖ω (inner ℬ x v : ℬ)‖ ≤ ε * C := by
+      intro ε hε
+      obtain ⟨d, hd, hdist⟩ := hx 1 (fun _ => ω) ε hε
+      have hsplit : (inner ℬ x v : ℬ) = inner ℬ (x - d) v := by
+        rw [CStarModule.inner_sub_left, hd v hv, sub_zero]
+      calc ‖ω (inner ℬ x v : ℬ)‖
+          = ‖ω ((cstarBInner ℬ X).inner (x - d) v)‖ := by rw [hsplit]; rfl
+        _ ≤ unSeminorm ω (cstarBInner ℬ X).inner (x - d) * C :=
+            unSeminorm_inner_le ω (cstarBInner ℬ X) _ _
+        _ ≤ ε * C := mul_le_mul_of_nonneg_right (hdist 0) hC
+    have hzero : ‖ω (inner ℬ x v : ℬ)‖ ≤ 0 := by
+      refine le_of_forall_pos_le_add fun δ hδ => ?_
+      have h1 : δ / (C + 1) * C ≤ δ := by
+        rw [div_mul_eq_mul_div, div_le_iff₀ (by positivity)]
+        nlinarith
+      linarith [key (δ / (C + 1)) (by positivity)]
+    simpa using le_antisymm hzero (norm_nonneg _)
+  · exact ⟨x, hx, fun i => by simpa [unSeminorm] using hε.le⟩
 
 /-- **160IV** (`hilbmod-projthm`, dils.tex:4488, Proposition), part 2:
 `V^⊥⊥` is the ultranorm closure of the ℬ-linear span of `V`. -/
@@ -697,7 +703,7 @@ theorem ext_tensor_ketbra_dense [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     ∃ approx : Finset (ι × κ) → Ba 𝒞 E.Z,
       (∀ s, approx s ∈ Submodule.span ℂ
         {S : Ba 𝒞 E.Z | ∃ (i k : ι) (j l : κ) (a : 𝒜) (b : ℬ),
-          S.1 = mketbra (E.η (a • e i) (b • d j)) (E.η (e k) (d l))}) ∧
+          S.1 = mketbra 𝒞 (E.η (a • e i) (b • d j)) (E.η (e k) (d l))}) ∧
       UWTendsto approx atTop T :=
   sorry
 
@@ -733,8 +739,8 @@ theorem hilbmod_tensor_ketbra [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     (hR'' : ∀ x y, R''.1 (E.η x y) = E.η ((S * S').1 x) ((T * T').1 y)) :
     (∀ (x₁ x₂ : X) (y₁ y₂ : Y),
       (∀ x y, R.1 (E.η x y) =
-          E.η ((mketbra x₁ x₂ : X →L[ℂ] X) x) ((mketbra y₁ y₂) y)) →
-        R.1 = mketbra (E.η x₁ y₁) (E.η x₂ y₂)) ∧
+          E.η ((mketbra 𝒜 x₁ x₂ : X →L[ℂ] X) x) ((mketbra ℬ y₁ y₂) y)) →
+        R.1 = mketbra 𝒞 (E.η x₁ y₁) (E.η x₂ y₂)) ∧
     ((∀ x y, R.1 (E.η x y) = E.η x y) → R = 1) ∧
     R * R' = R'' ∧
     (∀ x y, (star R).1 (E.η x y) = E.η ((star S).1 x) ((star T).1 y)) :=

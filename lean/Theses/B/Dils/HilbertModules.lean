@@ -913,31 +913,23 @@ variable {𝒷 : Type u} {X : Type v}
 von Neumann algebra `𝒷`, a Hilbert 𝒷-module `X` and `x ∈ X`, the vector
 state `h(T) = ⟨x, Tx⟩` on `𝒷ᵃ(X)` is completely positive: for adjointable
 `T₁, …, Tₙ` (with adjoints `Sᵢ`) and `b₁, …, bₙ ∈ 𝒷`,
-`∑_{i,j} bᵢ* h(Tᵢ* Tⱼ) bⱼ ≥ 0` (mirrored).
+`∑_{i,j} bᵢ* h(Tᵢ* Tⱼ) bⱼ ≥ 0`.
+
+**Convention.**  The thesis uses *right* 𝒷-modules, whereas `inner` follows
+Mathlib's `CStarModule` convention, so that `⟪u, v⟫ = ⟨v, u⟩_thesis` (see the
+file header, and `module_CS` / `Theses.A.CStar.chilb_cs` for the same swap).
+The thesis's `∑ᵢⱼ bᵢ* ⟨x, Tᵢ*Tⱼ x⟩ bⱼ ≥ 0` therefore mirrors to
+`∑ᵢⱼ star (bᵢ) * ⟪Sᵢ(Tⱼ x), x⟫ * bⱼ ≥ 0` — the inner product's *arguments*
+are interchanged.  Stated without the swap, i.e. with `⟪x, Sᵢ(Tⱼ x)⟫`, it is
+**false**: taking `𝒷 = M₂(ℂ)` and `X = 𝒷` over itself (`⟪u,v⟫ = v u*`,
+`yᵢ := Tᵢ x`) it would read `∑ᵢⱼ bᵢ* yⱼ yᵢ* bⱼ ≥ 0`, and random
+`y₁,y₂,b₁,b₂ ∈ M₂(ℂ)` make the left-hand side (always self-adjoint)
+indefinite.  The correct form is the Gram matrix
+`∑ᵢⱼ bᵢ* ⟪Tⱼ x, Tᵢ x⟫ bⱼ = ⟪v, v⟫` for `v = ∑ₖ star (bₖ) • Tₖ x`, which is
+what is proved here.
 
 **145II** is the proof — not converted. -/
 theorem hilbmod_vectstates_cp [VonNeumannAlgebra 𝒷] [CompleteSpace X]
-    (x : X) (n : ℕ) (T S : Fin n → (X →L[ℂ] X))
-    (hTS : ∀ i, ModuleAdjointTo 𝒷 ⇑(T i) ⇑(S i)) (b : Fin n → 𝒷) :
-    0 ≤ ∑ i, ∑ j,
-      star (b i) * inner 𝒷 x (((S i).comp (T j)) x) * b j :=
-  sorry
-
-/-- **145I** (`hilbmod-vectstates-cp`, dils.tex:1706, Proposition), with the
-inner product's arguments in the order the mirroring convention dictates.
-
-**Convention.**  Mathlib's `inner` is the mirror image of the thesis's:
-`⟪u, v⟫_Mathlib = ⟨v, u⟩_thesis` (this file's header).  The thesis's
-`∑ᵢⱼ bᵢ* ⟨x, Tᵢ*Tⱼ x⟩ bⱼ ≥ 0` therefore mirrors to
-`∑ᵢⱼ star (bᵢ) * ⟪Sᵢ(Tⱼ x), x⟫ * bⱼ ≥ 0` — the inner product's *arguments*
-are interchanged.  `hilbmod_vectstates_cp` above has them the other way
-round, i.e. `⟪x, Sᵢ(Tⱼ x)⟫`, and in that form the statement is **false**:
-taking `𝒷 = M₂(ℂ)` and `X = 𝒷` over itself (`⟪u,v⟫ = v u*`, `yᵢ := Tᵢ x`)
-it reads `∑ᵢⱼ bᵢ* yⱼ yᵢ* bⱼ ≥ 0`, and random `y₁,y₂,b₁,b₂ ∈ M₂(ℂ)` make the
-left-hand side (always self-adjoint) indefinite.  The correct form is the
-Gram matrix `∑ᵢⱼ bᵢ* ⟪Tⱼ x, Tᵢ x⟫ bⱼ = ⟪v, v⟫` for
-`v = ∑ₖ star (bₖ) • Tₖ x`, which is what is proved here. -/
-theorem hilbmod_vectstates_cp_mirrored [VonNeumannAlgebra 𝒷] [CompleteSpace X]
     (x : X) (n : ℕ) (T S : Fin n → (X →L[ℂ] X))
     (hTS : ∀ i, ModuleAdjointTo 𝒷 ⇑(T i) ⇑(S i)) (b : Fin n → 𝒷) :
     0 ≤ ∑ i, ∑ j,
@@ -1568,8 +1560,8 @@ ultranorm-dense subset `D` are nonnegative on a bounded 𝒷-linear `T`, then
 continuity of `x ↦ ⟨x,Tx⟩`) followed by order separation of the
 np-functionals, **44XI** (`Theses.A.VN.nonneg_of_conjNP`), and needs `𝒷` to
 be a von Neumann algebra — as does the ultranorm uniformity itself
-(**146VII**, dils.tex:1889).  Together with **144I** this gives **148VII**;
-see the `FIXME(denseordersep-vonNeumann)` note below. -/
+(**146VII**, dils.tex:1889).  Together with **144I** this gives **148VII**
+below. -/
 theorem unDense_inner_nonneg [VonNeumannAlgebra 𝒷] (D : Set X)
     (hD : UnDense (inner 𝒷) D) (T : X →L[ℂ] X)
     (hTmod : ∀ (a : 𝒷) (x : X), T (a • x) = a • T x)
@@ -1710,36 +1702,25 @@ theorem unDense_inner_nonneg [VonNeumannAlgebra 𝒷] (D : Set X)
   rw [hrw]
   exact hall _ ω
 
-/- FIXME(denseordersep-vonNeumann): **148VII** below is stated with `𝒷` only
-a C*-algebra, but the thesis's ultranorm uniformity — and hence the phrase
-"ultranorm-dense" in its statement (dils.tex:2116) — is defined only for a
-von Neumann algebra `𝒷` (**146VII**, dils.tex:1889, "Let 𝒷 be a von Neumann
-algebra").  Order separation of `𝒷`'s np-functionals (**44XI**) is what the
-proof consumes, and that is exactly the faithfulness clause of
-`VonNeumannAlgebra`; with only `[CStarAlgebra 𝒷]` there is nothing to
-separate with.  This is the same defect that was repaired in **148IV**
-(`ultranormscalar`) last session.  Once `[VonNeumannAlgebra 𝒷]` is added to
-the statement the proof is
-
-    fun D hD T hT =>
-      ⟨fun h x _ => (hilbmod_ordersep T hT).mp h x, fun h =>
-        (hilbmod_ordersep T hT).mpr
-          (unDense_inner_nonneg D hD T
-            (moduleAdjointable_linear (𝒜 := 𝒷) ⇑T hT).2.2 h)⟩
-
-(compiled and checked; `unDense_inner_nonneg` above carries the whole
-argument).  Not applied here: statements are not changed without the
-author's authorisation. -/
-
 /-- **148VII** (`hilbmod-denseordersep`, dils.tex:2116, Corollary): for a
 Hilbert 𝒷-module `X` with ultranorm-dense subset `D`, the vector states
 from `D` are order separating: for adjointable bounded `T`, `T ≥ 0` iff
-`⟨x, Tx⟩ ≥ 0` for all `x ∈ D`. -/
-theorem hilbmod_denseordersep [CompleteSpace X] (D : Set X)
+`⟨x, Tx⟩ ≥ 0` for all `x ∈ D`.
+
+The `[VonNeumannAlgebra 𝒷]` hypothesis is the thesis's: the ultranorm
+uniformity — and hence the phrase "ultranorm-dense" in the statement — is
+defined only for a von Neumann algebra `𝒷` (**146VII**, dils.tex:1889, "Let
+𝒷 be a von Neumann algebra").  Order separation of `𝒷`'s np-functionals
+(**44XI**) is what the proof consumes, and that is exactly the faithfulness
+clause of `VonNeumannAlgebra`. -/
+theorem hilbmod_denseordersep [VonNeumannAlgebra 𝒷] [CompleteSpace X] (D : Set X)
     (hD : UnDense (inner 𝒷) D) (T : X →L[ℂ] X)
     (hT : ModuleAdjointable 𝒷 ⇑T) :
     IsPositiveOp 𝒷 T ↔ ∀ x ∈ D, 0 ≤ inner 𝒷 x (T x) :=
-  sorry
+  ⟨fun h x _ => (hilbmod_ordersep T hT).mp h x, fun h =>
+    (hilbmod_ordersep T hT).mpr
+      (unDense_inner_nonneg D hD T
+        (moduleAdjointable_linear (𝒜 := 𝒷) ⇑T hT).2.2 h)⟩
 
 end DenseOrderSep
 
