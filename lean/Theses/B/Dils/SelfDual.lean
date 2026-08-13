@@ -68,6 +68,20 @@ theorem op_smul_complex_smul (c : ℂ) (a : ℬ) (x : X) :
     rw [CStarModule.inner_op_smul_right, CStarModule.inner_smul_right_complex,
       CStarModule.inner_op_smul_right, smul_mul_assoc]
 
+theorem op_smul_add (a : ℬ) (x y : X) : a • (x + y) = a • x + a • y :=
+  eq_of_inner_right_eq (𝒜 := ℬ) fun z => by
+    rw [CStarModule.inner_op_smul_right, CStarModule.inner_add_right,
+      CStarModule.inner_add_right, CStarModule.inner_op_smul_right,
+      CStarModule.inner_op_smul_right, mul_add]
+
+theorem op_zero_smul (x : X) : (0 : ℬ) • x = 0 :=
+  eq_of_inner_right_eq (𝒜 := ℬ) fun z => by
+    rw [CStarModule.inner_op_smul_right, zero_mul, CStarModule.inner_zero_right]
+
+theorem op_smul_zero (a : ℬ) : a • (0 : X) = 0 :=
+  eq_of_inner_right_eq (𝒜 := ℬ) fun z => by
+    rw [CStarModule.inner_op_smul_right, CStarModule.inner_zero_right, mul_zero]
+
 theorem norm_op_smul_le (a : ℬ) (x : X) : ‖a • x‖ ≤ ‖a‖ * ‖x‖ := by
   have hinner : (inner ℬ (a • x) (a • x) : ℬ) = a * inner ℬ x x * star a := by
     rw [CStarModule.inner_op_smul_right, CStarModule.inner_op_smul_left,
@@ -517,8 +531,186 @@ theorem onb2 [VonNeumannAlgebra ℬ] [CompleteSpace X] {ι : Type v}
     (e : ι → X) (he : IsONBasis ℬ e) (i₁ i₂ : ι) (hne : i₁ ≠ i₂)
     (hle : inner ℬ (e i₁) (e i₁) + inner ℬ (e i₂) (e i₂) ≤ 1) :
     IsONBasis ℬ fun i : {i : ι // i ≠ i₂} =>
-      if (i : ι) = i₁ then e i₁ + e i₂ else e i :=
-  sorry
+      if (i : ι) = i₁ then e i₁ + e i₂ else e i := by
+  -- `bsols.tex`, solution `onb2`, transcribed.
+  classical
+  obtain ⟨⟨horth, hproj⟩, hexp, hl2⟩ := he
+  set f : {i : ι // i ≠ i₂} → X :=
+    fun i => if (i : ι) = i₁ then e i₁ + e i₂ else e i with hfdef
+  set i₁' : {i : ι // i ≠ i₂} := ⟨i₁, hne⟩ with hi₁'
+  have hpr : ∀ i, IsStarProjection (inner ℬ (e i) (e i) : ℬ) := fun i => (hproj i).1
+  have hfpair : f i₁' = e i₁ + e i₂ := by simp [hfdef, hi₁']
+  have hfelse : ∀ i : {i : ι // i ≠ i₂}, (i : ι) ≠ i₁ → f i = e (i : ι) := by
+    intro i hi; simp [hfdef, hi]
+  -- "$p_1$ and $p_2$ are projections with $p_1 + p_2 \leq 1$ and so by
+  -- `orthogonal-tuple-of-projections` they are orthogonal" (**55XIII**)
+  have htfae := orthogonal_tuple_of_projections_1
+    (inner ℬ (e i₁) (e i₁) : ℬ) (inner ℬ (e i₂) (e i₂) : ℬ) (hpr i₁) (hpr i₂)
+  have h12 : (inner ℬ (e i₁) (e i₁) : ℬ) * inner ℬ (e i₂) (e i₂) = 0 :=
+    (htfae.out 3 0).mp hle
+  have h21 : (inner ℬ (e i₂) (e i₂) : ℬ) * inner ℬ (e i₁) (e i₁) = 0 :=
+    (htfae.out 3 1).mp hle
+  have hsumproj :
+      IsStarProjection ((inner ℬ (e i₁) (e i₁) : ℬ) + inner ℬ (e i₂) (e i₂)) :=
+    (htfae.out 3 5).mp hle
+  -- **149III** `mod-projelabs` in coefficient form: `⟨eᵢ,x⟩⟨eᵢ,eᵢ⟩ = ⟨eᵢ,x⟩`
+  have hcoef : ∀ (i : ι) (x : X),
+      (inner ℬ (e i) x : ℬ) * inner ℬ (e i) (e i) = inner ℬ (e i) x := by
+    intro i x
+    calc (inner ℬ (e i) x : ℬ) * inner ℬ (e i) (e i)
+        = inner ℬ ((inner ℬ (e i) (e i) : ℬ) • e i) x := by
+          rw [CStarModule.inner_op_smul_left, (hpr i).isSelfAdjoint.star_eq]
+      _ = inner ℬ (e i) x := by rw [mod_projelabs (e i) (hpr i)]
+  -- "$e_2 \langle e_1, x\rangle = e_2 p_2 \langle e_1, x\rangle = 0$"
+  have hkill : ∀ i j : ι, (inner ℬ (e i) (e i) : ℬ) * inner ℬ (e j) (e j) = 0 →
+      ∀ x : X, (inner ℬ (e i) x : ℬ) • e j = 0 := by
+    intro i j hij x
+    have h1 : (inner ℬ (e i) x : ℬ) * inner ℬ (e j) (e j) = 0 := by
+      conv_lhs => rw [← hcoef i x]
+      rw [mul_assoc, hij, mul_zero]
+    calc (inner ℬ (e i) x : ℬ) • e j
+        = (inner ℬ (e i) x : ℬ) • ((inner ℬ (e j) (e j) : ℬ) • e j) := by
+          rw [mod_projelabs (e j) (hpr j)]
+      _ = ((inner ℬ (e i) x : ℬ) * inner ℬ (e j) (e j)) • e j :=
+          (op_mul_smul _ _ _).symm
+      _ = 0 := by rw [h1, op_zero_smul]
+  -- "$(e_1+e_2)\langle e_1+e_2,x\rangle = e_1\langle e_1,x\rangle
+  --    + e_2 \langle e_2,x\rangle$"
+  have hpairsum : ∀ x : X, (inner ℬ (e i₁ + e i₂) x : ℬ) • (e i₁ + e i₂)
+      = (inner ℬ (e i₁) x : ℬ) • e i₁ + (inner ℬ (e i₂) x : ℬ) • e i₂ := by
+    intro x
+    rw [CStarModule.inner_add_left, op_add_smul, op_smul_add, op_smul_add,
+      hkill i₁ i₂ h12 x, hkill i₂ i₁ h21 x, add_zero, zero_add]
+  have hdiag : (inner ℬ (e i₁ + e i₂) (e i₁ + e i₂) : ℬ)
+      = inner ℬ (e i₁) (e i₁) + inner ℬ (e i₂) (e i₂) := by
+    rw [CStarModule.inner_add_left, CStarModule.inner_add_right,
+      CStarModule.inner_add_right, horth i₁ i₂ hne, horth i₂ i₁ hne.symm]
+    abel
+  have hoff : ∀ j : ι, j ≠ i₁ → j ≠ i₂ →
+      (inner ℬ (e i₁ + e i₂) (e j) : ℬ) = 0 ∧
+      (inner ℬ (e j) (e i₁ + e i₂) : ℬ) = 0 := by
+    intro j hj1 hj2
+    refine ⟨?_, ?_⟩
+    · rw [CStarModule.inner_add_left, horth i₁ j (Ne.symm hj1),
+        horth i₂ j (Ne.symm hj2), add_zero]
+    · rw [CStarModule.inner_add_right, horth j i₁ hj1, horth j i₂ hj2, add_zero]
+  -- the reindexing `Finset {i // i ≠ i₂} → Finset ι`
+  set g : Finset {i : ι // i ≠ i₂} → Finset ι :=
+    fun s => if i₁' ∈ s then insert i₂ (s.image Subtype.val) else s.image Subtype.val
+    with hgdef
+  have hvalinj : Function.Injective (Subtype.val : {i : ι // i ≠ i₂} → ι) :=
+    Subtype.val_injective
+  have hi₂notmem : ∀ s : Finset {i : ι // i ≠ i₂}, i₂ ∉ s.image Subtype.val := by
+    intro s hmem
+    obtain ⟨a, -, ha⟩ := Finset.mem_image.mp hmem
+    exact a.2 ha
+  have hsplit : ∀ (v : {i : ι // i ≠ i₂} → X) (v' : ι → X),
+      (∀ i : {i : ι // i ≠ i₂}, (i : ι) ≠ i₁ → v i = v' (i : ι)) →
+      v i₁' = v' i₁ + v' i₂ →
+      ∀ s : Finset {i : ι // i ≠ i₂}, ∑ i ∈ s, v i = ∑ j ∈ g s, v' j := by
+    intro v v' hveq hvpair s
+    by_cases hs : i₁' ∈ s
+    · have hcong : ∀ i ∈ s.erase i₁', v i = v' (i : ι) := fun i hi =>
+        hveq i fun hc => Finset.ne_of_mem_erase hi (Subtype.ext hc)
+      rw [hgdef]
+      simp only [if_pos hs]
+      rw [Finset.sum_insert (hi₂notmem s),
+        Finset.sum_image (fun a _ c _ h => hvalinj h),
+        ← Finset.add_sum_erase s v hs,
+        ← Finset.add_sum_erase s (fun i => v' (i : ι)) hs, hvpair,
+        Finset.sum_congr rfl hcong]
+      abel
+    · have hcong : ∀ i ∈ s, v i = v' (i : ι) := by
+        intro i hi
+        refine hveq i fun hc => hs ?_
+        have : i = i₁' := Subtype.ext hc
+        rwa [← this]
+      rw [hgdef]
+      simp only [if_neg hs]
+      rw [Finset.sum_image (fun a _ c _ h => hvalinj h)]
+      exact Finset.sum_congr rfl hcong
+  have hgtop : Tendsto g atTop atTop := by
+    rw [tendsto_atTop_atTop]
+    intro t
+    refine ⟨insert i₁' (t.subtype (fun j => j ≠ i₂)), fun s hs => ?_⟩
+    have hmem : i₁' ∈ s := hs (Finset.mem_insert_self _ _)
+    intro j hj
+    rw [hgdef]
+    simp only [if_pos hmem]
+    by_cases hj2 : j = i₂
+    · subst hj2; exact Finset.mem_insert_self _ _
+    · refine Finset.mem_insert_of_mem (Finset.mem_image.mpr ⟨⟨j, hj2⟩, ?_, rfl⟩)
+      exact hs (Finset.mem_insert_of_mem (Finset.mem_subtype.mpr hj))
+  refine ⟨⟨?_, ?_⟩, ?_, ?_⟩
+  -- "$E'$ is an orthogonal set"
+  · intro i j hij
+    by_cases hi : (i : ι) = i₁ <;> by_cases hj : (j : ι) = i₁
+    · exact absurd (Subtype.ext (hi.trans hj.symm)) hij
+    · rw [show f i = e i₁ + e i₂ by rw [hfdef]; simp [hi], hfelse j hj]
+      exact (hoff (j : ι) hj j.2).1
+    · rw [hfelse i hi, show f j = e i₁ + e i₂ by rw [hfdef]; simp [hj]]
+      exact (hoff (i : ι) hi i.2).2
+    · rw [hfelse i hi, hfelse j hj]
+      exact horth _ _ fun hc => hij (Subtype.ext hc)
+  -- "$\langle e_1+e_2, e_1+e_2\rangle = p_1 + p_2$ is a (non-zero) projection"
+  · intro i
+    by_cases hi : (i : ι) = i₁
+    · rw [show f i = e i₁ + e i₂ by rw [hfdef]; simp [hi], hdiag]
+      refine ⟨hsumproj, fun hzero => (hproj i₁).2 ?_⟩
+      calc (inner ℬ (e i₁) (e i₁) : ℬ)
+          = inner ℬ (e i₁) (e i₁) *
+              (inner ℬ (e i₁) (e i₁) + inner ℬ (e i₂) (e i₂)) := by
+            rw [mul_add, h12, add_zero, (hpr i₁).isIdempotentElem.eq]
+        _ = 0 := by rw [hzero, mul_zero]
+    · rw [hfelse i hi]; exact hproj _
+  -- "$x = (e_1+e_2)\langle e_1+e_2,x\rangle + \sum_{e\in E} e\langle e,x\rangle$"
+  · intro x ω
+    have hkey : ∀ s : Finset {i : ι // i ≠ i₂},
+        ∑ i ∈ s, (inner ℬ (f i) x : ℬ) • f i
+          = ∑ j ∈ g s, (inner ℬ (e j) x : ℬ) • e j := by
+      refine hsplit _ _ (fun i hi => by rw [hfelse i hi]) ?_
+      rw [hfpair]; exact hpairsum x
+    refine ((hexp x ω).comp hgtop).congr fun s => ?_
+    simp only [Function.comp_apply, hkey s]
+  -- "the second condition holds automatically as $E'$ is an orthonormal set"
+  · intro b hb
+    obtain ⟨M, hM⟩ := hb
+    set b' : ι → ℬ := fun j => if h : j = i₂ then b i₁' else b ⟨j, h⟩ with hb'def
+    have hb'val : ∀ i : {i : ι // i ≠ i₂}, b' (i : ι) = b i := by
+      intro i; simp [hb'def, i.2]
+    have hb'one : b' i₁ = b i₁' := by simp [hb'def, hne, hi₁']
+    have hb'two : b' i₂ = b i₁' := by simp [hb'def]
+    have himg : (t : Finset ι) → (t.subtype (fun j => j ≠ i₂)).image Subtype.val
+        = t.erase i₂ := by
+      intro t; ext j; simp [Finset.mem_erase, and_comm]
+    have hsub : ∀ t : Finset ι, ∑ j ∈ t.erase i₂, b' j * star (b' j)
+        = ∑ i ∈ t.subtype (fun j => j ≠ i₂), b i * star (b i) := by
+      intro t
+      rw [← himg t, Finset.sum_image (fun a _ c _ h => hvalinj h)]
+      exact Finset.sum_congr rfl fun i _ => by rw [hb'val i]
+    have hb'l2 : L2Summable ℬ b' := by
+      refine ⟨M + ‖b i₁' * star (b i₁')‖, fun t => ?_⟩
+      by_cases hi₂ : i₂ ∈ t
+      · rw [← Finset.add_sum_erase t (fun j => b' j * star (b' j)) hi₂, hsub t,
+          hb'two]
+        calc ‖b i₁' * star (b i₁')
+              + ∑ i ∈ t.subtype (fun j => j ≠ i₂), b i * star (b i)‖
+            ≤ ‖b i₁' * star (b i₁')‖
+              + ‖∑ i ∈ t.subtype (fun j => j ≠ i₂), b i * star (b i)‖ :=
+              norm_add_le _ _
+          _ ≤ ‖b i₁' * star (b i₁')‖ + M := by gcongr; exact hM _
+          _ = M + ‖b i₁' * star (b i₁')‖ := add_comm _ _
+      · rw [← Finset.erase_eq_of_notMem hi₂, hsub t]
+        exact le_trans (hM _) (le_add_of_nonneg_right (norm_nonneg _))
+    obtain ⟨x, hx⟩ := hl2 b' hb'l2
+    refine ⟨x, fun ω => ?_⟩
+    have hkey : ∀ s : Finset {i : ι // i ≠ i₂},
+        ∑ i ∈ s, b i • f i = ∑ j ∈ g s, b' j • e j := by
+      refine hsplit _ _ (fun i hi => by rw [hfelse i hi, hb'val i]) ?_
+      rw [hfpair, hb'one, hb'two]
+      exact op_smul_add _ _ _
+    refine ((hx ω).comp hgtop).congr fun s => ?_
+    simp only [Function.comp_apply, hkey s]
 
 end L2
 
@@ -742,6 +934,208 @@ theorem univprop_ext_tensor [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     Nonempty (ExtTensor t ht X Y) :=
   sorry
 
+section ExtTensorAux
+
+variable [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ] [VonNeumannAlgebra 𝒞]
+  [CompleteSpace X] [CompleteSpace Y]
+
+/-- The Gram identity `‖∑ᵢ xᵢ ⊗ yᵢ‖² = ‖∑ᵢⱼ ⟨xᵢ,xⱼ⟩ ⊗ ⟨yᵢ,yⱼ⟩‖`, from
+`ExtTensor.η_inner`.  (Auxiliary for parsecs 1640–1670.) -/
+private theorem extTensor_gram (E : ExtTensor t ht X Y) (n : ℕ)
+    (x : Fin n → X) (y : Fin n → Y) :
+    ‖∑ i, E.η (x i) (y i)‖ ^ 2
+      = ‖∑ i, ∑ j, t (inner 𝒜 (x i) (x j)) (inner ℬ (y i) (y j))‖ := by
+  have hg : (inner 𝒞 (∑ i, E.η (x i) (y i)) (∑ i, E.η (x i) (y i)) : 𝒞)
+      = ∑ i, ∑ j, t (inner 𝒜 (x i) (x j)) (inner ℬ (y i) (y j)) := by
+    rw [CStarModule.inner_sum_left]
+    exact Finset.sum_congr rfl fun i _ => by
+      rw [CStarModule.inner_sum_right]
+      exact Finset.sum_congr rfl fun j _ => E.η_inner _ _ _ _
+  rw [← hg, CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒞),
+    Real.sq_sqrt (norm_nonneg _)]
+
+/-- Auxiliary for parsecs 1640–1670: two bounded module maps out of a
+self-dual exterior tensor product which agree on the elementary tensors
+are equal.  This is the uniqueness half of the universal property
+**164II**, and is the substitute — offered by the author himself in
+`bsols.tex`, solution `hilbmod-tensor-ketbra` — for the ultranorm density
+of the elementary tensors. -/
+private theorem extTensor_map_ext (E : ExtTensor t ht X Y) {W : Type u}
+    [NormedAddCommGroup W] [NormedSpace ℂ W] [SMul 𝒞 W] [CStarModule 𝒞 W]
+    [CompleteSpace W] (hW : SelfDual 𝒞 W) (C₁ C₂ : ℝ) (F G : E.Z → W)
+    (hF : IsBoundedModuleMap (cstarBInner 𝒞 E.Z) (cstarBInner 𝒞 W) C₁ F)
+    (hG : IsBoundedModuleMap (cstarBInner 𝒞 E.Z) (cstarBInner 𝒞 W) C₂ G)
+    (hFG : ∀ (x : X) (y : Y), F (E.η x y) = G (E.η x y)) :
+    F = G := by
+  have hnormF : ∀ z : E.Z, ‖F z‖ ≤ C₁ * ‖z‖ := fun z => by
+    rw [CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒞) (F z),
+      CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒞) z]
+    exact hF.bound z
+  have huniv := E.univ W inferInstance inferInstance inferInstance
+    inferInstance inferInstance hW (fun x y => F (E.η x y))
+    (fun x x' y => by rw [E.η_add_left, hF.add])
+    (fun x y y' => by rw [E.η_add_right, hF.add])
+    (fun a b x y => by rw [E.η_smul, hF.smul])
+    ⟨C₁ ^ 2, fun n x y => ?_⟩
+  · exact huniv.unique ⟨⟨C₁, hF⟩, fun _ _ => rfl⟩
+      ⟨⟨C₂, hG⟩, fun x y => (hFG x y).symm⟩
+  · have hsum : ∑ i, F (E.η (x i) (y i)) = F (∑ i, E.η (x i) (y i)) :=
+      (map_sum (AddMonoidHom.mk' F hF.add) _ _).symm
+    rw [hsum, ← extTensor_gram E n x y]
+    nlinarith [hnormF (∑ i, E.η (x i) (y i)),
+      norm_nonneg (∑ i, E.η (x i) (y i)),
+      norm_nonneg (F (∑ i, E.η (x i) (y i)))]
+
+/-- Auxiliary for parsecs 1640–1670: a vector of `X ⊗ Y` orthogonal to
+every elementary tensor is `0`.  (Via `extTensor_map_ext` applied to
+`|w⟩⟨w|`.) -/
+private theorem extTensor_sep (E : ExtTensor t ht X Y) (w : E.Z)
+    (hw : ∀ (x : X) (y : Y), (inner 𝒞 (E.η x y) w : 𝒞) = 0) : w = 0 := by
+  have hK : IsBoundedModuleMap (cstarBInner 𝒞 E.Z) (cstarBInner 𝒞 E.Z)
+      ‖mketbra 𝒞 w w‖ ⇑(mketbra 𝒞 w w) :=
+    ⟨fun z z' => map_add _ z z', fun c z => map_smul _ c z,
+      fun b z => by
+        show (inner 𝒞 w (b • z) : 𝒞) • w = b • ((inner 𝒞 w z : 𝒞) • w)
+        rw [CStarModule.inner_op_smul_right, op_mul_smul],
+      fun z => by
+        have h : ‖(mketbra 𝒞 w w) z‖ ≤ ‖mketbra 𝒞 w w‖ * ‖z‖ :=
+          (mketbra 𝒞 w w).le_opNorm z
+        rw [CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒞)
+            ((mketbra 𝒞 w w) z),
+          CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒞) z] at h
+        exact h⟩
+  have hZ : IsBoundedModuleMap (cstarBInner 𝒞 E.Z) (cstarBInner 𝒞 E.Z) 0
+      (fun _ : E.Z => (0 : E.Z)) :=
+    ⟨fun _ _ => (add_zero _).symm, fun c _ => (smul_zero c).symm,
+      fun b _ => (op_smul_zero b).symm,
+      fun z => by
+        show Real.sqrt ‖(inner 𝒞 (0 : E.Z) (0 : E.Z) : 𝒞)‖
+          ≤ 0 * Real.sqrt ‖(inner 𝒞 z z : 𝒞)‖
+        simp [CStarModule.inner_zero_left]⟩
+  have hmap := extTensor_map_ext E E.selfDual _ _ _ _ hK hZ fun x y => by
+    show (inner 𝒞 w (E.η x y) : 𝒞) • w = 0
+    rw [← CStarModule.star_inner (E.η x y) w, hw x y, star_zero, op_zero_smul]
+  have happ : (inner 𝒞 w w : 𝒞) • w = 0 := congrFun hmap w
+  have hsa : star (inner 𝒞 w w : 𝒞) = inner 𝒞 w w := CStarModule.star_inner w w
+  have h3 : (inner 𝒞 w w : 𝒞) * inner 𝒞 w w * inner 𝒞 w w = 0 := by
+    have := congrArg (fun z : E.Z => (inner 𝒞 z z : 𝒞)) happ
+    simpa [CStarModule.inner_op_smul_left, CStarModule.inner_op_smul_right,
+      hsa, mul_assoc] using this
+  have h4 : (inner 𝒞 w w : 𝒞) * inner 𝒞 w w = 0 := by
+    refine (CStarRing.star_mul_self_eq_zero_iff _).mp ?_
+    calc star ((inner 𝒞 w w : 𝒞) * inner 𝒞 w w) * ((inner 𝒞 w w : 𝒞) * inner 𝒞 w w)
+        = (inner 𝒞 w w : 𝒞) * (inner 𝒞 w w * inner 𝒞 w w * inner 𝒞 w w) := by
+          rw [star_mul, hsa]; noncomm_ring
+      _ = 0 := by rw [h3, mul_zero]
+  refine (CStarModule.inner_self (A := 𝒞) (x := w)).mp ?_
+  refine (CStarRing.star_mul_self_eq_zero_iff _).mp ?_
+  rw [hsa]; exact h4
+
+/-- The identity is a bounded module map (auxiliary). -/
+private theorem isBoundedModuleMap_id {V : Type u} [NormedAddCommGroup V]
+    [NormedSpace ℂ V] [SMul 𝒞 V] [CStarModule 𝒞 V] :
+    IsBoundedModuleMap (cstarBInner 𝒞 V) (cstarBInner 𝒞 V) 1
+      (id : V → V) :=
+  ⟨fun _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl, fun z => by
+    show (cstarBInner 𝒞 V).norm z ≤ 1 * (cstarBInner 𝒞 V).norm z
+    rw [one_mul]⟩
+
+/-- Bounded module maps compose (auxiliary). -/
+private theorem isBoundedModuleMap_comp {V₁ V₂ V₃ : Type u}
+    [NormedAddCommGroup V₁] [NormedSpace ℂ V₁] [SMul 𝒞 V₁] [CStarModule 𝒞 V₁]
+    [NormedAddCommGroup V₂] [NormedSpace ℂ V₂] [SMul 𝒞 V₂] [CStarModule 𝒞 V₂]
+    [NormedAddCommGroup V₃] [NormedSpace ℂ V₃] [SMul 𝒞 V₃] [CStarModule 𝒞 V₃]
+    {C₁ C₂ : ℝ} {F : V₁ → V₂} {G : V₂ → V₃}
+    (hF : IsBoundedModuleMap (cstarBInner 𝒞 V₁) (cstarBInner 𝒞 V₂) C₁ F)
+    (hG : IsBoundedModuleMap (cstarBInner 𝒞 V₂) (cstarBInner 𝒞 V₃) C₂ G) :
+    IsBoundedModuleMap (cstarBInner 𝒞 V₁) (cstarBInner 𝒞 V₃) (|C₂| * |C₁|)
+      (fun z => G (F z)) := by
+  refine ⟨fun z z' => by rw [hF.add, hG.add],
+    fun c z => by rw [hF.smul_complex, hG.smul_complex],
+    fun b z => by rw [hF.smul, hG.smul], fun z => ?_⟩
+  have h1 : ‖F z‖ ≤ C₁ * ‖z‖ := by
+    rw [CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒞) (F z),
+      CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒞) z]
+    exact hF.bound z
+  have h2 : ‖G (F z)‖ ≤ C₂ * ‖F z‖ := by
+    rw [CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒞) (G (F z)),
+      CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒞) (F z)]
+    exact hG.bound (F z)
+  have hgoal : ‖G (F z)‖ ≤ |C₂| * |C₁| * ‖z‖ := by
+    have hA : ‖F z‖ ≤ |C₁| * ‖z‖ :=
+      h1.trans (mul_le_mul_of_nonneg_right (le_abs_self _) (norm_nonneg _))
+    have hB : ‖G (F z)‖ ≤ |C₂| * ‖F z‖ :=
+      h2.trans (mul_le_mul_of_nonneg_right (le_abs_self _) (norm_nonneg _))
+    calc ‖G (F z)‖ ≤ |C₂| * ‖F z‖ := hB
+      _ ≤ |C₂| * (|C₁| * ‖z‖) := mul_le_mul_of_nonneg_left hA (abs_nonneg _)
+      _ = |C₂| * |C₁| * ‖z‖ := by ring
+  rw [CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒞) (G (F z)),
+    CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒞) z] at hgoal
+  exact hgoal
+
+/-- Auxiliary for parsecs 1640–1670: a bounded 𝒞-linear functional on
+`X ⊗ Y` vanishing on the elementary tensors is `0` (self-duality of
+`X ⊗ Y` plus `extTensor_sep`). -/
+private theorem extTensor_functional_ext (E : ExtTensor t ht X Y)
+    (ψ : E.Z →ₗ[ℂ] 𝒞) (hmod : ∀ (b : 𝒞) (z : E.Z), ψ (b • z) = b * ψ z)
+    (hbdd : ∃ C : ℝ, ∀ z : E.Z, ‖ψ z‖ ≤ C * ‖z‖)
+    (hzero : ∀ (x : X) (y : Y), ψ (E.η x y) = 0) : ∀ z : E.Z, ψ z = 0 := by
+  obtain ⟨p, hp⟩ := E.selfDual ψ hmod hbdd
+  have hp0 : p = 0 := by
+    refine extTensor_sep E p fun x y => ?_
+    rw [← CStarModule.star_inner p (E.η x y), ← hp (E.η x y), hzero x y,
+      star_zero]
+  intro z
+  rw [hp z, hp0, CStarModule.inner_zero_left]
+
+/-- Auxiliary for **164IX**: two vector functionals `⟨a, U ·⟩` and `⟨b, ·⟩`
+on `X ⊗ Y` (with `U` a bounded module map) which agree on the elementary
+tensors agree everywhere. -/
+private theorem extTensor_inner_diff_ext (E : ExtTensor t ht X Y)
+    {W : Type u} [NormedAddCommGroup W] [NormedSpace ℂ W] [SMul 𝒞 W]
+    [CStarModule 𝒞 W] (U : E.Z → W) (C : ℝ)
+    (hU : IsBoundedModuleMap (cstarBInner 𝒞 E.Z) (cstarBInner 𝒞 W) C U)
+    (a : W) (b : E.Z)
+    (hzero : ∀ (x : X) (y : Y),
+      (inner 𝒞 a (U (E.η x y)) : 𝒞) = inner 𝒞 b (E.η x y)) :
+    ∀ z : E.Z, (inner 𝒞 a (U z) : 𝒞) = inner 𝒞 b z := by
+  have hUnorm : ∀ z : E.Z, ‖U z‖ ≤ |C| * ‖z‖ := fun z => by
+    have h : ‖U z‖ ≤ C * ‖z‖ := by
+      rw [CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒞) (U z),
+        CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒞) z]
+      exact hU.bound z
+    exact h.trans (mul_le_mul_of_nonneg_right (le_abs_self _) (norm_nonneg _))
+  have hψ := extTensor_functional_ext E
+    { toFun := fun z => (inner 𝒞 a (U z) : 𝒞) - inner 𝒞 b z
+      map_add' := fun z z' => by
+        simp only [hU.add, CStarModule.inner_add_right]; abel
+      map_smul' := fun c z => by
+        simp only [hU.smul_complex, CStarModule.inner_smul_right_complex,
+          RingHom.id_apply, smul_sub] }
+    (fun b₀ z => by
+      show (inner 𝒞 a (U (b₀ • z)) : 𝒞) - inner 𝒞 b (b₀ • z)
+        = b₀ * ((inner 𝒞 a (U z) : 𝒞) - inner 𝒞 b z)
+      rw [hU.smul, CStarModule.inner_op_smul_right,
+        CStarModule.inner_op_smul_right, mul_sub])
+    ⟨‖a‖ * |C| + ‖b‖, fun z => ?_⟩
+    (fun x y => by
+      show (inner 𝒞 a (U (E.η x y)) : 𝒞) - inner 𝒞 b (E.η x y) = 0
+      rw [hzero x y, sub_self])
+  · intro z
+    have h : (inner 𝒞 a (U z) : 𝒞) - inner 𝒞 b z = 0 := hψ z
+    exact sub_eq_zero.mp h
+  · show ‖(inner 𝒞 a (U z) : 𝒞) - inner 𝒞 b z‖ ≤ (‖a‖ * |C| + ‖b‖) * ‖z‖
+    calc ‖(inner 𝒞 a (U z) : 𝒞) - inner 𝒞 b z‖
+        ≤ ‖(inner 𝒞 a (U z) : 𝒞)‖ + ‖(inner 𝒞 b z : 𝒞)‖ := norm_sub_le _ _
+      _ ≤ ‖a‖ * ‖U z‖ + ‖b‖ * ‖z‖ := by
+          gcongr <;> exact CStarModule.norm_inner_le _
+      _ ≤ ‖a‖ * (|C| * ‖z‖) + ‖b‖ * ‖z‖ := by
+          gcongr
+          exact hUnorm z
+      _ = (‖a‖ * |C| + ‖b‖) * ‖z‖ := by ring
+
+end ExtTensorAux
+
 /-- **164IX** (`ext-tensor-uniqueness`, dils.tex:5286, Uniqueness — stated
 in **164II** as "up-to-isomorphism unique"): two self-dual exterior tensor
 products are isomorphic by a unique inner-product-preserving module
@@ -755,8 +1149,46 @@ theorem ext_tensor_uniqueness [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
         (cstarBInner 𝒞 E₂.Z) C U) ∧
       Function.Bijective U ∧
       (∀ z z' : E₁.Z, inner 𝒞 (U z) (U z') = inner 𝒞 z z') ∧
-      ∀ (x : X) (y : Y), U (E₁.η x y) = E₂.η x y :=
-  sorry
+      ∀ (x : X) (y : Y), U (E₁.η x y) = E₂.η x y := by
+  -- `η₂ : X × Y → E₂.Z` is itself an admissible datum for `E₁`'s universal
+  -- property (the required bound is the Gram identity with `C = 1`), and
+  -- symmetrically; the two induced maps are mutually inverse.
+  obtain ⟨U, ⟨hUb, hUη⟩, -⟩ := E₁.univ E₂.Z inferInstance inferInstance
+    inferInstance inferInstance inferInstance E₂.selfDual E₂.η
+    E₂.η_add_left E₂.η_add_right E₂.η_smul
+    ⟨1, fun n x y => by rw [extTensor_gram E₂ n x y, one_mul]⟩
+  obtain ⟨V, ⟨hVb, hVη⟩, -⟩ := E₂.univ E₁.Z inferInstance inferInstance
+    inferInstance inferInstance inferInstance E₁.selfDual E₁.η
+    E₁.η_add_left E₁.η_add_right E₁.η_smul
+    ⟨1, fun n x y => by rw [extTensor_gram E₁ n x y, one_mul]⟩
+  obtain ⟨CU, hCU⟩ := hUb
+  obtain ⟨CV, hCV⟩ := hVb
+  have hVU : (fun z => V (U z)) = (id : E₁.Z → E₁.Z) :=
+    extTensor_map_ext E₁ E₁.selfDual _ 1 _ _
+      (isBoundedModuleMap_comp hCU hCV) isBoundedModuleMap_id
+      fun x y => by rw [hUη, hVη]; rfl
+  have hUV : (fun z => U (V z)) = (id : E₂.Z → E₂.Z) :=
+    extTensor_map_ext E₂ E₂.selfDual _ 1 _ _
+      (isBoundedModuleMap_comp hCV hCU) isBoundedModuleMap_id
+      fun x y => by rw [hVη, hUη]; rfl
+  -- inner products: first against elementary tensors, then in general
+  have hstep1 : ∀ (x₀ : X) (y₀ : Y) (z : E₁.Z),
+      (inner 𝒞 (E₂.η x₀ y₀) (U z) : 𝒞) = inner 𝒞 (E₁.η x₀ y₀) z := by
+    intro x₀ y₀
+    refine extTensor_inner_diff_ext E₁ U CU hCU _ _ fun x y => ?_
+    rw [hUη, E₂.η_inner, E₁.η_inner]
+  have hstep2 : ∀ z' z : E₁.Z,
+      (inner 𝒞 (U z') (U z) : 𝒞) = inner 𝒞 z' z := by
+    intro z'
+    refine extTensor_inner_diff_ext E₁ U CU hCU _ _ fun x y => ?_
+    rw [hUη, ← CStarModule.star_inner (E₂.η x y) (U z'), hstep1 x y z',
+      CStarModule.star_inner]
+  refine ⟨U, ⟨⟨CU, hCU⟩, ?_, fun z z' => hstep2 z z', hUη⟩, ?_⟩
+  · exact Function.bijective_iff_has_inverse.mpr
+      ⟨V, fun z => congrFun hVU z, fun z => congrFun hUV z⟩
+  · rintro U' ⟨⟨CU', hCU'⟩, -, -, hU'η⟩
+    exact extTensor_map_ext E₁ E₂.selfDual _ _ _ _ hCU' hCU
+      fun x y => by rw [hU'η, hUη]
 
 /-- **164II** (`univprop-ext-tensor`, dils.tex:5024, Theorem), property 1:
 the (span of the) image of `η` is ultranorm dense in `X ⊗ Y`. -/
@@ -833,8 +1265,65 @@ theorem hilbmod_tensor_ketbra [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
         R.1 = mketbra 𝒞 (E.η x₁ y₁) (E.η x₂ y₂)) ∧
     ((∀ x y, R.1 (E.η x y) = E.η x y) → R = 1) ∧
     R * R' = R'' ∧
-    (∀ x y, (star R).1 (E.η x y) = E.η ((star S).1 x) ((star T).1 y)) :=
-  sorry
+    (∀ x y, (star R).1 (E.η x y) = E.η ((star S).1 x) ((star T).1 y)) := by
+  -- `bsols.tex`, solution `hilbmod-tensor-ketbra`.  Of the two routes the
+  -- author offers ("either by appealing to the defining universal property
+  -- of `X ⊗ Y` or by … ultranorm density") we take the first, since the
+  -- density statement **164II**.1 (`ext_tensor_dense`) is still `sorry`.
+  -- Every `R ∈ 𝒞ᵃ(X ⊗ Y)` is a bounded module map.
+  have hbdd : ∀ R₀ : Ba 𝒞 E.Z, ∃ C : ℝ,
+      IsBoundedModuleMap (cstarBInner 𝒞 E.Z) (cstarBInner 𝒞 E.Z) C ⇑R₀.1 := by
+    intro R₀
+    obtain ⟨-, -, hRm⟩ := moduleAdjointable_linear (𝒜 := 𝒞) ⇑R₀.1 R₀.2
+    refine ⟨‖R₀.1‖, ⟨fun x y => map_add _ x y, fun c x => map_smul _ c x,
+      hRm, fun x => ?_⟩⟩
+    change Real.sqrt ‖(inner 𝒞 (R₀.1 x) (R₀.1 x) : 𝒞)‖
+      ≤ ‖R₀.1‖ * Real.sqrt ‖(inner 𝒞 x x : 𝒞)‖
+    rw [← CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒞),
+      ← CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒞)]
+    exact R₀.1.le_opNorm x
+  -- "This is sufficient to show …": operators agreeing on the elementary
+  -- tensors agree, by the uniqueness half of the universal property.
+  have hunique : ∀ R₁ R₂ : Ba 𝒞 E.Z,
+      (∀ (x : X) (y : Y), R₁.1 (E.η x y) = R₂.1 (E.η x y)) → R₁ = R₂ := by
+    intro R₁ R₂ hagree
+    obtain ⟨C₁, hC₁⟩ := hbdd R₁
+    obtain ⟨C₂, hC₂⟩ := hbdd R₂
+    exact Subtype.ext (DFunLike.coe_injective
+      (extTensor_map_ext E E.selfDual C₁ C₂ _ _ hC₁ hC₂ hagree))
+  -- vector separation: a vector orthogonal to every elementary tensor is `0`
+  have hsep : ∀ w : E.Z, (∀ (x : X) (y : Y), (inner 𝒞 (E.η x y) w : 𝒞) = 0) →
+      w = 0 := extTensor_sep E
+  refine ⟨?_, ?_, ?_, ?_⟩
+  -- (1) `|x₁⟩⟨x₂| ⊗ |y₁⟩⟨y₂| = |x₁⊗y₁⟩⟨x₂⊗y₂|`
+  · intro x₁ x₂ y₁ y₂ hRk
+    have hK : ModuleAdjointable 𝒞 ⇑(mketbra 𝒞 (E.η x₁ y₁) (E.η x₂ y₂)) :=
+      ⟨_, mketbra_adjointable 𝒞 _ _⟩
+    have := hunique R ⟨mketbra 𝒞 (E.η x₁ y₁) (E.η x₂ y₂), hK⟩ fun x y => by
+      rw [hRk x y]
+      show E.η ((inner 𝒜 x₂ x : 𝒜) • x₁) ((inner ℬ y₂ y : ℬ) • y₁)
+        = (inner 𝒞 (E.η x₂ y₂) (E.η x y) : 𝒞) • E.η x₁ y₁
+      rw [E.η_smul, E.η_inner]
+    rw [this]
+  -- (2) `1 ⊗ 1 = 1`
+  · intro h1
+    exact hunique R 1 fun x y => h1 x y
+  -- (3) `(S ⊗ T)(S' ⊗ T') = SS' ⊗ TT'`
+  · refine hunique _ _ fun x y => ?_
+    show R.1 (R'.1 (E.η x y)) = _
+    rw [hR' x y, hR (S'.1 x) (T'.1 y), hR'' x y]
+    rfl
+  -- (4) `(S ⊗ T)* = S* ⊗ T*`
+  · intro x y
+    have hRadj : ModuleAdjointTo 𝒞 (⇑R.1 : E.Z → E.Z)
+      ⇑((star R : Ba 𝒞 E.Z)).1 := baSubalgebra_star_spec R
+    have hSadj : ModuleAdjointTo 𝒜 (⇑S.1 : X → X)
+      ⇑((star S : Ba 𝒜 X)).1 := baSubalgebra_star_spec S
+    have hTadj : ModuleAdjointTo ℬ (⇑T.1 : Y → Y)
+      ⇑((star T : Ba ℬ Y)).1 := baSubalgebra_star_spec T
+    refine sub_eq_zero.mp (hsep _ fun x' y' => ?_)
+    rw [CStarModule.inner_sub_right, ← hRadj (E.η x' y') (E.η x y), hR x' y',
+      E.η_inner, E.η_inner, hSadj x' x, hTadj y' y, sub_self]
 
 /-- **165VI** (`ba-ext-tensor-pres`, dils.tex:5531, Theorem): there is an
 nmiu-isomorphism `𝒜ᵃ(X) ⊗ ℬᵃ(Y) ≅ 𝒞ᵃ(X ⊗ Y)` sending `S ⊗ T` to

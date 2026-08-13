@@ -128,8 +128,11 @@ theorem prop_complete_into_hilbert_space (V : Type v) [AddCommGroup V]
 
 **137I**–**137VII** (dils.tex:397–585) are the proof of **135IV**
 (`dils-proof-stinespring` and its sub-points, including the extension lemma
-`stinespring-extend-operator`) — proof steps, not converted.
-**137VIII** (dils.tex:586, Remark) — not converted. -/
+`stinespring-extend-operator`); that proof is transcribed in this section, with
+`stinespring-extend-operator` supplied by `LinearMap.extendOfNorm`.
+**137VIII** (dils.tex:586, Remark) — not converted; note the Lean development
+does *not* follow it, deriving 135II downstream from Mathlib's GNS rather than
+using GNS inside the proof of 135IV. -/
 
 section StinespringProof
 
