@@ -2897,6 +2897,61 @@ theorem commutant_basic_1 (S T : Set A) :
     Set.subset_centralizer_centralizer,
     Set.centralizer_centralizer_centralizer S⟩
 
+/-- Auxiliary: np-functionals are `ℂ`-homogeneous. -/
+private theorem npFunctional_smul (ω : NPFunctional A) (c : ℂ) (a : A) :
+    (ω (c • a) : ℂ) = c * ω a :=
+  map_smul ω.toPositiveLinearMap c a
+
+/-- Auxiliary (polarisation): for `u, v ∈ A` and an np-functional `ω`, the
+map `a ↦ ω(uav)` is ultraweakly continuous.  Writing `u = x*`, the
+polarisation identity
+
+`Σ_{k<4} i^k (v + i^k x)* a (v + i^k x)  =  4·x* a v`
+
+(the `v*av`, `v*ax` and `x*ax` terms cancel) exhibits `a ↦ ω(x* a v)` as the
+`ℂ`-combination `¼(1, i, −1, −i)` of the four np-functionals
+`(v + i^k x)*ω` of **72III**.1a, each of which is ultraweakly continuous by
+the very definition of the ultraweak topology. -/
+private theorem continuous_ultraweak_conj (ω : NPFunctional A) (u v : A) :
+    @Continuous A ℂ (ultraweak A) _ (fun a => (ω (u * a * v) : ℂ)) := by
+  letI : TopologicalSpace A := ultraweak A
+  obtain ⟨x, rfl⟩ : ∃ x : A, star x = u := ⟨star u, star_star u⟩
+  -- the value of the np-functional `(v + c·x)*ω` at `a`, expanded
+  have hE : ∀ (c : ℂ) (a : A), (conjNP (v + c • x) ω a : ℂ)
+      = ω (star v * a * v) + c * ω (star v * a * x) + star c * ω (star x * a * v)
+        + (c * star c) * ω (star x * a * x) := by
+    intro c a
+    have hid : star (v + c • x) * a * (v + c • x)
+        = star v * a * v + c • (star v * a * x) + star c • (star x * a * v)
+          + (c * star c) • (star x * a * x) := by
+      rw [star_add, star_smul]
+      simp only [add_mul, mul_add, smul_add, smul_mul_assoc, mul_smul_comm, smul_smul]
+      abel
+    rw [conjNP_apply, hid, npFunctional_add, npFunctional_add, npFunctional_add,
+      npFunctional_smul, npFunctional_smul, npFunctional_smul]
+  have hsI : star Complex.I = -Complex.I := by
+    rw [Complex.star_def, Complex.conj_I]
+  have hkey : ∀ a : A, (ω (star x * a * v) : ℂ)
+      = (4 : ℂ)⁻¹ * ((conjNP (v + (1 : ℂ) • x) ω a : ℂ)
+          + Complex.I * (conjNP (v + Complex.I • x) ω a : ℂ)
+          - (conjNP (v + (-1 : ℂ) • x) ω a : ℂ)
+          - Complex.I * (conjNP (v + (-Complex.I) • x) ω a : ℂ)) := by
+    intro a
+    rw [hE 1 a, hE Complex.I a, hE (-1) a, hE (-Complex.I) a, hsI, star_one,
+      show star (-1 : ℂ) = -1 by rw [star_neg, star_one],
+      show star (-Complex.I) = Complex.I by rw [star_neg, hsI, neg_neg]]
+    linear_combination
+      ((2 : ℂ)⁻¹ * ((ω (star x * a * v) : ℂ) - (ω (star v * a * x) : ℂ))) *
+        Complex.I_mul_I
+  rw [funext hkey]
+  exact continuous_const.mul
+    ((((continuous_ultraweak_npFunctional (conjNP (v + (1 : ℂ) • x) ω)).add
+      (continuous_const.mul
+        (continuous_ultraweak_npFunctional (conjNP (v + Complex.I • x) ω)))).sub
+      (continuous_ultraweak_npFunctional (conjNP (v + (-1 : ℂ) • x) ω))).sub
+      (continuous_const.mul
+        (continuous_ultraweak_npFunctional (conjNP (v + (-Complex.I) • x) ω))))
+
 /-- **65III** (`commutant-basic`, vn.tex:3222, Exercise), part 2: `S^□` is
 closed under addition and (scalar) multiplication, contains `1`, and is
 ultraweakly closed. -/
@@ -2905,8 +2960,34 @@ theorem commutant_basic_2 (S : Set A) :
       (∀ a ∈ commutant A S, ∀ b ∈ commutant A S, a + b ∈ commutant A S) ∧
       (∀ a ∈ commutant A S, ∀ b ∈ commutant A S, a * b ∈ commutant A S) ∧
       (∀ (z : ℂ), ∀ a ∈ commutant A S, z • a ∈ commutant A S) ∧
-      @IsClosed A (ultraweak A) (commutant A S) :=
-  sorry
+      @IsClosed A (ultraweak A) (commutant A S) := by
+  refine ⟨fun s _ => by rw [mul_one, one_mul], fun a ha b hb s hs => by
+      rw [mul_add, add_mul, ha s hs, hb s hs],
+    fun a ha b hb s hs => by
+      rw [← mul_assoc, ha s hs, mul_assoc, hb s hs, mul_assoc],
+    fun z a ha s hs => by rw [mul_smul_comm, smul_mul_assoc, ha s hs], ?_⟩
+  -- `S□ = ⋂_{s∈S} ⋂_ω {a | ω(sa − as) = 0}` (the np-functionals are
+  -- separating), and each `a ↦ ω(sa − as)` is ultraweakly continuous by
+  -- polarisation
+  letI : TopologicalSpace A := ultraweak A
+  have hrepr : commutant A S = ⋂ s : S, ⋂ ω : NPFunctional A,
+      (fun a : A => (ω ((s : A) * a - a * (s : A)) : ℂ)) ⁻¹' {0} := by
+    ext a
+    simp only [Set.mem_iInter, Set.mem_preimage, Set.mem_singleton_iff]
+    refine ⟨fun ha s ω => by rw [ha (s : A) s.2, sub_self, npFunctional_zero],
+      fun h s hs => sub_eq_zero.mp
+        (np_separating ((s : A) * a - a * (s : A)) fun ω => h ⟨s, hs⟩ ω)⟩
+  rw [hrepr]
+  refine isClosed_iInter fun s => isClosed_iInter fun ω => ?_
+  refine IsClosed.preimage ?_ isClosed_singleton
+  have h1 := continuous_ultraweak_conj ω (s : A) 1
+  have h2 := continuous_ultraweak_conj ω 1 (s : A)
+  simp only [mul_one, one_mul] at h1 h2
+  have heq : (fun a : A => (ω ((s : A) * a - a * (s : A)) : ℂ))
+      = fun a : A => (ω ((s : A) * a) : ℂ) - (ω (a * (s : A)) : ℂ) := by
+    funext a; rw [npFunctional_sub]
+  rw [heq]
+  exact h1.sub h2
 
 /-- **65III** (`commutant-basic`, vn.tex:3222, Exercise), part 3
 (counterexample): the commutant need not be closed under the involution
@@ -2925,8 +3006,33 @@ theorem commutant_basic_3' (S : Set A) (hS : ∀ s ∈ S, star s ∈ S) :
         (T : Set A) = commutant A S) ∧
       (S ⊆ commutant A S →
         ∀ a ∈ commutant A (commutant A S), ∀ b ∈ commutant A (commutant A S),
-          a * b = b * a) :=
-  sorry
+          a * b = b * a) := by
+  -- `S□` is a star-subalgebra because `S` is star-closed; it is *norm* closed
+  -- because `a ↦ sa − as` is norm continuous, and it contains the suprema of
+  -- its bounded directed sets by **44XIII** (`vna-supremum-commutes`).
+  have hstar : ∀ {a : A}, a ∈ Subalgebra.centralizer ℂ S →
+      star a ∈ Subalgebra.centralizer ℂ S := by
+    intro a ha m hm
+    have h1 := congrArg star (ha (star m) (hS m hm))
+    rw [star_mul, star_mul, star_star] at h1
+    exact h1.symm
+  refine ⟨⟨⟨Subalgebra.centralizer ℂ S, hstar⟩, ⟨?_, ?_⟩, rfl⟩, ?_⟩
+  · show IsClosed (Set.centralizer S : Set A)
+    have hrepr : (Set.centralizer S : Set A)
+        = ⋂ m : S, {a : A | (m : A) * a = a * (m : A)} := by
+      ext a
+      simp only [Set.mem_iInter, Set.mem_setOf_eq]
+      exact ⟨fun ha m => ha m m.2, fun h m hm => h ⟨m, hm⟩⟩
+    rw [hrepr]
+    exact isClosed_iInter fun m =>
+      isClosed_eq (continuous_const.mul continuous_id)
+        (continuous_id.mul continuous_const)
+  · intro D t hDT hne hdir hlub m hm
+    have h3 : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧ BddAbove D := ⟨hne, hdir, ⟨t, hlub.1⟩⟩
+    have ht : dirSup D h3 = t := (isLUB_dirSup D h3).unique hlub
+    have hcomm := vna_supremum_commutes D h3 m fun d hd => hDT d hd m hm
+    rwa [ht] at hcomm
+  · exact fun hSS a ha b hb => (ha b (Set.centralizer_subset hSS hb)).symm
 
 /-- **65III** (`commutant-basic`, vn.tex:3222, Exercise), part 4: for a von
 Neumann subalgebra `S` (star-closed), `S^□□` is a von Neumann subalgebra
@@ -3284,6 +3390,102 @@ theorem cceil_basic_1 (a : A) :
         _ = rangeProj a * a := by rw [(proj_le_iff_mul_left hrproj hp).mp hle]
         _ = a := hra
 
+/-- Auxiliary: the supremum of a set of *central* projections is again
+central.  The argument is the one of **68I**: `⌈b*cb⌉ = ⋃_{p∈S} ⌈b*pb⌉ ≤ c`
+by **60IX**.2 (each `⌈b*pb⌉ ≤ p` because `p` is central), so `cbc = cb`; and
+`bc = cbc` follows by taking adjoints. -/
+private theorem projSup_isCentral {S : Set A} (hSproj : ∀ p ∈ S, IsStarProjection p)
+    (hScentral : ∀ p ∈ S, IsCentral A p) : IsCentral A (projSup S) := by
+  obtain ⟨hcproj, hcub, -⟩ := projSup_spec hSproj
+  set c : A := projSup S with hcdef
+  have hkey : ∀ b : A, c * b * c = c * b := by
+    intro b
+    have e1 : star (c * b) * (c * b) = star b * c * b := by
+      rw [star_mul, hcproj.isSelfAdjoint.star_eq]
+      calc star b * c * (c * b) = star b * (c * c) * b := by noncomm_ring
+        _ = star b * c * b := by rw [hcproj.isIdempotentElem.eq]
+    have h2 := ncp_union_2 (conjPMap b) (conjPMap_preservesDirSups b) S hSproj
+    have himgproj : ∀ x ∈ ((fun p => ceil ((conjPMap b) p)) '' S),
+        IsStarProjection x := by
+      rintro _ ⟨p, hp, rfl⟩
+      exact (ceil_spec (star_left_conjugate_nonneg (hSproj p hp).nonneg b)).1
+    have h3 : suppProj (c * b) ≤ c := by
+      rw [suppProj, e1]
+      refine le_of_eq_of_le (?_ : ceil (star b * c * b) = _)
+        ((projSup_spec himgproj).2.2 c hcproj ?_)
+      · exact h2
+      · rintro _ ⟨p, hp, rfl⟩
+        refine le_trans ?_ (hcub p hp)
+        show ceil (star b * p * b) ≤ p
+        refine (ceil_le_iff (star_left_conjugate_nonneg (hSproj p hp).nonneg b)
+          (hSproj p hp)).mpr ?_
+        calc star b * p * b * p = star b * p * (b * p) := by noncomm_ring
+          _ = star b * p * (p * b) := by rw [← hScentral p hp b]
+          _ = star b * (p * p) * b := by noncomm_ring
+          _ = star b * p * b := by rw [(hSproj p hp).isIdempotentElem.eq]
+    exact mul_eq_of_suppProj_le hcproj h3
+  intro b
+  have h4 : c * b * c = b * c := by
+    have h := congrArg star (hkey (star b))
+    simp only [star_mul, star_star, hcproj.isSelfAdjoint.star_eq] at h
+    rw [← mul_assoc] at h
+    exact h
+  rw [← hkey b, h4]
+
+/-- Auxiliary: `⌈⌈x⌉⌉ ≤ r` with `r` a projection gives `rx = x`. -/
+private theorem mul_eq_of_cceil_le {x r : A} (hr : IsStarProjection r)
+    (h : cceil x ≤ r) : r * x = x := by
+  obtain ⟨⟨h1, -, h3⟩, -⟩ := cceil_isLeast x
+  calc r * x = r * (cceil x * x) := by rw [h3]
+    _ = r * cceil x * x := by noncomm_ring
+    _ = cceil x * x := by rw [(proj_le_iff_mul_left h1 hr).mp h]
+    _ = x := h3
+
+/-- Auxiliary: for a *central* projection `p`, conjugation by `p` is
+multiplication by `p`. -/
+private theorem conj_central_proj {p : A} (hp : IsStarProjection p)
+    (hpc : IsCentral A p) (x : A) : star p * x * p = p * x := by
+  rw [hp.isSelfAdjoint.star_eq]
+  calc p * x * p = p * (p * x) := by rw [mul_assoc, ← hpc x]
+    _ = p * p * x := by noncomm_ring
+    _ = p * x := by rw [hp.isIdempotentElem.eq]
+
+/-- Auxiliary: the complement of a central projection is central. -/
+private theorem isCentral_one_sub {p : A} (hpc : IsCentral A p) :
+    IsCentral A (1 - p) := fun x => by
+  rw [sub_mul, mul_sub, one_mul, mul_one, hpc x]
+
+/-- Auxiliary: `⌈⌈·⌉⌉` is monotone on the positive cone.  If `0 ≤ a ≤ b` then
+`(1−⌈⌈b⌉⌉)a(1−⌈⌈b⌉⌉) = 0`, whence `⌈⌈b⌉⌉a = a`. -/
+private theorem cceil_mono {a b : A} (ha : 0 ≤ a) (hab : a ≤ b) :
+    cceil a ≤ cceil b := by
+  obtain ⟨⟨hp, hpc, hpb⟩, -⟩ := cceil_isLeast b
+  set p : A := cceil b with hpdef
+  have hq : IsStarProjection (1 - p) := hp.one_sub
+  have hqc : IsCentral A (1 - p) := isCentral_one_sub hpc
+  have hb0 : (1 - p) * b = 0 := by rw [sub_mul, one_mul, hpb, sub_self]
+  have hle : star (1 - p) * a * (1 - p) ≤ star (1 - p) * b * (1 - p) :=
+    star_left_conjugate_le_conjugate hab (1 - p)
+  rw [conj_central_proj hq hqc a, conj_central_proj hq hqc b, hb0] at hle
+  have ha0 : (1 - p) * a = 0 :=
+    le_antisymm hle
+      (by rw [← conj_central_proj hq hqc a]; exact star_left_conjugate_nonneg ha (1 - p))
+  refine (cceil_isLeast a).2 ⟨hp, hpc, ?_⟩
+  rw [sub_mul, one_mul] at ha0
+  exact (sub_eq_zero.mp ha0).symm
+
+/-- Auxiliary: `⌈⌈a⌉⌉ = ⌈⌈⌈a⌉⌉⌉` for positive `a` — a central projection
+absorbs `a` iff it absorbs `⌈a⌉`. -/
+private theorem cceil_ceil {a : A} (ha : 0 ≤ a) : cceil a = cceil (ceil a) := by
+  refine cceil_congr fun p hp hpc => ?_
+  constructor
+  · intro h
+    exact (proj_le_iff_mul_left (ceil_spec ha).1 hp).mp
+      ((ceil_le_iff ha hp).mpr (by rw [← hpc a]; exact h))
+  · intro h
+    rw [hpc a]
+    exact (ceil_le_iff ha hp).mp ((proj_le_iff_mul_left (ceil_spec ha).1 hp).mpr h)
+
 /-- **68IV** (`cceil-basic`, vn.tex:3490, Exercise), part 2:
 `⌈⌈⋁D⌉⌉ = ⋃_{d∈D} ⌈⌈d⌉⌉` for bounded directed `D` of *positive* elements;
 `⌈⌈⋃E⌉⌉ = ⋃_{e∈E} ⌈⌈e⌉⌉` for sets of projections `E`; and
@@ -3304,8 +3506,82 @@ theorem cceil_basic_2 (D : Set (selfAdjoint A)) (s : selfAdjoint A)
     cceil (s : A) = projSup ((fun d : selfAdjoint A => cceil (d : A)) '' D) ∧
       cceil (projSup E) = projSup (cceil '' E) ∧
       cceil (a + b) = cceil (projSup {ceil a, ceil b}) ∧
-      cceil (projSup {ceil a, ceil b}) = projSup {cceil a, cceil b} :=
-  sorry
+      cceil (projSup {ceil a, ceil b}) = projSup {cceil a, cceil b} := by
+  have hcp : ∀ x : A, IsStarProjection (cceil x) := fun x => (cceil_isLeast x).1.1
+  have hcc : ∀ x : A, IsCentral A (cceil x) := fun x => (cceil_isLeast x).1.2.1
+  -- the second clause, for an arbitrary set of projections; used again below
+  have key2 : ∀ F : Set A, (∀ e ∈ F, IsStarProjection e) →
+      cceil (projSup F) = projSup (cceil '' F) := by
+    intro F hF
+    have hFcp : ∀ x ∈ cceil '' F, IsStarProjection x := by
+      rintro _ ⟨e, -, rfl⟩; exact hcp e
+    have hFcc : ∀ x ∈ cceil '' F, IsCentral A x := by
+      rintro _ ⟨e, -, rfl⟩; exact hcc e
+    obtain ⟨hrproj, hrub, hrleast⟩ := projSup_spec hFcp
+    have hrc : IsCentral A (projSup (cceil '' F)) := projSup_isCentral hFcp hFcc
+    obtain ⟨hsproj, hsub, hsleast⟩ := projSup_spec hF
+    refine le_antisymm ((cceil_isLeast (projSup F)).2 ⟨hrproj, hrc, ?_⟩) ?_
+    · exact (proj_le_iff_mul_left hsproj hrproj).mp
+        (hsleast _ hrproj fun e he => (proj_le_iff_mul_left (hF e he) hrproj).mpr
+          (mul_eq_of_cceil_le hrproj (hrub _ ⟨e, he, rfl⟩)))
+    · refine hrleast _ (hcp _) ?_
+      rintro _ ⟨e, he, rfl⟩
+      exact cceil_mono (hF e he).nonneg (hsub e he)
+  -- clause 1: `⌈⌈⋁D⌉⌉ = ⋃_{d∈D}⌈⌈d⌉⌉`
+  have hDcp : ∀ x ∈ (fun d : selfAdjoint A => cceil (d : A)) '' D,
+      IsStarProjection x := by rintro _ ⟨d, -, rfl⟩; exact hcp _
+  have hDcc : ∀ x ∈ (fun d : selfAdjoint A => cceil (d : A)) '' D,
+      IsCentral A x := by rintro _ ⟨d, -, rfl⟩; exact hcc _
+  obtain ⟨hrproj, hrub, hrleast⟩ := projSup_spec hDcp
+  set r : A := projSup ((fun d : selfAdjoint A => cceil (d : A)) '' D) with hrdef
+  have hrc : IsCentral A r := projSup_isCentral hDcp hDcc
+  have hq : IsStarProjection (1 - r) := hrproj.one_sub
+  have hqc : IsCentral A (1 - r) := isCentral_one_sub hrc
+  have hzero : ∀ d ∈ D, (conjPMap (1 - r)) (d : A) = 0 := by
+    intro d hd
+    show star (1 - r) * (d : A) * (1 - r) = 0
+    rw [conj_central_proj hq hqc, sub_mul, one_mul,
+      mul_eq_of_cceil_le hrproj (hrub _ ⟨d, hd, rfl⟩), sub_self]
+  have hlub := conjPMap_preservesDirSups (1 - r) D s hne hdir hs
+  have himg : ((fun d : selfAdjoint A => (conjPMap (1 - r)) (d : A)) '' D)
+      = ({0} : Set A) := by
+    obtain ⟨d0, hd0⟩ := hne
+    exact Set.eq_singleton_iff_unique_mem.mpr
+      ⟨⟨d0, hd0, hzero d0 hd0⟩, by rintro _ ⟨d, hd, rfl⟩; exact hzero d hd⟩
+  rw [himg] at hlub
+  have hs0 : star (1 - r) * (s : A) * (1 - r) = 0 := hlub.unique isLUB_singleton
+  have hrs : r * (s : A) = (s : A) := by
+    rw [conj_central_proj hq hqc, sub_mul, one_mul] at hs0
+    exact (sub_eq_zero.mp hs0).symm
+  have h1 : cceil (s : A) = r :=
+    le_antisymm ((cceil_isLeast (s : A)).2 ⟨hrproj, hrc, hrs⟩)
+      (hrleast _ (hcp _) (by
+        rintro _ ⟨d, hd, rfl⟩
+        exact cceil_mono (hDpos d hd) (Subtype.coe_le_coe.mpr (hs.1 hd))))
+  -- clauses 3 and 4
+  have hFproj : ∀ e ∈ ({ceil a, ceil b} : Set A), IsStarProjection e := by
+    rintro e (rfl | rfl)
+    · exact (ceil_spec ha).1
+    · exact (ceil_spec hb).1
+  have h4 : cceil (projSup ({ceil a, ceil b} : Set A))
+      = projSup ({cceil a, cceil b} : Set A) := by
+    rw [key2 _ hFproj, Set.image_pair, ← cceil_ceil ha, ← cceil_ceil hb]
+  have hPcp : ∀ x ∈ ({cceil a, cceil b} : Set A), IsStarProjection x := by
+    rintro x (rfl | rfl) <;> exact hcp _
+  have hPcc : ∀ x ∈ ({cceil a, cceil b} : Set A), IsCentral A x := by
+    rintro x (rfl | rfl) <;> exact hcc _
+  obtain ⟨hr'proj, hr'ub, hr'least⟩ := projSup_spec hPcp
+  have hr'c : IsCentral A (projSup ({cceil a, cceil b} : Set A)) :=
+    projSup_isCentral hPcp hPcc
+  have h3 : cceil (a + b) = projSup ({cceil a, cceil b} : Set A) := by
+    refine le_antisymm ((cceil_isLeast (a + b)).2 ⟨hr'proj, hr'c, ?_⟩) ?_
+    · rw [mul_add, mul_eq_of_cceil_le hr'proj (hr'ub _ (Set.mem_insert _ _)),
+        mul_eq_of_cceil_le hr'proj (hr'ub _ (Set.mem_insert_of_mem _ rfl))]
+    · refine hr'least _ (hcp _) ?_
+      rintro x (rfl | rfl)
+      · exact cceil_mono ha (le_add_of_nonneg_right hb)
+      · exact cceil_mono hb (le_add_of_nonneg_left ha)
+  exact ⟨h1, key2 E hE, h3.trans h4.symm, h4⟩
 
 /-- **68IV** (`cceil-basic`, vn.tex:3490, Exercise), part 3:
 `⌈⌈a⌉⌉c = ⌈⌈ac⌉⌉` for central projections `c`; consequently
