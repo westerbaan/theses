@@ -2479,7 +2479,77 @@ theorem chevron_f_basic_12 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
 `⟨f⟩` is faithful and `⟨f⟩(1) = f(1)`. -/
 theorem chevron_f_basic_3 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (f : NCPMap A B) :
-    ncpCarrier (chevron f) = 1 ∧ (chevron f 1).val = f 1 := sorry
+    ncpCarrier (chevron f) = 1 ∧ (chevron f 1).val = f 1 := by
+  -- faithfulness: if `⟨f⟩(1-q) = 0` then `f(⌈f⌉ - q) = 0` (by `ceilOne_conj`),
+  -- so `⌈f⌉ ≤ q + ⌈f⌉^⊥`, and multiplying by `⌈f⌉` gives `⌈f⌉ = q`
+  have hch : ∀ x : Corner A (ncpCarrier f),
+      (chevron f x).val = ceil (f 1) * f x.val * ceil (f 1) :=
+    (exists_chevron f).choose_spec
+  have hcarr : carrier (PositiveLinearMap.ofClass f.toCompletelyPositiveMap)
+      f.preservesDirSups' = ncpCarrier f := rfl
+  have hfund : ∀ a : A, (f a : B) = f (ncpCarrier f * a * ncpCarrier f) := by
+    intro a
+    have h := (carrier_fundamental
+      (PositiveLinearMap.ofClass f.toCompletelyPositiveMap)
+      f.preservesDirSups' a).2.2
+    rwa [hcarr] at h
+  have he : IsStarProjection (ncpCarrier f) := isStarProjection_ncpCarrier f
+  have hfspec : IsStarProjection (ncpCarrier f) ∧ f (1 - ncpCarrier f) = 0 ∧
+      ∀ r : A, IsStarProjection r → f (1 - r) = 0 → ncpCarrier f ≤ r :=
+    (exists_ncpCarrier f).choose_spec.1
+  constructor
+  · have hqspec : IsStarProjection (ncpCarrier (chevron f)) ∧
+        chevron f (1 - ncpCarrier (chevron f)) = 0 ∧
+        ∀ r, IsStarProjection r → chevron f (1 - r) = 0 →
+          ncpCarrier (chevron f) ≤ r :=
+      (exists_ncpCarrier (chevron f)).choose_spec.1
+    set q := ncpCarrier (chevron f) with hqdef
+    have hqproj : IsStarProjection q := hqspec.1
+    have hqv : IsStarProjection q.val :=
+      ⟨congrArg Corner.val hqproj.isIdempotentElem.eq,
+        congrArg Corner.val hqproj.isSelfAdjoint.star_eq⟩
+    have hval : ceil (f 1) * f (ncpCarrier f - q.val) * ceil (f 1) = 0 := by
+      have h := congrArg Corner.val hqspec.2.1
+      rw [hch] at h
+      simpa using h
+    have hfz : (f (ncpCarrier f - q.val) : B) = 0 := by
+      rw [← ceilOne_conj f (ncpCarrier f - q.val), hval]
+    set s : A := q.val + (1 - ncpCarrier f) with hsdef
+    have hqe : q.val * ncpCarrier f = q.val := Corner.mul_right q
+    have heq : ncpCarrier f * q.val = q.val := Corner.mul_left q
+    have hsproj : IsStarProjection s := by
+      constructor
+      · change s * s = s
+        rw [hsdef]
+        calc (q.val + (1 - ncpCarrier f)) * (q.val + (1 - ncpCarrier f))
+            = q.val * q.val + (q.val - q.val * ncpCarrier f)
+              + ((1 - ncpCarrier f) * q.val)
+              + (1 - ncpCarrier f) * (1 - ncpCarrier f) := by noncomm_ring
+          _ = q.val + (1 - ncpCarrier f) := by
+              rw [hqv.isIdempotentElem.eq, hqe, sub_self,
+                he.one_sub.isIdempotentElem.eq, sub_mul, one_mul, heq, sub_self]
+              abel
+      · change star s = s
+        rw [hsdef, star_add, hqv.isSelfAdjoint.star_eq,
+          he.one_sub.isSelfAdjoint.star_eq]
+    have hles : ncpCarrier f ≤ s := by
+      refine hfspec.2.2 s hsproj ?_
+      rw [show (1 : A) - s = ncpCarrier f - q.val by rw [hsdef]; abel]
+      exact hfz
+    have hes : ncpCarrier f * s = ncpCarrier f :=
+      ((projection_below_effect s (ncpCarrier f)
+        ⟨hsproj.nonneg, hsproj.le_one⟩ he).out 0 7).mp hles
+    refine (Corner.val_injective ?_).symm
+    rw [Corner.val_one]
+    rw [hsdef] at hes
+    calc ncpCarrier f = ncpCarrier f * (q.val + (1 - ncpCarrier f)) := hes.symm
+      _ = ncpCarrier f * q.val + (ncpCarrier f - ncpCarrier f * ncpCarrier f) := by
+          noncomm_ring
+      _ = q.val := by rw [heq, he.isIdempotentElem.eq, sub_self, add_zero]
+  · have h1 : (f (ncpCarrier f) : B) = f 1 := by
+      conv_rhs => rw [hfund 1]
+      rw [mul_one, he.isIdempotentElem.eq]
+    rw [hch, Corner.val_one, h1, ceilOne_conj]
 
 /-- **105III** (`chevron-f-basic`, proc.tex:1717, Exercise), part 4: if
 `f` is pure then `⟨f⟩` is pure, and hence a filter. -/
