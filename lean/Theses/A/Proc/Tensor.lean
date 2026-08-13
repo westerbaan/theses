@@ -192,7 +192,59 @@ theorem orthonormal_basis_iff_l2_iso (E : Set H) :
     (Orthonormal ℂ (fun e : E => (e : H)) ∧
         Dense (Submodule.span ℂ E : Set H)) ↔
       ∃ T : lp (fun _ : E => ℂ) 2 ≃ₗᵢ[ℂ] H,
-        ∀ x : lp (fun _ : E => ℂ) 2, T x = ∑' e : E, x e • (e : H) := sorry
+        ∀ x : lp (fun _ : E => ℂ) 2, T x = ∑' e : E, x e • (e : H) := by
+  classical
+  have hrange : Set.range (fun e : E => (e : H)) = E := Subtype.range_coe
+  constructor
+  · -- `⇒`: this is exactly Mathlib's `HilbertBasis.mk`.
+    rintro ⟨hon, hdense⟩
+    have hsp : ⊤ ≤
+        (Submodule.span ℂ (Set.range fun e : E => (e : H))).topologicalClosure := by
+      rw [hrange, Submodule.dense_iff_topologicalClosure_eq_top.mp hdense]
+    set b := HilbertBasis.mk hon hsp with hb
+    refine ⟨b.repr.symm, fun x => ?_⟩
+    have hsum := b.hasSum_repr_symm x
+    rw [HilbertBasis.coe_mk] at hsum
+    exact hsum.tsum_eq.symm
+  · -- `⇐`: `e = T(δ_e)`, so orthonormality is the isometry of `T`, and
+    -- `E^⊥ = 0` because `⟨e, y⟩` is the `e`-th coordinate of `T⁻¹y`.
+    rintro ⟨T, hT⟩
+    have hsingle : ∀ e : E, T (lp.single 2 e (1 : ℂ)) = (e : H) := by
+      intro e
+      rw [hT]
+      refine (tsum_eq_single e ?_).trans ?_
+      · intro f hf
+        simp [lp.single_apply, hf]
+      · simp [lp.single_apply]
+    have hinner : ∀ e f : E, ⟪(e : H), (f : H)⟫ =
+        ⟪(lp.single 2 e (1 : ℂ) : lp (fun _ : E => ℂ) 2),
+          (lp.single 2 f (1 : ℂ) : lp (fun _ : E => ℂ) 2)⟫ := by
+      intro e f
+      rw [← hsingle e, ← hsingle f, T.inner_map_map]
+    refine ⟨⟨fun e => ?_, fun {e f} hef => ?_⟩, ?_⟩
+    · change ‖(e : H)‖ = 1
+      rw [← hsingle e, T.norm_map, lp.norm_single (by norm_num)]
+      simp
+    · change ⟪(e : H), (f : H)⟫ = 0
+      rw [hinner e f, lp.inner_single_left]
+      simp [lp.single_apply, hef]
+    · refine Submodule.dense_iff_topologicalClosure_eq_top.mpr ?_
+      rw [Submodule.topologicalClosure_eq_top_iff, Submodule.eq_bot_iff]
+      intro y hy
+      have hcoord : ∀ e : E, (T.symm y) e = 0 := by
+        intro e
+        have h1 : ⟪lp.single 2 e (1 : ℂ), T.symm y⟫ = (T.symm y) e := by
+          rw [lp.inner_single_left]; simp
+        have h2 : ⟪lp.single 2 e (1 : ℂ), T.symm y⟫ = ⟪(e : H), y⟫ := by
+          rw [← T.inner_map_map, hsingle e, T.apply_symm_apply]
+        rw [← h1, h2]
+        exact hy _ (Submodule.subset_span e.2)
+      have hzero : T.symm y = 0 := by
+        ext e
+        simpa using hcoord e
+      calc y = T (T.symm y) := (T.apply_symm_apply y).symm
+        _ = T 0 := by rw [hzero]
+        _ = 0 := map_zero _
 
 variable (H K) in
 /-- **110VI** (proc.tex:2349, Notation): a bundled (chosen) tensor product
@@ -288,7 +340,89 @@ theorem hilb_tensor_basic_2 {T : Type u} [NormedAddCommGroup T]
     Orthonormal ℂ
         (fun t : {t : T | ∃ e ∈ E, ∃ f ∈ F, t = γ e f} => (t : T)) ∧
       Dense (Submodule.span ℂ {t : T | ∃ e ∈ E, ∃ f ∈ F, t = γ e f} :
-        Set T) := sorry
+        Set T) := by
+  classical
+  obtain ⟨honE, hdE⟩ := hE
+  obtain ⟨honF, hdF⟩ := hF
+  set G : Set T := {t : T | ∃ e ∈ E, ∃ f ∈ F, t = γ e f} with hGdef
+  constructor
+  · -- Orthonormality is immediate from `⟨γ(e,f),γ(e',f')⟩ = ⟨e,e'⟩⟨f,f'⟩`.
+    constructor
+    · rintro ⟨t, e, he, f, hf, rfl⟩
+      change ‖γ e f‖ = 1
+      rw [hilb_tensor_basic_1 γ hγ, honE.1 ⟨e, he⟩, honF.1 ⟨f, hf⟩, one_mul]
+    · rintro ⟨t, e, he, f, hf, rfl⟩ ⟨t', e', he', f', hf', rfl⟩ hne
+      change ⟪γ e f, γ e' f'⟫ = 0
+      rw [hγ.inner_mul]
+      rcases eq_or_ne e e' with rfl | hee
+      · have hff : (⟨f, hf⟩ : F) ≠ ⟨f', hf'⟩ := by
+          intro h
+          have hfeq : f = f' := congrArg Subtype.val h
+          subst hfeq
+          exact hne rfl
+        rw [honF.2 hff, mul_zero]
+      · have hee' : (⟨e, he⟩ : E) ≠ ⟨e', he'⟩ := fun h => hee (congrArg Subtype.val h)
+        rw [honE.2 hee', zero_mul]
+  · -- Density: expand `x` and `y` in the bases and use continuity of `γ`.
+    have hspE : ⊤ ≤
+        (Submodule.span ℂ (Set.range fun e : E => (e : H))).topologicalClosure := by
+      rw [Subtype.range_coe, Submodule.dense_iff_topologicalClosure_eq_top.mp hdE]
+    have hspF : ⊤ ≤
+        (Submodule.span ℂ (Set.range fun f : F => (f : K))).topologicalClosure := by
+      rw [Subtype.range_coe, Submodule.dense_iff_topologicalClosure_eq_top.mp hdF]
+    set bE := HilbertBasis.mk honE hspE with hbE
+    set bF := HilbertBasis.mk honF hspF with hbF
+    have hbEc : ⇑bE = fun e : E => (e : H) := by
+      rw [hbE]; exact HilbertBasis.coe_mk honE hspE
+    have hbFc : ⇑bF = fun f : F => (f : K) := by
+      rw [hbF]; exact HilbertBasis.coe_mk honF hspF
+    set M := (Submodule.span ℂ G).topologicalClosure with hMdef
+    have hMclosed : IsClosed (M : Set T) := Submodule.isClosed_topologicalClosure _
+    have hGM : ∀ t ∈ G, t ∈ M :=
+      fun t ht => Submodule.le_topologicalClosure _ (Submodule.subset_span ht)
+    -- `γ(·,f)` and `γ(x,·)` as bounded operators (109IV.1).
+    let Lf : K → (H →L[ℂ] T) := fun f =>
+      (γ.flip f).mkContinuous ‖f‖ (fun x => by
+        rw [LinearMap.flip_apply, hilb_tensor_basic_1 γ hγ, mul_comm])
+    let Lx : H → (K →L[ℂ] T) := fun x =>
+      (γ x).mkContinuous ‖x‖ (fun y => le_of_eq (hilb_tensor_basic_1 γ hγ x y))
+    have hLf : ∀ (f : K) (x : H), Lf f x = γ x f := fun f x => rfl
+    have hLx : ∀ (x : H) (y : K), Lx x y = γ x y := fun x y => rfl
+    -- Step A: `γ(x,f) = ∑_{e∈ℰ} ⟨e,x⟩ γ(e,f) ∈ M` for `f ∈ ℱ`.
+    have hstepA : ∀ (f : K), f ∈ F → ∀ x : H, γ x f ∈ M := by
+      intro f hf x
+      have h1 : HasSum (fun e : E => bE.repr x e • (e : H)) x := by
+        have h := bE.hasSum_repr x
+        rwa [hbEc] at h
+      have h2 := (Lf f).hasSum h1
+      rw [hLf] at h2
+      refine hMclosed.mem_of_tendsto h2 (Filter.Eventually.of_forall fun s => ?_)
+      refine Submodule.sum_mem _ fun e _ => ?_
+      rw [map_smul, hLf]
+      exact Submodule.smul_mem _ _ (hGM _ ⟨(e : H), e.2, f, hf, rfl⟩)
+    -- Step B: `γ(x,y) = ∑_{f∈ℱ} ⟨f,y⟩ γ(x,f) ∈ M`.
+    have hstepB : ∀ (x : H) (y : K), γ x y ∈ M := by
+      intro x y
+      have h1 : HasSum (fun f : F => bF.repr y f • (f : K)) y := by
+        have h := bF.hasSum_repr y
+        rwa [hbFc] at h
+      have h2 := (Lx x).hasSum h1
+      rw [hLx] at h2
+      refine hMclosed.mem_of_tendsto h2 (Filter.Eventually.of_forall fun s => ?_)
+      refine Submodule.sum_mem _ fun f _ => ?_
+      rw [map_smul, hLx]
+      exact Submodule.smul_mem _ _ (hstepA (f : K) f.2 x)
+    -- Hence `M` contains the (dense) span of the range of `γ`.
+    have hsub : (Submodule.span ℂ {t : T | ∃ x y, t = γ x y} : Set T) ⊆ (M : Set T) := by
+      refine SetLike.coe_subset_coe.mpr (Submodule.span_le.mpr ?_)
+      rintro _ ⟨x, y, rfl⟩
+      exact hstepB x y
+    refine Submodule.dense_iff_topologicalClosure_eq_top.mpr (eq_top_iff.mpr ?_)
+    intro t _
+    have huniv : (Set.univ : Set T) ⊆ (M : Set T) := by
+      rw [← hγ.dense.closure_eq]
+      exact hMclosed.closure_subset_iff.mpr hsub
+    exact huniv (Set.mem_univ t)
 
 /-- **110I** (proc.tex:2201, Definition): a bilinear map
 `β : ℋ × 𝒦 → ℒ` between Hilbert spaces is **ℓ²-bounded** by
