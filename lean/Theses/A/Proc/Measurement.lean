@@ -1068,7 +1068,16 @@ theorem corner_vna_basic_10 [VonNeumannAlgebra A] (e : A)
     [Fact (IsStarProjection e)] (ω' : NPFunctional (Corner A e)) :
     ∃ ω : NPFunctional A,
       (∀ a : A, ω a = ω' ((cornerProjMap e).toNCPMap a)) ∧
-      (∀ a : Corner A e, ω' a = ω a.val) := sorry
+      (∀ a : Corner A e, ω' a = ω a.val) := by
+  set π := (cornerProjMap (A := A) e).toNCPMap with hπ
+  refine ⟨compNP (PositiveLinearMap.ofClass π.toCompletelyPositiveMap)
+      π.preservesDirSups' ω', fun _ => rfl, ?_⟩
+  intro a
+  show ω' a = ω' (π a.val)
+  congr 1
+  refine Corner.val_injective ?_
+  rw [hπ, cornerProjMap_apply]
+  exact a.property.symm
 
 /-- **94II** (`corner-vna-basic`, proc.tex:194, Exercise), part 10
 (continued): the ultraweak and ultrastrong topologies of the corner
@@ -1274,12 +1283,75 @@ theorem ncp_uwlim_2 [VonNeumannAlgebra A] [VonNeumannAlgebra B] {ι : Type*}
       ∀ᶠ i in l, ∀ p ∈ effects A, ‖ω (f i p) - ω (g p)‖ ≤ ε) :
     PreservesDirSups ⇑g := sorry
 
+/-- Infrastructure for the filters of parsec 980: for a projection `e` and
+any `a : A`, the map `b ↦ a* b a : e𝒜e → 𝒜` is an ncp-map. -/
+theorem exists_adFromCorner [VonNeumannAlgebra A] (e : A)
+    [Fact (IsStarProjection e)] (a : A) :
+    ∃ f : NCPMap (Corner A e) A, ∀ b : Corner A e, f b = star a * b.val * a := by
+  refine ⟨{ toCompletelyPositiveMap :=
+              { toFun := fun b => star a * b.val * a
+                map_add' := fun x y => by
+                  show star a * (x.val + y.val) * a
+                      = star a * x.val * a + star a * y.val * a
+                  noncomm_ring
+                map_smul' := fun c x => by
+                  show star a * (c • x.val) * a = c • (star a * x.val * a)
+                  simp [mul_smul_comm, smul_mul_assoc]
+                map_cstarMatrix_nonneg' := fun k M hM => ?_ }
+            preservesDirSups' := ?_ }, fun _ => rfl⟩
+  · -- `b ↦ a* b a` on the corner is `M ↦ star D (M.map val) D` for `D = diag a`
+    set D : CStarMatrix (Fin k) (Fin k) A :=
+      CStarMatrix.ofMatrix (Matrix.diagonal fun _ => a) with hD
+    have hDapp : ∀ i j, D i j = if i = j then a else 0 := fun i j => rfl
+    have hkey : M.map (fun b : Corner A e => star a * b.val * a)
+        = star D * (M.map Corner.val) * D := by
+      ext i j
+      rw [CStarMatrix.map_apply, CStarMatrix.mul_apply]
+      have h₁ : ∀ l, (star D * M.map Corner.val) i l = star a * (M i l).val := by
+        intro l
+        rw [CStarMatrix.mul_apply, Finset.sum_eq_single i]
+        · rw [CStarMatrix.star_apply, hDapp, if_pos rfl, CStarMatrix.map_apply]
+        · intro b _ hb
+          rw [CStarMatrix.star_apply, hDapp, if_neg hb, star_zero, zero_mul]
+        · intro hc; exact absurd (Finset.mem_univ i) hc
+      simp only [h₁]
+      rw [Finset.sum_eq_single j]
+      · rw [hDapp, if_pos rfl]
+      · intro b _ hb
+        rw [hDapp, if_neg hb, mul_zero]
+      · intro hc; exact absurd (Finset.mem_univ j) hc
+    have hMval : (0 : CStarMatrix (Fin k) (Fin k) A) ≤ M.map Corner.val :=
+      (Corner.nonneg_map_val_iff k M).mpr hM
+    have key : (0 : CStarMatrix (Fin k) (Fin k) A)
+        ≤ star D * (M.map Corner.val) * D := star_left_conjugate_nonneg hMval D
+    rw [← hkey] at key
+    exact key
+  · -- normality: `val` is normal and `ad_a` is normal (44VIII)
+    intro D s hne hdir hlub
+    have h1 := Corner.isLUB_saMap_image hne hdir hlub
+    have h2 : IsLUB (Subtype.val '' (Corner.saMap '' D))
+        ((Corner.saMap s : selfAdjoint A) : A) :=
+      isLUB_coe_of_isLUB (hne.image _) h1
+    have hbdd : BddAbove (Corner.saMap '' D) := ⟨Corner.saMap s, h1.1⟩
+    have h : (Corner.saMap '' D).Nonempty ∧ DirectedOn (· ≤ ·) (Corner.saMap '' D)
+        ∧ BddAbove (Corner.saMap '' D) := by
+      refine ⟨hne.image _, ?_, hbdd⟩
+      rintro _ ⟨x, hx, rfl⟩ _ ⟨z, hz, rfl⟩
+      obtain ⟨u, hu, hxu, hzu⟩ := hdir x hx z hz
+      exact ⟨Corner.saMap u, ⟨u, hu, rfl⟩, hxu, hzu⟩
+    have hs : Corner.saMap s = dirSup _ h := h1.unique (isLUB_dirSup _ h)
+    have hnat := ad_normal a (Corner.saMap '' D) h
+    rw [← hs] at hnat
+    rw [← Set.image_comp] at hnat
+    exact hnat
+
 /-- **96V** (`canonical-filter`, proc.tex:414, Proposition),
 well-definedness: for `d ∈ 𝒜` the assignment `a ↦ d* a d` gives an
 ncp-map `⌈d⌉ᵣ𝒜⌈d⌉ᵣ → 𝒜`; by choice `canonicalFilter`. -/
 theorem exists_canonicalFilter [VonNeumannAlgebra A] (d : A) :
     ∃ c : NCPMap (Corner A (suppProj d)) A,
-      ∀ a : Corner A (suppProj d), c a = star d * a.val * d := sorry
+      ∀ a : Corner A (suppProj d), c a = star d * a.val * d :=
+  exists_adFromCorner (suppProj d) d
 
 /-- The map `d*(·)d : ⌈d⌉ᵣ𝒜⌈d⌉ᵣ → 𝒜` of 96V. -/
 noncomputable def canonicalFilter [VonNeumannAlgebra A] (d : A) :
@@ -1301,7 +1373,10 @@ part 1, well-definedness: for positive `p` the assignment
 `a ↦ √p a √p` gives an ncp-map `⌈p⌉𝒜⌈p⌉ → 𝒜`; by choice `stdFilter`. -/
 theorem exists_stdFilter [VonNeumannAlgebra A] (p : A) :
     ∃ c : NCPMap (Corner A (ceil p)) A,
-      ∀ a : Corner A (ceil p), c a = CFC.sqrt p * a.val * CFC.sqrt p := sorry
+      ∀ a : Corner A (ceil p), c a = CFC.sqrt p * a.val * CFC.sqrt p := by
+  obtain ⟨c, hc⟩ := exists_adFromCorner (ceil p) (CFC.sqrt p)
+  refine ⟨c, fun a => ?_⟩
+  rw [hc a, (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg p)).star_eq]
 
 /-- **98I** (`dfn-standard-corner-and-filter`, proc.tex:551, Definition),
 part 1: the **standard filter** `c_p : ⌈p⌉𝒜⌈p⌉ → 𝒜` for a positive
