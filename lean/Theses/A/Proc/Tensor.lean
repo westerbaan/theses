@@ -285,6 +285,25 @@ def L2Bounded (β : H →ₗ[ℂ] K →ₗ[ℂ] L) (bound : ℝ) : Prop :=
     ‖∑ i, β (x i) (y i)‖ ^ 2 ≤
       bound ^ 2 * (∑ i, ∑ j, ⟪x i, x j⟫ * ⟪y i, y j⟫).re
 
+/-- Auxiliary for **110III**: for a tensor product `γ` of Hilbert spaces
+the Gram-type sum `∑_{i,j} ⟨xᵢ,xⱼ⟩⟨yᵢ,yⱼ⟩` occurring in the definition of
+ℓ²-boundedness is exactly `‖∑ᵢ γ(xᵢ,yᵢ)‖²`.  (This is the computation
+with which proc.tex:2250 opens the proof of 110III.) -/
+theorem IsHilbertTensorProduct.gram_sum_re {T : Type u}
+    [NormedAddCommGroup T] [InnerProductSpace ℂ T] [CompleteSpace T]
+    {γ : H →ₗ[ℂ] K →ₗ[ℂ] T} (hγ : IsHilbertTensorProduct γ) (n : ℕ)
+    (x : Fin n → H) (y : Fin n → K) :
+    (∑ i, ∑ j, ⟪x i, x j⟫ * ⟪y i, y j⟫).re = ‖∑ i, γ (x i) (y i)‖ ^ 2 := by
+  have key : ∑ i, ∑ j, ⟪x i, x j⟫ * ⟪y i, y j⟫
+      = ⟪∑ i, γ (x i) (y i), ∑ i, γ (x i) (y i)⟫ := by
+    rw [sum_inner]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [inner_sum]
+    exact Finset.sum_congr rfl fun j _ =>
+      (hγ.inner_mul (x i) (x j) (y i) (y j)).symm
+  rw [key, inner_self_eq_norm_sq_to_K]
+  simp [← Complex.ofReal_pow]
+
 /-- **110III** (`hilb-tensor-universal-property`, proc.tex:2232, Theorem):
 a tensor product `γ : ℋ × 𝒦 → 𝒯` of Hilbert spaces is ℓ²-bounded (by 1)
 and initial as such: for any bilinear `β : ℋ × 𝒦 → ℒ` that is ℓ²-bounded
@@ -295,7 +314,62 @@ theorem hilb_tensor_universal_property {T : Type u} [NormedAddCommGroup T]
     (hγ : IsHilbertTensorProduct γ) :
     L2Bounded γ 1 ∧
       ∀ (β : H →ₗ[ℂ] K →ₗ[ℂ] L) (bound : ℝ), L2Bounded β bound →
-        ∃! f : T →L[ℂ] L, (∀ x y, f (γ x y) = β x y) ∧ ‖f‖ ≤ bound := sorry
+        ∃! f : T →L[ℂ] L, (∀ x y, f (γ x y) = β x y) ∧ ‖f‖ ≤ bound := by
+  classical
+  -- `γ` is ℓ²-bounded by `1`: the defining Gram sum *is* `‖∑ γ(xᵢ,yᵢ)‖²`.
+  refine ⟨⟨zero_le_one, fun n x y => ?_⟩, ?_⟩
+  · rw [hγ.gram_sum_re n x y, one_pow, one_mul]
+  intro β bound hβ
+  -- The span of the range of `γ` is the range of `β_⊙ = TensorProduct.lift γ`
+  -- on the algebraic tensor product, hence the latter is dense.
+  have hsub : Submodule.span ℂ {t : T | ∃ x y, t = γ x y} ≤
+      LinearMap.range (TensorProduct.lift γ) := by
+    rw [Submodule.span_le]
+    rintro t ⟨x, y, rfl⟩
+    exact ⟨x ⊗ₜ[ℂ] y, by simp⟩
+  have hdense : DenseRange ⇑(TensorProduct.lift γ) := by
+    refine Dense.mono ?_ hγ.dense
+    simpa only [LinearMap.coe_range] using (SetLike.coe_subset_coe.2 hsub)
+  -- ℓ²-boundedness of `β` by `bound` says exactly that
+  -- `‖β_⊙ z‖ ≤ bound · ‖γ_⊙ z‖` on the algebraic tensor product.
+  have hnorm : ∀ z : H ⊗[ℂ] K,
+      ‖TensorProduct.lift β z‖ ≤ bound * ‖TensorProduct.lift γ z‖ := by
+    intro z
+    obtain ⟨S, rfl⟩ := TensorProduct.exists_finset z
+    set n := S.card with hn
+    set ee := S.equivFin with hee
+    have hsum : ∀ {M : Type u} [AddCommGroup M] [Module ℂ M]
+        (g : H × K → M), ∑ i ∈ S, g i = ∑ k : Fin n, g (ee.symm k) :=
+      fun {M} _ _ g => by
+        rw [← Finset.sum_coe_sort S g]
+        exact (Equiv.sum_comp ee.symm fun i : S => g (i : H × K)).symm
+    set x : Fin n → H := fun k => ((ee.symm k : H × K)).1 with hx
+    set y : Fin n → K := fun k => ((ee.symm k : H × K)).2 with hy
+    have hβS : TensorProduct.lift β (∑ i ∈ S, i.1 ⊗ₜ[ℂ] i.2)
+        = ∑ k : Fin n, β (x k) (y k) := by
+      rw [map_sum, hsum (M := L) fun i => TensorProduct.lift β (i.1 ⊗ₜ[ℂ] i.2)]
+      simp [hx, hy]
+    have hγS : TensorProduct.lift γ (∑ i ∈ S, i.1 ⊗ₜ[ℂ] i.2)
+        = ∑ k : Fin n, γ (x k) (y k) := by
+      rw [map_sum, hsum (M := T) fun i => TensorProduct.lift γ (i.1 ⊗ₜ[ℂ] i.2)]
+      simp [hx, hy]
+    rw [hβS, hγS]
+    refine le_of_pow_le_pow_left₀ two_ne_zero
+      (mul_nonneg hβ.1 (norm_nonneg _)) ?_
+    calc ‖∑ k : Fin n, β (x k) (y k)‖ ^ 2
+        ≤ bound ^ 2 * (∑ i, ∑ j, ⟪x i, x j⟫ * ⟪y i, y j⟫).re := hβ.2 n x y
+      _ = (bound * ‖∑ k : Fin n, γ (x k) (y k)‖) ^ 2 := by
+          rw [hγ.gram_sum_re n x y, mul_pow]
+  refine ⟨(TensorProduct.lift β).extendOfNorm (TensorProduct.lift γ),
+    ⟨fun x y => ?_, ?_⟩, ?_⟩
+  · have h := LinearMap.extendOfNorm_eq (f := TensorProduct.lift β)
+      (e := TensorProduct.lift γ) hdense ⟨bound, hnorm⟩ (x ⊗ₜ[ℂ] y)
+    simpa using h
+  · exact LinearMap.opNorm_extendOfNorm_le hdense hβ.1 hnorm
+  · rintro g ⟨hg, -⟩
+    refine (LinearMap.extendOfNorm_unique hdense bound hnorm g ?_).symm
+    refine TensorProduct.ext' fun x y => ?_
+    simpa using hg x y
 
 /-- **110V** (proc.tex:2338, Exercise): the tensor product of Hilbert
 spaces is unique up to a unique isometric isomorphism. -/
@@ -334,13 +408,143 @@ theorem mult_completely_monotone (N : ℕ)
   rw [hsplit]
   exact ((ha.hadamard hbb).add (hab.hadamard hb)).add (hab.hadamard hbb)
 
+/-- Auxiliary: `⟨u,u⟩ = ‖u‖²` as a *real* complex number. -/
+theorem inner_self_eq_ofReal_norm_sq {E : Type*} [NormedAddCommGroup E]
+    [InnerProductSpace ℂ E] (u : E) : ⟪u, u⟫ = ((‖u‖ ^ 2 : ℝ) : ℂ) := by
+  refine Complex.ext ?_ ?_
+  · simpa [RCLike.re_to_complex] using (norm_sq_eq_re_inner (𝕜 := ℂ) u).symm
+  · simpa [RCLike.im_to_complex] using inner_self_im (𝕜 := ℂ) u
+
+/-- Auxiliary: the quadratic form `zᴴMz` of a finite matrix written out. -/
+theorem quadForm_eq {n : ℕ} (M : Matrix (Fin n) (Fin n) ℂ) (z : Fin n → ℂ) :
+    dotProduct (star z) (M.mulVec z) = ∑ i, ∑ j, star (z i) * M i j * z j := by
+  simp only [dotProduct, Matrix.mulVec, Pi.star_apply, Finset.mul_sum,
+    mul_assoc]
+
+/-- Auxiliary for **111V**: the quadratic form of the Gram matrix
+`(⟨vᵢ,vⱼ⟩)ᵢⱼ` at `z` is `⟨∑ᵢ zᵢvᵢ, ∑ⱼ zⱼvⱼ⟩`. -/
+theorem gram_quad_eq {E : Type*} [NormedAddCommGroup E]
+    [InnerProductSpace ℂ E] {n : ℕ} (v : Fin n → E) (z : Fin n → ℂ) :
+    ∑ i, ∑ j, star (z i) * ⟪v i, v j⟫ * z j
+      = ⟪∑ i, z i • v i, ∑ i, z i • v i⟫ := by
+  rw [sum_inner]
+  refine Finset.sum_congr rfl fun i _ => ?_
+  rw [inner_smul_left, inner_sum, Finset.mul_sum]
+  exact Finset.sum_congr rfl fun j _ => by
+    rw [inner_smul_right]; simp only [Complex.star_def]; ring
+
+/-- Auxiliary for **111V**: a Gram matrix is positive. -/
+theorem gram_posSemidef {E : Type*} [NormedAddCommGroup E]
+    [InnerProductSpace ℂ E] {n : ℕ} (v : Fin n → E) :
+    (Matrix.of fun i j : Fin n => ⟪v i, v j⟫).PosSemidef := by
+  refine Matrix.PosSemidef.of_dotProduct_mulVec_nonneg ?_ fun z => ?_
+  · ext i j
+    simp [Matrix.conjTranspose_apply, inner_conj_symm]
+  · rw [quadForm_eq]
+    simp only [Matrix.of_apply]
+    rw [gram_quad_eq, inner_self_eq_ofReal_norm_sq]
+    exact Complex.zero_le_real.2 (by positivity)
+
+/-- Auxiliary for **111V** (proc.tex:2500): for a bounded operator `A` we
+have `(⟨Avᵢ,Avⱼ⟩)ᵢⱼ ≤ ‖A‖² (⟨vᵢ,vⱼ⟩)ᵢⱼ` as matrices. -/
+theorem gram_op_le_posSemidef {E F : Type*} [NormedAddCommGroup E]
+    [InnerProductSpace ℂ E] [NormedAddCommGroup F] [InnerProductSpace ℂ F]
+    {n : ℕ} (A : E →L[ℂ] F) (v : Fin n → E) :
+    ((Matrix.of fun i j : Fin n => ((‖A‖ : ℂ) ^ 2) * ⟪v i, v j⟫) -
+        Matrix.of fun i j : Fin n => ⟪A (v i), A (v j)⟫).PosSemidef := by
+  refine Matrix.PosSemidef.of_dotProduct_mulVec_nonneg ?_ fun z => ?_
+  · ext i j
+    simp [Matrix.conjTranspose_apply, inner_conj_symm, Complex.star_def,
+      ← Complex.ofReal_pow]
+  · rw [quadForm_eq]
+    have hmap : ∑ i, z i • A (v i) = A (∑ i, z i • v i) := by
+      rw [map_sum]
+      exact Finset.sum_congr rfl fun i _ => (A.map_smul _ _).symm
+    have hsplit : ∑ i, ∑ j, star (z i) *
+          ((Matrix.of fun i j : Fin n => ((‖A‖ : ℂ) ^ 2) * ⟪v i, v j⟫) -
+            Matrix.of fun i j : Fin n => ⟪A (v i), A (v j)⟫) i j * z j
+        = ((‖A‖ : ℂ) ^ 2) *
+            (∑ i, ∑ j, star (z i) * ⟪v i, v j⟫ * z j) -
+          ∑ i, ∑ j, star (z i) * ⟪A (v i), A (v j)⟫ * z j := by
+      simp only [Matrix.sub_apply, Matrix.of_apply, mul_sub, sub_mul,
+        Finset.sum_sub_distrib, Finset.mul_sum]
+      refine congrArg₂ _ ?_ rfl
+      exact Finset.sum_congr rfl fun i _ =>
+        Finset.sum_congr rfl fun j _ => by ring
+    rw [hsplit, gram_quad_eq, gram_quad_eq (fun k => A (v k)) z, hmap]
+    have h3 : ((‖A‖ : ℂ)) ^ 2 = ((‖A‖ ^ 2 : ℝ) : ℂ) := by push_cast; ring
+    rw [inner_self_eq_ofReal_norm_sq, inner_self_eq_ofReal_norm_sq, h3,
+      ← Complex.ofReal_mul, ← Complex.ofReal_sub]
+    refine Complex.zero_le_real.2 ?_
+    have hop := A.le_opNorm (∑ i, z i • v i)
+    have h0 : (0 : ℝ) ≤ ‖A (∑ i, z i • v i)‖ := norm_nonneg _
+    nlinarith
+
+/-- Auxiliary for **111V**: the sum of all entries of a positive matrix is
+`≥ 0` (take the all-ones vector in the quadratic form). -/
+theorem sum_entries_nonneg {n : ℕ} {M : Matrix (Fin n) (Fin n) ℂ}
+    (hM : M.PosSemidef) : (0 : ℂ) ≤ ∑ i, ∑ j, M i j := by
+  have h := hM.dotProduct_mulVec_nonneg (fun _ => (1 : ℂ))
+  rw [quadForm_eq] at h
+  simpa using h
+
 /-- **111V** (`hilb-tensor-functor`, proc.tex:2436, Proposition): for
 bounded linear maps `A : ℋ → ℋ'` and `B : 𝒦 → 𝒦'` there is a unique
 bounded linear map `A ⊗ B : ℋ ⊗ 𝒦 → ℋ' ⊗ 𝒦'` with
 `(A ⊗ B)(x ⊗ y) = Ax ⊗ By`. -/
 theorem exists_opTensor (f : H →L[ℂ] H') (g : K →L[ℂ] K') :
     ∃! T : HT H K →L[ℂ] HT H' K',
-      ∀ (x : H) (y : K), T (x ⊗ₕ y) = f x ⊗ₕ g y := sorry
+      ∀ (x : H) (y : K), T (x ⊗ₕ y) = f x ⊗ₕ g y := by
+  -- The bilinear map `(x,y) ↦ f x ⊗ g y : ℋ × 𝒦 → ℋ' ⊗ 𝒦'`.
+  set β : H →ₗ[ℂ] K →ₗ[ℂ] HT H' K' :=
+    ((hilbTensor H' K').map.compl₂ (g : K →ₗ[ℂ] K')).comp (f : H →ₗ[ℂ] H')
+    with hβdef
+  have hβ_apply : ∀ x y, β x y = f x ⊗ₕ g y := fun _ _ => rfl
+  -- It is `ℓ²`-bounded by `‖f‖·‖g‖`, by 111IV applied to the Gram matrices.
+  have hbdd : L2Bounded β (‖f‖ * ‖g‖) := by
+    refine ⟨by positivity, fun n x y => ?_⟩
+    have hlhs : ‖∑ i, β (x i) (y i)‖ ^ 2 =
+        (∑ i, ∑ j, ⟪f (x i), f (x j)⟫ * ⟪g (y i), g (y j)⟫).re := by
+      have hb : ∀ i, β (x i) (y i)
+          = (hilbTensor H' K').map (f (x i)) (g (y i)) := fun _ => rfl
+      simp only [hb]
+      rw [← (hilbTensor H' K').isTensor.gram_sum_re n (fun i => f (x i))
+        (fun i => g (y i))]
+    rw [hlhs]
+    -- `(⟨f xᵢ, f xⱼ⟩) ⊙ (⟨g yᵢ, g yⱼ⟩) ≤ ‖f‖²‖g‖² (⟨xᵢ,xⱼ⟩) ⊙ (⟨yᵢ,yⱼ⟩)`
+    have hpsd := mult_completely_monotone n
+      (Matrix.of fun i j : Fin n => ⟪f (x i), f (x j)⟫)
+      (Matrix.of fun i j : Fin n => ((‖f‖ : ℂ) ^ 2) * ⟪x i, x j⟫)
+      (Matrix.of fun i j : Fin n => ⟪g (y i), g (y j)⟫)
+      (Matrix.of fun i j : Fin n => ((‖g‖ : ℂ) ^ 2) * ⟪y i, y j⟫)
+      (gram_posSemidef _) (gram_posSemidef _)
+      (gram_op_le_posSemidef f x) (gram_op_le_posSemidef g y)
+    have hsum := sum_entries_nonneg hpsd
+    rw [← sub_nonneg]
+    have hre := (Complex.le_def.mp hsum).1
+    simp only [Complex.zero_re, Matrix.sub_apply, Matrix.hadamard_apply,
+      Matrix.of_apply, Complex.re_sum, Complex.sub_re, Finset.sum_sub_distrib]
+      at hre
+    have hcast : ∀ i j : Fin n,
+        (((‖f‖ : ℂ) ^ 2 * ⟪x i, x j⟫) * ((‖g‖ : ℂ) ^ 2 * ⟪y i, y j⟫)).re =
+          (‖f‖ * ‖g‖) ^ 2 * (⟪x i, x j⟫ * ⟪y i, y j⟫).re := by
+      intro i j
+      have : ((‖f‖ : ℂ) ^ 2 * ⟪x i, x j⟫) * ((‖g‖ : ℂ) ^ 2 * ⟪y i, y j⟫) =
+          (((‖f‖ * ‖g‖) ^ 2 : ℝ) : ℂ) * (⟪x i, x j⟫ * ⟪y i, y j⟫) := by
+        push_cast; ring
+      rw [this, Complex.re_ofReal_mul]
+    simp only [hcast] at hre
+    rw [Complex.re_sum]
+    simp only [Complex.re_sum, ← Finset.mul_sum]
+    simp only [← Finset.mul_sum] at hre
+    linarith
+  obtain ⟨hb1, huniv⟩ := hilb_tensor_universal_property (L := HT H' K')
+    (hilbTensor H K).map (hilbTensor H K).isTensor
+  obtain ⟨T, ⟨hT, -⟩, -⟩ := huniv β (‖f‖ * ‖g‖) hbdd
+  refine ⟨T, fun x y => (hT x y).trans (hβ_apply x y), fun T' hT' => ?_⟩
+  refine ContinuousLinearMap.ext_on (hilbTensor H K).isTensor.dense ?_
+  rintro t ⟨x, y, rfl⟩
+  exact (hT' x y).trans ((hT x y).trans (hβ_apply x y)).symm
 
 /-- The operator `A ⊗ B : ℋ ⊗ 𝒦 → ℋ' ⊗ 𝒦'` of 111V. -/
 noncomputable def opTensor (f : H →L[ℂ] H') (g : K →L[ℂ] K') :
