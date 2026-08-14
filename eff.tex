@@ -494,19 +494,42 @@ If the infimum~$a \wedge b$
 (This result appeared in my master's thesis~\cite[prop.~15]{basmsc}.
     It turns out that it was already proven before
         (in D-poset form) \cite[prop.~1.8.2]{dvurecenskij2013new}.)
-Note that~$x \mapsto x \ominus y$ is an order anti-automorphism
-    of~$\{ x ;\ x \in E ;\ x \leq y \}$.
-Hence it turns infima
-    into suprema and vice versa.
-As~$a \wedge b =
-    ((a \ovee b) \ominus b) \wedge
-    ((a \ovee b) \ominus a)$,
-we know~$b \vee a$ exists
-    and~$a \wedge b =
-    ((a \ovee b) \ominus b) \wedge
-    ((a \ovee b) \ominus a) =
-    ((a \ovee b) \ominus (b \vee a)$,
-     as desired.  \qed
+The result follows from this lemma:
+    if~$(x \ominus c) \wedge (x \ominus d)$ exists,
+    then~$c \vee d$ exists as well
+    and~$(x \ominus c) \wedge (x \ominus d)
+        = x \ominus (c \vee d)$.
+Indeed:
+\begin{equation*}
+    a \wedge b \ = \ 
+        ((a \ovee b) \ominus a) \wedge ((a \ovee b) \ominus b) \ = \ 
+        (a \ovee b) \ominus (a \vee b)
+\end{equation*}
+    and so~$(a \wedge b) \ovee (a \vee b) = a \ovee b$, as desired.
+\begin{point}{30}%
+Now, we prove the lemma.
+Assume~$(x \ominus c) \wedge (x \ominus d)$ exists.
+Note~$x \ominus c = (x^\perp \ovee c)^\perp$.
+As~$z \mapsto z^\perp$ is an order anti-isomorphism,
+    we see~$(x^\perp \ovee c) \vee (x^\perp \ovee d)$
+        exists and~$(x^\perp \ovee c) \vee (x^\perp \ovee d)
+                                    = ((x \ominus c)\wedge (x \ominus d))^\perp$.
+Clearly~$ (x^\perp \ovee c) \vee
+        (x^\perp \ovee d) \geq x^\perp$.
+    Write~$r := ((x^\perp \ovee c) \vee
+        (x^\perp \ovee d)) \ominus x^\perp$.
+We will show~$r = c \vee d$.
+It is easy to see~$r \geq c$ and~$r \geq d$.
+Assume~$s$ is any element with~$s \geq c$ and~$s \geq d$.
+Note~$x^\perp \ovee s \geq x^\perp \ovee c$
+and~$x^\perp \ovee s \geq x^\perp \ovee d$,
+    hence~$x^\perp \ovee s \geq (x^\perp \ovee c) \vee (x^\perp \ovee d)$
+    and so~$ s \geq  r$.
+We have shown~$r = c \vee d$.
+Consequently~$ (x \ominus c)\wedge (x \ominus d)
+        = ((x^\perp \ovee c) \vee (x^\perp \ovee d))^\perp
+        = (r \ovee x^\perp)^\perp = 
+            x \ominus (c \vee d) $, as promised. \qed
 \end{point}    
 \end{point}
 \end{point}
