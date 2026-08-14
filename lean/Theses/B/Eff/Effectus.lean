@@ -2458,12 +2458,331 @@ partial form (its effect object being `ℂ`). -/
 theorem effectus_vn_partial :
     Nonempty (EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) := sorry
 
+/-! ### Extensive categories (189aII.3) -/
+
+section ExtensiveEffectus
+
+variable {C : Type u} [Category.{v} C] [FinitaryExtensive C]
+
+/-- The van Kampen property of the coproduct cocone `X ⨿ Y`, in the form we use:
+a cofan `(inl', inr')` over `(X', Y')` lying over `X ⨿ Y` is a colimit iff both
+its squares are pullbacks. -/
+private theorem ext_vk {X Y X' Y' P : C} (inl' : X' ⟶ P) (inr' : Y' ⟶ P)
+    (αX : X' ⟶ X) (αY : Y' ⟶ Y) (f : P ⟶ X ⨿ Y)
+    (hX : αX ≫ coprod.inl = inl' ≫ f) (hY : αY ≫ coprod.inr = inr' ≫ f) :
+    Nonempty (IsColimit (BinaryCofan.mk inl' inr')) ↔
+      (IsPullback inl' αX f coprod.inl ∧ IsPullback inr' αY f coprod.inr) :=
+  (BinaryCofan.isVanKampen_iff
+      (BinaryCofan.mk (coprod.inl : X ⟶ X ⨿ Y) coprod.inr)).mp
+    (FinitaryExtensive.van_kampen' _ (coprodIsCoprod X Y))
+    (X' := X') (Y' := Y') (BinaryCofan.mk inl' inr') αX αY f hX hY
+
+/-- Coproducts in a finitary extensive category are *universal*: any map
+`m : Z ⟶ X ⨿ Y` decomposes `Z` as the coproduct of the two pullbacks. -/
+private theorem ext_decomp {X Y Z : C} (m : Z ⟶ X ⨿ Y) :
+    Nonempty (IsColimit (BinaryCofan.mk
+      (pullback.snd (coprod.inl : X ⟶ X ⨿ Y) m)
+      (pullback.snd (coprod.inr : Y ⟶ X ⨿ Y) m))) := by
+  have h₁ : IsPullback (pullback.snd (coprod.inl : X ⟶ X ⨿ Y) m)
+      (pullback.fst (coprod.inl : X ⟶ X ⨿ Y) m) m coprod.inl :=
+    (IsPullback.of_hasPullback _ _).flip
+  have h₂ : IsPullback (pullback.snd (coprod.inr : Y ⟶ X ⨿ Y) m)
+      (pullback.fst (coprod.inr : Y ⟶ X ⨿ Y) m) m coprod.inr :=
+    (IsPullback.of_hasPullback _ _).flip
+  exact (ext_vk _ _ _ _ m h₁.w.symm h₂.w.symm).mpr ⟨h₁, h₂⟩
+
+variable [HasTerminal C]
+
+omit [FinitaryExtensive C] in
+private theorem ext_terminal_self : terminal.from (⊤_ C) = 𝟙 (⊤_ C) :=
+  terminal.hom_ext _ _
+
+/-- Transporting the coproduct cocone along an isomorphism of its vertex. -/
+private noncomputable def cofanOfIso {X Y P : C} (e : X ⨿ Y ≅ P) :
+    IsColimit (BinaryCofan.mk (coprod.inl ≫ e.hom) (coprod.inr ≫ e.hom)) :=
+  (coprodIsCoprod X Y).ofIsoColimit (Cocone.ext e (by rintro ⟨⟨⟩⟩ <;> rfl))
+
+/-- `(1+1)+1` is *also* the coproduct of `1` and `1+1`, with injections
+`κ₁∘κ₁` and `[κ₂∘κ₁, κ₂]`. -/
+private noncomputable def cofanAssoc : IsColimit (BinaryCofan.mk
+    (coprod.inl ≫ coprod.inl : (⊤_ C) ⟶ ((⊤_ C) ⨿ (⊤_ C)) ⨿ (⊤_ C))
+    (coprod.desc (coprod.inr ≫ coprod.inl) coprod.inr)) := by
+  have h1 : (coprod.inl : (⊤_ C) ⟶ (⊤_ C) ⨿ ((⊤_ C) ⨿ (⊤_ C))) ≫
+      (coprod.associator (⊤_ C) (⊤_ C) (⊤_ C)).inv
+      = coprod.inl ≫ coprod.inl := by
+    rw [coprod.associator_inv, coprod.inl_desc]
+  have h2 : (coprod.inr : (⊤_ C) ⨿ (⊤_ C) ⟶ (⊤_ C) ⨿ ((⊤_ C) ⨿ (⊤_ C))) ≫
+      (coprod.associator (⊤_ C) (⊤_ C) (⊤_ C)).inv
+      = coprod.desc (coprod.inr ≫ coprod.inl) coprod.inr := by
+    rw [coprod.associator_inv, coprod.inr_desc]
+  rw [← h1, ← h2]
+  exact cofanOfIso (coprod.associator (⊤_ C) (⊤_ C) (⊤_ C)).symm
+
+/-- **189aII.3**, third axiom: the cotuples `[κ₁,κ₂,κ₂]` and `[κ₂,κ₁,κ₂]`
+are jointly monic in a finitary extensive category with a final object. -/
+private theorem ext_jointlyMonic :
+    JointlyMonic
+      (coprod.desc (coprod.desc coprod.inl coprod.inr) coprod.inr :
+        ((⊤_ C) ⨿ (⊤_ C)) ⨿ (⊤_ C) ⟶ (⊤_ C) ⨿ (⊤_ C))
+      (coprod.desc (coprod.desc coprod.inr coprod.inl) coprod.inr) := by
+  intro Z a b hf hg
+  -- `F⁻¹(κ₁)` is the first summand, `F⁻¹(κ₂)` the last two
+  obtain ⟨F1, F2⟩ :=
+    (ext_vk (coprod.inl ≫ coprod.inl : (⊤_ C) ⟶ ((⊤_ C) ⨿ (⊤_ C)) ⨿ (⊤_ C))
+      (coprod.desc (coprod.inr ≫ coprod.inl) coprod.inr)
+      (𝟙 (⊤_ C)) (terminal.from ((⊤_ C) ⨿ (⊤_ C)))
+      (coprod.desc (coprod.desc coprod.inl coprod.inr) coprod.inr)
+      (by simp [coprod.inl_desc])
+      (by
+        refine coprod.hom_ext ?_ ?_ <;>
+          simp [coprod.inl_desc, coprod.inr_desc, ext_terminal_self])).mp ⟨cofanAssoc⟩
+  -- over the first summand both `a` and `b` factor through `κ₁∘κ₁`
+  have key₁ : ∀ c : Z ⟶ ((⊤_ C) ⨿ (⊤_ C)) ⨿ (⊤_ C),
+      c ≫ coprod.desc (coprod.desc coprod.inl coprod.inr) coprod.inr =
+        a ≫ coprod.desc (coprod.desc coprod.inl coprod.inr) coprod.inr →
+      pullback.snd (coprod.inl : (⊤_ C) ⟶ (⊤_ C) ⨿ (⊤_ C))
+          (a ≫ coprod.desc (coprod.desc coprod.inl coprod.inr) coprod.inr) ≫ c =
+        terminal.from _ ≫ (coprod.inl ≫ coprod.inl) := by
+    intro c hc
+    have hw : (pullback.snd (coprod.inl : (⊤_ C) ⟶ (⊤_ C) ⨿ (⊤_ C))
+          (a ≫ coprod.desc (coprod.desc coprod.inl coprod.inr) coprod.inr) ≫ c) ≫
+        coprod.desc (coprod.desc coprod.inl coprod.inr) coprod.inr =
+          pullback.fst (coprod.inl : (⊤_ C) ⟶ (⊤_ C) ⨿ (⊤_ C))
+            (a ≫ coprod.desc (coprod.desc coprod.inl coprod.inr) coprod.inr) ≫ coprod.inl := by
+      rw [Category.assoc, hc, ← pullback.condition]
+    rw [← F1.lift_fst _ _ hw]
+    congr 1
+    exact terminal.hom_ext _ _
+  -- over the last two summands both factor through `N = [κ₂∘κ₁, κ₂]`, and `G`
+  -- recovers the factorisation because `N ∘ G = id`
+  have hGN : (coprod.desc (coprod.inr ≫ coprod.inl) coprod.inr :
+      (⊤_ C) ⨿ (⊤_ C) ⟶ ((⊤_ C) ⨿ (⊤_ C)) ⨿ (⊤_ C)) ≫
+      coprod.desc (coprod.desc coprod.inr coprod.inl) coprod.inr = 𝟙 _ := by
+    refine coprod.hom_ext ?_ ?_ <;> simp [coprod.inl_desc, coprod.inr_desc]
+  have key₂ : ∀ c : Z ⟶ ((⊤_ C) ⨿ (⊤_ C)) ⨿ (⊤_ C),
+      c ≫ coprod.desc (coprod.desc coprod.inl coprod.inr) coprod.inr =
+        a ≫ coprod.desc (coprod.desc coprod.inl coprod.inr) coprod.inr →
+      pullback.snd (coprod.inr : (⊤_ C) ⟶ (⊤_ C) ⨿ (⊤_ C))
+          (a ≫ coprod.desc (coprod.desc coprod.inl coprod.inr) coprod.inr) ≫ c =
+        (pullback.snd (coprod.inr : (⊤_ C) ⟶ (⊤_ C) ⨿ (⊤_ C))
+          (a ≫ coprod.desc (coprod.desc coprod.inl coprod.inr) coprod.inr) ≫ c ≫
+            coprod.desc (coprod.desc coprod.inr coprod.inl) coprod.inr) ≫
+          coprod.desc (coprod.inr ≫ coprod.inl) coprod.inr := by
+    intro c hc
+    have hw : (pullback.snd (coprod.inr : (⊤_ C) ⟶ (⊤_ C) ⨿ (⊤_ C))
+          (a ≫ coprod.desc (coprod.desc coprod.inl coprod.inr) coprod.inr) ≫ c) ≫
+        coprod.desc (coprod.desc coprod.inl coprod.inr) coprod.inr =
+          pullback.fst (coprod.inr : (⊤_ C) ⟶ (⊤_ C) ⨿ (⊤_ C))
+            (a ≫ coprod.desc (coprod.desc coprod.inl coprod.inr) coprod.inr) ≫ coprod.inr := by
+      rw [Category.assoc, hc, ← pullback.condition]
+    obtain ⟨L, hL⟩ : ∃ L, L ≫ coprod.desc (coprod.inr ≫ coprod.inl) coprod.inr =
+          pullback.snd (coprod.inr : (⊤_ C) ⟶ (⊤_ C) ⨿ (⊤_ C))
+            (a ≫ coprod.desc (coprod.desc coprod.inl coprod.inr) coprod.inr) ≫ c :=
+      ⟨F2.lift _ _ hw, F2.lift_fst _ _ hw⟩
+    have h3 : pullback.snd (coprod.inr : (⊤_ C) ⟶ (⊤_ C) ⨿ (⊤_ C))
+          (a ≫ coprod.desc (coprod.desc coprod.inl coprod.inr) coprod.inr) ≫ c ≫
+            coprod.desc (coprod.desc coprod.inr coprod.inl) coprod.inr = L := by
+      rw [← Category.assoc, ← hL, Category.assoc, hGN, Category.comp_id]
+    rw [h3, hL]
+  -- `Z` is the coproduct of the two pieces, so `a = b`
+  obtain ⟨hcol⟩ := ext_decomp (a ≫ coprod.desc (coprod.desc coprod.inl coprod.inr) coprod.inr)
+  refine BinaryCofan.IsColimit.hom_ext hcol ?_ ?_
+  · exact (key₁ a rfl).trans (key₁ b hf.symm).symm
+  · have h2 : (pullback.snd (coprod.inr : (⊤_ C) ⟶ (⊤_ C) ⨿ (⊤_ C))
+          (a ≫ coprod.desc (coprod.desc coprod.inl coprod.inr) coprod.inr) ≫ a ≫
+            coprod.desc (coprod.desc coprod.inr coprod.inl) coprod.inr) ≫
+          (coprod.desc (coprod.inr ≫ coprod.inl) coprod.inr :
+            (⊤_ C) ⨿ (⊤_ C) ⟶ ((⊤_ C) ⨿ (⊤_ C)) ⨿ (⊤_ C)) =
+        (pullback.snd (coprod.inr : (⊤_ C) ⟶ (⊤_ C) ⨿ (⊤_ C))
+          (a ≫ coprod.desc (coprod.desc coprod.inl coprod.inr) coprod.inr) ≫ b ≫
+            coprod.desc (coprod.desc coprod.inr coprod.inl) coprod.inr) ≫
+          (coprod.desc (coprod.inr ≫ coprod.inl) coprod.inr :
+            (⊤_ C) ⨿ (⊤_ C) ⟶ ((⊤_ C) ⨿ (⊤_ C)) ⨿ (⊤_ C)) := by
+      rw [hg]
+    exact (key₂ a rfl).trans (h2.trans (key₂ b hf.symm).symm)
+
+
+/-- **189aII.3**, second axiom: the `κ₁`-square is a pullback. -/
+private theorem ext_isPullback_kappa (X Y : C) :
+    IsPullback (terminal.from X) (coprod.inl : X ⟶ X ⨿ Y)
+      (coprod.inl : (⊤_ C) ⟶ (⊤_ C) ⨿ (⊤_ C))
+      (coprod.map (terminal.from X) (terminal.from Y)) :=
+  (((ext_vk (coprod.inl : X ⟶ X ⨿ Y) (coprod.inr : Y ⟶ X ⨿ Y)
+      (terminal.from X) (terminal.from Y)
+      (coprod.map (terminal.from X) (terminal.from Y))
+      (by rw [coprod.inl_map]) (by rw [coprod.inr_map])).mp
+    ⟨coprodIsCoprod X Y⟩).1).flip
+
+/-- The `κ₂`-form of the second axiom. -/
+private theorem ext_isPullback_kappa_inr (X Y : C) :
+    IsPullback (terminal.from Y) (coprod.inr : Y ⟶ X ⨿ Y)
+      (coprod.inr : (⊤_ C) ⟶ (⊤_ C) ⨿ (⊤_ C))
+      (coprod.map (terminal.from X) (terminal.from Y)) :=
+  (((ext_vk (coprod.inl : X ⟶ X ⨿ Y) (coprod.inr : Y ⟶ X ⨿ Y)
+      (terminal.from X) (terminal.from Y)
+      (coprod.map (terminal.from X) (terminal.from Y))
+      (by rw [coprod.inl_map]) (by rw [coprod.inr_map])).mp
+    ⟨coprodIsCoprod X Y⟩).2).flip
+
+omit [FinitaryExtensive C] [HasTerminal C] in
+/-- A square with a unique diagonal filler is a pullback.  (Stated with
+plainly typed data, so that the projections of an arbitrary `PullbackCone`
+never have to be rewritten.) -/
+private theorem isPullback_of_existsUnique {W X Y S : C} {fst : W ⟶ X} {snd : W ⟶ Y}
+    {f : X ⟶ S} {g : Y ⟶ S} (w : fst ≫ f = snd ≫ g)
+    (h : ∀ (T : C) (p : T ⟶ X) (q : T ⟶ Y), p ≫ f = q ≫ g →
+      ∃! l : T ⟶ W, l ≫ fst = p ∧ l ≫ snd = q) :
+    IsPullback fst snd f g := by
+  refine IsPullback.of_isLimit (PullbackCone.IsLimit.mk w
+    (fun s => (h s.pt s.fst s.snd s.condition).choose) (fun s => ?_) (fun s => ?_)
+    (fun s m h₁ h₂ => ?_))
+  · exact (h s.pt s.fst s.snd s.condition).choose_spec.1.1
+  · exact (h s.pt s.fst s.snd s.condition).choose_spec.1.2
+  · exact (h s.pt s.fst s.snd s.condition).choose_spec.2 m ⟨h₁, h₂⟩
+
+/-- **189aII.3**, first axiom: the `+`-square is a pullback. -/
+private theorem ext_isPullback_plus (X Y : C) :
+    IsPullback (coprod.map (𝟙 X) (terminal.from Y))
+      (coprod.map (terminal.from X) (𝟙 Y))
+      (coprod.map (terminal.from X) (𝟙 (⊤_ C)))
+      (coprod.map (𝟙 (⊤_ C)) (terminal.from Y)) := by
+  -- the decompositions of `u = !+id : X+1 → 1+1` and `v = id+! : 1+Y → 1+1`
+  obtain ⟨A1, A2⟩ :=
+    (ext_vk (coprod.inl : X ⟶ X ⨿ (⊤_ C)) (coprod.inr : (⊤_ C) ⟶ X ⨿ (⊤_ C))
+      (terminal.from X) (𝟙 (⊤_ C)) (coprod.map (terminal.from X) (𝟙 (⊤_ C)))
+      (by rw [coprod.inl_map]) (by rw [coprod.inr_map])).mp ⟨coprodIsCoprod _ _⟩
+  obtain ⟨B1, B2⟩ :=
+    (ext_vk (coprod.inl : (⊤_ C) ⟶ (⊤_ C) ⨿ Y) (coprod.inr : Y ⟶ (⊤_ C) ⨿ Y)
+      (𝟙 (⊤_ C)) (terminal.from Y) (coprod.map (𝟙 (⊤_ C)) (terminal.from Y))
+      (by rw [coprod.inl_map]) (by rw [coprod.inr_map])).mp ⟨coprodIsCoprod _ _⟩
+  have hmono₁ : Mono (coprod.inl : X ⟶ X ⨿ (⊤_ C)) :=
+    FinitaryExtensive.mono_inl_of_isColimit (colimit.isColimit (pair X (⊤_ C)))
+  have hmono₂ : Mono (coprod.inr : Y ⟶ (⊤_ C) ⨿ Y) :=
+    FinitaryExtensive.mono_inr_of_isColimit (colimit.isColimit (pair (⊤_ C) Y))
+  have hmap : coprod.map (𝟙 X) (terminal.from Y) ≫
+        coprod.map (terminal.from X) (𝟙 (⊤_ C)) =
+      coprod.map (terminal.from X) (terminal.from Y) := by
+    refine coprod.hom_ext ?_ ?_ <;> simp [coprod.inl_map, coprod.inr_map]
+  have hmap' : coprod.map (terminal.from X) (𝟙 Y) ≫
+        coprod.map (𝟙 (⊤_ C)) (terminal.from Y) =
+      coprod.map (terminal.from X) (terminal.from Y) := by
+    refine coprod.hom_ext ?_ ?_ <;> simp [coprod.inl_map, coprod.inr_map]
+  refine isPullback_of_existsUnique (hmap.trans hmap'.symm) (fun T p q hpq => ?_)
+  set m : T ⟶ (⊤_ C) ⨿ (⊤_ C) := p ≫ coprod.map (terminal.from X) (𝟙 (⊤_ C)) with hm
+  obtain ⟨hcol⟩ := ext_decomp m
+  set k₁ : pullback (coprod.inl : (⊤_ C) ⟶ (⊤_ C) ⨿ (⊤_ C)) m ⟶ T :=
+    pullback.snd (coprod.inl : (⊤_ C) ⟶ (⊤_ C) ⨿ (⊤_ C)) m with hk₁
+  set k₂ : pullback (coprod.inr : (⊤_ C) ⟶ (⊤_ C) ⨿ (⊤_ C)) m ⟶ T :=
+    pullback.snd (coprod.inr : (⊤_ C) ⟶ (⊤_ C) ⨿ (⊤_ C)) m with hk₂
+  have hc₁ : k₁ ≫ m = terminal.from _ ≫ coprod.inl := by
+    rw [hk₁, ← pullback.condition]
+    congr 1
+    exact terminal.hom_ext _ _
+  have hc₂ : k₂ ≫ m = terminal.from _ ≫ coprod.inr := by
+    rw [hk₂, ← pullback.condition]
+    congr 1
+    exact terminal.hom_ext _ _
+  -- restrictions of `p` and `q` to the two pieces of `T`
+  have hp₁ : (k₁ ≫ p) ≫ coprod.map (terminal.from X) (𝟙 (⊤_ C)) =
+      terminal.from _ ≫ coprod.inl := (Category.assoc _ _ _).trans hc₁
+  have hp₂' : (k₂ ≫ p) ≫ coprod.map (terminal.from X) (𝟙 (⊤_ C)) =
+      terminal.from _ ≫ coprod.inr := (Category.assoc _ _ _).trans hc₂
+  have hq₁' : (k₁ ≫ q) ≫ coprod.map (𝟙 (⊤_ C)) (terminal.from Y) =
+      terminal.from _ ≫ coprod.inl :=
+    (Category.assoc _ _ _).trans ((congrArg (fun t => k₁ ≫ t) hpq.symm).trans hc₁)
+  have hq₂ : (k₂ ≫ q) ≫ coprod.map (𝟙 (⊤_ C)) (terminal.from Y) =
+      terminal.from _ ≫ coprod.inr :=
+    (Category.assoc _ _ _).trans ((congrArg (fun t => k₂ ≫ t) hpq.symm).trans hc₂)
+  -- on the second piece `p` is `κ₂ ∘ !`; on the first piece `q` is `κ₁ ∘ !`
+  have hp₂ : k₂ ≫ p = terminal.from _ ≫ coprod.inr := by
+    obtain ⟨L, hL⟩ : ∃ L, L ≫ (coprod.inr : (⊤_ C) ⟶ X ⨿ (⊤_ C)) = k₂ ≫ p :=
+      ⟨A2.lift _ _ hp₂', A2.lift_fst _ _ hp₂'⟩
+    rw [← hL]
+    congr 1
+    exact terminal.hom_ext _ _
+  have hq₁ : k₁ ≫ q = terminal.from _ ≫ coprod.inl := by
+    obtain ⟨L, hL⟩ : ∃ L, L ≫ (coprod.inl : (⊤_ C) ⟶ (⊤_ C) ⨿ Y) = k₁ ≫ q :=
+      ⟨B1.lift _ _ hq₁', B1.lift_fst _ _ hq₁'⟩
+    rw [← hL]
+    congr 1
+    exact terminal.hom_ext _ _
+  -- the two components of the filler
+  obtain ⟨t₁, ht₁⟩ : ∃ t₁, t₁ ≫ (coprod.inl : X ⟶ X ⨿ (⊤_ C)) = k₁ ≫ p :=
+    ⟨A1.lift _ _ hp₁, A1.lift_fst _ _ hp₁⟩
+  obtain ⟨t₂, ht₂⟩ : ∃ t₂, t₂ ≫ (coprod.inr : Y ⟶ (⊤_ C) ⨿ Y) = k₂ ≫ q :=
+    ⟨B2.lift _ _ hq₂, B2.lift_fst _ _ hq₂⟩
+  obtain ⟨D, hd₁, hd₂⟩ : ∃ D : T ⟶ X ⨿ Y, k₁ ≫ D = t₁ ≫ coprod.inl ∧
+      k₂ ≫ D = t₂ ≫ coprod.inr :=
+    ⟨BinaryCofan.IsColimit.desc hcol _ _, BinaryCofan.IsColimit.inl_desc hcol _ _,
+      BinaryCofan.IsColimit.inr_desc hcol _ _⟩
+  refine ⟨D, ⟨?_, ?_⟩, ?_⟩
+  · have e₁ : k₁ ≫ (D ≫
+        coprod.map (𝟙 X) (terminal.from Y)) = k₁ ≫ p := by
+      rw [← Category.assoc, hd₁, Category.assoc, coprod.inl_map, Category.id_comp]
+      exact ht₁
+    have e₂ : k₂ ≫ (D ≫
+        coprod.map (𝟙 X) (terminal.from Y)) = k₂ ≫ p := by
+      rw [← Category.assoc, hd₂, Category.assoc, coprod.inr_map, ← Category.assoc, hp₂]
+      congr 1
+      exact terminal.hom_ext _ _
+    exact BinaryCofan.IsColimit.hom_ext hcol e₁ e₂
+  · have e₁ : k₁ ≫ (D ≫
+        coprod.map (terminal.from X) (𝟙 Y)) = k₁ ≫ q := by
+      rw [← Category.assoc, hd₁, Category.assoc, coprod.inl_map, ← Category.assoc, hq₁]
+      congr 1
+      exact terminal.hom_ext _ _
+    have e₂ : k₂ ≫ (D ≫
+        coprod.map (terminal.from X) (𝟙 Y)) = k₂ ≫ q := by
+      rw [← Category.assoc, hd₂, Category.assoc, coprod.inr_map, Category.id_comp]
+      exact ht₂
+    exact BinaryCofan.IsColimit.hom_ext hcol e₁ e₂
+  · rintro l ⟨hl₁, hl₂⟩
+    have e₁ : k₁ ≫ l = k₁ ≫ D := by
+      rw [hd₁]
+      have hcond : (k₁ ≫ l) ≫ coprod.map (terminal.from X) (terminal.from Y) =
+          terminal.from _ ≫ coprod.inl := by
+        rw [← hmap, ← Category.assoc, Category.assoc k₁ l, hl₁]
+        exact hp₁
+      obtain ⟨r, hr⟩ : ∃ r, r ≫ (coprod.inl : X ⟶ X ⨿ Y) = k₁ ≫ l :=
+        ⟨(ext_isPullback_kappa X Y).flip.lift _ _ hcond,
+          (ext_isPullback_kappa X Y).flip.lift_fst _ _ hcond⟩
+      have hrt : r ≫ (coprod.inl : X ⟶ X ⨿ (⊤_ C)) =
+          t₁ ≫ (coprod.inl : X ⟶ X ⨿ (⊤_ C)) := by
+        rw [ht₁, ← hl₁, ← Category.assoc, ← hr, Category.assoc, coprod.inl_map,
+          Category.id_comp]
+      rw [← hr, hmono₁.right_cancellation _ _ hrt]
+    have e₂ : k₂ ≫ l = k₂ ≫ D := by
+      rw [hd₂]
+      have hcond : (k₂ ≫ l) ≫ coprod.map (terminal.from X) (terminal.from Y) =
+          terminal.from _ ≫ coprod.inr := by
+        rw [← hmap', ← Category.assoc, Category.assoc k₂ l, hl₂]
+        exact hq₂
+      obtain ⟨r, hr⟩ : ∃ r, r ≫ (coprod.inr : Y ⟶ X ⨿ Y) = k₂ ≫ l :=
+        ⟨(ext_isPullback_kappa_inr X Y).flip.lift _ _ hcond,
+          (ext_isPullback_kappa_inr X Y).flip.lift_fst _ _ hcond⟩
+      have hrt : r ≫ (coprod.inr : Y ⟶ (⊤_ C) ⨿ Y) =
+          t₂ ≫ (coprod.inr : Y ⟶ (⊤_ C) ⨿ Y) := by
+        rw [ht₂, ← hl₂, ← Category.assoc, ← hr, Category.assoc, coprod.inr_map,
+          Category.id_comp]
+      rw [← hr, hmono₂.right_cancellation _ _ hrt]
+    exact BinaryCofan.IsColimit.hom_ext hcol e₁ e₂
+
+/-- **189aII.3** (`effexamplesintro`, eff.tex:2043): every finitary extensive
+category with a final object is an effectus in total form. -/
+private theorem ext_effectusTotalForm : EffectusTotalForm C where
+  isPullback_plus := ext_isPullback_plus
+  isPullback_kappa := ext_isPullback_kappa
+  jointlyMonic_cotuples := ext_jointlyMonic
+
+end ExtensiveEffectus
+
+
 /-- **189aII.3** (`effexamplesintro`, eff.tex:2043, Examples): every
 (finitary) extensive category with a final object is an effectus in total
 form.  (The other examples of 189a — `OUSᵒᵖ`, `OUGᵒᵖ`, `Set`, `CRngᵒᵖ`,
 `CH`, `EJAᵒᵖ` — are instances of general facts not formalized here.) -/
 theorem extensive_effectus (C : Type u) [Category.{v} C]
     [HasFiniteCoproducts C] [HasTerminal C] [FinitaryExtensive C] :
-    EffectusTotalForm C := sorry
+    EffectusTotalForm C := ext_effectusTotalForm
 
 end Theses.B.Eff

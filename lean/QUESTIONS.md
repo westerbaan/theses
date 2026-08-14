@@ -193,8 +193,15 @@ thesis defect)*: add `q (z • f) = z • q f` to `IsLinftyOf`?  It is the right
 fix, but it touches **four statements at once**, which is why it was not done
 unilaterally.
 
-### D3. `matBilin_nonneg_of_mi` is in the wrong chapter for its consumer
-It lives in `Theses/A/Proc/Tensor.lean` (worker 40) and is exactly what 165III
+### D3. `matBilin_nonneg_of_mi` is in the wrong chapter for its consumer — **RESOLVED (worker 43)**
+**Option 2 was taken, authorised by Bas.**  The lemma now lives in
+`Theses/A/CStar/Matrices.lean` as `Theses.A.CStar.matBilin_nonneg_of_mi`
+(axiom-clean), generalised to three independent universes; `A/Proc/Tensor.lean`
+keeps a pointer comment where it used to be.  `B/Dils` already imports
+`A/CStar/Matrices`, so 165III is now unblocked with no new inter-chapter
+coupling.  The original question is kept below for the record.
+
+It lived in `Theses/A/Proc/Tensor.lean` (worker 40) and is exactly what 165III
 in `Theses/B/Dils/SelfDual.lean` needs — but `B/Dils` imports `A/CStar/Matrices`,
 `A/VN/Projections` and `Theses.Common`, **not** `A/Proc`. So the lemma is off
 the consumer's import path and 165III is blocked structurally rather than
@@ -265,7 +272,30 @@ Confirm that is the right treatment:
   `gudder1998representation`).  Note our statement is also *weaker* than the
   cited result — it omits both the order-unit condition and the scalar
   compatibility — so if it is ever revived it must be strengthened first.
-* **`extensive_effectus`** (`eff.tex:2043`, cites `effintro`).
+* **178III.2** "every finite effect monoid comes from a Boolean algebra, hence
+  is commutative" and **178III.4** "there is a non-commutative effect monoid on
+  lexicographic `ℝ⁵`" (`eff.tex:640`/`651`, cited to `basmsc` prop. 40 /
+  cor. 51).  Three parked statements: `finite_effectMonoid_boolean`,
+  `finite_effectMonoid_commutative`, `exists_noncommutative_effectMonoid`.
+* **192V.4** "every cancellative abstract `[0,1]`-convex set embeds affinely in
+  a real vector space" (`eff.tex:2591`, cited to `statesofconvexsets` thm. 8);
+  `cancellative_iso_convex`.
+* ~~**`extensive_effectus`**~~ (189aII.3, `eff.tex:2043`, cites `effintro`) —
+  **no longer parked: proved 2026-08-14** (worker 44) from Mathlib's
+  `FinitaryExtensive`, i.e. from the van Kampen property of binary coproducts.
+  Two remarks for the authors, since this is the one place where we had to
+  supply mathematics the thesis does not contain:
+  * The two pullback axioms are essentially immediate from extensivity, as one
+    would expect.  The **third** axiom — joint monicity of
+    `[κ₁,κ₂,κ₂], [κ₂,κ₁,κ₂] : 1+1+1 → 1+1` — is *not* proved anywhere in
+    `eff.tex` or `bsols.tex`, and Mathlib has nothing about it either.  It is
+    **true** in any finitary extensive category with a final object; the short
+    argument is in PROVING-LOG session 17 and is now formalized.  It may be
+    worth a sentence in the text, since the reader is otherwise left with the
+    hardest of the three axioms unaddressed.
+  * `effintro` is still the only citation; we did not consult it.  If it does
+    contain the argument, our proof is an independent one and the entry above
+    can simply be dropped.
 * **`effectus_vn`** (`eff.tex:832`, says only "adapt the proof of
   `emod-effectus`").
 * **177Ia** — see B4 above.

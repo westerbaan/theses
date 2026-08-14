@@ -4243,3 +4243,120 @@ everything left there is behind 89IX, 90II, 21VII, 74IV/74VI, 86IX, 87III or
 * Doc `file:LINE` refs checked: 101VII → proc.tex:1102 ✓, 109III →
   proc.tex:2117 ✓.
 * Nothing staged, nothing committed.
+
+## Session 17 — `B/Eff` parsec 189a: extensive categories (worker 44)
+
+Target: **`extensive_effectus` (189aII.3)**, the last self-contained `sorry` of
+`Effectus.lean` — "every (finitary) extensive category with a final object is
+an effectus in total form".  **Proved**; `B/Eff` goes 26 → **25** code
+`sorry`s and `Effectus.lean` 3 → **2** (the two left are the thesis-A examples
+`effectus_vn`, `effectus_vn_partial`).  The statement is unchanged
+byte-for-byte; only `:= sorry` became `:= ext_effectusTotalForm`.
+
+### Why this one is a divergence of class 5 — legitimately
+
+`eff.tex:2043` does not prove 189aII.3: it is one item of an `\begin{enumerate}`
+of examples, attributed to `\cite{effintro}`.  There is therefore **no author's
+argument to transcribe**, which is what makes closing it from Mathlib's
+`FinitaryExtensive` the right thing to do rather than the thing to avoid.  (It
+was listed under QUESTIONS A3 "statements the theses only cite, never prove";
+that entry is now updated.)
+
+Mathlib's `FinitaryExtensive` (`Mathlib/CategoryTheory/Extensive.lean`) says
+every binary coproduct cocone is *van Kampen*.  The whole proof is driven by
+one specialisation of `BinaryCofan.isVanKampen_iff`, added as
+`ext_vk` (all declarations below are `private`, in
+`section ExtensiveEffectus` of `Effectus.lean`):
+
+```
+ext_vk (inl' : X' ⟶ P) (inr' : Y' ⟶ P) (αX : X' ⟶ X) (αY : Y' ⟶ Y) (f : P ⟶ X ⨿ Y)
+  (hX : αX ≫ κ₁ = inl' ≫ f) (hY : αY ≫ κ₂ = inr' ≫ f) :
+  Nonempty (IsColimit (BinaryCofan.mk inl' inr')) ↔
+    (IsPullback inl' αX f κ₁ ∧ IsPullback inr' αY f κ₂)
+```
+
+Its `mp` direction produces pullback squares out of known coproducts; its `mpr`
+direction produces coproduct decompositions out of pullbacks — `ext_decomp m`,
+"any `m : Z ⟶ X ⨿ Y` splits `Z` into `m⁻¹(κ₁) + m⁻¹(κ₂)`" (the pullbacks exist
+because `FinitaryExtensive` carries `HasPullbacksOfInclusions`).
+
+* **Axiom 2** (`ext_isPullback_kappa`, and its `κ₂` twin) is one line: apply
+  `ext_vk` to the cofan `(X, Y)` over `1 ⨿ 1` along `! + !`, and `.flip`.
+* **Axiom 1** (`ext_isPullback_plus`) is the only place where a limit has to be
+  *built*: `X + Y` is the pullback of `! + id` and `id + !` because `X` is the
+  `κ₁`-part of `X + 1` and `Y` is the `κ₂`-part of `1 + Y`.  Given a competing
+  cone `(p, q)` over `Z`, `ext_decomp (p ≫ (!+id))` splits `Z = Z₁ + Z₂`; on
+  `Z₁` the map `q` is forced to be `κ₁ ∘ !` and `p` lifts to `t₁ : Z₁ ⟶ X`, on
+  `Z₂` symmetrically; the filler is `[t₁ ≫ κ₁, t₂ ≫ κ₂]`.  Uniqueness uses
+  **axiom 2 for `X + Y`** to factor a competing filler through `κ₁`/`κ₂`, and
+  then that `κ₁ : X ⟶ X + 1` is monic (`FinitaryExtensive.mono_inl_of_isColimit`).
+* **Axiom 3** (`ext_jointlyMonic`) — this is the interesting one: the thesis
+  never proves it and Mathlib has nothing for it, so a proof had to be found.
+  It **is** true, and cheaply, once one stops thinking about `1 + 1 + 1` as
+  three points: apply `ext_vk` to the *other* coproduct decomposition
+  `(1 + 1) + 1 = 1 + (1 + 1)` (`cofanAssoc`, obtained by transporting
+  `coprodIsCoprod` along `coprod.associator`).  That gives
+  `F⁻¹(κ₁) = ` first summand and `F⁻¹(κ₂) = ` last two, for
+  `F = [κ₁,κ₂,κ₂]`.  Now for `a, b : Z ⟶ 1+1+1` with `a≫F = b≫F` and
+  `a≫G = b≫G`, split `Z` along `m = a≫F`:
+  on `m⁻¹(κ₁)` both `a` and `b` factor through the first summand, hence are
+  both `! ≫ κ₁κ₁`; on `m⁻¹(κ₂)` both factor through `N = [κ₂κ₁, κ₂]`, and
+  since `N ≫ G = id` the factorisation *is* `(–) ≫ G`, which `a` and `b`
+  share by hypothesis.  `Z` is the coproduct of the two pieces, so `a = b`.
+  Only `F`'s two squares are needed; `G`'s are not.
+
+New reusable API (all `private`): `ext_vk`, `ext_decomp`, `cofanOfIso`
+(transport of the coproduct cocone along an iso of the vertex), `cofanAssoc`,
+`ext_terminal_self`, `ext_jointlyMonic`, `ext_isPullback_kappa`,
+`ext_isPullback_kappa_inr`, `isPullback_of_existsUnique`,
+`ext_isPullback_plus`, `ext_effectusTotalForm`.
+
+### Two Lean traps worth recording
+
+1. **`coprod.inl_desc` and friends are not `simp` lemmas in this Mathlib**
+   (they are `@[reassoc]` only, and `cat_disch` does not close them either).
+   Every coproduct computation in the new block therefore passes an explicit
+   `simp [coprod.inl_desc, coprod.inr_desc, …]` or rewrites by hand.  Mixing
+   `← Category.assoc` into such a `simp` set breaks the `_assoc` variants and
+   silently leaves the goal open.
+2. **Projections of `BinaryCofan.mk` / `PullbackCone` carry dependent types.**
+   `(BinaryCofan.mk f g).inl` is *displayed* as `f` but has type
+   `(pair X Y).obj ⟨left⟩ ⟶ ((const _).obj c.pt).obj ⟨left⟩`, so `rw` fails
+   with "motive is not type correct" / "did not find an occurrence" on goals
+   that look identical to what one wrote.  Two workarounds are used throughout
+   and are worth reusing: prove the two component equations as separate
+   `have`s with hand-written (plain) types and finish with
+   `exact BinaryCofan.IsColimit.hom_ext hcol e₁ e₂` — `exact` is up to defeq
+   where `rw` is not — and abstract any such projection behind an
+   `obtain ⟨D, hD⟩ : ∃ D : T ⟶ X ⨿ Y, …` before computing with it.  The same
+   device (`isPullback_of_existsUnique`) shields the whole `PullbackCone` API.
+
+### Divergence classes
+
+* **(1) faithful:** none — there is no proof in the source to be faithful to.
+* **(2) different route:** none, for the same reason.
+* **(3) mild:** none.
+* **(4) our statement mis-transcribes the thesis:** none; `extensive_effectus`
+  is unchanged and is exactly 189aII.3.
+* **(5) closed from Mathlib without reading the author's argument:**
+  `extensive_effectus`, unavoidably (cited to `effintro`, no argument in
+  `eff.tex`, no solution in `bsols.tex`).  Recorded above and in QUESTIONS A3.
+
+### Verification
+
+* `lake build` of all eight `B/Eff` modules: exit 0,
+  `Build completed successfully (8715 jobs)`.  The ~315 new lines produce
+  **zero** warnings (build-log lines for `Effectus.lean` are 1593, 1602, 2297,
+  2298 — all pre-existing `linter.style.show` — plus the two remaining
+  `declaration uses sorry`; the new block spans 2463–2777).
+* `#print axioms Theses.B.Eff.extensive_effectus` →
+  `[propext, Classical.choice, Quot.sound]`.
+* Namespace walk (`#beff_leaks`): 1523 declarations, **25** are themselves
+  `sorry`, **0** depend on one, 0 hand-written indirect leaks, 0 non-standard
+  axioms.  (The count is unchanged from session 15 because the walk skips
+  `private` names, which are name-mangled out of the `Theses.B.Eff` prefix;
+  every new declaration in this session is `private`.  `#print axioms` on
+  `extensive_effectus` does traverse them.)
+* Per-file `sorry`s: Comparisons 3, Dagger 3, DiamondAmp 2, EffectAlgebras 6,
+  **Effectus 2**, Quotients 0, StatesPredicates 9, WStarCat 0 — **25**.
+* Nothing staged, nothing committed.
