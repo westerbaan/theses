@@ -283,50 +283,8 @@ structure EffectusPartialStructure (D : Type u) [Category.{v} D] where
   finPAC : @FinPAC D _ hasFiniteCoproducts homPCM
   effectus : @EffectusPartialForm D _ hasFiniteCoproducts homPCM finPAC
 
-section ChoTotal
-
-variable (C : Type u) [Category.{v} C] [HasFiniteCoproducts C] [HasTerminal C]
-  [EffectusTotalForm C]
-
-/-- **180X.1** (`cho-thm`, eff.tex:948, Theorem (Cho)) = **187I**
-(`eff-total-to-partial`, eff.tex:1713, Theorem): if `C` is an effectus in
-total form, then `Par C` is an effectus in partial form, with `I = 1`. -/
-theorem cho_thm_1 :
-    ∃ s : EffectusPartialStructure (Par C), s.effectus.I = Par.of (⊤_ C) :=
-  sorry
-
-/-- **180X.3** (`cho-thm`, eff.tex:948, Theorem (Cho)), second half (proved
-in 188IV): nothing is lost passing to partial maps: `Tot (Par C) ≅ C`, for
-any structure of an effectus in partial form on `Par C` as in `cho_thm_1`. -/
-theorem cho_thm_3_tot_par (s : EffectusPartialStructure (Par C)) :
-    letI := s.hasFiniteCoproducts
-    letI := s.homPCM
-    letI := s.finPAC
-    letI := s.effectus
-    Nonempty (Tot (Par C) ≌ C) := sorry
-
-end ChoTotal
-
-section ChoPartial
-
-variable (D : Type u) [Category.{v} D] [HasFiniteCoproducts D]
-  [∀ X Y : D, PCM (X ⟶ Y)] [FinPAC D] [EffectusPartialForm D]
-
-/-- **180X.2** (`cho-thm`, eff.tex:948, Theorem (Cho)) = **181XI**
-(`eff-partial-to-total`, eff.tex:1165, Theorem): the total maps of an
-effectus `D` in partial form form an effectus in total form `Tot D`. -/
-theorem eff_partial_to_total : Nonempty (EffectusTotalStructure (Tot D)) :=
-  sorry
-
-/-- **180X.3** (`cho-thm`, eff.tex:948, Theorem (Cho)), first half (proved
-in 188III): `Par (Tot D) ≅ D`, for any structure of an effectus in total
-form on `Tot D` as produced by `eff_partial_to_total`. -/
-theorem cho_thm_3_par_tot (s : EffectusTotalStructure (Tot D)) :
-    letI := s.hasFiniteCoproducts
-    letI := s.hasTerminal
-    Nonempty (Par (Tot D) ≌ D) := sorry
-
-end ChoPartial
+/-! The two halves of Cho's theorem **180X** are stated and proved below,
+after the machinery of parsecs 181–187 that they rest on. -/
 
 /-! ## From partial to total (parsec 181) -/
 
@@ -680,6 +638,532 @@ theorem eff_prod_rules_4 {W : C} (f : Z ⟶ X) (g : Z ⟶ Y)
       (effPair_spec (k ≫ f) (k ≫ g) h').2 hk]
 
 end PartialToTotal
+
+/-! ## The total maps form an effectus in total form (parsec 181, 181XI) -/
+
+section PartialToTotalStructure
+
+variable {D : Type u} [Category.{v} D] [HasFiniteCoproducts D]
+  [∀ X Y : D, PCM (X ⟶ Y)] [FinPAC D] [EffectusPartialForm D]
+
+/-! ### 181XIII and the basic totality facts -/
+
+/-- A morphism of `Tot D` is total, read as an equation in `D`. -/
+theorem tot_total_base {X Y : Tot D} (f : X ⟶ Y) :
+    f.1 ≫ truth Y.base = truth X.base := f.2
+
+theorem tot_comp_base {X Y Z : Tot D} (f : X ⟶ Y) (g : Y ⟶ Z) :
+    (f ≫ g).1 = f.1 ≫ g.1 := rfl
+
+theorem tot_id_base (X : Tot D) : (𝟙 X : X ⟶ X).1 = 𝟙 X.base := rfl
+
+variable [HasFiniteCoproducts (Tot D)] in
+theorem tot_desc_inl {X Y Z : Tot D} (f : X ⟶ Z) (g : Y ⟶ Z) :
+    (coprod.inl : X ⟶ X ⨿ Y).1 ≫ (coprod.desc f g).1 = f.1 :=
+  congrArg Subtype.val (coprod.inl_desc f g)
+
+variable [HasFiniteCoproducts (Tot D)] in
+theorem tot_desc_inr {X Y Z : Tot D} (f : X ⟶ Z) (g : Y ⟶ Z) :
+    (coprod.inr : Y ⟶ X ⨿ Y).1 ≫ (coprod.desc f g).1 = g.1 :=
+  congrArg Subtype.val (coprod.inr_desc f g)
+
+/-- **181XIII** (`one-m-is-id`): in an effectus in partial form the truth
+predicate on the effect object `I` is the identity, `1 = id_I`. -/
+theorem one_m_is_id : truth (effObj D) = 𝟙 (effObj D) := by
+  have hperp := EffectusPartialForm.perp_orth (𝟙 (effObj D))
+  have hovee := EffectusPartialForm.ovee_orth (𝟙 (effObj D))
+  have h2 := perp_comp_right hperp (truth (effObj D))
+  rw [Category.id_comp] at h2
+  have h3 : EffectusPartialForm.orth (𝟙 (effObj D)) ≫ truth (effObj D) = 0 :=
+    EffectusPartialForm.eq_zero_of_perp_one (PCM.perp_comm h2)
+  have h4 : EffectusPartialForm.orth (𝟙 (effObj D)) = 0 :=
+    EffectusPartialForm.eq_zero_of_one_zero h3
+  calc truth (effObj D) = ovee _ _ hperp := hovee.symm
+    _ = ovee (𝟙 (effObj D)) 0 (PCM.perp_zero _) := PCM.ovee_congr rfl h4 _ _
+    _ = 𝟙 (effObj D) := PCM.ovee_zero _ _
+
+/-- A predicate composed with `1 : I ⟶ I` is itself (**181XIII**). -/
+theorem comp_truth_effObj {X : D} (p : X ⟶ effObj D) : p ≫ truth (effObj D) = p := by
+  rw [one_m_is_id, Category.comp_id]
+
+/-- The truth predicate is a total map. -/
+theorem isTotal_truth (X : D) : IsTotal (truth X) := comp_truth_effObj _
+
+/-- **181XII**: the cotuple of two total maps is total. -/
+theorem isTotal_desc {X Y Z : D} {f : X ⟶ Z} {g : Y ⟶ Z}
+    (hf : IsTotal f) (hg : IsTotal g) : IsTotal (coprod.desc f g) := by
+  show coprod.desc f g ≫ truth Z = truth (X ⨿ Y)
+  rw [coprod.desc_comp, show f ≫ truth Z = truth X from hf,
+    show g ≫ truth Z = truth Y from hg, cotupl_pcm_one]
+
+/-- **181XII**: the unique map out of the initial object is total. -/
+theorem isTotal_initial (X : D) : IsTotal (initial.to X) :=
+  initialIsInitial.hom_ext _ _
+
+/-- Coproduct maps of total maps are total. -/
+theorem isTotal_map {X Y X' Y' : D} {f : X ⟶ X'} {g : Y ⟶ Y'}
+    (hf : IsTotal f) (hg : IsTotal g) : IsTotal (coprod.map f g) := by
+  show coprod.map f g ≫ truth (X' ⨿ Y') = truth (X ⨿ Y)
+  refine coprod.hom_ext ?_ ?_
+  · rw [← Category.assoc, coprod.inl_map, Category.assoc,
+      show (coprod.inl : X' ⟶ X' ⨿ Y') ≫ truth (X' ⨿ Y') = truth X' from
+        coproj_total_inl X' Y',
+      show f ≫ truth X' = truth X from hf,
+      show (coprod.inl : X ⟶ X ⨿ Y) ≫ truth (X ⨿ Y) = truth X from coproj_total_inl X Y]
+  · rw [← Category.assoc, coprod.inr_map, Category.assoc,
+      show (coprod.inr : Y' ⟶ X' ⨿ Y') ≫ truth (X' ⨿ Y') = truth Y' from
+        coproj_total_inr X' Y',
+      show g ≫ truth Y' = truth Y from hg,
+      show (coprod.inr : Y ⟶ X ⨿ Y) ≫ truth (X ⨿ Y) = truth Y from coproj_total_inr X Y]
+
+/-- The partial projections are jointly monic (the uniqueness half of
+**181VII**). -/
+theorem pproj_jm {X Y Z : D} {p q : Z ⟶ X ⨿ Y}
+    (h₁ : p ≫ pproj₁ X Y = q ≫ pproj₁ X Y)
+    (h₂ : p ≫ pproj₂ X Y = q ≫ pproj₂ X Y) : p = q :=
+  (coprod_prod (coprod_prod_converse p)).unique ⟨rfl, rfl⟩ ⟨h₁.symm, h₂.symm⟩
+
+/-! ### `Tot D` has finite coproducts and a final object -/
+
+/-- **181XIII**: the effect object is the final object of `Tot D`. -/
+noncomputable def totIsTerminal : IsTerminal (Tot.of (effObj D)) :=
+  IsTerminal.ofUniqueHom (fun X => ⟨truth X.base, isTotal_truth _⟩) (fun X m => by
+    refine Subtype.ext ?_
+    have h : (m.1 : X.base ⟶ effObj D) ≫ truth (effObj D) = truth X.base := m.2
+    rw [comp_truth_effObj] at h
+    exact h)
+
+/-- **181XII**: `0` is the initial object of `Tot D`. -/
+noncomputable def totIsInitial : IsInitial (Tot.of (⊥_ D)) :=
+  IsInitial.ofUniqueHom (fun Y => ⟨initial.to Y.base, isTotal_initial _⟩)
+    (fun _ _ => Subtype.ext (initialIsInitial.hom_ext _ _))
+
+/-- **181XII**: the coproduct of `D` is the coproduct of `Tot D`. -/
+noncomputable def totBinaryCofan (X Y : Tot D) : BinaryCofan X Y :=
+  BinaryCofan.mk
+    (⟨coprod.inl, coproj_total_inl X.base Y.base⟩ : X ⟶ Tot.of (X.base ⨿ Y.base))
+    (⟨coprod.inr, coproj_total_inr X.base Y.base⟩ : Y ⟶ Tot.of (X.base ⨿ Y.base))
+
+noncomputable def totBinaryCofanIsColimit (X Y : Tot D) : IsColimit (totBinaryCofan X Y) :=
+  BinaryCofan.IsColimit.mk _
+    (fun {T} f g => (⟨coprod.desc f.1 g.1, isTotal_desc f.2 g.2⟩ :
+      Tot.of (X.base ⨿ Y.base) ⟶ T))
+    (fun f g => Subtype.ext (coprod.inl_desc _ _))
+    (fun f g => Subtype.ext (coprod.inr_desc _ _))
+    (fun f g m h₁ h₂ => Subtype.ext (coprod.hom_ext
+      (by rw [coprod.inl_desc]; exact congrArg Subtype.val h₁)
+      (by rw [coprod.inr_desc]; exact congrArg Subtype.val h₂)))
+
+theorem totHasTerminal : HasTerminal (Tot D) := totIsTerminal.hasTerminal
+
+theorem totHasFiniteCoproducts : HasFiniteCoproducts (Tot D) :=
+  letI : HasInitial (Tot D) := totIsInitial.hasInitial
+  letI : ∀ X Y : Tot D, HasColimit (pair X Y) := fun X Y =>
+    HasColimit.mk ⟨totBinaryCofan X Y, totBinaryCofanIsColimit X Y⟩
+  letI : HasBinaryCoproducts (Tot D) := hasBinaryCoproducts_of_hasColimit_pair (Tot D)
+  hasFiniteCoproducts_of_has_binary_and_initial
+
+/-! ### Bridging: coordinates for an arbitrary coproduct structure on `Tot D` -/
+
+section Bridge
+
+variable [HasFiniteCoproducts (Tot D)]
+
+/-- The comparison isomorphism between a chosen coproduct of `Tot D` and the
+coproduct inherited from `D`. -/
+noncomputable def totCoprodIso (X Y : Tot D) :
+    (X ⨿ Y : Tot D) ≅ Tot.of (X.base ⨿ Y.base) :=
+  IsColimit.coconePointUniqueUpToIso (coprodIsCoprod X Y) (totBinaryCofanIsColimit X Y)
+
+theorem totCoprodIso_inl (X Y : Tot D) :
+    (coprod.inl : X ⟶ X ⨿ Y) ≫ (totCoprodIso X Y).hom
+      = (⟨coprod.inl, coproj_total_inl _ _⟩ : X ⟶ Tot.of (X.base ⨿ Y.base)) :=
+  IsColimit.comp_coconePointUniqueUpToIso_hom (coprodIsCoprod X Y)
+    (totBinaryCofanIsColimit X Y) (Discrete.mk WalkingPair.left)
+
+theorem totCoprodIso_inr (X Y : Tot D) :
+    (coprod.inr : Y ⟶ X ⨿ Y) ≫ (totCoprodIso X Y).hom
+      = (⟨coprod.inr, coproj_total_inr _ _⟩ : Y ⟶ Tot.of (X.base ⨿ Y.base)) :=
+  IsColimit.comp_coconePointUniqueUpToIso_hom (coprodIsCoprod X Y)
+    (totBinaryCofanIsColimit X Y) (Discrete.mk WalkingPair.right)
+
+theorem totCoprodIso_inl_base (X Y : Tot D) :
+    (coprod.inl : X ⟶ X ⨿ Y).1 ≫ (totCoprodIso X Y).hom.1
+      = (coprod.inl : X.base ⟶ X.base ⨿ Y.base) :=
+  congrArg Subtype.val (totCoprodIso_inl X Y)
+
+theorem totCoprodIso_inr_base (X Y : Tot D) :
+    (coprod.inr : Y ⟶ X ⨿ Y).1 ≫ (totCoprodIso X Y).hom.1
+      = (coprod.inr : Y.base ⟶ X.base ⨿ Y.base) :=
+  congrArg Subtype.val (totCoprodIso_inr X Y)
+
+theorem totCoprodIso_inv_inl_base (X Y : Tot D) :
+    (coprod.inl : X.base ⟶ X.base ⨿ Y.base) ≫ (totCoprodIso X Y).inv.1
+      = (coprod.inl : X ⟶ X ⨿ Y).1 := by
+  rw [← totCoprodIso_inl_base, Category.assoc]
+  exact congrArg (fun t => (coprod.inl : X ⟶ X ⨿ Y).1 ≫ t)
+    (congrArg Subtype.val (totCoprodIso X Y).hom_inv_id) |>.trans (Category.comp_id _)
+
+theorem totCoprodIso_inv_inr_base (X Y : Tot D) :
+    (coprod.inr : Y.base ⟶ X.base ⨿ Y.base) ≫ (totCoprodIso X Y).inv.1
+      = (coprod.inr : Y ⟶ X ⨿ Y).1 := by
+  rw [← totCoprodIso_inr_base, Category.assoc]
+  exact congrArg (fun t => (coprod.inr : Y ⟶ X ⨿ Y).1 ≫ t)
+    (congrArg Subtype.val (totCoprodIso X Y).hom_inv_id) |>.trans (Category.comp_id _)
+
+theorem totCoprodIso_hom_inv_base (X Y : Tot D) :
+    (totCoprodIso X Y).hom.1 ≫ (totCoprodIso X Y).inv.1 = 𝟙 (X ⨿ Y : Tot D).base :=
+  congrArg Subtype.val (totCoprodIso X Y).hom_inv_id
+
+theorem totCoprodIso_inv_hom_base (X Y : Tot D) :
+    (totCoprodIso X Y).inv.1 ≫ (totCoprodIso X Y).hom.1 = 𝟙 (X.base ⨿ Y.base) :=
+  congrArg Subtype.val (totCoprodIso X Y).inv_hom_id
+
+/-- Maps out of a coproduct of `Tot D` are determined, *as maps of `D`*, by
+their restrictions along the two coprojections. -/
+theorem tot_hom_ext_base {X Y : Tot D} {Z : D}
+    {u u' : (X ⨿ Y : Tot D).base ⟶ Z}
+    (h₁ : (coprod.inl : X ⟶ X ⨿ Y).1 ≫ u = (coprod.inl : X ⟶ X ⨿ Y).1 ≫ u')
+    (h₂ : (coprod.inr : Y ⟶ X ⨿ Y).1 ≫ u = (coprod.inr : Y ⟶ X ⨿ Y).1 ≫ u') :
+    u = u' := by
+  have key : (totCoprodIso X Y).inv.1 ≫ u = (totCoprodIso X Y).inv.1 ≫ u' := by
+    refine coprod.hom_ext ?_ ?_
+    · rw [← Category.assoc, ← Category.assoc, totCoprodIso_inv_inl_base]; exact h₁
+    · rw [← Category.assoc, ← Category.assoc, totCoprodIso_inv_inr_base]; exact h₂
+  calc u = ((totCoprodIso X Y).hom.1 ≫ (totCoprodIso X Y).inv.1) ≫ u := by
+        rw [totCoprodIso_hom_inv_base, Category.id_comp]
+    _ = ((totCoprodIso X Y).hom.1 ≫ (totCoprodIso X Y).inv.1) ≫ u' := by
+        rw [Category.assoc, Category.assoc, key]
+    _ = u' := by rw [totCoprodIso_hom_inv_base, Category.id_comp]
+
+/-- The first partial projection `▷₁ : X + Y ⟶ X` of a chosen coproduct
+of `Tot D` (a map of `D`, not of `Tot D`). -/
+noncomputable def tp₁ (X Y : Tot D) : (X ⨿ Y : Tot D).base ⟶ X.base :=
+  (totCoprodIso X Y).hom.1 ≫ pproj₁ X.base Y.base
+
+/-- The second partial projection `▷₂ : X + Y ⟶ Y`. -/
+noncomputable def tp₂ (X Y : Tot D) : (X ⨿ Y : Tot D).base ⟶ Y.base :=
+  (totCoprodIso X Y).hom.1 ≫ pproj₂ X.base Y.base
+
+theorem tinl_tp₁ (X Y : Tot D) :
+    (coprod.inl : X ⟶ X ⨿ Y).1 ≫ tp₁ X Y = 𝟙 X.base := by
+  rw [tp₁, ← Category.assoc, totCoprodIso_inl_base, inl_pproj₁]
+
+theorem tinr_tp₁ (X Y : Tot D) :
+    (coprod.inr : Y ⟶ X ⨿ Y).1 ≫ tp₁ X Y = 0 := by
+  rw [tp₁, ← Category.assoc, totCoprodIso_inr_base, inr_pproj₁]
+
+theorem tinl_tp₂ (X Y : Tot D) :
+    (coprod.inl : X ⟶ X ⨿ Y).1 ≫ tp₂ X Y = 0 := by
+  rw [tp₂, ← Category.assoc, totCoprodIso_inl_base, inl_pproj₂]
+
+theorem tinr_tp₂ (X Y : Tot D) :
+    (coprod.inr : Y ⟶ X ⨿ Y).1 ≫ tp₂ X Y = 𝟙 Y.base := by
+  rw [tp₂, ← Category.assoc, totCoprodIso_inr_base, inr_pproj₂]
+
+/-- **181VII** for `Tot D`: `▷₁, ▷₂` are jointly monic. -/
+theorem tp_jm {X Y : Tot D} {Z : D} {p q : Z ⟶ (X ⨿ Y : Tot D).base}
+    (h₁ : p ≫ tp₁ X Y = q ≫ tp₁ X Y) (h₂ : p ≫ tp₂ X Y = q ≫ tp₂ X Y) : p = q := by
+  have key : p ≫ (totCoprodIso X Y).hom.1 = q ≫ (totCoprodIso X Y).hom.1 := by
+    refine pproj_jm ?_ ?_
+    · rw [Category.assoc, Category.assoc]; exact h₁
+    · rw [Category.assoc, Category.assoc]; exact h₂
+  calc p = (p ≫ (totCoprodIso X Y).hom.1) ≫ (totCoprodIso X Y).inv.1 := by
+        rw [Category.assoc, totCoprodIso_hom_inv_base, Category.comp_id]
+    _ = (q ≫ (totCoprodIso X Y).hom.1) ≫ (totCoprodIso X Y).inv.1 := by rw [key]
+    _ = q := by rw [Category.assoc, totCoprodIso_hom_inv_base, Category.comp_id]
+
+/-- **181VII** for `Tot D`: the pairing `⟨f, g⟩`. -/
+noncomputable def tpair {X Y : Tot D} {Z : D} (f : Z ⟶ X.base) (g : Z ⟶ Y.base)
+    (h : Perp (f ≫ truth X.base) (g ≫ truth Y.base)) : Z ⟶ (X ⨿ Y : Tot D).base :=
+  effPair f g h ≫ (totCoprodIso X Y).inv.1
+
+theorem tpair_tp₁ {X Y : Tot D} {Z : D} (f : Z ⟶ X.base) (g : Z ⟶ Y.base)
+    (h : Perp (f ≫ truth X.base) (g ≫ truth Y.base)) :
+    tpair (X := X) (Y := Y) f g h ≫ tp₁ X Y = f := by
+  rw [tpair, tp₁, Category.assoc, ← Category.assoc ((totCoprodIso X Y).inv.1),
+    totCoprodIso_inv_hom_base, Category.id_comp]
+  exact (effPair_spec f g h).1
+
+theorem tpair_tp₂ {X Y : Tot D} {Z : D} (f : Z ⟶ X.base) (g : Z ⟶ Y.base)
+    (h : Perp (f ≫ truth X.base) (g ≫ truth Y.base)) :
+    tpair (X := X) (Y := Y) f g h ≫ tp₂ X Y = g := by
+  rw [tpair, tp₂, Category.assoc, ← Category.assoc ((totCoprodIso X Y).inv.1),
+    totCoprodIso_inv_hom_base, Category.id_comp]
+  exact (effPair_spec f g h).2
+
+/-- **181VII** converse for `Tot D`: the two projections of any map are
+orthogonal after composing with `1`. -/
+theorem tp_perp {X Y : Tot D} {Z : D} (p : Z ⟶ (X ⨿ Y : Tot D).base) :
+    Perp ((p ≫ tp₁ X Y) ≫ truth X.base) ((p ≫ tp₂ X Y) ≫ truth Y.base) := by
+  have h := coprod_prod_converse (p ≫ (totCoprodIso X Y).hom.1)
+  simp only [Category.assoc] at h ⊢
+  simpa only [tp₁, tp₂, Category.assoc] using h
+
+/-- Any map into a coproduct of `Tot D` is the pairing of its projections. -/
+theorem tpair_eta {X Y : Tot D} {Z : D} (p : Z ⟶ (X ⨿ Y : Tot D).base) :
+    tpair (X := X) (Y := Y) (p ≫ tp₁ X Y) (p ≫ tp₂ X Y) (tp_perp p) = p :=
+  tp_jm (by rw [tpair_tp₁]) (by rw [tpair_tp₂])
+
+/-- **181IX.2** for `Tot D`: `1 ∘ ⟨f,g⟩ = (1 ∘ f) ⋁ (1 ∘ g)`. -/
+theorem tpair_truth {X Y : Tot D} {Z : D} (f : Z ⟶ X.base) (g : Z ⟶ Y.base)
+    (h : Perp (f ≫ truth X.base) (g ≫ truth Y.base)) :
+    tpair (X := X) (Y := Y) f g h ≫ truth (X ⨿ Y : Tot D).base
+      = ovee (f ≫ truth X.base) (g ≫ truth Y.base) h := by
+  rw [tpair, Category.assoc,
+    show (totCoprodIso X Y).inv.1 ≫ truth (X ⨿ Y : Tot D).base = truth (X.base ⨿ Y.base) from
+      (totCoprodIso X Y).inv.2]
+  exact eff_prod_rules_2 f g h
+
+/-- `▷₁ ∘ (k + l) = k ∘ ▷₁`. -/
+theorem tot_map_tp₁ {X Y X' Y' : Tot D} (k : X ⟶ X') (l : Y ⟶ Y') :
+    (coprod.map k l : (X ⨿ Y : Tot D) ⟶ X' ⨿ Y').1 ≫ tp₁ X' Y' = tp₁ X Y ≫ k.1 := by
+  refine tot_hom_ext_base ?_ ?_
+  · rw [← Category.assoc,
+      show (coprod.inl : X ⟶ X ⨿ Y).1 ≫ (coprod.map k l : (X ⨿ Y : Tot D) ⟶ X' ⨿ Y').1
+        = k.1 ≫ (coprod.inl : X' ⟶ X' ⨿ Y').1 from congrArg Subtype.val (coprod.inl_map k l),
+      Category.assoc, tinl_tp₁, Category.comp_id, ← Category.assoc, tinl_tp₁, Category.id_comp]
+  · rw [← Category.assoc,
+      show (coprod.inr : Y ⟶ X ⨿ Y).1 ≫ (coprod.map k l : (X ⨿ Y : Tot D) ⟶ X' ⨿ Y').1
+        = l.1 ≫ (coprod.inr : Y' ⟶ X' ⨿ Y').1 from congrArg Subtype.val (coprod.inr_map k l),
+      Category.assoc, tinr_tp₁, FinPAC.comp_zero, ← Category.assoc, tinr_tp₁,
+      FinPAC.zero_comp]
+
+/-- `▷₂ ∘ (k + l) = l ∘ ▷₂`. -/
+theorem tot_map_tp₂ {X Y X' Y' : Tot D} (k : X ⟶ X') (l : Y ⟶ Y') :
+    (coprod.map k l : (X ⨿ Y : Tot D) ⟶ X' ⨿ Y').1 ≫ tp₂ X' Y' = tp₂ X Y ≫ l.1 := by
+  refine tot_hom_ext_base ?_ ?_
+  · rw [← Category.assoc,
+      show (coprod.inl : X ⟶ X ⨿ Y).1 ≫ (coprod.map k l : (X ⨿ Y : Tot D) ⟶ X' ⨿ Y').1
+        = k.1 ≫ (coprod.inl : X' ⟶ X' ⨿ Y').1 from congrArg Subtype.val (coprod.inl_map k l),
+      Category.assoc, tinl_tp₂, FinPAC.comp_zero, ← Category.assoc, tinl_tp₂,
+      FinPAC.zero_comp]
+  · rw [← Category.assoc,
+      show (coprod.inr : Y ⟶ X ⨿ Y).1 ≫ (coprod.map k l : (X ⨿ Y : Tot D) ⟶ X' ⨿ Y').1
+        = l.1 ≫ (coprod.inr : Y' ⟶ X' ⨿ Y').1 from congrArg Subtype.val (coprod.inr_map k l),
+      Category.assoc, tinr_tp₂, Category.comp_id, ← Category.assoc, tinr_tp₂,
+      Category.id_comp]
+
+end Bridge
+
+section Axioms
+
+variable [HasFiniteCoproducts (Tot D)] [HasTerminal (Tot D)]
+
+/-- The truth predicate on the final object of `Tot D` is an isomorphism of
+`D` (both `⊤_ (Tot D)` and `Tot.of I` are final, by **181XIII**). -/
+theorem truth_terminal_isIso : IsIso (truth (⊤_ (Tot D)).base) := by
+  have hhom : (IsTerminal.uniqueUpToIso (terminalIsTerminal (C := Tot D)) totIsTerminal).hom.1
+      = truth (⊤_ (Tot D)).base := by
+    have h := tot_total_base
+      (IsTerminal.uniqueUpToIso (terminalIsTerminal (C := Tot D)) totIsTerminal).hom
+    rwa [show truth (Tot.of (effObj D)).base = 𝟙 (effObj D) from one_m_is_id,
+      Category.comp_id] at h
+  refine ⟨(IsTerminal.uniqueUpToIso (terminalIsTerminal (C := Tot D)) totIsTerminal).inv.1,
+    ?_, ?_⟩
+  · rw [← hhom]
+    exact congrArg Subtype.val
+      (IsTerminal.uniqueUpToIso (terminalIsTerminal (C := Tot D)) totIsTerminal).hom_inv_id
+  · rw [← hhom]
+    exact congrArg Subtype.val
+      (IsTerminal.uniqueUpToIso (terminalIsTerminal (C := Tot D)) totIsTerminal).inv_hom_id
+
+/-- **181XIV** (`eff.tex:1206`): the left square of the effectus axioms is a
+pullback in `Tot D`. -/
+theorem tot_isPullback_plus (X Y : Tot D) :
+    IsPullback (coprod.map (𝟙 X) (terminal.from Y))
+      (coprod.map (terminal.from X) (𝟙 Y))
+      (coprod.map (terminal.from X) (𝟙 (⊤_ (Tot D))))
+      (coprod.map (𝟙 (⊤_ (Tot D))) (terminal.from Y)) := by
+  refine IsPullback.mk' ?_ ?_ ?_
+  · rw [coprod.map_map, coprod.map_map, Category.id_comp, Category.comp_id,
+      Category.id_comp, Category.comp_id]
+  · intro Z φ φ' h₁ h₂
+    refine Subtype.ext (tp_jm ?_ ?_)
+    · have h := congrArg (fun t => (Subtype.val t) ≫ tp₁ X (⊤_ (Tot D))) h₁
+      simpa only [tot_comp_base, Category.assoc, tot_map_tp₁, tot_id_base,
+        Category.comp_id] using h
+    · have h := congrArg (fun t => (Subtype.val t) ≫ tp₂ (⊤_ (Tot D)) Y) h₂
+      simpa only [tot_comp_base, Category.assoc, tot_map_tp₂, tot_id_base,
+        Category.comp_id] using h
+  · intro Z a b hab
+    have hu_eq : a.1 ≫ tp₂ X (⊤_ (Tot D))
+        = (b.1 ≫ tp₂ (⊤_ (Tot D)) Y) ≫ (terminal.from Y).1 := by
+      have h := congrArg (fun t => (Subtype.val t) ≫ tp₂ (⊤_ (Tot D)) (⊤_ (Tot D))) hab
+      simpa only [tot_comp_base, Category.assoc, tot_map_tp₂, tot_id_base,
+        Category.comp_id] using h
+    have hw_eq : (a.1 ≫ tp₁ X (⊤_ (Tot D))) ≫ (terminal.from X).1
+        = b.1 ≫ tp₁ (⊤_ (Tot D)) Y := by
+      have h := congrArg (fun t => (Subtype.val t) ≫ tp₁ (⊤_ (Tot D)) (⊤_ (Tot D))) hab
+      simpa only [tot_comp_base, Category.assoc, tot_map_tp₁, tot_id_base,
+        Category.comp_id] using h
+    set α := a.1 ≫ tp₁ X (⊤_ (Tot D)) with hα
+    set u := a.1 ≫ tp₂ X (⊤_ (Tot D)) with hu
+    set β := b.1 ≫ tp₂ (⊤_ (Tot D)) Y with hβ
+    have hdec := tpair_truth (X := X) (Y := ⊤_ (Tot D)) α u (tp_perp a.1)
+    rw [tpair_eta a.1, tot_total_base a] at hdec
+    have huβ : u ≫ truth (⊤_ (Tot D)).base = β ≫ truth Y.base := by
+      rw [hu_eq, Category.assoc, tot_total_base (terminal.from Y)]
+    have hperp : Perp (α ≫ truth X.base) (β ≫ truth Y.base) := by
+      have h0 : Perp (α ≫ truth X.base) (u ≫ truth (⊤_ (Tot D)).base) := tp_perp a.1
+      rwa [huβ] at h0
+    refine ⟨⟨tpair (X := X) (Y := Y) α β hperp, ?_⟩, ?_, ?_⟩
+    · show tpair (X := X) (Y := Y) α β hperp ≫ truth (X ⨿ Y : Tot D).base = truth Z.base
+      rw [tpair_truth, hdec]
+      exact PCM.ovee_congr rfl huβ.symm _ _
+    · refine Subtype.ext (tp_jm ?_ ?_)
+      · rw [tot_comp_base, Category.assoc, tot_map_tp₁, ← Category.assoc, tpair_tp₁,
+          tot_id_base, Category.comp_id]
+      · rw [tot_comp_base, Category.assoc, tot_map_tp₂, ← Category.assoc, tpair_tp₂,
+          ← hu_eq]
+    · refine Subtype.ext (tp_jm ?_ ?_)
+      · rw [tot_comp_base, Category.assoc, tot_map_tp₁, ← Category.assoc, tpair_tp₁,
+          hw_eq]
+      · rw [tot_comp_base, Category.assoc, tot_map_tp₂, ← Category.assoc, tpair_tp₂,
+          tot_id_base, Category.comp_id]
+
+/-- **181XV** (`eff.tex:1246`): the right square of the effectus axioms is a
+pullback in `Tot D`. -/
+theorem tot_isPullback_kappa (X Y : Tot D) :
+    IsPullback (terminal.from X) (coprod.inl : X ⟶ X ⨿ Y)
+      (coprod.inl : (⊤_ (Tot D)) ⟶ (⊤_ (Tot D)) ⨿ (⊤_ (Tot D)))
+      (coprod.map (terminal.from X) (terminal.from Y)) := by
+  refine IsPullback.mk' ?_ ?_ ?_
+  · exact (coprod.inl_map _ _).symm
+  · intro Z φ φ' _ h₂
+    refine Subtype.ext ?_
+    have h := congrArg (fun t => (Subtype.val t) ≫ tp₁ X Y) h₂
+    simpa only [tot_comp_base, Category.assoc, tinl_tp₁, Category.comp_id] using h
+  · intro Z a b hab
+    have hA : (b.1 ≫ tp₁ X Y) ≫ (terminal.from X).1 = a.1 := by
+      have h := congrArg (fun t => (Subtype.val t) ≫ tp₁ (⊤_ (Tot D)) (⊤_ (Tot D))) hab
+      simp only [tot_comp_base, Category.assoc, tot_map_tp₁, tinl_tp₁,
+        Category.comp_id] at h
+      rw [Category.assoc]
+      exact h.symm
+    have hB : (b.1 ≫ tp₂ X Y) ≫ (terminal.from Y).1 = 0 := by
+      have h := congrArg (fun t => (Subtype.val t) ≫ tp₂ (⊤_ (Tot D)) (⊤_ (Tot D))) hab
+      simp only [tot_comp_base, Category.assoc, tot_map_tp₂, tinl_tp₂,
+        FinPAC.comp_zero] at h
+      rw [Category.assoc]
+      exact h.symm
+    set α := b.1 ≫ tp₁ X Y with hα
+    set β := b.1 ≫ tp₂ X Y with hβ
+    have hαtot : IsTotal α := by
+      show α ≫ truth X.base = truth Z.base
+      rw [← tot_total_base (terminal.from X), ← Category.assoc, hA, tot_total_base a]
+    have hβ0 : β = 0 := by
+      refine EffectusPartialForm.eq_zero_of_one_zero ?_
+      show β ≫ truth Y.base = 0
+      rw [← tot_total_base (terminal.from Y), ← Category.assoc, hB, FinPAC.zero_comp]
+    refine ⟨⟨α, hαtot⟩, terminalIsTerminal.hom_ext _ _, ?_⟩
+    refine Subtype.ext (tp_jm ?_ ?_)
+    · rw [tot_comp_base, Category.assoc, tinl_tp₁, Category.comp_id]
+    · rw [tot_comp_base, Category.assoc, tinl_tp₂, FinPAC.comp_zero]
+      exact hβ0.symm
+
+/-- Any map into a coproduct of `Tot D` decomposes `1` into the two
+components (**181IX.2**). -/
+theorem truth_decomp {X Y : Tot D} {Z : D} (p : Z ⟶ (X ⨿ Y : Tot D).base) :
+    ovee ((p ≫ tp₁ X Y) ≫ truth X.base) ((p ≫ tp₂ X Y) ≫ truth Y.base) (tp_perp p)
+      = p ≫ truth (X ⨿ Y : Tot D).base := by
+  have h := tpair_truth (X := X) (Y := Y) (p ≫ tp₁ X Y) (p ≫ tp₂ X Y) (tp_perp p)
+  rw [tpair_eta p] at h
+  exact h.symm
+
+/-- Two total maps into a coproduct of `Tot D` that agree in the first
+coordinate agree in the second one after composing with `1`: both are the
+orthocomplement of the same predicate (**181XVI**). -/
+theorem tot_snd_coord_eq {X Y Z : Tot D} (f g : Z ⟶ X ⨿ Y)
+    (h : f.1 ≫ tp₁ X Y = g.1 ≫ tp₁ X Y) :
+    (f.1 ≫ tp₂ X Y) ≫ truth Y.base = (g.1 ≫ tp₂ X Y) ≫ truth Y.base := by
+  have e₁ : ovee ((f.1 ≫ tp₁ X Y) ≫ truth X.base) ((f.1 ≫ tp₂ X Y) ≫ truth Y.base)
+      (tp_perp f.1) = truth Z.base := by
+    rw [truth_decomp f.1]; exact tot_total_base f
+  have e₂ : ovee ((g.1 ≫ tp₁ X Y) ≫ truth X.base) ((g.1 ≫ tp₂ X Y) ≫ truth Y.base)
+      (tp_perp g.1) = truth Z.base := by
+    rw [truth_decomp g.1]; exact tot_total_base g
+  have hperp : Perp ((f.1 ≫ tp₁ X Y) ≫ truth X.base) ((g.1 ≫ tp₂ X Y) ≫ truth Y.base) := by
+    rw [h]; exact tp_perp g.1
+  have e₂' : ovee ((f.1 ≫ tp₁ X Y) ≫ truth X.base) ((g.1 ≫ tp₂ X Y) ≫ truth Y.base) hperp
+      = truth Z.base := by
+    rw [← e₂]; exact PCM.ovee_congr (by rw [h]) rfl _ _
+  rw [EffectusPartialForm.orth_unique (tp_perp f.1) e₁,
+    EffectusPartialForm.orth_unique hperp e₂']
+
+/-- **181XVI** (`eff.tex:1272`): the two cotuples `1+1+1 ⟶ 1+1` are jointly
+monic in `Tot D`. -/
+theorem tot_jointlyMonic_cotuples :
+    JointlyMonic
+      (coprod.desc (coprod.desc coprod.inl coprod.inr) coprod.inr :
+        ((⊤_ (Tot D)) ⨿ (⊤_ (Tot D))) ⨿ (⊤_ (Tot D)) ⟶ (⊤_ (Tot D)) ⨿ (⊤_ (Tot D)))
+      (coprod.desc (coprod.desc coprod.inr coprod.inl) coprod.inr) := by
+  intro Z f₁ f₂ h₁ h₂
+  -- `▷₁ ∘ m₁ = [id,0,0]` and `▷₁ ∘ m₂ = [0,id,0]`
+  have S : (coprod.desc (coprod.inr : (⊤_ (Tot D)) ⟶ (⊤_ (Tot D)) ⨿ (⊤_ (Tot D)))
+        coprod.inl).1 ≫ tp₁ (⊤_ (Tot D)) (⊤_ (Tot D)) = tp₂ (⊤_ (Tot D)) (⊤_ (Tot D)) := by
+    refine tot_hom_ext_base ?_ ?_
+    · rw [← Category.assoc, tot_desc_inl, tinr_tp₁, tinl_tp₂]
+    · rw [← Category.assoc, tot_desc_inr, tinl_tp₁, tinr_tp₂]
+  have L1 : (coprod.desc (coprod.desc coprod.inl coprod.inr) coprod.inr :
+        ((⊤_ (Tot D)) ⨿ (⊤_ (Tot D))) ⨿ (⊤_ (Tot D)) ⟶ (⊤_ (Tot D)) ⨿ (⊤_ (Tot D))).1
+      ≫ tp₁ (⊤_ (Tot D)) (⊤_ (Tot D))
+      = tp₁ ((⊤_ (Tot D)) ⨿ (⊤_ (Tot D))) (⊤_ (Tot D)) ≫ tp₁ (⊤_ (Tot D)) (⊤_ (Tot D)) := by
+    refine tot_hom_ext_base ?_ ?_
+    · rw [← Category.assoc, tot_desc_inl, coprod.desc_inl_inr, tot_id_base,
+        Category.id_comp, ← Category.assoc, tinl_tp₁, Category.id_comp]
+    · rw [← Category.assoc, tot_desc_inr, tinr_tp₁, ← Category.assoc, tinr_tp₁,
+        FinPAC.zero_comp]
+  have L2 : (coprod.desc (coprod.desc coprod.inr coprod.inl) coprod.inr :
+        ((⊤_ (Tot D)) ⨿ (⊤_ (Tot D))) ⨿ (⊤_ (Tot D)) ⟶ (⊤_ (Tot D)) ⨿ (⊤_ (Tot D))).1
+      ≫ tp₁ (⊤_ (Tot D)) (⊤_ (Tot D))
+      = tp₁ ((⊤_ (Tot D)) ⨿ (⊤_ (Tot D))) (⊤_ (Tot D)) ≫ tp₂ (⊤_ (Tot D)) (⊤_ (Tot D)) := by
+    refine tot_hom_ext_base ?_ ?_
+    · rw [← Category.assoc, tot_desc_inl, S, ← Category.assoc, tinl_tp₁, Category.id_comp]
+    · rw [← Category.assoc, tot_desc_inr, tinr_tp₁, ← Category.assoc, tinr_tp₁,
+        FinPAC.zero_comp]
+  -- the first two coordinates agree
+  have ha : (f₁.1 ≫ tp₁ ((⊤_ (Tot D)) ⨿ (⊤_ (Tot D))) (⊤_ (Tot D)))
+        ≫ tp₁ (⊤_ (Tot D)) (⊤_ (Tot D))
+      = (f₂.1 ≫ tp₁ ((⊤_ (Tot D)) ⨿ (⊤_ (Tot D))) (⊤_ (Tot D)))
+        ≫ tp₁ (⊤_ (Tot D)) (⊤_ (Tot D)) := by
+    have h := congrArg (fun t => (Subtype.val t) ≫ tp₁ (⊤_ (Tot D)) (⊤_ (Tot D))) h₁
+    simp only [tot_comp_base, Category.assoc] at h
+    rw [Category.assoc, Category.assoc, ← L1, ← Category.assoc, ← Category.assoc]
+    simpa only [Category.assoc] using h
+  have hb : (f₁.1 ≫ tp₁ ((⊤_ (Tot D)) ⨿ (⊤_ (Tot D))) (⊤_ (Tot D)))
+        ≫ tp₂ (⊤_ (Tot D)) (⊤_ (Tot D))
+      = (f₂.1 ≫ tp₁ ((⊤_ (Tot D)) ⨿ (⊤_ (Tot D))) (⊤_ (Tot D)))
+        ≫ tp₂ (⊤_ (Tot D)) (⊤_ (Tot D)) := by
+    have h := congrArg (fun t => (Subtype.val t) ≫ tp₁ (⊤_ (Tot D)) (⊤_ (Tot D))) h₂
+    simp only [tot_comp_base, Category.assoc] at h
+    rw [Category.assoc, Category.assoc, ← L2, ← Category.assoc, ← Category.assoc]
+    simpa only [Category.assoc] using h
+  have hp : f₁.1 ≫ tp₁ ((⊤_ (Tot D)) ⨿ (⊤_ (Tot D))) (⊤_ (Tot D))
+      = f₂.1 ≫ tp₁ ((⊤_ (Tot D)) ⨿ (⊤_ (Tot D))) (⊤_ (Tot D)) := tp_jm ha hb
+  have := truth_terminal_isIso (D := D)
+  have hc' : f₁.1 ≫ tp₂ ((⊤_ (Tot D)) ⨿ (⊤_ (Tot D))) (⊤_ (Tot D))
+      = f₂.1 ≫ tp₂ ((⊤_ (Tot D)) ⨿ (⊤_ (Tot D))) (⊤_ (Tot D)) :=
+    (cancel_mono (truth (⊤_ (Tot D)).base)).mp (tot_snd_coord_eq f₁ f₂ hp)
+  exact Subtype.ext (tp_jm hp hc')
+
+end Axioms
+
+section Assemble
+
+variable (D)
+
+/-- **181XI** (`eff-partial-to-total`, eff.tex:1165, Theorem): the total maps
+of an effectus in partial form form an effectus in total form. -/
+theorem tot_effectusTotalForm [HasFiniteCoproducts (Tot D)] [HasTerminal (Tot D)] :
+    EffectusTotalForm (Tot D) where
+  isPullback_plus := tot_isPullback_plus
+  isPullback_kappa := tot_isPullback_kappa
+  jointlyMonic_cotuples := tot_jointlyMonic_cotuples
+
+end Assemble
+
+end PartialToTotalStructure
 
 /-! ## Interlude on pullbacks and joint monicity (parsecs 183–184) -/
 
@@ -1125,6 +1609,788 @@ theorem pproj_joint_monicity (X Y : C) :
   rwa [e₁, e₂] at key
 
 end TotalToPartial
+
+/-! ## `Par C` is an effectus in partial form (parsec 187) -/
+
+section TotalToPartialStructure
+
+variable {C : Type u} [Category.{v} C] [HasFiniteCoproducts C] [HasTerminal C]
+
+/-! ### The calculus of concrete partial maps -/
+
+/-- The underlying map `X ⟶ Y + 1` of `C` of a partial map `f : X ⇸ Y`
+(definitionally the identity; it exists to fix the elaboration). -/
+def pval {X Y : Par C} (f : X ⟶ Y) : X.base ⟶ Y.base ⨿ ⊤_ C := f
+
+theorem pval_inj {X Y : Par C} {f g : X ⟶ Y} (h : pval f = pval g) : f = g := h
+
+theorem pval_comp {X Y Z : Par C} (f : X ⟶ Y) (g : Y ⟶ Z) :
+    pval (f ≫ g) = pval f ≫ coprod.desc (pval g) coprod.inr := rfl
+
+theorem pval_id (X : Par C) : pval (𝟙 X) = coprod.inl := rfl
+
+theorem pval_hat {X Y : C} (w : X ⟶ Y) :
+    pval (Par.hat w : Par.of X ⟶ Par.of Y) = w ≫ coprod.inl := rfl
+
+theorem pval_zero (X Y : C) :
+    pval (Par.zero X Y : Par.of X ⟶ Par.of Y) = terminal.from X ≫ coprod.inr := rfl
+
+theorem pval_pproj₁ (X Y : C) :
+    pval (Par.pproj₁ X Y) = coprod.desc coprod.inl (terminal.from Y ≫ coprod.inr) := rfl
+
+theorem pval_pproj₂ (X Y : C) :
+    pval (Par.pproj₂ X Y) = coprod.desc (terminal.from X ≫ coprod.inr) coprod.inl := rfl
+
+theorem pval_map {X Y X' Y' : C} (u : Par.of X ⟶ Par.of X') (w : Par.of Y ⟶ Par.of Y') :
+    pval (Par.map u w)
+      = coprod.desc (pval u ≫ coprod.map coprod.inl (𝟙 (⊤_ C)))
+          (pval w ≫ coprod.map coprod.inr (𝟙 (⊤_ C))) := rfl
+
+theorem pval_one (X : C) : pval (Par.one X) = terminal.from X ≫ coprod.inl := rfl
+
+/-- `!` out of `1` is the identity (a copy of `terminal_from_self` outside the
+`EffectusTotalForm` section). -/
+theorem par_terminal_self : terminal.from (⊤_ C) = 𝟙 (⊤_ C) :=
+  terminalIsTerminal.hom_ext _ _
+
+attribute [local simp] pval_comp pval_id pval_hat pval_zero pval_pproj₁ pval_pproj₂
+  pval_map pval_one par_terminal_self
+
+/-- `ŵ ⊙ g = w ∘ g`. -/
+theorem par_hat_comp {X Y : C} {Z : Par C} (w : X ⟶ Y) (g : Par.of Y ⟶ Z) :
+    pval ((Par.hat w : Par.of X ⟶ Par.of Y) ≫ g) = w ≫ pval g := by
+  simp [coprod.inl_desc, Category.assoc]
+
+theorem par_hat_hat {X Y Z : C} (w : X ⟶ Y) (w' : Y ⟶ Z) :
+    (Par.hat w : Par.of X ⟶ Par.of Y) ≫ Par.hat w' = Par.hat (w ≫ w') := by
+  refine pval_inj ?_
+  simp [coprod.inl_desc, Category.assoc]
+
+theorem par_hat_id (X : C) : Par.hat (𝟙 X) = 𝟙 (Par.of X) := by
+  refine pval_inj ?_
+  simp
+
+theorem par_zero_comp {X : Par C} {Y : C} {Z : Par C} (g : Par.of Y ⟶ Z) :
+    (Par.zero X.base Y : X ⟶ Par.of Y) ≫ g = Par.zero X.base Z.base := by
+  refine pval_inj ?_
+  simp [coprod.inr_desc, Category.assoc]
+
+theorem par_comp_zero {X Y : Par C} {Z : C} (f : X ⟶ Y) :
+    f ≫ (Par.zero Y.base Z : Y ⟶ Par.of Z) = Par.zero X.base Z := by
+  refine pval_inj ?_
+  have e : coprod.desc (terminal.from Y.base ≫ (coprod.inr : (⊤_ C) ⟶ Z ⨿ ⊤_ C))
+        (coprod.inr : (⊤_ C) ⟶ Z ⨿ ⊤_ C)
+      = terminal.from (Y.base ⨿ ⊤_ C) ≫ (coprod.inr : (⊤_ C) ⟶ Z ⨿ ⊤_ C) := by
+    refine coprod.hom_ext ?_ ?_ <;>
+      simp [coprod.inl_desc, coprod.inr_desc, ← Category.assoc]
+  simp only [pval_comp, pval_zero, e, ← Category.assoc]
+  simp
+
+theorem par_hat_pproj₁_inl (X Y : C) :
+    (Par.hat (coprod.inl : X ⟶ X ⨿ Y) : Par.of X ⟶ Par.of (X ⨿ Y)) ≫ Par.pproj₁ X Y
+      = 𝟙 (Par.of X) := by
+  refine pval_inj ?_
+  simp [coprod.inl_desc, Category.assoc]
+
+theorem par_hat_pproj₁_inr (X Y : C) :
+    (Par.hat (coprod.inr : Y ⟶ X ⨿ Y) : Par.of Y ⟶ Par.of (X ⨿ Y)) ≫ Par.pproj₁ X Y
+      = Par.zero Y X := by
+  refine pval_inj ?_
+  simp [coprod.inl_desc, coprod.inr_desc, Category.assoc]
+
+theorem par_hat_pproj₂_inl (X Y : C) :
+    (Par.hat (coprod.inl : X ⟶ X ⨿ Y) : Par.of X ⟶ Par.of (X ⨿ Y)) ≫ Par.pproj₂ X Y
+      = Par.zero X Y := by
+  refine pval_inj ?_
+  simp [coprod.inl_desc, Category.assoc]
+
+theorem par_hat_pproj₂_inr (X Y : C) :
+    (Par.hat (coprod.inr : Y ⟶ X ⨿ Y) : Par.of Y ⟶ Par.of (X ⨿ Y)) ≫ Par.pproj₂ X Y
+      = 𝟙 (Par.of Y) := by
+  refine pval_inj ?_
+  simp [coprod.inl_desc, coprod.inr_desc, Category.assoc]
+
+/-- Maps out of `Par.of (X ⨿ Y)` are determined by their restrictions along
+the two (hatted) coprojections. -/
+theorem par_hom_ext {X Y : C} {Z : Par C} {f g : Par.of (X ⨿ Y) ⟶ Z}
+    (h₁ : (Par.hat (coprod.inl : X ⟶ X ⨿ Y) : Par.of X ⟶ Par.of (X ⨿ Y)) ≫ f
+      = (Par.hat (coprod.inl : X ⟶ X ⨿ Y) : Par.of X ⟶ Par.of (X ⨿ Y)) ≫ g)
+    (h₂ : (Par.hat (coprod.inr : Y ⟶ X ⨿ Y) : Par.of Y ⟶ Par.of (X ⨿ Y)) ≫ f
+      = (Par.hat (coprod.inr : Y ⟶ X ⨿ Y) : Par.of Y ⟶ Par.of (X ⨿ Y)) ≫ g) :
+    f = g := by
+  refine pval_inj (coprod.hom_ext ?_ ?_)
+  · have e := congrArg pval h₁
+    rwa [par_hat_comp, par_hat_comp] at e
+  · have e := congrArg pval h₂
+    rwa [par_hat_comp, par_hat_comp] at e
+
+theorem par_inl_map {X Y X' Y' : C} (u : Par.of X ⟶ Par.of X') (w : Par.of Y ⟶ Par.of Y') :
+    (Par.hat (coprod.inl : X ⟶ X ⨿ Y) : Par.of X ⟶ Par.of (X ⨿ Y)) ≫ Par.map u w
+      = u ≫ Par.hat (coprod.inl : X' ⟶ X' ⨿ Y') := by
+  refine pval_inj ?_
+  rw [par_hat_comp, pval_map, coprod.inl_desc, pval_comp, pval_hat]
+  congr 1
+  refine coprod.hom_ext ?_ ?_
+  · rw [coprod.inl_map, coprod.inl_desc]
+  · rw [coprod.inr_map, coprod.inr_desc, Category.id_comp]
+
+theorem par_inr_map {X Y X' Y' : C} (u : Par.of X ⟶ Par.of X') (w : Par.of Y ⟶ Par.of Y') :
+    (Par.hat (coprod.inr : Y ⟶ X ⨿ Y) : Par.of Y ⟶ Par.of (X ⨿ Y)) ≫ Par.map u w
+      = w ≫ Par.hat (coprod.inr : Y' ⟶ X' ⨿ Y') := by
+  refine pval_inj ?_
+  rw [par_hat_comp, pval_map, coprod.inr_desc, pval_comp, pval_hat]
+  congr 1
+  refine coprod.hom_ext ?_ ?_
+  · rw [coprod.inl_map, coprod.inl_desc]
+  · rw [coprod.inr_map, coprod.inr_desc, Category.id_comp]
+
+theorem par_map_pproj₁ {X Y X' Y' : C} (u : Par.of X ⟶ Par.of X') (w : Par.of Y ⟶ Par.of Y') :
+    Par.map u w ≫ Par.pproj₁ X' Y' = Par.pproj₁ X Y ≫ u := by
+  refine par_hom_ext ?_ ?_
+  · rw [← Category.assoc, ← Category.assoc, par_inl_map, par_hat_pproj₁_inl,
+      Category.assoc, par_hat_pproj₁_inl, Category.comp_id, Category.id_comp]
+  · rw [← Category.assoc, ← Category.assoc, par_inr_map, par_hat_pproj₁_inr,
+      Category.assoc, par_hat_pproj₁_inr, par_comp_zero, par_zero_comp]
+
+theorem par_map_pproj₂ {X Y X' Y' : C} (u : Par.of X ⟶ Par.of X') (w : Par.of Y ⟶ Par.of Y') :
+    Par.map u w ≫ Par.pproj₂ X' Y' = Par.pproj₂ X Y ≫ w := by
+  refine par_hom_ext ?_ ?_
+  · rw [← Category.assoc, ← Category.assoc, par_inl_map, par_hat_pproj₂_inl,
+      Category.assoc, par_hat_pproj₂_inl, par_comp_zero, par_zero_comp]
+  · rw [← Category.assoc, ← Category.assoc, par_inr_map, par_hat_pproj₂_inr,
+      Category.assoc, par_hat_pproj₂_inr, Category.comp_id, Category.id_comp]
+
+theorem par_map_hat {X Y X' Y' : C} (u : X ⟶ X') (w : Y ⟶ Y') :
+    Par.map (Par.hat u) (Par.hat w) = Par.hat (coprod.map u w) := by
+  refine par_hom_ext ?_ ?_
+  · rw [par_inl_map, par_hat_hat, par_hat_hat, coprod.inl_map]
+  · rw [par_inr_map, par_hat_hat, par_hat_hat, coprod.inr_map]
+
+theorem par_one_eq (X : C) : Par.one X = Par.hat (terminal.from X) := rfl
+
+
+/-! ### 187III–IV: the PCM-enrichment of `Par C` -/
+
+section ParPCM
+
+variable [EffectusTotalForm C]
+
+/-- The codiagonal `∇ = [id, id] : Y + Y ⇸ Y` of `Par C`. -/
+noncomputable def parNabla (Y : C) : Par.of (Y ⨿ Y) ⟶ Par.of Y :=
+  Par.hat (coprod.desc (𝟙 Y) (𝟙 Y))
+
+/-- **187III**: `b` is a **bound** for `f ⊥ g`. -/
+def ParBound {X Y : Par C} (f g : X ⟶ Y) (b : X ⟶ Par.of (Y.base ⨿ Y.base)) : Prop :=
+  b ≫ Par.pproj₁ Y.base Y.base = f ∧ b ≫ Par.pproj₂ Y.base Y.base = g
+
+/-- **186X**: a bound is unique if it exists. -/
+theorem parBound_unique {X Y : Par C} {f g : X ⟶ Y}
+    {b b' : X ⟶ Par.of (Y.base ⨿ Y.base)}
+    (hb : ParBound f g b) (hb' : ParBound f g b') : b = b' :=
+  pproj_joint_monicity Y.base Y.base b b'
+    (hb.1.trans hb'.1.symm) (hb.2.trans hb'.2.symm)
+
+/-! the identities of `∇`, `swap` and `▷ᵢ` used in 187III -/
+
+theorem par_swap_pproj₁ (Y : C) :
+    (Par.hat (coprod.desc (coprod.inr : Y ⟶ Y ⨿ Y) coprod.inl) :
+        Par.of (Y ⨿ Y) ⟶ Par.of (Y ⨿ Y)) ≫ Par.pproj₁ Y Y = Par.pproj₂ Y Y := by
+  refine par_hom_ext ?_ ?_
+  · rw [← Category.assoc, par_hat_hat, coprod.inl_desc, par_hat_pproj₁_inr,
+      par_hat_pproj₂_inl]
+  · rw [← Category.assoc, par_hat_hat, coprod.inr_desc, par_hat_pproj₁_inl,
+      par_hat_pproj₂_inr]
+
+theorem par_swap_pproj₂ (Y : C) :
+    (Par.hat (coprod.desc (coprod.inr : Y ⟶ Y ⨿ Y) coprod.inl) :
+        Par.of (Y ⨿ Y) ⟶ Par.of (Y ⨿ Y)) ≫ Par.pproj₂ Y Y = Par.pproj₁ Y Y := by
+  refine par_hom_ext ?_ ?_
+  · rw [← Category.assoc, par_hat_hat, coprod.inl_desc, par_hat_pproj₂_inr,
+      par_hat_pproj₁_inl]
+  · rw [← Category.assoc, par_hat_hat, coprod.inr_desc, par_hat_pproj₂_inl,
+      par_hat_pproj₁_inr]
+
+theorem par_swap_nabla (Y : C) :
+    (Par.hat (coprod.desc (coprod.inr : Y ⟶ Y ⨿ Y) coprod.inl) :
+        Par.of (Y ⨿ Y) ⟶ Par.of (Y ⨿ Y)) ≫ parNabla Y = parNabla Y := by
+  rw [parNabla, par_hat_hat]
+  congr 1
+  refine coprod.hom_ext ?_ ?_
+  · rw [← Category.assoc, coprod.inl_desc, coprod.inr_desc, coprod.inl_desc]
+  · rw [← Category.assoc, coprod.inr_desc, coprod.inl_desc, coprod.inr_desc]
+
+theorem par_inl_nabla (Y : C) :
+    (Par.hat (coprod.inl : Y ⟶ Y ⨿ Y) : Par.of Y ⟶ Par.of (Y ⨿ Y)) ≫ parNabla Y
+      = 𝟙 (Par.of Y) := by
+  rw [parNabla, par_hat_hat, coprod.inl_desc, par_hat_id]
+
+theorem par_inr_nabla (Y : C) :
+    (Par.hat (coprod.inr : Y ⟶ Y ⨿ Y) : Par.of Y ⟶ Par.of (Y ⨿ Y)) ≫ parNabla Y
+      = 𝟙 (Par.of Y) := by
+  rw [parNabla, par_hat_hat, coprod.inr_desc, par_hat_id]
+
+theorem par_map_nabla {Y Z : C} (k : Par.of Y ⟶ Par.of Z) :
+    Par.map k k ≫ parNabla Z = parNabla Y ≫ k := by
+  refine par_hom_ext ?_ ?_
+  · rw [← Category.assoc, ← Category.assoc, par_inl_map, par_inl_nabla,
+      Category.assoc, par_inl_nabla, Category.comp_id, Category.id_comp]
+  · rw [← Category.assoc, ← Category.assoc, par_inr_map, par_inr_nabla,
+      Category.assoc, par_inr_nabla, Category.comp_id, Category.id_comp]
+
+/-! `e = [id, κ₂] : (Y+Y)+Y ⇸ Y+Y`, the map of 187III -/
+
+theorem par_e_pproj₁ (Y : C) :
+    (Par.hat (coprod.desc (𝟙 (Y ⨿ Y)) (coprod.inr : Y ⟶ Y ⨿ Y)) :
+        Par.of ((Y ⨿ Y) ⨿ Y) ⟶ Par.of (Y ⨿ Y)) ≫ Par.pproj₁ Y Y
+      = Par.pproj₁ (Y ⨿ Y) Y ≫ Par.pproj₁ Y Y := by
+  refine par_hom_ext ?_ ?_
+  · rw [← Category.assoc, par_hat_hat, coprod.inl_desc, par_hat_id, Category.id_comp,
+      ← Category.assoc, par_hat_pproj₁_inl, Category.id_comp]
+  · rw [← Category.assoc, par_hat_hat, coprod.inr_desc, par_hat_pproj₁_inr,
+      ← Category.assoc, par_hat_pproj₁_inr, par_zero_comp]
+
+theorem par_e_pproj₂ (Y : C) :
+    (Par.hat (coprod.desc (𝟙 (Y ⨿ Y)) (coprod.inr : Y ⟶ Y ⨿ Y)) :
+        Par.of ((Y ⨿ Y) ⨿ Y) ⟶ Par.of (Y ⨿ Y)) ≫ Par.pproj₂ Y Y
+      = Par.map (Par.pproj₂ Y Y) (𝟙 (Par.of Y)) ≫ parNabla Y := by
+  refine par_hom_ext ?_ ?_
+  · rw [← Category.assoc, par_hat_hat, coprod.inl_desc, par_hat_id, Category.id_comp,
+      ← Category.assoc, par_inl_map, Category.assoc, par_inl_nabla, Category.comp_id]
+  · rw [← Category.assoc, par_hat_hat, coprod.inr_desc, par_hat_pproj₂_inr,
+      ← Category.assoc, par_inr_map, Category.assoc, par_inr_nabla, Category.comp_id]
+
+theorem par_e_nabla (Y : C) :
+    (Par.hat (coprod.desc (𝟙 (Y ⨿ Y)) (coprod.inr : Y ⟶ Y ⨿ Y)) :
+        Par.of ((Y ⨿ Y) ⨿ Y) ⟶ Par.of (Y ⨿ Y)) ≫ parNabla Y
+      = Par.map (parNabla Y) (𝟙 (Par.of Y)) ≫ parNabla Y := by
+  refine par_hom_ext ?_ ?_
+  · rw [← Category.assoc, par_hat_hat, coprod.inl_desc, par_hat_id, Category.id_comp,
+      ← Category.assoc, par_inl_map, Category.assoc, par_inl_nabla, Category.comp_id]
+  · rw [← Category.assoc, par_hat_hat, coprod.inr_desc, par_inr_nabla,
+      ← Category.assoc, par_inr_map, Category.assoc, par_inr_nabla, Category.comp_id]
+
+/-- **187III**: `f ⊥ g` in `Par C` iff a bound exists. -/
+def ParPerp {X Y : Par C} (f g : X ⟶ Y) : Prop := ∃ b, ParBound f g b
+
+/-- **187III**: `f ⋁ g = ∇ ⊙ b` for the (unique) bound `b`. -/
+noncomputable def parOvee {X Y : Par C} (f g : X ⟶ Y) (h : ParPerp f g) : X ⟶ Y :=
+  h.choose ≫ parNabla Y.base
+
+theorem parOvee_eq {X Y : Par C} {f g : X ⟶ Y} (h : ParPerp f g)
+    {b : X ⟶ Par.of (Y.base ⨿ Y.base)} (hb : ParBound f g b) :
+    parOvee f g h = b ≫ parNabla Y.base := by
+  rw [parOvee, parBound_unique h.choose_spec hb]
+
+theorem parPerp_comm {X Y : Par C} {f g : X ⟶ Y} (h : ParPerp f g) : ParPerp g f :=
+  ⟨h.choose ≫ Par.hat (coprod.desc coprod.inr coprod.inl),
+    ⟨by rw [Category.assoc, par_swap_pproj₁]; exact h.choose_spec.2,
+     by rw [Category.assoc, par_swap_pproj₂]; exact h.choose_spec.1⟩⟩
+
+/-- **187III**, partial associativity, in one construction. -/
+theorem par_assoc_data {X Y : Par C} {f g k : X ⟶ Y} (hab : ParPerp f g)
+    (h : ParPerp (parOvee f g hab) k) :
+    ∃ (hgk : ParPerp g k) (h' : ParPerp f (parOvee g k hgk)),
+      parOvee (parOvee f g hab) k h = parOvee f (parOvee g k hgk) h' := by
+  obtain ⟨b, hb⟩ := id hab
+  obtain ⟨c, hc⟩ := id h
+  have hfg : parOvee f g hab = b ≫ parNabla Y.base := parOvee_eq hab hb
+  have hsq := par_pullbacks_right (X := Y.base) (coprod.desc (𝟙 Y.base) (𝟙 Y.base))
+  have hcond : c ≫ Par.pproj₁ Y.base Y.base
+      = b ≫ Par.hat (coprod.desc (𝟙 Y.base) (𝟙 Y.base)) := by
+    rw [hc.1, hfg]; rfl
+  set d := hsq.lift c b hcond with hddef
+  have hd₁ : d ≫ Par.map (parNabla Y.base) (𝟙 (Par.of Y.base)) = c := hsq.lift_fst c b hcond
+  have hd₂ : d ≫ Par.pproj₁ (Y.base ⨿ Y.base) Y.base = b := hsq.lift_snd c b hcond
+  have hd₂' : d ≫ Par.pproj₂ (Y.base ⨿ Y.base) Y.base = k := by
+    have e : d ≫ Par.pproj₂ (Y.base ⨿ Y.base) Y.base
+        = (d ≫ Par.map (parNabla Y.base)
+            (𝟙 (Par.of Y.base))) ≫ Par.pproj₂ Y.base Y.base := by
+      rw [Category.assoc, par_map_pproj₂, Category.comp_id]
+    rw [e, hd₁, hc.2]
+  have hbgk : ParBound g k (d ≫ Par.map (Par.pproj₂ Y.base Y.base) (𝟙 (Par.of Y.base))) := by
+    refine ⟨?_, ?_⟩
+    · rw [Category.assoc, par_map_pproj₁, ← Category.assoc, hd₂, hb.2]
+    · rw [Category.assoc, par_map_pproj₂, Category.comp_id, hd₂']
+  refine ⟨⟨_, hbgk⟩, ?_⟩
+  have hgk : parOvee g k ⟨_, hbgk⟩
+      = (d ≫ Par.map (Par.pproj₂ Y.base Y.base) (𝟙 (Par.of Y.base))) ≫ parNabla Y.base :=
+    parOvee_eq _ hbgk
+  have hbf : ParBound f (parOvee g k ⟨_, hbgk⟩)
+      (d ≫ Par.hat (coprod.desc (𝟙 (Y.base ⨿ Y.base)) coprod.inr)) := by
+    refine ⟨?_, ?_⟩
+    · rw [Category.assoc, par_e_pproj₁, ← Category.assoc, hd₂, hb.1]
+    · rw [Category.assoc, par_e_pproj₂, hgk, Category.assoc]
+  refine ⟨⟨_, hbf⟩, ?_⟩
+  have e1 : parOvee (parOvee f g hab) k h = c ≫ parNabla Y.base := parOvee_eq h hc
+  have e2 : parOvee f (parOvee g k ⟨_, hbgk⟩) ⟨_, hbf⟩
+      = (d ≫ Par.hat (coprod.desc (𝟙 (Y.base ⨿ Y.base)) coprod.inr)) ≫ parNabla Y.base :=
+    parOvee_eq _ hbf
+  rw [e1, e2, Category.assoc, par_e_nabla, ← Category.assoc, hd₁]
+
+
+theorem par_zero_bound {X Y : Par C} (a : X ⟶ Y) :
+    ParBound (Par.zero X.base Y.base) a (a ≫ Par.hat coprod.inr) :=
+  ⟨by rw [Category.assoc, par_hat_pproj₁_inr, par_comp_zero],
+   by rw [Category.assoc, par_hat_pproj₂_inr, Category.comp_id]⟩
+
+/-- **187IV**: postcomposition preserves `⊥` and `⋁`. -/
+theorem par_comp_ovee {X Y Z : Par C} {f g : X ⟶ Y} (h : ParPerp f g) (k : Y ⟶ Z) :
+    ∃ h' : ParPerp (f ≫ k) (g ≫ k), parOvee f g h ≫ k = parOvee (f ≫ k) (g ≫ k) h' := by
+  have hb : ParBound (f ≫ k) (g ≫ k) (h.choose ≫ Par.map k k) :=
+    ⟨by rw [Category.assoc, par_map_pproj₁, ← Category.assoc, h.choose_spec.1],
+     by rw [Category.assoc, par_map_pproj₂, ← Category.assoc, h.choose_spec.2]⟩
+  refine ⟨⟨_, hb⟩, ?_⟩
+  rw [parOvee_eq h h.choose_spec, parOvee_eq (⟨_, hb⟩ : ParPerp (f ≫ k) (g ≫ k)) hb]
+  simp only [Category.assoc]
+  rw [par_map_nabla]
+
+/-- **187IV**: precomposition preserves `⊥` and `⋁`. -/
+theorem par_ovee_comp {W X Y : Par C} {f g : X ⟶ Y} (h : ParPerp f g) (k : W ⟶ X) :
+    ∃ h' : ParPerp (k ≫ f) (k ≫ g), k ≫ parOvee f g h = parOvee (k ≫ f) (k ≫ g) h' := by
+  have hb : ParBound (k ≫ f) (k ≫ g) (k ≫ h.choose) :=
+    ⟨by rw [Category.assoc, h.choose_spec.1], by rw [Category.assoc, h.choose_spec.2]⟩
+  refine ⟨⟨_, hb⟩, ?_⟩
+  rw [parOvee_eq h h.choose_spec, parOvee_eq (⟨_, hb⟩ : ParPerp (k ≫ f) (k ≫ g)) hb]
+  simp only [Category.assoc]
+
+/-- **187III–IV** (`eff-total-to-partial`, eff.tex:1719): the hom-sets of
+`Par C` are PCMs. -/
+noncomputable instance parHomPCM (X Y : Par C) : PCM (X ⟶ Y) where
+  zero := Par.zero X.base Y.base
+  Perp := ParPerp
+  ovee := parOvee
+  perp_comm := parPerp_comm
+  ovee_comm := fun {a b} h => by
+    have hb := h.choose_spec
+    rw [parOvee_eq h hb,
+      parOvee_eq (parPerp_comm h) (b := h.choose ≫ Par.hat (coprod.desc coprod.inr coprod.inl))
+        ⟨by rw [Category.assoc, par_swap_pproj₁]; exact hb.2,
+         by rw [Category.assoc, par_swap_pproj₂]; exact hb.1⟩,
+      Category.assoc, par_swap_nabla]
+  perp_of_ovee_perp := fun hab h => (par_assoc_data hab h).choose
+  perp_ovee_of_ovee_perp := fun hab h => (par_assoc_data hab h).choose_spec.choose
+  ovee_assoc := fun hab h => (par_assoc_data hab h).choose_spec.choose_spec
+  zero_perp := fun a => ⟨_, par_zero_bound a⟩
+  zero_ovee := fun a =>
+    (parOvee_eq (⟨_, par_zero_bound a⟩ : ParPerp (Par.zero X.base Y.base) a)
+        (par_zero_bound a)).trans
+      (by rw [Category.assoc, par_inr_nabla, Category.comp_id])
+
+theorem par_zero_eq' (X Y : Par C) : (0 : X ⟶ Y) = Par.zero X.base Y.base := rfl
+
+theorem par_perp_iff {X Y : Par C} {f g : X ⟶ Y} :
+    Perp f g ↔ ∃ b, ParBound f g b := Iff.rfl
+
+theorem par_ovee_eq' {X Y : Par C} {f g : X ⟶ Y} (h : Perp f g)
+    {b : X ⟶ Par.of (Y.base ⨿ Y.base)} (hb : ParBound f g b) :
+    ovee f g h = b ≫ parNabla Y.base := parOvee_eq h hb
+
+/-! ### `Par C` has finite coproducts -/
+
+noncomputable def parCoprodCofan (X Y : Par C) : BinaryCofan X Y :=
+  BinaryCofan.mk
+    (Par.hat (coprod.inl : X.base ⟶ X.base ⨿ Y.base) : X ⟶ Par.of (X.base ⨿ Y.base))
+    (Par.hat (coprod.inr : Y.base ⟶ X.base ⨿ Y.base) : Y ⟶ Par.of (X.base ⨿ Y.base))
+
+noncomputable def parCoprodIsColimit (X Y : Par C) : IsColimit (parCoprodCofan X Y) :=
+  (par_c_coprod X.base Y.base).some
+
+theorem parHasFiniteCoproducts : HasFiniteCoproducts (Par C) :=
+  letI : HasInitial (Par C) := par_c_initial.some.hasInitial
+  letI : ∀ X Y : Par C, HasColimit (pair X Y) := fun X Y =>
+    HasColimit.mk ⟨parCoprodCofan X Y, parCoprodIsColimit X Y⟩
+  letI : HasBinaryCoproducts (Par C) := hasBinaryCoproducts_of_hasColimit_pair (Par C)
+  hasFiniteCoproducts_of_has_binary_and_initial
+
+section ParBridge
+
+variable [HasFiniteCoproducts (Par C)]
+
+noncomputable def parCoprodIso (X Y : Par C) :
+    (X ⨿ Y : Par C) ≅ Par.of (X.base ⨿ Y.base) :=
+  IsColimit.coconePointUniqueUpToIso (coprodIsCoprod X Y) (parCoprodIsColimit X Y)
+
+theorem parCoprodIso_inl (X Y : Par C) :
+    (coprod.inl : X ⟶ X ⨿ Y) ≫ (parCoprodIso X Y).hom
+      = (Par.hat (coprod.inl : X.base ⟶ X.base ⨿ Y.base) : X ⟶ Par.of (X.base ⨿ Y.base)) :=
+  IsColimit.comp_coconePointUniqueUpToIso_hom (coprodIsCoprod X Y)
+    (parCoprodIsColimit X Y) (Discrete.mk WalkingPair.left)
+
+theorem parCoprodIso_inr (X Y : Par C) :
+    (coprod.inr : Y ⟶ X ⨿ Y) ≫ (parCoprodIso X Y).hom
+      = (Par.hat (coprod.inr : Y.base ⟶ X.base ⨿ Y.base) : Y ⟶ Par.of (X.base ⨿ Y.base)) :=
+  IsColimit.comp_coconePointUniqueUpToIso_hom (coprodIsCoprod X Y)
+    (parCoprodIsColimit X Y) (Discrete.mk WalkingPair.right)
+
+theorem par_pproj₁_eq (X Y : Par C) :
+    (pproj₁ X Y : (X ⨿ Y : Par C) ⟶ X)
+      = (parCoprodIso X Y).hom ≫ Par.pproj₁ X.base Y.base := by
+  refine coprod.hom_ext ?_ ?_
+  · rw [pproj₁, coprod.inl_desc, ← Category.assoc, parCoprodIso_inl, par_hat_pproj₁_inl]
+  · rw [pproj₁, coprod.inr_desc, ← Category.assoc, parCoprodIso_inr, par_hat_pproj₁_inr]
+    rfl
+
+theorem par_pproj₂_eq (X Y : Par C) :
+    (pproj₂ X Y : (X ⨿ Y : Par C) ⟶ Y)
+      = (parCoprodIso X Y).hom ≫ Par.pproj₂ X.base Y.base := by
+  refine coprod.hom_ext ?_ ?_
+  · rw [pproj₂, coprod.inl_desc, ← Category.assoc, parCoprodIso_inl, par_hat_pproj₂_inl]
+    rfl
+  · rw [pproj₂, coprod.inr_desc, ← Category.assoc, parCoprodIso_inr, par_hat_pproj₂_inr]
+
+/-- **187V**: `Par C` is a finPAC. -/
+noncomputable instance parFinPAC : FinPAC (Par C) where
+  comp_ovee := fun h k => par_comp_ovee h k
+  ovee_comp := fun h k => par_ovee_comp h k
+  comp_zero := fun f => par_comp_zero f
+  zero_comp := fun f => par_zero_comp f
+  compatible_sum := fun {X Y} b =>
+    ⟨b ≫ (parCoprodIso Y Y).hom,
+      ⟨by rw [par_pproj₁_eq, ← Category.assoc], by rw [par_pproj₂_eq, ← Category.assoc]⟩⟩
+  untying := fun {X Y f g} h =>
+    ⟨h.choose ≫ Par.map (coprod.inl : Y ⟶ Y ⨿ Y) (coprod.inr : Y ⟶ Y ⨿ Y),
+      ⟨by rw [Category.assoc, par_map_pproj₁, ← Category.assoc, h.choose_spec.1],
+       by rw [Category.assoc, par_map_pproj₂, ← Category.assoc, h.choose_spec.2]⟩⟩
+
+
+end ParBridge
+
+/-! ### 187VI: the effect algebra of predicates -/
+
+noncomputable def parSwapTop : (⊤_ C) ⨿ (⊤_ C) ⟶ (⊤_ C) ⨿ (⊤_ C) :=
+  coprod.desc (W := ((⊤_ C) ⨿ (⊤_ C) : C)) (X := (⊤_ C : C)) (Y := (⊤_ C : C))
+    coprod.inr coprod.inl
+
+/-- **187VI**: the orthosupplement `p^⊥ = [κ₂,κ₁] ∘ p` of a predicate. -/
+noncomputable def parOrthAux {Z : C} (q : Z ⟶ (⊤_ C) ⨿ (⊤_ C)) : Z ⟶ (⊤_ C) ⨿ (⊤_ C) :=
+  q ≫ parSwapTop
+
+/-- **187VI**: the orthosupplement `p^⊥ = [κ₂,κ₁] ∘ p` of a predicate. -/
+noncomputable def parOrth {X : Par C} (p : X ⟶ Par.of (⊤_ C)) : X ⟶ Par.of (⊤_ C) :=
+  parOrthAux (pval p)
+
+theorem pval_parOrth {X : Par C} (p : X ⟶ Par.of (⊤_ C)) :
+    pval (parOrth p) = pval p ≫ parSwapTop := rfl
+
+theorem parSwapTop_eq :
+    (parSwapTop : (⊤_ C) ⨿ (⊤_ C) ⟶ (⊤_ C) ⨿ (⊤_ C))
+      = coprod.desc (W := ((⊤_ C) ⨿ (⊤_ C) : C)) (X := (⊤_ C : C)) (Y := (⊤_ C : C))
+          coprod.inr coprod.inl := rfl
+
+theorem par_nabla_top : parNabla (⊤_ C) = Par.one ((⊤_ C) ⨿ (⊤_ C)) := by
+  rw [parNabla, par_one_eq]
+  congr 1
+  exact terminalIsTerminal.hom_ext _ _
+
+theorem par_hat_pval_pproj₁ {X : Par C} (p : X ⟶ Par.of (⊤_ C)) :
+    (Par.hat (pval p) : X ⟶ Par.of ((⊤_ C) ⨿ ⊤_ C)) ≫ Par.pproj₁ (⊤_ C) (⊤_ C) = p := by
+  refine pval_inj ?_
+  rw [par_hat_comp, pval_pproj₁, par_terminal_self, Category.id_comp,
+    coprod.desc_inl_inr, Category.comp_id]
+
+theorem par_hat_pval_pproj₂ {X : Par C} (p : X ⟶ Par.of (⊤_ C)) :
+    (Par.hat (pval p) : X ⟶ Par.of ((⊤_ C) ⨿ ⊤_ C)) ≫ Par.pproj₂ (⊤_ C) (⊤_ C)
+      = parOrth p := by
+  refine pval_inj ?_
+  rw [par_hat_comp, pval_pproj₂, par_terminal_self, Category.id_comp, pval_parOrth,
+    parSwapTop_eq]
+
+theorem par_hat_pval_nabla {X : Par C} (p : X ⟶ Par.of (⊤_ C)) :
+    (Par.hat (pval p) : X ⟶ Par.of ((⊤_ C) ⨿ ⊤_ C)) ≫ parNabla (⊤_ C)
+      = Par.one X.base := by
+  refine pval_inj ?_
+  rw [par_hat_comp, parNabla, pval_hat, pval_one, ← Category.assoc]
+  congr 1
+  exact terminalIsTerminal.hom_ext _ _
+
+theorem par_perp_orth {X : Par C} (p : X ⟶ Par.of (⊤_ C)) : ParPerp p (parOrth p) :=
+  ⟨Par.hat (pval p), par_hat_pval_pproj₁ p, par_hat_pval_pproj₂ p⟩
+
+theorem par_ovee_orth {X : Par C} (p : X ⟶ Par.of (⊤_ C)) :
+    parOvee p (parOrth p) (par_perp_orth p) = Par.one X.base := by
+  rw [parOvee_eq (par_perp_orth p) ⟨par_hat_pval_pproj₁ p, par_hat_pval_pproj₂ p⟩,
+    par_hat_pval_nabla]
+
+/-- **187VI**: `p^⊥` is the unique orthosupplement. -/
+theorem par_orth_unique {X : Par C} {p q : X ⟶ Par.of (⊤_ C)} (h : ParPerp p q)
+    (he : parOvee p q h = Par.one X.base) : q = parOrth p := by
+  obtain ⟨b, hb₁, hb₂⟩ := id h
+  have hbe : b ≫ Par.one ((⊤_ C) ⨿ (⊤_ C)) = Par.one X.base := by
+    rw [← par_nabla_top, ← parOvee_eq h ⟨hb₁, hb₂⟩]
+    exact he
+  obtain ⟨c, hc, -⟩ := pardp_1 b hbe
+  have hp : pval p = c := by
+    rw [← hb₁, hc]
+    refine (par_hat_comp c (Par.pproj₁ (⊤_ C) (⊤_ C))).trans ?_
+    rw [pval_pproj₁, par_terminal_self, Category.id_comp, coprod.desc_inl_inr,
+      Category.comp_id]
+  refine pval_inj ?_
+  rw [← hb₂, hc, par_hat_comp, pval_pproj₂, par_terminal_self, Category.id_comp,
+    pval_parOrth, parSwapTop_eq, hp]
+
+/-- **187VI**, zero–one axiom.  (Derived from the uniqueness of the
+orthosupplement together with **186VIII.2**, rather than from the pullback
+square of the thesis' diagram.) -/
+theorem par_eq_zero_of_perp_one {X : Par C} {p : X ⟶ Par.of (⊤_ C)}
+    (h : ParPerp p (Par.one X.base)) : p = Par.zero X.base (⊤_ C) := by
+  have h' : ParPerp (Par.one X.base) p := parPerp_comm h
+  have hso : ParPerp (parOvee (Par.one X.base) p h')
+      (parOrth (parOvee (Par.one X.base) p h')) :=
+    par_perp_orth _
+  have hpt : ParPerp p (parOrth (parOvee (Par.one X.base) p h')) :=
+    PCM.perp_of_ovee_perp (c := parOrth (parOvee (Par.one X.base) p h')) h' hso
+  have ht1 : ParPerp (Par.one X.base)
+      (parOvee p (parOrth (parOvee (Par.one X.base) p h')) hpt) :=
+    PCM.perp_ovee_of_ovee_perp (c := parOrth (parOvee (Par.one X.base) p h')) h' hso
+  have hassoc := PCM.ovee_assoc (c := parOrth (parOvee (Par.one X.base) p h')) h' hso
+  have hone : parOvee (Par.one X.base)
+      (parOvee p (parOrth (parOvee (Par.one X.base) p h')) hpt) ht1 = Par.one X.base :=
+    hassoc.symm.trans (par_ovee_orth (parOvee (Par.one X.base) p h'))
+  have ht0 : parOvee p (parOrth (parOvee (Par.one X.base) p h')) hpt
+      = parOrth (Par.one X.base) := par_orth_unique ht1 hone
+  have horth_one : parOrth (Par.one X.base) = Par.zero X.base (⊤_ C) := by
+    refine pval_inj ?_
+    rw [pval_parOrth, parSwapTop_eq, pval_one, pval_zero, Category.assoc, coprod.inl_desc]
+  obtain ⟨d, hd₁, hd₂⟩ := id hpt
+  have hd : d ≫ Par.one ((⊤_ C) ⨿ (⊤_ C)) = Par.zero X.base (⊤_ C) := by
+    rw [← par_nabla_top, ← parOvee_eq hpt ⟨hd₁, hd₂⟩, ht0, horth_one]
+  have hd0 : d = Par.zero X.base ((⊤_ C) ⨿ ⊤_ C) := pardp_2 d hd
+  rw [← hd₁, hd0, par_zero_comp]
+
+
+/-! ### local copies of the two `private` helpers of `section TotalToPartial` -/
+
+/-! ### 187VII: the last two axioms -/
+
+/-- **187VII**: if `1 ∘ f ⊥ 1 ∘ g` then `f ⊥ g`. -/
+theorem par_perp_of_one_perp {X Y : Par C} {f g : X ⟶ Y}
+    (h : ParPerp (f ≫ Par.one Y.base) (g ≫ Par.one Y.base)) : ParPerp f g := by
+  obtain ⟨b, hb₁, hb₂⟩ := h
+  have hsq1 := par_pullbacks_right (X := ⊤_ C) (terminal.from Y.base)
+  have hc1 : b ≫ Par.pproj₁ (⊤_ C) (⊤_ C) = f ≫ Par.hat (terminal.from Y.base) := hb₁
+  have hcf : (hsq1.lift b f hc1) ≫ Par.pproj₁ Y.base (⊤_ C) = f := hsq1.lift_snd b f hc1
+  have hcb : (hsq1.lift b f hc1) ≫ Par.map (Par.hat (terminal.from Y.base))
+      (𝟙 (Par.of (⊤_ C))) = b := hsq1.lift_fst b f hc1
+  have hsq2 := par_pullbacks_right₂ (X := Y.base) (terminal.from Y.base)
+  have hc2 : (hsq1.lift b f hc1) ≫ Par.pproj₂ Y.base (⊤_ C)
+      = g ≫ Par.hat (terminal.from Y.base) := by
+    have e : (hsq1.lift b f hc1) ≫ Par.pproj₂ Y.base (⊤_ C)
+        = ((hsq1.lift b f hc1) ≫ Par.map (Par.hat (terminal.from Y.base))
+            (𝟙 (Par.of (⊤_ C)))) ≫ Par.pproj₂ (⊤_ C) (⊤_ C) := by
+      rw [Category.assoc, par_map_pproj₂, Category.comp_id]
+    rw [e, hcb]
+    exact hb₂
+  refine ⟨hsq2.lift (hsq1.lift b f hc1) g hc2, ?_, ?_⟩
+  · have e : (hsq2.lift (hsq1.lift b f hc1) g hc2) ≫ Par.pproj₁ Y.base Y.base
+        = ((hsq2.lift (hsq1.lift b f hc1) g hc2) ≫ Par.map (𝟙 (Par.of Y.base))
+            (Par.hat (terminal.from Y.base))) ≫ Par.pproj₁ Y.base (⊤_ C) := by
+      rw [Category.assoc, par_map_pproj₁, Category.comp_id]
+    rw [e, hsq2.lift_fst, hcf]
+  · exact hsq2.lift_snd (hsq1.lift b f hc1) g hc2
+
+/-! ### 187I: `Par C` is an effectus in partial form -/
+
+section ParAssemble
+
+variable [HasFiniteCoproducts (Par C)]
+
+/-- **187I** (`eff-total-to-partial`, eff.tex:1713, Theorem). -/
+noncomputable instance parEffectusPartialForm : EffectusPartialForm (Par C) where
+  I := Par.of (⊤_ C)
+  one X := Par.one X.base
+  orth := parOrth
+  perp_orth := par_perp_orth
+  ovee_orth := par_ovee_orth
+  orth_unique := par_orth_unique
+  eq_zero_of_perp_one := par_eq_zero_of_perp_one
+  perp_of_one_perp := par_perp_of_one_perp
+  eq_zero_of_one_zero := fun {_ _ f} h => pardp_2 f h
+
+end ParAssemble
+
+end ParPCM
+
+end TotalToPartialStructure
+
+/-! ## Cho's theorem, part 3: nothing is lost (parsec 188) -/
+
+section ParTotEquiv
+
+variable {D : Type u} [Category.{v} D] [HasFiniteCoproducts D]
+  [∀ X Y : D, PCM (X ⟶ Y)] [FinPAC D] [EffectusPartialForm D]
+  [HasFiniteCoproducts (Tot D)] [HasTerminal (Tot D)]
+
+/-- **188III**: `▷₁ ∘ [g, κ₂] = (▷₁ ∘ g) ∘ ▷₁`. -/
+theorem tot_desc_tp₁ {Y Z : Tot D} (g : Y ⟶ Z ⨿ ⊤_ (Tot D)) :
+    (coprod.desc g (coprod.inr : (⊤_ (Tot D)) ⟶ Z ⨿ ⊤_ (Tot D))).1 ≫ tp₁ Z (⊤_ (Tot D))
+      = tp₁ Y (⊤_ (Tot D)) ≫ (g.1 ≫ tp₁ Z (⊤_ (Tot D))) := by
+  refine tot_hom_ext_base ?_ ?_
+  · rw [← Category.assoc, tot_desc_inl, ← Category.assoc, tinl_tp₁, Category.id_comp]
+  · rw [← Category.assoc, tot_desc_inr, tinr_tp₁, ← Category.assoc, tinr_tp₁,
+      FinPAC.zero_comp]
+
+/-- **188III** (`proof-cho-thm`, eff.tex:1943): the identity-on-objects functor
+`P : Par (Tot D) ⟶ D`, `P f = ▷₁ ∘ f`. -/
+noncomputable def parTotFunctor : Par (Tot D) ⥤ D where
+  obj X := X.base.base
+  map {X Y} f := (pval f).1 ≫ tp₁ Y.base (⊤_ (Tot D))
+  map_id X := by
+    show (pval (𝟙 X)).1 ≫ tp₁ X.base (⊤_ (Tot D)) = 𝟙 X.base.base
+    rw [pval_id]
+    exact tinl_tp₁ X.base (⊤_ (Tot D))
+  map_comp {X Y Z} f g := by
+    show (pval (f ≫ g)).1 ≫ tp₁ Z.base (⊤_ (Tot D))
+      = ((pval f).1 ≫ tp₁ Y.base (⊤_ (Tot D))) ≫ ((pval g).1 ≫ tp₁ Z.base (⊤_ (Tot D)))
+    rw [pval_comp, tot_comp_base, Category.assoc, tot_desc_tp₁, ← Category.assoc]
+
+instance parTotFunctor_faithful : (parTotFunctor (D := D)).Faithful where
+  map_injective {X Y f g} h := by
+    have := truth_terminal_isIso (D := D)
+    have h₁ : (pval f).1 ≫ tp₁ Y.base (⊤_ (Tot D)) = (pval g).1 ≫ tp₁ Y.base (⊤_ (Tot D)) := h
+    refine pval_inj (Subtype.ext (tp_jm h₁ ?_))
+    exact (cancel_mono (truth (⊤_ (Tot D)).base)).mp
+      (tot_snd_coord_eq (pval f) (pval g) h₁)
+
+instance parTotFunctor_full : (parTotFunctor (D := D)).Full where
+  map_surjective {X Y} h := by
+    have := truth_terminal_isIso (D := D)
+    have hq : (EffectusPartialForm.orth (h ≫ truth Y.base.base)
+          ≫ inv (truth (⊤_ (Tot D)).base)) ≫ truth (⊤_ (Tot D)).base
+        = EffectusPartialForm.orth (h ≫ truth Y.base.base) := by
+      rw [Category.assoc, IsIso.inv_hom_id, Category.comp_id]
+    have hperp : Perp (h ≫ truth Y.base.base)
+        ((EffectusPartialForm.orth (h ≫ truth Y.base.base)
+          ≫ inv (truth (⊤_ (Tot D)).base)) ≫ truth (⊤_ (Tot D)).base) := by
+      rw [hq]; exact EffectusPartialForm.perp_orth _
+    refine ⟨(⟨tpair (X := Y.base) (Y := ⊤_ (Tot D)) h
+      (EffectusPartialForm.orth (h ≫ truth Y.base.base)
+        ≫ inv (truth (⊤_ (Tot D)).base)) hperp, ?_⟩ :
+      X.base ⟶ Y.base ⨿ ⊤_ (Tot D)), ?_⟩
+    · refine Eq.trans (tpair_truth (X := Y.base) (Y := ⊤_ (Tot D)) h _ hperp) ?_
+      refine (PCM.ovee_congr rfl hq _ (EffectusPartialForm.perp_orth _)).trans ?_
+      exact EffectusPartialForm.ovee_orth _
+    · exact tpair_tp₁ (X := Y.base) (Y := ⊤_ (Tot D)) h _ hperp
+
+instance parTotFunctor_essSurj : (parTotFunctor (D := D)).EssSurj where
+  mem_essImage Z := ⟨Par.of (Tot.of Z), ⟨Iso.refl Z⟩⟩
+
+/-- **188III** (`proof-cho-thm`, eff.tex:1943): `Par (Tot D) ≅ D`. -/
+theorem par_tot_equiv : Nonempty (Par (Tot D) ≌ D) :=
+  letI : (parTotFunctor (D := D)).IsEquivalence :=
+    { faithful := parTotFunctor_faithful, full := parTotFunctor_full,
+      essSurj := parTotFunctor_essSurj }
+  ⟨(parTotFunctor (D := D)).asEquivalence⟩
+
+end ParTotEquiv
+
+
+section TotParEquiv
+
+variable {C : Type u} [Category.{v} C] [HasFiniteCoproducts C] [HasTerminal C]
+  [EffectusTotalForm C] [HasFiniteCoproducts (Par C)]
+
+/-- **188IV** (`proof-cho-thm`, eff.tex:1969): the identity-on-objects functor
+`Q : C ⟶ Tot (Par C)`, `Q g = ĝ`. -/
+noncomputable def totParFunctor : C ⥤ Tot (Par C) where
+  obj Z := Tot.of (Par.of Z)
+  map {Z W} g := ⟨Par.hat g, by
+    show (Par.hat g : Par.of Z ⟶ Par.of W) ≫ truth (Par.of W) = truth (Par.of Z)
+    show (Par.hat g : Par.of Z ⟶ Par.of W) ≫ Par.one W = Par.one Z
+    rw [par_one_eq, par_hat_hat, par_one_eq]
+    congr 1
+    exact terminalIsTerminal.hom_ext _ _⟩
+  map_id Z := Subtype.ext (par_hat_id Z)
+  map_comp f g := Subtype.ext (par_hat_hat f g).symm
+
+instance totParFunctor_faithful : (totParFunctor (C := C)).Faithful where
+  map_injective {Z W g g'} h := by
+    have h' : (Par.hat g : Par.of Z ⟶ Par.of W) = Par.hat g' := congrArg Subtype.val h
+    have ht : (Par.hat g : Par.of Z ⟶ Par.of W) ≫ Par.one W = Par.one Z := by
+      rw [par_one_eq, par_hat_hat, par_one_eq]
+      congr 1
+      exact terminalIsTerminal.hom_ext _ _
+    have hu := pardp_1 (Par.hat g : Par.of Z ⟶ Par.of W) ht
+    exact hu.unique rfl h'
+
+instance totParFunctor_full : (totParFunctor (C := C)).Full where
+  map_surjective {Z W} f := by
+    obtain ⟨g, hg, -⟩ := pardp_1 (f.1 : Par.of Z ⟶ Par.of W) f.2
+    exact ⟨g, Subtype.ext hg.symm⟩
+
+instance totParFunctor_essSurj : (totParFunctor (C := C)).EssSurj where
+  mem_essImage X := ⟨X.base.base, ⟨Iso.refl X⟩⟩
+
+/-- **188IV** (`proof-cho-thm`, eff.tex:1969): `Tot (Par C) ≅ C`. -/
+theorem tot_par_equiv : Nonempty (Tot (Par C) ≌ C) :=
+  letI : (totParFunctor (C := C)).IsEquivalence :=
+    { faithful := totParFunctor_faithful, full := totParFunctor_full,
+      essSurj := totParFunctor_essSurj }
+  ⟨(totParFunctor (C := C)).asEquivalence.symm⟩
+
+end TotParEquiv
+
+/-! ## Cho's theorem (180X; proved in parsecs 187 and 188) -/
+
+section ChoTotal
+
+variable (C : Type u) [Category.{v} C] [HasFiniteCoproducts C] [HasTerminal C]
+  [EffectusTotalForm C]
+
+/-- **180X.1** (`cho-thm`, eff.tex:948, Theorem (Cho)) = **187I**
+(`eff-total-to-partial`, eff.tex:1713, Theorem): if `C` is an effectus in
+total form, then `Par C` is an effectus in partial form, with `I = 1`. -/
+theorem cho_thm_1 :
+    ∃ s : EffectusPartialStructure (Par C), s.effectus.I = Par.of (⊤_ C) :=
+  letI := parHasFiniteCoproducts (C := C)
+  ⟨{ hasFiniteCoproducts := parHasFiniteCoproducts
+     homPCM := parHomPCM
+     finPAC := parFinPAC
+     effectus := parEffectusPartialForm }, rfl⟩
+
+/-- **180X.3** (`cho-thm`, eff.tex:948, Theorem (Cho)), second half (proved
+in 188IV): nothing is lost passing to partial maps: `Tot (Par C) ≅ C`, for the
+structure of an effectus in partial form on `Par C` constructed in `cho_thm_1`.
+
+(An earlier formulation quantified over *every* structure of an effectus in
+partial form on `Par C`.  That is strictly stronger than 188IV: the notion of
+*total* map depends on the effect object `I` and the truth predicate `1` of the
+structure, and we could not show — nor does the thesis claim — that it is
+independent of them.  See PROVING-LOG, session 12.) -/
+theorem cho_thm_3_tot_par :
+    letI := parHasFiniteCoproducts (C := C)
+    Nonempty (Tot (Par C) ≌ C) :=
+  letI := parHasFiniteCoproducts (C := C)
+  tot_par_equiv
+
+end ChoTotal
+
+section ChoPartial
+
+variable (D : Type u) [Category.{v} D] [HasFiniteCoproducts D]
+  [∀ X Y : D, PCM (X ⟶ Y)] [FinPAC D] [EffectusPartialForm D]
+
+/-- **180X.2** (`cho-thm`, eff.tex:948, Theorem (Cho)) = **181XI**
+(`eff-partial-to-total`, eff.tex:1165, Theorem): the total maps of an
+effectus `D` in partial form form an effectus in total form `Tot D`. -/
+theorem eff_partial_to_total : Nonempty (EffectusTotalStructure (Tot D)) :=
+  letI := totHasFiniteCoproducts (D := D)
+  letI := totHasTerminal (D := D)
+  ⟨{ hasFiniteCoproducts := totHasFiniteCoproducts
+     hasTerminal := totHasTerminal
+     effectus := tot_effectusTotalForm D }⟩
+
+/-- **180X.3** (`cho-thm`, eff.tex:948, Theorem (Cho)), first half (proved
+in 188III): `Par (Tot D) ≅ D`, for any structure of an effectus in total
+form on `Tot D` as produced by `eff_partial_to_total`. -/
+theorem cho_thm_3_par_tot (s : EffectusTotalStructure (Tot D)) :
+    letI := s.hasFiniteCoproducts
+    letI := s.hasTerminal
+    Nonempty (Par (Tot D) ≌ D) :=
+  letI := s.hasFiniteCoproducts
+  letI := s.hasTerminal
+  par_tot_equiv
+
+end ChoPartial
 
 /-! ## Distinguishing the two forms, and examples (parsecs 189, 189a) -/
 
