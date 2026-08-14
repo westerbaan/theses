@@ -1992,66 +1992,12 @@ theorem cp_bilinear_comp {A' B' C' : Type u} [CStarAlgebra A']
   rfl
 
 
-/-- **113II** together with **113IV**, in the unbundled form in which
-thesis B's `IsVNTensor` (dils.tex 165II) supplies its data: `M_N t` sends
-a pair of positive matrices to a positive one.  **No `ℂ`-homogeneity of
-`t` is used** — only additivity in each slot, multiplicativity and
-involution preservation — which is exactly what `IsVNTensor` has.  (See
-`QUESTIONS.md` B5: the positivity clause it proposes to *add* is
-derivable.) -/
-theorem matBilin_nonneg_of_mi (t : A → B → C)
-    (hl : ∀ (a a' : A) (b : B), t (a + a') b = t a b + t a' b)
-    (hr : ∀ (a : A) (b b' : B), t a (b + b') = t a b + t a b')
-    (hmul : ∀ (a a' : A) (b b' : B), t a b * t a' b' = t (a * a') (b * b'))
-    (hstar : ∀ (a : A) (b : B), star (t a b) = t (star a) (star b))
-    {N : ℕ} (M : CStarMatrix (Fin N) (Fin N) A)
-    (M' : CStarMatrix (Fin N) (Fin N) B) (hM : 0 ≤ M) (hM' : 0 ≤ M')
-    (c : Fin N → C) :
-    0 ≤ ∑ i, ∑ j, star (c i) * t (M i j) (M' i j) * c j := by
-  have hsl : ∀ {n : ℕ} (x : Fin n → A) (y : B),
-      t (∑ k, x k) y = ∑ k, t (x k) y := fun {n} x y =>
-    map_sum (AddMonoidHom.mk' (fun a => t a y) fun a a' => hl a a' y) x Finset.univ
-  have hsr : ∀ {n : ℕ} (x : A) (y : Fin n → B),
-      t x (∑ k, y k) = ∑ k, t x (y k) := fun {n} x y =>
-    map_sum (AddMonoidHom.mk' (fun b => t x b) fun b b' => hr x b b') y Finset.univ
-  -- the argument of **113II**, for `t`
-  have hcp : ∀ {n : ℕ} (a : Fin n → A) (b : Fin n → B) (d : Fin n → C),
-      0 ≤ ∑ i, ∑ j,
-        star (d i) * t (star (a i) * a j) (star (b i) * b j) * d j := by
-    intro n a b d
-    have key : ∀ i j : Fin n,
-        star (d i) * t (star (a i) * a j) (star (b i) * b j) * d j
-          = star (t (a i) (b i) * d i) * (t (a j) (b j) * d j) := by
-      intro i j
-      rw [← hmul (star (a i)) (a j) (star (b i)) (b j), ← hstar (a i) (b i),
-        star_mul, mul_assoc, mul_assoc, mul_assoc]
-    calc (0 : C)
-        ≤ star (∑ i, t (a i) (b i) * d i) * (∑ i, t (a i) (b i) * d i) :=
-          star_mul_self_nonneg _
-      _ = ∑ i, ∑ j,
-            star (d i) * t (star (a i) * a j) (star (b i) * b j) * d j := by
-          rw [star_sum, Finset.sum_mul]
-          refine Finset.sum_congr rfl fun i _ => ?_
-          rw [Finset.mul_sum]
-          exact Finset.sum_congr rfl fun j _ => (key i j).symm
-  obtain ⟨X, hX⟩ := exists_star_repr_of_nonneg M hM
-  obtain ⟨Y, hY⟩ := exists_star_repr_of_nonneg M' hM'
-  have hrw : ∑ i, ∑ j, star (c i) * t (M i j) (M' i j) * c j
-      = ∑ k, ∑ l, ∑ i, ∑ j, star (c i) *
-          t (star (X k i) * X k j) (star (Y l i) * Y l j) * c j := by
-    rw [← sum_comm₄ (fun i j k l => star (c i) *
-      t (star (X k i) * X k j) (star (Y l i) * Y l j) * c j)]
-    refine Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => ?_
-    have hb : t (M i j) (M' i j)
-        = ∑ k, ∑ l, t (star (X k i) * X k j) (star (Y l i) * Y l j) := by
-      rw [hX i j, hY i j, hsl]
-      exact Finset.sum_congr rfl fun k _ => hsr _ _
-    rw [hb, Finset.mul_sum, Finset.sum_mul]
-    refine Finset.sum_congr rfl fun k _ => ?_
-    rw [Finset.mul_sum, Finset.sum_mul]
-  rw [hrw]
-  exact Finset.sum_nonneg fun k _ => Finset.sum_nonneg fun l _ =>
-    hcp (fun i => X k i) (fun i => Y l i) c
+/-! **113II** together with **113IV**, in the unbundled form in which
+thesis B's `IsVNTensor` (dils.tex 165II) supplies its data (`M_N t` sends a
+pair of positive matrices to a positive one), is stated and proved as
+`Theses.A.CStar.matBilin_nonneg_of_mi` in `A/CStar/Matrices.lean`: its
+content is about matrices over C*-algebras, and `B/Dils` needs it but does
+not import `A/Proc`.  See `QUESTIONS.md` D3. -/
 
 /-! ## Parsec 1140: extra universal properties and uniqueness -/
 

@@ -2899,13 +2899,278 @@ theorem carrier_fundamental (f : A →ₚ[ℂ] B) (hf : PreservesDirSups ⇑f)
 
 /-! ## Parsec 640 -/
 
+private theorem spectrum_abs_le {a : A} (ha : IsSelfAdjoint a) {r : ℝ}
+    (hr : r ∈ spectrum ℝ a) : |r| ≤ ‖a‖ := by
+  rcases subsingleton_or_nontrivial A with _ | _
+  · exact absurd (isUnit_of_subsingleton _) (spectrum.mem_iff.mp hr)
+  · have h : ((r : ℂ)) ∈ spectrum ℂ a := (IsSelfAdjoint.coe_mem_spectrum_complex ha).mpr hr
+    simpa using spectrum.norm_le_norm_of_mem h
+
+private theorem ramp_cont (t : ℝ) (s : Set ℝ) :
+    ContinuousOn (fun r : ℝ => max (r - t) 0) s :=
+  ((continuous_id.sub continuous_const).max continuous_const).continuousOn
+
+private theorem smul_one_eq (r : ℝ) : (r • (1 : A)) = algebraMap ℂ A ((r : ℝ) : ℂ) := by
+  rw [Algebra.algebraMap_eq_smul_one, ← algebraMap_smul ℂ r (1 : A)]
+  simp
+
+/-- The spectral (Riemann-sum) approximation behind **64II**/**65IV**: a
+self-adjoint element of a von Neumann algebra is, up to `ε` in norm, a real
+linear combination of the spectral projections `⌈(a - t)⁺⌉`, each of which
+commutes with everything that commutes with `a`. -/
+private theorem exists_spectral_approx (a : A) (ha : IsSelfAdjoint a) {ε : ℝ}
+    (hε : 0 < ε) :
+    ∃ s : A, s ∈ Submodule.span ℂ
+        {p : A | IsStarProjection p ∧ ∀ x : A, a * x = x * a → x * p = p * x} ∧
+      ‖a - s‖ ≤ ε := by
+  classical
+  set S : Set A := {p : A | IsStarProjection p ∧ ∀ x : A, a * x = x * a → x * p = p * x}
+    with hSdef
+  have hone : (1 : A) ∈ S := ⟨IsStarProjection.one A, fun x _ => by rw [mul_one, one_mul]⟩
+  rcases eq_or_lt_of_le (norm_nonneg a) with hM | hM
+  · -- `a = 0`
+    refine ⟨0, Submodule.zero_mem _, ?_⟩
+    rw [sub_zero, ← hM]
+    exact le_of_lt hε
+  -- choose a mesh `h = 2‖a‖/n < ε`
+  set M : ℝ := ‖a‖ with hMdef
+  obtain ⟨m, hm⟩ := exists_nat_gt (2 * M / ε)
+  set n : ℕ := m + 1 with hndef
+  have hn0 : (0 : ℝ) < n := by positivity
+  set hh : ℝ := 2 * M / n with hhdef
+  have hh0 : 0 < hh := by positivity
+  have hhε : hh ≤ ε := by
+    rw [hhdef, div_le_iff₀ hn0]
+    have : 2 * M / ε < (n : ℝ) := lt_of_lt_of_le hm (by exact_mod_cast Nat.le_succ m)
+    rw [div_lt_iff₀ hε] at this
+    linarith
+  set t : ℕ → ℝ := fun k => -M + k * hh with htdef
+  set g : ℕ → A := fun k => cfc (fun r : ℝ => max (r - t k) 0) a with hgdef
+  -- basic facts about `g`
+  have hgnn : ∀ k, (0 : A) ≤ g k := fun k => cfc_nonneg fun x _ => le_max_right _ _
+  have hgsa : ∀ k, IsSelfAdjoint (g k) := fun k => IsSelfAdjoint.of_nonneg (hgnn k)
+  have hgmono : ∀ k, g (k + 1) ≤ g k := by
+    intro k
+    refine (cfc_le_iff _ _ a (ramp_cont _ _) (ramp_cont _ _) ha).mpr fun r _ => ?_
+    have : t k ≤ t (k + 1) := by
+      simp only [htdef]; push_cast; nlinarith
+    exact max_le_max (by linarith) le_rfl
+  have hgle : ∀ k, g k - g (k + 1) ≤ hh • (1 : A) := by
+    intro k
+    have ht : t (k + 1) - t k = hh := by simp only [htdef]; push_cast; ring
+    rw [← cfc_sub _ _ a (ramp_cont _ _) (ramp_cont _ _),
+      show (hh • (1 : A)) = cfc (fun _ : ℝ => hh) a by
+        rw [cfc_const _ _ ha]; simp [Algebra.algebraMap_eq_smul_one]]
+    refine (cfc_le_iff _ _ a (by fun_prop) (by fun_prop) ha).mpr fun r _ => ?_
+    rcases le_total r (t k) with hr | hr
+    · rw [max_eq_right (by linarith : r - t k ≤ 0),
+        max_eq_right (by linarith [ht, hh0.le] : r - t (k + 1) ≤ 0)]
+      linarith
+    · rcases le_total r (t (k + 1)) with hr' | hr'
+      · rw [max_eq_left (by linarith : (0 : ℝ) ≤ r - t k),
+          max_eq_right (by linarith : r - t (k + 1) ≤ 0)]
+        linarith
+      · rw [max_eq_left (by linarith : (0 : ℝ) ≤ r - t k),
+          max_eq_left (by linarith : (0 : ℝ) ≤ r - t (k + 1))]
+        linarith
+  have hgprod : ∀ k, (hh • (1 : A) - (g k - g (k + 1))) * g (k + 1) = 0 := by
+    intro k
+    have ht : t (k + 1) - t k = hh := by simp only [htdef]; push_cast; ring
+    rw [show (hh • (1 : A)) = cfc (fun _ : ℝ => hh) a by
+        rw [cfc_const _ _ ha]; simp [Algebra.algebraMap_eq_smul_one],
+      ← cfc_sub _ _ a (ramp_cont _ _) (ramp_cont _ _),
+      ← cfc_sub _ _ a (by fun_prop) (by fun_prop),
+      ← cfc_mul _ _ a (by fun_prop) (ramp_cont _ _),
+      show (0 : A) = cfc (fun _ : ℝ => (0 : ℝ)) a by simp]
+    refine cfc_congr fun r _ => ?_
+    rcases le_total r (t (k + 1)) with hr | hr
+    · rw [max_eq_right (by linarith : r - t (k + 1) ≤ 0)]; ring
+    · rw [max_eq_left (by linarith : (0 : ℝ) ≤ r - t (k + 1)),
+        max_eq_left (by linarith [ht, hh0.le] : (0 : ℝ) ≤ r - t k),
+        show hh - (r - t k - (r - t (k + 1))) = 0 by linarith, zero_mul]
+  have hg0 : g 0 = a + M • (1 : A) := by
+    have h1 : cfc (fun r : ℝ => r + M) a = a + M • (1 : A) := by
+      rw [cfc_add a (fun r : ℝ => r) (fun _ : ℝ => M) (by fun_prop) (by fun_prop),
+        show (fun r : ℝ => r) = (id : ℝ → ℝ) from rfl, cfc_id ℝ a, cfc_const _ _ ha]
+      simp [Algebra.algebraMap_eq_smul_one]
+    rw [← h1]
+    refine cfc_congr fun r hr => ?_
+    have hb := spectrum_abs_le ha hr
+    rw [abs_le] at hb
+    have ht0 : t 0 = -M := by simp [htdef]
+    rw [ht0, max_eq_left (by linarith : (0 : ℝ) ≤ r - -M)]
+    ring
+  have hgn : g n = 0 := by
+    rw [show (0 : A) = cfc (fun _ : ℝ => (0 : ℝ)) a by simp]
+    refine cfc_congr fun r hr => ?_
+    have hb := spectrum_abs_le ha hr
+    rw [abs_le] at hb
+    have htn : t n = M := by
+      have hne : (n : ℝ) ≠ 0 := ne_of_gt hn0
+      simp only [htdef, hhdef]
+      field_simp
+      ring
+    rw [htn]
+    exact max_eq_right (by linarith)
+  -- the spectral projections
+  set e : ℕ → A := fun k => ceil (g k) with hedef
+  have heproj : ∀ k, IsStarProjection (e k) := fun k => (ceil_spec (hgnn k)).1
+  have hege : ∀ k, g k * e k = g k := fun k => (ceil_spec (hgnn k)).2.1
+  have hemono : ∀ k, e (k + 1) ≤ e k := fun k => ceil_mono (hgnn (k + 1)) (hgmono k)
+  have hgek : ∀ k, g (k + 1) * e k = g (k + 1) := fun k =>
+    (ceil_le_iff (hgnn (k + 1)) (heproj k)).mp (hemono k)
+  have hecomm : ∀ (k) (x : A), a * x = x * a → x * e k = e k * x := by
+    intro k x hx
+    refine vna_ceil_comm (g k) (hgnn k) x ?_
+    exact (Commute.cfc_real hx _).symm
+  have hemem : ∀ k, e k ∈ S := fun k => ⟨heproj k, hecomm k⟩
+  -- `e k` commutes with `g j`
+  have hegcomm : ∀ j k, g j * e k = e k * g j := fun j k =>
+    hecomm k (g j) ((Commute.cfc_real (Commute.refl a) _).symm)
+  -- I1
+  have hI1 : ∀ k, g k - g (k + 1) ≤ hh • e k := by
+    intro k
+    set x : A := g k - g (k + 1) with hxdef
+    have hxe : x * e k = x := by rw [hxdef, sub_mul, hege k, hgek k]
+    have hex : e k * x = x := by
+      rw [hxdef, mul_sub, ← hegcomm k k, ← hegcomm (k + 1) k, hege k, hgek k]
+    have hconj : e k * x * e k = x := by rw [hex, hxe]
+    have hsa : star (e k) = e k := (heproj k).isSelfAdjoint.star_eq
+    have h1 : e k * x * e k ≤ e k * (hh • (1 : A)) * e k := by
+      have := star_left_conjugate_le_conjugate (hgle k) (e k)
+      rwa [hsa] at this
+    rw [hconj] at h1
+    refine h1.trans_eq ?_
+    rw [mul_smul_comm, smul_mul_assoc, mul_one, (heproj k).isIdempotentElem.eq]
+  -- I2
+  have hI2 : ∀ k, hh • e (k + 1) ≤ g k - g (k + 1) := by
+    intro k
+    set y : A := g k - g (k + 1) with hydef
+    have hynn : (0 : A) ≤ y := sub_nonneg.mpr (hgmono k)
+    set z : A := hh • (1 : A) - y with hzdef
+    have hzsa : IsSelfAdjoint z := by
+      refine IsSelfAdjoint.sub ?_ ((hgsa k).sub (hgsa (k + 1)))
+      rw [smul_one_eq]
+      exact isSelfAdjoint_algebraMap_ofReal hh
+    have hzg : g (k + 1) * z = 0 := by
+      have h := congrArg star (hgprod k)
+      rw [star_mul, hzsa.star_eq, (hgsa (k + 1)).star_eq, star_zero] at h
+      exact h
+    have hez : e (k + 1) * z = 0 := ceil_mul_eq_zero (hgnn (k + 1)) hzg
+    have hey : e (k + 1) * y = hh • e (k + 1) := by
+      have := hez
+      rw [hzdef, mul_sub, sub_eq_zero] at this
+      rw [← this, mul_smul_comm, mul_one]
+    have hycomm : y * e (k + 1) = e (k + 1) * y := by
+      rw [hydef, sub_mul, mul_sub, hegcomm k (k + 1), hegcomm (k + 1) (k + 1)]
+    have hq : (1 - e (k + 1)) * y * (1 - e (k + 1)) = y - hh • e (k + 1) := by
+      have hidem := (heproj (k + 1)).isIdempotentElem.eq
+      calc (1 - e (k + 1)) * y * (1 - e (k + 1))
+          = y - y * e (k + 1) - e (k + 1) * y + e (k + 1) * y * e (k + 1) := by
+            noncomm_ring
+        _ = y - hh • e (k + 1) := by
+            rw [hycomm, hey, smul_mul_assoc, hidem]
+            module
+    have hnn : (0 : A) ≤ (1 - e (k + 1)) * y * (1 - e (k + 1)) := by
+      have := star_left_conjugate_nonneg hynn (1 - e (k + 1))
+      rwa [(heproj (k + 1)).one_sub.isSelfAdjoint.star_eq] at this
+    rw [hq] at hnn
+    exact sub_nonneg.mp hnn
+  -- assemble the Riemann sum
+  set E : A := ∑ k ∈ Finset.range n, e k with hEdef
+  have hsum1 : ∑ k ∈ Finset.range n, (g k - g (k + 1)) = a + M • (1 : A) := by
+    rw [Finset.sum_range_sub' g n, hg0, hgn, sub_zero]
+  have hlow : a + M • (1 : A) ≤ hh • E := by
+    rw [← hsum1, hEdef, Finset.smul_sum]
+    exact Finset.sum_le_sum fun k _ => hI1 k
+  have hhigh : hh • E ≤ hh • (1 : A) + (a + M • (1 : A)) := by
+    have h1 : ∑ k ∈ Finset.range m, hh • e (k + 1)
+        ≤ ∑ k ∈ Finset.range m, (g k - g (k + 1)) :=
+      Finset.sum_le_sum fun k _ => hI2 k
+    have h2 : ∑ k ∈ Finset.range m, (g k - g (k + 1)) = g 0 - g m :=
+      Finset.sum_range_sub' g m
+    have h3 : g 0 - g m ≤ a + M • (1 : A) := by
+      rw [← hg0]; exact sub_le_self _ (hgnn m)
+    have h4 : hh • e 0 ≤ hh • (1 : A) :=
+      smul_le_smul_of_nonneg_left (heproj 0).le_one hh0.le
+    have h5 : hh • E = ∑ k ∈ Finset.range m, hh • e (k + 1) + hh • e 0 := by
+      rw [hEdef, Finset.smul_sum, hndef, Finset.sum_range_succ' (fun k => hh • e k) m]
+    rw [h5, add_comm (hh • (1 : A))]
+    exact add_le_add (le_trans (h1.trans_eq h2) h3) h4
+  have hrsmul : ∀ (r : ℝ) (x : A), r • x = ((r : ℂ)) • x := by
+    intro r x
+    rw [← algebraMap_smul ℂ r x]
+    simp
+  refine ⟨(-M) • (1 : A) + hh • E, ?_, ?_⟩
+  · refine Submodule.add_mem _ ?_ ?_
+    · rw [hrsmul]
+      exact Submodule.smul_mem _ _ (Submodule.subset_span hone)
+    · rw [hrsmul]
+      refine Submodule.smul_mem _ _ ?_
+      exact Submodule.sum_mem _ fun k _ => Submodule.subset_span (hemem k)
+  · have hd : a - ((-M) • (1 : A) + hh • E) = a + M • (1 : A) - hh • E := by
+      rw [neg_smul]; abel
+    have hsa : IsSelfAdjoint (a - ((-M) • (1 : A) + hh • E)) := by
+      rw [hd]
+      refine (ha.add ?_).sub ?_
+      · rw [smul_one_eq]; exact isSelfAdjoint_algebraMap_ofReal M
+      · have hEsa : IsSelfAdjoint E := by
+          show star E = E
+          rw [hEdef, star_sum]
+          exact Finset.sum_congr rfl fun k _ => (heproj k).isSelfAdjoint.star_eq
+        show star (hh • E) = hh • E
+        rw [hrsmul, star_smul, hEsa.star_eq, Complex.star_def, Complex.conj_ofReal]
+    have hup : a - ((-M) • (1 : A) + hh • E) ≤ algebraMap ℂ A ((hh : ℝ) : ℂ) := by
+      rw [hd, ← smul_one_eq]
+      exact le_trans (sub_nonpos.mpr hlow) (smul_nonneg hh0.le zero_le_one)
+    have hlo : -(algebraMap ℂ A ((hh : ℝ) : ℂ)) ≤ a - ((-M) • (1 : A) + hh • E) := by
+      rw [hd, ← smul_one_eq, neg_le_sub_iff_le_add]
+      exact hhigh.trans_eq (add_comm _ _)
+    exact le_trans ((positive_basic_2_3a _ hsa hh hh0.le).mp ⟨hlo, hup⟩) hhε
+
+/-- **64II**/**65IV**, self-adjoint case: `a` is a norm limit of linear
+combinations of the spectral projections `⌈(a - t)⁺⌉`, all of which lie in
+`{a}^□□`. -/
+private theorem mem_closure_span_spectral (a : A) (ha : IsSelfAdjoint a) :
+    a ∈ closure (Submodule.span ℂ
+      {p : A | IsStarProjection p ∧ ∀ x : A, a * x = x * a → x * p = p * x} : Set A) := by
+  refine Metric.mem_closure_iff.mpr fun ε hε => ?_
+  obtain ⟨s, hs, hnorm⟩ := exists_spectral_approx a ha (half_pos hε)
+  refine ⟨s, hs, ?_⟩
+  rw [dist_eq_norm]
+  linarith
+
+private theorem mem_closure_span_proj (a : A) (ha : IsSelfAdjoint a) :
+    a ∈ closure (Submodule.span ℂ {p : A | IsStarProjection p} : Set A) := by
+  have hsub : {p : A | IsStarProjection p ∧ ∀ x : A, a * x = x * a → x * p = p * x}
+      ⊆ {p : A | IsStarProjection p} := fun p hp => hp.1
+  exact closure_mono (SetLike.coe_subset_coe.mpr (Submodule.span_mono hsub))
+    (mem_closure_span_spectral a ha)
+
+
 /-- **64II** (`abelian-projections-norm-dense`, vn.tex:3162, Proposition):
 every element of a *commutative* von Neumann algebra is the norm limit of
 linear combinations of projections. -/
 theorem abelian_projections_norm_dense {C : Type*} [CommCStarAlgebra C]
     [PartialOrder C] [StarOrderedRing C] [VonNeumannAlgebra C] (a : C) :
-    a ∈ closure (Submodule.span ℂ {p : C | IsStarProjection p} : Set C) :=
-  sorry
+    a ∈ closure (Submodule.span ℂ {p : C | IsStarProjection p} : Set C) := by
+  -- **Divergence from the thesis (different route).**  vn.tex:3165 proves this
+  -- through the normal Gelfand isomorphism `𝒜 ≅ C(spec 𝒜)` (`ngelfand_vna`),
+  -- extremal disconnectedness of `spec 𝒜` (`vn_spectrum_extremally_disconnected`)
+  -- and Stone–Weierstraß; all three are still `sorry` in the tree.  We instead
+  -- run the *spectral* argument (`exists_spectral_approx` above), which needs
+  -- no commutativity at all: `a` is within `2‖a‖/n` of the Riemann sum
+  -- `-‖a‖ + (2‖a‖/n)·∑ₖ ⌈(a + ‖a‖ - 2k‖a‖/n)⁺⌉` of its spectral projections.
+  have hmem : ∀ x : C, IsSelfAdjoint x →
+      x ∈ (Submodule.span ℂ {p : C | IsStarProjection p}).topologicalClosure :=
+    fun x hx => mem_closure_span_proj x hx
+  have hdec : a = (realPart a : C) + Complex.I • (imaginaryPart a : C) :=
+    (realPart_add_I_smul_imaginaryPart a).symm
+  have hres : a ∈ (Submodule.span ℂ {p : C | IsStarProjection p}).topologicalClosure := by
+    rw [hdec]
+    exact Submodule.add_mem _ (hmem _ (realPart a).property)
+      (Submodule.smul_mem _ _ (hmem _ (imaginaryPart a).property))
+  exact hres
 
 /-! ## Parsec 650: the commutant -/
 
@@ -2982,8 +3247,20 @@ theorem commutant_basic_2 (S : Set A) :
 (witness `{[[0,1],[0,0]]}^□` in `M₂`). -/
 theorem commutant_basic_3 :
     ∃ S : Set (CStarMatrix (Fin 2) (Fin 2) ℂ),
-      ¬∀ a ∈ commutant _ S, star a ∈ commutant _ S :=
-  sorry
+      ¬∀ a ∈ commutant _ S, star a ∈ commutant _ S := by
+  -- the thesis's own witness: `S = {e₁₂}`.  `e₁₂` commutes with itself, but
+  -- `e₁₂ e₁₂* = diag(1,0) ≠ diag(0,1) = e₁₂* e₁₂`.
+  classical
+  set e : CStarMatrix (Fin 2) (Fin 2) ℂ := CStarMatrix.ofMatrix !![0, 1; 0, 0] with he
+  refine ⟨{e}, fun h => ?_⟩
+  have hmem : e ∈ commutant (CStarMatrix (Fin 2) (Fin 2) ℂ) {e} := by
+    intro m hm
+    rw [Set.mem_singleton_iff] at hm
+    subst hm; rfl
+  have h2 := h e hmem e (Set.mem_singleton e)
+  have h3 : (e * star e) 0 0 = (star e * e) 0 0 := by rw [h2]
+  rw [CStarMatrix.mul_apply, CStarMatrix.mul_apply] at h3
+  simp [he, CStarMatrix.star_apply, Fin.sum_univ_two] at h3
 
 /-- **65III** (`commutant-basic`, vn.tex:3222, Exercise), part 3 (main): if
 `S` is closed under the involution, then `S^□` is a von Neumann subalgebra
@@ -3049,8 +3326,18 @@ linear combinations of projections from `{a}^□□`. -/
 theorem projections_norm_dense (a : A) (ha : IsSelfAdjoint a) :
     a ∈ closure (Submodule.span ℂ
       {p : A | IsStarProjection p ∧ p ∈ commutant A (commutant A {a})} :
-        Set A) :=
-  sorry
+        Set A) := by
+  -- The thesis reduces to **64II** through the commutative von Neumann
+  -- subalgebra `{a}^□□`; since our proof of **64II** is spectral, it already
+  -- produces projections inside `{a}^□□` (each `⌈(a - t)⁺⌉` commutes with
+  -- everything that commutes with `a`), so no reduction is needed.
+  have hset : {p : A | IsStarProjection p ∧ p ∈ commutant A (commutant A {a})}
+      = {p : A | IsStarProjection p ∧ ∀ x : A, a * x = x * a → x * p = p * x} := by
+    ext p
+    simp only [Set.mem_setOf_eq, commutant, Set.mem_centralizer_iff,
+      Set.mem_singleton_iff, forall_eq]
+  rw [hset]
+  exact mem_closure_span_spectral a ha
 
 /-! ## Parsec 660: ultracyclic projections -/
 
@@ -3845,6 +4132,107 @@ variable (A) in
 all `ω ∈ Ω` is zero. -/
 def CentreSeparating (Ω : Set (NPFunctional A)) : Prop :=
   ∀ a : A, IsCentral A a → 0 ≤ a → (∀ ω ∈ Ω, ω a = 0) → a = 0
+
+/-- **69IX** (`vn-center-separating`, vn.tex:3693, Corollary), the implication
+its consumers actually need: our `CentreSeparating` — thesis item **2**, "a
+*central* positive element killed by all of `Ω` is zero" — gives the
+C*-algebraic notion of cstar.tex **21II**.4, which is thesis item **1**.
+
+(Recorded in PROVING-LOG: our `CentreSeparating` renders item 2, not item 1,
+so `vn_center_separating`'s TFAE as stated loses the C*-notion.  This lemma
+supplies the missing bridge directly, without the `gns_ceil` route the thesis
+takes.)
+
+Proof: `⌈⌈a⌉⌉ = ⋃_b ⌈b* ⌊a⌉ b⌉` by **68I**, every `ω ∈ Ω` kills `b* ⌊a⌉ b`
+(because it kills `b* a b`, hence `b* a a* b`, hence `b* ⌈aa*⌉ b` by **60I**),
+so every `ω` kills `⌈b* ⌊a⌉ b⌉` — again by **60I** — hence kills their
+supremum, which is the central projection `⌈⌈a⌉⌉`. -/
+theorem eq_zero_of_centreSeparating_conj (Ω : Set (NPFunctional A))
+    (hΩ : CentreSeparating A Ω) {a : A} (ha : 0 ≤ a)
+    (h : ∀ ω ∈ Ω, ∀ b : A, ω (star b * a * b) = 0) : a = 0 := by
+  have hasa : IsSelfAdjoint a := IsSelfAdjoint.of_nonneg ha
+  obtain ⟨herproj, hera⟩ := (ceill_basic_2 a).1
+  set e : A := rangeProj a with hedef
+  have hstar : a * star a = a * a := by rw [hasa.star_eq]
+  have hea : ∀ ω ∈ Ω, ∀ b : A, ω (star b * e * b) = 0 := by
+    intro ω hω b
+    have h1 : conjNP b ω a = 0 := by rw [conjNP_apply]; exact h ω hω b
+    have h2 : conjNP b ω (a * star a) = 0 := by
+      have hle : a * a ≤ (‖a‖ : ℝ) • a := mul_self_le_norm_smul ha
+      have hmono : conjNP b ω (a * a) ≤ conjNP b ω ((‖a‖ : ℝ) • a) :=
+        (conjNP b ω).monotone hle
+      have hrhs : conjNP b ω ((‖a‖ : ℝ) • a) = 0 := by
+        have hcx : ((‖a‖ : ℝ) • a : A) = (((‖a‖ : ℝ) : ℂ)) • a := by
+          rw [← algebraMap_smul ℂ (‖a‖ : ℝ) a]; simp
+        rw [hcx]
+        show (conjNP b ω).toPositiveLinearMap _ = 0
+        rw [map_smul (conjNP b ω).toPositiveLinearMap]
+        show (((‖a‖ : ℝ) : ℂ)) • (conjNP b ω) a = 0
+        rw [h1, smul_zero]
+      have hnn : (0 : ℂ) ≤ conjNP b ω (a * a) :=
+        npFunctional_nonneg _ (by rw [← hstar]; exact mul_star_self_nonneg a)
+      rw [hstar]
+      rw [hrhs] at hmono
+      exact le_antisymm hmono hnn
+    have h3 : conjNP b ω (ceil (a * star a)) = 0 :=
+      (ceil_functionals_lemma (a * star a) (mul_star_self_nonneg a) (conjNP b ω)).mp h2
+    rw [conjNP_apply] at h3
+    exact h3
+  set P : Set A := {x : A | ∃ b : A, x = ceil (star b * e * b)} with hPdef
+  have hPproj : ∀ p ∈ P, IsStarProjection p := by
+    rintro p ⟨b, rfl⟩
+    exact (ceil_spec (star_left_conjugate_nonneg herproj.nonneg b)).1
+  have hcc : cceil a = projSup P := by
+    rw [(cceil_eq_cceil_supp a).2.1, ← hedef, (cceil_fundamental e herproj).2]
+  have hzero : ∀ ω ∈ Ω, ω (cceil a) = 0 := by
+    intro ω hω
+    set r : A := npCarrier ω with hrdef
+    obtain ⟨hrproj, hr0, -⟩ := carrier_spec ω.toPositiveLinearMap ω.preservesDirSups'
+    have hle : projSup P ≤ 1 - r := by
+      refine (projSup_spec hPproj).2.2 _ hrproj.one_sub ?_
+      rintro p ⟨b, rfl⟩
+      have hnn : (0 : A) ≤ star b * e * b := star_left_conjugate_nonneg herproj.nonneg b
+      have hp0 : ω (ceil (star b * e * b)) = 0 :=
+        (ceil_functionals_lemma _ hnn ω).mp (hea ω hω b)
+      have hcp : IsStarProjection (ceil (star b * e * b)) := (ceil_spec hnn).1
+      have hcar := (carrier_spec ω.toPositiveLinearMap ω.preservesDirSups').2.2
+        (1 - ceil (star b * e * b)) hcp.one_sub (by rw [sub_sub_cancel]; exact hp0)
+      exact le_sub_comm.mp hcar
+    have hmono : ω (cceil a) ≤ ω (1 - r) := by
+      rw [hcc]; exact (ω.monotone hle : ω (projSup P) ≤ ω (1 - r))
+    have hr0' : ω (1 - r) = 0 := hr0
+    rw [hr0'] at hmono
+    refine le_antisymm hmono ?_
+    exact npFunctional_nonneg ω (by rw [hcc]; exact (projSup_spec hPproj).1.nonneg)
+  obtain ⟨⟨hzproj, hzcentral, hza⟩, -⟩ := cceil_isLeast a
+  have hz0 : cceil a = 0 := hΩ (cceil a) hzcentral hzproj.nonneg hzero
+  rw [← hza, hz0, zero_mul]
+
+/-- `eq_zero_of_centreSeparating_conj` restated as cstar.tex **21II**.4 for the
+family `Ω`. -/
+theorem centreSeparating_cstar (Ω : Set (NPFunctional A))
+    (hΩ : CentreSeparating A Ω) :
+    Theses.A.CStar.CentreSeparating
+      (fun ω : Ω => ((ω : NPFunctional A).toPositiveLinearMap.toLinearMap : A →ₗ[ℂ] ℂ)) := by
+  intro x hx
+  refine ⟨fun hx0 ω b => by rw [hx0]; simp, fun H => ?_⟩
+  exact eq_zero_of_centreSeparating_conj Ω hΩ hx fun ω hω b => H ⟨ω, hω⟩ b
+
+/-- The `Ω`-version of **44XI**'s `nonneg_of_conjNP`: for a centre separating
+collection `Ω`, positivity of all `ω(c* a c)` (`ω ∈ Ω`, `c ∈ A`) already gives
+`0 ≤ a`.  This is `centreSeparating_cstar` fed to **30X**
+(`proto_gelfand_naimark_1`). -/
+theorem nonneg_of_conjNP_of_centreSeparating (Ω : Set (NPFunctional A))
+    (hΩ : CentreSeparating A Ω) {a : A}
+    (h : ∀ ω ∈ Ω, ∀ c : A, (0 : ℂ) ≤ ω (star c * a * c)) : 0 ≤ a := by
+  set F : Ω → (A →ₗ[ℂ] ℂ) :=
+    fun ω => (ω : NPFunctional A).toPositiveLinearMap.toLinearMap with hF
+  have hpos : ∀ ω : Ω, IsPositiveMap (F ω) := fun ω x hx =>
+    npFunctional_nonneg (ω : NPFunctional A) hx
+  refine ((proto_gelfand_naimark_1 F hpos).mp (centreSeparating_cstar Ω hΩ) a).mpr fun p => ?_
+  show (0 : ℂ) ≤ (p.1 : NPFunctional A) (star p.2 * (a * p.2))
+  rw [← mul_assoc]
+  exact h _ p.1.2 p.2
 
 /-- **69IX** (`vn-center-separating`, vn.tex:3693, Corollary): for a
 collection `Ω` of np-functionals on a von Neumann algebra the following are

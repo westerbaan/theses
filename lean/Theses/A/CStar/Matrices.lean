@@ -768,6 +768,102 @@ theorem cstar_matrix_star_mul_nonneg (a : Fin N → 𝒜) :
 
 end MatrixOrder
 
+section MatBilin
+
+/-- `∑ᵢ∑ⱼ∑ₖ = ∑ₖ∑ᵢ∑ⱼ`. -/
+private theorem sum_comm₃' {N : ℕ} {M : Type*} [AddCommMonoid M]
+    (h : Fin N → Fin N → Fin N → M) :
+    ∑ i, ∑ j, ∑ k, h i j k = ∑ k, ∑ i, ∑ j, h i j k := by
+  rw [Finset.sum_congr rfl (fun i _ => Finset.sum_comm), Finset.sum_comm]
+
+/-- `∑ᵢ∑ⱼ∑ₖ∑ₗ = ∑ₖ∑ₗ∑ᵢ∑ⱼ`. -/
+private theorem sum_comm₄' {N : ℕ} {M : Type*} [AddCommMonoid M]
+    (h : Fin N → Fin N → Fin N → Fin N → M) :
+    ∑ i, ∑ j, ∑ k, ∑ l, h i j k l = ∑ k, ∑ l, ∑ i, ∑ j, h i j k l := by
+  rw [sum_comm₃' (fun i j k => ∑ l, h i j k l)]
+  exact Finset.sum_congr rfl fun k _ => sum_comm₃' (fun i j l => h i j k l)
+
+/-- A positive matrix over a C*-algebra is `X* X`, entrywise
+`Mᵢⱼ = ∑ₖ Xₖᵢ* Xₖⱼ`. -/
+private theorem exists_star_repr_of_nonneg {𝒞 : Type*} [CStarAlgebra 𝒞]
+    [PartialOrder 𝒞] [StarOrderedRing 𝒞] {N : ℕ}
+    (M : CStarMatrix (Fin N) (Fin N) 𝒞) (hM : 0 ≤ M) :
+    ∃ X : Fin N → Fin N → 𝒞, ∀ i j, M i j = ∑ k, star (X k i) * X k j := by
+  obtain ⟨Y, hY⟩ := exists_star_mul_self hM
+  refine ⟨fun k i => Y k i, fun i j => ?_⟩
+  rw [hY, CStarMatrix.mul_apply]
+  exact Finset.sum_congr rfl fun k _ => by rw [CStarMatrix.star_apply]
+
+/-- **113II** (`bilinear-cp`, proc.tex) together with **113IV**, in the
+unbundled form in which thesis B's `IsVNTensor` (dils.tex 165II) supplies
+its data: `M_N t` sends a pair of positive matrices to a positive one.
+**No `ℂ`-homogeneity of `t` is used** — only additivity in each slot,
+multiplicativity and involution preservation — which is exactly what
+`IsVNTensor` has.  (See `QUESTIONS.md` B5: the positivity clause it
+proposes to *add* is derivable.)
+
+Lives here rather than in `A/Proc/Tensor.lean` (where it was first proved)
+because its content is about matrices over C*-algebras and it is needed by
+`B/Dils`, which imports this file but not `A/Proc`; see `QUESTIONS.md` D3. -/
+theorem matBilin_nonneg_of_mi {𝒜' ℬ' 𝒞 : Type*} [CStarAlgebra 𝒜']
+    [PartialOrder 𝒜'] [StarOrderedRing 𝒜'] [CStarAlgebra ℬ'] [PartialOrder ℬ']
+    [StarOrderedRing ℬ'] [CStarAlgebra 𝒞] [PartialOrder 𝒞] [StarOrderedRing 𝒞]
+    (t : 𝒜' → ℬ' → 𝒞)
+    (hl : ∀ (a a' : 𝒜') (b : ℬ'), t (a + a') b = t a b + t a' b)
+    (hr : ∀ (a : 𝒜') (b b' : ℬ'), t a (b + b') = t a b + t a b')
+    (hmul : ∀ (a a' : 𝒜') (b b' : ℬ'), t a b * t a' b' = t (a * a') (b * b'))
+    (hstar : ∀ (a : 𝒜') (b : ℬ'), star (t a b) = t (star a) (star b))
+    {N : ℕ} (M : CStarMatrix (Fin N) (Fin N) 𝒜')
+    (M' : CStarMatrix (Fin N) (Fin N) ℬ') (hM : 0 ≤ M) (hM' : 0 ≤ M')
+    (c : Fin N → 𝒞) :
+    0 ≤ ∑ i, ∑ j, star (c i) * t (M i j) (M' i j) * c j := by
+  have hsl : ∀ {n : ℕ} (x : Fin n → 𝒜') (y : ℬ'),
+      t (∑ k, x k) y = ∑ k, t (x k) y := fun {n} x y =>
+    map_sum (AddMonoidHom.mk' (fun a => t a y) fun a a' => hl a a' y) x Finset.univ
+  have hsr : ∀ {n : ℕ} (x : 𝒜') (y : Fin n → ℬ'),
+      t x (∑ k, y k) = ∑ k, t x (y k) := fun {n} x y =>
+    map_sum (AddMonoidHom.mk' (fun b => t x b) fun b b' => hr x b b') y Finset.univ
+  -- the argument of **113II**, for `t`
+  have hcp : ∀ {n : ℕ} (a : Fin n → 𝒜') (b : Fin n → ℬ') (d : Fin n → 𝒞),
+      0 ≤ ∑ i, ∑ j,
+        star (d i) * t (star (a i) * a j) (star (b i) * b j) * d j := by
+    intro n a b d
+    have key : ∀ i j : Fin n,
+        star (d i) * t (star (a i) * a j) (star (b i) * b j) * d j
+          = star (t (a i) (b i) * d i) * (t (a j) (b j) * d j) := by
+      intro i j
+      rw [← hmul (star (a i)) (a j) (star (b i)) (b j), ← hstar (a i) (b i),
+        star_mul, mul_assoc, mul_assoc, mul_assoc]
+    calc (0 : 𝒞)
+        ≤ star (∑ i, t (a i) (b i) * d i) * (∑ i, t (a i) (b i) * d i) :=
+          star_mul_self_nonneg _
+      _ = ∑ i, ∑ j,
+            star (d i) * t (star (a i) * a j) (star (b i) * b j) * d j := by
+          rw [star_sum, Finset.sum_mul]
+          refine Finset.sum_congr rfl fun i _ => ?_
+          rw [Finset.mul_sum]
+          exact Finset.sum_congr rfl fun j _ => (key i j).symm
+  obtain ⟨X, hX⟩ := exists_star_repr_of_nonneg M hM
+  obtain ⟨Y, hY⟩ := exists_star_repr_of_nonneg M' hM'
+  have hrw : ∑ i, ∑ j, star (c i) * t (M i j) (M' i j) * c j
+      = ∑ k, ∑ l, ∑ i, ∑ j, star (c i) *
+          t (star (X k i) * X k j) (star (Y l i) * Y l j) * c j := by
+    rw [← sum_comm₄' (fun i j k l => star (c i) *
+      t (star (X k i) * X k j) (star (Y l i) * Y l j) * c j)]
+    refine Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => ?_
+    have hb : t (M i j) (M' i j)
+        = ∑ k, ∑ l, t (star (X k i) * X k j) (star (Y l i) * Y l j) := by
+      rw [hX i j, hY i j, hsl]
+      exact Finset.sum_congr rfl fun k _ => hsr _ _
+    rw [hb, Finset.mul_sum, Finset.sum_mul]
+    refine Finset.sum_congr rfl fun k _ => ?_
+    rw [Finset.mul_sum, Finset.sum_mul]
+  rw [hrw]
+  exact Finset.sum_nonneg fun k _ => Finset.sum_nonneg fun l _ =>
+    hcp (fun i => X k i) (fun i => Y l i) c
+
+end MatBilin
+
 /-- **33III** (`mnf`, cstar.tex:5358, Exercise), parts 1–2: applying a
 linear map `f : 𝒜 → ℬ` entrywise to matrices gives a linear map
 `M_N f : M_N(𝒜) → M_N(ℬ)` (Mathlib: `CStarMatrix.mapₗ`, unbundled

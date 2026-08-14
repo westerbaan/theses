@@ -4360,3 +4360,240 @@ New reusable API (all `private`): `ext_vk`, `ext_decomp`, `cofanOfIso`
 * Per-file `sorry`s: Comparisons 3, Dagger 3, DiamondAmp 2, EffectAlgebras 6,
   **Effectus 2**, Quotients 0, StatesPredicates 9, WStarCat 0 — **25**.
 * Nothing staged, nothing committed.
+
+---
+
+## Session 17 — `A/CStar` parsecs 200/210, `A/VN` parsecs 640/650 (worker 43)
+
+Scope: `Theses/A/CStar/*.lean`, `Theses/A/VN/*.lean`, plus the one authorised
+relocation out of `A/Proc/Tensor.lean` (QUESTIONS **D3**).
+
+Closed: **20VI** `cstar_isometry`, **21VII** `order_separating_norm`,
+**64II** `abelian_projections_norm_dense`, **65IV** `projections_norm_dense`,
+**65III**.3 `commutant_basic_3`, **90II**.1
+`vn_center_separating_fundamental_1` (and, on the way to it, the **69IX**
+bridge `eq_zero_of_centreSeparating_conj` / `centreSeparating_cstar` /
+`nonneg_of_conjNP_of_centreSeparating`).
+Relocated: `matBilin_nonneg_of_mi` (`A/Proc/Tensor.lean` → `A/CStar/Matrices.lean`).
+
+### 0. QUESTIONS D3 — resolved by relocation (option 2, authorised by Bas)
+
+`matBilin_nonneg_of_mi` now lives in `Theses/A/CStar/Matrices.lean` as
+`Theses.A.CStar.matBilin_nonneg_of_mi`, in a new `section MatBilin` after
+`end MatrixOrder` (so it uses Mathlib's global order instances on
+`CStarMatrix`, as `A/Proc/Tensor.lean` did, not the section's assumed ones).
+The proof is worker 40's, verbatim; the only changes are (i) three independent
+universe/type variables instead of one shared `Type u`, and (ii) private copies
+of the two helpers it used (`sum_comm₃'`/`sum_comm₄'` and
+`exists_star_repr_of_nonneg`) — `A/Proc/Tensor.lean` still uses its own
+`sum_comm₄` and `exists_star_repr_of_nonneg` at other call sites, so they were
+not moved.  `A/Proc/Tensor.lean` keeps a pointer comment where the theorem was.
+`#print axioms` clean.  `B/Dils` already imports `A/CStar/Matrices`, so **165III
+is unblocked with no new inter-chapter coupling**.
+
+### 1. 20VI `cstar_isometry` (cstar.tex:2934) — divergence class 1 (faithful)
+
+The thesis's proof transcribed step for step.  (1) ⇒ (2) is "`-λ ≤ a ≤ λ` iff
+`-λ ≤ f a ≤ λ`, because `f` is bipositive and unital", applied at `λ = ‖a‖` and
+at `λ = ‖f a‖`; (3) ⇒ (1) is the norm reformulation
+`0 ≤ a  ⟺  ‖‖a‖ − a‖ ≤ ‖a‖` on both sides of the isometry, which is **17VI**.3a
+(`positive_basic_2_3a`, already proved) applied to `‖a‖ − a` and to
+`‖a‖ − f a`.  The `‖f a‖ ≤ 2‖a‖` side condition the thesis flags is weak
+Russo–Dye (**20II**.2) plus `‖1‖ ≤ 1`.
+
+**One gap in the thesis's write-up, filled here (not an erratum — the claim is
+true).**  The (3) ⇒ (1) argument opens with "since `f` is involution preserving
+`a` is self-adjoint iff `f(a)` is self-adjoint, and so we might as well assume
+that `a` is self-adjoint".  Involution preservation gives only the ⇒ direction;
+the ⇐ direction needs `f` to be *injective on self-adjoints*, which is not
+stated.  It does follow from (3), but only after the self-adjoint case has been
+done: applying the self-adjoint case to `k` and to `−k` shows `f k = 0 ⟹ k = 0`
+for self-adjoint `k`, and then `f a` self-adjoint gives
+`f(i(a* − a)) = 0`, hence `a* = a`.  The Lean proof therefore does the
+self-adjoint case *first* (`hsacase`) and derives self-adjointness from it.
+
+### 2. 21VII `order_separating_norm` (cstar.tex:3232) — divergence class 2
+
+The thesis's proof is one line: apply **20VI** to the single pu-map
+`⟨ω⟩ : 𝒜 → ⊕_ω ℬ_ω` into the C*-product (**20aI**), where positivity is
+pointwise and the norm is the supremum.  We cannot: the ℓ^∞-product of an
+arbitrary family of C*-algebras is not available in the tree — it is exactly
+the gap recorded for `vonNeumannAlgebra_lp_infty` (`0 ≤ a` iff `0 ≤ aᵢ`
+pointwise for `CStarAlgebra.spectralOrder` on `lp 𝒜 ∞`).  So **20VI**'s
+*argument* is re-run on the family directly; the three steps are identical, and
+the shared work is factored into the private helpers
+`nonneg_iff_norm_algebraMap_sub_le`, `map_mono_of_pos`,
+`isSelfAdjoint_map_of_pos`, `norm_map_le_two_mul`,
+`norm_map_le_of_isSelfAdjoint` (all in `A/CStar/Positive.lean`, both theorems
+use them).
+
+Worth recording: **no index is needed**.  For empty `ι` the supremum
+`⨆ i, ‖ω i a‖` is `0` (the `Real` convention) and all three conditions force
+`𝒜` to be trivial; the proof below covers that case without a split, because
+`Real.iSup_le`/`Real.iSup_nonneg` do not need `Nonempty`.
+
+### 3. 64II `abelian_projections_norm_dense` (vn.tex:3162) and 65IV
+### `projections_norm_dense` (vn.tex:3279) — divergence class 2, and a
+### **strictly stronger** intermediate
+
+The thesis proves 64II through the normal Gelfand isomorphism
+`𝒜 ≅ C(spec 𝒜)` (`ngelfand_vna`), extremal disconnectedness of `spec 𝒜`
+(`vn_spectrum_extremally_disconnected`) and Stone–Weierstraß, then gets 65IV by
+applying it inside the commutative subalgebra `{a}^□□`.  All three inputs are
+still `sorry` in the tree (and `vn_spectrum_extremally_disconnected` is itself
+downstream of the Gelfand machinery), so that route is unavailable.
+
+We run the **spectral** argument instead, which needs no commutativity and
+produces 64II and 65IV from a single lemma
+(`exists_spectral_approx`, private, in `A/VN/Projections.lean` just before
+parsec 640).  For self-adjoint `a` with `M = ‖a‖`, mesh `h = 2M/n` and
+`t_k = −M + kh`, put
+
+```
+g k = cfc (fun r => max (r − t k) 0) a        (the ramp (a − t_k)⁺)
+e k = ⌈g k⌉                                   (the spectral projection)
+s   = (−M)·1 + h·∑_{k<n} e k                  (the Riemann sum)
+```
+
+and the whole estimate reduces to two operator inequalities between commuting
+elements:
+
+* `g k − g (k+1) ≤ h·e k`.  The difference `x` satisfies `0 ≤ x ≤ h·1` and
+  `x·e k = x` (the second summand needs `⌈g (k+1)⌉ ≤ ⌈g k⌉`, `ceil_mono`), so
+  `x = e k · x · e k ≤ e k · (h·1) · e k = h·e k`.
+* `h·e (k+1) ≤ g k − g (k+1)`.  Here `(h·1 − (g k − g (k+1)))·g (k+1) = 0` is a
+  pointwise cfc identity, so `ceil_mul_eq_zero` gives
+  `e (k+1)·(h·1 − y) = 0`, i.e. `e (k+1)·y = h·e (k+1)`, and then
+  `y − h·e (k+1) = (1 − e (k+1))·y·(1 − e (k+1)) ≥ 0`.
+
+Telescoping the first over `k < n` gives `a + M·1 = g 0 − g n ≤ h·∑ e k`, i.e.
+`a ≤ s`; telescoping the second over `1 ≤ k < n` and bounding `h·e 0 ≤ h·1`
+gives `s ≤ a + h·1`.  Hence `−h ≤ a − s ≤ 0` and `‖a − s‖ ≤ h` by **17VI**.3a.
+
+**The intermediate is stronger than 64II**: `exists_spectral_approx` holds in
+*every* von Neumann algebra and its projections lie in `{a}^□□`
+(`vna_ceil_comm` plus `Commute.cfc_real`), so 65IV needs no reduction to the
+commutative case at all — it is the same lemma with the commutant condition
+kept.  64II is then the real/imaginary split.
+
+Ingredients used, all already proved in the tree: `ceil_spec`, `ceil_mono`,
+`ceil_le_iff`, `ceil_mul_eq_zero`, `vna_ceil_comm`, `positive_basic_2_3a`,
+`star_left_conjugate_le_conjugate`, `star_left_conjugate_nonneg`.
+
+### 4. Correction to the brief, and 90II.1 — first thought unreachable, then closed
+
+The brief ranks 90II `vn_center_separating_fundamental_1/2` as jointly
+unblocking 112X.2 (with 21VII) and 112X.1 alone.  The first reading of the tree
+said 90II.1 was **not** reachable, for a reason worth recording because it is a
+mismatch in *our* tree rather than in the thesis; the obstruction turned out to
+be removable, and 90II.1 is now proved.  Both halves of the story matter for
+whoever takes parsec 900.
+
+**The mismatch (still true, still worth fixing).**  vn.tex 90II's proof uses
+"centre separating" in the sense of **cstar.tex 21II.4**: `a ∈ 𝒜₊` is zero iff
+`ω(b* a b) = 0` for all `ω ∈ Ω`, `b ∈ 𝒜`.  That is
+`Theses.A.CStar.CentreSeparating`, and the bridge it needs — `Ξ = {ω(a*(·)a)}`
+is order separating — is `proto_gelfand_naimark_1`, which **is** proved.  But
+the hypothesis of our 90II is `Theses.A.VN.CentreSeparating`
+(`A/VN/Projections.lean`), defined as *"a **central** positive `a` with
+`ω(a) = 0` for all `ω ∈ Ω` is zero"* — that is thesis item **69IX.2** (modulo
+projections-versus-positives, which are interchangeable), not 69IX.1.  So
+**`vn_center_separating`'s TFAE is a mis-transcription (class 4)**: its item 1
+should be the C*-notion 21II.4 but is item 2 in disguise, and as stated the
+TFAE loses exactly the content 90II wants from it.  Not repaired here, because
+changing the definition touches 90II.1, 90II.2, 69IX and the `B/Dils` consumers
+of `CentreSeparating`.
+
+**The bridge, proved instead of the definition change**
+(`A/VN/Projections.lean`, right after the `CentreSeparating` definition):
+
+```
+eq_zero_of_centreSeparating_conj : CentreSeparating A Ω → 0 ≤ a →
+  (∀ ω ∈ Ω, ∀ b, ω (b* a b) = 0) → a = 0
+centreSeparating_cstar             -- the same, as `CStar.CentreSeparating`
+nonneg_of_conjNP_of_centreSeparating
+  : CentreSeparating A Ω → (∀ ω ∈ Ω, ∀ c, 0 ≤ ω (c* a c)) → 0 ≤ a
+```
+
+This is 69IX.2 ⇒ 69IX.1 — the hard direction — but **not** by the thesis's
+route.  The thesis goes through `gns_ceil` (`Projections.lean:3831`, still
+`sorry`) and `carrier_basic`; we go through the central support instead:
+`⌈⌈a⌉⌉ = ⋃_b ⌈b* ⌊a⌉ b⌉` (**68I** `cceil_fundamental`, proved), every `ω ∈ Ω`
+kills `b* ⌊a⌉ b` (it kills `b* a b`, hence `b* a a* b` since `aa* = a² ≤ ‖a‖a`,
+hence `b* ⌈aa*⌉ b` by **60I** `ceil_functionals_lemma`), hence kills each
+`⌈b* ⌊a⌉ b⌉` — **60I** again — hence kills their supremum, which is the
+*central* projection `⌈⌈a⌉⌉`, which the hypothesis therefore annihilates.
+**60I** is the step that was thought to be missing; it is already in the tree.
+This is a class-2 divergence and it also proves the substance of 69IX.2 ⇒ 69IX.1
+for whoever closes `vn_center_separating` (items 1 ⇔ 2 are then cheap; item 3
+still needs "a `projSup` of central projections is central", which has no lemma).
+
+**90II.1 itself** (`A/VN/NormalFunctionals.lean`) is then the thesis's own
+argument in the shape our statement asks for.  `Ξ = {ω(c*(·)c) : ω ∈ Ω, c ∈ 𝒜}`
+is order separating — that is `nonneg_of_conjNP_of_centreSeparating` — and
+`Ω' ⊆ Ξ` is norm dense by **72III**.1c
+(`‖b*ω − b'*ω‖ ≤ ‖b−b'‖_ω(‖b‖_ω + ‖b'‖_ω)`).  The thesis phrases the second
+step as norm density plus **21X** `order_separating_dense_subset`; since our
+statement is the unfolded "`ω(s* a s) ≤ ω(s* b s)` for all `s ∈ S` implies
+`a ≤ b`", the same estimate is used directly, as ultrastrong *continuity* of
+`x ↦ ω(x* k x)` (new lemma `continuous_ultrastrong_conjFunctional`), so that
+`{x | 0 ≤ ω(x* k x)}` is ultrastrongly closed and contains the dense set `S`.
+
+**90II.2 remains blocked on 89IX `normal_functional`** — its proof is "write
+`f = ∑ₙ ⟨xₙ, ϱ_Ω(·)xₙ⟩` by 89IX" and there is no way round that.  So 112X.1
+(which the brief says needs 90II alone) should now be reachable; 112X.5 and
+anything wanting 90II.2 are not.
+
+### 4a. 65III.3 `commutant_basic_3` — divergence class 1
+
+The thesis's own witness, transcribed: `S = {e₁₂} ⊆ M₂`.  `e₁₂` commutes with
+itself, so it lies in `S^□`, but `e₁₂e₁₂* = diag(1,0) ≠ diag(0,1) = e₁₂*e₁₂`,
+so `e₁₂* ∉ S^□`.  Worth noting for the record that the statement does *not*
+mention a `VonNeumannAlgebra (M₂)` instance (`commutant` is `Set.centralizer`
+and needs none), so the proof does not leak the `sorry`ed `mn_vna_1` — that is
+why it can be `#print axioms`-clean.
+
+### 5. Classification
+
+* **20VI** — class 1 (faithful), plus the injectivity gap of §1 filled.
+* **21VII** — class 2 (different route: the family argument in place of the
+  C*-product, because the ℓ^∞-product is not in the tree).
+* **64II** — class 2 (spectral Riemann sum in place of Gelfand +
+  Stone–Weierstraß, because all three inputs are `sorry`).
+* **65IV** — class 2, inherited: proved directly rather than by the thesis's
+  reduction to 64II, since the spectral projections are already in `{a}^□□`.
+* **65III**.3 — class 1 (the thesis's witness, verbatim).
+* **69IX**.2 ⇒ .1 (the bridge) — class 2: central-support route in place of the
+  thesis's `gns_ceil` route, because `gns_ceil` is `sorry`.
+* **90II**.1 — class 1 for the mathematics (the thesis's two steps), class 2 for
+  the second step's *rendering*: ultrastrong continuity of `x ↦ ω(x* k x)` in
+  place of "norm density of `Ω'` in `Ξ` plus **21X**", because our statement is
+  the unfolded order-separation property rather than `OrderSeparating Ω'`.
+* `matBilin_nonneg_of_mi` — relocation only, proof unchanged (worker 40's).
+
+No new errata: nothing in cstar.tex/vn.tex was found to be *wrong* this
+session.  §1's gap is an incomplete justification of a true claim and is
+recorded here, not in ERRATA.md.
+
+### 6. Verification
+
+* `lake build` (whole project): `Build completed successfully (8738 jobs)`,
+  exit 0.  `A/Proc.*` and `B/Dils.*` build exactly as before.
+* `#print axioms` → `[propext, Classical.choice, Quot.sound]` for
+  `Theses.A.CStar.matBilin_nonneg_of_mi`, `Theses.A.CStar.cstar_isometry`,
+  `Theses.A.CStar.order_separating_norm`,
+  `Theses.A.VN.abelian_projections_norm_dense`,
+  `Theses.A.VN.projections_norm_dense`, `Theses.A.VN.commutant_basic_3`,
+  `Theses.A.VN.eq_zero_of_centreSeparating_conj`,
+  `Theses.A.VN.centreSeparating_cstar`,
+  `Theses.A.VN.nonneg_of_conjNP_of_centreSeparating`,
+  `Theses.A.VN.continuous_ultrastrong_conjFunctional`,
+  `Theses.A.VN.vn_center_separating_fundamental_1`.
+* `sorry` tokens: `A/CStar` 41 → 39, `A/VN` 121 → 117.
+  (Per file: Matrices 6, Positive 22, Representation 11; Basic 34,
+  Completeness 17, Division 26, NormalFunctionals 18, Projections 22.)
+* Neither of the two `sorry`ed instances (`vonNeumannAlgebra_lp_infty`,
+  `mn_vna_1`) was discharged.  §2 records that `vonNeumannAlgebra_lp_infty`'s
+  gap is what forced 21VII's route change, so it now gates one more item than
+  before.
+* Nothing staged, nothing committed.

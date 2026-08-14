@@ -1444,6 +1444,53 @@ theorem functional_extension (ρ : NMIUMap A B)
 
 **90I** (vn.tex:7191): introduction — nothing to formalize. -/
 
+/-- `x ↦ ω(x* k x)` is ultrastrongly continuous: it is `‖·‖_ω`-locally
+Lipschitz by **72III**.1c. -/
+theorem continuous_ultrastrong_conjFunctional (ω : NPFunctional A) (k : A) :
+    @Continuous A ℂ (ultrastrong A) _ (fun x : A => ω (star x * k * x)) := by
+  let _ : TopologicalSpace A := ultrastrong A
+  refine continuous_iff_continuousAt.mpr fun x₀ => ?_
+  rw [ContinuousAt, Metric.tendsto_nhds]
+  intro ε hε
+  set C : ℝ := (2 * omegaNorm A ω x₀ + 1) * ‖k‖ + 1 with hC
+  have hC0 : 0 < C := by
+    have := omegaNorm_nonneg ω x₀
+    have := norm_nonneg k
+    positivity
+  set δ : ℝ := min 1 (ε / (2 * C)) with hδ
+  have hδ0 : 0 < δ := lt_min one_pos (by positivity)
+  filter_upwards [ultrastrong_ball_mem_nhds ω x₀ hδ0] with x hx
+  have hx' : omegaNorm A ω (x - x₀) < δ := hx
+  have hxb : omegaNorm A ω x ≤ omegaNorm A ω x₀ + δ := by
+    have h := omegaNorm_add_le ω (x - x₀) x₀
+    rw [sub_add_cancel] at h
+    linarith
+  have hlip := bstaromega_lipschitz ω x x₀ k
+  have hkey : ‖ω (star x * k * x) - ω (star x₀ * k * x₀)‖
+      ≤ omegaNorm A ω (x - x₀) * (omegaNorm A ω x + omegaNorm A ω x₀) * ‖k‖ := hlip
+  have hδ1 : δ ≤ 1 := min_le_left _ _
+  have hmul : omegaNorm A ω (x - x₀) * (omegaNorm A ω x + omegaNorm A ω x₀) * ‖k‖
+      ≤ δ * C := by
+    have h1 : omegaNorm A ω x + omegaNorm A ω x₀ ≤ 2 * omegaNorm A ω x₀ + 1 := by
+      linarith
+    have h2 : (0 : ℝ) ≤ omegaNorm A ω x + omegaNorm A ω x₀ :=
+      add_nonneg (omegaNorm_nonneg _ _) (omegaNorm_nonneg _ _)
+    have h3 : omegaNorm A ω (x - x₀) * (omegaNorm A ω x + omegaNorm A ω x₀)
+        ≤ δ * (2 * omegaNorm A ω x₀ + 1) :=
+      mul_le_mul hx'.le h1 h2 hδ0.le
+    have h4 : (0 : ℝ) ≤ ‖k‖ := norm_nonneg k
+    nlinarith [omegaNorm_nonneg ω x₀, mul_nonneg hδ0.le h4]
+  have hδC : δ * C < ε := by
+    have hle : δ ≤ ε / (2 * C) := min_le_right _ _
+    have : δ * C ≤ (ε / (2 * C)) * C := by nlinarith
+    have heq : (ε / (2 * C)) * C = ε / 2 := by field_simp
+    rw [heq] at this
+    linarith
+  rw [dist_eq_norm]
+  calc ‖ω (star x * k * x) - ω (star x₀ * k * x₀)‖ ≤ _ := hkey
+    _ ≤ δ * C := hmul
+    _ < ε := hδC
+
 /-- **90II** (`vn-center-separating-fundamental`, vn.tex:7206,
 Proposition), part 1: for a centre separating collection `Ω` of
 np-functionals and an ultrastrongly dense subset `S` of a von Neumann
@@ -1454,8 +1501,32 @@ theorem vn_center_separating_fundamental_1 (Ω : Set (NPFunctional A))
     (hS : @Dense A (ultrastrong A) S) (a b : A) (ha : IsSelfAdjoint a)
     (hb : IsSelfAdjoint b)
     (h : ∀ ω ∈ Ω, ∀ s ∈ S, ω (star s * a * s) ≤ ω (star s * b * s)) :
-    a ≤ b :=
-  sorry
+    a ≤ b := by
+  -- The thesis's argument, in the shape our statement asks for: `Ξ = {ω(c*(·)c)
+  -- : ω ∈ Ω, c ∈ A}` is order separating by **30X** (that is
+  -- `nonneg_of_conjNP_of_centreSeparating`, which also supplies the bridge from
+  -- our `CentreSeparating` to the C*-notion **21II**.4 that **30X** wants), and
+  -- `Ω' ⊆ Ξ` is norm dense by **72III**.1c — rendered here as ultrastrong
+  -- *continuity* of `x ↦ ω(x* k x)`, which is the same estimate.
+  rw [← sub_nonneg]
+  refine nonneg_of_conjNP_of_centreSeparating Ω hΩ fun ω hω c => ?_
+  set T : Set A := {x : A | (0 : ℂ) ≤ ω (star x * (b - a) * x)} with hT
+  have hTclosed : @IsClosed A (ultrastrong A) T := by
+    have hcont := continuous_ultrastrong_conjFunctional ω (b - a)
+    have hcl : IsClosed {z : ℂ | (0 : ℂ) ≤ z} := isClosed_le continuous_const continuous_id
+    exact @IsClosed.preimage A ℂ (ultrastrong A) _ _ hcont _ hcl
+  have hST : S ⊆ T := by
+    intro s hs
+    have h1 := h ω hω s hs
+    show (0 : ℂ) ≤ ω (star s * (b - a) * s)
+    rw [show star s * (b - a) * s = star s * b * s - star s * a * s by noncomm_ring,
+      npFunctional_sub, sub_nonneg]
+    exact h1
+  have hsub : @closure A (ultrastrong A) S ⊆ T :=
+    (@IsClosed.closure_subset_iff A (ultrastrong A) S T hTclosed).mpr hST
+  have huniv : @closure A (ultrastrong A) S = Set.univ :=
+    @Dense.closure_eq A (ultrastrong A) S hS
+  exact hsub (by rw [huniv]; trivial)
 
 /-- **90II** (`vn-center-separating-fundamental`, vn.tex:7206,
 Proposition), part 2: the finite sums `Ω''` of members of `Ω'` are

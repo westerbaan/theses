@@ -193,6 +193,26 @@ thesis defect)*: add `q (z • f) = z • q f` to `IsLinftyOf`?  It is the right
 fix, but it touches **four statements at once**, which is why it was not done
 unilaterally.
 
+### D4. `CentreSeparating` renders the wrong item of 69IX
+`Theses/A/VN/Projections.lean`.  `Theses.A.VN.CentreSeparating` is our
+rendering of **69IX.2**, not **69IX.1** (which is cstar.tex 21II.4, the
+C\*-notion).  But 69IX.1 is what 90II's proof and `proto_gelfand_naimark_1`
+actually consume.
+
+The consequence is that `vn_center_separating`'s TFAE is a **class-4
+mis-transcription**: its item 1 duplicates its item 2, and the C\*-notion is
+lost from the statement altogether.
+
+Not repaired: fixing the definition touches 90II.1, 90II.2, 69IX and reaches
+into `B/Dils`.  Worker 43 proved **90II.1** anyway, by a different route —
+central support plus 60I `ceil_functionals_lemma`, avoiding the thesis's
+`gns_ceil` — so nothing is currently blocked on it.
+
+*Decision needed (Bas)*: restate `CentreSeparating` as 69IX.1 and re-derive
+69IX.2 from it, or keep the present rendering and add the C\*-notion as a
+separate definition?  Related: 69IX item 3 needs one missing lemma — *a
+`projSup` of central projections is central* — which is cheap either way.
+
 ### D3. `matBilin_nonneg_of_mi` is in the wrong chapter for its consumer — **RESOLVED (worker 43)**
 **Option 2 was taken, authorised by Bas.**  The lemma now lives in
 `Theses/A/CStar/Matrices.lean` as `Theses.A.CStar.matBilin_nonneg_of_mi`

@@ -1521,6 +1521,70 @@ between C*-algebras is bounded with `‖ρ‖ ≤ 1`, i.e. `‖ρ(a)‖ ≤ ‖a
 theorem norm_mi_map_contractive (ρ : 𝒜 →⋆ₐ[ℂ] ℬ) (a : 𝒜) : ‖ρ a‖ ≤ ‖a‖ :=
   NonUnitalStarAlgHom.norm_apply_le ρ a
 
+/-! Auxiliary facts about pu-maps, shared by **20VI** and **21VII**. -/
+
+omit [PartialOrder 𝒜] [StarOrderedRing 𝒜] [PartialOrder ℬ] [StarOrderedRing ℬ] in
+/-- A unital linear map fixes the scalars. -/
+private theorem map_algebraMap_of_unital (f : 𝒜 →ₗ[ℂ] ℬ) (hu : f 1 = 1) (z : ℂ) :
+    f (algebraMap ℂ 𝒜 z) = algebraMap ℂ ℬ z := by
+  rw [Algebra.algebraMap_eq_smul_one, Algebra.algebraMap_eq_smul_one, map_smul, hu]
+
+omit [PartialOrder ℬ] [StarOrderedRing ℬ] in
+/-- The key equivalence behind **20VI**.3 ⇒ .1: for self-adjoint `a` whose norm
+is at most `2λ`, positivity of `a` is the *norm* condition `‖λ - a‖ ≤ λ`.  This
+is `positive-basic-2`.3a applied to `λ - a`; the hypothesis `‖a‖ ≤ 2λ` is what
+the thesis supplies through weak Russo–Dye. -/
+private theorem nonneg_iff_norm_algebraMap_sub_le (a : 𝒜) (ha : IsSelfAdjoint a)
+    (lam : ℝ) (hlam : 0 ≤ lam) (h2 : ‖a‖ ≤ 2 * lam) :
+    ‖algebraMap ℂ 𝒜 (lam : ℂ) - a‖ ≤ lam ↔ 0 ≤ a := by
+  have hsa : IsSelfAdjoint (algebraMap ℂ 𝒜 (lam : ℂ) - a) :=
+    (isSelfAdjoint_algebraMap_ofReal lam).sub ha
+  rw [← positive_basic_2_3a _ hsa lam hlam]
+  constructor
+  · rintro ⟨-, h⟩
+    have h' := sub_le_sub_left h (algebraMap ℂ 𝒜 (lam : ℂ))
+    simpa using h'
+  · intro h
+    refine ⟨?_, by simpa using h⟩
+    have h2' := ((positive_basic_2_3a a ha (2 * lam) (by linarith)).mpr h2).2
+    have hcast : algebraMap ℂ 𝒜 ((2 * lam : ℝ) : ℂ)
+        = algebraMap ℂ 𝒜 (lam : ℂ) + algebraMap ℂ 𝒜 (lam : ℂ) := by
+      rw [show ((2 * lam : ℝ) : ℂ) = (lam : ℂ) + (lam : ℂ) by push_cast; ring, map_add]
+    rw [hcast] at h2'
+    have h3 := sub_le_sub_left h2' (algebraMap ℂ 𝒜 (lam : ℂ))
+    simpa using h3
+
+/-- A positive linear map is monotone. -/
+private theorem map_mono_of_pos (f : 𝒜 →ₗ[ℂ] ℬ) (hf : IsPositiveMap f) {x y : 𝒜}
+    (h : x ≤ y) : f x ≤ f y := by
+  have h' := hf _ (sub_nonneg.mpr h)
+  rw [map_sub] at h'
+  exact sub_nonneg.mp h'
+
+/-- A positive linear map preserves self-adjointness (**10IV**). -/
+private theorem isSelfAdjoint_map_of_pos (f : 𝒜 →ₗ[ℂ] ℬ) (hf : IsPositiveMap f)
+    {a : 𝒜} (ha : IsSelfAdjoint a) : IsSelfAdjoint (f a) := by
+  rw [IsSelfAdjoint, ← cstar_p_implies_i f hf a, ha.star_eq]
+
+/-- Weak Russo–Dye (**20II**.2) for a *unital* positive map: `‖f a‖ ≤ 2‖a‖`. -/
+private theorem norm_map_le_two_mul (f : 𝒜 →ₗ[ℂ] ℬ) (hf : IsPositiveMap f)
+    (hu : f 1 = 1) (a : 𝒜) : ‖f a‖ ≤ 2 * ‖a‖ := by
+  have h := weak_russo_dye_2 f hf a
+  rw [hu] at h
+  nlinarith [norm_nonneg a, norm_nonneg (1 : ℬ), norm_one_le' (𝒜 := ℬ)]
+
+/-- A pu-map is contractive on self-adjoint elements: `-‖a‖ ≤ a ≤ ‖a‖` is
+carried to `-‖a‖ ≤ f a ≤ ‖a‖`. -/
+private theorem norm_map_le_of_isSelfAdjoint (f : 𝒜 →ₗ[ℂ] ℬ) (hf : IsPositiveMap f)
+    (hu : f 1 = 1) (a : 𝒜) (ha : IsSelfAdjoint a) : ‖f a‖ ≤ ‖a‖ := by
+  obtain ⟨hl, hr⟩ := (positive_basic_2_3a a ha ‖a‖ (norm_nonneg a)).mpr le_rfl
+  refine (positive_basic_2_3a (f a) (isSelfAdjoint_map_of_pos f hf ha) ‖a‖
+    (norm_nonneg a)).mp ⟨?_, ?_⟩
+  · have h := map_mono_of_pos f hf hl
+    rwa [map_neg, map_algebraMap_of_unital f hu] at h
+  · have h := map_mono_of_pos f hf hr
+    rwa [map_algebraMap_of_unital f hu] at h
+
 /-- **20VI** (`cstar-isometry`, cstar.tex:2934, Lemma): for a pu-map
 `f : 𝒜 → ℬ` the following are equivalent: (1) `f` is *bipositive*
 (`f(a) ≥ 0` iff `a ≥ 0`); (2) `f` is an isometry on `sa(𝒜)`; (3) `f` is an
@@ -1533,8 +1597,69 @@ theorem cstar_isometry (f : 𝒜 →ₗ[ℂ] ℬ) (hf : IsPositiveMap f)
     List.TFAE [
       ∀ a : 𝒜, 0 ≤ f a ↔ 0 ≤ a,
       ∀ a : 𝒜, IsSelfAdjoint a → ‖f a‖ = ‖a‖,
-      ∀ a : 𝒜, 0 ≤ a → ‖f a‖ = ‖a‖] :=
-  sorry
+      ∀ a : 𝒜, 0 ≤ a → ‖f a‖ = ‖a‖] := by
+  -- the thesis's argument (cstar.tex:2950), verbatim
+  tfae_have 2 → 3 := fun h a ha => h a (IsSelfAdjoint.of_nonneg ha)
+  tfae_have 1 → 2 := by
+    -- `-λ ≤ a ≤ λ` iff `-λ ≤ f a ≤ λ`, because `f` is bipositive and unital
+    intro h1 a ha
+    have hfa : IsSelfAdjoint (f a) := isSelfAdjoint_map_of_pos f hf ha
+    refine le_antisymm ?_ ?_
+    · obtain ⟨hl, hr⟩ := (positive_basic_2_3a a ha ‖a‖ (norm_nonneg a)).mpr le_rfl
+      refine (positive_basic_2_3a (f a) hfa ‖a‖ (norm_nonneg a)).mp ⟨?_, ?_⟩
+      · have h := map_mono_of_pos f hf hl
+        rwa [map_neg, map_algebraMap_of_unital f hu] at h
+      · have h := map_mono_of_pos f hf hr
+        rwa [map_algebraMap_of_unital f hu] at h
+    · obtain ⟨hl, hr⟩ :=
+        (positive_basic_2_3a (f a) hfa ‖f a‖ (norm_nonneg _)).mpr le_rfl
+      refine (positive_basic_2_3a a ha ‖f a‖ (norm_nonneg _)).mp ⟨?_, ?_⟩
+      · refine neg_le_iff_add_nonneg.mpr ((h1 _).mp ?_)
+        rw [map_add, map_algebraMap_of_unital f hu]
+        exact neg_le_iff_add_nonneg.mp hl
+      · refine sub_nonneg.mp ((h1 _).mp ?_)
+        rw [map_sub, map_algebraMap_of_unital f hu]
+        exact sub_nonneg.mpr hr
+  tfae_have 3 → 1 := by
+    intro h3
+    -- for self-adjoint `a`: `‖ ‖a‖ - a ‖ = ‖ ‖a‖ - f a ‖`, and each side is
+    -- `≤ ‖a‖` exactly when the corresponding element is positive
+    have hsacase : ∀ a : 𝒜, IsSelfAdjoint a → (0 ≤ f a ↔ 0 ≤ a) := by
+      intro a ha
+      have hfa : IsSelfAdjoint (f a) := isSelfAdjoint_map_of_pos f hf ha
+      have hb : (0 : 𝒜) ≤ algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ) - a :=
+        sub_nonneg.mpr ((positive_basic_2_3a a ha ‖a‖ (norm_nonneg a)).mpr le_rfl).2
+      have heq := h3 _ hb
+      rw [map_sub, map_algebraMap_of_unital f hu] at heq
+      rw [← nonneg_iff_norm_algebraMap_sub_le a ha ‖a‖ (norm_nonneg a)
+          (by linarith [norm_nonneg a]),
+        ← nonneg_iff_norm_algebraMap_sub_le (f a) hfa ‖a‖ (norm_nonneg a)
+          (norm_map_le_two_mul f hf hu a), heq]
+    -- the general case reduces to it: `f` is injective on self-adjoints, so
+    -- `f a` self-adjoint forces `a` self-adjoint
+    intro a
+    refine ⟨fun hfa => ?_, hf a⟩
+    have hfasa : IsSelfAdjoint (f a) := IsSelfAdjoint.of_nonneg hfa
+    have hd : f (Complex.I • (star a - a)) = 0 := by
+      rw [map_smul, map_sub, cstar_p_implies_i f hf, hfasa.star_eq, sub_self, smul_zero]
+    have hcsa : IsSelfAdjoint (Complex.I • (star a - a)) := by
+      show star (Complex.I • (star a - a)) = _
+      rw [star_smul, star_sub, star_star, Complex.star_def, Complex.conj_I]
+      module
+    have h1 : (0 : 𝒜) ≤ Complex.I • (star a - a) := (hsacase _ hcsa).mp (by rw [hd])
+    have h2 : (0 : 𝒜) ≤ -(Complex.I • (star a - a)) := by
+      refine (hsacase _ hcsa.neg).mp ?_
+      rw [map_neg, hd, neg_zero]
+    have hc : Complex.I • (star a - a) = (0 : 𝒜) :=
+      positive_basic_2_1 _ h1 (neg_nonneg.mp h2)
+    have hsa : IsSelfAdjoint a := by
+      show star a = a
+      refine sub_eq_zero.mp ?_
+      rcases smul_eq_zero.mp hc with h | h
+      · exact absurd h Complex.I_ne_zero
+      · exact h
+    exact (hsacase a hsa).mp hfa
+  tfae_finish
 
 end Maps
 
@@ -1749,8 +1874,86 @@ theorem order_separating_norm (ω : ∀ i, 𝒜 →ₗ[ℂ] ℬf i)
     List.TFAE [
       OrderSeparating ω,
       ∀ a : 𝒜, IsSelfAdjoint a → ‖a‖ = ⨆ i, ‖ω i a‖,
-      ∀ a : 𝒜, 0 ≤ a → ‖a‖ = ⨆ i, ‖ω i a‖] :=
-  sorry
+      ∀ a : 𝒜, 0 ≤ a → ‖a‖ = ⨆ i, ‖ω i a‖] := by
+  -- The thesis (cstar.tex:3247) applies **20VI** to the single pu-map
+  -- `⟨ω⟩ : 𝒜 → ⊕_ω ℬ_ω` into the C*-product, where positivity is pointwise
+  -- and the norm is the supremum.  Since the ℓ^∞-product of an arbitrary
+  -- family is not available in the tree (it is exactly the gap recorded for
+  -- `vonNeumannAlgebra_lp_infty`), we run **20VI**'s *argument* on the family
+  -- directly; the three steps are the same.  Note no index is needed: for
+  -- empty `ι` all three conditions force `𝒜` to be trivial, and the proof
+  -- below covers that case without a split (`⨆ over ∅ = 0` in `ℝ`).
+  have hbdd : ∀ a : 𝒜, IsSelfAdjoint a → BddAbove (Set.range fun i => ‖ω i a‖) :=
+    fun a ha => ⟨‖a‖, by
+      rintro x ⟨i, rfl⟩
+      exact norm_map_le_of_isSelfAdjoint (ω i) (hpos i) (hu i) a ha⟩
+  have hsupnn : ∀ a : 𝒜, 0 ≤ ⨆ i, ‖ω i a‖ :=
+    fun a => Real.iSup_nonneg fun i => norm_nonneg _
+  tfae_have 2 → 3 := fun h a ha => h a (IsSelfAdjoint.of_nonneg ha)
+  tfae_have 1 → 2 := by
+    intro h1 a ha
+    refine le_antisymm ?_ (Real.iSup_le
+      (fun i => norm_map_le_of_isSelfAdjoint (ω i) (hpos i) (hu i) a ha)
+      (norm_nonneg a))
+    set s : ℝ := ⨆ i, ‖ω i a‖ with hs
+    have hi : ∀ i, -(algebraMap ℂ (ℬf i) (s : ℂ)) ≤ ω i a ∧
+        ω i a ≤ algebraMap ℂ (ℬf i) (s : ℂ) := fun i =>
+      (positive_basic_2_3a (ω i a) (isSelfAdjoint_map_of_pos (ω i) (hpos i) ha) s
+        (hsupnn a)).mpr (le_ciSup (hbdd a ha) i)
+    refine (positive_basic_2_3a a ha s (hsupnn a)).mp ⟨?_, ?_⟩
+    · refine neg_le_iff_add_nonneg.mpr ((h1 _).mpr fun i => ?_)
+      rw [map_add, map_algebraMap_of_unital (ω i) (hu i)]
+      exact neg_le_iff_add_nonneg.mp (hi i).1
+    · refine sub_nonneg.mp ((h1 _).mpr fun i => ?_)
+      rw [map_sub, map_algebraMap_of_unital (ω i) (hu i)]
+      exact sub_nonneg.mpr (hi i).2
+  tfae_have 3 → 1 := by
+    intro h3
+    have hsacase : ∀ a : 𝒜, IsSelfAdjoint a → (0 ≤ a ↔ ∀ i, 0 ≤ ω i a) := by
+      intro a ha
+      have hb : (0 : 𝒜) ≤ algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ) - a :=
+        sub_nonneg.mpr ((positive_basic_2_3a a ha ‖a‖ (norm_nonneg a)).mpr le_rfl).2
+      set b : 𝒜 := algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ) - a with hbdef
+      have hbsa : IsSelfAdjoint b := (isSelfAdjoint_algebraMap_ofReal ‖a‖).sub ha
+      have hωb : ∀ i, ω i b = algebraMap ℂ (ℬf i) ((‖a‖ : ℝ) : ℂ) - ω i a := by
+        intro i; rw [hbdef, map_sub, map_algebraMap_of_unital (ω i) (hu i)]
+      have heq := h3 b hb
+      rw [← nonneg_iff_norm_algebraMap_sub_le a ha ‖a‖ (norm_nonneg a)
+        (by linarith [norm_nonneg a])]
+      have hright : (∀ i, 0 ≤ ω i a) ↔ ∀ i, ‖ω i b‖ ≤ ‖a‖ := by
+        refine forall_congr' fun i => ?_
+        rw [hωb i]
+        exact (nonneg_iff_norm_algebraMap_sub_le (ω i a)
+          (isSelfAdjoint_map_of_pos (ω i) (hpos i) ha) ‖a‖ (norm_nonneg a)
+          (norm_map_le_two_mul (ω i) (hpos i) (hu i) a)).symm
+      rw [hright, heq]
+      exact ⟨fun h i => le_trans (le_ciSup (hbdd b hbsa) i) h,
+        fun h => Real.iSup_le h (norm_nonneg a)⟩
+    intro a
+    refine ⟨fun ha i => hpos i a ha, fun hall => ?_⟩
+    have hsaω : ∀ i, IsSelfAdjoint (ω i a) := fun i => IsSelfAdjoint.of_nonneg (hall i)
+    have hd : ∀ i, ω i (Complex.I • (star a - a)) = 0 := by
+      intro i
+      rw [map_smul, map_sub, cstar_p_implies_i (ω i) (hpos i), (hsaω i).star_eq,
+        sub_self, smul_zero]
+    have hcsa : IsSelfAdjoint (Complex.I • (star a - a)) := by
+      show star (Complex.I • (star a - a)) = _
+      rw [star_smul, star_sub, star_star, Complex.star_def, Complex.conj_I]
+      module
+    have h1 : (0 : 𝒜) ≤ Complex.I • (star a - a) :=
+      (hsacase _ hcsa).mpr fun i => by rw [hd i]
+    have h2 : (0 : 𝒜) ≤ -(Complex.I • (star a - a)) :=
+      (hsacase _ hcsa.neg).mpr fun i => by rw [map_neg, hd i, neg_zero]
+    have hc : Complex.I • (star a - a) = (0 : 𝒜) :=
+      positive_basic_2_1 _ h1 (neg_nonneg.mp h2)
+    have hsa : IsSelfAdjoint a := by
+      show star a = a
+      refine sub_eq_zero.mp ?_
+      rcases smul_eq_zero.mp hc with h | h
+      · exact absurd h Complex.I_ne_zero
+      · exact h
+    exact (hsacase a hsa).mpr hall
+  tfae_finish
 
 /-! **21IX** (`warning-norm-states`, cstar.tex:3256, Warning): the formula
 `‖a‖ = sup_ω ‖ω(a)‖` may fail for non-self-adjoint `a` — not converted. -/
