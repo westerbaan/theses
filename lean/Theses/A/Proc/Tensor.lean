@@ -1282,6 +1282,320 @@ theorem product_functionals_separating (Ω : Set (A →ₗ[ℂ] ℂ))
     exact (Fintype.linearIndependent_iff.mp hind) (fun k => τ (b k)) (hΩ _ key) j
   simp [hb]
 
+/-! ### The tensor product seminorms `‖·‖_ω` (auxiliary for **112VIII**)
+
+The tensor product norm of 112II is a supremum of the seminorms
+`‖t‖_ω = ω(t* t)^½` over the basic functionals `ω` with `ω(1) ≤ 1`.  By
+**112V** each `[s,t]_ω = ω(s* t)` is a positive semidefinite Hermitian
+form, so `‖·‖_ω` is exactly the seminorm of Mathlib's
+`PreInnerProductSpace.Core` — which is where Cauchy–Schwarz, the
+triangle inequality and homogeneity come from. -/
+
+/-- `‖t‖_ω = ω(t* t)^½`, the seminorm attached to a functional on
+`𝒜 ⊙ ℬ` (the quantity the tensor product norm of 112II takes the
+supremum of). -/
+private noncomputable def tsn [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    (ω : A ⊗[ℂ] B →ₗ[ℂ] ℂ) (t : A ⊗[ℂ] B) : ℝ :=
+  Real.sqrt (ω (star t * t)).re
+
+set_option warn.classDefReducibility false in
+/-- The semi-inner-product structure `[s,t]_ω = ω(s* t)` of a basic
+functional: this *is* **112V** `basic_state_inner_product`, packaged so
+that Mathlib's Cauchy–Schwarz applies. -/
+private noncomputable def basicCore [VonNeumannAlgebra A]
+    [VonNeumannAlgebra B] {ω : A ⊗[ℂ] B →ₗ[ℂ] ℂ}
+    (hω : IsBasicFunctional ω) : PreInnerProductSpace.Core ℂ (A ⊗[ℂ] B) where
+  inner s t := ω (star s * t)
+  conj_inner_symm x y := by
+    show (starRingEnd ℂ) (ω (star y * x)) = ω (star x * y)
+    rw [(basic_state_inner_product ω hω).1 x y, Complex.conj_conj]
+  re_inner_nonneg x := by
+    have h := (basic_state_inner_product ω hω).2 x
+    simpa using (Complex.le_def.mp h).1
+  add_left x y z := by simp [star_add, add_mul]
+  smul_left x y r := by simp [star_smul, RCLike.star_def]
+
+omit [StarOrderedRing A] [StarOrderedRing B] in
+private theorem tsn_nonneg [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    (ω : A ⊗[ℂ] B →ₗ[ℂ] ℂ) (t : A ⊗[ℂ] B) : 0 ≤ tsn ω t :=
+  Real.sqrt_nonneg _
+
+/-- Cauchy–Schwarz: `|ω(s* t)| ≤ ‖s‖_ω ‖t‖_ω` for a basic functional. -/
+private theorem basic_cauchy_schwarz [VonNeumannAlgebra A]
+    [VonNeumannAlgebra B] {ω : A ⊗[ℂ] B →ₗ[ℂ] ℂ} (hω : IsBasicFunctional ω)
+    (s t : A ⊗[ℂ] B) : ‖ω (star s * t)‖ ≤ tsn ω s * tsn ω t := by
+  let _c := basicCore hω
+  let _ := InnerProductSpace.Core.toPreInner' (𝕜 := ℂ) (F := A ⊗[ℂ] B)
+  let _ := InnerProductSpace.Core.toNorm (𝕜 := ℂ) (F := A ⊗[ℂ] B)
+  exact InnerProductSpace.Core.norm_inner_le_norm (𝕜 := ℂ) s t
+
+private theorem tsn_add_le [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    {ω : A ⊗[ℂ] B →ₗ[ℂ] ℂ} (hω : IsBasicFunctional ω) (s t : A ⊗[ℂ] B) :
+    tsn ω (s + t) ≤ tsn ω s + tsn ω t := by
+  let _c := basicCore hω
+  let _ := InnerProductSpace.Core.toPreInner' (𝕜 := ℂ) (F := A ⊗[ℂ] B)
+  let _ := InnerProductSpace.Core.toSeminormedAddCommGroup (𝕜 := ℂ)
+    (F := A ⊗[ℂ] B)
+  exact norm_add_le s t
+
+private theorem tsn_smul [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    {ω : A ⊗[ℂ] B →ₗ[ℂ] ℂ} (hω : IsBasicFunctional ω) (z : ℂ)
+    (t : A ⊗[ℂ] B) : tsn ω (z • t) = ‖z‖ * tsn ω t := by
+  let _c := basicCore hω
+  let _ := InnerProductSpace.Core.toPreInner' (𝕜 := ℂ) (F := A ⊗[ℂ] B)
+  let _ := InnerProductSpace.Core.toSeminormedAddCommGroup (𝕜 := ℂ)
+    (F := A ⊗[ℂ] B)
+  let _ := InnerProductSpace.Core.toNormedSpace (𝕜 := ℂ) (F := A ⊗[ℂ] B)
+  exact norm_smul z t
+
+private theorem tsn_sum_le [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    {ω : A ⊗[ℂ] B →ₗ[ℂ] ℂ} (hω : IsBasicFunctional ω) {N : ℕ}
+    (f : Fin N → A ⊗[ℂ] B) : tsn ω (∑ i, f i) ≤ ∑ i, tsn ω (f i) := by
+  let _c := basicCore hω
+  let _ := InnerProductSpace.Core.toPreInner' (𝕜 := ℂ) (F := A ⊗[ℂ] B)
+  let _ := InnerProductSpace.Core.toSeminormedAddCommGroup (𝕜 := ℂ)
+    (F := A ⊗[ℂ] B)
+  exact norm_sum_le (E := A ⊗[ℂ] B) Finset.univ f
+
+/-- A basic functional is nonnegative on `x ⊙ y` for positive `x`, `y`:
+write `x = u* u`, `y = v* v`, so that `x ⊙ y = (u ⊙ v)* (u ⊙ v)` and
+apply **112V**. -/
+private theorem basic_nonneg_tmul [VonNeumannAlgebra A]
+    [VonNeumannAlgebra B] {ω : A ⊗[ℂ] B →ₗ[ℂ] ℂ} (hω : IsBasicFunctional ω)
+    {x : A} (hx : 0 ≤ x) {y : B} (hy : 0 ≤ y) : 0 ≤ ω (x ⊗ₜ[ℂ] y) := by
+  obtain ⟨u, rfl⟩ := CStarAlgebra.nonneg_iff_eq_star_mul_self.mp hx
+  obtain ⟨v, rfl⟩ := CStarAlgebra.nonneg_iff_eq_star_mul_self.mp hy
+  have h : (star u * u) ⊗ₜ[ℂ] (star v * v)
+      = star (u ⊗ₜ[ℂ] v) * (u ⊗ₜ[ℂ] v) := by
+    rw [TensorProduct.star_tmul, Algebra.TensorProduct.tmul_mul_tmul]
+  rw [h]
+  exact (basic_state_inner_product ω hω).2 _
+
+private theorem basic_mono_tmul_left [VonNeumannAlgebra A]
+    [VonNeumannAlgebra B] {ω : A ⊗[ℂ] B →ₗ[ℂ] ℂ} (hω : IsBasicFunctional ω)
+    {x x' : A} (h : x ≤ x') {y : B} (hy : 0 ≤ y) :
+    ω (x ⊗ₜ[ℂ] y) ≤ ω (x' ⊗ₜ[ℂ] y) := by
+  have hd := basic_nonneg_tmul hω (sub_nonneg.mpr h) hy
+  rw [TensorProduct.sub_tmul, map_sub, sub_nonneg] at hd
+  exact hd
+
+private theorem basic_mono_tmul_right [VonNeumannAlgebra A]
+    [VonNeumannAlgebra B] {ω : A ⊗[ℂ] B →ₗ[ℂ] ℂ} (hω : IsBasicFunctional ω)
+    {x : A} (hx : 0 ≤ x) {y y' : B} (h : y ≤ y') :
+    ω (x ⊗ₜ[ℂ] y) ≤ ω (x ⊗ₜ[ℂ] y') := by
+  have hd := basic_nonneg_tmul hω hx (sub_nonneg.mpr h)
+  rw [TensorProduct.tmul_sub, map_sub, sub_nonneg] at hd
+  exact hd
+
+private theorem basic_one_nonneg [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    {ω : A ⊗[ℂ] B →ₗ[ℂ] ℂ} (hω : IsBasicFunctional ω) : 0 ≤ ω 1 := by
+  have := (basic_state_inner_product ω hω).2 1
+  simpa using this
+
+/-- `ω(x ⊙ y) ≤ ‖x‖‖y‖ ω(1)` for positive `x`, `y`: apply `x ≤ ‖x‖·1`
+and `y ≤ ‖y‖·1` one slot at a time. -/
+private theorem basic_tmul_le [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    {ω : A ⊗[ℂ] B →ₗ[ℂ] ℂ} (hω : IsBasicFunctional ω) {x : A} (hx : 0 ≤ x)
+    {y : B} (hy : 0 ≤ y) :
+    (ω (x ⊗ₜ[ℂ] y)).re ≤ ‖x‖ * ‖y‖ * (ω 1).re := by
+  have hx1 : x ≤ ((‖x‖ : ℝ) : ℂ) • (1 : A) := by
+    rw [Complex.coe_smul]; exact le_norm_smul_one hx
+  have hy1 : y ≤ ((‖y‖ : ℝ) : ℂ) • (1 : B) := by
+    rw [Complex.coe_smul]; exact le_norm_smul_one hy
+  have h1 := basic_mono_tmul_left hω hx1 hy
+  have h2 := basic_mono_tmul_right hω
+    (le_trans hx hx1 : (0 : A) ≤ ((‖x‖ : ℝ) : ℂ) • (1 : A)) hy1
+  have hstep : ω (x ⊗ₜ[ℂ] y) ≤ (((‖x‖ * ‖y‖ : ℝ)) : ℂ) * ω 1 := by
+    refine le_trans h1 (le_trans h2 (le_of_eq ?_))
+    simp only [← TensorProduct.smul_tmul', TensorProduct.tmul_smul, map_smul,
+      smul_eq_mul, ← Algebra.TensorProduct.one_def]
+    push_cast
+    ring
+  have := (Complex.le_def.mp hstep).1
+  simpa using this
+
+/-- `‖a ⊙ b‖_ω ≤ ‖a‖‖b‖` when `ω(1) ≤ 1`. -/
+private theorem tsn_tmul_le [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    {ω : A ⊗[ℂ] B →ₗ[ℂ] ℂ} (hω : IsBasicFunctional ω) (h1 : (ω 1).re ≤ 1)
+    (a : A) (b : B) : tsn ω (a ⊗ₜ[ℂ] b) ≤ ‖a‖ * ‖b‖ := by
+  have hstar : star (a ⊗ₜ[ℂ] b) * (a ⊗ₜ[ℂ] b)
+      = (star a * a) ⊗ₜ[ℂ] (star b * b) := by
+    rw [TensorProduct.star_tmul, Algebra.TensorProduct.tmul_mul_tmul]
+  have hb := basic_tmul_le hω (star_mul_self_nonneg a) (star_mul_self_nonneg b)
+  have hna : ‖star a * a‖ = ‖a‖ * ‖a‖ := CStarRing.norm_star_mul_self
+  have hnb : ‖star b * b‖ = ‖b‖ * ‖b‖ := CStarRing.norm_star_mul_self
+  have h0 : (0 : ℝ) ≤ (ω 1).re := by
+    simpa using (Complex.le_def.mp (basic_one_nonneg hω)).1
+  have hkey : (ω (star (a ⊗ₜ[ℂ] b) * (a ⊗ₜ[ℂ] b))).re ≤ (‖a‖ * ‖b‖) ^ 2 := by
+    rw [hstar]
+    refine hb.trans ?_
+    rw [hna, hnb]
+    nlinarith [norm_nonneg a, norm_nonneg b]
+  have hle : tsn ω (a ⊗ₜ[ℂ] b) ≤ Real.sqrt ((‖a‖ * ‖b‖) ^ 2) :=
+    Real.sqrt_le_sqrt hkey
+  rwa [Real.sqrt_sq (by positivity)] at hle
+
+/-- The set of which the tensor product norm (112II) is the supremum. -/
+private def tnSet [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    (t : A ⊗[ℂ] B) : Set ℝ :=
+  {r : ℝ | ∃ ω : A ⊗[ℂ] B →ₗ[ℂ] ℂ, IsBasicFunctional ω ∧
+    (ω 1).re ≤ 1 ∧ r = Real.sqrt (ω (star t * t)).re}
+
+omit [StarOrderedRing A] [StarOrderedRing B] in
+private theorem tensorNorm_eq_sSup [VonNeumannAlgebra A]
+    [VonNeumannAlgebra B] (t : A ⊗[ℂ] B) :
+    tensorNorm A B t = sSup (tnSet t) := rfl
+
+omit [StarOrderedRing A] [StarOrderedRing B] in
+private theorem tnSet_nonneg [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    {t : A ⊗[ℂ] B} {r : ℝ} (hr : r ∈ tnSet t) : 0 ≤ r := by
+  obtain ⟨ω, _, _, rfl⟩ := hr
+  exact Real.sqrt_nonneg _
+
+omit [StarOrderedRing A] [StarOrderedRing B] in
+/-- `0` is always in the set: the zero functional is basic (`t₀ = 0`). -/
+private theorem zero_mem_tnSet [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    (t : A ⊗[ℂ] B) : (0 : ℝ) ∈ tnSet t :=
+  ⟨0, ⟨zeroNP, zeroNP, 0, fun s => by simp⟩, by simp, by simp⟩
+
+/-- The set is bounded above by `∑ᵢ ‖aᵢ‖‖bᵢ‖` for any representation
+`t = ∑ᵢ aᵢ ⊙ bᵢ` — this is what makes the supremum meaningful. -/
+private theorem tnSet_bddAbove [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    (t : A ⊗[ℂ] B) : BddAbove (tnSet t) := by
+  obtain ⟨N, a, b, rfl⟩ := exists_fin_repr t
+  refine ⟨∑ i, ‖a i‖ * ‖b i‖, ?_⟩
+  rintro r ⟨ω, hω, h1, rfl⟩
+  calc Real.sqrt (ω (star (∑ i, a i ⊗ₜ[ℂ] b i) * ∑ i, a i ⊗ₜ[ℂ] b i)).re
+      = tsn ω (∑ i, a i ⊗ₜ[ℂ] b i) := rfl
+    _ ≤ ∑ i, tsn ω (a i ⊗ₜ[ℂ] b i) := tsn_sum_le hω _
+    _ ≤ ∑ i, ‖a i‖ * ‖b i‖ :=
+        Finset.sum_le_sum fun i _ => tsn_tmul_le hω h1 (a i) (b i)
+
+omit [StarOrderedRing A] [StarOrderedRing B] in
+/-- **112VIII**, part 1. -/
+theorem tensorNorm_nonneg [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    (t : A ⊗[ℂ] B) : 0 ≤ tensorNorm A B t :=
+  Real.sSup_nonneg fun _ hx => tnSet_nonneg hx
+
+@[simp] theorem tensorNorm_zero [VonNeumannAlgebra A] [VonNeumannAlgebra B] :
+    tensorNorm A B (0 : A ⊗[ℂ] B) = 0 := by
+  refine le_antisymm (csSup_le ⟨0, zero_mem_tnSet 0⟩ ?_) ?_
+  · rintro r ⟨ω, _, _, rfl⟩
+    simp
+  · exact le_csSup (tnSet_bddAbove 0) (zero_mem_tnSet 0)
+
+private theorem tensorNorm_smul_le [VonNeumannAlgebra A]
+    [VonNeumannAlgebra B] (z : ℂ) (t : A ⊗[ℂ] B) :
+    tensorNorm A B (z • t) ≤ ‖z‖ * tensorNorm A B t := by
+  refine csSup_le ⟨0, zero_mem_tnSet _⟩ ?_
+  rintro r ⟨ω, hω, h1, rfl⟩
+  have h : Real.sqrt (ω (star (z • t) * (z • t))).re = ‖z‖ * tsn ω t :=
+    tsn_smul hω z t
+  rw [h]
+  exact mul_le_mul_of_nonneg_left
+    (le_csSup (tnSet_bddAbove t) ⟨ω, hω, h1, rfl⟩) (norm_nonneg z)
+
+/-- **112VIII**, part 3. -/
+theorem tensorNorm_smul [VonNeumannAlgebra A] [VonNeumannAlgebra B] (z : ℂ)
+    (t : A ⊗[ℂ] B) : tensorNorm A B (z • t) = ‖z‖ * tensorNorm A B t := by
+  rcases eq_or_ne z 0 with rfl | hz
+  · simp
+  refine le_antisymm (tensorNorm_smul_le z t) ?_
+  have h := tensorNorm_smul_le z⁻¹ (z • t)
+  rw [smul_smul, inv_mul_cancel₀ hz, one_smul, norm_inv] at h
+  have hzpos : 0 < ‖z‖ := norm_pos_iff.mpr hz
+  calc ‖z‖ * tensorNorm A B t
+      ≤ ‖z‖ * (‖z‖⁻¹ * tensorNorm A B (z • t)) :=
+        mul_le_mul_of_nonneg_left h hzpos.le
+    _ = tensorNorm A B (z • t) := by field_simp
+
+/-- **112VIII**, part 4: the triangle inequality, from Cauchy–Schwarz for
+each basic functional separately. -/
+theorem tensorNorm_add_le [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    (s t : A ⊗[ℂ] B) :
+    tensorNorm A B (s + t) ≤ tensorNorm A B s + tensorNorm A B t := by
+  refine csSup_le ⟨0, zero_mem_tnSet _⟩ ?_
+  rintro r ⟨ω, hω, h1, rfl⟩
+  calc Real.sqrt (ω (star (s + t) * (s + t))).re = tsn ω (s + t) := rfl
+    _ ≤ tsn ω s + tsn ω t := tsn_add_le hω s t
+    _ ≤ tensorNorm A B s + tensorNorm A B t :=
+        add_le_add (le_csSup (tnSet_bddAbove s) ⟨ω, hω, h1, rfl⟩)
+          (le_csSup (tnSet_bddAbove t) ⟨ω, hω, h1, rfl⟩)
+
+/-- **112VIII**, part 2 (definiteness).  For `t ≠ 0` the product
+functionals separate (**112VI**, applied to the np-functionals, which are
+separating by vn.tex 44XI), giving `σ`, `τ` with `(σ ⊙ τ)(t) ≠ 0`;
+Cauchy–Schwarz then forces both `(σ ⊙ τ)(1) > 0` and
+`(σ ⊙ τ)(t* t) > 0`, and rescaling by `t₀ = ((σ⊙τ)(1))^{-½}·1` turns
+`σ ⊙ τ` into a basic functional with `ω(1) = 1`. -/
+theorem tensorNorm_eq_zero_iff [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    (t : A ⊗[ℂ] B) : tensorNorm A B t = 0 ↔ t = 0 := by
+  refine ⟨fun h => ?_, fun h => by rw [h, tensorNorm_zero]⟩
+  by_contra ht
+  obtain ⟨σ, τ, hστ⟩ : ∃ (σ : NPFunctional A) (τ : NPFunctional B),
+      odotF (npLin σ) (npLin τ) t ≠ 0 := by
+    by_contra hex
+    have hall : ∀ (σ : NPFunctional A) (τ : NPFunctional B),
+        odotF (npLin σ) (npLin τ) t = 0 := fun σ τ => by
+      by_contra h0
+      exact hex ⟨σ, τ, h0⟩
+    refine ht (product_functionals_separating
+      (Set.range fun σ : NPFunctional A => npLin σ)
+      (Set.range fun τ : NPFunctional B => npLin τ)
+      (fun a ha => np_separating a fun ω => ha (npLin ω) ⟨ω, rfl⟩)
+      (fun b hb => np_separating b fun ω => hb (npLin ω) ⟨ω, rfl⟩)
+      t ?_)
+    rintro _ ⟨σ, rfl⟩ _ ⟨τ, rfl⟩
+    exact hall σ τ
+  set ω₀ := odotF (npLin σ) (npLin τ) with hω₀def
+  have hb₀ : IsBasicFunctional ω₀ := ⟨σ, τ, 1, fun s => by simp [hω₀def]⟩
+  have hcs := basic_cauchy_schwarz hb₀ 1 t
+  rw [star_one, one_mul] at hcs
+  have hpos : 0 < ‖ω₀ t‖ := norm_pos_iff.mpr hστ
+  have hs1 : 0 < tsn ω₀ 1 := by
+    rcases (tsn_nonneg ω₀ 1).lt_or_eq with hlt | heq
+    · exact hlt
+    · rw [← heq, zero_mul] at hcs; linarith
+  have hst : 0 < tsn ω₀ t := by
+    rcases (tsn_nonneg ω₀ t).lt_or_eq with hlt | heq
+    · exact hlt
+    · rw [← heq, mul_zero] at hcs; linarith
+  have hc : 0 < (ω₀ 1).re := by
+    have hone : tsn ω₀ 1 = Real.sqrt (ω₀ 1).re := by simp [tsn]
+    rw [hone] at hs1
+    exact Real.sqrt_pos.mp hs1
+  have hcstar : 0 < (ω₀ (star t * t)).re := Real.sqrt_pos.mp hst
+  set c : ℝ := (ω₀ 1).re with hcdef
+  set r : ℝ := Real.sqrt (1 / c) with hrdef
+  have hr2 : r ^ 2 = 1 / c := Real.sq_sqrt (by positivity)
+  set ω : A ⊗[ℂ] B →ₗ[ℂ] ℂ := ((r ^ 2 : ℝ) : ℂ) • ω₀ with hωdef
+  have hωapp : ∀ s, ω s = ((r ^ 2 : ℝ) : ℂ) * ω₀ s := fun s => rfl
+  have hbω : IsBasicFunctional ω := by
+    refine ⟨σ, τ, ((r : ℂ)) • 1, fun s => ?_⟩
+    have hstar : star (((r : ℂ)) • (1 : A ⊗[ℂ] B)) * s * (((r : ℂ)) • 1)
+        = (((r ^ 2 : ℝ)) : ℂ) • s := by
+      rw [star_smul, star_one, smul_mul_assoc, one_mul, mul_smul_comm, mul_one,
+        smul_smul]
+      norm_num
+      rw [← Complex.ofReal_pow]
+      norm_num [pow_two]
+    rw [hstar, hωapp, map_smul, smul_eq_mul]
+  have h1 : (ω 1).re ≤ 1 := by
+    rw [hωapp]
+    simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, zero_mul,
+      sub_zero]
+    rw [hr2, ← hcdef, one_div, inv_mul_cancel₀ (ne_of_gt hc)]
+  have hposval : 0 < Real.sqrt (ω (star t * t)).re := by
+    rw [Real.sqrt_pos, hωapp]
+    simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, zero_mul,
+      sub_zero]
+    have hr2pos : 0 < r ^ 2 := by rw [hr2]; positivity
+    exact mul_pos hr2pos hcstar
+  have hmem := le_csSup (tnSet_bddAbove t)
+    (⟨ω, hbω, h1, rfl⟩ : Real.sqrt (ω (star t * t)).re ∈ tnSet t)
+  rw [← tensorNorm_eq_sSup, h] at hmem
+  linarith
+
 /-- **112VIII** (`tensor-product-norm`, proc.tex:2849, Exercise): the
 tensor product norm is a norm on `𝒜 ⊙ ℬ`. -/
 theorem tensor_product_norm [VonNeumannAlgebra A] [VonNeumannAlgebra B] :
@@ -1291,7 +1605,8 @@ theorem tensor_product_norm [VonNeumannAlgebra A] [VonNeumannAlgebra B] :
         tensorNorm A B (z • t) = ‖z‖ * tensorNorm A B t) ∧
       ∀ s t : A ⊗[ℂ] B,
         tensorNorm A B (s + t) ≤ tensorNorm A B s + tensorNorm A B t :=
-  sorry
+  ⟨tensorNorm_nonneg, tensorNorm_eq_zero_iff, tensorNorm_smul,
+    tensorNorm_add_le⟩
 
 /-- **112IX** (`product-functional`, proc.tex:2854, Exercise): for bounded
 ultraweakly continuous functionals `f ∈ 𝒜_*` and `g ∈ ℬ_*` the
@@ -1393,10 +1708,30 @@ end TensorBasic
 
 /-! ## Parsec 1130: completely positive bilinear maps -/
 
+omit [PartialOrder A] [StarOrderedRing A] [PartialOrder B]
+  [StarOrderedRing B] in
 /-- **113II** (proc.tex:3012, Exercise): an mi-bilinear map between von
 Neumann algebras is completely positive. -/
 theorem mi_bilinear_cp (β : A →ₗ[ℂ] B →ₗ[ℂ] C) (hm : BilinMult β)
-    (hi : BilinStar β) : BilinCP β := sorry
+    (hi : BilinStar β) : BilinCP β := by
+  -- The exercise's index entry points at Schur's product theorem, but no
+  -- Schur is needed: multiplicativity and involution-preservation turn
+  -- `β(aᵢ*aⱼ, bᵢ*bⱼ)` into `β(aᵢ,bᵢ)* β(aⱼ,bⱼ)`, so the whole double sum
+  -- collapses to `x* x` with `x = ∑ᵢ β(aᵢ,bᵢ)cᵢ`.
+  intro n a b c
+  have key : ∀ i j : Fin n,
+      star (c i) * β (star (a i) * a j) (star (b i) * b j) * c j
+        = star (β (a i) (b i) * c i) * (β (a j) (b j) * c j) := by
+    intro i j
+    rw [hm (star (a i)) (a j) (star (b i)) (b j), ← hi (a i) (b i),
+      star_mul, mul_assoc, mul_assoc, mul_assoc]
+  calc (0 : C) ≤ star (∑ i, β (a i) (b i) * c i) * (∑ i, β (a i) (b i) * c i) :=
+        star_mul_self_nonneg _
+    _ = ∑ i, ∑ j, star (c i) * β (star (a i) * a j) (star (b i) * b j) * c j := by
+        rw [star_sum, Finset.sum_mul]
+        refine Finset.sum_congr rfl fun i _ => ?_
+        rw [Finset.mul_sum]
+        exact Finset.sum_congr rfl fun j _ => (key i j).symm
 
 /-- **113III** (proc.tex:3018, Notation): the entrywise bilinear map
 `M_N β : M_N(𝒜) × M_N(ℬ) → M_N(𝒞)`,
@@ -1406,6 +1741,60 @@ def matBilin (β : A →ₗ[ℂ] B →ₗ[ℂ] C) (N : ℕ)
     (M' : CStarMatrix (Fin N) (Fin N) B) :
     CStarMatrix (Fin N) (Fin N) C :=
   CStarMatrix.ofMatrix (Matrix.of fun i j => β (M i j) (M' i j))
+
+/-! ### Auxiliaries for **113IV**
+
+The exercise's "positivity of `M_N β`" is stated through the criterion of
+cstar.tex **33II** (`cstar_matrix_positive_iff`, proved), and the passage
+between the two is always the same: a positive matrix is `X* X`, so its
+entries are `Mᵢⱼ = ∑ₖ Xₖᵢ* Xₖⱼ`, and bilinearity turns a double sum into a
+sum of instances of the definition of complete positivity. -/
+
+private theorem sum_comm₃ {N : ℕ} {M : Type*} [AddCommMonoid M]
+    (h : Fin N → Fin N → Fin N → M) :
+    ∑ i, ∑ j, ∑ k, h i j k = ∑ k, ∑ i, ∑ j, h i j k := by
+  rw [Finset.sum_congr rfl (fun i _ => Finset.sum_comm), Finset.sum_comm]
+
+private theorem sum_comm₄ {N : ℕ} {M : Type*} [AddCommMonoid M]
+    (h : Fin N → Fin N → Fin N → Fin N → M) :
+    ∑ i, ∑ j, ∑ k, ∑ l, h i j k l = ∑ k, ∑ l, ∑ i, ∑ j, h i j k l := by
+  rw [sum_comm₃ (fun i j k => ∑ l, h i j k l)]
+  exact Finset.sum_congr rfl fun k _ => sum_comm₃ (fun i j l => h i j k l)
+
+/-- `0 ≤ a` gives `a = b* b`; stated for an abstract C*-algebra because
+typeclass search cannot find the functional calculus instances for
+`CStarMatrix` directly (the same dodge as in `A/CStar/Matrices.lean`). -/
+private theorem exists_star_mul_self {M : Type*} [CStarAlgebra M]
+    [PartialOrder M] [StarOrderedRing M] {a : M} (ha : 0 ≤ a) :
+    ∃ b, a = star b * b :=
+  CStarAlgebra.nonneg_iff_eq_star_mul_self.mp ha
+
+/-- A positive matrix over a C*-algebra is `X* X`, entrywise
+`Mᵢⱼ = ∑ₖ Xₖᵢ* Xₖⱼ`. -/
+private theorem exists_star_repr_of_nonneg {N : ℕ}
+    (M : CStarMatrix (Fin N) (Fin N) A) (hM : 0 ≤ M) :
+    ∃ X : Fin N → Fin N → A, ∀ i j, M i j = ∑ k, star (X k i) * X k j := by
+  obtain ⟨Y, hY⟩ := exists_star_mul_self hM
+  refine ⟨fun k i => Y k i, fun i j => ?_⟩
+  rw [hY, CStarMatrix.mul_apply]
+  exact Finset.sum_congr rfl fun k _ => by rw [CStarMatrix.star_apply]
+
+/-- A cp-map applied entrywise to a positive matrix keeps it positive (in
+the quadratic-form form of **33II**). -/
+private theorem cp_matrix_nonneg {D E : Type u} [CStarAlgebra D]
+    [PartialOrder D] [StarOrderedRing D] [CStarAlgebra E] [PartialOrder E]
+    [StarOrderedRing E] (h : D →ₗ[ℂ] E)
+    (hh : Theses.A.CStar.IsCompletelyPositiveMap h) {N : ℕ}
+    (P : CStarMatrix (Fin N) (Fin N) D) (hP : 0 ≤ P) (c : Fin N → E) :
+    0 ≤ ∑ i, ∑ j, star (c i) * h (P i j) * c j := by
+  obtain ⟨Z, hZ⟩ := exists_star_repr_of_nonneg P hP
+  have hrw : ∑ i, ∑ j, star (c i) * h (P i j) * c j
+      = ∑ k, ∑ i, ∑ j, star (c i) * h (star (Z k i) * Z k j) * c j := by
+    rw [← sum_comm₃ (fun i j k => star (c i) * h (star (Z k i) * Z k j) * c j)]
+    refine Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => ?_
+    rw [hZ i j, map_sum, Finset.mul_sum, Finset.sum_mul]
+  rw [hrw]
+  exact Finset.sum_nonneg fun k _ => hh N (fun i => Z k i) c
 
 /-- **113IV** (`cp-bilinear`, proc.tex:3029, Exercise), parts 1 and 3: a
 bilinear map `β` is completely positive iff `(M_N β)(A,B) ≥ 0` for all
@@ -1420,7 +1809,51 @@ theorem cp_bilinear (β : A →ₗ[ℂ] B →ₗ[ℂ] C) :
         (∀ a : Fin N → A, 0 ≤ ∑ i, ∑ j, star (a i) * M i j * a j) →
         (∀ b : Fin N → B, 0 ≤ ∑ i, ∑ j, star (b i) * M' i j * b j) →
         ∀ c : Fin N → C,
-          0 ≤ ∑ i, ∑ j, star (c i) * matBilin β N M M' i j * c j := sorry
+          0 ≤ ∑ i, ∑ j, star (c i) * matBilin β N M M' i j * c j := by
+  constructor
+  · -- (1) ⇒ (3): decompose both positive matrices as `X* X`, `Y* Y` and
+    -- expand by bilinearity; each of the resulting `N²` double sums is an
+    -- instance of complete positivity of `β`.
+    intro hβ N M M' hM hM' c
+    obtain ⟨X, hX⟩ := exists_star_repr_of_nonneg M
+      ((Theses.A.CStar.cstar_matrix_positive_iff M).mpr hM)
+    obtain ⟨Y, hY⟩ := exists_star_repr_of_nonneg M'
+      ((Theses.A.CStar.cstar_matrix_positive_iff M').mpr hM')
+    have hrw : ∑ i, ∑ j, star (c i) * matBilin β N M M' i j * c j
+        = ∑ k, ∑ l, ∑ i, ∑ j, star (c i) *
+            β (star (X k i) * X k j) (star (Y l i) * Y l j) * c j := by
+      rw [← sum_comm₄ (fun i j k l => star (c i) *
+        β (star (X k i) * X k j) (star (Y l i) * Y l j) * c j)]
+      refine Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => ?_
+      have hb : β (M i j) (M' i j)
+          = ∑ k, ∑ l, β (star (X k i) * X k j) (star (Y l i) * Y l j) := by
+        have hfst : β (∑ k, star (X k i) * X k j)
+            = ∑ k, β (star (X k i) * X k j) := map_sum β _ _
+        rw [hX i j, hY i j, hfst, LinearMap.sum_apply]
+        exact Finset.sum_congr rfl fun k _ => map_sum _ _ _
+      show star (c i) * β (M i j) (M' i j) * c j = _
+      rw [hb, Finset.mul_sum, Finset.sum_mul]
+      refine Finset.sum_congr rfl fun k _ => ?_
+      rw [Finset.mul_sum, Finset.sum_mul]
+    rw [hrw]
+    exact Finset.sum_nonneg fun k _ => Finset.sum_nonneg fun l _ =>
+      hβ N (fun i => X k i) (fun i => Y l i) c
+  · -- (3) ⇒ (1): apply it to the Gram matrices `(aᵢ* aⱼ)`, `(bᵢ* bⱼ)`,
+    -- positive by **33II**.3.
+    intro h n a b c
+    have hM : ∀ x : Fin n → A, 0 ≤ ∑ i, ∑ j,
+        star (x i) * (CStarMatrix.ofMatrix
+          (Matrix.of fun i j => star (a i) * a j) :
+            CStarMatrix (Fin n) (Fin n) A) i j * x j :=
+      fun x => (Theses.A.CStar.cstar_matrix_positive_iff _).mp
+        (Theses.A.CStar.cstar_matrix_star_mul_nonneg a) x
+    have hM' : ∀ y : Fin n → B, 0 ≤ ∑ i, ∑ j,
+        star (y i) * (CStarMatrix.ofMatrix
+          (Matrix.of fun i j => star (b i) * b j) :
+            CStarMatrix (Fin n) (Fin n) B) i j * y j :=
+      fun y => (Theses.A.CStar.cstar_matrix_positive_iff _).mp
+        (Theses.A.CStar.cstar_matrix_star_mul_nonneg b) y
+    exact h n _ _ hM hM' c
 
 /-- **113IV** (`cp-bilinear`, proc.tex:3029, Exercise), corollary:
 `h ∘ β ∘ (f × g)` is completely positive when `f`, `g`, `h` are cp-maps
@@ -1434,7 +1867,89 @@ theorem cp_bilinear_comp {A' B' C' : Type u} [CStarAlgebra A']
     (hg : Theses.A.CStar.IsCompletelyPositiveMap g)
     (hh : Theses.A.CStar.IsCompletelyPositiveMap h)
     (β' : A' →ₗ[ℂ] B' →ₗ[ℂ] C')
-    (hβ' : ∀ a b, β' a b = h (β (f a) (g b))) : BilinCP β' := sorry
+    (hβ' : ∀ a b, β' a b = h (β (f a) (g b))) : BilinCP β' := by
+  -- `M_N f` and `M_N g` send the Gram matrices to positive matrices (that
+  -- is complete positivity of `f`, `g`, verbatim), `cp_bilinear` sends
+  -- those to a positive matrix, and `M_N h` keeps it positive.
+  intro n a b c
+  set M : CStarMatrix (Fin n) (Fin n) A :=
+    CStarMatrix.ofMatrix (Matrix.of fun i j => f (star (a i) * a j)) with hMdef
+  set M' : CStarMatrix (Fin n) (Fin n) B :=
+    CStarMatrix.ofMatrix (Matrix.of fun i j => g (star (b i) * b j)) with hM'def
+  have hMq : ∀ x : Fin n → A, 0 ≤ ∑ i, ∑ j, star (x i) * M i j * x j :=
+    fun x => hf n a x
+  have hM'q : ∀ y : Fin n → B, 0 ≤ ∑ i, ∑ j, star (y i) * M' i j * y j :=
+    fun y => hg n b y
+  have hP : 0 ≤ matBilin β n M M' :=
+    (Theses.A.CStar.cstar_matrix_positive_iff _).mpr
+      ((cp_bilinear β).mp hβ n M M' hMq hM'q)
+  have hfin := cp_matrix_nonneg h hh (matBilin β n M M') hP c
+  refine le_of_le_of_eq hfin ?_
+  refine Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => ?_
+  rw [hβ' (star (a i) * a j) (star (b i) * b j)]
+  rfl
+
+
+/-- **113II** together with **113IV**, in the unbundled form in which
+thesis B's `IsVNTensor` (dils.tex 165II) supplies its data: `M_N t` sends
+a pair of positive matrices to a positive one.  **No `ℂ`-homogeneity of
+`t` is used** — only additivity in each slot, multiplicativity and
+involution preservation — which is exactly what `IsVNTensor` has.  (See
+`QUESTIONS.md` B5: the positivity clause it proposes to *add* is
+derivable.) -/
+theorem matBilin_nonneg_of_mi (t : A → B → C)
+    (hl : ∀ (a a' : A) (b : B), t (a + a') b = t a b + t a' b)
+    (hr : ∀ (a : A) (b b' : B), t a (b + b') = t a b + t a b')
+    (hmul : ∀ (a a' : A) (b b' : B), t a b * t a' b' = t (a * a') (b * b'))
+    (hstar : ∀ (a : A) (b : B), star (t a b) = t (star a) (star b))
+    {N : ℕ} (M : CStarMatrix (Fin N) (Fin N) A)
+    (M' : CStarMatrix (Fin N) (Fin N) B) (hM : 0 ≤ M) (hM' : 0 ≤ M')
+    (c : Fin N → C) :
+    0 ≤ ∑ i, ∑ j, star (c i) * t (M i j) (M' i j) * c j := by
+  have hsl : ∀ {n : ℕ} (x : Fin n → A) (y : B),
+      t (∑ k, x k) y = ∑ k, t (x k) y := fun {n} x y =>
+    map_sum (AddMonoidHom.mk' (fun a => t a y) fun a a' => hl a a' y) x Finset.univ
+  have hsr : ∀ {n : ℕ} (x : A) (y : Fin n → B),
+      t x (∑ k, y k) = ∑ k, t x (y k) := fun {n} x y =>
+    map_sum (AddMonoidHom.mk' (fun b => t x b) fun b b' => hr x b b') y Finset.univ
+  -- the argument of **113II**, for `t`
+  have hcp : ∀ {n : ℕ} (a : Fin n → A) (b : Fin n → B) (d : Fin n → C),
+      0 ≤ ∑ i, ∑ j,
+        star (d i) * t (star (a i) * a j) (star (b i) * b j) * d j := by
+    intro n a b d
+    have key : ∀ i j : Fin n,
+        star (d i) * t (star (a i) * a j) (star (b i) * b j) * d j
+          = star (t (a i) (b i) * d i) * (t (a j) (b j) * d j) := by
+      intro i j
+      rw [← hmul (star (a i)) (a j) (star (b i)) (b j), ← hstar (a i) (b i),
+        star_mul, mul_assoc, mul_assoc, mul_assoc]
+    calc (0 : C)
+        ≤ star (∑ i, t (a i) (b i) * d i) * (∑ i, t (a i) (b i) * d i) :=
+          star_mul_self_nonneg _
+      _ = ∑ i, ∑ j,
+            star (d i) * t (star (a i) * a j) (star (b i) * b j) * d j := by
+          rw [star_sum, Finset.sum_mul]
+          refine Finset.sum_congr rfl fun i _ => ?_
+          rw [Finset.mul_sum]
+          exact Finset.sum_congr rfl fun j _ => (key i j).symm
+  obtain ⟨X, hX⟩ := exists_star_repr_of_nonneg M hM
+  obtain ⟨Y, hY⟩ := exists_star_repr_of_nonneg M' hM'
+  have hrw : ∑ i, ∑ j, star (c i) * t (M i j) (M' i j) * c j
+      = ∑ k, ∑ l, ∑ i, ∑ j, star (c i) *
+          t (star (X k i) * X k j) (star (Y l i) * Y l j) * c j := by
+    rw [← sum_comm₄ (fun i j k l => star (c i) *
+      t (star (X k i) * X k j) (star (Y l i) * Y l j) * c j)]
+    refine Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => ?_
+    have hb : t (M i j) (M' i j)
+        = ∑ k, ∑ l, t (star (X k i) * X k j) (star (Y l i) * Y l j) := by
+      rw [hX i j, hY i j, hsl]
+      exact Finset.sum_congr rfl fun k _ => hsr _ _
+    rw [hb, Finset.mul_sum, Finset.sum_mul]
+    refine Finset.sum_congr rfl fun k _ => ?_
+    rw [Finset.mul_sum, Finset.sum_mul]
+  rw [hrw]
+  exact Finset.sum_nonneg fun k _ => Finset.sum_nonneg fun l _ =>
+    hcp (fun i => X k i) (fun i => Y l i) c
 
 /-! ## Parsec 1140: extra universal properties and uniqueness -/
 

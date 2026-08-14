@@ -83,6 +83,26 @@ clause is not derivable from the existing four.
 (proved, in file) already gives it — so adding the clause leaves only the
 existence half to prove.
 
+**Answered 2026-08-14 (worker 40): the clause is derivable, so no decision is
+needed.**  proc.tex **113II** and **113IV** are now proved
+(`A/Proc/Tensor.lean`), and reading their proofs back shows what they actually
+consume: 113II uses **only** multiplicativity and involution preservation, and
+113IV (1) ⇒ (3) uses **only** additivity in each slot.  No `ℂ`-homogeneity
+enters either.  Those four properties are exactly `mul`, `star`, `add_left`,
+`add_right` of `IsVNTensor`.  Proved in that shape, so that an `IsVNTensor`
+discharges it field by field:
+
+```
+Theses.A.Proc.matBilin_nonneg_of_mi (t : 𝒜 → ℬ → 𝒞) (hl hr hmul hstar)
+  (M : M_N 𝒜) (M' : M_N ℬ) (hM : 0 ≤ M) (hM' : 0 ≤ M') (c) :
+  0 ≤ ∑ᵢⱼ cᵢ* · t (Mᵢⱼ) (M'ᵢⱼ) · cⱼ
+```
+
+which is the cstar.tex 33II criterion for `0 ≤ Mₙ(t)(M,M')`.  `#print axioms`
+clean.  **To be closed by the `B/Dils` worker** once it is checked against what
+165III's existence half actually consumes — the claim here is about the
+positivity clause only, not about the rest of that proof.
+
 ### B6. `exc_dm_effectus_functor` / `_monad` / `_kleisli` are too weak to be meaningful
 Our statements constrain only `.obj` — they say *some* functor/monad agrees
 with `𝒟_M` on objects, and nothing about `map`, `η` or `μ`.  `_kleisli` is
@@ -233,3 +253,30 @@ the thesis, `⟪x,y⟫_Mathlib = ⟨y,x⟩_thesis`) — five of our statements w
 transcribed without the swap and are now corrected; and the `Corner` /
 `cornerSet` / `VNSub` / `mketbra` / `145I` / `148VII` / `88IV` fixes, all of
 which were **our** transcription errors rather than thesis defects.
+
+### B9. 188IV — is "total" independent of the effectus-in-partial-form structure?
+
+`Tot D` is defined by `1 ∘ f = 1`, i.e. relative to the effect object `I` and
+the truth predicate `1` of the chosen `EffectusPartialForm` structure on `D`.
+Everything *else* in such a structure is determined by the category together
+with its coproducts:
+
+* the initial object `0` is also terminal (for `f : X → 0`, `1 ∘ f = f ∘ 1_0`
+  and `1_0 = 0_0` by initiality, so `1 ∘ f = 0` and `f = 0`), so the zero maps
+  are the maps through `0` and `▷₁ = [id,0]`, `▷₂ = [0,id]` are determined;
+* `f ⊥ g` iff there is `b` with `▷₁ ∘ b = f`, `▷₂ ∘ b = g` (⇐ is the compatible
+  sum axiom, ⇒ is untying with `b = κ₁f ⋁ κ₂g`), and then `f ⋁ g = ∇ ∘ b` — so
+  the PCM-enrichment is determined too.
+
+We could not settle whether `(I, 1)` is likewise determined (up to a canonical
+iso of `I`), i.e. whether the wide subcategory `Tot D` depends on the choice.
+The obvious candidates fail: "`f` is total iff `f ⊥ g` implies `g = 0`" is
+false — in `Par(Set)` the unique map `X ⇸ ∅` is maximal but not total.
+
+**Why it matters.**  Our statement of 188IV (`cho_thm_3_tot_par`) originally
+quantified over *every* structure of an effectus in partial form on `Par C`,
+which is strictly stronger than what the thesis proves (188IV is about the
+structure built in 187I).  It has been weakened to the canonical structure.
+If totality is in fact structure-independent, the stronger form follows and
+the statement could be restored; a counterexample would be interesting in its
+own right.

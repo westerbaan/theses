@@ -3669,3 +3669,291 @@ should not be built on until it is made.**
   `Theses/B/Dils/SelfDual.lean`, `Theses/B/Dils/Paschke.lean`,
   `PROVING-LOG.md`.  Nothing staged, nothing committed.
   (`Theses/B/Eff/Effectus.lean` is also dirty — not mine.)
+
+## Session 15 — `B/Eff` parsecs 181, 187, 188: Cho's theorem (worker 39)
+
+Target: the four `sorry`s of Cho's theorem **180X** in `Theses/B/Eff/Effectus.lean`
+— `eff_partial_to_total` (181XI), `cho_thm_1` (187I), `cho_thm_3_par_tot`
+(188III) and `cho_thm_3_tot_par` (188IV).  **All four are now proved**; `B/Eff`
+goes 30 → **26** code `sorry`s and `Effectus.lean` 7 → **3** (the three left
+are the thesis-A examples `effectus_vn`, `effectus_vn_partial` and the parked
+`extensive_effectus`).
+
+### The one structural obstacle: chosen coproducts vs. inherited ones
+
+`EffectusTotalForm`/`FinPAC`/`EffectusPartialForm` are stated against
+*whatever* `HasFiniteCoproducts`/`HasTerminal` instance is in scope, while the
+thesis computes with the coproducts that `Tot D` and `Par C` inherit from `D`
+resp. `C`.  Both halves therefore needed a bridge, and both bridges have the
+same shape and are now permanent API:
+
+* `totCoprodIso`, `tot_hom_ext_base`, `tp₁`, `tp₂`, `tpair`, `tp_jm`,
+  `truth_decomp` — coordinates for an *arbitrary* chosen coproduct of `Tot D`,
+  transported from `coprod_prod` (181VII) along
+  `IsColimit.coconePointUniqueUpToIso`.
+* `parCoprodIso`, `par_pproj₁_eq`, `par_pproj₂_eq` — the same for `Par C`,
+  plus a small `pval` calculus (`pval_comp`, `par_hat_comp`, `par_map_pproj₁`,
+  `par_hom_ext`, …) that keeps the two category structures on
+  `X.base ⟶ Y.base ⨿ 1` from being confused by the elaborator.
+
+Consequence worth recording: **`tot_effectusTotalForm` is proved for an
+arbitrary coproduct/terminal structure on `Tot D`**, not just the inherited
+one.  That is what makes `cho_thm_3_par_tot` provable in the general form our
+statement already had (`∀ s : EffectusTotalStructure (Tot D)`).
+
+### 181XI (`eff_partial_to_total`) — class (1), faithful
+
+Transcribed from 181XII–XVI.  `Tot D`'s initial object is `0`, its final
+object is `I` via 181XIII (`one_m_is_id`: `1 = id_I`), its coproducts are `D`'s.
+The two pullback squares and the joint monicity of `[κ₁,κ₂,κ₂]`, `[κ₂,κ₁,κ₂]`
+are the thesis' arguments verbatim, in `tp₁/tp₂` coordinates.
+
+One step the thesis leaves implicit and that the formalization has to supply:
+in 181XVI the third coordinates are compared as *predicates* (`c₁ ⋁ … = 1`
+determines `1 ∘ cᵢ`, not `cᵢ`).  Over the inherited coproduct that is the same
+thing because `1 = id_I`; over an arbitrary one the final object `⊤` is only
+*isomorphic* to `I`, so we prove `truth_terminal_isIso` (`1 : ⊤ ⟶ I` is an
+iso, both objects being final in `Tot D`) and cancel it.
+
+### 187I (`cho_thm_1`) — class (1) for 187III–V and VII, class (2) for the
+### zero–one axiom
+
+187III (PCM), 187IV (enrichment), 187V (finPAC) and 187VII (the two final
+axioms) are transcribed exactly, including the bound `(▷₂+id) ⊙ d` and
+`[id,κ₂] ⊙ d` of the associativity argument and the two successive pullback
+liftings of 187VII (which is where the already-recorded `▷₂`-form of 186IV,
+`par_pullbacks_right₂`, is used).
+
+**Class (2)** — the zero–one axiom of 187VI.  The thesis derives `1 ⊥ p ⟹
+p = 0` from a pullback square drawn between `1`, `1`, `(1+1)+1` and `1+1`
+(eff.tex:1885–1900).  We could not reconstruct that square as an instance of
+either 180I's or 186IV's: its four corners are *not* of the shape
+`P+X, B+X, P, B` that `par-pullbacks` produces, and read in `C` it is not an
+instance of `tot-pullbacks` either (see ERRATA).  It is replaced by a
+three-line argument from material established two paragraphs earlier in the
+same point:
+
+> let `s = 1 ⋁ p`; then `(1 ⋁ p) ⋁ s^⊥ = s ⋁ s^⊥ = 1`, so by partial
+> associativity `1 ⋁ (p ⋁ s^⊥) = 1`, so `p ⋁ s^⊥ = 1^⊥ = 0` by the
+> *uniqueness* of the orthosupplement (the previous paragraph of 187VI); the
+> bound `d` for `p ⊥ s^⊥` then has `1 ⊙ d = 0`, so `d = 0` by **186VIII.2**
+> and `p = ▷₁ ⊙ d = 0`.
+
+### 188III (`cho_thm_3_par_tot`) — class (1)
+
+`P : Par (Tot D) ⥤ D`, `P f = ▷₁ ∘ f`, exactly as in 188III; functoriality is
+`▷₁ ∘ [g,κ₂] = [▷₁∘g, 0] = (▷₁∘g) ∘ ▷₁` (`tot_desc_tp₁`).  Instead of
+exhibiting the inverse `P' f = ⟨f, (1∘f)^⊥⟩` as a functor and checking
+`PP' = id`, `P'P = id`, we use `P'` only pointwise, to show `P` is full, and
+get the equivalence from full + faithful + (trivially) essentially surjective.
+Faithfulness is the one place where 181XVI's "third coordinate is determined"
+lemma (`tot_snd_coord_eq`) is reused.
+
+### 188IV (`cho_thm_3_tot_par`) — class (1) for the proof, class (4) for the
+### statement
+
+The proof is 188IV verbatim: `Q g = ĝ` is a functor because
+`1 ⊙ ĝ = 1` and `(f ∘ g)^ = f̂ ⊙ ĝ`, and it is full and faithful by the
+uniqueness half of **186VIII.1** (`pardp_1`).
+
+**Class (4).**  Our statement read
+
+```lean
+theorem cho_thm_3_tot_par (s : EffectusPartialStructure (Par C)) : … Tot (Par C) ≌ C
+```
+
+i.e. it asserted `Tot (Par C) ≅ C` for **every** structure of an effectus in
+partial form on `Par C`.  That is strictly stronger than 188IV, which is about
+the structure built in 187I: `Tot` is defined by `1 ∘ f = 1`, so it depends on
+the effect object `I` and the truth predicate `1` of the structure.  The PCM
+part of such a structure *is* determined by the category (`f ⊥ g` iff a bound
+exists, and `0` is the map through the zero object `0`, which every effectus in
+partial form has), but we found no reason why `(I, 1)` — hence the class of
+total maps — should be.  The statement has been weakened to the canonical
+structure; see QUESTIONS B9.
+
+### Classification
+
+* **(1) faithful:** 181XI (all of 181XII–XVI), 187III, 187IV, 187V, 187VI up
+  to the zero–one axiom, 187VII, 188III, 188IV.
+* **(2) different route:** the zero–one axiom of 187VI (above); 188III uses
+  full+faithful+ess.surj. rather than an explicit inverse functor.
+* **(3) mild:** the `truth_terminal_isIso` step in 181XVI (above).
+* **(4) our statement mis-transcribes the thesis:** `cho_thm_3_tot_par`
+  (above, fixed).
+* **(5) closed from Mathlib without reading the author's argument:** none.
+  `eff.tex` 1165–1290, 1713–1935 and 1936–1990 were read in full first.
+
+## Session 15 — `A/Proc` parsecs 1120 and 1130 (worker 40)
+
+Closed **four** statements, all in `Theses/A/Proc/Tensor.lean`, and added one
+lemma that settles **QUESTIONS B5**.  A/Proc 149 → 145 (grep convention);
+`Tensor.lean` 51 → **47** by the build-warning count, the other three files
+unchanged (Measurement 47, QuantumLambda 26, Duplicators 20).
+
+| point | declaration | note |
+|---|---|---|
+| **112VIII** | `tensor_product_norm` | all four clauses; §1 |
+| **113II** | `mi_bilinear_cp` | §2 — the author's index hint is not needed |
+| **113IV**.1/3 | `cp_bilinear` | §3 |
+| **113IV** cor. | `cp_bilinear_comp` | §3 |
+| — | `matBilin_nonneg_of_mi` | §4, resolves **QUESTIONS B5** |
+
+New private auxiliaries in `Tensor.lean`: `tsn`, `basicCore`, `tsn_nonneg`,
+`basic_cauchy_schwarz`, `tsn_add_le`, `tsn_smul`, `tsn_sum_le`,
+`basic_nonneg_tmul`, `basic_mono_tmul_left/right`, `basic_one_nonneg`,
+`basic_tmul_le`, `tsn_tmul_le`, `tnSet`, `tensorNorm_eq_sSup`,
+`tnSet_nonneg`, `zero_mem_tnSet`, `tnSet_bddAbove`, `sum_comm₃`, `sum_comm₄`,
+`exists_star_mul_self`, `exists_star_repr_of_nonneg`, `cp_matrix_nonneg`;
+public: `tensorNorm_nonneg`, `tensorNorm_zero`, `tensorNorm_smul`,
+`tensorNorm_add_le`, `tensorNorm_eq_zero_iff`.
+
+### 1. 112VIII (proc.tex:2849) — the tensor product norm really is a norm
+
+An Exercise, and `asols.tex` stops at parsec 340, so there is no author
+argument: this is the first proof of it.
+
+The organising observation is that **112V** (`basic_state_inner_product`,
+proved by w37) says exactly that `[s,t]_ω = ω(s* t)` is a positive
+semidefinite Hermitian form, i.e. a Mathlib `PreInnerProductSpace.Core ℂ
+(𝒜 ⊙ ℬ)`.  Feeding 112V into that structure (`basicCore`) buys
+Cauchy–Schwarz, the triangle inequality and homogeneity of
+`‖t‖_ω = ω(t* t)^½` for free — Mathlib's `Core` deliberately does *not*
+require definiteness, which is what makes it applicable here.
+
+The two things that are not free:
+
+* **Boundedness of the set the supremum is taken over.**  Nobody had checked
+  the supremum in 112II is over a bounded set, and without that neither the
+  triangle inequality nor definiteness can be proved (an unbounded set has
+  `sSup = 0` by Lean's convention, which would break both).  It is bounded:
+  writing `t = ∑ᵢ aᵢ ⊙ bᵢ`, `‖t‖_ω ≤ ∑ᵢ ‖aᵢ ⊙ bᵢ‖_ω ≤ ∑ᵢ ‖aᵢ‖‖bᵢ‖`, the
+  second step because `ω` is nonnegative on `x ⊙ y` for positive `x`, `y`
+  (write them as `u* u`, `v* v` and apply 112V again), hence monotone in each
+  slot separately, so `ω((a* a) ⊙ (b* b)) ≤ ‖a‖²‖b‖² ω(1) ≤ ‖a‖²‖b‖²`.
+* **Definiteness.**  For `t ≠ 0`, **112VI** (`product_functionals_separating`,
+  w37) applied to the *np*-functionals — separating by vn.tex 44XI
+  (`np_separating`, proved) — gives `σ`, `τ` with `(σ ⊙ τ)(t) ≠ 0`.  Then
+  `σ ⊙ τ` is itself basic (take `t₀ = 1`), and Cauchy–Schwarz
+  `|ω(1* t)| ≤ ‖1‖_ω ‖t‖_ω` forces **both** `(σ⊙τ)(1) > 0` and
+  `(σ⊙τ)(t* t) > 0`.  Rescaling by `t₀ = ((σ⊙τ)(1))^{-½}·1` — which keeps the
+  functional basic, since basicness is closed under this conjugation — gives a
+  basic `ω` with `ω(1) = 1` and `ω(t* t) > 0`, so `‖t‖ > 0`.
+
+Divergence class: no author argument exists to diverge from.
+
+### 2. 113II (proc.tex:3012) — the author's Schur hint is unnecessary
+
+The Exercise carries the index entry `\index{Schur's Product Theorem}`, i.e.
+the intended route is via **111II** `schur` (as in 112III).  It is not needed:
+multiplicativity and involution preservation turn
+`β(aᵢ* aⱼ, bᵢ* bⱼ)` into `β(aᵢ,bᵢ)* β(aⱼ,bⱼ)`, so
+
+  `∑ᵢⱼ cᵢ* β(aᵢ*aⱼ, bᵢ*bⱼ) cⱼ = x* x`,  `x = ∑ᵢ β(aᵢ,bᵢ) cᵢ`,
+
+and positivity is `star_mul_self_nonneg`.  Ten lines, no Schur, no
+von-Neumann-ness (the statement's `𝒜, ℬ, 𝒞` need only be C*-algebras) and no
+unitality — `BilinMult` + `BilinStar` alone.  **Divergence class (2)**: a
+different, shorter route than the author's hint.  Worth one sentence to the
+author; it is not a defect.
+
+### 3. 113IV (proc.tex:3029) — (1) ⇔ (3) and the corollary
+
+Also an Exercise with no published solution.  Both directions go through
+cstar.tex **33II** `cstar_matrix_positive_iff` (proved, `A/CStar/Matrices.lean`),
+which is how our statement renders "positive matrix" anyway:
+
+* **(3) ⇒ (1)** is immediate: apply (3) to the Gram matrices `(aᵢ* aⱼ)`,
+  `(bᵢ* bⱼ)`, positive by 33II.3.
+* **(1) ⇒ (3)** needs *the* recurring step of this parsec: a positive
+  `M ∈ M_N(𝒜)` is `X* X`, so `Mᵢⱼ = ∑ₖ Xₖᵢ* Xₖⱼ`; expanding both matrices this
+  way and using bilinearity turns `∑ᵢⱼ cᵢ* (M_N β)(M,M')ᵢⱼ cⱼ` into a sum of
+  `N²` instances of `BilinCP β`.  Factored out as
+  `exists_star_repr_of_nonneg`.  As in `A/CStar/Matrices.lean`, the
+  `∃ b, a = star b * b` step has to be routed through an abstract C*-algebra
+  variable, because typeclass search cannot find the functional calculus
+  instances for `CStarMatrix` directly.
+* The **corollary** (`cp_bilinear_comp`) is then the three-step chain the
+  author describes: `M_N f`, `M_N g` carry the Gram matrices to positive
+  matrices (that is complete positivity of `f`, `g` *verbatim*, given how
+  `IsCompletelyPositiveMap` is defined in this tree), `cp_bilinear` carries
+  those to a positive matrix, and `M_N h` keeps it positive
+  (`cp_matrix_nonneg`, the same decomposition again).
+
+### 4. QUESTIONS B5 is answered: the positivity clause is derivable
+
+B5 records that thesis B's `IsVNTensor` (`B/Dils/SelfDual.lean:979`) has
+`add_left`, `add_right`, `smul_complex`, `mul`, `one`, `star`, `generates`,
+`separating` and "nothing about order", and asks the author whether to *add* a
+positivity clause because 165III needs positivity of
+`M_N(⊗) : M_N𝒜 × M_Nℬ → M_N(𝒜⊗ℬ)`.
+
+It need not be added.  Reading the proofs of §2 and §3 back: **113II uses only
+multiplicativity and involution preservation, and 113IV (1) ⇒ (3) uses only
+additivity in each slot** — no `ℂ`-homogeneity anywhere, in either.  Those four
+properties are precisely `mul`, `star`, `add_left`, `add_right` of
+`IsVNTensor`.  To make this usable rather than merely arguable it is proved in
+that exact shape as
+
+```
+Theses.A.Proc.matBilin_nonneg_of_mi (t : 𝒜 → ℬ → 𝒞) (hl hr hmul hstar)
+  (M : M_N 𝒜) (M' : M_N ℬ) (hM : 0 ≤ M) (hM' : 0 ≤ M') (c) :
+  0 ≤ ∑ᵢⱼ cᵢ* · t (Mᵢⱼ) (M'ᵢⱼ) · cⱼ
+```
+
+which an `IsVNTensor` discharges field by field, and which is the 33II
+criterion for `0 ≤ M_N(t)(M,M')`.  Noted in `QUESTIONS.md` under B5; the
+`B/Dils` worker should check it against what 165III actually consumes before
+the question is closed.
+
+(Incidentally this also shows `smul_complex` is *not* what carries the weight
+in `IsVNTensor`; whether right-`ℂ`-homogeneity is derivable from the other
+fields is a separate question, and I did not settle it.)
+
+### 5. New "blocked on X": 112IX waits on **72XI `luws`**
+
+`product_functional` (112IX, proc.tex:2854) asks that `f ⊙ g` be bounded and
+ultraweakly continuous for `f ∈ 𝒜_*`, `g ∈ ℬ_*`, and the Exercise's own hint
+is "perhaps using `luws`".  That is **72XI**, `sorry` at
+`A/VN/Completeness.lean:889`.  It is not avoidable by cleverness: for
+np-functionals the statement is easy (`σ ⊙ τ` *is* a basic functional, hence
+simple, hence one of the maps that induce the ultraweak tensor topology, and
+Cauchy–Schwarz gives `|(σ⊙τ)(t)| ≤ (σ⊙τ)(1)·‖t‖`), and the whole content is the
+passage from a general `f ∈ 𝒜_*` to a combination of np-functionals — which is
+`luws` (2) ⇒ (3).  Proving it here would be re-proving `luws`.
+
+Correction to w37 §4's band table while I am here: **116I is `VNT`-typed**
+(`exists_predualTensor` and `product_functional_norm` both mention `VNT A B`),
+so it belongs in the vacuous band, not with 113II/113IV.
+
+### 6. Classification
+
+* **(1) faithful:** none — none of the four has an author argument to be
+  faithful to (`asols.tex` covers parsecs 40–340 only, and all four points are
+  Exercises).
+* **(2) different route:** 113II, §2 — the author's index hint points at
+  Schur's product theorem and the proof does not use it.
+* **(3) mild:** 112VIII's definiteness is proved through the *np*-functionals
+  rather than an unspecified separating family, and its supremum-set is shown
+  bounded explicitly (§1), a step the Exercise does not mention.
+* **(4) our statement mis-transcribes the thesis:** none found.
+* **(5) closed from Mathlib without reading the author's argument:** none.
+  `proc.tex` 2681–2860 and 3005–3110 were read first; `asols.tex`'s errata
+  block was re-checked (largest key `parsec-990.70`, so nothing for 1120/1130).
+
+### 7. Verification
+
+* `lake build Theses.A.Proc.Duplicators` → exit 0, `Build completed
+  successfully (8721 jobs)`.  `lake env lean Theses/A/Proc/Tensor.lean` → **0**
+  `error:` lines; the only non-`sorry` warning in the file is the pre-existing
+  unused-section-variable one on `product_functionals_separating`.
+* `#print axioms` on all nine new/closed public declarations →
+  `[propext, Classical.choice, Quot.sound]`.  No `sorryAx`.
+* Doc `file:LINE` refs checked against `proc.tex`: 112VIII→2849 ✓,
+  113II→3012 ✓, 113IV→3029 ✓ (each the `\begin{point}` line itself, the
+  convention already in force in this file).
+* No sorried instance is involved: everything proved here is over abstract
+  C*- or von Neumann algebras and Mathlib's algebraic `A ⊗[ℂ] B`.
+* Files touched: `Theses/A/Proc/Tensor.lean`, `PROVING-LOG.md`,
+  `QUESTIONS.md`.  Nothing staged, nothing committed.  (`Theses/B/Dils/*` and
+  `Theses/B/Eff/Effectus.lean` are also dirty — not mine.)
