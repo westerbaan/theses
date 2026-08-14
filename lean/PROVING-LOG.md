@@ -7115,3 +7115,126 @@ Kaplansky,Paschke,Pure,Stinespring}` → exit 0, zero `error:` lines.
 149IX were updated (149IX's remaining blocker is **87VIII** alone, in
 `Theses/A/VN/NormalFunctionals.lean`, not `Basic.lean` as the old comment
 said), as was the parsec-1490 section header.
+
+---
+
+## Session 35 — `A/VN`: 87VIII, 79VI.1–.3, and 79VI.4 refuted (worker 61, A chain)
+
+Four statements proved (`A/VN` 92 → 88 code `sorry`s: `NormalFunctionals`
+18 → 17, `Division` 26 → 23) and one refuted.  Whole-project `lake build`
+exit 0; every new declaration `#print axioms`-clean.
+
+### **87VIII** `ultraweakly_bounded_implies_bounded` — divergence class 2
+
+This is the last thing **149V** needed besides **80IV**, and the short route
+skips the two `sorry`s the thesis's route goes through.
+
+The thesis (vn.tex:6590) runs the uniform boundedness principle on the
+**predual** `𝒜_*`: `f ↦ f(bα)` has norm `‖bα‖` by **87VI**, `𝒜_*` is a Banach
+space by **87III**, and pointwise boundedness comes from **72V** (four
+np-pieces).  Of those, 87III and 87VI are still `sorry`, and both sit behind
+**86IX** (polar decomposition of functionals) and **86XII** — so the printed
+route costs four more theorems.
+
+Instead: push the net into a *faithful normal representation* `ρ : 𝒜 → B(ℋ)`
+(**48VIII** `exists_faithful_normal_rep_vectors`, proved), where
+`‖ρ a‖ = ‖a‖` (`NonUnitalStarAlgHom.norm_map`, injective ∗-homs of C\*-algebras
+are isometric), and run **Banach–Steinhaus on `ℋ` twice**:
+
+1. every `⟪z, ρ(·) z⟫` is an np-functional of `𝒜` — it is
+   `compNP (starAlgHomP ρ) (vectorNP z)`, both already in `Basic.lean` — so
+   the hypothesis bounds the diagonal `⟪ρ(bα) z, z⟫` for each `z`;
+2. the complex polarisation identity for a linear map
+   (`inner_map_polarization'`) turns that into a bound on `⟪ρ(bα) y, z⟫` for
+   each pair `y, z`;
+3. Banach–Steinhaus applied to `innerSL ℂ (ρ(bα) y)` bounds `‖ρ(bα) y‖` for
+   each `y` (`innerSL_apply_norm` gives the norm of the functional);
+4. Banach–Steinhaus applied to `ρ(bα)` itself bounds `‖ρ(bα)‖ = ‖bα‖`.
+
+No predual, no 72V, no 86-parsec input.  ~55 lines plus one private norm
+estimate (`uwbib_pol_aux`).  87III and 87VI remain open and are unaffected —
+they are still wanted for the predual's own sake.
+
+### **79VI**.1 `pseudoinverse_basic_2'_1` — class 2 (Exercise, no author argument)
+
+For positive `a`: pseudoinvertible ⟺ `at = ⌈a⌉` for some `t ≥ 0`, and such `t`
+commutes with `a`.
+
+* `⟸` is *not* "take `t`": the given `t` need not be supported in the corner.
+  Cut it down to `⌈a⌉t⌈a⌉`, whose `a(·)a = a` is immediate from `a⌈a⌉ = a`,
+  and whose two carrier bounds are one application each of `suppProj_mul_le`
+  and `rangeProj_mul_le`.  Then **79II**.(2) ⇒ (5).
+* `⟹` takes `t = a^{∼1}` and needs its *positivity*, which is new:
+  `a^{∼1}` is self-adjoint because `star` carries a pseudoinverse of `a` to
+  one of `a*` `= a` and pseudoinverses are unique (`pinv_isSelfAdjoint`),
+  and then `a^{∼1} = (a^{∼1})* a a^{∼1} ≥ 0` by **79II**.(4)
+  (`pinv_nonneg`).
+* The commutation clause is one line: `at = ⌈a⌉` is self-adjoint, so
+  `at = star(at) = ta`.
+
+### **79VI**.2 `pseudoinverse_basic_2'_2` — class 2
+
+For positive `a`: pseudoinvertible ⟺ `λ⌈a⌉ ≤ a` for some `λ > 0`.
+
+* `⟸` **avoids any spectral analysis of `a`**.  Put `b = a + λ(1−⌈a⌉)`.  Then
+  `b⌈a⌉ = ⌈a⌉b = a` by one computation, and `λ·1 ≤ b`, so `0 ∉ spectrum ℝ b`
+  (`algebraMap_le_iff_le_spectrum`) and `b` is invertible
+  (`spectrum.isUnit_of_zero_notMem`).  Its inverse `c` is positive
+  (`c = c* b c`, `c` being self-adjoint by uniqueness of two-sided inverses)
+  and commutes with `⌈a⌉`, and `t = c⌈a⌉` is positive with `at = ⌈a⌉` — so
+  **79VI**.1 applies.  In particular no `cfc` of `a` is needed here.
+* `⟹` is where `√a` enters.  With `t = a^{∼1}` one has `⌈a⌉t = t⌈a⌉ = t` and
+  `t ≤ ‖t‖⌈a⌉` (conjugate `t ≤ ‖t‖·1` by `⌈a⌉`), and `⌈a⌉ = √a t √a` because
+  `√a` commutes with `t` (`Commute.cfc_nnreal`, since `t` commutes with `a`).
+  Conjugating by `√a` gives `⌈a⌉ ≤ ‖t‖a`, i.e. `λ = ‖t‖⁻¹` works; `t = 0`
+  (hence `⌈a⌉ = 0`) is the separate trivial case.
+
+### **79VI**.3 `pseudoinverse_basic_2'_3` — class 2
+
+`⌈a^{∼1}⌉ = ⌈a⌉` is immediate once `a^{∼1} ≥ 0` is known: `⌈a^{∼1}⌉` is
+`⌈a^{∼1}⌋ = a a^{∼1} = ⌊a⌉ = ⌈a⌉`.
+
+For `a^{∼1} ∈ {a}^□□` the missing step was **whatever commutes with `a`
+commutes with `⌈a⌉`**, which the thesis does not state anywhere before parsec
+880 (**88II** `commutant-ceil` is the general form, and is a forward
+reference here).  It is elementary and is now a named auxiliary,
+`commute_ceil_of_commute`: `a(b(1−⌈a⌉)) = b(a(1−⌈a⌉)) = 0`, so
+`ceil_mul_eq_zero` gives `⌈a⌉b = ⌈a⌉b⌈a⌉`; the same for `b*`, conjugated,
+gives `b⌈a⌉ = ⌈a⌉b⌈a⌉`.  With that, `(ba^{∼1})a = (a^{∼1}b)a` and both sides
+have carrier below `⌊a⌉`, so **60VIII** `mult_cancellation_2` finishes.
+
+### **79VI**.4 is **false as stated** — new ERRATA row, in point order
+
+`c^{∼1} ≤ b^{∼1}` for positive commuting pseudoinvertible `b ≤ c` fails as
+soon as `⌈b⌉ < ⌈c⌉`.  Machine-checked witness
+`pseudoinverse_basic_2'_4_is_false`: in `ℓ^∞({0,1})` (a von Neumann algebra by
+the instance w57 proved) take `b = (1,0)`, `c = 1`.  Projections are their own
+pseudoinverses (`pinv_of_isStarProjection`), so the claim reads `1 ≤ (1,0)`.
+
+The refutation is not about the model: `pseudoinverse_basic_2'_4_forces_eq_one`
+shows that in *any* von Neumann algebra, 79VI.4 applied to `b = p`, `c = 1`
+forces every projection `p` to be `1`.  The repair is the hypothesis
+`⌈b⌉ = ⌈c⌉`.  The statement is kept verbatim and `sorry` pending an author
+decision; its doc comment now points at the refutation.
+
+### New auxiliaries in `Division.lean`
+
+`rangeProj_eq_suppProj_of_isSelfAdjoint`, `pinv_isSelfAdjoint`, `pinv_nonneg`,
+`commute_ceil_of_commute`, `isPseudoinverse_self_of_isStarProjection`,
+`pseudoinvertible_of_isStarProjection`, `pinv_of_isStarProjection`,
+`pbFourWitness` + two lemmas.  `commute_ceil_of_commute` and
+`pinv_of_isStarProjection` are the reusable ones; 80IV will want both.
+
+### What is left of the 790–810 block, precisely
+
+**80III** `approximate_pseudoinverse_reduction` is the real gate on **80IV**
+(the thesis reduces 80IV to the positive case by it), and it is *harder than
+it looks*: our `IsApproxPseudoinverse` records "`tₙa` and `atₙ` are
+projections, `∑ tₙa = ⌈a⌋ = ∑ ⌊tₙ⌉`, `∑ atₙ = ⌊a⌉ = ∑ ⌈tₙ⌋`" as six fields,
+and getting `b(tₙb*)` to be a projection needs `tₙ c tₙ = tₙ` for `c = b*b`,
+which does **not** follow field-by-field.  It follows from `tₙc ≤ ⌊tₙ⌉` plus
+equality of the two suprema — an order-limit argument (`R_N − P_N` increasing
+and dominated by `⌈a⌉ − P_N`), perhaps 80–150 lines, and worth stating as its
+own lemma about two sequences of projections with equal suprema.  The
+positive case of 80IV itself is then the thesis's `qₙ = ⌈(a−1/n)₊⌉`
+construction on top of **79VI**.2, which is now available.

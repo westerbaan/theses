@@ -530,14 +530,85 @@ theorem norm_predual (a : A) :
     IsLUB {r : ℝ | ∃ f ∈ predual A, ‖f‖ ≤ 1 ∧ r = ‖f a‖} ‖a‖ :=
   sorry
 
+/-- The norm estimate behind the polarisation step of **87VIII**. -/
+private theorem uwbib_pol_aux (a b c d : ℂ) :
+    ‖(a - b - Complex.I * c + Complex.I * d) / 4‖
+      ≤ (‖a‖ + ‖b‖ + ‖c‖ + ‖d‖) / 4 := by
+  rw [norm_div]
+  have h4 : ‖(4 : ℂ)‖ = 4 := by norm_num
+  rw [h4]
+  gcongr
+  calc ‖a - b - Complex.I * c + Complex.I * d‖
+      ≤ ‖a - b - Complex.I * c‖ + ‖Complex.I * d‖ := norm_add_le _ _
+    _ ≤ (‖a - b‖ + ‖Complex.I * c‖) + ‖Complex.I * d‖ := by
+        gcongr; exact norm_sub_le _ _
+    _ ≤ ((‖a‖ + ‖b‖) + ‖Complex.I * c‖) + ‖Complex.I * d‖ := by
+        gcongr; exact norm_sub_le _ _
+    _ = ‖a‖ + ‖b‖ + ‖c‖ + ‖d‖ := by
+        simp only [norm_mul, Complex.norm_I, one_mul]
+
 /-- **87VIII** (`ultraweakly-bounded-implies-bounded`, vn.tex:6584,
 Theorem): a net `(b_α)_α` in a von Neumann algebra is norm bounded provided
 it is **ultraweakly bounded**, i.e. `sup_α |ω(b_α)| < ∞` for every
 np-functional `ω`. -/
 theorem ultraweakly_bounded_implies_bounded {ι : Type*} (x : ι → A)
     (h : ∀ ω : NPFunctional A, BddAbove (Set.range fun i => ‖ω (x i)‖)) :
-    BddAbove (Set.range fun i => ‖x i‖) :=
-  sorry
+    BddAbove (Set.range fun i => ‖x i‖) := by
+  -- Class 2 (different route).  The thesis runs the uniform boundedness
+  -- principle on the predual `A_*`, which needs **87III** and **87VI** (both
+  -- still `sorry`, and behind **86IX**/**86XII**).  Instead we push the net
+  -- into a *faithful normal representation* `ρ : A → B(H)` (**48VIII**), where
+  -- `‖ρ a‖ = ‖a‖`, and run Banach–Steinhaus twice on `H` itself: ultraweak
+  -- boundedness bounds the diagonal `⟪z, ρ(bₐ) z⟫` (each `⟪z, ρ(·) z⟫` is an
+  -- np-functional), polarisation bounds the off-diagonal `⟪ρ(bₐ) y, z⟫`,
+  -- whence `‖ρ(bₐ) y‖` is bounded for each `y`, whence `‖ρ(bₐ)‖ = ‖bₐ‖`.
+  obtain ⟨H, _, _, _, ρ, hinj, hn, -⟩ := exists_faithful_normal_rep_vectors A
+  have hρP : PreservesDirSups ⇑(starAlgHomP ρ) := hn
+  set T : ι → (H →L[ℂ] H) := fun i => ρ (x i) with hTdef
+  -- the diagonal is bounded: `⟪z, ρ(·) z⟫` is an np-functional on `A`
+  have hdiag : ∀ z : H, ∃ C : ℝ, ∀ i, ‖(⟪T i z, z⟫ : ℂ)‖ ≤ C := by
+    intro z
+    obtain ⟨C, hC⟩ := h (compNP (starAlgHomP ρ) hρP (vectorNP z))
+    refine ⟨C, fun i => ?_⟩
+    have hmem : ‖(compNP (starAlgHomP ρ) hρP (vectorNP z) (x i) : ℂ)‖ ≤ C :=
+      hC ⟨i, rfl⟩
+    have hval : (compNP (starAlgHomP ρ) hρP (vectorNP z) (x i) : ℂ)
+        = ⟪z, T i z⟫ := rfl
+    rw [hval] at hmem
+    calc ‖(⟪T i z, z⟫ : ℂ)‖ = ‖(starRingEnd ℂ) (⟪T i z, z⟫ : ℂ)‖ :=
+          (RCLike.norm_conj _).symm
+      _ = ‖(⟪z, T i z⟫ : ℂ)‖ := by rw [inner_conj_symm]
+      _ ≤ C := hmem
+  -- polarisation carries the bound to the off-diagonal
+  have hoff : ∀ y z : H, ∃ C : ℝ, ∀ i, ‖(⟪T i y, z⟫ : ℂ)‖ ≤ C := by
+    intro y z
+    obtain ⟨C₁, h₁⟩ := hdiag (y + z)
+    obtain ⟨C₂, h₂⟩ := hdiag (y - z)
+    obtain ⟨C₃, h₃⟩ := hdiag (y + Complex.I • z)
+    obtain ⟨C₄, h₄⟩ := hdiag (y - Complex.I • z)
+    refine ⟨(C₁ + C₂ + C₃ + C₄) / 4, fun i => ?_⟩
+    have hpol := inner_map_polarization' ((T i : H →L[ℂ] H) : H →ₗ[ℂ] H) y z
+    simp only [ContinuousLinearMap.coe_coe] at hpol
+    rw [hpol]
+    refine le_trans (uwbib_pol_aux _ _ _ _) ?_
+    have e₁ := h₁ i; have e₂ := h₂ i; have e₃ := h₃ i; have e₄ := h₄ i
+    linarith
+  -- first Banach–Steinhaus, on the functionals `⟪ρ(bₐ) y, (·)⟫`
+  have hpt : ∀ y : H, ∃ C : ℝ, ∀ i, ‖T i y‖ ≤ C := by
+    intro y
+    obtain ⟨C, hC⟩ := banach_steinhaus (g := fun i => innerSL ℂ (T i y))
+      (fun z => by
+        obtain ⟨C, hC⟩ := hoff y z
+        exact ⟨C, fun i => by simpa using hC i⟩)
+    exact ⟨C, fun i => by simpa only [innerSL_apply_norm] using hC i⟩
+  -- second Banach–Steinhaus, on the operators themselves
+  obtain ⟨C, hC⟩ := banach_steinhaus (g := T) hpt
+  refine ⟨C, ?_⟩
+  rintro _ ⟨i, rfl⟩
+  have hnm : ‖x i‖ = ‖T i‖ := (NonUnitalStarAlgHom.norm_map ρ hinj (x i)).symm
+  show ‖x i‖ ≤ C
+  rw [hnm]
+  exact hC i
 
 /-! ## Parsec 880: ultraweak permanence and the double commutant theorem
 

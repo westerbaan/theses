@@ -382,20 +382,270 @@ theorem pseudoinverse_basic_3 (a : A) :
       (hback (pinv (star a * a)) (pinv_spec (hiff.mp h)))
   · rw [(hfwd h).2, (pseudoinverse_basic_1 a).2 h]
 
+/-- Auxiliary: `⌊a⌉ = ⌈a⌋` for self-adjoint `a` (both are `⌈a²⌉`). -/
+theorem rangeProj_eq_suppProj_of_isSelfAdjoint {a : A} (ha : IsSelfAdjoint a) :
+    rangeProj a = suppProj a := by
+  rw [rangeProj, suppProj, ha.star_eq]
+
+/-- Auxiliary: the pseudoinverse of a self-adjoint element is self-adjoint. -/
+theorem pinv_isSelfAdjoint {a : A} (ha : IsSelfAdjoint a)
+    (h : Pseudoinvertible A a) : IsSelfAdjoint (pinv a) := by
+  set t := pinv a with htdef
+  obtain ⟨e1, e2, e3, e4⟩ := pinv_spec h
+  have hsa : star (suppProj a) = suppProj a :=
+    (ceill_basic_1 a).1.1.isSelfAdjoint.star_eq
+  have hra : star (rangeProj a) = rangeProj a :=
+    (ceill_basic_2 a).1.1.isSelfAdjoint.star_eq
+  have hst : star (suppProj t) = suppProj t :=
+    (ceill_basic_1 t).1.1.isSelfAdjoint.star_eq
+  have hrt : star (rangeProj t) = rangeProj t :=
+    (ceill_basic_2 t).1.1.isSelfAdjoint.star_eq
+  have s1 : star t * a = suppProj a := by
+    have := congrArg star e4
+    rwa [star_mul, ha.star_eq, hra, rangeProj_eq_suppProj_of_isSelfAdjoint ha] at this
+  have s2 : star t * a = rangeProj (star t) := by
+    have := congrArg star e3
+    rw [star_mul, ha.star_eq, hst] at this
+    rw [this, rangeProj_star]
+  have s3 : a * star t = suppProj (star t) := by
+    have := congrArg star e2
+    rw [star_mul, ha.star_eq, hrt] at this
+    rw [this, suppProj_star]
+  have s4 : a * star t = rangeProj a := by
+    have := congrArg star e1
+    rwa [star_mul, ha.star_eq, hsa, ← rangeProj_eq_suppProj_of_isSelfAdjoint ha] at this
+  exact (isPseudoinverse_unique a t (star t) ⟨e1, e2, e3, e4⟩ ⟨s1, s2, s3, s4⟩).symm
+
+/-- Auxiliary: the pseudoinverse of a *positive* element is positive —
+`a^{∼1} = (a^{∼1})* a a^{∼1}` by **79II**.(4). -/
+theorem pinv_nonneg {a : A} (ha : 0 ≤ a) (h : Pseudoinvertible A a) :
+    (0 : A) ≤ pinv a := by
+  have hsa := pinv_isSelfAdjoint (IsSelfAdjoint.of_nonneg ha) h
+  have h4 : pinv a * a * pinv a = pinv a ∧ suppProj a ≤ rangeProj (pinv a) ∧
+      rangeProj a ≤ suppProj (pinv a) :=
+    ((pseudoinverse_equivalents a (pinv a)).out 4 3).mp (pinv_spec h)
+  have hrw : pinv a = star (pinv a) * a * pinv a := by
+    rw [hsa.star_eq]; exact h4.1.symm
+  rw [hrw]
+  exact star_left_conjugate_nonneg ha _
+
+/-- Auxiliary: whatever commutes with a positive `a` commutes with `⌈a⌉`:
+`a b (1−⌈a⌉) = b a (1−⌈a⌉) = 0` gives `⌈a⌉ b = ⌈a⌉ b ⌈a⌉`, and the same for
+`b*`, conjugated, gives `b ⌈a⌉ = ⌈a⌉ b ⌈a⌉`. -/
+theorem commute_ceil_of_commute {a b : A} (ha : 0 ≤ a) (hab : b * a = a * b) :
+    b * ceil a = ceil a * b := by
+  have hproj : IsStarProjection (ceil a) := (ceil_spec ha).1
+  have hac : a * ceil a = a := (ceil_spec ha).2.1
+  set p := ceil a with hpdef
+  have key : ∀ c : A, c * a = a * c → p * c = p * c * p := by
+    intro c hc
+    have e1 : a * (c * (1 - p)) = 0 := by
+      calc a * (c * (1 - p)) = a * c * (1 - p) := by rw [mul_assoc]
+        _ = c * (a * (1 - p)) := by rw [← hc, mul_assoc]
+        _ = 0 := by rw [mul_sub, mul_one, hac, sub_self, mul_zero]
+    have f1 := ceil_mul_eq_zero ha e1
+    rw [mul_sub, mul_one, mul_sub, sub_eq_zero, ← mul_assoc] at f1
+    exact f1
+  have hstar : star b * a = a * star b := by
+    have := congrArg star hab
+    rw [star_mul, star_mul, (IsSelfAdjoint.of_nonneg ha).star_eq] at this
+    exact this.symm
+  have k1 := key b hab
+  have k2 := key (star b) hstar
+  have k2' : b * p = p * b * p := by
+    have h := congrArg star k2
+    simp only [star_mul, star_star, hproj.isSelfAdjoint.star_eq] at h
+    rw [mul_assoc]
+    exact h
+  rw [k2', ← k1]
+
 /-- **79VI** (`pseudoinverse-basic-2`, vn.tex:5203, Exercise), part 1: a
 positive `a` is pseudoinvertible iff `at = ⌈a⌉` for some positive `t`
 (equivalently: `a` is invertible in the corner `⌈a⌉A⌈a⌉`); such `t`
 commutes with `a`. -/
 theorem pseudoinverse_basic_2'_1 (a : A) (ha : 0 ≤ a) :
     (Pseudoinvertible A a ↔ ∃ t : A, 0 ≤ t ∧ a * t = ceil a) ∧
-      ∀ t : A, 0 ≤ t → a * t = ceil a → a * t = t * a :=
-  sorry
+      ∀ t : A, 0 ≤ t → a * t = ceil a → a * t = t * a := by
+  have hasa : IsSelfAdjoint a := .of_nonneg ha
+  have hproj : IsStarProjection (ceil a) := (ceil_spec ha).1
+  have hsupp : suppProj a = ceil a := suppProj_of_nonneg ha
+  have hrange : rangeProj a = ceil a := by
+    rw [rangeProj_eq_suppProj_of_isSelfAdjoint hasa, hsupp]
+  have hac : a * ceil a = a := (ceil_spec ha).2.1
+  have hca : ceil a * a = a := by
+    have := congrArg star hac
+    rwa [star_mul, hproj.isSelfAdjoint.star_eq, hasa.star_eq] at this
+  refine ⟨⟨?_, ?_⟩, ?_⟩
+  · -- `⟹`: the pseudoinverse is positive
+    intro h
+    refine ⟨pinv a, pinv_nonneg ha h, ?_⟩
+    rw [(pinv_spec h).2.2.2, hrange]
+  · -- `⟸`: cut `t` down to the corner `⌈a⌉A⌈a⌉`
+    rintro ⟨t, -, hat⟩
+    set p := ceil a with hpdef
+    have hcond : a * (p * t * p) * a = a ∧
+        suppProj (p * t * p) ≤ rangeProj a ∧
+        rangeProj (p * t * p) ≤ suppProj a := by
+     refine ⟨?_, ?_, ?_⟩
+     · calc a * (p * t * p) * a = (a * p) * t * (p * a) := by noncomm_ring
+        _ = a * t * a := by rw [hac, hca]
+        _ = a := by rw [hat, hca]
+     · calc suppProj (p * t * p) ≤ suppProj p := suppProj_mul_le (p * t) p
+        _ = p := suppProj_of_isStarProjection hproj
+        _ = rangeProj a := hrange.symm
+     · have hassoc : p * t * p = p * (t * p) := by noncomm_ring
+       calc rangeProj (p * t * p) = rangeProj (p * (t * p)) := by rw [hassoc]
+        _ ≤ rangeProj p := rangeProj_mul_le p (t * p)
+        _ = p := rangeProj_of_isStarProjection hproj
+        _ = suppProj a := hsupp.symm
+    exact ⟨p * t * p, ((pseudoinverse_equivalents a (p * t * p)).out 1 4).mp hcond⟩
+  · -- such `t` commutes with `a`
+    intro t ht hat
+    have := congrArg star hat
+    rw [star_mul, hasa.star_eq, (IsSelfAdjoint.of_nonneg ht).star_eq,
+      hproj.isSelfAdjoint.star_eq] at this
+    rw [hat, this]
+
 
 /-- **79VI** (`pseudoinverse-basic-2`, vn.tex:5203, Exercise), part 2: a
 positive `a` is pseudoinvertible iff `λ⌈a⌉ ≤ a` for some `λ > 0`. -/
 theorem pseudoinverse_basic_2'_2 (a : A) (ha : 0 ≤ a) :
-    Pseudoinvertible A a ↔ ∃ l : ℝ, 0 < l ∧ (l : ℂ) • ceil a ≤ a :=
-  sorry
+    Pseudoinvertible A a ↔ ∃ l : ℝ, 0 < l ∧ (l : ℂ) • ceil a ≤ a := by
+  have hasa : IsSelfAdjoint a := .of_nonneg ha
+  have hproj : IsStarProjection (ceil a) := (ceil_spec ha).1
+  have hsupp : suppProj a = ceil a := suppProj_of_nonneg ha
+  have hrange : rangeProj a = ceil a := by
+    rw [rangeProj_eq_suppProj_of_isSelfAdjoint hasa, hsupp]
+  have hac : a * ceil a = a := (ceil_spec ha).2.1
+  have hca : ceil a * a = a := by
+    have := congrArg star hac
+    rwa [star_mul, hproj.isSelfAdjoint.star_eq, hasa.star_eq] at this
+  set p := ceil a with hpdef
+  constructor
+  · -- `⟹`
+    intro h
+    set t := pinv a with htdef
+    have hspec := pinv_spec h
+    have hta : t * a = p := by rw [hspec.1, hsupp]
+    have hat : a * t = p := by rw [hspec.2.2.2, hrange]
+    have hsa := pinv_isSelfAdjoint hasa h
+    have h4 := ((pseudoinverse_equivalents a t).out 4 3).mp hspec
+    have htat : t * a * t = t := h4.1
+    have htnn : (0 : A) ≤ t := by
+      have : t = star t * a * t := by rw [hsa.star_eq]; exact htat.symm
+      rw [this]; exact star_left_conjugate_nonneg ha _
+    have hpt : p * t = t := by rw [← hta, mul_assoc, ← mul_assoc]; exact htat
+    have htp : t * p = t := by rw [← hat, ← mul_assoc]; exact htat
+    -- `t ≤ ‖t‖ p`
+    have hnorm : t ≤ ‖t‖ • p := by
+      have h1 : t ≤ algebraMap ℝ A ‖t‖ := hsa.le_algebraMap_norm_self
+      have h2 : p * t * p ≤ p * algebraMap ℝ A ‖t‖ * p :=
+        hproj.isSelfAdjoint.conjugate_le_conjugate h1
+      have h3 : p * t * p = t := by rw [hpt, htp]
+      have h4' : p * algebraMap ℝ A ‖t‖ * p = ‖t‖ • p := by
+        rw [Algebra.algebraMap_eq_smul_one, mul_smul_comm, smul_mul_assoc, mul_one,
+          hproj.isIdempotentElem.eq]
+      rwa [h3, h4'] at h2
+    -- transport along `√a`
+    set s : A := CFC.sqrt a with hsdef
+    have hss : s * s = a := CFC.sqrt_mul_sqrt_self a ha
+    have hsnn : (0 : A) ≤ s := CFC.sqrt_nonneg a
+    have hcomm_at : Commute a t := by
+      have h : a * t = t * a := by rw [hat, hta]
+      exact h
+    have hcomm_ap : Commute a p := by
+      have h : a * p = p * a := by rw [hac, hca]
+      exact h
+    have hst : Commute s t := by
+      rw [hsdef, CFC.sqrt_eq_cfc]; exact hcomm_at.cfc_nnreal _
+    have hsp : Commute s p := by
+      rw [hsdef, CFC.sqrt_eq_cfc]; exact hcomm_ap.cfc_nnreal _
+    have hkey : p = s * t * s := by
+      calc p = a * t := hat.symm
+        _ = s * s * t := by rw [hss]
+        _ = s * (s * t) := by rw [mul_assoc]
+        _ = s * (t * s) := by rw [hst.eq]
+        _ = s * t * s := by rw [mul_assoc]
+    have hspa : s * p * s = a := by
+      rw [hsp.eq, mul_assoc, hss, hca]
+    have hple : p ≤ ‖t‖ • a := by
+      have := hsnn.isSelfAdjoint.conjugate_le_conjugate hnorm
+      rw [← hkey] at this
+      have hr : s * (‖t‖ • p) * s = ‖t‖ • a := by
+        rw [mul_smul_comm, smul_mul_assoc, hspa]
+      rwa [hr] at this
+    rcases eq_or_lt_of_le (norm_nonneg t) with h0 | h0
+    · refine ⟨1, one_pos, ?_⟩
+      have ht0 : t = 0 := by
+        have := norm_eq_zero.mp h0.symm; exact this
+      have hp0 : p = 0 := by rw [← hat, ht0, mul_zero]
+      rw [hp0, smul_zero]; exact ha
+    · refine ⟨‖t‖⁻¹, inv_pos.mpr h0, ?_⟩
+      rw [Complex.coe_smul]
+      have hsub : (0 : A) ≤ ‖t‖⁻¹ • (‖t‖ • a - p) :=
+        smul_nonneg (inv_nonneg.mpr h0.le) (sub_nonneg.mpr hple)
+      have hcalc : ‖t‖⁻¹ • (‖t‖ • a - p) = a - ‖t‖⁻¹ • p := by
+        rw [smul_sub, smul_smul, inv_mul_cancel₀ h0.ne', one_smul]
+      rw [hcalc] at hsub
+      exact sub_nonneg.mp hsub
+  · -- `⟸`
+    rintro ⟨l, hl, hle⟩
+    set b : A := a + (l : ℂ) • (1 - p) with hbdef
+    have hpnn : (0 : A) ≤ p := hproj.nonneg
+    have hlone : (l : ℂ) • (1 : A) ≤ b := by
+      have : b - (l : ℂ) • (1 : A) = a - (l : ℂ) • p := by
+        rw [hbdef, smul_sub]; abel
+      rw [← sub_nonneg, this, sub_nonneg]; exact hle
+    have hbsa : IsSelfAdjoint b := by
+      have h1 : IsSelfAdjoint ((l : ℂ) • (1 - p : A)) := by
+        rw [IsSelfAdjoint, star_smul, star_sub, star_one,
+          hproj.isSelfAdjoint.star_eq, Complex.star_def, Complex.conj_ofReal]
+      exact hasa.add h1
+    have hbnn : (0 : A) ≤ b := by
+      refine le_trans ?_ hlone
+      rw [Complex.coe_smul]
+      exact smul_nonneg hl.le zero_le_one
+    have hamap : algebraMap ℝ A l ≤ b := by
+      rw [Algebra.algebraMap_eq_smul_one, ← Complex.coe_smul]; exact hlone
+    have hspec : ∀ x ∈ spectrum ℝ b, l ≤ x :=
+      (algebraMap_le_iff_le_spectrum hbsa).mp hamap
+    have hunit : IsUnit b := by
+      refine spectrum.isUnit_of_zero_notMem (R := ℝ) fun hmem => ?_
+      exact absurd (hspec 0 hmem) (by linarith)
+    set c : A := Ring.inverse b with hcdef
+    have hcb : c * b = 1 := Ring.inverse_mul_cancel b hunit
+    have hbc : b * c = 1 := Ring.mul_inverse_cancel b hunit
+    have hbp : b * p = a := by
+      rw [hbdef, add_mul, smul_mul_assoc, sub_mul, one_mul,
+        hproj.isIdempotentElem.eq, sub_self, smul_zero, add_zero, hac]
+    have hpb : p * b = a := by
+      rw [hbdef, mul_add, mul_smul_comm, mul_sub, mul_one,
+        hproj.isIdempotentElem.eq, sub_self, smul_zero, add_zero, hca]
+    have hcp : c * p = p * c := by
+      calc c * p = c * p * (b * c) := by rw [hbc, mul_one]
+        _ = c * (p * b) * c := by noncomm_ring
+        _ = c * (b * p) * c := by rw [hpb, hbp]
+        _ = (c * b) * p * c := by noncomm_ring
+        _ = p * c := by rw [hcb, one_mul]
+    have hcsa : star c = c := by
+      have h1 : b * star c = 1 := by
+        have := congrArg star hcb
+        rwa [star_mul, star_one, hbsa.star_eq] at this
+      exact (left_inv_eq_right_inv hcb h1).symm
+    have hcnn : (0 : A) ≤ c := by
+      have : c = star c * b * c := by
+        rw [hcsa, mul_assoc, hbc, mul_one]
+      rw [this]; exact star_left_conjugate_nonneg hbnn _
+    refine (pseudoinverse_basic_2'_1 a ha).1.mpr ⟨c * p, ?_, ?_⟩
+    · have : c * p = p * c * p := by rw [← hcp, mul_assoc, hproj.isIdempotentElem.eq]
+      rw [this]
+      exact hproj.isSelfAdjoint.conjugate_nonneg hcnn
+    · calc a * (c * p) = (b * p) * (c * p) := by rw [hbp]
+        _ = b * (p * c) * p := by noncomm_ring
+        _ = b * (c * p) * p := by rw [hcp]
+        _ = (b * c) * (p * p) := by noncomm_ring
+        _ = p := by rw [hbc, one_mul, hproj.isIdempotentElem.eq]
+
 
 /-- **79VI** (`pseudoinverse-basic-2`, vn.tex:5203, Exercise), part 3: for
 pseudoinvertible positive `a`: `⌈a^{∼1}⌉ = ⌈a⌉`, and whatever commutes
@@ -403,11 +653,116 @@ with `a` commutes with `a^{∼1}` (i.e. `a^{∼1} ∈ {a}^□□`). -/
 theorem pseudoinverse_basic_2'_3 (a : A) (ha : 0 ≤ a)
     (hp : Pseudoinvertible A a) :
     ceil (pinv a) = ceil a ∧
-      ∀ b : A, b * a = a * b → b * pinv a = pinv a * b :=
-  sorry
+      ∀ b : A, b * a = a * b → b * pinv a = pinv a * b := by
+  have hasa : IsSelfAdjoint a := .of_nonneg ha
+  have hrange : rangeProj a = ceil a := by
+    rw [rangeProj_eq_suppProj_of_isSelfAdjoint hasa, suppProj_of_nonneg ha]
+  set t := pinv a with htdef
+  have hspec := pinv_spec hp
+  have htnn : (0 : A) ≤ t := pinv_nonneg ha hp
+  have hceq : ceil t = ceil a := by
+    have h1 : suppProj t = ceil a := by
+      rw [← hspec.2.2.1, hspec.2.2.2, hrange]
+    rw [← suppProj_of_nonneg htnn, h1]
+  refine ⟨hceq, fun b hb => ?_⟩
+  have hat : a * t = ceil a := by rw [hspec.2.2.2, hrange]
+  have h43 : t * a * t = t ∧ suppProj a ≤ rangeProj t ∧ rangeProj a ≤ suppProj t :=
+    ((pseudoinverse_equivalents a t).out 4 3).mp hspec
+  have htat : t * a * t = t := h43.1
+  have htp : t * ceil a = t := by rw [← hat, ← mul_assoc]; exact htat
+  have hbp : b * ceil a = ceil a * b := commute_ceil_of_commute ha hb
+  refine mult_cancellation_2 a (b * t) (t * b) ?_ ?_ ?_
+  · refine le_trans ((ceill_basic_1 (b * t)).2 ⟨(ceil_spec ha).1, ?_⟩) (le_of_eq hrange.symm)
+    rw [mul_assoc, htp]
+  · refine le_trans ((ceill_basic_1 (t * b)).2 ⟨(ceil_spec ha).1, ?_⟩) (le_of_eq hrange.symm)
+    rw [mul_assoc, hbp, ← mul_assoc, htp]
+  · calc b * t * a = b * (t * a) := by rw [mul_assoc]
+      _ = b * ceil a := by rw [hspec.1, suppProj_of_nonneg ha]
+      _ = ceil a * b := hbp
+      _ = t * a * b := by rw [hspec.1, suppProj_of_nonneg ha]
+      _ = t * b * a := by rw [mul_assoc, ← hb, ← mul_assoc]
+
+
+/-- Auxiliary: a projection is its own pseudoinverse. -/
+theorem isPseudoinverse_self_of_isStarProjection {p : A} (hp : IsStarProjection p) :
+    IsPseudoinverse A p p := by
+  have h1 : suppProj p = p := suppProj_of_isStarProjection hp
+  have h2 : rangeProj p = p := rangeProj_of_isStarProjection hp
+  exact ⟨by rw [hp.isIdempotentElem.eq, h1], by rw [hp.isIdempotentElem.eq, h2],
+    by rw [hp.isIdempotentElem.eq, h1], by rw [hp.isIdempotentElem.eq, h2]⟩
+
+/-- Auxiliary: a projection is pseudoinvertible. -/
+theorem pseudoinvertible_of_isStarProjection {p : A} (hp : IsStarProjection p) :
+    Pseudoinvertible A p :=
+  ⟨p, isPseudoinverse_self_of_isStarProjection hp⟩
+
+/-- Auxiliary: `p^{∼1} = p` for a projection `p`. -/
+theorem pinv_of_isStarProjection {p : A} (hp : IsStarProjection p) : pinv p = p :=
+  isPseudoinverse_unique p _ _ (pinv_spec (pseudoinvertible_of_isStarProjection hp))
+    (isPseudoinverse_self_of_isStarProjection hp)
+
+/-- **79VI**.4 applied to `b = p` (a projection) and `c = 1` would force
+`p = 1`: both are positive, commuting and pseudoinvertible with `p ≤ 1`, and
+`p^{∼1} = p`, `1^{∼1} = 1`. -/
+theorem pseudoinverse_basic_2'_4_forces_eq_one {p : A} (hp : IsStarProjection p)
+    (h : pinv (1 : A) ≤ pinv p) : p = 1 := by
+  rw [pinv_of_isStarProjection hp, pinv_of_isStarProjection (IsStarProjection.one _)] at h
+  exact le_antisymm hp.le_one h
+
+/-- A nontrivial projection in `ℓ^∞({0,1}) = ℂ ⊕ ℂ`: the witness for
+`pseudoinverse_basic_2'_4_is_false`. -/
+noncomputable def pbFourWitness : lp (fun _ : Fin 2 => ℂ) ∞ :=
+  ⟨fun i => if i = 0 then 1 else 0, (Set.finite_range _).bddAbove⟩
+
+theorem pbFourWitness_apply (i : Fin 2) :
+    (pbFourWitness : ∀ _ : Fin 2, ℂ) i = if i = 0 then 1 else 0 := rfl
+
+theorem pbFourWitness_isStarProjection : IsStarProjection pbFourWitness := by
+  constructor
+  · show pbFourWitness * pbFourWitness = pbFourWitness
+    refine lp.ext ?_
+    funext i
+    rw [lp.infty_coeFn_mul]
+    fin_cases i <;> simp [pbFourWitness_apply]
+  · show star pbFourWitness = pbFourWitness
+    refine lp.ext ?_
+    funext i
+    rw [lp.coeFn_star]
+    fin_cases i <;> simp [pbFourWitness_apply]
+
+theorem pbFourWitness_ne_one :
+    pbFourWitness ≠ (1 : lp (fun _ : Fin 2 => ℂ) ∞) := by
+  intro h
+  have hco := congrArg
+    (fun x : lp (fun _ : Fin 2 => ℂ) ∞ => (x : ∀ _ : Fin 2, ℂ) 1) h
+  simp only [pbFourWitness_apply, lp.infty_coeFn_one, Pi.one_apply] at hco
+  exact absurd hco (by norm_num)
+
+/-- **79VI**.4 (vn.tex:5222) is **false as stated** — ERRATA `79VI.4`.  Take
+`b = (1,0)` and `c = (1,1)` in `ℓ^∞({0,1})`: both are positive, commuting and
+pseudoinvertible (projections are their own pseudoinverses) with `b ≤ c`,
+`b^{∼1} = b` and `c^{∼1} = c`, and `c ≰ b`.  What the exercise needs is the
+extra hypothesis `⌈b⌉ = ⌈c⌉`; without it the pseudoinverse *grows* where the
+carrier of `c` exceeds that of `b`.  The parenthetical remark that the
+statement holds without the commutation hypothesis is false for the same
+reason. -/
+theorem pseudoinverse_basic_2'_4_is_false :
+    ¬ ∀ b c : lp (fun _ : Fin 2 => ℂ) ∞, 0 ≤ b → Pseudoinvertible _ b →
+      Pseudoinvertible _ c → b ≤ c → b * c = c * b → pinv c ≤ pinv b := by
+  intro h
+  exact pbFourWitness_ne_one (pseudoinverse_basic_2'_4_forces_eq_one
+    pbFourWitness_isStarProjection
+    (h pbFourWitness 1 pbFourWitness_isStarProjection.nonneg
+      (pseudoinvertible_of_isStarProjection pbFourWitness_isStarProjection)
+      (pseudoinvertible_of_isStarProjection (IsStarProjection.one _))
+      pbFourWitness_isStarProjection.le_one (by rw [mul_one, one_mul])))
 
 /-- **79VI** (`pseudoinverse-basic-2`, vn.tex:5203, Exercise), part 4:
-`c^{∼1} ≤ b^{∼1}` for pseudoinvertible positive *commuting* `b ≤ c`. -/
+`c^{∼1} ≤ b^{∼1}` for pseudoinvertible positive *commuting* `b ≤ c`.
+
+**False as stated** — see `pseudoinverse_basic_2'_4_is_false` just above and
+`ERRATA.md`.  The statement is kept verbatim (and `sorry`) pending an author
+decision; with `⌈b⌉ = ⌈c⌉` added it is true. -/
 theorem pseudoinverse_basic_2'_4 (b c : A) (hb : 0 ≤ b)
     (hbp : Pseudoinvertible A b) (hcp : Pseudoinvertible A c) (hbc : b ≤ c)
     (hcomm : b * c = c * b) : pinv c ≤ pinv b :=
