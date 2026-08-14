@@ -2657,6 +2657,134 @@ lost or gained by the re-count.  Of the changes above, only
 
 ---
 
+## Session 19 — `A/VN` parsecs 460, 650, 720, 730 (worker 47)
+
+Owner of `Theses/A/CStar/*` and `Theses/A/VN/*`.  `A/CStar` untouched
+(**39** `sorry`s, unchanged); `A/VN` **117 → 114** (`Basic` 34 → 33,
+`Completeness` 17 → 15).  Whole-project `lake build` green throughout;
+`A/Proc` (132), `B/Dils` (62) unchanged.  Everything below is
+`#print axioms`-clean (`propext`, `Classical.choice`, `Quot.sound`).
+
+| point | declaration | file | class |
+|---|---|---|---|
+| **46III** | `npuws` | `Basic.lean` | 2 (no author argument — Exercise) |
+| **72XI** | `luws` | `Completeness.lean` | 1 (Corollary; the thesis gives no proof) |
+| **73VIII** | `ultraclosed` | `Completeness.lean` | 1 — the exercise's own five steps |
+| — | `ceil_mem` + **65IV** relativised | `Projections.lean` | new (not a thesis point) |
+
+### 1. `ceil_mem`: a von Neumann subalgebra is closed under `⌈·⌉`
+
+Worker 46 named the missing ingredient of `A/Proc` **128II** `tomiyama`:
+*the linear span of the projections of a von Neumann **subalgebra** is
+norm-dense in it.*  65IV as stated puts the projections in `{a}^□□`, and
+`{a}^□□ ⊆ S` is the double commutant theorem **88VI** (`sorry`, and stated
+only for `B(H)`), so the relative form does not follow from the absolute one
+in this tree.
+
+It does follow from the *same* spectral Riemann sum, once one knows
+`0 ≤ x ∈ S → ⌈x⌉ ∈ S`.  That is the thesis's own construction
+`⌈b⌉ = ⋁ₙ b^{1/2ⁿ}` (**56I**.20, already in the tree as `vna_ceil_sup`) read
+inside `S`: with `b = ‖x‖⁻¹x`, every iterate `b^{1/2ⁿ}` lies in `S` because a
+norm-closed star subalgebra is closed under the continuous functional
+calculus, the iterates form a chain, and `IsVNSubalgebra.dirSup_mem` gives
+the supremum.  Two small bridges were needed:
+
+* `sqrt_eq_cfc_real` — Mathlib's `CFC.sqrt` is `cfcₙ NNReal.sqrt`
+  (non-unital, `ℝ≥0`-valued), while Mathlib's `cfc_mem` ("the CFC of an
+  element stays in any closed star subalgebra containing it") is stated for
+  `RCLike` scalars.  `CFC.sqrt x = cfc Real.sqrt x` for `0 ≤ x`, by
+  `CFC.sqrt_unique`.
+* `cfc_mem_of_isClosed` — `cfc_mem` at `𝕜 = ℝ`, `𝕜' = ℂ`.
+
+`exists_spectral_approx` (private, the Riemann sum behind 64II/65IV) then had
+its conclusion **strengthened**, not rewritten: its projection set gained the
+clause "`p` lies in every von Neumann subalgebra containing `a`", proved by
+`cfc_mem_of_isClosed` + `ceil_mem` for `p = ⌈(a−t)⁺⌉` and by `one_mem` for
+`p = 1`.  Its two existing consumers (`projections_norm_dense`,
+`mem_closure_span_proj`) now project the extra clause away.  New public
+results:
+
+* `projections_norm_dense_subalgebra_selfAdjoint` / `..._subalgebra`
+  (the latter for arbitrary `a ∈ S`, via `a = ℜa + i·ℑa`);
+* `mem_of_isClosed_of_projections_subalgebra` — *a norm-closed `ℂ`-subspace
+  containing every projection of `S` contains `S`* — the shape worker 46's
+  `A/Proc` proofs consume (cf. their `mem_of_isClosed_of_projections`).
+
+**128II should now be reachable**; it is in `A/Proc`, not this chapter.
+
+### 2. **72XI** `luws` — and `smulNP` at last
+
+72XI is a Corollary with **no proof in `vn.tex`**; the cycle used is
+1 ⇒ 4 ⇒ 3 ⇒ 2 ⇒ 1 with 3 ⇒ 5 ⇒ 4 on the side.
+
+* **1 ⇒ 4** needed a converse to `ultrastrong_ball_mem_nhds` that the tree
+  did not have: *every ultrastrongly open set contains a `‖·‖_ω`-ball around
+  each of its points*.  Proved as `exists_ultrastrong_ball_of_isOpen` by
+  induction on `TopologicalSpace.GenerateOpen`, the `inter` case being
+  `‖·‖_{ω₁} , ‖·‖_{ω₂} ≤ ‖·‖_{ω₁+ω₂}` (`omegaNorm_le_addNP`).  This avoids
+  extracting a finite subfamily from `nhds_generateFrom` and is the reusable
+  form.
+* **4 ⇒ 3** is 72V (1) ⇒ (2) followed by `normal_functionals_decomposition`
+  (worker 28's corrected 72V).
+* **3 ⇒ 5** is where `smulNP` is genuinely needed, exactly as predicted:
+  `‖f(a)‖ ≤ C‖a‖_{ω'}` for `ω' = Σₖ fₖ`, and one wants a *single* `ω` with
+  `‖f(a)‖ ≤ ‖a‖_ω`, namely `ω = C²ω'`.  **`smulNP` is now in `Basic.lean`**
+  next to `zeroNP`/`addNP`, with `smulNP_apply` and
+  `omegaNorm_smulNP : ‖a‖_{r·ω} = √r ‖a‖_ω`.  Normality of `r·ω` for `r ≥ 0`
+  is the observation that `z ↦ (r:ℂ)z` preserves and (for `r > 0`) reflects
+  the order on `ℂ`; the `r = 0` branch uses only that `D` is nonempty.
+  (`PositiveLinearMap` has `Zero`, `Add` and an `ℕ`-action but no real
+  scalar action, so `smulNP` goes through `PositiveLinearMap.mk₀`.)
+
+**Correction to worker 32's note (c):** `smulNP` was indeed not needed for
+72V, and it *is* needed for 72XI — but for clause 5, not for the `¼` of the
+polarisation, which worker 28 had already absorbed.
+
+### 3. **73VIII** `ultraclosed` — the exercise's five steps, transcribed
+
+The exercise (vn.tex:4160) comes with a full roadmap and it was followed
+step for step; the only structural change is that the thesis first
+translates `K` by `a₀` and then argues at `0`, whereas the Lean proof keeps
+`K` where it is and translates only the *ball*: the point `a₀ ∉ K` to be
+separated is fixed once, `B` is the ball at the origin and `K' = K − a₀` the
+translate.  **This matters**: the thesis's phrasing needs `K − a₀` to still
+be ultrastrongly closed, i.e. that translation is an ultrastrong
+homeomorphism, which is not in the tree and is not entirely free (the
+`‖·‖_ω`-bounded-map criterion `continuous_ultrastrong_of_omegaNorm_bound`
+does not apply to an affine map).  In the arrangement used, ultrastrong
+closedness of `K` is consumed *once*, in step 1, and `K'` is only ever needed
+to be convex and disjoint from `B`.  Suggested for the author.
+
+Ingredients: step 1 is `exists_ultrastrong_ball_of_isOpen` (§2); steps 2–3
+are **73IV** `hahn_banach` (already proved in the tree, by the
+Minkowski-functional route) applied to `B + K'`; the `ℂ`-linear extension
+`g(a) = f(a) − i f(ia)` is Mathlib's `Module.Dual.extendRCLike`; step 4's
+"`g` is ultraweakly continuous" is **72XI** clause (4), which is why 73VIII
+had to wait for `luws`; step 5 uses that `B` is absorbing for `‖·‖_ω`.
+
+### 4. **46III** `npuws`
+
+(1) ⇒ (2) is `continuous_ultraweak_npFunctional` at `⟨ω, h⟩`; (2) ⇒ (3) is
+`ultrastrong_le_ultraweak`; (3) ⇒ (1) is the new
+`preservesDirSups_of_continuous_ultrastrong`: **44XIV**
+`vna_supremum_uslimit` says the net `(d)_{d∈D}` converges ultrastrongly to
+`⋁D`, so `ω(d) → ω(⋁D)`, and the comparison with an upper bound `z` is done
+on real and imaginary parts separately (`Complex.le_def`), avoiding any
+`OrderClosedTopology ℂ` assumption.
+
+This is exactly **45I**.1 `us_cont_normal` for `B = ℂ` *without* the
+restriction to the effects.  45I.1 itself is **not** closed: its hypothesis
+is continuity on `[0,1]_A` only, so it needs the cofinal-tail rescaling of
+`preservesDirSups_of_continuousOn_effects` with `vna_supremum_uslimit` in
+place of `vna_supremum_uwlimit` — a ~100-line refactor of that private
+lemma, not attempted.
+
+### 5. Nothing false found
+
+No new `ERRATA.md` or `QUESTIONS.md` entry.  72XI and 73VIII are `vn.tex`
+Corollary/Exercise points with no published solution; both are true as
+stated and the roadmaps in the text are correct.
+
 ## Session 10 — `A/VN` parsecs 440–450 and 610 (worker 32)
 
 Proved: **44XV** `p_uwcont` + `p_uwcont_ad`, **45II** `cp_uscont`, **45IV**

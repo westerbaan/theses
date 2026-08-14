@@ -2899,6 +2899,108 @@ theorem carrier_fundamental (f : A →ₚ[ℂ] B) (hf : PreservesDirSups ⇑f)
 
 /-! ## Parsec 640 -/
 
+/-! ### A von Neumann subalgebra is closed under `⌈·⌉`
+
+`ceil_mem` below is the missing ingredient for the *relativised* form of
+**65IV** (`projections_norm_dense_subalgebra`): the linear span of the
+projections *of a von Neumann subalgebra* `S` is norm-dense in `S`.  The
+thesis never states this separately; it is its own construction
+`⌈b⌉ = ⋁ₙ b^{1/2ⁿ}` (**56I**.20) read inside `S` — every iterated square
+root of an element of `S` lies in `S` (a norm-closed star subalgebra is
+closed under the continuous functional calculus), and `S` contains the
+suprema of its bounded directed sets by definition. -/
+
+omit [VonNeumannAlgebra A] in
+/-- `√x = cfc √ x` for positive `x`.  Mathlib's `CFC.sqrt` is defined by the
+*non-unital* `ℝ≥0`-valued calculus; `cfc_mem` needs the unital `ℝ`-valued
+one. -/
+private theorem sqrt_eq_cfc_real {x : A} (hx : 0 ≤ x) :
+    CFC.sqrt x = cfc Real.sqrt x := by
+  refine CFC.sqrt_unique ?_ (cfc_nonneg fun r _ => Real.sqrt_nonneg r)
+  rw [← cfc_mul _ _ x (by fun_prop) (by fun_prop)]
+  nth_rewrite 2 [← cfc_id ℝ x]
+  refine cfc_congr fun r hr => ?_
+  exact Real.mul_self_sqrt (spectrum_nonneg_of_nonneg hx hr)
+
+omit [PartialOrder A] [StarOrderedRing A] [VonNeumannAlgebra A] in
+/-- A norm-closed `ℂ`-star-subalgebra is closed under the (`ℝ`-valued,
+unital) continuous functional calculus. -/
+private theorem cfc_mem_of_isClosed {S : StarSubalgebra ℂ A}
+    (hcl : IsClosed (S : Set A)) (f : ℝ → ℝ) {x : A} (hx : x ∈ S) :
+    cfc f x ∈ S := by
+  have : IsClosed ((S : StarSubalgebra ℂ A) : Set A) := hcl
+  exact cfc_mem (𝕜 := ℝ) (𝕜' := ℂ) f hx
+
+omit [PartialOrder A] [StarOrderedRing A] [VonNeumannAlgebra A] in
+/-- A `ℂ`-star-subalgebra is closed under real scalar multiples. -/
+private theorem real_smul_mem {S : StarSubalgebra ℂ A} (r : ℝ) {y : A}
+    (hy : y ∈ S) : r • y ∈ S := by
+  have hsm : r • y = ((r : ℝ) : ℂ) • y := by
+    rw [← algebraMap_smul ℂ r y]
+    simp
+  rw [hsm]
+  exact SMulMemClass.smul_mem _ hy
+
+/-- **56I**/**65IV**, relativised: a von Neumann subalgebra `S` of `A` is
+closed under the ceiling — `⌈x⌉ ∈ S` for every positive `x ∈ S`.
+
+This is **56I**.20's formula `⌈b⌉ = ⋁ₙ b^{1/2ⁿ}` (`vna_ceil_sup`) read
+inside `S`: the iterated square roots of `b = ‖x‖⁻¹x` stay in `S` because a
+norm-closed star subalgebra is closed under the continuous functional
+calculus, they form a chain, and `S` contains the suprema of its bounded
+directed sets. -/
+theorem ceil_mem {S : StarSubalgebra ℂ A} (hS : IsVNSubalgebra A S)
+    {x : A} (hx : 0 ≤ x) (hxS : x ∈ S) : ceil x ∈ S := by
+  classical
+  rcases eq_or_ne x 0 with rfl | hne
+  · rw [ceil_zero]; exact zero_mem _
+  have hn : (0 : ℝ) < ‖x‖ := norm_pos_iff.mpr hne
+  set b : A := (‖x‖⁻¹ : ℝ) • x with hbdef
+  have hbnn : (0 : A) ≤ b := smul_nonneg (by positivity) hx
+  have hbeff : b ∈ effects A := by
+    refine ⟨hbnn, ?_⟩
+    refine (CStarAlgebra.norm_le_one_iff_of_nonneg _ hbnn).mp ?_
+    rw [hbdef, norm_smul, Real.norm_eq_abs, abs_of_pos (by positivity),
+      inv_mul_cancel₀ (ne_of_gt hn)]
+  have hbS : b ∈ S := by
+    rw [hbdef]
+    exact real_smul_mem _ hxS
+  -- every iterated square root of `b` lies in `S`
+  have hmem : ∀ n : ℕ, sqrtIter b n ∈ S := by
+    intro n
+    induction n with
+    | zero => exact hbS
+    | succ n ih =>
+        rw [sqrtIter_succ, sqrt_eq_cfc_real (sqrtIter_mem_effects hbeff n).1]
+        exact cfc_mem_of_isClosed hS.isClosed _ ih
+  -- ... and they form a chain with supremum `⌈b⌉`
+  set E : ℕ → selfAdjoint A := fun n =>
+    ⟨sqrtIter b n, IsSelfAdjoint.of_nonneg (sqrtIter_mem_effects hbeff n).1⟩ with hE
+  have hEmono : Monotone E := fun m n hmn =>
+    Subtype.coe_le_coe.mp (sqrtIter_monotone hbeff hmn)
+  set D : Set (selfAdjoint A) := Set.range E with hD
+  have hDne : D.Nonempty := ⟨E 0, 0, rfl⟩
+  have hdir : DirectedOn (· ≤ ·) D := by
+    rintro _ ⟨m, rfl⟩ _ ⟨n, rfl⟩
+    exact ⟨E (max m n), ⟨max m n, rfl⟩, hEmono (le_max_left _ _),
+      hEmono (le_max_right _ _)⟩
+  have hcsa : IsSelfAdjoint (ceil b) := (ceil_spec hbnn).1.isSelfAdjoint
+  have hlubA : IsLUB (Set.range (sqrtIter b)) (ceil b) := vna_ceil_sup b hbeff
+  have hlubSA : IsLUB D (⟨ceil b, hcsa⟩ : selfAdjoint A) := by
+    constructor
+    · rintro _ ⟨n, rfl⟩
+      exact Subtype.coe_le_coe.mp (hlubA.1 ⟨n, rfl⟩)
+    · intro y hy
+      refine Subtype.coe_le_coe.mp (hlubA.2 ?_)
+      rintro _ ⟨n, rfl⟩
+      exact Subtype.coe_le_coe.mpr (hy ⟨n, rfl⟩)
+  have hcx : ceil b = ceil x := by
+    rw [hbdef]; exact ceil_smul hx (by positivity : (0:ℝ) < ‖x‖⁻¹)
+  have hres : ceil b ∈ S := hS.dirSup_mem D ⟨ceil b, hcsa⟩
+    (by rintro _ ⟨n, rfl⟩; exact hmem n) hDne hdir hlubSA
+  rwa [hcx] at hres
+
+
 private theorem spectrum_abs_le {a : A} (ha : IsSelfAdjoint a) {r : ℝ}
     (hr : r ∈ spectrum ℝ a) : |r| ≤ ‖a‖ := by
   rcases subsingleton_or_nontrivial A with _ | _
@@ -2917,16 +3019,23 @@ private theorem smul_one_eq (r : ℝ) : (r • (1 : A)) = algebraMap ℂ A ((r :
 /-- The spectral (Riemann-sum) approximation behind **64II**/**65IV**: a
 self-adjoint element of a von Neumann algebra is, up to `ε` in norm, a real
 linear combination of the spectral projections `⌈(a - t)⁺⌉`, each of which
-commutes with everything that commutes with `a`. -/
+commutes with everything that commutes with `a` — and, since a von Neumann
+subalgebra is closed under `cfc` and under `⌈·⌉` (`ceil_mem`), lies in every
+von Neumann subalgebra containing `a`.  The last clause is what makes the
+*relativised* **65IV** (`projections_norm_dense_subalgebra`) come out of the
+same Riemann sum. -/
 private theorem exists_spectral_approx (a : A) (ha : IsSelfAdjoint a) {ε : ℝ}
     (hε : 0 < ε) :
     ∃ s : A, s ∈ Submodule.span ℂ
-        {p : A | IsStarProjection p ∧ ∀ x : A, a * x = x * a → x * p = p * x} ∧
+        {p : A | IsStarProjection p ∧ (∀ x : A, a * x = x * a → x * p = p * x) ∧
+          ∀ T : StarSubalgebra ℂ A, IsVNSubalgebra A T → a ∈ T → p ∈ T} ∧
       ‖a - s‖ ≤ ε := by
   classical
-  set S : Set A := {p : A | IsStarProjection p ∧ ∀ x : A, a * x = x * a → x * p = p * x}
+  set S : Set A := {p : A | IsStarProjection p ∧ (∀ x : A, a * x = x * a → x * p = p * x) ∧
+      ∀ T : StarSubalgebra ℂ A, IsVNSubalgebra A T → a ∈ T → p ∈ T}
     with hSdef
-  have hone : (1 : A) ∈ S := ⟨IsStarProjection.one A, fun x _ => by rw [mul_one, one_mul]⟩
+  have hone : (1 : A) ∈ S :=
+    ⟨IsStarProjection.one A, fun x _ => by rw [mul_one, one_mul], fun T _ _ => one_mem T⟩
   rcases eq_or_lt_of_le (norm_nonneg a) with hM | hM
   · -- `a = 0`
     refine ⟨0, Submodule.zero_mem _, ?_⟩
@@ -3023,7 +3132,12 @@ private theorem exists_spectral_approx (a : A) (ha : IsSelfAdjoint a) {ε : ℝ}
     intro k x hx
     refine vna_ceil_comm (g k) (hgnn k) x ?_
     exact (Commute.cfc_real hx _).symm
-  have hemem : ∀ k, e k ∈ S := fun k => ⟨heproj k, hecomm k⟩
+  have hgmem : ∀ T : StarSubalgebra ℂ A, IsVNSubalgebra A T → a ∈ T → ∀ k, g k ∈ T := by
+    intro T hT haT k
+    simp only [hgdef]
+    exact cfc_mem_of_isClosed hT.isClosed _ haT
+  have hemem : ∀ k, e k ∈ S := fun k =>
+    ⟨heproj k, hecomm k, fun T hT haT => ceil_mem hT (hgnn k) (hgmem T hT haT k)⟩
   -- `e k` commutes with `g j`
   have hegcomm : ∀ j k, g j * e k = e k * g j := fun j k =>
     hecomm k (g j) ((Commute.cfc_real (Commute.refl a) _).symm)
@@ -3133,7 +3247,8 @@ combinations of the spectral projections `⌈(a - t)⁺⌉`, all of which lie in
 `{a}^□□`. -/
 private theorem mem_closure_span_spectral (a : A) (ha : IsSelfAdjoint a) :
     a ∈ closure (Submodule.span ℂ
-      {p : A | IsStarProjection p ∧ ∀ x : A, a * x = x * a → x * p = p * x} : Set A) := by
+      {p : A | IsStarProjection p ∧ (∀ x : A, a * x = x * a → x * p = p * x) ∧
+        ∀ T : StarSubalgebra ℂ A, IsVNSubalgebra A T → a ∈ T → p ∈ T} : Set A) := by
   refine Metric.mem_closure_iff.mpr fun ε hε => ?_
   obtain ⟨s, hs, hnorm⟩ := exists_spectral_approx a ha (half_pos hε)
   refine ⟨s, hs, ?_⟩
@@ -3142,7 +3257,8 @@ private theorem mem_closure_span_spectral (a : A) (ha : IsSelfAdjoint a) :
 
 private theorem mem_closure_span_proj (a : A) (ha : IsSelfAdjoint a) :
     a ∈ closure (Submodule.span ℂ {p : A | IsStarProjection p} : Set A) := by
-  have hsub : {p : A | IsStarProjection p ∧ ∀ x : A, a * x = x * a → x * p = p * x}
+  have hsub : {p : A | IsStarProjection p ∧ (∀ x : A, a * x = x * a → x * p = p * x) ∧
+        ∀ T : StarSubalgebra ℂ A, IsVNSubalgebra A T → a ∈ T → p ∈ T}
       ⊆ {p : A | IsStarProjection p} := fun p hp => hp.1
   exact closure_mono (SetLike.coe_subset_coe.mpr (Submodule.span_mono hsub))
     (mem_closure_span_spectral a ha)
@@ -3337,7 +3453,64 @@ theorem projections_norm_dense (a : A) (ha : IsSelfAdjoint a) :
     simp only [Set.mem_setOf_eq, commutant, Set.mem_centralizer_iff,
       Set.mem_singleton_iff, forall_eq]
   rw [hset]
-  exact mem_closure_span_spectral a ha
+  refine closure_mono (SetLike.coe_subset_coe.mpr (Submodule.span_mono ?_))
+    (mem_closure_span_spectral a ha)
+  rintro p ⟨h1, h2, -⟩
+  exact ⟨h1, h2⟩
+
+/-- **65IV** relativised to a von Neumann *subalgebra*, self-adjoint case:
+every self-adjoint element of a von Neumann subalgebra `S` of `A` is the
+norm limit of linear combinations of projections **of `S`**.
+
+The thesis states 65IV only for a von Neumann algebra, and the relative form
+does not follow from it in our setting: 65IV places the projections in
+`{a}^□□`, and `{a}^□□ ⊆ S` is the double commutant theorem **88VI**, which
+is still `sorry` (and is stated only for `B(H)`).  It does, however, come out
+of the same spectral Riemann sum, because a von Neumann subalgebra is closed
+under `cfc` and under `⌈·⌉` (`ceil_mem`). -/
+theorem projections_norm_dense_subalgebra_selfAdjoint {S : StarSubalgebra ℂ A}
+    (hS : IsVNSubalgebra A S) (a : A) (ha : IsSelfAdjoint a) (haS : a ∈ S) :
+    a ∈ closure (Submodule.span ℂ {p : A | IsStarProjection p ∧ p ∈ S} : Set A) := by
+  refine closure_mono (SetLike.coe_subset_coe.mpr (Submodule.span_mono ?_))
+    (mem_closure_span_spectral a ha)
+  rintro p ⟨h1, -, h3⟩
+  exact ⟨h1, h3 S hS haS⟩
+
+/-- **65IV** relativised to a von Neumann *subalgebra*: **the linear span of
+the projections of `S` is norm-dense in `S`** (`a = ℜa + i·ℑa`). -/
+theorem projections_norm_dense_subalgebra {S : StarSubalgebra ℂ A}
+    (hS : IsVNSubalgebra A S) (a : A) (haS : a ∈ S) :
+    a ∈ closure (Submodule.span ℂ {p : A | IsStarProjection p ∧ p ∈ S} : Set A) := by
+  have hre : (realPart a : A) ∈ S := by
+    rw [realPart_apply_coe]
+    exact real_smul_mem _ (add_mem haS (star_mem haS))
+  have him : (imaginaryPart a : A) ∈ S := by
+    rw [imaginaryPart_apply_coe]
+    exact SMulMemClass.smul_mem _ (real_smul_mem _ (sub_mem haS (star_mem haS)))
+  have hx : (realPart a : A) + Complex.I • (imaginaryPart a : A) = a :=
+    realPart_add_I_smul_imaginaryPart a
+  have hmem : a ∈ Submodule.topologicalClosure
+      (Submodule.span ℂ {p : A | IsStarProjection p ∧ p ∈ S}) := by
+    rw [← hx]
+    exact Submodule.add_mem _
+      (projections_norm_dense_subalgebra_selfAdjoint hS _ (realPart a).2 hre)
+      (Submodule.smul_mem _ _
+        (projections_norm_dense_subalgebra_selfAdjoint hS _ (imaginaryPart a).2 him))
+  exact hmem
+
+/-- **65IV** relativised, in the form its consumers use: a norm-closed
+`ℂ`-subspace of `A` containing every projection of a von Neumann subalgebra
+`S` contains all of `S`. -/
+theorem mem_of_isClosed_of_projections_subalgebra {S : StarSubalgebra ℂ A}
+    (hS : IsVNSubalgebra A S) (V : Submodule ℂ A) (hV : IsClosed (V : Set A))
+    (hp : ∀ p : A, IsStarProjection p → p ∈ S → p ∈ V) {a : A} (haS : a ∈ S) :
+    a ∈ V := by
+  have hspan : Submodule.span ℂ {p : A | IsStarProjection p ∧ p ∈ S} ≤ V :=
+    Submodule.span_le.mpr fun p hpp => hp p hpp.1 hpp.2
+  have hmem : a ∈ closure (V : Set A) :=
+    closure_mono (SetLike.coe_subset_coe.mpr hspan)
+      (projections_norm_dense_subalgebra hS a haS)
+  rwa [hV.closure_eq] at hmem
 
 /-! ## Parsec 660: ultracyclic projections -/
 

@@ -894,8 +894,93 @@ theorem luws (f : A →ₗ[ℂ] ℂ) :
         f a = g 0 a + Complex.I * g 1 a - g 2 a - Complex.I * g 3 a,
        ∃ (ω : NPFunctional A) (δ : ℝ), 0 < δ ∧
         BddAbove {r : ℝ | ∃ a : A, omegaNorm A ω a ≤ δ ∧ r = ‖f a‖},
-       ∃ ω : NPFunctional A, ∀ a : A, ‖f a‖ ≤ omegaNorm A ω a] :=
-  sorry
+       ∃ ω : NPFunctional A, ∀ a : A, ‖f a‖ ≤ omegaNorm A ω a] := by
+  tfae_have 1 → 4 := by
+    intro hcont
+    have hopen : @IsOpen A (ultrastrong A) (⇑f ⁻¹' Metric.ball (0 : ℂ) 1) :=
+      (@continuous_def A ℂ (ultrastrong A) _ _).mp hcont _ Metric.isOpen_ball
+    have hmem : (0 : A) ∈ ⇑f ⁻¹' Metric.ball (0 : ℂ) 1 := by
+      simp [Set.mem_preimage, map_zero]
+    obtain ⟨ω, δ, hδ, hsub⟩ := exists_ultrastrong_ball_of_isOpen hopen 0 hmem
+    refine ⟨ω, δ / 2, by positivity, 1, ?_⟩
+    rintro _ ⟨a, ha, rfl⟩
+    have hball : a ∈ {x : A | omegaNorm A ω (x - 0) < δ} := by
+      simp only [sub_zero, Set.mem_ofPred_eq]
+      linarith
+    have := hsub hball
+    simp only [Set.mem_preimage, Metric.mem_ball, dist_zero_right] at this
+    exact this.le
+  tfae_have 4 → 3 := by
+    rintro ⟨ω, δ, hδ, B₀, hB₀⟩
+    have h1 : ∃ δ B : ℝ, 0 < δ ∧ 0 < B ∧
+        ∀ a : A, omegaNorm A ω a ≤ δ → ‖f a‖ ≤ B := by
+      refine ⟨δ, |B₀| + 1, hδ, by positivity, fun a ha => ?_⟩
+      have := hB₀ ⟨a, ha, rfl⟩
+      have hle : B₀ ≤ |B₀| := le_abs_self B₀
+      linarith
+    exact normal_functionals_decomposition ω f
+      ((normal_functionals_lemma ω f).out 0 1 |>.mp h1)
+  tfae_have 3 → 2 := by
+    rintro ⟨g, hg⟩
+    let _ : TopologicalSpace A := ultraweak A
+    have heq : ⇑f = fun a : A =>
+        (g 0 a + Complex.I * g 1 a - g 2 a - Complex.I * g 3 a : ℂ) := funext hg
+    rw [heq]
+    exact (((continuous_ultraweak_npFunctional (g 0)).add
+        (continuous_const.mul (continuous_ultraweak_npFunctional (g 1)))).sub
+        (continuous_ultraweak_npFunctional (g 2))).sub
+      (continuous_const.mul (continuous_ultraweak_npFunctional (g 3)))
+  tfae_have 2 → 1 := fun h => continuous_le_dom ultrastrong_le_ultraweak h
+  tfae_have 3 → 5 := by
+    rintro ⟨g, hg⟩
+    -- `ω' = Σₖ fₖ` dominates every `‖·‖_{fₖ}`
+    set ω' : NPFunctional A := addNP (addNP (g 0) (g 1)) (addNP (g 2) (g 3)) with hω'
+    have hdom : ∀ k : Fin 4, ∀ a : A, omegaNorm A (g k) a ≤ omegaNorm A ω' a := by
+      intro k a
+      fin_cases k
+      · exact le_trans (omegaNorm_le_addNP (g 0) (g 1) a)
+          (omegaNorm_le_addNP _ _ a)
+      · exact le_trans (omegaNorm_le_addNP' (g 0) (g 1) a)
+          (omegaNorm_le_addNP _ _ a)
+      · exact le_trans (omegaNorm_le_addNP (g 2) (g 3) a)
+          (omegaNorm_le_addNP' _ _ a)
+      · exact le_trans (omegaNorm_le_addNP' (g 2) (g 3) a)
+          (omegaNorm_le_addNP' _ _ a)
+    set C : ℝ := Real.sqrt ((g 0 1).re) + Real.sqrt ((g 1 1).re) +
+      Real.sqrt ((g 2 1).re) + Real.sqrt ((g 3 1).re) with hC
+    have hC0 : 0 ≤ C := by rw [hC]; positivity
+    have hk : ∀ (k : Fin 4) (a : A),
+        ‖(g k a : ℂ)‖ ≤ Real.sqrt ((g k 1).re) * omegaNorm A ω' a := by
+      intro k a
+      calc ‖(g k a : ℂ)‖ ≤ omegaNorm A (g k) a * Real.sqrt ((g k 1).re) :=
+            norm_apply_le_omegaNorm (g k) a
+        _ ≤ omegaNorm A ω' a * Real.sqrt ((g k 1).re) :=
+            mul_le_mul_of_nonneg_right (hdom k a) (Real.sqrt_nonneg _)
+        _ = _ := by ring
+    have hbound : ∀ a : A, ‖f a‖ ≤ C * omegaNorm A ω' a := by
+      intro a
+      have e1 := norm_sub_le (g 0 a + Complex.I * g 1 a - g 2 a) (Complex.I * g 3 a)
+      have e2 := norm_sub_le (g 0 a + Complex.I * g 1 a) (g 2 a)
+      have e3 := norm_add_le (g 0 a) (Complex.I * g 1 a)
+      have hI1 : ‖Complex.I * g 1 a‖ = ‖(g 1 a : ℂ)‖ := by simp
+      have hI3 : ‖Complex.I * g 3 a‖ = ‖(g 3 a : ℂ)‖ := by simp
+      have b0 := hk 0 a
+      have b1 := hk 1 a
+      have b2 := hk 2 a
+      have b3 := hk 3 a
+      rw [hg a, hC]
+      ring_nf
+      ring_nf at e1 e2 e3 b0 b1 b2 b3 hI1 hI3
+      linarith
+    refine ⟨smulNP (by positivity : (0:ℝ) ≤ C ^ 2) ω', fun a => ?_⟩
+    rw [omegaNorm_smulNP, Real.sqrt_sq hC0]
+    exact hbound a
+  tfae_have 5 → 4 := by
+    rintro ⟨ω, hω⟩
+    refine ⟨ω, 1, one_pos, 1, ?_⟩
+    rintro _ ⟨a, ha, rfl⟩
+    exact le_trans (hω a) ha
+  tfae_finish
 
 end Functionals
 
@@ -1137,14 +1222,180 @@ theorem hahn_banach (K : Set V) (hK : RadiallyOpen V K)
 
 end Radial
 
+/-! ### Auxiliaries for **73VIII** -/
+
+omit [PartialOrder A] [StarOrderedRing A] in
+private theorem rsmul_eq (r : ℝ) (x : A) : r • x = ((r : ℝ) : ℂ) • x := by
+  rw [← IsScalarTower.algebraMap_smul ℂ r x, Complex.coe_algebraMap]
+
+private theorem omegaNorm_rsmul (ω : NPFunctional A) (r : ℝ) (x : A) :
+    omegaNorm A ω (r • x) = |r| * omegaNorm A ω x := by
+  rw [rsmul_eq, omegaNorm_smul, Complex.norm_real, Real.norm_eq_abs]
+
+omit [PartialOrder A] [StarOrderedRing A] in
+private theorem radiallyOpen_add_left {s t : Set A} (hs : RadiallyOpen A s) :
+    RadiallyOpen A (s + t) := by
+  rintro a ⟨p, hp, q, hq, rfl⟩ v
+  obtain ⟨d, hd, h⟩ := hs p hp v
+  refine ⟨d, hd, fun r hr0 hr => ?_⟩
+  have e : p + q + r • v = p + r • v + q := by abel
+  rw [e]
+  exact Set.add_mem_add (h r hr0 hr) hq
+
 /-- **73VIII** (`ultraclosed`, vn.tex:4160, Exercise): an ultrastrongly
 closed *convex* subset of a von Neumann algebra is ultraweakly closed
 (hence the ultrastrong and ultraweak closures of convex sets coincide).
 The exercise's enumerated items are steps of the proof and are not
-converted separately. -/
+converted separately.
+
+The thesis's five steps, transcribed: (1) `Kᶜ` is ultrastrongly open, so it
+contains a `‖·‖_ω`-ball around the point `a₀ ∉ K` to be separated
+(`exists_ultrastrong_ball_of_isOpen`); (2) that ball `B` (recentred at `0`)
+is convex and radially open, and misses the translate `K' = K - a₀`, so
+`0 ∉ B + K'`; (3) **73IV** `hahn_banach` gives an `ℝ`-linear `f` positive on
+`B + K'`, extended to a `ℂ`-linear `g` by `g(a) = f(a) - i f(ia)`
+(Mathlib's `Module.Dual.extendRCLike`); (4) `|f(b)| < f(k)` for `b ∈ B`,
+`k ∈ K'` — because `-b ∈ B` — whence `‖g(b)‖ ≤ 2f(k₀)` on the ball and `g`
+is ultraweakly continuous by **72XI** `luws`, clause (4); (5) `B` is
+absorbing, so a small multiple `b₀` of a fixed `k₀ ∈ K'` lies in `B` with
+`f(b₀) > 0`, and `f ≥ f(b₀) =: δ > 0` on `K'`.  Then
+`{a | (g a).re < δ + (g a₀).re}` is an ultraweak neighbourhood of `a₀`
+missing `K`. -/
 theorem ultraclosed [VonNeumannAlgebra A] (K : Set A) (hconv : Convex ℝ K)
-    (hK : @IsClosed A (ultrastrong A) K) : @IsClosed A (ultraweak A) K :=
-  sorry
+    (hK : @IsClosed A (ultrastrong A) K) : @IsClosed A (ultraweak A) K := by
+  rcases Set.eq_empty_or_nonempty K with rfl | ⟨k₀, hk₀⟩
+  · exact @isClosed_empty A (ultraweak A)
+  letI : TopologicalSpace A := ultraweak A
+  refine isOpen_compl_iff.mp (isOpen_iff_forall_mem_open.mpr ?_)
+  intro a₀ ha₀
+  -- (1) `K` is ultrastrongly closed, so its complement contains a `‖·‖_ω`-ball at `a₀`
+  obtain ⟨ω, ε, hε, hball⟩ :=
+    exists_ultrastrong_ball_of_isOpen hK.isOpen_compl a₀ ha₀
+  -- (2) the ball `B` at the origin, and the translate `K'` of `K`
+  set B : Set A := {b : A | omegaNorm A ω b < ε} with hB
+  set K' : Set A := (fun v => a₀ + v) ⁻¹' K with hK'
+  have hBmem : ∀ b : A, b ∈ B ↔ omegaNorm A ω b < ε := fun _ => Iff.rfl
+  have hK'mem : ∀ v : A, v ∈ K' ↔ a₀ + v ∈ K := fun _ => Iff.rfl
+  have hB0 : (0 : A) ∈ B := by rw [hBmem]; simpa using hε
+  have hBneg : ∀ b ∈ B, -b ∈ B := by
+    intro b hb; rw [hBmem, omegaNorm_neg]; exact hb
+  have hBconv : Convex ℝ B := by
+    intro x hx y hy s t hs ht hst
+    rw [hBmem] at hx hy ⊢
+    have h1 : omegaNorm A ω (s • x + t • y) ≤ s * omegaNorm A ω x + t * omegaNorm A ω y := by
+      refine le_trans (omegaNorm_add_le ω _ _) ?_
+      rw [omegaNorm_rsmul, omegaNorm_rsmul, abs_of_nonneg hs, abs_of_nonneg ht]
+    have h2 : s * omegaNorm A ω x + t * omegaNorm A ω y < ε := by
+      rcases eq_or_lt_of_le hs with hs0 | hs0
+      · rw [← hs0]; simp only [zero_mul, zero_add]
+        rw [← hs0, zero_add] at hst
+        rw [hst, one_mul]; exact hy
+      · rcases eq_or_lt_of_le ht with ht0 | ht0
+        · rw [← ht0]; simp only [zero_mul, add_zero]
+          rw [← ht0, add_zero] at hst
+          rw [hst, one_mul]; exact hx
+        · nlinarith [omegaNorm_nonneg ω x, omegaNorm_nonneg ω y]
+    linarith
+  have hBrad : RadiallyOpen A B := by
+    intro b hb v
+    rw [hBmem] at hb
+    refine ⟨(ε - omegaNorm A ω b) / (omegaNorm A ω v + 1),
+      by have := omegaNorm_nonneg ω v; positivity, fun r hr0 hr => ?_⟩
+    rw [hBmem]
+    have h1 : omegaNorm A ω (b + r • v) ≤ omegaNorm A ω b + r * omegaNorm A ω v := by
+      refine le_trans (omegaNorm_add_le ω _ _) ?_
+      rw [omegaNorm_rsmul, abs_of_nonneg hr0]
+    rw [lt_div_iff₀ (by have := omegaNorm_nonneg ω v; positivity)] at hr
+    nlinarith [omegaNorm_nonneg ω v]
+  have hK'conv : Convex ℝ K' := hconv.translate_preimage_right a₀
+  have hK'ne : k₀ - a₀ ∈ K' := by rw [hK'mem]; simpa using hk₀
+  have hdisj : ∀ x ∈ B, x ∉ K' := by
+    intro x hx hxK'
+    have : a₀ + x ∈ Kᶜ := by
+      refine hball ?_
+      rw [Set.mem_ofPred_eq]
+      simpa using (hBmem x).mp hx
+    exact this ((hK'mem x).mp hxK')
+  -- (3) Hahn–Banach on `C = B + K'`
+  set C : Set A := B + K' with hC
+  have hCconv : Convex ℝ C := hBconv.add hK'conv
+  have hCrad : RadiallyOpen A C := radiallyOpen_add_left hBrad
+  have hC0 : (0 : A) ∉ C := by
+    rintro ⟨b, hb, k, hk, hbk⟩
+    have hbk' : b + k = 0 := hbk
+    have hkb : k = -b := eq_neg_of_add_eq_zero_right hbk'
+    exact hdisj (-b) (hBneg b hb) (hkb ▸ hk)
+  obtain ⟨f, hf⟩ := hahn_banach C hCrad hCconv hC0
+  have hfpos : ∀ b ∈ B, ∀ k ∈ K', 0 < f b + f k := by
+    intro b hb k hk
+    have := hf (b + k) (Set.add_mem_add hb hk)
+    rwa [map_add] at this
+  -- (4) `|f(b)| < f(k)` and `‖g(b)‖ ≤ 2 f(k)`
+  have habs : ∀ b ∈ B, ∀ k ∈ K', |f b| < f k := by
+    intro b hb k hk
+    have h1 := hfpos b hb k hk
+    have h2 := hfpos (-b) (hBneg b hb) k hk
+    rw [map_neg] at h2
+    rw [abs_lt]
+    constructor <;> linarith
+  set g : Module.Dual ℂ A := Module.Dual.extendRCLike (𝕜 := ℂ) f with hg
+  have hgapp : ∀ x : A,
+      g x = ((f x : ℝ) : ℂ) - Complex.I * ((f (Complex.I • x) : ℝ) : ℂ) := fun x =>
+    Module.Dual.extendRCLike_apply (𝕜 := ℂ) f x
+  have hgre : ∀ x : A, (g x).re = f x := fun x => by rw [hgapp x]; simp
+  have hgnorm : ∀ b ∈ B, ∀ k ∈ K', ‖g b‖ ≤ 2 * f k := by
+    intro b hb k hk
+    have hIb : Complex.I • b ∈ B := by
+      rw [hBmem, omegaNorm_smul]
+      simpa using (hBmem b).mp hb
+    have e := hgapp b
+    have h1 : ‖g b‖ ≤ ‖((f b : ℝ) : ℂ)‖ + ‖Complex.I * ((f (Complex.I • b) : ℝ) : ℂ)‖ := by
+      rw [e]; exact norm_sub_le _ _
+    have h2 : ‖((f b : ℝ) : ℂ)‖ = |f b| := by simp
+    have h3 : ‖Complex.I * ((f (Complex.I • b) : ℝ) : ℂ)‖ = |f (Complex.I • b)| := by simp
+    have hb1 := habs b hb k hk
+    have hb2 := habs _ hIb k hk
+    rw [h2, h3] at h1
+    linarith
+  -- `g` is ultraweakly continuous by **72XI**
+  have hbdd : ∃ (ω' : NPFunctional A) (δ : ℝ), 0 < δ ∧
+      BddAbove {r : ℝ | ∃ a : A, omegaNorm A ω' a ≤ δ ∧ r = ‖g a‖} := by
+    refine ⟨ω, ε / 2, by positivity, 2 * f (k₀ - a₀), ?_⟩
+    rintro _ ⟨a, ha, rfl⟩
+    exact hgnorm a (by rw [hBmem]; linarith) _ hK'ne
+  have hgcont : @Continuous A ℂ (ultraweak A) _ ⇑g := ((luws g).out 3 1).mp hbdd
+  -- (5) a strictly positive lower bound `δ` for `f` on `K'`
+  obtain ⟨δ, hδ, hδle⟩ : ∃ δ : ℝ, 0 < δ ∧ ∀ k ∈ K', δ ≤ f k := by
+    set v : A := k₀ - a₀ with hv
+    have hfv : 0 < f v := by
+      have := hfpos 0 hB0 v hK'ne
+      rwa [map_zero, zero_add] at this
+    set r : ℝ := ε / (2 * (omegaNorm A ω v + 1)) with hr
+    have hr0 : 0 < r := by
+      rw [hr]; have := omegaNorm_nonneg ω v; positivity
+    have hrB : r • v ∈ B := by
+      rw [hBmem, omegaNorm_rsmul, abs_of_pos hr0, hr]
+      rw [div_mul_eq_mul_div, div_lt_iff₀ (by have := omegaNorm_nonneg ω v; positivity)]
+      nlinarith [omegaNorm_nonneg ω v]
+    refine ⟨r * f v, by positivity, fun k hk => ?_⟩
+    have h := habs (r • v) hrB k hk
+    have he : f (r • v) = r * f v := by rw [map_smul]; simp
+    rw [he, abs_of_pos (by positivity)] at h
+    linarith
+  -- the ultraweakly open separating set
+  refine ⟨{a : A | (g a).re < δ + (g a₀).re}, ?_, ?_, by simpa using hδ⟩
+  · intro a ha
+    simp only [Set.mem_ofPred_eq] at ha
+    intro hkK
+    have hk' : a - a₀ ∈ K' := by rw [hK'mem]; simpa using hkK
+    have := hδle _ hk'
+    rw [← hgre] at this
+    have e : (g (a - a₀)).re = (g a).re - (g a₀).re := by rw [map_sub]; simp
+    rw [e] at this
+    linarith
+  · have hcont : @Continuous A ℝ (ultraweak A) _ (fun a => (g a).re) :=
+      Complex.continuous_re.comp' hgcont
+    exact continuous_def.mp hcont _ isOpen_Iio
 
 /-! ## Parsec 740: Kaplansky's density theorem -/
 

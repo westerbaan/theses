@@ -461,12 +461,96 @@ theorem omegaNorm_le_addNP' (ω₁ ω₂ : NPFunctional A) (a : A) :
   simp only [addNP_apply, Complex.add_re]
   simpa using this
 
+private theorem cmul_le_cmul {r : ℝ} (hr : 0 ≤ r) {z w : ℂ} (h : z ≤ w) :
+    (r : ℂ) * z ≤ (r : ℂ) * w := by
+  obtain ⟨h1, h2⟩ := Complex.le_def.mp h
+  refine Complex.le_def.mpr ⟨?_, ?_⟩
+  · simpa using mul_le_mul_of_nonneg_left h1 hr
+  · simp [h2]
+
+/-- **72XI**/**73VIII**: the nonnegative real multiple `r·ω` of an np-functional. -/
+noncomputable def smulNP {r : ℝ} (hr : 0 ≤ r) (ω : NPFunctional A) : NPFunctional A where
+  toPositiveLinearMap :=
+    PositiveLinearMap.mk₀ ((r : ℂ) • (ω.toPositiveLinearMap : A →ₗ[ℂ] ℂ))
+      (fun x hx => by
+        have h : (0 : ℂ) ≤ ω x := npFunctional_nonneg ω hx
+        have h2 : (0 : ℂ) ≤ (r : ℂ) * ω x := by simpa using cmul_le_cmul hr h
+        exact h2)
+  preservesDirSups' := by
+    intro D s hne hdir hlub
+    have hω := ω.preservesDirSups' D s hne hdir hlub
+    have hub : ∀ d ∈ D, (ω (d : A) : ℂ) ≤ ω (s : A) := fun d hd => hω.1 ⟨d, hd, rfl⟩
+    constructor
+    · rintro _ ⟨d, hd, rfl⟩
+      change (r : ℂ) * ω (d : A) ≤ (r : ℂ) * ω (s : A)
+      exact cmul_le_cmul hr (hub d hd)
+    · intro z hz
+      have hz' : ∀ d ∈ D, (r : ℂ) * ω (d : A) ≤ z := fun d hd => hz ⟨d, hd, rfl⟩
+      change (r : ℂ) * ω (s : A) ≤ z
+      rcases eq_or_lt_of_le hr with hr0 | hr0
+      · obtain ⟨d₀, hd₀⟩ := hne
+        have h0 := hz' d₀ hd₀
+        rw [← hr0] at h0 ⊢
+        simpa using h0
+      · have hle : (ω (s : A) : ℂ) ≤ ((r⁻¹ : ℝ) : ℂ) * z := by
+          refine hω.2 ?_
+          rintro _ ⟨d, hd, rfl⟩
+          have h := cmul_le_cmul (le_of_lt (inv_pos.mpr hr0)) (hz' d hd)
+          rwa [← mul_assoc, ← Complex.ofReal_mul, inv_mul_cancel₀ (ne_of_gt hr0),
+            Complex.ofReal_one, one_mul] at h
+        have h := cmul_le_cmul hr hle
+        rwa [← mul_assoc, ← Complex.ofReal_mul, mul_inv_cancel₀ (ne_of_gt hr0),
+          Complex.ofReal_one, one_mul] at h
+
+@[simp] theorem smulNP_apply {r : ℝ} (hr : 0 ≤ r) (ω : NPFunctional A) (a : A) :
+    smulNP hr ω a = (r : ℂ) * ω a := rfl
+
+theorem omegaNorm_smulNP {r : ℝ} (hr : 0 ≤ r) (ω : NPFunctional A) (a : A) :
+    omegaNorm A (smulNP hr ω) a = Real.sqrt r * omegaNorm A ω a := by
+  rw [omegaNorm, omegaNorm, smulNP_apply, ← Real.sqrt_mul hr]
+  congr 1
+  simp
+
 /-- The "balls" `{a | ‖a - b‖_ω < ε}` of **42III** are ultrastrong
 neighbourhoods of `b` (they are among the generators of the topology). -/
 theorem ultrastrong_ball_mem_nhds (ω : NPFunctional A) (b : A) {ε : ℝ}
     (hε : 0 < ε) : {a : A | omegaNorm A ω (a - b) < ε} ∈ @nhds A (ultrastrong A) b :=
   @IsOpen.mem_nhds A (ultrastrong A) _ _
     (TopologicalSpace.isOpen_generateFrom_of_mem ⟨ω, b, ε, hε, rfl⟩) (by simp [hε])
+
+/-- Every ultrastrongly open set contains a `‖·‖_ω`-ball around each of its
+points. -/
+theorem exists_ultrastrong_ball_of_isOpen {S : Set A}
+    (hS : @IsOpen A (ultrastrong A) S) :
+    ∀ b ∈ S, ∃ (ω : NPFunctional A) (δ : ℝ), 0 < δ ∧
+      {a : A | omegaNorm A ω (a - b) < δ} ⊆ S := by
+  rw [ultrastrong] at hS
+  replace hS : TopologicalSpace.GenerateOpen
+      {U : Set A | ∃ (ω : NPFunctional A) (b : A) (ε : ℝ), 0 < ε ∧
+        U = {a : A | omegaNorm A ω (a - b) < ε}} S := hS
+  induction hS with
+  | basic U hU =>
+      obtain ⟨ω, c, ε, hε, rfl⟩ := hU
+      intro b hb
+      simp only [Set.mem_ofPred_eq] at hb
+      refine ⟨ω, ε - omegaNorm A ω (b - c), by linarith, fun a ha => ?_⟩
+      simp only [Set.mem_ofPred_eq] at ha ⊢
+      have := omegaNorm_sub_le ω a b c
+      linarith
+  | univ => exact fun b _ => ⟨zeroNP, 1, one_pos, fun _ _ => Set.mem_univ _⟩
+  | inter U V _ _ ihU ihV =>
+      intro b hb
+      obtain ⟨ω₁, δ₁, hδ₁, h₁⟩ := ihU b hb.1
+      obtain ⟨ω₂, δ₂, hδ₂, h₂⟩ := ihV b hb.2
+      refine ⟨addNP ω₁ ω₂, min δ₁ δ₂, lt_min hδ₁ hδ₂, fun a ha => ?_⟩
+      simp only [Set.mem_ofPred_eq] at ha
+      refine ⟨h₁ ?_, h₂ ?_⟩
+      · exact lt_of_le_of_lt (omegaNorm_le_addNP ω₁ ω₂ _) (lt_of_lt_of_le ha (min_le_left _ _))
+      · exact lt_of_le_of_lt (omegaNorm_le_addNP' ω₁ ω₂ _) (lt_of_lt_of_le ha (min_le_right _ _))
+  | sUnion T _ ih =>
+      rintro b ⟨U, hU, hbU⟩
+      obtain ⟨ω, δ, hδ, h⟩ := ih U hU b hbU
+      exact ⟨ω, δ, hδ, fun a ha => ⟨U, hU, h ha⟩⟩
 
 /-- Every np-functional is ultrastrongly continuous — this is the content of
 **43I**.1, and gives **43I**.2 and **43I**.3 below. -/
@@ -2380,6 +2464,44 @@ theorem usconv [VonNeumannAlgebra A] {ι : Type*} (x : ι → A) (l : Filter ι)
         UWTendsto x l b :=
   sorry
 
+/-- **46III**, (3) ⇒ (1): an ultrastrongly continuous positive functional is
+normal.  (This is **45I**.1 for `B = ℂ`, without the restriction to the
+effects: the net `(d)_{d∈D}` converges ultrastrongly to `⋁D` by **44XIV**
+`vna_supremum_uslimit`, so `ω(d) → ω(⋁D)`, and `ω(d) ≤ z` for every upper
+bound `z` of the image.) -/
+theorem preservesDirSups_of_continuous_ultrastrong [VonNeumannAlgebra A]
+    (ω : A →ₚ[ℂ] ℂ) (h : @Continuous A ℂ (ultrastrong A) _ ⇑ω) :
+    PreservesDirSups ⇑ω := by
+  intro D s hne hdir hlub
+  refine ⟨?_, ?_⟩
+  · rintro _ ⟨d, hd, rfl⟩
+    exact ω.monotone (Subtype.coe_le_coe.mpr (hlub.1 hd))
+  intro z hz
+  have hbdd : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧ BddAbove D := ⟨hne, hdir, ⟨s, hlub.1⟩⟩
+  have hsup : dirSup D hbdd = s := (isLUB_dirSup D hbdd).unique hlub
+  have hnonempty : Nonempty D := ⟨⟨hne.choose, hne.choose_spec⟩⟩
+  have hdo : IsDirectedOrder D := directedOn_iff_isDirectedOrder.mp hdir
+  -- the net converges ultrastrongly to `⋁D`
+  have hnet : USTendsto (fun d : D => ((d : selfAdjoint A) : A)) atTop (s : A) := by
+    have := vna_supremum_uslimit D hbdd
+    rwa [hsup] at this
+  have htend : Tendsto (fun d : D => (ω ((d : selfAdjoint A) : A) : ℂ)) atTop (𝓝 (ω (s : A))) :=
+    ((@Continuous.tendsto A ℂ (ultrastrong A) _ ⇑ω h ((s : selfAdjoint A) : A)).comp hnet)
+  have hle : ∀ d : D, (ω ((d : selfAdjoint A) : A) : ℂ) ≤ z := fun d =>
+    hz ⟨(d : selfAdjoint A), d.2, rfl⟩
+  -- compare real and imaginary parts separately
+  have hre : (ω (s : A)).re ≤ z.re := by
+    refine le_of_tendsto ((Complex.continuous_re.tendsto _).comp htend) ?_
+    exact Eventually.of_forall fun d => (Complex.le_def.mp (hle d)).1
+  have him : (ω (s : A)).im = z.im := by
+    have h1 : Tendsto (fun d : D => (ω ((d : selfAdjoint A) : A) : ℂ).im) atTop
+        (𝓝 (ω (s : A)).im) := (Complex.continuous_im.tendsto _).comp htend
+    have h2 : Tendsto (fun d : D => (ω ((d : selfAdjoint A) : A) : ℂ).im) atTop (𝓝 z.im) := by
+      refine Tendsto.congr' (Eventually.of_forall fun d => ?_) tendsto_const_nhds
+      exact ((Complex.le_def.mp (hle d)).2).symm
+    exact tendsto_nhds_unique h1 h2
+  exact Complex.le_def.mpr ⟨hre, him⟩
+
 /-- **46III** (`npuws`, vn.tex:940, Exercise): for a positive functional `ω`
 on a von Neumann algebra, the following are equivalent: (1) `ω` is normal;
 (2) `ω` is ultraweakly continuous; (3) `ω` is ultrastrongly continuous. -/
@@ -2387,8 +2509,11 @@ theorem npuws [VonNeumannAlgebra A] (ω : A →ₚ[ℂ] ℂ) :
     List.TFAE
       [PreservesDirSups ⇑ω,
        @Continuous A ℂ (ultraweak A) _ ⇑ω,
-       @Continuous A ℂ (ultrastrong A) _ ⇑ω] :=
-  sorry
+       @Continuous A ℂ (ultrastrong A) _ ⇑ω] := by
+  tfae_have 1 → 2 := fun h => continuous_ultraweak_npFunctional ⟨ω, h⟩
+  tfae_have 2 → 3 := fun h => continuous_le_dom ultrastrong_le_ultraweak h
+  tfae_have 3 → 1 := preservesDirSups_of_continuous_ultrastrong ω
+  tfae_finish
 
 /-! ## Parsec 470: the categor(ies) of von Neumann algebras
 
