@@ -173,6 +173,265 @@ theorem mketbra_rules (x y v w e : X) (b : ℬ)
 
 variable [CompleteSpace X]
 
+/-! ### Infrastructure for **159IV**: the projections `p_S = ∑_{i∈S} |eᵢ⟩⟨eᵢ|`
+
+**159VI** (`ketbra-dense-pt1`, dils.tex:4330) — the heart of **159IV**.  The
+`p_S`, indexed by the finite subsets of the basis, form an increasing net of
+effects of `𝒷ᵃ(X)` with supremum `1`: their vector forms are the partial
+Parseval sums (**149IV**), which are bounded by `⟨x,x⟩` (Bessel, `mod_bessel`)
+and converge ultraweakly to it, and the vector states of `𝒷ᵃ(X)` are order
+separating (**144I**, here through `ba_nonneg_iff`).
+
+The self-duality hypothesis of the thesis is not used below: by **149XI**
+`selfDual_of_isONBasis` it already follows from the existence of the basis.
+See ERRATA.md. -/
+
+section KetbraProj
+
+variable {ι : Type v}
+
+/-- `|x⟩⟨y|` as an element of `𝒷ᵃ(X)`. -/
+noncomputable def mketbraBa (x y : X) : Ba ℬ X :=
+  ⟨mketbra ℬ x y, ⟨_, mketbra_adjointable ℬ x y⟩⟩
+
+omit [CompleteSpace X] in
+@[simp] theorem mketbraBa_coe (x y : X) :
+    (mketbraBa (ℬ := ℬ) x y).1 = mketbra ℬ x y := rfl
+
+/-- The coercion `𝒷ᵃ(X) → B(X)` as an additive map, so that it commutes
+with finite sums. -/
+private def baVal : Ba ℬ X →+ (X →L[ℂ] X) where
+  toFun S := S.1
+  map_zero' := rfl
+  map_add' _ _ := rfl
+
+private theorem baVal_sum {ι : Type*} (s : Finset ι) (f : ι → Ba ℬ X) (z : X) :
+    ((∑ i ∈ s, f i : Ba ℬ X)).1 z = ∑ i ∈ s, ((f i).1 z) := by
+  have h : ((∑ i ∈ s, f i : Ba ℬ X)).1 = ∑ i ∈ s, (f i).1 := by
+    change baVal _ = _
+    exact map_sum baVal _ _
+  rw [h]
+  simp
+
+
+variable [VonNeumannAlgebra ℬ]
+
+/-- The finite-rank projection `p_S = ∑_{i∈S} |eᵢ⟩⟨eᵢ|` of **159VI**
+(`ketbra-dense-pt1`). -/
+noncomputable def onbProj (e : ι → X) (S : Finset ι) : Ba ℬ X :=
+  ∑ i ∈ S, mketbraBa (ℬ := ℬ) (e i) (e i)
+
+omit [VonNeumannAlgebra ℬ] in
+theorem onbProj_apply (e : ι → X) (S : Finset ι) (z : X) :
+    (onbProj (ℬ := ℬ) e S).1 z = ∑ i ∈ S, (inner ℬ (e i) z : ℬ) • e i := by
+  rw [onbProj, baVal_sum]
+  rfl
+
+omit [VonNeumannAlgebra ℬ] in
+/-- `⟨x, p_S x⟩ = ∑_{i∈S} ⟨eᵢ,x⟩⟨x,eᵢ⟩` (mirrored). -/
+theorem onbProj_vec (e : ι → X) (S : Finset ι) (x : X) :
+    (inner ℬ x ((onbProj (ℬ := ℬ) e S).1 x) : ℬ)
+      = ∑ i ∈ S, (inner ℬ (e i) x : ℬ) * inner ℬ x (e i) := by
+  rw [onbProj_apply, CStarModule.inner_sum_right]
+  exact Finset.sum_congr rfl fun i _ => by rw [CStarModule.inner_op_smul_right]
+
+omit [VonNeumannAlgebra ℬ] in
+theorem onbProj_nonneg (e : ι → X) (S : Finset ι) :
+    0 ≤ onbProj (ℬ := ℬ) e S := by
+  refine (ba_nonneg_iff _).mpr fun x => ?_
+  rw [onbProj_vec]
+  refine Finset.sum_nonneg fun i _ => ?_
+  have h : (inner ℬ x (e i) : ℬ) = star (inner ℬ (e i) x) :=
+    (CStarModule.star_inner _ _).symm
+  rw [h]
+  exact mul_star_self_nonneg (inner ℬ (e i) x)
+
+omit [VonNeumannAlgebra ℬ] in
+theorem onbProj_le_one {e : ι → X} (he : OrthonormalFam ℬ e) (S : Finset ι) :
+    onbProj (ℬ := ℬ) e S ≤ 1 := by
+  rw [← sub_nonneg]
+  refine (ba_nonneg_iff _).mpr fun x => ?_
+  have h1 : ((1 : Ba ℬ X) - onbProj (ℬ := ℬ) e S).1 x
+      = x - (onbProj (ℬ := ℬ) e S).1 x := rfl
+  rw [h1, CStarModule.inner_sub_right, onbProj_vec, sub_nonneg]
+  exact mod_bessel he x S
+
+omit [VonNeumannAlgebra ℬ] in
+theorem onbProj_mono (e : ι → X) {S S' : Finset ι}
+    (hS : S ⊆ S') : onbProj (ℬ := ℬ) e S ≤ onbProj (ℬ := ℬ) e S' := by
+  classical
+  rw [← sub_nonneg]
+  refine (ba_nonneg_iff _).mpr fun x => ?_
+  have h1 : ((onbProj (ℬ := ℬ) e S' - onbProj (ℬ := ℬ) e S)).1 x
+      = (onbProj (ℬ := ℬ) e S').1 x - (onbProj (ℬ := ℬ) e S).1 x := rfl
+  rw [h1, CStarModule.inner_sub_right, onbProj_vec, onbProj_vec,
+    ← Finset.sum_sdiff hS, add_sub_cancel_right]
+  refine Finset.sum_nonneg fun i _ => ?_
+  have h : (inner ℬ x (e i) : ℬ) = star (inner ℬ (e i) x) :=
+    (CStarModule.star_inner _ _).symm
+  rw [h]
+  exact mul_star_self_nonneg (inner ℬ (e i) x)
+
+
+/-- `p_S` as a self-adjoint element of `𝒷ᵃ(X)`. -/
+noncomputable def onbProjSA (e : ι → X) (S : Finset ι) :
+    selfAdjoint (Ba ℬ X) :=
+  ⟨onbProj (ℬ := ℬ) e S, IsSelfAdjoint.of_nonneg (onbProj_nonneg e S)⟩
+
+omit [VonNeumannAlgebra ℬ] in
+@[simp] theorem onbProjSA_coe (e : ι → X) (S : Finset ι) :
+    ((onbProjSA (ℬ := ℬ) e S : selfAdjoint (Ba ℬ X)) : Ba ℬ X)
+      = onbProj (ℬ := ℬ) e S := rfl
+
+/-- **159VI** (`ketbra-dense-pt1`, dils.tex:4330): `⋁_S p_S = 1`.
+Parseval (**149IV**) makes `⟨x, p_S x⟩` converge ultraweakly to `⟨x,x⟩`,
+and the vector states of `𝒷ᵃ(X)` are order separating (**144I**). -/
+theorem onbProj_isLUB {e : ι → X} (he : IsONBasis ℬ e) :
+    IsLUB (Set.range fun S : Finset ι => onbProjSA (ℬ := ℬ) e S)
+      (1 : selfAdjoint (Ba ℬ X)) := by
+  classical
+  constructor
+  · rintro _ ⟨S, rfl⟩
+    exact Subtype.coe_le_coe.mp (onbProj_le_one he.1 S)
+  · intro u hu
+    refine Subtype.coe_le_coe.mp ?_
+    change (1 : Ba ℬ X) ≤ (u : Ba ℬ X)
+    rw [← sub_nonneg]
+    refine (ba_nonneg_iff _).mpr fun x => ?_
+    have hstep : ((u : Ba ℬ X) - 1).1 x = (u : Ba ℬ X).1 x - x := rfl
+    rw [hstep, CStarModule.inner_sub_right, sub_nonneg]
+    -- `⟨x,x⟩ ≤ ⟨x, u x⟩` by order separation of the np-functionals of `ℬ`
+    refine np_orderSeparating _ _ ?_ ?_ fun ω => ?_
+    · exact CStarModule.isSelfAdjoint_inner_self (E := X)
+    · exact ba_inner_isSelfAdjoint x _ u.2
+    -- `ω⟨x, p_S x⟩ ≤ ω⟨x, u x⟩` for every `S`, and the left side tends to
+    -- `ω⟨x,x⟩` by Parseval
+    have hle : ∀ S : Finset ι,
+        (ω (∑ i ∈ S, (inner ℬ (e i) x : ℬ) * inner ℬ x (e i))) ≤ ω (inner ℬ x (u.1.1 x)) := by
+      intro S
+      have h1 : onbProj (ℬ := ℬ) e S ≤ (u : Ba ℬ X) :=
+        Subtype.coe_le_coe.mpr (hu ⟨S, rfl⟩)
+      have h2 := ba_inner_mono x h1
+      rw [onbProj_vec] at h2
+      exact ω.toPositiveLinearMap.monotone' h2
+    have hpar := mod_parseval e he x
+    rw [uwTendsto_iff] at hpar
+    have hlim := hpar ω
+    refine le_of_tendsto_of_tendsto' hlim tendsto_const_nhds ?_
+    exact hle
+  
+/-- For an effect `E` of a C*-algebra, `E² ≤ E`. -/
+private theorem sq_le_self_of_effect {A : Type*} [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] {E : A} (h0 : 0 ≤ E) (h1 : E ≤ 1) : E * E ≤ E := by
+  obtain ⟨r, hrsa, hr⟩ : ∃ r : A, star r = r ∧ r * r = E :=
+    ⟨CFC.sqrt E, (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg E)).star_eq,
+      CFC.sqrt_mul_sqrt_self E h0⟩
+  have h := star_left_conjugate_le_conjugate h1 r
+  rw [hrsa, mul_one, hr] at h
+  calc E * E = r * E * r := by rw [← hr]; noncomm_ring
+    _ ≤ E := h
+
+/-- **159VIII** (dils.tex:4390), the half that is used: `‖1 − p_S‖_ω → 0`
+for every np-functional `ω` of `𝒷ᵃ(X)`. -/
+theorem onbProj_omegaNorm_tendsto {e : ι → X}
+    (he : IsONBasis ℬ e) (ω : NPFunctional (Ba ℬ X)) :
+    Tendsto (fun S : Finset ι => omegaNorm (Ba ℬ X) ω (1 - onbProj (ℬ := ℬ) e S))
+      atTop (𝓝 0) := by
+  classical
+  set D : Set (selfAdjoint (Ba ℬ X)) :=
+    Set.range fun S : Finset ι => onbProjSA (ℬ := ℬ) e S with hD
+  have hne : D.Nonempty := ⟨_, ⟨∅, rfl⟩⟩
+  have hdir : DirectedOn (· ≤ ·) D := by
+    rintro _ ⟨S, rfl⟩ _ ⟨S', rfl⟩
+    refine ⟨onbProjSA (ℬ := ℬ) e (S ∪ S'), ⟨S ∪ S', rfl⟩, ?_, ?_⟩
+    · exact Subtype.coe_le_coe.mp (onbProj_mono e Finset.subset_union_left)
+    · exact Subtype.coe_le_coe.mp (onbProj_mono e Finset.subset_union_right)
+  have hlub := onbProj_isLUB he
+  have hnorm := ω.preservesDirSups' D 1 hne hdir hlub
+  have hreal : ∀ w ∈ (fun d : selfAdjoint (Ba ℬ X) => (ω (d : Ba ℬ X) : ℂ)) '' D,
+      w.im = 0 := by
+    rintro _ ⟨d, -, rfl⟩
+    exact npFunctional_im_eq_zero ω d.2
+  have hre : IsLUB (Complex.re '' ((fun d : selfAdjoint (Ba ℬ X) => (ω (d : Ba ℬ X) : ℂ)) '' D))
+      ((ω (1 : Ba ℬ X) : ℂ)).re := isLUB_re_of_isLUB hreal hnorm
+  have hset : Complex.re '' ((fun d : selfAdjoint (Ba ℬ X) => (ω (d : Ba ℬ X) : ℂ)) '' D)
+      = Set.range fun S : Finset ι => ((ω (onbProj (ℬ := ℬ) e S) : ℂ)).re := by
+    ext r
+    constructor
+    · rintro ⟨w, ⟨d, ⟨S, rfl⟩, rfl⟩, rfl⟩
+      exact ⟨S, rfl⟩
+    · rintro ⟨S, rfl⟩
+      exact ⟨ω (onbProj (ℬ := ℬ) e S), ⟨onbProjSA (ℬ := ℬ) e S, ⟨S, rfl⟩, rfl⟩, rfl⟩
+  rw [hset] at hre
+  have hmono : Monotone fun S : Finset ι => ((ω (onbProj (ℬ := ℬ) e S) : ℂ)).re := by
+    intro S S' hSS'
+    exact (Complex.le_def.mp
+      (ω.toPositiveLinearMap.monotone' (onbProj_mono e hSS'))).1
+  have htend := tendsto_atTop_isLUB hmono hre
+  have hsub : Tendsto
+      (fun S : Finset ι => ((ω (1 - onbProj (ℬ := ℬ) e S) : ℂ)).re) atTop (𝓝 0) := by
+    have h : (fun S : Finset ι => ((ω (1 - onbProj (ℬ := ℬ) e S) : ℂ)).re)
+        = fun S : Finset ι =>
+          ((ω (1 : Ba ℬ X) : ℂ)).re - ((ω (onbProj (ℬ := ℬ) e S) : ℂ)).re := by
+      funext S
+      rw [npFunctional_sub]
+      simp
+    rw [h]
+    simpa using htend.const_sub ((ω (1 : Ba ℬ X) : ℂ)).re
+  have hsqrt : Tendsto
+      (fun S : Finset ι => Real.sqrt ((ω (1 - onbProj (ℬ := ℬ) e S) : ℂ)).re)
+      atTop (𝓝 0) := by
+    simpa [Function.comp_def] using (Real.continuous_sqrt.tendsto 0).comp hsub
+  refine squeeze_zero (fun S => omegaNorm_nonneg _ _) (fun S => ?_) hsqrt
+  set E : Ba ℬ X := 1 - onbProj (ℬ := ℬ) e S with hEdef
+  have h0 : (0 : Ba ℬ X) ≤ E := sub_nonneg.mpr (onbProj_le_one he.1 S)
+  have h1 : E ≤ 1 := by
+    rw [hEdef, sub_le_self_iff]
+    exact onbProj_nonneg e S
+  have hsa : star E = E := (IsSelfAdjoint.of_nonneg h0).star_eq
+  have hmul : star E * E = E * E := by rw [hsa]
+  have hle : ((ω (star E * E) : ℂ)).re ≤ ((ω E : ℂ)).re := by
+    rw [hmul]
+    exact (Complex.le_def.mp
+      (ω.toPositiveLinearMap.monotone' (sq_le_self_of_effect h0 h1))).1
+  rw [omegaNorm]
+  exact Real.sqrt_le_sqrt hle
+
+omit [VonNeumannAlgebra ℬ] in
+/-- The compression `p_S T p_S` is a finite linear combination of the
+`|eᵢb⟩⟨eⱼ|` (**159VII**, dils.tex:4368). -/
+theorem onbProj_compress {e : ι → X} (he : IsONBasis ℬ e) (T : Ba ℬ X)
+    (S : Finset ι) :
+    onbProj (ℬ := ℬ) e S * T * onbProj (ℬ := ℬ) e S
+      = ∑ i ∈ S, ∑ j ∈ S,
+          mketbraBa (ℬ := ℬ) ((inner ℬ (e i) (T.1 (e j)) : ℬ) • e i) (e j) := by
+  have hT : ModuleAdjointTo ℬ (⇑(T.1) : X → X) ⇑((star T : Ba ℬ X)).1 :=
+    baSubalgebra_star_spec T
+  simp only [onbProj]
+  rw [Finset.sum_mul, Finset.sum_mul]
+  refine Finset.sum_congr rfl fun i _ => ?_
+  rw [Finset.mul_sum]
+  refine Finset.sum_congr rfl fun j _ => ?_
+  refine Subtype.ext ?_
+  have hstep :
+      (mketbraBa (ℬ := ℬ) (e i) (e i) * T * mketbraBa (ℬ := ℬ) (e j) (e j)).1
+        = (mketbra ℬ (e i) (e i)).comp (T.1.comp (mketbra ℬ (e j) (e j))) := rfl
+  rw [hstep]
+  obtain ⟨-, hcomp, -, -, -⟩ :=
+    mketbra_rules ℬ (e i) (e i) (T.1 (e j)) (e j) (e i) 1 T.1 (star T : Ba ℬ X).1
+      hT (he.1.2 i).1
+  obtain ⟨-, -, -, hleft, -⟩ :=
+    mketbra_rules ℬ (e j) (e j) (e j) (e j) (e i) 1 T.1 (star T : Ba ℬ X).1
+      hT (he.1.2 i).1
+  rw [hleft, hcomp]
+  rfl
+
+end KetbraProj
+
+-- `hX` is deliberately unused: **159IV** carries the thesis's self-duality
+-- hypothesis, which by **149XI** `selfDual_of_isONBasis` already follows from
+-- the orthonormal basis (see ERRATA.md).
+set_option linter.unusedVariables false in
 /-- **159IV** (`ketbra-ultraweakly-dense`, dils.tex:4319, Proposition): for
 a self-dual Hilbert ℬ-module `X` with orthonormal basis `(eᵢ)`, the linear
 span of the operators `|eᵢb⟩⟨eⱼ|` is ultraweakly dense in `ℬᵃ(X)`: every
@@ -186,8 +445,72 @@ theorem ketbra_ultraweakly_dense [VonNeumannAlgebra ℬ]
     ∃ approx : Finset ι → Ba ℬ X,
       (∀ s, approx s ∈ Submodule.span ℂ
         {S : Ba ℬ X | ∃ (i j : ι) (b : ℬ), S.1 = mketbra ℬ (b • e i) (e j)}) ∧
-      UWTendsto approx atTop T :=
-  sorry
+      UWTendsto approx atTop T := by
+  classical
+  refine ⟨fun S => onbProj (ℬ := ℬ) e S * T * onbProj (ℬ := ℬ) e S, fun S => ?_, ?_⟩
+  · change onbProj (ℬ := ℬ) e S * T * onbProj (ℬ := ℬ) e S ∈ _
+    rw [onbProj_compress he T S]
+    refine Submodule.sum_mem _ fun i _ => Submodule.sum_mem _ fun j _ => ?_
+    exact Submodule.subset_span ⟨i, j, inner ℬ (e i) (T.1 (e j)), rfl⟩
+  · rw [uwTendsto_iff]
+    intro ω
+    set p : Finset ι → Ba ℬ X := fun S => onbProj (ℬ := ℬ) e S with hp
+    -- `T − p T p = (1−p)*T + (pT)*(1−p)`, with `1−p` and `p` self-adjoint
+    have hsa : ∀ S, star (p S) = p S := fun S =>
+      (IsSelfAdjoint.of_nonneg (onbProj_nonneg e S)).star_eq
+    have hsplit : ∀ S, T - p S * T * p S
+        = star (1 - p S) * T + star (star T * p S) * (1 - p S) := by
+      intro S
+      rw [star_sub, star_one, hsa, star_mul, star_star, hsa]
+      noncomm_ring
+    -- the two Cauchy–Schwarz estimates
+    set M : ℝ := ‖(1 : Ba ℬ X)‖ with hM
+    have hpnorm : ∀ S, ‖p S‖ ≤ M :=
+      fun S => CStarAlgebra.norm_le_norm_of_nonneg_of_le
+        (onbProj_nonneg e S) (onbProj_le_one he.1 S)
+    set C : ℝ := omegaNorm (Ba ℬ X) ω T + ‖T‖ * (M * omegaNorm (Ba ℬ X) ω 1) with hC
+    have hbound : ∀ S, ‖ω (T - p S * T * p S)‖
+        ≤ C * omegaNorm (Ba ℬ X) ω (1 - p S) := by
+      intro S
+      have h2 : omegaNorm (Ba ℬ X) ω (star T * p S)
+          ≤ ‖T‖ * (M * omegaNorm (Ba ℬ X) ω 1) := by
+        refine le_trans (omegaNorm_mul_le ω (star T) (p S)) ?_
+        rw [norm_star]
+        refine mul_le_mul_of_nonneg_left ?_ (norm_nonneg T)
+        have h3 := omegaNorm_mul_le ω (p S) 1
+        rw [mul_one] at h3
+        refine le_trans h3 ?_
+        exact mul_le_mul_of_nonneg_right (hpnorm S) (omegaNorm_nonneg _ _)
+      have hA : ‖ω (star (1 - p S) * T)‖
+          ≤ omegaNorm (Ba ℬ X) ω (1 - p S) * omegaNorm (Ba ℬ X) ω T :=
+        norm_apply_star_mul_le ω _ _
+      have hB : ‖ω (star (star T * p S) * (1 - p S))‖
+          ≤ omegaNorm (Ba ℬ X) ω (star T * p S)
+            * omegaNorm (Ba ℬ X) ω (1 - p S) :=
+        norm_apply_star_mul_le ω _ _
+      have hB' : ‖ω (star (star T * p S) * (1 - p S))‖
+          ≤ (‖T‖ * (M * omegaNorm (Ba ℬ X) ω 1))
+            * omegaNorm (Ba ℬ X) ω (1 - p S) :=
+        hB.trans (mul_le_mul_of_nonneg_right h2 (omegaNorm_nonneg _ _))
+      calc ‖ω (T - p S * T * p S)‖
+          = ‖ω (star (1 - p S) * T + star (star T * p S) * (1 - p S))‖ := by
+            rw [hsplit S]
+        _ ≤ ‖ω (star (1 - p S) * T)‖ + ‖ω (star (star T * p S) * (1 - p S))‖ := by
+            rw [npFunctional_add]; exact norm_add_le _ _
+        _ ≤ omegaNorm (Ba ℬ X) ω (1 - p S) * omegaNorm (Ba ℬ X) ω T
+              + (‖T‖ * (M * omegaNorm (Ba ℬ X) ω 1))
+                * omegaNorm (Ba ℬ X) ω (1 - p S) := add_le_add hA hB'
+        _ = C * omegaNorm (Ba ℬ X) ω (1 - p S) := by rw [hC]; ring
+    have hz : Tendsto
+        (fun S : Finset ι => ‖ω (T - p S * T * p S)‖) atTop (𝓝 0) := by
+      refine squeeze_zero (fun S => norm_nonneg _) hbound ?_
+      simpa using (onbProj_omegaNorm_tendsto he ω).const_mul C
+    rw [tendsto_iff_norm_sub_tendsto_zero]
+    refine hz.congr fun S => ?_
+    have hEq : (ω (T - p S * T * p S) : ℂ)
+        = -((ω (p S * T * p S) : ℂ) - ω T) := by
+      rw [npFunctional_sub]; ring
+    rw [hEq, norm_neg]
 
 /-- **159IX** (`ketbra-ultranorm-continuous`, dils.tex:4378, Proposition):
 for a self-dual Hilbert ℬ-module `X`: if a norm-bounded net `x_α → x`

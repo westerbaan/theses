@@ -66,7 +66,11 @@ our tree and the question above still stands, but nothing waits on the answer.
 See also the 208III row in ERRATA.md: the thesis's own proof of 208III routes
 through 177Ia twice, and both detours turn out to be avoidable.
 
-### B5. `IsVNTensor` is too weak for 165III
+### B5. `IsVNTensor` is too weak for 165III (and, it turns out, 166II)
+*Status: the **positivity** half is answered — no change needed (worker 40,
+confirmed by worker 41 below).  A **second, different** gap — normality of the
+two legs, needed by 166II — is open at the bottom of this item.*
+
 `dils.tex:5433`.  Our axiomatization of the von Neumann tensor product
 (proc.tex 108II) gives miu-bilinearity, `generates`, and separation by product
 np-functionals — **nothing about order**.  165III's proof needs positivity of
@@ -99,9 +103,44 @@ Theses.A.Proc.matBilin_nonneg_of_mi (t : 𝒜 → ℬ → 𝒞) (hl hr hmul hsta
 ```
 
 which is the cstar.tex 33II criterion for `0 ≤ Mₙ(t)(M,M')`.  `#print axioms`
-clean.  **To be closed by the `B/Dils` worker** once it is checked against what
-165III's existence half actually consumes — the claim here is about the
-positivity clause only, not about the rest of that proof.
+clean.
+
+**Checked and confirmed by the `B/Dils` worker, 2026-08-14 (worker 41).**
+Reading **165IV** (the proof of 165III, `dils.tex:5433`) line by line, the
+existence half consumes exactly three things beyond `ExtTensor.univ` (a
+*field*, so free) and `η_inner`: (i) **33II**.1 `cstar_matrix_positive_iff`,
+proved and on `B/Dils`'s import path; (ii) *positivity* of `Mₙ(⊗)`, which is
+worker 40's lemma; (iii) *bi-monotonicity* of `Mₙ(⊗)` in the step
+`Mₙ(⊗)((⟨Sxᵢ,Sxⱼ⟩), (⟨Tyᵢ,Tyⱼ⟩)) ≤ Mₙ(⊗)((‖S‖²⟨xᵢ,xⱼ⟩), (‖T‖²⟨yᵢ,yⱼ⟩))` —
+and that is a two-line consequence of (ii) with `add_left`/`add_right`
+(`Mₙ(⊗)(A',B') − Mₙ(⊗)(A,B) = Mₙ(⊗)(A'−A, B') + Mₙ(⊗)(A, B'−B)`).  Nothing
+else in 165IV needs an order clause.  **So B5's positivity half is settled:
+no change to `IsVNTensor` is required.**
+
+One practical obstacle remains, and it is not a question for anyone but a
+structural choice: `matBilin_nonneg_of_mi` lives in `Theses/A/Proc/Tensor.lean`,
+which is **not on `B/Dils`'s import path** (`B/Dils` reaches only as far as
+`Theses.A.VN.Projections`).  Using it in `SelfDual.lean` means adding
+`import Theses.A.Proc.Tensor`, which pulls in `A/VN/Completeness`,
+`A/VN/Division`, `A/VN/NormalFunctionals` and all of `A/Proc` up to `Tensor`.
+That is the only thing now standing between 165III's existence half and a
+proof.
+
+*Second gap, found 2026-08-14 (worker 41): `IsVNTensor` also omits
+**normality of the legs**.*  The eight fields make `a ↦ t a 1` and `b ↦ t 1 b`
+miu-maps (hence completely positive, by `cp_of_mi`), but say nothing about
+their preserving directed suprema.  **166II**
+`ultranorm_continuity_ext_tensor` needs exactly that: its proof rewrites
+`⟨xα ⊗ yα, xα ⊗ yα⟩` as `(⟨xα,xα⟩ ⊗ 1)·(1 ⊗ ⟨yα,yα⟩)` and applies **44III**
+`vanishing_effects`, which requires the first factor to converge *ultraweakly*
+to `0` — i.e. that `Ω ∘ (· ⊗ 1)` be an np-functional of `𝒜` for every np `Ω`
+of `𝒜 ⊗ ℬ`.  `generates` and `separating` give pointwise separation, not
+this.  The thesis asserts the legs are "ncp" with a commented-out `\TODO`
+where the justification should be (see the 166II row in ERRATA.md).
+
+*Decision needed*: add a normality clause for the two legs alongside the
+positivity clause.  Until then **166II is unreachable too**, and with it
+166IV, which cites it.
 
 ### B6. `exc_dm_effectus_functor` / `_monad` / `_kleisli` are too weak to be meaningful
 Our statements constrain only `.obj` — they say *some* functor/monad agrees
@@ -153,6 +192,30 @@ is currently blocked on this.  But the rendering is weaker than intended.
 thesis defect)*: add `q (z • f) = z • q f` to `IsLinftyOf`?  It is the right
 fix, but it touches **four statements at once**, which is why it was not done
 unilaterally.
+
+### D3. `matBilin_nonneg_of_mi` is in the wrong chapter for its consumer
+It lives in `Theses/A/Proc/Tensor.lean` (worker 40) and is exactly what 165III
+in `Theses/B/Dils/SelfDual.lean` needs — but `B/Dils` imports `A/CStar/Matrices`,
+`A/VN/Projections` and `Theses.Common`, **not** `A/Proc`. So the lemma is off
+the consumer's import path and 165III is blocked structurally rather than
+mathematically.
+
+Three options, and a **recommendation**:
+
+1. **Add `import Theses.A.Proc.Tensor` to `B/Dils`.** Legitimate on the face of
+   it — CONVENTIONS records that thesis B freely imports thesis A, matching the
+   text's cross-references. But it **couples two chapters that are currently
+   independent**, and `A/Proc` is the largest active work-front (145 `sorry`s).
+   After this, no worker could edit `A/Proc` while another worked `B/Dils`.
+2. **Relocate the lemma to `A/CStar/Matrices.lean`**, which `B/Dils` already
+   imports. Its content — positivity of `∑ᵢⱼ cᵢ* t(Mᵢⱼ, M'ᵢⱼ) cⱼ` for a
+   multiplicative, involution-preserving, biadditive `t` — is about matrices
+   over C\*-algebras and has no `proc.tex` content, so it belongs there on
+   merit, not merely for convenience. **Recommended.**
+3. Duplicate it. Cheapest, and wrong.
+
+Not done unilaterally because option 2 edits `A/CStar`, which is upstream of
+every other chapter and was frozen while workers were live.
 
 ### D2. `PaschkeModule` is internally inconsistent with `IsPaschkeDilationOf`
 `Theses/B/Dils/Paschke.lean` (warning block at the head of the file).  Our

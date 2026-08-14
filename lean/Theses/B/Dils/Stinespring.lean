@@ -1561,6 +1561,215 @@ theorem paschke_basics_2 (φ : 𝒜 → ℬ) (D : PaschkeTriple 𝒜 ℬ)
   rintro σ' ⟨hσ'1, hσ'2⟩
   exact hσu σ' ⟨fun a => by rw [hρEapp]; exact hσ'1 (D.ρ a), hσ'2⟩
 
+/-! ### Infrastructure: the abstract direct sum
+
+**140X**.3 represents `ℬ₁ ⊕ ℬ₂` and `𝒫₁ ⊕ 𝒫₂` abstractly, by a von Neumann
+algebra together with two nmiu-projections whose pairing is a bijection —
+this avoids instance diamonds on product types, at the cost of having to
+*derive* the properties of a biproduct from the bijection.  The one that
+matters is that such a pair **reflects** positivity (`pair_nonneg_reflect`):
+if `p₁ c ≥ 0` and `p₂ c ≥ 0` then `c ≥ 0`, because `pᵢ c = star bᵢ * bᵢ` and
+a preimage `d` of `(b₁, b₂)` has `star d * d = c` by injectivity.  Everything
+else — order reflection, and the pairing `⟨σ₁, σ₂⟩` of two ncp-maps being
+again ncp — follows from it. -/
+
+section Biproduct
+
+variable {P P₁ P₂ : Type u}
+  [CStarAlgebra P] [PartialOrder P] [StarOrderedRing P]
+  [CStarAlgebra P₁] [PartialOrder P₁] [StarOrderedRing P₁]
+  [CStarAlgebra P₂] [PartialOrder P₂] [StarOrderedRing P₂]
+
+private theorem ncp_add {A B : Type u} [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
+    (f : NCPMap A B) (x y : A) : f (x + y) = f x + f y :=
+  map_add f.toCompletelyPositiveMap.toLinearMap x y
+
+private theorem ncp_smul {A B : Type u} [CStarAlgebra A] [PartialOrder A]
+    [StarOrderedRing A] [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
+    (f : NCPMap A B) (z : ℂ) (x : A) : f (z • x) = z • f x :=
+  map_smul f.toCompletelyPositiveMap.toLinearMap z x
+
+/-- An nmiu-map is monotone. -/
+private theorem nmiu_monotone (f : NMIUMap P P₁) : Monotone ⇑f :=
+  (starAlgHomP f.toStarAlgHom).monotone'
+
+private theorem nmiu_mul (f : NMIUMap P P₁) (x y : P) : f (x * y) = f x * f y :=
+  map_mul f.toStarAlgHom x y
+
+private theorem nmiu_star (f : NMIUMap P P₁) (x : P) : f (star x) = star (f x) :=
+  map_star f.toStarAlgHom x
+
+private theorem nmiu_sub (f : NMIUMap P P₁) (x y : P) : f (x - y) = f x - f y :=
+  map_sub f.toStarAlgHom x y
+
+private theorem nmiu_add (f : NMIUMap P P₁) (x y : P) : f (x + y) = f x + f y :=
+  map_add f.toStarAlgHom x y
+
+private theorem nmiu_smul (f : NMIUMap P P₁) (z : ℂ) (x : P) : f (z • x) = z • f x :=
+  map_smul f.toStarAlgHom z x
+
+private theorem nmiu_sum {ι : Type*} (f : NMIUMap P P₁) (s : Finset ι) (g : ι → P) :
+    f (∑ i ∈ s, g i) = ∑ i ∈ s, f (g i) :=
+  map_sum f.toStarAlgHom g s
+
+/-- Positivity is *reflected* by a pair of nmiu-maps whose pairing is a
+bijection: this is what makes the abstract representation of `𝒫₁ ⊕ 𝒫₂` in
+**140X**.3 usable. -/
+private theorem pair_nonneg_reflect (p₁ : NMIUMap P P₁) (p₂ : NMIUMap P P₂)
+    (hp : Function.Bijective fun c : P => (p₁ c, p₂ c)) {c : P}
+    (h1 : 0 ≤ p₁ c) (h2 : 0 ≤ p₂ c) : 0 ≤ c := by
+  obtain ⟨b₁, hb₁⟩ := CStarAlgebra.nonneg_iff_eq_star_mul_self.mp h1
+  obtain ⟨b₂, hb₂⟩ := CStarAlgebra.nonneg_iff_eq_star_mul_self.mp h2
+  obtain ⟨d, hd⟩ := hp.2 (b₁, b₂)
+  have hd1 : p₁ d = b₁ := congrArg Prod.fst hd
+  have hd2 : p₂ d = b₂ := congrArg Prod.snd hd
+  have hc : c = star d * d := by
+    refine hp.1 ?_
+    have e1 : p₁ (star d * d) = p₁ c := by
+      rw [nmiu_mul, nmiu_star, hd1, ← hb₁]
+    have e2 : p₂ (star d * d) = p₂ c := by
+      rw [nmiu_mul, nmiu_star, hd2, ← hb₂]
+    simp only [e1, e2]
+  rw [hc]
+  exact star_mul_self_nonneg d
+
+private theorem pair_le_reflect (p₁ : NMIUMap P P₁) (p₂ : NMIUMap P P₂)
+    (hp : Function.Bijective fun c : P => (p₁ c, p₂ c)) {c c' : P}
+    (h1 : p₁ c ≤ p₁ c') (h2 : p₂ c ≤ p₂ c') : c ≤ c' := by
+  rw [← sub_nonneg]
+  refine pair_nonneg_reflect p₁ p₂ hp ?_ ?_
+  · rw [nmiu_sub]; exact sub_nonneg.mpr h1
+  · rw [nmiu_sub]; exact sub_nonneg.mpr h2
+
+/-- The inverse of the pairing `c ↦ (p₁ c, p₂ c)`. -/
+private noncomputable def pairInv (p₁ : NMIUMap P P₁) (p₂ : NMIUMap P P₂)
+    (hp : Function.Bijective fun c : P => (p₁ c, p₂ c)) (b₁ : P₁) (b₂ : P₂) : P :=
+  (Equiv.ofBijective _ hp).symm (b₁, b₂)
+
+private theorem pairInv_spec (p₁ : NMIUMap P P₁) (p₂ : NMIUMap P P₂)
+    (hp : Function.Bijective fun c : P => (p₁ c, p₂ c)) (b₁ : P₁) (b₂ : P₂) :
+    p₁ (pairInv p₁ p₂ hp b₁ b₂) = b₁ ∧ p₂ (pairInv p₁ p₂ hp b₁ b₂) = b₂ := by
+  have h := (Equiv.ofBijective _ hp).apply_symm_apply (b₁, b₂)
+  exact ⟨congrArg Prod.fst h, congrArg Prod.snd h⟩
+
+/-- Pairing two ncp-maps into an abstract direct sum. -/
+private theorem exists_ncpPair {Q : Type u} [CStarAlgebra Q] [PartialOrder Q]
+    [StarOrderedRing Q] (p₁ : NMIUMap P P₁) (p₂ : NMIUMap P P₂)
+    (hp : Function.Bijective fun c : P => (p₁ c, p₂ c))
+    (σ₁ : NCPMap Q P₁) (σ₂ : NCPMap Q P₂) :
+    ∃ σ : NCPMap Q P, ∀ x, p₁ (σ x) = σ₁ x ∧ p₂ (σ x) = σ₂ x := by
+  set f : Q → P := fun x => pairInv p₁ p₂ hp (σ₁ x) (σ₂ x) with hf
+  have hs1 : ∀ x, p₁ (f x) = σ₁ x := fun x => (pairInv_spec p₁ p₂ hp _ _).1
+  have hs2 : ∀ x, p₂ (f x) = σ₂ x := fun x => (pairInv_spec p₁ p₂ hp _ _).2
+  have hinj : ∀ c c' : P, p₁ c = p₁ c' → p₂ c = p₂ c' → c = c' := by
+    intro c c' h1 h2
+    exact hp.1 (by simp only [h1, h2])
+  have hadd : ∀ x y, f (x + y) = f x + f y := by
+    intro x y
+    refine hinj _ _ ?_ ?_
+    · rw [hs1, nmiu_add, hs1, hs1, ncp_add]
+    · rw [hs2, nmiu_add, hs2, hs2, ncp_add]
+  have hsmul : ∀ (z : ℂ) x, f (z • x) = z • f x := by
+    intro z x
+    refine hinj _ _ ?_ ?_
+    · rw [hs1, nmiu_smul, hs1, ncp_smul]
+    · rw [hs2, nmiu_smul, hs2, ncp_smul]
+  set L : Q →ₗ[ℂ] P := { toFun := f, map_add' := hadd, map_smul' := hsmul } with hL
+  have hLapp : ∀ x, L x = f x := fun _ => rfl
+  -- complete positivity, from that of `σ₁` and `σ₂` and `pair_nonneg_reflect`
+  have hcp1 : ∀ (n : ℕ) (a : Fin n → Q) (b : Fin n → P₁),
+      0 ≤ ∑ i, ∑ j, star (b i) * σ₁ (star (a i) * a j) * b j :=
+    (cp_iff σ₁.toCompletelyPositiveMap.toLinearMap).out 1 0 |>.mp fun N M hM =>
+      σ₁.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM
+  have hcp2 : ∀ (n : ℕ) (a : Fin n → Q) (b : Fin n → P₂),
+      0 ≤ ∑ i, ∑ j, star (b i) * σ₂ (star (a i) * a j) * b j :=
+    (cp_iff σ₂.toCompletelyPositiveMap.toLinearMap).out 1 0 |>.mp fun N M hM =>
+      σ₂.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM
+  have key1 : ∀ (n : ℕ) (a : Fin n → Q) (b : Fin n → P),
+      p₁ (∑ i, ∑ j, star (b i) * f (star (a i) * a j) * b j)
+        = ∑ i, ∑ j, star (p₁ (b i)) * σ₁ (star (a i) * a j) * p₁ (b j) := by
+    intro n a b
+    rw [nmiu_sum]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [nmiu_sum]
+    refine Finset.sum_congr rfl fun j _ => ?_
+    rw [nmiu_mul, nmiu_mul, nmiu_star, hs1]
+  have key2 : ∀ (n : ℕ) (a : Fin n → Q) (b : Fin n → P),
+      p₂ (∑ i, ∑ j, star (b i) * f (star (a i) * a j) * b j)
+        = ∑ i, ∑ j, star (p₂ (b i)) * σ₂ (star (a i) * a j) * p₂ (b j) := by
+    intro n a b
+    rw [nmiu_sum]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [nmiu_sum]
+    refine Finset.sum_congr rfl fun j _ => ?_
+    rw [nmiu_mul, nmiu_mul, nmiu_star, hs2]
+  have hLcp : IsCompletelyPositiveMap L := by
+    intro n a b
+    have hgoal : (∑ i, ∑ j, star (b i) * L (star (a i) * a j) * b j)
+        = ∑ i, ∑ j, star (b i) * f (star (a i) * a j) * b j := by
+      simp only [hLapp]
+    rw [hgoal]
+    refine pair_nonneg_reflect p₁ p₂ hp ?_ ?_
+    · rw [key1]; exact hcp1 n a _
+    · rw [key2]; exact hcp2 n a _
+  -- normality
+  have hnorm : PreservesDirSups f := by
+    intro D s hne hdir hlub
+    have h1 := σ₁.preservesDirSups' D s hne hdir hlub
+    have h2 := σ₂.preservesDirSups' D s hne hdir hlub
+    have hu1 : ∀ d ∈ D, σ₁ (d : Q) ≤ σ₁ (s : Q) := fun d hd => h1.1 ⟨d, hd, rfl⟩
+    have hu2 : ∀ d ∈ D, σ₂ (d : Q) ≤ σ₂ (s : Q) := fun d hd => h2.1 ⟨d, hd, rfl⟩
+    constructor
+    · rintro _ ⟨d, hd, rfl⟩
+      refine pair_le_reflect p₁ p₂ hp ?_ ?_
+      · rw [hs1, hs1]; exact hu1 d hd
+      · rw [hs2, hs2]; exact hu2 d hd
+    · intro u hu
+      have hu' : ∀ d ∈ D, f (d : Q) ≤ u := fun d hd => hu ⟨d, hd, rfl⟩
+      refine pair_le_reflect p₁ p₂ hp ?_ ?_
+      · rw [hs1]
+        refine h1.2 ?_
+        rintro _ ⟨d, hd, rfl⟩
+        exact le_of_eq_of_le (hs1 (d : Q)).symm (nmiu_monotone p₁ (hu' d hd))
+      · rw [hs2]
+        refine h2.2 ?_
+        rintro _ ⟨d, hd, rfl⟩
+        exact le_of_eq_of_le (hs2 (d : Q)).symm (nmiu_monotone p₂ (hu' d hd))
+  exact ⟨{ toCompletelyPositiveMap :=
+             { toLinearMap := L
+               map_cstarMatrix_nonneg' := (cp_iff L).out 0 1 |>.mp hLcp }
+           preservesDirSups' := hnorm },
+    fun x => ⟨hs1 x, hs2 x⟩⟩
+
+/-- The composition of an ncp-map with an nmiu-map *after* it is an
+ncp-map (the mirror image of `exists_ncpCompNMIU`). -/
+private theorem exists_nmiuCompNCP {Q : Type u} [CStarAlgebra Q] [PartialOrder Q]
+    [StarOrderedRing Q] (g : NMIUMap P P₁) (f : NCPMap Q P) :
+    ∃ k : NCPMap Q P₁, ∀ a, k a = g (f a) := by
+  set Lf : Q →ₗ[ℂ] P := f.toCompletelyPositiveMap.toLinearMap with hLf
+  have hLfcp : IsCompletelyPositiveMap Lf :=
+    (cp_iff Lf).out 1 0 |>.mp fun N M hM =>
+      f.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM
+  set Lg : P →ₗ[ℂ] P₁ :=
+    { toFun := fun a => g a
+      map_add' := fun x y => map_add g.toStarAlgHom x y
+      map_smul' := fun r x => map_smul g.toStarAlgHom r x } with hLg
+  have hLgcp : IsCompletelyPositiveMap Lg :=
+    cp_of_mi Lg (fun x y => map_mul g.toStarAlgHom x y)
+      (fun x => map_star g.toStarAlgHom x)
+  exact ⟨{ toCompletelyPositiveMap :=
+             { toLinearMap := Lg.comp Lf
+               map_cstarMatrix_nonneg' :=
+                 (cp_iff (Lg.comp Lf)).out 0 1 |>.mp
+                   (cp_comp Lf Lg hLfcp hLgcp) }
+           preservesDirSups' :=
+             preservesDirSups_pmap_comp (ncpP f) f.preservesDirSups'
+               (starAlgHomP g.toStarAlgHom) g.preservesDirSups' },
+    fun _ => rfl⟩
+
+end Biproduct
+
 /-- **140X** (`paschke-basics`, dils.tex:1204, Exercise), part 3: if
 `(𝒫ᵢ, ϱᵢ, hᵢ)` is a Paschke dilation of `φᵢ : 𝒜 → ℬᵢ` (i = 1,2), then
 `(𝒫₁ ⊕ 𝒫₂, ⟨ϱ₁, ϱ₂⟩, h₁ ⊕ h₂)` is a Paschke dilation of `⟨φ₁, φ₂⟩ : 𝒜 →
@@ -1583,8 +1792,55 @@ theorem paschke_basics_3 {ℬ₁ ℬ₂ ℬp : Type u}
     (hφ : ∀ a, π₁ (φ a) = φ₁ a ∧ π₂ (φ a) = φ₂ a)
     (hρ : ∀ a, p₁ (D.ρ a) = D₁.ρ a ∧ p₂ (D.ρ a) = D₂.ρ a)
     (hh : ∀ c, π₁ (D.h c) = D₁.h (p₁ c) ∧ π₂ (D.h c) = D₂.h (p₂ c)) :
-    IsPaschkeDilationOf D φ :=
-  sorry
+    IsPaschkeDilationOf D φ := by
+  -- `bsols.tex`, solution `paschke-basics`.3, transcribed.
+
+  have hinjB : ∀ b b' : ℬp, π₁ b = π₁ b' → π₂ b = π₂ b' → b = b' := by
+    intro b b' e1 e2; exact hπ.1 (by simp only [e1, e2])
+  have hinjP : ∀ c c' : D.P, p₁ c = p₁ c' → p₂ c = p₂ c' → c = c' := by
+    intro c c' e1 e2; exact hp.1 (by simp only [e1, e2])
+  constructor
+  · -- `h₁ ⊕ h₂ ∘ ⟨ϱ₁, ϱ₂⟩ = ⟨φ₁, φ₂⟩`
+    intro a
+    refine hinjB _ _ ?_ ?_
+    · rw [(hh _).1, (hρ a).1, h₁.1 a, (hφ a).1]
+    · rw [(hh _).2, (hρ a).2, h₂.1 a, (hφ a).2]
+  · intro D' hD'
+    obtain ⟨k₁, hk₁⟩ := exists_nmiuCompNCP π₁ D'.h
+    obtain ⟨k₂, hk₂⟩ := exists_nmiuCompNCP π₂ D'.h
+    have hD'1 : ∀ a, k₁ (D'.ρ a) = φ₁ a := by
+      intro a; rw [hk₁, hD' a, (hφ a).1]
+    have hD'2 : ∀ a, k₂ (D'.ρ a) = φ₂ a := by
+      intro a; rw [hk₂, hD' a, (hφ a).2]
+    obtain ⟨σ₁, ⟨hσ₁a, hσ₁b⟩, huniq₁⟩ :=
+      h₁.2 ⟨D'.P, D'.vn, D'.ρ, k₁⟩ hD'1
+    obtain ⟨σ₂, ⟨hσ₂a, hσ₂b⟩, huniq₂⟩ :=
+      h₂.2 ⟨D'.P, D'.vn, D'.ρ, k₂⟩ hD'2
+    obtain ⟨σ, hσ⟩ := exists_ncpPair p₁ p₂ hp σ₁ σ₂
+    refine ⟨σ, ⟨?_, ?_⟩, ?_⟩
+    · intro a
+      refine hinjP _ _ ?_ ?_
+      · rw [(hσ _).1, hσ₁a a, (hρ a).1]
+      · rw [(hσ _).2, hσ₂a a, (hρ a).2]
+    · intro c
+      refine hinjB _ _ ?_ ?_
+      · rw [(hh _).1, (hσ _).1, hσ₁b c, hk₁]
+      · rw [(hh _).2, (hσ _).2, hσ₂b c, hk₂]
+    · rintro σ' ⟨hσ'a, hσ'b⟩
+      obtain ⟨t₁, ht₁⟩ := exists_nmiuCompNCP p₁ σ'
+      obtain ⟨t₂, ht₂⟩ := exists_nmiuCompNCP p₂ σ'
+      have he₁ : t₁ = σ₁ := by
+        refine huniq₁ t₁ ⟨fun a => ?_, fun c => ?_⟩
+        · rw [ht₁, hσ'a a, (hρ a).1]
+        · rw [ht₁, ← (hh (σ' c)).1, hσ'b c, hk₁]
+      have he₂ : t₂ = σ₂ := by
+        refine huniq₂ t₂ ⟨fun a => ?_, fun c => ?_⟩
+        · rw [ht₂, hσ'a a, (hρ a).2]
+        · rw [ht₂, ← (hh (σ' c)).2, hσ'b c, hk₂]
+      refine DFunLike.ext _ _ fun c => ?_
+      refine hinjP _ _ ?_ ?_
+      · rw [← ht₁, he₁, ← (hσ c).1]
+      · rw [← ht₂, he₂, ← (hσ c).2]
 
 /-- **140X** (`paschke-basics`, dils.tex:1204, Exercise), part 4: if
 `(𝒫, ϱ, h)` is a Paschke dilation of `φ` and `λ > 0`, then `(𝒫, ϱ, λh)` is

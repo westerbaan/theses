@@ -3957,3 +3957,147 @@ so it belongs in the vacuous band, not with 113II/113IV.
 * Files touched: `Theses/A/Proc/Tensor.lean`, `PROVING-LOG.md`,
   `QUESTIONS.md`.  Nothing staged, nothing committed.  (`Theses/B/Dils/*` and
   `Theses/B/Eff/Effectus.lean` are also dirty — not mine.)
+
+---
+
+## Session 16 — `B/Dils` (worker 41)
+
+Two statements proved — **140X**.3 `paschke_basics_3` (`Stinespring.lean`) and
+**159IV** `ketbra_ultraweakly_dense` (`SelfDual.lean`) — and the rest of the
+session went into a reachability survey of the chapter's remaining 62 `sorry`s.
+`B/Dils` 64 → **62**.  Tree green (`lake build Theses`, 8738 jobs, exit 0, zero
+`error:` lines); everything new axiom-clean; still no `sorry`ed instances in
+`B/Dils`; no new warnings anywhere (diffed against the session's baseline
+build).
+
+### 1. 140X.3 `paschke_basics_3` — divergence class 1
+
+`bsols.tex`, solution `paschke-basics`.3, transcribed.  The only thing the
+author's categorical argument does not supply is the Lean-specific step forced
+by our abstract rendering of the biproduct: **140X**.3's statement represents
+`ℬ₁ ⊕ ℬ₂` and `𝒫₁ ⊕ 𝒫₂` by algebras `ℬp`, `𝒫` with nmiu-projections whose
+pairing `c ↦ (p₁ c, p₂ c)` is a bijection (this avoids instance diamonds on
+product types).  From that one has to *derive* that the pairing **reflects**
+positivity, which is what makes `⟨σ₁, σ₂⟩` an ncp-map at all.
+
+The derivation is three lines and is the new private
+`pair_nonneg_reflect`: if `0 ≤ p₁ c` and `0 ≤ p₂ c` then
+`pᵢ c = star bᵢ * bᵢ` (`CStarAlgebra.nonneg_iff_eq_star_mul_self`), a preimage
+`d` of `(b₁, b₂)` has `pᵢ (star d * d) = pᵢ c`, and injectivity gives
+`c = star d * d`.  Everything else follows: `pair_le_reflect` (order
+reflection), and `exists_ncpPair`, which builds `σ` with `pᵢ ∘ σ = σᵢ`.
+Complete positivity of `σ` needs **no matrix machinery** — this repo's
+`IsCompletelyPositiveMap` is literally `0 ≤ ∑ᵢⱼ star(bᵢ) f(star aᵢ aⱼ) bⱼ`, so
+applying `p₁`/`p₂` to that sum reduces it to complete positivity of `σ₁`/`σ₂`.
+Normality is the same reduction through `pair_le_reflect`.
+
+New private by-products in `Stinespring.lean` (section `Biproduct`):
+`ncp_add`, `ncp_smul`, `nmiu_monotone`, `nmiu_mul`, `nmiu_star`, `nmiu_sub`,
+`nmiu_add`, `nmiu_smul`, `nmiu_sum`, `pair_nonneg_reflect`, `pair_le_reflect`,
+`pairInv`, `pairInv_spec`, `exists_ncpPair`, and `exists_nmiuCompNCP` (the
+mirror image of the existing `exists_ncpCompNMIU`: nmiu *after* ncp).
+
+### 2. 159IV `ketbra_ultraweakly_dense` — divergence class 2 (one step)
+
+The thesis's own proof (**159V**–**159VIII**), transcribed, except for its
+final step.
+
+Faithful part: `p_S = ∑_{i∈S} |eᵢ⟩⟨eᵢ|` (`onbProj`); its vector forms are the
+partial Parseval sums (`onbProj_vec`), so Bessel (`mod_bessel`, w38) gives
+`p_S ≤ 1` and monotonicity in `S`; `⋁_S p_S = 1` (`onbProj_isLUB`) because
+the vector states of `𝒷ᵃ(X)` are order separating (**144I**, through
+`ba_nonneg_iff`) and `⟨x, p_S x⟩ → ⟨x,x⟩` ultraweakly by Parseval (**149IV**
+`mod_parseval`); `p_S T p_S` lies in the span of the `|eᵢb⟩⟨eⱼ|`
+(`onbProj_compress`, from `mketbra_rules`); and the estimate of **159VIII** is
+Cauchy–Schwarz for `‖·‖_ω` (`norm_apply_star_mul_le`) applied to
+`T − p_S T p_S = (1−p_S)*T + (p_S T)*(1−p_S)`.
+
+**The one deviation (class 2).**  The thesis gets `p_S → 1` from
+`vna-supremum-uslimit` (**44XIV**), whose Lean form is indexed by the
+*directed set itself*, so using it would need a cofinality transport from
+`Finset ι` (the transport w34 had to build for `ba_isLUB`).  It is not needed:
+normality of the np-functional `ω` of `𝒷ᵃ(X)` turns `IsLUB` directly into
+`IsLUB` of a monotone net of reals (`isLUB_re_of_isLUB` +
+`tendsto_atTop_isLUB`), which gives `ω(1 − p_S) → 0`; and
+`‖1 − p_S‖_ω² = ω((1−p_S)²) ≤ ω(1−p_S)` because `E² ≤ E` for an effect
+(`sq_le_self_of_effect`, new).  So **44XIV** is not used at all, and neither is
+the von Neumann structure of `𝒷ᵃ(X)` (**152X**): the only normality used is
+that of the given `ω`.
+
+**The hypothesis `hX : SelfDual ℬ X` is not used** — the linter suppression
+above the declaration is the evidence.  It is redundant in the source too: by
+**149XI** `selfDual_of_isONBasis` (w38) an orthonormal basis already forces
+self-duality.  Filed as an ERRATA nit, following the **153I** precedent.
+
+New public by-products in `SelfDual.lean` (section `KetbraProj`):
+`mketbraBa`, `mketbraBa_coe`, `onbProj`, `onbProj_apply`, `onbProj_vec`,
+`onbProj_nonneg`, `onbProj_le_one`, `onbProj_mono`, `onbProjSA`,
+`onbProjSA_coe`, `onbProj_isLUB`, `onbProj_omegaNorm_tendsto`,
+`onbProj_compress` (plus private `baVal`, `baVal_sum`, `sq_le_self_of_effect`).
+`onbProj_isLUB` is the reusable form of **159VI**; `onbProj_compress` is
+**159VII**.
+
+### 3. Reachability survey — what is blocked, and on what
+
+Checked against the sources this session, not recalled:
+
+| point(s) | blocked on |
+|---|---|
+| 138II `nmiu_between_type_I` | nothing frozen, but a multi-session Hilbert-space theorem (unitary from a basis bijection, ultraweak sums in `B(𝒦)`); **138VI**, **138VII**, **138VIII** all reduce to it |
+| 139XI `ess_uniq_pur` | ditto: `𝒱 = ℋ ⊗ 𝒱'` splitting + a dimension count |
+| 140VIII `paschke_unique_up_to_iso` | **99IX** `iso` (proc.tex 878, "a unital ncp-isomorphism is nmiu") — `sorry` in `A/Proc/Measurement.lean`, which is **not on `B/Dils`'s import path** |
+| 160IV.2/.3 `hilbmod_projthm_2/_3` | the thesis's proof extends a basis of `W` to one of `X`, i.e. **149VIII** (3 ⇒ 4 of 149V) — `sorry`, blocked on `A/VN` **80IV** |
+| 160IX, 160X | 160IV.2/.3; 160X additionally needs the polar decomposition of **149VIII** |
+| 161II.1/.2 | `bh-bounded-uw-complete` = **77I**.2, `sorry` in the frozen, off-path `A/VN/Completeness.lean` |
+| 162II `total_mv_order` | polar decomposition (`A/VN/Division.lean`, off-path *and* `sorry`); 162IV needs 162II |
+| 163II uniqueness | **151Ia** (`SelfDualCompletion` has no `univ` field, unlike `PaschkeModule`) |
+| 163II "moreover" | **150II** + **151Ia**, or 160IV.3 for a direct route |
+| 164II (all four) | existence runs through `ℓ²`, hence 161II, hence 77I.2 |
+| 165III, 165VI | **not** the B5 order clause any more — worker 40 showed it is derivable (`Theses.A.Proc.matBilin_nonneg_of_mi`), and I checked 165IV consumes nothing else order-theoretic.  What blocks them now is purely structural: that lemma lives in `A/Proc/Tensor.lean`, off `B/Dils`'s import path.  See QUESTIONS B5 |
+| **166II** | **new**: `IsVNTensor` gives the legs `a ↦ a⊗1`, `b ↦ 1⊗b` as miu but not **n**miu, and the proof needs ultraweak continuity of a leg — see QUESTIONS B5 and the new 166II ERRATA row |
+| 166IV | 166II + **158II** (Kaplansky, blocked on `A/VN` 74IV) + `ext_tensor_dense` |
+| 166VI | **158Ia** + `PaschkeModule` (QUESTIONS **D2**) |
+| 167I | 164II + B5 |
+| 169IV, 169X | proc.tex 95II/98I, unformalized (unchanged from w30) |
+| 169V | routes through `existence-paschke`, hence `PaschkeModule` (D2) *and* 150II/151Ia |
+| 169XI.1/.2 | **169XII**, which needs 169X + `A/VN/Division`'s `mult-cancellation` on the standard filter |
+| 170II.1 | 138II; 170II.2 needs 169V + 169XI |
+| 170IV.1/.2 | 169IV (central-projection case) and **99IX** |
+| 171II, 171VII, 172III, 172X, 172XII | downstream of the above |
+| `Paschke.lean` (9) | QUESTIONS **D2** (unchanged) |
+
+So, with 140X.3 and 159IV closed, **`B/Dils` has no further statement that is
+reachable without either a decision (D2, B5), an `A/VN`/`A/Proc` `sorry`, or a
+multi-session Hilbert-space development (138II).**  The two cheapest unlocks
+remain the ones w38 named: settle D2, and prove **77I**.1/.2.
+
+### 4. Classification
+
+* **(1) faithful:** 140X.3 (`bsols.tex` `paschke-basics`.3, verbatim);
+  159IV up to §2's one step.
+* **(2) different route:** 159IV's `p_S → 1` step (§2) — normality of the
+  functional instead of **44XIV**, to avoid a cofinality transport.
+* **(3) mild:** the biproduct positivity-reflection lemma of §1 is an addition
+  to the author's argument forced by our abstract rendering of `⊕`.
+* **(4) our statement mis-transcribes the thesis:** none found.  Both
+  statements were re-checked for the mirroring convention: 159IV's span set
+  `mketbra ℬ (b • e i) (e j)` is the correct mirror of `|eᵢb⟩⟨eⱼ|` (the
+  convention is fixed by `mketbra_rules`.1, `|xb⟩⟨y| = |x⟩⟨yb*|`, which in
+  Lean reads `mketbra (b • x) y = mketbra x (star b • y)`).
+* **(5) closed from Mathlib without reading the author's argument:** none.
+
+### 5. Verification
+
+* `lake build Theses` → `Build completed successfully (8738 jobs)`, exit 0,
+  **zero** `error:` lines.
+* `#print axioms` → `[propext, Classical.choice, Quot.sound]` for all 15 new
+  public declarations and both closed theorems.
+* Warning diff against the session's baseline build: **empty** (the one new
+  unused-`hX` warning is suppressed with an explanatory comment).
+* Per-file code `sorry`s, before → after: `SelfDual` 24 → **23**,
+  `Stinespring` 8 → **7**, `Pure` 16, `Paschke` 9, `HilbertModules` 3,
+  `Kaplansky` 2, `SelfDualCompletion` 2.  **`B/Dils` 64 → 62.**
+* Files touched: `Theses/B/Dils/Stinespring.lean`,
+  `Theses/B/Dils/SelfDual.lean`, `ERRATA.md` (two rows, in point order),
+  `QUESTIONS.md` (B5 extended), `PROVING-LOG.md`.  Nothing staged, nothing
+  committed.
