@@ -4970,3 +4970,165 @@ uniqueness of the orthosupplement, `(0,0,λ) = λ·(0,0,1)`, and
 * Per-file `sorry`s: Comparisons 3, Dagger 3, DiamondAmp 2, EffectAlgebras 6,
   Effectus 2, Quotients 0, **StatesPredicates 6**, WStarCat 0 — **22**.
 * Nothing staged, nothing committed.
+
+## Session 19 — `B/Eff` parsec 192VII: states as an abstract `Mᵒᵖ`-convex set (worker 48)
+
+**Result: `stat_mconvex` and `stat_functor` are proved.  B/Eff 22 → 20 code
+`sorry`s; `StatesPredicates.lean` 6 → 4.  Both statements are unchanged
+byte-for-byte; only `:= sorry` was replaced.  Zero `sorryAx` leakage
+preserved.**
+
+With this, **every `sorry` left in `B/Eff` is blocked by something other than
+formalization effort**: 12 need thesis-A mathematics (and are off `B/Eff`'s
+import path, which is `Theses.Common` only — see session 17 §2), 5 are
+cited-only, 2 are parked on QUESTIONS **B4**/**B6**, and 1 (195VI) needs a
+Mathlib-sized development ("basically disconnected" spaces and σ-Dedekind
+completeness of `C(X)`, neither in Mathlib).  There is no reachable item left
+in the chapter.
+
+### 1. The obstacle, and why the n-ary tupling was not needed
+
+192VII defines the convex structure on `Stat X` by
+
+```
+h(λ₁|φ₁⟩ ⋁ ⋯ ⋁ λₙ|φₙ⟩)  =  [φ₁, …, φₙ] ∘ ⟨λ₁, …, λₙ⟩,
+```
+
+an `n`-ary cotuple composed with an `n`-ary *partial* tuple, and the previous
+two reports recorded the blocker as "our `Stat`/`Scal` layer has no `n`-ary
+tupling API".  It turns out that layer is **not** what the proof needs.  The
+thesis's own computation rewrites the composite on its very next line as the
+iterated partial sum
+
+```
+[φ₁, …, φₙ] ∘ ⟨λ₁, …, λₙ⟩  =  ⋁ᵢ φᵢ ∘ λᵢ,
+```
+
+and every subsequent line of the proof is about that form.  So the right move
+is to build the iterated partial sum directly.  Doing so avoids `Fin n`-indexed
+coproducts entirely — which matters, because the `n`-ary partial tuple would
+have needed an `n`-ary *untying* axiom, and `FinPAC.untying` is binary with no
+inductive handle on `∐_{i : Fin n}`.
+
+**What makes the direct route work is a different effectus axiom.**  The
+summability of `⋁ᵢ φᵢ ∘ λᵢ` does not follow from `untying`; it follows from
+`perp_of_one_perp` ("if `1∘f ⊥ 1∘g` then `f ⊥ g`") together with
+`truth_effObj_eq_id` (181XIII, `1_1 = id`): the truth of the `i`-th term is
+
+```
+(λᵢ ≫ φᵢ) ≫ 1_X  =  λᵢ ≫ (φᵢ ≫ 1_X)  =  λᵢ ≫ 1_1  =  λᵢ ≫ id  =  λᵢ,
+```
+
+using that `φᵢ` is a *state* (total).  The `λᵢ` sum to `1` by definition of a
+formal convex combination, so the terms are summable, and the sum's truth is
+`1` — i.e. the result is again a state.  Totality of the result is therefore
+not an extra check but the very thing that produced the sum.
+
+### 2. New reusable API (all public, all in `StatesPredicates.lean`)
+
+Four lemmas are the `n`-ary forms of the finPAC/effectus axioms and are worth
+reusing anywhere partial sums of morphisms appear:
+
+| name | content |
+|---|---|
+| `isSumOf_comp_right` | `⋁ᵢ fᵢ ≫ k = ⋁ᵢ (fᵢ ≫ k)` (n-ary `FinPAC.comp_ovee`) |
+| `isSumOf_comp_left` | `k ≫ ⋁ᵢ fᵢ = ⋁ᵢ (k ≫ fᵢ)` (n-ary `FinPAC.ovee_comp`) |
+| `exists_isSumOf_of_truth` | if `⋁ᵢ (1∘fᵢ)` exists so does `⋁ᵢ fᵢ`, and `1∘⋁ᵢfᵢ = ⋁ᵢ(1∘fᵢ)` |
+| `isSumOf_unop` | sums in `Mᵐᵒᵖ` are sums in `M` (converse of the existing `isSumOf_op`) |
+
+`tuple_desc` records the binary instance of the thesis's tuple identity —
+`[φ₁,φ₂] ∘ (κ₁∘λ₁ ⋁ κ₂∘λ₂) = (φ₁∘λ₁) ⋁ (φ₂∘λ₂)` — so that the translation of
+`h` into an iterated sum is *checked* in the tree rather than merely asserted
+in a comment.  (The `n`-ary tuple itself is still not formalized.)
+
+On top of that, `statSum p g` — "the convex combination `⋁ᵢ g(zᵢ) ∘ p(zᵢ)` of a
+family of states" — with its three laws, deliberately mirroring the existing
+`rsum`/`rsum_eta`/`rsum_map`/`rsum_mu` layer for `[0,1]`-combinations in a real
+vector space (which is `Finset`-based and only for `I`, hence not reusable
+here):
+
+* `statSum_spec` / `statSum_eq` — specification and uniqueness.  The spec holds
+  for **any** repetition-free list containing the support, not just an exact
+  enumeration; that is what makes every later proof a one-liner choice of list.
+* `statSum_eta`, `statSum_map` (reindexing), `statSum_mu` (Fubini),
+  `statSum_statMap` (`f ∘ ⋁ᵢ φᵢ∘λᵢ = ⋁ᵢ f∘φᵢ∘λᵢ`).
+
+Then `statMap`, `statMConvex`, `statMConvex_h`, `statMap_isAffine`,
+`statFunctor`, and the two theorems.
+
+### 3. The gap the thesis waves through
+
+The associativity axiom is stated as `h ∘ μ = h ∘ 𝒟_M h`, and the thesis's
+computation treats `𝒟_M h` as if it simply relabelled the terms
+`σᵢ|ψᵢ⟩ ↦ σᵢ|h(ψᵢ)⟩`.  It does not: `𝒟_M h` **sums coefficients over the fibres
+of `h`**, so when two of the inner combinations `ψᵢ` happen to have the same
+`h`-value the outer combination collapses.  That is precisely the work in
+`statSum_map`, which is proved by `isSumOf_map_fiber` (fibre-grouping for
+iterated partial sums, already in the file from 192III).  The identity still
+holds, so this is an elision rather than an error and no erratum was filed —
+but it is the single non-obvious step of the formalization, and the same
+elision will recur wherever an Eilenberg–Moore algebra law is transcribed.
+
+Similarly, `statSum_mu` needs Fubini for iterated partial sums in *both*
+directions (`isSumOf_flatMap` / `isSumOf_of_flatMap` + `flatMap_map_comm`),
+exactly as `exists_mu` did; the thesis's `⋁ᵢ ⋁ⱼ = ⋁_{i,j}` is one equals sign.
+
+### 4. Lean notes
+
+* **`(1 : (Scal C)ᵐᵒᵖ).unop = truth (effObj C)` is `rfl`**, and so is
+  `(a * b : (Scal C)ᵐᵒᵖ).unop = a.unop ≫ b.unop`: the opposite effect monoid's
+  `Mul` is `MulOpposite.instMul` (`a * b = op (b.unop * a.unop)`) and `Scal C`'s
+  is `fun l m => m ≫ l`, and the two reversals cancel.  All three facts were
+  checked with throwaway `example … := rfl` before being relied on; they make
+  the whole `Mᵒᵖ` bookkeeping invisible.
+* `List.map_congr_left` is the tool for "the two `map`s agree on the members of
+  *this* list" (needed twice, once after `List.filter`, once inside the Fubini
+  step); `simp only [Function.comp_def, Category.assoc]` is what reconciles the
+  `∘`-shaped result of `List.map_map` with a hand-written lambda.
+* `omit [EffectusPartialForm C] in` is needed on `isSumOf_comp_right/left`,
+  which are pure finPAC facts; without it the unused-section-variable linter
+  fires.
+
+### 5. Classification
+
+* **192VII** — class **1** for the mathematics (the thesis's proof is
+  transcribed step for step, including the associativity chain), with a
+  class **3** presentational departure: the `n`-ary tuple `[φ₁,…,φₙ] ∘
+  ⟨λ₁,…,λₙ⟩` is replaced throughout by the iterated partial sum `⋁ᵢ φᵢ ∘ λᵢ`
+  that the thesis's own proof substitutes for it on its second line, and the
+  identification is verified in the binary case by `tuple_desc`.
+* No statement was changed; no statement was found false; nothing filed in
+  ERRATA or QUESTIONS.
+* **A note on the strength of the two statements** (not changed, but worth
+  recording): `stat_mconvex` asserts only `Nonempty (MConvex …)` and
+  `stat_functor` only `∃ F, ∀ X, (F.obj X).carrier = Stat X.base`, so neither
+  pins down the structure map or the action on arrows the way the thesis does.
+  The full content is now in the tree as `statMConvex`, `statMConvex_h`
+  (the formula for `h`), `statMap_isAffine` and `statFunctor`; anyone
+  strengthening the two statements later should point them at those.
+
+### 6. Verification
+
+* `lake build` of all eight `B/Eff` modules: exit 0,
+  `Build completed successfully (8715 jobs)`.
+* The ~366 new lines (StatesPredicates 3613–3979) produce **no** warnings
+  beyond the file's pre-existing `linter.style.show` class (six, at 3781,
+  3785, 3788, 3902, 3911, 3954).
+* `#print axioms` → `[propext, Classical.choice, Quot.sound]` for
+  `stat_mconvex`, `stat_functor`, `statMConvex`, `statMConvex_h`,
+  `statFunctor`, `statMap_isAffine`, `statSum_mu`, `statSum_map`,
+  `statSum_eta`, `statSum_statMap`, `tuple_desc`, `exists_isSumOf_of_truth`,
+  `isSumOf_comp_right/left`, `exists_statSum`, `statSum_spec`, `statSum_eq`,
+  `statMap` (`isSumOf_unop` depends on none).
+* `#beff_leaks` over all eight modules:
+
+  ```
+  checked 1582 declarations under `Theses.B.Eff`
+  20 are themselves `sorry`; 0 depend on a `sorry`
+  hand-written indirect leaks: 0
+  non-standard axioms (outside propext/Classical.choice/Quot.sound/sorryAx): 0
+  ```
+
+* Per-file `sorry`s: Comparisons 3, Dagger 3, DiamondAmp 2, EffectAlgebras 6,
+  Effectus 2, Quotients 0, **StatesPredicates 4**, WStarCat 0 — **20**.
+* Nothing staged, nothing committed.

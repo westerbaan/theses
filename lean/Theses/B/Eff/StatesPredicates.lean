@@ -3615,17 +3615,366 @@ section StatConvex
 variable {C : Type u} [Category.{v} C] [HasFiniteCoproducts C]
   [∀ X Y : C, PCM (X ⟶ Y)] [FinPAC C] [EffectusPartialForm C]
 
+/-! ### n-ary forms of the finPAC axioms
+
+The thesis's `h(⋁ᵢ λᵢ|φᵢ⟩) = [φ₁,…,φₙ] ∘ ⟨λ₁,…,λₙ⟩` is an `n`-ary tuple of
+partial maps; as the proof of 192VII notes on its very next line, that
+composite *is* the iterated partial sum `⋁ᵢ φᵢ ∘ λᵢ`, and it is the latter
+form which is used throughout the computation.  We therefore build the
+`n`-ary sum directly, from three lemmas which are the `n`-ary forms of the
+finPAC/effectus axioms (and are reusable elsewhere): composition on either
+side distributes over an iterated partial sum, and a family of maps is
+summable as soon as the family of its truths is.  `tuple_desc` below records
+that in the binary case this really is the thesis's `[φ₁,φ₂] ∘ ⟨λ₁,λ₂⟩`. -/
+
+omit [EffectusPartialForm C] in
+/-- Composition on the right distributes over an iterated partial sum (the
+`n`-ary form of `FinPAC.comp_ovee`). -/
+theorem isSumOf_comp_right {X Y Z : C} {l : List (X ⟶ Y)} {s : X ⟶ Y}
+    (h : PCM.IsSumOf l s) (k : Y ⟶ Z) :
+    PCM.IsSumOf (l.map fun f => f ≫ k) (s ≫ k) := by
+  induction h with
+  | nil =>
+      rw [List.map_nil, FinPAC.zero_comp k]
+      exact PCM.IsSumOf.nil
+  | @cons a l s hl hp ih =>
+      obtain ⟨h', e⟩ := FinPAC.comp_ovee hp k
+      rw [List.map_cons, e]
+      exact PCM.IsSumOf.cons ih h'
+
+omit [EffectusPartialForm C] in
+/-- Composition on the left distributes over an iterated partial sum (the
+`n`-ary form of `FinPAC.ovee_comp`). -/
+theorem isSumOf_comp_left {W X Y : C} {l : List (X ⟶ Y)} {s : X ⟶ Y}
+    (h : PCM.IsSumOf l s) (k : W ⟶ X) :
+    PCM.IsSumOf (l.map fun f => k ≫ f) (k ≫ s) := by
+  induction h with
+  | nil =>
+      rw [List.map_nil, FinPAC.comp_zero k]
+      exact PCM.IsSumOf.nil
+  | @cons a l s hl hp ih =>
+      obtain ⟨h', e⟩ := FinPAC.ovee_comp hp k
+      rw [List.map_cons, e]
+      exact PCM.IsSumOf.cons ih h'
+
+/-- In an effectus in partial form a family of maps has a partial sum as
+soon as the family of its truths `1 ∘ fᵢ` has one (the `n`-ary form of the
+axiom `perp_of_one_perp`); moreover the truth of the sum is the sum of the
+truths. -/
+theorem exists_isSumOf_of_truth {X Y : C} :
+    ∀ {l : List (X ⟶ Y)} {s : X ⟶ effObj C},
+      PCM.IsSumOf (l.map fun f => f ≫ truth Y) s →
+        ∃ t : X ⟶ Y, PCM.IsSumOf l t ∧ t ≫ truth Y = s := by
+  intro l
+  induction l with
+  | nil =>
+      intro s h
+      rw [List.map_nil, PCM.isSumOf_nil_iff] at h
+      subst h
+      exact ⟨0, PCM.IsSumOf.nil, FinPAC.zero_comp (truth Y)⟩
+  | cons a l ih =>
+      intro s h
+      rw [List.map_cons] at h
+      obtain ⟨t, ht, hp, rfl⟩ := PCM.isSumOf_cons_iff.mp h
+      obtain ⟨u, hu, rfl⟩ := ih ht
+      have hpau : Perp a u := EffectusPartialForm.perp_of_one_perp hp
+      obtain ⟨h', e⟩ := FinPAC.comp_ovee hpau (truth Y)
+      exact ⟨ovee a u hpau, PCM.IsSumOf.cons hu hpau, e⟩
+
+/-- The thesis's tuple formula, in its binary instance: for orthogonal
+scalars `λ₁ ⊥ λ₂` the partial tuple `⟨λ₁, λ₂⟩ = κ₁∘λ₁ ⋁ κ₂∘λ₂` satisfies
+`[φ₁, φ₂] ∘ ⟨λ₁, λ₂⟩ = (φ₁ ∘ λ₁) ⋁ (φ₂ ∘ λ₂)`.  (This is what licenses
+computing `h` of 192VII as an iterated partial sum; the `n`-ary tuple itself
+would need `Fin n`-indexed coproducts and is not formalized.) -/
+theorem tuple_desc {X : C} (l₁ l₂ : Scal C) (h : Perp l₁ l₂)
+    (φ₁ φ₂ : effObj C ⟶ X) :
+    ∃ h' : Perp (l₁ ≫ φ₁) (l₂ ≫ φ₂),
+      ovee (l₁ ≫ (coprod.inl : effObj C ⟶ effObj C ⨿ effObj C))
+          (l₂ ≫ coprod.inr) (FinPAC.untying h) ≫ coprod.desc φ₁ φ₂
+        = ovee (l₁ ≫ φ₁) (l₂ ≫ φ₂) h' := by
+  obtain ⟨h', e⟩ := FinPAC.comp_ovee (FinPAC.untying h) (coprod.desc φ₁ φ₂)
+  simp only [Category.assoc, coprod.inl_desc, coprod.inr_desc] at h' e
+  exact ⟨h', e⟩
+
+/-- Sums in `Mᵐᵒᵖ` are the sums of `M`, transported along `unop` (the
+converse of `isSumOf_op`). -/
+theorem isSumOf_unop {M : Type u} [EffectMonoid M] {l : List Mᵐᵒᵖ} {s : Mᵐᵒᵖ}
+    (h : PCM.IsSumOf l s) :
+    PCM.IsSumOf (l.map MulOpposite.unop) s.unop := by
+  induction h with
+  | nil => exact PCM.IsSumOf.nil
+  | @cons a l s hl hp ih => exact PCM.IsSumOf.cons ih hp
+
+/-! ### The convex combination `⋁ᵢ φᵢ ∘ λᵢ` of a family of states -/
+
+section StatSum
+
+variable {X Y : C} {Z W : Type v}
+
+/-- The convex combination `⋁ᵢ φᵢ ∘ λᵢ` of a family `g` of states with
+coefficients `p` exists, and is again a state: its truth is `⋁ᵢ λᵢ = 1`. -/
+theorem exists_statSum (p : MConvexComb (Scal C)ᵐᵒᵖ Z) (g : Z → Stat X) :
+    ∃ ω : Stat X, ∀ l : List Z, l.Nodup → (∀ z, p.toFun z ≠ 0 → z ∈ l) →
+      PCM.IsSumOf (l.map fun z => (p.toFun z).unop ≫ (g z).1) ω.1 := by
+  obtain ⟨l₀, hnd₀, hmem₀, hsum₀⟩ := p.sum_one
+  have hone : ∀ z : Z, ((p.toFun z).unop ≫ (g z).1) ≫ truth X
+      = (p.toFun z).unop := by
+    intro z
+    rw [Category.assoc, show (g z).1 ≫ truth X = truth (effObj C) from (g z).2,
+      truth_effObj_eq_id, Category.comp_id]
+  have hsum₁ : PCM.IsSumOf (l₀.map fun z => (p.toFun z).unop)
+      (truth (effObj C)) := by
+    have h := isSumOf_unop hsum₀
+    rw [List.map_map] at h
+    exact h
+  have hsum₂ : PCM.IsSumOf
+      ((l₀.map fun z => (p.toFun z).unop ≫ (g z).1).map fun f => f ≫ truth X)
+      (truth (effObj C)) := by
+    rw [List.map_map]
+    have e : ((fun f => f ≫ truth X) ∘ fun z => (p.toFun z).unop ≫ (g z).1)
+        = fun z => (p.toFun z).unop := funext hone
+    rw [e]
+    exact hsum₁
+  obtain ⟨t, ht, htot⟩ := exists_isSumOf_of_truth hsum₂
+  refine ⟨⟨t, htot⟩, fun l hnd hsupp => ?_⟩
+  refine isSumOf_map_of_support _ hnd₀ hnd ?_ ?_ ht
+  all_goals
+    intro z hz
+    have hz' : p.toFun z ≠ 0 := by
+      intro h0
+      refine hz ?_
+      rw [show (p.toFun z).unop = 0 from congrArg MulOpposite.unop h0,
+        FinPAC.zero_comp]
+  · exact (hmem₀ z).mpr hz'
+  · exact hsupp z hz'
+
+/-- The convex combination `⋁ᵢ φᵢ ∘ λᵢ` of the family of states `g` with
+coefficients `p` (192VII). -/
+noncomputable def statSum (p : MConvexComb (Scal C)ᵐᵒᵖ Z) (g : Z → Stat X) :
+    Stat X :=
+  (exists_statSum p g).choose
+
+/-- The specification of `statSum`: it is the partial sum of the `φᵢ ∘ λᵢ`
+over any repetition-free list of indices containing the support of `p`. -/
+theorem statSum_spec (p : MConvexComb (Scal C)ᵐᵒᵖ Z) (g : Z → Stat X)
+    (l : List Z) (hnd : l.Nodup) (hsupp : ∀ z, p.toFun z ≠ 0 → z ∈ l) :
+    PCM.IsSumOf (l.map fun z => (p.toFun z).unop ≫ (g z).1) (statSum p g).1 :=
+  (exists_statSum p g).choose_spec l hnd hsupp
+
+/-- `statSum` is characterised by its specification. -/
+theorem statSum_eq {p : MConvexComb (Scal C)ᵐᵒᵖ Z} {g : Z → Stat X}
+    {ω : Stat X} {l : List Z} (hnd : l.Nodup)
+    (hsupp : ∀ z, p.toFun z ≠ 0 → z ∈ l)
+    (h : PCM.IsSumOf (l.map fun z => (p.toFun z).unop ≫ (g z).1) ω.1) :
+    statSum p g = ω :=
+  Subtype.ext (isSumOf_unique (statSum_spec p g l hnd hsupp) h)
+
+open Classical in
+/-- **192VII**, "clearly `h(|φ⟩) = φ`". -/
+theorem statSum_eta (z : Z) (g : Z → Stat X) :
+    statSum (MConvexComb.eta z) g = g z := by
+  refine statSum_eq (l := [z]) (List.nodup_singleton z) ?_ ?_
+  · intro y hy
+    rw [List.mem_singleton]
+    by_contra hne
+    refine hy ?_
+    show (if y = z then (1 : (Scal C)ᵐᵒᵖ) else 0) = 0
+    simp [hne]
+  · rw [List.map_cons, List.map_nil]
+    have hval : (MConvexComb.eta z : MConvexComb (Scal C)ᵐᵒᵖ Z).toFun z = 1 := by
+      show (if z = z then (1 : (Scal C)ᵐᵒᵖ) else 0) = 1
+      simp
+    rw [hval]
+    show PCM.IsSumOf [truth (effObj C) ≫ (g z).1] (g z).1
+    rw [truth_effObj_eq_id, Category.id_comp]
+    exact isSumOf_singleton _
+
+open Classical in
+/-- Reindexing: `statSum` of a pushed-forward combination is `statSum` of the
+reindexed family (the "`⋁ᵢ`" of the thesis does not depend on how the terms
+are grouped). -/
+theorem statSum_map (p : MConvexComb (Scal C)ᵐᵒᵖ Z) (f : Z → W)
+    (g : W → Stat X) :
+    statSum (p.map f) g = statSum p (fun z => g (f z)) := by
+  classical
+  obtain ⟨l₀, hnd₀, hmem₀, -⟩ := p.sum_one
+  have hndW : ((l₀.map f).dedup).Nodup := List.nodup_dedup _
+  have hsuppW : ∀ w, (p.map f).toFun w ≠ 0 → w ∈ (l₀.map f).dedup := by
+    intro w hw
+    by_contra hmem
+    have hnil : ∀ z, z ∈ ([] : List Z) ↔ (p.toFun z ≠ 0 ∧ f z = w) := by
+      intro z
+      simp only [List.not_mem_nil, false_iff, not_and]
+      intro hz0 hfz
+      exact absurd (List.mem_dedup.mpr
+        (List.mem_map.mpr ⟨z, (hmem₀ z).mpr hz0, hfz⟩)) hmem
+    have h := MConvexComb.map_spec p f w [] List.nodup_nil hnil
+    rw [List.map_nil, PCM.isSumOf_nil_iff] at h
+    exact hw h
+  refine statSum_eq hndW hsuppW ?_
+  refine isSumOf_map_fiber (fun z => (p.toFun z).unop ≫ (g (f z)).1) f
+    (fun w => ((p.map f).toFun w).unop ≫ (g w).1) hndW ?_ ?_
+    (statSum_spec p (fun z => g (f z)) l₀ hnd₀ (fun z hz => (hmem₀ z).mpr hz))
+  · intro z hz
+    exact List.mem_dedup.mpr (List.mem_map.mpr ⟨z, hz, rfl⟩)
+  · intro w _
+    have hfib : ∀ z, z ∈ l₀.filter (fun z => decide (f z = w)) ↔
+        (p.toFun z ≠ 0 ∧ f z = w) := by
+      intro z
+      rw [List.mem_filter, hmem₀ z]
+      simp
+    have h := isSumOf_unop
+      (MConvexComb.map_spec p f w _ (List.Nodup.filter _ hnd₀) hfib)
+    rw [List.map_map] at h
+    have h2 := isSumOf_comp_right h (g w).1
+    rw [List.map_map] at h2
+    have e : (l₀.filter (fun z => decide (f z = w))).map
+          (fun z => (p.toFun z).unop ≫ (g (f z)).1)
+        = (l₀.filter (fun z => decide (f z = w))).map
+          ((fun f' => f' ≫ (g w).1) ∘ (MulOpposite.unop ∘ p.toFun)) := by
+      refine List.map_congr_left ?_
+      intro z hz
+      have hz' : f z = w := by simpa using (List.mem_filter.mp hz).2
+      rw [hz']
+      rfl
+    rw [e]
+    exact h2
+
+open Classical in
+/-- **192VII**, the computation of the proof: summing a two-level
+combination in either order gives the same state, i.e.
+`⋁ᵢ (⋁ⱼ φᵢⱼ ∘ λᵢⱼ) ∘ σᵢ = ⋁_{i,j} φᵢⱼ ∘ (σᵢ ⊙_{Mᵒᵖ} λᵢⱼ)`.  (Both sides are
+computed by Fubini for iterated partial sums.) -/
+theorem statSum_mu (Φ : MConvexComb (Scal C)ᵐᵒᵖ (MConvexComb (Scal C)ᵐᵒᵖ Z))
+    (g : Z → Stat X) :
+    statSum (MConvexComb.mu Φ) g = statSum Φ (fun ψ => statSum ψ g) := by
+  classical
+  obtain ⟨lΦ, hndΦ, hmemΦ, -⟩ := Φ.sum_one
+  choose supp _hsuppnd hsuppmem _hsuppsum using
+    (fun ψ : MConvexComb (Scal C)ᵐᵒᵖ Z => ψ.sum_one)
+  have hndZ : ((lΦ.flatMap supp).dedup).Nodup := List.nodup_dedup _
+  have hmemZ : ∀ (ψ : MConvexComb (Scal C)ᵐᵒᵖ Z) (x : Z), ψ ∈ lΦ →
+      ψ.toFun x ≠ 0 → x ∈ (lΦ.flatMap supp).dedup :=
+    fun ψ x hψ hx =>
+      List.mem_dedup.mpr (List.mem_flatMap.mpr ⟨ψ, hψ, (hsuppmem ψ x).mpr hx⟩)
+  have hsuppmu : ∀ x, (MConvexComb.mu Φ).toFun x ≠ 0 →
+      x ∈ (lΦ.flatMap supp).dedup := by
+    intro x hx
+    by_contra hmem
+    refine hx (isSumOf_eq_zero ?_ (MConvexComb.mu_spec Φ x lΦ hndΦ hmemΦ))
+    intro a ha
+    obtain ⟨ψ, hψ, rfl⟩ := List.mem_map.mp ha
+    have h0 : ψ.toFun x = 0 := by
+      by_contra h
+      exact hmem (hmemZ ψ x hψ h)
+    rw [h0, (exc_emonzero (Φ.toFun ψ)).1]
+  refine statSum_eq hndZ hsuppmu ?_
+  -- the rows: `⋁ₓ σᵢ ∘ λᵢₓ ∘ φₓ = σᵢ ∘ (statSum ψ g)`
+  have hrow : ∀ ψ ∈ lΦ, PCM.IsSumOf
+      (((lΦ.flatMap supp).dedup).map fun x =>
+        (Φ.toFun ψ).unop ≫ ((ψ.toFun x).unop ≫ (g x).1))
+      ((Φ.toFun ψ).unop ≫ (statSum ψ g).1) := by
+    intro ψ hψ
+    have h := isSumOf_comp_left
+      (statSum_spec ψ g ((lΦ.flatMap supp).dedup) hndZ
+        (fun x hx => hmemZ ψ x hψ hx)) (Φ.toFun ψ).unop
+    rw [List.map_map] at h
+    exact h
+  have hS := statSum_spec Φ (fun ψ => statSum ψ g) lΦ hndΦ
+    (fun ψ hψ => (hmemΦ ψ).mpr hψ)
+  have hflat := isSumOf_flatMap _ _ hrow hS
+  have hflat2 := PCM.isSumOf_perm
+    (flatMap_map_comm lΦ ((lΦ.flatMap supp).dedup)
+      (fun (ψ : MConvexComb (Scal C)ᵐᵒᵖ Z) (x : Z) =>
+        (Φ.toFun ψ).unop ≫ ((ψ.toFun x).unop ≫ (g x).1))) hflat
+  refine isSumOf_of_flatMap _ _ ?_ hflat2
+  -- and the columns: `⋁ᵢ (σᵢ ⊙_{Mᵒᵖ} λᵢₓ) ∘ φₓ = μ(Φ)(x) ∘ φₓ`
+  intro x _
+  have h := isSumOf_unop (MConvexComb.mu_spec Φ x lΦ hndΦ hmemΦ)
+  rw [List.map_map] at h
+  have h2 := isSumOf_comp_right h (g x).1
+  rw [List.map_map] at h2
+  have e : (lΦ.map fun ψ => (Φ.toFun ψ).unop ≫ ((ψ.toFun x).unop ≫ (g x).1))
+      = lΦ.map ((fun f' => f' ≫ (g x).1) ∘
+          (MulOpposite.unop ∘ fun ψ => Φ.toFun ψ * ψ.toFun x)) := by
+    refine List.map_congr_left ?_
+    intro ψ _
+    show (Φ.toFun ψ).unop ≫ ((ψ.toFun x).unop ≫ (g x).1)
+      = ((Φ.toFun ψ).unop ≫ (ψ.toFun x).unop) ≫ (g x).1
+    rw [Category.assoc]
+  rw [e]
+  exact h2
+
+/-- **192VII**: `(Stat f)(φ) = f ∘ φ`, for a total `f`. -/
+def statMap (f : X ⟶ Y) (hf : IsTotal f) (ω : Stat X) : Stat Y :=
+  ⟨ω.1 ≫ f, by
+    show (ω.1 ≫ f) ≫ truth Y = truth (effObj C)
+    rw [Category.assoc, show f ≫ truth Y = truth X from hf,
+      show ω.1 ≫ truth X = truth (effObj C) from ω.2]⟩
+
+/-- **192VII**, "`f ∘ ⋁ᵢ φᵢ ∘ λᵢ = ⋁ᵢ f ∘ φᵢ ∘ λᵢ`, which is clearly
+true". -/
+theorem statSum_statMap (p : MConvexComb (Scal C)ᵐᵒᵖ Z) (g : Z → Stat X)
+    (f : X ⟶ Y) (hf : IsTotal f) :
+    statSum p (fun z => statMap f hf (g z)) = statMap f hf (statSum p g) := by
+  obtain ⟨l₀, hnd₀, hmem₀, -⟩ := p.sum_one
+  refine statSum_eq hnd₀ (fun z hz => (hmem₀ z).mpr hz) ?_
+  have h := isSumOf_comp_right
+    (statSum_spec p g l₀ hnd₀ (fun z hz => (hmem₀ z).mpr hz)) f
+  rw [List.map_map] at h
+  simp only [Function.comp_def, Category.assoc] at h
+  exact h
+
+end StatSum
+
+/-! ### The convex set of states and the functor `Stat` (192VII) -/
+
+/-- **192VII**: the abstract `Mᵒᵖ`-convex set of states of `X`, with
+`h(⋁ᵢ λᵢ|φᵢ⟩) = ⋁ᵢ φᵢ ∘ λᵢ` (see `statMConvex_h`). -/
+noncomputable def statMConvex (X : C) : MConvex (Scal C)ᵐᵒᵖ (Stat X) where
+  h p := statSum p _root_.id
+  h_eta x := statSum_eta x _root_.id
+  h_mu Φ := by
+    rw [statSum_mu]
+    exact (statSum_map Φ (fun ψ => statSum ψ _root_.id) _root_.id).symm
+
+/-- The structure map of `statMConvex` is the thesis's
+`h(⋁ᵢ λᵢ|φᵢ⟩) = [φ₁,…,φₙ] ∘ ⟨λ₁,…,λₙ⟩`, in the expanded form `⋁ᵢ φᵢ ∘ λᵢ`
+(cf. `tuple_desc`). -/
+theorem statMConvex_h (X : C) (p : MConvexComb (Scal C)ᵐᵒᵖ (Stat X))
+    (l : List (Stat X)) (hnd : l.Nodup) (hsupp : ∀ φ, p.toFun φ ≠ 0 → φ ∈ l) :
+    PCM.IsSumOf (l.map fun φ => (p.toFun φ).unop ≫ φ.1)
+      (((statMConvex X).h p) : Stat X).1 :=
+  statSum_spec p _root_.id l hnd hsupp
+
+/-- **192VII**: `Stat f` is `Mᵒᵖ`-affine for total `f`. -/
+theorem statMap_isAffine {X Y : C} (f : X ⟶ Y) (hf : IsTotal f) :
+    MConvex.IsAffine (statMConvex X) (statMConvex Y) (statMap f hf) := by
+  intro p
+  show statMap f hf (statSum p _root_.id)
+    = statSum (p.map (statMap f hf)) _root_.id
+  rw [statSum_map]
+  exact (statSum_statMap p _root_.id f hf).symm
+
+/-- **192VII**: the functor `Stat : Tot C ⥤ AConv_{Mᵒᵖ}`. -/
+noncomputable def statFunctor : Tot C ⥤ AConvMCat.{v, v} (Scal C)ᵐᵒᵖ where
+  obj X := ⟨Stat X.base, statMConvex X.base⟩
+  map f := ⟨statMap f.1 f.2, statMap_isAffine f.1 f.2⟩
+  map_id _ := Subtype.ext (funext fun ω => Subtype.ext (Category.comp_id ω.1))
+  map_comp f g :=
+    Subtype.ext (funext fun ω => Subtype.ext (Category.assoc ω.1 f.1 g.1).symm)
+
 /-- **192VII** (eff.tex:2613, Proposition), first half: for an effectus `C`
 with scalars `M`, the states `Stat X` form an abstract `Mᵒᵖ`-convex set,
 with `h(⋁ᵢ λᵢ|φᵢ⟩) = [φ₁, …, φₙ] ∘ ⟨λ₁, …, λₙ⟩`. -/
 theorem stat_mconvex (X : C) :
-    Nonempty (MConvex (Scal C)ᵐᵒᵖ (Stat X)) := sorry
+    Nonempty (MConvex (Scal C)ᵐᵒᵖ (Stat X)) := ⟨statMConvex X⟩
 
 /-- **192VII** (eff.tex:2622, Proposition), second half: `Stat f = f ∘ (–)`
 is affine for total `f`, and `Stat : Tot C → AConv_{Mᵒᵖ}` is a functor. -/
 theorem stat_functor :
     ∃ F : Tot C ⥤ AConvMCat.{v, v} (Scal C)ᵐᵒᵖ,
-      ∀ X : Tot C, (F.obj X).carrier = Stat X.base := sorry
+      ∀ X : Tot C, (F.obj X).carrier = Stat X.base := ⟨statFunctor, fun _ => rfl⟩
 
 end StatConvex
 
