@@ -235,6 +235,123 @@ variable [Nontrivial A]
 noncomputable def pairLp (a b : A) : lp (fun _ : Fin 2 => A) ∞ :=
   lp.single ∞ 0 a + lp.single ∞ 1 b
 
+/-! Auxiliary for **128VI**: the elementary algebra of `pairLp`, the
+diagonal `{(a,a)} ⊆ 𝒜 ⊕ 𝒜` as a von Neumann subalgebra, and the fact that
+`x ↦ (f x, f x)` is the norm-one idempotent onto it that Tomiyama's theorem
+(**128II**) applies to. -/
+
+section PairAux
+
+omit [PartialOrder A] [StarOrderedRing A] [Nontrivial A]
+
+theorem pairLp_apply (a b : A) (i : Fin 2) :
+    ((pairLp a b : (lp (fun _ : Fin 2 => A) ∞)) : ∀ _ : Fin 2, A) i = if i = 0 then a else b := by
+  rw [pairLp, lp.coeFn_add]
+  simp only [lp.coeFn_single, Pi.add_apply, Pi.single_apply]
+  fin_cases i <;> simp
+
+theorem pairLp_apply_zero (a b : A) :
+    ((pairLp a b : (lp (fun _ : Fin 2 => A) ∞)) : ∀ _ : Fin 2, A) 0 = a := by simp [pairLp_apply]
+
+theorem pairLp_apply_one (a b : A) :
+    ((pairLp a b : (lp (fun _ : Fin 2 => A) ∞)) : ∀ _ : Fin 2, A) 1 = b := by simp [pairLp_apply]
+
+theorem pairLp_eta (x : (lp (fun _ : Fin 2 => A) ∞)) :
+    pairLp ((x : ∀ _ : Fin 2, A) 0) ((x : ∀ _ : Fin 2, A) 1) = x := by
+  apply lp.ext
+  funext i
+  rw [pairLp_apply]
+  fin_cases i <;> simp
+
+theorem pairLp_mul (a b c d : A) :
+    (pairLp a b : (lp (fun _ : Fin 2 => A) ∞)) * pairLp c d = pairLp (a * c) (b * d) := by
+  apply lp.ext
+  funext i
+  rw [lp.infty_coeFn_mul]
+  simp only [Pi.mul_apply, pairLp_apply]
+  split <;> rfl
+
+theorem pairLp_add (a b c d : A) :
+    (pairLp a b : (lp (fun _ : Fin 2 => A) ∞)) + pairLp c d = pairLp (a + c) (b + d) := by
+  apply lp.ext
+  funext i
+  rw [lp.coeFn_add]
+  simp only [Pi.add_apply, pairLp_apply]
+  split <;> rfl
+
+theorem pairLp_star (a b : A) :
+    star (pairLp a b : (lp (fun _ : Fin 2 => A) ∞)) = pairLp (star a) (star b) := by
+  apply lp.ext
+  funext i
+  rw [lp.coeFn_star]
+  simp only [Pi.star_apply, pairLp_apply]
+  split <;> rfl
+
+end PairAux
+
+omit [PartialOrder A] [StarOrderedRing A] in
+theorem pairLp_one : (pairLp (1 : A) 1 : (lp (fun _ : Fin 2 => A) ∞)) = 1 := by
+  apply lp.ext
+  funext i
+  rw [lp.infty_coeFn_one, pairLp_apply]
+  split <;> rfl
+
+omit [PartialOrder A] [StarOrderedRing A] [Nontrivial A] in
+theorem norm_pairLp_le (c : A) : ‖(pairLp c c : (lp (fun _ : Fin 2 => A) ∞))‖ ≤ ‖c‖ := by
+  refine lp.norm_le_of_forall_le (norm_nonneg c) fun i => ?_
+  rw [pairLp_apply]
+  split <;> exact le_rfl
+
+omit [PartialOrder A] [StarOrderedRing A] in
+theorem pairLp_smul (c : ℂ) (a b : A) :
+    c • (pairLp a b : (lp (fun _ : Fin 2 => A) ∞)) = pairLp (c • a) (c • b) := by
+  apply lp.ext
+  funext i
+  rw [lp.coeFn_smul]
+  simp only [Pi.smul_apply, pairLp_apply]
+  split <;> rfl
+
+omit [PartialOrder A] [StarOrderedRing A] in
+theorem continuous_lpEval2 (i : Fin 2) :
+    Continuous fun x : (lp (fun _ : Fin 2 => A) ∞) => (x : ∀ _ : Fin 2, A) i := by
+  have := AddMonoidHomClass.continuous_of_bound
+    (lpEvalSAH (𝒜 := fun _ : Fin 2 => A) i) 1 (fun x => by
+      simpa using lp.norm_apply_le_norm ENNReal.top_ne_zero x i)
+  exact this
+
+/-- The diagonal `{(a,a)} ⊆ 𝒜 ⊕ 𝒜`. -/
+def diagSub : StarSubalgebra ℂ (lp (fun _ : Fin 2 => A) ∞) :=
+  StarAlgHom.equalizer (lpEvalSAH (𝒜 := fun _ : Fin 2 => A) 0)
+    (lpEvalSAH (𝒜 := fun _ : Fin 2 => A) 1)
+
+omit [PartialOrder A] [StarOrderedRing A] in
+theorem mem_diagSub (x : (lp (fun _ : Fin 2 => A) ∞)) :
+    x ∈ (diagSub : StarSubalgebra ℂ (lp (fun _ : Fin 2 => A) ∞)) ↔
+      (x : ∀ _ : Fin 2, A) 0 = (x : ∀ _ : Fin 2, A) 1 := Iff.rfl
+
+theorem isVNSubalgebra_diagSub [VonNeumannAlgebra A] :
+    IsVNSubalgebra (lp (fun _ : Fin 2 => A) ∞) (diagSub (A := A)) := by
+  constructor
+  · have h : ((diagSub (A := A) : StarSubalgebra ℂ (lp (fun _ : Fin 2 => A) ∞)) : Set (lp (fun _ : Fin 2 => A) ∞))
+        = {x : (lp (fun _ : Fin 2 => A) ∞) | (x : ∀ _ : Fin 2, A) 0 = (x : ∀ _ : Fin 2, A) 1} :=
+      Set.ext fun x => Iff.rfl
+    rw [h]
+    exact isClosed_eq (continuous_lpEval2 0) (continuous_lpEval2 1)
+  · intro D s hDS hne hdir hlub
+    obtain ⟨s', hs', hev⟩ := lp_infty_exists_isLUB D hne hdir ⟨s, hlub.1⟩
+    obtain rfl := hlub.unique hs'
+    rw [mem_diagSub]
+    have himg : lpEvalSA (𝒜 := fun _ : Fin 2 => A) 0 '' D
+        = lpEvalSA (𝒜 := fun _ : Fin 2 => A) 1 '' D := by
+      ext y
+      constructor
+      · rintro ⟨d, hd, rfl⟩
+        exact ⟨d, hd, Subtype.ext (hDS d hd).symm⟩
+      · rintro ⟨d, hd, rfl⟩
+        exact ⟨d, hd, Subtype.ext (hDS d hd)⟩
+    have := (hev 0).unique (himg ▸ hev 1)
+    exact congrArg Subtype.val this
+
 /-- **128VI** (`lem:sef-instrument`, proc.tex:6015, Lemma): for a pu-map
 `f : 𝒜 ⊕ 𝒜 → 𝒜` with `f(a,a) = a`, the element `p := f(1,0)` is
 central and `f(a,b) = a·p + b·p^⊥`. -/
@@ -244,7 +361,77 @@ theorem sef_instrument [VonNeumannAlgebra A]
     (hdiag : ∀ a : A, f (pairLp a a) = a) :
     f (pairLp 1 0) ∈ centre A ∧
       ∀ a b : A, f (pairLp a b) =
-        a * f (pairLp 1 0) + b * (1 - f (pairLp 1 0)) := sorry
+        a * f (pairLp 1 0) + b * (1 - f (pairLp 1 0)) := by
+  have hposmap : Theses.A.CStar.IsPositiveMap f := hpos
+  have hinv := Theses.A.CStar.cstar_p_implies_i f hposmap
+  set f' : (lp (fun _ : Fin 2 => A) ∞) →ₗ[ℂ] (lp (fun _ : Fin 2 => A) ∞) :=
+    { toFun := fun x => pairLp (f x) (f x)
+      map_add' := fun x y => by rw [map_add, ← pairLp_add]
+      map_smul' := fun c x => by
+        simp only [map_smul, RingHom.id_apply, pairLp_smul] } with hf'def
+  have hf'app : ∀ x : (lp (fun _ : Fin 2 => A) ∞), f' x = pairLp (f x) (f x) := fun _ => rfl
+  have hrange : Set.range ⇑f' = ((diagSub (A := A) : StarSubalgebra ℂ (lp (fun _ : Fin 2 => A) ∞)) : Set (lp (fun _ : Fin 2 => A) ∞)) := by
+    ext y
+    constructor
+    · rintro ⟨x, rfl⟩
+      rw [SetLike.mem_coe, mem_diagSub, hf'app, pairLp_apply_zero, pairLp_apply_one]
+    · intro hy
+      rw [SetLike.mem_coe, mem_diagSub] at hy
+      refine ⟨y, ?_⟩
+      have hfy : f y = (y : ∀ _ : Fin 2, A) 0 := by
+        conv_lhs => rw [← pairLp_eta y, ← hy]
+        exact hdiag _
+      have hyy : (pairLp ((y : ∀ _ : Fin 2, A) 0) ((y : ∀ _ : Fin 2, A) 0) : (lp (fun _ : Fin 2 => A) ∞)) = y := by
+        conv_rhs => rw [← pairLp_eta y]
+        rw [hy]
+      rw [hf'app, hfy, hyy]
+  have hproj : ∀ x : (lp (fun _ : Fin 2 => A) ∞), f' (f' x) = f' x := by
+    intro x
+    rw [hf'app, hf'app, hdiag]
+  have hnorm : ∀ x : (lp (fun _ : Fin 2 => A) ∞), ‖f' x‖ ≤ ‖x‖ := by
+    intro x
+    refine (norm_pairLp_le (f x)).trans ?_
+    have h := Theses.A.CStar.russo_dye_cor f hposmap x
+    rwa [hu, norm_one, one_mul] at h
+  have htom := tomiyama (diagSub (A := A)) isVNSubalgebra_diagSub f' hrange hproj hnorm
+  -- the thesis's `a f(c,d) = f(ac, ad)`
+  have hleft : ∀ a c d : A, a * f (pairLp c d) = f (pairLp (a * c) (a * d)) := by
+    intro a c d
+    have hmem : (pairLp a a : (lp (fun _ : Fin 2 => A) ∞)) ∈ (diagSub (A := A) : StarSubalgebra ℂ (lp (fun _ : Fin 2 => A) ∞)) := by
+      rw [mem_diagSub, pairLp_apply_zero, pairLp_apply_one]
+    have h := htom _ hmem (pairLp c d)
+    rw [hf'app, pairLp_mul, pairLp_mul, hf'app] at h
+    have h0 := congrArg (fun z : (lp (fun _ : Fin 2 => A) ∞) => (z : ∀ _ : Fin 2, A) 0) h
+    simpa only [pairLp_apply_zero] using h0
+  have hright : ∀ b c d : A, f (pairLp c d) * b = f (pairLp (c * b) (d * b)) := by
+    intro b c d
+    have h := hleft (star b) (star c) (star d)
+    have h2 := congrArg star h
+    rw [star_mul, star_star, ← hinv, ← hinv, pairLp_star, pairLp_star, star_star,
+      star_star, star_mul, star_mul, star_star, star_star, star_star] at h2
+    exact h2
+  refine ⟨?_, ?_⟩
+  · intro a _
+    have h1 := hleft a 1 0
+    have h2 := hright a 1 0
+    rw [mul_one, mul_zero] at h1
+    rw [one_mul, zero_mul] at h2
+    rw [h2, ← h1]
+  · intro a b
+    have hq : f (pairLp 0 1) = 1 - f (pairLp 1 0) := by
+      have hsum : (pairLp (1 : A) 0 : (lp (fun _ : Fin 2 => A) ∞)) + pairLp 0 1 = pairLp 1 1 := by
+        rw [pairLp_add, add_zero, zero_add]
+      have := congrArg f hsum
+      rw [map_add, hdiag] at this
+      linear_combination (norm := abel1) this
+    have h1 : a * f (pairLp 1 0) = f (pairLp a 0) := by
+      have := hleft a 1 0
+      rwa [mul_one, mul_zero] at this
+    have h2 : b * (1 - f (pairLp 1 0)) = f (pairLp 0 b) := by
+      rw [← hq]
+      have := hleft b 0 1
+      rwa [mul_zero, mul_one] at this
+    rw [h1, h2, ← map_add, pairLp_add, add_zero, zero_add]
 
 end Pairs
 

@@ -66,6 +66,360 @@ noncomputable def nmiuComp (g : NMIUMap B₁ C₁) (f : NMIUMap A₁ B₁) :
 
 end NmiuComp
 
+section DirectSums
+
+variable {I : Type*} {𝒜 : I → Type*} [∀ i, CStarAlgebra (𝒜 i)]
+  [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
+  [∀ i, StarOrderedRing (𝒜 i)]
+
+/-- Infrastructure: the coordinate projection `πⱼ : ⊕ᵢ 𝒜ᵢ → 𝒜ⱼ` as a
+∗-homomorphism.  (This is `Theses.A.VN.vn_products_proj_normal`'s companion;
+that file is closed for editing, so the two live here.) -/
+def lpEvalSAH (j : I) : lp 𝒜 ∞ →⋆ₐ[ℂ] 𝒜 j where
+  toFun a := (a : ∀ i, 𝒜 i) j
+  map_one' := by rw [lp.infty_coeFn_one]; rfl
+  map_mul' a b := by rw [lp.infty_coeFn_mul]; rfl
+  map_zero' := rfl
+  map_add' a b := by rw [lp.coeFn_add]; rfl
+  commutes' c := by
+    have h : ((algebraMap ℂ (lp 𝒜 ∞) c : lp 𝒜 ∞) : ∀ i, 𝒜 i)
+        = fun i => algebraMap ℂ (𝒜 i) c := by
+      rw [Algebra.algebraMap_eq_smul_one, lp.coeFn_smul, lp.infty_coeFn_one]
+      funext i
+      simp [Algebra.algebraMap_eq_smul_one]
+    exact congrFun h j
+  map_star' a := by rw [lp.coeFn_star]; rfl
+
+omit [∀ i, PartialOrder (𝒜 i)] [∀ i, StarOrderedRing (𝒜 i)] in
+@[simp] theorem lpEvalSAH_apply (j : I) (a : lp 𝒜 ∞) :
+    lpEvalSAH j a = (a : ∀ i, 𝒜 i) j := rfl
+
+/-- Infrastructure (= **47IV**.2, `Theses.A.VN.vn_products_proj_normal`,
+which is `sorry`ed in the closed file `A/VN/Basic.lean`): the coordinate
+projections of a direct sum of von Neumann algebras are normal.  Immediate
+from `lp_infty_exists_isLUB`, which says the suprema of `lp 𝒜 ∞` are
+computed coordinatewise. -/
+theorem lpEval_preservesDirSups [∀ i, VonNeumannAlgebra (𝒜 i)] (j : I) :
+    PreservesDirSups fun a : lp 𝒜 ∞ => (a : ∀ i, 𝒜 i) j := by
+  intro D s hne hdir hlub
+  obtain ⟨s', hs', hev⟩ := lp_infty_exists_isLUB D hne hdir ⟨s, hlub.1⟩
+  obtain rfl := hlub.unique hs'
+  have h := isLUB_coe_of_isLUB (hne.image (lpEvalSA j)) (hev j)
+  rwa [Set.image_image] at h
+
+/-- Infrastructure (= **47IV**.3, `Theses.A.VN.vn_products_nmiu`, which is
+`sorry`ed in the closed file `A/VN/Basic.lean`): `⊕ᵢ 𝒜ᵢ` is the product in
+`W*_miu`.  Note this needs *no* `VonNeumannAlgebra` hypothesis anywhere:
+the ∗-algebra part is **20aI** `cstar_product_2_miu` and normality of the
+mediating map follows from normality of the `fᵢ` because the order on
+`lp 𝒜 ∞` is pointwise. -/
+theorem lpProd_nmiu {B : Type*} [CStarAlgebra B] [PartialOrder B]
+    [StarOrderedRing B] (f : ∀ i, NMIUMap B (𝒜 i)) :
+    ∃! g : NMIUMap B (lp 𝒜 ∞), ∀ (j : I) (b : B),
+      ((g b : lp 𝒜 ∞) : ∀ i, 𝒜 i) j = f j b := by
+  obtain ⟨g₀, hg₀, -⟩ :=
+    Theses.A.CStar.cstar_product_2_miu (fun i => (f i).toStarAlgHom)
+  have hnorm : PreservesDirSups ⇑g₀ := by
+    intro D s hne hdir hlub
+    have key : ∀ (j : I) (d : selfAdjoint B),
+        ((g₀ (d : B) : lp 𝒜 ∞) : ∀ i, 𝒜 i) j = f j (d : B) := fun j d => hg₀ j _
+    constructor
+    · rintro _ ⟨d, hd, rfl⟩
+      rw [lp_infty_le_iff]
+      intro j
+      rw [key j d, key j s]
+      exact ((f j).preservesDirSups' D s hne hdir hlub).1 ⟨d, hd, rfl⟩
+    · intro u hu
+      rw [lp_infty_le_iff]
+      intro j
+      rw [key j s]
+      refine ((f j).preservesDirSups' D s hne hdir hlub).2 ?_
+      rintro _ ⟨d, hd, rfl⟩
+      have hd' := (lp_infty_le_iff _ _).mp (hu ⟨d, hd, rfl⟩) j
+      rwa [key j d] at hd'
+  refine ⟨⟨g₀, hnorm⟩, hg₀, ?_⟩
+  intro g' hg'
+  apply DFunLike.coe_injective
+  funext b
+  apply lp.ext
+  funext j
+  rw [hg' j b]
+  exact (hg₀ j b).symm
+
+/-! ### The coprojections `κᵢ : 𝒜ᵢ → ⊕ⱼ 𝒜ⱼ`
+
+Infrastructure for **122IV** (`nmiu-functional-product`): the *nmisu*-maps
+`κᵢ` of proc.tex:4595, the finite partial sums `∑_{j ∈ F} κⱼ(1)` (whose
+supremum is `1`), and the fact that an nmiu-functional is `1` on exactly one
+`κᵢ(1)`. -/
+
+open Classical in
+def lpKappa (i : I) (a : 𝒜 i) : lp 𝒜 ∞ := lp.single ∞ i a
+
+omit [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
+  [∀ i, StarOrderedRing (𝒜 i)] in
+open Classical in
+theorem lpKappa_mul_left (i : I) (x : lp 𝒜 ∞) :
+    lpKappa i (1 : 𝒜 i) * x = lpKappa i ((x : ∀ j, 𝒜 j) i) := by
+  apply lp.ext
+  funext j
+  rw [lp.infty_coeFn_mul]
+  simp only [lpKappa, lp.coeFn_single, Pi.mul_apply]
+  by_cases h : j = i
+  · subst h; simp
+  · simp [h]
+
+omit [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
+  [∀ i, StarOrderedRing (𝒜 i)] in
+open Classical in
+theorem lpKappa_mul (i : I) (a b : 𝒜 i) :
+    lpKappa i a * lpKappa i b = lpKappa i (a * b) := by
+  apply lp.ext
+  funext j
+  rw [lp.infty_coeFn_mul]
+  simp only [lpKappa, lp.coeFn_single, Pi.mul_apply]
+  by_cases h : j = i
+  · subst h; simp
+  · simp [h]
+
+omit [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
+  [∀ i, StarOrderedRing (𝒜 i)] in
+open Classical in
+theorem lpKappa_sa (i : I) : IsSelfAdjoint (lpKappa i (1 : 𝒜 i)) := by
+  show star _ = _
+  apply lp.ext
+  funext j
+  rw [lp.coeFn_star]
+  simp only [lpKappa, lp.coeFn_single, Pi.star_apply]
+  by_cases h : j = i
+  · subst h; simp
+  · simp [h]
+
+open Classical in
+noncomputable def lpSumSA (F : Finset I) : selfAdjoint (lp 𝒜 ∞) :=
+  ⟨∑ j ∈ F, lpKappa j (1 : 𝒜 j), by
+    show star _ = _
+    rw [star_sum]
+    exact Finset.sum_congr rfl fun j _ => lpKappa_sa j⟩
+
+omit [∀ i, PartialOrder (𝒜 i)] [∀ i, StarOrderedRing (𝒜 i)] in
+open Classical in
+theorem lpSumSA_apply (F : Finset I) (i : I) :
+    (((lpSumSA F : selfAdjoint (lp 𝒜 ∞)) : lp 𝒜 ∞) : ∀ k, 𝒜 k) i
+      = if i ∈ F then 1 else 0 := by
+  have h := map_sum (lpEvalSAH (𝒜 := 𝒜) i) (fun j => lpKappa j (1 : 𝒜 j)) F
+  simp only [lpEvalSAH_apply] at h
+  show ((∑ j ∈ F, lpKappa j (1 : 𝒜 j) : lp 𝒜 ∞) : ∀ k, 𝒜 k) i = _
+  rw [h]
+  simp only [lpKappa, lp.coeFn_single]
+  exact Finset.sum_pi_single i (fun _ => 1) F
+
+open Classical in
+theorem lpSumSA_isLUB :
+    IsLUB (Set.range (lpSumSA (𝒜 := 𝒜))) ⟨1, IsSelfAdjoint.one _⟩ := by
+  have hone : ∀ i : I, ((1 : lp 𝒜 ∞) : ∀ k, 𝒜 k) i = 1 := by
+    intro i; rw [lp.infty_coeFn_one]; rfl
+  constructor
+  · rintro _ ⟨F, rfl⟩
+    rw [← Subtype.coe_le_coe, lp_infty_le_iff]
+    intro i
+    rw [lpSumSA_apply]
+    show _ ≤ ((1 : lp 𝒜 ∞) : ∀ k, 𝒜 k) i
+    rw [hone]
+    split
+    · exact le_rfl
+    · exact zero_le_one
+  · intro u hu
+    rw [← Subtype.coe_le_coe, lp_infty_le_iff]
+    intro i
+    have h := (lp_infty_le_iff _ _).mp (Subtype.coe_le_coe.mpr (hu ⟨{i}, rfl⟩)) i
+    rw [lpSumSA_apply] at h
+    simp only [Finset.mem_singleton] at h
+    show ((1 : lp 𝒜 ∞) : ∀ k, 𝒜 k) i ≤ _
+    rw [hone]
+    exact h
+
+open Classical in
+theorem exists_kappa_one (φ : NMIUMap (lp 𝒜 ∞) ℂ) :
+    ∃ i, φ (lpKappa i (1 : 𝒜 i)) = 1 := by
+  have hψ : ∀ x : lp 𝒜 ∞, φ x = φ.toStarAlgHom x := fun _ => rfl
+  by_contra hcon
+  simp only [not_exists] at hcon
+  have hzero : ∀ j, φ (lpKappa j (1 : 𝒜 j)) = 0 := by
+    intro j
+    have hid : φ (lpKappa j (1 : 𝒜 j)) * φ (lpKappa j (1 : 𝒜 j))
+        = φ (lpKappa j (1 : 𝒜 j)) := by
+      rw [hψ, ← map_mul φ.toStarAlgHom, lpKappa_mul, mul_one]
+    have h0 : φ (lpKappa j (1 : 𝒜 j)) * (φ (lpKappa j (1 : 𝒜 j)) - 1) = 0 := by
+      linear_combination hid
+    rcases mul_eq_zero.mp h0 with h | h
+    · exact h
+    · exact absurd (by linear_combination h) (hcon j)
+  have hne : (Set.range (lpSumSA (𝒜 := 𝒜))).Nonempty := ⟨_, ⟨∅, rfl⟩⟩
+  have hmono : ∀ {F G : Finset I}, F ⊆ G → lpSumSA (𝒜 := 𝒜) F ≤ lpSumSA G := by
+    intro F G hFG
+    rw [← Subtype.coe_le_coe, lp_infty_le_iff]
+    intro i
+    rw [lpSumSA_apply, lpSumSA_apply]
+    split <;> split
+    · exact le_rfl
+    · exact absurd (hFG ‹_›) ‹_›
+    · exact zero_le_one
+    · exact le_rfl
+  have hdir : DirectedOn (· ≤ ·) (Set.range (lpSumSA (𝒜 := 𝒜))) := by
+    rintro _ ⟨F, rfl⟩ _ ⟨G, rfl⟩
+    exact ⟨lpSumSA (F ∪ G), ⟨F ∪ G, rfl⟩, hmono Finset.subset_union_left,
+      hmono Finset.subset_union_right⟩
+  have hlub := φ.preservesDirSups' _ _ hne hdir lpSumSA_isLUB
+  have himg : ((fun d : selfAdjoint (lp 𝒜 ∞) => φ.toStarAlgHom (d : lp 𝒜 ∞)) ''
+      Set.range (lpSumSA (𝒜 := 𝒜))) = {0} := by
+    ext z
+    simp only [Set.mem_image, Set.mem_range, Set.mem_singleton_iff]
+    constructor
+    · rintro ⟨_, ⟨F, rfl⟩, rfl⟩
+      show φ.toStarAlgHom (∑ j ∈ F, lpKappa j (1 : 𝒜 j)) = 0
+      rw [map_sum φ.toStarAlgHom]
+      exact Finset.sum_eq_zero fun j _ => (hψ _) ▸ hzero j
+    · rintro rfl
+      refine ⟨lpSumSA ∅, ⟨∅, rfl⟩, ?_⟩
+      show φ.toStarAlgHom (∑ j ∈ (∅ : Finset I), lpKappa j (1 : 𝒜 j)) = 0
+      simp
+  rw [himg] at hlub
+  have h1 : φ.toStarAlgHom ((⟨1, IsSelfAdjoint.one _⟩ : selfAdjoint (lp 𝒜 ∞))
+      : lp 𝒜 ∞) = 1 := map_one φ.toStarAlgHom
+  rw [h1] at hlub
+  have hle : (1 : ℂ) ≤ 0 := hlub.2 (fun z hz => le_of_eq hz)
+  exact absurd hle (by simp [Complex.le_def])
+
+omit [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
+  [∀ i, StarOrderedRing (𝒜 i)] in
+open Classical in
+theorem lpKappa_star (i : I) (a : 𝒜 i) :
+    star (lpKappa i a) = lpKappa i (star a) := by
+  apply lp.ext
+  funext j
+  rw [lp.coeFn_star]
+  simp only [lpKappa, lp.coeFn_single, Pi.star_apply]
+  by_cases h : j = i
+  · subst h; simp
+  · simp [h]
+
+omit [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
+  [∀ i, StarOrderedRing (𝒜 i)] in
+open Classical in
+theorem lpKappa_apply_self (i : I) (a : 𝒜 i) :
+    ((lpKappa i a : lp 𝒜 ∞) : ∀ j, 𝒜 j) i = a := lp.single_apply_self _ _ _
+
+omit [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
+  [∀ i, StarOrderedRing (𝒜 i)] in
+open Classical in
+theorem lpKappa_apply_ne (i : I) (a : 𝒜 i) {j : I} (h : j ≠ i) :
+    ((lpKappa i a : lp 𝒜 ∞) : ∀ k, 𝒜 k) j = 0 := lp.single_apply_ne _ _ _ h
+
+omit [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
+  [∀ i, StarOrderedRing (𝒜 i)] in
+open Classical in
+theorem lpKappa_sa' (i : I) {a : 𝒜 i} (ha : IsSelfAdjoint a) :
+    IsSelfAdjoint (lpKappa i a) := by
+  show star _ = _
+  rw [lpKappa_star, ha.star_eq]
+
+open Classical in
+theorem lpKappa_le (i : I) {a b : 𝒜 i} (h : a ≤ b) :
+    lpKappa i a ≤ lpKappa i b := by
+  rw [lp_infty_le_iff]
+  intro j
+  by_cases hj : j = i
+  · subst hj; rw [lpKappa_apply_self, lpKappa_apply_self]; exact h
+  · rw [lpKappa_apply_ne _ _ hj, lpKappa_apply_ne _ _ hj]
+
+
+/-- **122IV** (`nmiu-functional-product`, proc.tex:4585, Lemma), in its
+universe-polymorphic form: an nmiu-functional on a direct sum `⊕ᵢ 𝒜ᵢ`
+factors as `φ' ∘ πᵢ`.  (The statement `nmiu_functional_product` below is
+this one; it is restated there because the section it belongs to fixes
+`𝒜 : I → Type u`, which excludes `ℓ^∞(X) = ⊕_{x ∈ X} ℂ`.)
+
+Following proc.tex:4595, except that the thesis's step `φ(eᵢ^⊥) = 0` is
+replaced by the observation that `φ(x) = φ(eᵢ)φ(x)` is immediate from
+multiplicativity once `φ(eᵢ) = 1`; and the existence of an `i` with
+`φ(eᵢ) = 1` — which the thesis leaves implicit — is where normality is
+used: `1 = ⋁_F ∑_{j ∈ F} eⱼ` is a directed supremum. -/
+theorem lp_nmiu_functional_factors (φ : NMIUMap (lp 𝒜 ∞) ℂ) :
+    ∃ (i : I) (φ' : NMIUMap (𝒜 i) ℂ),
+      ∀ x : lp 𝒜 ∞, φ x = φ' ((x : ∀ j, 𝒜 j) i) := by
+  classical
+  classical
+  obtain ⟨i, hi⟩ := exists_kappa_one φ
+  have hψ : ∀ x : lp 𝒜 ∞, φ x = φ.toStarAlgHom x := fun _ => rfl
+  refine ⟨i, ⟨{ toFun := fun a => φ (lpKappa i a)
+                map_one' := hi
+                map_mul' := fun a b => by
+                  rw [← lpKappa_mul, hψ, hψ, hψ, map_mul]
+                map_zero' := by
+                  rw [hψ]
+                  show φ.toStarAlgHom (lp.single ∞ i (0 : 𝒜 i)) = 0
+                  rw [lp.single_zero, map_zero]
+                map_add' := fun a b => by
+                  rw [hψ, hψ, hψ]
+                  show φ.toStarAlgHom (lp.single ∞ i (a + b)) = _
+                  rw [lp.single_add, map_add]
+                  rfl
+                commutes' := fun c => by
+                  rw [Algebra.algebraMap_eq_smul_one]
+                  show φ (lp.single ∞ i (c • (1 : 𝒜 i))) = _
+                  rw [lp.single_smul, hψ, map_smul]
+                  show c • φ (lpKappa i (1 : 𝒜 i)) = _
+                  rw [hi, smul_eq_mul, mul_one]
+                  simp
+                map_star' := fun a => by
+                  rw [hψ, hψ, ← lpKappa_star, map_star] }, ?_⟩, ?_⟩
+  · -- normality
+    intro D s hne hdir hlub
+    set κ : selfAdjoint (𝒜 i) → selfAdjoint (lp 𝒜 ∞) :=
+      fun d => ⟨lpKappa i (d : 𝒜 i), lpKappa_sa' i d.2⟩ with hκ
+    have hκmono : ∀ {a b : selfAdjoint (𝒜 i)}, a ≤ b → κ a ≤ κ b := by
+      intro a b h
+      rw [← Subtype.coe_le_coe]
+      exact lpKappa_le i (Subtype.coe_le_coe.mpr h)
+    have hlub' : IsLUB (κ '' D) (κ s) := by
+      constructor
+      · rintro _ ⟨d, hd, rfl⟩
+        exact hκmono (hlub.1 hd)
+      · intro u hu
+        obtain ⟨d₀, hd₀⟩ := hne
+        rw [← Subtype.coe_le_coe, lp_infty_le_iff]
+        intro j
+        by_cases hj : j = i
+        · subst hj
+          rw [hκ]
+          simp only
+          rw [lpKappa_apply_self]
+          have hub : (⟨((u : lp 𝒜 ∞) : ∀ k, 𝒜 k) j,
+              lp_infty_isSelfAdjoint u.2 j⟩ : selfAdjoint (𝒜 j)) ∈ upperBounds D := by
+            intro d hd
+            have := (lp_infty_le_iff _ _).mp (Subtype.coe_le_coe.mpr (hu ⟨d, hd, rfl⟩)) j
+            rw [← Subtype.coe_le_coe]
+            simpa [hκ, lpKappa_apply_self] using this
+          exact hlub.2 hub
+        · rw [hκ]
+          simp only
+          rw [lpKappa_apply_ne _ _ hj]
+          have := (lp_infty_le_iff _ _).mp (Subtype.coe_le_coe.mpr (hu ⟨d₀, hd₀, rfl⟩)) j
+          rwa [show ((κ d₀ : selfAdjoint (lp 𝒜 ∞)) : lp 𝒜 ∞) = lpKappa i (d₀ : 𝒜 i) from rfl,
+            lpKappa_apply_ne _ _ hj] at this
+    have h := φ.preservesDirSups' (κ '' D) (κ s) (hne.image _) ?_ hlub'
+    · rwa [Set.image_image] at h
+    · rintro _ ⟨x, hx, rfl⟩ _ ⟨y, hy, rfl⟩
+      obtain ⟨z, hz, hxz, hyz⟩ := hdir x hx y hy
+      exact ⟨κ z, ⟨z, hz, rfl⟩, hκmono hxz, hκmono hyz⟩
+  · intro x
+    show φ x = φ (lpKappa i ((x : ∀ j, 𝒜 j) i))
+    rw [← lpKappa_mul_left, hψ, hψ, map_mul,
+      show φ.toStarAlgHom (lpKappa i (1 : 𝒜 i)) = 1 from hi, one_mul]
+
+end DirectSums
+
 variable (X : Type u) in
 /-- The commutative von Neumann algebra `ℓ^∞(X)` of bounded functions on a
 set `X`, as the `X`-fold direct sum of copies of `ℂ` (vn.tex 50I). -/
@@ -122,11 +476,16 @@ noncomputable def nspMap (f : NMIUMap A B) (φ : nsp B) : nsp A :=
 well-definedness of the unit: for `x ∈ X` evaluation at `x` is an
 nmiu-functional on `ℓ^∞(X)`. -/
 theorem exists_linfEval (X : Type u) (x : X) :
-    ∃ φ : NMIUMap (linf X) ℂ, ∀ f : linf X, φ f = f x := sorry
+    ∃ φ : NMIUMap (linf X) ℂ, ∀ f : linf X, φ f = f x :=
+  ⟨⟨lpEvalSAH x, lpEval_preservesDirSups x⟩, fun _ => rfl⟩
 
 /-- The unit `η : X → nsp(ℓ^∞(X))`, `η(x)(h) = h(x)` (122II). -/
 noncomputable def linfEval (X : Type u) (x : X) : nsp (linf X) :=
   (exists_linfEval X x).choose
+
+theorem linfEval_apply (X : Type u) (x : X) (f : linf X) :
+    linfEval X x f = (f : ∀ _ : X, ℂ) x :=
+  (exists_linfEval X x).choose_spec f
 
 /-- **122II** (`first-adjunction`, proc.tex:4493, Proposition): the map
 `η : X → nsp(ℓ^∞(X))` is universal: for every map `f : X → nsp(𝒜)` there
@@ -136,14 +495,21 @@ is a unique nmiu-map `g : 𝒜 → ℓ^∞(X)` with `nsp(g) ∘ η = f`.  (Hence
 theorem first_adjunction [VonNeumannAlgebra A] (X : Type u)
     (f : X → nsp A) :
     ∃! g : NMIUMap A (linf X),
-      ∀ (x : X) (a : A), (f x) a = linfEval X x (g a) := sorry
+      ∀ (x : X) (a : A), (f x) a = linfEval X x (g a) := by
+  obtain ⟨g, hg, huniq⟩ := lpProd_nmiu (𝒜 := fun _ : X => ℂ) f
+  refine ⟨g, fun x a => ?_, fun g' hg' => huniq g' fun x a => ?_⟩
+  · rw [linfEval_apply, hg x a]
+  · rw [← linfEval_apply, ← hg' x a]
 
 /-- **122II** (`first-adjunction`, proc.tex:4493, Proposition), the
 functor `ℓ^∞` on maps: `ℓ^∞(f)(h) = h ∘ f` is an nmiu-map
 `ℓ^∞(Y) → ℓ^∞(X)`. -/
 theorem exists_linfMap {X Y : Type u} (f : X → Y) :
     ∃ h : NMIUMap (linf Y) (linf X),
-      ∀ (g : linf Y) (x : X), h g x = g (f x) := sorry
+      ∀ (g : linf Y) (x : X), h g x = g (f x) := by
+  obtain ⟨h, hh, -⟩ :=
+    lpProd_nmiu (𝒜 := fun _ : X => ℂ) (fun x => linfEval Y (f x))
+  exact ⟨h, fun g x => (hh x g).trans (linfEval_apply Y (f x) g)⟩
 
 /-- The nmiu-map `ℓ^∞(f) : ℓ^∞(Y) → ℓ^∞(X)` for `f : X → Y` (122II). -/
 noncomputable def linfMap {X Y : Type u} (f : X → Y) :
@@ -157,30 +523,99 @@ variable {I : Type u} (𝒜 : I → Type u) [∀ i, CStarAlgebra (𝒜 i)]
 
 /-- **122IV** (`nmiu-functional-product`, proc.tex:4585, Lemma): an
 nmiu-functional on a direct sum `⊕ᵢ 𝒜ᵢ` is of the form `φ' ∘ πᵢ` for
-some `i` and nmiu-functional `φ'` on `𝒜ᵢ`. -/
+some `i` and nmiu-functional `φ'` on `𝒜ᵢ`.
+
+*Hypothesis not used*: the proof never needs the summands to be von Neumann
+algebras — normality of `φ` alone does the work (the `unusedSectionVars`
+warning is left in place as the evidence).  The universe-polymorphic form is
+`lp_nmiu_functional_factors` above; only that form applies to `ℓ^∞(X)`. -/
 theorem nmiu_functional_product (φ : NMIUMap (lp 𝒜 ∞) ℂ) :
     ∃ (i : I) (φ' : NMIUMap (𝒜 i) ℂ), ∀ x : lp 𝒜 ∞, φ x = φ' (x i) :=
-  sorry
+  lp_nmiu_functional_factors φ
+
 
 /-- **122VI** (`cor:linf-ff`, proc.tex:4612, Exercise), part 1: the
 functor `nsp` preserves coproducts: every nmiu-functional on `⊕ᵢ 𝒜ᵢ`
 factors through exactly one summand. -/
 theorem cor_linf_ff_1 (φ : NMIUMap (lp 𝒜 ∞) ℂ) :
-    ∃! p : Σ i : I, nsp (𝒜 i), ∀ x : lp 𝒜 ∞, φ x = p.2 (x p.1) := sorry
+    ∃! p : Σ i : I, nsp (𝒜 i), ∀ x : lp 𝒜 ∞, φ x = p.2 (x p.1) := by
+  classical
+  obtain ⟨i, φ', hφ'⟩ := nmiu_functional_product 𝒜 φ
+  have hone : φ (lpKappa i (1 : 𝒜 i)) = 1 := by
+    rw [hφ' (lpKappa i 1), lpKappa_apply_self]
+    exact map_one φ'.toStarAlgHom
+  refine ⟨⟨i, φ'⟩, hφ', ?_⟩
+  rintro ⟨j, ψ⟩ hψ
+  replace hψ : ∀ x : lp 𝒜 ∞, φ x = ψ ((x : ∀ k, 𝒜 k) j) := hψ
+  obtain rfl : j = i := by
+    by_contra hne
+    have h := hψ (lpKappa i (1 : 𝒜 i))
+    have hz : ψ (0 : 𝒜 j) = 0 := map_zero ψ.toStarAlgHom
+    rw [lpKappa_apply_ne i 1 hne, hz, hone] at h
+    exact one_ne_zero h
+  have hcoe : ψ = φ' := by
+    apply DFunLike.coe_injective
+    funext a
+    have h1 := hψ (lpKappa j a)
+    have h2 := hφ' (lpKappa j a)
+    rw [lpKappa_apply_self] at h1 h2
+    rw [← h1, ← h2]
+  rw [hcoe]
 
 end Sums
 
 /-- **122VI** (`cor:linf-ff`, proc.tex:4612, Exercise), part 2: the unit
 `η : X → nsp(ℓ^∞(X))` is a bijection. -/
-theorem cor_linf_ff_2 (X : Type u) : Function.Bijective (linfEval X) :=
-  sorry
+theorem cor_linf_ff_2 (X : Type u) : Function.Bijective (linfEval X) := by
+  classical
+  have hid : ∀ (ψ : NMIUMap ℂ ℂ) (c : ℂ), ψ c = c := fun ψ c => by
+    have h : ψ.toStarAlgHom c = c := by simpa using ψ.toStarAlgHom.commutes c
+    exact h
+  constructor
+  · intro x y hxy
+    by_contra hne
+    have h := congrArg (fun φ : nsp (linf X) => φ (lpKappa (𝒜 := fun _ : X => ℂ) x 1)) hxy
+    simp only [linfEval_apply] at h
+    rw [lpKappa_apply_self, lpKappa_apply_ne x 1 (Ne.symm hne)] at h
+    exact one_ne_zero h
+  · intro φ
+    obtain ⟨i, φ', hφ'⟩ := lp_nmiu_functional_factors (𝒜 := fun _ : X => ℂ) φ
+    refine ⟨i, ?_⟩
+    apply DFunLike.coe_injective
+    funext f
+    rw [linfEval_apply, hφ' f, hid φ']
 
 /-- **122VI** (`cor:linf-ff`, proc.tex:4612, Exercise), part 3: the
 functor `ℓ^∞ : Set → (W*_miu)^op` is full and faithful; whence `Set` is
 (isomorphic to) a coreflective subcategory of `(W*_miu)^op`. -/
 theorem cor_linf_ff_3 (X Y : Type u) :
     Function.Injective (linfMap : (X → Y) → NMIUMap (linf Y) (linf X)) ∧
-      ∀ h : NMIUMap (linf Y) (linf X), ∃ f : X → Y, h = linfMap f := sorry
+      ∀ h : NMIUMap (linf Y) (linf X), ∃ f : X → Y, h = linfMap f := by
+  classical
+  have hspec : ∀ (f : X → Y) (g : linf Y) (x : X),
+      ((linfMap f g : linf X) : ∀ _ : X, ℂ) x = (g : ∀ _ : Y, ℂ) (f x) :=
+    fun f => (exists_linfMap f).choose_spec
+  refine ⟨fun f g hfg => ?_, fun h => ?_⟩
+  · funext x
+    by_contra hne
+    have h1 := hspec f (lpKappa (𝒜 := fun _ : Y => ℂ) (f x) 1) x
+    have h2 := hspec g (lpKappa (𝒜 := fun _ : Y => ℂ) (f x) 1) x
+    rw [hfg, h2, lpKappa_apply_ne _ _ (Ne.symm hne)] at h1
+    rw [lpKappa_apply_self] at h1
+    exact one_ne_zero h1.symm
+  · choose f hf using fun x => (cor_linf_ff_2 Y).2 (nmiuComp (linfEval X x) h)
+    refine ⟨f, ?_⟩
+    apply DFunLike.coe_injective
+    funext g
+    apply lp.ext
+    funext x
+    rw [hspec f g x]
+    have hx : linfEval Y (f x) g = nmiuComp (linfEval X x) h g :=
+      congrArg (fun ψ : nsp (linf Y) => ψ g) (hf x)
+    rw [linfEval_apply,
+      show nmiuComp (linfEval X x) h g = linfEval X x (h g) from rfl,
+      linfEval_apply] at hx
+    exact hx.symm
 
 /-! ## Parsec 1230: `ℓ^∞` and `nsp` are strong monoidal -/
 
@@ -194,7 +629,13 @@ theorem linf_generated (X : Type u) [DecidableEq X] :
 nmiu-functionals on `ℓ^∞(X)`. -/
 theorem linf_projections_order_separating (X : Type u) (f g : linf X)
     (hf : IsSelfAdjoint f) (hg : IsSelfAdjoint g)
-    (h : ∀ x : X, (f x).re ≤ (g x).re) : f ≤ g := sorry
+    (h : ∀ x : X, (f x).re ≤ (g x).re) : f ≤ g := by
+  rw [lp_infty_le_iff]
+  intro x
+  rw [Complex.le_def]
+  refine ⟨h x, ?_⟩
+  rw [Complex.conj_eq_iff_im.mp (lp_infty_isSelfAdjoint hf x),
+    Complex.conj_eq_iff_im.mp (lp_infty_isSelfAdjoint hg x)]
 
 /-- **123I** (proc.tex:4628, Exercise), part 3: the map
 `⊗ : ℓ^∞(X) × ℓ^∞(Y) → ℓ^∞(X × Y)`, `(f ⊗ g)(x,y) = f(x)g(y)` is a
