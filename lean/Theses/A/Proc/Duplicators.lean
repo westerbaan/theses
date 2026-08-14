@@ -92,7 +92,136 @@ theorem tomiyama [VonNeumannAlgebra A] (S : StarSubalgebra ℂ A)
     (hS : IsVNSubalgebra A S) (f : A →ₗ[ℂ] A)
     (hrange : Set.range ⇑f = (S : Set A)) (hproj : ∀ a, f (f a) = f a)
     (hnorm : ∀ a, ‖f a‖ ≤ ‖a‖) :
-    ∀ b ∈ S, ∀ a : A, b * f a = f (b * a) := sorry
+    ∀ b ∈ S, ∀ a : A, b * f a = f (b * a) := by
+  -- `f` lands in `ℬ = S`, and fixes it pointwise (`f` is surjective onto `S`
+  -- and idempotent).
+  have hfS : ∀ x : A, f x ∈ S := by
+    intro x
+    have : f x ∈ (S : Set A) := by rw [← hrange]; exact Set.mem_range_self x
+    simpa using this
+  have hfix : ∀ x ∈ S, f x = x := by
+    intro x hx
+    have hx' : x ∈ Set.range ⇑f := by rw [hrange]; simpa using hx
+    obtain ⟨y, hy⟩ := hx'
+    rw [← hy, hproj]
+  have hfc : Continuous ⇑f := by
+    refine AddMonoidHomClass.continuous_of_bound f 1 fun x => ?_
+    simpa using hnorm x
+  -- **The heart of the argument**: `e^⊥ f(ea) = 0` for a projection `e ∈ ℬ`.
+  have key : ∀ e : A, IsStarProjection e → e ∈ S → ∀ a : A,
+      (1 - e) * f (e * a) = 0 := by
+    intro e he heS a
+    have hep : IsStarProjection (1 - e) := he.one_sub
+    set c : A := (1 - e) * f (e * a) with hcdef
+    -- `c ∈ ℬ`, hence `f(c) = c`; this is what makes the estimate close.
+    have hcS : c ∈ S := by
+      rw [hcdef]; exact mul_mem (sub_mem (one_mem S) heS) (hfS _)
+    have hfcc : f c = c := hfix c hcS
+    have hpc : (1 - e) * c = c := by
+      rw [hcdef, ← mul_assoc, hep.isIdempotentElem.eq]
+    have hec : e * c = 0 := by
+      rw [hcdef, ← mul_assoc, mul_sub, mul_one, he.isIdempotentElem.eq, sub_self,
+        zero_mul]
+    have hcestar : star c * e = 0 := by
+      have h0 : star (e * c) = 0 := by rw [hec, star_zero]
+      rwa [star_mul, he.isSelfAdjoint.star_eq] at h0
+    have hxc : star (e * a) * c = 0 := by
+      rw [star_mul, he.isSelfAdjoint.star_eq, mul_assoc, hec, mul_zero]
+    have hce : star c * (e * a) = 0 := by rw [← mul_assoc, hcestar, zero_mul]
+    -- `(1 + 2t)‖c‖² ≤ ‖ea‖²` for every `t ≥ 0`.
+    have main : ∀ t : ℝ, 0 ≤ t → (1 + 2 * t) * ‖c‖ ^ 2 ≤ ‖e * a‖ ^ 2 := by
+      intro t ht
+      set x : A := e * a + (t : ℂ) • c with hxdef
+      have hfx : f x = f (e * a) + (t : ℂ) • c := by
+        rw [hxdef, map_add, map_smul, hfcc]
+      have hlhs : (1 - e) * f x = c + (t : ℂ) • c := by
+        rw [hfx, mul_add, mul_smul_comm, hpc, ← hcdef]
+      have e0 : c + (t : ℂ) • c = ((1 + t : ℝ) : ℂ) • c := by
+        push_cast
+        rw [add_smul, one_smul]
+      have e1 : ‖c + (t : ℂ) • c‖ = (1 + t) * ‖c‖ := by
+        rw [e0, norm_smul, Complex.norm_real, Real.norm_eq_abs,
+          abs_of_nonneg (by linarith : (0:ℝ) ≤ 1 + t)]
+      have hn1 : (1 + t) * ‖c‖ ≤ ‖x‖ := by
+        calc (1 + t) * ‖c‖ = ‖(1 - e) * f x‖ := by rw [hlhs, e1]
+          _ ≤ ‖(1 - e : A)‖ * ‖f x‖ := norm_mul_le _ _
+          _ ≤ 1 * ‖x‖ :=
+              mul_le_mul (IsStarProjection.norm_le _ hep) (hnorm x)
+                (norm_nonneg _) zero_le_one
+          _ = ‖x‖ := one_mul _
+      have hstx : star x = star (e * a) + (t : ℂ) • star c := by
+        rw [hxdef, star_add, star_smul]
+        simp
+      have hexp : star x * x
+          = star (e * a) * (e * a) + ((t : ℂ) * (t : ℂ)) • (star c * c) := by
+        conv_lhs => rw [hstx, hxdef]
+        simp only [add_mul, mul_add, smul_mul_assoc, mul_smul_comm, hxc, hce,
+          smul_zero, add_zero, zero_add, smul_smul]
+      have hn2 : ‖x‖ ^ 2 ≤ ‖e * a‖ ^ 2 + t ^ 2 * ‖c‖ ^ 2 := by
+        have hnx : ‖x‖ ^ 2 = ‖star x * x‖ := by
+          rw [CStarRing.norm_star_mul_self]; ring
+        rw [hnx, hexp]
+        calc ‖star (e * a) * (e * a) + ((t : ℂ) * (t : ℂ)) • (star c * c)‖
+            ≤ ‖star (e * a) * (e * a)‖ + ‖((t : ℂ) * (t : ℂ)) • (star c * c)‖ :=
+              norm_add_le _ _
+          _ = ‖e * a‖ ^ 2 + t ^ 2 * ‖c‖ ^ 2 := by
+              rw [CStarRing.norm_star_mul_self, norm_smul,
+                CStarRing.norm_star_mul_self]
+              simp only [norm_mul, Complex.norm_real, Real.norm_eq_abs]
+              rw [abs_mul_abs_self]
+              ring
+      have hsq : ((1 + t) * ‖c‖) ^ 2 ≤ ‖x‖ ^ 2 :=
+        pow_le_pow_left₀ (by positivity) hn1 2
+      nlinarith [hsq, hn2]
+    -- letting `t → ∞` forces `c = 0`
+    by_contra hne
+    have hcpos : (0:ℝ) < ‖c‖ ^ 2 := by
+      have : 0 < ‖c‖ := norm_pos_iff.mpr hne
+      positivity
+    have h := main (‖e * a‖ ^ 2 / ‖c‖ ^ 2) (by positivity)
+    have hkey : ‖c‖ ^ 2 + 2 * ‖e * a‖ ^ 2 ≤ ‖e * a‖ ^ 2 := by
+      calc ‖c‖ ^ 2 + 2 * ‖e * a‖ ^ 2
+          = (1 + 2 * (‖e * a‖ ^ 2 / ‖c‖ ^ 2)) * ‖c‖ ^ 2 := by
+            field_simp
+        _ ≤ ‖e * a‖ ^ 2 := h
+    nlinarith [hcpos, sq_nonneg ‖e * a‖]
+  -- the set of `b` intertwining `f` is a norm-closed `ℂ`-subspace …
+  set V : Submodule ℂ A :=
+    { carrier := {b : A | ∀ a : A, b * f a = f (b * a)}
+      add_mem' := by
+        intro x y hx hy a
+        rw [add_mul, hx a, hy a, ← map_add, ← add_mul]
+      zero_mem' := by intro a; simp
+      smul_mem' := by
+        intro r x hx a
+        rw [smul_mul_assoc, hx a, ← map_smul, smul_mul_assoc] } with hVdef
+  have hVclosed : IsClosed (V : Set A) := by
+    have hV : (V : Set A) = ⋂ a : A, {b : A | b * f a = f (b * a)} := by
+      ext b; simp [hVdef, Set.mem_iInter]
+    rw [hV]
+    refine isClosed_iInter fun a => ?_
+    exact isClosed_eq (continuous_id.mul continuous_const)
+      (hfc.comp (continuous_id.mul continuous_const))
+  -- … containing every projection of `ℬ`, by `key` applied to `e` and `e^⊥`.
+  have hprojV : ∀ p : A, IsStarProjection p → p ∈ S → p ∈ V := by
+    intro e he heS
+    show ∀ a : A, e * f a = f (e * a)
+    intro a
+    have h1 := key e he heS a
+    have h2 := key (1 - e) he.one_sub (sub_mem (one_mem S) heS) a
+    rw [sub_sub_cancel] at h2
+    have h3 : f (e * a) = e * f (e * a) := by
+      have := h1
+      rw [sub_mul, one_mul, sub_eq_zero] at this
+      exact this
+    have ha : e * a + (1 - e) * a = a := by rw [sub_mul, one_mul]; abel
+    calc e * f a = e * f (e * a + (1 - e) * a) := by rw [ha]
+      _ = e * f (e * a) + e * f ((1 - e) * a) := by rw [map_add, mul_add]
+      _ = e * f (e * a) := by rw [h2, add_zero]
+      _ = f (e * a) := h3.symm
+  -- 65IV relativised to `ℬ` finishes the proof.
+  intro b hb a
+  exact mem_of_isClosed_of_projections_subalgebra hS V hVclosed hprojV hb a
 
 /- **128IV–V** (proc.tex:6011): moved/removed points — nothing to
 convert. -/

@@ -1710,10 +1710,127 @@ theorem tensor_product_norm [VonNeumannAlgebra A] [VonNeumannAlgebra B] :
   ⟨tensorNorm_nonneg, tensorNorm_eq_zero_iff, tensorNorm_smul,
     tensorNorm_add_le⟩
 
+/-! ### Auxiliary for **112IX**
+
+The np-functional case is the one the exercise calls "almost by
+definition": `σ ⊙ τ` *is* a basic functional (take `t₀ = 1`), hence
+simple, hence trivially an operator-norm limit of simple functionals —
+which is continuity for `uwTensorTopology` — and Cauchy–Schwarz against
+`1` bounds it by `(σ⊙τ)(1)` times the tensor product norm.  The general
+case is then **72XI** `luws` (2) ⇒ (3): `f = f₀ + i f₁ − f₂ − i f₃` with
+`f_k` np-functionals. -/
+
+omit [PartialOrder A] [StarOrderedRing A] [PartialOrder B] [StarOrderedRing B] in
+private theorem odotF_tmul (f : A →ₗ[ℂ] ℂ) (g : B →ₗ[ℂ] ℂ) (a : A) (b : B) :
+    odotF f g (a ⊗ₜ[ℂ] b) = f a * g b := by
+  simp [odotF]
+
+omit [StarOrderedRing A] [StarOrderedRing B] in
+/-- For np-functionals `σ`, `τ` the product functional `σ ⊙ τ` is basic
+(witness `t₀ = 1`). -/
+private theorem isBasicFunctional_odotF [VonNeumannAlgebra A]
+    [VonNeumannAlgebra B] (σ : NPFunctional A) (τ : NPFunctional B) :
+    IsBasicFunctional (odotF (npLin σ) (npLin τ)) :=
+  ⟨σ, τ, 1, fun s => by simp⟩
+
+omit [PartialOrder A] [StarOrderedRing A] [PartialOrder B] [StarOrderedRing B] in
+private theorem smul_apply_re (ω : A ⊗[ℂ] B →ₗ[ℂ] ℂ) (r : ℝ) (s : A ⊗[ℂ] B) :
+    ((((r : ℝ) : ℂ) • ω) s).re = r * (ω s).re := by
+  rw [LinearMap.smul_apply, smul_eq_mul]
+  simp [Complex.mul_re]
+
+omit [StarOrderedRing A] [StarOrderedRing B] in
+/-- A basic functional stays basic after multiplication by a nonnegative
+real: conjugate its witness `t₀` by `√r`. -/
+private theorem isBasicFunctional_smul [VonNeumannAlgebra A]
+    [VonNeumannAlgebra B] {ω : A ⊗[ℂ] B →ₗ[ℂ] ℂ} (hω : IsBasicFunctional ω)
+    {r : ℝ} (hr : 0 ≤ r) : IsBasicFunctional (((r : ℝ) : ℂ) • ω) := by
+  obtain ⟨σ, τ, t₀, hωt⟩ := hω
+  refine ⟨σ, τ, ((Real.sqrt r : ℝ) : ℂ) • t₀, fun s => ?_⟩
+  have hsq : ((Real.sqrt r : ℝ) : ℂ) * ((Real.sqrt r : ℝ) : ℂ) = ((r : ℝ) : ℂ) := by
+    rw [← Complex.ofReal_mul, Real.mul_self_sqrt hr]
+  have hsr : star ((Real.sqrt r : ℝ) : ℂ) = ((Real.sqrt r : ℝ) : ℂ) := by simp
+  have hstar : star (((Real.sqrt r : ℝ) : ℂ) • t₀) * s * (((Real.sqrt r : ℝ) : ℂ) • t₀)
+      = ((r : ℝ) : ℂ) • (star t₀ * s * t₀) := by
+    rw [star_smul, hsr, smul_mul_assoc, mul_smul_comm, smul_mul_assoc, smul_smul,
+      hsq]
+  rw [LinearMap.smul_apply, smul_eq_mul, hωt s, hstar, map_smul, smul_eq_mul]
+
+omit [StarOrderedRing A] [StarOrderedRing B] in
+private theorem tsn_smul_functional [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    (ω : A ⊗[ℂ] B →ₗ[ℂ] ℂ) {r : ℝ} (hr : 0 ≤ r) (t : A ⊗[ℂ] B) :
+    tsn (((r : ℝ) : ℂ) • ω) t = Real.sqrt r * tsn ω t := by
+  unfold tsn
+  rw [smul_apply_re, Real.sqrt_mul hr]
+
+/-- Every basic functional is bounded by `ω(1)` times the tensor product
+norm.  (Cauchy–Schwarz against `1`, after rescaling `ω` so that
+`ω(1) ≤ 1` — which is what makes it one of the functionals the supremum
+defining `‖·‖` runs over.) -/
+private theorem basic_norm_le_tensorNorm [VonNeumannAlgebra A]
+    [VonNeumannAlgebra B] {ω : A ⊗[ℂ] B →ₗ[ℂ] ℂ} (hω : IsBasicFunctional ω)
+    (t : A ⊗[ℂ] B) : ‖ω t‖ ≤ (ω 1).re * tensorNorm A B t := by
+  have h0 : (0 : ℝ) ≤ (ω 1).re := by
+    simpa using (Complex.le_def.mp (basic_one_nonneg hω)).1
+  have hcs := basic_cauchy_schwarz hω 1 t
+  rw [star_one, one_mul] at hcs
+  have hone : tsn ω 1 = Real.sqrt (ω 1).re := by simp [tsn]
+  rcases h0.eq_or_lt with hc | hc
+  · rw [hone, ← hc, Real.sqrt_zero, zero_mul] at hcs
+    rw [← hc, zero_mul]
+    exact hcs
+  · set c : ℝ := (ω 1).re with hcdef
+    set ω' : A ⊗[ℂ] B →ₗ[ℂ] ℂ := (((c⁻¹ : ℝ)) : ℂ) • ω with hω'def
+    have hbω' : IsBasicFunctional ω' :=
+      isBasicFunctional_smul hω (inv_pos.mpr hc).le
+    have h1 : (ω' 1).re ≤ 1 := by
+      rw [hω'def, smul_apply_re, ← hcdef, inv_mul_cancel₀ (ne_of_gt hc)]
+    have hmem : tsn ω' t ≤ tensorNorm A B t := by
+      rw [tensorNorm_eq_sSup]
+      exact le_csSup (tnSet_bddAbove t) ⟨ω', hbω', h1, rfl⟩
+    have hts : tsn ω' t = Real.sqrt c⁻¹ * tsn ω t :=
+      tsn_smul_functional ω (inv_pos.mpr hc).le t
+    have hs : 0 < Real.sqrt c := Real.sqrt_pos.mpr hc
+    have hsne : Real.sqrt c ≠ 0 := ne_of_gt hs
+    have hself : Real.sqrt c * Real.sqrt c = c := Real.mul_self_sqrt hc.le
+    have hcc : c * Real.sqrt c⁻¹ = Real.sqrt c := by
+      rw [Real.sqrt_inv]
+      field_simp
+      linarith
+    calc ‖ω t‖ ≤ tsn ω 1 * tsn ω t := hcs
+      _ = Real.sqrt c * tsn ω t := by rw [hone]
+      _ = c * (Real.sqrt c⁻¹ * tsn ω t) := by rw [← mul_assoc, hcc]
+      _ = c * tsn ω' t := by rw [hts]
+      _ ≤ c * tensorNorm A B t := mul_le_mul_of_nonneg_left hmem hc.le
+
+omit [StarOrderedRing A] [StarOrderedRing B] in
+/-- Every basic functional is continuous for the ultraweak tensor product
+topology: it is simple, hence (trivially) an operator-norm limit of
+simple functionals, and `uwTensorTopology` is the initial topology for
+exactly those. -/
+private theorem continuous_uwTensor_of_basic [VonNeumannAlgebra A]
+    [VonNeumannAlgebra B] {ω : A ⊗[ℂ] B →ₗ[ℂ] ℂ} (hω : IsBasicFunctional ω) :
+    @Continuous _ ℂ (uwTensorTopology A B) _ ⇑ω := by
+  have hsimple : IsSimpleFunctional ω := ⟨1, fun _ => ω, fun _ => hω, by simp⟩
+  have hnl : NormLimitOfSimple A B ω := by
+    intro ε hε
+    refine ⟨ω, hsimple, fun t => ?_⟩
+    simpa using mul_nonneg hε.le (tensorNorm_nonneg t)
+  rw [continuous_iff_le_induced]
+  show uwTensorTopology A B ≤ _
+  exact iInf_le _ (⟨ω, hnl⟩ :
+    {h : A ⊗[ℂ] B →ₗ[ℂ] ℂ // NormLimitOfSimple A B h})
+
 /-- **112IX** (`product-functional`, proc.tex:2854, Exercise): for bounded
 ultraweakly continuous functionals `f ∈ 𝒜_*` and `g ∈ ℬ_*` the
 functional `f ⊙ g` is bounded (w.r.t. the tensor norm) and continuous
-w.r.t. the ultraweak tensor product topology. -/
+w.r.t. the ultraweak tensor product topology.
+
+Note that the boundedness hypotheses `hfb`, `hgb` are **not used** (the
+unused-variable warnings on them are left in place as the evidence):
+ultraweak continuity alone gives, by **72XI** `luws` (2) ⇒ (3), a
+decomposition of `f` into np-functionals, and boundedness of `f` is a
+consequence rather than a hypothesis. -/
 theorem product_functional [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (f : A →ₗ[ℂ] ℂ) (g : B →ₗ[ℂ] ℂ)
     (hfb : ∃ M : ℝ, ∀ a, ‖f a‖ ≤ M * ‖a‖)
@@ -1721,7 +1838,57 @@ theorem product_functional [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (hfc : @Continuous A ℂ (ultraweak A) _ ⇑f)
     (hgc : @Continuous B ℂ (ultraweak B) _ ⇑g) :
     (∃ M : ℝ, ∀ t : A ⊗[ℂ] B, ‖odotF f g t‖ ≤ M * tensorNorm A B t) ∧
-      @Continuous _ ℂ (uwTensorTopology A B) _ ⇑(odotF f g) := sorry
+      @Continuous _ ℂ (uwTensorTopology A B) _ ⇑(odotF f g) := by
+  classical
+  -- **72XI** `luws` (2) ⇒ (3): decompose `f` and `g` into np-functionals.
+  obtain ⟨F, hF⟩ := ((luws f).out 1 2).mp hfc
+  obtain ⟨G, hG⟩ := ((luws g).out 1 2).mp hgc
+  set co : Fin 4 → ℂ := ![1, Complex.I, -1, -Complex.I] with hcodef
+  have hconorm : ∀ k, ‖co k‖ = 1 := by
+    intro k; fin_cases k <;> simp [hcodef]
+  have hnpA : ∀ (σ : NPFunctional A) (a : A), npLin σ a = σ a := fun _ _ => rfl
+  have hnpB : ∀ (τ : NPFunctional B) (b : B), npLin τ b = τ b := fun _ _ => rfl
+  have hfsum : ∀ a : A, f a = ∑ k, co k * npLin (F k) a := by
+    intro a
+    rw [Fin.sum_univ_four, hF a]
+    simp only [hnpA, hcodef, Matrix.cons_val_zero, Matrix.cons_val_one,
+      Matrix.head_cons, Matrix.cons_val_two, Matrix.tail_cons,
+      Matrix.cons_val_three, one_mul]
+    ring
+  have hgsum : ∀ b : B, g b = ∑ l, co l * npLin (G l) b := by
+    intro b
+    rw [Fin.sum_univ_four, hG b]
+    simp only [hnpB, hcodef, Matrix.cons_val_zero, Matrix.cons_val_one,
+      Matrix.head_cons, Matrix.cons_val_two, Matrix.tail_cons,
+      Matrix.cons_val_three, one_mul]
+    ring
+  have hsplit : odotF f g = ∑ k : Fin 4, ∑ l : Fin 4,
+      (co k * co l) • odotF (npLin (F k)) (npLin (G l)) := by
+    refine TensorProduct.ext' fun a b => ?_
+    rw [odotF_tmul, hfsum a, hgsum b, Finset.sum_mul_sum]
+    simp only [LinearMap.sum_apply, LinearMap.smul_apply, smul_eq_mul, odotF_tmul]
+    exact Finset.sum_congr rfl fun k _ =>
+      Finset.sum_congr rfl fun l _ => by ring
+  have happ : ∀ t : A ⊗[ℂ] B, odotF f g t = ∑ k : Fin 4, ∑ l : Fin 4,
+      (co k * co l) * odotF (npLin (F k)) (npLin (G l)) t := by
+    intro t
+    rw [hsplit]
+    simp only [LinearMap.sum_apply, LinearMap.smul_apply, smul_eq_mul]
+  refine ⟨⟨∑ k : Fin 4, ∑ l : Fin 4,
+      (odotF (npLin (F k)) (npLin (G l)) 1).re, fun t => ?_⟩, ?_⟩
+  · rw [happ t, Finset.sum_mul]
+    refine (norm_sum_le _ _).trans (Finset.sum_le_sum fun k _ => ?_)
+    rw [Finset.sum_mul]
+    refine (norm_sum_le _ _).trans (Finset.sum_le_sum fun l _ => ?_)
+    rw [norm_mul, norm_mul, hconorm, hconorm, one_mul, one_mul]
+    exact basic_norm_le_tensorNorm (isBasicFunctional_odotF (F k) (G l)) t
+  · let _ : TopologicalSpace (A ⊗[ℂ] B) := uwTensorTopology A B
+    have hfun : ⇑(odotF f g) = fun t => ∑ k : Fin 4, ∑ l : Fin 4,
+        (co k * co l) * odotF (npLin (F k)) (npLin (G l)) t := funext happ
+    rw [hfun]
+    exact continuous_finsetSum _ fun k _ => continuous_finsetSum _ fun l _ =>
+      continuous_const.mul
+        (continuous_uwTensor_of_basic (isBasicFunctional_odotF (F k) (G l)))
 
 section TensorBasic
 

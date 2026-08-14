@@ -2657,6 +2657,172 @@ lost or gained by the re-count.  Of the changes above, only
 
 ---
 
+## Session 20 — `A/Proc` parsecs 940, 1050, 1120, 1280: Tomiyama and the product functional (worker 49)
+
+Owner of `Theses/A/Proc/*`.  **A/Proc 132 → 128**: `Duplicators` 20 → **19**,
+`Tensor` 46 → **45**, `Measurement` 40 → **38**, `QuantumLambda` 26
+(untouched).  `A/CStar` (39), `A/VN` (114) and `B/*` untouched; whole
+`Theses.A.Proc.*` build exit 0 throughout.  Everything below is
+`#print axioms`-clean (`propext`, `Classical.choice`, `Quot.sound`).
+
+| point | declaration | file | class |
+|---|---|---|---|
+| **128II** | `tomiyama` | `Duplicators.lean` | 1 (faithful) |
+| **112IX** | `product_functional` | `Tensor.lean` | 1 — the exercise's own hint |
+| **94II**.10' | `corner_vna_basic_10'` | `Measurement.lean` | 1 (no author argument) |
+| **105IV**.2 | `chevron_f_purely_positive_2` | `Measurement.lean` | 3 (mild — fewer hypotheses) |
+
+### 1. **128II** `tomiyama` — the relativised 65IV lands
+
+Worker 46 named the blocker: *the linear span of the projections of a von
+Neumann **subalgebra** is norm-dense in it*.  Worker 47 supplied it as
+`mem_of_isClosed_of_projections_subalgebra` (`A/VN/Projections.lean`), and it
+fits **exactly**: the set
+
+```
+V = {b : A | ∀ a, b * f a = f (b * a)}
+```
+
+is a norm-closed `ℂ`-subspace (closed because `‖f a‖ ≤ ‖a‖` makes `f`
+continuous, via `AddMonoidHomClass.continuous_of_bound`), so it is enough to
+put every projection of `ℬ` in it.  That is the thesis's own reduction, and
+the rest is the thesis's own Blackadar-style estimate, transcribed line for
+line: with `c := e^⊥ f(ea)`,
+
+* `c ∈ ℬ = range f` and `f ∘ f = f` give `f(c) = c` — this is where
+  surjectivity onto `ℬ` is used, and it is the only place;
+* `(1−e)·f(ea + t·c) = (1+t)·c` for real `t ≥ 0`, so
+  `(1+t)‖c‖ ≤ ‖1−e‖·‖f(ea+t·c)‖ ≤ ‖ea + t·c‖`;
+* `star(ea)·c = 0 = star c·(ea)` (because `e·c = 0`), so
+  `‖ea+t·c‖² = ‖star(ea)(ea) + t²·(star c·c)‖ ≤ ‖ea‖² + t²‖c‖²`;
+* hence `(1+2t)‖c‖² ≤ ‖ea‖²` for **every** `t ≥ 0`, and `t = ‖ea‖²/‖c‖²`
+  contradicts `‖c‖ > 0`.
+
+Two small departures from the printed proof, both cosmetic: the thesis writes
+`(1+λ)²‖c‖² = ‖ea‖² + λ²‖c‖²` with an equality where the triangle inequality
+`≤` is all that is used (and all that holds in general); and the "this can
+only hold for all λ" step is made explicit by the choice of `t` above rather
+than by a limit.  The sharp constant matters — the argument collapses if
+`‖f‖ ≤ C` with `C > 1`.
+
+### 2. **112IX** `product_functional` — `luws` at work
+
+The exercise's own hint ("perhaps using `luws`") is exactly the proof.  Both
+halves reduce to the np-functional case, which the exercise itself calls
+"almost by definition", and here is why in this encoding:
+
+* `σ ⊙ τ` **is** a basic functional, with witness `t₀ = 1` (112II's
+  definition is `ω(s) = (σ⊙τ)(t* s t)`), hence simple, hence trivially an
+  operator-norm limit of simple functionals — and `uwTensorTopology` is by
+  definition the initial topology for those.  So continuity is one
+  `iInf_le`.
+* Boundedness is Cauchy–Schwarz against `1` for the semi-inner product
+  `[s,t]_ω = ω(s* t)` (**112V**, already packaged as `basicCore` /
+  `basic_cauchy_schwarz` in the file), followed by the rescaling `ω ↦ c⁻¹ω`
+  (`c = ω(1)`) that puts `ω` into the family the supremum defining `‖·‖`
+  runs over.  Result: `‖ω t‖ ≤ ω(1)·‖t‖` for every basic `ω`
+  (`basic_norm_le_tensorNorm`).
+
+**72XI** `luws` (2) ⇒ (3) then writes `f = f₀ + i f₁ − f₂ − i f₃` and
+`g = g₀ + i g₁ − g₂ − i g₃` with np-functionals, and `TensorProduct.ext'`
+gives `f ⊙ g = ∑_{k,l} c_k c_l · (f_k ⊙ g_l)` with `c = (1, i, −1, −i)`;
+`‖c_k‖ = 1` makes the bound `∑_{k,l} (f_k⊙g_l)(1)`, and continuity is
+`Continuous.add`/`Continuous.const_mul` — no scalar multiple of a *basic*
+functional needs to be basic (which it is not: `IsSimpleFunctional` is a
+cone, not a subspace).
+
+New private infrastructure in `Tensor.lean`, in the block "Auxiliary for
+112IX" just before the theorem: `odotF_tmul`, `isBasicFunctional_odotF`,
+`smul_apply_re`, `isBasicFunctional_smul` (a basic functional times a
+nonnegative real is basic — conjugate `t₀` by `√r`), `tsn_smul_functional`,
+`basic_norm_le_tensorNorm`, `continuous_uwTensor_of_basic`.  The last two are
+the reusable ones.
+
+**Our statement asks for more than it needs.**  `product_functional` carries
+boundedness hypotheses `hfb`, `hgb` alongside ultraweak continuity, and they
+are **not used**: `luws` (2) ⇒ (3) needs only continuity, and boundedness
+falls out of the decomposition.  The two `unusedVariables` warnings are left
+in place as the evidence and a note was added to the doc comment (cf.
+`measure_zorn`, which does the same).  This is not a defect in the thesis —
+proc.tex:2854 says "for all `f ∈ 𝒜_*` and `g ∈ ℬ_*`", and `𝒜_*` is *defined*
+as the bounded ultraweakly continuous functionals; it is our rendering that
+spells out a redundant clause.
+
+### 3. **94II**.10' `corner_vna_basic_10'` — the corner's two topologies
+
+The exercise ("Deduce from this that the ultraweak topology of `e𝒜e`
+coincides with the ultraweak topology on `𝒜` … similarly for ultrastrong")
+has no published solution.  Both halves are the same two facts:
+
+* every np-functional on `e𝒜e` is `ω ∘ val` for an np-functional `ω` on `𝒜`
+  (**94II**.10, already proved, `corner_vna_basic_10`), and
+* every `ω ∘ val` is an np-functional on `e𝒜e` (**94II**.8, already proved,
+  `Corner.restrictNP`),
+
+i.e. the two generating families of functionals coincide.  For the ultraweak
+topology that is `induced_compose` + `induced_mono` + `iInf_le` in each
+direction.  For the ultrastrong topology the generating *sets* do **not**
+coincide — `val ⁻¹' {a | ‖a − b‖_ω < ε}` has `b ∈ 𝒜` arbitrary, not
+necessarily in the corner — so the `≤` half needs the usual re-centring: for
+`x₀` in that preimage the corner-ball of radius `ε − ‖x₀.val − b‖_ω` around
+`x₀` stays inside it, by `omegaNorm_sub_le`.  The other half is exact,
+because `‖x‖_{ω∘val} = ‖x.val‖_ω` (`val` is a ∗-homomorphism).
+
+### 4. **105IV**.2 `chevron_f_purely_positive_2` — six lines, and two spare hypotheses
+
+`⟨f²⟩ = ⟨f⟩²` for ⋄-self-adjoint `f`, rendered elementwise, is
+`f(x) = f(⌈f⌉·x·⌈f⌉)` (**63VI** `carrier_fundamental`) at `x = f(a)`,
+once `⌈f⌉ = ⌈f(1)⌉` (**103III**.1 `purely_positive_basic_1`, already
+proved).  Two observations for the author:
+
+* the hypothesis `a ∈ ⌈f(1)⌉𝒜⌈f(1)⌉` is **not used** — the identity holds
+  for every `a ∈ 𝒜` (the unused-variable warning is left as the evidence);
+* ⋄-self-adjointness is used *only* to get `⌈f⌉ = ⌈f(1)⌉`, so the statement
+  holds for any ncp-map whose carrier is `⌈f(1)⌉` — in particular for any
+  faithful-on-its-carrier `f`.  This is the same pattern as 99II in session
+  18: the cited hypothesis is far stronger than what the argument consumes.
+
+### 5. Corrections to the brief
+
+1. **Parsec 1280 does *not* follow from 128II.**  128VIII
+   `uniqueness_duplicator` needs **128VI** `sef_instrument`, whose proof
+   (proc.tex:6015) applies Tomiyama to `f' : 𝒜⊕𝒜 → 𝒜⊕𝒜` and needs
+   `‖f'‖ ≤ 1` for a merely *positive* unital `f`.  That is **34aVIII**
+   `russo_dye_cor` (`A/CStar/Matrices.lean`), which is `sorry`, as is the
+   **34aII** `normal_russo_dye` it rests on.  The sharp constant is
+   essential: with `‖f‖ ≤ C`, `C > 1`, the Tomiyama inequality
+   `(1 + 2t − (C²−1)t²)‖c‖² ≤ C²‖ea‖²` has a finite maximum in `t` and yields
+   nothing.  `weak_russo_dye_2`'s factor `2` is therefore useless here.
+   *Note the duplicator really is only positive*: proc.tex:5861 says
+   "npsu-map", and 127I.20 spells out "requiring the maps to be only positive
+   subunital" — so our `Duplicator` structure (a `→ₚ[ℂ]` plus `normal` plus
+   `subunital`) is faithful, and complete positivity, which would have let
+   `cp_russo_dye` (34XVI, proved) do the job, is genuinely unavailable.
+   **`russo_dye_cor` is now the named blocker for parsec 1280**, and it is one
+   short corollary of the already-proved **34aVII** `russo_dye` plus 34aII.
+2. **128VIII, 128XI and 127III/127VI are blocked a second time over**, being
+   `Duplicator`-typed and hence `VNT`-typed: `VNT A B` is
+   `(vnTensor A B).carrier`, `vnTensor` is `Nonempty.some` of the `sorry`ed
+   **111XII** `vnTensorProduct_nonempty`, so *the statements themselves*
+   depend on `sorryAx` and can never be closed axiom-cleanly until 111XII is.
+   127VI `unit_duplicator` is in addition blocked on **116III**.1
+   `tensor_simple_facts_1` (monotonicity of `⊗` on positives, `sorry`), which
+   its two `≤` steps need.
+3. Everything else in the brief checked out: `projections_norm_dense_subalgebra`
+   / `mem_of_isClosed_of_projections_subalgebra` fit 128II exactly (§1); 72XI
+   `luws` really does release 112IX (§2); 112X.1/.2 and the `VNT` block really
+   are still blocked; 116I `exists_predualTensor` — the consumer of 112IX the
+   brief names — is `VNT`-typed and so does *not* become reachable.
+
+### 6. Nothing false found
+
+No new `ERRATA.md` or `QUESTIONS.md` entry.  128II's proof is correct as
+printed (modulo the `=`/`≤` noted in §1); 112IX and 94II.10' are `proc.tex`
+exercises with no published solution (`asols.tex` stops at parsec 340) and
+both are true as stated; 105IV is an Exercise too.
+
+---
+
 ## Session 19 — `A/VN` parsecs 460, 650, 720, 730 (worker 47)
 
 Owner of `Theses/A/CStar/*` and `Theses/A/VN/*`.  `A/CStar` untouched
@@ -2779,7 +2945,7 @@ is continuity on `[0,1]_A` only, so it needs the cofinal-tail rescaling of
 place of `vna_supremum_uwlimit` — a ~100-line refactor of that private
 lemma, not attempted.
 
-### 5. Nothing false found
+### 6. Nothing false found
 
 No new `ERRATA.md` or `QUESTIONS.md` entry.  72XI and 73VIII are `vn.tex`
 Corollary/Exercise points with no published solution; both are true as
@@ -5260,3 +5426,101 @@ exactly as `exists_mu` did; the thesis's `⋁ᵢ ⋁ⱼ = ⋁_{i,j}` is one equa
 * Per-file `sorry`s: Comparisons 3, Dagger 3, DiamondAmp 2, EffectAlgebras 6,
   Effectus 2, Quotients 0, **StatesPredicates 4**, WStarCat 0 — **20**.
 * Nothing staged, nothing committed.
+
+## Session 20 — `B/Dils` parsec 1650: 165III, and the legs of `IsVNTensor` (worker 50)
+
+**Result: `B/Dils` 62 → 61.  165III `dfn_tensor_of_hilbmod_maps` is proved
+(the first statement of parsecs 1640–1670 to fall), and two structural
+questions about `IsVNTensor` are answered by proof rather than by decision:
+it is automatically ℂ-linear in its *second* argument, and its two legs are
+automatically *normal*.  165VI and 167I were re-examined and are still
+blocked — for reasons different from the ones on record.**
+
+### 1. **165III** `dfn_tensor_of_hilbmod_maps` — divergence class 1, with two
+repairs to the write-up
+
+`dils.tex` **165IV**, transcribed.  `Θ(x,y) = (Sx) ⊗ (Ty)` is
+`𝒜 ⊙ ℬ`-bilinear; the estimate
+
+`‖∑ᵢⱼ ⟨Sxᵢ,Sxⱼ⟩ ⊗ ⟨Tyᵢ,Tyⱼ⟩‖ ≤ ‖S‖²‖T‖² ‖∑ᵢⱼ ⟨xᵢ,xⱼ⟩ ⊗ ⟨yᵢ,yⱼ⟩‖`
+
+is the thesis's displayed chain, with the row vector `s = (1,…,1)` replaced by
+the vector `c = (1,…,1)` in **33II**.1's criterion (the two say the same thing;
+`c` is what `matBilin_nonneg_of_mi` takes).  Then `ExtTensor.univ` factors `Θ`
+through `η`.  New private helpers: `sum_t_{nonneg,mono_left,mono_right,
+smul_left,smul_right}`, `gram_conj`, `gram_nonneg`, `ba_inner_le_norm_sq`,
+`gram_sub_nonneg`, `tensor_gram_bound`.
+
+Two things **165IV** needs and does not say, both supplied here:
+
+* *ℂ-homogeneity of `⊗` in the second slot.*  The step
+  `Mₙ(⊗)(G, ‖T‖²H) = ‖T‖² Mₙ(⊗)(G,H)` needs it; `IsVNTensor` records
+  `smul_complex` in the first slot only.  It is derivable — new public
+  `vnTensor_smul_complex_right`: `d := t 1 (c·1) − c·1` has `Ω(d*d) = 0` for
+  every product np-functional, so `d*d = 0` by `separating`, so `d = 0`, and
+  `t a (c·b) = t 1 (c·1) · t a b = c · t a b` by multiplicativity.
+* *Adjointability.*  The thesis writes "`S ⊗ T ∈ 𝒷ᵃ(X ⊗ Y)`" without
+  producing an adjoint.  Ours is the factorisation of `(S*, T*)` through the
+  same universal property; that it *is* the adjoint is checked against the
+  elementary tensors in each argument separately, by two applications of
+  `extTensor_inner_diff_ext`.
+
+The thesis's `√(‖S‖² − S*S)` is replaced by `ba_inner_le_norm_sq`
+(`⟨Sv,Sv⟩ = ⟨v, S*S v⟩ ≤ ‖S‖²⟨v,v⟩` via `CStarAlgebra.star_mul_le_algebraMap_norm_sq`
+and `ba_inner_mono`) — class 3, same content without the functional calculus.
+
+`hX`, `hY` are unused (the universal property is a *field* of `ExtTensor`);
+the declaration carries `set_option linter.unusedVariables false in` and a
+comment, as 159IV does.
+
+### 2. The legs of a von Neumann tensor product (QUESTIONS **B5**)
+
+New public, axiom-clean: `vnTensor_flip`, `vnTensor_legLeft_{nonneg,mono,
+isSelfAdjoint,normal}`, `vnTensor_legRight_{nonneg,mono,normal}`.
+
+`vnTensor_legLeft_normal : PreservesDirSups (fun a => t a 1)` is the one that
+matters: it removes the "decision needed" that w41 opened.  Proof: the image
+of a bounded directed `D` has a supremum `s'` in `𝒞`; every product
+np-functional `ω ⊗ ξ` sees the same supremum of reals on both `s'` and
+`s ⊗ 1` (normality of `Ω`, of `ω`, and `ξ(1) ≥ 0`, via `isLUB_re_of_isLUB` and
+a new private `isLUB_mul_const`); so `(s ⊗ 1) − s'` is positive and killed by
+every product functional, hence `0` by `separating`.
+
+Consequence: **166II is no longer blocked on a decision** — see QUESTIONS B5.
+
+### 3. What is still blocked, and why (corrections to the brief)
+
+* **165VI** `ba_ext_tensor_pres` does **not** follow from 165III.  Six of
+  `IsVNTensor`'s eight fields for `Θ` are now cheap (uniqueness on elementary
+  tensors + 165V), but `generates` needs **164II**.2a `ext_tensor_basis`
+  (`sorry`) and `separating` needs both **164II**.1 `ext_tensor_dense`
+  (`sorry`) *and* a clause `IsVNTensor` does not have: the **existence** of
+  product functionals (proc.tex `tensor`-2).  Filed as the third gap in
+  QUESTIONS B5.
+* **167I** `paschke_tensor` / `paschke_tensor_module` do not follow either:
+  167II–167VI run through **166IV** `exttensor_dense_subsets` and **166VI**
+  `dilationspace_dense_subset` (both `sorry`) and through `PaschkeModule`,
+  which is under the QUESTIONS **D2** freeze.
+* `ext_tensor_dense` is blocked twice over: it is a property of the concrete
+  ℓ² construction (the author offers `extTensor_map_ext` precisely as the
+  substitute for it), and the abstract route from `extTensor_sep` needs the
+  projection theorem **160IV**, itself blocked on 149VIII/80IV.
+
+### 4. Verification
+
+* `lake build Theses` → `Build completed successfully (8738 jobs)`, exit 0,
+  **zero** `error:` lines.
+* `#print axioms` → `[propext, Classical.choice, Quot.sound]` for
+  `dfn_tensor_of_hilbmod_maps`, `vnTensor_smul_complex_right`,
+  `vnTensor_flip`, and all six leg lemmas.
+* Warning diff for `SelfDual.lean` against the session's own baseline:
+  **exactly one line**, `declaration uses sorry` 23 → 22.  (`omit` clauses and
+  `change`-for-`show` were added where the new material would otherwise have
+  introduced linter noise.)
+* Code `sorry`s per file, before → after: `SelfDual` 23 → **22**, `Pure` 16,
+  `Paschke` 9, `Stinespring` 7, `HilbertModules` 3, `Kaplansky` 2,
+  `SelfDualCompletion` 2.  **`B/Dils` 62 → 61.**  No `sorry`ed instances.
+* Files touched: `Theses/B/Dils/SelfDual.lean`, `ERRATA.md`, `QUESTIONS.md`,
+  `PROVING-LOG.md`.  Nothing staged, nothing committed.  `HANDOFF.md` not
+  touched (its `B/Dils` row is a whole-chapter figure and is stale for other
+  reasons too).

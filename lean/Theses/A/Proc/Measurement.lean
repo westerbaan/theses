@@ -1252,7 +1252,79 @@ theorem corner_vna_basic_10' [VonNeumannAlgebra A] (e : A)
     ultraweak (Corner A e) =
         TopologicalSpace.induced (Corner.val) (ultraweak A) ∧
       ultrastrong (Corner A e) =
-        TopologicalSpace.induced (Corner.val) (ultrastrong A) := sorry
+        TopologicalSpace.induced (Corner.val) (ultrastrong A) := by
+  -- `‖x‖_{ω ∘ val} = ‖x.val‖_ω`, since `val` is a ∗-homomorphism
+  have hsemi : ∀ (ω : NPFunctional A) (x : Corner A e),
+      omegaNorm (Corner A e) (Corner.restrictNP e ω) x = omegaNorm A ω x.val := by
+    intro ω x
+    show Real.sqrt (Corner.restrictNP e ω (star x * x)).re
+      = Real.sqrt (ω (star x.val * x.val)).re
+    rw [Corner.restrictNP_apply, Corner.val_mul, Corner.val_star]
+  have hsemi' : ∀ (ω' : NPFunctional (Corner A e)) (ω : NPFunctional A),
+      (∀ y : Corner A e, ω' y = ω y.val) →
+      ∀ x : Corner A e, omegaNorm (Corner A e) ω' x = omegaNorm A ω x.val := by
+    intro ω' ω hω x
+    show Real.sqrt (ω' (star x * x)).re = Real.sqrt (ω (star x.val * x.val)).re
+    rw [hω]
+    rfl
+  constructor
+  · refine le_antisymm ?_ ?_
+    · rw [← continuous_iff_le_induced]
+      refine (continuous_iInf_rng).mpr fun ω => ?_
+      rw [continuous_induced_rng]
+      exact continuous_ultraweak_npFunctional (Corner.restrictNP e ω)
+    · show TopologicalSpace.induced (Corner.val) (ultraweak A) ≤
+        ⨅ ω' : NPFunctional (Corner A e),
+          TopologicalSpace.induced (fun x => ω' x) inferInstance
+      refine le_iInf fun ω' => ?_
+      obtain ⟨ω, -, hω⟩ := corner_vna_basic_10 e ω'
+      have hfun : (fun x : Corner A e => (ω' x : ℂ))
+          = (fun a : A => (ω a : ℂ)) ∘ Corner.val := funext hω
+      rw [hfun, ← induced_compose]
+      exact induced_mono (iInf_le _ ω)
+  · refine le_antisymm ?_ ?_
+    · show ultrastrong (Corner A e) ≤ TopologicalSpace.induced Corner.val
+        (TopologicalSpace.generateFrom
+          {U : Set A | ∃ (ω : NPFunctional A) (b : A) (ε : ℝ), 0 < ε ∧
+            U = {a : A | omegaNorm A ω (a - b) < ε}})
+      rw [induced_generateFrom_eq]
+      refine le_generateFrom ?_
+      rintro _ ⟨U, ⟨ω, b, ε, hε, rfl⟩, rfl⟩
+      refine (@isOpen_iff_forall_mem_open (Corner A e)
+        (ultrastrong (Corner A e)) _).mpr ?_
+      intro x₀ hx₀
+      simp only [Set.mem_preimage, Set.mem_ofPred_eq] at hx₀
+      refine ⟨{x : Corner A e |
+          omegaNorm (Corner A e) (Corner.restrictNP e ω) (x - x₀) <
+            ε - omegaNorm A ω (x₀.val - b)}, ?_, ?_, ?_⟩
+      · intro x hx
+        simp only [Set.mem_ofPred_eq] at hx
+        rw [hsemi] at hx
+        simp only [Set.mem_preimage, Set.mem_ofPred_eq]
+        have htri := omegaNorm_sub_le ω x.val x₀.val b
+        have hv : (x - x₀).val = x.val - x₀.val := rfl
+        rw [hv] at hx
+        linarith
+      · exact TopologicalSpace.isOpen_generateFrom_of_mem
+          ⟨Corner.restrictNP e ω, x₀, ε - omegaNorm A ω (x₀.val - b), by linarith, rfl⟩
+      · simp only [Set.mem_ofPred_eq, sub_self, omegaNorm_zero]
+        linarith
+    · show TopologicalSpace.induced Corner.val (ultrastrong A) ≤
+        TopologicalSpace.generateFrom
+          {U : Set (Corner A e) | ∃ (ω' : NPFunctional (Corner A e))
+            (b : Corner A e) (ε : ℝ), 0 < ε ∧
+            U = {a : Corner A e | omegaNorm (Corner A e) ω' (a - b) < ε}}
+      refine le_generateFrom ?_
+      rintro _ ⟨ω', b, ε, hε, rfl⟩
+      obtain ⟨ω, -, hω⟩ := corner_vna_basic_10 e ω'
+      have hset : {a : Corner A e | omegaNorm (Corner A e) ω' (a - b) < ε}
+          = Corner.val ⁻¹' {a : A | omegaNorm A ω (a - b.val) < ε} := by
+        ext x
+        simp only [Set.mem_ofPred_eq, Set.mem_preimage]
+        rw [hsemi' ω' ω hω (x - b)]
+        rfl
+      rw [hset]
+      exact ⟨_, TopologicalSpace.isOpen_generateFrom_of_mem ⟨ω, b.val, ε, hε, rfl⟩, rfl⟩
 
 /-- **94III** (`ad-ncp`, proc.tex:247, Exercise), part 1: if
 `a* p a ≤ q` for projections `p, q`, then `a* b a ∈ q𝒜q` for every
@@ -3954,12 +4026,29 @@ theorem chevron_f_purely_positive_1 [VonNeumannAlgebra A] (f : NCPMap A A)
 /-- **105IV** (`chevron-f-purely-positive`, proc.tex:1742, Exercise),
 part 2: for ⋄-self-adjoint `f`, `⟨f²⟩ = ⟨f⟩²` — rendered elementwise: for
 `a` in the corner `⌈f(1)⌉𝒜⌈f(1)⌉`,
-`⌈f(1)⌉ f(f(a)) ⌈f(1)⌉ = ⌈f(1)⌉ f(⌈f(1)⌉ f(a) ⌈f(1)⌉) ⌈f(1)⌉`. -/
+`⌈f(1)⌉ f(f(a)) ⌈f(1)⌉ = ⌈f(1)⌉ f(⌈f(1)⌉ f(a) ⌈f(1)⌉) ⌈f(1)⌉`.
+
+In this rendering the hypothesis `ha` is **not needed** (the
+unused-variable warning is left in place as the evidence), and ⋄-self-
+adjointness is used only through **103III**.1 `purely_positive_basic_1`
+(`⌈f⌉ = ⌈f(1)⌉`): the identity is then **63VI** `carrier_fundamental`,
+`f(x) = f(⌈f⌉·x·⌈f⌉)`, at `x = f(a)`. -/
 theorem chevron_f_purely_positive_2 [VonNeumannAlgebra A] (f : NCPMap A A)
     (hf : IsDiamondSelfAdjoint f) (a : A)
     (ha : a ∈ cornerSet A (ceil (f 1))) :
     ceil (f 1) * f (f a) * ceil (f 1) =
-      ceil (f 1) * f (ceil (f 1) * f a * ceil (f 1)) * ceil (f 1) := sorry
+      ceil (f 1) * f (ceil (f 1) * f a * ceil (f 1)) * ceil (f 1) := by
+  have hcarr : carrier (PositiveLinearMap.ofClass f.toCompletelyPositiveMap)
+      f.preservesDirSups' = ncpCarrier f := rfl
+  have hfund : ∀ x : A, (f x : A) = f (ncpCarrier f * x * ncpCarrier f) := by
+    intro x
+    have h := (carrier_fundamental
+      (PositiveLinearMap.ofClass f.toCompletelyPositiveMap)
+      f.preservesDirSups' x).2.2
+    rwa [hcarr] at h
+  have hce : ncpCarrier f = ceil (f 1) := purely_positive_basic_1 f hf
+  rw [← hce]
+  conv_rhs => rw [← hfund (f a)]
 
 /-- **105IV** (`chevron-f-purely-positive`, proc.tex:1742, Exercise),
 part 3: if `f` is ⋄-positive then `⟨f⟩` is ⋄-positive (rendered on the
