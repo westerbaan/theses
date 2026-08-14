@@ -2130,8 +2130,10 @@ private theorem continuous_ultrastrong_of_omegaNorm_bound {f : A → B}
     _ < ε := by linarith
 
 /-- `‖yb‖_ω = ‖y‖_{b*ω}`, where `b*ω = conjNP b ω` is the np-functional
-`a ↦ ω(b* a b)` of **44VIII**. -/
-private theorem omegaNorm_mul_right [VonNeumannAlgebra A] (ω : NPFunctional A)
+`a ↦ ω(b* a b)` of **44VIII**.  (Public since **74I** `proto_kaplansky`
+needs it too — it is the step `‖(b−a)s(a)‖_ω ≡ ‖b−a‖_{s(a)*ω}` of the
+thesis's proof.) -/
+theorem omegaNorm_mul_right [VonNeumannAlgebra A] (ω : NPFunctional A)
     (y b : A) : omegaNorm A ω (y * b) = omegaNorm A (conjNP b ω) y := by
   rw [omegaNorm, omegaNorm, conjNP_apply, star_mul]
   congr 3

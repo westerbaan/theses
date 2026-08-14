@@ -1403,23 +1403,509 @@ section Kaplansky
 
 variable [VonNeumannAlgebra A]
 
+/-! ### Auxiliaries for **74I** `proto_kaplansky`
+
+The thesis's proof (vn.tex:4232, "an adaptation of Conway Lemma 44.2") works
+with the set `S` of continuous `g : ℝ → ℝ` for which `a ↦ g(a)` is
+ultrastrongly continuous on `sa(𝒜)`.  `USCont A g` below is that membership,
+spelled out as an ε–δ statement in the seminorms `‖·‖_ω` — which is what
+`continuousOn_of_usCont` turns into the `ContinuousOn` of the statement.
+
+The plan is the thesis's, in this order: `S` contains the identity and the
+constants and is closed under `+`, real scalars, precomposition with an
+affine map, multiplication by a *bounded* member, and uniform limits;
+`e(t) = t/(1+t²)` lies in `S` by the thesis's identity
+`e(b) − e(a) = s(b)(b−a)s(a) − e(b)(b−a)e(a)`, and hence so does
+`s(t) = 1/(1+t²) = 1 − t·e(t)`; the translates `s(t−c)` separate the points
+of `ℝ ∪ {∞}`, so Stone–Weierstraß puts every continuous `f` vanishing at
+infinity in `S`; and `f = f·s + (f·s·t)·t` reduces the general `f = O(t)` to
+that case.
+-/
+
+variable (A) in
+/-- The set `S` of the thesis's proof of **74I**. -/
+private def USCont (g : ℝ → ℝ) : Prop :=
+  Continuous g ∧ ∀ a : A, IsSelfAdjoint a → ∀ (ω : NPFunctional A) (ε : ℝ), 0 < ε →
+    ∃ (ω' : NPFunctional A) (δ : ℝ), 0 < δ ∧
+      ∀ b : A, IsSelfAdjoint b → omegaNorm A ω' (b - a) < δ →
+        omegaNorm A ω (cfc g b - cfc g a) < ε
+
+omit [VonNeumannAlgebra A] in
+private theorem continuousOn_of_usCont {g : ℝ → ℝ} (h : USCont A g) :
+    @ContinuousOn A A (ultrastrong A) (ultrastrong A) (fun a => cfc g a)
+      {a : A | IsSelfAdjoint a} := by
+  intro a ha
+  simp only [Set.mem_ofPred_eq] at ha
+  intro V hV
+  obtain ⟨U, hUV, hUopen, hUmem⟩ := (@mem_nhds_iff A (ultrastrong A) _ _).mp hV
+  obtain ⟨ω, ε, hε, hball⟩ := exists_ultrastrong_ball_of_isOpen hUopen _ hUmem
+  obtain ⟨ω', δ, hδ, hmain⟩ := h.2 a ha ω ε hε
+  refine (@mem_nhdsWithin A (ultrastrong A) _ _ _).mpr
+    ⟨{x : A | omegaNorm A ω' (x - a) < δ},
+      TopologicalSpace.isOpen_generateFrom_of_mem ⟨ω', a, δ, hδ, rfl⟩, by simpa using hδ, ?_⟩
+  rintro b ⟨hb1, hb2⟩
+  simp only [Set.mem_ofPred_eq] at hb1 hb2
+  exact hUV (hball (hmain b hb2 hb1))
+
+omit [VonNeumannAlgebra A] in
+private theorem usCont_const (c : ℝ) : USCont A (fun _ => c) := by
+  refine ⟨continuous_const, fun a ha ω ε hε => ⟨zeroNP, 1, one_pos, fun b hb _ => ?_⟩⟩
+  rw [cfc_const c b hb, cfc_const c a ha, sub_self, omegaNorm_zero]
+  exact hε
+
+omit [StarOrderedRing A] [VonNeumannAlgebra A] in
+private theorem usCont_id : USCont A (fun t : ℝ => t) := by
+  refine ⟨continuous_id, fun a ha ω ε hε => ⟨ω, ε, hε, fun b hb hlt => ?_⟩⟩
+  rwa [cfc_id' ℝ b, cfc_id' ℝ a]
+
+omit [VonNeumannAlgebra A] in
+private theorem usCont_add {g h : ℝ → ℝ} (hg : USCont A g) (hh : USCont A h) :
+    USCont A (fun t => g t + h t) := by
+  refine ⟨hg.1.add hh.1, fun a ha ω ε hε => ?_⟩
+  obtain ⟨ω₁, δ₁, hδ₁, h₁⟩ := hg.2 a ha ω (ε / 2) (by positivity)
+  obtain ⟨ω₂, δ₂, hδ₂, h₂⟩ := hh.2 a ha ω (ε / 2) (by positivity)
+  refine ⟨addNP ω₁ ω₂, min δ₁ δ₂, lt_min hδ₁ hδ₂, fun b hb hlt => ?_⟩
+  have hb₁ : omegaNorm A ω₁ (b - a) < δ₁ :=
+    lt_of_le_of_lt (omegaNorm_le_addNP ω₁ ω₂ _) (lt_of_lt_of_le hlt (min_le_left _ _))
+  have hb₂ : omegaNorm A ω₂ (b - a) < δ₂ :=
+    lt_of_le_of_lt (omegaNorm_le_addNP' ω₁ ω₂ _) (lt_of_lt_of_le hlt (min_le_right _ _))
+  have he : cfc (fun t => g t + h t) b - cfc (fun t => g t + h t) a
+      = (cfc g b - cfc g a) + (cfc h b - cfc h a) := by
+    rw [cfc_add b g h hg.1.continuousOn hh.1.continuousOn,
+      cfc_add a g h hg.1.continuousOn hh.1.continuousOn]
+    abel
+  rw [he]
+  exact lt_of_le_of_lt (omegaNorm_add_le ω _ _) (by linarith [h₁ b hb hb₁, h₂ b hb hb₂])
+
+omit [VonNeumannAlgebra A] in
+private theorem usCont_smul {g : ℝ → ℝ} (hg : USCont A g) (r : ℝ) :
+    USCont A (fun t => r * g t) := by
+  refine ⟨continuous_const.mul hg.1, fun a ha ω ε hε => ?_⟩
+  obtain ⟨ω₁, δ₁, hδ₁, h₁⟩ := hg.2 a ha ω (ε / (|r| + 1)) (by positivity)
+  refine ⟨ω₁, δ₁, hδ₁, fun b hb hlt => ?_⟩
+  have he : cfc (fun t => r * g t) b - cfc (fun t => r * g t) a
+      = r • (cfc g b - cfc g a) := by
+    rw [cfc_const_mul r g b hg.1.continuousOn, cfc_const_mul r g a hg.1.continuousOn, smul_sub]
+  rw [he, omegaNorm_rsmul]
+  
+  have h := h₁ b hb hlt
+  have hnn : 0 ≤ omegaNorm A ω (cfc g b - cfc g a) := omegaNorm_nonneg _ _
+  rw [lt_div_iff₀ (by positivity : (0:ℝ) < |r| + 1)] at h
+  nlinarith [abs_nonneg r]
+
+omit [VonNeumannAlgebra A] in
+private theorem omegaNorm_le_norm_mul (ω : NPFunctional A) (x : A) :
+    omegaNorm A ω x ≤ ‖x‖ * omegaNorm A ω 1 := by
+  have := omegaNorm_mul_le ω x 1
+  rwa [mul_one] at this
+
+private theorem usCont_mul {g h : ℝ → ℝ} (hg : USCont A g) (hh : USCont A h)
+    {C : ℝ} (hC : ∀ t, |g t| ≤ C) : USCont A (fun t => g t * h t) := by
+  have hC0 : 0 ≤ C := le_trans (abs_nonneg _) (hC 0)
+  refine ⟨hg.1.mul hh.1, fun a ha ω ε hε => ?_⟩
+  obtain ⟨ω₁, δ₁, hδ₁, h₁⟩ := hh.2 a ha ω (ε / (2 * (C + 1))) (by positivity)
+  obtain ⟨ω₂, δ₂, hδ₂, h₂⟩ := hg.2 a ha (conjNP (cfc h a) ω) (ε / 2) (by positivity)
+  refine ⟨addNP ω₁ ω₂, min δ₁ δ₂, lt_min hδ₁ hδ₂, fun b hb hlt => ?_⟩
+  have hb₁ : omegaNorm A ω₁ (b - a) < δ₁ :=
+    lt_of_le_of_lt (omegaNorm_le_addNP ω₁ ω₂ _) (lt_of_lt_of_le hlt (min_le_left _ _))
+  have hb₂ : omegaNorm A ω₂ (b - a) < δ₂ :=
+    lt_of_le_of_lt (omegaNorm_le_addNP' ω₁ ω₂ _) (lt_of_lt_of_le hlt (min_le_right _ _))
+  have hgb : ‖cfc g b‖ ≤ C :=
+    norm_cfc_le hC0 fun x _ => by rw [Real.norm_eq_abs]; exact hC x
+  have he : cfc (fun t => g t * h t) b - cfc (fun t => g t * h t) a
+      = cfc g b * (cfc h b - cfc h a) + (cfc g b - cfc g a) * cfc h a := by
+    rw [cfc_mul g h b hg.1.continuousOn hh.1.continuousOn,
+      cfc_mul g h a hg.1.continuousOn hh.1.continuousOn]
+    noncomm_ring
+  rw [he]
+  refine lt_of_le_of_lt (omegaNorm_add_le ω _ _) ?_
+  have e1 : omegaNorm A ω (cfc g b * (cfc h b - cfc h a))
+      ≤ C * omegaNorm A ω (cfc h b - cfc h a) := by
+    refine (omegaNorm_mul_le ω _ _).trans ?_
+    exact mul_le_mul_of_nonneg_right hgb (omegaNorm_nonneg _ _)
+  have e2 : omegaNorm A ω ((cfc g b - cfc g a) * cfc h a)
+      = omegaNorm A (conjNP (cfc h a) ω) (cfc g b - cfc g a) := omegaNorm_mul_right ω _ _
+  have f1 := h₁ b hb hb₁
+  have f2 := h₂ b hb hb₂
+  rw [e2]
+  have hnn : 0 ≤ omegaNorm A ω (cfc h b - cfc h a) := omegaNorm_nonneg _ _
+  rw [lt_div_iff₀ (by positivity : (0:ℝ) < 2 * (C + 1))] at f1
+  nlinarith
+
+omit [VonNeumannAlgebra A] in
+private theorem usCont_comp_affine {g : ℝ → ℝ} (hg : USCont A g) (r c : ℝ) :
+    USCont A (fun t => g (r * t + c)) := by
+  have haffcfc : ∀ x : A, IsSelfAdjoint x →
+      cfc (fun t => g (r * t + c)) x = cfc g (r • x + algebraMap ℝ A c) := by
+    intro x hx
+    have haff : cfc (fun t : ℝ => r * t + c) x = r • x + algebraMap ℝ A c := by
+      rw [cfc_add x (fun t : ℝ => r * t) (fun _ : ℝ => c) (by fun_prop) (by fun_prop),
+        cfc_const_mul r (fun t : ℝ => t) x (by fun_prop), cfc_id' ℝ x, cfc_const c x hx]
+    rw [← haff, ← cfc_comp g (fun t : ℝ => r * t + c) x hx hg.1.continuousOn (by fun_prop)]
+    rfl
+  refine ⟨hg.1.comp (by fun_prop), fun a ha ω ε hε => ?_⟩
+  have hc' : IsSelfAdjoint (algebraMap ℝ A c) := IsSelfAdjoint.algebraMap A (IsSelfAdjoint.all c)
+  have ha' : IsSelfAdjoint (r • a + algebraMap ℝ A c) :=
+    (IsSelfAdjoint.smul (IsSelfAdjoint.all r) ha).add hc'
+  obtain ⟨ω', δ, hδ, hmain⟩ := hg.2 _ ha' ω ε hε
+  refine ⟨ω', δ / (|r| + 1), by positivity, fun b hb hlt => ?_⟩
+  have hb' : IsSelfAdjoint (r • b + algebraMap ℝ A c) :=
+    (IsSelfAdjoint.smul (IsSelfAdjoint.all r) hb).add hc'
+  have hsub : (r • b + algebraMap ℝ A c) - (r • a + algebraMap ℝ A c) = r • (b - a) := by
+    rw [smul_sub]; abel
+  have hlt' : omegaNorm A ω' ((r • b + algebraMap ℝ A c) - (r • a + algebraMap ℝ A c)) < δ := by
+    rw [hsub, omegaNorm_rsmul]
+    rw [lt_div_iff₀ (by positivity : (0:ℝ) < |r| + 1)] at hlt
+    nlinarith [omegaNorm_nonneg ω' (b - a), abs_nonneg r]
+  have := hmain _ hb' hlt'
+  rwa [← haffcfc b hb, ← haffcfc a ha] at this
+
+omit [VonNeumannAlgebra A] in
+private theorem usCont_of_approx {g : ℝ → ℝ} (hgc : Continuous g)
+    (happ : ∀ η : ℝ, 0 < η → ∃ h : ℝ → ℝ, USCont A h ∧ ∀ t, |g t - h t| ≤ η) :
+    USCont A g := by
+  refine ⟨hgc, fun a ha ω ε hε => ?_⟩
+  set M : ℝ := omegaNorm A ω 1 with hM
+  have hM0 : 0 ≤ M := omegaNorm_nonneg _ _
+  obtain ⟨h, hh, hgh⟩ := happ (ε / (3 * (M + 1))) (by positivity)
+  have hnorm : ∀ x : A, IsSelfAdjoint x → omegaNorm A ω (cfc g x - cfc h x) ≤ ε / 3 := by
+    intro x hx
+    have hd : cfc g x - cfc h x = cfc (fun t => g t - h t) x :=
+      (cfc_sub g h x hgc.continuousOn hh.1.continuousOn).symm
+    have hn : ‖cfc g x - cfc h x‖ ≤ ε / (3 * (M + 1)) := by
+      rw [hd]
+      exact norm_cfc_le (by positivity) fun y _ => by rw [Real.norm_eq_abs]; exact hgh y
+    refine (omegaNorm_le_norm_mul ω _).trans ?_
+    have hmul := mul_le_mul_of_nonneg_right hn hM0
+    refine hmul.trans ?_
+    rw [div_mul_eq_mul_div, div_le_div_iff₀ (by positivity) (by positivity)]
+    nlinarith
+  obtain ⟨ω', δ, hδ, hmain⟩ := hh.2 a ha ω (ε / 3) (by positivity)
+  refine ⟨ω', δ, hδ, fun b hb hlt => ?_⟩
+  have t1 := hnorm b hb
+  have t2 := hmain b hb hlt
+  have t3 := hnorm a ha
+  have step : omegaNorm A ω (cfc g b - cfc g a)
+      ≤ omegaNorm A ω (cfc g b - cfc h b) + omegaNorm A ω (cfc h b - cfc g a) :=
+    omegaNorm_sub_le ω _ _ _
+  have step2 : omegaNorm A ω (cfc h b - cfc g a)
+      ≤ omegaNorm A ω (cfc h b - cfc h a) + omegaNorm A ω (cfc h a - cfc g a) :=
+    omegaNorm_sub_le ω _ _ _
+  have t3' : omegaNorm A ω (cfc h a - cfc g a) ≤ ε / 3 := by
+    rw [← omegaNorm_neg, neg_sub]; exact t3
+  linarith
+
+/-! ### The generator `e(t) = t/(1+t²)` -/
+
+private noncomputable def sfun : ℝ → ℝ := fun t => 1 / (1 + t ^ 2)
+private noncomputable def efun : ℝ → ℝ := fun t => t / (1 + t ^ 2)
+
+private theorem denom_pos (t : ℝ) : (0 : ℝ) < 1 + t ^ 2 := by positivity
+
+private theorem sfun_continuous : Continuous sfun :=
+  continuous_const.div (by fun_prop) fun t => (denom_pos t).ne'
+
+private theorem efun_continuous : Continuous efun :=
+  continuous_id.div (by fun_prop) fun t => (denom_pos t).ne'
+
+private theorem abs_sfun_le (t : ℝ) : |sfun t| ≤ 1 := by
+  rw [sfun, abs_of_pos (by positivity)]
+  rw [div_le_one (denom_pos t)]
+  nlinarith [sq_nonneg t]
+
+private theorem abs_efun_le (t : ℝ) : |efun t| ≤ 1 := by
+  rw [efun, abs_div, abs_of_pos (denom_pos t), div_le_one (denom_pos t)]
+  nlinarith [sq_nonneg (|t| - 1), abs_nonneg t, sq_abs t]
+
+private theorem efun_eq_mul (t : ℝ) : efun t = t * sfun t := by
+  rw [efun, sfun]; ring
+
+omit [PartialOrder A] [StarOrderedRing A] [VonNeumannAlgebra A] in
+private theorem cfc_efun_eq {x : A} (hx : IsSelfAdjoint x) :
+    cfc efun x = x * cfc sfun x := by
+  rw [show efun = fun t : ℝ => t * sfun t from funext efun_eq_mul,
+    cfc_mul (fun t : ℝ => t) sfun x (by fun_prop) sfun_continuous.continuousOn, cfc_id' ℝ x]
+
+omit [PartialOrder A] [StarOrderedRing A] [VonNeumannAlgebra A] in
+private theorem cfc_efun_eq' {x : A} (hx : IsSelfAdjoint x) :
+    cfc efun x = cfc sfun x * x := by
+  rw [show efun = fun t : ℝ => sfun t * t from funext fun t => by rw [efun_eq_mul]; ring,
+    cfc_mul sfun (fun t : ℝ => t) x sfun_continuous.continuousOn (by fun_prop), cfc_id' ℝ x]
+
+omit [PartialOrder A] [StarOrderedRing A] [VonNeumannAlgebra A] in
+private theorem cfc_one_add_sq {x : A} (hx : IsSelfAdjoint x) :
+    cfc (fun t : ℝ => 1 + t ^ 2) x = 1 + x ^ 2 := by
+  rw [cfc_add x (fun _ : ℝ => (1 : ℝ)) (fun t : ℝ => t ^ 2) (by fun_prop) (by fun_prop),
+    cfc_const (1 : ℝ) x hx, map_one, cfc_pow_id x 2 hx]
+
+omit [PartialOrder A] [StarOrderedRing A] [VonNeumannAlgebra A] in
+private theorem cfc_sfun_left {x : A} (hx : IsSelfAdjoint x) :
+    (1 + x ^ 2) * cfc sfun x = 1 := by
+  have h := cfc_mul (fun t : ℝ => 1 + t ^ 2) sfun x (by fun_prop) sfun_continuous.continuousOn
+  rw [cfc_one_add_sq hx] at h
+  rw [← h, show (fun t : ℝ => (1 + t ^ 2) * sfun t) = fun _ : ℝ => (1 : ℝ) from
+    funext fun t => by rw [sfun]; field_simp, cfc_const (1 : ℝ) x hx, map_one]
+
+omit [PartialOrder A] [StarOrderedRing A] [VonNeumannAlgebra A] in
+private theorem cfc_sfun_right {x : A} (hx : IsSelfAdjoint x) :
+    cfc sfun x * (1 + x ^ 2) = 1 := by
+  have h := cfc_mul sfun (fun t : ℝ => 1 + t ^ 2) x sfun_continuous.continuousOn (by fun_prop)
+  rw [cfc_one_add_sq hx] at h
+  rw [← h, show (fun t : ℝ => sfun t * (1 + t ^ 2)) = fun _ : ℝ => (1 : ℝ) from
+    funext fun t => by rw [sfun]; field_simp, cfc_const (1 : ℝ) x hx, map_one]
+
+private theorem usCont_efun : USCont A efun := by
+  refine ⟨efun_continuous, fun a ha ω ε hε => ?_⟩
+  set Sa : A := cfc sfun a with hSa
+  set Ea : A := cfc efun a with hEa
+  refine ⟨addNP (conjNP Sa ω) (conjNP Ea ω), ε / 2, by positivity, fun b hb hlt => ?_⟩
+  set Sb : A := cfc sfun b with hSb
+  set Eb : A := cfc efun b with hEb
+  have hnSb : ‖Sb‖ ≤ 1 :=
+    norm_cfc_le zero_le_one fun t _ => by rw [Real.norm_eq_abs]; exact abs_sfun_le t
+  have hnEb : ‖Eb‖ ≤ 1 :=
+    norm_cfc_le zero_le_one fun t _ => by rw [Real.norm_eq_abs]; exact abs_efun_le t
+  -- the thesis's identity
+  have hEbl : Eb = Sb * b := by rw [hEb, hSb]; exact cfc_efun_eq' hb
+  have hEar : Ea = a * Sa := by rw [hEa, hSa]; exact cfc_efun_eq ha
+  have ha1 : (1 + a ^ 2) * Sa = 1 := by rw [hSa]; exact cfc_sfun_left ha
+  have hb1 : Sb * (1 + b ^ 2) = 1 := by rw [hSb]; exact cfc_sfun_right hb
+  have key : Eb - Ea = Sb * ((b - a) * Sa) - Eb * ((b - a) * Ea) := by
+    conv_rhs => rw [hEbl, hEar]
+    have expand : Sb * ((b - a) * Sa) - Sb * b * ((b - a) * (a * Sa))
+        = Sb * b * ((1 + a ^ 2) * Sa) - Sb * (1 + b ^ 2) * (a * Sa) := by
+      noncomm_ring
+    rw [expand, ha1, hb1, mul_one, one_mul, hEbl, hEar]
+  -- and the estimate
+  have e1 : omegaNorm A ω (Sb * ((b - a) * Sa)) ≤ omegaNorm A (conjNP Sa ω) (b - a) := by
+    refine (omegaNorm_mul_le ω Sb _).trans ?_
+    rw [omegaNorm_mul_right ω (b - a) Sa]
+    nlinarith [omegaNorm_nonneg (conjNP Sa ω) (b - a), hnSb]
+  have e2 : omegaNorm A ω (Eb * ((b - a) * Ea)) ≤ omegaNorm A (conjNP Ea ω) (b - a) := by
+    refine (omegaNorm_mul_le ω Eb _).trans ?_
+    rw [omegaNorm_mul_right ω (b - a) Ea]
+    nlinarith [omegaNorm_nonneg (conjNP Ea ω) (b - a), hnEb]
+  have f1 : omegaNorm A (conjNP Sa ω) (b - a) < ε / 2 :=
+    lt_of_le_of_lt (omegaNorm_le_addNP _ _ _) hlt
+  have f2 : omegaNorm A (conjNP Ea ω) (b - a) < ε / 2 :=
+    lt_of_le_of_lt (omegaNorm_le_addNP' _ _ _) hlt
+  rw [key, sub_eq_add_neg]
+  refine lt_of_le_of_lt (omegaNorm_add_le ω _ _) ?_
+  rw [omegaNorm_neg]
+  linarith
+
+omit [StarOrderedRing A] [VonNeumannAlgebra A] in
+private theorem usCont_congr {g h : ℝ → ℝ} (hg : USCont A g) (e : ∀ t, g t = h t) :
+    USCont A h := (funext e : g = h) ▸ hg
+
+/-- `s(t) = 1/(1+t²) = 1 − t·e(t)` is in `S`. -/
+private theorem usCont_sfun : USCont A sfun := by
+  refine usCont_congr (usCont_add (usCont_const (A := A) 1)
+    (usCont_smul (usCont_mul usCont_efun usCont_id (C := 1) abs_efun_le) (-1))) fun t => ?_
+  rw [sfun, efun]
+  field_simp
+  ring
+
+/-- The generating family `u_c(t) = 1/(1+(t−c)²)` is in `S`. -/
+private theorem usCont_sfun_sub (c : ℝ) : USCont A (fun t : ℝ => sfun (t - c)) := by
+  refine usCont_congr (usCont_comp_affine (usCont_sfun (A := A)) 1 (-c)) fun t => ?_
+  ring_nf
+
+/-! ### Stone–Weierstraß on `ℝ ∪ {∞}` -/
+
+private theorem tendsto_sfun_sub (c : ℝ) :
+    Tendsto (fun t : ℝ => sfun (t - c)) (cocompact ℝ) (𝓝 0) := by
+  have hmaj : Tendsto (fun t : ℝ => ‖t‖ + -|c|) (cocompact ℝ) atTop :=
+    tendsto_norm_cocompact_atTop.atTop_add (tendsto_const_nhds (x := -|c|))
+  have h0 : Tendsto (fun t : ℝ => 1 + (t - c) ^ 2) (cocompact ℝ) atTop := by
+    refine tendsto_atTop_mono (fun t => ?_) hmaj
+    have h1 : |t| - |c| ≤ |t - c| := abs_sub_abs_le_abs_sub t c
+    have h2 : |t - c| ≤ 1 + (t - c) ^ 2 := by
+      nlinarith [sq_nonneg (|t - c| - 1), abs_nonneg (t - c), sq_abs (t - c)]
+    rw [Real.norm_eq_abs]
+    linarith
+  simpa [sfun, Pi.inv_def, one_div] using h0.inv_tendsto_atTop
+
+/-- The generator `u_c`, extended to the one-point compactification. -/
+private noncomputable def kapGen (c : ℝ) : C(OnePoint ℝ, ℝ) :=
+  OnePoint.continuousMapMk ⟨fun t : ℝ => sfun (t - c), sfun_continuous.comp (by fun_prop)⟩ 0
+    (by rw [coclosedCompact_eq_cocompact]; exact tendsto_sfun_sub c)
+
+private theorem kapGen_coe (c t : ℝ) : kapGen c (t : OnePoint ℝ) = sfun (t - c) := rfl
+
+private theorem kapGen_infty (c : ℝ) : kapGen c (OnePoint.infty : OnePoint ℝ) = 0 := rfl
+
+private theorem usCont_of_mem_adjoin {F : C(OnePoint ℝ, ℝ)}
+    (hF : F ∈ Algebra.adjoin ℝ (Set.range (kapGen))) :
+    USCont A (fun t : ℝ => F (t : OnePoint ℝ)) := by
+  induction hF using Algebra.adjoin_induction with
+  | mem x hx =>
+      obtain ⟨c, rfl⟩ := hx
+      exact usCont_congr (usCont_sfun_sub (A := A) c) fun t => (kapGen_coe c t).symm
+  | algebraMap r => exact usCont_congr (usCont_const (A := A) r) fun t => rfl
+  | add x y _ _ ihx ihy => exact usCont_congr (usCont_add ihx ihy) fun t => rfl
+  | mul x y _ _ ihx ihy =>
+      exact usCont_congr (usCont_mul ihx ihy (C := ‖x‖)
+        fun t => by simpa using ContinuousMap.norm_coe_le_norm x (t : OnePoint ℝ)) fun t => rfl
+
+private theorem kapAlg_separatesPoints :
+    (Algebra.adjoin ℝ (Set.range (kapGen))).SeparatesPoints := by
+  have hmem : ∀ c : ℝ, kapGen c ∈ Algebra.adjoin ℝ (Set.range (kapGen)) := fun c =>
+    Algebra.subset_adjoin ⟨c, rfl⟩
+  have hne : ∀ u v : ℝ, u ^ 2 ≠ v ^ 2 → sfun u ≠ sfun v := by
+    intro u v h he
+    apply h
+    rw [sfun, sfun] at he
+    have hu : (0:ℝ) < 1 + u ^ 2 := by positivity
+    have hv : (0:ℝ) < 1 + v ^ 2 := by positivity
+    field_simp at he
+    linarith
+  rintro (_ | x) (_ | y) hxy
+  · exact absurd rfl hxy
+  · refine ⟨_, ⟨kapGen y, hmem y, rfl⟩, ?_⟩
+    change kapGen y (OnePoint.infty : OnePoint ℝ) ≠ kapGen y ((y : ℝ) : OnePoint ℝ)
+    rw [kapGen_infty, kapGen_coe, sub_self]
+    simp [sfun]
+  · refine ⟨_, ⟨kapGen x, hmem x, rfl⟩, ?_⟩
+    change kapGen x ((x : ℝ) : OnePoint ℝ) ≠ kapGen x (OnePoint.infty : OnePoint ℝ)
+    rw [kapGen_infty, kapGen_coe, sub_self]
+    simp [sfun]
+  · have hxy' : x ≠ y := by
+      intro h; exact hxy (by rw [h])
+    refine ⟨_, ⟨kapGen ((x + y) / 2 + 1), hmem _, rfl⟩, ?_⟩
+    change kapGen ((x + y) / 2 + 1) ((x : ℝ) : OnePoint ℝ)
+      ≠ kapGen ((x + y) / 2 + 1) ((y : ℝ) : OnePoint ℝ)
+    rw [kapGen_coe, kapGen_coe]
+    refine hne _ _ ?_
+    intro h
+    apply hxy'
+    have : (x - ((x + y) / 2 + 1)) ^ 2 - (y - ((x + y) / 2 + 1)) ^ 2 = 0 := by rw [h]; ring
+    have h2 : (x - y) * 2 = 0 := by nlinarith [this]
+    linarith
+
+/-- Every continuous `g : ℝ → ℝ` vanishing at infinity is in `S`. -/
+private theorem usCont_of_tendsto_zero {g : ℝ → ℝ} (hgc : Continuous g)
+    (hg0 : Tendsto g (cocompact ℝ) (𝓝 0)) : USCont A g := by
+  set G : C(OnePoint ℝ, ℝ) := OnePoint.continuousMapMk ⟨g, hgc⟩ 0
+    (by rw [coclosedCompact_eq_cocompact]; exact hg0) with hG
+  have hGcoe : ∀ t : ℝ, G (t : OnePoint ℝ) = g t := fun _ => rfl
+  have htop : (Algebra.adjoin ℝ (Set.range (kapGen))).topologicalClosure = ⊤ :=
+    ContinuousMap.subalgebra_topologicalClosure_eq_top_of_separatesPoints _ kapAlg_separatesPoints
+  have hGmem : G ∈ closure ((Algebra.adjoin ℝ (Set.range (kapGen))) : Set C(OnePoint ℝ, ℝ)) := by
+    have : G ∈ (Algebra.adjoin ℝ (Set.range (kapGen))).topologicalClosure := by
+      rw [htop]; trivial
+    exact this
+  refine usCont_of_approx hgc fun η hη => ?_
+  obtain ⟨F, hFmem, hFd⟩ := Metric.mem_closure_iff.mp hGmem η hη
+  refine ⟨fun t : ℝ => F (t : OnePoint ℝ), usCont_of_mem_adjoin hFmem, fun t => ?_⟩
+  have := ContinuousMap.dist_apply_le_dist (f := G) (g := F) (t : OnePoint ℝ)
+  rw [Real.dist_eq, hGcoe] at this
+  linarith
+
+/-! ### Reduction of a general `f = O(t)` to a function vanishing at infinity -/
+
+private theorem bounded_of_bigO {g : ℝ → ℝ} (hgc : Continuous g) {n : ℕ} {C : ℝ}
+    (h : ∀ t : ℝ, (n : ℝ) ≤ |t| → |g t| ≤ C) : ∃ C' : ℝ, ∀ t, |g t| ≤ C' := by
+  obtain ⟨C₀, hC₀⟩ := (isCompact_Icc (a := -(n : ℝ)) (b := (n : ℝ))).exists_bound_of_continuousOn
+    hgc.continuousOn
+  refine ⟨max C C₀, fun t => ?_⟩
+  rcases le_or_gt (n : ℝ) |t| with ht | ht
+  · exact le_trans (h t ht) (le_max_left _ _)
+  · refine le_trans ?_ (le_max_right C C₀)
+    have := hC₀ t ⟨by cases abs_le.mp ht.le with | intro h1 h2 => linarith,
+      by cases abs_le.mp ht.le with | intro h1 h2 => linarith⟩
+    rwa [Real.norm_eq_abs] at this
+
+private theorem tendsto_mul_sfun {f : ℝ → ℝ} {n : ℕ} {b : ℝ}
+    (hb : ∀ t : ℝ, (n : ℝ) ≤ |t| → |f t| ≤ b * |t|) (hb0 : 0 ≤ b) :
+    Tendsto (fun t : ℝ => f t * sfun t) (cocompact ℝ) (𝓝 0) := by
+  have hnorm : Tendsto (fun t : ℝ => |t|) (cocompact ℝ) atTop :=
+    tendsto_norm_cocompact_atTop
+  have hmaj : Tendsto (fun t : ℝ => b * (1 / |t|)) (cocompact ℝ) (𝓝 0) := by
+    simpa [one_div] using hnorm.inv_tendsto_atTop.const_mul b
+  refine squeeze_zero_norm' ?_ hmaj
+  filter_upwards [hnorm.eventually_ge_atTop (max (n : ℝ) 1)] with t ht
+  have ht1 : (1 : ℝ) ≤ |t| := le_trans (le_max_right _ _) ht
+  have htpos : (0 : ℝ) < |t| := by linarith
+  have htn : (n : ℝ) ≤ |t| := le_trans (le_max_left _ _) ht
+  have hden : (0 : ℝ) < 1 + t ^ 2 := by positivity
+  have habs : |t| ^ 2 = t ^ 2 := sq_abs t
+  have hf := hb t htn
+  have hval : ‖f t * sfun t‖ = |f t| * (1 / (1 + t ^ 2)) := by
+    have h0 : |sfun t| = 1 / (1 + t ^ 2) := by
+      simp only [sfun]
+      exact abs_of_pos (by positivity)
+    rw [Real.norm_eq_abs, abs_mul, h0]
+  rw [hval]
+  refine (mul_le_mul_of_nonneg_right hf (by positivity)).trans ?_
+  have e1 : b * |t| * (1 / (1 + t ^ 2)) = b * |t| / (1 + t ^ 2) := by ring
+  have e2 : b * (1 / |t|) = b / |t| := by ring
+  rw [e1, e2, div_le_div_iff₀ hden htpos]
+  nlinarith [hb0, habs]
+
 /-- **74I** (`proto-kaplansky`, vn.tex:4224, Proposition): for a continuous
 `f : ℝ → ℝ` with `f(t) = O(t)`, the map `a ↦ f(a)` (continuous functional
 calculus) is ultrastrongly continuous on the self-adjoint part of a von
-Neumann algebra. -/
+Neumann algebra.
+
+*Class 1 — faithful*, apart from one simplification.  See the block above
+for the plan, which is the thesis's.  The one departure: where the thesis
+adjoins all the `e_{a,b}(t) = e(at+b)` and appeals to Stone–Weierstraß for
+the algebra they generate, we adjoin only the translates `s(t−c)` of
+`s(t) = 1/(1+t²)`.  These already separate the points of `ℝ ∪ {∞}`
+(`s(x−c) = s(y−c)` forces `c = (x+y)/2`, and `s(·−c) > 0` on `ℝ` while it
+vanishes at `∞`), and being positive they make the "take real parts if
+necessary" step of the thesis unnecessary: `C(ℝ ∪ {∞}, ℝ)` is a real
+Banach algebra and Mathlib's real Stone–Weierstraß applies directly. -/
 theorem proto_kaplansky (f : ℝ → ℝ) (hf : Continuous f)
     (hO : ∃ (n : ℕ) (b : ℝ), ∀ t : ℝ, (n : ℝ) ≤ |t| → |f t| ≤ b * |t|) :
     @ContinuousOn A A (ultrastrong A) (ultrastrong A) (fun a => cfc f a)
-      {a : A | IsSelfAdjoint a} :=
-  sorry
+      {a : A | IsSelfAdjoint a} := by
+  refine continuousOn_of_usCont ?_
+  obtain ⟨n, b, hb⟩ := hO
+  have habs1 : |((n : ℝ) + 1)| = (n : ℝ) + 1 := abs_of_pos (by positivity)
+  have hb0 : 0 ≤ b := by
+    have h := hb ((n : ℝ) + 1) (by rw [habs1]; linarith)
+    rw [habs1] at h
+    nlinarith [abs_nonneg (f ((n : ℝ) + 1))]
+  have habsS : ∀ t : ℝ, |sfun t| = 1 / (1 + t ^ 2) := fun t => by
+    simp only [sfun]; exact abs_of_pos (by positivity)
+  have hg1c : Continuous (fun t => f t * sfun t) := hf.mul sfun_continuous
+  have hg1 : USCont A (fun t => f t * sfun t) :=
+    usCont_of_tendsto_zero hg1c (tendsto_mul_sfun hb hb0)
+  obtain ⟨C₁, hC₁⟩ : ∃ C' : ℝ, ∀ t, |f t * sfun t| ≤ C' := by
+    refine bounded_of_bigO hg1c (n := n) (C := b) fun t ht => ?_
+    have hden : (0 : ℝ) < 1 + t ^ 2 := by positivity
+    rw [abs_mul, habsS t]
+    refine (mul_le_mul_of_nonneg_right (hb t ht) (by positivity)).trans ?_
+    rw [mul_one_div, div_le_iff₀ hden]
+    nlinarith [sq_abs t, abs_nonneg t, sq_nonneg (|t| - 1)]
+  have hg2 : USCont A (fun t => f t * sfun t * t) := usCont_mul hg1 usCont_id hC₁
+  obtain ⟨C₂, hC₂⟩ : ∃ C' : ℝ, ∀ t, |f t * sfun t * t| ≤ C' := by
+    refine bounded_of_bigO (hg1c.mul continuous_id) (n := n) (C := b) fun t ht => ?_
+    have hden : (0 : ℝ) < 1 + t ^ 2 := by positivity
+    rw [abs_mul, abs_mul, habsS t]
+    have h1 : |f t| * (1 / (1 + t ^ 2)) * |t| ≤ b * |t| * (1 / (1 + t ^ 2)) * |t| := by
+      have hnn : (0 : ℝ) ≤ 1 / (1 + t ^ 2) * |t| := by positivity
+      nlinarith [hb t ht]
+    refine h1.trans ?_
+    rw [mul_comm (b * |t|) (1 / (1 + t ^ 2)), mul_assoc, ← mul_assoc, one_div,
+      inv_mul_eq_div, div_mul_eq_mul_div, div_le_iff₀ hden]
+    nlinarith [sq_abs t]
+  refine usCont_congr (usCont_add hg1 (usCont_mul hg2 usCont_id hC₂)) fun t => ?_
+  simp only [sfun]
+  field_simp
 
 /-- **74III** (`abs-us-cont`, vn.tex:4331, Corollary): `a ↦ |a|` is
 ultrastrongly continuous on the self-adjoint part of a von Neumann
-algebra. -/
+algebra.
+
+*Class 1 — faithful*: `|t| = O(t)` on the nose (`b = 1`, `n = 0`), so this
+is one application of **74I**. -/
 theorem abs_us_cont :
     @ContinuousOn A A (ultrastrong A) (ultrastrong A)
       (fun a => cfc (fun t : ℝ => |t|) a) {a : A | IsSelfAdjoint a} :=
-  sorry
+  proto_kaplansky (fun t : ℝ => |t|) continuous_abs ⟨0, 1, fun t _ => by rw [one_mul, abs_abs]⟩
 
 /-- **74IV** (`kaplansky`, vn.tex:4336, Kaplansky's Density Theorem): if `b`
 in a von Neumann algebra `B` is the ultrastrong limit of a net from a

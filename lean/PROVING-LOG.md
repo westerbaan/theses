@@ -5524,3 +5524,310 @@ Consequence: **166II is no longer blocked on a decision** — see QUESTIONS B5.
   `PROVING-LOG.md`.  Nothing staged, nothing committed.  `HANDOFF.md` not
   touched (its `B/Dils` row is a whole-chapter figure and is stale for other
   reasons too).
+
+## Session 21 — `B/Dils` parsec 1660: 166II ultranorm continuity of `⊗` (worker 52)
+
+Date 2026-08-14.  Successor of session 20 (worker 50).  Scope: `B/Dils` only.
+
+**Result: `B/Dils` 61 → 60.  166II `ultranorm_continuity_ext_tensor` is
+proved — the statement that opened QUESTIONS B5's second half two rounds ago,
+and the last of parsec 1660 that was reachable.  Two findings beyond the
+proof: the thesis's boundedness hypothesis on the `x`-net is redundant, and
+`kaplansky_hilbmod` (158II) is *not* blocked on `A/VN` 74IV, contrary to what
+every round since w34 has recorded.**
+
+### 1. 166II `ultranorm_continuity_ext_tensor` — divergence class 2
+
+`dils.tex` **166III**, the thesis's splitting
+
+```
+xα ⊗ yα − x ⊗ y  =  (xα − x) ⊗ yα  +  x ⊗ (yα − y)
+```
+
+fed to the triangle inequality `unSeminorm_add_le` and `squeeze_zero`.  Each
+of the two terms is estimated **differently from the thesis**, and that is the
+one deliberate divergence.
+
+*The thesis's route.*  `⟨(xα−x) ⊗ yα, (xα−x) ⊗ yα⟩ = (⟨xα−x,xα−x⟩ ⊗ 1)·(1 ⊗
+⟨yα,yα⟩)`; the left factor is scaled into `effects 𝒞` and shown to converge
+ultraweakly to `0`, the right factor is a bounded net, and **44III**
+`vanishing_effects` finishes.
+
+*Ours.*  Once `Ω(· ⊗ 1)` is known to be an np-functional — which is
+`compNP` applied to the leg together with w50's `vnTensor_legLeft_normal`,
+bundled here as `vnTensorLegLeftNP` — the whole estimate can stay inside the
+order of `𝒞` and never leaves it:
+
+```
+Ω(⟨d,d⟩ ⊗ ⟨yα,yα⟩)  ≤  Ω(⟨d,d⟩ ⊗ M²·1)  =  M² · Ω(⟨d,d⟩ ⊗ 1)  =  M² · ω(⟨d,d⟩)
+```
+
+using `⟨yα,yα⟩ ≤ ‖⟨yα,yα⟩‖·1 ≤ M²·1` and monotonicity of `⊗` in its second
+slot over a positive first slot.  Taking square roots this is exactly
+`‖(xα−x) ⊗ yα‖_Ω ≤ M · ‖xα−x‖_ω`, which tends to `0` because `hx` holds for
+*every* np-functional of `𝒜`, in particular for `ω`.  The second term is the
+mirror image with the legs exchanged: `‖x ⊗ (yα−y)‖_Ω ≤ ‖x‖ · ‖yα−y‖_ξ` with
+`ξ = Ω(1 ⊗ ·)`.
+
+**44III `vanishing_effects` is therefore not used at all**, and neither is any
+scaling into `effects 𝒞`.  Session 20's prediction of what the proof would
+need ("an ultranorm triangle inequality, the scaling into `effects 𝒞`, and
+bundling `Ω ∘ leg` as an `NPFunctional`") was right about the first and third
+and wrong about the second — and the second is what carries the redundant
+hypothesis, see §2.
+
+New declarations in `SelfDual.lean`, section `VNTensor`, all `#print axioms`
+clean: `le_ofReal_smul_one` (private; `0 ≤ u`, `‖u‖ ≤ r` ⟹ `u ≤ r·1`),
+`vnTensor_nonneg`, `vnTensor_mono_right`, `vnTensor_mono_left`,
+`vnTensorLegLeft`, `vnTensorLegRight` (the legs as `PositiveLinearMap`s),
+`vnTensorLegLeftNP`, `vnTensorLegRightNP` and their `_apply` simp lemmas.
+
+Also added, deliberately, as a standing guard: **`vnTensor_mul_complex`**, the
+machine-checked witness that `IsVNTensor` is *inhabited* (`t = (·*·)` on `ℂ`,
+all eight fields discharged, `#print axioms` clean).  Session 14's mirroring
+defect left `PaschkeModule` uninhabited and made nine theorems vacuous, and it
+survived several readings because nobody had tried a concrete example; this
+chapter now carries one for the other structure it reasons about
+hypothetically.
+
+`hX`, `hY` are unused (as in 165III: `E : ExtTensor t ht X Y` carries
+everything the proof needs), and so is `hxb` — §2.  The declaration carries
+`set_option linter.unusedVariables false in` plus a comment giving the reason
+for each, so the warning multiset is unchanged.
+
+### 2. The thesis's `x`-net bound is redundant (ERRATA, 166II statement row)
+
+166II hypothesises that **both** nets are norm-bounded.  The splitting it uses
+never bounds `xα`: the bound enters only to make `⟨xα−x,xα−x⟩ ⊗ 1` an
+*effect*, which is an artefact of routing through `vanishing_effects`.  The
+order estimate above needs a bound on the `y`-net only.  Splitting the other
+way, `xα ⊗ (yα − y) + (xα − x) ⊗ y`, drops the bound on `yα` instead — so the
+lemma is true with **either one** of the two hypotheses, and the statement as
+printed asks for one too many.  Our statement keeps both (faithful
+transcription); the linter suppression is the evidence that `hxb` is unused.
+
+This is the fifth time the "check whether a cited hypothesis is actually used"
+habit has paid inside this project.
+
+### 3. **`Kaplansky.lean` is not blocked on `A/VN` 74IV** — correction
+
+Every brief and report since w34 has recorded `Kaplansky.lean`'s two `sorry`s
+as waiting on thesis A's Kaplansky density theorem (**74IV**, and behind it
+74I `proto_kaplansky`).  That is right for **158Ia**
+`kaplansky_bounded_approx` and **wrong for 158II** `kaplansky_hilbmod`.
+
+Reading `dils.tex` 4082–4279 in full: parsec 1580's point **11** — our 158Ia —
+is an *unlabelled* expository restatement of the classical theorem ("The
+theorem is usually stated as follows … For our generalization, it is more
+convenient to consider the following variation"), and point **12** says the
+generalization is "inspired by" Arveson's proof, "Cf. `\sref{kaplansky}`".
+Because point 11 carries no LaTeX label it **cannot be cited**, and the proof
+of `kaplansky-hilbmod` (points 30, 40, 50) never cites `kaplansky` either.
+What that proof actually uses is:
+
+* the ultranorm density of `D` — a *hypothesis* of 158II;
+* `h(y) = y·2(1+⟨y,y⟩)⁻¹` and `g(x) = x·(1+√(1−⟨x,x⟩))⁻¹`, with `‖h(y)‖ ≤ 1`
+  and `h(g(x)) = x` by continuous functional calculus;
+* `h(y) ∈ D` for `y ∈ D`.  Note this needs `2(1+⟨y,y⟩)⁻¹ ∈ A`, i.e. `A`
+  *unital*.  Our Lean `A : StarSubalgebra ℂ ℬ` **is** unital, so this is fine
+  as transcribed — but the thesis's "C\*-subalgebra" need not be, and there the
+  step is `h(y) = 2y − (2b(1+b)⁻¹)·y` with `b = ⟨y,y⟩`, which also needs `D`
+  closed under negation (it is, being a submodule);
+* ultranorm continuity of `h` (point 50) — the bulk of the work: the splitting
+  `⟨h(y)−h(yα), h(y)−h(yα)⟩ = A₁ + A₁' + A₂ + A₂'`, `0 ≤ (1+b)⁻¹ ≤ 1` and
+  `0 ≤ b(1+b)⁻¹ ≤ 1` for `b ≥ 0`, **45IV** `mult-uws-cont`, and Cauchy–Schwarz
+  for `‖·‖_f` (`unSeminorm_inner_le`, in the tree).
+
+So **158II is a self-contained target inside `B/Dils`** — long (the four
+convergence estimates plus the CFC identities are the whole of it) but with no
+external `sorry` and no decision in its way.  I did not attempt it; the
+estimate is a session's work in its own right, and this round's target was
+166II.
+
+Consequence for **166IV** `exttensor_dense_subsets`: it is blocked on
+**`ext_tensor_dense`** (164II.1) *only* — not, as recorded, on `ext_tensor_dense`
+*and* Kaplansky.  And `ext_tensor_dense` is the one that has no route (w50 §3:
+it is a property of the concrete ℓ² construction, and the abstract route needs
+the projection theorem 160IV, itself behind 149VIII/80IV).
+
+### 4. What was checked and is still blocked
+
+* **166IV** — `ext_tensor_dense` (`sorry`), as above.  Verified by reading
+  `dils.tex` 166V.
+* **164II.2a** `ext_tensor_basis` — I re-checked whether it might follow from
+  `extTensor_sep` now.  It does not: `IsONBasis` (`HilbertModules.lean:1768`)
+  carries a genuine Parseval clause (`∑_{i∈s} ⟨eᵢ,x⟩•eᵢ → x` ultranorm) and an
+  ℓ²-completeness clause, not a separation condition.  Orthonormality of
+  `(eᵢ ⊗ dⱼ)` is immediate from `η_inner`; the other two clauses are the
+  density statement again.
+* **165VI**, **167I**, `Paschke.lean`, `Pure.lean`, `SelfDualCompletion.lean`,
+  `HilbertModules.lean`, `Stinespring.lean` — unchanged from sessions 14/16/20;
+  not re-tested, not contradicted.
+
+### 5. Verification
+
+* `lake build Theses.B.Dils.SelfDual` → exit 0, zero `error:` lines.
+  (`lake build Theses` raced with the `A`-chain worker's concurrent edit of
+  `Theses/A/VN/Basic.lean` — a missing `.olean` — and was re-run after.)
+* `#print axioms` → `[propext, Classical.choice, Quot.sound]` for
+  `ultranorm_continuity_ext_tensor`, `vnTensor_mul_complex` and all eight
+  other new public declarations.
+* Warning diff for `SelfDual.lean` against this session's own baseline,
+  message multiset with line/column stripped: **exactly one line**,
+  `declaration uses sorry` 22 → 21.
+* Code `sorry`s per file, before → after: `SelfDual` 22 → **21**, `Pure` 16,
+  `Paschke` 9, `Stinespring` 7, `HilbertModules` 3, `Kaplansky` 2,
+  `SelfDualCompletion` 2.  **`B/Dils` 61 → 60.**  No `sorry`ed instances.
+* `HANDOFF.md` **not** touched (w50's precedent).  Its `B/Dils` row reads
+  `139 → 75`; the true figure is `139 → 60` (its own refresh script agrees),
+  and the `total` row is stale for the other chapters too, so the table needs
+  one coordinated refresh rather than a per-worker edit.
+* Files touched: `Theses/B/Dils/SelfDual.lean`, `ERRATA.md` (two 166II rows,
+  and 165III/166II put back into point order), `QUESTIONS.md` (**B5**),
+  `PROVING-LOG.md`.  Nothing staged, nothing committed.  The dirty
+  `Theses/A/{CStar/Matrices,VN/Basic}.lean` are the other worker's.
+
+---
+
+## Session 22 — `A/CStar` parsec 341 and `A/VN` 74I Kaplansky (worker 51)
+
+Date 2026-08-14.  Successor of session 19 (worker 47) on the A chain.
+Scope: `Theses/A/CStar/*.lean` and `Theses/A/VN/*.lean`.
+
+**Result: `A/CStar` 39 → 37, `A/VN` 114 → 112.  Four statements proved:
+34aII `normal_russo_dye`, 34aVIII `russo_dye_cor` (which together release
+128VI `sef_instrument` in `A/Proc`), and 74I `proto_kaplansky` with its
+immediate corollary 74III `abs_us_cont`.**  All four `#print axioms`-clean.
+
+### 1. 34aII `normal_russo_dye` — divergence class 2 (different route)
+
+`‖f(a)‖ ≤ ‖f(1)‖‖a‖` for a *positive* map `f` and *normal* `a`.
+
+*The thesis's route* (cstar.tex 341.20) restricts `f` to the commutative
+`C*(a)` and invokes **34IX**.2 `cp_commutative_dom` (a positive map out of a
+commutative C\*-algebra is cp) and then **34XVI** `cp_russo_dye`.  That is
+**not** available: `cp_commutative_dom` is still `sorry` in the tree, and its
+own proof needs **34VII** `ccstar-pos-mat` — a partition-of-unity
+approximation of `(M_N 𝒜)₊` on the Gelfand spectrum.
+
+*Ours* runs the same approximation, but **directly on `a` through the
+continuous functional calculus**, where the partition of unity is explicit
+and neither Gelfand duality nor Urysohn's lemma is needed: cover the compact
+`spec(a) ⊆ ℂ` by finitely many `δ`-balls centred at spectrum points `λ`, turn
+the tent functions `max(0, δ − |z−λ|)` into a partition of unity `ψ_λ` by
+dividing by their (strictly positive) sum, and set `g_λ := ψ_λ(a)`.  Then
+`g_λ ≥ 0`, `∑ g_λ = 1` and `‖a − ∑ λ g_λ‖ ≤ δ` by `norm_cfc_le`.
+
+The one instance of `cp_commutative_dom` that survives is the new private
+`norm_sum_smul_le_aux` / `norm_sum_smul_le_of_nonneg`:
+
+> `‖∑ₖ λₖ pₖ‖ ≤ (maxₖ|λₖ|)·‖∑ₖ pₖ‖` for positive `pₖ` in a C\*-algebra.
+
+and there it is **elementary**: it is `cp_russo_dye` applied to the positive
+map `c ↦ ∑ₖ cₖ pₖ` out of `ι → ℂ` (a C\*-algebra in Mathlib for `Fintype ι`),
+whose complete positivity is a one-line regrouping —
+`∑ᵢⱼ bᵢ* φ(c̄ᵢcⱼ) bⱼ = ∑ₖ dₖ* pₖ dₖ` with `dₖ = ∑ᵢ cᵢ(k) bᵢ`.  No
+approximation is involved.  So the general 34IX.2 is still open, but nothing
+in parsec 341 waits on it.
+
+*Also worth recording (checked, not recalled):* the proved `cp_russo_dye`
+uses its complete-positivity hypothesis **only at `n = 1` and `n = 2`** — at
+`1` through `astara_pos_basic_2_cp` (which is `hf 1` and nothing else) and at
+`2` through `cp_cs f hp (hf 2)`.  So 34XVI holds verbatim for 2-positive
+maps, which is worth knowing the next time a merely 2-positive map turns up.
+
+### 2. 34aVIII `russo_dye_cor` — divergence class 1 (faithful)
+
+The thesis's own limit argument on top of the already-proved **34aVII**
+`russo_dye`: for `‖x‖ < 1` pick `N > 2/(1−‖x‖)`, write `x = (u₁+⋯+u_N)/N`,
+and bound each `‖f(uᵢ)‖ ≤ ‖f(1)‖‖uᵢ‖ = ‖f(1)‖` by 34aII (a unitary is normal
+of norm 1).  One cosmetic departure: the thesis approximates a norm-`≤ 1`
+element by such means and passes to the limit; we instead apply the ball
+statement to `r⁻¹·a` for every `r > ‖a‖`, which needs no closedness of the
+set of means.
+
+**This releases 128VI `sef_instrument`** (`A/Proc/Duplicators.lean`), which
+worker 49 identified as needing `‖f'‖ ≤ 1` sharply for a merely positive
+unital map.
+
+### 3. 74I `proto_kaplansky` — divergence class 1 apart from one shortcut
+
+The thesis's plan (vn.tex 740.20, "an adaptation of Conway Lemma 44.2") is
+transcribed in full, as a block of private lemmas about
+
+```
+USCont A g  :=  Continuous g ∧ (the ε–δ form, in the seminorms ‖·‖_ω, of
+                "a ↦ g(a) is ultrastrongly continuous on sa(A)")
+```
+
+`continuousOn_of_usCont` turns that into the `ContinuousOn` of the statement,
+using w47's `exists_ultrastrong_ball_of_isOpen` for the `𝓝`-basis.  Then, in
+the thesis's order: `usCont_id`, `usCont_const`, `usCont_add`,
+`usCont_smul`, `usCont_comp_affine` (precomposition with `t ↦ rt+c`, via
+`cfc_comp`), `usCont_mul` (`g·h` when `g` is **bounded** — this is where
+`‖g(b)‖ ≤ C` and `omegaNorm_mul_right` do the work), and `usCont_of_approx`
+(closure under uniform limits, via `‖x‖_ω ≤ ‖x‖·‖1‖_ω`).
+
+`usCont_efun` is the heart, and is the thesis's identity verbatim:
+
+```
+e(b) − e(a) = s(b)(b−a)s(a) − e(b)(b−a)e(a),   e(t)=t/(1+t²), s(t)=1/(1+t²)
+```
+
+proved from `(1+a²)s(a) = 1`, `s(b)(1+b²) = 1` and `e = id·s = s·id`
+(all four by `cfc_mul`) plus one `noncomm_ring`; the estimate is
+`‖s(b)‖ ≤ 1`, `‖e(b)‖ ≤ 1` and `‖(b−a)c‖_ω = ‖b−a‖_{c*ω}`, i.e.
+`omegaNorm_mul_right` — **made public in `A/VN/Basic.lean` for this
+purpose** (it was file-private).  `s = 1 − t·e(t)` then gives `usCont_sfun`.
+
+**The one deliberate shortcut.**  Where the thesis adjoins all the
+`e_{a,b}(t) = e(at+b)` and appeals to Stone–Weierstraß for the C\*-algebra
+they generate in `C(ℝ ∪ {∞})`, taking real parts at the end, we adjoin only
+the translates `s(t−c)`.  They already separate the points of `ℝ ∪ {∞}`
+(`s(x−c) = s(y−c)` forces `c = (x+y)/2`; and `s(·−c) > 0` on `ℝ` while it
+vanishes at `∞`), and being real-valued they let Mathlib's *real*
+Stone–Weierstraß
+(`ContinuousMap.subalgebra_topologicalClosure_eq_top_of_separatesPoints`)
+apply to `Algebra.adjoin ℝ (Set.range kapGen) ⊆ C(OnePoint ℝ, ℝ)` directly,
+with no real-part step.  `OnePoint.continuousMapMk` builds the extensions;
+`Algebra.adjoin_induction` transports membership back to `USCont`, the `mul`
+case using `‖F x‖ ≤ ‖F‖` on the compact `OnePoint ℝ` for the boundedness
+`usCont_mul` demands.
+
+Finally the thesis's reduction, verbatim: `f = f·s + (f·s·t)·t`, where
+`f·s` vanishes at infinity (from `|f(t)| ≤ b|t|`, since `|t|/(1+t²) ≤ 1/|t|`)
+and both `f·s` and `f·s·t` are bounded (`bounded_of_bigO`: a continuous
+function bounded outside `[−n,n]` is bounded, by
+`IsCompact.exists_bound_of_continuousOn`).  Each of the two multiplications
+by `id` is one application of `usCont_mul`.
+
+### 4. 74III `abs_us_cont` — divergence class 1, free
+
+`|t| = 1·|t|` for all `t`, so 74III is `proto_kaplansky (fun t => |t|)
+continuous_abs ⟨0, 1, …⟩`.  One line.
+
+### 5. Verification
+
+* Whole-project `lake build` → exit 0, `Build completed successfully
+  (8738 jobs)`; `grep error:` yields only the pre-existing
+  `linter.style.header` noise from `A/VN/Basic.lean` (the `²` token), zero
+  after filtering.  Log `scratchpad/w51full.log`.
+* `sorry` counts from that log's `declaration uses \`sorry\`` lines (never a
+  grep): `A/CStar` 39 → **37** (`Matrices` 6 → 4), `A/VN` 114 → **112**
+  (`Completeness` 15 → 13).  `A/Proc` 128 and `B/Eff` 20 unchanged;
+  `B/Dils` 60 is the concurrent worker's.
+* `#print axioms`: `[propext, Classical.choice, Quot.sound]` for
+  `Theses.A.CStar.normal_russo_dye`, `.russo_dye_cor`,
+  `Theses.A.VN.proto_kaplansky`, `.abs_us_cont`, plus regression checks on
+  `.russo_dye` and `.cp_russo_dye`.
+* **Warnings: none added.**  Message lists for the three touched files were
+  read off the full build and filtered to the edited line ranges
+  (`Matrices.lean` 1470–1740 and beyond, `Completeness.lean` 1400–1900,
+  `Basic.lean` 2125–2145): empty.  Every new private lemma that needed one
+  carries an `omit … in`, and the three `show`s that changed the goal were
+  turned into `change` for `linter.style.show`.
+* Files touched: `Theses/A/CStar/Matrices.lean`, `Theses/A/VN/Basic.lean`
+  (one `private` removed), `Theses/A/VN/Completeness.lean`,
+  `PROVING-LOG.md`.  `ERRATA.md`/`QUESTIONS.md` deliberately untouched —
+  nothing false found and no author decision is needed.  Nothing staged,
+  nothing committed.
