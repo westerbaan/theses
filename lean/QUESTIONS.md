@@ -67,9 +67,13 @@ See also the 208III row in ERRATA.md: the thesis's own proof of 208III routes
 through 177Ia twice, and both detours turn out to be avoidable.
 
 ### B5. `IsVNTensor` is too weak for 165III (and, it turns out, 166II)
-*Status: the **positivity** half is answered — no change needed (worker 40,
-confirmed by worker 41 below).  A **second, different** gap — normality of the
-two legs, needed by 166II — is open at the bottom of this item.*
+*Status 2026-08-14 (worker 50): the **positivity** half is answered (worker 40,
+confirmed by worker 41), and 165III `dfn_tensor_of_hilbmod_maps` is now
+**proved**.  The **normality-of-the-legs** half is answered too — it is
+derivable, so `IsVNTensor` needs no new clause; see the closing note.  A
+**third**, genuinely different gap has replaced them: `IsVNTensor` omits
+proc.tex `tensor`-**2** (the *existence* of product functionals), which
+**165VI** needs.  That one is open.*
 
 `dils.tex:5433`.  Our axiomatization of the von Neumann tensor product
 (proc.tex 108II) gives miu-bilinearity, `generates`, and separation by product
@@ -117,14 +121,14 @@ and that is a two-line consequence of (ii) with `add_left`/`add_right`
 else in 165IV needs an order clause.  **So B5's positivity half is settled:
 no change to `IsVNTensor` is required.**
 
-One practical obstacle remains, and it is not a question for anyone but a
-structural choice: `matBilin_nonneg_of_mi` lives in `Theses/A/Proc/Tensor.lean`,
-which is **not on `B/Dils`'s import path** (`B/Dils` reaches only as far as
-`Theses.A.VN.Projections`).  Using it in `SelfDual.lean` means adding
-`import Theses.A.Proc.Tensor`, which pulls in `A/VN/Completeness`,
-`A/VN/Division`, `A/VN/NormalFunctionals` and all of `A/Proc` up to `Tensor`.
-That is the only thing now standing between 165III's existence half and a
-proof.
+~~One practical obstacle remains … `matBilin_nonneg_of_mi` lives in
+`Theses/A/Proc/Tensor.lean`, which is not on `B/Dils`'s import path.~~
+**Resolved** (QUESTIONS D3, worker 43): the lemma was moved to
+`Theses/A/CStar/Matrices.lean`, which `B/Dils` already imports.  **165III
+`dfn_tensor_of_hilbmod_maps` is proved as of 2026-08-14 (worker 50)**, exactly
+along the route (i)–(iii) above; the only ingredient the analysis had missed is
+ℂ-homogeneity of `t` in its *second* slot, needed to pull `‖T‖²` out of
+`Mₙ(⊗)(G, ‖T‖²H)`, which is `vnTensor_smul_complex_right` (see below).
 
 *Second gap, found 2026-08-14 (worker 41): `IsVNTensor` also omits
 **normality of the legs**.*  The eight fields make `a ↦ t a 1` and `b ↦ t 1 b`
@@ -138,9 +142,55 @@ of `𝒜 ⊗ ℬ`.  `generates` and `separating` give pointwise separation, not
 this.  The thesis asserts the legs are "ncp" with a commented-out `\TODO`
 where the justification should be (see the 166II row in ERRATA.md).
 
-*Decision needed*: add a normality clause for the two legs alongside the
-positivity clause.  Until then **166II is unreachable too**, and with it
-166IV, which cites it.
+*Answered 2026-08-14 (worker 50): no clause is needed — leg normality is
+derivable, and is now in the tree.*  `vnTensor_legLeft_normal` and
+`vnTensor_legRight_normal` (`B/Dils/SelfDual.lean`, `#print axioms` clean)
+prove `PreservesDirSups (fun a => t a 1)` and `PreservesDirSups (fun b => t 1 b)`
+from the eight existing fields.  The argument uses only `separating`:
+
+* the leg is positive (`t (c*c) 1 = star (t c 1) · t c 1`), hence monotone and
+  self-adjointness-preserving;
+* for a bounded directed `D ⊆ selfAdjoint 𝒜` with `⋁D = s`, the image has a
+  supremum `s' ≤ s ⊗ 1` in `𝒞` (`𝒞` is a von Neumann algebra);
+* every *product* np-functional `Ω = ω ⊗ ξ` gives `Ω(d ⊗ 1) = ω(d)·ξ(1)`, so
+  `Ω(s')` and `Ω(s ⊗ 1)` are the same supremum of reals (normality of `Ω`,
+  normality of `ω`, and `ξ(1) ≥ 0`);
+* so `Ω((s ⊗ 1) − s') = 0` for all product `Ω`, and `(s ⊗ 1) − s' ≥ 0`, whence
+  `s ⊗ 1 = s'` by `separating`.
+
+The mirror statements for the right leg come from `vnTensor_flip`
+(`IsVNTensor t → IsVNTensor (fun b a => t a b)`), whose `smul_complex` field is
+`vnTensor_smul_complex_right` — itself derived from `separating` in the same
+way (proc.tex 108I asks a tensor product to be ℂ-**bi**linear; `IsVNTensor`
+records ℂ-homogeneity in the first slot only, and the second slot follows).
+
+**166II is therefore no longer blocked on a decision**; what remains is
+ordinary work (an ultranorm triangle inequality, the scaling into
+`effects 𝒞` that **44III** `vanishing_effects` wants, and `Ω ∘ leg` bundled
+as an `NPFunctional`).
+
+*Third gap, found 2026-08-14 (worker 50): `IsVNTensor` omits the **existence**
+of product functionals — proc.tex `tensor` clause 2 — and **165VI** needs it.*
+proc.tex 108II asks three things of a tensor product: (1) the range generates,
+(2) for **all** np `σ` on `𝒜` and `τ` on `ℬ` the product functional
+`γ(σ,τ)` *exists* and is positive, (3) those product functionals are faithful.
+`IsVNTensor` has (1) as `generates` and (3) as `separating`, but **not (2)**.
+That asymmetry is convenient where an `IsVNTensor` has to be *produced*, and
+fatal where one has to be *consumed with its functionals*: **165VI**
+`ba_ext_tensor_pres` must produce `separating` for `Θ(S,T) = S ⊗ T`, and the
+thesis's proof (165IX) does so by exhibiting the functionals
+`σ ⊗ τ = (f ⊗ g)(x ⊗ y, (·) x ⊗ y)` — which presupposes that `f ⊗ g` exists on
+`𝒞 = 𝒜 ⊗ ℬ` for the *given* `t`.  With only `separating` available for `t`,
+there is nothing to build them from.
+
+*Decision needed*: add to `IsVNTensor` a field
+`productFunctional : ∀ (ω : NPFunctional 𝒜) (ξ : NPFunctional ℬ), ∃ Ω : NPFunctional 𝒞, ∀ a b, Ω (t a b) = ω a * ξ b`
+(proc.tex `tensor`-2), which is a faithful transcription of the definition and
+strictly weakens nothing that is currently proved — but it does add a proof
+obligation to **165VI** and to any future construction of a tensor product.
+Note 165VI is *additionally* blocked on **164II**.1 `ext_tensor_dense` and
+**164II**.2a `ext_tensor_basis`, both still `sorry`, so the decision is not
+urgent.
 
 ### B6. `exc_dm_effectus_functor` / `_monad` / `_kleisli` are too weak to be meaningful
 Our statements constrain only `.obj` — they say *some* functor/monad agrees

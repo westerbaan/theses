@@ -1310,6 +1310,473 @@ structure IsVNTensor (t : 𝒜 → ℬ → 𝒞) : Prop where
   separating : ∀ z : 𝒞, 0 ≤ z →
     (∀ Ω : NPFunctional 𝒞, IsProductFunctional 𝒜 ℬ t Ω → Ω z = 0) → z = 0
 
+omit [StarOrderedRing 𝒜] in
+private theorem npf_csmul (ω : NPFunctional 𝒜) (c : ℂ) (a : 𝒜) :
+    ω (c • a) = c * ω a :=
+  (map_smul ω.toPositiveLinearMap c a).trans (smul_eq_mul _ _)
+
+omit [StarOrderedRing 𝒜] [StarOrderedRing ℬ] in
+/-- proc.tex **108I** (`bilinear-basic`) asks a tensor product to be a
+*bilinear* — hence ℂ-bilinear — miu-map; `IsVNTensor` records ℂ-homogeneity
+only in the **first** argument, because homogeneity in the second is a
+consequence of the remaining clauses: `t 1 (c·1)` and `c·1` have the same
+value under every product np-functional, hence `d = t 1 (c·1) − c·1` has
+`Ω(d*d) = 0` for all of them, so `d*d = 0` by `separating`, so `d = 0`; and
+then `t a (c·b) = t 1 (c·1) · t a b = c · t a b` by multiplicativity. -/
+theorem vnTensor_smul_complex_right {t : 𝒜 → ℬ → 𝒞} (ht : IsVNTensor t)
+    (c : ℂ) (a : 𝒜) (b : ℬ) : t a (c • b) = c • t a b := by
+  have hone : t 1 (c • (1 : ℬ)) = c • (1 : 𝒞) := by
+    set u : 𝒞 := t 1 (c • (1 : ℬ)) with hu
+    set v : 𝒞 := c • (1 : 𝒞) with hv
+    have hus : star u = t 1 (star c • (1 : ℬ)) := by
+      rw [hu, ht.star, star_one, star_smul, star_one]
+    have hvs : star v = star c • (1 : 𝒞) := by rw [hv, star_smul, star_one]
+    have e1 : star u * u = t 1 ((star c * c) • (1 : ℬ)) := by
+      rw [hus, hu, ht.mul, one_mul, smul_mul_smul_comm, one_mul]
+    have e2 : star u * v = c • t 1 (star c • (1 : ℬ)) := by
+      rw [hus, hv, mul_smul_comm, mul_one]
+    have e3 : star v * u = star c • t 1 (c • (1 : ℬ)) := by
+      rw [hvs, hu, smul_mul_assoc, one_mul]
+    have e4 : star v * v = (star c * c) • (1 : 𝒞) := by
+      rw [hvs, hv, smul_mul_smul_comm, one_mul]
+    have hexp : star (u - v) * (u - v)
+        = star u * u - star u * v - star v * u + star v * v := by
+      rw [star_sub]; noncomm_ring
+    have key : star (u - v) * (u - v) = 0 := by
+      refine ht.separating _ (star_mul_self_nonneg _) ?_
+      rintro Ω ⟨ω, ξ, hΩ⟩
+      have hΩ1 : Ω (1 : 𝒞) = ω 1 * ξ 1 := by rw [← ht.one]; exact hΩ 1 1
+      rw [hexp, e1, e2, e3, e4, npFunctional_add, npFunctional_sub,
+        npFunctional_sub, npf_csmul, npf_csmul, npf_csmul, hΩ, hΩ, hΩ, hΩ1,
+        npf_csmul, npf_csmul, npf_csmul]
+      ring
+    rw [← sub_eq_zero]
+    exact (CStarRing.star_mul_self_eq_zero_iff _).mp key
+  have h := ht.mul 1 a (c • (1 : ℬ)) b
+  rw [hone, one_mul, smul_mul_assoc, one_mul, smul_mul_assoc, one_mul] at h
+  exact h.symm
+
+/-! ### The legs of a von Neumann tensor product
+
+`QUESTIONS.md` B5 asks whether `IsVNTensor` should carry a *normality*
+clause for its legs `a ↦ a ⊗ 1`, `b ↦ 1 ⊗ b` (dils.tex 166III leaves the
+justification as a commented-out `\TODO`).  It should not: normality is a
+consequence of the faithfulness of the product functionals, as follows. -/
+
+omit [StarOrderedRing 𝒜] [StarOrderedRing ℬ] in
+/-- The flip `(b,a) ↦ a ⊗ b` of a von Neumann tensor product is again one
+(with the roles of the two factors exchanged).  ℂ-homogeneity in the new
+first slot is `vnTensor_smul_complex_right`. -/
+theorem vnTensor_flip {t : 𝒜 → ℬ → 𝒞} (ht : IsVNTensor t) :
+    IsVNTensor (fun (b : ℬ) (a : 𝒜) => t a b) where
+  add_left b b' a := ht.add_right a b b'
+  add_right b a a' := ht.add_left a a' b
+  smul_complex c b a := vnTensor_smul_complex_right ht c a b
+  mul b b' a a' := ht.mul a a' b b'
+  one := ht.one
+  star b a := ht.star a b
+  generates := by
+    rw [show (Set.range fun p : ℬ × 𝒜 => t p.2 p.1)
+        = Set.range fun p : 𝒜 × ℬ => t p.1 p.2 by
+      ext z
+      exact ⟨fun ⟨p, hp⟩ => ⟨(p.2, p.1), hp⟩, fun ⟨p, hp⟩ => ⟨(p.2, p.1), hp⟩⟩]
+    exact ht.generates
+  separating z hz h := by
+    refine ht.separating z hz fun Ω hΩ => ?_
+    obtain ⟨ω, ξ, hΩval⟩ := hΩ
+    exact h Ω ⟨ξ, ω, fun b a => by rw [hΩval a b, mul_comm]⟩
+
+omit [StarOrderedRing ℬ] in
+/-- The left leg `a ↦ a ⊗ 1` is positive. -/
+theorem vnTensor_legLeft_nonneg {t : 𝒜 → ℬ → 𝒞} (ht : IsVNTensor t) {a : 𝒜}
+    (ha : 0 ≤ a) : 0 ≤ t a 1 := by
+  obtain ⟨c, rfl⟩ := CStarAlgebra.nonneg_iff_eq_star_mul_self.mp ha
+  have hs : t (star c) 1 = star (t c 1) := by rw [ht.star c 1, star_one]
+  have h := ht.mul (star c) c (star (1 : ℬ)) 1
+  rw [star_one, one_mul, hs] at h
+  rw [← h]
+  exact star_mul_self_nonneg _
+
+omit [StarOrderedRing ℬ] in
+/-- The left leg is monotone. -/
+theorem vnTensor_legLeft_mono {t : 𝒜 → ℬ → 𝒞} (ht : IsVNTensor t) {a a' : 𝒜}
+    (h : a ≤ a') : t a 1 ≤ t a' 1 := by
+  have hd : t a' 1 - t a 1 = t (a' - a) 1 := by
+    have h2 := ht.add_left (a' - a) a 1
+    rw [sub_add_cancel] at h2
+    rw [h2]; abel
+  rw [← sub_nonneg, hd]
+  exact vnTensor_legLeft_nonneg ht (sub_nonneg.mpr h)
+
+omit [StarOrderedRing 𝒜] [StarOrderedRing ℬ] [StarOrderedRing 𝒞] in
+/-- The left leg preserves self-adjointness. -/
+theorem vnTensor_legLeft_isSelfAdjoint {t : 𝒜 → ℬ → 𝒞} (ht : IsVNTensor t)
+    {a : 𝒜} (ha : IsSelfAdjoint a) : IsSelfAdjoint (t a 1) := by
+  change star (t a 1) = t a 1
+  rw [ht.star, star_one, ha.star_eq]
+
+/-- `IsLUB` is preserved by multiplication with a nonnegative real. -/
+private theorem isLUB_mul_const {S : Set ℝ} {a k : ℝ} (hS : S.Nonempty)
+    (h : IsLUB S a) (hk : 0 ≤ k) : IsLUB ((fun x => x * k) '' S) (a * k) := by
+  rcases eq_or_lt_of_le hk with hk0 | hk0
+  · subst_vars
+    obtain ⟨x, hx⟩ := hS
+    have himg : (fun x : ℝ => x * 0) '' S = {0} := by
+      ext r; constructor
+      · rintro ⟨w, -, rfl⟩; simp
+      · rintro rfl; exact ⟨x, hx, by simp⟩
+    rw [himg, mul_zero]
+    exact isLUB_singleton
+  · refine ⟨?_, ?_⟩
+    · rintro r ⟨w, hw, rfl⟩
+      exact mul_le_mul_of_nonneg_right (h.1 hw) hk
+    · intro c hc
+      have hle : ∀ w ∈ S, w ≤ c / k := fun w hw =>
+        (le_div_iff₀ hk0).mpr (hc ⟨w, hw, rfl⟩)
+      exact (le_div_iff₀ hk0).mp (h.2 hle)
+
+/-- **Normality of the legs** of a von Neumann tensor product: `a ↦ a ⊗ 1`
+preserves suprema of bounded directed sets of self-adjoint elements.  This
+is *not* an extra clause of `IsVNTensor`: it follows from the faithfulness
+of the product functionals (`separating`), because the supremum `s'` of the
+image in `𝒞` and `s ⊗ 1` are separated by no product functional. -/
+theorem vnTensor_legLeft_normal [VonNeumannAlgebra 𝒞] {t : 𝒜 → ℬ → 𝒞}
+    (ht : IsVNTensor t) : PreservesDirSups (fun a : 𝒜 => t a 1) := by
+  intro D s hne hdir hlub
+  set g : selfAdjoint 𝒜 → selfAdjoint 𝒞 := fun d =>
+    ⟨t (d : 𝒜) 1, vnTensor_legLeft_isSelfAdjoint ht d.2⟩ with hg
+  have hgmono : ∀ d d' : selfAdjoint 𝒜, d ≤ d' → g d ≤ g d' := fun d d' h =>
+    Subtype.coe_le_coe.mp (vnTensor_legLeft_mono ht (Subtype.coe_le_coe.mpr h))
+  obtain ⟨d₀, hd₀⟩ := id hne
+  have hEne : (g '' D).Nonempty := ⟨g d₀, d₀, hd₀, rfl⟩
+  have hEdir : DirectedOn (· ≤ ·) (g '' D) := by
+    rintro _ ⟨x, hx, rfl⟩ _ ⟨z, hz, rfl⟩
+    obtain ⟨w, hw, hxw, hzw⟩ := hdir x hx z hz
+    exact ⟨g w, ⟨w, hw, rfl⟩, hgmono _ _ hxw, hgmono _ _ hzw⟩
+  have hEub : g s ∈ upperBounds (g '' D) := by
+    rintro _ ⟨d, hd, rfl⟩
+    exact hgmono _ _ (hlub.1 hd)
+  have hEbdd : BddAbove (g '' D) := ⟨_, hEub⟩
+  set s' : selfAdjoint 𝒞 := dirSup (g '' D) ⟨hEne, hEdir, hEbdd⟩ with hs'
+  have hlubE : IsLUB (g '' D) s' := isLUB_dirSup _ _
+  have hs'le : s' ≤ g s := hlubE.2 hEub
+  -- `g s = s'`, because their difference is positive and killed by every
+  -- product np-functional
+  have hkey : g s = s' := by
+    refine Subtype.ext (sub_eq_zero.mp ?_)
+    refine ht.separating _ (sub_nonneg.mpr (Subtype.coe_le_coe.mpr hs'le))
+      fun Ω hΩp => ?_
+    obtain ⟨ω, ξ, hΩ⟩ := hΩp
+    have hval : ∀ d : selfAdjoint 𝒜, ((Ω (g d : 𝒞) : ℂ)).re
+        = ((ω (d : 𝒜) : ℂ)).re * ((ξ (1 : ℬ) : ℂ)).re := by
+      intro d
+      rw [show (Ω (g d : 𝒞) : ℂ) = ω (d : 𝒜) * ξ 1 from hΩ _ _, Complex.mul_re,
+        npFunctional_im_eq_zero ω d.2, zero_mul, sub_zero]
+    have hωre : IsLUB (Complex.re ''
+        ((fun d : selfAdjoint 𝒜 => (ω (d : 𝒜) : ℂ)) '' D)) ((ω (s : 𝒜) : ℂ)).re :=
+      isLUB_re_of_isLUB (by
+        rintro _ ⟨d, -, rfl⟩
+        exact npFunctional_im_eq_zero ω d.2) (ω.preservesDirSups' D s hne hdir hlub)
+    have hΩre : IsLUB (Complex.re ''
+        ((fun d : selfAdjoint 𝒞 => (Ω (d : 𝒞) : ℂ)) '' (g '' D)))
+        ((Ω (s' : 𝒞) : ℂ)).re :=
+      isLUB_re_of_isLUB (by
+        rintro _ ⟨d, -, rfl⟩
+        exact npFunctional_im_eq_zero Ω d.2)
+        (Ω.preservesDirSups' (g '' D) s' hEne hEdir hlubE)
+    have hk : (0 : ℝ) ≤ ((ξ (1 : ℬ) : ℂ)).re :=
+      (Complex.le_def.mp (npFunctional_nonneg ξ zero_le_one)).1
+    have hsets : Complex.re ''
+        ((fun d : selfAdjoint 𝒞 => (Ω (d : 𝒞) : ℂ)) '' (g '' D))
+        = (fun x : ℝ => x * ((ξ (1 : ℬ) : ℂ)).re) ''
+          (Complex.re '' ((fun d : selfAdjoint 𝒜 => (ω (d : 𝒜) : ℂ)) '' D)) := by
+      ext r
+      constructor
+      · rintro ⟨-, ⟨-, ⟨d, hd, rfl⟩, rfl⟩, rfl⟩
+        exact ⟨((ω (d : 𝒜) : ℂ)).re, ⟨_, ⟨d, hd, rfl⟩, rfl⟩, (hval d).symm⟩
+      · rintro ⟨-, ⟨-, ⟨d, hd, rfl⟩, rfl⟩, rfl⟩
+        exact ⟨Ω (g d : 𝒞), ⟨g d, ⟨d, hd, rfl⟩, rfl⟩, hval d⟩
+    rw [hsets] at hΩre
+    have hSne : (Complex.re ''
+        ((fun d : selfAdjoint 𝒜 => (ω (d : 𝒜) : ℂ)) '' D)).Nonempty :=
+      ⟨((ω (d₀ : 𝒜) : ℂ)).re, ⟨_, ⟨d₀, hd₀, rfl⟩, rfl⟩⟩
+    have hre : ((Ω (s' : 𝒞) : ℂ)).re
+        = ((ω (s : 𝒜) : ℂ)).re * ((ξ (1 : ℬ) : ℂ)).re :=
+      hΩre.unique (isLUB_mul_const hSne hωre hk)
+    have him1 : ((Ω (g s : 𝒞) : ℂ)).im = 0 :=
+      npFunctional_im_eq_zero Ω (g s).2
+    have him2 : ((Ω (s' : 𝒞) : ℂ)).im = 0 := npFunctional_im_eq_zero Ω s'.2
+    rw [npFunctional_sub]
+    refine Complex.ext ?_ ?_
+    · simp only [Complex.sub_re, Complex.zero_re, hval s, hre, sub_self]
+    · simp only [Complex.sub_im, Complex.zero_im, him1, him2, sub_self]
+  refine ⟨?_, ?_⟩
+  · rintro _ ⟨d, hd, rfl⟩
+    exact vnTensor_legLeft_mono ht (Subtype.coe_le_coe.mpr (hlub.1 hd))
+  · intro c hc
+    have hcsa : IsSelfAdjoint c := by
+      have h0 : (0 : 𝒞) ≤ c - t (d₀ : 𝒜) 1 := sub_nonneg.mpr (hc ⟨d₀, hd₀, rfl⟩)
+      have h1 : c = (c - t (d₀ : 𝒜) 1) + t (d₀ : 𝒜) 1 := by abel
+      rw [h1]
+      exact (IsSelfAdjoint.of_nonneg h0).add
+        (vnTensor_legLeft_isSelfAdjoint ht d₀.2)
+    have hub : (⟨c, hcsa⟩ : selfAdjoint 𝒞) ∈ upperBounds (g '' D) := by
+      rintro _ ⟨d, hd, rfl⟩
+      exact Subtype.coe_le_coe.mp (hc ⟨d, hd, rfl⟩)
+    have hfin := hlubE.2 hub
+    rw [← hkey] at hfin
+    exact Subtype.coe_le_coe.mpr hfin
+
+omit [StarOrderedRing 𝒜] in
+/-- The right leg `b ↦ 1 ⊗ b` is positive. -/
+theorem vnTensor_legRight_nonneg {t : 𝒜 → ℬ → 𝒞} (ht : IsVNTensor t) {b : ℬ}
+    (hb : 0 ≤ b) : 0 ≤ t 1 b :=
+  vnTensor_legLeft_nonneg (vnTensor_flip ht) hb
+
+omit [StarOrderedRing 𝒜] in
+/-- The right leg is monotone. -/
+theorem vnTensor_legRight_mono {t : 𝒜 → ℬ → 𝒞} (ht : IsVNTensor t) {b b' : ℬ}
+    (h : b ≤ b') : t 1 b ≤ t 1 b' :=
+  vnTensor_legLeft_mono (vnTensor_flip ht) h
+
+/-- **Normality of the right leg** `b ↦ 1 ⊗ b`. -/
+theorem vnTensor_legRight_normal [VonNeumannAlgebra 𝒞] {t : 𝒜 → ℬ → 𝒞}
+    (ht : IsVNTensor t) : PreservesDirSups (fun b : ℬ => t 1 b) :=
+  vnTensor_legLeft_normal (vnTensor_flip ht)
+
+/-! ### Auxiliary material for **165IV**
+
+The estimate of **165IV** (dils.tex:5433) needs: positivity of
+`Mₙ(⊗)` — thesis A's **113II**/**113IV**, available here as
+`Theses.A.CStar.matBilin_nonneg_of_mi` — together with its two-sided
+monotonicity, which follows from positivity and additivity; and positivity
+of the Gram matrices `(⟨xᵢ,xⱼ⟩)ᵢⱼ`, which is **33II**.1
+(`cstar_matrix_positive_iff`). -/
+
+/-- **113II**/**113IV** in the form used by **165IV**:
+`∑ᵢⱼ t Mᵢⱼ M'ᵢⱼ ≥ 0` for positive matrices `M`, `M'`. -/
+private theorem sum_t_nonneg {t : 𝒜 → ℬ → 𝒞} (ht : IsVNTensor t) {n : ℕ}
+    (f : Fin n → Fin n → 𝒜) (g : Fin n → Fin n → ℬ)
+    (hf : (0 : CStarMatrix (Fin n) (Fin n) 𝒜)
+      ≤ CStarMatrix.ofMatrix (Matrix.of f))
+    (hg : (0 : CStarMatrix (Fin n) (Fin n) ℬ)
+      ≤ CStarMatrix.ofMatrix (Matrix.of g)) :
+    0 ≤ ∑ i, ∑ j, t (f i j) (g i j) := by
+  have h := matBilin_nonneg_of_mi t ht.add_left ht.add_right ht.mul ht.star
+    (CStarMatrix.ofMatrix (Matrix.of f)) (CStarMatrix.ofMatrix (Matrix.of g))
+    hf hg (fun _ => 1)
+  simpa using h
+
+/-- Monotonicity of `∑ᵢⱼ t · ·` in the first slot. -/
+private theorem sum_t_mono_left {t : 𝒜 → ℬ → 𝒞} (ht : IsVNTensor t) {n : ℕ}
+    (f f' d : Fin n → Fin n → 𝒜) (g : Fin n → Fin n → ℬ)
+    (hd : ∀ i j, f' i j = d i j + f i j)
+    (hdpos : (0 : CStarMatrix (Fin n) (Fin n) 𝒜)
+      ≤ CStarMatrix.ofMatrix (Matrix.of d))
+    (hg : (0 : CStarMatrix (Fin n) (Fin n) ℬ)
+      ≤ CStarMatrix.ofMatrix (Matrix.of g)) :
+    ∑ i, ∑ j, t (f i j) (g i j) ≤ ∑ i, ∑ j, t (f' i j) (g i j) := by
+  have hsplit : ∑ i, ∑ j, t (f' i j) (g i j)
+      = (∑ i, ∑ j, t (d i j) (g i j)) + ∑ i, ∑ j, t (f i j) (g i j) := by
+    rw [← Finset.sum_add_distrib]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [← Finset.sum_add_distrib]
+    exact Finset.sum_congr rfl fun j _ => by rw [hd i j, ht.add_left]
+  rw [hsplit, le_add_iff_nonneg_left]
+  exact sum_t_nonneg ht d g hdpos hg
+
+/-- Monotonicity of `∑ᵢⱼ t · ·` in the second slot. -/
+private theorem sum_t_mono_right {t : 𝒜 → ℬ → 𝒞} (ht : IsVNTensor t) {n : ℕ}
+    (f : Fin n → Fin n → 𝒜) (g g' e : Fin n → Fin n → ℬ)
+    (he : ∀ i j, g' i j = e i j + g i j)
+    (hepos : (0 : CStarMatrix (Fin n) (Fin n) ℬ)
+      ≤ CStarMatrix.ofMatrix (Matrix.of e))
+    (hf : (0 : CStarMatrix (Fin n) (Fin n) 𝒜)
+      ≤ CStarMatrix.ofMatrix (Matrix.of f)) :
+    ∑ i, ∑ j, t (f i j) (g i j) ≤ ∑ i, ∑ j, t (f i j) (g' i j) := by
+  have hsplit : ∑ i, ∑ j, t (f i j) (g' i j)
+      = (∑ i, ∑ j, t (f i j) (e i j)) + ∑ i, ∑ j, t (f i j) (g i j) := by
+    rw [← Finset.sum_add_distrib]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [← Finset.sum_add_distrib]
+    exact Finset.sum_congr rfl fun j _ => by rw [he i j, ht.add_right]
+  rw [hsplit, le_add_iff_nonneg_left]
+  exact sum_t_nonneg ht f e hf hepos
+
+omit [StarOrderedRing 𝒜] [StarOrderedRing ℬ] [StarOrderedRing 𝒞] in
+/-- Pulling a scalar out of the first slot. -/
+private theorem sum_t_smul_left {t : 𝒜 → ℬ → 𝒞} (ht : IsVNTensor t) {n : ℕ}
+    (c : ℂ) (f : Fin n → Fin n → 𝒜) (g : Fin n → Fin n → ℬ) :
+    ∑ i, ∑ j, t (c • f i j) (g i j) = c • ∑ i, ∑ j, t (f i j) (g i j) := by
+  rw [Finset.smul_sum]
+  refine Finset.sum_congr rfl fun i _ => ?_
+  rw [Finset.smul_sum]
+  exact Finset.sum_congr rfl fun j _ => ht.smul_complex _ _ _
+
+omit [StarOrderedRing 𝒜] [StarOrderedRing ℬ] in
+/-- Pulling a scalar out of the second slot (`vnTensor_smul_complex_right`). -/
+private theorem sum_t_smul_right {t : 𝒜 → ℬ → 𝒞} (ht : IsVNTensor t) {n : ℕ}
+    (c : ℂ) (f : Fin n → Fin n → 𝒜) (g : Fin n → Fin n → ℬ) :
+    ∑ i, ∑ j, t (f i j) (c • g i j) = c • ∑ i, ∑ j, t (f i j) (g i j) := by
+  rw [Finset.smul_sum]
+  refine Finset.sum_congr rfl fun i _ => ?_
+  rw [Finset.smul_sum]
+  exact Finset.sum_congr rfl fun j _ => vnTensor_smul_complex_right ht _ _ _
+
+/-! ### Gram matrices -/
+
+section Gram
+
+variable {X : Type v} [NormedAddCommGroup X] [NormedSpace ℂ X] [SMul 𝒜 X]
+  [CStarModule 𝒜 X]
+
+omit [StarOrderedRing 𝒜] in
+/-- `∑ᵢⱼ cᵢ* ⟨xⱼ,xᵢ⟩ cⱼ = ⟨v,v⟩` for `v = ∑ᵢ cᵢ* xᵢ` (mirrored
+convention). -/
+private theorem gram_conj {n : ℕ} (x : Fin n → X) (c : Fin n → 𝒜) :
+    ∑ i, ∑ j, star (c i) * (inner 𝒜 (x j) (x i) : 𝒜) * c j
+      = inner 𝒜 (∑ i, star (c i) • x i) (∑ i, star (c i) • x i) := by
+  rw [CStarModule.inner_sum_left, Finset.sum_comm]
+  refine Finset.sum_congr rfl fun j _ => ?_
+  rw [CStarModule.inner_sum_right]
+  refine Finset.sum_congr rfl fun i _ => ?_
+  rw [CStarModule.inner_op_smul_left, CStarModule.inner_op_smul_right,
+    star_star, mul_assoc]
+
+/-- The Gram matrix `(⟨xⱼ,xᵢ⟩)ᵢⱼ` of a finite family is positive
+(**33II**.1 `cstar_matrix_positive_iff`). -/
+private theorem gram_nonneg {n : ℕ} (x : Fin n → X) :
+    (0 : CStarMatrix (Fin n) (Fin n) 𝒜)
+      ≤ CStarMatrix.ofMatrix
+          (Matrix.of fun i j => (inner 𝒜 (x j) (x i) : 𝒜)) := by
+  refine (cstar_matrix_positive_iff _).mpr fun c => ?_
+  rw [show (∑ i, ∑ j, star (c i)
+        * (CStarMatrix.ofMatrix
+            (Matrix.of fun i j => (inner 𝒜 (x j) (x i) : 𝒜))) i j * c j)
+      = ∑ i, ∑ j, star (c i) * (inner 𝒜 (x j) (x i) : 𝒜) * c j from rfl,
+    gram_conj]
+  exact CStarModule.inner_self_nonneg
+
+variable [CompleteSpace X]
+
+/-- `⟨Sv, Sv⟩ ≤ ‖S‖² ⟨v,v⟩` for an adjointable bounded operator `S`. -/
+private theorem ba_inner_le_norm_sq (S : Ba 𝒜 X) (v : X) :
+    (inner 𝒜 (S.1 v) (S.1 v) : 𝒜) ≤ ((‖S‖ ^ 2 : ℝ) : ℂ) • inner 𝒜 v v := by
+  have h1 : (inner 𝒜 (S.1 v) (S.1 v) : 𝒜)
+      = inner 𝒜 v ((star S * S : Ba 𝒜 X).1 v) := by
+    have h := baSubalgebra_star_spec (𝒷 := 𝒜) (X := X) S
+    change (inner 𝒜 (S.1 v) (S.1 v) : 𝒜)
+      = inner 𝒜 v ((star S : Ba 𝒜 X).1 (S.1 v))
+    exact h v (S.1 v)
+  have h2 := ba_inner_mono (𝒷 := 𝒜) v
+    (CStarAlgebra.star_mul_le_algebraMap_norm_sq (a := S))
+  rw [h1]
+  refine h2.trans (le_of_eq ?_)
+  have h3 : ((algebraMap ℝ (Ba 𝒜 X) (‖S‖ ^ 2)).1 : X →L[ℂ] X) v
+      = ((‖S‖ ^ 2 : ℝ) : ℂ) • v := by
+    rw [Algebra.algebraMap_eq_smul_one]; rfl
+  rw [h3, CStarModule.inner_smul_right_complex]
+
+/-- `‖S‖²·Gram(x) − Gram(Sx) ≥ 0` — the thesis's "reasoning in the same way
+for `√(‖S‖² − S*S)`" (**165IV**), here by way of `ba_inner_le_norm_sq`. -/
+private theorem gram_sub_nonneg {n : ℕ} (S : Ba 𝒜 X) (x : Fin n → X) :
+    (0 : CStarMatrix (Fin n) (Fin n) 𝒜)
+      ≤ CStarMatrix.ofMatrix (Matrix.of fun i j =>
+          ((‖S‖ ^ 2 : ℝ) : ℂ) • (inner 𝒜 (x j) (x i) : 𝒜)
+            - inner 𝒜 (S.1 (x j)) (S.1 (x i))) := by
+  obtain ⟨-, -, hSm⟩ := moduleAdjointable_linear (𝒜 := 𝒜) ⇑S.1 S.2
+  refine (cstar_matrix_positive_iff _).mpr fun c => ?_
+  have hsplit : (∑ i, ∑ j, star (c i)
+        * (CStarMatrix.ofMatrix (Matrix.of fun i j =>
+            ((‖S‖ ^ 2 : ℝ) : ℂ) • (inner 𝒜 (x j) (x i) : 𝒜)
+              - inner 𝒜 (S.1 (x j)) (S.1 (x i)))) i j * c j)
+      = ((‖S‖ ^ 2 : ℝ) : ℂ)
+          • (∑ i, ∑ j, star (c i) * (inner 𝒜 (x j) (x i) : 𝒜) * c j)
+        - ∑ i, ∑ j, star (c i)
+            * (inner 𝒜 (S.1 (x j)) (S.1 (x i)) : 𝒜) * c j := by
+    rw [Finset.smul_sum, ← Finset.sum_sub_distrib]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [Finset.smul_sum, ← Finset.sum_sub_distrib]
+    refine Finset.sum_congr rfl fun j _ => ?_
+    change star (c i) * (((‖S‖ ^ 2 : ℝ) : ℂ) • (inner 𝒜 (x j) (x i) : 𝒜)
+        - inner 𝒜 (S.1 (x j)) (S.1 (x i))) * c j = _
+    rw [mul_sub, sub_mul, mul_smul_comm, smul_mul_assoc]
+  rw [hsplit, gram_conj, gram_conj, sub_nonneg]
+  have hsum : ∑ i, star (c i) • S.1 (x i) = S.1 (∑ i, star (c i) • x i) := by
+    rw [map_sum]
+    exact Finset.sum_congr rfl fun i _ => (hSm _ _).symm
+  rw [hsum]
+  exact ba_inner_le_norm_sq S _
+
+end Gram
+
+/-- The estimate of **165IV** (dils.tex:5433): `Θ(x,y) = (Sx) ⊗ (Ty)` is
+bounded by `‖S‖‖T‖`, in the Gram form in which `ExtTensor.univ` asks for
+it.  This is the displayed computation of **165IV**, with the row vector
+`s` of `1`s replaced by the equivalent `c = (1,…,1)` in `Mₙ(⊗)`'s
+positivity. -/
+private theorem tensor_gram_bound {t : 𝒜 → ℬ → 𝒞} (ht : IsVNTensor t)
+    {X Y : Type v}
+    [NormedAddCommGroup X] [NormedSpace ℂ X] [SMul 𝒜 X] [CStarModule 𝒜 X]
+    [CompleteSpace X]
+    [NormedAddCommGroup Y] [NormedSpace ℂ Y] [SMul ℬ Y] [CStarModule ℬ Y]
+    [CompleteSpace Y]
+    (S : Ba 𝒜 X) (T : Ba ℬ Y) {n : ℕ} (x : Fin n → X) (y : Fin n → Y) :
+    ‖∑ i, ∑ j, t (inner 𝒜 (S.1 (x i)) (S.1 (x j)))
+        (inner ℬ (T.1 (y i)) (T.1 (y j)))‖
+      ≤ ‖S‖ ^ 2 * ‖T‖ ^ 2
+        * ‖∑ i, ∑ j, t (inner 𝒜 (x i) (x j)) (inner ℬ (y i) (y j))‖ := by
+  have hGpos := gram_nonneg (𝒜 := 𝒜) x
+  have hApos := gram_nonneg (𝒜 := 𝒜) fun i => S.1 (x i)
+  have hBpos := gram_nonneg (𝒜 := ℬ) fun i => T.1 (y i)
+  have hDS := gram_sub_nonneg S x
+  have hDT := gram_sub_nonneg T y
+  have step1 : ∑ i, ∑ j, t (inner 𝒜 (S.1 (x j)) (S.1 (x i)))
+        (inner ℬ (T.1 (y j)) (T.1 (y i)))
+      ≤ ∑ i, ∑ j, t (((‖S‖ ^ 2 : ℝ) : ℂ) • (inner 𝒜 (x j) (x i) : 𝒜))
+        (inner ℬ (T.1 (y j)) (T.1 (y i))) :=
+    sum_t_mono_left ht _ _ _ _ (fun _ _ => (sub_add_cancel _ _).symm) hDS hBpos
+  have step2 := sum_t_smul_left ht ((‖S‖ ^ 2 : ℝ) : ℂ)
+    (fun i j => (inner 𝒜 (x j) (x i) : 𝒜))
+    (fun i j => (inner ℬ (T.1 (y j)) (T.1 (y i)) : ℬ))
+  have step3 : ∑ i, ∑ j, t (inner 𝒜 (x j) (x i))
+        (inner ℬ (T.1 (y j)) (T.1 (y i)))
+      ≤ ∑ i, ∑ j, t (inner 𝒜 (x j) (x i))
+        (((‖T‖ ^ 2 : ℝ) : ℂ) • (inner ℬ (y j) (y i) : ℬ)) :=
+    sum_t_mono_right ht _ _ _ _ (fun _ _ => (sub_add_cancel _ _).symm) hDT hGpos
+  have step4 := sum_t_smul_right ht ((‖T‖ ^ 2 : ℝ) : ℂ)
+    (fun i j => (inner 𝒜 (x j) (x i) : 𝒜))
+    (fun i j => (inner ℬ (y j) (y i) : ℬ))
+  have pos1 : (0 : 𝒞) ≤ ∑ i, ∑ j, t (inner 𝒜 (S.1 (x j)) (S.1 (x i)))
+      (inner ℬ (T.1 (y j)) (T.1 (y i))) := sum_t_nonneg ht _ _ hApos hBpos
+  have pos2 : (0 : 𝒞) ≤ ∑ i, ∑ j, t (inner 𝒜 (x j) (x i))
+      (inner ℬ (T.1 (y j)) (T.1 (y i))) := sum_t_nonneg ht _ _ hGpos hBpos
+  have hnormsmul : ∀ (r : ℝ) (z : 𝒞), 0 ≤ r → ‖(r : ℂ) • z‖ = r * ‖z‖ := by
+    intro r z hr
+    rw [norm_smul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hr]
+  have n1 := CStarAlgebra.norm_le_norm_of_nonneg_of_le pos1
+    (step1.trans (le_of_eq step2))
+  have n2 := CStarAlgebra.norm_le_norm_of_nonneg_of_le pos2
+    (step3.trans (le_of_eq step4))
+  rw [hnormsmul _ _ (by positivity)] at n1
+  rw [hnormsmul _ _ (by positivity)] at n2
+  have hswapST : ∑ i, ∑ j, t (inner 𝒜 (S.1 (x i)) (S.1 (x j)))
+        (inner ℬ (T.1 (y i)) (T.1 (y j)))
+      = ∑ i, ∑ j, t (inner 𝒜 (S.1 (x j)) (S.1 (x i)))
+        (inner ℬ (T.1 (y j)) (T.1 (y i))) := Finset.sum_comm
+  have hswap : ∑ i, ∑ j, t (inner 𝒜 (x i) (x j)) (inner ℬ (y i) (y j))
+      = ∑ i, ∑ j, t (inner 𝒜 (x j) (x i)) (inner ℬ (y j) (y i)) :=
+    Finset.sum_comm
+  rw [hswapST, hswap]
+  calc ‖∑ i, ∑ j, t (inner 𝒜 (S.1 (x j)) (S.1 (x i)))
+        (inner ℬ (T.1 (y j)) (T.1 (y i)))‖
+      ≤ ‖S‖ ^ 2 * ‖∑ i, ∑ j, t (inner 𝒜 (x j) (x i))
+          (inner ℬ (T.1 (y j)) (T.1 (y i)))‖ := n1
+    _ ≤ ‖S‖ ^ 2 * (‖T‖ ^ 2 * ‖∑ i, ∑ j, t (inner 𝒜 (x j) (x i))
+          (inner ℬ (y j) (y i))‖) := mul_le_mul_of_nonneg_left n2 (by positivity)
+    _ = ‖S‖ ^ 2 * ‖T‖ ^ 2 * ‖∑ i, ∑ j, t (inner 𝒜 (x j) (x i))
+          (inner ℬ (y j) (y i))‖ := by ring
+
 end VNTensor
 
 /-! ## Parsec 1640: the self-dual exterior tensor product
@@ -1695,18 +2162,92 @@ theorem ext_tensor_ketbra_dense [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
 **165I** (dils.tex:5407): introduction; **165II** (Setting) — nothing to
 formalize. -/
 
+-- `hX`, `hY` are not used below: the universal property is a *field* of
+-- `ExtTensor`, and adjointability of the factorisation is supplied by the
+-- factorisation of `(S*, T*)`, so no self-duality of `X`, `Y` beyond what
+-- `E` already carries is needed.  They are kept for uniformity with the
+-- neighbouring statements of parsecs 1640-1670.
+set_option linter.unusedVariables false in
 /-- **165III** (`dfn-tensor-of-hilbmod-maps`, dils.tex:5426, Proposition):
 for `S ∈ 𝒜ᵃ(X)` and `T ∈ ℬᵃ(Y)` there is a unique operator
 `S ⊗ T ∈ 𝒞ᵃ(X ⊗ Y)` with `(S ⊗ T)(x ⊗ y) = (Sx) ⊗ (Ty)`.
 
-**165IV** is the proof — not converted. -/
+**165IV** is the proof, transcribed below. -/
 theorem dfn_tensor_of_hilbmod_maps [VonNeumannAlgebra 𝒜]
     [VonNeumannAlgebra ℬ] [VonNeumannAlgebra 𝒞] [CompleteSpace X]
     [CompleteSpace Y] (hX : SelfDual 𝒜 X) (hY : SelfDual ℬ Y)
     (E : ExtTensor t ht X Y) (S : Ba 𝒜 X) (T : Ba ℬ Y) :
     ∃! R : Ba 𝒞 E.Z,
-      ∀ (x : X) (y : Y), R.1 (E.η x y) = E.η (S.1 x) (T.1 y) :=
-  sorry
+      ∀ (x : X) (y : Y), R.1 (E.η x y) = E.η (S.1 x) (T.1 y) := by
+  -- **165IV**: `Θ(x,y) = (Sx) ⊗ (Ty)` is `𝒜 ⊙ ℬ`-bilinear, and bounded by
+  -- `‖S‖‖T‖` (`tensor_gram_bound`), so it factors uniquely through `η` by
+  -- the universal property **164II**.  The factorisation is *adjointable*
+  -- because the same construction applied to `(S*, T*)` produces its
+  -- adjoint — this replaces the thesis's tacit "`S ⊗ T ∈ 𝒞ᵃ(X ⊗ Y)`".
+  have hmk : ∀ (S₀ : Ba 𝒜 X) (T₀ : Ba ℬ Y), ∃ (C : ℝ) (F : E.Z → E.Z),
+      IsBoundedModuleMap (cstarBInner 𝒞 E.Z) (cstarBInner 𝒞 E.Z) C F ∧
+        ∀ (x : X) (y : Y), F (E.η x y) = E.η (S₀.1 x) (T₀.1 y) := by
+    intro S₀ T₀
+    obtain ⟨-, -, hSm⟩ := moduleAdjointable_linear (𝒜 := 𝒜) ⇑S₀.1 S₀.2
+    obtain ⟨-, -, hTm⟩ := moduleAdjointable_linear (𝒜 := ℬ) ⇑T₀.1 T₀.2
+    have hbound : ∃ C : ℝ, ∀ (n : ℕ) (x : Fin n → X) (y : Fin n → Y),
+        ‖∑ i, E.η (S₀.1 (x i)) (T₀.1 (y i))‖ ^ 2 ≤
+          C * ‖∑ i, ∑ j, t (inner 𝒜 (x i) (x j)) (inner ℬ (y i) (y j))‖ := by
+      refine ⟨‖S₀‖ ^ 2 * ‖T₀‖ ^ 2, fun n x y => ?_⟩
+      rw [extTensor_gram E n (fun i => S₀.1 (x i)) fun i => T₀.1 (y i)]
+      exact tensor_gram_bound ht S₀ T₀ x y
+    obtain ⟨F, ⟨⟨C, hC⟩, hFη⟩, -⟩ := E.univ E.Z inferInstance inferInstance
+      inferInstance inferInstance inferInstance E.selfDual
+      (fun x y => E.η (S₀.1 x) (T₀.1 y))
+      (fun x x' y => by rw [map_add, E.η_add_left])
+      (fun x y y' => by rw [map_add, E.η_add_right])
+      (fun a b x y => by rw [hSm, hTm, E.η_smul]) hbound
+    exact ⟨C, F, hC, hFη⟩
+  obtain ⟨CF, F, hCF, hFη⟩ := hmk S T
+  obtain ⟨CG, G, hCG, hGη⟩ := hmk (star S) (star T)
+  have hSadj : ModuleAdjointTo 𝒜 (⇑S.1 : X → X) ⇑((star S : Ba 𝒜 X)).1 :=
+    baSubalgebra_star_spec S
+  have hTadj : ModuleAdjointTo ℬ (⇑T.1 : Y → Y) ⇑((star T : Ba ℬ Y)).1 :=
+    baSubalgebra_star_spec T
+  -- `G` is an adjoint of `F`: check it against the elementary tensors in
+  -- each argument separately (`extTensor_inner_diff_ext`, twice).
+  have hstep1 : ∀ (x : X) (y : Y) (z : E.Z),
+      (inner 𝒞 (E.η x y) (G z) : 𝒞) = inner 𝒞 (E.η (S.1 x) (T.1 y)) z := by
+    intro x y
+    refine extTensor_inner_diff_ext E G CG hCG _ _ fun x' y' => ?_
+    rw [hGη, E.η_inner, E.η_inner, hSadj x x', hTadj y y']
+  have hadj : ModuleAdjointTo 𝒞 F G := by
+    intro z z'
+    have h := extTensor_inner_diff_ext E F CF hCF z' (G z')
+      (fun x y => by
+        rw [hFη, ← CStarModule.star_inner (E.η x y) (G z'), hstep1 x y z',
+          CStarModule.star_inner]) z
+    rw [← CStarModule.star_inner z' (F z), ← CStarModule.star_inner (G z') z, h]
+  have hFnorm : ∀ z : E.Z, ‖F z‖ ≤ CF * ‖z‖ := fun z => by
+    rw [CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒞) (F z),
+      CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒞) z]
+    exact hCF.bound z
+  refine ⟨⟨LinearMap.mkContinuous
+      { toFun := F
+        map_add' := hCF.add
+        map_smul' := fun c z => hCF.smul_complex c z } CF hFnorm,
+    ⟨G, hadj⟩⟩, fun x y => hFη x y, ?_⟩
+  -- uniqueness: two elements of `𝒞ᵃ(X ⊗ Y)` agreeing on the elementary
+  -- tensors are equal (the uniqueness half of **164II**)
+  rintro R' hR'
+  obtain ⟨C', hC'⟩ : ∃ C : ℝ, IsBoundedModuleMap (cstarBInner 𝒞 E.Z)
+      (cstarBInner 𝒞 E.Z) C ⇑R'.1 := by
+    obtain ⟨-, -, hRm⟩ := moduleAdjointable_linear (𝒜 := 𝒞) ⇑R'.1 R'.2
+    refine ⟨‖R'.1‖, ⟨fun a b => map_add _ a b, fun c a => map_smul _ c a,
+      hRm, fun z => ?_⟩⟩
+    change Real.sqrt ‖(inner 𝒞 (R'.1 z) (R'.1 z) : 𝒞)‖
+      ≤ ‖R'.1‖ * Real.sqrt ‖(inner 𝒞 z z : 𝒞)‖
+    rw [← CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒞),
+      ← CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒞)]
+    exact R'.1.le_opNorm z
+  exact Subtype.ext (DFunLike.coe_injective
+    (extTensor_map_ext E E.selfDual C' CF _ _ hC' hCF fun x y => by
+      rw [hR' x y]; exact (hFη x y).symm))
 
 /-- **165V** (`hilbmod-tensor-ketbra`, dils.tex:5506, Exercise): the rules
 for `⊗` of module operators: (1) `|x₁⟩⟨x₂| ⊗ |y₁⟩⟨y₂| = |x₁⊗y₁⟩⟨x₂⊗y₂|`;
