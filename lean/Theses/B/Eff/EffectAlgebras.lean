@@ -1353,6 +1353,45 @@ theorem msc_cor16_1 {a b j : E} (hab : Perp a b) (hm : PCM.IsInf a b 0)
   obtain ⟨hmj, he⟩ := msc_cor16_2 hab hm hj
   rw [← he, PCM.ovee_comm, PCM.ovee_zero]
 
+/-- **The dual of the false lemma** of `modularity-lemma-proof` (eff.tex, the
+proof of 177Ia, point 20).  The thesis's lemma reads: for `c, d ≼ x`, if
+`(x ⊖ c) ∧ (x ⊖ d)` exists then `c ∨ d` exists and equals
+`x ⊖ ((x ⊖ c) ∧ (x ⊖ d))`.  That is false, even with `c ⊥ d` added
+(`WrightTriangle.not_modularity_lemma`); the honest remnant is
+`msc_cor14_2_sup_below`.  **Dualised it is true**: hypothesise the *supremum*
+of the two differences, and conclude the *infimum* of `c, d`.
+
+Why the dual survives.  The printed proof's final step takes a bound `s` of
+`c, d` and forms `x⊥ ⋁ s`, which is defined only when `s ≼ x`.  An *upper*
+bound of `c, d` need not lie below `x` — that is exactly how the Wright
+triangle escapes — whereas a *lower* bound satisfies `s ≼ c ≼ x` for free.  So
+the interval infimum computed in `↓x` by the order isomorphism
+`b ↦ x⊥ ⋁ b : ↓x → ↑x⊥` (`msc_prop13_1`) is an infimum in all of `E`, while the
+interval supremum is only that.
+
+The statement is more general than 177Ia: no `c ⊥ d`, and `x` arbitrary above
+`c` and `d`.  Under the involution `(·) ↦ x ⊖ (·)` of `↓x` (176II (D3)) it is
+literally the sound half of the master's thesis's Corollary 14.2, so we take
+that route rather than redoing the `⋁`-side computation; `msc_cor14_2_inf`
+carries the same asymmetry in its own proof (`hda : d ≼ a`). -/
+theorem dual_modularity_lemma {x c d u v j : E}
+    (hu : IsDiff x c u) (hv : IsDiff x d v) (hj : PCM.IsSup u v j) :
+    ∃ m, IsDiff x m j ∧ PCM.IsInf c d m := by
+  obtain ⟨m, hm⟩ : j ≼ x := hj.2.2 x (exc_dposet_D2 hu) (exc_dposet_D2 hv)
+  exact ⟨m, exc_dposet_D3 hm,
+    msc_cor14_2_inf (exc_dposet_D3 hu) (exc_dposet_D3 hv) hj hm⟩
+
+/-- 177Ia's corrected form, read off from `dual_modularity_lemma` at
+`x = a ⋁ b`, `c = a`, `d = b` (so that `x ⊖ c = b` and `x ⊖ d = a`).  It is
+`msc_prop15'` on the nose, which the dual lemma therefore generalises strictly:
+`msc_prop15'` is the case `x = c ⋁ d` with `c ⊥ d`. -/
+theorem msc_prop15'_of_dual {a b j : E} (hab : Perp a b) (hj : PCM.IsSup a b j) :
+    ∃ m, IsDiff (ovee a b hab) j m ∧ PCM.IsInf a b m := by
+  obtain ⟨m, hm, hinf⟩ :=
+    dual_modularity_lemma (x := ovee a b hab) (c := a) (d := b)
+      ⟨hab, rfl⟩ ⟨PCM.perp_comm hab, by rw [← PCM.ovee_comm]⟩ (isSup_comm hj)
+  exact ⟨m, exc_dposet_D3 hm, hinf⟩
+
 end MscOrder
 
 /-! ### A counterexample: the Wright triangle
