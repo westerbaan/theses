@@ -6500,3 +6500,91 @@ there `relCoceil 𝒮 ω = 1`, because `1 ∈ 𝒮` is then a projection killed 
   That gap is closed, but the remark stays accurate *as a statement about
   `A/CStar`*: `A/CStar` is imported by `A/VN`, so the product is still not
   available at 21VII, and the proof there is unchanged.
+
+## Session 29 — `B/Dils` 158II `kaplansky_hilbmod`: NOT closed; the sound half of a replacement proof is banked (worker 60)
+
+Target: **158II** `kaplansky_hilbmod` (`Theses/B/Dils/Kaplansky.lean`), with
+the thesis's own route known dead (158V is false, session 24).  Outcome: the
+theorem is **neither proved nor refuted** — its `sorry` stands — but the file
+gains an axiom-clean public theorem
+
+* `kaplansky_hilbmod_of_weak` — **158II reduces to weak bounded
+  approximation**: if for every np-functional `ω`, every `w ∈ X` and every
+  `η > 0` there is `d ∈ D` with `‖d‖ ≤ ‖x‖` and `‖ω ⟪w, x−d⟫‖ ≤ η`, then
+  the full conclusion of 158II holds for `x` (finitely many ultranorm
+  seminorms at once, same ball).  Checked:
+  `#print axioms` = `propext, Classical.choice, Quot.sound`.  Divergence
+  class (2) if it is ever used to close 158II — the thesis has no such step.
+
+Supporting infrastructure (all `private`): `npAdd`/`npZero`/`npSum` — finite
+sums of `NPFunctional`s, with `PreservesDirSups` for a sum proved directly
+from the two `IsLUB`s (upper bound via directedness: for `d, d' ∈ D` pick
+`e ≥ d, d'`; then `ω₁ s ≤ z − ω₂ d'` for each `d'`, and close with the
+second lub) — this avoids `npuws`, which is behind `sorry`s in `A/VN/Basic`;
+`unSeminorm_le_npSum` (each `‖·‖_{ωᵢ} ≤ ‖·‖_{Σωⱼ}`);
+`unSeminorm_sub_smul_sq` (the real-parameter parallelogram expansion);
+`weak_to_strong` — the Mazur-style variational lemma: for one `ω` and a
+*convex* `C` with `‖x−d‖_ω` bounded on `C`, weak approximability of `x` by
+`C` gives `‖·‖_ω`-approximability.  The proof is the elementary approximate-
+nearest-point computation (no completion, quotient, or Riesz): with
+`γ = inf_{d∈C} ‖x−d‖_ω`, an `η`-nearest `d*` and a weak approximant `d`
+against `w = x−d*` give, for `t ∈ [0,1]` and `d_t = d* + t(d−d*) ∈ C`,
+`γ² ≤ (γ²+η²) − 2t(γ²−η²) + t²(2M)²`; optimizing `t` yields
+`(γ²−η²)² ≤ η²(4M²+1)`, so `γ = 0`.  Also `smul_one_smul'`
+(`(c·1) • d = c • d`, by definiteness — the section's `X` has no
+`Module ℬ X`, so this is how `A ∋ c·1` makes `D` a ℂ-subspace, hence `C`
+convex) and `norm_smul_complex` (no `NormedSpace ℂ X` either; `‖c•d‖ = ‖c‖‖d‖`
+comes out of `CStarModule.norm_eq_sqrt_norm_inner_self`).
+
+### Why 158II is still open — the mirror obstruction, quantified
+
+All known routes to the weak statement (hence to 158II) funnel into one
+quantity.  Take `d₀ ∈ D` ultranorm-close to `x` (`‖x‖ ≤ 1`), `b₀ = ⟪d₀,d₀⟫`,
+and renormalize with any `ψ` with `t·ψ(t)² ≤ 1` (so `‖ψ(b₀)•d₀‖ ≤ 1`; the
+thesis's `h` is `ψ(t) = 2/(1+t)`).  The weak defect at `ω` is controlled by
+Cauchy–Schwarz up to the term `ω((1−ψ(b₀))²)` — the `ω`-mass of the spectral
+part of `b₀` above `‖x‖²` — and per-vector Chebyshev gives only
+`⟨v, b₀v⟩ ≤ (‖x‖+δ)²` for *requested* states `v`, i.e. bounds that mass by
+`≈ 1/(1+κ)`, **not** by `o(1)`.  A concrete adversarial approximant
+(`X = ℬ = B(ℓ²)`, `d₀ = x + s·|eₙ⟩⟨e₁|`-type with `s ≫ 1`, `n ≫ 1`) makes
+`ω((√b₀−M)₊²) = O(1)` for every fixed cap `M`, so *truncation-style*
+renormalizers provably cannot close even the weak statement one-shot.
+Controlling the term the other way needs `ω(P e P)` with `P` a `d₀`-dependent
+spectral projection and `e = ⟪d₀−x, d₀−x⟫` — a *mirrored* compression, which
+is exactly the unprovable side of Cauchy–Schwarz that kills 158V (the same
+`ω(c* · c)`-with-`c`-unknown-in-advance pattern; `conjNP` requests cannot be
+made before `d₀` is seen, and adaptive two-stage schemes lose either the norm
+bound or the coefficient-known-in-advance property — both variants were
+worked through and fail).  A least-squares sandwich
+`d = (f(b') ⟪d₀,d'⟫ (κ+b₀)⁻¹) • d₀` with `d', d₀ ∈ D` (all coefficients in
+`A` by polarization) achieves `‖d‖ ≤ ‖x‖` *cleanly* — `c b₀ c* = ζζ*` with
+`ζ = ⟪(b₀^½(κ+b₀)⁻¹)•d₀, ·⟫` and `‖b₀²(κ+b₀)⁻²‖ ≤ 1` — but its defect
+contains the same beast for `b' = ⟪d',d'⟫`.
+
+On the other side, **no counterexample** was found either: every attempted
+adversarial `D` (rank-one escapes in `K + ℂ1`, orthogonal-escape
+constructions) collapses because `D` must be an `A`-module with
+`⟪D,D⟫ ⊆ A` — the inner products of the escapes land in `A` and functional
+calculus/`A`-action then *trims* them, restoring good approximants.  This is
+a real dichotomy, not an artifact: the `∃ d ∈ D` form survives the 158V
+counterexample precisely because of this trimming, and any refutation must
+first defeat it.
+
+### Literature
+
+H. Lin, *Double duals and Hilbert modules* (arXiv:2311.15462), §4, proves a
+Kaplansky-style theorem: the unit ball of `H_A` is `T_s`-dense in the unit
+ball of `H_A ⊗ M` for `M = A''` — by writing `ξ` in *coordinates* of the
+standard module over the right ideal `AM` and applying the classical matrix
+Kaplansky to `Mₙ(A) ⊆ Mₙ(M)` on a column, then cutting by
+`q = diag(1,0,…,0)` (which preserves both the norm bound and the strong
+approximation).  This does not port to 158II as stated: `X` is abstract (no
+coordinates; Kasparov stabilization needs countable generation), `A` is
+*not* assumed ultrastrongly dense in `ℬ`, and `D` is not a standard module.
+But it is the strongest hint that a correct proof, if one exists, goes
+through matrix amplification and 158Ia rather than through any repaired
+version of the `h`-continuity argument.  **Author decision requested** (the
+ERRATA row for 158V already asks for one): either a proof of the weak
+statement of `kaplansky_hilbmod_of_weak`, or a counterexample to 158II, or a
+strengthening of 158II's hypotheses (e.g. `A` ultrastrongly dense, `X`
+countably generated) matching what Lin's technique needs.

@@ -6,7 +6,12 @@ lines 4082–4279.
   parsec 1580:  the Kaplansky density theorem for Hilbert C*-modules
 
 **158Ia** is proved; **158II** and the four **158V** estimates are `sorry`
-(the latter four are *false*, see below).  Following the conventions of
+(the latter four are *false*, see below).  For 158II the sound part of a
+replacement proof is banked as `kaplansky_hilbmod_of_weak` (axiom-clean):
+158II reduces, by an elementary Mazur-style variational argument, to *weak*
+bounded approximation — making `ω ⟪w, x−d⟫` small with `d` in the
+`‖x‖`-ball of `D`; see the section "Reduction of 158II to weak bounded
+approximation" and `PROVING-LOG.md`.  Following the conventions of
 `HilbertModules.lean`, ultrastrong/ultranorm approximation is expressed
 through the seminorms `unSeminorm ω B` (with `B = mulInner ℬ` for the
 ultrastrong uniformity on `ℬ` itself); "there is a net `x_α → x` ultranorm
@@ -100,7 +105,15 @@ Neumann algebra `ℬ` with an ultranorm-dense 𝒜-submodule `D ⊆ X`, where
 `h (g x) = x`) — not converted.  **158V**, the ultranorm continuity of `h`,
 is the real work; its four convergence estimates are stated separately
 below as `kaplansky_hilbmod_A₁`, `kaplansky_hilbmod_A₁'`,
-`kaplansky_hilbmod_A₂` and `kaplansky_hilbmod_A₂'`. -/
+`kaplansky_hilbmod_A₂` and `kaplansky_hilbmod_A₂'`.
+
+⚠️ The thesis's proof route is **dead**: 158V is false (see the section
+comment below), so this `sorry` cannot be closed by the printed argument.
+The statement itself is believed true but currently *open*: by
+`kaplansky_hilbmod_of_weak` (end of this file, proved) it reduces to the
+weak bounded-approximation statement recorded there; the obstruction to
+proving *that* — and the reason no counterexample is known either — is
+analyzed in `PROVING-LOG.md`. -/
 theorem kaplansky_hilbmod [VonNeumannAlgebra ℬ] [CompleteSpace X]
     (A : StarSubalgebra ℂ ℬ) (hA : IsClosed (A : Set ℬ))
     (D : Set X)
@@ -315,6 +328,467 @@ private theorem kaplansky_hilbmod_A₂' [VonNeumannAlgebra ℬ] [CompleteSpace X
         inv1p (inner ℬ (y i) (y i)) * inner ℬ (y₀ - y i) y₀
           * inv1p (inner ℬ y₀ y₀)) l 0 :=
   sorry
+
+/-! ### Reduction of 158II to weak bounded approximation
+
+Since the thesis's route through 158V is closed (see above), we record here
+the part of a replacement proof that is certain: a Mazur-style variational
+argument reducing the *strong* (seminorm) approximation of **158II** to
+*weak* approximation — approximating the finitely many complex numbers
+`ω [w, x]` by `ω [w, d]` with `d` in the `‖x‖`-ball of `D`.  The set
+`C = D ∩ ball(‖x‖)` is convex, and for the semidefinite inner product
+`(u,v) ↦ ω[u,v]` weak approximability of `x` by a convex set forces seminorm
+approximability; the proof is the elementary approximate-nearest-point
+computation, needing no completion, quotient, or Riesz representation.
+
+First, finite sums of np-functionals (`ω = Σ ωᵢ` dominates each `ωᵢ`, which
+turns the `n` seminorm bounds of the conclusion into one). -/
+
+section WeakToStrong
+
+omit [StarOrderedRing ℬ] in
+private theorem np_mono (ω : NPFunctional ℬ) {a b : ℬ} (h : a ≤ b) :
+    ω a ≤ ω b := ω.toPositiveLinearMap.monotone h
+
+omit [StarOrderedRing ℬ] in
+private theorem preservesDirSups_npAdd (ω₁ ω₂ : NPFunctional ℬ) :
+    PreservesDirSups (fun a : ℬ => ω₁ a + ω₂ a) := by
+  intro D s hne hdir hlub
+  have hFl := ω₁.preservesDirSups' D s hne hdir hlub
+  have hGl := ω₂.preservesDirSups' D s hne hdir hlub
+  constructor
+  · rintro _ ⟨d, hd, rfl⟩
+    exact add_le_add (hFl.1 ⟨d, hd, rfl⟩) (hGl.1 ⟨d, hd, rfl⟩)
+  · intro z hz
+    have key : ∀ d' ∈ D, (ω₁ ((s : selfAdjoint ℬ) : ℬ))
+        ≤ z - ω₂ ((d' : selfAdjoint ℬ) : ℬ) := by
+      intro d' hd'
+      refine hFl.2 ?_
+      rintro _ ⟨d, hd, rfl⟩
+      obtain ⟨e, he, hde, hd'e⟩ := hdir d hd d' hd'
+      have h1 : ω₁ ((d : selfAdjoint ℬ) : ℬ) ≤ ω₁ ((e : selfAdjoint ℬ) : ℬ) :=
+        np_mono ω₁ (Subtype.coe_le_coe.mpr hde)
+      have h2 : ω₂ ((d' : selfAdjoint ℬ) : ℬ) ≤ ω₂ ((e : selfAdjoint ℬ) : ℬ) :=
+        np_mono ω₂ (Subtype.coe_le_coe.mpr hd'e)
+      have h3 : ω₁ ((e : selfAdjoint ℬ) : ℬ) + ω₂ ((e : selfAdjoint ℬ) : ℬ) ≤ z :=
+        hz ⟨e, he, rfl⟩
+      rw [le_sub_iff_add_le]
+      calc ω₁ ((d : selfAdjoint ℬ) : ℬ) + ω₂ ((d' : selfAdjoint ℬ) : ℬ)
+          ≤ ω₁ ((e : selfAdjoint ℬ) : ℬ) + ω₂ ((e : selfAdjoint ℬ) : ℬ) :=
+            add_le_add h1 h2
+        _ ≤ z := h3
+    have h4 : ω₂ ((s : selfAdjoint ℬ) : ℬ)
+        ≤ z - ω₁ ((s : selfAdjoint ℬ) : ℬ) := by
+      refine hGl.2 ?_
+      rintro _ ⟨d', hd', rfl⟩
+      rw [le_sub_iff_add_le, add_comm, ← le_sub_iff_add_le]
+      exact key d' hd'
+    rw [le_sub_iff_add_le, add_comm] at h4
+    exact h4
+
+/-- The sum of two np-functionals. -/
+private noncomputable def npAdd (ω₁ ω₂ : NPFunctional ℬ) : NPFunctional ℬ where
+  toPositiveLinearMap := ω₁.toPositiveLinearMap + ω₂.toPositiveLinearMap
+  preservesDirSups' := by
+    have h : ⇑(ω₁.toPositiveLinearMap + ω₂.toPositiveLinearMap)
+        = fun a : ℬ => ω₁ a + ω₂ a :=
+      funext fun a => by rw [PositiveLinearMap.add_apply]; rfl
+    rw [h]
+    exact preservesDirSups_npAdd ω₁ ω₂
+
+/-- The zero np-functional. -/
+private noncomputable def npZero : NPFunctional ℬ where
+  toPositiveLinearMap := 0
+  preservesDirSups' := by
+    intro D s hne hdir hlub
+    have h : ⇑(0 : ℬ →ₚ[ℂ] ℂ) = fun _ : ℬ => (0 : ℂ) :=
+      funext fun a => PositiveLinearMap.zero_apply a
+    rw [h]
+    constructor
+    · rintro _ ⟨d, hd, rfl⟩
+      exact le_refl 0
+    · intro z hz
+      exact hz ⟨hne.choose, hne.choose_spec, rfl⟩
+
+/-- The sum `Σᵢ ωᵢ` of a finite family of np-functionals. -/
+private noncomputable def npSum : ∀ (n : ℕ), (Fin n → NPFunctional ℬ) → NPFunctional ℬ
+  | 0, _ => npZero
+  | (n + 1), ωs => npAdd (ωs 0) (npSum n fun i => ωs i.succ)
+
+private theorem npAdd_apply (ω₁ ω₂ : NPFunctional ℬ) (a : ℬ) :
+    npAdd ω₁ ω₂ a = ω₁ a + ω₂ a := by
+  change (ω₁.toPositiveLinearMap + ω₂.toPositiveLinearMap) a = _
+  rw [PositiveLinearMap.add_apply]; rfl
+
+private theorem npSum_apply (n : ℕ) (ωs : Fin n → NPFunctional ℬ) (a : ℬ) :
+    npSum n ωs a = ∑ i, ωs i a := by
+  induction n with
+  | zero => simp [npSum]; rfl
+  | succ n ih =>
+      rw [npSum, npAdd_apply, ih, Fin.sum_univ_succ]
+
+omit [StarOrderedRing ℬ] in
+private theorem np_re_nonneg' (ω : NPFunctional ℬ) {a : ℬ} (ha : 0 ≤ a) :
+    0 ≤ (ω a).re := by
+  have h : ω 0 ≤ ω a := np_mono ω ha
+  have h0 : ω (0 : ℬ) = 0 := map_zero ω.toPositiveLinearMap
+  rw [h0] at h
+  simpa using (Complex.le_def.mp h).1
+
+omit [StarOrderedRing ℬ] in
+private theorem np_re_mono' (ω : NPFunctional ℬ) {a b : ℬ} (h : a ≤ b) :
+    (ω a).re ≤ (ω b).re :=
+  (Complex.le_def.mp (np_mono ω h)).1
+
+private theorem np_star' (ω : NPFunctional ℬ) (a : ℬ) :
+    ω (star a) = starRingEnd ℂ (ω a) :=
+  map_star ω.toPositiveLinearMap a
+
+omit [CStarModule ℬ X] in
+/-- Each summand seminorm is dominated by the `npSum` seminorm. -/
+private theorem unSeminorm_le_npSum (n : ℕ) (ωs : Fin n → NPFunctional ℬ)
+    (i : Fin n) (B : BInner ℬ X) (u : X) :
+    unSeminorm (ωs i) B.inner u ≤ unSeminorm (npSum n ωs) B.inner u := by
+  refine Real.sqrt_le_sqrt ?_
+  rw [npSum_apply]
+  have hsum : (∑ j, ωs j (B.inner u u)).re = ∑ j, (ωs j (B.inner u u)).re :=
+    Complex.re_sum _ _
+  rw [hsum]
+  exact Finset.single_le_sum
+    (f := fun j => (ωs j (B.inner u u)).re)
+    (fun j _ => np_re_nonneg' (ωs j) (B.inner_self_nonneg u))
+    (Finset.mem_univ i)
+
+omit [CStarModule ℬ X] in
+/-- `‖·‖_ω` of a negation. -/
+private theorem unSeminorm_neg' (ω : NPFunctional ℬ) (B : BInner ℬ X) (u : X) :
+    unSeminorm ω B.inner (-u) = unSeminorm ω B.inner u := by
+  have h : B.inner (-u) (-u) = B.inner u u := by
+    rw [show (-u) = ((-1 : ℂ)) • u by simp, B.inner_smul_right_complex,
+      B.inner_smul_left_complex]
+    simp
+  rw [unSeminorm, unSeminorm, h]
+
+/-- Triangle inequality for differences. -/
+private theorem unSeminorm_sub_le' (ω : NPFunctional ℬ) (B : BInner ℬ X)
+    (u v : X) :
+    unSeminorm ω B.inner (u - v)
+      ≤ unSeminorm ω B.inner u + unSeminorm ω B.inner v := by
+  have h := unSeminorm_add_le ω B u (-v)
+  rw [← sub_eq_add_neg, unSeminorm_neg'] at h
+  exact h
+
+omit [CStarModule ℬ X] in
+/-- The quadratic expansion `‖u - t·v‖_ω² = ‖u‖_ω² - 2t·Re ω[u,v] + t²‖v‖_ω²`
+for real `t`. -/
+private theorem unSeminorm_sub_smul_sq (ω : NPFunctional ℬ) (B : BInner ℬ X)
+    (u v : X) (t : ℝ) :
+    unSeminorm ω B.inner (u - ((t : ℝ) : ℂ) • v) ^ 2
+      = unSeminorm ω B.inner u ^ 2 - 2 * t * (ω (B.inner u v)).re
+        + t ^ 2 * unSeminorm ω B.inner v ^ 2 := by
+  have hexp : B.inner (u - ((t : ℝ) : ℂ) • v) (u - ((t : ℝ) : ℂ) • v)
+      = B.inner u u - ((t : ℝ) : ℂ) • B.inner u v
+        - ((t : ℝ) : ℂ) • B.inner v u
+        + (((t : ℝ) : ℂ) * ((t : ℝ) : ℂ)) • B.inner v v := by
+    rw [B.inner_sub_right, B.inner_sub_left, B.inner_sub_left,
+      B.inner_smul_right_complex, B.inner_smul_left_complex,
+      B.inner_smul_left_complex, B.inner_smul_right_complex, smul_smul]
+    rw [Complex.conj_ofReal]
+    abel
+  have hvu : ω (B.inner v u) = starRingEnd ℂ (ω (B.inner u v)) := by
+    rw [← B.star_inner u v, np_star']
+  have happ : ω (B.inner (u - ((t : ℝ) : ℂ) • v) (u - ((t : ℝ) : ℂ) • v))
+      = ω (B.inner u u) - ((t : ℝ) : ℂ) * ω (B.inner u v)
+        - ((t : ℝ) : ℂ) * starRingEnd ℂ (ω (B.inner u v))
+        + (((t : ℝ) : ℂ) * ((t : ℝ) : ℂ)) * ω (B.inner v v) := by
+    have hadd : ∀ a b : ℬ, ω (a + b) = ω a + ω b := fun a b =>
+      map_add ω.toPositiveLinearMap a b
+    have hsub : ∀ a b : ℬ, ω (a - b) = ω a - ω b := fun a b =>
+      map_sub ω.toPositiveLinearMap a b
+    have hsmul : ∀ (c : ℂ) (a : ℬ), ω (c • a) = c * ω a := fun c a =>
+      map_smul ω.toPositiveLinearMap c a
+    rw [hexp, hadd, hsub, hsub, hsmul, hsmul, hsmul, hvu]
+  rw [unSeminorm_sq, unSeminorm_sq, unSeminorm_sq, happ]
+  simp only [Complex.sub_re, Complex.add_re, Complex.mul_re, Complex.mul_im,
+    pow_two, Complex.ofReal_re, Complex.ofReal_im, Complex.conj_re,
+    Complex.conj_im]
+  ring
+
+/-- The variational (Mazur-style) step: for the semidefinite inner product
+`(u,v) ↦ ω [u,v]` of a single np-functional, a point that is *weakly*
+approximable by a convex set `C` of uniformly bounded `‖·‖_ω`-distance is
+`‖·‖_ω`-approximable by `C`.  Entirely elementary: no completion, quotient,
+or Riesz representation — only the parallelogram-type expansion
+`unSeminorm_sub_smul_sq` and the approximate-nearest-point computation. -/
+private theorem weak_to_strong (ω : NPFunctional ℬ) (B : BInner ℬ X) (x : X)
+    (C : Set X) (M : ℝ)
+    (hbdd : ∀ d ∈ C, unSeminorm ω B.inner (x - d) ≤ M)
+    (hconv : ∀ d ∈ C, ∀ d' ∈ C, ∀ t : ℝ, 0 ≤ t → t ≤ 1 →
+      d + ((t : ℝ) : ℂ) • (d' - d) ∈ C)
+    (hweak : ∀ (w : X) (η : ℝ), 0 < η →
+      ∃ d ∈ C, ‖ω (B.inner w (x - d))‖ ≤ η)
+    (ε : ℝ) (hε : 0 < ε) :
+    ∃ d ∈ C, unSeminorm ω B.inner (x - d) ≤ ε := by
+  have hsubω : ∀ a b : ℬ, ω (a - b) = ω a - ω b := fun a b =>
+    map_sub ω.toPositiveLinearMap a b
+  set p : X → ℝ := fun z => unSeminorm ω B.inner (x - z) with hp
+  obtain ⟨d₀, hd₀C, -⟩ := hweak x 1 one_pos
+  have hM0 : 0 ≤ M :=
+    le_trans (unSeminorm_nonneg ω B.inner (x - d₀)) (hbdd d₀ hd₀C)
+  set S : Set ℝ := p '' C with hS
+  have hSne : S.Nonempty := ⟨p d₀, d₀, hd₀C, rfl⟩
+  have hSbdd : BddBelow S := by
+    refine ⟨0, ?_⟩
+    rintro - ⟨d, hd, rfl⟩
+    exact unSeminorm_nonneg ω B.inner _
+  set γ := sInf S with hγ
+  have hγ0 : 0 ≤ γ := by
+    refine le_csInf hSne ?_
+    rintro - ⟨d, hd, rfl⟩
+    exact unSeminorm_nonneg ω B.inner _
+  have hγle : ∀ d ∈ C, γ ≤ p d := fun d hd => csInf_le hSbdd ⟨d, hd, rfl⟩
+  have hγM : γ ≤ M := le_trans (hγle d₀ hd₀C) (hbdd d₀ hd₀C)
+  -- main estimate: `γ² ≤ η(2M+2)` for every `0 < η ≤ 1`
+  have hmain : ∀ η : ℝ, 0 < η → η ≤ 1 → γ ^ 2 ≤ η * (2 * M + 2) := by
+    intro η hη hη1
+    have h2M1 : (0 : ℝ) < 2 * M + 1 := by linarith
+    -- an approximate nearest point `d*`
+    obtain ⟨s, hsS, hslt⟩ := exists_lt_of_csInf_lt hSne
+      (show sInf S < γ + η ^ 2 / (2 * M + 1) by
+        have hpos : 0 < η ^ 2 / (2 * M + 1) := div_pos (by positivity) h2M1
+        rw [← hγ]; linarith)
+    obtain ⟨dstar, hdstarC, rfl⟩ := hsS
+    have hpn : 0 ≤ p dstar := unSeminorm_nonneg ω B.inner _
+    have hPM : p dstar ≤ M := hbdd _ hdstarC
+    have hP2 : p dstar ^ 2 ≤ γ ^ 2 + η ^ 2 := by
+      have hd1 : η ^ 2 / (2 * M + 1) ≤ η ^ 2 := by
+        rw [div_le_iff₀ h2M1]; nlinarith [sq_nonneg η]
+      have hd2 : η ^ 2 / (2 * M + 1) * (2 * γ + η ^ 2 / (2 * M + 1))
+          ≤ η ^ 2 := by
+        rw [div_mul_eq_mul_div, div_le_iff₀ h2M1]
+        have hd3 : η ^ 2 / (2 * M + 1) ≤ 1 := by
+          rw [div_le_one h2M1]; nlinarith
+        nlinarith [sq_nonneg η]
+      nlinarith [hslt, hγ0]
+    -- a weak approximant against `w = x - d*`
+    obtain ⟨d, hdC, hdw⟩ := hweak (x - dstar) (η ^ 2) (by positivity)
+    set u := x - dstar with hu
+    set v := d - dstar with hv
+    have hvsplit : v = u - (x - d) := by rw [hv, hu]; abel
+    -- `‖v‖_ω ≤ 2M`
+    have hq : unSeminorm ω B.inner v ≤ 2 * M := by
+      have h := unSeminorm_sub_le' ω B u (x - d)
+      rw [← hvsplit] at h
+      exact le_trans h (by
+        have h1 : unSeminorm ω B.inner u ≤ M := hbdd _ hdstarC
+        have h2 : unSeminorm ω B.inner (x - d) ≤ M := hbdd _ hdC
+        linarith)
+    -- `Re ω[u,v] ≥ γ² - η²`
+    have hR : γ ^ 2 - η ^ 2 ≤ (ω (B.inner u v)).re := by
+      have hsplit2 : B.inner u v = B.inner u u - B.inner u (x - d) := by
+        rw [hvsplit, B.inner_sub_right]
+      have hre1 : (ω (B.inner u (x - d))).re ≤ η ^ 2 :=
+        le_trans (Complex.re_le_norm _) hdw
+      have huu : γ ^ 2 ≤ (ω (B.inner u u)).re := by
+        have h1 : γ ≤ p dstar := hγle _ hdstarC
+        have h2 : γ ^ 2 ≤ p dstar ^ 2 := by nlinarith
+        rw [hp] at h2
+        rw [← unSeminorm_sq ω B u]
+        exact h2
+      rw [hsplit2, hsubω, Complex.sub_re]
+      linarith
+    -- the quadratic in `t`
+    have hkey : ∀ t : ℝ, 0 ≤ t → t ≤ 1 →
+        0 ≤ η ^ 2 - 2 * t * (γ ^ 2 - η ^ 2) + t ^ 2 * (2 * M) ^ 2 := by
+      intro t ht0 ht1
+      have hdt : dstar + ((t : ℝ) : ℂ) • v ∈ C := hconv dstar hdstarC d hdC t ht0 ht1
+      have hxd : x - (dstar + ((t : ℝ) : ℂ) • v) = u - ((t : ℝ) : ℂ) • v := by
+        rw [hu]; abel
+      have hγt : γ ≤ p (dstar + ((t : ℝ) : ℂ) • v) := hγle _ hdt
+      rw [hp] at hγt
+      simp only [hxd] at hγt
+      have hsq : γ ^ 2 ≤ unSeminorm ω B.inner (u - ((t : ℝ) : ℂ) • v) ^ 2 := by
+        nlinarith [unSeminorm_nonneg ω B.inner (u - ((t : ℝ) : ℂ) • v)]
+      rw [unSeminorm_sub_smul_sq] at hsq
+      have e1 : 2 * t * (γ ^ 2 - η ^ 2) ≤ 2 * t * (ω (B.inner u v)).re :=
+        mul_le_mul_of_nonneg_left hR (by linarith)
+      have e2 : t ^ 2 * unSeminorm ω B.inner v ^ 2 ≤ t ^ 2 * (2 * M) ^ 2 := by
+        have := unSeminorm_nonneg ω B.inner v
+        have h5 : unSeminorm ω B.inner v ^ 2 ≤ (2 * M) ^ 2 := by nlinarith
+        exact mul_le_mul_of_nonneg_left h5 (sq_nonneg t)
+      have h6 : unSeminorm ω B.inner u ^ 2 = p dstar ^ 2 := by rw [hp, hu]
+      nlinarith [hsq, hP2]
+    -- optimize `t`
+    by_cases hcase : γ ^ 2 ≤ η ^ 2
+    · nlinarith
+    · push_neg at hcase
+      set K := 4 * M ^ 2 + 1 with hK
+      have hKpos : (0 : ℝ) < K := by positivity
+      set t0 := (γ ^ 2 - η ^ 2) / K with ht0def
+      have hApos : 0 < γ ^ 2 - η ^ 2 := by linarith
+      have ht00 : 0 ≤ t0 := le_of_lt (div_pos hApos hKpos)
+      have ht01 : t0 ≤ 1 := by
+        rw [ht0def, div_le_one hKpos, hK]
+        nlinarith [sq_nonneg η]
+      have hkey0 := hkey t0 ht00 ht01
+      have hsubst : t0 * K = γ ^ 2 - η ^ 2 := div_mul_cancel₀ _ hKpos.ne'
+      -- `0 ≤ η² − t₀²(4M²+2)` hence `(γ²−η²)² ≤ η²(4M²+1)`
+      have hAsq : (γ ^ 2 - η ^ 2) ^ 2 ≤ η ^ 2 * K := by
+        nlinarith [hkey0, hsubst, hKpos, sq_nonneg t0]
+      have hB0 : 0 < η * (2 * M + 1) := mul_pos hη (by linarith)
+      have h9 : η ^ 2 * K ≤ (η * (2 * M + 1)) ^ 2 := by
+        rw [hK]; nlinarith [sq_nonneg η, hM0]
+      have hfin : γ ^ 2 - η ^ 2 ≤ η * (2 * M + 1) := by
+        nlinarith [hAsq, h9, hApos, hB0]
+      nlinarith
+  -- from the main estimate, `γ ≤ ε/2`
+  have hγε : γ ≤ ε / 2 := by
+    set η := min 1 ((ε / 2) ^ 2 / (2 * M + 2)) with hηdef
+    have hη0 : 0 < η := lt_min one_pos (by positivity)
+    have h1 := hmain η hη0 (min_le_left _ _)
+    have h6 : η * (2 * M + 2) ≤ (ε / 2) ^ 2 := by
+      have h7 : η ≤ (ε / 2) ^ 2 / (2 * M + 2) := min_le_right _ _
+      calc η * (2 * M + 2) ≤ (ε / 2) ^ 2 / (2 * M + 2) * (2 * M + 2) :=
+            mul_le_mul_of_nonneg_right h7 (by linarith)
+        _ = (ε / 2) ^ 2 := div_mul_cancel₀ _ (by positivity)
+    have h8 : γ ^ 2 ≤ (ε / 2) ^ 2 := le_trans h1 h6
+    nlinarith
+  obtain ⟨s, hsS, hslt⟩ := exists_lt_of_csInf_lt hSne
+    (show sInf S < ε from lt_of_le_of_lt hγε (by linarith))
+  obtain ⟨d, hdC, rfl⟩ := hsS
+  exact ⟨d, hdC, le_of_lt hslt⟩
+
+omit [StarOrderedRing ℬ] in
+/-- Scalar action through the algebra: `(c·1) • d = c • d` in a
+`CStarModule` (by definiteness of the inner product). -/
+private theorem smul_one_smul' (c : ℂ) (d : X) :
+    (c • (1 : ℬ)) • d = c • d := by
+  have hz : inner ℬ ((c • (1 : ℬ)) • d - c • d) ((c • (1 : ℬ)) • d - c • d)
+      = (0 : ℬ) := by
+    simp only [CStarModule.inner_sub_left, CStarModule.inner_sub_right,
+      CStarModule.inner_op_smul_left, CStarModule.inner_op_smul_right,
+      CStarModule.inner_smul_left_complex, CStarModule.inner_smul_right_complex,
+      star_smul, star_one, smul_mul_assoc, mul_smul_comm, one_mul, mul_one,
+      smul_smul]
+    module
+  exact sub_eq_zero.mp (CStarModule.inner_self.mp hz)
+
+omit [StarOrderedRing ℬ] in
+private theorem np_re_one_smul (ω : NPFunctional ℬ) (r : ℝ) :
+    (ω (r • (1 : ℬ))).re = r * (ω 1).re := by
+  have h : (r • (1 : ℬ)) = ((r : ℝ) : ℂ) • (1 : ℬ) :=
+    RCLike.real_smul_eq_coe_smul (K := ℂ) r 1
+  have h2 : ω (((r : ℝ) : ℂ) • (1 : ℬ)) = ((r : ℝ) : ℂ) * ω 1 :=
+    map_smul ω.toPositiveLinearMap _ _
+  rw [h, h2]
+  simp [Complex.mul_re]
+
+/-- `‖z‖_ω ≤ √(ω 1) ‖z‖`: the ultranorm seminorms are dominated by the
+norm. -/
+private theorem unSeminorm_le_norm' (ω : NPFunctional ℬ) (z : X) :
+    unSeminorm ω (cstarBInner ℬ X).inner z ≤ Real.sqrt (ω 1).re * ‖z‖ := by
+  have h1 : inner ℬ z z ≤ algebraMap ℝ ℬ ‖inner ℬ z z‖ :=
+    (CStarModule.isSelfAdjoint_inner_self (A := ℬ) (x := z)).le_algebraMap_norm_self
+  have h2 : (ω (inner ℬ z z)).re ≤ ‖inner ℬ z z‖ * (ω 1).re := by
+    have h3 := np_re_mono' ω h1
+    rwa [Algebra.algebraMap_eq_smul_one, np_re_one_smul] at h3
+  have h4 : ‖inner ℬ z z‖ = ‖z‖ ^ 2 := (CStarModule.norm_sq_eq (A := ℬ)).symm
+  calc unSeminorm ω (cstarBInner ℬ X).inner z
+      = Real.sqrt (ω (inner ℬ z z)).re := rfl
+    _ ≤ Real.sqrt (‖z‖ ^ 2 * (ω 1).re) := Real.sqrt_le_sqrt (by rw [← h4]; exact h2)
+    _ = ‖z‖ * Real.sqrt (ω 1).re := by
+        rw [Real.sqrt_mul (sq_nonneg _), Real.sqrt_sq (norm_nonneg z)]
+    _ = Real.sqrt (ω 1).re * ‖z‖ := mul_comm _ _
+
+omit [StarOrderedRing ℬ] in
+include ℬ in
+/-- `‖c • d‖ = ‖c‖ ‖d‖` for complex scalars, from the `CStarModule` norm
+(the section does not assume `NormedSpace ℂ X`). -/
+private theorem norm_smul_complex (c : ℂ) (d : X) : ‖c • d‖ = ‖c‖ * ‖d‖ := by
+  have h1 : inner ℬ (c • d) (c • d) = (star c * c) • inner ℬ d d := by
+    rw [CStarModule.inner_smul_left_complex, CStarModule.inner_smul_right_complex,
+      smul_smul]
+  rw [CStarModule.norm_eq_sqrt_norm_inner_self (A := ℬ), h1, norm_smul, norm_mul,
+    norm_star, CStarModule.norm_eq_sqrt_norm_inner_self (A := ℬ) (x := d)]
+  have h2 : ‖c‖ * ‖c‖ * ‖inner ℬ d d‖ = ‖c‖ ^ 2 * ‖inner ℬ d d‖ := by ring
+  rw [h2, Real.sqrt_mul (sq_nonneg _), Real.sqrt_sq (norm_nonneg c)]
+
+/-- **Reduction of 158II to weak bounded approximation.**  If, for every
+np-functional `ω`, every `w ∈ X` and every `η > 0`, some `d ∈ D` with
+`‖d‖ ≤ ‖x‖` makes the single complex number `ω ⟪w, x - d⟫` small, then the
+full conclusion of `kaplansky_hilbmod` holds for `x`: `d ∈ D` with
+`‖d‖ ≤ ‖x‖` and `x - d` small in finitely many ultranorm seminorms at once.
+
+This is the sound part of a replacement proof for **158II** (whose route
+through 158V is closed — see the section comment above): `C = D ∩ ball(‖x‖)`
+is convex, so by the variational argument `weak_to_strong` its weak
+approximations of `x` upgrade to `‖·‖_ω`-approximations, and a finite family
+`ω₁, …, ωₙ` is dominated by the single np-functional `Σᵢ ωᵢ` (`npSum`).
+Note no von Neumann algebra, completeness, closedness of `A`, ultranorm
+density of `D`, or `⟪d,d⟫ ∈ A` hypothesis is needed for this step. -/
+theorem kaplansky_hilbmod_of_weak
+    (A : StarSubalgebra ℂ ℬ) (D : Set X)
+    (hDadd : ∀ d ∈ D, ∀ d' ∈ D, d + d' ∈ D)
+    (hDsmul : ∀ a ∈ A, ∀ d ∈ D, a • d ∈ D)
+    (x : X)
+    (hweak : ∀ (ω : NPFunctional ℬ) (w : X) (η : ℝ), 0 < η →
+      ∃ d ∈ D, ‖d‖ ≤ ‖x‖ ∧ ‖ω (inner ℬ w (x - d))‖ ≤ η) :
+    ∀ (n : ℕ) (ωs : Fin n → NPFunctional ℬ) (ε : ℝ), 0 < ε →
+      ∃ d ∈ D, ‖d‖ ≤ ‖x‖ ∧
+        ∀ i, unSeminorm (ωs i) (inner ℬ) (x - d) ≤ ε := by
+  intro n ωs ε hε
+  set ω := npSum n ωs with hω
+  set C : Set X := {d | d ∈ D ∧ ‖d‖ ≤ ‖x‖} with hC
+  -- `D` is closed under complex scalars, through `A ∋ c·1`
+  have hDsmulℂ : ∀ (c : ℂ), ∀ d ∈ D, c • d ∈ D := by
+    intro c d hd
+    have h1 : (c • (1 : ℬ)) ∈ A := by
+      rw [← Algebra.algebraMap_eq_smul_one]
+      exact A.algebraMap_mem c
+    have h2 := hDsmul _ h1 d hd
+    rwa [smul_one_smul' c d] at h2
+  -- `C` is convex
+  have hconv : ∀ d ∈ C, ∀ d' ∈ C, ∀ t : ℝ, 0 ≤ t → t ≤ 1 →
+      d + ((t : ℝ) : ℂ) • (d' - d) ∈ C := by
+    intro d hd d' hd' t ht0 ht1
+    have heq : d + ((t : ℝ) : ℂ) • (d' - d)
+        = ((1 - t : ℝ) : ℂ) • d + ((t : ℝ) : ℂ) • d' := by
+      push_cast
+      module
+    rw [heq]
+    refine ⟨hDadd _ (hDsmulℂ _ _ hd.1) _ (hDsmulℂ _ _ hd'.1), ?_⟩
+    calc ‖((1 - t : ℝ) : ℂ) • d + ((t : ℝ) : ℂ) • d'‖
+        ≤ ‖((1 - t : ℝ) : ℂ) • d‖ + ‖((t : ℝ) : ℂ) • d'‖ := norm_add_le _ _
+      _ = (1 - t) * ‖d‖ + t * ‖d'‖ := by
+          rw [norm_smul_complex (ℬ := ℬ), norm_smul_complex (ℬ := ℬ),
+            Complex.norm_real,
+            Complex.norm_real, Real.norm_eq_abs, Real.norm_eq_abs,
+            abs_of_nonneg (by linarith : (0:ℝ) ≤ 1 - t), abs_of_nonneg ht0]
+      _ ≤ (1 - t) * ‖x‖ + t * ‖x‖ := by nlinarith [hd.2, hd'.2]
+      _ = ‖x‖ := by ring
+  -- the distances `‖x - d‖_ω` are bounded over `C`
+  have hbddM : ∀ d ∈ C, unSeminorm ω (cstarBInner ℬ X).inner (x - d)
+      ≤ Real.sqrt (ω 1).re * (2 * ‖x‖) := by
+    intro d hd
+    refine le_trans (unSeminorm_le_norm' ω (x - d)) ?_
+    have h1 : ‖x - d‖ ≤ 2 * ‖x‖ := by
+      have := norm_sub_le x d
+      have := hd.2
+      linarith
+    have h2 : 0 ≤ Real.sqrt (ω 1).re := Real.sqrt_nonneg _
+    nlinarith
+  -- weak approximation within `C`
+  have hweakC : ∀ (w : X) (η : ℝ), 0 < η →
+      ∃ d ∈ C, ‖ω ((cstarBInner ℬ X).inner w (x - d))‖ ≤ η := by
+    intro w η hη
+    obtain ⟨d, hd, hnorm, hval⟩ := hweak ω w η hη
+    exact ⟨d, ⟨hd, hnorm⟩, hval⟩
+  obtain ⟨d, hdC, hdε⟩ := weak_to_strong ω (cstarBInner ℬ X) x C _ hbddM hconv
+    hweakC ε hε
+  refine ⟨d, hdC.1, hdC.2, fun i => ?_⟩
+  exact le_trans (unSeminorm_le_npSum n ωs i (cstarBInner ℬ X) (x - d)) hdε
+
+end WeakToStrong
 
 end Kaplansky
 

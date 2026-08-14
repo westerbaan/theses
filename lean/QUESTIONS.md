@@ -110,6 +110,36 @@ too (in an ortholattice both bounds exist, so it only ever needs the surviving
 identity).  B/Eff: 1756 declarations walked, 19 `sorry`, **0** depending on
 one.
 
+### B10. 158II `kaplansky-hilbmod` — the thesis's proof is dead and no replacement is known
+`dils.tex` parsec 1580.  158II is proved in the thesis via **158V**, and 158V is
+**false** (counterexample in `PROVING-LOG`; `B(ℓ²)`, `y = |e₂⟩⟨e₁|`,
+`yₙ = |e₂⟩⟨e₁+eₙ|`).  A dedicated run then failed both to prove and to refute
+158II itself:
+
+* every replacement route tried — truncation/`h`-style renormalizers, adaptive
+  two-stage `conjNP` requests, a least-squares sandwich — funnels into the same
+  mirrored quantity, the `ω`-mass of `spec ⟪d₀,d₀⟫` above `‖x‖²`, which an
+  adversarial approximant makes `O(1)` for any *one-shot* renormalizer;
+* every adversarial `D` collapses, because `⟪D,D⟫ ⊆ 𝒜` lets `𝒜`-functional
+  calculus trim the escaping components — so the `∃ d ∈ D` form genuinely
+  resists the 158V counterexample.
+
+Recorded, and worth keeping: the `∃ d ∈ D` freedom is real but **not sufficient
+on its own** — pointwise ultranorm continuity of `h` fails even at norm-interior
+points, so any proof must exploit the `𝒜`-module trimming, not just the
+entourage form.
+
+**Banked**: `kaplansky_hilbmod_of_weak` (proved, axiom-clean) reduces 158II to
+*weak* bounded approximation — `‖ω⟪w, x−d⟫‖ ≤ η` with `d` in the `‖x‖`-ball of
+`D` — via a Mazur-style variational lemma.  So the open part is now the weak
+form alone.
+
+*Decision needed*: prove the weak form, refute 158II, or strengthen its
+hypotheses.  A pointer offered by the run, **which we have not checked**:
+H. Lin, *Double duals and Hilbert modules*, arXiv:2311.15462 §4 proves the
+analogue for standard modules with `𝒜` SOT-dense, via matrix Kaplansky — said
+not to port to 158II's hypotheses as stated.
+
 ### B5. `IsVNTensor` is too weak for 165III (and, it turns out, 166II)
 *Status 2026-08-14 (worker 52): the **positivity** half is answered (worker 40,
 confirmed by worker 41), and 165III `dfn_tensor_of_hilbmod_maps` is
