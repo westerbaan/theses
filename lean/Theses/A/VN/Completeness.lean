@@ -1907,10 +1907,208 @@ theorem abs_us_cont :
       (fun a => cfc (fun t : ℝ => |t|) a) {a : A | IsSelfAdjoint a} :=
   proto_kaplansky (fun t : ℝ => |t|) continuous_abs ⟨0, 1, fun t _ => by rw [one_mul, abs_abs]⟩
 
+/-! ### Auxiliaries for **74IV** `kaplansky`
+
+The thesis's proof (vn.tex:4344) of the self-adjoint case runs: the real
+parts `Re(a_α)` of an approximating net converge *ultraweakly* to
+`Re(b) = b`, so `b` lies in the ultraweak closure of the convex set
+`sa(S)`; by **73VIII** `ultraclosed` the ultraweak and ultrastrong closures
+of a convex set coincide, so `b` is already the ultrastrong limit of a net
+from `sa(S)`; and clamping with the continuous function
+`-‖b‖ ∨ (·) ∧ ‖b‖`, which is ultrastrongly continuous by **74I**, brings the
+norms down to `‖b‖` without disturbing the limit.  The positive case clamps
+with `0 ∨ (·) ∧ ‖b‖` instead, and the effect case is the positive case
+together with `‖b‖ ≤ 1`.
+
+The general (non-self-adjoint) case needs the `2×2`-matrix trick and hence
+**49IV**.1 `mn_vna_1` (`Basic.lean`), which is still `sorry`; it is left
+open. -/
+
+omit [VonNeumannAlgebra A] in
+/-- Membership of the ultrastrong closure, in terms of the seminorms. -/
+private theorem mem_usClosure_iff (K : Set A) (x : A) :
+    x ∈ @closure A (ultrastrong A) K ↔
+      ∀ (ω : NPFunctional A) (ε : ℝ), 0 < ε → ∃ z ∈ K, omegaNorm A ω (z - x) < ε := by
+  let _ : TopologicalSpace A := ultrastrong A
+  constructor
+  · intro hx ω ε hε
+    obtain ⟨z, hz1, hz2⟩ := mem_closure_iff_nhds.mp hx _ (ultrastrong_ball_mem_nhds ω x hε)
+    exact ⟨z, hz2, hz1⟩
+  · intro h
+    rw [mem_closure_iff]
+    intro o ho hxo
+    obtain ⟨ω, δ, hδ, hsub⟩ := exists_ultrastrong_ball_of_isOpen ho x hxo
+    obtain ⟨z, hz, hlt⟩ := h ω δ hδ
+    exact ⟨z, hsub hlt, hz⟩
+
+omit [VonNeumannAlgebra A] in
+/-- The ultrastrong closure of a convex set is convex — the `‖·‖_ω` are
+seminorms, so the ultrastrong topology is that of a locally convex space. -/
+private theorem convex_usClosure {K : Set A} (hK : Convex ℝ K) :
+    Convex ℝ (@closure A (ultrastrong A) K) := by
+  intro x hx y hy s t hs ht hst
+  rw [mem_usClosure_iff] at hx hy ⊢
+  intro ω ε hε
+  obtain ⟨z, hzK, hz⟩ := hx ω (ε / 2) (by positivity)
+  obtain ⟨w, hwK, hw⟩ := hy ω (ε / 2) (by positivity)
+  refine ⟨s • z + t • w, hK hzK hwK hs ht hst, ?_⟩
+  have hEq : s • z + t • w - (s • x + t • y) = s • (z - x) + t • (w - y) := by
+    simp only [smul_sub]; abel
+  rw [hEq]
+  refine lt_of_le_of_lt (omegaNorm_add_le ω _ _) ?_
+  rw [omegaNorm_rsmul, omegaNorm_rsmul, abs_of_nonneg hs, abs_of_nonneg ht]
+  have h1 : s * omegaNorm A ω (z - x) ≤ s * (ε / 2) :=
+    mul_le_mul_of_nonneg_left hz.le hs
+  have h2 : t * omegaNorm A ω (w - y) ≤ t * (ε / 2) :=
+    mul_le_mul_of_nonneg_left hw.le ht
+  have h3 : s * (ε / 2) + t * (ε / 2) = ε / 2 := by
+    rw [← add_mul, hst, one_mul]
+  linarith
+
+/-- Comparison of closures under a comparison of topologies. -/
+private theorem closure_subset_closure_of_continuous_id {X : Type*}
+    (t₁ t₂ : TopologicalSpace X) (h : @Continuous X X t₁ t₂ id) (K : Set X) :
+    @closure X t₁ K ⊆ @closure X t₂ K :=
+  @closure_minimal X t₁ K (@closure X t₂ K) (@subset_closure X t₂ K)
+    (@IsClosed.preimage X X t₁ t₂ id h _ (@isClosed_closure X t₂ K))
+
+omit [VonNeumannAlgebra A] in
+/-- The ultrastrong topology is finer than the ultraweak one (**43I**
+`uwweaker`), so ultrastrong closures are contained in ultraweak ones. -/
+private theorem usClosure_subset_uwClosure (K : Set A) :
+    @closure A (ultrastrong A) K ⊆ @closure A (ultraweak A) K :=
+  closure_subset_closure_of_continuous_id _ _
+    (continuous_le_dom ultrastrong_le_ultraweak (@continuous_id A (ultraweak A))) K
+
+omit [VonNeumannAlgebra A] in
+/-- Taking real parts is ultraweakly continuous: `ω(Re a) = Re(ω a)`. -/
+private theorem continuous_ultraweak_realPart :
+    @Continuous A A (ultraweak A) (ultraweak A)
+      (fun x : A => ((2 : ℝ)⁻¹ : ℝ) • (x + star x)) := by
+  let _ : TopologicalSpace A := ultraweak A
+  rw [ultraweak, continuous_iInf_rng]
+  intro ω
+  rw [continuous_induced_rng]
+  have hform : ∀ x : A, ω (((2 : ℝ)⁻¹ : ℝ) • (x + star x))
+      = ((((2 : ℝ)⁻¹ : ℝ) : ℂ)) * (ω x + star (ω x)) := by
+    intro x
+    rw [rsmul_eq]
+    have h2 : ω (((((2 : ℝ)⁻¹ : ℝ) : ℂ)) • (x + star x))
+        = ((((2 : ℝ)⁻¹ : ℝ) : ℂ)) * ω (x + star x) :=
+      map_smul ω.toPositiveLinearMap ((((2 : ℝ)⁻¹ : ℝ) : ℂ)) (x + star x)
+    rw [h2, npFunctional_add, npFunctional_star]
+  change Continuous fun x : A => (ω (((2 : ℝ)⁻¹ : ℝ) • (x + star x)) : ℂ)
+  simp only [hform]
+  exact continuous_const.mul ((continuous_ultraweak_npFunctional ω).add
+    (continuous_star.comp (continuous_ultraweak_npFunctional ω)))
+
+omit [VonNeumannAlgebra A] in
+/-- The ultraweak half of `mem_usClosure_selfAdjointPart`, isolated so the
+ultraweak topology can be installed as the ambient instance. -/
+private theorem realPart_mem_of_mem_uwClosure {C S : Set A}
+    (hCuw : @IsClosed A (ultraweak A) C)
+    (hSsub : ∀ x ∈ S, ((2 : ℝ)⁻¹ : ℝ) • (x + star x) ∈ C)
+    {b : A} (hb : b ∈ @closure A (ultraweak A) S) :
+    ((2 : ℝ)⁻¹ : ℝ) • (b + star b) ∈ C :=
+  @closure_minimal A (ultraweak A) S _ hSsub
+    (@IsClosed.preimage A A (ultraweak A) (ultraweak A) _
+      continuous_ultraweak_realPart C hCuw) b hb
+
+omit [StarOrderedRing A] [VonNeumannAlgebra A] in
+/-- A point of the ultrastrong closure of `K` is the limit of the tautological
+net indexed by `K` itself. -/
+private theorem exists_net_of_mem_usClosure (K : Set A) (b : A)
+    (hb : b ∈ @closure A (ultrastrong A) K) :
+    ∃ l : Filter K, l.NeBot ∧ USTendsto (fun i : K => (i : A)) l b := by
+  let _ : TopologicalSpace A := ultrastrong A
+  exact ⟨Filter.comap (fun i : K => (i : A)) (𝓝 b),
+    mem_closure_iff_comap_neBot.mp hb, tendsto_comap⟩
+
+/-- The self-adjoint part of a C\*-subalgebra `S` has the same ultrastrong
+closure as `S` at every self-adjoint point — the thesis's first step in
+**74IV**, and the only place the ultraweak topology enters. -/
+private theorem mem_usClosure_selfAdjointPart (S : StarSubalgebra ℂ A)
+    (b : A) (hb : b ∈ @closure A (ultrastrong A) (S : Set A))
+    (hsa : IsSelfAdjoint b) :
+    b ∈ @closure A (ultrastrong A) {x : A | x ∈ S ∧ IsSelfAdjoint x} := by
+  set K : Set A := {x : A | x ∈ S ∧ IsSelfAdjoint x} with hKdef
+  have hKconv : Convex ℝ K := by
+    rintro x ⟨hx1, hx2⟩ y ⟨hy1, hy2⟩ s t hs ht _
+    refine ⟨add_mem ?_ ?_, ?_⟩
+    · rw [rsmul_eq]; exact SMulMemClass.smul_mem _ hx1
+    · rw [rsmul_eq]; exact SMulMemClass.smul_mem _ hy1
+    · rw [rsmul_eq, rsmul_eq]
+      exact ((IsSelfAdjoint.smul (by simp [IsSelfAdjoint, Complex.conj_ofReal]) hx2).add
+        (IsSelfAdjoint.smul (by simp [IsSelfAdjoint, Complex.conj_ofReal]) hy2))
+  set C : Set A := @closure A (ultrastrong A) K with hCdef
+  have hCuw : @IsClosed A (ultraweak A) C :=
+    ultraclosed C (convex_usClosure hKconv) (@isClosed_closure A (ultrastrong A) K)
+  have hSsub : ∀ x ∈ (S : Set A), ((2 : ℝ)⁻¹ : ℝ) • (x + star x) ∈ C := by
+    intro s hs
+    refine @subset_closure A (ultrastrong A) K _ ⟨?_, ?_⟩
+    · rw [rsmul_eq]
+      exact SMulMemClass.smul_mem _ (add_mem hs (star_mem hs))
+    · rw [rsmul_eq]
+      refine IsSelfAdjoint.smul (by simp [IsSelfAdjoint]) ?_
+      rw [IsSelfAdjoint, star_add, star_star, add_comm]
+  have hmem := realPart_mem_of_mem_uwClosure hCuw hSsub (usClosure_subset_uwClosure _ hb)
+  have hReb : ((2 : ℝ)⁻¹ : ℝ) • (b + star b) = b := by
+    rw [hsa.star_eq, ← two_smul ℝ b, smul_smul]
+    norm_num
+  rwa [hReb] at hmem
+
+omit [StarOrderedRing A] [VonNeumannAlgebra A] in
+/-- Transport of an ultrastrong limit through an ultrastrongly continuous
+functional calculus (**74I**). -/
+private theorem usTendsto_cfc {f : ℝ → ℝ}
+    (hcont : @ContinuousOn A A (ultrastrong A) (ultrastrong A) (fun a => cfc f a)
+      {a : A | IsSelfAdjoint a})
+    {ι : Type*} {l : Filter ι} {a : ι → A} {b : A}
+    (ha : ∀ i, IsSelfAdjoint (a i)) (hb : IsSelfAdjoint b)
+    (h : USTendsto a l b) :
+    USTendsto (fun i => cfc f (a i)) l (cfc f b) := by
+  let _ : TopologicalSpace A := ultrastrong A
+  exact Filter.Tendsto.comp (hcont b hb)
+    (tendsto_nhdsWithin_iff.mpr ⟨h, Eventually.of_forall ha⟩)
+
+omit [VonNeumannAlgebra A] in
+private theorem abs_clamp_le_abs {M : ℝ} (hM : 0 ≤ M) (t : ℝ) :
+    |max (-M) (min t M)| ≤ |t| := by
+  refine abs_le.mpr ⟨le_trans ?_ (le_max_right (-M) (min t M)),
+    max_le (by linarith [abs_nonneg t]) ((min_le_left _ _).trans (le_abs_self t))⟩
+  exact le_min (neg_abs_le t) (by linarith [abs_nonneg t])
+
+omit [VonNeumannAlgebra A] in
+private theorem abs_clamp_le {M : ℝ} (hM : 0 ≤ M) (t : ℝ) :
+    |max (-M) (min t M)| ≤ M :=
+  abs_le.mpr ⟨le_max_left _ _, max_le (by linarith) (min_le_right _ _)⟩
+
+omit [VonNeumannAlgebra A] in
+private theorem abs_posClamp_le_abs {M : ℝ} (hM : 0 ≤ M) (t : ℝ) :
+    |max 0 (min t M)| ≤ |t| := by
+  rcases le_total t 0 with h | h
+  · rw [min_eq_left (h.trans hM), max_eq_left h, abs_zero]
+    exact abs_nonneg t
+  · rw [abs_of_nonneg (le_max_left _ _)]
+    exact max_le (abs_nonneg t) ((min_le_left _ _).trans (le_abs_self t))
+
+omit [VonNeumannAlgebra A] in
+private theorem abs_posClamp_le {M : ℝ} (hM : 0 ≤ M) (t : ℝ) :
+    |max 0 (min t M)| ≤ M :=
+  abs_le.mpr ⟨by linarith [le_max_left (0 : ℝ) (min t M)],
+    max_le hM (min_le_right _ _)⟩
+
 /-- **74IV** (`kaplansky`, vn.tex:4336, Kaplansky's Density Theorem): if `b`
 in a von Neumann algebra `B` is the ultrastrong limit of a net from a
 C*-subalgebra `S`, then `b` is the ultrastrong limit of a net `(a_α)_α` in
-`S` with `‖a_α‖ ≤ ‖b‖`. -/
+`S` with `‖a_α‖ ≤ ‖b‖`.
+
+Left `sorry`: the thesis's proof of this general case runs the self-adjoint
+case in `M₂(𝒜)` on `[[0, b], [b*, 0]]`, so it needs **49IV**.1 `mn_vna_1`
+(`M_N(𝒜)` is a von Neumann algebra) and **49IV**.2' (entrywise ultrastrong
+convergence), both still `sorry`.  The three "moreover" clauses below —
+which is what the rest of the development uses — avoid the trick and are
+proved. -/
 theorem kaplansky (S : StarSubalgebra ℂ A) (hS : IsClosed (S : Set A))
     (b : A) (hb : b ∈ @closure A (ultrastrong A) S) :
     ∃ (ι : Type u) (l : Filter ι), l.NeBot ∧ ∃ a : ι → A,
@@ -1919,33 +2117,85 @@ theorem kaplansky (S : StarSubalgebra ℂ A) (hS : IsClosed (S : Set A))
 
 /-- **74IV** (`kaplansky`, vn.tex:4336, Kaplansky's Density Theorem),
 part 1: if moreover `b` is self-adjoint, the `a_α` can be chosen
-self-adjoint. -/
+self-adjoint.
+
+*Class 1 — faithful*, see the block above. -/
 theorem kaplansky_sa (S : StarSubalgebra ℂ A) (hS : IsClosed (S : Set A))
     (b : A) (hb : b ∈ @closure A (ultrastrong A) S) (hsa : IsSelfAdjoint b) :
     ∃ (ι : Type u) (l : Filter ι), l.NeBot ∧ ∃ a : ι → A,
       (∀ i, a i ∈ S ∧ ‖a i‖ ≤ ‖b‖ ∧ IsSelfAdjoint (a i)) ∧
-        USTendsto a l b :=
-  sorry
+        USTendsto a l b := by
+  have hM0 : (0 : ℝ) ≤ ‖b‖ := norm_nonneg b
+  set f : ℝ → ℝ := fun t => max (-‖b‖) (min t ‖b‖) with hfdef
+  have hfc : Continuous f := by
+    simp only [hfdef]; fun_prop
+  have hcfc := proto_kaplansky (A := A) f hfc
+    ⟨0, 1, fun t _ => by rw [one_mul]; exact abs_clamp_le_abs hM0 t⟩
+  obtain ⟨l, hl, hlim⟩ :=
+    exists_net_of_mem_usClosure _ b (mem_usClosure_selfAdjointPart S b hb hsa)
+  have hcfcb : cfc f b = b := by
+    nth_rewrite 2 [← cfc_id ℝ b]
+    refine cfc_congr fun t ht => ?_
+    have h := abs_le.mp (spectrum_abs_le hsa ht)
+    simp only [hfdef, id]
+    rw [min_eq_left h.2, max_eq_right h.1]
+  have hSc : IsClosed ((S : StarSubalgebra ℂ A) : Set A) := hS
+  refine ⟨_, l, hl, fun i => cfc f (i : A), fun i => ⟨cfc_mem (𝕜 := ℝ) (𝕜' := ℂ) f i.2.1,
+    norm_cfc_le hM0 fun t _ => by rw [Real.norm_eq_abs]; exact abs_clamp_le hM0 t,
+    cfc_predicate f _⟩, ?_⟩
+  have := usTendsto_cfc hcfc (fun i : {x : A | x ∈ S ∧ IsSelfAdjoint x} => i.2.2) hsa hlim
+  rwa [hcfcb] at this
 
 /-- **74IV** (`kaplansky`, vn.tex:4336, Kaplansky's Density Theorem),
-part 2: if moreover `b` is positive, the `a_α` can be chosen positive. -/
+part 2: if moreover `b` is positive, the `a_α` can be chosen positive.
+
+*Class 3 — mild divergence*: the thesis first clamps to `[-‖b‖,‖b‖]` and then
+takes positive parts; we clamp once, with `0 ∨ (·) ∧ ‖b‖`, which is the
+composite of the two. -/
 theorem kaplansky_pos (S : StarSubalgebra ℂ A) (hS : IsClosed (S : Set A))
     (b : A) (hb : b ∈ @closure A (ultrastrong A) S) (hpos : 0 ≤ b) :
     ∃ (ι : Type u) (l : Filter ι), l.NeBot ∧ ∃ a : ι → A,
-      (∀ i, a i ∈ S ∧ ‖a i‖ ≤ ‖b‖ ∧ 0 ≤ a i) ∧ USTendsto a l b :=
-  sorry
+      (∀ i, a i ∈ S ∧ ‖a i‖ ≤ ‖b‖ ∧ 0 ≤ a i) ∧ USTendsto a l b := by
+  have hsa : IsSelfAdjoint b := hpos.isSelfAdjoint
+  have hM0 : (0 : ℝ) ≤ ‖b‖ := norm_nonneg b
+  set f : ℝ → ℝ := fun t => max 0 (min t ‖b‖) with hfdef
+  have hfc : Continuous f := by
+    simp only [hfdef]; fun_prop
+  have hcfc := proto_kaplansky (A := A) f hfc
+    ⟨0, 1, fun t _ => by rw [one_mul]; exact abs_posClamp_le_abs hM0 t⟩
+  obtain ⟨l, hl, hlim⟩ :=
+    exists_net_of_mem_usClosure _ b (mem_usClosure_selfAdjointPart S b hb hsa)
+  have hcfcb : cfc f b = b := by
+    nth_rewrite 2 [← cfc_id ℝ b]
+    refine cfc_congr fun t ht => ?_
+    have h2 := (abs_le.mp (spectrum_abs_le hsa ht)).2
+    have h1 : 0 ≤ t := spectrum_nonneg_of_nonneg hpos ht
+    simp only [hfdef, id]
+    rw [min_eq_left h2, max_eq_right h1]
+  have hSc : IsClosed ((S : StarSubalgebra ℂ A) : Set A) := hS
+  refine ⟨_, l, hl, fun i => cfc f (i : A), fun i => ⟨cfc_mem (𝕜 := ℝ) (𝕜' := ℂ) f i.2.1,
+    norm_cfc_le hM0 fun t _ => by rw [Real.norm_eq_abs]; exact abs_posClamp_le hM0 t,
+    cfc_nonneg fun t _ => le_max_left _ _⟩, ?_⟩
+  have := usTendsto_cfc hcfc (fun i : {x : A | x ∈ S ∧ IsSelfAdjoint x} => i.2.2) hsa hlim
+  rwa [hcfcb] at this
 
 /-- **74IV** (`kaplansky`, vn.tex:4336, Kaplansky's Density Theorem),
 part 3: if moreover `b` is an effect, the `a_α` can be chosen to be
 effects (retaining `‖a_α‖ ≤ ‖b‖` from the main claim, which the "moreover"
 clauses only add to — note this is strictly stronger than `‖a_α‖ ≤ 1`, which
-is all that being an effect gives). -/
+is all that being an effect gives).
+
+*Class 1 — faithful*: the thesis's observation that the positive case
+already delivers effects, since `‖a_α‖ ≤ ‖b‖ ≤ 1`. -/
 theorem kaplansky_effects (S : StarSubalgebra ℂ A)
     (hS : IsClosed (S : Set A)) (b : A)
     (hb : b ∈ @closure A (ultrastrong A) S) (heff : b ∈ effects A) :
     ∃ (ι : Type u) (l : Filter ι), l.NeBot ∧ ∃ a : ι → A,
-      (∀ i, a i ∈ S ∧ ‖a i‖ ≤ ‖b‖ ∧ a i ∈ effects A) ∧ USTendsto a l b :=
-  sorry
+      (∀ i, a i ∈ S ∧ ‖a i‖ ≤ ‖b‖ ∧ a i ∈ effects A) ∧ USTendsto a l b := by
+  obtain ⟨ι, l, hl, a, ha, hlim⟩ := kaplansky_pos S hS b hb heff.1
+  refine ⟨ι, l, hl, a, fun i => ⟨(ha i).1, (ha i).2.1, (ha i).2.2, ?_⟩, hlim⟩
+  refine (CStarAlgebra.norm_le_one_iff_of_nonneg _ (ha i).2.2).mp ?_
+  exact (ha i).2.1.trans (norm_le_one_of_mem_effects heff)
 
 /-- **74VI** (`dense-subalgebra`, vn.tex:4421, Corollary): given `ε > 0`
 and an ultraweakly dense ∗-subalgebra `S` of a von Neumann algebra, every
@@ -1961,32 +2211,522 @@ theorem dense_subalgebra (S : StarSubalgebra ℂ A)
 
 **75I** (vn.tex:4460): introduction — nothing to formalize. -/
 
+/-! ### Auxiliaries for **75II** `sequence_separation_lemma`
+
+The thesis's proof (vn.tex:4482) builds, from a subsequence `(b_n)_n` with
+`ω₀(b_n) ≤ n⁻¹2⁻ⁿ` and `ω₁(b_n^⊥) ≤ n⁻¹`, the effects
+`a_{nm} = (1+d)⁻¹d` with `d = ∑_{k=n}^m k b_k`, and takes
+`a = ⋀_n ⋁_{m≥n} a_{nm}`; the ceiling `⌈a⌉` is then the projection wanted.
+The two ingredients below are the ones the thesis names: the map
+`d ↦ (1+d)⁻¹d` is order preserving on the positives (**25II**.4
+`astara_pos_basic_4`), and for an effect `b` and `m ≥ 0` one has
+`(1+mb)⁻¹ ≤ (1+m)⁻¹(1+mb^⊥)` — which the thesis obtains from Gelfand's
+theorem and which here is one application of `cfc_le_iff`, since both sides
+are continuous functions of the single element `mb`.
+
+`(1+d)⁻¹d` is presented as `cfc frac d` for the globally continuous
+`frac t = (t ∨ 0)/(1 + (t ∨ 0))`, which makes membership in a
+C\*-subalgebra and the two bounds `0 ≤ cfc frac d ≤ 1`, `cfc frac d ≤ d`
+immediate; `cfc_frac_eq` identifies it with `Ring.inverse (1+d) * d` where
+**25II**.4 is needed.
+
+*Indexing note*: the thesis's `∑_{k=n}^{m}` is rendered as a sum over
+`Finset.range m` of the terms `(n+j+1)·c(n+j)`, which is the same family
+reindexed by `j = k − n`; this keeps every sum in `Finset.range` form. -/
+
+/-! ### the function `t ↦ t/(1+t)` -/
+
+private noncomputable def frac : ℝ → ℝ := fun t => max t 0 / (1 + max t 0)
+
+private theorem frac_continuous : Continuous frac := by
+  refine Continuous.div (continuous_id.max continuous_const)
+    (continuous_const.add (continuous_id.max continuous_const)) fun t => ?_
+  have h : (0 : ℝ) ≤ max t 0 := le_max_right _ _
+  exact ne_of_gt (by linarith)
+
+private theorem frac_nonneg (t : ℝ) : 0 ≤ frac t := by
+  have h : (0 : ℝ) ≤ max t 0 := le_max_right _ _
+  exact div_nonneg h (by linarith)
+
+private theorem frac_le_one (t : ℝ) : frac t ≤ 1 := by
+  have h : (0 : ℝ) ≤ max t 0 := le_max_right _ _
+  rw [frac, div_le_one (by linarith)]
+  linarith
+
+private theorem frac_eq {t : ℝ} (ht : 0 ≤ t) : frac t = t / (1 + t) := by
+  rw [frac, max_eq_left ht]
+
+private theorem frac_le_self {t : ℝ} (ht : 0 ≤ t) : frac t ≤ t := by
+  rw [frac_eq ht, div_le_iff₀ (by linarith)]
+  nlinarith
+
+private theorem one_add_mul_frac {t : ℝ} (ht : 0 ≤ t) : (1 + t) * frac t = t := by
+  rw [frac_eq ht]
+  field_simp
+
+/-! ### the operator `(1+d)⁻¹ d` -/
+
+omit [VonNeumannAlgebra A] in
+private theorem cfc_frac_mul {d : A} (hd : 0 ≤ d) : (1 + d) * cfc frac d = d := by
+  have hsa : IsSelfAdjoint d := hd.isSelfAdjoint
+  have h1 : cfc (fun t : ℝ => 1 + t) d = 1 + d := by
+    have h := cfc_add (a := d) (fun _ : ℝ => (1 : ℝ)) (fun t : ℝ => t)
+      (by fun_prop) (by fun_prop)
+    rwa [cfc_const_one ℝ d, cfc_id' ℝ d] at h
+  have h2 : cfc (fun t : ℝ => (1 + t) * frac t) d = cfc (id : ℝ → ℝ) d :=
+    cfc_congr fun t ht => one_add_mul_frac (spectrum_nonneg_of_nonneg hd ht)
+  rw [← h1, ← cfc_mul _ _ d (by fun_prop) frac_continuous.continuousOn, h2, cfc_id ℝ d]
+
+omit [VonNeumannAlgebra A] in
+private theorem cfc_frac_eq {d : A} (hd : 0 ≤ d) :
+    cfc frac d = Ring.inverse (1 + d) * d := by
+  have hsp1 : IsStrictlyPositive (1 : A) := ⟨zero_le_one, isUnit_one⟩
+  have hsp : IsStrictlyPositive ((1 : A) + d) := hsp1.add_nonneg hd
+  calc cfc frac d = Ring.inverse (1 + d) * ((1 + d) * cfc frac d) := by
+        rw [← mul_assoc, Ring.inverse_mul_cancel _ hsp.isUnit, one_mul]
+    _ = Ring.inverse (1 + d) * d := by rw [cfc_frac_mul hd]
+
+omit [VonNeumannAlgebra A] in
+private theorem cfc_frac_mono {d e : A} (hd : 0 ≤ d) (hde : d ≤ e) :
+    cfc frac d ≤ cfc frac e := by
+  rw [cfc_frac_eq hd, cfc_frac_eq (hd.trans hde)]
+  exact astara_pos_basic_4 d e hd hde
+
+omit [VonNeumannAlgebra A] in
+private theorem cfc_frac_nonneg {d : A} (_hd : 0 ≤ d) : 0 ≤ cfc frac d :=
+  cfc_nonneg fun t _ => frac_nonneg t
+
+omit [VonNeumannAlgebra A] in
+private theorem cfc_frac_le_one {d : A} (hd : 0 ≤ d) : cfc frac d ≤ 1 := by
+  have hsa : IsSelfAdjoint d := hd.isSelfAdjoint
+  rw [← cfc_const_one ℝ d]
+  exact (cfc_le_iff _ _ d frac_continuous.continuousOn (by fun_prop) hsa).mpr
+    fun t _ => frac_le_one t
+
+omit [VonNeumannAlgebra A] in
+private theorem cfc_frac_le_self {d : A} (hd : 0 ≤ d) : cfc frac d ≤ d := by
+  have hsa : IsSelfAdjoint d := hd.isSelfAdjoint
+  nth_rewrite 2 [← cfc_id ℝ d]
+  exact (cfc_le_iff _ _ d frac_continuous.continuousOn (by fun_prop) hsa).mpr
+    fun t ht => frac_le_self (spectrum_nonneg_of_nonneg hd ht)
+
+/-! ### the effect inequality of vn.tex:4547 -/
+
+private theorem effect_key_ineq {c : A} (hc : c ∈ effects A) {M : ℝ} (hM : 0 ≤ M) :
+    1 - cfc frac (M • c) ≤ ((1 + M)⁻¹ : ℝ) • (1 + M • (1 - c)) := by
+  set d : A := M • c with hddef
+  have hd : 0 ≤ d := smul_nonneg hM hc.1
+  have hsa : IsSelfAdjoint d := hd.isSelfAdjoint
+  have hnd : ‖d‖ ≤ M := by
+    rw [hddef, norm_smul, Real.norm_eq_abs, abs_of_nonneg hM]
+    calc M * ‖c‖ ≤ M * 1 := mul_le_mul_of_nonneg_left (norm_le_one_of_mem_effects hc) hM
+      _ = M := mul_one M
+  have hspec : ∀ t ∈ spectrum ℝ d, 0 ≤ t ∧ t ≤ M := fun t ht =>
+    ⟨spectrum_nonneg_of_nonneg hd ht,
+      (le_abs_self t).trans ((spectrum_abs_le hsa ht).trans hnd)⟩
+  have hL : 1 - cfc frac d = cfc (fun t : ℝ => 1 - frac t) d := by
+    have h := cfc_sub (fun _ : ℝ => (1 : ℝ)) frac d (by fun_prop)
+      frac_continuous.continuousOn
+    rw [cfc_const_one ℝ d] at h
+    exact h.symm
+  have hA : cfc (fun _ : ℝ => (1 : ℝ) + M) d = 1 + M • (1 : A) := by
+    have h := cfc_add (a := d) (fun _ : ℝ => (1 : ℝ)) (fun _ : ℝ => M)
+      (by fun_prop) (by fun_prop)
+    rw [cfc_const_one ℝ d, cfc_const M d, Algebra.algebraMap_eq_smul_one] at h
+    exact h
+  have h1 : cfc (fun t : ℝ => 1 + M - t) d = 1 + M • (1 : A) - d := by
+    have h := cfc_sub (fun _ : ℝ => (1 : ℝ) + M) (fun t : ℝ => t) d
+      (by fun_prop) (by fun_prop)
+    rwa [hA, cfc_id' ℝ d] at h
+  have h2 : cfc (fun t : ℝ => (1 + M)⁻¹ * (1 + M - t)) d
+      = ((1 + M)⁻¹ : ℝ) • cfc (fun t : ℝ => 1 + M - t) d := by
+    rw [← cfc_smul ((1 + M)⁻¹ : ℝ) (fun t : ℝ => 1 + M - t) d (by fun_prop)]
+    simp [smul_eq_mul]
+  have hR : ((1 + M)⁻¹ : ℝ) • (1 + M • (1 - c))
+      = cfc (fun t : ℝ => (1 + M)⁻¹ * (1 + M - t)) d := by
+    rw [h2, h1, hddef, smul_sub]
+    congr 2
+    abel
+  rw [hL, hR]
+  refine (cfc_le_iff (fun t : ℝ => 1 - frac t) (fun t : ℝ => (1 + M)⁻¹ * (1 + M - t)) d
+    (Continuous.continuousOn (continuous_const.sub frac_continuous)) (by fun_prop)
+      hsa).mpr fun t ht => ?_
+  obtain ⟨ht0, htM⟩ := hspec t ht
+  have hp1 : (0 : ℝ) < 1 + t := by linarith
+  have hp2 : (0 : ℝ) < 1 + M := by linarith
+  rw [frac_eq ht0, ← sub_nonneg]
+  have hkey : (1 + M)⁻¹ * (1 + M - t) - (1 - t / (1 + t))
+      = t * (M - t) / ((1 + t) * (1 + M)) := by
+    field_simp
+    ring
+  rw [hkey]
+  exact div_nonneg (mul_nonneg ht0 (by linarith)) (by positivity)
+
+/-! ### real parts of np-functionals -/
+
+omit [VonNeumannAlgebra A] in
+private theorem npRe_mono (ω : NPFunctional A) {x y : A} (h : x ≤ y) : (ω x).re ≤ (ω y).re :=
+  (Complex.le_def.mp (npFunctional_mono ω h)).1
+
+omit [StarOrderedRing A] [VonNeumannAlgebra A] in
+private theorem npFunctional_rsmul (ω : NPFunctional A) (r : ℝ) (x : A) :
+    ω (r • x) = (r : ℂ) * ω x := by
+  have h : (r • x : A) = ((r : ℂ)) • x := by
+    rw [← algebraMap_smul ℂ r x]; simp
+  rw [h]
+  exact (map_smul ω.toPositiveLinearMap _ _).trans (smul_eq_mul _ _)
+
+omit [StarOrderedRing A] [VonNeumannAlgebra A] in
+private theorem npRe_rsmul (ω : NPFunctional A) (r : ℝ) (x : A) :
+    (ω (r • x)).re = r * (ω x).re := by
+  rw [npFunctional_rsmul]
+  simp [Complex.mul_re]
+
+omit [StarOrderedRing A] [VonNeumannAlgebra A] in
+private theorem npRe_sum {J : Type*} (ω : NPFunctional A) (s : Finset J) (g : J → A) :
+    (ω (∑ k ∈ s, g k)).re = ∑ k ∈ s, (ω (g k)).re := by
+  rw [show ω (∑ k ∈ s, g k) = ∑ k ∈ s, ω (g k) from map_sum ω.toPositiveLinearMap g s,
+    Complex.re_sum]
+
+omit [StarOrderedRing A] [VonNeumannAlgebra A] in
+private theorem npRe_add (ω : NPFunctional A) (x y : A) :
+    (ω (x + y)).re = (ω x).re + (ω y).re := by
+  rw [npFunctional_add]; simp
+
+omit [VonNeumannAlgebra A] in
+private theorem npFunctional_le_ofReal (ω : NPFunctional A) {x : A} (hx : 0 ≤ x) {r : ℝ}
+    (h : (ω x).re ≤ r) : (ω x : ℂ) ≤ (r : ℂ) := by
+  have h0 : (0 : ℂ) ≤ ω x := npFunctional_nonneg ω hx
+  obtain ⟨_, h2⟩ := Complex.le_def.mp h0
+  exact Complex.le_def.mpr ⟨by simpa using h, by simp [← h2]⟩
+
+omit [VonNeumannAlgebra A] in
+private theorem npFunctional_eq_zero_of_re_le_zero (ω : NPFunctional A) {x : A} (hx : 0 ≤ x)
+    (h : (ω x).re ≤ 0) : ω x = 0 := by
+  have h0 : (0 : ℂ) ≤ ω x := npFunctional_nonneg ω hx
+  obtain ⟨h1, h2⟩ := Complex.le_def.mp h0
+  simp only [Complex.zero_re, Complex.zero_im] at h1 h2
+  exact Complex.ext (by simp; linarith) (by simp [← h2])
+
+/-! ### chain suprema -/
+
+omit [StarOrderedRing A] in
+private theorem exists_chain_lub {u : ℕ → selfAdjoint A} (hmono : Monotone u)
+    {B : selfAdjoint A} (hub : ∀ n, u n ≤ B) :
+    ∃ s : selfAdjoint A, IsLUB (Set.range u) s :=
+  VonNeumannAlgebra.isLUB_of_bddAbove_directed (Set.range u) ⟨u 0, 0, rfl⟩
+    (directedOn_range.mpr hmono.directed_le) ⟨B, by rintro _ ⟨n, rfl⟩; exact hub n⟩
+
+private theorem le_ceil_of_mem_effects {a : A} (ha : a ∈ effects A) : a ≤ ceil a := by
+  obtain ⟨hp, hac, _⟩ := ceil_spec ha.1
+  have hca : ceil a * a = a := by
+    have h := congrArg star hac
+    rwa [star_mul, hp.isSelfAdjoint.star_eq, (IsSelfAdjoint.of_nonneg ha.1).star_eq] at h
+  calc a = ceil a * a * ceil a := by rw [hca, hac]
+    _ ≤ ceil a * 1 * ceil a := IsSelfAdjoint.conjugate_le_conjugate ha.2 hp.isSelfAdjoint
+    _ = ceil a := by rw [mul_one, hp.isIdempotentElem.eq]
+
+private theorem geom_half_le (m : ℕ) : ∑ j ∈ Finset.range m, (2 : ℝ)⁻¹ ^ j ≤ 2 := by
+  rw [geom_sum_eq (by norm_num)]
+  have h1 : (0 : ℝ) < (2 : ℝ)⁻¹ ^ m := by positivity
+  rw [div_le_iff_of_neg (by norm_num : ((2 : ℝ)⁻¹ - 1) < 0)]
+  nlinarith
+
 /-- **75II** (`sequence-separation-lemma`, vn.tex:4469, Lemma): let `S` be
 a von Neumann subalgebra of `A`, and let `ω₀`, `ω₁` be npu-functionals on
 `A` separated by a net `(b_α)_α` of effects of `S` (i.e.
 `ω₀(b_α) → 0` and `ω₁(b_α^⊥) → 0`).  Then `ω₀` and `ω₁` are separated by a
-projection `q ∈ S`: `ω₀(q) = 0 = ω₁(q^⊥)`. -/
+projection `q ∈ S`: `ω₀(q) = 0 = ω₁(q^⊥)`.
+
+*Class 1 — faithful*, apart from the indexing note above.  Note that
+**`ω₀(1) = 1` is never used** — the `ω₀`-half of the argument only needs
+`ω₀` positive and normal; only `ω₁`'s normalisation enters, and there only
+through `ω₁(1) ≤ 1`.  The binder is therefore spelled `_hω₀`. -/
 theorem sequence_separation_lemma (S : StarSubalgebra ℂ A)
-    (hS : IsVNSubalgebra A S) (ω₀ ω₁ : NPFunctional A) (hω₀ : ω₀ 1 = 1)
+    (hS : IsVNSubalgebra A S) (ω₀ ω₁ : NPFunctional A) (_hω₀ : ω₀ 1 = 1)
     (hω₁ : ω₁ 1 = 1) {ι : Type*} {l : Filter ι} [l.NeBot] (b : ι → A)
     (hb : ∀ i, b i ∈ S ∧ b i ∈ effects A)
     (h₀ : Tendsto (fun i => ω₀ (b i)) l (𝓝 0))
     (h₁ : Tendsto (fun i => ω₁ (1 - b i)) l (𝓝 0)) :
-    ∃ q : A, q ∈ S ∧ IsStarProjection q ∧ ω₀ q = 0 ∧ ω₁ (1 - q) = 0 :=
-  sorry
+    ∃ q : A, q ∈ S ∧ IsStarProjection q ∧ ω₀ q = 0 ∧ ω₁ (1 - q) = 0 := by
+  classical
+  -- 1. a subsequence with quantitative bounds (vn.tex:4497)
+  have hchoice : ∀ n : ℕ, ∃ i : ι,
+      (ω₀ (b i)).re ≤ ((n : ℝ) + 1)⁻¹ * (2 : ℝ)⁻¹ ^ (n + 1) ∧
+      (ω₁ (1 - b i)).re ≤ ((n : ℝ) + 1)⁻¹ := by
+    intro n
+    have hp0 : (0 : ℝ) < ((n : ℝ) + 1)⁻¹ * (2 : ℝ)⁻¹ ^ (n + 1) := by positivity
+    have hp1 : (0 : ℝ) < ((n : ℝ) + 1)⁻¹ := by positivity
+    obtain ⟨i, hi0, hi1⟩ :=
+      (((Metric.tendsto_nhds.mp h₀) _ hp0).and ((Metric.tendsto_nhds.mp h₁) _ hp1)).exists
+    rw [dist_zero_right] at hi0 hi1
+    exact ⟨i, (Complex.re_le_norm _).trans hi0.le, (Complex.re_le_norm _).trans hi1.le⟩
+  choose idx hidx0 hidx1 using hchoice
+  set c : ℕ → A := fun n => b (idx n) with hcdef
+  have hcS : ∀ n, c n ∈ S := fun n => (hb (idx n)).1
+  have hceff : ∀ n, c n ∈ effects A := fun n => (hb (idx n)).2
+  -- 2. the partial sums `D n m = ∑_{j<m} (n+j+1)·c (n+j)`
+  set D : ℕ → ℕ → A := fun n m => ∑ j ∈ Finset.range m, ((n : ℝ) + j + 1) • c (n + j)
+    with hDdef
+  have hDnn : ∀ n m, 0 ≤ D n m := fun n m =>
+    Finset.sum_nonneg fun j _ => smul_nonneg (by positivity) (hceff _).1
+  have hDS : ∀ n m, D n m ∈ S := fun n m => by
+    refine sum_mem fun j _ => ?_
+    rw [show (((n : ℝ) + j + 1) • c (n + j) : A)
+        = ((((n : ℝ) + j + 1 : ℝ) : ℂ)) • c (n + j) from by
+      rw [← algebraMap_smul ℂ ((n : ℝ) + j + 1) (c (n + j))]; simp]
+    exact SMulMemClass.smul_mem _ (hcS _)
+  have hDmono : ∀ (n : ℕ) {m m' : ℕ}, m ≤ m' → D n m ≤ D n m' := by
+    intro n m m' h
+    have hsub : Finset.range m ⊆ Finset.range m' := by
+      intro x hx
+      simp only [Finset.mem_range] at hx ⊢
+      omega
+    exact Finset.sum_le_sum_of_subset_of_nonneg hsub
+      fun j _ _ => smul_nonneg (by positivity) (hceff _).1
+  have hDstep : ∀ n m : ℕ, D (n + 1) m ≤ D n (m + 1) := by
+    intro n m
+    have hsplit : D n (m + 1) = D (n + 1) m + ((n : ℝ) + (0 : ℕ) + 1) • c (n + 0) := by
+      simp only [hDdef]
+      rw [Finset.sum_range_succ' (fun j : ℕ => ((n : ℝ) + j + 1) • c (n + j)) m]
+      congr 1
+      refine Finset.sum_congr rfl fun j _ => ?_
+      have h1 : (n : ℝ) + ((j + 1 : ℕ) : ℝ) + 1 = ((n + 1 : ℕ) : ℝ) + (j : ℝ) + 1 := by
+        push_cast; ring
+      have h2 : n + (j + 1) = n + 1 + j := by omega
+      rw [h1, h2]
+    rw [hsplit]
+    exact le_add_of_nonneg_right (smul_nonneg (by positivity) (hceff _).1)
+  have hDsingle : ∀ n m' : ℕ, ((n : ℝ) + m' + 1) • c (n + m') ≤ D n (m' + 1) := by
+    intro n m'
+    exact Finset.single_le_sum (f := fun j : ℕ => ((n : ℝ) + j + 1) • c (n + j))
+      (fun j _ => smul_nonneg (by positivity) (hceff _).1) (Finset.self_mem_range_succ m')
+  -- 3. the effects `a n m = (1 + D n m)⁻¹ (D n m)`
+  set aa : ℕ → ℕ → A := fun n m => cfc frac (D n m) with haadef
+  have haaS : ∀ n m, aa n m ∈ S := fun n m => by
+    have hcl : IsClosed ((S : StarSubalgebra ℂ A) : Set A) := hS.isClosed
+    exact cfc_mem (𝕜 := ℝ) (𝕜' := ℂ) frac (hDS n m)
+  have haann : ∀ n m, 0 ≤ aa n m := fun n m => cfc_frac_nonneg (hDnn n m)
+  have haa1 : ∀ n m, aa n m ≤ 1 := fun n m => cfc_frac_le_one (hDnn n m)
+  have haasa : ∀ n m, IsSelfAdjoint (aa n m) := fun n m => (haann n m).isSelfAdjoint
+  have haamono : ∀ (n : ℕ) {m m' : ℕ}, m ≤ m' → aa n m ≤ aa n m' := fun n _ _ h =>
+    cfc_frac_mono (hDnn _ _) (hDmono n h)
+  have haastep : ∀ n m : ℕ, aa (n + 1) m ≤ aa n (m + 1) := fun n m =>
+    cfc_frac_mono (hDnn _ _) (hDstep n m)
+  -- 4. the `ω₀`-estimate
+  have hω₀aa : ∀ n m, (ω₀ (aa n m)).re ≤ (2 : ℝ)⁻¹ ^ n := by
+    intro n m
+    have h1 : (ω₀ (aa n m)).re ≤ (ω₀ (D n m)).re :=
+      npRe_mono ω₀ (cfc_frac_le_self (hDnn n m))
+    have h2 : (ω₀ (D n m)).re
+        = ∑ j ∈ Finset.range m, ((n : ℝ) + j + 1) * (ω₀ (c (n + j))).re := by
+      simp only [hDdef]
+      rw [npRe_sum]
+      exact Finset.sum_congr rfl fun j _ => npRe_rsmul ω₀ _ _
+    have h3 : ∀ j : ℕ, ((n : ℝ) + j + 1) * (ω₀ (c (n + j))).re ≤ (2 : ℝ)⁻¹ ^ (n + j + 1) := by
+      intro j
+      have hk := hidx0 (n + j)
+      have hcast : ((n + j : ℕ) : ℝ) + 1 = (n : ℝ) + j + 1 := by push_cast; ring
+      rw [hcast] at hk
+      have hpos : (0 : ℝ) < (n : ℝ) + j + 1 := by positivity
+      calc ((n : ℝ) + j + 1) * (ω₀ (c (n + j))).re
+          ≤ ((n : ℝ) + j + 1) * (((n : ℝ) + j + 1)⁻¹ * (2 : ℝ)⁻¹ ^ (n + j + 1)) :=
+            mul_le_mul_of_nonneg_left hk hpos.le
+        _ = (2 : ℝ)⁻¹ ^ (n + j + 1) := by field_simp
+    have h4 : ∑ j ∈ Finset.range m, ((n : ℝ) + j + 1) * (ω₀ (c (n + j))).re
+        ≤ ∑ j ∈ Finset.range m, (2 : ℝ)⁻¹ ^ (n + j + 1) :=
+      Finset.sum_le_sum fun j _ => h3 j
+    have h5 : ∑ j ∈ Finset.range m, (2 : ℝ)⁻¹ ^ (n + j + 1)
+        = (2 : ℝ)⁻¹ ^ (n + 1) * ∑ j ∈ Finset.range m, (2 : ℝ)⁻¹ ^ j := by
+      rw [Finset.mul_sum]
+      refine Finset.sum_congr rfl fun j _ => ?_
+      rw [← pow_add]
+      ring_nf
+    have h6 : (2 : ℝ)⁻¹ ^ (n + 1) * ∑ j ∈ Finset.range m, (2 : ℝ)⁻¹ ^ j ≤ (2 : ℝ)⁻¹ ^ n := by
+      have hp : (0 : ℝ) < (2 : ℝ)⁻¹ ^ (n + 1) := by positivity
+      calc (2 : ℝ)⁻¹ ^ (n + 1) * ∑ j ∈ Finset.range m, (2 : ℝ)⁻¹ ^ j
+          ≤ (2 : ℝ)⁻¹ ^ (n + 1) * 2 := mul_le_mul_of_nonneg_left (geom_half_le m) hp.le
+        _ = (2 : ℝ)⁻¹ ^ n := by rw [pow_succ]; field_simp
+    rw [h2] at h1
+    linarith [h4, h5 ▸ h6]
+  -- 5. the `ω₁`-estimate
+  have hω₁aa : ∀ n m' : ℕ,
+      (ω₁ (1 - aa n (m' + 1))).re ≤ 2 / (1 + ((n : ℝ) + m' + 1)) := by
+    intro n m'
+    set M : ℝ := (n : ℝ) + m' + 1 with hMdef
+    have hM0 : (0 : ℝ) ≤ M := by positivity
+    have hMpos : (0 : ℝ) < M := by positivity
+    have hle : 1 - aa n (m' + 1) ≤ ((1 + M)⁻¹ : ℝ) • (1 + M • (1 - c (n + m'))) := by
+      refine le_trans (sub_le_sub_left ?_ 1) (effect_key_ineq (hceff (n + m')) hM0)
+      exact cfc_frac_mono (smul_nonneg hM0 (hceff (n + m')).1) (hDsingle n m')
+    refine (npRe_mono ω₁ hle).trans ?_
+    rw [npRe_rsmul, npRe_add, npRe_rsmul]
+    have hone : (ω₁ (1 : A)).re = 1 := by rw [hω₁]; simp
+    have hcb : (ω₁ (1 - c (n + m'))).re ≤ M⁻¹ := by
+      have hk := hidx1 (n + m')
+      have hcast : ((n + m' : ℕ) : ℝ) + 1 = M := by rw [hMdef]; push_cast; ring
+      rwa [hcast] at hk
+    rw [hone]
+    have hMi : (0 : ℝ) < 1 + M := by linarith
+    rw [div_eq_inv_mul]
+    refine mul_le_mul_of_nonneg_left ?_ (by positivity)
+    have : M * (ω₁ (1 - c (n + m'))).re ≤ M * M⁻¹ :=
+      mul_le_mul_of_nonneg_left hcb hM0
+    rw [mul_inv_cancel₀ (ne_of_gt hMpos)] at this
+    linarith
+  -- 6. `a n = ⋁_m a n m`
+  have hlubex : ∀ n : ℕ, ∃ s : selfAdjoint A,
+      IsLUB (Set.range fun m : ℕ => (⟨aa n m, haasa n m⟩ : selfAdjoint A)) s := by
+    intro n
+    exact exists_chain_lub (B := ⟨1, IsSelfAdjoint.one A⟩)
+      (fun m m' h => Subtype.coe_le_coe.mp (haamono n h))
+      (fun m => Subtype.coe_le_coe.mp (haa1 n m))
+  choose an han using hlubex
+  have hdir : ∀ n : ℕ, DirectedOn (· ≤ ·)
+      (Set.range fun m : ℕ => (⟨aa n m, haasa n m⟩ : selfAdjoint A)) := fun n =>
+    directedOn_range.mpr
+      (Monotone.directed_le fun m m' h => Subtype.coe_le_coe.mp (haamono n h))
+  have hanS : ∀ n, ((an n : selfAdjoint A) : A) ∈ S := fun n =>
+    hS.dirSup_mem _ (an n) (by rintro _ ⟨m, rfl⟩; exact haaS n m)
+      (Set.range_nonempty _) (hdir n) (han n)
+  have haale : ∀ n m, aa n m ≤ ((an n : selfAdjoint A) : A) := fun n m =>
+    Subtype.coe_le_coe.mpr ((han n).1 ⟨m, rfl⟩)
+  have hanle1 : ∀ n, ((an n : selfAdjoint A) : A) ≤ 1 := fun n => by
+    have h : an n ≤ (⟨1, IsSelfAdjoint.one A⟩ : selfAdjoint A) :=
+      (han n).2 (by rintro _ ⟨m, rfl⟩; exact Subtype.coe_le_coe.mp (haa1 n m))
+    exact Subtype.coe_le_coe.mpr h
+  have hannn : ∀ n, (0 : A) ≤ ((an n : selfAdjoint A) : A) := fun n =>
+    (haann n 0).trans (haale n 0)
+  have hananti : ∀ n, ((an (n + 1) : selfAdjoint A) : A) ≤ ((an n : selfAdjoint A) : A) :=
+    fun n => Subtype.coe_le_coe.mpr ((han (n + 1)).2 (by
+      rintro _ ⟨m, rfl⟩
+      exact Subtype.coe_le_coe.mp ((haastep n m).trans (haale n (m + 1)))))
+  -- `ω₀ (a n) ≤ 2⁻ⁿ` by normality
+  have hω₀an : ∀ n, (ω₀ ((an n : selfAdjoint A) : A)).re ≤ (2 : ℝ)⁻¹ ^ n := by
+    intro n
+    have hnorm := ω₀.preservesDirSups' _ (an n) (Set.range_nonempty _) (hdir n) (han n)
+    have hub : (((2 : ℝ)⁻¹ ^ n : ℝ) : ℂ) ∈
+        upperBounds ((fun d : selfAdjoint A => (ω₀ (d : A) : ℂ)) ''
+          (Set.range fun m : ℕ => (⟨aa n m, haasa n m⟩ : selfAdjoint A))) := by
+      rintro _ ⟨_, ⟨m, rfl⟩, rfl⟩
+      exact npFunctional_le_ofReal ω₀ (haann n m) (hω₀aa n m)
+    exact_mod_cast (Complex.le_def.mp (hnorm.2 hub)).1
+  -- `ω₁ (1 - a n) = 0`
+  have hω₁an : ∀ n, ω₁ (1 - ((an n : selfAdjoint A) : A)) = 0 := by
+    intro n
+    refine npFunctional_eq_zero_of_re_le_zero ω₁ (by
+      simpa using sub_nonneg.mpr (hanle1 n)) ?_
+    have htend : Tendsto (fun m' : ℕ => 2 / (1 + ((n : ℝ) + m' + 1))) atTop (𝓝 0) := by
+      refine Filter.Tendsto.div_atTop tendsto_const_nhds ?_
+      refine tendsto_atTop_mono (fun m' : ℕ => ?_) (tendsto_natCast_atTop_atTop (R := ℝ))
+      have : (0 : ℝ) ≤ (n : ℝ) := Nat.cast_nonneg n
+      linarith
+    refine ge_of_tendsto' htend fun m' => ?_
+    exact (npRe_mono ω₁ (sub_le_sub_left (haale n (m' + 1)) 1)).trans (hω₁aa n m')
+  -- 7. `E = ⋁_n (1 - a n)` and `a = 1 - E`
+  have hesa : ∀ n : ℕ, IsSelfAdjoint (1 - ((an n : selfAdjoint A) : A)) :=
+    fun n => (sub_nonneg.mpr (hanle1 n)).isSelfAdjoint
+  obtain ⟨E, hE⟩ := exists_chain_lub
+    (u := fun n : ℕ => (⟨1 - ((an n : selfAdjoint A) : A), hesa n⟩ : selfAdjoint A))
+    (B := (⟨1, IsSelfAdjoint.one A⟩ : selfAdjoint A))
+    (by
+      intro n n' h
+      refine Subtype.coe_le_coe.mp (sub_le_sub_left ?_ 1)
+      induction h with
+      | refl => exact le_rfl
+      | step _ ih => exact (hananti _).trans ih)
+    (fun n => Subtype.coe_le_coe.mp (by simpa using sub_le_self (1 : A) (hannn n)))
+  set a : A := 1 - ((E : selfAdjoint A) : A) with hadef
+  have hEdir : DirectedOn (· ≤ ·)
+      (Set.range fun n : ℕ => (⟨1 - ((an n : selfAdjoint A) : A), hesa n⟩ : selfAdjoint A)) := by
+    refine directedOn_range.mpr (Monotone.directed_le ?_)
+    intro n n' h
+    refine Subtype.coe_le_coe.mp (sub_le_sub_left ?_ 1)
+    induction h with
+    | refl => exact le_rfl
+    | step _ ih => exact (hananti _).trans ih
+  have hES : ((E : selfAdjoint A) : A) ∈ S :=
+    hS.dirSup_mem _ E (by
+      rintro _ ⟨n, rfl⟩
+      exact sub_mem (one_mem _) (hanS n)) (Set.range_nonempty _) hEdir hE
+  have hEle : ∀ n, 1 - ((an n : selfAdjoint A) : A) ≤ ((E : selfAdjoint A) : A) := fun n =>
+    Subtype.coe_le_coe.mpr (hE.1 ⟨n, rfl⟩)
+  have hEle1 : ((E : selfAdjoint A) : A) ≤ 1 := by
+    have h : E ≤ (⟨1, IsSelfAdjoint.one A⟩ : selfAdjoint A) :=
+      hE.2 (by
+        rintro _ ⟨n, rfl⟩
+        exact Subtype.coe_le_coe.mp (by simpa using sub_le_self (1 : A) (hannn n)))
+    exact Subtype.coe_le_coe.mpr h
+  have hann : (0 : A) ≤ a := by rw [hadef]; exact sub_nonneg.mpr hEle1
+  have hale1 : a ≤ 1 := by
+    rw [hadef]
+    have : (0 : A) ≤ ((E : selfAdjoint A) : A) :=
+      (sub_nonneg.mpr (hanle1 0)).trans (hEle 0)
+    simpa using sub_le_self (1 : A) this
+  have haS : a ∈ S := sub_mem (one_mem _) hES
+  have halean : ∀ n, a ≤ ((an n : selfAdjoint A) : A) := by
+    intro n
+    rw [hadef]
+    exact sub_le_comm.mp (hEle n)
+  -- `ω₀ a = 0`
+  have hω₀a : ω₀ a = 0 := by
+    refine npFunctional_eq_zero_of_re_le_zero ω₀ hann ?_
+    refine ge_of_tendsto'
+      (tendsto_pow_atTop_nhds_zero_of_lt_one (r := (2 : ℝ)⁻¹) (by norm_num) (by norm_num))
+      fun n => ?_
+    exact (npRe_mono ω₀ (halean n)).trans (hω₀an n)
+  -- `ω₁ (1 - a) = ω₁ E = 0`
+  have hω₁a : ω₁ (1 - a) = 0 := by
+    have hEeq : (1 : A) - a = ((E : selfAdjoint A) : A) := by rw [hadef]; abel
+    rw [hEeq]
+    have hnorm := ω₁.preservesDirSups' _ E (Set.range_nonempty _) hEdir hE
+    have hub : (0 : ℂ) ∈ upperBounds ((fun d : selfAdjoint A => (ω₁ (d : A) : ℂ)) ''
+        (Set.range fun n : ℕ => (⟨1 - ((an n : selfAdjoint A) : A), hesa n⟩ : selfAdjoint A))) := by
+      rintro _ ⟨_, ⟨n, rfl⟩, rfl⟩
+      exact le_of_eq (hω₁an n)
+    have hle : (ω₁ ((E : selfAdjoint A) : A) : ℂ) ≤ 0 := hnorm.2 hub
+    refine npFunctional_eq_zero_of_re_le_zero ω₁ ((sub_nonneg.mpr (hanle1 0)).trans (hEle 0)) ?_
+    simpa using (Complex.le_def.mp hle).1
+  -- 8. pass to the ceiling
+  refine ⟨ceil a, ceil_mem hS hann haS, (ceil_spec hann).1,
+    (ceil_functionals_lemma a hann ω₀).mp hω₀a, ?_⟩
+  have hq1 : ceil a ≤ 1 := (ceil_spec hann).1.le_one
+  refine npFunctional_eq_zero_of_re_le_zero ω₁ (by simpa using sub_nonneg.mpr hq1) ?_
+  have := npRe_mono ω₁ (sub_le_sub_left (le_ceil_of_mem_effects ⟨hann, hale1⟩) (1 : A))
+  rw [hω₁a] at this
+  simpa using this
+
 
 /-- **75VI** (`kadisons-lemma`, vn.tex:4560, Lemma): let `S` be a von
 Neumann subalgebra of `A` and `p` a projection of `A` in the ultrastrong
 closure of `S`.  For all npu-functionals `ω₀`, `ω₁` with
 `ω₀(p) = 0 = ω₁(p^⊥)` there is a projection `q ∈ S` with
-`ω₀(q) = 0 = ω₁(q^⊥)`. -/
+`ω₀(q) = 0 = ω₁(q^⊥)`.
+
+*Class 1 — faithful*: Kaplansky's density theorem in the effect form
+(**74IV**.3 `kaplansky_effects`) replaces the approximating net by one of
+effects, and **75II** finishes.  Only the *effect* case of 74IV is used, so
+this does not depend on the still-`sorry`ed general 74IV. -/
 theorem kadisons_lemma (S : StarSubalgebra ℂ A) (hS : IsVNSubalgebra A S)
     (p : A) (hp : IsStarProjection p)
     (hcl : p ∈ @closure A (ultrastrong A) S) (ω₀ ω₁ : NPFunctional A)
     (hω₀ : ω₀ 1 = 1) (hω₁ : ω₁ 1 = 1) (h₀ : ω₀ p = 0)
     (h₁ : ω₁ (1 - p) = 0) :
-    ∃ q : A, q ∈ S ∧ IsStarProjection q ∧ ω₀ q = 0 ∧ ω₁ (1 - q) = 0 :=
-  sorry
+    ∃ q : A, q ∈ S ∧ IsStarProjection q ∧ ω₀ q = 0 ∧ ω₁ (1 - q) = 0 := by
+  obtain ⟨ι, l, hl, a, ha, hlim⟩ :=
+    kaplansky_effects S hS.isClosed p hcl ⟨hp.nonneg, hp.le_one⟩
+  have huw := (uwTendsto_iff a l p).mp (uwweaker_2 a l p hlim)
+  have : l.NeBot := hl
+  refine sequence_separation_lemma S hS ω₀ ω₁ hω₀ hω₁ (l := l) a
+    (fun i => ⟨(ha i).1, (ha i).2.2⟩) ?_ ?_
+  · have h := huw ω₀
+    rwa [h₀] at h
+  · have h := (tendsto_const_nhds (x := (ω₁ 1 : ℂ)) (f := l)).sub (huw ω₁)
+    have heq : ∀ i, (ω₁ 1 : ℂ) - ω₁ (a i) = ω₁ (1 - a i) := fun i => by
+      rw [npFunctional_sub]
+    simp only [heq] at h
+    rw [← npFunctional_sub, h₁] at h
+    exact h
 
 /-- **75VIII** (`vnsac`, vn.tex:4587, Theorem): a von Neumann subalgebra of
 a von Neumann algebra is ultrastrongly and ultraweakly closed. -/

@@ -5831,3 +5831,172 @@ continuous_abs ⟨0, 1, …⟩`.  One line.
   `PROVING-LOG.md`.  `ERRATA.md`/`QUESTIONS.md` deliberately untouched —
   nothing false found and no author decision is needed.  Nothing staged,
   nothing committed.
+
+## Session 23 — `A/VN` parsecs 740–750: Kaplansky density and Kadison's lemma (worker 54)
+
+Date 2026-08-14.  Successor of session 22 (worker 51) on the A chain.
+Scope: `Theses/A/CStar/*.lean` and `Theses/A/VN/*.lean`.
+
+**Result: `A/VN` 112 → 106, `A/CStar` 37 → 37.  Six statements proved:
+74IV.1 `kaplansky_sa`, 74IV.2 `kaplansky_pos`, 74IV.3 `kaplansky_effects`,
+75II `sequence_separation_lemma`, 75VI `kadisons_lemma`, and
+66IV.3 `ultracyclic_basic_3`.**  All six `#print axioms`-clean
+(`propext, Classical.choice, Quot.sound`), as are the regression targets
+`proto_kaplansky`, `abs_us_cont`, `ultraclosed`, `luws`, `ceil_mem`,
+`projections_norm_dense_subalgebra`.
+
+### 1. 74IV Kaplansky — the three "moreover" clauses, class 1
+
+The three special cases follow the thesis (vn.tex:4344) step for step:
+
+* the real parts of an approximating net converge **ultraweakly** to
+  `Re(b) = b`, so `b` lies in the ultraweak closure of the convex set
+  `sa(S)`;
+* by **73VIII** `ultraclosed` the ultraweak and ultrastrong closures of a
+  convex set coincide, so `b` is already an ultrastrong limit from `sa(S)`;
+* clamping with `−‖b‖ ∨ (·) ∧ ‖b‖`, ultrastrongly continuous by **74I**
+  `proto_kaplansky`, brings the norms down to `‖b‖` without moving the
+  limit, because `cfc f b = b` when `f = id` on `spec(b) ⊆ [−‖b‖,‖b‖]`.
+
+New private infrastructure in `Completeness.lean`, all reusable:
+`mem_usClosure_iff` (closure membership in terms of the `‖·‖_ω`),
+`convex_usClosure` (the ultrastrong closure of a convex set is convex — the
+`‖·‖_ω` are seminorms), `usClosure_subset_uwClosure` (from the tree's
+`ultrastrong_le_ultraweak`), `continuous_ultraweak_realPart`,
+`mem_usClosure_selfAdjointPart`, `exists_net_of_mem_usClosure` (the
+tautological net indexed by the set itself, which is how the
+`∃ (ι : Type u) (l : Filter ι)` shape of the statements is met), and
+`usTendsto_cfc`.
+
+*Divergence, class 3 (mild)*: for `kaplansky_pos` the thesis clamps to
+`[−‖b‖,‖b‖]` and then takes positive parts; we clamp once with
+`0 ∨ (·) ∧ ‖b‖`, which is the composite of the two.  `kaplansky_effects` is
+the thesis's own observation that the positive case already delivers
+effects, since `‖a_α‖ ≤ ‖b‖ ≤ 1`.
+
+**The general (non-self-adjoint) 74IV `kaplansky` is left `sorry`.**  The
+thesis proves it by running the self-adjoint case in `M₂(𝒜)` on
+`[[0,b],[b*,0]]`, which needs **49IV**.1 `mn_vna_1` (`M_N(𝒜)` is a von
+Neumann algebra) *and* **49IV**.2' `mn_vna_2'` (entrywise ultrastrong
+convergence), both still `sorry` in `Basic.lean`.  Closing 74IV through them
+would make it axiom-tainted rather than proved, so it was not attempted.
+Checked: the naive substitute — `b = Re b + i·Im b` with 74IV.1 applied to
+each part — gives only `‖a_α‖ ≤ 2‖b‖`, so the matrix trick really is doing
+work.  **Nothing downstream of parsec 740 needs the general form**: 75VI
+uses only `kaplansky_effects` (vn.tex:4570 says "we may assume that all `b_α`
+are effects"), and 74VI `dense_subalgebra` — the only other consumer — is
+itself unused until 77V.
+
+Also made public: `spectrum_abs_le` in `Projections.lean` (`|r| ≤ ‖a‖` for
+`r ∈ spec_ℝ(a)`, `a` self-adjoint), which the clamping functions need.
+
+### 2. 75II `sequence_separation_lemma` — class 1, with one indexing change
+
+The thesis's proof (vn.tex:4482, after Conway 45.3/45.6) is transcribed:
+choose a subsequence with `ω₀(b_n) ≤ n⁻¹2⁻ⁿ` and `ω₁(b_n^⊥) ≤ n⁻¹`, form
+`a_{nm} = (1+d)⁻¹d` for `d = ∑_{k=n}^m k b_k`, and take
+`a = ⋀_n ⋁_{m≥n} a_{nm}`, then `q = ⌈a⌉`.
+
+Two representation choices, both class 3:
+
+* `(1+d)⁻¹d` is presented as `cfc frac d` for the *globally continuous*
+  `frac t = (t ∨ 0)/(1 + (t ∨ 0))`.  That makes `a_{nm} ∈ S` (a norm-closed
+  star subalgebra is closed under the CFC), `0 ≤ a_{nm} ≤ 1` and
+  `a_{nm} ≤ d` immediate; the identification `cfc frac d = (1+d)⁻¹d`
+  (`cfc_frac_eq`) is proved once and is the only place **25II**.4
+  `astara_pos_basic_4` — the thesis's "`d ↦ (1+d)⁻¹d` is order preserving" —
+  is needed.
+* the thesis's `∑_{k=n}^{m}` is rendered as a sum over `Finset.range m` of
+  `(n+j+1)·c(n+j)`, i.e. the same family reindexed by `j = k − n`.  This
+  keeps every sum in `Finset.range` form (`Finset.sum_range_succ'` for the
+  `n ↦ n+1` step, `geom_sum_eq` for `∑_j 2⁻ʲ ≤ 2`).
+
+The thesis's "corresponding inequality for effects, obtained via Gelfand's
+representation theorem" — `(1+mb)⁻¹ ≤ (1+m)⁻¹(1+mb^⊥)` — is here one
+application of `cfc_le_iff` (`effect_key_ineq`), since both sides are
+continuous functions of the *single* element `mb`; no Gelfand duality is
+involved.  Its numeric content is
+`(1+M)⁻¹(1+M−t) − 1/(1+t) = t(M−t)/((1+t)(1+M)) ≥ 0` for `0 ≤ t ≤ M`, and
+`spec(M·b) ⊆ [0,M]` because `‖M·b‖ ≤ M`.
+
+Simplification worth telling the author: **the infimum step never needs the
+normality of `ω₀`.**  The thesis writes
+`ω₀(a) = ⋀_n ⋁_{m≥n} ω₀(a_{nm})`, but `a ≤ a_n` alone gives
+`ω₀(a) ≤ ω₀(a_n) ≤ 2⁻ⁿ`, so only the *suprema* `a_n = ⋁_m a_{nm}` are ever
+evaluated by a functional.  Correspondingly `a` is built as `1 − ⋁_n(1−a_n)`
+(an ascending supremum) rather than as a descending infimum, which avoids
+needing infima in a von Neumann algebra at all.
+
+**Hypothesis check: `ω₀(1) = 1` is never used.**  The `ω₀` half of the
+argument needs only that `ω₀` is positive and normal; only `ω₁`'s
+normalisation enters, and there only through `ω₁(1) ≤ 1`.  The Lean binder
+is therefore spelled `_hω₀`; the statement is unchanged (the thesis's
+hypothesis is retained, since every call site supplies npu-maps anyway).
+This is the same kind of finding as the redundant boundedness hypothesis in
+166II.
+
+### 3. 75VI `kadisons_lemma` — class 1, three lines of content
+
+Kaplansky in the effect form replaces the approximating net by one of
+effects, `uwweaker_2` turns ultrastrong convergence into ultraweak, and
+75II finishes.  It is the first consumer of 74IV and it needs only the
+effect case, which is why the general 74IV being open costs nothing here.
+
+### 4. 66IV.3 `ultracyclic_basic_3` — class 2, taken because 75VIII needs it
+
+`p = ⋁_ω ⌈ω⌉` over the np-functionals `ω` with `ω(p^⊥) = 0`.  The thesis's
+hint is "first consider `p = 1`"; the reduction turns out to be unnecessary,
+because the compression trick that proves the `p = 1` case works verbatim at
+every `p`.  That `p` is an upper bound is the defining leastness of `⌈ω⌉`.
+For leastness: let `r` be a projection above every such `⌈ω⌉`; for an
+arbitrary np-functional `τ` the compression `ω := τ(p(·)p) = conjNP p τ`
+satisfies `ω(p^⊥) = 0`, so `⌈ω⌉ ≤ r`, hence `ω(r^⊥) = 0` (monotonicity plus
+`ω(⌈ω⌉^⊥) = 0`), i.e. `τ(p r^⊥ p) = 0`.  As `τ` was arbitrary and
+`p r^⊥ p ≥ 0`, faithfulness (**42I**.2, `np_faithful`) gives `p r^⊥ p = 0`;
+then `‖r^⊥ p‖² = ‖p r^⊥ p‖ = 0`, so `rp = p = pr` and `p = r p r ≤ r`.
+
+Nothing is *released* by this on its own — it is one of the three
+ingredients 75VIII needs (§5).
+
+### 5. Left open, with blockers
+
+* **75VIII `vnsac`** — the next link, and *not* reachable this round.  Its
+  proof needs (a) the *dual* of 66IV.3, `p = ⋀_ω ⌈ω⌉^⊥` over `ω` with
+  `ω(p) = 0`, which the thesis uses in the display at vn.tex:4610 but never
+  states (it follows from 66IV.3 at `p^⊥` plus De Morgan for projections);
+  (b) the
+  *relativised* carriers `⌈ω⌉_S` — carriers of restrictions of `ω` to `S`,
+  which presupposes transporting the von Neumann structure to `S`; and (c)
+  the thesis's unstated step "the ultrastrong closure of `S` is a von
+  Neumann subalgebra".  For (c) there is a clean route, worth recording
+  because it is not in the thesis: `T := us-closure(S)` is convex and
+  ultrastrongly closed, hence **ultraweakly** closed by 73VIII, hence
+  `T = uw-closure(S)`; the ultraweak closure is star-closed because the
+  adjoint is ultraweakly continuous, `T·T ⊆ T` follows from *separate*
+  ultrastrong continuity of multiplication applied twice, and `T` is closed
+  under directed suprema by **44XIV** `vna_supremum_uslimit`.
+* **74IV general / 74VI `dense_subalgebra`** — blocked on `mn_vna_1` and
+  `mn_vna_2'` (§1).
+* **77I `vn_complete_1/2`** — blocked on 75VIII.
+
+### 6. Verification
+
+* `lake build` (whole project) at the end: exit 0, 8738 jobs
+  (`scratchpad/w54full2.log`).  Sorry counts from the build log's
+  `declaration uses \`sorry\`` lines (never a grep): `A/CStar` 37,
+  **`A/VN` 106**, `A/Proc` 128, `B/Dils` 60, `B/Eff` 20 — the last three
+  exactly as found.
+* `#print axioms` on all six new theorems and six regression targets:
+  standard three only (`scratchpad/w54ax.lean`, `w54ax2.lean`,
+  `w54ax3.lean`).
+* Warning profile: the build's message list restricted to the edited line
+  ranges of `Completeness.lean` and `Projections.lean` contains **no new
+  warnings** — every new private lemma carries the `omit … in` the linter
+  asked for, `letI` became `let`, and the one `show` that changed the goal
+  became `change`.  (The deprecation warnings from parsecs 760/770 and the
+  `linter.style.header` noise in `Basic.lean` are pre-existing.)
+* Files touched: `Theses/A/VN/Completeness.lean`,
+  `Theses/A/VN/Projections.lean` (66IV.3 proved; `spectrum_abs_le` made
+  public), `PROVING-LOG.md`.
+  `ERRATA.md`/`QUESTIONS.md` deliberately untouched — nothing false found
+  and no author decision is needed.  Nothing staged, nothing committed.

@@ -3001,7 +3001,9 @@ theorem ceil_mem {S : StarSubalgebra ℂ A} (hS : IsVNSubalgebra A S)
   rwa [hcx] at hres
 
 
-private theorem spectrum_abs_le {a : A} (ha : IsSelfAdjoint a) {r : ℝ}
+/-- The real spectrum of a self-adjoint element lies in `[-‖a‖, ‖a‖]`.  (Made
+public for the clamping functions of **74IV** in `Completeness.lean`.) -/
+theorem spectrum_abs_le {a : A} (ha : IsSelfAdjoint a) {r : ℝ}
     (hr : r ∈ spectrum ℝ a) : |r| ≤ ‖a‖ := by
   rcases subsingleton_or_nontrivial A with _ | _
   · exact absurd (isUnit_of_subsingleton _) (spectrum.mem_iff.mp hr)
@@ -3536,11 +3538,65 @@ theorem ultracyclic_basic_2 (p q : A) (hp : IsStarProjection p)
 
 /-- **66IV** (`ultracyclic-basic`, vn.tex:3334, Exercise), part 3: every
 projection `p` is the directed supremum of ultracyclic projections:
-`p = ⋁_ω ⌈ω⌉` over the np-functionals `ω` with `ω(p^⊥) = 0`. -/
+`p = ⋁_ω ⌈ω⌉` over the np-functionals `ω` with `ω(p^⊥) = 0`.
+
+*Class 2 — different route.*  The thesis's hint is "first consider `p = 1`";
+we do not need the reduction.  That `p` is an upper bound is the defining
+leastness of `⌈ω⌉`.  For leastness, let `r` be a projection above every such
+`⌈ω⌉`.  For an arbitrary np-functional `τ`, the compression
+`ω = τ(p(·)p) = conjNP p τ` satisfies `ω(p^⊥) = 0`, so `⌈ω⌉ ≤ r` and hence
+`ω(r^⊥) = 0`, i.e. `τ(p r^⊥ p) = 0`.  As `τ` was arbitrary and `p r^⊥ p ≥ 0`,
+faithfulness of the np-functionals (**42I**.2) gives `p r^⊥ p = 0`, whence
+`r^⊥ p = 0` by the C\*-identity and `p = r p r ≤ r`.
+
+The `p = 1` case of the thesis's hint is the special case `p = 1`, where the
+compression is the identity. -/
 theorem ultracyclic_basic_3 (p : A) (hp : IsStarProjection p) :
     p = projSup {q : A | ∃ ω : NPFunctional A, ω (1 - p) = 0 ∧
-      q = npCarrier ω} :=
-  sorry
+      q = npCarrier ω} := by
+  set P : Set A := {q : A | ∃ ω : NPFunctional A, ω (1 - p) = 0 ∧
+    q = npCarrier ω} with hPdef
+  have hPproj : ∀ q ∈ P, IsStarProjection q := by
+    rintro q ⟨ω, -, rfl⟩
+    exact (carrier_spec ω.toPositiveLinearMap ω.preservesDirSups').1
+  refine (projSup_eq hPproj hp ?_ ?_).symm
+  · rintro q ⟨ω, hω, rfl⟩
+    exact (carrier_spec ω.toPositiveLinearMap ω.preservesDirSups').2.2 p hp hω
+  · intro r hr hub
+    have hkey : p * (1 - r) * p = 0 := by
+      refine VonNeumannAlgebra.np_faithful _
+        (IsSelfAdjoint.conjugate_nonneg hr.one_sub.nonneg hp.isSelfAdjoint) fun τ => ?_
+      have hω0 : conjNP p τ (1 - p) = 0 := by
+        rw [conjNP_apply, hp.isSelfAdjoint.star_eq,
+          show p * (1 - p) * p = 0 from by
+            rw [mul_sub, mul_one, hp.isIdempotentElem.eq, sub_self, zero_mul]]
+        exact npFunctional_zero _
+      have hle : npCarrier (conjNP p τ) ≤ r := hub _ ⟨conjNP p τ, hω0, rfl⟩
+      have h1 : (conjNP p τ (1 - r) : ℂ) ≤ conjNP p τ (1 - npCarrier (conjNP p τ)) :=
+        npFunctional_mono _ (sub_le_sub_left hle 1)
+      have hc : conjNP p τ (1 - npCarrier (conjNP p τ)) = 0 :=
+        (carrier_spec (conjNP p τ).toPositiveLinearMap
+          (conjNP p τ).preservesDirSups').2.1
+      rw [hc] at h1
+      have h2 : (0 : ℂ) ≤ conjNP p τ (1 - r) :=
+        npFunctional_nonneg _ hr.one_sub.nonneg
+      have h3 : conjNP p τ (1 - r) = 0 := le_antisymm h1 h2
+      rwa [conjNP_apply, hp.isSelfAdjoint.star_eq] at h3
+    have hzero : (1 - r) * p = 0 := by
+      refine (CStarRing.star_mul_self_eq_zero_iff _).mp ?_
+      rw [star_mul, hp.isSelfAdjoint.star_eq, hr.one_sub.isSelfAdjoint.star_eq]
+      calc p * (1 - r) * ((1 - r) * p) = p * ((1 - r) * (1 - r)) * p := by noncomm_ring
+        _ = p * (1 - r) * p := by rw [hr.one_sub.isIdempotentElem.eq]
+        _ = 0 := hkey
+    have hrp : r * p = p := by
+      rw [sub_mul, one_mul] at hzero
+      exact (sub_eq_zero.mp hzero).symm
+    have hpr : p * r = p := by
+      have h := congrArg star hrp
+      rwa [star_mul, hr.isSelfAdjoint.star_eq, hp.isSelfAdjoint.star_eq] at h
+    calc p = r * p * r := by rw [hrp, hpr]
+      _ ≤ r * 1 * r := IsSelfAdjoint.conjugate_le_conjugate hp.le_one hr.isSelfAdjoint
+      _ = r := by rw [mul_one, hr.isIdempotentElem.eq]
 
 /-- **66IV** (`ultracyclic-basic`, vn.tex:3334, Exercise), part 4: every
 projection is the sum of a family of pairwise orthogonal ultracyclic
