@@ -483,9 +483,9 @@ The following is a generalization to effect algebras.
 \end{point}
 \begin{point}{11}[ea-modularity-prop]{Proposition}%
 Suppose~$E$ is an effect algebra.
-If the infimum~$a \wedge b$
+If the supremum~$a \vee b$
     exists for some~$a,b \in E$ with~$a \perp b$,
-    then their supremum~$a \vee b$ exists as well and
+    then their infimum~$a \wedge b$ exists as well and
 \begin{equation*}
     a \ovee b \ = \ (a \wedge b) \,\ovee\, (a \vee b).
 \end{equation*}
@@ -495,41 +495,41 @@ If the infimum~$a \wedge b$
     It turns out that it was already proven before
         (in D-poset form) \cite[prop.~1.8.2]{dvurecenskij2013new}.)
 The result follows from this lemma:
-    if~$(x \ominus c) \wedge (x \ominus d)$ exists,
-    then~$c \vee d$ exists as well
-    and~$(x \ominus c) \wedge (x \ominus d)
-        = x \ominus (c \vee d)$.
+    if~$(x \ominus c) \vee (x \ominus d)$ exists,
+    then~$c \wedge d$ exists as well
+    and~$(x \ominus c) \vee (x \ominus d)
+        = x \ominus (c \wedge d)$.
 Indeed:
 \begin{equation*}
-    a \wedge b \ = \ 
-        ((a \ovee b) \ominus a) \wedge ((a \ovee b) \ominus b) \ = \ 
-        (a \ovee b) \ominus (a \vee b)
+    a \vee b \ = \ 
+        ((a \ovee b) \ominus a) \vee ((a \ovee b) \ominus b) \ = \ 
+        (a \ovee b) \ominus (a \wedge b)
 \end{equation*}
-    and so~$(a \wedge b) \ovee (a \vee b) = a \ovee b$, as desired.
+    and so~$(a \vee b) \ovee (a \wedge b) = a \ovee b$, as desired.
 \begin{point}{30}%
 Now, we prove the lemma.
-Assume~$(x \ominus c) \wedge (x \ominus d)$ exists.
+Assume~$(x \ominus c) \vee (x \ominus d)$ exists.
 Note~$x \ominus c = (x^\perp \ovee c)^\perp$.
 As~$z \mapsto z^\perp$ is an order anti-isomorphism,
-    we see~$(x^\perp \ovee c) \vee (x^\perp \ovee d)$
-        exists and~$(x^\perp \ovee c) \vee (x^\perp \ovee d)
-                                    = ((x \ominus c)\wedge (x \ominus d))^\perp$.
-Clearly~$ (x^\perp \ovee c) \vee
-        (x^\perp \ovee d) \geq x^\perp$.
-    Write~$r := ((x^\perp \ovee c) \vee
+    we see~$(x^\perp \ovee c) \wedge (x^\perp \ovee d)$
+        exists and~$(x^\perp \ovee c) \wedge (x^\perp \ovee d)
+                                    = ((x \ominus c)\vee (x \ominus d))^\perp$.
+Clearly~$ (x^\perp \ovee c) \wedge
+        (x^\perp \ovee d) \leq x^\perp$.
+    Write~$r := ((x^\perp \ovee c) \wedge
         (x^\perp \ovee d)) \ominus x^\perp$.
-We will show~$r = c \vee d$.
-It is easy to see~$r \geq c$ and~$r \geq d$.
-Assume~$s$ is any element with~$s \geq c$ and~$s \geq d$.
-Note~$x^\perp \ovee s \geq x^\perp \ovee c$
-and~$x^\perp \ovee s \geq x^\perp \ovee d$,
-    hence~$x^\perp \ovee s \geq (x^\perp \ovee c) \vee (x^\perp \ovee d)$
-    and so~$ s \geq  r$.
-We have shown~$r = c \vee d$.
-Consequently~$ (x \ominus c)\wedge (x \ominus d)
-        = ((x^\perp \ovee c) \vee (x^\perp \ovee d))^\perp
+We will show~$r = c \wedge d$.
+It is easy to see~$r \leq c$ and~$r \leq d$.
+Assume~$s$ is any element with~$s \leq c$ and~$s \leq d$.
+Note~$x^\perp \ovee s \leq x^\perp \ovee c$
+and~$x^\perp \ovee s \leq x^\perp \ovee d$,
+    hence~$x^\perp \ovee s \leq (x^\perp \ovee c) \wedge (x^\perp \ovee d)$
+    and so~$ s \leq  r$.
+We have shown~$r = c \wedge d$.
+Consequently~$ (x \ominus c)\vee (x \ominus d)
+        = ((x^\perp \ovee c) \wedge (x^\perp \ovee d))^\perp
         = (r \ovee x^\perp)^\perp = 
-            x \ominus (c \vee d) $, as promised. \qed
+            x \ominus (c \wedge d) $, as promised. \qed
 \end{point}    
 \end{point}
 \end{point}
