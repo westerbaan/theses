@@ -6588,3 +6588,93 @@ ERRATA row for 158V already asks for one): either a proof of the weak
 statement of `kaplansky_hilbmod_of_weak`, or a counterexample to 158II, or a
 strengthening of 158II's hypotheses (e.g. `A` ultrastrongly dense, `X`
 countably generated) matching what Lin's technique needs.
+
+## Session 30 — `B/Dils` 158II weak form worked; iterated trimming has a precise structural blocker; Lin citation verified (worker 60, continued)
+
+Target per coordinator: the weak form created by `kaplansky_hilbmod_of_weak`.
+**Not closed, not refuted.**  No code changes this pass; three findings.
+
+### 1. The iterated/adaptive trimming route, worked out and blocked
+
+The suggested route was analyzed to the end.  Recursion: `X₀ := x`; at stage
+`i` request `dᵢ ∈ D` close to the *known* residual `Xᵢ` (adaptivity is fine:
+all coefficients are known at request time), set `bᵢ = ⟪dᵢ,dᵢ⟫`,
+`ψᵢ = ψ(bᵢ)`, `qᵢ = 1 − ψᵢ`, piece `Pᵢ := ψᵢ•dᵢ`, residual
+`Xᵢ₊₁ := qᵢ•Xᵢ`.  Then `x − ΣPᵢ = X_k + ΣEᵢ` with `Eᵢ = ψᵢ•(Xᵢ−dᵢ)` and
+*every `Eᵢ` is weak-small by good-slot Cauchy–Schwarz* — the weak-form
+telescoping works.  The residual even *contracts*: `‖Xᵢ‖ ≤ 1` forces
+`sp⟪Xᵢ,Xᵢ⟫ ⊆ [0,1]`, and on `[ε,1]` the trimming factor
+`t(1−ψ(t))²/t = ((1−t)/(1+t))²`-type is `≤ θ_ε < 1`, with an `εN` floor from
+`[0,ε)` — so in the commuting idealization `p_ω(X_k)² ≤ θ_ε^k N + εN/(1−θ_ε)`
+is arbitrarily small and the weak value follows by CS.  **The blocker is the
+norm bound**: the accumulated coefficient is the *ordered product*
+`1 − q_{k-1}⋯q₀` of noncommuting positive contractions, and this exceeds the
+unit ball even with *zero* approximation error: numerically
+`‖1 − q₁q₀‖ ≈ 1.155` for `qᵢ = 1 − Pᵢ` with rank-one `Pᵢ` at overlap
+`c ≈ 0.58`, and `> 1.17` for three random contractions (2×2/3×3, exact
+linear algebra; easy to make kernel-checked if ever needed).  Symmetric
+two-sided trimming `qᵢ^{1/2} · qᵢ^{1/2}` would keep the coefficient in
+`[0,1]` — but a Hilbert module has only *one-sided* smul, so the symmetric
+version does not exist.  Capping the finished sum with `f(⟪T,T⟫)` reopens
+the beast `ω((√β−1)₊²)`, with the overshoot direction adversary-steerable.
+This is the mirror obstruction restated at the level of the iteration: **no
+two-sided trimming on a one-sided module.**  Multi-piece sums fare no
+better: a positive `k×k` operator Gram matrix is only `≤ k·diag`, and the
+off-diagonal entries are known only weakly.
+
+### 2. Structural facts worth keeping
+
+* `J := cl span ⟪D,D⟫` is a closed two-sided *-ideal of `A`
+  (`a⟪d,d'⟫ = ⟪d, a•d'⟫`, `⟪d,d'⟫a* = ⟪a•d, d'⟫`), so `J` has an
+  approximate unit `(e_λ)` and `e_λ•d → d` *in norm* for every `d ∈ D` —
+  the abstract form of the trimming that collapses adversarial `D`s.
+* **Column modules degenerate**: for `X = cl{|v⟩⟨e₁|}`-type modules the
+  ultranorm-continuous functionals already separate as the norm dual, so a
+  *subspace* is ultranorm-dense iff norm-dense (Mazur), and the weak form is
+  then trivial.  Any counterexample needs `X` whose ultranorm dual is
+  genuinely smaller — e.g. `X = ℬ` — and there every candidate `D` tried
+  (e.g. the valid instance `D = ℂU + K`, `A = ℂ1 + K`, `U` a co-isometry:
+  all hypotheses check, and `(W)` holds through compact truncation +
+  normality) is rescued by trimming.
+* **No finite/decidable counterexample can exist**, for (W), 158II, *or*
+  158V: in finite dimension the trace is a faithful np-functional, ultranorm
+  density degenerates to norm density, and all these statements are *true*
+  (for 158V: `h` is norm-Lipschitz).  158V's falsity is inherently
+  infinite-dimensional *and* noncommutative — for commutative `ℬ` the
+  ultranorm is a weighted fiberwise `ℓ²` and `z ↦ 2z/(1+|z|²)` is Lipschitz,
+  so 158V is true there.  Kernel-checking the 158V counterexample therefore
+  requires `B(ℓ²)` as a `Theses.VonNeumannAlgebra` with its np-functional
+  theory — out of reach this session; `lp _ ∞` (now available) does not help
+  because block-diagonal variants make `⟪yₙ−y₀,yₙ−y₀⟫` non-null.
+* **Commutative 158II is provable** (sketch, one-shot): with everything
+  commuting the mirror vanishes — `ω(q z q) = ω(q² z) ≤ ‖q‖²ω(z)` — and
+  `d := f(b₀)•d₀`, `f = min(1, t^{-1/2})` works outright: movement²
+  `= ω((√b₀−1)₊²) ≤ ω(|b₀ − ⟪x,x⟫|)` via `(√s−√t)² ≤ |s−t|`, which is
+  `≤ 2(√N+δ)δ` by commutative CS.  Formalization cost is dominated by
+  two-variable functional calculus (`(√s−√t)² ≤ |s−t|` for commuting
+  positives); Mathlib has no `cfc₂`, so this is a Gelfand-duality detour —
+  a candidate for a dedicated session, not attempted here.
+
+### 3. H. Lin, arXiv:2311.15462 §4 — citation now verified (was unchecked in B10)
+
+Read in full.  Lemma 4.3: for the *standard* module `H_A`, the unit ball of
+`H_A` is `T_s`-dense in the unit ball of `H_A•M`, where `M = Ā^{SOT} ∋ 1`;
+proof by coordinates `ξ = {bₙ}`, a column matrix over `R = cl(AM)`, the
+classical Kaplansky theorem in `Mₙ` (`Mₙ(A)` SOT-dense in `Mₙ(M)`), and a
+corner cut `L ↦ Lq` that preserves both `‖L‖ ≤ ‖S‖` and the strong
+approximation.  Theorem 4.4 extends to an *arbitrary* Hilbert `A`-module
+`H`: countably generated case by Kasparov stabilization (`H_A = H ⊕ H^⊥`,
+compress by the projection); general case via an approximate identity
+`(E_λ)` of `K(H)` — `E_λH` is countably generated and `Ψ₀(E_λ)ξ → ξ` *in
+norm*.  Two reasons it does **not** port to 158II as stated: (i) it needs
+`A` SOT-dense in `M` (there `M` is *defined* as the closure), while 158II's
+`A` has no density in `ℬ`; (ii) its `ξ` lies in `H•M`, the *norm*-closed
+`M`-module generated by `H`, while 158II's `x` is only in the *ultranorm*
+closure of `D` — the passage from ultranorm closure to `D̄•M` is exactly the
+open content.  Also relevant: Lin's §5 Example 5.1 shows the analogous
+density *fails* for `H^♯` in the `⟨·,ξ⟩`-topology (a `{pₙ}` sequence in
+`H_M^♯` is not ball-approximable), a warning against strengthening 158II's
+conclusion.  Net effect on the recommendation: a repaired 158II likely
+needs added hypotheses of the shape "`x` in the norm-closed
+`us-closure(A)`-module generated by `D`", under which Lin's technique (via
+158Ia in matrix form) is the proof.
