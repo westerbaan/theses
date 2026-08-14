@@ -2999,12 +2999,412 @@ theorem kadisons_lemma (S : StarSubalgebra ℂ A) (hS : IsVNSubalgebra A S)
     rw [← npFunctional_sub, h₁] at h
     exact h
 
+section VNSubalgebraClosure
+
+variable {S : StarSubalgebra ℂ A}
+
+/-- Auxiliary for **75VIII**: the supremum (in the poset of projections of
+`A`) of a set of projections of a von Neumann subalgebra `S` again lies in
+`S`, and any np-functional annihilating the set annihilates the supremum.
+
+The two statements are proved together because they use the same directed
+set: the projections of `S` that are annihilated by `ω` and lie below every
+projection upper bound of `P`.  It is directed by `⌈x + y⌉`
+(`isLeast_ceil_add`), which stays in `S` by `ceil_mem` and is annihilated by
+`ω` by **60I** (`ceil_functionals_lemma`). -/
+theorem projSup_mem_of_np (hS : IsVNSubalgebra A S)
+    (P : Set A) (hP : ∀ p ∈ P, IsStarProjection p) (hPS : ∀ p ∈ P, p ∈ S)
+    (ω : NPFunctional A) (hω : ∀ p ∈ P, ω p = 0) :
+    projSup P ∈ S ∧ ω (projSup P) = 0 := by
+  classical
+  obtain ⟨hsproj, hsub, hsleast⟩ := projSup_spec hP
+  set J : Set A := {d : A | IsStarProjection d ∧ d ∈ S ∧ ω d = 0 ∧
+    ∀ r : A, IsStarProjection r → (∀ p ∈ P, p ≤ r) → d ≤ r} with hJdef
+  have hPJ : P ⊆ J := fun p hp =>
+    ⟨hP p hp, hPS p hp, hω p hp, fun r _ hr => hr p hp⟩
+  have hne : J.Nonempty :=
+    ⟨0, IsStarProjection.zero A, zero_mem _, npFunctional_zero ω,
+      fun r hr _ => hr.nonneg⟩
+  have hdir : DirectedOn (· ≤ ·) J := by
+    rintro x ⟨hx, hxS, hxω, hxle⟩ y ⟨hy, hyS, hyω, hyle⟩
+    obtain ⟨⟨hj, hxj, hyj⟩, hjleast⟩ := isLeast_ceil_add hx hy
+    have hsum : (0 : A) ≤ x + y := add_nonneg hx.nonneg hy.nonneg
+    have hωsum : ω (x + y) = 0 := by
+      rw [npFunctional_add, hxω, hyω, add_zero]
+    refine ⟨ceil (x + y), ⟨hj, ceil_mem hS hsum (add_mem hxS hyS),
+      (ceil_functionals_lemma (x + y) hsum ω).mp hωsum, fun r hr hrP =>
+        hjleast ⟨hr, hxle r hr hrP, hyle r hr hrP⟩⟩, hxj, hyj⟩
+  have hbdd : BddAbove J := ⟨1, fun d hd => hd.1.le_one⟩
+  set J' : Set (selfAdjoint A) := {d : selfAdjoint A | (d : A) ∈ J} with hJ'def
+  have hval : Subtype.val '' J' = J := by
+    ext x
+    exact ⟨by rintro ⟨d, hd, rfl⟩; exact hd,
+      fun hx => ⟨⟨x, hx.1.isSelfAdjoint⟩, hx, rfl⟩⟩
+  obtain ⟨d₀, hd₀⟩ := id hne
+  have hne' : J'.Nonempty := ⟨⟨d₀, hd₀.1.isSelfAdjoint⟩, hd₀⟩
+  have hdir' : DirectedOn (· ≤ ·) J' := by
+    intro x hx y hy
+    obtain ⟨c, hc, hxc, hyc⟩ := hdir _ hx _ hy
+    exact ⟨⟨c, hc.1.isSelfAdjoint⟩, hc, hxc, hyc⟩
+  have hbdd' : BddAbove J' := ⟨⟨1, IsSelfAdjoint.one A⟩, fun d hd => hd.1.le_one⟩
+  have h3 : J'.Nonempty ∧ DirectedOn (· ≤ ·) J' ∧ BddAbove J' := ⟨hne', hdir', hbdd'⟩
+  have hlubSA : IsLUB J' (dirSup J' h3) := isLUB_dirSup J' h3
+  have hlub : IsLUB J ((dirSup J' h3 : selfAdjoint A) : A) := by
+    rw [← hval]
+    exact isLUB_coe_of_isLUB hne' hlubSA
+  set s : A := ((dirSup J' h3 : selfAdjoint A) : A) with hsdef
+  have hsprojJ : IsStarProjection s :=
+    vna_directed_supremum_projections J s (fun d hd => hd.1) hne hdir hlub
+  -- `s = projSup P`
+  have hle₁ : projSup P ≤ s := hsleast s hsprojJ fun p hp => hlub.1 (hPJ hp)
+  have hle₂ : s ≤ projSup P := hlub.2 fun d hd => hd.2.2.2 _ hsproj hsub
+  have hseq : s = projSup P := le_antisymm hle₂ hle₁
+  refine ⟨hseq ▸ hS.dirSup_mem J' (dirSup J' h3) (fun d hd => hd.2.1) hne' hdir' hlubSA, ?_⟩
+  -- `ω` annihilates the supremum, by normality
+  have hω' := ω.preservesDirSups' J' (dirSup J' h3) hne' hdir' hlubSA
+  have himg : (fun d : selfAdjoint A => ω.toPositiveLinearMap (d : A)) '' J' = {(0 : ℂ)} := by
+    refine Set.eq_singleton_iff_unique_mem.mpr ⟨⟨⟨d₀, hd₀.1.isSelfAdjoint⟩, hd₀, hd₀.2.2.1⟩, ?_⟩
+    rintro _ ⟨d, hd, rfl⟩
+    exact hd.2.2.1
+  rw [himg] at hω'
+  rw [← hseq]
+  change ω.toPositiveLinearMap s = 0
+  exact IsLUB.unique hω' isLUB_singleton
+
+
+/-- Auxiliary: a projection annihilated by `ω` lies below `⌈ω⌉^⊥`. -/
+theorem proj_le_npCarrier_compl (ω : NPFunctional A) {q : A}
+    (hq : IsStarProjection q) (h : ω q = 0) : q ≤ 1 - npCarrier ω := by
+  have hle := (carrier_spec ω.toPositiveLinearMap ω.preservesDirSups').2.2 (1 - q)
+    hq.one_sub (by rw [sub_sub_cancel]; exact h)
+  exact le_sub_comm.mp hle
+
+variable (S) in
+/-- The **relative co-carrier** `⌈ω⌉_𝒮^⊥`: the largest projection of the von
+Neumann subalgebra `𝒮` annihilated by `ω`.  (The thesis's `⌈ω⌉_𝒮` is
+`1 - relCoceil 𝒮 ω`; the complement is the convenient form, since it is a
+`projSup` rather than a `projInf`.) -/
+noncomputable def relCoceil (ω : NPFunctional A) : A :=
+  projSup {q : A | IsStarProjection q ∧ q ∈ S ∧ ω q = 0}
+
+omit [StarOrderedRing A] [VonNeumannAlgebra A] in
+private theorem relCoceil_set_proj (ω : NPFunctional A) :
+    ∀ q ∈ {q : A | IsStarProjection q ∧ q ∈ S ∧ ω q = 0}, IsStarProjection q :=
+  fun _ hq => hq.1
+
+theorem relCoceil_isStarProjection (ω : NPFunctional A) :
+    IsStarProjection (relCoceil S ω) :=
+  (projSup_spec (relCoceil_set_proj ω)).1
+
+theorem le_relCoceil (ω : NPFunctional A) {q : A} (hq : IsStarProjection q)
+    (hqS : q ∈ S) (h : ω q = 0) : q ≤ relCoceil S ω :=
+  (projSup_spec (relCoceil_set_proj ω)).2.1 q ⟨hq, hqS, h⟩
+
+theorem relCoceil_mem (hS : IsVNSubalgebra A S) (ω : NPFunctional A) :
+    relCoceil S ω ∈ S :=
+  (projSup_mem_of_np hS _ (relCoceil_set_proj ω) (fun _ hq => hq.2.1) ω
+    (fun _ hq => hq.2.2)).1
+
+theorem relCoceil_apply (hS : IsVNSubalgebra A S) (ω : NPFunctional A) :
+    ω (relCoceil S ω) = 0 :=
+  (projSup_mem_of_np hS _ (relCoceil_set_proj ω) (fun _ hq => hq.2.1) ω
+    (fun _ hq => hq.2.2)).2
+
+/-- `⌈ω⌉ ≤ ⌈ω⌉_𝒮`, in complemented form. -/
+theorem relCoceil_le_npCarrier_compl (hS : IsVNSubalgebra A S) (ω : NPFunctional A) :
+    relCoceil S ω ≤ 1 - npCarrier ω :=
+  proj_le_npCarrier_compl ω (relCoceil_isStarProjection ω) (relCoceil_apply hS ω)
+
+theorem relCoceil_eq_one_of_apply_one (ω : NPFunctional A) (h : ω 1 = 0) :
+    relCoceil S ω = 1 :=
+  le_antisymm (relCoceil_isStarProjection ω).le_one
+    (le_relCoceil ω (IsStarProjection.one A) (one_mem S) h)
+
+
+omit [VonNeumannAlgebra A] in
+/-- Auxiliary for the normalisation step: an np-functional with `ω 1 ≠ 0`
+becomes an npu-functional after scaling by `(ω 1)⁻¹`, without changing which
+elements it annihilates. -/
+theorem exists_unital_scaling (ω : NPFunctional A) (h : ω 1 ≠ 0) :
+    ∃ (ω' : NPFunctional A) (c : ℂ), c ≠ 0 ∧ ω' 1 = 1 ∧ ∀ a, ω' a = c * ω a := by
+  have him : (ω 1).im = 0 := npFunctional_im_eq_zero ω (IsSelfAdjoint.one A)
+  have hnn : (0 : ℂ) ≤ ω 1 := npFunctional_nonneg ω zero_le_one
+  have hre : (0 : ℝ) ≤ (ω 1).re := (Complex.le_def.mp hnn).1
+  set r : ℝ := (ω 1).re with hrdef
+  have hone : ω 1 = (r : ℂ) := by
+    apply Complex.ext <;> simp [hrdef, him]
+  have hrne : r ≠ 0 := fun h0 => h (by rw [hone, h0]; simp)
+  have hrinv : (0 : ℝ) ≤ r⁻¹ := inv_nonneg.mpr hre
+  refine ⟨smulNP hrinv ω, ((r⁻¹ : ℝ) : ℂ), ?_, ?_, fun a => smulNP_apply hrinv ω a⟩
+  · simpa using inv_ne_zero hrne
+  · rw [smulNP_apply, hone, ← Complex.ofReal_mul, inv_mul_cancel₀ hrne, Complex.ofReal_one]
+
+/-- The heart of **75VIII**: for `ω₀` with `ω₀(p) = 0` and `ω₁` with
+`ω₁(p^⊥) = 0`, Kadison's lemma (**75VI**) produces a projection `q ∈ 𝒮`
+between `⌈ω₁⌉_𝒮` and `⌈ω₀⌉_𝒮^⊥`. -/
+theorem relCoceil_compl_le (hS : IsVNSubalgebra A S) {p : A}
+    (hp : IsStarProjection p) (hcl : p ∈ @closure A (ultrastrong A) S)
+    (ω₀ ω₁ : NPFunctional A) (h₀ : ω₀ p = 0) (h₁ : ω₁ (1 - p) = 0) :
+    1 - relCoceil S ω₁ ≤ relCoceil S ω₀ := by
+  by_cases hu₀ : ω₀ 1 = 0
+  · rw [relCoceil_eq_one_of_apply_one ω₀ hu₀]
+    simpa using (relCoceil_isStarProjection (S := S) ω₁).nonneg
+  by_cases hu₁ : ω₁ 1 = 0
+  · rw [relCoceil_eq_one_of_apply_one ω₁ hu₁, sub_self]
+    exact (relCoceil_isStarProjection (S := S) ω₀).nonneg
+  obtain ⟨ω₀', c₀, hc₀, hu₀', he₀⟩ := exists_unital_scaling ω₀ hu₀
+  obtain ⟨ω₁', c₁, hc₁, hu₁', he₁⟩ := exists_unital_scaling ω₁ hu₁
+  obtain ⟨q, hqS, hq, hq₀, hq₁⟩ :=
+    kadisons_lemma S hS p hp hcl ω₀' ω₁' hu₀' hu₁' (by rw [he₀, h₀, mul_zero])
+      (by rw [he₁, h₁, mul_zero])
+  have hω₀q : ω₀ q = 0 := by
+    have := hq₀; rw [he₀] at this
+    exact (mul_eq_zero.mp this).resolve_left hc₀
+  have hω₁q : ω₁ (1 - q) = 0 := by
+    have := hq₁; rw [he₁] at this
+    exact (mul_eq_zero.mp this).resolve_left hc₁
+  have h1 : q ≤ relCoceil S ω₀ := le_relCoceil ω₀ hq hqS hω₀q
+  have h2 : 1 - q ≤ relCoceil S ω₁ :=
+    le_relCoceil ω₁ hq.one_sub (sub_mem (one_mem S) hqS) hω₁q
+  exact le_trans (sub_le_comm.mp h2) h1
+
+/-- **75VIII**, main step: a projection of `A` lying in the ultrastrong
+closure of a von Neumann subalgebra `𝒮` already lies in `𝒮`. -/
+theorem projection_mem_of_mem_usClosure (hS : IsVNSubalgebra A S) {p : A}
+    (hp : IsStarProjection p) (hcl : p ∈ @closure A (ultrastrong A) S) : p ∈ S := by
+  classical
+  have hcarrier : ∀ ω : NPFunctional A, IsStarProjection (npCarrier ω) :=
+    fun ω => (carrier_spec ω.toPositiveLinearMap ω.preservesDirSups').1
+  set Q : Set A := {q : A | ∃ ω : NPFunctional A, ω (1 - p) = 0 ∧
+    q = 1 - relCoceil S ω} with hQdef
+  have hQproj : ∀ q ∈ Q, IsStarProjection q := by
+    rintro _ ⟨ω, -, rfl⟩
+    exact (relCoceil_isStarProjection ω).one_sub
+  have hQS : ∀ q ∈ Q, q ∈ S := by
+    rintro _ ⟨ω, -, rfl⟩
+    exact sub_mem (one_mem S) (relCoceil_mem hS ω)
+  obtain ⟨hUproj, hUub, hUleast⟩ := projSup_spec hQproj
+  set U : A := projSup Q with hUdef
+  -- `p ≤ ⋁_{ω₁} ⌈ω₁⌉_𝒮 = U`, by **66IV**.3
+  have hpU : p ≤ U := by
+    rw [ultracyclic_basic_3 p hp]
+    refine (projSup_spec (fun q hq => by obtain ⟨ω, -, rfl⟩ := hq; exact hcarrier ω)).2.2
+      U hUproj ?_
+    rintro _ ⟨ω, hω, rfl⟩
+    exact le_trans (le_sub_comm.mp (relCoceil_le_npCarrier_compl hS ω))
+      (hUub _ ⟨ω, hω, rfl⟩)
+  -- `U ≤ ⋀_{ω₀} ⌈ω₀⌉_𝒮^⊥ ≤ ⋀_{ω₀} ⌈ω₀⌉^⊥ = p`, by **66IV**.3 at `p^⊥`
+  have hUp : U ≤ p := by
+    have hstep : (1 : A) - p ≤ 1 - U := by
+      rw [ultracyclic_basic_3 (1 - p) hp.one_sub]
+      refine (projSup_spec (fun q hq => by obtain ⟨ω, -, rfl⟩ := hq; exact hcarrier ω)).2.2
+        (1 - U) hUproj.one_sub ?_
+      rintro _ ⟨ω₀, hω₀, rfl⟩
+      rw [sub_sub_cancel] at hω₀
+      refine le_sub_comm.mp (hUleast _ (hcarrier ω₀).one_sub ?_)
+      rintro _ ⟨ω₁, hω₁, rfl⟩
+      exact le_trans (relCoceil_compl_le hS hp hcl ω₀ ω₁ hω₀ hω₁)
+        (relCoceil_le_npCarrier_compl hS ω₀)
+    exact (sub_le_sub_iff_left (1 : A)).mp hstep
+  rw [le_antisymm hpU hUp, hUdef]
+  exact (projSup_mem_of_np hS Q hQproj hQS zeroNP (fun q _ => rfl)).1
+
+
+end VNSubalgebraClosure
+
+section UsClosureSubalgebra
+
+variable (S : StarSubalgebra ℂ A)
+
+omit [VonNeumannAlgebra A] in
+/-- The norm topology is finer than the ultrastrong topology. -/
+theorem norm_le_ultrastrong : (inferInstance : TopologicalSpace A) ≤ ultrastrong A := by
+  rw [ultrastrong]
+  refine _root_.le_generateFrom ?_
+  rintro U ⟨ω, b, ε, hε, rfl⟩
+  have hlip : LipschitzWith (Real.toNNReal (omegaNorm A ω 1))
+      (fun a : A => omegaNorm A ω (a - b)) := by
+    refine LipschitzWith.of_dist_le_mul fun x y => ?_
+    have h1 : |omegaNorm A ω (x - b) - omegaNorm A ω (y - b)|
+        ≤ omegaNorm A ω ((x - b) - (y - b)) :=
+      abs_omegaNorm_sub_omegaNorm_le ω (x - b) (y - b)
+    have h2 : ((x - b) - (y - b)) = x - y := by abel
+    rw [h2] at h1
+    have h3 : omegaNorm A ω (x - y) ≤ ‖x - y‖ * omegaNorm A ω 1 :=
+      omegaNorm_le_norm_mul ω (x - y)
+    have h4 : (Real.toNNReal (omegaNorm A ω 1) : ℝ) = omegaNorm A ω 1 :=
+      Real.coe_toNNReal _ (omegaNorm_nonneg ω 1)
+    rw [Real.dist_eq, h4, dist_eq_norm, mul_comm]
+    exact h1.trans h3
+  exact isOpen_lt hlip.continuous continuous_const
+
+omit [VonNeumannAlgebra A] in
+theorem isClosed_of_isClosed_ultrastrong {C : Set A}
+    (h : @IsClosed A (ultrastrong A) C) : IsClosed C :=
+  h.mono norm_le_ultrastrong
+
+
+
+omit [VonNeumannAlgebra A] in
+private theorem us_add {x y : A} (hx : x ∈ @closure A (ultrastrong A) (S : Set A))
+    (hy : y ∈ @closure A (ultrastrong A) (S : Set A)) :
+    x + y ∈ @closure A (ultrastrong A) (S : Set A) := by
+  rw [mem_usClosure_iff] at hx hy ⊢
+  intro ω ε hε
+  obtain ⟨z, hz, hz'⟩ := hx ω (ε / 2) (by positivity)
+  obtain ⟨w, hw, hw'⟩ := hy ω (ε / 2) (by positivity)
+  refine ⟨z + w, add_mem hz hw, ?_⟩
+  have heq : z + w - (x + y) = (z - x) + (w - y) := by abel
+  rw [heq]
+  exact lt_of_le_of_lt (omegaNorm_add_le ω _ _) (by linarith)
+
+omit [VonNeumannAlgebra A] in
+private theorem us_smul (c : ℂ) {x : A} (hx : x ∈ @closure A (ultrastrong A) (S : Set A)) :
+    c • x ∈ @closure A (ultrastrong A) (S : Set A) := by
+  rw [mem_usClosure_iff] at hx ⊢
+  intro ω ε hε
+  obtain ⟨z, hz, hz'⟩ := hx ω (ε / (‖c‖ + 1)) (by positivity)
+  refine ⟨c • z, SMulMemClass.smul_mem _ hz, ?_⟩
+  have heq : c • z - c • x = c • (z - x) := by rw [smul_sub]
+  rw [heq, omegaNorm_smul]
+  have h0 : (0 : ℝ) ≤ ‖c‖ := norm_nonneg c
+  have h1 : omegaNorm A ω (z - x) < ε / (‖c‖ + 1) := hz'
+  have h2 : ‖c‖ * omegaNorm A ω (z - x) ≤ (‖c‖ + 1) * omegaNorm A ω (z - x) :=
+    mul_le_mul_of_nonneg_right (by linarith) (omegaNorm_nonneg ω _)
+  have h3 : (‖c‖ + 1) * omegaNorm A ω (z - x) < (‖c‖ + 1) * (ε / (‖c‖ + 1)) :=
+    mul_lt_mul_of_pos_left h1 (by linarith)
+  rw [mul_div_cancel₀ _ (by positivity : (‖c‖ : ℝ) + 1 ≠ 0)] at h3
+  linarith
+
+private theorem us_mul {x y : A} (hx : x ∈ @closure A (ultrastrong A) (S : Set A))
+    (hy : y ∈ @closure A (ultrastrong A) (S : Set A)) :
+    x * y ∈ @closure A (ultrastrong A) (S : Set A) := by
+  rw [mem_usClosure_iff] at hx hy ⊢
+  intro ω ε hε
+  -- first approximate `y` (left multiplication by the *fixed* `x` is `‖x‖`-Lipschitz)
+  obtain ⟨w, hw, hw'⟩ := hy ω (ε / (2 * (‖x‖ + 1))) (by positivity)
+  -- then approximate `x` in the seminorm `‖·‖_{w*ω}`
+  obtain ⟨z, hz, hz'⟩ := hx (conjNP w ω) (ε / 2) (by positivity)
+  refine ⟨z * w, mul_mem hz hw, ?_⟩
+  have heq : z * w - x * y = (z - x) * w + x * (w - y) := by noncomm_ring
+  rw [heq]
+  refine lt_of_le_of_lt (omegaNorm_add_le ω _ _) ?_
+  have hA : omegaNorm A ω ((z - x) * w) = omegaNorm A (conjNP w ω) (z - x) :=
+    omegaNorm_mul_right ω (z - x) w
+  have hB : omegaNorm A ω (x * (w - y)) ≤ ‖x‖ * omegaNorm A ω (w - y) :=
+    omegaNorm_mul_le ω x (w - y)
+  have hC : ‖x‖ * omegaNorm A ω (w - y) ≤ (‖x‖ + 1) * omegaNorm A ω (w - y) :=
+    mul_le_mul_of_nonneg_right (by linarith) (omegaNorm_nonneg ω _)
+  have hD : (‖x‖ + 1) * omegaNorm A ω (w - y) < (‖x‖ + 1) * (ε / (2 * (‖x‖ + 1))) :=
+    mul_lt_mul_of_pos_left hw' (by positivity)
+  have hE : (‖x‖ + 1) * (ε / (2 * (‖x‖ + 1))) = ε / 2 := by
+    field_simp
+  rw [hE] at hD
+  rw [hA]
+  linarith
+
+private theorem us_star {x : A} (hx : x ∈ @closure A (ultrastrong A) (S : Set A)) :
+    star x ∈ @closure A (ultrastrong A) (S : Set A) := by
+  -- the adjoint is *ultraweakly* continuous, and the ultrastrong closure of the
+  -- convex set `S` is ultraweakly closed by **73VIII** (`ultraclosed`)
+  refine mem_usClosure_of_mem_uwClosure (convex_starSubalgebraA S) ?_
+  have hcont : @Continuous A A (ultraweak A) (ultraweak A) (fun a : A => star a) := by
+    let _ : TopologicalSpace A := ultraweak A
+    rw [ultraweak, continuous_iInf_rng]
+    intro ω
+    rw [continuous_induced_rng]
+    have hform : ∀ a : A, (ω (star a) : ℂ) = star (ω a) := fun a => npFunctional_star ω a
+    change Continuous fun a : A => (ω (star a) : ℂ)
+    simp only [hform]
+    exact continuous_star.comp (continuous_ultraweak_npFunctional ω)
+  have hsub : ∀ a ∈ (S : Set A), star a ∈ @closure A (ultraweak A) (S : Set A) :=
+    fun a ha => @subset_closure A (ultraweak A) (S : Set A) _ (star_mem ha)
+  exact @closure_minimal A (ultraweak A) (S : Set A) _ hsub
+    (@IsClosed.preimage A A (ultraweak A) (ultraweak A) _ hcont _
+      (@isClosed_closure A (ultraweak A) (S : Set A))) x (usClosure_subset_uwClosure _ hx)
+
+/-- The **ultrastrong closure of a C\*-subalgebra** of a von Neumann algebra
+is again a star subalgebra.  (Asserted without proof in the thesis's proof of
+**75VIII**, vn.tex:4597; multiplication is only *separately* ultrastrongly
+continuous, which is enough, and the adjoint — which is *not* ultrastrongly
+continuous, cf. **43II**.4 — is handled through the ultraweak topology and
+**73VIII** `ultraclosed`.) -/
+noncomputable def usClosureSubalgebra : StarSubalgebra ℂ A where
+  carrier := @closure A (ultrastrong A) (S : Set A)
+  mul_mem' := us_mul S
+  add_mem' := us_add S
+  one_mem' := @subset_closure A (ultrastrong A) (S : Set A) _ (one_mem S)
+  zero_mem' := @subset_closure A (ultrastrong A) (S : Set A) _ (zero_mem S)
+  algebraMap_mem' := fun r =>
+    @subset_closure A (ultrastrong A) (S : Set A) _ (algebraMap_mem S r)
+  star_mem' := us_star S
+
+@[simp] theorem mem_usClosureSubalgebra {x : A} :
+    x ∈ usClosureSubalgebra S ↔ x ∈ @closure A (ultrastrong A) (S : Set A) := Iff.rfl
+
+
+/-- The ultrastrong closure of a C*-subalgebra is a von Neumann subalgebra:
+it is norm-closed (the ultrastrong topology is coarser than the norm
+topology) and closed under bounded directed suprema, because by **44XIV**
+`vna_supremum_uslimit` such a supremum is the ultrastrong limit of its own
+net. -/
+theorem isVNSubalgebra_usClosureSubalgebra :
+    IsVNSubalgebra A (usClosureSubalgebra S) where
+  isClosed := isClosed_of_isClosed_ultrastrong (@isClosed_closure A (ultrastrong A) _)
+  dirSup_mem := by
+    intro D s hD hne hdir hlub
+    have h3 : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧ BddAbove D := ⟨hne, hdir, ⟨s, hlub.1⟩⟩
+    have hlim := vna_supremum_uslimit D h3
+    have heq : ((dirSup D h3 : selfAdjoint A) : A) = (s : A) := by
+      rw [(isLUB_dirSup D h3).unique hlub]
+    rw [heq] at hlim
+    have : Nonempty ↥D := hne.to_subtype
+    have : IsDirected ↥D (· ≤ ·) := ⟨fun x y => by
+      obtain ⟨z, hz, hxz, hyz⟩ := hdir x x.2 y y.2
+      exact ⟨⟨z, hz⟩, hxz, hyz⟩⟩
+    change (s : A) ∈ @closure A (ultrastrong A) (S : Set A)
+    rw [mem_usClosure_iff]
+    intro ω ε hε
+    have hmem := hlim (ultrastrong_ball_mem_nhds ω ((s : selfAdjoint A) : A)
+        (show (0 : ℝ) < ε / 2 by positivity))
+    have hev : ∀ᶠ i : ↥D in atTop,
+        omegaNorm A ω (((i : selfAdjoint A) : A) - ((s : selfAdjoint A) : A)) < ε / 2 := hmem
+    obtain ⟨d, hd⟩ := hev.exists
+    obtain ⟨z, hz, hz'⟩ :=
+      (mem_usClosure_iff (S : Set A) _).mp (hD (d : selfAdjoint A) d.2) ω (ε / 2) (by positivity)
+    refine ⟨z, hz, ?_⟩
+    have := omegaNorm_sub_le ω z (((d : selfAdjoint A) : A)) ((s : selfAdjoint A) : A)
+    have hd' : omegaNorm A ω (((d : selfAdjoint A) : A) - ((s : selfAdjoint A) : A)) < ε / 2 := hd
+    linarith
+
+end UsClosureSubalgebra
+
 /-- **75VIII** (`vnsac`, vn.tex:4587, Theorem): a von Neumann subalgebra of
-a von Neumann algebra is ultrastrongly and ultraweakly closed. -/
+a von Neumann algebra is ultrastrongly and ultraweakly closed.
+
+*Class 2 — different route in two places, and shorter than the thesis's.*
+The thesis's argument runs `p = ⋁_{ω₁} ⌈ω₁⌉_𝒮 = ⋀_{ω₀} ⌈ω₀⌉_𝒮^⊥` and uses
+(i) the *unstated* dual of **66IV**.3, `p = ⋀_ω ⌈ω⌉^⊥`, and (ii) the
+relativised carriers `⌈ω⌉_𝒮`, which presuppose the von Neumann structure of
+`𝒮`.  Neither is needed: complementing the second half of the display turns
+it into **66IV**.3 applied to `p^⊥`, so only `⋁` and only `ultracyclic_basic_3`
+occur; and `⌈ω⌉_𝒮^⊥` may be *defined* outright as the `projSup` of the
+projections of `𝒮` annihilated by `ω` (`relCoceil`), whose two defining
+properties come from `projSup_mem_of_np` — no von Neumann structure on `𝒮`
+is transported.  The remaining unstated ingredient, "the ultrastrong closure
+of `𝒮` is a von Neumann subalgebra", is `usClosureSubalgebra` /
+`isVNSubalgebra_usClosureSubalgebra` above. -/
 theorem vnsac (S : StarSubalgebra ℂ A) (hS : IsVNSubalgebra A S) :
     @IsClosed A (ultrastrong A) (S : Set A) ∧
-      @IsClosed A (ultraweak A) (S : Set A) :=
-  sorry
+      @IsClosed A (ultraweak A) (S : Set A) := by
+  have hsub : @closure A (ultrastrong A) (S : Set A) ⊆ (S : Set A) := by
+    intro a ha
+    exact mem_of_isClosed_of_projections_subalgebra
+      (isVNSubalgebra_usClosureSubalgebra S) (Subalgebra.toSubmodule S.toSubalgebra)
+      hS.isClosed (fun p hp hpS => projection_mem_of_mem_usClosure hS hp hpS) ha
+  have hus : @IsClosed A (ultrastrong A) (S : Set A) :=
+    (@closure_subset_iff_isClosed A (ultrastrong A) (S : Set A)).mp hsub
+  exact ⟨hus, ultraclosed _ (convex_starSubalgebraA S) hus⟩
 
 end Kaplansky
 

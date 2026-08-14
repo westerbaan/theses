@@ -759,11 +759,171 @@ instance : StarOrderedRing (lp 𝒜 ∞) := CStarAlgebra.spectralOrderedRing _
 
 variable [∀ i, PartialOrder (𝒜 i)] [∀ i, StarOrderedRing (𝒜 i)]
 
+variable {𝒜}
+
+/-- Positivity in the direct sum `⊕ᵢ 𝒜ᵢ = lp 𝒜 ∞` is *pointwise* positivity. -/
+theorem lp_infty_nonneg_iff (a : lp 𝒜 ∞) : 0 ≤ a ↔ ∀ i, 0 ≤ a i := by
+  constructor
+  · intro ha i
+    rw [StarOrderedRing.nonneg_iff] at ha
+    induction ha using AddSubmonoid.closure_induction with
+    | mem x hx =>
+        obtain ⟨s, rfl⟩ := hx
+        rw [lp.infty_coeFn_mul, lp.coeFn_star]
+        exact star_mul_self_nonneg (s i)
+    | zero => simp
+    | add x y _ _ hx hy => simpa using add_nonneg hx hy
+  · intro ha
+    set b : ∀ i, 𝒜 i := fun i => CFC.sqrt (a i) with hb
+    have hbsa : ∀ i, IsSelfAdjoint (b i) := fun i => .of_nonneg (CFC.sqrt_nonneg _)
+    have hnorm : ∀ i, ‖b i‖ * ‖b i‖ = ‖(a : ∀ i, 𝒜 i) i‖ := by
+      intro i
+      have h := CStarRing.norm_star_mul_self (x := b i)
+      rw [(hbsa i).star_eq] at h
+      rw [← h, hb, CFC.sqrt_mul_sqrt_self _ (ha i)]
+    have hmem : Memℓp b ∞ := by
+      apply memℓp_infty
+      refine ⟨‖a‖ + 1, ?_⟩
+      rintro _ ⟨i, rfl⟩
+      have h1 : ‖(a : ∀ i, 𝒜 i) i‖ ≤ ‖a‖ := lp.norm_apply_le_norm ENNReal.top_ne_zero a i
+      have h2 := hnorm i
+      have h3 : (0:ℝ) ≤ ‖b i‖ := norm_nonneg _
+      nlinarith [norm_nonneg ((a : ∀ i, 𝒜 i) i)]
+    have hEq : a = star (⟨b, hmem⟩ : lp 𝒜 ∞) * ⟨b, hmem⟩ := by
+      apply lp.ext
+      funext i
+      rw [lp.infty_coeFn_mul, lp.coeFn_star]
+      change (a : ∀ i, 𝒜 i) i = star (b i) * b i
+      rw [(hbsa i).star_eq, hb, CFC.sqrt_mul_sqrt_self _ (ha i)]
+    rw [hEq]
+    exact star_mul_self_nonneg _
+
+/-- The order on the direct sum `⊕ᵢ 𝒜ᵢ = lp 𝒜 ∞` is the pointwise order. -/
+theorem lp_infty_le_iff (a b : lp 𝒜 ∞) : a ≤ b ↔ ∀ i, a i ≤ b i := by
+  rw [← sub_nonneg, lp_infty_nonneg_iff]
+  simp only [lp.coeFn_sub, Pi.sub_apply, sub_nonneg]
+
+omit [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)] [∀ i, StarOrderedRing (𝒜 i)] in
+theorem lp_infty_isSelfAdjoint {a : lp 𝒜 ∞} (ha : IsSelfAdjoint a) (i : I) :
+    IsSelfAdjoint ((a : ∀ i, 𝒜 i) i) := by
+  have h : (⇑(star a) : ∀ i, 𝒜 i) = ⇑a := congrArg _ ha
+  rw [lp.coeFn_star] at h
+  exact congrFun h i
+
+variable (𝒜) in
+/-- Evaluation `⊕ᵢ 𝒜ᵢ → 𝒜ⱼ` as a linear map. -/
+def lpEvalₗ (i : I) : lp 𝒜 ∞ →ₗ[ℂ] 𝒜 i where
+  toFun a := a i
+  map_add' a b := by rw [lp.coeFn_add]; rfl
+  map_smul' c a := by rw [lp.coeFn_smul]; rfl
+
+/-- Evaluation on self-adjoint parts. -/
+def lpEvalSA (i : I) (a : selfAdjoint (lp 𝒜 ∞)) : selfAdjoint (𝒜 i) :=
+  ⟨(a : lp 𝒜 ∞) i, lp_infty_isSelfAdjoint a.2 i⟩
+
+theorem lpEvalSA_mono (i : I) {a b : selfAdjoint (lp 𝒜 ∞)} (h : a ≤ b) :
+    lpEvalSA i a ≤ lpEvalSA i b :=
+  (lp_infty_le_iff _ _).mp (Subtype.coe_le_coe.mpr h) i
+
+theorem lp_infty_exists_isLUB [∀ i, VonNeumannAlgebra (𝒜 i)]
+    (D : Set (selfAdjoint (lp 𝒜 ∞))) (hne : D.Nonempty)
+    (hdir : DirectedOn (· ≤ ·) D) (hbdd : BddAbove D) :
+    ∃ s : selfAdjoint (lp 𝒜 ∞), IsLUB D s ∧
+      ∀ i, IsLUB (lpEvalSA i '' D) (lpEvalSA i s) := by
+  obtain ⟨S, hS⟩ := hbdd
+  obtain ⟨d₀, hd₀⟩ := hne
+  have hex : ∀ i, ∃ t : selfAdjoint (𝒜 i), IsLUB (lpEvalSA i '' D) t := by
+    intro i
+    refine VonNeumannAlgebra.isLUB_of_bddAbove_directed _ ⟨lpEvalSA i d₀, ⟨d₀, hd₀, rfl⟩⟩ ?_
+      ⟨lpEvalSA i S, ?_⟩
+    · rintro _ ⟨x, hx, rfl⟩ _ ⟨y, hy, rfl⟩
+      obtain ⟨z, hz, hxz, hyz⟩ := hdir x hx y hy
+      exact ⟨lpEvalSA i z, ⟨z, hz, rfl⟩, lpEvalSA_mono i hxz, lpEvalSA_mono i hyz⟩
+    · rintro _ ⟨x, hx, rfl⟩
+      exact lpEvalSA_mono i (hS hx)
+  choose t ht using hex
+  have hub : ∀ i, lpEvalSA i S ∈ upperBounds (lpEvalSA i '' D) := by
+    rintro i _ ⟨x, hx, rfl⟩
+    exact lpEvalSA_mono i (hS hx)
+  have hbound : ∀ i, ‖(t i : 𝒜 i)‖ ≤ ‖S‖ + 2 * ‖d₀‖ := by
+    intro i
+    have h1 : (0 : 𝒜 i) ≤ (t i : 𝒜 i) - ((d₀ : lp 𝒜 ∞) : ∀ i, 𝒜 i) i :=
+      sub_nonneg.mpr (Subtype.coe_le_coe.mpr ((ht i).1 ⟨d₀, hd₀, rfl⟩))
+    have h2 : (t i : 𝒜 i) - ((d₀ : lp 𝒜 ∞) : ∀ i, 𝒜 i) i
+        ≤ ((S : lp 𝒜 ∞) : ∀ i, 𝒜 i) i - ((d₀ : lp 𝒜 ∞) : ∀ i, 𝒜 i) i :=
+      sub_le_sub_right (Subtype.coe_le_coe.mpr ((ht i).2 (hub i))) _
+    have h3 := CStarAlgebra.norm_le_norm_of_nonneg_of_le h1 h2
+    have h4 : ‖((S : lp 𝒜 ∞) : ∀ i, 𝒜 i) i‖ ≤ ‖S‖ := by
+      simpa using lp.norm_apply_le_norm ENNReal.top_ne_zero (S : lp 𝒜 ∞) i
+    have h5 : ‖((d₀ : lp 𝒜 ∞) : ∀ i, 𝒜 i) i‖ ≤ ‖d₀‖ := by
+      simpa using lp.norm_apply_le_norm ENNReal.top_ne_zero (d₀ : lp 𝒜 ∞) i
+    have h6 : ‖(t i : 𝒜 i)‖ ≤ ‖(t i : 𝒜 i) - ((d₀ : lp 𝒜 ∞) : ∀ i, 𝒜 i) i‖
+        + ‖((d₀ : lp 𝒜 ∞) : ∀ i, 𝒜 i) i‖ := by
+      simpa using norm_add_le ((t i : 𝒜 i) - ((d₀ : lp 𝒜 ∞) : ∀ i, 𝒜 i) i)
+        (((d₀ : lp 𝒜 ∞) : ∀ i, 𝒜 i) i)
+    have h7 : ‖((S : lp 𝒜 ∞) : ∀ i, 𝒜 i) i - ((d₀ : lp 𝒜 ∞) : ∀ i, 𝒜 i) i‖
+        ≤ ‖((S : lp 𝒜 ∞) : ∀ i, 𝒜 i) i‖ + ‖((d₀ : lp 𝒜 ∞) : ∀ i, 𝒜 i) i‖ := norm_sub_le _ _
+    linarith
+  have hmem : Memℓp (fun i => (t i : 𝒜 i)) ∞ :=
+    memℓp_infty ⟨‖S‖ + 2 * ‖d₀‖, by rintro _ ⟨i, rfl⟩; exact hbound i⟩
+  set s : lp 𝒜 ∞ := ⟨fun i => (t i : 𝒜 i), hmem⟩ with hs
+  have hssa : IsSelfAdjoint s := by
+    apply lp.ext
+    rw [lp.coeFn_star]
+    funext i
+    exact (t i).2
+  refine ⟨⟨s, hssa⟩, ⟨?_, ?_⟩, fun i => ?_⟩
+  · intro d hd
+    rw [← Subtype.coe_le_coe, lp_infty_le_iff]
+    intro i
+    exact Subtype.coe_le_coe.mpr ((ht i).1 ⟨d, hd, rfl⟩)
+  · intro u hu
+    rw [← Subtype.coe_le_coe, lp_infty_le_iff]
+    intro i
+    have hui : lpEvalSA i u ∈ upperBounds (lpEvalSA i '' D) := by
+      rintro _ ⟨x, hx, rfl⟩
+      exact lpEvalSA_mono i (hu hx)
+    exact Subtype.coe_le_coe.mpr ((ht i).2 hui)
+  · exact (show lpEvalSA i (⟨s, hssa⟩ : selfAdjoint (lp 𝒜 ∞)) = t i from Subtype.ext rfl) ▸ ht i
+
+/-- Composing an np-functional `ω` on `𝒜ᵢ` with the evaluation `⊕ⱼ 𝒜ⱼ → 𝒜ᵢ`
+gives an np-functional on the direct sum. -/
+noncomputable def lpNP [∀ i, VonNeumannAlgebra (𝒜 i)] (i : I)
+    (ω : NPFunctional (𝒜 i)) : NPFunctional (lp 𝒜 ∞) where
+  toPositiveLinearMap :=
+    { toLinearMap := ω.toPositiveLinearMap.toLinearMap.comp (lpEvalₗ 𝒜 i)
+      monotone' := fun a b hab =>
+        ω.toPositiveLinearMap.monotone' ((lp_infty_le_iff a b).mp hab i) }
+  preservesDirSups' := by
+    intro D s hne hdir hlub
+    obtain ⟨s', hs', hev⟩ := lp_infty_exists_isLUB D hne hdir ⟨s, hlub.1⟩
+    obtain rfl := hlub.unique hs'
+    have hdir' : DirectedOn (· ≤ ·) (lpEvalSA i '' D) := by
+      rintro _ ⟨x, hx, rfl⟩ _ ⟨y, hy, rfl⟩
+      obtain ⟨z, hz, hxz, hyz⟩ := hdir x hx y hy
+      exact ⟨lpEvalSA i z, ⟨z, hz, rfl⟩, lpEvalSA_mono i hxz, lpEvalSA_mono i hyz⟩
+    have h := ω.preservesDirSups' (lpEvalSA i '' D) (lpEvalSA i s) (hne.image _) hdir' (hev i)
+    rwa [Set.image_image] at h
+
+theorem lp_infty_np_apply [∀ i, VonNeumannAlgebra (𝒜 i)] (i : I)
+    (ω : NPFunctional (𝒜 i)) (a : lp 𝒜 ∞) :
+    lpNP i ω a = ω ((a : ∀ i, 𝒜 i) i) := rfl
+
 /-- **42V** (`von-neumann-examples`, vn.tex:262, Examples), part 3 (also
 **47IV**, `vn-products`, part 1): the direct sum `⊕ᵢ 𝒜ᵢ` (Mathlib:
 `lp 𝒜 ∞`) of a family of von Neumann algebras is a von Neumann algebra. -/
 instance vonNeumannAlgebra_lp_infty [∀ i, VonNeumannAlgebra (𝒜 i)] :
-    VonNeumannAlgebra (lp 𝒜 ∞) := sorry
+    VonNeumannAlgebra (lp 𝒜 ∞) where
+  isLUB_of_bddAbove_directed D hne hdir hbdd :=
+    let ⟨s, hs, _⟩ := lp_infty_exists_isLUB D hne hdir hbdd
+    ⟨s, hs⟩
+  np_faithful a ha h := by
+    apply lp.ext
+    funext i
+    have : (a : ∀ i, 𝒜 i) i = 0 :=
+      VonNeumannAlgebra.np_faithful _ ((lp_infty_nonneg_iff a).mp ha i)
+        fun ω => (lp_infty_np_apply i ω a).symm.trans (h (lpNP i ω))
+    simpa using this
 
 end DirectSum
 

@@ -6396,3 +6396,107 @@ arises: 74IV delivers `‖a_α‖ ≤ ‖b*‖` on the nose.
 `Kaplansky.lean` now imports `Theses.A.VN.Completeness` (it previously
 reached `A/VN` only through `HilbertModules.lean`, which stops at
 `A.VN.Projections`).
+
+---
+
+## Session 27 — `A/VN`: the last `sorry`ed instance, and 75VIII (worker 57)
+
+Date 2026-08-14.  Successor of session 25 (worker 56) on the A chain.
+Scope: `Theses/A/CStar/*.lean` and `Theses/A/VN/*.lean`.
+
+**Result: `A/VN` 102 → 100, `A/CStar` 37 → 37.  Two statements proved:
+42V.3/47IV.1 `vonNeumannAlgebra_lp_infty` — the project's *last* `sorry`ed
+instance — and 75VIII `vnsac`.**  Both `#print axioms`-clean, as are the
+eighteen new auxiliaries and the regression targets `kadisons_lemma`,
+`ultracyclic_basic_3`, `kaplansky`, `isLeast_ceil_add`.
+
+**The project now has no `sorry`ed `instance` at all** (checked by parsing
+every top-level declaration of `Theses/**.lean` and testing the bodies of
+those beginning `instance`/`noncomputable instance` for `sorry`, not by
+grepping for the word).
+
+### 1. `vonNeumannAlgebra_lp_infty` (`A/VN/Basic.lean`) — class 2, forced
+
+The recorded obstruction was exactly right: everything hangs on
+
+```
+lp_infty_nonneg_iff : 0 ≤ a ↔ ∀ i, 0 ≤ a i          (for `CStarAlgebra.spectralOrder` on `lp 𝒜 ∞`)
+```
+
+and it is 30 lines.  **⇒** is `StarOrderedRing.nonneg_iff` plus
+`AddSubmonoid.closure_induction`: positivity in `lp 𝒜 ∞` means membership of
+the closure of `{star s * s}`, and both multiplication and the star are
+pointwise.  **⇐** takes `b i = CFC.sqrt (a i)`; `‖b i‖² = ‖a i‖ ≤ ‖a‖` puts
+`b` in `lp 𝒜 ∞`, and `a = star b * b`.  From it:
+
+* `lp_infty_le_iff` (the order is pointwise) and `lpEvalSA` (evaluation on
+  self-adjoint parts, monotone);
+* `lp_infty_exists_isLUB`: the supremum is built **pointwise** — each fibre
+  gets its supremum from `VonNeumannAlgebra (𝒜 i)`, and the family is in
+  `lp` because `‖tᵢ‖ ≤ ‖S‖ + 2‖d₀‖` for `d₀ ≤ tᵢ ≤ S`
+  (`CStarAlgebra.norm_le_norm_of_nonneg_of_le` applied to `tᵢ − d₀ᵢ`);
+* `lpNP i ω = ω ∘ (evaluation at i)`, an np-functional, whose normality is
+  the *second* half of `lp_infty_exists_isLUB` (the pointwise supremum is
+  the fibre supremum) together with uniqueness of least upper bounds.
+  Faithfulness of the np-functionals of `lp 𝒜 ∞` then reduces fibrewise.
+
+Divergence class 2 — the thesis (42V, Examples) says only "the product of von
+Neumann algebras is one, with everything computed coordinatewise", so the
+route is the intended one but no author argument exists to transcribe.
+
+### 2. 75VIII `vnsac` (`A/VN/Completeness.lean`) — class 2, and shorter than the thesis
+
+The three blockers recorded by workers 54 and 56 were: the unstated dual of
+66IV.3; "the ultrastrong closure of `𝒮` is a von Neumann subalgebra"; and the
+relativised carriers `⌈ω⌉_𝒮`, estimated at 200–400 lines because they were
+believed to need the von Neumann structure transported to `𝒮`.  **Two of the
+three dissolve.**
+
+* **The dual of 66IV.3 is not needed.**  The thesis's display is
+  `⋁_{ω₁}⌈ω₁⌉_𝒮 ≥ ⋁_{ω₁}⌈ω₁⌉ = p = ⋀_{ω₀}⌈ω₀⌉^⊥ ≥ ⋀_{ω₀}⌈ω₀⌉_𝒮^⊥`.
+  Complementing the right-hand half replaces `⋀_{ω₀}⌈ω₀⌉^⊥ = p` by
+  `⋁_{ω₀}⌈ω₀⌉ = p^⊥`, which is **66IV**.3 itself at `p^⊥`.  So only
+  `ultracyclic_basic_3` is used, twice, and no infima of projections occur
+  anywhere in the proof.
+* **`⌈ω⌉_𝒮` needs no von Neumann structure on `𝒮`.**  Define the *complement*
+  directly: `relCoceil 𝒮 ω := projSup {q ∈ 𝒮 : q a projection, ω q = 0}`.
+  Everything then follows from a single lemma, `projSup_mem_of_np`: for a set
+  `P` of projections of a von Neumann subalgebra `𝒮` and an np-functional `ω`
+  annihilating `P`, `projSup P ∈ 𝒮` **and** `ω (projSup P) = 0`.  Its proof
+  is one directed set — the projections of `𝒮` killed by `ω` and below every
+  projection upper bound of `P` — which is directed by `⌈x+y⌉`
+  (`isLeast_ceil_add`), stays in `𝒮` by `ceil_mem` (56I.20 read inside `𝒮`)
+  and is killed by `ω` by **60I** `ceil_functionals_lemma`; `𝒮` contains its
+  supremum by `IsVNSubalgebra.dirSup_mem`, and `ω` kills it by normality.
+  Total for the relativised-carrier API: ~60 lines, not 200–400.
+* **The remaining ingredient really is needed** and is now in the tree as
+  `usClosureSubalgebra` + `isVNSubalgebra_usClosureSubalgebra`.  Worker 54's
+  route is the one that works, with one addition it did not record: the
+  *norm*-closedness demanded by `IsVNSubalgebra` needs
+  `norm_le_ultrastrong` (`‖a‖_ω ≤ ‖a‖‖1‖_ω` makes each `‖·‖_ω`-ball
+  norm-open), which did not exist in the tree.  Multiplication uses only
+  separate ultrastrong continuity, in the order "approximate the right factor
+  first, then the left one in the seminorm `‖·‖_{w*ω}`" (`omegaNorm_mul_le`
+  and `omegaNorm_mul_right`); the adjoint goes through the ultraweak topology
+  and **73VIII**, as 74V's repair does.
+
+One further gap in the thesis's argument, silently: 75VI `kadisons_lemma`
+requires **npu**-functionals, while the display quantifies over all np ones.
+`exists_unital_scaling` normalises (`smulNP` by `(ω 1)⁻¹`), and the two
+degenerate cases `ω₀ 1 = 0` / `ω₁ 1 = 0` are handled without normalisation —
+there `relCoceil 𝒮 ω = 1`, because `1 ∈ 𝒮` is then a projection killed by `ω`.
+
+`isLeast_ceil_add` in `A/VN/Projections.lean` was made public (it was
+`private`); `projSup_mem_of_np` needs it.  No other file was touched.
+
+### 3. Consequences
+
+* **77I** `vn_complete_1/2` is now blocked on nothing in `A/VN` (75VIII was
+  its last prerequisite); **77III** and **77V** sit behind 77I, and 77V's
+  other prerequisite 74VI is proved.  `B/Dils` **149V** is released too.
+* The comment inside 21VII `order_separating_norm`
+  (`A/CStar/Positive.lean`) still says the `ℓ^∞`-product "is not available in
+  the tree (it is exactly the gap recorded for `vonNeumannAlgebra_lp_infty`)".
+  That gap is closed, but the remark stays accurate *as a statement about
+  `A/CStar`*: `A/CStar` is imported by `A/VN`, so the product is still not
+  available at 21VII, and the proof there is unchanged.
