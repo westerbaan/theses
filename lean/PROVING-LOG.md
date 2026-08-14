@@ -6077,3 +6077,116 @@ ingredients 75VIII needs (§5).
   public), `PROVING-LOG.md`.
   `ERRATA.md`/`QUESTIONS.md` deliberately untouched — nothing false found
   and no author decision is needed.  Nothing staged, nothing committed.
+
+## Session 24 — `B/Dils` parsec 1580: **158V is false** (worker 55)
+
+Task: close two of the four estimates `kaplansky_hilbmod_A₁/A₁'/A₂/A₂'` in
+`Theses/B/Dils/Kaplansky.lean` (158V, the ultranorm continuity of
+`h(y) = y·2/(1+⟨y,y⟩)`, dils.tex point 1580.50).  **None of the four is
+provable: they are false, and so is 158V.**  Divergence class (4′) — not a
+mis-transcription of ours, a defect in the thesis; filed in ERRATA.md under
+**158V**, and reproduced in the doc comment above the four theorems.
+
+### The counterexample
+
+`ℬ = B(ℓ²)`, `X = ℬ` over itself, `pₙ = |eₙ⟩⟨eₙ|`; thesis convention
+(`⟨a,b⟩ = a*b`, right module):
+
+  `y = |e₂⟩⟨e₁|`,   `yₙ = |e₂⟩⟨e₁+eₙ|`   (`n ≥ 2`).
+
+`⟨yₙ−y, yₙ−y⟩ = pₙ`, and `ω(pₙ) → 0` for **every** np-functional `ω`
+(`ω = Tr(ρ·)`, `ρ` trace class, so `ρₙₙ → 0`), hence `yₙ → y` ultranorm along
+`atTop` — a plain *sequence*, and one inside the ball of radius `√2`.  So this
+is **not** the "bounded above but not norm-bounded" gap of 152XII/44XV that
+this material was expected to hide; adding a norm bound repairs nothing.
+
+With `w = e₁+eₙ`: `P = ⟨y,y⟩ = p₁`, `Q = ⟨yₙ,yₙ⟩ = |w⟩⟨w|`,
+`(1+P)⁻¹ = 1 − ½p₁`, `(1+Q)⁻¹ = 1 − ⅓|w⟩⟨w|`.  For `ω₀ = ⟨e₁, · e₁⟩` and
+every `n` (values independent of `n`; checked symbolically and numerically on
+the 3-dimensional truncation, which carries the whole computation):
+
+| | `A₁` | `A₁'` | `A₂` | `A₂'` | `⟨h(y)−h(yₙ), h(y)−h(yₙ)⟩` |
+|---|---|---|---|---|---|
+| `ω₀` | `−1/12` | `−1/18` | `0` | `1/6` | `1/9` |
+
+`ω₀(⟨yₙ−y,yₙ−y⟩) = 0` throughout.  (`A₂` vanishing at `ω₀` says only that this
+one functional does not see it; `A₁`, `A₁'`, `A₂'` and the splitting suffice.)  Concretely `h(y) = |e₂⟩⟨e₁|` while
+`h(yₙ) = ⅔|e₂⟩⟨w|`, so `h(yₙ) → ⅔|e₂⟩⟨e₁| ≠ h(y)` — the factor `2/3` never
+goes away.
+
+### Where the printed proof breaks
+
+Exactly at the **right-hand half of `kaplanskytodo2`** (dils.tex:4251) — the
+one the thesis dispatches with "the proof for the RHS is different, but
+simpler", without giving it.  It is false:
+`⟨y, yₙ−y⟩(1+⟨yₙ,yₙ⟩)⁻¹ = |e₁⟩⟨eₙ| − ⅓|e₁⟩⟨w|` has `ω₀`-value `−1/3`.
+
+The asymmetry is real and worth recording, because it is what makes the LHS
+work and the RHS fail.  Write `d = y_α − y`, `s = (1+⟨y_α,y_α⟩)⁻¹`.
+
+* **LHS**, `⟨d, y_α⟩s = ⟨d, y_α s⟩`: the resolvent is absorbed into the
+  *second* slot, and `‖y_α s‖ ≤ 1` because `s⟨y_α,y_α⟩s = s − s²  ≤ 1`.
+  Module Cauchy–Schwarz against `‖d‖_ω → 0` closes it.  This half is fine.
+* **RHS**, `⟨y, d⟩s = b_α s` with `b_α = ⟨y,d⟩`: module Cauchy–Schwarz gives
+  `b_α* b_α = ⟨d,y⟩⟨y,d⟩ ≤ ‖⟨y,y⟩‖⟨d,d⟩`, i.e. `ω(b*b) → 0` — the *unmirrored*
+  ultrastrong topology.  But `|ω(bs)|² ≤ ω(bb*)·ω(s*s)` needs `ω(bb*) → 0`,
+  the *mirrored* one, and the swap is exactly the one that
+  `module_CS`/`chilb_cs` refuses to make (the doc comment on `module_CS` in
+  `HilbertModules.lean` already records that the unswapped inequality is
+  false).  And "ultrastrongly null times norm-bounded is ultraweakly null" is
+  false on the wrong side: `|e₁⟩⟨eₙ| → 0` ultrastrongly, `‖|eₙ⟩⟨e₁|‖ = 1`,
+  product `= |e₁⟩⟨e₁|`.  The counterexample above is this observation dressed
+  as a Hilbert module.
+
+**158II `kaplansky_hilbmod` is not thereby refuted** and is presumably true:
+its statement (both the thesis's and ours) is an entourage/`∃ d ∈ D` one, so
+the approximant may be *chosen* per finite family of np-functionals — one is
+not obliged to feed `h` an arbitrary ultranorm-convergent net.  A repair
+plausibly enlarges the family (e.g. by the `conjNP`-twists that show up in the
+estimates) before applying ultranorm density.  Not attempted here.
+
+### What is in the file
+
+The four `sorry`s stay (nothing false has been *stated*: the four statements
+are the thesis's, and they are what the erratum is about).  Above them, the
+`158V` section comment now carries the counterexample.  New, and proved:
+resolvent infrastructure that any repair will want, all of it `private`,
+
+* `isUnit_one_add`, `inv1p_mul`, `mul_inv1p`, `inv1p_star` — `1+b` is a unit
+  for `0 ≤ b` via `IsStrictlyPositive.add_nonneg`, no spectral argument;
+* `rf`, `rf_continuous/nonneg/le_one`, `one_add_mul_rf`, `inv1p_eq_cfc` —
+  `(1+b)⁻¹ = cfc (t ↦ (1+max t 0)⁻¹) b`, modelled on `cfc_frac_eq` in
+  `A/VN/Completeness.lean` (whose analogues are `private` there, hence redone);
+* `inv1p_nonneg`, `inv1p_le_one`;
+* `inv1p_comm` (`b(1+b)⁻¹ = (1+b)⁻¹b`, both `= 1 − (1+b)⁻¹` — no functional
+  calculus needed) and `inv1p_conj_le_one`
+  (`(1+b)⁻¹b(1+b)⁻¹ = (1+b)⁻¹ − ((1+b)⁻¹)² ≤ 1`), which are the two facts the
+  thesis lists at dils.tex:4213 and the two that make the LHS of
+  `kaplanskytodo2` go through.
+
+### Two by-products of the same computation
+
+* **`kaplansky-splitting` is off by a factor `4`.**  `h(y) = y·2/(1+⟨y,y⟩)`, so
+  the left-hand side carries the square of that `2` and none of the four `A`s
+  does; the identity is `⟨h(y)−h(y_α),h(y)−h(y_α)⟩ = 4(A₁+A₁'+A₂+A₂')`.  Above:
+  `1/9 = 4·1/36`.  Harmless as printed (all four are claimed to vanish); filed
+  in ERRATA.md as a nit.  It is also the check that caught the next item.
+* **Ours: `kaplansky_hilbmod_A₂` and `A₂'` were transcribed without the
+  mirroring swap.**  `inner ℬ (y i - y₀) (y i)` is `⟨y_α, y_α − y⟩`, whereas
+  the thesis's `A₂` has `⟨y_α − y, y_α⟩ = inner ℬ (y i) (y i - y₀)`; likewise
+  `A₂'`.  This is the sixth and seventh instance of the swap being dropped in
+  this chapter.  `A₁`/`A₁'` mention only `⟨y,y⟩` and `⟨y_α,y_α⟩`, so they are
+  convention-free and the refutation above applies to them exactly as stated.
+  Both `A₂` forms are false regardless, so the statements were left as they
+  are rather than half-repairing a doomed theorem; the doc comment records it.
+
+`lake build Theses.B.Dils.Kaplansky`: exit 0, no errors, no new warnings.
+
+### Correction to three earlier reports and to `HANDOFF.md`
+
+They record `Kaplansky.lean` as waiting on 74IV.  That is true of **158Ia**
+`kaplansky_bounded_approx` only.  **158II depends on nothing outside the
+tree**: dils.tex point 1580.11 is an unlabelled expository restatement of the
+density theorem and cannot be cited, and the proof of `kaplansky-hilbmod`
+never cites `\sref{kaplansky}`.  158II is blocked by *this* erratum, not by
+74IV.
