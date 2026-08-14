@@ -18,7 +18,7 @@ import Theses.B.Dils.HilbertModules
 open scoped ComplexOrder CStarAlgebra WithCStarModule
 open Filter Topology Theses Theses.A.CStar Theses.A.VN
 
-universe u v
+universe u v w
 
 namespace Theses.B.Dils
 
@@ -51,7 +51,12 @@ Neumann algebra `ℬ` with an ultranorm-dense 𝒜-submodule `D ⊆ X`, where
 `𝒜 ⊆ ℬ` is a C*-subalgebra with `⟨y,y⟩ ∈ 𝒜` for all `y ∈ D`.  Then every
 `x ∈ X` is the ultranorm limit of a net in `D` norm-bounded by `‖x‖`.
 
-**158III**–**158V** are the proof — not converted. -/
+**158III** and **158IV** are the elementary part of the proof (with
+`h y = y · 2/(1+⟨y,y⟩)` and `g x = x · 1/(1+√(1-⟨x,x⟩))`: `‖h y‖ ≤ 1` and
+`h (g x) = x`) — not converted.  **158V**, the ultranorm continuity of `h`,
+is the real work; its four convergence estimates are stated separately
+below as `kaplansky_hilbmod_A₁`, `kaplansky_hilbmod_A₁'`,
+`kaplansky_hilbmod_A₂` and `kaplansky_hilbmod_A₂'`. -/
 theorem kaplansky_hilbmod [VonNeumannAlgebra ℬ] [CompleteSpace X]
     (A : StarSubalgebra ℂ ℬ) (hA : IsClosed (A : Set ℬ))
     (D : Set X)
@@ -63,6 +68,90 @@ theorem kaplansky_hilbmod [VonNeumannAlgebra ℬ] [CompleteSpace X]
     ∀ (n : ℕ) (ωs : Fin n → NPFunctional ℬ) (ε : ℝ), 0 < ε →
       ∃ d ∈ D, ‖d‖ ≤ ‖x‖ ∧
         ∀ i, unSeminorm (ωs i) (inner ℬ) (x - d) ≤ ε :=
+  sorry
+
+/-! ### 158V (dils.tex:4189): ultranorm continuity of `h`
+
+For `h y = y · 2/(1+⟨y,y⟩)` and a net `y_α → y` ultranorm, the splitting
+`kaplansky-splitting` (dils.tex:4205) reads
+
+  `⟨h y - h y_α, h y - h y_α⟩ = A₁ + A₁' + A₂ + A₂'`,
+
+and each of the four terms is shown to converge ultraweakly to `0`; that
+gives `h y_α → h y` ultranorm.  The four estimates are the four theorems
+below.  (`A₁`, `A₁'` are dual to each other under swapping `y` and `y_α`,
+as are `A₂`, `A₂'`, but the thesis states — and uses — all four.) -/
+
+/-- `inv1p b = (1 + b)⁻¹`, the resolvent occurring throughout **158V**; for
+`b ≥ 0` in a C*-algebra `1 + b` is invertible, so `Ring.inverse` is the
+genuine inverse there, and `0 ≤ inv1p b ≤ 1` as well as `0 ≤ b * inv1p b ≤ 1`
+(dils.tex:4213). -/
+private noncomputable def inv1p (b : ℬ) : ℬ := Ring.inverse (1 + b)
+
+variable {ι : Type w} {l : Filter ι}
+
+/-- **158V**.1 (dils.tex:4193, the term `A₁` of `kaplansky-splitting`): if
+`y_α → y` ultranorm, then
+
+  `A₁ = ⟨y,y⟩ (1+⟨y,y⟩)⁻² - (1+⟨y_α,y_α⟩)⁻¹ ⟨y,y⟩ (1+⟨y,y⟩)⁻¹ → 0`
+
+ultraweakly.  Proof (dils.tex:4211): rewrite `A₁` as
+`(1+⟨y,y⟩)⁻¹ (⟨y_α-y,y_α⟩ + ⟨y,y_α-y⟩) (1+⟨y_α,y_α⟩)⁻¹ ⟨y,y⟩ (1+⟨y,y⟩)⁻¹`
+using the resolvent identity, then use ultraweak continuity of
+multiplication by constants (`mult-uws-cont`) together with
+`⟨y_α-y, y_α (1+⟨y_α,y_α⟩)⁻¹⟩ → 0` and `⟨y, y_α-y⟩ (1+⟨y_α,y_α⟩)⁻¹ → 0`,
+both by Cauchy–Schwarz for the `f`-seminorms. -/
+private theorem kaplansky_hilbmod_A₁ [VonNeumannAlgebra ℬ] [CompleteSpace X]
+    (y : ι → X) (y₀ : X) (hy : UnTendsto (inner ℬ) y l y₀) :
+    UWTendsto (fun i =>
+        inner ℬ y₀ y₀ * inv1p (inner ℬ y₀ y₀) * inv1p (inner ℬ y₀ y₀)
+          - inv1p (inner ℬ (y i) (y i))
+              * (inner ℬ y₀ y₀ * inv1p (inner ℬ y₀ y₀))) l 0 :=
+  sorry
+
+/-- **158V**.2 (dils.tex:4196, the term `A₁'` of `kaplansky-splitting`): if
+`y_α → y` ultranorm, then
+
+  `A₁' = ⟨y_α,y_α⟩ (1+⟨y_α,y_α⟩)⁻² - (1+⟨y,y⟩)⁻¹ ⟨y_α,y_α⟩ (1+⟨y_α,y_α⟩)⁻¹ → 0`
+
+ultraweakly.  This is `A₁` with the roles of `y` and `y_α` interchanged;
+"in a similar way one sees `A₁' → 0` ultraweakly" (dils.tex:4272). -/
+private theorem kaplansky_hilbmod_A₁' [VonNeumannAlgebra ℬ] [CompleteSpace X]
+    (y : ι → X) (y₀ : X) (hy : UnTendsto (inner ℬ) y l y₀) :
+    UWTendsto (fun i =>
+        inner ℬ (y i) (y i) * inv1p (inner ℬ (y i) (y i))
+              * inv1p (inner ℬ (y i) (y i))
+          - inv1p (inner ℬ y₀ y₀)
+              * (inner ℬ (y i) (y i) * inv1p (inner ℬ (y i) (y i)))) l 0 :=
+  sorry
+
+/-- **158V**.3 (dils.tex:4200, the term `A₂` of `kaplansky-splitting`): if
+`y_α → y` ultranorm, then
+
+  `A₂ = (1+⟨y,y⟩)⁻¹ ⟨y_α - y, y_α⟩ (1+⟨y_α,y_α⟩)⁻¹ → 0`
+
+ultraweakly; "the proofs for `A₂, A₂' → 0` are very similar"
+(dils.tex:4273) — the middle factor is exactly the quantity bounded by
+Cauchy–Schwarz in the proof of `A₁`, and the outer resolvents are bounded
+by `1`. -/
+private theorem kaplansky_hilbmod_A₂ [VonNeumannAlgebra ℬ] [CompleteSpace X]
+    (y : ι → X) (y₀ : X) (hy : UnTendsto (inner ℬ) y l y₀) :
+    UWTendsto (fun i =>
+        inv1p (inner ℬ y₀ y₀) * inner ℬ (y i - y₀) (y i)
+          * inv1p (inner ℬ (y i) (y i))) l 0 :=
+  sorry
+
+/-- **158V**.4 (dils.tex:4202, the term `A₂'` of `kaplansky-splitting`): if
+`y_α → y` ultranorm, then
+
+  `A₂' = (1+⟨y_α,y_α⟩)⁻¹ ⟨y - y_α, y⟩ (1+⟨y,y⟩)⁻¹ → 0`
+
+ultraweakly; as for `A₂` (dils.tex:4273). -/
+private theorem kaplansky_hilbmod_A₂' [VonNeumannAlgebra ℬ] [CompleteSpace X]
+    (y : ι → X) (y₀ : X) (hy : UnTendsto (inner ℬ) y l y₀) :
+    UWTendsto (fun i =>
+        inv1p (inner ℬ (y i) (y i)) * inner ℬ (y₀ - y i) y₀
+          * inv1p (inner ℬ y₀ y₀)) l 0 :=
   sorry
 
 end Kaplansky
