@@ -6190,3 +6190,163 @@ tree**: dils.tex point 1580.11 is an unlabelled expository restatement of the
 density theorem and cannot be cited, and the proof of `kaplansky-hilbmod`
 never cites `\sref{kaplansky}`.  158II is blocked by *this* erratum, not by
 74IV.
+
+## Session 25 — `A/VN` parsec 490 and the general 74IV/74VI (worker 56)
+
+Date 2026-08-14.  Successor of session 23 (worker 54) on the A chain.
+Scope: `Theses/A/CStar/*.lean` and `Theses/A/VN/*.lean`.
+
+**Result: `A/VN` 106 → 102, `A/CStar` 37 → 37.  Four statements proved:
+49IV.1 `mn_vna_1` (an *instance*, one of the project's two `sorry`ed ones),
+49IV.2' `mn_vna_2'`, the general 74IV `kaplansky`, and 74VI
+`dense_subalgebra`.**  All four `#print axioms`-clean, as are the new
+auxiliaries and the regression targets `kaplansky_sa`, `kaplansky_effects`,
+`sequence_separation_lemma`, `kadisons_lemma`, `ultraclosed`.
+
+### 0. The `sorry`ed instance `mn_vna_1` is gone
+
+`instance mn_vna_1 : VonNeumannAlgebra (CStarMatrix (Fin N) (Fin N) 𝒜)` was
+one of the two invisible-taint sites.  Its only consumer outside `A/VN` is
+`Theses/A/Proc/QuantumLambda.lean:425`,
+`instance (n : ℕ) : VonNeumannAlgebra (MatAlg n) := mn_vna_1 n`, which
+carries the *types* of the parsec-1253/1254 block (`GeneratesMat`,
+`MIUEquiv`, `TensorBEquiv`, `Fha_concrete`, `AstarhaB_concrete`).  Those
+types were `sorryAx`-tainted; they are now clean
+(`#print axioms Theses.A.Proc.instVonNeumannAlgebraMatAlg` gives the
+standard three).  Nothing in the tree *proved* anything through the
+instance, so no previously-vacuous proof needed re-examination.
+The remaining `sorry`ed instance is `vonNeumannAlgebra_lp_infty`
+(`Basic.lean`), untouched.
+
+### 1. 49IV.1 `mn_vna_1` — divergence class 2 (different route), forced
+
+The thesis proves 49IV.1 by way of 49II (`bah-vn`): `M_N(𝒜) = B^a(𝒜^N)` and
+`B^a(X)` is a von Neumann algebra for self-dual `X`.  `B^a(X)` has no
+Mathlib counterpart and is *not formalized* (the FIXME at `Basic.lean`
+parsec 490 records this), so 49II is unavailable and the route had to be
+replaced.  The replacement uses the same ingredient 49II does — the
+`𝒜`-valued form of the Hilbert module `𝒜^N` — but stays inside `M_N(𝒜)`:
+
+* `matForm x y M = ∑ᵢⱼ xᵢ* Mᵢⱼ yⱼ`, with **33II**
+  (`cstar_matrix_positive_iff`, `A/CStar/Matrices.lean`, already proved)
+  giving `0 ≤ M ↔ ∀ x, 0 ≤ matForm x x M`, hence `le_iff_matForm`;
+* polarisation `Mᵢⱼ = ¼ ∑_{k<4} iᵏ ⟨eⱼ+iᵏeᵢ, M(eⱼ+iᵏeᵢ)⟩`
+  (`matForm_polarization`), which also gives `matrix_ext_of_matForm`: the
+  quadratic form determines the matrix;
+* for a bounded directed `D ⊆ sa(M_N(𝒜))`, each family
+  `{matForm x x d : d ∈ D}` is directed and bounded in `sa(𝒜)`, so it has a
+  supremum `s_x`, and by **44XIV** `vna_supremum_uslimit` the net converges
+  *ultrastrongly* to it;
+* polarisation therefore exhibits an ultrastrong limit for every entry;
+  assembling these into a matrix `S` and using that ultrastrong limits are
+  unique (**44XI**.1, Hausdorff) gives `matForm x x S = s_x` for all `x`,
+  whence `IsLUB D S` by `le_iff_matForm` — no ultraweak/ultrastrong
+  topology on `M_N(𝒜)` is ever mentioned, which is essential, since those
+  are *defined* from the np-functionals of `M_N(𝒜)` and so are not
+  available before the instance exists.
+
+Faithfulness of the np-functionals of `M_N(𝒜)` then comes from the
+np-functionals `matFormNP φ x : M ↦ φ(matForm x x M)`, whose normality is
+the "and the forms preserve it" half of `exists_isLUB_matForm`; taking
+`x = eᵢ + i^k eⱼ` and polarising reduces faithfulness on `M_N(𝒜)` to
+faithfulness on `𝒜`.
+
+New in `Basic.lean` (all before the instance, so the compiler enforces that
+none of it can use the instance): `matForm` and its (bi)linearity lemmas,
+`matUnit`, `matPolVec`, `matForm_polarization`, `matrix_ext_of_matForm`,
+`nonneg_iff_matForm`, `le_iff_matForm`, `matFormSA`, `exists_isLUB_matForm`,
+`matFormNP`.
+
+Also new and of general use, in the same file: `omegaNorm_smul` (**moved**
+here from `Completeness.lean`, where it was a public duplicate-in-waiting),
+`usTendsto_smul/_add/_const/_finsetSum`, `uwTendsto_finsetSum`,
+`usTendsto_mul_left_right`.  `Theses/B/Dils/SelfDualCompletion.lean:563`
+carries a comment asking for exactly these; they are now available (its own
+private primed copies were left alone — another worker owns that file).
+
+### 2. 49IV.2' `mn_vna_2'` — class 1 (faithful)
+
+Both directions, both topologies, exactly as the thesis states them.
+
+* *matrix ⇒ entrywise*, ultraweak: `φ(Mᵢⱼ)` is the `ℂ`-combination
+  `¼∑ₖ iᵏ · matFormNP φ (eⱼ+iᵏeᵢ) M` of np-functionals of `M_N(𝒜)`.
+* *matrix ⇒ entrywise*, ultrastrong: the clean estimate
+  `‖Xᵢⱼ‖_φ ≤ ‖X‖_{matFormNP φ eⱼ}`, because
+  `matFormNP φ eⱼ (X*X) = φ(∑ₖ Xₖⱼ* Xₖⱼ) ≥ φ(Xᵢⱼ* Xᵢⱼ)`.
+* *entrywise ⇒ matrix*, both: `M = ∑ᵢⱼ matEmb i j (Mᵢⱼ)` with
+  `matEmb i j x` the matrix with `x` in position `(i,j)`.  The diagonal
+  corners `matEmb j j` are *normal* positive maps — that is **44VIII**
+  `ad_normal` plus `le_iff_matForm` — so they pull np-functionals of
+  `M_N(𝒜)` back to np-functionals of `𝒜` (`matEmbNP`), and polarisation
+  (**44II**, in the form the tree's `continuous_ultraweak_conj` uses)
+  handles the off-diagonal corners via
+  `matEmb i j x = (matEmb i j 1)·(matEmb j j x)`.  For the ultrastrong
+  half, `‖matEmb i j x‖_ω = ‖x‖_{matEmbNP j ω}` is exact, because
+  `(matEmb i j x)*(matEmb i j x) = matEmb j j (x* x)`.
+
+### 3. General 74IV `kaplansky` — class 1, with one repair to the thesis
+
+The thesis (vn.tex:4400) writes: "`B = [[0,b],[b*,0]]` … is the ultrastrong
+limit of the net `[[0,aα],[aα*,0]]` from the C*-subalgebra `M₂(𝒜)`".
+**That step is not correct as stated**: `aα → b` ultrastrongly does *not*
+give `aα* → b*` ultrastrongly — the adjoint is not ultrastrongly
+continuous, which is the thesis's own **43II**.4 (`vn-counterexamples`) —
+and by 49IV.2' entrywise ultrastrong convergence is exactly what would be
+needed.
+
+The repair costs two lines and uses only what the thesis has already used
+in this very proof: the adjoint *is* ultraweakly continuous
+(`ω(a*) = conj(ω a)`), so `[[0,aα],[aα*,0]] → B` **ultraweakly**, putting
+`B` in the ultraweak closure of the convex set `M₂(𝒜)`; and **73VIII**
+`ultraclosed` — invoked three paragraphs earlier for the self-adjoint case
+— moves it into the ultrastrong closure.  From there the argument is the
+thesis's: run the self-adjoint case in `M₂(ℬ)`, then read off the
+upper-right entries with 49IV.2'.
+
+Not an erratum in `ERRATA.md`: the statement of 74IV is true and its proof
+is repairable in place with a tool the same proof already uses.  Recorded
+in the doc comment above `kaplansky` and here.
+
+Supporting material, private in `Completeness.lean` (`MatrixTrick` block):
+`matStarSubalgebra S N` (the ∗-subalgebra `M_N(S)`, norm-closed because the
+entry maps are `1`-Lipschitz by `CStarMatrix.norm_entry_le_norm`),
+`matEmb_mul_of_ne`, `antiDiag b = [[0,b],[b*,0]]`, `norm_antiDiag_le`
+(`‖B‖ ≤ ‖b‖`: `B*B = diag(bb*, b*b) ≤ ‖b‖²·1` by `le_iff_matForm`, then
+`CStarAlgebra.norm_le_iff_le_algebraMap`), `uwTendsto_add'`,
+`uwTendsto_star'`, `mem_uwClosure_of_uwTendsto`,
+`mem_usClosure_of_mem_uwClosure`, `convex_starSubalgebra(A)`.
+`matEmb_mul_of_ne` belongs next to `matEmb_mul` in `Basic.lean`; it is here
+only to avoid a second full rebuild.
+
+**Note on declaration order.**  `kaplansky` is now stated *after* the three
+"moreover" clauses (just before 74VI), because its proof calls
+`kaplansky_sa` at `M₂(𝒜)`.  The docstrings say so.
+
+### 4. 74VI `dense_subalgebra` — class 2 (different route)
+
+The thesis builds a double net indexed by `D × ℕ` (`s_{αn} ∈ 𝒮` with
+`‖cα − s_{αn}‖ ≤ 2⁻ⁿ`, then passes to a subsequence for the norm bound).
+We avoid the product filter entirely: it suffices to show that `a` lies in
+the ultrastrong closure of `K = {s ∈ 𝒮 : ‖s‖ ≤ ‖a‖(1+ε)}`, since
+`exists_net_of_mem_usClosure` then produces the tautological net indexed by
+`K`.  Membership is checked with `mem_usClosure_iff`: given `ω` and `δ > 0`,
+74IV applied to the norm closure `C = 𝒮̄` yields `c ∈ C` with `‖c‖ ≤ ‖a‖`
+and `‖c − a‖_ω < δ/2`, and then a single `s ∈ 𝒮` with
+`‖s − c‖ < min(ε‖a‖, δ/(2(‖1‖_ω+1)))` does both jobs at once, using
+`‖x‖_ω ≤ ‖x‖·‖1‖_ω` (which is `omegaNorm_mul_le ω x 1`).  The case
+`‖a‖ = 0` is separate (`a = 0 ∈ 𝒮`), as it must be: for `a = 0` the
+thesis's `‖s_{αn}‖ ≤ (1+ε)‖a‖` forces `s = 0`, which the `2⁻ⁿ`
+approximation does not give.
+
+### 5. Checked and *not* used
+
+* `mn_vna_2` (49IV.2 first half: ultraweak/ultrastrong continuity of
+  `M ↦ ∑ aᵢ* Mᵢⱼ bⱼ`) and `mn_vna_3` are still `sorry`.  The *normality*
+  clause of `mn_vna_2` is now free (it is `exists_isLUB_matForm` at
+  `a = b`); the two continuity clauses need a finite sum of np-functionals
+  (`addNP` iterated over `Fin N × Fin N`, with `omegaNorm_le_addNP`), which
+  nothing in the tree provides yet.  Left open deliberately: neither is on
+  any critical path.
+* The thesis's remark "In particular, `A ↦ Aᵢⱼ` is ultraweakly and
+  ultrastrongly continuous" is the `⇒` half of 49IV.2' and is proved as
+  part of it.

@@ -100,6 +100,12 @@ theorem omegaNorm_add_le (ω : NPFunctional A) (a b : A) :
   simp only [omegaNorm_eq_norm, map_neg]
   exact norm_neg _
 
+/-- `‖c • a‖_ω = |c| ‖a‖_ω`: `‖·‖_ω` is literally the norm of the GNS
+pre-Hilbert space, which is a `ℂ`-vector space. -/
+theorem omegaNorm_smul (ω : NPFunctional A) (c : ℂ) (a : A) :
+    omegaNorm A ω (c • a) = ‖c‖ * omegaNorm A ω a := by
+  simp only [omegaNorm_eq_norm, map_smul, norm_smul]
+
 theorem omegaNorm_sub_le (ω : NPFunctional A) (a b c : A) :
     omegaNorm A ω (a - c) ≤ omegaNorm A ω (a - b) + omegaNorm A ω (b - c) := by
   simp only [omegaNorm_eq_norm, map_sub]
@@ -3315,11 +3321,564 @@ for every `x ∈ X`.
 `Theses/A/CStar`; its rôle here (producing `M_N(𝒜)`) is covered by the
 direct statement 49IV below. -/
 
+/-! ### Auxiliary machinery for **49IV**: the `𝒜`-valued quadratic form of a
+matrix
+
+The thesis proves 49IV.1 by way of 49II (`bah-vn`), i.e. by realising
+`M_N(𝒜)` as `B^a(𝒜^N)`; `B^a(X)` has no Mathlib counterpart and is not
+formalized (see the FIXME above), so the supremum is constructed here
+directly, out of the same ingredient that makes 49II work: the `𝒜`-valued
+sesquilinear form `⟨x, M y⟩ = ∑ᵢⱼ xᵢ* Mᵢⱼ yⱼ` of the Hilbert `𝒜`-module
+`𝒜^N`.  Its two properties are **33II** (`cstar_matrix_positive_iff`: the
+form detects positivity) and **44VIII**+**44XIV** (each `M ↦ ⟨x, M x⟩`
+carries a bounded directed set to one whose supremum is an ultrastrong
+limit).  Polarisation recovers the entries of the supremum from the
+suprema of the forms, and the entries then reassemble into a matrix which
+the ultrastrong limits identify as the least upper bound. -/
+
+section MatrixForm
+
+variable {N : ℕ}
+
+omit [PartialOrder A] [StarOrderedRing A]
+
+/-- The `𝒜`-valued sesquilinear form `⟨x, M y⟩ = ∑ᵢⱼ xᵢ* Mᵢⱼ yⱼ` of the
+Hilbert `𝒜`-module `𝒜^N`, paired with a matrix `M ∈ M_N(𝒜)`. -/
+def matForm (x y : Fin N → A) (M : CStarMatrix (Fin N) (Fin N) A) : A :=
+  ∑ i, ∑ j, star (x i) * M i j * y j
+
+theorem matForm_add_right (x y z : Fin N → A) (M : CStarMatrix (Fin N) (Fin N) A) :
+    matForm x (y + z) M = matForm x y M + matForm x z M := by
+  simp only [matForm, Pi.add_apply, mul_add, Finset.sum_add_distrib]
+
+theorem matForm_add_left (x y z : Fin N → A) (M : CStarMatrix (Fin N) (Fin N) A) :
+    matForm (x + y) z M = matForm x z M + matForm y z M := by
+  simp only [matForm, Pi.add_apply, star_add, add_mul, Finset.sum_add_distrib]
+
+theorem matForm_smul_right (c : ℂ) (x y : Fin N → A)
+    (M : CStarMatrix (Fin N) (Fin N) A) :
+    matForm x (c • y) M = c • matForm x y M := by
+  simp only [matForm, Pi.smul_apply, mul_smul_comm, Finset.smul_sum]
+
+theorem matForm_smul_left (c : ℂ) (x y : Fin N → A)
+    (M : CStarMatrix (Fin N) (Fin N) A) :
+    matForm (c • x) y M = (starRingEnd ℂ) c • matForm x y M := by
+  simp only [matForm, Pi.smul_apply, star_smul, smul_mul_assoc, Finset.smul_sum]
+  rfl
+
+theorem matForm_add_matrix (x y : Fin N → A) (M M' : CStarMatrix (Fin N) (Fin N) A) :
+    matForm x y (M + M') = matForm x y M + matForm x y M' := by
+  simp only [matForm, CStarMatrix.add_apply, mul_add, add_mul, Finset.sum_add_distrib]
+
+theorem matForm_smul_matrix (c : ℂ) (x y : Fin N → A)
+    (M : CStarMatrix (Fin N) (Fin N) A) :
+    matForm x y (c • M) = c • matForm x y M := by
+  simp only [matForm, CStarMatrix.smul_apply, mul_smul_comm, smul_mul_assoc,
+    Finset.smul_sum]
+
+@[simp] theorem matForm_zero_matrix (x y : Fin N → A) :
+    matForm x y (0 : CStarMatrix (Fin N) (Fin N) A) = 0 := by
+  simp [matForm]
+
+theorem matForm_sub_matrix (x y : Fin N → A) (M M' : CStarMatrix (Fin N) (Fin N) A) :
+    matForm x y (M - M') = matForm x y M - matForm x y M' := by
+  simp only [matForm, CStarMatrix.sub_apply, mul_sub, sub_mul, Finset.sum_sub_distrib]
+
+theorem matForm_star_matrix (x y : Fin N → A) (M : CStarMatrix (Fin N) (Fin N) A) :
+    matForm x y (star M) = star (matForm y x M) := by
+  simp only [matForm, CStarMatrix.star_apply, star_sum, star_mul, star_star, mul_assoc]
+  exact Finset.sum_comm
+
+/-- The `i`-th standard basis vector of the Hilbert `𝒜`-module `𝒜^N`. -/
+def matUnit (i : Fin N) : Fin N → A := fun p => if p = i then 1 else 0
+
+theorem matForm_matUnit (i j : Fin N) (M : CStarMatrix (Fin N) (Fin N) A) :
+    matForm (matUnit i) (matUnit j) M = M i j := by
+  simp [matForm, matUnit, apply_ite star, ite_mul, mul_ite]
+
+/-- The vector `eᵢ + c eⱼ ∈ 𝒜^N` used for polarisation. -/
+def matPolVec (i j : Fin N) (c : ℂ) : Fin N → A := matUnit i + c • matUnit j
+
+theorem matForm_matPolVec (i j : Fin N) (c : ℂ) (M : CStarMatrix (Fin N) (Fin N) A) :
+    matForm (matPolVec i j c) (matPolVec i j c) M
+      = M i i + c • M i j + (starRingEnd ℂ) c • M j i
+        + ((starRingEnd ℂ) c * c) • M j j := by
+  simp only [matPolVec, matForm_add_left, matForm_add_right, matForm_smul_left,
+    matForm_smul_right, matForm_matUnit, smul_add, smul_smul]
+  module
+
+/-- Polarisation (**44II** for the `𝒜`-valued form): every entry of a matrix
+is recovered from the values of the quadratic form `x ↦ ⟨x, M x⟩`. -/
+theorem matForm_polarization (i j : Fin N) (M : CStarMatrix (Fin N) (Fin N) A) :
+    M i j = (4 : ℂ)⁻¹ • ∑ k ∈ Finset.range 4, Complex.I ^ k •
+      matForm (matPolVec j i (Complex.I ^ k)) (matPolVec j i (Complex.I ^ k)) M := by
+  simp only [matForm_matPolVec, Finset.sum_range_succ, Finset.sum_range_zero,
+    smul_add, smul_smul, zero_add]
+  match_scalars <;> norm_num [pow_succ, Complex.I_mul_I]
+
+/-- The `𝒜`-valued quadratic form determines the matrix. -/
+theorem matrix_ext_of_matForm {M M' : CStarMatrix (Fin N) (Fin N) A}
+    (h : ∀ x : Fin N → A, matForm x x M = matForm x x M') : M = M' := by
+  ext i j
+  rw [matForm_polarization i j M, matForm_polarization i j M']
+  exact congrArg _ (Finset.sum_congr rfl fun k _ => congrArg _ (h _))
+
+theorem isSelfAdjoint_matForm {M : CStarMatrix (Fin N) (Fin N) A}
+    (hM : IsSelfAdjoint M) (x : Fin N → A) : IsSelfAdjoint (matForm x x M) := by
+  have h := matForm_star_matrix x x M
+  rw [hM.star_eq] at h
+  exact h.symm
+
+end MatrixForm
+
+section MatrixFormOrder
+
+variable {N : ℕ}
+
+/-- **33II** (`cstar_matrix_positive_iff`) restated: `0 ≤ M` iff its
+`𝒜`-valued quadratic form is positive. -/
+theorem nonneg_iff_matForm {M : CStarMatrix (Fin N) (Fin N) A} :
+    0 ≤ M ↔ ∀ x : Fin N → A, 0 ≤ matForm x x M :=
+  cstar_matrix_positive_iff M
+
+theorem matForm_mono {M M' : CStarMatrix (Fin N) (Fin N) A} (h : M ≤ M')
+    (x : Fin N → A) : matForm x x M ≤ matForm x x M' := by
+  rw [← sub_nonneg, ← matForm_sub_matrix]
+  exact nonneg_iff_matForm.mp (sub_nonneg.mpr h) x
+
+theorem le_iff_matForm {M M' : CStarMatrix (Fin N) (Fin N) A} :
+    M ≤ M' ↔ ∀ x : Fin N → A, matForm x x M ≤ matForm x x M' := by
+  refine ⟨fun h x => matForm_mono h x, fun h => ?_⟩
+  rw [← sub_nonneg, nonneg_iff_matForm]
+  exact fun x => by rw [matForm_sub_matrix]; exact sub_nonneg.mpr (h x)
+
+end MatrixFormOrder
+
+/-! ### Auxiliary machinery: ultrastrong limits are linear
+
+`USTendsto` is closed under scalar multiples, finite sums and multiplication
+by fixed elements on either side (the last by **45IV**, in the `‖·‖_ω`-form
+in which it was proved).  These are stated here because 49IV needs them
+entrywise; cf. the private copies in `Theses/B/Dils/SelfDualCompletion.lean`. -/
+
+section USLinear
+
+theorem usTendsto_smul {ι : Type*} {l : Filter ι} {f : ι → A} {a : A} (c : ℂ)
+    (h : USTendsto f l a) : USTendsto (fun i => c • f i) l (c • a) := by
+  rw [usTendsto_iff] at h ⊢
+  intro ω
+  have he : ∀ i, omegaNorm A ω (c • f i - c • a) = ‖c‖ * omegaNorm A ω (f i - a) := by
+    intro i; rw [← smul_sub, omegaNorm_smul]
+  simp only [he]
+  simpa using (h ω).const_mul ‖c‖
+
+theorem usTendsto_add {ι : Type*} {l : Filter ι} {f g : ι → A} {a b : A}
+    (hf : USTendsto f l a) (hg : USTendsto g l b) :
+    USTendsto (fun i => f i + g i) l (a + b) := by
+  rw [usTendsto_iff] at hf hg ⊢
+  intro ω
+  refine squeeze_zero (fun i => omegaNorm_nonneg _ _) (fun i => ?_)
+    (by simpa using (hf ω).add (hg ω))
+  have he : f i + g i - (a + b) = (f i - a) + (g i - b) := by abel
+  rw [he]
+  exact omegaNorm_add_le ω _ _
+
+theorem usTendsto_const {ι : Type*} {l : Filter ι} (a : A) :
+    USTendsto (fun _ : ι => a) l a := by
+  rw [usTendsto_iff]; intro ω; simpa using tendsto_const_nhds
+
+theorem usTendsto_finsetSum {ι κ : Type*} {l : Filter ι} {s : Finset κ}
+    {f : κ → ι → A} {a : κ → A} (h : ∀ k ∈ s, USTendsto (f k) l (a k)) :
+    USTendsto (fun i => ∑ k ∈ s, f k i) l (∑ k ∈ s, a k) := by
+  classical
+  induction s using Finset.induction with
+  | empty => simpa using usTendsto_const (ι := ι) (l := l) (0 : A)
+  | insert k s hk ih =>
+      simp only [Finset.sum_insert hk]
+      exact usTendsto_add (h k (Finset.mem_insert_self k s))
+        (ih fun j hj => h j (Finset.mem_insert_of_mem hj))
+
+omit [StarOrderedRing A] in
+theorem uwTendsto_finsetSum {ι κ : Type*} {l : Filter ι} {s : Finset κ}
+    {f : κ → ι → A} {a : κ → A} (h : ∀ k ∈ s, UWTendsto (f k) l (a k)) :
+    UWTendsto (fun i => ∑ k ∈ s, f k i) l (∑ k ∈ s, a k) := by
+  rw [uwTendsto_iff]
+  intro ω
+  simp only [npFunctional_finsetSum]
+  exact tendsto_finset_sum _ fun k hk => (uwTendsto_iff _ _ _).mp (h k hk) ω
+
+theorem usTendsto_mul_left_right [VonNeumannAlgebra A] {ι : Type*} {l : Filter ι}
+    {f : ι → A} {a : A} (u v : A) (h : USTendsto f l a) :
+    USTendsto (fun i => u * f i * v) l (u * a * v) := by
+  rw [usTendsto_iff] at h ⊢
+  intro ω
+  refine squeeze_zero (fun i => omegaNorm_nonneg _ _) (fun i => ?_)
+    (by simpa using (h (conjNP v ω)).const_mul ‖u‖)
+  have he : u * f i * v - u * a * v = u * (f i - a) * v := by noncomm_ring
+  rw [he, omegaNorm_mul_right]
+  exact omegaNorm_mul_le _ _ _
+
+end USLinear
+
+section MatrixVN
+
+variable [VonNeumannAlgebra A] {N : ℕ}
+
+/-- `matForm x x` as a map on self-adjoint parts. -/
+def matFormSA (x : Fin N → A) (d : selfAdjoint (CStarMatrix (Fin N) (Fin N) A)) :
+    selfAdjoint A :=
+  ⟨matForm x x (d : CStarMatrix (Fin N) (Fin N) A), isSelfAdjoint_matForm d.2 x⟩
+
+omit [PartialOrder A] [StarOrderedRing A] [VonNeumannAlgebra A] in
+@[simp] theorem matFormSA_coe (x : Fin N → A)
+    (d : selfAdjoint (CStarMatrix (Fin N) (Fin N) A)) :
+    ((matFormSA x d : selfAdjoint A) : A)
+      = matForm x x (d : CStarMatrix (Fin N) (Fin N) A) := rfl
+
+omit [VonNeumannAlgebra A] in
+theorem matFormSA_mono (x : Fin N → A) : Monotone (matFormSA (A := A) (N := N) x) :=
+  fun _ _ h => Subtype.coe_le_coe.mp (matForm_mono (Subtype.coe_le_coe.mpr h) x)
+
+/-- **49IV**.1, the substance: a nonempty bounded directed set of self-adjoint
+matrices over a von Neumann algebra has a supremum, and every `𝒜`-valued
+quadratic form `M ↦ ∑ᵢⱼ xᵢ* Mᵢⱼ xⱼ` preserves it. -/
+theorem exists_isLUB_matForm
+    (D : Set (selfAdjoint (CStarMatrix (Fin N) (Fin N) A)))
+    (hne : D.Nonempty) (hdir : DirectedOn (· ≤ ·) D) (hbdd : BddAbove D) :
+    ∃ S : selfAdjoint (CStarMatrix (Fin N) (Fin N) A), IsLUB D S ∧
+      ∀ x : Fin N → A, IsLUB (matFormSA x '' D) (matFormSA x S) := by
+  classical
+  obtain ⟨b, hb⟩ := hbdd
+  obtain ⟨d₀, hd₀⟩ := hne
+  have : Nonempty D := ⟨⟨d₀, hd₀⟩⟩
+  have : IsDirectedOrder D := directedOn_iff_isDirectedOrder.mp hdir
+  -- the auxiliary suprema `⋁_{d∈D} ∑ᵢⱼ xᵢ* dᵢⱼ xⱼ`
+  have hDx : ∀ x : Fin N → A, (matFormSA x '' D).Nonempty ∧
+      DirectedOn (· ≤ ·) (matFormSA x '' D) ∧ BddAbove (matFormSA x '' D) := by
+    intro x
+    refine ⟨⟨matFormSA x d₀, d₀, hd₀, rfl⟩, ?_, ⟨matFormSA x b, ?_⟩⟩
+    · rintro _ ⟨p, hp, rfl⟩ _ ⟨q, hq, rfl⟩
+      obtain ⟨r, hr, hpr, hqr⟩ := hdir p hp q hq
+      exact ⟨matFormSA x r, ⟨r, hr, rfl⟩, matFormSA_mono x hpr, matFormSA_mono x hqr⟩
+    · rintro _ ⟨p, hp, rfl⟩
+      exact matFormSA_mono x (hb hp)
+  set sx : (Fin N → A) → selfAdjoint A := fun x => dirSup _ (hDx x) with hsx
+  have hlubx : ∀ x, IsLUB (matFormSA x '' D) (sx x) := fun x => isLUB_dirSup _ (hDx x)
+  -- each such family converges ultrastrongly to its supremum (**44XIV**)
+  have hconv : ∀ x : Fin N → A,
+      USTendsto (fun d : D => matForm x x (d.1 : CStarMatrix (Fin N) (Fin N) A))
+        atTop ((sx x : selfAdjoint A) : A) := by
+    intro x
+    have hg : Tendsto (fun d : D => (⟨matFormSA x d.1,
+        ⟨d.1, d.2, rfl⟩⟩ : (matFormSA x '' D))) atTop atTop := by
+      rw [tendsto_atTop]
+      rintro ⟨-, p, hp, rfl⟩
+      filter_upwards [eventually_ge_atTop (⟨p, hp⟩ : D)] with d hd
+      exact Subtype.coe_le_coe.mpr (matFormSA_mono x hd)
+    exact (vna_supremum_uslimit (matFormSA x '' D) (hDx x)).comp hg
+  -- the candidate supremum, entry by entry, by polarisation
+  set Sm : CStarMatrix (Fin N) (Fin N) A := CStarMatrix.ofMatrix (Matrix.of fun i j =>
+    (4 : ℂ)⁻¹ • ∑ k ∈ Finset.range 4, Complex.I ^ k •
+      ((sx (matPolVec j i (Complex.I ^ k)) : selfAdjoint A) : A)) with hSm
+  have hentry : ∀ i j, USTendsto
+      (fun d : D => (d.1 : CStarMatrix (Fin N) (Fin N) A) i j) atTop (Sm i j) := by
+    intro i j
+    have hrw : ∀ d : D, (d.1 : CStarMatrix (Fin N) (Fin N) A) i j
+        = (4 : ℂ)⁻¹ • ∑ k ∈ Finset.range 4, Complex.I ^ k •
+            matForm (matPolVec j i (Complex.I ^ k)) (matPolVec j i (Complex.I ^ k))
+              (d.1 : CStarMatrix (Fin N) (Fin N) A) :=
+      fun d => matForm_polarization i j _
+    simp only [hrw]
+    exact usTendsto_smul _ (usTendsto_finsetSum fun k _ => usTendsto_smul _ (hconv _))
+  have hform : ∀ x : Fin N → A,
+      USTendsto (fun d : D => matForm x x (d.1 : CStarMatrix (Fin N) (Fin N) A))
+        atTop (matForm x x Sm) := by
+    intro x
+    simp only [matForm]
+    exact usTendsto_finsetSum fun i _ => usTendsto_finsetSum fun j _ =>
+      usTendsto_mul_left_right _ _ (hentry i j)
+  -- the two ultrastrong limits agree
+  have huniq : ∀ x : Fin N → A, matForm x x Sm = ((sx x : selfAdjoint A) : A) := by
+    intro x
+    let _ : TopologicalSpace A := ultrastrong A
+    have _ : T2Space A := (vn_positive_basic_1 (A := A)).2
+    exact tendsto_nhds_unique (hform x) (hconv x)
+  have hSsa : IsSelfAdjoint Sm := by
+    refine matrix_ext_of_matForm fun x => ?_
+    rw [matForm_star_matrix, huniq]
+    exact (sx x).2.star_eq
+  refine ⟨⟨Sm, hSsa⟩, ⟨fun d hd => ?_, fun t ht => ?_⟩, fun x => ?_⟩
+  · refine Subtype.coe_le_coe.mp (le_iff_matForm.mpr fun x => ?_)
+    rw [huniq]
+    exact Subtype.coe_le_coe.mpr ((hlubx x).1 ⟨d, hd, rfl⟩)
+  · refine Subtype.coe_le_coe.mp (le_iff_matForm.mpr fun x => ?_)
+    rw [huniq]
+    have hub : matFormSA x t ∈ upperBounds (matFormSA x '' D) := by
+      rintro _ ⟨p, hp, rfl⟩
+      exact matFormSA_mono x (ht hp)
+    exact Subtype.coe_le_coe.mpr ((hlubx x).2 hub)
+  · have hSx : matFormSA x ⟨Sm, hSsa⟩ = sx x := Subtype.ext (huniq x)
+    rw [hSx]
+    exact hlubx x
+
+/-- For an np-functional `φ` on `𝒜` and `x ∈ 𝒜^N`, the functional
+`M ↦ φ(∑ᵢⱼ xᵢ* Mᵢⱼ xⱼ)` is an np-functional on `M_N(𝒜)`.  (These are the
+np-functionals 49IV.2 is about, for `a = b = x`.) -/
+noncomputable def matFormNP (φ : NPFunctional A) (x : Fin N → A) :
+    NPFunctional (CStarMatrix (Fin N) (Fin N) A) where
+  toPositiveLinearMap :=
+    { toFun := fun M => φ (matForm x x M)
+      map_add' := fun M M' => by
+        rw [matForm_add_matrix]; exact map_add φ.toPositiveLinearMap _ _
+      map_smul' := fun c M => by
+        rw [matForm_smul_matrix]; exact map_smul φ.toPositiveLinearMap _ _
+      monotone' := fun M M' h => npFunctional_mono φ (matForm_mono h x) }
+  preservesDirSups' := by
+    intro D s hne hdir hlub
+    obtain ⟨S, hS, hSx⟩ := exists_isLUB_matForm D hne hdir ⟨s, hlub.1⟩
+    have hsS : s = S := hlub.unique hS
+    subst hsS
+    have hkey := φ.preservesDirSups' (matFormSA x '' D) (matFormSA x s)
+      (hne.image _) ?_ (hSx x)
+    · rw [← Set.image_comp] at hkey
+      exact hkey
+    · rintro _ ⟨p, hp, rfl⟩ _ ⟨q, hq, rfl⟩
+      obtain ⟨r, hr, hpr, hqr⟩ := hdir p hp q hq
+      exact ⟨matFormSA x r, ⟨r, hr, rfl⟩, matFormSA_mono x hpr, matFormSA_mono x hqr⟩
+
+@[simp] theorem matFormNP_apply (φ : NPFunctional A) (x : Fin N → A)
+    (M : CStarMatrix (Fin N) (Fin N) A) :
+    matFormNP φ x M = φ (matForm x x M) := rfl
+
+end MatrixVN
+
 /-- **49IV** (`mn-vna`, vn.tex:1272, Exercise), part 1: the C*-algebra
 `M_N(𝒜)` of `N×N`-matrices over a von Neumann algebra `𝒜` (Mathlib:
 `CStarMatrix (Fin N) (Fin N) 𝒜`) is a von Neumann algebra. -/
 instance mn_vna_1 [VonNeumannAlgebra A] (N : ℕ) :
-    VonNeumannAlgebra (CStarMatrix (Fin N) (Fin N) A) := sorry
+    VonNeumannAlgebra (CStarMatrix (Fin N) (Fin N) A) where
+  isLUB_of_bddAbove_directed D hne hdir hbdd := by
+    obtain ⟨S, hS, -⟩ := exists_isLUB_matForm D hne hdir hbdd
+    exact ⟨S, hS⟩
+  np_faithful M hM h := by
+    refine matrix_ext_of_matForm (M' := 0) fun x => ?_
+    rw [matForm_zero_matrix]
+    refine VonNeumannAlgebra.np_faithful _ (nonneg_iff_matForm.mp hM x) fun φ => ?_
+    exact h (matFormNP φ x)
+
+/-! ### Auxiliary machinery for **49IV**.2: the corner embeddings `𝒜 → M_N(𝒜)`
+
+The matrix units `x ↦ x·eᵢⱼ` decompose every matrix as `M = ∑ᵢⱼ Mᵢⱼ·eᵢⱼ`;
+the diagonal ones `x ↦ x·eⱼⱼ` are normal positive maps, so they pull
+np-functionals of `M_N(𝒜)` back to np-functionals of `𝒜`, and polarisation
+(**44II**) does the same for the off-diagonal ones.  That gives one direction
+of 49IV.2; the other is the polarisation of the `𝒜`-valued form above
+together with the estimate `‖Xᵢⱼ‖_φ ≤ ‖X‖_{φ⟨eⱼ,·eⱼ⟩}`. -/
+
+section MatEmb
+
+variable {N : ℕ}
+
+omit [PartialOrder A] [StarOrderedRing A]
+
+/-- The matrix with `x` in position `(i,j)` and zeroes elsewhere. -/
+def matEmb (i j : Fin N) (x : A) : CStarMatrix (Fin N) (Fin N) A :=
+  CStarMatrix.ofMatrix (Matrix.of fun p q => if p = i then (if q = j then x else 0) else 0)
+
+theorem matEmb_apply (i j : Fin N) (x : A) (p q : Fin N) :
+    matEmb i j x p q = if p = i then (if q = j then x else 0) else 0 := rfl
+
+theorem matForm_matEmb (i j : Fin N) (x : A) (y z : Fin N → A) :
+    matForm y z (matEmb i j x) = star (y i) * x * z j := by
+  simp [matForm, matEmb_apply, ite_mul, mul_ite]
+
+theorem matEmb_add (i j : Fin N) (x y : A) :
+    matEmb i j (x + y) = matEmb i j x + matEmb i j y := by
+  ext p q; simp [matEmb_apply, apply_ite₂ (· + ·)]
+
+theorem matEmb_smul (i j : Fin N) (c : ℂ) (x : A) :
+    matEmb i j (c • x) = c • matEmb i j x := by
+  ext p q; simp [matEmb_apply, smul_ite]
+
+theorem matEmb_star (i j : Fin N) (x : A) :
+    star (matEmb i j x) = matEmb j i (star x) := by
+  ext p q
+  simp only [CStarMatrix.star_apply, matEmb_apply, apply_ite star, star_zero]
+  split_ifs <;> rfl
+
+theorem matEmb_star_mul (i j : Fin N) (x : A) :
+    star (matEmb i j x) * matEmb i j x = matEmb j j (star x * x) := by
+  ext p q
+  rw [matEmb_star, CStarMatrix.mul_apply]
+  simp only [matEmb_apply, ite_mul, mul_ite, zero_mul, mul_zero, Finset.sum_ite_eq',
+    Finset.mem_univ, if_true]
+  split_ifs <;> rfl
+
+end MatEmb
+
+section MatEmbOrder
+
+variable {N : ℕ}
+
+theorem matEmb_mono (i : Fin N) {x y : A} (h : x ≤ y) :
+    matEmb i i x ≤ matEmb i i y := by
+  refine le_iff_matForm.mpr fun z => ?_
+  rw [matForm_matEmb, matForm_matEmb]
+  exact star_left_conjugate_le_conjugate h (z i)
+
+omit [PartialOrder A] [StarOrderedRing A] in
+theorem matForm_finsetSum_matrix {κ : Type*} (s : Finset κ) (y z : Fin N → A)
+    (F : κ → CStarMatrix (Fin N) (Fin N) A) :
+    matForm y z (∑ k ∈ s, F k) = ∑ k ∈ s, matForm y z (F k) := by
+  classical
+  induction s using Finset.induction with
+  | empty => simp [matForm]
+  | insert k s hk ih =>
+      rw [Finset.sum_insert hk, matForm_add_matrix, ih, Finset.sum_insert hk]
+
+omit [PartialOrder A] [StarOrderedRing A] in
+theorem sum_matEmb (M : CStarMatrix (Fin N) (Fin N) A) :
+    M = ∑ i, ∑ j, matEmb i j (M i j) := by
+  refine matrix_ext_of_matForm fun x => ?_
+  simp only [matForm_finsetSum_matrix, matForm_matEmb]
+  rfl
+
+omit [PartialOrder A] [StarOrderedRing A] in
+theorem matEmb_mul (i j k : Fin N) (x y : A) :
+    matEmb i j x * matEmb j k y = matEmb i k (x * y) := by
+  ext p q
+  rw [CStarMatrix.mul_apply]
+  simp only [matEmb_apply, ite_mul, mul_ite, zero_mul, mul_zero,
+    Finset.sum_ite_eq', Finset.mem_univ, ite_true]
+  split_ifs <;> rfl
+
+/-- `x ↦ matEmb i i x`, the `i`-th diagonal corner embedding, as a positive
+linear map `𝒜 → M_N(𝒜)`. -/
+def matEmbP (i : Fin N) : A →ₚ[ℂ] CStarMatrix (Fin N) (Fin N) A where
+  toFun := matEmb i i
+  map_add' := matEmb_add i i
+  map_smul' := matEmb_smul i i
+  monotone' := fun _ _ h => matEmb_mono i h
+
+@[simp] theorem matEmbP_apply (i : Fin N) (x : A) : matEmbP i x = matEmb i i x := rfl
+
+/-- The corner embeddings are normal. -/
+theorem matEmb_normal [VonNeumannAlgebra A] (i : Fin N) :
+    PreservesDirSups (matEmb (A := A) (N := N) i i) := by
+  intro D s hne hdir hlub
+  have hbdd : BddAbove D := ⟨s, hlub.1⟩
+  have hh : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧ BddAbove D := ⟨hne, hdir, hbdd⟩
+  have hs : dirSup D hh = s := (isLUB_dirSup D hh).unique hlub
+  constructor
+  · rintro _ ⟨d, hd, rfl⟩
+    exact matEmb_mono i (Subtype.coe_le_coe.mpr (hlub.1 hd))
+  · intro T hT
+    refine le_iff_matForm.mpr fun x => ?_
+    rw [matForm_matEmb]
+    have hadn := ad_normal (x i) D hh
+    rw [hs] at hadn
+    refine hadn.2 ?_
+    rintro _ ⟨d, hd, rfl⟩
+    have hle := hT ⟨d, hd, rfl⟩
+    change star (x i) * ((d : selfAdjoint A) : A) * x i ≤ matForm x x T
+    rw [← matForm_matEmb i i ((d : selfAdjoint A) : A) x x]
+    exact matForm_mono hle x
+
+/-- The np-functional `x ↦ ω(matEmb i i x)` on `𝒜` attached to an
+np-functional `ω` on `M_N(𝒜)`. -/
+noncomputable def matEmbNP [VonNeumannAlgebra A] (i : Fin N)
+    (ω : NPFunctional (CStarMatrix (Fin N) (Fin N) A)) : NPFunctional A :=
+  compNP (matEmbP i) (matEmb_normal i) ω
+
+@[simp] theorem matEmbNP_apply [VonNeumannAlgebra A] (i : Fin N)
+    (ω : NPFunctional (CStarMatrix (Fin N) (Fin N) A)) (x : A) :
+    matEmbNP i ω x = ω (matEmb i i x) := rfl
+
+theorem omegaNorm_matEmb [VonNeumannAlgebra A] (i j : Fin N)
+    (ω : NPFunctional (CStarMatrix (Fin N) (Fin N) A)) (x : A) :
+    omegaNorm _ ω (matEmb i j x) = omegaNorm A (matEmbNP j ω) x := by
+  rw [omegaNorm, omegaNorm, matEmb_star_mul]
+  rfl
+
+omit [PartialOrder A] [StarOrderedRing A] in
+theorem matEmb_sub (i j : Fin N) (x y : A) :
+    matEmb i j (x - y) = matEmb i j x - matEmb i j y := by
+  ext p q; simp [matEmb_apply, apply_ite₂ (· - ·)]
+
+section Conv
+
+variable [VonNeumannAlgebra A]
+
+
+/-- `x ↦ ω(matEmb i j x)` is a `ℂ`-combination of np-functionals on `𝒜`
+(polarisation **44II** applied to `matEmb i j x = (matEmb i j 1)·(matEmb j j x)`). -/
+theorem npFunctional_matEmb_repr (i j : Fin N)
+    (ω : NPFunctional (CStarMatrix (Fin N) (Fin N) A)) :
+    ∃ ψ : ℕ → NPFunctional A, ∀ x : A,
+      (ω (matEmb i j x) : ℂ)
+        = (4 : ℂ)⁻¹ * ∑ k ∈ Finset.range 4, Complex.I ^ k * ψ k x := by
+  set u : CStarMatrix (Fin N) (Fin N) A := matEmb i j 1 with hu
+  refine ⟨fun k => matEmbNP j (conjNP ((Complex.I ^ k : ℂ) • star u + 1) ω), fun x => ?_⟩
+  have hx : matEmb i j x = u * matEmb j j x := by rw [hu, matEmb_mul, one_mul]
+  have h := mult_polarization (star u) 1 (matEmb j j x)
+  rw [star_star, mul_one] at h
+  rw [hx, h, npFunctional_csmul, npFunctional_finsetSum]
+  refine congrArg _ (Finset.sum_congr rfl fun k _ => ?_)
+  rw [npFunctional_csmul]
+  rfl
+
+theorem uwTendsto_matEmb {ι : Type*} {l : Filter ι} (i j : Fin N)
+    {f : ι → A} {a : A} (h : UWTendsto f l a) :
+    UWTendsto (fun α => matEmb i j (f α)) l (matEmb i j a) := by
+  rw [uwTendsto_iff] at h ⊢
+  intro ω
+  obtain ⟨ψ, hψ⟩ := npFunctional_matEmb_repr i j ω
+  simp only [hψ]
+  exact Filter.Tendsto.const_mul _
+    (tendsto_finset_sum _ fun k _ => ((h (ψ k)).const_mul _))
+
+theorem usTendsto_matEmb {ι : Type*} {l : Filter ι} (i j : Fin N)
+    {f : ι → A} {a : A} (h : USTendsto f l a) :
+    USTendsto (fun α => matEmb i j (f α)) l (matEmb i j a) := by
+  rw [usTendsto_iff] at h ⊢
+  intro ω
+  have he : ∀ α, omegaNorm _ ω (matEmb i j (f α) - matEmb i j a)
+      = omegaNorm A (matEmbNP j ω) (f α - a) := by
+    intro α; rw [← matEmb_sub, omegaNorm_matEmb]
+  simp only [he]
+  exact h _
+
+/-- The `‖·‖_ω`-estimate behind "ultrastrong convergence in `M_N(𝒜)` implies
+entrywise ultrastrong convergence": `‖Xᵢⱼ‖_φ ≤ ‖X‖_{φ(⟨eⱼ,·eⱼ⟩)}`. -/
+theorem omegaNorm_entry_le (φ : NPFunctional A) (i j : Fin N)
+    (X : CStarMatrix (Fin N) (Fin N) A) :
+    omegaNorm A φ (X i j) ≤ omegaNorm _ (matFormNP φ (matUnit j)) X := by
+  rw [omegaNorm, omegaNorm]
+  refine Real.sqrt_le_sqrt ?_
+  have h1 : (matFormNP φ (matUnit j) (star X * X) : ℂ) = φ ((star X * X) j j) := by
+    rw [matFormNP_apply, matForm_matUnit]
+  have h2 : (star X * X) j j = ∑ k, star (X k j) * X k j := by
+    rw [CStarMatrix.mul_apply]
+    simp [CStarMatrix.star_apply]
+  have h3 : star (X i j) * X i j ≤ ∑ k, star (X k j) * X k j :=
+    Finset.single_le_sum (f := fun k => star (X k j) * X k j)
+      (fun k _ => star_mul_self_nonneg _) (Finset.mem_univ i)
+  have h4 := npFunctional_mono φ h3
+  rw [← h2, ← h1] at h4
+  exact (Complex.le_def.mp h4).1
+
+/-- Entrywise recovery of an np-functional value by polarisation. -/
+theorem npFunctional_entry_repr (φ : NPFunctional A) (i j : Fin N)
+    (X : CStarMatrix (Fin N) (Fin N) A) :
+    (φ (X i j) : ℂ) = (4 : ℂ)⁻¹ * ∑ k ∈ Finset.range 4, Complex.I ^ k *
+      matFormNP φ (matPolVec j i (Complex.I ^ k)) X := by
+  conv_lhs => rw [matForm_polarization i j X]
+  rw [npFunctional_csmul, npFunctional_finsetSum]
+  exact congrArg _ (Finset.sum_congr rfl fun k _ => npFunctional_csmul _ _ _)
+
+end Conv
+
+end MatEmbOrder
 
 /-- **49IV** (`mn-vna`, vn.tex:1272, Exercise), part 2 (first half): for
 `a₁,…,a_N, b₁,…,b_N ∈ 𝒜`, the map `M ↦ ∑ᵢⱼ aᵢ* Mᵢⱼ bⱼ : M_N(𝒜) → 𝒜` is
@@ -3348,8 +3907,39 @@ theorem mn_vna_2' [VonNeumannAlgebra A] (N : ℕ) {ι : Type*} (l : Filter ι)
           (CStarMatrix.ofMatrix.symm M₀ i j)) ∧
       (USTendsto M l M₀ ↔ ∀ i j,
         USTendsto (fun α => CStarMatrix.ofMatrix.symm (M α) i j) l
-          (CStarMatrix.ofMatrix.symm M₀ i j)) :=
-  sorry
+          (CStarMatrix.ofMatrix.symm M₀ i j)) := by
+  have hMsum : M = fun α => ∑ i, ∑ j, matEmb i j (M α i j) :=
+    funext fun α => sum_matEmb (M α)
+  have hM₀sum : M₀ = ∑ i, ∑ j, matEmb i j (M₀ i j) := sum_matEmb M₀
+  constructor
+  · constructor
+    · intro h i j
+      rw [uwTendsto_iff] at h ⊢
+      intro φ
+      change Tendsto (fun α => (φ (M α i j) : ℂ)) l (𝓝 (φ (M₀ i j)))
+      simp only [npFunctional_entry_repr φ i j]
+      exact Filter.Tendsto.const_mul _
+        (tendsto_finset_sum _ fun k _ => (h _).const_mul _)
+    · intro h
+      rw [hMsum, hM₀sum]
+      exact uwTendsto_finsetSum fun i _ => uwTendsto_finsetSum fun j _ =>
+        uwTendsto_matEmb i j (h i j)
+  · constructor
+    · intro h i j
+      rw [usTendsto_iff] at h ⊢
+      intro φ
+      refine squeeze_zero (fun α => omegaNorm_nonneg _ _) (fun α => ?_)
+        (h (matFormNP φ (matUnit j)))
+      have he : (M α i j) - (M₀ i j) = (M α - M₀) i j := by
+        rw [CStarMatrix.sub_apply]
+      change omegaNorm A φ (M α i j - M₀ i j) ≤ _
+      rw [he]
+      exact omegaNorm_entry_le φ i j (M α - M₀)
+    · intro h
+      rw [hMsum, hM₀sum]
+      exact usTendsto_finsetSum fun i _ => usTendsto_finsetSum fun j _ =>
+        usTendsto_matEmb i j (h i j)
+
 
 /-- **49IV** (`mn-vna`, vn.tex:1272, Exercise), part 3: for an ncp-map
 `f : 𝒜 → ℬ` between von Neumann algebras, the entrywise map

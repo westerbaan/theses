@@ -387,12 +387,6 @@ theorem us_continuous_bounded_on_ball (f : A →ₗ[ℂ] ℂ)
 (linear, isometric, dense-range) canonical map of `A` into the GNS Hilbert
 space `ℋ_ω = PositiveLinearMap.GNS ω`, which is the thesis's `ℋ_ω`. -/
 
-omit [VonNeumannAlgebra A] in
-/-- `‖c • a‖_ω = |c| ‖a‖_ω`. -/
-theorem omegaNorm_smul (ω : NPFunctional A) (c : ℂ) (a : A) :
-    omegaNorm A ω (c • a) = ‖c‖ * omegaNorm A ω a := by
-  simp only [omegaNorm_eq_norm, map_smul, norm_smul]
-
 /-- `gnsVec ω` bundled as a linear map `A →ₗ[ℂ] ℋ_ω`. -/
 noncomputable def gnsVecₗ (ω : NPFunctional A) :
     A →ₗ[ℂ] ω.toPositiveLinearMap.GNS where
@@ -1921,8 +1915,9 @@ with `0 ∨ (·) ∧ ‖b‖` instead, and the effect case is the positive case
 together with `‖b‖ ≤ 1`.
 
 The general (non-self-adjoint) case needs the `2×2`-matrix trick and hence
-**49IV**.1 `mn_vna_1` (`Basic.lean`), which is still `sorry`; it is left
-open. -/
+**49IV**.1 `mn_vna_1` and **49IV**.2' `mn_vna_2'` (`Basic.lean`); both are
+now proved, and the trick is carried out in the `MatrixTrick` block below,
+after the self-adjoint case it consumes. -/
 
 omit [VonNeumannAlgebra A] in
 /-- Membership of the ultrastrong closure, in terms of the seminorms. -/
@@ -2098,22 +2093,194 @@ private theorem abs_posClamp_le {M : ℝ} (hM : 0 ≤ M) (t : ℝ) :
   abs_le.mpr ⟨by linarith [le_max_left (0 : ℝ) (min t M)],
     max_le hM (min_le_right _ _)⟩
 
-/-- **74IV** (`kaplansky`, vn.tex:4336, Kaplansky's Density Theorem): if `b`
-in a von Neumann algebra `B` is the ultrastrong limit of a net from a
-C*-subalgebra `S`, then `b` is the ultrastrong limit of a net `(a_α)_α` in
-`S` with `‖a_α‖ ≤ ‖b‖`.
+/-! #### The `2×2`-matrix trick for the general case of **74IV**
 
-Left `sorry`: the thesis's proof of this general case runs the self-adjoint
-case in `M₂(𝒜)` on `[[0, b], [b*, 0]]`, so it needs **49IV**.1 `mn_vna_1`
-(`M_N(𝒜)` is a von Neumann algebra) and **49IV**.2' (entrywise ultrastrong
-convergence), both still `sorry`.  The three "moreover" clauses below —
-which is what the rest of the development uses — avoid the trick and are
-proved. -/
-theorem kaplansky (S : StarSubalgebra ℂ A) (hS : IsClosed (S : Set A))
-    (b : A) (hb : b ∈ @closure A (ultrastrong A) S) :
-    ∃ (ι : Type u) (l : Filter ι), l.NeBot ∧ ∃ a : ι → A,
-      (∀ i, a i ∈ S ∧ ‖a i‖ ≤ ‖b‖) ∧ USTendsto a l b :=
-  sorry
+`M₂(S)` is a ∗-subalgebra of the von Neumann algebra `M₂(𝒜)` (**49IV**.1
+`mn_vna_1`), closed because the entry maps are `1`-Lipschitz; `B = [[0,b],
+[b*,0]]` is self-adjoint with `‖B‖ ≤ ‖b‖`; and `B` lies in the *ultraweak*
+closure of `M₂(S)` — the adjoint is ultraweakly, though not ultrastrongly,
+continuous — hence by **73VIII** in its ultrastrong closure.  The
+self-adjoint case then applies, and **49IV**.2' `mn_vna_2'` reads off the
+upper-right entries. -/
+
+section MatrixTrick
+
+variable {N : ℕ}
+
+/-- `M_N(S)`, the ∗-subalgebra of `M_N(𝒜)` of matrices with entries in a
+∗-subalgebra `S` of `𝒜`. -/
+private def matStarSubalgebra (S : StarSubalgebra ℂ A) (N : ℕ) :
+    StarSubalgebra ℂ (CStarMatrix (Fin N) (Fin N) A) where
+  carrier := {M | ∀ i j, M i j ∈ S}
+  mul_mem' := by
+    intro M M' hM hM' i j
+    rw [CStarMatrix.mul_apply]
+    exact sum_mem fun k _ => mul_mem (hM i k) (hM' k j)
+  add_mem' := by
+    intro M M' hM hM' i j
+    rw [CStarMatrix.add_apply]
+    exact add_mem (hM i j) (hM' i j)
+  zero_mem' := by intro i j; exact zero_mem S
+  algebraMap_mem' := by
+    intro r i j
+    rw [Algebra.algebraMap_eq_smul_one, CStarMatrix.smul_apply, CStarMatrix.one_apply]
+    by_cases h : i = j
+    · rw [if_pos h]
+      exact SMulMemClass.smul_mem r (one_mem S)
+    · rw [if_neg h, smul_zero]
+      exact zero_mem S
+  star_mem' := by
+    intro M hM i j
+    rw [CStarMatrix.star_apply]
+    exact star_mem (hM j i)
+
+omit [VonNeumannAlgebra A] in
+private theorem mem_matStarSubalgebra {S : StarSubalgebra ℂ A} {N : ℕ}
+    {M : CStarMatrix (Fin N) (Fin N) A} :
+    M ∈ matStarSubalgebra S N ↔ ∀ i j, M i j ∈ S := Iff.rfl
+
+omit [VonNeumannAlgebra A] in
+private theorem isClosed_matStarSubalgebra {S : StarSubalgebra ℂ A} (hS : IsClosed (S : Set A))
+    (N : ℕ) :
+    IsClosed (matStarSubalgebra S N : Set (CStarMatrix (Fin N) (Fin N) A)) := by
+  have hset : (matStarSubalgebra S N : Set (CStarMatrix (Fin N) (Fin N) A))
+      = ⋂ p : Fin N × Fin N, (fun M : CStarMatrix (Fin N) (Fin N) A => M p.1 p.2) ⁻¹' S := by
+    ext M
+    simp [mem_matStarSubalgebra, Set.mem_iInter, Prod.forall]
+  rw [hset]
+  refine isClosed_iInter fun p => IsClosed.preimage ?_ hS
+  refine (LipschitzWith.of_dist_le_mul (K := 1) fun M M' => ?_).continuous
+  simp only [NNReal.coe_one, one_mul, dist_eq_norm]
+  rw [← CStarMatrix.sub_apply]
+  exact CStarMatrix.norm_entry_le_norm
+
+omit [PartialOrder A] [StarOrderedRing A] [VonNeumannAlgebra A] in
+private theorem matEmb_mul_of_ne {i j k l : Fin N} (h : j ≠ k) (x y : A) :
+    matEmb i j x * matEmb k l y = 0 := by
+  ext p q
+  rw [CStarMatrix.mul_apply]
+  simp only [matEmb_apply]
+  rw [Finset.sum_eq_zero]
+  · rfl
+  · intro r _
+    rcases eq_or_ne r j with rfl | hr
+    · simp [h]
+    · simp [hr]
+
+omit [VonNeumannAlgebra A] in
+private theorem convex_starSubalgebra (T : StarSubalgebra ℂ (CStarMatrix (Fin N) (Fin N) A)) :
+    Convex ℝ (T : Set (CStarMatrix (Fin N) (Fin N) A)) := by
+  intro x hx y hy s t hs ht _
+  have hr : ∀ (r : ℝ) (z : CStarMatrix (Fin N) (Fin N) A), r • z = ((r : ℝ) : ℂ) • z :=
+    fun r z => by rw [← IsScalarTower.algebraMap_smul ℂ r z, Complex.coe_algebraMap]
+  rw [hr, hr]
+  exact add_mem (SMulMemClass.smul_mem _ hx) (SMulMemClass.smul_mem _ hy)
+
+omit [StarOrderedRing A] [VonNeumannAlgebra A] in
+private theorem uwTendsto_add' {ι : Type*} {l : Filter ι} {f g : ι → A} {a b : A}
+    (hf : UWTendsto f l a) (hg : UWTendsto g l b) :
+    UWTendsto (fun i => f i + g i) l (a + b) := by
+  rw [uwTendsto_iff] at hf hg ⊢
+  intro ω
+  have he : ∀ i, (ω (f i + g i) : ℂ) = ω (f i) + ω (g i) := fun i =>
+    map_add ω.toPositiveLinearMap _ _
+  have he₀ : (ω (a + b) : ℂ) = ω a + ω b := map_add ω.toPositiveLinearMap _ _
+  simp only [he, he₀]
+  exact (hf ω).add (hg ω)
+
+omit [VonNeumannAlgebra A] in
+private theorem uwTendsto_star' {ι : Type*} {l : Filter ι} {f : ι → A} {a : A}
+    (h : UWTendsto f l a) : UWTendsto (fun i => star (f i)) l (star a) := by
+  rw [uwTendsto_iff] at h ⊢
+  intro ω
+  simp only [npFunctional_star]
+  exact (Complex.continuous_conj.tendsto _).comp (h ω)
+
+/-- `[[0,b],[b*,0]] ∈ M₂(𝒜)`, the matrix of the 74IV trick. -/
+private def antiDiag (b : A) : CStarMatrix (Fin 2) (Fin 2) A :=
+  matEmb 0 1 b + matEmb 1 0 (star b)
+
+omit [PartialOrder A] [StarOrderedRing A] [VonNeumannAlgebra A] in
+private theorem antiDiag_apply_01 (b : A) : antiDiag b 0 1 = b := by
+  simp [antiDiag, matEmb_apply]
+
+omit [PartialOrder A] [StarOrderedRing A] [VonNeumannAlgebra A] in
+private theorem isSelfAdjoint_antiDiag (b : A) : IsSelfAdjoint (antiDiag b) := by
+  change star (antiDiag b) = antiDiag b
+  rw [antiDiag, star_add, matEmb_star, matEmb_star, star_star]
+  abel
+
+omit [VonNeumannAlgebra A] in
+private theorem norm_antiDiag_le (b : A) : ‖antiDiag b‖ ≤ ‖b‖ := by
+  have hrs : ∀ (r : ℝ) (x : A), r • x = ((r : ℝ) : ℂ) • x := fun r x => by
+    rw [← IsScalarTower.algebraMap_smul ℂ r x, Complex.coe_algebraMap]
+  have hrsM : ∀ (r : ℝ) (x : CStarMatrix (Fin 2) (Fin 2) A),
+      r • x = ((r : ℝ) : ℂ) • x := fun r x => by
+    rw [← IsScalarTower.algebraMap_smul ℂ r x, Complex.coe_algebraMap]
+  have hsq : star (antiDiag b) * antiDiag b
+      = matEmb 0 0 (b * star b) + matEmb 1 1 (star b * b) := by
+    rw [(isSelfAdjoint_antiDiag b).star_eq, antiDiag, add_mul, mul_add, mul_add,
+      matEmb_mul_of_ne (show (1 : Fin 2) ≠ 0 by decide),
+      matEmb_mul 0 1 0 b (star b),
+      matEmb_mul 1 0 1 (star b) b,
+      matEmb_mul_of_ne (show (0 : Fin 2) ≠ 1 by decide)]
+    abel
+  have hb2 : (0 : ℝ) ≤ ‖b‖ ^ 2 := by positivity
+  have hbound : ∀ x : A, x ≤ ((‖b‖ ^ 2 : ℝ) : ℂ) • (1 : A) →
+      ∀ w : A, star w * x * w ≤ ((‖b‖ ^ 2 : ℝ) : ℂ) • (star w * w) := by
+    intro x hx w
+    have h := star_left_conjugate_le_conjugate hx w
+    rwa [mul_smul_comm, smul_mul_assoc, mul_one] at h
+  have h1 : b * star b ≤ ((‖b‖ ^ 2 : ℝ) : ℂ) • (1 : A) := by
+    have h := le_norm_smul_one (mul_star_self_nonneg b)
+    rw [CStarRing.norm_self_mul_star, hrs] at h
+    refine h.trans (le_of_eq ?_)
+    norm_num [sq]
+  have h2 : star b * b ≤ ((‖b‖ ^ 2 : ℝ) : ℂ) • (1 : A) := by
+    have h := le_norm_smul_one (star_mul_self_nonneg b)
+    rw [CStarRing.norm_star_mul_self, hrs] at h
+    refine h.trans (le_of_eq ?_)
+    norm_num [sq]
+  have hle : star (antiDiag b) * antiDiag b
+      ≤ algebraMap ℝ (CStarMatrix (Fin 2) (Fin 2) A) (‖b‖ ^ 2) := by
+    rw [hsq, Algebra.algebraMap_eq_smul_one, hrsM]
+    refine le_iff_matForm.mpr fun z => ?_
+    rw [matForm_add_matrix, matForm_matEmb, matForm_matEmb, matForm_smul_matrix]
+    have hone : matForm z z (1 : CStarMatrix (Fin 2) (Fin 2) A)
+        = star (z 0) * z 0 + star (z 1) * z 1 := by
+      simp [matForm, Fin.sum_univ_two, CStarMatrix.one_apply]
+    rw [hone, smul_add]
+    exact add_le_add (hbound _ h1 (z 0)) (hbound _ h2 (z 1))
+  have hnorm : ‖antiDiag b‖ * ‖antiDiag b‖ ≤ ‖b‖ * ‖b‖ := by
+    rw [← CStarRing.norm_star_mul_self]
+    have h := (CStarAlgebra.norm_le_iff_le_algebraMap
+      (star (antiDiag b) * antiDiag b) hb2 (star_mul_self_nonneg _)).mpr hle
+    calc ‖star (antiDiag b) * antiDiag b‖ ≤ ‖b‖ ^ 2 := h
+      _ = ‖b‖ * ‖b‖ := by ring
+  nlinarith [norm_nonneg (antiDiag b), norm_nonneg b]
+
+omit [StarOrderedRing A] [VonNeumannAlgebra A] in
+private theorem mem_uwClosure_of_uwTendsto {K : Set A} {ι : Type*} {l : Filter ι} [l.NeBot]
+    {f : ι → A} {a : A} (hf : UWTendsto f l a) (hmem : ∀ i, f i ∈ K) :
+    a ∈ @closure A (ultraweak A) K := by
+  let _ : TopologicalSpace A := ultraweak A
+  exact mem_closure_of_tendsto hf (Filter.Eventually.of_forall hmem)
+
+/-- **73VIII** in the direction needed by the `2×2` trick: for a convex set the
+ultraweak closure is contained in the ultrastrong one. -/
+private theorem mem_usClosure_of_mem_uwClosure {K : Set A} (hK : Convex ℝ K) {a : A}
+    (h : a ∈ @closure A (ultraweak A) K) : a ∈ @closure A (ultrastrong A) K :=
+  @closure_minimal A (ultraweak A) K _ (@subset_closure A (ultrastrong A) K)
+    (ultraclosed _ (convex_usClosure hK) (@isClosed_closure A (ultrastrong A) K)) a h
+
+omit [PartialOrder A] [StarOrderedRing A] [VonNeumannAlgebra A] in
+private theorem convex_starSubalgebraA (T : StarSubalgebra ℂ A) :
+    Convex ℝ (T : Set A) := by
+  intro x hx y hy s t hs ht _
+  rw [rsmul_eq, rsmul_eq]
+  exact add_mem (SMulMemClass.smul_mem _ hx) (SMulMemClass.smul_mem _ hy)
+
+end MatrixTrick
 
 /-- **74IV** (`kaplansky`, vn.tex:4336, Kaplansky's Density Theorem),
 part 1: if moreover `b` is self-adjoint, the `a_α` can be chosen
@@ -2197,6 +2364,54 @@ theorem kaplansky_effects (S : StarSubalgebra ℂ A)
   refine (CStarAlgebra.norm_le_one_iff_of_nonneg _ (ha i).2.2).mp ?_
   exact (ha i).2.1.trans (norm_le_one_of_mem_effects heff)
 
+/-- **74IV** (`kaplansky`, vn.tex:4336, Kaplansky's Density Theorem): if `b`
+in a von Neumann algebra `B` is the ultrastrong limit of a net from a
+C*-subalgebra `S`, then `b` is the ultrastrong limit of a net `(a_α)_α` in
+`S` with `‖a_α‖ ≤ ‖b‖`.
+
+*Class 1 — faithful*, with one repair: the thesis says `B` is the
+ultrastrong limit of `[[0,aα],[aα*,0]]`, which is false as stated — the
+adjoint is not ultrastrongly continuous (**43II**.4), so `aα* → b*` need not
+hold ultrastrongly.  Passing to the *ultraweak* limit, where the adjoint is
+continuous, and then back by **73VIII** `ultraclosed` (which the thesis has
+already used for the self-adjoint case) repairs it.  Stated after the three
+"moreover" clauses because its proof runs part 1 in `M₂(𝒜)`. -/
+theorem kaplansky (S : StarSubalgebra ℂ A) (hS : IsClosed (S : Set A))
+    (b : A) (hb : b ∈ @closure A (ultrastrong A) S) :
+    ∃ (ι : Type u) (l : Filter ι), l.NeBot ∧ ∃ a : ι → A,
+      (∀ i, a i ∈ S ∧ ‖a i‖ ≤ ‖b‖) ∧ USTendsto a l b := by
+  classical
+  set T : StarSubalgebra ℂ (CStarMatrix (Fin 2) (Fin 2) A) := matStarSubalgebra S 2 with hT
+  -- `B = [[0,b],[b*,0]]` lies in the ultraweak, hence (73VIII) ultrastrong,
+  -- closure of `M₂(S)`
+  have hBmem : antiDiag b ∈
+      @closure _ (ultrastrong _) (T : Set (CStarMatrix (Fin 2) (Fin 2) A)) := by
+    obtain ⟨l, hl, hlim⟩ := exists_net_of_mem_usClosure (S : Set A) b hb
+    have h1 : UWTendsto (fun i : (S : Set A) => (i : A)) l b := uwweaker_2 _ _ _ hlim
+    have huw : UWTendsto (fun i : (S : Set A) => antiDiag (i : A)) l (antiDiag b) :=
+      uwTendsto_add' (uwTendsto_matEmb 0 1 h1) (uwTendsto_matEmb 1 0 (uwTendsto_star' h1))
+    have hmem : ∀ i : (S : Set A), antiDiag (i : A) ∈ T := by
+      intro i p q
+      fin_cases p <;> fin_cases q <;>
+        simp only [antiDiag, CStarMatrix.add_apply, matEmb_apply] <;> norm_num <;>
+        first
+          | exact zero_mem S
+          | exact i.2
+          | exact star_mem i.2
+    have _ : l.NeBot := hl
+    exact mem_usClosure_of_mem_uwClosure (convex_starSubalgebra T)
+      (mem_uwClosure_of_uwTendsto huw hmem)
+  obtain ⟨ι, l, hl, Am, hAm, hlimA⟩ :=
+    kaplansky_sa T (isClosed_matStarSubalgebra hS 2) (antiDiag b) hBmem
+      (isSelfAdjoint_antiDiag b)
+  refine ⟨ι, l, hl, fun i => (Am i) 0 1, fun i => ⟨(hAm i).1 0 1, ?_⟩, ?_⟩
+  · calc ‖(Am i) 0 1‖ ≤ ‖Am i‖ := CStarMatrix.norm_entry_le_norm
+      _ ≤ ‖antiDiag b‖ := (hAm i).2.1
+      _ ≤ ‖b‖ := norm_antiDiag_le b
+  · have h := (mn_vna_2' 2 l Am (antiDiag b)).2.mp hlimA 0 1
+    simp only [CStarMatrix.ofMatrix_symm_apply, antiDiag_apply_01] at h
+    exact h
+
 /-- **74VI** (`dense-subalgebra`, vn.tex:4421, Corollary): given `ε > 0`
 and an ultraweakly dense ∗-subalgebra `S` of a von Neumann algebra, every
 element `a` is the ultrastrong limit of a net `(s_α)_α` from `S` with
@@ -2204,8 +2419,63 @@ element `a` is the ultrastrong limit of a net `(s_α)_α` from `S` with
 theorem dense_subalgebra (S : StarSubalgebra ℂ A)
     (hS : @Dense A (ultraweak A) (S : Set A)) (ε : ℝ) (hε : 0 < ε) (a : A) :
     ∃ (ι : Type u) (l : Filter ι), l.NeBot ∧ ∃ s : ι → A,
-      (∀ i, s i ∈ S ∧ ‖s i‖ ≤ ‖a‖ * (1 + ε)) ∧ USTendsto s l a :=
-  sorry
+      (∀ i, s i ∈ S ∧ ‖s i‖ ≤ ‖a‖ * (1 + ε)) ∧ USTendsto s l a := by
+  classical
+  set K : Set A := {s : A | s ∈ S ∧ ‖s‖ ≤ ‖a‖ * (1 + ε)} with hK
+  -- it suffices that `a` lies in the ultrastrong closure of `K`
+  suffices h : a ∈ @closure A (ultrastrong A) K by
+    obtain ⟨l, hl, hlim⟩ := exists_net_of_mem_usClosure K a h
+    exact ⟨K, l, hl, fun i => (i : A), fun i => i.2, hlim⟩
+  rcases eq_or_lt_of_le (norm_nonneg a) with ha0 | ha0
+  · -- `a = 0`: the constant net `0` will do
+    have haz : a = 0 := norm_eq_zero.mp ha0.symm
+    refine @subset_closure A (ultrastrong A) K a ⟨?_, ?_⟩
+    · rw [haz]; exact zero_mem S
+    · rw [← ha0]; positivity
+  -- the norm closure `C` of `S` is a C*-subalgebra containing `a`
+  -- in its ultrastrong closure
+  set C : StarSubalgebra ℂ A := S.topologicalClosure with hC
+  have hCcl : IsClosed (C : Set A) := isClosed_closure
+  have haC : a ∈ @closure A (ultrastrong A) (C : Set A) := by
+    refine mem_usClosure_of_mem_uwClosure (convex_starSubalgebraA C) ?_
+    have hsub : (S : Set A) ⊆ (C : Set A) := subset_closure
+    have hmono := @closure_mono A (ultraweak A) (S : Set A) (C : Set A) hsub
+    exact hmono (hS a)
+  obtain ⟨ι, l, hl, c, hc, hlimc⟩ := kaplansky C hCcl a haC
+  rw [mem_usClosure_iff]
+  intro ω δ hδ
+  -- pick `c α` ultrastrongly close to `a`, then `s ∈ S` in norm close to `c α`
+  have _ : l.NeBot := hl
+  have hev := (usTendsto_iff c l a).mp hlimc ω
+  have hhalf : (0 : ℝ) < δ / 2 := by positivity
+  obtain ⟨i, hi⟩ := (hev.eventually (gt_mem_nhds hhalf)).exists
+  set M : ℝ := omegaNorm A ω 1 with hM
+  have hM0 : 0 ≤ M := omegaNorm_nonneg _ _
+  set η : ℝ := min (ε * ‖a‖) (δ / (2 * (M + 1))) with hη
+  have hMp : (0 : ℝ) < 2 * (M + 1) := by linarith
+  have hη0 : 0 < η := lt_min (mul_pos hε ha0) (div_pos hδ hMp)
+  obtain ⟨s, hsS, hsc⟩ : ∃ s ∈ (S : Set A), ‖s - c i‖ < η := by
+    obtain ⟨s, hsS, hsc⟩ := Metric.mem_closure_iff.mp ((hc i).1) η hη0
+    exact ⟨s, hsS, by rw [← dist_eq_norm, dist_comm]; exact hsc⟩
+  refine ⟨s, ⟨hsS, ?_⟩, ?_⟩
+  · have h1 : ‖s‖ ≤ ‖s - c i‖ + ‖c i‖ := by
+      have := norm_add_le (s - c i) (c i)
+      simpa using this
+    have h2 : ‖s - c i‖ ≤ ε * ‖a‖ := hsc.le.trans (min_le_left _ _)
+    have h3 : ‖c i‖ ≤ ‖a‖ := (hc i).2
+    nlinarith [h1, h2, h3]
+  · have hsplit : omegaNorm A ω (s - a)
+        ≤ omegaNorm A ω (s - c i) + omegaNorm A ω (c i - a) :=
+      omegaNorm_sub_le ω s (c i) a
+    have hnorm : omegaNorm A ω (s - c i) ≤ ‖s - c i‖ * M := by
+      have := omegaNorm_mul_le ω (s - c i) 1
+      rwa [mul_one] at this
+    have hlt : ‖s - c i‖ * M < δ / 2 := by
+      have h' : ‖s - c i‖ < δ / (2 * (M + 1)) := lt_of_lt_of_le hsc (min_le_right _ _)
+      have h'' : ‖s - c i‖ * (2 * (M + 1)) < δ := (lt_div_iff₀ hMp).mp h'
+      nlinarith [norm_nonneg (s - c i), hM0]
+    have hci : omegaNorm A ω (c i - a) < δ / 2 := hi
+    linarith [hsplit, hnorm, hlt, hci]
 
 /-! ## Parsec 750: closedness of subalgebras
 
@@ -2706,7 +2976,8 @@ closure of `S`.  For all npu-functionals `ω₀`, `ω₁` with
 *Class 1 — faithful*: Kaplansky's density theorem in the effect form
 (**74IV**.3 `kaplansky_effects`) replaces the approximating net by one of
 effects, and **75II** finishes.  Only the *effect* case of 74IV is used, so
-this does not depend on the still-`sorry`ed general 74IV. -/
+this does not depend on the general 74IV (which is proved too, but only
+later in the file, since its proof runs the effect case in `M₂(𝒜)`). -/
 theorem kadisons_lemma (S : StarSubalgebra ℂ A) (hS : IsVNSubalgebra A S)
     (p : A) (hp : IsStarProjection p)
     (hcl : p ∈ @closure A (ultrastrong A) S) (ω₀ ω₁ : NPFunctional A)
