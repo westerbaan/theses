@@ -132,11 +132,10 @@ class DaggerPrimeEffectus : Prop where
   quot_sharp : ∀ {X W : C} {s : Pred X} (_ : IsSharp s) {ξ : X ⟶ W},
     IsQuotient s ξ → SharpMap ξ
 
-/-- **215III** (`dagger-theorem`, eff.tex:5327, Theorem): an &-effectus is
-a †-effectus if and only if it is a †'-effectus (necessity is 216XI,
-sufficiency 220II). -/
-theorem dagger_theorem :
-    Nonempty (DaggerEffectus C) ↔ DaggerPrimeEffectus C := sorry
+-- **215III** (`dagger-theorem`, eff.tex:5327, Theorem), `dagger_theorem`:
+-- an &-effectus is a †-effectus iff it is a †'-effectus.  It is stated and
+-- proved after 220II (`dagger_thm_sufficiency`), which is one of its two
+-- halves; the other is 216XI (`dagger_thm_necessity`).
 
 /-- **215VI** (`vn-is-dagger-category`, eff.tex:5355, Corollary): the
 &-effectus `vNᵒᵖ` is a †-effectus. -/
@@ -1567,17 +1566,706 @@ theorem dagger_iso_mu [DaggerPrimeEffectus C] (a b : Pred X)
           comprMap (ceilPred (andThen b a))) ≫ asrt (andThen b a) := hpr5.symm
     _ = _ := by simp only [Category.assoc]
 
+/-- Helper: `pureDagger` respects equality of its argument (`IsPure` being a
+`Prop`, the purity proofs need not be transported). -/
+theorem pureDagger_congr [DaggerPrimeEffectus C] {f g : X ⟶ Y} (hf : IsPure f)
+    (hg : IsPure g) (h : f = g) : pureDagger f hf = pureDagger g hg := by
+  subst h; rfl
+
+/-- Helper: `f† = g` as soon as `g` is *a* dagger of `f` (217I). -/
+theorem pureDagger_eq [DaggerPrimeEffectus C] {f : X ⟶ Y} (hf : IsPure f)
+    {g : Y ⟶ X} (h : IsDaggerOf f g) : pureDagger f hf = g :=
+  (pureDagger_existsUnique f hf).unique (isDaggerOf_pureDagger f hf) h
+
+/-- Helper: `im (θ ∘ f) = im f ∘ θ⁻¹` for an isomorphism `θ`. -/
+theorem imPred_comp_iso (f : X ⟶ Y) (θ : Y ⟶ Z) [IsIso θ] :
+    imPred (f ≫ θ) = inv θ ≫ imPred f := by
+  refine imPred_eq _ ⟨?_, ?_⟩
+  · rw [Category.assoc, ← Category.assoc θ, IsIso.hom_inv_id, Category.id_comp,
+      (isImage_imPred f).1, Category.assoc, iso_isTotal θ]
+  · intro q hq
+    have h : f ≫ (θ ≫ q) = f ≫ truth Y := by
+      rw [← Category.assoc, hq, Category.assoc, iso_isTotal θ]
+    have h2 := comp_le_comp (inv θ) ((isImage_imPred f).2 _ h)
+    rwa [← Category.assoc, IsIso.inv_hom_id, Category.id_comp] at h2
+
+/-- Helper for the daggered squares of 219II (the technique of the published
+solution to **219IX**, `bsols.tex:3283`): if `m = π_J ∘ δ` for an isomorphism
+`δ` and `m ∘ z = asrt_J`, then `δ ∘ z = ζ_J` — a map into a comprehension for
+`J` composing with it to `asrt_J` *is* the corresponding quotient, comprehensions
+being monic. -/
+theorem zetaMap_eq_of_compr {J : Pred Y} (hJ : IsSharp J) {A : C}
+    (δ : A ≅ comprObj J) {m : A ⟶ Y} (hm : δ.hom ≫ comprMap J = m)
+    {z : Y ⟶ A} (hz : z ≫ m = asrt J) : z ≫ δ.hom = zetaMap J hJ := by
+  have : Mono (comprMap J) := compr_basics_5 (isComprehension_comprMap J)
+  refine (cancel_mono (comprMap J)).mp ?_
+  rw [Category.assoc, hm, hz, (zetaMap_spec J hJ).2.2]
+
+/-- Helper, dual to `zetaMap_eq_of_compr` (the technique of **219VII**,
+eff.tex:6203): if `z = β ∘ ζ_J` for an isomorphism `β` and `c ∘ z = asrt_J`, then
+`β⁻¹ ∘ π_J = c`, quotients being epic. -/
+theorem comprMap_eq_of_zeta {J : Pred Y} (hJ : IsSharp J) {B : C}
+    (β : comprObj J ≅ B) {z : Y ⟶ B} (hz : zetaMap J hJ ≫ β.hom = z)
+    {c : B ⟶ Y} (hc : z ≫ c = asrt J) : β.inv ≫ comprMap J = c := by
+  have : Epi (zetaMap J hJ) := quotient_basics_6 (zetaMap_spec J hJ).1
+  have : Epi z := by rw [← hz]; exact epi_comp _ _
+  refine (cancel_epi z).mp ?_
+  rw [← hz, Category.assoc, ← Category.assoc β.hom, β.hom_inv_id,
+    Category.id_comp, (zetaMap_spec J hJ).2.2, hz]
+  exact hc.symm
+
+/-- Helper: `im (π_i ∘ π_j) = j ∘ ζ_i` for sharp `i` on `Y` and sharp `j` on
+`{Y|i}` — the pushforward of `j` along `π_i`.  (`≥` is the universal property of
+the image; `≤` uses `j ≤ im (π_i ∘ π_j) ∘ π_i` and `asrt_i ∘ im (π_i ∘ π_j) =
+im (π_i ∘ π_j)`.) -/
+theorem imPred_compr_compr {i : Pred Y} (hi : IsSharp i)
+    {j : Pred (comprObj i)} (hj : IsSharp j) :
+    imPred (comprMap j ≫ comprMap i) = zetaMap i hi ≫ j := by
+  obtain ⟨-, hπζ, hζπ⟩ := zetaMap_spec i hi
+  set I := imPred (comprMap j ≫ comprMap i) with hI
+  have hIle : I ≼ i := by
+    have h := (im_ineq (comprMap i) (comprMap j)).1
+    rwa [(img_of_compr i).2 i hi] at h
+  refine eabasics_le_antisymm ?_ ?_
+  · -- `im` is least: `(π_i ∘ π_j) ∘ (j ∘ ζ_i) = (π_i ∘ π_j) ∘ 1`
+    refine (isImage_imPred _).2 _ ?_
+    rw [Category.assoc, ← Category.assoc (comprMap i) (zetaMap i hi) j, hπζ,
+      Category.id_comp, (isComprehension_comprMap j).1, Category.assoc,
+      compr_total (isComprehension_comprMap i)]
+  · -- `j ≤ π_i ∘ I` since `π_j ∘ (π_i ∘ I) = π_j ∘ 1`, so `j ∘ ζ_i ≤ I ∘ asrt_i = I`
+    have hj1 : j ≼ (comprMap i ≫ I) := by
+      have h : comprMap j ≫ (comprMap i ≫ I) = comprMap j ≫ truth (comprObj i) := by
+        rw [← Category.assoc, (isImage_imPred (comprMap j ≫ comprMap i)).1,
+          Category.assoc, compr_total (isComprehension_comprMap i)]
+      have h2 := (isImage_imPred (comprMap j)).2 _ h
+      rwa [(img_of_compr j).2 j hj] at h2
+    have h2 := comp_le_comp (zetaMap i hi) hj1
+    rw [← Category.assoc, hζπ] at h2
+    have h3 : asrt i ≫ I = I := by
+      have := ((asrt_absorp_rule I (isSharp_one (effObj C)) hi).2).mp
+        (by rw [truth_effObj_eq_id, Category.comp_id]; exact hIle)
+      exact this
+    rwa [h3] at h2
+
+/-- Helper: in a †'-effectus every predicate has a square root (the first
+axiom, in the form `zeta_through_asrt` and `asrt_iso` want it). -/
+theorem exists_sqrt_pred [DaggerPrimeEffectus C] {W : C} (p : Pred W) :
+    ∃ q, andThen q q = p := (DaggerPrimeEffectus.sqrt_existsUnique p).exists
+
+/-- Helper (216X at `ζ_i`): `asrt_{j ∘ ζ_i} = π_i ∘ asrt_j ∘ ζ_i`. -/
+theorem asrt_zeta_compr [DaggerPrimeEffectus C] {i : Pred Y} (hi : IsSharp i)
+    (j : Pred (comprObj i)) :
+    zetaMap i hi ≫ asrt j ≫ comprMap i = asrt (zetaMap i hi ≫ j) := by
+  obtain ⟨hq, hπζ, hζπ⟩ := zetaMap_spec i hi
+  have hz := zeta_through_asrt (fun p => exists_sqrt_pred p) hi
+    (quotcompr_diamond_adjoint hi) j
+  have hJle : (zetaMap i hi ≫ j) ≼ i := by
+    have h := comp_le_comp (zetaMap i hi) (pred_le_truth j)
+    rwa [quotient_basics_5 hq, eabasics_orth_orth] at h
+  have habs : asrt (zetaMap i hi ≫ j) ≫ asrt i = asrt (zetaMap i hi ≫ j) :=
+    (asrt_absorp_rule _ hi hi).1.mp
+      (by rw [imPred_asrt]; exact (ceil_le_iff_of_isSharp hi).mpr hJle)
+  calc zetaMap i hi ≫ asrt j ≫ comprMap i
+      = (zetaMap i hi ≫ asrt j) ≫ comprMap i := by rw [Category.assoc]
+    _ = (asrt (zetaMap i hi ≫ j) ≫ zetaMap i hi) ≫ comprMap i := by rw [hz]
+    _ = asrt (zetaMap i hi ≫ j) ≫ asrt i := by rw [Category.assoc, hζπ]
+    _ = asrt (zetaMap i hi ≫ j) := habs
+
+/-- Functoriality of the dagger against an isomorphism on the left:
+`(θ ∘ f)† = f† ∘ θ⁻¹`.  (Post-composing with `θ` moves the standard form of `f`
+to a comprehension for `im f ∘ θ⁻¹`.) -/
+theorem pureDagger_comp_iso [DaggerPrimeEffectus C] {n : X ⟶ Y} (hn : IsPure n)
+    (θ : Y ≅ Z) :
+    pureDagger (n ≫ θ.hom)
+        (upm_closed_pure hn (isPure_of_isQuotient (quotient_basics_3 θ.hom))) =
+      θ.inv ≫ pureDagger n hn := by
+  have hinv : inv θ.hom = θ.inv := by simp
+  set c := n ≫ truth Y with hc
+  set j := imPred n with hj
+  have hjs : IsSharp j := isSharp_imPred C n
+  obtain ⟨γ, hγ⟩ := standard_form_of_eq hn (isSharp_ceil c) hjs rfl rfl
+  have hdn : pureDagger n hn =
+      zetaMap j hjs ≫ γ.inv ≫ comprMap (ceilPred c) ≫ asrt c :=
+    pureDagger_eq hn ⟨γ, hγ, rfl⟩
+  have ht : (n ≫ θ.hom) ≫ truth Z = c := by
+    rw [Category.assoc, iso_isTotal θ.hom]
+  have him : imPred (n ≫ θ.hom) = θ.inv ≫ j := by
+    rw [imPred_comp_iso, hinv]
+  have hJs : IsSharp (θ.inv ≫ j) := him ▸ isSharp_imPred C (n ≫ θ.hom)
+  have hcompr : IsComprehension (θ.inv ≫ j) (comprMap j ≫ θ.hom) := by
+    have h := isComprehension_comp_iso (isComprehension_comprMap j) θ.hom
+    rwa [hinv] at h
+  obtain ⟨δ, hδiso, hδ, -⟩ :=
+    compr_basics_2 hcompr (isComprehension_comprMap (θ.inv ≫ j))
+  have := hδiso
+  -- `ζ_{j ∘ θ⁻¹} = θ⁻¹ ∘ ζ_j ∘ δ`
+  have hzeta : (θ.inv ≫ zetaMap j hjs) ≫ δ = zetaMap (θ.inv ≫ j) hJs := by
+    refine zetaMap_eq_of_compr hJs (asIso δ) (m := comprMap j ≫ θ.hom) hδ ?_
+    rw [Category.assoc, ← Category.assoc (zetaMap j hjs),
+      (zetaMap_spec j hjs).2.2, ← Category.assoc,
+      asrt_iso (fun p => exists_sqrt_pred p) θ.inv j, Category.assoc,
+      θ.inv_hom_id, Category.comp_id]
+  refine pureDagger_eq _ (isDaggerOf_of_eq (isSharp_ceil c) hJs (by rw [ht]) him
+    (γ ≪≫ asIso δ) ?_ ?_)
+  · rw [ht, Iso.trans_hom, asIso_hom]
+    conv_lhs => rw [hγ]
+    simp only [Category.assoc]
+    rw [hδ]
+  · rw [ht, hdn, Iso.trans_inv, asIso_inv]
+    rw [← hzeta]
+    simp only [Category.assoc]
+    rw [← Category.assoc δ (inv δ), IsIso.hom_inv_id, Category.id_comp]
+
+/-- Functoriality of the dagger against a comprehension on the left:
+`(π_i ∘ f)† = f† ∘ ζ_i`.  (Comprehensions compose, 211XI, and
+`im (π_i ∘ π_{im f}) = im f ∘ ζ_i`.) -/
+theorem pureDagger_comp_compr [DaggerPrimeEffectus C] {i : Pred Y}
+    (hi : IsSharp i) {n : X ⟶ comprObj i} (hn : IsPure n) :
+    pureDagger (n ≫ comprMap i)
+        (upm_closed_pure hn
+          (isPure_comprehension C (isComprehension_comprMap i))) =
+      zetaMap i hi ≫ pureDagger n hn := by
+  set c := n ≫ truth (comprObj i) with hc
+  set j := imPred n with hj
+  have hjs : IsSharp j := isSharp_imPred C n
+  obtain ⟨γ, hγ⟩ := standard_form_of_eq hn (isSharp_ceil c) hjs rfl rfl
+  have hdn : pureDagger n hn =
+      zetaMap j hjs ≫ γ.inv ≫ comprMap (ceilPred c) ≫ asrt c :=
+    pureDagger_eq hn ⟨γ, hγ, rfl⟩
+  have ht : (n ≫ comprMap i) ≫ truth Y = c := by
+    rw [Category.assoc, compr_total (isComprehension_comprMap i)]
+  -- `π_i ∘ π_j` is a comprehension for `J = j ∘ ζ_i`
+  obtain ⟨r, hr⟩ := upm_closed_compr (isComprehension_comprMap j)
+    (isComprehension_comprMap i)
+  have hcompr : IsComprehension (zetaMap i hi ≫ j) (comprMap j ≫ comprMap i) := by
+    have h := isComprehension_imPred hr
+    rwa [imPred_compr_compr hi hjs] at h
+  have hJs : IsSharp (zetaMap i hi ≫ j) :=
+    imPred_compr_compr hi hjs ▸ isSharp_imPred C (comprMap j ≫ comprMap i)
+  -- `im (π_i ∘ n) = J`
+  have hepi : Epi (asrt c ≫ zetaMap (ceilPred c) (isSharp_ceil c) ≫ γ.hom) := by
+    have h : Epi (asrt c ≫ zetaMap (ceilPred c) (isSharp_ceil c)) :=
+      quotient_basics_6 (zeta_asrt_quot c)
+    rw [← Category.assoc]
+    exact epi_comp _ _
+  have him : imPred (n ≫ comprMap i) = zetaMap i hi ≫ j := by
+    have he : n ≫ comprMap i =
+        (asrt c ≫ zetaMap (ceilPred c) (isSharp_ceil c) ≫ γ.hom) ≫
+          (comprMap j ≫ comprMap i) := by
+      conv_lhs => rw [hγ]
+      simp only [Category.assoc]
+      rw [← hc]
+    rw [he, imPred_comp_of_epi, imPred_compr_compr hi hjs]
+  obtain ⟨δ, hδiso, hδ, -⟩ :=
+    compr_basics_2 hcompr (isComprehension_comprMap (zetaMap i hi ≫ j))
+  have := hδiso
+  -- `ζ_J = ζ_i ∘ ζ_j ∘ δ`
+  have hzeta : (zetaMap i hi ≫ zetaMap j hjs) ≫ δ = zetaMap (zetaMap i hi ≫ j) hJs := by
+    refine zetaMap_eq_of_compr hJs (asIso δ) (m := comprMap j ≫ comprMap i) hδ ?_
+    rw [Category.assoc, ← Category.assoc (zetaMap j hjs),
+      (zetaMap_spec j hjs).2.2, asrt_zeta_compr hi j]
+  refine pureDagger_eq _ (isDaggerOf_of_eq (isSharp_ceil c) hJs (by rw [ht]) him
+    (γ ≪≫ asIso δ) ?_ ?_)
+  · rw [ht, Iso.trans_hom, asIso_hom]
+    conv_lhs => rw [hγ]
+    simp only [Category.assoc]
+    rw [hδ]
+  · rw [ht, hdn, Iso.trans_inv, asIso_inv, ← hzeta]
+    simp only [Category.assoc]
+    rw [← Category.assoc δ (inv δ), IsIso.hom_inv_id, Category.id_comp]
+
+/-- **219XI** (`dagger-iso-mu`, eff.tex:6266, Proposition), restated as the
+functoriality of the dagger on assert maps: `(asrt_b ∘ asrt_a)† =
+asrt_a ∘ asrt_b`.  (216XI.Ax2 puts `asrt_b ∘ asrt_a` in standard form; 219XI
+identifies the resulting formula for the dagger with `asrt_a ∘ asrt_b`.) -/
+theorem pureDagger_asrt_comp [DaggerPrimeEffectus C] (a b : Pred X) :
+    pureDagger (asrt a ≫ asrt b)
+        (upm_closed_pure (asrt_spec a).1.1 (asrt_spec b).1.1) =
+      asrt b ≫ asrt a := by
+  have htruth : (asrt a ≫ asrt b) ≫ truth X = andThen a b := by
+    rw [Category.assoc, (asrt_spec b).2]; rfl
+  have hadj : DiamondAdjoint (asrt a ≫ asrt b) (asrt b ≫ asrt a) := by
+    have hpsa : diaPull (asrt a) = diaPush (asrt a) :=
+      diamond_squares_2 (asrt_spec a).1
+    have hqsa : diaPull (asrt b) = diaPush (asrt b) :=
+      diamond_squares_2 (asrt_spec b).1
+    change diaPull _ = diaPush _
+    funext s
+    rw [diaPull_comp, diaPush_comp, hpsa, hqsa]
+  have him : imPred (asrt a ≫ asrt b) = ceilPred (andThen b a) := by
+    have h := exc_diamond_adj_2 hadj
+    rwa [Category.assoc, (asrt_spec a).2] at h
+  obtain ⟨ν, hν⟩ := asrt_comp_standard_form a b
+  refine pureDagger_eq _ (isDaggerOf_of_eq (isSharp_ceil (andThen a b))
+    (isSharp_ceil (andThen b a)) (by rw [htruth]) him ν ?_ ?_)
+  · rw [htruth]; exact hν
+  · rw [htruth]; exact dagger_iso_mu b a ν hν
+
+/-- The map `ζ_e ∘ asrt_p ∘ π_t` of 219XIV is pure. -/
+theorem isPure_compr_asrt_zeta [DaggerPrimeEffectus C] {t e : Pred Y} (he : IsSharp e)
+    (p : Pred Y) : IsPure (comprMap t ≫ asrt p ≫ zetaMap e he) :=
+  upm_closed_pure (isPure_comprehension C (isComprehension_comprMap t))
+    (upm_closed_pure (asrt_spec p).1.1
+      (isPure_of_isQuotient (zetaMap_spec e he).1))
+
+/-- **219XIV** (`dagger-iso-chi2`, eff.tex:6429, Lemma), in the general form
+that avoids the Setting 219II: for sharp `t`, `e` and a predicate `p` with
+`⌈p⌉ ≤ e`,
+`(ζ_e ∘ asrt_p ∘ π_t)† = ζ_t ∘ asrt_p ∘ π_e`.
+(The thesis states this for `e = ⌈p⌉`, and only for the `χ` of its Setting; the
+proof is the thesis's: put `asrt_p ∘ asrt_t` in standard form using the standard
+form `χ` of `ζ_e ∘ asrt_p ∘ π_t` together with the two auxiliary isomorphisms
+`α₂`, `β₂` and their daggered versions, then apply 219XI.) -/
+theorem pureDagger_compr_asrt_zeta [DaggerPrimeEffectus C] {t e : Pred Y} (ht : IsSharp t)
+    (he : IsSharp e) {p : Pred Y} (hpe : ceilPred p ≼ e) :
+    pureDagger (comprMap t ≫ asrt p ≫ zetaMap e he) (isPure_compr_asrt_zeta he p) =
+    comprMap e ≫ asrt p ≫ zetaMap t ht := by
+  obtain ⟨hqt, hπζt, hζπt⟩ := zetaMap_spec t ht
+  obtain ⟨hqe, hπζe, hζπe⟩ := zetaMap_spec e he
+  have hpure := isPure_compr_asrt_zeta (t := t) he p
+  have hZe : zetaMap e he ≫ truth (comprObj e) = e := by
+    rw [quotient_basics_5 hqe, eabasics_orth_orth]
+  have hZt : zetaMap t ht ≫ truth (comprObj t) = t := by
+    rw [quotient_basics_5 hqt, eabasics_orth_orth]
+  have habs : asrt p ≫ asrt e = asrt p :=
+    (asrt_absorp_rule (asrt p) he he).1.mp (by rw [imPred_asrt]; exact hpe)
+  have hpe' : asrt p ≫ e = p := by
+    refine eabasics_le_antisymm ?_ ?_
+    · have h := comp_le_comp (asrt p) (pred_le_truth e)
+      rwa [(asrt_spec p).2] at h
+    · have h := comp_le_comp (asrt p) hpe
+      rwa [asrt_comp_ceil] at h
+  -- the truth and image of `A`
+  set u := comprMap t ≫ p with hu
+  have hA1 : (comprMap t ≫ asrt p ≫ zetaMap e he) ≫ truth (comprObj e) = u := by
+    simp only [Category.assoc]
+    rw [hZe, hpe']
+  set v := imPred (comprMap t ≫ asrt p ≫ zetaMap e he) with hv
+  have hvs : IsSharp v := isSharp_imPred C _
+  obtain ⟨χ, hχ⟩ := standard_form_of_eq hpure (isSharp_ceil u) hvs (by rw [hA1]) rfl
+  have hdag : pureDagger (comprMap t ≫ asrt p ≫ zetaMap e he) hpure =
+      zetaMap v hvs ≫ χ.inv ≫ comprMap (ceilPred u) ≫ asrt u :=
+    pureDagger_eq hpure (isDaggerOf_of_eq (isSharp_ceil u) hvs (by rw [hA1]) rfl
+      χ hχ (by rw [hA1]))
+  rw [hA1] at hχ
+  set tp := andThen t p with htp
+  set pt := andThen p t with hpt
+  -- (1) `⌈u⌉ ∘ ζ_t = ⌈t & p⌉`
+  have hzt_sharp : SharpMap (zetaMap t ht) :=
+    DaggerPrimeEffectus.quot_sharp (DiamondEffectus.orth_sharp ht) hqt
+  have hzu : zetaMap t ht ≫ u = tp := by
+    rw [hu, ← Category.assoc, hζπt, htp]
+    rfl
+  have hceil_u : zetaMap t ht ≫ ceilPred u = ceilPred tp := by
+    rw [← (sharp_ceil _).mp hzt_sharp u, hzu]
+  have htple : ceilPred tp ≼ t := by
+    have h1 : tp ≼ t := by
+      have h := comp_le_comp (asrt t) (pred_le_truth p)
+      rwa [(asrt_spec t).2] at h
+    have h2 := ceilPred_mono h1
+    rwa [ceil_of_isSharp ht] at h2
+  -- (2) the isomorphism `β₂`
+  have hqcomp : IsQuotient (orth (ceilPred tp))
+      (zetaMap t ht ≫ zetaMap (ceilPred u) (isSharp_ceil u)) := by
+    have h := quotients_composition hqt
+      (zetaMap_spec (ceilPred u) (isSharp_ceil u)).1
+    rwa [hceil_u] at h
+  obtain ⟨β₂, hβiso, hβ, -⟩ :=
+    quotient_basics_2 hqcomp (zetaMap_spec (ceilPred tp) (isSharp_ceil tp)).1
+  have := hβiso
+  -- (3) the daggered version of `β₂`
+  have hβdag : (inv β₂) ≫ comprMap (ceilPred tp) =
+      comprMap (ceilPred u) ≫ comprMap t := by
+    have h := comprMap_eq_of_zeta (isSharp_ceil tp) (asIso β₂) hβ
+      (c := comprMap (ceilPred u) ≫ comprMap t) ?_
+    · rw [asIso_inv] at h; exact h
+    have hz := zeta_through_asrt (fun q => exists_sqrt_pred q) ht
+      (quotcompr_diamond_adjoint ht) (ceilPred u)
+    have habs2 : asrt (ceilPred tp) ≫ asrt t = asrt (ceilPred tp) :=
+      (asrt_absorp_rule (asrt (ceilPred tp)) ht ht).1.mp
+        (by rw [imPred_asrt, ceil_of_isSharp (isSharp_ceil tp)]; exact htple)
+    calc (zetaMap t ht ≫ zetaMap (ceilPred u) (isSharp_ceil u)) ≫
+          comprMap (ceilPred u) ≫ comprMap t
+        = zetaMap t ht ≫ (zetaMap (ceilPred u) (isSharp_ceil u) ≫
+            comprMap (ceilPred u)) ≫ comprMap t := by simp only [Category.assoc]
+      _ = (zetaMap t ht ≫ asrt (ceilPred u)) ≫ comprMap t := by
+          rw [(zetaMap_spec (ceilPred u) (isSharp_ceil u)).2.2]
+          simp only [Category.assoc]
+      _ = asrt (ceilPred tp) ≫ zetaMap t ht ≫ comprMap t := by
+          rw [hz, hceil_u]; simp only [Category.assoc]
+      _ = asrt (ceilPred tp) := by rw [hζπt, habs2]
+  -- (4) the isomorphism `α₂`
+  have himA : imPred (comprMap t ≫ asrt p) = ceilPred pt :=
+    (congrArg Subtype.val
+      (congrFun (diamond_squares_2 (asrt_spec p).1) ⟨t, ht⟩)).symm
+  have hAπe : (comprMap t ≫ asrt p ≫ zetaMap e he) ≫ comprMap e =
+      comprMap t ≫ asrt p := by
+    simp only [Category.assoc]; rw [hζπe, habs]
+  have hepiA : Epi (asrt u ≫ zetaMap (ceilPred u) (isSharp_ceil u) ≫ χ.hom) := by
+    have h : Epi (asrt u ≫ zetaMap (ceilPred u) (isSharp_ceil u)) :=
+      quotient_basics_6 (zeta_asrt_quot u)
+    rw [← Category.assoc]; exact epi_comp _ _
+  have himPv : imPred (comprMap v ≫ comprMap e) = ceilPred pt := by
+    have he1 : (comprMap t ≫ asrt p ≫ zetaMap e he) ≫ comprMap e =
+        (asrt u ≫ zetaMap (ceilPred u) (isSharp_ceil u) ≫ χ.hom) ≫
+          (comprMap v ≫ comprMap e) := by
+      conv_lhs => rw [hχ]
+      simp only [Category.assoc]
+    rw [← imPred_comp_of_epi (asrt u ≫ zetaMap (ceilPred u) (isSharp_ceil u) ≫
+      χ.hom) (comprMap v ≫ comprMap e), ← he1, hAπe, himA]
+  obtain ⟨r₂, hr₂⟩ := upm_closed_compr (isComprehension_comprMap v)
+    (isComprehension_comprMap e)
+  have hcompr₂ : IsComprehension (ceilPred pt) (comprMap v ≫ comprMap e) := by
+    have h := isComprehension_imPred hr₂
+    rwa [himPv] at h
+  obtain ⟨α₂, hαiso, hα, -⟩ :=
+    compr_basics_2 hcompr₂ (isComprehension_comprMap (ceilPred pt))
+  have := hαiso
+  -- (5) the daggered version of `α₂`
+  have hzev : zetaMap e he ≫ v = ceilPred pt := by
+    rw [← imPred_compr_compr he hvs, himPv]
+  have hαdag : (zetaMap e he ≫ zetaMap v hvs) ≫ α₂ =
+      zetaMap (ceilPred pt) (isSharp_ceil pt) := by
+    refine zetaMap_eq_of_compr (isSharp_ceil pt) (asIso α₂) hα ?_
+    rw [Category.assoc, ← Category.assoc (zetaMap v hvs),
+      (zetaMap_spec v hvs).2.2, asrt_zeta_compr he v, hzev]
+  -- (6) the isomorphism `ν` of 219XI
+  have hzu2 : zetaMap t ht ≫ asrt u = asrt tp ≫ zetaMap t ht := by
+    have h := zeta_through_asrt (fun q => exists_sqrt_pred q) ht
+      (quotcompr_diamond_adjoint ht) u
+    rwa [hzu] at h
+  have hν : asrt t ≫ asrt p = asrt tp ≫ zetaMap (ceilPred tp) (isSharp_ceil tp) ≫
+      (asIso β₂ ≪≫ χ ≪≫ asIso α₂).hom ≫ comprMap (ceilPred pt) := by
+    calc asrt t ≫ asrt p
+        = (zetaMap t ht ≫ comprMap t) ≫ (asrt p ≫ zetaMap e he ≫ comprMap e) := by
+          rw [hζπt, hζπe, habs]
+      _ = zetaMap t ht ≫ (comprMap t ≫ asrt p ≫ zetaMap e he) ≫ comprMap e := by
+          simp only [Category.assoc]
+      _ = zetaMap t ht ≫ (asrt u ≫ zetaMap (ceilPred u) (isSharp_ceil u) ≫
+            χ.hom ≫ comprMap v) ≫ comprMap e := by rw [hχ]
+      _ = (zetaMap t ht ≫ asrt u) ≫ zetaMap (ceilPred u) (isSharp_ceil u) ≫
+            χ.hom ≫ comprMap v ≫ comprMap e := by simp only [Category.assoc]
+      _ = asrt tp ≫ (zetaMap t ht ≫ zetaMap (ceilPred u) (isSharp_ceil u)) ≫
+            χ.hom ≫ (comprMap v ≫ comprMap e) := by
+          rw [hzu2]; simp only [Category.assoc]
+      _ = asrt tp ≫ (zetaMap (ceilPred tp) (isSharp_ceil tp) ≫ β₂) ≫ χ.hom ≫
+            (α₂ ≫ comprMap (ceilPred pt)) := by rw [hβ, hα]
+      _ = _ := by simp only [Iso.trans_hom, asIso_hom, Category.assoc]
+  have hmu := dagger_iso_mu p t (asIso β₂ ≪≫ χ ≪≫ asIso α₂) hν
+  -- (7) the final computation
+  have habsζ : asrt t ≫ zetaMap t ht = zetaMap t ht :=
+    (asrt_absorp_rule (zetaMap t ht) (isSharp_one _) ht).2.mp
+      (by rw [hZt]; exact pcm_preorder_refl _)
+  have hfront : comprMap e ≫ zetaMap (ceilPred pt) (isSharp_ceil pt) ≫ inv α₂ =
+      zetaMap v hvs := by
+    rw [← hαdag]
+    simp only [Category.assoc]
+    rw [IsIso.hom_inv_id, Category.comp_id, ← Category.assoc, hπζe,
+      Category.id_comp]
+  have htail : comprMap t ≫ asrt tp ≫ zetaMap t ht = asrt u := by
+    rw [← hzu2, ← Category.assoc, hπζt, Category.id_comp]
+  rw [hdag]
+  symm
+  calc comprMap e ≫ asrt p ≫ zetaMap t ht
+      = comprMap e ≫ (asrt p ≫ asrt t) ≫ zetaMap t ht := by
+        rw [Category.assoc, habsζ]
+    _ = comprMap e ≫ (zetaMap (ceilPred pt) (isSharp_ceil pt) ≫
+          (asIso β₂ ≪≫ χ ≪≫ asIso α₂).inv ≫ comprMap (ceilPred tp) ≫ asrt tp) ≫
+          zetaMap t ht := by rw [hmu]
+    _ = (comprMap e ≫ zetaMap (ceilPred pt) (isSharp_ceil pt) ≫ inv α₂) ≫ χ.inv ≫
+          (inv β₂ ≫ comprMap (ceilPred tp)) ≫ asrt tp ≫ zetaMap t ht := by
+        simp only [Iso.trans_inv, asIso_inv, Category.assoc]
+    _ = zetaMap v hvs ≫ χ.inv ≫ (comprMap (ceilPred u) ≫ comprMap t) ≫
+          asrt tp ≫ zetaMap t ht := by rw [hfront, hβdag]
+    _ = zetaMap v hvs ≫ χ.inv ≫ comprMap (ceilPred u) ≫
+          (comprMap t ≫ asrt tp ≫ zetaMap t ht) := by simp only [Category.assoc]
+    _ = zetaMap v hvs ≫ χ.inv ≫ comprMap (ceilPred u) ≫ asrt u := by rw [htail]
+
+/-- Functoriality of the dagger against a comprehension on the right:
+`(N ∘ π_s)† = ζ_s ∘ N†`.  Decompose `N = h ∘ asrt_c` with `h` pristine (218X):
+`N ∘ π_s` is then `π_{im h} ∘ γ ∘ (ζ_{1∘h} ∘ asrt_c ∘ π_s)`, whose last factor is
+219XIV. -/
+theorem pureDagger_compr_comp [DaggerPrimeEffectus C] {s : Pred Y}
+    (hs : IsSharp s) {N : Y ⟶ Z} (hN : IsPure N) :
+    pureDagger (comprMap s ≫ N)
+        (upm_closed_pure
+          (isPure_comprehension C (isComprehension_comprMap s)) hN) =
+      pureDagger N hN ≫ zetaMap s hs := by
+  obtain ⟨m, ⟨hm, h1, hd⟩, -⟩ := prist_asrt_decomp hN
+  obtain ⟨γ, hγ⟩ := standard_form_pristine hm
+  have hdm : pureDagger m hm.1 = zetaMap (imPred m) (isSharp_imPred C m) ≫
+      γ.inv ≫ comprMap (m ≫ truth Z) := asrt_pristine_reverse_1 hm γ hγ
+  have hdN : pureDagger N hN = pureDagger m hm.1 ≫ asrt (N ≫ truth Z) :=
+    prist_asrt_decomp_dagger hN hm h1 hd
+  have hpe : ceilPred (N ≫ truth Z) ≼ (m ≫ truth Z) := by
+    rw [h1]; exact pcm_preorder_refl _
+  have hApure : IsPure (comprMap s ≫ asrt (N ≫ truth Z) ≫
+      zetaMap (m ≫ truth Z) hm.2) := isPure_compr_asrt_zeta hm.2 _
+  have hAdag := pureDagger_compr_asrt_zeta hs hm.2 hpe
+  have hBpure : IsPure ((comprMap s ≫ asrt (N ≫ truth Z) ≫
+      zetaMap (m ≫ truth Z) hm.2) ≫ γ.hom) :=
+    upm_closed_pure hApure (isPure_of_isQuotient (quotient_basics_3 γ.hom))
+  have hBdag := pureDagger_comp_iso hApure γ
+  have hCdag := pureDagger_comp_compr (isSharp_imPred C m) hBpure
+  have hRpure : IsPure (((comprMap s ≫ asrt (N ≫ truth Z) ≫
+      zetaMap (m ≫ truth Z) hm.2) ≫ γ.hom) ≫ comprMap (imPred m)) :=
+    upm_closed_pure hBpure
+      (isPure_comprehension C (isComprehension_comprMap (imPred m)))
+  have key : comprMap s ≫ N = ((comprMap s ≫ asrt (N ≫ truth Z) ≫
+      zetaMap (m ≫ truth Z) hm.2) ≫ γ.hom) ≫ comprMap (imPred m) := by
+    conv_lhs => rw [hd, hγ]
+    simp only [Category.assoc]
+  refine (pureDagger_congr _ hRpure key).trans ?_
+  rw [hCdag, hBdag, hAdag, hdN, hdm]
+  simp only [Category.assoc]
+
+/-- Functoriality of the dagger against a quotient on the left:
+`(ζ_s ∘ n)† = n† ∘ π_s` — the dagger of `pureDagger_compr_comp` at `n†`
+(218XII). -/
+theorem pureDagger_comp_zeta [DaggerPrimeEffectus C] {s : Pred Y}
+    (hs : IsSharp s) {n : X ⟶ Y} (hn : IsPure n) :
+    pureDagger (n ≫ zetaMap s hs)
+        (upm_closed_pure hn (isPure_of_isQuotient (zetaMap_spec s hs).1)) =
+      comprMap s ≫ pureDagger n hn := by
+  have hd := pureDagger_compr_comp hs (isPure_pureDagger hn)
+  rw [dagger_idempotent hn] at hd
+  refine (pureDagger_congr _ (isPure_pureDagger
+    (upm_closed_pure (isPure_comprehension C (isComprehension_comprMap s))
+      (isPure_pureDagger hn))) hd.symm).trans ?_
+  exact dagger_idempotent _
+
+/-- Functoriality of the dagger against a **pristine** map on the left:
+`(h ∘ n)† = n† ∘ h†`.  A pristine `h` is `π_{im h} ∘ γ ∘ ζ_{1∘h}` (218VI), so
+this is the three preceding lemmas in sequence. -/
+theorem pureDagger_comp_pristine [DaggerPrimeEffectus C] {h : Y ⟶ Z}
+    (hh : Pristine h) {n : X ⟶ Y} (hn : IsPure n) :
+    pureDagger (n ≫ h) (upm_closed_pure hn hh.1) =
+      pureDagger h hh.1 ≫ pureDagger n hn := by
+  obtain ⟨γ, hγ⟩ := standard_form_pristine hh
+  have hdh : pureDagger h hh.1 = zetaMap (imPred h) (isSharp_imPred C h) ≫
+      γ.inv ≫ comprMap (h ≫ truth Z) := asrt_pristine_reverse_1 hh γ hγ
+  have hApure : IsPure (n ≫ zetaMap (h ≫ truth Z) hh.2) :=
+    upm_closed_pure hn (isPure_of_isQuotient (zetaMap_spec _ hh.2).1)
+  have hBpure : IsPure ((n ≫ zetaMap (h ≫ truth Z) hh.2) ≫ γ.hom) :=
+    upm_closed_pure hApure (isPure_of_isQuotient (quotient_basics_3 γ.hom))
+  have hRpure : IsPure (((n ≫ zetaMap (h ≫ truth Z) hh.2) ≫ γ.hom) ≫
+      comprMap (imPred h)) :=
+    upm_closed_pure hBpure
+      (isPure_comprehension C (isComprehension_comprMap (imPred h)))
+  have key : n ≫ h =
+      ((n ≫ zetaMap (h ≫ truth Z) hh.2) ≫ γ.hom) ≫ comprMap (imPred h) := by
+    conv_lhs => rw [hγ]
+    simp only [Category.assoc]
+  refine (pureDagger_congr _ hRpure key).trans ?_
+  rw [pureDagger_comp_compr (isSharp_imPred C h) hBpure,
+    pureDagger_comp_iso hApure γ, pureDagger_comp_zeta hh.2 hn, hdh]
+  simp only [Category.assoc]
+
+/-- Functoriality of the dagger against an assert map on the right:
+`(M ∘ asrt_q)† = asrt_q ∘ M†`.  Decompose `M = m ∘ asrt_c` with `m` pristine
+(218X) and use `pureDagger_comp_pristine` and 219XI. -/
+theorem pureDagger_asrt_comp_left [DaggerPrimeEffectus C] (q : Pred X)
+    {M : X ⟶ Y} (hM : IsPure M) :
+    pureDagger (asrt q ≫ M) (upm_closed_pure (asrt_spec q).1.1 hM) =
+      pureDagger M hM ≫ asrt q := by
+  obtain ⟨m, ⟨hm, h1, hd⟩, -⟩ := prist_asrt_decomp hM
+  have hdM : pureDagger M hM = pureDagger m hm.1 ≫ asrt (M ≫ truth Y) :=
+    prist_asrt_decomp_dagger hM hm h1 hd
+  have hRpure : IsPure ((asrt q ≫ asrt (M ≫ truth Y)) ≫ m) :=
+    upm_closed_pure
+      (upm_closed_pure (asrt_spec q).1.1 (asrt_spec (M ≫ truth Y)).1.1) hm.1
+  have key : asrt q ≫ M = (asrt q ≫ asrt (M ≫ truth Y)) ≫ m := by
+    conv_lhs => rw [hd]
+    simp only [Category.assoc]
+  refine (pureDagger_congr _ hRpure key).trans ?_
+  rw [pureDagger_comp_pristine hm
+      (upm_closed_pure (asrt_spec q).1.1 (asrt_spec (M ≫ truth Y)).1.1),
+    pureDagger_asrt_comp, hdM]
+  simp only [Category.assoc]
+
+/-- Functoriality of the dagger against an assert map on the left:
+`(asrt_q ∘ M)† = M† ∘ asrt_q` — the dagger of the previous lemma at `M†`. -/
+theorem pureDagger_comp_asrt [DaggerPrimeEffectus C] (q : Pred Y)
+    {M : X ⟶ Y} (hM : IsPure M) :
+    pureDagger (M ≫ asrt q) (upm_closed_pure hM (asrt_spec q).1.1) =
+      asrt q ≫ pureDagger M hM := by
+  have h := pureDagger_asrt_comp_left q (isPure_pureDagger hM)
+  rw [dagger_idempotent hM] at h
+  refine (pureDagger_congr _ (isPure_pureDagger
+    (upm_closed_pure (asrt_spec q).1.1 (isPure_pureDagger hM))) h.symm).trans ?_
+  exact dagger_idempotent _
+
 /-- **219XVI** (`dagger-is-functor`, eff.tex:6552, Proposition): in a
 †'-effectus, `(f ∘ g)† = g† ∘ f†` for pure `f, g`. -/
 theorem dagger_is_functor [DaggerPrimeEffectus C] {g : X ⟶ Y} {f : Y ⟶ Z}
     (hg : IsPure g) (hf : IsPure f) :
     pureDagger (g ≫ f) (upm_closed_pure hg hf) =
-      pureDagger f hf ≫ pureDagger g hg := sorry
+      pureDagger f hf ≫ pureDagger g hg := by
+  obtain ⟨h, ⟨hh, h1, hd⟩, -⟩ := prist_asrt_decomp hf
+  have hdf : pureDagger f hf = pureDagger h hh.1 ≫ asrt (f ≫ truth Z) :=
+    prist_asrt_decomp_dagger hf hh h1 hd
+  have hApure : IsPure (g ≫ asrt (f ≫ truth Z)) :=
+    upm_closed_pure hg (asrt_spec (f ≫ truth Z)).1.1
+  have hRpure : IsPure ((g ≫ asrt (f ≫ truth Z)) ≫ h) :=
+    upm_closed_pure hApure hh.1
+  have key : g ≫ f = (g ≫ asrt (f ≫ truth Z)) ≫ h := by
+    conv_lhs => rw [hd]
+    simp only [Category.assoc]
+  refine (pureDagger_congr _ hRpure key).trans ?_
+  rw [pureDagger_comp_pristine hh hApure,
+    pureDagger_comp_asrt (f ≫ truth Z) hg, hdf]
+  simp only [Category.assoc]
+
+/-- **220II** (`dagger-thm-sufficiency`, eff.tex:6682), Ax. 1: a pure map is
+⋄-adjoint to its dagger.  (Apply `(–)^⋄` to the standard form 212III of `f`,
+using 218II for `π/ζ` and 209IV for the isomorphism.) -/
+theorem pureDagger_diamond_adjoint [DaggerPrimeEffectus C] {f : X ⟶ Y}
+    (hf : IsPure f) : DiamondAdjoint f (pureDagger f hf) := by
+  obtain ⟨φ, hform⟩ :=
+    standard_form_of_eq hf (isSharp_ceil _) (isSharp_imPred C f) rfl rfl
+  have hdag : pureDagger f hf = zetaMap (imPred f) (isSharp_imPred C f) ≫
+      φ.inv ≫ comprMap (ceilPred (f ≫ truth Y)) ≫ asrt (f ≫ truth Y) :=
+    pureDagger_eq hf ⟨φ, hform, rfl⟩
+  have e1 : diaPull (comprMap (imPred f)) =
+      diaPush (zetaMap (imPred f) (isSharp_imPred C f)) :=
+    quotcompr_diamond_adjoint _
+  have e2 : diaPull φ.hom = diaPush φ.inv := by
+    have h := (iso_diamond_adjoint_2 φ.hom).2.2
+    have hinv : inv φ.hom = φ.inv := by simp
+    rw [hinv] at h
+    exact h
+  have e3 : diaPull (zetaMap (ceilPred (f ≫ truth Y)) (isSharp_ceil _)) =
+      diaPush (comprMap (ceilPred (f ≫ truth Y))) :=
+    ((exc_diamond_adj_1 _ _).mp (quotcompr_diamond_adjoint (isSharp_ceil _))).symm
+  have e4 : diaPull (asrt (f ≫ truth Y)) = diaPush (asrt (f ≫ truth Y)) :=
+    diamond_squares_2 (asrt_spec _).1
+  change diaPull f = diaPush (pureDagger f hf)
+  rw [hdag]
+  conv_lhs => rw [hform]
+  funext s
+  simp only [diaPull_comp, diaPush_comp, e1, e2, e3, e4]
+
+/-- **220II**, Ax. 2 (first half): `f† ∘ f = asrt_{1∘f} ∘ asrt_{1∘f}` for pure
+`f`; in particular †-positive maps are ⋄-positive. -/
+theorem pureDagger_comp_self [DaggerPrimeEffectus C] {f : X ⟶ Y}
+    (hf : IsPure f) : f ≫ pureDagger f hf =
+      asrt (f ≫ truth Y) ≫ asrt (f ≫ truth Y) := by
+  obtain ⟨φ, hform⟩ :=
+    standard_form_of_eq hf (isSharp_ceil _) (isSharp_imPred C f) rfl rfl
+  have hdag : pureDagger f hf = zetaMap (imPred f) (isSharp_imPred C f) ≫
+      φ.inv ≫ comprMap (ceilPred (f ≫ truth Y)) ≫ asrt (f ≫ truth Y) :=
+    pureDagger_eq hf ⟨φ, hform, rfl⟩
+  have habs : asrt (ceilPred (f ≫ truth Y)) ≫ asrt (f ≫ truth Y) =
+      asrt (f ≫ truth Y) :=
+    (asrt_absorp_rule (asrt (f ≫ truth Y)) (isSharp_one X)
+      (isSharp_ceil _)).2.mp
+      (by rw [(asrt_spec (f ≫ truth Y)).2]; exact le_ceil _)
+  calc f ≫ pureDagger f hf
+      = (asrt (f ≫ truth Y) ≫ zetaMap (ceilPred (f ≫ truth Y)) (isSharp_ceil _) ≫
+          φ.hom ≫ comprMap (imPred f)) ≫
+        (zetaMap (imPred f) (isSharp_imPred C f) ≫ φ.inv ≫
+          comprMap (ceilPred (f ≫ truth Y)) ≫ asrt (f ≫ truth Y)) := by
+        rw [hdag, ← hform]
+    _ = asrt (f ≫ truth Y) ≫ asrt (f ≫ truth Y) := by
+        simp only [Category.assoc]
+        rw [← Category.assoc (comprMap (imPred f))
+            (zetaMap (imPred f) (isSharp_imPred C f)),
+          (zetaMap_spec (imPred f) (isSharp_imPred C f)).2.1, Category.id_comp,
+          ← Category.assoc φ.hom φ.inv, φ.hom_inv_id, Category.id_comp,
+          ← Category.assoc (zetaMap (ceilPred (f ≫ truth Y)) (isSharp_ceil _)),
+          (zetaMap_spec (ceilPred (f ≫ truth Y)) (isSharp_ceil _)).2.2, habs]
+
+/-- The †-category structure on `Pure C` of a †'-effectus (220II, Ax. 1). -/
+noncomputable def pureDaggerCat [DaggerPrimeEffectus C] :
+    DaggerCat (PureCat C) where
+  dag f := ⟨pureDagger f.1 f.2, isPure_pureDagger f.2⟩
+  dag_comp f g := Subtype.ext (dagger_is_functor f.2 g.2)
+  dag_id P := Subtype.ext
+    (pureDagger_eq (isPure_of_isQuotient (quotient_basics_3 (𝟙 P.base)))
+      (dagger_prime_basics_iso (Iso.refl P.base)))
+  dag_dag f := Subtype.ext (dagger_idempotent f.2)
+
+/-- The dagger of `pureDaggerCat` is `pureDagger` (definitional). -/
+theorem pureDaggerCat_dag [DaggerPrimeEffectus C] {P Q : PureCat C} (f : P ⟶ Q) :
+    (@DaggerCat.dag _ _ pureDaggerCat P Q f).1 = pureDagger f.1 f.2 := rfl
+
+/-- Composition in `Pure C` is composition in `C` (definitional). -/
+theorem pureCat_comp_val {P Q R : PureCat C}
+    (f : P ⟶ Q) (g : Q ⟶ R) : (f ≫ g).1 = f.1 ≫ g.1 := rfl
 
 /-- **220II** (`dagger-thm-sufficiency`, eff.tex:6682, Theorem): a
 †'-effectus is a †-effectus, with the dagger of 217II. -/
 theorem dagger_thm_sufficiency [DaggerPrimeEffectus C] :
-    Nonempty (DaggerEffectus C) := sorry
+    Nonempty (DaggerEffectus C) := by
+  refine ⟨{ daggerCat := pureDaggerCat
+            dag_asrt := fun p => Subtype.ext ?_
+            dag_diamond_adjoint := fun f => ?_
+            sqrt_existsUnique := ?_
+            diamond_pos_dagger_pos := ?_ }⟩
+  · rw [pureDaggerCat_dag]
+    exact pureDagger_eq _ (dagger_prime_basics_asrt p)
+  · rw [pureDaggerCat_dag]
+    exact pureDagger_diamond_adjoint f.2
+  · -- Ax. 2
+    rintro P F ⟨Q, g, hg⟩
+    have hF : F.1 = asrt (g.1 ≫ truth Q.base) ≫ asrt (g.1 ≫ truth Q.base) := by
+      rw [congrArg Subtype.val hg, pureCat_comp_val, pureDaggerCat_dag]
+      exact pureDagger_comp_self g.2
+    have hF1 : F.1 ≫ truth P.base =
+        andThen (g.1 ≫ truth Q.base) (g.1 ≫ truth Q.base) := by
+      rw [hF, Category.assoc, (asrt_spec _).2]; rfl
+    obtain ⟨q, hq⟩ := (DaggerPrimeEffectus.sqrt_existsUnique
+      (g.1 ≫ truth Q.base)).exists
+    refine ⟨⟨asrt (g.1 ≫ truth Q.base), (asrt_spec _).1.1⟩,
+      ⟨⟨PureCat.of P.base, ⟨asrt q, (asrt_spec q).1.1⟩, Subtype.ext ?_⟩,
+        Subtype.ext hF.symm⟩, ?_⟩
+    · rw [pureCat_comp_val, pureDaggerCat_dag]
+      change asrt (g.1 ≫ truth Q.base) = asrt q ≫ pureDagger (asrt q) _
+      rw [pureDagger_eq (asrt_spec q).1.1 (dagger_prime_basics_asrt q),
+        andthen_square_rule, hq]
+    · rintro G' ⟨⟨R, k, hk⟩, hGG⟩
+      have hG' : G'.1 = asrt (andThen (k.1 ≫ truth R.base)
+          (k.1 ≫ truth R.base)) := by
+        rw [congrArg Subtype.val hk, pureCat_comp_val, pureDaggerCat_dag,
+          pureDagger_comp_self k.2, andthen_square_rule]
+      refine Subtype.ext ?_
+      have hsq : andThen (andThen (k.1 ≫ truth R.base) (k.1 ≫ truth R.base))
+          (andThen (k.1 ≫ truth R.base) (k.1 ≫ truth R.base)) =
+          F.1 ≫ truth P.base := by
+        rw [← congrArg (fun z => z ≫ truth P.base) (congrArg Subtype.val hGG),
+          pureCat_comp_val, hG', Category.assoc, (asrt_spec _).2]
+        rfl
+      have huniq := (DaggerPrimeEffectus.sqrt_existsUnique
+        (F.1 ≫ truth P.base)).unique hsq (by rw [← hF1])
+      rw [hG', huniq]
+  · -- Ax. 3
+    intro W f hf
+    obtain ⟨q, hq⟩ := (DaggerPrimeEffectus.sqrt_existsUnique
+      (f ≫ truth W)).exists
+    refine ⟨PureCat.of W, ⟨asrt q, (asrt_spec q).1.1⟩, Subtype.ext ?_⟩
+    rw [pureCat_comp_val, pureDaggerCat_dag]
+    change f = asrt q ≫ pureDagger (asrt q) _
+    rw [pureDagger_eq (asrt_spec q).1.1 (dagger_prime_basics_asrt q),
+      andthen_square_rule, hq]
+    exact asrt_unique _ f hf rfl
+
+section DaggerTheorem
+
+variable (C)
+
+/-- **215III** (`dagger-theorem`, eff.tex:5327, Theorem): an &-effectus is
+a †-effectus if and only if it is a †'-effectus (necessity is 216XI,
+sufficiency 220II).  (Stated at its numbering slot in parsec 215; proved here,
+where 220II is available.) -/
+theorem dagger_theorem :
+    Nonempty (DaggerEffectus C) ↔ DaggerPrimeEffectus C := by
+  constructor
+  · rintro ⟨d⟩
+    exact dagger_thm_necessity d
+  · intro h
+    exact dagger_thm_sufficiency
+
+end DaggerTheorem
 
 end PureDagger
 

@@ -2950,3 +2950,74 @@ Quot.sound`.
   its second conjunct `SelfDual ℬ Z` is the implication (4) ⇒ (1) of **149V**.
   So the statement as a whole waits on 149V, but a worker with room could
   prove the basis half as a private lemma and leave only the self-duality.
+
+## Session 11 — `B/Eff` parsecs 215/219/220: the †-effectus theorem (worker 33)
+
+Proved: **219XVI** `dagger_is_functor`, **220II** `dagger_thm_sufficiency` and
+**215III** `dagger_theorem` (`Theses/B/Eff/Dagger.lean`).  B/Eff 34 → 31 code
+`sorry`s; `Dagger.lean` 6 → 3 (the three left are the `vNᵒᵖ` examples 215VI,
+221III and 223VI, which need thesis A).
+
+### Divergence: class 2 — a different route to 219XVI
+
+The thesis proves `(f ∘ g)† = g† ∘ f†` by putting the *whole* composite in the
+standard form of 212III: Setting **219II** introduces four isomorphisms
+`χ, ω, β, α`, and the proof then chains 219III, 219V and the four "daggered
+squares" 219VII, 219IX, 219X, 219XIII together with 219XIV.  None of that
+apparatus is formalized here, because six of the eight results are not needed.
+
+What is formalized instead peels the composite one *generator* at a time.
+Writing `f = h ∘ asrt_{1∘f}` with `h` pristine (**218X**) and
+`h = π_{im h} ∘ γ ∘ ζ_{1∘h}` (**218VI**), every pure map is a composite of
+asserts, quotients `ζ_s`, comprehensions `π_i` and isomorphisms, and the dagger
+of each *one-sided* composite is a separate, short lemma:
+
+| lemma | statement | proof |
+|---|---|---|
+| `pureDagger_comp_iso` | `(θ ∘ f)† = f† ∘ θ⁻¹` | `π_{im f} ∘ θ` is a comprehension for `im f ∘ θ⁻¹` (199VII.1 + `isComprehension_comp_iso`), and `216V` transports `asrt` |
+| `pureDagger_comp_compr` | `(π_i ∘ f)† = f† ∘ ζ_i` | comprehensions compose (**211XI**) and `im (π_i ∘ π_j) = j ∘ ζ_i` |
+| `pureDagger_asrt_comp` | `(asrt_b ∘ asrt_a)† = asrt_a ∘ asrt_b` | **216XI.Ax2** + **219XI** — this *is* 219XI, restated |
+| `pureDagger_compr_asrt_zeta` | `(ζ_e ∘ asrt_p ∘ π_t)† = ζ_t ∘ asrt_p ∘ π_e` | **219XIV**, generalized (below) |
+| `pureDagger_compr_comp` | `(N ∘ π_s)† = ζ_s ∘ N†` | 218X, then the three above |
+| `pureDagger_comp_zeta` | `(ζ_s ∘ n)† = n† ∘ π_s` | the dagger of the previous one at `n†` (**218XII**) |
+| `pureDagger_comp_pristine` | `(h ∘ n)† = n† ∘ h†`, `h` pristine | 218VI + the three preceding |
+| `pureDagger_asrt_comp_left` | `(M ∘ asrt_q)† = asrt_q ∘ M†` | 218X + `pureDagger_comp_pristine` + 219XI |
+| `pureDagger_comp_asrt` | `(asrt_q ∘ M)† = M† ∘ asrt_q` | its dagger at `M†` |
+
+219XVI is then three lines: `f ∘ g = h ∘ (asrt_{1∘f} ∘ g)` with `h` pristine.
+
+The one genuinely hard ingredient is 219XIV, and it is transcribed **faithfully**
+(class 1): the thesis's own proof — compute `asrt_p ∘ asrt_t` in standard form
+using the auxiliary isomorphisms `α₂`, `β₂`, then apply **219XI** — with the
+single change that it is stated for an arbitrary sharp `e ≥ ⌈p⌉` in place of
+`⌈p⌉`.  That generalization costs nothing in the proof and is what lets the
+lemma be applied at `e = 1 ∘ h` for the pristine part `h` of an arbitrary pure
+map, without transporting along `1 ∘ h = ⌈1∘f⌉`.  Filed in ERRATA under
+**219II–219XVI** as informational ("the thesis proves more than it needs").
+
+Two reusable helpers isolate the two uniqueness arguments the thesis performs
+four times over (219VII, 219IX and the two halves of 219XIV's `α₂`/`β₂`):
+
+* `zetaMap_eq_of_compr` — a map into a comprehension for `J` composing with it
+  to `asrt_J` *is* `ζ_J` (comprehensions are monic).  This is the published
+  solution to **219IX** (`bsols.tex:3283`) in abstract form.
+* `comprMap_eq_of_zeta` — dually, quotients being epic; this is **219VII**.
+
+**219X** (`bsols.tex:3319`) is not formalized as such: in the route above the
+square it daggers never arises.  Its content — `π_⌈q⌉ ∘ ψ⁻¹` is pristine with
+dagger `ψ ∘ ζ_⌈q⌉`, so 218IX.5 applies — is subsumed by
+`pureDagger_comp_pristine`.
+
+### 220II and 215III
+
+`dagger_thm_sufficiency` is a faithful transcription (class 1) of eff.tex:6682–
+6795, using the new `pureDaggerCat` (`Pure C` as a †-category, whose `dag_comp`
+is 219XVI), `pureDagger_diamond_adjoint` (Ax. 1: apply `(–)^⋄` to the standard
+form, using 218II and 209IV — this needs no functoriality) and
+`pureDagger_comp_self` (`f† ∘ f = asrt_{1∘f}²`, Ax. 2).  Note `pureDaggerCat`
+is a plain `noncomputable def`, deliberately **not** an instance.
+
+**215III `dagger_theorem`** was stated in parsec 215, two thousand lines before
+`dagger_thm_sufficiency`, one of its two halves.  It has been **moved** to just
+after 220II, with a comment left at its numbering slot — the device used for
+208III and 178III.1.  Its statement is unchanged.
