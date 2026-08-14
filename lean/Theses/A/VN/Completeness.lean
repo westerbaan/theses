@@ -3741,6 +3741,15 @@ end BH
 
 /-! ## Parsec 770: completeness of a von Neumann algebra -/
 
+omit [StarOrderedRing A] [StarOrderedRing B] in
+/-- Auxiliary for **77I**: `‖·‖_ω` transports along a ∗-homomorphism —
+`‖a‖_{ω∘ρ} = ‖ρ(a)‖_ω`.  Stated for an arbitrary functional given
+pointwise, since both directions are used. -/
+theorem omegaNorm_comp_starAlgHom (ρ : A →⋆ₐ[ℂ] B) (ω : NPFunctional A)
+    (ν : NPFunctional B) (hων : ∀ a : A, ω a = ν (ρ a)) (a : A) :
+    omegaNorm A ω a = omegaNorm B ν (ρ a) := by
+  rw [omegaNorm, omegaNorm, hων, map_mul, map_star]
+
 section Complete
 
 variable [VonNeumannAlgebra A] [VonNeumannAlgebra B]
@@ -3751,22 +3760,109 @@ theorem vn_complete_1 {ι : Type*} (l : Filter ι) [l.NeBot] (x : ι → A)
     (hcauchy : ∀ ω : NPFunctional A,
       Tendsto (fun p : ι × ι => omegaNorm A ω (x p.1 - x p.2)) (l ×ˢ l)
         (𝓝 0)) :
-    ∃ a : A, USTendsto x l a :=
-  sorry
+    ∃ a : A, USTendsto x l a := by
+  -- the thesis's argument: transport along `ρ_Ω`, complete inside `B(H_Ω)`
+  -- by **76I**, land back in `ρ_Ω(A)` because it is ultrastrongly closed
+  -- (**75VIII**), and come back because every np-functional of `A` is a
+  -- vector functional in this representation (**48V**).
+  obtain ⟨H, _, _, _, ρ, hinj, hn, hvec⟩ := exists_faithful_normal_rep_vectors A
+  have hcau : ∀ ν : NPFunctional (H →L[ℂ] H),
+      Tendsto (fun p : ι × ι => omegaNorm _ ν (ρ (x p.1) - ρ (x p.2))) (l ×ˢ l)
+        (𝓝 0) := by
+    intro ν
+    refine (hcauchy (compNP (starAlgHomP ρ) hn ν)).congr fun p => ?_
+    rw [omegaNorm_comp_starAlgHom ρ _ ν (fun a => rfl), map_sub]
+  obtain ⟨T₀, hT₀⟩ := bh_us_complete l (fun i => ρ (x i)) hcau
+  -- `T₀` lies in the (ultrastrongly closed) range of `ρ`
+  have hmem : T₀ ∈ (ρ.range : Set (H →L[ℂ] H)) := by
+    let _ : TopologicalSpace (H →L[ℂ] H) := ultrastrong (H →L[ℂ] H)
+    exact IsClosed.mem_of_tendsto
+      (vnsac ρ.range (isVNSubalgebra_range ρ hinj hn)).1 hT₀
+      (Eventually.of_forall fun i => ⟨x i, rfl⟩)
+  obtain ⟨a, ha⟩ : ∃ a : A, ρ a = T₀ := hmem
+  refine ⟨a, (usTendsto_iff x l a).mpr fun ω => ?_⟩
+  obtain ⟨ξ, hξ⟩ := hvec ω
+  have key : ∀ b : A, omegaNorm A ω b = omegaNorm (H →L[ℂ] H) (vectorNP ξ) (ρ b) :=
+    omegaNorm_comp_starAlgHom ρ ω (vectorNP ξ) fun b => by
+      rw [hξ, vectorNP_apply]
+  refine ((usTendsto_iff (fun i => ρ (x i)) l T₀).mp hT₀ (vectorNP ξ)).congr
+    fun i => ?_
+  rw [key, map_sub, ha]
 
 /-- **77I** (`vn-complete`, vn.tex:4808, Theorem), part 2: a von Neumann
 algebra is bounded ultraweakly complete. -/
 theorem vn_complete_2 {ι : Type*} (l : Filter ι) [l.NeBot] (x : ι → A)
     (hbdd : ∃ C : ℝ, ∀ i, ‖x i‖ ≤ C)
     (hcauchy : ∀ ω : NPFunctional A, Cauchy (l.map fun i => ω (x i))) :
-    ∃ a : A, UWTendsto x l a :=
-  sorry
+    ∃ a : A, UWTendsto x l a := by
+  -- same transport as in `vn_complete_1`, now through **76III** and the
+  -- *ultraweak* half of **75VIII**
+  obtain ⟨H, _, _, _, ρ, hinj, hn, hvec⟩ := exists_faithful_normal_rep_vectors A
+  obtain ⟨C, hC⟩ := hbdd
+  obtain ⟨T₀, hT₀⟩ := bh_bounded_uw_complete l (fun i => ρ (x i))
+    ⟨C, fun i => by rw [NonUnitalStarAlgHom.norm_map ρ hinj]; exact hC i⟩
+    fun ν => hcauchy (compNP (starAlgHomP ρ) hn ν)
+  have hmem : T₀ ∈ (ρ.range : Set (H →L[ℂ] H)) := by
+    let _ : TopologicalSpace (H →L[ℂ] H) := ultraweak (H →L[ℂ] H)
+    exact IsClosed.mem_of_tendsto
+      (vnsac ρ.range (isVNSubalgebra_range ρ hinj hn)).2 hT₀
+      (Eventually.of_forall fun i => ⟨x i, rfl⟩)
+  obtain ⟨a, ha⟩ : ∃ a : A, ρ a = T₀ := hmem
+  refine ⟨a, (uwTendsto_iff x l a).mpr fun ω => ?_⟩
+  obtain ⟨ξ, hξ⟩ := hvec ω
+  have h := (uwTendsto_iff (fun i => ρ (x i)) l T₀).mp hT₀ (vectorNP ξ)
+  rw [← ha] at h
+  simpa only [hξ, vectorNP_apply] using h
 
 /-- **77III** (`vn-ball-compact`, vn.tex:4847, Theorem): the unit ball of a
 von Neumann algebra is ultraweakly compact. -/
 theorem vn_ball_compact :
-    @IsCompact A (ultraweak A) (Metric.closedBall (0 : A) 1) :=
-  sorry
+    @IsCompact A (ultraweak A) (Metric.closedBall (0 : A) 1) := by
+  -- The thesis embeds `(A)₁` into `ℂ^Ω` and combines Tychonoff with
+  -- **77I**.2.  We run the same argument in its ultrafilter form: an
+  -- ultrafilter on `(A)₁` pushes to a *convergent* ultrafilter along each
+  -- np-functional (Heine–Borel in `ℂ` replaces Tychonoff), so **77I**.2
+  -- supplies its ultraweak limit, which lies in `(A)₁` because the ball is
+  -- ultraweakly closed (**44XI**.3 plus **73VIII** `ultraclosed`).
+  let _ : TopologicalSpace A := ultraweak A
+  have hballclosed : IsClosed (Metric.closedBall (0 : A) 1) :=
+    ultraclosed _ (convex_closedBall (0 : A) 1) vn_positive_basic_3
+  rw [isCompact_iff_ultrafilter_le_nhds]
+  intro F hF
+  have hrange : Set.range (Subtype.val : ↥(Metric.closedBall (0 : A) 1) → A) ∈
+      (F : Filter A) := by
+    rw [Subtype.range_coe_subtype, Set.ofPred_mem_eq]
+    exact le_principal_iff.mp hF
+  set U : Ultrafilter ↥(Metric.closedBall (0 : A) 1) :=
+    Ultrafilter.comap (m := Subtype.val) F Subtype.val_injective hrange with hU
+  have hmap : Filter.map Subtype.val (U : Filter ↥(Metric.closedBall (0 : A) 1))
+      = (F : Filter A) := by
+    rw [hU, Ultrafilter.coe_comap]
+    exact Filter.map_comap_of_mem hrange
+  have hcau : ∀ ω : NPFunctional A,
+      Cauchy ((U : Filter ↥(Metric.closedBall (0 : A) 1)).map
+        fun i : ↥(Metric.closedBall (0 : A) 1) => ω (i : A)) := by
+    intro ω
+    obtain ⟨C, hC⟩ := PositiveLinearMap.exists_norm_apply_le ω.toPositiveLinearMap
+    refine cauchy_map_iff_exists_tendsto.mpr ?_
+    have hin : (Metric.closedBall (0 : ℂ) C) ∈
+        (U.map (fun i : ↥(Metric.closedBall (0 : A) 1) => ω (i : A)) :
+          Filter ℂ) := by
+      rw [Ultrafilter.coe_map, Filter.mem_map]
+      refine Filter.Eventually.of_forall
+        fun i : ↥(Metric.closedBall (0 : A) 1) => mem_closedBall_zero_iff.mpr ?_
+      refine (hC _).trans ?_
+      simpa using mul_le_of_le_one_right (by positivity)
+        (mem_closedBall_zero_iff.mp i.2)
+    obtain ⟨z, -, hz⟩ := (isCompact_closedBall (0 : ℂ) C).ultrafilter_le_nhds
+      (U.map fun i : ↥(Metric.closedBall (0 : A) 1) => ω (i : A))
+      (le_principal_iff.mpr hin)
+    exact ⟨z, hz⟩
+  obtain ⟨a, ha⟩ := vn_complete_2 (U : Filter ↥(Metric.closedBall (0 : A) 1))
+    (fun i => (i : A)) ⟨1, fun i => mem_closedBall_zero_iff.mp i.2⟩ hcau
+  have hmem : a ∈ Metric.closedBall (0 : A) 1 :=
+    hballclosed.mem_of_tendsto ha (Filter.Eventually.of_forall fun i => i.2)
+  exact ⟨a, hmem, hmap ▸ ha⟩
 
 /-- **77V** (`vn-extension`, vn.tex:4879, Proposition): an ultraweakly
 continuous bounded linear map `f` on an ultraweakly dense ∗-subalgebra `S`

@@ -94,57 +94,17 @@ omit [∀ i, PartialOrder (𝒜 i)] [∀ i, StarOrderedRing (𝒜 i)] in
 @[simp] theorem lpEvalSAH_apply (j : I) (a : lp 𝒜 ∞) :
     lpEvalSAH j a = (a : ∀ i, 𝒜 i) j := rfl
 
-/-- Infrastructure (= **47IV**.2, `Theses.A.VN.vn_products_proj_normal`,
-which is `sorry`ed in the closed file `A/VN/Basic.lean`): the coordinate
-projections of a direct sum of von Neumann algebras are normal.  Immediate
-from `lp_infty_exists_isLUB`, which says the suprema of `lp 𝒜 ∞` are
-computed coordinatewise. -/
-theorem lpEval_preservesDirSups [∀ i, VonNeumannAlgebra (𝒜 i)] (j : I) :
-    PreservesDirSups fun a : lp 𝒜 ∞ => (a : ∀ i, 𝒜 i) j := by
-  intro D s hne hdir hlub
-  obtain ⟨s', hs', hev⟩ := lp_infty_exists_isLUB D hne hdir ⟨s, hlub.1⟩
-  obtain rfl := hlub.unique hs'
-  have h := isLUB_coe_of_isLUB (hne.image (lpEvalSA j)) (hev j)
-  rwa [Set.image_image] at h
+/-! **47IV**.2 and **47IV**.3 used to be proved here, because `A/VN/Basic.lean`
+was closed for editing when they were found.  They now live where they belong,
+as `Theses.A.VN.vn_products_proj_normal` and `Theses.A.VN.vn_products_nmiu`,
+and the use sites below call those directly.
 
-/-- Infrastructure (= **47IV**.3, `Theses.A.VN.vn_products_nmiu`, which is
-`sorry`ed in the closed file `A/VN/Basic.lean`): `⊕ᵢ 𝒜ᵢ` is the product in
-`W*_miu`.  Note this needs *no* `VonNeumannAlgebra` hypothesis anywhere:
-the ∗-algebra part is **20aI** `cstar_product_2_miu` and normality of the
-mediating map follows from normality of the `fᵢ` because the order on
-`lp 𝒜 ∞` is pointwise. -/
-theorem lpProd_nmiu {B : Type*} [CStarAlgebra B] [PartialOrder B]
-    [StarOrderedRing B] (f : ∀ i, NMIUMap B (𝒜 i)) :
-    ∃! g : NMIUMap B (lp 𝒜 ∞), ∀ (j : I) (b : B),
-      ((g b : lp 𝒜 ∞) : ∀ i, 𝒜 i) j = f j b := by
-  obtain ⟨g₀, hg₀, -⟩ :=
-    Theses.A.CStar.cstar_product_2_miu (fun i => (f i).toStarAlgHom)
-  have hnorm : PreservesDirSups ⇑g₀ := by
-    intro D s hne hdir hlub
-    have key : ∀ (j : I) (d : selfAdjoint B),
-        ((g₀ (d : B) : lp 𝒜 ∞) : ∀ i, 𝒜 i) j = f j (d : B) := fun j d => hg₀ j _
-    constructor
-    · rintro _ ⟨d, hd, rfl⟩
-      rw [lp_infty_le_iff]
-      intro j
-      rw [key j d, key j s]
-      exact ((f j).preservesDirSups' D s hne hdir hlub).1 ⟨d, hd, rfl⟩
-    · intro u hu
-      rw [lp_infty_le_iff]
-      intro j
-      rw [key j s]
-      refine ((f j).preservesDirSups' D s hne hdir hlub).2 ?_
-      rintro _ ⟨d, hd, rfl⟩
-      have hd' := (lp_infty_le_iff _ _).mp (hu ⟨d, hd, rfl⟩) j
-      rwa [key j d] at hd'
-  refine ⟨⟨g₀, hnorm⟩, hg₀, ?_⟩
-  intro g' hg'
-  apply DFunLike.coe_injective
-  funext b
-  apply lp.ext
-  funext j
-  rw [hg' j b]
-  exact (hg₀ j b).symm
+One remark does not survive the move and is recorded here instead: the proof of
+`vn_products_nmiu` uses **no** `VonNeumannAlgebra` hypothesis at all — the
+∗-algebra part is **20aI** `cstar_product_2_miu` and normality of the mediating
+map follows from normality of the `fᵢ` because the order on `lp 𝒜 ∞` is
+pointwise (`lp_infty_le_iff`).  The hypotheses are kept in the A/VN statement
+because 47IV is stated there for von Neumann algebras. -/
 
 /-! ### The coprojections `κᵢ : 𝒜ᵢ → ⊕ⱼ 𝒜ⱼ`
 
@@ -477,7 +437,7 @@ well-definedness of the unit: for `x ∈ X` evaluation at `x` is an
 nmiu-functional on `ℓ^∞(X)`. -/
 theorem exists_linfEval (X : Type u) (x : X) :
     ∃ φ : NMIUMap (linf X) ℂ, ∀ f : linf X, φ f = f x :=
-  ⟨⟨lpEvalSAH x, lpEval_preservesDirSups x⟩, fun _ => rfl⟩
+  ⟨⟨lpEvalSAH x, vn_products_proj_normal (fun _ : X => ℂ) x⟩, fun _ => rfl⟩
 
 /-- The unit `η : X → nsp(ℓ^∞(X))`, `η(x)(h) = h(x)` (122II). -/
 noncomputable def linfEval (X : Type u) (x : X) : nsp (linf X) :=
@@ -496,7 +456,7 @@ theorem first_adjunction [VonNeumannAlgebra A] (X : Type u)
     (f : X → nsp A) :
     ∃! g : NMIUMap A (linf X),
       ∀ (x : X) (a : A), (f x) a = linfEval X x (g a) := by
-  obtain ⟨g, hg, huniq⟩ := lpProd_nmiu (𝒜 := fun _ : X => ℂ) f
+  obtain ⟨g, hg, huniq⟩ := vn_products_nmiu (fun _ : X => ℂ) f
   refine ⟨g, fun x a => ?_, fun g' hg' => huniq g' fun x a => ?_⟩
   · rw [linfEval_apply, hg x a]
   · rw [← linfEval_apply, ← hg' x a]
@@ -508,7 +468,7 @@ theorem exists_linfMap {X Y : Type u} (f : X → Y) :
     ∃ h : NMIUMap (linf Y) (linf X),
       ∀ (g : linf Y) (x : X), h g x = g (f x) := by
   obtain ⟨h, hh, -⟩ :=
-    lpProd_nmiu (𝒜 := fun _ : X => ℂ) (fun x => linfEval Y (f x))
+    vn_products_nmiu (fun _ : X => ℂ) (fun x => linfEval Y (f x))
   exact ⟨h, fun g x => (hh x g).trans (linfEval_apply Y (f x) g)⟩
 
 /-- The nmiu-map `ℓ^∞(f) : ℓ^∞(Y) → ℓ^∞(X)` for `f : X → Y` (122II). -/

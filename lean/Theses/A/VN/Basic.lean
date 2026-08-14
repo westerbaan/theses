@@ -1972,8 +1972,62 @@ theorem vn_positive_basic_2 [VonNeumannAlgebra A] :
 ball is ultrastrongly closed.  (It is ultraweakly closed too, but that is
 seen only in 73VIII, `ultraclosed`.) -/
 theorem vn_positive_basic_3 [VonNeumannAlgebra A] :
-    @IsClosed A (ultrastrong A) (Metric.closedBall (0 : A) 1) :=
-  sorry
+    @IsClosed A (ultrastrong A) (Metric.closedBall (0 : A) 1) := by
+  -- `‖a‖ ≤ 1` iff `a*a ≤ 1` iff `‖a‖_ω ≤ ‖1‖_ω` for every np-functional `ω`
+  -- (the second `iff` is the order-separation of the np-functionals), and
+  -- each `{a | ‖a‖_ω ≤ ‖1‖_ω}` is ultrastrongly closed because `‖·‖_ω` is
+  -- `1`-Lipschitz for `‖·‖_ω`.
+  have hchar : ∀ a : A, ‖a‖ ≤ 1 ↔
+      ∀ ω : NPFunctional A, omegaNorm A ω a ≤ omegaNorm A ω 1 := by
+    intro a
+    have hnn : ∀ ω : NPFunctional A, 0 ≤ (ω (star a * a)).re :=
+      fun ω => (Complex.le_def.mp (npFunctional_nonneg ω (star_mul_self_nonneg a))).1
+    have hnn1 : ∀ ω : NPFunctional A, 0 ≤ (ω 1).re :=
+      fun ω => (Complex.le_def.mp (npFunctional_nonneg ω zero_le_one)).1
+    have hnorms : ∀ ω : NPFunctional A,
+        omegaNorm A ω a = Real.sqrt (ω (star a * a)).re ∧
+          omegaNorm A ω 1 = Real.sqrt (ω 1).re := by
+      intro ω
+      exact ⟨rfl, by rw [omegaNorm, star_one, one_mul]⟩
+    have hsq : ‖a‖ ≤ 1 ↔ star a * a ≤ 1 := by
+      rw [← CStarAlgebra.norm_le_one_iff_of_nonneg _ (star_mul_self_nonneg a),
+        CStarRing.norm_star_mul_self]
+      constructor
+      · intro h; nlinarith [norm_nonneg a]
+      · intro h; nlinarith [norm_nonneg a]
+    rw [hsq]
+    constructor
+    · intro h ω
+      obtain ⟨h1, h2⟩ := hnorms ω
+      rw [h1, h2]
+      exact Real.sqrt_le_sqrt (Complex.le_def.mp (npFunctional_mono ω h)).1
+    · intro h
+      refine np_orderSeparating _ _ (IsSelfAdjoint.of_nonneg (star_mul_self_nonneg a))
+        (IsSelfAdjoint.one A) fun ω => ?_
+      obtain ⟨h1, h2⟩ := hnorms ω
+      have hle := h ω
+      rw [h1, h2] at hle
+      have hre : (ω (star a * a)).re ≤ (ω 1).re := by
+        nlinarith [Real.sq_sqrt (hnn ω), Real.sq_sqrt (hnn1 ω),
+          Real.sqrt_nonneg (ω (star a * a)).re, Real.sqrt_nonneg (ω 1).re]
+      refine Complex.le_def.mpr ⟨hre, ?_⟩
+      have i1 := (Complex.le_def.mp (npFunctional_nonneg ω (star_mul_self_nonneg a))).2
+      have i2 := (Complex.le_def.mp (npFunctional_nonneg ω (zero_le_one (α := A)))).2
+      rw [← i1, ← i2]
+  let _ : TopologicalSpace A := ultrastrong A
+  rw [← isOpen_compl_iff]
+  refine isOpen_iff_mem_nhds.mpr fun a ha => ?_
+  rw [Set.mem_compl_iff, mem_closedBall_zero_iff, hchar] at ha
+  simp only [not_forall, not_le] at ha
+  obtain ⟨ω, hω⟩ := ha
+  filter_upwards [ultrastrong_ball_mem_nhds ω a (sub_pos.mpr hω)] with b hb
+  rw [Set.mem_compl_iff, mem_closedBall_zero_iff, hchar]
+  simp only [not_forall, not_le]
+  refine ⟨ω, ?_⟩
+  have := abs_omegaNorm_sub_omegaNorm_le ω b a
+  have h2 : omegaNorm A ω a - omegaNorm A ω b ≤ omegaNorm A ω (b - a) := by
+    rw [abs_le] at this; linarith [this.1]
+  linarith
 
 /-- **44XIII** (`vna-supremum-commutes`, vn.tex:787): if `a` commutes with
 every member of a bounded directed set `D` of self-adjoint elements, then
@@ -2617,8 +2671,32 @@ norm-bounded, then `(a_α b_α)_α` converges ultrastrongly to `ab`. -/
 theorem mult_jus_cont [VonNeumannAlgebra A] {ι : Type*} {l : Filter ι}
     (x y : ι → A) (a b : A) (hx : USTendsto x l a) (hy : USTendsto y l b)
     (hbdd : ∃ C : ℝ, ∀ i, ‖x i‖ ≤ C) :
-    USTendsto (fun i => x i * y i) l (a * b) :=
-  sorry
+    USTendsto (fun i => x i * y i) l (a * b) := by
+  -- vn.tex:906 verbatim: `‖ab − a_α b_α‖_ω ≤ ‖(a−a_α)b‖_ω + ‖a_α(b−b_α)‖_ω`
+  -- `≤ ‖a−a_α‖_{ω(b*(·)b)} + ‖a_α‖ ‖b−b_α‖_ω`.
+  obtain ⟨C, hC⟩ := hbdd
+  refine (usTendsto_iff _ l _).mpr fun ω => ?_
+  have h1 := (usTendsto_iff x l a).mp hx (conjNP b ω)
+  have h2 := (usTendsto_iff y l b).mp hy ω
+  have hle : ∀ i : ι, omegaNorm A ω (x i * y i - a * b) ≤
+      omegaNorm A (conjNP b ω) (x i - a) + C * omegaNorm A ω (y i - b) := by
+    intro i
+    calc omegaNorm A ω (x i * y i - a * b)
+        ≤ omegaNorm A ω (x i * y i - x i * b)
+          + omegaNorm A ω (x i * b - a * b) := omegaNorm_sub_le ω _ _ _
+      _ = omegaNorm A ω (x i * (y i - b))
+          + omegaNorm A (conjNP b ω) (x i - a) := by
+          rw [← mul_sub, ← sub_mul, omegaNorm_mul_right ω (x i - a) b]
+      _ ≤ ‖x i‖ * omegaNorm A ω (y i - b)
+          + omegaNorm A (conjNP b ω) (x i - a) := by
+          linarith [omegaNorm_mul_le ω (x i) (y i - b)]
+      _ ≤ omegaNorm A (conjNP b ω) (x i - a)
+          + C * omegaNorm A ω (y i - b) := by
+          have := mul_le_mul_of_nonneg_right (hC i) (omegaNorm_nonneg ω (y i - b))
+          linarith
+  refine squeeze_zero' (Eventually.of_forall fun i => omegaNorm_nonneg ω _)
+    (Eventually.of_forall hle) ?_
+  simpa using h1.add (h2.const_mul C)
 
 /-! ## Parsec 460 -/
 
@@ -2629,8 +2707,69 @@ theorem usconv [VonNeumannAlgebra A] {ι : Type*} (x : ι → A) (l : Filter ι)
     (b : A) :
     USTendsto x l b ↔
       UWTendsto (fun i => star (x i) * x i) l (star b * b) ∧
-        UWTendsto x l b :=
-  sorry
+        UWTendsto x l b := by
+  -- `ω(y*y) = ‖y‖_ω²`, so the two ultraweak conditions are exactly
+  -- `‖x_α‖_ω → ‖b‖_ω` and `ω(b*x_α) → ω(b*b)`, and
+  -- `‖x_α − b‖_ω² = ω(x_α*x_α) − 2 Re ω(b*x_α) + ω(b*b)`.
+  have hcoe : ∀ (ω : NPFunctional A) (y : A),
+      (ω (star y * y) : ℂ) = ((omegaNorm A ω y ^ 2 : ℝ) : ℂ) := by
+    intro ω y
+    obtain ⟨hre, him⟩ :=
+      Complex.le_def.mp (npFunctional_nonneg ω (star_mul_self_nonneg y))
+    rw [omegaNorm, Real.sq_sqrt (by simpa using hre)]
+    exact Complex.ext rfl (by simpa using him.symm)
+  constructor
+  · intro h
+    refine ⟨(uwTendsto_iff _ l _).mpr fun ω => ?_, uwweaker_2 x l b h⟩
+    have hω := (usTendsto_iff x l b).mp h ω
+    have hn : Tendsto (fun i => omegaNorm A ω (x i)) l (𝓝 (omegaNorm A ω b)) := by
+      rw [tendsto_iff_dist_tendsto_zero]
+      refine squeeze_zero (fun i => dist_nonneg) (fun i => ?_) hω
+      rw [Real.dist_eq]
+      exact abs_omegaNorm_sub_omegaNorm_le ω (x i) b
+    simp only [hcoe]
+    exact (Complex.continuous_ofReal.tendsto _).comp (hn.pow 2)
+  · rintro ⟨h1, h2⟩
+    refine (usTendsto_iff x l b).mpr fun ω => ?_
+    have e1 := (uwTendsto_iff _ l _).mp h1 ω
+    have e2 : Tendsto (fun i => (ω (star b * x i) : ℂ)) l (𝓝 (ω (star b * b))) := by
+      have hc := @Continuous.tendsto A ℂ (ultraweak A) _ _
+        (continuous_ultraweak_conj ω (star b) 1) b
+      have := hc.comp h2
+      simpa [Function.comp_def] using this
+    have e3 : Tendsto (fun i => (ω (star (x i) * b) : ℂ)) l (𝓝 (ω (star b * b))) := by
+      have hconj := (Complex.continuous_conj.tendsto (ω (star b * b))).comp e2
+      have hsb : ∀ i, (ω (star (x i) * b) : ℂ) = (starRingEnd ℂ) (ω (star b * x i)) := by
+        intro i
+        rw [starRingEnd_apply, ← npFunctional_star ω, star_mul, star_star]
+      have hbb : (starRingEnd ℂ) (ω (star b * b)) = ω (star b * b) := by
+        rw [starRingEnd_apply, ← npFunctional_star ω, star_mul, star_star]
+      simp only [Function.comp_def, hbb] at hconj
+      exact hconj.congr fun i => (hsb i).symm
+    have key : ∀ i, ((omegaNorm A ω (x i - b) ^ 2 : ℝ) : ℂ)
+        = ω (star (x i) * x i) - ω (star (x i) * b) - ω (star b * x i)
+          + ω (star b * b) := by
+      intro i
+      rw [← hcoe ω (x i - b)]
+      have hexp : star (x i - b) * (x i - b)
+          = star (x i) * x i - star (x i) * b - star b * x i + star b * b := by
+        rw [star_sub]; noncomm_ring
+      rw [hexp]
+      have hadd : ∀ u v : A, (ω (u + v) : ℂ) = ω u + ω v := fun u v =>
+        map_add ω.toPositiveLinearMap u v
+      rw [hadd, npFunctional_sub, npFunctional_sub]
+    have hlim : Tendsto (fun i => ((omegaNorm A ω (x i - b) ^ 2 : ℝ) : ℂ)) l (𝓝 0) := by
+      have hz : (ω (star b * b) : ℂ) - ω (star b * b) - ω (star b * b)
+          + ω (star b * b) = 0 := by ring
+      refine Tendsto.congr (fun i => (key i).symm) ?_
+      rw [← hz]
+      exact ((e1.sub e3).sub e2).add tendsto_const_nhds
+    have hsq : Tendsto (fun i => omegaNorm A ω (x i - b) ^ 2) l (𝓝 0) := by
+      have := (Complex.continuous_re.tendsto (0 : ℂ)).comp hlim
+      simp only [Function.comp_def, Complex.ofReal_re, Complex.zero_re] at this
+      exact this
+    have := (Real.continuous_sqrt.tendsto (0 : ℝ)).comp hsq
+    simpa [Function.comp_def, Real.sqrt_sq (omegaNorm_nonneg ω _)] using this
 
 /-- **46III**, (3) ⇒ (1): an ultrastrongly continuous positive functional is
 normal.  (This is **45I**.1 for `B = ℂ`, without the restriction to the
@@ -2706,18 +2845,55 @@ variable {I : Type*} (𝒜 : I → Type u) [∀ i, CStarAlgebra (𝒜 i)]
 projections `π_j : ⊕ᵢ𝒜ᵢ → 𝒜ⱼ` are normal (they are miu-maps by cstar.tex
 20aI). -/
 theorem vn_products_proj_normal (j : I) :
-    PreservesDirSups fun a : lp 𝒜 ∞ => (a : ∀ i, 𝒜 i) j :=
-  sorry
+    PreservesDirSups fun a : lp 𝒜 ∞ => (a : ∀ i, 𝒜 i) j := by
+  intro D s hne hdir hlub
+  obtain ⟨s', hs', hev⟩ := lp_infty_exists_isLUB D hne hdir ⟨s, hlub.1⟩
+  obtain rfl := hlub.unique hs'
+  have h := isLUB_coe_of_isLUB (hne.image (lpEvalSA j)) (hev j)
+  rwa [Set.image_image] at h
 
 /-- **47IV** (`vn-products`, vn.tex:988, Exercise), part 3 (`W*_miu`):
 `⊕ᵢ𝒜ᵢ` with the projections `π_j` is the product of the `𝒜ᵢ` in `W*_miu`:
 every family of nmiu-maps `f_i : B → 𝒜ᵢ` factors through a unique nmiu-map
-`g : B → ⊕ᵢ𝒜ᵢ`. -/
+`g : B → ⊕ᵢ𝒜ᵢ`.
+
+*The von Neumann hypotheses are not used* (hence the deliberate
+`unusedSectionVars` warning, left in place as evidence, as for **112IX** and
+**105IV**.2): the ∗-algebra half is **20aI** `cstar_product_2_miu` and
+normality of the mediating map follows from normality of the `fᵢ` because the
+order on `⊕ᵢ𝒜ᵢ` is pointwise (`lp_infty_le_iff`).  Kept as the thesis states
+it, since 47IV is a statement about von Neumann algebras. -/
 theorem vn_products_nmiu {B : Type*} [CStarAlgebra B] [PartialOrder B]
     [StarOrderedRing B] [VonNeumannAlgebra B] (f : ∀ i, NMIUMap B (𝒜 i)) :
     ∃! g : NMIUMap B (lp 𝒜 ∞), ∀ (j : I) (b : B),
-      ((g b : lp 𝒜 ∞) : ∀ i, 𝒜 i) j = f j b :=
-  sorry
+      ((g b : lp 𝒜 ∞) : ∀ i, 𝒜 i) j = f j b := by
+  obtain ⟨g₀, hg₀, -⟩ := cstar_product_2_miu (fun i => (f i).toStarAlgHom)
+  have hnorm : PreservesDirSups ⇑g₀ := by
+    intro D s hne hdir hlub
+    have key : ∀ (j : I) (d : selfAdjoint B),
+        ((g₀ (d : B) : lp 𝒜 ∞) : ∀ i, 𝒜 i) j = f j (d : B) := fun j d => hg₀ j _
+    constructor
+    · rintro _ ⟨d, hd, rfl⟩
+      rw [lp_infty_le_iff]
+      intro j
+      rw [key j d, key j s]
+      exact ((f j).preservesDirSups' D s hne hdir hlub).1 ⟨d, hd, rfl⟩
+    · intro u hu
+      rw [lp_infty_le_iff]
+      intro j
+      rw [key j s]
+      refine ((f j).preservesDirSups' D s hne hdir hlub).2 ?_
+      rintro _ ⟨d, hd, rfl⟩
+      have hd' := (lp_infty_le_iff _ _).mp (hu ⟨d, hd, rfl⟩) j
+      rwa [key j d] at hd'
+  refine ⟨⟨g₀, hnorm⟩, hg₀, ?_⟩
+  intro g' hg'
+  apply DFunLike.coe_injective
+  funext b
+  apply lp.ext
+  funext j
+  rw [hg' j b]
+  exact (hg₀ j b).symm
 
 /-- **47IV** (`vn-products`, vn.tex:988, Exercise), part 3 (`W*_cpsu`):
 `⊕ᵢ𝒜ᵢ` is also the product in `W*_cpsu`: every family of ncpsu-maps

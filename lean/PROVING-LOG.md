@@ -6793,3 +6793,156 @@ pointwise).  Every proof below rests on one of the two.
 file (every new lemma carries the `omit`s the linter asked for; the single
 new `unusedSectionVars` warning, on `nmiu_functional_product`, is
 deliberate and documented above).
+
+---
+
+## Session 32 — `A/VN`: parsec 770 (77I, 77III), 44XI.3, and 47IV.2/.3 relocated (worker 59)
+
+Files touched: `Theses/A/VN/Basic.lean`, `Theses/A/VN/Completeness.lean`,
+`Theses/A/Proc/QuantumLambda.lean` (the two relocated lemmas deleted, call
+sites re-pointed), `ERRATA.md` (one new row, in point order), this file.
+
+**A/VN 100 → 92.**  Per file: `Basic` 30 → 25, `Completeness` 5 → 2;
+`Division` 26, `NormalFunctionals` 18, `Projections` 21 unchanged.
+`A/CStar` 37, `A/Proc` 119, `B/Dils` 63, `B/Eff` 19 — all unchanged.
+
+| point | declaration | file | class |
+|---|---|---|---|
+| **44XI**.3 | `vn_positive_basic_3` | Basic | 2 — no author argument exists (Exercise, `vn.tex`) |
+| **45VI** | `mult_jus_cont` | Basic | 1 |
+| **46II** | `usconv` | Basic | 2 — no author argument exists (Exercise, `vn.tex`) |
+| **47IV**.2 | `vn_products_proj_normal` | Basic | 2 — relocated from `A/Proc` (worker 58) |
+| **47IV**.3 | `vn_products_nmiu` | Basic | 2 — relocated from `A/Proc` (worker 58) |
+| **77I**.1 | `vn_complete_1` | Completeness | 1, with one citation replaced — see ERRATA **77II** |
+| **77I**.2 | `vn_complete_2` | Completeness | 1, likewise |
+| **77III** | `vn_ball_compact` | Completeness | 2 — ultrafilters in place of the thesis's uniform-space route |
+
+One new auxiliary, in `Completeness.lean`: `omegaNorm_comp_starAlgHom`.
+
+### 77I — the thesis's proof, minus a forward reference
+
+Transcribed as written except for one step.  The argument is: represent `𝒜`
+by `ρ_Ω` on `ℋ_Ω` (**48VIII**/**48V**), complete inside `B(ℋ_Ω)` by **76I**
+(ultrastrong) / **76III** (bounded ultraweak), land back in `ρ_Ω(𝒜)` because
+that is a von Neumann subalgebra (**48VI**.1) and hence ultrastrongly *and*
+ultraweakly closed (**75VIII** `vnsac`, proved in session 27 — this was
+77I's last prerequisite), and come back along `ρ_Ω`.
+
+The last step is where the thesis and this proof differ, and it is filed as
+ERRATA **77II**.  The thesis justifies "the two ultrastrong topologies agree
+on `ℛ`" by *"any np-functional `ω : ℛ → ℂ` is of the form `⟨x,(·)x⟩`"* — a
+statement about all np-functionals of `ℛ`, i.e. **89IX**, twelve parsecs
+later, and stronger than 89IX gives (89IX produces a *sum* of vector
+functionals).  Neither is needed.  Only one direction is used, and it is
+true by construction: with `Ω` = *all* np-functionals of `𝒜`, every
+np-functional of `𝒜` is a vector functional in `ℋ_Ω`, which is exactly
+**48V** `varrho-Omega-normal` and is already available at parsec 770.  The
+converse direction — restricting an np-functional of `B(ℋ_Ω)` along `ρ_Ω` —
+is `compNP (starAlgHomP ρ)`, which was already in `Basic.lean`.
+
+*Note to whoever proves the next thing about normal maps*: this session first
+rebuilt `compNP` from scratch (as `npPullback`, plus a universe-polymorphic
+composition lemma), because `preservesDirSups_pmap_comp` — the obvious
+candidate in `Basic.lean` — is stated with all three carriers in the *same*
+universe and so cannot take `ℂ` as codomain, which looked like the general
+obstruction.  It is not: `compNP` (`Basic.lean`, section `PositiveMaps`) is
+stated over `Type*` and does exactly this.  The duplicate was deleted.
+
+The transport of `‖·‖_ω` is `omegaNorm_comp_starAlgHom`:
+`‖a‖_{ω∘ρ} = ‖ρ(a)‖_ω`, one `rw` from `ρ(a*a) = ρ(a)*ρ(a)`.
+
+### 77III — same theorem, ultrafilters instead of uniform spaces
+
+*Class 2.*  The thesis embeds `(𝒜)₁` into `ℂ^Ω` (`Ω` the npu-maps), shows
+the image is complete hence closed, and applies Tychonoff.  Rendering
+"complete ⇒ closed" needs a uniform structure on `𝒜` for the ultraweak
+topology, which the tree does not have (the topologies are `def`s, not
+instances).  The ultrafilter form of compactness avoids it entirely:
+given an ultrafilter `F` on `(𝒜)₁`, each `F.map ω` is an ultrafilter inside
+a closed ball of `ℂ`, hence convergent, hence Cauchy — Heine–Borel in `ℂ`
+replaces Tychonoff — so **77I**.2 supplies an ultraweak limit `a`, which
+lies in `(𝒜)₁` because the ball is ultraweakly closed, and `F ≤ 𝓝 a`
+because `map val (comap val F) = F`.  About 35 lines.
+
+Two things the thesis leaves implicit, both harmless: that `(𝒜)₁` is
+ultraweakly (not merely ultrastrongly) closed — **44XI**.3 plus **73VIII**
+`ultraclosed`; and that the *npu*-maps suffice to give the ultraweak
+topology, which **42III** defines from the *np*-maps.  The proof here uses
+all np-functionals throughout, so the second step never arises.
+
+### 44XI.3 — the unit ball is ultrastrongly closed
+
+*Class 2 by necessity: 44XI is an Exercise of `vn.tex`, and `asols.tex`
+stops at parsec 340, so no author argument exists.*  Proved from the
+characterisation
+
+  `‖a‖ ≤ 1  ↔  a*a ≤ 1  ↔  ∀ ω, ‖a‖_ω ≤ ‖1‖_ω`,
+
+whose second `↔` is **44XI**'s own preliminary claim `np_orderSeparating`
+(already proved) in one direction and monotonicity of `ω` in the other; the
+first is `CStarAlgebra.norm_le_one_iff_of_nonneg` at `a*a` together with
+`‖a*a‖ = ‖a‖²`.  Closedness is then one line of the triangle inequality
+`abs_omegaNorm_sub_omegaNorm_le`, since each `{a | ‖a‖_ω ≤ ‖1‖_ω}` is
+ultrastrongly closed.  This was needed for 77III and is the only place the
+np-functionals' *order*-separation (as opposed to faithfulness) is used
+here.
+
+### 45VI — the thesis's two-line estimate, verbatim
+
+*Class 1.*  vn.tex:906 is transcribed as it stands:
+`‖ab − a_α b_α‖_ω ≤ ‖(a−a_α)b‖_ω + ‖a_α(b−b_α)‖_ω ≤ ‖a−a_α‖_{ω(b*(·)b)} +
+‖a_α‖‖b−b_α‖_ω`, the two pieces being `omegaNorm_mul_right` (which is
+literally "`ω(b*(·)b)`", i.e. `conjNP b ω`) and `omegaNorm_mul_le`.  Twenty
+lines, and the only place the norm bound on `(a_α)` is used is the last
+`≤`.
+
+### 46II — `‖·‖_ω²` is the bridge
+
+*Class 2 by necessity (Exercise, no published solution).*  Both directions
+run through `ω(y*y) = ‖y‖_ω²`.  Forwards: `|‖x_α‖_ω − ‖b‖_ω| ≤ ‖x_α−b‖_ω`
+(`abs_omegaNorm_sub_omegaNorm_le`) gives `‖x_α‖_ω → ‖b‖_ω`, hence
+`ω(x_α*x_α) → ω(b*b)` for every `ω`, which is the first ultraweak clause;
+the second is **43I**.2.  Backwards: expand
+
+  `‖x_α − b‖_ω² = ω(x_α*x_α) − ω(x_α*b) − ω(b*x_α) + ω(b*b)`.
+
+The first term converges by the first hypothesis.  The third is
+`ω(b* · 1)` evaluated along the second hypothesis, and is ultraweakly
+continuous by **44II** `continuous_ultraweak_conj` — the polarisation
+lemma, already in the file.  The second is the complex conjugate of the
+third (`npFunctional_star`), so it converges too, and the four limits
+cancel.
+
+**Worth recording for the author**: 46II is an Exercise placed at parsec
+460, and the `⟸` direction needs the ultraweak continuity of
+`a ↦ ω(b*a)`.  That is *not* immediate from **42III**, which defines the
+ultraweak topology from np-functionals only; it needs the polarisation of
+**44II**.  A hint pointing at 44II would be in order — without it the
+exercise looks as though it needs **72V**/**72XI**, twenty-six parsecs
+later.
+
+### 47IV.2 / 47IV.3 — relocated, not re-proved
+
+Worker 58 proved both in `A/Proc/QuantumLambda.lean` because `A/VN` was
+frozen.  They are moved here verbatim, the `sorry`s deleted, and
+`QuantumLambda.lean`'s three use sites now call the `A/VN` names; the
+`A/Proc` copies are gone, replaced by a pointer comment.
+
+**Hypothesis not actually used (47IV.3).**  `vn_products_nmiu` uses neither
+`[∀ i, VonNeumannAlgebra (𝒜 i)]` nor `[VonNeumannAlgebra B]`: the ∗-algebra
+half is **20aI** `cstar_product_2_miu` and normality of the mediating map
+follows from normality of the `fᵢ` because the order on `⊕ᵢ𝒜ᵢ` is pointwise
+(`lp_infty_le_iff`).  Kept as the thesis states it, with the
+`unusedSectionVars` warning left in place as evidence and a note in the doc
+comment — the `112IX`/`105IV.2` convention.
+
+### Verification
+
+Whole-project `lake build`: exit 0, 8738 jobs.  `#print axioms` on all eight
+theorems, the new auxiliary and the regression targets `vnsac`, `cp_uscont`,
+`ultraclosed`, `np_orderSeparating`, `ngns`,
+`Theses.A.Proc.{exists_linfEval, first_adjunction, exists_linfMap}`:
+`[propext, Classical.choice, Quot.sound]` throughout.  Exactly one new
+warning in the tree — the deliberate `unusedSectionVars` on
+`vn_products_nmiu` documented above; `omegaNorm_comp_starAlgHom` carries the
+`omit` the linter asked for.
