@@ -1112,12 +1112,118 @@ def BilinNormal [VonNeumannAlgebra A] [VonNeumannAlgebra B]
   @Continuous _ _ (uwTensorTopology A B) (ultraweak C)
     ⇑(TensorProduct.lift β)
 
+omit [PartialOrder A] [StarOrderedRing A] [PartialOrder B]
+  [StarOrderedRing B] in
+/-- Auxiliary for **112III**: every element of `𝒜 ⊙ ℬ` is a finite sum
+`∑ᵢ aᵢ ⊙ bᵢ` indexed by a `Fin N` (the form the author's proof writes it
+in).  Mathlib's `TensorProduct.exists_finset` gives a `Finset`; this
+reindexes it. -/
+private theorem exists_fin_repr (t : A ⊗[ℂ] B) :
+    ∃ (N : ℕ) (a : Fin N → A) (b : Fin N → B), t = ∑ i, a i ⊗ₜ[ℂ] b i := by
+  obtain ⟨S, hS⟩ := TensorProduct.exists_finset t
+  refine ⟨S.card, fun i => ((S.equivFin.symm i : A × B)).1,
+          fun i => ((S.equivFin.symm i : A × B)).2, ?_⟩
+  rw [hS, ← Finset.sum_coe_sort S (fun p => p.1 ⊗ₜ[ℂ] p.2)]
+  exact (Fintype.sum_equiv S.equivFin.symm _ _ (fun i => rfl)).symm
+
+omit [PartialOrder A] [StarOrderedRing A] [PartialOrder B]
+  [StarOrderedRing B] in
+/-- Auxiliary for **112VI**: the author's "by replacing them if necessary
+we may assume that `a₁, …, a_N` are linearly independent".  Made precise
+by expanding the `aᵢ` in a basis `E` of their (finite-dimensional) span
+and collecting the coefficients on the `ℬ`-side. -/
+private theorem exists_indep_repr (t : A ⊗[ℂ] B) :
+    ∃ (N : ℕ) (a : Fin N → A) (b : Fin N → B),
+      LinearIndependent ℂ a ∧ t = ∑ i, a i ⊗ₜ[ℂ] b i := by
+  obtain ⟨M, a₀, b₀, rfl⟩ := exists_fin_repr t
+  set V : Submodule ℂ A := Submodule.span ℂ (Set.range a₀) with hV
+  have : Module.Finite ℂ V := Module.Finite.span_of_finite ℂ (Set.finite_range a₀)
+  set e : Module.Basis (Fin (Module.finrank ℂ V)) ℂ V := Module.finBasis ℂ V with he
+  set E : Fin (Module.finrank ℂ V) → A := fun j => (e j : A) with hE
+  have hEind : LinearIndependent ℂ E :=
+    e.linearIndependent.map' V.subtype (Submodule.ker_subtype V)
+  have hmem : ∀ i, a₀ i ∈ V := fun i => Submodule.subset_span ⟨i, rfl⟩
+  set c : Fin M → Fin (Module.finrank ℂ V) → ℂ :=
+    fun i j => e.repr ⟨a₀ i, hmem i⟩ j with hc
+  have hrep : ∀ i, a₀ i = ∑ j, c i j • E j := by
+    intro i
+    have h := congrArg (Submodule.subtype V) (e.sum_repr ⟨a₀ i, hmem i⟩)
+    simp only [map_sum, map_smul, Submodule.coe_subtype] at h
+    exact h.symm
+  refine ⟨_, E, fun j => ∑ i, c i j • b₀ i, hEind, ?_⟩
+  calc ∑ i, a₀ i ⊗ₜ[ℂ] b₀ i
+      = ∑ i, ∑ j, E j ⊗ₜ[ℂ] (c i j • b₀ i) := by
+        refine Finset.sum_congr rfl fun i _ => ?_
+        rw [hrep i, TensorProduct.sum_tmul]
+        exact Finset.sum_congr rfl fun j _ => TensorProduct.smul_tmul _ _ _
+    _ = ∑ j, ∑ i, E j ⊗ₜ[ℂ] (c i j • b₀ i) := Finset.sum_comm
+    _ = ∑ j, E j ⊗ₜ[ℂ] (∑ i, c i j • b₀ i) :=
+        Finset.sum_congr rfl fun j _ => (TensorProduct.tmul_sum _ _ _).symm
+
+/-- Auxiliary for **112III**: for a positive functional `σ` on a
+C*-algebra the matrix `(σ(aᵢ* aⱼ))ᵢⱼ` is positive.  This is the step the
+author justifies by `cp-commutative` (**34IX**): `σ` is completely
+positive because `ℂ` is commutative, and complete positivity in the form
+`Theses.A.CStar.IsCompletelyPositiveMap` *is* the statement that the
+quadratic form of that matrix is nonnegative. -/
+private theorem posMap_gram_posSemidef (σ : A →ₚ[ℂ] ℂ) {N : ℕ}
+    (a : Fin N → A) :
+    (Matrix.of fun i j : Fin N => σ (star (a i) * a j)).PosSemidef := by
+  have hpos : Theses.A.CStar.IsPositiveMap σ.toLinearMap :=
+    fun x hx => σ.map_nonneg hx
+  have hcp : Theses.A.CStar.IsCompletelyPositiveMap σ.toLinearMap :=
+    Theses.A.CStar.cp_commutative_cod _ hpos
+  refine Matrix.PosSemidef.of_dotProduct_mulVec_nonneg ?_ fun z => ?_
+  · ext i j
+    simp only [Matrix.conjTranspose_apply, Matrix.of_apply]
+    have h : σ.toLinearMap (star (star (a j) * a i))
+        = star (σ.toLinearMap (star (a j) * a i)) :=
+      Theses.A.CStar.cstar_p_implies_i σ.toLinearMap hpos _
+    rw [star_mul, star_star] at h
+    exact h.symm
+  · rw [quadForm_eq]
+    simpa using hcp N a z
+
+/-- Auxiliary for **112V**: `σ ⊙ τ` is involution preserving when `σ` and
+`τ` are (**10IV**, `cstar-p-implies-i`). -/
+private theorem odotF_star (σ : A →ₚ[ℂ] ℂ) (τ : B →ₚ[ℂ] ℂ)
+    (y : A ⊗[ℂ] B) :
+    odotF σ.toLinearMap τ.toLinearMap (star y)
+      = starRingEnd ℂ (odotF σ.toLinearMap τ.toLinearMap y) := by
+  induction y using TensorProduct.induction_on with
+  | zero => simp
+  | tmul x z =>
+      have hσ := Theses.A.CStar.cstar_p_implies_i σ.toLinearMap
+        (fun u hu => σ.map_nonneg hu) x
+      have hτ := Theses.A.CStar.cstar_p_implies_i τ.toLinearMap
+        (fun u hu => τ.map_nonneg hu) z
+      simp [odotF, TensorProduct.star_tmul, hσ, hτ]
+  | add y z hy hz => simp [star_add, hy, hz]
+
 /-- **112III** (`product-state-positive`, proc.tex:2781, Lemma): for
 C*-algebras and positive functionals `σ`, `τ`,
 `(σ ⊙ τ)(t* t) ≥ 0` for all `t ∈ 𝒜 ⊙ ℬ`. -/
 theorem product_state_positive (σ : A →ₚ[ℂ] ℂ) (τ : B →ₚ[ℂ] ℂ)
     (t : A ⊗[ℂ] B) :
-    0 ≤ odotF σ.toLinearMap τ.toLinearMap (star t * t) := sorry
+    0 ≤ odotF σ.toLinearMap τ.toLinearMap (star t * t) := by
+  -- proc.tex:2789, verbatim: write `t = ∑ₙ aₙ ⊙ bₙ`, so that
+  -- `(σ ⊙ τ)(t*t) = ∑_{n,m} σ(aₙ* a_m) τ(bₙ* b_m)`; both matrices are
+  -- positive by `cp-commutative`, hence so is their entrywise product by
+  -- `schur` (111II), and the sum of the entries of a positive matrix is
+  -- nonnegative.
+  obtain ⟨N, a, b, rfl⟩ := exists_fin_repr t
+  have hexp : star (∑ i, a i ⊗ₜ[ℂ] b i) * (∑ i, a i ⊗ₜ[ℂ] b i)
+      = ∑ i, ∑ j, (star (a i) * a j) ⊗ₜ[ℂ] (star (b i) * b j) := by
+    rw [star_sum, Finset.sum_mul]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [Finset.mul_sum]
+    refine Finset.sum_congr rfl fun j _ => ?_
+    rw [TensorProduct.star_tmul, Algebra.TensorProduct.tmul_mul_tmul]
+  rw [hexp]
+  have hsum := sum_entries_nonneg
+    (schur N _ _ (posMap_gram_posSemidef σ a) (posMap_gram_posSemidef τ b))
+  simp only [Matrix.hadamard_apply, Matrix.of_apply] at hsum
+  simpa [odotF] using hsum
 
 /-- **112V** (`basic-state-inner-product`, proc.tex:2808, Exercise): for a
 basic functional `ω`, `[s,t]_ω = ω(s* t)` is an inner product (a
@@ -1127,7 +1233,26 @@ theorem basic_state_inner_product [VonNeumannAlgebra A]
     [VonNeumannAlgebra B] (ω : A ⊗[ℂ] B →ₗ[ℂ] ℂ)
     (hω : IsBasicFunctional ω) :
     (∀ s t : A ⊗[ℂ] B, ω (star t * s) = starRingEnd ℂ (ω (star s * t))) ∧
-      ∀ t : A ⊗[ℂ] B, 0 ≤ ω (star t * t) := sorry
+      ∀ t : A ⊗[ℂ] B, 0 ≤ ω (star t * t) := by
+  -- The exercise says "use `product-state-positive`", and that is exactly
+  -- what the second half is: `ω(t* t) = (σ ⊙ τ)((t t₀)* (t t₀))`.
+  -- Conjugate-symmetry does not need positivity at all — it is
+  -- involution-preservation of `σ ⊙ τ` (`odotF_star`) transported along
+  -- the ∗-compatible map `x ↦ t₀* x t₀`.
+  obtain ⟨σ, τ, t₀, hrep⟩ := hω
+  refine ⟨fun s t => ?_, fun t => ?_⟩
+  · have hstar : star t * s = star (star s * t) := by rw [star_mul, star_star]
+    rw [hstar, hrep, hrep]
+    have h : star t₀ * star (star s * t) * t₀
+        = star (star t₀ * (star s * t) * t₀) := by simp [star_mul, mul_assoc]
+    rw [h]
+    exact odotF_star σ.toPositiveLinearMap τ.toPositiveLinearMap _
+  · rw [hrep]
+    have h := product_state_positive σ.toPositiveLinearMap
+      τ.toPositiveLinearMap (t * t₀)
+    have heq : star (t * t₀) * (t * t₀) = star t₀ * (star t * t) * t₀ := by
+      simp [star_mul, mul_assoc]
+    rwa [heq] at h
 
 /-- **112VI** (proc.tex:2815, Lemma): product functionals formed from
 separating collections `Ω`, `Ξ` of linear functionals on C*-algebras are
@@ -1137,7 +1262,25 @@ theorem product_functionals_separating (Ω : Set (A →ₗ[ℂ] ℂ))
     (Ξ : Set (B →ₗ[ℂ] ℂ))
     (hΩ : ∀ a : A, (∀ σ ∈ Ω, σ a = 0) → a = 0)
     (hΞ : ∀ b : B, (∀ τ ∈ Ξ, τ b = 0) → b = 0) (t : A ⊗[ℂ] B)
-    (h : ∀ σ ∈ Ω, ∀ τ ∈ Ξ, odotF σ τ t = 0) : t = 0 := sorry
+    (h : ∀ σ ∈ Ω, ∀ τ ∈ Ξ, odotF σ τ t = 0) : t = 0 := by
+  -- proc.tex:2833, verbatim: write `t = ∑ₙ aₙ ⊙ bₙ` with the `aₙ` linearly
+  -- independent; for `τ ∈ Ξ` the element `∑ₙ aₙ τ(bₙ)` is killed by every
+  -- `σ ∈ Ω`, hence is `0`, hence every `τ(bₙ)` is `0`; and then every
+  -- `bₙ` is `0`, so `t = 0`.
+  obtain ⟨N, a, b, hind, rfl⟩ := exists_indep_repr t
+  have hb : ∀ j, b j = 0 := by
+    intro j
+    refine hΞ _ fun τ hτ => ?_
+    have key : ∀ σ ∈ Ω, σ (∑ k, τ (b k) • a k) = 0 := by
+      intro σ hσ
+      have h1 := h σ hσ τ hτ
+      simp only [odotF, map_sum, TensorProduct.lift.tmul, LinearMap.compl₁₂_apply,
+        LinearMap.mul_apply'] at h1
+      simp only [map_sum, map_smul, smul_eq_mul]
+      rw [← h1]
+      exact Finset.sum_congr rfl fun k _ => mul_comm _ _
+    exact (Fintype.linearIndependent_iff.mp hind) (fun k => τ (b k)) (hΩ _ key) j
+  simp [hb]
 
 /-- **112VIII** (`tensor-product-norm`, proc.tex:2849, Exercise): the
 tensor product norm is a norm on `𝒜 ⊙ ℬ`. -/

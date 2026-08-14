@@ -416,7 +416,13 @@ noncomputable instance (n : ℕ) : PartialOrder (MatAlg n) :=
 instance (n : ℕ) : StarOrderedRing (MatAlg n) :=
   CStarAlgebra.spectralOrderedRing _
 
-instance (n : ℕ) : VonNeumannAlgebra (MatAlg n) := sorry
+/-- `M_n(ℂ)` is a von Neumann algebra.  This is **49IV**.1
+(`Theses.A.VN.mn_vna_1`, vn.tex:1272) at `𝒜 = ℂ`, so it is *not* an
+independent obligation: the `sorry` that used to sit here has been
+repointed at its owner in `A/VN`.  (Note the `PartialOrder` above is the
+same spectral order that `mn_vna_1` is stated against, so the two agree
+definitionally.) -/
+instance (n : ℕ) : VonNeumannAlgebra (MatAlg n) := Theses.A.VN.mn_vna_1 n
 
 /-- **125cII** (proc.tex:5284): two ncpsu-maps
 `f₁ : 𝒜 → M_{n₁}`, `f₂ : 𝒜 → M_{n₂}` are **miu-equivalent** when there

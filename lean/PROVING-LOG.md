@@ -1300,19 +1300,45 @@ was "the one live example of the invisible-taint class in the project" — was
 `sorry`ed *instance* is not rare; enumerate them mechanically rather than
 recalling them:
 
+⚠️⚠️ **Correction to the correction (session 12).**  The recipe first written
+here was
+
 ```sh
+# DO NOT USE — produces false positives
 grep -rn '^instance\|^noncomputable instance' Theses/ --include=*.lean -A3 \
   | grep -B3 'sorry' | grep instance
 ```
 
-which currently finds **seven**: `mn_vna_1` and `vonNeumannAlgebra_lp_infty`
-(`A/VN/Basic.lean`), `StarOrderedRing (MatAlg n)` and `VonNeumannAlgebra
-(MatAlg n)` (`A/Proc/QuantumLambda.lean`), and the three `cornerSet` instances
-`instCStarAlgebra` / `instPartialOrder` / `instStarOrderedRing`
-(`B/Dils/Pure.lean`, each carrying a `FIXME(sorry-instance)` marker).  The
-`cornerSet` three are the highest-value of them: they sit under **8 statements
-in `Pure.lean`**, and discharging them is pure Lean infrastructure with no
-thesis dependency.
+and it is **wrong**: `-A3 | grep -B3 sorry` matches a `sorry` occurring
+anywhere in the three following lines, *including in a doc comment or in the
+next declaration*.  It reported **seven**, then **four**; the true number was
+**two** throughout.  Both false positives in `A/Proc/QuantumLambda.lean` were
+honest definitions — `StarOrderedRing (MatAlg n) := CStarAlgebra.spectralOrderedRing _`
+and `VonNeumannAlgebra (MatAlg n) := Theses.A.VN.mn_vna_1 n`.  The bad count
+went into three commit messages and two worker briefs before a worker checked
+it.
+
+**Use one of these instead.**  Textual, and exact:
+
+```sh
+grep -rn -A2 '^\(noncomputable \)\?instance' Theses/ --include=*.lean \
+  | grep -E ':= *sorry$| sorry$'
+```
+
+Authoritative, and the one to trust: `#print axioms` on the instance itself,
+or `#sorry_leaks` from `Theses/AxiomCheck.lean`, which walks the environment
+and cannot be fooled by comments.
+
+As of session 12 there are exactly **two**, both in `A/VN/Basic.lean`:
+`vonNeumannAlgebra_lp_infty` (line 676) and `mn_vna_1` (line 3195), each
+verified `sorryAx` by `#print axioms`.  The three `cornerSet` instances in
+`B/Dils/Pure.lean` were real and have been discharged.
+
+The general lesson, which is the reason this is worth the space: **a
+`grep`-shaped proxy for a semantic property will drift from the property.**
+Every count that matters here — `sorry`s, leaks, instances — should come from
+Lean, not from text matching, or at minimum be spot-checked against Lean
+before being repeated.
 
 Also stale, and corrected by the same pass: the session-2 `sorryAx` ranking
 listed `Ba.instCStarAlgebra` / `instPartialOrder` / `instStarOrderedRing` as
@@ -3336,3 +3362,130 @@ homology axiom is reproduced.
 * **(3) mild:** —
 * **(4) our statement mis-transcribes the thesis:** none.
 * **(5) closed from Mathlib without reading the author's argument:** none.
+
+## Session 13 — `A/Proc` parsecs 1120, 1253 and 1300 (worker 37)
+
+Proved **112III** `product_state_positive`, **112V** `basic_state_inner_product`
+and **112VI** `product_functionals_separating` (`Tensor.lean`), **130II**
+`atomic_measure_space` (`Duplicators.lean`), and repointed the sorried instance
+`VonNeumannAlgebra (MatAlg n)` (`QuantumLambda.lean`) at its owner in `A/VN`.
+A/Proc 154 → 149 code `sorry`s (build-warning convention 149 → 144).
+
+### The two findings that changed the map of the chapter
+
+* **Parsec 1120 is about the *algebraic* tensor product `𝒜 ⊙ ℬ`, not about
+  `VNT`.**  112III, 112V, 112VI, 112VIII and 112IX are stated over Mathlib's
+  `A ⊗[ℂ] B` with the tensor-product norm of 112II; none of them mentions
+  `vnTensorProduct`, so none is behind 89IX.  Three of the five are now closed;
+  only 112VIII (definiteness of the tensor norm) and 112IX are left, and they
+  are hard for their own reasons, not for want of the von Neumann tensor
+  product.
+* **130II is not gated on `vonNeumannAlgebra_lp_infty`.**  Its conclusion is
+  `∃ φ : NMIUMap 𝒜 ℂ, Bijective φ` — it lands in `ℂ`, whose `VonNeumannAlgebra`
+  instance is real.  (Nor do 130IV/130V *state* anything needing the sorried
+  instance: `NMIUMap` asks only for `CStarAlgebra`/`PartialOrder`/
+  `StarOrderedRing` on `lp ℬ ∞`, and all three of those are honest instances in
+  `A/VN/Basic.lean`.  A *proof* of 130IV/130V would still need the missing
+  componentwise description of `spectralOrder` on `lp ℬ ∞`, i.e. the same
+  mathematics as the instance — but that is "blocked on X", not "vacuous".)
+
+### 112III (proc.tex:2789) — class (1), faithful
+
+The author's four lines transcribed: `t = ∑ₙ aₙ ⊙ bₙ` gives
+`(σ⊙τ)(t*t) = ∑_{n,m} σ(aₙ*a_m) τ(bₙ*b_m)`; both matrices are positive by
+`cp-commutative` (**34IX**, `cp_commutative_cod`, proved); their entrywise
+product is positive by `schur` (**111II**, proved); and the sum of the entries
+of a positive matrix is `≥ 0`.  Worth recording: our
+`Theses.A.CStar.IsCompletelyPositiveMap` is *defined* as
+`0 ≤ ∑ᵢⱼ bᵢ* f(aᵢ*aⱼ) bⱼ`, which at `bᵢ ∈ ℂ` **is** the quadratic form of the
+matrix `(σ(aᵢ*aⱼ))` — so the "positive matrix" step needs no reformulation at
+all, only Hermitianness, which is `cstar-p-implies-i` (**10IV**).
+
+### 112V (proc.tex:2808, Exercise) — (1) for positivity, (2) for symmetry
+
+The exercise says "use `product-state-positive`", and the positivity half is
+exactly that: `ω(t*t) = (σ⊙τ)((t t₀)*(t t₀))`.  Conjugate-symmetry is proved
+*without* positivity, hence without the polarisation argument one would
+normally use: `x ↦ t₀* x t₀` is ∗-compatible and `σ ⊙ τ` is involution
+preserving (new `odotF_star`, from **10IV** on `σ` and `τ`), so
+`ω(star x) = conj (ω x)` outright.
+
+### 112VI (proc.tex:2833) — class (1), with one step made precise (3)
+
+Transcribed step for step.  The author's "by replacing them if necessary we may
+assume that `a₁,…,a_N` are linearly independent" is the new private
+`exists_indep_repr`: expand the `aᵢ` in a basis of their (finite-dimensional)
+span and collect the coefficients on the `ℬ`-side.  Everything after that is the
+author's argument verbatim.
+
+### 130II (proc.tex:6474) — (1) measure-theoretic half, (2) algebraic half
+
+*Faithful.*  The author's dichotomy ("either `μ(S)=0` or `μ(A∖S)=0`") is
+`atomic_dichotomy`; his reduction to real-valued `f` by splitting into real and
+imaginary parts is `ae_const_of_atomic`.
+
+*Different route, and why.*  For a real bounded measurable `g` the author takes
+the two closed sets `L = {t | t ≤ g°}`, `U = {t | g° ≤ t}`, observes that the
+dichotomy makes them cover `ℝ`, and concludes by **connectedness of `ℝ`** that
+they meet.  The Lean proof realises `L` concretely as `{t | μ{g < t} = 0}` and
+takes `r = sup L`, then shows `μ{g < r} = μ{g > r} = 0` directly by a countable
+union.  Same content, and it avoids having to introduce `g°` (the class of `g`
+in the abstract algebra) before knowing the algebra is `ℂ`.
+
+*The real divergence is at the end, and it is forced by our rendering.*  The
+thesis stops once every `f ∈ 𝓛^∞(A)` is a.e. constant — "hence `L^∞(X) ≅ ℂ`".
+That step is **not** available as stated here: `IsLinftyOf` records that `q` is
+additive, multiplicative, unital and ∗-preserving, but **not that it is
+`ℂ`-linear**, and a ∗-ring isomorphism `ℂ → 𝒜` need not be `ℂ`-linear —
+complex conjugation is one, and `q(f) = conj(f(x₀))` satisfies every clause of
+`IsLinftyOf` for a Dirac measure.  So `z ↦ q(const z)` cannot simply be
+inverted to an nmiu-map.  The fix used is to observe that `q(const ·)` is an
+injective ∗-ring homomorphism *onto* `𝒜`, so every nonzero element of `𝒜` is
+invertible, and then to apply **16VII** `gelfand_mazur` (proved, in
+`A/CStar/Positive.lean`), which gives surjectivity of `algebraMap ℂ 𝒜`
+directly.  Normality of the resulting isomorphism is read off from the two
+monotonicity facts (`algebraMap` preserves the order by
+`algebraMap_ofReal_mono`, and reflects it by the new
+`algebraMap_nonneg_reflect`).
+
+This is **not** an erratum against the thesis — in the thesis `L^∞(X)` is a
+concrete algebra of functions and its `ℂ`-linearity is part of the setting.  It
+is a note about our `IsLinftyOf`: *a `ℂ`-linearity clause is missing from it*,
+and adding one (`q (z • f) = z • q f`) would make the statement match the
+source more closely and shorten this proof.  Recorded here rather than acted on,
+since changing `IsLinftyOf` changes the statements of 129X, 130II, 130IV and
+130V at once.
+
+*The thesis proves more than it needs* (the recurring pattern): 130II's standing
+hypothesis `hμ : μ.IsComplete` is **not used** — the unused-variable warning is
+left in place as the evidence — nor is `𝒜`'s von-Neumann-ness used for anything
+except reading off the conclusion.  Atomicity plus finiteness is the whole
+hypothesis.
+
+### The `VonNeumannAlgebra (MatAlg n)` instance was a duplicate
+
+`QuantumLambda.lean:419` carried `instance (n : ℕ) : VonNeumannAlgebra (MatAlg n)
+:= sorry`.  `MatAlg n = CStarMatrix (Fin n) (Fin n) ℂ`, so this is **49IV**.1
+`Theses.A.VN.mn_vna_1` at `𝒜 = ℂ`, and `mn_vna_1 n` typechecks against it
+verbatim (the `PartialOrder` declared next to it is the same spectral order).
+The `sorry` is now `mn_vna_1 n`: the obligation has moved to its owner in
+`A/VN`, exactly as `exists_ncpCarrier` was repointed at `A/VN`'s
+`exists_carrier` in session 1.  **`A/Proc` now has no sorried instance**, and
+the project has two (`vonNeumannAlgebra_lp_infty`, `mn_vna_1`), not four.
+
+### Classification
+
+* **(1) faithful:** 112III, 112VI, and the measure-theoretic half of 130II.
+* **(2) different route:** 112V's conjugate-symmetry half (involution
+  preservation instead of polarisation); 130II's `L∞ ≅ ℂ` step (Gelfand–Mazur
+  instead of inverting `q(const ·)`) — forced, see above; 130II's `sup L`
+  instead of connectedness of `ℝ`.
+* **(3) mild:** `exists_indep_repr` makes 112VI's "we may assume linearly
+  independent" precise via a basis of the span.
+* **(4) our statement mis-transcribes the thesis:** none.  But `IsLinftyOf`
+  omits `ℂ`-linearity of `q` (above) — a *weakening* of the setting, not of a
+  statement, and it made 130II harder rather than easier.
+* **(5) closed from Mathlib without reading the author's argument:** none.
+  `proc.tex` was read at 2770–2870 (112III–112IX) and 6455–6530 (130I–130V)
+  before anything was written; `asols.tex` has no solutions past parsec 340 and
+  its errata block has nothing for 1120 or 1300.

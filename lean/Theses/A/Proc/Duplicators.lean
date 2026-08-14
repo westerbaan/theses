@@ -414,13 +414,286 @@ theorem continuous_finite_measure_space_not_duplicable
 
 /-! ## Parsec 1300: the discrete case -/
 
+/-- Auxiliary for **130II**, the author's opening observation
+(proc.tex:6483): in an atomic measure space a measurable set is either
+null or co-null. -/
+theorem atomic_dichotomy [IsFiniteMeasure μ] (hX : AtomicSet μ Set.univ)
+    (S : Set X) (hS : MeasurableSet S) : μ S = 0 ∨ μ Sᶜ = 0 := by
+  rcases eq_or_ne (μ S) 0 with h | h
+  · exact Or.inl h
+  · right
+    have hpos : 0 < μ S := pos_iff_ne_zero.mpr h
+    have := hX.2.2 S (Set.subset_univ S) hS hpos
+    rw [measure_compl hS (measure_ne_top μ S), this, tsub_self]
+
+/-- Auxiliary for **130II**: a bounded measurable *real* function on an
+atomic measure space is almost everywhere constant.
+
+This is the author's argument (proc.tex:6489) with `f°` read back into
+the measure space: he takes the two closed sets `L = {t | t ≤ f°}` and
+`U = {t | f° ≤ t}`, notes that `atomic_dichotomy` makes them cover `ℝ`
+and that connectedness of `ℝ` therefore puts a point in `L ∩ U`.  Here
+`L` is realised concretely as `{t | μ{g < t} = 0}` and the point is its
+supremum; the connectedness step becomes the (equivalent, and shorter in
+Lean) observation that `μ{g < r} = μ{g > r} = 0` for `r = sup L`. -/
+theorem ae_const_real_of_atomic [IsFiniteMeasure μ]
+    (hX : AtomicSet μ Set.univ) (g : X → ℝ) (hg : Measurable g) (C : ℝ)
+    (hC : ∀ x, |g x| ≤ C) : ∃ r : ℝ, g =ᵐ[μ] fun _ => r := by
+  set L : Set ℝ := {t : ℝ | μ {x | g x < t} = 0} with hL
+  have hdown : ∀ t t' : ℝ, t' ≤ t → t ∈ L → t' ∈ L := fun t t' hle ht =>
+    measure_mono_null (fun x hx => lt_of_lt_of_le hx hle) ht
+  have hne : (-C - 1) ∈ L := by
+    have he : {x | g x < -C - 1} = ∅ := by
+      ext x
+      simp only [Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false, not_lt]
+      have := abs_le.mp (hC x); linarith [this.1]
+    rw [hL]; simp [he]
+  have hbdd : ∀ t ∈ L, t ≤ C + 1 := by
+    intro t ht
+    by_contra hcon
+    push_neg at hcon
+    have huniv : {x | g x < t} = Set.univ := by
+      ext x
+      simp only [Set.mem_ofPred_eq, Set.mem_univ, iff_true]
+      have := abs_le.mp (hC x); linarith [this.2]
+    rw [hL, Set.mem_ofPred_eq, huniv] at ht
+    exact absurd ht hX.2.1.ne'
+  set r := sSup L with hr
+  have hLne : L.Nonempty := ⟨_, hne⟩
+  have hLbdd : BddAbove L := ⟨C + 1, hbdd⟩
+  have hlow : ∀ t < r, t ∈ L := by
+    intro t ht
+    obtain ⟨t', ht'L, ht'⟩ := exists_lt_of_lt_csSup hLne ht
+    exact hdown t' t ht'.le ht'L
+  have hbelow : μ {x | g x < r} = 0 := by
+    have hcover : {x | g x < r} = ⋃ n : ℕ, {x | g x < r - 1 / (n + 1)} := by
+      ext x
+      simp only [Set.mem_ofPred_eq, Set.mem_iUnion]
+      constructor
+      · intro hx
+        obtain ⟨n, hn⟩ := exists_nat_one_div_lt (show (0:ℝ) < r - g x by linarith)
+        exact ⟨n, by linarith [hn]⟩
+      · rintro ⟨n, hn⟩
+        have : (0:ℝ) < 1 / (n + 1) := by positivity
+        linarith
+    rw [hcover]
+    refine measure_iUnion_null fun n => hlow _ ?_
+    have : (0:ℝ) < 1 / (n + 1) := by positivity
+    linarith
+  have habove : μ {x | r < g x} = 0 := by
+    have hup : ∀ t, r < t → μ {x | t ≤ g x} = 0 := by
+      intro t ht
+      have htn : t ∉ L := fun h => absurd (le_csSup hLbdd h) (not_le.mpr ht)
+      rcases atomic_dichotomy μ hX {x | g x < t}
+        (measurableSet_lt hg measurable_const) with h | h
+      · exact absurd h htn
+      · exact measure_mono_null (fun x hx => by
+          simp only [Set.mem_compl_iff, Set.mem_ofPred_eq, not_lt]; exact hx) h
+    have hcover : {x | r < g x} = ⋃ n : ℕ, {x | r + 1 / (n + 1) ≤ g x} := by
+      ext x
+      simp only [Set.mem_ofPred_eq, Set.mem_iUnion]
+      constructor
+      · intro hx
+        obtain ⟨n, hn⟩ := exists_nat_one_div_lt (show (0:ℝ) < g x - r by linarith)
+        exact ⟨n, by linarith⟩
+      · rintro ⟨n, hn⟩
+        have : (0:ℝ) < 1 / (n + 1) := by positivity
+        linarith
+    rw [hcover]
+    refine measure_iUnion_null fun n => hup _ ?_
+    have : (0:ℝ) < 1 / (n + 1) := by positivity
+    linarith
+  refine ⟨r, measure_mono_null (fun x hx => ?_) (measure_union_null hbelow habove)⟩
+  rcases lt_trichotomy (g x) r with h | h | h
+  · exact Or.inl h
+  · exact absurd h hx
+  · exact Or.inr h
+
+/-- Auxiliary for **130II**: the complex case of
+`ae_const_real_of_atomic`, by the author's reduction ("we only need to
+consider the case that `f` takes its values in `ℝ`, because we may split
+`f` in its real and imaginary parts"). -/
+theorem ae_const_of_atomic [IsFiniteMeasure μ] (hX : AtomicSet μ Set.univ)
+    (f : X → ℂ) (hf : IsBoundedMeasurable X f) :
+    ∃ z : ℂ, f =ᵐ[μ] fun _ => z := by
+  obtain ⟨hmeas, C, hC⟩ := hf
+  obtain ⟨r₁, h₁⟩ := ae_const_real_of_atomic μ hX (fun x => (f x).re)
+    (Complex.measurable_re.comp hmeas) C
+    (fun x => le_trans (Complex.abs_re_le_norm _) (hC x))
+  obtain ⟨r₂, h₂⟩ := ae_const_real_of_atomic μ hX (fun x => (f x).im)
+    (Complex.measurable_im.comp hmeas) C
+    (fun x => le_trans (Complex.abs_im_le_norm _) (hC x))
+  refine ⟨⟨r₁, r₂⟩, ?_⟩
+  filter_upwards [h₁, h₂] with x hx1 hx2
+  exact Complex.ext hx1 hx2
+
+/-- Auxiliary for **130II**: `algebraMap ℂ 𝒞` as a ∗-homomorphism. -/
+def algebraMapStarHom (𝒞 : Type*) [CStarAlgebra 𝒞] : ℂ →⋆ₐ[ℂ] 𝒞 :=
+  { Algebra.ofId ℂ 𝒞 with map_star' := fun z => algebraMap_star_comm z }
+
+/-- Auxiliary for **130II**: in a nontrivial C*-algebra `algebraMap`
+*reflects* positivity.  (`Theses.A.CStar.algebraMap_ofReal_nonneg` is the
+forward direction.)  A positive `algebraMap ℂ 𝒞 d` is self-adjoint, so
+`d` is real by injectivity of `algebraMap`; and if `d < 0` then
+`algebraMap ℂ 𝒞 (-d) ≥ 0` squeezes `algebraMap ℂ 𝒞 d` to `0`. -/
+theorem algebraMap_nonneg_reflect {𝒞 : Type*} [CStarAlgebra 𝒞]
+    [PartialOrder 𝒞] [StarOrderedRing 𝒞] [Nontrivial 𝒞] {d : ℂ}
+    (hpos : (0 : 𝒞) ≤ algebraMap ℂ 𝒞 d) : 0 ≤ d := by
+  have hinj : Function.Injective (algebraMap ℂ 𝒞) := (algebraMap ℂ 𝒞).injective
+  have hsa : IsSelfAdjoint (algebraMap ℂ 𝒞 d) := IsSelfAdjoint.of_nonneg hpos
+  have hstar : star d = d := hinj (by rw [algebraMap_star_comm]; exact hsa)
+  have hre : ((d.re : ℝ) : ℂ) = d := Complex.conj_eq_iff_re.mp hstar
+  have hr : 0 ≤ d.re := by
+    by_contra hcon
+    push_neg at hcon
+    have h1 : (0 : 𝒞) ≤ algebraMap ℂ 𝒞 ((-d.re : ℝ) : ℂ) :=
+      Theses.A.CStar.algebraMap_ofReal_nonneg (by linarith)
+    rw [Complex.ofReal_neg, map_neg, neg_nonneg, hre] at h1
+    have hz : algebraMap ℂ 𝒞 d = 0 := le_antisymm h1 hpos
+    have hd0 : d = 0 := hinj (by rw [hz, map_zero])
+    have : d.re = 0 := by rw [hd0]; simp
+    linarith
+  rw [← hre]
+  exact Complex.zero_le_real.mpr hr
+
 /-- **130II** (`lem:atomic-measure-space`, proc.tex:6471, Lemma): for an
-atomic measure space `A` we have `L^∞(A) ≅ ℂ`. -/
+atomic measure space `A` we have `L^∞(A) ≅ ℂ`.
+
+The author's argument (proc.tex:6474) is the first half: every
+`f ∈ 𝓛^∞(A)` is almost everywhere constant, i.e. `𝒜` is the image of
+`ψ : z ↦ q(const z)`.  Since `ψ` is an injective unital ∗-ring
+homomorphism *onto* `𝒜`, every nonzero element of `𝒜` is invertible, so
+Gelfand–Mazur (**16VII**) makes `algebraMap ℂ 𝒜` surjective — which is
+how "`L^∞(X) ≅ ℂ`" is turned into an nmiu-isomorphism.  (Going through
+Gelfand–Mazur avoids having to show by hand that `ψ` is the `ℂ`-algebra
+map: `IsLinftyOf` records only that `q` is additive and multiplicative,
+and a ∗-ring isomorphism `ℂ → 𝒜` need not be `ℂ`-linear — complex
+conjugation is one.)
+
+Note `hμ : μ.IsComplete` is not used; nor is `𝒜`'s von-Neumann-ness, in
+the sense that the argument shows `𝒜` is C*-isomorphic to `ℂ` and only
+then reads off normality. -/
 theorem atomic_measure_space [IsFiniteMeasure μ] (hμ : μ.IsComplete)
     (hX : AtomicSet μ Set.univ) (𝒜 : Type u) [CStarAlgebra 𝒜]
     [PartialOrder 𝒜] [StarOrderedRing 𝒜] [VonNeumannAlgebra 𝒜]
     (q : (X → ℂ) → 𝒜) (hq : IsLinftyOf μ 𝒜 q) :
-    ∃ φ : NMIUMap 𝒜 ℂ, Function.Bijective ⇑φ := sorry
+    ∃ φ : NMIUMap 𝒜 ℂ, Function.Bijective ⇑φ := by
+  classical
+  have hconstBM : ∀ z : ℂ, IsBoundedMeasurable X (fun _ : X => z) :=
+    fun z => ⟨measurable_const, ‖z‖, fun _ => le_rfl⟩
+  have hsubBM : ∀ f g : X → ℂ, IsBoundedMeasurable X f →
+      IsBoundedMeasurable X g → IsBoundedMeasurable X (f - g) := by
+    rintro f g ⟨hf, Cf, hCf⟩ ⟨hg, Cg, hCg⟩
+    exact ⟨hf.sub hg, Cf + Cg, fun x =>
+      le_trans (norm_sub_le _ _) (add_le_add (hCf x) (hCg x))⟩
+  have hqcongr : ∀ f g : X → ℂ, IsBoundedMeasurable X f →
+      IsBoundedMeasurable X g → f =ᵐ[μ] g → q f = q g := by
+    intro f g hf hg h
+    have hsub := hsubBM f g hf hg
+    have h0 : q (f - g) = 0 := by
+      refine (hq.kernel _ hsub).mpr ?_
+      filter_upwards [h] with x hx
+      simp [hx]
+    have hadd := hq.add (f - g) g hsub hg
+    rw [sub_add_cancel, h0, zero_add] at hadd
+    exact hadd
+  set ψ : ℂ → 𝒜 := fun z => q (fun _ => z) with hψdef
+  have hψadd : ∀ z w : ℂ, ψ (z + w) = ψ z + ψ w := by
+    intro z w
+    have h := hq.add (fun _ => z) (fun _ => w) (hconstBM z) (hconstBM w)
+    have heq : ((fun _ : X => z) + (fun _ : X => w)) = (fun _ : X => z + w) := rfl
+    rw [heq] at h
+    exact h
+  have hψmul : ∀ z w : ℂ, ψ (z * w) = ψ z * ψ w := by
+    intro z w
+    have h := hq.mul (fun _ => z) (fun _ => w) (hconstBM z) (hconstBM w)
+    have heq : ((fun _ : X => z) * (fun _ : X => w)) = (fun _ : X => z * w) := rfl
+    rw [heq] at h
+    exact h
+  have hψone : ψ 1 = 1 := hq.one
+  have hconst_ae : ∀ c : ℂ, (fun _ : X => c) =ᵐ[μ] 0 → c = 0 := by
+    intro c hc
+    by_contra hne
+    have hset : {x : X | ¬ ((fun _ : X => c) x = (0 : X → ℂ) x)} = Set.univ := by
+      ext x; simp [hne]
+    have h := ae_iff.mp hc
+    rw [hset] at h
+    exact absurd h hX.2.1.ne'
+  have hψzero : ψ 0 = 0 := (hq.kernel _ (hconstBM 0)).mpr (by rfl)
+  have hψinj : Function.Injective ψ := by
+    intro z w h
+    have hz : ψ (z - w) = 0 := by
+      have h2 := hψadd (z - w) w
+      rw [sub_add_cancel, h] at h2
+      exact (add_eq_right).mp h2.symm
+    exact sub_eq_zero.mp (hconst_ae _ ((hq.kernel _ (hconstBM (z - w))).mp hz))
+  -- the author's claim: `𝒜` is exactly the set of classes of constants
+  have hψsurj : ∀ y : 𝒜, ∃ z : ℂ, y = ψ z := by
+    intro y
+    obtain ⟨f, hfBM, hfy⟩ := hq.surj y
+    obtain ⟨z, hz⟩ := ae_const_of_atomic μ hX f hfBM
+    exact ⟨z, by rw [← hfy, hqcongr f _ hfBM (hconstBM z) hz]⟩
+  have hunit : ∀ a : 𝒜, a ≠ 0 → IsUnit a := by
+    intro a ha
+    obtain ⟨z, rfl⟩ := hψsurj a
+    have hz : z ≠ 0 := fun h => ha (by rw [h, hψzero])
+    exact ⟨⟨ψ z, ψ z⁻¹, by rw [← hψmul, mul_inv_cancel₀ hz, hψone],
+      by rw [← hψmul, inv_mul_cancel₀ hz, hψone]⟩, rfl⟩
+  have hnt : Nontrivial 𝒜 := by
+    refine ⟨1, 0, fun h => one_ne_zero (hψinj ?_)⟩
+    rw [hψone, hψzero, h]
+  -- Gelfand–Mazur turns that into surjectivity of `algebraMap`
+  have hsurjA : Function.Surjective (algebraMap ℂ 𝒜) := by
+    intro a
+    obtain ⟨z, hz⟩ := Theses.A.CStar.gelfand_mazur hunit a
+    exact ⟨z, hz.symm⟩
+  have hinjA : Function.Injective (algebraMap ℂ 𝒜) := (algebraMap ℂ 𝒜).injective
+  have hbij : Function.Bijective ⇑(algebraMapStarHom 𝒜) := ⟨hinjA, hsurjA⟩
+  set e : ℂ ≃⋆ₐ[ℂ] 𝒜 := StarAlgEquiv.ofBijective (algebraMapStarHom 𝒜) hbij with he
+  set φ : 𝒜 ≃⋆ₐ[ℂ] ℂ := e.symm with hφ
+  have hφe : ∀ z : ℂ, φ (algebraMap ℂ 𝒜 z) = z := fun z => e.symm_apply_apply z
+  have heφ : ∀ a : 𝒜, algebraMap ℂ 𝒜 (φ a) = a := fun a => e.apply_symm_apply a
+  have hmono' : ∀ z w : ℂ, z ≤ w → algebraMap ℂ 𝒜 z ≤ algebraMap ℂ 𝒜 w := by
+    intro z w h
+    obtain ⟨hre, him⟩ := Complex.le_def.mp h
+    have heq : w - z = ((w.re - z.re : ℝ) : ℂ) := by
+      apply Complex.ext <;> simp [him]
+    rw [← sub_nonneg, ← map_sub, heq]
+    exact Theses.A.CStar.algebraMap_ofReal_nonneg (by linarith)
+  have hmono : ∀ a b : 𝒜, a ≤ b → φ a ≤ φ b := by
+    intro a b h
+    refine sub_nonneg.mp (algebraMap_nonneg_reflect (𝒞 := 𝒜) (d := φ b - φ a) ?_)
+    rw [map_sub, heφ, heφ, sub_nonneg]
+    exact h
+  -- normality: `φ` and its inverse are monotone, so suprema transport
+  have hnorm : PreservesDirSups ⇑(φ : 𝒜 →⋆ₐ[ℂ] ℂ) := by
+    intro D s hne hdir hlub
+    constructor
+    · rintro _ ⟨d, hd, rfl⟩
+      exact hmono _ _ (hlub.1 hd)
+    · intro u hu
+      obtain ⟨d₀, hd₀⟩ := hne
+      have hu0 : φ (d₀ : 𝒜) ≤ u := hu ⟨d₀, hd₀, rfl⟩
+      have hsa0 : star (φ (d₀ : 𝒜)) = φ (d₀ : 𝒜) := by
+        rw [← map_star]; exact congrArg _ d₀.2
+      have him0 : (φ (d₀ : 𝒜)).im = 0 := Complex.conj_eq_iff_im.mp hsa0
+      have himu : u.im = 0 := by
+        have h := (Complex.le_def.mp hu0).2
+        rw [him0] at h
+        exact h.symm
+      have hure : ((u.re : ℝ) : ℂ) = u := by apply Complex.ext <;> simp [himu]
+      have hsaA : IsSelfAdjoint (algebraMap ℂ 𝒜 u) := by
+        rw [← hure]; exact Theses.A.CStar.isSelfAdjoint_algebraMap_ofReal u.re
+      have hub : (⟨algebraMap ℂ 𝒜 u, hsaA⟩ : selfAdjoint 𝒜) ∈ upperBounds D := by
+        intro d hd
+        have hle : φ (d : 𝒜) ≤ u := hu ⟨d, hd, rfl⟩
+        have h2 := hmono' _ _ hle
+        rw [heφ] at h2
+        exact h2
+      have h4 := hmono _ _ (hlub.2 hub)
+      rwa [hφe] at h4
+  exact ⟨{ toStarAlgHom := (φ : 𝒜 →⋆ₐ[ℂ] ℂ), preservesDirSups' := hnorm },
+    φ.bijective⟩
 
 /-- **130IV** (`lem:measure-space-partition`, proc.tex:6518, Exercise):
 `L^∞(X) ≅ ⊕_{A ∈ 𝒫} L^∞(A)` for every countable partition `𝒫` of a
