@@ -3021,3 +3021,100 @@ is a plain `noncomputable def`, deliberately **not** an instance.
 `dagger_thm_sufficiency`, one of its two halves.  It has been **moved** to just
 after 220II, with a comment left at its numbering slot — the device used for
 208III and 178III.1.  Its statement is unchanged.
+
+## Session 12 — `A/Proc` parsecs 960, 1040 and 1290 (worker 35)
+
+Proved: **96III**.1 `ncp_uwlim_1` and **96III**.2 `ncp_uwlim_2`, **104IV**
+`centrally_similar_fundamental` (`Theses/A/Proc/Measurement.lean`, 50 → 47 code
+`sorry`s); **129IV** `measure_zorn`, **129VI**
+`measure_space_continuous_discrete`, **129VIII** `continuous_measure_space`
+(`Theses/A/Proc/Duplicators.lean`, 24 → 21).  A/Proc 160 → 154.  All seven
+new/closed declarations are axiom-clean (`propext`, `Classical.choice`,
+`Quot.sound`); `lake build Theses.A.Proc.Duplicators` exits 0.
+
+### Divergence classes
+
+**(1) Faithful.**  `ncp_uwlim_1` is proc.tex:390 verbatim — the positivity of
+`∑_{ij} b_i* g(a_i* a_j) b_j` as an ultraweak limit — and is only now provable
+because 45IV `mult-uws-cont` was discharged in session 10 (our
+`IsCompletelyPositiveMap` is *defined* by exactly the `∑_{ij} b_i* f(a_i*a_j)b_j`
+criterion the author uses, so no reformulation is needed).  `ncp_uwlim_2` is
+proc.tex:405, again unlocked by session 10 (**44XV** `p-uwcont`).  **104IV** is
+proc.tex:1525 step for step, including `q² e = q ϑ(e) q` self-adjoint and the
+appeal to **23VII** `sqrt` for "`q²` commutes with `e`, hence so does `q`".
+**129IV** and **129VIII** are proc.tex:6237 and 6315 transcribed, including the
+`β_C = sup{μ(D) : C ⊆ D ∈ 𝒮}` device and the halving recursion.
+
+**(2) Different route.**  In `ncp_uwlim_2`'s last step the thesis says "the
+uniform limit of continuous functions is continuous, thus normal by
+`p-uwcont`".  Mathlib's `TendstoUniformlyOn.continuousOn` needs a
+`TopologicalSpace` *instance* on the domain, and `ultraweak A` is deliberately
+not one, so uniform convergence is applied one np-functional at a time: the
+new private `continuousOn_ultraweak_of_forall` (the `ContinuousOn` counterpart
+of `A/VN`'s `continuous_ultraweak_of_forall`, three lines over **42III**
+`uwTendsto_iff`) reduces ultraweak `ContinuousOn` to the scalar case, where the
+uniform-limit theorem applies verbatim.  This is the same obstacle 45II hit in
+session 10, handled the same way.
+
+In **129VIII**'s halving step the thesis argues "either `0 < μ(A) ≤ ½μ(A₁)` or
+`0 < μ(X∖A) ≤ ½μ(A₁)`" — note `X∖A`, which should be `A₁∖A` (filed in
+`ERRATA.md`); the Lean proof
+uses `A₁∖A` (the sets must stay inside `A₁` for the recursion) and phrases the
+halving multiplicatively, `2·μ(C) ≤ μ(B)`, to avoid `ℝ≥0∞` division.  Also, the
+final "pick `n` with `μ(Aₙ) ≤ ε`" is done by contradiction from
+`n·ε ≤ 2ⁿ·μ(Aₙ) ≤ μ(B) < n·ε`, which needs only monotonicity — no cancellation
+in `ℝ≥0∞`.
+
+**(3) Mild.**  `ncp_uwlim_2` builds the positive linear map `gp` out of the
+bare `g : A →ₗ[ℂ] B` plus the main claim of 96III, since **44XV** is stated for
+`A →ₚ[ℂ] B`; our 96III.2 states its conclusion for `⇑g` directly.
+
+**(4) Our statement mis-transcribes the thesis:** none.  (**104IV**'s statement
+*did* have to change, but it was a faithful transcription of a thesis statement
+that is wrong — see below.)
+
+**(5) Closed from Mathlib without reading the author's argument:** none.  In
+particular **129VIII** is Sierpiński's theorem, and was written from
+proc.tex:6315 rather than looked up.
+
+### 104IV is false as printed (new erratum)
+
+`centrally_similar_fundamental` omits the hypothesis `⌈q⌉ = 1` that its own
+proof invokes.  At `q = 0` both hypotheses become `0 ≤ e` and `0 ≤ e^⊥`, so the
+printed lemma would force every miu-endomorphism of every von Neumann algebra
+to fix every projection.  Machine-checked as
+`centrally_similar_fundamental_needs_faithful`; filed in `ERRATA.md` in point
+order after 104III.2a.  **The Lean statement has been changed** — `⌈q⌉ = 1` is
+now a hypothesis — because both consumers (104VI, 104VII) state it anyway, so
+nothing downstream is weakened.  Only the second conclusion needs it; `eq = qe`
+does not.  This is the second false statement found in parsec 1040 (after
+worker 29's 104III.2a) and the third in this chapter.
+
+### 129IV proves more than it needs
+
+Lean's unused-variable linter reports that `measure_zorn` uses **neither**
+`hμ : μ.IsComplete` **nor** `hmeas : ∀ S ∈ 𝒮, MeasurableSet S`.  The two
+warnings are left in place as the evidence, and the doc comment says so.  The
+lemma holds for an arbitrary collection of subsets of a *finite* measure space
+(`μ` is an outer measure on all of them); only `IsFiniteMeasure` is used, for
+`β_C ≤ μ(X) < ∞`.  129VI and 129VIII, which are its consumers, do need
+measurability — but for their own reasons (`measure_union`, continuity from
+below), not for 129IV.
+
+### What is *not* reachable — correction to the round's plan
+
+**99II `gardner` is blocked, and not on 61II.**  Session 10 discharged 61II
+`ncp_ceill`, which was the blocker for (3)⇒(2).  But the *last* implication,
+(2)⇒(1), rests on "since the linear span of projections is norm-dense in `𝒜`"
+(proc.tex:872) — that is **65IV `projections_norm_dense`**, `sorry` at
+`A/VN/Projections.lean:3049`, and behind it **64II
+`abelian_projections_norm_dense`** (`:2905`).  There is no way around it: the
+statement is false for C*-algebras without projections, so von-Neumann-ness has
+to enter exactly there.  Everything else in the five-way TFAE is elementary and
+was checked to be in reach.  Consequently **99IX, 99XI, 99XII and 102V remain
+blocked** (99XI's and 99XII's own hints route through `iso`, hence gardner).
+
+The same lemma blocks **104VI** and **104VII**: both proofs end "since `p` is
+the norm limit of linear combinations of such projections `e`" (proc.tex:1580).
+So 65IV — not 61II — is now the highest-leverage frozen item for this chapter
+after 89IX.

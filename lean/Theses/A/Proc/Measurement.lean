@@ -1647,7 +1647,52 @@ theorem ncp_uwlim_1 [VonNeumannAlgebra A] [VonNeumannAlgebra B] {ι : Type*}
     (l : Filter ι) [l.NeBot] (f : ι → (A →ₚ[ℂ] B)) (g : A →ₗ[ℂ] B)
     (hlim : ∀ a : A, UWTendsto (fun i => f i a) l (g a))
     (hcp : ∀ i, Theses.A.CStar.IsCompletelyPositiveMap (f i).toLinearMap) :
-    Theses.A.CStar.IsCompletelyPositiveMap g := sorry
+    Theses.A.CStar.IsCompletelyPositiveMap g := by
+  -- the author's argument (proc.tex:390): `∑_{ij} b_i* g(a_i* a_j) b_j` is
+  -- the ultraweak limit of the positive `∑_{ij} b_i* f_α(a_i* a_j) b_j`,
+  -- because `x ↦ b_i* x b_j` is ultraweakly continuous (**45IV**
+  -- `mult-uws-cont`, here in the sharper form `continuous_ultraweak_conj`),
+  -- and the positive cone is ultraweakly closed (**44XI**).
+  intro n a b
+  have hclosed : @IsClosed B (ultraweak B) {x : B | 0 ≤ x} := vn_positive_basic_2.1
+  have hlim2 : UWTendsto
+      (fun i => ∑ p, ∑ q, star (b p) * (f i) (star (a p) * a q) * b q) l
+      (∑ p, ∑ q, star (b p) * g (star (a p) * a q) * b q) := by
+    rw [uwTendsto_iff]
+    intro ω
+    have hterm : ∀ p q : Fin n,
+        Tendsto (fun i => (ω (star (b p) * (f i) (star (a p) * a q) * b q) : ℂ)) l
+          (𝓝 (ω (star (b p) * g (star (a p) * a q) * b q))) := by
+      intro p q
+      have hc := @Continuous.tendsto B ℂ (ultraweak B) _
+        (fun x : B => (ω (star (b p) * x * b q) : ℂ))
+        (continuous_ultraweak_conj ω (star (b p)) (b q)) (g (star (a p) * a q))
+      exact hc.comp (hlim (star (a p) * a q))
+    have hsum := tendsto_finsetSum Finset.univ
+      (fun p _ => tendsto_finsetSum Finset.univ (fun q _ => hterm p q))
+    have hms : ∀ F : Fin n → B, (ω (∑ p, F p) : ℂ) = ∑ p, ω (F p) :=
+      fun F => map_sum ω.toPositiveLinearMap F Finset.univ
+    simp only [hms]
+    exact hsum
+  refine @IsClosed.mem_of_tendsto B (ultraweak B) ι _ _ _ l _ hclosed hlim2 ?_
+  filter_upwards with i using hcp i n a b
+
+/-- Infrastructure for 96III.2: the `ContinuousOn` counterpart of
+`Theses.A.VN.continuous_ultraweak_of_forall` — a map into a von Neumann
+algebra is ultraweakly continuous on a set as soon as `ω ∘ F` is, for every
+np-functional `ω`.  (Immediate from **42III** `uwTendsto_iff`, which is
+stated for an arbitrary filter and so applies to `𝓝[s] x`.) -/
+private theorem continuousOn_ultraweak_of_forall (F : A → B) (s : Set A)
+    (h : ∀ ω : NPFunctional B,
+      @ContinuousOn A ℂ (ultraweak A) _ (fun x => (ω (F x) : ℂ)) s) :
+    @ContinuousOn A B (ultraweak A) (ultraweak B) F s := by
+  intro x hx
+  have hx2 : UWTendsto (fun y : A => F y)
+      (@nhdsWithin A (ultraweak A) x s) (F x) := by
+    rw [uwTendsto_iff]
+    intro ω
+    exact h ω x hx
+  exact hx2
 
 /-- **96III** (`ncp-uwlim`, proc.tex:363, Lemma), part 2: the limit is
 normal provided the `f_α` are normal and converge uniformly on `[0,1]_A`
@@ -1658,7 +1703,37 @@ theorem ncp_uwlim_2 [VonNeumannAlgebra A] [VonNeumannAlgebra B] {ι : Type*}
     (hn : ∀ i, PreservesDirSups ⇑(f i))
     (hunif : ∀ ω : NPFunctional B, ∀ ε > (0 : ℝ),
       ∀ᶠ i in l, ∀ p ∈ effects A, ‖ω (f i p) - ω (g p)‖ ≤ ε) :
-    PreservesDirSups ⇑g := sorry
+    PreservesDirSups ⇑g := by
+  -- the author's argument (proc.tex:405): `g` is ultraweakly continuous on
+  -- `[0,1]_A`, being there a uniform limit of the ultraweakly continuous
+  -- `f_α`, and hence normal by **44XV** `p-uwcont`.  ("Uniform" is read
+  -- through the np-functionals, as the statement's `hunif` says: it is
+  -- uniform convergence of `ω ∘ f_α` to `ω ∘ g` for each `ω`.)
+  have hpos : ∀ a : A, 0 ≤ a → 0 ≤ g a := ncp_uwlim l f g hlim
+  let gp : A →ₚ[ℂ] B :=
+    { toFun := fun a => g a
+      map_add' := map_add g
+      map_smul' := map_smul g
+      monotone' := fun x y hxy => by
+        have h := hpos (y - x) (sub_nonneg.mpr hxy)
+        rw [map_sub] at h
+        exact sub_nonneg.mp h }
+  refine ((p_uwcont gp).out 1 2).mp ?_
+  refine continuousOn_ultraweak_of_forall _ _ fun ω => ?_
+  let _ : TopologicalSpace A := ultraweak A
+  have hcont : ∀ i, ContinuousOn (fun y : A => (ω (f i y) : ℂ)) (effects A) := by
+    intro i
+    have h := continuous_ultraweak_npFunctional (compNP (f i) (hn i) ω)
+    simpa using h.continuousOn
+  have huc : TendstoUniformlyOn (fun i (y : A) => (ω (f i y) : ℂ))
+      (fun y : A => (ω (g y) : ℂ)) l (effects A) := by
+    rw [Metric.tendstoUniformlyOn_iff]
+    intro ε hε
+    filter_upwards [hunif ω (ε / 2) (by linarith)] with i hi y hy
+    have h1 := hi y hy
+    rw [dist_eq_norm, norm_sub_rev]
+    linarith
+  exact huc.continuousOn ((Eventually.of_forall hcont).frequently)
 
 /-- Infrastructure for the filters of parsec 980: for a projection `e` and
 any `a : A`, the map `b ↦ a* b a : e𝒜e → 𝒜` is an ncp-map. -/
@@ -2925,15 +3000,111 @@ theorem centrally_similar_basic_5 [VonNeumannAlgebra A] (p q : A)
     (hcs : ∀ n, CentrallySimilar (e n * p) (e n * q)) :
     CentrallySimilar p q := sorry
 
+/-- **104IV**, obstruction: the printed statement of 104IV omits the
+faithfulness hypothesis `⌈q⌉ = 1` that its own proof invokes ("`ϑ(e)q = qe
+= eq` **and `⌈q⌉ = 1`** imply that `ϑ(e) = e` by `mult-cancellation`",
+proc.tex:1543).  Without it the hypotheses hold vacuously at `q = 0` — as
+this theorem checks — so the printed lemma would force *every* miu-endomorphism
+of *every* von Neumann algebra to fix *every* projection, and hence (by
+**65IV** `projections-norm-dense`) to be the identity: false already for
+`Ad_u` on `B(ℂ²)`, or the flip on `ℂ ⊕ ℂ`.  See `ERRATA.md`.  Only the
+second conclusion fails; `eq = qe` needs no faithfulness. -/
+theorem centrally_similar_fundamental_needs_faithful [VonNeumannAlgebra A]
+    (printed : ∀ (e q : A), IsStarProjection e → 0 ≤ q → ∀ ϑ : MIUMap A A,
+      ceil (q * ϑ e * q) ≤ e → ceil (q * ϑ (1 - e) * q) ≤ 1 - e →
+      e * q = q * e ∧ ϑ e = e) :
+    ∀ e : A, IsStarProjection e → ∀ ϑ : MIUMap A A, ϑ e = e := by
+  intro e he ϑ
+  have hz : ∀ x : A, (0 : A) * x * 0 = 0 := fun x => by rw [zero_mul, mul_zero]
+  refine (printed e 0 he le_rfl ϑ ?_ ?_).2
+  · rw [hz, ceil_zero]; exact he.nonneg
+  · rw [hz, ceil_zero]; exact he.one_sub.nonneg
+
 /-- **104IV** (`centrally-similar-fundamental`, proc.tex:1519, Lemma):
 if `⌈q ϑ(e) q⌉ ≤ e` and `⌈q ϑ(e^⊥) q⌉ ≤ e^⊥` for a projection `e`,
-positive `q`, and an miu-map `ϑ : 𝒜 → 𝒜`, then `eq = qe` and
-`ϑ(e) = e`. -/
+positive `q` **with `⌈q⌉ = 1`**, and an miu-map `ϑ : 𝒜 → 𝒜`, then `eq = qe`
+and `ϑ(e) = e`.
+
+The hypothesis `⌈q⌉ = 1` is **not printed** in the thesis but is used in its
+proof, and without it the second conclusion is false — see
+`centrally_similar_fundamental_needs_faithful` above and `ERRATA.md`.  Both
+consumers of the lemma (104VI, 104VII) do state it. -/
 theorem centrally_similar_fundamental [VonNeumannAlgebra A] (e q : A)
-    (he : IsStarProjection e) (hq : 0 ≤ q) (ϑ : MIUMap A A)
+    (he : IsStarProjection e) (hq : 0 ≤ q) (hcq : ceil q = 1) (ϑ : MIUMap A A)
     (h1 : ceil (q * ϑ e * q) ≤ e)
     (h2 : ceil (q * ϑ (1 - e) * q) ≤ 1 - e) :
-    e * q = q * e ∧ ϑ e = e := sorry
+    e * q = q * e ∧ ϑ e = e := by
+  -- the author's proof (proc.tex:1525), verbatim: `⌈qϑ(e)q⌉ = ⌈ϑ(e)q⌋`, so
+  -- `ϑ(e)qe = ϑ(e)q` and `ϑ(e^⊥)qe = 0`; hence `qe = ϑ(e)q`, making
+  -- `q²e = qϑ(e)q` self-adjoint, so `q²` and then `q = √(q²)` commute with
+  -- `e` (**23VII** `sqrt`); finally `mult-cancellation` (**60VIII**.2).
+  have hqsa : IsSelfAdjoint q := IsSelfAdjoint.of_nonneg hq
+  have hproj : ∀ p : A, IsStarProjection p → IsStarProjection (ϑ p) := by
+    intro p hp
+    exact ⟨by show ϑ p * ϑ p = ϑ p; rw [← map_mul, hp.isIdempotentElem.eq],
+      by show star (ϑ p) = ϑ p; rw [← map_star, hp.isSelfAdjoint.star_eq]⟩
+  -- `⌈q ϑ(p) q⌉ = ⌈ϑ(p)q⌋` for a projection `p` (**59VI** `ceill-basic`)
+  have hceil : ∀ p : A, IsStarProjection p →
+      ceil (q * ϑ p * q) = suppProj (ϑ p * q) := by
+    intro p hp
+    have hs : star (ϑ p * q) * (ϑ p * q) = q * ϑ p * q := by
+      rw [star_mul, hqsa.star_eq, (hproj p hp).isSelfAdjoint.star_eq]
+      calc q * ϑ p * (ϑ p * q) = q * (ϑ p * ϑ p) * q := by noncomm_ring
+        _ = q * ϑ p * q := by rw [(hproj p hp).isIdempotentElem.eq]
+    rw [suppProj, hs]
+  -- `⌈x⌋ ≤ p` gives `xp = x` (**59VI**.1)
+  have habs : ∀ x p : A, IsStarProjection p → suppProj x ≤ p → x * p = x := by
+    intro x p hp hle
+    obtain ⟨⟨hsp, hxs⟩, -⟩ := ceill_basic_1 x
+    have hmul : suppProj x * p = suppProj x := (hsp.le_iff_mul_eq_left hp).mp hle
+    calc x * p = x * suppProj x * p := by rw [hxs]
+      _ = x * (suppProj x * p) := by noncomm_ring
+      _ = x * suppProj x := by rw [hmul]
+      _ = x := hxs
+  have hep : IsStarProjection (1 - e) := he.one_sub
+  have ha1 : ϑ e * q * e = ϑ e * q := habs _ _ he (by rw [← hceil e he]; exact h1)
+  have ha2 : ϑ (1 - e) * q * (1 - e) = ϑ (1 - e) * q :=
+    habs _ _ hep (by rw [← hceil (1 - e) hep]; exact h2)
+  have ha3 : ϑ (1 - e) * q * e = 0 := by
+    calc ϑ (1 - e) * q * e = ϑ (1 - e) * q * (1 - e) * e := by rw [ha2]
+      _ = ϑ (1 - e) * q * ((1 - e) * e) := by noncomm_ring
+      _ = 0 := by
+          rw [sub_mul, one_mul, he.isIdempotentElem.eq, sub_self, mul_zero]
+  have hqe : q * e = ϑ e * q := by
+    have hsum : ϑ e + ϑ (1 - e) = 1 := by rw [← map_add, add_sub_cancel, map_one]
+    calc q * e = (ϑ e + ϑ (1 - e)) * (q * e) := by rw [hsum, one_mul]
+      _ = ϑ e * q * e + ϑ (1 - e) * q * e := by noncomm_ring
+      _ = ϑ e * q := by rw [ha3, ha1, add_zero]
+  have hcomm2 : e * q ^ 2 = q ^ 2 * e := by
+    have hkey : q ^ 2 * e = q * ϑ e * q := by rw [sq, mul_assoc, hqe]; noncomm_ring
+    have hsa : IsSelfAdjoint (q ^ 2 * e) := by
+      rw [hkey]
+      show star (q * ϑ e * q) = q * ϑ e * q
+      rw [star_mul, star_mul, hqsa.star_eq, (hproj e he).isSelfAdjoint.star_eq]
+      noncomm_ring
+    have h := hsa.star_eq
+    rwa [star_mul, he.isSelfAdjoint.star_eq, (hqsa.pow 2).star_eq] at h
+  have hcomm : e * q = q * e := by
+    have hsq : (0 : A) ≤ q ^ 2 := by
+      have h := star_mul_self_nonneg q
+      rwa [hqsa.star_eq, ← sq] at h
+    have hcc := (Theses.A.CStar.sqrt_commute (q ^ 2) hsq e hcomm2).1
+    rwa [CFC.sqrt_sq q hq] at hcc
+  refine ⟨hcomm, ?_⟩
+  -- `⌈q⌉ = 1` forces `⌊q⌉ = 1`, so `mult-cancellation` applies to `ϑ(e)q = eq`
+  have hrq : rangeProj q = 1 := by
+    obtain ⟨⟨hrp, hrq0⟩, -⟩ := ceill_basic_2 q
+    have hqr : q * rangeProj q = q := by
+      have h := congrArg star hrq0
+      rwa [star_mul, hqsa.star_eq, hrp.isSelfAdjoint.star_eq] at h
+    have hz : q * (1 - rangeProj q) = 0 := by rw [mul_sub, mul_one, hqr, sub_self]
+    have h := ceil_mul_eq_zero hq hz
+    rw [hcq, one_mul, sub_eq_zero] at h
+    exact h.symm
+  refine mult_cancellation_2 q (ϑ e) e ?_ ?_ ?_
+  · rw [hrq]; exact (ceill_basic_1 (ϑ e)).1.1.le_one
+  · rw [hrq]; exact (ceill_basic_1 e).1.1.le_one
+  · rw [← hqe, hcomm]
 
 /-- **104VI** (`centrally-similar-corollary`, proc.tex:1546, Corollary): a
 positive `q` with `⌈q⌉ = 1` is central provided there is an miu-map `ϑ`
