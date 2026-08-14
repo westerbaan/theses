@@ -1176,13 +1176,327 @@ theorem exc_eamorphism_map_orth (f : EAHom E F) (a : E) :
 
 end EAMorphism
 
-/-- **177Ia** (`ea-modularity-prop`, eff.tex:484, Proposition): in an effect
-algebra, if the infimum `a ⊓ b` exists for `a ⊥ b`, then the supremum
-`a ⊔ b` exists as well, and `a ⋁ b = (a ⊓ b) ⋁ (a ⊔ b)`. -/
-theorem ea_modularity_prop {E : Type u} [EffectAlgebra E] {a b m : E}
-    (hab : Perp a b) (hm : PCM.IsInf a b m) :
-    ∃ (j : E) (hmj : Perp m j), PCM.IsSup a b j ∧ ovee a b hab = ovee m j hmj :=
-  sorry
+/-! ### Infima and suprema in an effect algebra
+
+Section 2.1.1 of the author's *master's* thesis (Bas Westerbaan, *Quantum
+Programs as Kleisli Maps*, `westerbaan.name/~bas/math/master.pdf`) collects the
+order-theoretic facts that 177Ia rests on.  We transcribe them here — they are
+the `⋁`-versus-`∨` bridge that several later proofs want — with **one
+correction**: the master's thesis's Corollary 14 claims that `a ⋁ (·)` and
+`a ⊖ (·)` transport infima to suprema *and back*, on the grounds that suprema
+and infima taken inside `↓aᵖ` (resp. `↓a`) agree with those taken in `E`.  That
+is true for the halves recorded below, but **false** for the remaining two: an
+upper bound of a set contained in `↓a` need not itself lie below `a`, so a
+supremum computed inside `↓a` need not be a supremum in `E`.  The
+counterexample is `WrightTriangle` below; it is also what refutes 177Ia as
+printed.  (Master's thesis Proposition 13.2, about the dual operation
+`a ⊛ b = (aᵖ ⋁ bᵖ)ᵖ`, is omitted: that operation is not part of this
+development.) -/
+
+section MscOrder
+
+variable {E : Type u} [EffectAlgebra E]
+
+/-- Helper: `b ⊖ a` being defined witnesses `a ≼ b`. -/
+theorem le_of_isDiff {a b u : E} (h : IsDiff a b u) : b ≼ a := ⟨u, h⟩
+
+/-- Helper: `PCM.IsInf` is symmetric. -/
+theorem isInf_comm {a b m : E} (h : PCM.IsInf a b m) : PCM.IsInf b a m :=
+  ⟨h.2.1, h.1, fun c h1 h2 => h.2.2 c h2 h1⟩
+
+/-- Helper: `PCM.IsSup` is symmetric. -/
+theorem isSup_comm {a b j : E} (h : PCM.IsSup a b j) : PCM.IsSup b a j :=
+  ⟨h.2.1, h.1, fun c h1 h2 => h.2.2 c h2 h1⟩
+
+/-- Helper: infima are unique (by antisymmetry of `≼`, 175V.5). -/
+theorem isInf_unique {a b m m' : E} (h : PCM.IsInf a b m) (h' : PCM.IsInf a b m') :
+    m = m' :=
+  eabasics_le_antisymm (h'.2.2 m h.1 h.2.1) (h.2.2 m' h'.1 h'.2.1)
+
+/-- Helper: suprema are unique (by antisymmetry of `≼`, 175V.5). -/
+theorem isSup_unique {a b j j' : E} (h : PCM.IsSup a b j) (h' : PCM.IsSup a b j') :
+    j = j' :=
+  eabasics_le_antisymm (h.2.2 j' h'.1 h'.2.1) (h'.2.2 j h.1 h.2.1)
+
+/-- **Master's thesis, Proposition 13.1**: `x ↦ a ⋁ x` is an order isomorphism
+from `↓aᵖ` onto `↑a`.  Here: it is an order *embedding* (surjectivity onto `↑a`
+is the definition of `≼`, and the inverse is `x ↦ x ⊖ a`). -/
+theorem msc_prop13_1 {a b c : E} (hb : Perp a b) (hc : Perp a c) :
+    ovee a b hb ≼ ovee a c hc ↔ b ≼ c := by
+  constructor
+  · rintro ⟨t, ht, e⟩
+    have hbt : Perp b t := PCM.perp_of_ovee_perp hb ht
+    have hA : Perp a (ovee b t hbt) := PCM.perp_ovee_of_ovee_perp hb ht
+    have e2 : ovee a (ovee b t hbt) hA = ovee a c hc := by
+      rw [← PCM.ovee_assoc hb ht]; exact e
+    have e3 : ovee (ovee b t hbt) a (PCM.perp_comm hA) = ovee c a (PCM.perp_comm hc) := by
+      rw [← PCM.ovee_comm hA, ← PCM.ovee_comm hc]; exact e2
+    exact ⟨t, hbt, eabasics_cancellation (PCM.perp_comm hA) (PCM.perp_comm hc) e3⟩
+  · intro h
+    obtain ⟨hba, hle⟩ := eabasics_le_perp_compat h (PCM.perp_comm hc)
+    rw [PCM.ovee_comm hb, PCM.ovee_comm hc]
+    exact hle
+
+/-- **Master's thesis, Proposition 13.3**: `x ↦ a ⊖ x` is order *reversing* on
+`↓a` (the antitone half of the anti-isomorphism). -/
+theorem msc_sub_antitone {a b c u v : E} (hu : IsDiff a b u) (hv : IsDiff a c v)
+    (h : b ≼ c) : v ≼ u :=
+  (exc_dposet_D4 h (le_of_isDiff hv) hv hu).1
+
+/-- **Master's thesis, Proposition 13.3**: `x ↦ a ⊖ x` is an order
+anti-isomorphism of `↓a` onto itself; being its own inverse (176II (D3),
+`exc_dposet_D3`), it *reflects* the order as well: for `b, c ≼ a` with
+`a ⊖ b = u` and `a ⊖ c = v` one has `b ≼ c ↔ v ≼ u`. -/
+theorem msc_prop13_3 {a b c u v : E} (hu : IsDiff a b u) (hv : IsDiff a c v) :
+    b ≼ c ↔ v ≼ u :=
+  ⟨msc_sub_antitone hu hv,
+   fun h => msc_sub_antitone (exc_dposet_D3 hv) (exc_dposet_D3 hu) h⟩
+
+/-- **Master's thesis, Corollary 14.1** (supremum half): `a ⋁ (·)` carries a
+supremum of `b, c ≼ aᵖ` to a supremum of `a ⋁ b` and `a ⋁ c`.  (Sound in this
+direction: every upper bound of `a ⋁ b`, `a ⋁ c` lies above `a`, hence in the
+codomain `↑a` of the isomorphism.) -/
+theorem msc_cor14_1_sup {a b c j : E} (hb : Perp a b) (hc : Perp a c)
+    (hj : PCM.IsSup b c j) :
+    ∃ haj : Perp a j, PCM.IsSup (ovee a b hb) (ovee a c hc) (ovee a j haj) := by
+  have haj : Perp a j :=
+    PCM.perp_comm (eabasics_perp_iff_le_orth.mpr
+      (hj.2.2 _ (eabasics_perp_iff_le_orth.mp (PCM.perp_comm hb))
+        (eabasics_perp_iff_le_orth.mp (PCM.perp_comm hc))))
+  refine ⟨haj, (msc_prop13_1 hb haj).mpr hj.1, (msc_prop13_1 hc haj).mpr hj.2.1, ?_⟩
+  rintro d hbd hcd
+  obtain ⟨e, hae, rfl⟩ : ∃ e, ∃ h : Perp a e, ovee a e h = d :=
+    pcm_preorder_trans ⟨b, hb, rfl⟩ hbd
+  exact (msc_prop13_1 haj hae).mpr
+    (hj.2.2 e ((msc_prop13_1 hb hae).mp hbd) ((msc_prop13_1 hc hae).mp hcd))
+
+/-- **Master's thesis, Corollary 14.1** (infimum half): an infimum of `a ⋁ b`
+and `a ⋁ c` of the form `a ⋁ m` comes from an infimum `m` of `b` and `c`.
+(Sound in this direction: every lower bound of `a ⋁ b`, `a ⋁ c` that matters is
+of the form `a ⋁ d`.  The *converse* — that an infimum of `b, c` yields one of
+`a ⋁ b`, `a ⋁ c` — is the direction the master's thesis's proof does not
+establish, since a lower bound of `a ⋁ b` and `a ⋁ c` need not be above `a`.) -/
+theorem msc_cor14_1_inf {a b c m : E} (hb : Perp a b) (hc : Perp a c)
+    (ham : Perp a m) (hk : PCM.IsInf (ovee a b hb) (ovee a c hc) (ovee a m ham)) :
+    PCM.IsInf b c m := by
+  refine ⟨(msc_prop13_1 ham hb).mp hk.1, (msc_prop13_1 ham hc).mp hk.2.1, fun d hdb hdc => ?_⟩
+  have had : Perp a d :=
+    PCM.perp_comm (eabasics_perp_iff_le_orth.mpr
+      (pcm_preorder_trans hdb (eabasics_perp_iff_le_orth.mp (PCM.perp_comm hb))))
+  exact (msc_prop13_1 had ham).mp
+    (hk.2.2 _ ((msc_prop13_1 had hb).mpr hdb) ((msc_prop13_1 had hc).mpr hdc))
+
+/-- **Master's thesis, Corollary 14.2** (infimum half — this one is true as
+stated): if `b, c ≼ a` have a supremum `j` in `E`, then `a ⊖ b` and `a ⊖ c`
+have the infimum `a ⊖ j` in `E`.  (Sound: every lower bound of `a ⊖ b` and
+`a ⊖ c` is automatically `≼ a`.) -/
+theorem msc_cor14_2_inf {a b c j u v m : E}
+    (hu : IsDiff a b u) (hv : IsDiff a c v) (hj : PCM.IsSup b c j) (hm : IsDiff a j m) :
+    PCM.IsInf u v m := by
+  refine ⟨msc_sub_antitone hu hm hj.1, msc_sub_antitone hv hm hj.2.1, fun d hdu hdv => ?_⟩
+  have hda : d ≼ a := pcm_preorder_trans hdu (exc_dposet_D2 hu)
+  obtain ⟨e, he⟩ : ∃ e, IsDiff a d e := hda
+  have hbe : b ≼ e := (msc_prop13_3 he (exc_dposet_D3 hu)).mp hdu
+  have hce : c ≼ e := (msc_prop13_3 he (exc_dposet_D3 hv)).mp hdv
+  exact (msc_prop13_3 hm (exc_dposet_D3 he)).mp (hj.2.2 e hbe hce)
+
+/-- **Master's thesis, Corollary 14.2** (supremum half — *honest* form): if
+`b, c ≼ a` have an infimum `m` in `E`, then `a ⊖ m` is the least upper bound of
+`a ⊖ b` and `a ⊖ c` **among the elements below `a`**.  It need *not* be their
+least upper bound in `E`: the master's thesis's claim that it is is refuted by
+`WrightTriangle.no_sup_a1_a2` below (take `a = a₁ ⋁ a₂`, `b = a₁`, `c = a₂`,
+`m = 0`).  This is exactly the gap in the printed proof of 177Ia. -/
+theorem msc_cor14_2_sup_below {a b c m u v j : E}
+    (hu : IsDiff a b u) (hv : IsDiff a c v) (hm : PCM.IsInf b c m) (hj : IsDiff a m j) :
+    u ≼ j ∧ v ≼ j ∧ ∀ d, d ≼ a → u ≼ d → v ≼ d → j ≼ d := by
+  refine ⟨msc_sub_antitone hj hu hm.1, msc_sub_antitone hj hv hm.2.1, fun d hda hud hvd => ?_⟩
+  obtain ⟨e, he⟩ : ∃ e, IsDiff a d e := hda
+  have heb : e ≼ b := (msc_prop13_3 (exc_dposet_D3 hu) he).mp hud
+  have hec : e ≼ c := (msc_prop13_3 (exc_dposet_D3 hv) he).mp hvd
+  exact (msc_prop13_3 (exc_dposet_D3 he) hj).mp (hm.2.2 e heb hec)
+
+/-- **Master's thesis, Proposition 15**: if `a ⊥ b` and `a ∨ b` exists, then
+`a ∧ b` exists and equals `(a ⋁ b) ⊖ (a ∨ b)`. -/
+theorem msc_prop15 {a b j m : E} (hab : Perp a b) (hj : PCM.IsSup a b j)
+    (hm : IsDiff (ovee a b hab) j m) : PCM.IsInf a b m := by
+  have hu : IsDiff (ovee a b hab) a b := ⟨hab, rfl⟩
+  have hv : IsDiff (ovee a b hab) b a :=
+    ⟨PCM.perp_comm hab, by rw [← PCM.ovee_comm]⟩
+  exact isInf_comm (msc_cor14_2_inf hu hv hj hm)
+
+/-- **Master's thesis, Proposition 15**, existence form. -/
+theorem msc_prop15' {a b j : E} (hab : Perp a b) (hj : PCM.IsSup a b j) :
+    ∃ m, IsDiff (ovee a b hab) j m ∧ PCM.IsInf a b m := by
+  have hja : j ≼ ovee a b hab :=
+    hj.2.2 _ ⟨b, hab, rfl⟩ ⟨a, PCM.perp_comm hab, by rw [← PCM.ovee_comm]⟩
+  obtain ⟨m, hm⟩ := hja
+  exact ⟨m, hm, msc_prop15 hab hj hm⟩
+
+/-- **Master's thesis, Corollary 16.2**: whenever both exist,
+`(a ∨ b) ⋁ (a ∧ b) = a ⋁ b`.  This is the identity of 177Ia; what 177Ia adds —
+that the supremum exists as soon as the infimum does — is false (see
+`WrightTriangle.not_ea_modularity_prop`). -/
+theorem msc_cor16_2 {a b j m : E} (hab : Perp a b) (hm : PCM.IsInf a b m)
+    (hj : PCM.IsSup a b j) : ∃ hmj : Perp m j, ovee m j hmj = ovee a b hab := by
+  obtain ⟨m', hdiff, hm'⟩ := msc_prop15' hab hj
+  obtain rfl : m = m' := isInf_unique hm hm'
+  obtain ⟨hp, he⟩ := hdiff
+  exact ⟨PCM.perp_comm hp, by rw [← PCM.ovee_comm]; exact he⟩
+
+/-- **Master's thesis, Corollary 16.1**, honest form: if `a ⊥ b`, `a ∧ b = 0`
+and `a ∨ b` exists, then `a ∨ b = a ⋁ b` — the `⋁`-versus-`∨` bridge.  (That
+`a ∨ b` *exists* under the first two hypotheses is the false part; in
+`WrightTriangle`, `a₁ ⊥ a₂` and `a₁ ∧ a₂ = 0` while `a₁ ∨ a₂` does not
+exist.) -/
+theorem msc_cor16_1 {a b j : E} (hab : Perp a b) (hm : PCM.IsInf a b 0)
+    (hj : PCM.IsSup a b j) : j = ovee a b hab := by
+  obtain ⟨hmj, he⟩ := msc_cor16_2 hab hm hj
+  rw [← he, PCM.ovee_comm, PCM.ovee_zero]
+
+end MscOrder
+
+/-! ### A counterexample: the Wright triangle
+
+The Greechie diagram with three three-atom blocks pasted in a loop of order
+three — `B₁ = {a₁, a₄, a₂}`, `B₂ = {a₂, a₅, a₃}`, `B₃ = {a₃, a₆, a₁}`, each
+block a copy of `2³` and `cᵢ = aᵢᵖ` — is an effect algebra (indeed an
+orthoalgebra) that is not an orthomodular poset.  All fourteen elements and the
+whole partial addition are given explicitly below, and every effect algebra
+axiom is checked by `decide`.
+
+Since `a₁ ⊥ a₂` while `c₃ = a₃ᵖ = a₂ ⋁ a₅ = a₆ ⋁ a₁` and `c₄ = a₄ᵖ = a₁ ⋁ a₂`
+are *two incomparable* upper bounds of `{a₁, a₂}`, the pair `a₁, a₂` has an
+infimum (namely `0`) but **no** supremum.  That refutes 177Ia and the lemma its
+proof rests on. -/
+
+namespace WrightTriangle
+
+/-- The fourteen elements of the Wright triangle: `0`, the six atoms `aᵢ`,
+their orthocomplements `cᵢ = aᵢᵖ`, and `1`. -/
+inductive W where
+  | zero | a1 | a2 | a3 | a4 | a5 | a6 | c1 | c2 | c3 | c4 | c5 | c6 | one
+  deriving DecidableEq
+
+open W
+
+instance : Fintype W where
+  elems := ⟨[zero, a1, a2, a3, a4, a5, a6, c1, c2, c3, c4, c5, c6, one], by decide⟩
+  complete := by intro x; cases x <;> decide
+
+/-- The partial addition, as a table: `0` is neutral, the atoms of a common
+block add up to the orthocomplement of the third atom of that block, and
+`aᵢ ⋁ cᵢ = 1`.  Blocks: `{a₁,a₄,a₂}`, `{a₂,a₅,a₃}`, `{a₃,a₆,a₁}`. -/
+def add : W → W → Option W
+  | zero, b => some b
+  | a, zero => some a
+  | a1, a4 => some c2 | a4, a1 => some c2
+  | a1, a2 => some c4 | a2, a1 => some c4
+  | a4, a2 => some c1 | a2, a4 => some c1
+  | a2, a5 => some c3 | a5, a2 => some c3
+  | a2, a3 => some c5 | a3, a2 => some c5
+  | a5, a3 => some c2 | a3, a5 => some c2
+  | a3, a6 => some c1 | a6, a3 => some c1
+  | a3, a1 => some c6 | a1, a3 => some c6
+  | a6, a1 => some c3 | a1, a6 => some c3
+  | a1, c1 => some one | c1, a1 => some one
+  | a2, c2 => some one | c2, a2 => some one
+  | a3, c3 => some one | c3, a3 => some one
+  | a4, c4 => some one | c4, a4 => some one
+  | a5, c5 => some one | c5, a5 => some one
+  | a6, c6 => some one | c6, a6 => some one
+  | _, _ => none
+
+/-- The orthocomplement. -/
+def orthW : W → W
+  | zero => one | one => zero
+  | a1 => c1 | a2 => c2 | a3 => c3 | a4 => c4 | a5 => c5 | a6 => c6
+  | c1 => a1 | c2 => a2 | c3 => a3 | c4 => a4 | c5 => a5 | c6 => a6
+
+instance instPCMW : PCM W where
+  zero := W.zero
+  Perp a b := (add a b).isSome
+  ovee a b h := (add a b).get h
+  perp_comm := by decide
+  ovee_comm := by decide
+  perp_of_ovee_perp := by decide
+  perp_ovee_of_ovee_perp := by decide
+  ovee_assoc := by decide
+  zero_perp := by decide
+  zero_ovee := by decide
+
+instance decPerpW (a b : W) : Decidable (Perp a b) :=
+  inferInstanceAs (Decidable ((add a b).isSome = true))
+
+theorem perp_orthW : ∀ a : W, Perp a (orthW a) := by decide
+
+theorem ovee_orthW : ∀ a : W, ovee a (orthW a) (perp_orthW a) = W.one := by decide
+
+theorem orth_uniqueW : ∀ {a b : W} (h : Perp a b), ovee a b h = W.one → b = orthW a := by
+  decide
+
+theorem zero_oneW : ∀ {a : W}, Perp a W.one → a = W.zero := by decide
+
+instance instEAW : EffectAlgebra W where
+  one := W.one
+  orth := orthW
+  perp_orth := perp_orthW
+  ovee_orth := ovee_orthW
+  orth_unique := orth_uniqueW
+  eq_zero_of_perp_one := zero_oneW
+
+theorem perp_a1_a2 : Perp a1 a2 := by decide
+
+theorem perp_a2_a1 : Perp a2 a1 := by decide
+
+theorem ovee_a2_a1 : ovee a2 a1 perp_a2_a1 = ovee a1 a2 perp_a1_a2 := by decide
+
+/-- `a₁ ∧ a₂ = 0`: the only element below both atoms is `0`. -/
+theorem isInf_a1_a2 : PCM.IsInf a1 a2 (0 : W) := by
+  unfold PCM.IsInf PCM.le
+  decide
+
+/-- `a₁ ∨ a₂` does not exist: `c₃` and `c₄` are incomparable upper bounds. -/
+theorem no_sup_a1_a2 : ¬ ∃ j : W, PCM.IsSup a1 a2 j := by
+  unfold PCM.IsSup PCM.le
+  decide
+
+/-- **177Ia is false as printed** (`ea-modularity-prop`, eff.tex:484): in the
+Wright triangle `a₁ ⊥ a₂` and `a₁ ∧ a₂ = 0` exists, yet `a₁ ∨ a₂` does not.
+(Every orthoalgebra has `a ∧ b = 0` for `a ⊥ b`, so the Proposition would make
+every orthoalgebra an orthomodular poset.) -/
+theorem not_ea_modularity_prop :
+    ¬ ∀ (E : Type) [EffectAlgebra E] (a b m : E) (hab : Perp a b),
+        PCM.IsInf a b m →
+          ∃ (j : E) (hmj : Perp m j), PCM.IsSup a b j ∧ ovee a b hab = ovee m j hmj := by
+  intro H
+  obtain ⟨j, _, hj, _⟩ := H W a1 a2 0 perp_a1_a2 isInf_a1_a2
+  exact no_sup_a1_a2 ⟨j, hj⟩
+
+/-- **The lemma of `modularity-lemma-proof` (eff.tex:492) is false too**, even
+when strengthened by `c ⊥ d`: with `x = a₁ ⋁ a₂`, `c = a₁`, `d = a₂` one has
+`x ⊖ c = a₂`, `x ⊖ d = a₁`, whose infimum is `0`, while `c ∨ d` does not
+exist. -/
+theorem not_modularity_lemma :
+    ¬ ∀ (E : Type) [EffectAlgebra E] (x c d u v m : E), Perp c d →
+        IsDiff x c u → IsDiff x d v → PCM.IsInf u v m → ∃ j, PCM.IsSup c d j := by
+  intro H
+  refine no_sup_a1_a2 (H W (ovee a1 a2 perp_a1_a2) a1 a2 a2 a1 0 perp_a1_a2
+    ⟨perp_a1_a2, rfl⟩ ⟨perp_a2_a1, ovee_a2_a1⟩ (isInf_comm isInf_a1_a2))
+
+end WrightTriangle
+
+/-- **177Ia** (`ea-modularity-prop`, eff.tex:484, Proposition), **realigned**:
+as printed the Proposition claims that for `a ⊥ b` the existence of `a ∧ b`
+already gives `a ∨ b`; that is **false**, see
+`WrightTriangle.not_ea_modularity_prop` and the 177Ia row of `ERRATA.md`.  What
+survives — and is all that the thesis's own applications use — is the identity
+`a ⋁ b = (a ∧ b) ⋁ (a ∨ b)` whenever *both* the infimum and the supremum exist
+(master's thesis, Corollary 16.2). -/
+theorem ea_modularity_prop {E : Type u} [EffectAlgebra E] {a b m j : E}
+    (hab : Perp a b) (hm : PCM.IsInf a b m) (hj : PCM.IsSup a b j) :
+    ∃ hmj : Perp m j, ovee a b hab = ovee m j hmj := by
+  obtain ⟨hmj, he⟩ := msc_cor16_2 hab hm hj
+  exact ⟨hmj, he.symm⟩
 
 /-! ## Orthomodular lattices (parsec 177) -/
 

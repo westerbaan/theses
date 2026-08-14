@@ -43,28 +43,72 @@ mention `g` at all.  Our `exactAt_iff` carries the corrected form and is
 it (`isPure_of_isQuotient_comp` / `isPure_of_comp_isComprehension`, in plain
 effectus generality).  Recorded so the thesis can add the step.
 
-### B4. 177Ia — the modularity proof has a genuine gap, and the result is only cited
-`eff.tex:~510`.  The proof argues about `x⊥ ⋁ s` for an *arbitrary* upper bound
-`s` of `c,d`, but that sum is only defined when `s ≤ x` — so it establishes
-leastness only among elements below `x`, not a supremum in `E`.
+### B4. 177Ia — RESOLVED: the Proposition is false, and we have a machine-checked counterexample
+`eff.tex:~510`.  *Status 2026-08-14 (worker 55): settled — no author decision is
+needed on how to prove it, only on how to amend it.  See the two 177Ia rows in
+ERRATA.md.*
 
-We could not repair it: reducing to essentials, the conclusion holds iff
-`v ≤ t`, while the hypotheses give only `v ≤ u ⋁ t` with `u ∧ v = 0` — a
-Riesz-decomposition step effect algebras lack.  The ortholattice repair needs
-binary infima, which a general effect algebra does not have.
+The printed proof has a real gap: it argues about `x⊥ ⋁ s` for an *arbitrary*
+upper bound `s` of `c,d`, but that sum is only defined when `s ≤ x`, so it
+establishes leastness only among elements below `x`.  We then twice tried to
+repair or replace it, and the outcome is that **no repair exists — the
+Proposition itself is false.**
 
-The result itself is attributed to Dvurečenskij–Pulmannová 1.8.2.  *Decision
-needed*: is that citation the intended justification (in which case we park it
-permanently), or is a direct proof expected?
+**Counterexample** (`WrightTriangle` in `B/Eff/EffectAlgebras.lean`, every
+effect algebra axiom checked by `decide`): the Greechie loop of order 3 — three
+copies of `2³` pasted in a triangle, `B₁ = {a₁,a₄,a₂}`, `B₂ = {a₂,a₅,a₃}`,
+`B₃ = {a₃,a₆,a₁}`, 14 elements.  Here `a₁ ⊥ a₂`, and `a₁ ∧ a₂ = 0` exists, but
+`a₁ ∨ a₂` does **not**: `a₄ᵖ = a₁ ⋁ a₂` and `a₃ᵖ = a₆ ⋁ a₁ = a₂ ⋁ a₅` are
+incomparable minimal upper bounds.  Formalised as
+`WrightTriangle.not_ea_modularity_prop`, and
+`WrightTriangle.not_modularity_lemma` refutes the intermediate lemma of points
+20/30 as well — *even with `c ⊥ d` added*, so that patch does not save it
+either.
 
-**Update — B4 no longer blocks anything.**  It was the last source of `sorryAx`
-leakage in B/Eff: `isSharp_ovee` was 177Ia's only consumer, and
-`diamond_oml_subEA` inherited the leak through it.  Both are now proved
-*without* modularity, so **no declaration in B/Eff depends on `sorryAx`** —
-verified by walking all 1322 of them.  177Ia is still an unproved statement in
-our tree and the question above still stands, but nothing waits on the answer.
-See also the 208III row in ERRATA.md: the thesis's own proof of 208III routes
-through 177Ia twice, and both detours turn out to be avoidable.
+The one-line reason to believe it without reading the table: in **any**
+orthoalgebra `a ⊥ b` forces `a ∧ b = 0` (a common lower bound `c` has `c ⊥ c`),
+so 177Ia would say every orthoalgebra is an orthomodular poset — and the Wright
+triangle is the standard orthoalgebra that is not one.
+
+*Decision needed (now a drafting decision, not a mathematical one)*: amend the
+statement.  The natural amendment, and the only one the thesis's own uses need,
+is to **hypothesise that `a ∨ b` exists**; the identity
+`a ⋁ b = (a ∧ b) ⋁ (a ∨ b)` then holds, and is proved
+(`ea_modularity_prop`, realigned; it is master's thesis Corollary 16.2).  A
+lattice-effect-algebra hypothesis would do as well.  The citation to
+Dvurečenskij–Pulmannová 1.8.2 should be checked: as stated in the thesis the
+result is false, so 1.8.2 must carry a hypothesis that was dropped in transit.
+
+**§2.1.1 of the master's thesis is also affected, and is now in the tree.**
+Its Corollary 14 asserts that `a ⋁ (·)` and `a ⊖ (·)` transport suprema and
+infima *in both directions*, justified by "suprema and infima in the order
+restricted to `↓a⊥` are the same as in the whole of `E`".  That is sound only
+where the relevant bounds are forced into the interval, which is the case for
+exactly two of the four halves.  We transcribed the sound halves —
+`msc_prop13_1`, `msc_prop13_3`, `msc_cor14_1_sup`, `msc_cor14_1_inf`,
+`msc_cor14_2_inf`, `msc_prop15`, `msc_cor16_1`, `msc_cor16_2` — and the unsound
+one in honest form as `msc_cor14_2_sup_below` (least upper bound *among
+elements below `a`*).  Corollary 16.1 as printed ("`a ∧ b = 0` and `a ⊥ b`
+⟹ `a ⋁ b = a ∨ b`") is false in the same way if read as asserting existence;
+read as an identity given existence, it is true and proved.
+
+**What we got wrong twice, and it is worth recording.**  First we said "we
+could not repair it, therefore it is unreachable" — treating a broken proof as
+evidence of a hard theorem.  Then we swung the other way and accepted a
+three-line derivation from Corollary 14.2 without checking Corollary 14's own
+proof; that derivation produces the join *inside `↓(a ⋁ b)`* and silently
+promotes it to a join in `E`, which is the very step the printed proof gets
+wrong.  The lesson: when a proof's gap is "leastness only within an interval",
+any replacement built on interval-relative suprema inherits the gap — and the
+cheapest way to find out is to look for a counterexample with the same energy
+one spends looking for a proof.
+
+**Nothing waits on this.**  177Ia was the last source of `sorryAx` leakage in
+B/Eff and was bypassed earlier: `isSharp_ovee` and `diamond_oml_subEA` are
+proved without modularity, and **177VI** `orth-ea-is-orthomodular` is proved
+too (in an ortholattice both bounds exist, so it only ever needs the surviving
+identity).  B/Eff: 1756 declarations walked, 19 `sorry`, **0** depending on
+one.
 
 ### B5. `IsVNTensor` is too weak for 165III (and, it turns out, 166II)
 *Status 2026-08-14 (worker 52): the **positivity** half is answered (worker 40,

@@ -456,6 +456,84 @@ formalization trap recorded so it is not rediscovered:
 `exact` — `A`'s norm topology gets re-synthesised — hence the three `@`-applied
 wrappers in `Basic.lean`.
 
+### Session 55 — B/Eff: **177Ia is false**, and §2.1.1 of the master's thesis
+is in the tree
+
+The target was to *prove* 177Ia `ea-modularity-prop` ("for `a ⊥ b`, if `a ∧ b`
+exists then `a ∨ b` exists and `a ⋁ b = (a ∧ b) ⋁ (a ∨ b)`"), on a route
+supplied by the author: §2.1.1 of his master's thesis, Prop. 13.3 + Cor. 14.2.
+The instruction was to verify the route rather than trust it.  It does not
+hold, and neither does the Proposition.
+
+**The counterexample.**  `WrightTriangle` in `EffectAlgebras.lean`: the
+Greechie diagram with three three-atom blocks pasted in a loop of order 3
+(`B₁ = {a₁,a₄,a₂}`, `B₂ = {a₂,a₅,a₃}`, `B₃ = {a₃,a₆,a₁}`; 14 elements: `0`, six
+atoms, six coatoms `cᵢ = aᵢᵖ`, `1`).  It is given as a 14-constructor inductive
+type with the partial addition as a `match` table, and **every PCM and effect
+algebra axiom is discharged by `decide`** — no `native_decide`, so the axiom
+check stays clean (`propext`, `Classical.choice`, `Quot.sound`).  In it
+`a₁ ⊥ a₂` and `a₁ ∧ a₂ = 0` exists, while `a₁ ∨ a₂` does not: `a₄ᵖ = a₁ ⋁ a₂`
+and `a₃ᵖ = a₆ ⋁ a₁ = a₂ ⋁ a₅` are incomparable minimal upper bounds.  Hence
+`WrightTriangle.not_ea_modularity_prop` and — for the intermediate lemma of
+`modularity-lemma-proof`, *even with `c ⊥ d` added* —
+`WrightTriangle.not_modularity_lemma`.
+
+The structural reason is worth remembering: in **any** orthoalgebra `a ⊥ b`
+forces `a ∧ b = 0` (a common lower bound `c` satisfies `c ⊥ c`), so 177Ia would
+say every orthoalgebra is an orthomodular poset — and the Wright triangle is
+the textbook orthoalgebra that is not one.  Any effect algebra statement whose
+hypotheses reduce to "`a ⊥ b` and `a ∧ b = 0`" and whose conclusion is a join
+should be tested against it first.
+
+**Where the master's-thesis route fails.**  Corollary 14 justifies transporting
+suprema/infima across `a ⋁ (·)` and `a ⊖ (·)` by "suprema and infima in the
+order restricted to `↓a⊥` are the same as in the whole of `E`".  That is sound
+only when the bounds are forced into the interval, which happens for two of the
+four halves: lower bounds of a subset of `↓a` are automatically `≼ a`, and
+bounds of `a ⋁ U` are automatically `≽ a`.  For the remaining halves — in
+particular `⋀U` exists ⟹ `⋁(a ⊖ U)` exists, which is the whole content of
+177Ia — an upper bound of `a ⊖ U` need not lie below `a`, and the argument
+gives only a supremum *inside `↓a`*.  That is the identical flaw to the printed
+proof of 177Ia, which forms `x⊥ ⋁ s` for an arbitrary upper bound `s`.
+
+**Proved (class (2) — a different route, from the author's earlier work; cite
+master's thesis §2.1.1 by proposition number):**
+
+* `msc_prop13_1` (Prop. 13.1) — `x ↦ a ⋁ x` is an order embedding `↓aᵖ → ↑a`;
+* `msc_sub_antitone` / `msc_prop13_3` (Prop. 13.3) — `x ↦ a ⊖ x` is an order
+  anti-isomorphism of `↓a` onto itself, order-reflecting because it is its own
+  inverse (176II (D3));
+* `msc_cor14_1_sup`, `msc_cor14_1_inf`, `msc_cor14_2_inf` (Cor. 14, the sound
+  halves);
+* `msc_cor14_2_sup_below` (Cor. 14.2, **honest form**: least upper bound *among
+  elements below `a`* — the half that is false in `E`);
+* `msc_prop15` / `msc_prop15'` (Prop. 15) — `a ⊥ b` and `a ∨ b` exists ⟹
+  `a ∧ b = (a ⋁ b) ⊖ (a ∨ b)`;
+* `msc_cor16_1` (Cor. 16.1, honest form) — the `⋁`-versus-`∨` bridge: `a ⊥ b`,
+  `a ∧ b = 0` and `a ∨ b` exists ⟹ `a ∨ b = a ⋁ b`;
+* `msc_cor16_2` (Cor. 16.2) — the identity `(a ∧ b) ⋁ (a ∨ b) = a ⋁ b` whenever
+  both exist;
+* helpers `le_of_isDiff`, `isInf_comm`, `isSup_comm`, `isInf_unique`,
+  `isSup_unique`.
+
+**One statement changed, deliberately.**  The house rule is that statements are
+never changed and unprovable ones keep their `sorry`.  177Ia is the case the
+rule does not fit: leaving a `sorry` on a statement we have *proved false*
+would advertise an open goal that can never be closed.  Following the precedent
+of 39VII/38VI.2/227III.1 in ERRATA.md ("our statement is realigned and
+proved"), `ea_modularity_prop` now hypothesises the supremum and concludes the
+identity — one line from `msc_cor16_2` — with a doc comment pointing at the
+refutation directly above it.  The faithful, false form survives verbatim as
+the body of `WrightTriangle.not_ea_modularity_prop`, so nothing is lost.  If
+the coordinator prefers the `sorry`, restoring it is a two-line edit.
+
+Nothing consumed 177Ia (checked: no references outside the file), so nothing
+downstream moved.  **177VI `orth_ea_is_orthomodular` was found already proved**
+— the parked-items entry for it was stale — and its `key` step is exactly the
+surviving identity specialised to an ortholattice, where both bounds exist.
+B/Eff `#sorry_leaks`: **1756 declarations, 19 themselves `sorry` (was 20), 0
+depending on one.**
+
 ### Session 3 — B/Eff is now free of `sorryAx` leakage, and 177Ia is not
 load-bearing
 
@@ -2307,15 +2385,14 @@ together); `B/Dils/Stinespring.lean` (ℂ-valued inner product, whose convention
   argument, but transcribing it means *constructing* an `EffectAlgebra` whose
   `Perp`/`ovee` are defined by `a ⋁ b = c ↔ c ⊖ b = a` (hence by choice), plus
   single-valuedness and ten axioms; sizeable, not attempted.
-- **177Ia** `Theses/B/Eff/EffectAlgebras.lean:959` (`ea_modularity_prop`) — the
-  proof (eff.tex:492) reduces to a lemma about `(x ⊖ c) ∧ (x ⊖ d)` and uses
-  that `z ↦ zᵖ` is an order anti-isomorphism to turn infima into suprema.  That
-  transfer, together with `x ⊖ c = (xᵖ ⋁ c)ᵖ`, has to be built on top of the
-  ad-hoc `PCM.IsInf`/`PCM.IsSup` predicates; not attempted for lack of time.
-- **177VI** `Theses/B/Eff/EffectAlgebras.lean:1045` (`orth_ea_is_orthomodular`)
-  — depends on 177Ia (parked) *and* on an auxiliary distributivity claim that
-  eff.tex:578 only gestures at ("Similar to `modularity-lemma-proof` one can
-  show that `(b⊖a) ⋁ (bᵖ ∧ a) = ((b⊖a) ⋁ bᵖ) ∧ ((b⊖a) ⋁ a)`").
+- **177Ia** (`ea_modularity_prop`) — **no longer parked: the Proposition is
+  false and is now refuted in the tree** (`WrightTriangle.not_ea_modularity_prop`),
+  with the statement realigned to the surviving identity and proved.  See the
+  session entry "B/Eff: 177Ia is false" above, the two 177Ia rows in ERRATA.md
+  and QUESTIONS.md B4.
+- **177VI** (`orth_ea_is_orthomodular`) — **no longer parked: proved.**  In an
+  ortholattice both bounds exist, so only the surviving identity half of 177Ia
+  is needed, and it is established inline (the `key` step of the proof).
 - **177V** `Theses/B/Eff/EffectAlgebras.lean:993`
   (`projections_orthomodularLattice`) — projections of a von Neumann algebra
   form an orthomodular lattice; eff.tex:559 states it as an example with no
