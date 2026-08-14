@@ -3489,3 +3489,183 @@ the project has two (`vonNeumannAlgebra_lp_infty`, `mn_vna_1`), not four.
   `proc.tex` was read at 2770–2870 (112III–112IX) and 6455–6530 (130I–130V)
   before anything was written; `asols.tex` has no solutions past parsec 340 and
   its errata block has nothing for 1120 or 1300.
+
+---
+
+## Session 14 — `B/Dils` (worker 38)
+
+Target: **149V** `dils_selfdual` (`HilbertModules.lean`), the chapter's named
+root.  Result: **the reachable direction is proved and 160II falls with it**,
+and two *false* statements were found in `Paschke.lean` — one fixed, one
+diagnosed and machine-checked but deliberately not repaired.
+
+### 1. 149V is *not* unblocked — three of its four implications are
+
+Three successive briefs called 149V "unblocked; nothing frozen stands in its
+way".  That is wrong.  Reading `dils.tex` 2249–2621 against the tree:
+
+| implication | dils.tex | needs | status of the need |
+|---|---|---|---|
+| 1 ⇒ 3 | 149VII, 2258 | **77I**.1 `vn_complete_1` (ultrastrong completeness) | `sorry`, `A/VN/Completeness.lean:1602`, frozen |
+| 3 ⇒ 4 | 149VIII, 2328 | **80IV** `approximate_pseudoinverse` (for polar decomposition in `X`) | `sorry`, `A/VN/Division.lean:464`, frozen |
+| 4 ⇒ 2 | 149IX, 2461 | **77I**.1 again, and **87VIII** `ultraweakly_bounded_implies_bounded` | both `sorry`, frozen |
+| 4 ⇒ 1 | 149XI, 2569 | nothing outside `HilbertModules.lean` | **proved** |
+
+`VonNeumannAlgebra` in this project is `Theses/Common.lean:73`, i.e. the
+thesis's abstract 42I (bounded directed suprema + faithful np-functionals);
+completeness of `𝒷` is a theorem (77I), not part of the class, so there is no
+way around it.  None of `Completeness`, `Division`, `NormalFunctionals` is even
+on `HilbertModules.lean`'s import path — but importing them would only turn
+three `sorry`s here into three `sorry`s there.
+
+`dils_selfdual` is therefore now proved *from* five named implications
+(`bddUnComplete_of_selfDual`, `exists_isONBasis_of_bddUnComplete`,
+`unComplete_of_isONBasis`, `bddUnComplete_of_unComplete`,
+`selfDual_of_isONBasis`) by `tfae_have`/`tfae_finish`; `4 ⇒ 1` and the trivial
+`2 ⇒ 3` are proved, the other three carry a `sorry` and a doc comment naming
+the exact frozen blocker.  `HilbertModules.lean` goes 1 → 3 code `sorry`s;
+that is the deliberate "bank the skeleton" trade.
+
+### 2. 149XI `selfDual_of_isONBasis` (4 ⇒ 1) — divergence class 1
+
+The thesis's own argument, mirrored.  `t = ∑ᵢ eᵢτ(eᵢ)*`; ℓ²-summability of
+`(τ(eᵢ)*)ᵢ` comes from the "substitute the partial sum for `x`" trick, which
+needs Bessel; `τ x = ⟨t,x⟩` is then ultranorm continuity of `τ` (**148I**)
+against **148V**, compared in the *ultraweak* topology, where limits are
+unique (**44XI**.1).
+
+One deviation (class 2, forced): the thesis reads off `τ(x) = ∑ₑ τ(e)⟨e,x⟩`
+from ultranorm continuity of `τ` directly.  In the mirrored convention
+`x ↦ ⟨t,x⟩` is continuous in its *second* argument only, so the two nets are
+compared ultraweakly instead of ultrastrongly.  This needed the new
+`uwTendsto_of_unTendsto_mulInner` (**43I** mirrored: `|ω(a)| ≤ ‖a*‖_ω ω(1)^½`,
+i.e. `norm_apply_le_omegaNorm` at `star a`).
+
+New public by-products in `HilbertModules.lean`, all axiom-clean:
+`mulBInner` (+`_inner`, `_norm`) — `𝒷` as a `BInner`-module over itself,
+needed to apply **144V**/**148I** to `τ : X → 𝒷`; `cstarBInner_norm`;
+`norm_np_le_unSeminorm_mulInner`; `uwTendsto_of_unTendsto_mulInner`;
+`inner_sum_smul_orthogonal`; `inner_sum_smul_self`; `onbasis_coef_absorb`;
+**`mod_bessel`** (Bessel's inequality).
+
+One statement generalisation: the `UltranormContinuity` section had
+`variable {X Y : Type v}`, which pinned **144V**/**148I**'s codomain to `X`'s
+universe and so could not be applied with `Y = 𝒷`.  Now `{Y : Type*}`.
+
+### 3. 160II `direct_prod_self_dual_basis` — divergence class 1
+
+The published solution (`bsols.tex`, `direct-prod-self-dual-basis`) verbatim:
+`κ₁(E) ∪ κ₂(F)` is an ON basis of `Z`, and self-duality is then 149V's
+`4 ⇒ 1`.  Both clauses of `IsONBasis` reduce to the same lemma (`hconv`)
+because `∑_{g ∈ s} c g • G g` splits as `κ₁(∑_{i ∈ s.toLeft} …) + κ₂(∑_{j ∈
+s.toRight} …)`, and `Finset.toLeft`/`toRight` are cofinal
+(`tendsto_finset_toLeft_atTop`).  Two by-products in `SelfDual.lean`:
+`innerPreserving_add` (an inner-product-preserving map between pre-Hilbert
+modules is automatically additive) and `innerPreservingHom`.
+
+### 4. `PhiCompatible.bound` was false — mirrored on the wrong side (class 4, FIXED)
+
+`Paschke.lean`'s **154II** read
+
+```
+‖∑ i, T (a i) (b i)‖^2 ≤ r * ‖∑ i, ∑ j, star (b i) * φ (star (a i) * a j) * b j‖
+```
+
+— the thesis's formula copied *unmirrored*, while `PaschkeModule.inner_tprod`
+next to it is mirrored.  The two are jointly unsatisfiable.  For `n = 1` they
+read `‖b φ(a*a) b*‖ ≤ r ‖b* φ(a*a) b‖`, and in `M₂` with `φ = id`,
+`a = e₀₀`, `b = e₁₀` the left side is `‖e₁₁‖ = 1` and the right side `0`.
+Machine-checked in `CStarMatrix (Fin 2) (Fin 2) ℂ` (scratchpad `w38d.lean`):
+`star aa * aa = aa`, `star bb * (star aa * aa) * bb = 0`,
+`bb * (star aa * aa) * star bb ≠ 0`.  So `PaschkeModule φ` was **uninhabited**
+for `φ = id : M₂ → M₂`, `existence_paschke` was false, and the nine
+`PaschkeModule`-hypothesis theorems of the file were vacuous.
+
+Fixed to the mirrored form
+
+```
+‖∑ i, T (a i) (b i)‖^2 ≤ r * ‖∑ i, ∑ j, b i * φ (star (a i) * a j) * star (b j)‖
+```
+
+which is *exactly* `‖⟨v,v⟩‖` for `v = ∑ᵢ aᵢ ⊗ bᵢ` — machine-checked from
+`inner_tprod` alone (scratchpad `w38c.lean`, `tprod_bound_eq`), so `tprod`
+itself is now φ-compatible with `r = 1`, as it must be.  The stars must be on
+the *outside*: under `inner (b • x) y = inner x y * star b` every `⟨v,v⟩` has
+the shape `∑ bⱼ (…) star bᵢ`, so the old placement is wrong under *any*
+mirroring choice.  `existence_paschke_2`'s proof survives with three local
+edits (its `S₀,S₁,S₂` take the new shape, and complete positivity is applied
+at the coefficients `star ∘ b` instead of `b`).  The correction and the
+counterexample are recorded in `PhiCompatible`'s doc comment.
+
+### 5. `PaschkeModule` still forces `h ∘ ϱ = φ ∘ star` (class 4, NOT fixed — needs a decision)
+
+A second, deeper mirroring defect, machine-checked (scratchpad `w38e.lean`):
+
+```
+theorem h_rho_eq_phi_star (φ : NCPMap 𝒜 ℬ) (M : PaschkeModule φ) (a : 𝒜) :
+    M.h (M.ρ a) = φ (star a) := by
+  rw [M.h_def, M.ρ_tprod, M.inner_tprod]; simp
+```
+
+Since `IsPaschkeDilationOf` (`Stinespring.lean:1180`) requires
+`∀ a, D.h (D.ρ a) = φ a`, **`existence_paschke_5` is false as stated** as soon
+as `PaschkeModule φ` is inhabited (take `φ = id` and `a` non-self-adjoint).
+`existence_paschke_4`'s hypothesis `hφ : φ a = inner ℬ e ((ϱ' a).1 e)` is off
+by the same `star`.
+
+Which field is at fault is *not* free, and that is why this is left open:
+
+* `inner_tprod`'s `φ (star a' * a)` is **forced**: from `smul_action` every
+  inner product of elementary tensors has the shape `b' * M(a,a') * star b`,
+  and `⟨v,v⟩ ≥ 0` for all `v` forces the matrix `(M(aⱼ,aᵢ))ᵢⱼ` to be positive,
+  i.e. `M(a,a') = φ(star a' * a)` (giving the standard Gram
+  `(φ(star aᵢ * aⱼ))ᵢⱼ`).  `φ (star a * a')` gives its *transpose*, which is
+  not positive for a general ncp `φ`.
+* `h_def`'s `inner (1⊗1) (T (1⊗1))` is **forced**: the other order is
+  conjugate-linear in `T`, so `h` could not be an `NCPMap`.
+* `ρ_tprod`'s `tprod (a₀ * a) b` is **forced** by multiplicativity of `ρ` into
+  `Ba ℬ X`, whose product is composition (`baSubalgebra_coe_mul_apply`).
+
+So no single field can be edited; the repair is a coordinated re-mirroring of
+the bundle.  Two consistent packages were found and both have a cost:
+(i) `inner_tprod = b' * φ (a' * star a) * star b` with bound
+`∑ᵢⱼ bⱼ φ(aⱼ * star aᵢ) star bᵢ` (mirror 𝒜 as well) — self-consistent, gives
+`h ∘ ϱ = φ`, but then `existence_paschke_4`'s `ϱ' : NMIUMap 𝒜 (Ba ℬ Y)` is on
+the wrong handedness; (ii) reading Lean's `tprod a b` as the thesis's
+`a* ⊗ b`, i.e. `ρ_tprod : tprod (a * star a₀) b` — also self-consistent.  This
+is a `Paschke.lean`-wide decision and deserves its own pass; **`Paschke.lean`
+and the `PaschkeTriple`/`IsPaschkeDilationOf` interface in `Stinespring.lean`
+should not be built on until it is made.**
+
+### 6. Classification
+
+* **(1) faithful:** 149XI (4 ⇒ 1); 160II.
+* **(2) different route:** 149XI's final identification is made ultraweakly
+  rather than ultrastrongly (forced by the mirrored convention, §2); 160II's
+  ℓ²-summability of the two half-families is read off from `Finset.sum_map`
+  rather than from "subfamilies of ℓ²-summable families are ℓ²-summable".
+* **(3) mild:** 160II's index set is `ι ⊕ κ` with the cofinality of
+  `Finset.toLeft`/`toRight` made explicit, where the solution just writes
+  `G = κ₁(E) ∪ κ₂(F)`.
+* **(4) our statement mis-transcribes the thesis:** `PhiCompatible.bound`
+  (§4, fixed); the `PaschkeModule` bundle's `star` (§5, diagnosed, open); the
+  `{X Y : Type v}` universe pinning of `UltranormContinuity` (§2, fixed).
+* **(5) closed from Mathlib without reading the author's argument:** none.
+  `dils.tex` 2127–2621, 3530–3840, 4456–4720 and the `bsols.tex` solutions
+  `direct-prod-self-dual-basis` and `onb1` were read first.
+
+### 7. Verification
+
+* `lake build Theses` → `Build completed successfully (8738 jobs)`, exit 0,
+  **zero** `error:` lines outside the pre-existing `linter.style.header`
+  noise.
+* `#print axioms` → `[propext, Classical.choice, Quot.sound]` for all 15 new
+  declarations.  No `sorry`ed instances in `B/Dils`.
+* Code `sorry`s, before → after: `HilbertModules` 1 → **3**, `SelfDual` 25 →
+  **24**, others unchanged; `B/Dils` 63 → **64**.  (The +1 is the 149V
+  skeleton: one opaque `sorry` replaced by three named, individually blocked
+  ones, with the TFAE itself now proved.)
+* Files touched: `Theses/B/Dils/HilbertModules.lean`,
+  `Theses/B/Dils/SelfDual.lean`, `Theses/B/Dils/Paschke.lean`,
+  `PROVING-LOG.md`.  Nothing staged, nothing committed.
+  (`Theses/B/Eff/Effectus.lean` is also dirty — not mine.)

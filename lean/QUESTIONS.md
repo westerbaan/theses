@@ -134,6 +134,31 @@ thesis defect)*: add `q (z • f) = z • q f` to `IsLinftyOf`?  It is the right
 fix, but it touches **four statements at once**, which is why it was not done
 unilaterally.
 
+### D2. `PaschkeModule` is internally inconsistent with `IsPaschkeDilationOf`
+`Theses/B/Dils/Paschke.lean` (warning block at the head of the file).  Our
+mirroring of parsec 1540 is off by a `star`.  The fields `inner_tprod`,
+`ρ_tprod` and `h_def` together *prove* `h (ρ a) = φ (star a)`, while
+`IsPaschkeDilationOf` in `Stinespring.lean` asks for `h (ρ a) = φ a`.  So
+**`existence_paschke_5` is false as stated** once `PaschkeModule φ` is
+inhabited, and `existence_paschke_4`'s `hφ` is off by the same `star`.
+
+Machine-checked, and **no single field can be repaired**: `inner_tprod` is
+forced by positivity of `⟨v,v⟩`, `h_def` by ℂ-linearity of `h`, `ρ_tprod` by
+multiplicativity of `ρ`.  The fix is a coordinated re-mirroring of the bundle,
+touching **~10 statements across two files** — which is why it was diagnosed
+and flagged rather than done unilaterally.
+
+A *separate* and unambiguous defect in the same area **has been fixed**:
+`PhiCompatible.bound` was mirrored on the wrong side, which made
+`PaschkeModule φ` outright **uninhabited** and so made nine theorems vacuous.
+Counterexample (re-derived independently): `φ = id` on `M₂`, `a = e₀₀`,
+`b = e₁₀` gives `‖b* φ(a*a) b‖ = ‖ab‖² = 0` while `inner_tprod` forces
+`‖b φ(a*a) b*‖ = ‖e₁₁‖ = 1`, i.e. `1 ≤ r·0`.
+
+*Decision needed (Bas)*: which of the two candidate re-mirrorings to adopt —
+see PROVING-LOG session 14 §5.  **Until then, nothing should be built on
+`PaschkeModule`, `PaschkeTriple` or `IsPaschkeDilationOf`.**
+
 ## Thesis A (`cstar.tex`, `vn.tex`, `proc.tex`) — remaining after the 2026-08-13 rulings
 
 ### A1. 98VI's hint points the wrong way

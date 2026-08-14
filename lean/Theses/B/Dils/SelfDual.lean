@@ -217,6 +217,42 @@ variable {ℬ : Type u} {X Y Z : Type v}
   [NormedAddCommGroup Y] [NormedSpace ℂ Y] [SMul ℬ Y] [CStarModule ℬ Y]
   [NormedAddCommGroup Z] [NormedSpace ℂ Z] [SMul ℬ Z] [CStarModule ℬ Z]
 
+omit [StarOrderedRing ℬ] in
+/-- An inner-product-preserving map between pre-Hilbert ℬ-modules is
+automatically additive: `⟨κ(x+x') − κx − κx', κ(x+x') − κx − κx'⟩` expands to
+`⟨(x+x') − x − x', (x+x') − x − x'⟩ = 0`. -/
+theorem innerPreserving_add (κ : X → Z)
+    (h : ∀ x x' : X, inner ℬ (κ x) (κ x') = inner ℬ x x') (x x' : X) :
+    κ (x + x') = κ x + κ x' := by
+  have hz : (inner ℬ (κ (x + x') - (κ x + κ x')) (κ (x + x') - (κ x + κ x')) : ℬ)
+      = 0 := by
+    simp only [CStarModule.inner_sub_left, CStarModule.inner_sub_right,
+      CStarModule.inner_add_left, CStarModule.inner_add_right, h]
+    abel
+  have h0 := CStarModule.inner_self (A := ℬ) (x := κ (x + x') - (κ x + κ x')) |>.mp hz
+  rwa [sub_eq_zero] at h0
+
+omit [StarOrderedRing ℬ] in
+/-- The additive-monoid-hom packaging of an inner-product-preserving map
+(`innerPreserving_add`). -/
+noncomputable def innerPreservingHom (κ : X → Z)
+    (h : ∀ x x' : X, inner ℬ (κ x) (κ x') = inner ℬ x x') : X →+ Z :=
+  AddMonoidHom.mk' κ (innerPreserving_add κ h)
+
+/-- Taking the left part of a finite subset of `ι ⊕ κ` is cofinal: the net
+indexed by `Finset (ι ⊕ κ)` refines the one indexed by `Finset ι`. -/
+private theorem tendsto_finset_toLeft_atTop {ι κ : Type v} :
+    Tendsto (Finset.toLeft : Finset (ι ⊕ κ) → Finset ι) atTop atTop :=
+  Filter.tendsto_atTop_atTop.mpr fun t =>
+    ⟨t.map Function.Embedding.inl, fun _ hs _ hi =>
+      Finset.mem_toLeft.mpr (hs (Finset.mem_map_of_mem _ hi))⟩
+
+private theorem tendsto_finset_toRight_atTop {ι κ : Type v} :
+    Tendsto (Finset.toRight : Finset (ι ⊕ κ) → Finset κ) atTop atTop :=
+  Filter.tendsto_atTop_atTop.mpr fun t =>
+    ⟨t.map Function.Embedding.inr, fun _ hs _ hi =>
+      Finset.mem_toRight.mpr (hs (Finset.mem_map_of_mem _ hi))⟩
+
 /-- **160II** (`direct-prod-self-dual-basis`, dils.tex:4465, Exercise): the
 direct sum of self-dual Hilbert ℬ-modules `X ⊕ Y` (represented abstractly:
 a Hilbert ℬ-module `Z` with module embeddings `κ₁, κ₂` which are mutually
@@ -234,8 +270,110 @@ theorem direct_prod_self_dual_basis [VonNeumannAlgebra ℬ]
     (hκ₂ : ∀ (b : ℬ) (y : Y), κ₂ (b • y) = b • κ₂ y)
     {ι κ : Type v} (e : ι → X) (d : κ → Y)
     (he : IsONBasis ℬ e) (hd : IsONBasis ℬ d) :
-    IsONBasis ℬ (Sum.elim (κ₁ ∘ e) (κ₂ ∘ d)) ∧ SelfDual ℬ Z :=
-  sorry
+    IsONBasis ℬ (Sum.elim (κ₁ ∘ e) (κ₂ ∘ d)) ∧ SelfDual ℬ Z := by
+  set K₁ : X →+ Z := innerPreservingHom κ₁ h₁ with hK₁def
+  set K₂ : Y →+ Z := innerPreservingHom κ₂ h₂ with hK₂def
+  have h₂₁ : ∀ (y : Y) (x : X), (inner ℬ (κ₂ y) (κ₁ x) : ℬ) = 0 := by
+    intro y x
+    have h := congrArg star (h₁₂ x y)
+    rwa [CStarModule.star_inner, star_zero] at h
+  -- splitting a finite sum over `ι ⊕ κ`
+  have hsplit : ∀ (c : ι ⊕ κ → ℬ) (s : Finset (ι ⊕ κ)),
+      ∑ g ∈ s, c g • Sum.elim (κ₁ ∘ e) (κ₂ ∘ d) g
+        = κ₁ (∑ i ∈ s.toLeft, c (Sum.inl i) • e i)
+          + κ₂ (∑ j ∈ s.toRight, c (Sum.inr j) • d j) := by
+    intro c s
+    rw [Finset.sum_sum_eq_sum_toLeft_add_sum_toRight]
+    congr 1
+    · rw [show κ₁ (∑ i ∈ s.toLeft, c (Sum.inl i) • e i)
+        = K₁ (∑ i ∈ s.toLeft, c (Sum.inl i) • e i) from rfl, map_sum]
+      exact Finset.sum_congr rfl fun i _ => (hκ₁ _ _).symm
+    · rw [show κ₂ (∑ j ∈ s.toRight, c (Sum.inr j) • d j)
+        = K₂ (∑ j ∈ s.toRight, c (Sum.inr j) • d j) from rfl, map_sum]
+      exact Finset.sum_congr rfl fun j _ => (hκ₂ _ _).symm
+  -- the embeddings are ultranorm isometries
+  have htr₁ : ∀ (ω : NPFunctional ℬ) (u u' : X),
+      unSeminorm ω (inner ℬ : Z → Z → ℬ) (κ₁ u - κ₁ u')
+        = unSeminorm ω (inner ℬ : X → X → ℬ) (u - u') := by
+    intro ω u u'
+    rw [show κ₁ u - κ₁ u' = κ₁ (u - u') from (map_sub K₁ u u').symm,
+      unSeminorm, unSeminorm, h₁]
+  have htr₂ : ∀ (ω : NPFunctional ℬ) (u u' : Y),
+      unSeminorm ω (inner ℬ : Z → Z → ℬ) (κ₂ u - κ₂ u')
+        = unSeminorm ω (inner ℬ : Y → Y → ℬ) (u - u') := by
+    intro ω u u'
+    rw [show κ₂ u - κ₂ u' = κ₂ (u - u') from (map_sub K₂ u u').symm,
+      unSeminorm, unSeminorm, h₂]
+  -- the joint convergence statement used for both clauses of `IsONBasis`
+  have hconv : ∀ (c : ι ⊕ κ → ℬ) (x : X) (y : Y),
+      UnTendsto (inner ℬ) (fun t : Finset ι => ∑ i ∈ t, c (Sum.inl i) • e i) atTop x →
+      UnTendsto (inner ℬ) (fun u : Finset κ => ∑ j ∈ u, c (Sum.inr j) • d j) atTop y →
+      UnTendsto (inner ℬ)
+        (fun s : Finset (ι ⊕ κ) => ∑ g ∈ s, c g • Sum.elim (κ₁ ∘ e) (κ₂ ∘ d) g)
+        atTop (κ₁ x + κ₂ y) := by
+    intro c x y hx hy ω
+    simp only [hsplit c]
+    refine squeeze_zero (fun s => unSeminorm_nonneg _ _ _)
+      (g := fun s : Finset (ι ⊕ κ) =>
+        unSeminorm ω (inner ℬ : X → X → ℬ)
+            ((∑ i ∈ s.toLeft, c (Sum.inl i) • e i) - x)
+          + unSeminorm ω (inner ℬ : Y → Y → ℬ)
+            ((∑ j ∈ s.toRight, c (Sum.inr j) • d j) - y)) (fun s => ?_) ?_
+    · have hrw : κ₁ (∑ i ∈ s.toLeft, c (Sum.inl i) • e i)
+            + κ₂ (∑ j ∈ s.toRight, c (Sum.inr j) • d j) - (κ₁ x + κ₂ y)
+          = (κ₁ (∑ i ∈ s.toLeft, c (Sum.inl i) • e i) - κ₁ x)
+            + (κ₂ (∑ j ∈ s.toRight, c (Sum.inr j) • d j) - κ₂ y) := by abel
+      rw [hrw, ← htr₁ ω _ x, ← htr₂ ω _ y]
+      exact unSeminorm_add_le ω (cstarBInner ℬ Z) _ _
+    · have hL := (hx ω).comp (tendsto_finset_toLeft_atTop (ι := ι) (κ := κ))
+      have hR := (hy ω).comp (tendsto_finset_toRight_atTop (ι := ι) (κ := κ))
+      simpa using hL.add hR
+  -- orthonormality
+  have hbasis : IsONBasis ℬ (Sum.elim (κ₁ ∘ e) (κ₂ ∘ d)) := by
+    refine ⟨⟨?_, ?_⟩, ?_, ?_⟩
+    · rintro (i | j) (i' | j') hne
+      · exact (h₁ _ _).trans (he.1.1 i i' (fun h => hne (by rw [h])))
+      · exact h₁₂ _ _
+      · exact h₂₁ _ _
+      · exact (h₂ _ _).trans (hd.1.1 j j' (fun h => hne (by rw [h])))
+    · rintro (i | j)
+      · rw [show (inner ℬ (Sum.elim (κ₁ ∘ e) (κ₂ ∘ d) (Sum.inl i))
+          (Sum.elim (κ₁ ∘ e) (κ₂ ∘ d) (Sum.inl i)) : ℬ) = inner ℬ (e i) (e i) from h₁ _ _]
+        exact he.1.2 i
+      · rw [show (inner ℬ (Sum.elim (κ₁ ∘ e) (κ₂ ∘ d) (Sum.inr j))
+          (Sum.elim (κ₁ ∘ e) (κ₂ ∘ d) (Sum.inr j)) : ℬ) = inner ℬ (d j) (d j) from h₂ _ _]
+        exact hd.1.2 j
+    · intro z
+      obtain ⟨x, y, rfl⟩ := hadd z
+      have hcoefL : ∀ i : ι,
+          (inner ℬ (Sum.elim (κ₁ ∘ e) (κ₂ ∘ d) (Sum.inl i)) (κ₁ x + κ₂ y) : ℬ)
+            = inner ℬ (e i) x := by
+        intro i
+        change (inner ℬ (κ₁ (e i)) (κ₁ x + κ₂ y) : ℬ) = _
+        rw [CStarModule.inner_add_right, h₁, h₁₂, add_zero]
+      have hcoefR : ∀ j : κ,
+          (inner ℬ (Sum.elim (κ₁ ∘ e) (κ₂ ∘ d) (Sum.inr j)) (κ₁ x + κ₂ y) : ℬ)
+            = inner ℬ (d j) y := by
+        intro j
+        change (inner ℬ (κ₂ (d j)) (κ₁ x + κ₂ y) : ℬ) = _
+        rw [CStarModule.inner_add_right, h₂, h₂₁, zero_add]
+      refine hconv (fun g => inner ℬ (Sum.elim (κ₁ ∘ e) (κ₂ ∘ d) g) (κ₁ x + κ₂ y)) x y
+        ?_ ?_
+      · simpa only [hcoefL] using he.2.1 x
+      · simpa only [hcoefR] using hd.2.1 y
+    · rintro c ⟨M, hM⟩
+      have hL : L2Summable ℬ (fun i => c (Sum.inl i)) := by
+        refine ⟨M, fun t => ?_⟩
+        have h := hM (t.map Function.Embedding.inl)
+        rwa [Finset.sum_map] at h
+      have hR : L2Summable ℬ (fun j => c (Sum.inr j)) := by
+        refine ⟨M, fun t => ?_⟩
+        have h := hM (t.map Function.Embedding.inr)
+        rwa [Finset.sum_map] at h
+      obtain ⟨x₀, hx₀⟩ := he.2.2 _ hL
+      obtain ⟨y₀, hy₀⟩ := hd.2.2 _ hR
+      exact ⟨κ₁ x₀ + κ₂ y₀, hconv c x₀ y₀ hx₀ hy₀⟩
+  exact ⟨hbasis, selfDual_of_isONBasis hbasis⟩
 
 variable (ℬ) in
 /-- **160III** (dils.tex:4476, Definition): the **orthocomplement**

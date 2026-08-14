@@ -1188,7 +1188,10 @@ end UniformBasics
 
 section UltranormContinuity
 
-variable {𝒷 : Type u} {X Y : Type v}
+-- `Y` is deliberately in its own universe: **148I** and the seminorm form of
+-- **144V** below are applied with `Y = 𝒷` (in universe `u`) in the proof of
+-- **149V**.
+variable {𝒷 : Type u} {X : Type v} {Y : Type*}
   [CStarAlgebra 𝒷] [PartialOrder 𝒷] [StarOrderedRing 𝒷]
   [AddCommGroup X] [Module ℂ X] [SMul 𝒷 X]
   [AddCommGroup Y] [Module ℂ Y] [SMul 𝒷 Y]
@@ -1773,6 +1776,64 @@ def IsONBasis (e : ι → X) : Prop :=
 
 variable {𝒷}
 
+/-! ### Auxiliary: `𝒷` as a module over itself, and mirrored **43I**
+
+The proof of **149V** applies **144V**/**148I** to the 𝒷-linear map
+`τ : X → 𝒷` itself, so `𝒷` is needed as a `BInner`-module over itself; and it
+compares the mirrored ultrastrong uniformity of `𝒷` (which is the ultranorm
+uniformity of `mulInner`, **146VIII**) with the ultraweak topology. -/
+
+variable (𝒷) in
+/-- `mulInner` as a bundled `BInner`: `𝒷` as a module over itself
+(**141III**). -/
+def mulBInner : BInner 𝒷 𝒷 where
+  inner := mulInner 𝒷
+  inner_add_right _ _ _ := by simp [mulInner, add_mul]
+  inner_op_smul_right _ _ _ := by simp [mulInner, mul_assoc]
+  inner_smul_right_complex _ _ _ := by simp [mulInner, smul_mul_assoc]
+  star_inner _ _ := by simp [mulInner]
+  inner_self_nonneg _ := mul_star_self_nonneg _
+
+@[simp] theorem mulBInner_inner : (mulBInner 𝒷).inner = mulInner 𝒷 := rfl
+
+theorem mulBInner_norm (a : 𝒷) : (mulBInner 𝒷).norm a = ‖a‖ := by
+  change Real.sqrt ‖a * star a‖ = ‖a‖
+  rw [CStarRing.norm_self_mul_star]
+  exact Real.sqrt_mul_self (norm_nonneg a)
+
+theorem cstarBInner_norm (x : X) : (cstarBInner 𝒷 X).norm x = ‖x‖ :=
+  (CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒷) (E := X) x).symm
+
+/-- **43I** in the mirrored form: the (mirrored) ultrastrong seminorms
+dominate the ultraweak ones, `|ω(a)| ≤ ‖a*‖_ω ω(1)^½`. -/
+theorem norm_np_le_unSeminorm_mulInner (ω : NPFunctional 𝒷) (a : 𝒷) :
+    ‖ω a‖ ≤ unSeminorm ω (mulInner 𝒷) a * Real.sqrt (ω 1).re := by
+  have h := norm_apply_le_omegaNorm ω (star a)
+  have h1 : ‖ω (star a)‖ = ‖ω a‖ := by rw [np_star]; exact RCLike.norm_conj _
+  have h2 : omegaNorm 𝒷 ω (star a) = unSeminorm ω (mulInner 𝒷) a := by
+    rw [omegaNorm, unSeminorm, star_star]
+    rfl
+  rwa [h1, h2] at h
+
+/-- **43I** in the mirrored form: (mirrored) ultrastrong convergence implies
+ultraweak convergence. -/
+theorem uwTendsto_of_unTendsto_mulInner {l : Filter ι} (a : ι → 𝒷) (a₀ : 𝒷)
+    (h : UnTendsto (mulInner 𝒷) a l a₀) : UWTendsto a l a₀ := by
+  rw [uwTendsto_iff]
+  intro ω
+  rw [← tendsto_sub_nhds_zero_iff]
+  refine squeeze_zero_norm (a := fun i =>
+    unSeminorm ω (mulInner 𝒷) (a i - a₀) * Real.sqrt (ω 1).re) (fun i => ?_) ?_
+  · rw [← np_sub]
+    exact norm_np_le_unSeminorm_mulInner ω _
+  · simpa using (h ω).mul_const (Real.sqrt (ω 1).re)
+
+/-- Uniqueness of ultraweak limits (**44XI**.1, `vn_positive_basic_1`). -/
+private theorem uwTendsto_unique' [VonNeumannAlgebra 𝒷] {l : Filter ι} [l.NeBot]
+    {f : ι → 𝒷} {a c : 𝒷} (ha : UWTendsto f l a) (hc : UWTendsto f l c) : a = c :=
+  @tendsto_nhds_unique 𝒷 ι (ultraweak 𝒷) (vn_positive_basic_1 (A := 𝒷)).1
+    f l a c _ ha hc
+
 /-- **149III** (`mod-projelabs`, dils.tex:2216, Exercise): if `⟨e,e⟩` is a
 projection, then `e⟨e,e⟩ = e` (mirrored: `⟨e,e⟩ • e = e`). -/
 theorem mod_projelabs (e : X) (he : IsStarProjection (inner 𝒷 e e)) :
@@ -1788,6 +1849,72 @@ theorem mod_projelabs (e : X) (he : IsStarProjection (inner 𝒷 e e)) :
     simp
   have := CStarModule.inner_self (A := 𝒷) (x := p • e - e) |>.mp hzero
   rwa [sub_eq_zero] at this
+
+omit [StarOrderedRing 𝒷] in
+/-- The Gram computation for a finite partial sum over an orthogonal family:
+`⟨∑ eᵢbᵢ, ∑ eᵢcᵢ⟩ = ∑ bᵢ*⟨eᵢ,eᵢ⟩cᵢ` (mirrored). -/
+theorem inner_sum_smul_orthogonal {e : ι → X} (he : OrthogonalFam 𝒷 e)
+    (b c : ι → 𝒷) (s : Finset ι) :
+    (inner 𝒷 (∑ i ∈ s, b i • e i) (∑ i ∈ s, c i • e i) : 𝒷)
+      = ∑ i ∈ s, c i * inner 𝒷 (e i) (e i) * star (b i) := by
+  rw [CStarModule.inner_sum_left]
+  refine Finset.sum_congr rfl fun i hi => ?_
+  rw [CStarModule.inner_sum_right, Finset.sum_eq_single_of_mem i hi]
+  · rw [CStarModule.inner_op_smul_left, CStarModule.inner_op_smul_right]
+  · intro j _ hji
+    rw [CStarModule.inner_op_smul_left, CStarModule.inner_op_smul_right,
+      he i j (Ne.symm hji), mul_zero, zero_mul]
+
+omit [StarOrderedRing 𝒷] in
+/-- When the coefficients are absorbed by the projections `⟨eᵢ,eᵢ⟩`, the Gram
+sum collapses to `∑ bᵢ*bᵢ` (mirrored: `∑ bᵢbᵢ*`). -/
+theorem inner_sum_smul_self {e : ι → X} (he : OrthogonalFam 𝒷 e) (b : ι → 𝒷)
+    (hb : ∀ i, b i * inner 𝒷 (e i) (e i) = b i) (s : Finset ι) :
+    (inner 𝒷 (∑ i ∈ s, b i • e i) (∑ i ∈ s, b i • e i) : 𝒷)
+      = ∑ i ∈ s, b i * star (b i) := by
+  rw [inner_sum_smul_orthogonal he b b s]
+  exact Finset.sum_congr rfl fun i _ => by rw [hb i]
+
+/-- The coefficients `⟨eᵢ,x⟩` of an orthonormal family are absorbed by the
+projections `⟨eᵢ,eᵢ⟩` — the first step of the proof of **149IV**, used again
+throughout **149V**. -/
+theorem onbasis_coef_absorb {e : ι → X} (he : OrthonormalFam 𝒷 e) (x : X)
+    (i : ι) : (inner 𝒷 (e i) x : 𝒷) * inner 𝒷 (e i) (e i) = inner 𝒷 (e i) x := by
+  have hps : star (inner 𝒷 (e i) (e i) : 𝒷) = inner 𝒷 (e i) (e i) :=
+    (he.2 i).1.isSelfAdjoint
+  have h2 : (inner 𝒷 ((inner 𝒷 (e i) (e i) : 𝒷) • e i) x : 𝒷) = inner 𝒷 (e i) x := by
+    rw [mod_projelabs (e i) (he.2 i).1]
+  rwa [CStarModule.inner_op_smul_left, hps] at h2
+
+/-- **Bessel's inequality** (dils.tex:2378, inside the proof of **149V**): for
+an orthonormal family `(eᵢ)` and any `x`, `∑_{i∈S} ⟨x,eᵢ⟩⟨eᵢ,x⟩ ≤ ⟨x,x⟩` for
+every finite `S` (mirrored: `∑_{i∈S} ⟨eᵢ,x⟩⟨x,eᵢ⟩ ≤ ⟨x,x⟩`).  It is the
+positivity of `⟨x − ∑_{i∈S} eᵢ⟨eᵢ,x⟩, x − ∑_{i∈S} eᵢ⟨eᵢ,x⟩⟩`. -/
+theorem mod_bessel {e : ι → X} (he : OrthonormalFam 𝒷 e) (x : X) (s : Finset ι) :
+    ∑ i ∈ s, (inner 𝒷 (e i) x : 𝒷) * inner 𝒷 x (e i) ≤ inner 𝒷 x x := by
+  set b : ι → 𝒷 := fun i => inner 𝒷 (e i) x with hbdef
+  set P : X := ∑ i ∈ s, b i • e i with hP
+  have hstar : ∀ i, star (b i) = (inner 𝒷 x (e i) : 𝒷) := fun i =>
+    CStarModule.star_inner _ _
+  have hPP : (inner 𝒷 P P : 𝒷) = ∑ i ∈ s, b i * star (b i) :=
+    inner_sum_smul_self he.1 b (fun i => onbasis_coef_absorb he x i) s
+  have hxP : (inner 𝒷 x P : 𝒷) = ∑ i ∈ s, b i * star (b i) := by
+    rw [hP, CStarModule.inner_sum_right]
+    exact Finset.sum_congr rfl fun i _ => by
+      rw [CStarModule.inner_op_smul_right, hstar i]
+  have hPx : (inner 𝒷 P x : 𝒷) = ∑ i ∈ s, b i * star (b i) := by
+    have h := congrArg star hxP
+    rw [CStarModule.star_inner, star_sum] at h
+    rw [h]
+    exact Finset.sum_congr rfl fun i _ => by rw [star_mul, star_star]
+  have h0 : (0 : 𝒷) ≤ inner 𝒷 (x - P) (x - P) := CStarModule.inner_self_nonneg
+  rw [CStarModule.inner_sub_left, CStarModule.inner_sub_right,
+    CStarModule.inner_sub_right, hPP, hxP, hPx] at h0
+  have hQ : ∑ i ∈ s, b i * star (b i)
+      = ∑ i ∈ s, (inner 𝒷 (e i) x : 𝒷) * inner 𝒷 x (e i) :=
+    Finset.sum_congr rfl fun i _ => by rw [hstar i]
+  rw [sub_self, sub_zero, hQ] at h0
+  exact sub_nonneg.mp h0
 
 /-- **149IV** (`mod-parseval`, dils.tex:2225, Exercise (Parseval's
 identity)): for an orthonormal basis `(eᵢ)` of a pre-Hilbert 𝒷-module over
@@ -1837,6 +1964,175 @@ def BddUnComplete : Prop :=
     (∃ M : ℝ, ∃ s ∈ F, ∀ x ∈ s, ‖x‖ ≤ M) →
     ∃ x₀, UnTendsto (inner 𝒷) id F x₀
 
+/-! ### The four implications of **149V**
+
+**149VI** (dils.tex:2249) fixes the route `1 ⇒ 3 ⇒ 4 ⇒ 2 ⇒ 4 ⇒ 1`; the four
+non-trivial implications are stated separately below, so that they can be
+used (and proved) one at a time.  Of the four, only `4 ⇒ 1` is currently
+available: the other three all consume results of `A/VN` that are still
+`sorry` there — see their doc comments. -/
+
+/-- **149VII** (dils.tex:2258): (1) ⇒ (3) of **149V** — a self-dual
+pre-Hilbert 𝒷-module is norm-bounded ultranorm complete.
+
+**Blocked on `A/VN`.**  The proof defines `τ(y) = (uslim_α ⟨y,x_α⟩)*`, which
+needs **77I**.1 `Theses.A.VN.vn_complete_1` (ultrastrong completeness of a
+von Neumann algebra) — still `sorry` in `Theses/A/VN/Completeness.lean`, and
+not on this file's import path.  (The rest of the argument is available: the
+bound on `τ` can be obtained without **46II** `usconv` from
+`‖τ(y)‖_ω² = ω(τ(y)τ(y)*) = lim_α ω(⟨x_α,y⟩⟨y,x_α⟩) ≤ ‖y‖²B²ω(1)` and order
+separation of the np-functionals; the closing estimate is **142III** and
+Kadison's inequality.) -/
+theorem bddUnComplete_of_selfDual [VonNeumannAlgebra 𝒷] (h : SelfDual 𝒷 X) :
+    BddUnComplete 𝒷 X :=
+  sorry
+
+/-- **149VIII** (`selfdual-bcompl-then-basis`, dils.tex:2328): (3) ⇒ (4) of
+**149V** — a norm-bounded ultranorm complete pre-Hilbert 𝒷-module has an
+orthonormal basis.
+
+**Blocked on `A/VN`.**  The proof takes a maximal orthonormal set by Zorn and
+rules out a non-zero `x'` orthogonal to it by *polar decomposition* in `X`,
+`x' = u⟨x',x'⟩^½` with `⟨u,u⟩ = ⌈⟨x',x'⟩⌉`, which is built from an
+approximate pseudoinverse of `⟨x',x'⟩^½`: **80IV**
+`Theses.A.VN.approximate_pseudoinverse` — still `sorry` in
+`Theses/A/VN/Division.lean`, and not on this file's import path.  (Bessel,
+`mod_bessel`, and the ℓ²-summability half of the argument are available.) -/
+theorem exists_isONBasis_of_bddUnComplete [VonNeumannAlgebra 𝒷]
+    (h : BddUnComplete 𝒷 X) :
+    ∃ (ι' : Type v) (e : ι' → X), IsONBasis 𝒷 e :=
+  sorry
+
+/-- **149IX** (dils.tex:2461): (4) ⇒ (2) of **149V** — a pre-Hilbert
+𝒷-module with an orthonormal basis is ultranorm complete.
+
+**Blocked on `A/VN`.**  The limit is `∑ₑ e bₑ` with
+`bₑ = uslim_α ⟨e, x_α⟩`, so the proof needs **77I**.1
+`Theses.A.VN.vn_complete_1` (ultrastrong completeness); and the
+ℓ²-summability of `(bₑ)ₑ` is deduced from an ultraweak bound by **87VIII**
+`Theses.A.VN.ultraweakly_bounded_implies_bounded`.  Both are still `sorry`
+in `A/VN`, and neither is on this file's import path. -/
+theorem unComplete_of_isONBasis [VonNeumannAlgebra 𝒷] {e : ι → X}
+    (he : IsONBasis 𝒷 e) : UnComplete (inner 𝒷 : X → X → 𝒷) :=
+  sorry
+
+omit [StarOrderedRing 𝒷] in
+/-- **149X** (dils.tex:2565): (2) ⇒ (3) of **149V** — trivially, since a
+norm-bounded ultranorm-Cauchy filter is in particular ultranorm Cauchy. -/
+theorem bddUnComplete_of_unComplete (h : UnComplete (inner 𝒷 : X → X → 𝒷)) :
+    BddUnComplete 𝒷 X :=
+  fun F hF hCauchy _ => h F hF hCauchy
+
+/-- **149XI** (dils.tex:2569): (4) ⇒ (1) of **149V** — a pre-Hilbert
+𝒷-module with an orthonormal basis is self dual.
+
+Divergence class 1 (faithful).  Given a bounded 𝒷-linear `τ : X → 𝒷`, the
+candidate is `t = ∑ᵢ eᵢ τ(eᵢ)*` (mirrored: `∑ᵢ τ(eᵢ)* • eᵢ`), which exists by
+clause (b) of `IsONBasis` once `(τ(eᵢ)*)ᵢ` is shown ℓ²-summable; the thesis's
+argument for that is the "substitute the partial sum for `x`" trick, which
+gives `‖∑_{i∈S} τ(eᵢ)* • eᵢ‖ ≤ ‖τ‖` and rests on Bessel (`mod_bessel`).  The
+identification `τ x = ⟨t,x⟩` is then ultranorm continuity of `τ` (**148I**)
+against **148V**, both read off in the ultraweak topology, where limits are
+unique. -/
+theorem selfDual_of_isONBasis [VonNeumannAlgebra 𝒷] {e : ι → X}
+    (he : IsONBasis 𝒷 e) : SelfDual 𝒷 X := by
+  rintro τ hmod ⟨C₀, hC₀⟩
+  set C : ℝ := max C₀ 0 with hCdef
+  have hC0 : (0 : ℝ) ≤ C := le_max_right _ _
+  have hC : ∀ x, ‖τ x‖ ≤ C * ‖x‖ := fun x =>
+    (hC₀ x).trans (mul_le_mul_of_nonneg_right (le_max_left _ _) (norm_nonneg x))
+  have hp : ∀ i, IsStarProjection (inner 𝒷 (e i) (e i) : 𝒷) := fun i => (he.1.2 i).1
+  -- the candidate coefficients `bᵢ = τ(eᵢ)*`
+  set b : ι → 𝒷 := fun i => star (τ (e i)) with hbdef
+  have hbabs : ∀ i, b i * inner 𝒷 (e i) (e i) = b i := by
+    intro i
+    have h1 : τ (e i) = (inner 𝒷 (e i) (e i) : 𝒷) * τ (e i) := by
+      conv_lhs => rw [← mod_projelabs (e i) (hp i)]
+      exact hmod _ _
+    have h2 := congrArg star h1
+    rw [star_mul, (hp i).isSelfAdjoint.star_eq] at h2
+    exact h2.symm
+  set v : Finset ι → X := fun s => ∑ i ∈ s, b i • e i with hvdef
+  have hvv : ∀ s, (inner 𝒷 (v s) (v s) : 𝒷) = ∑ i ∈ s, b i * star (b i) :=
+    fun s => inner_sum_smul_self he.1.1 b hbabs s
+  -- `⟨∑_{i∈S} eᵢτ(eᵢ)*, y⟩ = τ (∑_{i∈S} eᵢ⟨eᵢ,y⟩)`
+  have hkey1 : ∀ (s : Finset ι) (y : X),
+      (inner 𝒷 (v s) y : 𝒷) = τ (∑ i ∈ s, (inner 𝒷 (e i) y : 𝒷) • e i) := by
+    intro s y
+    rw [map_sum, hvdef, CStarModule.inner_sum_left]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [CStarModule.inner_op_smul_left, hbdef, hmod]
+    simp
+  -- Bessel: the partial sums of `∑ᵢ eᵢ⟨eᵢ,y⟩` are norm-bounded by `‖y‖`
+  have hkey2 : ∀ (s : Finset ι) (y : X),
+      ‖∑ i ∈ s, (inner 𝒷 (e i) y : 𝒷) • e i‖ ≤ ‖y‖ := by
+    intro s y
+    have h1 : (inner 𝒷 (∑ i ∈ s, (inner 𝒷 (e i) y : 𝒷) • e i)
+        (∑ i ∈ s, (inner 𝒷 (e i) y : 𝒷) • e i) : 𝒷)
+        = ∑ i ∈ s, (inner 𝒷 (e i) y : 𝒷) * inner 𝒷 y (e i) := by
+      rw [inner_sum_smul_self he.1.1 _ (fun i => onbasis_coef_absorb he.1 y i) s]
+      exact Finset.sum_congr rfl fun i _ => by rw [CStarModule.star_inner]
+    have hle := mod_bessel he.1 y s
+    rw [← h1] at hle
+    have hnn : (0 : 𝒷) ≤ inner 𝒷 (∑ i ∈ s, (inner 𝒷 (e i) y : 𝒷) • e i)
+        (∑ i ∈ s, (inner 𝒷 (e i) y : 𝒷) • e i) := CStarModule.inner_self_nonneg
+    have hnorm := CStarAlgebra.norm_le_norm_of_nonneg_of_le hnn hle
+    rw [CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒷) (E := X),
+      CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒷) (E := X) (x := y)]
+    exact Real.sqrt_le_sqrt hnorm
+  have hkey3 : ∀ (s : Finset ι) (y : X), ‖(inner 𝒷 (v s) y : 𝒷)‖ ≤ C * ‖y‖ := by
+    intro s y
+    rw [hkey1 s y]
+    exact (hC _).trans (mul_le_mul_of_nonneg_left (hkey2 s y) hC0)
+  have hnormsq : ∀ z : X, ‖(inner 𝒷 z z : 𝒷)‖ = ‖z‖ * ‖z‖ := by
+    intro z
+    rw [CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒷) (E := X) (x := z)]
+    exact (Real.mul_self_sqrt (norm_nonneg _)).symm
+  -- substituting `∑_{i∈S} eᵢτ(eᵢ)*` for `y` gives `‖∑_{i∈S} eᵢτ(eᵢ)*‖ ≤ ‖τ‖`
+  have hkey4 : ∀ s, ‖v s‖ ≤ C := by
+    intro s
+    have h := hkey3 s (v s)
+    rw [hnormsq (v s)] at h
+    rcases eq_or_lt_of_le (norm_nonneg (v s)) with h0 | h0
+    · rw [← h0]; exact hC0
+    · nlinarith
+  have hL2 : L2Summable 𝒷 b := by
+    refine ⟨C * C, fun s => ?_⟩
+    rw [← hvv s, hnormsq (v s)]
+    exact mul_le_mul (hkey4 s) (hkey4 s) (norm_nonneg _) hC0
+  obtain ⟨t, ht⟩ := he.2.2 b hL2
+  refine ⟨t, fun y => ?_⟩
+  -- the net `⟨v S, y⟩` converges ultraweakly to `⟨t,y⟩` by **148V**
+  have hconst : UnTendsto (inner 𝒷) (fun _ : Finset ι => y) atTop y := by
+    intro ω
+    simp only [sub_self]
+    have hz : unSeminorm ω (inner 𝒷 : X → X → 𝒷) 0 = 0 := by
+      simp [unSeminorm]
+    simp [hz]
+  have hnet1 : UWTendsto (fun s => (inner 𝒷 (v s) y : 𝒷)) atTop (inner 𝒷 t y) :=
+    innerprod_ultraweak (cstarBInner 𝒷 X) v (fun _ => y) t y ht hconst
+  -- and to `τ y`, since `τ` is ultranorm continuous (**148I**)
+  have hbdd : IsBoundedModuleMap (cstarBInner 𝒷 X) (mulBInner 𝒷) C ⇑τ :=
+    { add := fun x z => map_add τ x z
+      smul_complex := fun c x => map_smul τ c x
+      smul := fun a x => (hmod a x).trans (smul_eq_mul a (τ x)).symm
+      bound := fun x => by rw [mulBInner_norm, cstarBInner_norm]; exact hC x }
+  have hun : UnTendsto (mulInner 𝒷)
+      (fun s => τ (∑ i ∈ s, (inner 𝒷 (e i) y : 𝒷) • e i)) atTop (τ y) := by
+    intro ω
+    refine squeeze_zero (fun s => unSeminorm_nonneg ω (mulInner 𝒷) _)
+      (g := fun s => C * unSeminorm ω (inner 𝒷 : X → X → 𝒷)
+        ((∑ i ∈ s, (inner 𝒷 (e i) y : 𝒷) • e i) - y)) (fun s => ?_) ?_
+    · have hsub : τ (∑ i ∈ s, (inner 𝒷 (e i) y : 𝒷) • e i) - τ y
+          = τ ((∑ i ∈ s, (inner 𝒷 (e i) y : 𝒷) • e i) - y) := (map_sub τ _ _).symm
+      rw [hsub]
+      exact unSeminorm_boundedModuleMap_le _ _ C hC0 _ hbdd ω _
+    · simpa using ((he.2.1 y) ω).const_mul C
+  have hnet2 : UWTendsto (fun s => (inner 𝒷 (v s) y : 𝒷)) atTop (τ y) := by
+    have h := uwTendsto_of_unTendsto_mulInner _ _ hun
+    simpa only [← hkey1] using h
+  exact uwTendsto_unique' hnet2 hnet1
+
 /-- **149V** (`dils-selfdual`, dils.tex:2236, Theorem): for a pre-Hilbert
 𝒷-module `X` over a von Neumann algebra `𝒷` the following are equivalent:
 (1) `X` is self dual; (2) `X` is ultranorm complete; (3) every norm-bounded
@@ -1844,14 +2140,21 @@ ultranorm-Cauchy net converges; (4) `X` has an orthonormal basis (indexed
 by a set of elements of `X`, i.e. a family over a type in the universe of
 `X`).
 
-**149VI**–**149XI** are the proof — not converted. -/
+The proof is **149VI**–**149XI**, the cycle `1 ⇒ 3 ⇒ 4 ⇒ 2 ⇒ 4 ⇒ 1` of the
+five implications above; `4 ⇒ 1` and `2 ⇒ 3` are proved, the remaining three
+are `sorry` and blocked on `A/VN`. -/
 theorem dils_selfdual [VonNeumannAlgebra 𝒷] :
     List.TFAE
       [SelfDual 𝒷 X,
        UnComplete (inner 𝒷 : X → X → 𝒷),
        BddUnComplete 𝒷 X,
-       ∃ (ι' : Type v) (e : ι' → X), IsONBasis 𝒷 e] :=
-  sorry
+       ∃ (ι' : Type v) (e : ι' → X), IsONBasis 𝒷 e] := by
+  tfae_have 1 → 3 := fun h => bddUnComplete_of_selfDual h
+  tfae_have 3 → 4 := fun h => exists_isONBasis_of_bddUnComplete h
+  tfae_have 4 → 2 := fun ⟨_, _, he⟩ => unComplete_of_isONBasis he
+  tfae_have 2 → 3 := fun h => bddUnComplete_of_unComplete h
+  tfae_have 4 → 1 := fun ⟨_, _, he⟩ => selfDual_of_isONBasis he
+  tfae_finish
 
 end Bases
 

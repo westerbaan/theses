@@ -15,6 +15,21 @@ algebra `𝒷ᵃ(X)` are as in `SelfDualCompletion.lean`, in the mirrored
 (left-action) convention of `HilbertModules.lean`; in particular the inner
 product on `𝒜 ⊗_φ ℬ` reads `⟨a ⊗ b, α ⊗ β⟩ = β φ(α* a) b*`, the mirror
 image of the thesis's `[a ⊗ b, α ⊗ β] = b* φ(a* α) β`.
+
+WARNING(mirroring).  The `PaschkeModule` bundle below is **not yet internally
+consistent**: its fields `inner_tprod`, `ρ_tprod` and `h_def` together prove
+`h (ρ a) = φ (star a)`, whereas `IsPaschkeDilationOf` (`Stinespring.lean`)
+asks for `h (ρ a) = φ a` — so `existence_paschke_5` is false as stated as soon
+as `PaschkeModule φ` is inhabited, and `existence_paschke_4`'s `hφ` is off by
+the same `star`.  None of the three fields can be edited on its own
+(`inner_tprod` is forced by positivity of `⟨v,v⟩`, `h_def` by ℂ-linearity of
+`h`, `ρ_tprod` by multiplicativity of `ρ`); the repair is a coordinated
+re-mirroring of the bundle.  See `PROVING-LOG.md`, session 14, §5, for the
+machine-checked derivation and the two candidate repairs.  **Do not build on
+`PaschkeModule`, `PaschkeTriple` or `IsPaschkeDilationOf` until this is
+settled.**  (A separate, unambiguous defect in `PhiCompatible.bound` — which
+made `PaschkeModule` outright uninhabited — was fixed; see §4 there and the
+doc comment on `PhiCompatible`.)
 -/
 import Theses.B.Dils.Stinespring
 import Theses.B.Dils.SelfDualCompletion
@@ -42,7 +57,18 @@ ncp-map `φ : 𝒜 → ℬ` between von Neumann algebras, a complex bilinear map
 when `T(a, b₁b₂) = T(a, b₁)b₂` (mirrored: `c • T a b = T a (c * b)`) and
 for some `r > 0`
 
-  `‖∑ᵢ T(aᵢ, bᵢ)‖² ≤ r ‖∑_{i,j} bᵢ* φ(aᵢ* aⱼ) bⱼ‖`. -/
+  `‖∑ᵢ T(aᵢ, bᵢ)‖² ≤ r ‖∑_{i,j} bᵢ* φ(aᵢ* aⱼ) bⱼ‖`
+
+(mirrored: `‖∑ᵢ T(aᵢ,bᵢ)‖² ≤ r ‖∑_{i,j} bᵢ φ(aᵢ* aⱼ) bⱼ*‖`).
+
+**Convention.**  The mirror of the thesis's right module sends `x·b` to
+`b • x`, hence `T_mirrored(a,b) = T_thesis(a, b*)`; substituting `bᵢ*` for
+`bᵢ` in the thesis's inequality is what produces the `bᵢ … bⱼ*` above.  The
+`star`s must be on the *outside*: with them on the inside the structure is
+**uninhabited together with `PaschkeModule.inner_tprod`** — for `n = 1` the
+two clauses would read `‖b φ(a*a) b*‖ ≤ r ‖b* φ(a*a) b‖`, which fails in
+`M₂` for `φ = id`, `a = e₀₀`, `b = e₁₀` (left side `‖e₁₁‖ = 1`, right side
+`0`).  See `PROVING-LOG.md`, session 14. -/
 structure PhiCompatible (φ : 𝒜 → ℬ) {X : Type u} [NormedAddCommGroup X]
     [Module ℂ X] [SMul ℬ X] [CStarModule ℬ X] (T : 𝒜 → ℬ → X) :
     Prop where
@@ -52,7 +78,7 @@ structure PhiCompatible (φ : 𝒜 → ℬ) {X : Type u} [NormedAddCommGroup X]
   smul_action : ∀ (a : 𝒜) (b c : ℬ), c • T a b = T a (c * b)
   bound : ∃ r > (0 : ℝ), ∀ (n : ℕ) (a : Fin n → 𝒜) (b : Fin n → ℬ),
     ‖∑ i, T (a i) (b i)‖ ^ 2 ≤
-      r * ‖∑ i, ∑ j, star (b i) * φ (star (a i) * a j) * b j‖
+      r * ‖∑ i, ∑ j, b i * φ (star (a i) * a j) * star (b j)‖
 
 /-- **154III** (`existence-paschke`, dils.tex:3558, Theorem), the data: the
 self-dual Hilbert ℬ-module `𝒜 ⊗_φ ℬ` with its φ-compatible bilinear map
@@ -175,17 +201,23 @@ theorem existence_paschke_2 [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
       have hsa : star c = c := IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg _)
       rw [hsa, hcdef, CFC.sqrt_mul_sqrt_self _ h0]
     -- the three conjugated sums
-    set S0 : ℬ := ∑ i, ∑ j, star (b i) * ψ (star (a i) * a j) * b j with hS0def
-    set S1 : ℬ := ∑ i, ∑ j, star (b i) * ψ (star (a₀ * a i) * (a₀ * a j)) * b j
+    set S0 : ℬ := ∑ i, ∑ j, b i * ψ (star (a i) * a j) * star (b j) with hS0def
+    set S1 : ℬ := ∑ i, ∑ j, b i * ψ (star (a₀ * a i) * (a₀ * a j)) * star (b j)
       with hS1def
-    set S2 : ℬ := ∑ i, ∑ j, star (b i) * ψ (star (c * a i) * (c * a j)) * b j
+    set S2 : ℬ := ∑ i, ∑ j, b i * ψ (star (c * a i) * (c * a j)) * star (b j)
       with hS2def
-    have hS1nn : (0 : ℬ) ≤ S1 := hcp n (fun i => a₀ * a i) b
-    have hS2nn : (0 : ℬ) ≤ S2 := hcp n (fun i => c * a i) b
+    have hS1nn : (0 : ℬ) ≤ S1 := by
+      have h := hcp n (fun i => a₀ * a i) (fun i => star (b i))
+      simp only [star_star] at h
+      exact h
+    have hS2nn : (0 : ℬ) ≤ S2 := by
+      have h := hcp n (fun i => c * a i) (fun i => star (b i))
+      simp only [star_star] at h
+      exact h
     have hpoint : ∀ i j : Fin n,
-        star (b i) * ψ (star (a₀ * a i) * (a₀ * a j)) * b j
-          + star (b i) * ψ (star (c * a i) * (c * a j)) * b j
-        = ((K : ℝ) : ℂ) • (star (b i) * ψ (star (a i) * a j) * b j) := by
+        b i * ψ (star (a₀ * a i) * (a₀ * a j)) * star (b j)
+          + b i * ψ (star (c * a i) * (c * a j)) * star (b j)
+        = ((K : ℝ) : ℂ) • (b i * ψ (star (a i) * a j) * star (b j)) := by
       intro i j
       have hsum : star a₀ * a₀ + star c * c = ((K : ℝ) : ℂ) • (1 : 𝒜) := by
         rw [hcc]; abel
@@ -218,7 +250,7 @@ theorem existence_paschke_2 [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
       _ ≤ r * (K * ‖S0‖) := mul_le_mul_of_nonneg_left hnormS1 hr0.le
       _ = r * K * ‖S0‖ := by ring
       _ = r * (‖a₀‖ ^ 2 + 1)
-            * ‖∑ i, ∑ j, star (b i) * φ (star (a i) * a j) * b j‖ := by
+            * ‖∑ i, ∑ j, b i * φ (star (a i) * a j) * star (b j)‖ := by
           rw [hS0def, hK]
   -- part 1 (the universal property) applied to it
   obtain ⟨T', -, hT'uniq⟩ :=
