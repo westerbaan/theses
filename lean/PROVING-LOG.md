@@ -3226,3 +3226,113 @@ The same lemma blocks **104VI** and **104VII**: both proofs end "since `p` is
 the norm limit of linear combinations of such projections `e`" (proc.tex:1580).
 So 65IV — not 61II — is now the highest-leverage frozen item for this chapter
 after 89IX.
+
+---
+
+## Session 11 — `B/Eff` parsec 228: the Snake Lemma (worker 36)
+
+Proved: **228II** `snake_lemma` (`Theses/B/Eff/Comparisons.lean`), the last
+substantial B/Eff item that is not gated on thesis A.  B/Eff 31 → 30 code
+`sorry`s; `Comparisons.lean` 4 → 3.  The statement is unchanged (class 4:
+nothing mis-transcribed).
+
+The proof is ~330 lines, preceded by 35 short helper lemmas that collect the
+`(–)_⋄`/`(–)^□` calculus of parsecs 206–208 in `SPred`-form.  Two of those
+helpers are the whole reason the proof is manageable and deserve naming:
+
+* `diaPull_eq_boxPull_compr` — for a comprehension `π` for a sharp `s`,
+  `π^⋄ = π^□` **on predicates below `s`**; and
+* `boxPull_pureDagger_quot` — for a quotient `ξ` for a sharp `s`,
+  `(ξ†)^□ = ξ_⋄` **on predicates above `s`**.
+
+Both are instances of the absorption rule **213V** (`simple_andthen_absorption`)
+via `π† ∘ π = asrt_{im π}` and `ξ ∘ ξ† = asrt_{(ker ξ)^⊥}` (the new
+`pureDagger_compr_comp_asrt` / `pureDagger_quot_comp_asrt`, each a three-line
+consequence of **219XVI** + **217III**).  They are what makes the four induced
+maps `f̄, ḡ, h̄, k̄` computable at all: e.g. `h̄^□(0) = (a_ζ†)^□(h^□(im b))`
+becomes `(a_ζ)_⋄(h^□(im b))`, which is the form 228VIII uses without comment.
+This is 228I's own remark ("maps `l^□` appear where we would have expected
+`l^⋄`") made precise: `(–)^□` and `(–)^⋄` agree exactly on the half of the
+lattice the diagram lives in, and the "orthomodularity" the agreement encodes is
+already inside `asrt`'s absorption rule — no orthomodular-lattice reasoning is
+needed anywhere in the proof.
+
+### Divergence: class 2 — the right-hand face of the cube is never built
+
+The thesis's overview (228III) constructs **two** subquotients: the left face
+`m ≫ g = g' ≫ c_π` and the right face `h ≫ v = a_ζ ≫ h'`, with
+`v = ξ_{h_⋄(im a)}` and `h'` a comprehension.  It then proves
+`h_⋄(1) = (v^□ ∘ h'_⋄)(1)` (`snakehdiamondone`), four forms of `d_⋄`
+(`snakedidents`), and the exchange identity `g^□ ∘ (c_π)_⋄ = m_⋄ ∘ g'^□`.
+
+**`v`, `h'`, `snakehdiamondone`, three of the four forms of `snakedidents` and
+the exchange identity are all avoidable**, because the four exactness statements
+only ever evaluate `d_⋄` at `1` and `d^□` at `0` (227III.1: exactness at the
+middle object of `u, w` is `u_⋄(1) = w^□(0)`, our `exactAt_iff'`).  Filed in
+`ERRATA.md` under **228III–228VI** as informational.  Concretely:
+
+* `d_⋄(1)`: `g'` is a quotient, so `g'_⋄(1) = 1` and
+  `d_⋄(1) = (a_ζ)_⋄(b'_⋄(1))`; `h^□ ∘ h_⋄ = id` (**227V**) turns that into
+  `(a_ζ)_⋄(h^□(b_⋄(im m)))`, and `im m = g^□(c^□(0))` **is** the definition of
+  `m` — which is exactly what the exchange identity degenerates to at `1`.
+* `d^□(0)`: `g'_⋄ ∘ g'^□ = id` (**227V**) gives `d^□(0) = g'_⋄(b'^□(im a))`, and
+  `b'^□ = m^□ ∘ b^□ ∘ h_⋄` follows from `b' ≫ h = m ≫ b` plus `h^□ ∘ h_⋄ = id`.
+  (This last identity is the thesis's `snakeceilbprime`, and is the one piece of
+  the `d`-identities that is used as printed.)
+
+### The two "dual arguments" the thesis does not write
+
+228VII and 228VIII each close with "by a dual argument one derives exactness in
+`ker c`/`ker b`".  A †-effectus is not self-dual, so both had to be supplied.
+Both turn out to be short, and neither is the mirror image of the argument it is
+said to be dual to:
+
+* **exactness at `ker b`** (`f̄_⋄(1) = ḡ^□(0)`, from the right-modularity `m₄` of
+  `f` over `⌈1∘b⌉^⊥`).  Both sides are `b_π^□` of something, and `b_π^□` is
+  injective modulo meeting with `ker b`, so it suffices to show
+  `SPred.IsInf (ker b) (g^□((ker c)^⊥)) (f_⋄(ker a))`.  The middle term collapses:
+  for `r ≤ ker b` one has `g_⋄(r) ≤ g_⋄(ker b) ≤ ker c` (from `w₂` and
+  `b_⋄(ker b) = 0`), so `g_⋄(r) ≤ (ker c)^⊥` forces `g_⋄(r) = 0`, i.e.
+  `r ≤ ker g = im f` (row 1).  Then `m₄` finishes, once one notes
+  `f^□(ker b) = (f ∘ b)^□(0) = (a ∘ h)^□(0) = ker a` because `h` is total.
+* **exactness at `ker c`** (`ḡ_⋄(1) = d^□(0)`, from the left-modularity `m₁` of
+  `b` over `im f`).  Apply the injective `(c_π)_⋄` to both sides:
+  `(c_π)_⋄(g'_⋄(m^□(z))) = g_⋄(m_⋄(m^□(z))) = g_⋄(z)` where `z = ker b ∨ im f` is
+  `m₁`'s witness, using `z ≤ im m` (both joinands are, since
+  `g_⋄(ker b) ≤ ker c` and `im f = ker g`); and `g_⋄(z) = g_⋄(ker b)` because
+  `g_⋄` preserves joins and kills `ker g`.  That is `(c_π)_⋄` of the left-hand
+  side.
+
+Exactness at `cok a` (228VII) and at `cok b` (228VIII) are faithful
+transcriptions (class 1) of the two displays the thesis does write, modulo the
+gap in 228VIII's third step recorded in `ERRATA.md`.
+
+### `g'` is a quotient: a shortcut through 212III
+
+The thesis gets `g'` from the universal property of `c_π` and then says "we see
+there is a unique **sharp quotient** `g'`", leaving the reader to redo the
+homology-axiom argument of 228IV on the other side.  Here `g'` is *defined* as
+`m ≫ g ≫ c_π†`, which makes purity immediate (`upm_closed_pure`), and
+`g' ≫ c_π = m ≫ g` follows from `c_π† ∘ c_π = asrt_{im c_π}` and the absorption
+rule.  That it is a quotient is then the new
+
+* `isQuotient_of_pure` — a pure `f` with `im f = 1` and `1 ∘ f` sharp is a
+  quotient for `(1 ∘ f)^⊥`,
+
+read straight off the standard form **212III** (`asrt_s ∘ ζ_s = ζ_s` for sharp
+`s`, and `π_1` is iso).  Its two hypotheses are: `im g' = 1`, from
+`(c_π)_⋄(g'_⋄(1)) = g_⋄(g^□(c^□(0))) = c^□(0) = (c_π)_⋄(1)` and injectivity of
+`(c_π)_⋄`; and sharpness of `1 ∘ g' = 1 ∘ (m ∘ g)`, which is the homology axiom
+**226VII** (`homological_category.2.2` + `homological_exact`) applied to the
+kernel `m` and the cokernel `g` — the one place the thesis's own appeal to the
+homology axiom is reproduced.
+
+### Classification
+
+* **(1) faithful:** the constructions of `m`, `b'` and `d` (228IV–228V), and the
+  two exactness displays of 228VII/228VIII.
+* **(2) different route:** the right-hand face of the cube and most of
+  `snakedidents` are skipped (above); `g'` is defined rather than obtained.
+* **(3) mild:** —
+* **(4) our statement mis-transcribes the thesis:** none.
+* **(5) closed from Mathlib without reading the author's argument:** none.

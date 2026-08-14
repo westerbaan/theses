@@ -948,7 +948,326 @@ end Homological
 
 section Snake
 
-variable [AndThenEffectus C] [DaggerPrimeEffectus C]
+variable [AndThenEffectus C] [DaggerPrimeEffectus C] {X Y Z : C}
+
+/-! ### The `(–)_⋄`/`(–)^□`-calculus of parsecs 206–208, in the form the
+Snake Lemma needs.
+
+The proof of 228II is carried out entirely in the lattices `SPred X` of
+sharp predicates and the order adjunctions `f_⋄ ⊣ f^□` between them (this is
+227III.3–4: `im f_*(k) = f_⋄(im k)` and `im f^*(k) = f^□(im k)`), so the
+following collects the calculus in `SPred`-form: 208IX and 208XII for an
+*arbitrary* comprehension resp. quotient, the values of `f_⋄, f^⋄, f^□` at
+`0` and `1`, and — the point of 228I's remark that "`l^□` appears where one
+would expect `l^⋄`" — the two places where `(–)^□` and `(–)^⋄` do agree:
+`π^⋄ = π^□` below `im π`, and `(ξ†)^□ = ξ_⋄` above `ker ξ`.  Both are
+instances of the absorption rule 213V for `asrt`, via `π† ∘ π = asrt_{im π}`
+and `ξ ∘ ξ† = asrt_{(ker ξ)ᵖ}`. -/
+
+/-- For an isomorphism `θ`, `θ_⋄ ∘ θ^□ = id`. -/
+theorem diaPush_boxPull_of_isIso (θ : X ⟶ Y) [IsIso θ] (t : SPred Y) :
+    diaPush θ (boxPull θ t) = t :=
+  diamondboxlemma_quot (dia_isSharp_zero X) (quotient_basics_3 θ) t
+
+/-- For an isomorphism `θ`, `θ^□ ∘ θ_⋄ = id`. -/
+theorem boxPull_diaPush_of_isIso (θ : X ⟶ Y) [IsIso θ] (s : SPred X) :
+    boxPull θ (diaPush θ s) = s :=
+  diamondboxlemma_compr (compr_basics_3 θ) s
+
+/-- 208IX for an arbitrary comprehension. -/
+theorem spred_inf_of_compr {W : C} {s : Pred X} (hs : IsSharp s) {π : W ⟶ X}
+    (hπ : IsComprehension s π) (t : SPred X) :
+    SPred.IsInf ⟨s, hs⟩ t (diaPush π (boxPull π t)) := by
+  obtain ⟨θ, hθ, hcomm, -⟩ := compr_basics_2 hπ (isComprehension_comprMap s)
+  have := hθ
+  have e : diaPush π (boxPull π t) =
+      diaPush (comprMap s) (boxPull (comprMap s) t) := by
+    rw [← hcomm, diaPush_comp, boxPull_comp, diaPush_boxPull_of_isIso]
+  rw [e]
+  exact spred_infimum ⟨s, hs⟩ t
+
+/-- 208XII for an arbitrary quotient. -/
+theorem spred_sup_of_quot {Q : C} {s : Pred X} (hs : IsSharp s) {ξ : X ⟶ Q}
+    (hξ : IsQuotient s ξ) (t : SPred X) :
+    SPred.IsSup ⟨s, hs⟩ t (boxPull ξ (diaPush ξ t)) := by
+  obtain ⟨θ, hθ, hcomm, -⟩ := quotient_basics_2 hξ (isQuotient_quotMap s)
+  have := hθ
+  have e : boxPull ξ (diaPush ξ t) =
+      boxPull (quotMap s) (diaPush (quotMap s) t) := by
+    rw [← hcomm, diaPush_comp, boxPull_comp, boxPull_diaPush_of_isIso]
+  rw [e]
+  exact spred_sup ⟨s, hs⟩ t
+
+omit [AndThenEffectus C] [DaggerPrimeEffectus C] in
+theorem spred_isSup_unique {s t j j' : SPred X} (h : SPred.IsSup s t j)
+    (h' : SPred.IsSup s t j') : j = j' :=
+  Subtype.ext (eabasics_le_antisymm (h.2.2 j' h'.1 h'.2.1) (h'.2.2 j h.1 h.2.1))
+
+omit [AndThenEffectus C] [DaggerPrimeEffectus C] in
+theorem spred_isInf_unique {s t m m' : SPred X} (h : SPred.IsInf s t m)
+    (h' : SPred.IsInf s t m') : m = m' :=
+  Subtype.ext (eabasics_le_antisymm (h'.2.2 m h.1 h.2.1) (h.2.2 m' h'.1 h'.2.1))
+
+omit [AndThenEffectus C] [DaggerPrimeEffectus C] in
+/-- If `t ≤ s` then `s ∧ t = t`. -/
+theorem spred_isInf_eq_right {s t m : SPred X} (h : SPred.IsInf s t m)
+    (hts : t.1 ≼ s.1) : m = t :=
+  Subtype.ext (eabasics_le_antisymm h.2.1 (h.2.2 t hts (pcm_preorder_refl _)))
+
+omit [AndThenEffectus C] [DaggerPrimeEffectus C] in
+/-- If `s = 0` then `s ∨ t = t`. -/
+theorem spred_isSup_eq_right {s t j : SPred X} (h : SPred.IsSup s t j)
+    (hs : s.1 = 0) : j = t :=
+  Subtype.ext (eabasics_le_antisymm
+    (h.2.2 t (by rw [hs]; exact zero_le_hom _) (pcm_preorder_refl _)) h.2.1)
+
+omit [DaggerPrimeEffectus C] in
+/-- `f^□(1) = 1`. -/
+theorem boxPull_one (f : X ⟶ Y) : boxPull f (sOne Y) = sOne X := by
+  apply Subtype.ext
+  change orth (ceilPred (f ≫ orth (1 : Pred Y))) = (1 : Pred X)
+  rw [eabasics_orth_one, FinPAC.comp_zero,
+    ceil_of_isSharp (dia_isSharp_zero X), eabasics_orth_zero]
+
+omit [DaggerPrimeEffectus C] in
+theorem boxPull_zero_val (f : X ⟶ Y) :
+    (boxPull f (sZero Y)).1 = orth (ceilPred (f ≫ truth Y)) := by
+  change orth (ceilPred (f ≫ orth (0 : Pred Y))) = _
+  rw [eabasics_orth_zero]
+  rfl
+
+omit [DaggerPrimeEffectus C] in
+theorem diaPull_one_val (f : X ⟶ Y) :
+    (diaPull f (sOne Y)).1 = ceilPred (f ≫ truth Y) := rfl
+
+/-- 227III.1 in `SPred` form: `f, g` is exact at the middle object iff
+`f_⋄(1) = g^□(0)`. -/
+theorem exactAt_iff' (f : X ⟶ Y) (g : Y ⟶ Z) :
+    ExactAt f g ↔ diaPush f (sOne X) = boxPull g (sZero Z) := by
+  rw [exactAt_iff]
+  constructor
+  · intro hh
+    apply Subtype.ext
+    rw [diaPush_one_val, boxPull_zero_val, ← hh, eabasics_orth_orth]
+  · intro hh
+    have h2 := congrArg Subtype.val hh
+    rw [diaPush_one_val, boxPull_zero_val] at h2
+    rw [h2, eabasics_orth_orth]
+
+omit [DaggerPrimeEffectus C] in
+/-- `s ∨ sᵖ = 1` in `SPred X`. -/
+theorem spred_isSup_orth_one (s : SPred X) : SPred.IsSup s s.orth (sOne X) := by
+  refine ⟨pred_le_truth _, pred_le_truth _, ?_⟩
+  intro r hs ho
+  have h1 : orth r.1 ≼ s.1 := by
+    have := eabasics_le_iff_orth_le.mp ho
+    rwa [spred_orth_val, eabasics_orth_orth] at this
+  have h2 : orth r.1 ≼ orth s.1 := eabasics_le_iff_orth_le.mp hs
+  have h0 : orth r.1 = 0 := image_sharp_is_order_sharp s.2 h1 h2
+  have := congrArg orth h0
+  rw [eabasics_orth_orth, eabasics_orth_zero] at this
+  rw [this]
+  exact pcm_preorder_refl _
+
+omit [DaggerPrimeEffectus C] in
+/-- `asrt_t^⋄(y) = y` for sharp `y ≤ t`. -/
+theorem diaPull_asrt_self {t : Pred X} (ht : IsSharp t) (y : SPred X)
+    (hy : y.1 ≼ t) : diaPull (asrt t) y = y := by
+  apply Subtype.ext
+  change ceilPred (asrt t ≫ y.1) = y.1
+  rw [show asrt t ≫ y.1 = y.1 from (simple_andthen_absorption ht).mp hy]
+  exact ceil_of_isSharp y.2
+
+omit [DaggerPrimeEffectus C] in
+/-- `asrt_t^□(y) = y` for sharp `y` with `tᵖ ≤ y`. -/
+theorem boxPull_asrt_self {t : Pred X} (ht : IsSharp t) (y : SPred X)
+    (hy : orth t ≼ y.1) : boxPull (asrt t) y = y := by
+  have h1 : orth y.1 ≼ t := by
+    have := eabasics_le_iff_orth_le.mp hy
+    rwa [eabasics_orth_orth] at this
+  change (diaPull (asrt t) y.orth).orth = y
+  rw [diaPull_asrt_self ht y.orth h1, spred_orth_orth]
+
+omit [DaggerPrimeEffectus C] in
+/-- `asrt_t_⋄(y) = y` for sharp `y ≤ t`. -/
+theorem diaPush_asrt_self {t : Pred X} (ht : IsSharp t) (y : SPred X)
+    (hy : y.1 ≼ t) : diaPush (asrt t) y = y := by
+  rw [← diamond_squares_2 (asrt_spec t).1]
+  exact diaPull_asrt_self ht y hy
+/-- `π† ∘ π = asrt_s` for a comprehension `π` for a sharp `s`. -/
+theorem pureDagger_compr_comp_asrt {W : C} {s : Pred X} (hs : IsSharp s)
+    {π : W ⟶ X} (hπ : IsComprehension s π) :
+    pureDagger π (isPure_comprehension C hπ) ≫ π = asrt s := by
+  obtain ⟨θ, hθ, hcomm, -⟩ := compr_basics_2 hπ (isComprehension_comprMap s)
+  have := hθ
+  have hθp : IsPure θ := isPure_of_isQuotient (quotient_basics_3 θ)
+  have hπsp : IsPure (comprMap s) :=
+    isPure_comprehension C (isComprehension_comprMap s)
+  have hd : pureDagger π (isPure_comprehension C hπ) =
+      pureDagger (comprMap s) hπsp ≫ pureDagger θ hθp :=
+    (pureDagger_congr _ (upm_closed_pure hθp hπsp) hcomm.symm).trans
+      (dagger_is_functor hθp hπsp)
+  have hdπs : pureDagger (comprMap s) hπsp = zetaMap s hs :=
+    pureDagger_eq _ (dagger_prime_basics_pi hs)
+  have hdθ : pureDagger θ hθp = inv θ :=
+    pureDagger_eq _ (dagger_prime_basics_iso (asIso θ))
+  rw [hd, hdπs, hdθ, ← hcomm, Category.assoc, ← Category.assoc (inv θ) θ,
+    IsIso.inv_hom_id, Category.id_comp]
+  exact (zetaMap_spec s hs).2.2
+
+/-- `ξ ∘ ξ† = asrt_{sᵖ}` for a quotient `ξ` for a sharp `s`. -/
+theorem pureDagger_quot_comp_asrt {Q : C} {s : Pred X} (hs : IsSharp s)
+    {ξ : X ⟶ Q} (hξ : IsQuotient s ξ) :
+    ξ ≫ pureDagger ξ (isPure_of_isQuotient hξ) = asrt (orth s) := by
+  have hs' : IsSharp (orth s) := DiamondEffectus.orth_sharp hs
+  obtain ⟨hq, hπζ, hζπ⟩ := zetaMap_spec (orth s) hs'
+  have hq' : IsQuotient s (zetaMap (orth s) hs') := by
+    rwa [eabasics_orth_orth] at hq
+  obtain ⟨θ, hθ, hcomm, -⟩ := quotient_basics_2 hξ hq'
+  have := hθ
+  have hθp : IsPure θ := isPure_of_isQuotient (quotient_basics_3 θ)
+  have hζp : IsPure (zetaMap (orth s) hs') := isPure_of_isQuotient hq
+  have hd : pureDagger ξ (isPure_of_isQuotient hξ) =
+      pureDagger θ hθp ≫ pureDagger (zetaMap (orth s) hs') hζp :=
+    (pureDagger_congr _ (upm_closed_pure hζp hθp) hcomm.symm).trans
+      (dagger_is_functor hζp hθp)
+  have hdζ : pureDagger (zetaMap (orth s) hs') hζp = comprMap (orth s) :=
+    pureDagger_eq _ (dagger_prime_basics_zeta hs')
+  have hdθ : pureDagger θ hθp = inv θ :=
+    pureDagger_eq _ (dagger_prime_basics_iso (asIso θ))
+  rw [hd, hdζ, hdθ, ← hcomm, Category.assoc, ← Category.assoc θ (inv θ),
+    IsIso.hom_inv_id, Category.id_comp]
+  exact hζπ
+
+omit [DaggerPrimeEffectus C] in
+/-- A pure map with image `1` and sharp `1 ∘ f` is a quotient. -/
+theorem isQuotient_of_pure {f : X ⟶ Y} (hf : IsPure f) (him : imPred f = 1)
+    (hs : IsSharp (f ≫ truth Y)) : IsQuotient (orth (f ≫ truth Y)) f := by
+  obtain ⟨β, hform⟩ :=
+    standard_form_of_eq hf hs (isSharp_one Y) (ceil_of_isSharp hs) him
+  have hζ1 : zetaMap (f ≫ truth Y) hs ≫ truth (comprObj (f ≫ truth Y)) =
+      f ≫ truth Y := by
+    rw [quotient_basics_5 (zetaMap_spec (f ≫ truth Y) hs).1, eabasics_orth_orth]
+  have habs : asrt (f ≫ truth Y) ≫ zetaMap (f ≫ truth Y) hs =
+      zetaMap (f ≫ truth Y) hs :=
+    (asrt_absorp_rule (zetaMap (f ≫ truth Y) hs) (isSharp_one _) hs).2.mp
+      (by rw [hζ1]; exact pcm_preorder_refl _)
+  have hiso : IsIso (comprMap (1 : Pred Y)) := isIso_comprMap_one Y
+  have hform' : f = zetaMap (f ≫ truth Y) hs ≫ (β.hom ≫ comprMap (1 : Pred Y)) :=
+    hform.trans (by rw [← Category.assoc, habs])
+  have hq : IsQuotient (orth (f ≫ truth Y))
+      (zetaMap (f ≫ truth Y) hs ≫ (β.hom ≫ comprMap (1 : Pred Y))) :=
+    quotient_basics_1 (zetaMap_spec (f ≫ truth Y) hs).1 _
+  rwa [← hform'] at hq
+
+/-- For a quotient `ξ` for a sharp `s` and sharp `y ≥ s`, `(ξ†)^□(y) = ξ_⋄(y)`. -/
+theorem boxPull_pureDagger_quot {Q : C} {s : Pred X} (hs : IsSharp s)
+    {ξ : X ⟶ Q} (hξ : IsQuotient s ξ) (y : SPred X) (hy : s ≼ y.1) :
+    boxPull (pureDagger ξ (isPure_of_isQuotient hξ)) y = diaPush ξ y := by
+  have hs' : IsSharp (orth s) := DiamondEffectus.orth_sharp hs
+  have key : boxPull ξ (boxPull (pureDagger ξ (isPure_of_isQuotient hξ)) y) = y := by
+    rw [← boxPull_comp, pureDagger_quot_comp_asrt hs hξ]
+    exact boxPull_asrt_self hs' y (by rwa [eabasics_orth_orth])
+  calc boxPull (pureDagger ξ (isPure_of_isQuotient hξ)) y
+      = diaPush ξ (boxPull ξ (boxPull (pureDagger ξ (isPure_of_isQuotient hξ)) y)) :=
+        (diamondboxlemma_quot hs hξ _).symm
+    _ = diaPush ξ y := by rw [key]
+
+/-- For a comprehension `π` for a sharp `s` and sharp `y ≤ s`,
+`π^⋄(y) = π^□(y)`. -/
+theorem diaPull_eq_boxPull_compr {W : C} {s : Pred X} (hs : IsSharp s)
+    {π : W ⟶ X} (hπ : IsComprehension s π) (y : SPred X) (hy : y.1 ≼ s) :
+    diaPull π y = boxPull π y := by
+  have h1 : diaPush π (diaPull π y) = y := by
+    rw [pureDagger_diamond_adjoint (isPure_comprehension C hπ), ← diaPush_comp,
+      pureDagger_compr_comp_asrt hs hπ]
+    exact diaPush_asrt_self hs y hy
+  calc diaPull π y = boxPull π (diaPush π (diaPull π y)) :=
+        (diamondboxlemma_compr hπ _).symm
+    _ = boxPull π y := by rw [h1]
+
+omit [DaggerPrimeEffectus C] in
+/-- Quotients have image `1`. -/
+theorem imPred_of_isQuotient {Q : C} {s : Pred X} {ξ : X ⟶ Q}
+    (hξ : IsQuotient s ξ) : imPred ξ = 1 := by
+  have := quotient_basics_6 hξ
+  exact (cancel_epi ξ).mp (isImage_imPred ξ).1
+
+omit [DaggerPrimeEffectus C] in
+/-- A quotient is "surjective": `ξ_⋄(1) = 1`. -/
+theorem diaPush_one_of_isQuotient {Q : C} {s : Pred X} {ξ : X ⟶ Q}
+    (hξ : IsQuotient s ξ) : diaPush ξ (sOne X) = sOne Q :=
+  Subtype.ext (by rw [diaPush_one_val, imPred_of_isQuotient hξ]; rfl)
+omit [DaggerPrimeEffectus C] in
+theorem comprMap_zero (X : C) : comprMap (0 : Pred X) = 0 := by
+  have h := (isComprehension_comprMap (0 : Pred X)).1
+  rw [FinPAC.comp_zero] at h
+  exact EffectusPartialForm.eq_zero_of_one_zero h.symm
+
+omit [DaggerPrimeEffectus C] in
+theorem diaPush_zero (f : X ⟶ Y) : diaPush f (sZero X) = sZero Y := by
+  apply Subtype.ext
+  change imPred (comprMap (0 : Pred X) ≫ f) = (0 : Pred Y)
+  rw [comprMap_zero, FinPAC.zero_comp, imPred_zero]
+
+omit [DaggerPrimeEffectus C] in
+theorem boxPull_zero_of_isTotal {f : X ⟶ Y} (hf : IsTotal f) :
+    boxPull f (sZero Y) = sZero X := by
+  apply Subtype.ext
+  rw [boxPull_zero_val, hf]
+  change orth (ceilPred (1 : Pred X)) = 0
+  rw [ceil_of_isSharp (isSharp_one X), eabasics_orth_one]
+
+omit [DaggerPrimeEffectus C] in
+theorem spred_orth_zero (X : C) : (sZero X).orth = sOne X :=
+  Subtype.ext eabasics_orth_zero
+
+omit [DaggerPrimeEffectus C] in
+theorem imPred_comprMap_orth (q : Pred X) :
+    imPred (comprMap (orth q)) = orth (ceilPred q) := by
+  change floorPred (orth q) = orth (ceilPred q)
+  rw [show ceilPred q = orth (floorPred (orth q)) from rfl, eabasics_orth_orth]
+
+omit [DaggerPrimeEffectus C] in
+/-- The standard kernel of `u` has image `u^□(0)`. -/
+theorem diaPush_kerCompr_one (u : X ⟶ Y) :
+    diaPush (comprMap (orth (u ≫ truth Y))) (sOne (comprObj (orth (u ≫ truth Y))))
+      = boxPull u (sZero Y) :=
+  Subtype.ext (by rw [diaPush_one_val, boxPull_zero_val, imPred_comprMap_orth])
+
+omit [DaggerPrimeEffectus C] in
+theorem comp_pred_eq_of_im_le {u : X ⟶ Y} {p : Pred Y} (hle : imPred u ≼ p) :
+    u ≫ p = u ≫ truth Y :=
+  eabasics_le_antisymm (comp_le_comp u (pred_le_truth p))
+    (by rw [← (isImage_imPred u).1]; exact comp_le_comp u hle)
+
+/-- `(f†)^⋄ = f_⋄`. -/
+theorem diaPull_pureDagger {f : X ⟶ Y} (hf : IsPure f) :
+    diaPull (pureDagger f hf) = diaPush f := by
+  have h := pureDagger_diamond_adjoint (isPure_pureDagger hf)
+  rwa [dagger_idempotent hf] at h
+
+omit [DaggerPrimeEffectus C] in
+theorem spred_eq_zero {s : SPred X} (h : s.1 ≼ 0) : s = sZero X :=
+  Subtype.ext (eq_zero_of_le_zero h)
+
+omit [AndThenEffectus C] [DaggerPrimeEffectus C] in
+/-- If `t = 0` then `s ∨ t = s`. -/
+theorem spred_isSup_eq_left {s t j : SPred X} (h : SPred.IsSup s t j)
+    (ht : t.1 = 0) : j = s :=
+  Subtype.ext (eabasics_le_antisymm
+    (h.2.2 s (pcm_preorder_refl _) (by rw [ht]; exact zero_le_hom _)) h.1)
+
+/-- `(f†)_⋄ = f^⋄`. -/
+theorem diaPush_pureDagger {f : X ⟶ Y} (hf : IsPure f) :
+    diaPush (pureDagger f hf) = diaPull f :=
+  (pureDagger_diamond_adjoint hf).symm
+
+/-- `(f†)^□(0) = f_⋄(1)ᵖ`. -/
+theorem boxPull_pureDagger_zero {f : X ⟶ Y} (hf : IsPure f) :
+    boxPull (pureDagger f hf) (sZero X) = (diaPush f (sOne X)).orth := by
+  change (diaPull (pureDagger f hf) (sZero X).orth).orth = _
+  rw [diaPull_pureDagger hf, spred_orth_zero]
 
 /-- **228II** (eff.tex:7687, Snake Lemma; Grandis): suppose the diagram
 
@@ -1022,7 +1341,404 @@ theorem snake_lemma {A B C₃ A' B' C₃' : C}
           (isPure_of_isQuotient (isQuotient_quotMap _)) ≫ k ≫
         quotMap (imPred c)
       ExactAt fbar gbar ∧ ExactAt gbar d ∧ ExactAt d hbar ∧
-        ExactAt hbar kbar := sorry
+        ExactAt hbar kbar := by
+  -- The route (see PROVING-LOG, session 11): only the *left* face of the cube
+  -- of 228III is built — the comprehension `m = π_{g^□(c^□(0))}`, the sharp
+  -- quotient `g' = m ∘ g ∘ c_π†`, the lift `b'` of `b` along `m` and `h`, and
+  -- `d` as the lift of `b' ∘ a_ζ` along `g'`.  The four exactness statements
+  -- are `u_⋄(1) = w^□(0)` (227III.1, `exactAt_iff'`), so `d` is only ever met
+  -- at `1` and at `0`, and the right face (`v`, `h'`) together with three of
+  -- the four forms of the thesis's `snakedidents` is never needed.
+  obtain ⟨sg, hsg, hgq⟩ := hg
+  obtain ⟨ph, hh0⟩ := hh
+  have hhc : IsComprehension (imPred h) h := isComprehension_imPred hh0
+  have hHi : IsSharp (imPred h) := isSharp_imPred C h
+  have hAi : IsSharp (imPred a) := isSharp_imPred C a
+  have hBi : IsSharp (imPred b) := isSharp_imPred C b
+  have hCi : IsSharp (imPred c) := isSharp_imPred C c
+  have hgp : IsPure g := isPure_of_isQuotient hgq
+  -- images as sharp predicates
+  have hIa : diaPush a (sOne A) = (⟨imPred a, hAi⟩ : SPred A') :=
+    Subtype.ext (diaPush_one_val a)
+  have hIb : diaPush b (sOne B) = (⟨imPred b, hBi⟩ : SPred B') :=
+    Subtype.ext (diaPush_one_val b)
+  have hIc : diaPush c (sOne C₃) = (⟨imPred c, hCi⟩ : SPred C₃') :=
+    Subtype.ext (diaPush_one_val c)
+  have hIh : diaPush h (sOne A') = (⟨imPred h, hHi⟩ : SPred B') :=
+    Subtype.ext (diaPush_one_val h)
+  have hIf : diaPush f (sOne A) = (⟨imPred f, isSharp_imPred C f⟩ : SPred B) :=
+    Subtype.ext (diaPush_one_val f)
+  have hKB : boxPull b (sZero B') =
+      SPred.orth ⟨ceilPred (b ≫ truth B'), isSharp_ceil _⟩ :=
+    Subtype.ext (boxPull_zero_val b)
+  -- kernels of the cokernels
+  have hKa : boxPull (quotMap (imPred a)) (sZero (quotObj (imPred a))) =
+      diaPush a (sOne A) :=
+    Subtype.ext (by
+      rw [boxPull_zero_of_isQuotient hAi (isQuotient_quotMap _), diaPush_one_val])
+  have hKb : boxPull (quotMap (imPred b)) (sZero (quotObj (imPred b))) =
+      diaPush b (sOne B) :=
+    Subtype.ext (by
+      rw [boxPull_zero_of_isQuotient hBi (isQuotient_quotMap _), diaPush_one_val])
+  have hKc : boxPull (quotMap (imPred c)) (sZero (quotObj (imPred c))) =
+      diaPush c (sOne C₃) :=
+    Subtype.ext (by
+      rw [boxPull_zero_of_isQuotient hCi (isQuotient_quotMap _), diaPush_one_val])
+  -- exactness of the rows
+  have r₁ : diaPush f (sOne A) = boxPull g (sZero C₃) := (exactAt_iff' f g).mp row₁
+  have r₂ : diaPush h (sOne A') = boxPull k (sZero C₃') := (exactAt_iff' h k).mp row₂
+  -- the modularity conditions, restated
+  have M1 : SPred.IsSup (boxPull b (sZero B')) (diaPush f (sOne A))
+      (boxPull b (diaPush b (diaPush f (sOne A)))) := by
+    have hx := m₁; rw [← hKB, ← hIf] at hx; exact hx
+  have M2 : SPred.IsInf (diaPush h (sOne A')) (diaPush b (sOne B))
+      (diaPush b (boxPull b (diaPush h (sOne A')))) := by
+    have hx := m₂; rw [← hIh, ← hIb] at hx; exact hx
+  have M3 : SPred.IsSup (diaPush h (sOne A')) (diaPush b (sOne B))
+      (boxPull k (diaPush k (diaPush b (sOne B)))) := by
+    have hx := m₃; rw [← hIh, ← hIb] at hx; exact hx
+  have M4₀ : SPred.IsInf (boxPull b (sZero B')) (diaPush f (sOne A))
+      (diaPush f (boxPull f (boxPull b (sZero B')))) := by
+    have hx := m₄; rw [← hKB, ← hIf] at hx; exact hx
+  -- `f^□(ker b) = ker a`
+  have hfka : boxPull f (boxPull b (sZero B')) = boxPull a (sZero A') := by
+    rw [← boxPull_comp, w₁, boxPull_comp, boxPull_zero_of_isTotal (compr_total hh0)]
+  have M4 : SPred.IsInf (boxPull b (sZero B')) (diaPush f (sOne A))
+      (diaPush f (boxPull a (sZero A'))) := by rw [← hfka]; exact M4₀
+  -- `h_⋄(im a) = b_⋄(im f) ≤ im b`
+  have hcomm₁ : diaPush h (diaPush a (sOne A)) = diaPush b (diaPush f (sOne A)) := by
+    rw [← diaPush_comp, ← diaPush_comp, w₁]
+  have hab : (diaPush h (diaPush a (sOne A))).1 ≼ (diaPush b (sOne B)).1 := by
+    rw [hcomm₁]
+    exact order_adj_basics_1 b (pred_le_truth _)
+  have hAih : (diaPush a (sOne A)).1 ≼ (boxPull h (diaPush b (sOne B))).1 :=
+    (diamond_adjunction' h _ _).mp hab
+  -- `b_⋄(ker b) = 0`
+  have hbkb : diaPush b (boxPull b (sZero B')) = sZero B' :=
+    spred_eq_zero (diaPush_boxPull_le b (sZero B'))
+  -- `g_⋄(ker b) ≤ ker c`
+  have hgkb : (diaPush g (boxPull b (sZero B'))).1 ≼ (boxPull c (sZero C₃')).1 := by
+    refine (diamond_adjunction' c _ _).mp ?_
+    have e : diaPush c (diaPush g (boxPull b (sZero B'))) =
+        diaPush k (diaPush b (boxPull b (sZero B'))) := by
+      rw [← diaPush_comp, ← diaPush_comp, w₂]
+    rw [e, hbkb, diaPush_zero]
+    exact pcm_preorder_refl _
+  -- the standard kernel of `c` is a comprehension for `c^□(0)`
+  have hcπ : IsComprehension (boxPull c (sZero C₃')).1
+      (comprMap (orth (c ≫ truth C₃'))) := by
+    have hx := isComprehension_imPred (isComprehension_comprMap (orth (c ≫ truth C₃')))
+    rwa [imPred_comprMap_orth, ← boxPull_zero_val] at hx
+  have hbπ : IsComprehension (boxPull b (sZero B')).1
+      (comprMap (orth (b ≫ truth B'))) := by
+    have hx := isComprehension_imPred (isComprehension_comprMap (orth (b ≫ truth B')))
+    rwa [imPred_comprMap_orth, ← boxPull_zero_val] at hx
+  -- ### the left face of the cube: `m` and `g'`
+  obtain ⟨M, hM⟩ : ∃ M : SPred B, M = boxPull g (boxPull c (sZero C₃')) := ⟨_, rfl⟩
+  have hm : IsComprehension M.1 (comprMap M.1) := isComprehension_comprMap M.1
+  have hmp : IsPure (comprMap M.1) := isPure_comprehension C hm
+  have hdm1 : diaPush (comprMap M.1) (sOne (comprObj M.1)) = M :=
+    Subtype.ext (by rw [diaPush_one_val]; exact (img_of_compr M.1).2 M.1 M.2)
+  have hMb : M = boxPull b (diaPush h (sOne A')) := by
+    rw [hM, ← boxPull_comp, w₂, boxPull_comp, ← r₂]
+  have himg : imPred (comprMap M.1 ≫ g) ≼ (boxPull c (sZero C₃')).1 := by
+    have e : diaPush (comprMap M.1 ≫ g) (sOne (comprObj M.1)) = diaPush g M := by
+      rw [diaPush_comp, hdm1]
+    have h2 : (diaPush g M).1 ≼ (boxPull c (sZero C₃')).1 := by
+      rw [hM]; exact diaPush_boxPull_le g _
+    rw [← diaPush_one_val, e]
+    exact h2
+  obtain ⟨g', hg'def⟩ : ∃ g' : comprObj M.1 ⟶ comprObj (orth (c ≫ truth C₃')),
+      g' = comprMap M.1 ≫ g ≫ pureDagger (comprMap (orth (c ≫ truth C₃')))
+        (isPure_comprehension C (isComprehension_comprMap _)) := ⟨_, rfl⟩
+  have hcd : pureDagger (comprMap (orth (c ≫ truth C₃')))
+      (isPure_comprehension C (isComprehension_comprMap _)) ≫
+      comprMap (orth (c ≫ truth C₃')) = asrt (boxPull c (sZero C₃')).1 :=
+    pureDagger_compr_comp_asrt (boxPull c (sZero C₃')).2 hcπ
+  have hsq : g' ≫ comprMap (orth (c ≫ truth C₃')) = comprMap M.1 ≫ g := by
+    rw [hg'def, Category.assoc, Category.assoc, hcd, ← Category.assoc]
+    exact (asrt_absorp_rule (comprMap M.1 ≫ g) (boxPull c (sZero C₃')).2
+      (isSharp_one _)).1.mp himg
+  -- `g'` is a sharp quotient
+  have hkerle : ∀ (K : C) (kq : K ⟶ B), IsKernel g kq → KernelLE kq (comprMap M.1) := by
+    intro K kq hkq
+    obtain ⟨θ, hθ, hcomm⟩ :=
+      isKernel_unique hkq (effectus_kernels g (isComprehension_comprMap (orth (g ≫ truth C₃))))
+    have him : imPred kq ≼ M.1 := by
+      have e : imPred kq = (boxPull g (sZero C₃)).1 := by
+        rw [← hcomm, (im_ineq (comprMap (orth (g ≫ truth C₃))) θ).2 θ hθ,
+          imPred_comprMap_orth, ← boxPull_zero_val]
+      rw [e, hM]
+      exact (exc_diam_order_pres g (zero_le_hom (boxPull c (sZero C₃')).1)).2
+    obtain ⟨u, hu, -⟩ := hm.2 kq (comp_pred_eq_of_im_le him)
+    exact ⟨u, hu⟩
+  have hprist : Pristine (comprMap M.1 ≫ g) :=
+    (homological_exact _).mp
+      (homological_category.2.2 (comprMap M.1) g
+        ⟨_, _, (compr_is_kernel M.1 _).mp hm⟩ ⟨_, _, (exc_cokernels hsg g).mp hgq⟩
+        hkerle)
+  have hg'truth : g' ≫ truth (comprObj (orth (c ≫ truth C₃'))) =
+      (comprMap M.1 ≫ g) ≫ truth C₃ := by
+    rw [← hsq, Category.assoc, compr_total (isComprehension_comprMap _)]
+  have hg'sharp : IsSharp (g' ≫ truth (comprObj (orth (c ≫ truth C₃')))) := by
+    rw [hg'truth]; exact hprist.2
+  have hg'pure : IsPure g' := by
+    rw [hg'def]
+    exact upm_closed_pure hmp (upm_closed_pure hgp (isPure_pureDagger _))
+  have hg'one : diaPush g' (sOne (comprObj M.1)) =
+      sOne (comprObj (orth (c ≫ truth C₃'))) := by
+    have e1 : diaPush (comprMap (orth (c ≫ truth C₃')))
+        (diaPush g' (sOne (comprObj M.1))) = boxPull c (sZero C₃') := by
+      rw [← diaPush_comp, hsq, diaPush_comp, hdm1, hM,
+        diamondboxlemma_quot hsg hgq]
+    have e2 : diaPush (comprMap (orth (c ≫ truth C₃')))
+        (sOne (comprObj (orth (c ≫ truth C₃')))) = boxPull c (sZero C₃') :=
+      diaPush_kerCompr_one c
+    calc diaPush g' (sOne (comprObj M.1))
+        = boxPull (comprMap (orth (c ≫ truth C₃')))
+            (diaPush (comprMap (orth (c ≫ truth C₃')))
+              (diaPush g' (sOne (comprObj M.1)))) :=
+          (diamondboxlemma_compr hcπ _).symm
+      _ = boxPull (comprMap (orth (c ≫ truth C₃')))
+            (diaPush (comprMap (orth (c ≫ truth C₃')))
+              (sOne (comprObj (orth (c ≫ truth C₃'))))) := by rw [e1, e2]
+      _ = sOne (comprObj (orth (c ≫ truth C₃'))) := diamondboxlemma_compr hcπ _
+  have hg'q : IsQuotient (orth (g' ≫ truth (comprObj (orth (c ≫ truth C₃'))))) g' :=
+    isQuotient_of_pure hg'pure
+      (by rw [← diaPush_one_val, hg'one]; rfl) hg'sharp
+  have hg'ssharp : IsSharp (orth (g' ≫ truth (comprObj (orth (c ≫ truth C₃')))))  :=
+    DiamondEffectus.orth_sharp hg'sharp
+  -- ### the lift `b'` of `b` along `m` and `h`
+  have hmb : (diaPush b M).1 ≼ imPred h := by
+    rw [hMb, ← diaPush_one_val h]
+    exact diaPush_boxPull_le b _
+  obtain ⟨b', hb'comm, -⟩ := hhc.2 (comprMap M.1 ≫ b)
+    (comp_pred_eq_of_im_le (by
+      rw [← diaPush_one_val, diaPush_comp, hdm1]; exact hmb))
+  -- `b'^□ ∘ h^□ = m^□ ∘ b^□`
+  have hb'box : ∀ y : SPred B', boxPull b' (boxPull h y) =
+      boxPull (comprMap M.1) (boxPull b y) := by
+    intro y
+    rw [← boxPull_comp, hb'comm, boxPull_comp]
+  -- ### the connecting map `d`
+  have hb'Ai : boxPull b' (diaPush a (sOne A)) =
+      boxPull (comprMap M.1) (boxPull b (diaPush b (diaPush f (sOne A)))) := by
+    have e : boxPull h (diaPush h (diaPush a (sOne A))) = diaPush a (sOne A) :=
+      diamondboxlemma_compr hhc _
+    rw [← e, hb'box, hcomm₁]
+  have hdcond : ((b' ≫ quotMap (imPred a)) ≫ truth (quotObj (imPred a))) ≼
+      orth (orth (g' ≫ truth (comprObj (orth (c ≫ truth C₃'))))) := by
+    rw [eabasics_orth_orth]
+    -- `g'^□(0) ≤ (b' ∘ a_ζ)^□(0)`
+    have e1 : boxPull g' (sZero (comprObj (orth (c ≫ truth C₃')))) =
+        boxPull (comprMap M.1) (boxPull g (sZero C₃)) := by
+      have e : boxPull g' (boxPull (comprMap (orth (c ≫ truth C₃'))) (sZero C₃)) =
+          boxPull (comprMap M.1) (boxPull g (sZero C₃)) := by
+        rw [← boxPull_comp, hsq, boxPull_comp]
+      rwa [boxPull_zero_of_isTotal (compr_total (isComprehension_comprMap _))] at e
+    have e2 : boxPull (b' ≫ quotMap (imPred a)) (sZero (quotObj (imPred a))) =
+        boxPull (comprMap M.1) (boxPull b (diaPush b (diaPush f (sOne A)))) := by
+      rw [boxPull_comp, hKa, hb'Ai]
+    have e3 : (boxPull g' (sZero (comprObj (orth (c ≫ truth C₃'))))).1 ≼
+        (boxPull (b' ≫ quotMap (imPred a)) (sZero (quotObj (imPred a)))).1 := by
+      rw [e1, e2]
+      refine (exc_diam_order_pres (comprMap M.1) ?_).2
+      rw [← r₁]
+      exact le_boxPull_diaPush b _
+    -- turn the inequality of kernels into one of truths
+    rw [boxPull_zero_val, boxPull_zero_val] at e3
+    have e4 : ceilPred ((b' ≫ quotMap (imPred a)) ≫ truth (quotObj (imPred a))) ≼
+        ceilPred (g' ≫ truth (comprObj (orth (c ≫ truth C₃')))) := by
+      have := eabasics_le_iff_orth_le.mp e3
+      rwa [eabasics_orth_orth, eabasics_orth_orth] at this
+    refine pcm_preorder_trans (le_ceil _) ?_
+    rw [← ceil_of_isSharp hg'sharp]
+    exact e4
+  obtain ⟨d, hd, -⟩ := hg'q.2 (b' ≫ quotMap (imPred a)) hdcond
+  refine ⟨d, ?_, ?_, ?_, ?_⟩
+  · -- ### exactness at `ker b`
+    rw [exactAt_iff']
+    have hlhs : diaPush (comprMap (orth (a ≫ truth A')) ≫ f ≫
+        pureDagger (comprMap (orth (b ≫ truth B')))
+          (isPure_comprehension C (isComprehension_comprMap _)))
+        (sOne (comprObj (orth (a ≫ truth A')))) =
+        boxPull (comprMap (orth (b ≫ truth B'))) (diaPush f (boxPull a (sZero A'))) := by
+      rw [diaPush_comp, diaPush_comp, diaPush_kerCompr_one, diaPush_pureDagger]
+      exact diaPull_eq_boxPull_compr (boxPull b (sZero B')).2 hbπ _ M4.1
+    have hrhs : boxPull (comprMap (orth (b ≫ truth B')) ≫ g ≫
+        pureDagger (comprMap (orth (c ≫ truth C₃')))
+          (isPure_comprehension C (isComprehension_comprMap _)))
+        (sZero (comprObj (orth (c ≫ truth C₃')))) =
+        boxPull (comprMap (orth (b ≫ truth B')))
+          (boxPull g (boxPull c (sZero C₃')).orth) := by
+      rw [boxPull_comp, boxPull_comp, boxPull_pureDagger_zero, diaPush_kerCompr_one]
+    rw [hlhs, hrhs]
+    have hV : SPred.IsInf (boxPull b (sZero B'))
+        (boxPull g (boxPull c (sZero C₃')).orth)
+        (diaPush f (boxPull a (sZero A'))) := by
+      refine ⟨M4.1, ?_, ?_⟩
+      · have h1 : (diaPush f (boxPull a (sZero A'))).1 ≼ (boxPull g (sZero C₃)).1 := by
+          rw [← r₁]; exact order_adj_basics_1 f (pred_le_truth _)
+        refine (diamond_adjunction' g _ _).mp ?_
+        refine pcm_preorder_trans (order_adj_basics_1 g h1) ?_
+        rw [spred_eq_zero (diaPush_boxPull_le g (sZero C₃))]
+        exact zero_le_hom _
+      · intro r hr1 hr2
+        have h1 : (diaPush g r).1 ≼ ((boxPull c (sZero C₃')).orth).1 :=
+          (diamond_adjunction' g r _).mpr hr2
+        have h2 : (diaPush g r).1 ≼ (boxPull c (sZero C₃')).1 :=
+          pcm_preorder_trans (order_adj_basics_1 g hr1) hgkb
+        have h3 : (diaPush g r).1 = 0 :=
+          image_sharp_is_order_sharp (boxPull c (sZero C₃')).2 h2 h1
+        have h4 : r.1 ≼ (boxPull g (sZero C₃)).1 :=
+          (diamond_adjunction' g r (sZero C₃)).mp (by rw [h3]; exact zero_le_hom _)
+        rw [← r₁] at h4
+        exact M4.2.2 r hr1 h4
+    have e1 : diaPush (comprMap (orth (b ≫ truth B')))
+        (boxPull (comprMap (orth (b ≫ truth B'))) (diaPush f (boxPull a (sZero A')))) =
+        diaPush f (boxPull a (sZero A')) :=
+      spred_isInf_eq_right (spred_inf_of_compr (boxPull b (sZero B')).2 hbπ _) M4.1
+    have e2 : diaPush (comprMap (orth (b ≫ truth B')))
+        (boxPull (comprMap (orth (b ≫ truth B')))
+          (boxPull g (boxPull c (sZero C₃')).orth)) =
+        diaPush f (boxPull a (sZero A')) :=
+      spred_isInf_unique (spred_inf_of_compr (boxPull b (sZero B')).2 hbπ _) hV
+    calc boxPull (comprMap (orth (b ≫ truth B'))) (diaPush f (boxPull a (sZero A')))
+        = boxPull (comprMap (orth (b ≫ truth B')))
+            (diaPush (comprMap (orth (b ≫ truth B')))
+              (boxPull (comprMap (orth (b ≫ truth B')))
+                (diaPush f (boxPull a (sZero A'))))) :=
+          (order_adj_basics_6 _ _).symm
+      _ = boxPull (comprMap (orth (b ≫ truth B')))
+            (diaPush (comprMap (orth (b ≫ truth B')))
+              (boxPull (comprMap (orth (b ≫ truth B')))
+                (boxPull g (boxPull c (sZero C₃')).orth))) := by rw [e1, e2]
+      _ = boxPull (comprMap (orth (b ≫ truth B')))
+            (boxPull g (boxPull c (sZero C₃')).orth) := order_adj_basics_6 _ _
+  · -- ### exactness at `ker c`
+    rw [exactAt_iff']
+    have hlhs : diaPush (comprMap (orth (b ≫ truth B')) ≫ g ≫
+        pureDagger (comprMap (orth (c ≫ truth C₃')))
+          (isPure_comprehension C (isComprehension_comprMap _)))
+        (sOne (comprObj (orth (b ≫ truth B')))) =
+        boxPull (comprMap (orth (c ≫ truth C₃')))
+          (diaPush g (boxPull b (sZero B'))) := by
+      rw [diaPush_comp, diaPush_comp, diaPush_kerCompr_one, diaPush_pureDagger]
+      exact diaPull_eq_boxPull_compr (boxPull c (sZero C₃')).2 hcπ _ hgkb
+    have hzM : (boxPull b (diaPush b (diaPush f (sOne A)))).1 ≼ M.1 := by
+      refine M1.2.2 M ?_ ?_
+      · have hx := (diamond_adjunction' g (boxPull b (sZero B'))
+          (boxPull c (sZero C₃'))).mp hgkb
+        rw [← hM] at hx
+        exact hx
+      · rw [r₁, hM]
+        exact (exc_diam_order_pres g (zero_le_hom (boxPull c (sZero C₃')).1)).2
+    have hgz : diaPush g (boxPull b (diaPush b (diaPush f (sOne A)))) =
+        diaPush g (boxPull b (sZero B')) := by
+      refine spred_isSup_eq_left (order_adj_basics_2 g M1) ?_
+      have hx : diaPush g (diaPush f (sOne A)) = sZero C₃ := by
+        rw [r₁]
+        exact spred_eq_zero (diaPush_boxPull_le g (sZero C₃))
+      rw [hx]
+      rfl
+    have hrhs : boxPull d (sZero (quotObj (imPred a))) =
+        diaPush g' (boxPull (comprMap M.1)
+          (boxPull b (diaPush b (diaPush f (sOne A))))) := by
+      have e : boxPull g' (boxPull d (sZero (quotObj (imPred a)))) =
+          boxPull (comprMap M.1) (boxPull b (diaPush b (diaPush f (sOne A)))) := by
+        rw [← boxPull_comp, hd, boxPull_comp, hKa, hb'Ai]
+      calc boxPull d (sZero (quotObj (imPred a)))
+          = diaPush g' (boxPull g' (boxPull d (sZero (quotObj (imPred a))))) :=
+            (diamondboxlemma_quot hg'ssharp hg'q _).symm
+        _ = _ := by rw [e]
+    rw [hlhs, hrhs]
+    have inj : ∀ u v : SPred (comprObj (orth (c ≫ truth C₃'))),
+        diaPush (comprMap (orth (c ≫ truth C₃'))) u =
+          diaPush (comprMap (orth (c ≫ truth C₃'))) v → u = v := by
+      intro u v huv
+      rw [← diamondboxlemma_compr hcπ u, huv, diamondboxlemma_compr hcπ v]
+    refine inj _ _ ?_
+    have e1 : diaPush (comprMap (orth (c ≫ truth C₃')))
+        (boxPull (comprMap (orth (c ≫ truth C₃')))
+          (diaPush g (boxPull b (sZero B')))) = diaPush g (boxPull b (sZero B')) :=
+      spred_isInf_eq_right (spred_inf_of_compr (boxPull c (sZero C₃')).2 hcπ _) hgkb
+    have e2 : diaPush (comprMap (orth (c ≫ truth C₃')))
+        (diaPush g' (boxPull (comprMap M.1)
+          (boxPull b (diaPush b (diaPush f (sOne A)))))) =
+        diaPush g (boxPull b (sZero B')) := by
+      rw [← diaPush_comp, hsq, diaPush_comp,
+        spred_isInf_eq_right (spred_inf_of_compr M.2 hm _) hzM, hgz]
+    rw [e1, e2]
+  · -- ### exactness at `cok a`
+    rw [exactAt_iff']
+    have hinf2 : SPred.IsInf (diaPush h (sOne A')) (diaPush b (sOne B))
+        (diaPush h (boxPull h (diaPush b (sOne B)))) := by
+      rw [hIh]; exact spred_inf_of_compr hHi hhc _
+    have hb'one : diaPush b' (sOne (comprObj M.1)) = boxPull h (diaPush b (sOne B)) := by
+      have e1 : diaPush h (diaPush b' (sOne (comprObj M.1))) = diaPush b M := by
+        rw [← diaPush_comp, hb'comm, diaPush_comp, hdm1]
+      have e2 : diaPush b M = diaPush h (boxPull h (diaPush b (sOne B))) := by
+        rw [hMb]; exact spred_isInf_unique M2 hinf2
+      calc diaPush b' (sOne (comprObj M.1))
+          = boxPull h (diaPush h (diaPush b' (sOne (comprObj M.1)))) :=
+            (diamondboxlemma_compr hhc _).symm
+        _ = boxPull h (diaPush h (boxPull h (diaPush b (sOne B)))) := by rw [e1, e2]
+        _ = boxPull h (diaPush b (sOne B)) := diamondboxlemma_compr hhc _
+    have hAih' : imPred a ≼ (boxPull h (diaPush b (sOne B))).1 := by
+      rw [← diaPush_one_val a]; exact hAih
+    have hlhs : diaPush d (sOne (comprObj (orth (c ≫ truth C₃')))) =
+        diaPush (quotMap (imPred a)) (boxPull h (diaPush b (sOne B))) := by
+      rw [← hg'one, ← diaPush_comp, hd, diaPush_comp, hb'one]
+    have hrhs : boxPull (pureDagger (quotMap (imPred a))
+        (isPure_of_isQuotient (isQuotient_quotMap _)) ≫ h ≫ quotMap (imPred b))
+        (sZero (quotObj (imPred b))) =
+        diaPush (quotMap (imPred a)) (boxPull h (diaPush b (sOne B))) := by
+      rw [boxPull_comp, boxPull_comp, hKb]
+      exact boxPull_pureDagger_quot hAi (isQuotient_quotMap (imPred a)) _ hAih'
+    rw [hlhs, hrhs]
+  · -- ### exactness at `cok b`
+    rw [exactAt_iff']
+    have hbz : diaPush (quotMap (imPred b)) (diaPush b (sOne B)) =
+        sZero (quotObj (imPred b)) := by
+      rw [← hKb]
+      exact spred_eq_zero (diaPush_boxPull_le (quotMap (imPred b)) _)
+    have hlhs : diaPush (pureDagger (quotMap (imPred a))
+        (isPure_of_isQuotient (isQuotient_quotMap _)) ≫ h ≫ quotMap (imPred b))
+        (sOne (quotObj (imPred a))) =
+        diaPush (quotMap (imPred b)) (diaPush h (sOne A')) := by
+      rw [diaPush_comp, diaPush_comp, diaPush_pureDagger]
+      have e : diaPull (quotMap (imPred a)) (sOne (quotObj (imPred a))) =
+          (diaPush a (sOne A)).orth := by
+        apply Subtype.ext
+        rw [diaPull_one_val, quotient_basics_5 (isQuotient_quotMap (imPred a)),
+          ceil_of_isSharp (DiamondEffectus.orth_sharp hAi)]
+        change orth (imPred a) = orth (diaPush a (sOne A)).1
+        rw [diaPush_one_val]
+      rw [e]
+      have S2 := order_adj_basics_2 (quotMap (imPred b))
+        (order_adj_basics_2 h (spred_isSup_orth_one (diaPush a (sOne A))))
+      have hz : (diaPush (quotMap (imPred b))
+          (diaPush h (diaPush a (sOne A)))).1 = 0 := by
+        refine eq_zero_of_le_zero ?_
+        have hx := order_adj_basics_1 (quotMap (imPred b)) hab
+        rw [hbz] at hx
+        exact hx
+      exact (spred_isSup_eq_right S2 hz).symm
+    have hkc : diaPush k (diaPush b (sOne B)) = diaPush c (sOne C₃) := by
+      rw [← diaPush_comp, ← w₂, diaPush_comp, diaPush_one_of_isQuotient hgq]
+    have hbk : imPred b ≼ (boxPull k (diaPush k (diaPush b (sOne B)))).1 := by
+      have hx := le_boxPull_diaPush k (diaPush b (sOne B))
+      rwa [diaPush_one_val] at hx
+    have hrhs : boxPull (pureDagger (quotMap (imPred b))
+        (isPure_of_isQuotient (isQuotient_quotMap _)) ≫ k ≫ quotMap (imPred c))
+        (sZero (quotObj (imPred c))) =
+        diaPush (quotMap (imPred b))
+          (boxPull k (diaPush k (diaPush b (sOne B)))) := by
+      rw [boxPull_comp, boxPull_comp, hKc, ← hkc]
+      exact boxPull_pureDagger_quot hBi (isQuotient_quotMap (imPred b)) _ hbk
+    rw [hlhs, hrhs]
+    exact (spred_isSup_eq_left (order_adj_basics_2 (quotMap (imPred b)) M3)
+      (congrArg Subtype.val hbz)).symm
 
 end Snake
 
