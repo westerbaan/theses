@@ -2542,8 +2542,38 @@ stated here, and the displayed direction fails, e.g. for the trace on `M₂`
 at `a = e₁₂`.) -/
 theorem ncp_ceill (f : NCPMap A B) (a : A) :
     suppProj (f a) ≤ ceil (f (suppProj a)) ∧
-      rangeProj (f a) ≤ ceil (f (rangeProj a)) :=
-  sorry
+      rangeProj (f a) ≤ ceil (f (rangeProj a)) := by
+  -- The thesis's chain, with `‖f(1)‖ + 1` in place of `‖f(1)‖²` so that the
+  -- constant is positive without a case split:
+  --   `⌈f(a)⌋ = ⌈f(a)* f(a)⌉ ≤ ⌈(‖f(1)‖+1)·f(a* a)⌉ = ⌈f(a* a)⌉`
+  --          `= ⌈f(⌈a* a⌉)⌉ = ⌈f(⌈a⌋)⌉`,
+  -- using **34XIV** `cp-cs` (as `ncp_cp_cs`), **59III**.4 (`ceil_smul`) and
+  -- **60VI** (`ncp_ceil`).  The second inequality is the first one at `a*`.
+  have key : ∀ x : A, suppProj (f x) ≤ ceil (f (suppProj x)) := by
+    intro x
+    have hxx : (0 : A) ≤ star x * x := star_mul_self_nonneg x
+    have hfxx : (0 : B) ≤ f (star x * x) := by
+      have h0 : ((ncpPositive f) (0 : A) : B) ≤ (ncpPositive f) (star x * x) :=
+        (ncpPositive f).monotone hxx
+      rwa [map_zero] at h0
+    have h1 : star (f x : B) * f x
+        ≤ ((‖(f 1 : B)‖ + 1 : ℝ)) • f (star x * x) :=
+      (ncp_cp_cs f x).trans (smul_le_smul_of_nonneg_right (by linarith) hfxx)
+    have h2 := ceil_mono (star_mul_self_nonneg (f x : B)) h1
+    rw [ceil_smul hfxx (by positivity : (0:ℝ) < ‖(f 1 : B)‖ + 1)] at h2
+    have h3 : ceil ((ncpPositive f) (star x * x) : B)
+        = ceil ((ncpPositive f) (ceil (star x * x)) : B) :=
+      ncp_ceil (ncpPositive f) f.preservesDirSups' _ hxx
+    simp only [ncpPositive_apply] at h3
+    rw [suppProj, suppProj, ← h3]
+    exact h2
+  refine ⟨key a, ?_⟩
+  have h1 : rangeProj (f a : B) = suppProj (f (star a)) := by
+    rw [rangeProj, suppProj, ncp_star f a, star_star]
+  have h2 : suppProj (star a) = rangeProj a := by
+    rw [suppProj, rangeProj, star_star]
+  rw [h1, ← h2]
+  exact key (star a)
 
 /-! ## Parsec 620 -/
 
@@ -2904,60 +2934,11 @@ theorem commutant_basic_1 (S T : Set A) :
     Set.subset_centralizer_centralizer,
     Set.centralizer_centralizer_centralizer S⟩
 
-/-- Auxiliary: np-functionals are `ℂ`-homogeneous. -/
-private theorem npFunctional_smul (ω : NPFunctional A) (c : ℂ) (a : A) :
-    (ω (c • a) : ℂ) = c * ω a :=
-  map_smul ω.toPositiveLinearMap c a
-
-/-- Auxiliary (polarisation): for `u, v ∈ A` and an np-functional `ω`, the
-map `a ↦ ω(uav)` is ultraweakly continuous.  Writing `u = x*`, the
-polarisation identity
-
-`Σ_{k<4} i^k (v + i^k x)* a (v + i^k x)  =  4·x* a v`
-
-(the `v*av`, `v*ax` and `x*ax` terms cancel) exhibits `a ↦ ω(x* a v)` as the
-`ℂ`-combination `¼(1, i, −1, −i)` of the four np-functionals
-`(v + i^k x)*ω` of **72III**.1a, each of which is ultraweakly continuous by
-the very definition of the ultraweak topology. -/
-private theorem continuous_ultraweak_conj (ω : NPFunctional A) (u v : A) :
-    @Continuous A ℂ (ultraweak A) _ (fun a => (ω (u * a * v) : ℂ)) := by
-  letI : TopologicalSpace A := ultraweak A
-  obtain ⟨x, rfl⟩ : ∃ x : A, star x = u := ⟨star u, star_star u⟩
-  -- the value of the np-functional `(v + c·x)*ω` at `a`, expanded
-  have hE : ∀ (c : ℂ) (a : A), (conjNP (v + c • x) ω a : ℂ)
-      = ω (star v * a * v) + c * ω (star v * a * x) + star c * ω (star x * a * v)
-        + (c * star c) * ω (star x * a * x) := by
-    intro c a
-    have hid : star (v + c • x) * a * (v + c • x)
-        = star v * a * v + c • (star v * a * x) + star c • (star x * a * v)
-          + (c * star c) • (star x * a * x) := by
-      rw [star_add, star_smul]
-      simp only [add_mul, mul_add, smul_add, smul_mul_assoc, mul_smul_comm, smul_smul]
-      abel
-    rw [conjNP_apply, hid, npFunctional_add, npFunctional_add, npFunctional_add,
-      npFunctional_smul, npFunctional_smul, npFunctional_smul]
-  have hsI : star Complex.I = -Complex.I := by
-    rw [Complex.star_def, Complex.conj_I]
-  have hkey : ∀ a : A, (ω (star x * a * v) : ℂ)
-      = (4 : ℂ)⁻¹ * ((conjNP (v + (1 : ℂ) • x) ω a : ℂ)
-          + Complex.I * (conjNP (v + Complex.I • x) ω a : ℂ)
-          - (conjNP (v + (-1 : ℂ) • x) ω a : ℂ)
-          - Complex.I * (conjNP (v + (-Complex.I) • x) ω a : ℂ)) := by
-    intro a
-    rw [hE 1 a, hE Complex.I a, hE (-1) a, hE (-Complex.I) a, hsI, star_one,
-      show star (-1 : ℂ) = -1 by rw [star_neg, star_one],
-      show star (-Complex.I) = Complex.I by rw [star_neg, hsI, neg_neg]]
-    linear_combination
-      ((2 : ℂ)⁻¹ * ((ω (star x * a * v) : ℂ) - (ω (star v * a * x) : ℂ))) *
-        Complex.I_mul_I
-  rw [funext hkey]
-  exact continuous_const.mul
-    ((((continuous_ultraweak_npFunctional (conjNP (v + (1 : ℂ) • x) ω)).add
-      (continuous_const.mul
-        (continuous_ultraweak_npFunctional (conjNP (v + Complex.I • x) ω)))).sub
-      (continuous_ultraweak_npFunctional (conjNP (v + (-1 : ℂ) • x) ω))).sub
-      (continuous_const.mul
-        (continuous_ultraweak_npFunctional (conjNP (v + (-Complex.I) • x) ω))))
+/-! `continuous_ultraweak_conj` — the polarisation lemma that used to be
+proved privately here — now lives in `Theses/A/VN/Basic.lean`, where **45IV**
+`mult_uws_cont` needs it too; it is stated there in exactly this form
+(`a ↦ ω(u a v)` is ultraweakly continuous) and proved from **44II**
+`mult_polarization`. -/
 
 /-- **65III** (`commutant-basic`, vn.tex:3222, Exercise), part 2: `S^□` is
 closed under addition and (scalar) multiplication, contains `1`, and is
