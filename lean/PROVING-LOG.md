@@ -6946,3 +6946,172 @@ theorems, the new auxiliary and the regression targets `vnsac`, `cp_uscont`,
 warning in the tree — the deliberate `unusedSectionVars` on
 `vn_products_nmiu` documented above; `omegaNorm_comp_starAlgHom` carries the
 `omit` the linter asked for.
+
+## Session 33 — `A/Proc`: 123I.1, 117II.2, and 117II.1 refuted (worker 60)
+
+Files touched: `Theses/A/Proc/QuantumLambda.lean`, `Theses/A/Proc/Tensor.lean`,
+`ERRATA.md`, this log.  `Measurement.lean`, `Duplicators.lean`, `A/CStar`,
+`A/VN`, `B/` untouched.
+
+**A/Proc 119 → 117.**  Per file: `QuantumLambda` 18 → **17**, `Tensor` 45 →
+**44**, `Measurement` 38, `Duplicators` 18 unchanged.
+
+| point | declaration | file | class |
+|---|---|---|---|
+| **123I**.1 | `linf_generated` | QuantumLambda | 1 (exercise, no author argument) |
+| **117II**.2 | `sum_generation_2` | Tensor | 1 (exercise) |
+| **117II**.1 | `sum_generation_1_is_false` (+ `starSubalgebra_complex_eq_top`, `diagBool`, `mem_diagBool`, `isVNSubalgebra_diagBool`) | Tensor | **4** — the thesis's statement is false; ours realigned |
+
+### 123I.1 `linf_generated` — `W*({x̂ : x ∈ X}) = ℓ^∞(X)`
+
+An exercise past parsec 340, so no published solution and no inline author
+argument.  The route, which is the one w58 sketched:
+
+* Norm-closedness is *not* enough — the finitely supported functions are
+  norm-dense in `c₀(X)`, not in `ℓ^∞(X)`.  The work is done by closure under
+  directed suprema.
+* For `0 ≤ f` the finite restrictions `∑_{x∈F} f(x)·x̂` form a directed family
+  (`F ⊆ X` finite) whose supremum is `f`, because the order on `⊕_{x∈X} ℂ` is
+  pointwise (`lp_infty_le_iff`).  Worth recording: the *least*-upper-bound half
+  needs only the singletons `F = {y}`, so no genuine limit argument appears.
+* A self-adjoint `a` reduces to that case by `a = (a + ‖a‖·1) − ‖a‖·1`; the
+  positive/negative-part decomposition that the obvious route would use is
+  unnecessary, and in `ℓ^∞` the bound `0 ≤ a(y) + ‖a‖` is just
+  `|Re a(y)| ≤ ‖a(y)‖ ≤ ‖a‖`.
+* A general `f` reduces to that by `f = ℜf + i·ℑf`
+  (`realPart_add_I_smul_imaginaryPart`).
+
+### 117II.1 `sum-generation` part 1 is **false as printed** — ERRATA filed
+
+Stated: if `Aᵢ` generates `𝒜ᵢ` for each `i`, then `⋃ᵢ κᵢ(Aᵢ)` generates
+`⊕ᵢ 𝒜ᵢ`.  The coprojection `κᵢ` is **not unital**, so nothing puts
+`eᵢ = κᵢ(1)` into `W*(⋃ᵢ κᵢ(Aᵢ))`, and a von Neumann subalgebra is unital by
+definition (42V.4: it is a C\*-subalgebra).
+
+`sum_generation_1_is_false` machine-checks the smallest witness: `I = Bool`,
+`𝒜ᵢ = ℂ`, `Aᵢ = ∅`.  Every subset of `ℂ` generates `ℂ`
+(`starSubalgebra_complex_eq_top`: every `ℂ`-∗-subalgebra of `ℂ` is `⊤`, since
+`x = x·1`), whereas `W*(∅) ⊆ ℂ·1 ⊊ ℂ ⊕ ℂ`: the diagonal `diagBool` is a von
+Neumann subalgebra — closed because evaluation is 1-Lipschitz
+(`lp.lipschitzWith_one_eval`), and closed under directed suprema because those
+are coordinatewise (`lp_infty_exists_isLUB`), so the two coordinates of a
+supremum of diagonal elements are LUBs of the *same* set.
+
+This is **not** an artefact of `∅` or of the trivial-ish algebra `ℂ`: `Aᵢ =
+{0}` works verbatim, and `𝒜₀ = 𝒜₁ = ℂ²` with `A₀ = A₁ = {(1,0)}` (both
+summands nontrivial, both generating sets non-empty and generating a *proper*
+subalgebra's worth of data) gives `W*(⋃ κᵢ(Aᵢ))` of dimension 3 inside `ℂ⁴`.
+The counterexample used in the tree is the shortest one; the others are
+recorded in ERRATA.
+
+Our statement of `sum_generation_1` is realigned to the repaired form —
+generating set `⋃ᵢ κᵢ(Aᵢ) ∪ {eᵢ : i ∈ I}` — and left `sorry`.  The repair is
+sufficient, and the argument is written out in its doc comment: with the `eᵢ`
+present, `Tᵢ = {a : κᵢ(a) ∈ W}` is a *unital* ∗-subalgebra of `𝒜ᵢ`, norm-closed
+(`κᵢ` is isometric) and closed under directed suprema (`κᵢ` carries LUBs to
+LUBs, the order being pointwise), hence a von Neumann subalgebra containing
+`Aᵢ`, hence `⊤`; and then a general `x` is the directed supremum of its finite
+restrictions exactly as in 123I.1.  Not formalized this round: it needs
+`lpKappa` and its algebra lemmas, which currently live *downstream* in
+`QuantumLambda.lean`, so proving it means first lifting that block into
+`Tensor.lean`.
+
+### 117II.2 `sum_generation_2` — three lines of content
+
+Centre separation transfers to `⊕ᵢ 𝒜ᵢ` because (i) centrality passes to each
+coordinate by testing against `κᵢ(b)`, (ii) positivity is pointwise
+(`lp_infty_nonneg_iff`), and (iii) `ω ∘ πᵢ` is already in the tree as
+`Theses.A.VN.lpNP i ω`, with `lp_infty_np_apply` its defining equation — so the
+witness the definition asks for is handed over directly.  No `DecidableEq I` in
+the statement, so the proof opens with `classical` for `lp.single`.
+
+### Verification
+
+`lake build Theses.A.Proc.{Tensor,Measurement,QuantumLambda,Duplicators}` →
+exit 0.  `#print axioms` on `linf_generated`, `sum_generation_2`,
+`sum_generation_1_is_false`, `starSubalgebra_complex_eq_top`, `diagBool`,
+`mem_diagBool`, `isVNSubalgebra_diagBool`, and regressions
+`linf_projections_order_separating`, `cor_linf_ff_2`: every line is
+`[propext, Classical.choice, Quot.sound]`.  Warnings were diffed against the
+baseline build; the only new ones are the `declaration uses sorry` lines that
+moved with the edits (all new tactic blocks use `change`, not `show`, where the
+style linter asks for it).
+
+## Session 34 — `B/Dils` 149VII: the `1 ⇒ 3` of 149V is proved (worker 61)
+
+**Result: `bddUnComplete_of_selfDual` (149VII, dils.tex:2258) is closed,
+axiom-clean.**  `HilbertModules.lean` goes 3 → 2 `sorry`s; 149V now has three
+of its four non-trivial implications settled by hand (1⇒3, 2⇒3, 4⇒1) and two
+still frozen (3⇒4 on **80IV**, 4⇒2 on **87VIII**).
+
+`Theses/A/VN/Completeness.lean` is now imported by `HilbertModules.lean` (no
+cycle: `Completeness` imports only `A/VN/Projections`, which was already on
+the path).  Session 32 having proved **77I**.1 `vn_complete_1`, this is the
+single ingredient that was missing.
+
+### Divergence: class 1 with one class-2 deviation
+
+Faithful to dils.tex 2256–2325 except at the bound on `τ`.
+
+* **Mirroring.**  The thesis's `τ(y) = (uslim_α ⟨y,x_α⟩)*` is *unstarred* in
+  the Mathlib convention: `τ(y) = uslim_α [x_α,y]`.  The star of the thesis is
+  exactly what the swap `[u,v] = ⟨v,u⟩` absorbs — and the check that decides
+  it is 𝒷-linearity, not the eye: `y ↦ [x,y]` satisfies `τ(b•y) = b·τ(y)`,
+  whereas `y ↦ [y,x]` satisfies `τ(b•y) = τ(y)·b*`, which is not what
+  `SelfDual` asks for.  The ultrastrong limit exists by 77I.1; `τ` is additive,
+  ℂ-linear and 𝒷-linear by uniqueness of ultrastrong limits (**44XI**.1 via
+  `tendsto_nhds_unique` for `ultrastrong 𝒷`).
+* **Class 2, the bound on `τ`.**  The thesis writes
+  `τ(y)τ(y)* = uwlim_α ⟨x_α,y⟩⟨y,x_α⟩ ≤ ‖y‖²B²` and cites **46II**
+  (`usconv`, joint ultrastrong/ultraweak continuity of multiplication on
+  bounded sets), which is not in the tree.  Instead every `‖[x_α,y]‖_ω` is
+  bounded by `‖y‖ B ω(1)^½` directly — **142III** `module_CS` gives
+  `[y,d][d,y] ≤ ‖[y,y]‖[d,d]`, i.e. `‖[d,y]‖_ω ≤ ‖y‖‖d‖_ω`
+  (`omegaNorm_inner_le`), and `‖x‖_ω ≤ ‖x‖ω(1)^½`
+  (`unSeminorm_le_norm_mul`) — and `‖·‖_ω` is `1`-Lipschitz, so the same bound
+  passes to `τ(y)`.  Order separation of the np-functionals (**44XI**,
+  `np_orderSeparating`) then converts the *family* of ω-bounds into
+  `‖τ(y)‖ ≤ B‖y‖`; this is `norm_le_of_omegaNorm_le`, which is the `hchar`
+  buried inside the proof of `vn_positive_basic_3` restated for a general
+  constant.  (`usconv` would have been used for precisely this step, so this
+  is a substitution of one 44XI-flavoured argument for a 46II-flavoured one,
+  not a change of route.)
+* The closing ε-argument is the thesis's verbatim, filter-side: for the
+  `s ∈ F` of diameter `≤ (ε/2)²/(2(K+1))` and any `x ∈ s ∩ s₀`, a `β ∈ s` is
+  chosen with `|ω[t-x, t-β]|` small (possible because `[·,t-x] → [t,t-x]`
+  ultrastrongly and `F` is `NeBot`), and
+  `[t-x,t-x] = [t-x,t-β] + [t-x,β-x]` splits the estimate into Kadison's
+  inequality (`norm_apply_le_omegaNorm`) and Cauchy–Schwarz for `‖·‖_ω`
+  (`unSeminorm_inner_le`).  `K = ‖t‖_ω + Bω(1)^½` is the thesis's `‖t‖_f + B`.
+
+### New private by-products in `HilbertModules.lean`
+
+`inner_neg_left'`, `inner_neg_right'`, `unSeminorm_neg'`, `usTendsto_unique'`,
+`usTendsto_add'`, `usTendsto_const_mul'`, `usTendsto_smul'`,
+`isSelfAdjoint_real_smul_one`, `norm_le_of_omegaNorm_le`, `omegaNorm_inner_le`,
+`unSeminorm_le_norm_mul`.  The last three are the reusable ones: any further
+`A/VN`-to-module transfer in this chapter will want them, and
+`norm_le_of_omegaNorm_le` is the general form of an argument that is currently
+inlined twice in `A/VN/Basic.lean`.
+
+### What 149V's partial completion does *not* open — checked, not assumed
+
+**151Ia** `selfdual_completion_univ` (`SelfDualCompletion.lean:96`) is the
+natural consumer, and it is *not* unblocked.  dils.tex:3283 uses "`Y` is
+ultranorm complete, see `dils-selfdual`" — condition **2** of 149V, which is
+reached only through `1 ⇒ 3 ⇒ 4 ⇒ 2`, i.e. through **80IV** *and* **87VIII**.
+Bounded ultranorm completeness (condition 3, what is now available) does not
+suffice: the approximating net supplied by `UnDense` is not norm-bounded, and
+making it so is exactly the Kaplansky-type statement 158II, which sessions 29
+and 30 left open.  `dils_completion` (150II) is likewise untouched.  No other
+file in `Theses/B` mentions `dils_selfdual`, `BddUnComplete` or `UnComplete`.
+
+### Verification
+
+`lake build Theses.B.Dils.{HilbertModules,SelfDual,SelfDualCompletion,
+Kaplansky,Paschke,Pure,Stinespring}` → exit 0, zero `error:` lines.
+`#print axioms Theses.B.Dils.bddUnComplete_of_selfDual` →
+`[propext, Classical.choice, Quot.sound]`.  The doc comments of 149VII and
+149IX were updated (149IX's remaining blocker is **87VIII** alone, in
+`Theses/A/VN/NormalFunctionals.lean`, not `Basic.lean` as the old comment
+said), as was the parsec-1490 section header.

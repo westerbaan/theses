@@ -580,9 +580,140 @@ theorem cor_linf_ff_3 (X Y : Type u) :
 /-! ## Parsec 1230: `ℓ^∞` and `nsp` are strong monoidal -/
 
 /-- **123I** (proc.tex:4628, Exercise), part 1: the indicator functions
-`x̂ = single x 1` generate `ℓ^∞(X)`. -/
+`x̂ = single x 1` generate `ℓ^∞(X)`.
+
+No author argument (an exercise past parsec 340, so no published solution
+either).  The route taken: norm-closedness alone is *not* enough — the
+finitely supported functions are norm-dense in `c₀(X)`, not in `ℓ^∞(X)` — so
+the work is done by closure under directed suprema.  For `0 ≤ f` the finite
+restrictions `∑_{x ∈ F} f(x)·x̂` (`F ⊆ X` finite) form a directed family whose
+supremum is `f`, because the order on `⊕_{x ∈ X} ℂ` is pointwise
+(`lp_infty_le_iff`); note the least-upper-bound half needs only the singletons
+`F = {y}`.  A self-adjoint `a` is reduced to that case by `a = (a + ‖a‖·1) −
+‖a‖·1` (no positive/negative part decomposition is needed), and a general `f`
+by `f = ℜf + i·ℑf`. -/
 theorem linf_generated (X : Type u) [DecidableEq X] :
-    wstar (linf X) {f : linf X | ∃ x : X, f = lp.single ∞ x 1} = ⊤ := sorry
+    wstar (linf X) {f : linf X | ∃ x : X, f = lp.single ∞ x 1} = ⊤ := by
+  obtain ⟨hVN, hgen⟩ :=
+    isVNSubalgebra_wstar (A := linf X) {f : linf X | ∃ x : X, f = lp.single ∞ x 1}
+  set S : StarSubalgebra ℂ (linf X) :=
+    wstar (linf X) {f : linf X | ∃ x : X, f = lp.single ∞ x 1} with hSdef
+  -- every `single x z` lies in `S`
+  have hsingle : ∀ (x : X) (z : ℂ), (lp.single ∞ x z : linf X) ∈ S := by
+    intro x z
+    have h : (lp.single ∞ x z : linf X) = z • lp.single ∞ x (1 : ℂ) := by
+      rw [← lp.single_smul]; simp
+    rw [h]
+    exact SMulMemClass.smul_mem _ (hgen ⟨x, rfl⟩)
+  have hsum_mem : ∀ (c : X → ℂ) (F : Finset X),
+      (∑ x ∈ F, (lp.single ∞ x (c x) : linf X)) ∈ S :=
+    fun c F => sum_mem fun x _ => hsingle x (c x)
+  -- the value of a finite restriction
+  have hev : ∀ (c : X → ℂ) (F : Finset X) (y : X),
+      ((∑ x ∈ F, (lp.single ∞ x (c x) : linf X)) : linf X) y
+        = if y ∈ F then c y else 0 := by
+    intro c F y
+    have h := map_sum (lpEvalSAH (𝒜 := fun _ : X => ℂ) y)
+      (fun x => (lp.single ∞ x (c x) : linf X)) F
+    simp only [lpEvalSAH_apply] at h
+    rw [h]
+    simp only [lp.coeFn_single]
+    exact Finset.sum_pi_single y c F
+  -- `single x z` is self-adjoint when `z` is
+  have hsingle_sa : ∀ (x : X) (z : ℂ), (starRingEnd ℂ) z = z →
+      IsSelfAdjoint (lp.single ∞ x z : linf X) := by
+    intro x z hz
+    change star _ = _
+    apply lp.ext
+    rw [lp.coeFn_star]
+    funext y
+    simp only [Pi.star_apply, lp.coeFn_single, Pi.single_apply]
+    split
+    · exact hz
+    · simp
+  -- every positive element lies in `S`
+  have key_pos : ∀ f : linf X, 0 ≤ f → f ∈ S := by
+    intro f hf
+    have hfx : ∀ y : X, (0 : ℂ) ≤ (f : linf X) y := (lp_infty_nonneg_iff f).mp hf
+    have him : ∀ y : X, (starRingEnd ℂ) ((f : linf X) y) = (f : linf X) y := fun y =>
+      Complex.conj_eq_iff_im.mpr (Complex.le_def.mp (hfx y)).2.symm
+    have hfsa : IsSelfAdjoint f := by
+      change star f = f
+      apply lp.ext
+      rw [lp.coeFn_star]
+      funext y
+      exact him y
+    set c : X → ℂ := fun y => (f : linf X) y with hc
+    have hsa : ∀ F : Finset X,
+        IsSelfAdjoint (∑ x ∈ F, (lp.single ∞ x (c x) : linf X)) := by
+      intro F
+      change star _ = _
+      rw [star_sum]
+      exact Finset.sum_congr rfl fun x _ => hsingle_sa x (c x) (him x)
+    set g : Finset X → selfAdjoint (linf X) :=
+      fun F => ⟨∑ x ∈ F, (lp.single ∞ x (c x) : linf X), hsa F⟩ with hg
+    have hev' : ∀ (F : Finset X) (y : X),
+        ((g F : selfAdjoint (linf X)) : linf X) y = if y ∈ F then c y else 0 :=
+      fun F y => hev c F y
+    have hmono : ∀ {F G : Finset X}, F ⊆ G → g F ≤ g G := by
+      intro F G hFG
+      rw [← Subtype.coe_le_coe, lp_infty_le_iff]
+      intro y
+      rw [hev', hev']
+      split_ifs with h1 h2 h3
+      · exact le_rfl
+      · exact absurd (hFG h1) h2
+      · exact hfx y
+      · exact le_rfl
+    have hlub : IsLUB (Set.range g) ⟨f, hfsa⟩ := by
+      constructor
+      · rintro _ ⟨F, rfl⟩
+        rw [← Subtype.coe_le_coe, lp_infty_le_iff]
+        intro y
+        rw [hev']
+        change _ ≤ (f : linf X) y
+        split
+        · exact le_rfl
+        · exact hfx y
+      · intro u hu
+        rw [← Subtype.coe_le_coe, lp_infty_le_iff]
+        intro y
+        have h := (lp_infty_le_iff _ _).mp (Subtype.coe_le_coe.mpr (hu ⟨{y}, rfl⟩)) y
+        rw [hev'] at h
+        simpa using h
+    refine hVN.dirSup_mem (Set.range g) ⟨f, hfsa⟩ ?_ ⟨_, ⟨∅, rfl⟩⟩ ?_ hlub
+    · rintro _ ⟨F, rfl⟩
+      exact hsum_mem c F
+    · rintro _ ⟨F, rfl⟩ _ ⟨G, rfl⟩
+      exact ⟨g (F ∪ G), ⟨F ∪ G, rfl⟩, hmono Finset.subset_union_left,
+        hmono Finset.subset_union_right⟩
+  -- every self-adjoint element lies in `S`
+  have key_sa : ∀ f : linf X, IsSelfAdjoint f → f ∈ S := by
+    intro a ha
+    have hb : (0 : linf X) ≤ a + ((‖a‖ : ℂ) • 1) := by
+      rw [lp_infty_nonneg_iff]
+      intro y
+      have h1 : ((a + ((‖a‖ : ℂ) • 1) : linf X) : linf X) y = (a : linf X) y + (‖a‖ : ℂ) := by
+        rw [lp.coeFn_add, lp.coeFn_smul, lp.infty_coeFn_one]
+        simp
+      rw [h1, Complex.le_def]
+      have him : ((a : linf X) y).im = 0 :=
+        Complex.conj_eq_iff_im.mp (lp_infty_isSelfAdjoint ha y)
+      have h2 : ‖(a : linf X) y‖ ≤ ‖a‖ := lp.norm_apply_le_norm ENNReal.top_ne_zero a y
+      have h3 : |((a : linf X) y).re| ≤ ‖(a : linf X) y‖ := Complex.abs_re_le_norm _
+      constructor
+      · simp only [Complex.zero_re, Complex.add_re, Complex.ofReal_re]
+        have := abs_le.mp h3
+        linarith [this.1]
+      · simp [him]
+    have hrw : a = (a + ((‖a‖ : ℂ) • 1)) - ((‖a‖ : ℂ) • 1) :=
+      (add_sub_cancel_right a ((‖a‖ : ℂ) • 1)).symm
+    rw [hrw]
+    exact sub_mem (key_pos _ hb) (SMulMemClass.smul_mem _ (one_mem S))
+  refine StarSubalgebra.eq_top_iff.mpr fun f => ?_
+  rw [← realPart_add_I_smul_imaginaryPart f]
+  exact add_mem (key_sa _ (realPart f).2)
+    (SMulMemClass.smul_mem _ (key_sa _ (imaginaryPart f).2))
 
 /-- **123I** (proc.tex:4628, Exercise), part 2: the coordinate projections
 `π_x : ℓ^∞(X) → ℂ` form an order separating collection of

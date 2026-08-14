@@ -2429,11 +2429,105 @@ variable {I : Type u} (𝒜 : I → Type u) [∀ i, CStarAlgebra (𝒜 i)]
 
 /-- **117II** (`sum-generation`, proc.tex:3733, Exercise), part 1: if
 `Aᵢ ⊆ 𝒜ᵢ` generates `𝒜ᵢ` for each `i`, then `⋃ᵢ κᵢ(Aᵢ)` generates the
-direct sum `⊕ᵢ 𝒜ᵢ`. -/
+direct sum `⊕ᵢ 𝒜ᵢ`.
+
+**The thesis's statement is false and has been repaired here**: the
+coprojections `eᵢ = κᵢ(1)` must be added to the generating set.  The printed
+statement is refuted by `sum_generation_1_is_false` below; briefly, `κᵢ` is
+not unital, so nothing forces `eᵢ` into `W*(⋃ᵢ κᵢ(Aᵢ))`, and for
+`𝒜₀ = 𝒜₁ = ℂ` with `A₀ = A₁ = ∅` (or `{0}`, or `{(1,0)} ⊆ ℂ²` for a
+counterexample with nontrivial summands and non-empty generating sets) the
+right-hand side is the diagonal `ℂ·1`, not `ℂ ⊕ ℂ`.  With the `eᵢ` present
+the exercise goes through: `{a : κᵢ(a) ∈ W}` is then a *unital* ∗-subalgebra
+of `𝒜ᵢ`, norm-closed and closed under directed suprema (the order on
+`⊕ᵢ 𝒜ᵢ` is pointwise), hence all of `𝒜ᵢ`; and a general `x` is the directed
+supremum of its finite restrictions. -/
 theorem sum_generation_1 [DecidableEq I] (S : ∀ i, Set (𝒜 i))
     (hS : ∀ i, wstar (𝒜 i) (S i) = ⊤) :
     wstar (lp 𝒜 ∞)
-      {x : lp 𝒜 ∞ | ∃ i, ∃ a ∈ S i, x = lp.single ∞ i a} = ⊤ := sorry
+      ({x : lp 𝒜 ∞ | ∃ i, ∃ a ∈ S i, x = lp.single ∞ i a} ∪
+        {x : lp 𝒜 ∞ | ∃ i, x = lp.single ∞ i 1}) = ⊤ := sorry
+
+/-- Every `ℂ`-∗-subalgebra of `ℂ` is the whole of `ℂ`; so *every* subset of
+`ℂ` is a generating subset, `∅` included. -/
+theorem starSubalgebra_complex_eq_top (T : StarSubalgebra ℂ ℂ) : T = ⊤ :=
+  StarSubalgebra.eq_top_iff.mpr fun x => by
+    simpa using T.algebraMap_mem x
+
+/-- The diagonal `{(z, z) : z ∈ ℂ}` of `ℂ ⊕ ℂ = ℓ^∞(Bool)`. -/
+def diagBool : StarSubalgebra ℂ (lp (fun _ : Bool => ℂ) ∞) where
+  carrier := {x | x true = x false}
+  mul_mem' {a b} ha hb := by
+    change ((a * b : lp (fun _ : Bool => ℂ) ∞) : ∀ _ : Bool, ℂ) true = _
+    rw [lp.infty_coeFn_mul]
+    simp only [Pi.mul_apply]
+    rw [show ((a : lp (fun _ : Bool => ℂ) ∞) : ∀ _ : Bool, ℂ) true = a false from ha,
+      show ((b : lp (fun _ : Bool => ℂ) ∞) : ∀ _ : Bool, ℂ) true = b false from hb]
+  one_mem' := by
+    change ((1 : lp (fun _ : Bool => ℂ) ∞) : ∀ _ : Bool, ℂ) true = _
+    rw [lp.infty_coeFn_one]
+    rfl
+  add_mem' {a b} ha hb := by
+    change ((a + b : lp (fun _ : Bool => ℂ) ∞) : ∀ _ : Bool, ℂ) true = _
+    rw [lp.coeFn_add]
+    simp only [Pi.add_apply]
+    rw [show ((a : lp (fun _ : Bool => ℂ) ∞) : ∀ _ : Bool, ℂ) true = a false from ha,
+      show ((b : lp (fun _ : Bool => ℂ) ∞) : ∀ _ : Bool, ℂ) true = b false from hb]
+  zero_mem' := by
+    change ((0 : lp (fun _ : Bool => ℂ) ∞) : ∀ _ : Bool, ℂ) true = _
+    rw [lp.coeFn_zero]
+    rfl
+  algebraMap_mem' c := by
+    change ((algebraMap ℂ (lp (fun _ : Bool => ℂ) ∞) c) : ∀ _ : Bool, ℂ) true = _
+    rw [Algebra.algebraMap_eq_smul_one, lp.coeFn_smul, lp.infty_coeFn_one]
+    rfl
+  star_mem' {a} ha := by
+    change ((star a : lp (fun _ : Bool => ℂ) ∞) : ∀ _ : Bool, ℂ) true = _
+    rw [lp.coeFn_star]
+    simp only [Pi.star_apply]
+    rw [show ((a : lp (fun _ : Bool => ℂ) ∞) : ∀ _ : Bool, ℂ) true = a false from ha]
+
+theorem mem_diagBool {x : lp (fun _ : Bool => ℂ) ∞} :
+    x ∈ diagBool ↔ x true = x false := Iff.rfl
+
+/-- The diagonal is a von Neumann subalgebra of `ℂ ⊕ ℂ`: it is closed
+(evaluation is 1-Lipschitz) and closed under directed suprema, because those
+are computed coordinatewise (`lp_infty_exists_isLUB`). -/
+theorem isVNSubalgebra_diagBool :
+    IsVNSubalgebra (lp (fun _ : Bool => ℂ) ∞) diagBool := by
+  constructor
+  · exact isClosed_eq ((lp.lipschitzWith_one_eval ∞ true).continuous)
+      ((lp.lipschitzWith_one_eval ∞ false).continuous)
+  · intro D s hDS hne hdir hlub
+    obtain ⟨s', hs', hev⟩ := lp_infty_exists_isLUB D hne hdir ⟨s, hlub.1⟩
+    obtain rfl := hlub.unique hs'
+    have himg : lpEvalSA (𝒜 := fun _ : Bool => ℂ) true '' D
+        = lpEvalSA (𝒜 := fun _ : Bool => ℂ) false '' D :=
+      Set.image_congr fun d hd => Subtype.ext (hDS d hd)
+    exact congrArg Subtype.val ((hev true).unique (himg ▸ hev false))
+
+/-- **117II**.1 (`sum-generation`, proc.tex:3733, Exercise) is **false as
+printed** — see the doc comment of `sum_generation_1` above.  Witness:
+`I = Bool`, `𝒜ᵢ = ℂ`, `Aᵢ = ∅` (which does generate `ℂ`, by
+`starSubalgebra_complex_eq_top`), while `W*(∅) ⊆ ℂ·1 ⊊ ℂ ⊕ ℂ` because the
+diagonal is a von Neumann subalgebra. -/
+theorem sum_generation_1_is_false :
+    ¬ ∀ (S : Bool → Set ℂ), (∀ i, wstar ℂ (S i) = ⊤) →
+      wstar (lp (fun _ : Bool => ℂ) ∞)
+        {x : lp (fun _ : Bool => ℂ) ∞ | ∃ i, ∃ a ∈ S i, x = lp.single ∞ i a} = ⊤ := by
+  intro h
+  have htop := h (fun _ => ∅) (fun _ => starSubalgebra_complex_eq_top _)
+  have hle : wstar (lp (fun _ : Bool => ℂ) ∞)
+      {x : lp (fun _ : Bool => ℂ) ∞ | ∃ i, ∃ a ∈ (∅ : Set ℂ), x = lp.single ∞ i a}
+        ≤ diagBool := by
+    apply sInf_le
+    exact ⟨isVNSubalgebra_diagBool, by rintro x ⟨i, a, ha, -⟩; exact ha.elim⟩
+  rw [htop] at hle
+  have hmem : (lp.single ∞ true (1 : ℂ) : lp (fun _ : Bool => ℂ) ∞) ∈ diagBool :=
+    hle (by trivial)
+  rw [mem_diagBool] at hmem
+  rw [lp.single_apply_self, lp.single_apply_ne _ _ _ (by simp)] at hmem
+  exact one_ne_zero hmem
 
 /-- **117II** (`sum-generation`, proc.tex:3733, Exercise), part 2: centre
 separating collections `Ωᵢ` on the `𝒜ᵢ` give the centre separating
@@ -2442,7 +2536,25 @@ theorem sum_generation_2 (Ω : ∀ i, Set (NPFunctional (𝒜 i)))
     (hΩ : ∀ i, CentreSeparating (𝒜 i) (Ω i)) :
     CentreSeparating (lp 𝒜 ∞)
       {χ : NPFunctional (lp 𝒜 ∞) | ∃ i, ∃ ω ∈ Ω i,
-        ∀ x : lp 𝒜 ∞, χ x = ω (x i)} := sorry
+        ∀ x : lp 𝒜 ∞, χ x = ω (x i)} := by
+  classical
+  intro a hcen hpos hkill
+  apply lp.ext
+  funext i
+  -- centrality passes to each coordinate (test against `κᵢ(b)`)
+  have hci : IsCentral (𝒜 i) ((a : lp 𝒜 ∞) i) := by
+    intro b
+    have h := hcen (lp.single ∞ i b)
+    have h1 := congrFun (congrArg (fun x : lp 𝒜 ∞ => (x : ∀ j, 𝒜 j)) h) i
+    rw [lp.infty_coeFn_mul, lp.infty_coeFn_mul] at h1
+    simpa [lp.single_apply_self] using h1
+  have hpi : (0 : 𝒜 i) ≤ (a : lp 𝒜 ∞) i := (lp_infty_nonneg_iff a).mp hpos i
+  -- `ω ∘ πᵢ` is `lpNP i ω`, hence belongs to the collection
+  have hki : ∀ ω ∈ Ω i, ω ((a : lp 𝒜 ∞) i) = 0 := by
+    intro ω hω
+    have := hkill (lpNP i ω) ⟨i, ω, hω, fun x => rfl⟩
+    rwa [lp_infty_np_apply] at this
+  simpa using hΩ i _ hci hpi hki
 
 variable [VonNeumannAlgebra A] [∀ i, Nontrivial (VNT A (𝒜 i))]
 

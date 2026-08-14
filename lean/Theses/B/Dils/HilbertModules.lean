@@ -33,6 +33,7 @@ The ultranorm uniformity is represented by its family of seminorms
 import Theses.Common
 import Theses.A.CStar.Matrices
 import Theses.A.VN.Projections
+import Theses.A.VN.Completeness
 
 open scoped ComplexOrder ComplexInnerProductSpace CStarAlgebra WithCStarModule
 open Filter Topology Theses Theses.A.CStar Theses.A.VN
@@ -1968,24 +1969,383 @@ def BddUnComplete : Prop :=
 
 **149VI** (dils.tex:2249) fixes the route `1 ⇒ 3 ⇒ 4 ⇒ 2 ⇒ 4 ⇒ 1`; the four
 non-trivial implications are stated separately below, so that they can be
-used (and proved) one at a time.  Of the four, only `4 ⇒ 1` is currently
-available: the other three all consume results of `A/VN` that are still
-`sorry` there — see their doc comments. -/
+used (and proved) one at a time.  Of the four, `1 ⇒ 3` and `4 ⇒ 1` are
+proved; the other two still consume results of `A/VN` that are `sorry`
+there (**80IV** for `3 ⇒ 4`, **87VIII** for `4 ⇒ 2`) — see their doc
+comments. -/
+
+section OneImpliesThree
+
+private theorem inner_neg_left' (B : BInner 𝒷 X) (x y : X) :
+    B.inner (-x) y = -B.inner x y := by
+  rw [show (-x) = (0 : X) - x by abel, B.inner_sub_left, B.inner_zero_left,
+    zero_sub]
+
+private theorem inner_neg_right' (B : BInner 𝒷 X) (x y : X) :
+    B.inner x (-y) = -B.inner x y := by
+  rw [show (-y) = (0 : X) - y by abel, B.inner_sub_right, B.inner_zero_right,
+    zero_sub]
+
+private theorem unSeminorm_neg' (ω : NPFunctional 𝒷) (B : BInner 𝒷 X) (x : X) :
+    unSeminorm ω B.inner (-x) = unSeminorm ω B.inner x := by
+  rw [unSeminorm, unSeminorm, inner_neg_left', inner_neg_right', neg_neg]
+
+/-- Uniqueness of ultrastrong limits (**44XI**.1, `vn_positive_basic_1`). -/
+private theorem usTendsto_unique' [VonNeumannAlgebra 𝒷] {J : Type*}
+    {l : Filter J} [l.NeBot] {f : J → 𝒷} {a c : 𝒷} (ha : USTendsto f l a)
+    (hc : USTendsto f l c) : a = c :=
+  @tendsto_nhds_unique 𝒷 J (ultrastrong 𝒷) (vn_positive_basic_1 (A := 𝒷)).2
+    f l a c _ ha hc
+
+private theorem usTendsto_add' {J : Type*} {l : Filter J} {f g : J → 𝒷}
+    {a b : 𝒷} (hf : USTendsto f l a) (hg : USTendsto g l b) :
+    USTendsto (fun i => f i + g i) l (a + b) := by
+  rw [usTendsto_iff] at hf hg ⊢
+  intro ω
+  refine squeeze_zero (fun i => omegaNorm_nonneg ω _) (fun i => ?_)
+    (by simpa using (hf ω).add (hg ω))
+  rw [show f i + g i - (a + b) = (f i - a) + (g i - b) by abel]
+  exact omegaNorm_add_le ω _ _
+
+private theorem usTendsto_const_mul' {J : Type*} {l : Filter J} {f : J → 𝒷}
+    {a : 𝒷} (b : 𝒷) (hf : USTendsto f l a) :
+    USTendsto (fun i => b * f i) l (b * a) := by
+  rw [usTendsto_iff] at hf ⊢
+  intro ω
+  refine squeeze_zero (fun i => omegaNorm_nonneg ω _) (fun i => ?_)
+    (by simpa using (hf ω).const_mul ‖b‖)
+  rw [← mul_sub]
+  exact omegaNorm_mul_le ω b _
+
+private theorem usTendsto_smul' {J : Type*} {l : Filter J} {f : J → 𝒷}
+    {a : 𝒷} (c : ℂ) (hf : USTendsto f l a) :
+    USTendsto (fun i => c • f i) l (c • a) := by
+  rw [usTendsto_iff] at hf ⊢
+  intro ω
+  have heq : ∀ i, omegaNorm 𝒷 ω (c • f i - c • a)
+      = ‖c‖ * omegaNorm 𝒷 ω (f i - a) := fun i => by
+    rw [← smul_sub, omegaNorm_smul]
+  simp only [heq]
+  simpa using (hf ω).const_mul ‖c‖
+
+omit [PartialOrder 𝒷] [StarOrderedRing 𝒷] in
+private theorem isSelfAdjoint_real_smul_one (r : ℝ) :
+    IsSelfAdjoint ((r : ℝ) • (1 : 𝒷)) := by
+  rw [show ((r : ℝ) • (1 : 𝒷)) = ((r : ℝ) : ℂ) • (1 : 𝒷) from
+    RCLike.real_smul_eq_coe_smul (K := ℂ) r 1]
+  exact IsSelfAdjoint.smul (Complex.conj_ofReal r) (IsSelfAdjoint.one 𝒷)
+
+/-- Order separation of the np-functionals in the form used below: a bound
+`‖a‖_ω ≤ C ω(1)^½` for every np-functional `ω` is a bound on `‖a‖`.  (This
+is the `hchar` of `vn_positive_basic_3`, stated for a general `C`.) -/
+private theorem norm_le_of_omegaNorm_le [VonNeumannAlgebra 𝒷] {a : 𝒷} {C : ℝ}
+    (hC : 0 ≤ C)
+    (h : ∀ ω : NPFunctional 𝒷, omegaNorm 𝒷 ω a ≤ C * Real.sqrt (ω 1).re) :
+    ‖a‖ ≤ C := by
+  rcases subsingleton_or_nontrivial 𝒷 with _ | _
+  · rw [Subsingleton.elim a 0, norm_zero]; exact hC
+  have hle : star a * a ≤ (C ^ 2 : ℝ) • (1 : 𝒷) := by
+    refine np_orderSeparating _ _ (IsSelfAdjoint.of_nonneg (star_mul_self_nonneg a))
+      (isSelfAdjoint_real_smul_one (C ^ 2)) fun ω => ?_
+    have hnn : 0 ≤ (ω (star a * a)).re := np_re_nonneg ω (star_mul_self_nonneg a)
+    have hnn1 : 0 ≤ (ω 1).re := np_re_nonneg ω zero_le_one
+    have hω := h ω
+    rw [omegaNorm] at hω
+    have hre : (ω (star a * a)).re ≤ (ω ((C ^ 2 : ℝ) • (1 : 𝒷))).re := by
+      rw [np_re_smul]
+      have h2 : Real.sqrt (ω (star a * a)).re * Real.sqrt (ω (star a * a)).re
+          ≤ (C * Real.sqrt (ω 1).re) * (C * Real.sqrt (ω 1).re) :=
+        mul_self_le_mul_self (Real.sqrt_nonneg _) hω
+      rw [Real.mul_self_sqrt hnn] at h2
+      calc (ω (star a * a)).re
+          ≤ (C * Real.sqrt (ω 1).re) * (C * Real.sqrt (ω 1).re) := h2
+        _ = C ^ 2 * (Real.sqrt (ω 1).re * Real.sqrt (ω 1).re) := by ring
+        _ = C ^ 2 * (ω 1).re := by rw [Real.mul_self_sqrt hnn1]
+    refine Complex.le_def.mpr ⟨hre, ?_⟩
+    have i1 : (ω (star a * a)).im = 0 := np_im_zero ω (star_mul_self_nonneg a)
+    have i2 : (ω ((C ^ 2 : ℝ) • (1 : 𝒷))).im = 0 := by
+      rw [show ((C ^ 2 : ℝ) • (1 : 𝒷)) = ((C ^ 2 : ℝ) : ℂ) • (1 : 𝒷) from
+        RCLike.real_smul_eq_coe_smul (K := ℂ) _ 1, np_smul, Complex.mul_im,
+        np_im_zero ω (zero_le_one (α := 𝒷)), Complex.ofReal_im]
+      ring
+    rw [i1, i2]
+  have hn : ‖star a * a‖ ≤ ‖((C ^ 2 : ℝ) • (1 : 𝒷))‖ :=
+    CStarAlgebra.norm_le_norm_of_nonneg_of_le (star_mul_self_nonneg a) hle
+  rw [CStarRing.norm_star_mul_self] at hn
+  have h1 : ‖((C ^ 2 : ℝ) • (1 : 𝒷))‖ = C ^ 2 := by
+    rw [norm_smul, norm_one, mul_one, Real.norm_eq_abs, abs_of_nonneg (sq_nonneg C)]
+  rw [h1] at hn
+  nlinarith [norm_nonneg a]
+
+/-- **142III** in the form used by **149VII**: `‖[d,y]‖_ω ≤ ‖y‖ ‖d‖_ω`. -/
+private theorem omegaNorm_inner_le (ω : NPFunctional 𝒷) (d y : X) :
+    omegaNorm 𝒷 ω (inner 𝒷 d y) ≤ ‖y‖ * unSeminorm ω (inner 𝒷 : X → X → 𝒷) d := by
+  have hcs : (inner 𝒷 y d : 𝒷) * inner 𝒷 d y
+      ≤ ‖(inner 𝒷 y y : 𝒷)‖ • (inner 𝒷 d d : 𝒷) := module_CS (cstarBInner 𝒷 X) d y
+  have hyy : ‖(inner 𝒷 y y : 𝒷)‖ = ‖y‖ ^ 2 := by
+    rw [CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒷) (E := X) y,
+      Real.sq_sqrt (norm_nonneg _)]
+  have h1 := np_re_mono ω hcs
+  rw [np_re_smul, hyy] at h1
+  have hd : (ω (inner 𝒷 d d : 𝒷)).re
+      = unSeminorm ω (inner 𝒷 : X → X → 𝒷) d ^ 2 :=
+    (unSeminorm_sq ω (cstarBInner 𝒷 X) d).symm
+  have hnn : 0 ≤ (ω (star (inner 𝒷 d y : 𝒷) * inner 𝒷 d y)).re :=
+    np_re_nonneg ω (star_mul_self_nonneg _)
+  have hstar : star (inner 𝒷 d y : 𝒷) = inner 𝒷 y d := CStarModule.star_inner _ _
+  have hsq : omegaNorm 𝒷 ω (inner 𝒷 d y) ^ 2
+      ≤ (‖y‖ * unSeminorm ω (inner 𝒷 : X → X → 𝒷) d) ^ 2 := by
+    rw [omegaNorm, Real.sq_sqrt hnn, hstar, mul_pow, ← hd]
+    exact h1
+  nlinarith [omegaNorm_nonneg (A := 𝒷) ω (inner 𝒷 d y),
+    mul_nonneg (norm_nonneg y) (unSeminorm_nonneg ω (inner 𝒷 : X → X → 𝒷) d)]
+
+/-- `‖x‖_ω ≤ ‖x‖ ω(1)^½` (**146VIII**, the half that **149VII** uses). -/
+private theorem unSeminorm_le_norm_mul (ω : NPFunctional 𝒷) (x : X) :
+    unSeminorm ω (inner 𝒷 : X → X → 𝒷) x ≤ ‖x‖ * Real.sqrt (ω 1).re := by
+  have hle : (inner 𝒷 x x : 𝒷) ≤ (‖(inner 𝒷 x x : 𝒷)‖ : ℝ) • (1 : 𝒷) :=
+    le_norm_smul_one (CStarModule.inner_self_nonneg (E := X) (x := x))
+  have h1 := np_re_mono ω hle
+  rw [np_re_smul] at h1
+  have hxx : ‖(inner 𝒷 x x : 𝒷)‖ = ‖x‖ ^ 2 := by
+    rw [CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒷) (E := X) x,
+      Real.sq_sqrt (norm_nonneg _)]
+  rw [hxx] at h1
+  rw [unSeminorm]
+  calc Real.sqrt (ω (inner 𝒷 x x : 𝒷)).re
+      ≤ Real.sqrt (‖x‖ ^ 2 * (ω 1).re) := Real.sqrt_le_sqrt h1
+    _ = ‖x‖ * Real.sqrt (ω 1).re := by
+        rw [Real.sqrt_mul (sq_nonneg _), Real.sqrt_sq (norm_nonneg x)]
+
+end OneImpliesThree
 
 /-- **149VII** (dils.tex:2258): (1) ⇒ (3) of **149V** — a self-dual
 pre-Hilbert 𝒷-module is norm-bounded ultranorm complete.
 
-**Blocked on `A/VN`.**  The proof defines `τ(y) = (uslim_α ⟨y,x_α⟩)*`, which
-needs **77I**.1 `Theses.A.VN.vn_complete_1` (ultrastrong completeness of a
-von Neumann algebra) — still `sorry` in `Theses/A/VN/Completeness.lean`, and
-not on this file's import path.  (The rest of the argument is available: the
-bound on `τ` can be obtained without **46II** `usconv` from
-`‖τ(y)‖_ω² = ω(τ(y)τ(y)*) = lim_α ω(⟨x_α,y⟩⟨y,x_α⟩) ≤ ‖y‖²B²ω(1)` and order
-separation of the np-functionals; the closing estimate is **142III** and
-Kadison's inequality.) -/
+Divergence class 1 (faithful) with one forced deviation, class 2, at the
+bound on `τ`.  The thesis's `τ(y) = (uslim_α ⟨y,x_α⟩)*` is *unstarred* in
+the mirrored convention — `τ(y) = uslim_α [x_α,y]` — because it is the
+*second* argument of Mathlib's `[·,·]` that is 𝒷-linear; the ultrastrong
+limit exists by **77I**.1 `Theses.A.VN.vn_complete_1` (whence the import of
+`Theses.A.VN.Completeness`), and `τ` is linear by uniqueness of ultrastrong
+limits (**44XI**.1).  Where the thesis identifies `τ(y)τ(y)*` with an
+ultraweak limit through **46II** (`usconv`), we bound `‖τ(y)‖_ω` directly by
+`‖y‖ B ω(1)^½` — every `‖[x_α,y]‖_ω` obeys that bound by **142III**, and
+`‖·‖_ω` is `‖·‖_ω`-continuous — and then turn the family of bounds into
+`‖τ(y)‖ ≤ B‖y‖` by order separation of the np-functionals (**44XI**), which
+is what `usconv` would have been used for.  The closing estimate is the
+thesis's verbatim, with Kadison's inequality in the form
+`norm_apply_le_omegaNorm`. -/
 theorem bddUnComplete_of_selfDual [VonNeumannAlgebra 𝒷] (h : SelfDual 𝒷 X) :
-    BddUnComplete 𝒷 X :=
-  sorry
+    BddUnComplete 𝒷 X := by
+  classical
+  rintro F hF hcauchy ⟨M, s₀, hs₀F, hs₀⟩
+  haveI : F.NeBot := hF
+  have hMnn : 0 ≤ M := by
+    obtain ⟨x, hx⟩ := Filter.nonempty_of_mem hs₀F
+    exact le_trans (norm_nonneg x) (hs₀ x hx)
+  -- rewriting rules for the inner product, phrased with `inner 𝒷` so that
+  -- they can be used by `rw`
+  have hsubL : ∀ a b c : X, (inner 𝒷 (a - b) c : 𝒷) = inner 𝒷 a c - inner 𝒷 b c :=
+    fun a b c => (cstarBInner 𝒷 X).inner_sub_left a b c
+  -- (a) for each `y`, `x ↦ [x,y]` is an ultrastrong-Cauchy net along `F`
+  have hcau : ∀ y : X, ∀ ω : NPFunctional 𝒷,
+      Tendsto (fun p : X × X =>
+          omegaNorm 𝒷 ω ((inner 𝒷 p.1 y : 𝒷) - inner 𝒷 p.2 y)) (F ×ˢ F) (𝓝 0) := by
+    intro y ω
+    rw [Metric.tendsto_nhds]
+    intro ε hε
+    obtain ⟨s, hsF, hs⟩ := hcauchy ω (ε / (2 * (‖y‖ + 1))) (by positivity)
+    filter_upwards [prod_mem_prod hsF hsF] with p hp
+    have h1 : omegaNorm 𝒷 ω ((inner 𝒷 p.1 y : 𝒷) - inner 𝒷 p.2 y)
+        ≤ ‖y‖ * unSeminorm ω (inner 𝒷 : X → X → 𝒷) (p.1 - p.2) := by
+      rw [← hsubL]; exact omegaNorm_inner_le ω _ y
+    have h2 := hs p.1 hp.1 p.2 hp.2
+    have h3 : ‖y‖ * (ε / (2 * (‖y‖ + 1))) < ε := by
+      have hpos : (0 : ℝ) < 2 * (‖y‖ + 1) := by positivity
+      have h0 : ‖y‖ * (ε / (2 * (‖y‖ + 1))) * (2 * (‖y‖ + 1)) = ‖y‖ * ε := by
+        field_simp
+      nlinarith [norm_nonneg y, hε, hpos]
+    rw [Real.dist_eq, sub_zero, abs_of_nonneg (omegaNorm_nonneg ω _)]
+    calc omegaNorm 𝒷 ω ((inner 𝒷 p.1 y : 𝒷) - inner 𝒷 p.2 y)
+        ≤ ‖y‖ * unSeminorm ω (inner 𝒷 : X → X → 𝒷) (p.1 - p.2) := h1
+      _ ≤ ‖y‖ * (ε / (2 * (‖y‖ + 1))) :=
+          mul_le_mul_of_nonneg_left h2 (norm_nonneg y)
+      _ < ε := h3
+  -- (b) `τ y = uslim_α [x_α, y]` (**77I**.1)
+  have hex : ∀ y : X, ∃ a : 𝒷, USTendsto (fun x : X => (inner 𝒷 x y : 𝒷)) F a :=
+    fun y => vn_complete_1 F (fun x : X => (inner 𝒷 x y : 𝒷)) (hcau y)
+  choose t' ht' using hex
+  -- (c) `τ` is ℂ-linear and 𝒷-linear, by uniqueness of ultrastrong limits
+  have hadd : ∀ y z : X, t' (y + z) = t' y + t' z := fun y z => by
+    refine usTendsto_unique' (ht' (y + z)) ?_
+    have h2 := usTendsto_add' (ht' y) (ht' z)
+    have heq : (fun x : X => (inner 𝒷 x y : 𝒷) + inner 𝒷 x z)
+        = fun x : X => (inner 𝒷 x (y + z) : 𝒷) :=
+      funext fun x => CStarModule.inner_add_right.symm
+    rwa [heq] at h2
+  have hsmul : ∀ (c : ℂ) (y : X), t' (c • y) = c • t' y := fun c y => by
+    refine usTendsto_unique' (ht' (c • y)) ?_
+    have h2 := usTendsto_smul' c (ht' y)
+    have heq : (fun x : X => c • (inner 𝒷 x y : 𝒷))
+        = fun x : X => (inner 𝒷 x (c • y) : 𝒷) :=
+      funext fun x => CStarModule.inner_smul_right_complex.symm
+    rwa [heq] at h2
+  have hbsmul : ∀ (b : 𝒷) (y : X), t' (b • y) = b * t' y := fun b y => by
+    refine usTendsto_unique' (ht' (b • y)) ?_
+    have h2 := usTendsto_const_mul' b (ht' y)
+    have heq : (fun x : X => b * (inner 𝒷 x y : 𝒷))
+        = fun x : X => (inner 𝒷 x (b • y) : 𝒷) :=
+      funext fun x => CStarModule.inner_op_smul_right.symm
+    rwa [heq] at h2
+  -- (d) `‖τ y‖_ω ≤ ‖y‖ B ω(1)^½`, hence `‖τ y‖ ≤ B ‖y‖` by order separation
+  have hbound : ∀ (ω : NPFunctional 𝒷) (y : X),
+      omegaNorm 𝒷 ω (t' y) ≤ ‖y‖ * M * Real.sqrt (ω 1).re := by
+    intro ω y
+    refine le_of_forall_pos_le_add fun ε hε => ?_
+    have hmem : {x : X | omegaNorm 𝒷 ω ((inner 𝒷 x y : 𝒷) - t' y) < ε} ∈ F := by
+      have h0 := (usTendsto_iff _ _ _).mp (ht' y) ω
+      filter_upwards [(Metric.tendsto_nhds.mp h0) ε hε] with x hx
+      rwa [Real.dist_eq, sub_zero, abs_of_nonneg (omegaNorm_nonneg ω _)] at hx
+    obtain ⟨x, hx⟩ := Filter.nonempty_of_mem (inter_mem hmem hs₀F)
+    have e1 : omegaNorm 𝒷 ω (t' y - (inner 𝒷 x y : 𝒷))
+        = omegaNorm 𝒷 ω ((inner 𝒷 x y : 𝒷) - t' y) := by
+      rw [show t' y - (inner 𝒷 x y : 𝒷) = -((inner 𝒷 x y : 𝒷) - t' y) by abel,
+        omegaNorm_neg]
+    have e2 : omegaNorm 𝒷 ω ((inner 𝒷 x y : 𝒷))
+        ≤ ‖y‖ * M * Real.sqrt (ω 1).re := by
+      have hsq : (0 : ℝ) ≤ Real.sqrt (ω 1).re := Real.sqrt_nonneg _
+      have hxM := hs₀ x hx.2
+      calc omegaNorm 𝒷 ω ((inner 𝒷 x y : 𝒷))
+          ≤ ‖y‖ * unSeminorm ω (inner 𝒷 : X → X → 𝒷) x := omegaNorm_inner_le ω x y
+        _ ≤ ‖y‖ * (‖x‖ * Real.sqrt (ω 1).re) :=
+            mul_le_mul_of_nonneg_left (unSeminorm_le_norm_mul ω x) (norm_nonneg y)
+        _ ≤ ‖y‖ * (M * Real.sqrt (ω 1).re) :=
+            mul_le_mul_of_nonneg_left
+              (mul_le_mul_of_nonneg_right hxM hsq) (norm_nonneg y)
+        _ = ‖y‖ * M * Real.sqrt (ω 1).re := (mul_assoc _ _ _).symm
+    have h3 := omegaNorm_sub_le ω (t' y) (inner 𝒷 x y) 0
+    rw [sub_zero, sub_zero, e1] at h3
+    have hx1 : omegaNorm 𝒷 ω ((inner 𝒷 x y : 𝒷) - t' y) < ε := hx.1
+    linarith
+  have hnormbound : ∀ y : X, ‖t' y‖ ≤ M * ‖y‖ := fun y =>
+    le_trans (norm_le_of_omegaNorm_le (a := t' y) (C := ‖y‖ * M)
+      (mul_nonneg (norm_nonneg y) hMnn) (fun ω => hbound ω y))
+      (le_of_eq (mul_comm _ _))
+  -- (e) self-duality produces the candidate limit `t`
+  obtain ⟨t, hts⟩ := h
+    { toFun := t', map_add' := hadd, map_smul' := fun c y => hsmul c y }
+    (fun b x => hbsmul b x) ⟨M, hnormbound⟩
+  have htt : ∀ y : X, t' y = inner 𝒷 t y := hts
+  -- (f) `x_α → t` ultranorm
+  refine ⟨t, fun ω => ?_⟩
+  rw [Metric.tendsto_nhds]
+  intro ε hε
+  obtain ⟨S, hS⟩ : ∃ S : ℝ, S = Real.sqrt (ω 1).re := ⟨_, rfl⟩
+  have hSnn : (0 : ℝ) ≤ S := hS ▸ Real.sqrt_nonneg _
+  obtain ⟨K, hK⟩ : ∃ K : ℝ,
+      K = unSeminorm ω (inner 𝒷 : X → X → 𝒷) t + M * S := ⟨_, rfl⟩
+  have hKnn : (0 : ℝ) ≤ K := by
+    rw [hK]
+    have h1 := unSeminorm_nonneg ω (inner 𝒷 : X → X → 𝒷) t
+    have h2 : (0 : ℝ) ≤ M * S := mul_nonneg hMnn hSnn
+    linarith
+  obtain ⟨s, hsF, hs⟩ := hcauchy ω ((ε / 2) ^ 2 / (2 * (K + 1))) (by positivity)
+  filter_upwards [inter_mem hsF hs₀F] with x hx
+  simp only [id_eq]
+  -- `‖t - x‖_ω ≤ K`
+  have hwK : unSeminorm ω (inner 𝒷 : X → X → 𝒷) (t - x) ≤ K := by
+    have h1 : unSeminorm ω (inner 𝒷 : X → X → 𝒷) (t + -x)
+        ≤ unSeminorm ω (inner 𝒷 : X → X → 𝒷) t
+          + unSeminorm ω (inner 𝒷 : X → X → 𝒷) (-x) :=
+      unSeminorm_add_le ω (cstarBInner 𝒷 X) t (-x)
+    have hneg : unSeminorm ω (inner 𝒷 : X → X → 𝒷) (-x)
+        = unSeminorm ω (inner 𝒷 : X → X → 𝒷) x :=
+      unSeminorm_neg' ω (cstarBInner 𝒷 X) x
+    rw [hneg] at h1
+    have h2 : unSeminorm ω (inner 𝒷 : X → X → 𝒷) x ≤ M * S := by
+      have h3 : unSeminorm ω (inner 𝒷 : X → X → 𝒷) x ≤ ‖x‖ * Real.sqrt (ω 1).re :=
+        unSeminorm_le_norm_mul ω x
+      rw [← hS] at h3
+      exact le_trans h3 (mul_le_mul_of_nonneg_right (hs₀ x hx.2) hSnn)
+    rw [show t - x = t + -x by abel, hK]
+    linarith
+  -- pick `β` with `|[t-x, t-β]_ω|` small
+  have hmem : {z : X | omegaNorm 𝒷 ω ((inner 𝒷 z (t - x) : 𝒷)
+      - inner 𝒷 t (t - x)) < (ε / 2) ^ 2 / (2 * (S + 1))} ∈ F := by
+    have h0 := (usTendsto_iff _ _ _).mp (ht' (t - x)) ω
+    filter_upwards [(Metric.tendsto_nhds.mp h0)
+      ((ε / 2) ^ 2 / (2 * (S + 1))) (by positivity)] with z hz
+    rwa [Real.dist_eq, sub_zero, abs_of_nonneg (omegaNorm_nonneg ω _),
+      htt (t - x)] at hz
+  obtain ⟨β, hβ⟩ := Filter.nonempty_of_mem (inter_mem hmem hsF)
+  -- split `[t-x, t-x] = [t-x, t-β] + [t-x, β-x]`
+  have hre : (ω (inner 𝒷 (t - x) (t - x) : 𝒷)).re
+      = (ω (inner 𝒷 (t - x) (t - β) : 𝒷)).re
+        + (ω (inner 𝒷 (t - x) (β - x) : 𝒷)).re := by
+    have hsplit : (inner 𝒷 (t - x) (t - x) : 𝒷)
+        = inner 𝒷 (t - x) (t - β) + inner 𝒷 (t - x) (β - x) := by
+      rw [← CStarModule.inner_add_right, show (t - β) + (β - x) = t - x by abel]
+    rw [hsplit, np_add, Complex.add_re]
+  have hT1 : (ω (inner 𝒷 (t - x) (t - β) : 𝒷)).re ≤ (ε / 2) ^ 2 / 2 := by
+    have hnorm : ‖ω (inner 𝒷 (t - x) (t - β) : 𝒷)‖
+        = ‖ω (inner 𝒷 (t - β) (t - x) : 𝒷)‖ := by
+      rw [show (inner 𝒷 (t - x) (t - β) : 𝒷) = star (inner 𝒷 (t - β) (t - x)) from
+        (CStarModule.star_inner _ _).symm, np_star, RCLike.norm_conj]
+    have hb1 : ‖ω (inner 𝒷 (t - β) (t - x) : 𝒷)‖
+        ≤ omegaNorm 𝒷 ω (inner 𝒷 (t - β) (t - x)) * S := by
+      have := norm_apply_le_omegaNorm ω (inner 𝒷 (t - β) (t - x) : 𝒷)
+      rwa [← hS] at this
+    have hb2 : omegaNorm 𝒷 ω (inner 𝒷 (t - β) (t - x))
+        = omegaNorm 𝒷 ω ((inner 𝒷 β (t - x) : 𝒷) - inner 𝒷 t (t - x)) := by
+      rw [show (inner 𝒷 (t - β) (t - x) : 𝒷)
+          = -((inner 𝒷 β (t - x) : 𝒷) - inner 𝒷 t (t - x)) by rw [hsubL]; abel,
+        omegaNorm_neg]
+    have hfin : ((ε / 2) ^ 2 / (2 * (S + 1))) * S ≤ (ε / 2) ^ 2 / 2 := by
+      have hpos : (0 : ℝ) < 2 * (S + 1) := by positivity
+      have key : ((ε / 2) ^ 2 / (2 * (S + 1))) * S * (2 * (S + 1))
+          = (ε / 2) ^ 2 * S := by field_simp
+      nlinarith [hSnn, pow_pos (by linarith : (0:ℝ) < ε / 2) 2, hpos]
+    have hmain : ‖ω (inner 𝒷 (t - x) (t - β) : 𝒷)‖
+        ≤ ((ε / 2) ^ 2 / (2 * (S + 1))) * S := by
+      rw [hnorm]
+      refine le_trans hb1 ?_
+      rw [hb2]
+      exact mul_le_mul_of_nonneg_right hβ.1.le hSnn
+    have := Complex.re_le_norm (ω (inner 𝒷 (t - x) (t - β) : 𝒷))
+    linarith
+  have hT2 : (ω (inner 𝒷 (t - x) (β - x) : 𝒷)).re ≤ (ε / 2) ^ 2 / 2 := by
+    have h1 := Complex.re_le_norm (ω (inner 𝒷 (t - x) (β - x) : 𝒷))
+    have h2 : ‖ω (inner 𝒷 (t - x) (β - x) : 𝒷)‖
+        ≤ unSeminorm ω (inner 𝒷 : X → X → 𝒷) (t - x)
+          * unSeminorm ω (inner 𝒷 : X → X → 𝒷) (β - x) :=
+      unSeminorm_inner_le ω (cstarBInner 𝒷 X) (t - x) (β - x)
+    have h3 : unSeminorm ω (inner 𝒷 : X → X → 𝒷) (β - x)
+        ≤ (ε / 2) ^ 2 / (2 * (K + 1)) := hs β hβ.2 x hx.1
+    have h4 : unSeminorm ω (inner 𝒷 : X → X → 𝒷) (t - x)
+        * unSeminorm ω (inner 𝒷 : X → X → 𝒷) (β - x)
+        ≤ K * ((ε / 2) ^ 2 / (2 * (K + 1))) :=
+      mul_le_mul hwK h3 (unSeminorm_nonneg _ _ _) hKnn
+    have h5 : K * ((ε / 2) ^ 2 / (2 * (K + 1))) ≤ (ε / 2) ^ 2 / 2 := by
+      have hpos : (0 : ℝ) < 2 * (K + 1) := by positivity
+      have key : K * ((ε / 2) ^ 2 / (2 * (K + 1))) * (2 * (K + 1))
+          = K * (ε / 2) ^ 2 := by field_simp
+      nlinarith [hKnn, pow_pos (by linarith : (0:ℝ) < ε / 2) 2, hpos]
+    linarith
+  have hfinal : unSeminorm ω (inner 𝒷 : X → X → 𝒷) (x - t) ≤ ε / 2 := by
+    have hneg : unSeminorm ω (inner 𝒷 : X → X → 𝒷) (-(t - x))
+        = unSeminorm ω (inner 𝒷 : X → X → 𝒷) (t - x) :=
+      unSeminorm_neg' ω (cstarBInner 𝒷 X) (t - x)
+    have hsq : unSeminorm ω (inner 𝒷 : X → X → 𝒷) (x - t) ^ 2
+        = (ω (inner 𝒷 (t - x) (t - x) : 𝒷)).re := by
+      rw [show x - t = -(t - x) by abel, hneg]
+      exact unSeminorm_sq ω (cstarBInner 𝒷 X) (t - x)
+    have h2 : unSeminorm ω (inner 𝒷 : X → X → 𝒷) (x - t) ^ 2 ≤ (ε / 2) ^ 2 := by
+      rw [hsq, hre]; linarith
+    nlinarith [unSeminorm_nonneg ω (inner 𝒷 : X → X → 𝒷) (x - t),
+      (by linarith : (0:ℝ) ≤ ε / 2)]
+  rw [Real.dist_eq, sub_zero, abs_of_nonneg (unSeminorm_nonneg _ _ _)]
+  linarith
 
 /-- **149VIII** (`selfdual-bcompl-then-basis`, dils.tex:2328): (3) ⇒ (4) of
 **149V** — a norm-bounded ultranorm complete pre-Hilbert 𝒷-module has an
@@ -2007,11 +2367,11 @@ theorem exists_isONBasis_of_bddUnComplete [VonNeumannAlgebra 𝒷]
 𝒷-module with an orthonormal basis is ultranorm complete.
 
 **Blocked on `A/VN`.**  The limit is `∑ₑ e bₑ` with
-`bₑ = uslim_α ⟨e, x_α⟩`, so the proof needs **77I**.1
-`Theses.A.VN.vn_complete_1` (ultrastrong completeness); and the
-ℓ²-summability of `(bₑ)ₑ` is deduced from an ultraweak bound by **87VIII**
-`Theses.A.VN.ultraweakly_bounded_implies_bounded`.  Both are still `sorry`
-in `A/VN`, and neither is on this file's import path. -/
+`bₑ = uslim_α ⟨e, x_α⟩`, which is now available (**77I**.1
+`Theses.A.VN.vn_complete_1`, imported and proved); but the ℓ²-summability of
+`(bₑ)ₑ` is deduced from an ultraweak bound by **87VIII**
+`Theses.A.VN.ultraweakly_bounded_implies_bounded`, still `sorry` in
+`Theses/A/VN/NormalFunctionals.lean`. -/
 theorem unComplete_of_isONBasis [VonNeumannAlgebra 𝒷] {e : ι → X}
     (he : IsONBasis 𝒷 e) : UnComplete (inner 𝒷 : X → X → 𝒷) :=
   sorry
