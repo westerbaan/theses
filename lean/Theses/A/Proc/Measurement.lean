@@ -2529,13 +2529,299 @@ projection `s` are contraposed (the filter of a projection being the
 inclusion). -/
 theorem equivalent_examples_1' [VonNeumannAlgebra A] (s : A)
     [Fact (IsStarProjection s)] :
-    Contraposed (cornerProjMap s).toNCPMap (cornerIncl s).toNCPMap := sorry
+    Contraposed (cornerProjMap s).toNCPMap (cornerIncl s).toNCPMap := by
+  -- the argument of `equivalent_examples_1` carried through the corner:
+  -- both sides say `x·t = 0`, once computed in `s𝒜s` and once in `𝒜`
+  have hs : IsStarProjection s := Fact.out
+  intro x t hx ht
+  have htv : IsStarProjection t.val := by
+    refine ⟨?_, ?_⟩
+    · show t.val * t.val = t.val
+      rw [← Corner.val_mul]
+      exact congrArg Corner.val ht.isIdempotentElem.eq
+    · show star t.val = t.val
+      rw [← Corner.val_star]
+      exact congrArg Corner.val ht.isSelfAdjoint.star_eq
+  have htvs : t.val * s = t.val := Corner.mul_right t
+  have hstv : s * t.val = t.val := Corner.mul_left t
+  have hπnn : (0 : Corner A s) ≤ (cornerProjMap s).toNCPMap x :=
+    ncpMap_nonneg _ hx.nonneg
+  -- `⌈π_s(x)⌉ ≤ t^⊥` in the corner is `t·x·t = 0` in `𝒜`
+  have hL : (diamondUp ((cornerProjMap s).toNCPMap) x ≤ 1 - t) ↔
+      t.val * x * t.val = 0 := by
+    show ceil ((cornerProjMap s).toNCPMap x) ≤ 1 - t ↔ _
+    rw [ceil_le_perp_iff hπnn ht]
+    have hval : (t * (cornerProjMap s).toNCPMap x * t).val
+        = t.val * x * t.val := by
+      rw [Corner.val_mul, Corner.val_mul, cornerProjMap_apply]
+      calc t.val * (s * x * s) * t.val
+          = t.val * s * x * (s * t.val) := by noncomm_ring
+        _ = t.val * x * t.val := by rw [htvs, hstv]
+    constructor
+    · intro h
+      have := congrArg Corner.val h
+      rwa [hval, Corner.val_zero] at this
+    · intro h
+      refine Corner.val_injective ?_
+      rw [hval, Corner.val_zero, h]
+  -- `⌈c_s(t)⌉ ≤ x^⊥` in `𝒜` is `x·t·x = 0`
+  have hR : (diamondUp ((cornerIncl s).toNCPMap) t ≤ 1 - x) ↔
+      x * t.val * x = 0 := by
+    show ceil ((cornerIncl s).toNCPMap t) ≤ 1 - x ↔ _
+    rw [cornerIncl_apply, ceil_le_perp_iff htv.nonneg hx]
+  rw [hL, hR]
+  have h1 : t.val * x * t.val = 0 ↔ x * t.val = 0 := by
+    simpa using conj_perp_eq_zero_iff hx htv (x := 1)
+  have h2 : x * t.val * x = 0 ↔ t.val * x = 0 := by
+    simpa using conj_perp_eq_zero_iff htv hx (x := 1)
+  have h3 : x * t.val = 0 ↔ t.val * x = 0 := by
+    simpa using mul_triple_eq_zero_iff_star hx htv (x := 1)
+  rw [h1, h2, h3]
 
-/-- **101VII** (`equivalent-examples`, proc.tex:1102, Examples), part 2: an
-ncp-isomorphism is contraposed to its inverse. -/
+/-! ### Infrastructure for **101VII**.2
+
+The exercise's claim is stated for an *arbitrary* ncp-isomorphism, and in
+that generality it is **false** (`equivalent_examples_2_is_false` below,
+and `ERRATA.md`): the thesis itself notes at proc.tex:282 that there are
+non-unital ncp-isomorphisms, and `a(·)a` for an invertible positive
+non-central `a` is one — it is contraposed to `a(·)a` (part 1), not to its
+inverse `a⁻¹(·)a⁻¹`.  Unitality of `f` repairs it, and is what an
+isomorphism of the category `W*_cpsu` of the theses carries anyway (a
+subunital iso with subunital inverse is unital: `1 = g(f 1) ≤ g 1 ≤ 1`).
+
+With `f` unital the proof is short, and does not need Kadison's theorem
+that a unital order isomorphism is a Jordan isomorphism: it is enough that
+`f` maps projections to projections, which follows from the order
+structure alone. -/
+
+/-- An ncp-map commutes with subtraction (it is linear; `NCPMap` carries no
+`AddMonoidHomClass` instance, so this goes through its
+`CompletelyPositiveMap`). -/
+private theorem ncpMap_sub (f : NCPMap A B) (x y : A) : f (x - y) = f x - f y :=
+  map_sub f.toCompletelyPositiveMap x y
+
+/-- An ncp-map is monotone. -/
+private theorem ncpMap_mono (f : NCPMap A B) {x y : A} (h : x ≤ y) :
+    f x ≤ f y := by
+  have h0 : (0 : B) ≤ f (y - x) := ncpMap_nonneg f (sub_nonneg.mpr h)
+  rw [ncpMap_sub, sub_nonneg] at h0
+  exact h0
+
+/-- A positive element below both a projection `p` and its complement is
+`0`: conjugating by `p^⊥` and by `p` gives `⌈x⌉ ≤ p` and `⌈x⌉ ≤ p^⊥`
+(59III), i.e. `px = x` and `(1-p)x = x`. -/
+private theorem eq_zero_of_le_proj_le_perp [VonNeumannAlgebra A] {x p : A}
+    (hx : 0 ≤ x) (hp : IsStarProjection p) (h1 : x ≤ p) (h2 : x ≤ 1 - p) :
+    x = 0 := by
+  have hc1 : (1 - p) * x * (1 - p) = 0 := by
+    have hle : (1 - p) * x * (1 - p) ≤ (1 - p) * p * (1 - p) := by
+      have := star_left_conjugate_le_conjugate h1 (1 - p)
+      rwa [star_sub, star_one, hp.isSelfAdjoint.star_eq] at this
+    have hzero : (1 - p) * p * (1 - p) = 0 := by
+      have hpp : p * p = p := hp.isIdempotentElem
+      noncomm_ring [hpp]
+    rw [hzero] at hle
+    have hge : (0 : A) ≤ (1 - p) * x * (1 - p) := by
+      have := star_left_conjugate_nonneg hx (1 - p)
+      rwa [star_sub, star_one, hp.isSelfAdjoint.star_eq] at this
+    exact le_antisymm hle hge
+  have hc2 : p * x * p = 0 := by
+    have hle : p * x * p ≤ p * (1 - p) * p := by
+      have := star_left_conjugate_le_conjugate h2 p
+      rwa [hp.isSelfAdjoint.star_eq] at this
+    have hzero : p * (1 - p) * p = 0 := by
+      have hpp : p * p = p := hp.isIdempotentElem
+      noncomm_ring [hpp]
+    rw [hzero] at hle
+    have hge : (0 : A) ≤ p * x * p := by
+      have := star_left_conjugate_nonneg hx p
+      rwa [hp.isSelfAdjoint.star_eq] at this
+    exact le_antisymm hle hge
+  have hce1 : ceil x ≤ p := by
+    have := (ceil_le_perp_iff hx hp.one_sub).mpr hc1
+    rwa [sub_sub_cancel] at this
+  have hce2 : ceil x ≤ 1 - p := (ceil_le_perp_iff hx hp).mpr hc2
+  have e1 : p * x = x := ((ceil_basic_1 x p hx hp).out 2 0).mp hce1
+  have e2 : (1 - p) * x = x :=
+    ((ceil_basic_1 x (1 - p) hx hp.one_sub).out 2 0).mp hce2
+  have h3 : (1 - p) * x = x - p * x := by noncomm_ring
+  rw [h3, e1, sub_self] at e2
+  exact e2.symm
+
+/-- A *unital* ncp-isomorphism maps projections to projections: `e := f(p)`
+is an effect, so `d := e - e²` is positive and below both `e` and `e^⊥`;
+`g(d)` is then below both `p` and `p^⊥`, hence `0`, and `g` is injective,
+so `e² = e`. -/
+private theorem isStarProjection_map [VonNeumannAlgebra A]
+    [VonNeumannAlgebra B] (f : NCPMap A B) (g : NCPMap B A)
+    (hgf : ∀ a, g (f a) = a) (hfg : ∀ b, f (g b) = b) (hfu : f 1 = 1)
+    (hgu : g 1 = 1) {p : A} (hp : IsStarProjection p) :
+    IsStarProjection (f p) := by
+  set e : B := f p with he
+  have he0 : (0 : B) ≤ e := ncpMap_nonneg f hp.nonneg
+  have he1 : e ≤ 1 := by
+    have := ncpMap_mono f hp.le_one
+    rwa [hfu] at this
+  have hd0 : (0 : B) ≤ e - e * e := sub_nonneg.mpr (mul_self_le_self ⟨he0, he1⟩)
+  have hsq : (0 : B) ≤ e * e := by
+    have := star_mul_self_nonneg e
+    rwa [(IsSelfAdjoint.of_nonneg he0).star_eq] at this
+  have hd1 : e - e * e ≤ e := by
+    have : e - e * e ≤ e - 0 := sub_le_sub_left hsq e
+    simpa using this
+  have hd2 : e - e * e ≤ 1 - e := by
+    have hns : (0 : B) ≤ (1 - e) * (1 - e) := by
+      have := star_mul_self_nonneg (1 - e)
+      rwa [star_sub, star_one, (IsSelfAdjoint.of_nonneg he0).star_eq] at this
+    have hexp : (1 - e) * (1 - e) = (1 - e) - (e - e * e) := by noncomm_ring
+    rw [hexp, sub_nonneg] at hns
+    exact hns
+  have hginj : Function.Injective ⇑g := fun x y hxy => by
+    rw [← hfg x, ← hfg y, hxy]
+  have hgd : g (e - e * e) = 0 := by
+    refine eq_zero_of_le_proj_le_perp (ncpMap_nonneg g hd0) hp ?_ ?_
+    · have := ncpMap_mono g hd1
+      rwa [he, hgf] at this
+    · have hrhs : g (1 - e) = 1 - p := by rw [ncpMap_sub, hgu, he, hgf]
+      have := ncpMap_mono g hd2
+      rwa [hrhs] at this
+  have hd : e - e * e = 0 :=
+    hginj (by rw [hgd]; exact (map_zero g.toCompletelyPositiveMap).symm)
+  exact ⟨by show e * e = e; rw [sub_eq_zero] at hd; exact hd.symm,
+    IsSelfAdjoint.of_nonneg he0⟩
+
+/-- **101VII** (`equivalent-examples`, proc.tex:1102, Examples), part 2: a
+**unital** ncp-isomorphism is contraposed to its inverse.
+
+The unitality hypothesis `hfu` is **not** in the thesis and is not
+redundant — see `equivalent_examples_2_is_false` and `ERRATA.md`.  (It is
+automatic for an isomorphism of `W*_cpsu`, where the maps are subunital.)
+Given it, `g` is unital too, `f` and `g` map projections to projections,
+and `f(s) ≤ 1 - t ⟺ s ≤ 1 - g(t)` by applying `g` and `f`. -/
 theorem equivalent_examples_2 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (f : NCPMap A B) (g : NCPMap B A) (hgf : ∀ a, g (f a) = a)
-    (hfg : ∀ b, f (g b) = b) : Contraposed f g := sorry
+    (hfg : ∀ b, f (g b) = b) (hfu : f 1 = 1) : Contraposed f g := by
+  have hgu : g 1 = 1 := by rw [← hfu, hgf]
+  intro s t hs ht
+  have hfs : IsStarProjection (f s) :=
+    isStarProjection_map f g hgf hfg hfu hgu hs
+  have hgt : IsStarProjection (g t) :=
+    isStarProjection_map g f hfg hgf hgu hfu ht
+  show ceil (f s) ≤ 1 - t ↔ ceil (g t) ≤ 1 - s
+  rw [ceil_of_isStarProjection hfs, ceil_of_isStarProjection hgt]
+  constructor
+  · intro h
+    have := ncpMap_mono g h
+    rw [ncpMap_sub, hgu, hgf] at this
+    exact perp_symm.mp this
+  · intro h
+    have := ncpMap_mono f h
+    rw [ncpMap_sub, hfu, hfg] at this
+    exact perp_symm.mp this
+
+/-! ### **101VII**.2 without unitality is false
+
+The witness lives in `B(ℂ²)` (the von Neumann algebra of **42V**.2, whose
+instance is honest), transported from `M₂(ℂ)` along Mathlib's
+`Matrix.toEuclideanCLM`.  With
+`a = diag(1,2)`, `s = ½!![1,1;1,1]`, `t = ⅕!![4,-2;-2,1]`,
+the maps `f = a(·)a` and `g = a⁻¹(·)a⁻¹` are mutually inverse ncp-maps
+(both are `adSelf` of a self-adjoint element), `s` and `t` are
+projections, and `t·f(s)·t = 0` while `s·g(t)·s = (9/80)!![1,1;1,1] ≠ 0`.
+By `ceil_le_perp_iff` that is exactly `⌈f(s)⌉ ≤ t^⊥` and
+`¬ ⌈g(t)⌉ ≤ s^⊥`.
+
+Geometrically: `f` sends the line `ℂ(1,1)` to `ℂ(1,2) = t^⊥`, so the left
+side holds; but `g` sends `t = ℂ(2,-1)` to `ℂ(4,-1)`, which is *not*
+orthogonal to `s = ℂ(1,1)`.  The map contraposed to `f` is `f` itself
+(part 1, `equivalent_examples_1`, since `a* = a`). -/
+
+section Counterexample
+
+/-- `ℂ²` as a Hilbert space. -/
+private abbrev H₂ : Type := EuclideanSpace ℂ (Fin 2)
+
+/-- `B(ℂ²)`, the von Neumann algebra the counterexample lives in. -/
+private abbrev B₂ : Type := H₂ →L[ℂ] H₂
+
+/-- `M₂(ℂ) ≅ B(ℂ²)` as ∗-algebras (Mathlib). -/
+private noncomputable def matEmb : Matrix (Fin 2) (Fin 2) ℂ ≃⋆ₐ[ℂ] B₂ :=
+  Matrix.toEuclideanCLM
+
+private def ceA : Matrix (Fin 2) (Fin 2) ℂ := !![1, 0; 0, 2]
+private def ceA' : Matrix (Fin 2) (Fin 2) ℂ := !![1, 0; 0, 1/2]
+private def ceS : Matrix (Fin 2) (Fin 2) ℂ := !![1/2, 1/2; 1/2, 1/2]
+private def ceT : Matrix (Fin 2) (Fin 2) ℂ := !![4/5, -2/5; -2/5, 1/5]
+
+private theorem ce_facts :
+    star ceA = ceA ∧ star ceA' = ceA' ∧ ceA * ceA' = 1 ∧ ceA' * ceA = 1 ∧
+      ceS * ceS = ceS ∧ star ceS = ceS ∧ ceT * ceT = ceT ∧ star ceT = ceT ∧
+      ceT * (ceA * ceS * ceA) * ceT = 0 := by
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
+    · ext i j
+      fin_cases i <;> fin_cases j <;>
+        simp [ceA, ceA', ceS, ceT, Matrix.mul_apply, Fin.sum_univ_two,
+          Matrix.star_eq_conjTranspose, Matrix.conjTranspose_apply,
+          Matrix.one_apply] <;>
+        norm_num
+
+/-- **101VII**.2 is false as stated in the thesis: there are mutually
+inverse ncp-maps that are not contraposed.  See `ERRATA.md`. -/
+theorem equivalent_examples_2_is_false :
+    ∃ f g : NCPMap B₂ B₂, (∀ x, g (f x) = x) ∧ (∀ x, f (g x) = x) ∧
+      ¬ Contraposed f g := by
+  obtain ⟨hstar0, hstar1, h01, h10, hs0, hs0s, ht0, ht0s, hzero⟩ := ce_facts
+  have hnz : ceS * (ceA' * ceT * ceA') * ceS ≠ 0 := by
+    intro h
+    have h00 := congrFun (congrFun h 0) 0
+    simp [ceA', ceS, ceT, Matrix.mul_apply, Fin.sum_univ_two] at h00
+    norm_num at h00
+  set a : B₂ := matEmb ceA with ha
+  set b : B₂ := matEmb ceA' with hb
+  set s : B₂ := matEmb ceS with hs
+  set t : B₂ := matEmb ceT with ht
+  have hsa : star a = a := by rw [ha, ← map_star]; exact congrArg matEmb hstar0
+  have hsb : star b = b := by rw [hb, ← map_star]; exact congrArg matEmb hstar1
+  have hab : a * b = 1 := by rw [ha, hb, ← map_mul, h01, map_one]
+  have hba : b * a = 1 := by rw [ha, hb, ← map_mul, h10, map_one]
+  have hsproj : IsStarProjection s :=
+    ⟨by show matEmb ceS * matEmb ceS = matEmb ceS; rw [← map_mul, hs0],
+      by show star (matEmb ceS) = matEmb ceS
+         rw [← map_star]; exact congrArg matEmb hs0s⟩
+  have htproj : IsStarProjection t :=
+    ⟨by show matEmb ceT * matEmb ceT = matEmb ceT; rw [← map_mul, ht0],
+      by show star (matEmb ceT) = matEmb ceT
+         rw [← map_star]; exact congrArg matEmb ht0s⟩
+  refine ⟨adSelf a, adSelf b, ?_, ?_, ?_⟩
+  · intro x
+    rw [adSelf_apply, adSelf_apply, hsa, hsb]
+    calc b * (a * x * a) * b = b * a * x * (a * b) := by noncomm_ring
+      _ = x := by rw [hab, hba, one_mul, mul_one]
+  · intro x
+    rw [adSelf_apply, adSelf_apply, hsa, hsb]
+    calc a * (b * x * b) * a = a * b * x * (b * a) := by noncomm_ring
+      _ = x := by rw [hab, hba, one_mul, mul_one]
+  · intro hcontra
+    have hfs : (0 : B₂) ≤ adSelf a s := by
+      rw [adSelf_apply]
+      exact star_left_conjugate_nonneg hsproj.nonneg a
+    have hgt : (0 : B₂) ≤ adSelf b t := by
+      rw [adSelf_apply]
+      exact star_left_conjugate_nonneg htproj.nonneg b
+    have hL : diamondUp (adSelf a) s ≤ 1 - t := by
+      show ceil (adSelf a s) ≤ 1 - t
+      rw [ceil_le_perp_iff hfs htproj, adSelf_apply, hsa]
+      have hrw : t * (a * s * a) * t = matEmb (ceT * (ceA * ceS * ceA) * ceT) := by
+        rw [ha, hs, ht]; simp only [← map_mul]
+      rw [hrw, hzero, map_zero]
+    have hR := (hcontra s t hsproj htproj).mp hL
+    rw [show diamondUp (adSelf b) t = ceil (adSelf b t) from rfl,
+      ceil_le_perp_iff hgt hsproj, adSelf_apply, hsb] at hR
+    have hR' : matEmb (ceS * (ceA' * ceT * ceA') * ceS) = 0 := by
+      rw [← hR, hb, hs, ht]; simp only [map_mul]
+    exact hnz (by simpa using congrArg matEmb.symm hR')
+
+end Counterexample
 
 /-- **101VII** (`equivalent-examples`, proc.tex:1102, Examples), part 3:
 `(zf)^⋄ = f^⋄` for every positive central `z` with `⌈z⌉ = 1`. -/

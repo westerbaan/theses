@@ -4101,3 +4101,145 @@ remain the ones w38 named: settle D2, and prove **77I**.1/.2.
   `Theses/B/Dils/SelfDual.lean`, `ERRATA.md` (two rows, in point order),
   `QUESTIONS.md` (B5 extended), `PROVING-LOG.md`.  Nothing staged, nothing
   committed.
+
+## Session 16 — `A/Proc` parsecs 1010 and 1090 (worker 42)
+
+Files touched: `Theses/A/Proc/Measurement.lean`, `Theses/A/Proc/Tensor.lean`,
+`ERRATA.md`, `PROVING-LOG.md`.  `QuantumLambda.lean`, `Duplicators.lean`,
+`A/CStar`, `A/VN`, `B/` untouched.
+
+**A/Proc 140 → 137** (build-warning count): Measurement 47 → **45**,
+Tensor 47 → **46**, QuantumLambda 26, Duplicators 20.
+
+Closed: **101VII**.1-continued `equivalent_examples_1'`, **101VII**.2
+`equivalent_examples_2` (corrected — §1), **109III**.1 `l2_tensor` (§2); plus
+the refutation `equivalent_examples_2_is_false` and five reusable private
+auxiliaries (`ncpMap_sub`, `ncpMap_mono`, `eq_zero_of_le_proj_le_perp`,
+`isStarProjection_map`, and the `l2Gamma` block).
+
+### 1. 101VII.2 is false as stated — the fourth false statement of the chapter
+
+`equivalent_examples_2` ("an ncp-isomorphism is contraposed to its inverse")
+was the target of a fallback pass and would not go through; it is **false**.
+The obstruction is exactly the one the thesis itself flags elsewhere: proc.tex
+:282 says "there are corners which are not unital, because there are non-unital
+ncp-isomorphisms", and a non-unital one refutes 101VII.2.
+
+Witness (now in the tree as `equivalent_examples_2_is_false`, `B(ℂ²)`
+transported from `M₂(ℂ)` along Mathlib's `Matrix.toEuclideanCLM`; `B(ℂ²)`'s
+von Neumann instance is **42V**.2, honest):
+`a = diag(1,2)`, `f = a(·)a`, `g = f⁻¹ = a⁻¹(·)a⁻¹` — both ncp by `ad-ncp`
+(`adSelf`), mutually inverse.  With `s` the projection onto `ℂ(1,1)` and `t`
+the one onto `ℂ(2,−1)`: `f(s)` has range `ℂ(1,2) ⊥ t`, so `⌈f(s)⌉ ≤ t^⊥`;
+but `g(t)` has range `ℂ(4,−1)`, which is *not* orthogonal to `s`.  Both halves
+are `ceil_le_perp_iff` applied to a 2×2 matrix identity
+(`t·f(s)·t = 0`, `s·g(t)·s = (9/80)!![1,1;1,1] ≠ 0`).
+
+The structural reason: by part **1** of the same Examples (proved, w-earlier)
+`a(·)a` is contraposed to `a(·)a* = a(·)a`, i.e. to *itself*; and a
+contraposition partner is unique up to `⋄` (`contraposed_iff_diamond`), so it
+cannot also be contraposed to `f⁻¹` unless `⌈a t a⌉ = ⌈a⁻¹ t a⁻¹⌉` for every
+projection — which the above disproves.
+
+**Fix, applied:** `equivalent_examples_2` gains the hypothesis `f 1 = 1`, and
+is **proved**.  This is class (4)-adjacent but the defect is the thesis's, so
+the row is in `ERRATA.md` (point order, between 101II and 104III.2a) rather
+than here; the Lean statement now diverges from the printed one deliberately
+and says so in its doc comment.  Nothing downstream consumes
+`equivalent_examples_2`, and an isomorphism of `W*_cpsu` is automatically
+unital (`1 = g(f 1) ≤ g 1 ≤ 1` for subunital `f`, `g`), so the corrected form
+is the one the thesis's own category needs.
+
+The proof does **not** need Kadison's theorem: a unital ncp-iso maps
+projections to projections by an order argument only — for `e = f(p)` the
+element `d = e − e²` is positive (`mul_self_le_self`) and below both `e` and
+`e^⊥`, so `g(d)` is below both `p` and `p^⊥`, hence `0`
+(`eq_zero_of_le_proj_le_perp`, via `ceil_le_perp_iff` + 59III), and `g` is
+injective.  Then `⌈f s⌉ = f s`, `⌈g t⌉ = g t` and contraposition is
+`f(s) ≤ 1−t ⟺ s ≤ 1−g(t)`, one application of `g` and one of `f`.
+
+### 1a. 101VII.1 (continued) `equivalent_examples_1'` — the same argument in a corner
+
+`π_s : 𝒜 → s𝒜s` and `c_s : s𝒜s → 𝒜` are contraposed.  This is
+`equivalent_examples_1` (proved earlier) carried through the corner: with `t`
+a projection of `s𝒜s`, `⌈π_s(x)⌉ ≤ t^⊥` unfolds — `ceil_le_perp_iff` *in the
+corner*, then `Corner.val_injective` — to `t·(sxs)·t = 0`, i.e. `t·x·t = 0`
+since `t·s = t = s·t`; and `⌈c_s(t)⌉ ≤ x^⊥` unfolds to `x·t·x = 0` in `𝒜`.
+Both are `x·t = 0` (`conj_perp_eq_zero_iff` at `x := 1`).  Class (1).
+
+### 2. 109III.1 `l2_tensor` — closed after seven sessions on the list
+
+`ℓ²(X) × ℓ²(Y) → ℓ²(X×Y)`, `γ(f,g)(x,y) = f(x)g(y)`, is a Hilbert-space
+tensor product.  Recipe as w12 §7.3 predicted: `Memℓp` from
+`Summable.mul_of_nonneg` (the sum of squares factorises), bilinearity
+coordinatewise through `LinearMap.mk₂`, `⟨γ(f,g),γ(f',g')⟩ = ⟨f,f'⟩⟨g,g'⟩`
+from `tsum_mul_tsum_of_summable_norm` with Cauchy–Schwarz (`lp.summable_mul`
+at the Hölder pair `(2,2)`) for the absolute summability, and density from
+`γ(δ_x, δ_y) = δ_(x,y)` plus `lp.hasSum_single`.  Five private auxiliaries
+(`l2Mem`, `l2Gamma`, `l2SummableInner`, `l2Gamma_inner`, `l2Gamma_single`,
+`l2Gamma_dense`).  No author argument exists (Exercise), so this is a first
+proof, class (1)-by-default.
+
+### 3. The brief's headline target, 112X.2, is **blocked** — correcting w40 §9
+
+w40 recommended `tensor_basic_2` (`‖γ_⊙ s‖ = ‖s‖_⊗`) as "the keystone, now
+materially easier".  It is not reachable: **only the easy inequality is.**
+
+* `‖s‖_⊗ ≤ ‖γ_⊙ s‖` is elementary (each basic `ω` with `ω(1) ≤ 1` lifts to
+  `ω̂ = γ(σ,τ)(γ_⊙(t)*(·)γ_⊙(t))` on `𝒯` with `ω̂ ∘ γ_⊙ = ω` and `ω̂(1) ≤ 1`,
+  and `ω̂(x* x) ≤ ω̂(1)‖x‖²`).
+* The reverse needs the *norm* of `𝒯` to be computed from `Ω₁`, which is the
+  exercise's own instruction ("show using `vn-center-separating-fundamental`
+  … and so determines the norm via `order-separating-norm`").  Both cited
+  results are `sorry`:
+  **90II** `vn_center_separating_fundamental_1/2`
+  (`A/VN/NormalFunctionals.lean:1452,1465`) and **21VII**
+  `order_separating_norm` (`A/CStar/Positive.lean:1747`).  Both frozen.
+
+That kills the whole 112X/112XI/114I/114II block for now, not just 112X.2:
+
+| point | additionally blocked on |
+|---|---|
+| 112X.1 | 90II (this *is* 90II at `Ω = ` product functionals, `S = γ_⊙(𝒜⊙ℬ)`) |
+| 112X.2 | 90II + 21VII |
+| 112X.3 | 112X.2 (the `‖f ∘ γ_⊙‖ ≤ ‖f‖` step) |
+| 112X.4 | **74VI** `dense_subalgebra` (Kaplansky, `A/VN/Completeness.lean:1217`) and **86IX** `polar_decomposition_of_functional` (`NormalFunctionals.lean:449`) — both `sorry` |
+| 112X.5 | **87III** `predual_complete` (`NormalFunctionals.lean:520`) — `sorry` |
+| 112XI | **77V** `vn_extension` (`Completeness.lean:1627`) — `sorry` |
+| 114I | parts (1)(2)(3) are reachable (separate ultraweak continuity of multiplication is **proved**, `mult_uws_cont`); parts (4)(5) need the positive cone of an ultraweakly dense ∗-subalgebra to be dense in the positive cone, i.e. **74IV/74VI** again.  Splitting the conjunction would *raise* the sorry count (1 → 2), so it is left alone |
+| 114II | 112XI |
+
+So the honest ordering of `A/Proc`'s remaining leverage is unchanged from w37
+except that the "hard but reachable" band of `Tensor.lean` is now **empty**:
+everything left there is behind 89IX, 90II, 21VII, 74IV/74VI, 86IX, 87III or
+77V `vn_extension`.
+
+### 4. Classification
+
+* **(1) faithful:** none available — both items proved this round are
+  Exercises past parsec 340, so no author argument exists (`asols.tex` stops
+  at 340; its errata block still tops out at `parsec-990.70`).
+* **(2) different route:** —
+* **(3) mild:** the corrected 101VII.2 proof avoids Kadison, which is what the
+  "unital order iso" phrase would normally invoke.
+* **(4) our statement mis-transcribes the thesis:** none.  101VII.2's
+  divergence is a *deliberate* repair of a false thesis statement, logged in
+  `ERRATA.md`.
+* **(5) closed from Mathlib without reading the author's argument:**
+  `l2_tensor` unavoidably (Exercise, no argument to read); the *statement*
+  was checked against proc.tex:2117 first.
+
+### 5. Verification
+
+* `lake build Theses.A.Proc.Duplicators` → exit 0 (log
+  `scratchpad/w42build.log`); the only `error:` lines are the pre-existing
+  `linter.style.header` noise from `A/VN/Basic.lean`.
+* `lake env lean` per file: `Measurement.lean` 0 errors, 45 `sorry`s;
+  `Tensor.lean` 0 errors, 46 `sorry`s.
+* `#print axioms` on all four closed statements →
+  `[propext, Classical.choice, Quot.sound]`; in particular
+  `equivalent_examples_2_is_false` is **`sorryAx`-free**, so the refutation is
+  real (`B(ℂ²)`'s instances, `adSelf`, `ceil_le_perp_iff` are all proved).
+* Doc `file:LINE` refs checked: 101VII → proc.tex:1102 ✓, 109III →
+  proc.tex:2117 ✓.
+* Nothing staged, nothing committed.

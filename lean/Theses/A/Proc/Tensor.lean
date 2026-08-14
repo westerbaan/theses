@@ -176,6 +176,107 @@ structure IsHilbertTensorProduct {T : Type u} [NormedAddCommGroup T]
   inner_mul : ∀ (x x' : H) (y y' : K),
     ⟪γ x y, γ x' y'⟫ = ⟪x, x'⟫ * ⟪y, y'⟫
 
+/-! ### Auxiliaries for **109III**.1
+
+The map `γ(f,g) = (f(x)g(y))_{x,y}` of the exercise, and the three facts
+it needs: that `(x,y) ↦ f(x)g(y)` is square summable (Tonelli for the
+double series of nonnegative terms), that the inner product factorises
+(the same computation, now for the absolutely summable double series
+`⟨f,f'⟩⟨g,g'⟩`), and that the image contains the point masses
+`δ_(x,y) = γ(δ_x, δ_y)`, whose span is dense. -/
+
+section L2Aux
+
+variable {X Y : Type u}
+
+/-- `(x,y) ↦ f(x)g(y)` is square summable when `f` and `g` are: the sum of
+the squares is the product of the two sums. -/
+private theorem l2Mem (f : lp (fun _ : X => ℂ) 2) (g : lp (fun _ : Y => ℂ) 2) :
+    Memℓp (fun p : X × Y => f p.1 * g p.2) 2 := by
+  have h2 : (2 : ℝ≥0∞).toReal = 2 := by norm_num
+  have hf : Summable fun x : X => ‖f x‖ ^ (2 : ℝ) := by
+    have := (memℓp_gen_iff (p := (2 : ℝ≥0∞)) (f := (f : ∀ _ : X, ℂ))
+      (by rw [h2]; norm_num)).mp (lp.memℓp f)
+    rwa [h2] at this
+  have hg : Summable fun y : Y => ‖g y‖ ^ (2 : ℝ) := by
+    have := (memℓp_gen_iff (p := (2 : ℝ≥0∞)) (f := (g : ∀ _ : Y, ℂ))
+      (by rw [h2]; norm_num)).mp (lp.memℓp g)
+    rwa [h2] at this
+  refine memℓp_gen ?_
+  rw [h2]
+  refine (hf.mul_of_nonneg hg (fun x => by positivity)
+    (fun y => by positivity)).congr fun p => ?_
+  rw [norm_mul, Real.mul_rpow (norm_nonneg _) (norm_nonneg _)]
+
+/-- The bilinear map `γ` of **109III**.1. -/
+private def l2Gamma : lp (fun _ : X => ℂ) 2 →ₗ[ℂ] lp (fun _ : Y => ℂ) 2 →ₗ[ℂ]
+    lp (fun _ : X × Y => ℂ) 2 :=
+  LinearMap.mk₂ ℂ (fun f g => ⟨fun p : X × Y => f p.1 * g p.2, l2Mem f g⟩)
+    (fun _ _ _ => by
+      ext p; show _ * _ = ((_ : ∀ _ : X × Y, ℂ) + _) p; simp [add_mul])
+    (fun _ _ _ => by ext p; simp [mul_assoc])
+    (fun _ _ _ => by
+      ext p; show _ * _ = ((_ : ∀ _ : X × Y, ℂ) + _) p; simp [mul_add])
+    (fun _ _ _ => by ext p; simp [mul_left_comm])
+
+/-- The `X`-series `x ↦ ⟨f(x), f'(x)⟩` is absolutely summable
+(Cauchy–Schwarz, i.e. Hölder for the conjugate pair `(2,2)`). -/
+private theorem l2SummableInner (f f' : lp (fun _ : X => ℂ) 2) :
+    Summable fun x : X => ‖(inner ℂ (f x) (f' x) : ℂ)‖ := by
+  have h := lp.summable_mul (E := fun _ : X => ℂ) (p := 2) (q := 2) (by
+    rw [show ((2 : ℝ≥0∞).toReal) = 2 by norm_num]
+    exact Real.HolderConjugate.two_two) f f'
+  refine h.congr fun x => ?_
+  rw [RCLike.inner_apply, norm_mul, RCLike.norm_conj, mul_comm]
+
+/-- `⟨γ(f,g), γ(f',g')⟩ = ⟨f,f'⟩⟨g,g'⟩`. -/
+private theorem l2Gamma_inner (f f' : lp (fun _ : X => ℂ) 2)
+    (g g' : lp (fun _ : Y => ℂ) 2) :
+    (inner ℂ (l2Gamma f g) (l2Gamma f' g') : ℂ)
+      = inner ℂ f f' * inner ℂ g g' := by
+  rw [lp.inner_eq_tsum, lp.inner_eq_tsum, lp.inner_eq_tsum,
+    tsum_mul_tsum_of_summable_norm (l2SummableInner f f')
+      (l2SummableInner g g')]
+  refine tsum_congr fun p => ?_
+  show (inner ℂ (l2Gamma f g p) (l2Gamma f' g' p) : ℂ) = _
+  rw [show (l2Gamma f g p : ℂ) = f p.1 * g p.2 from rfl,
+    show (l2Gamma f' g' p : ℂ) = f' p.1 * g' p.2 from rfl,
+    RCLike.inner_apply, RCLike.inner_apply, RCLike.inner_apply]
+  simp only [map_mul]
+  ring
+
+open scoped Classical in
+/-- `γ(c·δ_x, δ_y) = c·δ_(x,y)`: the point masses are in the range. -/
+private theorem l2Gamma_single (i : X × Y) (c : ℂ) :
+    lp.single (E := fun _ : X × Y => ℂ) 2 i c
+      = l2Gamma (lp.single (E := fun _ : X => ℂ) 2 i.1 c)
+          (lp.single (E := fun _ : Y => ℂ) 2 i.2 1) := by
+  ext p
+  have hR : (l2Gamma (lp.single (E := fun _ : X => ℂ) 2 i.1 c)
+      (lp.single (E := fun _ : Y => ℂ) 2 i.2 1) :
+        lp (fun _ : X × Y => ℂ) 2) p
+      = (lp.single (E := fun _ : X => ℂ) 2 i.1 c) p.1 *
+        (lp.single (E := fun _ : Y => ℂ) 2 i.2 1) p.2 := rfl
+  rw [hR, lp.single_apply, lp.single_apply, lp.single_apply]
+  by_cases h1 : p.1 = i.1 <;> by_cases h2 : p.2 = i.2 <;>
+    simp [Pi.single_apply, h1, h2, Prod.ext_iff]
+
+open scoped Classical in
+/-- The span of the range of `γ` is dense: it contains every finite sum of
+point masses, and those converge to an arbitrary element of `ℓ²(X×Y)`. -/
+private theorem l2Gamma_dense :
+    Dense (Submodule.span ℂ
+      {t : lp (fun _ : X × Y => ℂ) 2 | ∃ f g, t = l2Gamma f g} :
+        Set (lp (fun _ : X × Y => ℂ) 2)) := by
+  intro t
+  have hsum := lp.hasSum_single (E := fun _ : X × Y => ℂ) (p := 2)
+    (by norm_num) t
+  refine mem_closure_of_tendsto hsum (Filter.Eventually.of_forall fun s => ?_)
+  refine Submodule.sum_mem _ fun i _ => Submodule.subset_span ?_
+  exact ⟨_, _, l2Gamma_single i (t i)⟩
+
+end L2Aux
+
 /-- **109III** (proc.tex:2117, Exercise), part 1: the map
 `γ(f,g) = (f(x)g(y))_{x,y} : ℓ²(X) × ℓ²(Y) → ℓ²(X×Y)` is a tensor
 product of Hilbert spaces. -/
@@ -183,7 +284,8 @@ theorem l2_tensor (X Y : Type u) :
     ∃ γ : lp (fun _ : X => ℂ) 2 →ₗ[ℂ] lp (fun _ : Y => ℂ) 2 →ₗ[ℂ]
         lp (fun _ : X × Y => ℂ) 2,
       (∀ f g x y, γ f g (x, y) = f x * g y) ∧ IsHilbertTensorProduct γ :=
-  sorry
+  ⟨l2Gamma, fun _ _ _ _ => rfl, l2Gamma_dense, fun f f' g g' =>
+    l2Gamma_inner f f' g g'⟩
 
 /-- **109III** (proc.tex:2117, Exercise), part 2: a subset `E` of a
 Hilbert space `ℋ` is an orthonormal basis iff `x ↦ ∑_{e∈E} x_e e` is an
