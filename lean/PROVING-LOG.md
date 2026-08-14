@@ -6350,3 +6350,49 @@ approximation does not give.
 * The thesis's remark "In particular, `A ↦ Aᵢⱼ` is ultraweakly and
   ultrastrongly continuous" is the `⇒` half of 49IV.2' and is proved as
   part of it.
+
+## Session 26 — `B/Dils` 158Ia `kaplansky_bounded_approx` (worker 57)
+
+Closed **158Ia** (dils.tex:4121) in `Theses/B/Dils/Kaplansky.lean`,
+axiom-clean (`propext`, `Classical.choice`, `Quot.sound`).  Nothing else in
+the module changed: 158II and the four false 158V estimates are untouched
+`sorry`s.
+
+**Divergence class 1 — faithful.**  158Ia *is* thesis A's 74IV
+(`Theses.A.VN.kaplansky`, proved last session); the only work is the
+mirror.  Chapter B expresses the ultrastrong uniformity of `ℬ` through the
+ultranorm seminorms of `mulInner ℬ` (`⟨x,y⟩ = y x*`, **146VIII**), so
+
+  `unSeminorm ω (mulInner ℬ) x = √(ω (x x*)) = omegaNorm ℬ ω (star x)`
+
+(new private `unSeminorm_mulInner_eq`) — that is the *mirrored* ultrastrong
+seminorm, whereas `A/VN`'s `omegaNorm ω a = √(ω (a* a))` is the unmirrored
+one.  The two topologies genuinely differ (strong vs. strong\* on `B(H)`),
+so the hypothesis and the conclusion had to be transported, not identified:
+
+* `hdense` at `b` gives `d ∈ 𝒜` with `‖b − d‖^mirrored_ω` small, i.e.
+  `omegaNorm ω (b* − d*)` small with `d* ∈ 𝒜` — so **`b*`**, not `b`, is
+  what lands in the ultrastrong closure of `𝒜`;
+* 74IV at `b*` yields a net `a_α ∈ 𝒜`, `‖a_α‖ ≤ ‖b*‖ = ‖b‖`, `a_α → b*`
+  ultrastrongly;
+* `a_α*` is then the wanted net: `star` is an isometric involution of `𝒜`
+  and `unSeminorm ω (mulInner ℬ) (a_α* − b) = omegaNorm ω (a_α − b*)`.
+
+No convexity, no **73VIII** `ultraclosed`, and no comparison with the
+ultraweak topology is needed — those are all inside 74IV already.  (The
+alternative route, `norm_np_le_unSeminorm_mulInner` → ultraweakly dense →
+`ultraclosed` → ultrastrongly dense, would give the hypothesis but not the
+*conclusion*, which is mirrored too; the `star` transport does both at
+once.)  For the closure-membership step, `A/VN`'s `mem_usClosure_iff` is
+`private`, so the (easy) direction needed is re-derived in two lines from
+the public `exists_ultrastrong_ball_of_isOpen`.
+
+The finitary "approximation in every entourage" phrasing that
+`HilbertModules.lean` uses for nets is recovered from 74IV's net by
+`Filter.eventually_all` over the finitely many `ωᵢ` plus `l.NeBot`.  No
+norm-boundedness gap of the recurring "bounded above ≠ norm-bounded" kind
+arises: 74IV delivers `‖a_α‖ ≤ ‖b*‖` on the nose.
+
+`Kaplansky.lean` now imports `Theses.A.VN.Completeness` (it previously
+reached `A/VN` only through `HilbertModules.lean`, which stops at
+`A.VN.Projections`).

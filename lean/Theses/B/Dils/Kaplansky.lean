@@ -5,7 +5,8 @@ lines 4082–4279.
 
   parsec 1580:  the Kaplansky density theorem for Hilbert C*-modules
 
-Statements only; every proof is `sorry`.  Following the conventions of
+**158Ia** is proved; **158II** and the four **158V** estimates are `sorry`
+(the latter four are *false*, see below).  Following the conventions of
 `HilbertModules.lean`, ultrastrong/ultranorm approximation is expressed
 through the seminorms `unSeminorm ω B` (with `B = mulInner ℬ` for the
 ultrastrong uniformity on `ℬ` itself); "there is a net `x_α → x` ultranorm
@@ -13,6 +14,7 @@ with `‖x_α‖ ≤ ‖x‖`" is rendered as bounded approximability within eve
 entourage (finitely many seminorms, `ε > 0`), which yields the canonical
 approximating net.
 -/
+import Theses.A.VN.Completeness
 import Theses.B.Dils.HilbertModules
 
 open scoped ComplexOrder CStarAlgebra WithCStarModule
@@ -30,17 +32,59 @@ section Kaplansky
 variable {ℬ : Type u}
   [CStarAlgebra ℬ] [PartialOrder ℬ] [StarOrderedRing ℬ]
 
+/-- The `mulInner` ultranorm seminorm is the *mirrored* ultrastrong seminorm:
+`‖x‖_ω = ω(x x*)^½ = ‖x*‖_ω^{ultrastrong}` (**146VIII**). -/
+private theorem unSeminorm_mulInner_eq (ω : NPFunctional ℬ) (x : ℬ) :
+    unSeminorm ω (mulInner ℬ) x = omegaNorm ℬ ω (star x) := by
+  rw [omegaNorm, unSeminorm, star_star]; rfl
+
 /-- **158Ia** (dils.tex:4121, Kaplansky density theorem), the variant of
 thesis A's `kaplansky` (vn.tex 74IV) used here: for an ultrastrongly dense
 C*-subalgebra `𝒜` of a von Neumann algebra `ℬ` and every `b ∈ ℬ`, there is
-a net in `𝒜`, norm-bounded by `‖b‖`, converging ultrastrongly to `b`. -/
+a net in `𝒜`, norm-bounded by `‖b‖`, converging ultrastrongly to `b`.
+
+*Class 1 — faithful*: this **is** 74IV, transported across the mirror.  The
+ultranorm uniformity of `mulInner` is the *mirrored* ultrastrong uniformity
+(`unSeminorm_mulInner_eq`), whereas `Theses.A.VN.kaplansky` speaks of the
+ultrastrong one; since `star` is an isometric involution of `𝒜` that swaps
+the two, applying 74IV at `b*` and starring the resulting net is all that is
+needed — no appeal to convexity, to `73VIII` `ultraclosed`, or to the
+comparison with the ultraweak topology.  The finitary "bounded approximation
+in every entourage" phrasing of the ultranorm conventions is recovered from
+the net by taking a point on which the finitely many `‖·‖_{ωᵢ}` are already
+small, which exists since the index filter is nontrivial. -/
 theorem kaplansky_bounded_approx [VonNeumannAlgebra ℬ]
     (A : StarSubalgebra ℂ ℬ) (hA : IsClosed (A : Set ℬ))
     (hdense : UnDense (mulInner ℬ) (A : Set ℬ)) (b : ℬ) :
     ∀ (n : ℕ) (ωs : Fin n → NPFunctional ℬ) (ε : ℝ), 0 < ε →
       ∃ a ∈ A, ‖a‖ ≤ ‖b‖ ∧
-        ∀ i, unSeminorm (ωs i) (mulInner ℬ) (a - b) ≤ ε :=
-  sorry
+        ∀ i, unSeminorm (ωs i) (mulInner ℬ) (a - b) ≤ ε := by
+  -- `b*` lies in the *ultrastrong* closure of `𝒜`
+  have hbstar : star b ∈ @closure ℬ (ultrastrong ℬ) (A : Set ℬ) := by
+    let _ : TopologicalSpace ℬ := ultrastrong ℬ
+    rw [mem_closure_iff]
+    intro o ho hmem
+    obtain ⟨ω, δ, hδ, hsub⟩ := exists_ultrastrong_ball_of_isOpen ho _ hmem
+    obtain ⟨d, hd, hdε⟩ := hdense b 1 (fun _ => ω) (δ / 2) (by positivity)
+    have h0 := hdε 0
+    rw [unSeminorm_mulInner_eq, star_sub] at h0
+    have h1 : omegaNorm ℬ ω (star d - star b) < δ := by
+      rw [← omegaNorm_neg, neg_sub]; linarith
+    exact ⟨star d, hsub h1, star_mem hd⟩
+  obtain ⟨ι, l, hl, a, ha, hlim⟩ := Theses.A.VN.kaplansky A hA (star b) hbstar
+  haveI := hl
+  intro n ωs ε hε
+  have hev : ∀ᶠ j in l, ∀ i, omegaNorm ℬ (ωs i) (a j - star b) ≤ ε := by
+    refine Filter.eventually_all.mpr fun i => ?_
+    have hi := (usTendsto_iff a l (star b)).mp hlim (ωs i)
+    filter_upwards [Metric.tendsto_nhds.mp hi ε hε] with j hj
+    rw [Real.dist_eq, sub_zero, abs_of_nonneg (omegaNorm_nonneg _ _)] at hj
+    exact hj.le
+  obtain ⟨j, hj⟩ := hev.exists
+  refine ⟨star (a j), star_mem (ha j).1, ?_, fun i => ?_⟩
+  · simpa using (ha j).2
+  · rw [unSeminorm_mulInner_eq, star_sub, star_star]
+    exact hj i
 
 variable {X : Type v}
   [NormedAddCommGroup X] [Module ℂ X] [SMul ℬ X] [CStarModule ℬ X]
