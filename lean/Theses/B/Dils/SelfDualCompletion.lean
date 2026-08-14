@@ -439,16 +439,6 @@ variable {𝒷 : Type u} {X Y : Type v}
   [NormedAddCommGroup X] [Module ℂ X] [SMul 𝒷 X] [CStarModule 𝒷 X]
   [NormedAddCommGroup Y] [Module ℂ Y] [SMul 𝒷 Y] [CStarModule 𝒷 Y]
 
-/-- **152X** (dils.tex:3409, Theorem): for a self-dual Hilbert 𝒷-module
-`X` over a von Neumann algebra `𝒷`, the algebra `𝒷ᵃ(X)` is a von Neumann
-algebra (bounded directed suprema exist and the vector states are
-separating normal states). -/
-theorem ba_vonNeumannAlgebra [VonNeumannAlgebra 𝒷] [CompleteSpace X]
-    (hX : SelfDual 𝒷 X) : VonNeumannAlgebra (Ba 𝒷 X) :=
-  sorry
-
-/-! ## Parsec 1530: `ad_T` -/
-
 /-- Positivity in `𝒷ᵃ(X)` from the vector states: if `⟨x, Zx⟩ ≥ 0` for all
 `x`, then `0 ≤ Z` in the C*-order of `𝒷ᵃ(X)`.  This is **144I**
 `hilbmod_ordersep` transported from `IsPositiveOp` to the type `Ba 𝒷 X`
@@ -470,6 +460,471 @@ private theorem ba_nonneg_of_vector [CompleteSpace X] (Z : Ba 𝒷 X)
     rfl
   rw [hzz]
   exact star_mul_self_nonneg r
+
+
+/-! ### The proof of **152X**
+
+The thesis's argument (**152XI**–**152XIII**, dils.tex:3413–3505) verbatim:
+for a bounded directed net `(T_α)` of self-adjoint elements of `𝒷ᵃ(X)` the
+vector forms `⟨x, T_α x⟩` form a bounded directed net in `𝒷`, which
+converges ultrastrongly to its supremum by **44XIV** `vna_supremum_uslimit`;
+polarization (**142IX**) turns this into an ultrastrong limit
+`B(x,y) = uslim_α ⟨x, T_α y⟩` for all `x, y`, which is 𝒷-sesquilinear
+because addition and multiplication by a fixed element are ultrastrongly
+continuous (**45IV** `mult_uws_cont`) and bounded; **152V**
+`hilbmod_sesquilinear_forms` then represents it as `⟨x, Ty⟩` for a unique
+`T ∈ 𝒷ᵃ(X)`, and `T` is the supremum.  The vector states are separating by
+**144I** and normal by the same computation, which is **152XIII**.
+
+Two deviations from the text, both in the *bound* on `B`.  The thesis picks
+`r` with `‖T_α‖ ≤ r` for all `α`; a bounded directed set need not be
+norm-bounded (its elements are only bounded *above*), so we bound `B(x,x)`
+by order instead — `⟨x, d₀x⟩ ≤ B(x,x) ≤ ⟨x, ub x⟩` — which needs no such
+`r`.  And where the thesis derives `‖B(x,y)‖ ≤ r‖x‖‖y‖ ` from
+`usconv` and the module Cauchy–Schwarz inequality, we get
+`‖B(x,y)‖ ≤ r₀(‖x‖+‖y‖)²` from polarization and then rescale
+`x ↦ tx`, `y ↦ t⁻¹y` (which leaves `B(x,y)` fixed) with
+`t = (‖y‖/‖x‖)^{1/2}`.  This avoids `usconv`, whose Lean form would need
+the ultraweak closedness of norm balls (**44XI**.3 `vn_positive_basic_3`,
+still `sorry` in `Theses.A.VN`). -/
+
+/-- `0 ≤ Z` in `𝒷ᵃ(X)` iff every vector form `⟨x, Zx⟩` is positive: the
+two halves of **144I** `hilbmod_ordersep`, transported to `Ba 𝒷 X`. -/
+theorem ba_nonneg_iff [CompleteSpace X] (Z : Ba 𝒷 X) :
+    0 ≤ Z ↔ ∀ x : X, 0 ≤ (inner 𝒷 x (Z.1 x) : 𝒷) := by
+  let _ : NormedSpace ℂ X := NormedSpace.ofCore (CStarModule.normedSpaceCore 𝒷)
+  refine ⟨fun h x => ?_, ba_nonneg_of_vector Z⟩
+  have hsq : (0 : Ba 𝒷 X) ≤ (CFC.sqrt Z : Ba 𝒷 X) := CFC.sqrt_nonneg Z
+  have hsa : star (CFC.sqrt Z : Ba 𝒷 X) = (CFC.sqrt Z : Ba 𝒷 X) :=
+    IsSelfAdjoint.of_nonneg hsq
+  have hzz : Z = star (CFC.sqrt Z : Ba 𝒷 X) * (CFC.sqrt Z : Ba 𝒷 X) := by
+    rw [hsa, CFC.sqrt_mul_sqrt_self Z h]
+  have hkey :=
+    baSubalgebra_inner_star_mul_self (𝒷 := 𝒷) (X := X) (CFC.sqrt Z : Ba 𝒷 X) x
+  rw [hzz]
+  exact hkey ▸ CStarModule.inner_self_nonneg
+
+/-- The vector form of a self-adjoint element of `𝒷ᵃ(X)` is self-adjoint. -/
+theorem ba_inner_isSelfAdjoint [CompleteSpace X] (x : X) (Z : Ba 𝒷 X)
+    (hZ : IsSelfAdjoint Z) : IsSelfAdjoint (inner 𝒷 x (Z.1 x) : 𝒷) := by
+  let _ : NormedSpace ℂ X := NormedSpace.ofCore (CStarModule.normedSpaceCore 𝒷)
+  have h : ModuleAdjointTo 𝒷 (⇑(Z.1)) (⇑((star Z : Ba 𝒷 X).1)) :=
+    baSubalgebra_star_spec (𝒷 := 𝒷) (X := X) Z
+  have hz : (star Z : Ba 𝒷 X).1 = Z.1 := congrArg Subtype.val hZ.star_eq
+  change star (inner 𝒷 x (Z.1 x) : 𝒷) = _
+  rw [CStarModule.star_inner, h x x, hz]
+
+/-- The vector forms are monotone (**144I** again). -/
+theorem ba_inner_mono [CompleteSpace X] (x : X) {Z W : Ba 𝒷 X} (h : Z ≤ W) :
+    (inner 𝒷 x (Z.1 x) : 𝒷) ≤ inner 𝒷 x (W.1 x) := by
+  have hv := (ba_nonneg_iff _).mp (sub_nonneg.mpr h) x
+  have he : (W - Z).1 x = W.1 x - Z.1 x := rfl
+  rw [he, CStarModule.inner_sub_right, sub_nonneg] at hv
+  exact hv
+
+/-- The vector form `⟨x, Z x⟩` of a self-adjoint element of `𝒷ᵃ(X)`, as an
+element of the self-adjoint part of `𝒷`. -/
+def baVec [CompleteSpace X] (x : X) (Z : selfAdjoint (Ba 𝒷 X)) : selfAdjoint 𝒷 :=
+  ⟨inner 𝒷 x ((Z : Ba 𝒷 X).1 x), ba_inner_isSelfAdjoint x _ Z.2⟩
+
+@[simp] theorem baVec_coe [CompleteSpace X] (x : X) (Z : selfAdjoint (Ba 𝒷 X)) :
+    (baVec x Z : 𝒷) = inner 𝒷 x ((Z : Ba 𝒷 X).1 x) := rfl
+
+theorem baVec_mono [CompleteSpace X] (x : X) {Z W : selfAdjoint (Ba 𝒷 X)}
+    (h : Z ≤ W) : baVec x Z ≤ baVec x W :=
+  ba_inner_mono x (Subtype.coe_le_coe.mpr h)
+
+theorem baVec_image_directed [CompleteSpace X] (x : X)
+    {D : Set (selfAdjoint (Ba 𝒷 X))} (hdir : DirectedOn (· ≤ ·) D) :
+    DirectedOn (· ≤ ·) (baVec x '' D) := by
+  rintro _ ⟨a, ha, rfl⟩ _ ⟨b, hb, rfl⟩
+  obtain ⟨c, hc, hac, hbc⟩ := hdir a ha b hb
+  exact ⟨baVec x c, ⟨c, hc, rfl⟩, baVec_mono x hac, baVec_mono x hbc⟩
+
+/-- **142VIII** (dils.tex:1487, Example): `⟨·, Z·⟩` is a 𝒷-sesquilinear
+form for every `Z ∈ 𝒷ᵃ(X)`. -/
+theorem ba_isBSesquilinear [CompleteSpace X] (Z : Ba 𝒷 X) :
+    IsBSesquilinear (fun x y : X => (inner 𝒷 x (Z.1 y) : 𝒷)) := by
+  have hmod := (moduleAdjointable_linear (𝒜 := 𝒷) ⇑(Z.1) Z.2).2.2
+  exact
+    { add_left := fun x y z => by simp only [CStarModule.inner_add_left]
+      add_right := fun x y z => by
+        simp only [map_add Z.1, CStarModule.inner_add_right]
+      smul_op := fun β b x y => by
+        simp only [hmod, CStarModule.inner_op_smul_left,
+          CStarModule.inner_op_smul_right, mul_assoc]
+      smul_left_complex := fun c x y => by
+        simp only [CStarModule.inner_smul_left_complex]
+        rfl
+      smul_right_complex := fun c x y => by
+        simp only [map_smul Z.1, CStarModule.inner_smul_right_complex] }
+
+/-! Elementary stability properties of ultrastrong limits in `𝒷`.  These
+belong in `Theses.A.VN.Basic` next to `usTendsto_iff` and **45IV**; they are
+here because that file is currently frozen. -/
+
+private theorem usTendsto_add' {ι : Type*} {l : Filter ι} {f g : ι → 𝒷} {a b : 𝒷}
+    (hf : USTendsto f l a) (hg : USTendsto g l b) :
+    USTendsto (fun i => f i + g i) l (a + b) := by
+  rw [usTendsto_iff] at hf hg ⊢
+  intro ω
+  have h := (hf ω).add (hg ω)
+  rw [add_zero] at h
+  refine squeeze_zero (fun i => omegaNorm_nonneg _ _) (fun i => ?_) h
+  have he : f i + g i - (a + b) = (f i - a) + (g i - b) := by abel
+  rw [he]
+  exact omegaNorm_add_le ω _ _
+
+private theorem usTendsto_mul_left' [VonNeumannAlgebra 𝒷] {ι : Type*}
+    {l : Filter ι} {f : ι → 𝒷} {a : 𝒷} (b : 𝒷) (hf : USTendsto f l a) :
+    USTendsto (fun i => b * f i) l (b * a) :=
+  Filter.Tendsto.comp
+    (@Continuous.tendsto 𝒷 𝒷 (ultrastrong 𝒷) (ultrastrong 𝒷) _
+      (mult_uws_cont b).2.2.1 a) hf
+
+private theorem usTendsto_mul_right' [VonNeumannAlgebra 𝒷] {ι : Type*}
+    {l : Filter ι} {f : ι → 𝒷} {a : 𝒷} (b : 𝒷) (hf : USTendsto f l a) :
+    USTendsto (fun i => f i * b) l (a * b) :=
+  Filter.Tendsto.comp
+    (@Continuous.tendsto 𝒷 𝒷 (ultrastrong 𝒷) (ultrastrong 𝒷) _
+      (mult_uws_cont b).2.2.2 a) hf
+
+private theorem usTendsto_smul' [VonNeumannAlgebra 𝒷] {ι : Type*} {l : Filter ι}
+    {f : ι → 𝒷} {a : 𝒷} (c : ℂ) (hf : USTendsto f l a) :
+    USTendsto (fun i => c • f i) l (c • a) := by
+  have h := usTendsto_mul_left' (algebraMap ℂ 𝒷 c) hf
+  simpa only [← Algebra.smul_def] using h
+
+set_option linter.unusedSectionVars false in
+private theorem usTendsto_const' {ι : Type*} {l : Filter ι} (a : 𝒷) :
+    USTendsto (fun _ : ι => a) l a :=
+  @tendsto_const_nhds 𝒷 (ultrastrong 𝒷) ι a l
+
+private theorem usTendsto_sum' {ι : Type*} {l : Filter ι} {κ : Type*}
+    (s : Finset κ) (f : κ → ι → 𝒷) (a : κ → 𝒷)
+    (hf : ∀ k ∈ s, USTendsto (f k) l (a k)) :
+    USTendsto (fun i => ∑ k ∈ s, f k i) l (∑ k ∈ s, a k) := by
+  classical
+  induction s using Finset.induction_on with
+  | empty => simpa using usTendsto_const' (ι := ι) (l := l) (0 : 𝒷)
+  | insert k s hk ih =>
+      simp only [Finset.sum_insert hk]
+      exact usTendsto_add' (hf k (Finset.mem_insert_self _ _))
+        (ih fun j hj => hf j (Finset.mem_insert_of_mem hj))
+
+/-- Ultrastrong limits are unique: the ultrastrong topology is Hausdorff by
+**44XI**.1 `vn_positive_basic_1`. -/
+private theorem usTendsto_unique' [VonNeumannAlgebra 𝒷] {ι : Type*}
+    {l : Filter ι} [l.NeBot] {f : ι → 𝒷} {a b : 𝒷}
+    (ha : USTendsto f l a) (hb : USTendsto f l b) : a = b :=
+  @tendsto_nhds_unique 𝒷 ι (ultrastrong 𝒷) (vn_positive_basic_1 (A := 𝒷)).2
+    f l a b _ ha hb
+
+set_option maxHeartbeats 1000000 in
+-- the six stages of the proof in one declaration; see the note above
+/-- **152XII** (dils.tex:3417, "bounded order completeness"): a nonempty
+bounded directed set of self-adjoint elements of `𝒷ᵃ(X)` has a supremum, and
+— the extra clause **152XIII** needs — its vector forms compute it:
+`⟨x, (⋁D) x⟩ = ⋁_{d ∈ D} ⟨x, d x⟩`. -/
+theorem ba_isLUB [VonNeumannAlgebra 𝒷] [CompleteSpace X] (hX : SelfDual 𝒷 X)
+    (D : Set (selfAdjoint (Ba 𝒷 X))) (hne : D.Nonempty)
+    (hdir : DirectedOn (· ≤ ·) D) (hbdd : BddAbove D) :
+    ∃ s : selfAdjoint (Ba 𝒷 X), IsLUB D s ∧
+      ∀ x : X, IsLUB (baVec x '' D) (baVec x s) := by
+  classical
+  let _ : NormedSpace ℂ X := NormedSpace.ofCore (CStarModule.normedSpaceCore 𝒷)
+  obtain ⟨d₀, hd₀⟩ := hne
+  obtain ⟨ub, hub⟩ := hbdd
+  have : Nonempty D := ⟨⟨d₀, hd₀⟩⟩
+  have : IsDirectedOrder D := directedOn_iff_isDirectedOrder.mp hdir
+  -- (1) the vector sets and their suprema
+  have hDvh : ∀ x : X, (baVec x '' D).Nonempty ∧ DirectedOn (· ≤ ·) (baVec x '' D) ∧
+      BddAbove (baVec x '' D) := by
+    intro x
+    refine ⟨⟨baVec x d₀, ⟨d₀, hd₀, rfl⟩⟩, baVec_image_directed x hdir, ⟨baVec x ub, ?_⟩⟩
+    rintro _ ⟨a, ha, rfl⟩
+    exact baVec_mono x (hub ha)
+  set q : X → selfAdjoint 𝒷 := fun x => dirSup (baVec x '' D) (hDvh x) with hqdef
+  have hqlub : ∀ x : X, IsLUB (baVec x '' D) (q x) := fun x => isLUB_dirSup _ _
+  -- (2) **44XIV**: the vector nets converge ultrastrongly to their suprema
+  have hnet : ∀ x : X, USTendsto (fun d : D => (baVec x d.1 : 𝒷)) atTop (q x : 𝒷) := by
+    intro x
+    have hmap : Tendsto
+        (fun d : D => (⟨baVec x d.1, ⟨d.1, d.2, rfl⟩⟩ : ↥(baVec x '' D))) atTop atTop := by
+      refine Filter.tendsto_atTop.mpr fun b => ?_
+      obtain ⟨e, he, hbe⟩ := b.2
+      filter_upwards [Filter.mem_atTop (⟨e, he⟩ : D)] with d hd
+      change (b : selfAdjoint 𝒷) ≤ baVec x d.1
+      exact hbe ▸ baVec_mono x hd
+    exact (vna_supremum_uslimit (baVec x '' D) (hDvh x)).comp hmap
+  -- (3) the form `B(x,y) = uslim_α ⟨x, T_α y⟩`, defined by polarization
+  set Bf : X → X → 𝒷 := fun x y =>
+    (4 : ℂ)⁻¹ • ∑ k ∈ Finset.range 4,
+      Complex.I ^ k • (q (Complex.I ^ k • x + y) : 𝒷) with hBfdef
+  have hBlim : ∀ x y : X,
+      USTendsto (fun d : D => (inner 𝒷 x ((d.1 : Ba 𝒷 X).1 y) : 𝒷)) atTop (Bf x y) := by
+    intro x y
+    have hpol : ∀ d : D, (inner 𝒷 x ((d.1 : Ba 𝒷 X).1 y) : 𝒷)
+        = (4 : ℂ)⁻¹ • ∑ k ∈ Finset.range 4,
+            Complex.I ^ k • (baVec (Complex.I ^ k • x + y) d.1 : 𝒷) :=
+      fun d => hilbmod_polarization _ (ba_isBSesquilinear (d.1 : Ba 𝒷 X)) x y
+    simp only [hpol]
+    exact usTendsto_smul' _
+      (usTendsto_sum' _ _ _ fun k _ => usTendsto_smul' _ (hnet _))
+  have hdiag : ∀ x : X, Bf x x = (q x : 𝒷) :=
+    fun x => usTendsto_unique' (hBlim x x) (hnet x)
+  -- (4) `Bf` is 𝒷-sesquilinear, by **45IV** and uniqueness of ultrastrong limits
+  have hsesq : IsBSesquilinear Bf := by
+    constructor
+    · intro x y z
+      have hrw : ∀ d : D, (inner 𝒷 (x + y) ((d.1 : Ba 𝒷 X).1 z) : 𝒷)
+          = inner 𝒷 x ((d.1 : Ba 𝒷 X).1 z) + inner 𝒷 y ((d.1 : Ba 𝒷 X).1 z) :=
+        fun d => (ba_isBSesquilinear _).add_left x y z
+      have h := hBlim (x + y) z
+      simp only [hrw] at h
+      exact usTendsto_unique' h (usTendsto_add' (hBlim x z) (hBlim y z))
+    · intro x y z
+      have hrw : ∀ d : D, (inner 𝒷 x ((d.1 : Ba 𝒷 X).1 (y + z)) : 𝒷)
+          = inner 𝒷 x ((d.1 : Ba 𝒷 X).1 y) + inner 𝒷 x ((d.1 : Ba 𝒷 X).1 z) :=
+        fun d => (ba_isBSesquilinear _).add_right x y z
+      have h := hBlim x (y + z)
+      simp only [hrw] at h
+      exact usTendsto_unique' h (usTendsto_add' (hBlim x y) (hBlim x z))
+    · intro β b x y
+      have hrw : ∀ d : D, (inner 𝒷 (β • x) ((d.1 : Ba 𝒷 X).1 (b • y)) : 𝒷)
+          = b * inner 𝒷 x ((d.1 : Ba 𝒷 X).1 y) * star β :=
+        fun d => (ba_isBSesquilinear _).smul_op β b x y
+      have h := hBlim (β • x) (b • y)
+      simp only [hrw] at h
+      exact usTendsto_unique' h
+        (usTendsto_mul_right' (star β) (usTendsto_mul_left' b (hBlim x y)))
+    · intro c x y
+      have hrw : ∀ d : D, (inner 𝒷 (c • x) ((d.1 : Ba 𝒷 X).1 y) : 𝒷)
+          = starRingEnd ℂ c • inner 𝒷 x ((d.1 : Ba 𝒷 X).1 y) :=
+        fun d => (ba_isBSesquilinear _).smul_left_complex c x y
+      have h := hBlim (c • x) y
+      simp only [hrw] at h
+      exact usTendsto_unique' h (usTendsto_smul' _ (hBlim x y))
+    · intro c x y
+      have hrw : ∀ d : D, (inner 𝒷 x ((d.1 : Ba 𝒷 X).1 (c • y)) : 𝒷)
+          = c • inner 𝒷 x ((d.1 : Ba 𝒷 X).1 y) :=
+        fun d => (ba_isBSesquilinear _).smul_right_complex c x y
+      have h := hBlim x (c • y)
+      simp only [hrw] at h
+      exact usTendsto_unique' h (usTendsto_smul' _ (hBlim x y))
+  -- (5) `Bf` is bounded
+  have hCS : ∀ (x : X) (Z : Ba 𝒷 X),
+      ‖(inner 𝒷 x (Z.1 x) : 𝒷)‖ ≤ ‖Z.1‖ * ‖x‖ * ‖x‖ := by
+    intro x Z
+    calc ‖(inner 𝒷 x (Z.1 x) : 𝒷)‖ ≤ ‖x‖ * ‖Z.1 x‖ := CStarModule.norm_inner_le X
+      _ ≤ ‖x‖ * (‖Z.1‖ * ‖x‖) := by
+          gcongr
+          exact Z.1.le_opNorm x
+      _ = ‖Z.1‖ * ‖x‖ * ‖x‖ := by ring
+  set r₀ : ℝ := ‖((ub : Ba 𝒷 X) - (d₀ : Ba 𝒷 X)).1‖ + ‖(d₀ : Ba 𝒷 X).1‖ with hr₀def
+  have hr₀0 : (0 : ℝ) ≤ r₀ := by positivity
+  have hqbound : ∀ x : X, ‖(q x : 𝒷)‖ ≤ r₀ * (‖x‖ * ‖x‖) := by
+    intro x
+    have h1 : (inner 𝒷 x ((d₀ : Ba 𝒷 X).1 x) : 𝒷) ≤ (q x : 𝒷) :=
+      Subtype.coe_le_coe.mpr ((hqlub x).1 ⟨d₀, hd₀, rfl⟩)
+    have h2 : (q x : 𝒷) ≤ inner 𝒷 x ((ub : Ba 𝒷 X).1 x) :=
+      Subtype.coe_le_coe.mpr
+        ((hqlub x).2 (by rintro _ ⟨a, ha, rfl⟩; exact baVec_mono x (hub ha)))
+    have hdiff : (inner 𝒷 x ((ub : Ba 𝒷 X).1 x) : 𝒷) - inner 𝒷 x ((d₀ : Ba 𝒷 X).1 x)
+        = inner 𝒷 x (((ub : Ba 𝒷 X) - (d₀ : Ba 𝒷 X)).1 x) := by
+      change _ = inner 𝒷 x ((ub : Ba 𝒷 X).1 x - (d₀ : Ba 𝒷 X).1 x)
+      rw [CStarModule.inner_sub_right]
+    have hn : (0 : 𝒷) ≤ (q x : 𝒷) - inner 𝒷 x ((d₀ : Ba 𝒷 X).1 x) := sub_nonneg.mpr h1
+    have hle : (q x : 𝒷) - inner 𝒷 x ((d₀ : Ba 𝒷 X).1 x)
+        ≤ inner 𝒷 x (((ub : Ba 𝒷 X) - (d₀ : Ba 𝒷 X)).1 x) := by
+      rw [← hdiff]
+      exact sub_le_sub_right h2 _
+    have hnorm1 := CStarAlgebra.norm_le_norm_of_nonneg_of_le hn hle
+    have hnorm2 := hCS x ((ub : Ba 𝒷 X) - (d₀ : Ba 𝒷 X))
+    have hnorm3 := hCS x (d₀ : Ba 𝒷 X)
+    have htri : ‖(q x : 𝒷)‖
+        ≤ ‖(q x : 𝒷) - inner 𝒷 x ((d₀ : Ba 𝒷 X).1 x)‖
+            + ‖(inner 𝒷 x ((d₀ : Ba 𝒷 X).1 x) : 𝒷)‖ := by
+      simpa using norm_add_le ((q x : 𝒷) - inner 𝒷 x ((d₀ : Ba 𝒷 X).1 x))
+        (inner 𝒷 x ((d₀ : Ba 𝒷 X).1 x))
+    rw [hr₀def]
+    nlinarith [htri, hnorm1, hnorm2, hnorm3]
+  have hBbound0 : ∀ x y : X, ‖Bf x y‖ ≤ r₀ * ((‖x‖ + ‖y‖) * (‖x‖ + ‖y‖)) := by
+    intro x y
+    have hnorm : ∀ k : ℕ,
+        ‖Complex.I ^ k • (q (Complex.I ^ k • x + y) : 𝒷)‖
+          ≤ r₀ * ((‖x‖ + ‖y‖) * (‖x‖ + ‖y‖)) := by
+      intro k
+      rw [norm_smul, norm_pow, Complex.norm_I, one_pow, one_mul]
+      refine (hqbound _).trans ?_
+      have hle : ‖Complex.I ^ k • x + y‖ ≤ ‖x‖ + ‖y‖ := by
+        refine (norm_add_le _ _).trans ?_
+        rw [norm_smul, norm_pow, Complex.norm_I, one_pow, one_mul]
+      have h0 : (0 : ℝ) ≤ ‖Complex.I ^ k • x + y‖ := norm_nonneg _
+      have hmul := mul_le_mul hle hle h0 (by positivity : (0 : ℝ) ≤ ‖x‖ + ‖y‖)
+      exact mul_le_mul_of_nonneg_left hmul hr₀0
+    have hsum : ‖∑ k ∈ Finset.range 4, Complex.I ^ k • (q (Complex.I ^ k • x + y) : 𝒷)‖
+        ≤ 4 * (r₀ * ((‖x‖ + ‖y‖) * (‖x‖ + ‖y‖))) := by
+      refine (norm_sum_le _ _).trans ?_
+      calc ∑ k ∈ Finset.range 4, ‖Complex.I ^ k • (q (Complex.I ^ k • x + y) : 𝒷)‖
+          ≤ ∑ _k ∈ Finset.range 4, r₀ * ((‖x‖ + ‖y‖) * (‖x‖ + ‖y‖)) :=
+            Finset.sum_le_sum fun k _ => hnorm k
+        _ = 4 * (r₀ * ((‖x‖ + ‖y‖) * (‖x‖ + ‖y‖))) := by
+            simp [Finset.sum_const]
+    have hBeq : Bf x y = (4 : ℂ)⁻¹ • ∑ k ∈ Finset.range 4,
+        Complex.I ^ k • (q (Complex.I ^ k • x + y) : 𝒷) := rfl
+    rw [hBeq, norm_smul]
+    have h4 : ‖(4 : ℂ)⁻¹‖ = 1 / 4 := by norm_num
+    rw [h4]
+    nlinarith [hsum]
+  have hzero_left : ∀ y : X, Bf 0 y = 0 := by
+    intro y
+    have h := hsesq.add_left 0 0 y
+    rw [add_zero] at h
+    have h2 := congrArg (fun z : 𝒷 => z - Bf 0 y) h
+    simpa using h2.symm
+  have hzero_right : ∀ x : X, Bf x 0 = 0 := by
+    intro x
+    have h := hsesq.add_right x 0 0
+    rw [add_zero] at h
+    have h2 := congrArg (fun z : 𝒷 => z - Bf x 0) h
+    simpa using h2.symm
+  have hBbound : ∀ x y : X, ‖Bf x y‖ ≤ (4 * r₀) * ‖x‖ * ‖y‖ := by
+    intro x y
+    rcases eq_or_ne x 0 with rfl | hx
+    · simp [hzero_left]
+    rcases eq_or_ne y 0 with rfl | hy
+    · simp [hzero_right]
+    have hx0 : (0 : ℝ) < ‖x‖ := norm_pos_iff.mpr hx
+    have hy0 : (0 : ℝ) < ‖y‖ := norm_pos_iff.mpr hy
+    set sx : ℝ := Real.sqrt ‖x‖ with hsx
+    set sy : ℝ := Real.sqrt ‖y‖ with hsy
+    have hsx0 : 0 < sx := Real.sqrt_pos.mpr hx0
+    have hsy0 : 0 < sy := Real.sqrt_pos.mpr hy0
+    have hsx2 : sx * sx = ‖x‖ := Real.mul_self_sqrt hx0.le
+    have hsy2 : sy * sy = ‖y‖ := Real.mul_self_sqrt hy0.le
+    set t : ℝ := sy / sx with ht
+    have ht0 : 0 < t := div_pos hsy0 hsx0
+    have hhom : Bf ((t : ℂ) • x) (((t : ℂ))⁻¹ • y) = Bf x y := by
+      rw [hsesq.smul_left_complex, hsesq.smul_right_complex, smul_smul,
+        Complex.conj_ofReal]
+      have htne : (t : ℂ) ≠ 0 := by exact_mod_cast ht0.ne'
+      rw [mul_inv_cancel₀ htne, one_smul]
+    have hnx : ‖(t : ℂ) • x‖ = t * ‖x‖ := by
+      rw [norm_smul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos ht0]
+    have hny : ‖((t : ℂ))⁻¹ • y‖ = t⁻¹ * ‖y‖ := by
+      rw [norm_smul, ← Complex.ofReal_inv, Complex.norm_real, Real.norm_eq_abs,
+        abs_of_pos (inv_pos.mpr ht0)]
+    have hkey := hBbound0 ((t : ℂ) • x) (((t : ℂ))⁻¹ • y)
+    rw [hhom, hnx, hny] at hkey
+    have hcalc : t * ‖x‖ + t⁻¹ * ‖y‖ = 2 * (sx * sy) := by
+      rw [ht, ← hsx2, ← hsy2]
+      field_simp
+      ring
+    rw [hcalc] at hkey
+    refine hkey.trans (le_of_eq ?_)
+    rw [← hsx2, ← hsy2]
+    ring
+  -- (6) **152V**: the representing operator, and it is the supremum
+  obtain ⟨T, ⟨hTadj, hTrep⟩, -⟩ :=
+    hilbmod_sesquilinear_forms hX (4 * r₀) Bf ⟨hsesq, hBbound⟩
+  set s : Ba 𝒷 X := ⟨T, hTadj⟩ with hsdef
+  have hsvec : ∀ x : X, (inner 𝒷 x (s.1 x) : 𝒷) = (q x : 𝒷) := by
+    intro x
+    rw [hsdef]
+    change (inner 𝒷 x (T x) : 𝒷) = _
+    rw [← hTrep x x, hdiag x]
+  have hub' : ∀ d ∈ D, (d : Ba 𝒷 X) ≤ s := by
+    intro d hd
+    rw [← sub_nonneg]
+    refine (ba_nonneg_iff _).mpr fun x => ?_
+    have he : (s - (d : Ba 𝒷 X)).1 x = s.1 x - (d : Ba 𝒷 X).1 x := rfl
+    rw [he, CStarModule.inner_sub_right, sub_nonneg, hsvec x]
+    exact Subtype.coe_le_coe.mpr ((hqlub x).1 ⟨d, hd, rfl⟩)
+  have hsa : IsSelfAdjoint s := by
+    have h0 : (0 : Ba 𝒷 X) ≤ s - (d₀ : Ba 𝒷 X) := sub_nonneg.mpr (hub' d₀ hd₀)
+    have h1 : IsSelfAdjoint (s - (d₀ : Ba 𝒷 X)) := IsSelfAdjoint.of_nonneg h0
+    have h2 : s = (s - (d₀ : Ba 𝒷 X)) + (d₀ : Ba 𝒷 X) := by abel
+    rw [h2]
+    exact h1.add d₀.2
+  refine ⟨⟨s, hsa⟩, ⟨fun d hd => ?_, fun c hc => ?_⟩, fun x => ?_⟩
+  · exact Subtype.coe_le_coe.mp (hub' d hd)
+  · refine Subtype.coe_le_coe.mp ?_
+    rw [← sub_nonneg]
+    refine (ba_nonneg_iff _).mpr fun x => ?_
+    have he : ((c : Ba 𝒷 X) - s).1 x = (c : Ba 𝒷 X).1 x - s.1 x := rfl
+    rw [he, CStarModule.inner_sub_right, sub_nonneg, hsvec x]
+    exact Subtype.coe_le_coe.mpr ((hqlub x).2 (by
+      rintro _ ⟨a, ha, rfl⟩
+      exact baVec_mono x (hc ha)))
+  · have hb : baVec x ⟨s, hsa⟩ = q x := Subtype.ext (hsvec x)
+    rw [hb]
+    exact hqlub x
+
+/-- **152XII**, restated: the supremum of a bounded directed set in
+`𝒷ᵃ(X)` is computed by the vector forms. -/
+theorem ba_isLUB_vec [VonNeumannAlgebra 𝒷] [CompleteSpace X] (hX : SelfDual 𝒷 X)
+    {D : Set (selfAdjoint (Ba 𝒷 X))} {s : selfAdjoint (Ba 𝒷 X)} (hne : D.Nonempty)
+    (hdir : DirectedOn (· ≤ ·) D) (hlub : IsLUB D s) (x : X) :
+    IsLUB (baVec x '' D) (baVec x s) := by
+  obtain ⟨s', hs'lub, hs'vec⟩ := ba_isLUB hX D hne hdir ⟨s, hlub.1⟩
+  exact (hlub.unique hs'lub) ▸ hs'vec x
+
+set_option maxHeartbeats 1000000 in
+-- as for `ba_isLUB`: instance search through `Ba 𝒷 X` is slow
+/-- **152XIII** (`hilbmod-vecstates-normal`, dils.tex:3480): the vector
+states are normal, i.e. `Z ↦ ω⟨x, Zx⟩` is an np-functional of `𝒷ᵃ(X)` for
+every `x ∈ X` and every np-functional `ω` of `𝒷`. -/
+noncomputable def baVecNP [VonNeumannAlgebra 𝒷] [CompleteSpace X]
+    (hX : SelfDual 𝒷 X) (x : X) (ω : NPFunctional 𝒷) : NPFunctional (Ba 𝒷 X) where
+  toPositiveLinearMap :=
+    { toFun := fun Z => ω (inner 𝒷 x (Z.1 x))
+      map_add' := fun Z W => by
+        change ω (inner 𝒷 x ((Z + W).1 x)) = _
+        rw [show ((Z + W).1 x) = Z.1 x + W.1 x from rfl, CStarModule.inner_add_right]
+        exact map_add ω.toPositiveLinearMap _ _
+      map_smul' := fun c Z => by
+        change ω (inner 𝒷 x ((c • Z).1 x)) = _
+        rw [show ((c • Z).1 x) = c • Z.1 x from rfl,
+          CStarModule.inner_smul_right_complex]
+        exact map_smul ω.toPositiveLinearMap _ _
+      monotone' := fun Z W h => ω.toPositiveLinearMap.monotone (ba_inner_mono x h) }
+  preservesDirSups' := by
+    intro D s hne hdir hlub
+    have h := ω.preservesDirSups' (baVec x '' D) (baVec x s) (hne.image _)
+      (baVec_image_directed x hdir) (ba_isLUB_vec hX hne hdir hlub x)
+    rw [← Set.image_comp] at h
+    exact h
+
+@[simp] theorem baVecNP_apply [VonNeumannAlgebra 𝒷] [CompleteSpace X]
+    (hX : SelfDual 𝒷 X) (x : X) (ω : NPFunctional 𝒷) (Z : Ba 𝒷 X) :
+    baVecNP hX x ω Z = ω (inner 𝒷 x (Z.1 x)) := rfl
+
+set_option maxHeartbeats 1000000 in
+-- elaborating the two `VonNeumannAlgebra` fields against the subtype `Ba 𝒷 X`
+-- (whose C*-structure is that of `baSubalgebra`) is heartbeat-hungry
+/-- **152X** (dils.tex:3409, Theorem): for a self-dual Hilbert 𝒷-module
+`X` over a von Neumann algebra `𝒷`, the algebra `𝒷ᵃ(X)` is a von Neumann
+algebra (bounded directed suprema exist and the vector states are
+separating normal states). -/
+theorem ba_vonNeumannAlgebra [VonNeumannAlgebra 𝒷] [CompleteSpace X]
+    (hX : SelfDual 𝒷 X) : VonNeumannAlgebra (Ba 𝒷 X) where
+  isLUB_of_bddAbove_directed D hne hdir hbdd :=
+    let ⟨s, hs, _⟩ := ba_isLUB hX D hne hdir hbdd
+    ⟨s, hs⟩
+  np_faithful a ha hzero := by
+    -- **144I**: the vector states are separating, and **152XIII** they are normal
+    have hvec : ∀ x : X, (inner 𝒷 x (a.1 x) : 𝒷) = 0 := fun x =>
+      VonNeumannAlgebra.np_faithful _ ((ba_nonneg_iff a).mp ha x) fun ω =>
+        hzero (baVecNP hX x ω)
+    have hle : a ≤ 0 := by
+      rw [← neg_nonneg]
+      refine (ba_nonneg_iff _).mpr fun x => ?_
+      have he : (-a).1 x = -(a.1 x) := rfl
+      rw [he, CStarModule.inner_neg_right, hvec x, neg_zero]
+    exact le_antisymm hle ha
+
+/-! ## Parsec 1530: `ad_T` -/
 
 /-- **153I** (`hilbmod-ad-ncp`, dils.tex:3487, Proposition), part 1: for an
 adjointable bounded module map `T : X → Y` (with adjoint `T'`) between
@@ -550,16 +1005,82 @@ theorem hilbmod_ad_cp [CompleteSpace X] [CompleteSpace Y]
   rw [hgram]
   exact CStarModule.inner_self_nonneg
 
+set_option maxHeartbeats 1000000 in
+-- as for `ba_isLUB`: instance search through `Ba 𝒷 X` is slow
+set_option linter.unusedVariables false in
+-- `hX` is the thesis's hypothesis and is deliberately kept; see the note below
 /-- **153I** (`hilbmod-ad-ncp`, dils.tex:3487, Proposition), part 2: if `X`
 and `Y` are moreover self-dual, then `ad_T` is normal, i.e. an ncp-map.
 
-**153III** is the proof — not converted. -/
+**153III** (the author's proof) is not available to us; the proof here is
+**152XII** `ba_isLUB` twice: the vector forms of `ad_T S` on `X` are the
+vector forms of `S` on `Y` (`⟨x, T*STx⟩ = ⟨Tx, S(Tx)⟩`), and both suprema
+are computed by their vector forms.  Only `hY` is used: normality of `ad_T`
+does not need `X` to be self-dual, since the supremum it has to preserve is
+one that already exists in `𝒷ᵃ(X)` by hypothesis. -/
 theorem hilbmod_ad_ncp [VonNeumannAlgebra 𝒷] [CompleteSpace X]
     [CompleteSpace Y] (hX : SelfDual 𝒷 X) (hY : SelfDual 𝒷 Y)
     (T : X →L[ℂ] Y) (T' : Y →L[ℂ] X) (hT : ModuleAdjointTo 𝒷 ⇑T ⇑T') :
     ∃ ad : NCPMap (Ba 𝒷 Y) (Ba 𝒷 X),
-      ∀ S : Ba 𝒷 Y, (ad S).1 = T'.comp (S.1.comp T) :=
-  sorry
+      ∀ S : Ba 𝒷 Y, (ad S).1 = T'.comp (S.1.comp T) := by
+  obtain ⟨ad, hadeq, hadcp⟩ := hilbmod_ad_cp T T' hT
+  -- the vector forms of `ad_T S` on `X` are the vector forms of `S` on `Y`
+  have hvec : ∀ (S : Ba 𝒷 Y) (x : X),
+      (inner 𝒷 x ((ad S).1 x) : 𝒷) = inner 𝒷 (T x) (S.1 (T x)) := by
+    intro S x
+    rw [hadeq S]
+    exact (hT x (S.1 (T x))).symm
+  have hmono : ∀ Z W : Ba 𝒷 Y, Z ≤ W → ad Z ≤ ad W := by
+    intro Z W h
+    rw [← sub_nonneg, ← map_sub]
+    refine (ba_nonneg_iff _).mpr fun x => ?_
+    rw [hvec (W - Z) x]
+    have he : (W - Z).1 (T x) = W.1 (T x) - Z.1 (T x) := rfl
+    rw [he, CStarModule.inner_sub_right, sub_nonneg]
+    exact ba_inner_mono (T x) h
+  have hcp2 : ∀ (N : ℕ) (M : CStarMatrix (Fin N) (Fin N) (Ba 𝒷 Y)),
+      0 ≤ M → 0 ≤ M.map ⇑ad := ((cp_iff ad).out 0 1).mp hadcp
+  -- normality: **152XII** computes both suprema by vector forms
+  have hnorm : PreservesDirSups ⇑ad := by
+    intro D s hne hdir hlub
+    constructor
+    · rintro _ ⟨d, hd, rfl⟩
+      exact hmono _ _ (Subtype.coe_le_coe.mpr (hlub.1 hd))
+    · intro c hc
+      rw [← sub_nonneg]
+      refine (ba_nonneg_iff _).mpr fun x => ?_
+      rw [show (c - ad (s : Ba 𝒷 Y)).1 x = c.1 x - (ad (s : Ba 𝒷 Y)).1 x from rfl,
+        CStarModule.inner_sub_right, sub_nonneg, hvec]
+      -- `⟨x, c x⟩` is self-adjoint because it dominates `⟨Tx, d₀ (Tx)⟩`
+      obtain ⟨d₀, hd₀⟩ := hne
+      have h1 : (inner 𝒷 x ((ad (d₀ : Ba 𝒷 Y)).1 x) : 𝒷) ≤ inner 𝒷 x (c.1 x) :=
+        ba_inner_mono x (hc ⟨d₀, hd₀, rfl⟩)
+      have h2 : IsSelfAdjoint (inner 𝒷 x ((ad (d₀ : Ba 𝒷 Y)).1 x) : 𝒷) := by
+        rw [hvec]
+        exact ba_inner_isSelfAdjoint _ _ d₀.2
+      have h3 : IsSelfAdjoint ((inner 𝒷 x (c.1 x) : 𝒷)
+          - inner 𝒷 x ((ad (d₀ : Ba 𝒷 Y)).1 x)) :=
+        IsSelfAdjoint.of_nonneg (sub_nonneg.mpr h1)
+      have hcsa : IsSelfAdjoint (inner 𝒷 x (c.1 x) : 𝒷) := by
+        have h4 : (inner 𝒷 x (c.1 x) : 𝒷)
+            = ((inner 𝒷 x (c.1 x) : 𝒷) - inner 𝒷 x ((ad (d₀ : Ba 𝒷 Y)).1 x))
+              + inner 𝒷 x ((ad (d₀ : Ba 𝒷 Y)).1 x) := by abel
+        rw [h4]
+        exact h3.add h2
+      -- and it dominates every `⟨Tx, d (Tx)⟩`, so it dominates their supremum
+      have hlv := ba_isLUB_vec hY ⟨d₀, hd₀⟩ hdir hlub (T x)
+      exact Subtype.coe_le_coe.mpr
+        (hlv.2 (by
+          rintro _ ⟨d, hd, rfl⟩
+          refine Subtype.coe_le_coe.mp ?_
+          change (inner 𝒷 (T x) ((d : Ba 𝒷 Y).1 (T x)) : 𝒷) ≤ _
+          rw [← hvec]
+          exact ba_inner_mono x (hc ⟨d, hd, rfl⟩)) :
+          baVec (T x) s ≤ (⟨inner 𝒷 x (c.1 x), hcsa⟩ : selfAdjoint 𝒷))
+  exact ⟨{ toCompletelyPositiveMap :=
+             { toLinearMap := ad
+               map_cstarMatrix_nonneg' := fun k M hM => hcp2 k M hM }
+           preservesDirSups' := hnorm }, hadeq⟩
 
 end BaVN
 

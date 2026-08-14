@@ -2951,6 +2951,114 @@ Quot.sound`.
   So the statement as a whole waits on 149V, but a worker with room could
   prove the basis half as a private lemma and leave only the self-duality.
 
+## Session 13 — `B/Dils` parsecs 1520–1540 (worker 34)
+
+**B/Dils 66 → 63 code `sorry`s.**  `SelfDualCompletion.lean` 4 → 2,
+`Paschke.lean` 10 → 9.  Everything axiom-clean
+(`propext`, `Classical.choice`, `Quot.sound`); `lake build` green over the
+whole chapter; the chapter still has **no `sorry`ed instances**.
+
+| point | declaration | file |
+|---|---|---|
+| **152X** | `ba_vonNeumannAlgebra` (`𝒷ᵃ(X)` is a von Neumann algebra) | `SelfDualCompletion.lean` |
+| **153I**.2 | `hilbmod_ad_ncp` (`ad_T` is an ncp-map) | `SelfDualCompletion.lean` |
+| **154III**.2 | `existence_paschke_2` (uniqueness of `ϱ(a₀)`) | `Paschke.lean` |
+
+Reusable by-products, all public: `ba_nonneg_iff` (144I transported to the
+type `Ba 𝒷 X`), `ba_inner_isSelfAdjoint`, `ba_inner_mono`, `baVec` (+`_coe`,
+`_mono`, `_image_directed`), `ba_isBSesquilinear` (142VIII), **152XII**
+`ba_isLUB` and its restatement `ba_isLUB_vec`, and **152XIII** `baVecNP`
+(the vector np-functionals of `𝒷ᵃ(X)`).
+
+### 152X — divergence class (2), for two named reasons
+
+The skeleton is the thesis's own (152XI–152XIII): the vector forms
+`⟨x, T_α x⟩` are a bounded directed net in `𝒷`, hence converge ultrastrongly
+to their supremum (**44XIV** `vna_supremum_uslimit`); polarization (**142IX**)
+extends this to `B(x,y) = uslim_α ⟨x, T_α y⟩`; `B` is 𝒷-sesquilinear because
+addition and multiplication by a fixed element are ultrastrongly continuous
+(**45IV** `mult_uws_cont`, proved last round — this is what unblocked the
+parsec); **152V** `hilbmod_sesquilinear_forms` represents `B` as `⟨·, T·⟩`;
+`T` is the supremum; and the vector states are separating (**144I**) and
+normal (152XIII).  Two steps are done differently.
+
+1. **The bound on `B` uses order, not norm.**  The thesis picks `r` with
+   `‖T_α‖ ≤ r`.  A directed set that is bounded *above* — which is what
+   **42I**.1 asks for — need not be norm-bounded, so no such `r` exists in
+   general.  Filed as an erratum on **152XII**; the fix in the text is one
+   sentence (pass to the cofinal tail `{d | d₀ ≤ d}`), and the fix here is to
+   bound `B(x,x)` between `⟨x, d₀x⟩` and `⟨x, ub x⟩` and use
+   `CStarAlgebra.norm_le_norm_of_nonneg_of_le`.  It is the same gap worker 32
+   had to fill in `vn.tex` **44XV**.
+2. **`usconv` is avoided.**  The thesis gets `‖B(x,y)‖ ≤ r‖x‖‖y‖` from
+   `⟨T_α y, x⟩⟨x, T_α y⟩ ≤ r²‖x‖²⟨y,y⟩` and the fact that a product of
+   ultrastrong limits converges ultraweakly.  In Lean that route needs the
+   ultraweak closedness of norm balls — **44XI**.3 `vn_positive_basic_3`, still
+   `sorry` in the frozen `A/VN`.  Instead polarization gives
+   `‖B(x,y)‖ ≤ r₀(‖x‖+‖y‖)²`, and rescaling `x ↦ tx`, `y ↦ t⁻¹y` (which fixes
+   `B(x,y)`) with `t = (‖y‖/‖x‖)^{1/2}` turns that into `4r₀‖x‖‖y‖`.
+   The two zero cases come from `B(0,y) = B(x,0) = 0`.
+
+Self-adjointness of the supremum is also cheaper than the thesis's "noting
+`B(x,y) = uwlim ⟨x,T_α y⟩`, it is easy to see `T` is self-adjoint": once
+`0 ≤ T − d₀` is known (which is needed anyway), `T = (T − d₀) + d₀` is a sum
+of self-adjoints.  This matters, because `star` is *not* ultrastrongly
+continuous and the obvious Lean transcription of that sentence does not exist.
+
+Five file-private helpers about the ultrastrong topology on `𝒷` were needed
+(`usTendsto_add'`, `_mul_left'`, `_mul_right'`, `_smul'`, `_const'`, `_sum'`,
+`_unique'`).  **They belong in `Theses.A.VN.Basic` beside `usTendsto_iff` and
+45IV** and should be moved there when that file is unfrozen; scalar
+multiplication is handled as multiplication by `algebraMap ℂ 𝒷 c`, so 45IV
+covers it, and uniqueness of limits is `vn_positive_basic_1`.
+
+### 153I.2 — divergence class (2): the author's proof is unavailable
+
+`153III` is "not converted" and is not in `bsols.tex`.  The proof here is
+**152XII** applied twice: `⟨x, (ad_T S) x⟩ = ⟨Tx, S(Tx)⟩`, so the vector forms
+of `ad_T S` on `X` are the vector forms of `S` on `Y`, and both suprema are
+computed by their vector forms.
+
+**The hypothesis `hX : SelfDual 𝒷 X` is not used** — Lean's unused-variable
+linter says so, and the suppression `set_option linter.unusedVariables false`
+above the declaration is the evidence.  Normality of `ad_T : 𝒷ᵃ(Y) → 𝒷ᵃ(X)` is
+preservation of suprema *of `𝒷ᵃ(Y)`*; the supremum in `𝒷ᵃ(X)` is handed to it.
+The thesis's hypothesis was kept (faithful transcription) and the surplus is
+filed as an erratum nit on **153I**.
+
+### 154III.2 — divergence class (1)
+
+`existence_paschke_2` is the uniqueness clause of part 2, and it follows from
+part 1 (the universal property, a *field* of `PaschkeModule`) applied to the
+shifted bilinear map `(a,b) ↦ (a₀a) ⊗ b`.  The only work is its
+φ-compatibility bound, and that is complete positivity of `φ` at two families:
+with `K = ‖a₀‖²+1` and `c = √(K − a₀*a₀)`,
+
+```
+∑ᵢⱼ bᵢ* φ((a₀aᵢ)*(a₀aⱼ)) bⱼ  +  ∑ᵢⱼ bᵢ* φ((caᵢ)*(caⱼ)) bⱼ
+    =  K · ∑ᵢⱼ bᵢ* φ(aᵢ* aⱼ) bⱼ,
+```
+
+all three terms being `≥ 0`, so the first is between `0` and `K · S₀` and its
+norm is at most `K‖S₀‖`.  **No matrix machinery is needed** — the identity is
+`a₀* a₀ + c* c = K` conjugated by `aᵢ`, `aⱼ` and pushed through the linear map,
+and positivity is `IsCompletelyPositiveMap` read literally.
+
+### Corrections to the round's plan
+
+* **"All ten of `Paschke.lean` sit behind 152X" is wrong.**  152X unblocks
+  exactly one of them (154III.2, above, and that through part 1's universal
+  property rather than through 152X).  `existence_paschke` (154III.1–3) is the
+  parsec-1540 construction and needs **150II** + **151Ia**; `existence_paschke_4`
+  is `paschke-spatial`; 155II is KSGNS; 156II and 157IV are full theorems.
+* **`existence_paschke_5`'s "term-in-a-statement leak" is closed, but not by
+  proving `existence_paschke_5`.**  The leak was that its *statement* contains
+  the term `ba_vonNeumannAlgebra M.selfDual`, which was `sorry`.  Proving 152X
+  closes it.  `existence_paschke_5` itself is 154VIII/154IX and needs
+  `existence_paschke_4`, still `sorry`.
+* **160II** was not attempted; w30's assessment stands (the ON-basis conjunct is
+  the published solution, the `SelfDual ℬ Z` conjunct is 149V (4)⇒(1)).
+
 ## Session 11 — `B/Eff` parsecs 215/219/220: the †-effectus theorem (worker 33)
 
 Proved: **219XVI** `dagger_is_functor`, **220II** `dagger_thm_sufficiency` and

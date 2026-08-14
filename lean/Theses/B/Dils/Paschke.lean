@@ -105,14 +105,130 @@ theorem existence_paschke [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     (φ : NCPMap 𝒜 ℬ) : Nonempty (PaschkeModule φ) :=
   sorry
 
+/-- An adjointable bounded operator on a Hilbert 𝒷-module is a bounded
+module map in the sense of **144IV** (`IsBoundedModuleMap`). -/
+private theorem ba_isBoundedModuleMap {X : Type u} [NormedAddCommGroup X]
+    [NormedSpace ℂ X] [SMul ℬ X] [CStarModule ℬ X] (T : Ba ℬ X) :
+    ∃ C : ℝ, IsBoundedModuleMap (cstarBInner ℬ X) (cstarBInner ℬ X) C ⇑T.1 := by
+  obtain ⟨-, -, hmod⟩ := moduleAdjointable_linear (𝒜 := ℬ) ⇑T.1 T.2
+  refine ⟨‖T.1‖ + 1, { add := fun x y => map_add T.1 x y
+                       smul_complex := fun c x => map_smul T.1 c x
+                       smul := hmod
+                       bound := fun x => ?_ }⟩
+  change Real.sqrt ‖(inner ℬ (T.1 x) (T.1 x) : ℬ)‖
+    ≤ (‖T.1‖ + 1) * Real.sqrt ‖(inner ℬ x x : ℬ)‖
+  rw [← CStarModule.norm_eq_sqrt_norm_inner_self (A := ℬ),
+    ← CStarModule.norm_eq_sqrt_norm_inner_self (A := ℬ)]
+  have h := T.1.le_opNorm x
+  have h0 : (0 : ℝ) ≤ ‖x‖ := norm_nonneg x
+  nlinarith
+
+set_option maxHeartbeats 1000000 in
+-- the φ-compatibility bound is a long chain of `Finset` rewrites
 /-- **154III** (`existence-paschke`, dils.tex:3558, Theorem), part 2,
 uniqueness clause: for each `a₀ ∈ 𝒜` the operator `ϱ(a₀)` is the unique
 adjointable operator with `ϱ(a₀)(a ⊗ b) = (a₀a) ⊗ b`. -/
 theorem existence_paschke_2 [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     (φ : NCPMap 𝒜 ℬ) (M : PaschkeModule φ) (a₀ : 𝒜) :
     ∃! T : Ba ℬ M.X, ∀ (a : 𝒜) (b : ℬ),
-      T.1 (M.tprod a b) = M.tprod (a₀ * a) b :=
-  sorry
+      T.1 (M.tprod a b) = M.tprod (a₀ * a) b := by
+  classical
+  set ψ : 𝒜 →ₗ[ℂ] ℬ := φ.toCompletelyPositiveMap.toLinearMap with hψdef
+  have hψ : ⇑φ = ⇑ψ := rfl
+  have hcp : IsCompletelyPositiveMap ψ :=
+    ((cp_iff _).out 1 0).mp fun N A hA =>
+      φ.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N A hA
+  -- the shifted bilinear map `(a, b) ↦ (a₀a) ⊗ b` is φ-compatible: only the
+  -- bound needs an argument, and it is complete positivity of `φ` at the two
+  -- families `(a₀aᵢ)` and `(caᵢ)`, where `c* c = K - a₀* a₀` for
+  -- `K = ‖a₀‖² + 1`; adding the two gives `S₁ + S₂ = K · S₀`, so
+  -- `0 ≤ S₁ ≤ K · S₀`.
+  have hcompat : PhiCompatible ⇑φ (fun a b => M.tprod (a₀ * a) b) := by
+    obtain ⟨r, hr0, hr⟩ := M.compat.bound
+    refine { add_left := fun a a' b => by
+               rw [mul_add]; exact M.compat.add_left _ _ _
+             add_right := fun a b b' => M.compat.add_right _ _ _
+             smul_complex := fun c a b => by
+               rw [mul_smul_comm]; exact M.compat.smul_complex _ _ _
+             smul_action := fun a b c => M.compat.smul_action _ _ _
+             bound := ⟨r * (‖a₀‖ ^ 2 + 1), by positivity, fun n a b => ?_⟩ }
+    set K : ℝ := ‖a₀‖ ^ 2 + 1 with hK
+    have hK0 : (0 : ℝ) ≤ K := by positivity
+    have hcast : ∀ t : ℝ, algebraMap ℝ 𝒜 t = ((t : ℂ)) • (1 : 𝒜) := by
+      intro t
+      rw [IsScalarTower.algebraMap_apply ℝ ℂ 𝒜, Algebra.algebraMap_eq_smul_one]
+      norm_num
+    have hnorm2 : ‖star a₀ * a₀‖ = ‖a₀‖ ^ 2 := by
+      rw [CStarRing.norm_star_mul_self]; ring
+    have hle : star a₀ * a₀ ≤ ((K : ℝ) : ℂ) • (1 : 𝒜) := by
+      have h1 := (IsSelfAdjoint.star_mul_self a₀).le_algebraMap_norm_self
+      rw [hcast] at h1
+      refine h1.trans ?_
+      rw [← sub_nonneg, ← sub_smul]
+      have h2 : ((K : ℝ) : ℂ) - ((‖star a₀ * a₀‖ : ℝ) : ℂ) = 1 := by
+        rw [hnorm2, hK]; push_cast; ring
+      rw [h2, one_smul]
+      exact zero_le_one
+    set c : 𝒜 := CFC.sqrt (((K : ℝ) : ℂ) • (1 : 𝒜) - star a₀ * a₀) with hcdef
+    have hcc : star c * c = ((K : ℝ) : ℂ) • (1 : 𝒜) - star a₀ * a₀ := by
+      have h0 : (0 : 𝒜) ≤ ((K : ℝ) : ℂ) • (1 : 𝒜) - star a₀ * a₀ := sub_nonneg.mpr hle
+      have hsa : star c = c := IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg _)
+      rw [hsa, hcdef, CFC.sqrt_mul_sqrt_self _ h0]
+    -- the three conjugated sums
+    set S0 : ℬ := ∑ i, ∑ j, star (b i) * ψ (star (a i) * a j) * b j with hS0def
+    set S1 : ℬ := ∑ i, ∑ j, star (b i) * ψ (star (a₀ * a i) * (a₀ * a j)) * b j
+      with hS1def
+    set S2 : ℬ := ∑ i, ∑ j, star (b i) * ψ (star (c * a i) * (c * a j)) * b j
+      with hS2def
+    have hS1nn : (0 : ℬ) ≤ S1 := hcp n (fun i => a₀ * a i) b
+    have hS2nn : (0 : ℬ) ≤ S2 := hcp n (fun i => c * a i) b
+    have hpoint : ∀ i j : Fin n,
+        star (b i) * ψ (star (a₀ * a i) * (a₀ * a j)) * b j
+          + star (b i) * ψ (star (c * a i) * (c * a j)) * b j
+        = ((K : ℝ) : ℂ) • (star (b i) * ψ (star (a i) * a j) * b j) := by
+      intro i j
+      have hsum : star a₀ * a₀ + star c * c = ((K : ℝ) : ℂ) • (1 : 𝒜) := by
+        rw [hcc]; abel
+      have h1 : star (a₀ * a i) * (a₀ * a j) + star (c * a i) * (c * a j)
+          = ((K : ℝ) : ℂ) • (star (a i) * a j) := by
+        calc star (a₀ * a i) * (a₀ * a j) + star (c * a i) * (c * a j)
+            = star (a i) * (star a₀ * a₀ + star c * c) * a j := by
+              simp only [star_mul]; noncomm_ring
+          _ = star (a i) * (((K : ℝ) : ℂ) • (1 : 𝒜)) * a j := by rw [hsum]
+          _ = ((K : ℝ) : ℂ) • (star (a i) * a j) := by
+              rw [mul_smul_comm, smul_mul_assoc, mul_one]
+      rw [← add_mul, ← mul_add, ← map_add ψ, h1, map_smul, mul_smul_comm,
+        smul_mul_assoc]
+    have hSum : S1 + S2 = ((K : ℝ) : ℂ) • S0 := by
+      rw [hS0def, hS1def, hS2def, Finset.smul_sum]
+      rw [← Finset.sum_add_distrib]
+      refine Finset.sum_congr rfl fun i _ => ?_
+      rw [← Finset.sum_add_distrib, Finset.smul_sum]
+      exact Finset.sum_congr rfl fun j _ => hpoint i j
+    have hS1le : S1 ≤ ((K : ℝ) : ℂ) • S0 := by
+      rw [← hSum]
+      simpa using add_le_add_left hS2nn S1
+    have hnormS1 : ‖S1‖ ≤ K * ‖S0‖ := by
+      have h := CStarAlgebra.norm_le_norm_of_nonneg_of_le hS1nn hS1le
+      rwa [norm_smul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hK0] at h
+    have hkey := hr n (fun i => a₀ * a i) b
+    simp only [← hψ] at hS0def hS1def
+    calc ‖∑ i, M.tprod (a₀ * a i) (b i)‖ ^ 2
+        ≤ r * ‖S1‖ := by rw [hS1def]; simpa [hψ] using hkey
+      _ ≤ r * (K * ‖S0‖) := mul_le_mul_of_nonneg_left hnormS1 hr0.le
+      _ = r * K * ‖S0‖ := by ring
+      _ = r * (‖a₀‖ ^ 2 + 1)
+            * ‖∑ i, ∑ j, star (b i) * φ (star (a i) * a j) * b j‖ := by
+          rw [hS0def, hK]
+  -- part 1 (the universal property) applied to it
+  obtain ⟨T', -, hT'uniq⟩ :=
+    M.univ M.X inferInstance inferInstance inferInstance inferInstance inferInstance
+      M.selfDual _ hcompat
+  refine ⟨M.ρ a₀, fun a b => M.ρ_tprod a₀ a b, fun T hT => ?_⟩
+  have h1 : ⇑T.1 = T' := hT'uniq _ ⟨ba_isBoundedModuleMap T, fun a b => hT a b⟩
+  have h2 : ⇑(M.ρ a₀).1 = T' :=
+    hT'uniq _ ⟨ba_isBoundedModuleMap _, fun a b => M.ρ_tprod a₀ a b⟩
+  exact Subtype.ext (DFunLike.coe_injective (h1.trans h2.symm))
 
 /-- **154III** (`existence-paschke`, dils.tex:3558, Theorem), part 4
 (`paschke-spatial`): universal property of `(ϱ, 1 ⊗ 1)`: for every
