@@ -1310,6 +1310,27 @@ structure IsVNTensor (t : 𝒜 → ℬ → 𝒞) : Prop where
   separating : ∀ z : 𝒞, 0 ≤ z →
     (∀ Ω : NPFunctional 𝒞, IsProductFunctional 𝒜 ℬ t Ω → Ω z = 0) → z = 0
 
+/-- **Non-vacuity check** for `IsVNTensor`: multiplication exhibits `ℂ` as
+`ℂ ⊗ ℂ`, so the structure is inhabited and everything derived from it below
+(ℂ-homogeneity in the second slot, normality of the legs, **165III**,
+**166II**) says something.  Kept in the tree deliberately: a mirroring defect
+that left `PaschkeModule` *uninhabited* once made nine theorems of
+`Paschke.lean` vacuous (PROVING-LOG session 14), and only a concrete example
+caught it. -/
+theorem vnTensor_mul_complex : IsVNTensor (fun a b : ℂ => a * b) where
+  add_left a a' b := add_mul a a' b
+  add_right a b b' := mul_add a b b'
+  smul_complex c a b := smul_mul_assoc c a b
+  mul a a' b b' := by ring
+  one := one_mul 1
+  star a b := by rw [star_mul, mul_comm]
+  generates := by
+    refine eq_top_iff.mpr (le_sInf ?_)
+    rintro T ⟨-, hST⟩ z -
+    exact hST ⟨(z, 1), by simp⟩
+  separating z _ h :=
+    h complexIdNP ⟨complexIdNP, complexIdNP, fun _ _ => rfl⟩
+
 omit [StarOrderedRing 𝒜] in
 private theorem npf_csmul (ω : NPFunctional 𝒜) (c : ℂ) (a : 𝒜) :
     ω (c • a) = c * ω a :=
@@ -1543,6 +1564,76 @@ theorem vnTensor_legRight_mono {t : 𝒜 → ℬ → 𝒞} (ht : IsVNTensor t) {
 theorem vnTensor_legRight_normal [VonNeumannAlgebra 𝒞] {t : 𝒜 → ℬ → 𝒞}
     (ht : IsVNTensor t) : PreservesDirSups (fun b : ℬ => t 1 b) :=
   vnTensor_legLeft_normal (vnTensor_flip ht)
+
+/-- A positive element is dominated by any real bound on its norm:
+`0 ≤ u`, `‖u‖ ≤ r` give `u ≤ r·1`.  (**9X**.2 plus monotonicity of
+`r ↦ r·1`.) -/
+private theorem le_ofReal_smul_one {𝒟 : Type*} [CStarAlgebra 𝒟]
+    [PartialOrder 𝒟] [StarOrderedRing 𝒟] {u : 𝒟} {r : ℝ} (hu : 0 ≤ u)
+    (h : ‖u‖ ≤ r) : u ≤ ((r : ℝ) : ℂ) • (1 : 𝒟) := by
+  refine (cstar_positive_2 u (IsSelfAdjoint.of_nonneg hu)).2.2.trans ?_
+  rw [← Algebra.algebraMap_eq_smul_one]
+  exact algebraMap_ofReal_mono h
+
+/-- `⊗` of two positive elements is positive: `a = c*c`, `b = d*d` give
+`a ⊗ b = (c ⊗ d)* (c ⊗ d)`. -/
+theorem vnTensor_nonneg {t : 𝒜 → ℬ → 𝒞} (ht : IsVNTensor t) {a : 𝒜} {b : ℬ}
+    (ha : 0 ≤ a) (hb : 0 ≤ b) : 0 ≤ t a b := by
+  obtain ⟨c, rfl⟩ := CStarAlgebra.nonneg_iff_eq_star_mul_self.mp ha
+  obtain ⟨d, rfl⟩ := CStarAlgebra.nonneg_iff_eq_star_mul_self.mp hb
+  rw [← ht.mul, ← ht.star]
+  exact star_mul_self_nonneg _
+
+/-- `⊗` is monotone in its second argument, over a positive first one. -/
+theorem vnTensor_mono_right {t : 𝒜 → ℬ → 𝒞} (ht : IsVNTensor t) {a : 𝒜}
+    (ha : 0 ≤ a) {b b' : ℬ} (h : b ≤ b') : t a b ≤ t a b' := by
+  have hd : t a b' - t a b = t a (b' - b) := by
+    have h2 := ht.add_right a (b' - b) b
+    rw [sub_add_cancel] at h2
+    rw [h2]; abel
+  rw [← sub_nonneg, hd]
+  exact vnTensor_nonneg ht ha (sub_nonneg.mpr h)
+
+/-- `⊗` is monotone in its first argument, over a positive second one. -/
+theorem vnTensor_mono_left {t : 𝒜 → ℬ → 𝒞} (ht : IsVNTensor t) {b : ℬ}
+    (hb : 0 ≤ b) {a a' : 𝒜} (h : a ≤ a') : t a b ≤ t a' b :=
+  vnTensor_mono_right (vnTensor_flip ht) hb h
+
+/-- The left leg `a ↦ a ⊗ 1` as a positive linear map. -/
+noncomputable def vnTensorLegLeft {t : 𝒜 → ℬ → 𝒞} (ht : IsVNTensor t) :
+    𝒜 →ₚ[ℂ] 𝒞 where
+  toFun a := t a 1
+  map_add' a a' := ht.add_left a a' 1
+  map_smul' c a := ht.smul_complex c a 1
+  monotone' _ _ h := vnTensor_legLeft_mono ht h
+
+/-- The right leg `b ↦ 1 ⊗ b` as a positive linear map. -/
+noncomputable def vnTensorLegRight {t : 𝒜 → ℬ → 𝒞} (ht : IsVNTensor t) :
+    ℬ →ₚ[ℂ] 𝒞 where
+  toFun b := t 1 b
+  map_add' b b' := ht.add_right 1 b b'
+  map_smul' c b := vnTensor_smul_complex_right ht c 1 b
+  monotone' _ _ h := vnTensor_legRight_mono ht h
+
+/-- `Ω ↦ Ω(· ⊗ 1)`: an np-functional on `𝒞 = 𝒜 ⊗ ℬ` restricts along the
+left leg to an np-functional on `𝒜`.  Normality is
+`vnTensor_legLeft_normal`, i.e. it needs no clause beyond `IsVNTensor`. -/
+noncomputable def vnTensorLegLeftNP [VonNeumannAlgebra 𝒞] {t : 𝒜 → ℬ → 𝒞}
+    (ht : IsVNTensor t) (Ω : NPFunctional 𝒞) : NPFunctional 𝒜 :=
+  compNP (vnTensorLegLeft ht) (vnTensor_legLeft_normal ht) Ω
+
+@[simp] theorem vnTensorLegLeftNP_apply [VonNeumannAlgebra 𝒞]
+    {t : 𝒜 → ℬ → 𝒞} (ht : IsVNTensor t) (Ω : NPFunctional 𝒞) (a : 𝒜) :
+    vnTensorLegLeftNP ht Ω a = Ω (t a 1) := rfl
+
+/-- `Ω ↦ Ω(1 ⊗ ·)`; see `vnTensorLegLeftNP`. -/
+noncomputable def vnTensorLegRightNP [VonNeumannAlgebra 𝒞] {t : 𝒜 → ℬ → 𝒞}
+    (ht : IsVNTensor t) (Ω : NPFunctional 𝒞) : NPFunctional ℬ :=
+  compNP (vnTensorLegRight ht) (vnTensor_legRight_normal ht) Ω
+
+@[simp] theorem vnTensorLegRightNP_apply [VonNeumannAlgebra 𝒞]
+    {t : 𝒜 → ℬ → 𝒞} (ht : IsVNTensor t) (Ω : NPFunctional 𝒞) (b : ℬ) :
+    vnTensorLegRightNP ht Ω b = Ω (t 1 b) := rfl
 
 /-! ### Auxiliary material for **165IV**
 
@@ -2347,9 +2438,26 @@ theorem ba_ext_tensor_pres [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
 **166I** (dils.tex:5625): introduction; **166III**, **166V**, **166VII**
 are proofs — not converted. -/
 
+-- `hX`, `hY` are not used: `E : ExtTensor t ht X Y` already carries
+-- self-duality of `X ⊗ Y` and `η_inner`, which is all the proof needs; they
+-- are kept for uniformity with the neighbouring statements of parsecs
+-- 1640-1670.  **`hxb` is not used either**: the splitting
+-- `xα ⊗ yα − x ⊗ y = (xα − x) ⊗ yα + x ⊗ (yα − y)` needs a norm bound on
+-- the `y`-net only.  (The thesis needs both because it routes the estimate
+-- through **44III** `vanishing-effects`, whose vanishing net must consist of
+-- *effects*; the estimate below never leaves the order of `𝒞`.  Splitting
+-- the other way, `xα ⊗ (yα − y) + (xα − x) ⊗ y`, would use `hxb` and not
+-- `hyb`, so the lemma is true with either one of the two bounds.)
+set_option linter.unusedVariables false in
 /-- **166II** (`ultranorm-continuity-ext-tensor`, dils.tex:5630, Lemma): if
 `x_α → x` and `y_α → y` ultranorm for norm-bounded nets, then
-`x_α ⊗ y_α → x ⊗ y` ultranorm. -/
+`x_α ⊗ y_α → x ⊗ y` ultranorm.
+
+**166III** is the proof; transcribed below, with its appeal to **44III**
+`vanishing_effects` replaced by the order estimate
+`Ω(⟨d,d⟩ ⊗ ⟨yα,yα⟩) ≤ M² · Ω(⟨d,d⟩ ⊗ 1)` — which is available because the
+legs are normal (`vnTensor_legLeft_normal`), so `Ω(· ⊗ 1)` is again an
+np-functional. -/
 theorem ultranorm_continuity_ext_tensor [VonNeumannAlgebra 𝒜]
     [VonNeumannAlgebra ℬ] [VonNeumannAlgebra 𝒞] [CompleteSpace X]
     [CompleteSpace Y] (hX : SelfDual 𝒜 X) (hY : SelfDual ℬ Y)
@@ -2357,8 +2465,82 @@ theorem ultranorm_continuity_ext_tensor [VonNeumannAlgebra 𝒜]
     (x : ι → X) (x₀ : X) (y : ι → Y) (y₀ : Y)
     (hxb : ∃ M : ℝ, ∀ i, ‖x i‖ ≤ M) (hyb : ∃ M : ℝ, ∀ i, ‖y i‖ ≤ M)
     (hx : UnTendsto (inner 𝒜) x l x₀) (hy : UnTendsto (inner ℬ) y l y₀) :
-    UnTendsto (inner 𝒞) (fun i => E.η (x i) (y i)) l (E.η x₀ y₀) :=
-  sorry
+    UnTendsto (inner 𝒞) (fun i => E.η (x i) (y i)) l (E.η x₀ y₀) := by
+  intro Ω
+  obtain ⟨ω, hωa⟩ : ∃ ω : NPFunctional 𝒜, ∀ a : 𝒜, ω a = Ω (t a 1) :=
+    ⟨vnTensorLegLeftNP ht Ω, fun _ => rfl⟩
+  obtain ⟨ξ, hξb⟩ : ∃ ξ : NPFunctional ℬ, ∀ b : ℬ, ξ b = Ω (t 1 b) :=
+    ⟨vnTensorLegRightNP ht Ω, fun _ => rfl⟩
+  obtain ⟨M₀, hM₀⟩ := hyb
+  obtain ⟨M, hM0, hMy⟩ : ∃ M : ℝ, 0 ≤ M ∧ ∀ i, ‖y i‖ ≤ M :=
+    ⟨max M₀ 0, le_max_right _ _, fun i => (hM₀ i).trans (le_max_left _ _)⟩
+  -- `xα ⊗ yα − x ⊗ y = (xα − x) ⊗ yα + x ⊗ (yα − y)`
+  have hsplit : ∀ i, E.η (x i) (y i) - E.η x₀ y₀
+      = E.η (x i - x₀) (y i) + E.η x₀ (y i - y₀) := by
+    intro i
+    have h1 : E.η (x i - x₀) (y i) + E.η x₀ (y i) = E.η (x i) (y i) := by
+      rw [← E.η_add_left]; congr 1; abel
+    have h2 : E.η x₀ (y i - y₀) + E.η x₀ y₀ = E.η x₀ (y i) := by
+      rw [← E.η_add_right]; congr 1; abel
+    rw [← h1, ← h2]; abel
+  -- `‖(xα − x) ⊗ yα‖_Ω ≤ M ‖xα − x‖_{Ω(· ⊗ 1)}`
+  have hterm1 : ∀ i, unSeminorm Ω (inner 𝒞) (E.η (x i - x₀) (y i))
+      ≤ M * unSeminorm ω (inner 𝒜) (x i - x₀) := by
+    intro i
+    have hy2 : ‖(inner ℬ (y i) (y i) : ℬ)‖ ≤ M ^ 2 := by
+      have hn : ‖(inner ℬ (y i) (y i) : ℬ)‖ = ‖y i‖ ^ 2 := by
+        rw [CStarModule.norm_eq_sqrt_norm_inner_self (A := ℬ) (y i),
+          Real.sq_sqrt (norm_nonneg _)]
+      have h1 := hMy i
+      have h2 := norm_nonneg (y i)
+      rw [hn]; nlinarith
+    have hmono : t (inner 𝒜 (x i - x₀) (x i - x₀)) (inner ℬ (y i) (y i))
+        ≤ t (inner 𝒜 (x i - x₀) (x i - x₀)) (((M ^ 2 : ℝ) : ℂ) • (1 : ℬ)) :=
+      vnTensor_mono_right ht CStarModule.inner_self_nonneg
+        (le_ofReal_smul_one CStarModule.inner_self_nonneg hy2)
+    have hre : (Ω (inner 𝒞 (E.η (x i - x₀) (y i)) (E.η (x i - x₀) (y i)))).re
+        ≤ M ^ 2 * (ω (inner 𝒜 (x i - x₀) (x i - x₀))).re := by
+      rw [E.η_inner, hωa]
+      have h2 := npFunctional_mono Ω hmono
+      rw [vnTensor_smul_complex_right ht, npf_csmul] at h2
+      simpa [Complex.mul_re, ← Complex.ofReal_pow] using
+        (Complex.le_def.mp h2).1
+    calc unSeminorm Ω (inner 𝒞) (E.η (x i - x₀) (y i))
+        ≤ Real.sqrt (M ^ 2 * (ω (inner 𝒜 (x i - x₀) (x i - x₀))).re) :=
+          Real.sqrt_le_sqrt hre
+      _ = M * unSeminorm ω (inner 𝒜) (x i - x₀) := by
+          rw [Real.sqrt_mul (by positivity), Real.sqrt_sq hM0]; rfl
+  -- `‖x ⊗ (yα − y)‖_Ω ≤ ‖x‖ ‖yα − y‖_{Ω(1 ⊗ ·)}`
+  have hterm2 : ∀ i, unSeminorm Ω (inner 𝒞) (E.η x₀ (y i - y₀))
+      ≤ ‖x₀‖ * unSeminorm ξ (inner ℬ) (y i - y₀) := by
+    intro i
+    have hx2 : ‖(inner 𝒜 x₀ x₀ : 𝒜)‖ ≤ ‖x₀‖ ^ 2 := by
+      rw [CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒜) x₀,
+        Real.sq_sqrt (norm_nonneg _)]
+    have hmono : t (inner 𝒜 x₀ x₀) (inner ℬ (y i - y₀) (y i - y₀))
+        ≤ t (((‖x₀‖ ^ 2 : ℝ) : ℂ) • (1 : 𝒜)) (inner ℬ (y i - y₀) (y i - y₀)) :=
+      vnTensor_mono_left ht CStarModule.inner_self_nonneg
+        (le_ofReal_smul_one CStarModule.inner_self_nonneg hx2)
+    have hre : (Ω (inner 𝒞 (E.η x₀ (y i - y₀)) (E.η x₀ (y i - y₀)))).re
+        ≤ ‖x₀‖ ^ 2 * (ξ (inner ℬ (y i - y₀) (y i - y₀))).re := by
+      rw [E.η_inner, hξb]
+      have h2 := npFunctional_mono Ω hmono
+      rw [ht.smul_complex, npf_csmul] at h2
+      simpa [Complex.mul_re, ← Complex.ofReal_pow] using
+        (Complex.le_def.mp h2).1
+    calc unSeminorm Ω (inner 𝒞) (E.η x₀ (y i - y₀))
+        ≤ Real.sqrt (‖x₀‖ ^ 2 * (ξ (inner ℬ (y i - y₀) (y i - y₀))).re) :=
+          Real.sqrt_le_sqrt hre
+      _ = ‖x₀‖ * unSeminorm ξ (inner ℬ) (y i - y₀) := by
+          rw [Real.sqrt_mul (by positivity), Real.sqrt_sq (norm_nonneg _)]; rfl
+  refine squeeze_zero (fun i => unSeminorm_nonneg _ _ _) (g := fun i =>
+      M * unSeminorm ω (inner 𝒜) (x i - x₀)
+        + ‖x₀‖ * unSeminorm ξ (inner ℬ) (y i - y₀)) (fun i => ?_) ?_
+  · change unSeminorm Ω (inner 𝒞) (E.η (x i) (y i) - E.η x₀ y₀) ≤ _
+    rw [hsplit i]
+    exact (unSeminorm_add_le Ω (cstarBInner 𝒞 E.Z) _ _).trans
+      (add_le_add (hterm1 i) (hterm2 i))
+  · simpa using ((hx ω).const_mul M).add ((hy ξ).const_mul ‖x₀‖)
 
 /-- **166IV** (`exttensor-dense-subsets`, dils.tex:5669, Lemma): for
 ultranorm-dense submodules `U ⊆ X` and `V ⊆ Y`, the linear span of

@@ -67,13 +67,15 @@ See also the 208III row in ERRATA.md: the thesis's own proof of 208III routes
 through 177Ia twice, and both detours turn out to be avoidable.
 
 ### B5. `IsVNTensor` is too weak for 165III (and, it turns out, 166II)
-*Status 2026-08-14 (worker 50): the **positivity** half is answered (worker 40,
-confirmed by worker 41), and 165III `dfn_tensor_of_hilbmod_maps` is now
+*Status 2026-08-14 (worker 52): the **positivity** half is answered (worker 40,
+confirmed by worker 41), and 165III `dfn_tensor_of_hilbmod_maps` is
 **proved**.  The **normality-of-the-legs** half is answered too — it is
-derivable, so `IsVNTensor` needs no new clause; see the closing note.  A
-**third**, genuinely different gap has replaced them: `IsVNTensor` omits
-proc.tex `tensor`-**2** (the *existence* of product functionals), which
-**165VI** needs.  That one is open.*
+derivable, so `IsVNTensor` needs no new clause — and **166II**
+`ultranorm_continuity_ext_tensor`, the statement that raised it, is now
+**proved** as well.  A **third**, genuinely different gap has replaced them:
+`IsVNTensor` omits proc.tex `tensor`-**2** (the *existence* of product
+functionals), which **165VI** needs.  That one is open — and it is the only
+open half of B5.*
 
 `dils.tex:5433`.  Our axiomatization of the von Neumann tensor product
 (proc.tex 108II) gives miu-bilinearity, `generates`, and separation by product
@@ -164,10 +166,17 @@ The mirror statements for the right leg come from `vnTensor_flip`
 way (proc.tex 108I asks a tensor product to be ℂ-**bi**linear; `IsVNTensor`
 records ℂ-homogeneity in the first slot only, and the second slot follows).
 
-**166II is therefore no longer blocked on a decision**; what remains is
-ordinary work (an ultranorm triangle inequality, the scaling into
-`effects 𝒞` that **44III** `vanishing_effects` wants, and `Ω ∘ leg` bundled
-as an `NPFunctional`).
+**166II is therefore no longer blocked on a decision.**  *Closed
+2026-08-14 (worker 52): `ultranorm_continuity_ext_tensor` is **proved**.*  The
+only piece of the predicted plumbing that was actually needed is the bundling
+of `Ω ∘ leg` as an `NPFunctional` — `vnTensorLegLeftNP` / `vnTensorLegRightNP`,
+which are `compNP` applied to the leg together with `vnTensor_leg*_normal`.
+The scaling into `effects 𝒞` is *not* needed: once `Ω(· ⊗ 1)` is known to be an
+np-functional, the estimate can stay in the order of `𝒞`,
+`Ω(⟨d,d⟩ ⊗ ⟨yα,yα⟩) ≤ M²·Ω(⟨d,d⟩ ⊗ 1)` (monotonicity of `⊗` in each slot over
+a positive other slot, plus `⟨yα,yα⟩ ≤ M²·1`), and **44III**
+`vanishing_effects` is never invoked.  A by-product: the norm bound on the
+`x`-net is unnecessary (ERRATA, 166II statement row).
 
 *Third gap, found 2026-08-14 (worker 50): `IsVNTensor` omits the **existence**
 of product functionals — proc.tex `tensor` clause 2 — and **165VI** needs it.*
