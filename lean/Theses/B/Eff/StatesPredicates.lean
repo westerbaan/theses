@@ -654,13 +654,892 @@ theorem effectus_vn_real_separating
     IsRealEffectus WStarCPSU.{u}ᵒᵖ ∧ SeparatingPredicates WStarCPSU.{u}ᵒᵖ ∧
       SeparatingStates WStarCPSU.{u}ᵒᵖ := sorry
 
+/-! ### A bridge from a concrete coproduct/final object to `EffectusTotalForm` -/
+
+section EffectusBridge
+
+variable {D : Type u} [Category.{v} D]
+
+/-- Concrete presentation of a final object and of binary coproducts in `D`. -/
+structure CoprodPres (D : Type u) [Category.{v} D] where
+  /-- the chosen final object -/
+  T : D
+  /-- ... which is final -/
+  hT : IsTerminal T
+  /-- the chosen binary coproduct -/
+  P : D → D → D
+  /-- first coprojection -/
+  pinl : ∀ X Y, X ⟶ P X Y
+  /-- second coprojection -/
+  pinr : ∀ X Y, Y ⟶ P X Y
+  /-- ... which is a coproduct -/
+  hP : ∀ X Y, IsColimit (BinaryCofan.mk (pinl X Y) (pinr X Y))
+
+/-- Flipping a commuting square along two isomorphisms. -/
+theorem sq_symm {U U' V V' : D} (eU : U ≅ U') (eV : V ≅ V') {A : U ⟶ V}
+    {A' : U' ⟶ V'} (h : A ≫ eV.hom = eU.hom ≫ A') :
+    A' ≫ eV.symm.hom = eU.symm.hom ≫ A := by
+  show A' ≫ eV.inv = eU.inv ≫ A
+  rw [Iso.comp_inv_eq, Category.assoc, h, ← Category.assoc, Iso.inv_hom_id,
+    Category.id_comp]
+
+namespace CoprodPres
+
+variable (d : CoprodPres D)
+
+/-- Cotupling for the concrete coproduct. -/
+noncomputable def desc {X Y Z : D} (f : X ⟶ Z) (g : Y ⟶ Z) : d.P X Y ⟶ Z :=
+  (d.hP X Y).desc (BinaryCofan.mk f g)
+
+@[simp] theorem inl_desc {X Y Z : D} (f : X ⟶ Z) (g : Y ⟶ Z) :
+    d.pinl X Y ≫ d.desc f g = f :=
+  (d.hP X Y).fac (BinaryCofan.mk f g) ⟨WalkingPair.left⟩
+
+@[simp] theorem inr_desc {X Y Z : D} (f : X ⟶ Z) (g : Y ⟶ Z) :
+    d.pinr X Y ≫ d.desc f g = g :=
+  (d.hP X Y).fac (BinaryCofan.mk f g) ⟨WalkingPair.right⟩
+
+theorem hom_ext {X Y Z : D} {a b : d.P X Y ⟶ Z}
+    (h₁ : d.pinl X Y ≫ a = d.pinl X Y ≫ b)
+    (h₂ : d.pinr X Y ≫ a = d.pinr X Y ≫ b) : a = b := by
+  refine (d.hP X Y).hom_ext ?_
+  rintro ⟨⟨⟩⟩
+  · exact h₁
+  · exact h₂
+
+theorem desc_self {X Y : D} : d.desc (d.pinl X Y) (d.pinr X Y) = 𝟙 (d.P X Y) := by
+  refine d.hom_ext ?_ ?_ <;> simp
+
+/-- The coproduct of two morphisms for the concrete coproduct. -/
+noncomputable def pmap {X X' Y Y' : D} (f : X ⟶ X') (g : Y ⟶ Y') :
+    d.P X Y ⟶ d.P X' Y' :=
+  d.desc (f ≫ d.pinl X' Y') (g ≫ d.pinr X' Y')
+
+@[simp] theorem inl_pmap {X X' Y Y' : D} (f : X ⟶ X') (g : Y ⟶ Y') :
+    d.pinl X Y ≫ d.pmap f g = f ≫ d.pinl X' Y' := d.inl_desc _ _
+
+@[simp] theorem inr_pmap {X X' Y Y' : D} (f : X ⟶ X') (g : Y ⟶ Y') :
+    d.pinr X Y ≫ d.pmap f g = g ≫ d.pinr X' Y' := d.inr_desc _ _
+
+/-- Transporting the concrete coproduct along isomorphisms of the two
+summands. -/
+noncomputable def cofanIso {A B A' B' : D} (iA : A ≅ A') (iB : B ≅ B') :
+    IsColimit (BinaryCofan.mk (iA.hom ≫ d.pinl A' B') (iB.hom ≫ d.pinr A' B')) :=
+  BinaryCofan.IsColimit.mk _
+    (fun {_} f g => d.desc (iA.inv ≫ f) (iB.inv ≫ g))
+    (fun {_} f g => by
+      show (iA.hom ≫ d.pinl A' B') ≫ d.desc (iA.inv ≫ f) (iB.inv ≫ g) = f
+      rw [Category.assoc, d.inl_desc, ← Category.assoc, Iso.hom_inv_id,
+        Category.id_comp])
+    (fun {_} f g => by
+      show (iB.hom ≫ d.pinr A' B') ≫ d.desc (iA.inv ≫ f) (iB.inv ≫ g) = g
+      rw [Category.assoc, d.inr_desc, ← Category.assoc, Iso.hom_inv_id,
+        Category.id_comp])
+    (fun {Z} f g m h₁ h₂ => by
+      obtain ⟨m', rfl⟩ : ∃ m' : d.P A' B' ⟶ Z, m' = m := ⟨m, rfl⟩
+      have e₁ : iA.hom ≫ d.pinl A' B' ≫ m' = f := by
+        rw [← Category.assoc]; exact h₁
+      have e₂ : iB.hom ≫ d.pinr A' B' ≫ m' = g := by
+        rw [← Category.assoc]; exact h₂
+      refine d.hom_ext ?_ ?_
+      · rw [d.inl_desc, ← e₁]; simp
+      · rw [d.inr_desc, ← e₂]; simp)
+
+section Coprod
+
+variable [HasFiniteCoproducts D]
+
+/-- The comparison isomorphism between the ambient coproduct `A ⨿ B` and the
+concrete `d.P A' B'`, along isomorphisms `A ≅ A'`, `B ≅ B'`. -/
+noncomputable def coprodIso {A B A' B' : D} (iA : A ≅ A') (iB : B ≅ B') :
+    (A ⨿ B) ≅ d.P A' B' :=
+  (coprodIsCoprod A B).coconePointUniqueUpToIso (d.cofanIso iA iB)
+
+@[simp] theorem inl_coprodIso {A B A' B' : D} (iA : A ≅ A') (iB : B ≅ B') :
+    coprod.inl ≫ (d.coprodIso iA iB).hom = iA.hom ≫ d.pinl A' B' :=
+  (coprodIsCoprod A B).comp_coconePointUniqueUpToIso_hom (d.cofanIso iA iB)
+    ⟨WalkingPair.left⟩
+
+@[simp] theorem inr_coprodIso {A B A' B' : D} (iA : A ≅ A') (iB : B ≅ B') :
+    coprod.inr ≫ (d.coprodIso iA iB).hom = iB.hom ≫ d.pinr A' B' :=
+  (coprodIsCoprod A B).comp_coconePointUniqueUpToIso_hom (d.cofanIso iA iB)
+    ⟨WalkingPair.right⟩
+
+theorem map_comm {A B A' B' C₁ C₂ C₁' C₂' : D}
+    (iA : A ≅ A') (iB : B ≅ B') (iC : C₁ ≅ C₁') (iD : C₂ ≅ C₂')
+    {f : A ⟶ C₁} {g : B ⟶ C₂} {f' : A' ⟶ C₁'} {g' : B' ⟶ C₂'}
+    (hf : f ≫ iC.hom = iA.hom ≫ f') (hg : g ≫ iD.hom = iB.hom ≫ g') :
+    coprod.map f g ≫ (d.coprodIso iC iD).hom
+      = (d.coprodIso iA iB).hom ≫ d.pmap f' g' := by
+  refine coprod.hom_ext ?_ ?_
+  · rw [← Category.assoc, coprod.inl_map, Category.assoc, d.inl_coprodIso,
+      ← Category.assoc, hf, Category.assoc, ← Category.assoc coprod.inl,
+      d.inl_coprodIso, Category.assoc, d.inl_pmap]
+  · rw [← Category.assoc, coprod.inr_map, Category.assoc, d.inr_coprodIso,
+      ← Category.assoc, hg, Category.assoc, ← Category.assoc coprod.inr,
+      d.inr_coprodIso, Category.assoc, d.inr_pmap]
+
+end Coprod
+
+section Term
+
+variable [HasTerminal D]
+
+/-- The comparison isomorphism between the ambient final object and `d.T`. -/
+noncomputable def termIso : (⊤_ D) ≅ d.T :=
+  terminalIsTerminal.uniqueUpToIso d.hT
+
+theorem from_termIso (X : D) :
+    terminal.from X ≫ d.termIso.hom = 𝟙 X ≫ d.hT.from X := by
+  rw [Category.id_comp]; exact d.hT.hom_ext _ _
+
+end Term
+
+section Both
+
+variable [HasFiniteCoproducts D] [HasTerminal D]
+
+/-- `X ⨿ Y ≅ P X Y`. -/
+noncomputable abbrev eP (X Y : D) : (X ⨿ Y) ≅ d.P X Y :=
+  d.coprodIso (Iso.refl X) (Iso.refl Y)
+
+/-- `X ⨿ 1 ≅ P X T`. -/
+noncomputable abbrev ePT (X : D) : (X ⨿ ⊤_ D) ≅ d.P X d.T :=
+  d.coprodIso (Iso.refl X) d.termIso
+
+/-- `1 ⨿ Y ≅ P T Y`. -/
+noncomputable abbrev eTP (Y : D) : ((⊤_ D) ⨿ Y) ≅ d.P d.T Y :=
+  d.coprodIso d.termIso (Iso.refl Y)
+
+/-- `1 ⨿ 1 ≅ P T T`. -/
+noncomputable abbrev eTT : ((⊤_ D) ⨿ (⊤_ D)) ≅ d.P d.T d.T :=
+  d.coprodIso d.termIso d.termIso
+
+/-- `(1 ⨿ 1) ⨿ 1 ≅ P (P T T) T`. -/
+noncomputable abbrev eTTT : (((⊤_ D) ⨿ (⊤_ D)) ⨿ (⊤_ D)) ≅ d.P (d.P d.T d.T) d.T :=
+  d.coprodIso d.eTT d.termIso
+
+/-- The comparison square for a cotuple `[u, κ₂] : (1+1)+1 ⟶ 1+1`. -/
+theorem cotuple_comm (u : (⊤_ D) ⨿ (⊤_ D) ⟶ (⊤_ D) ⨿ (⊤_ D))
+    (u' : d.P d.T d.T ⟶ d.P d.T d.T) (hu : u ≫ d.eTT.hom = d.eTT.hom ≫ u') :
+    coprod.desc u coprod.inr ≫ d.eTT.hom
+      = d.eTTT.hom ≫ d.desc u' (d.pinr d.T d.T) := by
+  refine coprod.hom_ext ?_ ?_
+  · rw [← Category.assoc, coprod.inl_desc, hu, ← Category.assoc coprod.inl,
+      d.inl_coprodIso, Category.assoc, d.inl_desc]
+  · have l1 : coprod.inr ≫ (coprod.desc u coprod.inr ≫ d.eTT.hom)
+        = d.termIso.hom ≫ d.pinr d.T d.T := by
+      rw [← Category.assoc, coprod.inr_desc, d.inr_coprodIso]
+    have l2 : coprod.inr ≫ (d.eTTT.hom ≫ d.desc u' (d.pinr d.T d.T))
+        = d.termIso.hom ≫ d.pinr d.T d.T := by
+      rw [← Category.assoc, d.inr_coprodIso, Category.assoc, d.inr_desc]
+    rw [l1, l2]
+
+end Both
+
+end CoprodPres
+
+/-- The bridge: to establish `EffectusTotalForm D` for the ambient
+`HasFiniteCoproducts`/`HasTerminal` instances it suffices to verify the three
+axioms of 180I for *any* concrete presentation of the final object and of the
+binary coproducts. -/
+theorem effectusTotalForm_of_pres [HasFiniteCoproducts D] [HasTerminal D]
+    (d : CoprodPres D)
+    (h1 : ∀ X Y : D, IsPullback (d.pmap (𝟙 X) (d.hT.from Y))
+      (d.pmap (d.hT.from X) (𝟙 Y)) (d.pmap (d.hT.from X) (𝟙 d.T))
+      (d.pmap (𝟙 d.T) (d.hT.from Y)))
+    (h2 : ∀ X Y : D, IsPullback (d.hT.from X) (d.pinl X Y) (d.pinl d.T d.T)
+      (d.pmap (d.hT.from X) (d.hT.from Y)))
+    (h3 : JointlyMonic
+      (d.desc (d.desc (d.pinl d.T d.T) (d.pinr d.T d.T)) (d.pinr d.T d.T))
+      (d.desc (d.desc (d.pinr d.T d.T) (d.pinl d.T d.T)) (d.pinr d.T d.T))) :
+    EffectusTotalForm D := by
+  have hid : ∀ X : D, (𝟙 X) ≫ (Iso.refl X).hom = (Iso.refl X).hom ≫ 𝟙 X := by
+    intro X; simp
+  constructor
+  · -- first pullback square
+    intro X Y
+    exact (h1 X Y).of_iso (d.eP X Y).symm (d.ePT X).symm (d.eTP Y).symm d.eTT.symm
+      (sq_symm (d.eP X Y) (d.ePT X)
+        (d.map_comm _ _ _ _ (hid X) (d.from_termIso Y)))
+      (sq_symm (d.eP X Y) (d.eTP Y)
+        (d.map_comm _ _ _ _ (d.from_termIso X) (hid Y)))
+      (sq_symm (d.ePT X) d.eTT
+        (d.map_comm _ _ _ _ (d.from_termIso X) (by simp)))
+      (sq_symm (d.eTP Y) d.eTT
+        (d.map_comm _ _ _ _ (by simp) (d.from_termIso Y)))
+  · -- second pullback square
+    intro X Y
+    refine (h2 X Y).of_iso (Iso.refl X) d.termIso.symm (d.eP X Y).symm d.eTT.symm
+      ?_ (sq_symm (Iso.refl X) (d.eP X Y) (d.inl_coprodIso _ _))
+      (sq_symm d.termIso d.eTT (d.inl_coprodIso _ _))
+      (sq_symm (d.eP X Y) d.eTT
+        (d.map_comm _ _ _ _ (d.from_termIso X) (d.from_termIso Y)))
+    show d.hT.from X ≫ d.termIso.inv = 𝟙 X ≫ terminal.from X
+    rw [Iso.comp_inv_eq, Category.assoc, d.from_termIso X]
+    simp
+  · -- joint monicity
+    have cF := d.cotuple_comm (coprod.desc coprod.inl coprod.inr)
+      (d.desc (d.pinl d.T d.T) (d.pinr d.T d.T)) (by
+        refine coprod.hom_ext ?_ ?_
+        · rw [← Category.assoc, coprod.inl_desc, d.inl_coprodIso,
+            ← Category.assoc, d.inl_coprodIso, Category.assoc, d.inl_desc]
+        · rw [← Category.assoc, coprod.inr_desc, d.inr_coprodIso,
+            ← Category.assoc, d.inr_coprodIso, Category.assoc, d.inr_desc])
+    have cG := d.cotuple_comm (coprod.desc coprod.inr coprod.inl)
+      (d.desc (d.pinr d.T d.T) (d.pinl d.T d.T)) (by
+        refine coprod.hom_ext ?_ ?_
+        · rw [← Category.assoc, coprod.inl_desc, d.inr_coprodIso,
+            ← Category.assoc, d.inl_coprodIso, Category.assoc, d.inl_desc]
+        · rw [← Category.assoc, coprod.inr_desc, d.inl_coprodIso,
+            ← Category.assoc, d.inr_coprodIso, Category.assoc, d.inr_desc])
+    intro Z a b hf hg
+    have ha : (a ≫ d.eTTT.hom) ≫
+        d.desc (d.desc (d.pinl d.T d.T) (d.pinr d.T d.T)) (d.pinr d.T d.T)
+        = (b ≫ d.eTTT.hom) ≫
+        d.desc (d.desc (d.pinl d.T d.T) (d.pinr d.T d.T)) (d.pinr d.T d.T) := by
+      rw [Category.assoc, Category.assoc, ← cF, ← Category.assoc,
+        ← Category.assoc, hf]
+    have hb : (a ≫ d.eTTT.hom) ≫
+        d.desc (d.desc (d.pinr d.T d.T) (d.pinl d.T d.T)) (d.pinr d.T d.T)
+        = (b ≫ d.eTTT.hom) ≫
+        d.desc (d.desc (d.pinr d.T d.T) (d.pinl d.T d.T)) (d.pinr d.T d.T) := by
+      rw [Category.assoc, Category.assoc, ← cG, ← Category.assoc,
+        ← Category.assoc, hg]
+    exact (cancel_mono d.eTTT.hom).mp (h3 _ _ ha hb)
+
+end EffectusBridge
+
 /-! ## The effectus of effect modules (parsec 191) -/
+
+section EModEffectusDev
+
+open Opposite
+
+section EModEffectus
+
+/-- Middle-four interchange in an effect algebra. -/
+private theorem ovee_interchange {E : Type u} [EffectAlgebra E] {a b c d : E}
+    (hac : Perp a c) (hbd : Perp b d)
+    (h : Perp (ovee a c hac) (ovee b d hbd)) :
+    ∃ (hab : Perp a b) (hcd : Perp c d) (h' : Perp (ovee a b hab) (ovee c d hcd)),
+      ovee (ovee a b hab) (ovee c d hcd) h'
+        = ovee (ovee a c hac) (ovee b d hbd) h := by
+  have h1 : PCM.IsSumOf [a, c, b, d] (ovee (ovee a c hac) (ovee b d hbd) h) :=
+    isSumOf_four a c b d _ hac hbd h rfl
+  have h2 : PCM.IsSumOf [a, b, c, d] (ovee (ovee a c hac) (ovee b d hbd) h) :=
+    PCM.isSumOf_perm (List.Perm.cons a (List.Perm.swap b c [d])) h1
+  obtain ⟨t1, ht1, hp1, he1⟩ := PCM.isSumOf_cons_iff.mp h2
+  obtain ⟨t2, ht2, hp2, he2⟩ := PCM.isSumOf_cons_iff.mp ht1
+  obtain ⟨t3, ht3, hp3, he3⟩ := PCM.isSumOf_cons_iff.mp ht2
+  obtain ⟨t4, ht4, hp4, he4⟩ := PCM.isSumOf_cons_iff.mp ht3
+  rw [PCM.isSumOf_nil_iff] at ht4
+  subst ht4
+  rw [PCM.ovee_zero d hp4] at he4
+  subst he4
+  subst he3
+  subst he2
+  obtain ⟨hab, h', e⟩ := PCM.assoc_left hp2 hp1
+  exact ⟨hab, hp3, h', e.trans he1⟩
+
+variable {M : Type u} [EffectMonoid M]
+
+/-- `λ • 0 = 0` in an effect module. -/
+private theorem emod_smul_zero {E : Type v} [EffectAlgebra E] [EffectModule M E]
+    (l : M) : l • (0 : E) = 0 := by
+  obtain ⟨h', e⟩ := EffectModule.smul_perp l (PCM.zero_perp (0 : E))
+  rw [PCM.zero_ovee (0 : E)] at e
+  exact eabasics_cancellation (c := l • (0 : E)) h' (PCM.zero_perp _)
+    (e.trans (PCM.zero_ovee _).symm)
+
+/-- `0 • a = 0` in an effect module. -/
+private theorem emod_zero_smul {E : Type v} [EffectAlgebra E] [EffectModule M E]
+    (a : E) : (0 : M) • a = 0 := by
+  obtain ⟨h', e⟩ := EffectModule.perp_smul (PCM.zero_perp (0 : M)) a
+  rw [PCM.zero_ovee (0 : M)] at e
+  exact eabasics_cancellation (c := (0 : M) • a) h' (PCM.zero_perp _)
+    (e.trans (PCM.zero_ovee _).symm)
+
+/-- An effect monoid is a module over itself. -/
+private def selfEffectModule : EffectModule M M where
+  smul l a := l * a
+  mul_smul := EffectMonoid.mul_assoc
+  smul_perp := by
+    intro l a b h
+    obtain ⟨h', e⟩ := emon_mul_ovee l h
+    exact ⟨h', e.symm⟩
+  perp_smul := by
+    intro l m h a
+    obtain ⟨h', e⟩ := emon_ovee_mul a h
+    exact ⟨h', e.symm⟩
+  one_smul := EffectMonoid.one_mul
+
+/-- The product of two effect modules. -/
+private def prodEffectModule (E F : Type v) [EffectAlgebra E] [EffectAlgebra F]
+    [EffectModule M E] [EffectModule M F] : EffectModule M (E × F) where
+  smul l p := (l • p.1, l • p.2)
+  mul_smul l m a :=
+    Prod.ext (EffectModule.mul_smul l m a.1) (EffectModule.mul_smul l m a.2)
+  smul_perp := by
+    intro l a b h
+    obtain ⟨h1, e1⟩ := EffectModule.smul_perp l h.1
+    obtain ⟨h2, e2⟩ := EffectModule.smul_perp l h.2
+    exact ⟨⟨h1, h2⟩, Prod.ext e1 e2⟩
+  perp_smul := by
+    intro l m h a
+    obtain ⟨h1, e1⟩ := EffectModule.perp_smul h a.1
+    obtain ⟨h2, e2⟩ := EffectModule.perp_smul h a.2
+    exact ⟨⟨h1, h2⟩, Prod.ext e1 e2⟩
+  one_smul a := Prod.ext (EffectModule.one_smul a.1) (EffectModule.one_smul a.2)
+
+/-- The one-element effect module. -/
+private def punitEffectModule : EffectModule M PUnit.{v + 1} where
+  smul _ _ := PUnit.unit
+  mul_smul _ _ _ := rfl
+  smul_perp := by intro _ _ _ _; exact ⟨trivial, rfl⟩
+  perp_smul := by intro _ _ _ _; exact ⟨trivial, rfl⟩
+  one_smul _ := rfl
+
+attribute [local instance] selfEffectModule prodEffectModule punitEffectModule
+
+end EModEffectus
+
+section EModEffectus2
+
+variable {M : Type u} [EffectMonoid M]
+
+attribute [local instance] selfEffectModule prodEffectModule punitEffectModule
+
+/-- Extensionality for effect module homomorphisms. -/
+private theorem emodhom_ext {E F : Type v} [EffectAlgebra E] [EffectAlgebra F]
+    [EffectModule M E] [EffectModule M F] (f g : EffectModuleHom M E F) :
+    f.toFun = g.toFun → f = g := by
+  obtain ⟨⟨⟨f₁, -, -⟩, -⟩, -⟩ := f
+  obtain ⟨⟨⟨g₁, -, -⟩, -⟩, -⟩ := g
+  intro h
+  dsimp only at h
+  subst h
+  rfl
+
+/-- The unique effect module map `M → E`, `λ ↦ λ · 1`. -/
+private def emodInit (E : Type u) [EffectAlgebra E] [EffectModule M E] :
+    EffectModuleHom M M E where
+  toFun l := l • (1 : E)
+  perp_map := fun {_ _} h => (EffectModule.perp_smul h (1 : E)).choose
+  ovee_map := fun {_ _} h => ((EffectModule.perp_smul h (1 : E)).choose_spec).symm
+  map_one := EffectModule.one_smul (1 : E)
+  map_smul l a := EffectModule.mul_smul l a 1
+
+private theorem emodInit_unique {E : Type u} [EffectAlgebra E] [EffectModule M E]
+    (f : EffectModuleHom M M E) (l : M) : f.toFun l = l • (1 : E) := by
+  have e : (l • (1 : M)) = l := EffectMonoid.mul_one l
+  calc f.toFun l = f.toFun (l • (1 : M)) := by rw [e]
+    _ = l • f.toFun 1 := f.map_smul l 1
+    _ = l • (1 : E) := by rw [f.map_one]
+
+/-- `M` is the initial object of `EMod_M`. -/
+private def emodIsInitial : IsInitial (EModCat.of M M) :=
+  IsInitial.ofUniqueHom (fun E => emodInit E.carrier)
+    (fun _ f => emodhom_ext _ _ (funext fun l => emodInit_unique f l))
+
+/-- `{0 = 1}` is the final object of `EMod_M`. -/
+private def emodIsTerminal : IsTerminal (EModCat.of M PUnit.{u + 1}) :=
+  IsTerminal.ofUniqueHom
+    (fun _ => { toFun := fun _ => PUnit.unit
+                perp_map := fun {_ _} _ => trivial
+                ovee_map := fun {_ _} _ => rfl
+                map_one := rfl
+                map_smul := fun _ _ => rfl })
+    (fun _ _ => emodhom_ext _ _ (funext fun _ => rfl))
+
+/-- First projection of a product of effect modules. -/
+private def emodFst (E F : Type u) [EffectAlgebra E] [EffectAlgebra F]
+    [EffectModule M E] [EffectModule M F] : EffectModuleHom M (E × F) E where
+  toFun := Prod.fst
+  perp_map := fun {_ _} h => h.1
+  ovee_map := fun {_ _} _ => rfl
+  map_one := rfl
+  map_smul _ _ := rfl
+
+/-- Second projection of a product of effect modules. -/
+private def emodSnd (E F : Type u) [EffectAlgebra E] [EffectAlgebra F]
+    [EffectModule M E] [EffectModule M F] : EffectModuleHom M (E × F) F where
+  toFun := Prod.snd
+  perp_map := fun {_ _} h => h.2
+  ovee_map := fun {_ _} _ => rfl
+  map_one := rfl
+  map_smul _ _ := rfl
+
+/-- Pairing of two effect module maps. -/
+private def emodPair {G E F : Type u} [EffectAlgebra G] [EffectAlgebra E]
+    [EffectAlgebra F] [EffectModule M G] [EffectModule M E] [EffectModule M F]
+    (u : EffectModuleHom M G E) (v : EffectModuleHom M G F) :
+    EffectModuleHom M G (E × F) where
+  toFun g := (u.toFun g, v.toFun g)
+  perp_map := fun {_ _} h => ⟨u.perp_map h, v.perp_map h⟩
+  ovee_map := fun {_ _} h => Prod.ext (u.ovee_map h) (v.ovee_map h)
+  map_one := Prod.ext u.map_one v.map_one
+  map_smul l a := Prod.ext (u.map_smul l a) (v.map_smul l a)
+
+/-- The concrete presentation of `EMod_M^op`: the final object is `M` (the
+initial effect module), the binary coproducts are the cartesian products. -/
+private noncomputable def emodPres : CoprodPres (EModCat.{u, u} M)ᵒᵖ where
+  T := op (EModCat.of M M)
+  hT := IsInitial.op (EModCat.{u, u} M) emodIsInitial
+  P X Y := op (EModCat.of M (X.unop × Y.unop))
+  pinl X Y := Quiver.Hom.op
+    (emodFst X.unop Y.unop : EModCat.of M (X.unop × Y.unop) ⟶ X.unop)
+  pinr X Y := Quiver.Hom.op
+    (emodSnd X.unop Y.unop : EModCat.of M (X.unop × Y.unop) ⟶ Y.unop)
+  hP X Y := BinaryCofan.IsColimit.mk _
+    (fun {W} u v => Quiver.Hom.op
+      (emodPair u.unop v.unop : W.unop ⟶ EModCat.of M (X.unop × Y.unop)))
+    (fun {_} u v => rfl)
+    (fun {_} u v => rfl)
+    (fun {W} u v m h₁ h₂ => by
+      obtain ⟨m', rfl⟩ :
+          ∃ m' : op (EModCat.of M (X.unop × Y.unop)) ⟶ W, m' = m := ⟨m, rfl⟩
+      apply Quiver.Hom.unop_inj
+      refine emodhom_ext _ _ (funext fun x => Prod.ext ?_ ?_)
+      · exact congrArg (fun k : X ⟶ W => k.unop.toFun x) h₁
+      · exact congrArg (fun k : Y ⟶ W => k.unop.toFun x) h₂)
+
+end EModEffectus2
+
+section EModAlgebra
+
+variable {M : Type u} [EffectMonoid M]
+
+attribute [local instance] selfEffectModule prodEffectModule punitEffectModule
+
+/-- If `a ≼ a'`, `b ≼ b'` and `a' ⊥ b'`, then `a ⊥ b`. -/
+private theorem perp_of_le_le {E : Type u} [EffectAlgebra E] {a a' b b' : E}
+    (ha : a ≼ a') (hb : b ≼ b') (h : Perp a' b') : Perp a b :=
+  PCM.perp_comm (eabasics_le_perp_compat hb
+    (PCM.perp_comm (eabasics_le_perp_compat ha h).choose)).choose
+
+variable {E F G : Type u} [EffectAlgebra E] [EffectAlgebra F] [EffectAlgebra G]
+  [EffectModule M E] [EffectModule M F] [EffectModule M G]
+
+/-- **191II** (`emod-effectus`, eff.tex:2206), the left pushout square,
+element level. -/
+private theorem emod_po1 (α : EffectModuleHom M (E × M) G)
+    (β : EffectModuleHom M (M × F) G)
+    (hc : ∀ l m : M, α.toFun (l • (1 : E), m) = β.toFun (l, m • (1 : F))) :
+    ∃! h : EffectModuleHom M (E × F) G,
+      (∀ (x : E) (m : M), h.toFun (x, m • (1 : F)) = α.toFun (x, m)) ∧
+      (∀ (l : M) (y : F), h.toFun (l • (1 : E), y) = β.toFun (l, y)) := by
+  have h10 : α.toFun ((1 : E), (0 : M)) = β.toFun ((1 : M), (0 : F)) := by
+    have := hc 1 0
+    rwa [EffectModule.one_smul, emod_zero_smul] at this
+  -- `β(1,0) ⊥ β(0,1)`
+  have hperpβ : Perp (β.toFun ((1 : M), (0 : F))) (β.toFun ((0 : M), (1 : F))) :=
+    β.perp_map (⟨PCM.perp_zero (1 : M), PCM.zero_perp (1 : F)⟩ :
+      Perp ((1 : M), (0 : F)) ((0 : M), (1 : F)))
+  have hleα : ∀ x : E, α.toFun (x, (0 : M)) ≼ α.toFun ((1 : E), (0 : M)) := by
+    intro x
+    refine exc_eamorphism_monotone α.toEAHom ⟨(orth x, (0 : M)), ⟨EffectAlgebra.perp_orth x,
+      PCM.perp_zero (0 : M)⟩, ?_⟩
+    exact Prod.ext (EffectAlgebra.ovee_orth x) (PCM.ovee_zero (0 : M) _)
+  have hleβ : ∀ y : F, β.toFun ((0 : M), y) ≼ β.toFun ((0 : M), (1 : F)) := by
+    intro y
+    refine exc_eamorphism_monotone β.toEAHom ⟨((0 : M), orth y), ⟨PCM.perp_zero (0 : M),
+      EffectAlgebra.perp_orth y⟩, ?_⟩
+    exact Prod.ext (PCM.ovee_zero (0 : M) _) (EffectAlgebra.ovee_orth y)
+  have hperp : ∀ (x : E) (y : F),
+      Perp (α.toFun (x, (0 : M))) (β.toFun ((0 : M), y)) := by
+    intro x y
+    refine perp_of_le_le (hleα x) (hleβ y) ?_
+    rw [h10]
+    exact hperpβ
+  -- additivity of `f(x,y) = α(x,0) ⋁ β(0,y)`
+  have hadd : ∀ (x x' : E) (y y' : F) (hx : Perp x x') (hy : Perp y y'),
+      ∃ h' : Perp (ovee (α.toFun (x, (0 : M))) (β.toFun ((0 : M), y)) (hperp x y))
+              (ovee (α.toFun (x', (0 : M))) (β.toFun ((0 : M), y')) (hperp x' y')),
+        ovee (ovee (α.toFun (x, (0 : M))) (β.toFun ((0 : M), y)) (hperp x y))
+            (ovee (α.toFun (x', (0 : M))) (β.toFun ((0 : M), y')) (hperp x' y')) h'
+          = ovee (α.toFun (ovee x x' hx, (0 : M)))
+              (β.toFun ((0 : M), ovee y y' hy)) (hperp (ovee x x' hx) (ovee y y' hy)) := by
+    intro x x' y y' hx hy
+    have hac : Perp (α.toFun (x, (0 : M))) (α.toFun (x', (0 : M))) :=
+      α.perp_map (⟨hx, PCM.perp_zero (0 : M)⟩ : Perp ((x : E), (0 : M)) (x', (0 : M)))
+    have hbd : Perp (β.toFun ((0 : M), y)) (β.toFun ((0 : M), y')) :=
+      β.perp_map (⟨PCM.perp_zero (0 : M), hy⟩ : Perp ((0 : M), (y : F)) ((0 : M), y'))
+    have eac : ovee (α.toFun (x, (0 : M))) (α.toFun (x', (0 : M))) hac
+        = α.toFun (ovee x x' hx, (0 : M)) := by
+      rw [← α.ovee_map (⟨hx, PCM.perp_zero (0 : M)⟩ : Perp ((x : E), (0 : M)) (x', (0 : M)))]
+      congr 1
+      exact Prod.ext rfl (PCM.zero_ovee' (0 : M) _)
+    have ebd : ovee (β.toFun ((0 : M), y)) (β.toFun ((0 : M), y')) hbd
+        = β.toFun ((0 : M), ovee y y' hy) := by
+      rw [← β.ovee_map (⟨PCM.perp_zero (0 : M), hy⟩ : Perp ((0 : M), (y : F)) ((0 : M), y'))]
+      congr 1
+      exact Prod.ext (PCM.zero_ovee' (0 : M) _) rfl
+    have hbig : Perp (ovee (α.toFun (x, (0 : M))) (α.toFun (x', (0 : M))) hac)
+        (ovee (β.toFun ((0 : M), y)) (β.toFun ((0 : M), y')) hbd) := by
+      rw [eac, ebd]; exact hperp _ _
+    obtain ⟨hab, hcd, h', e⟩ := ovee_interchange hac hbd hbig
+    refine ⟨h', ?_⟩
+    rw [e]
+    exact PCM.ovee_congr eac ebd hbig _
+  refine ⟨{ toFun := fun p =>
+              ovee (α.toFun (p.1, (0 : M))) (β.toFun ((0 : M), p.2)) (hperp p.1 p.2)
+            perp_map := fun {p q} h => (hadd p.1 q.1 p.2 q.2 h.1 h.2).choose
+            ovee_map := fun {p q} h => ((hadd p.1 q.1 p.2 q.2 h.1 h.2).choose_spec).symm
+            map_one := ?_
+            map_smul := ?_ }, ⟨?_, ?_⟩, ?_⟩
+  · show ovee (α.toFun ((1 : E), (0 : M))) (β.toFun ((0 : M), (1 : F))) (hperp 1 1) = 1
+    rw [PCM.ovee_congr h10 rfl (hperp 1 1) hperpβ,
+      ← β.ovee_map (⟨PCM.perp_zero (1 : M), PCM.zero_perp (1 : F)⟩ :
+        Perp ((1 : M), (0 : F)) ((0 : M), (1 : F)))]
+    rw [show ovee ((1 : M), (0 : F)) ((0 : M), (1 : F))
+        (⟨PCM.perp_zero (1 : M), PCM.zero_perp (1 : F)⟩ :
+          Perp ((1 : M), (0 : F)) ((0 : M), (1 : F))) = ((1 : M), (1 : F)) from
+      Prod.ext (PCM.ovee_zero (1 : M) _) (PCM.zero_ovee' (1 : F) _)]
+    exact β.map_one
+  · rintro l ⟨x, y⟩
+    obtain ⟨hs, es⟩ := EffectModule.smul_perp l (hperp x y)
+    show ovee (α.toFun ((l • x : E), (0 : M))) (β.toFun ((0 : M), (l • y : F))) _
+        = l • ovee (α.toFun (x, (0 : M))) (β.toFun ((0 : M), y)) (hperp x y)
+    rw [← es]
+    refine PCM.ovee_congr ?_ ?_ _ _
+    · rw [← α.map_smul l (x, (0 : M))]
+      congr 1
+      exact Prod.ext rfl (emod_smul_zero l).symm
+    · rw [← β.map_smul l ((0 : M), y)]
+      congr 1
+      exact Prod.ext (emod_smul_zero l).symm rfl
+  · intro x m
+    have e0 : β.toFun ((0 : M), (m • (1 : F))) = α.toFun ((0 : E), m) := by
+      have h := hc 0 m
+      rw [emod_zero_smul] at h
+      exact h.symm
+    show ovee (α.toFun (x, (0 : M))) (β.toFun ((0 : M), (m • (1 : F)))) _ = α.toFun (x, m)
+    rw [PCM.ovee_congr rfl e0 _ (α.perp_map (⟨PCM.perp_zero x, PCM.zero_perp m⟩ :
+        Perp ((x : E), (0 : M)) ((0 : E), m))),
+      ← α.ovee_map (⟨PCM.perp_zero x, PCM.zero_perp m⟩ :
+        Perp ((x : E), (0 : M)) ((0 : E), m))]
+    congr 1
+    exact Prod.ext (PCM.ovee_zero x _) (PCM.zero_ovee' m _)
+  · intro l y
+    have e0 : α.toFun ((l • (1 : E)), (0 : M)) = β.toFun (l, (0 : F)) := by
+      have h := hc l 0
+      rwa [emod_zero_smul] at h
+    show ovee (α.toFun ((l • (1 : E)), (0 : M))) (β.toFun ((0 : M), y)) _ = β.toFun (l, y)
+    rw [PCM.ovee_congr e0 rfl _ (β.perp_map (⟨PCM.perp_zero l, PCM.zero_perp y⟩ :
+        Perp ((l : M), (0 : F)) ((0 : M), y))),
+      ← β.ovee_map (⟨PCM.perp_zero l, PCM.zero_perp y⟩ :
+        Perp ((l : M), (0 : F)) ((0 : M), y))]
+    congr 1
+    exact Prod.ext (PCM.ovee_zero l _) (PCM.zero_ovee' y _)
+  · rintro h' ⟨hf1, hf2⟩
+    refine emodhom_ext _ _ (funext ?_)
+    rintro ⟨x, y⟩
+    have e1 : h'.toFun (x, (0 : F)) = α.toFun (x, (0 : M)) := by
+      have h := hf1 x 0
+      rwa [emod_zero_smul] at h
+    have e2 : h'.toFun ((0 : E), y) = β.toFun ((0 : M), y) := by
+      have h := hf2 0 y
+      rwa [emod_zero_smul] at h
+    have hp : Perp ((x : E), (0 : F)) ((0 : E), y) := ⟨PCM.perp_zero x, PCM.zero_perp y⟩
+    have esum : ovee ((x : E), (0 : F)) ((0 : E), y) hp = (x, y) :=
+      Prod.ext (PCM.ovee_zero x _) (PCM.zero_ovee' y _)
+    show h'.toFun (x, y) = ovee (α.toFun (x, (0 : M))) (β.toFun ((0 : M), y)) (hperp x y)
+    rw [← esum, h'.ovee_map hp]
+    exact PCM.ovee_congr e1 e2 _ _
+
+end EModAlgebra
+
+section EModAlgebra2
+
+variable {M : Type u} [EffectMonoid M]
+
+attribute [local instance] selfEffectModule prodEffectModule punitEffectModule
+
+variable {E F G : Type u} [EffectAlgebra E] [EffectAlgebra F] [EffectAlgebra G]
+  [EffectModule M E] [EffectModule M F] [EffectModule M G]
+
+/-- **191II** (`emod-effectus`, eff.tex:2206), the right pushout square,
+element level. -/
+private theorem emod_po2 (δ : EffectModuleHom M (E × F) G)
+    (hc : ∀ l m : M, δ.toFun (l • (1 : E), m • (1 : F)) = l • (1 : G)) :
+    ∃! h : EffectModuleHom M E G,
+      (∀ (x : E) (y : F), h.toFun x = δ.toFun (x, y)) ∧
+      (∀ l : M, h.toFun (l • (1 : E)) = l • (1 : G)) := by
+  have h01 : δ.toFun ((0 : E), (1 : F)) = 0 := by
+    have h := hc 0 1
+    rwa [emod_zero_smul, EffectModule.one_smul, emod_zero_smul] at h
+  have hz : ∀ y : F, δ.toFun ((0 : E), y) = 0 := by
+    intro y
+    obtain ⟨c, hc', he⟩ : δ.toFun ((0 : E), y) ≼ δ.toFun ((0 : E), (1 : F)) :=
+      exc_eamorphism_monotone δ.toEAHom
+        ⟨((0 : E), orth y), ⟨PCM.perp_zero (0 : E), EffectAlgebra.perp_orth y⟩,
+          Prod.ext (PCM.ovee_zero (0 : E) _) (EffectAlgebra.ovee_orth y)⟩
+    rw [h01] at he
+    exact (eabasics_positivity hc' he).1
+  have hsplit : ∀ (x : E) (y : F), δ.toFun (x, y) = δ.toFun (x, (0 : F)) := by
+    intro x y
+    have hp : Perp ((x : E), (0 : F)) ((0 : E), y) := ⟨PCM.perp_zero x, PCM.zero_perp y⟩
+    have esum : ovee ((x : E), (0 : F)) ((0 : E), y) hp = (x, y) :=
+      Prod.ext (PCM.ovee_zero x _) (PCM.zero_ovee' y _)
+    rw [← esum, δ.ovee_map hp]
+    rw [PCM.ovee_congr rfl (hz y) (δ.perp_map hp) (PCM.perp_zero _)]
+    exact PCM.ovee_zero _ _
+  refine ⟨{ toFun := fun x => δ.toFun (x, (0 : F))
+            perp_map := fun {x x'} h => δ.perp_map ⟨h, PCM.perp_zero (0 : F)⟩
+            ovee_map := ?_
+            map_one := ?_
+            map_smul := ?_ }, ⟨?_, ?_⟩, ?_⟩
+  · intro x x' h
+    show δ.toFun (ovee x x' h, (0 : F)) = _
+    rw [← δ.ovee_map (⟨h, PCM.perp_zero (0 : F)⟩ : Perp ((x : E), (0 : F)) (x', (0 : F)))]
+    congr 1
+    exact Prod.ext rfl (PCM.zero_ovee' (0 : F) _).symm
+  · show δ.toFun ((1 : E), (0 : F)) = 1
+    rw [← hsplit 1 1]
+    exact δ.map_one
+  · intro l x
+    show δ.toFun ((l • x : E), (0 : F)) = l • δ.toFun (x, (0 : F))
+    rw [← δ.map_smul l (x, (0 : F))]
+    congr 1
+    exact Prod.ext rfl (emod_smul_zero l).symm
+  · intro x y
+    exact (hsplit x y).symm
+  · intro l
+    have h := hc l 0
+    rwa [emod_zero_smul] at h
+  · rintro h' ⟨hf1, -⟩
+    exact emodhom_ext _ _ (funext fun x => hf1 x 0)
+
+/-- **191II** (`emod-effectus`, eff.tex:2206), joint epicity of
+`⟨π₁,π₂,π₂⟩, ⟨π₂,π₁,π₂⟩ : M × M → M × M × M`, element level. -/
+private theorem emod_je (f g : EffectModuleHom M ((M × M) × M) E)
+    (h1 : ∀ k l : M, f.toFun ((k, l), l) = g.toFun ((k, l), l))
+    (h2 : ∀ k l : M, f.toFun ((l, k), l) = g.toFun ((l, k), l)) : f = g := by
+  have e1 : ∀ k : M, f.toFun ((k, (0 : M)), (0 : M)) = g.toFun ((k, 0), 0) :=
+    fun k => h1 k 0
+  have e2 : ∀ k : M, f.toFun (((0 : M), k), (0 : M)) = g.toFun ((0, k), 0) :=
+    fun k => h2 k 0
+  -- `(1,1,0) = (1,0,0) ⋁ (0,1,0)`
+  have hp110 : Perp (((1 : M), (0 : M)), (0 : M)) (((0 : M), (1 : M)), (0 : M)) :=
+    ⟨⟨PCM.perp_zero (1 : M), PCM.zero_perp (1 : M)⟩, PCM.perp_zero (0 : M)⟩
+  have e110 : ovee (((1 : M), (0 : M)), (0 : M)) (((0 : M), (1 : M)), (0 : M)) hp110
+      = (((1 : M), (1 : M)), (0 : M)) :=
+    Prod.ext (Prod.ext (PCM.ovee_zero (1 : M) _) (PCM.zero_ovee' (1 : M) _))
+      (PCM.ovee_zero (0 : M) _)
+  have key : ∀ h : EffectModuleHom M ((M × M) × M) E,
+      h.toFun (((1 : M), (1 : M)), (0 : M))
+        = ovee (h.toFun (((1 : M), (0 : M)), (0 : M)))
+            (h.toFun (((0 : M), (1 : M)), (0 : M))) (h.perp_map hp110) := by
+    intro h
+    rw [← e110, h.ovee_map hp110]
+  have e11 : f.toFun (((1 : M), (1 : M)), (0 : M))
+      = g.toFun (((1 : M), (1 : M)), (0 : M)) := by
+    rw [key f, key g]
+    exact PCM.ovee_congr (e1 1) (e2 1) _ _
+  -- `(0,0,1) = (1,1,0)ᵖ`
+  have hp3 : Perp ((((1 : M), (1 : M)), (0 : M))) ((((0 : M), (0 : M)), (1 : M))) :=
+    ⟨⟨PCM.perp_zero (1 : M), PCM.perp_zero (1 : M)⟩, PCM.zero_perp (1 : M)⟩
+  have e3sum : ovee ((((1 : M), (1 : M)), (0 : M))) ((((0 : M), (0 : M)), (1 : M))) hp3
+      = (1 : (M × M) × M) :=
+    Prod.ext (Prod.ext (PCM.ovee_zero (1 : M) _) (PCM.ovee_zero (1 : M) _))
+      (PCM.zero_ovee' (1 : M) _)
+  have keyo : ∀ h : EffectModuleHom M ((M × M) × M) E,
+      h.toFun (((0 : M), (0 : M)), (1 : M))
+        = orth (h.toFun (((1 : M), (1 : M)), (0 : M))) := by
+    intro h
+    refine EffectAlgebra.orth_unique (h.perp_map hp3) ?_
+    rw [← h.ovee_map hp3, e3sum]
+    exact h.map_one
+  have e3 : f.toFun (((0 : M), (0 : M)), (1 : M))
+      = g.toFun (((0 : M), (0 : M)), (1 : M)) := by
+    rw [keyo f, keyo g, e11]
+  have e4 : ∀ c : M, f.toFun (((0 : M), (0 : M)), c) = g.toFun ((((0 : M), (0 : M)), c)) := by
+    intro c
+    have ec : c • ((((0 : M), (0 : M)), (1 : M)) : (M × M) × M)
+        = (((0 : M), (0 : M)), c) :=
+      Prod.ext (Prod.ext (emod_smul_zero c) (emod_smul_zero c))
+        (EffectMonoid.mul_one c)
+    calc f.toFun (((0 : M), (0 : M)), c)
+        = f.toFun (c • ((((0 : M), (0 : M)), (1 : M)) : (M × M) × M)) := by rw [ec]
+      _ = c • f.toFun (((0 : M), (0 : M)), (1 : M)) := f.map_smul _ _
+      _ = c • g.toFun (((0 : M), (0 : M)), (1 : M)) := by rw [e3]
+      _ = g.toFun (c • ((((0 : M), (0 : M)), (1 : M)) : (M × M) × M)) :=
+          (g.map_smul _ _).symm
+      _ = g.toFun (((0 : M), (0 : M)), c) := by rw [ec]
+  refine emodhom_ext _ _ (funext ?_)
+  rintro ⟨⟨a, b⟩, c⟩
+  have hpab : Perp (((a : M), (0 : M)), (0 : M)) (((0 : M), b), (0 : M)) :=
+    ⟨⟨PCM.perp_zero a, PCM.zero_perp b⟩, PCM.perp_zero (0 : M)⟩
+  have eab : ovee (((a : M), (0 : M)), (0 : M)) (((0 : M), b), (0 : M)) hpab
+      = (((a : M), b), (0 : M)) :=
+    Prod.ext (Prod.ext (PCM.ovee_zero a _) (PCM.zero_ovee' b _)) (PCM.ovee_zero (0 : M) _)
+  have hpabc : Perp (((a : M), b), (0 : M)) (((0 : M), (0 : M)), c) :=
+    ⟨⟨PCM.perp_zero a, PCM.perp_zero b⟩, PCM.zero_perp c⟩
+  have eabc : ovee (((a : M), b), (0 : M)) (((0 : M), (0 : M)), c) hpabc
+      = (((a : M), b), c) :=
+    Prod.ext (Prod.ext (PCM.ovee_zero a _) (PCM.ovee_zero b _)) (PCM.zero_ovee' c _)
+  have expand : ∀ h : EffectModuleHom M ((M × M) × M) E,
+      h.toFun (((a : M), b), c)
+        = ovee (ovee (h.toFun ((a, (0 : M)), (0 : M))) (h.toFun (((0 : M), b), (0 : M)))
+              (h.perp_map hpab)) (h.toFun (((0 : M), (0 : M)), c))
+            (by rw [← h.ovee_map hpab, eab]; exact h.perp_map hpabc) := by
+    intro h
+    rw [← eabc, h.ovee_map hpabc]
+    exact PCM.ovee_congr (by rw [← h.ovee_map hpab, eab]) rfl _ _
+  rw [expand f, expand g]
+  exact PCM.ovee_congr (PCM.ovee_congr (e1 a) (e2 b) _ _) (e4 c) _ _
+
+end EModAlgebra2
+
+section EModPushouts
+
+variable {M : Type u} [EffectMonoid M]
+
+attribute [local instance] selfEffectModule prodEffectModule punitEffectModule
+
+private theorem emodcat_ext {X Y : EModCat.{u, u} M} (f g : X ⟶ Y)
+    (h : (f : EffectModuleHom M X.carrier Y.carrier).toFun
+      = (g : EffectModuleHom M X.carrier Y.carrier).toFun) : f = g :=
+  emodhom_ext f g h
+
+private theorem emod_hom_apply {E F : Type u} [EffectAlgebra E] [EffectAlgebra F]
+    [EffectModule M E] [EffectModule M F] {f g : EffectModuleHom M E F}
+    (h : f = g) (x : E) : f.toFun x = g.toFun x := by rw [h]
+
+/-- The product of two effect module maps. -/
+private def emodProdMap {E E' F F' : Type u} [EffectAlgebra E] [EffectAlgebra E']
+    [EffectAlgebra F] [EffectAlgebra F'] [EffectModule M E] [EffectModule M E']
+    [EffectModule M F] [EffectModule M F'] (u : EffectModuleHom M E E')
+    (v : EffectModuleHom M F F') : EffectModuleHom M (E × F) (E' × F') :=
+  emodPair (u.comp (emodFst E F)) (v.comp (emodSnd E F))
+
+/-- **191II**: the left pushout square of `pullbacks` in `EMod_M`. -/
+private theorem emod_isPushout1 (A B : EModCat.{u, u} M) :
+    IsPushout
+      (show EModCat.of M (M × M) ⟶ EModCat.of M (M × B.carrier) from
+        emodProdMap (EffectModuleHom.id M M) (emodInit B.carrier))
+      (show EModCat.of M (M × M) ⟶ EModCat.of M (A.carrier × M) from
+        emodProdMap (emodInit A.carrier) (EffectModuleHom.id M M))
+      (show EModCat.of M (M × B.carrier) ⟶ EModCat.of M (A.carrier × B.carrier) from
+        emodProdMap (emodInit A.carrier) (EffectModuleHom.id M B.carrier))
+      (show EModCat.of M (A.carrier × M) ⟶ EModCat.of M (A.carrier × B.carrier) from
+        emodProdMap (EffectModuleHom.id M A.carrier) (emodInit B.carrier)) := by
+  have w : (show EModCat.of M (M × M) ⟶ EModCat.of M (M × B.carrier) from
+        emodProdMap (EffectModuleHom.id M M) (emodInit B.carrier)) ≫
+      (show EModCat.of M (M × B.carrier) ⟶ EModCat.of M (A.carrier × B.carrier) from
+        emodProdMap (emodInit A.carrier) (EffectModuleHom.id M B.carrier))
+      = (show EModCat.of M (M × M) ⟶ EModCat.of M (A.carrier × M) from
+          emodProdMap (emodInit A.carrier) (EffectModuleHom.id M M)) ≫
+        (show EModCat.of M (A.carrier × M) ⟶ EModCat.of M (A.carrier × B.carrier) from
+          emodProdMap (EffectModuleHom.id M A.carrier) (emodInit B.carrier)) :=
+    emodcat_ext _ _ (funext fun _ => rfl)
+  refine IsPushout.of_isColimit' ⟨w⟩ (PushoutCocone.IsColimit.mk w
+    (fun s => (emod_po1 s.inr s.inl (fun l m =>
+      (emod_hom_apply s.condition (l, m)).symm)).choose) ?_ ?_ ?_)
+  · intro s
+    refine emodcat_ext _ _ (funext ?_)
+    rintro ⟨n, y⟩
+    exact (emod_po1 s.inr s.inl (fun l m =>
+      (emod_hom_apply s.condition (l, m)).symm)).choose_spec.1.2 n y
+  · intro s
+    refine emodcat_ext _ _ (funext ?_)
+    rintro ⟨x, m⟩
+    exact (emod_po1 s.inr s.inl (fun l m =>
+      (emod_hom_apply s.condition (l, m)).symm)).choose_spec.1.1 x m
+  · intro s m h₁ h₂
+    refine (emod_po1 s.inr s.inl (fun l m =>
+      (emod_hom_apply s.condition (l, m)).symm)).choose_spec.2 m ⟨?_, ?_⟩
+    · intro x mm
+      exact emod_hom_apply h₂ (x, mm)
+    · intro l y
+      exact emod_hom_apply h₁ (l, y)
+
+/-- **191II**: the right pushout square of `pullbacks` in `EMod_M`. -/
+private theorem emod_isPushout2 (A B : EModCat.{u, u} M) :
+    IsPushout
+      (show EModCat.of M (M × M) ⟶ EModCat.of M (A.carrier × B.carrier) from
+        emodProdMap (emodInit A.carrier) (emodInit B.carrier))
+      (show EModCat.of M (M × M) ⟶ EModCat.of M M from emodFst M M)
+      (show EModCat.of M (A.carrier × B.carrier) ⟶ EModCat.of M A.carrier from
+        emodFst A.carrier B.carrier)
+      (show EModCat.of M M ⟶ EModCat.of M A.carrier from emodInit A.carrier) := by
+  have w : (show EModCat.of M (M × M) ⟶ EModCat.of M (A.carrier × B.carrier) from
+        emodProdMap (emodInit A.carrier) (emodInit B.carrier)) ≫
+      (show EModCat.of M (A.carrier × B.carrier) ⟶ EModCat.of M A.carrier from
+        emodFst A.carrier B.carrier)
+      = (show EModCat.of M (M × M) ⟶ EModCat.of M M from emodFst M M) ≫
+        (show EModCat.of M M ⟶ EModCat.of M A.carrier from emodInit A.carrier) :=
+    emodcat_ext _ _ (funext fun _ => rfl)
+  refine IsPushout.of_isColimit' ⟨w⟩ (PushoutCocone.IsColimit.mk w
+    (fun s => (emod_po2 s.inl (fun l m =>
+      (emod_hom_apply s.condition (l, m)).trans (emodInit_unique s.inr l))).choose)
+    ?_ ?_ ?_)
+  · intro s
+    refine emodcat_ext _ _ (funext ?_)
+    rintro ⟨x, y⟩
+    exact (emod_po2 s.inl (fun l m =>
+      (emod_hom_apply s.condition (l, m)).trans
+        (emodInit_unique s.inr l))).choose_spec.1.1 x y
+  · intro s
+    refine emodcat_ext _ _ (funext ?_)
+    intro l
+    refine ((emod_po2 s.inl (fun l m =>
+      (emod_hom_apply s.condition (l, m)).trans
+        (emodInit_unique s.inr l))).choose_spec.1.2 l).trans ?_
+    exact (emodInit_unique s.inr l).symm
+  · intro s m h₁ h₂
+    refine (emod_po2 s.inl (fun l m =>
+      (emod_hom_apply s.condition (l, m)).trans
+        (emodInit_unique s.inr l))).choose_spec.2 m ⟨?_, ?_⟩
+    · intro x y
+      exact emod_hom_apply h₁ (x, y)
+    · intro l
+      exact (emod_hom_apply h₂ l).trans (emodInit_unique s.inr l)
+
+private theorem emod_from (X : (EModCat.{u, u} M)ᵒᵖ) :
+    emodPres.hT.from X = Quiver.Hom.op
+      (emodInit X.unop.carrier : EModCat.of M M ⟶ X.unop) :=
+  emodPres.hT.hom_ext _ _
+
+/-- **191II** (`emod-effectus`, eff.tex:2206, Theorem), first half. -/
+private theorem emod_effectus_aux :
+    Nonempty (EffectusTotalStructure (EModCat.{u, u} M)ᵒᵖ) := by
+  have : HasTerminal (EModCat.{u, u} M)ᵒᵖ := emodPres.hT.hasTerminal
+  have : HasInitial (EModCat.{u, u} M)ᵒᵖ :=
+    (IsTerminal.op (EModCat.{u, u} M) emodIsTerminal).hasInitial
+  have : ∀ X Y : (EModCat.{u, u} M)ᵒᵖ, HasColimit (pair X Y) := fun X Y =>
+    HasColimit.mk ⟨_, emodPres.hP X Y⟩
+  have : HasBinaryCoproducts (EModCat.{u, u} M)ᵒᵖ :=
+    hasBinaryCoproducts_of_hasColimit_pair _
+  have : HasFiniteCoproducts (EModCat.{u, u} M)ᵒᵖ :=
+    hasFiniteCoproducts_of_has_binary_and_initial
+  refine ⟨{ hasFiniteCoproducts := inferInstance
+            hasTerminal := inferInstance
+            effectus := effectusTotalForm_of_pres emodPres ?_ ?_ ?_ }⟩
+  · intro X Y
+    simp only [emod_from]
+    exact (emod_isPushout1 X.unop Y.unop).op
+  · intro X Y
+    simp only [emod_from]
+    exact (emod_isPushout2 X.unop Y.unop).op
+  · intro W a b hf hg
+    apply Quiver.Hom.unop_inj
+    refine emod_je a.unop b.unop ?_ ?_
+    · intro k l
+      exact emod_hom_apply (congrArg Quiver.Hom.unop hf) (k, l)
+    · intro k l
+      exact emod_hom_apply (congrArg Quiver.Hom.unop hg) (k, l)
+
+end EModPushouts
+
+end EModEffectusDev
 
 /-- **191II** (`emod-effectus`, eff.tex:2206, Theorem), first half: for any
 effect monoid `M` the category `EMod_M^op` is an effectus in total form
 (with scalars `M` and separating predicates). -/
 theorem emod_effectus (M : Type u) [EffectMonoid M] :
-    Nonempty (EffectusTotalStructure (EModCat.{u, u} M)ᵒᵖ) := sorry
+    Nonempty (EffectusTotalStructure (EModCat.{u, u} M)ᵒᵖ) := emod_effectus_aux
 
 /-- **191II** (`emod-effectus`, eff.tex:2210, Theorem), second half
 (*representation*, proved in 191VII): an effectus with separating predicates
@@ -671,14 +1550,376 @@ theorem emod_effectus_representation {C : Type u} [Category.{v} C]
     [HasFiniteCoproducts C] [∀ X Y : C, PCM (X ⟶ Y)] [FinPAC C]
     [EffectusPartialForm C] (hsep : SeparatingPredicates C) :
     ∃ F : Tot C ⥤ (EModCat.{v, v} (Scal C))ᵒᵖ,
-      (∀ X : Tot C, (F.obj X).unop.carrier = Pred X.base) ∧ F.Faithful :=
-  sorry
+      (∀ X : Tot C, (F.obj X).unop.carrier = Pred X.base) ∧ F.Faithful := by
+  -- effect module homomorphisms are determined by their underlying function
+  have emext : ∀ {E F : Type v} [EffectAlgebra E] [EffectAlgebra F]
+      [EffectModule (Scal C) E] [EffectModule (Scal C) F]
+      (f g : EffectModuleHom (Scal C) E F), f.toFun = g.toFun → f = g := by
+    intro E F _ _ _ _ f g
+    obtain ⟨⟨⟨f₁, -, -⟩, -⟩, -⟩ := f
+    obtain ⟨⟨⟨g₁, -, -⟩, -⟩, -⟩ := g
+    intro h
+    dsimp only at h
+    subst h
+    rfl
+  refine ⟨{ obj := fun X => Opposite.op (EModCat.of (Scal C) (Pred X.base))
+            map := fun {X Y} f => Quiver.Hom.op
+              ({ toFun := fun p => f.1 ≫ p
+                 perp_map := fun {a b} h => (FinPAC.ovee_comp h f.1).choose
+                 ovee_map := fun {a b} h => (FinPAC.ovee_comp h f.1).choose_spec
+                 map_one := f.2
+                 map_smul := fun l p => (Category.assoc f.1 p l).symm } :
+                EffectModuleHom (Scal C) (Pred Y.base) (Pred X.base))
+            map_id := fun X => congrArg Quiver.Hom.op
+              (emext _ _ (funext fun p => Category.id_comp p))
+            map_comp := fun {X Y Z} f g => congrArg Quiver.Hom.op
+              (emext _ _ (funext fun p => Category.assoc f.1 g.1 p)) },
+    fun X => rfl, ?_⟩
+  -- faithfulness is exactly the separating-predicates hypothesis (191VII)
+  constructor
+  intro X Y f g h
+  have h2 : (fun p : Pred Y.base => f.1 ≫ p) = (fun p : Pred Y.base => g.1 ≫ p) :=
+    congrArg (fun k : (Opposite.op (EModCat.of (Scal C) (Pred X.base)) ⟶
+        Opposite.op (EModCat.of (Scal C) (Pred Y.base))) =>
+      (Quiver.Hom.unop k).toFun) h
+  refine Subtype.ext (hsep _ _ ?_)
+  intro p
+  exact congrFun h2 p
+
+section RngEff
+
+open Opposite
+
+section RngAlgebra
+
+variable {Zc R S G : Type u} [Ring Zc] [Ring R] [Ring S] [Ring G]
+
+/-- **191VIII** (`exc-rng-eff`, bsols.tex:1830), the left pushout square,
+element level: given `α : R × Z → G` and `β : Z × S → G` agreeing on
+`Z × Z`, the map `f(r,s) = α(r,0) + β(0,s)` is the unique ring homomorphism
+`R × S → G` with `f ∘ (id × !) = α` and `f ∘ (! × id) = β`. -/
+private theorem rng_po1 (iR : Zc →+* R) (iS : Zc →+* S)
+    (α : R × Zc →+* G) (β : Zc × S →+* G)
+    (hc : ∀ n m : Zc, α (iR n, m) = β (n, iS m)) :
+    ∃! h : R × S →+* G,
+      (∀ r m, h (r, iS m) = α (r, m)) ∧ (∀ n s, h (iR n, s) = β (n, s)) := by
+  -- `α(1,0) = β(1,0)`
+  have h10 : α (1, 0) = β (1, 0) := by
+    have := hc 1 0
+    simpa using this
+  -- the two cross terms vanish
+  have hkey : α (1, 0) * β (0, 1) = 0 := by
+    rw [h10, ← map_mul]
+    have : ((1 : Zc), (0 : S)) * (0, 1) = 0 := by
+      refine Prod.ext ?_ ?_ <;> simp
+    rw [this, map_zero]
+  have hkey' : β (0, 1) * α (1, 0) = 0 := by
+    rw [h10, ← map_mul]
+    have : ((0 : Zc), (1 : S)) * (1, 0) = 0 := by
+      refine Prod.ext ?_ ?_ <;> simp
+    rw [this, map_zero]
+  have hcross : ∀ (r : R) (s : S), α (r, 0) * β (0, s) = 0 := by
+    intro r s
+    have e1 : α (r, 0) = α (r, 0) * α (1, 0) := by
+      rw [← map_mul]
+      congr 1
+      refine Prod.ext ?_ ?_ <;> simp
+    have e2 : β (0, s) = β (0, 1) * β (0, s) := by
+      rw [← map_mul]
+      congr 1
+      refine Prod.ext ?_ ?_ <;> simp
+    rw [e1, e2, mul_assoc, ← mul_assoc (α (1,0)), hkey, zero_mul, mul_zero]
+  have hcross' : ∀ (r : R) (s : S), β (0, s) * α (r, 0) = 0 := by
+    intro r s
+    have e1 : α (r, 0) = α (1, 0) * α (r, 0) := by
+      rw [← map_mul]
+      congr 1
+      refine Prod.ext ?_ ?_ <;> simp
+    have e2 : β (0, s) = β (0, s) * β (0, 1) := by
+      rw [← map_mul]
+      congr 1
+      refine Prod.ext ?_ ?_ <;> simp
+    rw [e1, e2, mul_assoc, ← mul_assoc (β (0,1)), hkey', zero_mul, mul_zero]
+  refine ⟨{ toFun := fun p => α (p.1, 0) + β (0, p.2)
+            map_one' := ?_
+            map_mul' := ?_
+            map_zero' := ?_
+            map_add' := ?_ }, ⟨?_, ?_⟩, ?_⟩
+  · show α ((1 : R), 0) + β (0, (1 : S)) = 1
+    rw [h10, ← map_add]
+    have : ((1 : Zc), (0 : S)) + (0, 1) = 1 := by
+      refine Prod.ext ?_ ?_ <;> simp
+    rw [this, map_one]
+  · rintro ⟨r, s⟩ ⟨r', s'⟩
+    show α ((r * r' : R), 0) + β (0, (s * s' : S))
+      = (α (r, 0) + β (0, s)) * (α (r', 0) + β (0, s'))
+    rw [add_mul, mul_add, mul_add, hcross, hcross', add_zero, zero_add,
+      ← map_mul, ← map_mul]
+    congr 2 <;> refine Prod.ext ?_ ?_ <;> simp
+  · show α ((0 : R), 0) + β (0, (0 : S)) = 0
+    rw [show ((0 : R), (0 : Zc)) = 0 from rfl, show ((0 : Zc), (0 : S)) = 0 from rfl,
+      map_zero, map_zero, add_zero]
+  · rintro ⟨r, s⟩ ⟨r', s'⟩
+    show α ((r + r' : R), 0) + β (0, (s + s' : S))
+      = (α (r, 0) + β (0, s)) + (α (r', 0) + β (0, s'))
+    have e1 : ((r : R), (0 : Zc)) + (r', 0) = (r + r', 0) := by
+      refine Prod.ext ?_ ?_ <;> simp
+    have e2 : ((0 : Zc), (s : S)) + (0, s') = (0, s + s') := by
+      refine Prod.ext ?_ ?_ <;> simp
+    rw [← e1, ← e2, map_add, map_add]
+    abel
+  · intro r m
+    show α (r, 0) + β (0, iS m) = α (r, m)
+    rw [← hc 0 m, ← map_add]
+    congr 1
+    refine Prod.ext ?_ ?_ <;> simp
+  · intro n s
+    show α (iR n, 0) + β (0, s) = β (n, s)
+    rw [show α (iR n, 0) = β (n, 0) by simpa using hc n 0, ← map_add]
+    congr 1
+    refine Prod.ext ?_ ?_ <;> simp
+  · rintro h' ⟨hf1, hf2⟩
+    ext p
+    obtain ⟨r, s⟩ := p
+    show h' (r, s) = α (r, 0) + β (0, s)
+    have e : ((r : R), (s : S)) = (r, iS 0) + (iR 0, s) := by
+      refine Prod.ext ?_ ?_ <;> simp
+    rw [e, map_add, hf1, hf2]
+
+/-- **191VIII** (`exc-rng-eff`, bsols.tex:1830), the right pushout square,
+element level: `g(r) = δ(r,0)` is the unique ring homomorphism `R → G` with
+`g ∘ π₁ = δ`. -/
+private theorem rng_po2 (iR : Zc →+* R) (iS : Zc →+* S) (j : Zc →+* G)
+    (δ : R × S →+* G) (hc : ∀ n m : Zc, δ (iR n, iS m) = j n) :
+    ∃! h : R →+* G, (∀ r s, h r = δ (r, s)) ∧ (∀ n, h (iR n) = j n) := by
+  have h01 : δ (0, 1) = 0 := by
+    have := hc 0 1
+    simpa using this
+  have hz : ∀ s : S, δ ((0 : R), s) = 0 := by
+    intro s
+    have e : ((0 : R), s) = ((0 : R), s) * (0, 1) := by
+      refine Prod.ext ?_ ?_ <;> simp
+    rw [e, map_mul, h01, mul_zero]
+  have hsplit : ∀ (r : R) (s : S), δ (r, s) = δ (r, 0) := by
+    intro r s
+    have e : ((r : R), s) = (r, 0) + (0, s) := by
+      refine Prod.ext ?_ ?_ <;> simp
+    rw [e, map_add, hz, add_zero]
+  refine ⟨{ toFun := fun r => δ (r, 0)
+            map_one' := ?_
+            map_mul' := ?_
+            map_zero' := ?_
+            map_add' := ?_ }, ⟨?_, ?_⟩, ?_⟩
+  · show δ ((1 : R), 0) = 1
+    rw [← hsplit 1 1, show ((1 : R), (1 : S)) = 1 from rfl, map_one]
+  · intro r r'
+    show δ ((r * r' : R), 0) = δ (r, 0) * δ (r', 0)
+    rw [← map_mul]
+    congr 1
+    refine Prod.ext ?_ ?_ <;> simp
+  · show δ ((0 : R), 0) = 0
+    rw [show ((0 : R), (0 : S)) = 0 from rfl, map_zero]
+  · intro r r'
+    show δ ((r + r' : R), 0) = δ (r, 0) + δ (r', 0)
+    rw [← map_add]
+    congr 1
+    refine Prod.ext ?_ ?_ <;> simp
+  · intro r s; exact (hsplit r s).symm
+  · intro n
+    show δ (iR n, 0) = j n
+    rw [← hc n 0]
+    congr 1
+    refine Prod.ext ?_ ?_ <;> simp
+  · rintro h' ⟨hf1, -⟩
+    ext r
+    show h' r = δ (r, 0)
+    exact hf1 r 0
+
+/-- **191VIII** (`exc-rng-eff`, bsols.tex:1830), joint epicity of
+`⟨π₁,π₂,π₂⟩, ⟨π₂,π₁,π₂⟩ : Z × Z → Z × Z × Z`, element level. -/
+private theorem rng_je (hinit : ∀ f g : Zc →+* R, f = g)
+    (f g : (Zc × Zc) × Zc →+* R)
+    (h1 : ∀ k l : Zc, f ((k, l), l) = g ((k, l), l))
+    (h2 : ∀ k l : Zc, f ((l, k), l) = g ((l, k), l)) : f = g := by
+  have e1 : ∀ k : Zc, f ((k, 0), 0) = g ((k, 0), 0) := fun k => h1 k 0
+  have e2 : ∀ k : Zc, f ((0, k), 0) = g ((0, k), 0) := fun k => h2 k 0
+  -- the diagonal is a ring homomorphism, so `f` and `g` agree on it
+  have eΔ : ∀ c : Zc, f ((c, c), c) = g ((c, c), c) := by
+    intro c
+    have hd := hinit
+      (f.comp (RingHom.prod (RingHom.prod (RingHom.id Zc) (RingHom.id Zc))
+        (RingHom.id Zc)))
+      (g.comp (RingHom.prod (RingHom.prod (RingHom.id Zc) (RingHom.id Zc))
+        (RingHom.id Zc)))
+    have := congrArg (fun k : Zc →+* R => k c) hd
+    simpa using this
+  have e3 : f ((0, 0), 1) = g ((0, 0), 1) := by
+    have hsum : (((1 : Zc), (0 : Zc)), (0 : Zc)) + ((0, 1), 0) + ((0, 0), 1) = 1 := by
+      refine Prod.ext (Prod.ext ?_ ?_) ?_ <;> simp
+    have hf : f (((1 : Zc), (0 : Zc)), 0) + f ((0, 1), 0) + f ((0, 0), 1) = 1 := by
+      rw [← map_add, ← map_add, hsum, map_one]
+    have hg : g (((1 : Zc), (0 : Zc)), 0) + g ((0, 1), 0) + g ((0, 0), 1) = 1 := by
+      rw [← map_add, ← map_add, hsum, map_one]
+    have := hf.trans hg.symm
+    rw [e1 1, e2 1] at this
+    exact add_left_cancel this
+  have e4 : ∀ c : Zc, f ((0, 0), c) = g ((0, 0), c) := by
+    intro c
+    have hp : (((0 : Zc), (0 : Zc)), (1 : Zc)) * ((c, c), c) = ((0, 0), c) := by
+      refine Prod.ext (Prod.ext ?_ ?_) ?_ <;> simp
+    rw [← hp, map_mul, map_mul, e3, eΔ c]
+  ext p
+  obtain ⟨⟨a, b⟩, c⟩ := p
+  have hsum : (((a : Zc), (b : Zc)), (c : Zc)) = ((a, 0), 0) + ((0, b), 0) + ((0, 0), c) := by
+    refine Prod.ext (Prod.ext ?_ ?_) ?_ <;> simp
+  show f ((a, b), c) = g ((a, b), c)
+  rw [hsum, map_add, map_add, map_add, map_add, e1 a, e2 b, e4 c]
+
+end RngAlgebra
+
+private noncomputable abbrev rZ : RingCat.{u} := ⊥_ RingCat.{u}
+
+private noncomputable abbrev rZi : IsInitial rZ.{u} := initialIsInitial
+
+private theorem rng_hom_unique (R : Type u) [Ring R] (f g : rZ.{u} →+* R) : f = g := by
+  have h := rZi.hom_ext (RingCat.ofHom f) (RingCat.ofHom g)
+  simpa using congrArg RingCat.Hom.hom h
+
+/-- The concrete presentation of `Rng^op`: the final object is the initial
+ring, the binary coproducts are the cartesian products of rings. -/
+private noncomputable def rngPres : CoprodPres RingCat.{u}ᵒᵖ where
+  T := op rZ
+  hT := IsInitial.op RingCat.{u} rZi
+  P X Y := op (RingCat.of (X.unop × Y.unop))
+  pinl X Y := (RingCat.ofHom (RingHom.fst X.unop Y.unop)).op
+  pinr X Y := (RingCat.ofHom (RingHom.snd X.unop Y.unop)).op
+  hP X Y := BinaryCofan.IsColimit.mk _
+    (fun {_} u v => (RingCat.ofHom (RingHom.prod u.unop.hom v.unop.hom)).op)
+    (fun {_} u v => by apply Quiver.Hom.unop_inj; ext x; rfl)
+    (fun {_} u v => by apply Quiver.Hom.unop_inj; ext x; rfl)
+    (fun {W} u v m h₁ h₂ => by
+      obtain ⟨m', rfl⟩ :
+          ∃ m' : op (RingCat.of (X.unop × Y.unop)) ⟶ W, m' = m := ⟨m, rfl⟩
+      apply Quiver.Hom.unop_inj
+      ext x
+      · exact congrArg (fun k : X ⟶ W => k.unop x) h₁
+      · exact congrArg (fun k : Y ⟶ W => k.unop x) h₂)
+
+section RngGlue
+
+private theorem rng_from (X : RingCat.{u}ᵒᵖ) :
+    rngPres.hT.from X = (rZi.to X.unop).op :=
+  rngPres.hT.hom_ext _ _
+
+end RngGlue
+
+section RngPushouts
+
+/-- **191VIII**: the right pushout square of `pullbacks` in `Rng`. -/
+private theorem rng_isPushout2 (R S : RingCat.{u}) :
+    IsPushout
+      (RingCat.ofHom (RingHom.prodMap (rZi.to R).hom (rZi.to S).hom))
+      (RingCat.ofHom (RingHom.fst rZ.{u} rZ.{u}))
+      (RingCat.ofHom (RingHom.fst R S))
+      (rZi.to R) := by
+  have w : (RingCat.ofHom (RingHom.prodMap (rZi.to R).hom (rZi.to S).hom)) ≫
+      (RingCat.ofHom (RingHom.fst R S))
+      = (RingCat.ofHom (RingHom.fst rZ.{u} rZ.{u})) ≫ (rZi.to R) := by
+    ext x; rfl
+  refine IsPushout.of_isColimit' ⟨w⟩ (PushoutCocone.IsColimit.mk w
+    (fun s => RingCat.ofHom (rng_po2 (rZi.to R).hom (rZi.to S).hom s.inr.hom
+      s.inl.hom (fun n m => congrArg (fun k : _ ⟶ s.pt => k (n, m)) s.condition)).choose)
+    ?_ ?_ ?_)
+  · intro s
+    ext x
+    obtain ⟨r, t⟩ := x
+    exact (rng_po2 (rZi.to R).hom (rZi.to S).hom s.inr.hom s.inl.hom
+      (fun n m => congrArg (fun k : _ ⟶ s.pt => k (n, m))
+        s.condition)).choose_spec.1.1 r t
+  · intro s
+    ext x
+    exact (rng_po2 (rZi.to R).hom (rZi.to S).hom s.inr.hom s.inl.hom
+      (fun n m => congrArg (fun k : _ ⟶ s.pt => k (n, m))
+        s.condition)).choose_spec.1.2 x
+  · intro s m h₁ h₂
+    apply RingCat.hom_ext
+    refine (rng_po2 (rZi.to R).hom (rZi.to S).hom s.inr.hom s.inl.hom
+      (fun n m => congrArg (fun k : _ ⟶ s.pt => k (n, m))
+        s.condition)).choose_spec.2 m.hom ⟨?_, ?_⟩
+    · intro r t
+      exact congrArg (fun k : _ ⟶ s.pt => k (r, t)) h₁
+    · intro n
+      exact congrArg (fun k : _ ⟶ s.pt => k n) h₂
+
+end RngPushouts
+
+section RngPushouts1
+
+/-- **191VIII**: the left pushout square of `pullbacks` in `Rng`. -/
+private theorem rng_isPushout1 (R S : RingCat.{u}) :
+    IsPushout
+      (RingCat.ofHom (RingHom.prodMap (RingHom.id rZ.{u}) (rZi.to S).hom))
+      (RingCat.ofHom (RingHom.prodMap (rZi.to R).hom (RingHom.id rZ.{u})))
+      (RingCat.ofHom (RingHom.prodMap (rZi.to R).hom (RingHom.id S)))
+      (RingCat.ofHom (RingHom.prodMap (RingHom.id R) (rZi.to S).hom)) := by
+  have w : (RingCat.ofHom (RingHom.prodMap (RingHom.id rZ.{u}) (rZi.to S).hom)) ≫
+      (RingCat.ofHom (RingHom.prodMap (rZi.to R).hom (RingHom.id S)))
+      = (RingCat.ofHom (RingHom.prodMap (rZi.to R).hom (RingHom.id rZ.{u}))) ≫
+        (RingCat.ofHom (RingHom.prodMap (RingHom.id R) (rZi.to S).hom)) := by
+    ext x <;> rfl
+  refine IsPushout.of_isColimit' ⟨w⟩ (PushoutCocone.IsColimit.mk w
+    (fun s => RingCat.ofHom (rng_po1 (rZi.to R).hom (rZi.to S).hom s.inr.hom
+      s.inl.hom (fun n m =>
+        (congrArg (fun k : _ ⟶ s.pt => k (n, m)) s.condition).symm)).choose)
+    ?_ ?_ ?_)
+  · intro s
+    ext x
+    obtain ⟨n, t⟩ := x
+    exact (rng_po1 (rZi.to R).hom (rZi.to S).hom s.inr.hom s.inl.hom
+      (fun n m => (congrArg (fun k : _ ⟶ s.pt => k (n, m))
+        s.condition).symm)).choose_spec.1.2 n t
+  · intro s
+    ext x
+    obtain ⟨r, m⟩ := x
+    exact (rng_po1 (rZi.to R).hom (rZi.to S).hom s.inr.hom s.inl.hom
+      (fun n m => (congrArg (fun k : _ ⟶ s.pt => k (n, m))
+        s.condition).symm)).choose_spec.1.1 r m
+  · intro s m h₁ h₂
+    apply RingCat.hom_ext
+    refine (rng_po1 (rZi.to R).hom (rZi.to S).hom s.inr.hom s.inl.hom
+      (fun n m => (congrArg (fun k : _ ⟶ s.pt => k (n, m))
+        s.condition).symm)).choose_spec.2 m.hom ⟨?_, ?_⟩
+    · intro r mm
+      exact congrArg (fun k : _ ⟶ s.pt => k (r, mm)) h₂
+    · intro n t
+      exact congrArg (fun k : _ ⟶ s.pt => k (n, t)) h₁
+
+end RngPushouts1
+
+end RngEff
 
 /-- **191VIII** (`exc-rng-eff`, eff.tex:2337, Exercise): the category
 `Rngᵒᵖ` of unital rings with unit-preserving homomorphisms, in the opposite
 direction, is an effectus in total form.  (Its predicates on `R` correspond
 to the idempotents of `R`; its scalars are `2`.) -/
-theorem exc_rng_eff : Nonempty (EffectusTotalStructure RingCat.{u}ᵒᵖ) := sorry
+theorem exc_rng_eff : Nonempty (EffectusTotalStructure RingCat.{u}ᵒᵖ) := by
+  refine ⟨{ hasFiniteCoproducts := inferInstance
+            hasTerminal := inferInstance
+            effectus := effectusTotalForm_of_pres rngPres ?_ ?_ ?_ }⟩
+  · intro X Y
+    simp only [rng_from]
+    exact (rng_isPushout1 X.unop Y.unop).op
+  · intro X Y
+    simp only [rng_from]
+    exact (rng_isPushout2 X.unop Y.unop).op
+  · intro W a b hf hg
+    apply Quiver.Hom.unop_inj
+    apply RingCat.hom_ext
+    refine rng_je (rng_hom_unique W.unop) a.unop.hom b.unop.hom ?_ ?_
+    · intro k l
+      exact congrArg (fun m : W ⟶ rngPres.P rngPres.T rngPres.T => m.unop (k, l)) hf
+    · intro k l
+      exact congrArg (fun m : W ⟶ rngPres.P rngPres.T rngPres.T => m.unop (k, l)) hg
 
 /-- **191VIII.2** (`exc-rng-eff`, eff.tex:2351, Exercise): there is no
 unit-preserving ring homomorphism `ℤ₂ → ℤ` (whence `Rngᵒᵖ` does not have

@@ -317,7 +317,12 @@ Confirm that is the right treatment:
     contain the argument, our proof is an independent one and the entry above
     can simply be dropped.
 * **`effectus_vn`** (`eff.tex:832`, says only "adapt the proof of
-  `emod-effectus`").
+  `emod-effectus`").  Note (2026-08-14, worker 45): `emod-effectus` (191II) is
+  now fully formalized, so the analogy now has something concrete to be an
+  analogy *to* — but the two proofs share nothing beyond their shape: 191II's
+  is elementwise in `EMod_M`, and the `vNᵒᵖ` version needs the von Neumann
+  theory of thesis A, none of which is on `B/Eff`'s import path (`B/Eff`
+  imports only `Theses.Common`).
 * **177Ia** — see B4 above.
 
 ### A4. 217I's independence-of-choice claim is not formalised

@@ -4791,7 +4791,7 @@ new questions.
   `show`, for the defeq unfoldings of `Submodule` membership.)
 * Nothing staged, nothing committed.
 
-## Session 18 — `B/Eff`: parsec 191 in full (191II, 191VII, 191VIII)
+## Session 18 — `B/Eff`: parsec 191 in full (191II, 191VII, 191VIII) (worker 45)
 
 Scope: `Theses/B/Eff/StatesPredicates.lean` only (+ `ERRATA.md`, `QUESTIONS.md`).
 Three `sorry`s closed; B/Eff **25 → 22**, `StatesPredicates.lean` **9 → 6**.
