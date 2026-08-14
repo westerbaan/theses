@@ -1665,11 +1665,120 @@ theorem standard_form_map_compr {f : X ⟶ Y} (hf : IsPure f)
 
 end AndThenMore
 
+section AndThenDivisoid
+
+variable [AndThenEffectus C]
+
+/-- Helper for 213I: for a *scalar* `μ`, `asrt_μ = μ` (as `1 = id` on the
+effect object, 181XIII). -/
+private theorem scal_asrt_eq (m : Scal C) : asrt m = m := by
+  have h := (asrt_spec m).2
+  rwa [truth_effObj_eq_id, Category.comp_id] at h
+
+/-- Helper for 213I: `ζ_{⌈μ⌉}`. -/
+private noncomputable def scalZeta (m : Scal C) :
+    effObj C ⟶ comprObj (ceilPred m) :=
+  zetaMap (ceilPred m) (isSharp_ceil m)
+
+/-- Helper for 213I (212I with `asrt_μ = μ`): `ζ_{⌈μ⌉} ∘ μ` is a quotient
+for `μᵖ`. -/
+private theorem scalQuot (m : Scal C) : IsQuotient (orth m) (m ≫ scalZeta m) := by
+  have h := zeta_asrt_quot m
+  rwa [scal_asrt_eq m] at h
+
+/-- Helper for 213I: `1 ∘ ζ_{⌈μ⌉} = ⌈μ⌉`. -/
+private theorem scalZeta_truth (m : Scal C) :
+    scalZeta m ≫ truth (comprObj (ceilPred m)) = ceilPred m := by
+  rw [scalZeta, quotient_basics_5 (zetaMap_spec (ceilPred m) (isSharp_ceil m)).1,
+    eabasics_orth_orth]
+
+/-- Helper for 213I: for `λ ≼ μ` there is a unique `λ'` with
+`λ' ∘ ζ_{⌈μ⌉} ∘ μ = λ`. -/
+private theorem scal_factor {l m : Scal C} (h : l ≼ m) :
+    ∃! l' : comprObj (ceilPred m) ⟶ effObj C, (m ≫ scalZeta m) ≫ l' = l := by
+  refine (scalQuot m).2 l ?_
+  rw [truth_effObj_eq_id, Category.comp_id, eabasics_orth_orth]
+  exact h
+
+open Classical in
+/-- Helper for 213I: the division `λ/μ ≡ λ' ∘ ζ_{⌈μ⌉}` of scalars. -/
+private noncomputable def scalDiv (l m : Scal C) : Scal C :=
+  if h : l ≼ m then scalZeta m ≫ (scal_factor h).exists.choose else 0
+
+private theorem scalDiv_spec {l m : Scal C} (h : l ≼ m) :
+    m ≫ scalDiv l m = l := by
+  classical
+  rw [scalDiv, dif_pos h, ← Category.assoc]
+  exact (scal_factor h).exists.choose_spec
+
+private theorem scalDiv_self (m : Scal C) : scalDiv m m = ceilPred m := by
+  classical
+  have hrefl : m ≼ m := pcm_preorder_refl m
+  have huniq := (scal_factor hrefl).unique
+    ((scal_factor hrefl).exists.choose_spec)
+    (show (m ≫ scalZeta m) ≫ truth (comprObj (ceilPred m)) = m by
+      rw [quotient_basics_5 (scalQuot m), eabasics_orth_orth])
+  rw [scalDiv, dif_pos hrefl, huniq, scalZeta_truth]
+
+private theorem scalDiv_le {l m : Scal C} (h : l ≼ m) :
+    scalDiv l m ≼ scalDiv m m := by
+  classical
+  have hle : scalZeta m ≫ (scal_factor h).exists.choose
+      ≼ scalZeta m ≫ truth (comprObj (ceilPred m)) :=
+    comp_le_comp _ (pred_le_truth _)
+  rw [scalZeta_truth m] at hle
+  rw [scalDiv, dif_pos h, scalDiv_self]
+  exact hle
+
+private theorem scalDiv_unique {a b c : Scal C} (hab : a ≼ b)
+    (hc : c ≼ ceilPred b) (habc : b ≫ c = a) : c = scalDiv a b := by
+  classical
+  -- `c` factors through the quotient `ζ_{⌈b⌉}` as `c = c' ∘ ζ_{⌈b⌉}`
+  obtain ⟨c', hc', -⟩ := (zetaMap_spec (ceilPred b) (isSharp_ceil b)).1.2 c
+    (by rw [truth_effObj_eq_id, Category.comp_id, eabasics_orth_orth]; exact hc)
+  have hkey : (b ≫ scalZeta b) ≫ c' = a := by
+    rw [Category.assoc]
+    show b ≫ (scalZeta b ≫ c') = a
+    rw [scalZeta, hc']
+    exact habc
+  have := (scal_factor hab).unique hkey ((scal_factor hab).exists.choose_spec)
+  rw [scalDiv, dif_pos hab, ← this, ← hc', scalZeta]
+
 /-- **213I** (`andthen-effect-divisoid`, eff.tex:5184, Proposition): if `C`
 is an &-effectus, then `(Scal C)ᵒᵖ` (scalars with reversed multiplication)
 is an effect divisoid. -/
-theorem andthen_effect_divisoid [AndThenEffectus C] :
-    Nonempty (EffectDivisoid (Scal C)ᵐᵒᵖ) := sorry
+theorem andthen_effect_divisoid :
+    Nonempty (EffectDivisoid (Scal C)ᵐᵒᵖ) := by
+  classical
+  refine ⟨{ div := fun a b => MulOpposite.op (scalDiv a.unop b.unop)
+            div_le := ?_
+            mul_div := ?_
+            div_unique := ?_
+            le_div_self := ?_
+            div_div_self := ?_ }⟩
+  · intro a b h
+    exact op_le_iff.mpr (scalDiv_le (op_le_iff.mp h))
+  · intro a b h
+    show MulOpposite.op (b.unop ≫ scalDiv a.unop b.unop) = a
+    exact congrArg MulOpposite.op (scalDiv_spec (op_le_iff.mp h))
+  · intro a b c hab hc habc
+    have h1 : b.unop ≫ c.unop = a.unop := congrArg MulOpposite.unop habc
+    have h2 : c.unop ≼ ceilPred b.unop := by
+      have := op_le_iff.mp
+        (show MulOpposite.op c.unop ≼ MulOpposite.op (scalDiv b.unop b.unop) from hc)
+      rwa [scalDiv_self] at this
+    show c = MulOpposite.op (scalDiv a.unop b.unop)
+    exact MulOpposite.unop_injective (scalDiv_unique (op_le_iff.mp hab) h2 h1)
+  · intro a
+    refine op_le_iff.mpr ?_
+    rw [scalDiv_self]
+    exact le_ceil a.unop
+  · intro a
+    show MulOpposite.op (scalDiv (scalDiv a.unop a.unop) (scalDiv a.unop a.unop))
+      = MulOpposite.op (scalDiv a.unop a.unop)
+    rw [scalDiv_self, scalDiv_self, ceil_of_isSharp (isSharp_ceil a.unop)]
+
+end AndThenDivisoid
 
 section AndThenSharp
 

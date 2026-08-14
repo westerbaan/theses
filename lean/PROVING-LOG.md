@@ -782,6 +782,94 @@ No other errata found in parsecs 350–390.  **Note for the record**: `asols.tex
 stops at parsec 340, so 38VI and 39VI have no published solution; the proofs of
 their neighbours here are ours, as was already the case for 38VI.2.
 
+### Session 9 — B/Eff: 192V.1 and 213I; one of our own statements was too weak
+
+B/Eff went **36 → 34** code `sorry`s (`StatesPredicates.lean` 10 → 9,
+`DiamondAmp.lean` 3 → 2) with
+
+| DISP | name | file | class |
+|---|---|---|---|
+| **192V.1** | `convex_subset_mconvex` — a convex subset of a real vector space is a cancellative abstract `[0,1]`-convex set | StatesPredicates | n/a (the thesis asserts, does not prove) |
+| **213I** | `andthen_effect_divisoid` — `(Scal C)ᵒᵖ` is an effect divisoid for an &-effectus `C` | DiamondAmp | 1 (faithful, eff.tex:5184–5222), with one shortcut noted in ERRATA |
+
+#### 192V.1: the missing piece really was only a bridge
+
+The brief was right that this needed nothing but a translation from
+`PCM.IsSumOf` over `[0,1]` to sums of reals.  That bridge is
+`unitInterval_isSumOf_iff`: `PCM.IsSumOf l s ↔ (l.map (↑·)).sum = ↑s`
+(forward by induction on the derivation, backward by induction on the list,
+the tail sum being in `[0,1]` because it is `≤ s`).  On top of it:
+
+* `MConvexComb.supp`, a `Finset` enumeration of the support, with
+  `mem_supp : x ∈ p.supp ↔ p x ≠ 0`;
+* `coe_sum_one`, `coe_map_apply` (`𝒟f(p)(y)` is the real sum over the fibre)
+  and `coe_mu_apply` (`μ(Φ)(x) = Σ_φ Φ(φ)·φ(x)`), each stated over *any*
+  finset containing the support, which is what makes them composable;
+* `MConvexComb.rsum p g = Σ_{x ∈ p.supp} p(x) • g x`, with `rsum_eq`
+  (independence of the enumerating finset), `rsum_eta`, **`rsum_map`**
+  (`(𝒟f p).rsum g = p.rsum (g ∘ f)` — `Finset.sum_fiberwise_of_maps_to`),
+  **`rsum_mu`** (`(μΦ).rsum g = Φ.rsum (φ ↦ φ.rsum g)` — `Finset.sum_comm`),
+  and `rsum_bin` (`(λ|y⟩ ⋁ λᵖ|x⟩).rsum g = λ·g y + (1−λ)·g x`, uniformly in
+  `y = x`).
+
+The two Eilenberg–Moore laws are then *exactly* `rsum_eta` and
+`rsum_mu`/`rsum_map`, membership in `s` is `Convex.sum_mem`, and
+cancellativity is `rsum_bin` plus `smul_right_injective` at `1 − λ ≠ 0`.
+`MConvexComb.bin_apply`, `bin_self`, `bin_eq_zero` moved up next to `bin`
+(they only need `bin`), since 192V.1 now needs them 2000 lines earlier.
+
+#### Statement changes (our own, not the thesis's)
+
+* **192V.4 `cancellative_iso_convex` was too weak.**  It read
+  `∃ V … (s : Set V) (_ : Convex ℝ s) (st' : MConvex I s) (f : X → s),
+  Bijective f ∧ st.IsAffine st' f` — with the convex structure `st'` on `s`
+  *itself* existentially quantified.  Nothing then ties `st'` to the convex
+  structure of `s`, so the statement says only that `X` is in bijection with
+  some convex subset carrying *some* abstract convex structure; it is a claim
+  about cardinalities, not the affine isomorphism of 192V.4 ("every
+  cancellative `[0,1]`-convex set is isomorphic to a convex subset of a real
+  vector space", where the convex subset carries its own structure).  Fixed:
+  the target is now `MConvex.ofConvex s hs`, the canonical structure, which
+  192V.1 supplies as a *definition*.  Still `sorry` (see below).
+* **192V.1 `convex_subset_mconvex`** was `∃ st : MConvex I s, st.Cancellative`,
+  which likewise dropped 192V.1's "with `h(⋁ᵢ λᵢ|xᵢ⟩) = λ₁x₁ + ⋯ + λₙxₙ`".
+  It is now `(MConvex.ofConvex s hs).Cancellative`, with
+  `MConvex.ofConvex_h` recording the formula by `rfl`.
+
+Both are our transcription artefacts, not thesis defects.  Nothing depended on
+either statement, so no proof had to change.
+
+#### 213I: short, and all its machinery was already there
+
+The thesis proof (eff.tex:5184–5222) is one paragraph and rests only on
+**212I** `zeta_asrt_quot`, which has been proved since session 3.  With
+`asrt_μ = μ` for a scalar (181XIII: `1 = id` on the effect object,
+`truth_effObj_eq_id`), 212I says `μ ≫ ζ_⌈μ⌉` is a quotient for `μᵖ`, so for
+`λ ≼ μ` there is a unique `λ'` with `(μ ≫ ζ_⌈μ⌉) ≫ λ' = λ`; the division is
+`λ/μ ≡ ζ_⌈μ⌉ ≫ λ'` (helpers `scalZeta`, `scalQuot`, `scal_factor`,
+`scalDiv`, `scalDiv_spec`, `scalDiv_self`, `scalDiv_le`, `scalDiv_unique`,
+all `private`).  `μ/μ = ⌈μ⌉` is `quotient_basics_5` plus the uniqueness clause
+— see the ERRATA row: the thesis's image computation and appeal to epicity are
+both avoidable.  One reusable addition in `StatesPredicates.lean`:
+`op_le_iff`, that `≼` in `Mᵒᵖ` is `≼` in `M`.
+
+*Lean note.*  `MulOpposite.unop` is a `def` over the private field `unop'`, so
+`rw` will not see through `MulOpposite.unop b` in a goal; use `congrArg
+MulOpposite.op` / `MulOpposite.unop_injective` instead of rewriting.
+
+#### 195VI `basic_divisoid_equiv` — measured, and it is not a bridge problem
+
+The brief asked whether Mathlib has σ-Dedekind completeness of `C(X)`.  It does
+not, and neither notion in the exercise (basically disconnected spaces,
+`ω`-completeness of `C(X)`) exists there.  The published solution
+(`bsols.tex:2466`) is two pages of point-set topology: the `⇒` half needs
+Urysohn (Mathlib has it) plus the fact that `f/f` is idempotent hence
+`{0,1}`-valued; the `⇐` half constructs `h_n` on `closure U_n`, proves each
+`h_n` continuous by a *net* argument using that `closure U_n` is open, and then
+needs `sup_n h_n` to be continuous — i.e. exactly the missing theorem, that
+`C(X)` is `σ`-Dedekind complete when `X` is basically disconnected.  That is
+the real work and it is a Mathlib-sized contribution, not a bridge.
+
 ### Session 8 — B/Eff: **196II is proved**, and the derivation calculus is avoidable there too
 
 B/Eff went **37 → 36** code `sorry`s (`StatesPredicates.lean` 11 → 10) with the
@@ -2660,3 +2748,115 @@ invisible-taint site in `B/Dils`); then **152X**, then **150II + 151Ia**.
   `instance`, or by deleting it from the statement.  Not done here, because
   deleting an instance hypothesis is a statement change and 171II is blocked
   on the `cornerSet` instances regardless; flagged for the doc-comment sweep.
+
+---
+
+## Session 5 — `B/Dils` (worker 30)
+
+**`B/Dils` 74 → 66 `sorry`s** (five proofs; the other three are the
+`FIXME(sorry-instance)` doc comments that went with them).  `lake build` of
+all seven modules: green, `sorry` + the repo-wide header-linter noise only.
+Every new declaration `#print axioms`-es to `propext, Classical.choice,
+Quot.sound`.
+
+### Proved
+
+* **proc.tex 94II parts 5–6** — `cornerSet.instCStarAlgebra`,
+  `cornerSet.instPartialOrder`, `cornerSet.instStarOrderedRing`
+  (`Pure.lean`), and **part 8** `cornerSet_vonNeumannAlgebra`.  These were the
+  last `sorry`-*instances* in `B/Dils`, i.e. the last invisible-taint site in
+  the chapter: `standard_corner_dils`, `dils_stand_filter` and
+  `paschke_corner` were structurally `sorryAx` with no visible `sorry`, and
+  `paschke_corner` additionally embedded `cornerSet_vonNeumannAlgebra` as a
+  *term in its statement*.  Both leaks are now closed.  (They remain `sorry`
+  as statements, so nothing became "genuinely proved for the first time" —
+  but a future proof of any of them will now be honest.)
+
+  The construction is the routine one: everything is carried by
+  `Subtype.val` from `A` except the unit, which is `p`; `pAp` is norm-closed
+  (zero set of `a ↦ p·a·p − a`), hence complete; and the order is the
+  star-order because `√a` lies in the corner whenever `a` does
+  (`cornerSet.sqrt_mem`: `‖√a(1−p)‖² = ‖(1−p)a(1−p)‖ = 0`).  Part 8 computes
+  suprema in `A` (**44VIII** `ad_normal` fixes the corner) and restricts
+  np-functionals.
+
+  *Divergence class 2 (different route), but only in the trivial sense that
+  proc.tex 94II is an Exercise with no published solution* (`asols.tex` stops
+  at parsec 340 and never covers `proc.tex`).  The argument is the standard
+  one and matches the parts-1–8 breakdown the exercise itself prescribes.
+
+  **Duplication, deliberately.**  `Theses/A/Proc/Measurement.lean` has since
+  acquired the *same* development for its own bundled corner type
+  `A.Proc.Corner A e`, and my instances are a transcription of it onto
+  `B.Dils.cornerSet A p` (a subtype).  `Theses.A.Proc` is not on `B/Dils`'s
+  import path, and importing a file another worker was editing live was not
+  worth the coupling; a note to merge the two is in `Pure.lean`'s header and
+  above the construction.
+
+* **153IV `hilbmod_adj_vector_ncp`** (`SelfDualCompletion.lean`) — `φ(d) =
+  (aᵢ* d aⱼ)ᵢⱼ : 𝒜 → Mₙ𝒜` is an ncp-map.
+
+  *Divergence class 2 (different route), for cause.*  The author's solution
+  (`bsols.tex` `hilbmod-adj-vector-ncp`) writes `φ = ad_T` for the row vector
+  `T : 𝒜ⁿ → 𝒜`, `(bᵢ)ᵢ ↦ ∑ᵢ bᵢaᵢ`, and invokes **153I** `hilbmod_ad_ncp` —
+  which is still `sorry` here and waits on 152X, so that route is closed.
+  Instead: by **33II.1** `cstar_matrix_positive_iff` both halves reduce to the
+  scalar identity `∑ᵢⱼ cᵢ* φ(d)ᵢⱼ cⱼ = v* d v` with `v = ∑ᵢ aᵢcᵢ`.  Complete
+  positivity is then the observation that the resulting six-fold sum is a
+  square `w* w`, and normality is **44VIII** `ad_normal` applied to `v`
+  (plus `sub_nonneg` and additivity of `P ↦ ∑ᵢⱼ cᵢ* Pᵢⱼ cⱼ`, packaged as the
+  private `AddMonoidHom` `conjFun`).
+
+  This also retires the *previous* session's note that 153IV was "blocked on
+  33II.2 `cstar_matrix_gram_nonneg`": 33II.2 has since been **proved** in
+  `A/CStar/Matrices.lean`, and in the event the proof did not need it — only
+  33II.1.
+
+### Statement changes (our own, not the thesis's)
+
+* **171II `paschke_corner`** — the second instance hypothesis
+  `[Fact (IsStarProjection (cceil p))]` is **deleted**, as its own doc comment
+  instructed ("drop it once 68III is proved"; 68III `cceil_isLeast` is proved).
+  It is now supplied by the new `fact_isStarProjection_cceil` instance next to
+  `fact_isStarProjection_floor`/`_ceil`.  The doc comment is updated to say so.
+
+### Erratum found
+
+* **153IV** (and its `bsols.tex` solution) opens "Let `𝒜` be a C\*-algebra",
+  but asks for `φ` to be an **n**cp-map, and normality is only defined over a
+  von Neumann algebra — the solution's own first move ("`𝒜` is a self-dual
+  Hilbert `𝒜`-module") and its appeal to `hilbmod-ad-ncp` part 2 both need one.
+  The same omission sits one level up in **153I** `hilbmod-ad-ncp`, whose
+  normality half cites `hilbmod-vecstates-normal` (152XIII).  Our Lean
+  statement already carried `[VonNeumannAlgebra 𝒜]` with a doc comment saying
+  why, so this is another "the Lean statement is right and the source is
+  wrong".  Filed in ERRATA in point order.
+
+### Our own notes (no author action)
+
+* **`B/Dils` now has zero `sorry`-instances.**  The repo-wide enumeration
+  ```sh
+  grep -rn '^instance\|^noncomputable instance' Theses/ --include=*.lean -A3 \
+    | grep -B3 'sorry' | grep instance
+  ```
+  returns only `A/VN/Basic.lean:674` `vonNeumannAlgebra_lp_infty`,
+  `A/VN/Basic.lean:2832` `mn_vna_1`, and `A/Proc/QuantumLambda.lean:416/419`.
+  The one remaining *term-in-a-statement* leak in `B/Dils` is
+  `existence_paschke_5` (`Paschke.lean`), which embeds
+  `ba_vonNeumannAlgebra M.selfDual`; `paschke_corner`'s twin leak is closed.
+* **152X `ba_vonNeumannAlgebra` has a precise blocker, and it is not 77I.**
+  Its thesis proof (152XI–152XIII) needs (i) **44XIV**
+  `vna_supremum_uslimit` — *proved* in `A/VN/Basic.lean:1790` — and (ii)
+  **45IV** `mult_uws_cont` / `mult_uws_cont_ad`, ultrastrong continuity of
+  multiplication by a fixed element, which is what makes the ultrastrong limit
+  `B(x,y) = uslim_α ⟨x, T_α y⟩` sesquilinear.  45IV is **`sorry` in the frozen
+  `A/VN/Basic.lean:1908/1914`**, so 152X — and through it 153I, 154III.5, all
+  ten of `Paschke.lean`, and the `existence_paschke_5` leak above — is blocked
+  there.  `hilbmod_sesquilinear_forms` (152V), the other big ingredient, is
+  already proved in `SelfDualCompletion.lean`.
+* **160II `direct_prod_self_dual_basis` is half-reachable.**  Its first
+  conjunct (`Sum.elim (κ₁∘e) (κ₂∘d)` is an ON basis) is exactly the published
+  solution `direct-prod-self-dual-basis` and needs nothing outside the file;
+  its second conjunct `SelfDual ℬ Z` is the implication (4) ⇒ (1) of **149V**.
+  So the statement as a whole waits on 149V, but a worker with room could
+  prove the basis half as a private lemma and leave only the self-duality.

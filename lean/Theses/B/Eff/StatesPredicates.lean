@@ -1524,6 +1524,277 @@ noncomputable def bin {X : Type v} (l : M) (x y : X) : MConvexComb M X :=
 
 end MConvexComb
 
+/-! ### `[0,1]`-convex combinations are ordinary real convex combinations
+
+Everything below is used for 192V.1 (`convex_subset_mconvex`): a bridge from
+`PCM.IsSumOf` over the effect algebra `[0,1]` to finite sums of reals, and the
+resulting real-valued interpretation `rsum` of a formal `[0,1]`-convex
+combination. -/
+
+/-- Over the effect algebra `[0,1]`, `PCM.IsSumOf` is ordinary summation of
+reals: `l` sums to `s` exactly when the reals `l` add up to `s`. -/
+theorem unitInterval_isSumOf_iff (l : List I) (s : I) :
+    PCM.IsSumOf l s ↔ (l.map (fun x : I => (x : ℝ))).sum = (s : ℝ) := by
+  constructor
+  · intro h
+    induction h with
+    | nil => simp
+    | @cons a l s hl hp ih =>
+      simp only [List.map_cons, List.sum_cons, ih]
+      rfl
+  · intro h
+    induction l generalizing s with
+    | nil =>
+      simp only [List.map_nil, List.sum_nil] at h
+      have hs : s = 0 := Subtype.ext h.symm
+      subst hs
+      exact PCM.IsSumOf.nil
+    | cons a l ih =>
+      simp only [List.map_cons, List.sum_cons] at h
+      have hnn : (0 : ℝ) ≤ (l.map (fun x : I => (x : ℝ))).sum := by
+        refine List.sum_nonneg ?_
+        intro y hy
+        obtain ⟨z, -, rfl⟩ := List.mem_map.mp hy
+        exact z.2.1
+      have hle : (l.map (fun x : I => (x : ℝ))).sum ≤ 1 := by
+        have h1 := s.2.2
+        have h2 := a.2.1
+        linarith
+      set t : I := ⟨(l.map (fun x : I => (x : ℝ))).sum, hnn, hle⟩ with ht
+      have hperp : Perp a t := by
+        show (a : ℝ) + (t : ℝ) ≤ 1
+        have h1 := s.2.2
+        simp only [ht]
+        linarith
+      have hcons := PCM.IsSumOf.cons (ih t rfl) hperp
+      convert hcons using 1
+      exact Subtype.ext (by simp only [ht] at h ⊢; exact h.symm)
+
+namespace MConvexComb
+
+variable {M : Type u} [EffectMonoid M]
+
+open Classical in
+/-- The values of the binary combination `bin l x y` when `x ≠ y`. -/
+theorem bin_apply {X : Type v} (l : M) {x y : X} (hxy : x ≠ y) (z : X) :
+    (bin l x y).toFun z = if z = x then l else if z = y then orth l else 0 := by
+  show (if x = y then (if z = x then (1 : M) else 0)
+    else if z = x then l else if z = y then orth l else 0) = _
+  rw [if_neg hxy]
+
+open Classical in
+/-- `bin l x x = η x`. -/
+theorem bin_self {X : Type v} (l : M) (x : X) : bin l x x = eta x := by
+  refine MConvexComb.ext (funext fun z => ?_)
+  show (if x = x then (if z = x then (1 : M) else 0)
+    else if z = x then l else if z = x then orth l else 0) = _
+  rw [if_pos rfl]
+  rfl
+
+open Classical in
+/-- The support of `bin l x y` is contained in `{x, y}`. -/
+theorem bin_eq_zero {X : Type v} (l : M) (x y z : X) (hzx : z ≠ x) (hzy : z ≠ y) :
+    (bin l x y).toFun z = 0 := by
+  by_cases hxy : x = y
+  · subst hxy
+    rw [bin_self]
+    show (if z = x then (1 : M) else 0) = 0
+    rw [if_neg hzx]
+  · rw [bin_apply l hxy z, if_neg hzx, if_neg hzy]
+
+variable {X : Type v}
+
+open Classical in
+/-- A `Finset` enumerating the support of a formal convex combination. -/
+noncomputable def supp (p : MConvexComb M X) : Finset X :=
+  p.sum_one.choose.toFinset
+
+theorem mem_supp (p : MConvexComb M X) (x : X) : x ∈ p.supp ↔ p.toFun x ≠ 0 := by
+  classical
+  rw [supp, List.mem_toFinset]
+  exact p.sum_one.choose_spec.2.1 x
+
+section Real
+
+variable {Y : Type w} {V : Type t} [AddCommGroup V] [Module ℝ V]
+
+/-- The coefficients of a formal `[0,1]`-convex combination add up to `1`. -/
+theorem coe_sum_one (p : MConvexComb I X) {s : Finset X} (hs : p.supp ⊆ s) :
+    ∑ x ∈ s, (p.toFun x : ℝ) = 1 := by
+  classical
+  obtain ⟨hnd, hmem, hsum⟩ := p.sum_one.choose_spec
+  rw [← Finset.sum_subset hs (by
+    intro x _ hx
+    rw [show p.toFun x = 0 by by_contra h; exact hx ((p.mem_supp x).mpr h)]
+    rfl)]
+  have hreal := (unitInterval_isSumOf_iff _ _).mp hsum
+  rw [List.map_map] at hreal
+  show p.sum_one.choose.toFinset.sum (fun x => (p.toFun x : ℝ)) = 1
+  rw [List.sum_toFinset _ hnd]
+  exact hreal
+
+open Classical in
+/-- `𝒟 f (p)` at `y` is the real sum of the coefficients of `p` over the
+fibre of `y`. -/
+theorem coe_map_apply (p : MConvexComb I X) (f : X → Y) (y : Y) {s : Finset X}
+    (hs : p.supp ⊆ s) :
+    ((p.map f).toFun y : ℝ)
+      = ∑ x ∈ s.filter (fun x => f x = y), (p.toFun x : ℝ) := by
+  classical
+  obtain ⟨hnd, hmem, -⟩ := p.sum_one.choose_spec
+  set l₀ := p.sum_one.choose with hl₀
+  have hfil : ∀ x, x ∈ l₀.filter (fun x => decide (f x = y)) ↔
+      (p.toFun x ≠ 0 ∧ f x = y) := by
+    intro x; rw [List.mem_filter, hmem x]; simp
+  have hreal :=
+    (unitInterval_isSumOf_iff _ _).mp (map_spec p f y _ (List.Nodup.filter _ hnd) hfil)
+  rw [List.map_map] at hreal
+  rw [← hreal, ← List.sum_toFinset _ (List.Nodup.filter _ hnd), List.toFinset_filter]
+  refine Finset.sum_subset ?_ ?_
+  · intro x hx
+    rw [Finset.mem_filter] at hx ⊢
+    refine ⟨hs ?_, by simpa using hx.2⟩
+    show x ∈ p.sum_one.choose.toFinset
+    rw [← hl₀]; exact hx.1
+  · intro x hx hx'
+    rw [Finset.mem_filter] at hx hx'
+    have hz : p.toFun x = 0 := by
+      by_contra h
+      refine hx' ⟨?_, by simpa using hx.2⟩
+      show x ∈ p.sum_one.choose.toFinset
+      rw [← hl₀, List.mem_toFinset]
+      exact (hmem x).mpr h
+    show ((p.toFun x : I) : ℝ) = 0
+    rw [hz]; rfl
+
+/-- `μ(Φ)` at `x` is the real sum `Σ_φ Φ(φ)·φ(x)`. -/
+theorem coe_mu_apply (Φ : MConvexComb I (MConvexComb I X)) (x : X)
+    {T : Finset (MConvexComb I X)} (hT : Φ.supp ⊆ T) :
+    ((mu Φ).toFun x : ℝ) = ∑ φ ∈ T, (Φ.toFun φ : ℝ) * (φ.toFun x : ℝ) := by
+  classical
+  obtain ⟨hnd, hmem, -⟩ := Φ.sum_one.choose_spec
+  set lΦ := Φ.sum_one.choose with hlΦ
+  have hreal := (unitInterval_isSumOf_iff _ _).mp (mu_spec Φ x lΦ hnd hmem)
+  rw [List.map_map] at hreal
+  have hfun : ((fun z : I => (z : ℝ)) ∘ fun φ => Φ.toFun φ * φ.toFun x)
+      = fun φ => (Φ.toFun φ : ℝ) * (φ.toFun x : ℝ) := by
+    funext φ; exact Set.Icc.coe_mul _ _
+  rw [hfun] at hreal
+  rw [← hreal, ← List.sum_toFinset _ hnd]
+  refine Finset.sum_subset ?_ ?_
+  · intro φ hφ
+    exact hT (by show φ ∈ Φ.sum_one.choose.toFinset; rw [← hlΦ]; exact hφ)
+  · intro φ _ hφ'
+    have hz : Φ.toFun φ = 0 := by
+      by_contra h
+      exact hφ' (List.mem_toFinset.mpr ((hmem φ).mpr h))
+    rw [hz]
+    show (0 : ℝ) * _ = 0
+    rw [zero_mul]
+
+/-- The value `Σᵢ λᵢ · g(xᵢ) ∈ V` of a formal `[0,1]`-convex combination in a
+real vector space. -/
+noncomputable def rsum (p : MConvexComb I X) (g : X → V) : V :=
+  ∑ x ∈ p.supp, (p.toFun x : ℝ) • g x
+
+theorem rsum_eq (p : MConvexComb I X) (g : X → V) {s : Finset X}
+    (hs : p.supp ⊆ s) : p.rsum g = ∑ x ∈ s, (p.toFun x : ℝ) • g x := by
+  refine Finset.sum_subset hs ?_
+  intro x _ hx
+  rw [show p.toFun x = 0 by by_contra h; exact hx ((p.mem_supp x).mpr h)]
+  show (0 : ℝ) • g x = 0
+  rw [zero_smul]
+
+open Classical in
+theorem rsum_eta (x : X) (g : X → V) : (eta x : MConvexComb I X).rsum g = g x := by
+  classical
+  have hval : ∀ y : X, (eta x : MConvexComb I X).toFun y = if y = x then (1 : I) else 0 :=
+    fun _ => rfl
+  have hsub : (eta x : MConvexComb I X).supp ⊆ {x} := by
+    intro y hy
+    rw [mem_supp, hval y] at hy
+    by_contra hne
+    rw [Finset.mem_singleton] at hne
+    exact hy (if_neg hne)
+  rw [rsum_eq _ _ hsub, Finset.sum_singleton, hval x, if_pos rfl]
+  show (1 : ℝ) • g x = g x
+  rw [one_smul]
+
+open Classical in
+theorem rsum_map (p : MConvexComb I X) (f : X → Y) (g : Y → V) :
+    (p.map f).rsum g = p.rsum (g ∘ f) := by
+  classical
+  have hsub : (p.map f).supp ⊆ p.supp.image f := by
+    intro y hy
+    rw [mem_supp] at hy
+    by_contra hy'
+    refine hy (Subtype.ext ?_)
+    have hval := coe_map_apply p f y (Finset.Subset.refl p.supp)
+    have hempty : p.supp.filter (fun x => f x = y) = ∅ := by
+      rw [Finset.filter_eq_empty_iff]
+      intro x hx hfx
+      exact hy' (Finset.mem_image.mpr ⟨x, hx, hfx⟩)
+    rw [hempty, Finset.sum_empty] at hval
+    exact hval
+  calc (p.map f).rsum g
+      = ∑ y ∈ p.supp.image f, ((p.map f).toFun y : ℝ) • g y := rsum_eq _ _ hsub
+    _ = ∑ y ∈ p.supp.image f,
+          ∑ x ∈ p.supp.filter (fun x => f x = y), (p.toFun x : ℝ) • g (f x) := by
+        refine Finset.sum_congr rfl (fun y _ => ?_)
+        rw [coe_map_apply p f y (Finset.Subset.refl p.supp), Finset.sum_smul]
+        refine Finset.sum_congr rfl (fun x hx => ?_)
+        rw [show y = f x from ((Finset.mem_filter.mp hx).2).symm]
+    _ = ∑ x ∈ p.supp, (p.toFun x : ℝ) • g (f x) :=
+        Finset.sum_fiberwise_of_maps_to (fun x hx => Finset.mem_image_of_mem f hx) _
+    _ = p.rsum (g ∘ f) := (rsum_eq _ _ (Finset.Subset.refl p.supp)).symm
+
+open Classical in
+theorem rsum_mu (Φ : MConvexComb I (MConvexComb I X)) (g : X → V) :
+    (mu Φ).rsum g = Φ.rsum (fun φ => φ.rsum g) := by
+  classical
+  let S : Finset X := (mu Φ).supp ∪ Φ.supp.biUnion (fun φ => φ.supp)
+  have h1 : (mu Φ).supp ⊆ S := Finset.subset_union_left
+  have h2 : ∀ φ ∈ Φ.supp, φ.supp ⊆ S := fun φ hf x hx =>
+    Finset.mem_union_right _ (Finset.mem_biUnion.mpr ⟨φ, hf, hx⟩)
+  calc (mu Φ).rsum g = ∑ x ∈ S, ((mu Φ).toFun x : ℝ) • g x := rsum_eq _ _ h1
+    _ = ∑ x ∈ S, ∑ φ ∈ Φ.supp, ((Φ.toFun φ : ℝ) * (φ.toFun x : ℝ)) • g x := by
+        refine Finset.sum_congr rfl (fun x _ => ?_)
+        rw [coe_mu_apply Φ x (Finset.Subset.refl _), Finset.sum_smul]
+    _ = ∑ φ ∈ Φ.supp, ∑ x ∈ S, (Φ.toFun φ : ℝ) • ((φ.toFun x : ℝ) • g x) := by
+        rw [Finset.sum_comm]
+        exact Finset.sum_congr rfl (fun φ _ => Finset.sum_congr rfl
+          (fun x _ => (smul_smul _ _ _).symm))
+    _ = ∑ φ ∈ Φ.supp, (Φ.toFun φ : ℝ) • φ.rsum g := by
+        refine Finset.sum_congr rfl (fun φ hf => ?_)
+        rw [← Finset.smul_sum, rsum_eq φ g (h2 φ hf)]
+    _ = Φ.rsum (fun φ => φ.rsum g) := (rsum_eq Φ _ (Finset.Subset.refl _)).symm
+
+/-- A binary `[0,1]`-mixture is the ordinary convex combination
+`λ·g(y) + (1−λ)·g(x)`. -/
+theorem rsum_bin (l : I) (y x : X) (g : X → V) :
+    (bin l y x : MConvexComb I X).rsum g = (l : ℝ) • g y + (1 - (l : ℝ)) • g x := by
+  classical
+  by_cases hxy : y = x
+  · subst hxy
+    rw [bin_self, rsum_eta, ← add_smul]
+    show g y = ((l : ℝ) + (1 - (l : ℝ))) • g y
+    rw [add_sub_cancel, one_smul]
+  · have hsub : (bin l y x : MConvexComb I X).supp ⊆ {y, x} := by
+      intro z hz
+      rw [mem_supp] at hz
+      by_contra hzn
+      simp only [Finset.mem_insert, Finset.mem_singleton, not_or] at hzn
+      exact hz (bin_eq_zero l y x z hzn.1 hzn.2)
+    rw [rsum_eq _ _ hsub, Finset.sum_pair hxy,
+      bin_apply l hxy y, if_pos rfl, bin_apply l hxy x,
+      if_neg (fun h : x = y => hxy h.symm), if_pos rfl]
+    show (l : ℝ) • g y + ((1 : ℝ) - (l : ℝ)) • g x = _
+    rfl
+
+end Real
+
+end MConvexComb
+
 section DMMonad
 
 variable (M : Type u) [EffectMonoid M]
@@ -1665,12 +1936,53 @@ noncomputable instance (M : Type u) [EffectMonoid M] :
   comp_id _ := Subtype.ext rfl
   assoc _ _ _ := Subtype.ext rfl
 
+/-- **192V.1** (eff.tex:2496, Examples): the canonical abstract
+`[0,1]`-convex structure on a convex subset `s` of a real vector space,
+`h(⋁ᵢ λᵢ|xᵢ⟩) = Σᵢ λᵢ xᵢ`. -/
+noncomputable def MConvex.ofConvex {V : Type u} [AddCommGroup V] [Module ℝ V]
+    (s : Set V) (hs : Convex ℝ s) : MConvex I s where
+  h p := ⟨p.rsum (fun x : s => (x : V)),
+    hs.sum_mem (fun x _ => (p.toFun x).2.1) (p.coe_sum_one (Finset.Subset.refl _))
+      (fun x _ => x.2)⟩
+  h_eta x := Subtype.ext (MConvexComb.rsum_eta x _)
+  h_mu Φ := Subtype.ext (by
+    show (MConvexComb.mu Φ).rsum (fun x : s => (x : V))
+        = (Φ.map _).rsum (fun x : s => (x : V))
+    rw [MConvexComb.rsum_mu, MConvexComb.rsum_map]
+    rfl)
+
+/-- The structure map of `MConvex.ofConvex` is the actual convex combination
+`Σᵢ λᵢ xᵢ` taken in `V` (this is the "`with h(…) = λ₁x₁ + ⋯ + λₙxₙ`" of
+192V.1). -/
+theorem MConvex.ofConvex_h {V : Type u} [AddCommGroup V] [Module ℝ V]
+    (s : Set V) (hs : Convex ℝ s) (p : MConvexComb I s) :
+    ((MConvex.ofConvex s hs).h p : V)
+      = ∑ x ∈ p.supp, (p.toFun x : ℝ) • (x : V) := rfl
+
 /-- **192V.1** (eff.tex:2496, Examples): every convex subset `s` of a real
 vector space is a cancellative abstract `[0,1]`-convex set, with
-`h(⋁ᵢ λᵢ|xᵢ⟩) = Σᵢ λᵢ xᵢ`. -/
+`h(⋁ᵢ λᵢ|xᵢ⟩) = Σᵢ λᵢ xᵢ` (the structure `MConvex.ofConvex`). -/
 theorem convex_subset_mconvex {V : Type u} [AddCommGroup V] [Module ℝ V]
-    (s : Set V) (hs : Convex ℝ s) :
-    ∃ st : MConvex I s, st.Cancellative := sorry
+    (s : Set V) (hs : Convex ℝ s) : (MConvex.ofConvex s hs).Cancellative := by
+  intro y x₁ x₂ l hl heq
+  have heq' : (l : ℝ) • (y : V) + (1 - (l : ℝ)) • (x₁ : V)
+      = (l : ℝ) • (y : V) + (1 - (l : ℝ)) • (x₂ : V) := by
+    have h := congrArg Subtype.val heq
+    rw [MConvex.ofConvex_h, MConvex.ofConvex_h] at h
+    rw [show (∑ x ∈ (MConvexComb.bin l y x₁).supp,
+          ((MConvexComb.bin l y x₁).toFun x : ℝ) • (x : V))
+        = (MConvexComb.bin l y x₁).rsum (fun x : s => (x : V)) from rfl,
+      show (∑ x ∈ (MConvexComb.bin l y x₂).supp,
+          ((MConvexComb.bin l y x₂).toFun x : ℝ) • (x : V))
+        = (MConvexComb.bin l y x₂).rsum (fun x : s => (x : V)) from rfl,
+      MConvexComb.rsum_bin, MConvexComb.rsum_bin] at h
+    exact h
+  have hl' : (1 : ℝ) - (l : ℝ) ≠ 0 := by
+    intro h0
+    refine hl (Subtype.ext ?_)
+    show (l : ℝ) = 1
+    linarith
+  exact Subtype.ext (smul_right_injective V hl' (add_left_cancel heq'))
 
 /-- **192V.3** (eff.tex:2577, Examples): every (join-)semilattice is an
 abstract `2`-convex set (in fact semilattices are *exactly* the abstract
@@ -1971,12 +2283,20 @@ theorem semilattice_unitInterval_convex (L : Type u) [SemilatticeSup L] :
 
 /-- **192V.4** (eff.tex:2591, Examples): every cancellative abstract
 `[0,1]`-convex set is isomorphic (by an affine bijection) to a convex subset
-of a real vector space. -/
+of a real vector space — *with its canonical convex structure*
+`MConvex.ofConvex`.  (Cited by the thesis to
+\[statesofconvexsets, thm. 8\]; not proved there.)
+
+The target structure must be pinned down.  Until session 9 this was stated
+with the structure `st'` on `s` *also* existentially quantified, which says
+only that `X` is in bijection with some convex subset (a statement about
+cardinalities), not that it is affinely isomorphic to one.  See PROVING-LOG,
+session 9. -/
 theorem cancellative_iso_convex {X : Type u} (st : MConvex I X)
     (hc : st.Cancellative) :
     ∃ (V : Type u) (_ : AddCommGroup V) (_ : Module ℝ V) (s : Set V)
-      (_ : Convex ℝ s) (st' : MConvex I s) (f : X → s),
-        Function.Bijective f ∧ st.IsAffine st' f := sorry
+      (hs : Convex ℝ s) (f : X → s),
+        Function.Bijective f ∧ st.IsAffine (MConvex.ofConvex s hs) f := sorry
 
 /-! ### The opposite effect monoid, and states as a convex set (192VII) -/
 
@@ -2036,6 +2356,16 @@ instance : EffectMonoid Mᵐᵒᵖ :=
             [c.unop * a.unop, c.unop * b.unop, d.unop * a.unop, d.unop * b.unop] :=
         List.Perm.cons _ (List.Perm.swap _ _ _)
       exact isSumOf_op _ (PCM.isSumOf_perm hperm (EffectMonoid.distrib hcd hab)) }
+
+/-- The algebraic order of `Mᵒᵖ` is that of `M` (the effect algebra structure
+is unchanged; only `⊙` is reversed). -/
+theorem op_le_iff {M : Type u} [EffectMonoid M] {a b : M} :
+    (MulOpposite.op a ≼ MulOpposite.op b) ↔ a ≼ b := by
+  constructor
+  · rintro ⟨c, hp, he⟩
+    exact ⟨c.unop, hp, congrArg MulOpposite.unop he⟩
+  · rintro ⟨c, hp, he⟩
+    exact ⟨MulOpposite.op c, hp, congrArg MulOpposite.op he⟩
 
 end Opposite
 
@@ -3618,33 +3948,8 @@ namespace MConvexComb
 
 variable {M : Type u} [EffectMonoid M]
 
-open Classical in
-/-- The values of the binary combination `bin l x y` when `x ≠ y`. -/
-theorem bin_apply {X : Type v} (l : M) {x y : X} (hxy : x ≠ y) (z : X) :
-    (bin l x y).toFun z = if z = x then l else if z = y then orth l else 0 := by
-  show (if x = y then (if z = x then (1 : M) else 0)
-    else if z = x then l else if z = y then orth l else 0) = _
-  rw [if_neg hxy]
-
-open Classical in
-/-- `bin l x x = η x`. -/
-theorem bin_self {X : Type v} (l : M) (x : X) : bin l x x = eta x := by
-  refine MConvexComb.ext (funext fun z => ?_)
-  show (if x = x then (if z = x then (1 : M) else 0)
-    else if z = x then l else if z = x then orth l else 0) = _
-  rw [if_pos rfl]
-  rfl
-
-open Classical in
-/-- The support of `bin l x y` is contained in `{x, y}`. -/
-theorem bin_eq_zero {X : Type v} (l : M) (x y z : X) (hzx : z ≠ x) (hzy : z ≠ y) :
-    (bin l x y).toFun z = 0 := by
-  by_cases hxy : x = y
-  · subst hxy
-    rw [bin_self]
-    show (if z = x then (1 : M) else 0) = 0
-    rw [if_neg hzx]
-  · rw [bin_apply l hxy z, if_neg hzx, if_neg hzy]
+-- (`bin_apply`, `bin_self` and `bin_eq_zero` are stated next to `bin` itself,
+-- above, because 192V.1 already needs them.)
 
 open Classical in
 /-- `bin 1 a b = η a`. -/
