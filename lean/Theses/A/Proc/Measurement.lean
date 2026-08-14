@@ -2121,6 +2121,355 @@ theorem square_f [VonNeumannAlgebra A] [VonNeumannAlgebra B]
         (g ((cornerProjMap (ncpCarrier f)).toNCPMap a))) → g = sqBracket f) ∧
     sqBracket f 1 = 1 ∧ ncpCarrier (sqBracket f) = 1 := sorry
 
+/-- An ncp-map commutes with subtraction (it is linear; `NCPMap` carries no
+`AddMonoidHomClass` instance, so this goes through its
+`CompletelyPositiveMap`). -/
+private theorem ncpMap_sub (f : NCPMap A B) (x y : A) : f (x - y) = f x - f y :=
+  map_sub f.toCompletelyPositiveMap x y
+
+/-- An ncp-map is monotone. -/
+private theorem ncpMap_mono (f : NCPMap A B) {x y : A} (h : x ≤ y) :
+    f x ≤ f y := by
+  have h0 : (0 : B) ≤ f (y - x) := ncpMap_nonneg f (sub_nonneg.mpr h)
+  rw [ncpMap_sub, sub_nonneg] at h0
+  exact h0
+
+/-- For positive `b` and a projection `e`: `⌈b⌉ ≤ e^⊥` iff `e b e = 0`
+(proc.tex:1063).  Left to right is 59III (`ceil-basic`); right to left
+factors `ebe = (√b e)*(√b e)`. -/
+theorem ceil_le_perp_iff [VonNeumannAlgebra B] {b e : B} (hb : 0 ≤ b)
+    (he : IsStarProjection e) : ceil b ≤ 1 - e ↔ e * b * e = 0 := by
+  constructor
+  · intro h
+    have h1 : b * (1 - e) = b := ((ceil_basic_1 b (1 - e) hb he.one_sub).out 2 1).mp h
+    rw [mul_sub, mul_one, sub_eq_self] at h1
+    rw [mul_assoc, h1, mul_zero]
+  · intro h
+    have hs : star (CFC.sqrt b) = CFC.sqrt b :=
+      (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg b)).star_eq
+    have hz : CFC.sqrt b * e = 0 := by
+      refine (CStarRing.star_mul_self_eq_zero_iff _).mp ?_
+      rw [star_mul, hs, he.isSelfAdjoint.star_eq]
+      calc e * CFC.sqrt b * (CFC.sqrt b * e)
+          = e * (CFC.sqrt b * CFC.sqrt b) * e := by noncomm_ring
+        _ = e * b * e := by rw [CFC.sqrt_mul_sqrt_self b hb]
+        _ = 0 := h
+    have hbe : b * e = 0 := by
+      rw [← CFC.sqrt_mul_sqrt_self b hb, mul_assoc, hz, mul_zero]
+    refine ((ceil_basic_1 b (1 - e) hb he.one_sub).out 1 2).mp ?_
+    rw [mul_sub, mul_one, hbe, sub_zero]
+
+/-- A positive element below both a projection `p` and its complement is
+`0`: conjugating by `p^⊥` and by `p` gives `⌈x⌉ ≤ p` and `⌈x⌉ ≤ p^⊥`
+(59III), i.e. `px = x` and `(1-p)x = x`. -/
+private theorem eq_zero_of_le_proj_le_perp [VonNeumannAlgebra A] {x p : A}
+    (hx : 0 ≤ x) (hp : IsStarProjection p) (h1 : x ≤ p) (h2 : x ≤ 1 - p) :
+    x = 0 := by
+  have hc1 : (1 - p) * x * (1 - p) = 0 := by
+    have hle : (1 - p) * x * (1 - p) ≤ (1 - p) * p * (1 - p) := by
+      have := star_left_conjugate_le_conjugate h1 (1 - p)
+      rwa [star_sub, star_one, hp.isSelfAdjoint.star_eq] at this
+    have hzero : (1 - p) * p * (1 - p) = 0 := by
+      have hpp : p * p = p := hp.isIdempotentElem
+      noncomm_ring [hpp]
+    rw [hzero] at hle
+    have hge : (0 : A) ≤ (1 - p) * x * (1 - p) := by
+      have := star_left_conjugate_nonneg hx (1 - p)
+      rwa [star_sub, star_one, hp.isSelfAdjoint.star_eq] at this
+    exact le_antisymm hle hge
+  have hc2 : p * x * p = 0 := by
+    have hle : p * x * p ≤ p * (1 - p) * p := by
+      have := star_left_conjugate_le_conjugate h2 p
+      rwa [hp.isSelfAdjoint.star_eq] at this
+    have hzero : p * (1 - p) * p = 0 := by
+      have hpp : p * p = p := hp.isIdempotentElem
+      noncomm_ring [hpp]
+    rw [hzero] at hle
+    have hge : (0 : A) ≤ p * x * p := by
+      have := star_left_conjugate_nonneg hx p
+      rwa [hp.isSelfAdjoint.star_eq] at this
+    exact le_antisymm hle hge
+  have hce1 : ceil x ≤ p := by
+    have := (ceil_le_perp_iff hx hp.one_sub).mpr hc1
+    rwa [sub_sub_cancel] at this
+  have hce2 : ceil x ≤ 1 - p := (ceil_le_perp_iff hx hp).mpr hc2
+  have e1 : p * x = x := ((ceil_basic_1 x p hx hp).out 2 0).mp hce1
+  have e2 : (1 - p) * x = x :=
+    ((ceil_basic_1 x (1 - p) hx hp.one_sub).out 2 0).mp hce2
+  have h3 : (1 - p) * x = x - p * x := by noncomm_ring
+  rw [h3, e1, sub_self] at e2
+  exact e2.symm
+
+/-- A *unital* ncp-isomorphism maps projections to projections: `e := f(p)`
+is an effect, so `d := e - e²` is positive and below both `e` and `e^⊥`;
+`g(d)` is then below both `p` and `p^⊥`, hence `0`, and `g` is injective,
+so `e² = e`. -/
+private theorem isStarProjection_map [VonNeumannAlgebra A]
+    [VonNeumannAlgebra B] (f : NCPMap A B) (g : NCPMap B A)
+    (hgf : ∀ a, g (f a) = a) (hfg : ∀ b, f (g b) = b) (hfu : f 1 = 1)
+    (hgu : g 1 = 1) {p : A} (hp : IsStarProjection p) :
+    IsStarProjection (f p) := by
+  set e : B := f p with he
+  have he0 : (0 : B) ≤ e := ncpMap_nonneg f hp.nonneg
+  have he1 : e ≤ 1 := by
+    have := ncpMap_mono f hp.le_one
+    rwa [hfu] at this
+  have hd0 : (0 : B) ≤ e - e * e := sub_nonneg.mpr (mul_self_le_self ⟨he0, he1⟩)
+  have hsq : (0 : B) ≤ e * e := by
+    have := star_mul_self_nonneg e
+    rwa [(IsSelfAdjoint.of_nonneg he0).star_eq] at this
+  have hd1 : e - e * e ≤ e := by
+    have : e - e * e ≤ e - 0 := sub_le_sub_left hsq e
+    simpa using this
+  have hd2 : e - e * e ≤ 1 - e := by
+    have hns : (0 : B) ≤ (1 - e) * (1 - e) := by
+      have := star_mul_self_nonneg (1 - e)
+      rwa [star_sub, star_one, (IsSelfAdjoint.of_nonneg he0).star_eq] at this
+    have hexp : (1 - e) * (1 - e) = (1 - e) - (e - e * e) := by noncomm_ring
+    rw [hexp, sub_nonneg] at hns
+    exact hns
+  have hginj : Function.Injective ⇑g := fun x y hxy => by
+    rw [← hfg x, ← hfg y, hxy]
+  have hgd : g (e - e * e) = 0 := by
+    refine eq_zero_of_le_proj_le_perp (ncpMap_nonneg g hd0) hp ?_ ?_
+    · have := ncpMap_mono g hd1
+      rwa [he, hgf] at this
+    · have hrhs : g (1 - e) = 1 - p := by rw [ncpMap_sub, hgu, he, hgf]
+      have := ncpMap_mono g hd2
+      rwa [hrhs] at this
+  have hd : e - e * e = 0 :=
+    hginj (by rw [hgd]; exact (map_zero g.toCompletelyPositiveMap).symm)
+  exact ⟨by show e * e = e; rw [sub_eq_zero] at hd; exact hd.symm,
+    IsSelfAdjoint.of_nonneg he0⟩
+
+/-! ### Infrastructure for parsecs 990–1040
+
+Linearity, monotonicity and norm-continuity of an ncp-map; norm-density of
+the linear span of the projections (**65IV**, `projections-norm-dense`); and
+the individual implications of **99II** (`gardner`), which are stated
+separately because **99XII** (`sharp-multiplicative`), **99IX** (`iso`) and
+**102V** (`nmiu-rigid`) each need some of them for a map that is *not*
+assumed unital. -/
+
+/-- An ncp-map is additive. -/
+private theorem ncpMap_add (f : NCPMap A B) (x y : A) : f (x + y) = f x + f y :=
+  map_add f.toCompletelyPositiveMap x y
+
+/-- An ncp-map sends `0` to `0`. -/
+private theorem ncpMap_zero (f : NCPMap A B) : (f 0 : B) = 0 :=
+  map_zero f.toCompletelyPositiveMap
+
+/-- An ncp-map is `ℂ`-homogeneous. -/
+private theorem ncpMap_smul (f : NCPMap A B) (c : ℂ) (x : A) :
+    f (c • x) = c • f x :=
+  map_smul f.toCompletelyPositiveMap c x
+
+/-- An ncp-map is norm-continuous: `‖f(a)‖ ≤ ‖f(1)‖ ‖a‖` by **34XVI**
+(`cp-russo-dye`). -/
+private theorem ncpMap_continuous (f : NCPMap A B) : Continuous ⇑f := by
+  have hcp : Theses.A.CStar.IsCompletelyPositiveMap
+      (f.toCompletelyPositiveMap.toLinearMap) :=
+    ((Theses.A.CStar.cp_iff _).out 1 0).mp fun N M hM =>
+      f.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM
+  exact AddMonoidHomClass.continuous_of_bound
+    (f.toCompletelyPositiveMap.toLinearMap) ‖(f 1 : B)‖
+    (fun x => Theses.A.CStar.cp_russo_dye _ hcp x)
+
+/-- **65IV** (`projections-norm-dense`) for arbitrary, not necessarily
+self-adjoint, elements: the linear span of the projections of a von Neumann
+algebra is norm-dense (split `x = ℜx + i ℑx`). -/
+private theorem mem_closure_span_projections [VonNeumannAlgebra A] (x : A) :
+    x ∈ closure (Submodule.span ℂ {p : A | IsStarProjection p} : Set A) := by
+  have hsa : ∀ y : A, IsSelfAdjoint y →
+      y ∈ closure (Submodule.span ℂ {p : A | IsStarProjection p} : Set A) :=
+    fun y hy => closure_mono (SetLike.coe_subset_coe.mpr
+      (Submodule.span_mono fun p hp => hp.1)) (projections_norm_dense y hy)
+  have hx : (realPart x : A) + Complex.I • (imaginaryPart x : A) = x :=
+    realPart_add_I_smul_imaginaryPart x
+  have hmem : x ∈ Submodule.topologicalClosure
+      (Submodule.span ℂ {p : A | IsStarProjection p}) := by
+    rw [← hx]
+    exact Submodule.add_mem _ (hsa _ (realPart x).2)
+      (Submodule.smul_mem _ _ (hsa _ (imaginaryPart x).2))
+  exact hmem
+
+/-- A norm-closed `ℂ`-subspace of a von Neumann algebra containing every
+projection is the whole algebra (**65IV**). -/
+private theorem mem_of_isClosed_of_projections [VonNeumannAlgebra A]
+    (S : Submodule ℂ A) (hS : IsClosed (S : Set A))
+    (hp : ∀ p : A, IsStarProjection p → p ∈ S) (x : A) : x ∈ S := by
+  have hspan : Submodule.span ℂ {p : A | IsStarProjection p} ≤ S :=
+    Submodule.span_le.mpr fun p hpp => hp p hpp
+  have hmem : x ∈ closure (S : Set A) :=
+    closure_mono (SetLike.coe_subset_coe.mpr hspan)
+      (mem_closure_span_projections (A := A) x)
+  rwa [hS.closure_eq] at hmem
+
+/-- Every value of an ncp-map sits under `⌈f(1)⌉`: `f(x)⌈f(1)⌉ = f(x)`.
+By **61II** (`ncp-ceill`), `⌈f(x)⌋ ≤ ⌈f(⌈x⌋)⌉ ≤ ⌈f(1)⌉`. -/
+private theorem ncpMap_mul_ceilOne [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    (f : NCPMap A B) (x : A) : (f x : B) * ceil (f 1) = f x := by
+  have hs : IsStarProjection (suppProj x) := (ceill_basic_1 x).1.1
+  have hle : suppProj (f x : B) ≤ ceil ((f 1 : B)) :=
+    (ncp_ceill f x).1.trans
+      (ceil_mono (ncpMap_nonneg f hs.nonneg) (ncpMap_mono f hs.le_one))
+  have hq : IsStarProjection (ceil ((f 1 : B))) :=
+    (ceil_spec (ncpMap_nonneg f zero_le_one)).1
+  have hsf : IsStarProjection (suppProj (f x : B)) := (ceill_basic_1 (f x : B)).1.1
+  have e : suppProj (f x : B) * ceil ((f 1 : B)) = suppProj (f x : B) :=
+    (hsf.le_iff_mul_eq_left hq).mp hle
+  calc (f x : B) * ceil ((f 1 : B))
+      = (f x * suppProj (f x : B)) * ceil ((f 1 : B)) := by
+        rw [(ceill_basic_1 (f x : B)).1.2]
+    _ = f x * (suppProj (f x : B) * ceil ((f 1 : B))) := by noncomm_ring
+    _ = f x * suppProj (f x : B) := by rw [e]
+    _ = f x := (ceill_basic_1 (f x : B)).1.2
+
+/-- **99II** (`gardner`), (1) ⇒ (4): a multiplicative ncp-map maps
+projections to projections. -/
+private theorem isStarProjection_map_of_mul (f : NCPMap A B)
+    (h : ∀ a b : A, f (a * b) = f a * f b) :
+    ∀ p : A, IsStarProjection p → IsStarProjection (f p) := fun p hp =>
+  ⟨by change (f p : B) * f p = f p; rw [← h p p, hp.isIdempotentElem.eq],
+    by change star (f p : B) = f p; rw [← ncp_star f p, hp.isSelfAdjoint.star_eq]⟩
+
+/-- **99II** (`gardner`), (4) ⇒ (5): `⌈f(a)⌉ = ⌈f(⌈a⌉)⌉ = f(⌈a⌉)` by
+**60V** (`ncp-ceil`), since `f(⌈a⌉)` is a projection. -/
+private theorem ceil_map_of_isStarProjection_map [VonNeumannAlgebra A]
+    [VonNeumannAlgebra B] (f : NCPMap A B)
+    (h : ∀ p : A, IsStarProjection p → IsStarProjection (f p)) :
+    ∀ a : A, 0 ≤ a → ceil (f a) = f (ceil a) := by
+  intro a ha
+  have h3 : ceil ((ncpPositive f) a : B) = ceil ((ncpPositive f) (ceil a) : B) :=
+    ncp_ceil (ncpPositive f) f.preservesDirSups' a ha
+  simp only [ncpPositive_apply] at h3
+  rw [h3, ceil_of_isStarProjection (h (ceil a) (ceil_spec ha).1)]
+
+/-- **99II** (`gardner`), (5) ⇒ (4): `f(p) = f(⌈p⌉) = ⌈f(p)⌉` is a
+projection. -/
+private theorem isStarProjection_map_of_ceil [VonNeumannAlgebra A]
+    [VonNeumannAlgebra B] (f : NCPMap A B)
+    (h : ∀ a : A, 0 ≤ a → ceil (f a) = f (ceil a)) :
+    ∀ p : A, IsStarProjection p → IsStarProjection (f p) := by
+  intro p hp
+  have hh := h p hp.nonneg
+  rw [ceil_of_isStarProjection hp] at hh
+  rw [← hh]
+  exact (ceil_spec (ncpMap_nonneg f hp.nonneg)).1
+
+/-- **99II** (`gardner`), (4) ⇒ (3), the author's argument: `pq = 0` gives
+`p ≤ q^⊥`, so `f(p) ≤ f(1) - f(q) ≤ 1 - f(q)`, and of two projections one
+of which is below the other's complement the product is `0`.  Unitality is
+not needed — `f(1)` is a projection because `1` is. -/
+private theorem gardner_43 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    (f : NCPMap A B)
+    (h : ∀ p : A, IsStarProjection p → IsStarProjection (f p)) :
+    ∀ p q : A, IsStarProjection p → IsStarProjection q → p * q = 0 →
+      ceil (f p) * ceil (f q) = 0 := by
+  intro p q hp hq hpq
+  have hfp := h p hp
+  have hfq := h q hq
+  have hf1 := h 1 (IsStarProjection.one (R := A))
+  rw [ceil_of_isStarProjection hfp, ceil_of_isStarProjection hfq]
+  have hple : p ≤ 1 - q :=
+    (hp.le_iff_mul_eq_left hq.one_sub).mpr (by rw [mul_sub, mul_one, hpq, sub_zero])
+  have h1 : (f p : B) ≤ 1 - f q := by
+    have hm := ncpMap_mono f hple
+    rw [ncpMap_sub] at hm
+    exact hm.trans (sub_le_sub_right hf1.le_one _)
+  have h2 := (hfp.le_iff_mul_eq_left hfq.one_sub).mp h1
+  rw [mul_sub, mul_one] at h2
+  exact sub_eq_self.mp h2
+
+/-- **99II** (`gardner`), (3) ⇒ (2), the author's argument:
+`f(a)f(b) = f(a)⌈f(a)⌋⌊f(b)⌉f(b)`, and `⌈f(a)⌋⌊f(b)⌉ = 0` because
+`⌈f(a)⌋ ≤ ⌈f(⌈a⌋)⌉`, `⌊f(b)⌉ ≤ ⌈f(⌊b⌉)⌉` (**61II**) and `⌈a⌋⌊b⌉ = 0`
+(**60VIII**).  No unitality is needed. -/
+private theorem gardner_32 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    (f : NCPMap A B)
+    (h : ∀ p q : A, IsStarProjection p → IsStarProjection q → p * q = 0 →
+      ceil (f p) * ceil (f q) = 0) :
+    ∀ a b : A, a * b = 0 → (f a : B) * f b = 0 := by
+  intro a b hab
+  have hsa : IsStarProjection (suppProj a) := (ceill_basic_1 a).1.1
+  have hrb : IsStarProjection (rangeProj b) := (ceill_basic_2 b).1.1
+  have h0 : suppProj a * rangeProj b = 0 :=
+    ((mult_cancellation_1 b a).out 0 1).mp hab
+  have hz := h _ _ hsa hrb h0
+  have hc1 : IsStarProjection (ceil ((f (suppProj a) : B))) :=
+    (ceil_spec (ncpMap_nonneg f hsa.nonneg)).1
+  have hc2 : IsStarProjection (ceil ((f (rangeProj b) : B))) :=
+    (ceil_spec (ncpMap_nonneg f hrb.nonneg)).1
+  have hsfa : IsStarProjection (suppProj (f a : B)) := (ceill_basic_1 (f a : B)).1.1
+  have hrfb : IsStarProjection (rangeProj (f b : B)) := (ceill_basic_2 (f b : B)).1.1
+  have e1 : suppProj (f a : B) * ceil ((f (suppProj a) : B)) = suppProj (f a : B) :=
+    (hsfa.le_iff_mul_eq_left hc1).mp (ncp_ceill f a).1
+  have e2 : ceil ((f (rangeProj b) : B)) * rangeProj (f b : B)
+      = rangeProj (f b : B) := by
+    have h' := (hrfb.le_iff_mul_eq_left hc2).mp (ncp_ceill f b).2
+    have h'' := congrArg star h'
+    rwa [star_mul, hc2.isSelfAdjoint.star_eq, hrfb.isSelfAdjoint.star_eq] at h''
+  have hzero : suppProj (f a : B) * rangeProj (f b : B) = 0 := by
+    calc suppProj (f a : B) * rangeProj (f b : B)
+        = (suppProj (f a : B) * ceil ((f (suppProj a) : B)))
+          * (ceil ((f (rangeProj b) : B)) * rangeProj (f b : B)) := by rw [e1, e2]
+      _ = suppProj (f a : B)
+          * (ceil ((f (suppProj a) : B)) * ceil ((f (rangeProj b) : B)))
+          * rangeProj (f b : B) := by noncomm_ring
+      _ = 0 := by rw [hz, mul_zero, zero_mul]
+  exact ((mult_cancellation_1 (f b : B) (f a : B)).out 1 0).mp hzero
+
+/-- **99II** (`gardner`), (2) ⇒ (1), the author's argument.  From
+`a e^⊥ e = 0` and `a e e^⊥ = 0` one gets `f(a)f(e) = f(ae)f(e)` and
+`f(ae) = f(ae)f(e)` for every projection `e`, hence `f(ae) = f(a)f(e)`;
+since the linear span of the projections is norm-dense (**65IV**) and `f`
+is norm-continuous, this extends to all of `𝒜`.  Instead of unitality only
+`f(1)` being a *projection* is needed (this is what **99XII** uses). -/
+private theorem gardner_21 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    (f : NCPMap A B) (hq : IsStarProjection (f 1 : B))
+    (h2 : ∀ a b : A, a * b = 0 → (f a : B) * f b = 0) :
+    ∀ a b : A, (f (a * b) : B) = f a * f b := by
+  have key : ∀ (a e : A), IsStarProjection e → (f (a * e) : B) = f a * f e := by
+    intro a e he
+    have hA : (f (a * (1 - e)) : B) * f e = 0 := by
+      refine h2 _ _ ?_
+      calc a * (1 - e) * e = a * ((1 - e) * e) := by noncomm_ring
+        _ = 0 := by
+            rw [sub_mul, one_mul, he.isIdempotentElem.eq, sub_self, mul_zero]
+    have hB : (f (a * e) : B) * f (1 - e) = 0 := by
+      refine h2 _ _ ?_
+      calc a * e * (1 - e) = a * (e * (1 - e)) := by noncomm_ring
+        _ = 0 := by
+            rw [mul_sub, mul_one, he.isIdempotentElem.eq, sub_self, mul_zero]
+    have hone : (f (a * e) : B) * f 1 = f (a * e) := by
+      have hc := ncpMap_mul_ceilOne f (a * e)
+      rwa [ceil_of_isStarProjection hq] at hc
+    have hsplit : a * (1 - e) = a - a * e := by noncomm_ring
+    rw [hsplit, ncpMap_sub, sub_mul, sub_eq_zero] at hA
+    rw [ncpMap_sub, mul_sub, hone, sub_eq_zero] at hB
+    rw [hA, ← hB]
+  intro a
+  let S : Submodule ℂ A :=
+    { carrier := {x : A | (f (a * x) : B) = (f a : B) * f x}
+      add_mem' := by
+        intro x y hx hy
+        replace hx : (f (a * x) : B) = (f a : B) * f x := hx
+        replace hy : (f (a * y) : B) = (f a : B) * f y := hy
+        change (f (a * (x + y)) : B) = (f a : B) * f (x + y)
+        rw [mul_add, ncpMap_add, ncpMap_add, hx, hy, mul_add]
+      zero_mem' := by
+        change (f (a * 0) : B) = (f a : B) * f 0
+        rw [mul_zero, ncpMap_zero, mul_zero]
+      smul_mem' := by
+        intro c x hx
+        replace hx : (f (a * x) : B) = (f a : B) * f x := hx
+        change (f (a * (c • x)) : B) = (f a : B) * f (c • x)
+        rw [mul_smul_comm, ncpMap_smul, ncpMap_smul, hx, mul_smul_comm] }
+  have hclosed : IsClosed (S : Set A) :=
+    isClosed_eq ((ncpMap_continuous f).comp (continuous_const.mul continuous_id))
+      (continuous_const.mul (ncpMap_continuous f))
+  exact fun b => mem_of_isClosed_of_projections S hclosed (fun p hp => key a p hp) b
+
 /-! ## Parsec 990: isomorphism -/
 
 /-- **99II** (`gardner`, proc.tex:795, Proposition): for an ncpu-map
@@ -2135,7 +2484,18 @@ theorem gardner [VonNeumannAlgebra A] [VonNeumannAlgebra B]
       ∀ p q : A, IsStarProjection p → IsStarProjection q → p * q = 0 →
         ceil (f p) * ceil (f q) = 0,
       ∀ p : A, IsStarProjection p → IsStarProjection (f p),
-      ∀ a : A, 0 ≤ a → ceil (f a) = f (ceil a) ].TFAE := sorry
+      ∀ a : A, 0 ≤ a → ceil (f a) = f (ceil a) ].TFAE := by
+  -- the author's cycle (1) ⇒ (4) ⇒ (3) ⇒ (2) ⇒ (1) with (4) ⇔ (5) on the
+  -- side; each implication is one of the private lemmas above.
+  have hq : IsStarProjection (f 1 : B) := by
+    rw [hu]; exact IsStarProjection.one (R := B)
+  tfae_have 1 → 4 := isStarProjection_map_of_mul f
+  tfae_have 4 → 5 := ceil_map_of_isStarProjection_map f
+  tfae_have 5 → 4 := isStarProjection_map_of_ceil f
+  tfae_have 4 → 3 := gardner_43 f
+  tfae_have 3 → 2 := gardner_32 f
+  tfae_have 2 → 1 := gardner_21 f hq
+  tfae_finish
 
 /-- **99IX** (`iso`, proc.tex:878, Theorem): an ncpsu-isomorphism between
 von Neumann algebras is an nmiu-isomorphism (unital, multiplicative, and
@@ -2146,7 +2506,23 @@ theorem iso [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (hfg : ∀ b, f.toNCPMap (g.toNCPMap b) = b) :
     f.toNCPMap 1 = 1 ∧
       (∀ a b : A, f.toNCPMap (a * b) = f.toNCPMap a * f.toNCPMap b) ∧
-      (∀ a : A, f.toNCPMap (star a) = star (f.toNCPMap a)) := sorry
+      (∀ a : A, f.toNCPMap (star a) = star (f.toNCPMap a)) := by
+  -- the author's proof: `1 = f(g 1) ≤ f 1 ≤ 1` makes both maps unital;
+  -- a unital ncp-isomorphism maps projections to projections
+  -- (`isStarProjection_map`), hence is multiplicative by **99II**;
+  -- involutivity is `cstar-p-implies-i` (**10IV**).
+  have hfu : (f.toNCPMap 1 : B) = 1 := by
+    refine le_antisymm f.subunital' ?_
+    have h := ncpMap_mono f.toNCPMap g.subunital'
+    rwa [hfg 1] at h
+  have hgu : (g.toNCPMap 1 : A) = 1 := by
+    refine le_antisymm g.subunital' ?_
+    have h := ncpMap_mono g.toNCPMap f.subunital'
+    rwa [hgf 1] at h
+  refine ⟨hfu, gardner_21 f.toNCPMap (by rw [hfu]; exact IsStarProjection.one (R := B))
+    (gardner_32 f.toNCPMap (gardner_43 f.toNCPMap fun p hp =>
+      isStarProjection_map f.toNCPMap g.toNCPMap hgf hfg hfu hgu hp)),
+    fun a => ncp_star f.toNCPMap a⟩
 
 /-- **99XI** (proc.tex:897, Exercise): any filter of a projection is
 multiplicative. -/
@@ -2161,7 +2537,18 @@ theorem sharp_multiplicative [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (f : NCPMap A B) :
     [ ∀ a b : A, f (a * b) = f a * f b,
       ∀ p : A, IsStarProjection p → IsStarProjection (f p),
-      ∀ a : A, 0 ≤ a → ceil (f a) = f (ceil a) ].TFAE := sorry
+      ∀ a : A, 0 ≤ a → ceil (f a) = f (ceil a) ].TFAE := by
+  -- Not the thesis's hint (factor `f = ζ ∘ h` through a filter for `f(1)`,
+  -- which would need **98II** `filter-basic`, still `sorry`): instead the
+  -- implications of **99II** are applied directly.  They need no unitality
+  -- beyond `f(1)` being a projection, which (2) supplies at `p = 1`.
+  tfae_have 1 → 2 := isStarProjection_map_of_mul f
+  tfae_have 2 → 3 := ceil_map_of_isStarProjection_map f
+  tfae_have 3 → 2 := isStarProjection_map_of_ceil f
+  tfae_have 2 → 1 := fun h =>
+    gardner_21 f (h 1 (IsStarProjection.one (R := A)))
+      (gardner_32 f (gardner_43 f h))
+  tfae_finish
 
 /-! ## Parsec 1000: purity -/
 
@@ -2288,31 +2675,6 @@ theorem projSup_pair_le_iff [VonNeumannAlgebra A] {a b q : A}
   rintro p (rfl | rfl)
   · exact h.1
   · exact h.2
-
-/-- For positive `b` and a projection `e`: `⌈b⌉ ≤ e^⊥` iff `e b e = 0`
-(proc.tex:1063).  Left to right is 59III (`ceil-basic`); right to left
-factors `ebe = (√b e)*(√b e)`. -/
-theorem ceil_le_perp_iff [VonNeumannAlgebra B] {b e : B} (hb : 0 ≤ b)
-    (he : IsStarProjection e) : ceil b ≤ 1 - e ↔ e * b * e = 0 := by
-  constructor
-  · intro h
-    have h1 : b * (1 - e) = b := ((ceil_basic_1 b (1 - e) hb he.one_sub).out 2 1).mp h
-    rw [mul_sub, mul_one, sub_eq_self] at h1
-    rw [mul_assoc, h1, mul_zero]
-  · intro h
-    have hs : star (CFC.sqrt b) = CFC.sqrt b :=
-      (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg b)).star_eq
-    have hz : CFC.sqrt b * e = 0 := by
-      refine (CStarRing.star_mul_self_eq_zero_iff _).mp ?_
-      rw [star_mul, hs, he.isSelfAdjoint.star_eq]
-      calc e * CFC.sqrt b * (CFC.sqrt b * e)
-          = e * (CFC.sqrt b * CFC.sqrt b) * e := by noncomm_ring
-        _ = e * b * e := by rw [CFC.sqrt_mul_sqrt_self b hb]
-        _ = 0 := h
-    have hbe : b * e = 0 := by
-      rw [← CFC.sqrt_mul_sqrt_self b hb, mul_assoc, hz, mul_zero]
-    refine ((ceil_basic_1 b (1 - e) hb he.one_sub).out 1 2).mp ?_
-    rw [mul_sub, mul_one, hbe, sub_zero]
 
 /-- Infrastructure for 101VII part 1: for projections `s`, `t` and any `x`,
 `t (x* s x) t = 0` iff `s x t = 0`, because `t x* s x t = (sxt)*(sxt)`. -/
@@ -2593,102 +2955,6 @@ With `f` unital the proof is short, and does not need Kadison's theorem
 that a unital order isomorphism is a Jordan isomorphism: it is enough that
 `f` maps projections to projections, which follows from the order
 structure alone. -/
-
-/-- An ncp-map commutes with subtraction (it is linear; `NCPMap` carries no
-`AddMonoidHomClass` instance, so this goes through its
-`CompletelyPositiveMap`). -/
-private theorem ncpMap_sub (f : NCPMap A B) (x y : A) : f (x - y) = f x - f y :=
-  map_sub f.toCompletelyPositiveMap x y
-
-/-- An ncp-map is monotone. -/
-private theorem ncpMap_mono (f : NCPMap A B) {x y : A} (h : x ≤ y) :
-    f x ≤ f y := by
-  have h0 : (0 : B) ≤ f (y - x) := ncpMap_nonneg f (sub_nonneg.mpr h)
-  rw [ncpMap_sub, sub_nonneg] at h0
-  exact h0
-
-/-- A positive element below both a projection `p` and its complement is
-`0`: conjugating by `p^⊥` and by `p` gives `⌈x⌉ ≤ p` and `⌈x⌉ ≤ p^⊥`
-(59III), i.e. `px = x` and `(1-p)x = x`. -/
-private theorem eq_zero_of_le_proj_le_perp [VonNeumannAlgebra A] {x p : A}
-    (hx : 0 ≤ x) (hp : IsStarProjection p) (h1 : x ≤ p) (h2 : x ≤ 1 - p) :
-    x = 0 := by
-  have hc1 : (1 - p) * x * (1 - p) = 0 := by
-    have hle : (1 - p) * x * (1 - p) ≤ (1 - p) * p * (1 - p) := by
-      have := star_left_conjugate_le_conjugate h1 (1 - p)
-      rwa [star_sub, star_one, hp.isSelfAdjoint.star_eq] at this
-    have hzero : (1 - p) * p * (1 - p) = 0 := by
-      have hpp : p * p = p := hp.isIdempotentElem
-      noncomm_ring [hpp]
-    rw [hzero] at hle
-    have hge : (0 : A) ≤ (1 - p) * x * (1 - p) := by
-      have := star_left_conjugate_nonneg hx (1 - p)
-      rwa [star_sub, star_one, hp.isSelfAdjoint.star_eq] at this
-    exact le_antisymm hle hge
-  have hc2 : p * x * p = 0 := by
-    have hle : p * x * p ≤ p * (1 - p) * p := by
-      have := star_left_conjugate_le_conjugate h2 p
-      rwa [hp.isSelfAdjoint.star_eq] at this
-    have hzero : p * (1 - p) * p = 0 := by
-      have hpp : p * p = p := hp.isIdempotentElem
-      noncomm_ring [hpp]
-    rw [hzero] at hle
-    have hge : (0 : A) ≤ p * x * p := by
-      have := star_left_conjugate_nonneg hx p
-      rwa [hp.isSelfAdjoint.star_eq] at this
-    exact le_antisymm hle hge
-  have hce1 : ceil x ≤ p := by
-    have := (ceil_le_perp_iff hx hp.one_sub).mpr hc1
-    rwa [sub_sub_cancel] at this
-  have hce2 : ceil x ≤ 1 - p := (ceil_le_perp_iff hx hp).mpr hc2
-  have e1 : p * x = x := ((ceil_basic_1 x p hx hp).out 2 0).mp hce1
-  have e2 : (1 - p) * x = x :=
-    ((ceil_basic_1 x (1 - p) hx hp.one_sub).out 2 0).mp hce2
-  have h3 : (1 - p) * x = x - p * x := by noncomm_ring
-  rw [h3, e1, sub_self] at e2
-  exact e2.symm
-
-/-- A *unital* ncp-isomorphism maps projections to projections: `e := f(p)`
-is an effect, so `d := e - e²` is positive and below both `e` and `e^⊥`;
-`g(d)` is then below both `p` and `p^⊥`, hence `0`, and `g` is injective,
-so `e² = e`. -/
-private theorem isStarProjection_map [VonNeumannAlgebra A]
-    [VonNeumannAlgebra B] (f : NCPMap A B) (g : NCPMap B A)
-    (hgf : ∀ a, g (f a) = a) (hfg : ∀ b, f (g b) = b) (hfu : f 1 = 1)
-    (hgu : g 1 = 1) {p : A} (hp : IsStarProjection p) :
-    IsStarProjection (f p) := by
-  set e : B := f p with he
-  have he0 : (0 : B) ≤ e := ncpMap_nonneg f hp.nonneg
-  have he1 : e ≤ 1 := by
-    have := ncpMap_mono f hp.le_one
-    rwa [hfu] at this
-  have hd0 : (0 : B) ≤ e - e * e := sub_nonneg.mpr (mul_self_le_self ⟨he0, he1⟩)
-  have hsq : (0 : B) ≤ e * e := by
-    have := star_mul_self_nonneg e
-    rwa [(IsSelfAdjoint.of_nonneg he0).star_eq] at this
-  have hd1 : e - e * e ≤ e := by
-    have : e - e * e ≤ e - 0 := sub_le_sub_left hsq e
-    simpa using this
-  have hd2 : e - e * e ≤ 1 - e := by
-    have hns : (0 : B) ≤ (1 - e) * (1 - e) := by
-      have := star_mul_self_nonneg (1 - e)
-      rwa [star_sub, star_one, (IsSelfAdjoint.of_nonneg he0).star_eq] at this
-    have hexp : (1 - e) * (1 - e) = (1 - e) - (e - e * e) := by noncomm_ring
-    rw [hexp, sub_nonneg] at hns
-    exact hns
-  have hginj : Function.Injective ⇑g := fun x y hxy => by
-    rw [← hfg x, ← hfg y, hxy]
-  have hgd : g (e - e * e) = 0 := by
-    refine eq_zero_of_le_proj_le_perp (ncpMap_nonneg g hd0) hp ?_ ?_
-    · have := ncpMap_mono g hd1
-      rwa [he, hgf] at this
-    · have hrhs : g (1 - e) = 1 - p := by rw [ncpMap_sub, hgu, he, hgf]
-      have := ncpMap_mono g hd2
-      rwa [hrhs] at this
-  have hd : e - e * e = 0 :=
-    hginj (by rw [hgd]; exact (map_zero g.toCompletelyPositiveMap).symm)
-  exact ⟨by show e * e = e; rw [sub_eq_zero] at hd; exact hd.symm,
-    IsSelfAdjoint.of_nonneg he0⟩
 
 /-- **101VII** (`equivalent-examples`, proc.tex:1102, Examples), part 2: a
 **unital** ncp-isomorphism is contraposed to its inverse.
@@ -3034,8 +3300,60 @@ theorem rigid_ncp_extreme [VonNeumannAlgebra A] [VonNeumannAlgebra B]
 between von Neumann algebras is rigid (stated for an ncp-map `f` that
 coincides with an nmiu-map `ρ`). -/
 theorem nmiu_rigid [VonNeumannAlgebra A] [VonNeumannAlgebra B]
-    (ρ : NMIUMap A B) (f : NCPMap A B) (h : ∀ a, f a = ρ a) : IsRigid f :=
-  sorry
+    (ρ : NMIUMap A B) (f : NCPMap A B) (h : ∀ a, f a = ρ a) : IsRigid f := by
+  -- the author's proof: for an ncp-map `g` with `g(1) = f(1) = 1` and
+  -- `⌈g(p)⌉ = ⌈ϱ(p)⌉`, `⌈g(p)⌉⌈g(q)⌉ = ϱ(p)ϱ(q) = ϱ(pq) = 0` when `pq = 0`,
+  -- so `g` is multiplicative by **99II**, hence maps projections to
+  -- projections, and `g(p) = ⌈g(p)⌉ = ⌈ϱ(p)⌉ = ϱ(p) = f(p)`.  The two
+  -- continuous linear maps `g` and `f` then agree on all of `𝒜`, because
+  -- the linear span of the projections is norm-dense (**65IV**).
+  intro g hg1 hceil
+  have hρproj : ∀ p : A, IsStarProjection p → IsStarProjection ((ρ p : B)) := by
+    intro p hp
+    refine ⟨?_, ?_⟩
+    · change (ρ.toStarAlgHom p) * (ρ.toStarAlgHom p) = ρ.toStarAlgHom p
+      rw [← map_mul, hp.isIdempotentElem.eq]
+    · change star (ρ.toStarAlgHom p) = ρ.toStarAlgHom p
+      rw [← map_star, hp.isSelfAdjoint.star_eq]
+  have hf1 : (f 1 : B) = 1 := by
+    rw [h 1]
+    change (ρ.toStarAlgHom 1 : B) = 1
+    exact map_one _
+  have hgu : (g 1 : B) = 1 := by rw [hg1, hf1]
+  have h3 : ∀ p q : A, IsStarProjection p → IsStarProjection q → p * q = 0 →
+      ceil (g p) * ceil (g q) = 0 := by
+    intro p q hp hq hpq
+    rw [← hceil p hp, ← hceil q hq, h p, h q,
+      ceil_of_isStarProjection (hρproj p hp), ceil_of_isStarProjection (hρproj q hq)]
+    change (ρ.toStarAlgHom p) * (ρ.toStarAlgHom q) = 0
+    rw [← map_mul, hpq, map_zero]
+  have hmult := gardner_21 g (by rw [hgu]; exact IsStarProjection.one (R := B))
+    (gardner_32 g h3)
+  have hgproj := isStarProjection_map_of_mul g hmult
+  have hagree : ∀ p : A, IsStarProjection p → (g p : B) = f p := by
+    intro p hp
+    rw [← ceil_of_isStarProjection (hgproj p hp), ← hceil p hp, h p,
+      ceil_of_isStarProjection (hρproj p hp), ← h p]
+  refine DFunLike.ext _ _ fun x => ?_
+  let S : Submodule ℂ A :=
+    { carrier := {y : A | (g y : B) = f y}
+      add_mem' := by
+        intro y z hy hz
+        replace hy : (g y : B) = f y := hy
+        replace hz : (g z : B) = f z := hz
+        change (g (y + z) : B) = f (y + z)
+        rw [ncpMap_add, ncpMap_add, hy, hz]
+      zero_mem' := by
+        change (g 0 : B) = f 0
+        rw [ncpMap_zero, ncpMap_zero]
+      smul_mem' := by
+        intro c y hy
+        replace hy : (g y : B) = f y := hy
+        change (g (c • y) : B) = f (c • y)
+        rw [ncpMap_smul, ncpMap_smul, hy] }
+  have hclosed : IsClosed (S : Set A) :=
+    isClosed_eq (ncpMap_continuous g) (ncpMap_continuous f)
+  exact mem_of_isClosed_of_projections S hclosed hagree x
 
 /-- **102VII** (`canonical-quotient-rigid`, proc.tex:1268, Lemma): for an
 element `b` of a von Neumann algebra the ncp-map
@@ -3398,7 +3716,54 @@ with `⌈q ϑ(e) q⌉ ≤ e` for every projection `e`; and then `ϑ = id`. -/
 theorem centrally_similar_corollary [VonNeumannAlgebra A] (q : A)
     (hq : 0 ≤ q) (hcq : ceil q = 1) (ϑ : MIUMap A A)
     (h : ∀ e : A, IsStarProjection e → ceil (q * ϑ e * q) ≤ e) :
-    q ∈ centre A ∧ ∀ a, ϑ a = a := sorry
+    q ∈ centre A ∧ ∀ a, ϑ a = a := by
+  -- **104IV** applies to every projection `e`, since its second hypothesis
+  -- is this one at `e^⊥`; it gives `eq = qe` and `ϑ(e) = e`.  Both
+  -- conclusions then extend from the projections to all of `𝒜` because
+  -- their linear span is norm-dense (**65IV**) and `x ↦ xq`, `x ↦ qx` and
+  -- `ϑ` are continuous and linear.
+  have hfund : ∀ e : A, IsStarProjection e → e * q = q * e ∧ ϑ e = e := fun e he =>
+    centrally_similar_fundamental e q he hq hcq ϑ (h e he) (h (1 - e) he.one_sub)
+  have hcont : Continuous ⇑ϑ :=
+    AddMonoidHomClass.continuous_of_bound ϑ 1
+      fun x => by simpa using NonUnitalStarAlgHom.norm_apply_le ϑ x
+  constructor
+  · intro m _
+    let S : Submodule ℂ A :=
+      { carrier := {y : A | y * q = q * y}
+        add_mem' := by
+          intro y z hy hz
+          replace hy : y * q = q * y := hy
+          replace hz : z * q = q * z := hz
+          change (y + z) * q = q * (y + z)
+          rw [add_mul, mul_add, hy, hz]
+        zero_mem' := by change (0 : A) * q = q * 0; rw [zero_mul, mul_zero]
+        smul_mem' := by
+          intro c y hy
+          replace hy : y * q = q * y := hy
+          change (c • y) * q = q * (c • y)
+          rw [smul_mul_assoc, mul_smul_comm, hy] }
+    have hclosed : IsClosed (S : Set A) :=
+      isClosed_eq (continuous_id.mul continuous_const)
+        (continuous_const.mul continuous_id)
+    exact mem_of_isClosed_of_projections S hclosed (fun p hp => (hfund p hp).1) m
+  · intro a
+    let S : Submodule ℂ A :=
+      { carrier := {y : A | ϑ y = y}
+        add_mem' := by
+          intro y z hy hz
+          replace hy : ϑ y = y := hy
+          replace hz : ϑ z = z := hz
+          change ϑ (y + z) = y + z
+          rw [map_add, hy, hz]
+        zero_mem' := by change ϑ (0 : A) = 0; rw [map_zero]
+        smul_mem' := by
+          intro c y hy
+          replace hy : ϑ y = y := hy
+          change ϑ (c • y) = c • y
+          rw [map_smul, hy] }
+    have hclosed : IsClosed (S : Set A) := isClosed_eq hcont continuous_id
+    exact mem_of_isClosed_of_projections S hclosed (fun p hp => (hfund p hp).2) a
 
 /-- **104VII** (`positive-quotients-centrally-similar`, proc.tex:1556,
 Proposition): positive `p, q` with `⌈p⌉ = ⌈q⌉ = 1` are centrally similar

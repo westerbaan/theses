@@ -4597,3 +4597,376 @@ recorded here, not in ERRATA.md.
   gap is what forced 21VII's route change, so it now gates one more item than
   before.
 * Nothing staged, nothing committed.
+
+---
+
+## Session 18 — `A/Proc` parsecs 990, 1020, 1040: the Gardner harvest (worker 46)
+
+`A/Proc/Measurement.lean` only; 45 → **40** `sorry` (chapter 137 → **132**).
+Nothing else in the tree touched.  This is the round that consumes worker 43's
+**65IV** `projections_norm_dense`.
+
+### 1. What was proved
+
+| point | declaration | note |
+|---|---|---|
+| **99II** | `gardner` | the author's cycle, verbatim |
+| **99IX** | `iso` | the author's proof |
+| **99XII** | `sharp_multiplicative` | *not* the thesis's hint — §3 |
+| **102V** | `nmiu_rigid` | the author's proof + one density step |
+| **104VI** | `centrally_similar_corollary` | the thesis gives **no** proof |
+
+New `private` infrastructure, all reusable (`Measurement.lean`, new block
+"Infrastructure for parsecs 990–1040", placed just before parsec 990):
+
+* `ncpMap_add`, `ncpMap_zero`, `ncpMap_smul` — the remaining linearity
+  clauses of an ncp-map, alongside the pre-existing `ncpMap_sub`,
+  `ncpMap_mono` (which were **moved up** from the parsec-1010 area; no
+  change to them).
+* `ncpMap_continuous` — `‖f(a)‖ ≤ ‖f(1)‖‖a‖` from **34XVI** `cp-russo-dye`.
+  Worth knowing: `NCPMap` carries no `ContinuousLinearMapClass`, and
+  `Theses.A.VN.ncp_isCompletelyPositiveMap` is `private`, so the
+  `IsCompletelyPositiveMap` witness has to be rebuilt from `cp_iff` and
+  `map_cstarMatrix_nonneg'` (two lines).
+* `mem_closure_span_projections` — **65IV** for *arbitrary* elements
+  (`x = ℜx + i·ℑx`; `A/VN` states it only for self-adjoint `x`), and
+  `mem_of_isClosed_of_projections` — "a norm-closed `ℂ`-subspace containing
+  every projection is everything".  These two are the whole of 65IV's
+  leverage; every one of the five proofs below ends in them.
+* `ncpMap_mul_ceilOne` — `f(x)⌈f(1)⌉ = f(x)` for *any* ncp-map, from **61II**
+  (`⌈f(x)⌋ ≤ ⌈f(⌈x⌋)⌉ ≤ ⌈f(1)⌉`).  This is what replaces unitality in §3.
+* `isStarProjection_map_of_mul`, `ceil_map_of_isStarProjection_map`,
+  `isStarProjection_map_of_ceil`, `gardner_43`, `gardner_32`, `gardner_21` —
+  the six implications of 99II, stated **separately**, because 99IX, 99XII
+  and 102V each need some of them for a map that is not assumed unital.
+* `ceil_le_perp_iff` (public, unchanged statement and proof) was **moved
+  earlier** in the file: the relocated `eq_zero_of_le_proj_le_perp` uses it,
+  and it now lives in the new infrastructure block instead of the
+  parsec-1010 one.  No other declaration order changed.
+
+### 2. 99II `gardner` — divergence class 1
+
+The author's cycle (1)⇒(4)⇒(3)⇒(2)⇒(1) with (4)⇔(5) on the side,
+transcribed step for step:
+
+* (1)⇒(4), (5)⇒(4): as the thesis says, immediate.
+* (4)⇒(5): **60V** `ncp_ceil` then `ceil` of a projection.
+* (4)⇒(3): `pq = 0` ⟹ `p ≤ q^⊥` ⟹ `f(p) ≤ f(1) − f(q)`, and two
+  projections one of which is below the other's complement multiply to `0`.
+* (3)⇒(2): `f(a)f(b) = f(a)⌈f(a)⌋⌊f(b)⌉f(b)` with `⌈f(a)⌋⌊f(b)⌉ = 0` from
+  **61II** `ncp_ceill` and **60VIII** `mult_cancellation`.
+* (2)⇒(1): the `ae^⊥·e = 0` / `ae·e^⊥ = 0` pair gives `f(ae) = f(a)f(e)` for
+  a projection `e`; the author's "since the linear span of projections is
+  norm-dense in `𝒜`" is **65IV**, and is realised as: `{x | f(ax) = f(a)f(x)}`
+  is a `ℂ`-submodule (linearity of `f`), norm-closed (`ncpMap_continuous`),
+  and contains the projections.
+
+### 3. 99XII `sharp_multiplicative` — divergence class 2, and why
+
+The thesis's hint is "factor `f = ζ ∘ h` where `ζ` is a filter for `f(1)`".
+That route is **not available**: it needs **98II** `filter_basic_1` (unique
+factorisation through the standard filter), which is `sorry`, as is **96V**
+`canonical_filter`.
+
+Instead: **the (4)⇒(3), (3)⇒(2), (2)⇒(1) steps of 99II never use unitality
+of `f` — only that `f(1)` is a projection.**  That is the finding of this
+session and it is what makes 99XII a two-line corollary of 99II:
+
+* (4)⇒(3) needs `f(1) ≤ 1`, which holds because `f(1)` is a projection (and
+  `f(1)` *is* one, by hypothesis (2) at `p = 1`);
+* (2)⇒(1) needs `f(ae)·f(1) = f(ae)`, and `ncpMap_mul_ceilOne` gives
+  `f(x)⌈f(1)⌉ = f(x)` unconditionally — with `f(1)` a projection,
+  `⌈f(1)⌉ = f(1)`.
+
+So the private lemmas are stated with `hq : IsStarProjection (f 1)` rather
+than `f 1 = 1`, and `gardner` supplies `hq` from its `hu`.
+
+### 4. 99IX `iso` — class 1
+
+`g(1) ≤ 1` and `1 = f(g 1) ≤ f(1) ≤ 1` give unitality of both maps (the
+author's first sentence).  The author then argues that `f` maps projections
+to projections via **55X** `projection-order-sharp` and preservation of
+`(·)^⊥` and order; our `NCPMap` bundle has no "order-isomorphism" API to
+apply 55X through, so the step is worker 42's `isStarProjection_map`, which
+is 55X's content transported along `g` (`e − e²` is positive and below both
+`e` and `e^⊥`, so `g(e − e²)` is below both `p` and `p^⊥`, hence `0`, and
+`g` is injective).  Multiplicativity is then 99II; `f(a*) = f(a)*` is
+**10IV** `cstar-p-implies-i` (`ncp_star`), already in the tree.
+
+### 5. 102V `nmiu_rigid` — class 1, with the density step made explicit
+
+The author's proof verbatim: `⌈g(p)⌉⌈g(q)⌉ = ϱ(p)ϱ(q) = ϱ(pq) = 0`, so `g`
+is multiplicative by 99II, hence maps projections to projections, hence
+`g(p) = ⌈g(p)⌉ = ⌈ϱ(p)⌉ = ϱ(p)`.  The thesis's "for this, it suffices to
+prove that `g(p) = ϱ(p)` for every projection `p`" is left unjustified
+there; it is 65IV again (both maps are continuous and linear), and that is
+how it is discharged here.
+
+### 6. 104VI `centrally_similar_corollary` — the thesis gives no proof
+
+proc.tex:1546 states it as a Corollary with no proof block, so this is the
+first proof of it.  It is short: **104IV**
+`centrally_similar_fundamental` applies to every projection `e`, because its
+*second* hypothesis `⌈q ϑ(e^⊥) q⌉ ≤ e^⊥` is this corollary's hypothesis at
+`e^⊥`.  That gives `eq = qe` and `ϑ(e) = e` for every projection, and 65IV
+then extends both to all of `𝒜` (`ϑ` is norm-contractive as a ∗-homomorphism,
+`NonUnitalStarAlgHom.norm_apply_le`).
+
+Note that 104VI *does* state the faithfulness hypothesis `⌈q⌉ = 1` that
+104IV's printed form omits (ERRATA, 104IV row), so no new erratum arises.
+
+### 7. Three of the eight statements 65IV was said to release are **not**
+released — with their real blockers
+
+* **99XI** `filter_of_projection_multiplicative` — blocked on **98II**.1
+  `filter_basic_1` (or **96V** `canonical_filter`), both `sorry`.  With 99XII
+  in hand it reduces to "a filter whose `c(1)` is a projection maps
+  projections to projections", and nothing in `IsFilter`'s universal property
+  yields that without the factorisation through the standard filter.
+* **104VII** `positive_quotients_centrally_similar` — only the *first
+  paragraph* of the thesis's proof (proc.tex:1563) is the density step.  The
+  rest reduces to the invertible case through an increasing sequence of
+  projections built from an **approximate pseudoinverse**: it needs **80IV**
+  `approximate_pseudoinverse` (`A/VN/Division.lean`, `sorry`, frozen),
+  **104III**.5 `centrally_similar_basic_5` (`sorry`), **45VI**
+  `mult_jus_cont`, and a corner reduction.  **Still blocked.**
+* **128II** `tomiyama` — the author's density step is over the projections
+  **of the subalgebra ℬ**, not of `𝒜`: the argument needs `e ∈ ℬ` so that
+  `e^⊥f(ea) ∈ ℬ = range f` and `f(e^⊥f(ea)) = e^⊥f(ea)`.  65IV as stated (and
+  as proved) produces projections in `{b}^□□`; concluding `{b}^□□ ⊆ ℬ`
+  requires the **double commutant theorem 88VI** (`sorry`, and stated only
+  for `B(H)`).  The alternative — that an `IsVNSubalgebra` is closed under
+  `cfc` and under `ceil` — is **not in the tree** either (`ceil` is defined by
+  its universal property, with no "increasing limit" characterisation to feed
+  to `dirSup_mem`).
+
+  **New named blocker**, worth its own line in any dependency map: *the
+  linear span of the projections of a von Neumann **subalgebra** is
+  norm-dense in it* — 65IV relativised.  It gates 128II and therefore parsec
+  1280 (128VIII `uniqueness_duplicator` sits on top of it).
+
+The rest of that paragraph of the brief was right: 104VI and 104VII do both
+state `⌈p⌉ = ⌈q⌉ = 1`, and 61II had indeed already supplied 99II's (3)⇒(2).
+
+### 8. Classification summary
+
+* **99II** — class 1.
+* **99IX** — class 1 (one rendering change, §4).
+* **99XII** — class 2: the thesis's hint routes through `sorry`ed filter
+  theory; the unitality-free form of 99II is used instead.
+* **102V** — class 1, with the unjustified "it suffices on projections"
+  step discharged by 65IV (§5).
+* **104VI** — no author argument exists; class 2 by default.
+
+No new errata (nothing in proc.tex was found to be wrong this session) and no
+new questions.
+
+### 9. Verification
+
+* `lake build` (whole project) → exit 0.  `grep -c error:` counts only the
+  pre-existing `linter.style.header` noise; filtering it leaves **0**.
+* Per-file `declaration uses \`sorry\`` from that build: Measurement **40**
+  (was 45), Tensor 46, QuantumLambda 26, Duplicators 20 — chapter **132**.
+  Nothing else in `A/` moved; `B/Eff/StatesPredicates.lean` 9 → 7 is the
+  concurrent `B/Eff` worker, not this session.
+* `#print axioms` → `[propext, Classical.choice, Quot.sound]` for
+  `Theses.A.Proc.gardner`, `.iso`, `.sharp_multiplicative`, `.nmiu_rigid`,
+  `.centrally_similar_corollary`, and (regression check after the move)
+  `.ceil_le_perp_iff`, `.equivalent_examples_2`,
+  `.equivalent_examples_2_is_false`.  No `sorryAx`.
+* `A/Proc` still has **no** `sorry`ed instance.
+* Doc `file:LINE` refs re-derived from the labels and confirmed exact:
+  99II→795, 99IX→878, 99XII→905, 102V→1241, 104VI→1546, 104VII→1556,
+  128II→5948.
+* `asols.tex`'s errata block has exactly **one** entry in these parsecs,
+  `parsec-990.70` (= **99VII**, the ERRATA row already marked DONE): it is
+  99II's (3) ⇒ (2) paragraph, and proc.tex **already carries the corrected
+  text**, so §2's transcription is of the corrected version.  (The point
+  numbering there is off by one point from the enumerated item: the erratum
+  rewrites `\begin{point}{70}`, which proves (3) ⇒ (2).)
+* Warning profile of `Measurement.lean` is byte-for-byte the pre-session one
+  apart from the five `declaration uses \`sorry\`` that disappeared: 43
+  `show`-style, 25 unused-section-variable, 18 `if_neg`, 15 `if_pos`, 13
+  unused-simp-argument, before and after.  (The new proofs use `change`, not
+  `show`, for the defeq unfoldings of `Submodule` membership.)
+* Nothing staged, nothing committed.
+
+## Session 18 — `B/Eff`: parsec 191 in full (191II, 191VII, 191VIII)
+
+Scope: `Theses/B/Eff/StatesPredicates.lean` only (+ `ERRATA.md`, `QUESTIONS.md`).
+Three `sorry`s closed; B/Eff **25 → 22**, `StatesPredicates.lean` **9 → 6**.
+
+* **191VII** `emod_effectus_representation` — the representation half of the
+  `emod-effectus` theorem.
+* **191VIII** `exc_rng_eff` — `Rngᵒᵖ` is an effectus in total form.
+* **191II** `emod_effectus` — `EMod_Mᵒᵖ` is an effectus in total form.
+
+### 1. The obstacle all three (well, two) share, and the API for it
+
+`EffectusTotalForm D` is stated against *whatever* `HasFiniteCoproducts D` /
+`HasTerminal D` instance is in scope, and both classes are `Prop`s, so `X ⨿ Y`
+is always `colimit (pair X Y)` and `⊤_ D` an opaque choice.  The thesis, of
+course, computes with the *concrete* product of effect modules (resp. of
+rings) and with the *concrete* initial object.  Bridging that gap once, for an
+arbitrary category, is the main piece of reusable API added this session:
+
+```
+structure CoprodPres (D) [Category D] where
+  T : D ; hT : IsTerminal T
+  P : D → D → D ; pinl ; pinr
+  hP : ∀ X Y, IsColimit (BinaryCofan.mk (pinl X Y) (pinr X Y))
+
+theorem effectusTotalForm_of_pres [HasFiniteCoproducts D] [HasTerminal D]
+    (d : CoprodPres D) (h1 …) (h2 …) (h3 …) : EffectusTotalForm D
+```
+
+`h1`, `h2`, `h3` are the three axioms of 180I written for `d`'s concrete data
+(`d.pmap`, `d.pinl`, `d.desc`).  Supporting API in `CoprodPres`: `desc`,
+`inl_desc`/`inr_desc`, `hom_ext`, `desc_self`, `pmap`, `cofanIso`,
+**`coprodIso`** and `termIso`, plus the top-level `sq_symm`.
+
+The key lemma is **`coprodIso : (A ⨿ B) ≅ d.P A' B'`, parameterised by
+isomorphisms `A ≅ A'` and `B ≅ B'` of the two *summands*** — not just by an
+isomorphism of the coproduct object.  That extra generality is what makes the
+comparison usable at `X ⨿ ⊤_D ≅ d.P X d.T` and at
+`(⊤_D ⨿ ⊤_D) ⨿ ⊤_D ≅ d.P (d.P d.T d.T) d.T`, which is exactly where the three
+axioms live.  (Session 17's `cofanOfIso`, in `Effectus.lean`, transports along
+an iso of the coproduct *object* and does not do this job; it was not reused.)
+
+Everything else is bookkeeping: `map_comm` turns a pair of commuting squares
+on the summands into one for `coprod.map`, `cotuple_comm` does the same for
+`[u, κ₂] : 1+1+1 → 1+1`, and `sq_symm` flips a square so `IsPullback.of_iso`
+can carry the concrete pullback to the ambient one.
+
+**Worth knowing for the next user of this bridge**: once the presentation is
+built from an *opposite* category (`d.P X Y := op (of (X.unop × Y.unop))` with
+`hP` proved by `BinaryCofan.IsColimit.mk`), `d.pmap` and `d.desc` come out
+**definitionally equal** to the concrete `op`ped maps, so no rewriting lemmas
+are needed for them.  Only `d.hT.from` needs one (`rng_from` / `emod_from`,
+each a one-line `IsTerminal.hom_ext`), because `IsTerminal.from` is an opaque
+`IsLimit.lift`.
+
+### 2. 191VII — `emod_effectus_representation`
+
+Class **(1) faithful**, and cheap: the thesis's 191VII argument is literally
+"`Pred f = Pred g` iff `p ∘ f = p ∘ g` for all `p`, so `Pred` is faithful iff
+`C` has separating predicates".  The functor itself was **already in the tree**
+— `predMap_functor` (190II.5) builds it — so the proof is that construction
+plus four lines of faithfulness.
+
+**This did not depend on 191II at all**, contrary to the plan inherited from
+session 17's blocker table, which recommended doing it after `emod_effectus`.
+It was in fact the cheapest of the three.
+
+### 3. 191VIII — `exc_rng_eff` (published solution, `bsols.tex:1830`)
+
+Divergence class **(2) different route, in one step only.**
+
+The three element-level lemmas `rng_po1`, `rng_po2`, `rng_je` transcribe the
+solution's three paragraphs.  `rng_po1` is `f(r,s) = α(r,0) + β(0,s)` with the
+solution's own key step `α(1,0)β(0,1) = β(1,0)β(0,1) = β(0,0) = 0`; `rng_po2`
+is `g(r) = δ(r,0)` after `δ(0,s) = δ(0,s)δ(0,1) = 0`.
+
+The **one divergence** is in joint epicity.  The solution argues
+`f(0,0,m) = m·f(0,0,1) = m·g(0,0,1) = g(0,0,m)`, which uses that the initial
+ring *is* `ℤ` (that every element is an integer multiple of `1`).  We cannot
+use that: `RingCat.{u}` for `u > 0` has no `ℤ`, only `ULift ℤ`, and Mathlib's
+`⊥_ RingCat` is an abstract choice.  Replaced by an argument that needs only
+**initiality** and holds for the initial object of any category of rings:
+
+* the diagonal `Δ : Z → (Z×Z)×Z` is a ring map, so `f ∘ Δ` and `g ∘ Δ` are
+  both *the* map out of the initial `Z`, hence `f(c,c,c) = g(c,c,c)`;
+* `(0,0,c) = (0,0,1) · (c,c,c)`, so `f(0,0,c) = f(0,0,1)·f(c,c,c)` and the two
+  factors are already known to agree.
+
+A pleasant consequence: **`ℤ` is never needed anywhere in 191VIII**, and
+neither is `RingCat.zIsInitial` (which does not exist in Mathlib).  The whole
+solution goes through with `⊥_ RingCat` and `initialIsInitial`; the only fact
+about it used outside joint epicity is that its structure maps are ring
+homomorphisms.  `HasInitial`, `HasTerminal` and `HasBinaryProducts` for
+`RingCat` are already instances, so no limit theory had to be built either.
+
+`ERRATA.md` gains one row: the closing chain of the solution's joint-epicity
+paragraph (`bsols.tex:1925`) is garbled.
+
+### 4. 191II — `emod_effectus` (thesis proof, `eff.tex:2206–2280`)
+
+Divergence class **(1) faithful** throughout; the three parts of the thesis's
+proof (finite products, the two pushout diagrams, joint epicity) map one-to-one
+onto `emod_po1`, `emod_po2`, `emod_je`.
+
+New effect-module infrastructure, all `private` and all *local* instances
+(`attribute [local instance]`, so nothing leaks into the rest of the file):
+
+* `emod_smul_zero` (`λ·0 = 0`) and `emod_zero_smul` (`0·a = 0`) — both by
+  cancellation, as in `effectModule_bool_smul`;
+* `selfEffectModule : EffectModule M M` (`λ · a = λ ⊙ a`; the two distributive
+  axioms are the existing `emon_mul_ovee` and `emon_ovee_mul`),
+  `prodEffectModule`, `punitEffectModule`;
+* `emodInit E : M → E`, `λ ↦ λ·1`, with `emodInit_unique` — so `M` is initial
+  (`emodIsInitial`) and `{0=1}` final (`emodIsTerminal`) in `EMod_M`;
+* `emodFst`/`emodSnd`/`emodPair`/`emodProdMap`, and `emodPres`, the
+  `CoprodPres` for `EMod_Mᵒᵖ`.
+
+**The one thing the thesis waves through** is "it is easy to see `f` is
+(partially) additive" for `f(x,y) = α(x,0) ⋁ β(0,y)`.  In the Perp-relation
+style that is the *middle-four interchange*
+`(a ⋁ b) ⋁ (c ⋁ d) = (a ⋁ c) ⋁ (b ⋁ d)`, including the claim that the
+left-hand sums are defined at all.  It is proved once, as `ovee_interchange`,
+and the route is worth recording because it is short: turn the known sum into
+`PCM.IsSumOf [a,c,b,d]` (`isSumOf_four`), permute the list
+(`PCM.isSumOf_perm`), peel the resulting `IsSumOf [a,b,c,d]` back apart with
+`PCM.isSumOf_cons_iff`, and re-associate twice with `PCM.assoc_left`.  All five
+ingredients were already in the tree.
+
+Joint epicity follows the thesis exactly: `f(1,0,0) = g(1,0,0)` and
+`f(0,1,0) = g(0,1,0)` from the two hypotheses, `f(0,0,1) = f(1,1,0)ᵖ` by
+uniqueness of the orthosupplement, `(0,0,λ) = λ·(0,0,1)`, and
+`(a,b,c) = (a,0,0) ⋁ (0,b,0) ⋁ (0,0,c)`.
+
+### 5. Lean traps met (in addition to session 17's two)
+
+* **Structure-instance fields with implicits *after* an explicit binder.**
+  `EffectModule.smul_perp : ∀ (l : M) {a b : E}, Perp a b → …` cannot be
+  written `smul_perp l h := …` — `h` binds to `a`.  Use tactic mode
+  (`smul_perp := by intro l a b h; …`).  Leading implicits are fine
+  (`perp_map := fun {_ _} h => …`).
+* **`obtain ⟨m', rfl⟩ : ∃ m', m' = m`**, not `∃ m', m = m'`: the latter
+  substitutes `m'` away and you lose the retyped variable.
+* **`IsPushout` arguments in a non-`Type` category need `show … from …`**, not
+  `(… : X ⟶ Y)` ascription: with four arguments whose category is still a
+  metavariable, plain ascription is postponed and never forces `C`.
+* `exc_eamorphism_monotone` and `eabasics_le_perp_compat` return **existentials**
+  (the witness of `≼`, resp. the definedness proof), so they need `.choose`.
+* `emodhom_ext`-style extensionality must take `f g` **explicitly**: with them
+  implicit, `obtain ⟨…⟩ := f` clears the hypothesis that mentions `f`.
+
+### 6. Classification summary
+
+* **191VII** — class **1**.
+* **191II** — class **1** (the interchange lemma is filling a gap the thesis
+  calls easy, not a change of route).
+* **191VIII** — class **1** except joint epicity, which is class **2**
+  (ℤ-free, for the reason in §3).
+* No statement was changed; no statement was found false.
+
+### 7. Verification
+
+* `lake build` of all eight `B/Eff` modules: exit 0,
+  `Build completed successfully (8715 jobs)`.  The ~900 new lines produce no
+  warnings other than the file's pre-existing `linter.style.show` class.
+* `#print axioms` on `emod_effectus`, `emod_effectus_representation`,
+  `exc_rng_eff` and `effectusTotalForm_of_pres`: all
+  `[propext, Classical.choice, Quot.sound]`.
+* `#beff_leaks` over all eight modules:
+
+  ```
+  checked 1564 declarations under `Theses.B.Eff`
+  22 are themselves `sorry`; 0 depend on a `sorry`
+  hand-written indirect leaks: 0
+  non-standard axioms (outside propext/Classical.choice/Quot.sound/sorryAx): 0
+  ```
+
+* Per-file `sorry`s: Comparisons 3, Dagger 3, DiamondAmp 2, EffectAlgebras 6,
+  Effectus 2, Quotients 0, **StatesPredicates 6**, WStarCat 0 — **22**.
+* Nothing staged, nothing committed.
