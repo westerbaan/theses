@@ -33,6 +33,18 @@ version (as written it is silently weaker and useless as a validation).
 
 Bas: fixed. (A followup question is whether semilattices can be defined as abstract M-convex sets for some M. Probably not.)
 
+**REALIGNED 2026-08-15** (`bb9615f`, "Fix 192V3"): the false claim is deleted
+upstream and the surviving direction carries the new label
+`eff-semilattice-aconv`.  Our side (session 39): `semilattice_two_convex` is
+gone; in its place `two_convexComb_eq_eta`, `two_convex_nonempty` and
+`two_convex_unique` say what is actually true (`𝒟₂ ≅ Id`, so `AConv₂ ≅ Set`),
+and `semilattice_unitInterval_convex` — the thesis's surviving claim — now
+*pins* the structure map to the join of the support instead of merely asserting
+`Nonempty (MConvex I L)`.  The second sentence of the corrected item
+("cancellative iff `x = y` for all `x,y`") is proved as
+`semilattice_cancellative_iff`.  The followup question is discussed in
+PROVING-LOG session 39.
+
 ### B2. 227III.1 — exactness condition names the wrong map
 `eff.tex:7629`.  For `A —f→ B —g→ C`, exactness at `B` is stated as
 `IM^⊥ f = ⌈1 ∘ f⌉`; it must be `⌈1 ∘ g⌉` — as printed the condition does not
@@ -300,6 +312,22 @@ This is our transcription, not a thesis defect.  *Decision needed*: restate to
 pin `map`/`η`/`μ` (we would then prove them — the intended witness already
 exists).
 
+**ANSWERED 2026-08-15 by Bas**: "yes, please fix the statements."  Done in
+session 39, by dropping the existential shape entirely — it is exactly what
+admitted the transported impostor, and with `F.obj X = 𝒟_M X` only
+*propositional* one cannot even phrase the condition on `F.map` without a cast.
+`exc_dm_effectus_functor : Type u ⥤ Type u` and
+`exc_dm_effectus_monad : Monad (Type u)` are now **definitions** whose object
+part is literally `MConvexComb M`, whose action on maps is literally
+`MConvexComb.map`, and whose `η`, `μ` are literally `MConvexComb.eta`,
+`MConvexComb.mu` — pinned by the `rfl` lemmas `exc_dm_effectus_functor_obj`,
+`_functor_map`, `_monad_toFunctor`, `_monad_eta`, `_monad_mu`.  The functor and
+monad laws are `map_id`/`map_comp` and `mu_map_eta`/`mu_eta`/`mu_mu`, all
+already proved, so .1 and .2 are **closed**.  `exc_dm_effectus_kleisli` is now
+stated about `Kleisli (exc_dm_effectus_monad M)` — no longer vacuous-by-transport
+— and remains `sorry`: it is the starred exercise itself (a full
+`EffectusTotalStructure` on `Kl 𝒟_M`), not something .2 hands us.
+
 ### B7. 194I — is the trivial effect monoid (`1 = 0`) admitted?
 `eff.tex:2974`.  The proof says "As `𝒟_M ∅ = ∅`, the empty set is … the initial
 object of `AConv_M`".  When `1 = 0` the empty formal combination sums to `1`, so
@@ -399,19 +427,50 @@ Three options, and a **recommendation**:
 Not done unilaterally because option 2 edits `A/CStar`, which is upstream of
 every other chapter and was frozen while workers were live.
 
-### D2. `PaschkeModule` is internally inconsistent with `IsPaschkeDilationOf`
-`Theses/B/Dils/Paschke.lean` (warning block at the head of the file).  Our
-mirroring of parsec 1540 is off by a `star`.  The fields `inner_tprod`,
-`ρ_tprod` and `h_def` together *prove* `h (ρ a) = φ (star a)`, while
-`IsPaschkeDilationOf` in `Stinespring.lean` asks for `h (ρ a) = φ a`.  So
-**`existence_paschke_5` is false as stated** once `PaschkeModule φ` is
-inhabited, and `existence_paschke_4`'s `hφ` is off by the same `star`.
+### D2. `PaschkeModule` cannot carry `ρ : NMIUMap 𝒜 (Ba ℬ X)` — RULED, and the diagnosis was wrong
+**Ruling (Bas, 2026-08-15):** *"the definition of Paschke dilation should not
+include the star"* — so `IsPaschkeDilationOf` (`Stinespring.lean:1179`,
+`∀ a, D.h (D.ρ a) = φ a`) **is correct as it stands** and the defect is on the
+`PaschkeModule` side.  Investigated 2026-08-15 (session 15); the defect turned
+out to be *structural*, not a misplaced `star`, and is still open.
 
-Machine-checked, and **no single field can be repaired**: `inner_tprod` is
-forced by positivity of `⟨v,v⟩`, `h_def` by ℂ-linearity of `h`, `ρ_tprod` by
-multiplicativity of `ρ`.  The fix is a coordinated re-mirroring of the bundle,
-touching **~10 statements across two files** — which is why it was diagnosed
-and flagged rather than done unilaterally.
+What was previously recorded here — that the fields prove
+`h (ρ a) = φ (star a)`, repairable by a coordinated re-mirroring — was
+**wrong in a stronger direction**.  Machine-checked in `Paschke.lean`:
+
+* `paschke_module_phi_eq_zero`: the fields force **`φ = 0`**.  `inner_tprod`'s
+  right-hand side `b' φ(a'* a) b*` is ℂ-*linear* in `a`, while
+  `⟨·,·⟩` is conjugate-linear in its first argument and
+  `PhiCompatible.smul_complex` makes `tprod` ℂ-linear in `a`; at `c = i` this
+  gives `2i·φ(a) = 0`.  So `PaschkeModule φ` is uninhabited for every non-zero
+  `φ`, `existence_paschke` is false, and all nine statements with a
+  `PaschkeModule` hypothesis are vacuous.
+* No edit of `inner_tprod`/`h_def` repairs it.  `tprod a b = b • tprod a 1`
+  forces `⟨a ⊗ b, a' ⊗ b'⟩ = b' M(a,a') b*`; positivity of `⟨v,v⟩` in
+  Mathlib's left-action convention leaves exactly two candidates,
+  `M(a,a') = φ(a'* a)` (needs `tprod` *conjugate*-linear in `a`, and then `ρ`
+  is conjugate-linear) and `M(a,a') = φ(a' a*)` (compatible with the ℂ-linear
+  `tprod`).  For the second, `paschke_rho_forces_cyclic` shows `ρ_tprod` plus
+  adjointability of `ρ(a₀)` forces `φ(a' a* a₀*) = φ(a₀* a' a*)` for all
+  `a, a', a₀` — false already for `φ = id` on `M₂`.
+* **Root cause.**  Mirroring a right Hilbert ℬ-module to a left one is passage
+  to the *conjugate* module, which turns the thesis's *left* `𝒜`-action into a
+  *right* one.  For a left Hilbert ℬ-module `X`, `𝒷ᵃ(X)` is anti-isomorphic to
+  the thesis's `𝒷ᵃ(X)` (for `X = ℬ` the adjointables are the *right*
+  multiplications, so `𝒷ᵃ(ℬ) ≅ ℬᵒᵖ`).  So the Paschke module carries an
+  nmiu-map `𝒜 → 𝒷ᵃ(𝒜 ⊗_φ ℬ)ᵐᵒᵖ`, not `𝒜 → 𝒷ᵃ(𝒜 ⊗_φ ℬ)`, and `𝒜 ≅ 𝒜ᵒᵖ` fails
+  for general von Neumann algebras (Connes).
+
+*Decision still needed (Bas)*: adopt
+`ρ : NMIUMap 𝒜 (Ba ℬ X)ᵐᵒᵖ`, `ρ_tprod : ρ(a₀)(a ⊗ b) = (a a₀) ⊗ b`,
+`inner_tprod : ⟨a ⊗ b, a' ⊗ b'⟩ = b' φ(a' a*) b*` (which gives `h (ρ a) = φ a`
+with `h_def` *unchanged*), and the matching `PhiCompatible.bound`; the
+`PaschkeTriple` built in `existence_paschke_5` then has
+`P = (Ba ℬ M.X)ᵐᵒᵖ`, which needs `PartialOrder`/`StarOrderedRing`/
+`VonNeumannAlgebra` instances on the opposite algebra (Mathlib has
+`CStarAlgebra Aᵐᵒᵖ`; the rest is new work).  The alternative — making the whole
+`B/Dils` module convention right-handed, or building over `ℬᵐᵒᵖ` — is a
+chapter-wide refactor.
 
 A *separate* and unambiguous defect in the same area **has been fixed**:
 `PhiCompatible.bound` was mirrored on the wrong side, which made
@@ -420,9 +479,9 @@ Counterexample (re-derived independently): `φ = id` on `M₂`, `a = e₀₀`,
 `b = e₁₀` gives `‖b* φ(a*a) b‖ = ‖ab‖² = 0` while `inner_tprod` forces
 `‖b φ(a*a) b*‖ = ‖e₁₁‖ = 1`, i.e. `1 ≤ r·0`.
 
-*Decision needed (Bas)*: which of the two candidate re-mirrorings to adopt —
-see PROVING-LOG session 14 §5.  **Until then, nothing should be built on
-`PaschkeModule`, `PaschkeTriple` or `IsPaschkeDilationOf`.**
+**Until the ruling above is implemented, nothing should be built on
+`PaschkeModule`.**  `PaschkeTriple` and `IsPaschkeDilationOf` themselves are
+fine and may be used (the earlier blanket warning on them is withdrawn).
 
 ## Thesis A (`cstar.tex`, `vn.tex`, `proc.tex`) — remaining after the 2026-08-13 rulings
 

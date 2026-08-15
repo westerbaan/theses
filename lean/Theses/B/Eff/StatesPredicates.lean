@@ -1594,7 +1594,7 @@ section RngAlgebra
 
 variable {Zc R S G : Type u} [Ring Zc] [Ring R] [Ring S] [Ring G]
 
-/-- **191VIII** (`exc-rng-eff`, bsols.tex:1830), the left pushout square,
+/-- **191VIII** (`exc-rng-eff`, bsols.tex:1833), the left pushout square,
 element level: given `α : R × Z → G` and `β : Z × S → G` agreeing on
 `Z × Z`, the map `f(r,s) = α(r,0) + β(0,s)` is the unique ring homomorphism
 `R × S → G` with `f ∘ (id × !) = α` and `f ∘ (! × id) = β`. -/
@@ -1686,7 +1686,7 @@ private theorem rng_po1 (iR : Zc →+* R) (iS : Zc →+* S)
       refine Prod.ext ?_ ?_ <;> simp
     rw [e, map_add, hf1, hf2]
 
-/-- **191VIII** (`exc-rng-eff`, bsols.tex:1830), the right pushout square,
+/-- **191VIII** (`exc-rng-eff`, bsols.tex:1833), the right pushout square,
 element level: `g(r) = δ(r,0)` is the unique ring homomorphism `R → G` with
 `g ∘ π₁ = δ`. -/
 private theorem rng_po2 (iR : Zc →+* R) (iS : Zc →+* S) (j : Zc →+* G)
@@ -1735,7 +1735,7 @@ private theorem rng_po2 (iR : Zc →+* R) (iS : Zc →+* S) (j : Zc →+* G)
     show h' r = δ (r, 0)
     exact hf1 r 0
 
-/-- **191VIII** (`exc-rng-eff`, bsols.tex:1830), joint epicity of
+/-- **191VIII** (`exc-rng-eff`, bsols.tex:1833), joint epicity of
 `⟨π₁,π₂,π₂⟩, ⟨π₂,π₁,π₂⟩ : Z × Z → Z × Z × Z`, element level. -/
 private theorem rng_je (hinit : ∀ f g : Zc →+* R, f = g)
     (f g : (Zc × Zc) × Zc →+* R)
@@ -2391,7 +2391,7 @@ theorem mu_mu {X : Type v}
   exact isSumOf_unique h8 h9
 
 open Classical in
-/-- **192III.1** (`exc-dm-effectus`, bsols.tex:2013): naturality of `η`:
+/-- **192III.1** (`exc-dm-effectus`, bsols.tex:2016): naturality of `η`:
 `𝒟_M f ∘ η_X = η_Y ∘ f`. -/
 theorem map_eta {X : Type v} {Y : Type w} (x : X) (f : X → Y) :
     (eta x : MConvexComb M X).map f = eta (f x) := by
@@ -2438,7 +2438,7 @@ theorem map_eta {X : Type v} {Y : Type w} (x : X) (f : X → Y) :
     rw [if_neg hz]
 
 open Classical in
-/-- **192III.2** (`exc-dm-effectus`, bsols.tex:2026): naturality of `μ`:
+/-- **192III.2** (`exc-dm-effectus`, bsols.tex:2029): naturality of `μ`:
 `𝒟_M f ∘ μ_X = μ_Y ∘ 𝒟_M 𝒟_M f`.  (The author's proof: expand `μ`, exchange
 the two sums, contract the inner one to `(𝒟_M f)(φ)(y)`, and regroup the
 outer one along the fibres of `φ ↦ 𝒟_M f (φ)`.) -/
@@ -2585,7 +2585,7 @@ theorem mu_map {X : Type v} {Y : Type w}
   exact isSumOf_unique h8 h9
 
 open Classical in
-/-- **192III.2** (`exc-dm-effectus`, bsols.tex:2075): the right unit law of
+/-- **192III.2** (`exc-dm-effectus`, bsols.tex:2078): the right unit law of
 the monad `𝒟_M`: `μ ∘ 𝒟_M η = id`. -/
 theorem mu_map_eta {X : Type v} (p : MConvexComb M X) :
     mu (p.map eta) = p := by
@@ -3040,63 +3040,89 @@ section DMMonad
 
 variable (M : Type u) [EffectMonoid M]
 
-/-- **192III.1** (`exc-dm-effectus`, eff.tex:2380, Exercise\*): `𝒟_M` is a
-functor `Set → Set` (with the action of `map`). -/
-theorem exc_dm_effectus_functor :
-    ∃ F : Type u ⥤ Type u, ∀ X : Type u, F.obj X = MConvexComb M X :=
-  ⟨{ obj := fun X => MConvexComb M X
-     map := fun {_ _} f => TypeCat.ofHom fun p => p.map (TypeCat.Hom.hom f)
-     map_id := fun X => by
-       ext p
-       exact MConvexComb.map_id p
-     map_comp := fun f g => by
-       ext p
-       exact (MConvexComb.map_comp p (⇑(TypeCat.Hom.hom f))
-         (⇑(TypeCat.Hom.hom g))).symm },
-   fun _ => rfl⟩
+/-- **192III.1** (`exc-dm-effectus`, eff.tex:2380, Exercise\*): `𝒟_M` *is* a
+functor `Set → Set`, with `(𝒟_M f)(p)(y) = ⋁_{x; f x = y} p(x)`, i.e. with
+`MConvexComb.map` as its action on maps.
+
+The structure is given directly rather than existentially: the object part is
+*literally* `MConvexComb M` and the action on maps is *literally*
+`MConvexComb.map` (`exc_dm_effectus_functor_obj`, `_map`, both `rfl`).  Until
+session 10 this read `∃ F : Type u ⥤ Type u, ∀ X, F.obj X = MConvexComb M X`,
+which constrains only the object part and is satisfied by any functor
+transported along a bijection — see QUESTIONS.md B6 and PROVING-LOG. -/
+noncomputable def exc_dm_effectus_functor : Type u ⥤ Type u where
+  obj X := MConvexComb M X
+  map {_ _} f := TypeCat.ofHom fun p => p.map (TypeCat.Hom.hom f)
+  map_id := fun X => by
+    ext p
+    exact MConvexComb.map_id p
+  map_comp := fun f g => by
+    ext p
+    exact (MConvexComb.map_comp p (⇑(TypeCat.Hom.hom f))
+      (⇑(TypeCat.Hom.hom g))).symm
+
+@[simp] theorem exc_dm_effectus_functor_obj (X : Type u) :
+    (exc_dm_effectus_functor M).obj X = MConvexComb M X := rfl
+
+@[simp] theorem exc_dm_effectus_functor_map {X Y : Type u} (f : X ⟶ Y)
+    (p : MConvexComb M X) :
+    TypeCat.Hom.hom ((exc_dm_effectus_functor M).map f) p =
+      p.map (TypeCat.Hom.hom f) := rfl
 
 /-- **192III.2** (`exc-dm-effectus`, eff.tex:2397, Exercise\*):
-`(𝒟_M, η, μ)` is a monad on `Set`. -/
-theorem exc_dm_effectus_monad :
-    ∃ T : Monad (Type u), ∀ X : Type u,
-      T.toFunctor.obj X = MConvexComb M X := by
-  refine ⟨{ toFunctor :=
-              { obj := fun X => MConvexComb M X
-                map := fun {_ _} f => TypeCat.ofHom fun p => p.map (TypeCat.Hom.hom f)
-                map_id := fun X => by
-                  ext p
-                  exact MConvexComb.map_id p
-                map_comp := fun f g => by
-                  ext p
-                  exact (MConvexComb.map_comp p (⇑(TypeCat.Hom.hom f))
-                    (⇑(TypeCat.Hom.hom g))).symm }
-            η := { app := fun X =>
-                     TypeCat.ofHom (MConvexComb.eta : X → MConvexComb M X)
-                   naturality := fun X Y f => by
-                     ext x
-                     exact (MConvexComb.map_eta x (⇑(TypeCat.Hom.hom f))).symm }
-            μ := { app := fun X =>
-                     TypeCat.ofHom
-                       (MConvexComb.mu :
-                         MConvexComb M (MConvexComb M X) → MConvexComb M X)
-                   naturality := fun X Y f => by
-                     ext Φ
-                     exact (MConvexComb.mu_map Φ (⇑(TypeCat.Hom.hom f))).symm }
-            assoc := fun X => by
-              ext Φ
-              exact (MConvexComb.mu_mu Φ).symm
-            left_unit := fun X => by
-              ext p
-              exact MConvexComb.mu_eta p
-            right_unit := fun X => by
-              ext p
-              exact MConvexComb.mu_map_eta p }, fun _ => rfl⟩
+`(𝒟_M, η, μ)` is a monad on `Set`, with `η(x) = 1|x⟩` and
+`μ(Φ)(x) = ⋁_φ Φ(φ) ⊙ φ(x)`.
+
+Again the structure is pinned, not existentially quantified: its functor part
+is `exc_dm_effectus_functor` itself, and `η`, `μ` are `MConvexComb.eta`,
+`MConvexComb.mu` (the three `rfl` lemmas below).  The monad laws are
+`mu_map_eta`, `mu_eta` and `mu_mu`. -/
+noncomputable def exc_dm_effectus_monad : Monad (Type u) where
+  toFunctor := exc_dm_effectus_functor M
+  η := { app := fun X =>
+           TypeCat.ofHom (MConvexComb.eta : X → MConvexComb M X)
+         naturality := fun X Y f => by
+           ext x
+           exact (MConvexComb.map_eta x (⇑(TypeCat.Hom.hom f))).symm }
+  μ := { app := fun X =>
+           TypeCat.ofHom
+             (MConvexComb.mu :
+               MConvexComb M (MConvexComb M X) → MConvexComb M X)
+         naturality := fun X Y f => by
+           ext Φ
+           exact (MConvexComb.mu_map Φ (⇑(TypeCat.Hom.hom f))).symm }
+  assoc := fun X => by
+    ext Φ
+    exact (MConvexComb.mu_mu Φ).symm
+  left_unit := fun X => by
+    ext p
+    exact MConvexComb.mu_eta p
+  right_unit := fun X => by
+    ext p
+    exact MConvexComb.mu_map_eta p
+
+@[simp] theorem exc_dm_effectus_monad_toFunctor :
+    (exc_dm_effectus_monad M).toFunctor = exc_dm_effectus_functor M := rfl
+
+@[simp] theorem exc_dm_effectus_monad_eta {X : Type u} (x : X) :
+    TypeCat.Hom.hom ((exc_dm_effectus_monad M).η.app X) x =
+      (MConvexComb.eta x : MConvexComb M X) := rfl
+
+@[simp] theorem exc_dm_effectus_monad_mu {X : Type u}
+    (Φ : MConvexComb M (MConvexComb M X)) :
+    TypeCat.Hom.hom ((exc_dm_effectus_monad M).μ.app X) Φ =
+      MConvexComb.mu Φ := rfl
 
 /-- **192III.3** (`exc-dm-effectus`, eff.tex:2410, Exercise\*): the Kleisli
-category of `𝒟_M` is an effectus (in total form) with scalars `M`. -/
-theorem exc_dm_effectus_kleisli (T : Monad (Type u))
-    (hT : ∀ X : Type u, T.toFunctor.obj X = MConvexComb M X) :
-    Nonempty (EffectusTotalStructure (Kleisli T)) := sorry
+category of `𝒟_M` is an effectus (in total form) with scalars `M`.
+
+Now stated about `exc_dm_effectus_monad` itself.  Until session 10 it was
+stated for an *arbitrary* monad `T` agreeing with `𝒟_M` on objects, which is
+**false**: transporting any monad along a bijection `T.obj X ≃ 𝒟_M X`
+satisfies that hypothesis while `Kl T` need not be an effectus (QUESTIONS.md
+B6).  The remaining `sorry` is the exercise itself. -/
+theorem exc_dm_effectus_kleisli :
+    Nonempty (EffectusTotalStructure (Kleisli (exc_dm_effectus_monad M))) := sorry
 
 end DMMonad
 
@@ -3225,80 +3251,102 @@ theorem convex_subset_mconvex {V : Type u} [AddCommGroup V] [Module ℝ V]
     linarith
   exact Subtype.ext (smul_right_injective V hl' (add_left_cancel heq'))
 
-/-- **192V.3** (eff.tex:2577, Examples): every (join-)semilattice is an
-abstract `2`-convex set (in fact semilattices are *exactly* the abstract
-`2`-convex sets). -/
-theorem semilattice_two_convex (L : Type u) [SemilatticeSup L] :
-    Nonempty (MConvex Bool L) := by
+/-- **Erratum to 192V.3** (`eff-semilattice-aconv`): over the two-element
+effect monoid `2` every formal convex combination is a Dirac distribution,
+so `𝒟₂ ≅ Id`.  Indeed by Definition 192II the coefficients of a formal
+combination sum to `1` in the *partial* effect algebra `2`, where `1 ⋁ 1` is
+undefined, so the support is a singleton. -/
+theorem two_convexComb_eq_eta {X : Type v} (p : MConvexComb Bool X) :
+    ∃ x : X, p = MConvexComb.eta x := by
   classical
-  -- Over `M = 2` the only summable family of non-zero scalars is a single
-  -- `1`, so every formal `2`-convex combination is a Dirac distribution.
-  have hdirac : ∀ (X : Type u) (p : MConvexComb Bool X),
-      ∃ x : X, p = MConvexComb.eta x := by
-    intro X p
-    obtain ⟨l, hnd, hmem, hsum⟩ := p.sum_one
-    have h0 : (0 : Bool) = false := rfl
-    have hone : ∀ y : X, y ∈ l → p.toFun y = true := by
-      intro y hy
-      rcases Bool.eq_false_or_eq_true (p.toFun y) with hb | hb
-      · exact hb
-      · exact absurd (hb.trans h0.symm) ((hmem y).mp hy)
-    -- the support list is a singleton
-    have hsingle : ∃ a : X, l = [a] := by
-      match l, hnd, hmem, hsum with
-      | [], _, _, hsum =>
-        rw [List.map_nil, PCM.isSumOf_nil_iff] at hsum
-        exact absurd hsum.symm (by decide)
-      | a :: t, _, hmem', hsum =>
-        rw [List.map_cons, PCM.isSumOf_cons_iff] at hsum
-        obtain ⟨s, hs, hperp, he⟩ := hsum
-        have hpa : p.toFun a = true := hone a (List.mem_cons_self ..)
-        have hs0 : s = false := by
-          have : p.toFun a ⊓ s = ⊥ := hperp
-          rw [hpa] at this
-          revert this; cases s <;> simp [show (⊥ : Bool) = false from rfl]
-        subst hs0
-        refine ⟨a, ?_⟩
-        match t, hs with
-        | [], _ => rfl
-        | b :: t', hs =>
-          rw [List.map_cons, PCM.isSumOf_cons_iff] at hs
-          obtain ⟨s', _, _, he'⟩ := hs
-          have hpb : p.toFun b = true := hone b (List.mem_cons_of_mem _
-            (List.mem_cons_self ..))
-          have hcon : p.toFun b ⊔ s' = false := he'
-          rw [hpb] at hcon
-          exact absurd hcon (by simp)
-    obtain ⟨a, rfl⟩ := hsingle
-    refine ⟨a, MConvexComb.ext (funext fun y => ?_)⟩
-    show p.toFun y = if y = a then (1 : Bool) else 0
-    by_cases hy : y = a
-    · subst hy; rw [if_pos rfl]; exact hone y (List.mem_cons_self ..)
-    · rw [if_neg hy]
-      by_contra hcon
-      exact hy (List.mem_singleton.mp ((hmem y).mpr hcon))
-  -- `η` is injective (as `1 ≠ 0` in `2`), so `h p := the `x` with `p = η x``
-  -- inverts `η`, and the algebra laws are then formal
-  have hinj : ∀ x y : L, (MConvexComb.eta x : MConvexComb Bool L) =
-      MConvexComb.eta y → x = y := by
-    intro x y hxy
-    by_contra hne
-    have hval := congrArg (fun q : MConvexComb Bool L => q.toFun x) hxy
-    have hL : (MConvexComb.eta x : MConvexComb Bool L).toFun x = 1 := by
-      show (if x = x then (1 : Bool) else 0) = 1
-      rw [if_pos rfl]
-    have hR : (MConvexComb.eta y : MConvexComb Bool L).toFun x = 0 := by
-      show (if x = y then (1 : Bool) else 0) = 0
-      rw [if_neg hne]
-    rw [hL, hR] at hval
-    exact absurd hval (by decide)
-  have heta : ∀ x : L, (hdirac L (MConvexComb.eta x)).choose = x := fun x =>
-    (hinj _ _ (hdirac L (MConvexComb.eta x)).choose_spec.symm)
-  refine ⟨⟨fun p => (hdirac L p).choose, heta, fun Φ => ?_⟩⟩
+  obtain ⟨l, hnd, hmem, hsum⟩ := p.sum_one
+  have h0 : (0 : Bool) = false := rfl
+  have hone : ∀ y : X, y ∈ l → p.toFun y = true := by
+    intro y hy
+    rcases Bool.eq_false_or_eq_true (p.toFun y) with hb | hb
+    · exact hb
+    · exact absurd (hb.trans h0.symm) ((hmem y).mp hy)
+  -- the support list is a singleton
+  have hsingle : ∃ a : X, l = [a] := by
+    match l, hnd, hmem, hsum with
+    | [], _, _, hsum =>
+      rw [List.map_nil, PCM.isSumOf_nil_iff] at hsum
+      exact absurd hsum.symm (by decide)
+    | a :: t, _, hmem', hsum =>
+      rw [List.map_cons, PCM.isSumOf_cons_iff] at hsum
+      obtain ⟨s, hs, hperp, he⟩ := hsum
+      have hpa : p.toFun a = true := hone a (List.mem_cons_self ..)
+      have hs0 : s = false := by
+        have : p.toFun a ⊓ s = ⊥ := hperp
+        rw [hpa] at this
+        revert this; cases s <;> simp [show (⊥ : Bool) = false from rfl]
+      subst hs0
+      refine ⟨a, ?_⟩
+      match t, hs with
+      | [], _ => rfl
+      | b :: t', hs =>
+        rw [List.map_cons, PCM.isSumOf_cons_iff] at hs
+        obtain ⟨s', _, _, he'⟩ := hs
+        have hpb : p.toFun b = true := hone b (List.mem_cons_of_mem _
+          (List.mem_cons_self ..))
+        have hcon : p.toFun b ⊔ s' = false := he'
+        rw [hpb] at hcon
+        exact absurd hcon (by simp)
+  obtain ⟨a, rfl⟩ := hsingle
+  refine ⟨a, MConvexComb.ext (funext fun y => ?_)⟩
+  show p.toFun y = if y = a then (1 : Bool) else 0
+  by_cases hy : y = a
+  · subst hy; rw [if_pos rfl]; exact hone y (List.mem_cons_self ..)
+  · rw [if_neg hy]
+    by_contra hcon
+    exact hy (List.mem_singleton.mp ((hmem y).mpr hcon))
+
+/-- `η` is injective over `2` (as `1 ≠ 0` there). -/
+theorem two_eta_injective {X : Type v} :
+    Function.Injective (MConvexComb.eta : X → MConvexComb Bool X) := by
+  classical
+  intro x y hxy
+  by_contra hne
+  have hval := congrArg (fun q : MConvexComb Bool X => q.toFun x) hxy
+  have hL : (MConvexComb.eta x : MConvexComb Bool X).toFun x = 1 := by
+    show (if x = x then (1 : Bool) else 0) = 1
+    rw [if_pos rfl]
+  have hR : (MConvexComb.eta y : MConvexComb Bool X).toFun x = 0 := by
+    show (if x = y then (1 : Bool) else 0) = 0
+    rw [if_neg hne]
+  rw [hL, hR] at hval
+  exact absurd hval (by decide)
+
+/-- **Erratum to 192V.3** (`eff-semilattice-aconv`, eff.tex:2577, Examples):
+the thesis used to claim "semilattices are exactly the abstract `2`-convex
+sets"; that claim is **false** and has been deleted (see the `erratum` on
+`eff-semilattice-aconv`, and QUESTIONS.md B1).  What is true is that the
+abstract `2`-convex sets are just *sets*: **every** type carries an abstract
+`2`-convex structure — no semilattice (indeed no structure at all) is
+needed.  Together with `two_convex_unique` this says `AConv₂ ≅ Set`. -/
+theorem two_convex_nonempty (X : Type v) : Nonempty (MConvex Bool X) := by
+  classical
+  -- `h p :=` the unique `x` with `p = η x`; the algebra laws are then formal
+  have heta : ∀ x : X, (two_convexComb_eq_eta (MConvexComb.eta x)).choose = x :=
+    fun x => two_eta_injective
+      (two_convexComb_eq_eta (MConvexComb.eta x)).choose_spec.symm
+  refine ⟨⟨fun p => (two_convexComb_eq_eta p).choose, heta, fun Φ => ?_⟩⟩
   -- `Φ = η(φ)`, so `μ Φ = φ` and `𝒟(h)(Φ) = η(h φ)`
-  obtain ⟨φ, hφ⟩ := hdirac _ Φ
+  obtain ⟨φ, hφ⟩ := two_convexComb_eq_eta Φ
   subst hφ
   rw [MConvexComb.mu_eta, MConvexComb.map_eta, heta]
+
+/-- **Erratum to 192V.3**: the abstract `2`-convex structure on a set is
+moreover *unique* (`h` is forced to invert `η`), so the forgetful functor
+`AConv₂ → Set` is an isomorphism and carries no semilattice information. -/
+theorem two_convex_unique {X : Type v} (s t : MConvex Bool X) : s = t := by
+  obtain ⟨hs, hse, -⟩ := s
+  obtain ⟨ht, hte, -⟩ := t
+  have hfun : hs = ht := funext fun p => by
+    obtain ⟨x, rfl⟩ := two_convexComb_eq_eta p
+    rw [hse, hte]
+  subst hfun
+  rfl
 
 /-- Helper for 192V.3: in `[0,1]` a finite partial sum vanishes iff all its
 summands do (it is the real sum of non-negative reals). -/
@@ -3374,10 +3422,17 @@ theorem listJoin_congr {L : Type u} [SemilatticeSup L] {a b : L}
   le_antisymm ((listJoin_le_iff _ _ _).mpr fun y hy => le_listJoin b m ((h y).mp hy))
     ((listJoin_le_iff _ _ _).mpr fun y hy => le_listJoin a l ((h y).mpr hy))
 
-/-- **192V.3** (eff.tex:2581, Examples): every semilattice is also an
-abstract `[0,1]`-convex set with `h(⋁ᵢ λᵢ|xᵢ⟩) = ⋁_{i : λᵢ ≠ 0} xᵢ`. -/
+/-- **192V.3** (`eff-semilattice-aconv`, eff.tex:2577, Examples): every
+semilattice `(L, ∨)` is an abstract `[0,1]`-convex set with
+`h(λ₁|x₁⟩ ⋁ ⋯ ⋁ λₙ|xₙ⟩) = ⋁_{i : λᵢ ≠ 0} xᵢ`.
+
+The structure map is *pinned down*: the second component says that `h p` is
+the join of (any enumeration `a :: l` of) the support of `p`.  Merely
+asserting `Nonempty (MConvex I L)` would be much weaker — it does not
+mention the join at all. -/
 theorem semilattice_unitInterval_convex (L : Type u) [SemilatticeSup L] :
-    Nonempty (MConvex I L) := by
+    ∃ st : MConvex I L, ∀ (p : MConvexComb I L) (a : L) (l : List L),
+      (∀ x : L, x ∈ a :: l ↔ p.toFun x ≠ 0) → st.h p = listJoin a l := by
   classical
   have hI0 : ((0 : I) : ℝ) = 0 := rfl
   have hI1 : ((1 : I) : ℝ) = 1 := rfl
@@ -3407,7 +3462,7 @@ theorem semilattice_unitInterval_convex (L : Type u) [SemilatticeSup L] :
   have hH : ∀ (p : MConvexComb I L) (a : L) (l : List L),
       (∀ x : L, x ∈ a :: l ↔ p.toFun x ≠ 0) → H p = listJoin a l :=
     fun p a l hal => listJoin_congr fun x => (hsel L p x).trans (hal x).symm
-  refine ⟨⟨H, fun x => ?_, fun Φ => ?_⟩⟩
+  refine ⟨⟨H, fun x => ?_, fun Φ => ?_⟩, hH⟩
   · -- `η x` is supported on `{x}`
     have hsp : ∀ y : L, y ∈ [x] ↔ (MConvexComb.eta x : MConvexComb I L).toFun y ≠ 0 := by
       intro y
@@ -3521,8 +3576,77 @@ theorem semilattice_unitInterval_convex (L : Type u) [SemilatticeSup L] :
       exact le_listJoin _ _ ((hbig z).mpr
         ((hmu z).mpr ⟨φ, hφ, (hsuppmem φ z).mp hz⟩))
 
+/-- **192V.3**, second half (`eff-semilattice-aconv`, eff.tex:2585): a
+semilattice `L` is cancellative as an abstract `[0,1]`-convex set (with the
+join structure of `semilattice_unitInterval_convex`) if and only if `x = y`
+for all `x, y ∈ L`.
 
-/-- **192V.4** (eff.tex:2591, Examples): every cancellative abstract
+Only-if: take `λ = ½` and mix `x` resp. `y` into `x ⊔ y`; both mixtures have
+join `x ⊔ y`, so cancellativity forces `x = y`. -/
+theorem semilattice_cancellative_iff (L : Type u) [SemilatticeSup L]
+    (st : MConvex I L)
+    (hst : ∀ (p : MConvexComb I L) (a : L) (l : List L),
+      (∀ x : L, x ∈ a :: l ↔ p.toFun x ≠ 0) → st.h p = listJoin a l) :
+    st.Cancellative ↔ ∀ x y : L, x = y := by
+  classical
+  refine ⟨fun hc x y => ?_, fun hall y x₁ x₂ l _ _ => hall x₁ x₂⟩
+  have hI0 : ((0 : I) : ℝ) = 0 := rfl
+  set half : I := ⟨1/2, by norm_num, by norm_num⟩ with hhalf
+  have hne0 : half ≠ 0 := fun hc' => by
+    have := congrArg Subtype.val hc'; rw [hI0] at this; norm_num at this
+  have hneo : orth half ≠ 0 := fun hc' => by
+    have hv : (1 : ℝ) - (1/2 : ℝ) = 0 := by
+      have := congrArg Subtype.val hc'; rw [hI0] at this; exact this
+    norm_num at hv
+  have hne1 : half ≠ 1 := fun hc' => by
+    have hv : (1/2 : ℝ) = 1 := congrArg Subtype.val hc'
+    norm_num at hv
+  -- `h(λ|a⟩ ⋁ λᵖ|w⟩) = a ⊔ w` whenever `λ ≠ 0 ≠ λᵖ`
+  have hIne : (1 : I) ≠ 0 := fun h => by
+    have hv : (1 : ℝ) = 0 := congrArg Subtype.val h
+    norm_num at hv
+  have key : ∀ a w : L, st.h (MConvexComb.bin half a w) = a ⊔ w := by
+    intro a w
+    by_cases haw : a = w
+    · subst haw
+      have hsp : ∀ x : L,
+          x ∈ [a] ↔ (MConvexComb.bin half a a).toFun x ≠ 0 := by
+        intro x
+        rw [MConvexComb.bin_self]
+        show x ∈ [a] ↔ (if x = a then (1 : I) else 0) ≠ 0
+        rw [List.mem_singleton]
+        by_cases hx : x = a
+        · rw [if_pos hx]
+          exact ⟨fun _ => hIne, fun _ => hx⟩
+        · rw [if_neg hx]
+          exact ⟨fun h => absurd h hx, fun h => absurd rfl h⟩
+      rw [hst _ a [] hsp, sup_idem]
+      rfl
+    · have hsp : ∀ x : L,
+          x ∈ [a, w] ↔ (MConvexComb.bin half a w).toFun x ≠ 0 := by
+        intro x
+        rw [MConvexComb.bin_apply half haw x]
+        by_cases hxa : x = a
+        · rw [if_pos hxa]
+          exact ⟨fun _ => hne0, fun _ => by rw [hxa]; exact List.mem_cons_self ..⟩
+        · rw [if_neg hxa]
+          by_cases hxw : x = w
+          · rw [if_pos hxw]
+            exact ⟨fun _ => hneo, fun _ =>
+              List.mem_cons_of_mem _ (List.mem_singleton.mpr hxw)⟩
+          · rw [if_neg hxw]
+            refine ⟨fun h => ?_, fun h => absurd rfl h⟩
+            rcases List.mem_cons.mp h with h' | h'
+            · exact absurd h' hxa
+            · exact absurd (List.mem_singleton.mp h') hxw
+      rw [hst _ a [w] hsp]
+      show w ⊔ a = a ⊔ w
+      exact sup_comm w a
+  refine hc (x ⊔ y) x y half hne1 ?_
+  rw [key, key, sup_eq_left.mpr (le_sup_left : x ≤ x ⊔ y),
+    sup_eq_left.mpr (le_sup_right : y ≤ x ⊔ y)]
+
+/-- **192V.4** (eff.tex:2588, Examples): every cancellative abstract
 `[0,1]`-convex set is isomorphic (by an affine bijection) to a convex subset
 of a real vector space — *with its canonical convex structure*
 `MConvex.ofConvex`.  (Cited by the thesis to
@@ -3964,13 +4088,13 @@ noncomputable def statFunctor : Tot C ⥤ AConvMCat.{v, v} (Scal C)ᵐᵒᵖ whe
   map_comp f g :=
     Subtype.ext (funext fun ω => Subtype.ext (Category.assoc ω.1 f.1 g.1).symm)
 
-/-- **192VII** (eff.tex:2613, Proposition), first half: for an effectus `C`
+/-- **192VII** (eff.tex:2610, Proposition), first half: for an effectus `C`
 with scalars `M`, the states `Stat X` form an abstract `Mᵒᵖ`-convex set,
 with `h(⋁ᵢ λᵢ|φᵢ⟩) = [φ₁, …, φₙ] ∘ ⟨λ₁, …, λₙ⟩`. -/
 theorem stat_mconvex (X : C) :
     Nonempty (MConvex (Scal C)ᵐᵒᵖ (Stat X)) := ⟨statMConvex X⟩
 
-/-- **192VII** (eff.tex:2622, Proposition), second half: `Stat f = f ∘ (–)`
+/-- **192VII** (eff.tex:2619, Proposition), second half: `Stat f = f ∘ (–)`
 is affine for total `f`, and `Stat : Tot C → AConv_{Mᵒᵖ}` is a functor. -/
 theorem stat_functor :
     ∃ F : Tot C ⥤ AConvMCat.{v, v} (Scal C)ᵐᵒᵖ,
@@ -3984,7 +4108,7 @@ section Congruence
 
 variable {M : Type u} [EffectMonoid M] {X : Type v}
 
-/-- **193II** (`aconv-cong`, eff.tex:2685, Exercise): an equivalence
+/-- **193II** (`aconv-cong`, eff.tex:2682, Exercise): an equivalence
 relation `∼` on an abstract `M`-convex set `(X, h)` is a **congruence** when
 `𝒟_M(q)(φ) = 𝒟_M(q)(ψ)` implies `q(h(φ)) = q(h(ψ))`, where `q : X → X/∼` is
 the quotient map. -/
@@ -3993,7 +4117,7 @@ def MConvex.IsCongruence (st : MConvex M X) (r : Setoid X) : Prop :=
     φ.map (Quotient.mk r) = ψ.map (Quotient.mk r) →
       Quotient.mk r (st.h φ) = Quotient.mk r (st.h ψ)
 
-/-- **193II.1** (`aconv-cong`, eff.tex:2702, Exercise): the maps `𝒟_M q` and
+/-- **193II.1** (`aconv-cong`, eff.tex:2699, Exercise): the maps `𝒟_M q` and
 `𝒟_M 𝒟_M q` are surjective (as is `q` itself). -/
 theorem aconv_cong_surjective (r : Setoid X) :
     Function.Surjective
@@ -4019,7 +4143,7 @@ theorem aconv_cong_surjective (r : Setoid X) :
       funext key,
     MConvexComb.map_id]
 
-/-- **193II.2** (`aconv-cong`, eff.tex:2705, Exercise): `∼` is a congruence
+/-- **193II.2** (`aconv-cong`, eff.tex:2702, Exercise): `∼` is a congruence
 iff the convex structure `h` descends to `X/∼` — there is (a necessarily
 unique) `h_∼` with `h_∼ ∘ 𝒟_M q = q ∘ h`. -/
 theorem aconv_cong_iff (st : MConvex M X) (r : Setoid X) :
@@ -4040,7 +4164,7 @@ theorem aconv_cong_iff (st : MConvex M X) (r : Setoid X) :
     rintro ⟨h', hh'⟩ φ ψ hq
     rw [← hh' φ, ← hh' ψ, hq]
 
-/-- **193II.3** (`aconv-cong`, eff.tex:2714, Exercise): for a congruence
+/-- **193II.3** (`aconv-cong`, eff.tex:2711, Exercise): for a congruence
 `∼`, the quotient `(X/∼, h_∼)` is an abstract `M`-convex set and the
 quotient map is `M`-affine. -/
 theorem aconv_cong_quotient (st : MConvex M X) (r : Setoid X)
@@ -4072,7 +4196,7 @@ theorem aconv_cong_quotient (st : MConvex M X) (r : Setoid X)
       exact hh' p
     rw [hL, hR, hh' (MConvexComb.mu Ψ), hh' (Ψ.map st.h), st.h_mu Ψ]
 
-/-- **193III** (`affine-kernel-cong`, eff.tex:2726, Exercise): the kernel
+/-- **193III** (`affine-kernel-cong`, eff.tex:2723, Exercise): the kernel
 `{(x,y) : f(x) = f(y)}` of an affine map `f` between abstract `M`-convex
 sets is a congruence. -/
 theorem affine_kernel_cong {Y : Type v} (st : MConvex M X)
@@ -4088,7 +4212,7 @@ theorem affine_kernel_cong {Y : Type v} (st : MConvex M X)
   change f (st.h φ) = f (st.h ψ)
   rw [hf φ, hf ψ, key φ, key ψ, hq]
 
-/-- **193IV** (`least-conv-cong`, eff.tex:2732, Exercise): every relation
+/-- **193IV** (`least-conv-cong`, eff.tex:2729, Exercise): every relation
 `R ⊆ X²` on an abstract `M`-convex set is contained in a least congruence.
 (The thesis moreover gives a syntactic description of this congruence by
 derivations, which is not formalized here.) -/
@@ -4122,7 +4246,7 @@ theorem least_conv_cong (st : MConvex M X) (R : X → X → Prop) :
 
 end Congruence
 
-/-- **193V** (`aconv-coprod`, eff.tex:2778, Proposition): `AConv_M` has
+/-- **193V** (`aconv-coprod`, eff.tex:2775, Proposition): `AConv_M` has
 binary coproducts (constructed as a quotient of `𝒟_M(X + Y)` by the least
 congruence making `η ∘ κ₁` and `η ∘ κ₂` affine).
 
@@ -4139,7 +4263,7 @@ theorem aconv_coprod (M : Type u) [EffectMonoid M] :
     -- the free abstract `M`-convex set on `X + Y`
     let D : MConvex M (MConvexComb M (X.carrier ⊕ Y.carrier)) :=
       ⟨MConvexComb.mu, MConvexComb.mu_eta, MConvexComb.mu_mu⟩
-    -- the relation of eff.tex:2790, whose least congruence makes `η∘κᵢ` affine
+    -- the relation of eff.tex:2787, whose least congruence makes `η∘κᵢ` affine
     let R : MConvexComb M (X.carrier ⊕ Y.carrier) →
         MConvexComb M (X.carrier ⊕ Y.carrier) → Prop := fun a b =>
       (∃ χ : MConvexComb M X.carrier,
@@ -4149,7 +4273,7 @@ theorem aconv_coprod (M : Type u) [EffectMonoid M] :
     obtain ⟨r, hrc, hrR, hrleast⟩ := least_conv_cong D R
     obtain ⟨stC, hqaff⟩ := aconv_cong_quotient D r hrc
     let Cobj : AConvMCat.{u, max u v} M := ⟨Quotient r, stC⟩
-    -- the coprojections `cᵢ = q ∘ η ∘ κᵢ` are affine (eff.tex:2806)
+    -- the coprojections `cᵢ = q ∘ η ∘ κᵢ` are affine (eff.tex:2803)
     have hc1 : MConvex.IsAffine X.str stC
         (fun x => Quotient.mk r (MConvexComb.eta (Sum.inl x))) := by
       intro p
@@ -4176,7 +4300,7 @@ theorem aconv_coprod (M : Type u) [EffectMonoid M] :
       rfl
     let c₁ : X ⟶ Cobj := ⟨fun x => Quotient.mk r (MConvexComb.eta (Sum.inl x)), hc1⟩
     let c₂ : Y ⟶ Cobj := ⟨fun y => Quotient.mk r (MConvexComb.eta (Sum.inr y)), hc2⟩
-    -- `h_Z ∘ 𝒟_M[f,g]` is affine (eff.tex:2830) …
+    -- `h_Z ∘ 𝒟_M[f,g]` is affine (eff.tex:2827) …
     have hFaff : ∀ (Z : AConvMCat.{u, max u v} M)
         (e : X.carrier ⊕ Y.carrier → Z.carrier),
         MConvex.IsAffine D Z.str (fun p => Z.str.h (p.map e)) := by
@@ -4202,7 +4326,7 @@ theorem aconv_coprod (M : Type u) [EffectMonoid M] :
         show Z.str.h (χ.map (Sum.elim f.1 g.1 ∘ Sum.inr)) = _
         rw [Z.str.h_eta]
         exact (g.2 χ).symm
-    -- so `h_Z ∘ 𝒟_M[f,g]` descends to the mediating map `k` (eff.tex:2856)
+    -- so `h_Z ∘ 𝒟_M[f,g]` descends to the mediating map `k` (eff.tex:2853)
     have hdesc : ∀ (Z : AConvMCat.{u, max u v} M) (f : X ⟶ Z) (g : Y ⟶ Z),
         ∃ k : Cobj ⟶ Z, ∀ p,
           k.1 (Quotient.mk r p) = Z.str.h (p.map (Sum.elim f.1 g.1)) := by
@@ -4215,7 +4339,7 @@ theorem aconv_coprod (M : Type u) [EffectMonoid M] :
       subst hP₀'
       rw [← hqaff P₀, MConvexComb.map_comp]
       exact hFaff Z (Sum.elim f.1 g.1) P₀
-    -- uniqueness: `k' ∘ q = k' ∘ q ∘ μ ∘ 𝒟_M η = h_Z ∘ 𝒟_M[f,g]` (eff.tex:2876)
+    -- uniqueness: `k' ∘ q = k' ∘ q ∘ μ ∘ 𝒟_M η = h_Z ∘ 𝒟_M[f,g]` (eff.tex:2873)
     have huniq : ∀ (Z : AConvMCat.{u, max u v} M) (f : X ⟶ Z) (g : Y ⟶ Z)
         (m : Cobj ⟶ Z), c₁ ≫ m = f → c₂ ≫ m = g →
         ∀ p, m.1 (Quotient.mk r p) = Z.str.h (p.map (Sum.elim f.1 g.1)) := by
@@ -4438,7 +4562,7 @@ noncomputable def AConvMCat.isColimit_freeBinaryCofan {M : Type u} [EffectMonoid
     rw [hz] at hfin
     exact hfin
 
-/-- **193X** (`n-times-one-aconvm`, eff.tex:2954, Exercise), first half: the
+/-- **193X** (`n-times-one-aconvm`, eff.tex:2951, Exercise), first half: the
 one-element convex set is the final object of `AConv_M`. -/
 theorem n_times_one_aconvm_terminal (M : Type u) [EffectMonoid M] :
     Nonempty (IsTerminal (AConvMCat.punit.{u, v} M)) :=
@@ -4468,7 +4592,7 @@ theorem AConvMCat.exists_binaryCoprod_iso {M : Type u} [EffectMonoid M]
   · exact colimit.isoColimitCocone_ι_hom _ (Discrete.mk WalkingPair.left)
   · exact colimit.isoColimitCocone_ι_hom _ (Discrete.mk WalkingPair.right)
 
-/-- **193X** (`n-times-one-aconvm`, eff.tex:2954, Exercise), second half: in
+/-- **193X** (`n-times-one-aconvm`, eff.tex:2951, Exercise), second half: in
 `AConv_M` the `n`-fold coproduct `n · 1 = 1 + ⋯ + 1` is isomorphic to
 `𝒟_M {1, …, n}`.
 
@@ -4733,7 +4857,7 @@ theorem AConvMCat.coprodQuot_eta_inr {M : Type u} [EffectMonoid M]
   rw [MConvexComb.map_eta]
   exact (X ⨿ Y).str.h_eta _
 
-/-- **193IX** (`elements-coprod-conv`, eff.tex:2887, Remark), existence half:
+/-- **193IX** (`elements-coprod-conv`, eff.tex:2884, Remark), existence half:
 every element of `X ⨿ Y` is `h(⋁ λᵢ|κ₁xᵢ⟩ ⋁ ⋁ σⱼ|κ₂yⱼ⟩)` for some formal
 combination.  (The argument is ours: the thesis reads this off its explicit
 construction of the coproduct, while the proof below uses only the universal
@@ -4790,7 +4914,7 @@ theorem AConvMCat.coprodQuot_surjective {M : Type u} [EffectMonoid M]
 
 /-- **194I.4**, first ingredient: `κ₁ : X → X + Y` is injective in `AConv_M`.
 
-⚠ Divergence from the thesis.  eff.tex:3057–3175 proves this by an induction
+⚠ Divergence from the thesis.  eff.tex:3062–3175 proves this by an induction
 over *derivations* (193IX), the longest argument of parsec 194, and one that
 needs the syntactic description of the least congruence that 193IV leaves to
 the reader.  It is unnecessary: constant maps are affine (`map_const`), so for
@@ -4821,7 +4945,7 @@ section AlmostEffectus
 
 variable (M : Type u) [EffectMonoid M]
 
-/-- **194I** (`aconvalmosteffectus`, eff.tex:2968, Proposition), part 1:
+/-- **194I** (`aconvalmosteffectus`, eff.tex:2965, Proposition), part 1:
 `AConv_M` has finite coproducts (binary ones by 193V; the empty set is the
 initial object).
 
@@ -4831,7 +4955,9 @@ initial object" fails for the **trivial** effect monoid `M` (`1 = 0`): there
 `𝒟_M ∅` is a *singleton*, so `∅` carries no `h : 𝒟_M ∅ → ∅` and is not an
 object of `AConv_M` at all.  `AConv_M` is then equivalent to the one-object,
 one-arrow category and `1` is initial, so the proposition itself survives —
-the proof below splits on `1 = 0`. -/
+the proof below splits on `1 = 0`.  The thesis now makes that same case split
+(erratum on `aconvalmosteffectus`), which settles QUESTIONS B7: effect
+monoids are *not* required to satisfy `1 ≠ 0`. -/
 theorem aconvalmosteffectus_coproducts :
     HasFiniteCoproducts (AConvMCat.{u, max u v} M) := by
   classical
@@ -4874,13 +5000,13 @@ theorem aconvalmosteffectus_coproducts :
       · exact Subtype.ext (funext fun x => x.elim)
   exact hasFiniteCoproducts_of_has_binary_and_initial
 
-/-- **194I** (`aconvalmosteffectus`, eff.tex:2968, Proposition), part 2:
+/-- **194I** (`aconvalmosteffectus`, eff.tex:2965, Proposition), part 2:
 `AConv_M` has a final object (the one-element convex set, 193X). -/
 theorem aconvalmosteffectus_terminal :
     HasTerminal (AConvMCat.{u, v} M) :=
   (n_times_one_aconvm_terminal.{u, v} M).some.hasTerminal
 
-/-- **194I** (`aconvalmosteffectus`, eff.tex:2979, Proposition), part 3: the
+/-- **194I** (`aconvalmosteffectus`, eff.tex:2984, Proposition), part 3: the
 cotuples `[κ₁,κ₂,κ₂], [κ₂,κ₁,κ₂] : 1+1+1 → 1+1` are jointly monic in
 `AConv_M`.
 
@@ -4960,7 +5086,7 @@ theorem aconvalmosteffectus_jointlyMonic
     (fun x => by rcases x with (x | x) | x <;> simp)
     (fun x => by rcases x with (x | x) | x <;> simp) hz₁ hz₂
 
-/-- **194I** (`aconvalmosteffectus`, eff.tex:3008, Proposition), part 4: the
+/-- **194I** (`aconvalmosteffectus`, eff.tex:3013, Proposition), part 4: the
 right pullback squares of the effectus axioms (`(κ₁; !)`-squares) hold in
 `AConv_M`; only the left squares remain open (settled in 196II when `M` is
 an effect divisoid).
@@ -5100,7 +5226,7 @@ end AlmostEffectus
 
 /-! ## Effect divisoids (parsec 195) -/
 
-/-- **195II** (`dfn-effect-divisoid`, eff.tex:3187, Definition): an **effect
+/-- **195II** (`dfn-effect-divisoid`, eff.tex:3192, Definition): an **effect
 divisoid** is an effect monoid `M` with a partial division `a/b` (defined
 for `a ≼ b`; formalized as a total operation whose axioms are guarded by
 `a ≼ b`, cf. the *Beware* 195IIa) such that
@@ -5123,7 +5249,7 @@ section DivisoidBasics
 
 variable {M : Type u} [EffectMonoid M] [EffectDivisoid M]
 
-/-- **195IV.1** (`exc-divisoid-basics`, eff.tex:3226, Exercise): `0/0 = 0`,
+/-- **195IV.1** (`exc-divisoid-basics`, eff.tex:3231, Exercise): `0/0 = 0`,
 `1/1 = 1`, `a/1 = a`, `(a/a) ⊙ (a/a) = a/a` and `(a ⊙ b)/a = (a/a) ⊙ b`. -/
 theorem exc_divisoid_basics_1 (a b : M) :
     div (0 : M) 0 = 0 ∧ div (1 : M) 1 = 1 ∧ div a 1 = a ∧
@@ -5148,7 +5274,7 @@ theorem exc_divisoid_basics_1 (a b : M) :
       (emon_mul_le_self _ _) ?_).symm
     rw [← EffectMonoid.mul_assoc, hself a]
 
-/-- **195IV.2** (`exc-divisoid-basics`, eff.tex:3233, Exercise): for
+/-- **195IV.2** (`exc-divisoid-basics`, eff.tex:3238, Exercise): for
 `a ≼ b ≼ c` we have `(b/c) ⊙ (a/b) = a/c`. -/
 theorem exc_divisoid_basics_2 {a b c : M} (hab : a ≼ b) (hbc : b ≼ c) :
     div b c * div a b = div a c := by
@@ -5176,7 +5302,7 @@ theorem unitInterval_le_iff {a b : I} : a ≼ b ↔ (a : ℝ) ≤ (b : ℝ) := b
       show (a : ℝ) + ((b : ℝ) - (a : ℝ)) = (b : ℝ)
       ring
 
-/-- **195V.1** (eff.tex:3243, Examples): `[0,1]` is an effect divisoid with
+/-- **195V.1** (eff.tex:3248, Examples): `[0,1]` is an effect divisoid with
 `a/b` the ordinary quotient (and `0/0 = 0`). -/
 noncomputable instance unitInterval.effectDivisoid : EffectDivisoid I where
   -- `div` must be *total*, while the thesis's division is only meaningful for
@@ -5248,7 +5374,7 @@ noncomputable instance unitInterval.effectDivisoid : EffectDivisoid I where
         = min ((a : ℝ) / (a : ℝ)) 1
       rw [h1, div_self one_ne_zero, min_self]
 
-/-- **195V.1** (eff.tex:3246, Examples): the two-element effect monoid `2`
+/-- **195V.1** (eff.tex:3251, Examples): the two-element effect monoid `2`
 is an effect divisoid (with `a/b = a`). -/
 instance : EffectDivisoid Bool where
   div a _ := a
@@ -5295,7 +5421,7 @@ instance prodEffectMonoid (M N : Type u) [EffectMonoid M] [EffectMonoid N] :
           (a.1 * d.1, a.2 * d.2), (b.1 * d.1, b.2 * d.2)])
         (EffectMonoid.distrib hab.1 hcd.1) (EffectMonoid.distrib hab.2 hcd.2) }
 
-/-- **195V.2** (eff.tex:3249, Examples): the product of two effect divisoids
+/-- **195V.2** (eff.tex:3254, Examples): the product of two effect divisoids
 is an effect divisoid, with componentwise division (in particular `[0,1]ⁿ`
 is an effect divisoid). -/
 instance prodEffectDivisoid (M N : Type u) [EffectMonoid M] [EffectMonoid N]
@@ -5821,7 +5947,7 @@ private theorem exists_divisoid_div (hX : BasicallyDisconnected X)
 
 end BasicDivisoid195VI
 
-/-- **195VI** (`basic-divisoid-equiv`, eff.tex:3275, Exercise\*): for a
+/-- **195VI** (`basic-divisoid-equiv`, eff.tex:3280, Exercise\*): for a
 compact Hausdorff space `X`, the unit interval of `C(X)` is an effect
 divisoid if and only if `X` is basically disconnected (equivalently, `C(X)`
 is σ-Dedekind complete).  In particular the unit interval of `C[0,1]` is
@@ -6030,8 +6156,15 @@ theorem basic_divisoid_equiv (X : Type u) [TopologicalSpace X]
         rw [hout ⟨d a a, hmem a a⟩ ⟨d a a, hmem a a⟩ x hx', hout a a x hx]
 
 
-/-- **195VII** (eff.tex:3328, Proposition): if `a ⊥ b` and `a ⋁ b ≼ c` in an
-effect divisoid, then `(a ⋁ b)/c = a/c ⋁ b/c`. -/
+/-- **195VII** (`eff-divisoid-add`, eff.tex:3333, Proposition): if `a ⊥ b`
+and `a ⋁ b ≼ c` in an effect divisoid, then `(a ⋁ b)/c = a/c ⋁ b/c`.
+
+The thesis's proof used to open with the false lemma "if `c⊙a ⊥ c⊙b` then
+`(c/c)⊙a ⊥ (c/c)⊙b`" (it fails in `[0,1]` at `c = ½`, `a = b = 1`).  That
+step has been deleted upstream (erratum on `eff-divisoid-add`) and the proof
+now runs exactly as below: first `c = a ⋁ b`, where `(a⋁b)/(a⋁b) ⊖ a/(a⋁b)`
+satisfies the defining property of `b/(a⋁b)`, then multiply on the left by
+`(a⋁b)/c`. -/
 theorem divisoid_div_ovee {M : Type u} [EffectMonoid M] [EffectDivisoid M]
     {a b c : M} (hab : Perp a b) (hc : ovee a b hab ≼ c) :
     ∃ h' : Perp (div a c) (div b c),
@@ -7023,7 +7156,7 @@ theorem coprod_exists_lift {a : (X ⨿ (⊤_ AConvMCat.{u, max u v} M)).carrier}
   · rw [map_apply_mix, terminal_carrier_subsingleton ((terminal.from X).1 x) s']
     rfl
 
-/-- **196II** (`aconvm-is-effectus`, eff.tex:3381), the left pullback square of
+/-- **196II** (`aconvm-is-effectus`, eff.tex:3364), the left pullback square of
 the effectus axioms in `AConv_M`. -/
 theorem aconv_left_pullback (X Y : AConvMCat.{u, max u v} M) :
     IsPullback (coprod.map (𝟙 X) (terminal.from Y))
@@ -7049,7 +7182,7 @@ theorem aconv_left_pullback (X Y : AConvMCat.{u, max u v} M) :
     -- `γ` is affine *because* the two legs are jointly injective: both
     -- `γ(h_T p)` and `h(𝒟_M γ (p))` are sent to `h(𝒟_M α (p))` and
     -- `h(𝒟_M β (p))` by the two legs.  (This replaces the thesis's
-    -- eff.tex:3592–3657.)
+    -- eff.tex:3575–3657.)
     have haff : MConvex.IsAffine T.str (X ⨿ Y).str γ := by
       intro p
       have hc1 : (p.map γ).map (coprod.map (𝟙 X) (terminal.from Y)).1 = p.map a.1 := by
@@ -7069,7 +7202,7 @@ end AConvMCat
 
 end LeftSquare
 
-/-- **196II** (`aconvm-is-effectus`, eff.tex:3381, Theorem): if `M` is an
+/-- **196II** (`aconvm-is-effectus`, eff.tex:3364, Theorem): if `M` is an
 effect divisoid, then `AConv_M` is an effectus (in total form).
 
 ⚠ Universe level `max u v`, as for 193V and 194I: an `EffectusTotalStructure`
@@ -7081,7 +7214,7 @@ The four other ingredients are 194I.1–.4 (`aconvalmosteffectus_coproducts`,
 `_terminal`, `_jointlyMonic`, `_kappaPullback`); the left pullback square is
 `AConvMCat.aconv_left_pullback` above.
 
-⚠ Divergence from the thesis (eff.tex:3383–3657).  The thesis proves the left
+⚠ Divergence from the thesis (eff.tex:3366–3657).  The thesis proves the left
 square by interleaving two *derivations* (193IX/193IV) into one, which needs
 the syntactic description of the least congruence that 193IV leaves to the
 reader.  That is avoided here: over an effect divisoid every element of
@@ -7089,7 +7222,7 @@ reader.  That is avoided here: over an effect divisoid every element of
 proved by dividing a general combination by its left mass `λ`, exactly the
 thesis's own normalization step), and the rest is then two applications of the
 fact that constant maps are affine.  Affineness of the mediating map `γ`
-(eff.tex:3592–3657) is likewise free: `γ` is *defined* by a universal
+(eff.tex:3575–3657) is likewise free: `γ` is *defined* by a universal
 property, so it is affine because its two legs are jointly injective. -/
 theorem aconvm_is_effectus (M : Type u) [EffectMonoid M] [EffectDivisoid M] :
     Nonempty (EffectusTotalStructure (AConvMCat.{u, max u v} M)) := by

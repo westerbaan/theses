@@ -7515,3 +7515,261 @@ construction (150III–150XV), independent of 149V.
 Doc comments fixed: the two stale "still `sorry`" blocker notes at 149VIII
 /149IX, the 149VI route note, and 149V's own "remaining three are `sorry`"
 tail.
+
+## Session 39 — `B/Eff` realignment to the author's eleven corrections; 192V.3 and 192III.1/.2 closed (worker 65)
+
+**Result: `B/Eff` stays at 18 `sorry`s with zero `sorryAx` leakage, but four
+statements that were unfaithful or unfalsifiable are now honest and three of
+them are proved.  192V.3 is realigned to the corrected
+`eff-semilattice-aconv` and closed; 192III.1/.2 (QUESTIONS B6) are restated so
+a transported impostor cannot satisfy them, and both close; 192III.3 keeps its
+`sorry` but is no longer vacuous.  272 stale `eff.tex:`/`bsols.tex:` line
+references across all eight modules were re-derived from the source.**
+
+### 1. **192V.3** `eff-semilattice-aconv` — divergence class 4 (our statement
+was silently weaker), now class 1
+
+The author deleted "Semilattices are exactly abstract `2`-convex sets"
+(erratum on `eff-semilattice-aconv`; QUESTIONS B1) and kept only "Every
+semilattice `(L, ∨)` is an abstract `[0,1]`-convex set with
+`h(⋁ᵢ λᵢ|xᵢ⟩) = ⋁_{i; λᵢ ≠ 0} xᵢ`", plus "a semilattice is cancellative iff
+`x = y` for all `x,y`".  Three changes on our side:
+
+* `semilattice_two_convex` is **gone**.  Its proof never used
+  `SemilatticeSup` — that was the evidence for B1 — so it is now stated for
+  what it actually proves: `two_convexComb_eq_eta` (every formal `2`-convex
+  combination is a Dirac distribution, i.e. `𝒟₂ ≅ Id`), `two_convex_nonempty`
+  (**every** type carries a `2`-convex structure) and the new
+  `two_convex_unique` (that structure is unique).  Together: `AConv₂ ≅ Set`,
+  which is the refutation, formalized.
+* `semilattice_unitInterval_convex` — the surviving claim — no longer asserts
+  the near-contentless `Nonempty (MConvex I L)`.  It now returns
+  `∃ st, ∀ p a l, (∀ x, x ∈ a :: l ↔ p x ≠ 0) → st.h p = listJoin a l`, i.e.
+  the structure map **is** the join of the support.  The existing proof
+  already built exactly that `H` and proved the spec as `hH`; only the
+  statement and the final `refine` changed (`⟨⟨H, …⟩, hH⟩`).
+* New `semilattice_cancellative_iff`: for any `st` satisfying that spec,
+  `st.Cancellative ↔ ∀ x y : L, x = y`.  Transcribed, not routed around: take
+  `λ = ½` and mix `x` resp. `y` into `x ⊔ y`; both mixtures have support
+  `{x ⊔ y, x}` resp. `{x ⊔ y, y}` and hence join `x ⊔ y`, so cancellativity
+  gives `x = y`.  (The `a = w` case of the mixture needs `bin_self`, since
+  `bin λ a a = η a` has a one-point support.)  Converse trivial.
+
+### 2. **192III.1/.2/.3** `exc-dm-effectus` — divergence class 4, on Bas's
+ruling for QUESTIONS B6 ("yes, please fix the statements")
+
+All three read `∃ T, ∀ X, T.obj X = 𝒟_M X`, which constrains only the object
+part.  Note the shape is not merely weak but *unfixable in place*: with
+`F.obj X = 𝒟_M X` only propositional, `F.map f` cannot even be applied to a
+`p : 𝒟_M X` without a cast, so no conjunct about `map`/`η`/`μ` can be added.
+The existential is therefore dropped: `exc_dm_effectus_functor` and
+`exc_dm_effectus_monad` are now **definitions** (`Type u ⥤ Type u`,
+`Monad (Type u)`) whose object part is literally `MConvexComb M`, whose action
+is literally `MConvexComb.map`, and whose `η`, `μ` are literally
+`MConvexComb.eta`, `MConvexComb.mu`; five `rfl` lemmas (`_functor_obj`,
+`_functor_map`, `_monad_toFunctor`, `_monad_eta`, `_monad_mu`) pin them, so a
+monad transported along a bijection no longer qualifies.  The laws are the
+already-proved `map_id`, `map_comp`, `mu_map_eta`, `mu_eta`, `mu_mu`.
+`exc_dm_effectus_kleisli` is now stated about
+`Kleisli (exc_dm_effectus_monad M)` and keeps its `sorry`: fixing .2 does not
+hand it over: what remains is the starred exercise itself — a whole
+`EffectusTotalStructure` on `Kl 𝒟_M` (finite coproducts, final object, both
+pullback squares, joint monicity).  Worth noting for whoever takes it: the
+analogous 196II needs `M` to be an effect *divisoid*, whereas 192III.3 claims
+the Kleisli result for every effect monoid, so it is not a corollary of 196II.
+
+### 3. The other nine corrections — checked, all already faithful
+
+* **178IIIa** (`11e51c9`, `ecc8bdc`): the exercise now reads
+  `a ⊙ 0 = 0 = 0 ⊙ a`, which is what `exc_emonzero` always proved, and the
+  *solution* now argues from the four-fold law instead of one-sided
+  distributivity — the circularity we flagged.  That is our proof's route.
+  Two doc comments that described the old text were rewritten.
+* **181XIII** (`334a383`): the circular "`1 = 1 ∘ 1`" opener is gone; the
+  printed proof is now the one `one_m_is_id` transcribes (PCM-enrichment on
+  `id ⋁ idᵖ`, then the zero–one axiom).  No Lean change.
+* **195VII** (`5a3fafd`): the false lemma "if `c⊙a ⊥ c⊙b` then
+  `(c/c)⊙a ⊥ (c/c)⊙b`" is deleted, and the new printed proof is *exactly* the
+  route `divisoid_div_ovee` took — reduce to `c = a ⋁ b`, note
+  `(a⋁b)/(a⋁b) ⊖ a/(a⋁b)` satisfies the defining property of `b/(a⋁b)`, then
+  multiply on the left by `(a⋁b)/c`.  Our divergence class for 195VII drops
+  from 2 (different route) to **1 (faithful)**; nothing referenced the deleted
+  step.  Doc comment updated.
+* **194I** (`d61feea`, `17cde5c`): the `M = 1` case split is now explicit
+  upstream, which is the shape `aconvalmosteffectus_coproducts` already had —
+  no Lean change, and QUESTIONS **B7 is answered**: effect monoids stay
+  possibly trivial.  The stray parenthesis is fixed.
+* **183III.1**, **189I.1/.2**, **191VIII** solution fixes: none of our doc
+  comments quoted the garbled text, and the corrected paragraphs match what
+  `pullback_lemma_1/2`, `distinction_part_tot_eff_1/2` and the `rng_*` chain
+  prove.  ⚠ **191VIII's fix is incomplete**: the `=`s became `+`s, but the
+  middle summand still reads `f(0,l,m)`/`g(0,l,m)` where the paragraph's own
+  two preceding lines establish `f(0,l,0) = g(0,l,0)`; as printed the `m` is
+  counted twice.  Recorded in ERRATA.
+
+### 4. Line references
+
+`eff.tex` shifted by up to 17 lines and `bsols.tex` by 3.  All 272 stale
+`file:LINE` references in `Theses/B/Eff/*.lean` were re-derived mechanically
+and **content-verified**: each old line's text was located in the new file
+(exact string match, nearest occurrence), so a reference only moved when the
+line it names still exists verbatim.  Two were remapped by hand: the old
+`eff.tex:3328` (`\begin{point}{70}{Proposition}%`, deleted when
+`eff-divisoid-add` got its label) → 3333, and a blank line, `eff.tex:6923` →
+6906.  Beware when writing new doc comments in the same session as such a
+sweep — three refs I had just written against the *new* file were caught by
+the rewrite and had to be restored.
+
+### 5. Open research question: can semilattices be the abstract `M`-convex
+sets for some effect monoid `M`?  **No** — Bas's suspicion is right
+
+Read as "there is an equivalence over `Set`" (i.e. the monads are isomorphic,
+which is what "are the abstract `M`-convex sets" means), the answer is a clean
+no, by counting the free algebra on **two** generators.
+
+*Step 1: `𝒟_M 2 ≅ M` as a set, for every effect monoid `M`.*  Send
+`p ↦ p(a)`.  Surjective: `p(a) = λ`, `p(b) = λᵖ` is a formal combination.
+Injective: if `p(a) = λ ∉ {0,1}` the support is `{a,b}` and `λ ⋁ p(b) = 1`
+forces `p(b) = λᵖ` by uniqueness of the orthosupplement; if `λ = 0` the
+support is `{b}`, so `p(b) = 1 = 0ᵖ`; if `λ = 1` then `p(b) ⊥ 1`, so
+`p(b) = 0 = 1ᵖ`.
+
+*Step 2.*  The free semilattice on two generators is the non-empty finite
+powerset, with **three** elements.  So `M` would have to have exactly three
+elements, and a three-element effect algebra is forced to be the chain
+`0 < u < 1` with `uᵖ = u`, i.e. `u ⋁ u = 1`.
+
+*Step 3.*  No such effect monoid exists.  Put `x = u ⊙ u`.  Since `u ⊥ u`,
+the four-fold law of **178II** says the four products of `(u ⋁ u) ⊙ (u ⋁ u)`
+are summable with sum `1 ⊙ 1 = 1`, i.e. `x ⋁ x ⋁ x ⋁ x = 1` must be defined.
+But `x = 0` gives `0 = 1`; `x = u` gives `u ⋁ u ⋁ u = 1 ⋁ u`, undefined; and
+`x = 1` gives `1 ⋁ 1`, undefined.  Contradiction.
+
+So for no effect monoid `M` is `𝒟_M` the non-empty-finite-powerset monad, and
+`AConv_M` is never (over `Set`) the category of semilattices.  What survives
+is exactly what the corrected `eff-semilattice-aconv` now says: every
+semilattice *is* an abstract `[0,1]`-convex set, non-cancellatively.  Not
+formalized — step 3 needs a concrete three-element effect algebra in Lean,
+which is more machinery than the paragraph is worth; flagged here in case a
+later session wants it.
+
+### 6. Verification
+
+* `lake build Theses.B.Eff.*`: exit 0, no errors; no new warnings beyond the
+  file's pre-existing `linter.style.show` class.
+* `#print axioms` → `[propext, Classical.choice, Quot.sound]` for
+  `two_convexComb_eq_eta`, `two_eta_injective`, `two_convex_nonempty`,
+  `two_convex_unique`, `semilattice_unitInterval_convex`,
+  `semilattice_cancellative_iff`, `exc_dm_effectus_functor`,
+  `exc_dm_effectus_monad` and their five `rfl` lemmas.
+* Declaration-level walk (`Lean.collectAxioms` over every non-internal name
+  under `Theses.B.Eff`, not a grep):
+
+  ```
+  checked 1704 declarations under `Theses.B.Eff`
+  18 depend on `sorryAx`; they are exactly the 18 `sorry`ed statements
+  non-standard axioms (outside propext/Classical.choice/Quot.sound): 0
+  ```
+
+* Per-file `sorry`s: Comparisons 3, Dagger 3, DiamondAmp 2, EffectAlgebras 5,
+  Effectus 2, Quotients 0, StatesPredicates 3, WStarCat 0 — **18**, unchanged
+  (`semilattice_two_convex` was proved, not `sorry`ed; `exc_dm_effectus_kleisli`
+  was `sorry` before and after).
+* Nothing staged, nothing committed.
+
+## Session 40 — `B/Dils` Paschke: the bundle defect is structural (`ρ` must land in the opposite algebra) (worker 66)
+
+**Target:** implement the author's D2 ruling ("the definition of Paschke
+dilation should not include the star", i.e. `IsPaschkeDilationOf` is correct)
+by repairing `PaschkeModule`.  **Result: the ruling is confirmed, the proposed
+one-field repair is wrong, and the real defect is structural — no edit of
+`inner_tprod`/`h_def` can work, because `ρ : NMIUMap 𝒜 (Ba ℬ X)` cannot exist
+in Mathlib's (mirrored, left-action) module convention.**  Two impossibility
+theorems added, axiom-clean; the nine `sorry`s stand.
+
+### 1. The brief's diagnosis (swap `h_def`'s arguments) is wrong
+
+`h_def`'s `⟨1⊗1, T(1⊗1)⟩` is the ℂ-linear order and is right; the swapped
+order `⟨T(1⊗1), 1⊗1⟫` is conjugate-linear in `T`, so `h` could not be an
+`NCPMap`.  (Mathlib's `CStarModule` inner is conjugate-linear in the *first*
+argument and linear in the second: `inner_smul_left_complex`,
+`inner_op_smul_right`.)  Neither is `inner_tprod` wrong on the `b`-side: with
+`tprod a b = b • tprod a 1` (from `smul_action`), `inner_op_smul_left/right`
+force the shape `⟨a⊗b, a'⊗b'⟩ = b' M(a,a') b*` under *any* mirroring, as
+recorded in session 14.
+
+### 2. The bundle is worse than reported: it forces `φ = 0`
+
+`Paschke.lean`, `paschke_module_phi_eq_zero` (machine-checked, axiom-clean):
+`inner_tprod`'s right-hand side `b' φ(a'* a) b*` is ℂ-**linear** in `a`, while
+the left-hand side is conjugate-linear in `a` (inner conj-linear in slot 1,
+`PhiCompatible.smul_complex` ℂ-linear).  At `c = i`: `2i·φ(a) = 0`, so
+`φ = 0`.  Session 14's `h (ρ a) = φ (star a)` is a *consequence* of an already
+inconsistent bundle, not the defect.  `PaschkeModule φ` is uninhabited for
+every non-zero `φ`; `existence_paschke` is false; the nine theorems are vacuous.
+
+### 3. Why no repair of `inner_tprod` works either
+
+Positivity of `⟨v,v⟩` for `v = ∑ᵢ tprod aᵢ bᵢ` gives
+`⟨v,v⟩ = ∑ᵢⱼ bⱼ M(aᵢ,aⱼ) bᵢ*`, i.e. the matrix `K_{kl} = M(a_l,a_k)` must be
+positive — note that in the *left*-action convention the positive Gram matrix
+is the transposed one, `[⟨x_l,x_k⟩]`, not `[⟨x_k,x_l⟩]` (checked on the model
+`X = ℬ`, `b•x = bx`, `⟨x,y⟩ = y x*`).  That leaves exactly two candidates:
+
+| `M(a,a')` | variance of `tprod` in `a` | verdict |
+|---|---|---|
+| `φ(a'* a)` (the current field) | conjugate-linear | `ρ` is then conjugate-linear, so not an `NMIUMap`; with the ℂ-linear `tprod` of `PhiCompatible` it forces `φ = 0` (§2) |
+| `φ(a' a*)` | ℂ-linear (as `PhiCompatible` has it) | `ρ(a₀)` is not adjointable: `paschke_rho_forces_cyclic` |
+
+`paschke_rho_forces_cyclic` (machine-checked, axiom-clean) derives from the
+second candidate plus `ρ_tprod` and `star (ρ a₀) = ρ (star a₀)` that
+`φ (a' a* a₀*) = φ (a₀* a' a*)` for all `a, a', a₀` — i.e. `φ` is cyclic, which
+fails for `φ = id` on `M₂` (`star` is a bijection, so this says `φ(xyz)=φ(zxy)`).
+
+### 4. Root cause and the repair the author has to rule on
+
+Mirroring a *right* Hilbert ℬ-module to a *left* one is passage to the
+**conjugate module** (the ℂ-action is conjugated too), and it turns the
+thesis's *left* `𝒜`-action into a *right* action.  Concretely: in a left
+Hilbert ℬ-module every adjointable operator is automatically ℬ-linear, and for
+`X = ℬ` the adjointables are the **right** multiplications `R_t`, with
+`R_t ∘ R_s = R_{st}` — so `𝒷ᵃ(X)` is anti-isomorphic to the thesis's `𝒷ᵃ(X)`,
+`𝒷ᵃ(ℬ) ≅ ℬᵒᵖ`.  Pinning `X` by `univ` at `φ = id_𝒜` turns `ρ_tprod` into the
+demand for a ℂ-linear anti-automorphism of `𝒜`, which a general von Neumann
+algebra does not admit (Connes).  Hence:
+
+    ρ         : NMIUMap 𝒜 (Ba ℬ X)ᵐᵒᵖ
+    ρ_tprod   : ρ(a₀)(a ⊗ b) = (a * a₀) ⊗ b
+    inner_tprod : ⟨a ⊗ b, a' ⊗ b'⟩ = b' * φ (a' * star a) ... → b' * φ (a' * a*) * b*
+    h_def     : unchanged — and then h (ρ a) = φ a, exactly as the ruling asks
+
+plus the matching `PhiCompatible.bound` (`∑ᵢⱼ bᵢ φ(aᵢ aⱼ*) bⱼ*`) and, in
+`existence_paschke_5`, a `PaschkeTriple` with `P = (Ba ℬ M.X)ᵐᵒᵖ`.  Mathlib has
+`CStarAlgebra Aᵐᵒᵖ`; `PartialOrder`, `StarOrderedRing` and the repo's
+`VonNeumannAlgebra` on the opposite algebra are new work.  **Not done
+unilaterally**: it is a second design decision, not the one that was ruled on.
+
+### 5. Consequences for the rest of the brief
+
+* `existence_paschke_5` is *not* "now true" — it is vacuously true (uninhabited
+  hypothesis) and unprovable without deriving `False` from `PaschkeModule`,
+  which would be a dishonest close; left `sorry`.
+* `existence_paschke_4`'s `hφ` (`φ a = ⟨e, ϱ'(a) e⟩`) is **not** off by a star:
+  it mirrors `h_def` exactly, and `h_def` is right.  The session-38 short route
+  through `PaschkeModule.univ` (four applications, no `paschke-uniqueness`, no
+  λ-scaling, no density) remains the right plan once `ρ`'s type is settled.
+* `existence_paschke_2` survives untouched (its proof uses `univ`, `compat` and
+  `ρ_tprod`, none of which changed).
+* Divergence class: 4 (our transcription defect, not the thesis's).
+
+### 6. Verification
+
+* `lake build Theses.B.Dils.Paschke` → `Build completed successfully
+  (8721 jobs)`, zero `error:` lines (the `linter.style.header` noise is
+  `info:`-level and pre-existing).
+* `#print axioms` → `[propext, Classical.choice, Quot.sound]` for
+  `paschke_module_phi_eq_zero` and `paschke_rho_forces_cyclic`.
+* `Paschke.lean` `sorry`s: 9 → **9** (unchanged); two new theorems, both proved.
+* Files touched: `Theses/B/Dils/Paschke.lean` (header WARNING rewritten, two
+  theorems added, `existence_paschke` doc marked FALSE), `QUESTIONS.md` (D2),
+  this log.  Nothing staged, nothing committed.
