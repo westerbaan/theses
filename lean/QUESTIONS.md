@@ -45,11 +45,17 @@ and `semilattice_unitInterval_convex` — the thesis's surviving claim — now
 `semilattice_cancellative_iff`.  The followup question is discussed in
 PROVING-LOG session 39.
 
-### B2. 227III.1 — exactness condition names the wrong map
+### B2. 227III.1 — exactness condition names the wrong map — **RESOLVED 2026-08-16**
 `eff.tex:7629`.  For `A —f→ B —g→ C`, exactness at `B` is stated as
 `IM^⊥ f = ⌈1 ∘ f⌉`; it must be `⌈1 ∘ g⌉` — as printed the condition does not
 mention `g` at all.  Our `exactAt_iff` carries the corrected form and is
 **proved**; the printed form is false.
+
+**Fixed by Bas** (`0d85d0e`): `eff.tex` now reads `IM^⊥ f = ⌈1 ∘ g⌉`, which is
+exactly our `exactAt_iff` (`Comparisons.lean:787`) — `ExactAt f g ↔ orth (imPred f)
+= ceilPred (g ≫ truth Z)`.  No Lean change needed; the statement was already
+carrying the corrected form.  The same commit also labels the containing point
+`eff-dagger-conc-ex`, so it is citable now.
 
 ### B3. 221IV.6 — purity of the mediating map is never checked
 `eff.tex:6923`.  221II requires the mediating map to be pure, and the proof of
