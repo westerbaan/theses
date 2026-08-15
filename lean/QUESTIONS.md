@@ -31,6 +31,8 @@ non-empty-finite-powerset monad.
 *Decision needed*: correct the thesis, and tell us whether to restate our
 version (as written it is silently weaker and useless as a validation).
 
+Bas: fixed. (A followup question is whether semilattices can be defined as abstract M-convex sets for some M. Probably not.)
+
 ### B2. 227III.1 — exactness condition names the wrong map
 `eff.tex:7629`.  For `A —f→ B —g→ C`, exactness at `B` is stated as
 `IM^⊥ f = ⌈1 ∘ f⌉`; it must be `⌈1 ∘ g⌉` — as printed the condition does not
