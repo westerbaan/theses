@@ -3330,49 +3330,27 @@ Prove that this partial division turns the unit interval of~$C(X)$
 \spacingfix{}
 
 \end{point}
-\begin{point}{70}{Proposition}%
+\begin{point}{70}[eff-divisoid-add]{Proposition}%
 If $a \perp b$ and~$a \ovee b \leq c$ in an effect divisoid,
 then~$\rfrac{a \ovee b}{c } = \rfrac{a}{c} \ovee \rfrac{b}{c}$.
 \begin{point}{80}{Proof}%
-We will first show that if~$c \odot a \perp c \odot b$,
-    then~$\rfrac{c}{c} \odot a \perp \rfrac{c}{c}\odot b$.
-To start,
-    note~$c \odot b^\perp \leq c \odot b^\perp \ovee c^\perp
-        = (c \odot b)^\perp \leq c \odot a$
-        and so
+It is sufficient to prove for~$c=a\ovee b$, as
 \begin{equation*}
-     \rfrac{c \odot a}{c} 
-     \ = \ 
-            \rfrac{c \odot b^\perp}{c} \odot
-            \rfrac{c \odot a}{c \odot b^\perp}
-     \ = \ 
-            \rfrac{c}{c} \odot b^\perp \odot
-            \rfrac{c \odot a}{c \odot b^\perp}
-    \ \leq \ \rfrac{c}{c} \odot b^\perp.
+\rfrac{a \ovee b}{c}
+    = \rfrac{a \ovee b}{c} \odot \rfrac{a \ovee b}{a \ovee b}
+    = \rfrac{a \ovee b}{c} \odot
+        \left( \rfrac{a}{a \ovee b} \ovee \rfrac{b}{a \ovee b}  \right)
+        = \rfrac{a}{c} \ovee \rfrac{b}{c}.
 \end{equation*}
-Hence~$(\rfrac{c}{c}\odot b)^\perp
-            \geq \rfrac{c}{c} \odot b^\perp
-            \geq \rfrac{c \odot a}{c}
-            = \rfrac{c}{c} \odot a $.
-    Indeed:~$\rfrac{c}{c}\odot a \perp \rfrac{c}{c} \odot b$.
-\begin{point}{90}%
-Assume~$a\perp b$ and~$a\ovee b \leq c$. 
-Clearly~$c \odot \rfrac{a}{c}  = a \perp b = c \odot \rfrac{b}{c}$.
-By our initial lemma, we get
-    $\rfrac{a}{c } =
-    \rfrac{c}{c} \odot \rfrac{a}{c} \perp
-    \rfrac{c}{c} \odot \rfrac{b}{c} =
-    \rfrac{b}{c }
-$.
-Clearly~$c \odot (\rfrac{a}{c} \ovee \rfrac{b}{c}) = a \ovee b$, so
-\begin{equation*}
-    \rfrac{a \ovee b}{c} \ = \  
-    \rfrac{c \odot (\rfrac{a}{c} \ovee \rfrac{b}{c})}{c} \ = \ 
-\rfrac{c}{c} \odot (\rfrac{a}{c} \ovee \rfrac{b}{c}) \ = \ 
-\rfrac{a}{c} \ovee \rfrac{b}{c},
-\end{equation*}
-as desired. \qed
-\end{point}
+By definition~$\rfrac{a}{a \ovee b} \leq \rfrac{a\ovee b}{a \ovee b}$.
+Define~$w \equiv \rfrac{a \ovee b}{a \ovee b} \ominus \rfrac{a}{a \ovee b}$.
+Note~$(a\ovee b) \odot w = (a \ovee b) \ominus a = b$.
+Thus~$ w = \rfrac{b}{a \ovee b}$
+    and hence~$
+    \rfrac{a \ovee b}{a\ovee b} 
+        = \rfrac{a}{a\ovee b} \ovee w
+        = \rfrac{a}{a\ovee b} \ovee \rfrac{b}{a \ovee b}$ as desired.
+\qed
 \end{point}
 \end{point}
 \end{parsec}
