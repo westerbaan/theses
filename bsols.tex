@@ -1637,8 +1637,11 @@ The element~$a \ominus_{\textrm{EA}} b$ is defined
 \spacingfix{}
 \begin{solution}{exc-emonzero}%
     Let~$M$ be an effect monoid with any~$a \in M$.
-    Then~$a\odot 1 = a \odot (0 \ovee 1) = (a\odot 0) \ovee (a \odot 1)$.
-    Hence by cancellation~$a \odot 0 = 0$.
+    Then~$a \odot 1 = (a \ovee 0) \odot (0 \ovee 1 )
+        = (a \odot 0) \ovee (a \odot 1) \ovee (0 \odot 0) \ovee (0 \odot 1)$.
+    By cancellation~$
+        0 = (a \odot 0) \ovee (a \odot 1) \ovee (0 \odot 0) \geq a\odot 0$
+            as desired.
     Similarly~$0 \odot a = 0$.
 \end{solution}
 \begin{solution}{emond-lemma-for-conv}%
