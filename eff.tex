@@ -2969,8 +2969,16 @@ form except perhaps for the left pullback square of~\eqref{pullbacks}.
 In \sref{aconv-coprod} we proved~$\AConvM$ has binary coproducts
     and in \sref{n-times-one-aconvm}
     that the one-element set~$1$ is its final object.
-As~$\mathcal{D}_M \emptyset = \emptyset$,
-    the empty set is trivially also an abstract~$M$-convex set
+
+What about initial object?
+Let's first consider the corner-case~$M=1$.
+Each non-empty set has a unique formal $1$-convex combination,
+    and thus each abstract~$1$-convex set~$X$ must be a singleton
+        as~$x = h(\ket{x}) = h(\ket{y}) = y$ for any~$x,y\in X$.
+    This makes any of them initial.
+For the other case, assume~$M \neq 1$.
+Then~$\mathcal{D}_M \emptyset = \emptyset$.
+    The empty set is trivially also an abstract~$M$-convex set
     and in fact the initial object of~$\AConvM$.
 \end{point}
 \begin{point}{30}%
