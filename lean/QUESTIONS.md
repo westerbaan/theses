@@ -167,16 +167,15 @@ whose defect `1 − q_{k-1}⋯q₀` can exceed the unit ball (`‖·‖ ≈ 1.15
 already for two ideal trimmers) — no two-sided trimming exists on a
 one-sided module.
 
-### B5. `IsVNTensor` is too weak for 165III (and, it turns out, 166II)
-*Status 2026-08-14 (worker 52): the **positivity** half is answered (worker 40,
-confirmed by worker 41), and 165III `dfn_tensor_of_hilbmod_maps` is
-**proved**.  The **normality-of-the-legs** half is answered too — it is
-derivable, so `IsVNTensor` needs no new clause — and **166II**
-`ultranorm_continuity_ext_tensor`, the statement that raised it, is now
-**proved** as well.  A **third**, genuinely different gap has replaced them:
-`IsVNTensor` omits proc.tex `tensor`-**2** (the *existence* of product
-functionals), which **165VI** needs.  That one is open — and it is the only
-open half of B5.*
+### B5. `IsVNTensor` is too weak for 165III (and, it turns out, 166II) — CLOSED
+*Status 2026-08-15 (worker 66): **all three halves are settled and nothing is
+asked of the authors.*** The **positivity** half is answered (worker 40,
+confirmed by worker 41) and 165III `dfn_tensor_of_hilbmod_maps` is **proved**;
+the **normality-of-the-legs** half is derivable, so no clause was needed, and
+**166II** `ultranorm_continuity_ext_tensor` is **proved**.  The third half —
+the missing proc.tex `tensor`-**2** (*existence* of product functionals) — was
+**our mis-transcription of 108II, not a weakness of the thesis**, and the field
+has now been added (divergence class 4; see the closing note below).
 
 `dils.tex:5433`.  Our axiomatization of the von Neumann tensor product
 (proc.tex 108II) gives miu-bilinearity, `generates`, and separation by product
@@ -293,11 +292,41 @@ thesis's proof (165IX) does so by exhibiting the functionals
 `𝒞 = 𝒜 ⊗ ℬ` for the *given* `t`.  With only `separating` available for `t`,
 there is nothing to build them from.
 
-*Decision needed*: add to `IsVNTensor` a field
-`productFunctional : ∀ (ω : NPFunctional 𝒜) (ξ : NPFunctional ℬ), ∃ Ω : NPFunctional 𝒞, ∀ a b, Ω (t a b) = ω a * ξ b`
-(proc.tex `tensor`-2), which is a faithful transcription of the definition and
-strictly weakens nothing that is currently proved — but it does add a proof
-obligation to **165VI** and to any future construction of a tensor product.
+**Closed 2026-08-15 (worker 66): this was not a question but a transcription
+error of ours (divergence class 4), and it is fixed.**  108II's `tensor-2` had
+simply been dropped when `IsVNTensor` was written; the thesis's definition is
+fine.  `IsVNTensor` (`B/Dils/SelfDual.lean`) now carries, between `generates`
+(`tensor-1`) and `separating` (`tensor-3`),
+
+```lean
+exists_productFunctional : ∀ (ω : NPFunctional 𝒜) (ξ : NPFunctional ℬ),
+  ∃ Ω : NPFunctional 𝒞, ∀ (a : 𝒜) (b : ℬ), Ω (t a b) = ω a * ξ b
+```
+
+("exists **and is positive**" of the thesis: positivity and normality are
+carried by the type `NPFunctional 𝒞`).  Verbatim `tensor-2` was chosen over
+the weaker `tensor-characterization` (proc.tex:3578) variant, which restricts
+existence to centre-separating collections `Σ, Γ`: that is an equivalent
+*characterisation* rather than a weaker interface — it still demands existence,
+only for fewer functionals — and it would additionally force
+`CentreSeparating` into the definition, which nothing in parsecs 1640–1670
+consumes.
+
+Only two things construct an `IsVNTensor`, and both were discharged:
+`vnTensor_mul_complex` (the ℂ ⊗ ℂ witness; the product functional is
+`smulNP (σ(1)·τ(1)) complexIdNP`) and `vnTensor_flip` (transports the field
+with `mul_comm`).  Everything already proved from `IsVNTensor` is unaffected —
+adding a field only strengthens the hypothesis — and `#print axioms` stays
+clean for `vnTensor_mul_complex`, `vnTensor_flip`,
+`vnTensor_smul_complex_right` and `vnTensor_legLeft_normal`.
+
+**165VI is still not reachable**, and the new field is not what blocks it:
+`ba_ext_tensor_pres` *concludes* `IsVNTensor Θ`, so the field is an extra
+obligation there (to be met, as the thesis's 165IX does, by
+`σ ⊗ τ = (f ⊗ g)(x ⊗ y, (·) x ⊗ y)` — which is exactly what the field now makes
+available on the *given* `t`).  Its blockers are the three `sorry`ed
+properties of **164II** it consumes — `ext_tensor_dense`, `ext_tensor_basis`
+and `ext_tensor_ketbra_dense` — plus 165VII–165X, which are not converted.
 Note 165VI is *additionally* blocked on **164II**.1 `ext_tensor_dense` and
 **164II**.2a `ext_tensor_basis`, both still `sorry`, so the decision is not
 urgent.

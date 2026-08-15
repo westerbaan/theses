@@ -7773,3 +7773,55 @@ unilaterally**: it is a second design decision, not the one that was ruled on.
 * Files touched: `Theses/B/Dils/Paschke.lean` (header WARNING rewritten, two
   theorems added, `existence_paschke` doc marked FALSE), `QUESTIONS.md` (D2),
   this log.  Nothing staged, nothing committed.
+
+## Session 40b — `B/Dils` `IsVNTensor`: proc.tex 108II's `tensor-2` was dropped in transcription (worker 66)
+
+**Divergence class 4** (our error, not the thesis's).  `IsVNTensor`
+(`SelfDual.lean`) rendered 108II (`tensor`, proc.tex:2034) with `tensor-1`
+(`generates`) and `tensor-3` (`separating`) but silently omitted **`tensor-2`**
+— *"for all np-functionals `σ : 𝒜 → ℂ` and `τ : ℬ → ℂ` the product functional
+`γ(σ,τ) : 𝒯 → ℂ` exists and is positive"*.  QUESTIONS **B5** had recorded this
+as "the definition is too weak"; it is not — the definition is fine and we
+copied it incompletely.  Added verbatim:
+
+```lean
+exists_productFunctional : ∀ (ω : NPFunctional 𝒜) (ξ : NPFunctional ℬ),
+  ∃ Ω : NPFunctional 𝒞, ∀ (a : 𝒜) (b : ℬ), Ω (t a b) = ω a * ξ b
+```
+
+"and is positive" needs no separate clause: normality and positivity are
+carried by the type `NPFunctional 𝒞`.  `tensor-1` gives *uniqueness* of `γ(σ,τ)`
+and `tensor-3` its faithfulness; neither gives existence, which is what 165VI
+must consume.
+
+**Verbatim `tensor-2` over `tensor-characterization`.**  108II's forward
+reference (proc.tex:3578, 111VII) restricts existence to *centre separating*
+collections `Σ, Γ` — but it is an equivalence ("is a tensor product iff"), not
+a weaker interface: it still demands existence, only for fewer functionals, and
+it would drag `CentreSeparating` into the definition, which nothing in parsecs
+1640–1670 consumes.  So the safe default was taken.
+
+**Constructions obliged by the new field — both discharged.**  Only two things
+build an `IsVNTensor`: `vnTensor_mul_complex` (the ℂ ⊗ ℂ non-vacuity witness;
+the product functional is `smulNP (σ(1)·τ(1)) complexIdNP`, using that
+`ω a = a·ω 1` on ℂ and `ω 1 ≥ 0`) and `vnTensor_flip` (transports the field,
+`mul_comm`).  Nothing else in the tree constructs one — `vnTensorProduct_nonempty`
+(111XII) is `sorry` and `A/Proc/Tensor.lean` mentions `IsVNTensor` only in
+comments.  Three private helpers were added (`npf_apply_complex`,
+`npf_one_ofReal`) and `npf_csmul` was moved above its first use.
+
+**165VI is still unreachable, and not because of this field.**
+`ba_ext_tensor_pres` *concludes* `IsVNTensor Θ`, so `tensor-2` is an extra
+obligation there — to be met the way 165IX does it, by
+`σ ⊗ τ = (f ⊗ g)(x ⊗ y, (·) x ⊗ y)`, which is exactly what the field now
+supplies on the *given* `t`.  Precise blockers: the three `sorry`ed clauses of
+**164II** that its proof consumes — `ext_tensor_dense`, `ext_tensor_basis`,
+`ext_tensor_ketbra_dense` — and 165VII–165X, which are not converted.
+
+**Verification.** `lake build Theses.B.Dils.SelfDual` and
+`… .Paschke/.Pure/.Kaplansky` complete successfully, zero `error:` lines;
+`#print axioms` clean (`[propext, Classical.choice, Quot.sound]`) for
+`vnTensor_mul_complex`, `vnTensor_flip`, `vnTensor_smul_complex_right`,
+`vnTensor_legLeft_normal`.  `SelfDual.lean` `sorry` count unchanged (24).
+Files touched: `Theses/B/Dils/SelfDual.lean`, `QUESTIONS.md` (B5 closed), this
+log.  Nothing staged, nothing committed.

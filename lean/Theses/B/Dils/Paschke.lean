@@ -16,20 +16,45 @@ algebra `𝒷ᵃ(X)` are as in `SelfDualCompletion.lean`, in the mirrored
 product on `𝒜 ⊗_φ ℬ` reads `⟨a ⊗ b, α ⊗ β⟩ = β φ(α* a) b*`, the mirror
 image of the thesis's `[a ⊗ b, α ⊗ β] = b* φ(a* α) β`.
 
-WARNING(mirroring).  The `PaschkeModule` bundle below is **not yet internally
-consistent**: its fields `inner_tprod`, `ρ_tprod` and `h_def` together prove
-`h (ρ a) = φ (star a)`, whereas `IsPaschkeDilationOf` (`Stinespring.lean`)
-asks for `h (ρ a) = φ a` — so `existence_paschke_5` is false as stated as soon
-as `PaschkeModule φ` is inhabited, and `existence_paschke_4`'s `hφ` is off by
-the same `star`.  None of the three fields can be edited on its own
-(`inner_tprod` is forced by positivity of `⟨v,v⟩`, `h_def` by ℂ-linearity of
-`h`, `ρ_tprod` by multiplicativity of `ρ`); the repair is a coordinated
-re-mirroring of the bundle.  See `PROVING-LOG.md`, session 14, §5, for the
-machine-checked derivation and the two candidate repairs.  **Do not build on
-`PaschkeModule`, `PaschkeTriple` or `IsPaschkeDilationOf` until this is
-settled.**  (A separate, unambiguous defect in `PhiCompatible.bound` — which
-made `PaschkeModule` outright uninhabited — was fixed; see §4 there and the
-doc comment on `PhiCompatible`.)
+WARNING(mirroring).  `IsPaschkeDilationOf` (`Stinespring.lean`) is correct as
+it stands: it asks for `h (ρ a) = φ a`, with no `star` (ruling of the author,
+QUESTIONS **D2**).  The defect is in the `PaschkeModule` bundle below, and it
+is **structural, not a matter of moving a `star`**:
+
+* As written the bundle is contradictory — `inner_tprod` together with
+  `PhiCompatible.smul_complex` forces `φ = 0`
+  (`paschke_module_phi_eq_zero`), so `PaschkeModule φ` is uninhabited for
+  every non-zero `φ` and `existence_paschke` is false as stated.
+* No edit of `inner_tprod` or `h_def` repairs this.  `tprod a b = b • tprod a 1`
+  makes every inner product of elementary tensors of the shape
+  `⟨a ⊗ b, a' ⊗ b'⟩ = b' M(a,a') b*`; positivity of `⟨v,v⟩` in *Mathlib's*
+  (left-action) convention leaves exactly two candidates for `M`, namely
+  `M(a,a') = φ(a'* a)` (the one in the field below, which needs `tprod`
+  *conjugate*-linear in `a`) and `M(a,a') = φ(a' a*)` (the one compatible with
+  the ℂ-linear `tprod` of `PhiCompatible`).  The first forces `φ = 0`; with the
+  second, `ρ_tprod` plus adjointability of `ρ(a₀)` forces `φ (a' a* a₀*) =
+  φ (a₀* a' a*)` for all `a, a', a₀` (`paschke_rho_forces_cyclic`), which fails
+  already for `φ = id` on `M₂`.
+* The reason is that mirroring a *right* Hilbert ℬ-module to a *left* one is
+  passage to the conjugate module, which turns the thesis's *left* action of
+  `𝒜` into a *right* action: for a left Hilbert ℬ-module `X`, every adjointable
+  operator is ℬ-linear and `𝒷ᵃ(X)` is anti-isomorphic to the thesis's
+  `𝒷ᵃ(X)` (for `X = ℬ` it is `{R_t}ᵗ ≅ ℬᵒᵖ`).  So `𝒜 ⊗_φ ℬ` carries an nmiu-map
+  `𝒜 → 𝒷ᵃ(𝒜 ⊗_φ ℬ)ᵐᵒᵖ` (equivalently a ℂ-linear ∗-preserving *anti*-homomorphism
+  `𝒜 → 𝒷ᵃ(𝒜 ⊗_φ ℬ)`), not the `ρ : NMIUMap 𝒜 (Ba ℬ X)` asked for below; and
+  `𝒜 ≅ 𝒜ᵒᵖ` fails for general von Neumann algebras (Connes).
+  The repair is therefore `ρ : NMIUMap 𝒜 (Ba ℬ X)ᵐᵒᵖ` with
+  `ρ_tprod : ρ(a₀)(a ⊗ b) = (a a₀) ⊗ b` and
+  `inner_tprod : ⟨a ⊗ b, a' ⊗ b'⟩ = b' φ(a' a*) b*` (which then gives
+  `h (ρ a) = φ a` with `h_def` unchanged), plus the matching change to
+  `PhiCompatible.bound`; that needs `PartialOrder`/`StarOrderedRing`/
+  `VonNeumannAlgebra` instances on `(Ba ℬ X)ᵐᵒᵖ` and a new design decision, so
+  it is **not** done here.  See `PROVING-LOG.md`, session 15, and QUESTIONS
+  **D2**.  **Do not build on `PaschkeModule` until this is settled**;
+  `PaschkeTriple` and `IsPaschkeDilationOf` themselves are fine.
+  (A separate, unambiguous defect in `PhiCompatible.bound` — which also made
+  `PaschkeModule` uninhabited — was fixed earlier; see the doc comment on
+  `PhiCompatible`.)
 -/
 import Theses.B.Dils.Stinespring
 import Theses.B.Dils.SelfDualCompletion
@@ -124,9 +149,67 @@ structure PaschkeModule (φ : NCPMap 𝒜 ℬ) : Type (u + 1) where
 attribute [instance] PaschkeModule.nacg PaschkeModule.mod PaschkeModule.smul
   PaschkeModule.cstarMod PaschkeModule.complete
 
+/-- The `PaschkeModule` fields are contradictory: `inner_tprod` is
+conjugate-linear in the first `𝒜`-argument (Mathlib's `⟨·,·⟩` is
+conjugate-linear in its first argument, and `PhiCompatible.smul_complex`
+makes `tprod` ℂ-linear in `a`) while its right-hand side `b' φ(a'* a) b*` is
+ℂ-*linear* in `a`; comparing the two at `c = i` gives `2i φ(a) = 0`.  Hence
+`PaschkeModule φ` is uninhabited for every `φ ≠ 0` and `existence_paschke`
+is false as stated.  See the WARNING at the head of this file. -/
+theorem paschke_module_phi_eq_zero (φ : NCPMap 𝒜 ℬ) (M : PaschkeModule φ)
+    (a : 𝒜) : φ a = 0 := by
+  have key : ∀ (c : ℂ) (a a' : 𝒜),
+      (c • (φ (star a' * a) : ℬ)) = (starRingEnd ℂ) c • (φ (star a' * a) : ℬ) := by
+    intro c a a'
+    have h1 : inner ℬ (M.tprod (c • a) 1) (M.tprod a' 1)
+        = (1 : ℬ) * φ (star a' * (c • a)) * star (1 : ℬ) := M.inner_tprod _ _ _ _
+    have h2 : M.tprod (c • a) 1 = c • M.tprod a 1 := M.compat.smul_complex c a 1
+    rw [h2, CStarModule.inner_smul_left_complex, M.inner_tprod] at h1
+    have hs : φ (c • (star a' * a)) = c • φ (star a' * a) :=
+      map_smul φ.toCompletelyPositiveMap.toLinearMap c _
+    simpa [hs] using h1.symm
+  have h := key Complex.I a 1
+  simp only [star_one, one_mul, Complex.conj_I] at h
+  have h3 : ((2 : ℂ) * Complex.I) • (φ a : ℬ) = 0 := by
+    rw [two_mul, add_smul]
+    nth_rewrite 2 [h]
+    simp
+  have h4 : ((2 : ℂ) * Complex.I) ≠ 0 := by simp [Complex.I_ne_zero]
+  exact (smul_eq_zero.mp h3).resolve_left h4
+
+/-- The other candidate for `inner_tprod` — the one compatible with the
+ℂ-linearity of `tprod`, `⟨a ⊗ b, a' ⊗ b'⟩ = b' φ(a' a*) b*` — is not
+repairable either, as long as `ρ` is asked to be an nmiu-map into
+`𝒷ᵃ(X)`: `ρ_tprod` and adjointability of `ρ(a₀)` (whose adjoint is
+`ρ(a₀*)`) force `φ` to be *cyclic*, which fails already for `φ = id` on
+`M₂`.  So the `ρ` field must instead land in `(Ba ℬ X)ᵐᵒᵖ`; see the WARNING
+at the head of this file. -/
+theorem paschke_rho_forces_cyclic (φ : NCPMap 𝒜 ℬ) {X : Type u}
+    [NormedAddCommGroup X] [NormedSpace ℂ X] [SMul ℬ X] [CStarModule ℬ X]
+    [CompleteSpace X] (tprod : 𝒜 → ℬ → X)
+    (hinner : ∀ (a a' : 𝒜) (b b' : ℬ),
+      inner ℬ (tprod a b) (tprod a' b') = b' * φ (a' * star a) * star b)
+    (ρ : NMIUMap 𝒜 (Ba ℬ X))
+    (hρ : ∀ (a₀ a : 𝒜) (b : ℬ), (ρ a₀).1 (tprod a b) = tprod (a₀ * a) b)
+    (a a' a₀ : 𝒜) :
+    φ (a' * (star a * star a₀)) = φ (star a₀ * a' * star a) := by
+  have hstar : (star (ρ a₀) : Ba ℬ X) = ρ (star a₀) := by
+    have hc : ⇑ρ = ⇑ρ.toStarAlgHom := rfl
+    have h := map_star ρ.toStarAlgHom a₀
+    simpa [hc] using h.symm
+  have hadj : ModuleAdjointTo ℬ ⇑(ρ a₀).1 ⇑((star (ρ a₀) : Ba ℬ X)).1 :=
+    baSubalgebra_star_spec _
+  have h1 := hadj (tprod a 1) (tprod a' 1)
+  rw [hstar, hρ, hρ, hinner, hinner] at h1
+  simpa [star_mul, mul_assoc] using h1
+
 /-- **154III** (`existence-paschke`, dils.tex:3558, Theorem), parts 1–3:
 the module `𝒜 ⊗_φ ℬ`, the representation `ϱ` and the vector state `h`
-exist. -/
+exist.
+
+**FALSE as stated** — see `paschke_module_phi_eq_zero` and the WARNING at
+the head of this file; the `PaschkeModule` bundle needs
+`ρ : NMIUMap 𝒜 (Ba ℬ X)ᵐᵒᵖ` before this can be proved. -/
 theorem existence_paschke [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     (φ : NCPMap 𝒜 ℬ) : Nonempty (PaschkeModule φ) :=
   sorry

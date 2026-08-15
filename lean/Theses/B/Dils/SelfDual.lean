@@ -19,9 +19,10 @@ Statements only; every proof is `sorry`.  Conventions as in
 
 NOTE(proc-dep): the tensor product of von Neumann algebras is developed in
 thesis A (proc.tex, parsec 1080, label `tensor`), which is not yet
-formalized; the interface needed here (an miu-bilinear map whose product
-np-functionals are separating and whose image generates) is axiomatized
-below as `IsVNTensor`.
+formalized; the interface needed here (an miu-bilinear map whose image
+generates, whose product functionals of np-functionals all exist, and whose
+product np-functionals are separating — the three clauses `tensor-1`,
+`tensor-2`, `tensor-3` of 108II) is axiomatized below as `IsVNTensor`.
 -/
 import Theses.B.Dils.Paschke
 import Theses.B.Dils.Kaplansky
@@ -1297,8 +1298,10 @@ def IsProductFunctional (t : 𝒜 → ℬ → 𝒞) (Ω : NPFunctional 𝒞) : P
 
 /-- The interface of the tensor product `𝒞 = 𝒜 ⊗ ℬ` of von Neumann
 algebras (proc.tex 108II, `tensor`): an miu-bilinear map
-`t : 𝒜 × ℬ → 𝒞` whose image generates `𝒞` as a von Neumann algebra and
-whose product np-functionals are separating. -/
+`t : 𝒜 × ℬ → 𝒞` whose image generates `𝒞` as a von Neumann algebra
+(`tensor-1`), for which every product functional of np-functionals exists and
+is positive (`tensor-2`), and whose product np-functionals are separating
+(`tensor-3`). -/
 structure IsVNTensor (t : 𝒜 → ℬ → 𝒞) : Prop where
   add_left : ∀ (a a' : 𝒜) (b : ℬ), t (a + a') b = t a b + t a' b
   add_right : ∀ (a : 𝒜) (b b' : ℬ), t a (b + b') = t a b + t a b'
@@ -1307,8 +1310,30 @@ structure IsVNTensor (t : 𝒜 → ℬ → 𝒞) : Prop where
   one : t 1 1 = 1
   star : ∀ (a : 𝒜) (b : ℬ), star (t a b) = t (star a) (star b)
   generates : wstar 𝒞 (Set.range fun p : 𝒜 × ℬ => t p.1 p.2) = ⊤
+  /-- `tensor-2` (proc.tex:2063): for all np-functionals `σ : 𝒜 → ℂ` and
+  `τ : ℬ → ℂ` the product functional `γ(σ,τ) : 𝒞 → ℂ` **exists** and is
+  positive — positivity and normality being carried by the type
+  `NPFunctional 𝒞`.  `generates` gives uniqueness, never existence, so this
+  clause is not redundant, and `separating` (`tensor-3`) says nothing about
+  which product functionals exist. -/
+  exists_productFunctional : ∀ (ω : NPFunctional 𝒜) (ξ : NPFunctional ℬ),
+    ∃ Ω : NPFunctional 𝒞, ∀ (a : 𝒜) (b : ℬ), Ω (t a b) = ω a * ξ b
   separating : ∀ z : 𝒞, 0 ≤ z →
     (∀ Ω : NPFunctional 𝒞, IsProductFunctional 𝒜 ℬ t Ω → Ω z = 0) → z = 0
+
+omit [StarOrderedRing 𝒜] in
+private theorem npf_csmul (ω : NPFunctional 𝒜) (c : ℂ) (a : 𝒜) :
+    ω (c • a) = c * ω a :=
+  (map_smul ω.toPositiveLinearMap c a).trans (smul_eq_mul _ _)
+
+private theorem npf_apply_complex (ω : NPFunctional ℂ) (a : ℂ) :
+    ω a = a * ω 1 := by simpa using npf_csmul (𝒜 := ℂ) ω a 1
+
+private theorem npf_one_ofReal (ω : NPFunctional ℂ) :
+    (0 : ℝ) ≤ (ω 1).re ∧ (((ω 1).re : ℝ) : ℂ) = ω 1 := by
+  have h : (0 : ℂ) ≤ ω 1 := npFunctional_nonneg ω zero_le_one
+  rw [Complex.le_def] at h
+  exact ⟨by simpa using h.1, Complex.ext (by simp) (by simpa using h.2)⟩
 
 /-- **Non-vacuity check** for `IsVNTensor`: multiplication exhibits `ℂ` as
 `ℂ ⊗ ℂ`, so the structure is inhabited and everything derived from it below
@@ -1328,13 +1353,16 @@ theorem vnTensor_mul_complex : IsVNTensor (fun a b : ℂ => a * b) where
     refine eq_top_iff.mpr (le_sInf ?_)
     rintro T ⟨-, hST⟩ z -
     exact hST ⟨(z, 1), by simp⟩
+  exists_productFunctional ω ξ := by
+    obtain ⟨hω0, hω1⟩ := npf_one_ofReal ω
+    obtain ⟨hξ0, hξ1⟩ := npf_one_ofReal ξ
+    refine ⟨smulNP (mul_nonneg hω0 hξ0) complexIdNP, fun a b => ?_⟩
+    rw [smulNP_apply, npf_apply_complex ω a, npf_apply_complex ξ b, ← hω1, ← hξ1]
+    show ((((ω 1).re * (ξ 1).re : ℝ)) : ℂ) * (a * b) = _
+    push_cast
+    ring
   separating z _ h :=
     h complexIdNP ⟨complexIdNP, complexIdNP, fun _ _ => rfl⟩
-
-omit [StarOrderedRing 𝒜] in
-private theorem npf_csmul (ω : NPFunctional 𝒜) (c : ℂ) (a : 𝒜) :
-    ω (c • a) = c * ω a :=
-  (map_smul ω.toPositiveLinearMap c a).trans (smul_eq_mul _ _)
 
 omit [StarOrderedRing 𝒜] [StarOrderedRing ℬ] in
 /-- proc.tex **108I** (`bilinear-basic`) asks a tensor product to be a
@@ -1402,6 +1430,9 @@ theorem vnTensor_flip {t : 𝒜 → ℬ → 𝒞} (ht : IsVNTensor t) :
       ext z
       exact ⟨fun ⟨p, hp⟩ => ⟨(p.2, p.1), hp⟩, fun ⟨p, hp⟩ => ⟨(p.2, p.1), hp⟩⟩]
     exact ht.generates
+  exists_productFunctional ξ ω := by
+    obtain ⟨Ω, hΩ⟩ := ht.exists_productFunctional ω ξ
+    exact ⟨Ω, fun b a => (hΩ a b).trans (mul_comm _ _)⟩
   separating z hz h := by
     refine ht.separating z hz fun Ω hΩ => ?_
     obtain ⟨ω, ξ, hΩval⟩ := hΩ
