@@ -1122,7 +1122,70 @@ well-definedness of the unit: `η : 𝒜 → ℓ^∞(nsp(𝒜))`,
 `η(a)(φ) = φ(a)`, is an nmiu-map. -/
 theorem exists_freeMonoidUnit [VonNeumannAlgebra A] :
     ∃ η : NMIUMap A (linf (nsp A)),
-      ∀ (a : A) (φ : nsp A), η a φ = φ a := sorry
+      ∀ (a : A) (φ : nsp A), η a φ = φ a := by
+  -- `η(a) = (φ ↦ φ(a))` is bounded by `‖a‖` because nmiu-maps are contractive;
+  -- it is a ∗-homomorphism because the operations on `ℓ^∞` are pointwise; and
+  -- it is normal because the order on `ℓ^∞` is pointwise and each `φ` is normal.
+  have hmem : ∀ a : A, Memℓp (fun φ : nsp A => φ a) ∞ := by
+    intro a
+    refine memℓp_infty ⟨‖a‖, ?_⟩
+    rintro _ ⟨φ, rfl⟩
+    exact NonUnitalStarAlgHom.norm_apply_le φ.toStarAlgHom a
+  have halg : ∀ c : ℂ,
+      ((algebraMap ℂ (linf (nsp A)) c : linf (nsp A)) : nsp A → ℂ) = fun _ => c := by
+    intro c
+    rw [Algebra.algebraMap_eq_smul_one, lp.coeFn_smul, lp.infty_coeFn_one]
+    funext φ
+    simp
+  have hstar : ∀ a : A, ∀ φ : nsp A, φ (star a) = star (φ a) :=
+    fun a φ => map_star φ.toStarAlgHom a
+  refine ⟨{ toStarAlgHom :=
+              { toFun := fun a => ⟨fun φ : nsp A => φ a, hmem a⟩
+                map_one' := by
+                  apply lp.ext
+                  rw [lp.infty_coeFn_one]
+                  funext φ
+                  exact map_one φ.toStarAlgHom
+                map_mul' := fun a b => by
+                  apply lp.ext
+                  rw [lp.infty_coeFn_mul]
+                  funext φ
+                  exact map_mul φ.toStarAlgHom a b
+                map_zero' := by
+                  apply lp.ext
+                  rw [lp.coeFn_zero]
+                  funext φ
+                  exact map_zero φ.toStarAlgHom
+                map_add' := fun a b => by
+                  apply lp.ext
+                  rw [lp.coeFn_add]
+                  funext φ
+                  exact map_add φ.toStarAlgHom a b
+                commutes' := fun c => by
+                  apply lp.ext
+                  rw [halg c]
+                  funext φ
+                  show φ.toStarAlgHom (algebraMap ℂ A c) = c
+                  exact φ.toStarAlgHom.commutes c
+                map_star' := fun a => by
+                  apply lp.ext
+                  rw [lp.coeFn_star]
+                  funext φ
+                  exact hstar a φ }
+            preservesDirSups' := ?_ }, fun _ _ => rfl⟩
+  intro D s hne hdir hlub
+  constructor
+  · rintro _ ⟨d, hd, rfl⟩
+    rw [lp_infty_le_iff]
+    intro φ
+    exact OrderHomClass.mono φ.toStarAlgHom (Subtype.coe_le_coe.mpr (hlub.1 hd))
+  · intro u hu
+    rw [lp_infty_le_iff]
+    intro φ
+    have hφ := φ.preservesDirSups' D s hne hdir hlub
+    refine hφ.2 ?_
+    rintro _ ⟨d, hd, rfl⟩
+    exact (lp_infty_le_iff _ _).mp (hu ⟨d, hd, rfl⟩) φ
 
 /-- The unit `η : 𝒜 → ℓ^∞(nsp(𝒜))` of 132IV, by choice. -/
 noncomputable def freeMonoidUnit [VonNeumannAlgebra A] :

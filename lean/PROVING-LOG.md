@@ -7825,3 +7825,104 @@ supplies on the *given* `t`.  Precise blockers: the three `sorry`ed clauses of
 `vnTensor_legLeft_normal`.  `SelfDual.lean` `sorry` count unchanged (24).
 Files touched: `Theses/B/Dils/SelfDual.lean`, `QUESTIONS.md` (B5 closed), this
 log.  Nothing staged, nothing committed.
+
+## Session 41 — `A/Proc` 117II.1 in its repaired form, and the `κᵢ` block lifted into `Tensor.lean` (worker 66, A/Proc)
+
+**Proved: 117II.1 `sum_generation_1` (Tensor) and 132IV's unit
+`exists_freeMonoidUnit` (Duplicators).**  Chapter 117 → 115: Tensor 44 → **43**,
+Duplicators 18 → **17**, Measurement 38, QuantumLambda 17 (its two
+`declaration uses 'sorry'` counts are unchanged; the file only lost lemmas by
+the move).  Both new theorems `#print axioms`-clean.
+
+### 117II.1 (proc.tex:3733, Exercise) — divergence class **4 → 1**
+
+Session 33 refuted the printed statement (`sum_generation_1_is_false`, kept in
+the tree) and realigned ours to the repaired form `⋃ᵢ κᵢ(Aᵢ) ∪ {eᵢ}`.  That
+repaired form is now **proved**, following the erratum's own recipe:
+
+1. `kappaPreimage i W hone = {a | κᵢ(a) ∈ W}` is a ∗-subalgebra of `𝒜ᵢ`, and
+   *unital* exactly because `eᵢ = κᵢ(1) ∈ W` — the hypothesis the printed
+   exercise lacks.  It is closed (`κᵢ` is isometric: `lp.norm_single`) and
+   closed under directed suprema, because the order on `⊕ⱼ 𝒜ⱼ` is pointwise
+   (`lp_infty_le_iff`) and `κᵢ(d)ⱼ = 0` off `i`; so it is a von Neumann
+   subalgebra containing `Sᵢ`, hence `⊤` by the hypothesis on `Sᵢ`.
+2. For `x ≥ 0` the finite restrictions `∑_{j∈F} κⱼ(xⱼ)` are directed with
+   supremum `x` — both directions of the LUB are the pointwise order again,
+   with `Finset.sum_pi_single` computing the coordinates.
+3. A general `x` is `ℜx + i·ℑx` (`realPart_add_I_smul_imaginaryPart`), and a
+   self-adjoint `y` is `(y + ‖y‖·1) − ‖y‖·1` with the first summand positive
+   by `IsSelfAdjoint.neg_algebraMap_norm_le_self`.  Step 3 is *not* in the
+   author's sketch (his "a general `x` is the directed supremum of its finite
+   restrictions" is only true for positive `x`); it costs six lines.
+
+**`lp_infty_exists_isLUB` is not used** — only `lp_infty_le_iff` and
+`lp_infty_nonneg_iff`.  Each LUB in the proof is *exhibited*, never obtained
+from completeness, so the von Neumann hypothesis on the summands is consumed
+only through `isVNSubalgebra_wstar`.
+
+### The refactor: `κᵢ` now lives in `Tensor.lean`
+
+`lpKappa` and its algebra lemmas (`_mul_left`, `_mul`, `_sa`, `_star`,
+`_apply_self`, `_apply_ne`, `_sa'`, `_le`) were **moved verbatim** from
+`QuantumLambda.lean` (§DirectSums) into a new `section Coprojections` of
+`Tensor.lean`, which `QuantumLambda` imports; signatures are unchanged, so no
+call site moved.  `lpSumSA`, `exists_kappa_one` and
+`lp_nmiu_functional_factors` stay where they are.  `lpEvalSAH` did **not** need
+to move (contrary to session 33's note): `A/VN`'s `lpEvalₗ` covers the one
+place a coordinate map was wanted, via `lp.coeFn_sum`.
+
+New in that section: `lpKappa_add/_zero/_smul/_sub` (one-liners over Mathlib's
+`lp.single_add` etc. — Mathlib already has the whole additive/linear API for
+`lp.single`, including `lp.norm_single` and `lp.lsingle`), `lpKappa_continuous`,
+`lpKappa_sum_apply`, and `lpKappa_eq_single`.  The last is the bridge the move
+needs: `lpKappa` bakes in the classical `DecidableEq I` while 117II.1's
+statement carries an instance binder, and the two are equal but not defeq.
+`rw` cannot cross that gap (it pre-synthesizes the instance in the pattern);
+`simp` can, because it matches the instance out of the target.
+
+### 132IV `exists_freeMonoidUnit` (proc.tex:6719) — class **3 (mild)**
+
+`η(a)(φ) = φ(a)` is asserted, not proved, in the thesis ("let `η` be the
+nmiu-map given by …").  It is: `Memℓp … ∞` because nmiu-maps are contractive
+(`NonUnitalStarAlgHom.norm_apply_le`), a ∗-homomorphism because the operations
+on `ℓ^∞` are pointwise, and normal because the order is pointwise and each `φ`
+is.  This also un-taints `freeMonoidUnit`, hence the *statement* of
+`free_monoid_in_vNAMIU` (132IV proper), which is defined by choice from it.
+
+### Where the brief was wrong
+
+* **128XIII is not closable, and the `lp` instance was never its blocker.**
+  `duplicable_product`'s hypothesis is `Duplicable (lp 𝒜 ∞)`, and `Duplicator`
+  carries a `δ : VNT A A →ₚ[ℂ] A` — so it is `VNT`-typed and sits behind 111XII
+  with the rest.  `vonNeumannAlgebra_lp_infty` being discharged changes nothing
+  for it.
+* **104VII needs more than 104III.5.**  Its proof (proc.tex:1564) also uses
+  104III.4/.1 for the two "by `centrally-similar-basic`" steps, 80IV for the
+  approximate pseudoinverse producing the `eₙ`, `mult-jus-cont` for the
+  ultrastrong convergence of `eₙaeₙ`, and a corner-restriction argument
+  (`eₙ𝒜eₙ`) to reduce to invertible `p, q`.  104VI is the easy input and is
+  already proved.
+* **81VI/81VII/81IX are still `sorry`** in `A/VN/Division.lean` (1739, 1753,
+  1792), so the 96V/98IX/100II.3/103II/99XI cluster has *not* opened.
+* **`l2_tensor` (109III.1) is proved** — it has been for several sessions; the
+  "best untouched target" note in the w37 map is stale.
+
+### 132VI is blocked, and precisely
+
+`exists_freeMonoidUnitCpsu` is the same formula into `ℓ^∞(W*_cpsu(𝒜,ℂ))`, but
+`NCPMap` extends **Mathlib's** `A →CP B`, whose complete positivity is stated
+on `CStarMatrix n B` — not our quadratic-form `IsCompletelyPositiveMap`, which
+*would* reduce pointwise to complete positivity of each `ω`.  So it is blocked
+on the same missing componentwise description of positivity in
+`CStarMatrix n (lp …)` as `vn_products_ncpsu`.
+
+**Verification.** `lake build Theses.A.Proc.Duplicators` (which covers all four
+modules) exits 0; `lake env lean` on `Tensor.lean` and `Duplicators.lean` exit
+0 with no new warnings in the touched regions (the `omit` lines were tuned
+until `linter.unusedSectionVars` was silent).  `#print axioms` clean for
+`sum_generation_1`, `exists_freeMonoidUnit`, `lpKappa_eq_single`,
+`lpKappa_continuous`, `lpKappa_sum_apply`, `lpKappa_add`, `lpKappa_smul`, and
+the regressions `lp_nmiu_functional_factors`, `sum_generation_2`,
+`linf_generated`, `sum_generation_1_is_false`.  Files touched:
+`Theses/A/Proc/{Tensor,QuantumLambda,Duplicators}.lean`, `ERRATA.md`, this log.
+Nothing staged, nothing committed.

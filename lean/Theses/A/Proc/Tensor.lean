@@ -2419,6 +2419,360 @@ theorem tensor_characterization [VonNeumannAlgebra A] [VonNeumannAlgebra B]
           {h : NPFunctional T | ∃ σ ∈ Sg, ∃ τ ∈ Γ,
             ∀ (a : A) (b : B), h (γ a b) = σ a * τ b} := sorry
 
+/-! ## The coprojections `κᵢ : 𝒜ᵢ → ⊕ⱼ 𝒜ⱼ`
+
+Infrastructure for **117II** below and for **122IV**
+(`nmiu-functional-product`) in `QuantumLambda.lean`, where these lemmas were
+first proved; 117II.1 needs them, so they were lifted here (that file imports
+this one). -/
+
+section Coprojections
+
+variable {I : Type*} {𝒜 : I → Type*} [∀ i, CStarAlgebra (𝒜 i)]
+  [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
+  [∀ i, StarOrderedRing (𝒜 i)]
+
+/-! ### The coprojections `κᵢ : 𝒜ᵢ → ⊕ⱼ 𝒜ⱼ`
+
+Infrastructure for **122IV** (`nmiu-functional-product`): the *nmisu*-maps
+`κᵢ` of proc.tex:4595, the finite partial sums `∑_{j ∈ F} κⱼ(1)` (whose
+supremum is `1`), and the fact that an nmiu-functional is `1` on exactly one
+`κᵢ(1)`. -/
+
+open Classical in
+def lpKappa (i : I) (a : 𝒜 i) : lp 𝒜 ∞ := lp.single ∞ i a
+
+omit [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
+  [∀ i, StarOrderedRing (𝒜 i)] in
+open Classical in
+theorem lpKappa_mul_left (i : I) (x : lp 𝒜 ∞) :
+    lpKappa i (1 : 𝒜 i) * x = lpKappa i ((x : ∀ j, 𝒜 j) i) := by
+  apply lp.ext
+  funext j
+  rw [lp.infty_coeFn_mul]
+  simp only [lpKappa, lp.coeFn_single, Pi.mul_apply]
+  by_cases h : j = i
+  · subst h; simp
+  · simp [h]
+
+omit [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
+  [∀ i, StarOrderedRing (𝒜 i)] in
+open Classical in
+theorem lpKappa_mul (i : I) (a b : 𝒜 i) :
+    lpKappa i a * lpKappa i b = lpKappa i (a * b) := by
+  apply lp.ext
+  funext j
+  rw [lp.infty_coeFn_mul]
+  simp only [lpKappa, lp.coeFn_single, Pi.mul_apply]
+  by_cases h : j = i
+  · subst h; simp
+  · simp [h]
+
+omit [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
+  [∀ i, StarOrderedRing (𝒜 i)] in
+open Classical in
+theorem lpKappa_sa (i : I) : IsSelfAdjoint (lpKappa i (1 : 𝒜 i)) := by
+  show star _ = _
+  apply lp.ext
+  funext j
+  rw [lp.coeFn_star]
+  simp only [lpKappa, lp.coeFn_single, Pi.star_apply]
+  by_cases h : j = i
+  · subst h; simp
+  · simp [h]
+
+omit [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
+  [∀ i, StarOrderedRing (𝒜 i)] in
+open Classical in
+theorem lpKappa_star (i : I) (a : 𝒜 i) :
+    star (lpKappa i a) = lpKappa i (star a) := by
+  apply lp.ext
+  funext j
+  rw [lp.coeFn_star]
+  simp only [lpKappa, lp.coeFn_single, Pi.star_apply]
+  by_cases h : j = i
+  · subst h; simp
+  · simp [h]
+
+omit [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
+  [∀ i, StarOrderedRing (𝒜 i)] in
+open Classical in
+theorem lpKappa_apply_self (i : I) (a : 𝒜 i) :
+    ((lpKappa i a : lp 𝒜 ∞) : ∀ j, 𝒜 j) i = a := lp.single_apply_self _ _ _
+
+omit [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
+  [∀ i, StarOrderedRing (𝒜 i)] in
+open Classical in
+theorem lpKappa_apply_ne (i : I) (a : 𝒜 i) {j : I} (h : j ≠ i) :
+    ((lpKappa i a : lp 𝒜 ∞) : ∀ k, 𝒜 k) j = 0 := lp.single_apply_ne _ _ _ h
+
+omit [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
+  [∀ i, StarOrderedRing (𝒜 i)] in
+open Classical in
+theorem lpKappa_sa' (i : I) {a : 𝒜 i} (ha : IsSelfAdjoint a) :
+    IsSelfAdjoint (lpKappa i a) := by
+  show star _ = _
+  rw [lpKappa_star, ha.star_eq]
+
+open Classical in
+theorem lpKappa_le (i : I) {a b : 𝒜 i} (h : a ≤ b) :
+    lpKappa i a ≤ lpKappa i b := by
+  rw [lp_infty_le_iff]
+  intro j
+  by_cases hj : j = i
+  · subst hj; rw [lpKappa_apply_self, lpKappa_apply_self]; exact h
+  · rw [lpKappa_apply_ne _ _ hj, lpKappa_apply_ne _ _ hj]
+
+omit [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
+  [∀ i, StarOrderedRing (𝒜 i)] in
+open Classical in
+theorem lpKappa_add (i : I) (a b : 𝒜 i) :
+    lpKappa i (a + b) = lpKappa i a + lpKappa i b :=
+  lp.single_add _ _ _ _
+
+omit [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
+  [∀ i, StarOrderedRing (𝒜 i)] in
+open Classical in
+theorem lpKappa_zero (i : I) : lpKappa i (0 : 𝒜 i) = 0 :=
+  lp.single_zero _ _
+
+omit [∀ i, PartialOrder (𝒜 i)] [∀ i, StarOrderedRing (𝒜 i)] in
+open Classical in
+theorem lpKappa_smul (i : I) (c : ℂ) (a : 𝒜 i) :
+    lpKappa i (c • a) = c • lpKappa i a :=
+  lp.single_smul _ _ _ _
+
+omit [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
+  [∀ i, StarOrderedRing (𝒜 i)] in
+open Classical in
+theorem lpKappa_sub (i : I) (a b : 𝒜 i) :
+    lpKappa i (a - b) = lpKappa i a - lpKappa i b :=
+  lp.single_sub _ _ _ _
+
+omit [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
+  [∀ i, StarOrderedRing (𝒜 i)] in
+/-- `κᵢ` is `lp.single` for *any* decidability instance on `I` (the definition
+above uses the classical one). -/
+theorem lpKappa_eq_single [DecidableEq I] (i : I) (a : 𝒜 i) :
+    lpKappa i a = lp.single ∞ i a := by
+  apply lp.ext
+  funext j
+  simp only [lpKappa, lp.coeFn_single]
+  by_cases h : j = i
+  · subst h; simp
+  · simp [h]
+
+omit [∀ i, PartialOrder (𝒜 i)] [∀ i, StarOrderedRing (𝒜 i)] in
+open Classical in
+/-- `κᵢ` is isometric, hence continuous. -/
+theorem lpKappa_continuous (i : I) : Continuous (fun a : 𝒜 i => lpKappa i a) := by
+  refine (Isometry.of_dist_eq (fun a b => ?_)).continuous
+  rw [dist_eq_norm, dist_eq_norm, ← lpKappa_sub]
+  simp only [lpKappa]
+  exact lp.norm_single (by simp) i (a - b)
+
+omit [∀ i, PartialOrder (𝒜 i)] [∀ i, StarOrderedRing (𝒜 i)] in
+open Classical in
+/-- The finite restriction `∑_{j ∈ F} κⱼ(xⱼ)` of `x` has coordinates `xₖ` for
+`k ∈ F` and `0` outside `F`. -/
+theorem lpKappa_sum_apply (x : lp 𝒜 ∞) (F : Finset I) (k : I) :
+    ((∑ j ∈ F, lpKappa j ((x : ∀ k, 𝒜 k) j) : lp 𝒜 ∞) : ∀ k, 𝒜 k) k
+      = if k ∈ F then (x : ∀ k, 𝒜 k) k else 0 := by
+  rw [lp.coeFn_sum]
+  simp only [Finset.sum_apply, lpKappa, lp.coeFn_single]
+  exact Finset.sum_pi_single _ _ _
+
+end Coprojections
+
+/-! ### Infrastructure for 117II.1
+
+`W*(⋃ᵢ κᵢ(Aᵢ) ∪ {eᵢ})` is reached in three steps: the preimage
+`{a | κᵢ(a) ∈ W}` is a von Neumann subalgebra of `𝒜ᵢ` (`kappaPreimage`), so it
+is everything; the finite restrictions of a *positive* `x` then form a directed
+family with supremum `x`; and a general `x` is a linear combination of positive
+elements. -/
+
+section SumGeneration
+
+variable {I : Type*} {𝒜 : I → Type*} [∀ i, CStarAlgebra (𝒜 i)]
+  [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
+  [∀ i, StarOrderedRing (𝒜 i)]
+  {W : StarSubalgebra ℂ (lp 𝒜 ∞)}
+
+open Classical in
+/-- The preimage `{a ∈ 𝒜ᵢ | κᵢ(a) ∈ W}` of a ∗-subalgebra `W ∋ eᵢ` of `⊕ⱼ 𝒜ⱼ`.
+It is a ∗-subalgebra because `κᵢ` is multiplicative and ∗-preserving, and
+*unital* precisely because `eᵢ = κᵢ(1) ∈ W` — the hypothesis the printed form
+of 117II.1 lacks. -/
+private def kappaPreimage (i : I) (W : StarSubalgebra ℂ (lp 𝒜 ∞))
+    (hone : lpKappa i (1 : 𝒜 i) ∈ W) : StarSubalgebra ℂ (𝒜 i) where
+  carrier := {a : 𝒜 i | lpKappa i a ∈ W}
+  mul_mem' {a b} ha hb := by
+    show lpKappa i (a * b) ∈ W
+    rw [← lpKappa_mul]; exact mul_mem ha hb
+  one_mem' := hone
+  add_mem' {a b} ha hb := by
+    show lpKappa i (a + b) ∈ W
+    rw [lpKappa_add]; exact add_mem ha hb
+  zero_mem' := by
+    show lpKappa i (0 : 𝒜 i) ∈ W
+    rw [lpKappa_zero]; exact zero_mem W
+  algebraMap_mem' c := by
+    show lpKappa i (algebraMap ℂ (𝒜 i) c) ∈ W
+    rw [Algebra.algebraMap_eq_smul_one, lpKappa_smul, Algebra.smul_def]
+    exact mul_mem (W.algebraMap_mem c) hone
+  star_mem' {a} ha := by
+    show lpKappa i (star a) ∈ W
+    rw [← lpKappa_star]; exact star_mem ha
+
+open Classical in
+/-- `κᵢ` on self-adjoint parts. -/
+private def kappaSA (i : I) (d : selfAdjoint (𝒜 i)) : selfAdjoint (lp 𝒜 ∞) :=
+  ⟨lpKappa i (d : 𝒜 i), lpKappa_sa' i d.2⟩
+
+omit [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
+  [∀ i, StarOrderedRing (𝒜 i)] in
+open Classical in
+private theorem kappaSA_coe (i : I) (d : selfAdjoint (𝒜 i)) :
+    ((kappaSA i d : selfAdjoint (lp 𝒜 ∞)) : lp 𝒜 ∞) = lpKappa i (d : 𝒜 i) := rfl
+
+open Classical in
+private theorem kappaSA_mono (i : I) {d e : selfAdjoint (𝒜 i)} (h : d ≤ e) :
+    kappaSA i d ≤ kappaSA i e :=
+  Subtype.coe_le_coe.mp (lpKappa_le i (Subtype.coe_le_coe.mpr h))
+
+open Classical in
+/-- `{a | κᵢ(a) ∈ W}` is a von Neumann subalgebra of `𝒜ᵢ` when `W` is one of
+`⊕ⱼ 𝒜ⱼ`: it is closed because `κᵢ` is isometric, and closed under directed
+suprema because `κᵢ` carries the supremum of `D` to the supremum of `κᵢ(D)`
+(the order on `⊕ⱼ 𝒜ⱼ` being pointwise, and `κᵢ(d)ⱼ = 0` for `j ≠ i`). -/
+private theorem isVNSubalgebra_kappaPreimage (i : I) (hone : lpKappa i (1 : 𝒜 i) ∈ W)
+    (hW : IsVNSubalgebra (lp 𝒜 ∞) W) : IsVNSubalgebra (𝒜 i) (kappaPreimage i W hone) := by
+  constructor
+  · exact IsClosed.preimage (lpKappa_continuous i) hW.isClosed
+  · intro D s hDT hne hdir hlub
+    show lpKappa i (s : 𝒜 i) ∈ W
+    refine hW.dirSup_mem (kappaSA i '' D) (kappaSA i s) ?_ (hne.image _) ?_ ?_
+    · rintro _ ⟨d, hd, rfl⟩; exact hDT d hd
+    · rintro _ ⟨d, hd, rfl⟩ _ ⟨e, he, rfl⟩
+      obtain ⟨z, hz, hdz, hez⟩ := hdir d hd e he
+      exact ⟨kappaSA i z, ⟨z, hz, rfl⟩, kappaSA_mono i hdz, kappaSA_mono i hez⟩
+    · constructor
+      · rintro _ ⟨d, hd, rfl⟩
+        exact kappaSA_mono i (hlub.1 hd)
+      · intro u hu
+        rw [← Subtype.coe_le_coe, kappaSA_coe, lp_infty_le_iff]
+        intro j
+        by_cases hj : j = i
+        · subst hj
+          rw [lpKappa_apply_self]
+          have hub : (⟨(u : lp 𝒜 ∞) j, lp_infty_isSelfAdjoint u.2 j⟩ : selfAdjoint (𝒜 j))
+              ∈ upperBounds D := by
+            intro d hd
+            have h1 : kappaSA j d ≤ u := hu ⟨d, hd, rfl⟩
+            have h2 := (lp_infty_le_iff _ _).mp (Subtype.coe_le_coe.mpr h1) j
+            rw [kappaSA_coe, lpKappa_apply_self] at h2
+            exact Subtype.coe_le_coe.mp h2
+          exact Subtype.coe_le_coe.mpr (hlub.2 hub)
+        · rw [lpKappa_apply_ne _ _ hj]
+          obtain ⟨d₀, hd₀⟩ := hne
+          have h1 : kappaSA i d₀ ≤ u := hu ⟨d₀, hd₀, rfl⟩
+          have h2 := (lp_infty_le_iff _ _).mp (Subtype.coe_le_coe.mpr h1) j
+          rw [kappaSA_coe, lpKappa_apply_ne _ _ hj] at h2
+          exact h2
+
+open Classical in
+private theorem lpRestrict_nonneg (x : lp 𝒜 ∞) (hx : 0 ≤ x) (F : Finset I) :
+    0 ≤ ∑ j ∈ F, lpKappa j ((x : ∀ k, 𝒜 k) j) := by
+  rw [lp_infty_nonneg_iff]
+  intro k
+  rw [lpKappa_sum_apply]
+  by_cases h : k ∈ F
+  · simpa [h] using (lp_infty_nonneg_iff x).mp hx k
+  · simp [h]
+
+open Classical in
+private theorem lpRestrict_mono (x : lp 𝒜 ∞) (hx : 0 ≤ x) {F G : Finset I} (h : F ⊆ G) :
+    (∑ j ∈ F, lpKappa j ((x : ∀ k, 𝒜 k) j)) ≤ ∑ j ∈ G, lpKappa j ((x : ∀ k, 𝒜 k) j) := by
+  rw [lp_infty_le_iff]
+  intro k
+  rw [lpKappa_sum_apply, lpKappa_sum_apply]
+  by_cases hF : k ∈ F
+  · simp [hF, h hF]
+  · by_cases hG : k ∈ G <;> simp [hF, hG, (lp_infty_nonneg_iff x).mp hx k]
+
+open Classical in
+private theorem lpRestrict_le (x : lp 𝒜 ∞) (hx : 0 ≤ x) (F : Finset I) :
+    (∑ j ∈ F, lpKappa j ((x : ∀ k, 𝒜 k) j)) ≤ x := by
+  rw [lp_infty_le_iff]
+  intro k
+  rw [lpKappa_sum_apply]
+  by_cases h : k ∈ F
+  · simp [h]
+  · simpa [h] using (lp_infty_nonneg_iff x).mp hx k
+
+open Classical in
+private def lpRestrictSA (x : lp 𝒜 ∞) (hx : 0 ≤ x) (F : Finset I) : selfAdjoint (lp 𝒜 ∞) :=
+  ⟨∑ j ∈ F, lpKappa j ((x : ∀ k, 𝒜 k) j), IsSelfAdjoint.of_nonneg (lpRestrict_nonneg x hx F)⟩
+
+open Classical in
+private theorem lpRestrictSA_coe (x : lp 𝒜 ∞) (hx : 0 ≤ x) (F : Finset I) :
+    ((lpRestrictSA x hx F : selfAdjoint (lp 𝒜 ∞)) : lp 𝒜 ∞)
+      = ∑ j ∈ F, lpKappa j ((x : ∀ k, 𝒜 k) j) := rfl
+
+open Classical in
+/-- A *positive* `x` is the directed supremum of its finite restrictions
+`∑_{j ∈ F} κⱼ(xⱼ)`, so a von Neumann subalgebra containing every `κᵢ(a)`
+contains it. -/
+private theorem wstar_mem_of_nonneg (hW : IsVNSubalgebra (lp 𝒜 ∞) W)
+    (hkey : ∀ (i : I) (a : 𝒜 i), lpKappa i a ∈ W) (x : lp 𝒜 ∞) (hx : 0 ≤ x) : x ∈ W := by
+  refine hW.dirSup_mem (Set.range (lpRestrictSA x hx))
+    ⟨x, IsSelfAdjoint.of_nonneg hx⟩ ?_ ⟨_, ⟨∅, rfl⟩⟩ ?_ ?_
+  · rintro _ ⟨F, rfl⟩
+    rw [lpRestrictSA_coe]
+    exact sum_mem fun j _ => hkey j _
+  · rintro _ ⟨F, rfl⟩ _ ⟨G, rfl⟩
+    refine ⟨lpRestrictSA x hx (F ∪ G), ⟨F ∪ G, rfl⟩, ?_, ?_⟩
+    · exact Subtype.coe_le_coe.mp (lpRestrict_mono x hx Finset.subset_union_left)
+    · exact Subtype.coe_le_coe.mp (lpRestrict_mono x hx Finset.subset_union_right)
+  · constructor
+    · rintro _ ⟨F, rfl⟩
+      exact Subtype.coe_le_coe.mp (lpRestrict_le x hx F)
+    · intro u hu
+      rw [← Subtype.coe_le_coe, lp_infty_le_iff]
+      intro k
+      have h1 : lpRestrictSA x hx {k} ≤ u := hu ⟨{k}, rfl⟩
+      have h2 := (lp_infty_le_iff _ _).mp (Subtype.coe_le_coe.mpr h1) k
+      rw [lpRestrictSA_coe, lpKappa_sum_apply] at h2
+      simpa using h2
+
+open Classical in
+/-- `y + ‖y‖·1 ≥ 0` for self-adjoint `y`, so self-adjoint elements follow. -/
+private theorem wstar_mem_of_isSelfAdjoint (hW : IsVNSubalgebra (lp 𝒜 ∞) W)
+    (hkey : ∀ (i : I) (a : 𝒜 i), lpKappa i a ∈ W) (y : lp 𝒜 ∞) (hy : IsSelfAdjoint y) :
+    y ∈ W := by
+  have h0 : (0 : lp 𝒜 ∞) ≤ y + algebraMap ℝ (lp 𝒜 ∞) ‖y‖ := by
+    have h := sub_nonneg.mpr hy.neg_algebraMap_norm_le_self
+    rwa [sub_neg_eq_add] at h
+  have hmem : algebraMap ℝ (lp 𝒜 ∞) ‖y‖ ∈ W := by
+    rw [IsScalarTower.algebraMap_apply ℝ ℂ (lp 𝒜 ∞)]
+    exact W.algebraMap_mem _
+  have hy' : y = (y + algebraMap ℝ (lp 𝒜 ∞) ‖y‖) - algebraMap ℝ (lp 𝒜 ∞) ‖y‖ := by abel
+  rw [hy']
+  exact sub_mem (wstar_mem_of_nonneg hW hkey _ h0) hmem
+
+open Classical in
+/-- `x = ℜx + i·ℑx` reduces the general case to the self-adjoint one. -/
+private theorem wstar_mem_all (hW : IsVNSubalgebra (lp 𝒜 ∞) W)
+    (hkey : ∀ (i : I) (a : 𝒜 i), lpKappa i a ∈ W) (x : lp 𝒜 ∞) : x ∈ W := by
+  rw [← realPart_add_I_smul_imaginaryPart x]
+  refine add_mem (wstar_mem_of_isSelfAdjoint hW hkey _ (realPart x).2) ?_
+  rw [Algebra.smul_def]
+  exact mul_mem (W.algebraMap_mem _)
+    (wstar_mem_of_isSelfAdjoint hW hkey _ (imaginaryPart x).2)
+
+end SumGeneration
+
 /-! ## Parsec 1170: distribution over direct sums -/
 
 section Sums
@@ -2446,7 +2800,23 @@ theorem sum_generation_1 [DecidableEq I] (S : ∀ i, Set (𝒜 i))
     (hS : ∀ i, wstar (𝒜 i) (S i) = ⊤) :
     wstar (lp 𝒜 ∞)
       ({x : lp 𝒜 ∞ | ∃ i, ∃ a ∈ S i, x = lp.single ∞ i a} ∪
-        {x : lp 𝒜 ∞ | ∃ i, x = lp.single ∞ i 1}) = ⊤ := sorry
+        {x : lp 𝒜 ∞ | ∃ i, x = lp.single ∞ i 1}) = ⊤ := by
+  set G : Set (lp 𝒜 ∞) := {x : lp 𝒜 ∞ | ∃ i, ∃ a ∈ S i, x = lp.single ∞ i a} ∪
+      {x : lp 𝒜 ∞ | ∃ i, x = lp.single ∞ i 1} with hG
+  obtain ⟨hWvn, hWsub⟩ := isVNSubalgebra_wstar (A := lp 𝒜 ∞) G
+  have hone : ∀ i : I, lpKappa i (1 : 𝒜 i) ∈ wstar (lp 𝒜 ∞) G := fun i =>
+    hWsub (by rw [hG]; exact Or.inr ⟨i, lpKappa_eq_single i 1⟩)
+  have hgen : ∀ (i : I) (a : 𝒜 i), a ∈ S i → lpKappa i a ∈ wstar (lp 𝒜 ∞) G := fun i a ha =>
+    hWsub (by rw [hG]; exact Or.inl ⟨i, a, ha, lpKappa_eq_single i a⟩)
+  -- `{a | κᵢ(a) ∈ W}` is a von Neumann subalgebra containing `Sᵢ`, hence `𝒜ᵢ`
+  have key : ∀ (i : I) (a : 𝒜 i), lpKappa i a ∈ wstar (lp 𝒜 ∞) G := by
+    intro i a
+    have hle : wstar (𝒜 i) (S i) ≤ kappaPreimage i (wstar (lp 𝒜 ∞) G) (hone i) := by
+      apply sInf_le
+      exact ⟨isVNSubalgebra_kappaPreimage i (hone i) hWvn, fun b hb => hgen i b hb⟩
+    rw [hS i] at hle
+    exact hle (by trivial)
+  exact StarSubalgebra.eq_top_iff.mpr fun x => wstar_mem_all hWvn key x
 
 /-- Every `ℂ`-∗-subalgebra of `ℂ` is the whole of `ℂ`; so *every* subset of
 `ℂ` is a generating subset, `∅` included. -/

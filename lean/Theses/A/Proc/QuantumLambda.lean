@@ -109,51 +109,9 @@ because 47IV is stated there for von Neumann algebras. -/
 /-! ### The coprojections `κᵢ : 𝒜ᵢ → ⊕ⱼ 𝒜ⱼ`
 
 Infrastructure for **122IV** (`nmiu-functional-product`): the *nmisu*-maps
-`κᵢ` of proc.tex:4595, the finite partial sums `∑_{j ∈ F} κⱼ(1)` (whose
-supremum is `1`), and the fact that an nmiu-functional is `1` on exactly one
-`κᵢ(1)`. -/
-
-open Classical in
-def lpKappa (i : I) (a : 𝒜 i) : lp 𝒜 ∞ := lp.single ∞ i a
-
-omit [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
-  [∀ i, StarOrderedRing (𝒜 i)] in
-open Classical in
-theorem lpKappa_mul_left (i : I) (x : lp 𝒜 ∞) :
-    lpKappa i (1 : 𝒜 i) * x = lpKappa i ((x : ∀ j, 𝒜 j) i) := by
-  apply lp.ext
-  funext j
-  rw [lp.infty_coeFn_mul]
-  simp only [lpKappa, lp.coeFn_single, Pi.mul_apply]
-  by_cases h : j = i
-  · subst h; simp
-  · simp [h]
-
-omit [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
-  [∀ i, StarOrderedRing (𝒜 i)] in
-open Classical in
-theorem lpKappa_mul (i : I) (a b : 𝒜 i) :
-    lpKappa i a * lpKappa i b = lpKappa i (a * b) := by
-  apply lp.ext
-  funext j
-  rw [lp.infty_coeFn_mul]
-  simp only [lpKappa, lp.coeFn_single, Pi.mul_apply]
-  by_cases h : j = i
-  · subst h; simp
-  · simp [h]
-
-omit [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
-  [∀ i, StarOrderedRing (𝒜 i)] in
-open Classical in
-theorem lpKappa_sa (i : I) : IsSelfAdjoint (lpKappa i (1 : 𝒜 i)) := by
-  show star _ = _
-  apply lp.ext
-  funext j
-  rw [lp.coeFn_star]
-  simp only [lpKappa, lp.coeFn_single, Pi.star_apply]
-  by_cases h : j = i
-  · subst h; simp
-  · simp [h]
+`κᵢ` of proc.tex:4595 live in `Tensor.lean` (117II needs them too); here are
+the finite partial sums `∑_{j ∈ F} κⱼ(1)` (whose supremum is `1`), and the
+fact that an nmiu-functional is `1` on exactly one `κᵢ(1)`. -/
 
 open Classical in
 noncomputable def lpSumSA (F : Finset I) : selfAdjoint (lp 𝒜 ∞) :=
@@ -250,49 +208,6 @@ theorem exists_kappa_one (φ : NMIUMap (lp 𝒜 ∞) ℂ) :
   rw [h1] at hlub
   have hle : (1 : ℂ) ≤ 0 := hlub.2 (fun z hz => le_of_eq hz)
   exact absurd hle (by simp [Complex.le_def])
-
-omit [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
-  [∀ i, StarOrderedRing (𝒜 i)] in
-open Classical in
-theorem lpKappa_star (i : I) (a : 𝒜 i) :
-    star (lpKappa i a) = lpKappa i (star a) := by
-  apply lp.ext
-  funext j
-  rw [lp.coeFn_star]
-  simp only [lpKappa, lp.coeFn_single, Pi.star_apply]
-  by_cases h : j = i
-  · subst h; simp
-  · simp [h]
-
-omit [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
-  [∀ i, StarOrderedRing (𝒜 i)] in
-open Classical in
-theorem lpKappa_apply_self (i : I) (a : 𝒜 i) :
-    ((lpKappa i a : lp 𝒜 ∞) : ∀ j, 𝒜 j) i = a := lp.single_apply_self _ _ _
-
-omit [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
-  [∀ i, StarOrderedRing (𝒜 i)] in
-open Classical in
-theorem lpKappa_apply_ne (i : I) (a : 𝒜 i) {j : I} (h : j ≠ i) :
-    ((lpKappa i a : lp 𝒜 ∞) : ∀ k, 𝒜 k) j = 0 := lp.single_apply_ne _ _ _ h
-
-omit [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
-  [∀ i, StarOrderedRing (𝒜 i)] in
-open Classical in
-theorem lpKappa_sa' (i : I) {a : 𝒜 i} (ha : IsSelfAdjoint a) :
-    IsSelfAdjoint (lpKappa i a) := by
-  show star _ = _
-  rw [lpKappa_star, ha.star_eq]
-
-open Classical in
-theorem lpKappa_le (i : I) {a b : 𝒜 i} (h : a ≤ b) :
-    lpKappa i a ≤ lpKappa i b := by
-  rw [lp_infty_le_iff]
-  intro j
-  by_cases hj : j = i
-  · subst hj; rw [lpKappa_apply_self, lpKappa_apply_self]; exact h
-  · rw [lpKappa_apply_ne _ _ hj, lpKappa_apply_ne _ _ hj]
-
 
 /-- **122IV** (`nmiu-functional-product`, proc.tex:4585, Lemma), in its
 universe-polymorphic form: an nmiu-functional on a direct sum `⊕ᵢ 𝒜ᵢ`
