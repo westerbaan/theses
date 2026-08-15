@@ -7326,3 +7326,88 @@ available: 1 ⇒ 3 (session 34), 4 ⇒ 1, 4 ⇒ 2 (87VIII, session 35) and now
 and were **not** edited (out of scope): line 2358 calls
 `Theses.A.VN.approximate_pseudoinverse` "still `sorry`", and line 2373 says
 the same of `ultraweakly_bounded_implies_bounded`.
+
+## Session 37 — `B/Eff` 195VI is proved: the divisoid characterisation of basically disconnected spaces (worker 63)
+
+**Result: `basic_divisoid_equiv` (195VI, the last reachable item in `B/Eff`)
+is proved.  B/Eff 19 → 18 code `sorry`s; `StatesPredicates.lean` 5 → 4
+`sorry` tokens (4 → 3 sorried declarations).  The statement is unchanged
+byte-for-byte.  `#print axioms` gives exactly `[propext, Classical.choice,
+Quot.sound]`; the declaration-level walk over all eight `B/Eff` modules
+(1695 declarations) shows the only `sorryAx`-dependent declarations are the
+18 remaining sorried statements themselves — zero leakage preserved.**
+
+The session-18 diagnosis was correct in substance — Mathlib still has neither
+"basically disconnected" nor any σ-Dedekind completeness of `C(X)` (checked
+against the current lake package; only `ExtremallyDisconnected` exists) — but
+wrong in scale: the missing theory is **not** a Mathlib-sized contribution.
+The special case the published solution actually consumes fits in three
+private lemmas (~350 lines) in `StatesPredicates.lean`:
+
+* `cIcc_pcm_le_iff` — the algebraic order `≼` of the effect monoid
+  `[0,1]_{C(X)}` is the pointwise order (witness `b − a`).
+* `exists_continuous_sup` — a bounded monotone sequence `h : ℕ → C(X, ℝ)`
+  has a **least continuous upper bound**, assuming only
+  `∀ q : ℚ, IsOpen (closure {x | ∃ n, q < hₙ x})`.  This is the entire
+  σ-completeness content of Gillman–Jerison 3N.5, but with the
+  basically-disconnected hypothesis abstracted into exactly the instances
+  needed: `d x := sSup {q : ℚ | x ∈ Wq}` with `Wq := closure {∃ n, q < hₙ x}`;
+  the `Wq` are clopen and nested, which gives continuity of `d` (a
+  neighbourhood `W_qa ∩ (W_b)ᶜ` pins `d` between two rationals), `hₙ ≤ d`
+  by density, and leastness because a continuous upper bound `u` has
+  `{q ≤ u}` closed ⊇ `{∃ n, q < hₙ x}`.
+* `exists_divisoid_div` — for `p q ∈ [0,1]_{C(X)}` on a basically
+  disconnected `X`, a continuous `d` with `0 ≤ d ≤ 1`,
+  `d x = min (p x) (q x) / q x` where `q x > 0`, and `d = 0` off
+  `closure (supp q)`.  These three properties alone drive all five divisoid
+  axioms; the least-upper-bound property is used only *inside* this lemma
+  (against the ceilings `kₙ` and the characteristic function of
+  `closure (supp q)`).
+
+Two simplifications made the abstraction possible (both class 2/3
+divergences from `bsols.tex:2466`):
+
+1. **No countable-union-of-cozero-sets machinery.**  The generic proof needs
+   "a countable union of cozero sets is cozero" (the `Σ 2⁻ⁿ φₙ` trick) to
+   apply basic disconnectedness to `{x | sup hₙ x > q}`.  For the *specific*
+   sequence `hₙ = (min f g / g)·χ_{Vₙ}` of the solution this union
+   collapses: for `q ≥ 0`, since `min f g ≤ g`,
+   `{x | ∃ n, q < hₙ x} = {x | q·g x < min (f x) (g x)}
+   = supp (max (min f g − q·g) 0)` — a single cozero set; for `q < 0` it is
+   `univ`.  So `BasicallyDisconnected` is applied only to honest single
+   continuous functions and no `tsum` appears anywhere.
+2. **No net argument, no compactness in the hard half.**  The solution
+   proves continuity of `hₙ` by a net argument; here `hₙ` is
+   `if x ∈ Vₙ then min f g / max g (1/(n+1)) else 0` with `Vₙ` clopen, so
+   `Continuous.if` with empty frontier does it (the denominator is globally
+   bounded below).  Neither `exists_continuous_sup` nor `exists_divisoid_div`
+   uses `CompactSpace` or `T2Space` at all.  The solution's WLOG reduction
+   "pick `B ≥ f` by compactness" in the `⇒` half is likewise replaced by the
+   truncation `min |f| 1`, which has the same support; compactness and
+   Hausdorffness enter *only* through `NormalSpace` for Urysohn's lemma
+   (`exists_continuous_zero_one_of_isClosed` on `{y}` vs `closure (supp f)`).
+
+The `⇒` half is otherwise the thesis's own argument, faithfully: `f/f` is
+idempotent (from `mul_div` at `f/f ≼ f/f` plus `div_div_self`), hence
+`{0,1}`-valued pointwise; `f ≼ f/f` forces `f/f = 1` on `closure (supp f)`;
+for `y` outside, Urysohn's `g` gives `h := (f/f) ⊓ g` with `f ⊙ h = f` and
+`h ≼ f/f`, so `div_unique` pins `h = f/f` and `(f/f)(y) ≤ g y = 0`.  Then
+`closure (supp f) = (f/f)⁻¹(½, ∞)` is open.  (Departure from the printed
+text: no `0 ⊔ g` is needed, since Mathlib's Urysohn already gives
+`0 ≤ g ≤ 1`.)  The `⇐` half verifies the five axioms of `EffectDivisoid`
+from the three properties of `exists_divisoid_div`, with
+`div q q = χ_{closure (supp q)}` exactly, and `div_div_self` falling out of
+`supp χ_S = S` for the clopen `S`.  Overall classification: **(1) faithful**,
+with the two class-2/3 shortcuts above; the `div` is made total by dividing
+`min p q` by `q`, which agrees with the thesis's partial division whenever
+`p ≼ q` and makes `EffectDivisoid.div`'s totality a non-issue.
+
+*Lean notes.*  (a) `(div e e : C(X, ℝ)) x` does **not** coerce — it
+elaborates `div` at type `C(X, ℝ)` and demands `EffectDivisoid C(X, ℝ)`;
+bind `ff` with `obtain ⟨ff, hffdef⟩ : ∃ ff, ff = div e e := ⟨_, rfl⟩` and
+coerce the variable.  (b) hypotheses of the form `((cIcc_pcm_le_iff …).mp h) x`
+carry `(fun f => f.toFun) ↑a x` heads that `rw`/`linarith` will not match;
+restate them once with an explicit `∀ x, (a : C(X,ℝ)) x ≤ _` ascription.
+(c) current-Mathlib renames hit here: `lt_div_iff₀`, `inv_anti₀`,
+`lt_or_ge`, `Set.notMem_empty`, and `IsClopen.frontier_eq` applied as a
+function (dot-notation on the `And` unfolds to `And.frontier_eq` and fails).

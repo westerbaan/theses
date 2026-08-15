@@ -5466,6 +5466,361 @@ the support of every continuous real function is open (195VI). -/
 def BasicallyDisconnected (X : Type u) [TopologicalSpace X] : Prop :=
   ∀ f : C(X, ℝ), IsOpen (closure (Function.support f))
 
+section BasicDivisoid195VI
+
+variable {X : Type u} [TopologicalSpace X]
+
+/-- The algebraic order `≼` of the effect monoid on `[0,1]_{C(X)}` is the
+pointwise order (helper for 195VI). -/
+private theorem cIcc_pcm_le_iff (a b : Set.Icc (0 : C(X, ℝ)) 1) :
+    letI := continuousUnitIntervalEffectMonoid X
+    (a ≼ b ↔ (a : C(X, ℝ)) ≤ (b : C(X, ℝ))) := by
+  letI := continuousUnitIntervalEffectMonoid X
+  constructor
+  · rintro ⟨c, hc, rfl⟩
+    intro x
+    have h1 : (0 : ℝ) ≤ (c : C(X, ℝ)) x := cIcc_nonneg c x
+    show (a : C(X, ℝ)) x ≤ (a : C(X, ℝ)) x + (c : C(X, ℝ)) x
+    linarith
+  · intro h
+    refine ⟨⟨(b : C(X, ℝ)) - (a : C(X, ℝ)), cIcc_mem (fun x => ?_) (fun x => ?_)⟩,
+      ?_, ?_⟩
+    · have h3 : (a : C(X, ℝ)) x ≤ (b : C(X, ℝ)) x := h x
+      show (0 : ℝ) ≤ (b : C(X, ℝ)) x - (a : C(X, ℝ)) x; linarith
+    · have h1 := cIcc_le_one b x
+      have h2 := cIcc_nonneg a x
+      show (b : C(X, ℝ)) x - (a : C(X, ℝ)) x ≤ 1; linarith
+    · intro x
+      have h1 := cIcc_le_one b x
+      show (a : C(X, ℝ)) x + ((b : C(X, ℝ)) x - (a : C(X, ℝ)) x) ≤ 1
+      linarith
+    · refine Subtype.ext ?_
+      show (a : C(X, ℝ)) + ((b : C(X, ℝ)) - (a : C(X, ℝ))) = (b : C(X, ℝ))
+      ring
+
+/-- Existence of a least continuous upper bound of a bounded monotone sequence
+in `C(X, ℝ)`, given that the relevant cozero-set closures are open. -/
+private theorem exists_continuous_sup (h : ℕ → C(X, ℝ)) (hmono : Monotone h)
+    (h0 : ∀ x, (0 : ℝ) ≤ h 0 x) (h1 : ∀ n x, h n x ≤ 1)
+    (hW : ∀ q : ℚ, IsOpen (closure {x | ∃ n, (q : ℝ) < h n x})) :
+    ∃ d : C(X, ℝ), (∀ n, h n ≤ d) ∧ ∀ u : C(X, ℝ), (∀ n, h n ≤ u) → d ≤ u := by
+  classical
+  set W : ℚ → Set X := fun q => closure {x | ∃ n, (q : ℝ) < h n x} with hWdef
+  have hWclosed : ∀ q, IsClosed (W q) := fun q => isClosed_closure
+  have hWmono : ∀ {q q' : ℚ}, q ≤ q' → W q' ⊆ W q := by
+    intro q q' hqq'
+    refine closure_mono ?_
+    rintro x ⟨n, hn⟩
+    exact ⟨n, lt_of_le_of_lt (by exact_mod_cast hqq') hn⟩
+  -- the set of rationals contributing at `x`
+  set S : X → Set ℚ := fun x => {q | x ∈ W q} with hSdef
+  have hSne : ∀ x, ((↑) '' S x : Set ℝ).Nonempty := by
+    intro x
+    refine ⟨((-1 : ℚ) : ℝ), Set.mem_image_of_mem _ ?_⟩
+    have : x ∈ {y | ∃ n, ((-1 : ℚ) : ℝ) < h n y} :=
+      ⟨0, lt_of_lt_of_le (by norm_num) (h0 x)⟩
+    exact subset_closure this
+  have hSbdd : ∀ x, BddAbove ((↑) '' S x : Set ℝ) := by
+    intro x
+    refine ⟨1, ?_⟩
+    rintro r ⟨q, hq, rfl⟩
+    by_contra hgt
+    push_neg at hgt
+    have hne : {y | ∃ n, (q : ℝ) < h n y} = ∅ := by
+      ext y
+      simp only [Set.mem_setOf_eq, Set.mem_empty_iff_false, iff_false, not_exists]
+      intro n hn
+      exact absurd (lt_of_lt_of_le hn (h1 n y)) (not_lt.mpr hgt.le)
+    have : x ∈ (∅ : Set X) := by
+      have := hq; rw [hSdef] at this
+      simpa [hWdef, hne] using this
+    exact this.elim
+  set d : X → ℝ := fun x => sSup ((↑) '' S x) with hddef
+  -- membership gives lower bounds on d
+  have hd_ge : ∀ {x : X} {q : ℚ}, x ∈ W q → (q : ℝ) ≤ d x := fun {x q} hq =>
+    le_csSup (hSbdd x) (Set.mem_image_of_mem _ hq)
+  -- if `d x < q` then `x ∉ W q`
+  have hd_lt : ∀ {x : X} {q : ℚ}, d x < (q : ℝ) → x ∉ W q := by
+    intro x q hlt hmem
+    exact absurd (hd_ge hmem) (not_le.mpr hlt)
+  -- upper bounds on d
+  have hd_le : ∀ {x : X} {r : ℝ}, (∀ q : ℚ, x ∈ W q → (q : ℝ) ≤ r) → d x ≤ r := by
+    intro x r hr
+    refine csSup_le (hSne x) ?_
+    rintro y ⟨q, hq, rfl⟩
+    exact hr q hq
+  have hcont : Continuous d := by
+    rw [continuous_iff_continuousAt]
+    intro x
+    show Filter.Tendsto d (nhds x) (nhds (d x))
+    rw [Metric.tendsto_nhds]
+    intro ε hε
+    obtain ⟨a, ha1, ha2⟩ := exists_rat_btwn (show d x - ε < d x by linarith)
+    obtain ⟨b, hb1, hb2⟩ := exists_rat_btwn (show d x < d x + ε by linarith)
+    -- a witness rational above `a`
+    obtain ⟨r, hrmem, hra⟩ := exists_lt_of_lt_csSup (hSne x) ha2
+    obtain ⟨qa, hqa, rfl⟩ := hrmem
+    have hxWb : x ∉ W b := hd_lt hb1
+    have hopen : IsOpen (W qa ∩ (W b)ᶜ) := (hW qa).inter (hWclosed b).isOpen_compl
+    have hxmem : x ∈ W qa ∩ (W b)ᶜ := ⟨hqa, hxWb⟩
+    refine Filter.eventually_of_mem (hopen.mem_nhds hxmem) ?_
+    rintro y ⟨hy1, hy2⟩
+    have hy_ge : (qa : ℝ) ≤ d y := hd_ge hy1
+    have hy_le : d y ≤ (b : ℝ) := by
+      refine hd_le ?_
+      intro q hq
+      by_contra hgt
+      push_neg at hgt
+      have : (b : ℚ) ≤ q := by exact_mod_cast hgt.le
+      exact hy2 (hWmono this hq)
+    rw [Real.dist_eq, abs_sub_lt_iff]
+    constructor <;> linarith
+  refine ⟨⟨d, hcont⟩, ?_, ?_⟩
+  · -- upper bound
+    intro n
+    rw [ContinuousMap.le_def]
+    intro x
+    by_contra hlt
+    push_neg at hlt
+    obtain ⟨q, hq1, hq2⟩ := exists_rat_btwn hlt
+    have : x ∈ W q := subset_closure ⟨n, hq2⟩
+    exact absurd (hd_ge this) (not_le.mpr hq1)
+  · -- least upper bound
+    intro u hu
+    rw [ContinuousMap.le_def]
+    intro x
+    refine hd_le ?_
+    intro q hq
+    have hsub : {y | ∃ n, (q : ℝ) < h n y} ⊆ {y | (q : ℝ) ≤ u y} := by
+      rintro y ⟨n, hn⟩
+      exact le_trans hn.le (hu n y)
+    have hclosed : IsClosed {y | (q : ℝ) ≤ u y} :=
+      isClosed_le continuous_const u.continuous
+    exact closure_minimal hsub hclosed hq
+
+/-- The division constructed for 195VI on a basically disconnected space:
+a continuous `d` with `d = min (p x) (q x) / q x` on the support of `q`,
+vanishing off the closure of that support, with `0 ≤ d ≤ 1`. -/
+private theorem exists_divisoid_div (hX : BasicallyDisconnected X)
+    (p q : Set.Icc (0 : C(X, ℝ)) 1) :
+    ∃ d : C(X, ℝ), (∀ x, 0 ≤ d x) ∧ (∀ x, d x ≤ 1) ∧
+      (∀ x, 0 < (q : C(X, ℝ)) x →
+        d x = min ((p : C(X, ℝ)) x) ((q : C(X, ℝ)) x) / (q : C(X, ℝ)) x) ∧
+      (∀ x, x ∉ closure (Function.support (q : C(X, ℝ))) → d x = 0) := by
+  classical
+  have hfc : Continuous fun x => (p : C(X, ℝ)) x := (p : C(X, ℝ)).continuous
+  have hgc : Continuous fun x => (q : C(X, ℝ)) x := (q : C(X, ℝ)).continuous
+  have hf0 : ∀ x, 0 ≤ (p : C(X, ℝ)) x := cIcc_nonneg p
+  have hg0 : ∀ x, 0 ≤ (q : C(X, ℝ)) x := cIcc_nonneg q
+  have hg1 : ∀ x, (q : C(X, ℝ)) x ≤ 1 := cIcc_le_one q
+  set f : X → ℝ := fun x => (p : C(X, ℝ)) x with hfdef
+  set g : X → ℝ := fun x => (q : C(X, ℝ)) x with hgdef
+  set f' : X → ℝ := fun x => min (f x) (g x) with hf'def
+  have hf'c : Continuous f' := hfc.min hgc
+  have hf'0 : ∀ x, 0 ≤ f' x := fun x => le_min (hf0 x) (hg0 x)
+  have hf'g : ∀ x, f' x ≤ g x := fun x => min_le_right _ _
+  set c : ℕ → ℝ := fun n => ((n : ℝ) + 1)⁻¹ with hcdef
+  have hcpos : ∀ n, 0 < c n := fun n => by positivity
+  set V : ℕ → Set X := fun n => closure {x | c n < g x} with hVdef
+  have hVclosed : ∀ n, IsClosed (V n) := fun n => isClosed_closure
+  have hVopen : ∀ n, IsOpen (V n) := by
+    intro n
+    have hsupp : Function.support (fun x => max (g x - c n) 0) = {x | c n < g x} := by
+      ext x
+      simp only [Function.mem_support]
+      constructor
+      · intro hne
+        show c n < g x
+        by_contra hle
+        rw [not_lt] at hle
+        exact hne (max_eq_right (by linarith))
+      · intro hlt
+        have hlt' : c n < g x := hlt
+        rw [max_eq_left (by linarith)]
+        intro habs
+        rw [sub_eq_zero] at habs
+        rw [habs] at hlt'
+        exact lt_irrefl _ hlt'
+    have hop := hX ⟨fun x => max (g x - c n) 0,
+      (hgc.sub continuous_const).max continuous_const⟩
+    simpa [hsupp] using hop
+  have hVg : ∀ n x, x ∈ V n → c n ≤ g x := by
+    intro n x hx
+    exact closure_minimal (fun y hy => le_of_lt hy)
+      (isClosed_le continuous_const hgc) hx
+  have hVmono : ∀ n, V n ⊆ V (n + 1) := by
+    intro n
+    refine closure_mono fun x hx => ?_
+    have h1 : c (n + 1) ≤ c n := by
+      rw [hcdef]
+      refine inv_anti₀ (by positivity) (by push_cast; linarith)
+    exact lt_of_le_of_lt h1 hx
+  have hVsub : ∀ n, V n ⊆ closure (Function.support g) := by
+    intro n
+    refine closure_mono fun x hx => ?_
+    exact ne_of_gt (lt_trans (hcpos n) hx)
+  have hVfrontier : ∀ n, frontier (V n) = ∅ := fun n =>
+    IsClopen.frontier_eq ⟨hVclosed n, hVopen n⟩
+  set h : ℕ → C(X, ℝ) := fun n =>
+    ⟨fun x => if x ∈ V n then f' x / max (g x) (c n) else 0,
+      Continuous.if
+        (fun a ha => by
+          have ha' : a ∈ frontier (V n) := by simpa using ha
+          rw [hVfrontier n] at ha'
+          exact absurd ha' (Set.notMem_empty a))
+        (hf'c.div (hgc.max continuous_const)
+          (fun x => ne_of_gt (lt_max_of_lt_right (hcpos n))))
+        continuous_const⟩ with hhdef
+  have hval : ∀ n x, x ∈ V n → h n x = f' x / g x := by
+    intro n x hx
+    show (if x ∈ V n then f' x / max (g x) (c n) else 0) = f' x / g x
+    rw [if_pos hx, max_eq_left (hVg n x hx)]
+  have hval0 : ∀ n x, x ∉ V n → h n x = 0 := by
+    intro n x hx
+    show (if x ∈ V n then f' x / max (g x) (c n) else 0) = 0
+    rw [if_neg hx]
+  have hh0 : ∀ n x, 0 ≤ h n x := by
+    intro n x
+    by_cases hx : x ∈ V n
+    · rw [hval n x hx]
+      exact div_nonneg (hf'0 x) (hg0 x)
+    · rw [hval0 n x hx]
+  have hh1 : ∀ n x, h n x ≤ 1 := by
+    intro n x
+    by_cases hx : x ∈ V n
+    · rw [hval n x hx]
+      have hgx : 0 < g x := lt_of_lt_of_le (hcpos n) (hVg n x hx)
+      exact (div_le_one hgx).mpr (hf'g x)
+    · rw [hval0 n x hx]
+      exact zero_le_one
+  have hhmono : Monotone h := by
+    refine monotone_nat_of_le_succ fun n => ContinuousMap.le_def.mpr fun x => ?_
+    by_cases hx : x ∈ V n
+    · rw [hval n x hx, hval (n + 1) x (hVmono n hx)]
+    · rw [hval0 n x hx]
+      exact hh0 (n + 1) x
+  have hA : ∀ ρ : ℚ, IsOpen (closure {x | ∃ n, (ρ : ℝ) < h n x}) := by
+    intro ρ
+    rcases lt_or_ge (ρ : ℝ) 0 with hneg | hpos
+    · have huniv : {x | ∃ n, (ρ : ℝ) < h n x} = Set.univ := by
+        ext x
+        simp only [Set.mem_univ, iff_true, Set.mem_setOf_eq]
+        exact ⟨0, lt_of_lt_of_le hneg (hh0 0 x)⟩
+      rw [huniv, closure_univ]
+      exact isOpen_univ
+    · have hset : {x | ∃ n, (ρ : ℝ) < h n x} =
+          Function.support fun x => max (f' x - ρ * g x) 0 := by
+        ext x
+        simp only [Set.mem_setOf_eq, Function.mem_support]
+        constructor
+        · rintro ⟨n, hn⟩
+          have hxV : x ∈ V n := by
+            by_contra hxn
+            rw [hval0 n x hxn] at hn
+            exact absurd hn (not_lt.mpr hpos)
+          rw [hval n x hxV] at hn
+          have hgx : 0 < g x := lt_of_lt_of_le (hcpos n) (hVg n x hxV)
+          have hlt : (ρ : ℝ) * g x < f' x := (lt_div_iff₀ hgx).mp hn
+          have hpos' : 0 < f' x - ρ * g x := by linarith
+          rw [max_eq_left hpos'.le]
+          exact ne_of_gt hpos'
+        · intro hne
+          have hpos' : 0 < f' x - ρ * g x := by
+            rcases lt_or_ge 0 (f' x - ρ * g x) with hgt | hle
+            · exact hgt
+            · exact absurd (max_eq_right hle) hne
+          have hgx : 0 < g x := by
+            rcases lt_or_ge 0 (g x) with hgt | hle
+            · exact hgt
+            · have hgeq : g x = 0 := le_antisymm hle (hg0 x)
+              have hf'le : f' x ≤ 0 := hgeq ▸ hf'g x
+              rw [hgeq, mul_zero] at hpos'
+              linarith
+          obtain ⟨n, hn⟩ := exists_nat_one_div_lt hgx
+          have hxV : x ∈ V n := subset_closure (by
+            show c n < g x
+            rw [hcdef]
+            simpa [one_div] using hn)
+          refine ⟨n, ?_⟩
+          rw [hval n x hxV, lt_div_iff₀ hgx]
+          linarith
+      rw [hset]
+      have hop := hX ⟨fun x => max (f' x - ρ * g x) 0,
+        (hf'c.sub (continuous_const.mul hgc)).max continuous_const⟩
+      simpa using hop
+  obtain ⟨d, hub, hlub⟩ := exists_continuous_sup h hhmono (hh0 0) hh1 hA
+  have hd0 : ∀ x, 0 ≤ d x := fun x =>
+    le_trans (hh0 0 x) (ContinuousMap.le_def.mp (hub 0) x)
+  have hd1 : ∀ x, d x ≤ 1 := by
+    have hle : d ≤ 1 := hlub 1 fun n => ContinuousMap.le_def.mpr fun x => by
+      simpa using hh1 n x
+    intro x
+    simpa using ContinuousMap.le_def.mp hle x
+  have hSclopen : IsClopen (closure (Function.support g)) :=
+    ⟨isClosed_closure, by simpa [hgdef] using hX (q : C(X, ℝ))⟩
+  have hchi : Continuous fun x =>
+      if x ∈ closure (Function.support g) then (1 : ℝ) else 0 :=
+    Continuous.if
+      (fun a ha => by
+        have ha' : a ∈ frontier (closure (Function.support g)) := by simpa using ha
+        rw [IsClopen.frontier_eq hSclopen] at ha'
+        exact absurd ha' (Set.notMem_empty a))
+      continuous_const continuous_const
+  have hd_out : ∀ x, x ∉ closure (Function.support g) → d x = 0 := by
+    intro x hx
+    have hle : d ≤ ⟨_, hchi⟩ := by
+      refine hlub _ fun n => ContinuousMap.le_def.mpr fun y => ?_
+      show h n y ≤ if y ∈ closure (Function.support g) then (1 : ℝ) else 0
+      by_cases hy : y ∈ closure (Function.support g)
+      · rw [if_pos hy]
+        exact hh1 n y
+      · rw [if_neg hy, hval0 n y fun hyV => hy (hVsub n hyV)]
+    have hx0 := ContinuousMap.le_def.mp hle x
+    rw [show (⟨_, hchi⟩ : C(X, ℝ)) x =
+        (if x ∈ closure (Function.support g) then (1 : ℝ) else 0) from rfl,
+      if_neg hx] at hx0
+    exact le_antisymm hx0 (hd0 x)
+  have hd_div : ∀ x, 0 < g x → d x = f' x / g x := by
+    intro x hgx
+    obtain ⟨n, hn⟩ := exists_nat_one_div_lt hgx
+    have hxV : x ∈ V n := subset_closure (by
+      show c n < g x
+      rw [hcdef]
+      simpa [one_div] using hn)
+    have hge : f' x / g x ≤ d x := by
+      rw [← hval n x hxV]
+      exact ContinuousMap.le_def.mp (hub n) x
+    have hkc : Continuous fun y =>
+        if y ∈ V n then f' y / max (g y) (c n) else 1 :=
+      Continuous.if
+        (fun a ha => by
+          have ha' : a ∈ frontier (V n) := by simpa using ha
+          rw [hVfrontier n] at ha'
+          exact absurd ha' (Set.notMem_empty a))
+        (hf'c.div (hgc.max continuous_const)
+          (fun y => ne_of_gt (lt_max_of_lt_right (hcpos n))))
+        continuous_const
+    have hk_ub : ∀ m, h m ≤ ⟨_, hkc⟩ := by
+      intro m
+      refine ContinuousMap.le_def.mpr fun y => ?_
+      show h m y ≤ if y ∈ V n then f' y / max (g y) (c n) else 1
+      by_cases hy : y ∈ V n
+      · rw [if_pos hy, max_eq_left (hVg n y hy)]
+        by_cases hym : y ∈ V m
+        · rw [hval m y hym]
+        · rw [hval0 m y hym]
+          exact div_nonneg (hf'0 y) (hg0 y)
+      · rw [if_neg hy]
+        exact hh1 m y
+    have hled := ContinuousMap.le_def.mp (hlub _ hk_ub) x
+    rw [show (⟨_, hkc⟩ : C(X, ℝ)) x =
+        (if x ∈ V n then f' x / max (g x) (c n) else 1) from rfl,
+      if_pos hxV, max_eq_left (hVg n x hxV)] at hled
+    exact le_antisymm hled hge
+  exact ⟨d, hd0, hd1, hd_div, hd_out⟩
+
+end BasicDivisoid195VI
+
 /-- **195VI** (`basic-divisoid-equiv`, eff.tex:3275, Exercise\*): for a
 compact Hausdorff space `X`, the unit interval of `C(X)` is an effect
 divisoid if and only if `X` is basically disconnected (equivalently, `C(X)`
@@ -5475,7 +5830,205 @@ theorem basic_divisoid_equiv (X : Type u) [TopologicalSpace X]
     [CompactSpace X] [T2Space X] :
     letI := continuousUnitIntervalEffectMonoid X
     (Nonempty (EffectDivisoid (Set.Icc (0 : C(X, ℝ)) 1)) ↔
-      BasicallyDisconnected X) := sorry
+      BasicallyDisconnected X) := by
+  letI := continuousUnitIntervalEffectMonoid X
+  constructor
+  · -- If the unit interval of `C(X)` is an effect divisoid, then `f/f` is the
+    -- characteristic function of `closure (supp f)`, which is hence open.
+    rintro ⟨D⟩ F
+    letI := D
+    classical
+    set T := closure (Function.support F) with hT
+    have hmc : Continuous fun x => min |F x| 1 :=
+      F.continuous.abs.min continuous_const
+    set e : Set.Icc (0 : C(X, ℝ)) 1 :=
+      ⟨⟨fun x => min |F x| 1, hmc⟩,
+        cIcc_mem (fun x => le_min (abs_nonneg _) zero_le_one)
+          (fun x => min_le_right _ _)⟩ with he
+    have hesupp : Function.support (e : C(X, ℝ)) = Function.support F := by
+      ext x
+      simp only [Function.mem_support]
+      show ¬(min |F x| 1 = 0) ↔ _
+      constructor
+      · intro hne hF
+        exact hne (by rw [hF]; simp)
+      · intro hF hmin
+        exact absurd hmin (ne_of_gt (lt_min (abs_pos.mpr hF) one_pos))
+    obtain ⟨ff, hffdef⟩ : ∃ ff, ff = div e e := ⟨_, rfl⟩
+    have hidem : ff * ff = ff := by
+      rw [hffdef]
+      have h1 := D.mul_div (pcm_preorder_refl (div e e))
+      rwa [D.div_div_self e] at h1
+    have hpt : ∀ x, (ff : C(X, ℝ)) x * (ff : C(X, ℝ)) x = (ff : C(X, ℝ)) x := by
+      intro x
+      have h2 : ((ff : C(X, ℝ)) * (ff : C(X, ℝ)) : C(X, ℝ))
+          = (ff : C(X, ℝ)) := congrArg Subtype.val hidem
+      simpa using ContinuousMap.congr_fun h2 x
+    have hzo : ∀ x, (ff : C(X, ℝ)) x = 0 ∨ (ff : C(X, ℝ)) x = 1 := by
+      intro x
+      have h3 : (ff : C(X, ℝ)) x * ((ff : C(X, ℝ)) x - 1) = 0 := by
+        rw [mul_sub, mul_one, hpt x, sub_self]
+      rcases mul_eq_zero.mp h3 with h | h
+      · exact Or.inl h
+      · exact Or.inr (sub_eq_zero.mp h)
+    have hle : ∀ x, (e : C(X, ℝ)) x ≤ (ff : C(X, ℝ)) x := by
+      have h1 : (e : C(X, ℝ)) ≤ (ff : C(X, ℝ)) := by
+        rw [hffdef]
+        exact (cIcc_pcm_le_iff e (div e e)).mp (D.le_div_self e)
+      exact fun x => h1 x
+    have hone : ∀ x ∈ T, (ff : C(X, ℝ)) x = 1 := by
+      have hsub : Function.support F ⊆ {x | (ff : C(X, ℝ)) x = 1} := by
+        intro x hx
+        have h1 : (0 : ℝ) < (e : C(X, ℝ)) x := by
+          show (0 : ℝ) < min |F x| 1
+          exact lt_min (abs_pos.mpr hx) one_pos
+        have h2 := lt_of_lt_of_le h1 (hle x)
+        show (ff : C(X, ℝ)) x = 1
+        rcases hzo x with h | h
+        · rw [h] at h2
+          exact absurd h2 (lt_irrefl 0)
+        · exact h
+      intro x hx
+      exact closure_minimal hsub
+        (isClosed_eq (ff : C(X, ℝ)).continuous continuous_const) hx
+    have hzero : ∀ y, y ∉ T → (ff : C(X, ℝ)) y = 0 := by
+      intro y hy
+      obtain ⟨g, hg0, hg1, hgIcc⟩ := exists_continuous_zero_one_of_isClosed
+        (isClosed_singleton (x := y)) isClosed_closure
+        (Set.disjoint_singleton_left.mpr hy)
+      have hhc : Continuous fun x => min ((ff : C(X, ℝ)) x) (g x) :=
+        (ff : C(X, ℝ)).continuous.min g.continuous
+      have hmem : (⟨fun x => min ((ff : C(X, ℝ)) x) (g x), hhc⟩ : C(X, ℝ))
+          ∈ Set.Icc (0 : C(X, ℝ)) 1 := cIcc_mem
+        (fun x => le_min (cIcc_nonneg ff x) (hgIcc x).1)
+        (fun x => le_trans (min_le_left _ _) (cIcc_le_one ff x))
+      have hhle : (⟨⟨fun x => min ((ff : C(X, ℝ)) x) (g x), hhc⟩, hmem⟩ :
+          Set.Icc (0 : C(X, ℝ)) 1) ≼ div e e := by
+        rw [← hffdef]
+        exact (cIcc_pcm_le_iff _ _).mpr fun x => min_le_left _ _
+      have hmul : e * ⟨⟨fun x => min ((ff : C(X, ℝ)) x) (g x), hhc⟩, hmem⟩
+          = e := by
+        refine Subtype.ext (ContinuousMap.ext fun x => ?_)
+        show (e : C(X, ℝ)) x * min ((ff : C(X, ℝ)) x) (g x) = (e : C(X, ℝ)) x
+        by_cases hx : x ∈ T
+        · have hgx1 : g x = 1 := hg1 hx
+          rw [hone x hx, hgx1, min_self, mul_one]
+        · have hex : (e : C(X, ℝ)) x = 0 := by
+            by_contra hne
+            exact hx (by rw [hT, ← hesupp]; exact subset_closure hne)
+          rw [hex, zero_mul]
+      have huniq := D.div_unique (pcm_preorder_refl e) hhle hmul
+      rw [← hffdef] at huniq
+      have h5 : min ((ff : C(X, ℝ)) y) (g y) = (ff : C(X, ℝ)) y :=
+        congrArg (fun z : Set.Icc (0 : C(X, ℝ)) 1 => (z : C(X, ℝ)) y) huniq
+      rw [hg0 rfl] at h5
+      exact le_antisymm (h5 ▸ min_le_right _ _) (cIcc_nonneg ff y)
+    have hTeq : T = (ff : C(X, ℝ)) ⁻¹' Set.Ioi (1 / 2 : ℝ) := by
+      ext x
+      simp only [Set.mem_preimage, Set.mem_Ioi]
+      constructor
+      · intro hx
+        rw [hone x hx]
+        norm_num
+      · intro hx
+        by_contra hxT
+        rw [hzero x hxT] at hx
+        norm_num at hx
+    rw [hTeq]
+    exact (ff : C(X, ℝ)).continuous.isOpen_preimage _ isOpen_Ioi
+  · -- Conversely the σ-supremum construction of the thesis gives a division.
+    intro hBD
+    classical
+    choose d hd0 hd1 hdiv hout using exists_divisoid_div hBD
+    have hmem : ∀ p q, d p q ∈ Set.Icc (0 : C(X, ℝ)) 1 := fun p q =>
+      cIcc_mem (hd0 p q) (hd1 p q)
+    have hone : ∀ (q : Set.Icc (0 : C(X, ℝ)) 1) (x : X),
+        x ∈ closure (Function.support (q : C(X, ℝ))) → d q q x = 1 := by
+      intro q x hx
+      refine closure_minimal (fun y hy => ?_)
+        (isClosed_eq (d q q).continuous continuous_const) hx
+      have hqy : (0 : ℝ) < (q : C(X, ℝ)) y :=
+        lt_of_le_of_ne (cIcc_nonneg q y) (Ne.symm hy)
+      show d q q y = 1
+      rw [hdiv q q y hqy, min_self]
+      exact div_self (ne_of_gt hqy)
+    refine ⟨{ div := fun p q => ⟨d p q, hmem p q⟩
+              div_le := ?_
+              mul_div := ?_
+              div_unique := ?_
+              le_div_self := ?_
+              div_div_self := ?_ }⟩
+    · intro a b hab
+      refine (cIcc_pcm_le_iff _ _).mpr fun x => ?_
+      show d a b x ≤ d b b x
+      by_cases hx : x ∈ closure (Function.support (b : C(X, ℝ)))
+      · rw [hone b x hx]
+        exact hd1 a b x
+      · rw [hout a b x hx, hout b b x hx]
+    · intro a b hab
+      have hab' : ∀ x, (a : C(X, ℝ)) x ≤ (b : C(X, ℝ)) x := fun x =>
+        (cIcc_pcm_le_iff a b).mp hab x
+      refine Subtype.ext (ContinuousMap.ext fun x => ?_)
+      show (b : C(X, ℝ)) x * d a b x = (a : C(X, ℝ)) x
+      rcases (cIcc_nonneg b x).lt_or_eq with hbx | hbx
+      · rw [hdiv a b x hbx, min_eq_left (hab' x), mul_comm,
+          div_mul_cancel₀ _ (ne_of_gt hbx)]
+      · rw [← hbx, zero_mul]
+        have h1 := hab' x
+        have h2 := cIcc_nonneg a x
+        rw [← hbx] at h1
+        linarith
+    · intro a b c hab hc hmul
+      have hc' : ∀ x, (c : C(X, ℝ)) x ≤ d b b x := fun x =>
+        (cIcc_pcm_le_iff _ _).mp hc x
+      have hab' : ∀ x, (a : C(X, ℝ)) x ≤ (b : C(X, ℝ)) x := fun x =>
+        (cIcc_pcm_le_iff a b).mp hab x
+      refine Subtype.ext (ContinuousMap.ext fun x => ?_)
+      show (c : C(X, ℝ)) x = d a b x
+      by_cases hx : x ∈ closure (Function.support (b : C(X, ℝ)))
+      · refine closure_minimal (fun y hy => ?_)
+          (isClosed_eq (c : C(X, ℝ)).continuous (d a b).continuous) hx
+        have hby : (0 : ℝ) < (b : C(X, ℝ)) y :=
+          lt_of_le_of_ne (cIcc_nonneg b y) (Ne.symm hy)
+        have hmul' : (b : C(X, ℝ)) y * (c : C(X, ℝ)) y = (a : C(X, ℝ)) y :=
+          congrArg (fun z : Set.Icc (0 : C(X, ℝ)) 1 => (z : C(X, ℝ)) y) hmul
+        show (c : C(X, ℝ)) y = d a b y
+        rw [hdiv a b y hby, min_eq_left (hab' y), eq_div_iff (ne_of_gt hby),
+          mul_comm]
+        exact hmul'
+      · have h1 : (c : C(X, ℝ)) x ≤ d b b x := hc' x
+        rw [hout b b x hx] at h1
+        rw [le_antisymm h1 (cIcc_nonneg c x), hout a b x hx]
+    · intro a
+      refine (cIcc_pcm_le_iff _ _).mpr fun x => ?_
+      show (a : C(X, ℝ)) x ≤ d a a x
+      rcases (cIcc_nonneg a x).lt_or_eq with hax | hax
+      · rw [hone a x (subset_closure (ne_of_gt hax))]
+        exact cIcc_le_one a x
+      · rw [← hax]
+        exact hd0 a a x
+    · intro a
+      refine Subtype.ext (ContinuousMap.ext fun x => ?_)
+      show d ⟨d a a, hmem a a⟩ ⟨d a a, hmem a a⟩ x = d a a x
+      have hSsupp : Function.support (d a a)
+          = closure (Function.support (a : C(X, ℝ))) := by
+        apply Set.Subset.antisymm
+        · intro y hy
+          by_contra hyS
+          exact hy (hout a a y hyS)
+        · intro y hy
+          rw [Function.mem_support, hone a y hy]
+          norm_num
+      by_cases hx : x ∈ closure (Function.support (a : C(X, ℝ)))
+      · have hx' : x ∈ closure (Function.support (d a a)) := by
+          rw [hSsupp, closure_closure]
+          exact hx
+        rw [hone ⟨d a a, hmem a a⟩ x hx', hone a x hx]
+      · have hx' : x ∉ closure (Function.support (d a a)) := by
+          rw [hSsupp, closure_closure]
+          exact hx
+        rw [hout ⟨d a a, hmem a a⟩ ⟨d a a, hmem a a⟩ x hx', hout a a x hx]
+
 
 /-- **195VII** (eff.tex:3328, Proposition): if `a ⊥ b` and `a ⋁ b ≼ c` in an
 effect divisoid, then `(a ⋁ b)/c = a/c ⋁ b/c`. -/
