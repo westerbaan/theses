@@ -7238,3 +7238,91 @@ and dominated by `⌈a⌉ − P_N`), perhaps 80–150 lines, and worth stating a
 own lemma about two sequences of projections with equal suprema.  The
 positive case of 80IV itself is then the thesis's `qₙ = ⌈(a−1/n)₊⌉`
 construction on top of **79VI**.2, which is now available.
+
+## Session 36 — `A/VN`: 80III and 80IV, the whole 790–800 gate (worker 62, A chain)
+
+Files: `Theses/A/VN/Division.lean` only.  Two theorems closed, both **class 2**
+(different route / original work: both are `vn.tex` points with no published
+solution — 80III is an Exercise with no author argument at all, 80IV has an
+author proof which is transcribed faithfully for the positive case).
+
+### **80III** `approximate_pseudoinverse_reduction` — class 2
+
+The Exercise gives no argument.  Writing `c = b*b`, four of the six fields of
+`IsApproxPseudoinverse A b (fun n => tₙ b*)` transfer by associativity —
+*provided* one knows two facts that are **not** fields of the definition:
+
+* `tₙ c tₙ = tₙ`, and
+* `tₙ = tₙ*`.
+
+**The first is an order-limit fact and is the lemma the previous session
+predicted** (`eq_of_le_of_isLUB_partialSums`), but the argument is shorter than
+the predicted 80–150 lines and needs no functional: if `pₙ ≤ rₙ` are two
+sequences of positive elements whose partial sums have the *same* supremum `q`,
+put `d = r_m − p_m ≥ 0`; for `N > m`,
+
+    ∑_{n<N} pₙ + d = (∑_{n<N} pₙ − p_m) + r_m ≤ (∑_{n<N} rₙ − r_m) + r_m ≤ q,
+
+so `q ≤ q − d` and `d = 0`.  ~30 lines, purely order-theoretic.  Applied to
+`(tₙc, ⌊tₙ⌉)` and to `(c tₙ, ⌈tₙ⌋)` — the inequalities are `⌊xy⌉ ≤ ⌊x⌉` and
+`⌈xy⌋ ≤ ⌈y⌋` — it gives `tₙ c = ⌊tₙ⌉` and `c tₙ = ⌈tₙ⌋`, hence
+`tₙ c tₙ = ⌊tₙ⌉ tₙ = tₙ`.
+
+**The second was not predicted and is the only place `c ≥ 0` is used.**  With
+`w = tₙ*tₙ − tₙtₙ*` the four identities `tₙ = c(tₙ*tₙ) = (tₙtₙ*)c` and
+`tₙ* = c(tₙtₙ*) = (tₙ*tₙ)c` give `tₙ − tₙ* = c w = −(w c)`, whence
+`c² w = w c²`; as `c = √(c²)` (`CFC.sqrt_mul_self`, `Commute.cfc_nnreal`) this
+upgrades to `c w = w c`, so `c w = 0` and `tₙ = tₙ*`.
+
+The genuinely new content is the two remaining sums `∑ₙ b tₙ b* = ⌊b⌉ =
+∑ₙ ⌈tₙb*⌋`.  Both reduce to the same statement because
+`⌈tₙb*⌋ = ⌊b tₙ⌉ = b tₙ b*`, and
+
+* `∑_{k<N} b t_k b* = ⌊b Eₙ⌉` for `Eₙ = ∑_{k<N} t_k c` (an `IsLeast`
+  computation on both sides of `ceill_basic_2`), and
+* `⋃_N ⌊b Eₙ⌉ = ⌈b ⌈b⌋ b*⌉ = ⌈b b*⌉ = ⌊b⌉` by **60IX**.2 in the form
+  `ceil_conj_projSup`, which is exactly the normality statement needed.
+
+Turning that `projSup` back into an `IsLUB` in `A` needed one further
+auxiliary, `isLUB_projSup_of_directed` (a directed set of projections has its
+`projSup` as supremum in `A`: the supremum exists in `sa(A)` and is a
+projection by **56XIV**).  Pairwise orthogonality of the `tₙc` is free from the
+definition — the partial sums are `≤ ⌈c⌋ ≤ 1`, and **55XIII**.1 turns that into
+`p q = 0`.
+
+### **80IV** `approximate_pseudoinverse` — class 2 for the reduction, class 1
+for the positive case
+
+The reduction to positive elements is the thesis's (`80III` applied to `a*a`).
+The positive case is the thesis's construction transcribed:
+`qₙ = ⌈(a − 1/n)₊⌉`, `eₙ = qₙ₊₁ − qₙ`, `tₙ = (a eₙ)^{∼1}`.  Divergences, all
+mild (class 3):
+
+* the thesis's "`(a−1/n)₊` converges in norm to `a`, and also ultraweakly, so
+  `a = ⋁ₙ(a−1/n)₊` and `⌈a⌉ = ⋃ₙ qₙ` by **59V**" is replaced by a direct
+  argument that needs **only the norm estimate**: if a projection `p` dominates
+  every `qₙ` then `uₙ p = uₙ`, so `‖ap − a‖ = ‖(a−uₙ)p − (a−uₙ)‖ ≤ 2/n → 0`,
+  i.e. `ap = a`, i.e. `⌈a⌉ ≤ p`.  No ultraweak topology, no **59V**.
+* the three facts about `(a − l)₊` for positive `a` — `(a−l)₊ ≤ a`,
+  monotonicity in `l`, and `‖a − (a−l)₊‖ ≤ l` — are proved once via
+  `(a − l)₊ = cfc (fun r => (r−l) ⊔ 0) a` (`posPart_sub_algebraMap`) and
+  `cfc_mono` / `norm_cfc_le`, i.e. by pointwise inequalities on `spectrum ℝ a`.
+  This is the only use of the functional calculus.
+* `eₙ ∈ {a}^□□` is not needed in the abstract; what is used is
+  `a eₙ = eₙ a`, which comes from **56I**'s addendum `vna_ceil_comm` plus
+  `a (cfc f a) = (cfc f a) a`.
+
+### Effect and verification
+
+`A/VN` 88 → **86** (`Division.lean` 23 → 21).  Whole-project `lake build`
+green at 8738 jobs, unchanged from the session's baseline, so `A/Proc` and
+`B/Dils` are as clean as they were found.  `#print axioms` on all sixteen new
+declarations gives `[propext, Classical.choice, Quot.sound]`; zero new
+warnings.
+
+With 80IV proved, `B/Dils` **149V** has all four of its implications
+available: 1 ⇒ 3 (session 34), 4 ⇒ 1, 4 ⇒ 2 (87VIII, session 35) and now
+3 ⇒ 4.  Two doc comments in `Theses/B/Dils/HilbertModules.lean` are now stale
+and were **not** edited (out of scope): line 2358 calls
+`Theses.A.VN.approximate_pseudoinverse` "still `sorry`", and line 2373 says
+the same of `ultraweakly_bounded_implies_bounded`.

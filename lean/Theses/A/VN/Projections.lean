@@ -1251,7 +1251,7 @@ theorem ceil_of_isStarProjection {p : A} (hp : IsStarProjection p) : ceil p = p 
 
 /-- Auxiliary (the binary join of projections): `⌈p + q⌉` is the least
 projection above both `p` and `q`. -/
-private theorem isLeast_ceil_add {p q : A} (hp : IsStarProjection p)
+theorem isLeast_ceil_add {p q : A} (hp : IsStarProjection p)
     (hq : IsStarProjection q) :
     IsLeast {r : A | IsStarProjection r ∧ p ≤ r ∧ q ≤ r} (ceil (p + q)) := by
   have hpq : (0 : A) ≤ p + q := add_nonneg hp.nonneg hq.nonneg
