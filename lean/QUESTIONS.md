@@ -312,6 +312,13 @@ or exclude `1 = 0` from the definition (178II) once and for all?  The same
 question governs `MConvexComb`, whose `sum_one` degenerates identically — the
 `1 = 0` branch already appears in five proofs in `StatesPredicates.lean`.
 
+**ANSWERED 2026-08-15 by Bas** (`d61feea`, "Fix 194I"): effect monoids stay possibly
+trivial, and 194I now performs the case split explicitly — it treats `M = 1` first
+(every abstract `1`-convex set is a singleton, so any of them is initial), then
+assumes `M ≠ 1` for the `𝒟_M ∅ = ∅` argument.  That is exactly the shape our proof
+already had, so **no Lean change is needed**; the split stays isolated in
+`MConvexComb.eq_eta_punit`.
+
 *Update (193X/194I.3/194I.4)*: the cost is smaller than it looked.  Isolating
 the split in one lemma — `MConvexComb.eq_eta_punit`, "`𝒟_M 1` is a singleton",
 which holds in both branches — makes the whole of 193X and 194I.3/.4 uniform in
