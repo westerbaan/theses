@@ -6,7 +6,10 @@ lines 4082–4279.
   parsec 1580:  the Kaplansky density theorem for Hilbert C*-modules
 
 **158Ia** is proved; **158II** and the four **158V** estimates are `sorry`
-(the latter four are *false*, see below).  For 158II the sound part of a
+(the latter four are *false*, see below).  The **commutative case of 158II**
+is proved outright (`kaplansky_hilbmod_of_commutative`, end of this file) —
+there the mirror obstruction vanishes and a one-shot renormalization closes
+the weak statement.  For the general 158II the sound part of a
 replacement proof is banked as `kaplansky_hilbmod_of_weak` (axiom-clean):
 158II reduces, by an elementary Mazur-style variational argument, to *weak*
 bounded approximation — making `ω ⟪w, x−d⟫` small with `d` in the
@@ -113,7 +116,8 @@ The statement itself is believed true but currently *open*: by
 `kaplansky_hilbmod_of_weak` (end of this file, proved) it reduces to the
 weak bounded-approximation statement recorded there; the obstruction to
 proving *that* — and the reason no counterexample is known either — is
-analyzed in `PROVING-LOG.md`. -/
+analyzed in `PROVING-LOG.md`.  The **commutative case** is proved:
+`kaplansky_hilbmod_of_commutative` (end of this file). -/
 theorem kaplansky_hilbmod [VonNeumannAlgebra ℬ] [CompleteSpace X]
     (A : StarSubalgebra ℂ ℬ) (hA : IsClosed (A : Set ℬ))
     (D : Set X)
@@ -789,6 +793,396 @@ theorem kaplansky_hilbmod_of_weak
   exact le_trans (unSeminorm_le_npSum n ωs i (cstarBInner ℬ X) (x - d)) hdε
 
 end WeakToStrong
+
+/-! ### 158II, the commutative case
+
+⚠️ *Class 2 — different proof.*  For **commutative** `ℬ` the statement of
+**158II** is provable outright, by a one-shot renormalization that is *not*
+the thesis's route (158V, which is false in general, is not used; nor is it
+true that this specializes the thesis's argument — the printed proof is dead
+even here).  The obstruction analyzed in `PROVING-LOG.md` — the *mirrored
+compression* `ω(c* · c)` with `c` not known in advance — vanishes when `ℬ`
+is commutative: `ω(r z r) = ω(r² z) ≤ ω(z)` for contractions `r`, because
+positive commuting elements have positive products.  Concretely: given `x`
+with `N := ‖x‖ > 0` and a `δ`-approximant `d₀ ∈ D`, set `b₀ := ⟪d₀, d₀⟫ ∈ A`
+and renormalize with `f_N(t) := N/√(max t N²)`:
+
+  `d := f_N(b₀) • d₀`.
+
+Then `⟪d,d⟫ = cfc (t ↦ f_N(t)²t) b₀` has norm `≤ N²`, so `‖d‖ ≤ ‖x‖`, and
+`d ∈ D` since `cfc f_N b₀` lies in the closed C*-subalgebra `A ∋ b₀`
+(`cfc_mem`).  The weak defect splits as
+
+  `ω⟪w, x−d⟫ = ω⟪w, x−d₀⟫ + ω(q ⟪w, d₀⟫)`,   `q := 1 − f_N(b₀) ≥ 0`,
+
+whose first term is `≤ ‖w‖_ω δ` by Cauchy–Schwarz, and whose second is
+`≤ ‖w‖_ω ‖q•d₀‖_ω` with `‖q•d₀‖_ω² = ω(q b₀ q)`.  The one identity doing the
+real work is the *single-variable* factorization (avoiding the two-variable
+functional calculus `(√s−√t)² ≤ |s−t|` of the original sketch):
+
+  `(1−f_N(t))² t = m_N(t)·(t − N²)`,   `m_N(t) := (√(max t N²) − N)/(√(max t N²) + N) ∈ [0,1]`,
+
+so `q b₀ q = r(b₀ − N²)` with `r := m_N(b₀)`; since `⟪x,x⟫ ≤ N²·1` and `r ≥ 0`
+commute, `ω(q b₀ q) ≤ ω(r(b₀ − ⟪x,x⟫))`, and `b₀ − ⟪x,x⟫ =
+⟪d₀−x, d₀⟫ + ⟪x, d₀−x⟫` is weak-small by Cauchy–Schwarz — both times on the
+*good* slot, which is what commutativity buys: `r` moves to the other side of
+the inner product at no cost.  Hence `ω(q b₀ q) ≤ δ² + 2‖x‖_ω δ`, and `δ`
+chosen from `η`, `‖w‖_ω`, `‖x‖_ω` alone closes the weak statement; the full
+(finitely-many-seminorms) statement follows by `kaplansky_hilbmod_of_weak`.
+
+This isolates exactly what the open general case is missing: a substitute
+for the commutation `ω(q z q) = ω(q² z)` on a one-sided module. -/
+
+section Commutative
+
+/-- `√(max t N²)`, the cut-off square root used by the renormalizer. -/
+private noncomputable def rsq (N t : ℝ) : ℝ := Real.sqrt (max t (N ^ 2))
+
+/-- The one-shot renormalizer `f_N(t) = N/√(max t N²)`. -/
+private noncomputable def renf (N t : ℝ) : ℝ := N / rsq N t
+
+/-- The extraction factor `m_N(t) = (√(max t N²) − N)/(√(max t N²) + N)`. -/
+private noncomputable def extf (N t : ℝ) : ℝ := (rsq N t - N) / (rsq N t + N)
+
+variable {N : ℝ}
+
+private theorem rsq_pos (hN : 0 < N) (t : ℝ) : 0 < rsq N t :=
+  Real.sqrt_pos.mpr (lt_of_lt_of_le (pow_pos hN 2) (le_max_right t (N ^ 2)))
+
+private theorem le_rsq (hN : 0 < N) (t : ℝ) : N ≤ rsq N t := by
+  rw [rsq]
+  calc N = Real.sqrt (N ^ 2) := (Real.sqrt_sq hN.le).symm
+    _ ≤ Real.sqrt (max t (N ^ 2)) := Real.sqrt_le_sqrt (le_max_right t (N ^ 2))
+
+private theorem rsq_sq (t : ℝ) : rsq N t ^ 2 = max t (N ^ 2) :=
+  Real.sq_sqrt (le_trans (sq_nonneg N) (le_max_right t (N ^ 2)))
+
+private theorem continuous_rsq (N : ℝ) : Continuous (rsq N) :=
+  Real.continuous_sqrt.comp (continuous_id.max continuous_const)
+
+private theorem continuous_renf (hN : 0 < N) : Continuous (renf N) :=
+  continuous_const.div (continuous_rsq N) fun t => (rsq_pos hN t).ne'
+
+private theorem continuous_extf (hN : 0 < N) : Continuous (extf N) :=
+  ((continuous_rsq N).sub continuous_const).div
+    ((continuous_rsq N).add continuous_const)
+    fun t => ne_of_gt (by have := rsq_pos hN t; linarith)
+
+private theorem renf_nonneg (hN : 0 < N) (t : ℝ) : 0 ≤ renf N t :=
+  div_nonneg hN.le (rsq_pos hN t).le
+
+private theorem renf_le_one (hN : 0 < N) (t : ℝ) : renf N t ≤ 1 :=
+  div_le_one_of_le₀ (le_rsq hN t) (rsq_pos hN t).le
+
+private theorem extf_nonneg (hN : 0 < N) (t : ℝ) : 0 ≤ extf N t :=
+  div_nonneg (sub_nonneg.mpr (le_rsq hN t))
+    (by have := rsq_pos hN t; linarith)
+
+private theorem extf_le_one (hN : 0 < N) (t : ℝ) : extf N t ≤ 1 := by
+  have h := rsq_pos hN t
+  exact div_le_one_of_le₀ (by linarith) (by linarith)
+
+/-- The renormalized square stays under the cap: `f_N(t)·t·f_N(t) ≤ N²`. -/
+private theorem renf_conj_le (hN : 0 < N) (t : ℝ) :
+    renf N t * t * renf N t ≤ N ^ 2 := by
+  rw [renf]
+  set s := rsq N t with hsdef
+  have hs : 0 < s := rsq_pos hN t
+  have hts : t ≤ s ^ 2 := by rw [hsdef, rsq_sq]; exact le_max_left _ _
+  have key : N / s * t * (N / s) = N ^ 2 * t / s ^ 2 := by
+    field_simp [hs.ne']
+  rw [key, div_le_iff₀ (pow_pos hs 2)]
+  exact mul_le_mul_of_nonneg_left hts (sq_nonneg N)
+
+/-- The key single-variable factorization: `(1−f_N(t))² t = m_N(t)(t − N²)`. -/
+private theorem renf_extf_key (hN : 0 < N) (t : ℝ) :
+    (1 - renf N t) * t * (1 - renf N t) = extf N t * (t - N ^ 2) := by
+  rcases le_total t (N ^ 2) with h | h
+  · have hst : rsq N t = N := by rw [rsq, max_eq_right h, Real.sqrt_sq hN.le]
+    rw [renf, extf, hst, div_self hN.ne']
+    simp
+  · rw [renf, extf]
+    set s := rsq N t with hsdef
+    have hs : 0 < s := rsq_pos hN t
+    have hst : s ^ 2 = t := by rw [hsdef, rsq_sq]; exact max_eq_left h
+    have hsN : 0 < s + N := by linarith
+    rw [← hst]
+    field_simp [hs.ne', hsN.ne']
+    ring
+
+/-- `cfc (f·id·g) b = cfc f b * b * cfc g b` for `b ≥ 0`. -/
+private theorem cfc_mul_id_mul {f g : ℝ → ℝ} {b : ℬ} (hb : 0 ≤ b)
+    (hf : Continuous f) (hg : Continuous g) :
+    cfc (fun t => f t * t * g t) b = cfc f b * b * cfc g b := by
+  have h1 : cfc (fun t : ℝ => f t * t) b = cfc f b * b := by
+    have h := cfc_mul (a := b) f (fun t : ℝ => t)
+      hf.continuousOn continuous_id.continuousOn
+    rwa [cfc_id' ℝ b hb.isSelfAdjoint] at h
+  have h2 := cfc_mul (a := b) (fun t : ℝ => f t * t) g
+    (hf.mul continuous_id).continuousOn hg.continuousOn
+  rw [h2, h1]
+
+/-- The mirror vanishes in a commutative algebra: `ω(r z r) ≤ ω(z)` for a
+selfadjoint contraction `r` (in the form `r² ≤ 1`) against positive `z`,
+since `r z r = r² z ≤ z` — the inequality that is *not* available in the
+noncommutative case (see the section comment). -/
+private theorem np_re_conj_le (hcomm : ∀ a b : ℬ, a * b = b * a)
+    (ω : NPFunctional ℬ) {r z : ℬ} (hz : 0 ≤ z) (hr1 : 0 ≤ 1 - r * r) :
+    (ω (r * z * r)).re ≤ (ω z).re := by
+  have h1 : r * z * r = r * r * z := by rw [mul_assoc, hcomm z r, ← mul_assoc]
+  have h2 : (1 - r * r) * z = z - r * r * z := by rw [sub_mul, one_mul]
+  have h3 : 0 ≤ z - r * r * z := h2 ▸ Commute.mul_nonneg hr1 hz (hcomm _ _)
+  rw [h1]
+  exact np_re_mono' ω (sub_nonneg.mp h3)
+
+/-- Contractions do not increase the ultranorm seminorms of a Hilbert module
+over a commutative C*-algebra. -/
+private theorem unSeminorm_smul_le (hcomm : ∀ a b : ℬ, a * b = b * a)
+    (ω : NPFunctional ℬ) {r : ℬ} (hrsa : IsSelfAdjoint r)
+    (hr1 : 0 ≤ 1 - r * r) (z : X) :
+    unSeminorm ω (inner ℬ) (r • z) ≤ unSeminorm ω (inner ℬ) z := by
+  have h1 : inner ℬ (r • z) (r • z) = r * inner ℬ z z * r := by
+    rw [CStarModule.inner_op_smul_left, CStarModule.inner_op_smul_right,
+      hrsa.star_eq]
+  rw [unSeminorm, unSeminorm, h1]
+  exact Real.sqrt_le_sqrt
+    (np_re_conj_le hcomm ω CStarModule.inner_self_nonneg hr1)
+
+/-- **158II, commutative case — the weak statement**: for commutative `ℬ`
+the weak bounded approximation required by `kaplansky_hilbmod_of_weak` holds,
+by the one-shot renormalization described in the section comment. -/
+private theorem kaplansky_weak_of_commutative
+    (hcomm : ∀ a b : ℬ, a * b = b * a)
+    (A : StarSubalgebra ℂ ℬ) (hA : IsClosed (A : Set ℬ))
+    (D : Set X) (hD0 : (0 : X) ∈ D)
+    (hDsmul : ∀ a ∈ A, ∀ d ∈ D, a • d ∈ D)
+    (hDinner : ∀ d ∈ D, inner ℬ d d ∈ A)
+    (hdense : UnDense (inner ℬ) D) (x : X)
+    (ω : NPFunctional ℬ) (w : X) (η : ℝ) (hη : 0 < η) :
+    ∃ d ∈ D, ‖d‖ ≤ ‖x‖ ∧ ‖ω (inner ℬ w (x - d))‖ ≤ η := by
+  by_cases hx0 : x = 0
+  · refine ⟨0, hD0, by simp, ?_⟩
+    rw [hx0, sub_zero, CStarModule.inner_zero_right,
+      show ω (0 : ℬ) = 0 from map_zero ω.toPositiveLinearMap]
+    simpa using hη.le
+  have hN : 0 < ‖x‖ := norm_pos_iff.mpr hx0
+  set N := ‖x‖ with hNdef
+  set P := unSeminorm ω (inner ℬ) w
+  set Q := unSeminorm ω (inner ℬ) x with hQ
+  have hP0 : 0 ≤ P := unSeminorm_nonneg ω _ w
+  have hQ0 : 0 ≤ Q := unSeminorm_nonneg ω _ x
+  have hP1 : (0 : ℝ) < 2 * (P + 1) := by linarith
+  have hQ1 : (0 : ℝ) < 1 + 2 * Q := by linarith
+  have hP2 : (0 : ℝ) < 4 * (P + 1) ^ 2 * (1 + 2 * Q) :=
+    mul_pos (mul_pos (by norm_num) (pow_pos (by linarith) 2)) hQ1
+  set δ := min 1 (min (η / (2 * (P + 1)))
+    (η ^ 2 / (4 * (P + 1) ^ 2 * (1 + 2 * Q))))
+  have hδ : 0 < δ :=
+    lt_min one_pos (lt_min (div_pos hη hP1) (div_pos (pow_pos hη 2) hP2))
+  have hδ1 : δ ≤ 1 := min_le_left _ _
+  have hδA : δ ≤ η / (2 * (P + 1)) := le_trans (min_le_right _ _) (min_le_left _ _)
+  have hδB : δ ≤ η ^ 2 / (4 * (P + 1) ^ 2 * (1 + 2 * Q)) :=
+    le_trans (min_le_right _ _) (min_le_right _ _)
+  -- the raw approximant `d₀` and its renormalization `d = f_N(b₀) • d₀`
+  obtain ⟨d₀, hd₀D, hd₀⟩ := hdense x 1 (fun _ => ω) δ hδ
+  have hxd₀ : unSeminorm ω (inner ℬ) (x - d₀) ≤ δ := hd₀ 0
+  have hd₀x : unSeminorm ω (inner ℬ) (d₀ - x) ≤ δ := by
+    rw [← neg_sub x d₀]
+    exact le_trans (le_of_eq (unSeminorm_neg' ω (cstarBInner ℬ X) (x - d₀))) hxd₀
+  set b₀ := inner ℬ d₀ d₀ with hb₀def
+  have hb₀A : b₀ ∈ A := hDinner d₀ hd₀D
+  have hb₀ : 0 ≤ b₀ := CStarModule.inner_self_nonneg
+  have hspec : ∀ t ∈ spectrum ℝ b₀, 0 ≤ t := fun t ht =>
+    spectrum_nonneg_of_nonneg hb₀ ht
+  set c := cfc (renf N) b₀ with hcdef
+  have hc0 : 0 ≤ c := cfc_nonneg fun t _ => renf_nonneg hN t
+  have hcsa : IsSelfAdjoint c := hc0.isSelfAdjoint
+  have hcA : c ∈ A := by
+    rw [hcdef]
+    exact cfc_mem (𝕜' := ℂ) (s := A) (hs := hA) (f := renf N) (has := hb₀A)
+  refine ⟨c • d₀, hDsmul c hcA d₀ hd₀D, ?_, ?_⟩
+  · -- ‖c • d₀‖ ≤ ‖x‖ = N: the renormalizer caps the norm
+    have hdd : inner ℬ (c • d₀) (c • d₀)
+        = cfc (fun t => renf N t * t * renf N t) b₀ := by
+      rw [CStarModule.inner_op_smul_left, CStarModule.inner_op_smul_right,
+        hcsa.star_eq, ← hb₀def, hcdef,
+        ← cfc_mul_id_mul hb₀ (continuous_renf hN) (continuous_renf hN)]
+    have h2 : ‖inner ℬ (c • d₀) (c • d₀)‖ ≤ N ^ 2 := by
+      rw [hdd]
+      refine norm_cfc_le (by positivity) fun t ht => ?_
+      have ht0 : 0 ≤ t := hspec t ht
+      have hf0 := renf_nonneg hN t
+      rw [Real.norm_eq_abs, abs_of_nonneg (mul_nonneg (mul_nonneg hf0 ht0) hf0)]
+      exact renf_conj_le hN t
+    rw [CStarModule.norm_eq_sqrt_norm_inner_self (A := ℬ)]
+    calc Real.sqrt ‖inner ℬ (c • d₀) (c • d₀)‖
+        ≤ Real.sqrt (N ^ 2) := Real.sqrt_le_sqrt h2
+      _ = N := Real.sqrt_sq hN.le
+  · -- the weak defect
+    have haddω : ∀ a b : ℬ, ω (a + b) = ω a + ω b := fun a b =>
+      map_add ω.toPositiveLinearMap a b
+    have hsubω : ∀ a b : ℬ, ω (a - b) = ω a - ω b := fun a b =>
+      map_sub ω.toPositiveLinearMap a b
+    -- the trimming factor `q = 1 − c` and the extraction factor `r`
+    set q := cfc (fun t => 1 - renf N t) b₀ with hqdef
+    have hq0 : 0 ≤ q := cfc_nonneg fun t _ => sub_nonneg.mpr (renf_le_one hN t)
+    have hqsa : IsSelfAdjoint q := hq0.isSelfAdjoint
+    have hq_eq : q = 1 - c := by
+      rw [hqdef, hcdef, cfc_sub _ _ b₀ continuous_const.continuousOn
+        (continuous_renf hN).continuousOn, cfc_const_one ℝ b₀ hb₀.isSelfAdjoint]
+    set r := cfc (extf N) b₀ with hrdef
+    have hr0 : 0 ≤ r := cfc_nonneg fun t _ => extf_nonneg hN t
+    have hrsa : IsSelfAdjoint r := hr0.isSelfAdjoint
+    have hr1 : 0 ≤ 1 - r * r := by
+      rw [hrdef, ← cfc_mul _ _ b₀ (continuous_extf hN).continuousOn
+          (continuous_extf hN).continuousOn,
+        ← cfc_const_one ℝ b₀ hb₀.isSelfAdjoint,
+        ← cfc_sub (fun _ : ℝ => (1 : ℝ)) (fun t : ℝ => extf N t * extf N t) b₀
+          continuous_const.continuousOn
+          (show Continuous fun t : ℝ => extf N t * extf N t from
+            (continuous_extf hN).mul (continuous_extf hN)).continuousOn]
+      exact cfc_nonneg fun t _ => by
+        nlinarith [extf_nonneg hN t, extf_le_one hN t]
+    -- the splitting `ω⟪w, x−d⟫ = ω⟪w, x−d₀⟫ + ω(q ⟪w, d₀⟫)`
+    have hsplit : inner ℬ w (x - c • d₀)
+        = inner ℬ w (x - d₀) + q * inner ℬ w d₀ := by
+      rw [CStarModule.inner_sub_right, CStarModule.inner_sub_right,
+        CStarModule.inner_op_smul_right, hq_eq]
+      noncomm_ring
+    have hT0 : ‖ω (inner ℬ w (x - d₀))‖ ≤ P * δ :=
+      le_trans (unSeminorm_inner_le ω (cstarBInner ℬ X) w (x - d₀))
+        (mul_le_mul_of_nonneg_left hxd₀ hP0)
+    have hT1 : ‖ω (q * inner ℬ w d₀)‖
+        ≤ P * unSeminorm ω (inner ℬ) (q • d₀) := by
+      rw [show q * inner ℬ w d₀ = inner ℬ w (q • d₀) from
+        (CStarModule.inner_op_smul_right).symm]
+      exact unSeminorm_inner_le ω (cstarBInner ℬ X) w (q • d₀)
+    -- the central estimate: `‖q•d₀‖_ω² = ω(q b₀ q) ≤ δ² + 2Qδ`
+    have hqbq : q * b₀ * star q = r * (b₀ - algebraMap ℝ ℬ (N ^ 2)) := by
+      rw [hqsa.star_eq, hqdef,
+        ← cfc_mul_id_mul hb₀
+          (show Continuous fun t : ℝ => 1 - renf N t from
+            continuous_const.sub (continuous_renf hN))
+          (show Continuous fun t : ℝ => 1 - renf N t from
+            continuous_const.sub (continuous_renf hN)),
+        cfc_congr fun t _ => renf_extf_key hN t,
+        cfc_mul (extf N) (fun t : ℝ => t - N ^ 2) b₀
+          (continuous_extf hN).continuousOn
+          (continuous_id.sub continuous_const).continuousOn,
+        cfc_sub (fun t : ℝ => t) (fun _ : ℝ => N ^ 2) b₀
+          continuous_id.continuousOn continuous_const.continuousOn,
+        cfc_id' ℝ b₀ hb₀.isSelfAdjoint, cfc_const (N ^ 2) b₀ hb₀.isSelfAdjoint,
+        ← hrdef]
+    have ha0 : (0 : ℬ) ≤ inner ℬ x x := CStarModule.inner_self_nonneg
+    have hnorm_a : ‖inner ℬ x x‖ = N ^ 2 := by
+      rw [← Real.sq_sqrt (norm_nonneg (inner ℬ x x)),
+        ← CStarModule.norm_eq_sqrt_norm_inner_self (A := ℬ), hNdef]
+    have haN : inner ℬ x x ≤ algebraMap ℝ ℬ (N ^ 2) := by
+      have h := IsSelfAdjoint.le_algebraMap_norm_self ha0.isSelfAdjoint
+      rwa [hnorm_a] at h
+    have hpos2 : 0 ≤ r * (algebraMap ℝ ℬ (N ^ 2) - inner ℬ x x) :=
+      Commute.mul_nonneg hr0 (sub_nonneg.mpr haN) (hcomm _ _)
+    have hqd₀ : inner ℬ (q • d₀) (q • d₀) = q * b₀ * star q := by
+      rw [CStarModule.inner_op_smul_left, CStarModule.inner_op_smul_right,
+        ← hb₀def]
+    have hrba : r * (b₀ - inner ℬ x x)
+        = inner ℬ (d₀ - x) (r • d₀) + inner ℬ x (r • (d₀ - x)) := by
+      rw [CStarModule.inner_op_smul_right, CStarModule.inner_op_smul_right,
+        CStarModule.inner_sub_left, CStarModule.inner_sub_right, ← hb₀def]
+      noncomm_ring
+    have hrd₀ : unSeminorm ω (inner ℬ) (r • d₀) ≤ Q + δ := by
+      refine le_trans (unSeminorm_smul_le hcomm ω hrsa hr1 d₀) ?_
+      have h3 := unSeminorm_add_le ω (cstarBInner ℬ X) (d₀ - x) x
+      rw [sub_add_cancel] at h3
+      exact le_trans h3 (le_trans (add_le_add hd₀x hQ.symm.le)
+        (le_of_eq (add_comm δ Q)))
+    have hcs1 : ‖ω (inner ℬ (d₀ - x) (r • d₀))‖ ≤ δ * (Q + δ) :=
+      le_trans (unSeminorm_inner_le ω (cstarBInner ℬ X) (d₀ - x) (r • d₀))
+        (mul_le_mul hd₀x hrd₀ (unSeminorm_nonneg _ _ _) hδ.le)
+    have hcs2 : ‖ω (inner ℬ x (r • (d₀ - x)))‖ ≤ Q * δ :=
+      le_trans (unSeminorm_inner_le ω (cstarBInner ℬ X) x (r • (d₀ - x)))
+        (mul_le_mul hQ.symm.le
+          (le_trans (unSeminorm_smul_le hcomm ω hrsa hr1 (d₀ - x)) hd₀x)
+          (unSeminorm_nonneg _ _ _) hQ0)
+    have hmass : (ω (inner ℬ (q • d₀) (q • d₀))).re ≤ δ ^ 2 + 2 * Q * δ := by
+      rw [hqd₀, hqbq, show r * (b₀ - algebraMap ℝ ℬ (N ^ 2))
+          = r * (b₀ - inner ℬ x x)
+            - r * (algebraMap ℝ ℬ (N ^ 2) - inner ℬ x x) by noncomm_ring,
+        hsubω, Complex.sub_re]
+      have h5 : 0 ≤ (ω (r * (algebraMap ℝ ℬ (N ^ 2) - inner ℬ x x))).re :=
+        np_re_nonneg' ω hpos2
+      have h6 : (ω (r * (b₀ - inner ℬ x x))).re ≤ δ * (Q + δ) + Q * δ := by
+        rw [hrba, haddω, Complex.add_re]
+        have h9 : (ω (inner ℬ (d₀ - x) (r • d₀))).re ≤ δ * (Q + δ) :=
+          le_trans (Complex.re_le_norm _) hcs1
+        have h10 : (ω (inner ℬ x (r • (d₀ - x)))).re ≤ Q * δ :=
+          le_trans (Complex.re_le_norm _) hcs2
+        linarith
+      nlinarith [h5, h6]
+    have hpq : unSeminorm ω (inner ℬ) (q • d₀)
+        ≤ Real.sqrt (δ ^ 2 + 2 * Q * δ) := by
+      rw [unSeminorm]
+      exact Real.sqrt_le_sqrt hmass
+    -- final arithmetic: `P(δ + √(δ² + 2Qδ)) ≤ η` by the choice of `δ`
+    have hδ2 : δ * (2 * (P + 1)) ≤ η := (le_div_iff₀ hP1).mp hδA
+    have hPδ : P * δ ≤ η / 2 := by nlinarith [hδ.le]
+    have hsqrt : Real.sqrt (δ ^ 2 + 2 * Q * δ) ≤ η / (2 * (P + 1)) := by
+      have h7 : δ ^ 2 + 2 * Q * δ ≤ δ * (1 + 2 * Q) := by nlinarith
+      have h9 : δ ≤ η ^ 2 / (4 * (P + 1) ^ 2) / (1 + 2 * Q) := by
+        rw [div_div]; exact hδB
+      have h10 : δ * (1 + 2 * Q) ≤ η ^ 2 / (4 * (P + 1) ^ 2) :=
+        (le_div_iff₀ hQ1).mp h9
+      have h8 : η ^ 2 / (4 * (P + 1) ^ 2) = (η / (2 * (P + 1))) ^ 2 := by
+        rw [div_pow]; congr 1; ring
+      calc Real.sqrt (δ ^ 2 + 2 * Q * δ)
+          ≤ Real.sqrt ((η / (2 * (P + 1))) ^ 2) :=
+            Real.sqrt_le_sqrt (le_trans h7 (h8 ▸ h10))
+        _ = η / (2 * (P + 1)) := Real.sqrt_sq (div_nonneg hη.le hP1.le)
+    have hPsq : P * Real.sqrt (δ ^ 2 + 2 * Q * δ) ≤ η / 2 := by
+      have h11 : P * Real.sqrt (δ ^ 2 + 2 * Q * δ) ≤ P * (η / (2 * (P + 1))) :=
+        mul_le_mul_of_nonneg_left hsqrt hP0
+      have hTmul : η / (2 * (P + 1)) * (2 * (P + 1)) = η :=
+        div_mul_cancel₀ η hP1.ne'
+      have hT0' : 0 ≤ η / (2 * (P + 1)) := div_nonneg hη.le hP1.le
+      nlinarith [h11, hTmul, hT0']
+    calc ‖ω (inner ℬ w (x - c • d₀))‖
+        = ‖ω (inner ℬ w (x - d₀)) + ω (q * inner ℬ w d₀)‖ := by
+          rw [hsplit, haddω]
+      _ ≤ ‖ω (inner ℬ w (x - d₀))‖ + ‖ω (q * inner ℬ w d₀)‖ := norm_add_le _ _
+      _ ≤ P * δ + P * Real.sqrt (δ ^ 2 + 2 * Q * δ) :=
+          add_le_add hT0 (le_trans hT1 (mul_le_mul_of_nonneg_left hpq hP0))
+      _ ≤ η / 2 + η / 2 := add_le_add hPδ hPsq
+      _ = η := by ring
+
+/-- **158II, the commutative case** (`kaplansky-hilbmod`, dils.tex:4135,
+restricted): the Kaplansky density theorem for Hilbert C*-modules over a
+*commutative* von Neumann algebra `ℬ` — the hypotheses of
+`kaplansky_hilbmod` plus commutativity, with the same conclusion.
+
+*Class 2 — different proof*: the thesis's route (158V) is false even in
+general and unnecessary here; instead the weak bounded approximation is
+established one-shot by `kaplansky_weak_of_commutative` (where the mirror
+obstruction of `PROVING-LOG.md` vanishes) and upgraded by
+`kaplansky_hilbmod_of_weak`.  The statement keeps 158II's exact hypotheses
+(`[VonNeumannAlgebra ℬ]` and `[CompleteSpace X]` are in fact not needed by
+this proof).  The general (noncommutative) case remains open — see
+`kaplansky_hilbmod`. -/
+theorem kaplansky_hilbmod_of_commutative [VonNeumannAlgebra ℬ] [CompleteSpace X]
+    (hcomm : ∀ a b : ℬ, a * b = b * a)
+    (A : StarSubalgebra ℂ ℬ) (hA : IsClosed (A : Set ℬ))
+    (D : Set X)
+    (hD0 : (0 : X) ∈ D)
+    (hDadd : ∀ d ∈ D, ∀ d' ∈ D, d + d' ∈ D)
+    (hDsmul : ∀ a ∈ A, ∀ d ∈ D, a • d ∈ D)
+    (hDinner : ∀ d ∈ D, inner ℬ d d ∈ A)
+    (hdense : UnDense (inner ℬ) D) (x : X) :
+    ∀ (n : ℕ) (ωs : Fin n → NPFunctional ℬ) (ε : ℝ), 0 < ε →
+      ∃ d ∈ D, ‖d‖ ≤ ‖x‖ ∧
+        ∀ i, unSeminorm (ωs i) (inner ℬ) (x - d) ≤ ε :=
+  kaplansky_hilbmod_of_weak A D hDadd hDsmul x fun ω w η hη =>
+    kaplansky_weak_of_commutative hcomm A hA D hD0 hDsmul hDinner hdense x ω w η hη
+
+end Commutative
 
 end Kaplansky
 
