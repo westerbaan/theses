@@ -2039,17 +2039,235 @@ cstar.tex:3140; the term is introduced there and used from parsec 220 on). -/
 def IsState (ω : 𝒜 →ₗ[ℂ] ℂ) : Prop :=
   IsPositiveMap ω ∧ ω 1 = 1
 
+-- copy of the file-private `eq_of_add_self_eq`
+private theorem eq_of_add_self_eq' {x y : 𝒜} (hxy : x + x = y + y) : x = y := by
+  have h : (2 : ℂ)⁻¹ • (x + x) = (2 : ℂ)⁻¹ • (y + y) := by rw [hxy]
+  rwa [← two_smul ℂ x, ← two_smul ℂ y, smul_smul, smul_smul,
+    inv_mul_cancel₀ (two_ne_zero), one_smul, one_smul] at h
+
+private theorem sub_add_cancel'' (x y : 𝒜) : x - y + y = x := by abel
+
+/-- An element of an order interval `[-b, b]` is self-adjoint. -/
+private theorem isSelfAdjoint_of_mem_interval {b c : 𝒜} (h1 : -b ≤ c) (h2 : c ≤ b) :
+    IsSelfAdjoint c := by
+  have hs1 : IsSelfAdjoint (b - c) := IsSelfAdjoint.of_nonneg (sub_nonneg.mpr h2)
+  have hs2 : IsSelfAdjoint (c - -b) := IsSelfAdjoint.of_nonneg (sub_nonneg.mpr h1)
+  have hsum : IsSelfAdjoint (c - -b - (b - c)) := hs2.sub hs1
+  have he : c - -b - (b - c) = c + c := by abel
+  rw [he] at hsum
+  have h := hsum.star_eq
+  rw [star_add] at h
+  exact eq_of_add_self_eq' h
+
+
 /-- **22III** (`order-ideal-basic`, cstar.tex:3324, Exercise), part 1: the
 kernel of a state is a maximal order ideal. -/
 theorem order_ideal_basic_1 (ω : 𝒜 →ₗ[ℂ] ℂ) (hω : IsState ω) :
-    IsMaximalOrderIdeal (LinearMap.ker ω) :=
-  sorry
+    IsMaximalOrderIdeal (LinearMap.ker ω) := by
+  obtain ⟨hpos, hone⟩ := hω
+  have hstar := cstar_p_implies_i ω hpos
+  refine ⟨⟨⟨?_, ?_⟩, ?_⟩, ?_⟩
+  · intro b hb
+    rw [LinearMap.mem_ker] at hb ⊢
+    rw [hstar b, hb, star_zero]
+  · intro b hb hb0 a h1 h2
+    rw [LinearMap.mem_ker] at hb ⊢
+    have hub := hpos _ (sub_nonneg.mpr h2)
+    have hlb := hpos _ (sub_nonneg.mpr h1)
+    rw [map_sub, hb, zero_sub] at hub
+    rw [map_sub, map_neg, hb, neg_zero, sub_zero] at hlb
+    exact le_antisymm (neg_nonneg.mp hub) hlb
+  · intro h1
+    rw [LinearMap.mem_ker, hone] at h1
+    exact one_ne_zero h1
+  · intro J hJ hle
+    by_contra hne
+    obtain ⟨x, hxJ, hxk⟩ := SetLike.exists_of_lt (lt_of_le_of_ne hle (Ne.symm hne))
+    have hx0 : ω x ≠ 0 := fun h => hxk (LinearMap.mem_ker.mpr h)
+    have hyJ : (ω x)⁻¹ • x ∈ J := J.smul_mem _ hxJ
+    have hy1 : ω ((ω x)⁻¹ • x) = 1 := by
+      rw [map_smul, smul_eq_mul, inv_mul_cancel₀ hx0]
+    have h1y : (1 : 𝒜) - (ω x)⁻¹ • x ∈ J :=
+      hle (LinearMap.mem_ker.mpr (by rw [map_sub, hy1, hone, sub_self]))
+    have h1J : (1 : 𝒜) ∈ J := by
+      have h := J.add_mem h1y hyJ
+      rwa [sub_add_cancel''] at h
+    exact hJ.2 h1J
 
 /-- **22III** (`order-ideal-basic`, cstar.tex:3324, Exercise), part 2: every
 proper order ideal is contained in a maximal order ideal. -/
 theorem order_ideal_basic_2 (I : Submodule ℂ 𝒜) (hI : IsProperOrderIdeal I) :
-    ∃ J : Submodule ℂ 𝒜, IsMaximalOrderIdeal J ∧ I ≤ J :=
-  sorry
+    ∃ J : Submodule ℂ 𝒜, IsMaximalOrderIdeal J ∧ I ≤ J := by
+  have hzorn : ∀ c ⊆ {J : Submodule ℂ 𝒜 | IsProperOrderIdeal J},
+      IsChain (· ≤ ·) c → ∀ y ∈ c,
+        ∃ ub ∈ {J : Submodule ℂ 𝒜 | IsProperOrderIdeal J}, ∀ z ∈ c, z ≤ ub := by
+    intro c hc hchain y hy
+    have hmem : ∀ x : 𝒜, x ∈ sSup c ↔ ∃ K ∈ c, x ∈ K := fun x =>
+      Submodule.mem_sSup_of_directed ⟨y, hy⟩ hchain.directedOn
+    refine ⟨sSup c, ⟨⟨?_, ?_⟩, ?_⟩, fun z hz => le_sSup hz⟩
+    · intro b hb
+      obtain ⟨K, hKc, hbK⟩ := (hmem b).mp hb
+      exact Submodule.mem_sSup_of_mem hKc ((hc hKc).1.star_mem b hbK)
+    · intro b hb hb0 a h1 h2
+      obtain ⟨K, hKc, hbK⟩ := (hmem b).mp hb
+      exact Submodule.mem_sSup_of_mem hKc ((hc hKc).1.mem_of_mem_interval b hbK hb0 a h1 h2)
+    · intro h1
+      obtain ⟨K, hKc, h1K⟩ := (hmem 1).mp h1
+      exact (hc hKc).2 h1K
+  obtain ⟨m, hIm, hm⟩ := zorn_le_nonempty₀ _ hzorn I hI
+  exact ⟨m, ⟨hm.1, fun J hJ hmJ => le_antisymm (hm.2 hJ hmJ) hmJ⟩, hIm⟩
+
+/-! ### The least order ideal `(a)` (22III.3) -/
+
+/-- Elements sandwiched between real multiples of `a`. -/
+private def sandwiched (a : 𝒜) : Set 𝒜 :=
+  {x | ∃ lam mu : ℝ, lam • a ≤ x ∧ x ≤ mu • a}
+
+private theorem smul_le_smul_left' {r : ℝ} (hr : 0 ≤ r) {x y : 𝒜} (h : x ≤ y) :
+    r • x ≤ r • y := by
+  have h1 := ofReal_smul_nonneg (sub_nonneg.mpr h) hr
+  rw [Complex.coe_smul, smul_sub] at h1
+  exact sub_nonneg.mp h1
+
+private theorem sandwiched_zero (a : 𝒜) : (0 : 𝒜) ∈ sandwiched a :=
+  ⟨0, 0, by simp⟩
+
+private theorem sandwiched_add {a x y : 𝒜} (hx : x ∈ sandwiched a)
+    (hy : y ∈ sandwiched a) : x + y ∈ sandwiched a := by
+  obtain ⟨l1, m1, hl1, hm1⟩ := hx
+  obtain ⟨l2, m2, hl2, hm2⟩ := hy
+  exact ⟨l1 + l2, m1 + m2, by rw [add_smul]; exact add_le_add hl1 hl2,
+    by rw [add_smul]; exact add_le_add hm1 hm2⟩
+
+private theorem sandwiched_neg {a x : 𝒜} (hx : x ∈ sandwiched a) :
+    -x ∈ sandwiched a := by
+  obtain ⟨l, m, hl, hm⟩ := hx
+  exact ⟨-m, -l, by rw [neg_smul]; exact neg_le_neg hm,
+    by rw [neg_smul]; exact neg_le_neg hl⟩
+
+private theorem sandwiched_real_smul {a x : 𝒜} (r : ℝ) (hx : x ∈ sandwiched a) :
+    r • x ∈ sandwiched a := by
+  rcases le_total 0 r with hr | hr
+  · obtain ⟨l, m, hl, hm⟩ := hx
+    exact ⟨r * l, r * m, by rw [mul_smul]; exact smul_le_smul_left' hr hl,
+      by rw [mul_smul]; exact smul_le_smul_left' hr hm⟩
+  · obtain ⟨l, m, hl, hm⟩ := sandwiched_neg hx
+    have hr' : (0 : ℝ) ≤ -r := by linarith
+    refine ⟨-r * l, -r * m, ?_, ?_⟩
+    · rw [mul_smul, ← neg_smul_neg r x]
+      exact smul_le_smul_left' hr' hl
+    · rw [mul_smul, ← neg_smul_neg r x]
+      exact smul_le_smul_left' hr' hm
+
+/-- **22III**.3: the least order ideal containing a self-adjoint `a`, as a
+submodule: `b ∈ (a)` iff both `ℜ b` and `ℑ b` are sandwiched between real
+multiples of `a`. -/
+private def orderIdealGen (a : 𝒜) : Submodule ℂ 𝒜 where
+  carrier := {b | ((ℜ b : 𝒜) ∈ sandwiched a) ∧ ((ℑ b : 𝒜) ∈ sandwiched a)}
+  zero_mem' := by
+    simp only [Set.mem_setOf_eq, map_zero, ZeroMemClass.coe_zero]
+    exact ⟨sandwiched_zero a, sandwiched_zero a⟩
+  add_mem' := by
+    rintro b c ⟨hbr, hbi⟩ ⟨hcr, hci⟩
+    constructor
+    · rw [map_add, AddSubgroup.coe_add]
+      exact sandwiched_add hbr hcr
+    · rw [map_add, AddSubgroup.coe_add]
+      exact sandwiched_add hbi hci
+  smul_mem' := by
+    rintro z b ⟨hbr, hbi⟩
+    constructor
+    · rw [realPart_smul]
+      have he : ((z.re • ℜ b - z.im • ℑ b : selfAdjoint 𝒜) : 𝒜)
+          = z.re • (ℜ b : 𝒜) + -(z.im • (ℑ b : 𝒜)) := by
+        rw [AddSubgroup.coe_sub, selfAdjoint.val_smul, selfAdjoint.val_smul,
+          sub_eq_add_neg]
+      rw [he]
+      exact sandwiched_add (sandwiched_real_smul _ hbr)
+        (sandwiched_neg (sandwiched_real_smul _ hbi))
+    · rw [imaginaryPart_smul]
+      have he : ((z.re • ℑ b + z.im • ℜ b : selfAdjoint 𝒜) : 𝒜)
+          = z.re • (ℑ b : 𝒜) + z.im • (ℜ b : 𝒜) := by
+        rw [AddSubgroup.coe_add, selfAdjoint.val_smul, selfAdjoint.val_smul]
+      rw [he]
+      exact sandwiched_add (sandwiched_real_smul _ hbi)
+        (sandwiched_real_smul _ hbr)
+
+private theorem mem_orderIdealGen_iff {a b : 𝒜} :
+    b ∈ orderIdealGen a ↔
+      (ℜ b : 𝒜) ∈ sandwiched a ∧ (ℑ b : 𝒜) ∈ sandwiched a :=
+  Iff.rfl
+
+private theorem self_mem_orderIdealGen {a : 𝒜} (ha : IsSelfAdjoint a) :
+    a ∈ orderIdealGen a := by
+  rw [mem_orderIdealGen_iff]
+  constructor
+  · rw [ha.coe_realPart]
+    exact ⟨1, 1, by rw [one_smul], by rw [one_smul]⟩
+  · rw [ha.imaginaryPart, ZeroMemClass.coe_zero]
+    exact sandwiched_zero a
+
+private theorem mem_orderIdealGen_iff_of_isSelfAdjoint {a b : 𝒜}
+    (hb : IsSelfAdjoint b) :
+    b ∈ orderIdealGen a ↔ ∃ lam mu : ℝ, lam • a ≤ b ∧ b ≤ mu • a := by
+  rw [mem_orderIdealGen_iff, hb.coe_realPart, hb.imaginaryPart,
+    ZeroMemClass.coe_zero]
+  exact ⟨fun h => h.1, fun h => ⟨h, sandwiched_zero a⟩⟩
+
+private theorem orderIdealGen_isOrderIdeal {a : 𝒜} :
+    IsOrderIdeal (orderIdealGen a) := by
+  constructor
+  · intro b hb
+    obtain ⟨hbr, hbi⟩ := hb
+    constructor
+    · have h : (ℜ (star b) : 𝒜) = (ℜ b : 𝒜) := by
+        rw [realPart_apply_coe, realPart_apply_coe, star_star, add_comm]
+      rw [h]
+      exact hbr
+    · have h : (ℑ (star b) : 𝒜) = -(ℑ b : 𝒜) := by
+        rw [imaginaryPart_apply_coe, imaginaryPart_apply_coe, star_star,
+          ← smul_neg, ← smul_neg, neg_sub]
+      rw [h]
+      exact sandwiched_neg hbi
+  · intro b hb hb0 c h1 h2
+    have hcsa : IsSelfAdjoint c := isSelfAdjoint_of_mem_interval h1 h2
+    have hbsa : IsSelfAdjoint b := IsSelfAdjoint.of_nonneg hb0
+    obtain ⟨hbr, hbi⟩ := hb
+    rw [hbsa.coe_realPart] at hbr
+    obtain ⟨l, m, hl, hm⟩ := hbr
+    constructor
+    · rw [hcsa.coe_realPart]
+      refine ⟨-m, m, ?_, le_trans h2 hm⟩
+      rw [neg_smul]
+      exact le_trans (neg_le_neg hm) h1
+    · rw [hcsa.imaginaryPart, ZeroMemClass.coe_zero]
+      exact sandwiched_zero a
+
+private theorem orderIdealGen_least {a : 𝒜} (J : Submodule ℂ 𝒜)
+    (hJ : IsOrderIdeal J) (haJ : a ∈ J) : orderIdealGen a ≤ J := by
+  have hsand : ∀ x : 𝒜, x ∈ sandwiched a → x ∈ J := by
+    rintro x ⟨l, m, hl, hm⟩
+    have hpos : (0 : 𝒜) ≤ (m - l) • a := by
+      rw [sub_smul]
+      exact sub_nonneg.mpr (le_trans hl hm)
+    have hmem : (m - l) • a ∈ J := by
+      have h := J.smul_mem (((m - l : ℝ) : ℂ)) haJ
+      rwa [Complex.coe_smul] at h
+    have hx : x - l • a ∈ J := by
+      refine hJ.mem_of_mem_interval _ hmem hpos _ ?_ ?_
+      · exact le_trans (neg_nonpos_of_nonneg hpos) (sub_nonneg.mpr hl)
+      · rw [sub_smul]
+        exact sub_le_sub_right hm _
+    have hla : l • a ∈ J := by
+      have h := J.smul_mem (((l : ℝ) : ℂ)) haJ
+      rwa [Complex.coe_smul] at h
+    have h := J.add_mem hx hla
+    rwa [sub_add_cancel''] at h
+  intro b hb
+  obtain ⟨hbr, hbi⟩ := hb
+  have h := J.add_mem (hsand _ hbr) (J.smul_mem Complex.I (hsand _ hbi))
+  rwa [realPart_add_I_smul_imaginaryPart] at h
+
 
 /-- **22III** (`order-ideal-basic`, cstar.tex:3324, Exercise), part 3a: for
 self-adjoint `a` there is a least order ideal `(a)` containing `a`, and a
@@ -2059,29 +2277,189 @@ theorem order_ideal_basic_3a (a : 𝒜) (ha : IsSelfAdjoint a) :
       (∀ J : Submodule ℂ 𝒜, IsOrderIdeal J → a ∈ J → I ≤ J) ∧
       ∀ b : 𝒜, IsSelfAdjoint b →
         (b ∈ I ↔ ∃ lam mu : ℝ, lam • a ≤ b ∧ b ≤ mu • a) :=
-  sorry
+  ⟨orderIdealGen a, orderIdealGen_isOrderIdeal, self_mem_orderIdealGen ha,
+    fun J hJ haJ => orderIdealGen_least J hJ haJ,
+    fun _ hb => mem_orderIdealGen_iff_of_isSelfAdjoint hb⟩
+
+private theorem least_eq_orderIdealGen {a : 𝒜} (ha : IsSelfAdjoint a)
+    (I : Submodule ℂ 𝒜) (hI : IsOrderIdeal I) (haI : a ∈ I)
+    (hleast : ∀ J : Submodule ℂ 𝒜, IsOrderIdeal J → a ∈ J → I ≤ J) :
+    I = orderIdealGen a :=
+  le_antisymm (hleast _ orderIdealGen_isOrderIdeal (self_mem_orderIdealGen ha))
+    (orderIdealGen_least I hI haI)
+
+private theorem zero_le_one' : (0 : 𝒜) ≤ 1 := zero_le_one
 
 /-- **22III** (`order-ideal-basic`, cstar.tex:3324, Exercise), part 3b: when
 `0 ≰ a ≰ 0`, the least order ideal containing `a` is the line `ℂa`. -/
 theorem order_ideal_basic_3b (a : 𝒜) (ha : IsSelfAdjoint a)
     (h0 : ¬0 ≤ a) (h0' : ¬a ≤ 0) (I : Submodule ℂ 𝒜) (hI : IsOrderIdeal I)
-    (haI : a ∈ I) (hleast : ∀ J : Submodule ℂ 𝒜, IsOrderIdeal J → a ∈ J → I ≤ J) :
-    I = Submodule.span ℂ {a} :=
-  sorry
+    (haI : a ∈ I)
+    (hleast : ∀ J : Submodule ℂ 𝒜, IsOrderIdeal J → a ∈ J → I ≤ J) :
+    I = Submodule.span ℂ {a} := by
+  rw [least_eq_orderIdealGen ha I hI haI hleast]
+  refine le_antisymm ?_
+    (Submodule.span_le.mpr (Set.singleton_subset_iff.mpr
+      (self_mem_orderIdealGen ha)))
+  have hsand : ∀ x : 𝒜, x ∈ sandwiched a → x ∈ Submodule.span ℂ {a} := by
+    rintro x ⟨l, m, hl, hm⟩
+    have hpos : (0 : 𝒜) ≤ (m - l) • a := by
+      rw [sub_smul]
+      exact sub_nonneg.mpr (le_trans hl hm)
+    rcases lt_trichotomy (m - l) 0 with hlt | heq | hgt
+    · exfalso
+      have hs : (0 : ℝ) < -(m - l) := by linarith
+      have h1 : (-(m - l)) • a ≤ 0 := by
+        rw [neg_smul]
+        exact neg_nonpos_of_nonneg hpos
+      have h2 := smul_le_smul_left' (le_of_lt (inv_pos.mpr hs)) h1
+      rw [smul_zero, smul_smul, inv_mul_cancel₀ (ne_of_gt hs), one_smul] at h2
+      exact h0' h2
+    · have hml : m = l := by linarith
+      have hx : x = l • a := le_antisymm (by rwa [hml] at hm) hl
+      rw [hx, ← Complex.coe_smul]
+      exact Submodule.smul_mem _ _ (Submodule.mem_span_singleton_self a)
+    · exfalso
+      have h2 := smul_le_smul_left' (le_of_lt (inv_pos.mpr hgt)) hpos
+      rw [smul_zero, smul_smul, inv_mul_cancel₀ (ne_of_gt hgt), one_smul] at h2
+      exact h0 h2
+  rintro b ⟨hbr, hbi⟩
+  have h := Submodule.add_mem _ (hsand _ hbr)
+    (Submodule.smul_mem _ Complex.I (hsand _ hbi))
+  rwa [realPart_add_I_smul_imaginaryPart] at h
+
+/-- If `0 ≤ a` and `1 ≤ m • a` then `a` is invertible (`m` is forced positive
+unless `𝒜` is trivial). -/
+private theorem isUnit_of_one_le_smul {a : 𝒜} (hpos : 0 ≤ a) {m : ℝ}
+    (hm : (1 : 𝒜) ≤ m • a) : IsUnit a := by
+  rcases subsingleton_or_nontrivial 𝒜 with hsub | hnt
+  · exact isUnit_of_subsingleton a
+  have hmpos : 0 < m := by
+    by_contra hle
+    push_neg at hle
+    have h2 : (0 : 𝒜) ≤ (-m) • a := by
+      rw [← Complex.coe_smul]
+      exact ofReal_smul_nonneg hpos (by linarith)
+    rw [neg_smul] at h2
+    have h3 : (1 : 𝒜) ≤ 0 := le_trans hm (neg_nonneg.mp h2)
+    exact one_ne_zero (α := 𝒜) (le_antisymm h3 zero_le_one')
+  have hinv : m⁻¹ • (1 : 𝒜) ≤ a := by
+    have h2 := smul_le_smul_left' (le_of_lt (inv_pos.mpr hmpos)) hm
+    rwa [smul_smul, inv_mul_cancel₀ (ne_of_gt hmpos), one_smul] at h2
+  obtain ⟨n, hn⟩ := exists_nat_gt m
+  have hn0 : (0 : ℝ) < n := lt_trans hmpos hn
+  refine (positive_basic_2_6 a hpos).mpr ⟨n, by exact_mod_cast hn0, ?_⟩
+  have hle2 : ((n : ℝ))⁻¹ ≤ m⁻¹ := by
+    apply inv_anti₀ hmpos (le_of_lt hn)
+  have hcast : ((n : ℂ))⁻¹ = (((n : ℝ)⁻¹ : ℝ) : ℂ) := by push_cast; ring
+  rw [hcast]
+  calc algebraMap ℂ 𝒜 (((n : ℝ)⁻¹ : ℝ) : ℂ)
+      ≤ algebraMap ℂ 𝒜 ((m⁻¹ : ℝ) : ℂ) := algebraMap_ofReal_mono hle2
+    _ = m⁻¹ • (1 : 𝒜) := by
+        rw [Algebra.algebraMap_eq_smul_one, Complex.coe_smul]
+    _ ≤ a := hinv
 
 /-- **22III** (`order-ideal-basic`, cstar.tex:3324, Exercise), part 3c:
 `1 ∈ (a)` iff `a` is invertible and either `0 ≤ a` or `a ≤ 0`. -/
 theorem order_ideal_basic_3c (a : 𝒜) (ha : IsSelfAdjoint a)
     (I : Submodule ℂ 𝒜) (hI : IsOrderIdeal I) (haI : a ∈ I)
     (hleast : ∀ J : Submodule ℂ 𝒜, IsOrderIdeal J → a ∈ J → I ≤ J) :
-    (1 : 𝒜) ∈ I ↔ IsUnit a ∧ (0 ≤ a ∨ a ≤ 0) :=
-  sorry
+    (1 : 𝒜) ∈ I ↔ IsUnit a ∧ (0 ≤ a ∨ a ≤ 0) := by
+  rw [least_eq_orderIdealGen ha I hI haI hleast,
+    mem_orderIdealGen_iff_of_isSelfAdjoint (IsSelfAdjoint.one 𝒜)]
+  constructor
+  · rintro ⟨l, m, hl, hm⟩
+    have hor : 0 ≤ a ∨ a ≤ 0 := by
+      by_contra hno
+      push_neg at hno
+      obtain ⟨h0, h0'⟩ := hno
+      have hnt : Nontrivial 𝒜 := by
+        rcases subsingleton_or_nontrivial 𝒜 with hsub | hnt
+        · exact absurd (le_of_eq (Subsingleton.elim (0 : 𝒜) a)) h0
+        · exact hnt
+      have hspan := order_ideal_basic_3b a ha h0 h0' (orderIdealGen a)
+        orderIdealGen_isOrderIdeal (self_mem_orderIdealGen ha)
+        (fun J hJ haJ => orderIdealGen_least J hJ haJ)
+      have h1span : (1 : 𝒜) ∈ Submodule.span ℂ {a} := by
+        rw [← hspan]
+        exact (mem_orderIdealGen_iff_of_isSelfAdjoint
+          (IsSelfAdjoint.one 𝒜)).mpr ⟨l, m, hl, hm⟩
+      obtain ⟨z, hz⟩ := Submodule.mem_span_singleton.mp h1span
+      have hz0 : z ≠ 0 := by
+        rintro rfl
+        rw [zero_smul] at hz
+        exact one_ne_zero hz.symm
+      have hae : a = z⁻¹ • (1 : 𝒜) := by
+        rw [← hz, smul_smul, inv_mul_cancel₀ hz0, one_smul]
+      have hreal : (starRingEnd ℂ) z⁻¹ = z⁻¹ := by
+        have h1 := ha.star_eq
+        rw [hae, star_smul, star_one, Complex.star_def] at h1
+        have h2 : ((starRingEnd ℂ) z⁻¹ - z⁻¹) • (1 : 𝒜) = 0 := by
+          rw [sub_smul, h1, sub_self]
+        rcases smul_eq_zero.mp h2 with h | h
+        · exact sub_eq_zero.mp h
+        · exact absurd h one_ne_zero
+      have hrim : z⁻¹.im = 0 := by
+        have h := congrArg Complex.im hreal
+        rw [Complex.conj_im] at h
+        linarith
+      have hzre : z⁻¹ = ((z⁻¹.re : ℝ) : ℂ) := by
+        rw [Complex.ext_iff]
+        simp [hrim]
+      rcases le_total 0 z⁻¹.re with hge | hlt
+      · refine h0 ?_
+        rw [hae, hzre, Complex.coe_smul]
+        have h2 := smul_le_smul_left' hge (zero_le_one' (𝒜 := 𝒜))
+        rwa [smul_zero] at h2
+      · refine h0' ?_
+        rw [hae, hzre, Complex.coe_smul]
+        have h2 := smul_le_smul_left' (r := -z⁻¹.re) (by linarith)
+          (zero_le_one' (𝒜 := 𝒜))
+        rw [smul_zero, neg_smul] at h2
+        have h3 := neg_le_neg h2
+        rwa [neg_neg, neg_zero] at h3
+    refine ⟨?_, hor⟩
+    rcases hor with hpos | hneg
+    · exact isUnit_of_one_le_smul hpos hm
+    · have hu : IsUnit (-a) := by
+        refine isUnit_of_one_le_smul (neg_nonneg.mpr hneg) (m := -m) ?_
+        rwa [neg_smul_neg]
+      have h := hu.neg
+      rwa [neg_neg] at h
+  · rintro ⟨hu, hor⟩
+    rcases hor with hpos | hneg
+    · obtain ⟨n, hn0, hle⟩ := (positive_basic_2_6 a hpos).mp hu
+      have hn0' : (0 : ℝ) < n := by exact_mod_cast hn0
+      refine ⟨0, n, by rw [zero_smul]; exact zero_le_one', ?_⟩
+      have h2 := smul_le_smul_left' (le_of_lt hn0') hle
+      have he : (n : ℝ) • algebraMap ℂ 𝒜 ((n : ℂ))⁻¹ = (1 : 𝒜) := by
+        rw [Algebra.algebraMap_eq_smul_one, ← Complex.coe_smul, smul_smul]
+        rw [show (((n : ℝ) : ℂ)) = ((n : ℂ)) by push_cast; ring]
+        rw [mul_inv_cancel₀ (by exact_mod_cast hn0'.ne'), one_smul]
+      rwa [he] at h2
+    · obtain ⟨n, hn0, hle⟩ :=
+        (positive_basic_2_6 (-a) (neg_nonneg.mpr hneg)).mp hu.neg
+      have hn0' : (0 : ℝ) < n := by exact_mod_cast hn0
+      refine ⟨0, -n, by rw [zero_smul]; exact zero_le_one', ?_⟩
+      have h2 := smul_le_smul_left' (le_of_lt hn0') hle
+      have he : (n : ℝ) • algebraMap ℂ 𝒜 ((n : ℂ))⁻¹ = (1 : 𝒜) := by
+        rw [Algebra.algebraMap_eq_smul_one, ← Complex.coe_smul, smul_smul]
+        rw [show (((n : ℝ) : ℂ)) = ((n : ℂ)) by push_cast; ring]
+        rw [mul_inv_cancel₀ (by exact_mod_cast hn0'.ne'), one_smul]
+      rw [he] at h2
+      rwa [smul_neg, ← neg_smul] at h2
 
 /-- **22III** (`order-ideal-basic`, cstar.tex:3324, Exercise), part 4: every
 non-invertible self-adjoint element lies in some maximal order ideal. -/
 theorem order_ideal_basic_4 (a : 𝒜) (ha : IsSelfAdjoint a) (hu : ¬IsUnit a) :
-    ∃ J : Submodule ℂ 𝒜, IsMaximalOrderIdeal J ∧ a ∈ J :=
-  sorry
+    ∃ J : Submodule ℂ 𝒜, IsMaximalOrderIdeal J ∧ a ∈ J := by
+  have hproper : IsProperOrderIdeal (orderIdealGen a) := by
+    refine ⟨orderIdealGen_isOrderIdeal, fun h1 => ?_⟩
+    exact hu ((order_ideal_basic_3c a ha (orderIdealGen a)
+      orderIdealGen_isOrderIdeal (self_mem_orderIdealGen ha)
+      (fun J hJ haJ => orderIdealGen_least J hJ haJ)).mp h1).1
+  obtain ⟨J, hJmax, hJle⟩ := order_ideal_basic_2 _ hproper
+  exact ⟨J, hJmax, hJle (self_mem_orderIdealGen ha)⟩
 
 /-- Auxiliary for **22III**.5: in a C*-algebra `≠ {0}` the spectral radius of
 a self-adjoint `a` is attained, so `‖a‖` or `-‖a‖` lies in `spec(a)`.
@@ -2129,12 +2507,436 @@ theorem order_ideal_basic_5 [Nontrivial 𝒜] (a : 𝒜) (ha : IsSelfAdjoint a) 
       rw [he, IsUnit.neg_iff]
       exact spectrum.mem_iff.mp h
 
+/-! ### 22IV: every maximal order ideal is the kernel of a state -/
+
+/-- `x ≼ y` modulo the order ideal `I`: `q x ≤ q y` in the quotient order
+from the thesis's proof of **22IV** (cstar.tex:3374). -/
+private def QLe (I : Submodule ℂ 𝒜) (x y : 𝒜) : Prop :=
+  ∃ c : 𝒜, 0 ≤ c ∧ y - x - c ∈ I
+
+private theorem QLe.of_le {I : Submodule ℂ 𝒜} {x y : 𝒜} (h : x ≤ y) :
+    QLe I x y :=
+  ⟨y - x, sub_nonneg.mpr h, by rw [sub_self]; exact I.zero_mem⟩
+
+private theorem QLe.refl (I : Submodule ℂ 𝒜) (x : 𝒜) : QLe I x x :=
+  QLe.of_le le_rfl
+
+private theorem QLe.trans {I : Submodule ℂ 𝒜} {x y z : 𝒜} (h1 : QLe I x y)
+    (h2 : QLe I y z) : QLe I x z := by
+  obtain ⟨c1, hc1, hm1⟩ := h1
+  obtain ⟨c2, hc2, hm2⟩ := h2
+  refine ⟨c1 + c2, add_nonneg hc1 hc2, ?_⟩
+  have h := I.add_mem hm1 hm2
+  have he : y - x - c1 + (z - y - c2) = z - x - (c1 + c2) := by abel
+  rwa [he] at h
+
+private theorem QLe.add {I : Submodule ℂ 𝒜} {x y x' y' : 𝒜} (h : QLe I x y)
+    (h' : QLe I x' y') : QLe I (x + x') (y + y') := by
+  obtain ⟨c, hc, hm⟩ := h
+  obtain ⟨c', hc', hm'⟩ := h'
+  refine ⟨c + c', add_nonneg hc hc', ?_⟩
+  have hs := I.add_mem hm hm'
+  have he : y - x - c + (y' - x' - c') = y + y' - (x + x') - (c + c') := by
+    abel
+  rwa [he] at hs
+
+private theorem QLe.add_right {I : Submodule ℂ 𝒜} {x y : 𝒜} (h : QLe I x y)
+    (z : 𝒜) : QLe I (x + z) (y + z) :=
+  h.add (QLe.refl I z)
+
+private theorem QLe.neg {I : Submodule ℂ 𝒜} {x y : 𝒜} (h : QLe I x y) :
+    QLe I (-y) (-x) := by
+  obtain ⟨c, hc, hm⟩ := h
+  refine ⟨c, hc, ?_⟩
+  have he : -x - -y - c = y - x - c := by abel
+  rwa [he]
+
+private theorem QLe.rsmul {I : Submodule ℂ 𝒜} {x y : 𝒜} {r : ℝ} (hr : 0 ≤ r)
+    (h : QLe I x y) : QLe I (r • x) (r • y) := by
+  obtain ⟨c, hc, hm⟩ := h
+  refine ⟨r • c, ?_, ?_⟩
+  · have h1 := ofReal_smul_nonneg hc hr
+    rwa [Complex.coe_smul] at h1
+  · have h1 := I.smul_mem (((r : ℝ) : ℂ)) hm
+    rw [Complex.coe_smul] at h1
+    have he : r • (y - x - c) = r • y - r • x - r • c := by
+      rw [smul_sub, smul_sub]
+    rwa [he] at h1
+
+private theorem QLe.mem_of_antisymm {I : Submodule ℂ 𝒜} (hI : IsOrderIdeal I)
+    {x y : 𝒜} (h1 : QLe I x y) (h2 : QLe I y x) : y - x ∈ I := by
+  obtain ⟨c1, hc1, hm1⟩ := h1
+  obtain ⟨c2, hc2, hm2⟩ := h2
+  have hsum := I.add_mem hm1 hm2
+  have he : y - x - c1 + (x - y - c2) = -(c1 + c2) := by abel
+  rw [he] at hsum
+  have hcsum : c1 + c2 ∈ I := by
+    have h := I.neg_mem hsum
+    rwa [neg_neg] at h
+  have hc1I : c1 ∈ I :=
+    hI.mem_of_mem_interval _ hcsum (add_nonneg hc1 hc2) _
+      (le_trans (neg_nonpos_of_nonneg (add_nonneg hc1 hc2)) hc1)
+      (le_add_of_nonneg_right hc2)
+  have h := I.add_mem hm1 hc1I
+  rwa [sub_add_cancel''] at h
+
+private theorem smul_one_le_smul_one {r s : ℝ} (h : r ≤ s) :
+    r • (1 : 𝒜) ≤ s • (1 : 𝒜) := by
+  have h1 : (0 : 𝒜) ≤ (s - r) • 1 := by
+    rw [← Complex.coe_smul]
+    exact ofReal_smul_nonneg zero_le_one' (by linarith)
+  rw [sub_smul] at h1
+  exact sub_nonneg.mp h1
+
+private theorem QLe.scalar_le {I : Submodule ℂ 𝒜} (hI : IsOrderIdeal I)
+    (h1I : (1 : 𝒜) ∉ I) {r s : ℝ}
+    (h : QLe I (r • (1 : 𝒜)) (s • (1 : 𝒜))) : r ≤ s := by
+  by_contra hlt
+  push_neg at hlt
+  have h2 : QLe I (s • (1 : 𝒜)) (r • (1 : 𝒜)) :=
+    QLe.of_le (smul_one_le_smul_one (le_of_lt hlt))
+  have hmem := QLe.mem_of_antisymm hI h h2
+  have hmem' : ((s - r : ℝ) : ℂ) • (1 : 𝒜) ∈ I := by
+    rw [Complex.coe_smul, sub_smul]
+    exact hmem
+  have h1' := I.smul_mem (((s - r : ℝ) : ℂ))⁻¹ hmem'
+  rw [smul_smul, inv_mul_cancel₀, one_smul] at h1'
+  · exact h1I h1'
+  · exact_mod_cast sub_ne_zero.mpr (ne_of_lt hlt)
+
+private theorem smul_one_eq_algebraMap (r : ℝ) :
+    r • (1 : 𝒜) = algebraMap ℂ 𝒜 ((r : ℝ) : ℂ) := by
+  rw [Algebra.algebraMap_eq_smul_one, Complex.coe_smul]
+
+/-- The order ideal `J` from the proof of **22IV** (cstar.tex:3395):
+elements whose real and imaginary parts are `≼`-sandwiched between real
+multiples of `d` modulo `I`. -/
+private def qSandwiched (I : Submodule ℂ 𝒜) (d : 𝒜) : Set 𝒜 :=
+  {x | ∃ lam mu : ℝ, QLe I (lam • d) x ∧ QLe I x (mu • d)}
+
+private theorem qSandwiched_zero (I : Submodule ℂ 𝒜) (d : 𝒜) :
+    (0 : 𝒜) ∈ qSandwiched I d :=
+  ⟨0, 0, by rw [zero_smul]; exact QLe.refl I 0,
+    by rw [zero_smul]; exact QLe.refl I 0⟩
+
+private theorem qSandwiched_add {I : Submodule ℂ 𝒜} {d x y : 𝒜}
+    (hx : x ∈ qSandwiched I d) (hy : y ∈ qSandwiched I d) :
+    x + y ∈ qSandwiched I d := by
+  obtain ⟨l1, m1, hl1, hm1⟩ := hx
+  obtain ⟨l2, m2, hl2, hm2⟩ := hy
+  exact ⟨l1 + l2, m1 + m2, by rw [add_smul]; exact hl1.add hl2,
+    by rw [add_smul]; exact hm1.add hm2⟩
+
+private theorem qSandwiched_neg {I : Submodule ℂ 𝒜} {d x : 𝒜}
+    (hx : x ∈ qSandwiched I d) : -x ∈ qSandwiched I d := by
+  obtain ⟨l, m, hl, hm⟩ := hx
+  exact ⟨-m, -l, by rw [neg_smul]; exact hm.neg,
+    by rw [neg_smul]; exact hl.neg⟩
+
+private theorem qSandwiched_real_smul {I : Submodule ℂ 𝒜} {d x : 𝒜} (r : ℝ)
+    (hx : x ∈ qSandwiched I d) : r • x ∈ qSandwiched I d := by
+  rcases le_total 0 r with hr | hr
+  · obtain ⟨l, m, hl, hm⟩ := hx
+    exact ⟨r * l, r * m, by rw [mul_smul]; exact hl.rsmul hr,
+      by rw [mul_smul]; exact hm.rsmul hr⟩
+  · obtain ⟨l, m, hl, hm⟩ := qSandwiched_neg hx
+    have hr' : (0 : ℝ) ≤ -r := by linarith
+    refine ⟨-r * l, -r * m, ?_, ?_⟩
+    · rw [mul_smul, ← neg_smul_neg r x]
+      exact hl.rsmul hr'
+    · rw [mul_smul, ← neg_smul_neg r x]
+      exact hm.rsmul hr'
+
+private def qIdeal (I : Submodule ℂ 𝒜) (d : 𝒜) : Submodule ℂ 𝒜 where
+  carrier := {b | ((ℜ b : 𝒜) ∈ qSandwiched I d) ∧ ((ℑ b : 𝒜) ∈ qSandwiched I d)}
+  zero_mem' := by
+    simp only [Set.mem_setOf_eq, map_zero, ZeroMemClass.coe_zero]
+    exact ⟨qSandwiched_zero I d, qSandwiched_zero I d⟩
+  add_mem' := by
+    rintro b c ⟨hbr, hbi⟩ ⟨hcr, hci⟩
+    constructor
+    · rw [map_add, AddSubgroup.coe_add]
+      exact qSandwiched_add hbr hcr
+    · rw [map_add, AddSubgroup.coe_add]
+      exact qSandwiched_add hbi hci
+  smul_mem' := by
+    rintro z b ⟨hbr, hbi⟩
+    constructor
+    · rw [realPart_smul]
+      have he : ((z.re • ℜ b - z.im • ℑ b : selfAdjoint 𝒜) : 𝒜)
+          = z.re • (ℜ b : 𝒜) + -(z.im • (ℑ b : 𝒜)) := by
+        rw [AddSubgroup.coe_sub, selfAdjoint.val_smul, selfAdjoint.val_smul,
+          sub_eq_add_neg]
+      rw [he]
+      exact qSandwiched_add (qSandwiched_real_smul _ hbr)
+        (qSandwiched_neg (qSandwiched_real_smul _ hbi))
+    · rw [imaginaryPart_smul]
+      have he : ((z.re • ℑ b + z.im • ℜ b : selfAdjoint 𝒜) : 𝒜)
+          = z.re • (ℑ b : 𝒜) + z.im • (ℜ b : 𝒜) := by
+        rw [AddSubgroup.coe_add, selfAdjoint.val_smul, selfAdjoint.val_smul]
+      rw [he]
+      exact qSandwiched_add (qSandwiched_real_smul _ hbi)
+        (qSandwiched_real_smul _ hbr)
+
+private theorem qIdeal_isOrderIdeal {I : Submodule ℂ 𝒜} {d : 𝒜} :
+    IsOrderIdeal (qIdeal I d) := by
+  constructor
+  · intro b hb
+    obtain ⟨hbr, hbi⟩ := hb
+    constructor
+    · have h : (ℜ (star b) : 𝒜) = (ℜ b : 𝒜) := by
+        rw [realPart_apply_coe, realPart_apply_coe, star_star, add_comm]
+      rw [h]
+      exact hbr
+    · have h : (ℑ (star b) : 𝒜) = -(ℑ b : 𝒜) := by
+        rw [imaginaryPart_apply_coe, imaginaryPart_apply_coe, star_star,
+          ← smul_neg, ← smul_neg, neg_sub]
+      rw [h]
+      exact qSandwiched_neg hbi
+  · intro b hb hb0 c h1 h2
+    have hcsa : IsSelfAdjoint c := isSelfAdjoint_of_mem_interval h1 h2
+    have hbsa : IsSelfAdjoint b := IsSelfAdjoint.of_nonneg hb0
+    obtain ⟨hbr, hbi⟩ := hb
+    rw [hbsa.coe_realPart] at hbr
+    obtain ⟨l, m, hl, hm⟩ := hbr
+    constructor
+    · rw [hcsa.coe_realPart]
+      refine ⟨-m, m, ?_, (QLe.of_le h2).trans hm⟩
+      rw [neg_smul]
+      exact hm.neg.trans (QLe.of_le h1)
+    · rw [hcsa.imaginaryPart, ZeroMemClass.coe_zero]
+      exact qSandwiched_zero I d
+
+private theorem mem_qSandwiched_of_mem {I : Submodule ℂ 𝒜} {d x : 𝒜}
+    (hx : x ∈ I) : x ∈ qSandwiched I d := by
+  refine ⟨0, 0, ⟨0, le_rfl, ?_⟩, ⟨0, le_rfl, ?_⟩⟩
+  · rw [zero_smul, sub_zero, sub_zero]
+    exact hx
+  · rw [zero_smul, zero_sub, sub_zero]
+    exact I.neg_mem hx
+  -- note: first goal is `x - 0 • d - 0 ∈ I`, second `0 • d - x - 0 ∈ I`
+
+private theorem le_qIdeal {I : Submodule ℂ 𝒜} (hI : IsOrderIdeal I) {d : 𝒜} :
+    I ≤ qIdeal I d := by
+  intro b hb
+  have hstar : star b ∈ I := hI.star_mem b hb
+  have hre : (ℜ b : 𝒜) ∈ I := by
+    rw [realPart_apply_coe]
+    have h := I.smul_mem (((2 : ℝ)⁻¹ : ℝ) : ℂ) (I.add_mem hb hstar)
+    rwa [Complex.coe_smul] at h
+  have him : (ℑ b : 𝒜) ∈ I := by
+    rw [imaginaryPart_apply_coe]
+    have h := I.smul_mem (-Complex.I)
+      (I.smul_mem ((((2 : ℝ)⁻¹ : ℝ)) : ℂ) (I.sub_mem hb hstar))
+    rwa [Complex.coe_smul] at h
+  exact ⟨mem_qSandwiched_of_mem hre, mem_qSandwiched_of_mem him⟩
+
+private theorem d_mem_qIdeal {I : Submodule ℂ 𝒜} {d : 𝒜}
+    (hd : IsSelfAdjoint d) : d ∈ qIdeal I d := by
+  constructor
+  · rw [hd.coe_realPart]
+    exact ⟨1, 1, by rw [one_smul]; exact QLe.refl I d,
+      by rw [one_smul]; exact QLe.refl I d⟩
+  · rw [hd.imaginaryPart, ZeroMemClass.coe_zero]
+    exact qSandwiched_zero I d
+
 /-- **22IV** (`maximal-ideal-state`, cstar.tex:3367, Lemma): for every
 maximal order ideal `I` of a C*-algebra `𝒜` there is a state `ω : 𝒜 → ℂ`
 with `ker(ω) = I`. -/
 theorem maximal_ideal_state (I : Submodule ℂ 𝒜) (hI : IsMaximalOrderIdeal I) :
-    ∃ ω : 𝒜 →ₗ[ℂ] ℂ, IsState ω ∧ LinearMap.ker ω = I :=
-  sorry
+    ∃ ω : 𝒜 →ₗ[ℂ] ℂ, IsState ω ∧ LinearMap.ker ω = I := by
+  obtain ⟨⟨hord, h1I⟩, hmax⟩ := hI
+  -- Step A (`pos-hahn-banach-1`, cstar.tex:3390): for self-adjoint `a`
+  -- there is a real `α` with `a - α•1 ∈ I`.
+  have hkey : ∀ a : 𝒜, IsSelfAdjoint a → ∃ r : ℝ, a - r • (1 : 𝒜) ∈ I := by
+    intro a ha
+    set S : Set ℝ := {lam | QLe I a (lam • (1 : 𝒜))} with hS
+    have hup : a ≤ ‖a‖ • (1 : 𝒜) := by
+      rw [smul_one_eq_algebraMap]
+      exact ((positive_basic_2_3a a ha ‖a‖ (norm_nonneg a)).mpr le_rfl).2
+    have hlow : -(‖a‖ • (1 : 𝒜)) ≤ a := by
+      rw [smul_one_eq_algebraMap]
+      exact ((positive_basic_2_3a a ha ‖a‖ (norm_nonneg a)).mpr le_rfl).1
+    have hSne : S.Nonempty := ⟨‖a‖, QLe.of_le hup⟩
+    have hSbdd : BddBelow S := by
+      refine ⟨-‖a‖, fun lam hlam => ?_⟩
+      refine QLe.scalar_le hord h1I (r := -‖a‖) (s := lam) ?_
+      refine QLe.trans (QLe.of_le ?_) hlam
+      rw [neg_smul]
+      exact hlow
+    set α := sInf S with hα
+    have hqle : ∀ ε : ℝ, 0 < ε → QLe I a ((α + ε) • (1 : 𝒜)) := by
+      intro ε hε
+      obtain ⟨lam, hlamS, hlt⟩ :=
+        exists_lt_of_csInf_lt hSne (show α < α + ε by linarith)
+      exact QLe.trans hlamS (QLe.of_le (smul_one_le_smul_one (le_of_lt hlt)))
+    set d : 𝒜 := α • (1 : 𝒜) - a with hd
+    have hdsa : IsSelfAdjoint d := by
+      rw [hd, smul_one_eq_algebraMap]
+      exact (isSelfAdjoint_algebraMap_ofReal α).sub ha
+    have h1J : (1 : 𝒜) ∉ qIdeal I d := by
+      rintro ⟨h1r, -⟩
+      rw [(IsSelfAdjoint.one 𝒜).coe_realPart] at h1r
+      obtain ⟨l, m, -, hm⟩ := h1r
+      rcases lt_trichotomy m 0 with hlt | heq | hgt
+      · -- μ < 0 (cstar.tex:3407)
+        set s : ℝ := (-m)⁻¹ with hs
+        have hspos : 0 < s := inv_pos.mpr (by linarith)
+        have h2 := hm.rsmul (le_of_lt hspos)
+        have he : s • (m • d) = -d := by
+          rw [smul_smul, hs,
+            show (-m)⁻¹ * m = -1 by
+              field_simp
+              rw [div_self (ne_of_lt hlt)],
+            neg_one_smul]
+        rw [he] at h2
+        have he2 : -d = a - α • (1 : 𝒜) := by rw [hd]; abel
+        rw [he2] at h2
+        have h3 := h2.add_right (α • (1 : 𝒜))
+        have he3 : a - α • (1 : 𝒜) + α • (1 : 𝒜) = a := by abel
+        have he4 : s • (1 : 𝒜) + α • (1 : 𝒜) = (s + α) • (1 : 𝒜) := by
+          rw [add_smul]
+        rw [he3, he4] at h3
+        have h4 := h3.trans (hqle (s / 2) (by linarith))
+        have h5 := QLe.scalar_le hord h1I h4
+        linarith
+      · -- μ = 0 (cstar.tex:3416)
+        rw [heq, zero_smul] at hm
+        have h2 : QLe I ((1 : ℝ) • (1 : 𝒜)) ((0 : ℝ) • (1 : 𝒜)) := by
+          rw [one_smul, zero_smul]
+          exact hm
+        have h5 := QLe.scalar_le hord h1I h2
+        linarith
+      · -- μ > 0 (cstar.tex:3418)
+        have h2 := hm.rsmul (le_of_lt (inv_pos.mpr hgt))
+        have he : m⁻¹ • (m • d) = d := by
+          rw [smul_smul, inv_mul_cancel₀ (ne_of_gt hgt), one_smul]
+        rw [he] at h2
+        have h3 := h2.add_right (a - m⁻¹ • (1 : 𝒜))
+        have he3 : m⁻¹ • (1 : 𝒜) + (a - m⁻¹ • (1 : 𝒜)) = a := by abel
+        have he4 : d + (a - m⁻¹ • (1 : 𝒜)) = (α - m⁻¹) • (1 : 𝒜) := by
+          rw [hd, sub_smul]
+          abel
+        rw [he3, he4] at h3
+        have hmem : (α - m⁻¹) ∈ S := h3
+        have h5 := csInf_le hSbdd hmem
+        have hminv : 0 < m⁻¹ := inv_pos.mpr hgt
+        linarith
+    have heqI := hmax (qIdeal I d) ⟨qIdeal_isOrderIdeal, h1J⟩ (le_qIdeal hord)
+    have hdI : d ∈ I := by
+      rw [← heqI]
+      exact d_mem_qIdeal hdsa
+    refine ⟨α, ?_⟩
+    have h := I.neg_mem hdI
+    have he : -d = a - α • (1 : 𝒜) := by rw [hd]; abel
+    rwa [he] at h
+  -- Step B: uniqueness of the scalar
+  have huniq : ∀ (z w : ℂ) (x : 𝒜),
+      x - z • (1 : 𝒜) ∈ I → x - w • (1 : 𝒜) ∈ I → z = w := by
+    intro z w x hz hw
+    by_contra hne
+    have hsub := I.sub_mem hz hw
+    have he : x - z • (1 : 𝒜) - (x - w • (1 : 𝒜)) = (w - z) • (1 : 𝒜) := by
+      rw [sub_smul]
+      abel
+    rw [he] at hsub
+    have h1' := I.smul_mem (w - z)⁻¹ hsub
+    rw [smul_smul, inv_mul_cancel₀ (sub_ne_zero.mpr (Ne.symm hne)),
+      one_smul] at h1'
+    exact h1I h1'
+  -- Step C (cstar.tex:3436): existence of the scalar for every element
+  have hex : ∀ a : 𝒜, ∃ z : ℂ, a - z • (1 : 𝒜) ∈ I := by
+    intro a
+    obtain ⟨r, hr⟩ := hkey _ (ℜ a).property
+    obtain ⟨s, hs⟩ := hkey _ (ℑ a).property
+    have hr' : (ℜ a : 𝒜) - ((r : ℝ) : ℂ) • (1 : 𝒜) ∈ I := by
+      rwa [Complex.coe_smul]
+    have hs' : (ℑ a : 𝒜) - ((s : ℝ) : ℂ) • (1 : 𝒜) ∈ I := by
+      rwa [Complex.coe_smul]
+    refine ⟨(r : ℂ) + (s : ℂ) * Complex.I, ?_⟩
+    have hmem := I.add_mem hr' (I.smul_mem Complex.I hs')
+    have he : (ℜ a : 𝒜) - ((r : ℝ) : ℂ) • (1 : 𝒜)
+        + Complex.I • ((ℑ a : 𝒜) - ((s : ℝ) : ℂ) • (1 : 𝒜))
+        = a - ((r : ℂ) + (s : ℂ) * Complex.I) • (1 : 𝒜) := by
+      rw [smul_sub, smul_smul, add_smul, mul_comm Complex.I ((s : ℝ) : ℂ)]
+      conv_rhs => rw [← realPart_add_I_smul_imaginaryPart a]
+      abel
+    rwa [he] at hmem
+  -- Step D: assemble the state
+  choose f hf using hex
+  have hadd : ∀ x y : 𝒜, f (x + y) = f x + f y := by
+    intro x y
+    refine huniq _ _ (x + y) (hf (x + y)) ?_
+    have h := I.add_mem (hf x) (hf y)
+    have he : x - f x • (1 : 𝒜) + (y - f y • (1 : 𝒜))
+        = x + y - (f x + f y) • (1 : 𝒜) := by
+      rw [add_smul]
+      abel
+    rwa [he] at h
+  have hsmul : ∀ (z : ℂ) (x : 𝒜), f (z • x) = z * f x := by
+    intro z x
+    refine huniq _ _ (z • x) (hf (z • x)) ?_
+    have h := I.smul_mem z (hf x)
+    have he : z • (x - f x • (1 : 𝒜)) = z • x - (z * f x) • (1 : 𝒜) := by
+      rw [smul_sub, smul_smul]
+    rwa [he] at h
+  let ω : 𝒜 →ₗ[ℂ] ℂ :=
+    { toFun := f
+      map_add' := hadd
+      map_smul' := fun z x => by rw [hsmul z x]; rfl }
+  have hω1 : f 1 = 1 :=
+    huniq (f 1) 1 1 (hf 1) (by rw [one_smul, sub_self]; exact I.zero_mem)
+  have hpos : ∀ a : 𝒜, 0 ≤ a → 0 ≤ f a := by
+    intro a ha0
+    have hsa : IsSelfAdjoint a := IsSelfAdjoint.of_nonneg ha0
+    have hstar : a - star (f a) • (1 : 𝒜) ∈ I := by
+      have h := hord.star_mem _ (hf a)
+      rwa [star_sub, hsa.star_eq, star_smul, star_one] at h
+    have hreal : star (f a) = f a := huniq _ _ a hstar (hf a)
+    have him : (f a).im = 0 := by
+      have h := congrArg Complex.im hreal
+      rw [Complex.star_def, Complex.conj_im] at h
+      linarith
+    have hre : 0 ≤ (f a).re := by
+      by_contra hlt
+      push_neg at hlt
+      set r := (f a).re with hr
+      have hfa : f a = ((r : ℝ) : ℂ) := by
+        rw [Complex.ext_iff]
+        simp [him, hr]
+      have hb : a - r • (1 : 𝒜) ∈ I := by
+        have h := hf a
+        rwa [hfa, Complex.coe_smul] at h
+      have hb0 : (0 : 𝒜) ≤ (-r) • (1 : 𝒜) := by
+        rw [← Complex.coe_smul]
+        exact ofReal_smul_nonneg zero_le_one' (by linarith)
+      have hble : (-r) • (1 : 𝒜) ≤ a - r • (1 : 𝒜) := by
+        rw [neg_smul]
+        have h3 : (0 : 𝒜) - r • 1 ≤ a - r • 1 := sub_le_sub_right ha0 _
+        rwa [zero_sub] at h3
+      have hbpos : (0 : 𝒜) ≤ a - r • (1 : 𝒜) := le_trans hb0 hble
+      have hmem := hord.mem_of_mem_interval _ hb hbpos ((-r) • (1 : 𝒜))
+        (le_trans (neg_nonpos_of_nonneg hbpos) hb0) hble
+      have hmem' : (((-r : ℝ)) : ℂ) • (1 : 𝒜) ∈ I := by
+        rw [Complex.coe_smul]
+        exact hmem
+      have h1' := I.smul_mem ((((-r : ℝ)) : ℂ))⁻¹ hmem'
+      rw [smul_smul, inv_mul_cancel₀
+        (Complex.ofReal_ne_zero.mpr (ne_of_gt (by linarith : (0:ℝ) < -r))),
+        one_smul] at h1'
+      exact h1I h1'
+    rw [Complex.le_def]
+    refine ⟨by simpa using hre, by simp [him]⟩
+  refine ⟨ω, ⟨fun a ha => hpos a ha, hω1⟩, ?_⟩
+  ext x
+  rw [LinearMap.mem_ker]
+  constructor
+  · intro hx
+    have h := hf x
+    rw [show f x = ω x from rfl, hx, zero_smul, sub_zero] at h
+    exact h
+  · intro hx
+    exact huniq (f x) 0 x (hf x) (by rw [zero_smul, sub_zero]; exact hx)
 
 /-- **22VIII** (`states-order-separating`, cstar.tex:3464, Exercise), part 1:
 for every self-adjoint `a` of a C*-algebra `≠ {0}` there is a state `ω` with
@@ -2143,16 +2945,117 @@ for every self-adjoint `a` of a C*-algebra `≠ {0}` there is a state `ω` with
 The hypothesis `𝒜 ≠ {0}` — here `[Nontrivial 𝒜]` — is **erratum 220.80**: the
 trivial C*-algebra has no states at all.  Part 2 below (order separation) is
 *not* touched by the erratum; it holds for `{0}` vacuously. -/
-theorem states_order_separating_1 [Nontrivial 𝒜] (a : 𝒜) (ha : IsSelfAdjoint a) :
-    ∃ ω : 𝒜 →ₗ[ℂ] ℂ, IsState ω ∧ ‖ω a‖ = ‖a‖ :=
-  sorry
+theorem states_order_separating_1 [Nontrivial 𝒜] (a : 𝒜)
+    (ha : IsSelfAdjoint a) :
+    ∃ ω : 𝒜 →ₗ[ℂ] ℂ, IsState ω ∧ ‖ω a‖ = ‖a‖ := by
+  have hsan : IsSelfAdjoint (algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ)) :=
+    isSelfAdjoint_algebraMap_ofReal ‖a‖
+  have hnorm : ∀ ω : 𝒜 →ₗ[ℂ] ℂ, IsState ω →
+      ω (algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ)) = ((‖a‖ : ℝ) : ℂ) := by
+    intro ω hω
+    rw [Algebra.algebraMap_eq_smul_one, map_smul, hω.2, smul_eq_mul, mul_one]
+  rcases order_ideal_basic_5 a ha with h | h
+  · obtain ⟨J, hJ, hmem⟩ := order_ideal_basic_4 _ (hsan.sub ha) h
+    obtain ⟨ω, hω, hker⟩ := maximal_ideal_state J hJ
+    refine ⟨ω, hω, ?_⟩
+    have h0 : ω (algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ) - a) = 0 := by
+      rw [← LinearMap.mem_ker, hker]
+      exact hmem
+    rw [map_sub, hnorm ω hω, sub_eq_zero] at h0
+    rw [← h0, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (norm_nonneg a)]
+  · obtain ⟨J, hJ, hmem⟩ := order_ideal_basic_4 _ (hsan.add ha) h
+    obtain ⟨ω, hω, hker⟩ := maximal_ideal_state J hJ
+    refine ⟨ω, hω, ?_⟩
+    have h0 : ω (algebraMap ℂ 𝒜 ((‖a‖ : ℝ) : ℂ) + a) = 0 := by
+      rw [← LinearMap.mem_ker, hker]
+      exact hmem
+    rw [map_add, hnorm ω hω] at h0
+    have h0' : ω a = -((‖a‖ : ℝ) : ℂ) := eq_neg_of_add_eq_zero_right h0
+    rw [h0', norm_neg, Complex.norm_real, Real.norm_eq_abs,
+      abs_of_nonneg (norm_nonneg a)]
 
 /-- **22VIII** (`states-order-separating`, cstar.tex:3464, Exercise), part 2:
 the states of a C*-algebra are order separating. -/
 theorem states_order_separating_2 :
     OrderSeparating fun ω : {ω : 𝒜 →ₗ[ℂ] ℂ // IsState ω} =>
-      (ω : 𝒜 →ₗ[ℂ] ℂ) :=
-  sorry
+      (ω : 𝒜 →ₗ[ℂ] ℂ) := by
+  intro a
+  constructor
+  · intro ha ω
+    exact ω.2.1 a ha
+  · intro H
+    rcases subsingleton_or_nontrivial 𝒜 with hsub | hnt
+    · exact le_of_eq (Subsingleton.elim 0 a)
+    -- states are involution preserving, so send self-adjoints to reals
+    have hsareal : ∀ (ω : 𝒜 →ₗ[ℂ] ℂ), IsState ω → ∀ x : 𝒜,
+        IsSelfAdjoint x → (ω x).im = 0 := by
+      intro ω hω x hx
+      have h := cstar_p_implies_i ω hω.1 x
+      rw [hx.star_eq] at h
+      have h2 := congrArg Complex.im h
+      rw [Complex.star_def, Complex.conj_im] at h2
+      linarith
+    -- `ℑ a = 0`, using part 1 on `ℑ a`
+    have him : (ℑ a : 𝒜) = 0 := by
+      obtain ⟨ω, hω, hnorm⟩ :=
+        states_order_separating_1 (𝒜 := 𝒜) (ℑ a : 𝒜) (ℑ a).property
+      have hωa := H ⟨ω, hω⟩
+      have hdec : ω a = ω (ℜ a : 𝒜) + Complex.I * ω (ℑ a : 𝒜) := by
+        conv_lhs => rw [← realPart_add_I_smul_imaginaryPart a]
+        rw [map_add, map_smul, smul_eq_mul]
+      have haim : (ω a).im = 0 := by
+        rw [Complex.le_def] at hωa
+        simpa using hωa.2.symm
+      have hreim : (ω (ℑ a : 𝒜)).re = 0 := by
+        have h2 := congrArg Complex.im hdec
+        rw [Complex.add_im, Complex.mul_im, Complex.I_re, Complex.I_im,
+          hsareal ω hω _ (ℜ a).property, haim] at h2
+        simpa using h2.symm
+      have himim : (ω (ℑ a : 𝒜)).im = 0 := hsareal ω hω _ (ℑ a).property
+      have hω0 : ω (ℑ a : 𝒜) = 0 := by
+        rw [Complex.ext_iff]
+        exact ⟨hreim, himim⟩
+      have h3 : ‖(ℑ a : 𝒜)‖ = 0 := by
+        rw [← hnorm, hω0, norm_zero]
+      exact norm_eq_zero.mp h3
+    have hasa : IsSelfAdjoint a := by
+      have haeq : a = (ℜ a : 𝒜) := by
+        conv_lhs => rw [← realPart_add_I_smul_imaginaryPart a]
+        rw [him, smul_zero, add_zero]
+      rw [haeq]
+      exact (ℜ a).property
+    -- now the norm argument
+    set t := ‖a‖ with ht
+    have hx : IsSelfAdjoint (algebraMap ℂ 𝒜 ((t : ℝ) : ℂ) - a) :=
+      (isSelfAdjoint_algebraMap_ofReal t).sub hasa
+    obtain ⟨ω, hω, hnorm⟩ := states_order_separating_1 (𝒜 := 𝒜) _ hx
+    have hval : ω (algebraMap ℂ 𝒜 ((t : ℝ) : ℂ) - a) = ((t : ℝ) : ℂ) - ω a := by
+      rw [map_sub, Algebra.algebraMap_eq_smul_one, map_smul, hω.2, smul_eq_mul,
+        mul_one]
+    -- ω a is a real number in [0, t]
+    have haim : (ω a).im = 0 := hsareal ω hω a hasa
+    have hare0 : 0 ≤ (ω a).re := by
+      have h := H ⟨ω, hω⟩
+      rw [Complex.le_def] at h
+      simpa using h.1
+    have haret : (ω a).re ≤ t := by
+      have hle : a ≤ algebraMap ℂ 𝒜 ((t : ℝ) : ℂ) :=
+        ((positive_basic_2_3a a hasa t (norm_nonneg a)).mpr le_rfl).2
+      have h2 := hω.1 _ (sub_nonneg.mpr hle)
+      rw [map_sub, Algebra.algebraMap_eq_smul_one, map_smul, hω.2, smul_eq_mul,
+        mul_one, Complex.le_def] at h2
+      have h3 := h2.1
+      simpa using h3
+    have hxnorm : ‖algebraMap ℂ 𝒜 ((t : ℝ) : ℂ) - a‖ ≤ t := by
+      rw [← hnorm, hval]
+      have he : ((t : ℝ) : ℂ) - ω a = (((t - (ω a).re : ℝ)) : ℂ) := by
+        rw [Complex.ext_iff]
+        simp [haim]
+      rw [he, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by linarith)]
+      linarith
+    exact (nonneg_iff_norm_algebraMap_sub_le a hasa t (norm_nonneg a)
+      (by rw [ht]; linarith [norm_nonneg a])).mp hxnorm
+
 
 end OrderIdeals
 
