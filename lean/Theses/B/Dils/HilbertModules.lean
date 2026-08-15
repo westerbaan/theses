@@ -34,6 +34,7 @@ import Theses.Common
 import Theses.A.CStar.Matrices
 import Theses.A.VN.Projections
 import Theses.A.VN.Completeness
+import Theses.A.VN.NormalFunctionals
 
 open scoped ComplexOrder ComplexInnerProductSpace CStarAlgebra WithCStarModule
 open Filter Topology Theses Theses.A.CStar Theses.A.VN
@@ -1969,10 +1970,9 @@ def BddUnComplete : Prop :=
 
 **149VI** (dils.tex:2249) fixes the route `1 ⇒ 3 ⇒ 4 ⇒ 2 ⇒ 4 ⇒ 1`; the four
 non-trivial implications are stated separately below, so that they can be
-used (and proved) one at a time.  Of the four, `1 ⇒ 3` and `4 ⇒ 1` are
-proved; the other two still consume results of `A/VN` that are `sorry`
-there (**80IV** for `3 ⇒ 4`, **87VIII** for `4 ⇒ 2`) — see their doc
-comments. -/
+used (and proved) one at a time.  All four are proved (`3 ⇒ 4` through
+**80IV** `approximate_pseudoinverse`, `4 ⇒ 2` through **87VIII**
+`ultraweakly_bounded_implies_bounded`, both from `A/VN`). -/
 
 section OneImpliesThree
 
@@ -2347,34 +2347,891 @@ theorem bddUnComplete_of_selfDual [VonNeumannAlgebra 𝒷] (h : SelfDual 𝒷 X)
   rw [Real.dist_eq, sub_zero, abs_of_nonneg (unSeminorm_nonneg _ _ _)]
   linarith
 
+/-! ### Auxiliary: the algebra of the `𝒷`-action, and ultranorm estimates
+
+Mathlib's `CStarModule` carries a bare `SMul 𝒷 X` with no distributivity
+axioms for the `𝒷`-action; on a pre-Hilbert module those laws are *forced* by
+the inner product axioms and definiteness (the same argument as **149III**),
+so we derive the ones the proofs of **149VIII**/**149IX** need. -/
+
+private theorem add_smul' (a b : 𝒷) (x : X) : (a + b) • x = a • x + b • x := by
+  have h : (inner 𝒷 ((a + b) • x - (a • x + b • x))
+      ((a + b) • x - (a • x + b • x)) : 𝒷) = 0 := by
+    simp only [CStarModule.inner_sub_left, CStarModule.inner_sub_right,
+      CStarModule.inner_add_left, CStarModule.inner_add_right,
+      CStarModule.inner_op_smul_left, CStarModule.inner_op_smul_right, star_add]
+    noncomm_ring
+  have := (CStarModule.inner_self (A := 𝒷)).mp h
+  rwa [sub_eq_zero] at this
+
+private theorem zero_smul' (x : X) : (0 : 𝒷) • x = 0 := by
+  have h := add_smul' (0 : 𝒷) 0 x
+  rw [add_zero] at h
+  have h2 : (0 : 𝒷) • x + (0 : 𝒷) • x = (0 : 𝒷) • x + 0 := by
+    rw [add_zero, ← h]
+  exact (add_left_cancel h2)
+
+private theorem sub_smul' (a b : 𝒷) (x : X) : (a - b) • x = a • x - b • x := by
+  have h := add_smul' (a - b) b x
+  rw [sub_add_cancel] at h
+  rw [eq_sub_iff_add_eq, ← h]
+
+private theorem mul_smul' (a b : 𝒷) (x : X) : (a * b) • x = a • (b • x) := by
+  have h : (inner 𝒷 ((a * b) • x - a • (b • x))
+      ((a * b) • x - a • (b • x)) : 𝒷) = 0 := by
+    simp only [CStarModule.inner_sub_left, CStarModule.inner_sub_right,
+      CStarModule.inner_op_smul_left, CStarModule.inner_op_smul_right, star_mul]
+    noncomm_ring
+  have := (CStarModule.inner_self (A := 𝒷)).mp h
+  rwa [sub_eq_zero] at this
+
+private theorem sum_smul' {κ : Type*} (s : Finset κ) (f : κ → 𝒷) (x : X) :
+    (∑ i ∈ s, f i) • x = ∑ i ∈ s, f i • x := by
+  classical
+  induction s using Finset.induction_on with
+  | empty => simpa using zero_smul' x
+  | insert a s ha ih =>
+    rw [Finset.sum_insert ha, Finset.sum_insert ha, add_smul', ih]
+
+/-- `‖ω(a)‖ = Re ω(a)` for positive `a`. -/
+private theorem norm_np_eq_re (ω : NPFunctional 𝒷) {a : 𝒷} (ha : 0 ≤ a) :
+    ‖ω a‖ = (ω a).re := by
+  have him : (ω a).im = 0 := np_im_zero ω ha
+  have hre : 0 ≤ (ω a).re := np_re_nonneg ω ha
+  have h1 : ω a = ((ω a).re : ℂ) := by
+    apply Complex.ext
+    · simp
+    · simp [him]
+  rw [h1, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hre,
+    Complex.ofReal_re]
+
+/-- The `ω`-seminorm form of Bessel's inequality: the coefficient partial
+sums are `‖·‖_ω`-contractions of `z`. -/
+private theorem unSeminorm_coeff_sum_le {e : ι → X} (he : OrthonormalFam 𝒷 e)
+    (ω : NPFunctional 𝒷) (z : X) (s : Finset ι) :
+    unSeminorm ω (inner 𝒷 : X → X → 𝒷) (∑ i ∈ s, (inner 𝒷 (e i) z : 𝒷) • e i)
+      ≤ unSeminorm ω (inner 𝒷 : X → X → 𝒷) z := by
+  have h1 : (inner 𝒷 (∑ i ∈ s, (inner 𝒷 (e i) z : 𝒷) • e i)
+      (∑ i ∈ s, (inner 𝒷 (e i) z : 𝒷) • e i) : 𝒷)
+      = ∑ i ∈ s, (inner 𝒷 (e i) z : 𝒷) * inner 𝒷 z (e i) := by
+    rw [inner_sum_smul_self he.1 _ (fun i => onbasis_coef_absorb he z i) s]
+    exact Finset.sum_congr rfl fun i _ => by rw [CStarModule.star_inner]
+  rw [unSeminorm, unSeminorm, h1]
+  exact Real.sqrt_le_sqrt (np_re_mono ω (mod_bessel he z s))
+
+/-- `‖d • x‖_ω ≤ ‖d*‖_ω` when `⟨x,x⟩` is a projection. -/
+private theorem unSeminorm_smul_proj_le {x : X}
+    (hx : IsStarProjection (inner 𝒷 x x : 𝒷)) (ω : NPFunctional 𝒷) (d : 𝒷) :
+    unSeminorm ω (inner 𝒷 : X → X → 𝒷) (d • x) ≤ omegaNorm 𝒷 ω (star d) := by
+  have h1 : (inner 𝒷 (d • x) (d • x) : 𝒷) = d * inner 𝒷 x x * star d := by
+    simp only [CStarModule.inner_op_smul_left, CStarModule.inner_op_smul_right,
+      mul_assoc]
+  rw [unSeminorm, h1, omegaNorm]
+  refine Real.sqrt_le_sqrt (np_re_mono ω ?_)
+  rw [star_star]
+  calc d * inner 𝒷 x x * star d ≤ d * 1 * star d :=
+        star_right_conjugate_le_conjugate hx.le_one d
+    _ = d * star d := by rw [mul_one]
+
+private theorem unSeminorm_sum_le (ω : NPFunctional 𝒷) {κ : Type*}
+    (s : Finset κ) (f : κ → X) :
+    unSeminorm ω (inner 𝒷 : X → X → 𝒷) (∑ i ∈ s, f i)
+      ≤ ∑ i ∈ s, unSeminorm ω (inner 𝒷 : X → X → 𝒷) (f i) := by
+  classical
+  induction s using Finset.induction_on with
+  | empty =>
+    have h0 : (inner 𝒷 (0 : X) (0 : X) : 𝒷) = 0 :=
+      (cstarBInner 𝒷 X).inner_zero_left 0
+    simp [unSeminorm, h0]
+  | insert a s ha ih =>
+    rw [Finset.sum_insert ha, Finset.sum_insert ha]
+    exact le_trans (unSeminorm_add_le ω (cstarBInner 𝒷 X) _ _)
+      (add_le_add le_rfl ih)
+
+/-- Along an ultranorm-Cauchy filter the mirrored coefficients `z ↦ [z, x]`
+form an ultrastrong-Cauchy net (via **142III**). -/
+private theorem unCauchy_inner_tendsto {F : Filter X}
+    (hcauchy : UnCauchy (inner 𝒷 : X → X → 𝒷) F) (x : X) (ω : NPFunctional 𝒷) :
+    Tendsto (fun p : X × X =>
+        omegaNorm 𝒷 ω ((inner 𝒷 p.1 x : 𝒷) - inner 𝒷 p.2 x))
+      (F ×ˢ F) (𝓝 0) := by
+  rw [Metric.tendsto_nhds]
+  intro ε hε
+  have hx : (0 : ℝ) ≤ ‖x‖ := norm_nonneg x
+  obtain ⟨s, hsF, hs⟩ := hcauchy ω (ε / (‖x‖ + 1)) (by positivity)
+  filter_upwards [Filter.prod_mem_prod hsF hsF] with p hp
+  have hsub : (inner 𝒷 p.1 x : 𝒷) - inner 𝒷 p.2 x = inner 𝒷 (p.1 - p.2) x :=
+    ((cstarBInner 𝒷 X).inner_sub_left p.1 p.2 x).symm
+  rw [Real.dist_eq, sub_zero, abs_of_nonneg (omegaNorm_nonneg _ _), hsub]
+  calc omegaNorm 𝒷 ω (inner 𝒷 (p.1 - p.2) x)
+      ≤ ‖x‖ * unSeminorm ω (inner 𝒷 : X → X → 𝒷) (p.1 - p.2) :=
+        omegaNorm_inner_le ω _ x
+    _ ≤ ‖x‖ * (ε / (‖x‖ + 1)) :=
+        mul_le_mul_of_nonneg_left (hs p.1 hp.1 p.2 hp.2) hx
+    _ = ε * (‖x‖ / (‖x‖ + 1)) := by ring
+    _ < ε * 1 := by
+        refine mul_lt_mul_of_pos_left ?_ hε
+        rw [div_lt_one (by positivity)]
+        linarith
+    _ = ε := mul_one ε
+
+private theorem uwTendsto_const {κ : Type*} (l : Filter κ) (aa : 𝒷) :
+    UWTendsto (fun _ : κ => aa) l aa := by
+  rw [uwTendsto_iff]
+  exact fun ω => tendsto_const_nhds
+
+/-- An increasing sequence of self-adjoint elements with supremum `q`
+converges to `q` ultraweakly, along with its left `b*`-multiples (**44XIV**,
+**46VII**, through `vna_supremum_uwlimit`/`vna_supremum_mult`, transferred
+from the directed-set index to `ℕ`). -/
+private theorem uwTendsto_partialSums [VonNeumannAlgebra 𝒷] {q : 𝒷}
+    (cc : ℕ → 𝒷) (hmono : Monotone cc) (hsa : ∀ N, IsSelfAdjoint (cc N))
+    (hqsa : IsSelfAdjoint q) (hlub : IsLUB {x : 𝒷 | ∃ N : ℕ, x = cc N} q)
+    (bb : 𝒷) :
+    UWTendsto cc atTop q ∧
+      UWTendsto (fun N => star bb * cc N) atTop (star bb * q) := by
+  classical
+  set mk : ℕ → selfAdjoint 𝒷 :=
+    fun N => ⟨cc N, selfAdjoint.mem_iff.mpr (hsa N)⟩ with hmk
+  set qmk : selfAdjoint 𝒷 := ⟨q, selfAdjoint.mem_iff.mpr hqsa⟩ with hqmk
+  set D : Set (selfAdjoint 𝒷) := {d : selfAdjoint 𝒷 | ∃ N : ℕ, (d : 𝒷) = cc N}
+    with hD
+  have hmkmem : ∀ N, mk N ∈ D := fun N => ⟨N, rfl⟩
+  have hne : D.Nonempty := ⟨mk 0, hmkmem 0⟩
+  have hdir : DirectedOn (· ≤ ·) D := by
+    rintro x ⟨N, hN⟩ y ⟨M, hM⟩
+    refine ⟨mk (max N M), hmkmem _, ?_, ?_⟩
+    · exact Subtype.coe_le_coe.mp (by rw [hN]; exact hmono (le_max_left _ _))
+    · exact Subtype.coe_le_coe.mp (by rw [hM]; exact hmono (le_max_right _ _))
+  have hbdd : BddAbove D := ⟨qmk, by
+    rintro x ⟨N, hN⟩
+    exact Subtype.coe_le_coe.mp (by rw [hN]; exact hlub.1 ⟨N, rfl⟩)⟩
+  have h3 : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧ BddAbove D := ⟨hne, hdir, hbdd⟩
+  have hlubD : IsLUB D qmk := by
+    constructor
+    · rintro x ⟨N, hN⟩
+      exact Subtype.coe_le_coe.mp (by rw [hN]; exact hlub.1 ⟨N, rfl⟩)
+    · intro v hv
+      refine Subtype.coe_le_coe.mp (hlub.2 ?_)
+      rintro x ⟨N, rfl⟩
+      exact Subtype.coe_le_coe.mpr (hv (hmkmem N))
+  have hds : dirSup D h3 = qmk := (isLUB_dirSup D h3).unique hlubD
+  set φ : ℕ → D := fun N => ⟨mk N, hmkmem N⟩ with hφ
+  have hφmono : Monotone φ := fun N M hNM => by
+    refine Subtype.coe_le_coe.mp (Subtype.coe_le_coe.mp ?_)
+    show cc N ≤ cc M
+    exact hmono hNM
+  have hφtendsto : Tendsto φ atTop atTop := by
+    refine tendsto_atTop_atTop_of_monotone hφmono ?_
+    rintro ⟨d, N, hN⟩
+    refine ⟨N, ?_⟩
+    refine Subtype.coe_le_coe.mp (Subtype.coe_le_coe.mp ?_)
+    show (d : 𝒷) ≤ cc N
+    exact le_of_eq hN
+  have h1 := Filter.Tendsto.comp (vna_supremum_uwlimit D h3) hφtendsto
+  have h2 := Filter.Tendsto.comp ((vna_supremum_mult D h3 bb).2) hφtendsto
+  rw [hds] at h1 h2
+  exact ⟨h1, h2⟩
+
+/-- **Polar decomposition** in a norm-bounded ultranorm complete pre-Hilbert
+𝒷-module (dils.tex:2389, the first half of the proof of **149VIII**): every
+`y` factors as `y = √⟨y,y⟩ • u` (mirrored) with `⟨u,u⟩ = ⌈√⟨y,y⟩⌋`.  The
+element `u` is the ultranorm limit of `(∑_{n<N} hₙ) • y` for an approximate
+pseudoinverse `(hₙ)ₙ` of `√⟨y,y⟩` (**80IV**). -/
+private theorem polar_decomposition [VonNeumannAlgebra 𝒷]
+    (h : BddUnComplete 𝒷 X) (y : X) :
+    ∃ u : X, (inner 𝒷 u u : 𝒷) = suppProj (CFC.sqrt (inner 𝒷 y y : 𝒷))
+      ∧ CFC.sqrt (inner 𝒷 y y : 𝒷) • u = y := by
+  classical
+  set a : 𝒷 := (inner 𝒷 y y : 𝒷) with hadef
+  have hann : (0 : 𝒷) ≤ a := CStarModule.inner_self_nonneg
+  set bb : 𝒷 := CFC.sqrt a with hbbdef
+  have hbnn : (0 : 𝒷) ≤ bb := CFC.sqrt_nonneg a
+  have hbsa : IsSelfAdjoint bb := .of_nonneg hbnn
+  have hbb : bb * bb = a := CFC.sqrt_mul_sqrt_self a hann
+  set q : 𝒷 := suppProj bb with hqdef
+  have hqproj : IsStarProjection q := (ceill_basic_1 bb).1.1
+  have hbq : bb * q = bb := (ceill_basic_1 bb).1.2
+  have hqb : q * bb = bb := by
+    have := congrArg star hbq
+    rwa [star_mul, hqproj.isSelfAdjoint.star_eq, hbsa.star_eq] at this
+  obtain ⟨τ, hτ⟩ := approximate_pseudoinverse_of_nonneg bb hbnn
+  have hτsa : ∀ n, IsSelfAdjoint (τ n) := fun n =>
+    hτ.isSelfAdjoint_of_nonneg hbnn n
+  set p : ℕ → 𝒷 := fun n => suppProj (τ n) with hpdef
+  have hpproj : ∀ n, IsStarProjection (p n) := fun n => (ceill_basic_1 (τ n)).1.1
+  have hbτ : ∀ n, bb * τ n = p n := fun n => hτ.mul_eq_suppProj n
+  have hτb : ∀ n, τ n * bb = p n := fun n => by
+    rw [hτ.mul_eq_rangeProj n, rangeProj_eq_suppProj_of_isSelfAdjoint (hτsa n)]
+  set sm : ℕ → 𝒷 := fun N => ∑ n ∈ Finset.range N, τ n with hsmdef
+  set qq : ℕ → 𝒷 := fun N => ∑ n ∈ Finset.range N, p n with hqqdef
+  have hsmsa : ∀ N, star (sm N) = sm N := by
+    intro N
+    rw [hsmdef]
+    rw [star_sum]
+    exact Finset.sum_congr rfl fun n _ => (hτsa n).star_eq
+  have hlub : IsLUB {x : 𝒷 | ∃ N : ℕ, x = qq N} q := by
+    have h1 := hτ.sum_supp
+    rwa [rangeProj_eq_suppProj_of_isSelfAdjoint hbsa] at h1
+  have hqle1 : ∀ N, qq N ≤ 1 := fun N =>
+    le_trans (hlub.1 ⟨N, rfl⟩) hqproj.le_one
+  have horth : ∀ n m, n ≠ m → p n * p m = 0 := by
+    intro n m hnm
+    have hle : p n + p m ≤ 1 := by
+      have hsub : ({n, m} : Finset ℕ) ⊆ Finset.range (max n m + 1) := by
+        intro k hk
+        rcases Finset.mem_insert.mp hk with rfl | hk
+        · exact Finset.mem_range.mpr (Nat.lt_succ_of_le (le_max_left _ _))
+        · rw [Finset.mem_singleton.mp hk]
+          exact Finset.mem_range.mpr (Nat.lt_succ_of_le (le_max_right _ _))
+      have h1 : ∑ k ∈ ({n, m} : Finset ℕ), p k ≤ qq (max n m + 1) :=
+        Finset.sum_le_sum_of_subset_of_nonneg hsub fun k _ _ => (hpproj k).nonneg
+      rw [Finset.sum_pair hnm] at h1
+      exact le_trans h1 (hqle1 _)
+    exact ((orthogonal_tuple_of_projections_1 (p n) (p m) (hpproj n)
+      (hpproj m)).out 3 0).mp hle
+  have hqqproj : ∀ N, IsStarProjection (qq N) := fun N =>
+    isStarProjection_sum (Finset.range N) p hpproj
+      fun i _ j _ hij => horth i j hij
+  have hqqmono : Monotone qq := fun N M hNM =>
+    Finset.sum_le_sum_of_subset_of_nonneg
+      (fun k hk => Finset.mem_range.mpr
+        (lt_of_lt_of_le (Finset.mem_range.mp hk) hNM))
+      fun k _ _ => (hpproj k).nonneg
+  have hsb : ∀ N, sm N * bb = qq N := fun N => by
+    rw [hsmdef, hqqdef]
+    rw [Finset.sum_mul]
+    exact Finset.sum_congr rfl fun n _ => hτb n
+  have hbs : ∀ N, bb * sm N = qq N := fun N => by
+    rw [hsmdef, hqqdef]
+    rw [Finset.mul_sum]
+    exact Finset.sum_congr rfl fun n _ => hbτ n
+  -- the approximants and their Gram matrix
+  set w : ℕ → X := fun N => sm N • y with hwdef
+  have hww : ∀ N M, (inner 𝒷 (w N) (w M) : 𝒷) = qq M * qq N := by
+    intro N M
+    rw [hwdef]
+    simp only [CStarModule.inner_op_smul_left, CStarModule.inner_op_smul_right]
+    rw [hsmsa N, ← mul_assoc, ← hadef, ← hbb,
+      show sm M * (bb * bb) * sm N = (sm M * bb) * (bb * sm N) by noncomm_ring,
+      hsb, hbs]
+  have hmul_le : ∀ {N M : ℕ}, M ≤ N → qq M * qq N = qq M := fun {N M} hMN =>
+    ((projection_below_effect (qq N) (qq M)
+      ⟨(hqqproj N).nonneg, (hqqproj N).le_one⟩ (hqqproj M)).out 0 7).mp
+      (hqqmono hMN)
+  -- ultranorm Cauchy, norm bounded
+  set F : Filter X := Filter.map w atTop with hFdef
+  haveI hFne : F.NeBot := Filter.map_neBot
+  have hwcau : UnCauchy (inner 𝒷 : X → X → 𝒷) F := by
+    intro ω ε hε
+    set r : ℕ → ℝ := fun N => (ω (qq N)).re with hrdef
+    have hrmono : Monotone r := fun N M hNM => np_re_mono ω (hqqmono hNM)
+    have hrbdd : BddAbove (Set.range r) := ⟨(ω q).re, by
+      rintro x ⟨N, rfl⟩
+      exact np_re_mono ω (hlub.1 ⟨N, rfl⟩)⟩
+    have hrconv := tendsto_atTop_ciSup hrmono hrbdd
+    have hσ : ∀ᶠ N in atTop, (⨆ i, r i) - ε ^ 2 < r N :=
+      hrconv.eventually (lt_mem_nhds (by nlinarith))
+    obtain ⟨N₀, hN₀⟩ := Filter.eventually_atTop.mp hσ
+    have key : ∀ {N M : ℕ}, N₀ ≤ M → M ≤ N →
+        unSeminorm ω (inner 𝒷 : X → X → 𝒷) (w N - w M) ≤ ε := by
+      intro N M hN₀M hMN
+      have hMN' : qq M * qq N = qq M := hmul_le hMN
+      have hNM' : qq N * qq M = qq M := by
+        have := congrArg star hMN'
+        rwa [star_mul, (hqqproj N).isSelfAdjoint.star_eq,
+          (hqqproj M).isSelfAdjoint.star_eq] at this
+      have hinner : (inner 𝒷 (w N - w M) (w N - w M) : 𝒷) = qq N - qq M := by
+        rw [CStarModule.inner_sub_left, CStarModule.inner_sub_right,
+          CStarModule.inner_sub_right, hww N N, hww N M, hww M N, hww M M,
+          (hqqproj N).isIdempotentElem.eq, (hqqproj M).isIdempotentElem.eq,
+          hMN', hNM']
+        abel
+      rw [unSeminorm, hinner]
+      have h1 : (ω (qq N - qq M)).re = r N - r M := by
+        rw [np_sub, Complex.sub_re]
+      have h2 : r N - r M ≤ ε ^ 2 := by
+        have h3 : r N ≤ ⨆ i, r i := le_ciSup hrbdd N
+        have h4 := hN₀ M hN₀M
+        linarith
+      calc Real.sqrt (ω (qq N - qq M)).re ≤ Real.sqrt (ε ^ 2) := by
+            rw [h1]; exact Real.sqrt_le_sqrt h2
+        _ = ε := by rw [Real.sqrt_sq hε.le]
+    refine ⟨w '' Set.Ici N₀, ?_, ?_⟩
+    · rw [hFdef, Filter.mem_map]
+      exact Filter.mem_of_superset (Filter.Ici_mem_atTop N₀)
+        (Set.subset_preimage_image w _)
+    · rintro x ⟨N, hN, rfl⟩ x' ⟨M, hM, rfl⟩
+      rcases le_total M N with hMN | hNM
+      · exact key hM hMN
+      · have hkey := key hN hNM
+        have hns : unSeminorm ω (inner 𝒷 : X → X → 𝒷) (w N - w M)
+            = unSeminorm ω (inner 𝒷 : X → X → 𝒷) (w M - w N) := by
+          have h' := unSeminorm_neg' ω (cstarBInner 𝒷 X) (w M - w N)
+          rw [neg_sub] at h'
+          exact h'
+        rw [hns]
+        exact hkey
+  have hwnorm : ∀ N, ‖w N‖ ≤ 1 := by
+    intro N
+    have h1 : ‖w N‖ = Real.sqrt ‖(inner 𝒷 (w N) (w N) : 𝒷)‖ :=
+      CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒷) (E := X) (w N)
+    rw [h1, hww N N, (hqqproj N).isIdempotentElem.eq]
+    have h2 : ‖qq N‖ ≤ 1 :=
+      norm_le_one_of_mem_effects ⟨(hqqproj N).nonneg, hqle1 N⟩
+    calc Real.sqrt ‖qq N‖ ≤ Real.sqrt 1 := Real.sqrt_le_sqrt h2
+      _ = 1 := Real.sqrt_one
+  obtain ⟨u, hu⟩ := h F hFne hwcau ⟨1, Set.range w, by
+      rw [hFdef, Filter.mem_map]
+      exact Filter.univ_mem' fun N => Set.mem_range_self N,
+    by rintro x ⟨N, rfl⟩; exact hwnorm N⟩
+  have huw : UnTendsto (inner 𝒷 : X → X → 𝒷) w atTop u := by
+    intro ω
+    have h1 := hu ω
+    rwa [hFdef, Filter.tendsto_map'_iff] at h1
+  -- the ultraweak limits of the partial sums
+  have hqlim := uwTendsto_partialSums qq hqqmono
+    (fun N => (hqqproj N).isSelfAdjoint) hqproj.isSelfAdjoint hlub bb
+  have huu : (inner 𝒷 u u : 𝒷) = q := by
+    have h1 : UWTendsto (fun N => (inner 𝒷 (w N) (w N) : 𝒷)) atTop
+        (inner 𝒷 u u) :=
+      innerprod_ultraweak (cstarBInner 𝒷 X) w w u u huw huw
+    have h4 : (fun N => (inner 𝒷 (w N) (w N) : 𝒷)) = qq := by
+      funext N
+      rw [hww N N, (hqqproj N).isIdempotentElem.eq]
+    rw [h4] at h1
+    exact uwTendsto_unique' h1 hqlim.1
+  have huy : (inner 𝒷 u y : 𝒷) = bb := by
+    have hconst : UnTendsto (inner 𝒷 : X → X → 𝒷) (fun _ : ℕ => y) atTop y := by
+      intro ω
+      simp only [sub_self]
+      have h0 : (inner 𝒷 (0 : X) (0 : X) : 𝒷) = 0 :=
+        (cstarBInner 𝒷 X).inner_zero_left 0
+      simp [unSeminorm, h0]
+    have h1 : UWTendsto (fun N => (inner 𝒷 (w N) y : 𝒷)) atTop
+        (inner 𝒷 u y) :=
+      innerprod_ultraweak (cstarBInner 𝒷 X) w (fun _ => y) u y huw hconst
+    have h4 : (fun N => (inner 𝒷 (w N) y : 𝒷)) = fun N => star bb * qq N := by
+      funext N
+      rw [hwdef]
+      rw [CStarModule.inner_op_smul_left, hsmsa N, hbsa.star_eq, ← hbs N,
+        ← hadef, ← hbb, mul_assoc]
+    have h5 : star bb * q = bb := by rw [hbsa.star_eq, hbq]
+    have h2 := hqlim.2
+    rw [← h4, h5] at h2
+    exact uwTendsto_unique' h1 h2
+  refine ⟨u, huu, ?_⟩
+  have e1 : (inner 𝒷 (bb • u) (bb • u) : 𝒷) = a := by
+    rw [CStarModule.inner_op_smul_right, CStarModule.inner_op_smul_left, huu,
+      hbsa.star_eq, hqb, hbb]
+  have e2 : (inner 𝒷 (bb • u) y : 𝒷) = a := by
+    rw [CStarModule.inner_op_smul_left, huy, hbsa.star_eq, hbb]
+  have e3 : (inner 𝒷 y (bb • u) : 𝒷) = a := by
+    rw [CStarModule.inner_op_smul_right]
+    have h6 : (inner 𝒷 y u : 𝒷) = bb := by
+      have := congrArg star huy
+      rwa [CStarModule.star_inner, hbsa.star_eq] at this
+    rw [h6, hbb]
+  have hz : (inner 𝒷 (bb • u - y) (bb • u - y) : 𝒷) = 0 := by
+    rw [CStarModule.inner_sub_left, CStarModule.inner_sub_right,
+      CStarModule.inner_sub_right, e1, e2, e3, ← hadef]
+    abel
+  have := (CStarModule.inner_self (A := 𝒷)).mp hz
+  rwa [sub_eq_zero] at this
+
 /-- **149VIII** (`selfdual-bcompl-then-basis`, dils.tex:2328): (3) ⇒ (4) of
 **149V** — a norm-bounded ultranorm complete pre-Hilbert 𝒷-module has an
 orthonormal basis.
 
-**Blocked on `A/VN`.**  The proof takes a maximal orthonormal set by Zorn and
-rules out a non-zero `x'` orthogonal to it by *polar decomposition* in `X`,
-`x' = u⟨x',x'⟩^½` with `⟨u,u⟩ = ⌈⟨x',x'⟩⌉`, which is built from an
-approximate pseudoinverse of `⟨x',x'⟩^½`: **80IV**
-`Theses.A.VN.approximate_pseudoinverse` — still `sorry` in
-`Theses/A/VN/Division.lean`, and not on this file's import path.  (Bessel,
-`mod_bessel`, and the ℓ²-summability half of the argument are available.) -/
+Divergence class 1 (faithful), mirrored.  A maximal orthonormal set `E`
+exists by Zorn; the summability clause (b) holds because the partial sums of
+`∑ₑ e bₑ` are ultranorm Cauchy (the monotone bounded net `Re ω(∑ bₑ⟨e,e⟩bₑ*)`
+of Gram values converges) and norm bounded, so they converge by (3); and a
+non-zero `x' = x − ∑ₑ e⟨e,x⟩` is ruled out by *polar decomposition*
+(`polar_decomposition` above, resting on **80IV**
+`Theses.A.VN.approximate_pseudoinverse`), whose isometric part `u` would
+extend `E`.  Where the thesis writes `x' = u⟨x',x'⟩^½`, the mirror image is
+`x' = ⟨x',x'⟩^½ • u`, and the closing cancellation `⟨e,u⟩ = ⟨e,u⟩⟨u,u⟩` uses
+**60VIII** `mult_cancellation_1` through `⌈·⌋⌊·⌉`. -/
 theorem exists_isONBasis_of_bddUnComplete [VonNeumannAlgebra 𝒷]
     (h : BddUnComplete 𝒷 X) :
-    ∃ (ι' : Type v) (e : ι' → X), IsONBasis 𝒷 e :=
-  sorry
+    ∃ (ι' : Type v) (e : ι' → X), IsONBasis 𝒷 e := by
+  classical
+  -- Zorn's lemma: a maximal orthonormal subset of `X`
+  obtain ⟨E, hEmax⟩ := zorn_subset
+    {E : Set X | (∀ x ∈ E, ∀ y ∈ E, x ≠ y → (inner 𝒷 x y : 𝒷) = 0)
+      ∧ ∀ x ∈ E, IsStarProjection (inner 𝒷 x x : 𝒷) ∧ (inner 𝒷 x x : 𝒷) ≠ 0}
+    (fun c hc hchain => by
+      refine ⟨⋃₀ c, ⟨?_, ?_⟩, fun s hs => Set.subset_sUnion_of_mem hs⟩
+      · rintro x ⟨s₁, hs₁, hxs₁⟩ y ⟨s₂, hs₂, hys₂⟩ hxy
+        rcases hchain.total hs₁ hs₂ with h12 | h21
+        · exact (hc hs₂).1 x (h12 hxs₁) y hys₂ hxy
+        · exact (hc hs₁).1 x hxs₁ y (h21 hys₂) hxy
+      · rintro x ⟨s₁, hs₁, hxs₁⟩
+        exact (hc hs₁).2 x hxs₁)
+  have hE := hEmax.1
+  have horth : OrthonormalFam 𝒷 (fun i : E => (i : X)) := by
+    constructor
+    · intro i j hij
+      exact hE.1 (i : X) i.2 (j : X) j.2 fun hh => hij (Subtype.ext hh)
+    · intro i
+      exact hE.2 (i : X) i.2
+  -- the Gram matrix of partial sums over the orthogonal family
+  have hcross : ∀ (bc : ↥E → 𝒷) (S T : Finset ↥E),
+      (inner 𝒷 (∑ i ∈ S, bc i • (i : X)) (∑ j ∈ T, bc j • (j : X)) : 𝒷)
+      = ∑ j ∈ S ∩ T, bc j * (inner 𝒷 (j : X) (j : X) : 𝒷) * star (bc j) := by
+    intro bc S T
+    rw [CStarModule.inner_sum_right]
+    have hj : ∀ j : ↥E, (inner 𝒷 (∑ i ∈ S, bc i • (i : X)) ((j : X)) : 𝒷)
+        = if j ∈ S then (inner 𝒷 (j : X) (j : X) : 𝒷) * star (bc j) else 0 := by
+      intro j
+      rw [CStarModule.inner_sum_left]
+      by_cases hjS : j ∈ S
+      · rw [if_pos hjS, Finset.sum_eq_single_of_mem j hjS]
+        · rw [CStarModule.inner_op_smul_left]
+        · intro i _ hij
+          rw [CStarModule.inner_op_smul_left, horth.1 i j hij, zero_mul]
+      · rw [if_neg hjS, Finset.sum_eq_zero]
+        intro i hiS
+        rw [CStarModule.inner_op_smul_left,
+          horth.1 i j (fun hh => hjS (hh ▸ hiS)), zero_mul]
+    calc ∑ j ∈ T, (inner 𝒷 (∑ i ∈ S, bc i • (i : X)) (bc j • (j : X)) : 𝒷)
+        = ∑ j ∈ T, if j ∈ S
+            then bc j * (inner 𝒷 (j : X) (j : X) : 𝒷) * star (bc j) else 0 := by
+          refine Finset.sum_congr rfl fun j _ => ?_
+          rw [CStarModule.inner_op_smul_right, hj j]
+          by_cases hjS : j ∈ S
+          · rw [if_pos hjS, if_pos hjS, ← mul_assoc]
+          · rw [if_neg hjS, if_neg hjS, mul_zero]
+      _ = ∑ j ∈ T ∩ S, bc j * (inner 𝒷 (j : X) (j : X) : 𝒷) * star (bc j) :=
+          Finset.sum_ite_mem T S _
+      _ = ∑ j ∈ S ∩ T, bc j * (inner 𝒷 (j : X) (j : X) : 𝒷) * star (bc j) := by
+          rw [Finset.inter_comm]
+  -- clause (b): ℓ²-summable families are summable, by norm-bounded
+  -- ultranorm completeness
+  have hclauseb : ∀ bc : ↥E → 𝒷, L2Summable 𝒷 bc →
+      ∃ x : X, UnTendsto (inner 𝒷 : X → X → 𝒷)
+        (fun s : Finset ↥E => ∑ i ∈ s, bc i • (i : X)) atTop x := by
+    rintro bc ⟨M, hM⟩
+    set v : Finset ↥E → X := fun s => ∑ i ∈ s, bc i • (i : X) with hvdef
+    set G : Finset ↥E → 𝒷 :=
+      fun s => ∑ i ∈ s, bc i * (inner 𝒷 (i : X) (i : X) : 𝒷) * star (bc i)
+      with hGdef
+    have hgram : ∀ S T, (inner 𝒷 (v S) (v T) : 𝒷)
+        = ∑ j ∈ S ∩ T, bc j * (inner 𝒷 (j : X) (j : X) : 𝒷) * star (bc j) := by
+      intro S T
+      simp only [hvdef]
+      exact hcross bc S T
+    have hGterm : ∀ i : ↥E,
+        (0 : 𝒷) ≤ bc i * (inner 𝒷 (i : X) (i : X) : 𝒷) * star (bc i) := fun i =>
+      star_right_conjugate_nonneg (horth.2 i).1.nonneg (bc i)
+    have hGmono : ∀ {S T : Finset ↥E}, S ⊆ T → G S ≤ G T := fun {S T} hST =>
+      Finset.sum_le_sum_of_subset_of_nonneg hST fun i _ _ => hGterm i
+    have hGnn : ∀ S, (0 : 𝒷) ≤ G S := fun S =>
+      Finset.sum_nonneg fun i _ => hGterm i
+    have hGleM : ∀ S, ‖G S‖ ≤ M := by
+      intro S
+      have h1 : G S ≤ ∑ i ∈ S, bc i * star (bc i) := by
+        refine Finset.sum_le_sum fun i _ => ?_
+        calc bc i * (inner 𝒷 (i : X) (i : X) : 𝒷) * star (bc i)
+            ≤ bc i * 1 * star (bc i) :=
+              star_right_conjugate_le_conjugate (horth.2 i).1.le_one (bc i)
+          _ = bc i * star (bc i) := by rw [mul_one]
+      exact le_trans
+        (CStarAlgebra.norm_le_norm_of_nonneg_of_le (hGnn S) h1) (hM S)
+    set F : Filter X := Filter.map v atTop with hFdef
+    haveI hFne : F.NeBot := Filter.map_neBot
+    have hvcau : UnCauchy (inner 𝒷 : X → X → 𝒷) F := by
+      intro ω ε hε
+      set g : Finset ↥E → ℝ := fun S => (ω (G S)).re with hgdef
+      have hgmono : ∀ {S T : Finset ↥E}, S ⊆ T → g S ≤ g T :=
+        fun hST => np_re_mono ω (hGmono hST)
+      have hgbdd : BddAbove (Set.range g) := ⟨M * (ω 1).re, by
+        rintro r ⟨S, rfl⟩
+        have h1 : G S ≤ (‖G S‖ : ℝ) • (1 : 𝒷) := le_norm_smul_one (hGnn S)
+        have h2 := np_re_mono ω h1
+        rw [np_re_smul] at h2
+        have h3 : (0 : ℝ) ≤ (ω 1).re := np_re_nonneg ω zero_le_one
+        calc g S ≤ ‖G S‖ * (ω 1).re := h2
+          _ ≤ M * (ω 1).re := mul_le_mul_of_nonneg_right (hGleM S) h3⟩
+      set σ : ℝ := sSup (Set.range g) with hσdef
+      have hne' : (Set.range g).Nonempty := ⟨g ∅, ⟨∅, rfl⟩⟩
+      obtain ⟨r₀, ⟨S₀, rfl⟩, hS₀⟩ := exists_lt_of_lt_csSup hne'
+        (show σ - ε ^ 2 / 2 < σ by nlinarith)
+      refine ⟨v '' Set.Ici S₀, ?_, ?_⟩
+      · rw [hFdef, Filter.mem_map]
+        exact Filter.mem_of_superset (Filter.Ici_mem_atTop S₀)
+          (Set.subset_preimage_image v _)
+      · rintro z ⟨S, hS, rfl⟩ z' ⟨T, hT, rfl⟩
+        have hSS : S₀ ⊆ S ∩ T := Finset.subset_inter hS hT
+        have hinner : (inner 𝒷 (v S - v T) (v S - v T) : 𝒷)
+            = G S + G T - G (S ∩ T) - G (S ∩ T) := by
+          rw [CStarModule.inner_sub_left, CStarModule.inner_sub_right,
+            CStarModule.inner_sub_right, hgram S S, hgram S T, hgram T S,
+            hgram T T, Finset.inter_self, Finset.inter_self,
+            Finset.inter_comm T S]
+          simp only [hGdef]
+          abel
+        have hre : (ω (inner 𝒷 (v S - v T) (v S - v T) : 𝒷)).re
+            = g S + g T - g (S ∩ T) - g (S ∩ T) := by
+          rw [hinner, np_sub, np_sub,
+            show ω (G S + G T) = ω (G S) + ω (G T) from
+              map_add ω.toPositiveLinearMap _ _,
+            Complex.sub_re, Complex.sub_re, Complex.add_re]
+        have hbound : g S + g T - g (S ∩ T) - g (S ∩ T) ≤ ε ^ 2 := by
+          have h1 : g S ≤ σ := le_csSup hgbdd ⟨S, rfl⟩
+          have h2 : g T ≤ σ := le_csSup hgbdd ⟨T, rfl⟩
+          have h3 : σ - ε ^ 2 / 2 < g (S ∩ T) :=
+            lt_of_lt_of_le hS₀ (hgmono hSS)
+          linarith
+        rw [unSeminorm]
+        calc Real.sqrt (ω (inner 𝒷 (v S - v T) (v S - v T) : 𝒷)).re
+            ≤ Real.sqrt (ε ^ 2) := Real.sqrt_le_sqrt (by rw [hre]; exact hbound)
+          _ = ε := Real.sqrt_sq hε.le
+    have hvnorm : ∀ S, ‖v S‖ ≤ Real.sqrt M := by
+      intro S
+      have h1 : ‖v S‖ = Real.sqrt ‖(inner 𝒷 (v S) (v S) : 𝒷)‖ :=
+        CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒷) (E := X) (v S)
+      have h2 : (inner 𝒷 (v S) (v S) : 𝒷) = G S := by
+        rw [hgram S S, Finset.inter_self]
+      rw [h1, h2]
+      exact Real.sqrt_le_sqrt (hGleM S)
+    obtain ⟨x, hx⟩ := h F hFne hvcau ⟨Real.sqrt M, Set.range v, by
+        rw [hFdef, Filter.mem_map]
+        exact Filter.univ_mem' fun S => Set.mem_range_self S,
+      by rintro z ⟨S, rfl⟩; exact hvnorm S⟩
+    refine ⟨x, fun ω => ?_⟩
+    have h1 := hx ω
+    rwa [hFdef, Filter.tendsto_map'_iff] at h1
+  -- clause (a): every `x` is the sum of its coefficients over `E`
+  have hclausea : ∀ x : X, UnTendsto (inner 𝒷 : X → X → 𝒷)
+      (fun s : Finset ↥E => ∑ i ∈ s, (inner 𝒷 ((i : X)) x : 𝒷) • (i : X))
+      atTop x := by
+    intro x
+    have hcfL2 : L2Summable 𝒷 (fun i : ↥E => (inner 𝒷 ((i : X)) x : 𝒷)) := by
+      refine ⟨‖(inner 𝒷 x x : 𝒷)‖, fun s => ?_⟩
+      have h1 : ∑ i ∈ s, (inner 𝒷 ((i : X)) x : 𝒷) * star (inner 𝒷 ((i : X)) x : 𝒷)
+          = ∑ i ∈ s, (inner 𝒷 ((i : X)) x : 𝒷) * (inner 𝒷 x ((i : X)) : 𝒷) :=
+        Finset.sum_congr rfl fun i _ => by rw [CStarModule.star_inner]
+      rw [h1]
+      have h3 : (0 : 𝒷) ≤ ∑ i ∈ s,
+          (inner 𝒷 ((i : X)) x : 𝒷) * (inner 𝒷 x ((i : X)) : 𝒷) := by
+        rw [← h1]
+        exact Finset.sum_nonneg fun i _ => mul_star_self_nonneg _
+      exact CStarAlgebra.norm_le_norm_of_nonneg_of_le h3 (mod_bessel horth x s)
+    obtain ⟨y, hy⟩ := hclauseb _ hcfL2
+    -- the coefficients of the sum `y` agree with those of `x`
+    have hcoefy : ∀ j : ↥E, (inner 𝒷 ((j : X)) y : 𝒷) = inner 𝒷 ((j : X)) x := by
+      intro j
+      have hconstj : UnTendsto (inner 𝒷 : X → X → 𝒷)
+          (fun _ : Finset ↥E => (j : X)) atTop ((j : X)) := by
+        intro ω
+        simp only [sub_self]
+        have h0 : (inner 𝒷 (0 : X) (0 : X) : 𝒷) = 0 :=
+          (cstarBInner 𝒷 X).inner_zero_left 0
+        simp [unSeminorm, h0]
+      have h1 : UWTendsto (fun S : Finset ↥E =>
+          (inner 𝒷 ((j : X))
+            (∑ i ∈ S, (inner 𝒷 ((i : X)) x : 𝒷) • (i : X)) : 𝒷)) atTop
+          (inner 𝒷 ((j : X)) y) :=
+        innerprod_ultraweak (cstarBInner 𝒷 X) _ _ _ _ hconstj hy
+      have h2 : (fun S : Finset ↥E =>
+          (inner 𝒷 ((j : X))
+            (∑ i ∈ S, (inner 𝒷 ((i : X)) x : 𝒷) • (i : X)) : 𝒷))
+          =ᶠ[atTop] fun _ => (inner 𝒷 ((j : X)) x : 𝒷) := by
+        filter_upwards [Filter.Ici_mem_atTop ({j} : Finset ↥E)] with S hS
+        have hjS : j ∈ S := Finset.singleton_subset_iff.mp hS
+        rw [CStarModule.inner_sum_right, Finset.sum_eq_single_of_mem j hjS]
+        · rw [CStarModule.inner_op_smul_right]
+          exact onbasis_coef_absorb horth x j
+        · intro i _ hij
+          rw [CStarModule.inner_op_smul_right, horth.1 j i (Ne.symm hij),
+            mul_zero]
+      have h3 := Filter.Tendsto.congr' h2 h1
+      exact uwTendsto_unique' h3 (uwTendsto_const atTop _)
+    -- a non-zero remainder would extend `E`, contradicting maximality
+    have hxy : x - y = 0 := by
+      by_contra hne
+      obtain ⟨u, huu, hbu⟩ := polar_decomposition h (x - y)
+      have ha'ne : (inner 𝒷 (x - y) (x - y) : 𝒷) ≠ 0 := fun h0 =>
+        hne ((CStarModule.inner_self (A := 𝒷)).mp h0)
+      have hbne : CFC.sqrt (inner 𝒷 (x - y) (x - y) : 𝒷) ≠ 0 := by
+        intro h0
+        refine ha'ne ?_
+        rw [← CFC.sqrt_mul_sqrt_self (inner 𝒷 (x - y) (x - y) : 𝒷)
+          CStarModule.inner_self_nonneg, h0, mul_zero]
+      have hqproj : IsStarProjection (inner 𝒷 u u : 𝒷) := by
+        rw [huu]
+        exact (ceill_basic_1 _).1.1
+      have hqne : (inner 𝒷 u u : 𝒷) ≠ 0 := by
+        rw [huu]
+        intro h0
+        have h1 := (ceill_basic_1 (CFC.sqrt (inner 𝒷 (x - y) (x - y) : 𝒷))).1.2
+        rw [h0, mul_zero] at h1
+        exact hbne h1.symm
+      have horthu : ∀ j : ↥E, (inner 𝒷 ((j : X)) u : 𝒷) = 0 := by
+        intro j
+        have h1 : (inner 𝒷 ((j : X)) (x - y) : 𝒷) = 0 := by
+          rw [CStarModule.inner_sub_right, hcoefy j, sub_self]
+        rw [← hbu, CStarModule.inner_op_smul_right] at h1
+        have h2 : suppProj (CFC.sqrt (inner 𝒷 (x - y) (x - y) : 𝒷))
+            * rangeProj (inner 𝒷 ((j : X)) u : 𝒷) = 0 :=
+          ((mult_cancellation_1 ((inner 𝒷 ((j : X)) u : 𝒷))
+            (CFC.sqrt (inner 𝒷 (x - y) (x - y) : 𝒷))).out 0 1).mp h1
+        have h3 : rangeProj (inner 𝒷 ((j : X)) u : 𝒷)
+            * (inner 𝒷 ((j : X)) u : 𝒷) = (inner 𝒷 ((j : X)) u : 𝒷) :=
+          (ceill_basic_2 _).1.2
+        have h4 : (inner 𝒷 u u : 𝒷) • u = u := mod_projelabs u hqproj
+        calc (inner 𝒷 ((j : X)) u : 𝒷)
+            = inner 𝒷 ((j : X)) ((inner 𝒷 u u : 𝒷) • u) := by rw [h4]
+          _ = (inner 𝒷 u u : 𝒷) * inner 𝒷 ((j : X)) u :=
+              CStarModule.inner_op_smul_right
+          _ = suppProj (CFC.sqrt (inner 𝒷 (x - y) (x - y) : 𝒷))
+              * (rangeProj (inner 𝒷 ((j : X)) u : 𝒷)
+                * (inner 𝒷 ((j : X)) u : 𝒷)) := by rw [huu, h3]
+          _ = (suppProj (CFC.sqrt (inner 𝒷 (x - y) (x - y) : 𝒷))
+              * rangeProj (inner 𝒷 ((j : X)) u : 𝒷))
+              * (inner 𝒷 ((j : X)) u : 𝒷) := by rw [mul_assoc]
+          _ = 0 := by rw [h2, zero_mul]
+      have huE : u ∉ E := fun huE => hqne (horthu ⟨u, huE⟩)
+      have hEu : (insert u E) ∈ {E' : Set X |
+          (∀ x' ∈ E', ∀ y' ∈ E', x' ≠ y' → (inner 𝒷 x' y' : 𝒷) = 0)
+          ∧ ∀ x' ∈ E', IsStarProjection (inner 𝒷 x' x' : 𝒷)
+            ∧ (inner 𝒷 x' x' : 𝒷) ≠ 0} := by
+        constructor
+        · rintro x' (rfl | hx') y' (rfl | hy') hne'
+          · exact absurd rfl hne'
+          · have h5 := congrArg star (horthu ⟨y', hy'⟩)
+            rwa [CStarModule.star_inner, star_zero] at h5
+          · exact horthu ⟨x', hx'⟩
+          · exact hE.1 x' hx' y' hy' hne'
+        · rintro x' (rfl | hx')
+          · exact ⟨hqproj, hqne⟩
+          · exact hE.2 x' hx'
+      have hsub : insert u E ⊆ E := hEmax.2 hEu (Set.subset_insert u E)
+      exact huE (hsub (Set.mem_insert u E))
+    have hxeq : x = y := by rwa [sub_eq_zero] at hxy
+    rwa [← hxeq] at hy
+  exact ⟨↥E, fun i => (i : X), horth, hclausea, hclauseb⟩
 
 /-- **149IX** (dils.tex:2461): (4) ⇒ (2) of **149V** — a pre-Hilbert
 𝒷-module with an orthonormal basis is ultranorm complete.
 
-**Blocked on `A/VN`.**  The limit is `∑ₑ e bₑ` with
-`bₑ = uslim_α ⟨e, x_α⟩`, which is now available (**77I**.1
-`Theses.A.VN.vn_complete_1`, imported and proved); but the ℓ²-summability of
-`(bₑ)ₑ` is deduced from an ultraweak bound by **87VIII**
-`Theses.A.VN.ultraweakly_bounded_implies_bounded`, still `sorry` in
-`Theses/A/VN/NormalFunctionals.lean`. -/
+Divergence class 1 (faithful), mirrored.  The limit is `∑ₑ e bₑ` with
+`bₑ = uslim_α ⟨e, x_α⟩`, whose mirror image is `bₑ = (uslim_α [x_α, e])*` —
+it is the net `[x_α, e]` of *starred* coefficients that is ultrastrong
+Cauchy (by **142III**), converging by **77I**.1 `Theses.A.VN.vn_complete_1`.
+The ℓ²-summability of `(bₑ)ₑ` follows from an ultraweak bound (Bessel at
+approximants) through **87VIII**
+`Theses.A.VN.ultraweakly_bounded_implies_bounded`; where the thesis sums
+Parseval tails, we bound `x_α − ∑ₑ eb_ₑ` at a *finite* stage `S` by the four
+terms `x_α − P_S x_α`, `P_S(x_α − x_β)`, `∑_{S} e(⟨e,x_β⟩ − b_e)` and
+`∑_S eb_e − t`, with `x_β` chosen late — same estimates, no infinite sums. -/
 theorem unComplete_of_isONBasis [VonNeumannAlgebra 𝒷] {e : ι → X}
-    (he : IsONBasis 𝒷 e) : UnComplete (inner 𝒷 : X → X → 𝒷) :=
-  sorry
+    (he : IsONBasis 𝒷 e) : UnComplete (inner 𝒷 : X → X → 𝒷) := by
+  classical
+  intro F hF hcauchy
+  haveI : F.NeBot := hF
+  -- (1) the mirrored coefficients `[z, eᵢ]` converge ultrastrongly along `F`
+  have hexist : ∀ i : ι, ∃ c : 𝒷,
+      USTendsto (fun z : X => (inner 𝒷 z (e i) : 𝒷)) F c := fun i =>
+    vn_complete_1 F _ fun ω => unCauchy_inner_tendsto hcauchy (e i) ω
+  choose c hc using hexist
+  set b : ι → 𝒷 := fun i => star (c i) with hbdef
+  -- coefficient-approximation sets are in `F`
+  have hcoef : ∀ (ω : NPFunctional 𝒷) (S : Finset ι) (δ : ℝ), 0 < δ →
+      ∀ᶠ z in F, ∀ i ∈ S,
+        omegaNorm 𝒷 ω ((inner 𝒷 z (e i) : 𝒷) - c i) < δ := by
+    intro ω S δ hδ
+    refine (Filter.eventually_all_finset S).mpr fun i _ => ?_
+    exact ((usTendsto_iff _ _ _).mp (hc i) ω).eventually (gt_mem_nhds hδ)
+  -- (2) the coefficients are ℓ²-summable, via the ultraweak bound (**87VIII**)
+  have hL2 : L2Summable 𝒷 b := by
+    have hub : ∀ ω : NPFunctional 𝒷, BddAbove
+        (Set.range fun S : Finset ι => ‖ω (∑ i ∈ S, b i * star (b i))‖) := by
+      intro ω
+      obtain ⟨s₁, hs₁F, hs₁⟩ := hcauchy ω 1 one_pos
+      obtain ⟨z₀, hz₀⟩ := Filter.nonempty_of_mem hs₁F
+      set K : ℝ := unSeminorm ω (inner 𝒷 : X → X → 𝒷) z₀ + 1 with hK
+      have hKz : ∀ z ∈ s₁, unSeminorm ω (inner 𝒷 : X → X → 𝒷) z ≤ K := by
+        intro z hz
+        have h1 : unSeminorm ω (inner 𝒷 : X → X → 𝒷) z
+            ≤ unSeminorm ω (inner 𝒷 : X → X → 𝒷) (z - z₀)
+              + unSeminorm ω (inner 𝒷 : X → X → 𝒷) z₀ := by
+          have := unSeminorm_add_le ω (cstarBInner 𝒷 X) (z - z₀) z₀
+          rwa [sub_add_cancel] at this
+        have h2 := hs₁ z hz z₀ hz₀
+        rw [hK]; linarith
+      refine ⟨2 * K ^ 2 + 2, ?_⟩
+      rintro r ⟨S, rfl⟩
+      set δ : ℝ := (1 + (S.card : ℝ))⁻¹ with hδdef
+      have hδpos : 0 < δ := by positivity
+      have hmulδ : (1 + (S.card : ℝ)) * δ = 1 :=
+        mul_inv_cancel₀ (by positivity)
+      have hcard0 : (0 : ℝ) ≤ S.card := Nat.cast_nonneg _
+      have hδ1 : δ ≤ 1 := by nlinarith
+      have hcardδ : (S.card : ℝ) * δ ^ 2 ≤ 1 := by nlinarith [sq_nonneg δ]
+      obtain ⟨z, hzs, hzc⟩ :=
+        Filter.nonempty_of_mem (Filter.inter_mem hs₁F (hcoef ω S δ hδpos))
+      -- pointwise: `‖cᵢ‖_ω ≤ ‖[z,eᵢ]‖_ω + δ`
+      have hci : ∀ i ∈ S, omegaNorm 𝒷 ω (c i)
+          ≤ omegaNorm 𝒷 ω (inner 𝒷 z (e i)) + δ := by
+        intro i hi
+        have h1 := omegaNorm_sub_le ω (c i) (inner 𝒷 z (e i)) 0
+        rw [sub_zero, sub_zero] at h1
+        have h2 : omegaNorm 𝒷 ω (c i - inner 𝒷 z (e i)) ≤ δ := by
+          have h3 := hzc i hi
+          rw [show c i - (inner 𝒷 z (e i) : 𝒷)
+            = -((inner 𝒷 z (e i) : 𝒷) - c i) by abel, omegaNorm_neg]
+          linarith
+        linarith
+      -- Bessel at `z`: `∑_{i∈S} ‖[z,eᵢ]‖_ω² ≤ ‖z‖_ω² ≤ K²`
+      have hbes : ∑ i ∈ S, omegaNorm 𝒷 ω ((inner 𝒷 z (e i) : 𝒷)) ^ 2
+          ≤ K ^ 2 := by
+        have h1 : ∀ i : ι, omegaNorm 𝒷 ω ((inner 𝒷 z (e i) : 𝒷)) ^ 2
+            = (ω ((inner 𝒷 (e i) z : 𝒷) * inner 𝒷 z (e i))).re := by
+          intro i
+          rw [omegaNorm, Real.sq_sqrt (np_re_nonneg ω (star_mul_self_nonneg _)),
+            CStarModule.star_inner]
+        have h2 : ω (∑ i ∈ S, (inner 𝒷 (e i) z : 𝒷) * inner 𝒷 z (e i))
+            = ∑ i ∈ S, ω ((inner 𝒷 (e i) z : 𝒷) * inner 𝒷 z (e i)) :=
+          map_sum ω.toPositiveLinearMap _ S
+        have h3 := np_re_mono ω (mod_bessel he.1 z S)
+        rw [h2, Complex.re_sum] at h3
+        have h4 : (ω (inner 𝒷 z z : 𝒷)).re
+            = unSeminorm ω (inner 𝒷 : X → X → 𝒷) z ^ 2 :=
+          (unSeminorm_sq ω (cstarBInner 𝒷 X) z).symm
+        have h5 := hKz z hzs
+        have h6 : unSeminorm ω (inner 𝒷 : X → X → 𝒷) z ^ 2 ≤ K ^ 2 := by
+          nlinarith [unSeminorm_nonneg ω (inner 𝒷 : X → X → 𝒷) z]
+        calc ∑ i ∈ S, omegaNorm 𝒷 ω ((inner 𝒷 z (e i) : 𝒷)) ^ 2
+            = ∑ i ∈ S, (ω ((inner 𝒷 (e i) z : 𝒷) * inner 𝒷 z (e i))).re :=
+              Finset.sum_congr rfl fun i _ => h1 i
+          _ ≤ (ω (inner 𝒷 z z : 𝒷)).re := h3
+          _ = unSeminorm ω (inner 𝒷 : X → X → 𝒷) z ^ 2 := h4
+          _ ≤ K ^ 2 := h6
+      -- assemble the ultraweak bound
+      have hpos : (0 : 𝒷) ≤ ∑ i ∈ S, b i * star (b i) :=
+        Finset.sum_nonneg fun i _ => mul_star_self_nonneg (b i)
+      show ‖ω (∑ i ∈ S, b i * star (b i))‖ ≤ 2 * K ^ 2 + 2
+      rw [norm_np_eq_re ω hpos]
+      have hexp : (ω (∑ i ∈ S, b i * star (b i))).re
+          = ∑ i ∈ S, omegaNorm 𝒷 ω (c i) ^ 2 := by
+        have h1 : ω (∑ i ∈ S, b i * star (b i))
+            = ∑ i ∈ S, ω (b i * star (b i)) :=
+          map_sum ω.toPositiveLinearMap _ S
+        rw [h1, Complex.re_sum]
+        refine Finset.sum_congr rfl fun i _ => ?_
+        rw [omegaNorm, Real.sq_sqrt (np_re_nonneg ω (star_mul_self_nonneg _))]
+        congr 2
+        rw [hbdef]
+        simp
+      rw [hexp]
+      have hterm : ∀ i ∈ S, omegaNorm 𝒷 ω (c i) ^ 2
+          ≤ 2 * omegaNorm 𝒷 ω (inner 𝒷 z (e i)) ^ 2 + 2 * δ ^ 2 := by
+        intro i hi
+        have h := hci i hi
+        nlinarith [omegaNorm_nonneg (A := 𝒷) ω (c i),
+          omegaNorm_nonneg (A := 𝒷) ω (inner 𝒷 z (e i)),
+          sq_nonneg (omegaNorm 𝒷 ω (inner 𝒷 z (e i)) - δ)]
+      calc ∑ i ∈ S, omegaNorm 𝒷 ω (c i) ^ 2
+          ≤ ∑ i ∈ S, (2 * omegaNorm 𝒷 ω (inner 𝒷 z (e i)) ^ 2 + 2 * δ ^ 2) :=
+            Finset.sum_le_sum hterm
+        _ = 2 * (∑ i ∈ S, omegaNorm 𝒷 ω ((inner 𝒷 z (e i) : 𝒷)) ^ 2)
+            + 2 * ((S.card : ℝ) * δ ^ 2) := by
+            rw [Finset.sum_add_distrib, ← Finset.mul_sum, Finset.sum_const,
+              nsmul_eq_mul]
+            ring
+        _ ≤ 2 * K ^ 2 + 2 := by nlinarith
+    obtain ⟨M, hM⟩ := ultraweakly_bounded_implies_bounded
+      (fun S : Finset ι => ∑ i ∈ S, b i * star (b i)) hub
+    exact ⟨M, fun S => hM ⟨S, rfl⟩⟩
+  -- (3) the candidate limit
+  obtain ⟨t, ht⟩ := he.2.2 b hL2
+  refine ⟨t, fun ω => ?_⟩
+  rw [Metric.tendsto_nhds]
+  intro ε hε
+  set δ : ℝ := ε / 8 with hδdef
+  have hδpos : 0 < δ := by rw [hδdef]; linarith
+  obtain ⟨s₀, hs₀F, hs₀⟩ := hcauchy ω δ hδpos
+  obtain ⟨S₀, hS₀⟩ :=
+    Filter.eventually_atTop.mp ((ht ω).eventually (gt_mem_nhds hδpos))
+  -- (4) every `z ∈ s₀` is `6δ`-close to `t`
+  have hclaim : ∀ z ∈ s₀,
+      unSeminorm ω (inner 𝒷 : X → X → 𝒷) (z - t) ≤ 6 * δ := by
+    intro z hz
+    obtain ⟨S₁', hS₁'⟩ := Filter.eventually_atTop.mp
+      (((he.2.1 z) ω).eventually (gt_mem_nhds hδpos))
+    set S : Finset ι := S₀ ∪ S₁' with hSdef
+    set P : X := ∑ i ∈ S, (inner 𝒷 (e i) z : 𝒷) • e i with hPdef
+    set V : X := ∑ i ∈ S, b i • e i with hVdef
+    have hT1 : unSeminorm ω (inner 𝒷 : X → X → 𝒷) (P - z) < δ :=
+      hS₁' S le_sup_right
+    have hT4 : unSeminorm ω (inner 𝒷 : X → X → 𝒷) (V - t) < δ :=
+      hS₀ S le_sup_left
+    -- late choice of `β`
+    set δ' : ℝ := δ / (S.card + 1) with hδ'def
+    have hδ'pos : 0 < δ' := by positivity
+    obtain ⟨β, hβs, hβc⟩ :=
+      Filter.nonempty_of_mem (Filter.inter_mem hs₀F (hcoef ω S δ' hδ'pos))
+    -- middle terms
+    set Q : X := ∑ i ∈ S, (inner 𝒷 (e i) β : 𝒷) • e i with hQdef
+    have hT2 : unSeminorm ω (inner 𝒷 : X → X → 𝒷) (P - Q) ≤ δ := by
+      have h1 : P - Q = ∑ i ∈ S, (inner 𝒷 (e i) (z - β) : 𝒷) • e i := by
+        rw [hPdef, hQdef, ← Finset.sum_sub_distrib]
+        refine Finset.sum_congr rfl fun i _ => ?_
+        rw [CStarModule.inner_sub_right, sub_smul']
+      rw [h1]
+      exact le_trans (unSeminorm_coeff_sum_le he.1 ω (z - β) S)
+        (hs₀ z hz β hβs)
+    have hT3 : unSeminorm ω (inner 𝒷 : X → X → 𝒷) (Q - V) ≤ δ := by
+      have h1 : Q - V = ∑ i ∈ S, ((inner 𝒷 (e i) β : 𝒷) - b i) • e i := by
+        rw [hQdef, hVdef, ← Finset.sum_sub_distrib]
+        exact Finset.sum_congr rfl fun i _ => (sub_smul' _ _ _).symm
+      have hterm : ∀ i ∈ S, unSeminorm ω (inner 𝒷 : X → X → 𝒷)
+          (((inner 𝒷 (e i) β : 𝒷) - b i) • e i) ≤ δ' := by
+        intro i hi
+        refine (unSeminorm_smul_proj_le (he.1.2 i).1 ω _).trans ?_
+        have hstar : star ((inner 𝒷 (e i) β : 𝒷) - b i)
+            = (inner 𝒷 β (e i) : 𝒷) - c i := by
+          rw [star_sub, CStarModule.star_inner, hbdef]
+          simp
+        rw [hstar]
+        exact (hβc i hi).le
+      have hmulδ' : ((S.card : ℝ) + 1) * δ' = δ := by
+        rw [hδ'def]; field_simp
+      have h2 : ∑ i ∈ S, unSeminorm ω (inner 𝒷 : X → X → 𝒷)
+          (((inner 𝒷 (e i) β : 𝒷) - b i) • e i) ≤ (S.card : ℝ) * δ' := by
+        refine le_trans (Finset.sum_le_sum hterm) ?_
+        rw [Finset.sum_const, nsmul_eq_mul]
+      rw [h1]
+      refine le_trans (unSeminorm_sum_le ω S _) (le_trans h2 ?_)
+      nlinarith [hδ'pos.le]
+    -- assemble via the triangle inequality
+    have hd1 : unSeminorm ω (inner 𝒷 : X → X → 𝒷) (z - t)
+        ≤ unSeminorm ω (inner 𝒷 : X → X → 𝒷) (-(P - z) + (P - Q) + (Q - V))
+          + unSeminorm ω (inner 𝒷 : X → X → 𝒷) (V - t) := by
+      have h := unSeminorm_add_le ω (cstarBInner 𝒷 X)
+        (-(P - z) + (P - Q) + (Q - V)) (V - t)
+      rw [show -(P - z) + (P - Q) + (Q - V) + (V - t) = z - t by abel] at h
+      exact h
+    have hd2 : unSeminorm ω (inner 𝒷 : X → X → 𝒷) (-(P - z) + (P - Q) + (Q - V))
+        ≤ unSeminorm ω (inner 𝒷 : X → X → 𝒷) (-(P - z) + (P - Q))
+          + unSeminorm ω (inner 𝒷 : X → X → 𝒷) (Q - V) :=
+      unSeminorm_add_le ω (cstarBInner 𝒷 X) _ _
+    have hd3 : unSeminorm ω (inner 𝒷 : X → X → 𝒷) (-(P - z) + (P - Q))
+        ≤ unSeminorm ω (inner 𝒷 : X → X → 𝒷) (-(P - z))
+          + unSeminorm ω (inner 𝒷 : X → X → 𝒷) (P - Q) :=
+      unSeminorm_add_le ω (cstarBInner 𝒷 X) _ _
+    have hneg : unSeminorm ω (inner 𝒷 : X → X → 𝒷) (-(P - z))
+        = unSeminorm ω (inner 𝒷 : X → X → 𝒷) (P - z) :=
+      unSeminorm_neg' ω (cstarBInner 𝒷 X) _
+    rw [hneg] at hd3
+    linarith [hT1.le, hT2, hT3, hT4.le]
+  filter_upwards [hs₀F] with z hz
+  rw [Real.dist_eq, sub_zero, abs_of_nonneg (unSeminorm_nonneg _ _ _)]
+  calc unSeminorm ω (inner 𝒷 : X → X → 𝒷) (id z - t) ≤ 6 * δ := hclaim z hz
+    _ < ε := by rw [hδdef]; linarith
 
 omit [StarOrderedRing 𝒷] in
 /-- **149X** (dils.tex:2565): (2) ⇒ (3) of **149V** — trivially, since a
@@ -2501,8 +3358,7 @@ by a set of elements of `X`, i.e. a family over a type in the universe of
 `X`).
 
 The proof is **149VI**–**149XI**, the cycle `1 ⇒ 3 ⇒ 4 ⇒ 2 ⇒ 4 ⇒ 1` of the
-five implications above; `4 ⇒ 1` and `2 ⇒ 3` are proved, the remaining three
-are `sorry` and blocked on `A/VN`. -/
+five implications above, all proved. -/
 theorem dils_selfdual [VonNeumannAlgebra 𝒷] :
     List.TFAE
       [SelfDual 𝒷 X,

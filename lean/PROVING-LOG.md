@@ -7411,3 +7411,107 @@ restate them once with an explicit `∀ x, (a : C(X,ℝ)) x ≤ _` ascription.
 (c) current-Mathlib renames hit here: `lt_div_iff₀`, `inv_anti₀`,
 `lt_or_ge`, `Set.notMem_empty`, and `IsClopen.frontier_eq` applied as a
 function (dot-notation on the `And` unfolds to `And.frontier_eq` and fails).
+
+## Session 38 — `B/Dils` 149V complete: 149VIII (3 ⇒ 4) and 149IX (4 ⇒ 2), so `dils_selfdual` closes (worker 64)
+
+**149V `dils_selfdual` is fully proved** — all five implications of the
+cycle `1 ⇒ 3 ⇒ 4 ⇒ 2 ⇒ 3` plus `4 ⇒ 1` compile, and
+`#print axioms` on `dils_selfdual`, `exists_isONBasis_of_bddUnComplete`
+and `unComplete_of_isONBasis` gives exactly
+`[propext, Classical.choice, Quot.sound]`.  The two blockers named in the
+handoff were indeed proved (**80IV** `approximate_pseudoinverse` in
+`Division.lean`, **87VIII** `ultraweakly_bounded_implies_bounded` in
+`NormalFunctionals.lean`), but the brief's "should now be closable" hid one
+real gap: **neither file was on `HilbertModules.lean`'s import path**
+(`HilbertModules` imported only `Projections` + `Completeness`;
+`NormalFunctionals` imports `Division` imports `Completeness`).  Adding
+`import Theses.A.VN.NormalFunctionals` is cycle-free and was the first step.
+
+**149IX (4 ⇒ 2), `unComplete_of_isONBasis` — class 1 (faithful), with the
+mirroring landing exactly where predicted.**  The thesis takes
+`bₑ = uslim_α ⟨e, x_α⟩`; under the mirror the net that is ultrastrong
+Cauchy is the *starred* coefficient `[x_α, e]` (because **142III** bounds
+`‖[d, y]‖_ω` by the seminorm of the *first* slot), so the limit taken by
+**77I**.1 `vn_complete_1` is `cₑ = uslim [x_α, e]` and the basis
+coefficient is `bₑ = cₑ*`.  ℓ²-summability: `Re ω(∑_S cₑ* cₑ)
+= ∑_S ‖cₑ‖_ω² ≤ 2‖x‖_ω² + 2` at a late approximant `x` (Bessel
+`mod_bessel` + `(a+δ)² ≤ 2a² + 2δ²` with `δ = (1+|S|)⁻¹`), which is an
+ultraweak bound on the positive partial sums, and **87VIII** turns it into
+the norm bound `L2Summable` needs.  Class-2/3 deviation in the last step:
+where the thesis sums Parseval tails over the *infinite* basis, we bound
+`x_α − t` at one *finite* stage `S ⊇ S₀` by four terms —
+`x_α − P_S x_α` (tail of the basis expansion of `x_α`), `P_S(x_α − x_β)`
+(the Bessel contraction `unSeminorm_coeff_sum_le`),
+`∑_S e(⟨e,x_β⟩ − bₑ)` (`|S|` single-term estimates
+`‖d • e‖_ω ≤ ‖d*‖_ω`, `unSeminorm_smul_proj_le`, at tolerance
+`δ/(|S|+1)`), and `∑_S e bₑ − t`; the late witness `x_β` is chosen from
+the intersection of the small-diameter set with the finitely many
+coefficient-approximation sets.  Same estimates, no infinite sums, no
+`⟨e, t⟩ = bₑ` computation.
+
+**149VIII (3 ⇒ 4), `exists_isONBasis_of_bddUnComplete` — class 1
+(faithful).**  Zorn (`zorn_subset`) gives a maximal orthonormal
+`E ⊆ X`; the witness type is `↥E : Type v`.  Clause (b): with
+`G S = ∑_{i∈S} bᵢ⟨eᵢ,eᵢ⟩bᵢ*`, the real net `Re ω (G S)` is monotone
+bounded, so `sSup`-tail estimates make the partial sums
+`v_S = ∑_S bᵢ • eᵢ` ultranorm Cauchy
+(`‖v_S − v_T‖_ω² = Re ω(G S) + Re ω(G T) − 2 Re ω(G (S∩T))`), and they
+are norm-bounded by `√M`; (3) applied to `Filter.map v atTop` converges
+them.  Clause (a) reduces to **polar decomposition**
+(`polar_decomposition`, private): for `y := x − ∑ e⟨e,x⟩ ≠ 0`, with
+`b = √⟨y,y⟩`, an approximate pseudoinverse `(τₙ)` of `b` (**80IV**) gives
+partial sums `sₘ = ∑_{n<N} τₙ` with `⟨sₘ•y, sₘ•y⟩ = q_N = ∑ pₙ`
+(pairwise-orthogonal projections `pₙ = suppProj τₙ` — orthogonality from
+`∑ pₙ ≤ ⌈b⌋ ≤ 1` via 55XIII); `(sₘ•y)` is ultranorm Cauchy and
+norm-bounded by 1, its limit `u` has `⟨u,u⟩ = ⌈b⌋` and `b•u = y` — both
+identified *ultraweakly* (148V `innerprod_ultraweak` against
+`vna_supremum_uwlimit`/`vna_supremum_mult` transferred from the
+directed-set index to `ℕ`, helper `uwTendsto_partialSums`), so no
+ultrastrong convergence of `q_N` and **no `𝒷`-action distributivity** is
+needed in the polar construction at all.  `⟨e, u⟩ = 0` then follows by
+**60VIII** `mult_cancellation_1` (from `b·⟨e,u⟩ = 0` conclude
+`⌈b⌋⌊⟨e,u⟩⌉ = 0`, and `⟨e,u⟩ = ⟨u,u⟩⟨e,u⟩` by **149III**), so `E ∪ {u}`
+contradicts maximality.
+
+*Lean notes.*  (a) Mathlib's `CStarModule` carries a **bare `SMul 𝒷 X`**
+— no `(a+b)•x`, `(ab)•x`, `0•x` laws.  They are forced by definiteness
+(`CStarModule.inner_self`) exactly as in 149III; `add_smul'`, `mul_smul'`,
+`zero_smul'`, `sub_smul'`, `sum_smul'` (private) prove them by expanding
+`⟨lhs−rhs, lhs−rhs⟩ = 0` with `noncomm_ring`.  The polar construction is
+arranged to avoid them (single smul `sₘ • y`); 149IX needs `sub_smul'`
+only.  (b) `selfAdjoint 𝒷` membership is *not* `IsSelfAdjoint` — convert
+with `selfAdjoint.mem_iff.mpr`; and goals `x ≤ ⟨_,_⟩` produced by
+`DirectedOn` come β-unreduced, where `rw [← Subtype.coe_le_coe]` fails but
+`Subtype.coe_le_coe.mp (by rw [hN]; …)` works.  (c) statements produced by
+`unSeminorm_neg'`/`unSeminorm_add_le` mention `(cstarBInner 𝒷 X).inner`;
+`rw` against goals phrased in `inner 𝒷` fails on syntax — always bind them
+with an explicit `have h : … (inner 𝒷 : X → X → 𝒷) …` ascription (defeq
+`exact` accepts, `rw` then matches).  (d) `set`-bound abbreviations are
+kernel-defeq: `rw [hgram S S, Finset.inter_self]` closes `⟨v S, v S⟩ = G S`
+by the trailing `rfl` of `rw` — a following `simp only [hGdef]` dies with
+"no goals".
+
+**What 149V opens (re-derived).**  The previous session's finding that
+**151Ia** `selfdual_completion_univ` was *not* opened by `1 ⇒ 3` alone no
+longer applies: dils.tex:3283–3289 uses condition 2 (ultranorm
+completeness) of the self-dual codomain `Y`, i.e. `1 ⇒ 2`, which the
+completed TFAE now provides (`dils_selfdual` or directly
+`bddUnComplete_of_selfDual` → `exists_isONBasis_of_bddUnComplete` →
+`unComplete_of_isONBasis`).  All other ingredients its proof cites
+(**148I** `blinear_bounded_is_ultranorm`, the 147 uniform-space basics)
+are proved, so **151Ia is now genuinely unblocked** — but it is a
+substantial standalone construction (extend `T` along `UnDense`
+approximation nets, well-definedness, `𝒷`-linearity, boundedness
+`‖T̂‖ = ‖T‖`, uniqueness) and was not attempted this session.  Also
+touched by 149V: **160IV**.2/.3 (`hilbmod_projthm`) and **160IX**, whose
+thesis proofs (dils.tex:4516–4530) take an orthonormal basis of the
+ultranorm-closed `W` from `dils-selfdual` and *re-enter the Zorn argument
+of 149VIII* to extend it — partially opened (the maximality-extension
+step would need the 149VIII construction refactored to start from a given
+orthonormal set, an easy generalization of `zorn_subset_nonempty`).
+**150II** `dils_completion` remains blocked on its own transfinite
+construction (150III–150XV), independent of 149V.
+
+Doc comments fixed: the two stale "still `sorry`" blocker notes at 149VIII
+/149IX, the 149VI route note, and 149V's own "remaining three are `sorry`"
+tail.
