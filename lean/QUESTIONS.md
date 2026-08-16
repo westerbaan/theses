@@ -40,6 +40,22 @@ Thesis A was ruled on 2026-08-13; none of thesis B has been.
   calculus trim the escaping components — so the `∃ d ∈ D` form genuinely
   resists the 158V counterexample.
 
+*Dead end, recorded 2026-08-16 (Bas asked: can we require `h` to be ultranorm
+continuous only where the proof uses it — at `g(x)`, along nets from `D`?).*
+**No: the counterexample already lies inside that restriction.**  Put
+`x := h(y) = |e₂⟩⟨e₁|`, so `‖x‖ = 1`; then `g(x) = y` **exactly** (checked
+numerically), so the failure point *is* of the form `g(x)` and `h(g(x)) = x` as
+the proof wants.  Both `y` and `yₙ = |e₂⟩⟨e₁+eₙ|` are rank one, hence compact,
+so both lie in `D` for the legitimate choice `ℬ = B(ℓ²)`, `X = ℬ` over itself,
+`𝒜 = D = K(ℓ²)` — a C\*-subalgebra, an `𝒜`-submodule, `⟨d,d⟩ = d*d ∈ 𝒜`, and
+`K` ultrastrongly (= ultranorm on `X = ℬ`) dense in `B(ℓ²)`.  Yet
+`h(yₙ) = ⅔yₙ` and `‖⟨h(yₙ)−h(y), h(yₙ)−h(y)⟩‖ = 5/9`, constant in `n`.
+Note 158II itself is **true** in this instance (classical Kaplansky supplies the
+net directly), which locates the defect precisely: the proof fixes `h` *before*
+the approximating net, whereas the statement only asks for `∃ d ∈ D` per finite
+family of np-functionals.  A repair must choose the approximant **after** seeing
+which functionals it must satisfy.
+
 Recorded, and worth keeping: the `∃ d ∈ D` freedom is real but **not sufficient
 on its own** — pointwise ultranorm continuity of `h` fails even at norm-interior
 points, so any proof must exploit the `𝒜`-module trimming, not just the
