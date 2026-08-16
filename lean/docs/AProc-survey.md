@@ -1,13 +1,68 @@
 # `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–81, sessions 47–58)
 
-**Headline count: A/Proc has 52 code `sorry`s** after session 64.
-Per file: `Tensor` 19, `Measurement` 10, `QuantumLambda` 17,
-`Duplicators` **6** (was 7).  All four compiler-verified in session 64,
-each with **0 errors**.  (`grep -c sorry` over-counts, because the file
+**Headline count: A/Proc has 51 code `sorry`s** after session 65.
+Per file: `Tensor` **18** (was 19), `Measurement` 10, `QuantumLambda` 17,
+`Duplicators` 6.  `Tensor` and `QuantumLambda` compiler-verified in session 65
+(**0 errors** each), the other two in session 64 (**0 errors** each).  (`grep -c sorry` over-counts, because the file
 docstrings mention `sorry` in prose; the code counts are the ones above.
 Note `\bsorry\b` also matches "sorry-ed" in prose — count the compiler's
 `declaration uses \`sorry\`` warnings instead.)
 
+
+> **Session 65 — 116VII `tensor_characterization` is CLOSED.**
+> `Tensor.lean` **19 → 18**, 0 errors, axiom-clean; A/Proc **52 → 51**.
+> **396 lines against the ~250 costed.**
+>
+> * The thesis's proof (proc.tex:3600) transcribes almost verbatim, with two
+>   simplifications.  **21VII `order_separating_norm` never enters**: the
+>   thesis renormalises its order separating collection to the unital members
+>   `(σ⊙τ)(s* s) = 1` and quotes `order-separating-norm`, but taking
+>   `b = ‖t‖²·1` in **90II**.1 directly gives `γ_⊙(t* t) ≤ ‖t‖²·1` without any
+>   renormalisation — the same shortcut `tensor_basic_2` already takes for
+>   112X.2 — and the one estimate needed is the existing private
+>   `basic_star_self_le`.  And **injectivity does not go through the carrier**:
+>   instead of `⌈γ_⊗⌉ = 1` by **69IV** `carrier_miu`, 116IV.2's centre
+>   separating collection is run directly on `γ_⊗(x)* γ_⊗(x) = γ_⊗(x* x)`.
+> * **The overrun is entirely in four `IsTensorProduct`-free twins.**
+>   `prodNP_lift`, `conjProdNP_lift`, `isBasicFunctional_comp_lift` and
+>   `dense_ultrastrong_tensorSpan` all take an `IsTensorProduct`, and 116VII's
+>   whole point is that `γ` is not yet known to be one; `prodLike_lift`,
+>   `conjLike_lift`, `conjLike_basic` and `usDense_range_lift` replace it by
+>   `hmiu : MIUBilinear γ` plus an np-functional implementing `σ ⊙ τ`.
+>   A fifth helper, `nmiuInv` (inverse of a bijective nmiu-map as an
+>   nmiu-map), is reusable and belongs in A/VN.  **All nine additions are
+>   `private`; the diff adds no public name**, so no dependent rebuild.
+> * Surjectivity needed **73IX `vnsac`**, not `IsVNSubalgebra.isClosed` — the
+>   latter is *norm* closedness; `vnsac` is what gives ultraweak closedness.
+> * **116VII gates two statements, not three.**
+>   `\sref{tensor-characterization}` is cited at proc.tex:3724/3774
+>   (**117III** `tensor_distributes_over_sums`) and proc.tex:4646
+>   (**123I.3** `linf_tensor`).  The "116VII (3)" in the session-~56 note below
+>   counts `CentreSeparating` occurrences migrated, not dependents.
+> * **Universe-polymorphic `tmap`, costed but not attempted: tedious, not
+>   hard.**  `exists_tmapM` needs 112XI + 114I + 112XI's uniqueness at four
+>   independent universes.  Two blocks move: (i) `Tensor.lean` ~1860–4512
+>   (parsecs 1120/1130/1140), ~2650 lines of *mechanical* re-universing out of
+>   the file-wide `variable {A B C D : Type u}` at line 151 — nothing outside
+>   breaks, since a polymorphic lemma still instantiates at equal universes;
+>   (ii) universe-polymorphic twins of the **only four** genuinely two-algebra
+>   A/VN lemmas that block occurs (enumerated from all 72 external names in
+>   lines 2651–4512): **77V `vn_extension`**, **44XV `p_uwcont`**, `compNP`,
+>   `preservesDirSups_of_continuousOn_effects`.  `vn_extension` is 236 lines
+>   whose own dependencies are *all* single-algebra, so its twin is a verbatim
+>   copy with the variable block changed; total twin cost ~350 lines of
+>   copy-paste, and the file already carries four such twins (lines 1583–1612).
+>   **This is not the cascade the traps list warns about** — that warning is
+>   about editing A/VN's own `variable`, which the twin route avoids.
+>   `exists_tmapM` is then ~60 lines.  One session, possibly two; it unlocks
+>   the 7 `tmapM` statements in `QuantumLambda.lean` plus 119V and the
+>   `vn_smc_*` block.
+> * **Next gate in `Tensor.lean`: 117III `tensor_distributes_over_sums`**
+>   (:7309).  proc.tex:3774 is nine lines and every input exists — 116VII,
+>   117II.1/.2 (both proved), and the `lpKappa`/`lp_centre_separating` block in
+>   the same section.  The work is `lp` bookkeeping plus
+>   `CentreSeparatingConj A Set.univ` (immediate from `np_faithful`).  ~150
+>   lines.  After it, 123I.3 `linf_tensor` is unblocked.
 
 > **Session 64 — the 129II.2 author ruling is implemented: `discrete` becomes
 > "partitioned into atoms", and **130V `discrete_ell_x` closes**.**
@@ -758,14 +813,15 @@ to be `Nonempty.some` of the sorried `vnTensorProduct_nonempty`.
 | 112XI | `tensor_universal_property` | **CLOSED (session 57)** — 77V applied to `S = γ_⊙(𝒜⊙ℬ)`, with 112X.2 for injectivity/the bound and 112X.5 for the topology |
 | 114I | `tensor_universal_property_extra` | **CLOSED (session 58)** — see the note at the top |
 | 114II | `tensor_uniqueness` | **CLOSED (session 58)** — as predicted: apply 112XI in both directions (`γ'` is normal and bounded *as a bilinear map* by 112X.3.1 and 112X.2); miu-ness of the extension is the usual separate-continuity-plus-density argument (`mult_uws_cont`), normality is then free via `starAlgEquiv_preservesDirSups'` |
-| 116VII | `tensor_characterization` | **all inputs now exist (112X, 116IV.1, 116IV.2 — session 62); this is the next gate in the file.**  Not a corollary: proc.tex:3600 makes `γ_⊙` bounded (21VII on `γ(σ,τ)(γ_⊙(s)*(·)γ_⊙(s))`) and ultraweakly continuous (90II.2), applies 112XI + 114I, then proves the nmiu-map bijective through `injective-nmiu-iso-on-image`.  ~250 lines |
+| 116VII | `tensor_characterization` | **CLOSED (session 65)** — 396 lines against ~250.  90II.1 (not 21VII) for boundedness, 90II.2 for normality, 112XI + 114I for the nmiu-map, `injective-nmiu-iso-on-image` + **73IX `vnsac`** for surjectivity, and 116IV.2's centre separating collection (not **69IV** `carrier_miu`) for injectivity.  The overrun is four `IsTensorProduct`-free twins of `prodNP_lift`/`conjProdNP_lift`/`isBasicFunctional_comp_lift`/`dense_ultrastrong_tensorSpan` |
+| 117III | `tensor_distributes_over_sums` | **next gate in the file (session 65).**  Every input now exists: 116VII, 117II.1/.2, and `lpKappa`/`lp_centre_separating` in the same section.  proc.tex:3774 is nine lines; the work is `lp` bookkeeping plus `CentreSeparatingConj A Set.univ` from `np_faithful`.  ~150 lines |
 
 ### `QuantumLambda.lean` — the 7 untainted ones (recounted, session 51)
 
 | DISP | decl | file:line | class | note |
 |---|---|---|---|---|
 | 121II | `intersection_tensor` | :326 | (c′) | proc.tex:4473 gives no argument, only "See Corollary IV.5.10 of Takesaki I".  **Not** in the vacuous band |
-| 123I.3 | `linf_tensor` | :650 | (b) | **116VII** `tensor_characterization` (`Tensor.lean:2407`, `sorry`), which proc.tex:4645 cites explicitly; parts 1/2 of the exercise are proved just above it |
+| 123I.3 | `linf_tensor` | :650 | (b) | **116VII `tensor_characterization` is CLOSED (session 65)**, so this is now local; proc.tex:4645 cites it explicitly and parts 1/2 of the exercise are proved just above it.  (The old pointer "`Tensor.lean:2407`" was stale.) |
 | 124I | `vn_generation_bound` | :678 | (a) | proc.tex:4696 needs `#(∗-algebra generated by S) ≤ #ℂ + #S` **and** that every element of `wstar S` is an ultraweak limit of a filter on it — the tree has **no** characterisation of `wstar` as a closure (only `isVNSubalgebra_wstar`), so a transfinite-closure construction has to be written |
 | 124III | `second_adjunction` | :707 | (b) | Freyd's AFT: needs products and equalisers in `W*_miu` preserved into `W*_cpsu`.  47V `vn_equalisers` is **proved**; **47IV.3 `vn_products_ncpsu` (`A/VN/Basic.lean:2905`, `sorry`) is the real external blocker** — the earlier note ("124I + 125II + Zorn") missed it |
 | 125II | `vn_gns_bound` | :729 | (a) | `ngns` is proved and `gnsHilb`/`exists_faithful_normal_rep` give the representation concretely; only the cardinal count `#H ≤ 2^#A` is left (the thesis's `#H = Σ_ω #H_ω` is correct only via countable support of `ℓ²`-families) |
