@@ -241,8 +241,8 @@ module; and the **public** `paschke_tprod_dense`.
 | 169V | `h_is_corner_for_unital_map` | **(b)** | the author's proof works with the *standard* dilation of `existence_paschke` (`Paschke.lean`, `sorry`) |
 | 169X | `dils_stand_filter` | **(c)** | cited to proc.tex 96V — which **is** now proved in `A/Proc/Measurement.lean` (session 47) but is not importable here.  Proving it locally means redoing 96V |
 | **169XI.1** | `dils_filter_basics_1` | **(a)** | **CLOSED this session** |
-| 169XI.2a | `dils_filter_basics_2a` | **(d)** | false under the transcribed `c 1 ≤ b`; QUESTIONS **B11**, left `sorry` per the brief |
-| **169XI.2b** | `dils_filter_basics_2b` | **(a)** | **CLOSED this session**, from 169XI.1.  Note it does **not** depend on 2a, and so is not affected by B11 |
+| **169XI.2a** | `dils_filter_basics_2a` | **(a)** | was **(d)**, false under the transcribed `c 1 ≤ b`.  **CLOSED session 63**, after Bas ruled on B11 (2026-08-16): the repair is that `IsFilterFor`'s *mediating* map is **subunital**, not that `c 1 = b`.  ~25 lines, the thesis's own argument; needs only monotonicity of `c'` plus **169XII**, not faithfulness |
+| **169XI.2b** | `dils_filter_basics_2b` | **(a)** | **CLOSED session 53**, from 169XI.1.  Note it does **not** depend on 2a, and was unaffected by the B11 repair |
 | 170II.1 | `dils_examples_pure_1` | **(b)** | `ad_T` classification of pure maps `B(H) → B(K)`; needs 171VII and the Stinespring block |
 | 170II.2 | `dils_examples_pure_2` | **(b)** | the thesis derives it from 169V + 169XI.2; 169V is `sorry` and 169XI.2**a** is the false half |
 | **170IV.1** | `surjective_nmiu_1` | **(a)** | **CLOSED session 53**, once D5 was ruled on and `[VonNeumannAlgebra A] [VonNeumannAlgebra B]` restored (the fix really was local to the two signatures).  ~150 lines by the costing below, and the estimate held |
@@ -699,3 +699,91 @@ here would have reproduced the session-59 regression exactly.  Ours is
 `phi_gram_nonneg`.  `exists_rho` likewise collides with a `private` lemma in
 `A/CStar/TowardsVN.lean` (different namespace, so harmless, but renamed to
 `exists_prho` anyway).
+
+
+---
+
+## Session 63 (result): **154III.5 `existence_paschke_5` is proved**, and the B11 ruling closes 169XI.2a
+
+`Paschke.lean` goes **6 → 5**, `Pure.lean` **12 → 11**, `B/Dils` **30 → 28**:
+`HilbertModules` 0, `SelfDualCompletion` 0, `Stinespring` 1, `Kaplansky` 4,
+`Paschke` **5**, `SelfDual` 7, `Pure` **11** — **all seven** run through `lean`
+individually against rebuilt oleans and each **paired with an error count,
+0 everywhere** (an `A/VN` rebuild by a sibling worker was in flight during the
+session, so the upstream four were re-checked as well rather than assumed).  Every new or changed
+declaration is axiom-clean (`propext, Classical.choice, Quot.sound`), checked
+from an importing file.
+
+**399 lines** in `Paschke.lean` (the ≈450–550 estimate held), ~40 changed lines
+in `Pure.lean`.
+
+### `existence_paschke_5`: what the costing got right and wrong
+
+The route was **exactly** the five steps costed in the session-62 section
+above, and the "not structurally blocked" correction is confirmed: 154X
+re-runs the construction on `h' : 𝒫' → ℬ`, whose domain is a von Neumann
+algebra by `PaschkeTriple.vn`, so `existence_paschke h'` supplies the missing
+input, and `paschkeModule_h_ρ` at `h'` is the hypothesis of
+`existence_paschke_4` on the nose.
+
+Two line items were mis-costed, in opposite directions:
+
+| # | piece | costed | actual | note |
+|---|---|---|---|---|
+| 3 | `ad_S` cp on the **opposite** algebras | 120 | **~15** | the survey's "`f ↦ fᵐᵒᵖ` does not preserve complete positivity in general" is **wrong**.  It does, for every `f`: the Gram sum of `fᵐᵒᵖ` unops to the Gram sum of `f` at the starred families with the two summation indices exchanged.  The counterexample in the file header is `op : A → Aᵐᵒᵖ` (a ∗-*anti*-isomorphism, = transpose on `M₂`), a different map.  Now public and general as `ncpMop` |
+| 5 | uniqueness of `σ` (**154VIII**) | 150 | **~230** | the thesis's route is via `hilmod-fixed-on-V`, i.e. ultranorm density of `η`'s image — unavailable, because `existence_paschke_5` quantifies over an **abstract** `PaschkeModule`, which carries no `η`.  Replaced by two lemmas extracted from the *uniqueness* half of the universal property of part 1 (below).  `dils_univlemma` **is** in the tree (**139III**, `Stinespring.lean`), and `stinespring_is_paschke` (140III) is a complete worked template for the whole shape |
+
+### The two reusable lemmas that replace the density argument
+
+* **`paschkeModule_inner_tprod_separating`** — `⟨a ⊗ b, w⟩ = 0` for all
+  `a, b` forces `w = 0`.  Run part 1 against **`ℬ` itself** (`selfDual_self`)
+  and the **zero** bilinear map: `x ↦ ⟨w, x⟩` and `0` are then two bounded
+  module maps `𝒜 ⊗_φ ℬ → ℬ` lifting it, so they are equal, and evaluating at
+  `w` gives `⟨w,w⟩ = 0`.
+* **`paschkeModule_ba_ext`** — adjointable operators agreeing on the
+  elementary tensors are equal, by the same uniqueness at `Y = 𝒜 ⊗_φ ℬ` (on
+  top of `phiCompatible_comp`).
+
+They make **no polarization step necessary**: the same computation run at two
+*different* elementary tensors gives the whole sesquilinear form,
+`⟨a ⊗ b, σ(c)(a' ⊗ b')⟩ = b' h'(ϱ'(a') c ϱ'(a*)) b*` (`paschke_sigma_matrix`),
+where the thesis determines only the diagonal.
+
+### The next gate
+
+**`exists_paschke_iso_paschkeModule`** is in `Paschke.lean`, public, proved
+(three lines): `existence_paschke_5` composed with **140VIII**
+`paschke_unique_up_to_iso` says *every* Paschke dilation of `φ` is
+nmiu-isomorphic to the constructed one, compatibly with `ϱ` and `h`.  That is
+the "by `paschke-unique-up-to-iso` it suffices to prove it for the dilation of
+`existence-paschke`" step with which the thesis opens **156II**
+(dils.tex:3886) *and* **157IV**.2/.3 (dils.tex:4042).  It typechecks, which is
+the machine-check that the two settings line up.
+
+**So the next gate is 157IV.2/.3 `paschke_correspondence_embedding` /
+`_surjective`** (`Paschke.lean`), now genuinely unblocked and the largest
+remaining cluster inside the directory.  Costing, from dils.tex 157VII–157IX:
+
+* **.2 (order embedding)**: for `T ∈ ϱ(𝒜)^□` with `φ_T` ncp, show `T ≥ 0` by
+  `⟨x̂, T x̂⟩ = ∑ᵢⱼ bᵢ* φ_T(aᵢ*aⱼ) bⱼ ≥ 0` on `x ∈ 𝒜 ⊙ ℬ`.  Needs positivity
+  from the elementary tensors, i.e. **`hilbmod_ordersep` plus ultranorm
+  density** — so it must be run on the *concrete* module (`E.dense`), not on
+  an abstract `PaschkeModule`, and then transported.  ~250 lines.
+* **.3 (surjectivity)**: for `ψ ≤_ncp φ`, the identity `a ⊗ b ↦ a ⊗ b` is
+  φ-compatible into `𝒜 ⊗_ψ ℬ` (this is where `ψ ≤_ncp φ` enters, via the two
+  Gram forms), giving `W`; then `T = W*W ∈ ϱ(𝒜)^□`, `0 ≤ T ≤ 1` and
+  `φ_T = ψ`.  Every ingredient is now in the file
+  (`ptprod_univ`, `hilbmod_adjoint_exists`, `hilmod_fixed_on_V`).  ~300 lines.
+* **transport to an arbitrary triple** (157IX): `exists_paschke_iso_paschkeModule`,
+  then check that `ϑ` restricts to `[0,1]_{ϱ'(𝒜)^□} → [0,1]_{ϱ(𝒜)^□}` and
+  that `φ_t^{𝒫'} = φ_{ϑ(t)}^{𝒫}`.  ~150 lines.
+
+**156II `paschke_injective`** is unblocked by the same corollary but is
+*also* an A/VN question (`cceil-fundamental`, `ad-contraposed`, `ceil` of a
+map), so it is the less attractive of the two.
+
+Unchanged after this session: **162II `total_mv_order`** is still the only
+self-contained item outside the Paschke chain; **165VI** is still blocked
+outside the directory on `tensor_characterization`; the five known-false items
+stand; **164II.2b** stands (QUESTIONS D6).  **169XI.2a is no longer among the
+false ones** — see the row above.

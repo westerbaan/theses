@@ -154,6 +154,97 @@ instance vonNeumannAlgebra_mulOpposite [VonNeumannAlgebra A] :
         (fun ω => h (npFunctionalOp ω))
     exact MulOpposite.unop_injective h0
 
+/-! ### Maps of the opposite algebras
+
+`op : A → Aᵐᵒᵖ` is a ∗-**anti**-isomorphism, and is *not* completely
+positive — for `A = M₂` it is the transpose, the standard counterexample.
+But transporting a map on *both* sides, `f ↦ fᵐᵒᵖ`, is: `Mₙ(Aᵐᵒᵖ)` is
+∗-isomorphic to `Mₙ(A)ᵐᵒᵖ` by `M ↦ (Mᵀ)ᵒᵖ`, under which `(fᵐᵒᵖ)ₙ` becomes
+`(fₙ)ᵐᵒᵖ`.  Concretely, the Gram sum of `fᵐᵒᵖ` at `(aᵢ, bᵢ)` unops to the
+Gram sum of `f` at `(aᵢ*, bᵢ*)` with the two summation indices exchanged,
+which is all the proof below does.  This is what carries `ad_S` (an ncp-map
+of the algebras `𝒷ᵃ(X)`) over to the `ᵐᵒᵖ`s on which `ρ` and `h` live, in
+**154III**.5. -/
+
+section MopMaps
+
+variable {B : Type*} [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
+
+/-- A linear map transported to the opposite algebras. -/
+noncomputable def mopLinear (f : A →ₗ[ℂ] B) : Aᵐᵒᵖ →ₗ[ℂ] Bᵐᵒᵖ :=
+  (MulOpposite.opLinearEquiv ℂ).toLinearMap.comp
+    (f.comp ((MulOpposite.opLinearEquiv ℂ).symm.toLinearMap))
+
+set_option linter.unusedSectionVars false in
+@[simp] theorem mopLinear_apply (f : A →ₗ[ℂ] B) (x : Aᵐᵒᵖ) :
+    mopLinear f x = MulOpposite.op (f (MulOpposite.unop x)) := rfl
+
+set_option linter.unusedSectionVars false in
+theorem mop_nonneg_iff (x : Aᵐᵒᵖ) : (0 : Aᵐᵒᵖ) ≤ x ↔ 0 ≤ MulOpposite.unop x :=
+  Iff.rfl
+
+set_option linter.unusedSectionVars false in
+theorem isLUB_mop {S : Set B} {t : B} (h : IsLUB S t) :
+    IsLUB (MulOpposite.op '' S) (MulOpposite.op t) := by
+  constructor
+  · rintro _ ⟨x, hx, rfl⟩
+    exact h.1 hx
+  · intro u hu
+    exact h.2 fun x hx => hu ⟨x, hx, rfl⟩
+
+set_option linter.unusedSectionVars false in
+theorem mopLinear_cp (f : A →ₗ[ℂ] B) (hf : IsCompletelyPositiveMap f) :
+    IsCompletelyPositiveMap (mopLinear f) := by
+  intro n a b
+  rw [mop_nonneg_iff]
+  have h := hf n (fun i => star (MulOpposite.unop (a i)))
+    (fun i => star (MulOpposite.unop (b i)))
+  simp only [star_star] at h
+  rw [show MulOpposite.unop
+      (∑ i, ∑ j, star (b i) * mopLinear f (star (a i) * a j) * b j)
+      = ∑ i, ∑ j, MulOpposite.unop (b j) *
+          f (MulOpposite.unop (a j) * star (MulOpposite.unop (a i))) *
+          star (MulOpposite.unop (b i)) from ?_]
+  · rw [Finset.sum_comm]
+    exact h
+  · simp only [Finset.unop_sum, MulOpposite.unop_mul, MulOpposite.unop_star,
+      mopLinear_apply, MulOpposite.unop_op, mul_assoc]
+
+set_option linter.unusedSectionVars false in
+theorem mopLinear_normal (f : A →ₗ[ℂ] B) (hf : PreservesDirSups ⇑f) :
+    PreservesDirSups ⇑(mopLinear f) := by
+  intro D s hne hdir hlub
+  have hlub' : IsLUB (selfAdjointUnop '' D) (selfAdjointUnop s) :=
+    selfAdjointUnop.isLUB_image'.mpr hlub
+  have h := hf (selfAdjointUnop '' D) (selfAdjointUnop s) (hne.image _)
+    (by
+      rintro _ ⟨x, hx, rfl⟩ _ ⟨y, hy, rfl⟩
+      obtain ⟨z, hz, hxz, hyz⟩ := hdir x hx y hy
+      exact ⟨selfAdjointUnop z, ⟨z, hz, rfl⟩, hxz, hyz⟩) hlub'
+  rw [Set.image_image] at h
+  have h2 := isLUB_mop h
+  rw [Set.image_image] at h2
+  exact h2
+
+/-- An ncp-map transported to the opposite algebras.  Unlike `op` itself
+(the transpose on `M₂`), `f ↦ fᵐᵒᵖ` **does** preserve complete positivity:
+the Gram sum of `fᵐᵒᵖ` at `(aᵢ, bᵢ)` is the Gram sum of `f` at
+`(aᵢ*, bᵢ*)` with the two summation indices exchanged. -/
+noncomputable def ncpMop (f : NCPMap A B) : NCPMap Aᵐᵒᵖ Bᵐᵒᵖ where
+  toCompletelyPositiveMap :=
+    { toLinearMap := mopLinear f.toCompletelyPositiveMap.toLinearMap
+      map_cstarMatrix_nonneg' :=
+        (cp_iff _).out 0 1 |>.mp (mopLinear_cp _
+          ((cp_iff _).out 1 0 |>.mp fun N M hM =>
+            f.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM)) }
+  preservesDirSups' := mopLinear_normal _ f.preservesDirSups'
+
+set_option linter.unusedSectionVars false in
+@[simp] theorem ncpMop_apply (f : NCPMap A B) (x : Aᵐᵒᵖ) :
+    ncpMop f x = MulOpposite.op (f (MulOpposite.unop x)) := rfl
+
+end MopMaps
+
 end MulOppositeVN
 
 /-! ## Parsec 1540: existence of Paschke dilations
@@ -1615,13 +1706,204 @@ theorem existence_paschke_4 [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     rw [M.ρ_tprod, one_mul]
   rw [h1, hC.smul, h2, hS'int, hS'one, hTdef]
 
+/-! ### Toward part 5: separation and extensionality on the elementary tensors
+
+The thesis's proof of **154VIII** `paschke-uniqueness` compares the vector
+forms `⟨x̂, σₖ(c) x̂⟩` for `x ∈ 𝒜 ⊙ ℬ` and then appeals to
+**152IX** `hilmod-fixed-on-V`, i.e. to ultranorm density of the image of
+`η`.  A `PaschkeModule` is *abstract* — it carries no `η` — so that route
+is unavailable here.  It is not needed either: the two lemmas below extract
+from the **uniqueness** half of the universal property of part 1 exactly
+what the density argument was for.
+
+* `paschkeModule_inner_tprod_separating`: `⟨a ⊗ b, w⟩ = 0` for all `a, b`
+  forces `w = 0`, because `x ↦ ⟨w, x⟩` and `0` are then two bounded module
+  maps `𝒜 ⊗_φ ℬ → ℬ` lifting the *zero* bilinear map (`ℬ` is self dual
+  over itself, `selfDual_self`).
+* `paschkeModule_ba_ext`: adjointable operators agreeing on the elementary
+  tensors are equal, by the same uniqueness at `Y = 𝒜 ⊗_φ ℬ`.
+
+Moreover the sesquilinear form — not merely its diagonal — is determined
+(`paschke_sigma_matrix`), so no polarization step is needed either. -/
+
+/-- The zero bilinear map is φ-compatible. -/
+theorem phiCompatible_zero (φ : NCPMap 𝒜 ℬ) {Y : Type u} [NormedAddCommGroup Y]
+    [Module ℂ Y] [SMul ℬ Y] [CStarModule ℬ Y] :
+    PhiCompatible ⇑φ (fun (_ : 𝒜) (_ : ℬ) => (0 : Y)) where
+  add_left _ _ _ := (add_zero _).symm
+  add_right _ _ _ := (add_zero _).symm
+  smul_complex _ _ _ := (smul_zero _).symm
+  smul_action _ _ c := op_smul_zero (X := Y) c
+  bound := ⟨1, one_pos, fun n a b => by
+    have h0 : ‖∑ _i : Fin n, (0 : Y)‖ ^ 2 = 0 := by simp
+    rw [h0]
+    positivity⟩
+
+/-- Composing the elementary tensors with a bounded module map again gives a
+φ-compatible bilinear map. -/
+theorem phiCompatible_comp (φ : NCPMap 𝒜 ℬ) (M : PaschkeModule φ) {Y : Type u}
+    [NormedAddCommGroup Y] [Module ℂ Y] [SMul ℬ Y] [CStarModule ℬ Y]
+    (T : M.X → Y) (C : ℝ)
+    (hT : IsBoundedModuleMap (cstarBInner ℬ M.X) (cstarBInner ℬ Y) C T) :
+    PhiCompatible ⇑φ (fun a b => T (M.tprod a b)) := by
+  obtain ⟨r, hr0, hr⟩ := M.compat.bound
+  refine { add_left := fun a a' b => by rw [M.compat.add_left, hT.add]
+           add_right := fun a b b' => by rw [M.compat.add_right, hT.add]
+           smul_complex := fun c a b => by
+             rw [M.compat.smul_complex, hT.smul_complex]
+           smul_action := fun a b c => by
+             rw [← M.compat.smul_action, hT.smul]
+           bound := ⟨r * (C ^ 2 + 1), by positivity, fun n a b => ?_⟩ }
+  have hsum : (∑ i, T (M.tprod (a i) (b i))) = T (∑ i, M.tprod (a i) (b i)) := by
+    classical
+    induction (Finset.univ : Finset (Fin n)) using Finset.induction with
+    | empty =>
+        simp only [Finset.sum_empty]
+        have h0 : T 0 = 0 := by
+          have := hT.smul_complex 0 0
+          simpa using this
+        exact h0.symm
+    | insert i s hi ih =>
+        rw [Finset.sum_insert hi, Finset.sum_insert hi, ih, hT.add]
+  rw [hsum]
+  have hb := hT.bound (∑ i, M.tprod (a i) (b i))
+  rw [cstarBInner_norm, cstarBInner_norm] at hb
+  have h3 := hr n a b
+  have h4 : (0 : ℝ) ≤ ‖∑ i, ∑ j, b i * φ (a i * star (a j)) * star (b j)‖ :=
+    norm_nonneg _
+  have h5 : (0 : ℝ) ≤ ‖∑ i, M.tprod (a i) (b i)‖ := norm_nonneg _
+  have h6 : ‖T (∑ i, M.tprod (a i) (b i))‖ ≤ |C| * ‖∑ i, M.tprod (a i) (b i)‖ := by
+    nlinarith [le_abs_self C]
+  have h7 : (0 : ℝ) ≤ ‖T (∑ i, M.tprod (a i) (b i))‖ := norm_nonneg _
+  calc ‖T (∑ i, M.tprod (a i) (b i))‖ ^ 2
+      ≤ (|C| * ‖∑ i, M.tprod (a i) (b i)‖) ^ 2 := by nlinarith
+    _ = C ^ 2 * ‖∑ i, M.tprod (a i) (b i)‖ ^ 2 := by rw [mul_pow, sq_abs]
+    _ ≤ C ^ 2 * (r * ‖∑ i, ∑ j, b i * φ (a i * star (a j)) * star (b j)‖) := by
+        nlinarith [sq_nonneg C]
+    _ ≤ r * (C ^ 2 + 1)
+          * ‖∑ i, ∑ j, b i * φ (a i * star (a j)) * star (b j)‖ := by
+        nlinarith [sq_nonneg C, mul_nonneg hr0.le h4]
+
+/-- The elementary tensors are *separating*: an element of `𝒜 ⊗_φ ℬ`
+orthogonal to every `a ⊗ b` is zero.  This is the universal property of
+part 1 applied to the zero bilinear map and to `ℬ` itself: `x ↦ ⟨w, x⟩` and
+`0` are two bounded module maps `𝒜 ⊗_φ ℬ → ℬ` lifting it. -/
+theorem paschkeModule_inner_tprod_separating [VonNeumannAlgebra 𝒜]
+    [VonNeumannAlgebra ℬ] (φ : NCPMap 𝒜 ℬ) (M : PaschkeModule φ) {w : M.X}
+    (hw : ∀ (a : 𝒜) (b : ℬ), (inner ℬ (M.tprod a b) w : ℬ) = 0) : w = 0 := by
+  obtain ⟨F, -, hFuniq⟩ :=
+    M.univ ℬ inferInstance inferInstance inferInstance inferInstance
+      inferInstance (selfDual_self ℬ) _ (phiCompatible_zero (Y := ℬ) φ)
+  have h1 : (fun x => (inner ℬ w x : ℬ)) = F := by
+    refine hFuniq _ ⟨⟨‖w‖, { add := fun x x' => CStarModule.inner_add_right
+                             smul_complex := fun c x =>
+                               CStarModule.inner_smul_right_complex
+                             smul := fun b x => by
+                               rw [CStarModule.inner_op_smul_right, smul_eq_mul]
+                             bound := fun x => by
+                               rw [cstarBInner_norm, cstarBInner_norm]
+                               exact CStarModule.norm_inner_le (A := ℬ) M.X }⟩,
+      fun a b => ?_⟩
+    show (inner ℬ w (M.tprod a b) : ℬ) = 0
+    rw [← CStarModule.star_inner (A := ℬ) (M.tprod a b) w, hw a b, star_zero]
+  have h2 : (fun _ : M.X => (0 : ℬ)) = F := by
+    refine hFuniq _ ⟨⟨0, { add := fun x x' => (add_zero _).symm
+                           smul_complex := fun c x => (smul_zero c).symm
+                           smul := fun b x => (op_smul_zero (X := ℬ) b).symm
+                           bound := fun x => by
+                             rw [cstarBInner_norm, cstarBInner_norm, norm_zero,
+                               zero_mul] }⟩, fun a b => rfl⟩
+  have h3 : (inner ℬ w w : ℬ) = 0 := by
+    have := h1.trans h2.symm
+    exact congrFun this w
+  exact CStarModule.inner_self.mp h3
+
+/-- Adjointable operators on `𝒜 ⊗_φ ℬ` agreeing on all elementary tensors
+are equal (the uniqueness half of part 1, at `Y = 𝒜 ⊗_φ ℬ`). -/
+theorem paschkeModule_ba_ext [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
+    (φ : NCPMap 𝒜 ℬ) (M : PaschkeModule φ) {S R : Ba ℬ M.X}
+    (h : ∀ (a : 𝒜) (b : ℬ), S.1 (M.tprod a b) = R.1 (M.tprod a b)) : S = R := by
+  have hbdd : ∀ T : Ba ℬ M.X, ∃ C : ℝ,
+      IsBoundedModuleMap (cstarBInner ℬ M.X) (cstarBInner ℬ M.X) C ⇑T.1 := by
+    intro T
+    obtain ⟨-, -, hmod⟩ := moduleAdjointable_linear (𝒜 := ℬ) ⇑T.1 T.2
+    refine ⟨‖T.1‖ + 1, { add := fun x y => map_add T.1 x y
+                         smul_complex := fun c x => map_smul T.1 c x
+                         smul := hmod
+                         bound := fun x => ?_ }⟩
+    rw [cstarBInner_norm, cstarBInner_norm]
+    have h1 := T.1.le_opNorm x
+    have h0 : (0 : ℝ) ≤ ‖x‖ := norm_nonneg x
+    nlinarith
+  obtain ⟨CS, hCS⟩ := hbdd S
+  obtain ⟨CR, hCR⟩ := hbdd R
+  obtain ⟨F, -, hFuniq⟩ :=
+    M.univ M.X inferInstance inferInstance inferInstance inferInstance
+      inferInstance M.selfDual _ (phiCompatible_comp φ M ⇑S.1 CS hCS)
+  have h1 : ⇑S.1 = F := hFuniq _ ⟨⟨CS, hCS⟩, fun a b => rfl⟩
+  have h2 : ⇑R.1 = F := hFuniq _ ⟨⟨CR, hCR⟩, fun a b => (h a b).symm⟩
+  exact Subtype.ext (DFunLike.coe_injective (h1.trans h2.symm))
+
+/-- **154VIII** (`paschke-uniqueness`, dils.tex:3719): a mediating ncp-map
+`σ` has determined matrix elements on the elementary tensors. -/
+theorem paschke_sigma_matrix [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
+    (φ : NCPMap 𝒜 ℬ) (M : PaschkeModule φ)
+    (D' : PaschkeTriple 𝒜 ℬ) (σ : NCPMap D'.P (Ba ℬ M.X)ᵐᵒᵖ)
+    (hσ1 : ∀ a, σ (D'.ρ a) = M.ρ a) (hσ2 : ∀ c, M.h (σ c) = D'.h c)
+    (c : D'.P) (a a' : 𝒜) (b b' : ℬ) :
+    (inner ℬ (M.tprod a b) ((σ c).unop.1 (M.tprod a' b')) : ℬ)
+      = b' * D'.h (D'.ρ a' * c * D'.ρ (star a)) * star b := by
+  have htp : ∀ (x : 𝒜) (y : ℬ),
+      M.tprod x y = y • (M.ρ x).unop.1 (M.tprod 1 1) := by
+    intro x y
+    rw [M.ρ_tprod, one_mul, M.compat.smul_action, mul_one]
+  have hmod : ∀ (bb : ℬ) (x : M.X), (σ c).unop.1 (bb • x) = bb • (σ c).unop.1 x :=
+    (moduleAdjointable_linear (𝒜 := ℬ) ⇑(σ c).unop.1 (σ c).unop.2).2.2
+  have hRadj : ∀ x y : M.X,
+      (inner ℬ ((M.ρ a).unop.1 x) y : ℬ)
+        = inner ℬ x ((M.ρ (star a)).unop.1 y) := by
+    intro x y
+    have h : ModuleAdjointTo ℬ ⇑(M.ρ a).unop.1
+        ⇑((star (M.ρ a).unop : Ba ℬ M.X)).1 := baSubalgebra_star_spec _
+    have h2 : (star (M.ρ a).unop : Ba ℬ M.X) = (M.ρ (star a)).unop := by
+      rw [show M.ρ (star a) = star (M.ρ a) from map_star M.ρ.toStarAlgHom a]
+      rfl
+    rw [← h2]
+    exact h x y
+  have hkey : (inner ℬ ((M.ρ a).unop.1 (M.tprod 1 1))
+        ((σ c).unop.1 ((M.ρ a').unop.1 (M.tprod 1 1))) : ℬ)
+      = D'.h (D'.ρ a' * c * D'.ρ (star a)) := by
+    rw [hRadj]
+    rw [show ((M.ρ (star a)).unop : Ba ℬ M.X).1
+          ((σ c).unop.1 ((M.ρ a').unop.1 (M.tprod 1 1)))
+        = ((M.ρ a' * σ c * M.ρ (star a)).unop : Ba ℬ M.X).1 (M.tprod 1 1)
+        from rfl, ← M.h_def,
+      ← dils_univlemma M.ρ D'.ρ σ hσ1 a' (star a) c, hσ2]
+  rw [htp a b, htp a' b', hmod, CStarModule.inner_op_smul_right,
+    CStarModule.inner_op_smul_left, hkey]
+  exact (mul_assoc _ _ _).symm
+
 /-- **154III** (`existence-paschke`, dils.tex:3558, Theorem), part 5:
 `(ℬᵃ(𝒜 ⊗_φ ℬ), ϱ, h)` is a Paschke dilation of `φ`.  (In particular every
 ncp-map between von Neumann algebras has a Paschke dilation.)
 
 **154IV**–**154X** are the proof (including **154VIII**
 `paschke-uniqueness` and **154IX** `paschke-spatial` as proof steps) — not
-converted separately. -/
+converted separately; **154IX** *is* `existence_paschke_4` above, and the
+matrix-element computation of **154VIII** is `paschke_sigma_matrix`.
+
+The existence half is **154X** verbatim: run the construction again on the
+ncp-map `h' : 𝒫' → ℬ` — legitimate because `𝒫'` is a von Neumann algebra
+by `PaschkeTriple.vn`, so `existence_paschke h'` applies — take
+`ϱ'' = ϱ_{h'} ∘ ϱ'`, feed `(𝒫' ⊗_{h'} ℬ, ϱ'', 1 ⊗ 1)` to part 4 to get the
+inner-product-preserving intertwiner `S`, and put `σ = ad_S ∘ ϱ_{h'}`.
+`ad_S` is an ncp-map by **153I** `hilbmod_ad_ncp` and survives the passage
+to the opposite algebras by `ncpMop`.
+
+Divergence from the thesis: uniqueness does **not** go through
+`hilmod-fixed-on-V` (which needs the concrete `η`, absent from an abstract
+`PaschkeModule`) but through `paschkeModule_inner_tprod_separating` and
+`paschkeModule_ba_ext` — see the section header above. -/
 theorem existence_paschke_5 [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     (φ : NCPMap 𝒜 ℬ) (M : PaschkeModule φ) :
     IsPaschkeDilationOf
@@ -1631,8 +1913,122 @@ theorem existence_paschke_5 [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
         M.ρ, M.h⟩ ⇑φ := by
   -- `h ∘ ϱ = φ` is `paschkeModule_h_ρ`; it is the half that was *false*
   -- before the `ᵐᵒᵖ` repair.  The universal property is **154IV**–**154X**.
-  refine ⟨paschkeModule_h_ρ φ M, ?_⟩
-  sorry
+  refine ⟨paschkeModule_h_ρ φ M, fun D' hD' => ?_⟩
+  let _ := D'.vn
+  -- **154VIII**: uniqueness of the mediating map
+  have huniq : ∀ σ₁ σ₂ : NCPMap D'.P (Ba ℬ M.X)ᵐᵒᵖ,
+      ((∀ a, σ₁ (D'.ρ a) = M.ρ a) ∧ ∀ c, M.h (σ₁ c) = D'.h c) →
+      ((∀ a, σ₂ (D'.ρ a) = M.ρ a) ∧ ∀ c, M.h (σ₂ c) = D'.h c) →
+      σ₁ = σ₂ := by
+    intro σ₁ σ₂ h₁ h₂
+    refine DFunLike.ext _ _ fun c => ?_
+    refine MulOpposite.unop_injective (paschkeModule_ba_ext φ M fun a' b' => ?_)
+    have hd : ∀ (a : 𝒜) (b : ℬ),
+        (inner ℬ (M.tprod a b)
+          ((σ₁ c).unop.1 (M.tprod a' b')
+            - (σ₂ c).unop.1 (M.tprod a' b')) : ℬ) = 0 := by
+      intro a b
+      rw [CStarModule.inner_sub_right,
+        paschke_sigma_matrix φ M D' σ₁ h₁.1 h₁.2 c a a' b b',
+        paschke_sigma_matrix φ M D' σ₂ h₂.1 h₂.2 c a a' b b', sub_self]
+    exact sub_eq_zero.mp (paschkeModule_inner_tprod_separating φ M hd)
+  -- **154X**: the construction re-run on `h' : 𝒫' → ℬ`
+  obtain ⟨M'⟩ := existence_paschke (𝒜 := D'.P) (ℬ := ℬ) D'.h
+  set ϱ'' : NMIUMap 𝒜 (Ba ℬ M'.X)ᵐᵒᵖ :=
+    { toStarAlgHom := M'.ρ.toStarAlgHom.comp D'.ρ.toStarAlgHom
+      preservesDirSups' :=
+        preservesDirSups_pmap_comp (starAlgHomP D'.ρ.toStarAlgHom)
+          D'.ρ.preservesDirSups' (starAlgHomP M'.ρ.toStarAlgHom)
+          M'.ρ.preservesDirSups' } with hϱ''
+  have hϱ''app : ∀ a : 𝒜, ϱ'' a = M'.ρ (D'.ρ a) := fun _ => rfl
+  have hφe : ∀ a : 𝒜,
+      φ a = inner ℬ (M'.tprod 1 1) ((ϱ'' a).unop.1 (M'.tprod 1 1)) := by
+    intro a
+    rw [hϱ''app, ← M'.h_def, paschkeModule_h_ρ D'.h M' (D'.ρ a), hD' a]
+  -- **154IX** (spatial case) = part 4
+  obtain ⟨S, ⟨hSbdd, hSinner, hSone, hSint⟩, -⟩ :=
+    existence_paschke_4 φ M M'.selfDual (M'.tprod 1 1) ϱ'' hφe
+  obtain ⟨C, hC⟩ := hSbdd
+  set Sl : M.X →ₗ[ℂ] M'.X :=
+    { toFun := S, map_add' := hC.add, map_smul' := hC.smul_complex } with hSl
+  have hbd : ∀ x, ‖Sl x‖ ≤ max C 0 * ‖x‖ := by
+    intro x
+    have h := hC.bound x
+    rw [cstarBInner_norm, cstarBInner_norm] at h
+    exact h.trans (mul_le_mul_of_nonneg_right (le_max_left _ _) (norm_nonneg x))
+  set Sc : M.X →L[ℂ] M'.X := Sl.mkContinuous (max C 0) hbd with hSc
+  have hScapp : ∀ x, Sc x = S x := fun _ => rfl
+  obtain ⟨S', hS'⟩ := hilbmod_adjoint_exists M.selfDual Sc hC.smul
+  have hSS : ∀ y : M.X, S' (Sc y) = y := by
+    intro y
+    refine eq_of_inner_right_eq (𝒜 := ℬ) fun x => ?_
+    rw [← hS' x (Sc y), hScapp, hScapp, hSinner]
+  obtain ⟨ad, hadeq⟩ := hilbmod_ad_ncp M.selfDual M'.selfDual Sc S' hS'
+  -- `σ = ad_S^ᵐᵒᵖ ∘ ϱ_{h'}`
+  set Lρ : D'.P →ₗ[ℂ] (Ba ℬ M'.X)ᵐᵒᵖ :=
+    { toFun := fun c => M'.ρ c
+      map_add' := fun x y => map_add M'.ρ.toStarAlgHom x y
+      map_smul' := fun r x => map_smul M'.ρ.toStarAlgHom r x } with hLρ
+  have hLρcp : IsCompletelyPositiveMap Lρ :=
+    cp_of_mi Lρ (fun x y => map_mul M'.ρ.toStarAlgHom x y)
+      (fun x => map_star M'.ρ.toStarAlgHom x)
+  have hLadcp : IsCompletelyPositiveMap
+      (ncpMop ad).toCompletelyPositiveMap.toLinearMap :=
+    (cp_iff _).out 1 0 |>.mp fun N Mm hM =>
+      (ncpMop ad).toCompletelyPositiveMap.map_cstarMatrix_nonneg' N Mm hM
+  set σ : NCPMap D'.P (Ba ℬ M.X)ᵐᵒᵖ :=
+    { toCompletelyPositiveMap :=
+        { toLinearMap :=
+            (ncpMop ad).toCompletelyPositiveMap.toLinearMap.comp Lρ
+          map_cstarMatrix_nonneg' :=
+            (cp_iff _).out 0 1 |>.mp (cp_comp Lρ _ hLρcp hLadcp) }
+      preservesDirSups' :=
+        preservesDirSups_pmap_comp (starAlgHomP M'.ρ.toStarAlgHom)
+          M'.ρ.preservesDirSups' (ncpPositive (ncpMop ad))
+          (ncpMop ad).preservesDirSups' } with hσdef
+  have hσapp : ∀ (c : D'.P) (x : M.X),
+      (σ c).unop.1 x = S' ((M'.ρ c).unop.1 (Sc x)) := by
+    intro c x
+    show ((ad ((M'.ρ c).unop) : Ba ℬ M.X)).1 x = _
+    rw [hadeq]
+    rfl
+  have hσ1 : ∀ a : 𝒜, σ (D'.ρ a) = M.ρ a := by
+    intro a
+    refine MulOpposite.unop_injective (Subtype.ext (ContinuousLinearMap.ext fun x => ?_))
+    rw [hσapp]
+    have h1 : (M'.ρ (D'.ρ a)).unop.1 (Sc x) = Sc ((M.ρ a).unop.1 x) := by
+      rw [hScapp, hScapp]
+      exact (hSint a x).symm
+    rw [h1, hSS]
+  have hσ2 : ∀ c : D'.P, M.h (σ c) = D'.h c := by
+    intro c
+    rw [M.h_def, hσapp, ← hS' (M.tprod 1 1) ((M'.ρ c).unop.1 (Sc (M.tprod 1 1))),
+      hScapp, hSone, ← M'.h_def, paschkeModule_h_ρ D'.h M' c]
+  exact ⟨σ, ⟨hσ1, hσ2⟩, fun τ hτ => huniq τ σ hτ ⟨hσ1, hσ2⟩⟩
+
+/-- **154III**.5 together with **140VIII** `paschke_unique_up_to_iso`:
+*every* Paschke dilation of `φ` is nmiu-isomorphic to the constructed one
+`(𝒷ᵃ(𝒜 ⊗_φ ℬ)ᵐᵒᵖ, ϱ, h)`, compatibly with `ϱ` and `h`.
+
+This is the "by `paschke-unique-up-to-iso` it suffices to prove it for the
+dilation constructed in `existence-paschke`" step with which the thesis
+opens its proofs of **156II** `paschke-injective` (dils.tex:3886) and of
+**157IV**.2/.3 `paschke-correspondence` (dils.tex:4042) — the two places
+where a computation inside `𝒜 ⊗_φ ℬ` has to be exported to an abstract
+`PaschkeTriple`.  It is exactly what those items were waiting for, and it
+is available only now: it consumes `existence_paschke_5`. -/
+theorem exists_paschke_iso_paschkeModule [VonNeumannAlgebra 𝒜]
+    [VonNeumannAlgebra ℬ] (φ : NCPMap 𝒜 ℬ) (M : PaschkeModule φ)
+    (D : PaschkeTriple 𝒜 ℬ) (hD : IsPaschkeDilationOf D ⇑φ) :
+    ∃! ϑ : NMIUMap D.P (Ba ℬ M.X)ᵐᵒᵖ,
+      Function.Bijective ⇑ϑ ∧ (∀ a, ϑ (D.ρ a) = M.ρ a) ∧
+        ∀ c, M.h (ϑ c) = D.h c :=
+  paschke_unique_up_to_iso ⇑φ D
+    ⟨(Ba ℬ M.X)ᵐᵒᵖ,
+      @vonNeumannAlgebra_mulOpposite (Ba ℬ M.X) _ _ _
+        (ba_vonNeumannAlgebra M.selfDual),
+      M.ρ, M.h⟩
+    hD (existence_paschke_5 φ M)
 
 end Existence
 

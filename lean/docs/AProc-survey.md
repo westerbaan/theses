@@ -1,11 +1,82 @@
 # `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–81, sessions 47–58)
 
-**Headline count: A/Proc has 53 code `sorry`s** after session 62.
-Per file: `Tensor` **19** (was 25), `Measurement` **10** (was 11),
-`QuantumLambda` 17, `Duplicators` **7** (was 11).  (`grep -c sorry` over-counts, because the file
+**Headline count: A/Proc has 52 code `sorry`s** after session 64.
+Per file: `Tensor` 19, `Measurement` 10, `QuantumLambda` 17,
+`Duplicators` **6** (was 7).  All four compiler-verified in session 64,
+each with **0 errors**.  (`grep -c sorry` over-counts, because the file
 docstrings mention `sorry` in prose; the code counts are the ones above.
 Note `\bsorry\b` also matches "sorry-ed" in prose — count the compiler's
 `declaration uses \`sorry\`` warnings instead.)
+
+
+> **Session 64 — the 129II.2 author ruling is implemented: `discrete` becomes
+> "partitioned into atoms", and **130V `discrete_ell_x` closes**.**
+> `Duplicators.lean` **7 → 6**, 0 errors, all new declarations axiom-clean.
+>
+> * **The definition change is authorised** (Bas Westerbaan, 2026-08-16;
+>   QUESTIONS **A6**, now deleted): 129II.2's "covered by atomic measurable
+>   subsets" is replaced by "*partitioned* into atomic measurable subsets".
+>   The partition form was chosen over Fremlin's phrasing because it hands
+>   130V the index set of its `ℓ^∞(Y)` directly.
+> * **The parenthetical citation to Fremlin 211K is now honest, with one
+>   side condition.**  `discrete_iff_purelyAtomic`: for a finite measure space
+>   with `μ(X) > 0`, "partitioned into atoms" ⟺ "every non-negligible
+>   measurable set includes an atom".  `μ(X) > 0` is **necessary** — on a
+>   non-empty `X` with `μ = 0` the space is purely atomic vacuously and has no
+>   atoms at all (`purelyAtomic_not_discrete_of_measure_zero`, machine-checked
+>   on `Unit`); the forward implication `discrete_purelyAtomic` needs no side
+>   condition.  **Completeness of `μ` is not used** anywhere in the
+>   equivalence, contrary to the expectation that absorbing the leftover null
+>   set into an atom would need it: `AtomicSet` quantifies only over
+>   *measurable* subsets, so the absorbed null set never has to be split.
+> * **129VI needed adjusting, and not in the way ERRATA conjectured.**  Its
+>   printed proof runs 129IV `measure_zorn` on the discrete measurable
+>   subsets, justified by "the countable union of discrete measurable subsets
+>   is again discrete" — false for the partition form (successive partitions
+>   need not refine one another).  ERRATA's conjectured repair, `𝒮` =
+>   *countable disjoint unions of atoms*, fails for the same reason.  What
+>   works is Zorn on **pairwise disjoint families of atoms**
+>   (`exists_maximal_atom_family`): the family is automatically countable
+>   (`atom_family_countable`, from
+>   `Measure.countable_meas_pos_of_disjoint_iUnion`), so `D = ⋃𝒞` is
+>   measurable, and maximality says `X∖D` holds no atom.  129VI is restated in
+>   the non-vacuous form ("`D` is *partitioned* by atoms") and reproved; it no
+>   longer uses the thesis's choice-free 129IV, which is still used by 129VIII.
+> * **130V does not go through 130IV**, for a formalization reason rather than
+>   a mathematical one: `measure_space_partition` is stated for an `ℕ`-indexed
+>   partition with each block algebra **nontrivial**, and a discrete space may
+>   have a *finite* partition into atoms — padding with `∅` forces
+>   `ℬₙ = {0}` there (its `kernel` field makes `qB 1 = 0`).  So the argument is
+>   run directly over `↥𝒬`, with `ℂ` as every block algebra (130II's content;
+>   its `ae_const_of_atomic` is the reused part) and `Φ a` recording the
+>   a.e.-constant value of `a` on each atom.  This also drops the need for
+>   130IV's norm dictionary: the value on an atom is *attained*, so a pointwise
+>   bound on `f` bounds it directly.  **Note this friction bites 127III too** —
+>   its proof splits `L^∞(Xᵢ) ≅ L^∞(D) ⊕ L^∞(C)` by 130IV, a two-block
+>   partition that hits the same `ℕ`-index/`Nontrivial` mismatch.
+> * **127III's blockers are more than 129X.**  Still open: (a) **129X**
+>   (→ 118IV.4), unchanged; (b) **54XI.1/.2** `cvn_faithful_1`/`_2`
+>   (`A/VN/Basic.lean`, `sorry`) — without them there is no measure space to
+>   feed 129VI/130IV/130V, since 70III `cvn` is stated in the reduced
+>   "`1 = ∑ᵢ ⌈⌈ωᵢ⌉⌉`" form; (c) the `⊕ᵢ L^∞(Xᵢ)` carrier that reduced form
+>   exists to avoid (FIXME at `Projections.lean:5695`), plus
+>   `⊕ᵢ ℓ^∞(Yᵢ) ≅ ℓ^∞(⋃ᵢ Yᵢ)`; (d) the *easy* direction, "`ℓ^∞(X)` is
+>   duplicable", which needs a monoid structure on `linf X` in `W*_miu` and so
+>   sits behind the tensor block.  So 130V was a real gap in 127III's proof,
+>   but closing it does not make 129X the last obstacle.
+> * **104VII**, re-derived from proc.tex:1560: the session-62 reading is
+>   confirmed.  Its inputs 104IV `centrally_similar_fundamental` (repaired),
+>   104VI `centrally_similar_corollary`, 80IV `approximate_pseudoinverse`,
+>   45VI `mult_jus_cont` and 65IV are **all proved**, and **104III.4 is not a
+>   blocker**: 104VII supplies exactly the `⌈p⌉ = ⌈q⌉ = 1` under which
+>   `centrally_similar_basic_4_faithful` is already proved.  What is missing is
+>   (i) "`p` is a norm limit of linear combinations of projections *commuting
+>   with `p`*" — the natural route is 65IV applied inside `{p}'`, and
+>   `commutant` is a bare `Set` (`Projections.lean:3516`) with no von Neumann
+>   algebra structure, so this is real missing infrastructure (a Borel
+>   functional calculus for `p` would do as well); (ii) the **repaired
+>   104III.5**, whose repair is *not yet authorised*; and (iii) the corner
+>   reduction to `eₙ𝒜eₙ` carrying `ϑ`, `p`, `q` across.
 
 
 > **Session 62 — parsec 1160 closes except for 116III.4; 130IV closes; and
@@ -706,7 +777,7 @@ to be `Nonempty.some` of the sorried `vnTensorProduct_nonempty`.
 | DISP | decl | file:line | class | note |
 |---|---|---|---|---|
 | ~~130IV~~ | `measure_space_partition` | :1019 | **CLOSED (session 62)** | ~230 lines; proc.tex:6518 is a bare Exercise.  The one real obstruction was the norm dictionary — `linfty_norm_le` (pointwise bound ⟹ `‖q f‖ ≤ C`) and its converse `linfty_ae_bound` (via the nonzero projection `q 1_S`) — after which surjectivity glues *truncated* representatives with `Measurable.find`; normality is free via `starAlgEquiv_preservesDirSups'`.  `μ.IsComplete` and `[IsFiniteMeasure μ]` are **not used** |
-| 130V | `discrete_ell_x` | :1034 | **FALSE AS PRINTED (session 62)** | 130IV is proved, but 130V is *false*: 129II.2's "covered by atomic subsets" is strictly weaker than Fremlin's "purely atomic" (`X = [0,1]`, `μ = λ + δ₀`, completed: the `{0,x}` are atoms and cover `X`, yet `(0,1]` contains none, and `L^∞ ≅ L^∞[0,1] ⊕ ℂ` is no `ℓ^∞(Y)`).  Also makes **129VI** vacuous and leaves a gap in **127III**.  ERRATA **129II.2**, QUESTIONS **A6** |
+| ~~130V~~ | `discrete_ell_x` | :1034 | **CLOSED (session 64)** | was **FALSE AS PRINTED**: 129II.2's "covered by atomic subsets" is strictly weaker than Fremlin's "purely atomic" (`X = [0,1]`, `μ = λ + δ₀`, completed: the `{0,x}` are atoms and cover `X`, yet `(0,1]` contains none). **Ruled by the author 2026-08-16**: 129II.2 now reads "`X` can be *partitioned* into atomic subsets", and with that 130V is proved — not via 130IV (whose `ℕ`-index + `Nontrivial ℬₙ` cannot express a *finite* partition into atoms) but directly over the partition `↥𝒬`, with `ℂ` as every block algebra and `Φ a` the a.e.-constant value of `a` on each atom.  129VI is likewise restated and reproved; ERRATA **129II.2** updated, QUESTIONS **A6** deleted |
 | ~~132VI unit~~ | `exists_freeMonoidUnitCpsu` | :1206 | **CLOSED (session 62)** | and **47IV.3 was never the blocker**: `cstar_product_4` (`A/CStar/Matrices.lean:1156`, proved) already supplies the C*-half in the form that is literally the definition of `IsCompletelyPositiveMap`, plus subunitality; only normality of the mediating map had to be added, the same five-line pointwise argument `vn_products_nmiu` makes |
 
 Everything else in the file is in the vacuous band (see above).  Note that

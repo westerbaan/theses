@@ -659,20 +659,33 @@ theorem h_is_corner_for_unital_map (φ : NCPMap A B) (hu : φ 1 = 1)
 /-- **169VIII** (`dils-def-filter`, dils.tex:6116, Definition): an ncp-map
 `c : A → B` is a **filter** for `b ∈ B`, `b ≥ 0`, when `c(1) ≤ b` and
 every ncp-map `f : C → B` with `f(1) ≤ b` factors uniquely through `c` (as
-`f = c ∘ f'`).
+`f = c ∘ f'`) **by a subunital `f'`**.
 
-⚠️ **`c 1 ≤ b` is what dils.tex says, and it is a defect** (ERRATA;
-QUESTIONS **B11**): proc.tex **96I**, the definition this one says it is
-recalling, asks the universal property for `f(1) ≤ c(1)` and calls `c` a
-filter *for `c(1)`*, i.e. `c 1 = b`.  The two differ — `c = ½·id` is a
-dils.tex-filter for `1` with `c(1) = ½` — and **169XI**.2
-(`dils_filter_basics_2a`) is false under this weaker reading.  `IsFilter`
-below, "a filter for *some* `b`", is insensitive to the difference. -/
+⚠️ **Repaired, by a ruling of the author (2026-08-16; QUESTIONS B11, now
+closed; ERRATA).**  As printed, dils.tex asks only for an *ncp* mediating
+map `f'`, and under that reading **169XI**.2a `dils_filter_basics_2a` is
+false: for `A = B = C' = ℂ`, `φ = id` and `c' = ½·id` the factorisation
+`f' = 2·id` is ncp, so `c'` is a filter for `φ(1) = 1`, yet no *unital* `φ'`
+has `c' ∘ φ' = φ`.
+
+The defect is in the mediating map only, and `c 1 ≤ b` is **kept** (it is
+not the problem).  eff.tex **197II** `dfn-quotient` — of which 169IX's own
+Remark says filters are the direction-reversed counterpart — has exactly
+this shape with `b = p^⊥`, but lives in an effectus, where the mediating map
+must be a *morphism*, i.e. subunital; our `NCPMap` is genuinely not
+subunital (`NCPSUMap` is a separate structure in `Theses/Common.lean`), and
+that gap is the whole counterexample.  The quantification over `f` needs no
+change: when `b` is an effect, `f(1) ≤ b ≤ 1` already forces `f` subunital,
+so only `f'` escapes.  With the repair, `f' = 2·id` is excluded and 169XI.2a
+is provable (below).
+
+`IsFilter` below, "a filter for *some* `b`", was insensitive to the
+difference already. -/
 def IsFilterFor (c : NCPMap A B) (b : B) : Prop :=
   0 ≤ b ∧ c 1 ≤ b ∧
   ∀ (C : Type u) (_ : CStarAlgebra C) (_ : PartialOrder C)
     (_ : StarOrderedRing C) (f : NCPMap C B), f 1 ≤ b →
-    ∃! f' : NCPMap C A, ∀ x, c (f' x) = f x
+    ∃! f' : NCPSUMap C A, ∀ x, c (f'.toNCPMap x) = f x
 
 /-- **169VIII** (`dils-def-filter`, dils.tex:6116, Definition): a
 **filter** is an ncp-map which is a filter for some positive element. -/
@@ -731,13 +744,20 @@ theorem dils_filters_injective (c : NCPMap A B) (hc : IsFilter c) :
       exact le_trans (hmono x 1 hx1) hc1
     obtain ⟨g, -, hgu⟩ :=
       huniv CU.{u} inferInstance inferInstance inferInstance (ncpOfNonneg hcx) hbnd
-    have h1 : ncpOfNonneg hx = ncpOfNonneg hy := by
+    -- the two candidate factorisations are **subunital**, because `x, y ≤ 1`
+    have hsu : ∀ {w : A}, (hw : 0 ≤ w) → w ≤ 1 → Subunital ⇑(ncpOfNonneg hw) := by
+      intro w hw hw1
+      show (ncpOfNonneg hw) 1 ≤ 1
+      rw [ncpOfNonneg_apply, CU.down_one, one_smul]
+      exact hw1
+    have h1 : (⟨ncpOfNonneg hx, hsu hx hx1⟩ : NCPSUMap CU.{u} A)
+        = ⟨ncpOfNonneg hy, hsu hy hy1⟩ := by
       refine (hgu _ ?_).trans (hgu _ ?_).symm
       · intro z
         rw [ncpOfNonneg_apply, ncpOfNonneg_apply, hsmul]
       · intro z
         rw [ncpOfNonneg_apply, ncpOfNonneg_apply, hsmul, hxy]
-    have hval := congrArg (fun f : NCPMap CU.{u} A => f 1) h1
+    have hval := congrArg (fun f : NCPSUMap CU.{u} A => f.toNCPMap 1) h1
     simpa [ncpOfNonneg_apply] using hval
   -- (2) `c` is injective on the positive cone, by scaling into the effects
   have keyPos : ∀ x y : A, 0 ≤ x → 0 ≤ y → c x = c y → x = y := by
@@ -1017,7 +1037,7 @@ theorem dils_filter_basics_1 {C : Type u} [CStarAlgebra C] [PartialOrder C]
   -- factor `λ h''` through `c`, then scale back
   obtain ⟨g₀, hg₀, -⟩ :=
     huniv D'.P inferInstance inferInstance inferInstance k hk1
-  obtain ⟨g, hg⟩ := exists_ncpSmul g₀ (inv_pos.mpr hlpos)
+  obtain ⟨g, hg⟩ := exists_ncpSmul g₀.toNCPMap (inv_pos.mpr hlpos)
   have hcg : ∀ x : D'.P, (c (g x) : C) = D'.h x := by
     intro x
     rw [hg, hcsmul, hg₀ x, hk x, smul_smul, Complex.ofReal_inv,
@@ -1044,18 +1064,44 @@ theorem dils_filter_basics_1 {C : Type u} [CStarAlgebra C] [PartialOrder C]
 part 2, first half: for a filter `c' : C' → B` of `φ(1)` there is a unique
 unital ncp-map `φ'` with `φ = c' ∘ φ'`.
 
-⚠️ **False as stated**, because `IsFilterFor` transcribes dils.tex's
-`c 1 ≤ b` rather than proc.tex's `c 1 = b` (see the note on `IsFilterFor`,
-and QUESTIONS **B11**): for `A = B = C' = ℂ`, `φ = id` and `c' = ½·id` —
-which is an `IsFilterFor c' (φ 1)` — the unital `φ'` demanded here would need
-`c'(1) = φ(1)`, i.e. `½ = 1`.  Left `sorry` pending the author's ruling; with
-`c 1 = b` the thesis's own two-line argument (`c'(φ'(1)) = φ(1) = c'(1)` and
-injectivity of `c'`, `dils_filters_injective`) closes it. -/
+This was `sorry` for six sessions as **false under the printed reading of
+`IsFilterFor`** (QUESTIONS B11): with a merely *ncp* mediating map,
+`A = B = C' = ℂ`, `φ = id`, `c' = ½·id` makes `c'` a filter for `φ(1) = 1`
+(factor `f` as `f' = 2f`), yet the unital `φ'` demanded here would need
+`c'(1) = φ(1)`, i.e. `½ = 1`.  The author ruled on 2026-08-16 that the
+mediating map is **subunital**; `IsFilterFor` now says so, and the argument
+below is the thesis's own two-liner.
+
+Note it does **not** need faithfulness or bipositivity of `c'`, only
+monotonicity: subunitality of the mediating `ψ` gives
+`φ(1) = c'(ψ(1)) ≤ c'(1)`, the filter clause gives `c'(1) ≤ φ(1)`, so
+`c'(ψ(1)) = c'(1)` and injectivity of a filter (**169XII**
+`dils_filters_injective`) yields `ψ(1) = 1`. -/
 theorem dils_filter_basics_2a {C' : Type u} [CStarAlgebra C']
     [PartialOrder C'] [StarOrderedRing C'] (φ : NCPMap A B)
     (c' : NCPMap C' B) (hc : IsFilterFor c' (φ 1)) :
-    ∃! φ' : NCPMap A C', φ' 1 = 1 ∧ ∀ a, c' (φ' a) = φ a :=
-  sorry
+    ∃! φ' : NCPMap A C', φ' 1 = 1 ∧ ∀ a, c' (φ' a) = φ a := by
+  have hcinj : Function.Injective ⇑c' := dils_filters_injective c' ⟨φ 1, hc⟩
+  obtain ⟨-, hc1, huniv⟩ := hc
+  have hcmono : ∀ x y : C', x ≤ y → (c' x : B) ≤ c' y := fun _ _ h =>
+    (ncpPos c').monotone h
+  -- factor `φ` through `c'` (legal: `φ(1) ≤ φ(1)`)
+  obtain ⟨ψ, hψ, hψu⟩ :=
+    huniv A inferInstance inferInstance inferInstance φ le_rfl
+  -- the mediating map is unital, because it is subunital and `c'` injective
+  have hψ1 : (ψ.toNCPMap 1 : C') = 1 := by
+    refine hcinj ?_
+    have h1 : (c' (ψ.toNCPMap 1) : B) = φ 1 := hψ 1
+    have h2 : (c' (ψ.toNCPMap 1) : B) ≤ c' 1 := hcmono _ _ ψ.subunital'
+    rw [h1] at h2
+    rw [h1]
+    exact le_antisymm h2 hc1
+  refine ⟨ψ.toNCPMap, ⟨hψ1, hψ⟩, ?_⟩
+  rintro φ' ⟨hφ'1, hφ'2⟩
+  have hsu : Subunital ⇑φ' := by
+    show (φ' 1 : C') ≤ 1
+    rw [hφ'1]
+  exact congrArg NCPSUMap.toNCPMap (hψu ⟨φ', hsu⟩ hφ'2)
 
 /-- **169XI** (`dils-filter-basics-exercise`, dils.tex:6158, Exercise),
 part 2, second half: if moreover `(𝒫, ϱ, h)` is a Paschke dilation of

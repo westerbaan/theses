@@ -743,14 +743,221 @@ def AtomicSet (S : Set X) : Prop :=
   MeasurableSet S ∧ 0 < μ S ∧
     ∀ S' ⊆ S, MeasurableSet S' → 0 < μ S' → μ S' = μ S
 
-/-- **129II** (proc.tex:6188, Definition), part 2: `X` is **discrete** if
-it is covered by atomic measurable subsets. -/
+/-- **129II** (proc.tex:6188, Definition), part 2, **as repaired by the
+author** (ruling of Bas Westerbaan, 2026-08-16, QUESTIONS **A6**): `X` is
+**discrete** if `X` can be *partitioned* into atomic measurable subsets.
+
+⚠️ **This is deliberately not the printed definition**, and is the one
+place in `A/Proc` where a transcribed statement was changed.
+proc.tex:6199 reads "`X` is **discrete** if `X` is covered by atomic
+measurable subsets", with the parenthetical "(This coincides with being
+'purely atomic' from 211K of [fremlin].)".  The parenthetical is false
+and the printed definition is strictly weaker: for `X = [0,1]` with
+`μ = λ + δ₀` completed, every `{0,x}` is an atom and these cover `X`,
+yet `(0,1]` is non-negligible and includes no atom.  Under the printed
+definition **130V** is false, **129VI** is vacuous, and the proof of the
+chapter's main theorem **127III** has a gap.  The author's ruling is to
+replace "covered" by "partitioned" — the partition form rather than
+Fremlin's phrasing, because it hands **130V** the index set of its
+`ℓ^∞(Y)` directly instead of requiring an exhaustion argument to
+manufacture one.  `discrete_iff_purelyAtomic` below shows the repaired
+definition does coincide with Fremlin's 211K, so the thesis's
+parenthetical becomes honest — with one exception, recorded there. -/
 def DiscreteSpace : Prop :=
-  ∃ 𝒞 : Set (Set X), (∀ S ∈ 𝒞, AtomicSet μ S) ∧ Set.univ ⊆ ⋃₀ 𝒞
+  ∃ 𝒬 : Set (Set X), (∀ S ∈ 𝒬, AtomicSet μ S) ∧ 𝒬.PairwiseDisjoint id ∧
+    ⋃₀ 𝒬 = Set.univ
+
+/-- Fremlin's **purely atomic** (211K of [fremlin], cited by 129II.2):
+every measurable set of non-zero measure includes an atom.  Stated here
+so that the parenthetical of 129II.2 can be *proved* rather than
+asserted; see `discrete_iff_purelyAtomic`. -/
+def PurelyAtomic : Prop :=
+  ∀ E : Set X, MeasurableSet E → 0 < μ E → ∃ A ⊆ E, AtomicSet μ A
 
 /-- **129II** (proc.tex:6188, Definition), part 3: `X` is **continuous**
 (atomless) if it contains no atomic subsets. -/
 def ContinuousSpace : Prop := ∀ S : Set X, ¬ AtomicSet μ S
+
+/-- A pairwise disjoint family of atoms in a finite measure space is
+countable — atoms have positive measure, and only countably many members
+of a disjoint family can.  (This is what makes the partition of a
+discrete space automatically countable, so that 129II.2 need not say so
+and **130IV**, which is stated for countable partitions, applies.) -/
+theorem atom_family_countable [IsFiniteMeasure μ] {𝒞 : Set (Set X)}
+    (h𝒞 : ∀ S ∈ 𝒞, AtomicSet μ S) (hdisj : 𝒞.PairwiseDisjoint id) :
+    𝒞.Countable := by
+  have hcount : Set.Countable {i : 𝒞 | 0 < μ (i : Set X)} :=
+    MeasureTheory.Measure.countable_meas_pos_of_disjoint_iUnion
+      (fun i => (h𝒞 (i : Set X) i.2).1)
+      (fun i j hij => hdisj i.2 j.2 (fun h => hij (Subtype.ext h)))
+  have huniv : {i : 𝒞 | 0 < μ (i : Set X)} = Set.univ := by
+    ext i
+    simp [(h𝒞 (i : Set X) i.2).2.1]
+  rw [huniv] at hcount
+  exact Set.countable_coe_iff.mp (Set.countable_univ_iff.mp hcount)
+
+/-- Every discrete space is purely atomic (Fremlin 211K): a
+non-negligible `E` must meet some block `A` of the partition in positive
+measure, and `E ∩ A` is then itself an atom inside `E`. -/
+theorem discrete_purelyAtomic [IsFiniteMeasure μ] (hd : DiscreteSpace μ) :
+    PurelyAtomic μ := by
+  obtain ⟨𝒬, hat, hdisj, hcov⟩ := hd
+  have hcount := atom_family_countable μ hat hdisj
+  intro E hE hEpos
+  have hex : ∃ A ∈ 𝒬, 0 < μ (E ∩ A) := by
+    by_contra hcon
+    push_neg at hcon
+    have hnull : μ (⋃ A ∈ 𝒬, E ∩ A) = 0 :=
+      (measure_biUnion_null_iff hcount).mpr fun A hA =>
+        nonpos_iff_eq_zero.mp (hcon A hA)
+    have hsub : E ⊆ ⋃ A ∈ 𝒬, E ∩ A := by
+      intro x hx
+      obtain ⟨A, hA, hxA⟩ := (Set.eq_univ_iff_forall.mp hcov) x
+      exact Set.mem_biUnion hA ⟨hx, hxA⟩
+    exact absurd (measure_mono_null hsub hnull) hEpos.ne'
+  obtain ⟨A, hA, hApos⟩ := hex
+  obtain ⟨hAm, -, hAat⟩ := hat A hA
+  have hEA : μ (E ∩ A) = μ A := hAat _ Set.inter_subset_right (hE.inter hAm) hApos
+  refine ⟨E ∩ A, Set.inter_subset_left, hE.inter hAm, hApos, fun S hS hSm hSpos => ?_⟩
+  rw [hEA]
+  exact hAat S (hS.trans Set.inter_subset_right) hSm hSpos
+
+/-- A maximal pairwise disjoint family of atoms, by Zorn's lemma.  It is
+countable, so its union is measurable, and by maximality the complement
+of that union contains no atom at all.  This is the engine of both
+**129VI** and the converse half of `discrete_iff_purelyAtomic`. -/
+theorem exists_maximal_atom_family [IsFiniteMeasure μ] :
+    ∃ 𝒞 : Set (Set X), (∀ A ∈ 𝒞, AtomicSet μ A) ∧ 𝒞.PairwiseDisjoint id ∧
+      𝒞.Countable ∧ ∀ S : Set X, S ⊆ Set.univ \ ⋃₀ 𝒞 → ¬ AtomicSet μ S := by
+  classical
+  set 𝒮 : Set (Set (Set X)) :=
+    {𝒞 | (∀ A ∈ 𝒞, AtomicSet μ A) ∧ 𝒞.PairwiseDisjoint id} with h𝒮
+  have hzorn : ∀ c ⊆ 𝒮, IsChain (· ⊆ ·) c → ∃ ub ∈ 𝒮, ∀ s ∈ c, s ⊆ ub := by
+    intro c hc hchain
+    refine ⟨⋃₀ c, ⟨fun A hA => ?_, ?_⟩, fun s hs => Set.subset_sUnion_of_mem hs⟩
+    · obtain ⟨𝒞, h𝒞c, hA𝒞⟩ := hA
+      exact (hc h𝒞c).1 A hA𝒞
+    · rintro A ⟨𝒞₁, h₁c, hA₁⟩ B ⟨𝒞₂, h₂c, hB₂⟩ hAB
+      rcases eq_or_ne 𝒞₁ 𝒞₂ with rfl | hne
+      · exact (hc h₁c).2 hA₁ hB₂ hAB
+      · rcases hchain h₁c h₂c hne with hsub | hsub
+        · exact (hc h₂c).2 (hsub hA₁) hB₂ hAB
+        · exact (hc h₁c).2 hA₁ (hsub hB₂) hAB
+  obtain ⟨𝒞, hmax⟩ := zorn_subset 𝒮 hzorn
+  obtain ⟨hat, hdisj⟩ := hmax.1
+  refine ⟨𝒞, hat, hdisj, atom_family_countable μ hat hdisj, fun S hS hSat => ?_⟩
+  have hSdisj : ∀ A ∈ 𝒞, Disjoint S A := by
+    intro A hA
+    refine Set.disjoint_left.mpr fun x hxS hxA => ?_
+    exact (hS hxS).2 ⟨A, hA, hxA⟩
+  have hins : insert S 𝒞 ∈ 𝒮 := by
+    refine ⟨fun A hA => ?_, ?_⟩
+    · rcases hA with rfl | hA
+      · exact hSat
+      · exact hat A hA
+    · rintro A (rfl | hA) B (rfl | hB) hAB
+      · exact absurd rfl hAB
+      · exact hSdisj B hB
+      · exact (hSdisj A hA).symm
+      · exact hdisj hA hB hAB
+  have hSmem : S ∈ 𝒞 :=
+    hmax.2 hins (Set.subset_insert _ _) (Set.mem_insert _ _)
+  exact absurd (Set.disjoint_left.mp (hSdisj S hSmem)) (by
+    obtain ⟨x, hx⟩ := nonempty_of_measure_ne_zero hSat.2.1.ne'
+    exact fun h => h hx hx)
+
+/-- The parenthetical of **129II**.2, proved: for a finite measure space
+carrying *some* non-negligible set, the repaired "discrete" (partitioned
+into atoms) coincides with Fremlin 211K's "purely atomic".
+
+The hypothesis `0 < μ(X)` is necessary and cannot be dropped: with
+`μ = 0` on a non-empty `X` the space is purely atomic vacuously, yet has
+no atoms at all and therefore admits no partition into atoms.  See
+`purelyAtomic_not_discrete_of_measure_zero`.  This is harmless for
+**130V**, which is trivially true there (both sides are the zero
+algebra) — and note the forward implication `discrete_purelyAtomic`
+needs no side condition.
+
+Note also that **completeness of `μ` is not needed** anywhere in the
+equivalence: the absorption of the leftover null set `R` into one atom
+`A₁` stays inside the definition of `AtomicSet`, which quantifies only
+over *measurable* subsets of `A₁ ∪ R`. -/
+theorem discrete_iff_purelyAtomic [IsFiniteMeasure μ] (hpos : 0 < μ Set.univ) :
+    DiscreteSpace μ ↔ PurelyAtomic μ := by
+  classical
+  refine ⟨discrete_purelyAtomic μ, fun hpa => ?_⟩
+  obtain ⟨𝒞, hat, hdisj, hcount, hnoatom⟩ := exists_maximal_atom_family μ
+  set D : Set X := ⋃₀ 𝒞 with hD
+  have hDm : MeasurableSet D := MeasurableSet.sUnion hcount fun A hA => (hat A hA).1
+  set R : Set X := Set.univ \ D with hR
+  have hRm : MeasurableSet R := MeasurableSet.univ.diff hDm
+  -- the leftover is null, since a positive-measure leftover would contain an atom
+  have hRnull : μ R = 0 := by
+    by_contra hne
+    obtain ⟨A, hAR, hAat⟩ := hpa R hRm (pos_iff_ne_zero.mpr hne)
+    exact hnoatom A hAR hAat
+  -- hence `𝒞` is non-empty
+  have hCne : 𝒞.Nonempty := by
+    rcases Set.eq_empty_or_nonempty 𝒞 with rfl | h
+    · exfalso
+      have : (Set.univ : Set X) = R := by simp [hR, hD]
+      rw [this] at hpos
+      exact absurd hRnull hpos.ne'
+    · exact h
+  obtain ⟨A₁, hA₁⟩ := hCne
+  have hA₁at := hat A₁ hA₁
+  -- absorb the null leftover into one atom
+  have habs : AtomicSet μ (A₁ ∪ R) := by
+    refine ⟨hA₁at.1.union hRm, lt_of_lt_of_le hA₁at.2.1 (measure_mono Set.subset_union_left),
+      fun S hS hSm hSpos => ?_⟩
+    have hsplit : S = (S ∩ A₁) ∪ (S ∩ R) := by
+      rw [← Set.inter_union_distrib_left, Set.inter_eq_self_of_subset_left hS]
+    have hSRnull : μ (S ∩ R) = 0 :=
+      measure_mono_null Set.inter_subset_right hRnull
+    have hSle : μ S ≤ μ (S ∩ A₁) := by
+      calc μ S = μ ((S ∩ A₁) ∪ (S ∩ R)) := by rw [← hsplit]
+        _ ≤ μ (S ∩ A₁) + μ (S ∩ R) := measure_union_le _ _
+        _ = μ (S ∩ A₁) := by rw [hSRnull, add_zero]
+    have hSeq : μ (S ∩ A₁) = μ S :=
+      le_antisymm (measure_mono Set.inter_subset_left) hSle
+    have hSA₁ : μ (S ∩ A₁) = μ A₁ :=
+      hA₁at.2.2 _ Set.inter_subset_right (hSm.inter hA₁at.1) (hSeq ▸ hSpos)
+    have hAR : μ (A₁ ∪ R) = μ A₁ :=
+      le_antisymm (le_trans (measure_union_le _ _) (by rw [hRnull, add_zero]))
+        (measure_mono Set.subset_union_left)
+    rw [hAR, ← hSeq, hSA₁]
+  refine ⟨insert (A₁ ∪ R) (𝒞 \ {A₁}), ?_, ?_, ?_⟩
+  · rintro S (rfl | ⟨hS, -⟩)
+    · exact habs
+    · exact hat S hS
+  · have hdisjR : ∀ B ∈ 𝒞 \ {A₁}, Disjoint (A₁ ∪ R) B := by
+      rintro B ⟨hB, hBne⟩
+      refine Set.disjoint_union_left.mpr ⟨hdisj hA₁ hB (fun h => hBne (h ▸ rfl)), ?_⟩
+      exact Set.disjoint_left.mpr fun x hxR hxB => hxR.2 ⟨B, hB, hxB⟩
+    rintro A (rfl | hA) B (rfl | hB) hAB
+    · exact absurd rfl hAB
+    · exact hdisjR B hB
+    · exact (hdisjR A hA).symm
+    · exact hdisj hA.1 hB.1 hAB
+  · refine Set.eq_univ_of_forall fun x => ?_
+    by_cases hxD : x ∈ D
+    · obtain ⟨B, hB, hxB⟩ := hxD
+      by_cases hBA : B = A₁
+      · exact ⟨A₁ ∪ R, Set.mem_insert _ _, Or.inl (hBA ▸ hxB)⟩
+      · exact ⟨B, Set.mem_insert_of_mem _ ⟨hB, hBA⟩, hxB⟩
+    · exact ⟨A₁ ∪ R, Set.mem_insert _ _, Or.inr ⟨Set.mem_univ x, hxD⟩⟩
+
+/-- The exception in `discrete_iff_purelyAtomic`, machine-checked: the
+zero measure on a one-point space is purely atomic (vacuously) but not
+discrete (it has no atoms, so nothing to partition `X` into). -/
+theorem purelyAtomic_not_discrete_of_measure_zero :
+    PurelyAtomic (0 : Measure Unit) ∧ ¬ DiscreteSpace (0 : Measure Unit) := by
+  constructor
+  · intro E _ hE
+    simp at hE
+  · rintro ⟨𝒬, hat, -, hcov⟩
+    obtain ⟨A, hA, -⟩ := (Set.eq_univ_iff_forall.mp hcov) ()
+    exact absurd (hat A hA).2.1 (by simp)
 
 /-- **129IV** (`lem:measure-zorn`, proc.tex:6221, Lemma; a choice-free
 variant of Zorn's lemma): if a collection `𝒮` of measurable subsets of a
@@ -833,48 +1040,36 @@ theorem measure_zorn [IsFiniteMeasure μ] (hμ : μ.IsComplete)
 
 /-- **129VI** (`lem:measure-space-continuous-discrete`, proc.tex:6279,
 Lemma): each finite complete measure space contains a discrete measurable
-subset `D` such that `X ∖ D` is continuous. -/
+subset `D` such that `X ∖ D` is continuous.
+
+Rendered against the **repaired** 129II.2 (see `DiscreteSpace`): "`D` is
+discrete" now means "`D` is *partitioned* by atoms", not "`D` is covered
+by atoms".  Under the printed definition the statement is true but
+vacuous (in the `μ = λ + δ₀` counterexample `D = X` satisfies both
+conjuncts), so this is the form that carries information.
+
+⚠️ **The printed proof (proc.tex:6283) does not survive the repair.**  It
+applies **129IV** `measure_zorn` to the collection of discrete measurable
+subsets, justified by "clearly the countable union of discrete measurable
+subsets of `X` is again discrete" — which is exactly what fails for the
+partition form: an ascending union of sets each *partitioned* by atoms
+need not be partitioned by atoms, because the successive partitions need
+not refine one another, and the leftovers `A ∖ Dₙ` of positive-measure
+atoms may be null and non-empty.  The repair used here is to run Zorn on
+*pairwise disjoint families of atoms* instead of on subsets
+(`exists_maximal_atom_family`), which yields the partition directly; note
+that this replaces the thesis's choice-free 129IV by ordinary Zorn.  It
+is **not** the repair conjectured in ERRATA ("`𝒮` = countable disjoint
+unions of atoms"), which runs into the same non-refinement problem. -/
 theorem measure_space_continuous_discrete [IsFiniteMeasure μ]
     (hμ : μ.IsComplete) :
     ∃ D : Set X, MeasurableSet D ∧
-      (∃ 𝒞 : Set (Set X), (∀ S ∈ 𝒞, AtomicSet μ S) ∧ D ⊆ ⋃₀ 𝒞) ∧
+      (∃ 𝒬 : Set (Set X), (∀ S ∈ 𝒬, AtomicSet μ S) ∧ 𝒬.PairwiseDisjoint id ∧
+        ⋃₀ 𝒬 = D) ∧
       ∀ S : Set X, S ⊆ Set.univ \ D → ¬ AtomicSet μ S := by
-  set 𝒮 : Set (Set X) :=
-    {S | MeasurableSet S ∧ ∃ 𝒞 : Set (Set X),
-      (∀ T ∈ 𝒞, AtomicSet μ T) ∧ S ⊆ ⋃₀ 𝒞} with h𝒮
-  have hempty : (∅ : Set X) ∈ 𝒮 :=
-    ⟨MeasurableSet.empty, ∅, fun T hT => absurd hT (Set.notMem_empty T),
-      Set.empty_subset _⟩
-  have hchain : ∀ f : ℕ → Set X, (∀ n, f n ∈ 𝒮) → Monotone f →
-      ∃ S ∈ 𝒮, ∀ n, f n ⊆ S := by
-    intro f hf _
-    refine ⟨⋃ n, f n, ⟨MeasurableSet.iUnion fun n => (hf n).1, ?_⟩,
-      fun n => Set.subset_iUnion f n⟩
-    refine ⟨⋃ n, (hf n).2.choose, ?_, ?_⟩
-    · rintro T hT
-      obtain ⟨n, hn⟩ := Set.mem_iUnion.mp hT
-      exact (hf n).2.choose_spec.1 T hn
-    · rintro x hx
-      obtain ⟨n, hn⟩ := Set.mem_iUnion.mp hx
-      obtain ⟨T, hT, hxT⟩ := (hf n).2.choose_spec.2 hn
-      exact ⟨T, Set.mem_iUnion.mpr ⟨n, hT⟩, hxT⟩
-  obtain ⟨D, hD𝒮, -, hDmax⟩ :=
-    measure_zorn μ hμ 𝒮 (fun S hS => hS.1) hchain ∅ hempty
-  refine ⟨D, hD𝒮.1, hD𝒮.2, fun S hS hSat => ?_⟩
-  have hunion : D ∪ S ∈ 𝒮 := by
-    obtain ⟨𝒞, h𝒞, hD𝒞⟩ := hD𝒮.2
-    exact ⟨hD𝒮.1.union hSat.1, insert S 𝒞,
-      fun T hT => by rcases hT with rfl | hT; exacts [hSat, h𝒞 T hT],
-      Set.union_subset (hD𝒞.trans (Set.sUnion_subset_sUnion (Set.subset_insert _ _)))
-        fun x hx => ⟨S, Set.mem_insert _ _, hx⟩⟩
-  have hdisj : Disjoint D S := Set.disjoint_left.mpr fun x hxD hxS => (hS hxS).2 hxD
-  have hadd : μ (D ∪ S) = μ D + μ S := measure_union hdisj hSat.1
-  have heq : μ (D ∪ S) = μ D := hDmax _ hunion Set.subset_union_left
-  rw [hadd] at heq
-  have : μ S = 0 := by
-    have h := measure_ne_top μ D
-    exact (ENNReal.add_right_inj h).mp (by rw [heq, add_zero])
-  exact absurd hSat.2.1 (by rw [this]; exact lt_irrefl 0)
+  obtain ⟨𝒞, hat, hdisj, hcount, hnoatom⟩ := exists_maximal_atom_family μ
+  exact ⟨⋃₀ 𝒞, MeasurableSet.sUnion hcount fun A hA => (hat A hA).1,
+    ⟨𝒞, hat, hdisj, rfl⟩, hnoatom⟩
 
 /-- **129VIII** (`lem:continuous-measure-space`, proc.tex:6305, Lemma):
 for a continuous finite complete measure space `X` and
@@ -1744,13 +1939,283 @@ theorem measure_space_partition [IsFiniteMeasure μ] (hμ : μ.IsComplete)
 
 /-- **130V** (`cor:discrete-ell-x`, proc.tex:6525, Corollary): for a
 discrete measure space `X` with `μ(X) < ∞` there is a set `Y` with
-`L^∞(X) ≅ ℓ^∞(Y)`. -/
+`L^∞(X) ≅ ℓ^∞(Y)`.
+
+Against the **repaired** 129II.2 (`DiscreteSpace`, the author's ruling of
+2026-08-16); under the printed definition this corollary is **false**,
+see the counterexample recorded there.  The index set `Y` is the
+partition itself, which is why the partition form of the definition was
+chosen: no exhaustion argument is needed to produce it.
+
+**Divergence from the printed proof.**  proc.tex:6525 reads "combine
+**130IV** with **130II**": partition `X` into atoms, decompose
+`L^∞(X) ≅ ⊕ₙ L^∞(Aₙ)`, and turn each `L^∞(Aₙ)` into `ℂ`.  That route is
+*not* available in this rendering, for a reason of formalization rather
+than mathematics: `measure_space_partition` (130IV) is stated for a
+partition indexed by `ℕ` with each block algebra `ℬₙ` **nontrivial**, and
+a discrete space may have a *finite* partition into atoms — padding it
+out to `ℕ` with `∅` forces `ℬₙ = {0}` there (the `kernel` field makes
+`qB 1 = 0`), which the `Nontrivial` hypothesis forbids.  So the argument
+is run directly over the index set `↥𝒬`: the block algebras are `ℂ` (this
+is 130II's content, and its key lemma `ae_const_of_atomic` is what is
+reused), and `Φ a` records the a.e.-constant value of `a` on each atom.
+Everything else — gluing representatives with `Measurable.find`,
+normality via `starAlgEquiv_preservesDirSups'` — is 130IV's own argument
+specialised to `ℬₙ = ℂ`, where the norm dictionary (`linfty_norm_le`,
+`linfty_ae_bound`) becomes unnecessary: the value on an atom is attained,
+so a pointwise bound on `f` bounds it directly.
+
+`hμ : μ.IsComplete` is not used. -/
 theorem discrete_ell_x [IsFiniteMeasure μ] (hμ : μ.IsComplete)
     (hd : DiscreteSpace μ) (𝒜 : Type u) [CStarAlgebra 𝒜]
     [PartialOrder 𝒜] [StarOrderedRing 𝒜] [VonNeumannAlgebra 𝒜]
     (q : (X → ℂ) → 𝒜) (hq : IsLinftyOf μ 𝒜 q) :
-    ∃ (Y : Type u) (φ : NMIUMap 𝒜 (linf Y)), Function.Bijective ⇑φ :=
-  sorry
+    ∃ (Y : Type u) (φ : NMIUMap 𝒜 (linf Y)), Function.Bijective ⇑φ := by
+  classical
+  obtain ⟨𝒬, hat, hdisj, hcov⟩ := hd
+  have hcount : 𝒬.Countable := atom_family_countable μ hat hdisj
+  haveI hfin : ∀ A : Set X, IsFiniteMeasure (μ.restrict A) := fun A =>
+    ⟨by rw [Measure.restrict_apply_univ]; exact measure_lt_top μ A⟩
+  -- each block is an atom for the measure restricted to it
+  have hatr : ∀ A ∈ 𝒬, AtomicSet (μ.restrict A) Set.univ := by
+    intro A hA
+    obtain ⟨hAm, hApos, hAat⟩ := hat A hA
+    refine ⟨MeasurableSet.univ, by rwa [Measure.restrict_apply_univ], ?_⟩
+    intro S' _ hS'm hS'pos
+    rw [Measure.restrict_apply hS'm] at hS'pos ⊢
+    rw [Measure.restrict_apply_univ]
+    exact hAat _ Set.inter_subset_right (hS'm.inter hAm) hS'pos
+  -- 130II's key lemma: on an atom every bounded measurable `f` is a.e. constant
+  have hval : ∀ A ∈ 𝒬, ∀ f : X → ℂ, IsBoundedMeasurable X f →
+      ∃ z : ℂ, ∀ᵐ x ∂(μ.restrict A), f x = z := by
+    intro A hA f hf
+    obtain ⟨z, hz⟩ := ae_const_of_atomic (μ.restrict A) (hatr A hA) f hf
+    exact ⟨z, hz⟩
+  choose! cval hcval using hval
+  have hrpos : ∀ A ∈ 𝒬, μ.restrict A ≠ 0 := by
+    intro A hA h
+    have h1 := (hat A hA).2.1
+    rw [← Measure.restrict_apply_univ, h] at h1
+    simp at h1
+  have huniq : ∀ A ∈ 𝒬, ∀ (f : X → ℂ) (z : ℂ), IsBoundedMeasurable X f →
+      (∀ᵐ x ∂(μ.restrict A), f x = z) → cval A f = z := by
+    intro A hA f z hf hz
+    haveI : (ae (μ.restrict A)).NeBot := ae_neBot.mpr (hrpos A hA)
+    obtain ⟨x, hx1, hx2⟩ := ((hcval A hA f hf).and hz).exists
+    rw [← hx1, hx2]
+  -- the value on an atom is attained, so pointwise bounds carry over
+  have hbound : ∀ A ∈ 𝒬, ∀ (f : X → ℂ) (C : ℝ), IsBoundedMeasurable X f →
+      (∀ x, ‖f x‖ ≤ C) → ‖cval A f‖ ≤ C := by
+    intro A hA f C hf hC
+    haveI : (ae (μ.restrict A)).NeBot := ae_neBot.mpr (hrpos A hA)
+    obtain ⟨x, hx⟩ := (hcval A hA f hf).exists
+    rw [← hx]
+    exact hC x
+  have hcvcongr : ∀ A ∈ 𝒬, ∀ f g : X → ℂ, IsBoundedMeasurable X f →
+      IsBoundedMeasurable X g → f =ᵐ[μ] g → cval A f = cval A g := by
+    intro A hA f g hf hg h
+    refine huniq A hA f _ hf ?_
+    filter_upwards [ae_restrict_of_ae h, hcval A hA g hg] with x h1 h2
+    rw [h1, h2]
+  have hcvconst : ∀ A ∈ 𝒬, ∀ z : ℂ, cval A (fun _ => z) = z := fun A hA z =>
+    huniq A hA _ z (bm_const z) (Filter.Eventually.of_forall fun _ => rfl)
+  have hcvadd : ∀ A ∈ 𝒬, ∀ f g : X → ℂ, IsBoundedMeasurable X f →
+      IsBoundedMeasurable X g → cval A (f + g) = cval A f + cval A g := by
+    intro A hA f g hf hg
+    refine huniq A hA _ _ (bm_add hf hg) ?_
+    filter_upwards [hcval A hA f hf, hcval A hA g hg] with x h1 h2
+    show f x + g x = _
+    rw [h1, h2]
+  have hcvmul : ∀ A ∈ 𝒬, ∀ f g : X → ℂ, IsBoundedMeasurable X f →
+      IsBoundedMeasurable X g → cval A (f * g) = cval A f * cval A g := by
+    intro A hA f g hf hg
+    refine huniq A hA _ _ (bm_mul hf hg) ?_
+    filter_upwards [hcval A hA f hf, hcval A hA g hg] with x h1 h2
+    show f x * g x = _
+    rw [h1, h2]
+  have hcvstar : ∀ A ∈ 𝒬, ∀ f : X → ℂ, IsBoundedMeasurable X f →
+      cval A (star f) = star (cval A f) := by
+    intro A hA f hf
+    refine huniq A hA _ _ (bm_star hf) ?_
+    filter_upwards [hcval A hA f hf] with x h1
+    show star (f x) = _
+    rw [h1]
+  have hcvsmul : ∀ A ∈ 𝒬, ∀ (z : ℂ) (f : X → ℂ), IsBoundedMeasurable X f →
+      cval A (z • f) = z • cval A f := by
+    intro A hA z f hf
+    refine huniq A hA _ _ (bm_smul z hf) ?_
+    filter_upwards [hcval A hA f hf] with x h1
+    show z • f x = _
+    rw [h1]
+  -- an `ℕ`-enumeration of the (countable) partition, padded with `∅`
+  obtain ⟨g, hg𝒬, hgcov⟩ : ∃ g : ℕ → Set X, (∀ n, g n = ∅ ∨ g n ∈ 𝒬) ∧
+      Set.univ ⊆ ⋃ n, g n := by
+    rcases Set.eq_empty_or_nonempty 𝒬 with h | h
+    · refine ⟨fun _ => ∅, fun _ => Or.inl rfl, ?_⟩
+      rw [← hcov, h]
+      simp
+    · obtain ⟨g, hg⟩ := hcount.exists_eq_range h
+      refine ⟨g, fun n => Or.inr (hg ▸ Set.mem_range_self n), ?_⟩
+      rw [← hcov, hg, Set.sUnion_range]
+  have hcover_ae : ∀ f : X → ℂ, Measurable f →
+      (∀ A ∈ 𝒬, f =ᵐ[μ.restrict A] 0) → f =ᵐ[μ] 0 := by
+    intro f hf h
+    refine ae_of_ae_restrict_cover μ g hgcov hf fun n => ?_
+    rcases hg𝒬 n with he | hn
+    · rw [he, Measure.restrict_empty]
+      simp [Filter.EventuallyEq]
+    · exact h _ hn
+  -- representatives, as in 130IV
+  have hrepex : ∀ a : 𝒜, ∃ f, IsBoundedMeasurable X f ∧ q f = a := hq.surj
+  have hrepBM : ∀ a, IsBoundedMeasurable X (hrepex a).choose :=
+    fun a => (hrepex a).choose_spec.1
+  have hrepq : ∀ a, q ((hrepex a).choose) = a := fun a => (hrepex a).choose_spec.2
+  set rep : 𝒜 → (X → ℂ) := fun a => (hrepex a).choose with hrepdef
+  have hmemb : ∀ f, IsBoundedMeasurable X f →
+      Memℓp (fun A : ↥𝒬 => cval (A : Set X) f) ∞ := by
+    intro f hf
+    obtain ⟨C, hC0, hC⟩ := bm_nonneg hf
+    refine memℓp_infty ⟨C, ?_⟩
+    rintro _ ⟨A, rfl⟩
+    exact hbound (A : Set X) A.2 f C hf hC
+  obtain ⟨Φ, hΦapp⟩ : ∃ Φ : 𝒜 → linf ↥𝒬,
+      ∀ (a : 𝒜) (A : ↥𝒬), (Φ a : ∀ _ : ↥𝒬, ℂ) A = cval (A : Set X) (rep a) :=
+    ⟨fun a => ⟨fun A => cval (A : Set X) (rep a), hmemb _ (hrepBM a)⟩, fun _ _ => rfl⟩
+  have hΦrep : ∀ (a : 𝒜) (f : X → ℂ), IsBoundedMeasurable X f → q f = a →
+      ∀ A : ↥𝒬, (Φ a : ∀ _ : ↥𝒬, ℂ) A = cval (A : Set X) f := by
+    intro a f hf hfa A
+    rw [hΦapp]
+    have h0 : q (rep a - f) = 0 := by
+      rw [linfty_sub _ _ _ hq (hrepBM a) hf, hrepq, hfa, sub_self]
+    have hae : (rep a - f) =ᵐ[μ] 0 := (hq.kernel _ (bm_sub (hrepBM a) hf)).mp h0
+    refine hcvcongr _ A.2 _ _ (hrepBM a) hf ?_
+    filter_upwards [hae] with x hx
+    have hx' : rep a x - f x = 0 := hx
+    exact sub_eq_zero.mp hx'
+  -- `Φ` is a unital ∗-algebra map
+  have hΦadd : ∀ a b, Φ (a + b) = Φ a + Φ b := by
+    intro a b
+    refine lp.ext ?_
+    funext A
+    rw [lp.coeFn_add, Pi.add_apply,
+      hΦrep (a + b) (rep a + rep b) (bm_add (hrepBM a) (hrepBM b))
+        (by rw [hq.add _ _ (hrepBM a) (hrepBM b), hrepq, hrepq]) A,
+      hΦapp, hΦapp, hcvadd _ A.2 _ _ (hrepBM a) (hrepBM b)]
+  have hΦmul : ∀ a b, Φ (a * b) = Φ a * Φ b := by
+    intro a b
+    refine lp.ext ?_
+    funext A
+    rw [lp.infty_coeFn_mul, Pi.mul_apply,
+      hΦrep (a * b) (rep a * rep b) (bm_mul (hrepBM a) (hrepBM b))
+        (by rw [hq.mul _ _ (hrepBM a) (hrepBM b), hrepq, hrepq]) A,
+      hΦapp, hΦapp, hcvmul _ A.2 _ _ (hrepBM a) (hrepBM b)]
+  have hΦstar : ∀ a, Φ (star a) = star (Φ a) := by
+    intro a
+    refine lp.ext ?_
+    funext A
+    rw [lp.coeFn_star, Pi.star_apply,
+      hΦrep (star a) (star (rep a)) (bm_star (hrepBM a))
+        (by rw [hq.star_map _ (hrepBM a), hrepq]) A,
+      hΦapp, hcvstar _ A.2 _ (hrepBM a)]
+  have hΦone : Φ 1 = 1 := by
+    refine lp.ext ?_
+    funext A
+    rw [lp.infty_coeFn_one, Pi.one_apply, hΦrep 1 1 bm_one hq.one A]
+    exact hcvconst _ A.2 1
+  have hΦzero : Φ 0 = 0 := by
+    refine lp.ext ?_
+    funext A
+    have h0 : q (0 : X → ℂ) = 0 := (hq.kernel _ bm_zero).mpr (by rfl)
+    rw [lp.coeFn_zero, Pi.zero_apply, hΦrep 0 0 bm_zero h0 A]
+    exact hcvconst _ A.2 0
+  have hΦsmul : ∀ (c : ℂ) (a : 𝒜), Φ (c • a) = c • Φ a := by
+    intro c a
+    refine lp.ext ?_
+    funext A
+    rw [lp.coeFn_smul, Pi.smul_apply,
+      hΦrep (c • a) (c • rep a) (bm_smul c (hrepBM a))
+        (by rw [hq.smul _ _ (hrepBM a), hrepq]) A,
+      hΦapp, hcvsmul _ A.2 _ _ (hrepBM a)]
+  -- injectivity: agreeing on every atom is agreeing almost everywhere
+  have hinj : Function.Injective Φ := by
+    intro a b hab
+    have hcomp : ∀ A ∈ 𝒬, cval A (rep a) = cval A (rep b) := by
+      intro A hA
+      have h := congrArg (fun z : linf ↥𝒬 => (z : ∀ _ : ↥𝒬, ℂ) ⟨A, hA⟩) hab
+      simpa only [hΦapp] using h
+    have hae : (rep a - rep b) =ᵐ[μ] 0 := by
+      refine hcover_ae _ (bm_sub (hrepBM a) (hrepBM b)).1 fun A hA => ?_
+      filter_upwards [hcval A hA (rep a) (hrepBM a),
+        hcval A hA (rep b) (hrepBM b)] with x h1 h2
+      show rep a x - rep b x = 0
+      rw [h1, h2, hcomp A hA, sub_self]
+    have h0 : q (rep a - rep b) = 0 :=
+      (hq.kernel _ (bm_sub (hrepBM a) (hrepBM b))).mpr hae
+    rw [linfty_sub _ _ _ hq (hrepBM a) (hrepBM b), hrepq, hrepq, sub_eq_zero] at h0
+    exact h0
+  -- surjectivity: a bounded family of values glues to a bounded measurable function
+  have hsurj : Function.Surjective Φ := by
+    intro y
+    obtain ⟨M, hM⟩ := memℓp_infty_iff.mp y.2
+    set M' : ℝ := max M 0 with hM'
+    have hM'0 : 0 ≤ M' := le_max_right _ _
+    have hMy : ∀ A : ↥𝒬, ‖(y : ∀ _ : ↥𝒬, ℂ) A‖ ≤ M' :=
+      fun A => le_trans (hM (Set.mem_range_self A)) (le_max_left _ _)
+    set c : ℕ → ℂ := fun n =>
+      if h : g n ∈ 𝒬 then (y : ∀ _ : ↥𝒬, ℂ) ⟨g n, h⟩ else 0 with hc
+    have hcM : ∀ n, ‖c n‖ ≤ M' := by
+      intro n
+      by_cases h : g n ∈ 𝒬
+      · simpa [hc, h] using hMy ⟨g n, h⟩
+      · simpa [hc, h] using hM'0
+    have hexQ : ∀ x, ∃ n, x ∈ g n := fun x =>
+      Set.mem_iUnion.mp (hgcov (Set.mem_univ x))
+    have hQm : ∀ n, MeasurableSet {x | x ∈ g n} := by
+      intro n
+      rcases hg𝒬 n with he | hn
+      · simpa [he] using MeasurableSet.empty
+      · exact (hat _ hn).1
+    set F : ℕ → X → ℂ := fun n _ => c n with hF
+    have hFm : ∀ n, Measurable (F n) := fun n => measurable_const
+    set f : X → ℂ := fun x => F (Nat.find (hexQ x)) x with hf
+    have hfm : Measurable f := Measurable.find hFm hQm hexQ
+    have hfBM : IsBoundedMeasurable X f := ⟨hfm, M', fun x => hcM _⟩
+    have hfval : ∀ (A : Set X) (hA : A ∈ 𝒬), ∀ x ∈ A,
+        f x = (y : ∀ _ : ↥𝒬, ℂ) ⟨A, hA⟩ := by
+      intro A hA x hxA
+      have hxn : x ∈ g (Nat.find (hexQ x)) := Nat.find_spec (hexQ x)
+      have hgn : g (Nat.find (hexQ x)) ∈ 𝒬 := by
+        rcases hg𝒬 (Nat.find (hexQ x)) with he | hn
+        · exact absurd (he ▸ hxn) (Set.notMem_empty x)
+        · exact hn
+      have hgA : g (Nat.find (hexQ x)) = A := by
+        by_contra hne
+        exact Set.disjoint_left.mp (hdisj hgn hA hne) hxn hxA
+      have : (⟨g (Nat.find (hexQ x)), hgn⟩ : ↥𝒬) = ⟨A, hA⟩ := Subtype.ext hgA
+      simp only [hf, hF, hc, dif_pos hgn]
+      rw [this]
+    refine ⟨q f, lp.ext ?_⟩
+    funext A
+    rw [hΦrep (q f) f hfBM rfl A]
+    refine huniq (A : Set X) A.2 f _ hfBM ?_
+    refine ae_restrict_of_forall_mem (hat (A : Set X) A.2).1 fun x hx => ?_
+    have := hfval (A : Set X) A.2 x hx
+    simpa using this
+  -- normality is free: a bijective ∗-homomorphism is an order isomorphism
+  obtain ⟨Ψ, hΨbij⟩ : ∃ Ψ : 𝒜 →⋆ₐ[ℂ] linf ↥𝒬, Function.Bijective ⇑Ψ :=
+    ⟨{ toFun := Φ
+       map_one' := hΦone
+       map_mul' := hΦmul
+       map_zero' := hΦzero
+       map_add' := hΦadd
+       commutes' := fun c => by
+         rw [Algebra.algebraMap_eq_smul_one, Algebra.algebraMap_eq_smul_one,
+           hΦsmul, hΦone]
+       map_star' := hΦstar }, ⟨hinj, hsurj⟩⟩
+  exact ⟨↥𝒬, { toStarAlgHom := Ψ
+               preservesDirSups' :=
+                 starAlgEquiv_preservesDirSups' (StarAlgEquiv.ofBijective Ψ hΨbij) },
+    hΨbij⟩
 
 end MeasureTheory
 
@@ -2134,5 +2599,6 @@ theorem free_monoid_in_Wcpsu [VonNeumannAlgebra A] [VonNeumannAlgebra B]
       (∀ h₁ h₂ : linf (NCPSUMap A ℂ),
         g (h₁ * h₂) = M.m.toNCPMap (g h₁ ⊗ᵥ g h₂)) ∧
         ∀ a : A, f.toNCPMap a = g (η.toNCPMap a) := sorry
+
 
 end Theses.A.Proc
