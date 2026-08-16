@@ -24,6 +24,7 @@ not asserted: they are built from `baSubalgebra` (32III), `moduleAdjointTo_uniqu
 import Theses.B.Dils.HilbertModules
 
 open scoped ComplexOrder ComplexInnerProductSpace CStarAlgebra WithCStarModule
+open scoped Uniformity
 open Filter Topology Theses Theses.A.CStar Theses.A.VN
 
 universe u v w
@@ -566,6 +567,500 @@ theorem selfdual_completion_univ [VonNeumannAlgebra 𝒷] (B : BInner 𝒷 V)
     linarith [hA, hB]
 
 end Completion
+
+/-! ## Parsec 1500 continued: the ultranorm uniformity and `V̄`
+
+Infrastructure for **150II** `dils_completion` (still `sorry`, above).  The
+thesis builds the ultranorm uniformity and its completion by hand
+(**150IV**–**150X**); we diverge and use Mathlib's `UniformSpace.Completion`
+— see the note on `UnUnif` below and PROVING-LOG session 59.  What is *not*
+here, and is what 150II still needs, is the σ-closure of `V₀ = η(V)` inside
+`V̄` and the 𝒷-valued inner product on it (**150XI**–**150XV**).
+-/
+
+section UnUniformity
+
+variable {𝒷 : Type u} {V : Type v}
+  [CStarAlgebra 𝒷] [PartialOrder 𝒷] [StarOrderedRing 𝒷]
+  [AddCommGroup V] [Module ℂ V] [SMul 𝒷 V]
+
+theorem unSeminorm_zero (ω : NPFunctional 𝒷) (B : BInner 𝒷 V) :
+    unSeminorm ω B.inner (0 : V) = 0 := by
+  rw [unSeminorm, B.inner_zero_left]
+  simp
+
+theorem unSeminorm_neg (ω : NPFunctional 𝒷) (B : BInner 𝒷 V) (x : V) :
+    unSeminorm ω B.inner (-x) = unSeminorm ω B.inner x := by
+  rw [unSeminorm, unSeminorm, show (-x) = ((-1 : ℂ)) • x by simp,
+    B.inner_smul_left_complex, B.inner_smul_right_complex]
+  simp
+
+theorem unSeminorm_smul_complex (ω : NPFunctional 𝒷) (B : BInner 𝒷 V) (c : ℂ) (x : V) :
+    unSeminorm ω B.inner (c • x) = ‖c‖ * unSeminorm ω B.inner x := by
+  have h : B.inner (c • x) (c • x) = ((Complex.normSq c : ℝ) : ℂ) • B.inner x x := by
+    rw [B.inner_smul_left_complex, B.inner_smul_right_complex, smul_smul]
+    congr 1
+    rw [Complex.normSq_eq_conj_mul_self, starRingEnd_apply]
+  have hs : ω (((Complex.normSq c : ℝ) : ℂ) • B.inner x x)
+      = ((Complex.normSq c : ℝ) : ℂ) * ω (B.inner x x) :=
+    map_smul ω.toPositiveLinearMap _ _
+  rw [unSeminorm, unSeminorm, h, hs, Complex.re_ofReal_mul,
+    Real.sqrt_mul (Complex.normSq_nonneg c), Complex.norm_def]
+
+/-- The ultranorm seminorm `‖x‖_ω = ω[x,x]^½` bundled as a `Seminorm ℂ V`. -/
+noncomputable def unSem (B : BInner 𝒷 V) (ω : NPFunctional 𝒷) : Seminorm ℂ V where
+  toFun := unSeminorm ω B.inner
+  map_zero' := unSeminorm_zero ω B
+  add_le' := unSeminorm_add_le ω B
+  neg' := unSeminorm_neg ω B
+  smul' := unSeminorm_smul_complex ω B
+
+@[simp] theorem unSem_apply (B : BInner 𝒷 V) (ω : NPFunctional 𝒷) (x : V) :
+    unSem B ω x = unSeminorm ω B.inner x := rfl
+
+/-! ### The ultranorm uniformity as a Mathlib `UniformSpace`
+
+**150IV**–**150IX** of the thesis construct the ultranorm uniformity on `V`
+by hand, together with the completion `V̄` as fast Cauchy nets modulo
+equivalence.  We diverge: the ultranorm uniformity *is* the uniformity of
+the seminorm family `(‖·‖_ω)_ω` above, so Mathlib's
+`UniformSpace.Completion` supplies `V̄` together with its additive group,
+its ℂ-module and its 𝒷-action, and the possible *indefiniteness* of `B` is
+handled for free because the completion of a non-separated uniform space is
+the separated completion.  (Precedent in the tree: **136II**.)
+
+`UnUnif B` is `V` carrying that uniformity; it is a type synonym so that the
+uniformity — which depends on the *term* `B` — can be an instance. -/
+
+/-- `V` carrying the ultranorm uniformity of the 𝒷-valued inner product `B`. -/
+def UnUnif (B : BInner 𝒷 V) : Type v := V
+
+namespace UnUnif
+
+variable (B : BInner 𝒷 V)
+
+instance : AddCommGroup (UnUnif B) := inferInstanceAs (AddCommGroup V)
+instance : Module ℂ (UnUnif B) := inferInstanceAs (Module ℂ V)
+instance : SMul 𝒷 (UnUnif B) := inferInstanceAs (SMul 𝒷 V)
+
+/-- The identity `V → UnUnif B`. -/
+def mk : V → UnUnif B := id
+
+@[simp] theorem mk_add (x y : V) : mk B (x + y) = mk B x + mk B y := rfl
+@[simp] theorem mk_sub (x y : V) : mk B (x - y) = mk B x - mk B y := rfl
+@[simp] theorem mk_zero : mk B (0 : V) = 0 := rfl
+@[simp] theorem mk_smul (c : ℂ) (x : V) : mk B (c • x) = c • mk B x := rfl
+@[simp] theorem mk_op_smul (b : 𝒷) (x : V) : mk B (b • x) = b • mk B x := rfl
+theorem mk_surjective : Function.Surjective (mk B) := fun x => ⟨x, rfl⟩
+
+/-- The 𝒷-valued inner product `B`, transported to `UnUnif B`. -/
+def binner : BInner 𝒷 (UnUnif B) := B
+
+@[simp] theorem binner_inner (x y : V) :
+    (binner B).inner (mk B x) (mk B y) = B.inner x y := rfl
+
+/-- The ultranorm seminorm on `UnUnif B`. -/
+noncomputable def sem (ω : NPFunctional 𝒷) : Seminorm ℂ (UnUnif B) := unSem (binner B) ω
+
+theorem sem_apply (ω : NPFunctional 𝒷) (x : UnUnif B) :
+    sem B ω x = unSeminorm ω (binner B).inner x := rfl
+
+@[simp] theorem sem_mk (ω : NPFunctional 𝒷) (x : V) :
+    sem B ω (mk B x) = unSeminorm ω B.inner x := rfl
+
+noncomputable instance instUniformSpace : UniformSpace (UnUnif B) :=
+  ⨅ ω : NPFunctional 𝒷, (sem B ω).toSeminormedAddCommGroup.toUniformSpace
+
+instance : IsUniformAddGroup (UnUnif B) :=
+  isUniformAddGroup_iInf fun ω => (sem B ω).toSeminormedAddCommGroup.to_isUniformAddGroup
+
+/-- The topology of `UnUnif B` is the one of the seminorm family `(‖·‖_ω)_ω`. -/
+theorem withSeminorms : WithSeminorms (sem B) :=
+  (SeminormFamily.withSeminorms_iff_uniformSpace_eq_iInf _).mpr rfl
+
+/-! ### Bridge: the tree's `Un*` predicates are the uniform-space notions -/
+
+private theorem tendsto_zero_iff_of_nonneg {ι : Type*} {g : ι → ℝ} {l : Filter ι}
+    (hg : ∀ i, 0 ≤ g i) :
+    Tendsto g l (𝓝 0) ↔ ∀ ε : ℝ, 0 < ε → ∀ᶠ i in l, g i < ε := by
+  constructor
+  · intro h ε hε
+    filter_upwards [Metric.tendsto_nhds.mp h ε hε] with i hi
+    rwa [Real.dist_eq, sub_zero, abs_of_nonneg (hg i)] at hi
+  · intro h
+    rw [Metric.tendsto_nhds]
+    intro ε hε
+    filter_upwards [h ε hε] with i hi
+    rwa [Real.dist_eq, sub_zero, abs_of_nonneg (hg i)]
+
+/-- **147I**.1: convergence in the ultranorm uniformity is `UnTendsto`. -/
+theorem tendsto_iff {ι : Type*} {f : ι → UnUnif B} {l : Filter ι} {x₀ : UnUnif B} :
+    Tendsto f l (𝓝 x₀) ↔ UnTendsto (binner B).inner f l x₀ := by
+  rw [(withSeminorms B).tendsto_nhds]
+  refine forall_congr' fun ω => ?_
+  rw [tendsto_zero_iff_of_nonneg fun i => unSeminorm_nonneg ω (binner B).inner _]
+  rfl
+
+/-- The uniformity of `UnUnif B` has the thesis's entourages (**150IV**) as a
+basis: finitely many np-functionals and an `ε > 0`. -/
+theorem hasBasis_uniformity :
+    (uniformity (UnUnif B)).HasBasis (fun sr : Finset (NPFunctional 𝒷) × ℝ => 0 < sr.2)
+      (fun sr => {q : UnUnif B × UnUnif B | (sr.1.sup (sem B)) (q.2 - q.1) < sr.2}) := by
+  rw [uniformity_eq_comap_nhds_zero]
+  simpa [Seminorm.ball, Set.preimage] using
+    ((withSeminorms B).hasBasis_zero_ball).comap (fun q : UnUnif B × UnUnif B => q.2 - q.1)
+
+/-- **147I**.2: Cauchyness in the ultranorm uniformity is `UnCauchy`. -/
+theorem cauchy_iff {F : Filter (UnUnif B)} :
+    Cauchy F ↔ F.NeBot ∧ UnCauchy (binner B).inner F := by
+  classical
+  rw [(hasBasis_uniformity B).cauchy_iff]
+  refine and_congr Iff.rfl ⟨fun h ω ε hε => ?_, fun h sr hsr => ?_⟩
+  · obtain ⟨t, htF, ht⟩ := h ({ω}, ε / 2) (by positivity)
+    refine ⟨t, htF, fun x hx y hy => ?_⟩
+    have hxy : (sem B ω) (y - x) < ε / 2 := by simpa using ht x hx y hy
+    have h2 : unSeminorm ω (binner B).inner (x - y) < ε / 2 := by
+      rw [← unSeminorm_neg ω (binner B), neg_sub]; exact hxy
+    linarith
+  · obtain ⟨s, r⟩ := sr
+    simp only at hsr ⊢
+    choose t htF ht using fun ω : NPFunctional 𝒷 => h ω (r / 2) (by positivity)
+    refine ⟨⋂ ω ∈ s, t ω, (Filter.biInter_finset_mem s).mpr fun ω _ => htF ω, ?_⟩
+    intro x hx y hy
+    rw [Set.mem_iInter₂] at hx hy
+    refine Seminorm.finset_sup_apply_lt hsr fun ω hω => ?_
+    have hxy := ht ω x (hx ω hω) y (hy ω hω)
+    have h2 : unSeminorm ω (binner B).inner (y - x) ≤ r / 2 := by
+      rw [← unSeminorm_neg ω (binner B), neg_sub]; exact hxy
+    calc sem B ω (y - x) = unSeminorm ω (binner B).inner (y - x) := rfl
+      _ ≤ r / 2 := h2
+      _ < r := by linarith
+
+/-- **147I**.5: density in the ultranorm uniformity is `UnDense`. -/
+theorem dense_iff {D : Set (UnUnif B)} :
+    Dense D ↔ UnDense (binner B).inner D := by
+  classical
+  constructor
+  · intro hD x n ωs ε hε
+    obtain ⟨d, hdD, hd⟩ :=
+      (mem_closure_iff_nhds_basis ((withSeminorms B).hasBasis_ball)).mp
+        (hD x) (Finset.image ωs Finset.univ, ε) hε
+    refine ⟨d, hdD, fun i => ?_⟩
+    have hd' : ((Finset.image ωs Finset.univ).sup (sem B)) (d - x) < ε := hd
+    have hlt : sem B (ωs i) (d - x) < ε :=
+      lt_of_le_of_lt (Seminorm.le_finset_sup_apply
+        (Finset.mem_image_of_mem ωs (Finset.mem_univ i))) hd'
+    rw [show x - d = -(d - x) by abel, unSeminorm_neg (ωs i) (binner B)]
+    exact le_of_lt hlt
+  · intro hD x
+    refine (mem_closure_iff_nhds_basis ((withSeminorms B).hasBasis_ball)).mpr ?_
+    rintro ⟨s, r⟩ hr
+    simp only at hr
+    obtain ⟨d, hdD, hd⟩ := hD x (Fintype.card s)
+      (fun i => (((Fintype.equivFin s).symm i : {y // y ∈ s}) : NPFunctional 𝒷)) (r / 2)
+      (by positivity)
+    refine ⟨d, hdD, show (s.sup (sem B)) (d - x) < r from ?_⟩
+    refine Seminorm.finset_sup_apply_lt hr fun ω hω => ?_
+    have hi := hd (Fintype.equivFin s ⟨ω, hω⟩)
+    simp only [Equiv.symm_apply_apply] at hi
+    have h2 : unSeminorm ω (binner B).inner (d - x) ≤ r / 2 := by
+      rw [show d - x = -(x - d) by abel, unSeminorm_neg ω (binner B)]; exact hi
+    calc sem B ω (d - x) = unSeminorm ω (binner B).inner (d - x) := rfl
+      _ ≤ r / 2 := h2
+      _ < r := by linarith
+
+/-- A map with a per-np-functional Lipschitz bound for the ultranorm
+seminorms is uniformly continuous. -/
+theorem uniformContinuous_of_bound {V' : Type w} [AddCommGroup V'] [Module ℂ V'] [SMul 𝒷 V']
+    (B' : BInner 𝒷 V') (f : UnUnif B → UnUnif B') (C : ℝ) (hC : 0 ≤ C)
+    (h : ∀ ω : NPFunctional 𝒷, ∃ ω' : NPFunctional 𝒷, ∀ x y : UnUnif B,
+      sem B' ω (f x - f y) ≤ C * sem B ω' (x - y)) :
+    UniformContinuous f := by
+  classical
+  choose ω' hω' using h
+  rw [(hasBasis_uniformity B).uniformContinuous_iff (hasBasis_uniformity B')]
+  rintro ⟨s, r⟩ hr
+  simp only at hr
+  have hC1 : (0 : ℝ) < C + 1 := by linarith
+  refine ⟨(s.image ω', r / (C + 1)), by positivity, fun x y hxy => ?_⟩
+  have hxy' : ((s.image ω').sup (sem B)) (y - x) < r / (C + 1) := hxy
+  refine Seminorm.finset_sup_apply_lt hr fun ω hω => ?_
+  have hb := hω' ω y x
+  have hle : sem B (ω' ω) (y - x) < r / (C + 1) :=
+    lt_of_le_of_lt (Seminorm.le_finset_sup_apply (Finset.mem_image_of_mem ω' hω)) hxy'
+  have hnn : (0 : ℝ) ≤ sem B (ω' ω) (y - x) := apply_nonneg _ _
+  calc sem B' ω (f y - f x) ≤ C * sem B (ω' ω) (y - x) := hb
+    _ ≤ (C + 1) * sem B (ω' ω) (y - x) := by nlinarith
+    _ < (C + 1) * (r / (C + 1)) := mul_lt_mul_of_pos_left hle hC1
+    _ = r := by field_simp
+
+instance : UniformContinuousConstSMul ℂ (UnUnif B) where
+  uniformContinuous_const_smul c := by
+    refine uniformContinuous_of_bound B B _ ‖c‖ (norm_nonneg c) fun ω => ⟨ω, fun x y => ?_⟩
+    rw [show c • x - c • y = c • (x - y) by rw [smul_sub]]
+    exact le_of_eq (map_smul_eq_mul (sem B ω) c (x - y))
+
+end UnUnif
+
+theorem BInner.inner_op_smul_op_smul (B : BInner 𝒷 V) (b b' : 𝒷) (x y : V) :
+    B.inner (b • x) (b' • y) = b' * B.inner x y * star b := by
+  rw [B.inner_op_smul_right, B.inner_op_smul_left, mul_assoc]
+
+theorem BInner.inner_op_smul_smul (B : BInner 𝒷 V) (b : 𝒷) (x y : V) :
+    B.inner (b • x) (b • y) = b * B.inner x y * star b :=
+  B.inner_op_smul_op_smul b b x y
+
+theorem unSeminorm_eq_zero_of_inner (ω : NPFunctional 𝒷) (B : BInner 𝒷 V) {d : V}
+    (h : B.inner d d = 0) : unSeminorm ω B.inner d = 0 := by
+  rw [unSeminorm, h]
+  simp
+
+theorem unSeminorm_op_smul [VonNeumannAlgebra 𝒷] (ω : NPFunctional 𝒷)
+    (B : BInner 𝒷 V) (b : 𝒷) (x : V) :
+    unSeminorm ω B.inner (b • x) = unSeminorm (conjNP (star b) ω) B.inner x := by
+  rw [unSeminorm, unSeminorm, B.inner_op_smul_self, conjNP_apply, star_star]
+
+/-- **150IX**: `x ↦ b·x` transforms the ultranorm seminorms by `ω ↦ b*ω`
+(**72III**.1a), so it is uniformly continuous *even though* the 𝒷-action on
+`V` is not assumed additive. -/
+theorem unSeminorm_op_smul_sub [VonNeumannAlgebra 𝒷] (ω : NPFunctional 𝒷)
+    (B : BInner 𝒷 V) (b : 𝒷) (x y : V) :
+    unSeminorm ω B.inner (b • x - b • y)
+      = unSeminorm (conjNP (star b) ω) B.inner (x - y) := by
+  have key : B.inner (b • x - b • y) (b • x - b • y)
+      = b * B.inner (x - y) (x - y) * star b := by
+    rw [B.inner_sub_left, B.inner_sub_right, B.inner_sub_right,
+      B.inner_op_smul_smul, B.inner_op_smul_smul, B.inner_op_smul_smul,
+      B.inner_op_smul_smul, B.inner_sub_left, B.inner_sub_right, B.inner_sub_right]
+    noncomm_ring
+  rw [unSeminorm, unSeminorm, key, conjNP_apply, star_star]
+
+instance [VonNeumannAlgebra 𝒷] (B : BInner 𝒷 V) :
+    UniformContinuousConstSMul 𝒷 (UnUnif B) where
+  uniformContinuous_const_smul b := by
+    refine UnUnif.uniformContinuous_of_bound B B _ 1 zero_le_one
+      fun ω => ⟨conjNP (star b) ω, fun x y => ?_⟩
+    rw [one_mul]
+    exact le_of_eq (unSeminorm_op_smul_sub ω (UnUnif.binner B) b x y)
+
+end UnUniformity
+
+/-! ### `V̄`: the ultranorm completion
+
+**150V**–**150IX** of the thesis (fast nets, the uniform space `N`, the
+uniformity on `V̄` and its module structure) are replaced by
+`UniformSpace.Completion`; see the note above. -/
+
+section UnCompletion
+
+variable {𝒷 : Type u} {V : Type v}
+  [CStarAlgebra 𝒷] [PartialOrder 𝒷] [StarOrderedRing 𝒷] [VonNeumannAlgebra 𝒷]
+  [AddCommGroup V] [Module ℂ V] [SMul 𝒷 V]
+
+/-- **150VIII**: `V̄`, the (separated) completion of `V` in the ultranorm
+uniformity.  It is an `AddCommGroup`, a `Module ℂ` and carries a 𝒷-action,
+all supplied by Mathlib. -/
+abbrev UnCompl (B : BInner 𝒷 V) : Type v := UniformSpace.Completion (UnUnif B)
+
+variable (B : BInner 𝒷 V)
+
+/-- **150VIII**: `η : V → V̄`. -/
+noncomputable def unEta (v : V) : UnCompl B := ((UnUnif.mk B v : UnUnif B) : UnCompl B)
+
+theorem unEta_def (v : V) : unEta B v = ((UnUnif.mk B v : UnUnif B) : UnCompl B) := rfl
+
+@[simp] theorem unEta_add (x y : V) : unEta B (x + y) = unEta B x + unEta B y :=
+  by rw [unEta_def, unEta_def, unEta_def, UnUnif.mk_add]
+     exact (UniformSpace.Completion.coe_add (UnUnif.mk B x) (UnUnif.mk B y))
+
+@[simp] theorem unEta_sub (x y : V) : unEta B (x - y) = unEta B x - unEta B y :=
+  by rw [unEta_def, unEta_def, unEta_def, UnUnif.mk_sub]
+     exact (UniformSpace.Completion.coe_sub (UnUnif.mk B x) (UnUnif.mk B y))
+
+@[simp] theorem unEta_zero : unEta B (0 : V) = 0 :=
+  (UniformSpace.Completion.coe_zero).symm
+
+@[simp] theorem unEta_smul_complex (c : ℂ) (x : V) :
+    unEta B (c • x) = c • unEta B x :=
+  by rw [unEta_def, unEta_def, UnUnif.mk_smul]
+     exact (UniformSpace.Completion.coe_smul c (UnUnif.mk B x))
+
+@[simp] theorem unEta_op_smul (b : 𝒷) (x : V) : unEta B (b • x) = b • unEta B x :=
+  by rw [unEta_def, unEta_def, UnUnif.mk_op_smul]
+     exact (UniformSpace.Completion.coe_smul b (UnUnif.mk B x))
+
+/-- **150II**.2: the image of `η` is dense in `V̄`. -/
+theorem denseRange_unEta : DenseRange (unEta B) := by
+  have h : Set.range (unEta B) = Set.range ((↑) : UnUnif B → UnCompl B) := by
+    ext z
+    exact ⟨fun ⟨v, hv⟩ => ⟨UnUnif.mk B v, hv⟩,
+      fun ⟨x, hx⟩ => ⟨x, hx⟩⟩
+  rw [DenseRange, h]
+  exact UniformSpace.Completion.denseRange_coe
+
+theorem uniformContinuous_sem (ω : NPFunctional 𝒷) :
+    UniformContinuous (UnUnif.sem B ω) :=
+  Seminorm.uniformContinuous_of_continuousAt_zero
+    ((UnUnif.withSeminorms B).continuous_seminorm ω).continuousAt
+
+/-- **150X**: the ultranorm seminorms extend to `V̄`. -/
+noncomputable def semC (ω : NPFunctional 𝒷) : UnCompl B → ℝ :=
+  UniformSpace.Completion.extension (UnUnif.sem B ω)
+
+theorem continuous_semC (ω : NPFunctional 𝒷) : Continuous (semC B ω) :=
+  UniformSpace.Completion.continuous_extension
+
+@[simp] theorem semC_coe (ω : NPFunctional 𝒷) (x : UnUnif B) :
+    semC B ω (x : UnCompl B) = UnUnif.sem B ω x :=
+  UniformSpace.Completion.extension_coe (uniformContinuous_sem B ω) x
+
+@[simp] theorem semC_unEta (ω : NPFunctional 𝒷) (v : V) :
+    semC B ω (unEta B v) = unSeminorm ω B.inner v :=
+  semC_coe B ω (UnUnif.mk B v)
+
+theorem semC_nonneg (ω : NPFunctional 𝒷) (x : UnCompl B) : 0 ≤ semC B ω x := by
+  refine UniformSpace.Completion.induction_on x
+    (isClosed_le continuous_const (continuous_semC B ω)) fun a => ?_
+  rw [semC_coe]
+  exact apply_nonneg _ _
+
+theorem semC_zero (ω : NPFunctional 𝒷) : semC B ω 0 = 0 := by
+  rw [show (0 : UnCompl B) = ((0 : UnUnif B) : UnCompl B) from
+    (UniformSpace.Completion.coe_zero).symm, semC_coe]
+  exact map_zero _
+
+theorem semC_add_le (ω : NPFunctional 𝒷) (x y : UnCompl B) :
+    semC B ω (x + y) ≤ semC B ω x + semC B ω y := by
+  refine UniformSpace.Completion.induction_on₂ x y
+    (isClosed_le ((continuous_semC B ω).comp continuous_add)
+      (((continuous_semC B ω).comp continuous_fst).add
+        ((continuous_semC B ω).comp continuous_snd))) fun a b => ?_
+  rw [← UniformSpace.Completion.coe_add, semC_coe, semC_coe, semC_coe]
+  exact map_add_le_add _ _ _
+
+theorem semC_smul_complex (ω : NPFunctional 𝒷) (c : ℂ) (x : UnCompl B) :
+    semC B ω (c • x) = ‖c‖ * semC B ω x := by
+  refine UniformSpace.Completion.induction_on x
+    (isClosed_eq ((continuous_semC B ω).comp (continuous_const_smul c))
+      ((continuous_semC B ω).const_smul ‖c‖)) fun a => ?_
+  rw [← UniformSpace.Completion.coe_smul, semC_coe, semC_coe]
+  exact map_smul_eq_mul _ _ _
+
+theorem semC_neg (ω : NPFunctional 𝒷) (x : UnCompl B) :
+    semC B ω (-x) = semC B ω x := by
+  refine UniformSpace.Completion.induction_on x
+    (isClosed_eq ((continuous_semC B ω).comp continuous_neg)
+      (continuous_semC B ω)) fun a => ?_
+  rw [← UniformSpace.Completion.coe_neg, semC_coe, semC_coe]
+  exact map_neg_eq_map _ _
+
+/-- **150IX**/**150X**: the 𝒷-action transforms the extended seminorms by
+`ω ↦ b*ω`. -/
+theorem semC_op_smul (ω : NPFunctional 𝒷) (b : 𝒷) (x : UnCompl B) :
+    semC B ω (b • x) = semC B (conjNP (star b) ω) x := by
+  refine UniformSpace.Completion.induction_on x
+    (isClosed_eq ((continuous_semC B ω).comp (continuous_const_smul b))
+      (continuous_semC B (conjNP (star b) ω))) fun a => ?_
+  rw [← UniformSpace.Completion.coe_smul, semC_coe, semC_coe]
+  exact unSeminorm_op_smul ω (UnUnif.binner B) b a
+
+/-! ### The module axioms on `V̄`
+
+The 𝒷-action on `V` carries **no** axioms — `BInner` constrains only the
+inner product — so `b·(x+y) - b·x - b·y` need not vanish in `V`.  It does
+vanish in *every* ultranorm seminorm, though, because
+`[b·u, b'·v] = b'[u,v]b*` is bilinear in `(b,b')` and in `(u,v)`; since `V̄`
+is the *separated* completion, the axioms therefore hold on `V̄` on the nose.
+This is where the thesis's remark (**150IX**) that `V̄` "is straightforward to
+check" to be a right 𝒷-module is discharged. -/
+
+/-- Elements of `V` that agree in every ultranorm seminorm have the same
+image in `V̄`. -/
+theorem coe_eq_coe_of_inner_zero {x y : UnUnif B}
+    (h : (UnUnif.binner B).inner (x - y) (x - y) = 0) :
+    (x : UnCompl B) = (y : UnCompl B) := by
+  have hins : Inseparable x y := by
+    refine (UnUnif.hasBasis_uniformity B).inseparable_iff_uniformity.mpr ?_
+    rintro ⟨s, r⟩ hr
+    simp only at hr
+    refine Seminorm.finset_sup_apply_lt hr fun ω _ => ?_
+    have h0 : UnUnif.sem B ω (y - x) = 0 := by
+      rw [UnUnif.sem_apply, show y - x = -(x - y) by abel,
+        unSeminorm_neg ω (UnUnif.binner B)]
+      exact unSeminorm_eq_zero_of_inner ω (UnUnif.binner B) h
+    rw [h0]; exact hr
+  exact (hins.map (UniformSpace.Completion.continuous_coe _)).eq
+
+theorem op_smul_add' (b : 𝒷) (x y : UnCompl B) :
+    b • (x + y) = b • x + b • y := by
+  refine UniformSpace.Completion.induction_on₂ x y
+    (isClosed_eq ((continuous_const_smul b).comp continuous_add)
+      (((continuous_const_smul b).comp continuous_fst).add
+        ((continuous_const_smul b).comp continuous_snd))) fun a c => ?_
+  rw [← UniformSpace.Completion.coe_add, ← UniformSpace.Completion.coe_smul,
+    ← UniformSpace.Completion.coe_smul, ← UniformSpace.Completion.coe_smul,
+    ← UniformSpace.Completion.coe_add]
+  refine coe_eq_coe_of_inner_zero B ?_
+  set A := UnUnif.binner B
+  simp only [show (b • (a + c) - (b • a + b • c) : UnUnif B)
+    = b • (a + c) - b • a - b • c by abel]
+  simp only [A.inner_sub_left, A.inner_sub_right, A.inner_add_left,
+    A.inner_add_right, A.inner_op_smul_left, A.inner_op_smul_right]
+  noncomm_ring
+
+theorem add_op_smul' (b b' : 𝒷) (x : UnCompl B) :
+    (b + b') • x = b • x + b' • x := by
+  refine UniformSpace.Completion.induction_on x
+    (isClosed_eq (continuous_const_smul (b + b'))
+      ((continuous_const_smul b).add (continuous_const_smul b'))) fun a => ?_
+  rw [← UniformSpace.Completion.coe_smul, ← UniformSpace.Completion.coe_smul,
+    ← UniformSpace.Completion.coe_smul, ← UniformSpace.Completion.coe_add]
+  refine coe_eq_coe_of_inner_zero B ?_
+  set A := UnUnif.binner B
+  simp only [show ((b + b') • a - (b • a + b' • a) : UnUnif B)
+    = (b + b') • a - b • a - b' • a by abel]
+  simp only [A.inner_sub_left, A.inner_sub_right, A.inner_op_smul_left,
+    A.inner_op_smul_right, star_add]
+  noncomm_ring
+
+theorem mul_op_smul' (b b' : 𝒷) (x : UnCompl B) :
+    (b * b') • x = b • (b' • x) := by
+  refine UniformSpace.Completion.induction_on x
+    (isClosed_eq (continuous_const_smul (b * b'))
+      ((continuous_const_smul b).comp (continuous_const_smul b'))) fun a => ?_
+  rw [← UniformSpace.Completion.coe_smul, ← UniformSpace.Completion.coe_smul,
+    ← UniformSpace.Completion.coe_smul]
+  refine coe_eq_coe_of_inner_zero B ?_
+  set A := UnUnif.binner B
+  simp only [A.inner_sub_left, A.inner_sub_right, A.inner_op_smul_left,
+    A.inner_op_smul_right, star_mul]
+  noncomm_ring
+
+theorem one_op_smul' (x : UnCompl B) : (1 : 𝒷) • x = x := by
+  refine UniformSpace.Completion.induction_on x
+    (isClosed_eq (continuous_const_smul (1 : 𝒷)) continuous_id) fun a => ?_
+  rw [← UniformSpace.Completion.coe_smul]
+  refine coe_eq_coe_of_inner_zero B ?_
+  set A := UnUnif.binner B
+  simp only [A.inner_sub_left, A.inner_sub_right, A.inner_op_smul_left,
+    A.inner_op_smul_right, star_one]
+  noncomm_ring
+
+theorem op_smul_comm_complex' (b : 𝒷) (c : ℂ) (x : UnCompl B) :
+    b • (c • x) = c • (b • x) := by
+  refine UniformSpace.Completion.induction_on x
+    (isClosed_eq ((continuous_const_smul b).comp (continuous_const_smul c))
+      ((continuous_const_smul c).comp (continuous_const_smul b))) fun a => ?_
+  rw [← UniformSpace.Completion.coe_smul, ← UniformSpace.Completion.coe_smul,
+    ← UniformSpace.Completion.coe_smul, ← UniformSpace.Completion.coe_smul]
+  refine coe_eq_coe_of_inner_zero B ?_
+  set A := UnUnif.binner B
+  simp only [A.inner_sub_left, A.inner_sub_right, A.inner_op_smul_left,
+    A.inner_op_smul_right, A.inner_smul_left_complex, A.inner_smul_right_complex]
+  simp only [smul_smul, smul_mul_assoc, mul_smul_comm, mul_assoc]
+  abel
+
+end UnCompletion
 
 /-! ## Parsec 1520: sesquilinear forms and 𝒷ᵃ(X) for self-dual X
 

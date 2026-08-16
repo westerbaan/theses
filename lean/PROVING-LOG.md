@@ -13180,3 +13180,112 @@ bilinear map `𝒜×ℬ→ℂ` and the next line's `ω'(1) = ω(f(1)⊗g(1))` pl
   `npCLM`/`npFunctional_norm_le` likewise went unused here.
 * Everything else checked out: 112X and 112XI really are closed, A/Proc really
   had no external blocker, and the 72/33/17/11/11 counts were exact.
+
+## Session 59 — `B/Dils`: **150II phase 1** — the ultranorm uniformity is Mathlib's, `V̄` is built, and steps 1–3 of the costing are closed (worker on `SelfDualCompletion.lean`)
+
+**Result.** `dils_completion` (**150II**, `SelfDualCompletion.lean:80`) is
+still `sorry` — as planned; this session was phase 1 of a 3–4-session item.
+What landed is **495 lines** of new, axiom-clean, compiling infrastructure in
+`SelfDualCompletion.lean` (inserted after `end Completion`, i.e. after 151Ia,
+under the heading *"Parsec 1500 continued: the ultranorm uniformity and
+`V̄`"*).  Compiler-counted `B/Dils` is **unchanged at 32**: `HilbertModules` 0,
+`Stinespring` 1, `SelfDualCompletion` 1, `Kaplansky` 4, `Paschke` 7,
+`SelfDual` 7, `Pure` 12 (each source run through `lean` individually).
+
+### Divergence from the thesis (case 2: the thesis's proof is fine, we took another route)
+
+**150IV–150X are not transcribed.**  Session 58's finding is confirmed, and
+more strongly than it was stated: the ultranorm uniformity *is* the uniformity
+of the seminorm family `(‖·‖_ω)_ω`, and
+
+```
+theorem UnUnif.withSeminorms (B) : WithSeminorms (UnUnif.sem B) :=
+  (SeminormFamily.withSeminorms_iff_uniformSpace_eq_iInf _).mpr rfl
+```
+
+closes by **`rfl`**.  So the thesis's fast nets (150V), the auxiliary uniform
+space `N` and its completeness (150VI/150VII), the uniformity `ε̃` on `V̄`
+(150VIII) and the module structure (150IX) are all replaced by
+`⨅ ω, (sem B ω).toSeminormedAddCommGroup.toUniformSpace` +
+`UniformSpace.Completion`.  Indefiniteness of `B` is free (separated
+completion), exactly as at **136II**.
+
+### What is in the file now
+
+* `UnUnif B` — `V` carrying the ultranorm uniformity, as a **type synonym**
+  (the uniformity depends on the *term* `B`, so it can only be an instance
+  this way).  Carries `AddCommGroup`, `Module ℂ`, `SMul 𝒷`, `UniformSpace`,
+  `IsUniformAddGroup`, `UniformContinuousConstSMul ℂ` and
+  `UniformContinuousConstSMul 𝒷`.  `UnUnif.binner B : BInner 𝒷 (UnUnif B)` and
+  `UnUnif.mk` mediate with `V`.
+* `unSem` / `UnUnif.sem` — `unSeminorm ω B.inner` bundled as a `Seminorm ℂ V`
+  (needed `unSeminorm_zero`, `unSeminorm_neg`, `unSeminorm_smul_complex` at
+  `BInner` level; only `unSeminorm_add_le` already existed).
+* **The bridge** — `UnUnif.tendsto_iff`, `UnUnif.cauchy_iff`,
+  `UnUnif.dense_iff`, `UnUnif.hasBasis_uniformity`: the tree's hand-rolled
+  `UnTendsto`/`UnCauchy`/`UnDense` (147I) *are* Mathlib's
+  `Tendsto (𝓝 ·)`/`Cauchy`/`Dense` for this uniformity.  This is independently
+  useful to the whole of `B/Dils`.
+* `UnUnif.uniformContinuous_of_bound` — a map with a per-ω Lipschitz bound
+  `‖f x − f y‖_ω ≤ C‖x − y‖_{ω'}` is uniformly continuous.
+* `UnCompl B := UniformSpace.Completion (UnUnif B)` — `V̄`, with `unEta`,
+  `unEta_add/_sub/_zero/_smul_complex/_op_smul` and **`denseRange_unEta`**
+  (150II.2, in `DenseRange` form).
+* `semC B ω` — the extended seminorm (**150X**), with `semC_coe`,
+  `semC_unEta`, `continuous_semC`, `semC_nonneg`, `semC_zero`, `semC_add_le`,
+  `semC_smul_complex`, `semC_neg` and the transformation rule
+  `semC_op_smul : semC B ω (b·x) = semC B (b*ω) x`.
+* The **module axioms on `V̄`**: `op_smul_add'`, `add_op_smul'`,
+  `mul_op_smul'`, `one_op_smul'`, `op_smul_comm_complex'`, all by
+  `Completion.induction_on` + `coe_eq_coe_of_inner_zero`.
+
+### Two findings
+
+**1. Our `BInner`-based 150II is strictly more general than the thesis's, and
+the extra generality is exactly what makes 150IX non-trivial.**  `BInner`
+constrains only the *inner product*; the carrier's 𝒷-action `[SMul 𝒷 V]` has
+**no axioms at all**, so in our `V` it is not even true that
+`b·(x+y) = b·x + b·y`.  It *is* true up to every ultranorm seminorm, because
+`[b₁·u, b₂·v] = b₂[u,v]b₁*` is bilinear in `(b₁,b₂)` and in `(u,v)`
+(the new `BInner.inner_op_smul_op_smul`), so the defect has zero inner
+product; and since `V̄` is the *separated* completion, all five module axioms
+hold on the nose there.  That is how `op_smul_add'` &c. are proved.  The
+thesis's "It is straightforward to check this turns `V̄` into a right
+𝒷-module" (150IX) is therefore true of *its* `V` for a duller reason than of
+ours.  No defect; recorded because a future reader will wonder why
+`op_smul_add` (which `HilbertModules.lean` proves for `CStarModule`s) is not
+simply reused.
+
+**2. Costing item 4 can be avoided.**  Session 58 costed "the norm on `V̄` as
+`⨆_ω ‖·‖_ω` over np *states*, needs `‖b‖ = sup{ω b}` for `0 ≤ b` — check
+A/VN for this first" at 200 lines.  That lemma is not in A/VN and is not
+needed: "norm-bounded by `M`" on a compatible extension `W` is
+`‖x‖²_W = ‖[x,x]‖ ≤ M²`, i.e. `[x,x] ≤ M²·1`, i.e. — by
+**`np_orderSeparating`** (`A/VN/Basic.lean:2260`, proved) —
+`∀ ω, ω[x,x] ≤ M² ω(1)`, i.e. `∀ ω, (semC B ω x)² ≤ M² (ω 1).re`, which is
+stated purely in the *extended* seminorms and needs no inner product and no
+supremum.  Define `σ`'s norm bound that way.  Re-costed at ~80 lines.
+
+**3. A tenth item the costing missed (universes).**  `dils_completion` asks
+for `Nonempty (SelfDualCompletion.{u, v, max u v} B)`, i.e. `X : Type (max u v)`,
+while `UniformSpace.Completion (UnUnif B) : Type v`.  The fix is to run the
+whole construction on `ULift.{u} V` with `B` transported along the equiv
+(`BInner` transport is ~30 lines); cheap, but it must be planned for rather
+than discovered at the end.
+
+**On `[CompleteSpace X]`** (session 58's ⚠): re-derived and it is **not** a
+transcription defect.  `HilbertModules.lean`'s own gloss on **141II** defines
+a *Hilbert* 𝒷-module as a norm-complete pre-Hilbert one, and 150II asks for a
+self-dual Hilbert module, so the field is faithful.  It remains a separate
+~100-line obligation that **149V** does not supply, by session 58's route
+(norm-Cauchy ⇒ ultranorm-Cauchy and norm-bounded ⇒ ultranorm limit; the norm
+estimate from ultraweak lower semicontinuity via **148V**).
+
+### Things the brief got wrong
+
+* Nothing substantive.  The three settled points (Mathlib's completion
+  applies; `kaplansky_hilbmod_of_selfDual` does not collapse the iteration;
+  149V is a TFAE so only `BddUnComplete` is needed) all held on inspection,
+  and the sorry counts were exact.  The one refinement is that
+  `[CompleteSpace X]` is *not* "something our structure asks that the thesis
+  does not" — see above.

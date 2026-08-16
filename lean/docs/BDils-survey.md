@@ -55,6 +55,12 @@ At the end of **session 58** (138VIII-findim; 150II costed, not closed):
 `HilbertModules.lean` 0 — **32**, compiler-counted per file (each source run
 through `lean` individually).
 
+At the end of **session 59** (150II phase 1: the ultranorm uniformity and
+`V̄`; no `sorry` closed by design): `SelfDual.lean` 7, `Pure.lean` 12,
+`Paschke.lean` 7, `Kaplansky.lean` 4, `Stinespring.lean` 1,
+`SelfDualCompletion.lean` 1, `HilbertModules.lean` 0 — **32**,
+compiler-counted per file (each source run through `lean` individually).
+
 Classification key: **(a)** self-contained, **(b)** blocked on a named
 `sorry` elsewhere, **(c)** cited to the literature / another chapter,
 **(d)** suspicious/false.
@@ -368,7 +374,8 @@ PROVING-LOG session 58:
    and which no lemma in the tree provides — an extra ~100-line item that the
    session-54/55 costing omitted.
 
-Total costing: **≈ 2100–2600 lines, 3–4 sessions**, of which steps 1–4
+**Superseded by session 59 — see the updated table below.**  Total costing:
+**≈ 2100–2600 lines, 3–4 sessions**, of which steps 1–4
 (seminorm family → `UniformSpace` → `Completion` → extended seminorms and
 norm, ~900 lines) form a self-contained first session that leaves the file
 compiling and are independently useful to the whole directory.  Step 5 (the
@@ -391,3 +398,42 @@ downstream of it, known-false, or blocked outside `B/Dils`:
 So three of the seven files are done, and the directory's whole remaining
 mass — `Pure` 12, `SelfDual` 7, `Paschke` 7 — sits behind 150II, proc.tex's
 96V/98I, `tensor_characterization`, and the false 169XI.2a / 164II.2b.
+
+---
+
+## Session 59: 150II phase 1 is built — the nine-item table, marked off and re-costed
+
+Nothing was closed (by design), and `B/Dils` stays at **32**.  What landed is
+**495 lines** in `SelfDualCompletion.lean`, after `end Completion`, under
+*"Parsec 1500 continued: the ultranorm uniformity and `V̄`"* — all compiling
+and axiom-clean (`propext, Classical.choice, Quot.sound`).  See PROVING-LOG
+session 59 for the two divergences and the three findings.
+
+**Confirmed, and more sharply than session 58 put it:** the ultranorm
+uniformity *is* the seminorm-family uniformity, and
+`UnUnif.withSeminorms : WithSeminorms (UnUnif.sem B)` closes by **`rfl`**.
+**150IV–150X are not transcribed at all.**
+
+| # | piece | costed (s58) | status after s59 | remaining |
+|---|---|---|---|---|
+| 1 | seminorm family → `UniformSpace`, + `UnTendsto`/`UnCauchy`/`UnDense` bridge | 250 | **DONE** (~200 lines): `unSem`, `UnUnif`, `instUniformSpace`, `withSeminorms`, `hasBasis_uniformity`, `tendsto_iff`, `cauchy_iff`, `dense_iff`, `uniformContinuous_of_bound` | 0 |
+| 2 | `V̄`, its `AddCommGroup` / `Module ℂ` / `SMul 𝒷` and the module axioms | 200 | **DONE** (~150 lines): `UnCompl`, `unEta` + its five algebra lemmas, `coe_eq_coe_of_inner_zero`, `op_smul_add'`, `add_op_smul'`, `mul_op_smul'`, `one_op_smul'`, `op_smul_comm_complex'` | 0 |
+| 3 | extended seminorms on `V̄`, their laws and transformation rules | 250 | **MOSTLY DONE** (~130 lines): `semC`, `semC_coe`, `semC_unEta`, `continuous_semC`, `semC_nonneg/_zero/_add_le/_smul_complex/_neg/_op_smul` | separation (`∀ω, semC B ω x = 0 → x = 0`) and the reverse triangle inequality — ~60 |
+| 4 | the "norm" on `V̄` | 200 | **RE-COSTED to ~80 and reshaped** — no `⨆` over np states and no new A/VN lemma: use `∀ ω, (semC B ω x)² ≤ M²(ω 1).re` and `np_orderSeparating` | ~80 |
+| 5 | **the heart**: σ-closure as an inductive predicate over `Φ`, the inner product on it by `∃!`-induction, the `BInner` axioms | 600–900 | untouched | 600–900 |
+| 6 | the carrier `X` as a subtype + `NormedAddCommGroup`/`NormedSpace ℂ`/`SMul 𝒷`/`CStarModule` | 250 | untouched | 250 |
+| 7 | `BddUnComplete 𝒷 X`, then `SelfDual` + `UnComplete` from **149V** | 150 | untouched | 150 |
+| 8 | `CompleteSpace X` (**not** supplied by 149V; *not* a transcription defect — 141II defines "Hilbert module" as norm-complete) | 100 | untouched | 100 |
+| 9 | `η`, `η_inner`, ultranorm density of its range | 150 | **PART DONE**: `unEta` and `denseRange_unEta` are in; `η_inner` and `DenseRange → UnDense` need the inner product from step 5 | ~40 |
+| **10** | **new**: universes.  `dils_completion` wants `X : Type (max u v)`, `Completion (UnUnif B) : Type v` — run the construction on `ULift.{u} V` with `B` transported | — | new | ~50 |
+
+**Remaining ≈ 1300–1700 lines, 2–3 sessions.**  Step 5 is still the only
+genuinely new mathematics and is the whole of the next session; steps 3-tail,
+4, 9 and 10 are small and can be swept up alongside it.  Note step 5 must be
+run against the *extended seminorms* `semC`, not against an inner product:
+that is what makes item 4's reshaping (above) load-bearing.
+
+**Carry-forward warning for step 5.**  In our setting `[SMul 𝒷 V]` carries
+**no axioms** (`BInner` constrains only the inner product), so nothing may be
+assumed about `b·(x+y)` in `V`; use `coe_eq_coe_of_inner_zero` and work in
+`V̄`, where `op_smul_add'` &c. are now available.
