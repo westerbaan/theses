@@ -1088,15 +1088,122 @@ dilation `(𝒫, ϱ, h)` and `t` in the commutant of `ϱ(𝒜)`, the map
 noncomputable def phiT (D : PaschkeTriple 𝒜 ℬ) (t : D.P) : 𝒜 → ℬ :=
   fun a => D.h (t * D.ρ a)
 
+/-! ### Auxiliary: ncp-maps compose
+
+`Theses/B/Dils/Stinespring.lean` and `Theses/B/Dils/Pure.lean` carry the same
+two constructions, both as `private` declarations, so they are repeated here
+rather than exported (a merge is noted in those files' headers). -/
+
+/-- An ncp-map, as a positive linear map. -/
+private noncomputable def corrPos {P Q : Type u} [CStarAlgebra P] [PartialOrder P]
+    [StarOrderedRing P] [CStarAlgebra Q] [PartialOrder Q] [StarOrderedRing Q]
+    (f : NCPMap P Q) : P →ₚ[ℂ] Q where
+  toLinearMap := f.toCompletelyPositiveMap.toLinearMap
+  monotone' := fun x y hxy => by
+    have hcp : IsCompletelyPositiveMap f.toCompletelyPositiveMap.toLinearMap :=
+      (cp_iff _).out 1 0 |>.mp fun N M hM =>
+        f.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM
+    have h := astara_pos_basic_2_cp _ hcp (y - x) (sub_nonneg.mpr hxy)
+    rw [map_sub] at h
+    exact sub_nonneg.mp h
+
+/-- The composition of two ncp-maps is an ncp-map. -/
+private theorem exists_corrComp {P Q R : Type u} [CStarAlgebra P] [PartialOrder P]
+    [StarOrderedRing P] [CStarAlgebra Q] [PartialOrder Q] [StarOrderedRing Q]
+    [CStarAlgebra R] [PartialOrder R] [StarOrderedRing R]
+    (f : NCPMap Q R) (g : NCPMap P Q) :
+    ∃ k : NCPMap P R, ∀ a, k a = f (g a) := by
+  have hLgcp : IsCompletelyPositiveMap g.toCompletelyPositiveMap.toLinearMap :=
+    (cp_iff _).out 1 0 |>.mp fun N M hM =>
+      g.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM
+  have hLfcp : IsCompletelyPositiveMap f.toCompletelyPositiveMap.toLinearMap :=
+    (cp_iff _).out 1 0 |>.mp fun N M hM =>
+      f.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM
+  exact ⟨{ toCompletelyPositiveMap :=
+             { toLinearMap := f.toCompletelyPositiveMap.toLinearMap.comp
+                 g.toCompletelyPositiveMap.toLinearMap
+               map_cstarMatrix_nonneg' :=
+                 (cp_iff _).out 0 1 |>.mp (cp_comp _ _ hLgcp hLfcp) }
+           preservesDirSups' :=
+             preservesDirSups_pmap_comp (corrPos g) g.preservesDirSups'
+               (corrPos f) f.preservesDirSups' },
+    fun _ => rfl⟩
+
 /-- **157IV** (`paschke-correspondence`, dils.tex:3950, Theorem), part 1:
 for `t` in `[0,1]` of the commutant of `ϱ(𝒜)`, the map `φ_t` lies in
-`[0, φ]_ncp`. -/
+`[0, φ]_ncp`.
+
+The thesis's argument (157V) is transcribed: `√t` again commutes with
+`ϱ(𝒜)`, so `φ_t(a) = h(√t ϱ(a) √t)` is the composite of the three ncp-maps
+`ϱ`, `ad_{√t}` and `h`; and `φ − φ_t = φ_{1−t}` is ncp by the same argument
+applied to `1 − t`. -/
 theorem paschke_correspondence_mem [VonNeumannAlgebra 𝒜]
     [VonNeumannAlgebra ℬ] (φ : NCPMap 𝒜 ℬ) (D : PaschkeTriple 𝒜 ℬ)
     (hD : IsPaschkeDilationOf D ⇑φ) (t : D.P)
     (ht : t ∈ commutant D.P (Set.range ⇑D.ρ)) (h0 : 0 ≤ t) (h1 : t ≤ 1) :
-    phiT D t ∈ ncpInterval ⇑φ :=
-  sorry
+    phiT D t ∈ ncpInterval ⇑φ := by
+  have : VonNeumannAlgebra D.P := D.vn
+  -- `ϱ` as an ncp-map: a ∗-homomorphism is completely positive (**34IV**.3)
+  obtain ⟨ρN, hρN⟩ : ∃ ρN : NCPMap 𝒜 D.P, ∀ a, ρN a = D.ρ a := by
+    refine ⟨{ toCompletelyPositiveMap :=
+                { toLinearMap := (D.ρ.toStarAlgHom : 𝒜 →ₐ[ℂ] D.P).toLinearMap
+                  map_cstarMatrix_nonneg' := by
+                    refine (cp_iff _).out 0 1 |>.mp (cp_of_mi _ ?_ ?_)
+                    · intro x y; exact map_mul D.ρ.toStarAlgHom x y
+                    · intro x; exact map_star D.ρ.toStarAlgHom x }
+              preservesDirSups' := D.ρ.preservesDirSups' }, fun _ => rfl⟩
+  have htc : ∀ a : 𝒜, t * D.ρ a = D.ρ a * t := fun a => (ht _ ⟨a, rfl⟩).symm
+  -- the key step: `a ↦ h(s·ϱ(a)) = h(√s ϱ(a) √s)` is ncp
+  have key : ∀ s : D.P, 0 ≤ s → (∀ a : 𝒜, s * D.ρ a = D.ρ a * s) →
+      ∃ δ : NCPMap 𝒜 ℬ, ∀ a : 𝒜, δ a = D.h (s * D.ρ a) := by
+    intro s hs0 hsc
+    have hrnn : (0 : D.P) ≤ CFC.sqrt s := CFC.sqrt_nonneg s
+    have hrsa : IsSelfAdjoint (CFC.sqrt s) := IsSelfAdjoint.of_nonneg hrnn
+    have hr2 : CFC.sqrt s * CFC.sqrt s = s := CFC.sqrt_mul_sqrt_self s hs0
+    have hrc : ∀ a : 𝒜, CFC.sqrt s * D.ρ a = D.ρ a * CFC.sqrt s := fun a =>
+      (Commute.cfcₙ_nnreal (hsc a) NNReal.sqrt : Commute (CFC.sqrt s) (D.ρ a))
+    -- `ad_{√s}` as an ncp-map: **34V**.1 for `cp`, **44VIII** for normality
+    obtain ⟨adN, hadN⟩ : ∃ k : NCPMap D.P D.P,
+        ∀ x, k x = star (CFC.sqrt s) * x * CFC.sqrt s := by
+      refine ⟨{ toCompletelyPositiveMap :=
+                  { toLinearMap :=
+                      { toFun := fun x => star (CFC.sqrt s) * x * CFC.sqrt s
+                        map_add' := fun x y => by noncomm_ring
+                        map_smul' := fun c x => by simp }
+                    map_cstarMatrix_nonneg' := ?_ }
+                preservesDirSups' := ?_ }, fun _ => rfl⟩
+      · refine (cp_iff _).out 0 1 |>.mp ?_
+        intro n c b
+        have h := ad_cp_1 (CFC.sqrt s) n c b
+        simpa [mul_assoc] using h
+      · intro Dset s' hne hdir hlub
+        have hb : BddAbove Dset := ⟨s', hlub.1⟩
+        have hsd : dirSup Dset ⟨hne, hdir, hb⟩ = s' :=
+          (isLUB_dirSup Dset ⟨hne, hdir, hb⟩).unique hlub
+        have h := ad_normal (CFC.sqrt s) Dset ⟨hne, hdir, hb⟩
+        rw [hsd] at h
+        exact h
+    obtain ⟨k, hk⟩ := exists_corrComp D.h adN
+    obtain ⟨δ, hδ⟩ := exists_corrComp k ρN
+    refine ⟨δ, fun a => ?_⟩
+    rw [hδ, hk, hadN, hρN, hrsa.star_eq]
+    congr 1
+    calc CFC.sqrt s * D.ρ a * CFC.sqrt s
+        = CFC.sqrt s * (D.ρ a * CFC.sqrt s) := by rw [mul_assoc]
+      _ = CFC.sqrt s * (CFC.sqrt s * D.ρ a) := by rw [← hrc]
+      _ = s * D.ρ a := by rw [← mul_assoc, hr2]
+  obtain ⟨δ₁, hδ₁⟩ := key t h0 htc
+  obtain ⟨δ₂, hδ₂⟩ := key (1 - t) (sub_nonneg.mpr h1)
+    (fun a => by rw [sub_mul, mul_sub, one_mul, mul_one, htc a])
+  refine ⟨⟨δ₁, fun a => ?_⟩, ⟨δ₂, fun a => ?_⟩⟩
+  · rw [zero_add]
+    exact (hδ₁ a).symm
+  · rw [hδ₂]
+    have hadd : (D.h (t * D.ρ a + (1 - t) * D.ρ a) : ℬ)
+        = D.h (t * D.ρ a) + D.h ((1 - t) * D.ρ a) :=
+      map_add D.h.toCompletelyPositiveMap.toLinearMap _ _
+    rw [show t * D.ρ a + (1 - t) * D.ρ a = D.ρ a by noncomm_ring] at hadd
+    rw [show (phiT D t a : ℬ) = D.h (t * D.ρ a) from rfl, ← hadd, hD.1 a]
 
 /-- **157IV** (`paschke-correspondence`, dils.tex:3950, Theorem), part 2:
 `t ↦ φ_t` is an order embedding of `[0,1]_{ϱ(𝒜)'}` into `[0,φ]_ncp`: for

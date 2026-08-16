@@ -1,4 +1,4 @@
-# `B/Dils` survey — `SelfDual.lean` and `Pure.lean` (sessions 48–50)
+# `B/Dils` survey — `SelfDual.lean` and `Pure.lean` (sessions 48–53)
 
 Counts verified by `grep -cE '(^|[^`])\bsorry\b'` **and** by the compiler's
 `declaration uses 'sorry'` warnings (they agree).
@@ -30,6 +30,11 @@ At the end of **session 52** (the `ExtTensor` witness): unchanged at
 `Kaplansky.lean` 5, `Stinespring.lean` 2, `SelfDualCompletion.lean` 2,
 `HilbertModules.lean` 0, compiler-counted per file.  The session's output
 is a new `def`, not a closed `sorry`.
+
+At the end of **session 53** (D5 implemented; 170IV.1 and 157IV.1):
+`SelfDual.lean` 9, `Pure.lean` **12**, `Paschke.lean` **7**,
+`Kaplansky.lean` 5, `Stinespring.lean` 2, `SelfDualCompletion.lean` 2,
+`HilbertModules.lean` 0 — **37**, compiler-counted per file.
 
 Classification key: **(a)** self-contained, **(b)** blocked on a named
 `sorry` elsewhere, **(c)** cited to the literature / another chapter,
@@ -63,22 +68,40 @@ Classification key: **(a)** self-contained, **(b)** blocked on a named
 | 167I | `paschke_tensor` | **(b)** | needs 165VI + `existence_paschke` |
 | 167I furth. | `paschke_tensor_module` | **(b)** | needs 167I |
 
-**Bottom line for `B/Dils` after session 52.**  The non-vacuity question is
+**Bottom line for `B/Dils` after session 53.**  The non-vacuity question is
 settled and no field is defective, so nothing that was proved has to be
-revisited.  What is left in the directory is now dominated by **three
-construction-sized roots**, none session-sized: **151I** `dils_completion`
-(the self-dual completion, `SelfDualCompletion.lean:81`), on which both
-`existence_paschke` and the general `univprop_ext_tensor` depend;
-**90II**.2 in `A/VN`, on which 159IX and hence 164II.2b depend; and **158II**
-`kaplansky_hilbmod`, open with a dead printed proof (QUESTIONS B10).  The
-**next gate is 151I `dils_completion`** — it is the only one of the three
-inside `B/Dils` and it unblocks the two largest remaining items at once.
-A smaller, genuinely reachable target is **157IV.1**
-`paschke_correspondence_mem` (`Paschke.lean:1099`): the thesis's argument is
-"`√T ∈ ϱ(𝒜)^□`, so `φ_T(a) = h(√T ϱ(a) √T)` is ncp", and the pieces exist
-(`ad_normal`/44VIII in `A/VN`, complete positivity of conjugation), but
-conjugation as a bundled `NCPMap` on a von Neumann algebra has to be built
-locally — `A/Proc`'s `adNCP` is off the import path (QUESTIONS **D3**).
+revisited.  What is left in the directory is dominated by **three
+construction-sized roots**, none session-sized: **150II** `dils_completion`
+(the self-dual completion, `SelfDualCompletion.lean:81` — sessions 52 and
+the brief for 53 both called this "151I", which is wrong: 151Ia is
+`selfdual_completion_univ`, the *universal property*, on the next screen),
+on which both **154III** `existence_paschke` and the general
+`univprop_ext_tensor` depend; **90II**.2 in `A/VN`, on which 159IX and hence
+164II.2b depend; and **158II** `kaplansky_hilbmod`, open with a dead printed
+proof (QUESTIONS B10).  150II is the only one of the three inside `B/Dils`,
+but it is a *type-construction* — a completion carrying `NormedAddCommGroup`,
+`CStarModule`, `CompleteSpace` and self-duality, built in the thesis
+(150III–150XV) from fast nets and a transfinite induction on compatible
+extensions.  It is not a session-sized item and was not attempted.
+
+The **next gate is therefore `existence_paschke`** (**154III**,
+`Paschke.lean:425`), which sits between 150II and everything else: 157IV.2
+and 157IV.3, 171II `paschke_corner`, and — through 171II — most of
+`Pure.lean`.
+
+~~A smaller, genuinely reachable target is **157IV.1**~~ — **CLOSED session
+53** (`Paschke.lean`).  The costing was right: the thesis's 157VI argument
+("`√T ∈ ϱ(𝒜)^□`, so `φ_T(a) = h(√T ϱ(a) √T)` is ncp") transcribes directly,
+and conjugation as a bundled `NCPMap` had to be built locally, from
+`ad_cp_1`/**34V**.1 and `ad_normal`/**44VIII**, together with a local copy of
+the ncp-composition helper (`Stinespring.lean` and `Pure.lean` both have one,
+both `private`).  ⚠️ Note the *thesis* proves 157IV only for the concrete
+dilation `𝒜 ⊗_φ ℬ` and transfers to an arbitrary one at 157IX through
+`paschke-unique-up-to-iso`; **part 1 needs none of that** — the Set-up
+argument is model-independent, and our proof uses only `hD.1` (`φ = h ∘ ϱ`).
+Parts 2 (⇒) and 3 are *not* model-independent: 157VII/157VIII compute inside
+`𝒜 ⊗_φ ℬ` with `hilmod-fixed-on-V`, so both stay blocked on
+`existence_paschke`.
 
 **Bottom line for `SelfDual.lean` after session 51.**  The 1600 and 1610
 parsecs are closed except 162II/162IV/163II-uniq, and the 1640 parsec is
@@ -155,44 +178,56 @@ module; and the **public** `paschke_tprod_dense`.
 | **169XI.2b** | `dils_filter_basics_2b` | **(a)** | **CLOSED this session**, from 169XI.1.  Note it does **not** depend on 2a, and so is not affected by B11 |
 | 170II.1 | `dils_examples_pure_1` | **(b)** | `ad_T` classification of pure maps `B(H) → B(K)`; needs 171VII and the Stinespring block |
 | 170II.2 | `dils_examples_pure_2` | **(b)** | the thesis derives it from 169V + 169XI.2; 169V is `sorry` and 169XI.2**a** is the false half |
-| 170IV.1 | `surjective_nmiu_1` | **(d)** | **Reclassified session 52.**  Our statement omits the thesis's "between von Neumann algebras" (dils.tex:6223); `section Pure` binds only `[CStarAlgebra A]`.  So the 69IV route below — and the author's own 69II route — is unavailable, both needing `[VonNeumannAlgebra A]`.  QUESTIONS **D5** |
-| 170IV.2 | `surjective_nmiu_2` | **(b)/(d)** | converse; needs 169IV (the standard corner `h_z`), *and* has the same missing von Neumann hypothesis — QUESTIONS **D5** |
+| **170IV.1** | `surjective_nmiu_1` | **(a)** | **CLOSED session 53**, once D5 was ruled on and `[VonNeumannAlgebra A] [VonNeumannAlgebra B]` restored (the fix really was local to the two signatures).  ~150 lines by the costing below, and the estimate held |
+| 170IV.2 | `surjective_nmiu_2` | **(b)** | converse; the von Neumann binders are restored (D5 done), but it still needs **169IV** — the standard corner `h_z` — *and* the thesis's `iso` (an ncp-isomorphism of von Neumann algebras is nmiu), which the tree does not have either |
 | 171II | `paschke_corner` | **(b)** | three-step proof through `existence_paschke` |
 | 171VII | `paschke_pure` | **(b)** | needs 171II |
 | 172III | `ncp_extreme_paschke` | **(b)** | needs `paschke_correspondence_*` (three `sorry`s in `Paschke.lean`) and 170II.2 |
 | 172X | `pure_ncp_extreme` | **(b)** | needs 172III + 171II + 169XI |
 | 172XII | `ncp_extreme_comp` | **(b)** | the thesis gives **no proof at all** (a Corollary with no proof point); the intended one is φ = h ∘ ϱ from `existence_paschke`, ϱ ncp-extreme by 172VIII (proved) and h ncp-extreme by 172X |
 
-**Bottom line for `Pure.lean`.**  This file is *not* volume: 13 of its 15
-were blocked, essentially all on three roots — `existence_paschke`
+**Bottom line for `Pure.lean` after session 53.**  This file is *not* volume:
+12 of its 15 are blocked, essentially all on three roots — `existence_paschke`
 (`Paschke.lean`), 169IV `standard_corner_dils`, and 169X `dils_stand_filter`.
-The two genuinely reachable items were 169XI.1 and 169XI.2b, and both are now
-closed.  **A worker sent at `Pure.lean` for volume will find nothing**; the
-return is in `Paschke.lean`'s `existence_paschke` and in re-deriving proc.tex
-96V/98I locally (or putting `A/Proc` on the import path — QUESTIONS **D3**).
+The genuinely reachable items were 169XI.1, 169XI.2b and (after D5) 170IV.1,
+and all three are now closed.  **A worker sent at `Pure.lean` for volume will
+find nothing**; the return is in `Paschke.lean`'s `existence_paschke` and in
+re-deriving proc.tex 96V/98I locally (or putting `A/Proc` on the import path
+— QUESTIONS **D3**).
 
-### ~~New lead: 170IV.1 `surjective_nmiu_1` is now unblocked~~ — WITHDRAWN (session 52)
+### 170IV.1 `surjective_nmiu_1` — CLOSED session 53
 
-**The lead below is dead as our statement stands.**  `surjective_nmiu_1`
-carries no `[VonNeumannAlgebra A]`, and `carrier_miu` (69IV) — like 69II —
-needs it.  See QUESTIONS **D5**; if the hypothesis is restored, the costing
-below applies unchanged.
+D5 was ruled on ("fix transcription"), `[VonNeumannAlgebra A]
+[VonNeumannAlgebra B]` were added to both halves of 170IV, and the change
+really was local to the two signatures: nothing consumes them, and the only
+other edit was the doc comments.
 
-### The (withdrawn) lead, kept for after D5 is ruled on
+The route costed in session 52 is the one that worked, and the ~200-line
+estimate was right (~150 lines).  For the record, since it is reusable:
 
-The author's solution routes the kernel of a surjective nmiu-map through
-`kernel-ultraweak-twosided-ideal-dils` and **69II**
-`prop:weakly-closed-ideal` — and 69II is still `sorry`
-(`A/VN/Projections.lean:4384`).  But **69IV `carrier_miu` is proved**
-(`A/VN/Projections.lean:4399`) and delivers exactly what is needed without
-69II: for an nmiu-map `f`, the carrier `z := ⌈f⌉` is **central**, and
-`f a = 0 ↔ z·a = 0`.  So the central projection with `ker ϱ = (1−z)A` is
-available directly.
+* The author's solution routes `ker ϱ` through
+  `kernel-ultraweak-twosided-ideal-dils` and **69II**
+  `prop:weakly-closed-ideal`, which is still `sorry`
+  (`A/VN/Projections.lean:4504`).  **69IV `carrier_miu` is proved** and
+  delivers what is needed without 69II: for an nmiu-map `f`, `z := ⌈f⌉` is
+  **central** and `f a = 0 ↔ z·a = 0` (we use it in the equivalent
+  `nmiu_factors` form, `f a = f b ↔ z·a = z·b`).  **Divergence from the
+  thesis, logged**: the author's 69II route is not taken.
+* The section `σ : B → A` of `ϱ` (the inverse of `ϱ' : zA → B`, which the
+  solution builds as a subtype) is built here as a *function* `B → A`,
+  `σ(ϱ a) = z·a`, well defined by 69IV.  This avoids the corner algebra
+  entirely: `σ` is a non-unital ∗-homomorphism, so **34IV**.3 `cp_of_mi`
+  gives complete positivity for free, and no "bijective miu-map has an miu
+  inverse" argument is needed.
+* Normality of `σ` is the one step the solution does not mention (it says
+  only "consequently it is an nmiu-isomorphism").  It is four lines of
+  algebra: if `u` bounds `σ(D)` then `(1−z)u = (1−z)(u − σd₀)(1−z) ≥ 0`, so
+  `σ(⋁D) ≤ σ(ϱ u) = zu ≤ u`.  The same computation reappears below.
+* `f(z·x) = f(x)` for ncp `f` with `f(z) = f(1)` is Kadison–Schwarz, but
+  **34XIV** `cp_cs` with `a := x`, `b := 1−z` is sharper than the session-52
+  costing suggested: it gives `f(x*(1−z))·f((1−z)x) ≤ ‖f(1−z)‖·f(x*x) = 0`
+  directly, so no `ww* ≤ ‖x‖²(1−z)` norm estimate is needed at all.
 
-What remains is real but routine: for `f : A → C` ncp with `f(z) = f(1)`,
-show `f((1−z)x) = 0` — Kadison–Schwarz (`ncp_cp_cs`, proved) gives
-`f(w)f(w)* ≤ ‖f 1‖·f(ww*)` with `w = (1−z)x = x(1−z)` by centrality, and
-`ww* = (1−z)xx*(1−z) ≤ ‖x‖²(1−z)`, whose image is `0` — and then build the
-factorisation `f'` as an `NCPMap` on `B` along the bijection `A/ker ϱ ≅ B`.
-Estimated 200–250 lines, most of it the `NCPMap` bundle.  Note 170IV.**2**
-stays blocked on 169IV regardless.
+Note 170IV.**2** stays blocked, and on *two* things, not one: 169IV, and the
+thesis's `iso` (a bijective ncp-map of von Neumann algebras is nmiu), which
+the tree does not have.

@@ -3293,19 +3293,19 @@ theorem continuous_ultrastrong_conjFunctional (ω : NPFunctional A) (k : A) :
 
 /-- **90II** (`vn-center-separating-fundamental`, vn.tex:7206,
 Proposition), part 1: for a centre separating collection `Ω` of
-np-functionals and an ultrastrongly dense subset `S` of a von Neumann
-algebra, the collection `Ω' = {ω(s*(·)s) : ω ∈ Ω, s ∈ S}` is order
+np-functionals (cstar.tex **21II**.4, `CentreSeparatingConj`) and an
+ultrastrongly dense subset `S` of a von Neumann algebra, the collection `Ω' = {ω(s*(·)s) : ω ∈ Ω, s ∈ S}` is order
 separating. -/
 theorem vn_center_separating_fundamental_1 (Ω : Set (NPFunctional A))
-    (hΩ : CentreSeparating A Ω) (S : Set A)
+    (hΩ : CentreSeparatingConj A Ω) (S : Set A)
     (hS : @Dense A (ultrastrong A) S) (a b : A) (ha : IsSelfAdjoint a)
     (hb : IsSelfAdjoint b)
     (h : ∀ ω ∈ Ω, ∀ s ∈ S, ω (star s * a * s) ≤ ω (star s * b * s)) :
     a ≤ b := by
   -- The thesis's argument, in the shape our statement asks for: `Ξ = {ω(c*(·)c)
   -- : ω ∈ Ω, c ∈ A}` is order separating by **30X** (that is
-  -- `nonneg_of_conjNP_of_centreSeparating`, which also supplies the bridge from
-  -- our `CentreSeparating` to the C*-notion **21II**.4 that **30X** wants), and
+  -- `nonneg_of_conjNP_of_centreSeparating`, fed the C*-notion **21II**.4
+  -- that **30X** wants, which is our hypothesis verbatim), and
   -- `Ω' ⊆ Ξ` is norm dense by **72III**.1c — rendered here as ultrastrong
   -- *continuity* of `x ↦ ω(x* k x)`, which is the same estimate.
   rw [← sub_nonneg]
@@ -3328,19 +3328,484 @@ theorem vn_center_separating_fundamental_1 (Ω : Set (NPFunctional A))
     @Dense.closure_eq A (ultrastrong A) S hS
   exact hsub (by rw [huniv]; trivial)
 
+/-! ### The direct-sum GNS representation `ϱ_Ω` over a *set* of functionals
+
+**90II**.2 runs through `ϱ_Ω : 𝒜 → 𝔅(ℋ_Ω)`, `ℋ_Ω = ⊕_{ω∈Ω} ℋ_ω`, for the
+given collection `Ω` — whereas `A/VN/Basic.lean` builds `⊕_ω ℋ_ω` over *all*
+np-functionals (`gnsHilb`, **48VIII**).  The block below is that construction
+with the index set cut down to `Ω`; it is a near-verbatim copy of the
+`GNSSum` section of `Basic.lean`, kept here rather than obtained by
+generalising the original because `Basic.lean` sits at the root of the import
+graph.  Whoever next touches `Basic.lean` should generalise `gnsHilb` over an
+index family and delete this copy.
+
+The one genuinely new item is `gnsRepOn_injective`: `ϱ_Ω(a) = 0` says
+`ω(b* a*a b) = ‖ϱ_Ω(a) η_ω(b)‖² = 0` for all `ω ∈ Ω` and `b`, so `a*a = 0`
+exactly when `Ω` is centre separating in the sense of cstar.tex **21II**.4.
+(The thesis gets this from **30X** and **69VII** instead.) -/
+
+section GNSSumOn
+
+variable (A) in
+/-- `ℋ_Ω = ⊕_{ω∈Ω} ℋ_ω`. -/
+abbrev gnsHilbOn (Ω : Set (NPFunctional A)) : Type u :=
+  lp (fun ω : Ω => (ω : NPFunctional A).toPositiveLinearMap.GNS) 2
+
+variable {Ω : Set (NPFunctional A)}
+
+private theorem rpow_two_toReal' (x : ℝ) : x ^ (2 : ℝ≥0∞).toReal = x ^ 2 := by
+  rw [show (2 : ℝ≥0∞).toReal = ((2 : ℕ) : ℝ) by norm_num, Real.rpow_natCast]
+
+/-- The pointwise (diagonal) action of `a` on `⊕_{ω∈Ω} ℋ_ω`. -/
+private noncomputable def gnsDiagFunOn (a : A) (y : gnsHilbOn A Ω) :
+    ∀ ω : Ω, (ω : NPFunctional A).toPositiveLinearMap.GNS :=
+  fun ω => (ω : NPFunctional A).toPositiveLinearMap.gnsStarAlgHom a
+    ((y : ∀ ω : Ω, _) ω)
+
+private theorem gnsDiagOn_memlp (a : A) (y : gnsHilbOn A Ω) :
+    Memℓp (gnsDiagFunOn a y) 2 := by
+  refine memℓp_gen ?_
+  have hy : Summable (fun ω : Ω => ‖(y : ∀ ω : Ω, _) ω‖ ^ (2 : ℝ≥0∞).toReal) :=
+    (lp.hasSum_norm (by norm_num) y).summable
+  refine Summable.of_nonneg_of_le (fun _ => Real.rpow_nonneg (norm_nonneg _) _)
+    (fun ω => ?_) (hy.mul_left (‖a‖ ^ 2))
+  rw [rpow_two_toReal', rpow_two_toReal']
+  simp only [gnsDiagFunOn]
+  have h := starAlgHom_apply_norm_le
+    ((ω : NPFunctional A).toPositiveLinearMap.gnsStarAlgHom) a ((y : ∀ ω : Ω, _) ω)
+  have h3 := pow_le_pow_left₀ (norm_nonneg _) h 2
+  rwa [mul_pow] at h3
+
+/-- The diagonal action of `a` on `⊕_{ω∈Ω} ℋ_ω` as a linear map. -/
+private noncomputable def gnsDiagLinOn (a : A) : gnsHilbOn A Ω →ₗ[ℂ] gnsHilbOn A Ω where
+  toFun y := ⟨gnsDiagFunOn a y, gnsDiagOn_memlp a y⟩
+  map_add' y z := by
+    refine Subtype.ext (funext fun ω => ?_)
+    show gnsDiagFunOn a (y + z) ω = gnsDiagFunOn a y ω + gnsDiagFunOn a z ω
+    simp [gnsDiagFunOn]
+  map_smul' c y := by
+    refine Subtype.ext (funext fun ω => ?_)
+    show gnsDiagFunOn a (c • y) ω = c • gnsDiagFunOn a y ω
+    simp [gnsDiagFunOn]
+
+private theorem gnsDiagLinOn_apply_coe (a : A) (y : gnsHilbOn A Ω) (ω : Ω) :
+    ((gnsDiagLinOn a y : gnsHilbOn A Ω) : ∀ ω : Ω, _) ω
+      = (ω : NPFunctional A).toPositiveLinearMap.gnsStarAlgHom a
+        ((y : ∀ ω : Ω, _) ω) := rfl
+
+private theorem gnsDiagLinOn_norm_le (a : A) (y : gnsHilbOn A Ω) :
+    ‖gnsDiagLinOn a y‖ ≤ ‖a‖ * ‖y‖ := by
+  have hp : (0:ℝ) < (2 : ℝ≥0∞).toReal := by norm_num
+  have hsum1 := lp.hasSum_norm hp (gnsDiagLinOn a y)
+  have hsum2 := lp.hasSum_norm hp y
+  have hle : ∀ ω : Ω,
+      ‖((gnsDiagLinOn a y : gnsHilbOn A Ω) : ∀ ω : Ω, _) ω‖ ^ (2 : ℝ≥0∞).toReal
+        ≤ ‖a‖ ^ 2 * ‖(y : ∀ ω : Ω, _) ω‖ ^ (2 : ℝ≥0∞).toReal := by
+    intro ω
+    rw [rpow_two_toReal', rpow_two_toReal', gnsDiagLinOn_apply_coe]
+    have h := starAlgHom_apply_norm_le
+      ((ω : NPFunctional A).toPositiveLinearMap.gnsStarAlgHom) a ((y : ∀ ω : Ω, _) ω)
+    have h3 := pow_le_pow_left₀ (norm_nonneg _) h 2
+    rwa [mul_pow] at h3
+  have hkey : ‖gnsDiagLinOn a y‖ ^ (2 : ℝ≥0∞).toReal
+      ≤ ‖a‖ ^ 2 * ‖y‖ ^ (2 : ℝ≥0∞).toReal := by
+    rw [← hsum1.tsum_eq, ← hsum2.tsum_eq, ← tsum_mul_left]
+    exact hsum1.summable.tsum_le_tsum hle (hsum2.summable.mul_left _)
+  rw [rpow_two_toReal', rpow_two_toReal'] at hkey
+  have hsq : ‖gnsDiagLinOn a y‖ ^ 2 ≤ (‖a‖ * ‖y‖) ^ 2 := by rw [mul_pow]; exact hkey
+  exact le_of_pow_le_pow_left₀ (by norm_num) (by positivity) hsq
+
+/-- The diagonal action of `a` on `⊕_{ω∈Ω} ℋ_ω` as a bounded operator. -/
+private noncomputable def gnsDiagOn (a : A) : gnsHilbOn A Ω →L[ℂ] gnsHilbOn A Ω :=
+  LinearMap.mkContinuous (gnsDiagLinOn a) ‖a‖ (gnsDiagLinOn_norm_le a)
+
+@[simp] private theorem gnsDiagOn_apply_coe (a : A) (y : gnsHilbOn A Ω) (ω : Ω) :
+    ((gnsDiagOn a y : gnsHilbOn A Ω) : ∀ ω : Ω, _) ω
+      = (ω : NPFunctional A).toPositiveLinearMap.gnsStarAlgHom a
+        ((y : ∀ ω : Ω, _) ω) := rfl
+
+private theorem gnsHilbOn_ext {y z : gnsHilbOn A Ω}
+    (h : ∀ ω : Ω, (y : ∀ ω : Ω, _) ω = (z : ∀ ω : Ω, _) ω) : y = z :=
+  Subtype.ext (funext h)
+
+variable (Ω) in
+/-- The direct-sum GNS representation `ϱ_Ω : A → B(⊕_{ω∈Ω} ℋ_ω)` over a
+*set* `Ω` of np-functionals. -/
+noncomputable def gnsRepOn : A →⋆ₐ[ℂ] (gnsHilbOn A Ω →L[ℂ] gnsHilbOn A Ω) where
+  toFun := gnsDiagOn
+  map_one' := by
+    refine ContinuousLinearMap.ext fun y => gnsHilbOn_ext fun ω => ?_
+    simp
+  map_mul' a b := by
+    refine ContinuousLinearMap.ext fun y => gnsHilbOn_ext fun ω => ?_
+    simp
+  map_zero' := by
+    refine ContinuousLinearMap.ext fun y => gnsHilbOn_ext fun ω => ?_
+    simp
+  map_add' a b := by
+    refine ContinuousLinearMap.ext fun y => gnsHilbOn_ext fun ω => ?_
+    simp
+  commutes' r := by
+    refine ContinuousLinearMap.ext fun y => gnsHilbOn_ext fun ω => ?_
+    simp [Algebra.algebraMap_eq_smul_one]
+  map_star' a := by
+    refine (ContinuousLinearMap.eq_adjoint_iff _ _).mpr fun x y => ?_
+    rw [lp.inner_eq_tsum, lp.inner_eq_tsum]
+    refine tsum_congr fun ω => ?_
+    show (⟪(ω : NPFunctional A).toPositiveLinearMap.gnsStarAlgHom (star a) _, _⟫) = _
+    rw [map_star]
+    exact ContinuousLinearMap.adjoint_inner_left _ _ _
+
+@[simp] theorem gnsRepOn_apply_coe (a : A) (y : gnsHilbOn A Ω) (ω : Ω) :
+    ((gnsRepOn Ω a y : gnsHilbOn A Ω) : ∀ ω : Ω, _) ω
+      = (ω : NPFunctional A).toPositiveLinearMap.gnsStarAlgHom a
+        ((y : ∀ ω : Ω, _) ω) := rfl
+
+open scoped Classical in
+/-- The "elementary" vectors `η_ω(b)` of `⊕_{ω∈Ω} ℋ_ω`. -/
+def gnsElemVecsOn (Ω : Set (NPFunctional A)) : Set (gnsHilbOn A Ω) :=
+  {y | ∃ (ω : Ω) (b : A), y = lp.single 2 ω (gnsVec (ω : NPFunctional A) b)}
+
+theorem gnsElemVecsOn_separating (R : gnsHilbOn A Ω →L[ℂ] gnsHilbOn A Ω)
+    (h : ∀ y ∈ gnsElemVecsOn Ω, R y = 0) : R = 0 := by
+  classical
+  have hsingle : ∀ (ω : Ω) (z : (ω : NPFunctional A).toPositiveLinearMap.GNS),
+      R (lp.single 2 ω z) = 0 := by
+    intro ω
+    have hcont : Continuous
+        fun z : (ω : NPFunctional A).toPositiveLinearMap.GNS => R (lp.single 2 ω z) :=
+      R.continuous.comp
+        (lp.singleContinuousLinearMap ℂ
+          (fun ω : Ω => (ω : NPFunctional A).toPositiveLinearMap.GNS) 2 ω).continuous
+    have hdense : Dense (Set.range (gnsVec (ω : NPFunctional A))) :=
+      gnsVec_denseRange (ω : NPFunctional A)
+    have hfun := Continuous.ext_on hdense hcont continuous_const
+      (fun x hx => by obtain ⟨b, rfl⟩ := hx; exact h _ ⟨ω, b, rfl⟩)
+    exact fun z => congrFun hfun z
+  refine ContinuousLinearMap.ext fun y => ?_
+  have hs : HasSum (fun ω : Ω => lp.single 2 ω ((y : ∀ ω : Ω, _) ω)) y :=
+    lp.hasSum_single (by norm_num) y
+  have hmap := hs.mapL R
+  have h0 : HasSum (fun _ : Ω => (0 : gnsHilbOn A Ω)) (R y) := by
+    refine hmap.congr_fun fun ω => ?_
+    exact (hsingle ω ((y : ∀ ω : Ω, _) ω)).symm
+  simpa using (hasSum_zero.unique h0).symm
+
+set_option maxHeartbeats 2000000 in
+theorem gnsRepOn_normal : PreservesDirSups ⇑(gnsRepOn (A := A) Ω) := by
+  classical
+  refine starAlgHom_preservesDirSups_of_vectors (gnsRepOn Ω) (gnsElemVecsOn Ω)
+    gnsElemVecsOn_separating ?_
+  rintro _ ⟨ω, b, rfl⟩
+  refine ⟨conjNP b (ω : NPFunctional A), fun a => ?_⟩
+  rw [lp.inner_single_left]
+  show (⟪gnsVec (ω : NPFunctional A) b,
+    ((gnsRepOn Ω a (lp.single 2 ω (gnsVec (ω : NPFunctional A) b)) : gnsHilbOn A Ω) :
+      ∀ _ : Ω, _) ω⟫) = _
+  rw [gnsRepOn_apply_coe, lp.single_apply_self, gnsRep_gnsVec, gnsVec_inner,
+    conjNP_apply, mul_assoc]
+
+/-- `ϱ_Ω` is injective exactly when `Ω` is centre separating (cstar.tex
+**21II**.4): `ϱ_Ω(a) = 0` says `ω(b* a* a b) = ‖ϱ_Ω(a) η_ω(b)‖² = 0`. -/
+theorem gnsRepOn_injective (hΩ : CentreSeparatingConj A Ω) :
+    Function.Injective (gnsRepOn (A := A) Ω) := by
+  classical
+  have hker : ∀ a : A, gnsRepOn Ω a = 0 → a = 0 := by
+    intro a ha
+    refine (CStarRing.star_mul_self_eq_zero_iff a).mp ?_
+    refine ((centreSeparatingConj_iff Ω).mp hΩ (star a * a)
+      (star_mul_self_nonneg a)).mpr fun ω hω b => ?_
+    have h := congrArg
+      (fun T : gnsHilbOn A Ω →L[ℂ] gnsHilbOn A Ω =>
+        ((T (lp.single 2 (⟨ω, hω⟩ : Ω) (gnsVec ω b)) : gnsHilbOn A Ω) :
+          ∀ _ : Ω, _) ⟨ω, hω⟩) ha
+    simp only [gnsRepOn_apply_coe, lp.single_apply_self] at h
+    rw [gnsRep_gnsVec] at h
+    have h0 : gnsVec ω (a * b) = 0 := by simpa using h
+    have := gnsVec_norm_sq ω (a * b)
+    rw [h0] at this
+    simp only [norm_zero] at this
+    rw [show star b * (star a * a) * b = star (a * b) * (a * b) by
+      rw [star_mul]; noncomm_ring]
+    simpa using this.symm
+  intro a b hab
+  have h : gnsRepOn Ω (a - b) = 0 := by rw [map_sub, hab, sub_self]
+  exact sub_eq_zero.mp (hker _ h)
+
+/-- `⟪u,Tu⟫ - ⟪w,Tw⟫ = ⟪u-w,Tu⟫ + ⟪w,T(u-w)⟫`, whence the bound. -/
+private theorem inner_conj_diff_le {K : Type*} [NormedAddCommGroup K]
+    [InnerProductSpace ℂ K] (T : K →L[ℂ] K) (u w : K) {M : ℝ} (hM : 0 ≤ M)
+    (hTM : ∀ z, ‖T z‖ ≤ M * ‖z‖) :
+    ‖(⟪u, T u⟫ : ℂ) - ⟪w, T w⟫‖ ≤ M * (‖u‖ + ‖w‖) * ‖u - w‖ := by
+  have hsplit : (⟪u, T u⟫ : ℂ) - ⟪w, T w⟫ = ⟪u - w, T u⟫ + ⟪w, T (u - w)⟫ := by
+    simp only [inner_sub_left, map_sub, inner_sub_right]
+    ring
+  rw [hsplit]
+  have b1 : ‖(⟪u - w, T u⟫ : ℂ)‖ ≤ ‖u - w‖ * (M * ‖u‖) :=
+    (norm_inner_le_norm _ _).trans (mul_le_mul_of_nonneg_left (hTM u) (norm_nonneg _))
+  have b2 : ‖(⟪w, T (u - w)⟫ : ℂ)‖ ≤ ‖w‖ * (M * ‖u - w‖) :=
+    (norm_inner_le_norm _ _).trans (mul_le_mul_of_nonneg_left (hTM _) (norm_nonneg _))
+  calc ‖(⟪u - w, T u⟫ : ℂ) + ⟪w, T (u - w)⟫‖
+      ≤ ‖(⟪u - w, T u⟫ : ℂ)‖ + ‖(⟪w, T (u - w)⟫ : ℂ)‖ := norm_add_le _ _
+    _ ≤ ‖u - w‖ * (M * ‖u‖) + ‖w‖ * (M * ‖u - w‖) := add_le_add b1 b2
+    _ = M * (‖u‖ + ‖w‖) * ‖u - w‖ := by ring
+
+/-- Every vector functional `⟪v, ϱ_ω(·)v⟫` of a GNS space is, to any
+prescribed operator-norm accuracy, of the form `ω(s*(·)s)` with `s` in a
+prescribed ultrastrongly dense set: `v` is a norm limit of the `η_ω(b)`
+(**48III**), and `b ↦ b*ω` is `‖·‖_ω`-to-norm Lipschitz (**72III**.1c). -/
+private theorem gnsVec_approx_functional (ω : NPFunctional A) {S : Set A}
+    (hS : @Dense A (ultrastrong A) S) (v : ω.toPositiveLinearMap.GNS) {η : ℝ}
+    (hη : 0 < η) :
+    ∃ s ∈ S, ∀ a : A,
+      ‖(⟪v, ω.toPositiveLinearMap.gnsStarAlgHom a v⟫ : ℂ)
+        - ω (star s * a * s)‖ ≤ η * ‖a‖ := by
+  -- Step 1: replace `v` by an `η_ω(b)`.
+  set δ : ℝ := min 1 (η / (2 * (2 * ‖v‖ + 1))) with hδdef
+  have hpos : (0:ℝ) < 2 * (2 * ‖v‖ + 1) := by positivity
+  have hδ0 : 0 < δ := lt_min one_pos (by positivity)
+  have hδ1 : δ ≤ 1 := min_le_left _ _
+  obtain ⟨b, hb⟩ := (gnsVec_denseRange ω).exists_dist_lt v hδ0
+  have hbv : ‖v - gnsVec ω b‖ < δ := by rwa [dist_eq_norm] at hb
+  have hbnorm : ‖gnsVec ω b‖ ≤ ‖v‖ + δ := by
+    have h1 : ‖gnsVec ω b‖ - ‖v‖ ≤ ‖gnsVec ω b - v‖ := norm_sub_norm_le _ _
+    have h2 : ‖gnsVec ω b - v‖ = ‖v - gnsVec ω b‖ := norm_sub_rev _ _
+    have h3 := hbv.le
+    linarith
+  have hstep1 : ∀ a : A,
+      ‖(⟪v, ω.toPositiveLinearMap.gnsStarAlgHom a v⟫ : ℂ) - ω (star b * a * b)‖
+        ≤ η / 2 * ‖a‖ := by
+    intro a
+    have hT : ∀ z, ‖ω.toPositiveLinearMap.gnsStarAlgHom a z‖ ≤ ‖a‖ * ‖z‖ :=
+      starAlgHom_apply_norm_le _ a
+    have hval : (⟪gnsVec ω b,
+        ω.toPositiveLinearMap.gnsStarAlgHom a (gnsVec ω b)⟫ : ℂ)
+          = ω (star b * a * b) := by
+      rw [gnsRep_gnsVec, gnsVec_inner, mul_assoc]
+    have hd := inner_conj_diff_le (ω.toPositiveLinearMap.gnsStarAlgHom a) v
+      (gnsVec ω b) (norm_nonneg a) hT
+    rw [hval] at hd
+    refine hd.trans ?_
+    have h1 : ‖v‖ + ‖gnsVec ω b‖ ≤ 2 * ‖v‖ + 1 := by linarith
+    have h2 : ‖a‖ * (‖v‖ + ‖gnsVec ω b‖) * ‖v - gnsVec ω b‖
+        ≤ ‖a‖ * (2 * ‖v‖ + 1) * δ := by
+      have hn : (0:ℝ) ≤ ‖a‖ := norm_nonneg a
+      have hd1 : (0:ℝ) ≤ ‖v - gnsVec ω b‖ := norm_nonneg _
+      have hmul := mul_le_mul_of_nonneg_left h1 hn
+      have hA : (0:ℝ) ≤ ‖a‖ * (2 * ‖v‖ + 1) := by positivity
+      calc ‖a‖ * (‖v‖ + ‖gnsVec ω b‖) * ‖v - gnsVec ω b‖
+          ≤ ‖a‖ * (2 * ‖v‖ + 1) * ‖v - gnsVec ω b‖ :=
+            mul_le_mul_of_nonneg_right hmul hd1
+        _ ≤ ‖a‖ * (2 * ‖v‖ + 1) * δ := mul_le_mul_of_nonneg_left hbv.le hA
+    refine h2.trans ?_
+    have hδle : δ ≤ η / (2 * (2 * ‖v‖ + 1)) := min_le_right _ _
+    have hkey : (2 * ‖v‖ + 1) * δ ≤ η / 2 := by
+      have h3 : (2 * ‖v‖ + 1) * δ ≤ (2 * ‖v‖ + 1) * (η / (2 * (2 * ‖v‖ + 1))) := by
+        have : (0:ℝ) ≤ 2 * ‖v‖ + 1 := by positivity
+        exact mul_le_mul_of_nonneg_left hδle this
+      have h4 : (2 * ‖v‖ + 1) * (η / (2 * (2 * ‖v‖ + 1))) = η / 2 := by
+        field_simp
+      linarith
+    have hn : (0:ℝ) ≤ ‖a‖ := norm_nonneg a
+    nlinarith
+  -- Step 2: replace `b` by an `s ∈ S`, using **72III**.1c.
+  set γ : ℝ := min 1 (η / (2 * (2 * omegaNorm A ω b + 1))) with hγdef
+  have hγpos : (0:ℝ) < 2 * (2 * omegaNorm A ω b + 1) := by
+    have := omegaNorm_nonneg ω b; positivity
+  have hγ0 : 0 < γ := lt_min one_pos (by positivity)
+  have hγ1 : γ ≤ 1 := min_le_left _ _
+  have hmemcl : b ∈ @closure A (ultrastrong A) S := hS b
+  obtain ⟨s, hsball, hsS⟩ :=
+    (@mem_closure_iff_nhds A (ultrastrong A) _ _).mp hmemcl _
+      (ultrastrong_ball_mem_nhds ω b hγ0)
+  have hsb : omegaNorm A ω (s - b) < γ := hsball
+  refine ⟨s, hsS, fun a => ?_⟩
+  have hstep2 : ‖(ω (star b * a * b) : ℂ) - ω (star s * a * s)‖ ≤ η / 2 * ‖a‖ := by
+    have hlip := bstaromega_lipschitz ω b s a
+    have he1 : bStarOmega A b ω a = ω (star b * a * b) := rfl
+    have he2 : bStarOmega A s ω a = ω (star s * a * s) := rfl
+    rw [he1, he2] at hlip
+    refine hlip.trans ?_
+    have hbs : omegaNorm A ω (b - s) < γ := by
+      rw [show b - s = -(s - b) by rw [neg_sub], omegaNorm_neg]; exact hsb
+    have hsn : omegaNorm A ω s ≤ omegaNorm A ω b + γ := by
+      have hadd : omegaNorm A ω (b + (s - b)) ≤ omegaNorm A ω b + omegaNorm A ω (s - b) :=
+        omegaNorm_add_le ω b (s - b)
+      rw [add_sub_cancel] at hadd
+      linarith
+    have hn : (0:ℝ) ≤ ‖a‖ := norm_nonneg a
+    have hnn := omegaNorm_nonneg ω b
+    have hkey : omegaNorm A ω (b - s) * (omegaNorm A ω b + omegaNorm A ω s)
+        ≤ γ * (2 * omegaNorm A ω b + 1) := by
+      have h1 : omegaNorm A ω b + omegaNorm A ω s ≤ 2 * omegaNorm A ω b + 1 := by
+        linarith
+      have h2 : (0:ℝ) ≤ omegaNorm A ω b + omegaNorm A ω s := by
+        have := omegaNorm_nonneg ω s; linarith
+      nlinarith [omegaNorm_nonneg ω (b - s)]
+    have hγle : γ ≤ η / (2 * (2 * omegaNorm A ω b + 1)) := min_le_right _ _
+    have h4 : γ * (2 * omegaNorm A ω b + 1) ≤ η / 2 := by
+      have h5 : γ * (2 * omegaNorm A ω b + 1)
+          ≤ (η / (2 * (2 * omegaNorm A ω b + 1))) * (2 * omegaNorm A ω b + 1) :=
+        mul_le_mul_of_nonneg_right hγle (by linarith)
+      have h6 : (η / (2 * (2 * omegaNorm A ω b + 1))) * (2 * omegaNorm A ω b + 1)
+          = η / 2 := by field_simp
+      linarith
+    nlinarith
+  calc ‖(⟪v, ω.toPositiveLinearMap.gnsStarAlgHom a v⟫ : ℂ) - ω (star s * a * s)‖
+      ≤ ‖(⟪v, ω.toPositiveLinearMap.gnsStarAlgHom a v⟫ : ℂ) - ω (star b * a * b)‖
+        + ‖(ω (star b * a * b) : ℂ) - ω (star s * a * s)‖ := by
+        simpa using norm_sub_le_norm_sub_add_norm_sub
+          (⟪v, ω.toPositiveLinearMap.gnsStarAlgHom a v⟫ : ℂ) (ω (star b * a * b))
+          (ω (star s * a * s))
+    _ ≤ η / 2 * ‖a‖ + η / 2 * ‖a‖ := add_le_add (hstep1 a) hstep2
+    _ = η * ‖a‖ := by ring
+
 /-- **90II** (`vn-center-separating-fundamental`, vn.tex:7206,
 Proposition), part 2: the finite sums `Ω''` of members of `Ω'` are
 operator-norm dense in the positive part of the predual: every
 np-functional `f` is an operator-norm limit of sums
 `∑ₖ ωₖ(sₖ*(·)sₖ)` with `ωₖ ∈ Ω`, `sₖ ∈ S`. -/
 theorem vn_center_separating_fundamental_2 (Ω : Set (NPFunctional A))
-    (hΩ : CentreSeparating A Ω) (S : Set A)
+    (hΩ : CentreSeparatingConj A Ω) (S : Set A)
     (hS : @Dense A (ultrastrong A) S) (f : NPFunctional A) (ε : ℝ)
     (hε : 0 < ε) :
     ∃ (n : ℕ) (ω : Fin n → NPFunctional A) (s : Fin n → A),
       (∀ k, ω k ∈ Ω ∧ s k ∈ S) ∧
-      ∀ a : A, ‖f a - ∑ k, (ω k) (star (s k) * a * s k)‖ ≤ ε * ‖a‖ :=
-  sorry
+      ∀ a : A, ‖f a - ∑ k, (ω k) (star (s k) * a * s k)‖ ≤ ε * ‖a‖ := by
+  classical
+  -- `ϱ_Ω` is an injective normal representation with von Neumann range.
+  set ρ : NMIUMap A (gnsHilbOn A Ω →L[ℂ] gnsHilbOn A Ω) :=
+    ⟨gnsRepOn Ω, gnsRepOn_normal⟩ with hρdef
+  have hinj : Function.Injective ⇑ρ := gnsRepOn_injective hΩ
+  have hR : IsVNSubalgebra _ ρ.toStarAlgHom.range :=
+    isVNSubalgebra_range ρ.toStarAlgHom hinj gnsRepOn_normal
+  -- **89IX**: `f = ∑ₙ ⟪xₙ, ϱ_Ω(·)xₙ⟫`.
+  obtain ⟨x, hx2, hxs⟩ := normal_functional ρ hinj hR f
+  -- the double family of components, and its square-summability
+  set w : ℕ × Ω → ℝ := fun p => ‖(x p.1 : ∀ ω : Ω, _) p.2‖ ^ 2 with hwdef
+  have hfiber : ∀ n : ℕ, HasSum (fun ω : Ω => w (n, ω)) (‖x n‖ ^ 2) := by
+    intro n
+    simpa only [hwdef, rpow_two_toReal'] using lp.hasSum_norm (by norm_num) (x n)
+  have hw0 : ∀ p, 0 ≤ w p := fun p => by positivity
+  have hw : Summable w := by
+    refine (summable_prod_of_nonneg hw0).mpr ⟨fun n => (hfiber n).summable, ?_⟩
+    refine hx2.congr fun n => ((hfiber n).tsum_eq).symm
+  -- a finite set carrying all but `ε/2` of the mass
+  obtain ⟨F, hFball⟩ :=
+    (hw.hasSum.eventually (Metric.ball_mem_nhds _ (half_pos hε))).exists
+  have htail : ∑' p : ↥((F : Set (ℕ × ↥Ω))ᶜ), w p ≤ ε / 2 := by
+    have hsplit := hw.sum_add_tsum_compl (s := F)
+    have hd : |∑ p ∈ F, w p - ∑' p, w p| < ε / 2 := by
+      simpa [Real.dist_eq] using hFball
+    have h0 : 0 ≤ ∑' p : ↥((F : Set (ℕ × ↥Ω))ᶜ), w p :=
+      tsum_nonneg fun p => hw0 p
+    have hd2 := (abs_lt.mp hd).1
+    linarith
+  -- one `s ∈ S` per index, uniformly in `a` (approximation lemma)
+  set η : ℝ := ε / (2 * (F.card + 1)) with hηdef
+  have hη : 0 < η := by
+    have : (0:ℝ) < 2 * (F.card + 1) := by positivity
+    exact div_pos hε this
+  have hchoice : ∀ p : ℕ × Ω, ∃ s ∈ S, ∀ a : A,
+      ‖(⟪(x p.1 : ∀ ω : Ω, _) p.2,
+          (p.2 : NPFunctional A).toPositiveLinearMap.gnsStarAlgHom a
+            ((x p.1 : ∀ ω : Ω, _) p.2)⟫ : ℂ)
+        - (p.2 : NPFunctional A) (star s * a * s)‖ ≤ η * ‖a‖ :=
+    fun p => gnsVec_approx_functional (p.2 : NPFunctional A) hS _ hη
+  choose sel hselS hsel using hchoice
+  -- package the finite index set as `Fin F.card`
+  refine ⟨F.card, fun k => ((F.equivFin.symm k : ℕ × Ω).2 : NPFunctional A),
+    fun k => sel (F.equivFin.symm k : ℕ × Ω), fun k => ⟨(F.equivFin.symm k : ℕ × Ω).2.2,
+      hselS _⟩, fun a => ?_⟩
+  -- the `a`-dependent scalar family
+  set g : ℕ × Ω → ℂ := fun p =>
+    (⟪(x p.1 : ∀ ω : Ω, _) p.2,
+      (p.2 : NPFunctional A).toPositiveLinearMap.gnsStarAlgHom a
+        ((x p.1 : ∀ ω : Ω, _) p.2)⟫ : ℂ) with hgdef
+  have hgb : ∀ p, ‖g p‖ ≤ ‖a‖ * w p := by
+    intro p
+    show ‖g p‖ ≤ ‖a‖ * ‖(x p.1 : ∀ ω : Ω, _) p.2‖ ^ 2
+    have h1 : ‖g p‖ ≤ ‖(x p.1 : ∀ ω : Ω, _) p.2‖ *
+        ‖(p.2 : NPFunctional A).toPositiveLinearMap.gnsStarAlgHom a
+          ((x p.1 : ∀ ω : Ω, _) p.2)‖ := norm_inner_le_norm _ _
+    have h2 := starAlgHom_apply_norm_le
+      ((p.2 : NPFunctional A).toPositiveLinearMap.gnsStarAlgHom) a
+      ((x p.1 : ∀ ω : Ω, _) p.2)
+    calc ‖g p‖ ≤ ‖(x p.1 : ∀ ω : Ω, _) p.2‖ * _ := h1
+      _ ≤ ‖(x p.1 : ∀ ω : Ω, _) p.2‖ * (‖a‖ * ‖(x p.1 : ∀ ω : Ω, _) p.2‖) :=
+          mul_le_mul_of_nonneg_left h2 (norm_nonneg _)
+      _ = ‖a‖ * ‖(x p.1 : ∀ ω : Ω, _) p.2‖ ^ 2 := by ring
+  have hgsummable : Summable g :=
+    Summable.of_norm_bounded (hw.mul_left ‖a‖) hgb
+  have hgfiber : ∀ n : ℕ, HasSum (fun ω : Ω => g (n, ω)) (⟪x n, ρ a (x n)⟫) := by
+    intro n
+    have h := lp.hasSum_inner (𝕜 := ℂ)
+      (G := fun ω : Ω => (ω : NPFunctional A).toPositiveLinearMap.GNS) (x n) (ρ a (x n))
+    refine h.congr_fun fun ω => ?_
+    rfl
+  have hgtot : HasSum g (f a) := by
+    have h1 := hgsummable.hasSum
+    have h2 := h1.prod_fiberwise hgfiber
+    have h3 := hxs a
+    rw [← h2.unique h3]
+    exact h1
+  -- the tail estimate
+  have hcompl : ∑' p : ↥((F : Set (ℕ × ↥Ω))ᶜ), g p = f a - ∑ p ∈ F, g p := by
+    have heq := hgsummable.sum_add_tsum_compl (s := F)
+    rw [hgtot.tsum_eq] at heq
+    exact eq_sub_of_add_eq' heq
+  have htailbound : ‖f a - ∑ p ∈ F, g p‖ ≤ ε / 2 * ‖a‖ := by
+    have h1 : ‖f a - ∑ p ∈ F, g p‖ ≤ ∑' p : ↥((F : Set (ℕ × ↥Ω))ᶜ), ‖g p‖ := by
+      rw [← hcompl]
+      exact norm_tsum_le_tsum_norm ((hgsummable.subtype _).norm)
+    have h2 : ∑' p : ↥((F : Set (ℕ × ↥Ω))ᶜ), ‖g p‖
+        ≤ ∑' p : ↥((F : Set (ℕ × ↥Ω))ᶜ), ‖a‖ * w p := by
+      refine Summable.tsum_le_tsum (fun p => hgb p) ((hgsummable.subtype _).norm)
+        ((hw.mul_left ‖a‖).subtype _)
+    have h3 : ∑' p : ↥((F : Set (ℕ × ↥Ω))ᶜ), ‖a‖ * w p
+        = ‖a‖ * ∑' p : ↥((F : Set (ℕ × ↥Ω))ᶜ), w p := tsum_mul_left
+    have h4 : ‖a‖ * ∑' p : ↥((F : Set (ℕ × ↥Ω))ᶜ), w p ≤ ‖a‖ * (ε / 2) :=
+      mul_le_mul_of_nonneg_left htail (norm_nonneg a)
+    calc ‖f a - ∑ p ∈ F, g p‖ ≤ _ := h1
+      _ ≤ _ := h2
+      _ = _ := h3
+      _ ≤ ‖a‖ * (ε / 2) := h4
+      _ = ε / 2 * ‖a‖ := by ring
+  -- the per-index estimate
+  have hsum_eq : ∑ k : Fin F.card,
+      ((F.equivFin.symm k : ℕ × Ω).2 : NPFunctional A)
+        (star (sel (F.equivFin.symm k : ℕ × Ω)) * a * sel (F.equivFin.symm k : ℕ × Ω))
+      = ∑ p ∈ F, ((p.2 : NPFunctional A) (star (sel p) * a * sel p) : ℂ) := by
+    rw [← Finset.sum_coe_sort F
+      (fun p : ℕ × Ω => ((p.2 : NPFunctional A) (star (sel p) * a * sel p) : ℂ))]
+    exact Fintype.sum_equiv F.equivFin.symm _ _ fun k => rfl
+  rw [hsum_eq]
+  have hper : ‖(∑ p ∈ F, g p) - ∑ p ∈ F, ((p.2 : NPFunctional A)
+      (star (sel p) * a * sel p) : ℂ)‖ ≤ ε / 2 * ‖a‖ := by
+    rw [← Finset.sum_sub_distrib]
+    refine (norm_sum_le _ _).trans ?_
+    have hbd : ∀ p ∈ F, ‖g p - ((p.2 : NPFunctional A)
+        (star (sel p) * a * sel p) : ℂ)‖ ≤ η * ‖a‖ := fun p _ => hsel p a
+    refine (Finset.sum_le_sum hbd).trans ?_
+    rw [Finset.sum_const, nsmul_eq_mul]
+    have hηeq : 2 * (η * (F.card : ℝ)) + 2 * η = ε := by
+      rw [hηdef]; field_simp
+    have hηc : (F.card : ℝ) * η ≤ ε / 2 := by
+      have := hη.le
+      nlinarith
+    have hn : (0:ℝ) ≤ ‖a‖ := norm_nonneg a
+    have hcard : (F.card : ℝ) * (η * ‖a‖) ≤ ε / 2 * ‖a‖ := by nlinarith
+    linarith [hcard]
+  calc ‖f a - ∑ p ∈ F, ((p.2 : NPFunctional A) (star (sel p) * a * sel p) : ℂ)‖
+      ≤ ‖f a - ∑ p ∈ F, g p‖
+        + ‖(∑ p ∈ F, g p) - ∑ p ∈ F, ((p.2 : NPFunctional A)
+            (star (sel p) * a * sel p) : ℂ)‖ := by
+        simpa using norm_sub_le_norm_sub_add_norm_sub (f a) (∑ p ∈ F, g p)
+          (∑ p ∈ F, ((p.2 : NPFunctional A) (star (sel p) * a * sel p) : ℂ))
+    _ ≤ ε / 2 * ‖a‖ + ε / 2 * ‖a‖ := add_le_add htailbound hper
+    _ = ε * ‖a‖ := by ring
+
+end GNSSumOn
 
 /-! **91I** (vn.tex:7311): closing remarks of the chapter — nothing to
 formalize. -/

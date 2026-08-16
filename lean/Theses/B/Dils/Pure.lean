@@ -1121,17 +1121,225 @@ theorem dils_examples_pure_2 (φ : NCPMap A B) (D : PaschkeTriple A B)
   sorry
 
 /-- **170IV** (`surjective-nmiu`, dils.tex:6223, Exercise), first half:
-every surjective nmiu-map is a corner of a central projection (hence
-pure). -/
-theorem surjective_nmiu_1 (ϱ : NMIUMap A B) (hs : Function.Surjective ⇑ϱ)
+every surjective nmiu-map **between von Neumann algebras** is a corner of a
+central projection (hence pure).
+
+The two `[VonNeumannAlgebra]` binders are the exercise's own hypothesis; they
+were missing from the first transcription of this point, which therefore
+claimed the result for arbitrary C\*-algebras (QUESTIONS **D5**, ruled on by
+Bas: restore the hypothesis).  They are not decoration — the central
+projection is produced by **69IV** `carrier_miu`, which needs them. -/
+theorem surjective_nmiu_1 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    (ϱ : NMIUMap A B) (hs : Function.Surjective ⇑ϱ)
     (φ : NCPMap A B) (hφ : ∀ a, φ a = ϱ a) :
-    ∃ z : A, IsStarProjection z ∧ IsCentral A z ∧ IsCornerFor φ z :=
-  sorry
+    ∃ z : A, IsStarProjection z ∧ IsCentral A z ∧ IsCornerFor φ z := by
+  classical
+  -- ### the algebra of `ϱ`
+  have hϱmul : ∀ x y : A, (ϱ (x * y) : B) = ϱ x * ϱ y := fun x y =>
+    map_mul ϱ.toStarAlgHom x y
+  have hϱstar : ∀ x : A, (ϱ (star x) : B) = star (ϱ x) := fun x =>
+    map_star ϱ.toStarAlgHom x
+  have hϱadd : ∀ x y : A, (ϱ (x + y) : B) = ϱ x + ϱ y := fun x y =>
+    map_add ϱ.toStarAlgHom x y
+  have hϱsmul : ∀ (c : ℂ) (x : A), (ϱ (c • x) : B) = c • ϱ x := fun c x =>
+    map_smul ϱ.toStarAlgHom c x
+  have hϱone : (ϱ 1 : B) = 1 := map_one ϱ.toStarAlgHom
+  have hϱmono : ∀ x y : A, x ≤ y → (ϱ x : B) ≤ ϱ y := fun _ _ h =>
+    starAlgHom_mono ϱ.toStarAlgHom h
+  -- ### the central projection `z = ⌈ϱ⌉`, from **69IV** `carrier_miu`
+  -- The author routes `ker ϱ` through **69II** `weakly-closed-ideal`; 69IV is
+  -- the same conclusion for the special case of an nmiu-map and is proved.
+  obtain ⟨z, hzproj, hzcen, hzone, hker⟩ :
+      ∃ z : A, IsStarProjection z ∧ IsCentral A z ∧ (ϱ z : B) = 1 ∧
+        ∀ a b : A, ((ϱ a : B) = ϱ b ↔ z * a = z * b) := by
+    refine ⟨carrier (nmiuP ϱ) ϱ.preservesDirSups', (carrier_spec _ _).1,
+      (carrier_miu ϱ (nmiuP ϱ) ϱ.preservesDirSups' (fun _ => rfl)).1, ?_,
+      fun a b =>
+        (nmiu_factors ϱ (nmiuP ϱ) ϱ.preservesDirSups' (fun _ => rfl) a b).2⟩
+    have h := (nmiu_factors ϱ (nmiuP ϱ) ϱ.preservesDirSups' (fun _ => rfl) 1 1).1
+    rw [mul_one] at h
+    rw [← h]
+    exact map_one ϱ.toStarAlgHom
+  have hzz : z * z = z := hzproj.isIdempotentElem.eq
+  have hzstar : star z = z := hzproj.isSelfAdjoint.star_eq
+  have he2 : ((1 : A) - z) * (1 - z) = 1 - z := hzproj.one_sub.isIdempotentElem.eq
+  have hestar : star ((1 : A) - z) = 1 - z := hzproj.one_sub.isSelfAdjoint.star_eq
+  have hecen : ∀ x : A, ((1 : A) - z) * x = x * (1 - z) := by
+    intro x; rw [sub_mul, mul_sub, one_mul, mul_one, hzcen x]
+  -- ### the section `σ : B → A` of `ϱ`, i.e. the inverse of `ϱ' : zA → B`
+  obtain ⟨σ0, hσspec⟩ :
+      ∃ σ0 : B → A, ∀ (b : B) (a : A), (ϱ a : B) = b → σ0 b = z * a := by
+    refine ⟨fun b => z * Function.surjInv hs b, fun b a hab => ?_⟩
+    exact (hker _ a).mp (by rw [Function.surjInv_eq hs b]; exact hab.symm)
+  have hσϱ : ∀ a : A, σ0 (ϱ a) = z * a := fun a => hσspec _ a rfl
+  have hϱσ : ∀ b : B, (ϱ (σ0 b) : B) = b := by
+    intro b
+    obtain ⟨a, ha⟩ := hs b
+    rw [hσspec b a ha, hϱmul, hzone, one_mul, ha]
+  have hσadd : ∀ b₁ b₂ : B, σ0 (b₁ + b₂) = σ0 b₁ + σ0 b₂ := by
+    intro b₁ b₂
+    obtain ⟨a₁, ha₁⟩ := hs b₁
+    obtain ⟨a₂, ha₂⟩ := hs b₂
+    rw [hσspec _ (a₁ + a₂) (by rw [hϱadd, ha₁, ha₂]), hσspec _ a₁ ha₁,
+      hσspec _ a₂ ha₂, mul_add]
+  have hσsmul : ∀ (c : ℂ) (b : B), σ0 (c • b) = c • σ0 b := by
+    intro c b
+    obtain ⟨a, ha⟩ := hs b
+    rw [hσspec _ (c • a) (by rw [hϱsmul, ha]), hσspec _ a ha, mul_smul_comm]
+  have hσsub : ∀ b₁ b₂ : B, σ0 (b₁ - b₂) = σ0 b₁ - σ0 b₂ := by
+    intro b₁ b₂
+    have hneg : σ0 (-b₂) = -σ0 b₂ := by
+      have h := hσsmul (-1) b₂; simpa using h
+    rw [sub_eq_add_neg, hσadd, hneg, ← sub_eq_add_neg]
+  have hσmul : ∀ b₁ b₂ : B, σ0 (b₁ * b₂) = σ0 b₁ * σ0 b₂ := by
+    intro b₁ b₂
+    obtain ⟨a₁, ha₁⟩ := hs b₁
+    obtain ⟨a₂, ha₂⟩ := hs b₂
+    rw [hσspec _ (a₁ * a₂) (by rw [hϱmul, ha₁, ha₂]), hσspec _ a₁ ha₁,
+      hσspec _ a₂ ha₂]
+    calc z * (a₁ * a₂) = (z * z) * (a₁ * a₂) := by rw [hzz]
+      _ = z * (z * a₁) * a₂ := by noncomm_ring
+      _ = z * (a₁ * z) * a₂ := by rw [hzcen a₁]
+      _ = (z * a₁) * (z * a₂) := by noncomm_ring
+  have hσstar : ∀ b : B, σ0 (star b) = star (σ0 b) := by
+    intro b
+    obtain ⟨a, ha⟩ := hs b
+    rw [hσspec _ (star a) (by rw [hϱstar, ha]), hσspec _ a ha, star_mul, hzstar]
+    exact hzcen (star a)
+  -- `σ` is positive — it is a (non-unital) ∗-homomorphism — hence monotone
+  have hσnonneg : ∀ b : B, 0 ≤ b → 0 ≤ σ0 b := by
+    intro b hb
+    have hsq : CFC.sqrt b * CFC.sqrt b = b := CFC.sqrt_mul_sqrt_self b hb
+    have hsa : IsSelfAdjoint (CFC.sqrt b) := IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg b)
+    have h : σ0 b = star (σ0 (CFC.sqrt b)) * σ0 (CFC.sqrt b) := by
+      rw [← hσstar, hsa.star_eq, ← hσmul, hsq]
+    rw [h]
+    exact star_mul_self_nonneg _
+  have hσmono : ∀ b₁ b₂ : B, b₁ ≤ b₂ → σ0 b₁ ≤ σ0 b₂ := by
+    intro b₁ b₂ h
+    have h0 := hσnonneg _ (sub_nonneg.mpr h)
+    rw [hσsub] at h0
+    exact sub_nonneg.mp h0
+  -- `σ` kills nothing and lands in `zA`
+  have hσz : ∀ b : B, ((1 : A) - z) * σ0 b = 0 := by
+    intro b
+    obtain ⟨a, ha⟩ := hs b
+    rw [hσspec b a ha]
+    calc ((1 : A) - z) * (z * a) = (z - z * z) * a := by noncomm_ring
+      _ = 0 := by rw [hzz, sub_self, zero_mul]
+  -- `σ` is normal: an upper bound `u` of `σ(D)` satisfies `(1−z)u ≥ 0`, so
+  -- `σ(⋁D) ≤ σ(ϱ(u)) = zu ≤ u`
+  have hσnormal : PreservesDirSups σ0 := by
+    intro D s hne hdir hlub
+    constructor
+    · rintro _ ⟨d, hd, rfl⟩
+      exact hσmono _ _ (hlub.1 hd)
+    · intro u hu
+      obtain ⟨d₀, hd₀⟩ := hne
+      have hd₀le : σ0 (d₀ : B) ≤ u := hu ⟨d₀, hd₀, rfl⟩
+      have hd₀sa : IsSelfAdjoint (σ0 (d₀ : B)) := by
+        show star (σ0 (d₀ : B)) = σ0 (d₀ : B)
+        rw [← hσstar, show star (d₀ : B) = d₀ from d₀.2]
+      have husa : IsSelfAdjoint u := by
+        have h1 : IsSelfAdjoint (u - σ0 (d₀ : B)) :=
+          IsSelfAdjoint.of_nonneg (sub_nonneg.mpr hd₀le)
+        have h2 := h1.add hd₀sa
+        simpa using h2
+      have hϱusa : IsSelfAdjoint (ϱ u : B) := by
+        show star (ϱ u : B) = ϱ u
+        rw [← hϱstar, husa.star_eq]
+      -- `(1−z)u ≥ 0`
+      have heu : (0 : A) ≤ ((1 : A) - z) * u := by
+        have h0 : (0 : A) ≤ star ((1 : A) - z) * (u - σ0 (d₀ : B)) * (1 - z) :=
+          star_left_conjugate_nonneg (sub_nonneg.mpr hd₀le) _
+        rw [hestar] at h0
+        have hrw : ((1 : A) - z) * (u - σ0 (d₀ : B)) * (1 - z)
+            = ((1 : A) - z) * u := by
+          calc ((1 : A) - z) * (u - σ0 (d₀ : B)) * (1 - z)
+              = ((1 : A) - z) * (((1 : A) - z) * (u - σ0 (d₀ : B))) := by
+                rw [mul_assoc, ← hecen]
+            _ = (((1 : A) - z) * (1 - z)) * (u - σ0 (d₀ : B)) := by
+                rw [mul_assoc]
+            _ = ((1 : A) - z) * (u - σ0 (d₀ : B)) := by rw [he2]
+            _ = ((1 : A) - z) * u - ((1 : A) - z) * σ0 (d₀ : B) := by rw [mul_sub]
+            _ = ((1 : A) - z) * u := by rw [hσz, sub_zero]
+        rwa [hrw] at h0
+      -- `s ≤ ϱ(u)`
+      have hub : (⟨(ϱ u : B), hϱusa⟩ : selfAdjoint B) ∈ upperBounds D := by
+        intro d hd
+        show (d : B) ≤ ϱ u
+        have h1 : σ0 (d : B) ≤ u := hu ⟨d, hd, rfl⟩
+        have h2 : (ϱ (σ0 (d : B)) : B) ≤ ϱ u := hϱmono _ _ h1
+        rwa [hϱσ] at h2
+      have hsle : (s : B) ≤ ϱ u := hlub.2 hub
+      have h3 : σ0 (s : B) ≤ z * u := by
+        have h4 := hσmono _ _ hsle
+        rwa [hσϱ] at h4
+      refine h3.trans ?_
+      have h5 : u - z * u = ((1 : A) - z) * u := by noncomm_ring
+      rw [← sub_nonneg, h5]
+      exact heu
+  -- `σ` as an ncp-map: a ∗-homomorphism is completely positive (**34IV**.3)
+  obtain ⟨σ, hσ⟩ : ∃ σ : NCPMap B A, ∀ b, σ b = σ0 b := by
+    refine ⟨{ toCompletelyPositiveMap :=
+                { toLinearMap :=
+                    { toFun := σ0
+                      map_add' := hσadd
+                      map_smul' := fun c b => hσsmul c b }
+                  map_cstarMatrix_nonneg' := by
+                    refine (cp_iff _).out 0 1 |>.mp (cp_of_mi _ ?_ ?_)
+                    · intro x y; exact hσmul x y
+                    · intro x; exact hσstar x }
+              preservesDirSups' := hσnormal }, fun _ => rfl⟩
+  -- ### `z` is the corner
+  refine ⟨z, hzproj, hzcen, Set.mem_Icc.mpr ⟨hzproj.nonneg, hzproj.le_one⟩, ?_, ?_⟩
+  · rw [hφ, hφ, hzone, hϱone]
+  intro C _ _ _ f hfz
+  -- `f((1−z)x) = 0` by Kadison–Schwarz (**34XIV** `cp-cs`), since `f(1−z) = 0`
+  have hLfcp : IsCompletelyPositiveMap f.toCompletelyPositiveMap.toLinearMap :=
+    (cp_iff _).out 1 0 |>.mp fun N M hM =>
+      f.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM
+  have hLfpos : IsPositiveMap f.toCompletelyPositiveMap.toLinearMap :=
+    astara_pos_basic_2_cp _ hLfcp
+  have hLfval : ∀ x : A, f.toCompletelyPositiveMap.toLinearMap x = f x := fun _ => rfl
+  have hfsub : ∀ x y : A, (f (x - y) : C) = f x - f y := fun x y =>
+    map_sub f.toCompletelyPositiveMap.toLinearMap x y
+  have hfe : (f ((1 : A) - z) : C) = 0 := by rw [hfsub, hfz, sub_self]
+  have hkill : ∀ x : A, (f (((1 : A) - z) * x) : C) = 0 := by
+    intro x
+    have h := cp_cs f.toCompletelyPositiveMap.toLinearMap hLfpos
+      (fun a b => hLfcp 2 a b) x ((1 : A) - z)
+    rw [hestar, he2] at h
+    simp only [hLfval] at h
+    rw [hfe, norm_zero, zero_smul] at h
+    have hsa : (f (star x * ((1 : A) - z)) : C) = star (f (((1 : A) - z) * x)) := by
+      have h1 := cstar_p_implies_i _ hLfpos (((1 : A) - z) * x)
+      rw [star_mul, hestar] at h1
+      simpa only [hLfval] using h1
+    rw [hsa] at h
+    have h0 : (0 : C) ≤ star (f (((1 : A) - z) * x)) * f (((1 : A) - z) * x) :=
+      star_mul_self_nonneg _
+    exact (CStarRing.star_mul_self_eq_zero_iff _).mp (le_antisymm h h0)
+  have hfzx : ∀ x : A, (f (z * x) : C) = f x := by
+    intro x
+    have h := hkill x
+    rw [sub_mul, one_mul, hfsub, sub_eq_zero] at h
+    exact h.symm
+  -- the factorisation `f' = f ∘ σ`, unique because `ϱ` is surjective
+  obtain ⟨k, hk⟩ := exists_ncpComp f σ
+  refine ⟨k, fun x => ?_, fun k' hk' => ?_⟩
+  · rw [hk, hσ, hφ, hσϱ, hfzx]
+  · refine DFunLike.ext _ _ fun b => ?_
+    obtain ⟨a, ha⟩ := hs b
+    have h1 : (φ a : B) = b := by rw [hφ, ha]
+    rw [← h1, hk' a, hk, hσ, hφ, hσϱ, hfzx]
 
 /-- **170IV** (`surjective-nmiu`, dils.tex:6223, Exercise), second half:
-conversely, every corner of a central projection is (equal as a map to) a
-surjective nmiu-map. -/
-theorem surjective_nmiu_2 (φ : NCPMap A B) (z : A)
+conversely, every corner of a central projection **in a von Neumann
+algebra** is (equal as a map to) a surjective nmiu-map.  (For the
+`[VonNeumannAlgebra]` binders see the first half.) -/
+theorem surjective_nmiu_2 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    (φ : NCPMap A B) (z : A)
     (hz : IsStarProjection z) (hcentral : IsCentral A z)
     (hφ : IsCornerFor φ z) :
     ∃ ϱ : NMIUMap A B, (∀ a, ϱ a = φ a) ∧ Function.Surjective ⇑ϱ :=

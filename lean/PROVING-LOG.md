@@ -11705,3 +11705,255 @@ A/VN.  `#print axioms` was run by appending the commands to a *copy* of the
 module and compiling that, never from an importing scratch file.  The olean for
 `Theses.A.Proc.Duplicators` is left built and current (written via `lean -o` to
 the scratchpad and copied in).
+
+
+---
+
+## Session 53 (`B/Dils`) — D5 implemented; 170IV.1 and 157IV.1 closed
+
+Territory: `Theses/B/Dils/` only.  **39 → 37** open declarations,
+compiler-counted per file (`SelfDual` 9, `Pure` **12**, `Paschke` **7**,
+`Kaplansky` 5, `Stinespring` 2, `SelfDualCompletion` 2, `HilbertModules` 0).
+Both new proofs are axiom-clean (`propext, Classical.choice, Quot.sound`,
+checked by appending `#print axioms` to a *copy* of each module).
+
+### 1. QUESTIONS **D5** — implemented, and it really was two signatures
+
+Bas ruled "fix transcription".  `[VonNeumannAlgebra A] [VonNeumannAlgebra B]`
+were added to **170IV**.1 `surjective_nmiu_1` and **170IV**.2
+`surjective_nmiu_2` (`Pure.lean`), matching dils.tex:6223's "between von
+Neumann algebras" and the idiom of the neighbouring `standard_corner_dils`
+and `paschke_corner`.  A tree-wide grep confirmed beforehand what the brief
+assumed: nothing outside `Pure.lean` mentions either name, so the edit is the
+two signatures plus their doc comments.  D5 is **deleted** from QUESTIONS.md
+per the new house rule.
+
+### 2. **170IV**.1 `surjective_nmiu_1` — proved (~150 lines)
+
+The author's solution (`bsols.tex`, `surjective-nmiu`) is transcribed with
+**one dependency-order divergence and one simplification**:
+
+* *(divergence, class 3)* The solution routes `ker ϱ` through
+  `kernel-ultraweak-twosided-ideal-dils` and **69II** `weakly-closed-ideal`
+  (still `sorry`, `A/VN/Projections.lean:4504`).  We use **69IV**
+  `carrier_miu` instead, which *is* proved and gives the same central
+  projection `z = ⌈ϱ⌉` for the special case of an nmiu-map — in the
+  `nmiu_factors` form `ϱ a = ϱ b ↔ z·a = z·b`.  This is not a shortcut past
+  the thesis's development: 69IV is a corollary of 69II in the thesis, so
+  the bootstrapping order is respected; only the more general 69II is
+  bypassed.
+* *(divergence, class 2)* The solution builds the corner `zA` as a type,
+  restricts `ϱ` to it, and argues "a bijective miu-map has an miu inverse,
+  hence is an nmiu- and so an ncp-isomorphism".  We never build `zA`: the
+  inverse is a bare function `σ : B → A` with `σ(ϱ a) = z·a` (well defined
+  by 69IV), which is a *non-unital* ∗-homomorphism, so **34IV**.3
+  `cp_of_mi` gives complete positivity directly and the "miu inverse"
+  argument is not needed.  `σ(1) = z ≠ 1` is exactly why unitality had to
+  go, and nothing else in the proof wanted it.
+* **The step the solution omits is normality of `σ`**, which it covers with
+  "consequently, it is an nmiu-isomorphism (as miu-maps are order-
+  preserving)" — order-preservation is not normality.  The missing argument
+  is short and worth recording: if `u` is an upper bound of `σ(D)` and
+  `d₀ ∈ D`, then `(1−z)u = (1−z)(u − σd₀)(1−z) ≥ 0` because `(1−z)σd₀ = 0`
+  and `z` is central; hence `zu ≤ u`, and `σ(⋁D) ≤ σ(ϱ u) = zu ≤ u`.  This
+  is *not* an erratum — the solution's claim is true, just unargued — so
+  nothing was added to ERRATA.
+* The remaining obligation, `f(z·x) = f(x)` for an ncp `f` with
+  `f(z) = f(1)`, is Kadison–Schwarz.  Session 52's costing proposed
+  `ncp_cp_cs` plus the estimate `ww* ≤ ‖x‖²(1−z)`; the two-argument form
+  **34XIV** `cp_cs` with `a := x`, `b := 1−z` is strictly cheaper — it yields
+  `f(x*(1−z))·f((1−z)x) ≤ ‖f(1−z)‖·f(x*x) = 0` with the left side
+  `star(f((1−z)x))·f((1−z)x)`, so `f((1−z)x) = 0` with no norm estimate.
+
+Uniqueness in the corner's universal property is free: `ϱ` is surjective, so
+a factorisation is determined pointwise.
+
+### 3. **157IV**.1 `paschke_correspondence_mem` — proved (`Paschke.lean`)
+
+The thesis's 157VI ("Set-up") transcribes directly: `√t` commutes with
+`ϱ(𝒜)` (Mathlib's `Commute.cfcₙ_nnreal`, since `CFC.sqrt = cfcₙ NNReal.sqrt`),
+so `φ_t = h ∘ ad_{√t} ∘ ϱ` is a composite of three ncp-maps, and
+`φ − φ_t = φ_{1−t}` is ncp by the same argument at `1 − t`.
+
+**Divergence, class 3, and it is the interesting one.**  The thesis proves
+157IV *only for the concrete dilation* `𝒜 ⊗_φ ℬ` of `existence-paschke` and
+transfers to an arbitrary Paschke dilation at 157IX via
+`paschke-unique-up-to-iso`.  Part 1 needs none of that machinery: the Set-up
+argument never looks inside `𝒫`, and our proof uses the dilation only through
+`hD.1` (`φ = h ∘ ϱ`).  So 157IV.1 is **not** blocked on `existence_paschke`,
+contrary to how the thesis's proof structure reads.  Parts 2 (⇒) and 3 *are*
+model-dependent — 157VII and 157VIII compute with `⟨x̂, T x̂⟩` inside
+`𝒜 ⊗_φ ℬ` and appeal to `hilmod-fixed-on-V` — so they stay blocked.
+
+Infrastructure added, all `private` in `Paschke.lean`: `corrPos` (an ncp-map
+as a positive linear map) and `exists_corrComp` (composition of ncp-maps).
+These are the *third* copy in the tree — `Stinespring.lean` and `Pure.lean`
+each carry their own `private` pair, and `A/Proc/Measurement.lean` has a
+public `ncpComp` that is off this import path (QUESTIONS **D3**).  Worth one
+consolidation pass when D3 is decided.  `ad_{√s}` as a bundled `NCPMap` is
+built inline from `ad_cp_1` (**34V**.1) and `ad_normal` (**44VIII**), the
+latter through the `dirSup`-uniqueness glue that `Stinespring.lean`'s
+`private adPos_normal` also uses.
+
+### 4. Nothing false found; a numbering correction to our own notes
+
+No ERRATA or QUESTIONS row was added.  One correction to *our* documents:
+`dils_completion` (`SelfDualCompletion.lean:81`) is **150II**, not "151I" —
+151Ia is `selfdual_completion_univ`, its universal property.  Session 52's
+survey and the session-53 brief both used the wrong number; `docs/BDils-survey.md`
+now says 150II and explains the difference.
+
+150II itself was assessed and **not attempted**: it is a type construction
+(a completion carrying `NormedAddCommGroup`, `CStarModule`, `CompleteSpace`
+and self-duality) whose thesis proof is the twelve points 150III–150XV, with
+fast nets and a transfinite induction on compatible extensions.  It is not
+session-sized.  The next gate in `B/Dils` is therefore **154III**
+`existence_paschke` (`Paschke.lean:425`), which sits between 150II and
+157IV.2/.3, 171II and most of `Pure.lean`.
+
+### 5. Verification
+
+Each file checked with `lean <file>` under the `LEAN_PATH` bypass: `Pure.lean`
+**0 errors, 12** `declaration uses 'sorry'` (was 13); `Paschke.lean` **0
+errors, 7** (was 8; its remaining style-linter `warning`s are all pre-existing
+and none is in the new code).  `SelfDual` 9, `Kaplansky` 5, `Stinespring` 2,
+`SelfDualCompletion` 2, `HilbertModules` 0 recompiled unchanged, 0 errors
+each.  Several compile attempts had to be retried: another agent was
+rebuilding `A/VN`, and `Completeness.olean`/`Division.olean` vanished
+mid-session — the "oleans go missing under concurrent load" trap, exactly as
+documented.
+
+## Session 55 — `A/VN`: the `CentreSeparating` mis-transcription is repaired, and **69IX** and **90II.2** both fall (worker 80, A chain)
+
+QUESTIONS **D4** ruled on by Bas ("fix transcription") and now deleted from
+that file.
+
+### 1. What was wrong, and what the fix is
+
+`Theses.A.VN.CentreSeparating Ω` was
+
+```lean
+∀ a : A, IsCentral A a → 0 ≤ a → (∀ ω ∈ Ω, ω a = 0) → a = 0
+```
+
+which is **neither** item of **69IX**.  The sources:
+
+* cstar.tex **21II**.4 (`separating-4`) = 69IX item **1**: "`Ω` […] is
+  *centre separating* if `a ∈ 𝒜₊` is zero iff `ω(b*ab) = 0` for all `ω ∈ Ω`
+  and `b ∈ 𝒜`" — note the conjugation, which our version dropped;
+* vn.tex 69IX item **2**: "A central projection `z` of `𝒜` is zero when
+  `ω(z) = 0` for all `ω ∈ Ω`" — central *projections*, not positives;
+* vn.tex 69IX item **3**: `ϱ_Ω` is injective.
+
+**A/CStar already had the faithful 21II.4 rendering**: `Theses.A.CStar.
+CentreSeparating` (`A/CStar/Positive.lean:1811`), alongside 21II.1–3
+(`OrderSeparating`, `Separating`, `Faithful`).  So no new definition of the
+notion was written; the A/VN name is *defined as* that predicate applied to
+`Ω`:
+
+* **`CentreSeparatingConj Ω`** := `Theses.A.CStar.CentreSeparating (fun ω : Ω
+  => ω.toPositiveLinearMap.toLinearMap)` — 69IX item 1, with
+  `centreSeparatingConj_iff` giving the unfolded form;
+* **`CentreSeparatingCentralProj Ω`** — 69IX item 2, verbatim.
+
+The old `CentreSeparating` is **kept under its name**, its doc comment
+retitled to say it is an auxiliary notion belonging to neither thesis, because
+`A/Proc/Tensor.lean` states eight results with it and that file was being
+edited by another worker.  **All eight mean the thesis's notion**
+(`CentreSeparatingConj`): proc.tex 116IV.2 `tensor_generation_2` (three
+occurrences), 116VII `tensor_characterization` (three), 117II.2
+`sum_generation_2` (two) — every one of them transcribes "centre separating
+collection of np-functionals", which in the theses is always 21II.4.  The
+migration is a mechanical rename once `Tensor.lean` is free; `sum_generation_2`
+is the only one of the three that is *proved*, and its proof gets **shorter**
+under the faithful notion (test with `b = κᵢ(bᵢ)`; the centrality gymnastics
+in its current proof disappear).
+
+Bridges proved: `CentreSeparating.centralProj` (auxiliary ⇒ item 2, since a
+central projection is a central positive) and `CentreSeparating.conj`
+(⇒ item 1).  The converses are *not* proved: they need "`⌈a⌉` is central for
+central positive `a`", which the tree still lacks.  Nothing needs them.
+
+### 2. **69IX** `vn_center_separating` — proved, and the brief over-costed it
+
+The brief (following the session-53 QUESTIONS note) said (3) ⇒ (1) needs
+"`⌈a⌉` is central for central positive `a`", via the ultrastrong limit of the
+`a^{1/2ⁿ}`.  **It does not.**  Run the cycle the other way:
+
+* **(1) ⇒ (3)**: `z := (⋃_{ω∈Ω} ⌈⌈ω⌉⌉)^⊥` is a projection with
+  `z ≤ ⌈⌈ω⌉⌉^⊥`, so `star b * z * b ≤ star b * ⌈⌈ω⌉⌉^⊥ * b` and
+  `ω(b* z b) = 0` by the private `omega_conj_cceil_compl` (half of 69V).
+  Item 1 then gives `z = 0`.  This is the thesis's (2) ⇒ (3) argument with
+  the conjugating `b` carried along — and it needs neither `gns_ceil` nor
+  centrality of `z`.
+* **(3) ⇒ (2)**: `1 - z` is a central projection with `ω(1 - (1-z)) = 0`, so
+  `⌈ω⌉ ≤ 1 - z` (`carrier_spec`) and `⌈⌈ω⌉⌉ ≤ 1 - z` (`cceil_fundamental`,
+  leastness); hence `1 = ⋃ ⌈⌈ω⌉⌉ ≤ 1 - z`, so `z ≤ 0`, so `z = 0`.
+* **(2) ⇒ (1)**: the existing `eq_zero_of_centreSeparating_conj`, whose proof
+  already only ever applied the hypothesis to the *projection* `⌈⌈a⌉⌉` — its
+  hypothesis was simply weakened from the auxiliary notion to item 2.
+
+**Divergence, class 3 (different route).**  The thesis gets (1) ⟺ (3) from
+**30X** and proves (2) ⇒ (3) at length through **69VII** `gns_ceil`; we prove
+the cycle (1) ⇒ (3) ⇒ (2) ⇒ (1) and use `gns_ceil` nowhere.  `gns_ceil`
+remains proved and unused here.
+
+Also wrong in the brief: it warned that `projSup_isCentral` might be needed —
+it exists, but the proof above does not use it either.
+
+### 3. **90II.2** `vn_center_separating_fundamental_2` — proved
+
+This was the sole blocker of `B/Dils` **159IX** and **164II.2b**, which are
+now unblocked.  90II.1 and .2 were both restated with the thesis's hypothesis
+(`CentreSeparatingConj`), which is the *weakest* of the three notions, so both
+theorems got stronger; 90II.1's existing proof went through unchanged after
+`nonneg_of_conjNP_of_centreSeparating` was rebased on item 1 (which is exactly
+what **30X** `proto_gelfand_naimark_1` consumes — the bridge lemma
+`centreSeparating_cstar` it used to go through became superfluous and was
+deleted).
+
+The proof transcribes vn.tex 90IV: `ϱ_Ω` is injective (69IX), so **89IX**
+`normal_functional` writes `f = ∑ₙ ⟪xₙ, ϱ_Ω(·)xₙ⟫`; decomposing each `xₙ` over
+the summands of `ℋ_Ω = ⊕_{ω∈Ω} ℋ_ω` turns this into a single absolutely
+summable family over `ℕ × Ω`; a finite `F` carries all but `ε/2` of it; and
+each remaining term `⟪v, ϱ_ω(·)v⟫` is brought within `ε/2` of some `ω(s*(·)s)`
+with `s ∈ S` by 48III (density of the `η_ω(b)`) followed by **72III**.1c
+`bstaromega_lipschitz` — the `‖·‖_ω`-to-operator-norm Lipschitz bound — plus
+ultrastrong density of `S` (`ultrastrong_ball_mem_nhds`).  The thesis's own
+two "without loss of generality" reductions (over `n`, then over `ω`) are the
+single product-index family here.
+
+**Infrastructure, and a duplication to be merged.**  `ℋ_Ω` over a *set* `Ω` did
+not exist: `A/VN/Basic.lean` builds `⊕_ω ℋ_ω` over *all* np-functionals
+(`gnsHilb`, 48VIII).  Rather than generalise that block over an index family —
+which would force a rebuild of the entire tree from the root of the import
+graph, with other workers active — its ~150 lines were copied into
+`NormalFunctionals.lean` with the index cut to `Ω`: `gnsHilbOn`, `gnsRepOn`,
+`gnsElemVecsOn`, `gnsRepOn_normal`, `gnsRepOn_injective`.  **Whoever next
+touches `Basic.lean` should generalise `gnsHilb` over an index family and
+delete the copy** (a note to that effect sits above it, as for `VNSub` and
+`CU`).  The one new item is `gnsRepOn_injective`: `ϱ_Ω(a) = 0` says
+`ω(b* a*a b) = ‖ϱ_Ω(a) η_ω(b)‖² = 0`, so `a*a = 0` exactly when `Ω` is centre
+separating — three lines, where the thesis routes through 30X and 69VII.
+Two further private helpers were added: `inner_conj_diff_le` (the
+polarisation-free `|⟪u,Tu⟫ − ⟪w,Tw⟫| ≤ ‖T‖(‖u‖+‖w‖)‖u−w‖`, the same estimate
+as inside 38VI.2 `vector_functional_convergence_2`, which is *not* exported as
+a lemma there) and `gnsVec_approx_functional` (the ε-argument for a single
+summand).
+
+### 4. Nothing false found
+
+No ERRATA row was added; no new QUESTIONS item.  D4 was deleted, and with it
+the (now empty) "Ours to decide, not the authors'" heading.
+
+### 5. Verification
+
+`lean` under the `LEAN_PATH` bypass, 0 errors each:
+`Projections.lean` **13** `declaration uses 'sorry'` (was 14),
+`NormalFunctionals.lean` **4** (was 5), `Basic.lean` 24, `Division.lean` 7,
+`Completeness.lean` 0 — **A/VN total 48** (was 50).  `#print axioms` clean
+(`[propext, Classical.choice, Quot.sound]`) for `vn_center_separating`,
+`CentreSeparatingCentralProj.conj`, `centreSeparatingConj_iff`,
+`vn_center_separating_fundamental_1` and `vn_center_separating_fundamental_2`.
+Nothing outside `A/VN` referenced the changed declarations, so `A/Proc` and
+`B/Dils` are untouched.

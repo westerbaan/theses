@@ -5099,28 +5099,73 @@ theorem gns_ceil {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
     rwa [sub_sub_cancel] at hkey
 
 variable (A) in
-/-- A collection `Ω` of np-functionals is **centre separating**
-(`separating`, cstar.tex 21II): a central positive `a` with `ω(a) = 0` for
-all `ω ∈ Ω` is zero. -/
+/-- **Auxiliary, and not a notion of either thesis**: a collection `Ω` of
+np-functionals kills no nonzero *central positive* element — `a` central,
+`0 ≤ a` and `ω(a) = 0` for all `ω ∈ Ω` force `a = 0`.
+
+⚠️ This is *neither* item of **69IX**: it is not cstar.tex **21II**.4 (which
+conjugates, item 1, here `CentreSeparatingConj`) and not 69IX item 2 (which
+speaks of central *projections*, here `CentreSeparatingCentralProj`).  It sits
+strictly between the two: `CentreSeparating → CentreSeparatingCentralProj`
+(`CentreSeparating.centralProj`, projections are positive), and the three are
+all equivalent once the missing lemma "`⌈a⌉` is central for central positive
+`a`" is available (see PROVING-LOG, "Divergences").
+
+Kept under this name only because `A/Proc/Tensor.lean` states eight results
+with it; those eight all mean the thesis's notion, i.e.
+`CentreSeparatingConj`, and are to be migrated. -/
 def CentreSeparating (Ω : Set (NPFunctional A)) : Prop :=
   ∀ a : A, IsCentral A a → 0 ≤ a → (∀ ω ∈ Ω, ω a = 0) → a = 0
 
-/-- **69IX** (`vn-center-separating`, vn.tex:3693, Corollary), the implication
-its consumers actually need: our `CentreSeparating` — thesis item **2**, "a
-*central* positive element killed by all of `Ω` is zero" — gives the
-C*-algebraic notion of cstar.tex **21II**.4, which is thesis item **1**.
+variable (A) in
+/-- **21II**.4 (`separating`, cstar.tex:3098, Definition), which is **69IX**
+item **1** — the thesis's *centre separating*.  Quoting cstar.tex:
 
-(Recorded in PROVING-LOG: our `CentreSeparating` renders item 2, not item 1,
-so `vn_center_separating`'s TFAE as stated loses the C*-notion.  This lemma
-supplies the missing bridge directly, without the `gns_ceil` route the thesis
-takes.)
+> A collection `Ω` of linear maps on a C\*-algebra `𝒜` will be called […]
+> **centre separating** if `a ∈ 𝒜₊` is zero iff `ω(b*ab) = 0` for all
+> `ω ∈ Ω` and `b ∈ 𝒜`.
+
+This is *literally* `Theses.A.CStar.CentreSeparating` — the 21II.4 rendering
+already in `A/CStar/Positive.lean` — applied to `Ω` read as an indexed family
+of positive linear functionals; it is not a second definition of the notion.
+See `centreSeparatingConj_iff` for the unfolded form. -/
+def CentreSeparatingConj (Ω : Set (NPFunctional A)) : Prop :=
+  Theses.A.CStar.CentreSeparating
+    (fun ω : Ω => ((ω : NPFunctional A).toPositiveLinearMap.toLinearMap : A →ₗ[ℂ] ℂ))
+
+/-- `CentreSeparatingConj` unfolded: `a ∈ A₊` is zero iff `ω(b*ab) = 0` for
+all `ω ∈ Ω` and all `b ∈ A`. -/
+theorem centreSeparatingConj_iff (Ω : Set (NPFunctional A)) :
+    CentreSeparatingConj A Ω ↔
+      ∀ a : A, 0 ≤ a → (a = 0 ↔ ∀ ω ∈ Ω, ∀ b : A, (ω (star b * a * b) : ℂ) = 0) :=
+  ⟨fun h a ha => (h a ha).trans ⟨fun H ω hω b => H ⟨ω, hω⟩ b, fun H ω b => H ω ω.2 b⟩,
+   fun h a ha => (h a ha).trans ⟨fun H ω b => H ω ω.2 b, fun H ω hω b => H ⟨ω, hω⟩ b⟩⟩
+
+variable (A) in
+/-- **69IX** item **2** (`vn-center-separating`, vn.tex:3693, Corollary),
+quoting vn.tex:
+
+> A central projection `z` of `𝒜` is zero when `ω(z) = 0` for all `ω ∈ Ω`. -/
+def CentreSeparatingCentralProj (Ω : Set (NPFunctional A)) : Prop :=
+  ∀ z : A, IsStarProjection z → IsCentral A z → (∀ ω ∈ Ω, ω z = 0) → z = 0
+
+/-- The auxiliary central-positive notion implies **69IX** item 2: a central
+projection is a central positive. -/
+theorem CentreSeparating.centralProj {Ω : Set (NPFunctional A)}
+    (h : CentreSeparating A Ω) : CentreSeparatingCentralProj A Ω :=
+  fun z hz hzc hzero => h z hzc hz.nonneg hzero
+
+/-- **69IX**, the implication (2) ⇒ (1) — the one its consumers actually
+need: 69IX item **2** ("a central *projection* killed by all of `Ω` is
+zero") gives cstar.tex **21II**.4, thesis item **1**.
 
 Proof: `⌈⌈a⌉⌉ = ⋃_b ⌈b* ⌊a⌉ b⌉` by **68I**, every `ω ∈ Ω` kills `b* ⌊a⌉ b`
 (because it kills `b* a b`, hence `b* a a* b`, hence `b* ⌈aa*⌉ b` by **60I**),
 so every `ω` kills `⌈b* ⌊a⌉ b⌉` — again by **60I** — hence kills their
-supremum, which is the central projection `⌈⌈a⌉⌉`. -/
+supremum, which is the central projection `⌈⌈a⌉⌉`.  (This is a shortcut: the
+thesis derives (2) ⇒ (1) through (3) and `gns_ceil`.) -/
 theorem eq_zero_of_centreSeparating_conj (Ω : Set (NPFunctional A))
-    (hΩ : CentreSeparating A Ω) {a : A} (ha : 0 ≤ a)
+    (hΩ : CentreSeparatingCentralProj A Ω) {a : A} (ha : 0 ≤ a)
     (h : ∀ ω ∈ Ω, ∀ b : A, ω (star b * a * b) = 0) : a = 0 := by
   have hasa : IsSelfAdjoint a := IsSelfAdjoint.of_nonneg ha
   obtain ⟨herproj, hera⟩ := (ceill_basic_2 a).1
@@ -5177,47 +5222,103 @@ theorem eq_zero_of_centreSeparating_conj (Ω : Set (NPFunctional A))
     refine le_antisymm hmono ?_
     exact npFunctional_nonneg ω (by rw [hcc]; exact (projSup_spec hPproj).1.nonneg)
   obtain ⟨⟨hzproj, hzcentral, hza⟩, -⟩ := cceil_isLeast a
-  have hz0 : cceil a = 0 := hΩ (cceil a) hzcentral hzproj.nonneg hzero
+  have hz0 : cceil a = 0 := hΩ (cceil a) hzproj hzcentral hzero
   rw [← hza, hz0, zero_mul]
 
-/-- `eq_zero_of_centreSeparating_conj` restated as cstar.tex **21II**.4 for the
-family `Ω`. -/
-theorem centreSeparating_cstar (Ω : Set (NPFunctional A))
-    (hΩ : CentreSeparating A Ω) :
-    Theses.A.CStar.CentreSeparating
-      (fun ω : Ω => ((ω : NPFunctional A).toPositiveLinearMap.toLinearMap : A →ₗ[ℂ] ℂ)) := by
+/-- **69IX**, (2) ⇒ (1) packaged: `eq_zero_of_centreSeparating_conj` read as
+cstar.tex **21II**.4 for the family `Ω`. -/
+theorem CentreSeparatingCentralProj.conj {Ω : Set (NPFunctional A)}
+    (hΩ : CentreSeparatingCentralProj A Ω) : CentreSeparatingConj A Ω := by
   intro x hx
   refine ⟨fun hx0 ω b => by rw [hx0]; simp, fun H => ?_⟩
   exact eq_zero_of_centreSeparating_conj Ω hΩ hx fun ω hω b => H ⟨ω, hω⟩ b
 
+/-- The auxiliary central-positive notion implies the thesis's, through
+**69IX** item 2. -/
+theorem CentreSeparating.conj {Ω : Set (NPFunctional A)}
+    (hΩ : CentreSeparating A Ω) : CentreSeparatingConj A Ω :=
+  hΩ.centralProj.conj
+
 /-- The `Ω`-version of **44XI**'s `nonneg_of_conjNP`: for a centre separating
-collection `Ω`, positivity of all `ω(c* a c)` (`ω ∈ Ω`, `c ∈ A`) already gives
-`0 ≤ a`.  This is `centreSeparating_cstar` fed to **30X**
-(`proto_gelfand_naimark_1`). -/
+collection `Ω` (cstar.tex **21II**.4), positivity of all `ω(c* a c)`
+(`ω ∈ Ω`, `c ∈ A`) already gives `0 ≤ a`.  This is `CentreSeparatingConj` fed
+to **30X** (`proto_gelfand_naimark_1`). -/
 theorem nonneg_of_conjNP_of_centreSeparating (Ω : Set (NPFunctional A))
-    (hΩ : CentreSeparating A Ω) {a : A}
+    (hΩ : CentreSeparatingConj A Ω) {a : A}
     (h : ∀ ω ∈ Ω, ∀ c : A, (0 : ℂ) ≤ ω (star c * a * c)) : 0 ≤ a := by
-  set F : Ω → (A →ₗ[ℂ] ℂ) :=
-    fun ω => (ω : NPFunctional A).toPositiveLinearMap.toLinearMap with hF
-  have hpos : ∀ ω : Ω, IsPositiveMap (F ω) := fun ω x hx =>
-    npFunctional_nonneg (ω : NPFunctional A) hx
-  refine ((proto_gelfand_naimark_1 F hpos).mp (centreSeparating_cstar Ω hΩ) a).mpr fun p => ?_
+  have hpos : ∀ ω : Ω,
+      IsPositiveMap ((ω : NPFunctional A).toPositiveLinearMap.toLinearMap : A →ₗ[ℂ] ℂ) :=
+    fun ω x hx => npFunctional_nonneg (ω : NPFunctional A) hx
+  refine ((proto_gelfand_naimark_1 _ hpos).mp hΩ a).mpr fun p => ?_
   show (0 : ℂ) ≤ (p.1 : NPFunctional A) (star p.2 * (a * p.2))
   rw [← mul_assoc]
   exact h _ p.1.2 p.2
 
 /-- **69IX** (`vn-center-separating`, vn.tex:3693, Corollary): for a
 collection `Ω` of np-functionals on a von Neumann algebra the following are
-equivalent: (1) `Ω` is centre separating; (2) a central projection `z` with
-`ω(z) = 0` for all `ω ∈ Ω` is zero; (3) `⋃_{ω∈Ω}⌈⌈ω⌉⌉ = 1` (equivalently:
-the representation `ρ_Ω` is injective, cf. **69VII**). -/
+equivalent.
+
+> 1. `Ω` is centre separating (see 21II).
+> 2. A central projection `z` of `𝒜` is zero when `ω(z) = 0` for all `ω ∈ Ω`.
+> 3. The map `ϱ_Ω : 𝒜 → 𝔅(ℋ_Ω)` from 69II is injective.
+
+Item 3 is rendered as `⌈ϱ_Ω⌉ = ⋃_{ω∈Ω}⌈⌈ω⌉⌉ = 1`, which is what **69VII**
+(`gns_ceil`) computes and what `carrier_basic` turns into injectivity.
+
+Our route differs from the thesis's.  The thesis gets (1) ⟺ (3) from **30X**
+and proves (2) ⇒ (3); we prove (1) ⇒ (3) ⇒ (2) ⇒ (1), where (2) ⇒ (1) is
+`eq_zero_of_centreSeparating_conj` (**68I** plus **60I**, a shortcut round
+`gns_ceil`) and (3) ⇒ (2) is the leastness of `⌈⌈·⌉⌉`.  The thesis's
+(2) ⇒ (3) step — `⌈ϱ_Ω⌉^⊥ ≤ ⌈⌈ω⌉⌉^⊥ ≤ ⌈ω⌉^⊥`, so `ω(⌈ϱ_Ω⌉^⊥) = 0` — is our
+(1) ⇒ (3) with the conjugating `b` carried along. -/
 theorem vn_center_separating (Ω : Set (NPFunctional A)) :
     List.TFAE
-      [CentreSeparating A Ω,
-       ∀ z : A, IsStarProjection z → IsCentral A z →
-         (∀ ω ∈ Ω, ω z = 0) → z = 0,
-       projSup {p : A | ∃ ω ∈ Ω, p = cceil (npCarrier ω)} = 1] :=
-  sorry
+      [CentreSeparatingConj A Ω,
+       CentreSeparatingCentralProj A Ω,
+       projSup {p : A | ∃ ω ∈ Ω, p = cceil (npCarrier ω)} = 1] := by
+  have hSproj : ∀ p ∈ {p : A | ∃ ω ∈ Ω, p = cceil (npCarrier ω)}, IsStarProjection p := by
+    rintro _ ⟨ν, -, rfl⟩
+    exact (cceil_isLeast _).1.1
+  have hSmem : ∀ ω ∈ Ω, cceil (npCarrier ω)
+      ∈ {p : A | ∃ ω ∈ Ω, p = cceil (npCarrier ω)} := fun ω hω => ⟨ω, hω, rfl⟩
+  obtain ⟨huproj, hub, hleast⟩ := projSup_spec hSproj
+  set u : A := projSup {p : A | ∃ ω ∈ Ω, p = cceil (npCarrier ω)} with hudef
+  tfae_have 1 → 3 := by
+    intro h
+    -- `z := (⋃_ω ⌈⌈ω⌉⌉)^⊥` is a central projection, and `ω(b* z b) = 0`
+    -- because `z ≤ ⌈⌈ω⌉⌉^⊥` and `ω(b* ⌈⌈ω⌉⌉^⊥ b) = 0` (half of **69V**).
+    have hzproj : IsStarProjection (1 - u) := huproj.one_sub
+    have hz0 : (1 : A) - u = 0 := by
+      refine (h (1 - u) hzproj.nonneg).mpr fun ω b => ?_
+      have hle : (1 : A) - u ≤ 1 - cceil (npCarrier (ω : NPFunctional A)) :=
+        sub_le_sub_left (hub _ (hSmem _ ω.2)) 1
+      have h2 : ((ω : NPFunctional A) (star b * (1 - u) * b) : ℂ)
+          ≤ (ω : NPFunctional A)
+            (star b * (1 - cceil (npCarrier (ω : NPFunctional A))) * b) :=
+        npFunctional_mono _ (star_left_conjugate_le_conjugate hle b)
+      rw [omega_conj_cceil_compl (ω : NPFunctional A) b] at h2
+      exact le_antisymm h2 (npFunctional_nonneg _ (conj_proj_nonneg hzproj b))
+    exact (sub_eq_zero.mp hz0).symm
+  tfae_have 3 → 2 := by
+    intro hu z hzproj hzc hzero
+    -- `1 - z` is a central projection above every `⌈ω⌉`, hence above every
+    -- `⌈⌈ω⌉⌉`, hence above their supremum `1`.
+    have hle : u ≤ 1 - z := by
+      refine hleast _ hzproj.one_sub ?_
+      rintro _ ⟨ν, hν, rfl⟩
+      obtain ⟨hcproj, -, hcleast⟩ := carrier_spec ν.toPositiveLinearMap ν.preservesDirSups'
+      refine (cceil_fundamental (npCarrier ν) hcproj).1.2
+        ⟨hzproj.one_sub, isCentral_one_sub hzc, ?_⟩
+      exact hcleast (1 - z) hzproj.one_sub (by rw [sub_sub_cancel]; exact hzero ν hν)
+    rw [hu] at hle
+    have hz : z ≤ 0 := by
+      have h0 : (0 : A) ≤ -z := by
+        have h1 := sub_nonneg.mpr hle
+        rwa [sub_sub_cancel_left] at h1
+      exact neg_nonneg.mp h0
+    exact le_antisymm hz hzproj.nonneg
+  tfae_have 2 → 1 := fun h => h.conj
+  tfae_finish
 
 /-! ## Parsec 700: the classification of commutative von Neumann algebras
 
