@@ -3582,7 +3582,17 @@ theorem sharp_multiplicative [VonNeumannAlgebra A] [VonNeumannAlgebra B]
 /-! ## Parsec 1000: purity -/
 
 /-- **100I** (`pure`, proc.tex:926, Definition): filters, corners, and
-their compositions are called **pure**. -/
+their compositions are called **pure**.
+
+The whole chapter lives in `W*_cp`, so the algebra *through* which a
+composition passes is a von Neumann algebra like the others; the `comp`
+constructor therefore carries `[VonNeumannAlgebra B]`.  Without it the
+definition is not the thesis's, and **100III** (1)⟹(2) is not provable:
+its induction must factor the two halves of a composite through
+`filter-basic` / `corner-basic`, which need the intermediate algebra to be
+a von Neumann algebra.  (Transcription fix, session 49; the filter and
+corner constructors need no such hypothesis because the base cases of that
+induction do not.) -/
 inductive IsPure :
     ∀ {A B : Type u} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
       [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B],
@@ -3596,7 +3606,8 @@ inductive IsPure :
   | comp {A B C : Type u} [CStarAlgebra A] [PartialOrder A]
       [StarOrderedRing A] [CStarAlgebra B] [PartialOrder B]
       [StarOrderedRing B] [CStarAlgebra C] [PartialOrder C]
-      [StarOrderedRing C] {f : NCPMap A B} {g : NCPMap B C} :
+      [StarOrderedRing C] [VonNeumannAlgebra B] {f : NCPMap A B}
+      {g : NCPMap B C} :
       IsPure g → IsPure f → IsPure (ncpComp g f)
 
 /-- **100II** (proc.tex:931, Exercise), part 1: an ncp-isomorphism between
@@ -3643,6 +3654,400 @@ theorem isPure_adSelf [VonNeumannAlgebra A] (a : A) : IsPure (adSelf a) := by
     isCornerOf_cornerProjMap (rangeProj a) (rangeProj a) hq
       (floor_of_isStarProjection hq)⟩
 
+/-! ### Infrastructure for **100III** `pure-fundamental` -/
+
+/-- An ncp-isomorphism is a **filter**: the factorisation of `h` through
+`f` is `f⁻¹ ∘ h`, and the hypothesis `h(1) ≤ f(1)` is not needed.  (This is
+the argument inside `isPure_of_iso`, isolated for reuse.) -/
+theorem isFilter_of_iso [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    (f : NCPMap A B) (g : NCPMap B A) (hgf : ∀ a, g (f a) = a)
+    (hfg : ∀ b, f (g b) = b) : IsFilter f := by
+  refine ⟨?_⟩
+  intro X _ _ _ _ h _
+  refine ⟨ncpComp g h, fun x => ?_, fun k hk => ?_⟩
+  · rw [ncpComp_apply, hfg]
+  · refine DFunLike.ext _ _ fun x => ?_
+    rw [ncpComp_apply, hk x, hgf]
+
+/-- The identity map is a filter. -/
+theorem isFilter_ncpId [VonNeumannAlgebra A] : IsFilter (ncpId A) :=
+  isFilter_of_iso (ncpId A) (ncpId A) (fun a => by rw [ncpId_apply, ncpId_apply])
+    (fun b => by rw [ncpId_apply, ncpId_apply])
+
+/-- An ncp-isomorphism is a corner of `1`. -/
+theorem isCornerOf_one_of_iso [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    (f : NCPMap A B) (g : NCPMap B A) (hgf : ∀ a, g (f a) = a)
+    (hfg : ∀ b, f (g b) = b) : IsCornerOf (1 : A) f := by
+  constructor
+  · rw [sub_self]
+    exact map_zero f.toCompletelyPositiveMap
+  · intro X _ _ _ _ h _
+    refine ⟨ncpComp h g, fun a => ?_, fun k hk => ?_⟩
+    · rw [ncpComp_apply, hgf]
+    · refine DFunLike.ext _ _ fun b => ?_
+      calc k b = k (f (g b)) := by rw [hfg]
+        _ = h (g b) := (hk (g b)).symm
+        _ = ncpComp h g b := (ncpComp_apply h g b).symm
+
+/-- A *unital* ncp-isomorphism is a **corner map** — a corner of `1`. -/
+theorem isCornerMap_of_iso [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    (f : NCPMap A B) (g : NCPMap B A) (hgf : ∀ a, g (f a) = a)
+    (hfg : ∀ b, f (g b) = b) (hu : f 1 = 1) : IsCornerMap f :=
+  ⟨hu, 1, ⟨zero_le_one, le_rfl⟩, isCornerOf_one_of_iso f g hgf hfg⟩
+
+/-- The identity map is a corner of `1`. -/
+theorem isCornerOf_one_ncpId [VonNeumannAlgebra A] :
+    IsCornerOf (1 : A) (ncpId A) :=
+  isCornerOf_one_of_iso (ncpId A) (ncpId A)
+    (fun a => by rw [ncpId_apply, ncpId_apply])
+    (fun b => by rw [ncpId_apply, ncpId_apply])
+
+/-- The identity map is a corner map. -/
+theorem isCornerMap_ncpId [VonNeumannAlgebra A] : IsCornerMap (ncpId A) :=
+  isCornerMap_of_iso (ncpId A) (ncpId A)
+    (fun a => by rw [ncpId_apply, ncpId_apply])
+    (fun b => by rw [ncpId_apply, ncpId_apply]) (ncpId_apply 1)
+
+/-- **98IV**.1 in the form 100III needs it: *any* two corners of the same
+effect are canonically isomorphic (`corner_basic_1` is the case where one
+of them is the standard corner `π_p`). -/
+theorem corner_unique [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    [VonNeumannAlgebra C] (p : A) (π : NCPMap A B) (hπ : IsCornerOf p π)
+    (ρ : NCPMap A C) (hρ : IsCornerOf p ρ) :
+    ∃ β : NCPMap C B, (∀ a : A, π a = β (ρ a)) ∧
+      ∃ β' : NCPMap B C, (∀ x, β' (β x) = x) ∧ ∀ y, β (β' y) = y := by
+  obtain ⟨β, hβ, -⟩ := hρ.universal B π hπ.map_perp
+  obtain ⟨γ, hγ, -⟩ := hπ.universal C ρ hρ.map_perp
+  have hβγ : ncpComp β γ = ncpId B := by
+    obtain ⟨k₀, hk₀, hun⟩ := hπ.universal B π hπ.map_perp
+    rw [hun (ncpComp β γ) (fun a => by rw [ncpComp_apply, ← hγ, ← hβ]),
+      hun (ncpId B) (fun a => by rw [ncpId_apply])]
+  have hγβ : ncpComp γ β = ncpId C := by
+    obtain ⟨k₀, hk₀, hun⟩ := hρ.universal C ρ hρ.map_perp
+    rw [hun (ncpComp γ β) (fun a => by rw [ncpComp_apply, ← hβ, ← hγ]),
+      hun (ncpId C) (fun a => by rw [ncpId_apply])]
+  refine ⟨β, hβ, γ, fun x => ?_, fun y => ?_⟩
+  · have h := congrArg (fun k : NCPMap C C => k x) hγβ
+    simpa [ncpComp_apply, ncpId_apply] using h
+  · have h := congrArg (fun k : NCPMap B B => k y) hβγ
+    simpa [ncpComp_apply, ncpId_apply] using h
+
+/-- **98II**.1 in the form 100III needs it: two filters with the same value
+at `1` are canonically isomorphic (`filter_basic_1` is the case where one
+of them is the standard filter `c_p`). -/
+theorem filter_unique [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    [VonNeumannAlgebra C] (c : NCPMap B A) (hc : IsFilter c) (d : NCPMap C A)
+    (hd : IsFilter d) (h : (c 1 : A) = d 1) :
+    ∃ α : NCPMap B C, (∀ x : B, (c x : A) = d (α x)) ∧ α 1 = 1 ∧
+      ∃ α' : NCPMap C B, (∀ x, α' (α x) = x) ∧ ∀ y, α (α' y) = y := by
+  obtain ⟨α, hα, -⟩ := hd.universal B c (le_of_eq h)
+  obtain ⟨γ, hγ, -⟩ := hc.universal C d (le_of_eq h.symm)
+  have hγα : ncpComp γ α = ncpId B := by
+    obtain ⟨k₀, hk₀, hun⟩ := hc.universal B c le_rfl
+    rw [hun (ncpComp γ α) (fun x => by rw [ncpComp_apply, ← hγ, ← hα]),
+      hun (ncpId B) (fun x => by rw [ncpId_apply])]
+  have hαγ : ncpComp α γ = ncpId C := by
+    obtain ⟨k₀, hk₀, hun⟩ := hd.universal C d le_rfl
+    rw [hun (ncpComp α γ) (fun x => by rw [ncpComp_apply, ← hα, ← hγ]),
+      hun (ncpId C) (fun x => by rw [ncpId_apply])]
+  have hγα' : ∀ x : B, γ (α x) = x := fun x => by
+    have h1 := congrArg (fun k : NCPMap B B => k x) hγα
+    simpa [ncpComp_apply, ncpId_apply] using h1
+  have hαγ' : ∀ y : C, α (γ y) = y := fun y => by
+    have h1 := congrArg (fun k : NCPMap C C => k y) hαγ
+    simpa [ncpComp_apply, ncpId_apply] using h1
+  refine ⟨α, hα, ?_, γ, hγα', hαγ'⟩
+  refine (filter_basic_2 d hd).1 ?_
+  rw [← hα 1, h]
+
+/-- A **unital filter is an ncpu-isomorphism**: `id` factors through it by
+its own universal property (`filter_unique` against `id`, which is a filter
+by `isFilter_ncpId`).  This is what turns 100III into **100VII**. -/
+theorem exists_inverse_of_isFilter_unital [VonNeumannAlgebra A]
+    [VonNeumannAlgebra B] (c : NCPMap A B) (hc : IsFilter c)
+    (hu : (c 1 : B) = 1) :
+    ∃ g : NCPMap B A, (∀ a, g (c a) = a) ∧ (∀ b, c (g b) = b) ∧ g 1 = 1 := by
+  obtain ⟨α, hα, hα1, α', hα'α, hαα'⟩ :=
+    filter_unique c hc (ncpId B) isFilter_ncpId (by rw [ncpId_apply, hu])
+  have hcx : ∀ x : A, (c x : B) = α x := fun x => by rw [hα x, ncpId_apply]
+  refine ⟨α', fun a => ?_, fun b => ?_, ?_⟩
+  · rw [hcx a, hα'α]
+  · rw [hcx (α' b), hαα']
+  · have h := hα'α 1
+    rwa [hα1] at h
+
+/-- A **corner of `1` is an ncp-isomorphism**, hence in particular a
+filter — the corner half of the same reduction. -/
+theorem isFilter_of_isCornerOf_one [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    (π : NCPMap A B) (hπ : IsCornerOf (1 : A) π) : IsFilter π := by
+  obtain ⟨β, hβ, β', hβ'β, hββ'⟩ :=
+    corner_unique (1 : A) π hπ (ncpId A) isCornerOf_one_ncpId
+  have hβx : ∀ a : A, (π a : B) = β a := fun a => by rw [hβ a, ncpId_apply]
+  refine isFilter_of_iso π β' (fun a => ?_) (fun b => ?_)
+  · rw [hβx a, hβ'β]
+  · rw [hβx (β' b), hββ']
+
+/-- Auxiliary for **100III**: an ncp-map killing `q^⊥`, for a projection
+`q`, is invariant under conjugation by `q`.  (The carrier step inside
+`isCornerOf_stdCorner`, isolated so that it can also be used when the
+ambient algebra is itself a corner.) -/
+private theorem map_conj_eq_of_map_perp [VonNeumannAlgebra A]
+    [VonNeumannAlgebra B] {q : A} (hq : IsStarProjection q) (f : NCPMap A B)
+    (hf : (f (1 - q) : B) = 0) (a : A) : (f a : B) = f (q * a * q) := by
+  set F : A →ₚ[ℂ] B := PositiveLinearMap.ofClass f.toCompletelyPositiveMap with hF
+  have hFn : PreservesDirSups ⇑F := f.preservesDirSups'
+  have hf' : F (1 - q) = 0 := hf
+  have hcle : carrier F hFn ≤ q := (carrier_spec F hFn).2.2 _ hq hf'
+  have hcproj : IsStarProjection (carrier F hFn) := (carrier_spec F hFn).1
+  have hcq : carrier F hFn * q = carrier F hFn :=
+    ((projection_below_effect q (carrier F hFn) ⟨hq.nonneg, hq.le_one⟩
+      hcproj).out 0 7).mp hcle
+  have hqc : q * carrier F hFn = carrier F hFn := by
+    have hs := congrArg star hcq
+    rwa [star_mul, hq.isSelfAdjoint.star_eq, hcproj.isSelfAdjoint.star_eq] at hs
+  have key : (F a : B) = F (q * a * q) := by
+    have e1 := (carrier_fundamental F hFn a).2.2
+    have e2 := (carrier_fundamental F hFn (q * a * q)).2.2
+    rw [e2, show carrier F hFn * (q * a * q) * carrier F hFn
+        = (carrier F hFn * q) * a * (q * carrier F hFn) by noncomm_ring, hcq,
+      hqc, ← e1]
+  exact key
+
+/-- Auxiliary for **100III**: for projections `q ≤ e` the map
+`x ↦ q x q : e𝒜e → q𝒜q` is a **corner** (of the effect `q` of `e𝒜e`).
+This is `isCornerOf_stdCorner` run inside the von Neumann algebra `e𝒜e`,
+but with the sub-corner presented as `q𝒜q` rather than as a corner of a
+corner — which is what keeps 100III clear of iterated corners. -/
+private theorem exists_subCornerProj [VonNeumannAlgebra A] {e q : A}
+    [Fact (IsStarProjection e)] [Fact (IsStarProjection q)] (hqe : q * e = q) :
+    ∃ κ : NCPMap (Corner A e) (Corner A q),
+      (∀ x : Corner A e, (κ x).val = q * x.val * q) ∧ IsCornerMap κ := by
+  have he : IsStarProjection e := Corner.proj e
+  have hq : IsStarProjection q := Corner.proj q
+  have hqq : q * q = q := hq.isIdempotentElem.eq
+  have heq : e * q = q := by
+    have h := congrArg star hqe
+    rwa [star_mul, he.isSelfAdjoint.star_eq, hq.isSelfAdjoint.star_eq] at h
+  have hqmem : e * q * e = q := by rw [heq, hqe]
+  -- the map `x ↦ q x q : e𝒜e → 𝒜`, corestricted to `q𝒜q`
+  have hbaseapp : ∀ x : Corner A e,
+      (ncpComp (adSelf q) (cornerIncl e).toNCPMap x : A) = q * x.val * q := by
+    intro x
+    rw [ncpComp_apply, cornerIncl_apply, adSelf_apply, hq.isSelfAdjoint.star_eq]
+  obtain ⟨κ, hκ0⟩ := exists_ncpCorestrict q
+    (ncpComp (adSelf q) (cornerIncl e).toNCPMap) (by
+      intro x
+      rw [hbaseapp]
+      calc q * (q * x.val * q) * q = (q * q) * x.val * (q * q) := by noncomm_ring
+        _ = q * x.val * q := by rw [hqq])
+  have hκ : ∀ x : Corner A e, (κ x).val = q * x.val * q := by
+    intro x; rw [hκ0 x, hbaseapp]
+  -- the inclusion `q𝒜q → e𝒜e`
+  obtain ⟨ι, hι0⟩ := exists_ncpCorestrict e (cornerIncl q).toNCPMap (by
+    intro y
+    rw [cornerIncl_apply]
+    calc e * y.val * e = e * (q * y.val * q) * e := by rw [y.property]
+      _ = (e * q) * y.val * (q * e) := by noncomm_ring
+      _ = q * y.val * q := by rw [heq, hqe]
+      _ = y.val := y.property)
+  have hι : ∀ y : Corner A q, (ι y).val = y.val := by
+    intro y; rw [hι0 y, cornerIncl_apply]
+  have hq'idem : (⟨q, hqmem⟩ : Corner A e) * ⟨q, hqmem⟩ = ⟨q, hqmem⟩ :=
+    Corner.val_injective (by show q * q = q; exact hqq)
+  have hq'sa : star (⟨q, hqmem⟩ : Corner A e) = ⟨q, hqmem⟩ :=
+    Corner.val_injective (by show star q = q; exact hq.isSelfAdjoint.star_eq)
+  have hq' : IsStarProjection (⟨q, hqmem⟩ : Corner A e) := ⟨hq'idem, hq'sa⟩
+  refine ⟨κ, hκ, ?_, ⟨q, hqmem⟩, ⟨?_, ?_⟩, ?_, ?_⟩
+  · refine Corner.val_injective ?_
+    rw [hκ]
+    simp only [Corner.val_one]
+    rw [hqe, hqq]
+  · exact (Corner.le_def _ _).mpr (show (0 : A) ≤ q from hq.nonneg)
+  · refine (Corner.le_def _ _).mpr ?_
+    show q ≤ (1 : Corner A e).val
+    simp only [Corner.val_one]
+    exact ((projection_below_effect e q ⟨he.nonneg, he.le_one⟩ hq).out 7 0).mp hqe
+  · refine Corner.val_injective ?_
+    rw [hκ]
+    simp only [Corner.val_sub, Corner.val_one, Corner.val_zero]
+    have h1 : q * (e - q) * q = q * e * q - q * q * q := by noncomm_ring
+    rw [h1, hqe, hqq, hqq, sub_self]
+  · intro X _ _ _ _ f' hf'
+    have hconj := map_conj_eq_of_map_perp hq' f' hf'
+    refine ⟨ncpComp f' ι, fun x => ?_, fun g hg => ?_⟩
+    · rw [ncpComp_apply]
+      have hval : ι (κ x) = (⟨q, hqmem⟩ : Corner A e) * x * ⟨q, hqmem⟩ :=
+        Corner.val_injective (by rw [hι, hκ]; simp only [Corner.val_mul])
+      rw [hval]
+      exact hconj x
+    · refine DFunLike.ext _ _ fun y => ?_
+      have hsurj : κ (ι y) = y :=
+        Corner.val_injective (by rw [hκ, hι]; exact y.property)
+      calc g y = g (κ (ι y)) := by rw [hsurj]
+        _ = f' (ι y) := (hg _).symm
+        _ = ncpComp f' ι y := (ncpComp_apply f' ι y).symm
+
+/-- Auxiliary for **100III**: a filter all of whose values lie in a corner
+`q𝒜q` is still a filter when corestricted to `q𝒜q`. -/
+private theorem isFilter_corestrict [VonNeumannAlgebra A]
+    [VonNeumannAlgebra C] {q : A} [Fact (IsStarProjection q)] (c : NCPMap C A)
+    (hc : IsFilter c) (c' : NCPMap C (Corner A q))
+    (hcc : ∀ x : C, (c' x).val = c x) : IsFilter c' := by
+  refine ⟨?_⟩
+  intro X _ _ _ _ h hh1
+  have hh0 : ∀ x : X, (ncpComp (cornerIncl q).toNCPMap h x : A) = (h x).val := by
+    intro x; rw [ncpComp_apply, cornerIncl_apply]
+  have hle : (ncpComp (cornerIncl q).toNCPMap h 1 : A) ≤ c 1 := by
+    rw [hh0, ← hcc 1]
+    exact (Corner.le_def _ _).mp hh1
+  obtain ⟨g, hg, hgu⟩ := hc.universal X (ncpComp (cornerIncl q).toNCPMap h) hle
+  refine ⟨g, fun x => ?_, fun g' hg' => ?_⟩
+  · refine Corner.val_injective ?_
+    rw [hcc, ← hh0 x]
+    exact hg x
+  · refine hgu g' ?_
+    intro x
+    rw [hh0, ← hcc (g' x), hg' x]
+
+/-- Auxiliary for **100III** and **100VII**: a filter is faithful
+(`⌈c⌉ = 1`, 98II.2 — here only its injectivity is used), so
+`⌈c ∘ π⌉ = ⌈π⌉`. -/
+private theorem ncpCarrier_comp_filter [VonNeumannAlgebra A]
+    [VonNeumannAlgebra B] [VonNeumannAlgebra C] (π : NCPMap A C)
+    (c : NCPMap C B) (hc : IsFilter c) :
+    ncpCarrier (ncpComp c π) = ncpCarrier π := by
+  have hcinj : Function.Injective ⇑c := (filter_basic_2 c hc).1
+  have hcz : (c (0 : C) : B) = 0 := map_zero c.toCompletelyPositiveMap
+  have hzero : ∀ x : A, (ncpComp c π x : B) = 0 ↔ (π x : C) = 0 := by
+    intro x
+    rw [ncpComp_apply]
+    exact ⟨fun h => hcinj (by rw [h, hcz]), fun h => by rw [h, hcz]⟩
+  have hspecf := (exists_ncpCarrier (ncpComp c π)).choose_spec.1
+  have hspecπ := (exists_ncpCarrier π).choose_spec.1
+  exact le_antisymm (hspecf.2.2 _ hspecπ.1 ((hzero _).mpr hspecπ.2.1))
+    (hspecπ.2.2 _ hspecf.1 ((hzero _).mp hspecf.2.1))
+
+/-- The heart of **100III** (1)⟹(2): the composition `π ∘ c` of a filter
+`c` followed by a corner `π` is again *properly* pure, i.e. of the form
+(filter) ∘ (corner).
+
+The thesis (proc.tex:975) reduces this — by `filter-basic` and
+`corner-basic` — to `π_s ∘ c_p` and then appeals to the Example `ad-pure`
+(98XI) for `[π_s ∘ c_p]` being an ncpu-isomorphism.  We give the
+factorisation of `π_s ∘ c_p` outright, which avoids `ad-pure` (and with it
+the polar decomposition and the iterated corners `[f]` would live in):
+with `a := √p·s` one has `s√p x √p s = a*(⌊a⌉x⌊a⌉)a`, where
+`x ↦ ⌊a⌉x⌊a⌉ : ⌈p⌉𝒜⌈p⌉ → ⌊a⌉𝒜⌊a⌉` is a corner (`exists_subCornerProj`)
+and `a*(·)a : ⌊a⌉𝒜⌊a⌉ → s𝒜s` is a filter (**96V** `canonical_filter`,
+corestricted). -/
+private theorem properlyPure_corner_comp_filter [VonNeumannAlgebra A]
+    [VonNeumannAlgebra B] [VonNeumannAlgebra C] (c : NCPMap C A)
+    (hc : IsFilter c) (π : NCPMap A B) (hπ : IsCornerMap π) :
+    ∃ (Z : Type u) (_ : CStarAlgebra Z) (_ : PartialOrder Z)
+      (_ : StarOrderedRing Z) (_ : VonNeumannAlgebra Z) (π' : NCPMap C Z)
+      (c' : NCPMap Z B), IsCornerMap π' ∧ IsFilter c' ∧
+      ncpComp π c = ncpComp c' π' := by
+  obtain ⟨hπu, r, hr, hπc⟩ := hπ
+  have hs : IsStarProjection (floor r) := isStarProjection_floor r
+  have hπs : IsCornerOf (floor r) π := ((corners_floor r hr π hπu).1).mp hπc
+  obtain ⟨β, hβ, β', hβ'β, hββ'⟩ :=
+    corner_unique (floor r) π hπs (cornerProjMap (floor r)).toNCPMap
+      (isCornerOf_cornerProjMap (floor r) (floor r) hs
+        (floor_of_isStarProjection hs))
+  have hp0 : (0 : A) ≤ c 1 := ncpMap_nonneg c zero_le_one
+  obtain ⟨α, hα, hα1, α', hα'α, hαα'⟩ :=
+    filter_unique c hc (stdFilter (c 1)) (isFilter_stdFilter (c 1) hp0)
+      (by rw [stdFilter_one hp0])
+  set a : A := CFC.sqrt (c 1) * floor r with hadef
+  have hsqsa : star (CFC.sqrt (c 1)) = CFC.sqrt (c 1) :=
+    (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg (c 1))).star_eq
+  have hstara : star a = floor r * CFC.sqrt (c 1) := by
+    rw [hadef, star_mul, hs.isSelfAdjoint.star_eq, hsqsa]
+  have has : a * floor r = a := by
+    rw [hadef, mul_assoc, hs.isIdempotentElem.eq]
+  have hsl : floor r * star a = star a := by
+    rw [hstara, ← mul_assoc, hs.isIdempotentElem.eq]
+  have hqa : rangeProj a * a = a := (ceill_basic_2 a).1.2
+  have haq : star a * rangeProj a = star a := by
+    have h := congrArg star hqa
+    rwa [star_mul, (isStarProjection_rangeProj a).isSelfAdjoint.star_eq] at h
+  -- the corner `⌈p⌉𝒜⌈p⌉ → ⌊a⌉𝒜⌊a⌉`
+  have hqle : rangeProj a ≤ ceil (c 1) := by
+    rw [ceil_eq_rangeProj_sqrt hp0, hadef]
+    exact rangeProj_mul_le _ _
+  have hqe : rangeProj a * ceil (c 1) = rangeProj a :=
+    ((projection_below_effect (ceil (c 1)) (rangeProj a)
+      ⟨(isStarProjection_ceil (c 1)).nonneg, (isStarProjection_ceil (c 1)).le_one⟩
+      (isStarProjection_rangeProj a)).out 0 7).mp hqle
+  obtain ⟨κ, hκ, hκcorner⟩ := exists_subCornerProj (A := A) (e := ceil (c 1))
+    (q := rangeProj a) hqe
+  -- the filter `a*(·)a : ⌊a⌉𝒜⌊a⌉ → s𝒜s`
+  have hsval : ∀ z : Corner A (rangeProj a),
+      floor r * (canonicalFilter a z : A) * floor r = canonicalFilter a z := by
+    intro z
+    rw [canonicalFilter_apply]
+    calc floor r * (star a * z.val * a) * floor r
+        = (floor r * star a) * z.val * (a * floor r) := by noncomm_ring
+      _ = star a * z.val * a := by rw [hsl, has]
+  obtain ⟨c₀, hc₀⟩ := exists_ncpCorestrict (floor r) (canonicalFilter a) hsval
+  have hc₀filter : IsFilter c₀ :=
+    isFilter_corestrict (canonicalFilter a) (canonical_filter a) c₀ hc₀
+  refine ⟨Corner A (rangeProj a), inferInstance, inferInstance, inferInstance,
+    inferInstance, ncpComp κ α, ncpComp β c₀,
+    corners_composition α κ (isCornerMap_of_iso α α' hα'α hαα' hα1) hκcorner,
+    filters_composition c₀ β hc₀filter (isFilter_of_iso β β' hβ'β hββ'), ?_⟩
+  refine DFunLike.ext _ _ fun x => ?_
+  rw [ncpComp_apply, ncpComp_apply, ncpComp_apply, ncpComp_apply, hα x,
+    hβ (stdFilter (c 1) (α x))]
+  congr 1
+  refine Corner.val_injective ?_
+  rw [cornerProjMap_apply, hc₀, canonicalFilter_apply, hκ, stdFilter_apply]
+  calc floor r * (CFC.sqrt (c 1) * (α x).val * CFC.sqrt (c 1)) * floor r
+      = (floor r * CFC.sqrt (c 1)) * (α x).val * (CFC.sqrt (c 1) * floor r) := by
+        noncomm_ring
+    _ = star a * (α x).val * a := by rw [← hstara, ← hadef]
+    _ = (star a * rangeProj a) * (α x).val * (rangeProj a * a) := by
+        rw [haq, hqa]
+    _ = star a * (rangeProj a * (α x).val * rangeProj a) * a := by noncomm_ring
+
+/-- **100III** (1)⟹(2): every pure map is *properly* pure.  The induction
+of the thesis (proc.tex:955): filters and corners compose among themselves
+(98III, 98VI), so everything reduces to `π ∘ c` — which is
+`properlyPure_corner_comp_filter`. -/
+private theorem properlyPure_of_isPure {X Y : Type u} [CStarAlgebra X]
+    [PartialOrder X] [StarOrderedRing X] [CStarAlgebra Y] [PartialOrder Y]
+    [StarOrderedRing Y] {f : NCPMap X Y} (hf : IsPure f) :
+    ∀ [VonNeumannAlgebra X] [VonNeumannAlgebra Y],
+      ∃ (Z : Type u) (_ : CStarAlgebra Z) (_ : PartialOrder Z)
+        (_ : StarOrderedRing Z) (_ : VonNeumannAlgebra Z) (π : NCPMap X Z)
+        (c : NCPMap Z Y), IsCornerMap π ∧ IsFilter c ∧ f = ncpComp c π := by
+  induction hf with
+  | filter hc =>
+      intro _ _
+      exact ⟨_, inferInstance, inferInstance, inferInstance, inferInstance,
+        ncpId _, _, isCornerMap_ncpId, hc,
+        DFunLike.ext _ _ fun x => by rw [ncpComp_apply, ncpId_apply]⟩
+  | corner hπ =>
+      intro _ _
+      exact ⟨_, inferInstance, inferInstance, inferInstance, inferInstance,
+        _, ncpId _, hπ, isFilter_ncpId,
+        DFunLike.ext _ _ fun x => by rw [ncpComp_apply, ncpId_apply]⟩
+  | comp hg hf' ihg ihf =>
+      intro _ _
+      obtain ⟨E₁, _, _, _, _, π₁, c₁, hπ₁, hc₁, hfac₁⟩ := ihf
+      obtain ⟨E₂, _, _, _, _, π₂, c₂, hπ₂, hc₂, hfac₂⟩ := ihg
+      obtain ⟨E₃, _, _, _, _, π₃, c₃, hπ₃, hc₃, hcrux⟩ :=
+        properlyPure_corner_comp_filter c₁ hc₁ π₂ hπ₂
+      refine ⟨E₃, inferInstance, inferInstance, inferInstance, inferInstance,
+        ncpComp π₃ π₁, ncpComp c₂ c₃, corners_composition π₁ π₃ hπ₁ hπ₃,
+        filters_composition c₃ c₂ hc₃ hc₂, ?_⟩
+      rw [hfac₁, hfac₂]
+      refine DFunLike.ext _ _ fun x => ?_
+      have hcx := congrArg (fun k : NCPMap E₁ E₂ => k (π₁ x)) hcrux
+      simp only [ncpComp_apply] at hcx
+      simp only [ncpComp_apply]
+      rw [hcx]
+
 /-- **100III** (`pure-fundamental`, proc.tex:945, Proposition): for an
 ncp-map `f : 𝒜 → ℬ` between von Neumann algebras are equivalent:
 (1) `f` is pure; (2) `f = c ∘ π` for a filter `c` and a corner `π`;
@@ -3656,19 +4061,96 @@ theorem pure_fundamental [VonNeumannAlgebra A] [VonNeumannAlgebra B]
         IsCornerMap π ∧ IsFilter c ∧ f = ncpComp c π,
       sqBracket f 1 = 1 ∧
         ∃ h : NCPMap (Corner B (ceil (f 1))) (Corner A (ncpCarrier f)),
-          (∀ x, h (sqBracket f x) = x) ∧ ∀ y, sqBracket f (h y) = y ].TFAE :=
-  sorry
+          (∀ x, h (sqBracket f x) = x) ∧ ∀ y, sqBracket f (h y) = y ].TFAE := by
+  -- The thesis's cycle, with (1)⟹(2) the only work (see
+  -- `properlyPure_of_isPure`).  (2)⟹(3): `⌈f⌉ = ⌈π⌉` (because `⌈c⌉ = 1`) and
+  -- `f(1) = c(1)` (because `π(1) = 1`), so `f = c_{f(1)} ∘ (α ∘ β') ∘ π_{⌈f⌉}`
+  -- with `α`, `β'` the isomorphisms of 98II.1 and 98IV.1; by the uniqueness
+  -- clause of 98IX that composite *is* `[f]`.  (3)⟹(1): `[f]` is an
+  -- isomorphism, hence a filter, so `c_{f(1)} ∘ [f]` is a filter (98III) and
+  -- `f = (c_{f(1)} ∘ [f]) ∘ π_{⌈f⌉}` is pure.
+  have hp : (0 : B) ≤ f 1 := ncpMap_nonneg f zero_le_one
+  have hcf : IsStarProjection (ncpCarrier f) := isStarProjection_ncpCarrier f
+  tfae_have 1 → 2 := fun hf => properlyPure_of_isPure hf
+  tfae_have 2 → 3 := by
+    rintro ⟨C', _, _, _, _, π, c, hπ, hc, hfac⟩
+    have hfx : ∀ x : A, (f x : B) = c (π x) := fun x => by
+      rw [hfac, ncpComp_apply]
+    have hcarr : ncpCarrier f = ncpCarrier π := by
+      rw [hfac]; exact ncpCarrier_comp_filter π c hc
+    obtain ⟨hπu, p, hp', hπc⟩ := hπ
+    have hc1 : (c 1 : B) = f 1 := by rw [hfx 1, hπu]
+    have hcarrπ : ncpCarrier π = floor p := (corners_floor p hp' π hπu).2 hπc
+    have hπc' : IsCornerOf (ncpCarrier f) π := by
+      rw [hcarr, hcarrπ]
+      exact ((corners_floor p hp' π hπu).1).mp hπc
+    obtain ⟨β, hβ, β', hβ'β, hββ'⟩ :=
+      corner_unique (ncpCarrier f) (cornerProjMap (ncpCarrier f)).toNCPMap
+        (isCornerOf_cornerProjMap (ncpCarrier f) (ncpCarrier f) hcf
+          (floor_of_isStarProjection hcf)) π hπc'
+    obtain ⟨α, hα, hα1, α', hα'α, hαα'⟩ :=
+      filter_unique c hc (stdFilter (f 1)) (isFilter_stdFilter (f 1) hp)
+        (by rw [stdFilter_one hp, hc1])
+    -- `γ = α ∘ β'` satisfies the square of 98IX, hence is `[f]`
+    have hsquare : ∀ a : A, (f a : B) =
+        stdFilter (f 1)
+          (ncpComp α β' ((cornerProjMap (ncpCarrier f)).toNCPMap a)) := by
+      intro a
+      rw [ncpComp_apply, hβ a, hβ'β, ← hα (π a)]
+      exact hfx a
+    have hγ : ncpComp α β' = sqBracket f := (square_f f).2.1 _ hsquare
+    refine ⟨(square_f f).2.2.1, ncpComp β α', fun x => ?_, fun y => ?_⟩
+    · rw [← hγ, ncpComp_apply, ncpComp_apply, hα'α, hββ']
+    · rw [← hγ, ncpComp_apply, ncpComp_apply, hβ'β, hαα']
+  tfae_have 3 → 1 := by
+    rintro ⟨-, h, hhf, hfh⟩
+    have hfac : f = ncpComp (ncpComp (stdFilter (f 1)) (sqBracket f))
+        ((cornerProjMap (ncpCarrier f)).toNCPMap) := by
+      refine DFunLike.ext _ _ fun a => ?_
+      rw [ncpComp_apply, ncpComp_apply]
+      exact (square_f f).1 a
+    rw [hfac]
+    refine IsPure.comp (IsPure.filter (filters_composition (sqBracket f)
+      (stdFilter (f 1)) (isFilter_of_iso (sqBracket f) h hhf hfh)
+      (isFilter_stdFilter (f 1) hp))) (IsPure.corner ?_)
+    exact ⟨(cornerProjMap (ncpCarrier f)).unital', ncpCarrier f,
+      ⟨hcf.nonneg, hcf.le_one⟩,
+      isCornerOf_cornerProjMap (ncpCarrier f) (ncpCarrier f) hcf
+        (floor_of_isStarProjection hcf)⟩
+  tfae_finish
 
 /-- **100VII** (`special-pure-maps`, proc.tex:1016, Exercise), part 1: a
 faithful pure map is a filter. -/
 theorem special_pure_maps_1 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (f : NCPMap A B) (hf : IsPure f) (hfaith : ncpCarrier f = 1) :
-    IsFilter f := sorry
+    IsFilter f := by
+  -- `f = c ∘ π` by 100III; `⌈π⌉ = ⌈f⌉ = 1`, so `π` is a corner of `1`,
+  -- hence an isomorphism, hence a filter — and filters compose (98III).
+  obtain ⟨Z, _, _, _, _, π, c, hπ, hc, hfac⟩ := ((pure_fundamental f).out 0 1).mp hf
+  obtain ⟨hπu, p, hp, hπc⟩ := hπ
+  have hfl : floor p = 1 := by
+    rw [← (corners_floor p hp π hπu).2 hπc, ← ncpCarrier_comp_filter π c hc,
+      ← hfac, hfaith]
+  have hπ1 : IsCornerOf (1 : A) π := by
+    rw [← hfl]
+    exact ((corners_floor p hp π hπu).1).mp hπc
+  rw [hfac]
+  exact filters_composition π c (isFilter_of_isCornerOf_one π hπ1) hc
 
 /-- **100VII** (`special-pure-maps`, proc.tex:1016, Exercise), part 2: a
 unital pure map is a corner. -/
 theorem special_pure_maps_2 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
-    (f : NCPMap A B) (hf : IsPure f) (hu : f 1 = 1) : IsCornerMap f := sorry
+    (f : NCPMap A B) (hf : IsPure f) (hu : f 1 = 1) : IsCornerMap f := by
+  -- `f = c ∘ π` by 100III; `c(1) = f(1) = 1`, so the filter `c` is an
+  -- isomorphism, hence a corner map — and corners compose (98VI).
+  obtain ⟨Z, _, _, _, _, π, c, hπ, hc, hfac⟩ := ((pure_fundamental f).out 0 1).mp hf
+  have hc1 : (c 1 : B) = 1 := by
+    have h1 : (f 1 : B) = c (π 1) := by rw [hfac, ncpComp_apply]
+    rw [hπ.1] at h1
+    rw [← h1, hu]
+  obtain ⟨g, hgc, hcg, -⟩ := exists_inverse_of_isFilter_unital c hc hc1
+  rw [hfac]
+  exact corners_composition π c hπ (isCornerMap_of_iso c g hgc hcg hc1)
 
 /-- **100VII** (`special-pure-maps`, proc.tex:1016, Exercise), part 3: a
 unital and faithful pure map is an ncpu-isomorphism. -/
@@ -3676,7 +4158,8 @@ theorem special_pure_maps_3 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (f : NCPMap A B) (hf : IsPure f) (hu : f 1 = 1)
     (hfaith : ncpCarrier f = 1) :
     ∃ g : NCPMap B A, (∀ a, g (f a) = a) ∧ (∀ b, f (g b) = b) ∧ g 1 = 1 :=
-  sorry
+  -- part 1 makes `f` a filter, and a unital filter is an isomorphism
+  exists_inverse_of_isFilter_unital f (special_pure_maps_1 f hf hfaith) hu
 
 /-! ## Parsec 1010: contraposition -/
 
@@ -5011,7 +5494,188 @@ theorem chevron_f_basic_3 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
 `f` is pure then `⟨f⟩` is pure, and hence a filter. -/
 theorem chevron_f_basic_4 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (f : NCPMap A B) (hf : IsPure f) :
-    IsPure (chevron f) ∧ IsFilter (chevron f) := sorry
+    IsPure (chevron f) ∧ IsFilter (chevron f) := by
+  -- The exercise's own route: by part 2, `⟨f⟩ = π_{⌈f(1)⌉} ∘ c_{f(1)} ∘ [f]`;
+  -- `[f]` is an ncpu-isomorphism by **100III**, hence a filter, so `⟨f⟩` is
+  -- (corner) ∘ (filter) ∘ (filter) and therefore pure.  Purity together with
+  -- faithfulness (part 3) makes it a filter by **100VII**.1.
+  have hp : (0 : B) ≤ f 1 := ncpMap_nonneg f zero_le_one
+  have hce : IsStarProjection (ceil (f 1)) := isStarProjection_ceil (f 1)
+  obtain ⟨-, h, hhf, hfh⟩ := ((pure_fundamental f).out 0 2).mp hf
+  have hcs : ceil (f 1) * CFC.sqrt (f 1) = CFC.sqrt (f 1) := by
+    rw [ceil_eq_rangeProj_sqrt hp]
+    exact (ceill_basic_2 (CFC.sqrt (f 1))).1.2
+  have hsc : CFC.sqrt (f 1) * ceil (f 1) = CFC.sqrt (f 1) := by
+    have h2 := congrArg star hcs
+    rwa [star_mul, hce.isSelfAdjoint.star_eq,
+      (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg (f 1))).star_eq] at h2
+  have hfac : chevron f = ncpComp (cornerProjMap (ceil (f 1))).toNCPMap
+      (ncpComp (stdFilter (f 1)) (sqBracket f)) := by
+    refine DFunLike.ext _ _ fun a => Corner.val_injective ?_
+    rw [ncpComp_apply, ncpComp_apply, cornerProjMap_apply, stdFilter_apply,
+      (chevron_f_basic_12 f a).2]
+    calc CFC.sqrt (f 1) * (sqBracket f a).val * CFC.sqrt (f 1)
+        = (ceil (f 1) * CFC.sqrt (f 1)) * (sqBracket f a).val
+            * (CFC.sqrt (f 1) * ceil (f 1)) := by rw [hcs, hsc]
+      _ = ceil (f 1) * (CFC.sqrt (f 1) * (sqBracket f a).val * CFC.sqrt (f 1))
+            * ceil (f 1) := by noncomm_ring
+  have hpure : IsPure (chevron f) := by
+    rw [hfac]
+    refine IsPure.comp (IsPure.corner ?_)
+      (IsPure.comp (IsPure.filter (isFilter_stdFilter (f 1) hp))
+        (IsPure.filter (isFilter_of_iso (sqBracket f) h hhf hfh)))
+    exact ⟨(cornerProjMap (ceil (f 1))).unital', ceil (f 1),
+      ⟨hce.nonneg, hce.le_one⟩,
+      isCornerOf_cornerProjMap (ceil (f 1)) (ceil (f 1)) hce
+        (floor_of_isStarProjection hce)⟩
+  exact ⟨hpure, special_pure_maps_1 _ hpure (chevron_f_basic_3 f).1⟩
+
+/-- Auxiliary for **105IV**: the ceiling computed *in a corner* is the
+ambient ceiling.  For `0 ≤ x` in `e𝒜e` one has `⌈x⌉ ≤ e` (59III), so the
+ambient `⌈x⌉` lies in the corner, and the two least-ness clauses are the
+same condition on the same projections. -/
+theorem corner_ceil_val [VonNeumannAlgebra A] {e : A}
+    [Fact (IsStarProjection e)] (x : Corner A e) (hx : 0 ≤ x) :
+    (ceil x).val = ceil x.val := by
+  have he : IsStarProjection e := Corner.proj e
+  have hx0 : (0 : A) ≤ x.val := hx
+  have hcproj : IsStarProjection (ceil x.val) := isStarProjection_ceil x.val
+  have hle : ceil x.val ≤ e := (ceil_le_iff hx0 he).mpr (Corner.mul_right x)
+  have hce : ceil x.val * e = ceil x.val :=
+    ((projection_below_effect e (ceil x.val) ⟨he.nonneg, he.le_one⟩
+      hcproj).out 0 7).mp hle
+  have hec : e * ceil x.val = ceil x.val := by
+    have h := congrArg star hce
+    rwa [star_mul, he.isSelfAdjoint.star_eq, hcproj.isSelfAdjoint.star_eq] at h
+  have hmem : e * ceil x.val * e = ceil x.val := by rw [hec, hce]
+  have hcorner : IsStarProjection (⟨ceil x.val, hmem⟩ : Corner A e) :=
+    ⟨Corner.val_injective (by
+        show ceil x.val * ceil x.val = ceil x.val
+        exact hcproj.isIdempotentElem.eq),
+      Corner.val_injective (by
+        show star (ceil x.val) = ceil x.val
+        exact hcproj.isSelfAdjoint.star_eq)⟩
+  refine congrArg Corner.val (ceil_eq_of_isLeast hx hcorner ?_ ?_)
+  · exact Corner.val_injective (by
+      show x.val * ceil x.val = x.val
+      exact (ceil_spec hx0).2.1)
+  · intro q hq hxq
+    show ceil x.val ≤ q.val
+    refine (ceil_spec hx0).2.2 q.val ?_ ?_
+    · exact ⟨congrArg Corner.val hq.isIdempotentElem.eq,
+        congrArg Corner.val hq.isSelfAdjoint.star_eq⟩
+    · exact congrArg Corner.val hxq
+
+/-- Auxiliary for **105IV**: for projections `p, t ≤ u` the ambient
+orthocomplement and the one of the corner `u𝒜u` cut out the same
+condition: `p ≤ 1 − t` iff `p ≤ u − t`. -/
+theorem le_sub_iff_le_one_sub [VonNeumannAlgebra A] {p t u : A}
+    (hp : IsStarProjection p) (ht : IsStarProjection t)
+    (hu : IsStarProjection u) (hpu : p ≤ u) (htu : t ≤ u) :
+    p ≤ 1 - t ↔ p ≤ u - t := by
+  have hut : u * t = t :=
+    ((projection_below_effect u t ⟨hu.nonneg, hu.le_one⟩ ht).out 0 6).mp htu
+  have htu' : t * u = t :=
+    ((projection_below_effect u t ⟨hu.nonneg, hu.le_one⟩ ht).out 0 7).mp htu
+  have hpu' : p * u = p :=
+    ((projection_below_effect u p ⟨hu.nonneg, hu.le_one⟩ hp).out 0 7).mp hpu
+  have hsub : IsStarProjection (u - t) := by
+    refine ⟨?_, ?_⟩
+    · show (u - t) * (u - t) = u - t
+      calc (u - t) * (u - t)
+          = u * u - u * t - t * u + t * t := by noncomm_ring
+        _ = u - t := by
+            rw [hu.isIdempotentElem.eq, ht.isIdempotentElem.eq, hut, htu']
+            abel
+    · show star (u - t) = u - t
+      rw [star_sub, hu.isSelfAdjoint.star_eq, ht.isSelfAdjoint.star_eq]
+  constructor
+  · intro h
+    have hpt : p * (1 - t) = p :=
+      ((projection_below_effect (1 - t) p
+        ⟨ht.one_sub.nonneg, ht.one_sub.le_one⟩ hp).out 0 7).mp h
+    have hpt0 : p * t = 0 := by
+      rw [mul_sub, mul_one] at hpt
+      exact sub_eq_self.mp hpt
+    refine ((projection_below_effect (u - t) p
+      ⟨hsub.nonneg, hsub.le_one⟩ hp).out 7 0).mp ?_
+    calc p * (u - t) = p * u - p * t := by noncomm_ring
+      _ = p := by rw [hpu', hpt0, sub_zero]
+  · intro h
+    exact h.trans (sub_le_sub_right hu.le_one t)
+
+/-- **105IV**.1 with the index carried as a parameter (so part 3 can use it
+at `u = ⌈h(1)⌉` for its square root `h`): for ⋄-self-adjoint `f` and
+`u = ⌈f(1)⌉` the map `u f(·) u : u𝒜u → u𝒜u` is ⋄-self-adjoint.
+
+Purity is `π_u ∘ f ∘ (u𝒜u ↪ 𝒜)` — a corner after a pure map after a filter
+(`isFilter_cornerIncl`).  Contraposition transports because ceilings in the
+corner are ambient ceilings (`corner_ceil_val`), because `⌈f(1)⌉f(x)⌈f(1)⌉
+= f(x)`, and because `p ≤ 1 − t` and `p ≤ u − t` agree below `u`. -/
+private theorem isDiamondSelfAdjoint_cornerMap [VonNeumannAlgebra A]
+    (f : NCPMap A A) (hf : IsDiamondSelfAdjoint f) (u : A)
+    [Fact (IsStarProjection u)] (hu : u = ceil (f 1)) :
+    ∃ g : NCPMap (Corner A u) (Corner A u),
+      (∀ a : Corner A u, (g a).val = u * f a.val * u) ∧
+      IsDiamondSelfAdjoint g := by
+  have huproj : IsStarProjection u := Corner.proj u
+  -- the two consequences of `u = ⌈f(1)⌉` that are used, stated on elements
+  -- of `𝒜` (rewriting `u` itself is impossible: it indexes a dependent type)
+  have hconj : ∀ x : A, u * f x * u = f x := by
+    intro x
+    rw [hu]
+    exact ceilOne_conj f x
+  have hceilu : ∀ x : A, 0 ≤ x → ceil (f x) ≤ u := by
+    intro x hx
+    rw [hu]
+    exact ceil_le_ceil_one f x hx
+  refine ⟨ncpComp (cornerProjMap u).toNCPMap
+    (ncpComp f (cornerIncl u).toNCPMap), fun a => ?_, ?_, ?_⟩
+  · rw [ncpComp_apply, cornerProjMap_apply, ncpComp_apply, cornerIncl_apply]
+  · -- purity: a corner after a pure map after a filter
+    exact IsPure.comp (IsPure.corner ⟨(cornerProjMap u).unital', u,
+        ⟨huproj.nonneg, huproj.le_one⟩,
+        isCornerOf_cornerProjMap u u huproj (floor_of_isStarProjection huproj)⟩)
+      (IsPure.comp hf.1 (IsPure.filter (isFilter_cornerIncl u)))
+  · -- contraposition
+    set g : NCPMap (Corner A u) (Corner A u) := ncpComp (cornerProjMap u).toNCPMap
+      (ncpComp f (cornerIncl u).toNCPMap) with hgdef
+    have hgval : ∀ a : Corner A u, (g a).val = u * f a.val * u := by
+      intro a
+      rw [hgdef, ncpComp_apply, cornerProjMap_apply, ncpComp_apply,
+        cornerIncl_apply]
+    have hproj_val : ∀ s : Corner A u, IsStarProjection s →
+        IsStarProjection s.val := by
+      intro s hs
+      exact ⟨congrArg Corner.val hs.isIdempotentElem.eq,
+        congrArg Corner.val hs.isSelfAdjoint.star_eq⟩
+    have hvalceil : ∀ s : Corner A u, IsStarProjection s →
+        (diamondUp g s).val = ceil (f s.val) := by
+      intro s hs
+      have hgs : (0 : Corner A u) ≤ g s := ncpMap_nonneg g hs.nonneg
+      show (ceil (g s)).val = ceil (f s.val)
+      rw [corner_ceil_val (g s) hgs, hgval s, hconj s.val]
+    have hiff : ∀ s t : Corner A u, IsStarProjection s → IsStarProjection t →
+        ((diamondUp g s ≤ 1 - t) ↔ ceil (f s.val) ≤ 1 - t.val) := by
+      intro s t hs ht
+      have hs0 : (0 : A) ≤ s.val := hs.nonneg
+      have hsu : ceil (f s.val) ≤ u := hceilu s.val hs0
+      have htu : t.val ≤ u := by
+        have h : t ≤ (1 : Corner A u) := ht.le_one
+        exact h
+      have hmid : (diamondUp g s ≤ 1 - t) ↔ ceil (f s.val) ≤ u - t.val := by
+        constructor
+        · intro h
+          have h2 : (diamondUp g s).val ≤ ((1 : Corner A u) - t).val := h
+          rwa [hvalceil s hs, Corner.val_sub, Corner.val_one] at h2
+        · intro h
+          show (diamondUp g s).val ≤ ((1 : Corner A u) - t).val
+          rwa [hvalceil s hs, Corner.val_sub, Corner.val_one]
+      exact hmid.trans (le_sub_iff_le_one_sub (isStarProjection_ceil _)
+        (hproj_val t ht) huproj hsu htu).symm
+    intro s t hs ht
+    rw [hiff s t hs ht, hiff t s ht hs]
+    exact hf.2 s.val t.val (hproj_val s hs) (hproj_val t ht)
 
 /-- **105IV** (`chevron-f-purely-positive`, proc.tex:1742, Exercise),
 part 1: for ⋄-self-adjoint `f : 𝒜 → 𝒜` (so `⌈f⌉ = ⌈f(1)⌉` and `⟨f⟩` can
@@ -5022,7 +5686,8 @@ theorem chevron_f_purely_positive_1 [VonNeumannAlgebra A] (f : NCPMap A A)
     ∃ g : NCPMap (Corner A (ceil (f 1))) (Corner A (ceil (f 1))),
       (∀ a : Corner A (ceil (f 1)),
         (g a).val = ceil (f 1) * f a.val * ceil (f 1)) ∧
-      IsDiamondSelfAdjoint g := sorry
+      IsDiamondSelfAdjoint g :=
+  isDiamondSelfAdjoint_cornerMap f hf (ceil (f 1)) rfl
 
 /-- **105IV** (`chevron-f-purely-positive`, proc.tex:1742, Exercise),
 part 2: for ⋄-self-adjoint `f`, `⟨f²⟩ = ⟨f⟩²` — rendered elementwise: for
@@ -5059,7 +5724,29 @@ theorem chevron_f_purely_positive_3 [VonNeumannAlgebra A] (f : NCPMap A A)
     ∃ g : NCPMap (Corner A (ceil (f 1))) (Corner A (ceil (f 1))),
       (∀ a : Corner A (ceil (f 1)),
         (g a).val = ceil (f 1) * f a.val * ceil (f 1)) ∧
-      IsDiamondPositive g := sorry
+      IsDiamondPositive g := by
+  -- `f = h ∘ h` with `h` ⋄-self-adjoint; `⌈f(1)⌉ = ⌈f⌉ = ⌈h∘h⌉ = ⌈h⌉ = ⌈h(1)⌉`
+  -- (103III.1/.2/.3), so part 1 applies to `h` *on the corner of `⌈f(1)⌉`*
+  -- and gives a ⋄-self-adjoint `k` with `⟨f⟩ = k ∘ k` — the latter being
+  -- exactly part 2, `⟨h²⟩ = ⟨h⟩²`.
+  obtain ⟨h, hh, hfhh⟩ := hf
+  have hfsa : IsDiamondSelfAdjoint f := purely_positive_basic_3 f ⟨h, hh, hfhh⟩
+  have hfval : ∀ x : A, (f x : A) = h (h x) := fun x => by
+    rw [hfhh, ncpComp_apply]
+  have he : ceil (f 1) = ceil (h 1) := by
+    rw [← purely_positive_basic_1 f hfsa, ← purely_positive_basic_1 h hh, hfhh]
+    exact (purely_positive_basic_2 h hh).2
+  have hkey : ∀ x : A, ceil (h 1) * x * ceil (h 1) = x →
+      ceil (f 1) * h (ceil (f 1) * h x * ceil (f 1)) * ceil (f 1)
+        = ceil (f 1) * h (h x) * ceil (f 1) := by
+    intro x hx
+    rw [he]
+    exact (chevron_f_purely_positive_2 h hh x hx).symm
+  obtain ⟨k, hkval, hksa⟩ := isDiamondSelfAdjoint_cornerMap h hh (ceil (f 1)) he
+  refine ⟨ncpComp k k, fun a => ?_, k, hksa, rfl⟩
+  have hmem : ceil (h 1) * a.val * ceil (h 1) = a.val := by
+    rw [← he]; exact a.property
+  rw [ncpComp_apply, hkval, hkval, hkey a.val hmem, hfval a.val]
 
 /-- **105V** (`positive-map-uniqueness`, proc.tex:1766, Theorem),
 existence: `√p(·)√p` is a ⋄-positive map with value `p` at `1`. -/

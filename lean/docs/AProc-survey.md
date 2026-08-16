@@ -1,11 +1,32 @@
-# `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised worker 72, session 47; worker 73, session 48)
+# `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–74, sessions 47–49)
 
-**Headline count: A/Proc has 97 code `sorry`s** after session 48.
-Per file: `Tensor` 43, `Measurement` **20** (was 27), `QuantumLambda` 17,
-`Duplicators` 17.  (`grep -c sorry` gives 45/25/20/17 because the file
+**Headline count: A/Proc has 90 code `sorry`s** after session 49.
+Per file: `Tensor` 43, `Measurement` **13** (was 20), `QuantumLambda` 17,
+`Duplicators` 17.  (`grep -c sorry` over-counts, because the file
 docstrings mention `sorry` in prose; the code counts are the ones above.
 Note `\bsorry\b` also matches "sorry-ed" in prose — count the compiler's
 `declaration uses \`sorry\`` warnings instead.)
+
+> **Session 49 update — 100III is proved, and the parsec-1000 gate is open.**
+> **100III** `pure_fundamental`, **100VII**.1/.2/.3 `special_pure_maps_*`,
+> **105III**.4 `chevron_f_basic_4` and **105IV**.1/.3
+> `chevron_f_purely_positive_1/3` are **proved and axiom-clean**.
+> Two corrections to what follows:
+> (i) **98XI `ad-pure` was not needed** — (1)⟹(2) reduces to "`π_s ∘ c_p` is
+> properly pure", and that factors directly as (filter)∘(corner) with
+> `a := √p·s`: `x ↦ ⌊a⌉x⌊a⌉` is a corner `⌈p⌉𝒜⌈p⌉ → ⌊a⌉𝒜⌊a⌉` and `a*(·)a` a
+> filter `⌊a⌉𝒜⌊a⌉ → s𝒜s`, so no polar decomposition and no iterated corners.
+> 98XI is still **not transcribed**, and reading it produced ERRATA **98XI**
+> (its `[f] = [a](·)[a]*` has the brackets swapped).
+> (ii) **our `IsPure` (100I) was mis-transcribed** — no von Neumann hypothesis
+> on the algebra in the middle of a composition, which makes (1)⟹(2)
+> unprovable; `[VonNeumannAlgebra B]` was added to the `comp` constructor
+> (PROVING-LOG session 49 §1).
+> **The chain above 100III is now blocked only by A/VN**: 104III.3/.4/.5 wait
+> on 81V `douglas` / 81VIII `sequential-quotient`, and 104VII → 104IX →
+> 105V-uniqueness → 105VII / 106I-uniqueness behind them.  The one big
+> *reachable* item left in `Measurement.lean` is **102VII**
+> `canonical_quotient_rigid` (and 102IX behind it).
 
 > **Session 48 update — both parsec-980 blockers are gone.**
 > **98III** `filters_composition` and **98VI** `corners_composition` are
@@ -128,7 +149,7 @@ band can be `#print axioms`-clean until 111XII is.
 
 ## (b) Blocked, with the named blocker
 
-### `Measurement.lean` (parsecs 960–1060) — 20 left, 7 closed in session 48 (9 in session 47)
+### `Measurement.lean` (parsecs 960–1060) — 13 left, 7 closed in session 49 (7 in session 48, 9 in session 47)
 
 | DISP | decl | blocked on |
 |---|---|---|
@@ -141,19 +162,19 @@ band can be `#print axioms`-clean until 111XII is.
 | 98VII, 98VII-formula | `filter_corner`, `filter_corner_formula` | **CLOSED** (the thesis's proof verbatim) |
 | 98IX | `exists_sqBracket`, `square_f` | **CLOSED** |
 | 100II.3 | `isPure_adSelf` | **CLOSED** (`a*(·)a = canonicalFilter a ∘ π_{⌊a⌉}`) |
-| 100III | `pure_fundamental` | **the live blocker of the whole chain.**  98III/98VI are now proved, so only (1)⟹(2) is left: the induction over `IsPure` reduces (via 98III + 98VI + 98II.1 + 98IV.1) to "`π_s ∘ c_p` is properly pure", which is **98XI `ad-pure`** — *not transcribed in the Lean file*, and needing 82I polar decomposition |
-| 100VII.1/.2/.3 | `special_pure_maps_*` | 100III |
+| 100III | `pure_fundamental` | **CLOSED (session 49)** — and **without 98XI**: `π_s ∘ c_p` factors directly as (corner into `⌊a⌉𝒜⌊a⌉`) then (filter `a*(·)a`), `a = √p·s`.  Needed one repair to our own `IsPure` (see the session-49 note above) |
+| 100VII.1/.2/.3 | `special_pure_maps_*` | **CLOSED (session 49)** — a unital filter and a corner of `1` are isomorphisms |
 | 102VII | `canonical_quotient_rigid` | 96V is proved, so this is *reachable*, but it is a long proof: approximate pseudoinverses `eₙ = Σ⌈tₙ⌉`, ultrastrong convergence via 66-something `mult-jus-cont`, and `nmiu-rigid`.  Not attempted in session 48 |
-| 102IX | `pure_is_rigid` | 98IX + 102VII + 100III |
+| 102IX | `pure_is_rigid` | 102VII alone now (98IX and 100III are proved) |
 | 103II.1/.2 | `purely_positive_examples_*` | **CLOSED (session 48)** — .1 is `isPure_adSelf` (100II.3) plus 101VII.1 at `a* = a`; .2 is `a(·)a = g∘g` for `g = √a(·)√a` |
 | 104III.2a | `centrally_similar_basic_2a` | **parked: false as printed**, ERRATA row exists |
 | 104III.3/.4/.5 | `centrally_similar_basic_*` | 81V `douglas` / 81VIII `sequential-quotient` (A/VN, `sorry`) |
 | 104VII | `positive_quotients_centrally_similar` | 104III.4/.5 (80IV is now proved — correction to w46 §7) |
 | 104IX | `faithful_positive_map_uniqueness` | 100VII + 104VII |
 | 105III.1-2 | `chevron_f_basic_12` | **CLOSED (session 48)** — part 1 is the defining formula, part 2 is the 98IX square at `a ∈ ⌈f⌉𝒜⌈f⌉` plus `ceilOne_conj` |
-| 105III.4 | `chevron_f_basic_4` | purity of `⟨f⟩` ⇒ **100III** (via 100VII.1 for the filter half) |
-| 105IV.1/.3 | `chevron_f_purely_positive_*` | 105III.4, hence 100III (the ⋄-self-adjointness of `⟨f⟩` needs its *purity*).  103II is no longer a blocker |
-| 105V uniqueness, 105VII | `positive_map_uniqueness`, `sqrt_axiom` | 104IX + 105IV.  **105V existence is CLOSED (session 48)**: it is `adSelf √p`, ⋄-positive by 103II.2 — it never needed 104IX |
+| 105III.4 | `chevron_f_basic_4` | **CLOSED (session 49)** |
+| 105IV.1/.3 | `chevron_f_purely_positive_*` | **CLOSED (session 49)** — and neither needed 105III.4: the map `u f(·) u` is pure directly (corner ∘ `f` ∘ `cornerIncl`), and its ⋄-self-adjointness transports from `f`'s via the new `corner_ceil_val` (ceilings in a corner are ambient ceilings) and `le_sub_iff_le_one_sub` |
+| 105V uniqueness, 105VII | `positive_map_uniqueness`, `sqrt_axiom` | 104IX (105IV is now proved; the thesis's proof cites `faithful-positive-map-uniqueness` = 104IX explicitly).  **105V existence is CLOSED (session 48)**: it is `adSelf √p`, ⋄-positive by 103II.2 — it never needed 104IX |
 | 106I uniqueness | `uniqueness_sequential_product` | 105V uniqueness.  **106I existence is CLOSED (session 48)**: (A)/(C)/(D) are `√p√p = p` computations, (B) is `adSelf √p` with 100II.3, and (E) is 101VII.1 transported from ceilings to the order by the new private helper `effect_le_isStarProjection_iff` (`b ≤ q ↔ ⌈b⌉ ≤ q` for an *effect* `b` and a projection `q`) |
 | 106III.1 | `sequential_product_counterexample_1` | **CLOSED this session** |
 | 106III.2/.3 | `sequential_product_counterexample_2/3` | purity-free? .2's axioms (A)(C)(D)(E) are computations; (E) needs contraposition.  Worth a look after 106III.1 |

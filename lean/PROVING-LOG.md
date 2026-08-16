@@ -10334,3 +10334,292 @@ and recompiling: `normal_functional`, `cceil_sum_relative`,
 (`lake build Theses.A.VN.NormalFunctionals`), so `A/Proc` and `B/Dils`
 workers need no rebuild.  Files touched:
 `Theses/A/VN/NormalFunctionals.lean` and this log.
+
+## Session 49 — `A/Proc`: **100III `pure-fundamental`** falls, and with it 100VII, 105III.4 and 105IV.1/.3 (worker 74)
+
+Files touched: `Theses/A/Proc/Measurement.lean`, `ERRATA.md`,
+`docs/AProc-survey.md`, this log.  Nothing outside `Theses/A/Proc/`.
+**A/Proc 97 → 90**: `Measurement` 20 → **13**, `Tensor` 43,
+`QuantumLambda` 17, `Duplicators` 17 (compiler-counted).
+
+Closed (all `#print axioms` = `[propext, Classical.choice, Quot.sound]`):
+
+| point | declaration | class |
+|---|---|---|
+| **100III** | `pure_fundamental` | 1 for (2)⟹(3) and (3)⟹(1); **2** for the crux of (1)⟹(2) (§2) |
+| **100VII**.1/.2/.3 | `special_pure_maps_1/2/3` | 1 — the exercise has no printed solution; the route is the obvious one (§3) |
+| **105III**.4 | `chevron_f_basic_4` | 1 — the exercise's own route |
+| **105IV**.1 | `chevron_f_purely_positive_1` | 1 |
+| **105IV**.3 | `chevron_f_purely_positive_3` | 1 |
+| — | `isFilter_of_iso`, `isCornerOf_one_of_iso`, `isCornerMap_of_iso`, `isFilter_ncpId`, `isCornerOf_one_ncpId`, `isCornerMap_ncpId`, `corner_unique`, `filter_unique`, `exists_inverse_of_isFilter_unital`, `isFilter_of_isCornerOf_one`, `corner_ceil_val`, `le_sub_iff_le_one_sub`, and the private `map_conj_eq_of_map_perp`, `exists_subCornerProj`, `isFilter_corestrict`, `ncpCarrier_comp_filter` | new reusable infrastructure |
+
+### 1. Our transcription of **100I** `pure` was too weak, and that blocked 100III
+
+`inductive IsPure` had **no von Neumann hypotheses anywhere**, so its `comp`
+constructor allowed a composite to pass through an arbitrary ordered
+C*-algebra.  The thesis's parsec 1000 lives in `W*_cp`: filters and corners
+are ncp-maps *between von Neumann algebras* (96I, 95I), so the algebra in the
+middle of a composition is one too.
+
+This is not cosmetic.  (1)⟹(2) is an induction over `IsPure`, and its `comp`
+case must factor the two halves through `filter-basic` (98II.1) and
+`corner-basic` (98IV.1), both of which need the **intermediate** algebra to be
+a von Neumann algebra — the universal properties of `IsFilter`/`IsCornerOf`
+quantify over von Neumann algebras only, and there is no way to manufacture
+the structure from the hypotheses.  With the definition as transcribed, 100III
+(1)⟹(2) is, as far as we can see, simply not provable.
+
+Fixed by adding `[VonNeumannAlgebra B]` to the `comp` constructor — the
+**minimal** repair: the `filter` and `corner` constructors need nothing,
+because the base cases of the induction are `f = c ∘ id` and `f = id ∘ π`,
+and `id` is a corner map (resp. a filter) with no hypotheses at all.  All
+existing users of `IsPure` (`isPure_of_iso`, `isPure_id`, `isPure_adSelf`,
+103III.2, 106III.1) supply the instance without change.  *Our own
+mis-transcription, so no ERRATA entry* — but note it is the sixth in two
+weeks with the same shape: a statement quietly **weaker** than its source.
+Hypothesis-side users of `IsPure` (100VII, 102IX, 105III.4, and the `ax2`
+clauses of 105V/106I/106III) are correspondingly weakened, which is what the
+thesis says.
+
+### 2. **98XI `ad-pure` is not needed** — and it is wrong as printed
+
+The thesis reduces (1)⟹(2) to "`π_s ∘ c_p` is properly pure" and then invokes
+the Example **98XI**: `[π_s ∘ c_p]` is an ncpu-isomorphism because
+`[a*(·)a] = [a](·)[a]*`.  We proved the reduction target *directly*, which is
+both shorter and avoids two things we do not have: the polar decomposition
+(82I, proved, but only in `A/VN`) and — much worse — **iterated corners**,
+since `[f]` for `f : s𝒜s → t𝒜t` lives on `Corner (Corner A s) ⌈f⌉`.  With
+`p ≥ 0`, `s` a projection and `a := √p·s`, so that `(π_s ∘ c_p)(x) = a*xa`:
+
+* `x ↦ ⌊a⌉x⌊a⌉ : ⌈p⌉𝒜⌈p⌉ → ⌊a⌉𝒜⌊a⌉` is a **corner** (`exists_subCornerProj`,
+  new): it is `isCornerOf_stdCorner` run in the von Neumann algebra `⌈p⌉𝒜⌈p⌉`,
+  but with the sub-corner presented as `⌊a⌉𝒜⌊a⌉` rather than as a corner of a
+  corner.  `⌊a⌉ ≤ ⌈p⌉` because `⌊√p·s⌉ ≤ ⌊√p⌉ = ⌈p⌉`.
+* `z ↦ a*za : ⌊a⌉𝒜⌊a⌉ → s𝒜s` is a **filter**: 96V `canonical_filter`
+  corestricted to `s𝒜s`, which is legitimate because a filter whose values lie
+  in a corner is a filter into that corner (`isFilter_corestrict`, new).
+* and `a*(⌊a⌉x⌊a⌉)a = a*xa` because `a*⌊a⌉ = a*` and `⌊a⌉a = a`.
+
+Reading 98XI to check it, though, turned up a genuine slip: the formula has
+the two partial isometries swapped (`[f] = [a]*(·)[a]`, not `[a](·)[a]*` —
+the printed map runs the wrong way between the two corners of the diagram).
+**ERRATA 98XI**, with an `M₂` witness.  98XI is *still not transcribed* in the
+Lean file; transcribing it faithfully needs an iterated-corner collapse
+(`Corner (Corner A e) q ≅ Corner A q.val`), which nothing else now wants.
+
+### 3. The rest of 100III, and 100VII
+
+(2)⟹(3) is the thesis's argument.  `⌈f⌉ = ⌈π⌉` (a filter is injective, 98II.2
+— extracted as `ncpCarrier_comp_filter`) and `f(1) = c(1)` (`π` unital), so
+`f = c_{f(1)} ∘ (α ∘ β') ∘ π_{⌈f⌉}` with `α`, `β'` the isomorphisms of 98II.1
+and 98IV.1, and the *uniqueness* clause of 98IX identifies that composite with
+`[f]`.  To dodge transports along `⌈f⌉ = ⌊p⌋` and `f(1) = c(1)` inside the
+dependent type `Corner A e`, the two isomorphism lemmas were re-proved in
+index-free form: `corner_unique` (any two corners of the same effect are
+isomorphic) and `filter_unique` (any two filters with the same value at `1`),
+of which `corner_basic_1` and `filter_basic_1` are the standard-corner and
+standard-filter instances.  (3)⟹(1) is `f = (c_{f(1)} ∘ [f]) ∘ π_{⌈f⌉}` with
+the bracket an isomorphism, hence a filter (`isFilter_of_iso`), hence the
+first factor a filter by 98III.
+
+**100VII** then needs only two observations, both new lemmas: a *unital
+filter* is an isomorphism (factor `id` through it) and a *corner of `1`* is an
+isomorphism (`corner_unique` against `id`).  .1: `⌈π⌉ = ⌈f⌉ = 1` makes `π` a
+corner of `1`, hence a filter, and filters compose.  .2: `c(1) = f(1) = 1`
+makes `c` an isomorphism, hence a corner map, and corners compose.  .3 is .1
+plus "unital filter is an isomorphism".
+
+### 4. 105III.4 and 105IV.1/.3
+
+105III.4 is the exercise's own route: by 105III.2, `⟨f⟩ = π_{⌈f(1)⌉} ∘ c_{f(1)}
+∘ [f]`, and `[f]` is an isomorphism by 100III, so `⟨f⟩` is
+corner ∘ filter ∘ filter; being faithful (105III.3) it is a filter by 100VII.1.
+
+105IV.1 was proved in an **index-carrying** form
+(`isDiamondSelfAdjoint_cornerMap`: for ⋄-self-adjoint `f` and *any* projection
+`u` with `u = ⌈f(1)⌉`, the map `u f(·) u` on `u𝒜u` is ⋄-self-adjoint), because
+part 3 needs it at `u = ⌈h(1)⌉` for the square root `h` of `f` while its
+statement is indexed by `⌈f(1)⌉`.  Two general facts came out of it and are
+worth keeping:
+
+* `corner_ceil_val`: **ceilings computed in a corner are ambient ceilings**.
+  For `0 ≤ x ∈ e𝒜e` one has `⌈x⌉ ≤ e`, so the ambient `⌈x⌉` lies in the corner
+  and the two minimality clauses quantify over the same projections.
+* `le_sub_iff_le_one_sub`: for projections `p, t ≤ u`, `p ≤ 1−t ⟺ p ≤ u−t`.
+  This is what makes `⋄` in a corner agree with `⋄` in `𝒜`.
+
+With those, `Contraposed ⟨f⟩ ⟨f⟩` is `Contraposed f f` verbatim.  105IV.3 is
+then part 1 applied to `h` on the corner of `⌈f(1)⌉ = ⌈f⌉ = ⌈h∘h⌉ = ⌈h⌉ =
+⌈h(1)⌉` (103III.1/.2/.3), together with the already-proved part 2
+(`⟨h²⟩ = ⟨h⟩²`), which is exactly the equation `⟨f⟩ = k ∘ k` needed.
+
+**A Lean note that cost two compile rounds**: `u` indexes the dependent type
+`Corner A u`, so `rw [hu]` with `hu : u = ⌈f(1)⌉` is never type-correct once
+any `s : Corner A u` is in sight.  State the consequences of `hu` as
+`∀ x : A`-facts (`∀ x, u·f(x)·u = f(x)`, `∀ x ≥ 0, ⌈f(x)⌉ ≤ u`) *before*
+touching the corner, and use those.
+
+### 5. What parsec 1000–1060 now hangs on
+
+Everything downstream of 100III that is not blocked elsewhere is done.  What
+is left in `Measurement.lean` (13):
+
+* **102VII** `canonical_quotient_rigid` — reachable, long (approximate
+  pseudoinverses, `mult-jus-cont`, `nmiu-rigid`); **102IX** `pure_is_rigid`
+  waits only on it, now that 100III is in.
+* 104III.3/.4/.5 → **A/VN 81V `douglas` / 81VIII `sequential-quotient`**;
+  104VII, 104IX, **105V uniqueness**, **105VII**, **106I uniqueness** are a
+  single chain behind them (105V's proof cites `faithful-positive-map-
+  uniqueness` = 104IX explicitly).  104III.2a is parked (false as printed).
+* 106III.2/.3 — long computations, no purity involved.
+
+### 6. Verification
+
+`env LEAN_PATH=… lean Theses/A/Proc/Measurement.lean` → **0** `error:` lines
+and **13** `declaration uses 'sorry'` warnings, down from 20, with no new
+warning of any kind.  `#print axioms` was run by appending a block to the
+module itself and recompiling (never from an importing scratch file): all
+seven statements above, the twelve public helpers, and the regression set
+`isPure_adSelf` / `isPure_of_iso` / `purely_positive_basic_2` /
+`sequential_product_counterexample_1` / `uniqueness_sequential_product_exists`
+(the users of the amended `IsPure`) are exactly `[propext, Classical.choice,
+Quot.sound]`.  Nothing staged, nothing committed.
+
+## Session 50 — `A/VN`: **89XI.1/.2/.3 and 89XII close the 890-chain** — and the "missing" np-functional lemma was already proved, one chapter *upstream* (worker 75, A chain)
+
+Target: the lemma the previous session identified as the last obstacle to
+89XI.1, 89XII and `tensor-2` of **111VII** —
+
+> *a square-summable family `(xₙ)` of vectors defines an np-functional
+> `T ↦ ∑ₙ ⟪xₙ, T xₙ⟫` on `B(H)`* —
+
+estimated at "one lemma of perhaps 120–150 lines whose only hard part is a
+sup/sum interchange over a directed net".
+
+**It did not have to be written.  It is 38IV.2 `bh_functional_lemma_2` in
+`Theses/A/CStar/TowardsVN.lean` (cstar.tex:6416), proved, axiom-clean, and
+sitting eleven lines below its own converse 39IX `bh_np`** — the lemma the
+brief said was "the only direction the tree has".  The interchange of suprema
+is in its proof, at `TowardsVN.lean:1179–1186`.
+
+`A/VN` sorries **62 → 55** (Basic 25→**24**, Projections 19→**17**,
+Division 7, NormalFunctionals 9→**5**, Completeness 2).
+
+| point | declaration | file | class |
+|---|---|---|---|
+| **89XI**.1 | `functional_permanence_1` | `NormalFunctionals.lean` | 2 — no thesis proof (Corollary, stated without one) |
+| **89XI**.2 | `functional_permanence_2` | `NormalFunctionals.lean` | 2 — likewise |
+| **89XI**.3 | `functional_permanence_3` | `NormalFunctionals.lean` | 2 — likewise |
+| **89XII** | `functional_extension` | `NormalFunctionals.lean` | 1 — the thesis's own hint (48VI) |
+| — | `exists_sumVectorNP` | `NormalFunctionals.lean` | arbitrary-index wrapper around 38IV.2, for `A/Proc` |
+| **47V** | `vn_equalisers` | `Basic.lean` | 2 — no published solution (asols stops at parsec 340) |
+| **66IV**.1 | `ultracyclic_basic_1` | `Projections.lean` | 1 |
+| **66IV**.2 | `ultracyclic_basic_2` | `Projections.lean` | 1 |
+
+All eight are `#print axioms` = `[propext, Classical.choice, Quot.sound]`.
+
+### 1. 89XI.1 is twenty lines, and does not need its own hypothesis
+
+Represent `B` faithfully and normally on `ℓ²(ι)` (**48VIII** `ngns`); then
+`σ = f ∘ ρ : A → B(ℓ²(ι))` is injective and normal, so `isVNSubalgebra_range`
+(**48VI**.1) makes its range a von Neumann subalgebra and **89IX** applies:
+`ω = ∑ₙ ⟪xₙ, σ(·)xₙ⟫`.  The *same* family gives an np-functional `ν` on all
+of `B(ℓ²(ι))` by 38IV.2, and `ξ = ν ∘ f` (i.e. `compNP (nmiuP f) _ ν`) is the
+extension.  **The hypothesis `hR : IsVNSubalgebra B ρ.range` is never used** —
+injectivity of `ρ` already gives it, by 48VI.1.  That is exactly why 89XII
+(which has no `hR`) is a one-liner from 89XI.1, as the thesis's own hint
+says.
+
+89XI.2 (ultraweak permanence) is the initial-topology bookkeeping:
+`induced ρ (⨅_ξ induced ξ) = ⨅_ξ induced (ξ∘ρ)` by `induced_iInf` +
+`induced_compose`; `≤` because each `ξ∘ρ` is an np-functional of `A`
+(`compNP`), `≥` because by part 1 *every* np-functional of `A` is a `ξ∘ρ`.
+
+89XI.3 (ultrastrong permanence) is the same idea one level down, on the
+generating balls: `‖ρa - ρb‖_ξ = ‖a - b‖_{ξ∘ρ}`, so every ball of `A` **is**
+the `ρ`-preimage of a ball of `B` (part 1 supplies the `ξ`), giving one
+inclusion by `generateFrom_anti`; the other is that
+`a ↦ ‖ρ a - c‖_ξ` is `‖·‖_{ξ∘ρ}`-Lipschitz for an *arbitrary* `c ∈ B`, so its
+sublevel sets are ultrastrongly open (`ultrastrong_ball_mem_nhds`).
+`induced_generateFrom_eq` does the rest.  Note `rw [ultrastrong B]` fails —
+the topologies are `def`s, so `unfold ultrastrong` is the move.
+
+### 2. `exists_sumVectorNP`: the arbitrary-index wrapper
+
+38IV.2 is stated for `x : ℕ → H`.  `111VII`'s `tensor-2` needs the family
+`(n,m) ↦ xₙ ⊗ yₘ` indexed by `ℕ × ℕ`, so `exists_sumVectorNP` (35 lines)
+re-indexes any square-summable `x : ι → H` through `exists_nat_reindex`
+(session 49) and transports the `HasSum` back with
+`Function.Injective.hasSum_iff` + `hasSum_subtype_iff_of_support_subset`.
+It is in `A/VN` so both `A/Proc` and `B/Dils` can see it.
+
+**Is `tensor-2` genuinely satisfied now?  Yes, as far as `A/VN` is
+concerned.** proc.tex:2528 needs (i) 89IX — proved, session 49; (ii) the
+np-functional of a square-summable `ℕ × ℕ`-family — `exists_sumVectorNP`,
+above; (iii) square-summability of `(x,y) ↦ f(x)g(y)`, which
+`A/Proc/Tensor.lean:192` already has; (iv) restriction to `𝒯` along the
+inclusion, which is `VNSub.restrictNP` (`A/Proc/Tensor.lean:1107`).  What
+remains is `A/Proc`-local assembly — the identity
+`⟪x⊗y,(A⊗B)(x⊗y)⟫ = ⟪x,Ax⟫⟪y,By⟫` and a `tsum` over `ℕ × ℕ` — not a missing
+theorem.  `special_tensor` still carries `tensor-1` and `tensor-3`, which
+were never blocked on `A/VN`.
+
+### 3. Three items from the survey, worked cheapest-first
+
+* **47V** `vn_equalisers`: `StarAlgHom.equalizer` (Mathlib) gives the
+  ∗-subalgebra; it is norm-closed because miu-maps are contractive
+  (`norm_mi_map_contractive`), and closed under directed suprema because
+  `f(⋁D)` and `g(⋁D)` are lubs of the *same* set `f''D = g''D`.  17 lines.
+  There is **no author solution** — `asols.tex` stops at parsec 340 — so this
+  argument is ours.  It unblocks half of **84bV** `ha_equalisers`.
+* **66IV**.1: `⌈ω⌉ ∪ ⌈τ⌉ = ⌈ω+τ⌉` is **63II**.2 `carrier_basic_2`, already
+  proved; four lines.
+* **66IV**.2: `p = ⌈ω(p(·)p)⌉` for `p ≤ ⌈ω⌉`.  Leastness is the one step with
+  content: from `ω(p r^⊥ p) = 0` we get `ω(⌈p r^⊥ p⌉) = 0` by **60I**
+  `ceil_functionals_lemma`, hence `⌈ω⌉ ≤ ⌈p r^⊥ p⌉^⊥`; since
+  `⌈p r^⊥ p⌉ ≤ p ≤ ⌈ω⌉` this makes the projection dominated by its own
+  complement, so (conjugating) it is `0`, so `p r^⊥ p = 0` and `p ≤ r`.  The
+  tail is the same computation as in the proved 66IV.3.
+
+### 4. A full survey of `A/VN` is now in `docs/AVN-survey.md`
+
+Every one of the 55 remaining `sorry`s, with DISP number, class
+(self-contained / blocked-on-named-sorry / cited-to-literature / false) and
+the cheapest next targets.  Two findings worth repeating here:
+
+* **The nine 43II counterexamples in `Basic.lean` are much cheaper than they
+  look**, now that 39IX `bh_np` is proved: every np-functional on `B(ℓ²)` is
+  `∑ₙ⟪xₙ,(·)xₙ⟫`, so `‖T‖²_ω = ∑ₙ‖T xₙ‖²` and each part becomes dominated
+  convergence against the summable `(‖xₙ‖²)ₙ`.  That is 9 of `Basic.lean`'s
+  24.
+* **`Projections.lean` is one chain**: 69V → 69VII → 69IX → 70II → 70III.
+  Proving **69V** `proto_gns_ceil` unlocks five statements.  The best
+  *isolated* target there is **63IV** `cp_comprehension`, whose thesis proof
+  needs only `states_order_separating_1/2` and `omega_norm_basic_1`, both
+  proved in `A/CStar`.
+
+### 5. Corrections to the brief
+
+1. **"The tree has only the converse, 39IX `bh_np`; the missing direction is
+   one 120–150 line lemma"** — wrong: the missing direction is **38IV**.2
+   `bh_functional_lemma_2`, proved, in the *same file* as 39IX.  The brief's
+   own advice ("the thing you need may already exist downstream") was right
+   in spirit and wrong in direction: this time it was **upstream**, in
+   `A/CStar`, which is exactly where a worker told "your territory is A/VN"
+   does not look.  Eighteenth over-costed blocker.
+2. **"89XI.1 needs `isVNSubalgebra_range` to supply a missing hypothesis"** —
+   the reverse: 89XI.1 does not use its `hR` at all, and 48VI.1 is what makes
+   *89XII* (the version without `hR`) follow from it.
+3. Nothing false was found in the theses this session; no ERRATA or QUESTIONS
+   rows added.
+
+### 6. Verification
+
+Each of `Basic`, `Projections`, `Division`, `NormalFunctionals`,
+`Completeness` compiled with `lean` invoked directly under `LEAN_PATH`
+(the `lake build` bypass): no errors, `sorry` and linter warnings only.
+`#print axioms` was run by appending the commands to each module and
+recompiling; all eight new declarations are exactly
+`[propext, Classical.choice, Quot.sound]`; the commands were then removed.
+Files touched: `Theses/A/VN/{Basic,Projections,NormalFunctionals}.lean`,
+`docs/AVN-survey.md`, and this log.
