@@ -1,11 +1,92 @@
-# `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–78, sessions 47–54)
+# `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–80, sessions 47–55)
 
-**Headline count: A/Proc has 78 code `sorry`s** after session 54.
-Per file: `Tensor` 39, `Measurement` **11**, `QuantumLambda` 17,
-`Duplicators` **11** (was 17).  (`grep -c sorry` over-counts, because the file
+**Headline count: A/Proc has 77 code `sorry`s** after session 55.
+Per file: `Tensor` **38** (was 39), `Measurement` **11**, `QuantumLambda` 17,
+`Duplicators` **11**.  (`grep -c sorry` over-counts, because the file
 docstrings mention `sorry` in prose; the code counts are the ones above.
 Note `\bsorry\b` also matches "sorry-ed" in prose — count the compiler's
 `declaration uses \`sorry\`` warnings instead.)
+
+> **Session 55 — 112X.1 IS PROVED; the external frontier is down to two
+> `sorry`s, and `Tensor.lean`'s next gate is 112X.2, which is in *this*
+> chapter.**
+> The session-54 note below is correct about the *chain* but its blocker list
+> is now stale in one place: **90II.2 `vn_center_separating_fundamental_2` was
+> closed by the A/VN worker in session 55**, and with it **112X**.1
+> `tensor_basic_1` is now **proved and axiom-clean** — both conjuncts:
+> * *order separating*: `nonneg_of_conjNP_of_centreSeparating` (30X) fed with
+>   the product functionals, which are `CentreSeparatingConj` for the trivial
+>   reason that faithfulness (condition (3) of 108II) is the `b = 1` case; the
+>   hypothesis only conjugates by `γ_⊙(s)`, and the gap to arbitrary `c ∈ 𝒯`
+>   is closed by **74VI** `dense_subalgebra` (a norm-bounded net from
+>   `γ_⊙(𝒜⊙ℬ)` converging ultrastrongly) plus **72III**.1c
+>   `bstaromega_lipschitz`;
+> * *norm-limit-of-sums*: a direct application of **90II**.2 to the collection
+>   of product functionals and to the ultrastrongly dense ∗-subalgebra
+>   `γ_⊙(𝒜⊙ℬ)`.
+>
+> Banked infrastructure (all in `Tensor.lean`, all axiom-clean): `tensorSpan`
+> (the ∗-subalgebra `γ_⊙(𝒜⊙ℬ)`), `range_lift_eq_span`, `prodFunctionals`,
+> `eq_prodNP`, `centreSeparatingConj_prodFunctionals`,
+> `dense_ultrastrong_tensorSpan`, `lift_one/lift_mul/lift_star` (`γ_⊙` is a
+> ∗-homomorphism), `prodNP_lift` (`γ(σ,τ) ∘ γ_⊙ = σ ⊙ τ`), `conjProdNP` (the
+> collection `Ω` of 112X.1), `isBasicFunctional_comp_lift` and
+> `exists_conjProdNP_of_isBasicFunctional` — the last two are the *second*
+> half of 112X.1's exercise text (`Ω ↔ basic functionals`), which our Lean
+> statement of part 1 does not carry.
+>
+> **The next gate is 112X.2 `tensor_basic_2` (`‖γ_⊙ s‖ = ‖s‖`), and it is
+> A/Proc-local.**  With 112X.1 in hand the thesis's route is: the unital
+> members `Ω₁` of `Ω` are order separating (rescale `σ`), so **21VII**
+> `order_separating_norm` (proved, `A/CStar/Positive.lean`) gives
+> `‖a‖ = ⨆_{ω∈Ω₁} ‖ω a‖` for positive `a`; apply it at
+> `a = γ_⊙(s)*γ_⊙(s) = γ_⊙(s*s)` and match the resulting supremum with
+> `tensorNorm`'s, using the bijection `Ω ↔ basic functionals` above (which
+> also matches the subunitality conditions, since
+> `conjProdNP hγ σ τ s 1 = odotF σ τ (star s * 1 * s)`).  The remaining work
+> is the sSup/iSup bookkeeping (squares vs. square roots; subunital vs.
+> unital sups).  112X.3 follows from 112X.1's second conjunct once 112X.2
+> supplies the norm bound, and 112X.3 then unblocks **116III**.4/.5,
+> **116IV**.1 and **118II**.
+>
+> **A/Proc's external frontier is now two `sorry`s in
+> `A/VN/NormalFunctionals.lean`: 87III `predual_complete` (gates 112X.5,
+> hence 112XI, 114I, 114II, 115II) and 86IX
+> `polar_decomposition_of_functional` (gates 112X.4 and, via 116I, 116III.3;
+> 87VI `norm_predual` is the other half of 116III.2).**
+>
+> **Also this session:** all eight `CentreSeparating` uses in `Tensor.lean`
+> were migrated to `CentreSeparatingConj` (= cstar.tex **21II**.4, the
+> thesis's notion) — 116IV.2 `tensor_generation_2` (3), 116VII
+> `tensor_characterization` (3), 117II.2 `sum_generation_2` (2).
+> `sum_generation_2` was reproved and is *shorter* under the correct notion:
+> the centrality argument disappears entirely (test `a` against `ω ∘ πᵢ`
+> conjugated by `κᵢ(b)`).  A/VN's auxiliary `CentreSeparating` now has **no
+> A/Proc consumer**; its only remaining use in the tree is inside a proof at
+> `A/VN/Basic.lean:1837`, so A/VN may retire it.
+>
+> **Two corrections to the tables below.**
+> 1. **129X is not behind 115II.**  The row "129X needs the product functional
+>    `ω ⊗ ω` and `carrier-tensor` faithfulness (118IV), both behind 115II" is
+>    wrong on both counts: `prodNP` produces `ω ⊗ ω` straight out of
+>    `IsTensorProduct.prod_exists` (no `tmap`), and **118IV.4**
+>    `carrier_tensor_4`'s *statement* mentions no `tmap` either — it is about a
+>    product np-functional `χ` on `𝒜 ⊗ ℬ`.  129X's blocker is therefore
+>    **118IV.4, inside this chapter**, together with the dyadic-partition
+>    construction of proc.tex:6395 (`continuous_measure_space` is already
+>    proved in `Duplicators.lean`).
+> 2. **The D1 `smul` fix does not unblock 129X/130IV/130V.**  It is necessary
+>    (without ℂ-linearity `ψ : z ↦ q(const z)` need not be the algebra map) but
+>    it is not what is missing.  130IV needs a genuine build: the ∗-algebra
+>    isomorphism `𝒜 ≅ ⊕ₙ ℬₙ`, `q f ↦ (qB n f)ₙ`, whose *surjectivity* needs a
+>    uniform bound on the representatives — given `y ∈ ℓ^∞(ℬ)` one must show
+>    each representative `fₙ` is a.e. bounded by `‖y n‖`, which `IsLinftyOf`
+>    does not record and which has to be derived from positivity of `q`
+>    (`q(1_S)` is a nonzero projection when `μ S > 0`, and
+>    `(y n·p)*(y n·p) ≥ (M+ε)²p` contradicts `‖y n‖ ≤ M`).  *Normality of the
+>    resulting map is free*: a bijective ∗-homomorphism is an order
+>    isomorphism, so `starAlgEquiv_preservesDirSups'` (already in
+>    `Tensor.lean`) applies.  130V is blocked on 130IV alone, as recorded.
 
 > **Session 54 correction — 112XI IS NOT UNBLOCKED BY 77V, and the whole
 > `Tensor.lean` upper half is still shut.**
@@ -302,12 +383,12 @@ to be `Nonempty.some` of the sorried `vnTensorProduct_nonempty`.
 
 | DISP | decl | blocked on |
 |---|---|---|
-| 112X.1 | `tensor_basic_1` | **90II.2** `vn_center_separating_fundamental_2` (A/VN, `sorry`).  *Correction to earlier notes:* 90II**.1** is now **proved** and is exactly this statement's first conjunct; only the norm-approximation conjunct is left, and the two sit in one theorem. |
-| 112X.2 | `tensor_basic_2` | 90II.2 (21VII `order_separating_norm` is now **proved**) |
-| 112X.3 | `tensor_basic_3` | 112X.2 |
+| 112X.1 | `tensor_basic_1` | **CLOSED (session 55)** — 90II.1 *and* .2 are proved, and this is 90II.2 applied to the product functionals plus 74VI/72III.1c for the order-separating half.  See the session-55 note at the top |
+| 112X.2 | `tensor_basic_2` | **unblocked — this is now the gate.**  90II.2 is proved and 21VII `order_separating_norm` is proved; what is left is the `Ω₁`-rescaling and the sSup bookkeeping (session-55 note) |
+| 112X.3 | `tensor_basic_3` | 112X.2 (its second conjunct is 112X.1's second conjunct restricted along `γ_⊙`, once 112X.2 supplies the norm bound) |
 | 112X.4 | `tensor_basic_4` | 74IV/74VI now **proved**; still needs **86IX** `polar_decomposition_of_functional` (A/VN, `sorry`) |
 | 112X.5 | `tensor_basic_5` | **87III** `predual_complete` (A/VN, `sorry`) |
-| 112XI | `tensor_universal_property` | ~~77V~~ — **77V is proved (session 53); 112XI is blocked on 112X.2 and 112X.5**, hence on **87III** and **90II.2**.  See the session-54 note at the top |
+| 112XI | `tensor_universal_property` | ~~77V~~ — 77V is proved (session 53); 112XI is blocked on 112X.2 and 112X.5, hence (correction, session 55: 90II.2 is proved) on **87III** alone plus the local 112X.2.  See the session-54 and session-55 notes at the top |
 | 114I | `tensor_universal_property_extra` | 112XI |
 | 114II | `tensor_uniqueness` | 112XI |
 | 116VII | `tensor_characterization` | 112X + 116IV |

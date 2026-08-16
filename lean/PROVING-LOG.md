@@ -12226,3 +12226,111 @@ for `tensor_basic_1`, `sum_generation_2`, `tensorSpan`, `range_lift_eq_span`,
 `dense_ultrastrong_tensorSpan`, `lift_one`, `lift_mul`, `lift_star`,
 `prodNP_lift`, `conjProdNP_lift`, `isBasicFunctional_comp_lift` and
 `exists_conjProdNP_of_isBasicFunctional`.
+
+## Session 56 — `A/VN`: **`NormalFunctionals.lean` is finished** — 86IX, 86XII, 87III, 87VI, plus 67II.3 and 67IV.1 (worker 81, A chain)
+
+`NormalFunctionals.lean` goes 4 → **0**; `Projections.lean` 13 → **11**.
+A/VN total 48 → **42** (compiler-counted).  All six new theorems, and all
+seven new helpers, are `#print axioms`-clean.
+
+### 1. The parsec-860/870 block, whole
+
+The four were one chain: **87III** needs **86XII**, which is a corollary of
+**86IX**, and **86IX** is the Krein–Milman argument.  All four are the
+thesis's own proofs.
+
+* **86IX** `polar_decomposition_of_functional` (vn.tex:6373).  The thesis
+  takes the maximum of `f` over the ultraweakly compact ball (**77III**
+  `vn_ball_compact`, proved session 53), extracts an extreme point of the
+  face `F = {a ∈ (𝒜)₁ : f(a) = ‖f‖}` by Krein–Milman, and feeds it to
+  **86VI** `vn_ball_extreme_point`.
+* **86XII** `uwcont_on_ball` (vn.tex:6435): `f = f(uu*(·)) = g(u*(·))` with
+  `g := f(u(·))` positive; `g` is ultraweakly continuous on `[0,1]` because
+  `a ↦ ua` maps the effects into the ball, so `g` is normal, so continuous.
+* **87III** `predual_complete` (vn.tex:6509): the ε/3 estimate of the thesis,
+  run as *uniform* convergence on the ball (`TendstoUniformlyOn.continuousOn`)
+  rather than net-by-net; then 86XII.  Stated for a Cauchy **filter**
+  (`IsComplete`), so the approximating sequence is extracted from
+  `𝓝 x ∩ 𝓟 (predual A) ∈ F`.
+* **87VI** `norm_predual` (vn.tex:6563): `a = [a]√(a*a)` (**82I**) and
+  `f := ω([a]*(·))`.
+
+### 2. The reusable infrastructure this needed (all public, in the same file)
+
+* **`ultraweak_isTopologicalAddGroup`, `ultraweak_continuousSMul`,
+  `ultraweak_locallyConvexSpace`** — three lines each.  `ultraweak A` is an
+  `⨅` of topologies induced by `ℂ`-linear maps, and Mathlib has
+  `topologicalAddGroup_iInf`/`_induced`, `continuousSMul_iInf`/`_induced`,
+  `LocallyConvexSpace.iInf`/`.induced`.  With **44XI**.1 (Hausdorff) this
+  makes `(A, ultraweak)` an LCTVS over `ℝ`, so `IsCompact.extremePoints_nonempty`
+  (Mathlib's Krein–Milman lemma) applies directly.  **Anyone needing a
+  compactness/convexity argument in the ultraweak topology should start here.**
+* **`exists_extremePoint_max`** — the Krein–Milman step of 86IX, isolated so
+  that it mentions no `ContinuousLinearMap`: `f` linear and ultraweakly
+  continuous on `(𝒜)₁` yields `M ≥ 0` and an extreme point `u` of the ball
+  with `f(u) = M` and `|f| ≤ M` on the ball.
+* **`posFunctional_mul_eq_zero`** — a positive functional killing a
+  projection `q` kills `qb` and `bq` for every `b` (Cauchy–Schwarz,
+  `omega_norm_basic_1`).  This is what replaces the thesis's appeal to
+  `carrier-fundamental` in 86IX (see divergences).
+* **`preservesDirSups_of_continuousOn_effects_functional`** — **44XV** (2) ⇒ (3)
+  *for functionals*.  `A/VN/Basic.lean`'s `preservesDirSups_of_continuousOn_effects`
+  is `private` **and** typed `f : A →ₚ[ℂ] B` with `B : Type u` carrying a
+  `VonNeumannAlgebra` instance, which `ℂ : Type 0` does not have (that is
+  what `CU` exists for, but `CU` has no `VonNeumannAlgebra` instance and is
+  declared 3000 lines *below* 87III).  The proof is the Basic.lean one with
+  the target specialised to `ℂ`, where the closing `np_orderSeparating` step
+  collapses to a real/imaginary-part comparison.  **Cleanup for whoever next
+  edits `Basic.lean`: un-`private` that lemma, or better, state it once for a
+  `PositiveLinearMap` into any target and delete this copy.**
+
+### 3. Divergences
+
+* **86IX, class 2 (different route, one step).**  The thesis derives
+  `f(ubu*u) = f(ub)` from `u*u ≥ ⌈f(u(·))⌉` and **63I** `carrier-fundamental`.
+  The carrier is only defined for *normal* positive maps, and at that point in
+  the argument `f` is not yet known to be ultraweakly continuous — 86XII is
+  its corollary, so using it would be circular.  We use plain Cauchy–Schwarz
+  instead (`posFunctional_mul_eq_zero`), which needs no normality and is what
+  `carrier-fundamental` is doing here anyway.  **Worth a footnote in the
+  thesis**: as written, 86IX's last paragraph cites a lemma about carriers of
+  *normal* functionals for a functional whose normality is proved only in the
+  next point.
+* **86IX, class 3 (mild).**  The thesis says "the subset `{f(a) : a ∈ (𝒜)₁}`
+  of **ℝ** is compact and therefore has a largest element, which must be
+  `‖f‖`".  That set is a subset of `ℂ`, not `ℝ`; the maximum meant is the
+  maximum of `Re f`, and the identification with `‖f‖` uses that `λa ∈ (𝒜)₁`
+  for `|λ| = 1`.  Also `‖f‖` is used before `f` is known bounded — boundedness
+  is exactly what compactness of the image gives.  Both are harmless; we make
+  them explicit.
+* **87III, class 2.**  The thesis argues net-by-net ("one easily deduces");
+  we package the same ε/3 as uniform convergence on the ball.
+* **87VI, class 2 (one step).**  The thesis writes
+  `‖√(a*a)‖ = sup_{ω ∈ Ω} |ω(√(a*a))|` over the npu-maps, i.e. invokes
+  **21VII** `order-separating-norm` for the *normal* states.  Getting that
+  family into the shape `order_separating_norm` wants (a family of **unital**
+  pu-maps, so each `ω` must be renormalised, with the `ω(1) = 0` case split
+  out) is more work than the substitute: bound `ω(√(a*a)) ≤ b·ω(1)` for every
+  np-functional directly and apply `np_orderSeparating` to get
+  `√(a*a) ≤ b·1`.  Same content, no renormalisation.
+
+### 4. `Projections.lean`: 67II.3 and 67IV.1
+
+* **67II**.3 `central_examples_3` — only scalars are central in `B(H)`.
+  `T` commutes with `|x⟩⟨x| = (innerSL ℂ x).smulRight x`, so every vector is
+  an eigenvector; the standard two-case argument (`y` dependent on / independent
+  of a fixed `x₀ ≠ 0`) then gives a single eigenvalue.  The `Subsingleton H`
+  case is separate.
+* **67IV**.1 `central_projections_sums_1` — the corner `cA`.  Parts 1–2 are
+  computation.  Part 3 (`c⋁D = ⋁D`) does **not** need normality of `b ↦ cb`:
+  `c(·)c` is monotone, so `csc` is an upper bound of `D` (each `d = cdc`),
+  whence `s ≤ csc`; conjugating by `q := c^⊥` gives `qsq ≤ q(csc)q = 0`, while
+  `0 = qdq ≤ qsq`; so `qsq = 0`, and `qsq = qs` by centrality of `q`.
+  This avoids the `IsLUB`-in-`selfAdjoint A` → `IsLUB`-in-`A` transfer that
+  the normality route would need.
+
+### 5. What this unblocks
+
+`A/Proc`'s external frontier on `A/VN` is **empty**: 90II.2 closed in session
+55, 87III and 86IX here.  112X `tensor-basic` and 87VI (for 116III.2's `≥`
+half) are now A/Proc-local work.

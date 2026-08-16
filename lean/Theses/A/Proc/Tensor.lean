@@ -2614,6 +2614,197 @@ variable [VonNeumannAlgebra A] [VonNeumannAlgebra B] [VonNeumannAlgebra C]
 variable {T : Type u} [CStarAlgebra T] [PartialOrder T] [StarOrderedRing T]
   [VonNeumannAlgebra T]
 
+/-! ### Infrastructure for **112X**: the ∗-subalgebra `γ_⊙(𝒜 ⊙ ℬ)` and the
+product functionals as a centre separating collection -/
+
+open scoped Pointwise in
+/-- The linear span of the range of an miu-bilinear map `γ`, as a
+∗-subalgebra of the codomain — this is `γ_⊙(𝒜 ⊙ ℬ)`, the copy of the
+algebraic tensor product `𝒜 ⊙ ℬ` inside `𝒯` (see `range_lift_eq_span`).  It
+is a ∗-subalgebra because `γ` is multiplicative and involution preserving
+and `γ(1,1) = 1`. -/
+def tensorSpan (γ : A →ₗ[ℂ] B →ₗ[ℂ] T) (hmiu : MIUBilinear γ) :
+    StarSubalgebra ℂ T where
+  toSubalgebra := (Submodule.span ℂ {t : T | ∃ a b, t = γ a b}).toSubalgebra
+    (Submodule.subset_span ⟨1, 1, hmiu.1.symm⟩)
+    (by
+      intro x y hx hy
+      have hsub : ({t : T | ∃ a b, t = γ a b} * {t : T | ∃ a b, t = γ a b})
+          ⊆ {t : T | ∃ a b, t = γ a b} := by
+        rintro _ ⟨p, ⟨a, b, rfl⟩, q, ⟨a', b', rfl⟩, rfl⟩
+        exact ⟨a * a', b * b', (hmiu.2.1 a a' b b').symm⟩
+      have h1 : x * y ∈ Submodule.span ℂ {t : T | ∃ a b, t = γ a b}
+          * Submodule.span ℂ {t : T | ∃ a b, t = γ a b} :=
+        Submodule.mul_mem_mul hx hy
+      rw [Submodule.span_mul_span] at h1
+      exact Submodule.span_le.mpr (hsub.trans Submodule.subset_span) h1)
+  star_mem' := by
+    intro x hx
+    induction hx using Submodule.span_induction with
+    | mem u hu =>
+        obtain ⟨a, b, rfl⟩ := hu
+        exact Submodule.subset_span ⟨star a, star b, hmiu.2.2 a b⟩
+    | zero => simp
+    | add u v _ _ hu hv => rw [star_add]; exact Submodule.add_mem _ hu hv
+    | smul c u _ hu => rw [star_smul]; exact Submodule.smul_mem _ _ hu
+
+@[simp] theorem coe_tensorSpan (γ : A →ₗ[ℂ] B →ₗ[ℂ] T) (hmiu : MIUBilinear γ) :
+    (tensorSpan γ hmiu : Set T)
+      = (Submodule.span ℂ {t : T | ∃ a b, t = γ a b} : Set T) :=
+  rfl
+
+/-- The range of `γ_⊙ : 𝒜 ⊙ ℬ → 𝒯` is the linear span of the range of
+`γ`, since `𝒜 ⊙ ℬ` is spanned by the pure tensors. -/
+theorem range_lift_eq_span (γ : A →ₗ[ℂ] B →ₗ[ℂ] T) :
+    Set.range ⇑(TensorProduct.lift γ)
+      = (Submodule.span ℂ {t : T | ∃ a b, t = γ a b} : Set T) := by
+  ext t
+  constructor
+  · rintro ⟨s, rfl⟩
+    induction s using TensorProduct.induction_on with
+    | zero => simp
+    | tmul a b => exact Submodule.subset_span ⟨a, b, by simp⟩
+    | add u v hu hv => rw [map_add]; exact Submodule.add_mem _ hu hv
+  · intro ht
+    induction ht using Submodule.span_induction with
+    | mem u hu => obtain ⟨a, b, rfl⟩ := hu; exact ⟨a ⊗ₜ[ℂ] b, by simp⟩
+    | zero => exact ⟨0, by simp⟩
+    | add u v _ _ hu hv =>
+        obtain ⟨s, rfl⟩ := hu; obtain ⟨s', rfl⟩ := hv; exact ⟨s + s', by simp⟩
+    | smul c u _ hu => obtain ⟨s, rfl⟩ := hu; exact ⟨c • s, by simp⟩
+
+/-- The collection of *product functionals* `γ(σ,τ)` of a tensor product. -/
+def prodFunctionals {γ : A →ₗ[ℂ] B →ₗ[ℂ] T} (hγ : IsTensorProduct γ) :
+    Set (NPFunctional T) :=
+  {χ : NPFunctional T | ∃ (σ : NPFunctional A) (τ : NPFunctional B),
+    χ = prodNP hγ σ τ}
+
+/-- Any np-functional implementing the product of `σ` and `τ` *is* the
+chosen product functional `γ(σ,τ)` — `prod_functional_unique` read for
+np-functionals. -/
+theorem eq_prodNP {γ : A →ₗ[ℂ] B →ₗ[ℂ] T} (hγ : IsTensorProduct γ)
+    (σ : NPFunctional A) (τ : NPFunctional B) (h : NPFunctional T)
+    (hh : ∀ (a : A) (b : B), h (γ a b) = σ a * τ b) (t : T) :
+    h t = prodNP hγ σ τ t := by
+  have hu := prod_functional_unique γ hγ (npLin σ) (npLin τ) (npLin h)
+    (npLin (prodNP hγ σ τ)) (continuous_ultraweak_npFunctional h)
+    (continuous_ultraweak_npFunctional _) hh (prodNP_apply hγ σ τ)
+  exact congrArg (fun f : T →ₗ[ℂ] ℂ => f t) hu
+
+/-- The product functionals of a tensor product are **centre separating**
+in the sense of cstar.tex **21II**.4: this is faithfulness (condition (3)
+of 108II) with the conjugating element taken to be `1`. -/
+theorem centreSeparatingConj_prodFunctionals {γ : A →ₗ[ℂ] B →ₗ[ℂ] T}
+    (hγ : IsTensorProduct γ) : CentreSeparatingConj T (prodFunctionals hγ) := by
+  rw [centreSeparatingConj_iff]
+  intro a ha
+  refine ⟨fun h ω hω b => by simp [h], fun H => ?_⟩
+  refine hγ.faithful a ha fun σ τ h hh => ?_
+  have h1 := H (prodNP hγ σ τ) ⟨σ, τ, rfl⟩ 1
+  rw [star_one, one_mul, mul_one] at h1
+  rw [eq_prodNP hγ σ τ h hh a]
+  exact h1
+
+/-- `γ_⊙(𝒜 ⊙ ℬ)` is *ultrastrongly* dense in `𝒯`: it is ultraweakly dense
+by condition (1) of 108II, and **74VI** `dense_subalgebra` upgrades that to
+ultrastrong convergence of a bounded net. -/
+theorem dense_ultrastrong_tensorSpan {γ : A →ₗ[ℂ] B →ₗ[ℂ] T}
+    (hγ : IsTensorProduct γ) :
+    @Dense T (ultrastrong T)
+      ((tensorSpan γ hγ.miu : StarSubalgebra ℂ T) : Set T) := by
+  intro x
+  refine (mem_usClosure_iff _ x).mpr ?_
+  intro ω ε hε
+  obtain ⟨ι, l, hl, s, hs, hlim⟩ :=
+    dense_subalgebra (tensorSpan γ hγ.miu) hγ.dense 1 one_pos x
+  have _ : l.NeBot := hl
+  have ht := (usTendsto_iff s l x).mp hlim ω
+  obtain ⟨i, hi⟩ := (ht.eventually (gt_mem_nhds hε)).exists
+  exact ⟨s i, (hs i).1, hi⟩
+
+/-! ### `γ_⊙` is a ∗-homomorphism, and `Ω ↔ basic functionals`
+
+The second half of **112X**.1's exercise text ("show that `ω ∘ γ_⊙` is a basic
+functional for every `ω ∈ Ω`, and that every basic functional is of this form")
+— infrastructure for 112X.2/.3, which our rendering of part 1 does not
+state. -/
+
+theorem lift_one (γ : A →ₗ[ℂ] B →ₗ[ℂ] T) (hu : BilinUnital γ) :
+    TensorProduct.lift γ (1 : A ⊗[ℂ] B) = 1 := by
+  show TensorProduct.lift γ ((1 : A) ⊗ₜ[ℂ] (1 : B)) = 1
+  rw [TensorProduct.lift.tmul]
+  exact hu
+
+theorem lift_mul (γ : A →ₗ[ℂ] B →ₗ[ℂ] T) (hm : BilinMult γ) (s t : A ⊗[ℂ] B) :
+    TensorProduct.lift γ (s * t)
+      = TensorProduct.lift γ s * TensorProduct.lift γ t := by
+  induction s using TensorProduct.induction_on with
+  | zero => simp
+  | tmul a b =>
+      induction t using TensorProduct.induction_on with
+      | zero => simp
+      | tmul a' b' =>
+          rw [Algebra.TensorProduct.tmul_mul_tmul]
+          simp [hm a a' b b']
+      | add u v hu hv => rw [mul_add, map_add, map_add, hu, hv, mul_add]
+  | add u v hu hv => rw [add_mul, map_add, map_add, hu, hv, add_mul]
+
+theorem lift_star (γ : A →ₗ[ℂ] B →ₗ[ℂ] T) (hs : BilinStar γ) (s : A ⊗[ℂ] B) :
+    TensorProduct.lift γ (star s) = star (TensorProduct.lift γ s) := by
+  induction s using TensorProduct.induction_on with
+  | zero => simp
+  | tmul a b => simp [hs a b]
+  | add u v hu hv => rw [star_add, map_add, map_add, hu, hv, star_add]
+
+/-- `γ(σ,τ) ∘ γ_⊙ = σ ⊙ τ`. -/
+theorem prodNP_lift {γ : A →ₗ[ℂ] B →ₗ[ℂ] T} (hγ : IsTensorProduct γ)
+    (σ : NPFunctional A) (τ : NPFunctional B) (s : A ⊗[ℂ] B) :
+    prodNP hγ σ τ (TensorProduct.lift γ s) = odotF (npLin σ) (npLin τ) s := by
+  induction s using TensorProduct.induction_on with
+  | zero => simp
+  | tmul a b =>
+      simp only [prodNP_apply hγ σ τ a b, odotF, npLin, TensorProduct.lift.tmul,
+        LinearMap.compl₁₂_apply, LinearMap.mul_apply']
+      rfl
+  | add u v hu hv => rw [map_add, npFunctional_add, hu, hv, map_add]
+
+/-- The np-functionals of the collection `Ω` of **112X**.1:
+`γ(σ,τ)(γ_⊙(s)*(·)γ_⊙(s))`. -/
+def conjProdNP {γ : A →ₗ[ℂ] B →ₗ[ℂ] T} (hγ : IsTensorProduct γ)
+    (σ : NPFunctional A) (τ : NPFunctional B) (s : A ⊗[ℂ] B) : NPFunctional T :=
+  conjNP (TensorProduct.lift γ s) (prodNP hγ σ τ)
+
+@[simp] theorem conjProdNP_apply {γ : A →ₗ[ℂ] B →ₗ[ℂ] T} (hγ : IsTensorProduct γ)
+    (σ : NPFunctional A) (τ : NPFunctional B) (s : A ⊗[ℂ] B) (t : T) :
+    conjProdNP hγ σ τ s t
+      = prodNP hγ σ τ
+          (star (TensorProduct.lift γ s) * t * TensorProduct.lift γ s) :=
+  conjNP_apply _ _ _
+
+/-- The restriction of a member of `Ω` along `γ_⊙` is the basic functional
+`(σ ⊙ τ)(s*(·)s)`. -/
+theorem conjProdNP_lift {γ : A →ₗ[ℂ] B →ₗ[ℂ] T} (hγ : IsTensorProduct γ)
+    (σ : NPFunctional A) (τ : NPFunctional B) (s t : A ⊗[ℂ] B) :
+    conjProdNP hγ σ τ s (TensorProduct.lift γ t)
+      = odotF (npLin σ) (npLin τ) (star s * t * s) := by
+  rw [conjProdNP_apply, ← lift_star γ hγ.miu.2.2, ← lift_mul γ hγ.miu.2.1,
+    ← lift_mul γ hγ.miu.2.1, prodNP_lift hγ]
+
+theorem isBasicFunctional_comp_lift {γ : A →ₗ[ℂ] B →ₗ[ℂ] T}
+    (hγ : IsTensorProduct γ) (σ : NPFunctional A) (τ : NPFunctional B)
+    (s : A ⊗[ℂ] B) :
+    IsBasicFunctional ((npLin (conjProdNP hγ σ τ s)).comp (TensorProduct.lift γ)) :=
+  ⟨σ, τ, s, fun t => conjProdNP_lift hγ σ τ s t⟩
+
+/-- Conversely, every basic functional on `𝒜 ⊙ ℬ` is the restriction along
+`γ_⊙` of a (unique, by `prod_functional_unique`) member of `Ω`. -/
+theorem exists_conjProdNP_of_isBasicFunctional {γ : A →ₗ[ℂ] B →ₗ[ℂ] T}
+    (hγ : IsTensorProduct γ) (ω : A ⊗[ℂ] B →ₗ[ℂ] ℂ) (hω : IsBasicFunctional ω) :
+    ∃ (σ : NPFunctional A) (τ : NPFunctional B) (s : A ⊗[ℂ] B),
+      ∀ t : A ⊗[ℂ] B, ω t = conjProdNP hγ σ τ s (TensorProduct.lift γ t) := by
+  obtain ⟨σ, τ, s, hs⟩ := hω
+  exact ⟨σ, τ, s, fun t => by rw [hs t, conjProdNP_lift hγ]⟩
+
 /-- **112X** (`tensor-basic`, proc.tex:2868, Exercise), part 1 (headline
 claims): for a tensor product `γ` the np-functionals of the form
 `γ(σ,τ)(γ_⊙(s)* (·) γ_⊙(s))` are order separating, and every
@@ -2632,7 +2823,92 @@ theorem tensor_basic_1 (γ : A →ₗ[ℂ] B →ₗ[ℂ] T) (hγ : IsTensorProdu
         ∀ t : T,
           ‖h t - ∑ i, prodNP hγ (σ i) (τ i)
             (star (TensorProduct.lift γ (s i)) * t *
-              TensorProduct.lift γ (s i))‖ ≤ ε * ‖t‖ := sorry
+              TensorProduct.lift γ (s i))‖ ≤ ε * ‖t‖ := by
+  constructor
+  · -- **Order separating.**  Put `a := y - x`.  By `nonneg_of_conjNP_of_centreSeparating`
+    -- (30X fed with `centreSeparatingConj_prodFunctionals`) it suffices that
+    -- `γ(σ,τ)(c* a c) ≥ 0` for *every* `c ∈ 𝒯`, while the hypothesis gives this
+    -- only for `c ∈ γ_⊙(𝒜 ⊙ ℬ)`.  **74VI** `dense_subalgebra` supplies a
+    -- norm-bounded net `s_α → c` ultrastrongly from that subalgebra, and
+    -- **72III**.1c `bstaromega_lipschitz` transfers the limit.
+    intro x y hx hy H
+    rw [← sub_nonneg]
+    set a : T := y - x with hadef
+    have hasa : IsSelfAdjoint a := hy.sub hx
+    have hconj : ∀ d : T, IsSelfAdjoint (star d * a * d) := fun d => by
+      show star (star d * a * d) = star d * a * d
+      rw [star_mul, star_mul, star_star, hasa.star_eq, mul_assoc]
+    refine nonneg_of_conjNP_of_centreSeparating (prodFunctionals hγ)
+      (centreSeparatingConj_prodFunctionals hγ) ?_
+    rintro χ ⟨σ, τ, rfl⟩ c
+    set ω : NPFunctional T := prodNP hγ σ τ with hωdef
+    have hsplit : ∀ d : T,
+        ω (star d * a * d) = ω (star d * y * d) - ω (star d * x * d) := by
+      intro d
+      have e : star d * a * d = star d * y * d - star d * x * d := by
+        rw [hadef]; noncomm_ring
+      rw [e, npFunctional_sub]
+    obtain ⟨ι, l, hl, s, hs, hlim⟩ :=
+      dense_subalgebra (tensorSpan γ hγ.miu) hγ.dense 1 one_pos c
+    have _ : l.NeBot := hl
+    have hnn : ∀ i, 0 ≤ (ω (star (s i) * a * s i)).re := by
+      intro i
+      have hmem : s i ∈ Set.range ⇑(TensorProduct.lift γ) := by
+        rw [range_lift_eq_span]; exact (hs i).1
+      obtain ⟨v, hv⟩ := hmem
+      have hH := H σ τ v
+      rw [hv] at hH
+      rw [hsplit, Complex.sub_re]
+      linarith
+    set K : ℝ := ‖c‖ * (1 + 1) * omegaNorm T ω 1 + omegaNorm T ω c with hKdef
+    have hbnd : ∀ i, ‖ω (star (s i) * a * s i) - ω (star c * a * c)‖
+        ≤ omegaNorm T ω (s i - c) * (K * ‖a‖) := by
+      intro i
+      have hlip := bstaromega_lipschitz ω (s i) c a
+      have hsi : omegaNorm T ω (s i) ≤ ‖c‖ * (1 + 1) * omegaNorm T ω 1 := by
+        have h1 : omegaNorm T ω (s i * 1) ≤ ‖s i‖ * omegaNorm T ω 1 :=
+          omegaNorm_mul_le ω (s i) 1
+        rw [mul_one] at h1
+        exact h1.trans (mul_le_mul_of_nonneg_right (hs i).2 (omegaNorm_nonneg ω 1))
+      have h0 := omegaNorm_nonneg ω (s i - c)
+      have h1 : omegaNorm T ω (s i) + omegaNorm T ω c ≤ K := by rw [hKdef]; linarith
+      refine hlip.trans ?_
+      calc omegaNorm T ω (s i - c) * (omegaNorm T ω (s i) + omegaNorm T ω c) * ‖a‖
+          = omegaNorm T ω (s i - c)
+              * ((omegaNorm T ω (s i) + omegaNorm T ω c) * ‖a‖) := by ring
+        _ ≤ omegaNorm T ω (s i - c) * (K * ‖a‖) :=
+            mul_le_mul_of_nonneg_left
+              (mul_le_mul_of_nonneg_right h1 (norm_nonneg a)) h0
+    have hzero : Tendsto (fun i => omegaNorm T ω (s i - c) * (K * ‖a‖)) l (𝓝 0) := by
+      have hus := (usTendsto_iff s l c).mp hlim ω
+      simpa using hus.mul_const (K * ‖a‖)
+    have hconv : Tendsto (fun i => ω (star (s i) * a * s i)) l
+        (𝓝 (ω (star c * a * c))) := by
+      rw [tendsto_iff_norm_sub_tendsto_zero]
+      exact squeeze_zero (fun i => norm_nonneg _) hbnd hzero
+    have hre : Tendsto (fun i => (ω (star (s i) * a * s i)).re) l
+        (𝓝 (ω (star c * a * c)).re) := (Complex.continuous_re.tendsto _).comp hconv
+    have hfin : (0 : ℝ) ≤ (ω (star c * a * c)).re :=
+      ge_of_tendsto hre (Filter.Eventually.of_forall hnn)
+    rw [Complex.le_def]
+    exact ⟨by simpa using hfin, by
+      rw [Complex.zero_im, npFunctional_im_eq_zero ω (hconj c)]⟩
+  · -- **Every np-functional is a norm limit of finite sums from `Ω`** — this is
+    -- **90II**.2 `vn_center_separating_fundamental_2` applied to the centre
+    -- separating collection of product functionals and the ultrastrongly dense
+    -- ∗-subalgebra `γ_⊙(𝒜 ⊙ ℬ)`.
+    intro h ε hε
+    have hdense : @Dense T (ultrastrong T) (Set.range ⇑(TensorProduct.lift γ)) := by
+      rw [range_lift_eq_span]; exact dense_ultrastrong_tensorSpan hγ
+    obtain ⟨n, ω, s, hmem, hbound⟩ :=
+      vn_center_separating_fundamental_2 (prodFunctionals hγ)
+        (centreSeparatingConj_prodFunctionals hγ)
+        (Set.range ⇑(TensorProduct.lift γ)) hdense h ε hε
+    choose σ τ hστ using fun k => (hmem k).1
+    choose u hu using fun k => (hmem k).2
+    refine ⟨n, σ, τ, u, fun t => ?_⟩
+    simp only [hu]
+    simpa only [hστ] using hbound t
 
 /-- **112X** (`tensor-basic`, proc.tex:2868, Exercise), part 2 (headline
 claim): `γ_⊙ : 𝒜 ⊙ ℬ → 𝒯` is an isometry for the tensor product
@@ -3152,9 +3428,9 @@ theorem tensor_generation_1 (S : Set A) (T : Set B)
 centre separating collections `Ω`, `Θ` of np-functionals on `𝒜`, `ℬ`
 yield a centre separating collection `{ω ⊗ θ}` on `𝒜 ⊗ ℬ`. -/
 theorem tensor_generation_2 (Ω : Set (NPFunctional A))
-    (Θ : Set (NPFunctional B)) (hΩ : CentreSeparating A Ω)
-    (hΘ : CentreSeparating B Θ) :
-    CentreSeparating (VNT A B)
+    (Θ : Set (NPFunctional B)) (hΩ : CentreSeparatingConj A Ω)
+    (hΘ : CentreSeparatingConj B Θ) :
+    CentreSeparatingConj (VNT A B)
       {χ : NPFunctional (VNT A B) | ∃ ω ∈ Ω, ∃ θ ∈ Θ,
         ∀ (a : A) (b : B), χ (a ⊗ᵥ b) = ω a * θ b} := sorry
 
@@ -3169,15 +3445,15 @@ centre separating. -/
 theorem tensor_characterization [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     {T : Type u} [CStarAlgebra T] [PartialOrder T] [StarOrderedRing T]
     [VonNeumannAlgebra T] (Sg : Set (NPFunctional A))
-    (Γ : Set (NPFunctional B)) (hSg : CentreSeparating A Sg)
-    (hΓ : CentreSeparating B Γ) (γ : A →ₗ[ℂ] B →ₗ[ℂ] T)
+    (Γ : Set (NPFunctional B)) (hSg : CentreSeparatingConj A Sg)
+    (hΓ : CentreSeparatingConj B Γ) (γ : A →ₗ[ℂ] B →ₗ[ℂ] T)
     (hmiu : MIUBilinear γ) :
     IsTensorProduct γ ↔
       (@Dense T (ultraweak T)
           (Submodule.span ℂ {t : T | ∃ a b, t = γ a b} : Set T)) ∧
         (∀ σ ∈ Sg, ∀ τ ∈ Γ, ∃ h : NPFunctional T,
           ∀ (a : A) (b : B), h (γ a b) = σ a * τ b) ∧
-        CentreSeparating T
+        CentreSeparatingConj T
           {h : NPFunctional T | ∃ σ ∈ Sg, ∃ τ ∈ Γ,
             ∀ (a : A) (b : B), h (γ a b) = σ a * τ b} := sorry
 
@@ -3665,28 +3941,28 @@ theorem sum_generation_1_is_false :
 separating collections `Ωᵢ` on the `𝒜ᵢ` give the centre separating
 collection `{ω ∘ πᵢ}` on `⊕ᵢ 𝒜ᵢ`. -/
 theorem sum_generation_2 (Ω : ∀ i, Set (NPFunctional (𝒜 i)))
-    (hΩ : ∀ i, CentreSeparating (𝒜 i) (Ω i)) :
-    CentreSeparating (lp 𝒜 ∞)
+    (hΩ : ∀ i, CentreSeparatingConj (𝒜 i) (Ω i)) :
+    CentreSeparatingConj (lp 𝒜 ∞)
       {χ : NPFunctional (lp 𝒜 ∞) | ∃ i, ∃ ω ∈ Ω i,
         ∀ x : lp 𝒜 ∞, χ x = ω (x i)} := by
   classical
-  intro a hcen hpos hkill
+  rw [centreSeparatingConj_iff]
+  intro a ha
+  refine ⟨fun h ω hω b => by simp [h], fun H => ?_⟩
   apply lp.ext
   funext i
-  -- centrality passes to each coordinate (test against `κᵢ(b)`)
-  have hci : IsCentral (𝒜 i) ((a : lp 𝒜 ∞) i) := by
-    intro b
-    have h := hcen (lp.single ∞ i b)
-    have h1 := congrFun (congrArg (fun x : lp 𝒜 ∞ => (x : ∀ j, 𝒜 j)) h) i
-    rw [lp.infty_coeFn_mul, lp.infty_coeFn_mul] at h1
-    simpa [lp.single_apply_self] using h1
-  have hpi : (0 : 𝒜 i) ≤ (a : lp 𝒜 ∞) i := (lp_infty_nonneg_iff a).mp hpos i
-  -- `ω ∘ πᵢ` is `lpNP i ω`, hence belongs to the collection
-  have hki : ∀ ω ∈ Ω i, ω ((a : lp 𝒜 ∞) i) = 0 := by
-    intro ω hω
-    have := hkill (lpNP i ω) ⟨i, ω, hω, fun x => rfl⟩
-    rwa [lp_infty_np_apply] at this
-  simpa using hΩ i _ hci hpi hki
+  have hpi : (0 : 𝒜 i) ≤ (a : ∀ j, 𝒜 j) i := (lp_infty_nonneg_iff a).mp ha i
+  have key : (a : ∀ j, 𝒜 j) i = 0 := by
+    refine ((centreSeparatingConj_iff (Ω i)).mp (hΩ i) _ hpi).mpr ?_
+    intro ω hω b
+    -- test `a` against `ω ∘ πᵢ` conjugated by the coprojection `κᵢ(b)`
+    have h := H (lpNP i ω) ⟨i, ω, hω, fun x => rfl⟩ (lp.single ∞ i b)
+    rw [lp_infty_np_apply] at h
+    rw [← h]
+    congr 1
+    rw [lp.infty_coeFn_mul, lp.infty_coeFn_mul, lp.coeFn_star]
+    simp only [Pi.mul_apply, Pi.star_apply, lp.single_apply_self]
+  simpa using key
 
 variable [VonNeumannAlgebra A] [∀ i, Nontrivial (VNT A (𝒜 i))]
 
