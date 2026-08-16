@@ -561,3 +561,141 @@ costs, in the same units as the table above:
 
 ≈**800–950 lines, one long session or two.**  `existence_paschke_5` stays
 structurally blocked (unchanged).
+
+---
+
+## Session 62 (result): **154III `existence_paschke` is proved**; the next gate is 154III.5
+
+`Paschke.lean` goes **7 → 6** and `B/Dils` **31 → 30**:
+`HilbertModules` 0, `SelfDualCompletion` 0, `Stinespring` 1, `Kaplansky` 4,
+`Paschke` **6**, `SelfDual` 7, `Pure` 12 — each source run through `lean`
+individually and **paired with an error count (all 0)**, including the two
+dependents `SelfDual.lean` and `Pure.lean`, rebuilt against the new
+`Paschke.olean`.  `existence_paschke` and every new declaration are
+axiom-clean (`propext, Classical.choice, Quot.sound`), checked from an
+importing file against the rebuilt olean.
+
+**≈830 lines** were added to `Paschke.lean`, immediately before
+`existence_paschke`, under *"The construction of `𝒜 ⊗_φ ℬ`
+(**154IV**–**154VI**)"*.  The ≈800–950 estimate held, and so did four of the
+five line items:
+
+| # | piece | costed | actual | how |
+|---|---|---|---|---|
+| 1 | `BInner ℬ (𝒜 ⊗[ℂ] ℬ)` | 200 | **~150** | `ptensPair` by two `TensorProduct.lift`s; `star` on the tensor product is Mathlib's (`TensorProduct.star_tmul`), so the conjugate-linear slot is `x ↦ pair (star x)`; positivity is `phi_gram_nonneg` = `cp_iff … .out 1 0` after `TensorProduct.exists_finset` |
+| 2 | `X`, `tprod`, `inner_tprod`, `PhiCompatible` | 100 | **~90** | `dils_completion` at `𝒷 = ℬ`, `V = 𝒜 ⊗[ℂ] ℬ`, both `Type u`, so `SelfDualCompletion.{u,u,u}` — no `ULift`.  The bound holds with `r = 1`, *as an equality* |
+| 3 | `univ` from **151Ia** | 150 | **~110** | `TensorProduct.lift` of `T`, then `selfdual_completion_univ`.  The one gap the statement of `PhiCompatible` leaves is ℂ-linearity in `b`, recovered from `smul_action` + `op_smul_complex_smul`/`op_one_smul` |
+| 4 | `ρ : NMIUMap 𝒜 (Ba ℬ X)ᵐᵒᵖ`, **normality the hard field** | 250–400 | **~330** | see below |
+| 5 | `h` from a vector state | 100 | **~90** | **not** `hilbmod_adj_vector_ncp` (153IV) but **145I** `hilbmod_vectstates_cp` for complete positivity and **152XIII** `baVecNP` (through `npFunctionalOp`, already in the file) for normality |
+
+### What `ρ`'s normality actually cost — and a blocker the costing missed
+
+The thesis (154VI) proves normality of `ϱ` from **48II** `normal_faithful`
+and **152IX** `hilmod-fixed-on-V`, reducing it to normality of the vector
+forms `d ↦ ⟨x̂, ϱ(d) x̂⟩ = ∑ᵢⱼ bᵢ* φ(aᵢ* d aⱼ) bⱼ`, and then cites **153I**
+`hilbmod-ad-ncp` **and 49IV `mn-vna`** for that.  ⚠️ **Both halves of 49IV it
+needs are `sorry` in `A/VN/Basic.lean`**: `mn_vna_2`'s third clause
+(`M ↦ ∑ᵢⱼ aᵢ* Mᵢⱼ aⱼ` preserves suprema — although *this* one is in fact
+available, as `exists_isLUB_matForm`, which is proved) and `mn_vna_3`
+(`Mₙφ` is normal, genuinely open).  So the thesis's route to the *only*
+hard field of `existence_paschke` is blocked outside `B/Dils`, which neither
+the brief nor the survey knew.
+
+The route taken instead needs nothing from `A/VN` that is not already
+proved, and is ~150 of the ~330 lines:
+
+* **`gram_polarization`** — *double* polarisation, i.e. **44II**
+  `mult_polarization` applied twice, once in the `aᵢ` and once in the `bᵢ`:
+  `b φ(u d u'*) b* = (1/16) ∑ₖ ∑ₗ iᵏ⁺ˡ · w_k* φ(v_l* d v_l) w_k`
+  with `w_k = iᵏ b* + b'*`, `v_l = iˡ u* + u'*`.  Every diagonal term
+  `d ↦ ω(w* φ(v* d v) w)` is `conjNP v (compNP φ (conjNP w ω))`, an
+  np-functional.  This terminates where the single polarisation of the
+  *module* variable does not: `Θ_{a⊗b}(d) = b φ(a d a*) b*`, so the double
+  polarisation is exactly the reduction of a general `Θ_x` to elementary
+  tensors, whereas polarising in `x ∈ 𝒜 ⊙ ℬ` only ever reduces `n` terms to
+  two.
+* **`preservesDirSups_of_np_combination`** — a monotone `g : 𝒜 → ℂ` that is
+  a ℂ-*combination* of np-functionals is normal.  A combination does not
+  preserve suprema, so normality is read off **convergence**: each
+  np-functional converges along the net of the directed set to its value at
+  the supremum (`npFunctional_tendsto_of_isLUB`, the **44VI**
+  `vna_supremum_uwlimit` idiom isolated), the combination therefore
+  converges, and the limit is squeezed between monotonicity and any upper
+  bound.  This is the reusable half of the argument.
+
+The remaining ~180 lines of item 4 are ordinary: `exists_prho` (through
+`ptprod_univ` and **152VIII** `hilbmod_adjoint_exists`, which turns a bounded
+module map on a self-dual module into an element of `𝒷ᵃ(X)`),
+`ba_ext_ptprod` (**152IX**.2 on the elementary tensors), the ring/star
+structure by that extensionality — `prho_star` needs the `BInner`-level
+identity `[x·a₀, y] = [x, y·a₀*]` rather than a density argument — and the
+`ᵐᵒᵖ` bookkeeping.
+
+### The next gate: **154III.5 `existence_paschke_5`, which is *not* blocked**
+
+⚠️ **The standing claim that `existence_paschke_5` is "structurally blocked"
+is wrong**, and it was wrong for a reason that this session removed.  The
+argument was that 154X builds `σ` by re-running the construction for `h'`,
+"which needs `existence_paschke` applied to a triple the statement does not
+hand you".  But 154X applies the construction to the **ncp-map
+`h' : 𝒫' → ℬ`**, and `𝒫'` is a von Neumann algebra by `PaschkeTriple.vn` —
+so `existence_paschke h'` now delivers exactly the `PaschkeModule h'` that
+154X asks for.  The route, entirely inside `B/Dils`:
+
+1. `M' : PaschkeModule h'` from `existence_paschke h'`; put
+   `ϱ'' := M'.ρ ∘ D'.ρ : NMIUMap 𝒜 (Ba ℬ M'.X)ᵐᵒᵖ` and `e := M'.tprod 1 1`.
+   `paschkeModule_h_ρ` gives `φ a = ⟨e, ϱ''(a) e⟩`, which is the hypothesis
+   `hφ` of **154III.4** `existence_paschke_4` **on the nose** (that theorem is
+   proved and takes an arbitrary `M`).  ~60 lines.
+2. `existence_paschke_4` yields the inner-product-preserving intertwiner
+   `S : M.X → M'.X`; `hilbmod_adjoint_exists` gives `S*`, and **153I**
+   `hilbmod_ad_ncp` (proved) gives `ad_S : NCPMap (Ba ℬ M'.X) (Ba ℬ M.X)`.
+   ~80 lines.
+3. Transport `ad_S` to the opposite algebras.  This is the one genuinely new
+   obligation: `f ↦ fᵐᵒᵖ` does **not** preserve complete positivity in
+   general (the transpose is the counterexample the file header already
+   records), but it does for `ad_S`, because the ᵐᵒᵖ-Gram sum collapses to
+   `(∑ⱼ Cⱼ S* Tⱼ)(∑ᵢ Cᵢ S* Tᵢ)*`.  Normality transports along
+   `selfAdjointUnop` as in `npFunctionalOp`.  ~120 lines.
+4. `σ := ad_S^ᵐᵒᵖ ∘ M'.ρ`, and the two equations `σ ∘ ϱ' = ϱ`,
+   `h ∘ σ = h'` by unwinding.  ~60 lines.
+5. **Uniqueness** of `σ` — 154VIII, which the thesis proves *before* part 4:
+   by `hilmod_fixed_on_V` it is enough to compare `⟨x̂, σₖ(c) x̂⟩`, and
+   `a ⊗ b = ϱ(a)(1 ⊗ 1)b` turns both into
+   `∑ᵢⱼ bᵢ* h'(ϱ'(aᵢ*) c ϱ'(aⱼ)) bⱼ`.  Needs `dils-univlemma`
+   (`σ(ϱ'(a) c ϱ'(a')) = ϱ(a) σ(c) ϱ(a')` for a mediating `σ`) — check
+   whether the tree has it before writing it.  ~150 lines.
+
+**≈450–550 lines, one session.**  It is the single highest-return item left
+in the directory: `IsPaschkeDilationOf` carries the universal property, so
+**156II, 157IV.2/.3 and 171II are all downstream of 154III.5, not of
+`existence_paschke`** — every one of them is stated for an arbitrary
+`PaschkeTriple`, and there is no way to transfer a computation from
+`𝒜 ⊗_φ ℬ` to it without the mediating `σ`.  The earlier reading of this
+survey ("`existence_paschke` gates 157IV.2/.3, most of `Pure.lean`, 171II")
+was therefore one step short: `existence_paschke` gates 154III.5, and
+154III.5 gates them.
+
+Also still true after this session: **162II `total_mv_order` is the only
+self-contained item in the directory**, `165VI` is blocked outside it on
+`tensor_characterization`, and the five known-false items
+(`Kaplansky`'s four, `Stinespring`'s 139XI) plus 169XI.2a and 164II.2b stand.
+
+### Reusable output
+
+All public in `Paschke.lean`: `ptensPair` / `ptensBInner` (the φ-inner
+product on `𝒜 ⊙ ℬ`), `exists_fin_tmul`, `phi_gram_nonneg`, `ptprod`,
+`ptprod_univ` (part 1 as a standalone theorem), `phiLift`,
+`exists_ba_of_boundedModuleMap`, `ba_ext_ptprod`, `prho` and its ring/star
+lemmas, `prhoHom`, `prhoHom_normal`, `pTheta`, `gram_polarization`,
+`npFunctional_tendsto_of_isLUB`, `preservesDirSups_of_np_combination`,
+`pVecLin` / `pVecLin_cp` / `pVecLin_normal` / `pVecNCP` (the vector state on
+`𝒷ᵃ(X)ᵐᵒᵖ` as an ncp-map, for **any** self-dual `X` — this is what 154III.3
+is, and it is stated independently of the Paschke construction).
+
+⚠️ The name `gram_nonneg` was **not** available: `SelfDual.lean` (which
+imports `Paschke.lean`) has a `private` lemma of that name, and a public one
+here would have reproduced the session-59 regression exactly.  Ours is
+`phi_gram_nonneg`.  `exists_rho` likewise collides with a `private` lemma in
+`A/CStar/TowardsVN.lean` (different namespace, so harmless, but renamed to
+`exists_prho` anyway).

@@ -72,6 +72,7 @@ import Theses.B.Dils.Stinespring
 import Theses.B.Dils.SelfDualCompletion
 
 open scoped ComplexOrder ComplexInnerProductSpace CStarAlgebra WithCStarModule
+open scoped TensorProduct
 open Filter Topology Theses Theses.A.CStar Theses.A.VN
 
 universe u
@@ -415,6 +416,865 @@ theorem paschke_rho_forces_cyclic (φ : NCPMap 𝒜 ℬ) {X : Type u}
   rw [hstar, hρ, hρ, hinner, hinner] at h1
   simpa [star_mul, mul_assoc] using h1
 
+
+/-! ### The construction of `𝒜 ⊗_φ ℬ` (**154IV**–**154VI**)
+
+The thesis's own proof of **154III**, transcribed.  `𝒜 ⊙ ℬ` is Mathlib's
+`𝒜 ⊗[ℂ] ℬ` carrying the ℬ-action `b·(a ⊗ b') = a ⊗ (b b')` and the
+φ-inner product `⟨a ⊗ b, a' ⊗ b'⟩ = b' φ(a' a*) b*` (mirrored, see the head
+of the file); **150II** `dils_completion` completes it, **151Ia**
+`selfdual_completion_univ` gives part 1, and parts 2 and 3 are built on top.
+
+Note that **no conjugation of the ℂ-action** is needed on `𝒜 ⊙ ℬ` itself:
+the mirroring is absorbed entirely into `tprod a b = a ⊗ₜ b` together with
+the `star`s in `inner_tprod`, which is what makes the pairing
+conjugate-linear in its first argument.
+
+The one step the thesis takes for granted and we do not have is normality of
+`ϱ`: dils.tex proves it from **49IV** `mn-vna` (the entrywise `Mₙφ` is
+normal, and `M ↦ ∑ᵢⱼ aᵢ* Mᵢⱼ aⱼ` preserves suprema), and **both** halves of
+49IV that it uses — `mn_vna_2`'s third clause and `mn_vna_3` — are still
+`sorry` in `A/VN/Basic.lean`.  The route here avoids them: the vector form
+`d ↦ ∑ᵢⱼ bᵢ φ(aᵢ d aⱼ*) bⱼ*` is written by *double* polarisation
+(`gram_polarization`, i.e. **44II** through `mult_polarization`, once in the
+`aᵢ` and once in the `bᵢ`) as a ℂ-combination of the np-functionals
+`d ↦ ω(w* φ(v* d v) w)`, and `preservesDirSups_of_np_combination` turns that
+into normality by reading it off the *convergence* of the monotone nets
+rather than off preservation of suprema, which a ℂ-combination does not
+enjoy. -/
+
+/-- Right slot of the φ-pairing. -/
+noncomputable def ptensR (φ : 𝒜 →ₗ[ℂ] ℬ) (a : 𝒜) (b : ℬ) :
+    (𝒜 ⊗[ℂ] ℬ) →ₗ[ℂ] ℬ :=
+  TensorProduct.lift <| LinearMap.mk₂ ℂ (fun (a' : 𝒜) (b' : ℬ) => b' * φ (a' * a) * b)
+    (fun a₁ a₂ b' => by rw [add_mul, map_add, mul_add, add_mul])
+    (fun c a' b' => by rw [smul_mul_assoc, map_smul, mul_smul_comm, smul_mul_assoc])
+    (fun a' b₁ b₂ => by rw [add_mul, add_mul])
+    (fun c a' b' => by rw [smul_mul_assoc, smul_mul_assoc])
+
+@[simp] theorem ptensR_tmul (φ : 𝒜 →ₗ[ℂ] ℬ) (a a' : 𝒜) (b b' : ℬ) :
+    ptensR φ a b (a' ⊗ₜ[ℂ] b') = b' * φ (a' * a) * b := rfl
+
+/-- The ℂ-bilinear pairing `⟨a ⊗ b, a' ⊗ b'⟩ = b' * φ (a' * a) * b`. -/
+noncomputable def ptensPair (φ : 𝒜 →ₗ[ℂ] ℬ) :
+    (𝒜 ⊗[ℂ] ℬ) →ₗ[ℂ] (𝒜 ⊗[ℂ] ℬ) →ₗ[ℂ] ℬ :=
+  TensorProduct.lift <| LinearMap.mk₂ ℂ (fun (a : 𝒜) (b : ℬ) => ptensR φ a b)
+    (fun a₁ a₂ b => by
+      refine TensorProduct.ext' fun a' b' => ?_
+      simp [mul_add, map_add, add_mul])
+    (fun c a b => by
+      refine TensorProduct.ext' fun a' b' => ?_
+      simp [mul_smul_comm, smul_mul_assoc])
+    (fun a b₁ b₂ => by
+      refine TensorProduct.ext' fun a' b' => ?_
+      simp [mul_add])
+    (fun c a b => by
+      refine TensorProduct.ext' fun a' b' => ?_
+      simp [mul_smul_comm])
+
+@[simp] theorem ptensPair_tmul (φ : 𝒜 →ₗ[ℂ] ℬ) (a a' : 𝒜) (b b' : ℬ) :
+    ptensPair φ (a ⊗ₜ[ℂ] b) (a' ⊗ₜ[ℂ] b') = b' * φ (a' * a) * b := rfl
+
+
+/-- Every element of `𝒜 ⊗[ℂ] ℬ` is a finite sum of elementary tensors,
+indexed by a `Fin n`. -/
+theorem exists_fin_tmul (x : 𝒜 ⊗[ℂ] ℬ) :
+    ∃ (n : ℕ) (a : Fin n → 𝒜) (b : Fin n → ℬ), x = ∑ i, a i ⊗ₜ[ℂ] b i := by
+  classical
+  obtain ⟨S, rfl⟩ := TensorProduct.exists_finset x
+  refine ⟨S.card, fun i => ((S.equivFin.symm i : 𝒜 × ℬ)).1,
+    fun i => ((S.equivFin.symm i : 𝒜 × ℬ)).2, ?_⟩
+  rw [← Finset.sum_coe_sort S (fun p : 𝒜 × ℬ => p.1 ⊗ₜ[ℂ] p.2)]
+  exact (Fintype.sum_equiv S.equivFin.symm _ _ (fun i => rfl)).symm
+
+/-- ℬ-valued Gram positivity for an ncp-map, in the mirrored (outer-star)
+shape used by `PhiCompatible.bound`: `0 ≤ ∑ᵢⱼ bᵢ φ(aᵢaⱼ*)bⱼ*`.  This is
+complete positivity of `φ` (`cp_iff … |>.out 1 0`) applied to the families
+`(aᵢ*)` and `(bᵢ*)`. -/
+theorem phi_gram_nonneg (φ : NCPMap 𝒜 ℬ) {ι : Type*} [Fintype ι]
+    (a : ι → 𝒜) (b : ι → ℬ) :
+    (0 : ℬ) ≤ ∑ i, ∑ j, b i * φ (a i * star (a j)) * star (b j) := by
+  classical
+  set ψ : 𝒜 →ₗ[ℂ] ℬ := φ.toCompletelyPositiveMap.toLinearMap with hψdef
+  have hψ : ⇑φ = ⇑ψ := rfl
+  have hcp : IsCompletelyPositiveMap ψ :=
+    ((cp_iff _).out 1 0).mp fun N A hA =>
+      φ.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N A hA
+  set e : Fin (Fintype.card ι) ≃ ι := (Fintype.equivFin ι).symm with he
+  have h := hcp (Fintype.card ι) (fun i => star (a (e i))) (fun i => star (b (e i)))
+  simp only [star_star] at h
+  rw [hψ]
+  have h2 : ∑ i, ∑ j, b (e i) * ψ (a (e i) * star (a (e j))) * star (b (e j))
+      = ∑ i, ∑ j, b i * ψ (a i * star (a j)) * star (b j) := by
+    rw [Fintype.sum_equiv e (fun i => ∑ j, b (e i) * ψ (a (e i) * star (a (e j))) * star (b (e j)))
+      (fun i => ∑ j, b i * ψ (a i * star (a j)) * star (b j))]
+    intro i
+    exact Fintype.sum_equiv e _ _ (fun j => rfl)
+  rwa [h2] at h
+
+/-- The right ℬ-action on `𝒜 ⊙ ℬ`, mirrored: `b • (a ⊗ b') = a ⊗ (b b')`. -/
+noncomputable local instance ptensSMul : SMul ℬ (𝒜 ⊗[ℂ] ℬ) where
+  smul b := LinearMap.lTensor 𝒜 (LinearMap.mulLeft ℂ b)
+
+theorem ptens_smul_tmul (b : ℬ) (a : 𝒜) (b' : ℬ) :
+    b • (a ⊗ₜ[ℂ] b') = a ⊗ₜ[ℂ] (b * b') := rfl
+
+@[simp] theorem ptens_smul_zero (b : ℬ) : b • (0 : 𝒜 ⊗[ℂ] ℬ) = 0 :=
+  map_zero (LinearMap.lTensor 𝒜 (LinearMap.mulLeft ℂ b))
+
+theorem ptens_smul_add (b : ℬ) (x y : 𝒜 ⊗[ℂ] ℬ) :
+    b • (x + y) = b • x + b • y :=
+  map_add (LinearMap.lTensor 𝒜 (LinearMap.mulLeft ℂ b)) x y
+
+theorem ptens_smul_sum {ι : Type*} (b : ℬ) (s : Finset ι) (f : ι → 𝒜 ⊗[ℂ] ℬ) :
+    b • (∑ i ∈ s, f i) = ∑ i ∈ s, b • f i :=
+  map_sum (LinearMap.lTensor 𝒜 (LinearMap.mulLeft ℂ b)) f s
+
+/-- The φ-inner product on `𝒜 ⊙ ℬ` (**154IV**, mirrored):
+`⟨a ⊗ b, a' ⊗ b'⟩ = b' φ(a' a*) b*`. -/
+noncomputable def ptensBInner (φ : NCPMap 𝒜 ℬ) : BInner ℬ (𝒜 ⊗[ℂ] ℬ) where
+  inner x y := ptensPair (φ.toCompletelyPositiveMap.toLinearMap) (star x) y
+  inner_add_right x y z := map_add _ _ _
+  inner_op_smul_right b x y := by
+    induction y using TensorProduct.induction_on with
+    | zero => simp
+    | tmul a' b' =>
+        induction x using TensorProduct.induction_on with
+        | zero => simp
+        | tmul a b₀ => rw [ptens_smul_tmul]; simp [mul_assoc]
+        | add x₁ x₂ h₁ h₂ =>
+            rw [star_add, map_add, LinearMap.add_apply, LinearMap.add_apply, h₁, h₂,
+              mul_add]
+    | add y₁ y₂ h₁ h₂ => rw [ptens_smul_add, map_add, map_add, h₁, h₂, mul_add]
+  inner_smul_right_complex c x y := map_smul _ _ _
+  star_inner x y := by
+    induction x using TensorProduct.induction_on with
+    | zero => simp
+    | tmul a b =>
+        induction y using TensorProduct.induction_on with
+        | zero => simp
+        | tmul a' b' =>
+            have hst : star (φ (a' * star a)) = φ (a * star a') := by
+              rw [← ncp_star φ, star_mul, star_star]
+            show star (b' * φ (a' * star a) * star b) = b * φ (a * star a') * star b'
+            rw [star_mul, star_mul, star_star, hst, mul_assoc]
+        | add y₁ y₂ h₁ h₂ =>
+            rw [map_add, star_add, h₁, h₂, star_add, map_add, LinearMap.add_apply]
+    | add x₁ x₂ h₁ h₂ =>
+        rw [star_add, map_add, LinearMap.add_apply, star_add, h₁, h₂, map_add]
+  inner_self_nonneg x := by
+    obtain ⟨n, a, b, rfl⟩ := exists_fin_tmul x
+    have hexp : ptensPair (φ.toCompletelyPositiveMap.toLinearMap)
+        (star (∑ i, a i ⊗ₜ[ℂ] b i)) (∑ i, a i ⊗ₜ[ℂ] b i)
+          = ∑ i, ∑ j, b i * φ (a i * star (a j)) * star (b j) := by
+      rw [star_sum, map_sum]
+      refine Finset.sum_congr rfl fun i _ => ?_
+      rw [map_sum, LinearMap.sum_apply]
+      refine Finset.sum_congr rfl fun j _ => ?_
+      show ptensPair _ (star (a j) ⊗ₜ[ℂ] star (b j)) (a i ⊗ₜ[ℂ] b i) = _
+      rw [ptensPair_tmul]
+      rfl
+    show (0 : ℬ) ≤ ptensPair _ (star (∑ i, a i ⊗ₜ[ℂ] b i)) (∑ i, a i ⊗ₜ[ℂ] b i)
+    rw [hexp]
+    exact phi_gram_nonneg φ a b
+
+@[simp] theorem ptensBInner_tmul (φ : NCPMap 𝒜 ℬ) (a a' : 𝒜) (b b' : ℬ) :
+    (ptensBInner φ).inner (a ⊗ₜ[ℂ] b) (a' ⊗ₜ[ℂ] b') = b' * φ (a' * star a) * star b := rfl
+
+section Carrier
+
+variable [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
+  (φ : NCPMap 𝒜 ℬ) (E : SelfDualCompletion.{u, u, u} (ptensBInner φ))
+
+/-- `η` as an additive map, so that it commutes with finite sums. -/
+noncomputable def etaHom : (𝒜 ⊗[ℂ] ℬ) →+ E.X where
+  toFun := E.η
+  map_zero' := by simpa using E.η_smul_complex 0 0
+  map_add' := E.η_add
+
+@[simp] theorem etaHom_apply (x : 𝒜 ⊗[ℂ] ℬ) : etaHom φ E x = E.η x := rfl
+
+/-- The elementary tensor `a ⊗ b` of `𝒜 ⊗_φ ℬ` (mirrored). -/
+noncomputable def ptprod (a : 𝒜) (b : ℬ) : E.X := E.η (a ⊗ₜ[ℂ] b)
+
+theorem inner_ptprod (a a' : 𝒜) (b b' : ℬ) :
+    inner ℬ (ptprod φ E a b) (ptprod φ E a' b') = b' * φ (a' * star a) * star b :=
+  E.η_inner _ _
+
+theorem eta_sum {n : ℕ} (a : Fin n → 𝒜) (b : Fin n → ℬ) :
+    E.η (∑ i, a i ⊗ₜ[ℂ] b i) = ∑ i, ptprod φ E (a i) (b i) :=
+  map_sum (etaHom φ E) _ _
+
+/-- The Gram identity behind the φ-compatibility of `⊗`: with `r = 1` the
+bound of **154II** holds with equality. -/
+theorem norm_sq_sum_ptprod {n : ℕ} (a : Fin n → 𝒜) (b : Fin n → ℬ) :
+    ‖∑ i, ptprod φ E (a i) (b i)‖ ^ 2
+      = ‖∑ i, ∑ j, b i * φ (a i * star (a j)) * star (b j)‖ := by
+  rw [← eta_sum, CStarModule.norm_eq_sqrt_norm_inner_self (A := ℬ),
+    Real.sq_sqrt (norm_nonneg _), E.η_inner]
+  congr 1
+  show (ptensBInner φ).inner (∑ i, a i ⊗ₜ[ℂ] b i) (∑ i, a i ⊗ₜ[ℂ] b i) = _
+  show ptensPair (φ.toCompletelyPositiveMap.toLinearMap)
+      (star (∑ i, a i ⊗ₜ[ℂ] b i)) (∑ i, a i ⊗ₜ[ℂ] b i) = _
+  rw [star_sum, map_sum]
+  refine Finset.sum_congr rfl fun i _ => ?_
+  rw [map_sum, LinearMap.sum_apply]
+  refine Finset.sum_congr rfl fun j _ => ?_
+  show ptensPair _ (star (a j) ⊗ₜ[ℂ] star (b j)) (a i ⊗ₜ[ℂ] b i) = _
+  rw [ptensPair_tmul]
+  rfl
+
+theorem phiCompatible_ptprod : PhiCompatible ⇑φ (ptprod φ E) where
+  add_left a a' b := by
+    show E.η ((a + a') ⊗ₜ[ℂ] b) = _
+    rw [TensorProduct.add_tmul, E.η_add]; rfl
+  add_right a b b' := by
+    show E.η (a ⊗ₜ[ℂ] (b + b')) = _
+    rw [TensorProduct.tmul_add, E.η_add]; rfl
+  smul_complex c a b := by
+    show E.η ((c • a) ⊗ₜ[ℂ] b) = _
+    rw [← TensorProduct.smul_tmul', E.η_smul_complex]; rfl
+  smul_action a b c := by
+    show _ = E.η (a ⊗ₜ[ℂ] (c * b))
+    rw [← ptens_smul_tmul, E.η_smul]; rfl
+  bound := ⟨1, one_pos, fun n a b => by
+    rw [one_mul, norm_sq_sum_ptprod]⟩
+
+end Carrier
+
+section Univ
+
+variable [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
+  (φ : NCPMap 𝒜 ℬ) (E : SelfDualCompletion.{u, u, u} (ptensBInner φ))
+
+variable {Y : Type u} [NormedAddCommGroup Y] [Module ℂ Y] [SMul ℬ Y]
+  [CStarModule ℬ Y]
+
+/-- A φ-compatible map is ℂ-linear in its ℬ-argument as well: `c • b` is
+`(c·1)b` and the ℬ-action of `c·1` is the ℂ-action (`op_smul_complex_smul`,
+`op_one_smul`). -/
+theorem PhiCompatible.smul_complex_right {T : 𝒜 → ℬ → Y}
+    (hT : PhiCompatible ⇑φ T) (c : ℂ) (a : 𝒜) (b : ℬ) :
+    T a (c • b) = c • T a b := by
+  have h : (c • (1 : ℬ)) * b = c • b := by rw [smul_mul_assoc, one_mul]
+  rw [← h, ← hT.smul_action, op_smul_complex_smul, op_one_smul]
+
+/-- The linear map `T₀ : 𝒜 ⊙ ℬ → Y` determined by a φ-compatible `T`. -/
+noncomputable def phiLift {T : 𝒜 → ℬ → Y} (hT : PhiCompatible ⇑φ T) :
+    (𝒜 ⊗[ℂ] ℬ) →ₗ[ℂ] Y :=
+  TensorProduct.lift <| LinearMap.mk₂ ℂ T hT.add_left hT.smul_complex hT.add_right
+    (fun c a b => hT.smul_complex_right φ c a b)
+
+@[simp] theorem phiLift_tmul {T : 𝒜 → ℬ → Y} (hT : PhiCompatible ⇑φ T)
+    (a : 𝒜) (b : ℬ) : phiLift φ hT (a ⊗ₜ[ℂ] b) = T a b := rfl
+
+theorem phiLift_op_smul {T : 𝒜 → ℬ → Y} (hT : PhiCompatible ⇑φ T) (b : ℬ)
+    (x : 𝒜 ⊗[ℂ] ℬ) : phiLift φ hT (b • x) = b • phiLift φ hT x := by
+  induction x using TensorProduct.induction_on with
+  | zero => rw [ptens_smul_zero, map_zero, op_smul_zero]
+  | tmul a b' => rw [ptens_smul_tmul, phiLift_tmul, phiLift_tmul, hT.smul_action]
+  | add x₁ x₂ h₁ h₂ => rw [ptens_smul_add, map_add, map_add, h₁, h₂, op_smul_add]
+
+/-- The φ-compatibility bound, transported to `T₀` and the φ-inner product:
+`T₀` is a bounded module map with constant `√r`. -/
+theorem phiLift_bounded {T : 𝒜 → ℬ → Y} (hT : PhiCompatible ⇑φ T) :
+    ∃ C : ℝ, 0 ≤ C ∧
+      IsBoundedModuleMap (ptensBInner φ) (cstarBInner ℬ Y) C (phiLift φ hT) := by
+  obtain ⟨r, hr0, hr⟩ := hT.bound
+  refine ⟨Real.sqrt r, Real.sqrt_nonneg _,
+    { add := fun x y => map_add _ x y
+      smul_complex := fun c x => map_smul _ c x
+      smul := fun b x => phiLift_op_smul φ hT b x
+      bound := fun x => ?_ }⟩
+  obtain ⟨n, a, b, rfl⟩ := exists_fin_tmul x
+  have hsum : phiLift φ hT (∑ i, a i ⊗ₜ[ℂ] b i) = ∑ i, T (a i) (b i) := by
+    rw [map_sum]; rfl
+  have hgram : (ptensBInner φ).inner (∑ i, a i ⊗ₜ[ℂ] b i) (∑ i, a i ⊗ₜ[ℂ] b i)
+      = ∑ i, ∑ j, b i * φ (a i * star (a j)) * star (b j) := by
+    show ptensPair (φ.toCompletelyPositiveMap.toLinearMap)
+        (star (∑ i, a i ⊗ₜ[ℂ] b i)) (∑ i, a i ⊗ₜ[ℂ] b i) = _
+    rw [star_sum, map_sum]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [map_sum, LinearMap.sum_apply]
+    refine Finset.sum_congr rfl fun j _ => ?_
+    show ptensPair _ (star (a j) ⊗ₜ[ℂ] star (b j)) (a i ⊗ₜ[ℂ] b i) = _
+    rw [ptensPair_tmul]
+    rfl
+  show Real.sqrt ‖(inner ℬ (phiLift φ hT _) (phiLift φ hT _) : ℬ)‖
+    ≤ Real.sqrt r * Real.sqrt ‖(ptensBInner φ).inner _ _‖
+  rw [← CStarModule.norm_eq_sqrt_norm_inner_self (A := ℬ), hgram, ← Real.sqrt_mul hr0.le]
+  rw [hsum]
+  have h1 := Real.sqrt_le_sqrt (hr n a b)
+  rwa [Real.sqrt_sq (norm_nonneg _)] at h1
+
+/-- **154III**, part 1: the universal property of `⊗`. -/
+theorem ptprod_univ [CompleteSpace Y] (hY : SelfDual ℬ Y) (T : 𝒜 → ℬ → Y)
+    (hT : PhiCompatible ⇑φ T) :
+    ∃! T' : E.X → Y,
+      (∃ C : ℝ, IsBoundedModuleMap (cstarBInner ℬ E.X) (cstarBInner ℬ Y) C T') ∧
+        ∀ a b, T' (ptprod φ E a b) = T a b := by
+  obtain ⟨C, hC0, hbdd⟩ := phiLift_bounded φ hT
+  obtain ⟨T', ⟨hT'bdd, hT'eta⟩, hT'uniq⟩ :=
+    selfdual_completion_univ (ptensBInner φ) E hY C (phiLift φ hT) hbdd
+  refine ⟨T', ⟨hT'bdd, fun a b => hT'eta _⟩, ?_⟩
+  rintro T'' ⟨hT''bdd, hT''tp⟩
+  refine hT'uniq _ ⟨hT''bdd, fun v => ?_⟩
+  obtain ⟨n, a, b, rfl⟩ := exists_fin_tmul v
+  obtain ⟨C'', hC''⟩ := hT''bdd
+  have hadd : ∀ (m : ℕ) (f : Fin m → E.X), T'' (∑ i, f i) = ∑ i, T'' (f i) := by
+    intro m f
+    have h0 : T'' 0 = 0 := by
+      have := hC''.smul_complex 0 0
+      simpa using this
+    induction m with
+    | zero => simpa using h0
+    | succ k ih =>
+        rw [Fin.sum_univ_castSucc, Fin.sum_univ_castSucc, hC''.add, ih]
+  rw [eta_sum, hadd, map_sum]
+  exact Finset.sum_congr rfl fun i _ => hT''tp (a i) (b i)
+
+end Univ
+
+section Normality
+
+variable {A B : Type u}
+  [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A] [VonNeumannAlgebra A]
+  [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B] [VonNeumannAlgebra B]
+
+/-- An np-functional converges along the net of a nonempty directed set of
+self-adjoint elements to its value at the supremum.  (The idiom of **44VI**
+`vna_supremum_uwlimit`, isolated.) -/
+theorem npFunctional_tendsto_of_isLUB (τ : NPFunctional A)
+    {D : Set (selfAdjoint A)} {s : selfAdjoint A} [Nonempty D]
+    (hne : D.Nonempty) (hdir : DirectedOn (· ≤ ·) D) (hlub : IsLUB D s) :
+    Tendsto (fun d : D => (τ ((d : selfAdjoint A) : A) : ℂ)) atTop (𝓝 (τ (s : A))) := by
+  have hτ : IsLUB ((fun d : selfAdjoint A => (τ (d : A) : ℂ)) '' D) (τ (s : A)) :=
+    τ.preservesDirSups' D s hne hdir hlub
+  have himg : ∀ w ∈ (fun d : selfAdjoint A => (τ (d : A) : ℂ)) '' D, w.im = 0 := by
+    rintro w ⟨d, -, rfl⟩
+    exact npFunctional_im_eq_zero τ d.2
+  have hre := isLUB_re_of_isLUB himg hτ
+  have hrange : Complex.re '' ((fun d : selfAdjoint A => (τ (d : A) : ℂ)) '' D) =
+      Set.range fun d : D => (τ ((d : selfAdjoint A) : A)).re := by
+    rw [← Set.image_comp]
+    exact (Set.image_eq_range _ _).trans rfl
+  rw [hrange] at hre
+  have hmono : Monotone fun d : D => (τ ((d : selfAdjoint A) : A)).re := by
+    intro d₁ d₂ hd
+    exact (Complex.le_def.mp (τ.toPositiveLinearMap.monotone
+      (Subtype.coe_le_coe.mpr hd))).1
+  have hlim := tendsto_atTop_isLUB hmono hre
+  have hcast : ∀ z : ℂ, z.im = 0 → ((z.re : ℂ)) = z := fun z hz =>
+    Complex.ext (by simp) (by simp [hz])
+  have h2 := (Complex.continuous_ofReal.tendsto _).comp hlim
+  simp only [Function.comp_def] at h2
+  rw [hcast _ (npFunctional_im_eq_zero τ s.2)] at h2
+  exact h2.congr fun d => hcast _ (npFunctional_im_eq_zero τ (d : selfAdjoint A).2)
+
+/-- A monotone `g : A → ℂ` which is a ℂ-linear combination of np-functionals
+is **normal**.
+
+This is the mechanism behind the normality of `ϱ` in **154III**.2: the
+vector form `d ↦ ∑ᵢⱼ bᵢ φ(aᵢ d aⱼ*) bⱼ*` is not itself a composite of
+np-maps, but polarisation in both `a` and `b` writes it as a ℂ-combination
+of the np-functionals `d ↦ ω(w φ(v d v*) w*)`.  Normality is then read off
+from convergence of the monotone nets rather than from preservation of
+suprema, which a ℂ-combination does not enjoy. -/
+theorem preservesDirSups_of_np_combination {ι : Type*} (t : Finset ι)
+    (g : A → ℂ) (hmono : ∀ {x y : A}, x ≤ y → g x ≤ g y)
+    (c : ι → ℂ) (τ : ι → NPFunctional A)
+    (hcomb : ∀ a : A, g a = ∑ k ∈ t, c k * τ k a) :
+    PreservesDirSups g := by
+  classical
+  intro D s hne hdir hlub
+  have hub : ∀ w ∈ (fun d : selfAdjoint A => g (d : A)) '' D, w ≤ g (s : A) := by
+    rintro _ ⟨d, hd, rfl⟩
+    exact hmono (Subtype.coe_le_coe.mpr (hlub.1 hd))
+  refine ⟨hub, fun z hz => ?_⟩
+  obtain ⟨d₀, hd₀⟩ := hne
+  have : Nonempty D := ⟨⟨d₀, hd₀⟩⟩
+  have : IsDirectedOrder D := directedOn_iff_isDirectedOrder.mp hdir
+  have hg : Tendsto (fun d : D => g ((d : selfAdjoint A) : A)) atTop (𝓝 (g (s : A))) := by
+    simp only [hcomb]
+    exact tendsto_finsetSum _ fun k _ =>
+      Tendsto.const_mul _ (npFunctional_tendsto_of_isLUB (τ k) ⟨d₀, hd₀⟩ hdir hlub)
+  have hzd : ∀ d : D, g ((d : selfAdjoint A) : A) ≤ z :=
+    fun d => hz ⟨(d : selfAdjoint A), d.2, rfl⟩
+  have hre : (g (s : A)).re ≤ z.re := by
+    have h1 : Tendsto (fun d : D => (g ((d : selfAdjoint A) : A)).re) atTop
+        (𝓝 (g (s : A)).re) := by
+      simpa [Function.comp_def] using (Complex.continuous_re.tendsto _).comp hg
+    exact le_of_tendsto h1 (Filter.Eventually.of_forall fun d => (Complex.le_def.mp (hzd d)).1)
+  have him : (g (s : A)).im = z.im := by
+    have h1 : Tendsto (fun d : D => (g ((d : selfAdjoint A) : A)).im) atTop
+        (𝓝 (g (s : A)).im) := by
+      simpa [Function.comp_def] using (Complex.continuous_im.tendsto _).comp hg
+    exact tendsto_nhds_unique h1
+      (tendsto_const_nhds.congr fun d => ((Complex.le_def.mp (hzd d)).2).symm)
+  exact Complex.le_def.mpr ⟨hre, him⟩
+
+end Normality
+
+section Rho
+
+variable [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
+  (φ : NCPMap 𝒜 ℬ) (E : SelfDualCompletion.{u, u, u} (ptensBInner φ))
+
+/-- The right 𝒜-action on `𝒜 ⊙ ℬ` (mirrored): `a ⊗ b ↦ (a a₀) ⊗ b`. -/
+noncomputable def prmul (a₀ : 𝒜) : (𝒜 ⊗[ℂ] ℬ) →ₗ[ℂ] (𝒜 ⊗[ℂ] ℬ) :=
+  LinearMap.rTensor ℬ (LinearMap.mulRight ℂ a₀)
+
+@[simp] theorem prmul_tmul (a₀ a : 𝒜) (b : ℬ) :
+    prmul a₀ (a ⊗ₜ[ℂ] b) = (a * a₀) ⊗ₜ[ℂ] b := rfl
+
+/-- A bounded module map on a self-dual Hilbert ℬ-module is adjointable
+(**152VIII**), hence an element of `𝒷ᵃ(X)`. -/
+theorem exists_ba_of_boundedModuleMap {X : Type u} [NormedAddCommGroup X]
+    [NormedSpace ℂ X] [SMul ℬ X] [CStarModule ℬ X] [CompleteSpace X]
+    (hX : SelfDual ℬ X) (S : X → X) (C : ℝ)
+    (hS : IsBoundedModuleMap (cstarBInner ℬ X) (cstarBInner ℬ X) C S) :
+    ∃ R : Ba ℬ X, ∀ x, R.1 x = S x := by
+  set Sl : X →ₗ[ℂ] X :=
+    { toFun := S, map_add' := hS.add, map_smul' := hS.smul_complex } with hSl
+  have hbd : ∀ x, ‖Sl x‖ ≤ max C 0 * ‖x‖ := by
+    intro x
+    have h := hS.bound x
+    rw [cstarBInner_norm, cstarBInner_norm] at h
+    exact h.trans (mul_le_mul_of_nonneg_right (le_max_left _ _) (norm_nonneg x))
+  obtain ⟨T', hT'⟩ :=
+    hilbmod_adjoint_exists hX (Sl.mkContinuous (max C 0) hbd) hS.smul
+  exact ⟨⟨Sl.mkContinuous (max C 0) hbd, ⟨⇑T', hT'⟩⟩, fun x => rfl⟩
+
+/-- **154III**.2, existence: the operator `ϱ(a₀)`. -/
+theorem exists_prho (a₀ : 𝒜) :
+    ∃ R : Ba ℬ E.X, ∀ (a : 𝒜) (b : ℬ),
+      R.1 (ptprod φ E a b) = ptprod φ E (a * a₀) b := by
+  obtain ⟨T', ⟨⟨C, hC⟩, hTtp⟩, -⟩ :=
+    ptprod_univ φ E E.selfDual _ ((phiCompatible_ptprod φ E).mul_right φ a₀)
+  obtain ⟨R, hR⟩ := exists_ba_of_boundedModuleMap E.selfDual T' C hC
+  exact ⟨R, fun a b => by rw [hR, hTtp]⟩
+
+/-- Adjointable operators agreeing on all elementary tensors are equal
+(**152IX**.2 through the ultranorm-dense image of `η`). -/
+theorem ba_ext_ptprod {S R : Ba ℬ E.X}
+    (h : ∀ (a : 𝒜) (b : ℬ), S.1 (ptprod φ E a b) = R.1 (ptprod φ E a b)) : S = R := by
+  refine Subtype.ext (hilmod_fixed_on_V_eq (ptensBInner φ) E S.1 R.1 S.2 R.2 fun v => ?_)
+  obtain ⟨n, a, b, rfl⟩ := exists_fin_tmul v
+  rw [eta_sum, map_sum, map_sum]
+  exact congrArg _ (Finset.sum_congr rfl fun i _ => h (a i) (b i))
+
+/-- `ϱ(a₀)` acts on the image of `η` as the right 𝒜-action of `𝒜 ⊙ ℬ`. -/
+theorem rho_eta {R : Ba ℬ E.X} {a₀ : 𝒜}
+    (hR : ∀ (a : 𝒜) (b : ℬ), R.1 (ptprod φ E a b) = ptprod φ E (a * a₀) b)
+    (v : 𝒜 ⊗[ℂ] ℬ) : R.1 (E.η v) = E.η (prmul a₀ v) := by
+  obtain ⟨n, a, b, rfl⟩ := exists_fin_tmul v
+  rw [eta_sum, map_sum, map_sum]
+  refine (Finset.sum_congr rfl fun i _ => hR (a i) (b i)).trans ?_
+  exact (eta_sum φ E (fun i => a i * a₀) b).symm
+
+end Rho
+
+
+section RhoAlgebra
+
+variable [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
+  (φ : NCPMap 𝒜 ℬ) (E : SelfDualCompletion.{u, u, u} (ptensBInner φ))
+
+/-- **154III**.2: the operator `ϱ(a₀)` on `𝒜 ⊗_φ ℬ` (mirrored). -/
+noncomputable def prho (a₀ : 𝒜) : Ba ℬ E.X := (exists_prho φ E a₀).choose
+
+@[simp] theorem prho_ptprod (a₀ a : 𝒜) (b : ℬ) :
+    (prho φ E a₀).1 (ptprod φ E a b) = ptprod φ E (a * a₀) b :=
+  (exists_prho φ E a₀).choose_spec a b
+
+theorem prho_eta (a₀ : 𝒜) (v : 𝒜 ⊗[ℂ] ℬ) :
+    (prho φ E a₀).1 (E.η v) = E.η (prmul a₀ v) :=
+  rho_eta φ E (prho_ptprod φ E a₀) v
+
+theorem prho_one : prho φ E 1 = 1 :=
+  ba_ext_ptprod φ E fun a b => by rw [prho_ptprod, mul_one]; rfl
+
+theorem prho_mul (a₀ a₁ : 𝒜) : prho φ E (a₀ * a₁) = prho φ E a₁ * prho φ E a₀ :=
+  ba_ext_ptprod φ E fun a b => by
+    rw [prho_ptprod]
+    show _ = (prho φ E a₁).1 ((prho φ E a₀).1 (ptprod φ E a b))
+    rw [prho_ptprod, prho_ptprod, mul_assoc]
+
+theorem prho_add (a₀ a₁ : 𝒜) : prho φ E (a₀ + a₁) = prho φ E a₀ + prho φ E a₁ :=
+  ba_ext_ptprod φ E fun a b => by
+    rw [prho_ptprod, mul_add]
+    show _ = (prho φ E a₀).1 (ptprod φ E a b) + (prho φ E a₁).1 (ptprod φ E a b)
+    rw [prho_ptprod, prho_ptprod]
+    exact (phiCompatible_ptprod φ E).add_left _ _ _
+
+theorem prho_zero : prho φ E 0 = 0 :=
+  ba_ext_ptprod φ E fun a b => by
+    rw [prho_ptprod, mul_zero]
+    show _ = (0 : E.X)
+    have h := (phiCompatible_ptprod φ E).smul_complex 0 0 b
+    simpa using h
+
+theorem prho_smul (c : ℂ) (a₀ : 𝒜) : prho φ E (c • a₀) = c • prho φ E a₀ :=
+  ba_ext_ptprod φ E fun a b => by
+    rw [prho_ptprod, mul_smul_comm]
+    show _ = c • (prho φ E a₀).1 (ptprod φ E a b)
+    rw [prho_ptprod]
+    exact (phiCompatible_ptprod φ E).smul_complex _ _ _
+
+theorem ptensBInner_add_left (φ : NCPMap 𝒜 ℬ) (x x' y : 𝒜 ⊗[ℂ] ℬ) :
+    (ptensBInner φ).inner (x + x') y
+      = (ptensBInner φ).inner x y + (ptensBInner φ).inner x' y := by
+  show ptensPair _ (star (x + x')) y = _
+  rw [star_add, map_add, LinearMap.add_apply]
+  rfl
+
+theorem ptensBInner_zero_left (φ : NCPMap 𝒜 ℬ) (y : 𝒜 ⊗[ℂ] ℬ) :
+    (ptensBInner φ).inner 0 y = 0 := by
+  show ptensPair _ (star (0 : 𝒜 ⊗[ℂ] ℬ)) y = 0
+  rw [star_zero, map_zero, LinearMap.zero_apply]
+
+theorem ptensBInner_zero_right (φ : NCPMap 𝒜 ℬ) (x : 𝒜 ⊗[ℂ] ℬ) :
+    (ptensBInner φ).inner x 0 = 0 := by
+  show ptensPair _ (star x) 0 = 0
+  rw [map_zero]
+
+/-- The right 𝒜-action is `star`-adjoint for the φ-inner product. -/
+theorem ptensBInner_prmul (a₀ : 𝒜) (x y : 𝒜 ⊗[ℂ] ℬ) :
+    (ptensBInner φ).inner (prmul a₀ x) y
+      = (ptensBInner φ).inner x (prmul (star a₀) y) := by
+  induction x using TensorProduct.induction_on with
+  | zero => rw [map_zero, ptensBInner_zero_left, ptensBInner_zero_left]
+  | tmul a b =>
+      induction y using TensorProduct.induction_on with
+      | zero => rw [map_zero, ptensBInner_zero_right, ptensBInner_zero_right]
+      | tmul a' b' =>
+          show b' * φ (a' * star (a * a₀)) * star b
+            = b' * φ (a' * star a₀ * star a) * star b
+          rw [star_mul, ← mul_assoc]
+      | add y₁ y₂ h₁ h₂ =>
+          show (ptensBInner φ).inner _ (y₁ + y₂) = (ptensBInner φ).inner _ (prmul _ (y₁ + y₂))
+          rw [(ptensBInner φ).inner_add_right, map_add,
+            (ptensBInner φ).inner_add_right, h₁, h₂]
+  | add x₁ x₂ h₁ h₂ =>
+      rw [map_add, ptensBInner_add_left, h₁, h₂, ptensBInner_add_left]
+
+theorem prho_star (a₀ : 𝒜) : prho φ E (star a₀) = star (prho φ E a₀) := by
+  have hadj : ModuleAdjointTo ℬ ⇑(prho φ E a₀).1
+      ⇑((star (prho φ E a₀) : Ba ℬ E.X)).1 := baSubalgebra_star_spec _
+  refine Subtype.ext (hilmod_fixed_on_V_eq (ptensBInner φ) E _ _
+    (prho φ E (star a₀)).2 (star (prho φ E a₀) : Ba ℬ E.X).2 fun v => ?_)
+  rw [← hadj (E.η v) (E.η v), prho_eta, prho_eta, E.η_inner, E.η_inner]
+  exact (ptensBInner_prmul φ a₀ v v).symm
+
+end RhoAlgebra
+section Polarization
+
+variable [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
+
+/-- Double polarisation (**44II** twice, through `mult_polarization`): the
+off-diagonal Gram term `b φ(u d u'*) b'*` is a ℂ-combination of the
+*diagonal* terms `w* φ(v* d v) w`.  This is what makes the vector form of
+`ϱ` a combination of np-functionals, and hence normal. -/
+theorem gram_polarization (φ : NCPMap 𝒜 ℬ) (u u' : 𝒜) (b b' : ℬ) (d : 𝒜) :
+    b * φ (u * d * star u') * star b'
+      = ∑ k ∈ Finset.range 4, ∑ l ∈ Finset.range 4,
+          ((16 : ℂ)⁻¹ * (Complex.I ^ k * Complex.I ^ l)) •
+            (star (Complex.I ^ k • star b + star b') *
+              φ (star (Complex.I ^ l • star u + star u') * d
+                  * (Complex.I ^ l • star u + star u')) *
+              (Complex.I ^ k • star b + star b')) := by
+  set ψ : 𝒜 →ₗ[ℂ] ℬ := φ.toCompletelyPositiveMap.toLinearMap with hψdef
+  have hψ : ⇑φ = ⇑ψ := rfl
+  have hA : u * d * star u' = (4 : ℂ)⁻¹ • ∑ l ∈ Finset.range 4, Complex.I ^ l •
+      (star (Complex.I ^ l • star u + star u') * d
+        * (Complex.I ^ l • star u + star u')) := by
+    have h := mult_polarization (star u) (star u') d
+    rwa [star_star] at h
+  have hB : ∀ y : ℬ, b * y * star b'
+      = (4 : ℂ)⁻¹ • ∑ k ∈ Finset.range 4, Complex.I ^ k •
+          (star (Complex.I ^ k • star b + star b') * y
+            * (Complex.I ^ k • star b + star b')) := by
+    intro y
+    have h := mult_polarization (star b) (star b') y
+    rwa [star_star] at h
+  rw [hB, hA, hψ, map_smul, map_sum]
+  simp only [map_smul, smul_mul_assoc, mul_smul_comm, Finset.mul_sum, Finset.sum_mul,
+    Finset.smul_sum, smul_smul, ← hψ]
+  refine Finset.sum_congr rfl fun k _ => Finset.sum_congr rfl fun l _ => ?_
+  congr 1
+  ring
+
+end Polarization
+
+section Theta
+
+variable [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ] (φ : NCPMap 𝒜 ℬ)
+
+/-- The vector form of `ϱ` at `η v`: `d ↦ ⟨η v, ϱ(d) (η v)⟩`, computed
+inside `𝒜 ⊙ ℬ`. -/
+noncomputable def pTheta (v : 𝒜 ⊗[ℂ] ℬ) (d : 𝒜) : ℬ :=
+  (ptensBInner φ).inner v (prmul d v)
+
+theorem ptensBInner_sum {n m : ℕ} (a : Fin n → 𝒜) (b : Fin n → ℬ)
+    (a' : Fin m → 𝒜) (b' : Fin m → ℬ) :
+    (ptensBInner φ).inner (∑ i, a i ⊗ₜ[ℂ] b i) (∑ j, a' j ⊗ₜ[ℂ] b' j)
+      = ∑ j, ∑ i, b' j * φ (a' j * star (a i)) * star (b i) := by
+  show ptensPair (φ.toCompletelyPositiveMap.toLinearMap)
+      (star (∑ i, a i ⊗ₜ[ℂ] b i)) (∑ j, a' j ⊗ₜ[ℂ] b' j) = _
+  rw [star_sum, map_sum]
+  refine Finset.sum_congr rfl fun j _ => ?_
+  rw [map_sum, LinearMap.sum_apply]
+  refine Finset.sum_congr rfl fun i _ => ?_
+  show ptensPair _ (star (a i) ⊗ₜ[ℂ] star (b i)) (a' j ⊗ₜ[ℂ] b' j) = _
+  rw [ptensPair_tmul]
+  rfl
+
+theorem pTheta_sum {n : ℕ} (a : Fin n → 𝒜) (b : Fin n → ℬ) (d : 𝒜) :
+    pTheta φ (∑ i, a i ⊗ₜ[ℂ] b i) d
+      = ∑ i, ∑ j, b i * φ (a i * d * star (a j)) * star (b j) := by
+  have hprm : prmul d (∑ i, a i ⊗ₜ[ℂ] b i) = ∑ i, (a i * d) ⊗ₜ[ℂ] b i := by
+    rw [map_sum]; rfl
+  show (ptensBInner φ).inner _ (prmul d _) = _
+  rw [hprm, ptensBInner_sum]
+
+theorem pTheta_add (v : 𝒜 ⊗[ℂ] ℬ) (d d' : 𝒜) :
+    pTheta φ v (d + d') = pTheta φ v d + pTheta φ v d' := by
+  have h : prmul (d + d') v = prmul d v + prmul d' v := by
+    have : prmul (𝒜 := 𝒜) (ℬ := ℬ) (d + d') = prmul d + prmul d' := by
+      refine TensorProduct.ext' fun a b => ?_
+      show (a * (d + d')) ⊗ₜ[ℂ] b = (a * d) ⊗ₜ[ℂ] b + (a * d') ⊗ₜ[ℂ] b
+      rw [mul_add, TensorProduct.add_tmul]
+    rw [this]; rfl
+  show (ptensBInner φ).inner v (prmul (d + d') v) = _
+  rw [h, (ptensBInner φ).inner_add_right]
+  rfl
+
+theorem pTheta_nonneg (v : 𝒜 ⊗[ℂ] ℬ) {d : 𝒜} (hd : 0 ≤ d) :
+    (0 : ℬ) ≤ pTheta φ v d := by
+  obtain ⟨n, a, b, rfl⟩ := exists_fin_tmul v
+  rw [pTheta_sum]
+  set e : 𝒜 := CFC.sqrt d with he
+  have hsa : star e = e := IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg d)
+  have hee : e * e = d := CFC.sqrt_mul_sqrt_self d hd
+  have hterm : ∀ i j : Fin n, a i * d * star (a j) = (a i * e) * star (a j * e) := by
+    intro i j
+    rw [star_mul, hsa, ← hee]
+    noncomm_ring
+  simp only [hterm]
+  exact phi_gram_nonneg φ (fun i => a i * e) b
+
+theorem pTheta_mono (v : 𝒜 ⊗[ℂ] ℬ) {d d' : 𝒜} (h : d ≤ d') :
+    pTheta φ v d ≤ pTheta φ v d' := by
+  rw [← sub_nonneg]
+  have h0 : pTheta φ v (d' - d) + pTheta φ v d = pTheta φ v d' := by
+    rw [← pTheta_add, sub_add_cancel]
+  have hsub : pTheta φ v d' - pTheta φ v d = pTheta φ v (d' - d) := by
+    rw [← h0]; abel
+  rw [hsub]
+  exact pTheta_nonneg φ _ (sub_nonneg.mpr h)
+
+end Theta
+
+section ThetaNormal
+
+variable [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ] (φ : NCPMap 𝒜 ℬ)
+
+/-- The index set `(i, j, k, l)` of the double polarisation. -/
+def pIdx (n : ℕ) : Finset (Fin n × Fin n × ℕ × ℕ) :=
+  (Finset.univ : Finset (Fin n)) ×ˢ (Finset.univ : Finset (Fin n))
+    ×ˢ Finset.range 4 ×ˢ Finset.range 4
+
+/-- Its coefficients. -/
+noncomputable def pCoef {n : ℕ} (p : Fin n × Fin n × ℕ × ℕ) : ℂ :=
+  (16 : ℂ)⁻¹ * (Complex.I ^ p.2.2.1 * Complex.I ^ p.2.2.2)
+
+/-- The np-functionals of the double polarisation:
+`d ↦ ω(w* φ(v* d v) w)`. -/
+noncomputable def pNP (ω : NPFunctional ℬ) {n : ℕ} (a : Fin n → 𝒜) (b : Fin n → ℬ)
+    (p : Fin n × Fin n × ℕ × ℕ) : NPFunctional 𝒜 :=
+  conjNP (Complex.I ^ p.2.2.2 • star (a p.1) + star (a p.2.1))
+    (compNP (ncpPositive φ) φ.preservesDirSups'
+      (conjNP (Complex.I ^ p.2.2.1 • star (b p.1) + star (b p.2.1)) ω))
+
+theorem pTheta_combination (ω : NPFunctional ℬ) {n : ℕ} (a : Fin n → 𝒜)
+    (b : Fin n → ℬ) (d : 𝒜) :
+    (ω (pTheta φ (∑ i, a i ⊗ₜ[ℂ] b i) d) : ℂ)
+      = ∑ p ∈ pIdx n, pCoef p * pNP φ ω a b p d := by
+  have hsum : ∀ {ι : Type} (s : Finset ι) (f : ι → ℬ),
+      (ω (∑ i ∈ s, f i) : ℂ) = ∑ i ∈ s, ω (f i) :=
+    fun s f => map_sum ω.toPositiveLinearMap f s
+  have hsmul : ∀ (c : ℂ) (x : ℬ), (ω (c • x) : ℂ) = c * ω x := fun c x =>
+    (map_smul ω.toPositiveLinearMap c x).trans (smul_eq_mul _ _)
+  rw [pTheta_sum, hsum, pIdx, Finset.sum_product]
+  refine Finset.sum_congr rfl fun i _ => ?_
+  rw [hsum, Finset.sum_product]
+  refine Finset.sum_congr rfl fun j _ => ?_
+  rw [gram_polarization φ (a i) (a j) (b i) (b j) d, hsum, Finset.sum_product]
+  refine Finset.sum_congr rfl fun k _ => ?_
+  rw [hsum]
+  refine Finset.sum_congr rfl fun l _ => ?_
+  rw [hsmul]
+  rfl
+
+theorem pTheta_normal (ω : NPFunctional ℬ) (v : 𝒜 ⊗[ℂ] ℬ) :
+    PreservesDirSups (fun d : 𝒜 => (ω (pTheta φ v d) : ℂ)) := by
+  obtain ⟨n, a, b, rfl⟩ := exists_fin_tmul v
+  exact preservesDirSups_of_np_combination (pIdx n) _
+    (fun h => npFunctional_mono ω (pTheta_mono φ _ h)) pCoef (pNP φ ω a b)
+    (pTheta_combination φ ω a b)
+
+end ThetaNormal
+
+section RhoHom
+
+variable [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
+  (φ : NCPMap 𝒜 ℬ) (E : SelfDualCompletion.{u, u, u} (ptensBInner φ))
+
+/-- `ϱ` as a ring homomorphism into `𝒷ᵃ(𝒜 ⊗_φ ℬ)ᵐᵒᵖ` (the `ᵐᵒᵖ` turns the
+anti-multiplicativity of `a₀ ↦ (a ⊗ b ↦ (a a₀) ⊗ b)` into
+multiplicativity). -/
+noncomputable def prhoRing : 𝒜 →+* (Ba ℬ E.X)ᵐᵒᵖ where
+  toFun a₀ := MulOpposite.op (prho φ E a₀)
+  map_one' := by rw [prho_one]; rfl
+  map_mul' a₀ a₁ := by
+    show MulOpposite.op (prho φ E (a₀ * a₁)) = _
+    rw [prho_mul, ← MulOpposite.op_mul]
+  map_zero' := by rw [prho_zero]; rfl
+  map_add' a₀ a₁ := by
+    show MulOpposite.op (prho φ E (a₀ + a₁)) = _
+    rw [prho_add, MulOpposite.op_add]
+
+/-- **154III**.2: `ϱ : 𝒜 → 𝒷ᵃ(𝒜 ⊗_φ ℬ)ᵐᵒᵖ` is a ∗-homomorphism. -/
+noncomputable def prhoHom : 𝒜 →⋆ₐ[ℂ] (Ba ℬ E.X)ᵐᵒᵖ where
+  toAlgHom := AlgHom.mk' (prhoRing φ E) fun c x => by
+    show MulOpposite.op (prho φ E (c • x)) = _
+    rw [prho_smul, MulOpposite.op_smul]
+    rfl
+  map_star' a₀ := by
+    show MulOpposite.op (prho φ E (star a₀)) = _
+    rw [prho_star, MulOpposite.op_star]
+    rfl
+
+@[simp] theorem prhoHom_apply (a₀ : 𝒜) :
+    prhoHom φ E a₀ = MulOpposite.op (prho φ E a₀) := rfl
+
+/-- **154III**.2: `ϱ` is normal.  The thesis's route (`normal-faithful` +
+`hilmod-fixed-on-V`), with the vector forms `d ↦ ⟨η v, ϱ(d) η v⟩` shown
+normal by the double polarisation above rather than by `mn-vna` (which is
+still open in `A/VN`). -/
+theorem prhoHom_normal : PreservesDirSups ⇑(prhoHom φ E) := by
+  haveI : VonNeumannAlgebra (Ba ℬ E.X) := ba_vonNeumannAlgebra E.selfDual
+  set Ω : Set (NPFunctional (Ba ℬ E.X)ᵐᵒᵖ) :=
+    {ν | ∃ (v : 𝒜 ⊗[ℂ] ℬ) (ω : NPFunctional ℬ),
+      ν = npFunctionalOp (baVecNP E.selfDual (E.η v) ω)} with hΩ
+  have hfaith : FaithfulCollection Ω := by
+    intro Z hZ hzero
+    have hZu : (0 : Ba ℬ E.X) ≤ Z.unop := hZ
+    have hvec : ∀ v : 𝒜 ⊗[ℂ] ℬ, (inner ℬ (E.η v) (Z.unop.1 (E.η v)) : ℬ) = 0 := fun v =>
+      VonNeumannAlgebra.np_faithful _ ((ba_nonneg_iff Z.unop).mp hZu (E.η v))
+        fun ω => hzero _ ⟨v, ω, rfl⟩
+    refine MulOpposite.unop_injective (Subtype.ext ?_)
+    refine hilmod_fixed_on_V_eq (ptensBInner φ) E _ (0 : Ba ℬ E.X).1
+      Z.unop.2 (0 : Ba ℬ E.X).2 fun v => ?_
+    rw [hvec v]
+    show (0 : ℬ) = inner ℬ (E.η v) (0 : E.X)
+    rw [CStarModule.inner_zero_right]
+  refine (normal_faithful Ω hfaith (starAlgHomP (prhoHom φ E))).mpr ?_
+  rintro ν ⟨v, ω, rfl⟩
+  have heq : (fun a : 𝒜 =>
+      (npFunctionalOp (baVecNP E.selfDual (E.η v) ω) (starAlgHomP (prhoHom φ E) a) : ℂ))
+      = fun a : 𝒜 => (ω (pTheta φ v a) : ℂ) := by
+    funext a
+    show (ω (inner ℬ (E.η v) ((prho φ E a).1 (E.η v))) : ℂ) = _
+    rw [prho_eta, E.η_inner]
+    rfl
+  rw [heq]
+  exact pTheta_normal φ ω v
+
+end RhoHom
+
+section VectorState
+
+variable [VonNeumannAlgebra ℬ] {X : Type u} [NormedAddCommGroup X]
+  [NormedSpace ℂ X] [SMul ℬ X] [CStarModule ℬ X] [CompleteSpace X]
+
+/-- The vector state `T ↦ ⟨e, T e⟩` on `𝒷ᵃ(X)ᵐᵒᵖ`, as a linear map. -/
+noncomputable def pVecLin (e : X) : (Ba ℬ X)ᵐᵒᵖ →ₗ[ℂ] ℬ where
+  toFun T := inner ℬ e (T.unop.1 e)
+  map_add' T S := by
+    show (inner ℬ e (T.unop.1 e + S.unop.1 e) : ℬ) = _
+    rw [CStarModule.inner_add_right]
+  map_smul' c T := by
+    show (inner ℬ e (c • T.unop.1 e) : ℬ) = _
+    rw [CStarModule.inner_smul_right_complex]
+    rfl
+
+@[simp] theorem pVecLin_apply (e : X) (T : (Ba ℬ X)ᵐᵒᵖ) :
+    pVecLin (ℬ := ℬ) e T = inner ℬ e (T.unop.1 e) := rfl
+
+/-- **145I** `hilbmod_vectstates_cp`: the vector state is completely
+positive on `𝒷ᵃ(X)ᵐᵒᵖ` (and, as the file header explains, *not* on
+`𝒷ᵃ(X)`). -/
+theorem pVecLin_cp (e : X) : IsCompletelyPositiveMap (pVecLin (ℬ := ℬ) e) := by
+  intro n A b
+  set T : Fin n → Ba ℬ X := fun i => star ((A i).unop) with hT
+  have hAi : ∀ i, (A i).unop = star (T i) := fun i => by rw [hT]; simp
+  have hadj : ∀ i, ModuleAdjointTo ℬ ⇑(T i).1 ⇑((star (T i) : Ba ℬ X)).1 :=
+    fun i => baSubalgebra_star_spec (T i)
+  have h := hilbmod_vectstates_cp (𝒷 := ℬ) e n (fun i => (T i).1)
+    (fun i => ((star (T i) : Ba ℬ X)).1) hadj b
+  refine le_of_le_of_eq h (Finset.sum_congr rfl fun i _ =>
+    Finset.sum_congr rfl fun j _ => ?_)
+  have hterm : (inner ℬ (((star (T i) : Ba ℬ X)).1 ((T j).1 e)) e : ℬ)
+      = pVecLin (ℬ := ℬ) e (star (A i) * A j) := by
+    have h1 : (inner ℬ (((star (T i) : Ba ℬ X)).1 ((T j).1 e)) e : ℬ)
+        = inner ℬ ((T j).1 e) ((T i).1 e) :=
+      moduleAdjointTo_symm (𝒜 := ℬ) _ _ (hadj i) ((T j).1 e) e
+    have h2 : (inner ℬ ((T j).1 e) ((T i).1 e) : ℬ)
+        = inner ℬ e (((star (T j) : Ba ℬ X)).1 ((T i).1 e)) := hadj j e ((T i).1 e)
+    have h3 : pVecLin (ℬ := ℬ) e (star (A i) * A j)
+        = inner ℬ e (((star (T j) : Ba ℬ X)).1 ((T i).1 e)) := by
+      show (inner ℬ e ((star (A i) * A j).unop.1 e) : ℬ) = _
+      have hstj : (star (T j) : Ba ℬ X) = (A j).unop := by rw [hT]; simp
+      have h4 : (star (A i) * A j).unop = (star (T j) : Ba ℬ X) * T i := by
+        rw [MulOpposite.unop_mul, MulOpposite.unop_star, hstj]
+      rw [h4]
+      rfl
+    rw [h3, ← h2, ← h1]
+  exact congrArg (fun z => star (b i) * z * b j) hterm
+
+theorem pVecLin_nonneg (e : X) {T : (Ba ℬ X)ᵐᵒᵖ} (hT : 0 ≤ T) :
+    (0 : ℬ) ≤ pVecLin (ℬ := ℬ) e T :=
+  (ba_nonneg_iff T.unop).mp hT e
+
+/-- **152XIII** `baVecNP`: the vector state is normal. -/
+theorem pVecLin_normal (hX : SelfDual ℬ X) (e : X) :
+    PreservesDirSups ⇑(pVecLin (ℬ := ℬ) e) := by
+  haveI : VonNeumannAlgebra (Ba ℬ X) := ba_vonNeumannAlgebra hX
+  have hfaith : FaithfulCollection (Set.univ : Set (NPFunctional ℬ)) := fun c hc h =>
+    VonNeumannAlgebra.np_faithful c hc fun ω => h ω (Set.mem_univ ω)
+  refine (normal_faithful _ hfaith
+    (PositiveLinearMap.mk₀ (pVecLin (ℬ := ℬ) e) fun x hx => pVecLin_nonneg e hx)).mpr ?_
+  intro ω _
+  exact (npFunctionalOp (baVecNP hX e ω)).preservesDirSups'
+
+/-- **154III**.3: `h(T) = ⟨e, T e⟩` is an ncp-map `𝒷ᵃ(X)ᵐᵒᵖ → ℬ`. -/
+noncomputable def pVecNCP (hX : SelfDual ℬ X) (e : X) : NCPMap (Ba ℬ X)ᵐᵒᵖ ℬ where
+  toCompletelyPositiveMap :=
+    { toLinearMap := pVecLin (ℬ := ℬ) e
+      map_cstarMatrix_nonneg' := by
+        have h : ∀ (N : ℕ) (M : CStarMatrix (Fin N) (Fin N) ((Ba ℬ X)ᵐᵒᵖ)),
+            0 ≤ M → 0 ≤ M.map ⇑(pVecLin (ℬ := ℬ) e) :=
+          ((cp_iff (pVecLin (ℬ := ℬ) e)).out 0 1).mp (pVecLin_cp e)
+        exact fun k M hM => h k M hM }
+  preservesDirSups' := pVecLin_normal hX e
+
+@[simp] theorem pVecNCP_apply (hX : SelfDual ℬ X) (e : X) (T : (Ba ℬ X)ᵐᵒᵖ) :
+    pVecNCP hX e T = inner ℬ e (T.unop.1 e) := rfl
+
+end VectorState
+
+
 /-- **154III** (`existence-paschke`, dils.tex:3558, Theorem), parts 1–3:
 the module `𝒜 ⊗_φ ℬ`, the representation `ϱ` and the vector state `h`
 exist.
@@ -423,8 +1283,21 @@ The bundle is not vacuous: `paschkeModuleId` exhibits `ℬ` itself as
 `ℬ ⊗_id ℬ`, so every field below is jointly satisfiable for a non-zero
 `φ`. -/
 theorem existence_paschke [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
-    (φ : NCPMap 𝒜 ℬ) : Nonempty (PaschkeModule φ) :=
-  sorry
+    (φ : NCPMap 𝒜 ℬ) : Nonempty (PaschkeModule φ) := by
+  obtain ⟨E⟩ := dils_completion (𝒷 := ℬ) (V := 𝒜 ⊗[ℂ] ℬ) (ptensBInner φ)
+  exact ⟨{ X := E.X
+           selfDual := E.selfDual
+           tprod := ptprod φ E
+           compat := phiCompatible_ptprod φ E
+           inner_tprod := inner_ptprod φ E
+           univ := fun Y i1 i2 i3 i4 i5 hY T hT => by
+             letI := i1; letI := i2; letI := i3; letI := i4; letI := i5
+             exact ptprod_univ φ E hY T hT
+           ρ := { toStarAlgHom := prhoHom φ E
+                  preservesDirSups' := prhoHom_normal φ E }
+           ρ_tprod := fun a₀ a b => prho_ptprod φ E a₀ a b
+           h := pVecNCP E.selfDual (ptprod φ E 1 1)
+           h_def := fun T => rfl }⟩
 
 /-- An adjointable bounded operator on a Hilbert 𝒷-module is a bounded
 module map in the sense of **144IV** (`IsBoundedModuleMap`). -/

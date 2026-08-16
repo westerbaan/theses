@@ -13670,3 +13670,122 @@ Two process lessons, both cheap:
   premise that the *directory* compiles was not — see the regression above.
 * The brief lists `existence_paschke` as gated by 150II, which is right, but
   it is worth stating positively: after this session it is gated by **nothing**.
+
+## Session 62 — `B/Dils`: **154III `existence_paschke` is proved** — the thesis's route to `ϱ`'s normality is blocked in `A/VN`, and a double polarisation replaces it (worker on `Paschke.lean`)
+
+**Result.** **`existence_paschke` (154III, parts 1–3) is closed.**
+`Paschke.lean` goes 7 → **6**, `B/Dils` 31 → **30**: `HilbertModules` 0,
+`SelfDualCompletion` 0, `Stinespring` 1, `Kaplansky` 4, `Paschke` **6**,
+`SelfDual` 7, `Pure` 12 — each source run through `lean` individually and
+each paired with an **error count (0 everywhere)**, including the two
+dependents `SelfDual.lean` and `Pure.lean` re-checked against the rebuilt
+`Paschke.olean`.  `existence_paschke`, `ptprod_univ`, `prhoHom_normal`,
+`pVecNCP`, `ptensBInner` and `preservesDirSups_of_np_combination` are all
+axiom-clean (`propext, Classical.choice, Quot.sound`), verified from a file
+importing the rebuilt olean.
+
+**≈830 lines** were added to `Paschke.lean` immediately before
+`existence_paschke`, under *"The construction of `𝒜 ⊗_φ ℬ`
+(**154IV**–**154VI**)"*.  The survey's ≈800–950 estimate held for a fourth
+consecutive session, and four of its five line items were within 25%.
+
+### The one thing the costing did not know: the thesis's route is blocked
+
+dils.tex **154VI** proves normality of `ϱ` — the field the survey correctly
+identified as the hard one — from **48II** `normal_faithful` plus **152IX**
+`hilmod-fixed-on-V`, reducing it to normality of the vector forms
+`d ↦ ⟨x̂, ϱ(d) x̂⟩ = ∑ᵢⱼ bᵢ* φ(aᵢ* d aⱼ) bⱼ`, and then cites **153I**
+`hilbmod-ad-ncp` *and* **49IV** `mn-vna` for that.  The matrix route factors
+the vector form as `C_b ∘ Mₙφ ∘ A_a`, and of the three factors:
+
+* `A_a : d ↦ (aᵢ* d aⱼ)ᵢⱼ` is **153IV** `hilbmod_adj_vector_ncp` — proved;
+* `C_b : M ↦ ∑ᵢⱼ bᵢ* Mᵢⱼ bⱼ` is 49IV.2's third clause, `sorry` as
+  `mn_vna_2` — but in fact *available*, since `exists_isLUB_matForm`
+  (`A/VN/Basic.lean`, proved) delivers exactly it;
+* `Mₙφ : Mₙ(𝒜) → Mₙ(ℬ)` is **`mn_vna_3`, and it is genuinely `sorry`** —
+  and unwinding it through `le_iff_matForm` reduces it straight back to the
+  composite `C_b ∘ Mₙφ` one is trying to prove.
+
+So the author's proof of the only hard field of `existence_paschke` rests on
+an open lemma one chapter upstream, off this worker's territory.  This is
+worth recording as a *dependency* finding rather than a defect: the thesis's
+argument is correct, but the formalization cannot follow it yet.
+
+### Divergence (case 2: the thesis's proof is fine; another route was used)
+
+Normality of `ϱ` is proved instead by **double polarisation**, in two
+reusable pieces:
+
+* **`gram_polarization`** — **44II** `mult_polarization` applied twice, once
+  in the `aᵢ` and once in the `bᵢ`:
+  `b φ(u d u'*) b'* = (1/16) ∑ₖ∑ₗ iᵏ⁺ˡ · w_k* φ(v_l* d v_l) w_k`,
+  `w_k = iᵏ b* + b'*`, `v_l = iˡ u* + u'*`.  Each diagonal term is
+  `conjNP v_l (compNP φ (conjNP w_k ω))`, an np-functional of `𝒜` built from
+  **44VIII** `ad_normal` and normality of `φ` alone.
+
+  Why *double*: the vector form is `Θ_x(d) = [x, x·d]` for `x ∈ 𝒜 ⊙ ℬ`, and
+  `Θ_{a⊗b}(d) = b φ(a d a*) b*` — so polarising separately in the `𝒜`- and
+  the `ℬ`-argument is exactly the reduction of a general `Θ_x` to *elementary
+  tensors*, and it terminates.  Polarising in the module variable `x` itself
+  does not: it rewrites `Θ` at an `n`-term `x` in terms of `Θ` at two-term
+  vectors, and never reaches one term.
+* **`preservesDirSups_of_np_combination`** — a monotone `g : 𝒜 → ℂ` which is
+  a ℂ-*linear combination* of np-functionals preserves directed suprema.  A
+  combination does not preserve suprema termwise, so the proof goes through
+  **convergence**: `npFunctional_tendsto_of_isLUB` (the **44VI**
+  `vna_supremum_uwlimit` idiom, isolated as a standalone lemma) gives
+  `τₖ(d) → τₖ(⋁D)` along the net of the directed set, the finite combination
+  converges, and the limit is squeezed between monotonicity of `g` and any
+  upper bound (in `ℂ`, splitting `Complex.le_def` into a `le` on the real
+  part and an `Eq` on the imaginary part).
+
+Two smaller divergences, both simplifications:
+
+* **`h` is not built from 153IV.**  The survey costed part 3 through
+  `hilbmod_adj_vector_ncp`; the direct route is the thesis's own citation —
+  **145I** `hilbmod_vectstates_cp` for complete positivity and **152XIII**
+  `baVecNP` (via the file's existing `npFunctionalOp`) for normality — and it
+  is stated for an arbitrary self-dual `X`, as `pVecNCP`.
+* **No conjugated ℂ-action on `𝒜 ⊙ ℬ`.**  The file header warns that the
+  mirror of a right module conjugates the ℂ-action.  On the *carrier*
+  `𝒜 ⊗[ℂ] ℬ` this is not needed: with `tprod a b = a ⊗ₜ b` and
+  `⟨a⊗b, a'⊗b'⟩ = b' φ(a' a*) b*`, the `star`s in the inner product already
+  make the pairing conjugate-linear in its first argument, and Mathlib's
+  ordinary `𝒜 ⊗[ℂ] ℬ` (with `star (a ⊗ₜ b) = star a ⊗ₜ star b`, from
+  `Mathlib.Algebra.Star.TensorProduct`) is the right carrier.  The mirroring
+  lives entirely in `inner_tprod` and in the `ᵐᵒᵖ` of `ρ`.
+
+### Things the brief got wrong
+
+* **`existence_paschke_5` is *not* structurally blocked.**  The brief (and the
+  survey) said 154X "builds `σ` by re-running the construction for `h'`, which
+  needs `existence_paschke` applied to a triple the statement does not hand
+  you".  154X applies the construction to the **ncp-map `h' : 𝒫' → ℬ`**, and
+  `𝒫'` is a von Neumann algebra by `PaschkeTriple.vn`, so
+  `existence_paschke h'` — now a theorem — supplies precisely it.  Costed at
+  ≈450–550 lines in `docs/BDils-survey.md`; the one genuinely new obligation
+  is that `ad_S` stays completely positive on the *opposite* algebras (true,
+  though `f ↦ fᵐᵒᵖ` does not preserve complete positivity in general).
+* **`existence_paschke` does not gate 156II, 157IV.2/.3 or 171II directly.**
+  All four are stated for an arbitrary `PaschkeTriple`, and
+  `IsPaschkeDilationOf` carries the universal property, so they need the
+  mediating `σ` of **154III.5**.  The gate is 154III.5, one step further
+  than the brief placed it.
+* The brief's "33II.1 is not in its blocker set" was right, and the
+  `cp_iff … |>.out 1 0` idiom is what `phi_gram_nonneg` uses.
+* Everything else in the brief held: `paschkeModuleId` is the template that
+  makes the field list concrete, `PhiCompatible.mul_right` is used verbatim
+  for `ϱ(a₀)`, and the mirroring dictionary in the header is correct as
+  written.
+
+### A name that was not free
+
+`gram_nonneg` — the obvious name for the ℬ-valued Gram positivity — is a
+**`private` lemma of `SelfDual.lean`**, which imports `Paschke.lean`.  Adding
+a public one here would have reproduced the session-59 regression exactly
+(Lean rejects a private declaration whose user-facing name an imported public
+one already holds), and it would again have been invisible to a
+`declaration uses 'sorry'` count.  Ours is `phi_gram_nonneg`.  A tree-wide
+grep of all ~70 new public names against `Theses/` before writing was what
+caught it; `exists_rho` (private in `A/CStar/TowardsVN.lean`, different
+namespace) was renamed to `exists_prho` for the same reason.
