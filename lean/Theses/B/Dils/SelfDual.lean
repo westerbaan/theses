@@ -2525,8 +2525,112 @@ theorem selfdual_compl_defining_unique [VonNeumannAlgebra ℬ]
         (cstarBInner ℬ E₂.X) C U) ∧
       Function.Bijective U ∧
       (∀ x y : E₁.X, inner ℬ (U x) (U y) = inner ℬ x y) ∧
-      ∀ v : V, U (E₁.η v) = E₂.η v :=
-  sorry
+      ∀ v : V, U (E₁.η v) = E₂.η v := by
+  classical
+  -- both embeddings are bounded module maps, with constant `1`
+  have hb₁ : IsBoundedModuleMap B (cstarBInner ℬ E₁.X) 1 E₁.η :=
+    ⟨E₁.η_add, E₁.η_smul_complex, E₁.η_smul, fun v => by
+      have h : (cstarBInner ℬ E₁.X).norm (E₁.η v) = B.norm v := by
+        show Real.sqrt ‖(inner ℬ (E₁.η v) (E₁.η v) : ℬ)‖ = Real.sqrt ‖B.inner v v‖
+        rw [E₁.η_inner]
+      rw [h, one_mul]⟩
+  have hb₂ : IsBoundedModuleMap B (cstarBInner ℬ E₂.X) 1 E₂.η :=
+    ⟨E₂.η_add, E₂.η_smul_complex, E₂.η_smul, fun v => by
+      have h : (cstarBInner ℬ E₂.X).norm (E₂.η v) = B.norm v := by
+        show Real.sqrt ‖(inner ℬ (E₂.η v) (E₂.η v) : ℬ)‖ = Real.sqrt ‖B.inner v v‖
+        rw [E₂.η_inner]
+      rw [h, one_mul]⟩
+  -- **151Ia** in both directions, and for the identity
+  obtain ⟨U, ⟨⟨CU, hU⟩, hUη⟩, hUuniq⟩ :=
+    selfdual_completion_univ B E₁ E₂.selfDual 1 E₂.η hb₂
+  obtain ⟨W, ⟨⟨CW, hW⟩, hWη⟩, -⟩ :=
+    selfdual_completion_univ B E₂ E₁.selfDual 1 E₁.η hb₁
+  obtain ⟨Z₁, -, hId₁⟩ := selfdual_completion_univ B E₁ E₁.selfDual 1 E₁.η hb₁
+  obtain ⟨Z₂, -, hId₂⟩ := selfdual_completion_univ B E₂ E₂.selfDual 1 E₂.η hb₂
+  set CU' : ℝ := max CU 0 with hCU'def
+  set CW' : ℝ := max CW 0 with hCW'def
+  have hCU'0 : (0 : ℝ) ≤ CU' := le_max_right _ _
+  have hCW'0 : (0 : ℝ) ≤ CW' := le_max_right _ _
+  have hU' : IsBoundedModuleMap (cstarBInner ℬ E₁.X) (cstarBInner ℬ E₂.X) CU' U :=
+    { hU with
+      bound := fun x => (hU.bound x).trans
+        (mul_le_mul_of_nonneg_right (le_max_left _ _) (Real.sqrt_nonneg _)) }
+  have hW' : IsBoundedModuleMap (cstarBInner ℬ E₂.X) (cstarBInner ℬ E₁.X) CW' W :=
+    { hW with
+      bound := fun x => (hW.bound x).trans
+        (mul_le_mul_of_nonneg_right (le_max_left _ _) (Real.sqrt_nonneg _)) }
+  -- `W ∘ U` and `U ∘ W` both factor the embeddings, hence are the identity
+  have hWUb : IsBoundedModuleMap (cstarBInner ℬ E₁.X) (cstarBInner ℬ E₁.X)
+      (CW' * CU') (fun x => W (U x)) :=
+    { add := fun x y => by rw [hU.add, hW.add]
+      smul_complex := fun c x => by rw [hU.smul_complex, hW.smul_complex]
+      smul := fun b x => by rw [hU.smul, hW.smul]
+      bound := fun x => (hW'.bound (U x)).trans (by
+        calc CW' * (cstarBInner ℬ E₂.X).norm (U x)
+            ≤ CW' * (CU' * (cstarBInner ℬ E₁.X).norm x) :=
+              mul_le_mul_of_nonneg_left (hU'.bound x) hCW'0
+          _ = CW' * CU' * (cstarBInner ℬ E₁.X).norm x := by ring) }
+  have hUWb : IsBoundedModuleMap (cstarBInner ℬ E₂.X) (cstarBInner ℬ E₂.X)
+      (CU' * CW') (fun y => U (W y)) :=
+    { add := fun x y => by rw [hW.add, hU.add]
+      smul_complex := fun c x => by rw [hW.smul_complex, hU.smul_complex]
+      smul := fun b x => by rw [hW.smul, hU.smul]
+      bound := fun x => (hU'.bound (W x)).trans (by
+        calc CU' * (cstarBInner ℬ E₁.X).norm (W x)
+            ≤ CU' * (CW' * (cstarBInner ℬ E₂.X).norm x) :=
+              mul_le_mul_of_nonneg_left (hW'.bound x) hCU'0
+          _ = CU' * CW' * (cstarBInner ℬ E₂.X).norm x := by ring) }
+  have hIdb₁ : IsBoundedModuleMap (cstarBInner ℬ E₁.X) (cstarBInner ℬ E₁.X) 1
+      (fun x : E₁.X => x) :=
+    ⟨fun _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl, fun x => by rw [one_mul]⟩
+  have hIdb₂ : IsBoundedModuleMap (cstarBInner ℬ E₂.X) (cstarBInner ℬ E₂.X) 1
+      (fun x : E₂.X => x) :=
+    ⟨fun _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl, fun x => by rw [one_mul]⟩
+  have hWUid : ∀ x : E₁.X, W (U x) = x := by
+    have h1 := hId₁ (fun x => W (U x))
+      ⟨⟨CW' * CU', hWUb⟩, fun v => by
+        show W (U (E₁.η v)) = E₁.η v
+        rw [hUη, hWη]⟩
+    have h2 := hId₁ (fun x : E₁.X => x) ⟨⟨1, hIdb₁⟩, fun _ => rfl⟩
+    exact fun x => congrFun (h1.trans h2.symm) x
+  have hUWid : ∀ y : E₂.X, U (W y) = y := by
+    have h1 := hId₂ (fun y => U (W y))
+      ⟨⟨CU' * CW', hUWb⟩, fun v => by
+        show U (W (E₂.η v)) = E₂.η v
+        rw [hWη, hUη]⟩
+    have h2 := hId₂ (fun y : E₂.X => y) ⟨⟨1, hIdb₂⟩, fun _ => rfl⟩
+    exact fun y => congrFun (h1.trans h2.symm) y
+  have hbij : Function.Bijective U :=
+    ⟨fun a b h => by rw [← hWUid a, ← hWUid b, h], fun y => ⟨W y, hUWid y⟩⟩
+  -- `U` preserves the inner product: `U* U` and `id` have the same vector
+  -- states on `η₁ V`, so **152IX**.2 identifies them
+  have hUnorm : ∀ x : E₁.X, ‖U x‖ ≤ CU' * ‖x‖ := fun x => by
+    have h := hU'.bound x
+    rwa [cstarBInner_norm, cstarBInner_norm] at h
+  let Ul : E₁.X →ₗ[ℂ] E₂.X :=
+    { toFun := U, map_add' := hU.add, map_smul' := fun c x => hU.smul_complex c x }
+  let Ucl : E₁.X →L[ℂ] E₂.X := Ul.mkContinuous CU' hUnorm
+  obtain ⟨S, hS⟩ :=
+    hilbmod_adjoint_exists E₁.selfDual Ucl (fun b x => hU.smul b x)
+  have hSU : ∀ (x : E₁.X) (y : E₂.X), (inner ℬ (U x) y : ℬ) = inner ℬ x (S y) := hS
+  have hadj : ModuleAdjointable ℬ (⇑(S.comp Ucl) : E₁.X → E₁.X) := by
+    refine ⟨⇑(S.comp Ucl), fun x y => ?_⟩
+    show (inner ℬ (S (U x)) y : ℬ) = inner ℬ x (S (U y))
+    rw [← hSU x (U y), ← CStarModule.star_inner (A := ℬ) y (S (U x)),
+      ← hSU y (U x), CStarModule.star_inner]
+  have hadjId : ModuleAdjointable ℬ
+      (⇑(ContinuousLinearMap.id ℂ E₁.X) : E₁.X → E₁.X) := ⟨id, fun _ _ => rfl⟩
+  have hfix : S.comp Ucl = ContinuousLinearMap.id ℂ E₁.X := by
+    refine hilmod_fixed_on_V_eq B E₁ _ _ hadj hadjId fun v => ?_
+    show (inner ℬ (E₁.η v) (S (U (E₁.η v))) : ℬ) = inner ℬ (E₁.η v) (E₁.η v)
+    rw [← hSU (E₁.η v) (U (E₁.η v)), hUη, E₂.η_inner, E₁.η_inner]
+  have hip : ∀ x y : E₁.X, (inner ℬ (U x) (U y) : ℬ) = inner ℬ x y := by
+    intro x y
+    have hy : S (U y) = y := congrArg (fun F : E₁.X →L[ℂ] E₁.X => F y) hfix
+    rw [hSU x (U y), hy]
+  refine ⟨U, ⟨⟨CU, hU⟩, hbij, hip, hUη⟩, ?_⟩
+  rintro U' ⟨hU'b, -, -, hU'η⟩
+  exact hUuniq U' ⟨hU'b, hU'η⟩
 
 /-- **163II** (`selfdual-compl-defining`, dils.tex:4935, Proposition),
 moreover-clause: if an inner-product-preserving module map `η : V → X`

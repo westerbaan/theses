@@ -83,7 +83,132 @@ theorem dils_completion [VonNeumannAlgebra 𝒷] (B : BInner 𝒷 V) :
 /-! ## Parsec 1510: the universal property of the completion
 
 **151I** (dils.tex:3249): introduction — nothing to formalize.
-**151II** is the proof of **151Ia** — not converted. -/
+**151II** is the proof of **151Ia**, transcribed below. -/
+
+/-! ### Elementary properties of the ultranorm seminorms
+
+`HilbertModules.lean` keeps most of these `private`; they are restated here
+for `CStarModule`s (so that they are phrased with `inner 𝒷` rather than
+`(cstarBInner 𝒷 W).inner` and can be used by `rw`). -/
+
+section UnivHelpers
+
+variable {W : Type*} {V' : Type*}
+  [NormedAddCommGroup W] [Module ℂ W] [SMul 𝒷 W] [CStarModule 𝒷 W]
+  [AddCommGroup V'] [Module ℂ V'] [SMul 𝒷 V']
+
+omit [StarOrderedRing 𝒷] in
+private theorem npf_smul (ω : NPFunctional 𝒷) (c : ℂ) (a : 𝒷) : ω (c • a) = c * ω a :=
+  map_smul ω.toPositiveLinearMap c a
+
+omit [StarOrderedRing 𝒷] in
+private theorem npf_nonneg (ω : NPFunctional 𝒷) {a : 𝒷} (ha : 0 ≤ a) :
+    (0 : ℂ) ≤ ω a := by
+  have h : ω.toPositiveLinearMap 0 ≤ ω.toPositiveLinearMap a :=
+    ω.toPositiveLinearMap.monotone ha
+  rwa [map_zero] at h
+
+omit [StarOrderedRing 𝒷] in
+private theorem npf_im_zero (ω : NPFunctional 𝒷) {a : 𝒷} (ha : 0 ≤ a) :
+    (ω a).im = 0 := by
+  simpa using ((Complex.le_def.mp (npf_nonneg ω ha)).2).symm
+
+private theorem le_of_forall_eps {a b : ℝ} (h : ∀ ε : ℝ, 0 < ε → a ≤ b + ε) :
+    a ≤ b := by
+  by_contra hc
+  have hlt : b < a := lt_of_not_ge hc
+  have := h ((a - b) / 2) (by linarith)
+  linarith
+
+private theorem un_zero (ω : NPFunctional 𝒷) :
+    unSeminorm ω (inner 𝒷 : W → W → 𝒷) (0 : W) = 0 := by
+  have h : (inner 𝒷 (0 : W) (0 : W) : 𝒷) = 0 :=
+    (cstarBInner 𝒷 W).inner_zero_left 0
+  rw [unSeminorm, h]
+  simp
+
+omit [StarOrderedRing 𝒷] in
+private theorem un_neg (ω : NPFunctional 𝒷) (z : W) :
+    unSeminorm ω (inner 𝒷 : W → W → 𝒷) (-z)
+      = unSeminorm ω (inner 𝒷 : W → W → 𝒷) z := by
+  rw [unSeminorm, unSeminorm, CStarModule.inner_neg_left,
+    CStarModule.inner_neg_right, neg_neg]
+
+private theorem op_smul_sub' (b : 𝒷) (z z' : W) : b • (z - z') = b • z - b • z' := by
+  have h := op_smul_add b (z - z') z'
+  rw [sub_add_cancel] at h
+  rw [h]; abel
+
+private theorem un_add_le (ω : NPFunctional 𝒷) (z z' : W) :
+    unSeminorm ω (inner 𝒷 : W → W → 𝒷) (z + z')
+      ≤ unSeminorm ω (inner 𝒷 : W → W → 𝒷) z
+        + unSeminorm ω (inner 𝒷 : W → W → 𝒷) z' :=
+  unSeminorm_add_le ω (cstarBInner 𝒷 W) z z'
+
+private theorem un_sub_le (ω : NPFunctional 𝒷) (a b c : W) :
+    unSeminorm ω (inner 𝒷 : W → W → 𝒷) (a - c)
+      ≤ unSeminorm ω (inner 𝒷 : W → W → 𝒷) (a - b)
+        + unSeminorm ω (inner 𝒷 : W → W → 𝒷) (b - c) := by
+  have h := un_add_le ω (a - b) (b - c)
+  rwa [show a - b + (b - c) = a - c by abel] at h
+
+omit [StarOrderedRing 𝒷] in
+private theorem un_sub_comm (ω : NPFunctional 𝒷) (a b : W) :
+    unSeminorm ω (inner 𝒷 : W → W → 𝒷) (a - b)
+      = unSeminorm ω (inner 𝒷 : W → W → 𝒷) (b - a) := by
+  rw [show b - a = -(a - b) by abel, un_neg]
+
+omit [StarOrderedRing 𝒷] in
+private theorem un_smul_complex (ω : NPFunctional 𝒷) (c : ℂ) (z : W) :
+    unSeminorm ω (inner 𝒷 : W → W → 𝒷) (c • z)
+      = ‖c‖ * unSeminorm ω (inner 𝒷 : W → W → 𝒷) z := by
+  have h : (inner 𝒷 (c • z) (c • z) : 𝒷)
+      = ((Complex.normSq c : ℝ) : ℂ) • inner 𝒷 z z := by
+    rw [CStarModule.inner_smul_left_complex, CStarModule.inner_smul_right_complex,
+      smul_smul]
+    congr 1
+    rw [Complex.normSq_eq_conj_mul_self, starRingEnd_apply]
+  rw [unSeminorm, unSeminorm, h, npf_smul, Complex.re_ofReal_mul,
+    Real.sqrt_mul (Complex.normSq_nonneg c), Complex.norm_def]
+
+private theorem un_op_smul [VonNeumannAlgebra 𝒷] (ω : NPFunctional 𝒷) (b : 𝒷)
+    (z : W) :
+    unSeminorm ω (inner 𝒷 : W → W → 𝒷) (b • z)
+      = unSeminorm (conjNP (star b) ω) (inner 𝒷 : W → W → 𝒷) z := by
+  have h : (inner 𝒷 (b • z) (b • z) : 𝒷) = b * inner 𝒷 z z * star b :=
+    (cstarBInner 𝒷 W).inner_op_smul_self b z
+  rw [unSeminorm, unSeminorm, h, conjNP_apply, star_star]
+
+/-- The ultranorm seminorms are separating: an element which is `ε`-small for
+every np-functional and every `ε > 0` is `0`. -/
+private theorem eq_zero_of_un_small [VonNeumannAlgebra 𝒷] (z : W)
+    (h : ∀ (ω : NPFunctional 𝒷) (ε : ℝ), 0 < ε →
+      unSeminorm ω (inner 𝒷 : W → W → 𝒷) z ≤ ε) : z = 0 := by
+  have hinner : (inner 𝒷 z z : 𝒷) = 0 := by
+    refine np_separating _ fun ω => ?_
+    have hz : unSeminorm ω (inner 𝒷 : W → W → 𝒷) z = 0 :=
+      le_antisymm (le_of_forall_eps fun ε hε => by simpa using h ω ε hε)
+        (unSeminorm_nonneg _ _ _)
+    have hsq : unSeminorm ω (inner 𝒷 : W → W → 𝒷) z ^ 2
+        = (ω (inner 𝒷 z z : 𝒷)).re := unSeminorm_sq ω (cstarBInner 𝒷 W) z
+    rw [hz] at hsq
+    have hre : (ω (inner 𝒷 z z : 𝒷)).re = 0 := by rw [← hsq]; norm_num
+    have hnn : (0 : 𝒷) ≤ inner 𝒷 z z := CStarModule.inner_self_nonneg
+    have him : (ω (inner 𝒷 z z : 𝒷)).im = 0 := npf_im_zero ω hnn
+    exact Complex.ext (by simpa using hre) (by simpa using him)
+  have hn : ‖z‖ = 0 := by
+    rw [CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒷), hinner]
+    simp
+  exact norm_eq_zero.mp hn
+
+/-- **144V** in seminorm form, phrased with `inner 𝒷` on the target. -/
+private theorem un_bmm_le (B₁ : BInner 𝒷 V') (Cc : ℝ) (hCc : 0 ≤ Cc) (S : V' → W)
+    (hS : IsBoundedModuleMap B₁ (cstarBInner 𝒷 W) Cc S) (ω : NPFunctional 𝒷)
+    (x : V') :
+    unSeminorm ω (inner 𝒷 : W → W → 𝒷) (S x) ≤ Cc * unSeminorm ω B₁.inner x :=
+  unSeminorm_boundedModuleMap_le B₁ (cstarBInner 𝒷 W) Cc hCc S hS ω x
+
+end UnivHelpers
 
 /-- **151Ia** (`selfdual-completion-univ`, dils.tex:3254, Lemma): let
 `η : V → X` be an inner-product-preserving 𝒷-linear map into a self-dual
@@ -98,8 +223,347 @@ theorem selfdual_completion_univ [VonNeumannAlgebra 𝒷] (B : BInner 𝒷 V)
     (hT : IsBoundedModuleMap B (cstarBInner 𝒷 Y) C T) :
     ∃! T' : E.X → Y,
       (∃ C' : ℝ, IsBoundedModuleMap (cstarBInner 𝒷 E.X) (cstarBInner 𝒷 Y)
-        C' T') ∧ ∀ v : V, T' (E.η v) = T v :=
-  sorry
+        C' T') ∧ ∀ v : V, T' (E.η v) = T v := by
+  classical
+  -- replace `C` by a nonnegative bound
+  set C' : ℝ := max C 0 with hC'def
+  have hC'0 : (0 : ℝ) ≤ C' := le_max_right _ _
+  have hTC' : IsBoundedModuleMap B (cstarBInner 𝒷 Y) C' T :=
+    { hT with
+      bound := fun v => (hT.bound v).trans
+        (mul_le_mul_of_nonneg_right (le_max_left _ _) (Real.sqrt_nonneg _)) }
+  -- elementary consequences of the axioms of `η` and `T`
+  have hη0 : E.η 0 = 0 := by
+    simpa using E.η_smul_complex 0 0
+  have hηsub : ∀ v v' : V, E.η (v - v') = E.η v - E.η v' := by
+    intro v v'
+    have h := E.η_add (v - v') v'
+    rw [sub_add_cancel] at h
+    rw [h]; abel
+  have hηsem : ∀ (ω : NPFunctional 𝒷) (v : V),
+      unSeminorm ω (inner 𝒷 : E.X → E.X → 𝒷) (E.η v) = unSeminorm ω B.inner v := by
+    intro ω v
+    rw [unSeminorm, unSeminorm, E.η_inner]
+  have hT0 : T 0 = 0 := by
+    simpa using hT.smul_complex 0 0
+  have hTsub : ∀ v v' : V, T (v - v') = T v - T v' := by
+    intro v v'
+    have h := hT.add (v - v') v'
+    rw [sub_add_cancel] at h
+    rw [h]; abel
+  -- ultranorm density of the image of `η`, in the form needed below
+  have hdense' : ∀ (x : E.X) (s : Finset (NPFunctional 𝒷)) (ε : ℝ), 0 < ε →
+      ∃ v : V, ∀ ω ∈ s,
+        unSeminorm ω (inner 𝒷 : E.X → E.X → 𝒷) (x - E.η v) ≤ ε := by
+    intro x s ε hε
+    obtain ⟨d, ⟨v, rfl⟩, hd⟩ := E.dense x (Fintype.card s)
+      (fun i => (((Fintype.equivFin s).symm i : {y // y ∈ s}) : NPFunctional 𝒷)) ε hε
+    exact ⟨v, fun ω hω => by simpa using hd ((Fintype.equivFin s) ⟨ω, hω⟩)⟩
+  -- **149V**: a self-dual module is ultranorm complete
+  have hYun : UnComplete (inner 𝒷 : Y → Y → 𝒷) :=
+    ((dils_selfdual (𝒷 := 𝒷) (X := Y)).out 0 1).mp hY
+  -- the heart of the matter: the ultranorm limit `T̂ x = unlim T x_α`, together
+  -- with the estimate `‖T̂ x - T v‖_ω ≤ C ‖x - η v‖_ω` that characterizes it
+  have hexists : ∀ x : E.X, ∃ y : Y, ∀ (ω : NPFunctional 𝒷) (v : V),
+      unSeminorm ω (inner 𝒷 : Y → Y → 𝒷) (y - T v)
+        ≤ C' * unSeminorm ω (inner 𝒷 : E.X → E.X → 𝒷) (x - E.η v) := by
+    intro x
+    -- the approximating net, indexed by finite sets of (functional, precision)
+    choose vnet hvnet using fun s : Finset (NPFunctional 𝒷 × ℕ) =>
+      hdense' x (s.image Prod.fst)
+        (1 / (((s.sup (fun p => p.2) : ℕ) : ℝ) + 1)) (by positivity)
+    have hvnet' : ∀ (s : Finset (NPFunctional 𝒷 × ℕ)) (p : NPFunctional 𝒷 × ℕ),
+        p ∈ s → unSeminorm p.1 (inner 𝒷 : E.X → E.X → 𝒷) (x - E.η (vnet s))
+          ≤ 1 / ((p.2 : ℝ) + 1) := by
+      intro s p hp
+      refine (hvnet s p.1 (Finset.mem_image_of_mem _ hp)).trans ?_
+      have hle : (p.2 : ℝ) ≤ ((s.sup (fun q => q.2) : ℕ) : ℝ) := by
+        exact_mod_cast Finset.le_sup (f := fun q : NPFunctional 𝒷 × ℕ => q.2) hp
+      exact one_div_le_one_div_of_le (by positivity) (by linarith)
+    -- the ultranorm-Cauchy estimate along the net
+    have hcau : ∀ (ω : NPFunctional 𝒷) (s s' : Finset (NPFunctional 𝒷 × ℕ))
+        (δ : ℝ), unSeminorm ω (inner 𝒷 : E.X → E.X → 𝒷) (x - E.η (vnet s)) ≤ δ →
+        unSeminorm ω (inner 𝒷 : E.X → E.X → 𝒷) (x - E.η (vnet s')) ≤ δ →
+        unSeminorm ω (inner 𝒷 : Y → Y → 𝒷) (T (vnet s) - T (vnet s'))
+          ≤ C' * (δ + δ) := by
+      intro ω s s' δ h1 h2
+      calc unSeminorm ω (inner 𝒷 : Y → Y → 𝒷) (T (vnet s) - T (vnet s'))
+          = unSeminorm ω (inner 𝒷 : Y → Y → 𝒷) (T (vnet s - vnet s')) := by
+            rw [hTsub]
+        _ ≤ C' * unSeminorm ω B.inner (vnet s - vnet s') :=
+            un_bmm_le B C' hC'0 T hTC' ω _
+        _ = C' * unSeminorm ω (inner 𝒷 : E.X → E.X → 𝒷)
+              (E.η (vnet s) - E.η (vnet s')) := by rw [← hηsem, hηsub]
+        _ ≤ C' * (unSeminorm ω (inner 𝒷 : E.X → E.X → 𝒷) (E.η (vnet s) - x)
+              + unSeminorm ω (inner 𝒷 : E.X → E.X → 𝒷) (x - E.η (vnet s'))) :=
+            mul_le_mul_of_nonneg_left (un_sub_le ω _ x _) hC'0
+        _ ≤ C' * (δ + δ) := by
+            rw [un_sub_comm ω (E.η (vnet s)) x]
+            exact mul_le_mul_of_nonneg_left (add_le_add h1 h2) hC'0
+    have hFcauchy : UnCauchy (inner 𝒷 : Y → Y → 𝒷)
+        (Filter.map (fun s => T (vnet s)) atTop) := by
+      intro ω ε hε
+      obtain ⟨n, hn⟩ :=
+        exists_nat_one_div_lt (show (0 : ℝ) < ε / (2 * (C' + 1)) by positivity)
+      refine ⟨(fun s => T (vnet s)) '' (Set.Ici {(ω, n)}),
+        Filter.image_mem_map (Filter.Ici_mem_atTop _), ?_⟩
+      rintro _ ⟨s, hs, rfl⟩ _ ⟨s', hs', rfl⟩
+      have hsub : ({(ω, n)} : Finset (NPFunctional 𝒷 × ℕ)) ⊆ s := hs
+      have hsub' : ({(ω, n)} : Finset (NPFunctional 𝒷 × ℕ)) ⊆ s' := hs'
+      have h1 : unSeminorm ω (inner 𝒷 : E.X → E.X → 𝒷) (x - E.η (vnet s))
+          ≤ ε / (2 * (C' + 1)) :=
+        (hvnet' s (ω, n) (hsub (Finset.mem_singleton_self _))).trans hn.le
+      have h2 : unSeminorm ω (inner 𝒷 : E.X → E.X → 𝒷) (x - E.η (vnet s'))
+          ≤ ε / (2 * (C' + 1)) :=
+        (hvnet' s' (ω, n) (hsub' (Finset.mem_singleton_self _))).trans hn.le
+      refine (hcau ω s s' _ h1 h2).trans ?_
+      have hden : (0 : ℝ) < 2 * (C' + 1) := by positivity
+      have hδ : ε / (2 * (C' + 1)) * (2 * (C' + 1)) = ε := by field_simp
+      have hδ0 : (0 : ℝ) ≤ ε / (2 * (C' + 1)) := by positivity
+      nlinarith [hδ, hδ0]
+    obtain ⟨y₀, hy₀⟩ := hYun _ Filter.map_neBot hFcauchy
+    refine ⟨y₀, fun ω v => ?_⟩
+    refine le_of_forall_eps fun ε hε => ?_
+    -- pick a stage of the net which is both close to `y₀` and close to `x`
+    have hev : ∀ᶠ s in (atTop : Filter (Finset (NPFunctional 𝒷 × ℕ))),
+        unSeminorm ω (inner 𝒷 : Y → Y → 𝒷) (T (vnet s) - y₀)
+          < ε / (2 * (C' + 1)) :=
+      (Filter.tendsto_map'_iff.mpr (hy₀ ω))
+        (Iio_mem_nhds (by positivity : (0 : ℝ) < ε / (2 * (C' + 1))))
+    obtain ⟨s₁, hs₁⟩ := Filter.eventually_atTop.mp hev
+    obtain ⟨n, hn⟩ :=
+      exists_nat_one_div_lt (show (0 : ℝ) < ε / (2 * (C' + 1)) by positivity)
+    set s : Finset (NPFunctional 𝒷 × ℕ) := s₁ ∪ {(ω, n)} with hsdef
+    have ha : unSeminorm ω (inner 𝒷 : Y → Y → 𝒷) (T (vnet s) - y₀)
+        ≤ ε / (2 * (C' + 1)) := (hs₁ s Finset.subset_union_left).le
+    have hb : unSeminorm ω (inner 𝒷 : E.X → E.X → 𝒷) (x - E.η (vnet s))
+        ≤ ε / (2 * (C' + 1)) :=
+      (hvnet' s (ω, n)
+        (Finset.mem_union_right _ (Finset.mem_singleton_self _))).trans hn.le
+    calc unSeminorm ω (inner 𝒷 : Y → Y → 𝒷) (y₀ - T v)
+        ≤ unSeminorm ω (inner 𝒷 : Y → Y → 𝒷) (y₀ - T (vnet s))
+            + unSeminorm ω (inner 𝒷 : Y → Y → 𝒷) (T (vnet s) - T v) :=
+          un_sub_le ω _ (T (vnet s)) _
+      _ ≤ ε / (2 * (C' + 1))
+            + C' * (unSeminorm ω (inner 𝒷 : E.X → E.X → 𝒷) (E.η (vnet s) - x)
+              + unSeminorm ω (inner 𝒷 : E.X → E.X → 𝒷) (x - E.η v)) := by
+          refine add_le_add ((un_sub_comm ω y₀ (T (vnet s))) ▸ ha) ?_
+          calc unSeminorm ω (inner 𝒷 : Y → Y → 𝒷) (T (vnet s) - T v)
+              = unSeminorm ω (inner 𝒷 : Y → Y → 𝒷) (T (vnet s - v)) := by rw [hTsub]
+            _ ≤ C' * unSeminorm ω B.inner (vnet s - v) :=
+                un_bmm_le B C' hC'0 T hTC' ω _
+            _ = C' * unSeminorm ω (inner 𝒷 : E.X → E.X → 𝒷)
+                  (E.η (vnet s) - E.η v) := by rw [← hηsem, hηsub]
+            _ ≤ _ := mul_le_mul_of_nonneg_left (un_sub_le ω _ x _) hC'0
+      _ ≤ C' * unSeminorm ω (inner 𝒷 : E.X → E.X → 𝒷) (x - E.η v) + ε := by
+          rw [un_sub_comm ω (E.η (vnet s)) x]
+          have hkey : C' * (ε / (2 * (C' + 1))) ≤ ε / 2 := by
+            rw [mul_div_assoc'] at *
+            rw [div_le_div_iff₀ (by positivity) (by norm_num)]
+            nlinarith [hε.le, hC'0]
+          have hε2 : ε / (2 * (C' + 1)) ≤ ε / 2 := by
+            apply div_le_div_of_nonneg_left hε.le (by norm_num)
+            nlinarith [hC'0]
+          nlinarith [mul_le_mul_of_nonneg_left hb hC'0,
+            unSeminorm_nonneg ω (inner 𝒷 : E.X → E.X → 𝒷) (x - E.η v)]
+  choose T' hkey using hexists
+  -- `T̂` extends `T`
+  have hηT : ∀ v : V, T' (E.η v) = T v := by
+    intro v
+    refine sub_eq_zero.mp (eq_zero_of_un_small (𝒷 := 𝒷) (W := Y) _ fun ω ε hε => ?_)
+    have h := hkey (E.η v) ω v
+    rw [sub_self, un_zero (W := E.X) ω, mul_zero] at h
+    exact h.trans hε.le
+  -- the fundamental estimate turns every algebraic identity into a
+  -- density argument, one np-functional at a time
+  have hbound : ∀ (ω : NPFunctional 𝒷) (x : E.X),
+      unSeminorm ω (inner 𝒷 : Y → Y → 𝒷) (T' x)
+        ≤ C' * unSeminorm ω (inner 𝒷 : E.X → E.X → 𝒷) x := by
+    intro ω x
+    have h := hkey x ω 0
+    rwa [hT0, sub_zero, hη0, sub_zero] at h
+  have hadd : ∀ x x' : E.X, T' (x + x') = T' x + T' x' := by
+    intro x x'
+    refine sub_eq_zero.mp (eq_zero_of_un_small (𝒷 := 𝒷) (W := Y) _ fun ω ε hε => ?_)
+    obtain ⟨v, hv⟩ := hdense' x {ω} (ε / (4 * (C' + 1))) (by positivity)
+    obtain ⟨v', hv'⟩ := hdense' x' {ω} (ε / (4 * (C' + 1))) (by positivity)
+    have hv1 := hv ω (Finset.mem_singleton_self _)
+    have hv2 := hv' ω (Finset.mem_singleton_self _)
+    have hsplit : T' (x + x') - (T' x + T' x')
+        = (T' (x + x') - T (v + v')) + ((T v - T' x) + (T v' - T' x')) := by
+      rw [hT.add]; abel
+    have hA : unSeminorm ω (inner 𝒷 : Y → Y → 𝒷) (T' (x + x') - T (v + v'))
+        ≤ C' * (ε / (4 * (C' + 1)) + ε / (4 * (C' + 1))) := by
+      refine (hkey (x + x') ω (v + v')).trans ?_
+      rw [E.η_add]
+      refine mul_le_mul_of_nonneg_left ?_ hC'0
+      calc unSeminorm ω (inner 𝒷 : E.X → E.X → 𝒷) (x + x' - (E.η v + E.η v'))
+          = unSeminorm ω (inner 𝒷 : E.X → E.X → 𝒷)
+              ((x - E.η v) + (x' - E.η v')) := by rw [show x + x' - (E.η v + E.η v')
+                = (x - E.η v) + (x' - E.η v') by abel]
+        _ ≤ _ := un_add_le ω _ _
+        _ ≤ _ := add_le_add hv1 hv2
+    have hB1 : unSeminorm ω (inner 𝒷 : Y → Y → 𝒷) (T v - T' x)
+        ≤ C' * (ε / (4 * (C' + 1))) := by
+      rw [un_sub_comm]
+      exact (hkey x ω v).trans (mul_le_mul_of_nonneg_left hv1 hC'0)
+    have hB2 : unSeminorm ω (inner 𝒷 : Y → Y → 𝒷) (T v' - T' x')
+        ≤ C' * (ε / (4 * (C' + 1))) := by
+      rw [un_sub_comm]
+      exact (hkey x' ω v').trans (mul_le_mul_of_nonneg_left hv2 hC'0)
+    have hfin : unSeminorm ω (inner 𝒷 : Y → Y → 𝒷)
+        (T' (x + x') - (T' x + T' x'))
+          ≤ C' * (ε / (4 * (C' + 1)) + ε / (4 * (C' + 1)))
+            + (C' * (ε / (4 * (C' + 1))) + C' * (ε / (4 * (C' + 1)))) := by
+      rw [hsplit]
+      exact (un_add_le ω _ _).trans
+        (add_le_add hA ((un_add_le ω _ _).trans (add_le_add hB1 hB2)))
+    refine hfin.trans ?_
+    have hle : C' * (ε / (4 * (C' + 1))) ≤ ε / 4 := by
+      rw [mul_div_assoc', div_le_div_iff₀ (by positivity) (by norm_num)]
+      nlinarith [hε.le, hC'0]
+    linarith
+  have hsmulC : ∀ (c : ℂ) (x : E.X), T' (c • x) = c • T' x := by
+    intro c x
+    refine sub_eq_zero.mp (eq_zero_of_un_small (𝒷 := 𝒷) (W := Y) _ fun ω ε hε => ?_)
+    obtain ⟨v, hv⟩ := hdense' x {ω}
+      (ε / (2 * (C' + 1) * (‖c‖ + 1))) (by positivity)
+    have hv1 := hv ω (Finset.mem_singleton_self _)
+    have hsplit : T' (c • x) - c • T' x
+        = (T' (c • x) - T (c • v)) + c • (T v - T' x) := by
+      rw [hT.smul_complex, smul_sub]; abel
+    have hA : unSeminorm ω (inner 𝒷 : Y → Y → 𝒷) (T' (c • x) - T (c • v))
+        ≤ C' * (‖c‖ * (ε / (2 * (C' + 1) * (‖c‖ + 1)))) := by
+      refine (hkey (c • x) ω (c • v)).trans ?_
+      rw [E.η_smul_complex, ← smul_sub, un_smul_complex]
+      exact mul_le_mul_of_nonneg_left
+        (mul_le_mul_of_nonneg_left hv1 (norm_nonneg c)) hC'0
+    have hB : unSeminorm ω (inner 𝒷 : Y → Y → 𝒷) (c • (T v - T' x))
+        ≤ ‖c‖ * (C' * (ε / (2 * (C' + 1) * (‖c‖ + 1)))) := by
+      rw [un_smul_complex, un_sub_comm]
+      exact mul_le_mul_of_nonneg_left
+        ((hkey x ω v).trans (mul_le_mul_of_nonneg_left hv1 hC'0)) (norm_nonneg c)
+    have hfin : unSeminorm ω (inner 𝒷 : Y → Y → 𝒷) (T' (c • x) - c • T' x)
+        ≤ C' * (‖c‖ * (ε / (2 * (C' + 1) * (‖c‖ + 1))))
+          + ‖c‖ * (C' * (ε / (2 * (C' + 1) * (‖c‖ + 1)))) := by
+      rw [hsplit]
+      exact (un_add_le ω _ _).trans (add_le_add hA hB)
+    refine hfin.trans ?_
+    have hle : C' * (‖c‖ * (ε / (2 * (C' + 1) * (‖c‖ + 1)))) ≤ ε / 2 := by
+      rw [mul_div_assoc', mul_div_assoc',
+        div_le_div_iff₀ (by positivity) (by norm_num)]
+      nlinarith [hε.le, hC'0, norm_nonneg c]
+    linarith
+  have hsmulB : ∀ (b : 𝒷) (x : E.X), T' (b • x) = b • T' x := by
+    intro b x
+    refine sub_eq_zero.mp (eq_zero_of_un_small (𝒷 := 𝒷) (W := Y) _ fun ω ε hε => ?_)
+    obtain ⟨v, hv⟩ := hdense' x {ω, conjNP (star b) ω}
+      (ε / (2 * (C' + 1))) (by positivity)
+    have hv2 := hv (conjNP (star b) ω) (by simp)
+    have hsplit : T' (b • x) - b • T' x
+        = (T' (b • x) - T (b • v)) + b • (T v - T' x) := by
+      rw [hT.smul, op_smul_sub' (W := Y)]
+      abel
+    have hA : unSeminorm ω (inner 𝒷 : Y → Y → 𝒷) (T' (b • x) - T (b • v))
+        ≤ C' * (ε / (2 * (C' + 1))) := by
+      refine (hkey (b • x) ω (b • v)).trans ?_
+      rw [E.η_smul, ← op_smul_sub' (W := E.X), un_op_smul]
+      exact mul_le_mul_of_nonneg_left hv2 hC'0
+    have hB : unSeminorm ω (inner 𝒷 : Y → Y → 𝒷) (b • (T v - T' x))
+        ≤ C' * (ε / (2 * (C' + 1))) := by
+      rw [un_op_smul, un_sub_comm]
+      exact (hkey x (conjNP (star b) ω) v).trans
+        (mul_le_mul_of_nonneg_left hv2 hC'0)
+    have hfin : unSeminorm ω (inner 𝒷 : Y → Y → 𝒷) (T' (b • x) - b • T' x)
+        ≤ C' * (ε / (2 * (C' + 1))) + C' * (ε / (2 * (C' + 1))) := by
+      rw [hsplit]
+      exact (un_add_le ω _ _).trans (add_le_add hA hB)
+    refine hfin.trans ?_
+    have hle : C' * (ε / (2 * (C' + 1))) ≤ ε / 2 := by
+      rw [mul_div_assoc', div_le_div_iff₀ (by positivity) (by norm_num)]
+      nlinarith [hε.le, hC'0]
+    linarith
+  -- boundedness: `⟨T̂x, T̂x⟩ ≤ ‖T‖² ⟨x,x⟩` by order separation of the
+  -- np-functionals (**44XI**), which is the thesis's `innerprod-ultraweak` step
+  have hnorm : ∀ x : E.X, ‖T' x‖ ≤ C' * ‖x‖ := by
+    intro x
+    have hle : (inner 𝒷 (T' x) (T' x) : 𝒷) ≤ (C' ^ 2) • (inner 𝒷 x x : 𝒷) := by
+      refine np_orderSeparating _ _
+        (IsSelfAdjoint.of_nonneg CStarModule.inner_self_nonneg)
+        (IsSelfAdjoint.of_nonneg (smul_nonneg (by positivity)
+          CStarModule.inner_self_nonneg)) fun ω => ?_
+      have hs1 : unSeminorm ω (inner 𝒷 : Y → Y → 𝒷) (T' x) ^ 2
+          = (ω (inner 𝒷 (T' x) (T' x) : 𝒷)).re := unSeminorm_sq ω (cstarBInner 𝒷 Y) _
+      have hs2 : unSeminorm ω (inner 𝒷 : E.X → E.X → 𝒷) x ^ 2
+          = (ω (inner 𝒷 x x : 𝒷)).re := unSeminorm_sq ω (cstarBInner 𝒷 E.X) _
+      have hre : (ω (inner 𝒷 (T' x) (T' x) : 𝒷)).re
+          ≤ (ω ((C' ^ 2) • (inner 𝒷 x x : 𝒷))).re := by
+        have hsm : (ω ((C' ^ 2) • (inner 𝒷 x x : 𝒷))).re
+            = C' ^ 2 * (ω (inner 𝒷 x x : 𝒷)).re := by
+          rw [show ((C' ^ 2 : ℝ) • (inner 𝒷 x x : 𝒷))
+              = ((C' ^ 2 : ℝ) : ℂ) • (inner 𝒷 x x : 𝒷) from
+            (RCLike.real_smul_eq_coe_smul (K := ℂ) _ _),
+            npf_smul, Complex.re_ofReal_mul]
+        rw [hsm, ← hs1, ← hs2]
+        have h := hbound ω x
+        have h0 := unSeminorm_nonneg ω (inner 𝒷 : Y → Y → 𝒷) (T' x)
+        have h1 := unSeminorm_nonneg ω (inner 𝒷 : E.X → E.X → 𝒷) x
+        nlinarith
+      have him1 : (ω (inner 𝒷 (T' x) (T' x) : 𝒷)).im = 0 :=
+        npf_im_zero ω (CStarModule.inner_self_nonneg (E := Y) (x := T' x))
+      have him2 : (ω ((C' ^ 2) • (inner 𝒷 x x : 𝒷))).im = 0 :=
+        npf_im_zero ω (smul_nonneg (by positivity : (0:ℝ) ≤ C' ^ 2)
+          (CStarModule.inner_self_nonneg (E := E.X) (x := x)))
+      exact Complex.le_def.mpr ⟨hre, by rw [him1, him2]⟩
+    have hnn : (0 : 𝒷) ≤ inner 𝒷 (T' x) (T' x) := CStarModule.inner_self_nonneg
+    have hnle := CStarAlgebra.norm_le_norm_of_nonneg_of_le hnn hle
+    rw [norm_smul, Real.norm_eq_abs, abs_of_nonneg (by positivity : (0:ℝ) ≤ C' ^ 2)]
+      at hnle
+    have e1 : ‖T' x‖ ^ 2 = ‖(inner 𝒷 (T' x) (T' x) : 𝒷)‖ :=
+      CStarModule.norm_sq_eq (A := 𝒷)
+    have e2 : ‖x‖ ^ 2 = ‖(inner 𝒷 x x : 𝒷)‖ := CStarModule.norm_sq_eq (A := 𝒷)
+    have h1 : (0 : ℝ) ≤ C' * ‖x‖ := mul_nonneg hC'0 (norm_nonneg x)
+    have hsq : ‖T' x‖ ^ 2 ≤ (C' * ‖x‖) ^ 2 := by
+      rw [e1, mul_pow, e2]
+      exact hnle
+    have hs := Real.sqrt_le_sqrt hsq
+    rwa [Real.sqrt_sq (norm_nonneg _), Real.sqrt_sq h1] at hs
+  refine ⟨T', ⟨⟨C', ?_⟩, hηT⟩, ?_⟩
+  · refine ⟨hadd, hsmulC, hsmulB, fun x => ?_⟩
+    rw [cstarBInner_norm, cstarBInner_norm]
+    exact hnorm x
+  · rintro S ⟨⟨C₂, hS⟩, hSη⟩
+    set C₂' : ℝ := max C₂ 0 with hC₂'def
+    have hC₂'0 : (0 : ℝ) ≤ C₂' := le_max_right _ _
+    have hSC₂' : IsBoundedModuleMap (cstarBInner 𝒷 E.X) (cstarBInner 𝒷 Y) C₂' S :=
+      { hS with
+        bound := fun x => (hS.bound x).trans
+          (mul_le_mul_of_nonneg_right (le_max_left _ _) (Real.sqrt_nonneg _)) }
+    funext x
+    refine sub_eq_zero.mp (eq_zero_of_un_small (𝒷 := 𝒷) (W := Y) _ fun ω ε hε => ?_)
+    obtain ⟨v, hv⟩ := hdense' x {ω} (ε / (2 * (C' + C₂' + 1))) (by positivity)
+    have hv1 := hv ω (Finset.mem_singleton_self _)
+    have hSsub : S x - S (E.η v) = S (x - E.η v) := by
+      have h := hS.add (x - E.η v) (E.η v)
+      rw [sub_add_cancel] at h
+      rw [h]; abel
+    have hA : unSeminorm ω (inner 𝒷 : Y → Y → 𝒷) (S x - T v)
+        ≤ C₂' * (ε / (2 * (C' + C₂' + 1))) := by
+      rw [← hSη v, hSsub]
+      exact (un_bmm_le (cstarBInner 𝒷 E.X) C₂' hC₂'0 S hSC₂' ω _).trans
+        (mul_le_mul_of_nonneg_left hv1 hC₂'0)
+    have hB : unSeminorm ω (inner 𝒷 : Y → Y → 𝒷) (T v - T' x)
+        ≤ C' * (ε / (2 * (C' + C₂' + 1))) := by
+      rw [un_sub_comm]
+      exact (hkey x ω v).trans (mul_le_mul_of_nonneg_left hv1 hC'0)
+    refine (un_sub_le ω (S x) (T v) (T' x)).trans ?_
+    have hle1 : C₂' * (ε / (2 * (C' + C₂' + 1))) ≤ ε / 2 := by
+      rw [mul_div_assoc', div_le_div_iff₀ (by positivity) (by norm_num)]
+      nlinarith [hε.le, hC'0, hC₂'0]
+    have hle2 : C' * (ε / (2 * (C' + C₂' + 1))) ≤ ε / 2 := by
+      rw [mul_div_assoc', div_le_div_iff₀ (by positivity) (by norm_num)]
+      nlinarith [hε.le, hC'0, hC₂'0]
+    linarith [hA, hB]
 
 end Completion
 
