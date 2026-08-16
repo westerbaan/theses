@@ -8224,3 +8224,300 @@ edited live by another worker for most of this session, and a mid-edit state
 there makes *every* `lake build` under `Theses/B/Dils` fail with errors that
 are not yours (missing `.olean`, parse errors in `A/VN`).  Retry rather than
 debug.
+
+## Session 44 — `B/Dils`: the 145I lead is **refuted**, and 140VIII `paschke_unique_up_to_iso` is proved (worker 69)
+
+Files touched: `Theses/B/Dils/Stinespring.lean`, this log.  Nothing staged,
+nothing committed.  **B/Dils 59 → 58 `sorry`s.**
+
+### 1. **145I `hilbmod_vectstates_cp` is faithful, and was already proved**
+
+The brief carried session 43's lead — "145I states exactly the form that
+fails, is very likely mis-mirrored, and is still `sorry`".  Both halves are
+wrong, and the second is checkable in one command: `HilbertModules.lean` has
+carried **zero** code `sorry`s since `ae94174`, and
+`#print axioms Theses.B.Dils.hilbmod_vectstates_cp` returns exactly
+`[propext, Classical.choice, Quot.sound]`.  A statement with a machine-checked
+proof cannot be false; the only live question was faithfulness, and it is
+faithful.
+
+`dils.tex:1706` states `h(T) = ⟨x, Tx⟩` is cp, and proves it by
+`∑ᵢⱼ bᵢ* ⟨x, Tᵢ*Tⱼ x⟩ bⱼ = ∑ᵢⱼ ⟨Tᵢ x bᵢ, Tⱼ x bⱼ⟩ = ⟨∑ᵢ Tᵢ x bᵢ, ∑ᵢ Tᵢ x bᵢ⟩ ≥ 0`.
+Under the mirror (`⟪u,v⟫ = ⟨v,u⟩`, `x·b ↦ star b • x`) that is exactly the Lean
+statement `0 ≤ ∑ᵢⱼ star (bᵢ) * ⟪Sᵢ(Tⱼ x), x⟫ * bⱼ` and exactly the Lean proof,
+with `v = ∑ₖ star (bₖ) • Tₖ x`.  The doc comment already records the swap and
+already explains why the *un*-swapped `⟪x, Sᵢ Tⱼ x⟫` form is false.
+
+**Why the lead looked plausible, and where it goes wrong.**  Session 43's
+computation is right about `Paschke.lean` and wrong about 145I, because the two
+use *different* forms of the vector state:
+
+* `Paschke.lean`'s `h_def` is the **bundled, ℂ-linear** map
+  `h : NCPMap (Ba ℬ X)ᵐᵒᵖ ℬ`, `h (op T) = ⟪x, T x⟫`.  The `ᵐᵒᵖ` is forced:
+  under the mirror the ℂ-action on the operator algebra is conjugated too, so
+  the ℂ-*linear* rendering of a thesis operator `T` is the Lean operator `T*`,
+  and `T ↦ T*` is anti-multiplicative.
+* **145I is unbundled.**  It quantifies over families `(Tᵢ, Sᵢ)` with `Sᵢ` an
+  explicit `ModuleAdjointTo` partner and asserts positivity of a sum built from
+  `Sᵢ ∘ Tⱼ`.  No ℂ-scalar and no algebra structure on `Ba ℬ X` enters, so
+  neither the conjugated ℂ-action nor the `ᵐᵒᵖ` can bite.  The two forms are
+  literally the same family of inequalities under `T ↔ S`.
+
+**The `X = ℬ` check session 43 recommended, carried out.**  For Mathlib's own
+left module `ℬ` over itself (`⟪u,v⟫ = v u*`) the adjointables are the right
+multiplications `R_t`, with `(R_t)* = R_{t*}` and `R_t ∘ R_s = R_{st}`.  Then
+
+* `T ↦ ⟪T 1, 1⟫` — 145I's form — sends `R_t ↦ t*`, which is a
+  ∗-**homomorphism** `Ba ℬ ℬ → ℬ` (anti ∘ anti), hence cp.  Its CP sum is
+  `∑ᵢⱼ bᵢ* tᵢ tⱼ* bⱼ = v* v` for `v = ∑ tᵢ* bᵢ`.
+* `T ↦ ⟪1, T 1⟫` — the other form — sends `R_t ↦ t`, which is `unop`, the
+  transpose on `M₂`: its CP sum is `∑ᵢⱼ bᵢ* tⱼ tᵢ* bⱼ`, the transposed Gram
+  matrix, indefinite.  This is the map session 43 computed, and it is cp on
+  `(Ba ℬ ℬ)ᵐᵒᵖ`, which is where `Paschke.lean` puts it.
+
+So the tree is coherent: `Paschke.lean` uses `⟪x, T x⟫` on `Baᵐᵒᵖ`,
+`HilbertModules.lean` uses `⟪T x, x⟫` on `Ba`, and both are cp.  **No erratum,
+no QUESTIONS entry, no restatement.**
+
+**A correction to the mirroring dictionary as the brief stated it.**  The brief
+said "Mathlib's inner product is conjugate-linear in the FIRST argument; the
+thesis's is conjugate-linear in the SECOND".  The second clause is false:
+`dils.tex:1302` defines `⟨x,·⟩` to be ℬ-linear with `⟨x,y⟩* = ⟨y,x⟩`, so the
+thesis's is conjugate-linear in the **first** argument too.  The only
+difference is right modules vs. left modules, and the mirror is passage to the
+*conjugate* module — which is what conjugates the ℂ-action, exactly as session
+43 said.  The dictionary is right; the stated reason for it was not.
+
+### 2. Neighbours: nothing else is infected
+
+Every `B/Dils` declaration that asserts positivity or complete positivity of a
+vector-state-like map on `Ba` was re-checked:
+
+* `Paschke.lean` `PaschkeModule.h` and `rightMulNCP` — already `ᵐᵒᵖ`.
+* `SelfDualCompletion.lean` **153I** `hilbmod_ad_cp` / `hilbmod_ad_ncp`
+  (`ad : NCPMap (Ba 𝒷 Y) (Ba 𝒷 X)`, `S ↦ T'ST`) — immune: the ℂ-actions on
+  source and target are conjugated *the same way*, so `ad` is ℂ-linear in
+  either convention, and its CP condition involves only composition and `*`,
+  which the mirror preserves.
+* `SelfDualCompletion.lean` `ba_nonneg_of_vector` and **144I**
+  `hilbmod_ordersep` — immune: `⟪x, Zx⟫` and `⟪Zx, x⟫` are each other's
+  adjoints and positivity is `star`-invariant.
+
+### 3. **140VIII** `paschke_unique_up_to_iso` — proved (Stinespring.lean 7 → 6)
+
+Two Paschke dilations of the same `φ` are related by a unique
+nmiu-isomorphism.  The author's proof (**140IX**) is transcribed: the mediating
+`σ : 𝒫₁ → 𝒫₂` and `τ : 𝒫₂ → 𝒫₁` compose to the identities because `τ ∘ σ` and
+`id` both mediate `(𝒫₁,ϱ₁,h₁)` to itself, and `σ(1) = σ(ϱ₁ 1) = ϱ₂ 1 = 1`.
+
+**Divergence (case 2: thesis argument fine, different route, forced by the
+import graph).**  For the last step — "a unital ncp-isomorphism is an
+nmiu-isomorphism" — the author cites `iso` (proc.tex:878 = **99IX**), which
+*is* formalized and axiom-clean at `Theses/A/Proc/Measurement.lean:2572`, but
+`A/Proc` is off `B/Dils`'s import path; QUESTIONS **D3** already ruled against
+coupling the two chapters for exactly this kind of reason, and `iso` genuinely
+belongs to `proc.tex`, so relocating it (the D3 remedy) is not available
+either.  Instead the standard Kadison–Schwarz argument is run inline, using
+only `ncp_cp_cs` (**34XIV**) from `A/VN/Basic.lean`:
+
+* for unital `σ`, `σ(x)*σ(x) ≤ σ(x*x)`; applying the (monotone, also unital)
+  `τ` gives `x*x ≤ τ(σ(x)*σ(x)) ≤ τ(σ(x*x)) = x*x`, so
+  `σ(x*x) = σ(x)*σ(x)` by injectivity of `τ`;
+* the defect `d(x,y) = σ(x*y) − σ(x)*σ(y)` is sesquilinear and vanishes on the
+  diagonal, so `d(x,y) = −d(y,x)`, and substituting `iy` for `y` gives
+  `d(x,y) = +d(y,x)`; hence `2d = 0` and `σ` is multiplicative.  (`star`
+  preservation is `ncp_star`.)
+
+This is shorter than importing `A/Proc` would be, and it keeps the chapter
+independent.  Note it is a *weaker* input than the author's: `iso` needs
+Gardner's theorem, this needs only Kadison's inequality, because we already
+know both maps are unital rather than merely subunital.
+
+New private helper in `Stinespring.lean`: `exists_ncpComp` (composition of two
+ncp-maps), the missing third of the `exists_ncpCompNMIU` / `exists_nmiuCompNCP`
+pair.  `paschke_unique_up_to_iso` was **moved** to the foot of the file (its
+old position precedes the private id/composition helpers it needs); a pointer
+comment is left where it was.
+
+### 4. Parked: `existence_paschke_5` is structurally blocked on `existence_paschke`
+
+The brief named `existence_paschke_5`'s remaining half (154IV–154X's universal
+property) as the top secondary target.  It cannot be closed as stated.  The
+author's **154X** proves σ-existence by *re-running the whole construction for
+`h'`* — it needs a Paschke module `𝒫' ⊗_{h'} ℬ` for the ncp-map
+`h' : 𝒫' → ℬ` of the competing triple, and `existence_paschke` (the
+construction) is itself `sorry`.  `existence_paschke_5` only receives a
+`PaschkeModule φ`, so there is no way to manufacture the module for `h'`.
+The alternative the thesis mentions in **154VIII** ("use `equation-sigma` as
+defining formula") does stay inside `M`, but needs the parsec-1520
+bounded-sesquilinear-form ⇒ operator machinery, which is also `sorry`.
+**Either close `existence_paschke` first, or take the 1520 route.**
+The uniqueness half of **154VIII** is transcribable today (it needs only
+`hilmod-fixed-on-V`, which is proved in `SelfDualCompletion.lean`), but the
+Lean statement is a single `∃!` and cannot be split.
+
+Also parked, with the reason: the **169X–169XII filter cluster** in
+`Pure.lean`.  The thesis derives filter injectivity (**169XII**) from the
+standard filter (**169X**), which is `sorry` and needs the `proc.tex` 96V/98I
+corner machinery.  There *is* a route that avoids it — the universal property
+of a filter `c` for `b`, applied to ncp-maps `ℂ → 𝒜`, says that every
+`t ∈ [0, c(1)]` has a *unique* positive preimage, which gives injectivity on
+effects and then on all of `𝒜` by `star`-splitting and scaling — but it needs
+an `NCPMap ℂ A` from a positive element, which does not exist anywhere in the
+tree (complete positivity would come from `a = s*s` and the factorisation
+`∑ᵢⱼ cᵢ* (conj(xᵢ)xⱼ • a) cⱼ = (∑ᵢ xᵢ s cᵢ)* (∑ⱼ xⱼ s cⱼ)`).  Worth building
+once: it would unblock **169XI**.1, **169XI**.2a/2b and **169XII** together.
+
+### 5. Verification
+
+`lake env lean Theses/B/Dils/Stinespring.lean`: no errors, six `sorry`
+warnings (702, 714, 729, 739, 750, 1128 — 138II, 138VI, 138VII, 138VIII×2,
+139XI).  `lake build Theses.B.Dils.Stinespring`: `Build completed
+successfully`.  `#print axioms Theses.B.Dils.paschke_unique_up_to_iso` and
+`#print axioms Theses.B.Dils.hilbmod_vectstates_cp`: both exactly
+`[propext, Classical.choice, Quot.sound]`.
+
+## Session 44 — `A/VN` parsecs 810–830: 81III `proto-douglas`, **82I the polar decomposition**, 83II `vmleq`, 83IV, **83V `cceil-sum`** (worker 69, A chain)
+
+Target given: **81III** `proto_douglas_1`, then "work up 81V–81IX, 82I, 83II,
+83IV, 83V".  81III went through as the brief predicted, and it turned out to
+carry the whole of parsecs 820–830 with it, so the session closed the division
+chain end to end rather than stopping at 81III.
+
+Closed (all `#print axioms` = `[propext, Classical.choice, Quot.sound]`):
+
+| point | declaration | class |
+|---|---|---|
+| **81III**.1 | `proto_douglas_1` | 1 — the thesis's own proof, with a shorter form of its one estimate (§1) |
+| **81III**.2 | `proto_douglas_2` | 1 — falls out of the same estimate, exactly as the thesis says |
+| **82I** | `polar_decomposition` | 1 |
+| **82I**.1 | `polar_decomposition_1` | 1 |
+| **82I**.2 | `polar_decomposition_2` | 1 |
+| **83II** | `vmleq` | 1 |
+| **83IV** | `mvn_preorders` | 2 — Exercise, no author argument exists |
+| **83V** | `cceil_sum` | 1, with one step replaced by its contrapositive (§4) |
+
+Five reusable auxiliaries came with them, all public, all in `Division.lean`:
+`usTendsto_of_monotone_isStarProjection`, `partialSums_of_isLUB`,
+`apinv_block_est`, `sqrt_star_self_spec`, `rangeProj_mul_polar`.
+
+`A/VN` sorries **82 → 74**; `A/CStar` **28 → 28** (untouched).
+
+### 1. 81III: the estimate, shorter than the thesis's
+
+vn.tex 5411 bounds the Cauchy tail by expanding
+`(∑_{n=M}^N at_n)^*(∑_{n=M}^N at_n) = ∑_{n,m} t_n^*b^*bt_m` and collapsing the
+double sum with "`bt_1, bt_2, …` are pairwise orthogonal projections".  That
+collapse is avoidable: both blocks are *the same right factor* applied to `a`
+resp. `b` —
+
+    S_N − S_M = a·d,   P_N − P_M = b·d,   d := ∑_{n∈[M,N)} t_n,
+
+so `star(ad)(ad) = d^*(a^*a)d ≤ d^*(b^*b)d = star(bd)(bd) = P_N − P_M`
+is a single `star_left_conjugate_le_conjugate`, and `P_N − P_M` is a projection
+because the partial sums `P_N` are increasing projections.  Pairwise
+orthogonality of the `bt_n` is then needed only for *that* (`P_N` a
+projection), not for the estimate, and it comes for free: the partial sums are
+`≤ ⌊b⌉ ≤ 1`, and projections summing to `≤ 1` are pairwise orthogonal
+(**55XIII**.2).  This is `apinv_block_est`, which is stated with **no**
+mention of `a` on the right-hand side and therefore proves **81III**.2 (the
+uniformity) as directly as the thesis promises — "because `a` does not appear
+in the expression that gave the bound".
+
+`‖·‖_ω`-Cauchyness then follows from `omegaNorm_le_omegaNorm` plus
+`ω(P_N).re ↑`, bounded by `ω(⌊b⌉).re`; **77I** `vn_complete_1` supplies the
+limit `c`, and `a = cb`, `c⌊b⌉ = c` come from `⌈a⌋ ≤ ⌈b⌉` and
+`⌈t_n⌋ ≤ ⌊b⌉` exactly as in the thesis, using the new
+`partialSums_of_isLUB` to turn the structure's four `IsLUB` fields into
+honest ultrastrong convergence and `vn_positive_basic_1` (Hausdorffness) to
+identify the two limits.
+
+`partialSums_of_isLUB` rests on `usTendsto_of_monotone_isStarProjection` — *an
+increasing sequence of projections converges ultrastrongly to its supremum* —
+which is the ω-half of session 42's `sum_of_orthogonal_projections`, extracted
+so it can be reused; the `Finset`-indexed net of 56XVIII is not convenient for
+the `ℕ`-indexed partial sums the definition of an approximate pseudoinverse
+uses.
+
+### 2. 82I needs 81III, not 81V
+
+vn.tex 5591 says the existence and uniqueness of `[a]` "is provided by
+`douglas`" (**81V**).  Only **81III** and the *definition* of division
+(**81I**) are used: `a^*a ≤ √(a^*a)√(a^*a)` puts `a` in `𝒜√(a^*a)`, and `[a]`
+is then literally `a/√(a^*a)`, whose two defining properties are `div_spec`.
+81V's norm bound `‖a/b‖ ≤ λ` plays no part.  **81V is still `sorry`** and
+nothing in 820–830 waits on it.
+
+The rest is the thesis verbatim: `[a]^*[a] = ⌈a^*a⌉` by two-sided cancellation
+(**60VIII**.3, `mult_cancellation_3`) against `√(a^*a)`; `[a][a]^* = ⌊a⌉` by
+`⌊[a]⌉ ≤ ⌊a⌉` (which is **81II**.1, `division_basic_1`, not something extra)
+and `⌊a⌉ = ⌈aa^*⌉ = ⌈[a](a^*a)[a]^*⌉ ≤ ⌈‖a^*a‖[a][a]^*⌉ = [a][a]^*`;
+`√(aa^*) = [a]√(a^*a)[a]^*` by squaring; `[a^*] = [a]^*` by the uniqueness
+clause.  The `a = 0` case is split off, because `⌈λ·x⌉ = ⌈x⌉` needs `λ > 0`.
+
+### 3. 83II `vmleq`: a hypothesis that is never used
+
+`he' : IsStarProjection e'` is **not used** and cannot be: each of the three
+conditions already forces `e'` to be a projection (`⌈a^*ea⌉`, `⌈a⌋`, and
+`u^*u` for a partial isometry `u` are all projections).  Not an erratum — the
+thesis says "given projections `e'` and `e`", so it is stating the intended
+scope — but worth knowing that only `he` is load-bearing.  The proof is the
+thesis's, with `u := [ea]` for (1)⇒(3).
+
+### 4. 83V `cceil_sum`: the middle step replaced by its contrapositive
+
+The thesis (vn.tex 5730) argues, for `p := ⌈⌈e⌉⌉ − ⋃_i e_i ≠ 0`,
+
+    p = p⌈⌈e⌉⌉p = ⋃_a ⌈p⌈a^*ea⌉p⌉ = ⋃_a ⌈(eap)^*eap⌉,
+
+hence some `(eap)^*eap ≠ 0`.  The last equality is asserted without proof and
+needs `⌈p⌈c⌉p⌉ = ⌈pcp⌉` for positive `c`, which the thesis has not stated.
+The contrapositive is elementary and needs neither:
+
+    if `eap = 0` for every `a`, then `p(a^*ea)p = (eap)^*(eap) = 0`, so
+    `√(a^*ea)·p = 0` (C*-identity), so `(a^*ea)p = 0`
+    (`sqrt_mul_eq_zero_iff`), so `⌈a^*ea⌉p = 0` (`ceil_mul_eq_zero`),
+    so `⌈⌈e⌉⌉ = ⋃_a⌈a^*ea⌉ ≤ 1 − p` (**68I** `cceil_fundamental`);
+    with `p ≤ ⌈⌈e⌉⌉` this gives `p ≤ 1 − p`, i.e. `p = 0`.
+
+Everything else is the thesis: Zorn (`zorn_subset`) for the maximal orthogonal
+family, `e_i = u_i^*u_iu_i^*u_i ≤ u_i^*eu_i` for `⋃_i e_i ≤ ⌈⌈e⌉⌉`, and
+`u := [eap]` for the contradiction with maximality.  The index type is the
+maximal set itself (`ι := ↥S`, `e' := Subtype.val`), which is why the
+statement's `ι : Type u` is satisfiable without a choice of cardinal.
+
+One thesis slip found here, filed in ERRATA: the proof's last sentence says
+"**`e`** could have been added to `(e_i)_i`" where it means `u^*u`.
+
+Also worth recording: the thesis's chain
+`e_i = u_i^*u_i ≤ u_i^*eu_i ≤ ⋃_{a}⌈a^*ea⌉` writes `≤` where the second step
+needs a ceiling (`u_i^*eu_i` is not a projection); the repair is one
+`ceil_mono` plus `⌈e_i⌉ = e_i`, which is what the Lean proof does.
+
+### 5. What this releases
+
+`vmleq` (83II) and `MvNLE` are now theorems, so **`B/Dils/SelfDual`'s uses of
+`vmleq` are unblocked**, and **83V** — one of **89IX**'s two chains — is done.
+89IX still waits on 89VII ← 89V, i.e. on **88IV** `carrier_vector_state`,
+**88IX** `commutant_cceil` and **69IVb** `nmiu_image`, exactly as session 42
+recorded; nothing this session changes that side.
+
+Still `sorry` in parsecs 810–830: **81V**.1/.2 (`douglas_1`, `douglas_2`),
+**81VI**.1/.2, **81VII** `div_approx`, **81VIII**.1/.2, **81IX** `div_usc`.
+81V.1 (⇐) and 81IX both want one missing ingredient — *the ultrastrong limit
+of a norm-bounded net is norm-bounded* (`‖·‖ ≤ C` transported through
+`np_orderSeparating`); with it, 81V.1 is `‖∑_{n<N} at_n‖ ≤ λ` from
+`star(S_N)S_N ≤ λ²P_N ≤ λ²`, and 81IX is the thesis's "uniform limit of
+continuous functions" argument on top of `proto_douglas_2`.  That helper is
+the highest-value next step in this file.
+
+### 6. Verification
+
+`lake env lean Theses/A/VN/Division.lean`: no errors, and the only warnings are
+the two pre-existing `dif_pos` deprecations at lines 70 and 1521 (the `pinv`
+and `div` definitions), which predate this session.  Whole-project `lake
+build`: exit 0.  `#print axioms` on all thirteen new declarations: exactly
+`[propext, Classical.choice, Quot.sound]`.  Sorry counts from the build log's
+`declaration uses \`sorry\`` lines (never a grep).  Files touched:
+`Theses/A/VN/Division.lean`, `ERRATA.md` and this log.  Nothing staged,
+nothing committed.

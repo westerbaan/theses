@@ -1362,19 +1362,11 @@ theorem stinespring_is_paschke [VonNeumannAlgebra 𝒜]
     exact (E.eq c).symm
   exact ⟨σ, ⟨hσ1, hσ2⟩, fun τ hτ => huniq τ σ hτ ⟨hσ1, hσ2⟩⟩
 
-/-- **140VIII** (`paschke-unique-up-to-iso`, dils.tex:1176, Lemma): two
-Paschke dilations `(𝒫₁, ϱ₁, h₁)`, `(𝒫₂, ϱ₂, h₂)` of the same ncp-map `φ`
-are related by a unique nmiu-isomorphism `ϑ : 𝒫₁ → 𝒫₂` with `ϑ ∘ ϱ₁ = ϱ₂`
-and `h₂ ∘ ϑ = h₁`.
+/-! **140VIII** (`paschke-unique-up-to-iso`) is proved at the foot of this
+file, as `paschke_unique_up_to_iso`: it needs the identity and composition
+of ncp-maps, whose (private) constructions come below.
 
-**140VII** (dils.tex:1157): discussion; **140IX** is the proof — not
-converted. -/
-theorem paschke_unique_up_to_iso (φ : 𝒜 → ℬ) (D₁ D₂ : PaschkeTriple 𝒜 ℬ)
-    (h₁ : IsPaschkeDilationOf D₁ φ) (h₂ : IsPaschkeDilationOf D₂ φ) :
-    ∃! ϑ : NMIUMap D₁.P D₂.P,
-      Function.Bijective ⇑ϑ ∧ (∀ a, ϑ (D₁.ρ a) = D₂.ρ a) ∧
-        ∀ c, D₂.h (ϑ c) = D₁.h c :=
-  sorry
+**140VII** (dils.tex:1157): discussion; **140IX** is the proof. -/
 
 /-! ### Infrastructure: the identity ncp-map
 
@@ -1875,6 +1867,194 @@ theorem paschke_basics_4 (φ : 𝒜 → ℬ) (D : PaschkeTriple 𝒜 ℬ)
     rw [hh'] at h
     change D.h (τ c) = k c
     rw [hk, ← h, smul_smul, Complex.ofReal_inv, inv_mul_cancel₀ hlne, one_smul]
+
+/-! ### **140VIII**: Paschke dilations are unique up to a unique
+nmiu-isomorphism -/
+
+/-- The composition of two ncp-maps is an ncp-map (the two mixed versions
+are `exists_ncpCompNMIU` and `exists_nmiuCompNCP`). -/
+private theorem exists_ncpComp {A B C : Type u} [CStarAlgebra A]
+    [PartialOrder A] [StarOrderedRing A] [CStarAlgebra B] [PartialOrder B]
+    [StarOrderedRing B] [CStarAlgebra C] [PartialOrder C] [StarOrderedRing C]
+    (f : NCPMap B C) (g : NCPMap A B) :
+    ∃ k : NCPMap A C, ∀ a, k a = f (g a) := by
+  set Lg : A →ₗ[ℂ] B := g.toCompletelyPositiveMap.toLinearMap with hLg
+  set Lf : B →ₗ[ℂ] C := f.toCompletelyPositiveMap.toLinearMap with hLf
+  have hLgcp : IsCompletelyPositiveMap Lg :=
+    (cp_iff Lg).out 1 0 |>.mp fun N M hM =>
+      g.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM
+  have hLfcp : IsCompletelyPositiveMap Lf :=
+    (cp_iff Lf).out 1 0 |>.mp fun N M hM =>
+      f.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM
+  exact ⟨{ toCompletelyPositiveMap :=
+             { toLinearMap := Lf.comp Lg
+               map_cstarMatrix_nonneg' :=
+                 (cp_iff (Lf.comp Lg)).out 0 1 |>.mp
+                   (cp_comp Lg Lf hLgcp hLfcp) }
+           preservesDirSups' :=
+             preservesDirSups_pmap_comp (ncpP g) g.preservesDirSups'
+               (ncpP f) f.preservesDirSups' },
+    fun _ => rfl⟩
+
+/-- **140VIII** (`paschke-unique-up-to-iso`, dils.tex:1176, Lemma): two
+Paschke dilations `(𝒫₁, ϱ₁, h₁)`, `(𝒫₂, ϱ₂, h₂)` of the same ncp-map `φ`
+are related by a unique nmiu-isomorphism `ϑ : 𝒫₁ → 𝒫₂` with `ϑ ∘ ϱ₁ = ϱ₂`
+and `h₂ ∘ ϑ = h₁`.
+
+The author's proof (**140IX**) is transcribed up to its last step: the
+mediating maps `σ : 𝒫₁ → 𝒫₂` and `τ : 𝒫₂ → 𝒫₁` compose to the identities
+because `τ ∘ σ` and `id` both mediate `(𝒫₁,ϱ₁,h₁)` to itself, and `σ` is
+unital because `σ(1) = σ(ϱ₁ 1) = ϱ₂ 1 = 1`.  For the last step the author
+cites `iso` (proc.tex:878 = **99IX**), which lives in `A/Proc` — off this
+chapter's import path (QUESTIONS **D3**).  Instead we run the standard
+Kadison–Schwarz argument, which needs only `ncp_cp_cs` (**34XIV**) from
+`A/VN`: for unital `σ`, `σ(x)*σ(x) ≤ σ(x*x)`, and applying `τ` (monotone,
+also unital) to that inequality gives `x*x ≤ τ(σ(x)*σ(x)) ≤ τ(σ(x*x)) =
+x*x`, so `σ(x*x) = σ(x)*σ(x)` by injectivity of `τ`.  The defect
+`d(x,y) = σ(x*y) − σ(x)*σ(y)` is sesquilinear and vanishes on the
+diagonal, so `d(x,y) = −d(y,x)` and (replacing `y` by `iy`) also
+`d(x,y) = d(y,x)`; hence `d = 0` and `σ` is multiplicative. -/
+theorem paschke_unique_up_to_iso (φ : 𝒜 → ℬ) (D₁ D₂ : PaschkeTriple 𝒜 ℬ)
+    (h₁ : IsPaschkeDilationOf D₁ φ) (h₂ : IsPaschkeDilationOf D₂ φ) :
+    ∃! ϑ : NMIUMap D₁.P D₂.P,
+      Function.Bijective ⇑ϑ ∧ (∀ a, ϑ (D₁.ρ a) = D₂.ρ a) ∧
+        ∀ c, D₂.h (ϑ c) = D₁.h c := by
+  obtain ⟨σ, ⟨hσρ, hσh⟩, hσu⟩ := h₂.2 D₁ h₁.1
+  obtain ⟨τ, ⟨hτρ, hτh⟩, -⟩ := h₁.2 D₂ h₂.1
+  obtain ⟨id₁, hid₁⟩ := exists_ncpId D₁.P
+  obtain ⟨id₂, hid₂⟩ := exists_ncpId D₂.P
+  -- "It is easy to see `σ₁ ∘ σ₂` satisfies the same defining property as
+  -- the unique mediating map `id`."
+  have hτσ : ∀ c : D₁.P, τ (σ c) = c := by
+    obtain ⟨ts, hts⟩ := exists_ncpComp τ σ
+    obtain ⟨m, -, hmu⟩ := h₁.2 D₁ h₁.1
+    have e1 : ts = m := hmu ts ⟨fun a => by rw [hts, hσρ, hτρ],
+      fun c => by rw [hts, hτh, hσh]⟩
+    have e2 : id₁ = m := hmu id₁ ⟨fun a => by rw [hid₁], fun c => by rw [hid₁]⟩
+    intro c
+    have h := DFunLike.congr_fun (e1.trans e2.symm) c
+    rw [hts, hid₁] at h
+    exact h
+  have hστ : ∀ c : D₂.P, σ (τ c) = c := by
+    obtain ⟨st, hst⟩ := exists_ncpComp σ τ
+    obtain ⟨m, -, hmu⟩ := h₂.2 D₂ h₂.1
+    have e1 : st = m := hmu st ⟨fun a => by rw [hst, hτρ, hσρ],
+      fun c => by rw [hst, hσh, hτh]⟩
+    have e2 : id₂ = m := hmu id₂ ⟨fun a => by rw [hid₂], fun c => by rw [hid₂]⟩
+    intro c
+    have h := DFunLike.congr_fun (e1.trans e2.symm) c
+    rw [hst, hid₂] at h
+    exact h
+  have hσinj : Function.Injective ⇑σ := fun x y hxy => by
+    have h : τ (σ x) = τ (σ y) := by rw [hxy]
+    rwa [hτσ, hτσ] at h
+  have hτinj : Function.Injective ⇑τ := fun x y hxy => by
+    have h : σ (τ x) = σ (τ y) := by rw [hxy]
+    rwa [hστ, hστ] at h
+  -- "`ϑ(1) = ϑ(ϱ₁(1)) = ϱ₂(1) = 1`, and so `ϑ` is unital."
+  have hρ₁1 : (D₁.ρ 1 : D₁.P) = 1 := map_one D₁.ρ.toStarAlgHom
+  have hρ₂1 : (D₂.ρ 1 : D₂.P) = 1 := map_one D₂.ρ.toStarAlgHom
+  have hσ1 : (σ 1 : D₂.P) = 1 := by
+    have h := hσρ 1; rwa [hρ₁1, hρ₂1] at h
+  have hτ1 : (τ 1 : D₁.P) = 1 := by
+    have h := hτρ 1; rwa [hρ₂1, hρ₁1] at h
+  have hσ0 : (σ 0 : D₂.P) = 0 := map_zero σ.toCompletelyPositiveMap.toLinearMap
+  have hσadd : ∀ x y : D₁.P, (σ (x + y) : D₂.P) = σ x + σ y := ncp_add σ
+  have hσsmul : ∀ (c : ℂ) (x : D₁.P), (σ (c • x) : D₂.P) = c • σ x :=
+    fun c x => ncp_smul σ c x
+  -- Kadison–Schwarz with equality on `x* x`
+  have key : ∀ x : D₁.P, (σ (star x * x) : D₂.P) = star (σ x) * σ x := by
+    rcases subsingleton_or_nontrivial D₂.P with _ | _
+    · exact fun x => Subsingleton.elim _ _
+    haveI : Nontrivial D₁.P :=
+      ⟨⟨0, 1, fun h => zero_ne_one (α := D₂.P) (by rw [← hσ0, ← hσ1, h])⟩⟩
+    intro x
+    have hks : star (σ x : D₂.P) * σ x ≤ σ (star x * x) := by
+      have h := ncp_cp_cs σ x
+      rwa [hσ1, norm_one, one_smul] at h
+    have hτks : star (x : D₁.P) * x ≤ τ (star (σ x) * σ x) := by
+      have h := ncp_cp_cs τ (σ x)
+      rw [hτ1, norm_one, one_smul, hτσ] at h
+      exact h
+    have hmono : τ (star (σ x) * σ x) ≤ τ (σ (star x * x)) := by
+      have h := (ncpPositive τ).monotone' hks
+      simpa using h
+    refine (hτinj (le_antisymm hmono ?_)).symm
+    rw [hτσ]
+    exact hτks
+  -- multiplicativity by polarization of the defect
+  have main : ∀ x y : D₁.P, (σ (star x * y) : D₂.P) - star (σ x) * σ y = 0 := by
+    obtain ⟨d, hdd⟩ : ∃ d : D₁.P → D₁.P → D₂.P,
+        ∀ x y, d x y = (σ (star x * y) : D₂.P) - star (σ x) * σ y :=
+      ⟨_, fun _ _ => rfl⟩
+    have hdiag : ∀ x, d x x = 0 := fun x => by rw [hdd, key x, sub_self]
+    have hadd₂ : ∀ x y z, d x (y + z) = d x y + d x z := by
+      intro x y z; simp only [hdd, mul_add, hσadd]; abel
+    have hadd₁ : ∀ x y z, d (x + y) z = d x z + d y z := by
+      intro x y z; simp only [hdd, star_add, add_mul, hσadd]; abel
+    have hsmul₂ : ∀ (c : ℂ) (x y), d x (c • y) = c • d x y := by
+      intro c x y
+      simp only [hdd, mul_smul_comm, hσsmul, smul_sub]
+    have hsmul₁ : ∀ (c : ℂ) (x y), d (c • x) y = star c • d x y := by
+      intro c x y
+      simp only [hdd, star_smul, smul_mul_assoc, hσsmul, smul_sub]
+    have hanti : ∀ x y, d x y + d y x = 0 := by
+      intro x y
+      have h := hdiag (x + y)
+      rw [hadd₁ x y (x + y), hadd₂ x x y, hadd₂ y x y, hdiag x, hdiag y] at h
+      simp only [zero_add, add_zero] at h
+      exact h
+    have hsymm : ∀ x y, d x y = d y x := by
+      intro x y
+      have h := hanti x (Complex.I • y)
+      rw [hsmul₂ Complex.I x y, hsmul₁ Complex.I y x] at h
+      have hI : (star Complex.I : ℂ) = -Complex.I := by
+        simpa using Complex.conj_I
+      rw [hI, neg_smul, ← sub_eq_add_neg, ← smul_sub] at h
+      rcases smul_eq_zero.mp h with h0 | h0
+      · exact absurd h0 Complex.I_ne_zero
+      · exact sub_eq_zero.mp h0
+    intro x y
+    have h2 : (2 : ℂ) • d x y = 0 := by
+      rw [two_smul]
+      nth_rewrite 2 [hsymm x y]
+      exact hanti x y
+    have hd0 : d x y = 0 := by
+      rcases smul_eq_zero.mp h2 with h0 | h0
+      · exact absurd h0 (by norm_num)
+      · exact h0
+    rw [← hdd]
+    exact hd0
+  have hmul : ∀ x y : D₁.P, (σ (star x * y) : D₂.P) = star (σ x) * σ y :=
+    fun x y => sub_eq_zero.mp (main x y)
+  have hmulfull : ∀ x y : D₁.P, (σ (x * y) : D₂.P) = σ x * σ y := by
+    intro x y
+    have h := hmul (star x) y
+    rw [star_star, ncp_star σ x, star_star] at h
+    exact h
+  have hcomm : ∀ r : ℂ,
+      (σ (algebraMap ℂ D₁.P r) : D₂.P) = algebraMap ℂ D₂.P r := by
+    intro r
+    rw [Algebra.algebraMap_eq_smul_one, Algebra.algebraMap_eq_smul_one,
+      hσsmul, hσ1]
+  refine ⟨{ toStarAlgHom :=
+              { toFun := fun c => σ c
+                map_one' := hσ1
+                map_mul' := hmulfull
+                map_zero' := map_zero σ.toCompletelyPositiveMap.toLinearMap
+                map_add' := hσadd
+                commutes' := hcomm
+                map_star' := fun c => ncp_star σ c }
+            preservesDirSups' := σ.preservesDirSups' },
+    ⟨⟨hσinj, fun y => ⟨τ y, hστ y⟩⟩, hσρ, hσh⟩, ?_⟩
+  rintro ϑ' ⟨-, hϑ'ρ, hϑ'h⟩
+  obtain ⟨k, hk⟩ := exists_ncpCompNMIU id₂ ϑ'
+  have hkσ : k = σ :=
+    hσu k ⟨fun a => by rw [hk, hid₂, hϑ'ρ], fun c => by rw [hk, hid₂, hϑ'h]⟩
+  refine DFunLike.ext _ _ fun c => ?_
+  have h := DFunLike.congr_fun hkσ c
+  rw [hk, hid₂] at h
+  exact h
 
 end Paschke
 
