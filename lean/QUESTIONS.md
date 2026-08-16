@@ -40,6 +40,43 @@ Thesis A was ruled on 2026-08-13; none of thesis B has been.
   calculus trim the escaping components — so the `∃ d ∈ D` form genuinely
   resists the 158V counterexample.
 
+*The renormalizer approach is dead for **every** choice of renormalizer, not
+just the thesis's (Bas asked: `h(y) = y·h'(y)` with `g` chosen to match — is the
+approach flawed for any `h'`?).  Recorded 2026-08-16.*
+
+**Claim.** Let `φ : [0,∞) → ℝ` and `h(y) := y·φ(⟨y,y⟩)` (functional calculus —
+the shape of every renormalizer of this kind, the thesis's `φ(t) = 2/(1+t)`
+included).  If `‖h(y)‖ ≤ 1` for all `y ∈ X` and `h∘g = id` on the unit ball for
+*some* `g`, then `h` is **not** ultranorm continuous.
+
+*Proof.*  In `ℬ = B(ℓ²)`, `X = ℬ`, take `v ⊥ uₙ` with `‖v‖² = a > 0`,
+`‖uₙ‖² = c > 0` and `uₙ → 0` weakly; put `y := |e₂⟩⟨v|`, `yₙ := |e₂⟩⟨v+uₙ|`
+(all rank one, hence in `D = 𝒜 = K(ℓ²)`).  Since `⟨y,y⟩ = a·P_v` is rank one,
+`φ(⟨y,y⟩) = φ(0)(1−P_v) + φ(a)P_v` and therefore `h(y) = φ(a)·y`; likewise
+`h(yₙ) = φ(a+c)·yₙ`.  Now `⟨yₙ−y, yₙ−y⟩ = |uₙ⟩⟨uₙ| → 0` ultraweakly, so
+`yₙ → y` ultranorm, while
+
+    h(yₙ) − h(y) = (φ(a+c) − φ(a))·y + φ(a+c)·|e₂⟩⟨uₙ|,
+
+whose second term is ultranorm null.  Continuity at `y` thus forces
+`φ(a+c) = φ(a)` for **all** `a, c > 0`, i.e. `φ ≡ κ` on `(0,∞)`.  Then
+`h(y) = κy` for every `y ≠ 0`, so `‖h‖` is unbounded on `X` unless `κ = 0`,
+and `κ = 0` contradicts `h(g(x)) = x` for `x ≠ 0`. ∎
+
+**Why the scheme cannot be patched.**  A renormalizer is a function of
+`⟨y,y⟩`, whose norm jumps by exactly the escaping mass `c` that the ultranorm
+topology declares null.  The scheme therefore asks one continuous function to be
+*sensitive* to that mass (to contract into the unit ball) and *insensitive* to it
+(to be ultranorm continuous) at once.  Verified numerically for
+`2/(1+t)`, `1/√(1+t)`, `min(1,1/√t)` and `e^{-t}`; the persistent gap is
+`|φ(a+c) − φ(a)|·‖v‖` in every case.
+
+The escape route this leaves is precise: the renormalization must be allowed to
+depend on the **np-functionals**, which a fixed `φ` cannot do.  That is exactly
+the `∃ d ∈ D` entourage form of the statement — choose the approximant *after*
+seeing the finite family it must satisfy — together with the `𝒜`-module trimming
+`⟨D,D⟩ ⊆ 𝒜`.
+
 *Dead end, recorded 2026-08-16 (Bas asked: can we require `h` to be ultranorm
 continuous only where the proof uses it — at `g(x)`, along nets from `D`?).*
 **No: the counterexample already lies inside that restriction.**  Put
