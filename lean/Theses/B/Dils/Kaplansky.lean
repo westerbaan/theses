@@ -42,7 +42,7 @@ variable {ℬ : Type u}
 
 /-- The `mulInner` ultranorm seminorm is the *mirrored* ultrastrong seminorm:
 `‖x‖_ω = ω(x x*)^½ = ‖x*‖_ω^{ultrastrong}` (**146VIII**). -/
-private theorem unSeminorm_mulInner_eq (ω : NPFunctional ℬ) (x : ℬ) :
+theorem unSeminorm_mulInner_eq (ω : NPFunctional ℬ) (x : ℬ) :
     unSeminorm ω (mulInner ℬ) x = omegaNorm ℬ ω (star x) := by
   rw [omegaNorm, unSeminorm, star_star]; rfl
 
@@ -351,11 +351,11 @@ turns the `n` seminorm bounds of the conclusion into one). -/
 section WeakToStrong
 
 omit [StarOrderedRing ℬ] in
-private theorem np_mono (ω : NPFunctional ℬ) {a b : ℬ} (h : a ≤ b) :
+theorem np_mono (ω : NPFunctional ℬ) {a b : ℬ} (h : a ≤ b) :
     ω a ≤ ω b := ω.toPositiveLinearMap.monotone h
 
 omit [StarOrderedRing ℬ] in
-private theorem preservesDirSups_npAdd (ω₁ ω₂ : NPFunctional ℬ) :
+theorem preservesDirSups_npAdd (ω₁ ω₂ : NPFunctional ℬ) :
     PreservesDirSups (fun a : ℬ => ω₁ a + ω₂ a) := by
   intro D s hne hdir hlub
   have hFl := ω₁.preservesDirSups' D s hne hdir hlub
@@ -391,7 +391,7 @@ private theorem preservesDirSups_npAdd (ω₁ ω₂ : NPFunctional ℬ) :
     exact h4
 
 /-- The sum of two np-functionals. -/
-private noncomputable def npAdd (ω₁ ω₂ : NPFunctional ℬ) : NPFunctional ℬ where
+noncomputable def npAdd (ω₁ ω₂ : NPFunctional ℬ) : NPFunctional ℬ where
   toPositiveLinearMap := ω₁.toPositiveLinearMap + ω₂.toPositiveLinearMap
   preservesDirSups' := by
     have h : ⇑(ω₁.toPositiveLinearMap + ω₂.toPositiveLinearMap)
@@ -401,7 +401,7 @@ private noncomputable def npAdd (ω₁ ω₂ : NPFunctional ℬ) : NPFunctional 
     exact preservesDirSups_npAdd ω₁ ω₂
 
 /-- The zero np-functional. -/
-private noncomputable def npZero : NPFunctional ℬ where
+noncomputable def npZero : NPFunctional ℬ where
   toPositiveLinearMap := 0
   preservesDirSups' := by
     intro D s hne hdir hlub
@@ -415,16 +415,16 @@ private noncomputable def npZero : NPFunctional ℬ where
       exact hz ⟨hne.choose, hne.choose_spec, rfl⟩
 
 /-- The sum `Σᵢ ωᵢ` of a finite family of np-functionals. -/
-private noncomputable def npSum : ∀ (n : ℕ), (Fin n → NPFunctional ℬ) → NPFunctional ℬ
+noncomputable def npSum : ∀ (n : ℕ), (Fin n → NPFunctional ℬ) → NPFunctional ℬ
   | 0, _ => npZero
   | (n + 1), ωs => npAdd (ωs 0) (npSum n fun i => ωs i.succ)
 
-private theorem npAdd_apply (ω₁ ω₂ : NPFunctional ℬ) (a : ℬ) :
+theorem npAdd_apply (ω₁ ω₂ : NPFunctional ℬ) (a : ℬ) :
     npAdd ω₁ ω₂ a = ω₁ a + ω₂ a := by
   change (ω₁.toPositiveLinearMap + ω₂.toPositiveLinearMap) a = _
   rw [PositiveLinearMap.add_apply]; rfl
 
-private theorem npSum_apply (n : ℕ) (ωs : Fin n → NPFunctional ℬ) (a : ℬ) :
+theorem npSum_apply (n : ℕ) (ωs : Fin n → NPFunctional ℬ) (a : ℬ) :
     npSum n ωs a = ∑ i, ωs i a := by
   induction n with
   | zero => simp [npSum]; rfl
@@ -432,15 +432,26 @@ private theorem npSum_apply (n : ℕ) (ωs : Fin n → NPFunctional ℬ) (a : �
       rw [npSum, npAdd_apply, ih, Fin.sum_univ_succ]
 
 omit [StarOrderedRing ℬ] in
-private theorem np_re_nonneg' (ω : NPFunctional ℬ) {a : ℬ} (ha : 0 ≤ a) :
+theorem np_re_nonneg' (ω : NPFunctional ℬ) {a : ℬ} (ha : 0 ≤ a) :
     0 ≤ (ω a).re := by
   have h : ω 0 ≤ ω a := np_mono ω ha
   have h0 : ω (0 : ℬ) = 0 := map_zero ω.toPositiveLinearMap
   rw [h0] at h
   simpa using (Complex.le_def.mp h).1
 
+/-- Each `‖·‖_{ωᵢ}` is dominated by `‖·‖_{Σⱼωⱼ}`, in the `omegaNorm` form.
+(The `unSeminorm` form is `unSeminorm_le_npSum` below.) -/
+theorem omegaNorm_le_npSum (n : ℕ) (ωs : Fin n → NPFunctional ℬ) (i : Fin n)
+    (a : ℬ) : omegaNorm ℬ (ωs i) a ≤ omegaNorm ℬ (npSum n ωs) a := by
+  refine Real.sqrt_le_sqrt ?_
+  rw [npSum_apply, Complex.re_sum]
+  exact Finset.single_le_sum
+    (f := fun j => (ωs j (star a * a)).re)
+    (fun j _ => np_re_nonneg' (ωs j) (star_mul_self_nonneg a))
+    (Finset.mem_univ i)
+
 omit [StarOrderedRing ℬ] in
-private theorem np_re_mono' (ω : NPFunctional ℬ) {a b : ℬ} (h : a ≤ b) :
+theorem np_re_mono' (ω : NPFunctional ℬ) {a b : ℬ} (h : a ≤ b) :
     (ω a).re ≤ (ω b).re :=
   (Complex.le_def.mp (np_mono ω h)).1
 

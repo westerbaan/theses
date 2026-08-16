@@ -1,4 +1,4 @@
-# `B/Dils` survey — `SelfDual.lean` and `Pure.lean` (sessions 48–49)
+# `B/Dils` survey — `SelfDual.lean` and `Pure.lean` (sessions 48–50)
 
 Counts verified by `grep -cE '(^|[^`])\bsorry\b'` **and** by the compiler's
 `declaration uses 'sorry'` warnings (they agree).
@@ -15,17 +15,22 @@ At the end of **session 49** (parsec 1600, see PROVING-LOG): `SelfDual.lean`
 `Stinespring.lean` 2, `SelfDualCompletion.lean` 2, `HilbertModules.lean` 0 —
 **44**, compiler-counted per file.
 
+At the end of **session 50** (164II.1 and the 1660 parsec): `SelfDual.lean`
+**11**, `Pure.lean` 13, `Paschke.lean` 8, `Kaplansky.lean` 5,
+`Stinespring.lean` 2, `SelfDualCompletion.lean` 2, `HilbertModules.lean` 0 —
+**41**, compiler-counted per file.
+
 Classification key: **(a)** self-contained, **(b)** blocked on a named
 `sorry` elsewhere, **(c)** cited to the literature / another chapter,
 **(d)** suspicious/false.
 
 ---
 
-## `SelfDual.lean` — 21 items
+## `SelfDual.lean` — 21 items (11 open after session 50)
 
 | DISP | name | class | note |
 |---|---|---|---|
-| 159IX | `ketbra_ultranorm_continuous` | **(a)** | thesis proof is 159X–159XI, present but "not converted"; self-contained, medium-large.  **Now the largest self-contained item in the file** |
+| 159IX | `ketbra_ultranorm_continuous` | **(b)** | **Reclassified session 50, was (a).**  Thesis proof 159X–159XI needs the operator-norm density of `span Ω` among np-functionals on `ℬᵃ(X)`, i.e. **90II**.2 `vn_center_separating_fundamental_2`, which is `sorry` at `A/VN/NormalFunctionals.lean:3343` (90II.1, line 3299, *is* proved).  Everything else in the proof is elementary |
 | **160IV.2** | `hilbmod_projthm_2` | **(a)** | **CLOSED session 49** |
 | **160IV.3** | `hilbmod_projthm_3` | **(a)** | **CLOSED session 49** — the keystone; done by running 149VIII's Zorn argument inside the submodule instead of extending a basis of `X` |
 | **160IX** | `selfdual_orthn_basis` | **(a)** | **CLOSED session 49**; needed no Zorn, and the "ℓ²-sum convergence for a non-basis orthonormal family" is now `exists_unTendsto_of_l2Summable` in `HilbertModules.lean` |
@@ -38,27 +43,40 @@ Classification key: **(a)** self-contained, **(b)** blocked on a named
 | 163II uniq | `selfdual_compl_defining_unique` | **(b)** | needs **151Ia** `selfdual_completion_univ` (`SelfDualCompletion.lean`, `sorry`) |
 | **163II dense** | `selfdual_compl_defining_dense` | **(a)** | **CLOSED session 49**.  The survey's "needs 151Ia" was **wrong**: the statement takes the universal property as a hypothesis |
 | 164II ex. | `univprop_ext_tensor` | **(a)** | the construction 164III–164VIII via `ℓ²((pᵢⱼ))`; the single biggest item in the file, and 161II.2 is a prerequisite in practice |
-| 164II.1 | `ext_tensor_dense` | **(a)/(b)** | density is **not** a field of `ExtTensor`, so it must come from `univ`.  The projection route is now available (`exists_orthoProj` + 160IV.2/.3, exactly as in the closed 163II-dense), but the last step needs `bSpan D = D` for `D = {∑ η(xᵢ,yᵢ)}`, which is **false**: `D` absorbs elementary tensors `t a b` only.  The real remaining content is bounded ultrastrong* approximation of `c ∈ 𝒜 ⊗̄ ℬ` by sums of elementary tensors (`IsVNTensor` generation + Kaplansky density) |
+| **164II.1** | `ext_tensor_dense` | **(a)** | **CLOSED session 50.**  `P = id` from `exists_orthoProj` + `ExtTensor.univ` as in 163II-dense; the `bSpan D ⊆ unClosure D` gap is the thesis's own 164VII, and needs only *unbounded* ultrastrong density of `𝒜 ⊙ ℬ` (`IsVNTensor.generates` + `isVNSubalgebra_usClosureSubalgebra`) — **not** Kaplansky density, contrary to this row's earlier text |
 | 164II.2a | `ext_tensor_basis` | **(b)** | needs 164II.1 and 161II.2 |
 | 164II.2b | `ext_tensor_ketbra_dense` | **(b)** | needs 164II.2a |
 | 165VI | `ba_ext_tensor_pres` | **(b)** | proof 165VII–165X; needs 164II.2b.  165III (its companion) *is* proved |
-| 166IV | `exttensor_dense_subsets` | **(b)** | needs 164II.1; 166II (the other half of the parsec) is proved |
-| 166VI | `dilationspace_dense_subset` | **(b)** | needs 166IV |
+| **166IV** | `exttensor_dense_subsets` | **(a)** | **CLOSED session 50.**  The thesis's route through 158II `kaplansky_hilbmod` (open, printed proof false) is avoided: `u ∈ U` is chosen before `v ∈ V`, so no norm-bounded net is required |
+| **166VI** | `dilationspace_dense_subset` | **(a)** | **CLOSED session 50**, together with the new public `paschke_tprod_dense` (the elementary tensors of `𝒜 ⊗_φ ℬ` are ultranorm dense — easier than 164II.1, since `{∑ aᵢ ⊗ bᵢ}` is already a ℬ-submodule) |
 | 167I | `paschke_tensor` | **(b)** | needs 165VI + `existence_paschke` |
 | 167I furth. | `paschke_tensor_module` | **(b)** | needs 167I |
 
-**Bottom line for `SelfDual.lean` after session 49.**  The whole 1600 parsec
-is closed (160IV.1/.2/.3, 160IX, 160X), and with it 163II-dense.  Of the
-remaining **14**, the self-contained ones are **159IX**
-(`ketbra_ultranorm_continuous`, thesis proof 159X–159XI), **161II.2**
-`hilbmod_el2` and the **164II existence** construction (both large), and
-**162II** `total_mv_order` (Zorn + halving, genuinely hard).  The next
-*gate* is **164II.1** `ext_tensor_dense`, whose remaining content is the
-ultrastrong* density of the algebraic tensor product in `𝒞` (see its row);
-it gates 166IV → 166VI, while 164II.2a additionally needs 161II.2.
-`exists_orthogonal_decomp` / `exists_orthoProj` (private, `SelfDual.lean`)
-are the reusable output: the projection theorem for *any* ultranorm-closed
-ℬ-submodule, and the projection as a bounded module map.
+**Bottom line for `SelfDual.lean` after session 50.**  The 1600 parsec is
+closed (160IV.1/.2/.3, 160IX, 160X) and so is the 1660 parsec (166II, 166IV,
+166VI), together with 163II-dense and **164II.1**.  Of the remaining **11**,
+the self-contained ones are **161II.2** `hilbmod_el2`, the **164II
+existence** construction (both large) and **162II** `total_mv_order` (Zorn +
+halving, genuinely hard); **159IX** is *not* self-contained — see its row.
+
+**The next gate is 161II.2 `hilbmod_el2`**, and it is now the only thing
+between the file and the 1640–1650 chain: 164II.2a `ext_tensor_basis` needs
+it, then 164II.2b, then 165VI, then 167I (which additionally needs
+`existence_paschke`).  Its three parts each have their tool already in the
+tree — `IsONBasis` clause (a) for injectivity, `exists_unTendsto_of_l2Summable`
++ `inner_of_unTendsto_sum_smul` for surjectivity onto `L2Set`, and the
+polarisation of 160IX.2 for the inner-product clause — but the `L2Set`
+support condition `⌈bᵢ*bᵢ⌉ ≤ pᵢ` will need `ceil` lemmas from `A/VN`.
+
+Reusable output of sessions 49–50 (all `private` in `SelfDual.lean` unless
+noted): `exists_orthogonal_decomp` / `exists_orthoProj` (the projection
+theorem for *any* ultranorm-closed ℬ-submodule, and the projection as a
+bounded module map); `tSpan` / `tSpanSubalg` / `unDense_tSpan` (`𝒜 ⊙ ℬ` as a
+`*`-subalgebra of `𝒜 ⊗ ℬ`, ultrastrongly dense);
+`unSeminorm_op_smul_le` (`‖c·z‖_ω ≤ ‖z‖‖c‖_ω`);
+`unSeminorm_eta_le_left/_right` (the 166III estimates);
+`unSeminorm_tprod_left/_right` and `exists_conj_comp_np` for the Paschke
+module; and the **public** `paschke_tprod_dense`.
 
 ---
 

@@ -3281,6 +3281,150 @@ private theorem extTensor_inner_diff_ext (E : ExtTensor t ht X Y)
 
 end ExtTensorAux
 
+/-! ### Auxiliary for **164II**.1: ultranorm density of the elementary tensors
+
+The thesis's **164VII** (`ultranorm-dense-tensor-base`) reads the density off
+its own construction of `X ⊗ Y` as `ℓ²((pᵢⱼ))`.  Our statement quantifies
+over an *arbitrary* `E : ExtTensor`, so the density has to come from the
+universal property instead — exactly as in `selfdual_compl_defining_dense`
+(**163II**), through the orthogonal projection onto `D^⊥⊥` (`exists_orthoProj`)
+and **160IV**.2.  The one step that does not transfer verbatim is that
+**160IV**.2 identifies `D^⊥⊥` with the ultranorm closure of the `𝒞`-**span**
+of `D = {∑ᵢ xᵢ ⊗ yᵢ}`, which is strictly bigger than `D`: the latter absorbs
+elementary tensors `t a b` only.  Bridging that gap *is* the thesis's own
+argument for 164VII — `𝒜 ⊙ ℬ` is ultrastrongly dense in `𝒜 ⊗ ℬ` (by `tensor`
+and `ultraclosed`), so `D·(𝒜 ⊙ ℬ)` is ultranorm dense in `D·(𝒜 ⊗ ℬ)` — and
+it is developed here.  Note that no *bounded* net is needed for it, so
+Kaplansky density (**158Ia**, `kaplansky_bounded_approx`) does not enter. -/
+
+section TensorDense
+
+variable (t) in
+/-- The algebraic tensor product `𝒜 ⊙ ℬ` seen inside `𝒞 = 𝒜 ⊗ ℬ`: the finite
+sums of elementary tensors.  (Auxiliary for **164II**.1.) -/
+private def tSpan : Set 𝒞 :=
+  {c : 𝒞 | ∃ (n : ℕ) (a : Fin n → 𝒜) (b : Fin n → ℬ), c = ∑ i, t (a i) (b i)}
+
+private theorem t_mem_tSpan (a : 𝒜) (b : ℬ) : t a b ∈ tSpan t :=
+  ⟨1, fun _ => a, fun _ => b, by simp⟩
+
+private theorem tSpan_add {c d : 𝒞} (hc : c ∈ tSpan t) (hd : d ∈ tSpan t) :
+    c + d ∈ tSpan t := by
+  obtain ⟨n, a, b, rfl⟩ := hc
+  obtain ⟨m, a', b', rfl⟩ := hd
+  refine ⟨n + m, Fin.append a a', Fin.append b b', ?_⟩
+  rw [Fin.sum_univ_add]
+  simp only [Fin.append_left, Fin.append_right]
+
+private theorem tSpan_star (ht : IsVNTensor t) {c : 𝒞} (hc : c ∈ tSpan t) :
+    star c ∈ tSpan t := by
+  obtain ⟨n, a, b, rfl⟩ := hc
+  refine ⟨n, fun i => star (a i), fun i => star (b i), ?_⟩
+  rw [star_sum]
+  exact Finset.sum_congr rfl fun i _ => ht.star (a i) (b i)
+
+private theorem tSpan_mul (ht : IsVNTensor t) {c d : 𝒞} (hc : c ∈ tSpan t)
+    (hd : d ∈ tSpan t) : c * d ∈ tSpan t := by
+  obtain ⟨n, a, b, rfl⟩ := hc
+  obtain ⟨m, a', b', rfl⟩ := hd
+  have h1 : (∑ i, t (a i) (b i)) * ∑ j, t (a' j) (b' j)
+      = ∑ p : Fin n × Fin m, t (a p.1 * a' p.2) (b p.1 * b' p.2) := by
+    rw [Fintype.sum_prod_type, Finset.sum_mul_sum]
+    exact Finset.sum_congr rfl fun i _ =>
+      Finset.sum_congr rfl fun j _ => ht.mul _ _ _ _
+  refine ⟨n * m,
+    fun k => a (finProdFinEquiv.symm k).1 * a' (finProdFinEquiv.symm k).2,
+    fun k => b (finProdFinEquiv.symm k).1 * b' (finProdFinEquiv.symm k).2, ?_⟩
+  rw [h1]
+  exact Fintype.sum_equiv finProdFinEquiv _ _ fun p => by simp
+
+variable (ht) in
+/-- `𝒜 ⊙ ℬ` as a unital `*`-subalgebra of `𝒞 = 𝒜 ⊗ ℬ`. -/
+private def tSpanSubalg : StarSubalgebra ℂ 𝒞 where
+  carrier := tSpan t
+  mul_mem' := tSpan_mul ht
+  add_mem' := tSpan_add
+  one_mem' := ⟨1, fun _ => 1, fun _ => 1, by simp [ht.one]⟩
+  zero_mem' := ⟨0, Fin.elim0, Fin.elim0, by simp⟩
+  algebraMap_mem' := fun r => ⟨1, fun _ => r • (1 : 𝒜), fun _ => 1, by
+    simp [ht.smul_complex, ht.one, Algebra.algebraMap_eq_smul_one]⟩
+  star_mem' := tSpan_star ht
+
+/-- **The algebraic tensor product is ultrastrongly dense**: this is the
+thesis's "by `tensor` (and `ultraclosed`) `𝒜 ⊙ ℬ` is ultrastrongly dense in
+`𝒜 ⊗ ℬ`" (dils.tex:5153), in the mirrored (`mulInner`) ultranorm form used
+throughout this file.  It needs only the *generation* clause of `IsVNTensor`,
+plus thesis A's `isVNSubalgebra_usClosureSubalgebra` (the ultrastrong closure
+of a `*`-subalgebra is a von Neumann subalgebra), which makes `W*(𝒜 ⊙ ℬ)`
+land inside that closure. -/
+private theorem unDense_tSpan [VonNeumannAlgebra 𝒞] (ht : IsVNTensor t) :
+    UnDense (mulInner 𝒞) (tSpan t) := by
+  have hclosed : ∀ c : 𝒞, c ∈ @closure 𝒞 (ultrastrong 𝒞) (tSpan t) := by
+    have hmem : usClosureSubalgebra (tSpanSubalg ht) ∈
+        {T : StarSubalgebra ℂ 𝒞 | IsVNSubalgebra 𝒞 T ∧
+          (Set.range fun p : 𝒜 × ℬ => t p.1 p.2) ⊆ T} := by
+      refine ⟨isVNSubalgebra_usClosureSubalgebra _, ?_⟩
+      rintro _ ⟨p, rfl⟩
+      exact @subset_closure 𝒞 (ultrastrong 𝒞) (tSpan t) _ (t_mem_tSpan p.1 p.2)
+    have hle : wstar 𝒞 (Set.range fun p : 𝒜 × ℬ => t p.1 p.2)
+        ≤ usClosureSubalgebra (tSpanSubalg ht) := sInf_le hmem
+    rw [ht.generates] at hle
+    intro c
+    exact hle (by simp : c ∈ (⊤ : StarSubalgebra ℂ 𝒞))
+  intro c n ωs ε hε
+  obtain ⟨z, hz, hlt⟩ := (mem_usClosure_iff (tSpan t) (star c)).mp
+    (hclosed (star c)) (npSum n ωs) ε hε
+  refine ⟨star z, tSpan_star ht hz, fun i => ?_⟩
+  rw [unSeminorm_mulInner_eq, star_sub, star_star]
+  calc omegaNorm 𝒞 (ωs i) (star c - z)
+      = omegaNorm 𝒞 (ωs i) (z - star c) := by rw [← omegaNorm_neg, neg_sub]
+    _ ≤ omegaNorm 𝒞 (npSum n ωs) (z - star c) := omegaNorm_le_npSum n ωs i _
+    _ ≤ ε := hlt.le
+
+variable {Z : Type u} [NormedAddCommGroup Z] [NormedSpace ℂ Z] [SMul 𝒞 Z]
+  [CStarModule 𝒞 Z]
+
+/-- `(∑ᵢ cᵢ)·z = ∑ᵢ (cᵢ·z)`; the companion of `op_smul_sum`. -/
+private theorem add_smul_sum {κ : Type*} (s : Finset κ) (f : κ → 𝒞) (z : Z) :
+    (∑ i ∈ s, f i) • z = ∑ i ∈ s, f i • z := by
+  classical
+  refine Finset.induction_on s (by simp [op_zero_smul]) ?_
+  intro i s hi ih
+  rw [Finset.sum_insert hi, op_add_smul, ih, Finset.sum_insert hi]
+
+/-- `‖c·z‖_ω ≤ ‖z‖·‖c‖_ω`: the module action is ultranorm continuous in the
+*algebra* variable, uniformly on norm-bounded sets — where `‖c‖_ω` is the
+mirrored ultrastrong seminorm `ω(cc*)^½` (`mulInner`).  This is the estimate
+behind the thesis's "so `E(𝒜 ⊙ ℬ)` is ultranorm dense in `E(𝒜 ⊗ ℬ)`, see
+`ultranormcontstruct`" (dils.tex:5155); it is `c⟨z,z⟩c* ≤ ‖⟨z,z⟩‖ cc*`. -/
+private theorem unSeminorm_op_smul_le [VonNeumannAlgebra 𝒞]
+    (ω : NPFunctional 𝒞) (c : 𝒞) (z : Z) :
+    unSeminorm ω (inner 𝒞 : Z → Z → 𝒞) (c • z)
+      ≤ ‖z‖ * unSeminorm ω (mulInner 𝒞) c := by
+  have hinner : (inner 𝒞 (c • z) (c • z) : 𝒞) = c * (inner 𝒞 z z : 𝒞) * star c := by
+    rw [CStarModule.inner_op_smul_right, CStarModule.inner_op_smul_left, mul_assoc]
+  have hsa : IsSelfAdjoint (inner 𝒞 z z : 𝒞) :=
+    IsSelfAdjoint.of_nonneg (CStarModule.inner_self_nonneg (A := 𝒞))
+  have hle : c * (inner 𝒞 z z : 𝒞) * star c
+      ≤ ‖(inner 𝒞 z z : 𝒞)‖ • (c * star c) :=
+    CStarAlgebra.star_right_conjugate_le_norm_smul hsa
+  have hnorm : ‖(inner 𝒞 z z : 𝒞)‖ = ‖z‖ ^ 2 := (CStarModule.norm_sq_eq (A := 𝒞) (x := z)).symm
+  have hsmul : ((‖z‖ ^ 2 : ℝ) • (c * star c) : 𝒞)
+      = ((‖z‖ ^ 2 : ℝ) : ℂ) • (c * star c) := by
+    rw [← Complex.coe_algebraMap, algebraMap_smul]
+  have hre : (ω (c * (inner 𝒞 z z : 𝒞) * star c)).re
+      ≤ ‖z‖ ^ 2 * (ω (c * star c)).re := by
+    have h1 := np_re_mono' ω hle
+    rwa [hnorm, hsmul, npf_csmul, Complex.re_ofReal_mul] at h1
+  have hm : mulInner 𝒞 c c = c * star c := rfl
+  rw [unSeminorm, unSeminorm, hinner, hm]
+  calc Real.sqrt (ω (c * (inner 𝒞 z z : 𝒞) * star c)).re
+      ≤ Real.sqrt (‖z‖ ^ 2 * (ω (c * star c)).re) := Real.sqrt_le_sqrt hre
+    _ = ‖z‖ * Real.sqrt ((ω (c * star c)).re) := by
+        rw [Real.sqrt_mul (by positivity), Real.sqrt_sq (norm_nonneg z)]
+
+end TensorDense
+
 /-- **164IX** (`ext-tensor-uniqueness`, dils.tex:5286, Uniqueness — stated
 in **164II** as "up-to-isomorphism unique"): two self-dual exterior tensor
 products are isomorphic by a unique inner-product-preserving module
@@ -3335,15 +3479,112 @@ theorem ext_tensor_uniqueness [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     exact extTensor_map_ext E₁ E₂.selfDual _ _ _ _ hCU' hCU
       fun x y => by rw [hU'η, hUη]
 
+-- `hX`, `hY` are not used: the universal property is a *field* of
+-- `ExtTensor`, and the self-duality that the argument needs is `E.selfDual`.
+set_option linter.unusedVariables false in
 /-- **164II** (`univprop-ext-tensor`, dils.tex:5024, Theorem), property 1:
-the (span of the) image of `η` is ultranorm dense in `X ⊗ Y`. -/
+the (span of the) image of `η` is ultranorm dense in `X ⊗ Y`.
+
+**Divergence, class 2 (and forced).**  The thesis proves this at **164VII**
+(`ultranorm-dense-tensor-base`) *for its own construction* of `X ⊗ Y` as
+`ℓ²((pᵢⱼ))`, where "the linear span of `E(𝒜 ⊗ ℬ)` is by construction
+ultranorm dense" is read off the definition.  Our statement is about an
+arbitrary `E : ExtTensor`, so that last step is unavailable and its place is
+taken by the projection argument of **163II**
+(`selfdual_compl_defining_dense`): the orthogonal projection `P` onto
+`D^⊥⊥` (`exists_orthoProj`, from **160IV**.3) fixes every elementary
+tensor, so `P` and `id` both factor `η` through itself and the uniqueness
+half of the universal property gives `P = id`, i.e. `D^⊥⊥ = X ⊗ Y`.
+**160IV**.2 then identifies `D^⊥⊥` with the ultranorm closure of the
+`𝒞`-span of `D`, and it is exactly here that the thesis's own argument is
+still needed: `D` absorbs elementary tensors only, so its `𝒞`-span is
+strictly bigger, and `bSpan D ⊆ unClosure D` is the thesis's
+"`𝒜 ⊙ ℬ` ultrastrongly dense in `𝒜 ⊗ ℬ`, hence `E(𝒜 ⊙ ℬ)` ultranorm dense
+in `E(𝒜 ⊗ ℬ)`" (`unDense_tSpan` and `unSeminorm_op_smul_le` above). -/
 theorem ext_tensor_dense [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     [VonNeumannAlgebra 𝒞] [CompleteSpace X] [CompleteSpace Y]
     (hX : SelfDual 𝒜 X) (hY : SelfDual ℬ Y) (E : ExtTensor t ht X Y) :
     UnDense (inner 𝒞)
       {z : E.Z | ∃ (n : ℕ) (x : Fin n → X) (y : Fin n → Y),
-        z = ∑ i, E.η (x i) (y i)} :=
-  sorry
+        z = ∑ i, E.η (x i) (y i)} := by
+  classical
+  set D : Set E.Z := {z : E.Z | ∃ (n : ℕ) (x : Fin n → X) (y : Fin n → Y),
+    z = ∑ i, E.η (x i) (y i)} with hDdef
+  -- `D` is closed under sums, complex scalars and *elementary* tensors
+  have hD0 : (0 : E.Z) ∈ D := ⟨0, Fin.elim0, Fin.elim0, by simp⟩
+  have hDadd : ∀ z ∈ D, ∀ z' ∈ D, z + z' ∈ D := by
+    rintro _ ⟨n, x, y, rfl⟩ _ ⟨m, x', y', rfl⟩
+    refine ⟨n + m, Fin.append x x', Fin.append y y', ?_⟩
+    rw [Fin.sum_univ_add]
+    simp only [Fin.append_left, Fin.append_right]
+  have hDc : ∀ (c : ℂ), ∀ z ∈ D, c • z ∈ D := by
+    rintro c _ ⟨n, x, y, rfl⟩
+    refine ⟨n, fun i => c • x i, y, ?_⟩
+    rw [Finset.smul_sum]
+    exact Finset.sum_congr rfl fun i _ => (E.η_smul_complex c (x i) (y i)).symm
+  have hDt : ∀ (a : 𝒜) (b : ℬ), ∀ z ∈ D, t a b • z ∈ D := by
+    rintro a b _ ⟨n, x, y, rfl⟩
+    refine ⟨n, fun i => a • x i, fun i => b • y i, ?_⟩
+    rw [op_smul_sum]
+    exact Finset.sum_congr rfl fun i _ => (E.η_smul a b (x i) (y i)).symm
+  have hDspan : ∀ c ∈ tSpan t, ∀ z ∈ D, c • z ∈ D := by
+    rintro _ ⟨n, a, b, rfl⟩ z hz
+    rw [add_smul_sum]
+    exact Finset.sum_induction _ (fun w => w ∈ D) (fun w w' hw hw' => hDadd w hw w' hw')
+      hD0 fun i _ => hDt (a i) (b i) z hz
+  -- the `𝒞`-span of `D` lies in its ultranorm closure: this is **164VII**
+  have hsmul : ∀ (c : 𝒞), ∀ v ∈ D, c • v ∈ unClosure 𝒞 (inner 𝒞) D := by
+    intro c v hv n ωs ε hε
+    obtain ⟨d, hd, hdist⟩ := unDense_tSpan ht c n ωs (ε / (‖v‖ + 1)) (by positivity)
+    refine ⟨d • v, hDspan d hd v hv, fun i => ?_⟩
+    have hsub : c • v - d • v = (c - d) • v := by
+      have h : (c - d) • v + d • v = c • v := by
+        rw [← op_add_smul]; congr 1; abel
+      rw [← h]; abel
+    calc unSeminorm (ωs i) (inner 𝒞 : E.Z → E.Z → 𝒞) (c • v - d • v)
+        = unSeminorm (ωs i) (inner 𝒞 : E.Z → E.Z → 𝒞) ((c - d) • v) := by rw [hsub]
+      _ ≤ ‖v‖ * unSeminorm (ωs i) (mulInner 𝒞) (c - d) :=
+          unSeminorm_op_smul_le _ _ _
+      _ ≤ ‖v‖ * (ε / (‖v‖ + 1)) :=
+          mul_le_mul_of_nonneg_left (hdist i) (norm_nonneg v)
+      _ ≤ ε := by
+          rw [mul_div_assoc', div_le_iff₀ (by positivity)]
+          nlinarith [norm_nonneg v, hε.le]
+  have hbSpan : bSpan 𝒞 D ⊆ unClosure 𝒞 (inner 𝒞) D := by
+    rintro _ ⟨n, c, b, v, hv, rfl⟩
+    refine Finset.sum_induction _ (fun w => w ∈ unClosure 𝒞 (inner 𝒞) D)
+      (fun w w' hw hw' => unClosure_add hDadd hw hw') (subset_unClosure _ hD0)
+      fun i _ => ?_
+    rw [← op_smul_complex_smul]
+    exact hsmul _ _ (hv i)
+  -- the projection onto `D^⊥⊥` fixes `D`, so the universal property makes it `id`
+  obtain ⟨hW0, hWadd, hWb, hWc, hWcl⟩ := hilbmod_projthm_1 E.selfDual (orthoCompl 𝒞 D)
+  obtain ⟨P, hPbdd, hPW, hPfix⟩ :=
+    exists_orthoProj E.selfDual (orthoCompl 𝒞 (orthoCompl 𝒞 D)) hW0 hWadd hWb hWc hWcl
+  have hbound : ∃ C : ℝ, ∀ (n : ℕ) (x : Fin n → X) (y : Fin n → Y),
+      ‖∑ i, E.η (x i) (y i)‖ ^ 2 ≤
+        C * ‖∑ i, ∑ j, t (inner 𝒜 (x i) (x j)) (inner ℬ (y i) (y j))‖ :=
+    ⟨1, fun n x y => by rw [extTensor_gram E n x y, one_mul]⟩
+  obtain ⟨T', -, hT'uniq⟩ := E.univ E.Z inferInstance inferInstance inferInstance
+    inferInstance inferInstance E.selfDual E.η E.η_add_left E.η_add_right
+    E.η_smul hbound
+  have hPid : P = id := by
+    have h1 : P = T' := hT'uniq P ⟨⟨1, hPbdd⟩, fun x y =>
+      hPfix (E.η x y) (subset_biorthoCompl _
+        ⟨1, fun _ => x, fun _ => y, by simp⟩)⟩
+    have h2 : id = T' := hT'uniq id
+      ⟨⟨1, ⟨fun x y => rfl, fun c x => rfl, fun b x => rfl,
+        fun x => le_of_eq (one_mul _).symm⟩⟩, fun x y => rfl⟩
+    exact h1.trans h2.symm
+  intro z n ωs ε hε
+  have hzW : z ∈ orthoCompl 𝒞 (orthoCompl 𝒞 D) := by
+    have h := hPW z
+    rwa [hPid] at h
+  rw [hilbmod_projthm_2 E.selfDual D] at hzW
+  have hz : z ∈ unClosure 𝒞 (inner 𝒞) D := by
+    rw [← unClosure_unClosure D]
+    exact unClosure_mono hbSpan hzW
+  exact hz n ωs ε hε
 
 /-- **164II** (`univprop-ext-tensor`, dils.tex:5024, Theorem), property 2a:
 for orthonormal bases `(eᵢ)` of `X` and `(dⱼ)` of `Y`, the family
@@ -3564,6 +3805,64 @@ theorem ba_ext_tensor_pres [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
 **166I** (dils.tex:5625): introduction; **166III**, **166V**, **166VII**
 are proofs — not converted. -/
 
+section EtaEstimates
+
+variable [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ] [VonNeumannAlgebra 𝒞]
+  [CompleteSpace X] [CompleteSpace Y]
+
+/-- `‖u ⊗ w‖_Ω ≤ ‖w‖ · ‖u‖_{Ω(·⊗1)}`: the one estimate behind **166II** and
+**166IV**, from `⟨u,u⟩ ⊗ ⟨w,w⟩ ≤ ‖⟨w,w⟩‖ · (⟨u,u⟩ ⊗ 1)` and the normality of
+the left leg (`vnTensorLegLeftNP`). -/
+private theorem unSeminorm_eta_le_left (E : ExtTensor t ht X Y)
+    (Ω : NPFunctional 𝒞) (u : X) (w : Y) :
+    unSeminorm Ω (inner 𝒞) (E.η u w)
+      ≤ ‖w‖ * unSeminorm (vnTensorLegLeftNP ht Ω) (inner 𝒜) u := by
+  have hw2 : ‖(inner ℬ w w : ℬ)‖ ≤ ‖w‖ ^ 2 := by
+    rw [CStarModule.norm_eq_sqrt_norm_inner_self (A := ℬ) w,
+      Real.sq_sqrt (norm_nonneg _)]
+  have hmono : t (inner 𝒜 u u) (inner ℬ w w)
+      ≤ t (inner 𝒜 u u) (((‖w‖ ^ 2 : ℝ) : ℂ) • (1 : ℬ)) :=
+    vnTensor_mono_right ht CStarModule.inner_self_nonneg
+      (le_ofReal_smul_one CStarModule.inner_self_nonneg hw2)
+  have hre : (Ω (inner 𝒞 (E.η u w) (E.η u w))).re
+      ≤ ‖w‖ ^ 2 * (vnTensorLegLeftNP ht Ω (inner 𝒜 u u)).re := by
+    rw [E.η_inner, vnTensorLegLeftNP_apply]
+    have h2 := npFunctional_mono Ω hmono
+    rw [vnTensor_smul_complex_right ht, npf_csmul] at h2
+    simpa [Complex.mul_re, ← Complex.ofReal_pow] using (Complex.le_def.mp h2).1
+  calc unSeminorm Ω (inner 𝒞) (E.η u w)
+      ≤ Real.sqrt (‖w‖ ^ 2 * (vnTensorLegLeftNP ht Ω (inner 𝒜 u u)).re) :=
+        Real.sqrt_le_sqrt hre
+    _ = ‖w‖ * unSeminorm (vnTensorLegLeftNP ht Ω) (inner 𝒜) u := by
+        rw [Real.sqrt_mul (by positivity), Real.sqrt_sq (norm_nonneg _)]; rfl
+
+/-- `‖u ⊗ w‖_Ω ≤ ‖u‖ · ‖w‖_{Ω(1⊗·)}`: the mirror of
+`unSeminorm_eta_le_left`. -/
+private theorem unSeminorm_eta_le_right (E : ExtTensor t ht X Y)
+    (Ω : NPFunctional 𝒞) (u : X) (w : Y) :
+    unSeminorm Ω (inner 𝒞) (E.η u w)
+      ≤ ‖u‖ * unSeminorm (vnTensorLegRightNP ht Ω) (inner ℬ) w := by
+  have hu2 : ‖(inner 𝒜 u u : 𝒜)‖ ≤ ‖u‖ ^ 2 := by
+    rw [CStarModule.norm_eq_sqrt_norm_inner_self (A := 𝒜) u,
+      Real.sq_sqrt (norm_nonneg _)]
+  have hmono : t (inner 𝒜 u u) (inner ℬ w w)
+      ≤ t (((‖u‖ ^ 2 : ℝ) : ℂ) • (1 : 𝒜)) (inner ℬ w w) :=
+    vnTensor_mono_left ht CStarModule.inner_self_nonneg
+      (le_ofReal_smul_one CStarModule.inner_self_nonneg hu2)
+  have hre : (Ω (inner 𝒞 (E.η u w) (E.η u w))).re
+      ≤ ‖u‖ ^ 2 * (vnTensorLegRightNP ht Ω (inner ℬ w w)).re := by
+    rw [E.η_inner, vnTensorLegRightNP_apply]
+    have h2 := npFunctional_mono Ω hmono
+    rw [ht.smul_complex, npf_csmul] at h2
+    simpa [Complex.mul_re, ← Complex.ofReal_pow] using (Complex.le_def.mp h2).1
+  calc unSeminorm Ω (inner 𝒞) (E.η u w)
+      ≤ Real.sqrt (‖u‖ ^ 2 * (vnTensorLegRightNP ht Ω (inner ℬ w w)).re) :=
+        Real.sqrt_le_sqrt hre
+    _ = ‖u‖ * unSeminorm (vnTensorLegRightNP ht Ω) (inner ℬ) w := by
+        rw [Real.sqrt_mul (by positivity), Real.sqrt_sq (norm_nonneg _)]; rfl
+
+end EtaEstimates
+
 -- `hX`, `hY` are not used: `E : ExtTensor t ht X Y` already carries
 -- self-duality of `X ⊗ Y` and `η_inner`, which is all the proof needs; they
 -- are kept for uniformity with the neighbouring statements of parsecs
@@ -3668,9 +3967,24 @@ theorem ultranorm_continuity_ext_tensor [VonNeumannAlgebra 𝒜]
       (add_le_add (hterm1 i) (hterm2 i))
   · simpa using ((hx ω).const_mul M).add ((hy ξ).const_mul ‖x₀‖)
 
+-- `hUsub`, `hUsmul`, `hVsub`, `hVsmul` are not used: the proof below picks
+-- `u` and `v` one after the other rather than through a *net*, so it never
+-- needs `U`, `V` to be submodules (see the divergence in the doc comment).
+set_option linter.unusedVariables false in
 /-- **166IV** (`exttensor-dense-subsets`, dils.tex:5669, Lemma): for
 ultranorm-dense submodules `U ⊆ X` and `V ⊆ Y`, the linear span of
-`U ⊗ V = {u ⊗ v}` is ultranorm dense in `X ⊗ Y`. -/
+`U ⊗ V = {u ⊗ v}` is ultranorm dense in `X ⊗ Y`.
+
+**Divergence, class 2, and it removes a dependency on a `sorry`.**  The
+thesis's proof (166V) obtains *norm-bounded* nets `u_α → x`, `v_α → y` from
+the Kaplansky density theorem for Hilbert C*-modules **158II**
+(`kaplansky_hilbmod`) and then applies **166II**.  158II is open — its
+printed proof is false, see `Kaplansky.lean` — so that route is unavailable.
+It is also unnecessary: the ultranorm uniformity is approximated one
+entourage at a time, so `u ∈ U` may be chosen *first* and `v ∈ V` afterwards,
+with an accuracy depending on the `‖u‖` already fixed.  No norm bound, and
+hence no Kaplansky density, is needed.  The two estimates are those of
+**166III** (`unSeminorm_eta_le_left/_right`). -/
 theorem exttensor_dense_subsets [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     [VonNeumannAlgebra 𝒞] [CompleteSpace X] [CompleteSpace Y]
     (hX : SelfDual 𝒜 X) (hY : SelfDual ℬ Y) (E : ExtTensor t ht X Y)
@@ -3682,10 +3996,191 @@ theorem exttensor_dense_subsets [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     (hVsmul : ∀ (b : ℬ), ∀ v ∈ V, b • v ∈ V) :
     UnDense (inner 𝒞)
       {z : E.Z | ∃ (n : ℕ) (u : Fin n → X) (v : Fin n → Y),
-        (∀ i, u i ∈ U) ∧ (∀ i, v i ∈ V) ∧ z = ∑ i, E.η (u i) (v i)} :=
-  sorry
+        (∀ i, u i ∈ U) ∧ (∀ i, v i ∈ V) ∧ z = ∑ i, E.η (u i) (v i)} := by
+  classical
+  set D' : Set E.Z := {z : E.Z | ∃ (n : ℕ) (u : Fin n → X) (v : Fin n → Y),
+    (∀ i, u i ∈ U) ∧ (∀ i, v i ∈ V) ∧ z = ∑ i, E.η (u i) (v i)} with hD'def
+  have hD'0 : (0 : E.Z) ∈ D' :=
+    ⟨0, Fin.elim0, Fin.elim0, fun i => i.elim0, fun i => i.elim0, by simp⟩
+  have hD'add : ∀ z ∈ D', ∀ z' ∈ D', z + z' ∈ D' := by
+    rintro _ ⟨n, u, v, hu, hv, rfl⟩ _ ⟨m, u', v', hu', hv', rfl⟩
+    refine ⟨n + m, Fin.append u u', Fin.append v v', ?_, ?_, ?_⟩
+    · exact fun i => Fin.addCases (fun j => by rw [Fin.append_left]; exact hu j)
+        (fun j => by rw [Fin.append_right]; exact hu' j) i
+    · exact fun i => Fin.addCases (fun j => by rw [Fin.append_left]; exact hv j)
+        (fun j => by rw [Fin.append_right]; exact hv' j) i
+    · rw [Fin.sum_univ_add]
+      simp only [Fin.append_left, Fin.append_right]
+  -- every *elementary* tensor is an ultranorm limit of elements of `U ⊗ V`
+  have helem : ∀ (x : X) (y : Y), E.η x y ∈ unClosure 𝒞 (inner 𝒞) D' := by
+    intro x y n Ωs ε hε
+    obtain ⟨u, huU, hu⟩ := hU x n (fun i => vnTensorLegLeftNP ht (Ωs i))
+      (ε / (2 * (‖y‖ + 1))) (by positivity)
+    obtain ⟨v, hvV, hv⟩ := hV y n (fun i => vnTensorLegRightNP ht (Ωs i))
+      (ε / (2 * (‖u‖ + 1))) (by positivity)
+    refine ⟨E.η u v, ⟨1, fun _ => u, fun _ => v, fun _ => huU, fun _ => hvV, by simp⟩,
+      fun i => ?_⟩
+    have hsplit : E.η x y - E.η u v = E.η (x - u) y + E.η u (y - v) := by
+      have h1 : E.η (x - u) y + E.η u y = E.η x y := by
+        rw [← E.η_add_left]; congr 1; abel
+      have h2 : E.η u (y - v) + E.η u v = E.η u y := by
+        rw [← E.η_add_right]; congr 1; abel
+      rw [← h1, ← h2]; abel
+    have hb1 : ‖y‖ * unSeminorm (vnTensorLegLeftNP ht (Ωs i)) (inner 𝒜) (x - u)
+        ≤ ε / 2 := by
+      have h := mul_le_mul_of_nonneg_left (hu i) (norm_nonneg y)
+      refine h.trans ?_
+      rw [mul_div_assoc', div_le_div_iff₀ (by positivity) (by positivity)]
+      nlinarith [norm_nonneg y, hε.le]
+    have hb2 : ‖u‖ * unSeminorm (vnTensorLegRightNP ht (Ωs i)) (inner ℬ) (y - v)
+        ≤ ε / 2 := by
+      have h := mul_le_mul_of_nonneg_left (hv i) (norm_nonneg u)
+      refine h.trans ?_
+      rw [mul_div_assoc', div_le_div_iff₀ (by positivity) (by positivity)]
+      nlinarith [norm_nonneg u, hε.le]
+    calc unSeminorm (Ωs i) (inner 𝒞 : E.Z → E.Z → 𝒞) (E.η x y - E.η u v)
+        = unSeminorm (Ωs i) (inner 𝒞 : E.Z → E.Z → 𝒞)
+            (E.η (x - u) y + E.η u (y - v)) := by rw [hsplit]
+      _ ≤ unSeminorm (Ωs i) (inner 𝒞 : E.Z → E.Z → 𝒞) (E.η (x - u) y)
+            + unSeminorm (Ωs i) (inner 𝒞 : E.Z → E.Z → 𝒞) (E.η u (y - v)) :=
+          unSeminorm_add_le _ (cstarBInner 𝒞 E.Z) _ _
+      _ ≤ ‖y‖ * unSeminorm (vnTensorLegLeftNP ht (Ωs i)) (inner 𝒜) (x - u)
+            + ‖u‖ * unSeminorm (vnTensorLegRightNP ht (Ωs i)) (inner ℬ) (y - v) :=
+          add_le_add (unSeminorm_eta_le_left E _ _ _)
+            (unSeminorm_eta_le_right E _ _ _)
+      _ ≤ ε / 2 + ε / 2 := add_le_add hb1 hb2
+      _ = ε := by ring
+  -- hence so is every finite sum of elementary tensors, and those are dense
+  have hDsub : {z : E.Z | ∃ (n : ℕ) (x : Fin n → X) (y : Fin n → Y),
+      z = ∑ i, E.η (x i) (y i)} ⊆ unClosure 𝒞 (inner 𝒞) D' := by
+    rintro _ ⟨n, x, y, rfl⟩
+    exact Finset.sum_induction _ (fun w => w ∈ unClosure 𝒞 (inner 𝒞) D')
+      (fun w w' hw hw' => unClosure_add hD'add hw hw') (subset_unClosure _ hD'0)
+      fun i _ => helem (x i) (y i)
+  intro z n Ωs ε hε
+  have hz : z ∈ unClosure 𝒞 (inner 𝒞) D' := by
+    rw [← unClosure_unClosure D']
+    exact unClosure_mono hDsub (ext_tensor_dense hX hY E z)
+  exact hz n Ωs ε hε
 
 end ExtTensor
+
+section DilationSpaceDense
+
+variable {𝒜 ℬ : Type u}
+  [CStarAlgebra 𝒜] [PartialOrder 𝒜] [StarOrderedRing 𝒜]
+  [CStarAlgebra ℬ] [PartialOrder ℬ] [StarOrderedRing ℬ]
+  [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
+
+/-- `x ↦ ω(b φ(x) b*)` is again an np-functional: this is `conjNP` followed by
+`compNP`, and it is normality of `φ` (`NCPMap.preservesDirSups'`) that makes it
+one.  (Auxiliary for **166VI**.) -/
+private theorem ncpPreservesDirSups (φ : NCPMap 𝒜 ℬ) :
+    PreservesDirSups ⇑(ncpPositive φ) := φ.preservesDirSups'
+
+private theorem exists_conj_comp_np (φ : NCPMap 𝒜 ℬ) (ω : NPFunctional ℬ)
+    (b : ℬ) : ∃ ν : NPFunctional 𝒜, ∀ x : 𝒜, ν x = ω (b * φ x * star b) :=
+  ⟨compNP (ncpPositive φ) (ncpPreservesDirSups φ) (conjNP (star b) ω),
+    fun x => by rw [compNP_apply, conjNP_apply, star_star]; rfl⟩
+
+/-- `‖d ⊗ b‖_ω = ‖d‖_{ω(b φ(·) b*)}`: the ultranorm seminorms of the
+elementary tensors of `𝒜 ⊗_φ ℬ` are, in the `𝒜`-variable, exactly the
+mirrored ultrastrong seminorms of `𝒜`.  (Auxiliary for **166VI**.) -/
+private theorem unSeminorm_tprod_left (φ : NCPMap 𝒜 ℬ) (M : PaschkeModule φ)
+    (ω : NPFunctional ℬ) (ν : NPFunctional 𝒜) (b : ℬ)
+    (hν : ∀ x : 𝒜, ν x = ω (b * φ x * star b)) (d : 𝒜) :
+    unSeminorm ω (inner ℬ) (M.tprod d b) = unSeminorm ν (mulInner 𝒜) d := by
+  rw [unSeminorm, unSeminorm, M.inner_tprod, hν]
+  rfl
+
+/-- `‖a ⊗ e‖_ω ≤ ‖φ(a a*)‖^½ · ‖e‖_ω`: in the `ℬ`-variable the elementary
+tensors are dominated by the mirrored ultrastrong seminorms of `ℬ`, with a
+constant depending on `a` only.  (Auxiliary for **166VI**.) -/
+private theorem unSeminorm_tprod_right (φ : NCPMap 𝒜 ℬ) (M : PaschkeModule φ)
+    (ω : NPFunctional ℬ) (a : 𝒜) (e : ℬ) :
+    unSeminorm ω (inner ℬ) (M.tprod a e)
+      ≤ Real.sqrt ‖φ (a * star a)‖ * unSeminorm ω (mulInner ℬ) e := by
+  have hnn : (0 : ℬ) ≤ φ (a * star a) := by
+    have hz : (φ 0 : ℬ) = 0 := map_zero φ.toCompletelyPositiveMap
+    have h : (φ 0 : ℬ) ≤ φ (a * star a) :=
+      (ncpPositive φ).monotone (mul_star_self_nonneg a)
+    rwa [hz] at h
+  have hle : e * φ (a * star a) * star e ≤ ‖φ (a * star a)‖ • (e * star e) :=
+    CStarAlgebra.star_right_conjugate_le_norm_smul (IsSelfAdjoint.of_nonneg hnn)
+  have hsmul : ((‖φ (a * star a)‖ : ℝ) • (e * star e) : ℬ)
+      = ((‖φ (a * star a)‖ : ℝ) : ℂ) • (e * star e) := by
+    rw [← Complex.coe_algebraMap, algebraMap_smul]
+  have hre : (ω (e * φ (a * star a) * star e)).re
+      ≤ ‖φ (a * star a)‖ * (ω (e * star e)).re := by
+    have h1 := np_re_mono' ω hle
+    rwa [hsmul, npf_csmul, Complex.re_ofReal_mul] at h1
+  rw [unSeminorm, unSeminorm, M.inner_tprod]
+  calc Real.sqrt (ω (e * φ (a * star a) * star e)).re
+      ≤ Real.sqrt (‖φ (a * star a)‖ * (ω (e * star e)).re) := Real.sqrt_le_sqrt hre
+    _ = Real.sqrt ‖φ (a * star a)‖ * Real.sqrt ((ω (e * star e)).re) := by
+        rw [Real.sqrt_mul (norm_nonneg _)]
+    _ = Real.sqrt ‖φ (a * star a)‖ * unSeminorm ω (mulInner ℬ) e := rfl
+
+/-- **The elementary tensors of `𝒜 ⊗_φ ℬ` are ultranorm dense.**  This is
+the Paschke-module analogue of `selfdual_compl_defining_dense` (**163II**)
+and of `ext_tensor_dense` (**164II**.1), and it is the easiest of the three:
+the set `D` of finite sums `∑ᵢ aᵢ ⊗ bᵢ` is *already* a ℬ-submodule
+(`PhiCompatible.smul_action`, `c·(a ⊗ b) = a ⊗ (cb)`), so `bSpan D = D` and
+**160IV**.2 identifies `D^⊥⊥` with the ultranorm closure of `D` outright.
+The projection onto `D^⊥⊥` fixes every elementary tensor, hence equals `id`
+by the uniqueness half of the universal property of `𝒜 ⊗_φ ℬ`
+(**154III**.1), so `D^⊥⊥` is everything.  The thesis states this only
+implicitly, in the "by construction" of **151V**/**164VII**. -/
+theorem paschke_tprod_dense (φ : NCPMap 𝒜 ℬ) (M : PaschkeModule φ) :
+    UnDense (inner ℬ)
+      {z : M.X | ∃ (n : ℕ) (a : Fin n → 𝒜) (b : Fin n → ℬ),
+        z = ∑ i, M.tprod (a i) (b i)} := by
+  classical
+  set D : Set M.X := {z : M.X | ∃ (n : ℕ) (a : Fin n → 𝒜) (b : Fin n → ℬ),
+    z = ∑ i, M.tprod (a i) (b i)} with hDdef
+  have hD0 : (0 : M.X) ∈ D := ⟨0, Fin.elim0, Fin.elim0, by simp⟩
+  have hDadd : ∀ z ∈ D, ∀ z' ∈ D, z + z' ∈ D := by
+    rintro _ ⟨n, a, b, rfl⟩ _ ⟨m, a', b', rfl⟩
+    refine ⟨n + m, Fin.append a a', Fin.append b b', ?_⟩
+    rw [Fin.sum_univ_add]
+    simp only [Fin.append_left, Fin.append_right]
+  have hDb : ∀ c : ℬ, ∀ z ∈ D, c • z ∈ D := by
+    rintro c _ ⟨n, a, b, rfl⟩
+    refine ⟨n, a, fun i => c * b i, ?_⟩
+    rw [op_smul_sum]
+    exact Finset.sum_congr rfl fun i _ => M.compat.smul_action (a i) (b i) c
+  have hDc : ∀ c : ℂ, ∀ z ∈ D, c • z ∈ D := by
+    rintro c _ ⟨n, a, b, rfl⟩
+    refine ⟨n, fun i => c • a i, b, ?_⟩
+    rw [Finset.smul_sum]
+    exact Finset.sum_congr rfl fun i _ => (M.compat.smul_complex c (a i) (b i)).symm
+  have hspan : bSpan ℬ D = D := by
+    refine Set.eq_of_subset_of_subset ?_ (subset_bSpan _)
+    rintro _ ⟨n, c, b, v, hv, rfl⟩
+    exact Finset.sum_induction _ (fun w => w ∈ D)
+      (fun w w' hw hw' => hDadd w hw w' hw') hD0
+      fun i _ => hDc (c i) _ (hDb (b i) _ (hv i))
+  obtain ⟨hW0, hWadd, hWb, hWc, hWcl⟩ := hilbmod_projthm_1 M.selfDual (orthoCompl ℬ D)
+  obtain ⟨P, hPbdd, hPW, hPfix⟩ :=
+    exists_orthoProj M.selfDual (orthoCompl ℬ (orthoCompl ℬ D)) hW0 hWadd hWb hWc hWcl
+  obtain ⟨T', -, hT'uniq⟩ := M.univ M.X inferInstance inferInstance inferInstance
+    inferInstance inferInstance M.selfDual M.tprod M.compat
+  have hPid : P = id := by
+    have h1 : P = T' := hT'uniq P ⟨⟨1, hPbdd⟩, fun a b =>
+      hPfix (M.tprod a b) (subset_biorthoCompl _
+        ⟨1, fun _ => a, fun _ => b, by simp⟩)⟩
+    have h2 : id = T' := hT'uniq id
+      ⟨⟨1, ⟨fun x y => rfl, fun c x => rfl, fun b x => rfl,
+        fun x => le_of_eq (one_mul _).symm⟩⟩, fun a b => rfl⟩
+    exact h1.trans h2.symm
+  intro z n ωs ε hε
+  have hzW : z ∈ orthoCompl ℬ (orthoCompl ℬ D) := by
+    have h := hPW z
+    rwa [hPid] at h
+  rw [hilbmod_projthm_2 M.selfDual D, hspan] at hzW
+  exact hzW n ωs ε hε
+
+end DilationSpaceDense
 
 /-- **166VI** (`dilationspace-dense-subset`, dils.tex:5695, Lemma): for an
 ncp-map `φ : 𝒜 → ℬ` between von Neumann algebras with ultrastrongly dense
@@ -3702,8 +4197,69 @@ theorem dilationspace_dense_subset {𝒜 ℬ : Type u}
     UnDense (inner ℬ)
       {z : M.X | ∃ (n : ℕ) (a : Fin n → 𝒜) (b : Fin n → ℬ),
         (∀ i, a i ∈ A') ∧ (∀ i, b i ∈ B') ∧
-        z = ∑ i, M.tprod (a i) (b i)} :=
-  sorry
+        z = ∑ i, M.tprod (a i) (b i)} := by
+  classical
+  set T : Set M.X := {z : M.X | ∃ (n : ℕ) (a : Fin n → 𝒜) (b : Fin n → ℬ),
+    (∀ i, a i ∈ A') ∧ (∀ i, b i ∈ B') ∧ z = ∑ i, M.tprod (a i) (b i)} with hTdef
+  have hT0 : (0 : M.X) ∈ T :=
+    ⟨0, Fin.elim0, Fin.elim0, fun i => i.elim0, fun i => i.elim0, by simp⟩
+  have hTadd : ∀ z ∈ T, ∀ z' ∈ T, z + z' ∈ T := by
+    rintro _ ⟨n, a, b, ha, hb, rfl⟩ _ ⟨m, a', b', ha', hb', rfl⟩
+    refine ⟨n + m, Fin.append a a', Fin.append b b', ?_, ?_, ?_⟩
+    · exact fun i => Fin.addCases (fun j => by rw [Fin.append_left]; exact ha j)
+        (fun j => by rw [Fin.append_right]; exact ha' j) i
+    · exact fun i => Fin.addCases (fun j => by rw [Fin.append_left]; exact hb j)
+        (fun j => by rw [Fin.append_right]; exact hb' j) i
+    · rw [Fin.sum_univ_add]
+      simp only [Fin.append_left, Fin.append_right]
+  -- every elementary tensor is an ultranorm limit of elements of `𝒯`
+  have helem : ∀ (a : 𝒜) (b : ℬ), M.tprod a b ∈ unClosure ℬ (inner ℬ) T := by
+    intro a b n ωs ε hε
+    choose ν hν using fun i : Fin n => exists_conj_comp_np φ (ωs i) b
+    obtain ⟨a', ha'A, ha'⟩ := hA a n ν (ε / 2) (by positivity)
+    set K : ℝ := Real.sqrt ‖φ (a' * star a')‖ with hKdef
+    have hK0 : 0 ≤ K := Real.sqrt_nonneg _
+    obtain ⟨b', hb'B, hb'⟩ := hB b n ωs (ε / (2 * (K + 1))) (by positivity)
+    refine ⟨M.tprod a' b',
+      ⟨1, fun _ => a', fun _ => b', fun _ => ha'A, fun _ => hb'B, by simp⟩,
+      fun i => ?_⟩
+    have hsplit : M.tprod a b - M.tprod a' b'
+        = M.tprod (a - a') b + M.tprod a' (b - b') := by
+      have h1 : M.tprod (a - a') b + M.tprod a' b = M.tprod a b := by
+        rw [← M.compat.add_left]; congr 1; abel
+      have h2 : M.tprod a' (b - b') + M.tprod a' b' = M.tprod a' b := by
+        rw [← M.compat.add_right]; congr 1; abel
+      rw [← h1, ← h2]; abel
+    have hb2 : K * unSeminorm (ωs i) (mulInner ℬ) (b - b') ≤ ε / 2 := by
+      have h := mul_le_mul_of_nonneg_left (hb' i) hK0
+      refine h.trans ?_
+      rw [mul_div_assoc', div_le_div_iff₀ (by positivity) (by positivity)]
+      nlinarith [hε.le]
+    calc unSeminorm (ωs i) (inner ℬ : M.X → M.X → ℬ) (M.tprod a b - M.tprod a' b')
+        = unSeminorm (ωs i) (inner ℬ : M.X → M.X → ℬ)
+            (M.tprod (a - a') b + M.tprod a' (b - b')) := by rw [hsplit]
+      _ ≤ unSeminorm (ωs i) (inner ℬ : M.X → M.X → ℬ) (M.tprod (a - a') b)
+            + unSeminorm (ωs i) (inner ℬ : M.X → M.X → ℬ) (M.tprod a' (b - b')) :=
+          unSeminorm_add_le _ (cstarBInner ℬ M.X) _ _
+      _ ≤ unSeminorm (ν i) (mulInner 𝒜) (a - a')
+            + K * unSeminorm (ωs i) (mulInner ℬ) (b - b') :=
+          add_le_add
+            (le_of_eq (unSeminorm_tprod_left φ M (ωs i) (ν i) b (hν i) (a - a')))
+            (unSeminorm_tprod_right φ M (ωs i) a' (b - b'))
+      _ ≤ ε / 2 + ε / 2 := add_le_add (ha' i) hb2
+      _ = ε := by ring
+  -- and hence so is every finite sum of elementary tensors, which are dense
+  have hDsub : {z : M.X | ∃ (n : ℕ) (a : Fin n → 𝒜) (b : Fin n → ℬ),
+      z = ∑ i, M.tprod (a i) (b i)} ⊆ unClosure ℬ (inner ℬ) T := by
+    rintro _ ⟨n, a, b, rfl⟩
+    exact Finset.sum_induction _ (fun w => w ∈ unClosure ℬ (inner ℬ) T)
+      (fun w w' hw hw' => unClosure_add hTadd hw hw') (subset_unClosure _ hT0)
+      fun i _ => helem (a i) (b i)
+  intro z n ωs ε hε
+  have hz : z ∈ unClosure ℬ (inner ℬ) T := by
+    rw [← unClosure_unClosure T]
+    exact unClosure_mono hDsub (paschke_tprod_dense φ M z)
+  exact hz n ωs ε hε
 
 /-! ## Parsec 1670: the tensor product of Paschke dilations -/
 

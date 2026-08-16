@@ -10902,3 +10902,118 @@ of `ad_rigid`, `canonical_quotient_rigid`, `stdFilter_rigid`,
 `chevron_f_purely_positive_1` are exactly
 `[propext, Classical.choice, Quot.sound]`.  Nothing staged, nothing
 committed.
+
+## Session 50 — `B/Dils`: **164II.1 `ext_tensor_dense`** falls, and **166IV** and **166VI** with it (worker 76)
+
+Files touched: `Theses/B/Dils/SelfDual.lean`, `Theses/B/Dils/Kaplansky.lean`
+(un-privating only), `docs/BDils-survey.md`, this log.  Nothing staged,
+nothing committed.  **B/Dils 44 → 41 `sorry`s** (`SelfDual.lean` 14 → 11).
+All four new theorems `#print axioms` to exactly
+`[propext, Classical.choice, Quot.sound]`.
+
+### 1. **164II**.1 `ext_tensor_dense`, and what the ultrastrong step cost
+
+The brief's diagnosis was right in every part.  The `P = id` half transfers
+verbatim from the closed **163II**-dense: `exists_orthoProj` gives the
+orthogonal projection `P` onto `D^⊥⊥` for
+`D = {∑ᵢ η(xᵢ,yᵢ)}`, `P` fixes every elementary tensor, and both `P` and
+`id` factor `η` through itself, so the uniqueness clause of `ExtTensor.univ`
+forces `P = id` and `D^⊥⊥ = X ⊗ Y`.  The bound `ExtTensor.univ` asks for is
+the *equality* `extTensor_gram` with `C = 1`.
+
+The remaining content — `bSpan 𝒞 D ⊆ unClosure 𝒞 D`, which **160IV**.2 needs
+because `D` absorbs only elementary tensors `t a b` — is the thesis's own
+**164VII**, and it came to about 130 lines:
+
+* `tSpan t`, the finite sums `∑ᵢ t aᵢ bᵢ` (i.e. `𝒜 ⊙ ℬ` inside `𝒞`), as a
+  `StarSubalgebra ℂ 𝒞` (`tSpanSubalg`).  `t` is multiplicative, star-closed
+  and unital, so the ℂ-span of its range *is* a `*`-subalgebra — no `adjoin`
+  induction is needed, only `Fin.append` for `+` and `finProdFinEquiv` for
+  `*`.
+* `unDense_tSpan`: `𝒜 ⊙ ℬ` is ultrastrongly dense in `𝒜 ⊗ ℬ`.  This is
+  `IsVNTensor.generates` plus thesis A's `isVNSubalgebra_usClosureSubalgebra`
+  (the ultrastrong closure of a `*`-subalgebra is a von Neumann subalgebra):
+  that closure is then a member of the family `wstar` takes the `sInf` of, so
+  `⊤ = W*(𝒜 ⊙ ℬ) ≤ closure`.  The finitely-many-seminorms form of the
+  ultranorm conventions comes from `npSum` and the new `omegaNorm_le_npSum`,
+  and the mirroring by applying the closure at `c*` and starring back
+  (`unSeminorm_mulInner_eq`), exactly as in `kaplansky_bounded_approx`.
+* `unSeminorm_op_smul_le`: `‖c·z‖_ω ≤ ‖z‖ ‖c‖_{mulInner,ω}`, from
+  `c⟨z,z⟩c* ≤ ‖⟨z,z⟩‖ cc*` (Mathlib's
+  `CStarAlgebra.star_right_conjugate_le_norm_smul`).
+
+**No bounded net, hence no Kaplansky density, is needed** — the brief and the
+survey both said `IsVNTensor` generation *plus* `Kaplansky.lean`, and the
+`Kaplansky.lean` half turned out to be unnecessary: the estimate above is
+linear in `c`, so plain ultrastrong density suffices.  That matters, because
+**158II** `kaplansky_hilbmod` is open and its printed proof is false.
+
+Un-privated in `Kaplansky.lean` for this: `unSeminorm_mulInner_eq`, `npAdd`,
+`npZero`, `npSum`, `npAdd_apply`, `npSum_apply`, `np_mono`, `np_re_nonneg'`,
+`np_re_mono'`, `preservesDirSups_npAdd`; added `omegaNorm_le_npSum`.
+
+### 2. **166IV** `exttensor_dense_subsets` — and it does **not** need 158II
+
+Divergence, class 2, and it removes a dependency on an open `sorry`.  The
+thesis (166V) gets *norm-bounded* nets `u_α → x`, `v_α → y` out of
+**158II** and then applies **166II**.  158II is open, so that route is dead.
+It is also unnecessary: the ultranorm uniformity is approximated one
+entourage at a time, so `u ∈ U` may be chosen **first** and `v ∈ V`
+afterwards, to an accuracy depending on the `‖u‖` already fixed.  The two
+estimates are 166III's own, extracted as `unSeminorm_eta_le_left/_right`
+(`‖u ⊗ w‖_Ω ≤ ‖w‖ ‖u‖_{Ω(·⊗1)}` and its mirror), which the proof of 166II
+had inline.  The hypotheses `hUsub`, `hUsmul`, `hVsub`, `hVsmul` are
+consequently unused.
+
+### 3. **166VI** `dilationspace_dense_subset`, and a new lemma for `Paschke`
+
+Same shape, one level easier, plus a preliminary that was missing from the
+tree: **the elementary tensors of `𝒜 ⊗_φ ℬ` are ultranorm dense**
+(`paschke_tprod_dense`, new, public).  Unlike `D` in 164II.1, the set
+`{∑ᵢ aᵢ ⊗ bᵢ}` is *already* a ℬ-submodule — `PhiCompatible.smul_action` is
+`c·(a ⊗ b) = a ⊗ (cb)` — so `bSpan D = D`, **160IV**.2 applies outright, and
+the `P = id` argument through `PaschkeModule.univ` finishes it with no
+ultrastrong-density step at all.  The thesis states this only implicitly
+("by construction").
+
+The approximation step then needs two seminorm computations, both new:
+
+* `unSeminorm_tprod_left`: `‖d ⊗ b‖_ω = ‖d‖_{ν}` **exactly**, where
+  `ν = ω(b φ(·) b*)` is an np-functional on `𝒜` (`conjNP` then `compNP`;
+  normality of `φ` is what makes it one — `exists_conj_comp_np`);
+* `unSeminorm_tprod_right`: `‖a ⊗ e‖_ω ≤ ‖φ(aa*)‖^½ ‖e‖_{mulInner,ω}`, the
+  same conjugation estimate as in 164II.1.
+
+So `a' ∈ 𝒜'` is chosen first against the `ν`'s and `b' ∈ ℬ'` second, and the
+thesis's appeal to `dense-subalgebra` for norm-bounded nets is again not
+needed.
+
+*Lean note.*  `compNP (ncpPositive φ) φ.preservesDirSups' ω` — which
+typechecks verbatim in `A/VN/Basic.lean:2619` — is rejected inside
+`SelfDual.lean` ("application type mismatch", `⇑(ncpPositive φ)` vs
+`⇑φ.toCompletelyPositiveMap`), and `by exact` does not help.  Stating the
+*same* defeq as a separate one-line declaration `ncpPreservesDirSups` and
+passing that does work.  Worth knowing; the cause was not tracked down.
+
+### 4. Correction to the survey: **159IX is not self-contained**
+
+`docs/BDils-survey.md` classes **159IX** `ketbra_ultranorm_continuous` as
+**(a)**, "the largest self-contained item left in `SelfDual.lean`", and the
+brief repeats it.  It is **(b)**.  The thesis's proof (159X–159XI,
+dils.tex:4383) needs the linear span of `Ω = {f(⟨x,(·)x⟩)}` to be
+*operator-norm dense* among the np-functionals on `ℬᵃ(X)`, and cites
+`vn-center-separating-fundamental` (**90II**) for it.  90II part 1 is proved
+(`A/VN/NormalFunctionals.lean:3299`), but the density is **90II**.2
+`vn_center_separating_fundamental_2`, which is `sorry`
+(`A/VN/NormalFunctionals.lean:3343`) and is outside `B/Dils`.  Everything
+else in 159X–159XI (the norm bound `‖|z⟩⟨y|‖ ≤ ‖z‖‖y‖`, ultranorm
+continuity of `ω(|·⟩⟨y|)`) is elementary.
+
+### 5. Verification
+
+`lean Theses/B/Dils/{HilbertModules,Kaplansky,Paschke,Stinespring,
+SelfDualCompletion,SelfDual,Pure}.lean` under the `LEAN_PATH` bypass: no
+errors; per-file `sorry`-declaration counts 0 / 5 / 8 / 2 / 2 / **11** / 13,
+**41** in total.  `#print axioms` on `ext_tensor_dense`,
+`exttensor_dense_subsets`, `dilationspace_dense_subset` and
+`paschke_tprod_dense`: all exactly `[propext, Classical.choice, Quot.sound]`.
