@@ -11317,3 +11317,243 @@ SelfDualCompletion,SelfDual,Pure}.lean` under the `LEAN_PATH` bypass: no
 errors; per-file `sorry`-declaration counts 0 / 5 / 8 / 2 / 2 / **9** / 13,
 **39** in total.  `#print axioms` on `hilbmod_el2` and `ext_tensor_basis`:
 both exactly `[propext, Classical.choice, Quot.sound]`.
+
+## Session 52 — `B/Dils`: **`ExtTensor` is inhabited** — `𝒞 = 𝒜 ⊗ ℬ` over itself is a self-dual exterior tensor product, and no field is defective (worker 78)
+
+Files touched: `Theses/B/Dils/SelfDual.lean`, `docs/BDils-survey.md`,
+`QUESTIONS.md`, this log.  Nothing staged, nothing committed.  **B/Dils
+stays at 39 `sorry`s** (compiler-counted per file: `HilbertModules` 0,
+`Kaplansky` 5, `Paschke` 8, `Stinespring` 2, `SelfDualCompletion` 2,
+`SelfDual` 9, `Pure` 13) — the witness is a new `def`, not a closed
+`sorry`.
+
+### 1. The primary target: `extTensorSelf`
+
+`ExtTensor` **is inhabited**, and constructing the witness exposed **no
+defect** in any field.  The witness is stronger than the `ℂ`-only check the
+survey suggested: for *any* `ht : IsVNTensor t` with `t : 𝒜 → ℬ → 𝒞`, the
+algebra `𝒞` itself — as a Hilbert `𝒞`-module over itself, with `η = t` — is
+an `ExtTensor t ht 𝒜 ℬ`.  It is exactly the case `X = 𝒜`, `Y = ℬ` of
+`univprop_ext_tensor`, and it needs **no** von Neumann hypotheses at all.
+`#print axioms extTensorSelf` (checked from inside the module) is exactly
+`[propext, Classical.choice, Quot.sound]`, so no field hides a `sorryAx`.
+A fully concrete instance exists too: `extTensorSelf _ vnTensor_mul_complex`
+inhabits `ExtTensor (fun a b : ℂ => a * b) vnTensor_mul_complex ℂ ℂ`, and
+**164II.1 `ext_tensor_dense` was checked to elaborate against it**, with
+`selfDual_self ℂ` for both self-duality hypotheses — so the seven
+`ExtTensor`-hypothesised theorems (164II.1, 164II.2a/2b, 165III, 165VI,
+166IV, 166VI, 167I) are not merely conditional and not vacuous.  **None of
+the seven is affected.**
+
+Why each field survives, in the mirrored convention (Mathlib's
+`CStarModule A A` has `inner x y = y * star x` and `a • x = a * x`):
+
+* `η_inner` becomes `t x' y' * star (t x y) = t (x' * star x) (y' * star y)`,
+  i.e. `IsVNTensor.star` then `IsVNTensor.mul`.  This is the field a
+  mis-mirroring would break, and `𝒜`, `ℬ` are *not* assumed commutative
+  here, so a star in the wrong slot would not typecheck.
+* `η_smul` is `IsVNTensor.mul` again; `η_add_left/_right/_smul_complex` are
+  the corresponding `IsVNTensor` clauses verbatim.
+* `selfDual` is `selfDual_self 𝒞` (141III).
+* **`univ` needs no density argument.**  `T' z := z · T(1,1)` is forced,
+  because `z = z · 1 = z · t(1,1)` and a module map commutes with the
+  action; existence uses `T x y = T (x·1) (y·1) = t x y · T(1,1)`, the
+  bound is `norm_op_smul_le` with `C' = ‖T(1,1)‖`, and the Gram-bound
+  hypothesis on `T` is never used.  Uniqueness likewise follows from
+  `IsVNTensor.one` alone.
+
+The whole thing typechecked on the first compile apart from a missing
+`noncomputable`.  **Divergence class 3**: the thesis proves existence only
+via the `ℓ²((pᵢⱼ))` construction of 164III–164VIII; this special case
+bypasses it entirely.
+
+### 2. `univprop_ext_tensor` was inspected and *not* attempted
+
+The general case still needs `ℓ²((pᵢⱼ))` as an actual Hilbert `𝒞`-module,
+and our `L2Set` is a `Set (ι → ℬ)` with no module structure (session 51).
+The obvious shortcut — build the algebraic tensor product and take its
+self-dual completion — is blocked: **151I `dils_completion`**
+(`SelfDualCompletion.lean:81`) is itself `sorry`.  So this is a
+multi-session construction, not a session-sized item.
+
+### 3. The secondary target 170IV.1 is blocked by a defect in **our**
+statement, not by mathematics
+
+`surjective_nmiu_1` and `surjective_nmiu_2` (`Pure.lean:1126`, `:1134`) sit
+in `section Pure`, whose only instance binders are `[CStarAlgebra A]
+[PartialOrder A] [StarOrderedRing A]` and likewise for `B`.  The exercise
+(dils.tex:6223) says "any surjective nmiu-map **between von Neumann
+algebras**", and every neighbouring statement that needs it —
+`standard_corner_dils` (`:643`), `paschke_corner` (`:1164`) — carries
+`[VonNeumannAlgebra A]`.  So our two statements are *strictly more general
+than the source*.  This matters concretely: the whole route the survey
+identified (69IV `carrier_miu`, giving the central projection `z = ⌈ϱ⌉` and
+`ϱ a = 0 ↔ z·a = 0`) requires `[VonNeumannAlgebra A]` and is simply
+unavailable, and so is the author's own route through 69II.  No
+counterexample was found in the time available (the obvious commutative
+candidates — `ev₀ : C([0,1]) → ℂ`, `lim : c → ℂ` — are *not* normal, so they
+are not `NMIUMap`s), so the over-general statement is open rather than known
+false.  Recorded as **QUESTIONS D5**; the `sorry`s are left in place per the
+never-change-a-statement rule.
+
+### 4. Corrections to the brief
+
+* "The suggested cheap witness is `ℬ = ℂ`" — the general
+  `X = 𝒜, Y = ℬ, Z = 𝒞` witness is no harder and much more informative,
+  and it *is* a (special) case of the theorem being witnessed.
+* "did constructing the witness expose any defect in the fields?" — no.
+  Unlike `PaschkeModule`, `ExtTensor` was transcribed correctly; the
+  mirroring is consistent throughout.
+* "170IV.1 … now the largest file … ~200 lines" — the size estimate is moot:
+  the statement as transcribed cannot be proved by the route named, because
+  it lacks the thesis's von Neumann hypothesis.
+* `existence_paschke` really is a whole-`PaschkeModule` construction, as
+  session 51 said — re-confirmed, and it is additionally blocked on the same
+  `dils_completion` `sorry`.
+
+## Session 53 — `A/VN`: **77V `vn-extension` closes `Completeness.lean`**, and 63IV, 69V, 69VII fall in `Projections.lean` (worker 78, A chain)
+
+Five declarations proved, all `#print axioms`-clean
+(`[propext, Classical.choice, Quot.sound]`).  `A/VN` **55 → 50**
+(Basic 24, Projections 17→**14**, Division 7, NormalFunctionals 5,
+Completeness 2→**0**).  Compiler-counted per file, not grepped.
+
+| point | declaration | file | divergence class |
+|---|---|---|---|
+| **77V** | `vn_extension` | `Completeness.lean` | 1 — a gap in the thesis's continuity paragraph, see below |
+| **77V** | `vn_extension_norm` | `Completeness.lean` | 2 |
+| **63IV** | `cp_comprehension` | `Projections.lean` | 0 — the thesis's proof, transcribed |
+| **69V** | `proto_gns_ceil` | `Projections.lean` | 2 |
+| **69VII** | `gns_ceil` | `Projections.lean` | 2 |
+
+**`Completeness.lean` is now free of `sorry`.**  The point of 77V for the
+project is that **A/Proc's 112XI `tensor_universal_property` was blocked on it
+alone**, and 112XI gates 114I, 114II and 116VII — that band is now open.
+
+### 1. 77V: the existence half is the thesis's, the continuity half is not
+
+Existence is a straight transcription of vn.tex:4885ff: **74VI**
+`dense_subalgebra` supplies, for each `a`, a norm-bounded net in `S`
+converging *ultrastrongly* to `a`; `f` of it is bounded and ultraweakly
+Cauchy (ultraweak continuity of `f` applied to the difference net, which stays
+in `S`), so **77I**.2 `vn_complete_2` gives it a limit; the thesis's point 70
+(independence of the net) is the product-filter form of the same difference
+argument, and gives linearity too, since a sum of admissible nets is an
+admissible net for the sum.  Uniqueness is density plus Hausdorffness
+(**44XI**.1) — note it needs no linearity at all, so our `∃!`, which quantifies
+over *linear* maps, is weaker than what the proof gives.
+
+The **continuity** paragraph has a genuine gap, now **ERRATA 77VI**: it takes
+"δ > 0 and an np-functional ν with `|ν(s)| ≤ δ ⟹ |ω(f(s))| ≤ ε`".  A basic
+ultraweak neighbourhood of 0 is a *finite intersection* of such sets and the
+np-functionals do not combine — `|(ν₁+ν₂)(s)|` bounds neither summand for
+non-positive `s`.  (The *ultrastrong* seminorms do combine:
+`‖s‖²_{ν₁+ν₂} = ‖s‖²_{ν₁} + ‖s‖²_{ν₂}`.)  Two repairs; the Lean proof takes the
+second.  (i) Allow finitely many `νᵢ`: nothing else in the paragraph changes.
+(ii) Work in the ultrastrong gauge: an ultraweakly open set is ultrastrongly
+open, so `exists_ultrastrong_ball_of_isOpen` gives `ν, δ` with
+`|ω(f s)| ≤ (2/δ)‖s‖_ν` on `S` (scale `s`); along 74VI's *ultrastrongly*
+convergent net `‖s_α‖_ν → ‖a‖_ν`, so the bound passes to `g`; and **72XI**
+`luws`, clause (5) ⇒ (2), turns `|ω(g a)| ≤ ‖a‖_{ν'}` (with `ν' = (2/δ)²·ν`,
+`omegaNorm_smulNP`) back into ultraweak continuity of `ω ∘ g`, for every
+np-functional `ω` of `B`.  This is the thesis's argument with its one
+unavailable step replaced by the tool the thesis itself provides at 72XI.
+
+`vn_extension_norm` follows the thesis but replaces "‖uwlim‖ ≤ liminf" by the
+ultraweak **closedness of the ball** of radius `C‖a‖(1+ε)` (**73VIII**
+`ultraclosed` + **44XI**.3, transported to arbitrary radii by
+`isClosed_ultraweak_closedBall`, added here), then lets `ε → 0`.  It also needs
+a case split the thesis does not have: for `C < 0` the hypothesis forces
+`S = {0}`, hence (by density) `A = {0}`.
+
+Six small reusable lemmas were added just above 77V: `uwTendsto_unique`,
+`UWTendsto.add`, `UWTendsto.smul`, `continuous_ultraweak_of_npFunctional`
+(ultraweak continuity into `B` is tested by the np-functionals of `B`),
+`continuous_ultraweak_smul`, `isClosed_ultraweak_closedBall`, `uw_map_of_cont`.
+
+### 2. 63IV `cp_comprehension` — the thesis's proof, verbatim
+
+`(p^⊥)² ≤ p^⊥` (`mul_self_le_self`, already in the file) gives
+`ω((p^⊥)²) = 0`, Kadison's inequality **30IV**.1 `omega_norm_basic_1` gives
+`ω(p^⊥a) = 0`, hence `ω(a) = ω(pa)`; `ω(ap)` follows by applying that to
+`star a` and conjugating (`cstar_p_implies_i`), and `ω(pap)` by composing the
+two.  The general `B` is the thesis's second paragraph: **22VIII**.2
+`states_order_separating_2` reduces to states, and `ω ∘ f` is a p-map into `ℂ`.
+65 lines.
+
+### 3. 69V, and why 69VII came almost for free
+
+The thesis's chain (vn.tex:3648) passes through
+`⌈a*ea⌉ ≤ ⌈ω⌉^⊥ ⟺ ⌈a⌈ω⌉a*⌉ ≤ e^⊥` — true (both say `⌈ω⌉a*e = 0`) but not
+stated anywhere in the thesis — and then reindexes `a ↦ a*`.  The Lean proof
+does not need it: it verifies the two defining properties of `⌈ρ⌉` directly,
+using **68I** `cceil_fundamental`'s `⌈⌈e⌉⌉ = ⋃_a ⌈a*ea⌉` in the leastness half
+and complementing at the end.  Concretely, three private lemmas do all the
+work and are shared with 69VII:
+
+* `gns_zero_iff` — `ρ(e)ρ(a)ξ = 0 ⟺ ω(a*ea) = 0`, because
+  `⟪ρ(e)ρ(a)ξ, ρ(e)ρ(a)ξ⟫ = ⟪ρ(a)ξ, ρ(e)ρ(a)ξ⟫ = ω(a*ea)` for a projection `e`;
+* `omega_conj_cceil_compl` — `ω(a* ⌈⌈⌈ω⌉⌉⌉^⊥ a) = 0`: the complement `q` of a
+  central support is central, so `⌈a*qa⌉ ≤ q` (`ceil_le_iff`) and
+  `ω(q) ≤ ω(⌈ω⌉^⊥) = 0`, so **60I** `ceil_functionals_lemma` finishes;
+* `cceil_npCarrier_le` — if `ω(a*ea) = 0` for all `a` then `⌈⌈⌈ω⌉⌉⌉ ≤ e^⊥`,
+  by 68I plus leastness of `⌈⌈·⌉⌉` among *central* projections.
+
+**69VII** `gns_ceil` is then 40 lines: the thesis's proof splits
+`ℋ_Ω = ⨁_ω ℋ_ω` and argues coordinatewise, which our coordinate-free statement
+(one `H`, vectors `x_ω`, `span{ρ(a)x_ω}` dense) does not have; instead the same
+two carrier properties are checked, with `1 - ⋃_ω ⌈⌈ω⌉⌉ ≤ ⌈⌈⌈ω⌉⌉⌉^⊥` and
+conjugation-monotonicity for the first, and `projSup` leastness for the second.
+A continuous map killing a *spanning* set is `0` via `LinearMap.ker` +
+`IsClosed.closure_subset_iff`.
+
+### 4. 69IX is **not** blocked on 69VII — the survey's classification was wrong
+
+`docs/AVN-survey.md` (and this brief) had 69IX `vn_center_separating` as
+"[B] on 69VII, the TFAE's (1)⇔(3) is exactly 69VII".  It is not: our item 3 is
+`⋃_{ω∈Ω}⌈⌈ω⌉⌉ = 1`, not "ρ_Ω is injective", so `gns_ceil` never enters.
+(1)⇒(2) is trivial; (2)⇒(3) is a few lines from `projSup_isCentral` (which
+**already exists**, `Projections.lean:4176` — QUESTIONS D4 says it is missing,
+now corrected there) plus `omega_conj_cceil_compl` above.  (3)⇒(1) needs
+*`⌈a⌉` is central for central positive `a`*, which the tree does **not** have;
+the natural route is `⌈a⌉ = ⋁ₙ a^{1/2ⁿ}` plus `vna_supremum_mult`.  Since 69IX
+is also a known mis-transcription (QUESTIONS **D4**: its item 1 duplicates its
+item 2), it was left alone rather than proved in a shape awaiting a ruling.
+
+### 5. The `Type u` generalisation of `A/VN/Basic.lean` **cascades** — left undone
+
+Changing `variable {A B : Type u}` (Basic.lean:2911) and `{C : Type u}`
+(:3014) to `Type*` breaks the GNS block twelve lines later:
+`abbrev gnsHilb : Type u` (:3229) and `exists_faithful_normal_rep (A : Type u)
+… ∃ H : Type u` (:3547, :3559, :3585, :3602, :3653) all pin the section
+universe, and the file then fails with a `whnf` timeout on top of the
+universe errors.  Reverted; `Basic.lean` is untouched.  The targeted fix, if
+someone wants it, is to move the four lemmas A/Proc needs
+(`starAlgHom_mono`, `starAlgHom_le_iff`, `starAlgEquiv_preservesDirSups`,
+`isVNSubalgebra_range`) into their own section with `Type*` variables, *above*
+the GNS block — but `isVNSubalgebra_range` sits below it and would have to move.
+Not attempted: the brief said not to sink the session into it.
+
+### 6. Lean traps (the same family as the `filter_upwards` one in HANDOFF)
+
+Because the topologies are `def`s, every Mathlib lemma with a
+`[TopologicalSpace _]` instance argument synthesizes the **norm** topology and
+then fails with "synthesized type class instance is not definitionally equal".
+Hit four times in one proof: `nhds_induced` (note its arguments are
+`@nhds_induced A S (ultraweak A) …`, α before β), `isOpen_induced_iff`,
+`Continuous.comp`, `Continuous.tendsto`, `tendsto_const_nhds`.  Two ways out,
+both used here: give the topology explicitly with `@`, or — for anything stated
+about *convergence* — `rw [uwTendsto_iff]` first and work in `ℂ`, where the
+instances are the real ones.
+
+### 7. Verification
+
+Each of `Projections` and `Completeness` compiles clean under the `LEAN_PATH`
+bypass (`sorry` + pre-existing linter warnings only); `Division` (7) and
+`NormalFunctionals` (5) were recompiled against them unchanged.  `#print
+axioms` was run by appending to a copy of each module.  All five A/VN oleans
+are current (written atomically via a temp file, since another agent's
+`lake build` was reading them).  Files touched:
+`Theses/A/VN/{Completeness,Projections}.lean`, `docs/AVN-survey.md`,
+`ERRATA.md` (one new row, **77VI**), `QUESTIONS.md` (D4 update), this log.
+Nothing staged, nothing committed.

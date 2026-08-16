@@ -2988,8 +2988,68 @@ end Functionals
 `f(a) = f(pa) = f(ap) = f(pap)` for all `a`. -/
 theorem cp_comprehension (f : A →ₚ[ℂ] B) (p : A) (hp : p ∈ effects A)
     (h : f (1 - p) = 0) (a : A) :
-    f a = f (p * a) ∧ f a = f (a * p) ∧ f a = f (p * a * p) :=
-  sorry
+    f a = f (p * a) ∧ f a = f (a * p) ∧ f a = f (p * a * p) := by
+  -- the thesis's first paragraph: the case `B = ℂ`
+  have hscalar : ∀ ω : A →ₗ[ℂ] ℂ, IsPositiveMap ω → ω (1 - p) = 0 → ∀ x : A,
+      ω x = ω (p * x) ∧ ω x = ω (x * p) ∧ ω x = ω (p * x * p) := by
+    intro ω hω h0
+    have hq : (1 - p) ∈ effects A := effect_orthosupplement p hp
+    have hqsa : star (1 - p) = 1 - p := (IsSelfAdjoint.of_nonneg hq.1).star_eq
+    have hnn : (0 : ℂ) ≤ ω ((1 - p) * (1 - p)) := by
+      refine hω _ ?_
+      simpa [hqsa] using star_mul_self_nonneg (1 - p)
+    have hle : ω ((1 - p) * (1 - p)) ≤ ω (1 - p) := by
+      have hs := hω ((1 - p) - (1 - p) * (1 - p)) (sub_nonneg.mpr (mul_self_le_self hq))
+      rw [map_sub, sub_nonneg] at hs
+      exact hs
+    have hzero : ω ((1 - p) * (1 - p)) = 0 := le_antisymm (h0 ▸ hle) hnn
+    -- Kadison's inequality (**30IV**.1) kills `ω(p^⊥ x)`
+    have hkad : ∀ x : A, ω ((1 - p) * x) = 0 := by
+      intro x
+      have hk := omega_norm_basic_1 ω hω (1 - p) x
+      rw [hqsa, hzero, zero_mul, ← Complex.ofReal_pow, ← Complex.ofReal_zero,
+        Complex.real_le_real] at hk
+      have h3 : ‖ω ((1 - p) * x)‖ = 0 := by
+        have := le_antisymm hk (by positivity : (0:ℝ) ≤ ‖ω ((1 - p) * x)‖ ^ 2)
+        exact pow_eq_zero_iff (n := 2) (by norm_num) |>.mp this
+      exact norm_eq_zero.mp h3
+    have hleft : ∀ x : A, ω x = ω (p * x) := by
+      intro x
+      have hx := hkad x
+      rw [sub_mul, one_mul, map_sub, sub_eq_zero] at hx
+      exact hx
+    have hinv := cstar_p_implies_i ω hω
+    have hright : ∀ x : A, ω x = ω (x * p) := by
+      intro x
+      have h1 : ω (star (x * p)) = ω (star x) := by
+        rw [star_mul, (IsSelfAdjoint.of_nonneg hp.1).star_eq]
+        exact (hleft (star x)).symm
+      rw [hinv (x * p), hinv x] at h1
+      exact (star_injective h1).symm
+    exact fun x => ⟨hleft x, hright x, (hleft x).trans (hright (p * x))⟩
+  -- the thesis's second paragraph: the states of `B` are separating
+  have hsep : ∀ y z : B, (∀ ω : B →ₗ[ℂ] ℂ, IsState ω → ω y = ω z) → y = z := by
+    intro y z hyz
+    have key : ∀ w : B, (∀ ω : B →ₗ[ℂ] ℂ, IsState ω → ω w = 0) → (0 : B) ≤ w := by
+      intro w hw
+      refine (states_order_separating_2 w).mpr fun ω => ?_
+      rw [hw ω.1 ω.2]
+    have h1 : (0 : B) ≤ z - y := key _ fun ω hω => by rw [map_sub, hyz ω hω, sub_self]
+    have h2 : (0 : B) ≤ y - z := key _ fun ω hω => by rw [map_sub, hyz ω hω, sub_self]
+    exact le_antisymm (sub_nonneg.mp h1) (sub_nonneg.mp h2)
+  have hcomp : ∀ ω : B →ₗ[ℂ] ℂ, IsState ω →
+      IsPositiveMap (ω.comp (f.toLinearMap)) ∧ (ω.comp (f.toLinearMap)) (1 - p) = 0 := by
+    intro ω hω
+    refine ⟨fun x hx => hω.1 _ ?_, ?_⟩
+    · have hm : (f (0 : A) : B) ≤ f x := f.monotone hx
+      rwa [show (f (0 : A) : B) = 0 from map_zero f] at hm
+    · simp only [LinearMap.comp_apply]
+      change ω (f (1 - p)) = 0
+      rw [h, map_zero]
+  refine ⟨hsep _ _ fun ω hω => ?_, hsep _ _ fun ω hω => ?_, hsep _ _ fun ω hω => ?_⟩
+  · exact (hscalar _ (hcomp ω hω).1 (hcomp ω hω).2 a).1
+  · exact (hscalar _ (hcomp ω hω).1 (hcomp ω hω).2 a).2.1
+  · exact (hscalar _ (hcomp ω hω).1 (hcomp ω hω).2 a).2.2
 
 section Commutant
 
@@ -4854,6 +4914,105 @@ theorem nmiu_image (f : NMIUMap A B) :
   rw [hrange, ← hst]
   exact ⟨(t : A), rfl⟩
 
+/-- `a* e a` is positive for a projection `e`. -/
+private theorem conj_proj_nonneg {e : A} (he : IsStarProjection e) (a : A) :
+    (0 : A) ≤ star a * e * a := by
+  have h : star a * e * a = star (e * a) * (e * a) := by
+    calc star a * e * a = star a * (e * e) * a := by rw [he.isIdempotentElem.eq]
+      _ = star (e * a) * (e * a) := by
+          rw [star_mul, he.isSelfAdjoint.star_eq]; noncomm_ring
+  rw [h]
+  exact star_mul_self_nonneg _
+
+/-- The GNS identity behind **69V** and **69VII**: for a vector `ξ` implementing
+`ω` in a ∗-representation `ρ`, and a projection `e`, the vector
+`ρ(e)ρ(a)ξ` vanishes exactly when `ω(a* e a)` does, because its squared norm
+*is* `ω(a* e a)`. -/
+private theorem gns_zero_iff {H : Type*} [NormedAddCommGroup H]
+    [InnerProductSpace ℂ H] [CompleteSpace H] (ω : NPFunctional A)
+    (ρ : MIUMap A (H →L[ℂ] H)) (ξ : H) (hξ : ∀ a : A, ω a = ⟪ξ, ρ a ξ⟫)
+    {e : A} (he : IsStarProjection e) (a : A) :
+    ρ e (ρ a ξ) = 0 ↔ (ω (star a * e * a) : ℂ) = 0 := by
+  have hinner : ∀ b : A, ⟪ρ a ξ, ρ b (ρ a ξ)⟫ = (ω (star a * b * a) : ℂ) := by
+    intro b
+    rw [hξ (star a * b * a), map_mul, map_mul, map_star]
+    rw [← ContinuousLinearMap.adjoint_inner_right (ρ a) ξ (ρ b (ρ a ξ))]
+    simp [ContinuousLinearMap.star_eq_adjoint]
+  have hself : ⟪ρ e (ρ a ξ), ρ e (ρ a ξ)⟫ = (ω (star a * e * a) : ℂ) := by
+    rw [← hinner e, ← ContinuousLinearMap.adjoint_inner_right (ρ e) (ρ a ξ) (ρ e (ρ a ξ))]
+    have hst : ContinuousLinearMap.adjoint (ρ e) = ρ e := by
+      rw [← ContinuousLinearMap.star_eq_adjoint, ← map_star, he.isSelfAdjoint.star_eq]
+    rw [hst]
+    have hee : (ρ e) (ρ e (ρ a ξ)) = ρ (e * e) (ρ a ξ) := by rw [map_mul]; rfl
+    rw [hee, he.isIdempotentElem.eq]
+  rw [← hself]
+  exact (inner_self_eq_zero (𝕜 := ℂ) (x := ρ e (ρ a ξ))).symm
+
+/-- Half of **69V**: `ω(a* ⌈⌈⌈ω⌉⌉⌉^⊥ a) = 0`.  (`⌈⌈⌈ω⌉⌉⌉^⊥` is central and
+killed by `ω`, and `⌈a* q a⌉ ≤ q` for central `q`.) -/
+private theorem omega_conj_cceil_compl (ω : NPFunctional A) (a : A) :
+    (ω (star a * (1 - cceil (npCarrier ω)) * a) : ℂ) = 0 := by
+  set c : A := npCarrier ω with hcdef
+  have hspec := carrier_spec ω.toPositiveLinearMap ω.preservesDirSups'
+  have hcproj : IsStarProjection c := hspec.1
+  have hc0 : (ω (1 - c) : ℂ) = 0 := hspec.2.1
+  have hcc := (cceil_fundamental c hcproj).1
+  set q : A := 1 - cceil c with hqdef
+  have hqproj : IsStarProjection q := hcc.1.1.one_sub
+  have hqcentral : IsCentral A q := by
+    intro b
+    rw [hqdef, sub_mul, mul_sub, one_mul, mul_one, hcc.1.2.1 b]
+  have hqω : (ω q : ℂ) = 0 := by
+    have hle : q ≤ 1 - c := by rw [hqdef]; exact sub_le_sub_left hcc.1.2.2 1
+    have h1 : (0 : ℂ) ≤ ω q := npFunctional_nonneg ω hqproj.nonneg
+    have h2 : (ω q : ℂ) ≤ ω (1 - c) := npFunctional_mono ω hle
+    rw [hc0] at h2
+    exact le_antisymm h2 h1
+  have hx0 : (0 : A) ≤ star a * q * a := conj_proj_nonneg hqproj a
+  refine (ceil_functionals_lemma _ hx0 ω).mpr ?_
+  have hceilq : ceil (star a * q * a) ≤ q := by
+    refine (ceil_le_iff hx0 hqproj).mpr ?_
+    calc star a * q * a * q = star a * q * (q * a) := by rw [hqcentral a]; noncomm_ring
+      _ = star a * (q * q) * a := by noncomm_ring
+      _ = star a * q * a := by rw [hqproj.isIdempotentElem.eq]
+  have h1 : (0 : ℂ) ≤ ω (ceil (star a * q * a)) :=
+    npFunctional_nonneg ω (ceil_spec hx0).1.nonneg
+  have h2 : (ω (ceil (star a * q * a)) : ℂ) ≤ ω q := npFunctional_mono ω hceilq
+  rw [hqω] at h2
+  exact le_antisymm h2 h1
+
+/-- The other half of **69V**: if `ω(a* e a) = 0` for every `a` then
+`⌈⌈⌈ω⌉⌉⌉ ≤ e^⊥`.  (By **68I** `cceil-fundamental`, `⌈⌈e⌉⌉ = ⋃_a ⌈a* e a⌉`
+lies below `⌈ω⌉^⊥`, and `1 - ⌈⌈e⌉⌉` is then a central projection above
+`⌈ω⌉`.) -/
+private theorem cceil_npCarrier_le (ω : NPFunctional A) {e : A} (he : IsStarProjection e)
+    (hvan : ∀ a : A, (ω (star a * e * a) : ℂ) = 0) :
+    cceil (npCarrier ω) ≤ 1 - e := by
+  set c : A := npCarrier ω with hcdef
+  have hspec := carrier_spec ω.toPositiveLinearMap ω.preservesDirSups'
+  have hcproj : IsStarProjection c := hspec.1
+  have hcleast : ∀ p : A, IsStarProjection p → (ω (1 - p) : ℂ) = 0 → c ≤ p := hspec.2.2
+  have hcc := (cceil_fundamental c hcproj).1
+  have hbelow : ∀ x ∈ {x : A | ∃ a : A, x = ceil (star a * e * a)}, x ≤ 1 - c := by
+    rintro _ ⟨a, rfl⟩
+    have hx0 : (0 : A) ≤ star a * e * a := conj_proj_nonneg he a
+    have hceilproj : IsStarProjection (ceil (star a * e * a)) := (ceil_spec hx0).1
+    have h0 : (ω (ceil (star a * e * a)) : ℂ) = 0 :=
+      (ceil_functionals_lemma _ hx0 ω).mp (hvan a)
+    exact le_sub_comm.mp
+      (hcleast (1 - ceil (star a * e * a)) hceilproj.one_sub (by simpa using h0))
+  have hccele : cceil e ≤ 1 - c := by
+    rw [(cceil_fundamental e he).2]
+    refine (projSup_spec ?_).2.2 _ hcproj.one_sub hbelow
+    rintro _ ⟨a, rfl⟩
+    exact (ceil_spec (conj_proj_nonneg he a)).1
+  have hce := (cceil_fundamental e he).1
+  have hsub : cceil c ≤ 1 - cceil e := by
+    refine hcc.2 ⟨hce.1.1.one_sub, ?_, le_sub_comm.mp hccele⟩
+    intro b
+    rw [sub_mul, mul_sub, one_mul, mul_one, hce.1.2.1 b]
+  exact hsub.trans (sub_le_sub_left hce.1.2.2 1)
+
 /-- **69V** (`proto-gns-ceil`, vn.tex:3642, Lemma): `⌈⌈ω⌉⌉ = ⌈ρ_ω⌉` for an
 np-functional `ω` on a von Neumann algebra with GNS representation `ρ_ω` —
 rendered: for every normal cyclic representation `(ρ, ξ)` of `ω` on a
@@ -4864,8 +5023,25 @@ theorem proto_gns_ceil {H : Type*} [NormedAddCommGroup H]
     (hg : PreservesDirSups ⇑g) (heq : ∀ a, g a = ρ a) (ξ : H)
     (hξ : ∀ a : A, ω a = ⟪ξ, ρ a ξ⟫)
     (hcyc : Dense (Set.range fun a : A => ρ a ξ)) :
-    carrier g hg = cceil (npCarrier ω) :=
-  sorry
+    carrier g hg = cceil (npCarrier ω) := by
+  have hcproj : IsStarProjection (npCarrier ω) :=
+    (carrier_spec ω.toPositiveLinearMap ω.preservesDirSups').1
+  have hccproj : IsStarProjection (cceil (npCarrier ω)) :=
+    ((cceil_fundamental _ hcproj).1).1.1
+  refine carrier_eq g hg hccproj ?_ ?_
+  · -- `ρ(⌈⌈⌈ω⌉⌉⌉^⊥)` kills the dense set of `ρ(a)ξ`, hence vanishes
+    rw [heq]
+    have hzero : ∀ a : A, (ρ (1 - cceil (npCarrier ω))) (ρ a ξ) = 0 := fun a =>
+      (gns_zero_iff ω ρ ξ hξ hccproj.one_sub a).mpr (omega_conj_cceil_compl ω a)
+    have hfun : ⇑(ρ (1 - cceil (npCarrier ω))) = fun _ => (0 : H) := by
+      refine Continuous.ext_on hcyc (ρ _).continuous continuous_const ?_
+      rintro _ ⟨a, rfl⟩
+      exact hzero a
+    exact ContinuousLinearMap.ext fun y => by simpa using congrFun hfun y
+  · intro r hr hgr
+    have hkey := cceil_npCarrier_le ω hr.one_sub fun a =>
+      (gns_zero_iff ω ρ ξ hξ hr.one_sub a).mp (by rw [← heq, hgr]; rfl)
+    rwa [sub_sub_cancel] at hkey
 
 /-- **69VII** (`gns-ceil`, vn.tex:3670, Proposition):
 `⌈ρ_Ω⌉ = ⋃_{ω∈Ω} ⌈⌈ω⌉⌉` for a collection `Ω` of np-functionals — rendered:
@@ -4880,8 +5056,47 @@ theorem gns_ceil {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
     (hcyc : Dense (Submodule.span ℂ
       (Set.range fun p : Ω × A => ρ p.2 (x p.1)) : Set H)) :
     carrier g hg =
-      projSup {p : A | ∃ ω ∈ Ω, p = cceil (npCarrier ω)} :=
-  sorry
+      projSup {p : A | ∃ ω ∈ Ω, p = cceil (npCarrier ω)} := by
+  set S : Set A := {p : A | ∃ ω ∈ Ω, p = cceil (npCarrier ω)} with hSdef
+  have hSproj : ∀ p ∈ S, IsStarProjection p := by
+    rintro _ ⟨ν, -, rfl⟩
+    exact ((cceil_fundamental _ (carrier_spec ν.toPositiveLinearMap ν.preservesDirSups').1).1).1.1
+  obtain ⟨hPproj, hPub, hPleast⟩ := projSup_spec hSproj
+  -- a continuous map killing every `ρ(a)x_ω` is zero
+  have hdense_zero : ∀ T : H →L[ℂ] H, (∀ (ν : Ω) (a : A), T (ρ a (x ν)) = 0) → T = 0 := by
+    intro T hT
+    have hsub : (Set.range fun p : Ω × A => ρ p.2 (x p.1)) ⊆ (T : H →ₗ[ℂ] H).ker := by
+      rintro _ ⟨p, rfl⟩
+      exact hT p.1 p.2
+    have hspan : (Submodule.span ℂ (Set.range fun p : Ω × A => ρ p.2 (x p.1)) : Set H)
+        ⊆ ((T : H →ₗ[ℂ] H).ker : Set H) := by
+      simpa using (Submodule.span_le.mpr hsub)
+    have hclosed : IsClosed ((T : H →ₗ[ℂ] H).ker : Set H) := T.isClosed_ker
+    have huniv : (Set.univ : Set H) ⊆ ((T : H →ₗ[ℂ] H).ker : Set H) := by
+      rw [← hcyc.closure_eq]
+      exact hclosed.closure_subset_iff.mpr hspan
+    exact ContinuousLinearMap.ext fun y => huniv (Set.mem_univ y)
+  refine carrier_eq g hg hPproj ?_ ?_
+  · rw [heq]
+    refine hdense_zero _ fun ν a => ?_
+    refine (gns_zero_iff (ν : NPFunctional A) ρ (x ν) (hx ν) hPproj.one_sub a).mpr ?_
+    -- `1 - ⋃ ≤ 1 - ⌈⌈⌈ν⌉⌉⌉`, so `ν(a* (1-⋃) a) ≤ ν(a* ⌈⌈⌈ν⌉⌉⌉^⊥ a) = 0`
+    have hle : (1 : A) - projSup S ≤ 1 - cceil (npCarrier (ν : NPFunctional A)) :=
+      sub_le_sub_left (hPub _ ⟨ν, ν.2, rfl⟩) 1
+    have h1 : (0 : ℂ) ≤ (ν : NPFunctional A) (star a * (1 - projSup S) * a) :=
+      npFunctional_nonneg _ (conj_proj_nonneg hPproj.one_sub a)
+    have h2 : ((ν : NPFunctional A) (star a * (1 - projSup S) * a) : ℂ)
+        ≤ (ν : NPFunctional A) (star a * (1 - cceil (npCarrier (ν : NPFunctional A))) * a) :=
+      npFunctional_mono _ (star_left_conjugate_le_conjugate hle a)
+    rw [omega_conj_cceil_compl (ν : NPFunctional A) a] at h2
+    exact le_antisymm h2 h1
+  · intro r hr hgr
+    refine hPleast r hr ?_
+    rintro _ ⟨ν, hν, rfl⟩
+    have hkey := cceil_npCarrier_le (((⟨ν, hν⟩ : Ω) : NPFunctional A)) hr.one_sub fun a =>
+      (gns_zero_iff ((⟨ν, hν⟩ : Ω) : NPFunctional A) ρ (x ⟨ν, hν⟩)
+        (hx ⟨ν, hν⟩) hr.one_sub a).mp (by rw [← heq, hgr]; rfl)
+    rwa [sub_sub_cancel] at hkey
 
 variable (A) in
 /-- A collection `Ω` of np-functionals is **centre separating**

@@ -3864,6 +3864,96 @@ theorem vn_ball_compact :
     hballclosed.mem_of_tendsto ha (Filter.Eventually.of_forall fun i => i.2)
   exact ⟨a, hmem, hmap ▸ ha⟩
 
+/-! ### Tools for **77V**
+
+Six small lemmas about the ultraweak topology, all of them consequences of the
+fact (**42III**) that it is the initial topology of the np-functionals. -/
+
+/-- Ultraweak limits are unique: the np-functionals separate the points of a
+von Neumann algebra (**44XI**). -/
+theorem uwTendsto_unique {ι : Type*} {l : Filter ι} [l.NeBot] {x : ι → A} {b b' : A}
+    (h : UWTendsto x l b) (h' : UWTendsto x l b') : b = b' :=
+  eq_of_forall_npFunctional fun ω =>
+    tendsto_nhds_unique ((uwTendsto_iff x l b).mp h ω) ((uwTendsto_iff x l b').mp h' ω)
+
+omit [StarOrderedRing A] [VonNeumannAlgebra A] in
+/-- Ultraweak convergence is additive. -/
+theorem UWTendsto.add {ι : Type*} {l : Filter ι} {x y : ι → A} {a b : A}
+    (hx : UWTendsto x l a) (hy : UWTendsto y l b) :
+    UWTendsto (fun i => x i + y i) l (a + b) := by
+  rw [uwTendsto_iff] at hx hy ⊢
+  intro ω
+  simpa using ((hx ω).add (hy ω))
+
+omit [StarOrderedRing A] [VonNeumannAlgebra A] in
+/-- Ultraweak convergence commutes with scalars. -/
+theorem UWTendsto.smul {ι : Type*} {l : Filter ι} {x : ι → A} {a : A} (c : ℂ)
+    (hx : UWTendsto x l a) : UWTendsto (fun i => c • x i) l (c • a) := by
+  rw [uwTendsto_iff] at hx ⊢
+  intro ω
+  have : ∀ z : A, ω (c • z) = c * ω z := fun z =>
+    (map_smul ω.toPositiveLinearMap c z).trans (smul_eq_mul _ _)
+  simp only [this]
+  exact (hx ω).const_mul c
+
+omit [StarOrderedRing A] [StarOrderedRing B] [VonNeumannAlgebra A] [VonNeumannAlgebra B] in
+/-- A map into `B` is ultraweakly continuous as soon as `ω ∘ g` is ultraweakly
+continuous for every np-functional `ω` of `B`. -/
+theorem continuous_ultraweak_of_npFunctional {g : A → B}
+    (h : ∀ ω : NPFunctional B, @Continuous A ℂ (ultraweak A) _ (fun a => ω (g a))) :
+    @Continuous A B (ultraweak A) (ultraweak B) g := by
+  rw [show ultraweak B =
+      ⨅ ω : NPFunctional B, TopologicalSpace.induced (fun b : B => (ω b : ℂ)) inferInstance from
+      rfl, continuous_iInf_rng]
+  exact fun ω => continuous_induced_rng.mpr (h ω)
+
+omit [VonNeumannAlgebra A] in
+/-- Multiplication by a scalar is ultraweakly continuous. -/
+theorem continuous_ultraweak_smul (c : ℂ) :
+    @Continuous A A (ultraweak A) (ultraweak A) (fun a => c • a) := by
+  let _instA : TopologicalSpace A := ultraweak A
+  refine continuous_ultraweak_of_npFunctional fun ω => ?_
+  have hz : ∀ z : A, ω (c • z) = c * ω z := fun z =>
+    (map_smul ω.toPositiveLinearMap c z).trans (smul_eq_mul _ _)
+  simp only [hz]
+  exact (continuous_ultraweak_npFunctional ω).const_mul c
+
+/-- Every closed ball around `0` is ultraweakly closed: the unit ball is
+(**44XI**.3 and **73VIII** `ultraclosed`), and scalars are ultraweakly
+continuous. -/
+theorem isClosed_ultraweak_closedBall {r : ℝ} (hr : 0 ≤ r) :
+    @IsClosed A (ultraweak A) (Metric.closedBall (0 : A) r) := by
+  let _instA : TopologicalSpace A := ultraweak A
+  rcases eq_or_lt_of_le hr with h0 | h0
+  · have _t : T2Space A := vn_positive_basic_1.1
+    rw [show Metric.closedBall (0 : A) r = {0} by rw [← h0]; exact Metric.closedBall_zero]
+    exact isClosed_singleton
+  · have h1 : IsClosed (Metric.closedBall (0 : A) 1) :=
+      ultraclosed _ (convex_closedBall (0 : A) 1) vn_positive_basic_3
+    have heq : Metric.closedBall (0 : A) r
+        = (fun a : A => (r⁻¹ : ℂ) • a) ⁻¹' Metric.closedBall (0 : A) 1 := by
+      ext a
+      simp only [Set.mem_preimage, Metric.mem_closedBall, dist_zero_right, norm_smul,
+        Complex.norm_real, norm_inv, Real.norm_eq_abs, abs_of_pos h0]
+      rw [inv_mul_le_iff₀ h0, mul_one]
+    rw [heq]
+    exact h1.preimage (continuous_ultraweak_smul _)
+
+omit [StarOrderedRing A] [StarOrderedRing B] [VonNeumannAlgebra A] [VonNeumannAlgebra B] in
+/-- An ultraweakly continuous linear map on a ∗-subalgebra `S` carries a net of
+`S` converging ultraweakly in `S` to an ultraweakly convergent net. -/
+theorem uw_map_of_cont {S : StarSubalgebra ℂ A} (f : S →ₗ[ℂ] B)
+    (hf : @Continuous S B (TopologicalSpace.induced Subtype.val (ultraweak A))
+      (ultraweak B) ⇑f)
+    {ι : Type*} {l : Filter ι} (u : ι → S) (u₀ : S)
+    (h : UWTendsto (fun i => ((u i : A))) l ((u₀ : A))) :
+    UWTendsto (fun i => f (u i)) l (f u₀) := by
+  have h' : Tendsto u l (@nhds S (TopologicalSpace.induced Subtype.val (ultraweak A)) u₀) := by
+    rw [@nhds_induced A S (ultraweak A) Subtype.val u₀]
+    exact tendsto_comap_iff.mpr h
+  exact (@Continuous.tendsto S B (TopologicalSpace.induced Subtype.val (ultraweak A))
+    (ultraweak B) _ hf u₀).comp h'
+
 /-- **77V** (`vn-extension`, vn.tex:4879, Proposition): an ultraweakly
 continuous bounded linear map `f` on an ultraweakly dense ∗-subalgebra `S`
 of a von Neumann algebra `A` extends uniquely to an ultraweakly continuous
@@ -3874,8 +3964,235 @@ theorem vn_extension (S : StarSubalgebra ℂ A)
       (ultraweak B) ⇑f)
     (C : ℝ) (hC : ∀ s : S, ‖f s‖ ≤ C * ‖(s : A)‖) :
     ∃! g : A →ₗ[ℂ] B,
-      @Continuous A B (ultraweak A) (ultraweak B) ⇑g ∧ ∀ s : S, g s = f s :=
-  sorry
+      @Continuous A B (ultraweak A) (ultraweak B) ⇑g ∧ ∀ s : S, g s = f s := by
+  classical
+  -- (0) **74VI**: bounded nets in `S` converging ultrastrongly to a given `a`
+  have hnb : ∀ (a : A) (ε : ℝ), 0 < ε → ∃ (ι : Type u) (l : Filter ι) (_ : l.NeBot)
+      (u : ι → S), (∀ i, ‖((u i : A))‖ ≤ ‖a‖ * (1 + ε)) ∧
+        USTendsto (fun i => ((u i : A))) l a := by
+    intro a ε hε
+    obtain ⟨ι, l, hl, s, hs, hlim⟩ := dense_subalgebra S hS ε hε a
+    exact ⟨ι, l, hl, fun i => ⟨s i, (hs i).1⟩, fun i => (hs i).2, hlim⟩
+  -- (1) `f` of a bounded ultraweakly Cauchy net converges, by **77I**.2
+  have hlimex : ∀ {ι : Type u} (l : Filter ι), l.NeBot → ∀ (u : ι → S) (a : A),
+      (∃ M, ∀ i, ‖((u i : A))‖ ≤ M) → UWTendsto (fun i => ((u i : A))) l a →
+      ∃ b : B, UWTendsto (fun i => f (u i)) l b := by
+    rintro ι l hl u a ⟨M, hM⟩ hu
+    have := hl
+    refine vn_complete_2 l (fun i => f (u i)) ⟨|C| * max M 0, fun i => ?_⟩ ?_
+    · have h1 : ‖f (u i)‖ ≤ C * ‖((u i : A))‖ := hC (u i)
+      have h2 : ‖((u i : A))‖ ≤ max M 0 := le_max_of_le_left (hM i)
+      nlinarith [norm_nonneg ((u i : A)), abs_nonneg C, le_abs_self C, le_max_right M 0]
+    · intro ω
+      have hdiff : UWTendsto (fun p : ι × ι => (((u p.1 - u p.2 : S) : A))) (l ×ˢ l)
+          (((0 : S) : A)) := by
+        rw [uwTendsto_iff]
+        intro ν
+        have h1 : Tendsto (fun p : ι × ι => (ν ((u p.1 : A)) : ℂ)) (l ×ˢ l) (𝓝 (ν a)) :=
+          ((uwTendsto_iff _ l a).mp hu ν).comp tendsto_fst
+        have h2 : Tendsto (fun p : ι × ι => (ν ((u p.2 : A)) : ℂ)) (l ×ˢ l) (𝓝 (ν a)) :=
+          ((uwTendsto_iff _ l a).mp hu ν).comp tendsto_snd
+        have h3 := h1.sub h2
+        rw [sub_self] at h3
+        simpa using h3
+      have hlim0 := uw_map_of_cont f hf (fun p : ι × ι => u p.1 - u p.2) 0 hdiff
+      refine cauchy_map_of_tendsto_dist ?_
+      have h4 := (uwTendsto_iff _ _ _).mp hlim0 ω
+      simp only [map_sub, map_zero, npFunctional_sub, npFunctional_zero] at h4
+      simpa [dist_eq_norm] using h4.norm
+  -- (2) the thesis's point 70: the limit does not depend on the net
+  have hagree : ∀ {ι₁ ι₂ : Type u} (l₁ : Filter ι₁) (l₂ : Filter ι₂), l₁.NeBot → l₂.NeBot →
+      ∀ (u₁ : ι₁ → S) (u₂ : ι₂ → S) (a : A) (b₁ b₂ : B),
+      UWTendsto (fun i => ((u₁ i : A))) l₁ a → UWTendsto (fun i => ((u₂ i : A))) l₂ a →
+      UWTendsto (fun i => f (u₁ i)) l₁ b₁ → UWTendsto (fun i => f (u₂ i)) l₂ b₂ →
+      b₁ = b₂ := by
+    intro ι₁ ι₂ l₁ l₂ hl₁ hl₂ u₁ u₂ a b₁ b₂ h₁ h₂ hf₁ hf₂
+    have := hl₁
+    have := hl₂
+    have hdiff : UWTendsto (fun p : ι₁ × ι₂ => (((u₁ p.1 - u₂ p.2 : S) : A))) (l₁ ×ˢ l₂)
+        (((0 : S) : A)) := by
+      rw [uwTendsto_iff]
+      intro ν
+      have k1 : Tendsto (fun p : ι₁ × ι₂ => (ν ((u₁ p.1 : A)) : ℂ)) (l₁ ×ˢ l₂) (𝓝 (ν a)) :=
+        ((uwTendsto_iff _ l₁ a).mp h₁ ν).comp tendsto_fst
+      have k2 : Tendsto (fun p : ι₁ × ι₂ => (ν ((u₂ p.2 : A)) : ℂ)) (l₁ ×ˢ l₂) (𝓝 (ν a)) :=
+        ((uwTendsto_iff _ l₂ a).mp h₂ ν).comp tendsto_snd
+      have k3 := k1.sub k2
+      rw [sub_self] at k3
+      simpa using k3
+    have hz := uw_map_of_cont f hf (fun p : ι₁ × ι₂ => u₁ p.1 - u₂ p.2) 0 hdiff
+    have hb : UWTendsto (fun p : ι₁ × ι₂ => f (u₁ p.1) - f (u₂ p.2)) (l₁ ×ˢ l₂) (b₁ - b₂) := by
+      rw [uwTendsto_iff]
+      intro ω
+      have k1 : Tendsto (fun p : ι₁ × ι₂ => (ω (f (u₁ p.1)) : ℂ)) (l₁ ×ˢ l₂) (𝓝 (ω b₁)) :=
+        ((uwTendsto_iff _ l₁ b₁).mp hf₁ ω).comp tendsto_fst
+      have k2 : Tendsto (fun p : ι₁ × ι₂ => (ω (f (u₂ p.2)) : ℂ)) (l₁ ×ˢ l₂) (𝓝 (ω b₂)) :=
+        ((uwTendsto_iff _ l₂ b₂).mp hf₂ ω).comp tendsto_snd
+      simpa using k1.sub k2
+    refine sub_eq_zero.mp (uwTendsto_unique hb ?_)
+    simpa using hz
+  -- (3) the extension as a function
+  have key : ∀ a : A, ∃ b : B, ∀ (ι : Type u) (l : Filter ι), l.NeBot → ∀ u : ι → S,
+      UWTendsto (fun i => ((u i : A))) l a → (∃ M, ∀ i, ‖((u i : A))‖ ≤ M) →
+      UWTendsto (fun i => f (u i)) l b := by
+    intro a
+    obtain ⟨ι₀, l₀, hl₀, u₀, hbd₀, hus₀⟩ := hnb a 1 one_pos
+    have huw₀ : UWTendsto (fun i => ((u₀ i : A))) l₀ a := uwweaker_2 _ _ _ hus₀
+    obtain ⟨b, hb⟩ := hlimex l₀ hl₀ u₀ a ⟨‖a‖ * (1 + 1), hbd₀⟩ huw₀
+    refine ⟨b, fun ι l hl u hu hbd => ?_⟩
+    obtain ⟨b', hb'⟩ := hlimex l hl u a hbd hu
+    exact (hagree l₀ l hl₀ hl u₀ u a b b' huw₀ hu hb hb') ▸ hb'
+  choose g0 hg0 using key
+  -- (4) `g0` extends `f`
+  have hext : ∀ s : S, g0 ((s : A)) = f s := by
+    intro s
+    have hcA : UWTendsto (fun _ : ULift.{u} Unit => ((s : A))) (pure (ULift.up ())) ((s : A)) := by
+      rw [uwTendsto_iff]; exact fun ν => tendsto_const_nhds
+    have hcB : UWTendsto (fun _ : ULift.{u} Unit => f s) (pure (ULift.up ())) (f s) := by
+      rw [uwTendsto_iff]; exact fun ν => tendsto_const_nhds
+    have h := hg0 ((s : A)) (ULift.{u} Unit) (pure (ULift.up ())) inferInstance (fun _ => s)
+      hcA ⟨‖((s : A))‖, fun _ => le_rfl⟩
+    exact uwTendsto_unique h hcB
+  -- (5) `g0` is linear
+  have hadd : ∀ a a' : A, g0 (a + a') = g0 a + g0 a' := by
+    intro a a'
+    obtain ⟨ι₁, l₁, hl₁, u₁, hbd₁, hus₁⟩ := hnb a 1 one_pos
+    obtain ⟨ι₂, l₂, hl₂, u₂, hbd₂, hus₂⟩ := hnb a' 1 one_pos
+    have := hl₁
+    have := hl₂
+    have h₁' : UWTendsto (fun i => ((u₁ i : A))) l₁ a := uwweaker_2 _ _ _ hus₁
+    have h₂' : UWTendsto (fun i => ((u₂ i : A))) l₂ a' := uwweaker_2 _ _ _ hus₂
+    rw [uwTendsto_iff] at h₁' h₂'
+    have h₁ : UWTendsto (fun p : ι₁ × ι₂ => ((u₁ p.1 : A))) (l₁ ×ˢ l₂) a := by
+      rw [uwTendsto_iff]; exact fun ν => (h₁' ν).comp tendsto_fst
+    have h₂ : UWTendsto (fun p : ι₁ × ι₂ => ((u₂ p.2 : A))) (l₁ ×ˢ l₂) a' := by
+      rw [uwTendsto_iff]; exact fun ν => (h₂' ν).comp tendsto_snd
+    have hsum : UWTendsto (fun p : ι₁ × ι₂ => (((u₁ p.1 + u₂ p.2 : S) : A))) (l₁ ×ˢ l₂)
+        (a + a') := by simpa using h₁.add h₂
+    have hbdsum : ∃ M, ∀ p : ι₁ × ι₂, ‖(((u₁ p.1 + u₂ p.2 : S) : A))‖ ≤ M := by
+      refine ⟨‖a‖ * (1 + 1) + ‖a'‖ * (1 + 1), fun p => ?_⟩
+      have h := norm_add_le ((u₁ p.1 : A)) ((u₂ p.2 : A))
+      have := hbd₁ p.1
+      have := hbd₂ p.2
+      simp only [AddMemClass.coe_add]
+      linarith
+    have hA := hg0 (a + a') (ι₁ × ι₂) (l₁ ×ˢ l₂) inferInstance
+      (fun p => u₁ p.1 + u₂ p.2) hsum hbdsum
+    have hB1 := hg0 a (ι₁ × ι₂) (l₁ ×ˢ l₂) inferInstance (fun p => u₁ p.1) h₁
+      ⟨‖a‖ * (1 + 1), fun p => hbd₁ p.1⟩
+    have hB2 := hg0 a' (ι₁ × ι₂) (l₁ ×ˢ l₂) inferInstance (fun p => u₂ p.2) h₂
+      ⟨‖a'‖ * (1 + 1), fun p => hbd₂ p.2⟩
+    refine uwTendsto_unique hA ?_
+    simpa using hB1.add hB2
+  have hsmul : ∀ (c : ℂ) (a : A), g0 (c • a) = c • g0 a := by
+    intro c a
+    obtain ⟨ι₁, l₁, hl₁, u₁, hbd₁, hus₁⟩ := hnb a 1 one_pos
+    have := hl₁
+    have h₁ : UWTendsto (fun i => ((u₁ i : A))) l₁ a := uwweaker_2 _ _ _ hus₁
+    have hsm : UWTendsto (fun i => (((c • u₁ i : S) : A))) l₁ (c • a) := by
+      simpa using h₁.smul c
+    have hbdc : ∃ M, ∀ i, ‖(((c • u₁ i : S) : A))‖ ≤ M := by
+      refine ⟨‖c‖ * (‖a‖ * (1 + 1)), fun i => ?_⟩
+      rw [show (((c • u₁ i : S) : A)) = c • ((u₁ i : A)) from rfl, norm_smul]
+      exact mul_le_mul_of_nonneg_left (hbd₁ i) (norm_nonneg c)
+    have hA := hg0 (c • a) ι₁ l₁ inferInstance (fun i => c • u₁ i) hsm hbdc
+    have hB := hg0 a ι₁ l₁ inferInstance u₁ h₁ ⟨‖a‖ * (1 + 1), hbd₁⟩
+    refine uwTendsto_unique hA ?_
+    simpa using hB.smul c
+  -- (6) `g0` is ultraweakly continuous
+  have hcont : @Continuous A B (ultraweak A) (ultraweak B) g0 := by
+    refine continuous_ultraweak_of_npFunctional fun ω => ?_
+    -- `ω ∘ f` is bounded on a `‖·‖_ν`-ball of `S`
+    obtain ⟨ν, δ, hδ, hball⟩ : ∃ (ν : NPFunctional A) (δ : ℝ), 0 < δ ∧
+        ∀ s : S, omegaNorm A ν ((s : A)) < δ → ‖(ω (f s) : ℂ)‖ < 1 := by
+      have hcomp : @Continuous S ℂ (TopologicalSpace.induced Subtype.val (ultraweak A)) _
+          (fun s : S => (ω (f s) : ℂ)) :=
+        @Continuous.comp S B ℂ (TopologicalSpace.induced Subtype.val (ultraweak A))
+          (ultraweak B) _ _ _ (continuous_ultraweak_npFunctional ω) hf
+      have hopen : @IsOpen S (TopologicalSpace.induced Subtype.val (ultraweak A))
+          ((fun s : S => (ω (f s) : ℂ)) ⁻¹' Metric.ball 0 1) :=
+        (@continuous_def S ℂ (TopologicalSpace.induced Subtype.val (ultraweak A)) _ _).mp
+          hcomp _ Metric.isOpen_ball
+      rw [@isOpen_induced_iff S A (ultraweak A) _ Subtype.val] at hopen
+      obtain ⟨W, hWopen, hWeq⟩ := hopen
+      have h0W : (0 : A) ∈ W := by
+        have hz : (0 : S) ∈ (fun s : S => (ω (f s) : ℂ)) ⁻¹' Metric.ball 0 1 := by
+          simp [map_zero]
+        rw [← hWeq] at hz
+        exact hz
+      obtain ⟨ν, δ, hδ, hsub⟩ :=
+        exists_ultrastrong_ball_of_isOpen (hWopen.mono ultrastrong_le_ultraweak) 0 h0W
+      refine ⟨ν, δ, hδ, fun s hs => ?_⟩
+      have hin : s ∈ Subtype.val ⁻¹' W := hsub (by simpa using hs)
+      rw [hWeq] at hin
+      simpa [Metric.mem_ball, dist_zero_right] using hin
+    -- and therefore dominated by `(2/δ)‖·‖_ν` there
+    have hK : ∀ s : S, ‖(ω (f s) : ℂ)‖ ≤ (2 / δ) * omegaNorm A ν ((s : A)) := by
+      intro s
+      refine le_of_forall_pos_le_add fun εr hεr => le_of_lt ?_
+      set K : ℝ := 2 / δ with hKdef
+      set t : ℝ := omegaNorm A ν ((s : A)) with htdef
+      have ht0 : 0 ≤ t := omegaNorm_nonneg ν _
+      have hKpos : 0 < K := by positivity
+      have hden : 0 < K * t + εr := by positivity
+      have hδK : δ * K = 2 := by rw [hKdef]; field_simp
+      have hct : (K * t + εr)⁻¹ * t < δ := by
+        rw [inv_mul_eq_div, div_lt_iff₀ hden]
+        nlinarith
+      have hcs : omegaNorm A ν ((((((K * t + εr)⁻¹ : ℝ) : ℂ) • s : S)) : A) < δ := by
+        rw [show ((((((K * t + εr)⁻¹ : ℝ) : ℂ) • s : S)) : A)
+            = ((((K * t + εr)⁻¹ : ℝ) : ℂ) • ((s : A))) from rfl, omegaNorm_smul,
+          Complex.norm_real, Real.norm_eq_abs, abs_of_pos (inv_pos.mpr hden), ← htdef]
+        exact hct
+      have hlt := hball _ hcs
+      rw [map_smul] at hlt
+      rw [show (ω ((((K * t + εr)⁻¹ : ℝ) : ℂ) • f s) : ℂ)
+          = (((K * t + εr)⁻¹ : ℝ) : ℂ) * ω (f s) from
+        (map_smul ω.toPositiveLinearMap _ _).trans (smul_eq_mul _ _)] at hlt
+      rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (inv_pos.mpr hden),
+        inv_mul_lt_iff₀ hden, mul_one] at hlt
+      exact hlt
+    -- pass to the limit along an ultrastrongly convergent net
+    have hKA : ∀ a : A, ‖(ω (g0 a) : ℂ)‖ ≤ (2 / δ) * omegaNorm A ν a := by
+      intro a
+      obtain ⟨ι, l, hl, u, hbd, hus⟩ := hnb a 1 one_pos
+      have := hl
+      have huw : UWTendsto (fun i => ((u i : A))) l a := uwweaker_2 _ _ _ hus
+      have hg := hg0 a ι l hl u huw ⟨‖a‖ * (1 + 1), hbd⟩
+      have h1 : Tendsto (fun i => ‖(ω (f (u i)) : ℂ)‖) l (𝓝 ‖(ω (g0 a) : ℂ)‖) :=
+        (((uwTendsto_iff _ _ _).mp hg) ω).norm
+      have h3 : Tendsto (fun i => omegaNorm A ν ((u i : A))) l (𝓝 (omegaNorm A ν a)) := by
+        rw [tendsto_iff_dist_tendsto_zero]
+        refine squeeze_zero (fun i => dist_nonneg) (fun i => ?_)
+          ((usTendsto_iff _ _ _).mp hus ν)
+        rw [Real.dist_eq]
+        exact abs_omegaNorm_sub_omegaNorm_le ν _ _
+      exact le_of_tendsto_of_tendsto' h1 (h3.const_mul (2 / δ)) fun i => hK (u i)
+    -- **72XI** `luws`, (5) ⟹ (2)
+    have hle : ∀ a : A, ‖(ω (g0 a) : ℂ)‖
+        ≤ omegaNorm A (smulNP (r := (2 / δ) ^ 2) (by positivity) ν) a := by
+      intro a
+      rw [omegaNorm_smulNP, Real.sqrt_sq (by positivity)]
+      exact hKA a
+    let hL : A →ₗ[ℂ] ℂ :=
+      { toFun := fun a => (ω (g0 a) : ℂ),
+        map_add' := fun x y => by rw [hadd]; exact npFunctional_add ω _ _,
+        map_smul' := fun c x => by
+          rw [hsmul]
+          exact (map_smul ω.toPositiveLinearMap c _).trans (smul_eq_mul _ _) }
+    have hiff := (luws hL).out 4 1
+    exact hiff.mp ⟨smulNP (r := (2 / δ) ^ 2) (by positivity) ν, hle⟩
+  refine ⟨{ toFun := g0, map_add' := hadd, map_smul' := fun c a => hsmul c a },
+    ⟨hcont, hext⟩, ?_⟩
+  rintro g' ⟨hcont', hext'⟩
+  let _instA : TopologicalSpace A := ultraweak A
+  let _instB : TopologicalSpace B := ultraweak B
+  have _instT2 : T2Space B := vn_positive_basic_1.1
+  have hfun : ⇑g' = g0 :=
+    Continuous.ext_on hS hcont' hcont fun x hx => by
+      rw [hext' ⟨x, hx⟩]
+      exact (hext ⟨x, hx⟩).symm
+  exact LinearMap.ext fun a => congrFun hfun a
 
 /-- **77V** (`vn-extension`, vn.tex:4879, Proposition), norm part: the
 extension `g` is bounded with `‖g‖ = ‖f‖` — rendered: `g` satisfies every
@@ -3887,8 +4204,51 @@ theorem vn_extension_norm (S : StarSubalgebra ℂ A)
     (C : ℝ) (hC : ∀ s : S, ‖f s‖ ≤ C * ‖(s : A)‖) (g : A →ₗ[ℂ] B)
     (hg : @Continuous A B (ultraweak A) (ultraweak B) ⇑g)
     (hext : ∀ s : S, g s = f s) (a : A) :
-    ‖g a‖ ≤ C * ‖a‖ :=
-  sorry
+    ‖g a‖ ≤ C * ‖a‖ := by
+  rcases lt_or_ge C 0 with hC0 | hC0
+  · -- a negative bound forces `S = {0}`, hence (by density) `A = {0}`
+    have hs0 : ∀ s : S, ((s : A)) = 0 := by
+      intro s
+      by_contra hne
+      have h1 : 0 < ‖((s : A))‖ := norm_pos_iff.mpr hne
+      have h2 := hC s
+      nlinarith [norm_nonneg (f s)]
+    have hsub : (S : Set A) ⊆ {0} := fun x hx => hs0 ⟨x, hx⟩
+    let _instA : TopologicalSpace A := ultraweak A
+    have _instT2 : T2Space A := vn_positive_basic_1.1
+    have ha0 : a ∈ ({0} : Set A) := by
+      have h3 : (Set.univ : Set A) ⊆ closure ({0} : Set A) :=
+        hS.closure_eq ▸ closure_mono hsub
+      simpa using h3 (Set.mem_univ a)
+    rw [Set.mem_singleton_iff] at ha0
+    simp [ha0]
+  -- the bound, up to `(1 + ε)`, from **74VI**
+  have hstep : ∀ ε : ℝ, 0 < ε → ‖g a‖ ≤ C * ‖a‖ * (1 + ε) := by
+    intro ε hε
+    obtain ⟨ι, l, hl, s, hs, hlim⟩ := dense_subalgebra S hS ε hε a
+    have := hl
+    let _instB : TopologicalSpace B := ultraweak B
+    have huw : UWTendsto s l a := uwweaker_2 _ _ _ hlim
+    have hgt : Tendsto (fun i => g (s i)) l (𝓝 (g a)) :=
+      (@Continuous.tendsto A B (ultraweak A) (ultraweak B) _ hg a).comp huw
+    have hball : ∀ i, g (s i) ∈ Metric.closedBall (0 : B) (C * ‖a‖ * (1 + ε)) := by
+      intro i
+      have hgs : g (s i) = f ⟨s i, (hs i).1⟩ := hext ⟨s i, (hs i).1⟩
+      rw [Metric.mem_closedBall, dist_zero_right, hgs]
+      exact (hC ⟨s i, (hs i).1⟩).trans (by nlinarith [(hs i).2, norm_nonneg a])
+    have hmem := IsClosed.mem_of_tendsto
+      (isClosed_ultraweak_closedBall (show (0:ℝ) ≤ C * ‖a‖ * (1 + ε) by positivity)) hgt
+      (Eventually.of_forall hball)
+    simpa [dist_zero_right] using Metric.mem_closedBall.mp hmem
+  refine le_of_forall_pos_le_add fun εr hεr => ?_
+  have h4 := hstep (εr / (C * ‖a‖ + 1)) (by positivity)
+  have h5 : 0 ≤ C * ‖a‖ := by positivity
+  have h6 : (0:ℝ) < C * ‖a‖ + 1 := by linarith
+  rw [mul_add, mul_one, mul_div_assoc'] at h4
+  have h7 : C * ‖a‖ * εr / (C * ‖a‖ + 1) ≤ εr := by
+    rw [div_le_iff₀ h6]
+    nlinarith
+  linarith
 
 end Complete
 

@@ -1,16 +1,16 @@
-# `Theses/A/VN/` — full survey of the remaining `sorry`s (worker 75, session 50)
+# `Theses/A/VN/` — full survey of the remaining `sorry`s (updated session 53)
 
-**Headline count: A/VN has 55 code `sorry`s** after session 50 (was 62).
+**Headline count: A/VN has 50 code `sorry`s** after session 53 (was 55).
 Per file, compiler-counted (`declaration uses 'sorry'` warnings, *not* grep):
 
 | file | sorries |
 |---|---|
 | `Basic.lean` | 24 |
-| `Projections.lean` | 17 |
+| `Projections.lean` | **14** |
 | `Division.lean` | 7 |
 | `NormalFunctionals.lean` | 5 |
-| `Completeness.lean` | 2 |
-| **total** | **55** |
+| `Completeness.lean` | **0** |
+| **total** | **50** |
 
 Refresh with (bypasses another agent's `lake build` lock):
 
@@ -22,6 +22,17 @@ for f in Basic Projections Division NormalFunctionals Completeness; do
 done
 ```
 
+> **Session 53 headline — `Completeness.lean` is finished and the 690 chain
+> is half open.**  **77V** `vn_extension` *and* `vn_extension_norm` are proved,
+> so **A/Proc's 112XI `tensor_universal_property` is unblocked** (and with it
+> 114I, 114II, 116VII).  In `Projections.lean`, **63IV** `cp_comprehension`,
+> **69V** `proto_gns_ceil` and **69VII** `gns_ceil` are proved; the core of 69V
+> was factored into four private lemmas (`conj_proj_nonneg`, `gns_zero_iff`,
+> `omega_conj_cceil_compl`, `cceil_npCarrier_le`), which is what made 69VII
+> cheap.  **69IX is now gated on a decision, not on 69VII** — see QUESTIONS D4
+> and the note in the `Projections.lean` table below.  All five are
+> `#print axioms`-clean.
+>
 > **Session 50 headline — the 890 chain is finished.** **89XI**.1/.2/.3
 > (`functional_permanence_*`) and **89XII** (`functional_extension`) are
 > proved and axiom-clean.  The "one 120–150 line lemma" the previous session
@@ -51,12 +62,13 @@ needs a carrier/development Mathlib lacks, **[F]** known false / parked.
 Everything else in the file is proved, including the whole 880–890 block
 (88IV–88IX, 89I–89IX, 89XI, 89XII).
 
-## `Completeness.lean` — 2
+## `Completeness.lean` — 0
 
-| line | point | decl | class |
-|---|---|---|---|
-| 3871 | **77V** | `vn_extension` | [S] ultraweakly continuous extension from an ultraweakly dense ∗-subalgebra |
-| 3883 | **77V** | `vn_extension_norm` | [B] on 77V (it takes the extension as a hypothesis, so it is separable, but the argument is the same) |
+**Nothing left.**  Both halves of **77V** were proved in session 53 (~250
+lines, plus six reusable helpers — `uwTendsto_unique`, `UWTendsto.add`/`.smul`,
+`continuous_ultraweak_of_npFunctional`, `continuous_ultraweak_smul`,
+`isClosed_ultraweak_closedBall`, `uw_map_of_cont` — placed just above them and
+usable anywhere in `A/VN` and downstream.)
 
 ## `Division.lean` — 7
 
@@ -74,7 +86,7 @@ Everything else in the file is proved, including the whole 880–890 block
 nmiu-maps is a von Neumann subalgebra", is 47V and was proved this session,
 so 84bV is now only blocked on 84bIII.
 
-## `Projections.lean` — 17
+## `Projections.lean` — 14
 
 | line | point | decl | class |
 |---|---|---|---|
@@ -84,21 +96,25 @@ so 84bV is now only blocked on 84bIII.
 | 2191 | **59VII**.3 | `hilb_ceil_2` | [S] `⌊T⌋` for an effect is the projection onto `{x | Tx = x}` |
 | 2736 | **62I** | `ncpsu_floor` | [S] `⌊f(a)⌋ = ⌊f(⌊a⌋)⌋`; the thesis's proof cites `cp-cs` (erratum 620.20) |
 | 2924 | **63III**.2 | `carrier_ad_operator` | [S] Hilbert-space form of `carrier_ad`, which **is** proved right above it |
-| 2989 | **63IV** | `cp_comprehension` | [S] **best next target**: the thesis's proof (vn.tex:3113) reduces to `B = ℂ` by `states_order_separating_1/2` (proved, `A/CStar/Positive.lean:2948/2979`) and then applies Kadison's inequality `omega_norm_basic_1` (proved, `A/CStar/Representation.lean:468`) |
 | 3818 | **66IV**.4 | `ultracyclic_basic_4` | [S] Zorn over orthogonal families of ultracyclic projections; 66IV.1/.2/.3 are all proved |
 | 3836 | **67II**.3 | `central_examples_3` | [S] only scalars are central in `B(H)` — commute with `|x⟩⟨y|` |
 | 3846 | **67IV**.1 | `central_projections_sums_1` | [S] the corner `cA` of a central projection |
 | 3862 | **67IV**.2 | `central_projections_sums_2` | [B] on 67IV.1 |
 | 4444 | **69II** | `weakly_closed_ideal` | [S] weakly closed two-sided ideals are `cA`; substantial |
-| 4861 | **69V** | `proto_gns_ceil` | [S] `⌈⌈ω⌉⌉ = ⌈ρ_ω⌉` |
-| 4875 | **69VII** | `gns_ceil` | [B] on 69V |
-| 4999 | **69IX** | `vn_center_separating` | [B] on 69VII (the TFAE's (1)⇔(3) is exactly 69VII) |
-| 5015 | **70II** | `central_projection_central_carrier` | [B] on 69IX + 66IV.4 |
-| 5032 | **70III** | `cvn` | [B] on 70II; also needs 54XI |
+| 5214 | **69IX** | `vn_center_separating` | [S/decision] **no longer blocked on 69VII** (proved).  (1)⇒(2) is trivial and (2)⇒(3) is a few lines from `projSup_isCentral` + the new private `omega_conj_cceil_compl`; (3)⇒(1) needs *`⌈a⌉` is central for central positive `a`*, which the tree lacks.  Its statement is also a known mis-transcription — QUESTIONS **D4** |
+| 5226 | **70II** | `central_projection_central_carrier` | [B] on 69IX + 66IV.4 |
+| — | **70III** | `cvn` | [B] on 70II; also needs 54XI |
 
-The parsec 690–700 block is one chain: **69V → 69VII → 69IX → 70II → 70III**.
-Proving 69V unlocks five statements, and it is the highest-return item in
-this file.
+The parsec 690–700 block was one chain, **69V → 69VII → 69IX → 70II → 70III**;
+the first two links are now proved.  What is left of it is 69IX (see above),
+then 70II (which also wants **66IV**.4) and 70III (which also wants **54XI**).
+The best *isolated* targets remaining in this file are **63III**.2
+`carrier_ad_operator` (the Hilbert-space form of the already-proved
+`carrier_ad` right above it), **67II**.3 and **67IV**.1.
+
+Line numbers in this table are those of session 50 except where noted; the
+session-53 insertions shifted everything below `cp_comprehension` by ~180
+lines.  Locate by name.
 
 ## `Basic.lean` — 24
 

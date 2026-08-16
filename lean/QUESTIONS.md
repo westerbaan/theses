@@ -228,6 +228,17 @@ central support plus 60I `ceil_functionals_lemma`, avoiding the thesis's
 separate definition?  Related: 69IX item 3 needs one missing lemma — *a
 `projSup` of central projections is central* — which is cheap either way.
 
+*Update (session 53)*: that lemma **already exists**, `projSup_isCentral`
+(`Projections.lean:4176`), and **69VII** `gns_ceil` is now proved, so the
+implication (2) ⇒ (3) of 69IX — the only one the thesis proves at length — is
+a few lines away (`z := (⋃_ω ⌈⌈ω⌉⌉)^⊥` is central, and `ω(z) ≤ ω(⌈⌈⌈ω⌉⌉⌉^⊥) = 0`
+by the private `omega_conj_cceil_compl` of the same file).  What (3) ⇒ (1)
+still needs is *`⌈a⌉` is central for central positive `a`*, which the tree does
+not have; the natural proof is that `⌈a⌉` is the ultrastrong limit of the
+`a^{1/2ⁿ}` and `vna_supremum_mult` passes centrality to the limit.  69IX is
+therefore left `sorry` pending this decision **and** that lemma, not pending
+69VII.
+
 ## Thesis A (`cstar.tex`, `vn.tex`, `proc.tex`) — remaining after the 2026-08-13 rulings
 
 ### A1. 98VI's hint points the wrong way
