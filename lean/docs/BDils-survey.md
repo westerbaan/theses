@@ -61,6 +61,12 @@ At the end of **session 59** (150II phase 1: the ultranorm uniformity and
 `SelfDualCompletion.lean` 1, `HilbertModules.lean` 0 — **32**,
 compiler-counted per file (each source run through `lean` individually).
 
+At the end of **session 60** (150II phase 2: the σ-closure and its inner
+product; again no `sorry` closed by design): `SelfDual.lean` 7, `Pure.lean`
+12, `Paschke.lean` 7, `Kaplansky.lean` 4, `Stinespring.lean` 1,
+`SelfDualCompletion.lean` 1, `HilbertModules.lean` 0 — **32**,
+compiler-counted per file (each source run through `lean` individually).
+
 Classification key: **(a)** self-contained, **(b)** blocked on a named
 `sorry` elsewhere, **(c)** cited to the literature / another chapter,
 **(d)** suspicious/false.
@@ -427,13 +433,43 @@ uniformity *is* the seminorm-family uniformity, and
 | 9 | `η`, `η_inner`, ultranorm density of its range | 150 | **PART DONE**: `unEta` and `denseRange_unEta` are in; `η_inner` and `DenseRange → UnDense` need the inner product from step 5 | ~40 |
 | **10** | **new**: universes.  `dils_completion` wants `X : Type (max u v)`, `Completion (UnUnif B) : Type v` — run the construction on `ULift.{u} V` with `B` transported | — | new | ~50 |
 
-**Remaining ≈ 1300–1700 lines, 2–3 sessions.**  Step 5 is still the only
-genuinely new mathematics and is the whole of the next session; steps 3-tail,
-4, 9 and 10 are small and can be swept up alongside it.  Note step 5 must be
-run against the *extended seminorms* `semC`, not against an inner product:
-that is what makes item 4's reshaping (above) load-bearing.
+**Remaining after session 59 was ≈ 1300–1700 lines, 2–3 sessions.**  Session
+60 did steps 3-tail, 4 and 5; see the next section for the state now.
 
-**Carry-forward warning for step 5.**  In our setting `[SMul 𝒷 V]` carries
-**no axioms** (`BInner` constrains only the inner product), so nothing may be
-assumed about `b·(x+y)` in `V`; use `coe_eq_coe_of_inner_zero` and work in
-`V̄`, where `op_smul_add'` &c. are now available.
+---
+
+## Session 61 (i.e. after session 60): 150II is one session from done
+
+Session 60 added **747 lines** (section `SigmaClosure`), all axiom-clean, and
+closed costing items **3**, **4** and **5** — including "the heart".  The
+structural finding that made step 5 cheap is in PROVING-LOG session 60: the
+inner product of a compatible extension is **determined by its underlying
+set** (condition 4 of 150XI fixes the quadratic form, polarization fixes the
+sesquilinear form, and **44XI** fixes the element of `𝒷`), so the thesis's
+poset of *pairs* becomes a poset of `Submodule ℂ V̄`s under `⊆`, its limit
+step becomes `sSup` of a chain, and both of 150XIII's estimates are replaced
+by *joint continuity* of the polarization form `ipf`.
+
+| # | piece | status after s60 | remaining |
+|---|---|---|---|
+| 1 | seminorm family → `UniformSpace`, `Un*` bridge | **DONE** (s59) | 0 |
+| 2 | `V̄`, its module structure | **DONE** (s59) | 0 |
+| 3 | extended seminorms `semC` and their laws | **DONE** — separation is `eq_zero_of_semC_eq_zero` (~15 lines, not 60); the reverse triangle inequality is **not needed** | 0 |
+| 4 | the "norm" on `V̄` | **DONE** as `SemBddBy B M x := ∀ ω, semC B ω x ≤ M·((ω 1).re)^½`, with both directions of "on a compatible extension this is `‖x‖ ≤ M`" | 0 |
+| 5 | **the heart**: the σ-closure and the inner product on it | **DONE**, ~490 lines: `ipf`, `HasIP`/`ipVal`, `IsCompatExt` (+ its `BInner`), `SigmaCl`, `IsCompatExt.sigma`, `exists_maximal_compatExt` | 0 |
+| 6 | the carrier `X := ↥W` with `NormedAddCommGroup`/`NormedSpace ℂ`/`CStarModule` | untouched (`hW.smulInst`, `hW.binner` are in) | 250 |
+| 6b | **new**: `unSeminorm ω (inner 𝒷) = semC B ω` on `X` (clause 4 of 150XI) — the bridge steps 7–9 all run through | new | 40 |
+| 7 | `BddUnComplete 𝒷 X` from σ-closedness, then **149V** | untouched | 150 |
+| 8 | `CompleteSpace X` | untouched | 100 |
+| 9 | `η`, `η_inner`, `UnDense (range η)` | `η_inner` is `ipVal_unEta`; density needs 6b | 60 |
+| 10 | universes (`ULift.{u} V`) | untouched | 50 |
+
+**Remaining ≈ 600 lines — one session.**  It is packaging: no new
+mathematics, and the two facts everything rests on (`σ(W) ⊆ W` for the
+maximal `W`, and `ω[x,x] = ‖x‖_ω²` on it) are proved.
+
+**Carry-forward.**  In our setting `[SMul 𝒷 V]` carries **no axioms**, so the
+only inner-product rule that survives to `V̄` is the *conjugated* one
+`[b·x,b·y] = b[x,y]b*`; 𝒷-homogeneity is recovered by polarizing in the
+algebra variable (`IsCompatExt.ipVal_op_smul_right`), which also needed a
+sixth module law `smul_op_smul' : (c • b) • x = c • (b • x)`.

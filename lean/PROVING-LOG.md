@@ -13289,3 +13289,126 @@ estimate from ultraweak lower semicontinuity via **148V**).
   and the sorry counts were exact.  The one refinement is that
   `[CompleteSpace X]` is *not* "something our structure asks that the thesis
   does not" — see above.
+
+## Session 60 — `B/Dils`: **150II phase 2** — the σ-closure and its inner product are built; the inner product turns out to be *determined by the set*, so the thesis's Zorn argument costs almost nothing (worker on `SelfDualCompletion.lean`)
+
+**Result.** `dils_completion` (**150II**, `SelfDualCompletion.lean:80`) is still
+`sorry` — as planned; this was phase 2 of the item.  What landed is **747
+lines** in `SelfDualCompletion.lean` (the section `SigmaClosure`, replacing
+and extending the phase-1 stub after `end UnCompletion`), all compiling and
+axiom-clean (`propext, Classical.choice, Quot.sound`, checked on eight
+declarations including `IsCompatExt.binner`, `sigmaCl_hasIP`,
+`IsCompatExt.sigma` and `exists_maximal_compatExt`).  Compiler-counted
+`B/Dils` is **unchanged at 32**: `HilbertModules` 0, `SelfDualCompletion` 1,
+`SelfDual` 7, `Paschke` 7, `Pure` 12, `Kaplansky` 4, `Stinespring` 1 (each
+source run through `lean` individually).
+
+**Step 5 of the costing — "the only genuinely new mathematics" — is done**,
+together with the leftovers of steps 3 and 4.  What now exists is a maximal
+compatible extension `W ⊆ V̄`, σ-closed, carrying a genuine `BInner 𝒷 ↥W`
+that restricts to `B` along `η`.  What is left is packaging (steps 6–10).
+
+### The structural finding: a compatible extension needs no data
+
+The thesis (**150XI**) defines a compatible extension as a *pair* — a subset
+`W ⊆ V̄` together with a 𝒷-valued inner product on it — and orders such pairs
+by "`W₁ ⊆ W₂` and the inner products agree".  That is what makes its limit
+step (**150XIV**) and its Zorn application heavy, and it is what session 58
+proposed to avoid with an inductive predicate over the entourage type `Φ`.
+
+None of that is necessary.  Condition 4 of 150XI says
+`f([x,x]_W) = ‖x‖_f^{V̄}²` for every np-map `f`, i.e. the *quadratic form* of
+the inner product is fixed in advance by the extended seminorms; by
+polarization the whole sesquilinear form is then fixed, and since the
+np-functionals separate `𝒷` (**44XI**), so is `[x,y]_W` itself.  Concretely
+the file now defines, for every np-functional `ω` and *all* `x, y ∈ V̄`,
+
+```
+ipf B ω x y = ¼ ( q(y+x) − q(y−x) + i·q(y+i·x) − i·q(y−i·x) ),   q z = (semC B ω z)²
+```
+
+and proves `ipf ω (η v) (η w) = ω[v,w]`, joint continuity, and the
+sesquilinearity/star/𝒷-transformation rules by density from `V`.  A
+compatible extension is then just a `Submodule ℂ V̄` that contains `η(V)`, is
+closed under the 𝒷-action, and on which `HasIP x y : ∃ b, ∀ ω, ω b = ipf ω x y`
+holds — a property of the set alone.  Consequences:
+
+* the poset Zorn is applied to is the poset of **submodules under `⊆`**, and
+  the limit step is `sSup` of a chain (`Submodule.mem_sSup_of_directed`) — a
+  dozen lines instead of a construction;
+* the thesis's well-definedness argument in 150XIII (the second displayed
+  estimate, showing two nets give the same ultraweak limit) is **not needed**:
+  `ipf ω` is *jointly* continuous, so the limit is read off directly;
+* the first displayed estimate (ultraweak Cauchyness of `[x_α,y_α]`) is
+  likewise replaced by joint continuity: `ω[x_α,y_α] = ipf ω x_α y_α`
+  converges because `(x_α,y_α) → (x,y)`;
+* the thesis's fast nets (**150V**) are not used anywhere, and neither is
+  session 58's inductive-predicate plan.
+
+**Divergence from the thesis, case 2** (its proof is fine; we took another
+route): 150XI's pair-poset, 150XIII's two estimates and 150XIV's transport of
+the inner product along a chain are all replaced by the above.  The *shape*
+of the argument — base case `V₀`, σ-step, chain step, Zorn, maximality gives
+`σ(W) = W` — is the thesis's own and is transcribed.
+
+### What the `BInner` generality costs, and the trick that pays it
+
+Phase 1 recorded that our 150II is strictly more general than the thesis's
+because `[SMul 𝒷 V]` carries no axioms.  On `V̄` the module laws hold (phase
+1), but the only inner-product rule that survives the completion is the
+*conjugated* one, `[b·x, b·y] = b[x,y]b*` — proved here as
+`ipf_op_smul : ipf ω (b·x) (b·y) = ipf (b*ω) x y`, i.e. **150IX** again.
+𝒷-homogeneity `[x, b·y] = b[x,y]` does **not** follow from it by the usual
+one-line star argument (that argument *is* the statement).  It is recovered
+by polarizing in the *algebra* variable: applying the conjugated rule at
+`1 + b` and at `1 + ib`, expanding by additivity, and adding the two
+identities gives `2[x, b·y] = 2b[x,y]`.  This needed a sixth module law on
+`V̄`, `smul_op_smul' : (c • b) • x = c • (b • x)` (`c : ℂ`), proved like the
+other five.  Recorded because a reader will otherwise wonder why
+`IsCompatExt.ipVal_op_smul_right` is forty lines.
+
+### Costing items closed
+
+* **3-tail** (separation): `eq_zero_of_semC_eq_zero` — if every extended
+  seminorm kills `x` then `x = 0`.  ~15 lines, not 60, and by a route worth
+  keeping: pull `𝓝 x` back along `coe` (`IsDenseInducing.comap_nhds_neBot`),
+  observe the pulled-back filter tends to `0` in `V̄`'s own uniformity by
+  `UnUnif.tendsto_iff`, and use `T2`.  The "reverse triangle inequality" the
+  session-59 table listed is **not needed at all** — it was for the thesis's
+  hand-built extension of the seminorms, which `Completion.extension` does.
+* **4** (the norm on `V̄`): confirmed exactly as re-costed in session 59.
+  `SemBddBy B M x := ∀ ω, semC B ω x ≤ M·((ω 1).re)^½` — the square-root form
+  is better than the squared one (additivity is one `linarith`), and both
+  directions of "on a compatible extension this *is* `‖x‖ ≤ M`" are proved
+  through `np_orderSeparating` and `IsSelfAdjoint.le_algebraMap_norm_self`.
+  ~80 lines, as predicted.  Note the bound carries a factor `‖(1:𝒷)‖` (which
+  is 1 unless `𝒷 = {0}`) because Mathlib's `CStarAlgebra` has no
+  `NormOneClass`; it is only ever used existentially, so this is harmless.
+* **5** (the heart): ~490 lines against 600–900 costed.
+* **9** (part): `η_inner` is now `ipVal_unEta`.
+
+### What is left of 150II (steps 6–10), re-costed at ~600 lines, one session
+
+The carrier is `X := ↥W` for the `W` of `exists_maximal_compatExt`, with
+`hW.smulInst` and `hW.binner` already built.  Remaining:
+
+1. `NormedAddCommGroup X` from `BInner.norm` (triangle inequality is
+   **142V**.2 `module_seminorm_2`, definiteness is
+   `eq_zero_of_ipVal_self_eq_zero`), `NormedSpace ℂ X`, and the `CStarModule`
+   instance — ~250;
+2. the identification `unSeminorm ω (inner 𝒷) x = semC B ω x` on `X` (clause
+   4 of 150XI, and the bridge that makes everything below work) — ~40;
+3. `BddUnComplete 𝒷 X` from σ-closedness + completeness of `V̄`, then
+   `SelfDual` and `UnComplete` by **149V** — ~150;
+4. `CompleteSpace X` (session 58's route) — ~100;
+5. `η`, its clauses, `UnDense (Set.range η)` from `denseRange_unEta` — ~60;
+6. universes: run the whole thing on `ULift.{u} V` — ~50.
+
+### Things the brief got wrong
+
+Nothing.  The three carry-forward points (item 4's reshaping, the universe
+item, and `[CompleteSpace X]` being a real obligation rather than a
+transcription defect) all held.  The only superseded advice is session 58's
+"σ-closure as an inductive predicate over `Φ`": legal, but unnecessary — with
+the inner product determined by the set, the thesis's own Zorn argument is
+cheaper, and it keeps the proof a transcription rather than a redesign.

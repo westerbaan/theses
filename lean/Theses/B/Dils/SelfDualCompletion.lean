@@ -1062,6 +1062,753 @@ theorem op_smul_comm_complex' (b : 𝒷) (c : ℂ) (x : UnCompl B) :
 
 end UnCompletion
 
+/-! ### The σ-closure and its inner product (**150XI**–**150XV**)
+
+This is the heart of **150II**, and the only part of the construction that
+Mathlib does not supply.  The thesis extends the inner product from
+`V₀ = η(V)` to a maximal *compatible extension* `W ⊆ V̄` by Zorn's lemma over
+pairs (a subset together with an inner product on it), taking `σ(W)` — the
+limits of norm-bounded Cauchy nets over `W` — at each step.
+
+**Divergence (case 2).**  We keep the thesis's Zorn argument but drop the
+data: the *polarization form* `ipf ω x y` of the extended seminorm `‖·‖_ω`
+is defined on all of `V̄`, is jointly continuous, and agrees with `ω[x,y]`
+on `V₀`; since the np-functionals separate `𝒷` (**44XI**), the inner product
+of a compatible extension is *determined* by its underlying set.  So the
+poset the thesis orders by "`W₁ ⊆ W₂` and the inner products agree" is here
+a poset of plain subsets under `⊆`, and the thesis's limit step (**150XIV**)
+becomes a union of sets. -/
+
+section SigmaClosure
+
+variable {𝒷 : Type u} {V : Type v}
+  [CStarAlgebra 𝒷] [PartialOrder 𝒷] [StarOrderedRing 𝒷] [VonNeumannAlgebra 𝒷]
+  [AddCommGroup V] [Module ℂ V] [SMul 𝒷 V]
+
+variable (B : BInner 𝒷 V)
+
+/-- The extended seminorms separate the points of `V̄`. -/
+theorem eq_zero_of_semC_eq_zero {x : UnCompl B}
+    (h : ∀ ω : NPFunctional 𝒷, semC B ω x = 0) : x = 0 := by
+  set F : Filter (UnUnif B) := Filter.comap ((↑) : UnUnif B → UnCompl B) (𝓝 x) with hF
+  have hne : F.NeBot := UniformSpace.Completion.isDenseInducing_coe.comap_nhds_neBot x
+  have hto : Tendsto ((↑) : UnUnif B → UnCompl B) F (𝓝 x) := Filter.map_comap_le
+  have hsem : ∀ ω : NPFunctional 𝒷,
+      Tendsto (fun a : UnUnif B => UnUnif.sem B ω a) F (𝓝 0) := by
+    intro ω
+    have h1 : Tendsto (fun a : UnUnif B => semC B ω (a : UnCompl B)) F (𝓝 (semC B ω x)) :=
+      ((continuous_semC B ω).continuousAt).tendsto.comp hto
+    rw [h ω] at h1
+    exact h1.congr fun a => semC_coe B ω a
+  have h0 : Tendsto (id : UnUnif B → UnUnif B) F (𝓝 0) := by
+    rw [UnUnif.tendsto_iff]
+    intro ω
+    have := hsem ω
+    simpa [UnUnif.sem_apply] using this
+  have h1 : Tendsto (fun a : UnUnif B => (a : UnCompl B)) F (𝓝 ((0 : UnUnif B) : UnCompl B)) :=
+    ((UniformSpace.Completion.continuous_coe (UnUnif B)).continuousAt).tendsto.comp h0
+  rw [UniformSpace.Completion.coe_zero] at h1
+  exact tendsto_nhds_unique hto h1
+
+/-- `(ω a).re` as a complex number is `ω a`, for `0 ≤ a`. -/
+private theorem npf_re_coe (ω : NPFunctional 𝒷) {a : 𝒷} (ha : 0 ≤ a) :
+    (((ω a).re : ℝ) : ℂ) = ω a := by
+  have h := npFunctional_nonneg ω ha
+  rw [Complex.le_def] at h
+  exact Complex.ext (by simp) (by simp [← h.2])
+
+private theorem npf_smul_complex (ω : NPFunctional 𝒷) (c : ℂ) (a : 𝒷) :
+    ω (c • a) = c * ω a :=
+  (map_smul ω.toPositiveLinearMap c a).trans (smul_eq_mul _ _)
+
+private theorem npf_re_nonneg' (ω : NPFunctional 𝒷) {a : 𝒷} (ha : 0 ≤ a) :
+    (0 : ℝ) ≤ (ω a).re := by
+  have h := npFunctional_nonneg ω ha
+  rw [Complex.le_def] at h
+  simpa using h.1
+
+/-- The quadratic form `q_ω(x) = ‖x‖_ω²` on `V̄`, as a complex number. -/
+private noncomputable def unQ (ω : NPFunctional 𝒷) (x : UnCompl B) : ℂ :=
+  ((semC B ω x ^ 2 : ℝ) : ℂ)
+
+private theorem continuous_unQ (ω : NPFunctional 𝒷) : Continuous (unQ B ω) :=
+  Complex.continuous_ofReal.comp ((continuous_semC B ω).pow 2)
+
+private theorem unQ_coe (ω : NPFunctional 𝒷) (a : UnUnif B) :
+    unQ B ω (a : UnCompl B) = ω ((UnUnif.binner B).inner a a) := by
+  rw [unQ, semC_coe, UnUnif.sem_apply, unSeminorm,
+    Real.sq_sqrt (npf_re_nonneg' ω ((UnUnif.binner B).inner_self_nonneg a))]
+  exact npf_re_coe ω ((UnUnif.binner B).inner_self_nonneg a)
+
+private theorem unQ_smul (ω : NPFunctional 𝒷) (c : ℂ) (x : UnCompl B) :
+    unQ B ω (c • x) = ((‖c‖ ^ 2 : ℝ) : ℂ) * unQ B ω x := by
+  rw [unQ, unQ, semC_smul_complex, mul_pow, Complex.ofReal_mul]
+
+private theorem unQ_zero (ω : NPFunctional 𝒷) : unQ B ω 0 = 0 := by
+  rw [unQ, semC_zero]; norm_num
+
+/-- **150XI**, the key device: the polarization form of the extended
+seminorm `‖·‖_ω`.  On the image of `V` it is `ω[v,w]`, it is *jointly
+continuous* (which the inner product itself is not), and — because the
+np-functionals separate the points of `𝒷` — it determines the inner product
+of any compatible extension. -/
+noncomputable def ipf (ω : NPFunctional 𝒷) (x y : UnCompl B) : ℂ :=
+  (4 : ℂ)⁻¹ * (unQ B ω (y + x) - unQ B ω (y - x)
+    + Complex.I * unQ B ω (y + Complex.I • x)
+    - Complex.I * unQ B ω (y - Complex.I • x))
+
+/-- `ipf` is *jointly* continuous — the point of the polarization form. -/
+theorem continuous_ipf₂ {α : Type*} [TopologicalSpace α] (ω : NPFunctional 𝒷)
+    {f g : α → UnCompl B} (hf : Continuous f) (hg : Continuous g) :
+    Continuous fun t => ipf B ω (f t) (g t) :=
+  continuous_const.mul
+    (((((continuous_unQ B ω).comp (hg.add hf)).sub
+      ((continuous_unQ B ω).comp (hg.sub hf))).add
+        (continuous_const.mul ((continuous_unQ B ω).comp
+          (hg.add (hf.const_smul Complex.I))))).sub
+      (continuous_const.mul ((continuous_unQ B ω).comp
+        (hg.sub (hf.const_smul Complex.I)))))
+
+theorem continuous_ipf (ω : NPFunctional 𝒷) :
+    Continuous fun p : UnCompl B × UnCompl B => ipf B ω p.1 p.2 :=
+  continuous_ipf₂ B ω continuous_fst continuous_snd
+
+@[simp] theorem ipf_coe (ω : NPFunctional 𝒷) (a b : UnUnif B) :
+    ipf B ω (a : UnCompl B) (b : UnCompl B) = ω ((UnUnif.binner B).inner a b) := by
+  set A := UnUnif.binner B with hA
+  have e1 : A.inner (b + a) (b + a)
+      = A.inner b b + A.inner b a + A.inner a b + A.inner a a := by
+    simp only [A.inner_add_left, A.inner_add_right]; abel
+  have e2 : A.inner (b - a) (b - a)
+      = A.inner b b - A.inner b a - A.inner a b + A.inner a a := by
+    simp only [A.inner_sub_left, A.inner_sub_right]; abel
+  have e3 : A.inner (b + Complex.I • a) (b + Complex.I • a)
+      = A.inner b b + Complex.I • A.inner b a - Complex.I • A.inner a b
+        + A.inner a a := by
+    simp only [A.inner_add_left, A.inner_add_right, A.inner_smul_left_complex,
+      A.inner_smul_right_complex, Complex.conj_I, smul_smul, neg_mul,
+      Complex.I_mul_I, neg_neg, one_smul, neg_smul]
+    abel
+  have e4 : A.inner (b - Complex.I • a) (b - Complex.I • a)
+      = A.inner b b - Complex.I • A.inner b a + Complex.I • A.inner a b
+        + A.inner a a := by
+    simp only [A.inner_sub_left, A.inner_sub_right, A.inner_smul_left_complex,
+      A.inner_smul_right_complex, Complex.conj_I, smul_smul, neg_mul,
+      Complex.I_mul_I, neg_neg, one_smul, neg_smul]
+    abel
+  rw [ipf, ← UniformSpace.Completion.coe_smul, ← UniformSpace.Completion.coe_add,
+    ← UniformSpace.Completion.coe_sub, ← UniformSpace.Completion.coe_add,
+    ← UniformSpace.Completion.coe_sub, unQ_coe, unQ_coe, unQ_coe, unQ_coe,
+    e1, e2, e3, e4]
+  simp only [npFunctional_add, npFunctional_sub, npf_smul_complex]
+  linear_combination ((ω (A.inner b a) - ω (A.inner a b)) / 2) * Complex.I_mul_I
+
+theorem ipf_unEta (ω : NPFunctional 𝒷) (v w : V) :
+    ipf B ω (unEta B v) (unEta B w) = ω (B.inner v w) :=
+  ipf_coe B ω (UnUnif.mk B v) (UnUnif.mk B w)
+
+private theorem norm_sq_complex (z : ℂ) : (‖z‖ ^ 2 : ℝ) = Complex.normSq z := by
+  rw [Complex.norm_def, Real.sq_sqrt (Complex.normSq_nonneg z)]
+
+/-- `ipf ω x x = ‖x‖_ω²` — the polarization form recovers the seminorm. -/
+theorem ipf_self (ω : NPFunctional 𝒷) (x : UnCompl B) :
+    ipf B ω x x = ((semC B ω x ^ 2 : ℝ) : ℂ) := by
+  have h2 : x + x = (2 : ℂ) • x := by rw [two_smul]
+  have h0 : x - x = 0 := sub_self x
+  have hp : x + Complex.I • x = ((1 + Complex.I : ℂ)) • x := by
+    rw [add_smul, one_smul]
+  have hm : x - Complex.I • x = ((1 - Complex.I : ℂ)) • x := by
+    rw [sub_smul, one_smul]
+  have n2 : ((‖(2 : ℂ)‖ ^ 2 : ℝ) : ℂ) = 4 := by
+    rw [norm_sq_complex]; norm_num
+  have np : ((‖(1 + Complex.I : ℂ)‖ ^ 2 : ℝ) : ℂ) = 2 := by
+    rw [norm_sq_complex]; simp [Complex.normSq_apply]; norm_num
+  have nm : ((‖(1 - Complex.I : ℂ)‖ ^ 2 : ℝ) : ℂ) = 2 := by
+    rw [norm_sq_complex]; simp [Complex.normSq_apply]; norm_num
+  rw [ipf, h2, h0, hp, hm, unQ_smul, unQ_smul, unQ_smul, unQ_zero, n2, np, nm]
+  rw [unQ]
+  ring
+
+theorem ipf_add_right (ω : NPFunctional 𝒷) (x y z : UnCompl B) :
+    ipf B ω x (y + z) = ipf B ω x y + ipf B ω x z := by
+  refine UniformSpace.Completion.induction_on₃ x y z
+    (isClosed_eq (continuous_ipf₂ B ω continuous_fst
+        (continuous_snd.fst.add continuous_snd.snd))
+      ((continuous_ipf₂ B ω continuous_fst continuous_snd.fst).add
+        (continuous_ipf₂ B ω continuous_fst continuous_snd.snd)))
+    fun a b c => ?_
+  rw [← UniformSpace.Completion.coe_add, ipf_coe, ipf_coe, ipf_coe,
+    (UnUnif.binner B).inner_add_right, npFunctional_add]
+
+theorem ipf_smul_right (ω : NPFunctional 𝒷) (c : ℂ) (x y : UnCompl B) :
+    ipf B ω x (c • y) = c * ipf B ω x y := by
+  refine UniformSpace.Completion.induction_on₂ x y
+    (isClosed_eq (continuous_ipf₂ B ω continuous_fst (continuous_snd.const_smul c))
+      ((continuous_ipf₂ B ω continuous_fst continuous_snd).const_mul c))
+    fun a b => ?_
+  rw [← UniformSpace.Completion.coe_smul, ipf_coe, ipf_coe,
+    (UnUnif.binner B).inner_smul_right_complex, npf_smul_complex]
+
+theorem ipf_conj (ω : NPFunctional 𝒷) (x y : UnCompl B) :
+    ipf B ω y x = (starRingEnd ℂ) (ipf B ω x y) := by
+  refine UniformSpace.Completion.induction_on₂ x y
+    (isClosed_eq (continuous_ipf₂ B ω continuous_snd continuous_fst)
+      (Complex.continuous_conj.comp
+        (continuous_ipf₂ B ω continuous_fst continuous_snd)))
+    fun a b => ?_
+  rw [ipf_coe, ipf_coe, starRingEnd_apply, ← npFunctional_star,
+    (UnUnif.binner B).star_inner]
+
+theorem ipf_add_left (ω : NPFunctional 𝒷) (x y z : UnCompl B) :
+    ipf B ω (x + y) z = ipf B ω x z + ipf B ω y z := by
+  rw [ipf_conj, ipf_add_right, map_add, ← ipf_conj, ← ipf_conj]
+
+theorem ipf_smul_left (ω : NPFunctional 𝒷) (c : ℂ) (x y : UnCompl B) :
+    ipf B ω (c • x) y = (starRingEnd ℂ) c * ipf B ω x y := by
+  rw [ipf_conj, ipf_smul_right, map_mul, ← ipf_conj]
+
+/-- The 𝒷-action transforms `ipf` by `ω ↦ b*ω` — the form of **150IX** that
+survives to the completion, and the only handle we have on the module
+action there. -/
+theorem ipf_op_smul (ω : NPFunctional 𝒷) (b : 𝒷) (x y : UnCompl B) :
+    ipf B ω (b • x) (b • y) = ipf B (conjNP (star b) ω) x y := by
+  refine UniformSpace.Completion.induction_on₂ x y
+    (isClosed_eq (continuous_ipf₂ B ω (continuous_fst.const_smul b)
+        (continuous_snd.const_smul b))
+      (continuous_ipf₂ B (conjNP (star b) ω) continuous_fst continuous_snd))
+    fun a c => ?_
+  rw [← UniformSpace.Completion.coe_smul, ← UniformSpace.Completion.coe_smul,
+    ipf_coe, ipf_coe, BInner.inner_op_smul_smul, conjNP_apply, star_star]
+
+theorem ipf_zero_right (ω : NPFunctional 𝒷) (x : UnCompl B) : ipf B ω x 0 = 0 := by
+  have := ipf_smul_right B ω 0 x 0
+  simpa using this
+
+theorem ipf_zero_left (ω : NPFunctional 𝒷) (x : UnCompl B) : ipf B ω 0 x = 0 := by
+  rw [ipf_conj, ipf_zero_right, map_zero]
+
+theorem ipf_sub_right (ω : NPFunctional 𝒷) (x y z : UnCompl B) :
+    ipf B ω x (y - z) = ipf B ω x y - ipf B ω x z := by
+  rw [sub_eq_add_neg, ipf_add_right, show -z = (-1 : ℂ) • z by simp,
+    ipf_smul_right]
+  ring
+
+theorem ipf_sub_left (ω : NPFunctional 𝒷) (x y z : UnCompl B) :
+    ipf B ω (x - y) z = ipf B ω x z - ipf B ω y z := by
+  rw [ipf_conj, ipf_sub_right, map_sub, ← ipf_conj, ← ipf_conj]
+
+/-! ### The inner product determined by `ipf`
+
+Because the np-functionals separate the points of `𝒷` (**44XI**), an element
+`b` with `ω b = ipf ω x y` for every `ω` is unique if it exists.  So — and
+this is what replaces the thesis's poset of *pairs* (a subset together with
+an inner product) by a poset of plain subsets — the inner product of a
+compatible extension is determined by the extension's underlying set. -/
+
+/-- `x` and `y` **have an inner product**: some `b ∈ 𝒷` has `ω b = ipf ω x y`
+for every np-functional `ω`. -/
+def HasIP (x y : UnCompl B) : Prop :=
+  ∃ b : 𝒷, ∀ ω : NPFunctional 𝒷, ω b = ipf B ω x y
+
+/-- The inner product of `x` and `y` (junk value `0` when `HasIP` fails). -/
+noncomputable def ipVal (x y : UnCompl B) : 𝒷 :=
+  Classical.epsilon fun b : 𝒷 => ∀ ω : NPFunctional 𝒷, ω b = ipf B ω x y
+
+theorem ipVal_spec {x y : UnCompl B} (h : HasIP B x y) (ω : NPFunctional 𝒷) :
+    ω (ipVal B x y) = ipf B ω x y :=
+  Classical.epsilon_spec h ω
+
+theorem ipVal_eq {x y : UnCompl B} {b : 𝒷}
+    (hb : ∀ ω : NPFunctional 𝒷, ω b = ipf B ω x y) : ipVal B x y = b :=
+  eq_of_forall_npFunctional fun ω => by rw [ipVal_spec B ⟨b, hb⟩ ω, ← hb ω]
+
+theorem hasIP_unEta (v w : V) : HasIP B (unEta B v) (unEta B w) :=
+  ⟨B.inner v w, fun ω => (ipf_unEta B ω v w).symm⟩
+
+@[simp] theorem ipVal_unEta (v w : V) :
+    ipVal B (unEta B v) (unEta B w) = B.inner v w :=
+  ipVal_eq B fun ω => (ipf_unEta B ω v w).symm
+
+variable {B}
+
+theorem HasIP.add_right {x y z : UnCompl B} (h₁ : HasIP B x y) (h₂ : HasIP B x z) :
+    HasIP B x (y + z) :=
+  ⟨ipVal B x y + ipVal B x z, fun ω => by
+    rw [npFunctional_add, ipVal_spec B h₁, ipVal_spec B h₂, ipf_add_right]⟩
+
+theorem ipVal_add_right {x y z : UnCompl B} (h₁ : HasIP B x y) (h₂ : HasIP B x z) :
+    ipVal B x (y + z) = ipVal B x y + ipVal B x z :=
+  ipVal_eq B fun ω => by
+    rw [npFunctional_add, ipVal_spec B h₁, ipVal_spec B h₂, ipf_add_right]
+
+theorem HasIP.smul_right (c : ℂ) {x y : UnCompl B} (h : HasIP B x y) :
+    HasIP B x (c • y) :=
+  ⟨c • ipVal B x y, fun ω => by
+    rw [npf_smul_complex, ipVal_spec B h, ipf_smul_right]⟩
+
+theorem ipVal_smul_right (c : ℂ) {x y : UnCompl B} (h : HasIP B x y) :
+    ipVal B x (c • y) = c • ipVal B x y :=
+  ipVal_eq B fun ω => by rw [npf_smul_complex, ipVal_spec B h, ipf_smul_right]
+
+theorem HasIP.symm {x y : UnCompl B} (h : HasIP B x y) : HasIP B y x :=
+  ⟨star (ipVal B x y), fun ω => by
+    rw [npFunctional_star, ipVal_spec B h, ← starRingEnd_apply, ← ipf_conj]⟩
+
+theorem ipVal_symm {x y : UnCompl B} (h : HasIP B x y) :
+    ipVal B y x = star (ipVal B x y) :=
+  ipVal_eq B fun ω => by
+    rw [npFunctional_star, ipVal_spec B h, ← starRingEnd_apply, ← ipf_conj]
+
+theorem HasIP.add_left {x y z : UnCompl B} (h₁ : HasIP B x z) (h₂ : HasIP B y z) :
+    HasIP B (x + y) z := ((h₁.symm.add_right h₂.symm).symm)
+
+theorem ipVal_add_left {x y z : UnCompl B} (h₁ : HasIP B x z) (h₂ : HasIP B y z) :
+    ipVal B (x + y) z = ipVal B x z + ipVal B y z := by
+  rw [ipVal_symm (h₁.symm.add_right h₂.symm), ipVal_add_right h₁.symm h₂.symm,
+    star_add, ipVal_symm h₁, ipVal_symm h₂, star_star, star_star]
+
+theorem HasIP.smul_left (c : ℂ) {x y : UnCompl B} (h : HasIP B x y) :
+    HasIP B (c • x) y := (h.symm.smul_right c).symm
+
+theorem ipVal_smul_left (c : ℂ) {x y : UnCompl B} (h : HasIP B x y) :
+    ipVal B (c • x) y = (starRingEnd ℂ) c • ipVal B x y := by
+  rw [ipVal_symm (h.symm.smul_right c), ipVal_smul_right c h.symm, star_smul,
+    ipVal_symm h, star_star]
+  rfl
+
+theorem HasIP.op_smul (b : 𝒷) {x y : UnCompl B} (h : HasIP B x y) :
+    HasIP B (b • x) (b • y) :=
+  ⟨b * ipVal B x y * star b, fun ω => by
+    have hc : ω (b * ipVal B x y * star b) = conjNP (star b) ω (ipVal B x y) := by
+      rw [conjNP_apply, star_star]
+    rw [hc, ipVal_spec B h, ipf_op_smul]⟩
+
+theorem ipVal_op_smul (b : 𝒷) {x y : UnCompl B} (h : HasIP B x y) :
+    ipVal B (b • x) (b • y) = b * ipVal B x y * star b :=
+  ipVal_eq B fun ω => by
+    have hc : ω (b * ipVal B x y * star b) = conjNP (star b) ω (ipVal B x y) := by
+      rw [conjNP_apply, star_star]
+    rw [hc, ipVal_spec B h, ipf_op_smul]
+
+variable (B)
+
+theorem hasIP_zero_right (x : UnCompl B) : HasIP B x 0 :=
+  ⟨0, fun ω => by rw [npFunctional_zero, ipf_zero_right]⟩
+
+@[simp] theorem ipVal_zero_right (x : UnCompl B) : ipVal B x 0 = 0 :=
+  ipVal_eq B fun ω => by rw [npFunctional_zero, ipf_zero_right]
+
+/-- `[x,x] = 0` forces `x = 0`: the inner product of a compatible extension
+is *definite*, because the extended seminorms separate `V̄`. -/
+theorem eq_zero_of_ipVal_self_eq_zero {x : UnCompl B} (h : HasIP B x x)
+    (h0 : ipVal B x x = 0) : x = 0 := by
+  refine eq_zero_of_semC_eq_zero B fun ω => ?_
+  have h1 : ((semC B ω x ^ 2 : ℝ) : ℂ) = 0 := by
+    rw [← ipf_self B ω x, ← ipVal_spec B h ω, h0, npFunctional_zero]
+  have h2 : semC B ω x ^ 2 = 0 := by exact_mod_cast h1
+  nlinarith [semC_nonneg B ω x]
+
+/-- Positivity: `ω [x,x] = ‖x‖_ω² ≥ 0` for every np-functional, and the
+np-functionals are *order* separating (**44XI**). -/
+theorem ipVal_self_nonneg {x : UnCompl B} (h : HasIP B x x) :
+    (0 : 𝒷) ≤ ipVal B x x := by
+  have hsa : IsSelfAdjoint (ipVal B x x) := (ipVal_symm h).symm
+  refine np_orderSeparating 0 _ (IsSelfAdjoint.zero 𝒷) hsa fun ω => ?_
+  rw [npFunctional_zero, ipVal_spec B h ω, ipf_self, Complex.le_def]
+  refine ⟨?_, by simp only [Complex.zero_im, Complex.ofReal_im]⟩
+  simp only [Complex.zero_re, Complex.ofReal_re]
+  positivity
+
+/-- The sixth module law on `V̄`: the ℂ-action on `𝒷` and the 𝒷-action on
+`V̄` are compatible.  Like the other five it holds only after separation. -/
+theorem smul_op_smul' (c : ℂ) (b : 𝒷) (x : UnCompl B) :
+    ((c • b) • x : UnCompl B) = c • (b • x) := by
+  refine UniformSpace.Completion.induction_on x
+    (isClosed_eq (continuous_const_smul (c • b))
+      ((continuous_const_smul c).comp (continuous_const_smul b))) fun a => ?_
+  rw [← UniformSpace.Completion.coe_smul, ← UniformSpace.Completion.coe_smul,
+    ← UniformSpace.Completion.coe_smul]
+  refine coe_eq_coe_of_inner_zero B ?_
+  set A := UnUnif.binner B
+  simp only [A.inner_sub_left, A.inner_sub_right, A.inner_op_smul_left,
+    A.inner_op_smul_right, A.inner_smul_left_complex, A.inner_smul_right_complex,
+    star_smul, Complex.star_def, smul_smul, smul_mul_assoc, mul_smul_comm,
+    mul_assoc]
+  rw [mul_comm ((starRingEnd ℂ) c) c]
+  abel
+
+private theorem smul_cancel {c : ℂ} (hc : c ≠ 0) {u v : 𝒷} (h : c • u = c • v) :
+    u = v := by
+  have h2 := congrArg (fun z : 𝒷 => c⁻¹ • z) h
+  simpa [smul_smul, inv_mul_cancel₀ hc] using h2
+
+/-- **150XI** (`dils-completion-setup`, dils.tex:3035, Definition), rephrased:
+a **compatible extension** is a subset of `V̄` containing `V₀ = η(V)`, closed
+under the operations, and on which the inner product exists.
+
+The thesis carries the inner product as *data* (a pair of a subset and an
+inner product on it) and orders such pairs; here `HasIP` makes it a property
+of the set alone, because `ipf` determines the inner product.  The thesis's
+fourth condition — that the extension's own ultranorm seminorms agree with
+those of `V̄` — is likewise automatic, being `ω [x,x] = ipf ω x x = ‖x‖_ω²`. -/
+structure IsCompatExt (W : Submodule ℂ (UnCompl B)) : Prop where
+  unEta_mem : ∀ v : V, unEta B v ∈ W
+  op_smul_mem : ∀ (b : 𝒷) ⦃x : UnCompl B⦄, x ∈ W → b • x ∈ W
+  hasIP : ∀ ⦃x y : UnCompl B⦄, x ∈ W → y ∈ W → HasIP B x y
+
+variable {B}
+
+/-- The polarization identity in the *algebra* variable: applying
+`[b·x, b·y] = b[x,y]b*` at `1 + b` and at `1 + ib` and combining. -/
+private theorem compat_key {W : Submodule ℂ (UnCompl B)} (hW : IsCompatExt B W)
+    {x y : UnCompl B} (hx : x ∈ W) (hy : y ∈ W) (b : 𝒷) :
+    ipVal B x (b • y) + ipVal B (b • x) y
+      = ipVal B x y * star b + b * ipVal B x y := by
+  have hbx := hW.op_smul_mem b hx
+  have hby := hW.op_smul_mem b hy
+  have hxy := hW.hasIP hx hy
+  have hsum := ipVal_op_smul (1 + b) hxy
+  have hex : ((1 + b) • x : UnCompl B) = x + b • x := by
+    rw [add_op_smul', one_op_smul']
+  have hey : ((1 + b) • y : UnCompl B) = y + b • y := by
+    rw [add_op_smul', one_op_smul']
+  rw [hex, hey, ipVal_add_left (hW.hasIP hx (W.add_mem hy hby))
+      (hW.hasIP hbx (W.add_mem hy hby)),
+    ipVal_add_right (hW.hasIP hx hy) (hW.hasIP hx hby),
+    ipVal_add_right (hW.hasIP hbx hy) (hW.hasIP hbx hby),
+    ipVal_op_smul b hxy] at hsum
+  have hrhs : (1 + b) * ipVal B x y * star (1 + b)
+      = ipVal B x y + ipVal B x y * star b + b * ipVal B x y
+        + b * ipVal B x y * star b := by
+    rw [star_add, star_one]; noncomm_ring
+  rw [hrhs] at hsum
+  have h3 : ipVal B x (b • y) + ipVal B (b • x) y
+      = (ipVal B x y + ipVal B x y * star b + b * ipVal B x y
+          + b * ipVal B x y * star b) - ipVal B x y - b * ipVal B x y * star b := by
+    rw [← hsum]; abel
+  rw [h3]; abel
+
+/-- 𝒷-homogeneity of the inner product of a compatible extension. -/
+theorem IsCompatExt.ipVal_op_smul_right {W : Submodule ℂ (UnCompl B)} (hW : IsCompatExt B W)
+    (b : 𝒷) {x y : UnCompl B} (hx : x ∈ W) (hy : y ∈ W) :
+    ipVal B x (b • y) = b * ipVal B x y := by
+  have hbx := hW.op_smul_mem b hx
+  have hby := hW.op_smul_mem b hy
+  have k1 := compat_key hW hx hy b
+  have k2 := compat_key hW hx hy ((Complex.I : ℂ) • b)
+  rw [smul_op_smul', smul_op_smul',
+    ipVal_smul_right Complex.I (hW.hasIP hx hby),
+    ipVal_smul_left Complex.I (hW.hasIP hbx hy), Complex.conj_I,
+    star_smul, Complex.star_def, Complex.conj_I, mul_smul_comm,
+    smul_mul_assoc, neg_smul, neg_smul] at k2
+  have e2 : ipVal B x (b • y) - ipVal B (b • x) y
+      = -(ipVal B x y * star b) + b * ipVal B x y := by
+    refine smul_cancel Complex.I_ne_zero ?_
+    rw [smul_sub, smul_add, smul_neg, sub_eq_add_neg]
+    exact k2
+  have e3 : (2 : ℂ) • ipVal B x (b • y) = (2 : ℂ) • (b * ipVal B x y) := by
+    rw [two_smul, two_smul]
+    calc ipVal B x (b • y) + ipVal B x (b • y)
+        = (ipVal B x (b • y) + ipVal B (b • x) y)
+          + (ipVal B x (b • y) - ipVal B (b • x) y) := by abel
+      _ = (ipVal B x y * star b + b * ipVal B x y)
+          + (-(ipVal B x y * star b) + b * ipVal B x y) := by rw [k1, e2]
+      _ = b * ipVal B x y + b * ipVal B x y := by abel
+  exact smul_cancel two_ne_zero e3
+
+/-- The 𝒷-action on a compatible extension.  It is not an instance: it
+depends on the proof `hW`. -/
+@[instance_reducible] noncomputable def IsCompatExt.smulInst
+    {W : Submodule ℂ (UnCompl B)} (hW : IsCompatExt B W) : SMul 𝒷 W where
+  smul b x := ⟨b • (x : UnCompl B), hW.op_smul_mem b x.2⟩
+
+/-- A compatible extension is a 𝒷-module with a 𝒷-valued inner product —
+the thesis's clause 3 of **150XI**, and all five `BInner` axioms come from
+the `ipf` identities. -/
+noncomputable def IsCompatExt.binner {W : Submodule ℂ (UnCompl B)}
+    (hW : IsCompatExt B W) : letI := hW.smulInst; BInner 𝒷 W :=
+  letI := hW.smulInst
+  { inner := fun x y => ipVal B (x : UnCompl B) (y : UnCompl B)
+    inner_add_right := fun x y z =>
+      ipVal_add_right (hW.hasIP x.2 y.2) (hW.hasIP x.2 z.2)
+    inner_op_smul_right := fun b x y => hW.ipVal_op_smul_right b x.2 y.2
+    inner_smul_right_complex := fun c x y => ipVal_smul_right c (hW.hasIP x.2 y.2)
+    star_inner := fun x y => (ipVal_symm (hW.hasIP x.2 y.2)).symm
+    inner_self_nonneg := fun x => ipVal_self_nonneg B (hW.hasIP x.2 x.2) }
+
+/-- Cauchy–Schwarz (**142V**.1) on a compatible extension. -/
+theorem IsCompatExt.norm_ipVal_le {W : Submodule ℂ (UnCompl B)}
+    (hW : IsCompatExt B W) {x y : UnCompl B} (hx : x ∈ W) (hy : y ∈ W) :
+    ‖ipVal B x y‖ ≤ Real.sqrt ‖ipVal B x x‖ * Real.sqrt ‖ipVal B y y‖ := by
+  letI := hW.smulInst
+  exact module_seminorm_1 hW.binner ⟨x, hx⟩ ⟨y, hy⟩
+
+/-! ### Norm-boundedness in the extended seminorms
+
+The thesis's `σ(W)` collects the limits of **norm-bounded** Cauchy nets over
+`W`, and the norm is the one of `W`'s own inner product.  We phrase the
+bound in the extended seminorms instead: `‖x‖ ≤ M` is `[x,x] ≤ M²·1`, which
+by order separation of the np-functionals (**44XI**) is
+`ω[x,x] ≤ M²ω(1)`, i.e. `‖x‖_ω ≤ M(ω 1)^½`.  This makes sense on all of `V̄`,
+and needs neither an inner product nor a supremum. -/
+
+variable (B)
+
+private theorem np_re_le_norm (ω : NPFunctional 𝒷) {a : 𝒷} (ha : IsSelfAdjoint a) :
+    (ω a).re ≤ ‖a‖ * (ω 1).re := by
+  have h2 := npFunctional_mono ω ha.le_algebraMap_norm_self
+  rw [algebraMap_real_eq, Algebra.algebraMap_eq_smul_one, npf_smul_complex] at h2
+  simpa [Complex.mul_re] using (Complex.le_def.mp h2).1
+
+private theorem np_one_re_nonneg (ω : NPFunctional 𝒷) : (0 : ℝ) ≤ (ω 1).re :=
+  npf_re_nonneg' ω zero_le_one
+
+/-- `‖x‖ ≤ M`, phrased in the extended seminorms only. -/
+def SemBddBy (M : ℝ) (x : UnCompl B) : Prop :=
+  ∀ ω : NPFunctional 𝒷, semC B ω x ≤ M * Real.sqrt ((ω 1).re)
+
+variable {B}
+
+theorem SemBddBy.add {M N : ℝ} {x y : UnCompl B} (hx : SemBddBy B M x)
+    (hy : SemBddBy B N y) : SemBddBy B (M + N) (x + y) := fun ω => by
+  have h := semC_add_le B ω x y
+  have h1 := hx ω
+  have h2 := hy ω
+  rw [add_mul]
+  linarith
+
+theorem SemBddBy.smul {M : ℝ} {x : UnCompl B} (c : ℂ) (hx : SemBddBy B M x) :
+    SemBddBy B (‖c‖ * M) (c • x) := fun ω => by
+  rw [semC_smul_complex, mul_assoc]
+  exact mul_le_mul_of_nonneg_left (hx ω) (norm_nonneg c)
+
+theorem SemBddBy.op_smul {M : ℝ} {x : UnCompl B} (b : 𝒷) (hM : 0 ≤ M)
+    (hx : SemBddBy B M x) : SemBddBy B (M * ‖b‖) (b • x) := fun ω => by
+  rw [semC_op_smul]
+  have h2 : ((conjNP (star b) ω) 1).re ≤ ‖b‖ ^ 2 * (ω 1).re := by
+    rw [conjNP_apply, star_star, mul_one]
+    have hsa : IsSelfAdjoint (b * star b) := by
+      simp [IsSelfAdjoint, star_mul, star_star]
+    have h3 := np_re_le_norm ω hsa
+    have hn : ‖b * star b‖ = ‖b‖ ^ 2 := by
+      rw [CStarRing.norm_self_mul_star]; ring
+    rwa [hn] at h3
+  calc semC B (conjNP (star b) ω) x
+      ≤ M * Real.sqrt (((conjNP (star b) ω) 1).re) := hx _
+    _ ≤ M * Real.sqrt (‖b‖ ^ 2 * (ω 1).re) :=
+        mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt h2) hM
+    _ = M * ‖b‖ * Real.sqrt ((ω 1).re) := by
+        rw [Real.sqrt_mul (by positivity), Real.sqrt_sq (norm_nonneg b), mul_assoc]
+
+theorem SemBddBy.mono {M N : ℝ} {x : UnCompl B} (hMN : M ≤ N)
+    (hx : SemBddBy B M x) : SemBddBy B N x := fun ω =>
+  (hx ω).trans (mul_le_mul_of_nonneg_right hMN (Real.sqrt_nonneg _))
+
+/-- On a compatible extension, `SemBddBy` *is* the norm bound: every element
+is bounded by its own norm … -/
+theorem IsCompatExt.semBddBy_of_mem {W : Submodule ℂ (UnCompl B)}
+    (hW : IsCompatExt B W) {x : UnCompl B} (hx : x ∈ W) :
+    SemBddBy B (Real.sqrt ‖ipVal B x x‖) x := fun ω => by
+  have h := hW.hasIP hx hx
+  have hsa : IsSelfAdjoint (ipVal B x x) := (ipVal_symm h).symm
+  have h1 : ((semC B ω x ^ 2 : ℝ) : ℂ) = ω (ipVal B x x) := by
+    rw [ipVal_spec B h ω, ipf_self]
+  have h1' : semC B ω x ^ 2 = (ω (ipVal B x x)).re := by
+    rw [← h1]; exact (Complex.ofReal_re _).symm
+  have h2 : (ω (ipVal B x x)).re ≤ ‖ipVal B x x‖ * (ω 1).re := np_re_le_norm ω hsa
+  have h3 : semC B ω x ^ 2
+      ≤ (Real.sqrt ‖ipVal B x x‖ * Real.sqrt ((ω 1).re)) ^ 2 := by
+    rw [mul_pow, Real.sq_sqrt (norm_nonneg _), Real.sq_sqrt (np_one_re_nonneg ω)]
+    rw [h1']; exact h2
+  nlinarith [semC_nonneg B ω x,
+    mul_nonneg (Real.sqrt_nonneg ‖ipVal B x x‖) (Real.sqrt_nonneg ((ω 1).re))]
+
+/-- … and conversely a `SemBddBy M` element of a compatible extension has
+`‖[x,x]‖ ≤ M²‖1‖`. -/
+theorem IsCompatExt.norm_ipVal_self_le {W : Submodule ℂ (UnCompl B)}
+    (hW : IsCompatExt B W) {x : UnCompl B} (hx : x ∈ W) {M : ℝ}
+    (hb : SemBddBy B M x) : ‖ipVal B x x‖ ≤ M ^ 2 * ‖(1 : 𝒷)‖ := by
+  have h := hW.hasIP hx hx
+  have hsa : IsSelfAdjoint (ipVal B x x) := (ipVal_symm h).symm
+  have hsa2 : IsSelfAdjoint (((M ^ 2 : ℝ) : ℂ) • (1 : 𝒷)) := by
+    rw [← Algebra.algebraMap_eq_smul_one, ← algebraMap_real_eq]
+    exact isSelfAdjoint_algebraMap_ofReal _
+  have hle : ipVal B x x ≤ ((M ^ 2 : ℝ) : ℂ) • (1 : 𝒷) := by
+    refine np_orderSeparating _ _ hsa hsa2 fun ω => ?_
+    rw [ipVal_spec B h ω, ipf_self, npf_smul_complex, Complex.le_def]
+    have hsq : semC B ω x ^ 2 ≤ M ^ 2 * (ω 1).re := by
+      have h1 := hb ω
+      have h2 : (0 : ℝ) ≤ semC B ω x := semC_nonneg B ω x
+      have h3 : Real.sqrt ((ω 1).re) ^ 2 = (ω 1).re :=
+        Real.sq_sqrt (np_one_re_nonneg ω)
+      nlinarith [Real.sqrt_nonneg ((ω 1).re)]
+    have him : (ω (1 : 𝒷)).im = 0 := by
+      have := (Complex.le_def.mp (npFunctional_nonneg ω (zero_le_one (α := 𝒷)))).2
+      simpa using this.symm
+    refine ⟨?_, ?_⟩
+    · rw [Complex.ofReal_re, Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im,
+        zero_mul, sub_zero]
+      exact hsq
+    · rw [Complex.ofReal_im, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im,
+        zero_mul, add_zero, him, mul_zero]
+  calc ‖ipVal B x x‖ ≤ ‖((M ^ 2 : ℝ) : ℂ) • (1 : 𝒷)‖ :=
+        CStarAlgebra.norm_le_norm_of_nonneg_of_le (ipVal_self_nonneg B h) hle
+    _ = M ^ 2 * ‖(1 : 𝒷)‖ := by
+        rw [norm_smul, Complex.norm_real, Real.norm_eq_abs,
+          abs_of_nonneg (by positivity : (0:ℝ) ≤ M ^ 2)]
+
+/-! ### The σ-closure (**150XIII**) -/
+
+variable (B)
+
+/-- **150XIII**: `σ(W)`, the set of limits in `V̄` of norm-bounded nets over
+`W`.  Nets are replaced by closures of norm-bounded slices, which is the
+same thing and avoids the thesis's fast-net reduction (**150V**). -/
+def SigmaCl (W : Submodule ℂ (UnCompl B)) : Set (UnCompl B) :=
+  {x | ∃ M : ℝ, 0 ≤ M ∧ x ∈ closure ((W : Set (UnCompl B)) ∩ {z | SemBddBy B M z})}
+
+variable {B}
+
+theorem subset_sigmaCl {W : Submodule ℂ (UnCompl B)} (hW : IsCompatExt B W) :
+    (W : Set (UnCompl B)) ⊆ SigmaCl B W := fun x hx =>
+  ⟨Real.sqrt ‖ipVal B x x‖, Real.sqrt_nonneg _,
+    subset_closure ⟨hx, hW.semBddBy_of_mem hx⟩⟩
+
+/-- `σ(W)` is again a ℂ-submodule of `V̄`: the operations are (uniformly)
+continuous and multiply the bounds. -/
+noncomputable def sigmaSubmodule {W : Submodule ℂ (UnCompl B)} (hW : IsCompatExt B W) :
+    Submodule ℂ (UnCompl B) where
+  carrier := SigmaCl B W
+  zero_mem' := subset_sigmaCl hW W.zero_mem
+  add_mem' := by
+    rintro x y ⟨M, hM, hx⟩ ⟨N, hN, hy⟩
+    exact ⟨M + N, by linarith, map_mem_closure₂ continuous_add hx hy
+      fun a ha b hb => ⟨W.add_mem ha.1 hb.1, ha.2.add hb.2⟩⟩
+  smul_mem' := by
+    rintro c x ⟨M, hM, hx⟩
+    exact ⟨‖c‖ * M, by positivity, map_mem_closure (continuous_const_smul c) hx
+      fun a ha => ⟨W.smul_mem c ha.1, ha.2.smul c⟩⟩
+
+@[simp] theorem mem_sigmaSubmodule {W : Submodule ℂ (UnCompl B)} (hW : IsCompatExt B W)
+    {x : UnCompl B} : x ∈ sigmaSubmodule hW ↔ x ∈ SigmaCl B W := Iff.rfl
+
+set_option maxHeartbeats 1000000 in
+/-- The inner product extends to `σ(W)`.  This is the analytic heart of
+**150XIII**: the net `[x_α, y_α]` is norm-bounded by Cauchy–Schwarz and
+*converges* under every np-functional, because `ipf` is jointly continuous;
+so it has an ultraweak limit by **77I**.2 `vn_complete_2`. -/
+theorem sigmaCl_hasIP {W : Submodule ℂ (UnCompl B)} (hW : IsCompatExt B W)
+    {x y : UnCompl B} (hx : x ∈ SigmaCl B W) (hy : y ∈ SigmaCl B W) :
+    HasIP B x y := by
+  classical
+  obtain ⟨M, hM, hx⟩ := hx
+  obtain ⟨N, hN, hy⟩ := hy
+  set S₁ := (W : Set (UnCompl B)) ∩ {z | SemBddBy B M z} with hS₁
+  set S₂ := (W : Set (UnCompl B)) ∩ {z | SemBddBy B N z} with hS₂
+  set F : Filter (UnCompl B × UnCompl B) := 𝓝 (x, y) ⊓ 𝓟 (S₁ ×ˢ S₂) with hFdef
+  have hmem : (S₁ ×ˢ S₂) ∈ F := mem_inf_of_right (mem_principal_self _)
+  haveI hne : F.NeBot := by
+    have hcl : (x, y) ∈ closure (S₁ ×ˢ S₂) := by
+      rw [closure_prod_eq]; exact ⟨hx, hy⟩
+    exact mem_closure_iff_clusterPt.mp hcl
+  set g : UnCompl B × UnCompl B → 𝒷 :=
+    fun p => if p ∈ S₁ ×ˢ S₂ then ipVal B p.1 p.2 else 0 with hg
+  set C : ℝ := Real.sqrt (M ^ 2 * ‖(1 : 𝒷)‖) * Real.sqrt (N ^ 2 * ‖(1 : 𝒷)‖) with hC
+  have hCnn : (0 : ℝ) ≤ C := by positivity
+  have hbdd : ∀ p, ‖g p‖ ≤ C := by
+    intro p
+    by_cases hp : p ∈ S₁ ×ˢ S₂
+    · rw [hg]
+      simp only [if_pos hp]
+      refine (hW.norm_ipVal_le hp.1.1 hp.2.1).trans ?_
+      exact mul_le_mul
+        (Real.sqrt_le_sqrt (hW.norm_ipVal_self_le hp.1.1 hp.1.2))
+        (Real.sqrt_le_sqrt (hW.norm_ipVal_self_le hp.2.1 hp.2.2))
+        (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
+    · rw [hg]; simp only [if_neg hp, norm_zero]; exact hCnn
+  have htend : ∀ ω : NPFunctional 𝒷,
+      Tendsto (fun p => ω (g p)) F (𝓝 (ipf B ω x y)) := by
+    intro ω
+    have h0 : Tendsto (fun p : UnCompl B × UnCompl B => ipf B ω p.1 p.2) (𝓝 (x, y))
+        (𝓝 (ipf B ω x y)) := (continuous_ipf B ω).tendsto (x, y)
+    have h1 : Tendsto (fun p : UnCompl B × UnCompl B => ipf B ω p.1 p.2) F
+        (𝓝 (ipf B ω x y)) := h0.mono_left inf_le_left
+    refine h1.congr' ?_
+    filter_upwards [hmem] with p hp
+    rw [hg]
+    simp only [if_pos hp]
+    exact (ipVal_spec B (hW.hasIP hp.1.1 hp.2.1) ω).symm
+  obtain ⟨a, ha⟩ := vn_complete_2 F g ⟨C, hbdd⟩ fun ω => (htend ω).cauchy_map
+  exact ⟨a, fun ω => tendsto_nhds_unique ((uwTendsto_iff g F a).mp ha ω) (htend ω)⟩
+
+/-- **150XIII**: `σ(W)` is again a compatible extension. -/
+theorem IsCompatExt.sigma {W : Submodule ℂ (UnCompl B)} (hW : IsCompatExt B W) :
+    IsCompatExt B (sigmaSubmodule hW) where
+  unEta_mem v := subset_sigmaCl hW (hW.unEta_mem v)
+  op_smul_mem b x hx := by
+    obtain ⟨M, hM, hx⟩ := hx
+    exact ⟨M * ‖b‖, by positivity, map_mem_closure (continuous_const_smul b) hx
+      fun a ha => ⟨hW.op_smul_mem b ha.1, ha.2.op_smul b hM⟩⟩
+  hasIP _ _ hx hy := sigmaCl_hasIP hW hx hy
+
+/-! ### The base case, the limit step, and Zorn (**150XII**, **150XIV**, **150XV**) -/
+
+variable (B)
+
+/-- `η : V → V̄` as a ℂ-linear map. -/
+noncomputable def unEtaL : V →ₗ[ℂ] UnCompl B where
+  toFun := unEta B
+  map_add' := unEta_add B
+  map_smul' c v := unEta_smul_complex B c v
+
+/-- **150XII** (induction base case): `V₀ = η(V)` is a compatible extension.
+It needs no quotient: `V̄` is the *separated* completion, so `η` already
+identifies the vectors the thesis has to quotient out. -/
+theorem isCompatExt_range : IsCompatExt B (LinearMap.range (unEtaL B)) where
+  unEta_mem v := ⟨v, rfl⟩
+  op_smul_mem b x hx := by
+    obtain ⟨v, rfl⟩ := hx
+    exact ⟨b • v, unEta_op_smul B b v⟩
+  hasIP x y hx hy := by
+    obtain ⟨v, rfl⟩ := hx
+    obtain ⟨w, rfl⟩ := hy
+    exact hasIP_unEta B v w
+
+/-- **150XIV** (limit step) and **150XV**: Zorn's lemma gives a maximal
+compatible extension, and by maximality it is σ-closed.  The thesis's limit
+step — carrying the inner product along the union of a chain — is here the
+observation that a union of a chain of submodules is a submodule, since the
+inner product is determined by the set. -/
+theorem exists_maximal_compatExt :
+    ∃ W : Submodule ℂ (UnCompl B),
+      IsCompatExt B W ∧ SigmaCl B W ⊆ (W : Set (UnCompl B)) := by
+  have hbound : ∀ c ⊆ {W : Submodule ℂ (UnCompl B) | IsCompatExt B W},
+      IsChain (· ≤ ·) c →
+      ∃ ub ∈ {W : Submodule ℂ (UnCompl B) | IsCompatExt B W}, ∀ z ∈ c, z ≤ ub := by
+    intro c hc hchain
+    rcases c.eq_empty_or_nonempty with rfl | hne
+    · exact ⟨LinearMap.range (unEtaL B), isCompatExt_range B, by simp⟩
+    obtain ⟨W₀, hW₀⟩ := hne
+    have hdir : DirectedOn (· ≤ ·) c := hchain.directedOn
+    have hmem : ∀ x : UnCompl B, x ∈ sSup c ↔ ∃ W' ∈ c, x ∈ W' := fun x =>
+      Submodule.mem_sSup_of_directed ⟨W₀, hW₀⟩ hdir
+    refine ⟨sSup c, ?_, fun z hz => le_sSup hz⟩
+    exact
+      { unEta_mem := fun v => (hmem _).mpr ⟨W₀, hW₀, (hc hW₀).unEta_mem v⟩
+        op_smul_mem := fun b x hx => by
+          obtain ⟨W', hW', hxW'⟩ := (hmem x).mp hx
+          exact (hmem _).mpr ⟨W', hW', (hc hW').op_smul_mem b hxW'⟩
+        hasIP := fun x y hx hy => by
+          obtain ⟨W₁, h₁, hx₁⟩ := (hmem x).mp hx
+          obtain ⟨W₂, h₂, hy₂⟩ := (hmem y).mp hy
+          obtain ⟨W₃, h₃, hle₁, hle₂⟩ := hdir W₁ h₁ W₂ h₂
+          exact (hc h₃).hasIP (hle₁ hx₁) (hle₂ hy₂) }
+  obtain ⟨W, hW⟩ := zorn_le₀ {W : Submodule ℂ (UnCompl B) | IsCompatExt B W} hbound
+  refine ⟨W, hW.1, fun x hx => ?_⟩
+  exact hW.2 hW.1.sigma (subset_sigmaCl hW.1) hx
+
+end SigmaClosure
+
 /-! ## Parsec 1520: sesquilinear forms and 𝒷ᵃ(X) for self-dual X
 
 **152I** (dils.tex:3320): introduction; **152III**/**152IV** (Example) —
