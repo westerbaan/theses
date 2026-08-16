@@ -96,6 +96,17 @@ lake build 2>&1 | grep -oE "Theses/[A-Za-z/]+\.lean:[0-9]+:[0-9]+: declaration u
 This counts **declarations that still use `sorry`**, per file, from the compiler's
 own warnings.  Warnings replay from cache, so it is cheap after the first build.
 
+⚠️ **Pair it with an error count.**  A file with hard errors still emits its
+`declaration uses 'sorry'` warnings, so the table can look right while a file
+does not compile at all.  This happened for two sessions running:
+`SelfDual.lean` was broken by a name clash introduced in
+`SelfDualCompletion.lean` (session 59) and reported its usual 7 the whole time
+(PROVING-LOG session 61).  So per file also run
+`env LEAN_PATH="$LP" lean <file> 2>&1 | grep -c ': error'`, and **after adding
+a public name to a file, re-check its dependents** — `private` does not protect
+you: Lean refuses a private declaration whose name an imported public one
+already holds.
+
 Do **not** count with grep.  The old recipe was
 
 ```sh

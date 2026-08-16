@@ -6,8 +6,8 @@ lines 4082–4279.
   parsec 1580:  the Kaplansky density theorem for Hilbert C*-modules
 
 **158Ia** and **158II** are proved (158II through the linking algebra, at the
-end of the file, modulo **150II** `dils_completion`); the four **158V**
-estimates are `sorry`
+end of the file; it uses **150II** `dils_completion`, which is now itself
+proved, so 158II is unconditional); the four **158V** estimates are `sorry`
 (they are *false*, see below).  The thesis's route to 158II is therefore
 dead; the proof here runs the **linking algebra** `ℬᵃ(X ⊕ ℬ)` and thesis A's
 **74IV** `kaplansky` instead — see the section comment before
@@ -1937,8 +1937,8 @@ which is **false** (see the section comment above and ERRATA.md); this proof
 instead runs the **linking algebra** `ℬᵃ(X ⊕ ℬ)` and thesis A's **74IV**
 `kaplansky`, as described before `kaplansky_hilbmod_of_selfDual`.  The
 general case is reduced to the self-dual one by the self-dual completion
-**150II** `dils_completion` (whose own proof is still `sorry`, so this
-theorem is proved *modulo 150II* — `#print axioms` shows `sorryAx`): `D` is
+**150II** `dils_completion` (proved since session 61, so this theorem is
+now unconditional — `#print axioms` is clean): `D` is
 ultranorm dense in `X`, `X` is ultranorm dense in its completion `X̄`, so `D`
 is ultranorm dense in `X̄` (`unDense_trans`), and both the norm bound and the
 ultranorm seminorms are computed from the inner product, which `η` preserves.

@@ -13547,3 +13547,126 @@ justification needs the `predual-complete` step above.
   blocker) goes through 118IV.2/.3 — a spatial argument using
   `carrier-vector-state` and the double commutant — and is a development, not
   a corollary; **130IV** was not reached.
+
+## Session 61 — `B/Dils`: **150II `dils_completion` is proved** — `SelfDualCompletion.lean` is finished, 158II becomes unconditional, and a session-59 regression in `SelfDual.lean` is repaired (worker on `SelfDualCompletion.lean`)
+
+**Result.** **`dils_completion` (150II) is closed.**  `SelfDualCompletion.lean`
+goes 1 → **0** and is finished; compiler-counted `B/Dils` is **31** (was 32):
+`HilbertModules` 0, `SelfDualCompletion` **0**, `SelfDual` 7, `Paschke` 7,
+`Pure` 12, `Kaplansky` 4, `Stinespring` 1 — each source run through `lean`
+individually and checked for **errors** as well as `sorry`s.  Every new
+declaration is axiom-clean (`propext, Classical.choice, Quot.sound`), verified
+from inside the module *and* from a file importing the rebuilt olean —
+including the five new `instance`s, where a hidden `sorry` would be invisible
+at every use site.
+
+**432 lines** were added, after `end SigmaClosure`, under the heading *"Parsec
+1500 concluded: the carrier of the completion, and 150II"*.  The **statement**
+of `dils_completion` is untouched; only its *proof* moved, from line 80 to the
+end of parsec 1500 — Lean wants a proof at the point of the statement, and the
+statement sits above the construction it consumes.  A pointer comment is left
+in its old place.
+
+This closes the item that sessions 58–60 costed and built: phases 1 and 2 laid
+~1240 lines (the ultranorm uniformity, `V̄`, the extended seminorms, the
+σ-closure and the maximal compatible extension), and this session did costing
+items 6–10 plus 6b — "all of it packaging", as session 60 predicted.  The
+costing was accurate for a third consecutive session: 432 lines against ≈600.
+
+### The two things the costing did not name
+
+**1. The extended seminorms had to be shown to *generate* the uniformity of
+`V̄`** (`exists_semC_entourage_subset`, ~45 lines).  Item 7 turns `UnCauchy`
+— a statement about `semC` — into Mathlib's `Cauchy`, a statement about
+entourages, and nothing in phases 1–2 connects the two: `semC` was built by
+`Completion.extension`, which gives *continuity* but no neighbourhood basis.
+The proof is short and worth recording because it is the general shape of
+"the completion of a seminorm space is a seminorm space": closed entourages
+are a basis (`uniformity_hasBasis_closed`); pull one back along the uniform
+inducing `coe` and apply the existing `UnUnif.hasBasis_uniformity`; then
+observe that the `semC`-entourage is **open** (continuity of `semC`) and that
+the image of `V × V` is **dense** in `V̄ × V̄`, so
+`Dense.open_subset_closure_inter` places it inside the closed entourage.  It
+belongs to the `UnCompl` API rather than to 150II, and it is what makes the
+`UnDense` clause cheap as well (a `semC`-ball is open, so
+`DenseRange.exists_mem_open` does it — no basis for the completion's
+uniformity is ever needed).
+
+**2. Bundling, forced by Lean rather than by mathematics.**  Every structure
+on the carrier depends on the *proof* `hW : IsCompatExt B W`, so none of them
+can be an `instance`, and the shape session 60 used for `IsCompatExt.binner`
+— a `letI` in the *type* of a `def` — does not scale: the first attempt at
+`NormedAddCommGroup` this way hit `(deterministic) timeout at isDefEq`.  The
+fix is to bundle: `structure CompatExt B` carries the submodule *and* the
+proof, `CompatExt.Car E` is the carrier, and `NormedAddCommGroup`,
+`Module ℂ`, `SMul 𝒷`, `NormedSpace ℂ` and `CStarModule 𝒷` are all genuine
+instances on it.  `Car E` is a **type synonym** of `↥E.carrier`, and that is
+load-bearing: `↥W` is a subtype of a uniform space, so it carries the subspace
+uniformity, which would clash with the norm uniformity.  (A `def` is not
+reducible, so instance search does not see through it; making it `abbrev`
+would reintroduce the clash.)
+
+### Divergences from the thesis (case 2 in both cases: its proof is fine)
+
+* **`CompleteSpace X` is proved by the route session 58 costed**, which is not
+  in the thesis at all — the thesis's 150II produces a self-dual module and
+  takes norm-completeness for granted (141II *defines* a Hilbert module as
+  norm-complete, and 149V does not supply it).  Ours: a norm-Cauchy filter is
+  ultranorm-Cauchy (`‖z‖_ω ≤ ‖z‖·ω(1)^½`) and norm-bounded, so it has an
+  ultranorm limit `x₀` by `BddUnComplete`; inserting a net element into
+  `‖x − x₀‖_ω ≤ ‖x − y‖_ω + ‖y − x₀‖_ω` gives `SemBddBy ε (x − x₀)`, and
+  `IsCompatExt.norm_ipVal_self_le` (session 60) converts that to
+  `‖x − x₀‖ ≤ ε‖1‖^½` by order separation of the np-functionals (**44XI**).
+* **The universe item** is `ULift`: `dils_completion` wants
+  `X : Type (max u v)` and `Completion (UnUnif B) : Type v`, so the whole
+  construction runs on `ULift.{u} V` with `B` transported by `BInner.ulift`
+  (every field is the corresponding field of `B`; ~15 lines, not the ~30 the
+  costing feared).  The brief warned to watch for `∃ (ι : Type _)`
+  auto-binding a fresh universe here — it does not arise: `SelfDualCompletion`
+  fixes `X : Type w` as a *field*, and the three universes are pinned
+  explicitly at the use site.
+
+### What it unblocks
+
+* **158II** `kaplansky_hilbmod` — the general (non-self-dual) Kaplansky
+  density theorem for Hilbert C*-modules, proved in session 57 *modulo* 150II
+  — is now **unconditional**; `#print axioms` is clean.  The `Kaplansky.lean`
+  doc comments saying it depends on a `sorry` are corrected.
+* **154III `existence_paschke`** is now the single root of `B/Dils` and is
+  blocked on nothing.  Costed at ≈800–950 lines in `docs/BDils-survey.md`;
+  note in particular that the ℬ-valued Gram positivity it needs is already
+  available (`cp_iff … |>.out 1 0`, as used at `Stinespring.lean:3187`), so
+  **33II.1 is not in its blocker set**.
+
+### A regression from session 59, found and fixed
+
+**`SelfDual.lean` has not compiled since session 59.**  That session added a
+*public* `unSeminorm_op_smul` to `SelfDualCompletion.lean`; `SelfDual.lean`
+(which imports it transitively, through `Paschke`) already had a **private**
+lemma of that name, and Lean rejects a private declaration whose user-facing
+name is already taken by an imported public one ("a non-private declaration …
+has already been declared"), with a knock-on `rewrite` failure at its use
+site.  Renaming the private one to `unSeminorm_op_smul_inner` restores the
+file; `SelfDual.lean` is back to 7 `sorry`s and 0 errors, and `Pure.lean`
+(which could not even be loaded, its `SelfDual.olean` being absent) to 12.
+
+Two process lessons, both cheap:
+
+* **After adding a public name to a file, check its dependents**, not only the
+  file you edited.  Sessions 59 and 60 each ran `lean` on
+  `SelfDualCompletion.lean` alone and reported "everything compiles".
+* **Count errors as well as `sorry`s.**  `grep -c "declaration uses"` returned
+  the expected 7 for a file with two hard errors in it, so the per-file table
+  looked right for two sessions running.  The count command in HANDOFF should
+  be paired with `grep -c ': error'`.
+
+### Things the brief got wrong
+
+* Nothing about 150II: the plan, the item list and the warnings (the universe
+  item, `[CompleteSpace X]` being a real obligation, 149V being a TFAE so only
+  `BddUnComplete` is needed, 151Ia's interface being exactly what to deliver)
+  all held.
+* The brief's "`SelfDualCompletion.lean` compiles" was true; its implicit
+  premise that the *directory* compiles was not — see the regression above.
+* The brief lists `existence_paschke` as gated by 150II, which is right, but
+  it is worth stating positively: after this session it is gated by **nothing**.

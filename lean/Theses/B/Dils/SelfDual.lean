@@ -965,7 +965,7 @@ private theorem unClosure_neg {S : Set X} (hS : ∀ y ∈ S, -y ∈ S) {y : X}
 
 /-- `‖b·z‖_ω = ‖z‖_{ω(b*·b)}`: the ultranorm seminorms are permuted by the
 ℬ-action, which is why the ultranorm closure of a submodule is one. -/
-private theorem unSeminorm_op_smul [VonNeumannAlgebra ℬ] (ω : NPFunctional ℬ)
+private theorem unSeminorm_op_smul_inner [VonNeumannAlgebra ℬ] (ω : NPFunctional ℬ)
     (b : ℬ) (z : X) :
     unSeminorm ω (inner ℬ : X → X → ℬ) (b • z)
       = unSeminorm (conjNP (star b) ω) (inner ℬ : X → X → ℬ) z := by
@@ -987,7 +987,7 @@ private theorem unClosure_op_smul [VonNeumannAlgebra ℬ] {S : Set X}
       abel
     rw [← h]
     abel
-  rw [hsub, unSeminorm_op_smul]
+  rw [hsub, unSeminorm_op_smul_inner]
   exact h1 i
 
 /-! ### Auxiliary for **160IV**.2: the ℬ-linear span -/

@@ -74,12 +74,10 @@ attribute [instance] SelfDualCompletion.nacg SelfDualCompletion.mod
   SelfDualCompletion.smul SelfDualCompletion.cstarMod
   SelfDualCompletion.complete
 
-/-- **150II** (`dils-completion`, dils.tex:2632, Theorem): for a von
-Neumann algebra `𝒷`, every 𝒷-module `V` with (possibly indefinite)
-𝒷-valued inner product has a self-dual completion. -/
-theorem dils_completion [VonNeumannAlgebra 𝒷] (B : BInner 𝒷 V) :
-    Nonempty (SelfDualCompletion.{u, v, max u v} B) :=
-  sorry
+/-! **150II** `dils_completion` — the existence theorem itself — is **proved
+below**, at the end of parsec 1500, after the construction it needs (the
+ultranorm uniformity, `V̄`, the σ-closure and the maximal compatible
+extension).  Only the *proof* moved; the statement is unchanged. -/
 
 /-! ## Parsec 1510: the universal property of the completion
 
@@ -570,12 +568,12 @@ end Completion
 
 /-! ## Parsec 1500 continued: the ultranorm uniformity and `V̄`
 
-Infrastructure for **150II** `dils_completion` (still `sorry`, above).  The
-thesis builds the ultranorm uniformity and its completion by hand
-(**150IV**–**150X**); we diverge and use Mathlib's `UniformSpace.Completion`
-— see the note on `UnUnif` below and PROVING-LOG session 59.  What is *not*
-here, and is what 150II still needs, is the σ-closure of `V₀ = η(V)` inside
-`V̄` and the 𝒷-valued inner product on it (**150XI**–**150XV**).
+The construction behind **150II** `dils_completion`, which is proved at the
+end of this parsec.  The thesis builds the ultranorm uniformity and its
+completion by hand (**150IV**–**150X**); we diverge and use Mathlib's
+`UniformSpace.Completion` — see the note on `UnUnif` below and PROVING-LOG
+session 59.  The σ-closure of `V₀ = η(V)` inside `V̄` and the 𝒷-valued inner
+product on it (**150XI**–**150XV**) follow, and then the carrier itself.
 -/
 
 section UnUniformity
@@ -1808,6 +1806,428 @@ theorem exists_maximal_compatExt :
   exact hW.2 hW.1.sigma (subset_sigmaCl hW.1) hx
 
 end SigmaClosure
+
+/-! ## Parsec 1500 concluded: the carrier of the completion, and **150II**
+
+A maximal compatible extension `W ⊆ V̄` (`exists_maximal_compatExt`) is
+turned into a self-dual *Hilbert* 𝒷-module.  What has to be produced is a
+`NormedAddCommGroup`, a `NormedSpace ℂ`, a `CStarModule 𝒷` (**141II**),
+completeness of the *norm* (which **149V** does not supply), self-duality
+(**149V**.3 ⇒ .1, through `BddUnComplete`), and the embedding `η` with
+ultranorm dense image.
+
+Two devices carry all of it.  `exists_semC_entourage_subset` says the
+extended seminorms **generate** the uniformity of `V̄` — the transfer
+between the two Cauchy notions that everything below needs.  And a
+compatible extension is *bundled* into `CompatExt`, so that the structures
+on its carrier can be genuine instances rather than `letI`s depending on a
+proof. -/
+
+section CompletionCarrier
+
+variable {𝒷 : Type u} {V : Type v}
+  [CStarAlgebra 𝒷] [PartialOrder 𝒷] [StarOrderedRing 𝒷] [VonNeumannAlgebra 𝒷]
+  [AddCommGroup V] [Module ℂ V] [SMul 𝒷 V]
+variable (B : BInner 𝒷 V)
+
+/-- The extended seminorms **generate** the uniformity of `V̄`: every
+entourage contains one of the thesis's entourages (**150IV**), now phrased
+with the extended seminorms `semC`. -/
+theorem exists_semC_entourage_subset {S : Set (UnCompl B × UnCompl B)}
+    (hS : S ∈ 𝓤 (UnCompl B)) :
+    ∃ (s : Finset (NPFunctional 𝒷)) (r : ℝ), 0 < r ∧
+      {p : UnCompl B × UnCompl B | ∀ ω ∈ s, semC B ω (p.2 - p.1) < r} ⊆ S := by
+  classical
+  obtain ⟨T, ⟨hT, hTcl⟩, hTS⟩ := uniformity_hasBasis_closed.mem_iff.mp hS
+  have hpre : (fun q : UnUnif B × UnUnif B => ((q.1 : UnCompl B), (q.2 : UnCompl B))) ⁻¹' T
+      ∈ 𝓤 (UnUnif B) := by
+    rw [← (UniformSpace.Completion.isUniformInducing_coe (UnUnif B)).comap_uniformity]
+    exact preimage_mem_comap hT
+  obtain ⟨⟨s, r⟩, hr, hsub⟩ := (UnUnif.hasBasis_uniformity B).mem_iff.mp hpre
+  simp only at hr hsub
+  refine ⟨s, r, hr, ?_⟩
+  set U : Set (UnCompl B × UnCompl B) :=
+    {p : UnCompl B × UnCompl B | ∀ ω ∈ s, semC B ω (p.2 - p.1) < r} with hU
+  have hUopen : IsOpen U := by
+    rw [hU]
+    simpa only [Set.ofPred_forall] using
+      isOpen_biInter_finset (s := s) (f := fun ω =>
+        {p : UnCompl B × UnCompl B | semC B ω (p.2 - p.1) < r})
+        fun ω _ => isOpen_lt ((continuous_semC B ω).comp (continuous_snd.sub continuous_fst))
+          continuous_const
+  set R : Set (UnCompl B × UnCompl B) :=
+    Set.range (fun q : UnUnif B × UnUnif B => ((q.1 : UnCompl B), (q.2 : UnCompl B))) with hR
+  have hRdense : Dense R :=
+    ((UniformSpace.Completion.denseRange_coe (α := UnUnif B)).prodMap
+      (UniformSpace.Completion.denseRange_coe (α := UnUnif B)))
+  have hUR : U ∩ R ⊆ T := by
+    rintro ⟨x, y⟩ ⟨hxy, ⟨⟨a, b⟩, hab⟩⟩
+    obtain ⟨rfl, rfl⟩ : x = (a : UnCompl B) ∧ y = (b : UnCompl B) := by
+      exact ⟨(congrArg Prod.fst hab).symm, (congrArg Prod.snd hab).symm⟩
+    have hlt : (s.sup (UnUnif.sem B)) (b - a) < r := by
+      refine Seminorm.finset_sup_apply_lt hr fun ω hω => ?_
+      have := hxy ω hω
+      rwa [← UniformSpace.Completion.coe_sub, semC_coe] at this
+    exact hsub (show ((a, b) : UnUnif B × UnUnif B) ∈ _ from hlt)
+  calc U ⊆ closure (U ∩ R) := hRdense.open_subset_closure_inter hUopen
+    _ ⊆ closure T := closure_mono hUR
+    _ = T := hTcl.closure_eq
+    _ ⊆ S := hTS
+
+/-- A filter on `V̄` which is Cauchy for the extended seminorms is Cauchy. -/
+theorem cauchy_of_semC {F : Filter (UnCompl B)} (hne : F.NeBot)
+    (h : ∀ (ω : NPFunctional 𝒷) (ε : ℝ), 0 < ε →
+      ∃ t ∈ F, ∀ x ∈ t, ∀ y ∈ t, semC B ω (x - y) ≤ ε) :
+    Cauchy F := by
+  classical
+  refine ⟨hne, fun S hS => ?_⟩
+  obtain ⟨s, r, hr, hsub⟩ := exists_semC_entourage_subset B hS
+  choose t htF ht using fun ω : NPFunctional 𝒷 => h ω (r / 2) (by positivity)
+  refine Filter.mem_prod_iff.mpr ⟨⋂ ω ∈ s, t ω, (Filter.biInter_finset_mem s).mpr
+    fun ω _ => htF ω, ⋂ ω ∈ s, t ω, (Filter.biInter_finset_mem s).mpr fun ω _ => htF ω, ?_⟩
+  rintro ⟨x, y⟩ ⟨hx, hy⟩
+  rw [Set.mem_iInter₂] at hx hy
+  refine hsub fun ω hω => ?_
+  have := ht ω y (hy ω hω) x (hx ω hω)
+  linarith
+
+variable {B}
+
+
+/-- A compatible extension, **bundled**. -/
+structure CompatExt (B : BInner 𝒷 V) : Type v where
+  /-- The underlying submodule of `V̄`. -/
+  carrier : Submodule ℂ (UnCompl B)
+  /-- It is a compatible extension. -/
+  isCompat : IsCompatExt B carrier
+
+namespace CompatExt
+
+/-- The carrier of a compatible extension, as a **type synonym** of `↥W`. -/
+def Car (E : CompatExt B) : Type v := E.carrier
+
+variable {E : CompatExt B}
+
+/-- The underlying element of `V̄`. -/
+def val (x : E.Car) : UnCompl B := Subtype.val x
+
+omit [VonNeumannAlgebra 𝒷] in
+theorem val_mem (x : E.Car) : val x ∈ E.carrier := Subtype.property x
+
+omit [VonNeumannAlgebra 𝒷] in
+theorem val_injective : Function.Injective (val (E := E)) := Subtype.val_injective
+
+/-- An element of `W`, as an element of the carrier. -/
+def ofMem (x : UnCompl B) (hx : x ∈ E.carrier) : E.Car := ⟨x, hx⟩
+
+theorem hasIP (x y : E.Car) : HasIP B (val x) (val y) :=
+  E.isCompat.hasIP (val_mem x) (val_mem y)
+
+/-- The norm `‖x‖ = ‖[x,x]‖^½` of the carrier. -/
+noncomputable def nrm (x : E.Car) : ℝ := Real.sqrt ‖ipVal B (val x) (val x)‖
+
+private theorem ipVal_neg_neg {v : UnCompl B} (h : HasIP B v v) :
+    ipVal B (-v) (-v) = ipVal B v v := by
+  rw [show -v = (-1 : ℂ) • v by simp, ipVal_smul_left _ (h.smul_right (-1)),
+    ipVal_smul_right _ h]
+  simp
+
+noncomputable instance : NormedAddCommGroup E.Car :=
+  letI : AddCommGroup E.Car := inferInstanceAs (AddCommGroup E.carrier)
+  letI : Module ℂ E.Car := inferInstanceAs (Module ℂ E.carrier)
+  letI := E.isCompat.smulInst
+  have key := @module_seminorm_2 𝒷 ↥E.carrier _ _ _ _ _ E.isCompat.smulInst
+    E.isCompat.binner
+  AddGroupNorm.toNormedAddCommGroup
+    { toFun := nrm
+      map_zero' := by
+        show Real.sqrt ‖ipVal B (val (0 : E.Car)) (val (0 : E.Car))‖ = 0
+        rw [show val (0 : E.Car) = 0 from rfl, ipVal_zero_right]
+        simp
+      add_le' := fun x y => (key x y 1 1).1
+      neg' := fun x => by
+        show Real.sqrt ‖ipVal B (val (-x)) (val (-x))‖
+          = Real.sqrt ‖ipVal B (val x) (val x)‖
+        rw [show val (-x) = -val x from rfl, ipVal_neg_neg (hasIP x x)]
+      eq_zero_of_map_eq_zero' := fun x hx => by
+        have hx' : Real.sqrt ‖ipVal B (val x) (val x)‖ = 0 := hx
+        have h0 : ‖ipVal B (val x) (val x)‖ = 0 := by
+          nlinarith [Real.sq_sqrt (norm_nonneg (ipVal B (val x) (val x))),
+            norm_nonneg (ipVal B (val x) (val x))]
+        exact val_injective (by
+          rw [show val (0 : E.Car) = 0 from rfl]
+          exact eq_zero_of_ipVal_self_eq_zero B (hasIP x x) (norm_eq_zero.mp h0)) }
+
+noncomputable instance : Module ℂ E.Car := inferInstanceAs (Module ℂ E.carrier)
+
+noncomputable instance : SMul 𝒷 E.Car where
+  smul b x := ofMem (b • val x) (E.isCompat.op_smul_mem b (val_mem x))
+
+omit [VonNeumannAlgebra 𝒷] in
+@[simp] theorem val_ofMem (x : UnCompl B) (hx : x ∈ E.carrier) : val (ofMem x hx) = x := rfl
+@[simp] theorem val_add (x y : E.Car) : val (x + y) = val x + val y := rfl
+@[simp] theorem val_sub (x y : E.Car) : val (x - y) = val x - val y := rfl
+@[simp] theorem val_neg (x : E.Car) : val (-x) = -val x := rfl
+@[simp] theorem val_zero : val (0 : E.Car) = 0 := rfl
+@[simp] theorem val_smul (c : ℂ) (x : E.Car) : val (c • x) = c • val x := rfl
+@[simp] theorem val_op_smul (b : 𝒷) (x : E.Car) : val (b • x) = b • val x := rfl
+
+theorem norm_def (x : E.Car) : ‖x‖ = Real.sqrt ‖ipVal B (val x) (val x)‖ := rfl
+
+noncomputable instance : NormedSpace ℂ E.Car where
+  norm_smul_le c x :=
+    le_of_eq (@module_seminorm_2 𝒷 ↥E.carrier _ _ _ _ _ E.isCompat.smulInst
+      E.isCompat.binner x x c 1).2.1
+
+noncomputable instance : CStarModule 𝒷 E.Car where
+  inner x y := ipVal B (val x) (val y)
+  inner_add_right := ipVal_add_right (hasIP _ _) (hasIP _ _)
+  inner_self_nonneg := ipVal_self_nonneg B (hasIP _ _)
+  inner_self := by
+    intro x
+    constructor
+    · intro h
+      exact val_injective (by
+        rw [show val (0 : E.Car) = 0 from rfl]
+        exact eq_zero_of_ipVal_self_eq_zero B (hasIP x x) h)
+    · rintro rfl
+      rw [show val (0 : E.Car) = 0 from rfl, ipVal_zero_right]
+  inner_op_smul_right := E.isCompat.ipVal_op_smul_right _ (val_mem _) (val_mem _)
+  inner_smul_right_complex := ipVal_smul_right _ (hasIP _ _)
+  star_inner x y := (ipVal_symm (hasIP x y)).symm
+  norm_eq_sqrt_norm_inner_self x := rfl
+
+@[simp] theorem inner_eq (x y : E.Car) : (inner 𝒷 x y : 𝒷) = ipVal B (val x) (val y) := rfl
+
+
+/-! ### The carrier is ultranorm complete and norm complete -/
+
+/-- Clause 4 of **150XI**: on a compatible extension the module's own
+ultranorm seminorms *are* the extended seminorms of `V̄`. -/
+theorem unSeminorm_eq_semC (ω : NPFunctional 𝒷) (x : E.Car) :
+    unSeminorm ω (inner 𝒷 : E.Car → E.Car → 𝒷) x = semC B ω (val x) := by
+  have h : (ω (inner 𝒷 x x : 𝒷)) = ((semC B ω (val x) ^ 2 : ℝ) : ℂ) := by
+    rw [inner_eq, ipVal_spec B (hasIP x x) ω, ipf_self]
+  rw [unSeminorm, h, Complex.ofReal_re, Real.sqrt_sq (semC_nonneg B ω (val x))]
+
+theorem semBddBy_val (x : E.Car) : SemBddBy B ‖x‖ (val x) :=
+  E.isCompat.semBddBy_of_mem (val_mem x)
+
+/-- **148V** in the present setting: `‖x‖_ω ≤ ‖x‖ · ω(1)^½`. -/
+theorem unSeminorm_le (ω : NPFunctional 𝒷) (x : E.Car) :
+    unSeminorm ω (inner 𝒷 : E.Car → E.Car → 𝒷) x ≤ ‖x‖ * Real.sqrt ((ω 1).re) := by
+  rw [unSeminorm_eq_semC]; exact semBddBy_val x ω
+
+/-- Conversely a bound in the extended seminorms is a norm bound (up to the
+harmless factor `‖1‖`, which is `1` unless `𝒷 = {0}`). -/
+theorem norm_le_of_semBddBy {x : E.Car} {M : ℝ} (hM : 0 ≤ M)
+    (h : SemBddBy B M (val x)) : ‖x‖ ≤ M * Real.sqrt ‖(1 : 𝒷)‖ := by
+  have h1 := E.isCompat.norm_ipVal_self_le (val_mem x) h
+  rw [norm_def]
+  calc Real.sqrt ‖ipVal B (val x) (val x)‖ ≤ Real.sqrt (M ^ 2 * ‖(1 : 𝒷)‖) :=
+        Real.sqrt_le_sqrt h1
+    _ = M * Real.sqrt ‖(1 : 𝒷)‖ := by
+        rw [Real.sqrt_mul (by positivity), Real.sqrt_sq hM]
+
+/-- **149V**.3 for the carrier: every norm-bounded ultranorm-Cauchy filter
+converges.  This is where σ-closedness of the extension is used: the limit
+in `V̄` of a norm-bounded net over `W` lies in `σ(W) = W`. -/
+theorem bddUnComplete (hσ : SigmaCl B E.carrier ⊆ (E.carrier : Set (UnCompl B))) :
+    BddUnComplete 𝒷 E.Car := by
+  classical
+  rintro F hne hcau ⟨M, s, hsF, hs⟩
+  have := hne
+  have hM : 0 ≤ M := by
+    obtain ⟨x, hx⟩ := hne.nonempty_of_mem hsF
+    exact le_trans (norm_nonneg x) (hs x hx)
+  have hGcau : Cauchy (Filter.map (val (E := E)) F) := by
+    refine cauchy_of_semC B (hne.map _) fun ω ε hε => ?_
+    obtain ⟨t, htF, ht⟩ := hcau ω ε hε
+    refine ⟨val '' t, Filter.image_mem_map htF, ?_⟩
+    rintro _ ⟨x, hx, rfl⟩ _ ⟨y, hy, rfl⟩
+    have h := ht x hx y hy
+    rwa [unSeminorm_eq_semC, val_sub] at h
+  obtain ⟨x₀, hx₀⟩ := CompleteSpace.complete hGcau
+  have htend : Tendsto (val (E := E)) F (𝓝 x₀) := hx₀
+  have hmem : x₀ ∈ E.carrier := by
+    refine hσ ⟨M, hM, mem_closure_of_tendsto htend ?_⟩
+    filter_upwards [hsF] with x hx
+    exact ⟨val_mem x, (semBddBy_val x).mono (hs x hx)⟩
+  refine ⟨ofMem x₀ hmem, fun ω => ?_⟩
+  have hcont : Continuous fun z : UnCompl B => semC B ω (z - x₀) :=
+    (continuous_semC B ω).comp (continuous_id.sub continuous_const)
+  have h1 : Tendsto (fun x : E.Car => semC B ω (val x - x₀)) F
+      (𝓝 (semC B ω (x₀ - x₀))) := (hcont.tendsto x₀).comp htend
+  rw [sub_self, semC_zero] at h1
+  refine h1.congr fun x => ?_
+  rw [unSeminorm_eq_semC, val_sub, val_ofMem]
+  rfl
+
+/-- The carrier is **norm** complete — the last field of a Hilbert
+𝒷-module, and one that **149V** does not supply.  Route: a norm-Cauchy
+filter is ultranorm-Cauchy and norm-bounded (**148V**), so it has an
+ultranorm limit `x₀`; and the estimate `‖x − x₀‖_ω ≤ ε·ω(1)^½` obtained by
+inserting a net element gives `‖x − x₀‖ ≤ ε‖1‖^½` by order separation. -/
+theorem completeSpace (hσ : SigmaCl B E.carrier ⊆ (E.carrier : Set (UnCompl B))) :
+    CompleteSpace E.Car := by
+  classical
+  set c : ℝ := Real.sqrt ‖(1 : 𝒷)‖ with hc
+  have hc0 : (0 : ℝ) ≤ c := Real.sqrt_nonneg _
+  refine ⟨?_⟩
+  intro F hF
+  have := hF.1
+  have hmet := Metric.cauchy_iff.mp hF
+  have huc : UnCauchy (inner 𝒷 : E.Car → E.Car → 𝒷) F := by
+    intro ω ε hε
+    have hd0 : (0 : ℝ) ≤ Real.sqrt ((ω 1).re) := Real.sqrt_nonneg _
+    obtain ⟨t, htF, ht⟩ := hmet.2 (ε / (Real.sqrt ((ω 1).re) + 1)) (by positivity)
+    refine ⟨t, htF, fun x hx y hy => ?_⟩
+    have h1 : ‖x - y‖ < ε / (Real.sqrt ((ω 1).re) + 1) := by
+      rw [← dist_eq_norm]; exact ht x hx y hy
+    have h2 := unSeminorm_le ω (x - y)
+    have h3 : ‖x - y‖ * Real.sqrt ((ω 1).re) ≤ ε := by
+      have h4 : ‖x - y‖ * (Real.sqrt ((ω 1).re) + 1) ≤ ε :=
+        ((lt_div_iff₀ (by positivity)).mp h1).le
+      nlinarith [norm_nonneg (x - y)]
+    linarith
+  have hbdd : ∃ M : ℝ, ∃ s ∈ F, ∀ x ∈ s, ‖x‖ ≤ M := by
+    obtain ⟨t, htF, ht⟩ := hmet.2 1 one_pos
+    obtain ⟨x₁, hx₁⟩ := hF.1.nonempty_of_mem htF
+    refine ⟨‖x₁‖ + 1, t, htF, fun x hx => ?_⟩
+    have h1 : ‖x - x₁‖ < 1 := by rw [← dist_eq_norm]; exact ht x hx x₁ hx₁
+    calc ‖x‖ = ‖x₁ + (x - x₁)‖ := by rw [show x₁ + (x - x₁) = x by abel]
+      _ ≤ ‖x₁‖ + ‖x - x₁‖ := norm_add_le _ _
+      _ ≤ ‖x₁‖ + 1 := by linarith
+  obtain ⟨x₀, hx₀⟩ := bddUnComplete hσ F hF.1 huc hbdd
+  refine ⟨x₀, (Metric.nhds_basis_ball (x := x₀)).ge_iff.mpr fun ε hε => ?_⟩
+  have hε'0 : (0 : ℝ) < ε / (2 * (c + 1)) := by positivity
+  obtain ⟨t, htF, ht⟩ := hmet.2 (ε / (2 * (c + 1))) hε'0
+  filter_upwards [htF] with x hx
+  have hsb : SemBddBy B (ε / (2 * (c + 1))) (val (x - x₀)) := by
+    intro ω
+    have hd0 : (0 : ℝ) ≤ Real.sqrt ((ω 1).re) := Real.sqrt_nonneg _
+    refine le_of_forall_pos_le_add fun η hη => ?_
+    obtain ⟨y, hy, hyt⟩ :=
+      (((tendsto_order.mp (hx₀ ω)).2 η hη).and (Filter.eventually_mem_set.mpr htF)).exists
+    have h1 : semC B ω (val (x - x₀))
+        ≤ semC B ω (val x - val y) + semC B ω (val y - val x₀) := by
+      have := semC_add_le B ω (val x - val y) (val y - val x₀)
+      rw [show val x - val y + (val y - val x₀) = val (x - x₀) by
+        rw [val_sub]; abel] at this
+      exact this
+    have h2 : semC B ω (val x - val y) ≤ (ε / (2 * (c + 1))) * Real.sqrt ((ω 1).re) := by
+      have h3 := unSeminorm_le ω (x - y)
+      rw [unSeminorm_eq_semC, val_sub] at h3
+      have h4 : ‖x - y‖ < ε / (2 * (c + 1)) := by
+        rw [← dist_eq_norm]; exact ht x hx y hyt
+      nlinarith
+    have h5 : semC B ω (val y - val x₀) < η := by
+      have h6 := hy
+      rwa [unSeminorm_eq_semC, val_sub] at h6
+    linarith
+  have hnorm := norm_le_of_semBddBy hε'0.le hsb
+  rw [Metric.mem_ball, dist_eq_norm]
+  have : ‖x - x₀‖ ≤ ε / (2 * (c + 1)) * c := by
+    have hval : val (x - x₀) = val (x - x₀) := rfl
+    exact hnorm
+  have hlt : ε / (2 * (c + 1)) * c < ε := by
+    rw [div_mul_eq_mul_div, div_lt_iff₀ (by positivity)]
+    nlinarith
+  linarith
+
+
+/-! ### `η` and the universal property -/
+
+variable (E)
+
+/-- `η : V → X`, the embedding of `V` into the carrier. -/
+noncomputable def eta (v : V) : E.Car := ofMem (unEta B v) (E.isCompat.unEta_mem v)
+
+variable {E}
+
+omit [VonNeumannAlgebra 𝒷] in
+@[simp] theorem val_eta (v : V) : val (eta E v) = unEta B v := rfl
+
+theorem eta_add (v w : V) : eta E (v + w) = eta E v + eta E w :=
+  val_injective (by rw [val_eta, val_add, val_eta, val_eta, unEta_add])
+
+theorem eta_smul_complex (c : ℂ) (v : V) : eta E (c • v) = c • eta E v :=
+  val_injective (by rw [val_eta, val_smul, val_eta, unEta_smul_complex])
+
+theorem eta_op_smul (b : 𝒷) (v : V) : eta E (b • v) = b • eta E v :=
+  val_injective (by rw [val_eta, val_op_smul, val_eta, unEta_op_smul])
+
+@[simp] theorem inner_eta (v w : V) :
+    (inner 𝒷 (eta E v) (eta E w) : 𝒷) = B.inner v w := by
+  rw [inner_eq, val_eta, val_eta, ipVal_unEta]
+
+/-- **150II**.2: the image of `η` is ultranorm dense in the carrier. -/
+theorem unDense_range_eta : UnDense (inner 𝒷 : E.Car → E.Car → 𝒷) (Set.range (eta E)) := by
+  intro x n ωs ε hε
+  set U : Set (UnCompl B) := {z | ∀ i : Fin n, semC B (ωs i) (val x - z) < ε} with hU
+  have hUopen : IsOpen U := by
+    rw [hU, Set.ofPred_forall]
+    exact isOpen_iInter_of_finite fun i =>
+      isOpen_lt ((continuous_semC B (ωs i)).comp (continuous_const.sub continuous_id))
+        continuous_const
+  have hxU : val x ∈ U := fun i => by rw [sub_self, semC_zero]; exact hε
+  obtain ⟨v, hv⟩ := (denseRange_unEta B).exists_mem_open hUopen ⟨val x, hxU⟩
+  refine ⟨eta E v, ⟨v, rfl⟩, fun i => ?_⟩
+  rw [unSeminorm_eq_semC, val_sub, val_eta]
+  exact (hv i).le
+
+/-- **149V**.1: the carrier is self dual. -/
+theorem selfDual (hσ : SigmaCl B E.carrier ⊆ (E.carrier : Set (UnCompl B))) :
+    SelfDual 𝒷 E.Car :=
+  ((dils_selfdual (𝒷 := 𝒷) (X := E.Car)).out 2 0).mp (bddUnComplete hσ)
+
+end CompatExt
+
+/-- A 𝒷-valued inner product transported to `ULift V` — needed because
+**150II** asks for a completion in `Type (max u v)` while `V̄` lives in
+`Type v`. -/
+def BInner.ulift (B : BInner 𝒷 V) : BInner 𝒷 (ULift.{w} V) where
+  inner x y := B.inner x.down y.down
+  inner_add_right _ _ _ := B.inner_add_right _ _ _
+  inner_op_smul_right _ _ _ := B.inner_op_smul_right _ _ _
+  inner_smul_right_complex _ _ _ := B.inner_smul_right_complex _ _ _
+  star_inner _ _ := B.star_inner _ _
+  inner_self_nonneg _ := B.inner_self_nonneg _
+
+omit [StarOrderedRing 𝒷] in
+@[simp] theorem BInner.ulift_inner (B : BInner 𝒷 V) (x y : ULift.{w} V) :
+    (B.ulift).inner x y = B.inner x.down y.down := rfl
+
+
+/-- **150II** (`dils-completion`, dils.tex:2632, Theorem): for a von
+Neumann algebra `𝒷`, every 𝒷-module `V` with (possibly indefinite)
+𝒷-valued inner product has a self-dual completion.
+
+The proof is the thesis's own: complete `V` in the ultranorm uniformity
+(**150IV**–**150X**, here Mathlib's `UniformSpace.Completion`), extend the
+inner product from `η(V)` to a maximal compatible extension `W ⊆ V̄` by
+Zorn's lemma over the σ-closure (**150XI**–**150XV**), and take `X = W`.
+The construction is run on `ULift V` for universe reasons only. -/
+theorem dils_completion (B : BInner 𝒷 V) :
+    Nonempty (SelfDualCompletion.{u, v, max u v} B) := by
+  obtain ⟨W, hW, hσ⟩ := exists_maximal_compatExt (B.ulift : BInner 𝒷 (ULift.{u} V))
+  let E : CompatExt (B.ulift : BInner 𝒷 (ULift.{u} V)) := ⟨W, hW⟩
+  have hrange : Set.range (fun v : V => CompatExt.eta E (ULift.up v))
+      = Set.range (CompatExt.eta E) := by
+    ext z
+    exact ⟨fun ⟨v, hv⟩ => ⟨ULift.up v, hv⟩, fun ⟨u, hu⟩ => ⟨u.down, hu⟩⟩
+  exact ⟨{ X := E.Car
+           complete := E.completeSpace hσ
+           selfDual := E.selfDual hσ
+           η := fun v => CompatExt.eta E (ULift.up v)
+           η_add := fun v w => CompatExt.eta_add _ _
+           η_smul_complex := fun c v => CompatExt.eta_smul_complex _ _
+           η_smul := fun b v => CompatExt.eta_op_smul _ _
+           η_inner := fun v w => CompatExt.inner_eta _ _
+           dense := hrange ▸ CompatExt.unDense_range_eta }⟩
+
+end CompletionCarrier
+
 
 /-! ## Parsec 1520: sesquilinear forms and 𝒷ᵃ(X) for self-dual X
 

@@ -67,6 +67,14 @@ product; again no `sorry` closed by design): `SelfDual.lean` 7, `Pure.lean`
 `SelfDualCompletion.lean` 1, `HilbertModules.lean` 0 — **32**,
 compiler-counted per file (each source run through `lean` individually).
 
+At the end of **session 61** (**150II `dils_completion` is proved**;
+`SelfDualCompletion.lean` is finished): `SelfDual.lean` 7, `Pure.lean` 12,
+`Paschke.lean` 7, `Kaplansky.lean` 4, `Stinespring.lean` 1,
+`SelfDualCompletion.lean` **0**, `HilbertModules.lean` 0 — **31**,
+compiler-counted per file (each source run through `lean` individually, and
+each checked for *errors* as well as `sorry`s — see the regression noted in
+the session-61 section below).
+
 Classification key: **(a)** self-contained, **(b)** blocked on a named
 `sorry` elsewhere, **(c)** cited to the literature / another chapter,
 **(d)** suspicious/false.
@@ -473,3 +481,83 @@ only inner-product rule that survives to `V̄` is the *conjugated* one
 `[b·x,b·y] = b[x,y]b*`; 𝒷-homogeneity is recovered by polarizing in the
 algebra variable (`IsCompatExt.ipVal_op_smul_right`), which also needed a
 sixth module law `smul_op_smul' : (c • b) • x = c • (b • x)`.
+
+---
+
+## Session 61 (result): **150II `dils_completion` is proved**; the next gate is 154III
+
+`SelfDualCompletion.lean` is **finished** (1 → 0), `B/Dils` is **32 → 31**,
+and every declaration of the new material is axiom-clean
+(`propext, Classical.choice, Quot.sound`), checked both inside the module and
+from an importing file against a rebuilt olean.  **432 lines** were added
+(after `end SigmaClosure`, under *"Parsec 1500 concluded"*); the statement of
+`dils_completion` is unchanged, only its *proof* moved down the file, to
+after the construction it consumes.
+
+Costing items 6–10 and 6b, costed at ≈600 lines, cost **432**:
+
+| # | piece | costed (s60) | actual | how |
+|---|---|---|---|---|
+| 6 | carrier + `NormedAddCommGroup`/`NormedSpace ℂ`/`CStarModule` | 250 | **~110** | `CompatExt` (see below); `AddGroupNorm.toNormedAddCommGroup`; every axiom is one application of `module_seminorm_2` or of the `ipVal` API |
+| 6b | `unSeminorm ω (inner 𝒷) = semC B ω` on `X` | 40 | **6** | `ipVal_spec` + `ipf_self` + `Real.sqrt_sq` |
+| 7 | `BddUnComplete 𝒷 X`, then **149V** | 150 | **~80** | plus a **new general lemma**, `exists_semC_entourage_subset` (~45), that was not in the costing |
+| 8 | `CompleteSpace X` | 100 | **~75** | exactly session 58's route |
+| 9 | `η`, its clauses, `UnDense (range η)` | 60 | **~35** | density needs no uniformity basis: the `semC`-ball is *open*, so `DenseRange.exists_mem_open` suffices |
+| 10 | universes (`ULift.{u} V`) | 50 | **~15** | `BInner.ulift`; every field is the corresponding field of `B` |
+
+**Two things the costing did not name.**
+
+1. **`exists_semC_entourage_subset` — the extended seminorms *generate* the
+   uniformity of `V̄`.**  Item 7 needs to turn `UnCauchy` (a `semC` statement)
+   into Mathlib's `Cauchy` (an entourage statement), and nothing in phases 1–2
+   does that: `semC` was built by `Completion.extension`, which gives
+   continuity but not a basis.  The proof is four lines of mathematics —
+   closed entourages are a basis (`uniformity_hasBasis_closed`); pull one back
+   along the uniform inducing `coe` and apply `UnUnif.hasBasis_uniformity`; the
+   `semC`-entourage is *open* and the image of `V × V` is dense, so
+   `Dense.open_subset_closure_inter` puts it inside the closed entourage.  It
+   is independently useful and belongs to the `UnCompl` API rather than to
+   150II.
+2. **Bundling.**  Every structure on the carrier depends on the *proof*
+   `hW : IsCompatExt B W`, so none of them can be an `instance` — and `letI`
+   in the type of a `def` (the shape `IsCompatExt.binner` already had) makes
+   `isDefEq` time out.  Bundling `W` with its proof into a one-field structure
+   `CompatExt B` fixes this: `CompatExt.Car E` is a type *synonym* of `↥E.carrier`
+   (load-bearing — the subtype of a uniform space carries the subspace
+   uniformity, which would clash with the norm one), and everything on it is a
+   genuine instance.
+
+**A regression from session 59, found here and fixed.**  Session 59 added a
+**public** `unSeminorm_op_smul` to `SelfDualCompletion.lean`; `SelfDual.lean`
+(which imports it transitively) already had a `private` lemma of that name, and
+Lean rejects a private declaration whose name is already taken by an imported
+public one.  So **`SelfDual.lean` has not compiled since session 59** — two
+errors, invisible to a `grep -c "declaration uses"` count, and invisible to
+sessions 59 and 60 because they only ran `lean` on the file they were editing.
+Renaming the private lemma to `unSeminorm_op_smul_inner` restores it.
+**Lesson: after adding a public name to a file, re-check its dependents, and
+count errors as well as `sorry`s.**
+
+**What 150II unblocks.**  **158II** `kaplansky_hilbmod` (Kaplansky density for
+Hilbert C*-modules, general case) was proved *modulo* 150II in session 57; it
+is now **unconditional** — `#print axioms` is clean.  The doc comments in
+`Kaplansky.lean` that said otherwise are corrected.
+
+**The next gate is 154III `existence_paschke`** (`Paschke.lean:425`), now the
+single root of `B/Dils`: 157IV.2/.3, most of `Pure.lean` (12), 171II and the
+shortcut for 164II ex. all sit behind it.  It is no longer blocked on anything
+— 150II and 151Ia are both proved, and the ℬ-valued Gram positivity
+`0 ≤ ∑ᵢⱼ bᵢ* φ(aᵢ*aⱼ) bⱼ` it needs is available (`cp_iff … |>.out 1 0`, used
+in `Stinespring.lean:3187`), so 33II.1 is *not* in its blocker set.  What it
+costs, in the same units as the table above:
+
+| # | piece | cost |
+|---|---|---|
+| 1 | `BInner ℬ (𝒜 ⊗[ℂ] ℬ)` with `⟨a⊗b, a'⊗b'⟩ = b' φ(a' a*) b*`: two `TensorProduct.lift`s, and positivity from `cp_iff` after writing a tensor as a finite sum (`Stinespring.exists_fin_rep` is the model, currently `private`) | 200 |
+| 2 | `X` and `tprod` from **150II**, `inner_tprod`, `PhiCompatible` | 100 |
+| 3 | `univ` from **151Ia** `selfdual_completion_univ` (bilinear → linear on the tensor product, then the universal property) | 150 |
+| 4 | `ρ : NMIUMap 𝒜 (Ba ℬ X)ᵐᵒᵖ` — each `ρ a₀` from `univ`, then unitality/multiplicativity/involutivity by uniqueness on elementary tensors; **normality is the hard field** | 250–400 |
+| 5 | `h : NCPMap (Ba ℬ X)ᵐᵒᵖ ℬ` from `hilbmod_adj_vector_ncp` (**153IV**, proved) | 100 |
+
+≈**800–950 lines, one long session or two.**  `existence_paschke_5` stays
+structurally blocked (unchanged).
