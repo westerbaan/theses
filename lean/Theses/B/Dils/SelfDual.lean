@@ -44,59 +44,10 @@ variable {ℬ : Type u} {X : Type v}
   [CStarAlgebra ℬ] [PartialOrder ℬ] [StarOrderedRing ℬ]
   [NormedAddCommGroup X] [NormedSpace ℂ X] [SMul ℬ X] [CStarModule ℬ X]
 
-/-! ### Elementary properties of the module action
-
-`CStarModule ℬ X` assumes only `SMul ℬ X`; the module laws for that action
-are consequences of the axioms, by definiteness of the inner product (the
-same derivation as `Theses.A.CStar.moduleAdjointable_linear`).  Together
-with `norm_op_smul_le` these are exactly what is needed to *define* the
-operator `|x⟩⟨y| : z ↦ ⟨y,z⟩ • x` of **159II** as a
-`LinearMap.mkContinuous`. -/
-
-theorem op_add_smul (a b : ℬ) (x : X) : (a + b) • x = a • x + b • x :=
-  eq_of_inner_right_eq (𝒜 := ℬ) fun z => by
-    rw [CStarModule.inner_op_smul_right, CStarModule.inner_add_right,
-      CStarModule.inner_op_smul_right, CStarModule.inner_op_smul_right, add_mul]
-
-theorem op_mul_smul (a b : ℬ) (x : X) : (a * b) • x = a • (b • x) :=
-  eq_of_inner_right_eq (𝒜 := ℬ) fun z => by
-    rw [CStarModule.inner_op_smul_right, CStarModule.inner_op_smul_right,
-      CStarModule.inner_op_smul_right, mul_assoc]
-
-theorem op_smul_complex_smul (c : ℂ) (a : ℬ) (x : X) :
-    (c • a) • x = c • (a • x) :=
-  eq_of_inner_right_eq (𝒜 := ℬ) fun z => by
-    rw [CStarModule.inner_op_smul_right, CStarModule.inner_smul_right_complex,
-      CStarModule.inner_op_smul_right, smul_mul_assoc]
-
-theorem op_smul_add (a : ℬ) (x y : X) : a • (x + y) = a • x + a • y :=
-  eq_of_inner_right_eq (𝒜 := ℬ) fun z => by
-    rw [CStarModule.inner_op_smul_right, CStarModule.inner_add_right,
-      CStarModule.inner_add_right, CStarModule.inner_op_smul_right,
-      CStarModule.inner_op_smul_right, mul_add]
-
-theorem op_zero_smul (x : X) : (0 : ℬ) • x = 0 :=
-  eq_of_inner_right_eq (𝒜 := ℬ) fun z => by
-    rw [CStarModule.inner_op_smul_right, zero_mul, CStarModule.inner_zero_right]
-
-theorem op_smul_zero (a : ℬ) : a • (0 : X) = 0 :=
-  eq_of_inner_right_eq (𝒜 := ℬ) fun z => by
-    rw [CStarModule.inner_op_smul_right, CStarModule.inner_zero_right, mul_zero]
-
-theorem norm_op_smul_le (a : ℬ) (x : X) : ‖a • x‖ ≤ ‖a‖ * ‖x‖ := by
-  have hinner : (inner ℬ (a • x) (a • x) : ℬ) = a * inner ℬ x x * star a := by
-    rw [CStarModule.inner_op_smul_right, CStarModule.inner_op_smul_left,
-      mul_assoc]
-  have hsq : ‖a • x‖ ^ 2 ≤ (‖a‖ * ‖x‖) ^ 2 := by
-    rw [CStarModule.norm_sq_eq (A := ℬ), hinner]
-    calc ‖a * inner ℬ x x * star a‖ ≤ ‖a‖ * ‖(inner ℬ x x : ℬ)‖ * ‖star a‖ :=
-          (norm_mul_le _ _).trans
-            (mul_le_mul_of_nonneg_right (norm_mul_le _ _) (norm_nonneg _))
-      _ = (‖a‖ * ‖x‖) ^ 2 := by
-          rw [norm_star, ← CStarModule.norm_sq_eq (A := ℬ)]; ring
-  have h1 : (0 : ℝ) ≤ ‖a • x‖ := norm_nonneg _
-  have h2 : (0 : ℝ) ≤ ‖a‖ * ‖x‖ := mul_nonneg (norm_nonneg _) (norm_nonneg _)
-  nlinarith
+/-! The module laws for the action of `ℬ` on a `CStarModule` (`op_add_smul`,
+`op_mul_smul`, `norm_op_smul_le`, …) are in `HilbertModules.lean`; together
+they are what is needed to *define* the operator `|x⟩⟨y| : z ↦ ⟨y,z⟩ • x` of
+**159II** as a `LinearMap.mkContinuous`. -/
 
 variable (ℬ) in
 /-- **159II** (dils.tex:4292, Definition): for `x, y` in a Hilbert

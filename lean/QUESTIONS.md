@@ -462,7 +462,7 @@ Three options, and a **recommendation**:
 Not done unilaterally because option 2 edits `A/CStar`, which is upstream of
 every other chapter and was frozen while workers were live.
 
-### D2. `PaschkeModule` cannot carry `ρ : NMIUMap 𝒜 (Ba ℬ X)` — RULED, and the diagnosis was wrong
+### D2. `PaschkeModule` cannot carry `ρ : NMIUMap 𝒜 (Ba ℬ X)` — RULED, and FIXED (session 43)
 **Ruling (Bas, 2026-08-15):** *"the definition of Paschke dilation should not
 include the star"* — so `IsPaschkeDilationOf` (`Stinespring.lean:1179`,
 `∀ a, D.h (D.ρ a) = φ a`) **is correct as it stands** and the defect is on the
@@ -496,16 +496,62 @@ What was previously recorded here — that the fields prove
   nmiu-map `𝒜 → 𝒷ᵃ(𝒜 ⊗_φ ℬ)ᵐᵒᵖ`, not `𝒜 → 𝒷ᵃ(𝒜 ⊗_φ ℬ)`, and `𝒜 ≅ 𝒜ᵒᵖ` fails
   for general von Neumann algebras (Connes).
 
-*Decision still needed (Bas)*: adopt
-`ρ : NMIUMap 𝒜 (Ba ℬ X)ᵐᵒᵖ`, `ρ_tprod : ρ(a₀)(a ⊗ b) = (a a₀) ⊗ b`,
-`inner_tprod : ⟨a ⊗ b, a' ⊗ b'⟩ = b' φ(a' a*) b*` (which gives `h (ρ a) = φ a`
-with `h_def` *unchanged*), and the matching `PhiCompatible.bound`; the
-`PaschkeTriple` built in `existence_paschke_5` then has
-`P = (Ba ℬ M.X)ᵐᵒᵖ`, which needs `PartialOrder`/`StarOrderedRing`/
-`VonNeumannAlgebra` instances on the opposite algebra (Mathlib has
-`CStarAlgebra Aᵐᵒᵖ`; the rest is new work).  The alternative — making the whole
-`B/Dils` module convention right-handed, or building over `ℬᵐᵒᵖ` — is a
-chapter-wide refactor.
+**Ruling implemented (Bas, 2026-08-16: "Ok, fix the transcription please";
+session 43).**  Of the two mechanisms on the table, `Paschke.lean` now uses
+**`ᵐᵒᵖ` on the operators**:
+
+    ρ : NMIUMap 𝒜 (Ba ℬ X)ᵐᵒᵖ
+    ρ_tprod    : (ρ a₀).unop (a ⊗ b) = (a a₀) ⊗ b
+    inner_tprod: ⟨a ⊗ b, a' ⊗ b'⟩ = b' φ(a' a*) b*
+    bound      : ‖∑ᵢ T(aᵢ,bᵢ)‖² ≤ r ‖∑ᵢⱼ bᵢ φ(aᵢ aⱼ*) bⱼ*‖
+    h : NCPMap (Ba ℬ X)ᵐᵒᵖ ℬ,  h T = ⟨1 ⊗ 1, T.unop (1 ⊗ 1)⟩
+
+`h_def` is unchanged in substance and `paschkeModule_h_ρ` proves
+`h (ρ a) = φ a` with no `star`, so `IsPaschkeDilationOf` stands untouched, as
+ruled.  The mirroring dictionary that makes all of this a *faithful* image of
+the thesis is now stated in the file header: the mirror of a right module is
+the **conjugate** module, so the ℂ-action is conjugated too, and the mirror of
+the thesis's `⊗` carries a `star` in **both** arguments,
+`tprod a b = (a* ⊗ b*)_thesis`.  That single correction produces `inner_tprod`,
+`bound` and the anti-homomorphism `ρ` simultaneously.
+
+*Why this mechanism and not `CStarModule ℬᵐᵒᵖ X` (`ᵐᵒᵖ` on the scalars).*
+The expected tiebreaker — that Mathlib's `MulOpposite` support for a
+C*-algebra `ℬ` is richer than anything available for `Ba ℬ X` — does not
+exist: `CStarAlgebra Aᵐᵒᵖ` (`Mathlib/Analysis/CStarAlgebra/Classes.lean:139`),
+`MulOpposite.instPartialOrder` and `StarOrderedRing Aᵐᵒᵖ`
+(`Mathlib/Algebra/Order/Star/Basic.lean:395`) are all generic in `A`, so they
+apply verbatim to `Ba ℬ X`.  And the one piece Mathlib does *not* supply — the
+abstract Kadison `VonNeumannAlgebra Aᵐᵒᵖ` of `Theses/Common.lean` — is needed
+identically by both routes (the scalars route needs it for `ℬᵐᵒᵖ`, to invoke
+`ba_vonNeumannAlgebra`).  It is now proved once, as
+`vonNeumannAlgebra_mulOpposite` in `Paschke.lean`.
+
+With the tiebreaker gone the decision is churn, and the operators route wins:
+`𝒜 ⊗_φ ℬ` stays a `CStarModule ℬ`-module, i.e. in the same mirrored
+convention as the rest of the chapter, so `SelfDual`, `cstarBInner`,
+`IsBoundedModuleMap`, `UnDense` and `ExtTensor` all apply unchanged — in
+particular **167I** (`paschke_tensor`, `paschke_tensor_module`) and **166VI**
+(`dilationspace_dense_subset`) in `SelfDual.lean` needed *no* edit.  The
+scalars route would have needed `ExtTensor` over `ℬᵢᵐᵒᵖ` plus an `IsVNTensor`
+transfer to the opposite algebras, i.e. new infrastructure for statements that
+are still `sorry`.  `ᵐᵒᵖ` now occurs in exactly three places, all inside
+`Paschke.lean`: `ρ`, `h`, and the `PaschkeTriple` of `existence_paschke_5`.
+
+*A third fact the `ᵐᵒᵖ` explains.*  In the mirrored convention the vector
+state is completely positive on the **opposite** of `𝒷ᵃ(X)`, not on `𝒷ᵃ(X)`:
+for `X = ℬ` the adjointables are the right multiplications, `𝒷ᵃ(ℬ) ≅ ℬᵐᵒᵖ`
+via `t ↦ R_t` with `⟨1, R_t 1⟩ = t`, so `h : 𝒷ᵃ(ℬ) → ℬ` is `unop`, which is
+the transpose on `M₂` — positive but not completely positive.  With the `ᵐᵒᵖ`
+on the domain it is a ∗-isomorphism.  (Worth checking whether **145I**
+`hilbmod_vectstates_cp` in `HilbertModules.lean` has the same defect; it was
+out of scope for session 43 and is still `sorry`.)
+
+*Non-vacuity.*  `paschkeModuleId` exhibits `ℬ` itself, with `tprod a b = b·a`
+and `ρ = rightMulEquiv`, as a `PaschkeModule` of `φ = id`, so the repaired
+bundle is inhabited for a non-zero `φ` and the nine theorems that quantify
+over it say something.  This is the check that would have caught both this
+defect and the `PhiCompatible.bound` defect below.
 
 A *separate* and unambiguous defect in the same area **has been fixed**:
 `PhiCompatible.bound` was mirrored on the wrong side, which made
@@ -514,9 +560,10 @@ Counterexample (re-derived independently): `φ = id` on `M₂`, `a = e₀₀`,
 `b = e₁₀` gives `‖b* φ(a*a) b‖ = ‖ab‖² = 0` while `inner_tprod` forces
 `‖b φ(a*a) b*‖ = ‖e₁₁‖ = 1`, i.e. `1 ≤ r·0`.
 
-**Until the ruling above is implemented, nothing should be built on
-`PaschkeModule`.**  `PaschkeTriple` and `IsPaschkeDilationOf` themselves are
-fine and may be used (the earlier blanket warning on them is withdrawn).
+The freeze on `PaschkeModule` is **lifted**: the bundle is repaired and
+inhabited, `existence_paschke_2` and `existence_paschke_4` are proved against
+it, and `existence_paschke_5`'s `h ∘ ϱ = φ` half — the half that was false —
+is proved.  `PaschkeTriple` and `IsPaschkeDilationOf` were always fine.
 
 ## Thesis A (`cstar.tex`, `vn.tex`, `proc.tex`) — remaining after the 2026-08-13 rulings
 

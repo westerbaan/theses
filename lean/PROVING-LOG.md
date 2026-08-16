@@ -8179,9 +8179,13 @@ because `∑ᵢⱼ bᵢ(aᵢ aⱼ*)bⱼ* = v v*` for `v = ∑ᵢ bᵢaᵢ` (`gra
 universal property forces `T' x = T x 1` and is proved by feeding the bound
 the two-element family `(b·a, a)`, `(1, −b)` whose `v` is `0`, and
 `ρ = rightMulEquiv`, `h = rightMulEquiv.symm` are a ∗-isomorphism and its
-inverse.  Normality of both is `starAlgEquiv_preservesDirSups` (a
-∗-isomorphism of C*-algebras is normal — new, general); complete positivity
-of `h` is Mathlib's `NonUnitalStarAlgHomClass.instCompletelyPositiveMapClass`.
+inverse.  Normality of both is `starAlgEquiv_preservesDirSups`, which already existed
+in `Theses/A/VN/Basic.lean:3107` (a first draft of it here was thrown away —
+worth grepping for before proving anything about normality); complete
+positivity of `h` and of `ncpMapId` is Mathlib's
+`NonUnitalStarAlgHomClass.instCompletelyPositiveMapClass`, reached through
+`CompletelyPositiveMapClass.toCompletelyPositiveLinearMap` (the `CoeHead`
+ascription `(f : A →CP B)` does *not* elaborate here).
 So the repaired bundle is inhabited for a non-zero `φ`, and the nine
 theorems quantifying over `PaschkeModule` say something.  This is the check
 that would have caught both this defect and the `PhiCompatible.bound`
@@ -8198,3 +8202,25 @@ they moved verbatim into `HilbertModules.lean` (new `ModuleAction` section,
 right after `cstarBInner`), joined by two new ones, `op_one_smul` and
 `op_smul_comm_complex`.  Names and statements unchanged; `SelfDual.lean`
 keeps using them and still builds.  `selfDual_self` is also new there.
+
+### 7. Verification
+
+`lake build Theses.B.Dils.Paschke`, `Theses.B.Dils.SelfDual`,
+`Theses.B.Dils.Pure`: `Build completed successfully`.  `#print axioms` clean
+(`propext`, `Classical.choice`, `Quot.sound` only) on all of
+`selfDual_self`, `op_add_smul`, `op_mul_smul`, `op_one_smul`,
+`op_smul_comm_complex`, `op_smul_complex_smul`, `op_smul_add`,
+`op_zero_smul`, `op_smul_zero`, `norm_op_smul_le`, `selfAdjointUnop`,
+`npFunctionalOp`, `vonNeumannAlgebra_mulOpposite`, `paschkeModule_h_ρ`,
+`PhiCompatible.mul_right`, `existence_paschke_2`, `existence_paschke_4`,
+`paschke_inner_conj_forces_zero`, `paschke_rho_forces_cyclic`, `rightMul`,
+`rightMul_mul`, `rightMul_one`, `rightMul_star`, `rightMulEquiv`,
+`ncpMapId`, `gram_id_sum`, `rightMulNMIU`, `rightMulNCP` and
+`paschkeModuleId` — in particular the non-vacuity witness carries no
+`sorryAx`, so the bundle really is inhabited.
+
+Note for whoever runs next: `Theses/A/VN/NormalFunctionals.lean` was being
+edited live by another worker for most of this session, and a mid-edit state
+there makes *every* `lake build` under `Theses/B/Dils` fail with errors that
+are not yours (missing `.olean`, parse errors in `A/VN`).  Retry rather than
+debug.

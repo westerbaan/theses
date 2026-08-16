@@ -99,6 +99,79 @@ def cstarBInner (𝒷 : Type u) (X : Type w) [CStarAlgebra 𝒷] [PartialOrder �
   star_inner _ _ := CStarModule.star_inner _ _
   inner_self_nonneg _ := CStarModule.inner_self_nonneg
 
+/-! ### Elementary properties of the module action
+
+`CStarModule 𝒷 X` assumes only `SMul 𝒷 X`; the module laws for that action
+are consequences of the axioms, by definiteness of the inner product (the
+same derivation as `Theses.A.CStar.moduleAdjointable_linear`).  Together
+with `norm_op_smul_le` these are what is needed to define the operator
+`|x⟩⟨y|` of **159II** as a `LinearMap.mkContinuous`, and to compute with
+the module action of `𝒜 ⊗_φ ℬ` in `Paschke.lean`. -/
+
+section ModuleAction
+
+variable {𝒷 : Type u} {X : Type w}
+  [CStarAlgebra 𝒷] [PartialOrder 𝒷] [StarOrderedRing 𝒷]
+  [NormedAddCommGroup X] [Module ℂ X] [SMul 𝒷 X] [CStarModule 𝒷 X]
+
+theorem op_add_smul (a b : 𝒷) (x : X) : (a + b) • x = a • x + b • x :=
+  eq_of_inner_right_eq (𝒜 := 𝒷) fun z => by
+    rw [CStarModule.inner_op_smul_right, CStarModule.inner_add_right,
+      CStarModule.inner_op_smul_right, CStarModule.inner_op_smul_right, add_mul]
+
+theorem op_mul_smul (a b : 𝒷) (x : X) : (a * b) • x = a • (b • x) :=
+  eq_of_inner_right_eq (𝒜 := 𝒷) fun z => by
+    rw [CStarModule.inner_op_smul_right, CStarModule.inner_op_smul_right,
+      CStarModule.inner_op_smul_right, mul_assoc]
+
+theorem op_one_smul (x : X) : (1 : 𝒷) • x = x :=
+  eq_of_inner_right_eq (𝒜 := 𝒷) fun z => by
+    rw [CStarModule.inner_op_smul_right, one_mul]
+
+theorem op_smul_complex_smul (c : ℂ) (a : 𝒷) (x : X) :
+    (c • a) • x = c • (a • x) :=
+  eq_of_inner_right_eq (𝒜 := 𝒷) fun z => by
+    rw [CStarModule.inner_op_smul_right, CStarModule.inner_smul_right_complex,
+      CStarModule.inner_op_smul_right, smul_mul_assoc]
+
+theorem op_smul_comm_complex (c : ℂ) (a : 𝒷) (x : X) :
+    a • (c • x) = c • (a • x) :=
+  eq_of_inner_right_eq (𝒜 := 𝒷) fun z => by
+    rw [CStarModule.inner_op_smul_right, CStarModule.inner_smul_right_complex,
+      CStarModule.inner_smul_right_complex, CStarModule.inner_op_smul_right,
+      mul_smul_comm]
+
+theorem op_smul_add (a : 𝒷) (x y : X) : a • (x + y) = a • x + a • y :=
+  eq_of_inner_right_eq (𝒜 := 𝒷) fun z => by
+    rw [CStarModule.inner_op_smul_right, CStarModule.inner_add_right,
+      CStarModule.inner_add_right, CStarModule.inner_op_smul_right,
+      CStarModule.inner_op_smul_right, mul_add]
+
+theorem op_zero_smul (x : X) : (0 : 𝒷) • x = 0 :=
+  eq_of_inner_right_eq (𝒜 := 𝒷) fun z => by
+    rw [CStarModule.inner_op_smul_right, zero_mul, CStarModule.inner_zero_right]
+
+theorem op_smul_zero (a : 𝒷) : a • (0 : X) = 0 :=
+  eq_of_inner_right_eq (𝒜 := 𝒷) fun z => by
+    rw [CStarModule.inner_op_smul_right, CStarModule.inner_zero_right, mul_zero]
+
+theorem norm_op_smul_le (a : 𝒷) (x : X) : ‖a • x‖ ≤ ‖a‖ * ‖x‖ := by
+  have hinner : (inner 𝒷 (a • x) (a • x) : 𝒷) = a * inner 𝒷 x x * star a := by
+    rw [CStarModule.inner_op_smul_right, CStarModule.inner_op_smul_left,
+      mul_assoc]
+  have hsq : ‖a • x‖ ^ 2 ≤ (‖a‖ * ‖x‖) ^ 2 := by
+    rw [CStarModule.norm_sq_eq (A := 𝒷), hinner]
+    calc ‖a * inner 𝒷 x x * star a‖ ≤ ‖a‖ * ‖(inner 𝒷 x x : 𝒷)‖ * ‖star a‖ :=
+          (norm_mul_le _ _).trans
+            (mul_le_mul_of_nonneg_right (norm_mul_le _ _) (norm_nonneg _))
+      _ = (‖a‖ * ‖x‖) ^ 2 := by
+          rw [norm_star, ← CStarModule.norm_sq_eq (A := 𝒷)]; ring
+  have h1 : (0 : ℝ) ≤ ‖a • x‖ := norm_nonneg _
+  have h2 : (0 : ℝ) ≤ ‖a‖ * ‖x‖ := mul_nonneg (norm_nonneg _) (norm_nonneg _)
+  nlinarith
+
+end ModuleAction
+
 section SelfDualDef
 
 variable (𝒷 : Type u) (X : Type v)
@@ -117,6 +190,20 @@ def SelfDual : Prop :=
     ∃ t : X, ∀ x, τ x = inner 𝒷 t x
 
 end SelfDualDef
+
+/-- **141III** (dils.tex:1331, Examples): a C*-algebra `𝒷` is self dual as
+a Hilbert `𝒷`-module over itself, because a `𝒷`-linear `τ : 𝒷 → 𝒷` is
+`τ x = x · τ 1 = ⟨(τ 1)*, x⟩` (boundedness is not needed).  Used in
+`Paschke.lean` to run the universal property of `𝒜 ⊗_φ ℬ` against `ℬ`
+itself. -/
+theorem selfDual_self (𝒷 : Type u) [CStarAlgebra 𝒷] [PartialOrder 𝒷]
+    [StarOrderedRing 𝒷] : SelfDual 𝒷 𝒷 := by
+  intro τ hmod _
+  refine ⟨star (τ 1), fun x => ?_⟩
+  have h := hmod x 1
+  rw [smul_eq_mul, mul_one] at h
+  show τ x = x * star (star (τ 1))
+  rw [star_star, h]
 
 /-! ## Parsec 1420: Cauchy–Schwarz and sesquilinear forms
 
