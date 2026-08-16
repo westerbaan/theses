@@ -15028,3 +15028,293 @@ what is missing is `𝒜p` as a self-dual Hilbert `p𝒜p`-module and
 only self-contained one, 165VI is blocked outside the directory on
 `tensor_characterization`, 164II.2b is QUESTIONS **D6**, and
 `univprop_ext_tensor` is multi-session.  The five known-false items stand.
+
+## Session 66 — `A/Proc`: **`exists_tmapM` is proved, and the 2650-line re-universing was never needed** — plus **117III** and **123I.3** (worker on `Tensor.lean` / `QuantumLambda.lean`)
+
+`Tensor.lean` **18 → 16** code `sorry`s, `QuantumLambda.lean` **17 → 16**;
+A/Proc **51 → 48**.  All four A/Proc files compiler-verified with a direct
+`lean` run: **0 errors** each (`Tensor` 16, `QuantumLambda` 16, `Measurement`
+10, `Duplicators` 6).  Every new declaration is axiom-clean
+(`[propext, Classical.choice, Quot.sound]`).  Cost: **+662 / −27 lines**
+(`Tensor` +533/−6, `QuantumLambda` +129/−21) against the ~3000 costed in
+session 65.
+
+### The costing was wrong in two places, and the job was ~5× smaller
+
+Session 65 costed `exists_tmapM` as (i) ~2650 lines of mechanical
+re-universing of parsecs 1120/1130/1140 out of `Tensor.lean`'s file-wide
+`variable {A B C D : Type u}`, plus (ii) ~350 lines of universe-polymorphic
+twins of **four** two-algebra A/VN lemmas.  Neither was needed.
+
+1. **Three of the four "two-algebra" A/VN lemmas are already
+   universe-polymorphic.**  `p_uwcont` (44XV), `compNP` and
+   `preservesDirSups_of_continuousOn_effects` all live in `A/VN/Basic.lean`
+   under `variable {A B : Type*}` (`section Topologies`, which runs from
+   line 63 to 5181, and the nested `section PositiveMaps`).  Verified with
+   `#check @… ` under `set_option pp.universes true`: each reports
+   `.{u_1, u_2}` with `A : Type u_1`, `B : Type u_2`.  **Only 77V
+   `vn_extension` is single-universe** (`A/VN/Completeness.lean` line 36,
+   `{A B : Type u}`) — and it never enters.
+2. **Lift instead of re-universe.**  `ngns_ulift` (already in `Tensor.lean`,
+   used by `vnTensorProduct_nonempty`) gives, for any von Neumann algebra
+   `𝒳 : Type p` and any `q`, a faithful nmiu-image inside
+   `B(ULift.{q} ℓ²(ι))`, whose bundled `VNSub` lives in `Type (max p q)`.
+   Packaged as **`exists_vnLift`** (10 lines), this makes every von Neumann
+   algebra nmiu-isomorphic to one in any larger universe.  `exists_tmapM`
+   then lifts `𝒜, ℬ, 𝒞, 𝒟` **and** `𝒜 ⊗ ℬ`, `𝒞 ⊗ 𝒟` into
+   `max u₁ u₂ u₃ u₄`, applies the *existing* single-universe **115II**
+   `exists_tmap` there, and transports back.  Nothing in parsecs 1120–1140
+   was touched.
+
+### What had to be built (all in `Tensor.lean`, all public, all new names checked against the tree first)
+
+* **`isTensorProduct_comp_target`** — the one genuinely new mathematical
+  ingredient: a tensor product transports along an nmiu-isomorphism of the
+  *target* (`ℓ ∘ γ` is a tensor product when `γ` is).  This is the companion
+  of the existing `isTensorProduct_comp`, which transports along isomorphisms
+  of the two *factors* and keeps the target fixed; unlike that one it moves
+  the tensor product to another universe, which is the whole point.  Density
+  needs `ℓ` to be an ultraweak homeomorphism — that is `p_uwcont` in both
+  directions, hence the check above; `prod_exists` and `faithful` transport by
+  `compNP` along `nmiuSymm ℓ`.
+* **`exists_vnt_transfer`** — combines `isTensorProduct_comp` (factors) and
+  `isTensorProduct_comp_target` (target) and then compares with the chosen
+  `𝒜' ⊗ ℬ'` by **114II** `tensor_uniqueness`, at the single common universe.
+* Plumbing: `nmiuComp` (**moved down from `QuantumLambda.lean`**, where it was
+  the only copy; its docstring's "normality sorry-ed" was already stale),
+  `nmiuComp_apply`, `nmiuSymm_apply_apply'`, `nmiuSymm_bijective`,
+  `nmiuLin_cp` (an nmiu-map is completely positive — the `star_mul_self`
+  computation), `nmiuNCP` (an nmiu-map as an ncp-map), and `tmapM_apply`.
+
+`exists_tmapM` itself is ~70 lines: six `exists_vnLift`s, two
+`exists_vnt_transfer`s, `exists_tmap` + `tensor_functorial` to build the
+universe-`max` nmiu-map, and a conjugation both ways.  Uniqueness is
+`exists_tmap`'s own uniqueness pulled back through the transfer isomorphisms,
+so no cross-universe continuity argument is needed there either.
+
+**The seven `FreeExp`/`HaFreeExp` fields went axiom-clean**, as HANDOFF
+predicted: `FreeExp.{carrier,cstar,po,sor,vna,unit,universal}` and the
+`HaFreeExp` ones all report the three standard axioms now.
+`dup_vna_is_monoid_4` is **still tainted** — through `braiding` (119IVc
+`exists_braiding`), which `exists_tmapM` does not reach.
+
+### 117III `tensor_distributes_over_sums` — the thesis's proof, plus a `W*`/density bridge
+
+proc.tex:3772 is nine lines and transcribes directly through **116VII**
+`tensor_characterization`, with `Sg` = all np-functionals on `𝒜` and `Γ` =
+`117II.2`'s collection `{ω ∘ πᵢ}`.  One gap had to be filled: the thesis says
+the `κᵢ(a ⊗ b)` "generate" `⊕ᵢ 𝒜 ⊗ ℬᵢ` and quotes **117II**.1, which is
+phrased with `W*(·)`, whereas 116VII's condition (1) is *ultraweak density of
+a linear span*.  Two new lemmas connect them and are reusable:
+
+* `wstar_eq_top_of_dense_span` — `W*(S)` is a von Neumann subalgebra, hence
+  ultraweakly closed (**75VIII** `vnsac`), so a dense span forces `W*(S) = ⊤`;
+* `dense_of_wstar_eq_top` — the *ultrastrong* closure of a ∗-subalgebra is
+  already a von Neumann subalgebra (**75VII** `usClosureSubalgebra`), so
+  `W*(S) = ⊤` forces `S` ultraweakly dense.
+
+Plus `wstar_mono`, `centreSeparatingConj_univ` (immediate from 42I's
+`np_faithful`, as the brief said) and `centreSeparatingConj_mono`.  The `lp`
+side is `sumTmul`/`sumTmulBilin`/`sumTmulBilin_miu`; the generating set of the
+*repaired* `sum_generation_1` (which adds the coprojections `eᵢ = κᵢ(1)`) is
+covered because `κᵢ(1) = γ(1, κᵢ(1))` is itself in the range of `γ`.
+
+### 123I.3 `linf_tensor` — and it does **not** go through 117III
+
+The survey had `linf_tensor` blocked on 117III.  It is not: `ℓ^∞(X × Y)` is
+`⊕_{(x,y)} ℂ`, and 116VII applies directly with the point evaluations on both
+sides, the generators `δ_{(x,y)} = δ_x ⊗ δ_y` coming from `sum_generation_1`
+at `S i = ∅` (legitimate by `starSubalgebra_complex_eq_top`).  New helpers in
+`QuantumLambda.lean`: `centreSeparatingConj_complexId`, `linfT_memℓp`,
+`linfT`, `linfTmul`, `linfTmul_miu`.
+
+**One structural change in `Tensor.lean`**: `section Sums` is split.
+`sum_generation_1`, `sum_generation_2`, `starSubalgebra_complex_eq_top`,
+`diagBool` and `sum_generation_1_is_false` are now under
+`variable {I : Type*} (𝒜 : I → Type*)` — their proofs never used the
+equal-universe assumption, and `ℓ^∞(X)` needs `I : Type u` with summands in
+`Type 0`.  117III keeps the equal-universe block, in a new `section
+SumsTensor`, because **116VII** confines its three algebras to one universe.
+
+### Divergences from the theses
+
+* **`exists_tmapM`** is *our* infrastructure statement, not a thesis point;
+  the thesis simply writes `ρ ⊗ σ`.  The lifting route has no counterpart in
+  proc.tex — universes are a Lean artefact.  (Divergence case 2.)
+* **117III**: the thesis's argument is transcribed; the `W*`/density bridge
+  above is an addition Lean needs, not a repair.  (Case 2, mechanical.)
+* **123I.3**: proc.tex:4646 says "by `tensor-characterization`", which is
+  exactly what was done; the survey's claim that it waits on 117III was our
+  own error, not the thesis's.
+
+### Next gate, precisely
+
+`Tensor.lean`'s remaining 16 are parsecs 1180–1190 plus the leftovers.
+**119V's `vn_smc_*` block is NOT unblocked by `exists_tmapM`**: it also needs
+`associator` (119IV), `braiding` (119IVc) and the unitors (119IVb), all still
+`sorry`.  Read against proc.tex:4031/4053/4072 these split three ways, and
+only one of them is hard:
+
+* **119IVc `exists_braiding`** is the cheapest, and it is the one worth doing
+  first because it is the *only* remaining taint in `dup_vna_is_monoid_4`
+  (`Duplicators.lean`), which is otherwise proved.  The exercise is
+  "`(a,b) ↦ b ⊗ a` is a tensor product": `miu` and `dense` are the same data
+  as `(vnTensor ℬ 𝒜).map`'s, `prod_exists` is `prodNP … τ σ` (ℂ is
+  commutative, so `τ b * σ a = σ a * τ b`), and `faithful` is the same swap —
+  perhaps 40 lines for `IsTensorProduct ((vnTensor ℬ 𝒜).map.flip)`.  **But
+  114II `tensor_uniqueness` cannot then be applied directly**: `𝒜 : Type u`
+  and `ℬ : Type v` are in different universes and `tensor_uniqueness` confines
+  its factors and both targets to one.  Use this session's device — lift `𝒜`,
+  `ℬ` into `Type (max u v)` with `exists_vnLift` and go through
+  `exists_vnt_transfer` on both sides, exactly as `exists_tmapM` does.
+  Estimate ~150 lines total.
+* **119IVb `exists_unitors`** is the same shape (`(z,a) ↦ z·a` is a tensor
+  product; `dense` is trivial because the range is already all of `𝒜`,
+  `prod_exists` needs `σ z = z·σ(1)` so the witness is `σ(1)·τ`, and
+  `faithful` is `np_faithful` at `σ = complexIdNP`).  Its universes are
+  `ℂ : Type 0` against `𝒜 : Type u`, so it needs the same lifting.
+* **119IV `exists_associator` is the only one that needs 119II
+  `triple_tensor`** (proc.tex:4031 states it as a corollary of it), and 119II
+  is a genuine `IsTensorProduct₃` construction.  That is the real gate of
+  parsec 1190 and should be costed separately.
+
+In `QuantumLambda.lean` the seven `tmapM`-mentioning statements are now
+stateable and attackable, but they are Kornell's parsec-1250 mathematics; the
+cheapest items in that file remain **124I** `vn_generation_bound` and
+**125II** `vn_gns_bound`.
+
+Nothing new for ERRATA.md or QUESTIONS.md this session.
+
+## Session 67 — `B/Dils`: **171II does not need `𝒜p` at all** — surjectivity of `ϱ` is proved; the corner theorem is one step short (worker on `Pure.lean`)
+
+**Headline: `paschke_corner` did *not* close, but its mathematical content
+did.**  The step the survey and the brief called the multi-session blocker —
+"`𝒜p` as a self-dual Hilbert `p𝒜p`-module" and "`𝒜 ⊗_{h_p} p𝒜p ≅ 𝒜p`" — is
+**not needed**, and the module `𝒜p` is never constructed.  What is now proved,
+axiom-clean (`[propext, Classical.choice, Quot.sound]`), inside `Pure.lean`:
+
+* **`pcorner_rho_surjective`**: for the Paschke module `𝒜 ⊗_{h_p} p𝒜p` of the
+  standard corner `h_p : 𝒜 → p𝒜p`, the nmiu-map `ϱ` is **surjective** — the
+  thesis's third step, and the only hard one;
+* **`pcorner_forall_mul_eq_zero_iff` / `pcorner_rho_eq_zero_iff`**: its kernel,
+  `ϱ(a) = 0 ⟺ ∀x, pxa = 0 ⟺ ⌈⌈p⌉⌉a = 0` (the thesis's `⌈ϱ₀⌉ = ⌈⌈p⌉⌉`);
+* **`pcorner_sigma`** and **`pcorner_sigma_injective`**: the corestriction
+  `σ : ⌈⌈p⌉⌉𝒜 → 𝒷ᵃ(𝒜 ⊗_{h_p} p𝒜p)ᵐᵒᵖ`, `c ↦ ϱ(c)`, an **injective** nmiu-map
+  with `σ ∘ h_{⌈⌈p⌉⌉} = ϱ` — bijective by the two items above;
+* **`pcorner_centralCorner`**: the standard corner `h_z : 𝒜 → z𝒜` of a central
+  projection as an nmiu-map, with `pcorner_val_normal` (the inclusion `z𝒜 ⊆ 𝒜`
+  preserves directed suprema — the "direct summand" fact that makes it normal).
+
+`Pure.lean` stays at **10** `sorry`s, 0 errors; `B/Dils` stays at 23
+(HilbertModules 0, SelfDualCompletion 0, Stinespring 1, Kaplansky 4, Paschke 1,
+SelfDual 7, Pure 10 — each compiled individually, error count 0 everywhere).
+~1000 lines added, all `private`, all with the `pcorner_` prefix (greped
+against the whole tree first; the only collision was `ncpPos`, which already
+exists `private` in `Pure.lean` and was reused).
+
+### Why `𝒜p` is unnecessary — three observations
+
+The thesis (dils.tex:6237) proves `paschke-corner` in three steps: (1) `𝒜p` is
+a self-dual Hilbert `p𝒜p`-module; (2) `𝒜 ⊗_{h_p} p𝒜p ≅ 𝒜p`; (3)
+`𝒷ᵃ(𝒜p) ≅ ⌈⌈p⌉⌉𝒜`, via an orthonormal basis of `𝒜p` and `surjective-nmiu`.
+Steps (1) and (2) exist only to transport the basis and the ketbra calculus
+into a concrete model.  Both can be done *inside* the abstract `PaschkeModule`
+of **154III**:
+
+* **Every elementary tensor is `a ⊗ 1`** (`pcorner_tprod_eq_one`):
+  `a ⊗ pbp = (pbp·a) ⊗ 1`, proved by expanding `⟨x−y, x−y⟩` with
+  `PaschkeModule.inner_tprod`.  So `V = {a ⊗ 1}` is already a `p𝒜p`-submodule
+  (no spans, no sums), and it is **ultranorm dense**
+  (`pcorner_unDense_tprod`): `V^⊥ = {0}` by
+  `paschkeModule_inner_tprod_separating`, so **160IV**.2 `hilbmod_projthm_2`
+  gives `X = V^{⊥⊥} = unClosure (bSpan V)`.
+* **The thesis's basis transports**: for the partial isometries of **83V**
+  `cceil_sum` (`uᵢ*uᵢ = qᵢ` pairwise orthogonal with `⋁ᵢqᵢ = ⌈⌈p⌉⌉`,
+  `uᵢuᵢ* ≤ p`), the family `eᵢ = uᵢ ⊗ 1` is an orthonormal basis of
+  `𝒜 ⊗_{h_p} p𝒜p` (`pcorner_onb_data`, `pcorner_isONBasis_tprod`).
+* **`|a ⊗ 1⟩⟨b ⊗ 1| = ϱ(b*pa)`** (`pcorner_mketbra_tprod`) — a two-line
+  identity checked on elementary tensors through `paschkeModule_ba_ext`.
+
+Surjectivity then needs **no approximation argument at all**: by **159IV**
+`ketbra_ultraweakly_dense` every `T` is an ultraweak limit of elements of the
+span of the `|b·eᵢ⟩⟨eⱼ|`, and `b·eᵢ = (b·uᵢ) ⊗ 1` is again an elementary
+tensor, so *every generator is literally in the range of `ϱ`*.  The range is
+ultraweakly closed because `σ` is injective: **48VI**.1
+`injective_nmiu_iso_on_image_1` makes `σ`'s range a von Neumann subalgebra and
+**73IX** `vnsac` closes it.
+
+**The one analytic step is the thesis's own**, and it is where the work is
+(`pcorner_untendsto_tprod_proj`, ~150 lines): `⟨eᵢ, a ⊗ 1⟩ • eᵢ = (p a qᵢ) ⊗ 1`,
+so the partial sums are `(p a Qₛ) ⊗ 1` with `Qₛ = ∑_{i∈s} qᵢ ↑ ⌈⌈p⌉⌉`, and
+`‖(p a (⌈⌈p⌉⌉ − Qₛ)) ⊗ 1‖_ω² = μ(⌈⌈p⌉⌉ − Qₛ)` for the np-functional
+`μ = conjNP (star (pa)) (compNP (ncpPos φ) _ ω)`, which tends to `0` by
+`npFunctional_tendsto_of_isLUB` — `isLUB_projSup_of_directed` supplying the
+supremum.  Clause (a) of `IsONBasis` extends from `V` to all of `X` by an ε/3
+argument (`pₛ` is a contraction for every `‖·‖_ω`, by `mod_bessel`); clause (b)
+is `exists_unTendsto_of_l2Summable` for free.
+
+*Divergence, class 2* — worth a remark in dils.tex: steps 1 and 2 of
+`paschke-corner` can be dropped entirely.  Nothing in the printed proof is
+wrong; the concrete model is simply not needed once the elementary tensors are
+known to be of the form `a ⊗ 1`.
+
+### What is left of 171II, precisely
+
+`σ` is a bijective nmiu-map with `σ ∘ h_{⌈⌈p⌉⌉} = ϱ` and (by construction of
+the module triple) `h_M ∘ σ = h'_p`.  Three things remain, none of them about
+modules:
+
+1. **`h'_p : ⌈⌈p⌉⌉𝒜 → p𝒜p`, `c ↦ pcp`, as an `NCPMap`** — complete positivity
+   is `ad_cp` in the corner, normality is `ad_normal` plus
+   `cornerSet.isLUB_mem` (the same pattern as `pcorner_val_normal`).
+2. **`σ⁻¹` as an ncp-map**: complete positivity of a ∗-isomorphism is
+   `cp_of_mi`; normality of the inverse follows from
+   `starAlgHom_nonneg_reflect` (`Paschke.lean`, public) making `σ` an order
+   isomorphism.  (`nmiuInv` in `A/Proc/Tensor.lean` is the same construction,
+   off this import path.)
+3. **A transport lemma**: if `D₁` is a Paschke dilation of `φ` and
+   `ϑ : D₁.P → D₂.P` is a bijective nmiu-map with `ϑ∘ϱ₁ = ϱ₂`, `h₂∘ϑ = h₁`,
+   then `D₂` is a Paschke dilation of `φ`.  ~40 lines: mediate with `ϑ∘σ`, and
+   get uniqueness from injectivity of `ϑ`.  (`paschke_unique_up_to_iso` is the
+   converse and does not give this.)
+
+Estimate: one short session.  **`paschke_pure` (171VII) and `pure_ncp_extreme`
+(172X) are then the next gate**, and both need 169IV/169X, which are cited to
+proc.tex.
+
+### Two dead ends, recorded so they are not re-tried
+
+* **`dils_filter_basics_1` does not shortcut 171II.**  It is tempting to write
+  `h_p = (compression `z𝒜 → p𝒜p`) ∘ h_z`, take `(z𝒜, h_z, id)` (a Paschke
+  dilation by **140X**.1) and compose.  But 169XI.1 composes a dilation with a
+  **filter**, and filters go *out of* a corner (`⌈b⌉B⌈b⌉ → B`, 169X); the
+  compression `z𝒜 → p𝒜p` is a **corner**, and the corner-composition statement
+  is false in general — that is exactly what the cutting-down to `⌈⌈p⌉⌉`
+  repairs.
+* **The general ketbra `|x⟩⟨y|` cannot be approximated naively.**
+  `ketbra_ultranorm_continuous` needs a *norm-bounded* net, and ultranorm
+  density (`unClosure`) gives no norm control (a Kaplansky-density statement
+  for modules, which the tree does not have).  Using a basis *inside* `V`
+  avoids the issue completely — the generators of **159IV** are then already
+  in the range.
+
+### Corrections to the brief
+
+* **165VI `ba_ext_tensor_pres` is still blocked, but not for the stated
+  reason.**  The blocker is not that `tensor_characterization` (**116VII**) is
+  unproved — it is proved (session 65) — but that it lives in
+  `Theses/A/Proc/Tensor.lean`, and **`B/Dils` does not import `A/Proc` at
+  all** (`HilbertModules.lean` imports only `Theses.Common`,
+  `A.CStar.Matrices` and three `A/VN` files).  `B/Dils` even carries its own
+  `IsVNTensor` (`SelfDual.lean:2743`).  So 165VI needs either its own copy of
+  116VII or a decision to put `A/Proc` on the import path — the same
+  structural issue as QUESTIONS **D3**.
+* The brief's per-file counts were right, and `cceil_sum` and
+  `surjective_nmiu_1` are indeed both proved and usable.  `surjective_nmiu_1`
+  was in the end **not** used: `σ` is built by hand, because the carrier
+  identity `⌈ϱ⌉ = ⌈⌈p⌉⌉` is exactly what `pcorner_forall_mul_eq_zero_iff`
+  computes, and going through 170IV.1 would have required re-deriving it.
+* `ncpSMul` was not promoted: nothing in this session touched `NCPLe` or
+  `ncpInterval`.
+
+Nothing new for ERRATA.md or QUESTIONS.md this session.

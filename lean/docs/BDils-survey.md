@@ -101,7 +101,7 @@ Classification key: **(a)** self-contained, **(b)** blocked on a named
 | **164II.1** | `ext_tensor_dense` | **(a)** | **CLOSED session 50.**  `P = id` from `exists_orthoProj` + `ExtTensor.univ` as in 163II-dense; the `bSpan D ⊆ unClosure D` gap is the thesis's own 164VII, and needs only *unbounded* ultrastrong density of `𝒜 ⊙ ℬ` (`IsVNTensor.generates` + `isVNSubalgebra_usClosureSubalgebra`) — **not** Kaplansky density, contrary to this row's earlier text |
 | **164II.2a** | `ext_tensor_basis` | **(a)** | **CLOSED session 51** (~170 lines).  It needed 164II.1 but **not** 161II.2, contrary to this row's earlier text: the thesis's 164X reduces to a Parseval identity checked against product np-functionals only because its `X ⊗ Y` *is* `ℓ²((pᵢⱼ))`; for an abstract `E : ExtTensor` the cheaper route is 164II.1 + the 166III estimates with `s` chosen before `u` |
 | 164II.2b | `ext_tensor_ketbra_dense` | **(d)** | **FALSE as transcribed** (session 54, QUESTIONS **D6**): our statement forces a `Finset (ι × κ)`-indexed net along `atTop`, and at `ι = κ = PUnit` (`X = 𝒜`, `Y = ℬ`, `E = extTensorSelf`) `atTop` is principal at the top element, so the net's value there would have to *equal* `T` — forcing `𝒜 ⊗ ℬ = 𝒜 ⊙ ℬ`.  The thesis claims only ultraweak **density** of `span D`, and *that* **is proved**, as the new public `ext_tensor_ketbra_uwDense` (entourage form), by the thesis's own 164XI: 159IV + 164II.2a + Kaplansky 74IV + 159IX.  Left `sorry` per the never-change-a-statement rule |
-| 165VI | `ba_ext_tensor_pres` | **(b)** | proof 165VII–165X.  `generates` is supplied by `ext_tensor_ketbra_uwDense`, and the miu-clauses by 165III (proved).  ⚠️ **This row previously said "what is left is 165IX/165X" — that is wrong** (session 55): 165IX/165X give product functionals only for the *vector states* `Ω_X`, `Ω_Y` and then appeal to **116VII** `tensor-characterization`, whereas our `IsVNTensor.exists_productFunctional` transcribes proc.tex's `tensor` literally and demands one for **every** pair of np-functionals.  `tensor_characterization` (`A/Proc/Tensor.lean:3848`) is itself `sorry` **and** off this import path, so 165VI is blocked *outside* `B/Dils` |
+| 165VI | `ba_ext_tensor_pres` | **(b)** | proof 165VII–165X.  `generates` is supplied by `ext_tensor_ketbra_uwDense`, and the miu-clauses by 165III (proved).  ⚠️ **This row previously said "what is left is 165IX/165X" — that is wrong** (session 55): 165IX/165X give product functionals only for the *vector states* `Ω_X`, `Ω_Y` and then appeal to **116VII** `tensor-characterization`, whereas our `IsVNTensor.exists_productFunctional` transcribes proc.tex's `tensor` literally and demands one for **every** pair of np-functionals.  `tensor_characterization` (`A/Proc/Tensor.lean`) **was closed in session 65**, but it is still off this import path — `B/Dils` does not import `A/Proc` at all (`HilbertModules.lean` imports `Theses.Common`, `A.CStar.Matrices` and three `A/VN` files), and `B/Dils` carries its own `IsVNTensor`.  So 165VI remains blocked *structurally*: it needs its own copy of 116VII, or a decision to put `A/Proc` on the import path (QUESTIONS **D3** territory).  Re-checked session 67 |
 | **166IV** | `exttensor_dense_subsets` | **(a)** | **CLOSED session 50.**  The thesis's route through 158II `kaplansky_hilbmod` (open, printed proof false) is avoided: `u ∈ U` is chosen before `v ∈ V`, so no norm-bounded net is required |
 | **166VI** | `dilationspace_dense_subset` | **(a)** | **CLOSED session 50**, together with the new public `paschke_tprod_dense` (the elementary tensors of `𝒜 ⊗_φ ℬ` are ultranorm dense — easier than 164II.1, since `{∑ aᵢ ⊗ bᵢ}` is already a ℬ-submodule) |
 | 167I | `paschke_tensor` | **(b)** | needs 165VI + `existence_paschke` |
@@ -247,7 +247,7 @@ module; and the **public** `paschke_tprod_dense`.
 | 170II.2 | `dils_examples_pure_2` | **(b)** | the thesis derives it from 169V + 169XI.2.  ⚠️ row corrected session 66: **169XI.2a is no longer false or open** (B11 was ruled on; closed session 63) and 169XI.2b closed session 53, so the only blocker left is **169V**, i.e. **169IV** |
 | **170IV.1** | `surjective_nmiu_1` | **(a)** | **CLOSED session 53**, once D5 was ruled on and `[VonNeumannAlgebra A] [VonNeumannAlgebra B]` restored (the fix really was local to the two signatures).  ~150 lines by the costing below, and the estimate held |
 | 170IV.2 | `surjective_nmiu_2` | **(b)** | converse; the von Neumann binders are restored (D5 done), but it still needs **169IV** — the standard corner `h_z` — *and* the thesis's `iso` (an ncp-isomorphism of von Neumann algebras is nmiu), which the tree does not have either |
-| 171II | `paschke_corner` | **(b)** | three-step proof through `existence_paschke`, which **is** proved now, as are the two `A/VN` inputs of its third step (**83V** `cceil_sum`, axiom-clean, and **170IV**.1 `surjective_nmiu_1`).  What is *not* in the tree is the first two steps: `𝒜p` as a self-dual Hilbert `p𝒜p`-module and the isomorphism `𝒜 ⊗_{h_p} p𝒜p ≅ 𝒜p`.  Still multi-session |
+| 171II | `paschke_corner` | **(b)** | ⚠️ **row rewritten session 67: the first two steps are not needed and `𝒜p` is never built.**  Everything is done inside the abstract `PaschkeModule`, because every elementary tensor is `a ⊗ 1` (`a ⊗ pbp = (pbp·a) ⊗ 1`), the tensors are ultranorm dense (**160IV**.2 + `paschkeModule_inner_tprod_separating`), the thesis's basis transports as `uᵢ ⊗ 1` (**83V** `cceil_sum`), and `|a ⊗ 1⟩⟨b ⊗ 1| = ϱ(b*pa)`.  **Step 3 is proved** (session 67, axiom-clean): `pcorner_rho_surjective` (ϱ surjective, via **159IV** `ketbra_ultraweakly_dense` — every generator is *already* in the range — plus **48VI**.1 + **73IX** `vnsac` for closedness of the range), the carrier `ϱ(a) = 0 ⟺ ⌈⌈p⌉⌉a = 0`, the injective corestriction `σ : ⌈⌈p⌉⌉𝒜 → 𝒷ᵃ(·)ᵐᵒᵖ`, and the standard corner `h_z` of a central projection as an nmiu-map.  **What is left**: `h'_p : ⌈⌈p⌉⌉𝒜 → p𝒜p` as an `NCPMap`, `σ⁻¹` as an ncp-map (`starAlgHom_nonneg_reflect` + `cp_of_mi`), and a ~40-line transport lemma (a bijective nmiu-intertwiner carries a Paschke dilation to another triple).  One short session |
 | 171VII | `paschke_pure` | **(b)** | needs 171II, 170II.2 **and** proc.tex's `square-f` and `weakly-closed-ideal` |
 | **172III** | `ncp_extreme_paschke` | **(a)** | **CLOSED session 66.**  This row (and session 64's) said it needs 170II.2 — **wrong**: only the *thesis's* proof of 3 ⇒ 1 does, to get `0 < λ < 1` out of purity of `h`.  Choosing `t = μa + ½` with `μ = (4(‖a‖+1))⁻¹` gives `φ_t(1) = ½φ(1)` directly, so 3 ⇒ 1 needs nothing beyond **157IV**.2/.3 (now proved).  ~200 lines + two helpers (`ncpSMul`, `isLUB_ofReal_smul`) |
 | 172X | `pure_ncp_extreme` | **(b)** | needs 171II + 169XI (172III is no longer a blocker) |
@@ -929,7 +929,8 @@ zero ncp-map (`ncpSMul 0`) is what makes `NCPLe` reflexive and hence turns
 independent of the Paschke chain).  In `Pure.lean` the remaining ten are
 still rooted in three places, unchanged: **169IV** `standard_corner_dils`
 and **169X** `dils_stand_filter` (both cited to proc.tex, which is off this
-import path), and **171II** `paschke_corner` (which additionally needs
+import path), and **171II** `paschke_corner` (whose step 3 is now proved —
+session 67 — and which additionally needed, so the old row said,
 `cceil_sum`, `surjective_nmiu`, and `𝒜p` as a self-dual Hilbert
 `p𝒜p`-module).  `172XII` `ncp_extreme_comp` remains blocked on 172X, which
 is blocked on 171II.
@@ -938,3 +939,25 @@ Unchanged: **162II `total_mv_order`** is still the only self-contained item
 outside the Paschke chain; **165VI** is still blocked outside the directory
 on `tensor_characterization`; the five known-false items and **164II.2b**
 (QUESTIONS D6) stand.
+
+## Session 67 — 171II: the module theory was the wrong target
+
+**`B/Dils` 23, unchanged** (HilbertModules 0, SelfDualCompletion 0,
+Stinespring 1, Kaplansky 4, Paschke 1, SelfDual 7, Pure 10; 0 errors per
+file, compiled individually).  Nothing closed, but the blocker moved: what
+the last four surveys called "`𝒜p` as a self-dual Hilbert `p𝒜p`-module and
+`𝒜 ⊗_{h_p} p𝒜p ≅ 𝒜p`, still multi-session" is **not needed for 171II**, and
+the theorem's real content — surjectivity of `ϱ` for the standard corner —
+**is now proved and axiom-clean** (`pcorner_rho_surjective` in `Pure.lean`,
+~1000 private lines).  See the 171II row above and PROVING-LOG session 67
+for the three observations that make `𝒜p` unnecessary, the one analytic
+step that remains the thesis's own, and the two dead ends (composing with
+`dils_filter_basics_1`; approximating a general ketbra) that should not be
+re-tried.
+
+**Three items left in 171II**, none about modules: `h'_p` as an `NCPMap`,
+`σ⁻¹` as an ncp-map, and a transport lemma for a bijective nmiu-intertwiner.
+
+**165VI** was re-checked: still blocked, but because `A/Proc` is off
+`B/Dils`'s import path, not because **116VII** is open (it was closed in
+session 65).
