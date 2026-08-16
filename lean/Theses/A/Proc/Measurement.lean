@@ -5526,6 +5526,101 @@ private theorem pbFourWitness_not_centrallySimilar_one :
   pbFourWitness_ne_one
     (centrally_similar_one_of_isStarProjection _ pbFourWitness_isStarProjection h)
 
+/-! ### A *factor* witness for 104III: `B(ℂ²)`
+
+The `ℓ^∞({0,1})` witness above refutes 104III.2a/.3/.4/.5 as printed, and the
+repair `⌈p⌉ = ⌈q⌉` excludes it — as does the *weaker* proposed repair
+`⌈⌈p⌉⌉ = ⌈⌈q⌉⌉` (equal **central** carriers, `cceil`), because in a
+commutative von Neumann algebra the central carrier *is* the carrier.  The
+witnesses in this section live in the factor `B(ℂ²)` instead, where every
+non-zero element has central carrier `1` (`bh_cceil_eq_one`, from **67II**.3
+`central_examples_3`), so `⌈⌈p⌉⌉ = ⌈⌈q⌉⌉` holds for free; they show that
+adding it repairs neither part 4 nor part 5. -/
+
+/-- The projection `diag(1,0)` of `B(ℂ²)`. -/
+private def bhTwoProj : EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2) :=
+  Matrix.toEuclideanCLM (𝕜 := ℂ) (!![1, 0; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ)
+
+/-- The swap unitary of `B(ℂ²)`; it does not commute with `bhTwoProj`. -/
+private def bhTwoSwap : EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2) :=
+  Matrix.toEuclideanCLM (𝕜 := ℂ) (!![0, 1; 1, 0] : Matrix (Fin 2) (Fin 2) ℂ)
+
+private theorem bhTwoProj_isStarProjection : IsStarProjection bhTwoProj := by
+  constructor
+  · show bhTwoProj * bhTwoProj = bhTwoProj
+    rw [bhTwoProj, ← map_mul]
+    congr 1
+    ext i j
+    fin_cases i <;> fin_cases j <;> simp [Matrix.mul_apply, Fin.sum_univ_succ]
+  · show star bhTwoProj = bhTwoProj
+    rw [bhTwoProj, ← map_star]
+    congr 1
+    ext i j
+    fin_cases i <;> fin_cases j <;> simp
+
+private theorem bhTwoProj_ne_one : bhTwoProj ≠ 1 := by
+  intro h
+  rw [bhTwoProj, ← map_one (Matrix.toEuclideanCLM (𝕜 := ℂ) (n := Fin 2))] at h
+  have hM := (Matrix.toEuclideanCLM (𝕜 := ℂ) (n := Fin 2)).injective h
+  have := congrFun (congrFun hM 1) 1
+  simp at this
+
+private theorem bhTwoProj_ne_zero : bhTwoProj ≠ 0 := by
+  intro h
+  rw [bhTwoProj, ← map_zero (Matrix.toEuclideanCLM (𝕜 := ℂ) (n := Fin 2))] at h
+  have hM := (Matrix.toEuclideanCLM (𝕜 := ℂ) (n := Fin 2)).injective h
+  have := congrFun (congrFun hM 0) 0
+  simp at this
+
+private theorem bhTwoProj_not_commute_swap : bhTwoSwap * bhTwoProj ≠ bhTwoProj * bhTwoSwap := by
+  intro h
+  have hM : (!![0, 1; 1, 0] : Matrix (Fin 2) (Fin 2) ℂ) * !![1, 0; 0, 0]
+      = (!![1, 0; 0, 0] : Matrix (Fin 2) (Fin 2) ℂ) * !![0, 1; 1, 0] := by
+    apply (Matrix.toEuclideanCLM (𝕜 := ℂ) (n := Fin 2)).injective
+    rw [map_mul, map_mul]
+    exact h
+  have := congrFun (congrFun hM 1) 0
+  simp [Matrix.mul_apply, Fin.sum_univ_succ] at this
+
+/-- `B(H)` is a **factor** (**67II**.3/**67III**): every non-zero element has
+central carrier `⌈⌈T⌉⌉ = 1`.  Indeed `⌈⌈T⌉⌉` is central, hence a scalar `z·1`
+by `central_examples_3`, and `⌈⌈T⌉⌉T = T` forces `z = 1`. -/
+theorem bh_cceil_eq_one {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
+    [CompleteSpace H] [Nontrivial H] (T : H →L[ℂ] H) (hT : T ≠ 0) :
+    cceil T = 1 := by
+  obtain ⟨⟨-, hzc, hzT⟩, -⟩ := cceil_isLeast T
+  obtain ⟨z, hz⟩ := (central_examples_3 (cceil T)).mp hzc
+  rw [hz, smul_mul_assoc, one_mul] at hzT
+  have hz1 : z = 1 := by
+    by_contra hne
+    refine hT ?_
+    have hzero : (z - 1) • T = 0 := by rw [sub_smul, one_smul, hzT, sub_self]
+    rcases smul_eq_zero.mp hzero with h | h
+    · exact absurd (sub_eq_zero.mp h) hne
+    · exact h
+  rw [hz, hz1, one_smul]
+
+private theorem bhTwoProj_cceil : cceil bhTwoProj = 1 :=
+  bh_cceil_eq_one bhTwoProj bhTwoProj_ne_zero
+
+private theorem bhTwoOne_cceil :
+    cceil (1 : EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2)) = 1 :=
+  bh_cceil_eq_one 1 one_ne_zero
+
+private theorem bhTwoProjCompl_ne_zero :
+    (1 : EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2)) - bhTwoProj ≠ 0 :=
+  fun h => bhTwoProj_ne_one (sub_eq_zero.mp h).symm
+
+private theorem bhTwoProjCompl_cceil :
+    cceil ((1 : EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2)) - bhTwoProj) = 1 :=
+  bh_cceil_eq_one _ bhTwoProjCompl_ne_zero
+
+private theorem bhTwoProj_not_centrallySimilar_one :
+    ¬ CentrallySimilar bhTwoProj
+      (1 : EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2)) := fun h =>
+  bhTwoProj_ne_one
+    (centrally_similar_one_of_isStarProjection _ bhTwoProj_isStarProjection h)
+
 open scoped ENNReal in
 /-- **104III** (`centrally-similar-basic`, proc.tex:1465, Exercise),
 part 3 is **FALSE as printed**; this is the counterexample.  Take
@@ -5562,6 +5657,58 @@ theorem centrally_similar_basic_3_counterexample :
       rw [rangeProj_of_isStarProjection (IsStarProjection.one _), mul_one]
     rw [hd]
     exact fun a _ => mul_comm a _
+
+/-- **104III**.3 and the **reading of `p ∧ q`**.  Our transcription reads
+`p ∧ q` as the infimum of `{p, q}` *in the order of `𝒜`* (`IsGLB`), which is
+the thesis's own `⋀` (vn.tex:371).  That reading is what saves part 3 from
+the witness below — and it is a very strong hypothesis: by Kadison's
+anti-lattice theorem two positive elements of a von Neumann algebra have an
+infimum only when they are comparable relative to the centre, so outside the
+commutative case the hypotheses of part 3 are rarely met at all.
+
+Under the other natural reading — `p ∧ q` computed in the commutative von
+Neumann algebra generated by the *commuting* pair `p, q`, i.e. their
+pointwise minimum, which for the commuting projections below is `pq` — part 3
+is **false even with `⌈⌈p⌉⌉ = ⌈⌈q⌉⌉`**: in the factor `B(ℂ²)` take
+`p = diag(1,0)` and `q = 1 - p`.  Then `m := pq = 0` is a lower bound of both
+(and their meet in the commutative algebra they generate), `m/p = m/q = 0`
+are central, `⌈⌈p⌉⌉ = ⌈⌈q⌉⌉ = 1`, yet `p ≁ q` because part 2 forces
+`⌈p⌉ = ⌈q⌉`.
+
+Under the `IsGLB` reading no such witness exists, and part 3 *is* true with
+`⌈⌈p⌉⌉ = ⌈⌈q⌉⌉` — but the only route to it is the anti-lattice theorem:
+`c := m/p` and `d := m/q` already give `cp = m = dq`, and the missing carrier
+conditions `⌈p⌉ ≤ ⌈c⌉`, `⌈q⌉ ≤ ⌈d⌉` amount exactly to
+`⌈⌈m⌉⌉ = ⌈⌈p⌉⌉ = ⌈⌈q⌉⌉`.  That fails precisely on a central block where
+`⌈p⌉ ⊥ ⌈q⌉` (note `pq/(‖p‖+‖q‖) ≤ p, q`, so `m = 0` on such a block forces
+`pq = 0` there), and the existence of the infimum is what excludes such a
+block; nothing weaker does, since on it the conclusion itself fails.  Neither
+the anti-lattice theorem nor the comparison theory it rests on is in this
+tree.  See `ERRATA.md`. -/
+theorem centrally_similar_basic_3_meet_cceil_counterexample :
+    ∃ p q m : EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2),
+      0 ≤ p ∧ 0 ≤ q ∧ p * q = q * p ∧ m = p * q ∧ m ≤ p ∧ m ≤ q ∧
+        div m p ∈ centre _ ∧ div m q ∈ centre _ ∧
+        cceil p = cceil q ∧ ¬ CentrallySimilar p q := by
+  have hP := bhTwoProj_isStarProjection
+  have hQ := hP.one_sub
+  have hpq : bhTwoProj * (1 - bhTwoProj) = 0 := by
+    rw [mul_sub, mul_one, hP.isIdempotentElem.eq, sub_self]
+  have hqp : (1 - bhTwoProj) * bhTwoProj = 0 := by
+    rw [sub_mul, one_mul, hP.isIdempotentElem.eq, sub_self]
+  have hdiv : ∀ b : EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2),
+      div 0 b = 0 := fun b => div_eq (by rw [zero_mul]) (by rw [zero_mul])
+  refine ⟨bhTwoProj, 1 - bhTwoProj, 0, hP.nonneg, hQ.nonneg, by rw [hpq, hqp], hpq.symm,
+    hP.nonneg, hQ.nonneg, by rw [hdiv]; exact fun a _ => by rw [mul_zero, zero_mul],
+    by rw [hdiv]; exact fun a _ => by rw [mul_zero, zero_mul],
+    by rw [bhTwoProj_cceil, bhTwoProjCompl_cceil], ?_⟩
+  intro h
+  have h2 := centrally_similar_basic_2 bhTwoProj (1 - bhTwoProj) hP.nonneg hQ.nonneg h
+  rw [ceil_of_isStarProjection hP, ceil_of_isStarProjection hQ] at h2
+  refine bhTwoProj_ne_zero ?_
+  calc bhTwoProj = bhTwoProj * bhTwoProj := hP.isIdempotentElem.eq.symm
+    _ = bhTwoProj * (1 - bhTwoProj) := by rw [← h2]
+    _ = 0 := hpq
 
 /-- **104III** (`centrally-similar-basic`, proc.tex:1465, Exercise),
 part 3: if `p` and `q` commute, `m` is their infimum, and both `m/p` and
@@ -5618,6 +5765,38 @@ theorem centrally_similar_basic_4_obstruction [VonNeumannAlgebra A] (e : A)
       by rw [ceil_one, ceil_of_isStarProjection he]; exact he.le_one⟩
   have hc := h.mp hcs
   rwa [pinv_of_isStarProjection he, he.isIdempotentElem.eq] at hc
+
+/-- **104III**.4, third obstruction, in concrete form: the weaker repair
+`⌈⌈p⌉⌉ = ⌈⌈q⌉⌉` (equal **central** carriers) does not work either.  In the
+factor `B(ℂ²)` take `p = q = m = diag(1,0)`: `p` and `q` are trivially
+centrally similar (`c = d = 1`), `m` is their infimum, both are
+pseudoinvertible, `⌈⌈p⌉⌉ = ⌈⌈q⌉⌉ = 1` since `B(ℂ²)` is a factor — and yet
+`p·q^∼¹ = p` is *not* central.  This is `centrally_similar_basic_4_obstruction`
+made unconditional (that one only says "if the first `iff` held at `e` then
+`e` would be central"), and it settles the shape of the repair: at `p = q`
+*every* hypothesis that is reflexive in the pair holds, so both `⌈p⌉ = ⌈q⌉`
+and `⌈⌈p⌉⌉ = ⌈⌈q⌉⌉` leave the first `iff` false.  Only a condition ruling out
+non-faithful `p` — the `⌈p⌉ = ⌈q⌉ = 1` of **104VII**, under which
+`centrally_similar_basic_4_faithful` proves the first two `iff`s — repairs
+part 4. -/
+theorem centrally_similar_basic_4_cceil_counterexample :
+    ∃ p q m : EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2),
+      0 ≤ p ∧ 0 ≤ q ∧ Pseudoinvertible _ p ∧ Pseudoinvertible _ q ∧ IsGLB {p, q} m ∧
+        cceil p = cceil q ∧ CentrallySimilar p q ∧ p * pinv q ∉ centre _ := by
+  have hP := bhTwoProj_isStarProjection
+  refine ⟨bhTwoProj, bhTwoProj, bhTwoProj, hP.nonneg, hP.nonneg,
+    pseudoinvertible_of_isStarProjection hP, pseudoinvertible_of_isStarProjection hP,
+    ⟨?_, ?_⟩, rfl, ?_, ?_⟩
+  · rintro x (rfl | rfl) <;> exact le_rfl
+  · intro x hx
+    exact hx (by left; rfl)
+  · exact ⟨1, 1, fun a _ => by rw [one_mul, mul_one], fun a _ => by rw [one_mul, mul_one],
+      zero_le_one, zero_le_one, rfl,
+      by rw [ceil_one, ceil_of_isStarProjection hP]; exact hP.le_one,
+      by rw [ceil_one, ceil_of_isStarProjection hP]; exact hP.le_one⟩
+  · intro hc
+    rw [pinv_of_isStarProjection hP, hP.isIdempotentElem.eq] at hc
+    exact bhTwoProj_not_commute_swap (hc bhTwoSwap (Set.mem_univ _))
 
 /-- **104III**.4, the **repaired** first two `iff`s: with the faithfulness
 hypothesis `⌈p⌉ = ⌈q⌉ = 1` of **104VII** in place, `p` and `q` are
@@ -5780,6 +5959,47 @@ theorem centrally_similar_basic_5_counterexample :
     exact ⟨1, 1, fun a _ => mul_comm a _, fun a _ => mul_comm a _, zero_le_one, zero_le_one,
       rfl, by rw [ceil_one]; exact (ceil_spec hw.nonneg).1.le_one,
       by rw [ceil_one]; exact (ceil_spec hw.nonneg).1.le_one⟩
+
+/-- **104III**.5 is **not repaired by `⌈⌈p⌉⌉ = ⌈⌈q⌉⌉`** either: the printed
+statement's witness transplanted from `ℓ^∞({0,1})` to the factor `B(ℂ²)`,
+where equal central carriers cost nothing.  Take `p = diag(1,0)`, `q = 1` and
+the constant sequence `eₙ = p`.  Then `⋃ₙ eₙ = ⌈p⌉`, each `eₙp = eₙq = p` is
+pseudoinvertible, `eₙp` and `eₙq` are centrally similar (they are equal), and
+`⌈⌈p⌉⌉ = ⌈⌈q⌉⌉ = 1` — yet `p` and `q` are not centrally similar, since part 2
+would force `⌈p⌉ = ⌈q⌉`, i.e. `p = 1`.  Note that no centrality hypothesis
+appears in part 5, so nothing here forces faithfulness the way it does inside
+a factor for parts 2a and 3.  What part 5 needs is `⌈p⌉ = ⌈q⌉` itself
+(equivalently: `⋃ₙ eₙ = ⌈q⌉` as well as `= ⌈p⌉`), which its only consumer
+**104VII** supplies in the stronger form `⌈p⌉ = ⌈q⌉ = 1`. -/
+theorem centrally_similar_basic_5_cceil_counterexample :
+    ∃ (p q : EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2))
+      (e : ℕ → EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2)),
+      0 ≤ p ∧ 0 ≤ q ∧ p * q = q * p ∧ (∀ n, IsStarProjection (e n)) ∧ Monotone e ∧
+        (∀ n, e n * p = p * e n) ∧ (∀ n, e n * q = q * e n) ∧
+        projSup (Set.range e) = ceil p ∧
+        (∀ n, Pseudoinvertible _ (e n * p)) ∧ (∀ n, Pseudoinvertible _ (e n * q)) ∧
+        (∀ n, CentrallySimilar (e n * p) (e n * q)) ∧
+        cceil p = cceil q ∧ ¬ CentrallySimilar p q := by
+  have hw := bhTwoProj_isStarProjection
+  have hww : bhTwoProj * bhTwoProj = bhTwoProj := hw.isIdempotentElem.eq
+  refine ⟨bhTwoProj, 1, fun _ => bhTwoProj, hw.nonneg, zero_le_one,
+    by rw [mul_one, one_mul], fun _ => hw, fun m n _ => le_rfl, fun _ => rfl,
+    fun n => by rw [mul_one, one_mul], ?_, ?_, ?_, ?_, ?_,
+    bhTwoProj_not_centrallySimilar_one⟩
+  · rw [ceil_of_isStarProjection hw]
+    refine projSup_eq ?_ hw ?_ ?_
+    · rintro p ⟨n, rfl⟩; exact hw
+    · rintro p ⟨n, rfl⟩; exact le_rfl
+    · intro q hq hub; exact hub bhTwoProj ⟨0, rfl⟩
+  · intro n; rw [hww]; exact pseudoinvertible_of_isStarProjection hw
+  · intro n; rw [mul_one]; exact pseudoinvertible_of_isStarProjection hw
+  · intro n
+    rw [hww, mul_one]
+    exact ⟨1, 1, fun a _ => by rw [one_mul, mul_one], fun a _ => by rw [one_mul, mul_one],
+      zero_le_one, zero_le_one, rfl,
+      by rw [ceil_one]; exact (ceil_spec hw.nonneg).1.le_one,
+      by rw [ceil_one]; exact (ceil_spec hw.nonneg).1.le_one⟩
+  · rw [bhTwoProj_cceil, bhTwoOne_cceil]
 
 /-- **104III** (`centrally-similar-basic`, proc.tex:1465, Exercise),
 part 5: if `p, q` commute and `e₁ ≤ e₂ ≤ ⋯` are projections commuting
@@ -7274,4 +7494,5 @@ axiom (D) redundant?) — not formalizable as a theorem; skipped.
 [westerbaan2016universal]; skipped. -/
 
 end Theses.A.Proc
+
 

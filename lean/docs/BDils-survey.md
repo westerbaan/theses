@@ -787,3 +787,62 @@ self-contained item outside the Paschke chain; **165VI** is still blocked
 outside the directory on `tensor_characterization`; the five known-false items
 stand; **164II.2b** stands (QUESTIONS D6).  **169XI.2a is no longer among the
 false ones** — see the row above.
+
+---
+
+## Session 64 (result): **157IV.2 and 157IV.3 are proved**; the next gate is 156II
+
+`Paschke.lean` goes **5 → 3** and `B/Dils` **28 → 26**:
+`HilbertModules` 0, `SelfDualCompletion` 0, `Stinespring` 1, `Kaplansky` 4,
+`Paschke` **3**, `SelfDual` 7, `Pure` 11 — each source run through `lean`
+individually and **paired with an error count (0 everywhere)**, including the
+two dependents `SelfDual.lean` and `Pure.lean` rebuilt against the new
+`Paschke.olean`.  Every new declaration is axiom-clean
+(`propext, Classical.choice, Quot.sound`), checked from an importing file.
+
+**≈470 lines** were added to `Paschke.lean`, in `section Correspondence`
+between `exists_corrComp` and `paschke_correspondence_mem` (the helpers) and
+in the two theorems themselves.  The costing (≈250 + ≈300 + ≈150) held in
+total but was wrong about the shape:
+
+| # | piece | costed | actual | note |
+|---|---|---|---|---|
+| .2 | order embedding, on the **concrete** module via `hilbmod_ordersep` + `E.dense` | 250 | **~60** | it is **not** run on the concrete module and uses **no density**: given `φ_t ≤_ncp φ_s`, part 3 produces a *positive* `u` with `φ_u = φ_{s−t}`, and injectivity gives `u = s − t` |
+| .3 | surjectivity | 300 | **~200** | the thesis's 157VIII verbatim, except `T ≤ 1`, which comes from `φ_{T+T'} = φ_1` and injectivity rather than from `hilmod-fixed-on-V` |
+| — | injectivity + the matrix identity (**not costed**) | — | ~150 | `paschkeModule_inner_tprod_commutant`, `paschkeModule_phiT_injective` |
+| — | transport to an arbitrary triple (157IX) | 150 | **~60** | `exists_paschke_iso_paschkeModule` + `starAlgHom_nonneg` (`A/VN`) + the new `starAlgHom_nonneg_reflect` |
+
+**The survey's claim that .2 "must be run on the concrete module — it needs
+`hilbmod_ordersep` and `E.dense`" is wrong.**  Both parts run on an abstract
+`M : PaschkeModule φ`; `hilmod_fixed_on_V`, `E.dense` and `hilbmod_ordersep`
+appear nowhere in either proof (`ba_nonneg_iff`, which is `hilbmod_ordersep`
+transported to `Ba`, is used once, for `0 ≤ W*W` — a one-liner, not a density
+argument).  The two facts that replace the thesis's density steps are the
+**full matrix identity** `⟨a ⊗ b, t(a' ⊗ b')⟩ = b' φ_t(a' a*) b*` for `t` in
+the commutant (the thesis computes only the diagonal) and, through it,
+**injectivity of `t ↦ φ_t`**; positivity of `T` is then never proved by hand,
+because part 3 hands it over as `T = W*W`.  Note the dependency order is
+inverted relative to the thesis: **.3 proves .2**.
+
+Also worth recording: **157IV.2's hypotheses `0 ≤ s` and `t ≤ 1` are not
+used** (only `s ≤ 1`, `0 ≤ t` and the two commutant memberships), and 157VI —
+now public as **`exists_phiT_ncp`** — is model-independent, so part 1 is three
+lines of it.
+
+### The next gate
+
+**156II `paschke_injective` / `paschke_injective_carrier`** (2 of the 3
+remaining `sorry`s; the third is **155II** `ksgns`, which is a KSGNS
+construction, not a Paschke item).  It is unblocked in the same way — the
+transfer corollary plus the matrix identity above give the computation on the
+constructed module — but it is *also* an A/VN question (`cceil-fundamental`,
+`ad-contraposed`, the `ceil` of a map), so check those roots before starting.
+`paschkeModule_inner_tprod_commutant` is likely to be the workhorse there too:
+`ϱ(p) = 0` iff every matrix element `b' φ(a' p a*) b*` vanishes.
+
+Unchanged after this session: **162II `total_mv_order`** is still the only
+self-contained item outside the Paschke chain; **165VI** is still blocked
+outside the directory on `tensor_characterization`; the five known-false items
+and **164II.2b** (QUESTIONS D6) stand.  With 157IV closed, `Pure.lean`'s
+**172III** `ncp_extreme_paschke` now needs only 171II and 170II.2 (its
+`paschke_correspondence_*` prerequisite is met).

@@ -14499,3 +14499,207 @@ two parked defects and the finite-dimensional/hereditarily-atomic block.
 
 **`mn_vna_3` was not attempted** — no time after the two items above; the
 circularity noted in the brief is untouched.
+
+---
+
+## Session 64 — `B/Dils`: **157IV.2 and 157IV.3 are proved**, and the whole of 157IV needs *no* density argument (worker on `Paschke.lean`)
+
+**Headline: `paschke_correspondence_embedding` and
+`paschke_correspondence_surjective` are closed**, ~470 lines in
+`Paschke.lean`, all of it inside the directory.  `Paschke.lean` **5 → 3**,
+`B/Dils` **28 → 26**.  The remaining three are 155II `ksgns` and the two
+halves of 156II.
+
+### What the transfer corollary saved, and what it did not
+
+`exists_paschke_iso_paschkeModule` (session 63) is used exactly once in each
+proof and is *not* the expensive part: it hands over a **bijective nmiu-map**
+`ϑ : 𝒫 → 𝒷ᵃ(𝒜 ⊗_φ ℬ)ᵐᵒᵖ`, and what the thesis calls "it is easy to see `ϑ`
+restricts to a linear order isomorphism `[0,1]_{ϱ'(𝒜)^□} → [0,1]_{ϱ(𝒜)^□}`"
+costs about 30 lines: forward positivity is `starAlgHom_nonneg` (`A/VN`),
+*backward* positivity needed a new lemma `starAlgHom_nonneg_reflect` (a
+bijective ∗-homomorphism reflects positivity: write `f x = star y * y`, pull
+`y = f z` back through surjectivity, and use injectivity on
+`f (star z * z) = f x`), and the commutant and `φ_t^{𝒫'} = φ_{ϑ(t)}^{𝒫}`
+clauses are one `map_mul` each.  The transport is ~60 of the ~470 lines, not
+the costed ~150.
+
+### The costing was wrong about the *shape* of both proofs: no density is used
+
+The survey (and the brief) said .2 "must be run on the **concrete** module —
+it needs `hilbmod_ordersep` and `E.dense` — and then transported".  **That is
+not necessary, and the proof here does not do it.**  Both parts run on an
+*abstract* `M : PaschkeModule φ`, and `hilmod_fixed_on_V` / `E.dense` appear
+nowhere.  Two observations replace them:
+
+* **`paschkeModule_inner_tprod_commutant`** — for `t` commuting with `ϱ(𝒜)`,
+  `⟨a ⊗ b, t(a' ⊗ b')⟩ = b' φ_t(a' a*) b*` (mirrored).  This is the thesis's
+  157VII computation, but for the whole sesquilinear form rather than its
+  diagonal, and it needs only `a ⊗ b = b·ϱ(a)(1 ⊗ 1)`, the adjoint
+  `ϱ(a)* = ϱ(a*)` and the commutation.  With
+  `paschkeModule_inner_tprod_separating` and `paschkeModule_ba_ext` (both
+  session 63) it gives **injectivity of `t ↦ φ_t` outright**
+  (`paschkeModule_phiT_injective`): `φ_t = 0` kills every matrix element,
+  hence every `t(a' ⊗ b')`, hence `t`.
+* **positivity is never proved by hand.**  The thesis proves `T ≥ 0` from
+  `⟨x̂, T x̂⟩ = ∑ᵢⱼ bᵢ* φ_T(aᵢ*aⱼ) bⱼ ≥ 0` plus density, and `T ≤ 1` the same
+  way.  Here `T ≥ 0` comes *free* from the surjectivity construction
+  (`T = W*W`), and `T ≤ 1` from injectivity: running the construction on both
+  `ψ` and `φ − ψ` gives `T`, `T'` with `φ_{T+T'} = φ = φ_1`, so `T + T' = 1`
+  and `T = 1 − T' ≤ 1`.  Part **2** is then not proved directly either: from
+  `φ_t ≤_ncp φ_s` one gets `δ := φ_{s−t}` ncp with `φ = δ + φ_{1−s+t}` (the
+  second summand is ncp by 157VI, which needs only `0 ≤ 1−s+t`, *not*
+  `0 ≤ s−t`), so part 3 supplies a **positive** `u` with `φ_u = δ = φ_{s−t}`,
+  and injectivity gives `u = s − t ≥ 0`.
+
+So the dependency order is inverted relative to the thesis: **.3 proves .2**,
+and the only genuinely new mathematics is the surjectivity construction.
+Recorded as a divergence (class 2: the thesis's proof is fine, we took
+another route) in the file's section header.
+
+### Surjectivity: the thesis's argument, transcribed
+
+`paschkeModule_phiT_surjective` is 157VIII verbatim: `(a,b) ↦ a ⊗_ψ b` is
+φ-compatible with constant `r = 1` because `⟨x,x⟩_ψ ≤ ⟨x,x⟩_φ` (the
+difference is the Gram form of the ncp-map `φ − ψ`, `phi_gram_nonneg`), the
+universal property of part 1 turns it into `W`, **152VIII**
+`hilbmod_adjoint_exists` gives `W*` (self-duality of the *source* is what is
+needed), and `T = W*W`.  `W ϱ(a) = ϱ_ψ(a) W` is again the uniqueness half of
+part 1, at the shifted bilinear map `PhiCompatible.mul_right`; positivity of
+`T` is `ba_nonneg_iff` + `mop_nonneg_iff`.  The one thing the thesis's `T ≤ 1`
+step is replaced by is described above.
+
+### Reusable output (all public in `Paschke.lean` unless noted)
+
+`paschkeModule_rho_adjoint`, `paschkeModule_norm_sq_sum_tprod` (the Gram
+identity for an *abstract* Paschke module — `norm_sq_sum_ptprod` is the
+concrete version), `paschkeModule_inner_tprod_commutant`,
+`paschkeModule_phiT_injective`, `paschkeModule_phiT_surjective`,
+`starAlgHom_nonneg_reflect`, **`exists_phiT_ncp`** (157VI, extracted from the
+proof of part 1, which is now three lines of it), and the private
+`bmm_comp_aux` (bounded module maps compose) and `exists_paschke_starAlgHom`.
+All names were greped against the whole `Theses/` tree before adding.
+⚠ `isBoundedModuleMap_comp` was **not** available: `SelfDual.lean`, which
+imports `Paschke.lean`, has a `private` lemma of that name, and a public one
+here would have reproduced the session-59 regression; ours is
+`bmm_comp_aux`.  `starAlgHom_nonneg` likewise already exists in
+`A/VN/Basic.lean` and is used as is.
+
+## Session 65 — `A/Proc`: **the central-carrier repair of 104III fails for .4 and .5** — three machine-checked witnesses in the factor `B(ℂ²)`, and .3's fate turns on what `p ∧ q` means (worker on `Measurement.lean`)
+
+`Measurement.lean` **10 → 10** code `sorry`s, **0 errors**; `Tensor` **19**,
+`QuantumLambda` **17**, `Duplicators` **6**, each **0 errors** (compiler
+counted, `lake build Theses.A.Proc.Duplicators`, which rebuilds all four).
+A/Proc stays at **52**: nothing was closed, because the session's task was to
+*test a proposed repair*, and the answer is negative.  All four new public
+declarations verified `[propext, Classical.choice, Quot.sound]` by
+`#print axioms` run inside the file.
+
+### The question
+
+Bram proposed (2026-08-16) repairing 104III.3/.4/.5 — false as printed, see
+ERRATA — by assuming that `p` and `q` have the same **central carrier**
+`⌈⌈p⌉⌉ = ⌈⌈q⌉⌉` (`cceil`, 68III) rather than the same carrier `⌈p⌉ = ⌈q⌉`.
+The proposal is necessary (part 2 gives `⌈p⌉ = ⌈q⌉`, hence equal central
+carriers), and it does exclude the printed `ℓ^∞({0,1})` witness, since in a
+commutative von Neumann algebra `⌈⌈·⌉⌉ = ⌈·⌉`.
+
+### The answer: **no for .4, no for .5, and .3 depends on the reading of `∧`**
+
+The brief's reason to expect sufficiency was that in a *factor* — the only
+place where a non-central carrier can coexist with a matching central carrier
+— "the centrality hypotheses already force faithfulness".  That is true for
+2a and 3 and **false for .4 and .5**, and the same factor is where the
+witnesses live.  `B(ℂ²)` is a factor (`bh_cceil_eq_one`: every non-zero
+element has `⌈⌈T⌉⌉ = 1`, three lines from **67II**.3 `central_examples_3`,
+which was already proved), so `⌈⌈p⌉⌉ = ⌈⌈q⌉⌉` costs nothing there.
+
+* **`centrally_similar_basic_4_cceil_counterexample`** — `p = q = m =
+  diag(1,0)`.  The pair is centrally similar to itself (`c = d = 1`), `m` is
+  its own infimum, both are pseudoinvertible, and `p q^∼¹ = p` is not central
+  (it does not commute with the swap).  This is the concrete form of the
+  session-62 `centrally_similar_basic_4_obstruction`, which was conditional
+  ("if the first `iff` held at `e` then `e` would be central") — and it
+  settles the tension the brief flagged: **the session-62 worker's reading was
+  right, not over-cautious.**  At `p = q` every hypothesis *reflexive in the
+  pair* is satisfied, so `⌈p⌉ = ⌈q⌉` and `⌈⌈p⌉⌉ = ⌈⌈q⌉⌉` are equally useless;
+  only a condition ruling out non-faithful `p` repairs .4.  The brief's
+  counter-argument ("in .4, `pq^∼¹ = λ` and for `λ ≠ 0` its carrier is 1")
+  addresses the `⟸` direction; the direction that fails is `⟹`, which has no
+  centrality hypothesis at all.
+* **`centrally_similar_basic_5_cceil_counterexample`** — `p = diag(1,0)`,
+  `q = 1`, `eₙ = p`: the printed statement's own witness transplanted from
+  `ℓ^∞({0,1})` into the factor.  Part 5 assumes no centrality of anything, so
+  nothing about being inside a factor helps it.  It needs `⌈p⌉ = ⌈q⌉` (i.e.
+  `⋃ₙ eₙ = ⌈q⌉` as well as `= ⌈p⌉`), which **104VII** supplies as
+  `⌈p⌉ = ⌈q⌉ = 1`.
+* **.3 is not refuted, and is true under `⌈⌈p⌉⌉ = ⌈⌈q⌉⌉` — but only via the
+  anti-lattice theorem.**  `c := m/p` and `d := m/q` central already give
+  `cp = m = dq`, which *is* the central-similarity equation; the whole content
+  is the two carrier conditions `⌈p⌉ ≤ ⌈c⌉`, `⌈q⌉ ≤ ⌈d⌉`.  Since `⌈c⌉` is
+  central and `⌈c⌉m = m`, they amount to `⌈⌈m⌉⌉ = ⌈⌈p⌉⌉ = ⌈⌈q⌉⌉`.  If that
+  fails on a central block `w`, then on `w` one has `wpq = 0` (because
+  `pq/(‖p‖+‖q‖) ≤ p, q` — a lower bound built from commutativity alone — so
+  `wm = 0` forces `wpq = 0`), i.e. `⌈p⌉ ⊥ ⌈q⌉` there; and on such a block the
+  *conclusion* fails outright (`cp = dq` with `pq = 0` and `⌈q⌉ ≤ ⌈d⌉` forces
+  `q = 0`).  So no proof can avoid excluding that block, and the only thing
+  that excludes it is the existence of `p ∧ q` — two projections with equal
+  central carrier and orthogonal ranges have equivalent non-zero
+  subprojections (comparison theorem), which is what makes `0` fail to be
+  their infimum.  Kadison's anti-lattice theorem and the comparison theory
+  under it are in neither thesis nor tree (`grep -i comparison` finds one
+  aside in `vn.tex:1658` and nothing in `Theses/`), so **.3 under
+  `⌈⌈p⌉⌉ = ⌈⌈q⌉⌉` is out of reach here, while `⌈p⌉ = ⌈q⌉` keeps it
+  three lines.**
+
+### The `p ∧ q` question, which is new and decides .3
+
+Our transcription reads `p ∧ q` as `IsGLB {p,q} m`, the infimum in the order
+of `𝒜` — the thesis's own `⋀` (vn.tex:371).  That reading is doing real work:
+it is the *only* thing standing between .3 and
+**`centrally_similar_basic_3_meet_cceil_counterexample`** (`p = diag(1,0)`,
+`q = 1−p`, `m = pq = 0` in `B(ℂ²)`: `m/p = m/q = 0` are central,
+`⌈⌈p⌉⌉ = ⌈⌈q⌉⌉ = 1`, `p ≁ q`), which refutes .3 under the *other* natural
+reading — the meet inside the commutative von Neumann algebra generated by the
+commuting pair, i.e. the pointwise minimum.  It also cuts the other way: by
+the anti-lattice theorem the `IsGLB` reading makes the hypotheses of .3 (and
+`p ∧ q` in .4's third `iff`, and the `p ∧ q` whose approximate pseudoinverse
+104VII's proof uses to build the `eₙ`) rarely satisfiable outside the
+commutative case.  Recorded as QUESTIONS **A7**.
+
+⚠️ One formalization caveat, not an erratum: `div a b` carries the junk value
+`0` when `a ∉ 𝒜b`, so in the Lean statements of .3 "`m/p` is central" is
+*vacuously* true whenever `m` is not a left multiple of `p` — a weakening of
+the thesis's hypothesis that no witness in this session exploits (all three
+have genuine quotients).
+
+### Corrections to the brief
+
+* **The tree already has the central carrier.**  The brief said only
+  `central_projection_central_carrier` exists; in fact **68III** `cceil` is a
+  full development in `A/VN/Projections.lean` (`cceil_isLeast`,
+  `cceil_fundamental`, `cceil_eq_cceil_supp`, `cceil_basic_1/2`, monotonicity,
+  `projSup_isCentral`), which is what made stating the proposed hypothesis a
+  one-liner.
+* **The "missing infrastructure" for 104VII is not missing.**  The brief calls
+  "`p` is a norm limit of combinations of projections *commuting with* `p`"
+  the real work, because `commutant` is a bare `Set.centralizer`.  But
+  **65IV** `projections_norm_dense` is proved *in exactly that form*: it puts
+  the projections in `{a}^□□`, unfolded in its own proof as
+  `{p | IsStarProjection p ∧ ∀ x, a * x = x * a → x * p = p * x}` — at `x = a`
+  these commute with `a`.  There is also a relativised version for von Neumann
+  subalgebras (`projections_norm_dense_subalgebra`, with `ceil_mem`) and the
+  packaged consumer form used by 104VI (`mem_of_isClosed_of_projections`).
+  What 104VII still needs is the **corner reduction** to `eₙ𝒜eₙ`, the
+  construction of the `eₙ` from an approximate pseudoinverse of `p ∧ q`, and
+  .5 with the `⌈p⌉ = ⌈q⌉` repair (which 104VII supplies).
+
+### Reusable output (`Measurement.lean`)
+
+`bh_cceil_eq_one` (public: `B(H)` is a factor — every non-zero `T` has
+`⌈⌈T⌉⌉ = 1`) and the three counterexamples above; the witness elements
+`bhTwoProj = diag(1,0)`, `bhTwoSwap` and their nine lemmas are `private`,
+since the statements are existential and mention only
+`EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2)`.  All names were
+greped against the whole `Theses/` tree first (all four were free), and the
+dependents `Tensor`, `QuantumLambda`, `Duplicators` were rebuilt.
