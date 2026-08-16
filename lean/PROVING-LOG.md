@@ -10194,3 +10194,143 @@ in another worker's session removed and re-created `A/VN/NormalFunctionals`,
 single-module check failed with `object file … does not exist` — *not* with a
 type error.  The brief's "retry rather than debug" rule extends to this
 failure mode, and it hits **B/Dils** oleans too, not only the A-chain ones.
+
+## Session 49 — `A/VN`: **89IX `normal_functional` is proved** — the last gate of the 890-chain, and the relative `cceil-sum` cost less than the brief feared (worker 74, A chain)
+
+Target: **89IX** (`normal-functional`, vn.tex:7089), the theorem the whole
+A/Proc "vacuous band" waits on through 111VII/111XII.  **It is closed**, with
+`#print axioms` = `[propext, Classical.choice, Quot.sound]`, as are all five
+supporting declarations.
+
+`A/VN` sorries **63 → 62** (Basic 25, Completeness 2, Division 7,
+NormalFunctionals **9**, Projections 19).
+
+| point | declaration | file | class |
+|---|---|---|---|
+| **89IX** | `normal_functional` | `NormalFunctionals.lean` | 1 — the thesis's proof, verbatim |
+| — | `cceil_sum_relative` | `NormalFunctionals.lean` | the relative **83V** the thesis uses without comment |
+| — | `normal_functional_assembly`, `hasSum_projSup_apply`, `exists_nat_index`, `exists_nat_reindex` | `NormalFunctionals.lean` | the three steps the thesis compresses into one display |
+
+### 1. The relative `cceil-sum` did **not** need a new Zorn argument — and the `VonNeumannAlgebra` instance on `VNSub` already existed
+
+The brief proposed either redoing 83V's Zorn argument with `MvNLE` replaced
+by a relative version, or "giving `VNSub` a `VonNeumannAlgebra` instance —
+probably the better investment".  Neither was necessary: **that instance has
+existed since session 45**, in `A/Proc/Tensor.lean`, together with the whole
+`VNSub` C*-algebra/`StarOrderedRing`/normality block (~250 lines).  The only
+real obstacle was *location*: `A/Proc` is downstream of `A/VN`, so it cannot
+be imported from here.
+
+The block is therefore **copied verbatim** into `A/VN/NormalFunctionals.lean`
+(namespace `Theses.A.VN`), exactly as `CU` was copied in session 47, and the
+copy in `A/Proc/Tensor.lean` should be deleted by whoever next touches that
+file.  Checked, as for `CU`: a declaration in the current namespace takes
+precedence over one reached through `open`, so `Theses.A.Proc.VNSub` still
+wins inside `A/Proc` and the two instance sets are on *different types*, so
+they cannot conflict.  (Verified with a scratch file reproducing the `A/Proc`
+context; `A/Proc` needs no edit.)
+
+With the instance in hand, `cceil_sum_relative` is 50 lines and its content is
+entirely bookkeeping:
+
+* `E := ⟨e, heS⟩ : VNSub A S hS`, and `cceil E = 1` — `≤` because `1` is a
+  central projection above `E`, and `≥` because the hypothesis's `IsLeast`
+  says `1` is least among the central projections of `S` above `e`, which is
+  exactly what `(cceil_isLeast E).1` provides once pushed down along `val`;
+* `cceil_sum E` then gives the family, and `MvNLE` unfolds to the partial
+  isometries directly;
+* the one genuinely non-formal step is that the supremum of the `fᵢ` computed
+  **in `A`** is again `1`: `projSup_mem_of_np` (Completeness.lean, with
+  `zeroNP`) puts `projSup P` back inside `S`, whence it is an upper bound
+  *in* `VNSub` and dominates `projSup_{VNSub} = cceil E = 1`.
+
+Two helpers were added for the traffic across `val`: `VNSub.isStarProjection_val`
+and `VNSub.isStarProjection_mk`.
+
+**Seventeenth "needs a Mathlib-sized development" estimate to collapse on
+contact**, though this one collapsed for an unusual reason: the development
+had already been written, one chapter too late.
+
+### 2. The `ℕ`-indexing was as cheap as advertised
+
+`exists_nat_reindex` (12 lines): `Summable.countable_support` on
+`fun i => ‖xᵢ‖²` — whose support *is* the support of `x` — plus
+`Set.countable_iff_exists_injective` and `Function.extend φ x 0`.
+`exists_nat_index` (30 lines) transports along it with
+`hasSum_subtype_iff_of_support_subset` and `Function.Injective.hasSum_iff`;
+square-summability is not a separate obligation, it is the case `a = 1` of the
+`HasSum` hypothesis (`ρ(1) = 1`, `⟪x,x⟫ = ‖x‖²`), mapped through
+`Complex.reCLM`.  No `Fintype`/finite-support branch is needed.
+
+### 3. The thesis's display, and the one step it does not spell out
+
+The five-line `alignat*` at vn.tex:7115 is `normal_functional_assembly`.
+Transcribed as written, with `vᵢvᵢ* ≤ U*U ⟹ (U*U)vᵢ = vᵢ` supplied (the
+thesis writes "since `vᵢvᵢ* ≤ U*U`" and leaves it), and with the term
+identity finishing at `⟪pᵢy, ϱ_Ω(a)y⟫` where `pᵢ = vᵢ*vᵢ`.
+
+The step the thesis really does leave implicit is `∑ᵢ pᵢ = 1`: it writes
+`1 = ∑ᵢ vᵢ*vᵢ` where `cceil-sum` gives only a *supremum* of projections.
+`hasSum_projSup_apply` closes the gap and is three lines given
+**56XVIII** `sum_of_orthogonal_projections` (proved session 42): that lemma
+gives *ultrastrong* convergence of the finite sums to `projSup`, and
+`usTendsto_iff` applied to the single np-functional `vectorNP y`, with
+`omegaNorm_vectorNP : ‖T‖_{vectorNP y} = ‖T y‖`, turns it into
+`HasSum (fun i => pᵢ y) y` in `K`.  No Hilbert-space geometry (closed spans,
+orthogonal families) is needed anywhere in 89IX.
+
+### 4. What is now reachable, and the **next** gate (it is *not* 89IX-shaped)
+
+111VII/111XII are unblocked as far as 89IX goes.  But reading proc.tex:2528
+(condition `tensor-2` of `special-tensor`) against what the tree has, its
+proof needs 89IX **and** one thing more, which is also what 89XI.1
+`functional_permanence_1` and hence 89XII `functional_extension` need:
+
+> *a square-summable family `(xₙ)` of vectors defines an np-functional
+> `T ↦ ∑ₙ ⟪xₙ, T xₙ⟫` on `B(H)`.*
+
+The tree has only the converse, **39IX** `bh_np` (`A/CStar/TowardsVN.lean`).
+The missing direction is easy except for **normality**, which is a
+sup/sum interchange for a *directed net* (finite `F` with
+`∑_{n∈F} fₙ(s) > ∑ₙ fₙ(s) − ε/2`, then directedness for the finitely many
+`n ∈ F`).  Two shortcuts were checked and both fail:
+
+* `addNP` (Basic.lean) only sums *two* np-functionals;
+* the slick route "`∑ₙ⟪xₙ,T xₙ⟫` is the vector functional of `(xₙ)ₙ ∈ ⊕ₙH`
+  composed with the amplification, so `compNP` gives normality for free"
+  needs `PreservesDirSups ⇑ampHom`, which is **not** proved — `ampHom`
+  (NormalFunctionals.lean:1359) is built as a `→⋆ₐ[ℂ]`, never as an
+  `NMIUMap`, and proving its normality is the same interchange again.
+
+So the honest estimate for 89XI.1 + 89XII + `tensor-2` of 111VII is *one*
+lemma, `sumVectorNP`, of perhaps 120–150 lines; 89XII is then two lines
+(`isVNSubalgebra_range` supplies the missing hypothesis of 89XI.1).  Whoever
+proves it should put it in `A/VN` where both chapters can see it.
+
+### 5. Corrections to the brief
+
+1. **"The suggested investment is a `VonNeumannAlgebra` instance on `VNSub`"**
+   — it exists already (session 45, `A/Proc/Tensor.lean`); the work was to
+   *relocate* it, not to build it (§1).
+2. **"Unlike 89V's relative-carrier steps this cannot be routed around — its
+   content *is* comparison theory inside the subalgebra"** — the first half is
+   right and the second overstates the cost: with `VNSub` the comparison
+   theory is imported wholesale and nothing is redone.
+3. The brief's "everything else for 89IX is in place" was right, with the one
+   omission that `∑ᵢ vᵢ*vᵢ = 1` needed `sum_of_orthogonal_projections`
+   converted from a supremum to a `HasSum` (§3).
+4. Nothing false was found in the theses this session; no ERRATA or QUESTIONS
+   rows added.  The thesis's proof of 89IX is correct as written.
+
+### 6. Verification
+
+`lean Theses/A/VN/NormalFunctionals.lean` (invoked directly with `LEAN_PATH`):
+no errors.  `#print axioms` was run by appending the commands to the module
+and recompiling: `normal_functional`, `cceil_sum_relative`,
+`normal_functional_assembly`, `exists_nat_index`, `exists_nat_reindex`,
+`hasSum_projSup_apply` and `instVonNeumannAlgebraVNSub` are all exactly
+`[propext, Classical.choice, Quot.sound]`; the commands were then removed.
+**The olean for `Theses.A.VN.NormalFunctionals` is left built and current**
+(`lake build Theses.A.VN.NormalFunctionals`), so `A/Proc` and `B/Dils`
+workers need no rebuild.  Files touched:
+`Theses/A/VN/NormalFunctionals.lean` and this log.

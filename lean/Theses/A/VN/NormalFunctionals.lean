@@ -30,6 +30,375 @@ namespace Theses.A.VN
 variable {A B : Type u} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
   [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
 
+/-! ## Von Neumann subalgebras as bundled algebras
+
+`VNSub A S hS` bundles a von Neumann subalgebra `S ⊆ A` as a von Neumann
+algebra in its own right.  It is what makes the *relative* forms of the
+comparison theory of parsecs 600–830 available: results such as **83V**
+`cceil-sum` are proved for a von Neumann algebra **as a type**, while the
+thesis applies them inside `ϱ(𝒜)^□`, which here is a subalgebra-as-a-set
+(see `cceil_sum_relative` below, which **89IX** needs).
+
+⚠️ This block is a verbatim copy of the one in `A/Proc/Tensor.lean`
+(session 45), which is *downstream* of this file and so cannot be imported
+from here; the copy there should be deleted by whoever next touches that
+file — a name in the current namespace takes precedence over one reached
+through `open`, so `Theses.A.Proc.VNSub` still wins inside `A/Proc` (the
+same manoeuvre as for `CU`, session 47). -/
+
+noncomputable section VNSubalgebra
+
+
+variable (A) in
+/-- Wrapper: a von Neumann subalgebra `S ⊆ A` bundled as an algebra in its
+own right, with proved instances (cf. `Corner` in `Measurement.lean`).
+The witness `hS : IsVNSubalgebra A S` (42V, `A/VN/Basic.lean`) is carried
+as an index: a bare `StarSubalgebra ℂ A` need not be norm-closed, hence
+need not be complete, hence need not be a C*-algebra at all. -/
+structure VNSub (S : StarSubalgebra ℂ A) (hS : IsVNSubalgebra A S) :
+    Type u where
+  val : A
+  property : val ∈ S
+
+namespace VNSub
+
+variable {S : StarSubalgebra ℂ A} {hS : IsVNSubalgebra A S}
+
+theorem val_injective :
+    Function.Injective (VNSub.val (A := A) (S := S) (hS := hS)) := by
+  rintro ⟨a, ha⟩ ⟨b, hb⟩ h
+  cases h; rfl
+
+instance : Zero (VNSub A S hS) := ⟨⟨0, zero_mem S⟩⟩
+instance : Add (VNSub A S hS) :=
+  ⟨fun a b => ⟨a.val + b.val, add_mem a.property b.property⟩⟩
+instance : Neg (VNSub A S hS) := ⟨fun a => ⟨-a.val, neg_mem a.property⟩⟩
+instance : Sub (VNSub A S hS) :=
+  ⟨fun a b => ⟨a.val - b.val, sub_mem a.property b.property⟩⟩
+instance : SMul ℕ (VNSub A S hS) := ⟨fun n a => ⟨n • a.val, nsmul_mem a.property n⟩⟩
+instance : SMul ℤ (VNSub A S hS) := ⟨fun n a => ⟨n • a.val, zsmul_mem a.property n⟩⟩
+instance : SMul ℂ (VNSub A S hS) :=
+  ⟨fun z a => ⟨z • a.val, SMulMemClass.smul_mem z a.property⟩⟩
+instance : One (VNSub A S hS) := ⟨⟨1, one_mem S⟩⟩
+instance : Mul (VNSub A S hS) :=
+  ⟨fun a b => ⟨a.val * b.val, mul_mem a.property b.property⟩⟩
+instance : Star (VNSub A S hS) := ⟨fun a => ⟨star a.val, star_mem a.property⟩⟩
+
+@[simp] theorem val_zero : (0 : VNSub A S hS).val = 0 := rfl
+@[simp] theorem val_add (a b : VNSub A S hS) : (a + b).val = a.val + b.val := rfl
+@[simp] theorem val_neg (a : VNSub A S hS) : (-a).val = -a.val := rfl
+@[simp] theorem val_sub (a b : VNSub A S hS) : (a - b).val = a.val - b.val := rfl
+@[simp] theorem val_one : (1 : VNSub A S hS).val = 1 := rfl
+@[simp] theorem val_mul (a b : VNSub A S hS) : (a * b).val = a.val * b.val := rfl
+@[simp] theorem val_star (a : VNSub A S hS) : (star a).val = star a.val := rfl
+@[simp] theorem val_smul (z : ℂ) (a : VNSub A S hS) : (z • a).val = z • a.val := rfl
+
+instance instAddCommGroup : AddCommGroup (VNSub A S hS) :=
+  Function.Injective.addCommGroup VNSub.val val_injective rfl (fun _ _ => rfl)
+    (fun _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl) (fun _ _ => rfl)
+
+instance instRing : Ring (VNSub A S hS) where
+  __ := instAddCommGroup
+  mul_assoc a b c := val_injective (mul_assoc _ _ _)
+  one_mul a := val_injective (one_mul _)
+  mul_one a := val_injective (mul_one _)
+  left_distrib a b c := val_injective (mul_add _ _ _)
+  right_distrib a b c := val_injective (add_mul _ _ _)
+  zero_mul a := val_injective (zero_mul _)
+  mul_zero a := val_injective (mul_zero _)
+
+/-- `VNSub.val` as an additive monoid homomorphism. -/
+def valAddHom : VNSub A S hS →+ A where
+  toFun := VNSub.val
+  map_zero' := rfl
+  map_add' _ _ := rfl
+
+instance instModule : Module ℂ (VNSub A S hS) :=
+  Function.Injective.module ℂ valAddHom val_injective (fun _ _ => rfl)
+
+instance instAlgebra : Algebra ℂ (VNSub A S hS) :=
+  Algebra.ofModule (fun r x y => val_injective (smul_mul_assoc r x.val y.val))
+    (fun r x y => val_injective (mul_smul_comm r x.val y.val))
+
+instance instStarRing : StarRing (VNSub A S hS) where
+  star_involutive a := val_injective (star_star a.val)
+  star_mul a b := val_injective (star_mul a.val b.val)
+  star_add a b := val_injective (star_add a.val b.val)
+
+instance instStarModule : StarModule ℂ (VNSub A S hS) where
+  star_smul r a := val_injective (star_smul r a.val)
+
+/-- `VNSub.val` as a non-unital ring homomorphism. -/
+def valNonUnitalRingHom : VNSub A S hS →ₙ+* A where
+  toFun := VNSub.val
+  map_zero' := rfl
+  map_add' _ _ := rfl
+  map_mul' _ _ := rfl
+
+instance instNormedRing : NormedRing (VNSub A S hS) :=
+  NormedRing.induced (VNSub A S hS) A valNonUnitalRingHom val_injective
+
+@[simp] theorem norm_def (a : VNSub A S hS) : ‖a‖ = ‖a.val‖ := rfl
+
+instance instNormedAlgebra : NormedAlgebra ℂ (VNSub A S hS) where
+  norm_smul_le r a := by simpa [norm_def] using (norm_smul_le r a.val)
+
+theorem isometry_val : Isometry (VNSub.val (A := A) (S := S) (hS := hS)) :=
+  AddMonoidHomClass.isometry_of_norm valAddHom (fun _ => rfl)
+
+theorem range_val :
+    Set.range (VNSub.val (A := A) (S := S) (hS := hS)) = (S : Set A) := by
+  ext a
+  constructor
+  · rintro ⟨b, rfl⟩; exact b.property
+  · intro ha; exact ⟨⟨a, ha⟩, rfl⟩
+
+instance instCompleteSpace : CompleteSpace (VNSub A S hS) := by
+  refine (isometry_val (S := S) (hS := hS)).isUniformInducing.completeSpace ?_
+  rw [range_val]
+  exact hS.isClosed.isComplete
+
+instance instCStarRing : CStarRing (VNSub A S hS) where
+  norm_mul_self_le a := CStarRing.norm_star_mul_self (x := a.val) |>.symm.le
+
+end VNSub
+
+noncomputable instance (S : StarSubalgebra ℂ A) (hS : IsVNSubalgebra A S) :
+    CStarAlgebra (VNSub A S hS) where
+
+noncomputable instance (S : StarSubalgebra ℂ A) (hS : IsVNSubalgebra A S) :
+    PartialOrder (VNSub A S hS) :=
+  PartialOrder.lift VNSub.val VNSub.val_injective
+
+namespace VNSub
+
+variable {S : StarSubalgebra ℂ A} {hS : IsVNSubalgebra A S}
+
+theorem le_def (a b : VNSub A S hS) : a ≤ b ↔ a.val ≤ b.val := Iff.rfl
+
+/-- The square root of a positive element of a *closed* star subalgebra
+again lies in it: `√a = cfcₙ √ a`, and the non-unital continuous functional
+calculus of an element stays inside every closed star subalgebra
+containing it (Mathlib's `cfcₙ_mem`). -/
+theorem sqrt_mem (hcl : IsClosed (S : Set A)) (a : A) (ha : 0 ≤ a)
+    (hmem : a ∈ S) : CFC.sqrt a ∈ S := by
+  have : IsClosed (S : Set A) := hcl
+  rw [CFC.sqrt_eq_real_sqrt a ha]
+  exact cfcₙ_mem (𝕜 := ℝ) (𝕜' := ℂ) Real.sqrt hmem
+
+end VNSub
+
+instance (S : StarSubalgebra ℂ A) (hS : IsVNSubalgebra A S) :
+    StarOrderedRing (VNSub A S hS) := by
+  refine StarOrderedRing.of_nonneg_iff' (fun {x y} hxy z => ?_) (fun x => ?_)
+  · show z.val + x.val ≤ z.val + y.val
+    exact add_le_add le_rfl (show x.val ≤ y.val from hxy)
+  · constructor
+    · intro hx
+      have hx' : (0 : A) ≤ x.val := hx
+      refine ⟨⟨CFC.sqrt x.val, VNSub.sqrt_mem hS.isClosed x.val hx' x.property⟩, ?_⟩
+      refine VNSub.val_injective ?_
+      have hsa : IsSelfAdjoint (CFC.sqrt x.val) :=
+        IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg x.val)
+      show x.val = star (CFC.sqrt x.val) * CFC.sqrt x.val
+      rw [hsa.star_eq, CFC.sqrt_mul_sqrt_self x.val hx']
+    · rintro ⟨s, rfl⟩
+      show (0 : A) ≤ star s.val * s.val
+      exact star_mul_self_nonneg s.val
+
+namespace VNSub
+
+variable {S : StarSubalgebra ℂ A} {hS : IsVNSubalgebra A S} [VonNeumannAlgebra A]
+
+/-- A self-adjoint element of `S`, viewed in `A`. -/
+def saMap (d : selfAdjoint (VNSub A S hS)) : selfAdjoint A :=
+  ⟨d.1.val, congrArg VNSub.val (show star d.1 = d.1 from d.2)⟩
+
+@[simp] theorem saMap_coe (d : selfAdjoint (VNSub A S hS)) :
+    ((saMap d : selfAdjoint A) : A) = d.1.val := rfl
+
+/-- Suprema of nonempty directed sets of self-adjoint elements are computed
+in a von Neumann subalgebra exactly as they are in `A` (42V part 4). -/
+theorem isLUB_saMap_image {D : Set (selfAdjoint (VNSub A S hS))}
+    {s : selfAdjoint (VNSub A S hS)} (hne : D.Nonempty)
+    (hdir : DirectedOn (· ≤ ·) D) (hlub : IsLUB D s) :
+    IsLUB (saMap '' D) (saMap s) := by
+  set D' : Set (selfAdjoint A) := saMap '' D with hD'
+  have hne' : D'.Nonempty := hne.image _
+  have hdir' : DirectedOn (· ≤ ·) D' := by
+    rintro _ ⟨x, hx, rfl⟩ _ ⟨z, hz, rfl⟩
+    obtain ⟨u, hu, hxu, hzu⟩ := hdir x hx z hz
+    exact ⟨saMap u, ⟨u, hu, rfl⟩, hxu, hzu⟩
+  have hbdd' : BddAbove D' := by
+    refine ⟨saMap s, ?_⟩
+    rintro _ ⟨x, hx, rfl⟩
+    exact hlub.1 hx
+  obtain ⟨s₀, hs₀⟩ :=
+    VonNeumannAlgebra.isLUB_of_bddAbove_directed D' hne' hdir' hbdd'
+  have hmem : (s₀ : A) ∈ S :=
+    hS.dirSup_mem D' s₀ (by rintro _ ⟨x, hx, rfl⟩; exact x.1.property) hne' hdir' hs₀
+  set t : VNSub A S hS := ⟨(s₀ : A), hmem⟩ with ht
+  have htsa : IsSelfAdjoint t := val_injective s₀.2
+  have hlubt : IsLUB D ⟨t, htsa⟩ := by
+    constructor
+    · intro d hd
+      exact hs₀.1 ⟨d, hd, rfl⟩
+    · intro u hu
+      have hub : saMap u ∈ upperBounds D' := by
+        rintro _ ⟨x, hx, rfl⟩
+        exact hu hx
+      exact hs₀.2 hub
+  have hst : s = ⟨t, htsa⟩ := hlub.unique hlubt
+  have hsm : saMap (⟨t, htsa⟩ : selfAdjoint (VNSub A S hS)) = s₀ := Subtype.ext rfl
+  rw [hst, hsm]
+  exact hs₀
+
+/-- Restriction of an np-functional on `A` to a von Neumann subalgebra. -/
+def restrictNP (ω : NPFunctional A) : NPFunctional (VNSub A S hS) where
+  toPositiveLinearMap :=
+    { toFun := fun a => ω a.val
+      map_add' := fun x y => map_add ω.toPositiveLinearMap _ _
+      map_smul' := fun c x => map_smul ω.toPositiveLinearMap _ _
+      monotone' := fun x y hxy => ω.toPositiveLinearMap.monotone hxy }
+  preservesDirSups' := by
+    intro D s hne hdir hlub
+    have hkey := ω.preservesDirSups' (saMap '' D) (saMap s) (hne.image _)
+      (by
+        rintro _ ⟨x, hx, rfl⟩ _ ⟨z, hz, rfl⟩
+        obtain ⟨u, hu, hxu, hzu⟩ := hdir x hx z hz
+        exact ⟨saMap u, ⟨u, hu, rfl⟩, hxu, hzu⟩)
+      (isLUB_saMap_image hne hdir hlub)
+    rw [← Set.image_comp] at hkey
+    exact hkey
+
+@[simp] theorem restrictNP_apply (ω : NPFunctional A) (a : VNSub A S hS) :
+    (restrictNP ω : NPFunctional (VNSub A S hS)) a = ω a.val := rfl
+
+end VNSub
+
+instance (S : StarSubalgebra ℂ A) (hS : IsVNSubalgebra A S)
+    [VonNeumannAlgebra A] : VonNeumannAlgebra (VNSub A S hS) where
+  isLUB_of_bddAbove_directed := by
+    intro D hne hdir hbdd
+    obtain ⟨u, hu⟩ := hbdd
+    have hne' : (VNSub.saMap '' D).Nonempty := hne.image _
+    have hdir' : DirectedOn (· ≤ ·) (VNSub.saMap (S := S) (hS := hS) '' D) := by
+      rintro _ ⟨x, hx, rfl⟩ _ ⟨z, hz, rfl⟩
+      obtain ⟨v, hv, hxv, hzv⟩ := hdir x hx z hz
+      exact ⟨VNSub.saMap v, ⟨v, hv, rfl⟩, hxv, hzv⟩
+    have hbdd' : BddAbove (VNSub.saMap (S := S) (hS := hS) '' D) := by
+      refine ⟨VNSub.saMap u, ?_⟩
+      rintro _ ⟨x, hx, rfl⟩
+      exact hu hx
+    obtain ⟨s₀, hs₀⟩ :=
+      VonNeumannAlgebra.isLUB_of_bddAbove_directed _ hne' hdir' hbdd'
+    have hmem : (s₀ : A) ∈ S :=
+      hS.dirSup_mem _ s₀ (by rintro _ ⟨x, hx, rfl⟩; exact x.1.property) hne' hdir' hs₀
+    refine ⟨⟨⟨(s₀ : A), hmem⟩, VNSub.val_injective s₀.2⟩, ?_, ?_⟩
+    · intro d hd
+      exact hs₀.1 ⟨d, hd, rfl⟩
+    · intro v hv
+      have hub : VNSub.saMap v ∈ upperBounds (VNSub.saMap (S := S) (hS := hS) '' D) := by
+        rintro _ ⟨x, hx, rfl⟩
+        exact hv hx
+      exact hs₀.2 hub
+  np_faithful := by
+    intro a ha hω
+    refine VNSub.val_injective ?_
+    exact VonNeumannAlgebra.np_faithful a.val ha (fun ω => hω (VNSub.restrictNP ω))
+
+
+namespace VNSub
+
+variable {S : StarSubalgebra ℂ A} {hS : IsVNSubalgebra A S}
+
+theorem isStarProjection_val {x : VNSub A S hS} (hx : IsStarProjection x) :
+    IsStarProjection x.val :=
+  ⟨congrArg VNSub.val hx.isIdempotentElem, congrArg VNSub.val hx.isSelfAdjoint⟩
+
+theorem isStarProjection_mk {x : A} (hx : IsStarProjection x) (h : x ∈ S) :
+    IsStarProjection (⟨x, h⟩ : VNSub A S hS) :=
+  ⟨val_injective hx.isIdempotentElem, val_injective hx.isSelfAdjoint⟩
+
+end VNSub
+
+variable [VonNeumannAlgebra A]
+
+/-- **83V** (`cceil-sum`, vn.tex:5706, Lemma) **relative to a von Neumann
+subalgebra** `S`, in the form 89IX needs it: if the least central projection
+of `S` above a projection `e ∈ S` is `1`, then there are partial isometries
+`(vᵢ)` in `S` with `∑ᵢ vᵢ*vᵢ = 1` (as a supremum of projections) and
+`vᵢvᵢ* ≤ e`.
+
+This is `cceil_sum` applied inside the bundled von Neumann algebra `VNSub`;
+the thesis simply writes `⌈⌈·⌉⌉_{S}` and uses `cceil-sum` there. -/
+theorem cceil_sum_relative (S : StarSubalgebra ℂ A) (hS : IsVNSubalgebra A S)
+    (e : A) (heS : e ∈ S) (he : IsStarProjection e)
+    (hone : IsLeast {p : A | p ∈ S ∧ IsStarProjection p ∧
+      (∀ b ∈ S, p * b = b * p) ∧ e ≤ p} 1) :
+    ∃ (ι : Type u) (v : ι → A), (∀ i, v i ∈ S) ∧
+      (∀ i, IsStarProjection (star (v i) * v i)) ∧
+      (Pairwise fun i j => (star (v i) * v i) * (star (v j) * v j) = 0) ∧
+      projSup (Set.range fun i => star (v i) * v i) = 1 ∧
+      ∀ i, v i * star (v i) ≤ e := by
+  classical
+  set E : VNSub A S hS := ⟨e, heS⟩ with hEdef
+  have hEproj : IsStarProjection E := VNSub.isStarProjection_mk he heS
+  -- the central carrier of `E` inside `S` is `1`
+  have hcc : cceil E = 1 := by
+    refine le_antisymm ?_ ?_
+    · exact (cceil_isLeast E).2 ⟨IsStarProjection.one _, fun b => by
+        rw [one_mul, mul_one], one_mul _⟩
+    · have hspec := (cceil_isLeast E).1
+      have hcproj : IsStarProjection (cceil E).val :=
+        VNSub.isStarProjection_val hspec.1
+      have hle : E ≤ cceil E :=
+        ((projection_below_effect (cceil E) E ⟨hspec.1.nonneg, hspec.1.le_one⟩
+          hEproj).out 6 0).mp hspec.2.2
+      have hmem : (cceil E).val ∈ {p : A | p ∈ S ∧ IsStarProjection p ∧
+          (∀ b ∈ S, p * b = b * p) ∧ e ≤ p} :=
+        ⟨(cceil E).property, hcproj,
+          fun b hb => congrArg VNSub.val (hspec.2.1 ⟨b, hb⟩), hle⟩
+      exact (VNSub.le_def _ _).mpr (hone.2 hmem)
+  obtain ⟨ι, f, hf, hforth, hfsup⟩ := cceil_sum E hEproj
+  choose u hupi hu1 hu2 using fun i => (hf i).2.2
+  refine ⟨ι, fun i => (u i).val, fun i => (u i).property, ?_, ?_, ?_, ?_⟩
+  · intro i
+    have : star ((u i).val) * (u i).val = (f i).val := congrArg VNSub.val (hu1 i)
+    rw [this]
+    exact VNSub.isStarProjection_val (hf i).1
+  · intro i j hij
+    have h1 : star ((u i).val) * (u i).val = (f i).val := congrArg VNSub.val (hu1 i)
+    have h2 : star ((u j).val) * (u j).val = (f j).val := congrArg VNSub.val (hu1 j)
+    rw [h1, h2]
+    exact congrArg VNSub.val (hforth hij)
+  · -- the supremum of the `fᵢ`, computed in `A`, is again `1`
+    have hval : (fun i => star ((u i).val) * (u i).val) = fun i => (f i).val := by
+      funext i; exact congrArg VNSub.val (hu1 i)
+    rw [hval]
+    set P : Set A := Set.range fun i => (f i).val with hP
+    have hPproj : ∀ p ∈ P, IsStarProjection p := by
+      rintro _ ⟨i, rfl⟩; exact VNSub.isStarProjection_val (hf i).1
+    have hPS : ∀ p ∈ P, p ∈ S := by rintro _ ⟨i, rfl⟩; exact (f i).property
+    have hq : projSup P ∈ S :=
+      (projSup_mem_of_np hS P hPproj hPS zeroNP (fun _ _ => rfl)).1
+    obtain ⟨hqproj, hqub, hqleast⟩ := projSup_spec hPproj
+    set Q : VNSub A S hS := ⟨projSup P, hq⟩ with hQdef
+    have hQproj : IsStarProjection Q := VNSub.isStarProjection_mk hqproj hq
+    have hub : ∀ x ∈ Set.range f, x ≤ Q := by
+      rintro _ ⟨i, rfl⟩
+      exact (VNSub.le_def _ _).mpr (hqub _ ⟨i, rfl⟩)
+    obtain ⟨-, -, hleast⟩ := projSup_spec (P := Set.range f)
+      (by rintro _ ⟨i, rfl⟩; exact (hf i).1)
+    have h1 : (1 : VNSub A S hS) ≤ Q := by
+      rw [← hcc, hfsup]; exact hleast Q hQproj hub
+    exact le_antisymm hqproj.le_one ((VNSub.le_def _ _).mp h1)
+  · intro i
+    exact (VNSub.le_def _ _).mp (hu2 i)
+
+end VNSubalgebra
+
+
 /-! ## Parsec 860: ultraweak boundedness
 
 **85I** (vn.tex:6233) and **86I** (vn.tex:6259): overview — nothing to
@@ -2505,6 +2874,149 @@ theorem sigma_weak_lemma (ρ : NMIUMap A (H →L[ℂ] H))
   rwa [hπone] at hUleast
 
 
+/-- Pairwise orthogonal projections of `B(K)` whose supremum is `1` resolve
+every vector: `∑ᵢ pᵢ y = y`. -/
+theorem hasSum_projSup_apply {ι : Type*} (p : ι → (K →L[ℂ] K))
+    (hp : ∀ i, IsStarProjection (p i))
+    (horth : Pairwise fun i j => p i * p j = 0)
+    (hsup : projSup (Set.range p) = 1) (y : K) :
+    HasSum (fun i => p i y) y := by
+  have hus := sum_of_orthogonal_projections p hp horth
+  rw [hsup] at hus
+  have h := (usTendsto_iff (fun F : Finset ι => ∑ i ∈ F, p i) atTop 1).mp hus (vectorNP y)
+  simp only [omegaNorm_vectorNP] at h
+  rw [HasSum, tendsto_iff_norm_sub_tendsto_zero]
+  refine h.congr fun F => ?_
+  congr 1
+  simp
+
+/-- The computation at the end of **89IX** (`normal-functional`,
+vn.tex:7089): given the partial isometries `(vᵢ)` of the commutant supplied
+by the relative form of `cceil-sum`, the vectors `Uvᵢy` represent `ω`. -/
+theorem normal_functional_assembly {ι : Type*} (ρ : NMIUMap A (H →L[ℂ] H))
+    (π : NMIUMap A (K →L[ℂ] K)) (U : K →L[ℂ] H)
+    (hU : ∀ a : A, U ∘L π a = ρ a ∘L U)
+    (hQ : IsStarProjection (ContinuousLinearMap.adjoint U ∘L U))
+    (v : ι → (K →L[ℂ] K))
+    (hvpi : ∀ i, IsPartialIsometry (K →L[ℂ] K) (v i))
+    (hvcomm : ∀ (i) (a : A), v i * π a = π a * v i)
+    (horth : Pairwise fun i j => (star (v i) * v i) * (star (v j) * v j) = 0)
+    (hsup : projSup (Set.range fun i => star (v i) * v i) = 1)
+    (hvle : ∀ i, v i * star (v i) ≤ ContinuousLinearMap.adjoint U ∘L U)
+    (ω : NPFunctional A) (y : K) (hy : ∀ a : A, ω a = ⟪y, π a y⟫) :
+    ∀ a : A, HasSum (fun i => ⟪U (v i y), ρ a (U (v i y))⟫) (ω a) := by
+  set Q : K →L[ℂ] K := ContinuousLinearMap.adjoint U ∘L U with hQdef
+  -- `Q vᵢ = vᵢ`, because `vᵢvᵢ* ≤ Q`
+  have hQv : ∀ i, Q * v i = v i := by
+    intro i
+    have hvv : IsStarProjection (v i * star (v i)) :=
+      ((partial_isometry_equivalents (v i)).out 0 3).mp (hvpi i)
+    have h1 : Q * (v i * star (v i)) = v i * star (v i) :=
+      ((projection_below_effect Q (v i * star (v i)) ⟨hQ.nonneg, hQ.le_one⟩
+        hvv).out 0 6).mp (hvle i)
+    have h2 : v i * star (v i) * v i = v i :=
+      ((partial_isometry_equivalents (v i)).out 0 2).mp (hvpi i)
+    calc Q * v i = Q * (v i * star (v i) * v i) := by rw [h2]
+      _ = (Q * (v i * star (v i))) * v i := by noncomm_ring
+      _ = v i := by rw [h1, h2]
+  set p : ι → (K →L[ℂ] K) := fun i => star (v i) * v i with hpdef
+  have hpproj : ∀ i, IsStarProjection (p i) :=
+    fun i => ((partial_isometry_equivalents (v i)).out 0 1).mp (hvpi i)
+  -- the key term-by-term identity
+  have hterm : ∀ (a : A) (i), (⟪U (v i y), ρ a (U (v i y))⟫ : ℂ) = ⟪p i y, π a y⟫ := by
+    intro a i
+    have e1 : (ρ a : H →L[ℂ] H) (U (v i y)) = U (π a (v i y)) := by
+      have := congrArg (fun T : K →L[ℂ] H => T (v i y)) (hU a)
+      simpa using this.symm
+    have e2 : ContinuousLinearMap.adjoint U (U (v i y)) = v i y := by
+      have := congrArg (fun T : K →L[ℂ] K => T y) (hQv i)
+      simpa [hQdef] using this
+    have e3 : (π a : K →L[ℂ] K) (v i y) = v i ((π a : K →L[ℂ] K) y) := by
+      have := congrArg (fun T : K →L[ℂ] K => T y) (hvcomm i a)
+      simpa using this.symm
+    calc (⟪U (v i y), ρ a (U (v i y))⟫ : ℂ)
+        = ⟪U (v i y), U (π a (v i y))⟫ := by rw [e1]
+      _ = ⟪ContinuousLinearMap.adjoint U (U (v i y)), π a (v i y)⟫ := by
+            rw [ContinuousLinearMap.adjoint_inner_left]
+      _ = ⟪v i y, π a (v i y)⟫ := by rw [e2]
+      _ = ⟪v i y, v i ((π a : K →L[ℂ] K) y)⟫ := by rw [e3]
+      _ = ⟪y, star (v i) (v i ((π a : K →L[ℂ] K) y))⟫ := by
+            rw [ContinuousLinearMap.star_eq_adjoint,
+              ContinuousLinearMap.adjoint_inner_right]
+      _ = ⟪y, p i ((π a : K →L[ℂ] K) y)⟫ := rfl
+      _ = ⟪p i y, π a y⟫ := by
+            have hself : ContinuousLinearMap.adjoint (p i) = p i := by
+              rw [← ContinuousLinearMap.star_eq_adjoint]
+              exact (hpproj i).isSelfAdjoint.star_eq
+            conv_rhs => rw [← hself]
+            rw [ContinuousLinearMap.adjoint_inner_left]
+  intro a
+  have hres : HasSum (fun i => p i y) y := hasSum_projSup_apply p hpproj horth hsup y
+  have h2 : HasSum (fun i => (⟪(π a : K →L[ℂ] K) y, p i y⟫ : ℂ))
+      ⟪(π a : K →L[ℂ] K) y, y⟫ := hres.mapL (innerSL ℂ ((π a : K →L[ℂ] K) y))
+  have h3 := h2.map (starRingEnd ℂ) Complex.continuous_conj
+  simp only [Function.comp_def, inner_conj_symm] at h3
+  rw [← hy a] at h3
+  exact h3.congr_fun fun i => hterm a i
+
+/-- Zero-padded re-indexing of a square-summable family by `ℕ`. -/
+theorem exists_nat_reindex {ι : Type*} (x : ι → H)
+    (hs : Summable fun i => ‖x i‖ ^ 2) :
+    ∃ (x' : ℕ → H) (φ : Function.support x → ℕ), Function.Injective φ ∧
+      (∀ i : Function.support x, x' (φ i) = x i) ∧
+      (∀ n, n ∉ Set.range φ → x' n = 0) := by
+  classical
+  have hsupp : (Function.support fun i => ‖x i‖ ^ 2) = Function.support x := by
+    ext i; simp [Function.mem_support]
+  have hcount : (Function.support x).Countable := by
+    rw [← hsupp]; exact hs.countable_support
+  obtain ⟨φ, hφ⟩ := Set.countable_iff_exists_injective.mp hcount
+  refine ⟨Function.extend φ (fun i : Function.support x => x i) (fun _ => 0), φ, hφ,
+    fun i => hφ.extend_apply _ _ i, fun n hn => ?_⟩
+  exact Function.extend_apply' (f := φ) (fun i : Function.support x => x i) (fun _ => 0) n
+    (fun h => hn ⟨h.choose, h.choose_spec⟩)
+
+/-- A family of vectors indexed by an arbitrary type representing an
+np-functional can be re-indexed by `ℕ`. -/
+theorem exists_nat_index {ι : Type*} (ρ : NMIUMap A (H →L[ℂ] H)) (ω : NPFunctional A)
+    (x : ι → H) (hx : ∀ a : A, HasSum (fun i => ⟪x i, ρ a (x i)⟫) (ω a)) :
+    ∃ x' : ℕ → H, (Summable fun n => ‖x' n‖ ^ 2) ∧
+      ∀ a : A, HasSum (fun n => ⟪x' n, ρ a (x' n)⟫) (ω a) := by
+  classical
+  -- square-summability is the case `a = 1`
+  have hone : ∀ i, (⟪x i, ρ (1 : A) (x i)⟫ : ℂ) = ((‖x i‖ ^ 2 : ℝ) : ℂ) := by
+    intro i
+    have h1 : ρ (1 : A) = 1 := map_one ρ.toStarAlgHom
+    rw [h1]
+    simp [inner_self_eq_norm_sq_to_K]
+  have hsumℂ : HasSum (fun i => ((‖x i‖ ^ 2 : ℝ) : ℂ)) (ω 1) := by
+    refine (hx 1).congr_fun fun i => (hone i).symm
+  have hsum : Summable fun i => ‖x i‖ ^ 2 := by
+    have := hsumℂ.mapL Complex.reCLM
+    simpa [← Complex.ofReal_pow] using this.summable
+  obtain ⟨x', φ, hφ, hval, hzero⟩ := exists_nat_reindex x hsum
+  -- transport a `HasSum` along the re-indexing
+  have key : ∀ (g : H → ℂ) (c : ℂ), g 0 = 0 →
+      HasSum (fun i => g (x i)) c → HasSum (fun n => g (x' n)) c := by
+    intro g c hg0 hgs
+    have hsub : Function.support (fun i => g (x i)) ⊆ Function.support x := by
+      intro i hi
+      by_contra hc
+      simp only [Function.mem_support, not_not] at hc
+      exact hi (by simp [Function.mem_support, hc, hg0])
+    have h1 : HasSum (fun i : Function.support x => g (x i)) c :=
+      (hasSum_subtype_iff_of_support_subset hsub).mpr hgs
+    refine (hφ.hasSum_iff ?_).mp ?_
+    · intro n hn; rw [hzero n hn, hg0]
+    · exact h1.congr_fun fun i => by rw [Function.comp_apply, hval i]
+  refine ⟨x', ?_, fun a => ?_⟩
+  · have : HasSum (fun n => ((‖x' n‖ ^ 2 : ℝ) : ℂ)) (ω 1) := by
+      refine key (fun z => ((‖z‖ ^ 2 : ℝ) : ℂ)) (ω 1) (by simp) ?_
+      exact hsumℂ
+    have := this.mapL Complex.reCLM
+    simpa [← Complex.ofReal_pow] using this.summable
+  · refine key (fun z => ⟪z, ρ a z⟫) (ω a) (by simp) (hx a)
+
 /-- **89IX** (`normal-functional`, vn.tex:7089, Theorem): every
 np-functional `ω` on a von Neumann subalgebra `A` of `B(H)` (given by an
 injective nmiu-map `ρ : A → B(H)` with von Neumann subalgebra range) is of
@@ -2515,8 +3027,43 @@ theorem normal_functional (ρ : NMIUMap A (H →L[ℂ] H))
     (hR : IsVNSubalgebra (H →L[ℂ] H) ρ.toStarAlgHom.range)
     (ω : NPFunctional A) :
     ∃ x : ℕ → H, (Summable fun n => ‖x n‖ ^ 2) ∧
-      ∀ a : A, HasSum (fun n => ⟪x n, ρ a (x n)⟫) (ω a) :=
-  sorry
+      ∀ a : A, HasSum (fun n => ⟪x n, ρ a (x n)⟫) (ω a) := by
+  classical
+  -- the universal representation `π` of 89VII
+  obtain ⟨K₀, _, _, _, π₀, -, hπn, huniv⟩ := exists_faithful_normal_rep_vectors A
+  set π : NMIUMap A (K₀ →L[ℂ] K₀) := ⟨π₀, hπn⟩ with hπdef
+  obtain ⟨U, hU, hQproj, hQmem, hQleast⟩ := sigma_weak_lemma ρ hρ hR π huniv
+  set C : Set (K₀ →L[ℂ] K₀) :=
+    commutant (K₀ →L[ℂ] K₀) (Set.range fun a : A => (π a : K₀ →L[ℂ] K₀)) with hC
+  set Q : K₀ →L[ℂ] K₀ := ContinuousLinearMap.adjoint U ∘L U with hQdef
+  -- `π(A)□` as a von Neumann subalgebra
+  obtain ⟨T, hT, hTcar⟩ :=
+    (commutant_basic_3' (Set.range fun a : A => (π a : K₀ →L[ℂ] K₀)) (by
+      rintro _ ⟨a, rfl⟩
+      exact ⟨star a, by
+        show (π (star a) : K₀ →L[ℂ] K₀) = star (π a)
+        exact map_star π.toStarAlgHom a⟩)).1
+  have hmemT : ∀ p : K₀ →L[ℂ] K₀, p ∈ T ↔ p ∈ C := by
+    intro p; rw [← SetLike.mem_coe, hTcar]
+  -- the relative `cceil-sum`
+  obtain ⟨ι, v, hvT, hvproj, hvorth, hvsup, hvle⟩ :=
+    cceil_sum_relative T hT Q ((hmemT Q).mpr hQmem) hQproj
+      (by
+        constructor
+        · exact ⟨(hmemT 1).mpr hQleast.1.1, hQleast.1.2.1,
+            fun b hb => hQleast.1.2.2.1 b ((hmemT b).mp hb), hQleast.1.2.2.2⟩
+        · rintro p ⟨hp1, hp2, hp3, hp4⟩
+          exact hQleast.2 ⟨(hmemT p).mp hp1, hp2,
+            fun b hb => hp3 b ((hmemT b).mpr hb), hp4⟩)
+  -- the vector representing `ω` in the universal representation
+  obtain ⟨y, hy⟩ := huniv ω
+  have hvpi : ∀ i, IsPartialIsometry (K₀ →L[ℂ] K₀) (v i) :=
+    fun i => ((partial_isometry_equivalents (v i)).out 1 0).mp (hvproj i)
+  have hvcomm : ∀ (i) (a : A), v i * π a = π a * v i := by
+    intro i a
+    exact ((hmemT (v i)).mp (hvT i) (π a) ⟨a, rfl⟩).symm
+  exact exists_nat_index ρ ω (fun i => U (v i y))
+    (normal_functional_assembly ρ π U hU hQproj v hvpi hvcomm hvorth hvsup hvle ω y hy)
 
 end BH
 
