@@ -1672,6 +1672,170 @@ theorem division_basic_5 (b c : A) (h : ∃ x : A, c = x * b) :
   show star (div (star (star c)) (star (star b))) = star (div c b)
   rw [star_star, star_star]
 
+/-- Auxiliary: an increasing sequence of projections converges ultrastrongly
+to its supremum. -/
+theorem usTendsto_of_monotone_isStarProjection {P : ℕ → A}
+    (hproj : ∀ N, IsStarProjection (P N)) (hmono : Monotone P) {q : A}
+    (hq : IsLUB (Set.range P) q) : USTendsto P atTop q := by
+  have hPrange : ∀ r ∈ Set.range P, IsStarProjection r := by
+    rintro _ ⟨N, rfl⟩; exact hproj N
+  have hdir : DirectedOn (· ≤ ·) (Set.range P) := by
+    rintro _ ⟨N, rfl⟩ _ ⟨M, rfl⟩
+    exact ⟨P (max N M), ⟨max N M, rfl⟩, hmono (le_max_left N M),
+      hmono (le_max_right N M)⟩
+  have hlub' :=
+    isLUB_projSup_of_directed (Set.range P) hPrange (Set.range_nonempty _) hdir
+  have hqeq : q = projSup (Set.range P) := hq.unique hlub'
+  have hqproj : IsStarProjection q := by rw [hqeq]; exact (projSup_spec hPrange).1
+  have hle : ∀ N, P N ≤ q := fun N => hq.1 ⟨N, rfl⟩
+  have hsa : ∀ N, IsSelfAdjoint (P N) := fun N => (hproj N).isSelfAdjoint
+  rw [usTendsto_iff]
+  intro ω
+  have hfun : ∀ N, omegaNorm A ω (P N - q)
+      = Real.sqrt ((ω q : ℂ).re - (ω (P N) : ℂ).re) := by
+    intro N
+    have hdiff : IsStarProjection (q - P N) :=
+      projection_below_projection _ _ (hproj N) hqproj (hle N)
+    have hstar : star (P N - q) * (P N - q) = q - P N := by
+      have hs : star (P N - q) = -(q - P N) := by
+        rw [star_sub, (hsa N).star_eq, hqproj.isSelfAdjoint.star_eq]; abel
+      rw [hs, show P N - q = -(q - P N) by abel, neg_mul_neg]
+      exact hdiff.isIdempotentElem.eq
+    rw [omegaNorm, hstar, npFunctional_sub]
+    simp
+  simp only [hfun]
+  set D : Set (selfAdjoint A) := {d : selfAdjoint A | (d : A) ∈ Set.range P} with hD
+  have hDval : Subtype.val '' D = Set.range P := by
+    ext x
+    exact ⟨by rintro ⟨d, hd, rfl⟩; exact hd,
+      fun hx => ⟨⟨x, by obtain ⟨N, rfl⟩ := hx; exact hsa N⟩, hx, rfl⟩⟩
+  have hDne : D.Nonempty := ⟨⟨P 0, hsa 0⟩, ⟨0, rfl⟩⟩
+  have hDdir : DirectedOn (· ≤ ·) D := by
+    intro x hx y hy
+    obtain ⟨c, hc, hxc, hyc⟩ := hdir _ hx _ hy
+    exact ⟨⟨c, by obtain ⟨N, rfl⟩ := hc; exact hsa N⟩, hc, hxc, hyc⟩
+  have hDlub : IsLUB D (⟨q, hqproj.isSelfAdjoint⟩ : selfAdjoint A) := by
+    refine isLUB_sa_of_isLUB ?_
+    rw [hDval]; exact hq
+  have hωlub := ω.preservesDirSups' D _ hDne hDdir hDlub
+  have hreal : ∀ w ∈ ((fun d : selfAdjoint A => (ω (d : A) : ℂ)) '' D), w.im = 0 := by
+    rintro _ ⟨d, hd, rfl⟩
+    obtain ⟨N, hN⟩ := hd
+    have h0 : (0 : ℂ) ≤ ω (d : A) := by
+      rw [← hN] at *
+      exact npFunctional_nonneg ω (hproj N).nonneg
+    exact ((Complex.le_def.mp h0).2).symm
+  have hrelub := isLUB_re_of_isLUB hreal hωlub
+  have hrange : Complex.re '' ((fun d : selfAdjoint A => (ω (d : A) : ℂ)) '' D)
+      = Set.range (fun N : ℕ => (ω (P N) : ℂ).re) := by
+    ext r
+    constructor
+    · rintro ⟨_, ⟨d, hd, rfl⟩, rfl⟩
+      obtain ⟨N, hN⟩ := hd
+      exact ⟨N, by change (ω (P N) : ℂ).re = ((ω (d : A) : ℂ)).re; rw [hN]⟩
+    · rintro ⟨N, rfl⟩
+      exact ⟨ω (P N), ⟨⟨P N, hsa N⟩, ⟨N, rfl⟩, rfl⟩, rfl⟩
+  rw [hrange] at hrelub
+  have hmono' : Monotone (fun N : ℕ => (ω (P N) : ℂ).re) := fun M N h =>
+    (Complex.le_def.mp (npFunctional_mono ω (hmono h))).1
+  have htend := tendsto_atTop_isLUB hmono' hrelub
+  have hlim : Tendsto (fun N : ℕ => (ω q : ℂ).re - (ω (P N) : ℂ).re) atTop (𝓝 0) := by
+    have htend' : Tendsto (fun N : ℕ => (ω (P N) : ℂ).re) atTop (𝓝 ((ω q : ℂ).re)) :=
+      htend
+    have h := (tendsto_const_nhds
+      (x := (ω q : ℂ).re) (f := (atTop : Filter ℕ))).sub htend'
+    simpa using h
+  have hc := (Real.continuous_sqrt.tendsto 0).comp hlim
+  simpa [Function.comp_def] using hc
+
+/-- Auxiliary for **81III**: given a sequence of projections whose partial
+sums have a least upper bound `q ≤ 1`, the partial sums are themselves
+projections, increase to `q`, and converge ultrastrongly to it. -/
+theorem partialSums_of_isLUB {p : ℕ → A} (hp : ∀ n, IsStarProjection (p n))
+    {q : A} (hq : IsLUB {x : A | ∃ N : ℕ, x = ∑ n ∈ Finset.range N, p n} q)
+    (hq1 : q ≤ 1) :
+    (∀ N : ℕ, IsStarProjection (∑ n ∈ Finset.range N, p n)) ∧
+      Monotone (fun N : ℕ => ∑ n ∈ Finset.range N, p n) ∧
+      USTendsto (fun N : ℕ => ∑ n ∈ Finset.range N, p n) atTop q := by
+  classical
+  have hmono : Monotone (fun N : ℕ => ∑ n ∈ Finset.range N, p n) := by
+    intro M N h
+    exact Finset.sum_le_sum_of_subset_of_nonneg
+      (Finset.range_mono h)
+      fun i _ _ => (hp i).nonneg
+  have hub : ∀ N : ℕ, ∑ n ∈ Finset.range N, p n ≤ q := fun N => hq.1 ⟨N, rfl⟩
+  have horth : ∀ n m : ℕ, n ≠ m → p n * p m = 0 := by
+    intro n m hnm
+    have hsub : p n + p m ≤ ∑ k ∈ Finset.range (max n m + 1), p k := by
+      have hsubset : ({n, m} : Finset ℕ) ⊆ Finset.range (max n m + 1) := by
+        intro i hi
+        simp only [Finset.mem_insert, Finset.mem_singleton] at hi
+        rcases hi with rfl | rfl <;>
+          exact Finset.mem_range.mpr (Nat.lt_succ_of_le (by omega))
+      have := Finset.sum_le_sum_of_subset_of_nonneg hsubset
+        (fun k _ _ => (hp k).nonneg)
+      rwa [Finset.sum_pair hnm] at this
+    exact ((orthogonal_tuple_of_projections_1 (p n) (p m) (hp n) (hp m)).out 3 0).mp
+      (hsub.trans ((hub _).trans hq1))
+  have hproj : ∀ N : ℕ, IsStarProjection (∑ n ∈ Finset.range N, p n) := fun N =>
+    isStarProjection_sum _ p hp fun i _ j _ hij => horth i j hij
+  refine ⟨hproj, hmono, ?_⟩
+  refine usTendsto_of_monotone_isStarProjection hproj hmono ?_
+  have hset : Set.range (fun N : ℕ => ∑ n ∈ Finset.range N, p n)
+      = {x : A | ∃ N : ℕ, x = ∑ n ∈ Finset.range N, p n} := by
+    ext x
+    exact ⟨fun ⟨N, hN⟩ => ⟨N, hN.symm⟩, fun ⟨N, hN⟩ => ⟨N, hN.symm⟩⟩
+  rw [hset]; exact hq
+
+
+/-- Auxiliary for **81III**, the thesis's block estimate (vn.tex:5411): for
+`a*a ≤ b*b` and an approximate pseudoinverse `t` of `b`,
+`(∑_{n=M}^{N} a tₙ)* (∑_{n=M}^{N} a tₙ) ≤ ∑_{n=M}^{N} b tₙ`, whence
+`‖∑_{n=M}^{N} a tₙ‖_ω ≤ (ω(∑_{n<N} b tₙ) − ω(∑_{n<M} b tₙ))^½`.  The bound
+does not mention `a`, which is what makes the convergence uniform in `a`
+(**81III**, second half). -/
+theorem apinv_block_est {a b : A} (h : star a * a ≤ star b * b) {t : ℕ → A}
+    (ht : IsApproxPseudoinverse A b t) (ω : NPFunctional A) {M N : ℕ}
+    (hMN : M ≤ N) :
+    omegaNorm A ω (∑ n ∈ Finset.range N, a * t n - ∑ n ∈ Finset.range M, a * t n)
+      ≤ Real.sqrt ((ω (∑ n ∈ Finset.range N, b * t n) : ℂ).re
+          - (ω (∑ n ∈ Finset.range M, b * t n) : ℂ).re) := by
+  classical
+  obtain ⟨hPproj, hPmono, _⟩ :=
+    partialSums_of_isLUB (p := fun n => b * t n) ht.proj_right ht.sum_right
+      (ceill_basic_2 b).1.1.le_one
+  have hIco : ∀ (f : ℕ → A) (M N : ℕ), M ≤ N →
+      ∑ n ∈ Finset.range N, f n - ∑ n ∈ Finset.range M, f n
+        = ∑ n ∈ Finset.Ico M N, f n := by
+    intro f M N hMN
+    have hcons := Finset.sum_Ico_consecutive f (Nat.zero_le M) hMN
+    rw [Finset.range_eq_Ico, Finset.range_eq_Ico]
+    exact (eq_sub_of_add_eq' hcons).symm
+  have hproj : IsStarProjection (∑ n ∈ Finset.range N, b * t n
+      - ∑ n ∈ Finset.range M, b * t n) :=
+    projection_below_projection _ _ (hPproj M) (hPproj N) (hPmono hMN)
+  have hsq : star (∑ n ∈ Finset.range N, b * t n - ∑ n ∈ Finset.range M, b * t n) *
+      (∑ n ∈ Finset.range N, b * t n - ∑ n ∈ Finset.range M, b * t n)
+      = ∑ n ∈ Finset.range N, b * t n - ∑ n ∈ Finset.range M, b * t n := by
+    rw [hproj.isSelfAdjoint.star_eq]; exact hproj.isIdempotentElem.eq
+  have hest : star (∑ n ∈ Finset.range N, a * t n - ∑ n ∈ Finset.range M, a * t n) *
+      (∑ n ∈ Finset.range N, a * t n - ∑ n ∈ Finset.range M, a * t n)
+      ≤ star (∑ n ∈ Finset.range N, b * t n - ∑ n ∈ Finset.range M, b * t n) *
+        (∑ n ∈ Finset.range N, b * t n - ∑ n ∈ Finset.range M, b * t n) := by
+    rw [hIco (fun n => a * t n) M N hMN, hIco (fun n => b * t n) M N hMN,
+      ← Finset.mul_sum, ← Finset.mul_sum]
+    calc star (a * ∑ n ∈ Finset.Ico M N, t n) * (a * ∑ n ∈ Finset.Ico M N, t n)
+        = star (∑ n ∈ Finset.Ico M N, t n) * (star a * a) *
+            (∑ n ∈ Finset.Ico M N, t n) := by rw [star_mul]; noncomm_ring
+      _ ≤ star (∑ n ∈ Finset.Ico M N, t n) * (star b * b) *
+            (∑ n ∈ Finset.Ico M N, t n) :=
+          star_left_conjugate_le_conjugate h _
+      _ = star (b * ∑ n ∈ Finset.Ico M N, t n) *
+            (b * ∑ n ∈ Finset.Ico M N, t n) := by rw [star_mul]; noncomm_ring
+  refine (omegaNorm_le_omegaNorm ω hest).trans (le_of_eq ?_)
+  rw [omegaNorm, hsq, npFunctional_sub]
+  simp
+
 /-- **81III** (`proto-douglas`, vn.tex:5395, Lemma), part 1: if
 `a*a ≤ b*b` then `a ∈ Ab`, and the series `∑ₙ atₙ` (for an approximate
 pseudoinverse `t` of `b`) converges ultrastrongly to `a/b`. -/
@@ -1679,8 +1843,114 @@ theorem proto_douglas_1 (a b : A) (h : star a * a ≤ star b * b)
     (t : ℕ → A) (ht : IsApproxPseudoinverse A b t) :
     (∃ c : A, a = c * b) ∧
       USTendsto (fun N : ℕ => ∑ n ∈ Finset.range N, a * t n) atTop
-        (div a b) :=
-  sorry
+        (div a b) := by
+  classical
+  obtain ⟨hPproj, hPmono, _hPtend⟩ :=
+    partialSums_of_isLUB (p := fun n => b * t n) ht.proj_right ht.sum_right
+      (ceill_basic_2 b).1.1.le_one
+  obtain ⟨_hQproj, _hQmono, hQtend⟩ :=
+    partialSums_of_isLUB (p := fun n => t n * b) ht.proj_left ht.sum_left
+      (ceill_basic_1 b).1.1.le_one
+  set S : ℕ → A := fun N => ∑ n ∈ Finset.range N, a * t n with hSdef
+  set P : ℕ → A := fun N => ∑ n ∈ Finset.range N, b * t n with hPdef
+  set Q : ℕ → A := fun N => ∑ n ∈ Finset.range N, t n * b with hQdef
+  have hnormbd : ∀ (ω : NPFunctional A) (M N : ℕ), M ≤ N →
+      omegaNorm A ω (S N - S M)
+        ≤ Real.sqrt ((ω (P N) : ℂ).re - (ω (P M) : ℂ).re) :=
+    fun ω M N hMN => apinv_block_est h ht ω hMN
+  -- `PN ≤ ⌊b⌉`, so `ω(PN).re` increases to a finite limit
+  have hPub : ∀ N : ℕ, P N ≤ rangeProj b := fun N => ht.sum_right.1 ⟨N, rfl⟩
+  have hcauchy : ∀ ω : NPFunctional A,
+      Tendsto (fun p : ℕ × ℕ => omegaNorm A ω (S p.1 - S p.2)) (atTop ×ˢ atTop)
+        (𝓝 0) := by
+    intro ω
+    set g : ℕ → ℝ := fun N => (ω (P N) : ℂ).re with hgdef
+    have hgmono : Monotone g := fun M N hMN =>
+      (Complex.le_def.mp (npFunctional_mono ω (hPmono hMN))).1
+    have hgbdd : BddAbove (Set.range g) := by
+      refine ⟨(ω (rangeProj b) : ℂ).re, ?_⟩
+      rintro _ ⟨N, rfl⟩
+      exact (Complex.le_def.mp (npFunctional_mono ω (hPub N))).1
+    have hgtend : Tendsto g atTop (𝓝 (⨆ N, g N)) := tendsto_atTop_ciSup hgmono hgbdd
+    have hbound : ∀ p : ℕ × ℕ,
+        omegaNorm A ω (S p.1 - S p.2) ≤ Real.sqrt |g p.1 - g p.2| := by
+      intro p
+      rcases le_total p.2 p.1 with hle | hle
+      · exact (hnormbd ω p.2 p.1 hle).trans (Real.sqrt_le_sqrt (le_abs_self _))
+      · have heq : omegaNorm A ω (S p.1 - S p.2) = omegaNorm A ω (S p.2 - S p.1) := by
+          rw [← omegaNorm_neg ω (S p.2 - S p.1)]; congr 1; abel
+        rw [heq]
+        refine (hnormbd ω p.1 p.2 hle).trans (Real.sqrt_le_sqrt ?_)
+        rw [abs_sub_comm]; exact le_abs_self _
+    have hlim : Tendsto (fun p : ℕ × ℕ => Real.sqrt |g p.1 - g p.2|)
+        (atTop ×ˢ atTop) (𝓝 0) := by
+      have h1 : Tendsto (fun p : ℕ × ℕ => g p.1) (atTop ×ˢ atTop) (𝓝 (⨆ N, g N)) :=
+        hgtend.comp tendsto_fst
+      have h2 : Tendsto (fun p : ℕ × ℕ => g p.2) (atTop ×ˢ atTop) (𝓝 (⨆ N, g N)) :=
+        hgtend.comp tendsto_snd
+      have h3 : Tendsto (fun p : ℕ × ℕ => g p.1 - g p.2) (atTop ×ˢ atTop) (𝓝 0) := by
+        simpa using h1.sub h2
+      have hcont : Continuous fun x : ℝ => Real.sqrt |x| :=
+        Real.continuous_sqrt.comp continuous_abs
+      have := (hcont.tendsto 0).comp h3
+      simpa [Function.comp_def] using this
+    exact squeeze_zero (fun p => omegaNorm_nonneg _ _) hbound hlim
+  obtain ⟨c, hc⟩ := vn_complete_1 (atTop : Filter ℕ) S hcauchy
+  -- `a = c b`
+  have hsupp : a * suppProj b = a := by
+    have hle : suppProj a ≤ suppProj b := ceil_mono (star_mul_self_nonneg a) h
+    have hmul : suppProj a * suppProj b = suppProj a :=
+      ((projection_below_effect (suppProj b) (suppProj a)
+        ⟨(ceill_basic_1 b).1.1.nonneg, (ceill_basic_1 b).1.1.le_one⟩
+        (ceill_basic_1 a).1.1).out 0 7).mp hle
+    calc a * suppProj b = a * suppProj a * suppProj b := by rw [(ceill_basic_1 a).1.2]
+      _ = a * (suppProj a * suppProj b) := by noncomm_ring
+      _ = a * suppProj a := by rw [hmul]
+      _ = a := (ceill_basic_1 a).1.2
+  have hSQ : ∀ N : ℕ, S N * b = a * Q N := by
+    intro N
+    rw [hSdef, hQdef]
+    simp only [Finset.sum_mul, Finset.mul_sum, mul_assoc]
+  let _ : TopologicalSpace A := ultrastrong A
+  have _ : T2Space A := (vn_positive_basic_1 (A := A)).2
+  have hlim1 : USTendsto (fun N : ℕ => a * Q N) atTop (c * b) := by
+    have h1 : USTendsto (fun N : ℕ => (1 : A) * S N * b) atTop ((1 : A) * c * b) :=
+      usTendsto_mul_left_right (1 : A) b hc
+    simp only [one_mul] at h1
+    simpa only [hSQ] using h1
+  have hlim2 : USTendsto (fun N : ℕ => a * Q N) atTop a := by
+    have h2 : USTendsto (fun N : ℕ => a * Q N * (1 : A)) atTop (a * suppProj b * (1 : A)) :=
+      usTendsto_mul_left_right a (1 : A) hQtend
+    simp only [mul_one, hsupp] at h2
+    exact h2
+  have hcb : c * b = a := tendsto_nhds_unique hlim1 hlim2
+  -- `c ⌊b⌉ = c`
+  have htr : ∀ n : ℕ, t n * rangeProj b = t n := by
+    intro n
+    have hle : suppProj (t n) ≤ rangeProj b := by
+      refine le_trans ?_ (ht.sum_supp.1 ⟨n + 1, rfl⟩)
+      exact Finset.single_le_sum (f := fun k => suppProj (t k))
+        (fun k _ => (ceill_basic_1 (t k)).1.1.nonneg) (Finset.self_mem_range_succ n)
+    have hmul : suppProj (t n) * rangeProj b = suppProj (t n) :=
+      ((projection_below_effect (rangeProj b) (suppProj (t n))
+        ⟨(ceill_basic_2 b).1.1.nonneg, (ceill_basic_2 b).1.1.le_one⟩
+        (ceill_basic_1 (t n)).1.1).out 0 7).mp hle
+    calc t n * rangeProj b = t n * suppProj (t n) * rangeProj b := by
+          rw [(ceill_basic_1 (t n)).1.2]
+      _ = t n * (suppProj (t n) * rangeProj b) := by noncomm_ring
+      _ = t n * suppProj (t n) := by rw [hmul]
+      _ = t n := (ceill_basic_1 (t n)).1.2
+  have hSr : ∀ N : ℕ, S N * rangeProj b = S N := by
+    intro N
+    rw [hSdef]
+    simp only [Finset.sum_mul, mul_assoc, htr]
+  have hlim3 : USTendsto S atTop (c * rangeProj b) := by
+    have h3 : USTendsto (fun N : ℕ => (1 : A) * S N * rangeProj b) atTop
+        ((1 : A) * c * rangeProj b) := usTendsto_mul_left_right (1 : A) (rangeProj b) hc
+    simp only [one_mul, hSr] at h3
+    exact h3
+  have hcr : c * rangeProj b = c := tendsto_nhds_unique hlim3 hc
+  exact ⟨⟨c, hcb.symm⟩, by rw [div_eq hcb.symm hcr]; exact hc⟩
 
 /-- **81III** (`proto-douglas`, vn.tex:5395, Lemma), part 2: the
 convergence of `∑ₙ atₙ` to `a/b` is uniform in `a` (over
@@ -1689,8 +1959,60 @@ theorem proto_douglas_2 (b : A) (t : ℕ → A)
     (ht : IsApproxPseudoinverse A b t) (ω : NPFunctional A) (ε : ℝ)
     (hε : 0 < ε) :
     ∃ N : ℕ, ∀ a : A, star a * a ≤ star b * b → ∀ M ≥ N,
-      omegaNorm A ω (div a b - ∑ n ∈ Finset.range M, a * t n) ≤ ε :=
-  sorry
+      omegaNorm A ω (div a b - ∑ n ∈ Finset.range M, a * t n) ≤ ε := by
+  classical
+  obtain ⟨_, hPmono, _⟩ :=
+    partialSums_of_isLUB (p := fun n => b * t n) ht.proj_right ht.sum_right
+      (ceill_basic_2 b).1.1.le_one
+  set g : ℕ → ℝ := fun N => (ω (∑ n ∈ Finset.range N, b * t n) : ℂ).re with hgdef
+  have hgmono : Monotone g := fun M N hMN =>
+    (Complex.le_def.mp (npFunctional_mono ω (hPmono hMN))).1
+  have hgbdd : BddAbove (Set.range g) := by
+    refine ⟨(ω (rangeProj b) : ℂ).re, ?_⟩
+    rintro _ ⟨N, rfl⟩
+    exact (Complex.le_def.mp (npFunctional_mono ω (ht.sum_right.1 ⟨N, rfl⟩))).1
+  have hgL : ∀ N : ℕ, g N ≤ ⨆ K, g K := fun N => le_ciSup hgbdd N
+  have hgtend : Tendsto g atTop (𝓝 (⨆ K, g K)) := tendsto_atTop_ciSup hgmono hgbdd
+  obtain ⟨N, hN⟩ : ∃ N : ℕ, (⨆ K, g K) - g N ≤ ε ^ 2 := by
+    have hpos : (0 : ℝ) < ε ^ 2 := by positivity
+    obtain ⟨N, hN⟩ := Metric.tendsto_atTop.mp hgtend (ε ^ 2) hpos
+    have h1 := hN N le_rfl
+    rw [Real.dist_eq] at h1
+    exact ⟨N, by linarith [(abs_lt.mp h1).1]⟩
+  refine ⟨N, fun a ha M hM => ?_⟩
+  have hconv : USTendsto (fun K : ℕ => ∑ n ∈ Finset.range K, a * t n) atTop (div a b) :=
+    (proto_douglas_1 a b ha t ht).2
+  have hzero : Tendsto
+      (fun K : ℕ => omegaNorm A ω (div a b - ∑ n ∈ Finset.range K, a * t n))
+      atTop (𝓝 0) := by
+    refine ((usTendsto_iff _ atTop (div a b)).mp hconv ω).congr fun K => ?_
+    rw [← omegaNorm_neg ω (∑ n ∈ Finset.range K, a * t n - div a b)]
+    congr 1
+    abel
+  have hbd : ∀ K : ℕ, M ≤ K →
+      omegaNorm A ω (div a b - ∑ n ∈ Finset.range M, a * t n)
+        ≤ omegaNorm A ω (div a b - ∑ n ∈ Finset.range K, a * t n)
+          + Real.sqrt ((⨆ K, g K) - g M) := by
+    intro K hK
+    have h1 : omegaNorm A ω (div a b - ∑ n ∈ Finset.range M, a * t n)
+        ≤ omegaNorm A ω (div a b - ∑ n ∈ Finset.range K, a * t n)
+          + omegaNorm A ω (∑ n ∈ Finset.range K, a * t n
+              - ∑ n ∈ Finset.range M, a * t n) := omegaNorm_sub_le ω _ _ _
+    have h2 : omegaNorm A ω (∑ n ∈ Finset.range K, a * t n
+        - ∑ n ∈ Finset.range M, a * t n) ≤ Real.sqrt (g K - g M) :=
+      apinv_block_est ha ht ω hK
+    have h3 : Real.sqrt (g K - g M) ≤ Real.sqrt ((⨆ K, g K) - g M) :=
+      Real.sqrt_le_sqrt (by linarith [hgL K])
+    linarith
+  have hfin : omegaNorm A ω (div a b - ∑ n ∈ Finset.range M, a * t n)
+      ≤ 0 + Real.sqrt ((⨆ K, g K) - g M) := by
+    refine ge_of_tendsto (hzero.add tendsto_const_nhds) ?_
+    filter_upwards [eventually_ge_atTop M] with K hK using hbd K hK
+  have hsq : Real.sqrt ((⨆ K, g K) - g M) ≤ ε := by
+    have hle : (⨆ K, g K) - g M ≤ ε ^ 2 := by linarith [hgmono hM]
+    calc Real.sqrt ((⨆ K, g K) - g M) ≤ Real.sqrt (ε ^ 2) := Real.sqrt_le_sqrt hle
+      _ = ε := by rw [Real.sqrt_sq hε.le]
+  linarith
 
 /-- **81V** (`douglas`, vn.tex:5461, Exercise), part 1 (Douglas' lemma):
 `a ∈ (A)_λ·b` iff `a*a ≤ λ²b*b`, and then `‖a/b‖ ≤ λ`. -/
@@ -1778,14 +2100,51 @@ Decomposition)): the partial isometry `[a] = a/√(a*a)` of the polar
 decomposition `a = [a]√(a*a)`. -/
 noncomputable def polar (a : A) : A := div a (CFC.sqrt (star a * a))
 
+/-- Auxiliary for **82I**: the elementary facts about `√(a*a)` used
+throughout the polar decomposition. -/
+theorem sqrt_star_self_spec (a : A) :
+    0 ≤ CFC.sqrt (star a * a) ∧ star (CFC.sqrt (star a * a)) = CFC.sqrt (star a * a) ∧
+      CFC.sqrt (star a * a) * CFC.sqrt (star a * a) = star a * a ∧
+      rangeProj (CFC.sqrt (star a * a)) = suppProj a ∧
+      ceil (CFC.sqrt (star a * a)) = suppProj a ∧
+      CFC.sqrt (star a * a) * suppProj a = CFC.sqrt (star a * a) := by
+  have hspos : (0 : A) ≤ CFC.sqrt (star a * a) := CFC.sqrt_nonneg _
+  have hssa : star (CFC.sqrt (star a * a)) = CFC.sqrt (star a * a) :=
+    (IsSelfAdjoint.of_nonneg hspos).star_eq
+  have hss : CFC.sqrt (star a * a) * CFC.sqrt (star a * a) = star a * a :=
+    CFC.sqrt_mul_sqrt_self _ (star_mul_self_nonneg a)
+  have hceil : ceil (CFC.sqrt (star a * a)) = suppProj a := by
+    have h := ceil_basic_5 (CFC.sqrt (star a * a)) hspos
+    rw [sq, hss] at h
+    rw [← h, suppProj]
+  refine ⟨hspos, hssa, hss, ?_, hceil, ?_⟩
+  · rw [rangeProj, hssa, hss, suppProj]
+  · rw [← hceil]; exact (ceil_spec hspos).2.1
+
 /-- **82I** (`polar-decomposition`, vn.tex:5579, Proposition (Polar
 Decomposition)), main claim: every `a` can be written *uniquely* as
 `a = u√(a*a)` with `u ∈ A⌈a⌋`; namely `u = [a]`. -/
 theorem polar_decomposition (a : A) :
     (∃! u : A, a = u * CFC.sqrt (star a * a) ∧ u * suppProj a = u) ∧
       a = polar a * CFC.sqrt (star a * a) ∧
-      polar a * suppProj a = polar a :=
-  sorry
+      polar a * suppProj a = polar a := by
+  obtain ⟨hspos, hssa, hss, hrs, -, -⟩ := sqrt_star_self_spec a
+  have hex : ∃ c : A, a = c * CFC.sqrt (star a * a) := by
+    obtain ⟨t, ht⟩ := approximate_pseudoinverse (CFC.sqrt (star a * a))
+    exact (proto_douglas_1 a _ (by rw [hssa, hss]) t ht).1
+  obtain ⟨h1, h2⟩ := div_spec a (CFC.sqrt (star a * a)) hex
+  refine ⟨?_, h1, ?_⟩
+  · simpa only [hrs] using exists_div a (CFC.sqrt (star a * a)) hex
+  · rw [polar, ← hrs]; exact h2
+
+/-- Auxiliary for **82I**: `⌊a⌉[a] = [a]`, i.e. `⌊[a]⌉ ≤ ⌊a⌉`
+(**81II**.1). -/
+theorem rangeProj_mul_polar (a : A) : rangeProj a * polar a = polar a := by
+  obtain ⟨hspos, hssa, hss, -, -, -⟩ := sqrt_star_self_spec a
+  have hex : ∃ c : A, a = c * CFC.sqrt (star a * a) := by
+    obtain ⟨t, ht⟩ := approximate_pseudoinverse (CFC.sqrt (star a * a))
+    exact (proto_douglas_1 a _ (by rw [hssa, hss]) t ht).1
+  exact (division_basic_1 (CFC.sqrt (star a * a)) a hex).1
 
 /-- **82I** (`polar-decomposition`, vn.tex:5579, Proposition), part 1:
 `[a]` is a partial isometry with `[a]*[a] = ⌈a*a⌉ = ⌈a⌋` and
@@ -1793,15 +2152,125 @@ theorem polar_decomposition (a : A) :
 theorem polar_decomposition_1 (a : A) :
     IsPartialIsometry A (polar a) ∧
       star (polar a) * polar a = suppProj a ∧
-      polar a * star (polar a) = rangeProj a :=
-  sorry
+      polar a * star (polar a) = rangeProj a := by
+  obtain ⟨hspos, hssa, hss, hrs, hceil, hse⟩ := sqrt_star_self_spec a
+  obtain ⟨-, hus, hue⟩ := polar_decomposition a
+  set u : A := polar a with hudef
+  set s : A := CFC.sqrt (star a * a) with hsdef
+  set e : A := suppProj a with hedef
+  have heproj : IsStarProjection e := (ceill_basic_1 a).1.1
+  have hesa : star e = e := heproj.isSelfAdjoint.star_eq
+  have heu : e * star u = star u := by
+    have := congrArg star hue
+    rwa [star_mul, hesa] at this
+  -- `u*u = e` by cancelling `s` on both sides
+  have hstaru : star u * u = e := by
+    refine mult_cancellation_3 s (star u * u) e ?_ ?_ ?_
+    · rw [hrs]
+      calc e * (star u * u) * e = (e * star u) * (u * e) := by noncomm_ring
+        _ = star u * u := by rw [heu, hue]
+    · rw [hrs, heproj.isIdempotentElem.eq, heproj.isIdempotentElem.eq]
+    · have hl : star s * (star u * u) * s = star a * a := by
+        rw [hssa]
+        calc s * (star u * u) * s = star (u * s) * (u * s) := by
+              rw [star_mul, hssa]; noncomm_ring
+          _ = star a * a := by rw [← hus]
+      have hr : star s * e * s = star a * a := by
+        rw [hssa]
+        calc s * e * s = (s * e) * s := rfl
+          _ = s * s := by rw [hse]
+          _ = star a * a := hss
+      rw [hl, hr]
+  have hpi : IsPartialIsometry A u :=
+    ((partial_isometry_equivalents u).out 1 0).mp (by rw [hstaru]; exact heproj)
+  refine ⟨hpi, hstaru, ?_⟩
+  -- `uu* = ⌊u⌉ ≤ ⌊a⌉`
+  have huustar : u * star u = rangeProj u := hpi.2.2.2
+  have hra : rangeProj a * u = u := rangeProj_mul_polar a
+  have hle1 : rangeProj u ≤ rangeProj a :=
+    (ceill_basic_2 u).2 ⟨(ceill_basic_2 a).1.1, hra⟩
+  rcases eq_or_ne a 0 with rfl | hane
+  · -- `a = 0` forces `u = 0`
+    have h0 : e = 0 := by
+      rw [hedef, suppProj, star_zero, zero_mul, ceil_zero]
+    have hu0 : u = 0 := by rw [← hue, h0, mul_zero]
+    rw [hu0, star_zero, mul_zero, rangeProj, star_zero, zero_mul, ceil_zero]
+  · -- `⌊a⌉ = ⌈aa*⌉ = ⌈u(a*a)u*⌉ ≤ ⌈‖a*a‖ uu*⌉ = ⌈uu*⌉ ≤ uu*`
+    refine le_antisymm (by rw [huustar]; exact hle1) ?_
+    have hnn : (0 : A) ≤ a * star a := by simp
+    have haa : a * star a = u * (star a * a) * star u := by
+      calc a * star a = (u * s) * star (u * s) := by rw [← hus]
+        _ = u * (s * s) * star u := by rw [star_mul, hssa]; noncomm_ring
+        _ = u * (star a * a) * star u := by rw [hss]
+    have hbound : u * (star a * a) * star u
+        ≤ (‖star a * a‖ : ℝ) • (u * star u) := by
+      have h := star_right_conjugate_le_conjugate
+        (le_norm_smul_one (star_mul_self_nonneg a)) u
+      calc u * (star a * a) * star u
+          ≤ u * ((‖star a * a‖ : ℝ) • (1 : A)) * star u := h
+        _ = (‖star a * a‖ : ℝ) • (u * star u) := by
+            rw [mul_smul_comm, smul_mul_assoc, mul_one]
+    have hnorm : 0 < ‖star a * a‖ := by
+      rw [norm_pos_iff]
+      exact fun h => hane ((CStarRing.star_mul_self_eq_zero_iff a).mp h)
+    calc rangeProj a = ceil (a * star a) := rfl
+      _ = ceil (u * (star a * a) * star u) := by rw [haa]
+      _ ≤ ceil ((‖star a * a‖ : ℝ) • (u * star u)) := ceil_mono (haa ▸ hnn) hbound
+      _ = ceil (u * star u) := ceil_smul (by rw [huustar]; exact (ceill_basic_2 u).1.1.nonneg) hnorm
+      _ = u * star u := by
+          rw [huustar]; exact ceil_of_isStarProjection (ceill_basic_2 u).1.1
 
 /-- **82I** (`polar-decomposition`, vn.tex:5579, Proposition), part 2:
 `[a*] = [a]*`, so that `√(aa*)[a] = a = [a]√(a*a)`. -/
 theorem polar_decomposition_2 (a : A) :
     polar (star a) = star (polar a) ∧
-      CFC.sqrt (a * star a) * polar a = a :=
-  sorry
+      CFC.sqrt (a * star a) * polar a = a := by
+  obtain ⟨hspos, hssa, hss, hrs, hceil, hse⟩ := sqrt_star_self_spec a
+  obtain ⟨-, hus, hue⟩ := polar_decomposition a
+  obtain ⟨hpi, hstaru, huu⟩ := polar_decomposition_1 a
+  set u : A := polar a with hudef
+  set s : A := CFC.sqrt (star a * a) with hsdef
+  set e : A := suppProj a with hedef
+  have heproj : IsStarProjection e := (ceill_basic_1 a).1.1
+  have hesa : star e = e := heproj.isSelfAdjoint.star_eq
+  have hes : e * s = s := by
+    have := congrArg star hse
+    rwa [star_mul, hssa, hesa] at this
+  -- `√(aa*) = u √(a*a) u*`
+  have hxpos : (0 : A) ≤ u * s * star u := by
+    have := star_right_conjugate_nonneg hspos u
+    simpa [mul_assoc] using this
+  have hxx : (u * s * star u) * (u * s * star u) = a * star a := by
+    calc (u * s * star u) * (u * s * star u)
+        = u * s * (star u * u) * s * star u := by noncomm_ring
+      _ = u * (s * e) * s * star u := by rw [hstaru]; noncomm_ring
+      _ = u * (s * s) * star u := by rw [hse]; noncomm_ring
+      _ = (u * s) * star (u * s) := by rw [star_mul, hssa]; noncomm_ring
+      _ = a * star a := by rw [← hus]
+  have hsqrt : CFC.sqrt (a * star a) = u * s * star u := by
+    rw [← hxx, CFC.sqrt_mul_self _ hxpos]
+  have hmain : CFC.sqrt (a * star a) * u = a := by
+    rw [hsqrt]
+    calc u * s * star u * u = u * s * (star u * u) := by noncomm_ring
+      _ = u * (s * e) := by rw [hstaru]; noncomm_ring
+      _ = u * s := by rw [hse]
+      _ = a := hus.symm
+  refine ⟨?_, hmain⟩
+  -- `[a*] = [a]*`
+  have hstara : star (star a) * star a = a * star a := by rw [star_star]
+  have hrx : rangeProj (CFC.sqrt (star (star a) * star a)) = suppProj (star a) := by
+    exact (sqrt_star_self_spec (star a)).2.2.2.1
+  refine div_eq ?_ ?_
+  · -- `a* = u* √(aa*)`
+    rw [hstara, hsqrt]
+    calc star a = star (u * s) := by rw [← hus]
+      _ = s * star u := by rw [star_mul, hssa]
+      _ = (e * s) * star u := by rw [hes]
+      _ = star u * (u * s * star u) := by rw [← hstaru]; noncomm_ring
+  · rw [hrx, suppProj_star]
+    have hra : rangeProj a * u = u := rangeProj_mul_polar a
+    have := congrArg star hra
+    rwa [star_mul, (ceill_basic_2 a).1.1.isSelfAdjoint.star_eq] at this
 
 /-! ## Parsec 830: the Murray–von Neumann preorder
 
@@ -1822,16 +2291,88 @@ theorem vmleq (e' e : A) (he' : IsStarProjection e')
     List.TFAE
       [∃ a : A, e' = ceil (star a * e * a),
        ∃ a : A, e' = suppProj a ∧ rangeProj a ≤ e,
-       MvNLE A e' e] :=
-  sorry
+       MvNLE A e' e] := by
+  -- `he'` is redundant: each of the three conditions already forces `e'` to
+  -- be a projection (see PROVING-LOG).
+  have _ := he'
+  have hemul : ∀ x : A, rangeProj x ≤ e → e * x = x := by
+    intro x hx
+    have h1 : e * rangeProj x = rangeProj x :=
+      ((projection_below_effect e (rangeProj x) ⟨he.nonneg, he.le_one⟩
+        (ceill_basic_2 x).1.1).out 0 6).mp hx
+    calc e * x = e * (rangeProj x * x) := by rw [(ceill_basic_2 x).1.2]
+      _ = (e * rangeProj x) * x := by noncomm_ring
+      _ = x := by rw [h1, (ceill_basic_2 x).1.2]
+  tfae_have 3 → 2 := by
+    rintro ⟨u, hpi, h1, h2⟩
+    refine ⟨u, ?_, ?_⟩
+    · rw [← h1]; exact hpi.1
+    · rw [← hpi.2.2.2]; exact h2
+  tfae_have 2 → 1 := by
+    rintro ⟨x, hx1, hx2⟩
+    refine ⟨x, ?_⟩
+    rw [mul_assoc, hemul x hx2, hx1, suppProj]
+  tfae_have 1 → 3 := by
+    rintro ⟨x, hx⟩
+    obtain ⟨hpi, hstar, hrange⟩ := polar_decomposition_1 (e * x)
+    refine ⟨polar (e * x), hpi, ?_, ?_⟩
+    · rw [hstar, suppProj, hx]
+      congr 1
+      calc star (e * x) * (e * x) = star x * (star e * e) * x := by
+            rw [star_mul]; noncomm_ring
+        _ = star x * e * x := by
+            rw [he.isSelfAdjoint.star_eq, he.isIdempotentElem.eq]
+    · rw [hrange]
+      calc rangeProj (e * x) ≤ rangeProj e := (ceill_basic_4 e x).2
+        _ = e := rangeProj_of_isStarProjection he
+  tfae_finish
 
 /-- **83IV** (`mvn-preorders`, vn.tex:5702, Exercise): `⊴` preorders the
 projections of a von Neumann algebra. -/
 theorem mvn_preorders :
     (∀ p : A, IsStarProjection p → MvNLE A p p) ∧
       ∀ p q r : A, IsStarProjection p → IsStarProjection q →
-        IsStarProjection r → MvNLE A p q → MvNLE A q r → MvNLE A p r :=
-  sorry
+        IsStarProjection r → MvNLE A p q → MvNLE A q r → MvNLE A p r := by
+  constructor
+  · intro p hp
+    refine ⟨p, ?_, ?_, ?_⟩
+    · exact ((partial_isometry_equivalents p).out 1 0).mp
+        (by rw [hp.isSelfAdjoint.star_eq, hp.isIdempotentElem.eq]; exact hp)
+    · rw [hp.isSelfAdjoint.star_eq, hp.isIdempotentElem.eq]
+    · rw [hp.isSelfAdjoint.star_eq, hp.isIdempotentElem.eq]
+  · rintro p q r hp hq hr ⟨u, hu, hu1, hu2⟩ ⟨v, hv, hv1, hv2⟩
+    -- `uu* ≤ q` gives `qu = u`
+    have huu : IsStarProjection (u * star u) :=
+      ((partial_isometry_equivalents u).out 0 3).mp hu
+    have hqu : q * u = u := by
+      have h1 : q * (u * star u) = u * star u :=
+        ((projection_below_effect q (u * star u) ⟨hq.nonneg, hq.le_one⟩
+          huu).out 0 6).mp hu2
+      have h2 : u * star u * u = u := ((partial_isometry_equivalents u).out 0 2).mp hu
+      calc q * u = q * (u * star u * u) := by rw [h2]
+        _ = (q * (u * star u)) * u := by noncomm_ring
+        _ = u := by rw [h1, h2]
+    have hkey : star (v * u) * (v * u) = p := by
+      calc star (v * u) * (v * u) = star u * (star v * v) * u := by
+            rw [star_mul]; noncomm_ring
+        _ = star u * (q * u) := by rw [hv1]; noncomm_ring
+        _ = star u * u := by rw [hqu]
+        _ = p := hu1
+    refine ⟨v * u, ?_, hkey, ?_⟩
+    · exact ((partial_isometry_equivalents (v * u)).out 1 0).mp
+        (by rw [hkey]; exact hp)
+    · have h3 : v * (u * star u) * star v ≤ v * q * star v :=
+        star_right_conjugate_le_conjugate hu2 v
+      have h4 : v * q * star v = v * star v := by
+        rw [← hv1]
+        have h5 : v * star v * v = v := ((partial_isometry_equivalents v).out 0 2).mp hv
+        calc v * (star v * v) * star v = (v * star v * v) * star v := by noncomm_ring
+          _ = v * star v := by rw [h5]
+      calc (v * u) * star (v * u) = v * (u * star u) * star v := by
+            rw [star_mul]; noncomm_ring
+        _ ≤ v * q * star v := h3
+        _ = v * star v := h4
+        _ ≤ r := hv2
 
 /-- **83V** (`cceil-sum`, vn.tex:5706, Lemma): for a projection `e` there
 is a family `(eᵢ)` of non-zero pairwise orthogonal projections with
@@ -1840,8 +2381,159 @@ theorem cceil_sum (e : A) (he : IsStarProjection e) :
     ∃ (ι : Type u) (e' : ι → A),
       (∀ i, IsStarProjection (e' i) ∧ e' i ≠ 0 ∧ MvNLE A (e' i) e) ∧
       (Pairwise fun i j => e' i * e' j = 0) ∧
-      cceil e = projSup (Set.range e') :=
-  sorry
+      cceil e = projSup (Set.range e') := by
+  classical
+  -- a maximal family of non-zero pairwise orthogonal projections below `e`
+  set T : Set (Set A) :=
+    {S | (∀ x ∈ S, IsStarProjection x ∧ x ≠ 0 ∧ MvNLE A x e) ∧
+      ∀ x ∈ S, ∀ y ∈ S, x ≠ y → x * y = 0} with hT
+  obtain ⟨S, hSmax⟩ : ∃ S, Maximal (· ∈ T) S := by
+    refine zorn_subset T fun c hc hchain =>
+      ⟨⋃₀ c, ⟨?_, ?_⟩, fun s hs => Set.subset_sUnion_of_mem hs⟩
+    · rintro x ⟨s, hs, hxs⟩
+      exact (hc hs).1 x hxs
+    · rintro x ⟨s, hs, hxs⟩ y ⟨s', hs', hys'⟩ hxy
+      rcases hchain.total hs hs' with hsub | hsub
+      · exact (hc hs').2 x (hsub hxs) y hys' hxy
+      · exact (hc hs).2 x hxs y (hsub hys') hxy
+  have hSproj : ∀ x ∈ S, IsStarProjection x := fun x hx => (hSmax.1.1 x hx).1
+  refine ⟨↥S, Subtype.val, fun i => hSmax.1.1 i.1 i.2,
+    fun i j hij => hSmax.1.2 i.1 i.2 j.1 j.2 fun h => hij (Subtype.ext h), ?_⟩
+  rw [Subtype.range_coe]
+  obtain ⟨hqproj, hqub, hqleast⟩ := projSup_spec hSproj
+  have hcproj : IsStarProjection (cceil e) := (cceil_isLeast e).1.1
+  have hnn : ∀ a : A, (0 : A) ≤ star a * e * a := fun a =>
+    star_left_conjugate_nonneg he.nonneg a
+  have hceilproj : ∀ a : A, IsStarProjection (ceil (star a * e * a)) := fun a =>
+    (ceil_spec (hnn a)).1
+  have hsetproj : ∀ z ∈ {x : A | ∃ a : A, x = ceil (star a * e * a)},
+      IsStarProjection z := by
+    rintro _ ⟨a, rfl⟩; exact hceilproj a
+  -- `x ⊴ e` implies `x ≤ ⌈⌈e⌉⌉`
+  have hmvle : ∀ x : A, IsStarProjection x → MvNLE A x e → x ≤ cceil e := by
+    rintro x hx ⟨u, hu, hu1, hu2⟩
+    have hflip : star u * u * star u = star u :=
+      ((partial_isometry_equivalents u).out 0 4).mp hu
+    have hstep : x ≤ star u * e * u := by
+      rw [← hu1]
+      calc star u * u = (star u * u * star u) * u := by rw [hflip]
+        _ = star u * (u * star u) * u := by noncomm_ring
+        _ ≤ star u * e * u := star_left_conjugate_le_conjugate hu2 u
+    calc x = ceil x := (ceil_of_isStarProjection hx).symm
+      _ ≤ ceil (star u * e * u) := ceil_mono hx.nonneg hstep
+      _ ≤ cceil e := by
+          rw [(cceil_fundamental e he).2]
+          exact (projSup_spec hsetproj).2.1 _ ⟨u, rfl⟩
+  have hqle : projSup S ≤ cceil e :=
+    hqleast _ hcproj fun x hx => hmvle x (hSproj x hx) (hSmax.1.1 x hx).2.2
+  refine le_antisymm ?_ hqle
+  by_contra hlt
+  set p : A := cceil e - projSup S with hpdef
+  have hpproj : IsStarProjection p :=
+    projection_below_projection _ _ hqproj hcproj hqle
+  have hpne : p ≠ 0 := by
+    intro h
+    rw [hpdef, sub_eq_zero] at h
+    exact hlt h.le
+  have hple : p ≤ cceil e := by
+    rw [hpdef, sub_le_self_iff]
+    exact hqproj.nonneg
+  -- some `e a p` is non-zero
+  have hex : ∃ a : A, e * a * p ≠ 0 := by
+    by_contra hcon
+    have hall : ∀ a : A, e * a * p = 0 := fun a => by
+      by_contra h; exact hcon ⟨a, h⟩
+    have hkey : ∀ a : A, ceil (star a * e * a) * p = 0 := by
+      intro a
+      have hconj : star (e * a * p) * (e * a * p) = p * (star a * e * a) * p := by
+        calc star (e * a * p) * (e * a * p)
+            = p * (star a * (e * e) * a) * p := by
+              rw [star_mul, star_mul, he.isSelfAdjoint.star_eq,
+                hpproj.isSelfAdjoint.star_eq]
+              noncomm_ring
+          _ = p * (star a * e * a) * p := by rw [he.isIdempotentElem.eq]
+      have h0 : p * (star a * e * a) * p = 0 := by
+        rw [← hconj, hall a, star_zero, zero_mul]
+      have hsqrtsa : star (CFC.sqrt (star a * e * a)) = CFC.sqrt (star a * e * a) :=
+        (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg _)).star_eq
+      have hs : CFC.sqrt (star a * e * a) * p = 0 := by
+        refine (CStarRing.star_mul_self_eq_zero_iff _).mp ?_
+        rw [star_mul, hsqrtsa, hpproj.isSelfAdjoint.star_eq]
+        calc p * CFC.sqrt (star a * e * a) *
+              (CFC.sqrt (star a * e * a) * p)
+            = p * (CFC.sqrt (star a * e * a) * CFC.sqrt (star a * e * a)) * p := by
+              noncomm_ring
+          _ = p * (star a * e * a) * p := by
+              rw [CFC.sqrt_mul_sqrt_self _ (hnn a)]
+          _ = 0 := h0
+      exact ceil_mul_eq_zero (hnn a) ((sqrt_mul_eq_zero_iff (hnn a) p).mp hs)
+    have hle1 : cceil e ≤ 1 - p := by
+      rw [(cceil_fundamental e he).2]
+      refine (projSup_spec hsetproj).2.2 (1 - p) hpproj.one_sub ?_
+      rintro _ ⟨a, rfl⟩
+      exact ((orthogonal_tuple_of_projections_1 (ceil (star a * e * a)) p
+        (hceilproj a) hpproj).out 0 4).mp (hkey a)
+    have hpp : p * p = 0 :=
+      ((orthogonal_tuple_of_projections_1 p p hpproj hpproj).out 4 0).mp
+        (hple.trans hle1)
+    exact hpne (by rw [← hpproj.isIdempotentElem.eq, hpp])
+  obtain ⟨a, hax⟩ := hex
+  obtain ⟨hpi, hstar, hrange⟩ := polar_decomposition_1 (e * a * p)
+  set f : A := star (polar (e * a * p)) * polar (e * a * p) with hfdef
+  have hfsupp : f = suppProj (e * a * p) := hstar
+  have hfproj : IsStarProjection f := by rw [hfsupp]; exact (ceill_basic_1 _).1.1
+  have hfne : f ≠ 0 := by
+    rw [hfsupp]
+    intro h
+    exact hax (by rw [← (ceill_basic_1 (e * a * p)).1.2, h, mul_zero])
+  have hfmvn : MvNLE A f e := by
+    refine ⟨polar (e * a * p), hpi, rfl, ?_⟩
+    rw [hrange]
+    calc rangeProj (e * a * p) = rangeProj (e * (a * p)) := by rw [mul_assoc]
+      _ ≤ rangeProj e := (ceill_basic_4 e (a * p)).2
+      _ = e := rangeProj_of_isStarProjection he
+  have hfp : f ≤ p := by
+    rw [hfsupp]
+    calc suppProj (e * a * p) ≤ suppProj p := (ceill_basic_4 (e * a) p).1
+      _ = p := suppProj_of_isStarProjection hpproj
+  have hfpmul : f * p = f :=
+    ((projection_below_effect p f ⟨hpproj.nonneg, hpproj.le_one⟩ hfproj).out 0 7).mp hfp
+  have hcq : cceil e * projSup S = projSup S :=
+    ((projection_below_effect (cceil e) (projSup S)
+      ⟨hcproj.nonneg, hcproj.le_one⟩ hqproj).out 0 6).mp hqle
+  have hpq : p * projSup S = 0 := by
+    rw [hpdef, sub_mul, hcq, hqproj.isIdempotentElem.eq, sub_self]
+  have hforth : ∀ y ∈ S, f * y = 0 := by
+    intro y hy
+    have hyq : projSup S * y = y :=
+      ((projection_below_effect (projSup S) y ⟨hqproj.nonneg, hqproj.le_one⟩
+        (hSproj y hy)).out 0 6).mp (hqub y hy)
+    calc f * y = (f * p) * (projSup S * y) := by rw [hfpmul, hyq]
+      _ = f * (p * projSup S) * y := by noncomm_ring
+      _ = 0 := by rw [hpq, mul_zero, zero_mul]
+  -- `insert f S` contradicts maximality
+  have hins : insert f S ∈ T := by
+    constructor
+    · rintro x (rfl | hx)
+      · exact ⟨hfproj, hfne, hfmvn⟩
+      · exact hSmax.1.1 x hx
+    · rintro x (rfl | hx) y (rfl | hy) hxy
+      · exact absurd rfl hxy
+      · exact hforth y hy
+      · have h := hforth x hx
+        have := congrArg star h
+        rwa [star_mul, hfproj.isSelfAdjoint.star_eq,
+          (hSproj x hx).isSelfAdjoint.star_eq, star_zero] at this
+      · exact hSmax.1.2 x hx y hy hxy
+  have hfS : f ∈ S := hSmax.2 hins (Set.subset_insert _ _) (Set.mem_insert _ _)
+  have hfq : f * projSup S = f :=
+    ((projection_below_effect (projSup S) f ⟨hqproj.nonneg, hqproj.le_one⟩
+      hfproj).out 0 7).mp (hqub f hfS)
+  exact hfne (by
+    calc f = f * projSup S := hfq.symm
+      _ = (f * p) * projSup S := by rw [hfpmul]
+      _ = f * (p * projSup S) := by noncomm_ring
+      _ = 0 := by rw [hpq, mul_zero])
 
 end Pseudoinverse
 

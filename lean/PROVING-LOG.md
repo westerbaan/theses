@@ -8383,7 +8383,7 @@ successfully`.  `#print axioms Theses.B.Dils.paschke_unique_up_to_iso` and
 `#print axioms Theses.B.Dils.hilbmod_vectstates_cp`: both exactly
 `[propext, Classical.choice, Quot.sound]`.
 
-## Session 44 — `A/VN` parsecs 810–830: 81III `proto-douglas`, **82I the polar decomposition**, 83II `vmleq`, 83IV, **83V `cceil-sum`** (worker 69, A chain)
+## Session 44 — `A/VN` parsecs 810–830: 81III `proto-douglas`, **82I the polar decomposition**, 83II `vmleq`, 83IV, **83V `cceil-sum`** (worker 68, A chain)
 
 Target given: **81III** `proto_douglas_1`, then "work up 81V–81IX, 82I, 83II,
 83IV, 83V".  81III went through as the brief predicted, and it turned out to
@@ -8521,10 +8521,22 @@ the highest-value next step in this file.
 
 `lake env lean Theses/A/VN/Division.lean`: no errors, and the only warnings are
 the two pre-existing `dif_pos` deprecations at lines 70 and 1521 (the `pinv`
-and `div` definitions), which predate this session.  Whole-project `lake
-build`: exit 0.  `#print axioms` on all thirteen new declarations: exactly
-`[propext, Classical.choice, Quot.sound]`.  Sorry counts from the build log's
-`declaration uses \`sorry\`` lines (never a grep).  Files touched:
+and `div` definitions), which predate this session.  `#print axioms` on all
+thirteen new declarations: exactly `[propext, Classical.choice, Quot.sound]`.
+
+Downstream, `lake build Theses.A.Proc.Duplicators Theses.B.Dils.Pure` (the two
+tips of the import graph below `A/VN`) reports `Build completed successfully`,
+so `Theses.A.Proc.*` and `Theses.B.Dils.*` build as cleanly as they were found.
+A *whole-project* `lake build` was started and deliberately killed: two other
+workers were building `B/Dils` and `B/Eff` at the same time on the 14 GB box
+and free memory was down to 1 GB — the two tips above cover everything
+downstream of this session's changes, and were run one module at a time
+(`LEAN_NUM_THREADS=1`) for the same reason.
+
+Sorry counts from that build's `declaration uses \`sorry\`` lines (never a
+grep): **A/CStar 28 → 28** (Matrices 4, Positive 13, Representation 11);
+**A/VN 82 → 74** (Basic 25, Completeness 2, **Division 21 → 13**,
+NormalFunctionals 14, Projections 20).  Files touched:
 `Theses/A/VN/Division.lean`, `ERRATA.md` and this log.  Nothing staged,
 nothing committed.
 
