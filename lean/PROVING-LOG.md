@@ -9327,3 +9327,146 @@ erratum.
 regenerated with `lean -o …` (which does not take the workspace lock, unlike
 `lake build`) and `Theses/B/Dils/Paschke.lean`, the one file importing it,
 re-checks clean — so none of the ~15 new names collides downstream.
+
+## Session 47 — `A/VN`: two of 89IX's three blockers closed (**69IVb**, **88IX**), and the claimed circularity is not real (worker 72, A chain)
+
+Target given: **89IX** `normal_functional`, "blocked on 88IV, 88IX and
+69IVb", with a warning that 69IVb might be circular (leastness in 89V wants
+`Z(π(𝒜)□) ⊆ π(𝒜)`, and the obvious bridge "wants an injectivity that 89V
+does not have and whose proof uses 89V itself").
+
+Closed (both `#print axioms` = `[propext, Classical.choice, Quot.sound]`):
+
+| point | declaration | file | class |
+|---|---|---|---|
+| **69IVb** | `nmiu_image` | `Projections.lean` | 3 — the thesis's route, but through a different factorisation (§2) |
+| **88IX** | `commutant_cceil` | `NormalFunctionals.lean` | 1 — the thesis's own deduction from 88VIII, plus the existence half it leaves implicit (§3) |
+
+`A/VN` sorries **68 → 66** (Basic 25, Completeness 2, Division 7,
+NormalFunctionals 13, Projections 19).  Also lifted the `CU`/`ncpOfNonneg`
+probe object from `B/Dils/Pure.lean` into `A/VN/NormalFunctionals.lean` (§4).
+
+### 1. The dependency graph for 89IX, corrected again
+
+The brief (and the survey in `docs/AProc-survey.md`) says 89IX is blocked on
+88IV, 88IX and 69IVb.  Those are the *leaves*; the chain in between is also
+`sorry` and is where the work is:
+
+    89IX  ←  89VII (sigma-weak-lemma)  ←  89V (sigma-weak-lemma-2)
+                                         ←  88IV, 88IX, 69IVb
+    89IX  ←  83V (cceil-sum)   [proved, session 44]
+
+So closing the three leaves leaves **three theorems still to prove** —
+89V, 89VII, 89IX itself — of which 89V is the substantial one (it assembles
+the `U_ω` of 89I with `summing-partial-isometries` 89III, both proved) and
+89VII additionally needs a Zorn-style maximal orthogonal family.  **88IV is
+the one leaf still open**, and it is the analytic one: it needs `projSup` of
+a family of rank-one projections in `B(H)` to be identified with the
+orthogonal projection onto the closed span, which the tree does not have in
+any form.  Nothing else in parsec 890 needs new Hilbert-space geometry.
+
+### 2. 69IVb — there is no circularity, and 48VI.1 was already in the tree
+
+The reported obstruction was that `π(𝒜)` is the image of a *non-injective*
+nmiu-map, so `injective-nmiu-iso-on-image` (**48VI**.1) does not apply.  That
+is right, and it is exactly what the thesis's own proof of 69IVb handles: by
+**69IVa** `nmiu_factors` (proved) `f` factors through the corner `⌈f⌉𝒜`, on
+which it *is* injective.  `injective_nmiu_iso_on_image_1` is **proved** in
+`Basic.lean`, so nothing in the argument reaches forward to 89V.  **The
+circularity is an artefact of reading the non-injective case as if the only
+available tool were 48VI applied to `f` itself.**
+
+The Lean proof does not build the corner as a type (that would need a
+`CStarAlgebra ⌈f⌉𝒜` instance the tree lacks); it works with the elements
+`c·a`, `c = ⌈f⌉`, and needs exactly two facts about `f` restricted to the
+corner:
+
+* **isometry** — obtained *without* any subtype gymnastics by the trick of
+  testing against the pair: `φ : 𝒜 → ℬ × 𝒜`, `a ↦ (f a, c^⊥a)`, is an
+  injective non-unital ∗-homomorphism (injectivity is `ker f = c^⊥𝒜`, i.e.
+  **69IV** `carrier_miu`), hence isometric by Mathlib's
+  `NonUnitalStarAlgHom.norm_map`; the product norm is the sup, so on the
+  corner (`c^⊥a = 0`) this reads `‖f a‖ = ‖a‖`.  Closedness of the range is
+  then the usual Cauchy-sequence argument.
+* **order reflection** — `f x ≤ f y` with `c(y−x) = y−x` gives `x ≤ y`.  The
+  argument of `starAlgHom_le_iff` transposes, with one pleasant surprise:
+  where the injective case concludes `(y−x)⁻ = 0`, here one gets only
+  `c·(y−x)⁻³ = 0`, hence `c·(y−x)⁻ = 0` (the element is self-adjoint, and
+  `c` commutes with it) — and that is *enough*, because
+  `y−x = c(y−x) = c(y−x)⁺` is then a conjugate `c*(y−x)⁺c ≥ 0`.  **No CFC
+  functional calculus inside the corner is needed**, which is what one would
+  otherwise have to build.
+
+One helper worth knowing about: `starAlgHomP`, `starAlgHom_mono` and
+`starAlgHom_nonneg` in `Basic.lean` are stated for two algebras **in one
+universe** (`{A C : Type u}`), so they cannot be used on the `{A B : Type*}`
+of `Projections.lean`.  A universe-polymorphic `nmiuP`/`nmiu_nonneg` pair is
+now in `Projections.lean` (private) for that reason.
+
+### 3. 88IX — the two `IsLeast`s are over *literally the same set*
+
+The thesis says only "deduce from `centre-commutant`", and the Lean statement
+asks for one `c` that is least in both `{p ∈ Z(R) : f(p^⊥) = 0}` and
+`{p ∈ Z(R□) : f(p^⊥) = 0}`.  Unfolding, the two conditions are
+`p ∈ R ∩ R□` and `p ∈ R□ ∩ R□□`, and **88VIII** `centre_commutant` (proved)
+says those sets are equal — so the second half is a rewrite, and the content
+is the *existence* of the least element, which the thesis leaves implicit
+because it reads it off from the relative central carrier of a von Neumann
+subalgebra.  `cceilMap` does not supply that (it is stated for an algebra as
+a type), so it is proved here from scratch, following `exists_carrier`:
+
+* `E := {p ∈ Z(R) : p a projection, f p = 0}` is **directed** — for `p, q ∈ E`
+  the join is `p + q − pq = 1 − (1−p)(1−q)`, a projection because `p` and `q`
+  commute (`q ∈ R`, `p ∈ R□`), still in `Z(R)`, and killed by `f` because
+  `p + q − pq ≤ p + q`.  Writing the join this way avoids the `⌈½p+½q⌉`
+  description of `p ∪ q` and with it any appeal to `ceil_mem`.
+* `e := ⋃E` is then an honest supremum (`isLUB_projSup_of_directed`), so it
+  lies in `R` and in `R□` because both are von Neumann subalgebras
+  (`commutant_basic_3'` supplies the second), and `f e = 0` by **60IX**.2
+  (`ncp_union_2`), exactly as in `ncp_union_3`.
+* `1 − e` is the required least element.
+
+### 4. The `CU` probe object, lifted into `A/VN`
+
+`B/Dils/Pure.lean` (session 45) built `CU = ULift ℂ` with the ∗-structure and
+order Mathlib lacks, plus `ncpOfNonneg : 0 ≤ a → NCPMap CU A`.  `A/Proc`
+needs the same gadget for 98II.2's injectivity clause but is a *sibling* of
+`B/Dils` over `A/VN`, so the block is now copied verbatim (only the
+docstring changed) at the end of `A/VN/NormalFunctionals.lean`, which
+`A/Proc/Measurement.lean` imports.  The copy in `B/Dils/Pure.lean` was left
+in place as instructed; **it should be deleted by whoever next touches that
+file**.  Two notes for that worker:
+
+* the duplicate is harmless as it stands — a declaration in the *current*
+  namespace takes precedence over one reached through `open`, so
+  `Theses.B.Dils.CU` still wins inside `B/Dils` (checked), and the two
+  instance sets on `ULift ℂ` are the same definitions;
+* the A/VN copy is in namespace `Theses.A.VN`, so from `A/Proc` (which opens
+  it) the names are just `CU` and `ncpOfNonneg`.
+
+### 5. Corrections to the brief
+
+1. **"89IX is blocked on three sorries"** — it is blocked on *six*: those
+   three plus 89V, 89VII and 89IX's own assembly (§1).
+2. **The 69IVb circularity is not real** (§2); the ingredient the brief
+   thought was missing, `injective_nmiu_iso_on_image_1`, has been proved
+   since session 3.
+3. **`docs/AProc-survey.md` is already stale on its second headline blocker**:
+   it says 96V waits on 81VI, 81VII and 81IX, but session 46 (same day,
+   same worker) proved **81VI** and **81VII** and the true half of **81IX**.
+   What 96V still needs from parsec 810 should be re-derived from
+   `div_usc_ball` — the false second conjunct of 81IX may or may not be on
+   the path.
+4. Nothing false was found this session; no ERRATA or QUESTIONS rows added.
+
+### 6. Verification
+
+`lean Theses/A/VN/Projections.lean` and `lean Theses/A/VN/NormalFunctionals.lean`
+(invoked directly with `LEAN_PATH`, per the process note): no errors, only
+pre-existing warnings.  `#print axioms` was run by appending the commands to
+the modules themselves and recompiling: `nmiu_image`, `commutant_cceil` and
+`ncpOfNonneg` are all exactly `[propext, Classical.choice, Quot.sound]`.
+Files touched: `Theses/A/VN/{Projections,NormalFunctionals}.lean` and this
+log.  Oleans were **not** rebuilt (`lake build` was avoided to keep the other
+two workers' checkout locks free), so the next worker in this chain should
+rebuild `Theses.A.VN.Projections` before relying on `nmiu_image`.

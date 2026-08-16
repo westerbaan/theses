@@ -1093,6 +1093,19 @@ theorem centre_commutant (R : StarSubalgebra ℂ (H →L[ℂ] H))
   rw [wstar_eq_of_isVNSubalgebra R hR] at h
   rw [h, Set.inter_comm]
 
+/-- Auxiliary: the product of two *commuting* projections is a projection. -/
+private theorem isStarProjection_mul_of_comm {M : Type*} [CStarAlgebra M]
+    {p q : M} (hp : IsStarProjection p) (hq : IsStarProjection q)
+    (h : p * q = q * p) : IsStarProjection (p * q) := by
+  constructor
+  · show p * q * (p * q) = p * q
+    calc p * q * (p * q) = p * (q * p) * q := by noncomm_ring
+      _ = p * (p * q) * q := by rw [h]
+      _ = (p * p) * (q * q) := by noncomm_ring
+      _ = p * q := by rw [hp.isIdempotentElem.eq, hq.isIdempotentElem.eq]
+  · show star (p * q) = p * q
+    rw [star_mul, hp.isSelfAdjoint.star_eq, hq.isSelfAdjoint.star_eq, ← h]
+
 /-- **88IX** (`commutant-cceil`, vn.tex:6831): for an np-map
 `f : B(H) → B` and a von Neumann subalgebra `R` of `B(H)`, the central
 carrier of `f` relative to `R` coincides with the central carrier of `f`
@@ -1108,8 +1121,170 @@ theorem commutant_cceil [VonNeumannAlgebra B]
       IsLeast {p : H →L[ℂ] H | p ∈ commutant (H →L[ℂ] H) R ∧
         IsStarProjection p ∧
         (∀ b ∈ commutant (H →L[ℂ] H) R, p * b = b * p) ∧
-        f (1 - p) = 0} c :=
-  sorry
+        f (1 - p) = 0} c := by
+  classical
+  have hfnn : ∀ a : H →L[ℂ] H, 0 ≤ a → (0 : B) ≤ f a := by
+    intro a ha
+    have h : (f (0 : H →L[ℂ] H) : B) ≤ f a := f.monotone ha
+    rwa [map_zero f] at h
+  -- `T` is the commutant of `R`, as a von Neumann subalgebra
+  obtain ⟨T, hT, hTset⟩ :=
+    (commutant_basic_3' (R : Set (H →L[ℂ] H)) (fun s hs => star_mem hs)).1
+  -- the set of projections of `Z(R)` killed by `f`
+  set E : Set (H →L[ℂ] H) :=
+    {p : H →L[ℂ] H | p ∈ R ∧ p ∈ commutant (H →L[ℂ] H) (R : Set (H →L[ℂ] H)) ∧
+      IsStarProjection p ∧ f p = 0} with hEdef
+  have hEproj : ∀ p ∈ E, IsStarProjection p := fun _ hp => hp.2.2.1
+  have hEne : E.Nonempty := by
+    refine ⟨0, zero_mem _, ?_, IsStarProjection.zero _, map_zero f⟩
+    intro b _
+    rw [mul_zero, zero_mul]
+  have hEdir : DirectedOn (· ≤ ·) E := by
+    rintro p ⟨hpR, hpC, hpproj, hpf⟩ q ⟨hqR, hqC, hqproj, hqf⟩
+    have hpq : p * q = q * p := (hpC q hqR).symm
+    have hp' : IsStarProjection (1 - p) := hpproj.one_sub
+    have hq' : IsStarProjection (1 - q) := hqproj.one_sub
+    have hpq' : (1 - p) * (1 - q) = (1 - q) * (1 - p) := by
+      have h1 : (1 - p) * ((1 : H →L[ℂ] H) - q) = 1 - p - q + p * q := by noncomm_ring
+      have h2 : (1 - q) * ((1 : H →L[ℂ] H) - p) = 1 - q - p + q * p := by noncomm_ring
+      rw [h1, h2, hpq]; abel
+    set s : H →L[ℂ] H := (1 - p) * (1 - q) with hsdef
+    have hsproj : IsStarProjection s := isStarProjection_mul_of_comm hp' hq' hpq'
+    set r : H →L[ℂ] H := 1 - s with hrdef
+    have hrproj : IsStarProjection r := hsproj.one_sub
+    have hreq : r = p + q - p * q := by
+      rw [hrdef, hsdef]; noncomm_ring
+    have hpr : p ≤ r := by
+      have hd : r - p = (1 - p) * q := by rw [hreq]; noncomm_ring
+      have hdproj : IsStarProjection ((1 - p) * q) := by
+        refine isStarProjection_mul_of_comm hp' hqproj ?_
+        have h1 : (1 - p) * q = q - p * q := by noncomm_ring
+        have h2 : q * ((1 : H →L[ℂ] H) - p) = q - q * p := by noncomm_ring
+        rw [h1, h2, hpq]
+      have : (0 : H →L[ℂ] H) ≤ r - p := hd ▸ hdproj.nonneg
+      exact sub_nonneg.mp this
+    have hqr : q ≤ r := by
+      have hd : r - q = p * (1 - q) := by rw [hreq]; noncomm_ring
+      have hdproj : IsStarProjection (p * (1 - q)) := by
+        refine isStarProjection_mul_of_comm hpproj hq' ?_
+        have h1 : p * ((1 : H →L[ℂ] H) - q) = p - p * q := by noncomm_ring
+        have h2 : (1 - q) * p = p - q * p := by noncomm_ring
+        rw [h1, h2, hpq]
+      have : (0 : H →L[ℂ] H) ≤ r - q := hd ▸ hdproj.nonneg
+      exact sub_nonneg.mp this
+    refine ⟨r, ⟨?_, ?_, hrproj, ?_⟩, hpr, hqr⟩
+    · rw [hreq]; exact sub_mem (add_mem hpR hqR) (mul_mem hpR hqR)
+    · intro b hb
+      have h1 : b * p = p * b := hpC b hb
+      have h2 : b * q = q * b := hqC b hb
+      rw [hreq]
+      calc b * (p + q - p * q) = b * p + b * q - (b * p) * q := by noncomm_ring
+        _ = p * b + q * b - (p * b) * q := by rw [h1, h2]
+        _ = p * b + q * b - p * (b * q) := by noncomm_ring
+        _ = p * b + q * b - p * (q * b) := by rw [h2]
+        _ = (p + q - p * q) * b := by noncomm_ring
+    · have hle : r ≤ p + q := by
+        have hpqnn : (0 : H →L[ℂ] H) ≤ p * q :=
+          (isStarProjection_mul_of_comm hpproj hqproj hpq).nonneg
+        rw [hreq]
+        have h := sub_le_sub_left hpqnn (p + q)
+        rwa [sub_zero] at h
+      have h1 : (f r : B) ≤ f (p + q) := f.monotone hle
+      rw [map_add f, hpf, hqf, add_zero] at h1
+      exact le_antisymm h1 (hfnn r hrproj.nonneg)
+  -- the supremum of `E`
+  obtain ⟨heproj, heub, -⟩ := projSup_spec hEproj
+  set e : H →L[ℂ] H := projSup E with hedef
+  have hlub : IsLUB E e := isLUB_projSup_of_directed E hEproj hEne hEdir
+  have hmemS : ∀ S : StarSubalgebra ℂ (H →L[ℂ] H), IsVNSubalgebra (H →L[ℂ] H) S →
+      (∀ p ∈ E, p ∈ S) → e ∈ S := by
+    intro S hS hsub
+    refine hS.dirSup_mem {d : selfAdjoint (H →L[ℂ] H) | (d : H →L[ℂ] H) ∈ E}
+      ⟨e, heproj.isSelfAdjoint⟩ (fun d hd => hsub _ hd) ?_ ?_ ?_
+    · obtain ⟨p, hp⟩ := hEne
+      exact ⟨⟨p, (hEproj p hp).isSelfAdjoint⟩, hp⟩
+    · intro x hx y hy
+      obtain ⟨z, hz, hxz, hyz⟩ := hEdir _ hx _ hy
+      exact ⟨⟨z, (hEproj z hz).isSelfAdjoint⟩, hz, hxz, hyz⟩
+    · constructor
+      · intro d hd
+        exact Subtype.coe_le_coe.mp (hlub.1 hd)
+      · intro u hu
+        refine Subtype.coe_le_coe.mp (hlub.2 fun x hx => ?_)
+        exact Subtype.coe_le_coe.mpr
+          (hu (show (⟨x, (hEproj x hx).isSelfAdjoint⟩ : selfAdjoint _) ∈ _ from hx))
+  have heR : e ∈ R := hmemS R hR fun p hp => hp.1
+  have heC : e ∈ commutant (H →L[ℂ] H) (R : Set (H →L[ℂ] H)) := by
+    have hmem : e ∈ T := hmemS T hT fun p hp => by
+      rw [← SetLike.mem_coe, hTset]; exact hp.2.1
+    rw [← SetLike.mem_coe, hTset] at hmem
+    exact hmem
+  have hfe : (f e : B) = 0 := by
+    have himg : ∀ x ∈ ((fun p => ceil (f p)) '' E), IsStarProjection x := by
+      rintro _ ⟨p, hp, rfl⟩
+      show IsStarProjection (ceil (f p))
+      rw [hp.2.2.2, ceil_zero]
+      exact IsStarProjection.zero B
+    have hzero : projSup ((fun p => ceil (f p)) '' E) = 0 := by
+      refine projSup_eq himg (IsStarProjection.zero B) ?_ fun q hq _ => hq.nonneg
+      rintro _ ⟨p, hp, rfl⟩
+      show ceil (f p) ≤ 0
+      rw [hp.2.2.2, ceil_zero]
+    have h := ncp_union_2 f hf E hEproj
+    rw [hzero] at h
+    exact (ceil_basic_3 _ (hfnn e heproj.nonneg)).mpr h
+  -- `1 - e` is the least element of the first set
+  have hS1 : IsLeast {p : H →L[ℂ] H | p ∈ R ∧ IsStarProjection p ∧
+      (∀ b ∈ R, p * b = b * p) ∧ f (1 - p) = 0} (1 - e) := by
+    constructor
+    · refine ⟨sub_mem (one_mem R) heR, heproj.one_sub, ?_, ?_⟩
+      · intro b hb
+        have h := heC b hb
+        calc (1 - e) * b = b - e * b := by noncomm_ring
+          _ = b - b * e := by rw [h]
+          _ = b * (1 - e) := by noncomm_ring
+      · rw [sub_sub_cancel]; exact hfe
+    · rintro p ⟨hpR, hpproj, hpc, hpf⟩
+      have hmem : 1 - p ∈ E := by
+        refine ⟨sub_mem (one_mem R) hpR, ?_, hpproj.one_sub, hpf⟩
+        intro b hb
+        have h := hpc b hb
+        calc b * (1 - p) = b - b * p := by noncomm_ring
+          _ = b - p * b := by rw [h]
+          _ = (1 - p) * b := by noncomm_ring
+      exact sub_le_comm.mp (heub _ hmem)
+  refine ⟨1 - e, hS1, ?_⟩
+  -- the second set is the same set, by **88VIII**
+  have hc1 : ∀ p : H →L[ℂ] H, (∀ b ∈ (R : Set (H →L[ℂ] H)), p * b = b * p) ↔
+      p ∈ commutant (H →L[ℂ] H) (R : Set (H →L[ℂ] H)) :=
+    fun p => ⟨fun h b hb => (h b hb).symm, fun h b hb => (h b hb).symm⟩
+  have hc2 : ∀ p : H →L[ℂ] H,
+      (∀ b ∈ commutant (H →L[ℂ] H) (R : Set (H →L[ℂ] H)), p * b = b * p) ↔
+      p ∈ commutant (H →L[ℂ] H) (commutant (H →L[ℂ] H) (R : Set (H →L[ℂ] H))) :=
+    fun p => ⟨fun h b hb => (h b hb).symm, fun h b hb => (h b hb).symm⟩
+  have hcc := centre_commutant R hR
+  have hsetEq : {p : H →L[ℂ] H | p ∈ commutant (H →L[ℂ] H) (R : Set (H →L[ℂ] H)) ∧
+        IsStarProjection p ∧
+        (∀ b ∈ commutant (H →L[ℂ] H) (R : Set (H →L[ℂ] H)), p * b = b * p) ∧
+        f (1 - p) = 0}
+      = {p : H →L[ℂ] H | p ∈ R ∧ IsStarProjection p ∧
+        (∀ b ∈ R, p * b = b * p) ∧ f (1 - p) = 0} := by
+    ext p
+    simp only [Set.mem_setOf_eq]
+    constructor
+    · rintro ⟨h1, h2, h3, h4⟩
+      have hmem : p ∈ commutant (H →L[ℂ] H) (R : Set (H →L[ℂ] H)) ∩
+          commutant (H →L[ℂ] H) (commutant (H →L[ℂ] H) (R : Set (H →L[ℂ] H))) :=
+        ⟨h1, (hc2 p).mp h3⟩
+      rw [← hcc] at hmem
+      exact ⟨hmem.1, h2, (hc1 p).mpr hmem.2, h4⟩
+    · rintro ⟨h1, h2, h3, h4⟩
+      have hmem : p ∈ (R : Set (H →L[ℂ] H)) ∩
+          commutant (H →L[ℂ] H) (R : Set (H →L[ℂ] H)) := ⟨h1, (hc1 p).mp h3⟩
+      rw [hcc] at hmem
+      exact ⟨hmem.1, h2, (hc2 p).mpr hmem.2, h4⟩
+  rw [hsetEq]
+  exact hS1
 
 /-! ## Parsec 890: normal functionals as sums of vector functionals -/
 
@@ -1881,5 +2056,175 @@ theorem vn_center_separating_fundamental_2 (Ω : Set (NPFunctional A))
 formalize. -/
 
 end Permanence
+
+/-! ## The scalars in universe `u`
+
+Several universal properties in thesis A and thesis B (proc.tex 98II,
+dils.tex 169II/169VIII) quantify their test algebra over `Type u`, the
+universe this development's von Neumann algebras live in, while `ℂ` sits in
+`Type 0`.  The cheapest test maps available are the ones *out of the
+scalars*: the ncp-maps `ℂ → A` are exactly `z ↦ z·a` for `0 ≤ a ∈ A`, so the
+uniqueness half of such a universal property becomes an injectivity
+statement about elements of `A`.  The scalars therefore have to be lifted.
+Mathlib carries the ring, norm, algebra and completeness of `ULift ℂ` but
+neither its ∗-structure nor its order; those are supplied here.
+
+This block is a copy of the one in `Theses/B/Dils/Pure.lean` (session 45),
+lifted here so that `A/Proc` — a sibling of `B/Dils` over `A/VN`, hence
+unable to import it — can use it too; the copy in `B/Dils` should be dropped
+in favour of this one. -/
+
+section Scalars
+
+/-- `ℂ`, lifted into the universe `u` of this chapter's algebras. -/
+abbrev CU : Type u := ULift.{u} ℂ
+
+namespace CU
+
+theorem down_injective : Function.Injective (ULift.down : CU.{u} → ℂ) :=
+  fun a b h => by cases a; cases b; exact congrArg ULift.up h
+
+instance : StarRing CU.{u} where
+  star x := ⟨star x.down⟩
+  star_involutive x := down_injective (star_star x.down)
+  star_mul x y := down_injective (star_mul x.down y.down)
+  star_add x y := down_injective (star_add x.down y.down)
+
+@[simp] theorem down_star (x : CU.{u}) : (star x).down = star x.down := rfl
+@[simp] theorem down_one : (1 : CU.{u}).down = 1 := rfl
+@[simp] theorem down_mul (x y : CU.{u}) : (x * y).down = x.down * y.down := rfl
+@[simp] theorem down_smul (r : ℂ) (x : CU.{u}) : (r • x).down = r * x.down := rfl
+
+instance : StarModule ℂ CU.{u} where
+  star_smul r x := down_injective (star_smul r x.down)
+
+instance : CStarRing CU.{u} where
+  norm_mul_self_le x := CStarRing.norm_mul_self_le (x := x.down)
+
+noncomputable instance : CStarAlgebra CU.{u} where
+
+instance : PartialOrder CU.{u} := PartialOrder.lift ULift.down down_injective
+
+theorem le_def {x y : CU.{u}} : x ≤ y ↔ x.down ≤ y.down := Iff.rfl
+
+instance : StarOrderedRing CU.{u} := by
+  refine StarOrderedRing.of_nonneg_iff' (fun {x y} hxy z => ?_) (fun x => ?_)
+  · exact le_def.mpr (add_le_add (le_refl z.down) (le_def.mp hxy))
+  · constructor
+    · intro hx
+      obtain ⟨s, hs⟩ :=
+        CStarAlgebra.nonneg_iff_eq_star_mul_self.mp (le_def.mp hx)
+      exact ⟨⟨s⟩, down_injective hs⟩
+    · rintro ⟨s, rfl⟩
+      exact le_def.mpr (star_mul_self_nonneg s.down)
+
+theorem isSelfAdjoint_down {x : CU.{u}} (hx : IsSelfAdjoint x) :
+    IsSelfAdjoint x.down :=
+  congrArg ULift.down hx
+
+end CU
+
+/-- The linear map `ℂᵤ → A`, `z ↦ z·a`. -/
+private noncomputable def smulLin (a : A) : CU.{u} →ₗ[ℂ] A where
+  toFun z := z.down • a
+  map_add' x y := by simp [add_smul]
+  map_smul' r x := by simp [mul_smul]
+
+omit [PartialOrder A] [StarOrderedRing A] in
+private theorem smulLin_apply (a : A) (z : CU.{u}) : smulLin a z = z.down • a := rfl
+
+/-- Complete positivity of `z ↦ z·a`: `∑ᵢⱼ bᵢ* (cᵢ*cⱼ · a) bⱼ = v* a v` for
+`v = ∑ᵢ cᵢbᵢ`. -/
+private theorem smulLin_cp {a : A} (ha : 0 ≤ a) :
+    IsCompletelyPositiveMap (smulLin (A := A) a) := by
+  intro n c b
+  have h : ∀ i j : Fin n,
+      star (b i) * smulLin a (star (c i) * c j) * b j
+        = star ((c i).down • b i) * a * ((c j).down • b j) := by
+    intro i j
+    simp only [smulLin_apply, CU.down_mul, CU.down_star, star_smul,
+      smul_mul_assoc, mul_smul_comm, smul_smul, mul_comm]
+  simp_rw [h]
+  have hsum : ∑ i, ∑ j, star ((c i).down • b i) * a * ((c j).down • b j)
+      = star (∑ i, (c i).down • b i) * a * (∑ j, (c j).down • b j) := by
+    rw [star_sum, Finset.sum_mul, Finset.sum_mul]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [Finset.mul_sum]
+  rw [hsum]
+  exact star_left_conjugate_nonneg ha _
+
+/-- Transfer of a supremum in `sa(ℂᵤ)` to `ℝ`. -/
+private theorem isLUB_re {D : Set (selfAdjoint CU.{u})} {s : selfAdjoint CU.{u}}
+    (hlub : IsLUB D s) :
+    IsLUB ((fun d : selfAdjoint CU.{u} => ((d : CU.{u}).down).re) '' D)
+      (((s : CU.{u}).down).re) := by
+  constructor
+  · rintro _ ⟨d, hd, rfl⟩
+    exact (Complex.le_def.mp (CU.le_def.mp (Subtype.coe_le_coe.mpr (hlub.1 hd)))).1
+  · intro r hr
+    have hsa : IsSelfAdjoint (⟨((r : ℝ) : ℂ)⟩ : CU.{u}) :=
+      CU.down_injective
+        ((Complex.im_eq_zero_iff_isSelfAdjoint _).mp (Complex.ofReal_im _))
+    have hub : (⟨⟨((r : ℝ) : ℂ)⟩, hsa⟩ : selfAdjoint CU.{u}) ∈ upperBounds D := by
+      intro d hd
+      refine Subtype.coe_le_coe.mp
+        (CU.le_def.mpr (Complex.le_def.mpr ⟨hr ⟨d, hd, rfl⟩, ?_⟩))
+      rw [Complex.ofReal_im, Complex.im_eq_zero_iff_isSelfAdjoint]
+      exact CU.isSelfAdjoint_down d.2
+    exact (Complex.le_def.mp (CU.le_def.mp (Subtype.coe_le_coe.mpr (hlub.2 hub)))).1
+
+/-- Normality of `z ↦ z·a`: the positive cone of `A` is closed, and a
+supremum in `ℝ` lies in the closure of its set. -/
+private theorem smulLin_normal {a : A} (ha : 0 ≤ a) :
+    PreservesDirSups ⇑(smulLin (A := A) a) := by
+  intro D s hne _ hlub
+  have hre := isLUB_re hlub
+  have hmono : ∀ t r : ℝ, t ≤ r → ((t : ℂ)) • a ≤ ((r : ℂ)) • a := by
+    intro t r htr
+    have h : (0 : A) ≤ ((r - t : ℝ) : ℂ) • a := cstar_positive_1 a ha _ (by linarith)
+    have he : ((r - t : ℝ) : ℂ) • a = (r : ℂ) • a - (t : ℂ) • a := by
+      push_cast; rw [sub_smul]
+    rw [he] at h
+    exact sub_nonneg.mp h
+  have hcoe : ∀ d : selfAdjoint CU.{u},
+      (((((d : CU.{u}).down).re : ℝ)) : ℂ) = (d : CU.{u}).down := by
+    intro d
+    have him : ((d : CU.{u}).down).im = 0 :=
+      (Complex.im_eq_zero_iff_isSelfAdjoint _).mpr (CU.isSelfAdjoint_down d.2)
+    apply Complex.ext <;> simp [him]
+  constructor
+  · rintro _ ⟨d, hd, rfl⟩
+    show (d : CU.{u}).down • a ≤ (s : CU.{u}).down • a
+    rw [← hcoe d, ← hcoe s]
+    exact hmono _ _ (hre.1 ⟨d, hd, rfl⟩)
+  · intro u hu
+    show (s : CU.{u}).down • a ≤ u
+    have hclosed : IsClosed {t : ℝ | ((t : ℂ)) • a ≤ u} :=
+      isClosed_Iic.preimage (by fun_prop)
+    have hsub : (fun d : selfAdjoint CU.{u} => ((d : CU.{u}).down).re) '' D
+        ⊆ {t : ℝ | ((t : ℂ)) • a ≤ u} := by
+      rintro _ ⟨d, hd, rfl⟩
+      show ((((d : CU.{u}).down).re : ℝ) : ℂ) • a ≤ u
+      rw [hcoe d]
+      exact hu ⟨d, hd, rfl⟩
+    have hmem := hre.mem_closure (hne.image _)
+    have hfin := hclosed.closure_subset_iff.mpr hsub hmem
+    rw [← hcoe s]
+    exact hfin
+
+/-- Every positive element `a` of a C*-algebra `A` is the value at `1` of an
+ncp-map `ℂᵤ → A`, namely `z ↦ z·a`.  (Conversely every ncp-map `ℂᵤ → A` is
+of this form, by linearity; that direction is not needed here.) -/
+noncomputable def ncpOfNonneg {a : A} (ha : 0 ≤ a) : NCPMap CU.{u} A where
+  toCompletelyPositiveMap :=
+    { toLinearMap := smulLin a
+      map_cstarMatrix_nonneg' :=
+        (cp_iff (smulLin (A := A) a)).out 0 1 |>.mp (smulLin_cp ha) }
+  preservesDirSups' := smulLin_normal ha
+
+@[simp] theorem ncpOfNonneg_apply {a : A} (ha : 0 ≤ a) (z : CU.{u}) :
+    ncpOfNonneg ha z = z.down • a := rfl
+
+end Scalars
 
 end Theses.A.VN
