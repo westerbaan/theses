@@ -114,38 +114,6 @@ neither.  `kaplansky_hilbmod_of_weak` (158II from *weak* bounded
 approximation) and `kaplansky_hilbmod_of_commutative` remain in the file as
 independent partial results.
 
-### B11. 169VIII `dils-def-filter` — "filter **for** `b`" is defined weaker than in proc.tex, and 169XI.2 is false as printed
-`dils.tex:6118`.  The Definition says "`c` is a filter for `b ≥ 0` if
-**`c(1) ≤ b`** and every ncp-map `f` with `f(1) ≤ b` factors uniquely through
-`c`", while proc.tex **96I** (`filter`), which the surrounding text says it is
-recalling, asks the universal property for `f(1) ≤ c(1)` and calls `c` a filter
-*for `c(1)`* — so there `c(1) = b` by construction.
-
-The two are genuinely different: `c = ½·id : ℬ → ℬ` satisfies the dils.tex
-condition for `b = 1` (each `f` with `f(1) ≤ 1` factors uniquely, as `2f`)
-while `c(1) = ½`.  Consequently **169XI**.2 — "there is a unique **unital**
-ncp-map `φ'` with `φ = c' ∘ φ'`", for `c'` a filter of `φ(1)` — is false as
-printed: take `φ = id : ℂ → ℂ` and `c' = ½·id`.  Its `bsols.tex` solution uses
-`c'(1) = φ(1)`, i.e. the proc.tex reading.  See ERRATA for the one-character
-fix (`c(1) ≤ b` → `c(1) = b`), which repairs everything; the *derived* notion
-"`c` is a filter" (= a filter for some `b`) is insensitive to the change, so
-purity (**170I**), **169XI**.1 and **169XII** are untouched.
-
-*Decision needed*: our `IsFilterFor` (`B/Dils/Pure.lean`) transcribes
-dils.tex literally and so carries the weak form, which leaves
-`dils_filter_basics_2a` unprovable.  Say whether to change it to `c 1 = b`
-(the proc.tex form) — we have not, under the standing rule that statements are
-not altered without an author's ruling.
-
-*Status 2026-08-16 (worker 73): the blast radius is now **machine-confirmed**
-to be exactly `dils_filter_basics_2a`.*  **169XI**.1 `dils_filter_basics_1`
-and **169XI**.2's second half `dils_filter_basics_2b` are both **proved**
-against the weak (dils.tex) reading and are axiom-clean.  Part 1 survives
-because the only place it needs the filter's universal property is at
-`h'(1) = c(φ(1))`, and `c(φ(1)) ≤ c(1) ≤ b` holds under either reading; part
-2b never uses unitality of `φ'` at all — it is part 1 applied to `c'` and the
-dilation of `φ'`.  So a ruling on B11 changes exactly one Lean statement.
-
 ### B12. 139XI `ess-uniq-pur` — essential uniqueness of purification is false without a dimension hypothesis; which repair?
 `dils.tex:998`, solution `bsols.tex:209`.  The exercise asks to show: if
 `V, W : 𝒦 → ℋ ⊗ 𝒦'` satisfy `V*(a⊗1)V = φ(a) = W*(a⊗1)W` for all `a ∈ B(ℋ)`,
@@ -239,8 +207,41 @@ is now proved from the thesis's own argument (`div_usc_ball`).  The second is
 **false** — see the 81IX row in ERRATA.md for the counterexample
 (`b = 1`, `c = diag(1,½,⅓,…)` in `B(ℓ²)`, `dₙ = |n⟩⟨0|`).
 
-Three repairs are available and they are not equivalent, so this needs a
-decision:
+⚠️ **Update (session 63): a fourth repair is available, it is verified, and
+it is the cheapest — replace "ultrastrongly" by "ultraweakly".**  Bas
+observed that the counterexample does not touch the ultraweak topology, and
+that is right: `‖dₙ‖_ω = 1` is a statement about one fixed vector state,
+whereas `ω(dₙ) = ⟨0|ρ|n⟩ → 0` for every trace-class `ρ`, so `dₙ → 0`
+ultraweakly.  The ultraweak statement is not merely un-refuted, it is
+**true, for both maps**, and is now machine-checked and axiom-clean as
+`div_uwc` in `A/VN/Division.lean`.
+
+That makes 81IX a **one-word fix**: no map is dropped, no hypothesis on `c`
+is added, the Lemma keeps its shape and both of its clauses, and — see
+option 1 below — the **96VI** erratum can then be withdrawn, because the
+proof of 96V uses 81IX only for *normality* of `g = d*∖f(·)/d`, and
+ultraweak continuity gives exactly that (a bounded increasing net converges
+ultraweakly to its supremum, and `g` is positive).  So this repair is also
+the only one that leaves proc.tex untouched.
+
+The cost is that the thesis's own *proof* of 81IX does not survive: it
+factors through `c(𝒜)₁ → 𝒜` and estimates seminorms, and no seminorm
+estimate can prove the ultraweak statement, since the failure is not a
+missing estimate but the absence of ultrastrong compactness.  The proof we
+have instead is short but different in kind: `c∖a/b` is the *unique* element
+`x` of the corner `⌈c⌋𝒜⌊b⌉` with `cxb = a`, and on `c(𝒜)₁b` it is explicitly
+`⌈c⌋d⌊b⌉` for any witness `a = cdb`, hence lies in the unit ball; that ball
+is ultraweakly compact (**77III**), the corner is ultraweakly closed and
+`z ↦ czb` is ultraweakly continuous (**45IV**), so every ultraweak cluster
+point of the values satisfies the same characterisation and therefore *is*
+the value — and compactness turns "unique cluster point" into convergence.
+Ultrastrongly the identical argument fails at exactly one step, compactness
+of the ball, which **43II**.5 refutes.  If the thesis wants a proof in its
+own idiom, this is the erratum to write; if it only wants a true statement
+with a correct proof somewhere, the Lean proof is it.
+
+**`div_usc` is left unchanged and `sorry` pending your ruling.**  The four
+repairs are not equivalent:
 
 1. **Drop the second map.**  Nothing in **vn.tex** appears to use it: the
    sequel (**82I** polar decomposition, **83II**, **83V**) uses only
@@ -257,6 +258,11 @@ decision:
 3. **Weaken the topology for that factor** to the ultrastrong-\* topology,
    in which `c∖(·)` *is* continuous on `c(𝒜)₁` (the mirror of the thesis's
    own argument, run on the seminorms `ω(xx*)^½`).
+4. **Weaken the topology throughout to the ultraweak one** — the update
+   above.  Recommended: it is one word, it keeps both maps and needs no
+   hypothesis on `c`, it is proved (`div_uwc`), and it withdraws the **96VI**
+   erratum instead of adding to it.  Its only cost is that 81IX's printed
+   proof must be replaced.
 
 Note that **81VII** `div-approx` — which reads like the same statement about
 `c∖·/b` — is **true** and is proved (`div_approx`): for one fixed `a` the
@@ -264,36 +270,6 @@ convergence holds by normality; it is only the *uniformity* over the unit ball
 that fails, and the Lean statement of 81VII does not claim it.  The thesis's
 parenthetical "(and uniformly so)" in 81VII should therefore be checked too:
 by the same counterexample it is false for the `c∖·` half.
-
-### A6. 129II.2 `discrete` is weaker than "purely atomic"; 130V is false as printed — which repair?
-`proc.tex:6188`.  129II.2 defines a finite complete measure space to be
-**discrete** when it is *covered by atomic measurable subsets*, and asserts
-parenthetically that this coincides with Fremlin 211K's *purely atomic*.  It
-does not: with `X = [0,1]` and `μ = λ + δ₀` (completed) the sets `{0,x}` are
-atoms and cover `X`, yet `(0,1]` has positive measure and includes no atom.
-For that `X`, `L^∞(X,μ) ≅ L^∞[0,1] ⊕ ℂ`, so **130V** `discrete-ell-x`
-("a discrete finite measure space has `L^∞(X) ≅ ℓ^∞(Y)`") is **false as
-stated** — see the 129II.2 row of ERRATA.md.  The Lean statement transcribes
-129II.2 verbatim, so `discrete_ell_x` is unprovable and is parked.
-
-The repair we expect is to replace the definition by Fremlin's ("every
-non-negligible measurable set includes an atom"), but that is a *statement*
-change and touches three further points, so it needs a ruling:
-
-1. **129VI** `measure-space-continuous-discrete` is *true* as stated but
-   **vacuous** under the printed definition (in the counterexample `D = univ`
-   satisfies both conjuncts).  With the repaired definition its Zorn argument
-   goes through if `𝒮` is taken to be *countable disjoint unions of atoms*
-   rather than *sets covered by atoms*.
-2. **130V** becomes provable, by the route the Lean tree already has: 130IV
-   `measure-space-partition` is proved, and `atomic_measure_space` turns each
-   atom into `ℂ`.
-3. **127III** `duplicable`, the main theorem of the chapter, is proved at
-   proc.tex:6543 from 129VI + 129X + 130V, so its proof has a gap as printed.
-   The theorem itself is not in doubt.
-
-Do you want the definition repaired (and 129VI's proof adjusted), or 130V
-restated with the stronger hypothesis carried explicitly?
 
 ### A2. `parsec-340.60` (34VI.1) is an empty `\TODO{}`
 The solution slot exists but is empty, and it is the *last* entry in

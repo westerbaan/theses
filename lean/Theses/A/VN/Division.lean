@@ -2510,6 +2510,55 @@ theorem ldiv_div_recover {a b : A} (h : ∃ d : A, a = star b * d * b) :
     _ = (star b * suppProj (star b)) * d * (rangeProj b * b) := by rw [hsb, hrb]
     _ = star b * (suppProj (star b) * d * rangeProj b) * b := by noncomm_ring
 
+omit [PartialOrder A] [StarOrderedRing A] [VonNeumannAlgebra A] in
+/-- Auxiliary: membership of the corner `pAq` splits into its two halves. -/
+private theorem corner_two_sided {p q x : A} (hp : IsStarProjection p)
+    (hq : IsStarProjection q) (h : p * x * q = x) :
+    p * x = x ∧ x * q = x := by
+  have hpp : p * p = p := hp.isIdempotentElem.eq
+  have hqq : q * q = q := hq.isIdempotentElem.eq
+  constructor
+  · calc p * x = p * (p * x * q) := by rw [h]
+      _ = (p * p) * x * q := by noncomm_ring
+      _ = p * x * q := by rw [hpp]
+      _ = x := h
+  · calc x * q = (p * x * q) * q := by rw [h]
+      _ = p * x * (q * q) := by noncomm_ring
+      _ = p * x * q := by rw [hqq]
+      _ = x := h
+
+/-- **81II** (`division-basic`) in the form used for 81IX: for `x` in the
+corner `⌈c⌋A⌊b⌉` one has `c∖(cxb)/b = x`.  Both steps are the explicit
+characterisations of division: `(cxb)/b = cx` because `x⌊b⌉ = x`, and
+`c∖(cx) = x` because `⌈c⌋x = x`. -/
+theorem ldiv_div_corner {b c x : A} (h : suppProj c * x * rangeProj b = x) :
+    ldiv c (div (c * x * b) b) = x := by
+  obtain ⟨h1, h2⟩ := corner_two_sided (ceill_basic_1 c).1.1 (ceill_basic_2 b).1.1 h
+  have hd : div (c * x * b) b = c * x := div_eq rfl (by rw [mul_assoc, h2])
+  rw [hd]
+  exact ldiv_eq rfl h1
+
+/-- The explicit value of `c∖a/b` on `c(A)b`: for `a = cdb` it is
+`⌈c⌋d⌊b⌉`.  In particular `‖c∖a/b‖ ≤ ‖d‖`, which is the norm bound
+**81VI**.1 supplies in general — here it is immediate, because the corner
+projections are contractions. -/
+theorem ldiv_div_ball (b c d : A) :
+    ldiv c (div (c * d * b) b) = suppProj c * d * rangeProj b := by
+  have hp : IsStarProjection (suppProj c) := (ceill_basic_1 c).1.1
+  have hq : IsStarProjection (rangeProj b) := (ceill_basic_2 b).1.1
+  have hc : c * suppProj c = c := (ceill_basic_1 c).1.2
+  have hb : rangeProj b * b = b := (ceill_basic_2 b).1.2
+  have key : c * (suppProj c * d * rangeProj b) * b = c * d * b := by
+    calc c * (suppProj c * d * rangeProj b) * b
+        = (c * suppProj c) * d * (rangeProj b * b) := by noncomm_ring
+      _ = c * d * b := by rw [hc, hb]
+  rw [← key]
+  refine ldiv_div_corner ?_
+  calc suppProj c * (suppProj c * d * rangeProj b) * rangeProj b
+      = (suppProj c * suppProj c) * d * (rangeProj b * rangeProj b) := by noncomm_ring
+    _ = suppProj c * d * rangeProj b := by
+        rw [hp.isIdempotentElem.eq, hq.isIdempotentElem.eq]
+
 /-- **81VIII** (`sequential-quotient`, vn.tex:5513, Exercise), part 1: for
 positive `a`, `b`: `a ≤ λb` for some `λ ≥ 0` iff `a = √b c √b` for some
 positive `c`. -/
@@ -2545,7 +2594,24 @@ theorem sequential_quotient_1 (a b : A) (ha : 0 ≤ a) (hb : 0 ≤ b) :
 /-- **81VIII** (`sequential-quotient`, vn.tex:5513, Exercise), part 2: in
 that case there is a *unique* positive `c` with `a = √b c √b` and
 `⌈c⌉ ≤ ⌈b⌉`; and for an approximate pseudoinverse `t` of `√b` the double
-series `∑_{m,n} tₘ a tₙ` converges ultraweakly to this `c`. -/
+series `∑_{m,n} tₘ a tₙ` converges ultraweakly to this `c`.
+
+The witness is `c = √b∖a/√b`, positive by **81VI**.2 and a genuine witness
+by `ldiv_div_recover`; it lies in the corner `⌈b⌉A⌈b⌉` (because
+`⌈(√b)*⌋ = ⌊√b⌉ = ⌈b⌉`), which is exactly `⌈c⌉ ≤ ⌈b⌉` by **59III**.1, and
+that same corner condition makes the *uniqueness* an instance of
+`ldiv_div_corner`.
+
+**Divergence (a strengthening).**  The double series is
+`(∑_{m<N}tₘ√b) c (∑_{n<N}√b tₙ) = Q_N c P_N` with `Q_N, P_N` projections
+increasing to `⌈b⌉` (**80III**), and
+`Q_N c P_N − c = (Q_N c)(P_N − ⌈b⌉) + (Q_N − ⌈b⌉)(c⌈b⌉)`; the first term is
+`‖·‖_ω`-bounded by `‖c‖‖P_N − ⌈b⌉‖_ω` and the second is
+`‖Q_N − ⌈b⌉‖_{(c⌈b⌉)*ω(c⌈b⌉)}`, so both vanish.  That proves convergence in
+the *ultrastrong* topology, which is strictly finer; the thesis's ultraweak
+claim follows by **43I**.2.  (This does not conflict with the falsity of the
+second half of **81IX**: here `a` is fixed, and it is only uniformity in `a`
+that fails — cf. `div_approx`.) -/
 theorem sequential_quotient_2 (a b : A) (ha : 0 ≤ a) (hb : 0 ≤ b)
     (l : ℝ) (hl : 0 ≤ l) (hab : a ≤ (l : ℂ) • b) (t : ℕ → A)
     (ht : IsApproxPseudoinverse A (CFC.sqrt b) t) :
@@ -2553,8 +2619,118 @@ theorem sequential_quotient_2 (a b : A) (ha : 0 ≤ a) (hb : 0 ≤ b)
         ceil c ≤ ceil b) ∧
       UWTendsto
         (fun N : ℕ => ∑ m ∈ Finset.range N, ∑ n ∈ Finset.range N,
-          t m * a * t n) atTop c :=
-  sorry
+          t m * a * t n) atTop c := by
+  classical
+  set s : A := CFC.sqrt b with hsdef
+  have hsnn : (0 : A) ≤ s := CFC.sqrt_nonneg b
+  have hs : star s = s := (IsSelfAdjoint.of_nonneg hsnn).star_eq
+  have hss : s * s = b := CFC.sqrt_mul_sqrt_self b hb
+  have hqb : IsStarProjection (ceil b) := (ceil_spec hb).1
+  have hsupp : suppProj s = ceil b := by rw [suppProj, hs, hss]
+  have hrange : rangeProj s = ceil b := by rw [rangeProj, hs, hss]
+  -- `a ∈ s A s`
+  have hex : ∃ d : A, a = star s * d * s := by
+    obtain ⟨d₀, _, had₀⟩ := (sequential_quotient_1 a b ha hb).mp ⟨l, hl, hab⟩
+    exact ⟨d₀, by rw [hs]; exact had₀⟩
+  set c₀ : A := ldiv (star s) (div a s) with hcdef
+  have hcpos : (0 : A) ≤ c₀ := sequential_douglas_2 a s ha hex
+  have hrec : a = s * c₀ * s := by
+    have h : a = star s * c₀ * s := ldiv_div_recover hex
+    rwa [hs] at h
+  -- `c₀` lies in the corner `⌈b⌉A⌈b⌉`
+  have hcorner : ceil b * c₀ * ceil b = c₀ := by
+    obtain ⟨d, hd⟩ := hex
+    have h := ldiv_div_ball s (star s) d
+    rw [← hd] at h
+    rw [hcdef, h, suppProj_star, hrange]
+    calc ceil b * (ceil b * d * ceil b) * ceil b
+        = (ceil b * ceil b) * d * (ceil b * ceil b) := by noncomm_ring
+      _ = ceil b * d * ceil b := by rw [hqb.isIdempotentElem.eq]
+  have hqc : ceil b * c₀ = c₀ := by
+    calc ceil b * c₀ = ceil b * (ceil b * c₀ * ceil b) := by rw [hcorner]
+      _ = (ceil b * ceil b) * c₀ * ceil b := by noncomm_ring
+      _ = ceil b * c₀ * ceil b := by rw [hqb.isIdempotentElem.eq]
+      _ = c₀ := hcorner
+  have hceil : ceil c₀ ≤ ceil b := ((ceil_basic_1 c₀ (ceil b) hcpos hqb).out 0 2).mp hqc
+  -- the partial sums
+  obtain ⟨hQproj, _, hQtend⟩ :=
+    partialSums_of_isLUB (p := fun n => t n * s) ht.proj_left ht.sum_left
+      (ceill_basic_1 s).1.1.le_one
+  obtain ⟨_, _, hPtend⟩ :=
+    partialSums_of_isLUB (p := fun n => s * t n) ht.proj_right ht.sum_right
+      (ceill_basic_2 s).1.1.le_one
+  rw [hsupp] at hQtend
+  rw [hrange] at hPtend
+  -- the double series *is* `Q_N c₀ P_N`
+  have hnet : ∀ N : ℕ, (∑ m ∈ Finset.range N, ∑ n ∈ Finset.range N, t m * a * t n)
+      = (∑ n ∈ Finset.range N, t n * s) * c₀ * (∑ n ∈ Finset.range N, s * t n) := by
+    intro N
+    have hQ : (∑ n ∈ Finset.range N, t n) * s = ∑ n ∈ Finset.range N, t n * s :=
+      Finset.sum_mul _ _ _
+    have hP : s * (∑ n ∈ Finset.range N, t n) = ∑ n ∈ Finset.range N, s * t n :=
+      Finset.mul_sum _ _ _
+    calc (∑ m ∈ Finset.range N, ∑ n ∈ Finset.range N, t m * a * t n)
+        = (∑ m ∈ Finset.range N, t m) * a * (∑ n ∈ Finset.range N, t n) := by
+          simp only [Finset.sum_mul, Finset.mul_sum]
+          exact Finset.sum_comm
+      _ = ((∑ n ∈ Finset.range N, t n) * s) * c₀ * (s * (∑ n ∈ Finset.range N, t n)) := by
+          rw [hrec]; noncomm_ring
+      _ = _ := by rw [hQ, hP]
+  -- ultrastrong (hence ultraweak) convergence
+  have hUS : USTendsto (fun N : ℕ =>
+      (∑ n ∈ Finset.range N, t n * s) * c₀ * (∑ n ∈ Finset.range N, s * t n))
+      atTop c₀ := by
+    rw [usTendsto_iff]
+    intro ω
+    have hdecomp : ∀ N : ℕ,
+        (∑ n ∈ Finset.range N, t n * s) * c₀ * (∑ n ∈ Finset.range N, s * t n) - c₀
+        = ((∑ n ∈ Finset.range N, t n * s) * c₀) *
+            ((∑ n ∈ Finset.range N, s * t n) - ceil b)
+          + ((∑ n ∈ Finset.range N, t n * s) - ceil b) * (c₀ * ceil b) := by
+      intro N
+      have hr : ((∑ n ∈ Finset.range N, t n * s) * c₀) *
+            ((∑ n ∈ Finset.range N, s * t n) - ceil b)
+          + ((∑ n ∈ Finset.range N, t n * s) - ceil b) * (c₀ * ceil b)
+          = (∑ n ∈ Finset.range N, t n * s) * c₀ * (∑ n ∈ Finset.range N, s * t n)
+            - ceil b * c₀ * ceil b := by noncomm_ring
+      rw [hr, hcorner]
+    have hbound : ∀ N : ℕ, omegaNorm A ω
+        ((∑ n ∈ Finset.range N, t n * s) * c₀ * (∑ n ∈ Finset.range N, s * t n) - c₀)
+        ≤ ‖c₀‖ * omegaNorm A ω ((∑ n ∈ Finset.range N, s * t n) - ceil b)
+          + omegaNorm A (conjNP (c₀ * ceil b) ω)
+              ((∑ n ∈ Finset.range N, t n * s) - ceil b) := by
+      intro N
+      rw [hdecomp N]
+      refine (omegaNorm_add_le ω _ _).trans (add_le_add ?_ ?_)
+      · refine (omegaNorm_mul_le ω _ _).trans
+          (mul_le_mul_of_nonneg_right ?_ (omegaNorm_nonneg _ _))
+        calc ‖(∑ n ∈ Finset.range N, t n * s) * c₀‖
+            ≤ ‖∑ n ∈ Finset.range N, t n * s‖ * ‖c₀‖ := norm_mul_le _ _
+          _ ≤ 1 * ‖c₀‖ := by
+              gcongr
+              exact IsStarProjection.norm_le _ (hQproj N)
+          _ = ‖c₀‖ := one_mul _
+      · rw [omegaNorm_mul_right]
+    refine squeeze_zero (fun N => omegaNorm_nonneg _ _) hbound ?_
+    have h1 := (usTendsto_iff _ atTop (ceil b)).mp hPtend ω
+    have h2 := (usTendsto_iff _ atTop (ceil b)).mp hQtend (conjNP (c₀ * ceil b) ω)
+    simpa using (h1.const_mul ‖c₀‖).add h2
+  have hUW : UWTendsto (fun N : ℕ => ∑ m ∈ Finset.range N, ∑ n ∈ Finset.range N,
+      t m * a * t n) atTop c₀ := by
+    have := uwweaker_2 _ atTop c₀ hUS
+    simpa only [hnet] using this
+  refine ⟨c₀, ⟨⟨hcpos, hrec, hceil⟩, hUW⟩, ?_⟩
+  rintro y ⟨⟨hy0, hys, hyc⟩, -⟩
+  have hqy : ceil b * y = y := ((ceil_basic_1 y (ceil b) hy0 hqb).out 2 0).mp hyc
+  have hyq : y * ceil b = y := ((ceil_basic_1 y (ceil b) hy0 hqb).out 2 1).mp hyc
+  have hcor : suppProj (star s) * y * rangeProj s = y := by
+    rw [suppProj_star, hrange, hqy, hyq]
+  have h : ldiv (star s) (div (star s * y * s) s) = y := ldiv_div_corner hcor
+  have hsy : star s * y * s = a := by rw [hs, ← hys]
+  rw [hsy] at h
+  rw [hcdef]
+  exact h.symm
+
 
 /-- **81IX** (`div-usc`, vn.tex:5533, Lemma), **first half**: `a ↦ a/b` is
 ultrastrongly continuous on `(A)₁b`.  This is the thesis's own argument
@@ -2632,7 +2808,12 @@ ultrastrongly continuous on `c(A)₁`.  The thesis's proof factors the map as
 continuous "as follows"; it is not — left division is ultrastrongly
 continuous only in the commutative case (there `‖e‖ ≤ 2` really does bound
 `‖e‖_ω` by `c_K⁻¹‖ce‖_ω + 4ε`), and in general only for the ultrastrong-*
-topology.  See ERRATA.md. -/
+topology.  See ERRATA.md.
+
+**The ultraweak form of the very same statement is true**, and is proved
+below as `div_uwc` — so 81IX is repaired by changing one word,
+"ultrastrongly" to "ultraweakly", with both maps and no extra hypothesis.
+See QUESTIONS.md **A5**. -/
 theorem div_usc (b c : A) :
     @ContinuousOn A A (ultrastrong A) (ultrastrong A) (fun a => div a b)
         {a : A | ∃ d : A, ‖d‖ ≤ 1 ∧ a = d * b} ∧
@@ -2640,6 +2821,140 @@ theorem div_usc (b c : A) :
         (fun a => ldiv c (div a b))
         {a : A | ∃ d : A, ‖d‖ ≤ 1 ∧ a = c * d * b} :=
   sorry
+
+/-! ### 81IX in the ultraweak topology
+
+The counterexample that refutes the second conjunct of **81IX** does not
+touch its ultraweak analogue (there `‖dₙ‖_ω = 1` for a *fixed* vector state,
+while `ω(dₙ) = ⟨0|ρ|n⟩ → 0` for every trace-class `ρ`), and in fact the
+ultraweak statement is **true** for both maps — see `div_uwc`.
+
+The argument is not the thesis's.  It rests on the *characterisation* of
+`c∖a/b` rather than on any approximation: for `a ∈ c(A)b`, `x = c∖a/b` is
+the unique element of the corner `⌈c⌋A⌊b⌉` with `cxb = a`
+(`ldiv_div_corner` above, which is **81II**), and on `c(A)₁b` it is explicitly `⌈c⌋d⌊b⌉` for
+any witness `a = cdb` with `‖d‖ ≤ 1` (`ldiv_div_ball`), hence lies in the
+unit ball.  The unit ball is ultraweakly **compact** (**77III**
+`vn_ball_compact`), so it suffices to identify the cluster points: if `y` is
+a cluster point of the values, then `y` lies in the corner (which is
+ultraweakly closed, being the equaliser of the ultraweakly continuous
+`z ↦ ⌈c⌋z⌊b⌉` with the identity — **45IV**), and `cyb` is a cluster point of
+`(c(c∖a/b)b)_a = (a)_a → a₀`, so `cyb = a₀` by Hausdorffness (**44XI**.1);
+uniqueness then forces `y = c∖a₀/b`.
+
+Note the contrast with the ultrastrong case: everything here except
+compactness holds ultrastrongly too, and it is exactly compactness that
+fails — **43II**.5 (`vn_counterexamples_5`) records that the unit ball of
+`B(ℓ²)` is *not* ultrastrongly compact, by the sequence `(|0⟩⟨n|)ₙ`. -/
+
+/-- `⌈1⌋ = 1`. -/
+theorem suppProj_one : suppProj (1 : A) = 1 := by
+  have h := (ceil_spec (b := (1 : A)) zero_le_one).2.1
+  rw [suppProj, star_one, one_mul]
+  rw [one_mul] at h
+  exact h
+
+/-- `1∖a = a`, so the first map of 81IX is the second one at `c = 1`. -/
+theorem ldiv_one (y : A) : ldiv 1 y = y :=
+  ldiv_eq (one_mul y).symm (by rw [suppProj_one, one_mul])
+
+/-- **81IX** (`div-usc`, vn.tex:5533, Lemma) with "ultrastrongly" replaced
+by "ultraweakly", second map: `a ↦ c∖a/b` is **ultraweakly** continuous on
+`c(A)₁b`.  See the section note above for the argument, and `div_usc` for
+why the ultrastrong claim is false. -/
+theorem div_uwc_corner (b c : A) :
+    @ContinuousOn A A (ultraweak A) (ultraweak A)
+      (fun a => ldiv c (div a b))
+      {a : A | ∃ d : A, ‖d‖ ≤ 1 ∧ a = c * d * b} := by
+  let _instA : TopologicalSpace A := ultraweak A
+  have : T2Space A := vn_positive_basic_1.1
+  set S : Set A := {a : A | ∃ d : A, ‖d‖ ≤ 1 ∧ a = c * d * b} with hS
+  set f : A → A := fun a => ldiv c (div a b) with hfdef
+  have hp : IsStarProjection (suppProj c) := (ceill_basic_1 c).1.1
+  have hq : IsStarProjection (rangeProj b) := (ceill_basic_2 b).1.1
+  -- the three properties of the value on `c(A)₁b`
+  have hval : ∀ a ∈ S, suppProj c * f a * rangeProj b = f a ∧ c * f a * b = a ∧
+      ‖f a‖ ≤ 1 := by
+    rintro a ⟨d, hd, rfl⟩
+    have hc : c * suppProj c = c := (ceill_basic_1 c).1.2
+    have hb : rangeProj b * b = b := (ceill_basic_2 b).1.2
+    have hfa : f (c * d * b) = suppProj c * d * rangeProj b := ldiv_div_ball b c d
+    rw [hfa]
+    refine ⟨?_, ?_, ?_⟩
+    · calc suppProj c * (suppProj c * d * rangeProj b) * rangeProj b
+          = (suppProj c * suppProj c) * d * (rangeProj b * rangeProj b) := by noncomm_ring
+        _ = suppProj c * d * rangeProj b := by
+            rw [hp.isIdempotentElem.eq, hq.isIdempotentElem.eq]
+    · calc c * (suppProj c * d * rangeProj b) * b
+          = (c * suppProj c) * d * (rangeProj b * b) := by noncomm_ring
+        _ = c * d * b := by rw [hc, hb]
+    · calc ‖suppProj c * d * rangeProj b‖
+          ≤ ‖suppProj c * d‖ * ‖rangeProj b‖ := norm_mul_le _ _
+        _ ≤ (‖suppProj c‖ * ‖d‖) * ‖rangeProj b‖ := by
+            gcongr; exact norm_mul_le _ _
+        _ ≤ (1 * 1) * 1 := by
+            gcongr
+            · exact IsStarProjection.norm_le _ hp
+            · exact IsStarProjection.norm_le _ hq
+        _ = 1 := by norm_num
+  intro a₀ ha₀
+  -- multiplication by fixed elements is ultraweakly continuous (**45IV**)
+  have hΦ : Continuous (fun z : A => c * z * b) :=
+    ((mult_uws_cont b).2.1).comp (mult_uws_cont c).1
+  have hΨ : Continuous (fun z : A => suppProj c * z * rangeProj b) :=
+    ((mult_uws_cont (rangeProj b)).2.1).comp (mult_uws_cont (suppProj c)).1
+  have hC : IsClosed {z : A | suppProj c * z * rangeProj b = z} :=
+    isClosed_eq hΨ continuous_id
+  have hmemK : ∀ᶠ x in 𝓝[S] a₀, f x ∈ Metric.closedBall (0 : A) 1 := by
+    filter_upwards [self_mem_nhdsWithin] with a ha
+    simpa using (hval a ha).2.2
+  -- the values lie in the ultraweakly compact unit ball (**77III**)
+  refine vn_ball_compact.tendsto_nhds_of_unique_mapClusterPt hmemK ?_
+  intro y _ hcl
+  -- (1) a cluster point `y` of the values lies in the corner `⌈c⌋A⌊b⌉`
+  have hyC : suppProj c * y * rangeProj b = y := by
+    have hsub : Filter.map f (𝓝[S] a₀) ≤
+        Filter.principal {z : A | suppProj c * z * rangeProj b = z} := by
+      rw [Filter.le_principal_iff, Filter.mem_map]
+      filter_upwards [self_mem_nhdsWithin] with a ha
+      exact (hval a ha).1
+    have := (hcl.clusterPt.mono hsub)
+    rw [← mem_closure_iff_clusterPt, hC.closure_eq] at this
+    exact this
+  -- (2) `cyb` is a cluster point of the identity net, so `cyb = a₀`
+  have hΦy : c * y * b = a₀ := by
+    have htend : Tendsto (fun z : A => c * z * b) (Filter.map f (𝓝[S] a₀)) (𝓝 a₀) := by
+      rw [Filter.tendsto_map'_iff]
+      refine Tendsto.congr' ?_ (nhdsWithin_le_nhds (s := S) (a := a₀))
+      filter_upwards [self_mem_nhdsWithin] with a ha
+      exact ((hval a ha).2.1).symm
+    have := ClusterPt.map hcl.clusterPt hΦ.continuousAt htend
+    exact eq_of_nhds_neBot this
+  -- (3) so `y` is the value at `a₀`, by uniqueness of the quotient
+  calc y = ldiv c (div (c * y * b) b) := (ldiv_div_corner hyC).symm
+    _ = ldiv c (div a₀ b) := by rw [hΦy]
+    _ = f a₀ := rfl
+
+/-- **81IX** (`div-usc`, vn.tex:5533, Lemma) with "ultrastrongly" replaced
+throughout by "ultraweakly": **both** maps `a ↦ a/b : (A)₁b → A` and
+`a ↦ c∖a/b : c(A)₁b → A` are ultraweakly continuous.
+
+This is the repair of 81IX proposed in QUESTIONS.md **A5**: one word, both
+maps kept, no hypothesis on `c`.  It is also what the one real consumer
+needs — **96V** `canonical-filter` uses 81IX only for *normality* of
+`g = d*∖f(·)/d`, and ultraweak continuity gives that, since a bounded
+increasing net converges ultraweakly to its supremum and `g` is positive.
+The ultrastrong statement `div_usc` above is false and stays `sorry`. -/
+theorem div_uwc (b c : A) :
+    @ContinuousOn A A (ultraweak A) (ultraweak A) (fun a => div a b)
+        {a : A | ∃ d : A, ‖d‖ ≤ 1 ∧ a = d * b} ∧
+      @ContinuousOn A A (ultraweak A) (ultraweak A)
+        (fun a => ldiv c (div a b))
+        {a : A | ∃ d : A, ‖d‖ ≤ 1 ∧ a = c * d * b} := by
+  refine ⟨?_, div_uwc_corner b c⟩
+  have h := div_uwc_corner b (1 : A)
+  simp only [one_mul, ldiv_one] at h
+  exact h
 
 /-! ## Parsec 820: polar decomposition -/
 

@@ -13983,3 +13983,519 @@ else — and, since `QuantumLambda.lean` and `Duplicators.lean` import
 discipline that `SelfDual.lean` lacked for two sessions.  The first five
 lemmas are about a *single* von Neumann algebra and belong in A/VN; they live
 in `Tensor.lean` only because A/Proc must not edit A/VN.
+
+---
+
+## Session 63 — `B/Dils`: **154III.5 `existence_paschke_5` is proved** — the mediating σ exists, and `f ↦ fᵐᵒᵖ` turns out to preserve complete positivity in general (worker on `Paschke.lean`)
+
+**Result.** **`existence_paschke_5` is closed**, so the constructed triple
+`(𝒷ᵃ(𝒜 ⊗_φ ℬ)ᵐᵒᵖ, ϱ, h)` **is** a Paschke dilation of every ncp-map between
+von Neumann algebras.  `Paschke.lean` goes 6 → **5**, `B/Dils` **30 → 29**:
+`HilbertModules` 0, `SelfDualCompletion` 0, `Stinespring` 1, `Kaplansky` 4,
+`Paschke` **5**, `SelfDual` 7, `Pure` 12 — the three files on or below the
+edit (`Paschke`, and its dependents `SelfDual` and `Pure`, the latter two
+re-checked against rebuilt oleans) each run through `lean` individually and
+each paired with an **error count of 0**.  `existence_paschke_5` and every
+new declaration are axiom-clean (`propext, Classical.choice, Quot.sound`),
+checked from an importing file against the rebuilt olean.
+
+**399 lines** were added to `Paschke.lean`, in three places: a
+`section MopMaps` inside `section MulOppositeVN` (~91), a block of helpers
+immediately before `existence_paschke_5` (~178), the proof itself (~73) and
+one corollary (~26).  The survey's ≈450–550 estimate held for a fifth
+consecutive session.
+
+### The brief's "one genuinely new obligation" is a general theorem
+
+The brief and the survey both said that `ad_S` staying completely positive
+on the *opposite* algebras is "the one genuinely new obligation", "true,
+though `f ↦ fᵐᵒᵖ` does not preserve complete positivity in general", and
+costed it at ~120 lines through a collapsing Gram sum special to `ad_S`.
+
+**That is wrong: `f ↦ fᵐᵒᵖ` preserves complete positivity for every `f`**,
+and the proof is four lines (`mopLinear_cp`, ~15 with the plumbing).  The
+counterexample the file header records — the transpose on `M₂` — is
+`op : A → Aᵐᵒᵖ`, a ∗-**anti**-isomorphism, which indeed is positive and not
+cp.  Transporting on *both* sides is a different map, and
+
+```
+0 ≤ ∑ᵢⱼ (Bᵢ)* fᵐᵒᵖ((Aᵢ)* Aⱼ) Bⱼ   in Qᵐᵒᵖ
+```
+
+unops, entry by entry, to `0 ≤ ∑ᵢⱼ bⱼ f(aⱼ aᵢ*) bᵢ*` in `Q`, which is the
+Gram sum of `f` at the families `(aᵢ*)`, `(bᵢ*)` **with the two summation
+indices exchanged** (`Finset.sum_comm`).  Structurally: `Mₙ(Aᵐᵒᵖ) ≅ Mₙ(A)ᵐᵒᵖ`
+by `M ↦ (Mᵀ)ᵒᵖ`, a ∗-isomorphism, under which `(fᵐᵒᵖ)ₙ = (fₙ)ᵐᵒᵖ`.  The new
+`ncpMop` is public and general, so any future ᵐᵒᵖ-transport in the chapter is
+now free.  Normality transports along `selfAdjointUnop`, as the brief said.
+
+### Divergence (case 2: the thesis's proof is fine; another route was used)
+
+**Uniqueness of σ (154VIII) does not go through `hilmod-fixed-on-V`.**  The
+thesis compares the vector forms `⟨x̂, σₖ(c) x̂⟩` for `x ∈ 𝒜 ⊙ ℬ` and then
+appeals to **152IX**, i.e. to ultranorm density of the image of `η`.  Our
+`PaschkeModule` is *abstract*: it has no `η` and no density field, so that
+route is not available — and the statement of `existence_paschke_5`
+quantifies over an arbitrary `M : PaschkeModule φ`, so it cannot be
+recovered by working with the concrete completion either.
+
+It is not needed.  The **uniqueness half of the universal property of part
+1** supplies exactly what the density argument was for, in two lemmas:
+
+* `paschkeModule_inner_tprod_separating` — if `⟨a ⊗ b, w⟩ = 0` for all
+  `a, b` then `w = 0`.  Run part 1 against **`ℬ` itself** (self dual by
+  `selfDual_self`) and the **zero** bilinear map: `x ↦ ⟨w, x⟩` and `0` are
+  then two bounded module maps `𝒜 ⊗_φ ℬ → ℬ` lifting it, hence equal, and
+  evaluating at `w` gives `⟨w,w⟩ = 0`.  ~25 lines.
+* `paschkeModule_ba_ext` — adjointable operators agreeing on the elementary
+  tensors are equal, by the same uniqueness at `Y = 𝒜 ⊗_φ ℬ`.  ~20 lines,
+  on top of `phiCompatible_comp` (a bounded module map composed with `⊗` is
+  again φ-compatible).
+
+A second simplification falls out: **no polarization is needed.**  The
+thesis determines only the diagonal `⟨x̂, σₖ(c) x̂⟩` and would have to
+polarize to get the operator; the same computation run at two *different*
+elementary tensors gives the whole sesquilinear form directly,
+
+```
+⟨a ⊗ b, σ(c)(a' ⊗ b')⟩ = b' · h'(ϱ'(a') c ϱ'(a*)) · b*      (mirrored)
+```
+
+(`paschke_sigma_matrix`).  The derivation is the thesis's own —
+`a ⊗ b = b·ϱ(a)(1 ⊗ 1)`, then adjointness of `ϱ(a)`, then **139III**
+`dils_univlemma` (already proved, from Choi) to move `ϱ(a')·σ(c)·ϱ(a*)`
+inside `σ`, then `h ∘ σ = h'` — only carried out at `(a,b) ≠ (a',b')`.
+
+### Existence: **154X** verbatim, and the brief's correction holds
+
+The brief's correction of the standing "structurally blocked" claim is
+right, and the route it sketched is the one that worked, step for step:
+`existence_paschke h'` (legitimate because `𝒫'` is a von Neumann algebra by
+`PaschkeTriple.vn`) gives `M'`; `ϱ'' = ϱ_{h'} ∘ ϱ'` and `e = 1 ⊗ 1` satisfy
+the hypothesis of `existence_paschke_4` **on the nose**, by
+`paschkeModule_h_ρ` at `h'`; part 4 returns the intertwiner `S`;
+`hilbmod_adjoint_exists` (**152VIII**) gives `S*`, `hilbmod_ad_ncp`
+(**153I**) makes `ad_S` an ncp-map, `ncpMop` moves it to the ᵐᵒᵖs, and
+`σ = ad_S^ᵐᵒᵖ ∘ ϱ_{h'}` satisfies both equations by unwinding
+(`S*S = 1` from inner-product preservation, `S(1⊗1) = e` for the second).
+The step-5 costing in the survey was accurate; only step 3's difficulty was
+overstated.
+
+### Reusable output
+
+All public in `Paschke.lean`: `mopLinear`, `mopLinear_apply`,
+`mop_nonneg_iff`, `isLUB_mop`, `mopLinear_cp`, `mopLinear_normal`,
+`ncpMop`, `ncpMop_apply` (the ᵐᵒᵖ-transport of maps, general, in
+`section MulOppositeVN`); `phiCompatible_zero`, `phiCompatible_comp`,
+`paschkeModule_inner_tprod_separating`, `paschkeModule_ba_ext`,
+`paschke_sigma_matrix`; and
+
+* **`exists_paschke_iso_paschkeModule`** — `existence_paschke_5` composed
+  with **140VIII** `paschke_unique_up_to_iso`: *every* Paschke dilation of
+  `φ` is nmiu-isomorphic to the constructed one, compatibly with `ϱ` and
+  `h`.  This is the "by `paschke-unique-up-to-iso` it suffices to prove it
+  for the dilation of `existence-paschke`" step with which the thesis opens
+  **156II** (dils.tex:3886) *and* **157IV**.2/.3 (dils.tex:4042).  It is
+  three lines, but it is the thing those items were actually waiting for,
+  and it typechecks — which is the machine-check that the constructed triple
+  and the abstract `PaschkeTriple` really line up.
+
+### Name-collision check
+
+All 14 new public names were grepped against the whole `Theses/` tree before
+being written (0 hits each), and `SelfDual.lean` and `Pure.lean` were
+re-`lean`ed against the rebuilt `Paschke.olean` with an error count, per the
+session-59/61 regression.  `isLUB_op` was renamed to `isLUB_mop` on general
+principle (nothing collided, but the unqualified name is generic enough to
+collide later).  Noted for a future cleanup: `corrPos`, a `private`
+NCP-to-positive-map wrapper near the foot of `Paschke.lean`, duplicates the
+**public** `ncpPositive` of `A/VN/Basic.lean`; the new proof uses
+`ncpPositive`.
+
+### Things the brief got wrong
+
+* "`ad_S` stays cp on the opposite algebras" is **not** a special property of
+  `ad_S`, and `f ↦ fᵐᵒᵖ` **does** preserve complete positivity in general —
+  see above.  Costed 120 lines, cost ~15.
+* Step 5 of the brief's plan says uniqueness "needs `dils-univlemma` — check
+  whether the tree has it before writing it".  It has it: **139III**
+  `dils_univlemma`, proved, in `Stinespring.lean`, and
+  `stinespring_is_paschke` (140III, proved) is a complete worked template
+  for the whole uniqueness-plus-existence shape.
+* Everything else in the brief held: the "not structurally blocked" reading
+  of 154X is correct, `existence_paschke_4` takes an arbitrary `M`, and
+  `paschkeModule_h_ρ` at `h'` is the hypothesis of part 4 on the nose.
+
+
+## Session 64 — `A/Proc`: **the 129II.2 author ruling lands** — `discrete` becomes "partitioned into atoms", and **130V `discrete_ell_x` closes** (worker on `Duplicators.lean`)
+
+`Duplicators.lean` **7 → 6** code `sorry`s, **0 errors** (compiler-counted,
+`lean Theses/A/Proc/Duplicators.lean`).  All seven new/changed declarations
+verified `[propext, Classical.choice, Quot.sound]` by `#print axioms` run
+*inside* the file (no stale-olean risk).  The other three `A/Proc` files were re-counted once the A/VN worker's oleans
+reappeared (they were absent for most of the session, which blocks
+`Measurement`, `QuantumLambda` and `Tensor` but not `Duplicators`, which
+imports neither `Division` nor `NormalFunctionals`): `Measurement` **10**,
+`QuantumLambda` **17**, `Tensor` **19**, each with **0 errors** — A/Proc
+**53 → 52**.
+
+### The statement change, and that it is authorised
+
+**129II.2 was changed.**  This is one of the rare authorised exceptions to
+"never change a statement": **Bas Westerbaan ruled on 2026-08-16** (QUESTIONS
+**A6**, now deleted per the house rule) that the printed definition
+
+> `X` is *discrete* if `X` is covered by atomic measurable subsets
+
+be replaced by
+
+> `X` is *discrete* if `X` can be **partitioned** into atomic measurable
+> subsets.
+
+Not Fremlin's "purely atomic": the partition form was chosen deliberately,
+because it hands **130V** the index set of its `ℓ^∞(Y)` directly instead of
+requiring an exhaustion argument to manufacture one.  The reason a change was
+needed is in ERRATA **129II.2**: the printed definition is strictly weaker
+than 211K's "purely atomic" (`X = [0,1]`, `μ = λ + δ₀` completed: the `{0,x}`
+are atoms and cover `X`, yet `(0,1]` is non-negligible and includes no atom),
+which makes **130V false as printed**, **129VI vacuous**, and gaps the printed
+proof of **127III**.  The Lean doc comment on `DiscreteSpace` records the
+ruling and the counterexample, so the printed form is not "restored" later.
+
+### What the ruling bought
+
+* **130V `discrete_ell_x` is proved.**
+* **129VI `measure_space_continuous_discrete` is restated and reproved** in
+  its non-vacuous form (`D` *partitioned* by atoms, not merely covered).
+* The parenthetical citation to Fremlin 211K is now **provable**, and is
+  proved: `discrete_iff_purelyAtomic`.
+
+### The equivalence — it holds, with one honest side condition
+
+`PurelyAtomic μ` is Fremlin's "every measurable set of non-zero measure
+includes an atom".  Then, for a finite measure space:
+
+* `discrete_purelyAtomic` : partitioned ⟹ purely atomic, **no side
+  condition**.  For non-negligible `E`, countability of the partition forces
+  some `μ(E ∩ A) > 0`, and `E ∩ A` is then an atom (`μ(E∩A) = μA` because
+  `E∩A ⊆ A`).
+* `discrete_iff_purelyAtomic` : the converse needs **`0 < μ(X)`**, and that
+  hypothesis is **necessary**, exactly as the brief anticipated:
+  `purelyAtomic_not_discrete_of_measure_zero` machine-checks that `(0 : Measure
+  Unit)` is purely atomic (vacuously) and *not* partitionable (there are no
+  atoms at all).  This is harmless for 130V, which is trivially true there.
+
+**Two corrections to the brief's sketch, both in our favour.**
+
+1. **Completeness of `μ` is not needed.**  The brief expected the absorption
+   step (`A₁ ∪ R` must still be an atom, where `R` is the leftover null set) to
+   need subsets of `R` to be measurable, i.e. completeness.  It does not:
+   `AtomicSet` quantifies only over *measurable* `S ⊆ A₁ ∪ R`, so one never has
+   to split a non-measurable set — `μ(S ∩ R) = 0` and `μ(S ∩ A₁) = μ(A₁)` do
+   the whole job.  `μ.IsComplete` is therefore unused in the equivalence, in
+   129VI and in 130V (it is kept in the signatures, as the thesis states it).
+2. **The countability of the partition is automatic and does not have to be
+   assumed.**  `atom_family_countable`: a pairwise disjoint family of atoms in
+   a finite measure space is countable, from Mathlib's
+   `Measure.countable_meas_pos_of_disjoint_iUnion`.  So 129II.2 need not say
+   "countable partition" even though 130IV is stated for countable ones.
+
+### Divergence (class 1 — the thesis's proof is wrong/unavailable): 129VI
+
+The printed proof (proc.tex:6283) applies **129IV** `measure_zorn` to the
+collection of discrete measurable subsets, justified by "clearly the countable
+union of discrete measurable subsets of `X` is again discrete".  **That step
+does not survive the repair**: an ascending union of sets each *partitioned*
+by atoms need not be partitioned by atoms, because successive partitions need
+not refine one another — for `A` an atom of a later stage, `A ∖ Dₙ` is either
+an atom or *null and possibly non-empty*, and the null leftovers cannot be
+dropped without breaking exactness of the partition.
+
+The repair conjectured in ERRATA (take `𝒮` = *countable disjoint unions of
+atoms* rather than sets covered by atoms) **fails for the same reason**, and
+that row has been corrected.  What works — and is what `exists_maximal_atom_family`
+does — is to run Zorn on **pairwise disjoint families of atoms** (elements of
+`Set (Set X)`, not subsets of `X`): chains are closed under union without any
+measure theory, the maximal family is automatically countable, so `D = ⋃₀𝒞`
+is measurable, and maximality says directly that `X ∖ D` contains no atom.
+Cost: 129VI no longer uses the thesis's choice-free 129IV (which stays in use
+for 129VIII); it uses ordinary `zorn_subset`.
+
+### Divergence (class 2 — a different route): 130V
+
+proc.tex:6525 says "combine **130IV** with **130II**".  That route is **not
+available in this rendering**, for a formalization reason rather than a
+mathematical one: `measure_space_partition` (130IV) is stated for a partition
+indexed by `ℕ` with every block algebra `ℬₙ` **`Nontrivial`**, and a discrete
+space may have a *finite* partition into atoms.  Padding an `ℕ`-index with `∅`
+forces `ℬₙ = {0}` on the padding (the `kernel` field of `IsLinftyOf` makes
+`qB f = 0` for all `f`, and then `one : qB 1 = 1` forces `1 = 0`), which
+`Nontrivial` forbids; and no filler algebra can be substituted.
+
+So the argument is run directly over the index type `↥𝒬` (the partition
+itself), with `ℂ` as every block algebra.  That is 130II's content inlined —
+its key lemma `ae_const_of_atomic` is exactly what is reused — and everything
+else is 130IV's own argument specialised: `Φ a` records the a.e.-constant
+value of a representative of `a` on each atom; surjectivity glues a bounded
+family of values with `Measurable.find` over an `ℕ`-enumeration of the
+(countable) partition, padded with `∅`; normality is free via
+`starAlgEquiv_preservesDirSups'`.  One simplification falls out: 130IV's norm
+dictionary (`linfty_norm_le` / `linfty_ae_bound`, the hard part of that proof)
+is **not needed**, because the value on an atom is *attained* on a
+positive-measure set, so a pointwise bound on `f` bounds it directly.
+
+**This friction is worth reporting to the authors**, because it is not
+peculiar to 130V: **127III**'s printed proof also invokes 130IV on the
+*two-block* partition `Xᵢ = D ⊎ C`, and hits the same mismatch.  If 130IV is
+ever restated, the useful form is "for a partition indexed by an arbitrary
+countable type" — or, equivalently, without the `Nontrivial` hypothesis.
+
+### 127III — 129X is *not* its only remaining blocker
+
+Closing 130V removes a real gap from the printed proof, but four obstacles
+remain in the Lean tree:
+
+1. **129X** `continuous_finite_measure_space_not_duplicable` — `sorry`,
+   blocked on **118IV.4** (inside `Tensor.lean`), unchanged this session.
+2. **54XI.1/.2** `cvn_faithful_1` / `cvn_faithful_2` (`A/VN/Basic.lean`) —
+   both `sorry`.  70III `cvn` *is* proved, but in the reduced
+   "`1 = ∑ᵢ ⌈⌈ωᵢ⌉⌉`" form; 54XI is what turns a corner into an `L^∞(Xᵢ)`, and
+   without it there is no measure space at all to feed 129VI/130IV/130V.
+3. The **`⊕ᵢ L^∞(Xᵢ)` carrier** that the reduced form of `cvn` exists to avoid
+   (FIXME at `Projections.lean:5695`), together with
+   `⊕ᵢ ℓ^∞(Yᵢ) ≅ ℓ^∞(⋃ᵢ Yᵢ)`.
+4. The **easy direction** — "`ℓ^∞(X)` is duplicable" — which needs a monoid
+   structure on `linf X` in `W*_miu`, i.e. an nmiu-map `linf X ⊗ linf X → linf
+   X`, and so sits behind the tensor block.  (This is also why 127III is
+   statement-tainted in the survey.)
+
+### 104VII, re-derived (no code written)
+
+Session 62's reading is confirmed against proc.tex:1560.  **104III.4 is not a
+blocker**: 104VII supplies exactly the `⌈p⌉ = ⌈q⌉ = 1` under which
+`centrally_similar_basic_4_faithful` is already proved, and that is what the
+final step ("`p⁻¹q` central, hence `p ~ q`") needs.  104IV
+`centrally_similar_fundamental` (repaired), 104VI
+`centrally_similar_corollary`, 80IV `approximate_pseudoinverse`, 45VI
+`mult_jus_cont` and 65IV are all proved.  What 104VII still needs is:
+
+1. "`p` is a norm limit of linear combinations of projections **commuting with
+   `p`**" — the tree has 65IV only for *all* projections
+   (`mem_of_isClosed_of_projections`, `projections_norm_dense`).  The natural
+   route is 65IV applied inside `{p}'`, but `commutant`
+   (`Projections.lean:3516`) is a bare `Set` (`Set.centralizer`) with no
+   algebra, let alone von Neumann algebra, structure; a Borel functional
+   calculus for `p` would do as well.  Either way this is missing
+   infrastructure, not a missing tactic.
+2. The **repaired 104III.5** — false as printed, and its repair is **not yet
+   authorised**, so nothing was changed there.
+3. The corner reduction to `eₙ𝒜eₙ`, carrying `ϑ`, `p` and `q` across and back
+   (the `Corner` / `cornerProjMap` machinery exists; the transport does not).
+
+### Naming note
+
+The partition variable is written `𝒬`, not `𝒫`: **`𝒫` is Mathlib notation for
+the power set** and is not usable as an identifier — `∃ 𝒫 : Set (Set X), …`
+fails to parse with "unexpected token '𝒫'".  Worth knowing before the next
+measure-theoretic block.
+
+New public names in `Theses.A.Proc` (all greped against `Theses/` before
+adding, no collisions; only `Theses.lean` imports `Duplicators`, so nothing
+downstream needed rebuilding): `PurelyAtomic`, `atom_family_countable`,
+`discrete_purelyAtomic`, `exists_maximal_atom_family`,
+`discrete_iff_purelyAtomic`, `purelyAtomic_not_discrete_of_measure_zero`.
+
+### Session 63, second item: **B11 is ruled on and implemented** — `IsFilterFor`'s mediating map becomes subunital, and 169XI.2a falls
+
+**Author ruling, Bas, 2026-08-16.**  In **169VIII** `dils-def-filter`
+(`Pure.lean`, `IsFilterFor`) the mediating map of the universal property
+becomes **subunital**: `∃! f' : NCPMap C A` → `∃! f' : NCPSUMap C A`.
+**`c 1 ≤ b` is kept** — it is *not* changed to `c 1 = b`, which is what
+QUESTIONS B11 and the ERRATA row had proposed.  Recorded here so that nobody
+later "restores" the printed form.
+
+**Why `≤` was never the problem.**  eff.tex **197II** `dfn-quotient`
+defines a quotient by `1 ∘ ξ_p ≤ p^⊥` *plus* a universal property quantified
+over `1 ∘ f ≤ p^⊥` — the same shape as 169VIII with `b = p^⊥` — and 169IX's
+own Remark says filters are the direction-reversed counterpart of quotients.
+So 169VIII was meant to be 197II transposed.  The mismatch is only in the
+**mediating** map: 197II lives in an effectus, where `f'` must be a
+*morphism*, i.e. subunital, whereas 169VIII asks merely for an ncp-map, and
+our `NCPMap` is genuinely not subunital (`NCPSUMap` is a separate structure
+in `Theses/Common.lean`).  That gap is the entire counterexample: for `b = 1`
+and `f = id`, the factorisation `f' = 2·id` is ncp but not subunital — legal
+under 169VIII as printed, illegal in the effectus.  The quantification over
+`f` needs no change: when `b` is an effect, `f(1) ≤ b ≤ 1` already forces `f`
+subunital, so only `f'` escaped.
+
+**Result.**  `Pure.lean` goes 12 → **11**, `B/Dils` 29 → **28**.
+**169XI.2a `dils_filter_basics_2a` is proved** (~25 lines), and it is the
+thesis's own two-liner.  Everything already proved against the old reading
+was re-checked and still holds; `Pure.lean` compiles with **0 errors** and
+`dils_filter_basics_1`, `_2a`, `_2b`, `dils_filters_injective` and
+`surjective_nmiu_1` are all axiom-clean.
+
+**What the change cost, item by item.**
+
+* **169XII `dils_filters_injective`** — the probe maps are `ncpOfNonneg hx`
+  for *effects* `x`, so they are subunital on the nose
+  (`ncpOfNonneg hx 1 = x ≤ 1`); the two candidates only had to be bundled as
+  `NCPSUMap`s and the conclusion read off with `.toNCPMap`.  ~8 lines.  (The
+  coordinator's worry that the `CU = ULift ℂ` probe might not be subunital
+  was unfounded — `keyEff` is stated for `x, y ∈ [0,1]`, and the extension to
+  the whole positive cone goes through `keyEff` after rescaling, never
+  through the universal property directly.)
+* **169XI.1 `dils_filter_basics_1`** — one character: the factorisation `g₀`
+  returned by the filter is now an `NCPSUMap`, so `exists_ncpSmul` is applied
+  to `g₀.toNCPMap`.  Nothing else moved, because the proof uses *injectivity*
+  of `c` rather than the uniqueness clause (a divergence logged in session
+  53).  Had it used uniqueness, it would have needed the competing map to be
+  subunital, which is exactly where the ruling bites.
+* **169XI.2b, 170I `IsPureMap`, 170IV.1 `surjective_nmiu_1`** — untouched.
+  2b is part 1 applied to `c'`; `IsPureMap` mentions only the derived
+  `IsFilter c`; 170IV.1 is about `IsCornerFor`, which the ruling does not
+  reach.
+* **Establishing directions** — there are none to repair: nothing in the tree
+  *proves* an `IsFilterFor`.  The only would-be producer is **169X**
+  `dils_stand_filter`, still `sorry`; whoever proves it now owes a subunital
+  factorisation (for the standard filter `c_b : ⌈b⌉B⌈b⌉ → B`, `a ↦ √b a √b`,
+  that is the content of proc.tex 96V, so no new obstacle is expected).
+
+**169XI.2a needs less than the coordinator predicted.**  The suggestion was
+that concluding `φ'(1) = 1` from `c'(φ'(1)) = 1` would need faithfulness or
+bipositivity of `c'` on its corner.  It needs only monotonicity: subunitality
+of the mediating `ψ` gives `φ(1) = c'(ψ(1)) ≤ c'(1)`, the filter clause gives
+`c'(1) ≤ φ(1)`, so `c'(ψ(1)) = c'(1)`, and **169XII** (filters are injective,
+proved) gives `ψ(1) = 1`.  Uniqueness is immediate: a unital `φ'` is
+subunital, so it is one of the maps the `∃!` ranges over.
+
+**Not checked, and deliberately not put in an erratum:** the coordinator's
+remark that proc.tex **96I** has no bug because bipositivity of a filter on
+its corner forces `g(1) ≤ 1`.  A/Proc's own `IsFilter` (96I,
+`Measurement.lean:1693`) is a separate structure, out of this worker's scope,
+and was not touched.
+
+QUESTIONS **B11** is deleted (house rule: resolved questions are removed, not
+marked).  The two ERRATA rows — **169VIII** and the **169XI.2 solution** —
+are rewritten to carry the ruling and the actual repair, and stay OPEN
+against the *tex sources*, which still print the weak form.
+
+## Session 63 — `A/VN`: **81IX is repaired by one word — `a ↦ c∖a/b` IS ultraweakly continuous** — and 81VIII.2 closes `Division.lean`'s named gate (worker on `Division.lean`)
+
+**Headline: the ultraweak analogue of `div-usc` is TRUE, for both maps,
+proved and axiom-clean as `div_uwc`.**  `div_usc` is untouched and still
+`sorry`; QUESTIONS **A5** now carries a fourth repair option (weaken the
+topology throughout to the ultraweak one) with the evidence, and the ERRATA
+rows **81IX** and **96VI** are updated accordingly.  Bas's observation that
+the counterexample does not touch the ultraweak version is correct:
+`‖dₙ‖_ω = 1` is a statement about one *fixed* vector state, while
+`ω(dₙ) = ⟨0|ρ|n⟩ → 0` for every trace-class `ρ`, so `dₙ → 0` ultraweakly.
+The refutation is specific to the ultrastrong topology.
+
+### What our `∖`/`/` actually pins down — the load-bearing check
+
+The coordinator's sketch flagged this as the step most likely to break, and
+it did not break; it is in fact *stronger* than the sketch assumed, and that
+is why the argument works.  `div`/`ldiv` are defined by `choose` from the
+uniqueness statements `exists_div`/`ldiv_eq`, and unwinding both gives: for
+`a ∈ c𝒜b`, `x = c∖a/b` is the **unique** element with
+
+    c x b = a,   ⌈c⌋x = x,   x⌊b⌉ = x
+
+(`ldiv_div_corner`, new, which is just **81II** repackaged; uniqueness is
+two applications of it).  So the characterisation is exactly "`cxb = a` plus
+the corner condition" and nothing more — no approximation data, no choice of
+pseudoinverse, no residual dependence on the `apinv` machinery, which enters
+only through *theorems* about `div`, never its definition.  The cluster-point
+step therefore survives verbatim.
+
+Two further simplifications relative to the sketch, both worth recording
+because they shorten the proof considerably:
+
+* **81VI.1's norm bound is not needed.**  On `c(𝒜)₁b` the value is
+  *explicitly* `⌈c⌋d⌊b⌉` for any witness `a = cdb` (`ldiv_div_ball`, new), so
+  `‖c∖a/b‖ ≤ ‖d‖ ≤ 1` because the corner projections are contractions.
+  `sequential_douglas_1` is never invoked.
+* **The first conjunct is the second at `c = 1`.**  `1∖y = y` and
+  `1·d·b = d·b`, so `div_uwc`'s first half is `div_uwc_corner b 1` after a
+  `simp only [one_mul, ldiv_one]`.  Both halves of 81IX therefore hold
+  ultraweakly, which is what makes the repair a genuine one-word change
+  rather than a change to one clause.
+
+### The proof, and why it has no ultrastrong analogue
+
+`div_uwc_corner`: fix `a₀ ∈ c(𝒜)₁b` and let `y` be an ultraweak cluster
+point of the values along `𝓝[c(𝒜)₁b] a₀` (one exists, and the filter is
+eventually inside the unit ball, which is ultraweakly **compact** —
+**77III** `vn_ball_compact`).  The corner `{z | ⌈c⌋z⌊b⌉ = z}` is the
+equaliser of the ultraweakly continuous `z ↦ ⌈c⌋z⌊b⌉` (**45IV**
+`mult_uws_cont`) with the identity, hence ultraweakly closed (**44XI**.1
+gives Hausdorff), so `y` lies in it.  And `z ↦ czb` is ultraweakly
+continuous and carries the value-filter to `𝓝[S]a₀ ≤ 𝓝 a₀`, so `cyb` is a
+cluster point of `𝓝 a₀`, i.e. `cyb = a₀`.  Uniqueness gives `y = c∖a₀/b`,
+and `IsCompact.tendsto_nhds_of_unique_mapClusterPt` upgrades "unique cluster
+point" to convergence.
+
+Every step of that argument holds ultrastrongly **except compactness of the
+ball**, which **43II**.5 `vn_counterexamples_5` explicitly refutes for
+`B(ℓ²)`.  So the two topologies differ here for one identifiable reason, and
+the thesis's seminorm proof cannot be repaired into the ultraweak
+statement — a different proof is needed, which is the whole cost of this
+repair option.
+
+### 96VI: the erratum should now be rewritten, not kept
+
+Ultraweak continuity is **all that 96V needs**.  Its use of 81IX is for
+*normality* of `g = d*∖f(·)/d`, and a bounded increasing net converges
+ultraweakly to its supremum with `g` positive, so ultraweak continuity
+delivers normality directly.  The ERRATA **96VI** row now says so: with the
+ultraweak repair of 81IX the thesis's own paragraph stands as printed except
+for the word "ultrastrongly", and the row can be deleted; with any of the
+other three repairs the elementary bipositivity argument (already in Lean as
+`canonical_filter`, axiom-clean) is still needed.  The Lean proof of 96V is
+left as it is either way — it is in `A/Proc`, out of scope, and it is not
+wrong, merely more than necessary.
+
+### 81VIII.2 `sequential_quotient_2` — closed, and the thesis understates it
+
+The named gate of `Division.lean` falls to the same new machinery.
+Uniqueness of the positive `c` with `a = √b c √b` and `⌈c⌉ ≤ ⌈b⌉` is exactly
+`ldiv_div_corner` (the hypothesis `⌈c⌉ ≤ ⌈b⌉` is, by **59III**.1, the corner
+condition `⌈b⌉c⌈b⌉ = c`, and `⌈(√b)*⌋ = ⌊√b⌉ = ⌈b⌉`), and the witness is
+`√b∖a/√b`, positive by **81VI**.2.
+
+**Divergence, class 2 (a strengthening).**  The double series is
+`(∑_{m<N}tₘ√b) c (∑_{n<N}√b tₙ) = Q_N c P_N` with `Q_N, P_N` projections
+increasing to `⌈b⌉`, and
+
+    Q_N c P_N − c = (Q_N c)(P_N − ⌈b⌉) + (Q_N − ⌈b⌉)(c⌈b⌉),
+
+whose two terms are bounded in `‖·‖_ω` by `‖c‖‖P_N − ⌈b⌉‖_ω` and by
+`‖Q_N − ⌈b⌉‖_{(c⌈b⌉)*ω(c⌈b⌉)}` (the second via `omegaNorm_mul_right`, the
+identity `‖yx‖_ω = ‖y‖_{x*ωx}`).  Both vanish, so the convergence is
+**ultrastrong**, strictly stronger than the ultraweak convergence 81VIII.2
+claims; the printed statement follows by **43I**.2.  This is not an erratum
+— the statement is true as printed — but the thesis could claim more.  It
+also does not conflict with the falsity of 81IX's second half: here `a` is
+*fixed*, and only uniformity in `a` fails, exactly as for **81VII**
+`div-approx`.
+
+### Result
+
+`A/VN/Division.lean` **6 → 5** declarations using `sorry`, **0 errors**;
+A/VN as a whole **30 → 29** (`Basic` 16, `Projections` 8, `Division` 5,
+`Completeness` 0, `NormalFunctionals` 0).  New public names, all greped
+against the whole `Theses/` tree before adding (none existed) and all
+axiom-clean: `ldiv_div_corner`, `ldiv_div_ball`, `suppProj_one`, `ldiv_one`,
+`div_uwc_corner`, `div_uwc`, plus a private `corner_two_sided`.  The first
+three helpers are placed *before* `sequential_quotient_1` because 81VIII.2
+uses them.  `lake build Theses.A.VN.NormalFunctionals` completes
+successfully, so A/VN's oleans are current for the downstream workers.
+
+The five remaining `Division.lean` items are **79VI.4** (false as stated,
+parked), **81IX** `div_usc` (false, parked pending A5), **84II**
+Artin–Wedderburn, **84bIII** and **84bV** — i.e. the file is done apart from
+two parked defects and the finite-dimensional/hereditarily-atomic block.
+
+**`mn_vna_3` was not attempted** — no time after the two items above; the
+circularity noted in the brief is untouched.
