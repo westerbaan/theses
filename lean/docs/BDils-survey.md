@@ -238,19 +238,19 @@ module; and the **public** `paschke_tprod_dense`.
 | DISP | name | class | note |
 |---|---|---|---|
 | 169IV | `standard_corner_dils` | **(c)** | cited to proc.tex 98I/95II; the universal property of `b ↦ ⌊a⌋b⌊a⌋` has to be built from scratch (`A/Proc` is off this import path) |
-| 169V | `h_is_corner_for_unital_map` | **(b)** | the author's proof works with the *standard* dilation of `existence_paschke` (`Paschke.lean`, `sorry`) |
+| 169V | `h_is_corner_for_unital_map` | **(b)** | ⚠️ row corrected session 66: `existence_paschke` **is** proved, and `exists_paschke_iso_paschkeModule` supplies the transfer, so the author's `ϑ : ℬ ≅ p𝒫p`, `p = \|e⟩⟨e\|` is now writable.  The remaining gap is the *last* sentence of 169VI — "so `h` is a corner (of `p`)" — which is **169IV**, the universal property of the standard corner, still `sorry` and cited to proc.tex |
 | 169X | `dils_stand_filter` | **(c)** | cited to proc.tex 96V — which **is** now proved in `A/Proc/Measurement.lean` (session 47) but is not importable here.  Proving it locally means redoing 96V |
 | **169XI.1** | `dils_filter_basics_1` | **(a)** | **CLOSED this session** |
 | **169XI.2a** | `dils_filter_basics_2a` | **(a)** | was **(d)**, false under the transcribed `c 1 ≤ b`.  **CLOSED session 63**, after Bas ruled on B11 (2026-08-16): the repair is that `IsFilterFor`'s *mediating* map is **subunital**, not that `c 1 = b`.  ~25 lines, the thesis's own argument; needs only monotonicity of `c'` plus **169XII**, not faithfulness |
 | **169XI.2b** | `dils_filter_basics_2b` | **(a)** | **CLOSED session 53**, from 169XI.1.  Note it does **not** depend on 2a, and was unaffected by the B11 repair |
 | 170II.1 | `dils_examples_pure_1` | **(b)** | `ad_T` classification of pure maps `B(H) → B(K)`; needs 171VII and the Stinespring block |
-| 170II.2 | `dils_examples_pure_2` | **(b)** | the thesis derives it from 169V + 169XI.2; 169V is `sorry` and 169XI.2**a** is the false half |
+| 170II.2 | `dils_examples_pure_2` | **(b)** | the thesis derives it from 169V + 169XI.2.  ⚠️ row corrected session 66: **169XI.2a is no longer false or open** (B11 was ruled on; closed session 63) and 169XI.2b closed session 53, so the only blocker left is **169V**, i.e. **169IV** |
 | **170IV.1** | `surjective_nmiu_1` | **(a)** | **CLOSED session 53**, once D5 was ruled on and `[VonNeumannAlgebra A] [VonNeumannAlgebra B]` restored (the fix really was local to the two signatures).  ~150 lines by the costing below, and the estimate held |
 | 170IV.2 | `surjective_nmiu_2` | **(b)** | converse; the von Neumann binders are restored (D5 done), but it still needs **169IV** — the standard corner `h_z` — *and* the thesis's `iso` (an ncp-isomorphism of von Neumann algebras is nmiu), which the tree does not have either |
-| 171II | `paschke_corner` | **(b)** | three-step proof through `existence_paschke` |
-| 171VII | `paschke_pure` | **(b)** | needs 171II |
-| 172III | `ncp_extreme_paschke` | **(b)** | needs `paschke_correspondence_*` (three `sorry`s in `Paschke.lean`) and 170II.2 |
-| 172X | `pure_ncp_extreme` | **(b)** | needs 172III + 171II + 169XI |
+| 171II | `paschke_corner` | **(b)** | three-step proof through `existence_paschke`, which **is** proved now, as are the two `A/VN` inputs of its third step (**83V** `cceil_sum`, axiom-clean, and **170IV**.1 `surjective_nmiu_1`).  What is *not* in the tree is the first two steps: `𝒜p` as a self-dual Hilbert `p𝒜p`-module and the isomorphism `𝒜 ⊗_{h_p} p𝒜p ≅ 𝒜p`.  Still multi-session |
+| 171VII | `paschke_pure` | **(b)** | needs 171II, 170II.2 **and** proc.tex's `square-f` and `weakly-closed-ideal` |
+| **172III** | `ncp_extreme_paschke` | **(a)** | **CLOSED session 66.**  This row (and session 64's) said it needs 170II.2 — **wrong**: only the *thesis's* proof of 3 ⇒ 1 does, to get `0 < λ < 1` out of purity of `h`.  Choosing `t = μa + ½` with `μ = (4(‖a‖+1))⁻¹` gives `φ_t(1) = ½φ(1)` directly, so 3 ⇒ 1 needs nothing beyond **157IV**.2/.3 (now proved).  ~200 lines + two helpers (`ncpSMul`, `isLUB_ofReal_smul`) |
+| 172X | `pure_ncp_extreme` | **(b)** | needs 171II + 169XI (172III is no longer a blocker) |
 | 172XII | `ncp_extreme_comp` | **(b)** | the thesis gives **no proof at all** (a Corollary with no proof point); the intended one is φ = h ∘ ϱ from `existence_paschke`, ϱ ncp-extreme by 172VIII (proved) and h ncp-extreme by 172X |
 
 **Bottom line for `Pure.lean` after session 53.**  This file is *not* volume:
@@ -846,3 +846,95 @@ outside the directory on `tensor_characterization`; the five known-false items
 and **164II.2b** (QUESTIONS D6) stand.  With 157IV closed, `Pure.lean`'s
 **172III** `ncp_extreme_paschke` now needs only 171II and 170II.2 (its
 `paschke_correspondence_*` prerequisite is met).
+
+
+---
+
+## Session 66 (result): **156II is proved** — and it needed no new `A/VN` — plus **172III**, which the survey had wrongly blocked on 170II.2
+
+`Paschke.lean` **3 → 1**, `Pure.lean` **11 → 10**, `B/Dils` **26 → 23**:
+`HilbertModules` 0, `SelfDualCompletion` 0, `Stinespring` 1, `Kaplansky` 4,
+`Paschke` **1**, `SelfDual` 7, `Pure` **10** — every file run through `lean`
+individually against rebuilt oleans and **paired with an error count, 0
+everywhere**.  All three new theorems verify
+`[propext, Classical.choice, Quot.sound]` from an importing file.
+
+### 156II: the A/VN question was already answered
+
+The brief flagged 156II as "partly an A/VN question (`cceil-fundamental`,
+`ad-contraposed`, the `ceil` of a map)".  **Neither `cceil_fundamental` nor
+`ad_contraposed` is used.**  They belong to the thesis's route, which proves
+`⌈ϱ⌉ = ⌈⌈φ⌉⌉` by showing `p ≤ ⌈ϱ⌉^⊥ ⟺ p ≤ ⌈⌈φ⌉⌉^⊥` for every projection `p`;
+the `a ⌈φ⌉ a* ≤ p^⊥` step (`ad-contraposed`) and the union
+`⌈⌈φ⌉⌉ = ⋃_a ⌈a⌈φ⌉a*⌉` (`cceil-fundamental`) are what carry `a` through.  Our
+two statements are phrased *without* carriers, so the whole detour
+disappears:
+
+* `paschke_injective_carrier` (`ϱ(p) = 0 ⟺ ∀a, φ(a*pa) = 0`).  **⇒** is three
+  lines from `φ = h ∘ ϱ` alone — no model, no minimality.  **⇐** transports to
+  the constructed module by `exists_paschke_iso_paschkeModule` and computes
+  `⟨(ap) ⊗ b, (ap) ⊗ b⟩ = b φ(a p a*) b*`, so the hypothesis (at `a*`) kills
+  every elementary tensor and `paschkeModule_ba_ext` gives `ϱ(p) = 0`.  This
+  is the thesis's own computation; what it replaces is the appeal to
+  `hilmod-fixed-on-V`.
+* `paschke_injective` uses **63II**.4 `carrier_basic_4` and **69IV**
+  `carrier_miu` from `A/VN` — **both already proved**, so nothing was needed
+  *from* A/VN beyond what is on the shelf.  `⌈ϱ⌉` is central and
+  `ϱ(⌈ϱ⌉^⊥) = 0`, so the carrier form at `a = 1` gives `φ(⌈ϱ⌉^⊥) = 0`, the
+  hypothesis gives `⌈ϱ⌉ = 1`, and `carrier_basic_4` converts that to
+  injectivity.  The `⇒` half needs only `a*za = z(a*a)z ≤ ‖a*a‖z` for central
+  `z`.
+
+⚠️ **Both statements were missing `[VonNeumannAlgebra ℬ]`** and it has been
+restored — a transcription slip of exactly the `221IV.1` kind, not a
+weakening in the source: dils.tex 156II is about an ncp-map, ncp-maps go
+between von Neumann algebras, and every sibling in the file
+(`existence_paschke`, all of **157IV**) carries both binders.  Without it
+there is no `PaschkeModule φ` to transport to, and the ⇐ half is not provable
+by any route we could find: the only *abstract* substitute we could see is a
+minimality lemma ("a projection `r` in `ϱ(𝒜)^□` with `h(r^⊥·) = 0` is `1`",
+proved from the universal property by comparing `π : c ↦ rcr` with the
+mediating map out of the corner triple), and that needs corner **algebras**,
+which live in `A/Proc/Measurement.lean` and are off this import path.
+Recorded in `PROVING-LOG.md`, not `QUESTIONS.md`: the thesis is right and we
+were wrong, so no author decision is involved.
+
+### 172III: the survey's blocker was the thesis's proof, not the statement
+
+`ncp_extreme_paschke` was listed as needing 170II.2 `dils_examples_pure_2`
+(purity of `h`), which is blocked on 169IV/169X and hence on proc.tex.  That
+is true of the thesis's **proof** of 3 ⇒ 1 only, where purity is used to split
+`h = c ∘ h_p`, deduce `ptp = λp` and thereby *discover* that `0 < λ < 1`.
+`λ` is ours to choose: for self-adjoint `a` in the commutant with `h(a) = 0`,
+take `t = μa + ½` with `μ = (4(‖a‖+1))⁻¹`, so `¼ ≤ t ≤ ¾` and
+`φ_t(1) = μh(a) + ½h(1) = ½φ(1)` **directly**.  Then `2φ_t`, `2φ_{1-t}` are
+ncp (157VI `exists_phiT_ncp`) with value `φ(1)` at `1`, ncp-extremity gives
+`φ_t = φ_{½1}`, and injectivity of `t ↦ φ_t` (from **157IV**.2) gives
+`t = ½1`, i.e. `a = 0`.  A general commutant element is handled by its real
+and imaginary parts.  2 ⇒ 3 is the thesis's argument verbatim, on **157IV**.3.
+
+**Reusable output**, all `private` in `Pure.lean`: `smulReal_mono_aux`
+(`x ≤ y → r·x ≤ r·y` for real `r ≥ 0` — Mathlib has no `PosSMulMono ℝ`
+instance for C\*-algebras), `isLUB_ofReal_smul`, and **`ncpSMul`** (a
+nonnegative real multiple of an ncp-map is an ncp-map, with
+`ncpSMul_apply`).  `ncpSMul` is the one worth promoting: `NCPLe` and
+`ncpInterval` quantify over *bundled* ncp-maps, so scalar multiples are
+needed by anything that feeds a convex combination to **157IV**.3, and the
+zero ncp-map (`ncpSMul 0`) is what makes `NCPLe` reflexive and hence turns
+`paschke_correspondence_embedding` into injectivity of `t ↦ φ_t`.
+
+### The next gate
+
+**155II `ksgns`** is now the whole of `Paschke.lean` (a KSGNS construction,
+independent of the Paschke chain).  In `Pure.lean` the remaining ten are
+still rooted in three places, unchanged: **169IV** `standard_corner_dils`
+and **169X** `dils_stand_filter` (both cited to proc.tex, which is off this
+import path), and **171II** `paschke_corner` (which additionally needs
+`cceil_sum`, `surjective_nmiu`, and `𝒜p` as a self-dual Hilbert
+`p𝒜p`-module).  `172XII` `ncp_extreme_comp` remains blocked on 172X, which
+is blocked on 171II.
+
+Unchanged: **162II `total_mv_order`** is still the only self-contained item
+outside the Paschke chain; **165VI** is still blocked outside the directory
+on `tensor_characterization`; the five known-false items and **164II.2b**
+(QUESTIONS D6) stand.

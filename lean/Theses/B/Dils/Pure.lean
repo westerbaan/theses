@@ -1460,10 +1460,114 @@ def NCPExtreme (φ : NCPMap A B) : Prop :=
     (∀ a, φ a = (l : ℂ) • φ₁ a + ((1 - l : ℝ) : ℂ) • φ₂ a) →
     (∀ a, φ₁ a = φ a) ∧ ∀ a, φ₂ a = φ a
 
+/-- Auxiliary: multiplication by a nonnegative real is monotone on a
+C\*-algebra (Mathlib has no `PosSMulMono ℝ` instance here; this is the
+`√r`-conjugation workaround of **25I**, via `ofReal_smul_nonneg`). -/
+private theorem smulReal_mono_aux {C : Type*} [CStarAlgebra C] [PartialOrder C] [StarOrderedRing C]
+    {x y : C} (h : x ≤ y) {r : ℝ} (hr : 0 ≤ r) : (r : ℂ) • x ≤ (r : ℂ) • y := by
+  have h0 := ofReal_smul_nonneg (sub_nonneg.mpr h) hr
+  rwa [smul_sub, sub_nonneg] at h0
+
+/-- Auxiliary: `x ↦ r·x` preserves suprema for `r ≥ 0` (for `r = 0` this
+needs the set to be non-empty, which normality supplies). -/
+private theorem isLUB_ofReal_smul {S : Set B} {t : B} (h : IsLUB S t) {r : ℝ} (hr : 0 ≤ r)
+    (hne : S.Nonempty) : IsLUB ((fun x : B => (r : ℂ) • x) '' S) ((r : ℂ) • t) := by
+  rcases hr.eq_or_lt with hr0 | hrpos
+  · have himg : (fun x : B => (r : ℂ) • x) '' S = {0} := by
+      ext y
+      simp only [Set.mem_image, Set.mem_singleton_iff]
+      constructor
+      · rintro ⟨x, -, rfl⟩; simp [← hr0]
+      · rintro rfl; obtain ⟨x, hx⟩ := hne; exact ⟨x, hx, by simp [← hr0]⟩
+    rw [himg, ← hr0]
+    simp
+  · have hrne : (r : ℂ) ≠ 0 := by simpa using hrpos.ne'
+    constructor
+    · rintro y ⟨x, hx, rfl⟩
+      exact smulReal_mono_aux (h.1 hx) hr
+    · intro b hb
+      have hcancel : ∀ x : B, ((r⁻¹ : ℝ) : ℂ) • ((r : ℂ) • x) = x := by
+        intro x
+        rw [smul_smul]
+        push_cast
+        rw [inv_mul_cancel₀ hrne, one_smul]
+      have hub : t ≤ ((r⁻¹ : ℝ) : ℂ) • b := by
+        refine h.2 fun x hx => ?_
+        have := smulReal_mono_aux (hb ⟨x, hx, rfl⟩) (le_of_lt (inv_pos.mpr hrpos))
+        rwa [hcancel x] at this
+      have h2 := smulReal_mono_aux hub hr
+      have hrr : (r : ℂ) * ((r⁻¹ : ℝ) : ℂ) = 1 := by
+        push_cast
+        exact mul_inv_cancel₀ hrne
+      rwa [smul_smul, hrr, one_smul] at h2
+
+/-- Auxiliary: a nonnegative real multiple of an ncp-map is an ncp-map.
+Needed to feed `λψ` to **157IV**.3 `paschke_correspondence_surjective`
+(`ncpInterval` takes *bundled* ncp-maps), and to build the two halves
+`λ⁻¹φ_t`, `(1-λ)⁻¹φ_{1-t}` of the convex decomposition in 3 ⇒ 1. -/
+private noncomputable def ncpSMul (r : ℝ) (hr : 0 ≤ r) (f : NCPMap A B) : NCPMap A B where
+  toCompletelyPositiveMap :=
+    { toLinearMap := (r : ℂ) • f.toCompletelyPositiveMap.toLinearMap
+      map_cstarMatrix_nonneg' := by
+        refine (cp_iff _).out 0 1 |>.mp ((cp_iff _).out 2 0 |>.mp ?_)
+        intro N a
+        have hf : IsCompletelyPositiveMap f.toCompletelyPositiveMap.toLinearMap :=
+          (cp_iff _).out 1 0 |>.mp fun N M hM =>
+            f.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM
+        have h3 : ∀ (N : ℕ) (a : Fin N → A),
+            0 ≤ CStarMatrix.ofMatrix (Matrix.of fun i j =>
+              f.toCompletelyPositiveMap.toLinearMap (star (a i) * a j)) :=
+          (cp_iff f.toCompletelyPositiveMap.toLinearMap).out 0 2 |>.mp hf
+        have hbase := h3 N a
+        have heq : CStarMatrix.ofMatrix
+              (Matrix.of fun i j => ((r : ℂ) • f.toCompletelyPositiveMap.toLinearMap)
+                 (star (a i) * a j))
+            = (r : ℂ) • CStarMatrix.ofMatrix
+                (Matrix.of fun i j =>
+                  f.toCompletelyPositiveMap.toLinearMap (star (a i) * a j)) := by
+          ext i j
+          simp
+        rw [heq]
+        exact ofReal_smul_nonneg hbase hr }
+  preservesDirSups' := by
+    have key : PreservesDirSups ⇑((r : ℂ) • f.toCompletelyPositiveMap.toLinearMap) := by
+      intro Ds s hne hdir hlub
+      have h := f.preservesDirSups' Ds s hne hdir hlub
+      have himg : ((fun d : selfAdjoint A =>
+          ((r : ℂ) • f.toCompletelyPositiveMap.toLinearMap) (d : A)) '' Ds)
+          = (fun x : B => (r : ℂ) • x) ''
+              ((fun d : selfAdjoint A => (f (d : A) : B)) '' Ds) := by
+        rw [Set.image_image]
+        rfl
+      rw [himg]
+      exact isLUB_ofReal_smul h hr (hne.image _)
+    exact key
+
+@[simp] private theorem ncpSMul_apply (r : ℝ) (hr : 0 ≤ r) (f : NCPMap A B) (a : A) :
+    ncpSMul r hr f a = (r : ℂ) • f a := rfl
+
 /-- **172III** (`ncp-extreme-paschke`, dils.tex:6426, Theorem): for an
 ncp-map `φ` with Paschke dilation `(𝒫, ϱ, h)` the following are
 equivalent: (1) `h` is injective on the commutant `ϱ(A)′`; (2) `h` is
-injective on `[0,1]_{ϱ(A)′}`; (3) `φ` is ncp-extreme. -/
+injective on `[0,1]_{ϱ(A)′}`; (3) `φ` is ncp-extreme.
+
+**1 ⇒ 2** is a restriction and **2 ⇒ 3** is the thesis's argument verbatim:
+`λψ ≤_ncp φ`, so `λψ = φ_t` for some `t ∈ [0,1]_{ϱ(A)′}` by **157IV**.3, and
+`h(t) = φ_t(1) = λφ(1) = h(λ1)` forces `t = λ1`.
+
+**3 ⇒ 1 diverges from the thesis, which routes it through purity of `h`**
+(**170II**.2, itself resting on 169IV/169X and hence on proc.tex) to split
+`h = c ∘ h_p` and read `0 < λ < 1` off `ptp = λp`.  None of that is needed:
+`λ` is ours to choose.  For self-adjoint `a` in the commutant with `h(a) = 0`
+put `t = μa + ½` with `μ = (4(‖a‖+1))⁻¹`, so that `¼ ≤ t ≤ ¾`; then
+`φ_t(1) = μh(a) + ½h(1) = ½φ(1)` *directly*, `2φ_t` and `2φ_{1-t}` are
+ncp-maps agreeing with `φ` at `1`, and ncp-extremity gives `φ_t = φ_{½1}`,
+whence `t = ½1` by the injectivity of `t ↦ φ_t` (**157IV**.2) and `a = 0`.
+The general element is handled by its real and imaginary parts, which are
+again in the commutant and again killed by `h`.
+
+So **172III does not depend on 170II.2** — the survey's row saying it does
+was reading the thesis's proof, not the statement. -/
 theorem ncp_extreme_paschke [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (φ : NCPMap A B) (D : PaschkeTriple A B)
     (hD : IsPaschkeDilationOf D ⇑φ) :
@@ -1471,8 +1575,239 @@ theorem ncp_extreme_paschke [VonNeumannAlgebra A] [VonNeumannAlgebra B]
       [Set.InjOn ⇑D.h (commutant D.P (Set.range ⇑D.ρ)),
        Set.InjOn ⇑D.h
          (commutant D.P (Set.range ⇑D.ρ) ∩ Set.Icc (0 : D.P) 1),
-       NCPExtreme φ] :=
-  sorry
+       NCPExtreme φ] := by
+  let _ := D.vn
+  have hρ1 : (D.ρ (1 : A) : D.P) = 1 := map_one D.ρ.toStarAlgHom
+  have hhadd : ∀ x y : D.P, (D.h (x + y) : B) = D.h x + D.h y := fun x y =>
+    map_add D.h.toCompletelyPositiveMap.toLinearMap x y
+  have hhsub : ∀ x y : D.P, (D.h (x - y) : B) = D.h x - D.h y := fun x y =>
+    map_sub D.h.toCompletelyPositiveMap.toLinearMap x y
+  have hhsmul : ∀ (c : ℂ) (x : D.P), (D.h (c • x) : B) = c • D.h x := fun c x =>
+    map_smul D.h.toCompletelyPositiveMap.toLinearMap c x
+  have hh1 : (D.h (1 : D.P) : B) = φ 1 := by rw [← hρ1]; exact hD.1 1
+  have hphiT1 : ∀ t : D.P, phiT D t 1 = D.h t := by
+    intro t
+    show (D.h (t * D.ρ 1) : B) = D.h t
+    rw [hρ1, mul_one]
+  have hcomm_smul_one : ∀ c : ℂ, (c • (1 : D.P)) ∈ commutant D.P (Set.range ⇑D.ρ) := by
+    rintro c m ⟨a, rfl⟩
+    rw [mul_smul_comm, smul_mul_assoc, mul_one, one_mul]
+  have hphiT_smul_one : ∀ (c : ℂ) (a : A), phiT D (c • (1 : D.P)) a = c • φ a := by
+    intro c a
+    show (D.h ((c • (1 : D.P)) * D.ρ a) : B) = c • φ a
+    rw [smul_mul_assoc, one_mul, hhsmul, hD.1 a]
+  have hone_mono : ∀ {c d : ℝ}, c ≤ d →
+      ((c : ℂ) • (1 : D.P)) ≤ ((d : ℂ) • (1 : D.P)) := by
+    intro c d hcd
+    have h := ofReal_smul_nonneg (zero_le_one (α := D.P)) (sub_nonneg.mpr hcd)
+    have he : ((d - c : ℝ) : ℂ) • (1 : D.P) = (d : ℂ) • 1 - (c : ℂ) • 1 := by
+      push_cast; rw [sub_smul]
+    rw [he, sub_nonneg] at h
+    exact h
+  have hsmul_one_one : ((1 : ℝ) : ℂ) • (1 : D.P) = 1 := by push_cast; rw [one_smul]
+  have hphiT_inj : ∀ s t : D.P, s ∈ commutant D.P (Set.range ⇑D.ρ) → 0 ≤ s → s ≤ 1 →
+      t ∈ commutant D.P (Set.range ⇑D.ρ) → 0 ≤ t → t ≤ 1 →
+      (∀ a, phiT D s a = phiT D t a) → s = t := by
+    intro s t hs hs0 hs1 ht ht0 ht1 heq
+    have hzero : ∀ a, (ncpSMul (0 : ℝ) le_rfl φ) a = 0 := by
+      intro a; rw [ncpSMul_apply]; simp
+    have hle1 : NCPLe (phiT D t) (phiT D s) :=
+      ⟨ncpSMul (0 : ℝ) le_rfl φ, fun a => by rw [hzero a, add_zero, heq a]⟩
+    have hle2 : NCPLe (phiT D s) (phiT D t) :=
+      ⟨ncpSMul (0 : ℝ) le_rfl φ, fun a => by rw [hzero a, add_zero, heq a]⟩
+    exact le_antisymm
+      ((paschke_correspondence_embedding φ D hD t s ht ht0 ht1 hs hs0 hs1).mp hle2)
+      ((paschke_correspondence_embedding φ D hD s t hs hs0 hs1 ht ht0 ht1).mp hle1)
+  tfae_have 1 → 2 := fun h => h.mono Set.inter_subset_left
+  tfae_have 2 → 3 := by
+    intro hinj
+    have key : ∀ m : ℝ, 0 < m → m < 1 → ∀ ψ χ : NCPMap A B, ψ 1 = φ 1 →
+        (∀ a, φ a = (m : ℂ) • ψ a + ((1 - m : ℝ) : ℂ) • χ a) → ∀ a, ψ a = φ a := by
+      intro m hm0 hm1 ψ χ hψ1 hsum'
+      have hmem : (fun a => (m : ℂ) • ψ a) ∈ ncpInterval ⇑φ := by
+        refine ⟨⟨ncpSMul m hm0.le ψ, fun a => by rw [ncpSMul_apply, zero_add]⟩,
+          ⟨ncpSMul (1 - m) (by linarith) χ, fun a => by
+            rw [ncpSMul_apply]; exact hsum' a⟩⟩
+      obtain ⟨t, htc, ht0, ht1, htφ⟩ :=
+        paschke_correspondence_surjective φ D hD _ hmem
+      have hs0 : (0 : D.P) ≤ ((m : ℝ) : ℂ) • (1 : D.P) :=
+        ofReal_smul_nonneg zero_le_one hm0.le
+      have hs1 : ((m : ℝ) : ℂ) • (1 : D.P) ≤ 1 := by
+        have := hone_mono (le_of_lt hm1)
+        rwa [hsmul_one_one] at this
+      have hhts : (D.h t : B) = D.h (((m : ℝ) : ℂ) • (1 : D.P)) := by
+        rw [← hphiT1 t, ← hphiT1 (((m : ℝ) : ℂ) • (1 : D.P)), hphiT_smul_one]
+        have := congrFun htφ 1
+        rw [this, hψ1]
+      have hts : t = ((m : ℝ) : ℂ) • (1 : D.P) :=
+        hinj ⟨htc, ht0, ht1⟩ ⟨hcomm_smul_one _, hs0, hs1⟩ hhts
+      intro a
+      have h1 := congrFun htφ a
+      rw [hts, hphiT_smul_one] at h1
+      have hmne : ((m : ℝ) : ℂ) ≠ 0 := by simpa using hm0.ne'
+      exact (smul_right_injective B hmne h1).symm
+    intro l hl0 hl1 φ₁ φ₂ h1 h2 hsum
+    refine ⟨key l hl0 hl1 φ₁ φ₂ h1 hsum, key (1 - l) (by linarith) (by linarith) φ₂ φ₁ h2
+      (fun a => ?_)⟩
+    rw [hsum a]
+    have hc : ((1 - (1 - l) : ℝ) : ℂ) = ((l : ℝ) : ℂ) := by push_cast; ring
+    rw [hc, add_comm]
+  tfae_have 3 → 1 := by
+    intro hext
+    have hhpos : IsPositiveMap D.h.toCompletelyPositiveMap.toLinearMap := by
+      intro x hx
+      have h1 : (D.h (0 : D.P) : B) ≤ D.h x :=
+        OrderHomClass.mono D.h.toCompletelyPositiveMap hx
+      have h2 : (D.h (0 : D.P) : B) = 0 :=
+        map_zero D.h.toCompletelyPositiveMap.toLinearMap
+      rw [h2] at h1
+      exact h1
+    have hhstar : ∀ x : D.P, (D.h (star x) : B) = star (D.h x) :=
+      cstar_p_implies_i _ hhpos
+    have hcstar : ∀ x ∈ commutant D.P (Set.range ⇑D.ρ),
+        star x ∈ commutant D.P (Set.range ⇑D.ρ) := by
+      rintro x hx m ⟨a, rfl⟩
+      have h := hx (D.ρ (star a)) ⟨star a, rfl⟩
+      have h2 := congrArg star h
+      rw [star_mul, star_mul] at h2
+      have h3 : star (D.ρ (star a) : D.P) = D.ρ a := by
+        rw [show (D.ρ (star a) : D.P) = star (D.ρ a) from map_star D.ρ.toStarAlgHom a,
+          star_star]
+      rw [h3] at h2
+      exact h2.symm
+    -- the self-adjoint core
+    have hcore : ∀ a : D.P, a ∈ commutant D.P (Set.range ⇑D.ρ) → IsSelfAdjoint a →
+        (D.h a : B) = 0 → a = 0 := by
+      intro a ha hsa h0
+      have hden : (0 : ℝ) < 4 * (‖a‖ + 1) := by positivity
+      set μ : ℝ := (4 * (‖a‖ + 1))⁻¹ with hμdef
+      have hμ0 : 0 < μ := by rw [hμdef]; positivity
+      have hμne : ((μ : ℝ) : ℂ) ≠ 0 := by simpa using hμ0.ne'
+      have hsa' : IsSelfAdjoint (((μ : ℝ) : ℂ) • a) := by
+        refine IsSelfAdjoint.smul ?_ hsa
+        simp [IsSelfAdjoint]
+      have hna' : ‖((μ : ℝ) : ℂ) • a‖ ≤ 1 / 4 := by
+        rw [norm_smul]
+        simp only [Complex.norm_real, Real.norm_eq_abs, abs_of_pos hμ0]
+        rw [hμdef]
+        rw [inv_mul_eq_div, div_le_div_iff₀ hden (by norm_num : (0:ℝ) < 4)]
+        nlinarith [norm_nonneg a]
+      have hb := (norm_le_iff_neg_algebraMap_le hsa' (by norm_num : (0:ℝ) ≤ 1/4)).mp hna'
+      have halg : ∀ r : ℝ, algebraMap ℂ D.P ((r : ℝ) : ℂ) = ((r : ℝ) : ℂ) • (1 : D.P) :=
+        fun r => Algebra.algebraMap_eq_smul_one _
+      rw [halg] at hb
+      obtain ⟨hb1, hb2⟩ := hb
+      set t : D.P := ((μ : ℝ) : ℂ) • a + (((1/2 : ℝ)) : ℂ) • 1 with htdef
+      have hneg : -((((1/4 : ℝ)) : ℂ) • (1 : D.P)) = (((-(1/4) : ℝ)) : ℂ) • (1 : D.P) := by
+        push_cast; rw [neg_smul]
+      rw [hneg] at hb1
+      have ht0 : (0 : D.P) ≤ t := by
+        have h4 : ((((-(1/4) : ℝ)) : ℂ) • (1 : D.P)) + ((((1/2 : ℝ)) : ℂ) • 1)
+            = ((((1/4 : ℝ)) : ℂ) • (1 : D.P)) := by
+          rw [← add_smul]; push_cast; ring_nf
+        have h5 : (0 : D.P) ≤ ((((1/4 : ℝ)) : ℂ) • (1 : D.P)) :=
+          ofReal_smul_nonneg zero_le_one (by norm_num)
+        calc (0 : D.P) ≤ ((((1/4 : ℝ)) : ℂ) • (1 : D.P)) := h5
+          _ = ((((-(1/4) : ℝ)) : ℂ) • (1 : D.P)) + ((((1/2 : ℝ)) : ℂ) • 1) := h4.symm
+          _ ≤ t := by rw [htdef]; exact add_le_add hb1 le_rfl
+      have ht1 : t ≤ 1 := by
+        have h4 : ((((1/4 : ℝ)) : ℂ) • (1 : D.P)) + ((((1/2 : ℝ)) : ℂ) • 1)
+            = ((((3/4 : ℝ)) : ℂ) • (1 : D.P)) := by
+          rw [← add_smul]; push_cast; ring_nf
+        have h6 : ((((3/4 : ℝ)) : ℂ) • (1 : D.P)) ≤ 1 := by
+          have := hone_mono (by norm_num : (3/4 : ℝ) ≤ 1)
+          rwa [hsmul_one_one] at this
+        calc t ≤ ((((1/4 : ℝ)) : ℂ) • (1 : D.P)) + ((((1/2 : ℝ)) : ℂ) • 1) := by
+              rw [htdef]; exact add_le_add hb2 le_rfl
+          _ = ((((3/4 : ℝ)) : ℂ) • (1 : D.P)) := h4
+          _ ≤ 1 := h6
+      have htc : ∀ b : A, t * D.ρ b = D.ρ b * t := by
+        intro b
+        have hab := (ha (D.ρ b) ⟨b, rfl⟩).symm
+        rw [htdef, add_mul, mul_add, smul_mul_assoc, mul_smul_comm, hab,
+          smul_mul_assoc, mul_smul_comm, one_mul, mul_one]
+      have htcm : t ∈ commutant D.P (Set.range ⇑D.ρ) := by
+        rintro m ⟨b, rfl⟩
+        exact (htc b).symm
+      have hht : (D.h t : B) = (((1/2 : ℝ)) : ℂ) • φ 1 := by
+        rw [htdef, hhadd, hhsmul, hhsmul, h0, smul_zero, zero_add, hh1]
+      obtain ⟨δ₁, hδ₁⟩ := exists_phiT_ncp D t ht0 htc
+      obtain ⟨δ₂, hδ₂⟩ := exists_phiT_ncp D (1 - t) (sub_nonneg.mpr ht1)
+        (fun b => by rw [sub_mul, mul_sub, one_mul, mul_one, htc b])
+      set ψ₁ : NCPMap A B := ncpSMul (2 : ℝ) (by norm_num) δ₁ with hψ₁def
+      set ψ₂ : NCPMap A B := ncpSMul (2 : ℝ) (by norm_num) δ₂ with hψ₂def
+      have hψ₁1 : ψ₁ 1 = φ 1 := by
+        rw [hψ₁def, ncpSMul_apply, hδ₁ 1, hρ1, mul_one, hht]
+        push_cast
+        module
+      have hψ₂1 : ψ₂ 1 = φ 1 := by
+        rw [hψ₂def, ncpSMul_apply, hδ₂ 1, hρ1, mul_one, hhsub, hh1, hht]
+        push_cast
+        module
+      have hsum : ∀ b, φ b
+          = (((1/2 : ℝ)) : ℂ) • ψ₁ b + ((1 - (1/2 : ℝ) : ℝ) : ℂ) • ψ₂ b := by
+        intro b
+        have hkey : (D.h (t * D.ρ b) : B) + D.h ((1 - t) * D.ρ b) = φ b := by
+          rw [← hhadd, show t * D.ρ b + (1 - t) * D.ρ b = D.ρ b by noncomm_ring,
+            hD.1 b]
+        rw [hψ₁def, hψ₂def, ncpSMul_apply, ncpSMul_apply, hδ₁ b, hδ₂ b, ← hkey]
+        push_cast
+        module
+      obtain ⟨hex1, -⟩ :=
+        hext (1/2 : ℝ) (by norm_num) (by norm_num) ψ₁ ψ₂ hψ₁1 hψ₂1 hsum
+      have hs0 : (0 : D.P) ≤ (((1/2 : ℝ)) : ℂ) • (1 : D.P) :=
+        ofReal_smul_nonneg zero_le_one (by norm_num)
+      have hs1 : (((1/2 : ℝ)) : ℂ) • (1 : D.P) ≤ 1 := by
+        have := hone_mono (by norm_num : (1/2 : ℝ) ≤ 1)
+        rwa [hsmul_one_one] at this
+      have hphit : ∀ b, phiT D t b = phiT D ((((1/2 : ℝ)) : ℂ) • (1 : D.P)) b := by
+        intro b
+        have h1 := hex1 b
+        rw [hψ₁def, ncpSMul_apply, hδ₁ b] at h1
+        rw [hphiT_smul_one]
+        show (D.h (t * D.ρ b) : B) = _
+        rw [← h1]
+        push_cast
+        module
+      have hteq := hphiT_inj t _ htcm ht0 ht1 (hcomm_smul_one _) hs0 hs1 hphit
+      rw [htdef] at hteq
+      have hz : ((μ : ℝ) : ℂ) • a = 0 := by
+        have := sub_eq_zero.mpr hteq
+        simpa using this
+      exact (smul_eq_zero.mp hz).resolve_left hμne
+    -- ### the general case, by taking real and imaginary parts
+    intro x hx y hy hxy
+    have hw : (x - y) ∈ commutant D.P (Set.range ⇑D.ρ) := by
+      rintro m ⟨b, rfl⟩
+      rw [mul_sub, sub_mul, hx (D.ρ b) ⟨b, rfl⟩, hy (D.ρ b) ⟨b, rfl⟩]
+    have hw0 : (D.h (x - y) : B) = 0 := by rw [hhsub, hxy, sub_self]
+    set w : D.P := x - y with hwdef
+    have hws : star w ∈ commutant D.P (Set.range ⇑D.ρ) := hcstar _ hw
+    have hp : w + star w = 0 := by
+      refine hcore _ (fun m hm => ?_) ?_ ?_
+      · rw [mul_add, add_mul, hw m hm, hws m hm]
+      · show star (w + star w) = w + star w
+        rw [star_add, star_star, add_comm]
+      · rw [hhadd, hhstar, hw0, star_zero, add_zero]
+    have hq : (Complex.I • (w - star w)) = 0 := by
+      refine hcore _ (fun m hm => ?_) ?_ ?_
+      · rw [mul_smul_comm, smul_mul_assoc, mul_sub, sub_mul, hw m hm, hws m hm]
+      · show star (Complex.I • (w - star w)) = Complex.I • (w - star w)
+        rw [star_smul, star_sub, star_star, Complex.star_def, Complex.conj_I,
+          neg_smul, ← smul_neg, neg_sub]
+      · rw [hhsmul, hhsub, hhstar, hw0, star_zero, sub_zero, smul_zero]
+    have hIne : (Complex.I : ℂ) ≠ 0 := Complex.I_ne_zero
+    have hws' : star w = w := by
+      have := (smul_eq_zero.mp hq).resolve_left hIne
+      have h2 : w - star w = 0 := this
+      exact (sub_eq_zero.mp h2).symm
+    have hww : (2 : ℂ) • w = 0 := by
+      rw [two_smul]
+      rw [hws'] at hp
+      exact hp
+    have hw00 : w = 0 := (smul_eq_zero.mp hww).resolve_left two_ne_zero
+    exact sub_eq_zero.mp hw00
+  tfae_finish
 
 /-- **172VIII** (`nmiu-ncp-extreme`, dils.tex:6512, Corollary): every
 nmiu-map (as an ncp-map) is ncp-extreme. -/

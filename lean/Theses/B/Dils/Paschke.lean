@@ -2312,21 +2312,129 @@ variable {𝒜 ℬ : Type u}
 for an ncp-map `φ : 𝒜 → ℬ` with Paschke dilation `(𝒫, ϱ, h)` we have
 `⌈ϱ⌉ = ⌈⌈φ⌉⌉` (the carrier of `ϱ` is the central carrier of `φ`); stated
 via the characterization used in the proof: for every projection
-`p ∈ 𝒜`, `ϱ(p) = 0` iff `φ(a* p a) = 0` for all `a ∈ 𝒜`. -/
-theorem paschke_injective_carrier [VonNeumannAlgebra 𝒜]
+`p ∈ 𝒜`, `ϱ(p) = 0` iff `φ(a* p a) = 0` for all `a ∈ 𝒜`.
+
+The `⇒` half needs nothing but `φ = h ∘ ϱ`.  The `⇐` half is the thesis's
+argument: transport to the constructed dilation by
+`exists_paschke_iso_paschkeModule`, where `ϱ(p)(a ⊗ b) = (ap) ⊗ b` has
+`⟨(ap) ⊗ b, (ap) ⊗ b⟩ = b φ(a p a*) b*`, so the hypothesis (at `a*`) kills
+every elementary tensor and `paschkeModule_ba_ext` finishes.  This replaces
+the thesis's appeal to `hilmod-fixed-on-V`.
+
+⚠ **`[VonNeumannAlgebra ℬ]` was missing from the first transcription** of
+this point and of `paschke_injective` below — a slip on our side, not a
+weakening in the source: dils.tex 156II is stated for an ncp-map, and
+ncp-maps go between von Neumann algebras (every sibling in this file —
+`existence_paschke`, **157IV** — carries both binders).  Without it there is
+no `PaschkeModule φ` to transport to.  See PROVING-LOG, session 66. -/
+theorem paschke_injective_carrier [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     (φ : NCPMap 𝒜 ℬ) (D : PaschkeTriple 𝒜 ℬ)
     (hD : IsPaschkeDilationOf D ⇑φ) (p : 𝒜) (hp : IsStarProjection p) :
-    D.ρ p = 0 ↔ ∀ a : 𝒜, φ (star a * p * a) = 0 :=
-  sorry
+    D.ρ p = 0 ↔ ∀ a : 𝒜, φ (star a * p * a) = 0 := by
+  letI := D.vn
+  have hρmul : ∀ x y : 𝒜, (D.ρ (x * y) : D.P) = D.ρ x * D.ρ y := fun x y =>
+    map_mul D.ρ.toStarAlgHom x y
+  have hρ0 : (D.ρ (0 : 𝒜) : D.P) = 0 := map_zero D.ρ.toStarAlgHom
+  have hh0 : (D.h (0 : D.P) : ℬ) = 0 :=
+    map_zero D.h.toCompletelyPositiveMap.toLinearMap
+  constructor
+  · intro h a
+    have hz : (D.ρ (star a * p * a) : D.P) = 0 := by
+      rw [hρmul, hρmul, h, mul_zero, zero_mul]
+    rw [← hD.1 (star a * p * a), hz, hh0]
+  · intro h
+    obtain ⟨M⟩ := existence_paschke φ
+    obtain ⟨ϑ, ⟨hbij, hϑρ, -⟩, -⟩ := exists_paschke_iso_paschkeModule φ M D hD
+    have hM : (M.ρ p : (Ba ℬ M.X)ᵐᵒᵖ) = 0 := by
+      refine MulOpposite.unop_injective
+        (paschkeModule_ba_ext φ M (S := (M.ρ p).unop) (R := 0) fun a b => ?_)
+      have hpp : (a * p) * star (a * p) = a * p * star a := by
+        rw [star_mul, hp.isSelfAdjoint.star_eq, ← mul_assoc, mul_assoc a p p,
+          hp.isIdempotentElem.eq]
+      have hφ : φ (a * p * star a) = 0 := by
+        have := h (star a)
+        rwa [star_star] at this
+      have hzero : (inner ℬ (M.tprod (a * p) b) (M.tprod (a * p) b) : ℬ) = 0 := by
+        rw [M.inner_tprod, hpp, hφ, mul_zero, zero_mul]
+      have := CStarModule.inner_self.mp hzero
+      rw [M.ρ_tprod, this]
+      rfl
+    have hϑ0 : (ϑ (0 : D.P) : (Ba ℬ M.X)ᵐᵒᵖ) = 0 := map_zero ϑ.toStarAlgHom
+    have hϑ : (ϑ (D.ρ p) : (Ba ℬ M.X)ᵐᵒᵖ) = ϑ 0 := by rw [hϑρ p, hM, hϑ0]
+    exact hbij.1 hϑ
 
 /-- **156II** (`paschke-injective`, dils.tex:3875, Theorem): the Paschke
 representation `ϱ` is injective if and only if `φ` maps no non-zero
-central projection to zero (`⌈⌈φ⌉⌉ = 1`). -/
-theorem paschke_injective [VonNeumannAlgebra 𝒜] (φ : NCPMap 𝒜 ℬ)
-    (D : PaschkeTriple 𝒜 ℬ) (hD : IsPaschkeDilationOf D ⇑φ) :
+central projection to zero (`⌈⌈φ⌉⌉ = 1`).
+
+Both halves run through the carrier form above.  `⇒`: a central projection
+`z` with `φ(z) = 0` satisfies `a* z a = z (a* a) z ≤ ‖a*a‖ z`, so
+`φ(a* z a) = 0` and `ϱ(z) = 0 = ϱ(0)`.  `⇐`: `⌈ϱ⌉` is a *central*
+projection by **69IV** `carrier_miu` and `ϱ(⌈ϱ⌉^⊥) = 0`, so the carrier
+form (at `a = 1`) gives `φ(⌈ϱ⌉^⊥) = 0`, the hypothesis gives `⌈ϱ⌉ = 1`,
+and **63II**.4 `carrier_basic_4` turns that into injectivity.  (The thesis
+instead reads both off the identity `⌈ϱ⌉ = ⌈⌈φ⌉⌉`.)
+
+See the warning on `paschke_injective_carrier` about `[VonNeumannAlgebra ℬ]`. -/
+theorem paschke_injective [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
+    (φ : NCPMap 𝒜 ℬ) (D : PaschkeTriple 𝒜 ℬ) (hD : IsPaschkeDilationOf D ⇑φ) :
     Function.Injective ⇑D.ρ ↔
-      ∀ z : 𝒜, IsStarProjection z → IsCentral 𝒜 z → φ z = 0 → z = 0 :=
-  sorry
+      ∀ z : 𝒜, IsStarProjection z → IsCentral 𝒜 z → φ z = 0 → z = 0 := by
+  letI := D.vn
+  constructor
+  · intro hinj z hz hzc hφz
+    have hall : ∀ a : 𝒜, φ (star a * z * a) = 0 := by
+      intro a
+      have hcnn : (0 : 𝒜) ≤ star a * a := star_mul_self_nonneg a
+      have hzs : star z = z := hz.isSelfAdjoint.star_eq
+      have hconj := star_left_conjugate_le_conjugate (le_norm_smul_one hcnn) z
+      have h1 : star z * (star a * a) * z = star a * z * a := by
+        calc star z * (star a * a) * z = z * (star a * a) * z := by rw [hzs]
+          _ = star a * a * z * z := by rw [hzc (star a * a)]
+          _ = star a * a * z := by rw [mul_assoc, hz.isIdempotentElem.eq]
+          _ = star a * (a * z) := by rw [mul_assoc]
+          _ = star a * z * a := by rw [← hzc a, mul_assoc]
+      have h2 : star z * ((‖star a * a‖ : ℝ) • (1 : 𝒜)) * z
+          = (‖star a * a‖ : ℝ) • z := by
+        rw [hzs, mul_smul_comm, smul_mul_assoc, mul_one, hz.isIdempotentElem.eq]
+      rw [h1, h2] at hconj
+      have hup : (φ (star a * z * a) : ℬ) ≤ φ ((‖star a * a‖ : ℝ) • z) :=
+        OrderHomClass.mono φ.toCompletelyPositiveMap hconj
+      have hφsmul : (φ ((‖star a * a‖ : ℝ) • z) : ℬ) = 0 := by
+        have hc : ((‖star a * a‖ : ℝ) • z) = ((‖star a * a‖ : ℂ)) • z :=
+          (Complex.coe_smul _ _).symm
+        have hs : (φ (((‖star a * a‖ : ℂ)) • z) : ℬ)
+            = ((‖star a * a‖ : ℂ)) • φ z :=
+          map_smul φ.toCompletelyPositiveMap _ _
+        rw [hc, hs, hφz, smul_zero]
+      have hlow : (0 : ℬ) ≤ φ (star a * z * a) := by
+        have h0 : (0 : 𝒜) ≤ star a * z * a := by
+          rw [← h1]
+          exact star_left_conjugate_nonneg hcnn z
+        have hmono : (φ (0 : 𝒜) : ℬ) ≤ φ (star a * z * a) :=
+          OrderHomClass.mono φ.toCompletelyPositiveMap h0
+        have hφ0 : (φ (0 : 𝒜) : ℬ) = 0 :=
+          map_zero φ.toCompletelyPositiveMap.toLinearMap
+        rwa [hφ0] at hmono
+      exact le_antisymm (by rwa [hφsmul] at hup) hlow
+    have hρ0 : (D.ρ (0 : 𝒜) : D.P) = 0 := map_zero D.ρ.toStarAlgHom
+    refine hinj ?_
+    rw [(paschke_injective_carrier φ D hD z hz).mpr hall, hρ0]
+  · intro H
+    set g : 𝒜 →ₚ[ℂ] D.P := nmiuP D.ρ with hgdef
+    have hgnorm : PreservesDirSups ⇑g := D.ρ.preservesDirSups'
+    have hcarr := carrier_spec g hgnorm
+    have hccen : IsCentral 𝒜 (carrier g hgnorm) :=
+      (carrier_miu D.ρ g hgnorm (fun _ => rfl)).1
+    have hz0 : (D.ρ (1 - carrier g hgnorm) : D.P) = 0 := hcarr.2.1
+    have hφ : φ ((1 : 𝒜) - carrier g hgnorm) = 0 := by
+      have := (paschke_injective_carrier φ D hD _ hcarr.1.one_sub).mp hz0 1
+      simpa using this
+    have hone : (1 : 𝒜) - carrier g hgnorm = 0 :=
+      H _ hcarr.1.one_sub
+        (fun b => by rw [sub_mul, mul_sub, one_mul, mul_one, hccen b]) hφ
+    exact (carrier_basic_4 g hgnorm
+      (fun a b => map_mul D.ρ.toStarAlgHom a b)).mp (sub_eq_zero.mp hone).symm
 
 end Injective
 

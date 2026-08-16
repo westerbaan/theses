@@ -14750,3 +14750,281 @@ Operational: compilation stalled ~90 minutes on two **idle** MCP `lean --worker`
 processes holding ~4.3 GB between them (static CPU, hours old).  Killing them
 restored full speed.  They respawn on demand.  Worth a periodic sweep — this is
 the second time stale language servers have eaten the box.
+
+## Session 65 (worker, `Theses/A/Proc/`) — **116VII `tensor_characterization` is CLOSED**
+
+`Tensor.lean` **19 → 18** code `sorry`s, **0 errors** (compiler-counted with a
+direct `lean` run, not `lake build`); A/Proc **52 → 51**.
+`tensor_characterization` is axiom-clean
+(`[propext, Classical.choice, Quot.sound]`).  **Cost: 396 added lines against
+the ~250 costed** — the overrun is entirely in the four
+`IsTensorProduct`-free twins the proof needs (see below), not in the argument.
+
+### How it went
+
+The thesis's proof (proc.tex:3600) transcribes almost verbatim.  The hard
+direction has three parts and each landed where costed:
+
+* **`γ_⊙` is bounded** (`char_bounded`, ~75 lines).  `‖γ_⊙ t‖² = ‖γ_⊙(t* t)‖`,
+  and `γ_⊙(t* t) ≤ ‖t‖²·1` by **90II**.1 `vn_center_separating_fundamental_1`
+  fed hypothesis (3) and `S = γ_⊙(𝒜 ⊙ ℬ)`.  **21VII is not used and is not
+  needed** — the thesis renormalises its order separating collection to the
+  unital members `(σ⊙τ)(s* s) = 1` and quotes `order-separating-norm`; taking
+  `b = ‖t‖²·1` in 90II.1 directly avoids the renormalisation entirely, exactly
+  as `tensor_basic_2` already does for 112X.2.  The one estimate needed is the
+  *existing private* `basic_star_self_le`
+  (`ω(t* t) ≤ ‖t‖² ω(1)` for a basic `ω`, not assumed subunital), which is
+  precisely the renormalisation, done once, in the right place.
+* **`γ_⊙` is ultraweakly continuous** (`char_normal`, ~40 lines): **90II**.2
+  makes every np-functional on `𝒯` a norm limit of sums of members of the
+  conjugated collection, boundedness turns `ε‖γ_⊙ u‖` into `ε‖u‖`, and the
+  restrictions are basic functionals.  The final topology step is
+  `tensor_basic_3`'s closing ten lines verbatim.
+* **`γ_⊗` is bijective.**  Surjectivity is the thesis's: the range is a von
+  Neumann subalgebra (**48VI**.1), hence *ultraweakly* closed (**73IX**
+  `vnsac` — the ambient `IsVNSubalgebra.isClosed` is *norm* closedness, so
+  `vnsac` is the lemma that is actually wanted), and it contains the
+  ultraweakly dense span of condition (1).
+
+### Divergence — injectivity does not go through the carrier
+
+The thesis proves `γ_⊗` injective by showing `⌈γ_⊗⌉ = 1` via **69IV**
+`carrier_miu` and centrality.  We instead run **116IV**.2's centre separating
+collection directly on `γ_⊗(x)* γ_⊗(x) = γ_⊗(x* x)`: for `χ = σ ⊗ τ` in that
+collection, `χ(c*(x* x)c) = h(γ_⊗(c)* γ_⊗(x)* γ_⊗(x) γ_⊗(c)) = 0`, so
+`x* x = 0`.  Same argument, no carrier bookkeeping; ~20 lines instead of the
+`carrier`/`nmiuP`/`IsCentral` chain.
+
+### The four twins, and why they were unavoidable
+
+`prodNP_lift`, `conjProdNP_lift`, `isBasicFunctional_comp_lift` and
+`dense_ultrastrong_tensorSpan` all take an `IsTensorProduct` argument, and
+116VII's hypothesis is exactly that `γ` is *not yet known* to be one.  Their
+`IsTensorProduct`-free twins (`prodLike_lift`, `conjLike_lift`,
+`conjLike_basic`, `usDense_range_lift`) are the bulk of the overrun; each takes
+`hmiu : MIUBilinear γ` plus an np-functional `h` implementing `σ ⊙ τ` in place
+of `hγ`.  A fifth helper, `nmiuInv` (the inverse of a bijective nmiu-map, as an
+nmiu-map, from `StarAlgEquiv.ofBijective … |>.symm` plus
+`starAlgEquiv_preservesDirSups'`), is reusable and would suit A/VN.
+**All nine additions are `private`; the diff adds no public name at all**, so
+no dependent rebuild was needed (checked by greping the diff).
+
+### Corrections to the brief
+
+* **116VII gates two statements, not three**: `\sref{tensor-characterization}`
+  is cited at proc.tex:3724/3774 (**117III** `tensor_distributes_over_sums`) and
+  proc.tex:4646 (**123I.3** `linf_tensor`).  The survey's "116VII (3)" is a count
+  of `CentreSeparating` occurrences migrated in session ~56, not of dependents.
+* The costing note "21VII on `γ(σ,τ)(γ_⊙(s)*(·)γ_⊙(s))`" describes the thesis
+  but overstates the Lean cost: 21VII never enters.
+* The brief's "7 of QuantumLambda's items are blocked on `exists_tmapM`" **is
+  correct** — 7 of the 17 `sorry`d declarations mention `tmapM`
+  (`equaliser_lemma`, `tensor_equalisers`, `tensor_preimage`,
+  `tensor_map_factorisation`, `tensorBsurjectivity`, `AstarhaB_concrete`, and
+  the `Fha_concrete`/`ha_tensor_closed` region).
+
+### Costing: universe-polymorphic `tmap` — **tedious, not hard**
+
+Assessed, not attempted.  `exists_tmapM` needs **112XI**, **114I** and 112XI's
+uniqueness clause at four independent universes
+(`A₂:u₁, B₂:u₂, C₂:u₃, D₂:u₄`, with `VNT A₂ B₂ : Type (max u₁ u₂)` and
+`VNT C₂ D₂ : Type (max u₃ u₄)`).  Two blocks have to move:
+
+1. **`Tensor.lean` lines ~1860–4512** (parsecs 1120/1130/1140: `tensorNorm`,
+   `IsBasicFunctional`, `NormLimitOfSimple`, `uwTensorTopology`,
+   `BilinBounded`, `BilinNormal`, 112III–112XI, 113*, 114I/II) currently sit
+   under the file-wide `variable {A B C D : Type u}` at line 151.  ~2650 lines
+   of *mechanical* re-universing; nothing outside breaks, because a
+   universe-polymorphic lemma still instantiates at equal universes, which is
+   all `section Chosen` ever asks for.
+2. **Universe-polymorphic twins of the two-algebra A/VN lemmas they call.**
+   I enumerated every A/VN/A/CStar name occurring in lines 2651–4512 (72 hits,
+   of which ~14 are grep noise).  **Only four are genuinely two-algebra**:
+   **77V `vn_extension`** (the engine of 112XI), **44XV `p_uwcont`**,
+   `compNP` and `preservesDirSups_of_continuousOn_effects`.  Everything else —
+   `dense_subalgebra`, `luws`, `omegaNorm*`, `mult_uws_cont`,
+   `continuous_ultraweak_*`, `uwweaker_2`, `isClosed_ultraweak_closedBall`,
+   `vn_center_separating_fundamental_*`, `nonneg_of_conjNP_of_centreSeparating`,
+   `predual_complete` — mentions **one** algebra and is already usable.
+   `vn_extension` is 236 lines and *all* of its own dependencies are
+   single-algebra, so its twin is a **verbatim copy with the variable block
+   changed**, no new proof.  `p_uwcont` is ~40 lines over `compNP` (~30) and
+   `preservesDirSups_of_continuousOn_effects`.
+   Total twin cost: **~350 lines of copy-paste**, and the file already carries
+   four such twins (`starAlgHom_nonneg'`, `starAlgHom_mono'`,
+   `starAlgEquiv_le_iff`, `starAlgEquiv_preservesDirSups'`, lines 1583–1612),
+   so the pattern is established.
+
+**This is *not* the cascade the traps list warns about.**  That warning is
+about generalising *A/VN's own* `variable {A B C : Type u}`; the twin route
+leaves A/VN untouched, which is what A/Proc is required to do anyway.
+`exists_tmapM` itself is then ~60 lines (112XI + 114I + 44XV, exactly like
+`exists_tmap`).  Estimate: **one full session, possibly two**, with the risk
+concentrated in re-elaborating 2650 lines rather than in any mathematics.  It
+unlocks the 7 `tmapM` statements in `QuantumLambda.lean` plus 119V and the
+`vn_smc_*` block in `Tensor.lean`.
+
+### Next gate, precisely
+
+**117III `tensor_distributes_over_sums`** (`Tensor.lean:7309`).  proc.tex:3774
+is nine lines and every input now exists: 116VII (this session), 117II.1
+`sum_generation_1` and 117II.2 `sum_generation_2` (both proved), and the
+`lp`-coprojection block `lpKappa`/`lp_centre_separating` in the same section.
+The work is `lp`-bookkeeping — building
+`γ : 𝒜 × ⊕ᵢ ℬᵢ → ⊕ᵢ (𝒜 ⊗ ℬᵢ)` as a `LinearMap` into `lp _ ∞` and checking
+miu-bilinearity pointwise — plus `CentreSeparatingConj A Set.univ` (immediate
+from `VonNeumannAlgebra.np_faithful`) for the `Σ` side.  Estimate ~150 lines.
+After it, 123I.3 `linf_tensor` in `QuantumLambda.lean` is unblocked.
+
+## Session 66 — `B/Dils`: **156II `paschke_injective` falls, and it needed nothing new from `A/VN`** — plus **172III**, which the survey had blocked on the wrong thing (worker on `Paschke.lean` / `Pure.lean`)
+
+**Headline: `paschke_injective_carrier`, `paschke_injective` and
+`ncp_extreme_paschke` are closed.**  `Paschke.lean` **3 → 1** (only 155II
+`ksgns` left), `Pure.lean` **11 → 10**, `B/Dils` **26 → 23**:
+`HilbertModules` 0, `SelfDualCompletion` 0, `Stinespring` 1, `Kaplansky` 4,
+`Paschke` **1**, `SelfDual` 7, `Pure` **10** — each source run through `lean`
+individually against rebuilt oleans and **paired with an error count, 0
+everywhere** (`SelfDual.lean` and `Pure.lean` re-checked against the new
+`Paschke.olean`).  All three new theorems verify
+`[propext, Classical.choice, Quot.sound]` from an importing file.
+
+### 156II is not an A/VN question
+
+The brief and the session-64 log both flagged 156II as "*also* an A/VN
+question (`cceil-fundamental`, `ad-contraposed`, the `ceil` of a map)".
+**`cceil_fundamental` and `ad_contraposed` are not used, and no new `A/VN`
+lemma was needed.**  They are artefacts of the thesis's *phrasing*: 156II is
+stated there as `⌈ϱ⌉ = ⌈⌈φ⌉⌉` and proved by comparing `p ≤ ⌈ϱ⌉^⊥` with
+`p ≤ ⌈⌈φ⌉⌉^⊥` for every projection `p`, which is what drags in
+`a⌈φ⌉a* ≤ p^⊥` (55V `ad-contraposed`) and `⌈⌈φ⌉⌉ = ⋃_a ⌈a⌈φ⌉a*⌉`
+(68I `cceil-fundamental`).  Our two statements are carrier-free, so that
+detour is unnecessary:
+
+* **`paschke_injective_carrier`** — `ϱ(p) = 0 ⟺ ∀a, φ(a*pa) = 0`.
+  * `⇒` is three lines from `φ = h ∘ ϱ` and multiplicativity of `ϱ`; it uses
+    neither the model nor minimality, and holds for *any* factorisation.
+  * `⇐` is the thesis's computation, transported by
+    `exists_paschke_iso_paschkeModule`:
+    `ϱ(p)(a ⊗ b) = (ap) ⊗ b` and
+    `⟨(ap) ⊗ b, (ap) ⊗ b⟩ = b φ((ap)(ap)*) b* = b φ(a p a*) b*`, so the
+    hypothesis at `a*` makes every elementary tensor vanish and
+    `paschkeModule_ba_ext` gives `ϱ(p) = 0`.  This replaces the thesis's
+    appeal to `hilmod-fixed-on-V` — the same substitution sessions 63/64
+    made, and the third time the abstract-bundle version of the density step
+    has been cheaper than the density step itself.
+* **`paschke_injective`** — `⇒`: for a central projection `z` with `φ(z) = 0`,
+  `a*za = z(a*a)z ≤ ‖a*a‖z` by `star_left_conjugate_le_conjugate` and
+  `le_norm_smul_one`, so `φ(a*za) = 0` and the carrier form gives
+  `ϱ(z) = 0 = ϱ(0)`.  `⇐`: `⌈ϱ⌉` (taken through `nmiuP`) is **central** by
+  **69IV** `carrier_miu` and `ϱ(⌈ϱ⌉^⊥) = 0` by `carrier_spec`, so the carrier
+  form at `a = 1` gives `φ(⌈ϱ⌉^⊥) = 0`, the hypothesis gives `⌈ϱ⌉ = 1`, and
+  **63II**.4 `carrier_basic_4` ("for multiplicative `f`, `⌈f⌉ = 1` iff `f` is
+  injective") converts that into injectivity.  Both A/VN lemmas were already
+  proved; `Pure.lean`'s `surjective_nmiu_1` already used the same pair, which
+  is where the calling convention was read off.
+
+  *Divergence (class 2).*  The thesis reads both halves off the single
+  identity `⌈ϱ⌉ = ⌈⌈φ⌉⌉`; we never form `⌈⌈φ⌉⌉` at all.
+
+### Our own mis-transcription: `[VonNeumannAlgebra ℬ]` was missing from both
+
+Both 156II statements carried `[VonNeumannAlgebra 𝒜]` and **not**
+`[VonNeumannAlgebra ℬ]`.  That is a slip on our side, of exactly the
+`221IV.1` kind (HANDOFF "Still open" item 2), not a deliberate
+generalisation: dils.tex 156II is about an **ncp-map**, and ncp-maps in both
+theses go between von Neumann algebras — every sibling statement in the same
+file (`existence_paschke`, `existence_paschke_5`, all four parts of
+**157IV**) carries both binders, and `NCPMap`'s own doc comment says "between
+von Neumann algebras".  **The binder has been restored** and both halves are
+proved; this is recorded here rather than in QUESTIONS.md because the thesis
+is right and no author decision is involved.
+
+It is not cosmetic.  Without `[VonNeumannAlgebra ℬ]` there is no
+`PaschkeModule φ` (`existence_paschke` needs it, through 150II), hence no
+`exists_paschke_iso_paschkeModule`, hence no route to the `⇐` half — and
+`paschke_correspondence_embedding`, the only other way in, needs the same
+binder.  The one *abstract* substitute we could find is:
+
+> **Minimality lemma.**  If `(𝒫,ϱ,h)` is a Paschke dilation and `r` is a
+> projection in `ϱ(𝒜)^□` with `h(r^⊥c) = 0` for all `c`, then `r = 1`.
+> *Proof.*  `(r𝒫r, rϱ(·), h|)` is again a triple over `φ`; `π : c ↦ rcr`
+> mediates `D → D'` and the universal property's `σ` mediates `D' → D`, so
+> `σ ∘ π` mediates `D → D` and is therefore `id`; hence `π` is injective and
+> `π(r^⊥) = 0 = π(0)` gives `r^⊥ = 0`.
+
+which is model-free and would also give the general shape "a projection in
+the commutant killed by `h` is `0`".  It is not usable here: it needs corner
+**algebras** as types, and the tree's `Corner A e` lives in
+`A/Proc/Measurement.lean`, which is off `B/Dils`'s import path.  Getting from
+`ϱ(p)` (not in the commutant) to a commutant projection would additionally
+need the least `ϱ(𝒜)`-invariant projection above it, i.e. a sup of range
+projections `⌊ϱ(a)ϱ(p)⌉` plus Russo–Dye to see it commutes with `ϱ(𝒜)`.
+Recorded so it is not re-derived.
+
+### 172III `ncp_extreme_paschke`: the blocker was the thesis's proof, not the statement
+
+The survey (and session 64's log) said 172III "needs 170II.2", i.e. purity of
+`h`, which is blocked on 169IV/169X and hence on proc.tex.  **That is true of
+the thesis's proof of 3 ⇒ 1 only.**  There, purity is used to split
+`h = c ∘ h_p`, deduce `ptp = λp` from `pap = 0`, and *thereby discover* that
+the `λ` in `t = μa + λ` satisfies `0 < λ < 1`.  But `λ` is ours to choose:
+
+* **3 ⇒ 1.**  For self-adjoint `a` in the commutant with `h(a) = 0` put
+  `μ = (4(‖a‖+1))⁻¹` and `t = μa + ½·1`.  Then `‖μa‖ ≤ ¼`, so `¼ ≤ t ≤ ¾`
+  (via `norm_le_iff_neg_algebraMap_le`), `t` is in the commutant, and
+  `φ_t(1) = h(t) = μh(a) + ½h(1) = ½φ(1)` **directly** — no purity, no `p`.
+  `2φ_t` and `2φ_{1-t}` are ncp by **157VI** `exists_phiT_ncp`, take the value
+  `φ(1)` at `1`, and average to `φ`; ncp-extremity gives `φ_t = ½φ = φ_{½1}`,
+  and injectivity of `t ↦ φ_t` gives `t = ½1`, i.e. `μa = 0`, i.e. `a = 0`.
+  A general commutant element is handled by `w + w*` and `i(w − w*)`, both
+  again in the commutant (it is `*`-closed because `ϱ(𝒜)` is) and both killed
+  by `h` (positive maps preserve `*`, `cstar_p_implies_i`).
+* **2 ⇒ 3** is 172VI verbatim, on **157IV**.3
+  (`paschke_correspondence_surjective`): `λψ ≤_ncp φ` gives `λψ = φ_t` with
+  `t ∈ [0,1]_{ϱ(𝒜)^□}`, and `h(t) = φ_t(1) = λφ(1) = h(λ1)` with injectivity
+  of `h` on that interval forces `t = λ1`.  **1 ⇒ 2** is `Set.InjOn.mono`.
+
+Injectivity of `t ↦ φ_t` on `[0,1]_{ϱ(𝒜)^□}` is read off
+`paschke_correspondence_embedding` by taking `NCPLe` in both directions with
+the **zero** ncp-map as witness.
+
+*Divergence (class 2), and a class-1 caveat.*  The thesis's 3 ⇒ 1 is not
+wrong, just more expensive than it needs to be: it establishes `0 < λ < 1`
+where it could have picked `λ = ½`, and pays for that with 170II.2, hence
+with the whole corner/filter apparatus of proc.tex.  Worth a remark in
+dils.tex, since 172III is otherwise a two-page corollary of
+`paschke-correspondence` and the printed proof makes it look like it depends
+on the pure-map theory.
+
+### New (private) helpers in `Pure.lean`
+
+* `smulReal_mono_aux` — `x ≤ y → (r:ℂ)•x ≤ (r:ℂ)•y` for real `r ≥ 0`.
+  Mathlib has no `PosSMulMono ℝ` instance for C\*-algebras (HANDOFF records
+  this); the workaround is `ofReal_smul_nonneg`, i.e. conjugation by `√r`.
+  Note `A/CStar/Positive.lean` has a **private** `ofReal_smul_le` of the same
+  content, unusable from here — hence the new name.
+* `isLUB_ofReal_smul` — `r ≥ 0` scaling preserves suprema (`r = 0` needs the
+  set non-empty, which normality supplies).
+* **`ncpSMul` / `ncpSMul_apply`** — a nonnegative real multiple of an ncp-map
+  is an ncp-map.  Complete positivity via `cp_iff`'s third clause (the Gram
+  form) plus `ofReal_smul_nonneg` on `CStarMatrix`; normality via
+  `isLUB_ofReal_smul`.  **This is the one worth promoting to a shared file**:
+  `NCPLe` and `ncpInterval` quantify over *bundled* ncp-maps, so every convex
+  combination fed to **157IV**.3 needs it, and `ncpSMul 0` is the zero
+  ncp-map that makes `NCPLe` reflexive — without which
+  `paschke_correspondence_embedding` cannot be turned into injectivity.
+  All four names were greped against the whole `Theses/` tree first; none
+  existed.
+
+### What is left in `B/Dils`
+
+`Paschke.lean` is down to **155II `ksgns`** alone (a KSGNS construction, not a
+Paschke item).  `Pure.lean`'s ten remain rooted in **169IV**
+`standard_corner_dils` and **169X** `dils_stand_filter` (both cited to
+proc.tex, off this import path) and **171II** `paschke_corner` (whose A/VN
+inputs — 83V `cceil_sum`, 170IV.1 `surjective_nmiu_1` — are *both proved*;
+what is missing is `𝒜p` as a self-dual Hilbert `p𝒜p`-module and
+`𝒜 ⊗_{h_p} p𝒜p ≅ 𝒜p`).  `SelfDual.lean`'s seven are unchanged: 162II is the
+only self-contained one, 165VI is blocked outside the directory on
+`tensor_characterization`, 164II.2b is QUESTIONS **D6**, and
+`univprop_ext_tensor` is multi-session.  The five known-false items stand.
