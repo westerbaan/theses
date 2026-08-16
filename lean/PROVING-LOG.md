@@ -9612,3 +9612,144 @@ are exactly `[propext, Classical.choice, Quot.sound]`.  Nothing staged, nothing
 committed.  One build was lost to `A/VN/NormalFunctionals.olean` disappearing
 under another worker's `lake build`; retrying 20 s later worked, as the brief
 predicted.
+
+## Session 47 — `B/Dils` Kraus: **138VIII** (general case) is proved, and **139XI is false** (worker 72)
+
+Files touched: `Theses/B/Dils/Stinespring.lean`, `ERRATA.md`, `QUESTIONS.md`,
+this log.  Nothing staged, nothing committed.  **B/Dils 54 → 53 `sorry`s**
+(`Stinespring.lean` 3 → 2).
+
+### 1. 139XI `ess_uniq_pur` — the suspicion-of-falsity pass says **false**
+
+The previous session flagged it because it does not hypothesise minimality.
+That was right, and the counterexample is one line of operator theory: take
+`𝒦' = ℓ²`, `𝒦 = ℋ ⊗ ℓ²`, `W = 1` and `V = 1 ⊗ S` with `S` the unilateral
+shift.  `S*S = 1` gives `V*(a⊗1)V = a⊗1 = W*(a⊗1)W`, so both are dilations of
+the ncp-map `φ(a) = a ⊗ 1` (a normal unital `*`-homomorphism), and `W = 1`
+forces `U = S` in `V = (1⊗U)W` — an isometry, not a unitary.
+
+**Where the author's solution breaks** is its *last* paragraph only: "As `𝒱`
+and `𝒲` are isomorphic, they have the same dimension and so do `𝒱^⊥` and `𝒲`"
+(the final `𝒲` is a typo for `𝒲^⊥`).  Equal dimension does not give equal
+*co*dimension in infinite dimensions — in the example `𝒱' = ran S` and
+`𝒲' = 𝒦'` are both `ℵ₀`-dimensional with codimensions 1 and 0 — and that
+extension step is exactly what produces the unitary of `𝒦'`.  Everything
+before it, including the minimal case and `U₀ = 1 ⊗ U₁`, is correct as
+written.  Note also that weakening "unitary" to "isometry" does **not** repair
+the statement: swapping the roles of `V` and `W` in the same example needs an
+isometry of `𝒦'` whose restriction to a proper subspace is already onto.
+
+Point **139X** calls the property one about "dilations *of the same
+dimension*", so a hypothesis is plainly intended; which one is a decision, so
+the row is in ERRATA and the ruling request is **QUESTIONS B12**.  The
+statement is left `sorry`ed and unchanged.
+
+*Not machine-checked.*  A Lean counterexample would have to supply an
+`NCPMap`, i.e. prove normality of `a ↦ a ⊗ 1`, plus a non-surjective isometry
+on `ℓ²` (`OrthogonalFamily.linearIsometry` against the orthonormal family
+`(e_{i+1})ᵢ` of `lp (fun _ : ℕ => ℂ) 2` is the cheap route).  That is
+~200 lines and it was judged a worse use of the session than 138VIII; the
+paper argument above is complete and needs no formalization to be checked.
+
+### 2. **138VIII** `kraus_decomposition` — proved; **614 lines** against the 250–400 estimate
+
+The previous session's costing was right about the *shape* of the proof and
+low by about 60% on the size.  Where the extra went is worth recording,
+because none of it is the mathematics:
+
+* **The `IsLUB` was the cheap part, not the expensive one** (the estimate said
+  "most of it that `IsLUB`").  It is ~35 lines, because it is not proved by
+  comparing quadratic forms of `a ⊗ P_F` and `a ⊗ 1` at all — see below.
+* **The expensive part is the `tensorCLM` API that did not exist**: `mul`,
+  `one`, `adjoint`/`star`, `add`/`sub`/`zero`/`sum` in the right-hand factor,
+  `nonneg`, `mono`, and the `hilbTensorMk` additivity/homogeneity lemmas they
+  rest on — ~230 lines, every one of them a `hilbTensor_ext` one-liner *after*
+  the ext lemma applies.  `tensorCLM_adjoint` alone is 30 lines: the existing
+  `hilbTensor_ext` cannot see it, because `⟪T x, y⟫` is *conjugate*-linear in
+  `x`, so the identity has to be extended in `y` first (linear), conjugated,
+  extended in `x`, and conjugated back.
+* **`hilbTensor_ext` needed a universe-polymorphic twin.**  It is stated with
+  `Z : Type u`, the file's single universe, and every use here has `Z = ℂ`.
+  `hilbTensor_ext'` (13 lines, same proof, `[NormedAddCommGroup Z]
+  [NormedSpace ℂ Z]` and no completeness) is what the adjoint argument uses.
+  ⚠️ This will bite anyone else mapping out of `hilbTensor` into scalars.
+* ~90 lines are the `(1 ⊗ P_F)ξ → ξ` argument (uniform bound `‖1⊗P_F‖ ≤ 1`
+  from idempotence and self-adjointness, elementary tensors by continuity of
+  `y ↦ x ⊗ y`, then the 3ε density argument), and ~60 the four-positives
+  reduction plus `uwTendsto_add'`/`uwTendsto_smul'`.
+
+### 3. Two structural simplifications worth reusing
+
+**(a) Never form the operator `Pᵢ` (the slice map).**  The costed plan wanted
+slice maps `Pᵢ(x ⊗ d) = ⟨eᵢ,d⟩x`, "easy, ~40 lines by the
+`exists_hilbTensor_isometry` route".  That route does not in fact work — a
+slice map preserves no inner product, and bounding `‖(1⊗⟨e|)z‖ ≤ ‖z‖` on the
+*algebraic* tensor product is not a one-liner.  What works is to build the map
+in the other direction and take an adjoint: `hilbTensorKet e : ℋ → ℋ ⊗ 𝒦'`,
+`x ↦ x ⊗ e`, is bounded by inspection (`‖x ⊗ e‖ = ‖x‖‖e‖`), and
+`Pᵢ := (hilbTensorKet eᵢ)*` then has `Pᵢ(x ⊗ y) = ⟪eᵢ,y⟫ x` by one
+`ext_inner_right`.  The Kraus operators are `Vᵢ = Pᵢ ∘ V₀` and
+`Qᵢ a Qᵢ* = a ⊗ |eᵢ⟩⟨eᵢ|` is a three-line `hilbTensor_ext`.  This is the same
+trick that made 138II cheap last session (build `W`, not `U`), and it has now
+paid twice.
+
+**(b) The supremum is proved in `B(𝒦)`, not in `B(ℋ ⊗ 𝒦')`.**  The plan was
+to prove `IsLUB {a ⊗ P_F} (a ⊗ 1)` upstairs and then "push the limit through
+`ad_V`" — which needs *normality* of `ad_{V₀}`, a fact we would have had to
+prove.  Instead the whole `IsLUB` is stated for the conjugated net
+`x_F = V₀*(a ⊗ P_F)V₀` directly: the upper-bound half is `ad`-monotonicity
+(elementary, from `IsPositive.adjoint_conj`), and the least-upper-bound half
+is the quadratic-form limit
+`⟪ξ, x_F ξ⟫ = ⟪(a⊗1)(R_F η), R_F η⟫ → ⟪(a⊗1)η, η⟫` with `η = V₀ξ` and
+`R_F = 1 ⊗ P_F`, which is *continuity of one fixed function* along
+`R_F η → η`.  Normality of `ad_{V₀}` is never used, and neither is any
+`NPFunctional` computation.  The identity that makes it work is
+`(1⊗P_F)(a⊗1)(1⊗P_F) = a ⊗ P_F` (`tensorProj_conj`), i.e. the thesis's
+`Pᵢ* a Pᵢ = a ⊗ |eᵢ⟩⟨eᵢ|` summed over `F`.
+
+Divergence class: **(2) different route**, with the caveat that the exercise
+gives no proof — `bsols.tex` has no `kraus-exercise` solution — so there was
+nothing to transcribe.  The thesis's own two-sentence sketch ("apply 138VII,
+then decompose `1 = ∑|eᵢ⟩⟨eᵢ|`") is exactly what is formalized.
+
+### 4. New, reusable
+
+In `Stinespring.lean`, section `KrausAux` (before `section TypeI`):
+`hilbTensorMk_{add,sub,smul}_{left,right}`, `norm_hilbTensorMk`,
+`hilbTensorKet`/`hilbTensorKet'` and `hilbTensorKet_adjoint_mk`,
+`hilbTensor_ext'`, `hilbTensor_adjoint_eq`, `tensorCLM_{one,mul,adjoint,star,
+add_right,sub_right,zero_right,sum_right,nonneg,mono}`, `basisProj` with
+`isStarProjection_basisProj`/`_apply`/`_nonneg`/`_mono`, `tendsto_basisProj`,
+`tensorProj_{mk,star,idem,conj}`, `norm_tensorProj_le`, `tendsto_tensorProj`;
+and in section `UWAux` the three ultraweak lemmas `uwTendsto_smul'`,
+`uwTendsto_add'` and **`uwTendsto_of_monotone_isLUB`** — 44VI re-indexed from
+the subtype `↥D` to an arbitrary directed index type, which is what any
+`Finset`-indexed net needs and which nothing in the tree had.
+
+### 5. What is left, and what it would cost
+
+* **`kraus_decomposition_findim`** — parked, not attempted.  It is *not* a
+  corollary of the general case: the `𝒦'` that 138VII hands you carries no
+  dimension bound, so one has to go through the **minimal** dilation
+  (`stinespring_normal_aux` returns `hmin`, the density of
+  `span{ϱ(a)V₀ξ}`), observe that a dense finite-dimensional subspace of a
+  Hilbert space is the whole space, and get `dim 𝒦₀ ≤ dim B(ℋ)·dim 𝒦 =
+  (dim ℋ)²·dim 𝒦`; 138II then gives `𝒦₀ ≅ ℋ ⊗ 𝒦'` and
+  `dim 𝒦' ≤ dim ℋ · dim 𝒦`.  The Lean cost is dominated by
+  `Module.finrank (ℋ ⊗ 𝒦') = finrank ℋ * finrank 𝒦'` for *our* `hilbTensor`
+  (a completion, so Mathlib's `TensorProduct` finrank lemma does not apply
+  directly — though the completion is an isomorphism in finite dimensions,
+  which is itself a lemma to prove).  Estimate 200–300 lines, and unlike the
+  general case it is all bookkeeping.
+* **`ess_uniq_pur`** — false, see §1; it should stay `sorry`ed until Bas rules
+  on QUESTIONS B12.
+
+### 6. Verification
+
+`lean Theses/B/Dils/Stinespring.lean` — no errors, two `sorry` warnings
+(`kraus_decomposition_findim`, `ess_uniq_pur`).  `#print axioms` on
+`kraus_decomposition`, `tendsto_tensorProj`, `uwTendsto_of_monotone_isLUB` and
+`tensorCLM_adjoint`: all exactly `[propext, Classical.choice, Quot.sound]`.
+The `.olean` was regenerated with `lean -o` (which does not take the workspace
+lock) and `Theses/B/Dils/Paschke.lean`, the one file importing it, re-checks
+clean, so none of the ~40 new names collides downstream.

@@ -196,6 +196,32 @@ dils.tex literally and so carries the weak form, which leaves
 (the proc.tex form) — we have not, under the standing rule that statements are
 not altered without an author's ruling.
 
+### B12. 139XI `ess-uniq-pur` — essential uniqueness of purification is false without a dimension hypothesis; which repair?
+`dils.tex:998`, solution `bsols.tex:209`.  The exercise asks to show: if
+`V, W : 𝒦 → ℋ ⊗ 𝒦'` satisfy `V*(a⊗1)V = φ(a) = W*(a⊗1)W` for all `a ∈ B(ℋ)`,
+then `V = (1 ⊗ U)W` for a **unitary** `U` on `𝒦'`.
+
+**Counterexample** (see ERRATA for the full row): `𝒦' = ℓ²`, `𝒦 = ℋ ⊗ ℓ²`,
+`W = 1`, `V = 1 ⊗ S` with `S` the unilateral shift.  Both dilate
+`φ(a) = a ⊗ 1`; the only `U` with `V = (1⊗U)W` is `S`, which is an isometry
+but not unitary.  Weakening "unitary" to "isometry" does not save it either:
+exchanging `V` and `W` in the same example requires a `U` mapping `𝒦'` onto
+`𝒦'` isometrically *from* a proper subspace, which is impossible.
+
+The solution is correct up to its last paragraph, which reads "As `𝒱` and `𝒲`
+are isomorphic, they have the same dimension and so do `𝒱^⊥` and `𝒲`" (the
+last `𝒲` is a typo for `𝒲^⊥`).  Equal dimension does not imply equal
+codimension in infinite dimensions, and that is exactly what the extension of
+`U₁ : 𝒲' → 𝒱'` to a unitary of `𝒦'` needs.
+
+*Decision needed*: point 139X introduces the property as one "concerning
+dilations *of the same dimension*", so a hypothesis is clearly intended.
+Which one — (a) both dilations minimal, (b) `dim 𝒦' < ∞`, or (c) conclude only
+with a unitary `𝒲' → 𝒱'` between the ancilla subspaces?  Under (a) or (b) the
+printed statement is recovered verbatim; under (c) the exercise's own first
+half is already the whole content.  We have left `ess_uniq_pur` `sorry`ed and
+unchanged.
+
 ### B5. `IsVNTensor` is too weak for 165III (and, it turns out, 166II) — CLOSED
 *Status 2026-08-15 (worker 66): **all three halves are settled and nothing is
 asked of the authors.*** The **positivity** half is answered (worker 40,

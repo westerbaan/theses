@@ -1128,6 +1128,434 @@ end TypeIAuxMain
 end TypeIAux
 
 
+/-! ### Auxiliary development for 138VIII (Kraus)
+
+The slice maps of the thesis's proof: for a unit vector `e` of `𝒦'` the "ket"
+operator `Q_e : ℋ → ℋ ⊗ 𝒦'`, `x ↦ x ⊗ e`, has `Q_e a Q_e* = a ⊗ |e⟩⟨e|`, so
+that the Kraus operators of `φ(a) = V*(a ⊗ 1)V` are `Vᵢ = Q_{eᵢ}* V` and the
+partial sums `∑_{i∈F} Vᵢ* a Vᵢ` are `V* (a ⊗ P_F) V`.  What the convergence
+needs is that `a ⊗ P_F ↑ a ⊗ 1`, which is proved here from `(1 ⊗ P_F)ξ → ξ`
+(density plus the uniform bound `‖1 ⊗ P_F‖ ≤ 1`) and **44VI**
+`vna_supremum_uwlimit`.  See PROVING-LOG.md. -/
+
+section KrausAux
+
+variable {H K Z : Type u} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+  [NormedAddCommGroup K] [InnerProductSpace ℂ K] [CompleteSpace K]
+
+/-- `hilbTensorMk` is additive in its first argument. -/
+theorem hilbTensorMk_add_left (x x' : H) (y : K) :
+    hilbTensorMk (x + x') y = hilbTensorMk x y + hilbTensorMk (K := K) x' y := by
+  unfold hilbTensorMk
+  rw [TensorProduct.add_tmul, UniformSpace.Completion.coe_add]
+
+theorem hilbTensorMk_add_right (x : H) (y y' : K) :
+    hilbTensorMk x (y + y') = hilbTensorMk x y + hilbTensorMk (K := K) x y' := by
+  unfold hilbTensorMk
+  rw [TensorProduct.tmul_add, UniformSpace.Completion.coe_add]
+
+theorem hilbTensorMk_sub_right (x : H) (y y' : K) :
+    hilbTensorMk x (y - y') = hilbTensorMk x y - hilbTensorMk (K := K) x y' := by
+  unfold hilbTensorMk
+  rw [TensorProduct.tmul_sub, UniformSpace.Completion.coe_sub]
+
+theorem hilbTensorMk_smul_left (c : ℂ) (x : H) (y : K) :
+    hilbTensorMk (c • x) y = c • hilbTensorMk (K := K) x y := by
+  unfold hilbTensorMk
+  rw [← TensorProduct.smul_tmul']
+  exact (UniformSpace.Completion.coe_smul c _)
+
+theorem hilbTensorMk_smul_right (c : ℂ) (x : H) (y : K) :
+    hilbTensorMk x (c • y) = c • hilbTensorMk (K := K) x y := by
+  unfold hilbTensorMk
+  rw [TensorProduct.tmul_smul]
+  exact (UniformSpace.Completion.coe_smul c _)
+
+private theorem norm_inner_self' {E : Type*} [NormedAddCommGroup E]
+    [InnerProductSpace ℂ E] (z : E) : ‖(⟪z, z⟫ : ℂ)‖ = ‖z‖ ^ 2 := by
+  rw [inner_self_eq_norm_sq_to_K, norm_pow, RCLike.norm_ofReal, abs_norm]
+
+theorem norm_hilbTensorMk (x : H) (y : K) : ‖hilbTensorMk x y‖ = ‖x‖ * ‖y‖ := by
+  have h := congrArg (fun z : ℂ => ‖z‖) (hilbTensor_inner_mk x x y y)
+  simp only [norm_mul, norm_inner_self'] at h
+  have h3 : ‖hilbTensorMk x y‖ ^ 2 = (‖x‖ * ‖y‖) ^ 2 := by rw [h, mul_pow]
+  have := congrArg Real.sqrt h3
+  rwa [Real.sqrt_sq (norm_nonneg _),
+    Real.sqrt_sq (mul_nonneg (norm_nonneg _) (norm_nonneg _))] at this
+
+/-- The "ket" operator `|·⟩ ⊗ e : H → H ⊗ K`, `x ↦ x ⊗ e`. -/
+noncomputable def hilbTensorKet (e : K) : H →L[ℂ] hilbTensor H K :=
+  LinearMap.mkContinuous
+    { toFun := fun x => hilbTensorMk x e
+      map_add' := fun x x' => hilbTensorMk_add_left x x' e
+      map_smul' := fun c x => hilbTensorMk_smul_left c x e } ‖e‖
+    (fun x => by
+      show ‖hilbTensorMk x e‖ ≤ ‖e‖ * ‖x‖
+      rw [norm_hilbTensorMk]; exact le_of_eq (mul_comm _ _))
+
+@[simp] theorem hilbTensorKet_apply (e : K) (x : H) :
+    hilbTensorKet e x = hilbTensorMk x e := rfl
+
+/-- The adjoint of the ket operator is the slice map `x ⊗ y ↦ ⟪e,y⟫ x`. -/
+theorem hilbTensorKet_adjoint_mk (e : K) (x : H) (y : K) :
+    ContinuousLinearMap.adjoint (hilbTensorKet (H := H) e) (hilbTensorMk x y) = ⟪e, y⟫ • x := by
+  refine ext_inner_right ℂ fun v => ?_
+  rw [ContinuousLinearMap.adjoint_inner_left, hilbTensorKet_apply, hilbTensor_inner_mk,
+    inner_smul_left, inner_conj_symm]
+  ring
+
+/-- `hilbTensor_ext` for a target in an arbitrary universe (needed for `Z = ℂ`). -/
+theorem hilbTensor_ext' {Z : Type*} [NormedAddCommGroup Z] [NormedSpace ℂ Z]
+    {f g : hilbTensor H K →L[ℂ] Z}
+    (h : ∀ x y, f (hilbTensorMk x y) = g (hilbTensorMk x y)) : f = g := by
+  have hEq : Set.EqOn ⇑f ⇑g
+      (Set.range (fun z : TensorProduct ℂ H K => ((z : hilbTensor H K)))) := by
+    rintro _ ⟨z, rfl⟩
+    induction z using TensorProduct.induction_on with
+    | zero =>
+        simp only []
+        rw [show ((0 : TensorProduct ℂ H K) : hilbTensor H K) = 0 from
+          UniformSpace.Completion.coe_zero]
+        simp
+    | tmul x y => exact h x y
+    | add z z' hz hz' => simp only [UniformSpace.Completion.coe_add, map_add, hz, hz']
+  exact DFunLike.coe_injective
+    (Continuous.ext_on hilbTensor_denseRange_coe f.continuous g.continuous hEq)
+
+/-- Adjoints on `H ⊗ K` are determined by elementary tensors. -/
+theorem hilbTensor_adjoint_eq {T S : hilbTensor H K →L[ℂ] hilbTensor H K}
+    (h : ∀ x₁ x₂ y₁ y₂, ⟪S (hilbTensorMk x₁ x₂), hilbTensorMk y₁ y₂⟫
+        = ⟪hilbTensorMk x₁ x₂, T (hilbTensorMk y₁ y₂)⟫) :
+    ContinuousLinearMap.adjoint T = S := by
+  have hB : ∀ (y₁ : H) (y₂ : K) (x : hilbTensor H K),
+      ⟪S x, hilbTensorMk y₁ y₂⟫ = ⟪x, T (hilbTensorMk y₁ y₂)⟫ := by
+    intro y₁ y₂
+    have hext : ((innerSL ℂ (hilbTensorMk y₁ y₂)).comp S)
+        = innerSL ℂ (T (hilbTensorMk y₁ y₂)) := by
+      refine hilbTensor_ext' fun x₁ x₂ => ?_
+      simp only [ContinuousLinearMap.comp_apply, innerSL_apply_apply]
+      have h2 := congrArg (starRingEnd ℂ) (h x₁ x₂ y₁ y₂)
+      rwa [inner_conj_symm, inner_conj_symm] at h2
+    intro x
+    have h3 := congrArg (fun f : hilbTensor H K →L[ℂ] ℂ => f x) hext
+    simp only [ContinuousLinearMap.comp_apply, innerSL_apply_apply] at h3
+    have h4 := congrArg (starRingEnd ℂ) h3
+    rwa [inner_conj_symm, inner_conj_symm] at h4
+  have hfull : ∀ x y : hilbTensor H K, ⟪S x, y⟫ = ⟪x, T y⟫ := by
+    intro x
+    have hext : innerSL ℂ (S x) = (innerSL ℂ x).comp T := by
+      refine hilbTensor_ext' fun y₁ y₂ => ?_
+      simp only [ContinuousLinearMap.comp_apply, innerSL_apply_apply]
+      exact hB y₁ y₂ x
+    intro y
+    have h3 := congrArg (fun f : hilbTensor H K →L[ℂ] ℂ => f y) hext
+    simpa only [ContinuousLinearMap.comp_apply, innerSL_apply_apply] using h3
+  exact ((ContinuousLinearMap.eq_adjoint_iff S T).mpr hfull).symm
+
+variable (H K) in
+theorem tensorCLM_one : tensorCLM (1 : H →L[ℂ] H) (1 : K →L[ℂ] K) = 1 := by
+  refine hilbTensor_ext fun x y => ?_
+  rw [tensorCLM_mk]
+  rfl
+
+theorem tensorCLM_mul (a c : H →L[ℂ] H) (b d : K →L[ℂ] K) :
+    tensorCLM a b * tensorCLM (K := K) c d = tensorCLM (a * c) (b * d) := by
+  refine hilbTensor_ext fun x y => ?_
+  rw [ContinuousLinearMap.mul_apply, tensorCLM_mk, tensorCLM_mk, tensorCLM_mk]
+  rfl
+
+theorem tensorCLM_adjoint (a : H →L[ℂ] H) (b : K →L[ℂ] K) :
+    ContinuousLinearMap.adjoint (tensorCLM a b)
+      = tensorCLM (ContinuousLinearMap.adjoint a) (ContinuousLinearMap.adjoint b) := by
+  refine hilbTensor_adjoint_eq fun x₁ x₂ y₁ y₂ => ?_
+  rw [tensorCLM_mk, tensorCLM_mk, hilbTensor_inner_mk, hilbTensor_inner_mk,
+    ContinuousLinearMap.adjoint_inner_left, ContinuousLinearMap.adjoint_inner_left]
+
+theorem tensorCLM_star (a : H →L[ℂ] H) (b : K →L[ℂ] K) :
+    star (tensorCLM a b) = tensorCLM (K := K) (star a) (star b) := by
+  simp only [ContinuousLinearMap.star_eq_adjoint]
+  exact tensorCLM_adjoint a b
+
+theorem tensorCLM_add_right (a : H →L[ℂ] H) (b b' : K →L[ℂ] K) :
+    tensorCLM a (b + b') = tensorCLM (K := K) a b + tensorCLM a b' := by
+  refine hilbTensor_ext fun x y => ?_
+  rw [tensorCLM_mk]
+  show hilbTensorMk (a x) (b y + b' y) = _
+  rw [hilbTensorMk_add_right]
+  rw [ContinuousLinearMap.add_apply, tensorCLM_mk, tensorCLM_mk]
+
+theorem tensorCLM_sub_right (a : H →L[ℂ] H) (b b' : K →L[ℂ] K) :
+    tensorCLM a (b - b') = tensorCLM (K := K) a b - tensorCLM a b' := by
+  refine hilbTensor_ext fun x y => ?_
+  rw [tensorCLM_mk]
+  show hilbTensorMk (a x) (b y - b' y) = _
+  rw [hilbTensorMk_sub_right, ContinuousLinearMap.sub_apply, tensorCLM_mk, tensorCLM_mk]
+
+theorem tensorCLM_zero_right (a : H →L[ℂ] H) :
+    tensorCLM a (0 : K →L[ℂ] K) = 0 := by
+  refine hilbTensor_ext fun x y => ?_
+  rw [tensorCLM_mk]
+  show hilbTensorMk (a x) 0 = _
+  unfold hilbTensorMk
+  rw [TensorProduct.tmul_zero]
+  simp
+
+theorem tensorCLM_sum_right {ι : Type*} (a : H →L[ℂ] H) (s : Finset ι)
+    (b : ι → (K →L[ℂ] K)) :
+    tensorCLM a (∑ i ∈ s, b i) = ∑ i ∈ s, tensorCLM a (b i) := by
+  classical
+  induction s using Finset.induction with
+  | empty => simpa using tensorCLM_zero_right (K := K) a
+  | insert k s hk ih =>
+      rw [Finset.sum_insert hk, Finset.sum_insert hk, tensorCLM_add_right, ih]
+
+/-- `Q_e a Q_e* = a ⊗ |e⟩⟨e|`: the slice maps turn `ad` into a tensor factor. -/
+theorem conjOperator_ketAdjoint (a : H →L[ℂ] H) (e : K) :
+    conjOperator (ContinuousLinearMap.adjoint (hilbTensorKet (H := H) e)) a
+      = tensorCLM a (ketbra e e) := by
+  refine hilbTensor_ext fun x y => ?_
+  show ContinuousLinearMap.adjoint (ContinuousLinearMap.adjoint (hilbTensorKet e))
+      (a (ContinuousLinearMap.adjoint (hilbTensorKet e) (hilbTensorMk x y))) = _
+  rw [ContinuousLinearMap.adjoint_adjoint, hilbTensorKet_adjoint_mk, map_smul,
+    hilbTensorKet_apply, hilbTensorMk_smul_left, tensorCLM_mk, ketbra_apply',
+    hilbTensorMk_smul_right]
+
+/-- `a ⊗ b ≥ 0` for `a, b ≥ 0`. -/
+theorem tensorCLM_nonneg {a : H →L[ℂ] H} {b : K →L[ℂ] K} (ha : 0 ≤ a) (hb : 0 ≤ b) :
+    0 ≤ tensorCLM a b := by
+  have hca : CFC.sqrt a * CFC.sqrt a = a := CFC.sqrt_mul_sqrt_self a ha
+  have hcb : CFC.sqrt b * CFC.sqrt b = b := CFC.sqrt_mul_sqrt_self b hb
+  have hsa : star (CFC.sqrt a) = CFC.sqrt a :=
+    (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg a)).star_eq
+  have hsb : star (CFC.sqrt b) = CFC.sqrt b :=
+    (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg b)).star_eq
+  have h : tensorCLM a b = star (tensorCLM (CFC.sqrt a) (CFC.sqrt b))
+      * tensorCLM (CFC.sqrt a) (CFC.sqrt b) := by
+    rw [tensorCLM_star, hsa, hsb, tensorCLM_mul, hca, hcb]
+  rw [h]
+  exact star_mul_self_nonneg (tensorCLM (CFC.sqrt a) (CFC.sqrt b))
+
+/-- The "co-ket" operator `x ⊗ · : K → H ⊗ K`, `y ↦ x ⊗ y`. -/
+noncomputable def hilbTensorKet' (x : H) : K →L[ℂ] hilbTensor H K :=
+  LinearMap.mkContinuous
+    { toFun := fun y => hilbTensorMk x y
+      map_add' := fun y y' => hilbTensorMk_add_right x y y'
+      map_smul' := fun c y => hilbTensorMk_smul_right c x y } ‖x‖
+    (fun y => by
+      show ‖hilbTensorMk x y‖ ≤ ‖x‖ * ‖y‖
+      rw [norm_hilbTensorMk])
+
+@[simp] theorem hilbTensorKet'_apply (x : H) (y : K) :
+    hilbTensorKet' x y = hilbTensorMk x y := rfl
+
+theorem tensorCLM_mono {a : H →L[ℂ] H} {b b' : K →L[ℂ] K} (ha : 0 ≤ a) (h : b ≤ b') :
+    tensorCLM a b ≤ tensorCLM a b' := by
+  have h0 : 0 ≤ tensorCLM a (b' - b) := tensorCLM_nonneg ha (sub_nonneg.mpr h)
+  rw [tensorCLM_sub_right] at h0
+  exact sub_nonneg.mp h0
+
+section Partial
+
+variable {ι : Type u} (bb : HilbertBasis ι ℂ K)
+
+/-- The partial-sum projections `P_F = ∑_{i∈F} |bᵢ⟩⟨bᵢ|` of a Hilbert basis. -/
+noncomputable def basisProj (F : Finset ι) : K →L[ℂ] K :=
+  ∑ i ∈ F, ketbra (bb i) (bb i)
+
+theorem isStarProjection_basisProj (F : Finset ι) : IsStarProjection (basisProj bb F) :=
+  isStarProjection_sum F _ (fun i => isStarProjection_ketbra (bb.orthonormal.1 i))
+    (fun i _ j _ hij => ketbra_orth bb.orthonormal hij)
+
+theorem basisProj_apply (F : Finset ι) (y : K) :
+    basisProj bb F y = ∑ i ∈ F, ⟪bb i, y⟫ • bb i := by
+  rw [basisProj, ContinuousLinearMap.sum_apply]
+  rfl
+
+theorem tendsto_basisProj (y : K) :
+    Filter.Tendsto (fun F : Finset ι => basisProj bb F y) atTop (𝓝 y) := by
+  have h : HasSum (fun i => ⟪bb i, y⟫ • bb i) y := by
+    simpa only [HilbertBasis.repr_apply_apply] using bb.hasSum_repr y
+  simp only [basisProj_apply]
+  exact h
+
+variable (H)
+
+theorem tensorProj_mk (F : Finset ι) (x : H) (y : K) :
+    tensorCLM (1 : H →L[ℂ] H) (basisProj bb F) (hilbTensorMk x y)
+      = hilbTensorMk x (basisProj bb F y) := by
+  rw [tensorCLM_mk]; rfl
+
+theorem tensorProj_star (F : Finset ι) :
+    star (tensorCLM (1 : H →L[ℂ] H) (basisProj bb F))
+      = tensorCLM (1 : H →L[ℂ] H) (basisProj bb F) := by
+  rw [tensorCLM_star, star_one, (isStarProjection_basisProj bb F).2]
+
+theorem tensorProj_idem (F : Finset ι) :
+    tensorCLM (1 : H →L[ℂ] H) (basisProj bb F) * tensorCLM (1 : H →L[ℂ] H) (basisProj bb F)
+      = tensorCLM (1 : H →L[ℂ] H) (basisProj bb F) := by
+  rw [tensorCLM_mul, one_mul, (isStarProjection_basisProj bb F).1]
+
+theorem norm_tensorProj_le (F : Finset ι) (η : hilbTensor H K) :
+    ‖tensorCLM (1 : H →L[ℂ] H) (basisProj bb F) η‖ ≤ ‖η‖ := by
+  set R := tensorCLM (1 : H →L[ℂ] H) (basisProj bb F) with hR
+  have hsa : ContinuousLinearMap.adjoint R = R := by
+    rw [← ContinuousLinearMap.star_eq_adjoint]; exact tensorProj_star H bb F
+  have hidem : R (R η) = R η := by
+    have h2 := congrArg (fun T : hilbTensor H K →L[ℂ] hilbTensor H K => T η)
+      (tensorProj_idem H bb F)
+    simpa [ContinuousLinearMap.mul_apply] using h2
+  have h1 : (⟪R η, R η⟫ : ℂ) = ⟪R η, η⟫ := by
+    have h := ContinuousLinearMap.adjoint_inner_left R η (R η)
+    rw [hsa] at h
+    rw [← h, hidem]
+  have h2 : ‖R η‖ ^ 2 ≤ ‖R η‖ * ‖η‖ := by
+    rw [← norm_inner_self' (R η), h1]
+    exact norm_inner_le_norm _ _
+  rcases eq_or_lt_of_le (norm_nonneg (R η)) with h0 | h0
+  · rw [← h0]; exact norm_nonneg _
+  · nlinarith [h2]
+
+theorem tensorProj_conj (a : H →L[ℂ] H) (F : Finset ι) :
+    tensorCLM (1 : H →L[ℂ] H) (basisProj bb F) * tensorCLM a 1
+        * tensorCLM (1 : H →L[ℂ] H) (basisProj bb F)
+      = tensorCLM a (basisProj bb F) := by
+  rw [tensorCLM_mul, tensorCLM_mul, one_mul, mul_one, mul_one,
+    (isStarProjection_basisProj bb F).1]
+
+theorem basisProj_nonneg (F : Finset ι) : (0 : K →L[ℂ] K) ≤ basisProj bb F := by
+  have h := isStarProjection_basisProj bb F
+  have h2 : basisProj bb F = star (basisProj bb F) * basisProj bb F := by rw [h.2, h.1]
+  rw [h2]
+  exact star_mul_self_nonneg (basisProj bb F)
+
+theorem basisProj_mono {F G : Finset ι} (h : F ⊆ G) :
+    basisProj bb F ≤ basisProj bb G := by
+  classical
+  have hnn : ∀ i : ι, (0 : K →L[ℂ] K) ≤ ketbra (bb i) (bb i) := by
+    intro i
+    have hp := isStarProjection_ketbra (bb.orthonormal.1 i)
+    have h2 : ketbra (bb i) (bb i) = star (ketbra (bb i) (bb i)) * ketbra (bb i) (bb i) := by
+      rw [hp.2, hp.1]
+    rw [h2]
+    exact star_mul_self_nonneg _
+  have hsd : ∑ i ∈ G \ F, ketbra (bb i) (bb i) + ∑ i ∈ F, ketbra (bb i) (bb i)
+      = ∑ i ∈ G, ketbra (bb i) (bb i) := Finset.sum_sdiff h
+  have h0 : (0 : K →L[ℂ] K) ≤ ∑ i ∈ G \ F, ketbra (bb i) (bb i) :=
+    Finset.sum_nonneg fun i _ => hnn i
+  rw [basisProj, basisProj, ← hsd]
+  simpa using add_le_add_right h0 (∑ i ∈ F, ketbra (bb i) (bb i))
+
+theorem tendsto_tensorProj (η : hilbTensor H K) :
+    Filter.Tendsto (fun F : Finset ι => tensorCLM (1 : H →L[ℂ] H) (basisProj bb F) η)
+      atTop (𝓝 η) := by
+  classical
+  -- first on the algebraic tensor product
+  have halg : ∀ z : TensorProduct ℂ H K,
+      Filter.Tendsto (fun F : Finset ι =>
+        tensorCLM (1 : H →L[ℂ] H) (basisProj bb F) ((z : hilbTensor H K)))
+        atTop (𝓝 ((z : hilbTensor H K))) := by
+    intro z
+    induction z using TensorProduct.induction_on with
+    | zero =>
+        rw [show ((0 : TensorProduct ℂ H K) : hilbTensor H K) = 0 from
+          UniformSpace.Completion.coe_zero]
+        simpa using tendsto_const_nhds (x := (0 : hilbTensor H K))
+          (f := (atTop : Filter (Finset ι)))
+    | tmul x y =>
+        have hmk : ((x ⊗ₜ[ℂ] y : TensorProduct ℂ H K) : hilbTensor H K)
+            = hilbTensorMk x y := rfl
+        rw [hmk]
+        have := ((hilbTensorKet' (K := K) x).continuous.tendsto y).comp
+          (tendsto_basisProj bb y)
+        simpa only [Function.comp_def, hilbTensorKet'_apply, tensorProj_mk] using this
+    | add z z' hz hz' =>
+        rw [UniformSpace.Completion.coe_add]
+        simpa only [map_add] using hz.add hz'
+  -- then everywhere, by density and the uniform bound
+  rw [Metric.tendsto_atTop]
+  intro ε hε
+  obtain ⟨z, hz⟩ := Metric.denseRange_iff.mp
+    (hilbTensor_denseRange_coe (H := H) (K := K)) η (ε / 3) (by linarith)
+  have hzη : ‖η - ((z : hilbTensor H K))‖ < ε / 3 := by
+    rw [← dist_eq_norm]; exact hz
+  obtain ⟨F₀, hF₀⟩ := Metric.tendsto_atTop.mp (halg z) (ε / 3) (by linarith)
+  refine ⟨F₀, fun F hF => ?_⟩
+  have h1 : ‖tensorCLM (1 : H →L[ℂ] H) (basisProj bb F) ((z : hilbTensor H K))
+      - ((z : hilbTensor H K))‖ < ε / 3 := by
+    rw [← dist_eq_norm]; exact hF₀ F hF
+  have h2 : ‖tensorCLM (1 : H →L[ℂ] H) (basisProj bb F) (η - ((z : hilbTensor H K)))‖
+      < ε / 3 := lt_of_le_of_lt (norm_tensorProj_le H bb F _) hzη
+  rw [dist_eq_norm]
+  have hsplit : tensorCLM (1 : H →L[ℂ] H) (basisProj bb F) η - η
+      = tensorCLM (1 : H →L[ℂ] H) (basisProj bb F) (η - ((z : hilbTensor H K)))
+        + (tensorCLM (1 : H →L[ℂ] H) (basisProj bb F) ((z : hilbTensor H K))
+            - ((z : hilbTensor H K)))
+        + (((z : hilbTensor H K)) - η) := by
+    rw [map_sub]; abel
+  rw [hsplit]
+  have h3 : ‖((z : hilbTensor H K)) - η‖ < ε / 3 := by
+    rw [norm_sub_rev]; exact hzη
+  calc ‖_ + _ + _‖ ≤ ‖tensorCLM (1 : H →L[ℂ] H) (basisProj bb F) (η - ((z : hilbTensor H K)))
+          + (tensorCLM (1 : H →L[ℂ] H) (basisProj bb F) ((z : hilbTensor H K))
+            - ((z : hilbTensor H K)))‖ + ‖((z : hilbTensor H K)) - η‖ := norm_add_le _ _
+    _ ≤ ‖tensorCLM (1 : H →L[ℂ] H) (basisProj bb F) (η - ((z : hilbTensor H K)))‖
+          + ‖tensorCLM (1 : H →L[ℂ] H) (basisProj bb F) ((z : hilbTensor H K))
+            - ((z : hilbTensor H K))‖ + ‖((z : hilbTensor H K)) - η‖ := by
+        gcongr; exact norm_add_le _ _
+    _ < ε := by linarith
+
+end Partial
+
+end KrausAux
+
+section UWAux
+
+variable {A : Type*} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
+
+theorem uwTendsto_smul' {ι : Type*} {l : Filter ι} {f : ι → A} {a : A} (c : ℂ)
+    (h : UWTendsto f l a) : UWTendsto (fun i => c • f i) l (c • a) := by
+  rw [uwTendsto_iff] at h ⊢
+  intro ω
+  have h1 := (h ω).const_mul c
+  have hrw : ∀ b : A, (ω (c • b) : ℂ) = c * ω b := fun b =>
+    (map_smul ω.toPositiveLinearMap c b).trans (smul_eq_mul _ _)
+  simp only [hrw]
+  exact h1
+
+theorem uwTendsto_add' {ι : Type*} {l : Filter ι} {f g : ι → A} {a b : A}
+    (hf : UWTendsto f l a) (hg : UWTendsto g l b) :
+    UWTendsto (fun i => f i + g i) l (a + b) := by
+  rw [uwTendsto_iff] at hf hg ⊢
+  intro ω
+  simpa only [npFunctional_add] using (hf ω).add (hg ω)
+
+/-- A monotone net of self-adjoint elements converges ultraweakly to its supremum
+(**44VI** transported from the index set `D` to an arbitrary directed index). -/
+theorem uwTendsto_of_monotone_isLUB [VonNeumannAlgebra A] {ι : Type*} [Nonempty ι]
+    [SemilatticeSup ι] (x : ι → selfAdjoint A) (hmono : Monotone x) (L : selfAdjoint A)
+    (hlub : IsLUB (Set.range x) L) :
+    UWTendsto (fun i => ((x i : A))) atTop (L : A) := by
+  set D : Set (selfAdjoint A) := Set.range x with hD
+  have hne : D.Nonempty := Set.range_nonempty x
+  have hdir : DirectedOn (· ≤ ·) D := by
+    rintro _ ⟨i, rfl⟩ _ ⟨j, rfl⟩
+    exact ⟨x (i ⊔ j), ⟨i ⊔ j, rfl⟩, hmono le_sup_left, hmono le_sup_right⟩
+  have hh : D.Nonempty ∧ DirectedOn (· ≤ ·) D ∧ BddAbove D := ⟨hne, hdir, ⟨L, hlub.1⟩⟩
+  have hsup : dirSup D hh = L := (isLUB_dirSup D hh).unique hlub
+  have hbase := vna_supremum_uwlimit D hh
+  rw [hsup] at hbase
+  have hg : Filter.Tendsto (fun i : ι => (⟨x i, ⟨i, rfl⟩⟩ : D)) atTop atTop := by
+    refine Filter.tendsto_atTop_atTop.mpr fun d => ?_
+    obtain ⟨i₀, hi₀⟩ := d.2
+    refine ⟨i₀, fun j hj => ?_⟩
+    show d ≤ (⟨x j, ⟨j, rfl⟩⟩ : D)
+    rw [← Subtype.coe_le_coe, ← hi₀]
+    exact hmono hj
+  exact hbase.comp hg
+
+end UWAux
+
+
 /-! ## Parsec 1380: consequences of Stinespring
 
 **138I** (dils.tex:597): introduction — nothing to formalize.
@@ -1415,8 +1843,193 @@ theorem kraus_decomposition (φ : NCPMap (H →L[ℂ] H) (K →L[ℂ] K)) :
       (∃ M : ℝ, ∀ s : Finset ι, ‖∑ i ∈ s, conjOperator (V i) 1‖ ≤ M) ∧
       ∀ a : H →L[ℂ] H,
         UWTendsto (fun s : Finset ι => ∑ i ∈ s, conjOperator (V i) a)
-          atTop (φ a) :=
-  sorry
+          atTop (φ a) := by
+  classical
+  obtain ⟨K', i1, i2, i3, V₀, hV₀⟩ := physics_stinespring φ
+  letI := i1; letI := i2; letI := i3
+  obtain ⟨sset, bb, -⟩ := exists_hilbertBasis ℂ K'
+  set f : (H →L[ℂ] H) →ₗ[ℂ] (K →L[ℂ] K) := φ.toCompletelyPositiveMap.toLinearMap with hf
+  have hfφ : ∀ a, φ a = f a := fun _ => rfl
+  -- conjugation by a composite
+  have hcc : ∀ (S : hilbTensor H K' →L[ℂ] H) (a : H →L[ℂ] H),
+      conjOperator (S.comp V₀) a = conjOperator V₀ (conjOperator S a) := by
+    intro S a
+    show (ContinuousLinearMap.adjoint (S.comp V₀)).comp (a.comp (S.comp V₀))
+        = (ContinuousLinearMap.adjoint V₀).comp
+            (((ContinuousLinearMap.adjoint S).comp (a.comp S)).comp V₀)
+    rw [ContinuousLinearMap.adjoint_comp]
+    simp only [ContinuousLinearMap.comp_assoc]
+  -- `ad_{V₀}` is positive and monotone
+  have hadpos : ∀ T : hilbTensor H K' →L[ℂ] hilbTensor H K',
+      0 ≤ T → 0 ≤ conjOperator V₀ T := by
+    intro T hT
+    rw [ContinuousLinearMap.nonneg_iff_isPositive] at hT ⊢
+    exact hT.adjoint_conj V₀
+  have hadmono : ∀ T T' : hilbTensor H K' →L[ℂ] hilbTensor H K',
+      T ≤ T' → conjOperator V₀ T ≤ conjOperator V₀ T' := by
+    intro T T' h
+    have h0 := hadpos (T' - T) (sub_nonneg.mpr h)
+    rw [map_sub] at h0
+    exact sub_nonneg.mp h0
+  set W : ↥sset → (K →L[ℂ] H) :=
+    fun i => (ContinuousLinearMap.adjoint (hilbTensorKet (H := H) (bb i))).comp V₀ with hW
+  -- the partial sums are the conjugates of `a ⊗ P_F`
+  have hsum : ∀ (F : Finset ↥sset) (a : H →L[ℂ] H),
+      ∑ i ∈ F, conjOperator (W i) a = conjOperator V₀ (tensorCLM a (basisProj bb F)) := by
+    intro F a
+    rw [basisProj, tensorCLM_sum_right, map_sum]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [hW]
+    simp only []
+    rw [hcc, conjOperator_ketAdjoint]
+  refine ⟨↥sset, W, ⟨‖conjOperator V₀ (1 : hilbTensor H K' →L[ℂ] hilbTensor H K')‖,
+    fun F => ?_⟩, ?_⟩
+  · -- the norm bound
+    rw [hsum]
+    refine CStarAlgebra.norm_le_norm_of_nonneg_of_le
+      (hadpos _ (tensorCLM_nonneg zero_le_one (basisProj_nonneg bb F))) ?_
+    have h1 : tensorCLM (1 : H →L[ℂ] H) (basisProj bb F)
+        ≤ (1 : hilbTensor H K' →L[ℂ] hilbTensor H K') := by
+      have := tensorCLM_mono (a := (1 : H →L[ℂ] H)) zero_le_one
+        (isStarProjection_basisProj bb F).le_one
+      rwa [tensorCLM_one] at this
+    exact hadmono _ _ h1
+  · -- the ultraweak convergence
+    -- (i) the positive case, by monotone convergence to the supremum
+    have hpos : ∀ a : H →L[ℂ] H, 0 ≤ a →
+        UWTendsto (fun F : Finset ↥sset => ∑ i ∈ F, conjOperator (W i) a) atTop (φ a) := by
+      intro a ha
+      have hnn : ∀ F : Finset ↥sset,
+          0 ≤ conjOperator V₀ (tensorCLM a (basisProj bb F)) := fun F =>
+        hadpos _ (tensorCLM_nonneg ha (basisProj_nonneg bb F))
+      have hsaT : ∀ F : Finset ↥sset,
+          IsSelfAdjoint (conjOperator V₀ (tensorCLM a (basisProj bb F))) := fun F =>
+        IsSelfAdjoint.of_nonneg (hnn F)
+      have hφa : (φ a : K →L[ℂ] K) = conjOperator V₀ (tensorCLM a 1) := hV₀ a
+      have hsaφ : IsSelfAdjoint (φ a : K →L[ℂ] K) := by
+        rw [hφa]
+        exact IsSelfAdjoint.of_nonneg (hadpos _ (tensorCLM_nonneg ha zero_le_one))
+      -- monotone
+      have hmono : Monotone fun F : Finset ↥sset =>
+          (⟨conjOperator V₀ (tensorCLM a (basisProj bb F)), hsaT F⟩ :
+            selfAdjoint (K →L[ℂ] K)) := by
+        intro F G hFG
+        rw [← Subtype.coe_le_coe]
+        exact hadmono _ _ (tensorCLM_mono ha (basisProj_mono bb hFG))
+      -- the quadratic-form limit
+      have hlim : ∀ ξ : K,
+          Filter.Tendsto (fun F : Finset ↥sset =>
+            (⟪(conjOperator V₀ (tensorCLM a (basisProj bb F))) ξ, ξ⟫ : ℂ))
+            atTop (𝓝 (⟪(φ a : K →L[ℂ] K) ξ, ξ⟫ : ℂ)) := by
+        intro ξ
+        set η : hilbTensor H K' := V₀ ξ with hη
+        have hRsa : ∀ F : Finset ↥sset,
+            ContinuousLinearMap.adjoint (tensorCLM (1 : H →L[ℂ] H) (basisProj bb F))
+              = tensorCLM (1 : H →L[ℂ] H) (basisProj bb F) := by
+          intro F
+          rw [← ContinuousLinearMap.star_eq_adjoint]
+          exact tensorProj_star H bb F
+        have hkey : ∀ F : Finset ↥sset,
+            (⟪(conjOperator V₀ (tensorCLM a (basisProj bb F))) ξ, ξ⟫ : ℂ)
+              = ⟪(tensorCLM a 1) (tensorCLM (1 : H →L[ℂ] H) (basisProj bb F) η),
+                  tensorCLM (1 : H →L[ℂ] H) (basisProj bb F) η⟫ := by
+          intro F
+          have h1 : (conjOperator V₀ (tensorCLM a (basisProj bb F))) ξ
+              = ContinuousLinearMap.adjoint V₀ ((tensorCLM a (basisProj bb F)) η) := rfl
+          rw [h1, ContinuousLinearMap.adjoint_inner_left]
+          rw [← tensorProj_conj H bb a F]
+          simp only [ContinuousLinearMap.mul_apply]
+          rw [← hRsa F]
+          rw [ContinuousLinearMap.adjoint_inner_left, hRsa F]
+        have hcont : Continuous fun ζ : hilbTensor H K' => (⟪(tensorCLM a 1) ζ, ζ⟫ : ℂ) := by
+          exact Continuous.inner ((tensorCLM a 1).continuous) continuous_id
+        have hlim0 := (hcont.tendsto η).comp (tendsto_tensorProj H bb η)
+        simp only [Function.comp_def] at hlim0
+        have hφ' : (⟪(φ a : K →L[ℂ] K) ξ, ξ⟫ : ℂ) = ⟪(tensorCLM a 1) η, η⟫ := by
+          rw [hφa]
+          have : (conjOperator V₀ (tensorCLM a 1)) ξ
+              = ContinuousLinearMap.adjoint V₀ ((tensorCLM a 1) η) := rfl
+          rw [this, ContinuousLinearMap.adjoint_inner_left]
+        rw [hφ']
+        simpa only [hkey] using hlim0
+      -- the supremum
+      have hlub : IsLUB (Set.range fun F : Finset ↥sset =>
+          (⟨conjOperator V₀ (tensorCLM a (basisProj bb F)), hsaT F⟩ :
+            selfAdjoint (K →L[ℂ] K))) ⟨(φ a : K →L[ℂ] K), hsaφ⟩ := by
+        constructor
+        · rintro _ ⟨F, rfl⟩
+          rw [← Subtype.coe_le_coe]
+          show conjOperator V₀ (tensorCLM a (basisProj bb F)) ≤ (φ a : K →L[ℂ] K)
+          rw [hφa]
+          exact hadmono _ _ (tensorCLM_mono ha (isStarProjection_basisProj bb F).le_one)
+        · rintro t ht
+          rw [← Subtype.coe_le_coe]
+          show (φ a : K →L[ℂ] K) ≤ (t : K →L[ℂ] K)
+          rw [ContinuousLinearMap.le_def, ContinuousLinearMap.isPositive_iff']
+          refine ⟨t.2.sub hsaφ, fun ξ => ?_⟩
+          have hle : ∀ F : Finset ↥sset,
+              (⟪(conjOperator V₀ (tensorCLM a (basisProj bb F))) ξ, ξ⟫ : ℂ)
+                ≤ ⟪(t : K →L[ℂ] K) ξ, ξ⟫ := by
+            intro F
+            have h := ht ⟨F, rfl⟩
+            rw [← Subtype.coe_le_coe] at h
+            rw [ContinuousLinearMap.le_def, ContinuousLinearMap.isPositive_iff'] at h
+            have h2 := h.2 ξ
+            rw [ContinuousLinearMap.sub_apply, inner_sub_left] at h2
+            exact sub_nonneg.mp h2
+          have hfin := le_of_tendsto (hlim ξ) (Filter.Eventually.of_forall hle)
+          rw [ContinuousLinearMap.sub_apply, inner_sub_left]
+          exact sub_nonneg.mpr hfin
+      have := uwTendsto_of_monotone_isLUB
+        (fun F : Finset ↥sset =>
+          (⟨conjOperator V₀ (tensorCLM a (basisProj bb F)), hsaT F⟩ :
+            selfAdjoint (K →L[ℂ] K))) hmono ⟨(φ a : K →L[ℂ] K), hsaφ⟩ hlub
+      simpa only [hsum] using this
+    -- (ii) linearity in `a`
+    have hadd : ∀ a b : H →L[ℂ] H,
+        UWTendsto (fun F : Finset ↥sset => ∑ i ∈ F, conjOperator (W i) a) atTop (φ a) →
+        UWTendsto (fun F : Finset ↥sset => ∑ i ∈ F, conjOperator (W i) b) atTop (φ b) →
+        UWTendsto (fun F : Finset ↥sset => ∑ i ∈ F, conjOperator (W i) (a + b)) atTop
+          (φ (a + b)) := by
+      intro a b ha hb
+      have hEq : (fun F : Finset ↥sset => ∑ i ∈ F, conjOperator (W i) (a + b))
+          = fun F : Finset ↥sset => (∑ i ∈ F, conjOperator (W i) a)
+              + (∑ i ∈ F, conjOperator (W i) b) := by
+        funext F
+        rw [← Finset.sum_add_distrib]
+        exact Finset.sum_congr rfl fun i _ => map_add _ _ _
+      have hφ' : (φ (a + b) : K →L[ℂ] K) = (φ a : K →L[ℂ] K) + φ b := by
+        rw [hfφ, hfφ, hfφ, map_add]
+      rw [hEq, hφ']
+      exact uwTendsto_add' ha hb
+    have hsmul : ∀ (c : ℂ) (a : H →L[ℂ] H),
+        UWTendsto (fun F : Finset ↥sset => ∑ i ∈ F, conjOperator (W i) a) atTop (φ a) →
+        UWTendsto (fun F : Finset ↥sset => ∑ i ∈ F, conjOperator (W i) (c • a)) atTop
+          (φ (c • a)) := by
+      intro c a ha
+      have hEq : (fun F : Finset ↥sset => ∑ i ∈ F, conjOperator (W i) (c • a))
+          = fun F : Finset ↥sset => c • (∑ i ∈ F, conjOperator (W i) a) := by
+        funext F
+        rw [Finset.smul_sum]
+        exact Finset.sum_congr rfl fun i _ => map_smul _ _ _
+      have hφ' : (φ (c • a) : K →L[ℂ] K) = c • (φ a : K →L[ℂ] K) := by
+        rw [hfφ, hfφ, map_smul]
+      rw [hEq, hφ']
+      exact uwTendsto_smul' c ha
+    -- (iii) every element is a complex combination of four positives
+    have hsaCase : ∀ b : H →L[ℂ] H, IsSelfAdjoint b →
+        UWTendsto (fun F : Finset ↥sset => ∑ i ∈ F, conjOperator (W i) b) atTop (φ b) := by
+      intro b hb
+      have hdec : b = b⁺ + (-1 : ℂ) • b⁻ := by
+        rw [neg_one_smul, ← sub_eq_add_neg, CFC.posPart_sub_negPart b hb]
+      have h := hadd _ _ (hpos _ (CFC.posPart_nonneg b))
+        (hsmul (-1 : ℂ) _ (hpos _ (CFC.negPart_nonneg b)))
+      rwa [← hdec] at h
+    intro a
+    have h1 := hsaCase ((realPart a : H →L[ℂ] H)) (realPart a).2
+    have h2 := hsaCase ((imaginaryPart a : H →L[ℂ] H)) (imaginaryPart a).2
+    have h3 := hadd _ _ h1 (hsmul Complex.I _ h2)
+    rwa [realPart_add_I_smul_imaginaryPart a] at h3
 
 /-- **138VIII** (`kraus-exercise`, dils.tex:742, Exercise*), finite
 dimensional case: for finite-dimensional `ℋ` and `𝒦` the number of Kraus
