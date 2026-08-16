@@ -810,6 +810,245 @@ section VNA
 
 variable [VonNeumannAlgebra A]
 
+/-! ### Tools for **86IX**: the ultraweak topology is a locally convex TVS
+
+The Krein–Milman theorem needs `A` with the ultraweak topology to be a
+Hausdorff locally convex topological vector space over `ℝ`.  Hausdorffness is
+**44XI**.1; the other three properties follow formally, the ultraweak topology
+being an infimum of topologies induced by linear maps into `ℂ`. -/
+
+omit [StarOrderedRing A] in
+/-- The ultraweak topology makes `A` a topological additive group: it is the
+infimum of the topologies induced by the (additive) np-functionals. -/
+theorem ultraweak_isTopologicalAddGroup : @IsTopologicalAddGroup A (ultraweak A) _ := by
+  rw [ultraweak]
+  refine topologicalAddGroup_iInf fun ω => ?_
+  exact topologicalAddGroup_induced ω.toPositiveLinearMap.toLinearMap
+
+omit [StarOrderedRing A] in
+/-- Scalar multiplication is ultraweakly continuous. -/
+theorem ultraweak_continuousSMul : @ContinuousSMul ℝ A _ _ (ultraweak A) := by
+  rw [ultraweak]
+  refine continuousSMul_iInf fun ω => ?_
+  exact continuousSMul_induced
+    (LinearMap.restrictScalars ℝ ω.toPositiveLinearMap.toLinearMap)
+
+omit [StarOrderedRing A] in
+/-- The ultraweak topology is locally convex: `ℂ` is, and local convexity is
+preserved by induced topologies and by infima. -/
+theorem ultraweak_locallyConvexSpace : @LocallyConvexSpace ℝ A _ _ _ _ (ultraweak A) := by
+  rw [ultraweak]
+  refine LocallyConvexSpace.iInf fun ω => ?_
+  exact LocallyConvexSpace.induced
+    (LinearMap.restrictScalars ℝ ω.toPositiveLinearMap.toLinearMap)
+
+/-- Krein–Milman step of **86IX**. -/
+theorem exists_extremePoint_max (f : A →ₗ[ℂ] ℂ)
+    (hf : @ContinuousOn A ℂ (ultraweak A) _ ⇑f (Metric.closedBall 0 1)) :
+    ∃ (M : ℝ) (u : A), 0 ≤ M ∧
+      u ∈ Set.extremePoints ℝ (Metric.closedBall (0 : A) 1) ∧
+      f u = (M : ℂ) ∧ ∀ z ∈ Metric.closedBall (0 : A) 1, ‖f z‖ ≤ M := by
+  letI : TopologicalSpace A := ultraweak A
+  haveI : T2Space A := vn_positive_basic_1.1
+  haveI : IsTopologicalAddGroup A := ultraweak_isTopologicalAddGroup
+  haveI : ContinuousSMul ℝ A := ultraweak_continuousSMul
+  haveI : LocallyConvexSpace ℝ A := ultraweak_locallyConvexSpace
+  have h0 : (0 : A) ∈ Metric.closedBall (0 : A) 1 := Metric.mem_closedBall_self zero_le_one
+  have hballc : IsCompact (Metric.closedBall (0 : A) 1) := vn_ball_compact
+  have hballcl : IsClosed (Metric.closedBall (0 : A) 1) :=
+    ultraclosed _ (convex_closedBall (0 : A) 1) vn_positive_basic_3
+  obtain ⟨a₀, ha₀, hmax⟩ := hballc.exists_isMaxOn ⟨0, h0⟩
+    (Complex.continuous_re.comp_continuousOn hf)
+  set M : ℝ := (f a₀).re with hMdef
+  have hM0 : 0 ≤ M := by simpa using hmax h0
+  have hMle : ∀ z ∈ Metric.closedBall (0 : A) 1, ‖f z‖ ≤ M := by
+    intro z hz
+    rcases eq_or_ne (f z) 0 with h | h
+    · rw [h, norm_zero]; exact hM0
+    · set l : ℂ := (‖f z‖ : ℂ) / f z with hl
+      have hlnorm : ‖l‖ = 1 := by
+        rw [hl, norm_div, Complex.norm_real, Real.norm_eq_abs,
+          abs_of_nonneg (norm_nonneg _)]
+        field_simp
+      have hlz : l • z ∈ Metric.closedBall (0 : A) 1 := by
+        rw [mem_closedBall_zero_iff, norm_smul, hlnorm, one_mul]
+        exact mem_closedBall_zero_iff.mp hz
+      have hval : f (l • z) = (‖f z‖ : ℂ) := by
+        rw [map_smul, smul_eq_mul, hl]
+        field_simp
+      have hle := hmax hlz
+      simp only [Set.mem_setOf_eq, Function.comp_apply, hval, Complex.ofReal_re] at hle
+      exact hle
+  have hkey : ∀ x ∈ Metric.closedBall (0 : A) 1, (f x).re = M → f x = (M : ℂ) := by
+    intro x hx hre
+    have h1 : ‖f x‖ ≤ M := hMle x hx
+    have h2 : (f x).re = ‖f x‖ := le_antisymm (Complex.re_le_norm _) (by rw [hre]; exact h1)
+    have h3 : (0 : ℂ) ≤ f x := Complex.re_eq_norm.mp h2
+    exact Complex.ext (by simpa using hre) (by simpa using ((Complex.le_def.mp h3).2).symm)
+  have hfa₀ : f a₀ = (M : ℂ) := hkey a₀ ha₀ rfl
+  set F : Set A := Metric.closedBall (0 : A) 1 ∩ ⇑f ⁻¹' {(M : ℂ)} with hFdef
+  have hFcl : IsClosed F := hf.preimage_isClosed_of_isClosed hballcl isClosed_singleton
+  have hFcomp : IsCompact F := hballc.of_isClosed_subset hFcl Set.inter_subset_left
+  obtain ⟨u, hu⟩ := hFcomp.extremePoints_nonempty ⟨a₀, ha₀, hfa₀⟩
+  refine ⟨M, u, hM0, ⟨hu.1.1, ?_⟩, hu.1.2, hMle⟩
+  intro x₁ hx₁ x₂ hx₂ hseg
+  obtain ⟨t₁, t₂, ht₁, ht₂, hts, hcomb⟩ := hseg
+  have hfu : f u = (M : ℂ) := hu.1.2
+  have hre1 : (f x₁).re ≤ M := (Complex.re_le_norm _).trans (hMle x₁ hx₁)
+  have hre2 : (f x₂).re ≤ M := (Complex.re_le_norm _).trans (hMle x₂ hx₂)
+  have hcx : f u = (t₁ : ℂ) * f x₁ + (t₂ : ℂ) * f x₂ := by
+    rw [← hcomb, map_add, ← Complex.coe_smul, ← Complex.coe_smul, map_smul, map_smul,
+      smul_eq_mul, smul_eq_mul]
+  have hsum : t₁ * (f x₁).re + t₂ * (f x₂).re = M := by
+    have := congrArg Complex.re hcx
+    simpa [hfu] using this.symm
+  have he1 : (f x₁).re = M := by nlinarith
+  have he2 : (f x₂).re = M := by nlinarith
+  exact hu.2 ⟨hx₁, hkey x₁ hx₁ he1⟩ ⟨hx₂, hkey x₂ hx₂ he2⟩ ⟨t₁, t₂, ht₁, ht₂, hts, hcomb⟩
+
+/-- Cauchy–Schwarz consequence: a positive functional killing a projection
+kills every product with it. -/
+theorem posFunctional_mul_eq_zero (g : A →L[ℂ] ℂ)
+    (hg : ∀ a : A, 0 ≤ a → 0 ≤ g a) (q : A) (hq : IsStarProjection q)
+    (hq0 : g q = 0) :
+    (∀ b : A, g (q * b) = 0) ∧ (∀ b : A, g (b * q) = 0) := by
+  have hω : IsPositiveMap (g : A →ₗ[ℂ] ℂ) := hg
+  have hqs : star q = q := hq.isSelfAdjoint.star_eq
+  have hqq : star q * q = q := by rw [hqs]; exact hq.isIdempotentElem.eq
+  have hzero : ∀ z : A, ((‖g z‖ : ℂ)) ^ 2 ≤ 0 → g z = 0 := by
+    intro z hz
+    have hle : ((‖g z‖ ^ 2 : ℝ) : ℂ) ≤ 0 := by push_cast; exact hz
+    have h2 : (‖g z‖ : ℝ) ^ 2 ≤ 0 := by
+      exact_mod_cast Complex.real_le_real.mp (by simpa using hle)
+    have : ‖g z‖ = 0 := by nlinarith [norm_nonneg (g z)]
+    exact norm_eq_zero.mp this
+  constructor
+  · intro b
+    have hcs := omega_norm_basic_1 (g : A →ₗ[ℂ] ℂ) hω q b
+    simp only [ContinuousLinearMap.coe_coe] at hcs
+    rw [hqs, hq.isIdempotentElem.eq, hq0, zero_mul] at hcs
+    exact hzero _ hcs
+  · intro b
+    have hcs := omega_norm_basic_1 (g : A →ₗ[ℂ] ℂ) hω (star b) q
+    simp only [ContinuousLinearMap.coe_coe] at hcs
+    rw [star_star, hqq, hq0, mul_zero] at hcs
+    exact hzero _ hcs
+
+private theorem np_real_smul (ω : NPFunctional A) (r : ℝ) (a : A) :
+    (ω (r • a) : ℂ) = (r : ℂ) * ω a := by
+  rw [← Complex.coe_smul]
+  exact (map_smul ω.toPositiveLinearMap _ _).trans (smul_eq_mul _ _)
+
+private theorem plm_real_smul (g : A →ₚ[ℂ] ℂ) (r : ℝ) (a : A) :
+    (g (r • a) : ℂ) = (r : ℂ) * g a := by
+  rw [← Complex.coe_smul]
+  exact (map_smul g _ _).trans (smul_eq_mul _ _)
+
+/-- **44XV**, (2) ⇒ (3), for functionals. -/
+theorem preservesDirSups_of_continuousOn_effects_functional (g : A →ₚ[ℂ] ℂ)
+    (h : @ContinuousOn A ℂ (ultraweak A) _ ⇑g (effects A)) :
+    PreservesDirSups ⇑g := by
+  let _ : TopologicalSpace A := ultraweak A
+  intro D s hne hdir hlub
+  refine ⟨?_, ?_⟩
+  · rintro _ ⟨d, hd, rfl⟩
+    exact g.monotone (Subtype.coe_le_coe.mpr (hlub.1 hd))
+  intro z hz
+  obtain ⟨d₀, hd₀⟩ := hne
+  set D' : Set (selfAdjoint A) := {d ∈ D | d₀ ≤ d} with hD'
+  have hne' : D'.Nonempty := ⟨d₀, hd₀, le_refl _⟩
+  have hdir' : DirectedOn (· ≤ ·) D' := by
+    rintro x ⟨hxD, hx0⟩ y ⟨hyD, hy0⟩
+    obtain ⟨e, heD, hxe, hye⟩ := hdir x hxD y hyD
+    exact ⟨e, ⟨heD, hx0.trans hxe⟩, hxe, hye⟩
+  have hlub' : IsLUB D' s := by
+    refine ⟨fun d hd => hlub.1 hd.1, fun u hu => hlub.2 fun d hd => ?_⟩
+    obtain ⟨e, heD, hde, h0e⟩ := hdir d hd d₀ hd₀
+    exact hde.trans (hu ⟨heD, h0e⟩)
+  have hd₀s : ((d₀ : selfAdjoint A) : A) ≤ (s : A) :=
+    Subtype.coe_le_coe.mpr (hlub.1 hd₀)
+  set c : ℝ := ‖(s : A) - ((d₀ : selfAdjoint A) : A)‖ with hc
+  by_cases hc0 : c = 0
+  · have hsd : (s : A) = ((d₀ : selfAdjoint A) : A) :=
+      sub_eq_zero.mp (norm_eq_zero.mp hc0)
+    rw [hsd]
+    exact hz ⟨d₀, hd₀, rfl⟩
+  have hcpos : 0 < c := lt_of_le_of_ne (norm_nonneg _) (Ne.symm hc0)
+  set e : A → A := fun a => c⁻¹ • (a - ((d₀ : selfAdjoint A) : A)) with he
+  have heff : ∀ a : A, ((d₀ : selfAdjoint A) : A) ≤ a → a ≤ (s : A) →
+      e a ∈ effects A := by
+    intro a h1 h2
+    have hnn : (0 : A) ≤ a - ((d₀ : selfAdjoint A) : A) := sub_nonneg.mpr h1
+    refine ⟨smul_nonneg (inv_nonneg.mpr hcpos.le) hnn, ?_⟩
+    have hle : a - ((d₀ : selfAdjoint A) : A) ≤ c • (1 : A) := by
+      refine (sub_le_sub_right h2 _).trans ?_
+      simpa [hc] using le_norm_smul_one (sub_nonneg.mpr hd₀s)
+    have := smul_le_smul_of_nonneg_left hle (inv_nonneg.mpr hcpos.le)
+    rwa [smul_smul, inv_mul_cancel₀ hcpos.ne', one_smul] at this
+  have hes : e (s : A) ∈ effects A := heff _ hd₀s le_rfl
+  have hnonempty : Nonempty D' := ⟨⟨d₀, hd₀, le_refl _⟩⟩
+  have hdo : IsDirectedOrder D' := directedOn_iff_isDirectedOrder.mp hdir'
+  have hh' : D'.Nonempty ∧ DirectedOn (· ≤ ·) D' ∧ BddAbove D' :=
+    ⟨hne', hdir', ⟨s, hlub'.1⟩⟩
+  have hsup : dirSup D' hh' = s := (isLUB_dirSup D' hh').unique hlub'
+  have hbase : UWTendsto (fun d : D' => ((d : selfAdjoint A) : A)) atTop (s : A) := by
+    have := vna_supremum_uwlimit D' hh'
+    rwa [hsup] at this
+  have hnet : UWTendsto (fun d : D' => e ((d : selfAdjoint A) : A)) atTop
+      (e (s : A)) := by
+    rw [uwTendsto_iff] at hbase ⊢
+    intro ω
+    have h1 := ((hbase ω).sub (tendsto_const_nhds
+      (x := (ω ((d₀ : selfAdjoint A) : A) : ℂ)) (f := (atTop : Filter D')))).const_mul
+      ((c⁻¹ : ℝ) : ℂ)
+    have hrw : ∀ a : A, (ω (e a) : ℂ)
+        = ((c⁻¹ : ℝ) : ℂ) * (ω a - ω ((d₀ : selfAdjoint A) : A)) := by
+      intro a
+      rw [he]
+      simp only [np_real_smul, npFunctional_sub]
+    simp only [hrw]
+    exact h1
+  have hin : ∀ᶠ d : D' in atTop, e ((d : selfAdjoint A) : A) ∈ effects A :=
+    Eventually.of_forall fun d =>
+      heff _ (Subtype.coe_le_coe.mpr d.2.2) (Subtype.coe_le_coe.mpr (hlub'.1 d.2))
+  have htw : Tendsto (fun d : D' => e ((d : selfAdjoint A) : A)) atTop
+      (𝓝[effects A] (e (s : A))) :=
+    tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within _ hnet hin
+  have hfnet : Tendsto (fun d : D' => (g (e ((d : selfAdjoint A) : A)) : ℂ)) atTop
+      (𝓝 (g (e (s : A)))) := Filter.Tendsto.comp (h _ hes) htw
+  have hback : ∀ a : A, (g a : ℂ)
+      = ((c : ℝ) : ℂ) * g (e a) + g ((d₀ : selfAdjoint A) : A) := by
+    intro a
+    rw [he]
+    simp only
+    rw [plm_real_smul, map_sub]
+    have hcne : ((c : ℝ) : ℂ) ≠ 0 := by exact_mod_cast hcpos.ne'
+    push_cast
+    field_simp
+    ring
+  have hfd : Tendsto (fun d : D' => (g ((d : selfAdjoint A) : A) : ℂ)) atTop
+      (𝓝 (g (s : A))) := by
+    have h1 := (hfnet.const_mul (((c : ℝ) : ℂ))).add_const
+      ((g ((d₀ : selfAdjoint A) : A) : ℂ))
+    rw [show (g (s : A) : ℂ) = ((c : ℝ) : ℂ) * g (e (s : A))
+      + g ((d₀ : selfAdjoint A) : A) from hback _]
+    exact h1.congr fun d => (hback _).symm
+  have hle : ∀ d : D', (g ((d : selfAdjoint A) : A) : ℂ) ≤ z := fun d =>
+    hz ⟨(d : selfAdjoint A), d.2.1, rfl⟩
+  have hre : (g (s : A) : ℂ).re ≤ z.re :=
+    le_of_tendsto ((Complex.continuous_re.tendsto _).comp hfd)
+      (Eventually.of_forall fun d => (Complex.le_def.mp (hle d)).1)
+  have him : (g (s : A) : ℂ).im = z.im := by
+    have h1 : Tendsto (fun d : D' => (g ((d : selfAdjoint A) : A) : ℂ).im) atTop
+        (𝓝 (g (s : A) : ℂ).im) := (Complex.continuous_im.tendsto _).comp hfd
+    have h2 : Tendsto (fun d : D' => (g ((d : selfAdjoint A) : A) : ℂ).im) atTop
+        (𝓝 z.im) := by
+      refine Tendsto.congr' (Eventually.of_forall fun d => ?_) tendsto_const_nhds
+      exact ((Complex.le_def.mp (hle d)).2).symm
+    exact tendsto_nhds_unique h1 h2
+  exact Complex.le_def.mpr ⟨hre, him⟩
+
+
 /-- **86IX** (`polar-decomposition-of-functional`, vn.tex:6373, Theorem
 (Polar decomposition of functionals)): every linear functional `f` on a von
 Neumann algebra that is ultraweakly continuous on the unit ball is of the
@@ -821,16 +1060,159 @@ theorem polar_decomposition_of_functional (f : A →ₗ[ℂ] ℂ)
       (∀ a : A, f a = f (u * star u * a)) ∧
       (∀ a : A, f a = f (a * (star u * u))) ∧
       (∀ a : A, 0 ≤ a → 0 ≤ f (u * a)) ∧
-      (∀ a : A, 0 ≤ a → 0 ≤ f (a * u)) :=
-  sorry
+      (∀ a : A, 0 ≤ a → 0 ≤ f (a * u)) := by
+  obtain ⟨M, u, hM0, huext, hfu, hMle⟩ := exists_extremePoint_max f hf
+  have hu1 : ‖u‖ ≤ 1 := mem_closedBall_zero_iff.mp huext.1
+  have hbound : ∀ z : A, ‖f z‖ ≤ M * ‖z‖ := by
+    intro z
+    rcases eq_or_ne z 0 with rfl | hz
+    · simp
+    · have hzn : (0 : ℝ) < ‖z‖ := norm_pos_iff.mpr hz
+      have hmem : ((‖z‖⁻¹ : ℝ) : ℂ) • z ∈ Metric.closedBall (0 : A) 1 := by
+        rw [mem_closedBall_zero_iff, norm_smul, Complex.norm_real, Real.norm_eq_abs,
+          abs_of_pos (inv_pos.mpr hzn), inv_mul_cancel₀ (ne_of_gt hzn)]
+      have h := hMle _ hmem
+      rw [map_smul, smul_eq_mul, norm_mul, Complex.norm_real, Real.norm_eq_abs,
+        abs_of_pos (inv_pos.mpr hzn)] at h
+      simpa [mul_comm] using (inv_mul_le_iff₀ hzn).mp h
+  set fc : A →L[ℂ] ℂ := f.mkContinuous M hbound with hfcdef
+  have hfcapp : ∀ z : A, fc z = f z := fun _ => rfl
+  obtain ⟨hproj, hann⟩ := vn_ball_extreme_point u huext
+  have hpi : IsPartialIsometry A u :=
+    ((partial_isometry_equivalents u).out 1 0).mp hproj
+  have huu : u * star u * u = u := ((partial_isometry_equivalents u).out 1 2).mp hproj
+  have hproje : IsStarProjection (u * star u) :=
+    ((partial_isometry_equivalents u).out 1 3).mp hproj
+  -- `g = f(u ·)` and `g' = f((·)u)` are positive
+  set g : A →L[ℂ] ℂ := fc.comp (ContinuousLinearMap.mul ℂ A u) with hgdef
+  have hgapp : ∀ a : A, g a = f (u * a) := fun _ => rfl
+  set g' : A →L[ℂ] ℂ := fc.comp ((ContinuousLinearMap.mul ℂ A).flip u) with hg'def
+  have hg'app : ∀ a : A, g' a = f (a * u) := fun _ => rfl
+  have hgnorm : ‖g‖ ≤ M := by
+    refine ContinuousLinearMap.opNorm_le_bound _ hM0 fun a => ?_
+    rw [hgapp]
+    calc ‖f (u * a)‖ ≤ M * ‖u * a‖ := hbound _
+      _ ≤ M * (‖u‖ * ‖a‖) := by gcongr; exact norm_mul_le _ _
+      _ ≤ M * (1 * ‖a‖) := by gcongr
+      _ = M * ‖a‖ := by ring
+  have hg'norm : ‖g'‖ ≤ M := by
+    refine ContinuousLinearMap.opNorm_le_bound _ hM0 fun a => ?_
+    rw [hg'app]
+    calc ‖f (a * u)‖ ≤ M * ‖a * u‖ := hbound _
+      _ ≤ M * (‖a‖ * ‖u‖) := by gcongr; exact norm_mul_le _ _
+      _ ≤ M * (‖a‖ * 1) := by gcongr
+      _ = M * ‖a‖ := by ring
+  have hgpos : ∀ a : A, 0 ≤ a → 0 ≤ g a := by
+    refine (positive_functional_criterion g).mpr ?_
+    have h1 : g 1 = (M : ℂ) := by rw [hgapp, mul_one, hfu]
+    rw [h1]
+    exact ⟨Complex.ofReal_im M, by simpa using hgnorm⟩
+  have hg'pos : ∀ a : A, 0 ≤ a → 0 ≤ g' a := by
+    refine (positive_functional_criterion g').mpr ?_
+    have h1 : g' 1 = (M : ℂ) := by rw [hg'app, one_mul, hfu]
+    rw [h1]
+    exact ⟨Complex.ofReal_im M, by simpa using hg'norm⟩
+  -- `g` kills `(u*u)^⊥`
+  have hcompl : IsStarProjection (1 - star u * u) := hproj.one_sub
+  have hg0 : g (1 - star u * u) = 0 := by
+    rw [hgapp, mul_sub, mul_one, ← mul_assoc, huu, sub_self, map_zero]
+  have hgz := posFunctional_mul_eq_zero g hgpos _ hcompl hg0
+  have hcomple : IsStarProjection (1 - u * star u) := hproje.one_sub
+  have hg'0 : g' (1 - u * star u) = 0 := by
+    rw [hg'app, sub_mul, one_mul, huu, sub_self, map_zero]
+  have hg'z := posFunctional_mul_eq_zero g' hg'pos _ hcomple hg'0
+  -- `f(u b (u*u)) = f(u b)`
+  have hR : ∀ b : A, f (u * b * (star u * u)) = f (u * b) := by
+    intro b
+    have h := hgz.2 b
+    rw [hgapp, show u * (b * (1 - star u * u)) = u * b - u * b * (star u * u) by
+      noncomm_ring, map_sub, sub_eq_zero] at h
+    exact h.symm
+  -- `f((1-uu*) b u) = 0`, i.e. `f(b u) = f(uu* b u)`
+  have hL : ∀ b : A, f (u * star u * b * u) = f (b * u) := by
+    intro b
+    have h := hg'z.1 b
+    rw [hg'app, show (1 - u * star u) * b * u = b * u - u * star u * b * u by
+      noncomm_ring, map_sub, sub_eq_zero] at h
+    exact h.symm
+  have hexpand : ∀ a : A, f a - f (u * star u * a) - f (a * (star u * u))
+      + f (u * star u * a * (star u * u)) = 0 := by
+    intro a
+    have h0 : f ((1 - u * star u) * a * (1 - star u * u)) = 0 := by
+      rw [hann a, map_zero]
+    rw [show (1 - u * star u) * a * (1 - star u * u)
+        = a - u * star u * a - a * (star u * u) + u * star u * a * (star u * u) by
+      noncomm_ring, map_add, map_sub, map_sub] at h0
+    exact h0
+  have hA : ∀ a : A, f (u * star u * a * (star u * u)) = f (u * star u * a) := by
+    intro a
+    have h := hR (star u * a)
+    rw [show u * (star u * a) * (star u * u) = u * star u * a * (star u * u) by
+      noncomm_ring, show u * (star u * a) = u * star u * a by noncomm_ring] at h
+    exact h
+  have hB : ∀ a : A, f (u * star u * a * (star u * u)) = f (a * (star u * u)) := by
+    intro a
+    have h := hL (a * star u)
+    rw [show u * star u * (a * star u) * u = u * star u * a * (star u * u) by
+      noncomm_ring, show a * star u * u = a * (star u * u) by noncomm_ring] at h
+    exact h
+  refine ⟨u, hpi, fun a => ?_, fun a => ?_, fun a ha => by rw [← hgapp]; exact hgpos a ha,
+    fun a ha => by rw [← hg'app]; exact hg'pos a ha⟩
+  · have h := hexpand a
+    rw [hB a] at h
+    linear_combination h
+  · have h := hexpand a
+    rw [hA a] at h
+    linear_combination h
 
 /-- **86XII** (`uwcont-on-ball`, vn.tex:6435, Corollary): a functional on a
 von Neumann algebra that is ultraweakly continuous on the unit ball is
 ultraweakly continuous. -/
 theorem uwcont_on_ball (f : A →ₗ[ℂ] ℂ)
     (hf : @ContinuousOn A ℂ (ultraweak A) _ ⇑f (Metric.closedBall 0 1)) :
-    @Continuous A ℂ (ultraweak A) _ ⇑f :=
-  sorry
+    @Continuous A ℂ (ultraweak A) _ ⇑f := by
+  obtain ⟨u, hpi, h1, h2, hpos, hpos'⟩ := polar_decomposition_of_functional f hf
+  have hproj : IsStarProjection (star u * u) :=
+    ((partial_isometry_equivalents u).out 0 1).mp hpi
+  have hu1 : ‖u‖ ≤ 1 := by
+    have h : ‖u‖ * ‖u‖ ≤ 1 := by
+      rw [← CStarRing.norm_star_mul_self]
+      exact norm_starProjection_le_one hproj
+    nlinarith [norm_nonneg u]
+  let g : A →ₚ[ℂ] ℂ :=
+    { toFun := fun a => f (u * a)
+      map_add' := fun x y => by simp only [mul_add, map_add]
+      map_smul' := fun r x => by
+        simp only [RingHom.id_apply, mul_smul_comm, map_smul, smul_eq_mul]
+      monotone' := fun a b hab => by
+        have h0 : (0 : ℂ) ≤ f (u * (b - a)) := hpos _ (sub_nonneg.mpr hab)
+        rw [mul_sub, map_sub, sub_nonneg] at h0
+        exact h0 }
+  have hgapp : ∀ a : A, (g a : ℂ) = f (u * a) := fun _ => rfl
+  have hcont : @ContinuousOn A ℂ (ultraweak A) _ ⇑g (effects A) := by
+    letI : TopologicalSpace A := ultraweak A
+    have hmul : Continuous (fun a : A => u * a) := (mult_uws_cont u).1
+    have hmaps : Set.MapsTo (fun a : A => u * a) (effects A) (Metric.closedBall 0 1) := by
+      intro a ha
+      rw [mem_closedBall_zero_iff]
+      calc ‖u * a‖ ≤ ‖u‖ * ‖a‖ := norm_mul_le _ _
+        _ ≤ 1 * 1 := by
+            gcongr
+            exact (CStarAlgebra.norm_le_one_iff_of_nonneg a ha.1).mpr ha.2
+        _ = 1 := by norm_num
+    exact hf.comp hmul.continuousOn hmaps
+  have hnormal : PreservesDirSups ⇑g :=
+    preservesDirSups_of_continuousOn_effects_functional g hcont
+  have hgc : @Continuous A ℂ (ultraweak A) _ ⇑g :=
+    continuous_ultraweak_npFunctional ⟨g, hnormal⟩
+  have hfg : ∀ a : A, (g (star u * a) : ℂ) = f a := by
+    intro a
+    rw [hgapp, ← mul_assoc, ← h1 a]
+  have hfinal : @Continuous A ℂ (ultraweak A) _ (fun a : A => (g (star u * a) : ℂ)) := by
+    letI : TopologicalSpace A := ultraweak A
+    exact hgc.comp ((mult_uws_cont (star u)).1)
+  letI : TopologicalSpace A := ultraweak A
+  exact hfinal.congr hfg
 
 /-- **86XIV** (`functional-norm`, vn.tex:6460, Lemma): for a normal
 (= ultraweakly continuous) functional `f` and a partial isometry `u` with
@@ -886,8 +1268,48 @@ def predual : Set (A →L[ℂ] ℂ) :=
 
 /-- **87III** (`predual-complete`, vn.tex:6509, Proposition): the predual
 of a von Neumann algebra is complete with respect to the operator norm. -/
-theorem predual_complete : IsComplete (predual A) :=
-  sorry
+theorem predual_complete : IsComplete (predual A) := by
+  intro F hF hFle
+  haveI : F.NeBot := hF.1
+  obtain ⟨x, hx⟩ := CompleteSpace.complete hF
+  refine ⟨x, ?_, hx⟩
+  have hmemF : predual A ∈ F := le_principal_iff.mp hFle
+  have happrox : ∀ ε : ℝ, 0 < ε → ∃ g : A →L[ℂ] ℂ,
+      (@Continuous A ℂ (ultraweak A) _ ⇑g) ∧ ‖x - g‖ ≤ ε := by
+    intro ε hε
+    have h1 : Metric.closedBall x ε ∈ F := hx (Metric.closedBall_mem_nhds x hε)
+    obtain ⟨g, hg1, hg2⟩ := Filter.nonempty_of_mem (Filter.inter_mem h1 hmemF)
+    refine ⟨g, hg2, ?_⟩
+    rw [← dist_eq_norm, dist_comm]
+    exact Metric.mem_closedBall.mp hg1
+  choose G hGcont hGnorm using fun n : ℕ => happrox (1 / (n + 1)) (by positivity)
+  have hcontOn : @ContinuousOn A ℂ (ultraweak A) _ ⇑x (Metric.closedBall 0 1) := by
+    letI : TopologicalSpace A := ultraweak A
+    have huc : TendstoUniformlyOn (fun n : ℕ => ⇑(G n)) ⇑x atTop
+        (Metric.closedBall (0 : A) 1) := by
+      rw [Metric.tendstoUniformlyOn_iff]
+      intro ε hε
+      obtain ⟨N, hN⟩ := exists_nat_one_div_lt hε
+      refine Eventually.mono (eventually_ge_atTop N) fun n hn a ha => ?_
+      have h1 : ‖x a - G n a‖ ≤ 1 / (n + 1) := by
+        have h2 := (x - G n).le_opNorm a
+        have h3 : ‖a‖ ≤ 1 := mem_closedBall_zero_iff.mp ha
+        have h4 : ((x - G n) a) = x a - G n a := rfl
+        rw [h4] at h2
+        calc ‖x a - G n a‖ ≤ ‖x - G n‖ * ‖a‖ := h2
+          _ ≤ (1 / (n + 1)) * 1 :=
+              mul_le_mul (hGnorm n) h3 (norm_nonneg a) (by positivity)
+          _ = 1 / (n + 1) := by ring
+      have h5 : (1 : ℝ) / (n + 1) ≤ 1 / (N + 1) := by
+        apply one_div_le_one_div_of_le (by positivity)
+        have : (N : ℝ) ≤ n := by exact_mod_cast hn
+        linarith
+      rw [dist_eq_norm]
+      linarith
+    exact huc.continuousOn
+      ((Eventually.of_forall fun n => (hGcont n).continuousOn).frequently)
+  show @Continuous A ℂ (ultraweak A) _ ⇑x
+  exact uwcont_on_ball (x : A →ₗ[ℂ] ℂ) hcontOn
 
 /-! **87V** (vn.tex:6548): motivation for the next lemma — nothing to
 formalize. -/
@@ -896,8 +1318,130 @@ formalize. -/
 `‖a‖ = sup {|f(a)| : f ∈ (A_*)₁}` for every element `a` of a von Neumann
 algebra. -/
 theorem norm_predual (a : A) :
-    IsLUB {r : ℝ | ∃ f ∈ predual A, ‖f‖ ≤ 1 ∧ r = ‖f a‖} ‖a‖ :=
-  sorry
+    IsLUB {r : ℝ | ∃ f ∈ predual A, ‖f‖ ≤ 1 ∧ r = ‖f a‖} ‖a‖ := by
+  constructor
+  · rintro r ⟨f, -, hf1, rfl⟩
+    calc ‖f a‖ ≤ ‖f‖ * ‖a‖ := f.le_opNorm a
+      _ ≤ 1 * ‖a‖ := by gcongr
+      _ = ‖a‖ := one_mul _
+  intro b hb
+  have hb0 : (0 : ℝ) ≤ b := by
+    refine hb ⟨0, ?_, by simp, by simp⟩
+    show @Continuous A ℂ (ultraweak A) _ ⇑(0 : A →L[ℂ] ℂ)
+    letI : TopologicalSpace A := ultraweak A
+    exact continuous_const
+  obtain ⟨hpi, hstaru, -⟩ := polar_decomposition_1 a
+  obtain ⟨-, hus, -⟩ := polar_decomposition a
+  obtain ⟨hspos, hssa, hss, -, -, hse⟩ := sqrt_star_self_spec a
+  set u : A := polar a with hudef
+  set s : A := CFC.sqrt (star a * a) with hsdef
+  have hprojuu : IsStarProjection (star u * u) :=
+    ((partial_isometry_equivalents u).out 0 1).mp hpi
+  have hu1 : ‖u‖ ≤ 1 := by
+    have h : ‖u‖ * ‖u‖ ≤ 1 := by
+      rw [← CStarRing.norm_star_mul_self]
+      exact norm_starProjection_le_one hprojuu
+    nlinarith [norm_nonneg u]
+  have hsu : star u * a = s := by
+    have hsp : suppProj a * s = s := by
+      have h := congrArg star hse
+      rwa [star_mul, hssa, (((ceill_basic_1 a).1.1).isSelfAdjoint).star_eq] at h
+    rw [hus, ← mul_assoc, hstaru, hsp]
+  have hone_nonneg : ∀ ω : NPFunctional A, (0 : ℂ) ≤ ω 1 := fun ω =>
+    npFunctional_nonneg ω (zero_le_one (α := A))
+  -- Cauchy–Schwarz estimate: `|ω([a]* z)| ≤ ω(1)‖z‖`
+  have hkey : ∀ (ω : NPFunctional A) (z : A),
+      ‖(ω (star u * z) : ℂ)‖ ≤ (ω 1).re * ‖z‖ := by
+    intro ω z
+    have h1 : ‖(ω (star u * z) : ℂ)‖ ≤ omegaNorm A ω u * omegaNorm A ω z :=
+      norm_apply_star_mul_le ω u z
+    have hnn : (0 : ℝ) ≤ (ω 1).re := (Complex.le_def.mp (hone_nonneg ω)).1
+    have h2 : omegaNorm A ω u ≤ Real.sqrt (ω 1).re := by
+      have h := omegaNorm_mul_le ω u 1
+      rw [mul_one, omegaNorm_one] at h
+      refine h.trans ?_
+      nlinarith [Real.sqrt_nonneg (ω 1).re]
+    have h3 : omegaNorm A ω z ≤ ‖z‖ * Real.sqrt (ω 1).re := by
+      have h := omegaNorm_mul_le ω z 1
+      rwa [mul_one, omegaNorm_one] at h
+    calc ‖(ω (star u * z) : ℂ)‖ ≤ omegaNorm A ω u * omegaNorm A ω z := h1
+      _ ≤ Real.sqrt (ω 1).re * (‖z‖ * Real.sqrt (ω 1).re) :=
+          mul_le_mul h2 h3 (omegaNorm_nonneg ω z) (Real.sqrt_nonneg _)
+      _ = (Real.sqrt (ω 1).re * Real.sqrt (ω 1).re) * ‖z‖ := by ring
+      _ = (ω 1).re * ‖z‖ := by rw [Real.mul_self_sqrt hnn]
+  -- every np-functional satisfies `ω(√(a*a)) ≤ ω(b·1)`
+  have hmain : ∀ ω : NPFunctional A, (ω s : ℂ) ≤ ω ((b : ℝ) • (1 : A)) := by
+    intro ω
+    have hnn : (0 : ℝ) ≤ (ω 1).re := (Complex.le_def.mp (hone_nonneg ω)).1
+    have him1 : (ω 1 : ℂ).im = 0 := ((Complex.le_def.mp (hone_nonneg ω)).2).symm
+    have hsnn : (0 : ℂ) ≤ ω s := npFunctional_nonneg ω hspos
+    have hsre : ‖(ω s : ℂ)‖ = (ω s).re := (Complex.re_eq_norm.mpr hsnn).symm
+    have hbound : ‖(ω s : ℂ)‖ ≤ b * (ω 1).re := by
+      rcases eq_or_lt_of_le hnn with hr0 | hrpos
+      · have h0 := hkey ω a
+        rw [hsu] at h0
+        rw [← hr0] at h0 ⊢
+        simpa using h0
+      · set L : A →ₗ[ℂ] ℂ := (((((ω 1).re)⁻¹ : ℝ) : ℂ) •
+          (ω.toPositiveLinearMap.toLinearMap.comp (LinearMap.mulLeft ℂ (star u))))
+          with hLdef
+        have hLapp : ∀ z : A, L z = ((((ω 1).re)⁻¹ : ℝ) : ℂ) * ω (star u * z) :=
+          fun _ => rfl
+        have hLb : ∀ z : A, ‖L z‖ ≤ 1 * ‖z‖ := by
+          intro z
+          rw [hLapp, norm_mul, one_mul, Complex.norm_real, Real.norm_eq_abs,
+            abs_of_pos (inv_pos.mpr hrpos)]
+          have h := hkey ω z
+          rw [inv_mul_le_iff₀ hrpos]
+          exact h
+        set fc : A →L[ℂ] ℂ := L.mkContinuous 1 hLb with hfcdef
+        have hfcnorm : ‖fc‖ ≤ 1 := L.mkContinuous_norm_le zero_le_one hLb
+        have hfcpred : fc ∈ predual A := by
+          show @Continuous A ℂ (ultraweak A) _ ⇑fc
+          letI : TopologicalSpace A := ultraweak A
+          exact ((continuous_ultraweak_npFunctional ω).comp
+            ((mult_uws_cont (star u)).1)).const_mul _
+        have hle := hb (show ‖fc a‖ ∈ _ from ⟨fc, hfcpred, hfcnorm, rfl⟩)
+        have hfca : ‖fc a‖ = ((ω 1).re)⁻¹ * ‖(ω s : ℂ)‖ := by
+          show ‖L a‖ = _
+          rw [hLapp, norm_mul, Complex.norm_real, Real.norm_eq_abs,
+            abs_of_pos (inv_pos.mpr hrpos), hsu]
+        rw [hfca, inv_mul_le_iff₀ hrpos] at hle
+        simpa [mul_comm] using hle
+    have him : (ω s : ℂ).im = 0 := ((Complex.le_def.mp hsnn).2).symm
+    rw [np_real_smul ω b 1]
+    refine Complex.le_def.mpr ⟨?_, ?_⟩
+    · simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, zero_mul,
+        him1, mul_zero, sub_zero]
+      rw [← hsre]
+      exact hbound
+    · simp only [Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im, zero_mul,
+        him1, mul_zero, add_zero, him]
+  have hbsa : IsSelfAdjoint ((b : ℝ) • (1 : A)) :=
+    (IsSelfAdjoint.all (b : ℝ)).smul (IsSelfAdjoint.one A)
+  have hsle : s ≤ (b : ℝ) • (1 : A) :=
+    np_orderSeparating s _ (IsSelfAdjoint.of_nonneg hspos) hbsa hmain
+  have hnorms : ‖s‖ ≤ b := by
+    rcases eq_or_lt_of_le hb0 with hb0' | hbpos
+    · have hz : s = 0 := by
+        refine le_antisymm ?_ hspos
+        rw [← hb0'] at hsle
+        simpa using hsle
+      rw [hz, norm_zero, ← hb0']
+    · have h1 : (b⁻¹ : ℝ) • s ≤ 1 := by
+        have h := smul_le_smul_of_nonneg_left hsle (inv_nonneg.mpr hb0)
+        rwa [smul_smul, inv_mul_cancel₀ hbpos.ne', one_smul] at h
+      have h2 : (0 : A) ≤ (b⁻¹ : ℝ) • s := smul_nonneg (inv_nonneg.mpr hb0) hspos
+      have h3 := (CStarAlgebra.norm_le_one_iff_of_nonneg _ h2).mpr h1
+      rw [norm_smul, Real.norm_eq_abs, abs_of_pos (inv_pos.mpr hbpos),
+        inv_mul_le_iff₀ hbpos] at h3
+      simpa [mul_comm] using h3
+  have hnorm_eq : ‖a‖ = ‖s‖ := by
+    have h1 : ‖a‖ * ‖a‖ = ‖s‖ * ‖s‖ := by
+      rw [← CStarRing.norm_star_mul_self, ← hss, ← CStarRing.norm_star_mul_self, hssa]
+    nlinarith [norm_nonneg a, norm_nonneg s]
+  rw [hnorm_eq]
+  exact hnorms
 
 /-- The norm estimate behind the polarisation step of **87VIII**. -/
 private theorem uwbib_pol_aux (a b c d : ℂ) :

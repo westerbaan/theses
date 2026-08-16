@@ -12292,10 +12292,10 @@ thesis's own proofs.
   the argument `f` is not yet known to be ultraweakly continuous — 86XII is
   its corollary, so using it would be circular.  We use plain Cauchy–Schwarz
   instead (`posFunctional_mul_eq_zero`), which needs no normality and is what
-  `carrier-fundamental` is doing here anyway.  **Worth a footnote in the
-  thesis**: as written, 86IX's last paragraph cites a lemma about carriers of
+  `carrier-fundamental` is doing here anyway.  **Filed in ERRATA** as
+  `86X`: as written, 86IX's last paragraph cites a lemma about carriers of
   *normal* functionals for a functional whose normality is proved only in the
-  next point.
+  next point (86XII), which is a corollary of 86IX.
 * **86IX, class 3 (mild).**  The thesis says "the subset `{f(a) : a ∈ (𝒜)₁}`
   of **ℝ** is compact and therefore has a largest element, which must be
   `‖f‖`".  That set is a subset of `ℂ`, not `ℝ`; the maximum meant is the

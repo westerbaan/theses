@@ -3895,8 +3895,62 @@ sums — are immediate from the definitions and not converted.  **67III**,
 Remark: such von Neumann algebras are called *factors*.) -/
 theorem central_examples_3 {H : Type*} [NormedAddCommGroup H]
     [InnerProductSpace ℂ H] [CompleteSpace H] (T : H →L[ℂ] H) :
-    IsCentral (H →L[ℂ] H) T ↔ ∃ z : ℂ, T = z • (1 : H →L[ℂ] H) :=
-  sorry
+    IsCentral (H →L[ℂ] H) T ↔ ∃ z : ℂ, T = z • (1 : H →L[ℂ] H) := by
+  constructor
+  · intro hT
+    -- every vector is an eigenvector: `T` commutes with `|x⟩⟨x|`
+    have hev : ∀ x : H, ∃ l : ℂ, T x = l • x := by
+      intro x
+      rcases eq_or_ne x 0 with rfl | hx
+      · exact ⟨0, by simp⟩
+      have hxx : (⟪x, x⟫ : ℂ) ≠ 0 := by
+        simpa [inner_self_eq_zero] using hx
+      have h := hT ((innerSL ℂ x).smulRight x)
+      have h0 := congrArg (fun S : H →L[ℂ] H => S x) h
+      simp only [mul_apply_eq_comp, ContinuousLinearMap.smulRight_apply,
+        ContinuousLinearMap.comp_apply, map_smul] at h0
+      have h1 : (⟪x, x⟫ : ℂ) • T x = (⟪x, T x⟫ : ℂ) • x := h0
+      refine ⟨(⟪x, T x⟫ : ℂ) / ⟪x, x⟫, ?_⟩
+      rw [div_eq_inv_mul, ← smul_smul, ← h1, smul_smul, inv_mul_cancel₀ hxx, one_smul]
+    -- a linear map with every vector an eigenvector is a scalar
+    rcases subsingleton_or_nontrivial H with hsub | hnt
+    · refine ⟨0, ?_⟩
+      ext y
+      simp [Subsingleton.elim y 0]
+    obtain ⟨x₀, hx₀⟩ := exists_ne (0 : H)
+    obtain ⟨z, hz⟩ := hev x₀
+    refine ⟨z, ?_⟩
+    ext y
+    show T y = z • y
+    rcases eq_or_ne y 0 with rfl | hy
+    · simp
+    obtain ⟨l, hl⟩ := hev y
+    by_cases hdep : ∃ c : ℂ, y = c • x₀
+    · obtain ⟨c, rfl⟩ := hdep
+      rw [map_smul, hz, smul_smul, smul_smul, mul_comm]
+    · -- `x₀` and `y` are independent, so the eigenvalue on `x₀ + y` forces `l = z`
+      obtain ⟨m, hm⟩ := hev (x₀ + y)
+      rw [map_add, hz, hl, smul_add] at hm
+      have h1 : (z - m) • x₀ + (l - m) • y = 0 := by
+        rw [sub_smul, sub_smul]
+        rw [show z • x₀ - m • x₀ + (l • y - m • y)
+          = z • x₀ + l • y - (m • x₀ + m • y) by abel, hm, sub_self]
+      have hlm : l - m = 0 := by
+        by_contra hne
+        refine hdep ⟨-((l - m)⁻¹ * (z - m)), ?_⟩
+        refine smul_right_injective H hne ?_
+        show (l - m) • y = (l - m) • ((-((l - m)⁻¹ * (z - m))) • x₀)
+        rw [smul_smul, show (l - m) * -((l - m)⁻¹ * (z - m)) = -(z - m) by
+          field_simp, neg_smul, eq_neg_iff_add_eq_zero, add_comm]
+        exact h1
+      have hzm : z - m = 0 := by
+        have := h1
+        rw [hlm, zero_smul, add_zero, smul_eq_zero] at this
+        exact this.resolve_right hx₀
+      rw [hl, show l = m from by linear_combination hlm,
+        show m = z from by linear_combination -hzm]
+  · rintro ⟨z, rfl⟩ b
+    simp [smul_mul_assoc, mul_smul_comm]
 
 /-- **67IV** (`central-projections-sums`, vn.tex:3408, Exercise), part 1:
 for a central projection `c` of a von Neumann algebra `A`, the corner
@@ -3911,8 +3965,70 @@ theorem central_projections_sums_1 (c : A) (hc : IsStarProjection c)
       c * c = c ∧  -- `c` is the unit of the corner `cA`
       (∀ (D : Set (selfAdjoint A)) (s : selfAdjoint A),
         (∀ d ∈ D, c * (d : A) = (d : A)) → D.Nonempty →
-          DirectedOn (· ≤ ·) D → IsLUB D s → c * (s : A) = (s : A)) :=
-  sorry
+          DirectedOn (· ≤ ·) D → IsLUB D s → c * (s : A) = (s : A)) := by
+  have hcs : star c = c := hc.isSelfAdjoint.star_eq
+  refine ⟨?_, hc.isIdempotentElem.eq, ?_⟩
+  · intro x hx y hy
+    have hx' : c * x = x := hx
+    have hy' : c * y = y := hy
+    refine ⟨?_, ?_, ?_⟩
+    · show c * (x + y) = x + y
+      rw [mul_add, hx', hy']
+    · show c * (x * y) = x * y
+      rw [← mul_assoc, hx']
+    · show c * star x = star x
+      have h := congrArg star hx'
+      rwa [star_mul, hcs, ← hcentral (star x)] at h
+  · intro D s hD hne hdir hlub
+    have hfix : ∀ d ∈ D, c * (d : A) * c = (d : A) := by
+      intro d hd
+      rw [hD d hd, ← hcentral (d : A), hD d hd]
+    -- `csc` is an upper bound of `D`, so `s ≤ csc`
+    have hsacsc : IsSelfAdjoint (c * (s : A) * c) := by
+      have : star (c * (s : A) * c) = c * (s : A) * c := by
+        rw [star_mul, star_mul, hcs, s.2.star_eq, mul_assoc]
+      exact this
+    have hub : ∀ d ∈ D, d ≤ (⟨c * (s : A) * c, hsacsc⟩ : selfAdjoint A) := by
+      intro d hd
+      refine Subtype.coe_le_coe.mp ?_
+      show (d : A) ≤ c * (s : A) * c
+      rw [← hfix d hd]
+      exact IsSelfAdjoint.conjugate_le_conjugate
+        (Subtype.coe_le_coe.mpr (hlub.1 hd)) hc.isSelfAdjoint
+    have hle : (s : A) ≤ c * (s : A) * c :=
+      Subtype.coe_le_coe.mpr (hlub.2 hub)
+    -- conjugate by `c^⊥`
+    set q : A := 1 - c with hq
+    have hqc : q * c = 0 := by rw [hq, sub_mul, one_mul, hc.isIdempotentElem.eq, sub_self]
+    have hqsa : IsSelfAdjoint q := hc.one_sub.isSelfAdjoint
+    have hqcentral : IsCentral A q := fun b => by
+      rw [hq, sub_mul, mul_sub, one_mul, mul_one, hcentral b]
+    have hupper : q * (s : A) * q ≤ 0 := by
+      have h := IsSelfAdjoint.conjugate_le_conjugate hle hqsa
+      have hz : q * (c * (s : A) * c) * q = 0 := by
+        rw [show q * (c * (s : A) * c) * q = (q * c) * (s : A) * (c * q) by noncomm_ring,
+          hqc, zero_mul, zero_mul]
+      rwa [hz] at h
+    have hlower : (0 : A) ≤ q * (s : A) * q := by
+      obtain ⟨d, hd⟩ := hne
+      have h := IsSelfAdjoint.conjugate_le_conjugate
+        (Subtype.coe_le_coe.mpr (hlub.1 hd)) hqsa
+      have hz : q * ((d : selfAdjoint A) : A) * q = 0 := by
+        rw [← hfix d hd,
+          show q * (c * ((d : selfAdjoint A) : A) * c) * q
+            = (q * c) * ((d : selfAdjoint A) : A) * (c * q) by noncomm_ring,
+          hqc, zero_mul, zero_mul]
+      rwa [hz] at h
+    have hzero : q * (s : A) * q = 0 := le_antisymm hupper hlower
+    have hqq : q * q = q := hc.one_sub.isIdempotentElem.eq
+    have heq : q * (s : A) * q = q * (s : A) := by
+      calc q * (s : A) * q = q * ((s : A) * q) := by noncomm_ring
+        _ = q * (q * (s : A)) := by rw [← hqcentral (s : A)]
+        _ = q * q * (s : A) := by noncomm_ring
+        _ = q * (s : A) := by rw [hqq]
+    have hqs : q * (s : A) = 0 := by rw [← heq]; exact hzero
+    rw [hq, sub_mul, one_mul, sub_eq_zero] at hqs
+    exact hqs.symm
 
 /-- **67IV** (`central-projections-sums`, vn.tex:3408, Exercise), part 2:
 given a family of central projections `(cᵢ)` with `∑ᵢ cᵢ = 1` (pairwise

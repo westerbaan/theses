@@ -1,16 +1,16 @@
-# `Theses/A/VN/` — full survey of the remaining `sorry`s (updated session 54)
+# `Theses/A/VN/` — full survey of the remaining `sorry`s (updated session 56)
 
-**Headline count: A/VN has 48 code `sorry`s** after session 54 (was 50).
+**Headline count: A/VN has 42 code `sorry`s** after session 56 (was 48).
 Per file, compiler-counted (`declaration uses 'sorry'` warnings, *not* grep):
 
 | file | sorries |
 |---|---|
 | `Basic.lean` | 24 |
-| `Projections.lean` | **13** |
+| `Projections.lean` | **11** |
 | `Division.lean` | 7 |
-| `NormalFunctionals.lean` | **4** |
+| `NormalFunctionals.lean` | **0** |
 | `Completeness.lean` | **0** |
-| **total** | **48** |
+| **total** | **42** |
 
 Refresh with (bypasses another agent's `lake build` lock):
 
@@ -22,6 +22,25 @@ for f in Basic Projections Division NormalFunctionals Completeness; do
 done
 ```
 
+> **Session 56 headline — `NormalFunctionals.lean` is finished, and with it
+> `A/Proc`'s entire external frontier on `A/VN`.**  **86IX**
+> `polar_decomposition_of_functional`, **86XII** `uwcont_on_ball`, **87III**
+> `predual_complete` and **87VI** `norm_predual` are all proved, by the
+> thesis's own arguments.  The enabling piece is that `(A, ultraweak)` is now
+> known to be a **locally convex TVS over `ℝ`** —
+> `ultraweak_isTopologicalAddGroup`, `ultraweak_continuousSMul`,
+> `ultraweak_locallyConvexSpace`, three lines each from Mathlib's `iInf` /
+> `induced` lemmas — so Mathlib's Krein–Milman lemma
+> (`IsCompact.extremePoints_nonempty`) applies to the ultraweakly compact unit
+> ball (**77III**).  Four other reusable helpers landed with them:
+> `exists_extremePoint_max`, `posFunctional_mul_eq_zero` (Cauchy–Schwarz:
+> a positive functional killing a projection kills every product with it),
+> `preservesDirSups_of_continuousOn_effects_functional` (**44XV** (2) ⇒ (3)
+> for functionals — `Basic.lean`'s version is `private` *and* needs a target
+> in `Type u` with a `VonNeumannAlgebra` instance, which `ℂ` has not), and
+> `plm_real_smul`.  In `Projections.lean`, **67II**.3 `central_examples_3`
+> and **67IV**.1 `central_projections_sums_1` also fell.
+>
 > **Session 54 headline — the 690–900 mis-transcription is repaired and
 > both of its consequences are closed.**  `CentreSeparating` rendered
 > *neither* item of **69IX** (QUESTIONS D4, now deleted).  The two faithful
@@ -65,15 +84,10 @@ needs a carrier/development Mathlib lacks, **[F]** known false / parked.
 
 ---
 
-## `NormalFunctionals.lean` — 4
+## `NormalFunctionals.lean` — 0
 
-| line | point | decl | class |
-|---|---|---|---|
-| 818 | **86XI** | `polar_decomposition_of_functional` | [S] the substantial one; thesis proof at vn.tex:6410ff |
-| 830 | **86XII** | `uwcont_on_ball` | [B] on 86XI (it is its corollary) |
-| 889 | **87III** | `predual_complete` | [S] operator-norm completeness of the ultraweakly continuous functionals |
-| 898 | **87VI** | `norm_predual` | [S] `‖a‖ = sup{|f(a)| : f ∈ (A_*)₁}` |
-Everything else in the file is proved, including the whole 880–890 block
+**Nothing left.**  86IX, 86XII, 87III and 87VI were proved in session 56 (see
+the headline above).  Everything else in the file was already proved, including the whole 880–890 block
 (88IV–88IX, 89I–89IX, 89XI, 89XII) **and all of parsec 900**: **90II**.2 was
 proved in session 54 through `ϱ_Ω` over the set `Ω` (a copy of `Basic.lean`'s
 `GNSSum` block cut down to `Ω`, inserted above 90II; see the note there), 89IX
@@ -104,7 +118,7 @@ usable anywhere in `A/VN` and downstream.)
 nmiu-maps is a von Neumann subalgebra", is 47V and was proved this session,
 so 84bV is now only blocked on 84bIII.
 
-## `Projections.lean` — 13
+## `Projections.lean` — 11
 
 | line | point | decl | class |
 |---|---|---|---|
@@ -128,9 +142,13 @@ the first three links are now proved (69IX in session 54, by the cycle
 for central positive `a`", which the session-53 note wrongly put on its
 critical path).  What is left is 70II (which wants **66IV**.4) and 70III
 (which also wants **54XI**).
-The best *isolated* targets remaining in this file are **63III**.2
-`carrier_ad_operator` (the Hilbert-space form of the already-proved
-`carrier_ad` right above it), **67II**.3 and **67IV**.1.
+**67II**.3 and **67IV**.1 were proved in session 56.  The best *isolated*
+target remaining in this file is **63III**.2 `carrier_ad_operator` (the
+Hilbert-space form of the already-proved `carrier_ad` right above it): take
+`p` = the orthogonal projection onto `closure (range T)`, note
+`T*(1-p)T = ((1-p)T)*((1-p)T) = 0`, and get minimality the same way; the cost
+is Hilbert-space plumbing (`orthogonalProjection` as an `IsStarProjection`,
+and its fixed-point set), not von Neumann theory.
 
 Line numbers in this table are those of session 50 except where noted; the
 session-53 insertions shifted everything below `cp_comprehension` by ~180
@@ -183,6 +201,12 @@ other two pieces.  This block (9 of the 24) is the cheapest volume left in
 ---
 
 ## What `A/Proc` needs from here
+
+**As of session 56 the answer is: nothing.**  The three sorries that were
+`A/Proc`'s external frontier — 90II.2 (session 55), 87III and 86IX (session
+56) — are all closed, and 87VI, which 116III.2 wants for its `≥` half, with
+them.  The note below is kept because it records *why* `tensor-2` is
+satisfiable.
 
 `111VII`'s condition `tensor-2` (proc.tex:2528) needs, besides 89IX:
 
