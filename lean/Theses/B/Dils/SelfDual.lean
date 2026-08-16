@@ -3179,6 +3179,68 @@ theorem univprop_ext_tensor [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
     Nonempty (ExtTensor t ht X Y) :=
   sorry
 
+/-- **Non-vacuity check** for `ExtTensor` — the analogue of
+`vnTensor_mul_complex` for `IsVNTensor` and of `paschkeModuleId` for
+`PaschkeModule`.  `𝒞 = 𝒜 ⊗ ℬ` itself, as a Hilbert `𝒞`-module over itself
+with `η = t`, **is** a self-dual exterior tensor product of `X = 𝒜` and
+`Y = ℬ`: it is the case `X = 𝒜`, `Y = ℬ` of `univprop_ext_tensor`, and it
+needs no von Neumann hypotheses at all.
+
+Every field is checked against the mirrored convention: `inner 𝒜 x x'`
+is `x' * star x`, so `η_inner` reads
+`t x' y' * star (t x y) = t (x' * star x) (y' * star y)`, which is exactly
+`IsVNTensor.star` followed by `IsVNTensor.mul` — a star in the wrong slot
+would not typecheck.  The universal property is *not* proved by density:
+`T' z := z · T(1,1)` is forced, because `z = z · 1 = z · t(1,1)` and a
+module map commutes with the action.
+
+Kept in the tree deliberately: without it every theorem hypothesising
+`E : ExtTensor t ht X Y` (**164II**.1/.2a/.2b, **165III**, **165VI**,
+**166IV**, **166VI**, **167I**) would be conditional on a structure not
+known to be inhabited; PROVING-LOG session 14 records a mirroring defect
+that left `PaschkeModule` uninhabited and nine theorems vacuous. -/
+noncomputable def extTensorSelf (t : 𝒜 → ℬ → 𝒞) (ht : IsVNTensor t) :
+    ExtTensor t ht 𝒜 ℬ where
+  Z := 𝒞
+  selfDual := selfDual_self 𝒞
+  η := t
+  η_add_left x x' y := ht.add_left x x' y
+  η_add_right x y y' := ht.add_right x y y'
+  η_smul_complex c x y := ht.smul_complex c x y
+  η_smul a b x y := by
+    show t (a * x) (b * y) = t a b * t x y
+    rw [ht.mul]
+  η_inner x x' y y' := by
+    show t x' y' * star (t x y) = t (x' * star x) (y' * star y)
+    rw [ht.star, ht.mul]
+  univ := by
+    intro W iW₁ iW₂ iW₃ iW₄ iW₅ _ T _ _ hsmul _
+    letI := iW₁; letI := iW₂; letI := iW₃; letI := iW₄; letI := iW₅
+    -- `T` is determined by `w₀ := T 1 1`, since `T x y = T (x·1) (y·1)`.
+    set w₀ : W := T 1 1 with hw₀
+    have hTxy : ∀ (x : 𝒜) (y : ℬ), T x y = t x y • w₀ := by
+      intro x y
+      have h := hsmul x y 1 1
+      rwa [smul_eq_mul, mul_one, smul_eq_mul, mul_one] at h
+    have hone : ∀ z : 𝒞, z • (1 : 𝒞) = z := fun z => by
+      rw [smul_eq_mul, mul_one]
+    refine ⟨fun z => z • w₀, ⟨⟨‖w₀‖, ?_, ?_, ?_, ?_⟩, ?_⟩, ?_⟩
+    · exact fun z z' => op_add_smul z z' w₀
+    · exact fun c z => op_smul_complex_smul c z w₀
+    · exact fun b z => op_mul_smul b z w₀
+    · intro z
+      rw [cstarBInner_norm, cstarBInner_norm, mul_comm]
+      exact norm_op_smul_le z w₀
+    · exact fun x y => (hTxy x y).symm
+    · rintro T'' ⟨⟨C, -, -, hmod, -⟩, hT''⟩
+      funext z
+      have h1 : T'' (1 : 𝒞) = w₀ := by
+        have := hT'' 1 1
+        rwa [ht.one] at this
+      have := hmod z 1
+      rw [hone z, h1] at this
+      exact this
+
 section ExtTensorAux
 
 variable [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ] [VonNeumannAlgebra 𝒞]
@@ -4629,5 +4691,6 @@ theorem paschke_tensor_module
   sorry
 
 end PaschkeTensor
+
 
 end Theses.B.Dils

@@ -25,6 +25,12 @@ At the end of **session 51** (161II.2 and 164II.2a): `SelfDual.lean` **9**,
 `SelfDualCompletion.lean` 2, `HilbertModules.lean` 0 — **39**,
 compiler-counted per file.
 
+At the end of **session 52** (the `ExtTensor` witness): unchanged at
+**39** — `SelfDual.lean` 9, `Pure.lean` 13, `Paschke.lean` 8,
+`Kaplansky.lean` 5, `Stinespring.lean` 2, `SelfDualCompletion.lean` 2,
+`HilbertModules.lean` 0, compiler-counted per file.  The session's output
+is a new `def`, not a closed `sorry`.
+
 Classification key: **(a)** self-contained, **(b)** blocked on a named
 `sorry` elsewhere, **(c)** cited to the literature / another chapter,
 **(d)** suspicious/false.
@@ -47,7 +53,7 @@ Classification key: **(a)** self-contained, **(b)** blocked on a named
 | 162IV | `selfdual_normalish_form` | **(b)** | needs 162II and 161II.2 |
 | 163II uniq | `selfdual_compl_defining_unique` | **(b)** | needs **151Ia** `selfdual_completion_univ` (`SelfDualCompletion.lean`, `sorry`) |
 | **163II dense** | `selfdual_compl_defining_dense` | **(a)** | **CLOSED session 49**.  The survey's "needs 151Ia" was **wrong**: the statement takes the universal property as a hypothesis |
-| 164II ex. | `univprop_ext_tensor` | **(a)** | the construction 164III–164VIII via `ℓ²((pᵢⱼ))`; the single biggest item in the file, and 161II.2 is a prerequisite in practice |
+| 164II ex. | `univprop_ext_tensor` | **(a)/(b)** | the construction 164III–164VIII via `ℓ²((pᵢⱼ))`; the single biggest item in the file.  **Session 52**: the case `X = 𝒜`, `Y = ℬ` *is* proved, as `extTensorSelf` (see below); the general case still needs `ℓ²((pᵢⱼ))` as an actual Hilbert `𝒞`-module (our `L2Set` is a bare `Set (ι → ℬ)`), and the shortcut through the self-dual completion is blocked on **151I** `dils_completion` (`SelfDualCompletion.lean:81`, `sorry`).  Multi-session |
 | **164II.1** | `ext_tensor_dense` | **(a)** | **CLOSED session 50.**  `P = id` from `exists_orthoProj` + `ExtTensor.univ` as in 163II-dense; the `bSpan D ⊆ unClosure D` gap is the thesis's own 164VII, and needs only *unbounded* ultrastrong density of `𝒜 ⊙ ℬ` (`IsVNTensor.generates` + `isVNSubalgebra_usClosureSubalgebra`) — **not** Kaplansky density, contrary to this row's earlier text |
 | **164II.2a** | `ext_tensor_basis` | **(a)** | **CLOSED session 51** (~170 lines).  It needed 164II.1 but **not** 161II.2, contrary to this row's earlier text: the thesis's 164X reduces to a Parseval identity checked against product np-functionals only because its `X ⊗ Y` *is* `ℓ²((pᵢⱼ))`; for an abstract `E : ExtTensor` the cheaper route is 164II.1 + the 166III estimates with `s` chosen before `u` |
 | 164II.2b | `ext_tensor_ketbra_dense` | **(b)/(d?)** | needs **159IX** `ketbra_ultranorm_continuous`, hence 90II.2 in `A/VN` — see below.  164II.2a is *not* the blocker any more |
@@ -56,6 +62,23 @@ Classification key: **(a)** self-contained, **(b)** blocked on a named
 | **166VI** | `dilationspace_dense_subset` | **(a)** | **CLOSED session 50**, together with the new public `paschke_tprod_dense` (the elementary tensors of `𝒜 ⊗_φ ℬ` are ultranorm dense — easier than 164II.1, since `{∑ aᵢ ⊗ bᵢ}` is already a ℬ-submodule) |
 | 167I | `paschke_tensor` | **(b)** | needs 165VI + `existence_paschke` |
 | 167I furth. | `paschke_tensor_module` | **(b)** | needs 167I |
+
+**Bottom line for `B/Dils` after session 52.**  The non-vacuity question is
+settled and no field is defective, so nothing that was proved has to be
+revisited.  What is left in the directory is now dominated by **three
+construction-sized roots**, none session-sized: **151I** `dils_completion`
+(the self-dual completion, `SelfDualCompletion.lean:81`), on which both
+`existence_paschke` and the general `univprop_ext_tensor` depend;
+**90II**.2 in `A/VN`, on which 159IX and hence 164II.2b depend; and **158II**
+`kaplansky_hilbmod`, open with a dead printed proof (QUESTIONS B10).  The
+**next gate is 151I `dils_completion`** — it is the only one of the three
+inside `B/Dils` and it unblocks the two largest remaining items at once.
+A smaller, genuinely reachable target is **157IV.1**
+`paschke_correspondence_mem` (`Paschke.lean:1099`): the thesis's argument is
+"`√T ∈ ϱ(𝒜)^□`, so `φ_T(a) = h(√T ϱ(a) √T)` is ncp", and the pieces exist
+(`ad_normal`/44VIII in `A/VN`, complete positivity of conjugation), but
+conjugation as a bundled `NCPMap` on a von Neumann algebra has to be built
+locally — `A/Proc`'s `adNCP` is off the import path (QUESTIONS **D3**).
 
 **Bottom line for `SelfDual.lean` after session 51.**  The 1600 and 1610
 parsecs are closed except 162II/162IV/163II-uniq, and the 1640 parsec is
@@ -73,16 +96,25 @@ of 164XI — `ketbra_ultraweakly_dense` (**159IV**, proved) applied to the
 basis now supplied by 164II.2a, and `unDense_tSpan` — is already in the
 file.
 
-⚠️ **Non-vacuity gap.**  `ExtTensor` has **no** inhabitation witness in the
-tree (unlike `IsVNTensor`, which has `vnTensor_mul_complex`, and
-`PaschkeModule`, which has `paschkeModuleId`), and `univprop_ext_tensor`
-is `sorry`.  So every theorem of parsecs 1640–1670 hypothesising
-`E : ExtTensor t ht X Y` — 164II.1, 164II.2a/2b, 165III, 165VI, 166IV,
-166VI, 167I — is *conditionally* proved only.  A cheap check would be
-`𝒜 = ℬ = 𝒞 = X = Y = Z = ℂ`, `t = (· * ·)`, `η x y = x * y`; PROVING-LOG
-session 14 records a mirroring defect that left `PaschkeModule`
-uninhabited and nine theorems vacuous, and only a concrete example caught
-it.
+~~⚠️ **Non-vacuity gap.**~~ — **CLOSED session 52.**  `ExtTensor` **is
+inhabited**, by the new `extTensorSelf` (`SelfDual.lean`, just below
+`univprop_ext_tensor`): for *any* `ht : IsVNTensor t`, the algebra `𝒞`
+itself — as a Hilbert `𝒞`-module over itself, with `η = t` — is an
+`ExtTensor t ht 𝒜 ℬ`.  That is stronger than the `ℂ`-only check suggested
+here, and it is literally the case `X = 𝒜`, `Y = ℬ` of
+`univprop_ext_tensor`; it needs no von Neumann hypotheses.  Axiom-clean
+(`propext, Classical.choice, Quot.sound`, checked from inside the module),
+and `extTensorSelf _ vnTensor_mul_complex` gives the fully concrete
+`ExtTensor (·*·) _ ℂ ℂ`, against which **164II.1 was checked to
+elaborate**.  So 164II.1, 164II.2a/2b, 165III, 165VI, 166IV, 166VI and
+167I are non-vacuous.
+
+**Constructing it exposed no defect.**  Unlike `PaschkeModule` (session
+14/43), every field of `ExtTensor` is mirrored correctly: `η_inner` reduces
+to `IsVNTensor.star` then `.mul` over *non-commutative* `𝒜`, `ℬ`, so a star
+in the wrong slot would not have typechecked.  The `univ` field needs no
+density argument — `T' z := z · T(1,1)` is forced by `t 1 1 = 1` — and the
+Gram-bound hypothesis on `T` is never used.
 
 **Bottom line for `SelfDual.lean` after session 50.**  The 1600 parsec is
 closed (160IV.1/.2/.3, 160IX, 160X) and so is the 1660 parsec (166II, 166IV,
@@ -123,8 +155,8 @@ module; and the **public** `paschke_tprod_dense`.
 | **169XI.2b** | `dils_filter_basics_2b` | **(a)** | **CLOSED this session**, from 169XI.1.  Note it does **not** depend on 2a, and so is not affected by B11 |
 | 170II.1 | `dils_examples_pure_1` | **(b)** | `ad_T` classification of pure maps `B(H) → B(K)`; needs 171VII and the Stinespring block |
 | 170II.2 | `dils_examples_pure_2` | **(b)** | the thesis derives it from 169V + 169XI.2; 169V is `sorry` and 169XI.2**a** is the false half |
-| 170IV.1 | `surjective_nmiu_1` | **(a)**, newly | see "New lead" below |
-| 170IV.2 | `surjective_nmiu_2` | **(b)** | converse; needs 169IV (the standard corner `h_z`) |
+| 170IV.1 | `surjective_nmiu_1` | **(d)** | **Reclassified session 52.**  Our statement omits the thesis's "between von Neumann algebras" (dils.tex:6223); `section Pure` binds only `[CStarAlgebra A]`.  So the 69IV route below — and the author's own 69II route — is unavailable, both needing `[VonNeumannAlgebra A]`.  QUESTIONS **D5** |
+| 170IV.2 | `surjective_nmiu_2` | **(b)/(d)** | converse; needs 169IV (the standard corner `h_z`), *and* has the same missing von Neumann hypothesis — QUESTIONS **D5** |
 | 171II | `paschke_corner` | **(b)** | three-step proof through `existence_paschke` |
 | 171VII | `paschke_pure` | **(b)** | needs 171II |
 | 172III | `ncp_extreme_paschke` | **(b)** | needs `paschke_correspondence_*` (three `sorry`s in `Paschke.lean`) and 170II.2 |
@@ -139,7 +171,14 @@ closed.  **A worker sent at `Pure.lean` for volume will find nothing**; the
 return is in `Paschke.lean`'s `existence_paschke` and in re-deriving proc.tex
 96V/98I locally (or putting `A/Proc` on the import path — QUESTIONS **D3**).
 
-### New lead: 170IV.1 `surjective_nmiu_1` is now unblocked
+### ~~New lead: 170IV.1 `surjective_nmiu_1` is now unblocked~~ — WITHDRAWN (session 52)
+
+**The lead below is dead as our statement stands.**  `surjective_nmiu_1`
+carries no `[VonNeumannAlgebra A]`, and `carrier_miu` (69IV) — like 69II —
+needs it.  See QUESTIONS **D5**; if the hypothesis is restored, the costing
+below applies unchanged.
+
+### The (withdrawn) lead, kept for after D5 is ruled on
 
 The author's solution routes the kernel of a surjective nmiu-map through
 `kernel-ultraweak-twosided-ideal-dils` and **69II**
