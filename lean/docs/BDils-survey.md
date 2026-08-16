@@ -1,4 +1,4 @@
-# `B/Dils` survey — `SelfDual.lean` and `Pure.lean` (session 48)
+# `B/Dils` survey — `SelfDual.lean` and `Pure.lean` (sessions 48–49)
 
 Counts verified by `grep -cE '(^|[^`])\bsorry\b'` **and** by the compiler's
 `declaration uses 'sorry'` warnings (they agree).
@@ -7,8 +7,13 @@ At session start: `SelfDual.lean` 21, `Pure.lean` 15, `Paschke.lean` 8,
 `Kaplansky.lean` 5, `Stinespring.lean` 2, `SelfDualCompletion.lean` 2,
 `HilbertModules.lean` 0 — **53**, exactly as the brief said.
 
-At session end: `SelfDual.lean` **19**, `Pure.lean` **13**, rest unchanged —
-**49**.
+At the end of session 48: `SelfDual.lean` **19**, `Pure.lean` **13**, rest
+unchanged — **49**.
+
+At the end of **session 49** (parsec 1600, see PROVING-LOG): `SelfDual.lean`
+**14**, `Pure.lean` 13, `Paschke.lean` 8, `Kaplansky.lean` 5,
+`Stinespring.lean` 2, `SelfDualCompletion.lean` 2, `HilbertModules.lean` 0 —
+**44**, compiler-counted per file.
 
 Classification key: **(a)** self-contained, **(b)** blocked on a named
 `sorry` elsewhere, **(c)** cited to the literature / another chapter,
@@ -20,20 +25,20 @@ Classification key: **(a)** self-contained, **(b)** blocked on a named
 
 | DISP | name | class | note |
 |---|---|---|---|
-| 159IX | `ketbra_ultranorm_continuous` | **(a)** | thesis proof is 159X–159XI, present but "not converted"; self-contained, medium-large |
-| 160IV.2 | `hilbmod_projthm_2` | **(a)** | proof 160V–160VIII; needs `V^⊥⊥` = un-closure of `bSpan V`.  160IV.1 is *proved* in file |
-| 160IV.3 | `hilbmod_projthm_3` | **(a)** | same proof block; the orthogonal decomposition.  **This is the keystone of the 1600 parsec** — 160IX(⇐) and 160X wait only on it |
-| 160IX | `selfdual_orthn_basis` | **(b)** | ⇐ half needs 160IV.3; ⇒ half needs ℓ²-sum convergence for a non-basis orthonormal family, which the tree does not yet have separately |
-| 160X | `selfdual_gramschmidt` | **(b)** | needs 160IX + polar decomposition in a self-dual module |
+| 159IX | `ketbra_ultranorm_continuous` | **(a)** | thesis proof is 159X–159XI, present but "not converted"; self-contained, medium-large.  **Now the largest self-contained item in the file** |
+| **160IV.2** | `hilbmod_projthm_2` | **(a)** | **CLOSED session 49** |
+| **160IV.3** | `hilbmod_projthm_3` | **(a)** | **CLOSED session 49** — the keystone; done by running 149VIII's Zorn argument inside the submodule instead of extending a basis of `X` |
+| **160IX** | `selfdual_orthn_basis` | **(a)** | **CLOSED session 49**; needed no Zorn, and the "ℓ²-sum convergence for a non-basis orthonormal family" is now `exists_unTendsto_of_l2Summable` in `HilbertModules.lean` |
+| **160X** | `selfdual_gramschmidt` | **(a)** | **CLOSED session 49**, by induction on `n` with the polar decomposition as the orthonormalization step |
 | **161II.1** | `hilbmod_el2_inner` | **(a)** | **CLOSED this session** (polarization, see log) |
 | 161II.2 | `hilbmod_el2` | **(a)** | large: `ℓ²((pᵢ))` self dual + coordinate map is a bijection.  Now that 161II.1 is closed the inner product exists, so this is the natural next target in this parsec |
 | **161IV.2** | `onb1_el2` | **(a)** | **CLOSED this session** (direct bijection, see log); the brief's assumption that it needs 161II was wrong |
 | 162II | `total_mv_order` | **(a)/(c)** | comparison of projections in a factor; proof 162III not converted.  Genuinely hard (Zorn + halving) |
 | 162IV | `selfdual_normalish_form` | **(b)** | needs 162II and 161II.2 |
 | 163II uniq | `selfdual_compl_defining_unique` | **(b)** | needs **151Ia** `selfdual_completion_univ` (`SelfDualCompletion.lean`, `sorry`) |
-| 163II dense | `selfdual_compl_defining_dense` | **(b)** | same, plus 160IV.3 |
+| **163II dense** | `selfdual_compl_defining_dense` | **(a)** | **CLOSED session 49**.  The survey's "needs 151Ia" was **wrong**: the statement takes the universal property as a hypothesis |
 | 164II ex. | `univprop_ext_tensor` | **(a)** | the construction 164III–164VIII via `ℓ²((pᵢⱼ))`; the single biggest item in the file, and 161II.2 is a prerequisite in practice |
-| 164II.1 | `ext_tensor_dense` | **(b)** | density is **not** a field of `ExtTensor`, so it must come from `univ`; that route needs 160IV.3.  Checked: nothing in file derives it |
+| 164II.1 | `ext_tensor_dense` | **(a)/(b)** | density is **not** a field of `ExtTensor`, so it must come from `univ`.  The projection route is now available (`exists_orthoProj` + 160IV.2/.3, exactly as in the closed 163II-dense), but the last step needs `bSpan D = D` for `D = {∑ η(xᵢ,yᵢ)}`, which is **false**: `D` absorbs elementary tensors `t a b` only.  The real remaining content is bounded ultrastrong* approximation of `c ∈ 𝒜 ⊗̄ ℬ` by sums of elementary tensors (`IsVNTensor` generation + Kaplansky density) |
 | 164II.2a | `ext_tensor_basis` | **(b)** | needs 164II.1 and 161II.2 |
 | 164II.2b | `ext_tensor_ketbra_dense` | **(b)** | needs 164II.2a |
 | 165VI | `ba_ext_tensor_pres` | **(b)** | proof 165VII–165X; needs 164II.2b.  165III (its companion) *is* proved |
@@ -42,13 +47,18 @@ Classification key: **(a)** self-contained, **(b)** blocked on a named
 | 167I | `paschke_tensor` | **(b)** | needs 165VI + `existence_paschke` |
 | 167I furth. | `paschke_tensor_module` | **(b)** | needs 167I |
 
-**Bottom line for `SelfDual.lean`.**  Only *five* of the 21 were (a) at
-session start: 159IX, 160IV.2, 160IV.3, 161II.1, 161IV.2 (plus 161II.2 and
-164II existence, which are (a) but very large).  Two of those five are now
-closed.  **160IV.3 is the highest-value remaining target**: it is the direct
-blocker of 160IX, 160X, 163II-dense and 164II.1, and 164II.1 in turn gates
-165VI → 166IV → 166VI → 167I — i.e. *eleven* of the file's remaining
-nineteen sorries sit downstream of the 1600-parsec projection theorem.
+**Bottom line for `SelfDual.lean` after session 49.**  The whole 1600 parsec
+is closed (160IV.1/.2/.3, 160IX, 160X), and with it 163II-dense.  Of the
+remaining **14**, the self-contained ones are **159IX**
+(`ketbra_ultranorm_continuous`, thesis proof 159X–159XI), **161II.2**
+`hilbmod_el2` and the **164II existence** construction (both large), and
+**162II** `total_mv_order` (Zorn + halving, genuinely hard).  The next
+*gate* is **164II.1** `ext_tensor_dense`, whose remaining content is the
+ultrastrong* density of the algebraic tensor product in `𝒞` (see its row);
+it gates 166IV → 166VI, while 164II.2a additionally needs 161II.2.
+`exists_orthogonal_decomp` / `exists_orthoProj` (private, `SelfDual.lean`)
+are the reusable output: the projection theorem for *any* ultranorm-closed
+ℬ-submodule, and the projection as a bounded module map.
 
 ---
 

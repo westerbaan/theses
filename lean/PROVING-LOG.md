@@ -10623,3 +10623,130 @@ recompiling; all eight new declarations are exactly
 `[propext, Classical.choice, Quot.sound]`; the commands were then removed.
 Files touched: `Theses/A/VN/{Basic,Projections,NormalFunctionals}.lean`,
 `docs/AVN-survey.md`, and this log.
+
+## Session 49 — `B/Dils` parsec 1600 falls whole: **160IV**.2/.3, **160IX**, **160X**, **163II**-dense (worker 74)
+
+Files touched: `Theses/B/Dils/SelfDual.lean`, `Theses/B/Dils/HilbertModules.lean`,
+`docs/BDils-survey.md`, this log.  Nothing staged, nothing committed.
+**B/Dils 49 → 44 `sorry`s** (`SelfDual.lean` 19 → 14).  All five new
+theorems `#print axioms` to exactly `[propext, Classical.choice, Quot.sound]`.
+
+### 1. The keystone: **160IV**.3 `hilbmod_projthm_3`, and why it is not expensive
+
+The thesis's proof (160V–160VIII) obtains the decomposition
+`X = V^{⊥⊥} ⊕ V^⊥` by taking an orthonormal basis of `W = V^{⊥⊥}`,
+*extending it to a maximal orthonormal subset of the whole of `X`*, and
+expanding along the extended basis.  That extension step is asserted by
+pointing back into the proof of **149VIII**
+(`selfdual-bcompl-then-basis`), and it also makes part 2 a prerequisite of
+part 3.
+
+**Divergence, class 2, and it collapses the parsec.**  Run 149VIII's Zorn
+argument *one level down* instead: take a maximal orthonormal `E` inside the
+closed submodule `W` itself.  Then
+
+* every `y ∈ X` has an expansion `p = ∑_{e∈E} ⟨e,y⟩ • e`, converging by
+  Bessel + norm-bounded ultranorm completeness of `X`, with `p ∈ W` because
+  `W` is an ultranorm-closed submodule and the partial sums are in `W`;
+* `y − p ⊥ E` (the coefficients of the limit are the coefficients);
+* for `y ∈ W`, maximality forces `y = p`, because a non-zero `y − p ∈ W`
+  would be normalized by polar decomposition into a new orthonormal element
+  **of `W`**, extending `E`.
+
+So `x − p ⊥ W` for every `x ∈ X`, which is the decomposition — with no
+basis of `X`, no basis extension, and no part 2.
+
+The one thing 149VIII's proof does not hand over as stated is that the
+isometric part `u` of the polar decomposition of `y` stays inside a closed
+submodule containing `y`.  It is true by construction (`u` is the ultranorm
+limit of `sm N • y`), so `polar_decomposition` in `HilbertModules.lean` now
+**records it as a third conjunct**: `∃ c : ℕ → 𝒷, UnTendsto (fun N => c N • y)
+atTop u`.  That is the whole cost of the relativization.
+
+### 2. What fell with it
+
+* **160IV**.2 `hilbmod_projthm_2` (`V^{⊥⊥}` = ultranorm closure of the
+  ℬ-span).  `⊇` is the thesis's own argument; `⊆` is the *same* relativized
+  decomposition, applied to `W' = unClosure (bSpan V)`: `x = p + (x−p)` with
+  `p ∈ W'` and `x − p ⊥ W'`, so `x − p ∈ V^⊥ ∩ V^{⊥⊥} = {0}`.  The thesis
+  proves 2 and 3 together in the order 3-then-2 through the extended basis;
+  here they are independent, and 2 needs only that `unClosure` of a
+  submodule is a submodule (`unClosure_add/_neg/_op_smul`, the last through
+  `‖b·z‖_ω = ‖z‖_{conjNP (b*) ω}`).
+* **160IX** `selfdual_orthn_basis`, both parts, and it needs *no* Zorn at
+  all: the expansion of an arbitrary `x` along the given orthonormal family
+  lands in `E^{⊥⊥}` and `x − p ∈ E^⊥`, and `E^{⊥⊥} ∩ E^⊥ = {0}`.  The `⇐`
+  of part 2 computes `⟨x−p,x−p⟩ = ⟨x,x⟩ − ⟨x,p⟩ − ⟨p,x⟩ + ⟨p,p⟩ = 0`, the
+  three cross terms being the same ultraweak limit as the Parseval sum.
+  (The survey's worry that the `⇒` half "needs ℓ²-sum convergence for a
+  non-basis orthonormal family, which the tree does not yet have
+  separately" was right about the need and wrong about the difficulty: that
+  convergence is `hclauseb` inside 149VIII, and this session extracted it as
+  the standalone `exists_unTendsto_of_l2Summable`.)
+* **160X** `selfdual_gramschmidt`, by induction on `n`, which *is* the
+  thesis's hint ("use the orthonormalization in the last part of
+  `selfdual-bcompl-then-basis`"): the new basis vector is the isometric part
+  `u` of the polar decomposition of `z = xₙ − ∑ₖ ⟨fₖ,xₙ⟩ • fₖ`, and
+  `⟨u,xₙ⟩ = √⟨z,z⟩` makes `z = ⟨u,xₙ⟩ • u`, so the expansion closes.  `u`
+  lies in `{x₁,…,xₙ}^{⊥⊥}` by the new third conjunct of
+  `polar_decomposition`.
+* **163II**-dense `selfdual_compl_defining_dense`, which the survey listed
+  as blocked on **151Ia** `selfdual_completion_univ`.  **It is not**: the
+  hypothesis of the statement already *is* the universal property, so 151Ia
+  is not needed.  The proof is the thesis's: the orthogonal projection `P`
+  onto `ηV^{⊥⊥}` (new `exists_orthoProj`, a bounded module map by
+  uniqueness of the decomposition) fixes `ηV`, so `P` and `id` both factor
+  `η` through itself and the uniqueness clause gives `P = id`; then
+  **160IV**.2 identifies `ηV^{⊥⊥}` with the ultranorm closure of `ηV`,
+  using `bSpan (ηV) = ηV` (η is a module map).
+
+### 3. New reusable infrastructure
+
+In `HilbertModules.lean` (extracted from the proof of **149VIII**, which now
+calls them, so the file got shorter rather than longer):
+
+* `exists_unTendsto_of_l2Summable` — clause (b) of `IsONBasis` for *any*
+  orthonormal family in a norm-bounded ultranorm complete module;
+* `inner_of_unTendsto_sum_smul` — the coefficients of a convergent
+  `∑ᵢ bᵢ • eᵢ` are the `bᵢ`;
+* `inner_eq_zero_of_polar` — the isometric part of the polar decomposition
+  of `y` is orthogonal to whatever `y` is orthogonal to;
+* `polar_decomposition` is no longer `private`, and carries the extra
+  conjunct described above.
+
+In `SelfDual.lean`, all `private`: `mem_unClosure_of_unTendsto`,
+`subset_unClosure`, `unClosure_mono`, `unClosure_unClosure`,
+`unClosure_add/_neg/_op_smul`, `unSeminorm_neg_inner`, `unSeminorm_op_smul`,
+`subset_bSpan`, `zero_mem_bSpan`, `bSpan_add/_neg/_op_smul`, `op_smul_sum`,
+`subset_biorthoCompl`, `biorthoCompl_mono`, `uwTendsto_unique₂`,
+**`exists_orthogonal_decomp`** (the projection theorem for an arbitrary
+ultranorm-closed ℬ-submodule — the workhorse of all five items) and
+**`exists_orthoProj`** (the same, as a bounded idempotent module map).
+
+### 4. Where the next worker should look
+
+`exists_orthoProj` + the universal property is exactly the shape of
+**164II**.1 `ext_tensor_dense`, the remaining gate of the 1640–1670 chain
+(164II.1 → 166IV → 166VI; 164II.2a additionally needs 161II.2).  The
+`P = id` half transfers verbatim.  What does **not** transfer is the last
+step: 160IV.2 identifies `D^{⊥⊥}` with the closure of the ℬ-**span** of
+`D`, and for `D = {∑ᵢ η(xᵢ,yᵢ)}` the span is strictly bigger than `D`
+(`D` is closed under `+`, `ℂ·` and under elementary tensors `t a b`, but not
+under a general `c ∈ 𝒜 ⊗̄ ℬ`).  Closing that gap needs bounded ultrastrong*
+approximation of `c` by sums of elementary tensors — i.e. `IsVNTensor`'s
+generation clause plus Kaplansky density (`Kaplansky.lean`) — and is the
+real remaining content of 164II.1.  For `163II`-dense the gap did not arise
+because `ηV` is already a submodule.
+
+### 5. Verification
+
+`lean Theses/B/Dils/HilbertModules.lean` and `.../SelfDual.lean` (with the
+`LEAN_PATH` bypass): no errors, `HilbertModules` still 0 `sorry`s,
+`SelfDual` 14.  `#print axioms` on `hilbmod_projthm_2`, `hilbmod_projthm_3`,
+`selfdual_orthn_basis`, `selfdual_gramschmidt` and
+`selfdual_compl_defining_dense`: all exactly
+`[propext, Classical.choice, Quot.sound]`.
+
+The olean-disappearance failure mode of session 48 recurred twice
+(`A/VN/Completeness`, `A/VN/Division`), both times cured by waiting and
+retrying, as the brief says.
