@@ -2400,10 +2400,16 @@ together); `B/Dils/Stinespring.lean` (ℂ-valued inner product, whose convention
 - **178III.1** `Theses/B/Eff/EffectAlgebras.lean:1175`
   (`unitInterval_effectMonoid_unique`) — "the usual product is the only effect
   monoid structure on `[0,1]`"; eff.tex:636 asserts it without proof.
-- **178III.2/.4** `Theses/B/Eff/EffectAlgebras.lean:1181`, `:1186`, `:1192` —
-  every finite effect monoid is Boolean (hence commutative), and there is a
-  non-commutative one on lexicographic `ℝ⁵`; eff.tex:640/651 cites these to the
-  literature.
+- **178III.2/.4** — **partly un-parked (session 44).**  `178III.4`
+  `exists_noncommutative_effectMonoid` is **proved**: the `ℝ⁵` example is
+  reconstructed in full (`LexNC`, `EffectAlgebras.lean`), since eff.tex:651
+  only cites \[basmsc, cor. 51].  The corollary `178III.2`
+  `finite_effectMonoid_commutative` is **proved** too, by a direct route that
+  does not go through the Boolean structure theorem.  Still parked:
+  `finite_effectMonoid_boolean` itself (`EffectAlgebras.lean`, the *structure*
+  equality with `booleanEffectMonoid`), which eff.tex:640 cites to
+  \[basmsc, prop. 40] — but see the session-44 entry: the mathematics for it
+  is now in the file; only the structure-equality transport is missing.
 - **178V** `Theses/B/Eff/EffectAlgebras.lean:1247` (`emond_lemma_for_conv`) —
   the solution (bsols.tex:1653) computes with `aᵢᵖ = ⋁_{j≠i} aⱼ`, i.e. it drops
   one summand out of an iterated sum; that is exactly the generalized
@@ -8521,3 +8527,286 @@ build`: exit 0.  `#print axioms` on all thirteen new declarations: exactly
 `declaration uses \`sorry\`` lines (never a grep).  Files touched:
 `Theses/A/VN/Division.lean`, `ERRATA.md` and this log.  Nothing staged,
 nothing committed.
+
+## Session 44 — `B/Eff` parsec 178: the non-commutative effect monoid on lexicographic `ℝ⁵`, and finite effect monoids are commutative (worker 69)
+
+`Theses/B/Eff/EffectAlgebras.lean` (plus one lemma moved out of
+`StatesPredicates.lean`).  The directory was at 18 `sorry`s, of which twelve
+are the `vNᵒᵖ` examples — blocked on essentially all of thesis A — and the
+rest are cited-to-literature or `Exercise*` items with no argument in either
+thesis to transcribe.  This session took the two that are *mathematics we can
+supply ourselves* rather than citations: 178III.4 and the 178III.2 corollary.
+
+### 1. 178III.4 `exists_noncommutative_effectMonoid` — proved
+
+eff.tex:651 says only "There is a non-commutative effect monoid based on the
+lexicographically ordered vector space `ℝ⁵`, see \[basmsc, cor. 51]".  We do
+not have `basmsc`, so the example was **reconstructed from scratch**; that
+makes this an independent check that the cited claim holds, and it pins down
+*why* the dimension is five.  Everything is in namespace `LexNC`.
+
+* `V = ℝ⁵` lexicographically ordered, `u = e₁`; `[0,u]` is an effect algebra
+  by 175II.2 (`orderIntervalEffectAlgebra`), which wants `V` to be an
+  `AddCommGroup` + `IsOrderedAddMonoid`.  Rather than fight `Prod.Lex`'s
+  instance set, `V` is built from a one-step lexicographic extension
+  `LexR G = ℝ × G` — own `PartialOrder`/`IsOrderedAddMonoid`, algebra
+  instances inherited from `Prod` via `inferInstanceAs` — iterated four times.
+* `V` becomes an associative unital `ℝ`-algebra with `e₁` the unit and, on
+  `N = span(e₂,e₃,e₄,e₅)`, exactly two non-zero products of basis vectors:
+  `e₂ ⊙ e₂ = e₄` and `e₂ ⊙ e₃ = e₅`.  All triple products in `N` vanish, so
+  associativity reduces to `ring`/`module` bookkeeping, and
+  `e₂ ⊙ e₃ = e₅ ≠ 0 = e₃ ⊙ e₂` with `e₂, e₃ ∈ [0,u]` is the
+  non-commutativity.
+* The only real obligation is that the positive cone is closed under `⊙`
+  (`vmul_nonneg`), by cases on leading coordinates — **and this is what forces
+  five dimensions.**  The naive 4-dimensional variant
+  `e₂ ⊙ e₂ = e₂ ⊙ e₃ = e₄` fails: `e₂ ≥ 0` and `e₂ - 2e₃ ≥ 0`, yet
+  `e₂ ⊙ (e₂ - 2e₃) = -e₄ < 0`.  Sending `e₂ ⊙ e₂` to a level strictly *above*
+  `e₂ ⊙ e₃` makes the leading term `n₂m₂e₄ > 0` dominate the
+  sign-indeterminate `n₂m₃e₅`, and the cone closes.
+* Closure of `[0,u]` then needs no second case analysis:
+  `u - xy = (u - y) + (u - x)y`, so it follows from cone-closure alone.  The
+  same trick keeps the fourfold distributivity axiom short — every partial sum
+  of `[a⊙c, b⊙c, a⊙d, b⊙d]` is below `(a ⋁ b) ⊙ (c ⋁ d) ≤ u`, because the
+  omitted products are positive.
+
+### 2. 178III.2, the corollary `finite_effectMonoid_commutative` — proved, by a different route
+
+⚠️ *Class 2 — different proof.*  eff.tex:640 derives commutativity from
+"every finite effect monoid comes from a Boolean algebra", cited to
+\[basmsc, prop. 40]; that structure theorem (`finite_effectMonoid_boolean`,
+an equality of `EffectMonoid` structures) is **still `sorry`** and remains
+parked.  The corollary, however, has a short direct proof, which is what the
+file now carries:
+
+1. **In any effect monoid, `a ⊙ aᵖ = aᵖ ⊙ a`** (`emon_mul_orth_comm`).  Both
+   `a ⊙ 1 = (a⊙a) ⋁ (a⊙aᵖ)` and `1 ⊙ a = (a⊙a) ⋁ (aᵖ⊙a)` equal `a`, so
+   cancellation (175V.4) applies.  This needed the mirror of `emon_mul_ovee`,
+   which already existed in `StatesPredicates.lean` as `emon_ovee_mul` and has
+   been **moved to `EffectAlgebras.lean`** (same name, same namespace, so no
+   use site changes; a pointer comment is left behind).
+2. **An idempotent `x` with `x ⊥ x` is `0`** (`emon_idem_perp_self_zero`) —
+   *no finiteness needed*.  Cancellation in `x = x ⋁ (x ⊙ xᵖ)` gives
+   `x ⊙ xᵖ = 0`; writing `xᵖ = x ⋁ z` (which `x ⊥ x` provides) turns that into
+   `0 = x ⋁ (x ⊙ z)`, so `x = 0` by positivity.
+3. **In a finite effect monoid `x ⊙ x = 0` forces `x = 0`**
+   (`emon_sq_zero`).  If `x ≼ y` and `x ⊙ y = x`, write `y = x ⋁ g`; then
+   `x = (x⊙x) ⋁ (x⊙g) = x ⊙ g`, so `x ≼ g ≺ y` and the two hypotheses survive
+   for `g`.  Starting at `y = 1` that is an infinite descent, so `x = 0`.
+   (Formally: well-founded induction on `≼`, which finiteness makes
+   well-founded — `emonOrder` bundles 175V.5's partial order for
+   `Finite.to_wellFoundedLT`.)
+4. **Hence every element is idempotent** (`emon_finite_idem`): `d = a ⊙ aᵖ`
+   satisfies `d ≼ a` and `d ≼ aᵖ`, hence `d ⊥ d`; and self-orthogonal
+   elements vanish (`emon_perp_self_zero`), because the squares
+   `x ≽ x⊙x ≽ …` descend — each still self-orthogonal, since
+   `(x ⋁ x) ⊙ (x ⋁ x)` is a fourfold sum of `x⊙x` — to an idempotent, killed
+   by (2), and (3) propagates that back.  With `a ⊙ aᵖ = 0`,
+   `a = (a⊙a) ⋁ 0`.
+5. **Idempotency ⟹ commutativity**: `a ⊙ b` is a lower bound of `a, b`, and
+   any lower bound `c` satisfies `c = c ⊙ c ≼ a ⊙ b` by monotonicity, so
+   `a ⊙ b` *is* the infimum; infima are unique (`isInf_unique`), so
+   `a ⊙ b = b ⊙ a`.
+
+Step 5 is worth keeping in mind independently: **in any effect monoid in
+which every element is idempotent, `⊙` is the meet and hence commutative.**
+
+Nothing here contradicts the thesis; no erratum.  The only judgement call is
+that we did *not* attempt `finite_effectMonoid_boolean`, which additionally
+demands that the induced `BooleanAlgebra` reproduce the given effect algebra
+structure on the nose.
+
+**For whoever picks that up: the mathematics is now essentially in the file.**
+With `emon_finite_idem` and `finite_effectMonoid_commutative` in hand, a
+finite effect monoid `M` is a Boolean algebra by the following four steps,
+each a couple of lines with the helpers listed above:
+
+* `Perp a b ↔ a ⊙ b = 0`.  (⇒) `a ⊙ b ≼ a` and `a ⊙ b ≼ b ≼ aᵖ`, so
+  `a ⊙ b ⊥ a ⊙ b`, so it is `0` by `emon_perp_self_zero`.  (⇐)
+  `a = a ⊙ 1 = (a ⊙ b) ⋁ (a ⊙ bᵖ) = a ⊙ bᵖ ≼ bᵖ`.
+* `a ≼ c` iff `a = a ⊙ c` (one way by idempotency + monotonicity and
+  antisymmetry, the other by `emon_mul_le_self_right`); hence `a ⊙ b` is the
+  meet and, for `a ⊥ b`, `a ⋁ b` is the join — if `a, b ≼ c` then
+  `(a ⋁ b) ⊙ c = (a ⊙ c) ⋁ (b ⊙ c) = a ⋁ b ≼ c`.
+* General joins exist: `a ⊔ b := a ⋁ (b ⊖ a ⊙ b)`, the summands being
+  orthogonal because `a ⊙ (b ⊖ a ⊙ b) = a ⊙ b ⊖ a ⊙ b = 0`.
+* Distributivity: `a ⊙ (b ⊔ c) = (a ⊙ b) ⊔ (a ⊙ c)`, since `⊙` is
+  bi-additive and `(a ⊙ b) ⊙ (a ⊙ c) = a ⊙ b ⊙ c` by commutativity and
+  idempotency.  A complemented distributive bounded lattice is Boolean, with
+  `aᶜ = aᵖ`.
+
+What is *not* done, and is the real remaining cost, is Lean plumbing rather
+than mathematics: the statement asks for `@booleanEffectMonoid M ba = em`, an
+equality of `EffectMonoid` *structures*, whose `ovee` field is typed over the
+`Perp` field — so the two `Perp`s being only propositionally equal (funext +
+propext) has to be `subst`-ed before the `ovee` fields can be compared.
+
+### 3. What is left in `B/Eff`, and why
+
+**16 `sorry`s.**  Twelve are the `vNᵒᵖ` examples, needing thesis A (and, for
+223VI, the Paschke development of `B/Dils`): 177V, 180V, 189aI, 190III,
+206III, 211IV, 215VI, 221III, 223VI, 224VI, 224VII, 225V.1.  The other four
+are cited-to-literature or `Exercise*` items with nothing to transcribe:
+178III.2 `finite_effectMonoid_boolean`, 179III.2
+`effectModule_unitInterval_representation` (Gudder–Pulmannová, explicitly
+parked as "not a result of the thesis"), 192III.3 `exc_dm_effectus_kleisli`,
+192V.4 `cancellative_iso_convex`.
+
+### 4. Verification
+
+`lake env lean Theses/B/Eff/EffectAlgebras.lean`: no errors; the three
+`declaration uses \`sorry\`` lines left in it are 177V, 178III.2-Boolean and
+179III.2.  `lake build` of all eight `B/Eff` modules: succeeds.
+`#print axioms` on `exists_noncommutative_effectMonoid`, `LexNC.effectMonoid`,
+`LexNC.not_commutative`, `LexNC.vmul_assoc`, `LexNC.vmul_mem_Icc`,
+`LexNC.e2_mem`, `finite_effectMonoid_commutative`, `emon_perp_self_zero`,
+`emon_sq_zero`, `emon_finite_idem`, `emon_mul_orth_comm`, `emon_ovee_mul`:
+either exactly `[propext, Classical.choice, Quot.sound]` or, for the four
+choice-free ones (`emon_mul_orth_comm`, `emon_idem_perp_self_zero`,
+`emon_ovee_mul`, `isSumOf_mul_right`), just `[propext]`.  No `sorryAx`.  Files touched: `Theses/B/Eff/EffectAlgebras.lean`,
+`Theses/B/Eff/StatesPredicates.lean` (the moved lemma) and this log.  Nothing
+staged, nothing committed.
+
+## Session 45 — `B/Dils`: the scalars in universe `u`, **169XII** filters are injective, and two mis-transcriptions (worker 70)
+
+Files touched: `Theses/B/Dils/Pure.lean`, `Theses/B/Dils/SelfDual.lean`,
+`ERRATA.md`, `QUESTIONS.md`, this log.  Nothing staged, nothing committed.
+**B/Dils 58 → 57 `sorry`s.**
+
+### 1. **169XII** `dils_filters_injective` — proved, and it did **not** need 169X
+
+Session 44 parked the 169X–169XII cluster because the thesis derives filter
+injectivity from the *standard* filter (**169X**, still `sorry`) plus
+`mult-cancellation`.  There is a one-step route that avoids 169X entirely, and
+it is the one worker 69 sketched: run the *uniqueness* half of the filter's own
+universal property against maps out of the scalars.
+
+For `0 ≤ a` in a C*-algebra `A` the map `z ↦ z·a` is an ncp-map `ℂ → A`.  So if
+`c` is a filter for `b` and `x, y` are effects of `A` with `c x = c y`, then
+`z ↦ z·(c x)` is an ncp-map `ℂ → ℬ` whose value at `1` is `c x ≤ c 1 ≤ b`; both
+`z ↦ z·x` and `z ↦ z·y` factor it through `c`, so they are equal by uniqueness,
+and `x = y`.  Scaling by `(1+‖x‖+‖y‖)⁻¹` extends this to the whole positive
+cone, and `w = w⁺ − w⁻` together with `c(w*) = (c w)*` to all of `A`.
+
+**Divergence (case 2: thesis argument fine, different route).**  The thesis's
+route is not wrong, it is merely downstream of a `sorry`; this one is
+upstream of everything in the parsec.
+
+**The universe wrinkle — why "just use `ℂ`" does not typecheck.**
+`IsCornerFor` and `IsFilterFor` quantify their test algebra over `Type u`, the
+universe of `A` and `ℬ`, while `ℂ : Type 0`.  The probe therefore has to be
+`ULift ℂ`, and Mathlib carries its ring, norm, algebra and completeness but
+**not** its ∗-structure or its order.  `Pure.lean` now supplies them, in a new
+`section Scalars` before parsec 1690:
+
+* `CU := ULift.{u} ℂ` with `StarRing`, `StarModule ℂ`, `CStarRing`,
+  `CStarAlgebra`, `PartialOrder`, `StarOrderedRing` (~35 lines of transport
+  along `ULift.down`, which is injective);
+* `ncpOfNonneg : 0 ≤ a → NCPMap CU A`, `z ↦ z·a`.  Complete positivity is
+  `∑ᵢⱼ (cᵢbᵢ)* a (cⱼbⱼ) = v* a v` with `v = ∑ᵢ cᵢbᵢ`; normality is the
+  closedness of the positive cone — `t ↦ t·a` is continuous `ℝ → A`, so
+  `{t | t·a ≤ u}` is closed and contains `sSup` of any set it contains
+  (`IsLUB.mem_closure`), after transporting the supremum from `sa(ℂᵤ)` to `ℝ`.
+
+This is the "worth building once" item flagged at the end of session 44.  Any
+proof that has to *use*, rather than merely state, one of this parsec's
+universal properties will want it — **169XI**.1/.2b included.
+
+### 2. **169XI**.2a `dils_filter_basics_2a` is **false as transcribed**, and the erratum standing against it was wrong
+
+Our `IsFilterFor c b` transcribes dils.tex **169VIII** literally: `c 1 ≤ b`
+plus the universal property for every `f` with `f 1 ≤ b`.  That is *not* the
+definition proc.tex **96I** gives, which asks the universal property for
+`f(1) ≤ c(1)` and calls `c` a filter *for `c(1)`* — so there `c(1) = b` holds by
+construction.  Under dils.tex's `≤`, `c = ½·id : ℬ → ℬ` is a filter for `1`
+with `c(1) = ½` (every `f` with `f(1) ≤ 1` factors uniquely, as `2f`), and then
+169XI.2a fails outright: for `φ = id : ℂ → ℂ` and `c' = ½·id` there is no
+unital `φ'` with `c' ∘ φ' = φ`.
+
+ERRATA already carried a row for the corresponding gap in the *solution* of
+169XI.2 ("the step `c'(φ'(1)) = φ(1) = c'(1)` uses `c'(1) = φ(1)`"), proposing
+the repair "the isomorphism with the standard filter built in the
+`dils-filters-injective` solution gives `c(1) = b`".  **That repair does not
+work**: the argument yields `c = c_b ∘ ϑ` for an ncp-*isomorphism* `ϑ`, and
+`ϑ(1) = 1` is precisely what fails (`ϑ = ½·id` in the counterexample).  Both
+rows are rewritten and a new row is added against **169VIII** itself, whose
+one-character fix (`c(1) ≤ b` → `c(1) = b`) repairs everything.  QUESTIONS
+**B11** asks for the ruling, since changing our `IsFilterFor` is a statement
+change.  The *derived* notion "`c` is a filter" (a filter for some `b`) is
+insensitive to the difference — a `≤`-filter for `b` is an `=`-filter for
+`c(1)` and conversely — so purity (**170I**), **169XI**.1 and **169XII** are
+untouched.  Both declarations carry a ⚠️ note in their doc comments.
+
+### 3. `L2Set` was mis-mirrored, which made **161II**.2 and **161IV**.2 false
+
+`SelfDual.lean`'s `L2Set ℬ p` read
+`{b | L2Summable ℬ b ∧ ∀ i, ⌈bᵢ bᵢ*⌉ ≤ pᵢ}` — dils.tex **161II**'s support
+condition copied unchanged, while the two neighbouring halves of the same
+definition *were* mirrored: `L2Summable` renders the thesis's `∑ᵢ bᵢ*bᵢ` as
+`∑ᵢ bᵢbᵢ*`, and the inner product `∑ᵢ bᵢ*cᵢ` as `∑ᵢ cᵢbᵢ*`.  The mirror stars
+the entries (this file's coordinates are `⟪eᵢ,x⟫ = ⟨x,eᵢ⟩`, the thesis's are
+`⟨eᵢ,x⟩`), so the support condition has to be starred with them:
+`⌈bᵢ*bᵢ⌉ ≤ pᵢ`.
+
+As it stood, **161II**.2 `hilbmod_el2` was **false**.  Take `ℬ = X = M₂` over
+itself (Mathlib's left module, `⟪u,v⟫ = v u*`) with orthonormal basis
+`(e₀₀, e₁₁)`; the coordinates of `x` are `bᵢ = x eᵢᵢ`, which satisfy
+`⌈bᵢ*bᵢ⌉ = ⌈eᵢᵢ x* x eᵢᵢ⌉ ≤ eᵢᵢ` always, while for `x = e₁₀` one has
+`⌈b₀b₀*⌉ = ⌈e₁₁⌉ = e₁₁ ≰ e₀₀` — so the coordinate map does not land in `L2Set`
+as written, and `Set.BijOn` cannot hold.  **161IV**.2 `onb1_el2` inherits the
+same defect; with the fix its intended witness is `Φ b i = bᵢ · uᵢ*`, the
+mirror of the thesis's `bᵢ ↦ uᵢbᵢ`, and the inner products then agree on the
+nose (`(cu*)(bu*)* = c u*u b* = c p b* = c b*`).
+
+Fixed, with the mirroring dictionary written into the definition's doc
+comment.  This is **our** error, not the thesis's — no ERRATA entry.
+
+### 4. Two notes on the brief
+
+* The brief's correction of the inner-product convention ("the thesis is
+  conjugate-linear in the **first** argument, same handedness as Mathlib; the
+  real difference is right- vs. left-modules") is right, and is exactly what
+  item 3 turns on.  No occurrence of the wrong version was found in the docs —
+  session 44 had already fixed it.
+* The brief lists `Stinespring.lean` as the first target because "140VIII was
+  just closed there".  Its six survivors are all one cluster: **138II**
+  `nmiu_between_type_I` and its corollaries **138VI**, **138VII**, **138VIII**
+  ×2, plus **139XI**.  All of them are stated in terms of `hilbTensor`/
+  `tensorCLM`, which today have exactly one API lemma (`tensorCLM_mk`) — no
+  inner-product formula, no unitary-from-orthonormal-bases construction, no
+  ultraweak sums of `|rᵢⱼ⟩⟨rᵢⱼ|`.  138II's own proof needs all three.  That is
+  a Hilbert-space-tensor-product development, not a neighbouring item, and it
+  is why this session went to `Pure.lean` instead.
+
+### 5. Verification
+
+`lean Theses/B/Dils/Pure.lean` and `lean Theses/B/Dils/SelfDual.lean`: no
+errors, only the pre-existing `sorry`/linter warnings (Pure: 15 `sorry`s,
+SelfDual: 21).  `#print axioms Theses.B.Dils.dils_filters_injective` and
+`#print axioms Theses.B.Dils.ncpOfNonneg`: both exactly
+`[propext, Classical.choice, Quot.sound]` — so the whole `CU` instance stack
+is `sorry`-free too, which `#print axioms` is the only way to see (a `sorry`
+inside an instance is invisible at the use site).
+
+### 6. Tooling: `lake env lean` blocks on *another* agent's `lake build`
+
+Three sessions are on record as having stalled waiting on builds, and this is
+at least part of why.  `lake env lean Foo.lean` takes the workspace lock, so
+while any other agent is running `lake build` **anywhere in this checkout**,
+your `lake env lean` sits at ~64 MB RSS and 0:00 CPU until that build
+finishes — indistinguishable from a slow compile, and it will happily eat a
+600 s timeout and be killed with no output.  Three of this session's
+compile attempts died that way.
+
+The fix is to skip `lake` and call `lean` directly with `LEAN_PATH` built by
+hand; it does not touch the lock, and reads exactly the same oleans:
+
+```sh
+LP=".lake/build/lib/lean"
+for d in .lake/packages/*/.lake/build/lib/lean; do LP="$LP:$d"; done
+LEAN_PATH="$LP" lean Theses/B/Dils/Pure.lean
+```
+
+With this, `Pure.lean` (820 lines) checks in well under a minute even with
+two other agents building.  Use `lake build` only when oleans genuinely need
+regenerating.

@@ -173,6 +173,29 @@ whose defect `1 − q_{k-1}⋯q₀` can exceed the unit ball (`‖·‖ ≈ 1.15
 already for two ideal trimmers) — no two-sided trimming exists on a
 one-sided module.
 
+### B11. 169VIII `dils-def-filter` — "filter **for** `b`" is defined weaker than in proc.tex, and 169XI.2 is false as printed
+`dils.tex:6118`.  The Definition says "`c` is a filter for `b ≥ 0` if
+**`c(1) ≤ b`** and every ncp-map `f` with `f(1) ≤ b` factors uniquely through
+`c`", while proc.tex **96I** (`filter`), which the surrounding text says it is
+recalling, asks the universal property for `f(1) ≤ c(1)` and calls `c` a filter
+*for `c(1)`* — so there `c(1) = b` by construction.
+
+The two are genuinely different: `c = ½·id : ℬ → ℬ` satisfies the dils.tex
+condition for `b = 1` (each `f` with `f(1) ≤ 1` factors uniquely, as `2f`)
+while `c(1) = ½`.  Consequently **169XI**.2 — "there is a unique **unital**
+ncp-map `φ'` with `φ = c' ∘ φ'`", for `c'` a filter of `φ(1)` — is false as
+printed: take `φ = id : ℂ → ℂ` and `c' = ½·id`.  Its `bsols.tex` solution uses
+`c'(1) = φ(1)`, i.e. the proc.tex reading.  See ERRATA for the one-character
+fix (`c(1) ≤ b` → `c(1) = b`), which repairs everything; the *derived* notion
+"`c` is a filter" (= a filter for some `b`) is insensitive to the change, so
+purity (**170I**), **169XI**.1 and **169XII** are untouched.
+
+*Decision needed*: our `IsFilterFor` (`B/Dils/Pure.lean`) transcribes
+dils.tex literally and so carries the weak form, which leaves
+`dils_filter_basics_2a` unprovable.  Say whether to change it to `c 1 = b`
+(the proc.tex form) — we have not, under the standing rule that statements are
+not altered without an author's ruling.
+
 ### B5. `IsVNTensor` is too weak for 165III (and, it turns out, 166II) — CLOSED
 *Status 2026-08-15 (worker 66): **all three halves are settled and nothing is
 asked of the authors.*** The **positivity** half is answered (worker 40,

@@ -444,6 +444,173 @@ instance fact_isStarProjection_cceil [VonNeumannAlgebra A] (b : A) :
 
 end CornerSet
 
+/-! ## The scalars in universe `u`
+
+The universal properties of **169II** and **169VIII** quantify their test
+algebra over `Type u`, the universe this chapter's von Neumann algebras live
+in, while `ℂ` sits in `Type 0`.  The cheapest test maps available are the
+ones *out of the scalars*: the ncp-maps `ℂ → A` are exactly `z ↦ z·a` for
+`0 ≤ a ∈ A`, so the uniqueness half of such a universal property becomes an
+injectivity statement about elements of `A` — which is how **169XII** below
+is proved.  The scalars therefore have to be lifted.  Mathlib carries the
+ring, norm, algebra and completeness of `ULift ℂ` but neither its
+∗-structure nor its order; those are supplied here. -/
+
+section Scalars
+
+/-- `ℂ`, lifted into the universe `u` of this chapter's algebras. -/
+abbrev CU : Type u := ULift.{u} ℂ
+
+namespace CU
+
+theorem down_injective : Function.Injective (ULift.down : CU.{u} → ℂ) :=
+  fun a b h => by cases a; cases b; exact congrArg ULift.up h
+
+instance : StarRing CU.{u} where
+  star x := ⟨star x.down⟩
+  star_involutive x := down_injective (star_star x.down)
+  star_mul x y := down_injective (star_mul x.down y.down)
+  star_add x y := down_injective (star_add x.down y.down)
+
+@[simp] theorem down_star (x : CU.{u}) : (star x).down = star x.down := rfl
+@[simp] theorem down_one : (1 : CU.{u}).down = 1 := rfl
+@[simp] theorem down_mul (x y : CU.{u}) : (x * y).down = x.down * y.down := rfl
+@[simp] theorem down_smul (r : ℂ) (x : CU.{u}) : (r • x).down = r * x.down := rfl
+
+instance : StarModule ℂ CU.{u} where
+  star_smul r x := down_injective (star_smul r x.down)
+
+instance : CStarRing CU.{u} where
+  norm_mul_self_le x := CStarRing.norm_mul_self_le (x := x.down)
+
+noncomputable instance : CStarAlgebra CU.{u} where
+
+instance : PartialOrder CU.{u} := PartialOrder.lift ULift.down down_injective
+
+theorem le_def {x y : CU.{u}} : x ≤ y ↔ x.down ≤ y.down := Iff.rfl
+
+instance : StarOrderedRing CU.{u} := by
+  refine StarOrderedRing.of_nonneg_iff' (fun {x y} hxy z => ?_) (fun x => ?_)
+  · exact le_def.mpr (add_le_add (le_refl z.down) (le_def.mp hxy))
+  · constructor
+    · intro hx
+      obtain ⟨s, hs⟩ :=
+        CStarAlgebra.nonneg_iff_eq_star_mul_self.mp (le_def.mp hx)
+      exact ⟨⟨s⟩, down_injective hs⟩
+    · rintro ⟨s, rfl⟩
+      exact le_def.mpr (star_mul_self_nonneg s.down)
+
+theorem isSelfAdjoint_down {x : CU.{u}} (hx : IsSelfAdjoint x) :
+    IsSelfAdjoint x.down :=
+  congrArg ULift.down hx
+
+end CU
+
+variable {A : Type u} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
+
+/-- The linear map `ℂᵤ → A`, `z ↦ z·a`. -/
+private noncomputable def smulLin (a : A) : CU.{u} →ₗ[ℂ] A where
+  toFun z := z.down • a
+  map_add' x y := by simp [add_smul]
+  map_smul' r x := by simp [mul_smul]
+
+omit [PartialOrder A] [StarOrderedRing A] in
+private theorem smulLin_apply (a : A) (z : CU.{u}) : smulLin a z = z.down • a := rfl
+
+/-- Complete positivity of `z ↦ z·a`: `∑ᵢⱼ bᵢ* (cᵢ*cⱼ · a) bⱼ = v* a v` for
+`v = ∑ᵢ cᵢbᵢ`. -/
+private theorem smulLin_cp {a : A} (ha : 0 ≤ a) :
+    IsCompletelyPositiveMap (smulLin (A := A) a) := by
+  intro n c b
+  have h : ∀ i j : Fin n,
+      star (b i) * smulLin a (star (c i) * c j) * b j
+        = star ((c i).down • b i) * a * ((c j).down • b j) := by
+    intro i j
+    simp only [smulLin_apply, CU.down_mul, CU.down_star, star_smul,
+      smul_mul_assoc, mul_smul_comm, smul_smul, mul_comm]
+  simp_rw [h]
+  have hsum : ∑ i, ∑ j, star ((c i).down • b i) * a * ((c j).down • b j)
+      = star (∑ i, (c i).down • b i) * a * (∑ j, (c j).down • b j) := by
+    rw [star_sum, Finset.sum_mul, Finset.sum_mul]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [Finset.mul_sum]
+  rw [hsum]
+  exact star_left_conjugate_nonneg ha _
+
+/-- Transfer of a supremum in `sa(ℂᵤ)` to `ℝ`. -/
+private theorem isLUB_re {D : Set (selfAdjoint CU.{u})} {s : selfAdjoint CU.{u}}
+    (hlub : IsLUB D s) :
+    IsLUB ((fun d : selfAdjoint CU.{u} => ((d : CU.{u}).down).re) '' D)
+      (((s : CU.{u}).down).re) := by
+  constructor
+  · rintro _ ⟨d, hd, rfl⟩
+    exact (Complex.le_def.mp (CU.le_def.mp (Subtype.coe_le_coe.mpr (hlub.1 hd)))).1
+  · intro r hr
+    have hsa : IsSelfAdjoint (⟨((r : ℝ) : ℂ)⟩ : CU.{u}) :=
+      CU.down_injective
+        ((Complex.im_eq_zero_iff_isSelfAdjoint _).mp (Complex.ofReal_im _))
+    have hub : (⟨⟨((r : ℝ) : ℂ)⟩, hsa⟩ : selfAdjoint CU.{u}) ∈ upperBounds D := by
+      intro d hd
+      refine Subtype.coe_le_coe.mp
+        (CU.le_def.mpr (Complex.le_def.mpr ⟨hr ⟨d, hd, rfl⟩, ?_⟩))
+      rw [Complex.ofReal_im, Complex.im_eq_zero_iff_isSelfAdjoint]
+      exact CU.isSelfAdjoint_down d.2
+    exact (Complex.le_def.mp (CU.le_def.mp (Subtype.coe_le_coe.mpr (hlub.2 hub)))).1
+
+/-- Normality of `z ↦ z·a`: the positive cone of `A` is closed, and a
+supremum in `ℝ` lies in the closure of its set. -/
+private theorem smulLin_normal {a : A} (ha : 0 ≤ a) :
+    PreservesDirSups ⇑(smulLin (A := A) a) := by
+  intro D s hne _ hlub
+  have hre := isLUB_re hlub
+  have hmono : ∀ t r : ℝ, t ≤ r → ((t : ℂ)) • a ≤ ((r : ℂ)) • a := by
+    intro t r htr
+    have h : (0 : A) ≤ ((r - t : ℝ) : ℂ) • a := cstar_positive_1 a ha _ (by linarith)
+    have he : ((r - t : ℝ) : ℂ) • a = (r : ℂ) • a - (t : ℂ) • a := by
+      push_cast; rw [sub_smul]
+    rw [he] at h
+    exact sub_nonneg.mp h
+  have hcoe : ∀ d : selfAdjoint CU.{u},
+      (((((d : CU.{u}).down).re : ℝ)) : ℂ) = (d : CU.{u}).down := by
+    intro d
+    have him : ((d : CU.{u}).down).im = 0 :=
+      (Complex.im_eq_zero_iff_isSelfAdjoint _).mpr (CU.isSelfAdjoint_down d.2)
+    apply Complex.ext <;> simp [him]
+  constructor
+  · rintro _ ⟨d, hd, rfl⟩
+    show (d : CU.{u}).down • a ≤ (s : CU.{u}).down • a
+    rw [← hcoe d, ← hcoe s]
+    exact hmono _ _ (hre.1 ⟨d, hd, rfl⟩)
+  · intro u hu
+    show (s : CU.{u}).down • a ≤ u
+    have hclosed : IsClosed {t : ℝ | ((t : ℂ)) • a ≤ u} :=
+      isClosed_Iic.preimage (by fun_prop)
+    have hsub : (fun d : selfAdjoint CU.{u} => ((d : CU.{u}).down).re) '' D
+        ⊆ {t : ℝ | ((t : ℂ)) • a ≤ u} := by
+      rintro _ ⟨d, hd, rfl⟩
+      show ((((d : CU.{u}).down).re : ℝ) : ℂ) • a ≤ u
+      rw [hcoe d]
+      exact hu ⟨d, hd, rfl⟩
+    have hmem := hre.mem_closure (hne.image _)
+    have hfin := hclosed.closure_subset_iff.mpr hsub hmem
+    rw [← hcoe s]
+    exact hfin
+
+/-- Every positive element `a` of a C*-algebra `A` is the value at `1` of an
+ncp-map `ℂᵤ → A`, namely `z ↦ z·a`.  (Conversely every ncp-map `ℂᵤ → A` is
+of this form, by linearity; that direction is not needed here.) -/
+noncomputable def ncpOfNonneg {a : A} (ha : 0 ≤ a) : NCPMap CU.{u} A where
+  toCompletelyPositiveMap :=
+    { toLinearMap := smulLin a
+      map_cstarMatrix_nonneg' :=
+        (cp_iff (smulLin (A := A) a)).out 0 1 |>.mp (smulLin_cp ha) }
+  preservesDirSups' := smulLin_normal ha
+
+@[simp] theorem ncpOfNonneg_apply {a : A} (ha : 0 ≤ a) (z : CU.{u}) :
+    ncpOfNonneg ha z = z.down • a := rfl
+
+end Scalars
+
 /-! ## Parsec 1690: corners and filters
 
 **169I** (dils.tex:6056) and **169VII** (dils.tex:6113): introduction —
@@ -492,7 +659,15 @@ theorem h_is_corner_for_unital_map (φ : NCPMap A B) (hu : φ 1 = 1)
 /-- **169VIII** (`dils-def-filter`, dils.tex:6116, Definition): an ncp-map
 `c : A → B` is a **filter** for `b ∈ B`, `b ≥ 0`, when `c(1) ≤ b` and
 every ncp-map `f : C → B` with `f(1) ≤ b` factors uniquely through `c` (as
-`f = c ∘ f'`). -/
+`f = c ∘ f'`).
+
+⚠️ **`c 1 ≤ b` is what dils.tex says, and it is a defect** (ERRATA;
+QUESTIONS **B11**): proc.tex **96I**, the definition this one says it is
+recalling, asks the universal property for `f(1) ≤ c(1)` and calls `c` a
+filter *for `c(1)`*, i.e. `c 1 = b`.  The two differ — `c = ½·id` is a
+dils.tex-filter for `1` with `c(1) = ½` — and **169XI**.2
+(`dils_filter_basics_2a`) is false under this weaker reading.  `IsFilter`
+below, "a filter for *some* `b`", is insensitive to the difference. -/
 def IsFilterFor (c : NCPMap A B) (b : B) : Prop :=
   0 ≤ b ∧ c 1 ≤ b ∧
   ∀ (C : Type u) (_ : CStarAlgebra C) (_ : PartialOrder C)
@@ -526,7 +701,15 @@ theorem dils_filter_basics_1 {C : Type u} [CStarAlgebra C] [PartialOrder C]
 
 /-- **169XI** (`dils-filter-basics-exercise`, dils.tex:6158, Exercise),
 part 2, first half: for a filter `c' : C' → B` of `φ(1)` there is a unique
-unital ncp-map `φ'` with `φ = c' ∘ φ'`. -/
+unital ncp-map `φ'` with `φ = c' ∘ φ'`.
+
+⚠️ **False as stated**, because `IsFilterFor` transcribes dils.tex's
+`c 1 ≤ b` rather than proc.tex's `c 1 = b` (see the note on `IsFilterFor`,
+and QUESTIONS **B11**): for `A = B = C' = ℂ`, `φ = id` and `c' = ½·id` —
+which is an `IsFilterFor c' (φ 1)` — the unital `φ'` demanded here would need
+`c'(1) = φ(1)`, i.e. `½ = 1`.  Left `sorry` pending the author's ruling; with
+`c 1 = b` the thesis's own two-line argument (`c'(φ'(1)) = φ(1) = c'(1)` and
+injectivity of `c'`, `dils_filters_injective`) closes it. -/
 theorem dils_filter_basics_2a {C' : Type u} [CStarAlgebra C']
     [PartialOrder C'] [StarOrderedRing C'] (φ : NCPMap A B)
     (c' : NCPMap C' B) (hc : IsFilterFor c' (φ 1)) :
@@ -546,10 +729,141 @@ theorem dils_filter_basics_2b {C' : Type u} [CStarAlgebra C']
   sorry
 
 /-- **169XII** (`dils-filters-injective`, dils.tex:6180, Exercise): filters
-are injective. -/
+are injective.
+
+The hint (and the `bsols.tex` solution) route this through the *standard*
+filter `c_b` of **169X**: `c = c_b ∘ ϑ` for an ncp-isomorphism `ϑ`, and `c_b`
+is injective by `mult-cancellation`.  **169X** is still `sorry`, and it is not
+needed: the *uniqueness* half of `c`'s own universal property already gives
+injectivity, tested against the ncp-maps out of the scalars
+(`ncpOfNonneg` above).  For effects `x, y` with `c x = c y`, the map
+`z ↦ z·(c x)` is an ncp-map `ℂᵤ → B` whose value at `1` is `c x ≤ c 1 ≤ b`,
+and both `z ↦ z·x` and `z ↦ z·y` factor it through `c`; so they agree, and
+`x = y`.  Scaling by `(1+‖x‖+‖y‖)⁻¹` extends this to all positive elements,
+and `w = w⁺ − w⁻` together with `c(w*) = (c w)*` to all of `A`. -/
 theorem dils_filters_injective (c : NCPMap A B) (hc : IsFilter c) :
-    Function.Injective ⇑c :=
-  sorry
+    Function.Injective ⇑c := by
+  obtain ⟨b, -, hc1, huniv⟩ := hc
+  set L : A →ₗ[ℂ] B := c.toCompletelyPositiveMap.toLinearMap with hLdef
+  have hLc : ∀ x : A, L x = c x := fun _ => rfl
+  have hcp : IsCompletelyPositiveMap L :=
+    (cp_iff L).out 1 0 |>.mp fun N M hM =>
+      c.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM
+  have hpos : IsPositiveMap L := astara_pos_basic_2_cp L hcp
+  have hmono : ∀ x y : A, x ≤ y → c x ≤ c y := by
+    intro x y hxy
+    have h := hpos (y - x) (sub_nonneg.mpr hxy)
+    rw [map_sub, hLc, hLc] at h
+    exact sub_nonneg.mp h
+  have hsmul : ∀ (z : ℂ) (x : A), c (z • x) = z • c x := by
+    intro z x
+    rw [← hLc, ← hLc, map_smul]
+  -- (1) `c` is injective on the effects
+  have keyEff : ∀ x y : A, 0 ≤ x → x ≤ 1 → 0 ≤ y → y ≤ 1 → c x = c y → x = y := by
+    intro x y hx hx1 hy hy1 hxy
+    have hcx : (0 : B) ≤ c x := by rw [← hLc]; exact hpos x hx
+    have hbnd : (ncpOfNonneg hcx : NCPMap CU.{u} B) 1 ≤ b := by
+      rw [ncpOfNonneg_apply, CU.down_one, one_smul]
+      exact le_trans (hmono x 1 hx1) hc1
+    obtain ⟨g, -, hgu⟩ :=
+      huniv CU.{u} inferInstance inferInstance inferInstance (ncpOfNonneg hcx) hbnd
+    have h1 : ncpOfNonneg hx = ncpOfNonneg hy := by
+      refine (hgu _ ?_).trans (hgu _ ?_).symm
+      · intro z
+        rw [ncpOfNonneg_apply, ncpOfNonneg_apply, hsmul]
+      · intro z
+        rw [ncpOfNonneg_apply, ncpOfNonneg_apply, hsmul, hxy]
+    have hval := congrArg (fun f : NCPMap CU.{u} A => f 1) h1
+    simpa [ncpOfNonneg_apply] using hval
+  -- (2) `c` is injective on the positive cone, by scaling into the effects
+  have keyPos : ∀ x y : A, 0 ≤ x → 0 ≤ y → c x = c y → x = y := by
+    intro x y hx hy hxy
+    set t : ℝ := (1 + ‖x‖ + ‖y‖)⁻¹ with htdef
+    have hden : (0 : ℝ) < 1 + ‖x‖ + ‖y‖ := by
+      have := norm_nonneg x; have := norm_nonneg y; linarith
+    have htpos : 0 < t := by rw [htdef]; exact inv_pos.mpr hden
+    have hshrink : ∀ w : A, 0 ≤ w → ‖w‖ ≤ 1 + ‖x‖ + ‖y‖ → (t : ℂ) • w ≤ 1 := by
+      intro w hw hwn
+      have h1 : w ≤ algebraMap ℂ A ((‖w‖ : ℝ) : ℂ) := by
+        have h := IsSelfAdjoint.le_algebraMap_norm_self (IsSelfAdjoint.of_nonneg hw)
+        rwa [algebraMap_real_eq] at h
+      have h2 : (t : ℂ) • w ≤ (t : ℂ) • algebraMap ℂ A ((‖w‖ : ℝ) : ℂ) := by
+        have h0 : (0 : A) ≤ (t : ℂ) • (algebraMap ℂ A ((‖w‖ : ℝ) : ℂ) - w) :=
+          cstar_positive_1 _ (sub_nonneg.mpr h1) t htpos.le
+        rw [smul_sub] at h0
+        exact sub_nonneg.mp h0
+      have h3 : (t : ℂ) • algebraMap ℂ A ((‖w‖ : ℝ) : ℂ)
+          = algebraMap ℂ A (((t * ‖w‖ : ℝ)) : ℂ) := by
+        rw [Algebra.algebraMap_eq_smul_one, Algebra.algebraMap_eq_smul_one,
+          smul_smul]
+        push_cast
+        ring_nf
+      have h4 : algebraMap ℂ A (((t * ‖w‖ : ℝ)) : ℂ) ≤ (1 : A) := by
+        have hle : t * ‖w‖ ≤ 1 := by
+          rw [htdef]
+          rw [inv_mul_le_iff₀ hden]
+          simpa using hwn
+        have h := algebraMap_ofReal_mono (𝒜 := A) hle
+        rwa [show (((1 : ℝ)) : ℂ) = 1 by norm_num, map_one] at h
+      exact h2.trans (h3 ▸ h4)
+    have htx : (t : ℂ) • x ≤ 1 := by
+      refine hshrink x hx ?_
+      have := norm_nonneg y; linarith
+    have hty : (t : ℂ) • y ≤ 1 := by
+      refine hshrink y hy ?_
+      have := norm_nonneg x; linarith
+    have hstep : (t : ℂ) • x = (t : ℂ) • y :=
+      keyEff _ _ (cstar_positive_1 x hx t htpos.le) htx
+        (cstar_positive_1 y hy t htpos.le) hty
+        (by rw [hsmul, hsmul, hxy])
+    have htne : ((t : ℂ)) ≠ 0 := by exact_mod_cast htpos.ne'
+    exact smul_right_injective A htne hstep
+  -- (3) all of `A`, by `w = w⁺ − w⁻` and the Cartesian decomposition
+  have hstar : ∀ w : A, c (star w) = star (c w) := by
+    intro w
+    have h := cstar_p_implies_i L hpos w
+    rw [hLc, hLc] at h
+    exact h
+  have hsa : ∀ w : A, IsSelfAdjoint w → c w = 0 → w = 0 := by
+    intro w hw hcw
+    have h1 : w⁺ - w⁻ = w := CFC.posPart_sub_negPart w hw
+    have h2 : c (w⁺) = c (w⁻) := by
+      have h : c (w⁺ - w⁻) = 0 := by rw [h1]; exact hcw
+      rw [← hLc, map_sub, hLc, hLc, sub_eq_zero] at h
+      exact h
+    have h3 := keyPos _ _ (CFC.posPart_nonneg w) (CFC.negPart_nonneg w) h2
+    rw [← h1, h3, sub_self]
+  have hzero : ∀ z : A, c z = 0 → z = 0 := by
+    intro z hz
+    have hzs : c (star z) = 0 := by rw [hstar, hz, star_zero]
+    have hadd : ∀ v w : A, c (v + w) = c v + c w := by
+      intro v w
+      rw [← hLc, map_add, hLc, hLc]
+    have hsub : ∀ v w : A, c (v - w) = c v - c w := by
+      intro v w
+      rw [← hLc, map_sub, hLc, hLc]
+    have hu : z + star z = 0 := by
+      refine hsa _ (IsSelfAdjoint.add_star_self z) ?_
+      rw [hadd, hz, hzs, add_zero]
+    have hv : Complex.I • (z - star z) = 0 := by
+      refine hsa _ ?_ ?_
+      · rw [IsSelfAdjoint, star_smul, star_sub, star_star, RCLike.star_def,
+          Complex.conj_I, neg_smul, ← smul_neg, neg_sub]
+      · rw [hsmul, hsub, hz, hzs, sub_zero, smul_zero]
+    have hv' : z - star z = 0 := by
+      have hI : (Complex.I : ℂ) ≠ 0 := Complex.I_ne_zero
+      exact smul_right_injective A hI (by simpa using hv)
+    have : (2 : ℂ) • z = 0 := by
+      have := congrArg₂ (· + ·) hu hv'
+      simp only [add_zero] at this
+      rw [← this]
+      module
+    have h2 : ((2 : ℂ)) ≠ 0 := two_ne_zero
+    exact smul_right_injective A h2 (by simpa using this)
+  intro x y hxy
+  have h : c (x - y) = 0 := by
+    rw [← hLc, map_sub, hLc, hLc, hxy, sub_self]
+  exact sub_eq_zero.mp (hzero _ h)
 
 end CornersFilters
 

@@ -775,10 +775,20 @@ variable {ℬ : Type u}
   [CStarAlgebra ℬ] [PartialOrder ℬ] [StarOrderedRing ℬ]
 
 variable (ℬ) in
-/-- The set `ℓ²((pᵢ)ᵢ)` of ℓ²-summable tuples `(bᵢ)` with
-`⌈bᵢbᵢ*⌉ ≤ pᵢ` (**161II**; mirrored), as a subset of `ι → ℬ`. -/
+/-- The set `ℓ²((pᵢ)ᵢ)` of ℓ²-summable tuples `(bᵢ)` with `⌈bᵢbᵢ*⌉ ≤ pᵢ`
+(**161II**), as a subset of `ι → ℬ`.
+
+**Mirroring.**  The thesis's tuples are the coordinates `⟨eᵢ,x⟩` of the
+*right* module, this file's are the coordinates `⟪eᵢ,x⟫ = ⟨x,eᵢ⟩` of its
+mirror, so the entries are starred relative to the thesis — which is why
+`L2Summable` (`HilbertModules.lean`) renders `∑ᵢ bᵢ*bᵢ` as `∑ᵢ bᵢbᵢ*` and
+the inner product `∑ᵢ bᵢ*cᵢ` as `∑ᵢ cᵢbᵢ*`.  The support condition has to
+be starred with them: `⌈bᵢbᵢ*⌉ ≤ pᵢ` becomes `⌈bᵢ*bᵢ⌉ ≤ pᵢ`.  (It read
+`⌈bᵢbᵢ*⌉ ≤ pᵢ` until 2026-08-16, which made **161II**.2 false: for
+`ℬ = X = M₂` with orthonormal basis `(e₀₀, e₁₁)` the coordinates of
+`x = e₁₀` are `bᵢ = x eᵢᵢ`, and `⌈b₀b₀*⌉ = e₁₁ ≰ e₀₀`.) -/
 def L2Set [VonNeumannAlgebra ℬ] {ι : Type v} (p : ι → ℬ) : Set (ι → ℬ) :=
-  {b | L2Summable ℬ b ∧ ∀ i, ceil (b i * star (b i)) ≤ p i}
+  {b | L2Summable ℬ b ∧ ∀ i, ceil (star (b i) * b i) ≤ p i}
 
 /-- **161II** (`hilbmod-el2`, dils.tex:4602, Exercise), part 1: for
 ℓ²-summable tuples `(bᵢ)`, `(cᵢ)` over a von Neumann algebra the inner
