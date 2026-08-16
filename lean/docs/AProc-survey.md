@@ -1,11 +1,54 @@
-# `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–77, sessions 47–52)
+# `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–78, sessions 47–54)
 
-**Headline count: A/Proc has 84 code `sorry`s** after session 52.
-Per file: `Tensor` **39** (was 43), `Measurement` **11** (was 20),
-`QuantumLambda` 17, `Duplicators` 17.  (`grep -c sorry` over-counts, because the file
+**Headline count: A/Proc has 78 code `sorry`s** after session 54.
+Per file: `Tensor` 39, `Measurement` **11**, `QuantumLambda` 17,
+`Duplicators` **11** (was 17).  (`grep -c sorry` over-counts, because the file
 docstrings mention `sorry` in prose; the code counts are the ones above.
 Note `\bsorry\b` also matches "sorry-ed" in prose — count the compiler's
 `declaration uses \`sorry\`` warnings instead.)
+
+> **Session 54 correction — 112XI IS NOT UNBLOCKED BY 77V, and the whole
+> `Tensor.lean` upper half is still shut.**
+> The row "112XI | blocked on **77V** `vn_extension`" below was wrong, and so
+> was the session-53 A/VN note that inherited it.  77V is now proved, and
+> 112XI is still out of reach: proc.tex:2998 reads "since `β_⊙` is ultraweakly
+> continuous and bounded, and `𝒜⊙ℬ` can **by `tensor-basic`** be considered an
+> ultraweakly dense ∗-subalgebra of `𝒯` via `γ_⊙`, the theorem follows from
+> `vn-extension`" — it cites **112X as well as 77V**, and all five parts of
+> 112X are `sorry`.  Concretely, `vn_extension` wants a map `f : S → 𝒞` on a
+> ∗-subalgebra `S ⊆ 𝒯` that is continuous for the topology **induced from
+> `𝒯`** plus a bound `‖f s‖ ≤ C‖s‖_𝒯`, and building `f` from `β_⊙` needs
+> (i) injectivity of `γ_⊙` (well-definedness; available from 112X.2, or by a
+> separate product-functional separation argument);
+> (ii) `uwTensorTopology ≤ induced(γ_⊙, ultraweak 𝒯)` — equivalently, every
+> norm-limit-of-simple functional on `𝒜⊙ℬ` is the restriction of a normal
+> functional on `𝒯`, which is exactly **112X.5**'s first half, whose own hint
+> is **87III** `predual_complete` (`A/VN/NormalFunctionals.lean:889`,
+> `sorry`).  This is not a Lean artefact: continuity for an *induced* topology
+> is equivalent to extendability of the testing functionals, so no amount of
+> `BilinNormal β` (continuity for the *finer* `uwTensorTopology`) substitutes
+> for it;
+> (iii) the norm bound, which converts `hb`'s tensorNorm bound through
+> **112X.2** `‖γ_⊙ s‖ = ‖s‖`, resting on **90II.2**
+> (`NormalFunctionals.lean:3336`, `sorry`).
+> **So A/Proc's external frontier is now three `sorry`s in one A/VN file,
+> `NormalFunctionals.lean`: 87III `predual_complete`, 90II.2
+> `vn_center_separating_fundamental_2`, and 86IX
+> `polar_decomposition_of_functional` (needed by 112X.4).**  Everything above
+> them — 112X, 112XI, 114I, 114II, 115II, 116VII and the whole
+> functoriality/monoidal block — stays shut.
+> **Closed instead this session, all in `Duplicators.lean` and all following
+> the thesis's own proofs:** **127VI** `unit_duplicator`, **128VIII**
+> `uniqueness_duplicator` (a duplicable von Neumann algebra is commutative and
+> its duplicator is multiplication), **128XI** `duplicability_multiplication`,
+> **127III**-uniqueness `duplicable_unique`, **132III**.1
+> `dup_vna_is_monoid_1` and **132III**.3 `dup_vna_is_monoid_3`.  128VIII cost
+> ~90 lines: **128VI** `sef_instrument` and **128II** `tomiyama` were already
+> proved in the file, and the only new machinery is that the effects span `𝒜`
+> linearly (`mem_span_effects`, `effects_induction`), which is what the
+> thesis's "by the usual reasoning" appeals to.
+> **128XIII** `duplicable_product` is *not* reachable: the thesis builds
+> `π₁ ∘ δ ∘ (κ₁ ⊗ κ₁)`, and `κ₁ ⊗ κ₁` needs `tmap`/`tmapM`, i.e. **115II**.
 
 > **Session 52 update — THE VACUOUS BAND IS OPEN: 111VII and 111XII are
 > proved and axiom-clean.**
@@ -213,8 +256,10 @@ to be `Nonempty.some` of the sorried `vnTensorProduct_nonempty`.
   `hilbTensor` comes from the **proved** `hilbertTensor_nonempty`), **125bII**
   and **125cIII** (`HaFreeMIU` / `MatAlg` / `lp` contain no `VNT`, and the
   `VonNeumannAlgebra (MatAlg n)` instance `Theses.A.VN.mn_vna_1` is proved).
-* `Duplicators.lean` (14): 127III (main equivalence **and** uniqueness), 127VI,
-  128VIII, 128XI, **128XIII**, **129X**, **132III.1**, 132III.2/.3/.4,
+* `Duplicators.lean` (14, of which six are now closed — session 54: 127III
+  uniqueness, 127VI, 128VIII, 128XI, 132III.1, 132III.3): 127III (main
+  equivalence ~~and uniqueness~~), ~~127VI~~,
+  ~~128VIII~~, ~~128XI~~, **128XIII**, **129X**, ~~**132III.1**~~, 132III.2/~~.3~~/.4,
   **132III.5**, 132IV, **132VI** `free_monoid_in_Wcpsu`.  The five in bold were
   previously classified (b) or (a); each carries `Duplicable`/`Duplicator`/`⊗ᵥ`
   in its *type*, hypothesis side included, so none can be axiom-clean before
@@ -262,7 +307,7 @@ to be `Nonempty.some` of the sorried `vnTensorProduct_nonempty`.
 | 112X.3 | `tensor_basic_3` | 112X.2 |
 | 112X.4 | `tensor_basic_4` | 74IV/74VI now **proved**; still needs **86IX** `polar_decomposition_of_functional` (A/VN, `sorry`) |
 | 112X.5 | `tensor_basic_5` | **87III** `predual_complete` (A/VN, `sorry`) |
-| 112XI | `tensor_universal_property` | **77V** `vn_extension` (A/VN, `sorry`) |
+| 112XI | `tensor_universal_property` | ~~77V~~ — **77V is proved (session 53); 112XI is blocked on 112X.2 and 112X.5**, hence on **87III** and **90II.2**.  See the session-54 note at the top |
 | 114I | `tensor_universal_property_extra` | 112XI |
 | 114II | `tensor_uniqueness` | 112XI |
 | 116VII | `tensor_characterization` | 112X + 116IV |

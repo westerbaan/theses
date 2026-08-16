@@ -11557,3 +11557,151 @@ are current (written atomically via a temp file, since another agent's
 `Theses/A/VN/{Completeness,Projections}.lean`, `docs/AVN-survey.md`,
 `ERRATA.md` (one new row, **77VI**), `QUESTIONS.md` (D4 update), this log.
 Nothing staged, nothing committed.
+
+## Session 54 — `A/Proc`: **112XI is not unblocked by 77V** (the brief was wrong), and six of `Duplicators.lean` fall instead (worker 79)
+
+Files touched: `Theses/A/Proc/Duplicators.lean`, `docs/AProc-survey.md`, this
+log.  Nothing staged, nothing committed.  **A/Proc 84 → 78**
+(`Duplicators` 17 → **11**; `Measurement` 11, `Tensor` 39, `QuantumLambda` 17
+unchanged and untouched).  All six new theorems `#print axioms` to exactly
+`[propext, Classical.choice, Quot.sound]`, checked from *inside* the module.
+
+| point | declaration | divergence class |
+|---|---|---|
+| **127VI** | `unit_duplicator` | 0 — the thesis's four-line proof verbatim |
+| **128VIII** | `uniqueness_duplicator` | 0 — the thesis's proof, through the already-proved `sef_instrument` |
+| **127III** uniqueness | `duplicable_unique` | 0 |
+| **128XI** | `duplicability_multiplication` | 0 |
+| **132III**.1 | `dup_vna_is_monoid_1` | 2 — exercise, no published solution (`asols.tex` stops at parsec 340) |
+| **132III**.3 | `dup_vna_is_monoid_3` | 2 — likewise |
+
+### 1. The headline: **112XI `tensor-universal-property` is still blocked, and the blocker is not 77V**
+
+The brief (and the survey row it came from, and session 53's A/VN note) said
+112XI was "blocked on 77V alone", so that closing 77V would open 112XI, 114I,
+114II and 116VII.  **That is wrong.**  proc.tex:2998 reads
+
+> Since `β_⊙` is ultraweakly continuous and bounded, and `𝒜⊙ℬ` can
+> **by \sref{tensor-basic}** be considered an ultraweakly dense ∗-subalgebra
+> of `𝒯` via `γ_⊙`, the theorem follows from \sref{vn-extension} except for
+> some trivial details.
+
+— it cites **112X** (`tensor-basic`) as well as **77V**, and all five parts of
+112X are `sorry`.  Spelled out against our `vn_extension`, which asks for a
+∗-subalgebra `S ⊆ 𝒯`, a map `f : S →ₗ 𝒞` continuous for the topology
+**induced from `𝒯`**, and a bound `‖f s‖ ≤ C‖(s : 𝒯)‖`, building `f` from
+`β_⊙` needs three things the hypotheses of 112XI do not give:
+
+1. **`γ_⊙` injective**, for `f` to be well defined on `S = γ_⊙(𝒜⊙ℬ)`.  This is
+   the cheap one: it is 112X.2's isometry, but it can also be got directly from
+   `IsTensorProduct` (if `γ_⊙ t = 0` then `(σ⊙τ)(t) = 0` for all np `σ,τ`,
+   hence for all normal functionals by the four-term decomposition of **72XI**,
+   and normal functionals separate a finite-dimensional subspace, so the
+   `exists_indep_repr` normal form forces `t = 0`).  Not written, since 2 and 3
+   are not cheap.
+2. **`uwTensorTopology A B ≤ TopologicalSpace.induced ⇑(lift γ) (ultraweak T)`.**
+   `uwTensorTopology` is the initial topology of the norm-limit-of-simple
+   functionals and the induced topology is the initial topology of
+   `{h ∘ γ_⊙ : h ∈ 𝒯_*}`, so this says exactly that **every norm limit of
+   simple functionals extends along `γ_⊙` to a normal functional on `𝒯`** —
+   which is **112X.5**'s first half, and the exercise's own hint for it is
+   "using the fact that the operator norm limit of np-functionals is an
+   np-functional again, see \sref{predual-complete}", i.e. **87III**
+   (`A/VN/NormalFunctionals.lean:889`, `sorry`).
+   This is not a rendering artefact.  `hn : BilinNormal β` gives continuity of
+   `β_⊙` for `uwTensorTopology`, which is the *finer* topology (112X.3 is the
+   inclusion the other way), and continuity for an induced topology is
+   equivalent to extendability of the testing functionals — so no manipulation
+   of `hn`/`hb` substitutes for it.
+3. **The norm bound**, converting `hb`'s `tensorNorm` bound into a `‖·‖_𝒯`
+   bound, i.e. **112X.2** `‖γ_⊙ s‖ = ‖s‖`, which rests on **90II.2**
+   `vn_center_separating_fundamental_2` (`NormalFunctionals.lean:3336`,
+   `sorry`) — 90II.**1** is proved, 90II.2 is the operator-norm density half.
+
+**Consequence for planning: A/Proc's external frontier is now three `sorry`s in
+one A/VN file, `NormalFunctionals.lean` — 87III `predual_complete`, 90II.2, and
+86IX `polar_decomposition_of_functional` (which 112X.4 needs).**  Behind them
+sit 112X (5), 112XI, 114I, 114II, 116VII, 115II and the whole
+functoriality/monoidal block of `Tensor.lean` — well over half the file.
+115II is blocked twice over: proc.tex:3139 takes `f ⊗ g := β_⊗` from
+`tensor-universal-property` *and* extends `ω ∘ β_⊙` by it a second time.
+
+I also checked the two `Tensor.lean` items that looked independent of that
+chain and they are not: **116III**.2 (`‖a ⊗ b‖ = ‖a‖‖b‖`) needs np *states* to
+be norming — the `≤` half is free (`a ⊗ b = (a⊗1)(1⊗b)` with two unital
+∗-homs), but the `≥` half wants `σ(x)τ(y)` close to `‖x‖‖y‖` for np states,
+which is **87VI** `norm_predual` (`sorry`), and **117III**
+`tensor_distributes_over_sums` routes through 116VII.
+
+### 2. `Duplicators.lean`: parsec 1270–1280 closes except the measure theory
+
+The one piece of new machinery is that **the effects span `𝒜` linearly**
+(`mem_span_effects`, with the induction principle `effects_induction`):
+`a = ℜa + i·ℑa`, a self-adjoint element is `a⁺ − a⁻`, and a positive `x` is
+`‖x‖ · (‖x‖⁻¹ • x)` with `‖x‖⁻¹ • x` an effect (`ofReal_smul_nonneg` twice,
+plus `IsSelfAdjoint.le_algebraMap_norm_self`).  This is precisely what the
+thesis waves at twice in 128VIII's proof — "of course, it suffices to show that
+all `p ∈ [0,1]_𝒜` are central (by the usual reasoning)" and "similarly, we only
+need to prove that `δ(a ⊗ p) = a·p` for `p ∈ [0,1]_𝒜`".
+
+* **127VI** is the thesis's proof unchanged; the only Lean content is that
+  `u ⊗ 1 ≤ 1 ⊗ 1` and `u^⊥ ⊗ u ≤ u^⊥ ⊗ 1` come from **116III**.1
+  `tensor_simple_facts_1` (proved last session — the first pay-off of the
+  un-vacuumed band), and that `1 ⊗ 1 = 1` is `IsTensorProduct.miu.1`.
+* **128VIII** is ~90 lines.  For each effect `p` it feeds
+  `f(a,b) = δ(a ⊗ p + b ⊗ p^⊥)` — assembled as
+  `δ ∘ (⊗p ∘ π₀ + ⊗p^⊥ ∘ π₁)` out of `LinearMap.flip (vnTensor A A).map` and
+  `lpEvalₗ` — to **128VI** `sef_instrument`, which was already proved in the
+  file (and rests on the already-proved **128II** `tomiyama`).  Positivity of
+  `f` is `vtmul_nonneg` plus `lp_infty_nonneg_iff`; unitality and `f(a,a) = a`
+  are `a ⊗ p + a ⊗ p^⊥ = a ⊗ 1` and 127VI; and `f(1,0) = δ(1 ⊗ p) = p` is the
+  left unit law.  `sef_instrument` then returns exactly the thesis's two
+  conclusions, `p` central and `f(a,b) = ap + bp^⊥`.
+  One divergence forced by our rendering: `sef_instrument` carries
+  `[Nontrivial A]` (it lives in a section that assumes it), so 128VIII opens
+  with a `subsingleton_or_nontrivial` split the thesis does not have; the
+  trivial algebra is `Subsingleton.elim` twice.
+* **128XI**'s `⇐` is the observation that multiplication *is* a duplicator with
+  unit `1` (subunitality is `δ(1⊗1) = 1·1 = 1`), and `⇒` is 128VIII.
+* **132III**.1 is pure plumbing (`PositiveLinearMap.ofClass` on the ncpsu-map;
+  a monoid asks for strictly more than a duplicator), and **132III**.3 is then
+  a reshuffle: by 128VIII both multiplications are the algebras' own and both
+  units are `1`, so "monoid morphism" and "unital + multiplicative" are the
+  same pair of conditions in the other order.
+
+**One declaration was moved, not changed**: `duplicable_unique` (127III's
+uniqueness clause) was stated at parsec 1270, above `uniqueness_duplicator`,
+which supplies its second conjunct — it is now stated immediately after 128VIII,
+with a pointer left at its old position.  The statement is byte-identical.
+
+What is *not* reachable in this file, with the reason:
+
+* **128XIII** `duplicable_product` — the thesis builds
+  `δ_𝒜 = π₁ ∘ δ ∘ (κ₁ ⊗ κ₁)`, and `κ₁ ⊗ κ₁` is `tmap`/`tmapM`, i.e. **115II**.
+* **132III**.2 contains 127III's main equivalence as one of its four conjuncts,
+  and 127III needs the measure-theoretic chain 129X/130IV/130V plus `cvn`.
+* **132III**.4's first conjunct quantifies over `braiding A A`, which is chosen
+  from the still-`sorry`ed `exists_braiding`, so nothing about it can be
+  computed; **132III**.5 needs 127III.
+* **129X** needs the product functional `ω ⊗ ω` and `carrier-tensor`
+  faithfulness (118IV), both behind 115II.
+
+### 3. Nothing false found
+
+Every step of the thesis's arguments for 127VI, 128VIII, 128XI and 132III.1/.3
+checked out; no ERRATA or QUESTIONS rows were added or changed this session.
+The one factual correction is to *our* survey (the 112XI row), recorded in §1
+and at the top of `docs/AProc-survey.md`.
+
+### 4. Verification
+
+`lean Theses/A/Proc/Duplicators.lean` under the `LEAN_PATH` bypass: **0 errors,
+11 `declaration uses 'sorry'` warnings** (was 17), no new warning of any kind;
+`Measurement.lean` recompiled unchanged at 11.  `Tensor.lean` and
+`QuantumLambda.lean` were not touched (39 and 17 from session 52's compiler
+count); a confirming recompile of `QuantumLambda` was not possible because
+`A/VN/Projections.olean` was missing at the time — another agent was rebuilding
+A/VN.  `#print axioms` was run by appending the commands to a *copy* of the
+module and compiling that, never from an importing scratch file.  The olean for
+`Theses.A.Proc.Duplicators` is left built and current (written via `lean -o` to
+the scratchpad and copied in).

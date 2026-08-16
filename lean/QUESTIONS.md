@@ -133,22 +133,7 @@ requires.  Harmless; noted for tidiness.
 
 ---
 
-## Ours to decide, not the authors' — but it changes four statements
-
-### D1. `IsLinftyOf` omits `ℂ`-linearity of `q`
-`Theses/A/Proc/QuantumLambda.lean`.  Our predicate requires `q` to be a
-`∗`-ring map but never `q (z • f) = z • q f`.  Without that, the thesis's
-argument "every `f` is a.e. constant, hence `L^∞ ≅ ℂ`" does **not** produce an
-nmiu-map: a `∗`-ring isomorphism `ℂ → 𝒜` can be *conjugate*-linear, so the
-conclusion genuinely does not follow from the hypotheses as we stated them.
-
-130II was proved anyway, by routing through Gelfand–Mazur instead — so nothing
-is currently blocked on this.  But the rendering is weaker than intended.
-
-*Decision needed (Bas, not the authors — this is our transcription, not a
-thesis defect)*: add `q (z • f) = z • q f` to `IsLinftyOf`?  It is the right
-fix, but it touches **four statements at once**, which is why it was not done
-unilaterally.
+## Ours to decide, not the authors'
 
 ### D5. 170IV `surjective_nmiu_1`/`_2` drop the thesis's "between von Neumann algebras"
 `Theses/B/Dils/Pure.lean:1126` and `:1134`.  The exercise (dils.tex:6223)

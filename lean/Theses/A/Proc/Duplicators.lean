@@ -42,6 +42,62 @@ variable {A B C : Type u}
   [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
   [CStarAlgebra C] [PartialOrder C] [StarOrderedRing C]
 
+/-! ### Auxiliary: the effects span `𝒜`
+
+Both **128VIII** and the "usual reasoning" it appeals to ("it suffices to show
+that all `p ∈ [0,1]_𝒜` are central") need that the effects span `𝒜` linearly:
+`a = ℜa + i·ℑa`, a self-adjoint element is `a⁺ − a⁻` (`CFC.posPart_sub_negPart`)
+and a positive element is `‖a‖` times an effect. -/
+
+section Effects
+
+private theorem mem_span_effects (a : A) : a ∈ Submodule.span ℂ (effects A) := by
+  have hpos : ∀ x : A, 0 ≤ x → x ∈ Submodule.span ℂ (effects A) := by
+    intro x hx
+    rcases eq_or_lt_of_le (norm_nonneg x) with h0 | h0
+    · have hx0 : x = 0 := by rw [← norm_eq_zero]; exact h0.symm
+      rw [hx0]
+      exact Submodule.zero_mem _
+    · have hxle : x ≤ algebraMap ℂ A ((‖x‖ : ℝ) : ℂ) := by
+        rw [← Theses.A.CStar.algebraMap_real_eq]
+        exact (IsSelfAdjoint.of_nonneg hx).le_algebraMap_norm_self
+      have hp : (((‖x‖⁻¹ : ℝ) : ℂ) • x) ∈ effects A := by
+        refine Set.mem_Icc.mpr ⟨Theses.A.CStar.ofReal_smul_nonneg hx (by positivity), ?_⟩
+        rw [← sub_nonneg]
+        have hrw : (1 : A) - ((‖x‖⁻¹ : ℝ) : ℂ) • x
+            = ((‖x‖⁻¹ : ℝ) : ℂ) • (algebraMap ℂ A ((‖x‖ : ℝ) : ℂ) - x) := by
+          rw [smul_sub, Algebra.algebraMap_eq_smul_one, smul_smul, ← Complex.ofReal_mul,
+            inv_mul_cancel₀ h0.ne', Complex.ofReal_one, one_smul]
+        rw [hrw]
+        exact Theses.A.CStar.ofReal_smul_nonneg (sub_nonneg.mpr hxle) (by positivity)
+      have hx' : x = ((‖x‖ : ℝ) : ℂ) • (((‖x‖⁻¹ : ℝ) : ℂ) • x) := by
+        rw [smul_smul, ← Complex.ofReal_mul, mul_inv_cancel₀ h0.ne', Complex.ofReal_one,
+          one_smul]
+      rw [hx']
+      exact Submodule.smul_mem _ _ (Submodule.subset_span hp)
+  have hsa : ∀ x : A, IsSelfAdjoint x → x ∈ Submodule.span ℂ (effects A) := by
+    intro x hx
+    rw [← CFC.posPart_sub_negPart x hx]
+    exact Submodule.sub_mem _ (hpos _ (CFC.posPart_nonneg x)) (hpos _ (CFC.negPart_nonneg x))
+  rw [← realPart_add_I_smul_imaginaryPart a]
+  exact Submodule.add_mem _ (hsa _ (realPart a).property)
+    (Submodule.smul_mem _ _ (hsa _ (imaginaryPart a).property))
+
+/-- Induction principle: a property of elements of `𝒜` that holds on the
+effects and is closed under `0`, `+` and scalars holds everywhere. -/
+private theorem effects_induction {P : A → Prop} (h0 : P 0)
+    (hadd : ∀ x y : A, P x → P y → P (x + y))
+    (hsmul : ∀ (c : ℂ) (x : A), P x → P (c • x))
+    (heff : ∀ p ∈ effects A, P p) (a : A) : P a := by
+  have ha := mem_span_effects a
+  induction ha using Submodule.span_induction with
+  | mem u hu => exact heff u hu
+  | zero => exact h0
+  | add u v _ _ hu hv => exact hadd u v hu hv
+  | smul c u _ hu => exact hsmul c u hu
+
+end Effects
+
 /-! ## Parsec 1270: duplicators -/
 
 variable (A) in
@@ -72,15 +128,41 @@ theorem duplicable [VonNeumannAlgebra A] :
       ∃ (X : Type u) (φ : NMIUMap A (linf X)), Function.Bijective ⇑φ :=
   sorry
 
-/-- **127III** (`duplicable`, proc.tex:5881, Theorem), uniqueness: in that
-case the duplicator is unique, given by `δ(a ⊗ b) = a·b` and `u = 1`. -/
-theorem duplicable_unique [VonNeumannAlgebra A] (d : Duplicator A) :
-    d.unit = 1 ∧ ∀ a b : A, d.δ (a ⊗ᵥ b) = a * b := sorry
+/-! **127III** (`duplicable`, proc.tex:5881, Theorem), uniqueness, is
+`duplicable_unique` below — it is stated after **128VIII**
+`uniqueness_duplicator`, which supplies its second conjunct. -/
 
 /-- **127VI** (`lem:unit-duplicator`, proc.tex:5925, Lemma): the unit of a
 duplicator is `1`, and `δ(1 ⊗ 1) = 1`. -/
 theorem unit_duplicator [VonNeumannAlgebra A] (d : Duplicator A) :
-    d.unit = 1 ∧ d.δ ((1 : A) ⊗ᵥ (1 : A)) = 1 := sorry
+    d.unit = 1 ∧ d.δ ((1 : A) ⊗ᵥ (1 : A)) = 1 := by
+  -- The thesis's proof (proc.tex:5932) verbatim.
+  obtain ⟨hu0, hu1⟩ := Set.mem_Icc.mp d.unit_mem
+  have hone : ((1 : A) ⊗ᵥ (1 : A)) = (1 : VNT A A) :=
+    (vnTensor A A).isTensorProduct.miu.1
+  -- `1 = δ(u ⊗ 1) ≤ δ(1 ⊗ 1) ≤ 1`, so `δ(1 ⊗ 1) = 1`.
+  have h1 : d.δ (d.unit ⊗ᵥ (1 : A)) = 1 := d.left_unit 1
+  have hmono : d.δ (d.unit ⊗ᵥ (1 : A)) ≤ d.δ ((1 : A) ⊗ᵥ (1 : A)) :=
+    OrderHomClass.mono d.δ
+      ((tensor_simple_facts_1 d.unit (1 : A) hu0 zero_le_one).2 1 1 hu1 le_rfl)
+  have hsub : d.δ ((1 : A) ⊗ᵥ (1 : A)) ≤ 1 := by rw [hone]; exact d.subunital
+  have hδ11 : d.δ ((1 : A) ⊗ᵥ (1 : A)) = 1 :=
+    le_antisymm hsub (le_trans (le_of_eq h1.symm) hmono)
+  -- Hence `δ(u^⊥ ⊗ 1) = 0`.
+  have hbil : ((1 - d.unit) ⊗ᵥ (1 : A))
+      = ((1 : A) ⊗ᵥ (1 : A)) - (d.unit ⊗ᵥ (1 : A)) := by
+    show (vnTensor A A).map (1 - d.unit) 1 = _
+    rw [map_sub]; rfl
+  have hcompl : d.δ ((1 - d.unit) ⊗ᵥ (1 : A)) = 0 := by
+    rw [hbil, map_sub, hδ11, h1, sub_self]
+  -- But `u^⊥ = δ(u^⊥ ⊗ u) ≤ δ(u^⊥ ⊗ 1) = 0`, so `u^⊥ = 0`.
+  have hu0' : (0 : A) ≤ 1 - d.unit := sub_nonneg.mpr hu1
+  have hru : d.δ ((1 - d.unit) ⊗ᵥ d.unit) = 1 - d.unit := d.right_unit _
+  have hle : d.δ ((1 - d.unit) ⊗ᵥ d.unit) ≤ d.δ ((1 - d.unit) ⊗ᵥ (1 : A)) :=
+    OrderHomClass.mono d.δ
+      ((tensor_simple_facts_1 (1 - d.unit) d.unit hu0' hu0).2 (1 - d.unit) 1 le_rfl hu1)
+  have hle0 : (1 : A) - d.unit ≤ 0 := by rw [← hru, ← hcompl]; exact hle
+  exact ⟨(sub_eq_zero.mp (le_antisymm hle0 hu0')).symm, hδ11⟩
 
 /-! ## Parsec 1280: Tomiyama's theorem and commutativity -/
 
@@ -439,7 +521,102 @@ end Pairs
 von Neumann algebra with a duplicator `δ` is commutative, and
 `δ(a ⊗ b) = a·b`. -/
 theorem uniqueness_duplicator [VonNeumannAlgebra A] (d : Duplicator A) :
-    (∀ a b : A, a * b = b * a) ∧ ∀ a b : A, d.δ (a ⊗ᵥ b) = a * b := sorry
+    (∀ a b : A, a * b = b * a) ∧ ∀ a b : A, d.δ (a ⊗ᵥ b) = a * b := by
+  -- The thesis's proof (proc.tex:6067) verbatim, through **128VI**
+  -- `sef_instrument`.  (`sef_instrument` needs `Nontrivial`; the trivial
+  -- algebra is handled separately.)
+  rcases subsingleton_or_nontrivial A with hsub | hnt
+  · haveI := hsub
+    exact ⟨fun _ _ => Subsingleton.elim _ _, fun _ _ => Subsingleton.elim _ _⟩
+  haveI := hnt
+  have hunit : d.unit = 1 := (unit_duplicator d).1
+  have hleft : ∀ a : A, d.δ ((1 : A) ⊗ᵥ a) = a := fun a => by
+    rw [← hunit]; exact d.left_unit a
+  have hright : ∀ a : A, d.δ (a ⊗ᵥ (1 : A)) = a := fun a => by
+    rw [← hunit]; exact d.right_unit a
+  have hzeroL : ∀ b : A, ((0 : A) ⊗ᵥ b) = 0 := by
+    intro b
+    show (vnTensor A A).map 0 b = 0
+    rw [map_zero]; rfl
+  -- For each effect `p`, apply **128VI** to `f(a,b) := δ(a ⊗ p + b ⊗ p^⊥)`.
+  have key : ∀ p ∈ effects A,
+      (∀ m : A, m * p = p * m) ∧ ∀ a : A, d.δ (a ⊗ᵥ p) = a * p := by
+    intro p hp
+    obtain ⟨hp0, hp1⟩ := Set.mem_Icc.mp hp
+    have hp0' : (0 : A) ≤ 1 - p := sub_nonneg.mpr hp1
+    set L : lp (fun _ : Fin 2 => A) ∞ →ₗ[ℂ] VNT A A :=
+      (LinearMap.flip (vnTensor A A).map p).comp (lpEvalₗ (fun _ : Fin 2 => A) 0) +
+        (LinearMap.flip (vnTensor A A).map (1 - p)).comp
+          (lpEvalₗ (fun _ : Fin 2 => A) 1) with hLdef
+    set f : lp (fun _ : Fin 2 => A) ∞ →ₗ[ℂ] A := d.δ.toLinearMap.comp L with hfdef
+    have hfapp : ∀ x : lp (fun _ : Fin 2 => A) ∞,
+        f x = d.δ (((x : ∀ _ : Fin 2, A) 0) ⊗ᵥ p +
+          ((x : ∀ _ : Fin 2, A) 1) ⊗ᵥ (1 - p)) := fun _ => rfl
+    have hfpair : ∀ a b : A, f (pairLp a b) = d.δ (a ⊗ᵥ p + b ⊗ᵥ (1 - p)) := by
+      intro a b
+      rw [hfapp, pairLp_apply_zero, pairLp_apply_one]
+    -- `a ⊗ p + a ⊗ p^⊥ = a ⊗ 1`
+    have hbil : ∀ a : A, (a ⊗ᵥ p) + (a ⊗ᵥ (1 - p)) = a ⊗ᵥ (1 : A) := by
+      intro a
+      show (vnTensor A A).map a p + (vnTensor A A).map a (1 - p)
+        = (vnTensor A A).map a 1
+      rw [← map_add]
+      congr 1
+      abel
+    have hpos : ∀ x : lp (fun _ : Fin 2 => A) ∞, 0 ≤ x → 0 ≤ f x := by
+      intro x hx
+      rw [hfapp]
+      exact d.δ.map_nonneg (add_nonneg
+        (vtmul_nonneg _ _ ((lp_infty_nonneg_iff x).mp hx 0) hp0)
+        (vtmul_nonneg _ _ ((lp_infty_nonneg_iff x).mp hx 1) hp0'))
+    have hu : f 1 = 1 := by
+      have h0 : ((1 : lp (fun _ : Fin 2 => A) ∞) : ∀ _ : Fin 2, A) 0 = 1 := by
+        rw [lp.infty_coeFn_one]; rfl
+      have h1 : ((1 : lp (fun _ : Fin 2 => A) ∞) : ∀ _ : Fin 2, A) 1 = 1 := by
+        rw [lp.infty_coeFn_one]; rfl
+      rw [hfapp, h0, h1, hbil]
+      exact hright 1
+    have hdiag : ∀ a : A, f (pairLp a a) = a := by
+      intro a; rw [hfpair, hbil]; exact hright a
+    have hf10 : f (pairLp (1 : A) 0) = p := by
+      rw [hfpair, hzeroL, add_zero]; exact hleft p
+    obtain ⟨hcentre, hform⟩ := sef_instrument f hpos hu hdiag
+    rw [hf10] at hcentre hform
+    refine ⟨fun m => hcentre m (Set.mem_univ m), fun a => ?_⟩
+    have h := hform a 0
+    rw [hfpair, hzeroL, add_zero, zero_mul, add_zero] at h
+    exact h
+  refine ⟨fun a b => ?_, fun a b => ?_⟩
+  · -- commutativity: both sides are linear in `b` and agree on the effects
+    refine effects_induction (P := fun b => a * b = b * a) (by simp) ?_ ?_ ?_ b
+    · intro x y hx hy; rw [mul_add, hx, hy, add_mul]
+    · intro c x hx; rw [mul_smul_comm, hx, smul_mul_assoc]
+    · intro q hq; exact (key q hq).1 a
+  · -- `δ(a ⊗ b) = a·b`: likewise linear in `b`
+    refine effects_induction (P := fun b => d.δ (a ⊗ᵥ b) = a * b) ?_ ?_ ?_ ?_ b
+    · have hz : (a ⊗ᵥ (0 : A)) = 0 := by
+        show (vnTensor A A).map a 0 = 0
+        rw [map_zero]
+      rw [hz, map_zero, mul_zero]
+    · intro x y hx hy
+      have ha : (a ⊗ᵥ (x + y)) = (a ⊗ᵥ x) + (a ⊗ᵥ y) := by
+        show (vnTensor A A).map a (x + y) = _
+        rw [map_add]; rfl
+      rw [ha, map_add, hx, hy, mul_add]
+    · intro c x hx
+      have hs : (a ⊗ᵥ (c • x)) = c • (a ⊗ᵥ x) := by
+        show (vnTensor A A).map a (c • x) = _
+        rw [map_smul]; rfl
+      rw [hs, map_smul, hx, mul_smul_comm]
+    · intro q hq; exact (key q hq).2 a
+
+/-- **127III** (`duplicable`, proc.tex:5881, Theorem), uniqueness: in that
+case the duplicator is unique, given by `δ(a ⊗ b) = a·b` and `u = 1`.
+(Stated here rather than at parsec 1270 because its second conjunct is
+**128VIII**.) -/
+theorem duplicable_unique [VonNeumannAlgebra A] (d : Duplicator A) :
+    d.unit = 1 ∧ ∀ a b : A, d.δ (a ⊗ᵥ b) = a * b :=
+  ⟨(unit_duplicator d).1, (uniqueness_duplicator d).2⟩
 
 /-- **128XI** (`cor:duplicability-multiplication`, proc.tex:6109,
 Corollary): `𝒜` is duplicable iff there is an np-map
@@ -449,7 +626,25 @@ theorem duplicability_multiplication [VonNeumannAlgebra A] :
     (Duplicable A ↔
       ∃ δ : VNT A A →ₚ[ℂ] A, PreservesDirSups ⇑δ ∧
         ∀ a b : A, δ (a ⊗ᵥ b) = a * b) ∧
-    (Duplicable A → ∀ a b : A, a * b = b * a) := sorry
+    (Duplicable A → ∀ a b : A, a * b = b * a) := by
+  have hone : ((1 : A) ⊗ᵥ (1 : A)) = (1 : VNT A A) :=
+    (vnTensor A A).isTensorProduct.miu.1
+  refine ⟨⟨?_, ?_⟩, ?_⟩
+  · -- a duplicator is multiplication, by **128VIII**
+    rintro ⟨d⟩
+    exact ⟨d.δ, d.normal, (uniqueness_duplicator d).2⟩
+  · -- conversely, multiplication is a duplicator with unit `1`
+    rintro ⟨δ, hnormal, hmul⟩
+    have hδone : δ (1 : VNT A A) = 1 := by rw [← hone, hmul, one_mul]
+    exact ⟨{ δ := δ
+             normal := hnormal
+             subunital := hδone.le
+             unit := 1
+             unit_mem := Set.mem_Icc.mpr ⟨zero_le_one, le_rfl⟩
+             left_unit := fun a => by rw [hmul, one_mul]
+             right_unit := fun a => by rw [hmul, mul_one] }⟩
+  · rintro ⟨d⟩
+    exact (uniqueness_duplicator d).1
 
 /-- **128XIII** (`cor:duplicable-product`, proc.tex:6128, Corollary): when
 a direct sum of von Neumann algebras is duplicable, so is each summand.
@@ -708,11 +903,26 @@ theorem continuous_measure_space [IsFiniteMeasure μ] (hμ : μ.IsComplete)
 variable (𝒜 : Type u) [CStarAlgebra 𝒜] [PartialOrder 𝒜]
   [StarOrderedRing 𝒜] in
 /-- The Prop "`𝒜` is (a copy of) `L^∞(X, μ)` via the quotient map `q`"
-(mirroring the rendering of vn.tex 51IX, `Linfty_vn`). -/
+(mirroring the rendering of vn.tex 51IX, `Linfty_vn`).
+
+This predicate is ours: 51IX itself only says that `L^∞(X)` is a commutative
+von Neumann algebra with `∫` faithful normal positive, so there is no source
+statement to transcribe here and the fields were assembled to say "`q`
+presents `𝒜` as `L^∞(X, μ)`".
+
+`smul` was added on 2026-08-16 (QUESTIONS D1, ruled by Bas).  Without it the
+fields make `q` only a `∗`-*ring* map, and the intended reading of the
+consumers — "every `f` is a.e. constant, hence `L^∞ ≅ ℂ`, hence an nmiu-map"
+— does not follow: a `∗`-ring isomorphism `ℂ → 𝒜` need not be `ℂ`-linear, as
+complex conjugation shows.  **130II** `atomic_measure_space` was proved before
+the fix by routing through Gelfand–Mazur (**16VII**) instead, so it does not
+depend on `smul`; the other three consumers (**129X**, **130IV**, **130V**)
+were still `sorry` when the field was added. -/
 structure IsLinftyOf (q : (X → ℂ) → 𝒜) : Prop where
   surj : ∀ y : 𝒜, ∃ f, IsBoundedMeasurable X f ∧ q f = y
   add : ∀ f g, IsBoundedMeasurable X f → IsBoundedMeasurable X g →
     q (f + g) = q f + q g
+  smul : ∀ (z : ℂ) f, IsBoundedMeasurable X f → q (z • f) = z • q f
   mul : ∀ f g, IsBoundedMeasurable X f → IsBoundedMeasurable X g →
     q (f * g) = q f * q g
   star_map : ∀ f, IsBoundedMeasurable X f → q (star f) = star (q f)
@@ -1075,7 +1285,32 @@ structure MonoidInWmiu [VonNeumannAlgebra A] : Type u where
 /-- **132III** (`prop:dup-vna-is-monoid`, proc.tex:6677, Exercise),
 part 1: any monoid structure on `𝒜` in `W*_cpsu` is a duplicator. -/
 theorem dup_vna_is_monoid_1 [VonNeumannAlgebra A] (M : MonoidInWcpsu A) :
-    Duplicable A := sorry
+    Duplicable A :=
+  -- A monoid in `W*_cpsu` is a duplicator on the nose: an ncpsu-map is in
+  -- particular a positive, normal, subunital map, and the unit laws are the
+  -- monoid's own (associativity and commutativity are not required of a
+  -- duplicator).
+  ⟨{ δ := PositiveLinearMap.ofClass M.m.toNCPMap.toCompletelyPositiveMap
+     normal := M.m.toNCPMap.preservesDirSups'
+     subunital := M.m.subunital'
+     unit := M.e
+     unit_mem := M.e_mem
+     left_unit := M.left_unit
+     right_unit := M.right_unit }⟩
+
+/-- The multiplication of a monoid in `W*_cpsu` is the algebra's own, and its
+unit is `1` — **128VIII** applied to the duplicator of `dup_vna_is_monoid_1`. -/
+private theorem monoid_e_and_mul [VonNeumannAlgebra A] (M : MonoidInWcpsu A) :
+    M.e = 1 ∧ ∀ a b : A, M.m.toNCPMap (a ⊗ᵥ b) = a * b := by
+  set d : Duplicator A :=
+    { δ := PositiveLinearMap.ofClass M.m.toNCPMap.toCompletelyPositiveMap
+      normal := M.m.toNCPMap.preservesDirSups'
+      subunital := M.m.subunital'
+      unit := M.e
+      unit_mem := M.e_mem
+      left_unit := M.left_unit
+      right_unit := M.right_unit } with hd
+  exact ⟨(unit_duplicator d).1, (uniqueness_duplicator d).2⟩
 
 /-- **132III** (`prop:dup-vna-is-monoid`, proc.tex:6677, Exercise),
 part 2: there is a monoid structure on `𝒜` in `W*_miu` or `W*_cpsu` iff
@@ -1098,8 +1333,20 @@ theorem dup_vna_is_monoid_3 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
         M₂.m.toNCPMap (f.toNCPMap a ⊗ᵥ f.toNCPMap b)) ∧
       f.toNCPMap M₁.e = M₂.e) ↔
       (f.toNCPMap 1 = 1 ∧
-        ∀ a b : A, f.toNCPMap (a * b) = f.toNCPMap a * f.toNCPMap b) :=
-  sorry
+        ∀ a b : A, f.toNCPMap (a * b) = f.toNCPMap a * f.toNCPMap b) := by
+  -- By 128VIII both multiplications are the algebras' own and both units are
+  -- `1`, so the two sides say the same thing.
+  obtain ⟨he₁, hm₁⟩ := monoid_e_and_mul M₁
+  obtain ⟨he₂, hm₂⟩ := monoid_e_and_mul M₂
+  constructor
+  · rintro ⟨hmul, hunit⟩
+    refine ⟨by rw [← he₁, hunit, he₂], fun a b => ?_⟩
+    have h := hmul a b
+    rwa [hm₁, hm₂] at h
+  · rintro ⟨hunit, hmul⟩
+    refine ⟨fun a b => ?_, by rw [he₁, hunit, he₂]⟩
+    rw [hm₁, hm₂]
+    exact hmul a b
 
 /-- **132III** (`prop:dup-vna-is-monoid`, proc.tex:6677, Exercise),
 part 4: `CMon(W*_miu) = Mon(W*_miu) = CMon(W*_cpsu) = Mon(W*_cpsu)` —
