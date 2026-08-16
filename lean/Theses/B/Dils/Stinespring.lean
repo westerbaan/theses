@@ -684,6 +684,450 @@ theorem tensorCLM_mk (a : H →L[ℂ] H) (b : K →L[ℂ] K) (x : H) (y : K) :
 
 end HilbTensor
 
+/-! ### Auxiliary development for 138II
+
+The thesis proves **138II** (dils.tex 138III–138V) by building an orthonormal
+basis `rᵢⱼ = ϱ(uᵢ*) dⱼ` of `𝒦` out of an orthonormal basis `(eᵢ)` of `ℋ`, an
+orthonormal basis `(dⱼ)` of `𝒦' = ϱ(p_{i₀})𝒦` and the partial isometries
+`uᵢ = |e_{i₀}⟩⟨eᵢ|`, and reading the unitary `U` off it.  What follows is the
+same construction in coordinate-free form: the map `W(x ⊗ d) = ϱ(|x⟩⟨e₀|) d`,
+for one unit vector `e₀` (the thesis's `e_{i₀}`), satisfies `W(eᵢ ⊗ dⱼ) = rᵢⱼ`.
+That `W` is isometric *is* the thesis's orthonormality computation, and the
+intertwining relation `W ∘ (a ⊗ 1) = ϱ(a) ∘ W`, immediate from
+`a·|x⟩⟨e₀| = |a x⟩⟨e₀|`, replaces the ultrastrongly convergent expansion of
+`|a eᵢ⟩⟨e_{i₀}|` in 138V.  A basis of `ℋ` is still needed, but only for the
+surjectivity of `W`, which is where the thesis's `∑ᵢⱼ |rᵢⱼ⟩⟨rᵢⱼ| = 1` and the
+normality of `ϱ` are used.  See PROVING-LOG.md. -/
+
+section KetbraAux
+
+
+variable {H : Type u} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+
+/-- `|x⟩⟨y| z = ⟪y, z⟫ x` (**4XIX**.1). -/
+theorem ketbra_apply' (x y z : H) : ketbra x y z = ⟪y, z⟫ • x := rfl
+
+/-- `(|x⟩⟨y|)* = |y⟩⟨x|` (**4XIX**.2, in `star` form). -/
+theorem ketbra_star (x y : H) : star (ketbra x y) = ketbra y x := by
+  rw [ContinuousLinearMap.star_eq_adjoint]
+  refine ((ContinuousLinearMap.eq_adjoint_iff _ _).mpr ?_).symm
+  intro u v
+  simp only [ketbra_apply', inner_smul_left, inner_smul_right, inner_conj_symm]
+  ring
+
+/-- `|a⟩⟨b| · |c⟩⟨d| = ⟪b,c⟫ |a⟩⟨d|`. -/
+theorem ketbra_mul (a b c d : H) : ketbra a b * ketbra c d = ⟪b, c⟫ • ketbra a d := by
+  ext z
+  show ketbra a b (ketbra c d z) = _
+  simp only [ketbra_apply', ContinuousLinearMap.smul_apply, smul_smul, inner_smul_right]
+  ring_nf
+
+/-- `|x⟩⟨y| · a = |x⟩⟨a* y|`. -/
+theorem ketbra_mul_op (a : H →L[ℂ] H) (x y : H) :
+    ketbra x y * a = ketbra x (ContinuousLinearMap.adjoint a y) := by
+  ext z
+  show ⟪y, a z⟫ • x = ⟪ContinuousLinearMap.adjoint a y, z⟫ • x
+  rw [ContinuousLinearMap.adjoint_inner_left]
+
+/-- `a · |x⟩⟨y| = |a x⟩⟨y|`. -/
+theorem mul_ketbra (a : H →L[ℂ] H) (x y : H) : a * ketbra x y = ketbra (a x) y := by
+  ext z
+  show a (⟪y, z⟫ • x) = ⟪y, z⟫ • a x
+  rw [map_smul]
+
+/-- `|x⟩⟨x|` is a projection when `x` is a unit vector. -/
+theorem isStarProjection_ketbra {x : H} (hx : ‖x‖ = 1) : IsStarProjection (ketbra x x) := by
+  refine ⟨?_, ?_⟩
+  · show ketbra x x * ketbra x x = ketbra x x
+    rw [ketbra_mul, inner_self_eq_norm_sq_to_K, hx]
+    simp
+  · exact ketbra_star x x
+
+/-- The rank-one projections of an orthonormal family are pairwise orthogonal. -/
+theorem ketbra_orth {ι : Type*} {v : ι → H} (hv : Orthonormal ℂ v) {i j : ι} (hij : i ≠ j) :
+    ketbra (v i) (v i) * ketbra (v j) (v j) = 0 := by
+  rw [ketbra_mul, hv.2 hij]
+  simp
+
+/-- For a Hilbert basis `b`, the partial sums `∑_{i∈F} |bᵢ⟩⟨bᵢ|` have supremum `1`
+in the self-adjoint part of `B(H)` — the statement of normality needs. -/
+theorem isLUB_hilbertBasis_partialSums {ι : Type u} (b : HilbertBasis ι ℂ H) :
+    ∀ (hsa : ∀ F : Finset ι, IsSelfAdjoint (∑ i ∈ F, ketbra (b i) (b i))),
+    IsLUB (Set.range fun F : Finset ι =>
+      (⟨∑ i ∈ F, ketbra (b i) (b i), hsa F⟩ : selfAdjoint (H →L[ℂ] H))) 1 := by
+  intro hsa
+  have hproj : ∀ F : Finset ι, IsStarProjection (∑ i ∈ F, ketbra (b i) (b i)) := fun F =>
+    isStarProjection_sum F _ (fun i => isStarProjection_ketbra (b.orthonormal.1 i))
+      (fun i _ j _ hij => ketbra_orth b.orthonormal hij)
+  constructor
+  · rintro _ ⟨F, rfl⟩
+    exact (hproj F).le_one
+  · rintro t ht
+    show (1 : H →L[ℂ] H) ≤ (t : H →L[ℂ] H)
+    rw [ContinuousLinearMap.le_def, ContinuousLinearMap.isPositive_iff']
+    refine ⟨(t.2.sub (IsSelfAdjoint.one _)), fun ξ => ?_⟩
+    have hle : ∀ F : Finset ι, (0:ℂ) ≤ ⟪((t : H →L[ℂ] H) - ∑ i ∈ F, ketbra (b i) (b i)) ξ, ξ⟫ := by
+      intro F
+      have := ht ⟨F, rfl⟩
+      have h2 : (∑ i ∈ F, ketbra (b i) (b i)) ≤ (t : H →L[ℂ] H) := this
+      rw [ContinuousLinearMap.le_def, ContinuousLinearMap.isPositive_iff'] at h2
+      exact h2.2 ξ
+    have hsum := b.hasSum_inner_mul_inner ξ ξ
+    have hpartial : ∀ F : Finset ι,
+        ∑ i ∈ F, ⟪ξ, b i⟫ * ⟪b i, ξ⟫ ≤ ⟪(t : H →L[ℂ] H) ξ, ξ⟫ := by
+      intro F
+      have h := hle F
+      rw [ContinuousLinearMap.sub_apply, inner_sub_left] at h
+      have hcomp : ⟪(∑ i ∈ F, ketbra (b i) (b i)) ξ, ξ⟫
+          = ∑ i ∈ F, ⟪ξ, b i⟫ * ⟪b i, ξ⟫ := by
+        rw [ContinuousLinearMap.sum_apply, sum_inner]
+        refine Finset.sum_congr rfl fun i _ => ?_
+        rw [ketbra_apply', inner_smul_left, inner_conj_symm]
+      rw [hcomp] at h
+      exact sub_nonneg.mp h
+    have hfin := le_of_tendsto hsum (Filter.Eventually.of_forall hpartial)
+    rw [ContinuousLinearMap.sub_apply, inner_sub_left, ContinuousLinearMap.one_apply]
+    exact sub_nonneg.mpr hfin
+
+end KetbraAux
+
+section HilbTensorAPI
+
+
+variable {H K Z : Type u} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+  [NormedAddCommGroup K] [InnerProductSpace ℂ K] [CompleteSpace K]
+  [NormedAddCommGroup Z] [InnerProductSpace ℂ Z] [CompleteSpace Z]
+
+/-- The algebraic tensor product is dense in `H ⊗ K`. -/
+theorem hilbTensor_denseRange_coe :
+    DenseRange (fun z : TensorProduct ℂ H K => ((z : hilbTensor H K))) :=
+  UniformSpace.Completion.denseRange_coe
+
+/-- `⟪x ⊗ y, x' ⊗ y'⟫ = ⟪x,x'⟫ ⟪y,y'⟫` in `H ⊗ K`. -/
+theorem hilbTensor_inner_mk (x x' : H) (y y' : K) :
+    ⟪hilbTensorMk x y, hilbTensorMk x' y'⟫ = ⟪x, x'⟫ * ⟪y, y'⟫ := by
+  unfold hilbTensorMk
+  rw [UniformSpace.Completion.inner_coe]
+  simp
+
+/-- Two continuous linear maps out of `H ⊗ K` agreeing on elementary tensors are equal. -/
+theorem hilbTensor_ext {f g : hilbTensor H K →L[ℂ] Z}
+    (h : ∀ x y, f (hilbTensorMk x y) = g (hilbTensorMk x y)) : f = g := by
+  have hEq : Set.EqOn ⇑f ⇑g (Set.range (fun z : TensorProduct ℂ H K => ((z : hilbTensor H K)))) := by
+    rintro _ ⟨z, rfl⟩
+    induction z using TensorProduct.induction_on with
+    | zero => simp only []; rw [show ((0 : TensorProduct ℂ H K) : hilbTensor H K) = 0 from UniformSpace.Completion.coe_zero]; simp
+    | tmul x y => exact h x y
+    | add z z' hz hz' =>
+        simp only [UniformSpace.Completion.coe_add, map_add, hz, hz']
+  exact DFunLike.coe_injective
+    (Continuous.ext_on hilbTensor_denseRange_coe f.continuous g.continuous hEq)
+
+/-- The continuous extension to `H ⊗ K` of an inner-product-preserving linear map on
+the algebraic tensor product. -/
+theorem exists_hilbTensor_isometry (w : TensorProduct ℂ H K →ₗ[ℂ] Z)
+    (hw : ∀ z z', ⟪w z, w z'⟫ = ⟪z, z'⟫) :
+    ∃ W : hilbTensor H K →L[ℂ] Z,
+      (∀ z : TensorProduct ℂ H K, W (z : hilbTensor H K) = w z) ∧ ∀ v, ‖W v‖ = ‖v‖ := by
+  have hnormw : ∀ z : TensorProduct ℂ H K, ‖w z‖ = ‖z‖ := by
+    intro z
+    have h2 : ‖w z‖ ^ 2 = ‖z‖ ^ 2 := by
+      rw [← inner_self_eq_norm_sq (𝕜 := ℂ), ← inner_self_eq_norm_sq (𝕜 := ℂ), hw]
+    have := congrArg Real.sqrt h2
+    rwa [Real.sqrt_sq (norm_nonneg _), Real.sqrt_sq (norm_nonneg _)] at this
+  have hdense : DenseRange
+      ⇑((UniformSpace.Completion.toComplL :
+          TensorProduct ℂ H K →L[ℂ] hilbTensor H K).toLinearMap) := by
+    simpa [UniformSpace.Completion.coe_toComplL] using
+      (UniformSpace.Completion.denseRange_coe (α := TensorProduct ℂ H K))
+  have hbound : ∃ C : ℝ, ∀ z : TensorProduct ℂ H K, ‖w z‖ ≤ C *
+      ‖((UniformSpace.Completion.toComplL :
+        TensorProduct ℂ H K →L[ℂ] hilbTensor H K).toLinearMap) z‖ := by
+    refine ⟨1, fun z => ?_⟩
+    simp [UniformSpace.Completion.coe_toComplL, hnormw]
+  set W := w.extendOfNorm
+    ((UniformSpace.Completion.toComplL :
+      TensorProduct ℂ H K →L[ℂ] hilbTensor H K).toLinearMap) with hW
+  have key : ∀ z : TensorProduct ℂ H K, W (z : hilbTensor H K) = w z := by
+    intro z
+    have h1 := LinearMap.extendOfNorm_eq (f := w)
+      (e := ((UniformSpace.Completion.toComplL :
+        TensorProduct ℂ H K →L[ℂ] hilbTensor H K).toLinearMap)) hdense hbound z
+    simpa [UniformSpace.Completion.coe_toComplL, hW] using h1
+  refine ⟨W, key, ?_⟩
+  intro v
+  have hclosed : IsClosed {v : hilbTensor H K | ‖W v‖ = ‖v‖} :=
+    isClosed_eq (by fun_prop) (by fun_prop)
+  refine hilbTensor_denseRange_coe.induction_on (p := fun v => ‖W v‖ = ‖v‖) v hclosed ?_
+  intro z
+  rw [key z, UniformSpace.Completion.norm_coe, hnormw]
+
+end HilbTensorAPI
+
+section TypeIAux
+
+variable {H K : Type u} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+  [NormedAddCommGroup K] [InnerProductSpace ℂ K] [CompleteSpace K]
+
+/-- `|·⟩⟨y|` is additive in its first argument. -/
+theorem ketbra_add_left (x x' y : H) : ketbra (x + x') y = ketbra x y + ketbra x' y := by
+  ext z; simp [ketbra_apply', smul_add]
+
+/-- `|·⟩⟨y|` is homogeneous in its first argument. -/
+theorem ketbra_smul_left (c : ℂ) (x y : H) : ketbra (c • x) y = c • ketbra x y := by
+  ext z
+  show ⟪y, z⟫ • (c • x) = c • (⟪y, z⟫ • x)
+  rw [smul_comm]
+
+/-- A star projection whose range lies in a closed subspace `M` is below the
+orthogonal projection onto `M`. -/
+theorem isStarProjection_le_starProjection {M : Submodule ℂ K} [M.HasOrthogonalProjection]
+    {e : K →L[ℂ] K} (he : IsStarProjection e) (hr : ∀ v, e v ∈ M) :
+    e ≤ M.starProjection := by
+  have hPe : M.starProjection * e = e := by
+    ext v
+    exact Submodule.starProjection_eq_self_iff.mpr (hr v)
+  have hPsa : star (M.starProjection : K →L[ℂ] K) = M.starProjection :=
+    (isSelfAdjoint_starProjection M).star_eq
+  have heP : e * M.starProjection = e := by
+    have := congrArg star hPe
+    rwa [star_mul, hPsa, he.isSelfAdjoint.star_eq] at this
+  have hidem : IsIdempotentElem (M.starProjection - e) := by
+    show (M.starProjection - e) * (M.starProjection - e) = M.starProjection - e
+    rw [sub_mul, mul_sub, mul_sub, hPe, heP, he.isIdempotentElem.eq,
+      M.isIdempotentElem_starProjection.eq]
+    abel
+  have hsa : IsSelfAdjoint (M.starProjection - e) := by
+    show star _ = _
+    rw [star_sub, hPsa, he.isSelfAdjoint.star_eq]
+  have hnn : (0 : K →L[ℂ] K) ≤ M.starProjection - e :=
+    (IsStarProjection.mk hidem hsa).nonneg
+  rw [ContinuousLinearMap.le_def]
+  exact (ContinuousLinearMap.nonneg_iff_isPositive _).mp hnn
+
+/-- The heart of the thesis's proof of **138II** (dils.tex 138IV): if a closed
+subspace `M ⊆ 𝒦` absorbs every `ϱ(|x⟩⟨e₀|)η` with `η` fixed by `ϱ(|e₀⟩⟨e₀|)`,
+then `M = 𝒦`.  This is the thesis's computation `1 = ϱ(1) = ∑ᵢ ϱ(pᵢ)
+= ∑ᵢⱼ |rᵢⱼ⟩⟨rᵢⱼ|`, read as: the projection onto `M` dominates every partial
+sum `ϱ(∑_{i∈F} pᵢ)` — because `pᵢ = |eᵢ⟩⟨e₀| · |e₀⟩⟨e₀| · |e₀⟩⟨eᵢ|` — while
+`1` is the *least* upper bound of those partial sums, by normality of `ϱ`. -/
+theorem nmiu_forall_mem (ϱ : NMIUMap (H →L[ℂ] H) (K →L[ℂ] K)) (e₀ : H) (he₀ : ‖e₀‖ = 1)
+    (M : Submodule ℂ K) [M.HasOrthogonalProjection]
+    (hM : ∀ (x : H) (η : K), ϱ (ketbra e₀ e₀) η = η → ϱ (ketbra x e₀) η ∈ M) :
+    ∀ y : K, y ∈ M := by
+  classical
+  have hcoe : ⇑ϱ = ⇑ϱ.toStarAlgHom := rfl
+  have he₀e₀ : ⟪e₀, e₀⟫ = (1 : ℂ) := by
+    rw [inner_self_eq_norm_sq_to_K, he₀]; norm_num
+  have hmapmul : ∀ b b' : H →L[ℂ] H, ϱ (b * b') = ϱ b * ϱ b' := fun b b' => by
+    simpa [hcoe] using map_mul ϱ.toStarAlgHom b b'
+  have hmulapp : ∀ (b b' : H →L[ℂ] H) (y : K), ϱ b (ϱ b' y) = ϱ (b * b') y := by
+    intro b b' y; rw [hmapmul]; rfl
+  have hp₀idem : ketbra e₀ e₀ * ketbra e₀ e₀ = ketbra e₀ e₀ := by
+    rw [ketbra_mul, he₀e₀, one_smul]
+  -- every `ϱ(|x⟩⟨x|)` has its range inside `M`
+  have hrangeM : ∀ (x : H) (ξ : K), ϱ (ketbra x x) ξ ∈ M := by
+    intro x ξ
+    have hfact : ketbra x x = ketbra x e₀ * (ketbra e₀ e₀ * ketbra e₀ x) := by
+      rw [ketbra_mul, he₀e₀, one_smul, ketbra_mul, he₀e₀, one_smul]
+    have hη : ϱ (ketbra e₀ e₀) (ϱ (ketbra e₀ e₀) (ϱ (ketbra e₀ x) ξ))
+        = ϱ (ketbra e₀ e₀) (ϱ (ketbra e₀ x) ξ) := by
+      rw [hmulapp, hp₀idem]
+    have hval : ϱ (ketbra x x) ξ
+        = ϱ (ketbra x e₀) (ϱ (ketbra e₀ e₀) (ϱ (ketbra e₀ x) ξ)) := by
+      rw [hfact, ← hmulapp, ← hmulapp]
+    rw [hval]
+    exact hM x _ hη
+  obtain ⟨sB, bb, hbb⟩ := exists_hilbertBasis ℂ H
+  have hprojF : ∀ F : Finset ↥sB, IsStarProjection (∑ i ∈ F, ketbra (bb i) (bb i)) := fun F =>
+    isStarProjection_sum F _ (fun i => isStarProjection_ketbra (bb.orthonormal.1 i))
+      (fun i _ j _ hij => ketbra_orth bb.orthonormal hij)
+  have hsa : ∀ F : Finset ↥sB, IsSelfAdjoint (∑ i ∈ F, ketbra (bb i) (bb i)) := fun F =>
+    (hprojF F).isSelfAdjoint
+  have hleP : ∀ F : Finset ↥sB,
+      ϱ (∑ i ∈ F, ketbra (bb i) (bb i)) ≤ M.starProjection := by
+    intro F
+    refine isStarProjection_le_starProjection (IsStarProjection.map (hprojF F) ϱ.toStarAlgHom) ?_
+    intro ξ
+    have hsum : ϱ (∑ i ∈ F, ketbra (bb i) (bb i)) ξ = ∑ i ∈ F, ϱ (ketbra (bb i) (bb i)) ξ := by
+      rw [show ϱ (∑ i ∈ F, ketbra (bb i) (bb i)) = ∑ i ∈ F, ϱ (ketbra (bb i) (bb i)) from
+        map_sum ϱ.toStarAlgHom _ F, ContinuousLinearMap.sum_apply]
+    rw [hsum]
+    exact Submodule.sum_mem _ fun i _ => hrangeM (bb i) ξ
+  -- `1` is the supremum of the partial sums; normality transports it to `ϱ`
+  set D : Set (selfAdjoint (H →L[ℂ] H)) :=
+    Set.range (fun F : Finset ↥sB =>
+      (⟨∑ i ∈ F, ketbra (bb i) (bb i), hsa F⟩ : selfAdjoint (H →L[ℂ] H))) with hDdef
+  have hmono : ∀ F G : Finset ↥sB, F ⊆ G →
+      (∑ i ∈ F, ketbra (bb i) (bb i)) ≤ ∑ i ∈ G, ketbra (bb i) (bb i) := by
+    intro F G hFG
+    have hsplit := Finset.sum_sdiff (f := fun i => ketbra (bb i) (bb i)) hFG
+    have hdiff : (∑ i ∈ G, ketbra (bb i) (bb i)) - ∑ i ∈ F, ketbra (bb i) (bb i)
+        = ∑ i ∈ G \ F, ketbra (bb i) (bb i) := by
+      rw [← hsplit]; abel
+    rw [ContinuousLinearMap.le_def, hdiff]
+    exact (ContinuousLinearMap.nonneg_iff_isPositive _).mp (hprojF _).nonneg
+  have hDne : D.Nonempty := ⟨_, ⟨∅, rfl⟩⟩
+  have hDdir : DirectedOn (· ≤ ·) D := by
+    rintro _ ⟨F, rfl⟩ _ ⟨G, rfl⟩
+    exact ⟨_, ⟨F ∪ G, rfl⟩, hmono F (F ∪ G) Finset.subset_union_left,
+      hmono G (F ∪ G) Finset.subset_union_right⟩
+  have hlubD : IsLUB D 1 := isLUB_hilbertBasis_partialSums bb hsa
+  have hnormal := ϱ.preservesDirSups' D 1 hDne hDdir hlubD
+  have hub : M.starProjection ∈
+      upperBounds ((fun d : selfAdjoint (H →L[ℂ] H) => ϱ (d : H →L[ℂ] H)) '' D) := by
+    rintro _ ⟨_, ⟨F, rfl⟩, rfl⟩
+    exact hleP F
+  have h1le : (1 : K →L[ℂ] K) ≤ M.starProjection := by
+    have h := hnormal.2 hub
+    rwa [show ((1 : selfAdjoint (H →L[ℂ] H)) : H →L[ℂ] H) = 1 from rfl,
+      map_one ϱ.toStarAlgHom] at h
+  have hPone : M.starProjection = (1 : K →L[ℂ] K) :=
+    le_antisymm (isStarProjection_starProjection).le_one h1le
+  intro y
+  refine Submodule.starProjection_eq_self_iff.mp ?_
+  rw [hPone]; rfl
+
+section TypeIAuxMain
+
+variable {H K : Type u} [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
+  [NormedAddCommGroup K] [InnerProductSpace ℂ K] [CompleteSpace K]
+
+theorem nmiu_between_type_I_aux (ϱ : NMIUMap (H →L[ℂ] H) (K →L[ℂ] K))
+    (e₀ : H) (he₀ : ‖e₀‖ = 1) :
+    ∃ (K' : Type u) (_ : NormedAddCommGroup K') (_ : InnerProductSpace ℂ K')
+      (_ : CompleteSpace K') (U : K →L[ℂ] hilbTensor H K'),
+      (ContinuousLinearMap.adjoint U).comp U = 1 ∧
+      U.comp (ContinuousLinearMap.adjoint U) = 1 ∧
+      ∀ a : H →L[ℂ] H, ϱ a = conjOperator U (tensorCLM a 1) := by
+  classical
+  have hcoe : ⇑ϱ = ⇑ϱ.toStarAlgHom := rfl
+  have he₀e₀ : ⟪e₀, e₀⟫ = (1 : ℂ) := by
+    rw [inner_self_eq_norm_sq_to_K, he₀]; norm_num
+  set p₀ : H →L[ℂ] H := ketbra e₀ e₀ with hp₀
+  have hp₀idem : p₀ * p₀ = p₀ := by
+    rw [hp₀, ketbra_mul, he₀e₀, one_smul]
+  -- the subspace `K' = ϱ(p₀) K`, as the fixed points of `ϱ(p₀)`
+  set S : Submodule ℂ K := LinearMap.ker (((1 : K →L[ℂ] K) - ϱ p₀) : K →ₗ[ℂ] K) with hSdef
+  have hSmem : ∀ d : K, d ∈ S ↔ ϱ p₀ d = d := by
+    intro d
+    rw [hSdef, LinearMap.mem_ker]
+    show ((1 : K →L[ℂ] K) - ϱ p₀) d = 0 ↔ _
+    rw [ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply, sub_eq_zero]
+    exact eq_comm
+  have hSclosed : IsClosed (S : Set K) :=
+    ContinuousLinearMap.isClosed_ker ((1 : K →L[ℂ] K) - ϱ p₀)
+  haveI : CompleteSpace ↥S := hSclosed.completeSpace_coe
+  -- the bilinear map `(x, d) ↦ ϱ(|x⟩⟨e₀|) d`
+  have hmapadd : ∀ b b' : H →L[ℂ] H, ϱ (b + b') = ϱ b + ϱ b' := fun b b' => by
+    simpa [hcoe] using map_add ϱ.toStarAlgHom b b'
+  have hmapsmul : ∀ (c : ℂ) (b : H →L[ℂ] H), ϱ (c • b) = c • ϱ b := fun c b => by
+    simpa [hcoe] using map_smul ϱ.toStarAlgHom c b
+  have hmapmul : ∀ b b' : H →L[ℂ] H, ϱ (b * b') = ϱ b * ϱ b' := fun b b' => by
+    simpa [hcoe] using map_mul ϱ.toStarAlgHom b b'
+  have hmapstar : ∀ b : H →L[ℂ] H, ϱ (star b) = star (ϱ b) := fun b => by
+    simpa [hcoe] using map_star ϱ.toStarAlgHom b
+  have hmapone : ϱ (1 : H →L[ℂ] H) = 1 := by simpa [hcoe] using map_one ϱ.toStarAlgHom
+  set B : H →ₗ[ℂ] ↥S →ₗ[ℂ] K :=
+    LinearMap.mk₂ ℂ (fun (x : H) (d : ↥S) => ϱ (ketbra x e₀) (d : K))
+      (fun x x' d => by rw [ketbra_add_left, hmapadd]; rfl)
+      (fun c x d => by rw [ketbra_smul_left, hmapsmul]; rfl)
+      (fun x d d' => by rw [Submodule.coe_add, map_add])
+      (fun c x d => by rw [Submodule.coe_smul, map_smul]) with hBdef
+  set w : TensorProduct ℂ H ↥S →ₗ[ℂ] K := TensorProduct.lift B with hwdef
+  have hwmk : ∀ (x : H) (d : ↥S), w (x ⊗ₜ[ℂ] d) = ϱ (ketbra x e₀) (d : K) := fun x d => rfl
+  have hadj : ∀ b : H →L[ℂ] H, ContinuousLinearMap.adjoint (ϱ b) = ϱ (star b) := by
+    intro b
+    rw [← ContinuousLinearMap.star_eq_adjoint, hmapstar]
+  have hw : ∀ z z' : TensorProduct ℂ H ↥S, ⟪w z, w z'⟫ = ⟪z, z'⟫ := by
+    have base : ∀ (x : H) (d : ↥S) (z' : TensorProduct ℂ H ↥S),
+        ⟪w (x ⊗ₜ[ℂ] d), w z'⟫ = ⟪x ⊗ₜ[ℂ] d, z'⟫ := by
+      intro x d z'
+      induction z' using TensorProduct.induction_on with
+      | zero =>
+          rw [map_zero, inner_zero_right (𝕜 := ℂ) (w (x ⊗ₜ[ℂ] d))]
+          exact (inner_zero_right (𝕜 := ℂ) (x ⊗ₜ[ℂ] d)).symm
+      | tmul x' d' =>
+          rw [hwmk, hwmk, TensorProduct.inner_tmul,
+            ← ContinuousLinearMap.adjoint_inner_right, hadj]
+          have hcomp : ϱ (star (ketbra x e₀)) (ϱ (ketbra x' e₀) (d' : K))
+              = ϱ (star (ketbra x e₀) * ketbra x' e₀) (d' : K) := by
+            rw [hmapmul]; rfl
+          rw [hcomp, ketbra_star, ketbra_mul, ← hp₀, hmapsmul,
+            ContinuousLinearMap.smul_apply, inner_smul_right, (hSmem _).mp d'.2]
+          rfl
+      | add u v hu hv =>
+          rw [map_add, inner_add_right (𝕜 := ℂ) (w (x ⊗ₜ[ℂ] d)) (w u) (w v), hu, hv]
+          exact (inner_add_right (𝕜 := ℂ) (x ⊗ₜ[ℂ] d) u v).symm
+    intro z
+    induction z using TensorProduct.induction_on with
+    | zero =>
+        intro z'
+        rw [map_zero, inner_zero_left (𝕜 := ℂ) (w z')]
+        exact (inner_zero_left (𝕜 := ℂ) z').symm
+    | tmul x d => exact base x d
+    | add u v hu hv =>
+        intro z'
+        rw [map_add, inner_add_left (𝕜 := ℂ) (w u) (w v) (w z'), hu z', hv z']
+        exact (inner_add_left (𝕜 := ℂ) u v z').symm
+  obtain ⟨W, hWcoe, hWnorm⟩ := exists_hilbTensor_isometry w hw
+  have hWmk : ∀ (x : H) (d : ↥S), W (hilbTensorMk x (d : ↥S)) = ϱ (ketbra x e₀) (d : K) :=
+    fun x d => hWcoe (x ⊗ₜ[ℂ] d)
+  have hmulapp : ∀ (b b' : H →L[ℂ] H) (y : K), ϱ b (ϱ b' y) = ϱ (b * b') y := by
+    intro b b' y; rw [hmapmul]; rfl
+  -- the (closed) range `M` of `W`
+  set M : Submodule ℂ K := LinearMap.range (W : hilbTensor H ↥S →ₗ[ℂ] K) with hMdef
+  have hMrange : (M : Set K) = Set.range ⇑W := LinearMap.coe_range _
+  have hWiso : Isometry ⇑W := AddMonoidHomClass.isometry_of_norm W hWnorm
+  have hMcomplete : IsComplete (M : Set K) := by
+    rw [hMrange]; exact hWiso.isUniformInducing.isComplete_range
+  haveI : CompleteSpace ↥M := hMcomplete.completeSpace_coe
+  have hMtop : ∀ y : K, y ∈ M :=
+    nmiu_forall_mem ϱ e₀ he₀ M (by
+      intro x η hη
+      exact ⟨hilbTensorMk x (⟨η, (hSmem η).mpr hη⟩ : ↥S), hWmk x ⟨η, (hSmem η).mpr hη⟩⟩)
+  have hWsurj : Function.Surjective ⇑W := fun y => hMtop y
+  -- `W` is a unitary
+  have hWadjW : (ContinuousLinearMap.adjoint W).comp W = 1 := by
+    refine ContinuousLinearMap.ext fun v => ?_
+    refine ext_inner_left ℂ fun y => ?_
+    show ⟪y, ContinuousLinearMap.adjoint W (W v)⟫ = ⟪y, (1 : hilbTensor H ↥S →L[ℂ] _) v⟫
+    rw [ContinuousLinearMap.adjoint_inner_right, ContinuousLinearMap.one_apply]
+    exact ((⟨W.toLinearMap, hWnorm⟩ : hilbTensor H ↥S →ₗᵢ[ℂ] K)).inner_map_map y v
+  have hWadjW' : ∀ v, ContinuousLinearMap.adjoint W (W v) = v := fun v => by
+    have := congrArg (fun T : hilbTensor H ↥S →L[ℂ] hilbTensor H ↥S => T v) hWadjW
+    simpa using this
+  have hWWadj : W.comp (ContinuousLinearMap.adjoint W) = 1 := by
+    refine ContinuousLinearMap.ext fun y => ?_
+    obtain ⟨v, rfl⟩ := hWsurj y
+    show W (ContinuousLinearMap.adjoint W (W v)) = _
+    rw [hWadjW']
+    rfl
+  refine ⟨↥S, inferInstance, inferInstance, inferInstance,
+    ContinuousLinearMap.adjoint W, ?_, ?_, ?_⟩
+  · rw [ContinuousLinearMap.adjoint_adjoint]; exact hWWadj
+  · rw [ContinuousLinearMap.adjoint_adjoint]; exact hWadjW
+  · intro a
+    have hintertwine : W.comp (tensorCLM a 1) = (ϱ a).comp W := by
+      refine hilbTensor_ext ?_
+      intro x d
+      show W (tensorCLM a 1 (hilbTensorMk x d)) = ϱ a (W (hilbTensorMk x d))
+      rw [tensorCLM_mk, hWmk, hWmk, hmulapp, mul_ketbra]
+      rfl
+    have hconj : conjOperator (ContinuousLinearMap.adjoint W) (tensorCLM a 1)
+        = W.comp ((tensorCLM a 1).comp (ContinuousLinearMap.adjoint W)) := by
+      show (ContinuousLinearMap.adjoint (ContinuousLinearMap.adjoint W)).comp
+        ((tensorCLM a 1).comp (ContinuousLinearMap.adjoint W)) = _
+      rw [ContinuousLinearMap.adjoint_adjoint]
+    rw [hconj, ← ContinuousLinearMap.comp_assoc, hintertwine,
+      ContinuousLinearMap.comp_assoc, hWWadj]
+    exact (mul_one (ϱ a)).symm
+
+
+end TypeIAuxMain
+end TypeIAux
+
+
 /-! ## Parsec 1380: consequences of Stinespring
 
 **138I** (dils.tex:597): introduction — nothing to formalize.
@@ -705,8 +1149,32 @@ theorem nmiu_between_type_I (ϱ : NMIUMap (H →L[ℂ] H) (K →L[ℂ] K))
       (_ : CompleteSpace K') (U : K →L[ℂ] hilbTensor H K'),
       (ContinuousLinearMap.adjoint U).comp U = 1 ∧
       U.comp (ContinuousLinearMap.adjoint U) = 1 ∧
-      ∀ a : H →L[ℂ] H, ϱ a = conjOperator U (tensorCLM a 1) :=
-  sorry
+      ∀ a : H →L[ℂ] H, ϱ a = conjOperator U (tensorCLM a 1) := by
+  by_cases hH : Nontrivial H
+  · obtain ⟨x, hx⟩ := @exists_ne H hH 0
+    have hxn : ‖x‖ ≠ 0 := norm_ne_zero_iff.mpr hx
+    refine nmiu_between_type_I_aux ϱ (‖x‖⁻¹ • x) ?_
+    rw [norm_smul, norm_inv, norm_norm, inv_mul_cancel₀ hxn]
+  · -- `ℋ = 0` forces `B(ℋ) = 0`, hence `1 = ϱ(1) = ϱ(0) = 0` in `B(𝒦)`, hence
+    -- `ϱ = 0`, contradicting the hypothesis.
+    rw [not_nontrivial_iff_subsingleton] at hH
+    exfalso
+    obtain ⟨a, ha⟩ := hnz
+    have h1 : (1 : H →L[ℂ] H) = 0 := by
+      ext z
+      exact Subsingleton.elim _ _
+    have h1K : (1 : K →L[ℂ] K) = 0 := by
+      have h := map_one ϱ.toStarAlgHom
+      rw [h1, map_zero] at h
+      exact h.symm
+    exact ha (by rw [show ϱ a = ϱ a * 1 from (mul_one _).symm, h1K, mul_zero])
+
+/-- Normalising a non-zero vector, with a *complex* scalar (so that the
+`ℂ`-linear maps below apply to it). -/
+private theorem norm_normalize {E : Type u} [NormedAddCommGroup E] [NormedSpace ℂ E]
+    {v : E} (hv : v ≠ 0) : ‖((‖v‖⁻¹ : ℝ) : ℂ) • v‖ = 1 := by
+  rw [norm_smul, Complex.norm_real, Real.norm_eq_abs,
+    abs_of_nonneg (inv_nonneg.mpr (norm_nonneg v)), inv_mul_cancel₀ (norm_ne_zero_iff.mpr hv)]
 
 /-- **138VI** (`typei-inner-auto`, dils.tex:719, Corollary): the
 nmiu-isomorphisms `B(ℋ) → B(𝒦)` are precisely the maps `ad_U` for a unitary
@@ -716,8 +1184,186 @@ theorem typei_inner_auto (ϱ : NMIUMap (H →L[ℂ] H) (K →L[ℂ] K)) :
       ∃ U : K →L[ℂ] H,
         (ContinuousLinearMap.adjoint U).comp U = 1 ∧
         U.comp (ContinuousLinearMap.adjoint U) = 1 ∧
-        ∀ a : H →L[ℂ] H, ϱ a = conjOperator U a :=
-  sorry
+        ∀ a : H →L[ℂ] H, ϱ a = conjOperator U a := by
+  have hcoe : ⇑ϱ = ⇑ϱ.toStarAlgHom := rfl
+  have hmapadd : ∀ b b' : H →L[ℂ] H, ϱ (b + b') = ϱ b + ϱ b' := fun b b' => by
+    simpa [hcoe] using map_add ϱ.toStarAlgHom b b'
+  have hmapsmul : ∀ (c : ℂ) (b : H →L[ℂ] H), ϱ (c • b) = c • ϱ b := fun c b => by
+    simpa [hcoe] using map_smul ϱ.toStarAlgHom c b
+  have hmapmul : ∀ b b' : H →L[ℂ] H, ϱ (b * b') = ϱ b * ϱ b' := fun b b' => by
+    simpa [hcoe] using map_mul ϱ.toStarAlgHom b b'
+  have hmapstar : ∀ b : H →L[ℂ] H, ϱ (star b) = star (ϱ b) := fun b => by
+    simpa [hcoe] using map_star ϱ.toStarAlgHom b
+  have hmulapp : ∀ (b b' : H →L[ℂ] H) (y : K), ϱ b (ϱ b' y) = ϱ (b * b') y := by
+    intro b b' y; rw [hmapmul]; rfl
+  have hadj : ∀ b : H →L[ℂ] H, ContinuousLinearMap.adjoint (ϱ b) = ϱ (star b) := by
+    intro b; rw [← ContinuousLinearMap.star_eq_adjoint, hmapstar]
+  constructor
+  · intro hbij
+    by_cases hH : Nontrivial H
+    · -- pick a unit vector `e₀` and the projection `p₀ = |e₀⟩⟨e₀|`
+      obtain ⟨x₁, hx₁⟩ := @exists_ne H hH 0
+      obtain ⟨e₀, he₀⟩ : ∃ e₀ : H, ‖e₀‖ = 1 := ⟨_, norm_normalize hx₁⟩
+      have he₀ne : e₀ ≠ 0 := fun h => one_ne_zero (by rw [← he₀, h, norm_zero])
+      have he₀e₀ : ⟪e₀, e₀⟫ = (1 : ℂ) := by
+        rw [inner_self_eq_norm_sq_to_K, he₀]; norm_num
+      set p₀ : H →L[ℂ] H := ketbra e₀ e₀ with hp₀
+      have hp₀idem : p₀ * p₀ = p₀ := by rw [hp₀, ketbra_mul, he₀e₀, one_smul]
+      -- `ϱ(p₀) ≠ 0` by injectivity, so `𝒦' = ϱ(p₀)𝒦` has a unit vector `d₀`
+      have hmapzero : ϱ (0 : H →L[ℂ] H) = 0 := by
+        simpa [hcoe] using map_zero ϱ.toStarAlgHom
+      have hp₀ne : ϱ p₀ ≠ 0 := by
+        intro h
+        have h0 : p₀ = 0 := hbij.1 (by rw [h, hmapzero])
+        have hz := congrArg (fun T : H →L[ℂ] H => T e₀) h0
+        simp only [hp₀, ketbra_apply', he₀e₀, one_smul,
+          ContinuousLinearMap.zero_apply] at hz
+        exact he₀ne hz
+      obtain ⟨ξ₀, hξ₀⟩ : ∃ ξ, ϱ p₀ ξ ≠ 0 := by
+        by_contra hc
+        push_neg at hc
+        exact hp₀ne (ContinuousLinearMap.ext hc)
+      obtain ⟨d₀, hd₀, hfix⟩ : ∃ d₀ : K, ‖d₀‖ = 1 ∧ ϱ p₀ d₀ = d₀ :=
+        ⟨((‖ϱ p₀ ξ₀‖⁻¹ : ℝ) : ℂ) • ϱ p₀ ξ₀, norm_normalize hξ₀, by
+          rw [map_smul, hmulapp, hp₀idem]⟩
+      have hd₀d₀ : ⟪d₀, d₀⟫ = (1 : ℂ) := by
+        rw [inner_self_eq_norm_sq_to_K, hd₀]; norm_num
+      -- the fixed space of `ϱ(p₀)` is the line `ℂ d₀`
+      have hline : ∀ η : K, ϱ p₀ η = η → η = ⟪d₀, η⟫ • d₀ := by
+        intro η hη
+        set ζ : K := η - ⟪d₀, η⟫ • d₀ with hζ
+        have hζfix : ϱ p₀ ζ = ζ := by rw [hζ, map_sub, map_smul, hη, hfix]
+        have hζorth : ⟪d₀, ζ⟫ = 0 := by
+          rw [hζ, inner_sub_right, inner_smul_right, hd₀d₀, mul_one, sub_self]
+        by_contra hne
+        have hζne : ζ ≠ 0 := fun h => hne (by rw [← sub_eq_zero, ← hζ, h])
+        obtain ⟨d, hd, hdfix, hdorth⟩ :
+            ∃ d : K, ‖d‖ = 1 ∧ ϱ p₀ d = d ∧ ⟪d₀, d⟫ = (0 : ℂ) :=
+          ⟨((‖ζ‖⁻¹ : ℝ) : ℂ) • ζ, norm_normalize hζne, by rw [map_smul, hζfix],
+            by rw [inner_smul_right, hζorth, mul_zero]⟩
+        obtain ⟨a, ha⟩ := hbij.2 (ketbra d d₀)
+        -- `p₀ a p₀ = ⟪e₀, a e₀⟫ p₀`, so `d = ϱ(p₀ a p₀) d₀ = ⟪e₀,a e₀⟫ d₀`
+        have hpap : p₀ * a * p₀ = ⟪e₀, a e₀⟫ • p₀ := by
+          rw [hp₀, ketbra_mul_op, ketbra_mul, ContinuousLinearMap.adjoint_inner_left]
+        have h1 : ϱ (p₀ * a * p₀) d₀ = d := by
+          rw [← hmulapp, ← hmulapp, ha, hfix]
+          show ϱ p₀ (⟪d₀, d₀⟫ • d) = d
+          rw [hd₀d₀, one_smul, hdfix]
+        have h2 : ϱ (p₀ * a * p₀) d₀ = ⟪e₀, a e₀⟫ • d₀ := by
+          rw [hpap, hmapsmul]
+          show ⟪e₀, a e₀⟫ • ϱ p₀ d₀ = _
+          rw [hfix]
+        have h3 : d = ⟪e₀, a e₀⟫ • d₀ := by rw [← h1, h2]
+        have h4 : (0 : ℂ) = ⟪e₀, a e₀⟫ := by
+          rw [← hdorth, h3, inner_smul_right, hd₀d₀, mul_one]
+        rw [← h4, zero_smul] at h3
+        rw [h3, norm_zero] at hd
+        exact one_ne_zero hd.symm
+      -- the isometry `V x = ϱ(|x⟩⟨e₀|) d₀`
+      set Vl : H →ₗ[ℂ] K :=
+        { toFun := fun x => ϱ (ketbra x e₀) d₀
+          map_add' := fun x x' => by rw [ketbra_add_left, hmapadd]; rfl
+          map_smul' := fun c x => by rw [ketbra_smul_left, hmapsmul]; rfl } with hVl
+      have hVinner : ∀ x y : H, ⟪Vl x, Vl y⟫ = ⟪x, y⟫ := by
+        intro x y
+        show ⟪ϱ (ketbra x e₀) d₀, ϱ (ketbra y e₀) d₀⟫ = _
+        rw [← ContinuousLinearMap.adjoint_inner_right, hadj, hmulapp, ketbra_star,
+          ketbra_mul, ← hp₀, hmapsmul]
+        show ⟪d₀, ⟪x, y⟫ • ϱ p₀ d₀⟫ = _
+        rw [hfix, inner_smul_right, hd₀d₀, mul_one]
+      have hVnorm : ∀ x : H, ‖Vl x‖ = ‖x‖ := by
+        intro x
+        have h2 : ‖Vl x‖ ^ 2 = ‖x‖ ^ 2 := by
+          rw [← inner_self_eq_norm_sq (𝕜 := ℂ), ← inner_self_eq_norm_sq (𝕜 := ℂ), hVinner]
+        have := congrArg Real.sqrt h2
+        rwa [Real.sqrt_sq (norm_nonneg _), Real.sqrt_sq (norm_nonneg _)] at this
+      set V : H →L[ℂ] K := Vl.mkContinuousOfExistsBound ⟨1, fun x => by
+        rw [hVnorm]; simp⟩ with hVdef
+      have hVapp : ∀ x : H, V x = ϱ (ketbra x e₀) d₀ := fun x => rfl
+      have hVnorm' : ∀ x : H, ‖V x‖ = ‖x‖ := hVnorm
+      -- `V` is surjective, by the same argument as in 138II
+      set M : Submodule ℂ K := LinearMap.range (V : H →ₗ[ℂ] K) with hMdef
+      have hMrange : (M : Set K) = Set.range ⇑V := LinearMap.coe_range _
+      have hViso : Isometry ⇑V := AddMonoidHomClass.isometry_of_norm V hVnorm'
+      have hMcomplete : IsComplete (M : Set K) := by
+        rw [hMrange]; exact hViso.isUniformInducing.isComplete_range
+      haveI : CompleteSpace ↥M := hMcomplete.completeSpace_coe
+      have hMtop : ∀ y : K, y ∈ M :=
+        nmiu_forall_mem ϱ e₀ he₀ M (by
+          intro x η hη
+          have hηl : η = ⟪d₀, η⟫ • d₀ := hline η hη
+          refine ⟨⟪d₀, η⟫ • x, ?_⟩
+          show V (⟪d₀, η⟫ • x) = ϱ (ketbra x e₀) η
+          rw [map_smul, hVapp, ← map_smul (ϱ (ketbra x e₀)), ← hηl])
+      have hVsurj : Function.Surjective ⇑V := fun y => hMtop y
+      have hVadjV : (ContinuousLinearMap.adjoint V).comp V = 1 := by
+        refine ContinuousLinearMap.ext fun v => ?_
+        refine ext_inner_left ℂ fun y => ?_
+        show ⟪y, ContinuousLinearMap.adjoint V (V v)⟫ = ⟪y, (1 : H →L[ℂ] H) v⟫
+        rw [ContinuousLinearMap.adjoint_inner_right, ContinuousLinearMap.one_apply]
+        exact hVinner y v
+      have hVadjV' : ∀ v, ContinuousLinearMap.adjoint V (V v) = v := fun v => by
+        have := congrArg (fun T : H →L[ℂ] H => T v) hVadjV
+        simpa using this
+      have hVVadj : V.comp (ContinuousLinearMap.adjoint V) = 1 := by
+        refine ContinuousLinearMap.ext fun y => ?_
+        obtain ⟨v, rfl⟩ := hVsurj y
+        show V (ContinuousLinearMap.adjoint V (V v)) = _
+        rw [hVadjV']
+        rfl
+      exact ⟨ContinuousLinearMap.adjoint V, by
+          rw [ContinuousLinearMap.adjoint_adjoint]; exact hVVadj, by
+          rw [ContinuousLinearMap.adjoint_adjoint]; exact hVadjV, fun a => by
+        have hintertwine : V.comp a = (ϱ a).comp V := by
+          refine ContinuousLinearMap.ext fun x => ?_
+          show V (a x) = ϱ a (V x)
+          rw [hVapp, hVapp, hmulapp, mul_ketbra]
+        show ϱ a = (ContinuousLinearMap.adjoint (ContinuousLinearMap.adjoint V)).comp
+          (a.comp (ContinuousLinearMap.adjoint V))
+        rw [ContinuousLinearMap.adjoint_adjoint, ← ContinuousLinearMap.comp_assoc,
+          hintertwine, ContinuousLinearMap.comp_assoc, hVVadj]
+        exact (mul_one (ϱ a)).symm⟩
+    · -- `ℋ = 0`: then `B(ℋ) = 0`, so `1 = ϱ(1) = 0` in `B(𝒦)` and everything is `0`
+      rw [not_nontrivial_iff_subsingleton] at hH
+      have h1 : (1 : H →L[ℂ] H) = 0 := by
+        ext z; exact Subsingleton.elim _ _
+      have h1K : (1 : K →L[ℂ] K) = 0 := by
+        have h := map_one ϱ.toStarAlgHom
+        rw [h1, map_zero] at h
+        exact h.symm
+      have hsubK : ∀ T : K →L[ℂ] K, T = 0 := fun T => by
+        rw [show T = T * 1 from (mul_one _).symm, h1K, mul_zero]
+      have hsubH : ∀ T : H →L[ℂ] H, T = 0 := fun T => by
+        rw [show T = T * 1 from (mul_one _).symm, h1, mul_zero]
+      exact ⟨0, by rw [hsubK ((ContinuousLinearMap.adjoint 0).comp 0), h1K],
+        by rw [hsubH ((0 : K →L[ℂ] H).comp (ContinuousLinearMap.adjoint 0)), h1],
+        fun a => by rw [hsubK (ϱ a), hsubK (conjOperator 0 a)]⟩
+  · rintro ⟨U, hUU, hUU', hϱ⟩
+    have hA : ∀ x : H, U (ContinuousLinearMap.adjoint U x) = x := fun x => by
+      have h := congrArg (fun T : H →L[ℂ] H => T x) hUU'
+      simpa using h
+    have hB : ∀ v : K, ContinuousLinearMap.adjoint U (U v) = v := fun v => by
+      have h := congrArg (fun T : K →L[ℂ] K => T v) hUU
+      simpa using h
+    constructor
+    · intro a b hab
+      have h : U.comp ((conjOperator U a).comp (ContinuousLinearMap.adjoint U))
+          = U.comp ((conjOperator U b).comp (ContinuousLinearMap.adjoint U)) := by
+        rw [← hϱ a, ← hϱ b, hab]
+      have hrec : ∀ c : H →L[ℂ] H,
+          U.comp ((conjOperator U c).comp (ContinuousLinearMap.adjoint U)) = c := by
+        intro c
+        refine ContinuousLinearMap.ext fun x => ?_
+        show U (ContinuousLinearMap.adjoint U (c (U (ContinuousLinearMap.adjoint U x)))) = c x
+        rw [hA, hA]
+      rw [hrec a, hrec b] at h
+      exact h
+    · intro c
+      refine ⟨U.comp (c.comp (ContinuousLinearMap.adjoint U)), ?_⟩
+      rw [hϱ]
+      refine ContinuousLinearMap.ext fun v => ?_
+      show ContinuousLinearMap.adjoint U (U (c (ContinuousLinearMap.adjoint U (U v)))) = c v
+      rw [hB, hB]
 
 /-- **138VII** (`physics-stinespring`, dils.tex:725, Exercise*): for every
 ncp-map `φ : B(ℋ) → B(𝒦)` there are a Hilbert space `𝒦'` and a bounded
@@ -729,8 +1375,36 @@ operators are not yet available in this formalization.) -/
 theorem physics_stinespring (φ : NCPMap (H →L[ℂ] H) (K →L[ℂ] K)) :
     ∃ (K' : Type u) (_ : NormedAddCommGroup K') (_ : InnerProductSpace ℂ K')
       (_ : CompleteSpace K') (V : K →L[ℂ] hilbTensor H K'),
-      ∀ a : H →L[ℂ] H, φ a = conjOperator V (tensorCLM a 1) :=
-  sorry
+      ∀ a : H →L[ℂ] H, φ a = conjOperator V (tensorCLM a 1) := by
+  -- Stinespring (**135IV**) followed by **138II**, as the exercise directs.
+  set f : (H →L[ℂ] H) →ₗ[ℂ] (K →L[ℂ] K) := φ.toCompletelyPositiveMap.toLinearMap with hf
+  have hcp : IsCompletelyPositiveMap f :=
+    (cp_iff f).out 1 0 |>.mp fun N M hM =>
+      φ.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM
+  have hnn : PreservesDirSups ⇑f := φ.preservesDirSups'
+  obtain ⟨𝒦, h1, h2, h3, ϱ, V₀, heq⟩ := stinespring_normal f hcp hnn
+  letI := h1; letI := h2; letI := h3
+  by_cases hz : ∃ a, ϱ a ≠ 0
+  · obtain ⟨K', i1, i2, i3, U, -, hUU, hU⟩ := nmiu_between_type_I ϱ hz
+    refine ⟨K', i1, i2, i3, U.comp V₀, fun a => ?_⟩
+    have h := heq a
+    rw [hU a] at h
+    rw [show (φ a) = f a from rfl, h]
+    show (ContinuousLinearMap.adjoint V₀).comp
+        (((ContinuousLinearMap.adjoint U).comp ((tensorCLM a 1).comp U)).comp V₀) = _
+    show _ = (ContinuousLinearMap.adjoint (U.comp V₀)).comp ((tensorCLM a 1).comp (U.comp V₀))
+    rw [ContinuousLinearMap.adjoint_comp]
+    simp only [ContinuousLinearMap.comp_assoc]
+  · -- the dilating space is trivial, so `φ = 0`
+    push_neg at hz
+    refine ⟨↥(⊥ : Submodule ℂ K), inferInstance, inferInstance, inferInstance, 0, fun a => ?_⟩
+    have h := heq a
+    rw [hz a] at h
+    rw [show (φ a) = f a from rfl, h]
+    show (ContinuousLinearMap.adjoint V₀).comp ((0 : 𝒦 →L[ℂ] 𝒦).comp V₀) = _
+    show _ = (ContinuousLinearMap.adjoint (0 : K →L[ℂ] hilbTensor H _)).comp
+      ((tensorCLM a 1).comp 0)
+    simp
 
 /-- **138VIII** (`kraus-exercise`, dils.tex:742, Exercise* (Kraus'
 decomposition)): every ncp-map `φ : B(ℋ) → B(𝒦)` is of the form
@@ -2059,3 +2733,4 @@ theorem paschke_unique_up_to_iso (φ : 𝒜 → ℬ) (D₁ D₂ : PaschkeTriple 
 end Paschke
 
 end Theses.B.Dils
+

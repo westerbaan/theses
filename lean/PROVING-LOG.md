@@ -9159,3 +9159,171 @@ lines): `Division.lean` 13 → **7** (lines 766 and 779 in parsec 790,
 81VIII.2, `div_usc`, and three in parsec 842).  `A/VN` total 74 → **68**
 (Basic 25, Completeness 2, Division 7, NormalFunctionals 14,
 Projections 20).
+
+## Session 46 — `B/Dils` Stinespring: **138II** `nmiu-between-type-I` is proved, and with it 138VI and 138VII (worker 71)
+
+Files touched: `Theses/B/Dils/Stinespring.lean`, this log.  Nothing staged,
+nothing committed.  **B/Dils 57 → 54 `sorry`s** (`Stinespring.lean` 6 → 3).
+
+### 1. The finding: 138II does *not* need a Hilbert-space tensor product development
+
+Session 45 parked the whole 138II cluster on the ground that `hilbTensor` /
+`tensorCLM` carry exactly one API lemma and that 138II's proof "needs an
+inner-product formula, a unitary-from-orthonormal-bases construction, and
+ultraweak sums of `|rᵢⱼ⟩⟨rᵢⱼ|`".  That estimate was too pessimistic, and the
+reason is the recurring one: *the proof consumes a sliver of the theory, not
+the theory*.  What was actually needed came to **~130 lines**:
+
+* Mathlib already has `TensorProduct.instInnerProductSpace` (with
+  `TensorProduct.inner_tmul`) and `UniformSpace.Completion.innerProductSpace`,
+  so `hilbTensor H K` is a Hilbert space with `⟪x⊗y, x'⊗y'⟫ = ⟪x,x'⟫⟪y,y'⟫`
+  for free — no construction at all.  `hilbTensor_inner_mk` is three lines.
+* `hilbTensor_ext` (two continuous linear maps agreeing on elementary tensors
+  are equal) — 10 lines, via `TensorProduct.induction_on` plus
+  `Continuous.ext_on` on the dense range of the coercion.
+* `exists_hilbTensor_isometry`: a linear map on the *algebraic* tensor product
+  that preserves inner products extends to an isometric CLM on the completion
+  — 30 lines, via the existing `LinearMap.extendOfNorm`.
+
+**No orthonormal basis of the tensor product, and no unitary-from-bases
+construction, is used anywhere.**  Those are artefacts of reading the thesis's
+proof literally; see item 2.
+
+⚠️ **A trap for anyone else touching `TensorProduct` analytically.**
+`TensorProduct.induction_on` produces goals whose `0` and `+` are the *algebraic*
+instances (`instZeroTensorProduct`, `instAddTensorProduct`), while
+`inner_zero_right` / `inner_add_right` are stated for the ones coming from
+`SeminormedAddCommGroup`.  The two are defeq but not syntactically equal, so
+`rw`, `simp` **and** bare `exact inner_add_right _ _ _` all fail, the last with
+a stuck `InnerProductSpace ?𝕜 (E ⊗ F)` because `𝕜` never gets solved.  What
+works is `exact inner_add_right (𝕜 := ℂ) x u v` with every argument given.
+This cost more time than any mathematical step in the session.
+
+### 2. The proof: the thesis's construction, made coordinate-free
+
+Divergence **class 2** (thesis proof fine; different route), and it is worth
+recording precisely because the two proofs are the *same construction*.
+
+dils.tex 138IV picks an orthonormal basis `(eᵢ)` of `ℋ`, a basis `(dⱼ)` of
+`𝒦' = ϱ(p_{i₀})𝒦`, the partial isometries `uᵢ = |e_{i₀}⟩⟨eᵢ|`, sets
+`rᵢⱼ = ϱ(uᵢ*)dⱼ`, proves `(rᵢⱼ)` is an orthonormal basis of `𝒦`, and *defines*
+`U` by `U rᵢⱼ = eᵢ ⊗ dⱼ`.  We instead build the map in the other direction,
+without coordinates on either factor:
+
+    W : ℋ ⊗ 𝒦' → 𝒦 ,   W(x ⊗ d) = ϱ(|x⟩⟨e₀|) d ,
+
+so that `W(eᵢ ⊗ dⱼ) = rᵢⱼ` — the same map, and `U = W*`.  Three things fall out:
+
+* **Orthonormality of `(rᵢⱼ)` becomes one computation, valid for all `x,y,d,d'`
+  at once**: `⟪ϱ(|x⟩⟨e₀|)d, ϱ(|y⟩⟨e₀|)d'⟫ = ⟪d, ϱ(|e₀⟩⟨x|·|y⟩⟨e₀|)d'⟫
+  = ⟪x,y⟫⟪d, ϱ(p₀)d'⟫ = ⟪x,y⟫⟪d,d'⟫`, the last step because `d' ∈ 𝒦'`.  This is
+  literally the thesis's `‖rᵢⱼ‖ = 1` computation with `eᵢ, dⱼ` left as
+  variables, and it *is* the isometry of `W`.
+* **138V disappears.**  The thesis's second half expands `|a eᵢ⟩⟨e_{i₀}|` as an
+  ultrastrongly convergent sum `∑ₖ ⟨eₖ, aeᵢ⟩ |eₖ⟩⟨e_{i₀}|` and uses
+  ultrastrong continuity of `ϱ` (`p-uwcont`) to push `ϱ` through it.  In the
+  coordinate-free form the intertwining relation `W ∘ (a ⊗ 1) = ϱ(a) ∘ W` is
+  the one-line identity `a·|x⟩⟨e₀| = |a x⟩⟨e₀|` checked on elementary tensors
+  and extended by `hilbTensor_ext`.  **No ultrastrong convergence, and no use
+  of `p-uwcont`, anywhere in the proof.**
+* **Injectivity of `ϱ` is never needed.**  dils.tex 138III opens by proving
+  `ker ϱ = 0` via `prop:weakly-closed-ideal` and centrality of projections in
+  `B(ℋ)`.  That step is not used by anything below it in our proof: what the
+  argument needs is surjectivity of `W`, and that is proved directly.  (The
+  hypothesis "`ϱ` non-zero" is still used, but only to rule out `ℋ = 0`.)
+
+**What the thesis's argument is genuinely needed for** is exactly one step, and
+it is transcribed faithfully as `nmiu_forall_mem`: the range `M` of `W` is all
+of `𝒦`.  Take a Hilbert basis `(eᵢ)` of `ℋ`, `pᵢ = |eᵢ⟩⟨eᵢ|`.  Then
+`pᵢ = |eᵢ⟩⟨e₀| · |e₀⟩⟨e₀| · |e₀⟩⟨eᵢ|`, so `ϱ(pᵢ)𝒦 ⊆ M`, hence
+`ϱ(∑_{i∈F} pᵢ) ≤ P_M` for every finite `F` (a projection whose range lies in a
+closed subspace is below the projection onto it).  Meanwhile
+`IsLUB {∑_{i∈F} pᵢ} 1` in `sa(B(ℋ))` — Parseval, in the form
+`HilbertBasis.hasSum_inner_mul_inner` — and `ϱ` is normal, so `1 = ϱ(1)` is the
+*least* upper bound of `{ϱ(∑_{i∈F} pᵢ)}`, giving `1 ≤ P_M` and `M = 𝒦`.  This
+is the thesis's display `1 = ϱ(1) = ∑ᵢ ϱ(pᵢ) = ∑ᵢⱼ |rᵢⱼ⟩⟨rᵢⱼ|` read as an
+inequality between projections, which avoids having to give the sum
+`∑ᵢⱼ |rᵢⱼ⟩⟨rᵢⱼ|` a meaning as a limit.
+
+### 3. **138VI** `typei_inner_auto` — proved, and the tensor product is not needed at all
+
+The thesis states this as a corollary of 138II.  Deriving it *through* 138II
+would mean showing `dim 𝒦' = 1` and then transporting along `ℋ ⊗ 𝒦' ≅ ℋ`,
+which is more tensor bookkeeping than the whole of 138II.  Instead the same
+skeleton runs with `𝒦'` replaced by a single unit vector `d₀ ∈ ϱ(p₀)𝒦`:
+`V : ℋ → 𝒦`, `V x = ϱ(|x⟩⟨e₀|)d₀`, is an isometry by the same computation,
+intertwines by the same identity, and is surjective by the same
+`nmiu_forall_mem` — provided `ϱ(p₀)𝒦 = ℂd₀`, which is where *surjectivity* of
+`ϱ` enters:
+
+> if `d ⊥ d₀` are unit vectors fixed by `ϱ(p₀)`, pick `a` with
+> `ϱ(a) = |d⟩⟨d₀|`; then `p₀ a p₀ = ⟨e₀, a e₀⟩ p₀`, so applying
+> `ϱ(p₀ a p₀) = ϱ(p₀)ϱ(a)ϱ(p₀)` to `d₀` gives `d = ⟨e₀,ae₀⟩ d₀`, whence
+> `⟨d₀,d⟩ = ⟨e₀,ae₀⟩ = 0` and `d = 0`, contradiction.
+
+The easy direction (`ad_U` is bijective) is the two-line inversion
+`U(U* a U)U* = a`, `U* (U c U*) U = c`.  Divergence class 2 again — the
+thesis gives no proof, so there was nothing to transcribe.
+
+### 4. **138VII** `physics_stinespring` — proved exactly as the exercise directs
+
+Stinespring (`stinespring_normal`, already proved in this file) followed by
+138II, with `V = U ∘ V₀`.  The one case the exercise does not mention: if the
+dilating space is `0` then `ϱ = 0`, 138II does not apply, and `φ = 0`; the
+witness there is `𝒦' = (⊥ : Submodule ℂ 𝒦)` and `V = 0`.  Divergence class 1
+in the weakest sense — a missing degenerate case in an exercise, not worth an
+erratum.
+
+### 5. What is left in the cluster, and what it would cost
+
+* **138VIII** `kraus_decomposition` (both halves) — *not* attempted, and the
+  reason is specific.  From 138VII one gets `φ(a) = V*(a ⊗ 1)V`; with an
+  orthonormal basis `(eᵢ)` of `𝒦'` and the slices `Pᵢ(x ⊗ d) = ⟨eᵢ,d⟩x` one has
+  `Pᵢ* a Pᵢ = a ⊗ |eᵢ⟩⟨eᵢ|`, so the Kraus operators are `Vᵢ = Pᵢ V` and the
+  statement reduces to `∑_{i∈F} (a ⊗ |eᵢ⟩⟨eᵢ|) → a ⊗ 1` **ultraweakly**.  That
+  is the piece we do not have: it needs the slice maps (easy, ~40 lines by the
+  same `exists_hilbTensor_isometry` route) *plus* ultraweak convergence on
+  `hilbTensor`.  The convergence lemma itself is **already available**: **44VI**
+  `vna_supremum_uwlimit` (`A/VN/Basic.lean:1281`) says a bounded directed set of
+  self-adjoints converges ultraweakly to its supremum, so what is missing is the
+  order statement `IsLUB {a ⊗ P_F} (a ⊗ 1)` for `a ≥ 0` and finite `F`, plus
+  `a,b ≥ 0 ⟹ a ⊗ b ≥ 0` (which is `(c ⊗ d)*(c ⊗ d)` once `tensorCLM` has an
+  adjoint formula — one `hilbTensor_ext`), the reduction of a general `a` to four
+  positives, and pushing the limit through `ad_V`.  The `IsLUB` goes exactly like
+  `isLUB_hilbertBasis_partialSums` above: `(a ⊗ P_F)ξ → (a ⊗ 1)ξ` in norm for
+  elementary `ξ`, hence for all `ξ` by density and `‖a ⊗ P_F‖ ≤ ‖a‖`, and then
+  compare quadratic forms.  Estimate **250–400 lines**, most of it that `IsLUB`.  The finite-dimensional half additionally needs the *minimal* Stinespring
+  dilation (`stinespring_minimal_dilation`, in this file) to bound `dim 𝒦'`, since
+  the `𝒦'` produced by 138VII carries no dimension bound.
+* **139XI** `ess_uniq_pur` — untouched; it is essential uniqueness of
+  purification and looks to need minimality, which the statement does not
+  hypothesise.  Worth a suspicion-of-falsity pass before any proof attempt.
+
+### 6. Notes on the brief
+
+* The brief's "138II rests on a Hilbert-space tensor product development that
+  `hilbTensor`/`tensorCLM` does not have" was **wrong in its conclusion**,
+  though right about the state of the API.  The recurring lesson it itself
+  quoted — "*Mathlib lacks X* is a fact about Mathlib, not a measurement of how
+  much of X the proof consumes" — applied here, and to the thesis's own proof
+  as much as to Mathlib: the basis-heavy presentation in 138IV/138V made the
+  requirement look much larger than it is.
+* The brief says `Stinespring.lean` has "seven sorries, six of them the 138II
+  cluster".  It has **six** code `sorry`s (the seventh `grep` hit is the word
+  `sorry` in the file's header doc comment), and the cluster is **five** of
+  them: 138II, 138VI, 138VII, 138VIII ×2 — **139XI is not downstream of 138II**
+  (it is about two given dilations of one `φ`, not about the form of an
+  nmiu-map), so it would have survived the cluster falling in any case.
+* `Theses/B/Dils/HilbertModules.lean` is now at **0** `sorry`s; the per-file
+  B/Dils split is Kaplansky 5, Paschke 8, Pure 15, SelfDualCompletion 2,
+  SelfDual 21, Stinespring 3.
+
+### 7. Verification
+
+`lean Theses/B/Dils/Stinespring.lean` — no errors, three `sorry` warnings.
+`#print axioms` on `nmiu_between_type_I`, `typei_inner_auto`,
+`physics_stinespring` and `nmiu_forall_mem`: all exactly
+`[propext, Classical.choice, Quot.sound]`.  `Stinespring.olean` was
+regenerated with `lean -o …` (which does not take the workspace lock, unlike
+`lake build`) and `Theses/B/Dils/Paschke.lean`, the one file importing it,
+re-checks clean — so none of the ~15 new names collides downstream.
