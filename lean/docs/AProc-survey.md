@@ -1,11 +1,76 @@
 # `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–81, sessions 47–58)
 
-**Headline count: A/Proc has 64 code `sorry`s** after session 59.
-Per file: `Tensor` **25** (was 31), `Measurement` **11**, `QuantumLambda` 17,
-`Duplicators` **11**.  (`grep -c sorry` over-counts, because the file
+**Headline count: A/Proc has 53 code `sorry`s** after session 62.
+Per file: `Tensor` **19** (was 25), `Measurement` **10** (was 11),
+`QuantumLambda` 17, `Duplicators` **7** (was 11).  (`grep -c sorry` over-counts, because the file
 docstrings mention `sorry` in prose; the code counts are the ones above.
 Note `\bsorry\b` also matches "sorry-ed" in prose — count the compiler's
 `declaration uses \`sorry\`` warnings instead.)
+
+
+> **Session 62 — parsec 1160 closes except for 116III.4; 130IV closes; and
+> **104III.3/.4/.5** and **130V** turn out to be FALSE.**  A/Proc **64 → 53**
+> (`Tensor` 19, `Measurement` 10, `QuantumLambda` 17, `Duplicators` 7), verified
+> by a successful `lake build Theses.A.Proc.Duplicators Theses.A.Proc.Measurement`.
+>
+> **`Tensor.lean` (25 → 19).**  Closed: **116I** `product_functional_norm`,
+> **116III.2**, **116III.3**, **116IV.1**, **116IV.2**, **118II.1**
+> `ceil_tensor`.
+> * The `≥` half of **116III.2** needed the *subunital* form of 21VII, which
+>   does not exist: four new public lemmas in `DensityAux`
+>   (`exists_npFunctional_polar`, `starMulSelf_le_one_of_isPartialIsometry`,
+>   `exists_npFunctional_ge_norm_sub`, `exists_npFunctional_ge_omegaNorm_sub`)
+>   prove `‖p‖ = sup {ω(p) : ω np, ω(1) ≤ 1}` from **87VI** + **86IX** +
+>   Cauchy–Schwarz for `‖·‖_{|f|}`.  These belong in A/VN and are here only
+>   because A/Proc must not edit it.
+> * **116IV.1**: the brief was right that `ultraweak` had to be recorded as a
+>   topological **ℂ**-vector space (`ultraweak_continuousSMul_complex`, three
+>   lines), and *also* that the thesis's own proof cannot be used — it cites
+>   **116III.4**, joint ultraweak continuity, which is still open.  Separate
+>   continuity in each variable suffices, but the *left* slice had to be
+>   written out (`npTmulLeft` / `continuous_ultraweak_vtmul_left`, ~90 lines):
+>   `IsTensorProduct γ` is not symmetric on the nose.  ERRATA gained a **116V**
+>   row.
+> * **116I** and **116III.3** are the thesis's proofs verbatim; **116IV.2** is
+>   too, with one implicit step (the approximants are product functionals *of
+>   the conjugated shape*) made explicit; **118II.1** is `ncp_ceil` applied to
+>   the two np-slices, the left one now available.
+> * **116III.4 is still neither proved nor refuted** — the session-59
+>   obstruction was re-derived and stands even with `‖a ⊗ b‖ = ‖a‖‖b‖` as an
+>   equality.
+> * **Next gate in `Tensor.lean`: 116VII `tensor_characterization`.**  All its
+>   inputs (112X, 116IV.1, 116IV.2) now exist, but it is a ~250-line
+>   development: proc.tex:3600 makes `γ_⊙` bounded (21VII on
+>   `γ(σ,τ)(γ_⊙(s)*(·)γ_⊙(s))`) and ultraweakly continuous (90II.2), applies
+>   112XI + 114I, then proves the resulting nmiu-map bijective through
+>   `injective-nmiu-iso-on-image`.
+>
+> **`Measurement.lean` (11 → 10).**  **104III.3, .4 and .5 are FALSE as
+> printed** — the survey's row "not blocked — unsolved exercises" is wrong.
+> Part 2 forces `⌈p⌉ = ⌈q⌉`; parts 3/4/5 conclude central similarity from
+> hypotheses that never constrain the carriers, and one machine-checked witness
+> (`ℓ^∞({0,1})`, `p = (1,0)`, `q = 1`) refutes all three.  For .4 the repair
+> `⌈p⌉ = ⌈q⌉` is *insufficient* (it would make every projection central); it
+> needs `⌈p⌉ = ⌈q⌉ = 1`, under which its first two `iff`s are **proved**
+> (`centrally_similar_basic_4_faithful`).  **106III.2** closed; **106III.3**'s
+> clause (E) refuted in `B(ℂ²)`.  **Next gate: 104VII**, which is *not* blocked
+> on .4/.5 any more — what it needs is (i) "`p` is a norm limit of combinations
+> of projections *commuting with `p`*" (the tree has 65IV only for all
+> projections) and (ii) the reduction to the invertible case via the repaired
+> .5.
+>
+> **`Duplicators.lean` (11 → 7).**  Closed: **130IV** `measure_space_partition`
+> (~230 lines; the missing piece was the norm dictionary `linfty_norm_le` /
+> `linfty_ae_bound`, exactly as costed), **128XIII**, **132VI**'s unit, and
+> **132III.4**.  **130V `discrete_ell_x` is FALSE as stated**: 129II.2's
+> "covered by atomic subsets" is strictly weaker than Fremlin's "purely
+> atomic" (`X = [0,1]`, `μ = λ + δ₀`), which also makes **129VI** vacuous and
+> leaves a gap in the chapter's main theorem **127III**.  ERRATA **129II.2**,
+> QUESTIONS **A6**.  Three further blocker claims were refuted by closing the
+> item: **128XIII** does not need `tmapM`, **132VI's unit** is not blocked on
+> 47IV.3 (`cstar_product_4` supplies the C*-half), and **132III.4** was not
+> blocked at all.  `dup_vna_is_monoid_4` is proved but statement-tainted via
+> `braiding` (**119IVc**), the only remaining `sorryAx` source in the file.
 
 
 > **Session 59 — the normal-limit lemma is written, and **115II `exists_tmap`
@@ -599,7 +664,7 @@ to be `Nonempty.some` of the sorried `vnTensorProduct_nonempty`.
 | 102IX | `pure_is_rigid` | **CLOSED (session 51)** — 60 lines from `ad_rigid` at `d = √f(1)` (`stdFilter_rigid`), the 98IX square, and 100III's inverse for `[f]`; the thesis's `⋄`-computation is replaced by the pointwise identity `π_{⌈f⌉}(q.val) = q` |
 | 103II.1/.2 | `purely_positive_examples_*` | **CLOSED (session 48)** — .1 is `isPure_adSelf` (100II.3) plus 101VII.1 at `a* = a`; .2 is `a(·)a = g∘g` for `g = √a(·)√a` |
 | 104III.2a | `centrally_similar_basic_2a` | **parked: false as printed**, ERRATA row exists |
-| 104III.3/.4/.5 | `centrally_similar_basic_*` | **not blocked** — 81V `douglas` and 81VIII.1 are proved (correction, session 51).  These are unsolved exercises about `div`, `pinv` and infima of positive elements, with no published solution (asols stops at parsec 340) |
+| 104III.3/.4/.5 | `centrally_similar_basic_*` | **FALSE AS PRINTED (session 62)** — not exercises that resist, but statements missing the carrier hypothesis `⌈p⌉ = ⌈q⌉` (for .4: `⌈p⌉ = ⌈q⌉ = 1`).  One machine-checked witness in `ℓ^∞({0,1})` refutes all three; ERRATA row added.  .4's first two `iff`s are proved under faithfulness as `centrally_similar_basic_4_faithful` |
 | 104VII | `positive_quotients_centrally_similar` | 104III.4/.5 (80IV is now proved — correction to w46 §7) |
 | 104IX | `faithful_positive_map_uniqueness` | 100VII + 104VII |
 | 105III.1-2 | `chevron_f_basic_12` | **CLOSED (session 48)** — part 1 is the defining formula, part 2 is the 98IX square at `a ∈ ⌈f⌉𝒜⌈f⌉` plus `ceilOne_conj` |
@@ -622,7 +687,7 @@ to be `Nonempty.some` of the sorried `vnTensorProduct_nonempty`.
 | 112XI | `tensor_universal_property` | **CLOSED (session 57)** — 77V applied to `S = γ_⊙(𝒜⊙ℬ)`, with 112X.2 for injectivity/the bound and 112X.5 for the topology |
 | 114I | `tensor_universal_property_extra` | **CLOSED (session 58)** — see the note at the top |
 | 114II | `tensor_uniqueness` | **CLOSED (session 58)** — as predicted: apply 112XI in both directions (`γ'` is normal and bounded *as a bilinear map* by 112X.3.1 and 112X.2); miu-ness of the extension is the usual separate-continuity-plus-density argument (`mult_uws_cont`), normality is then free via `starAlgEquiv_preservesDirSups'` |
-| 116VII | `tensor_characterization` | 112X + 116IV |
+| 116VII | `tensor_characterization` | **all inputs now exist (112X, 116IV.1, 116IV.2 — session 62); this is the next gate in the file.**  Not a corollary: proc.tex:3600 makes `γ_⊙` bounded (21VII on `γ(σ,τ)(γ_⊙(s)*(·)γ_⊙(s))`) and ultraweakly continuous (90II.2), applies 112XI + 114I, then proves the nmiu-map bijective through `injective-nmiu-iso-on-image`.  ~250 lines |
 
 ### `QuantumLambda.lean` — the 7 untainted ones (recounted, session 51)
 
@@ -640,9 +705,9 @@ to be `Nonempty.some` of the sorried `vnTensorProduct_nonempty`.
 
 | DISP | decl | file:line | class | note |
 |---|---|---|---|---|
-| 130IV | `measure_space_partition` | :1019 | (a) | **the recorded obstruction is gone**: `lp_infty_nonneg_iff` / `lp_infty_le_iff` (`A/VN/Basic.lean:765 ff.`) and 47IV.1/.2 supply the componentwise order on `lp ℬ ∞`.  proc.tex:6518 is a bare Exercise — build `𝒜 ≅ ⊕ₙ ℬₙ` from `IsLinftyOf` by restriction maps; ordinary measure theory |
-| 130V | `discrete_ell_x` | :1034 | (b) | 130IV alone; `atomic_measure_space` (same file, :892, **proved**) already turns each atom into `ℂ` |
-| 132VI unit | `exists_freeMonoidUnitCpsu` | :1206 | (b) | **47IV.3 `vn_products_ncpsu` (`A/VN/Basic.lean:2905`, `sorry`)** — it is exactly the `W*_cpsu` product of the family `(ω)_{ω ∈ W*_cpsu(𝒜,ℂ)}`.  The earlier note ("missing componentwise positivity of `CStarMatrix n (lp …)`") named the symptom, not the blocker |
+| ~~130IV~~ | `measure_space_partition` | :1019 | **CLOSED (session 62)** | ~230 lines; proc.tex:6518 is a bare Exercise.  The one real obstruction was the norm dictionary — `linfty_norm_le` (pointwise bound ⟹ `‖q f‖ ≤ C`) and its converse `linfty_ae_bound` (via the nonzero projection `q 1_S`) — after which surjectivity glues *truncated* representatives with `Measurable.find`; normality is free via `starAlgEquiv_preservesDirSups'`.  `μ.IsComplete` and `[IsFiniteMeasure μ]` are **not used** |
+| 130V | `discrete_ell_x` | :1034 | **FALSE AS PRINTED (session 62)** | 130IV is proved, but 130V is *false*: 129II.2's "covered by atomic subsets" is strictly weaker than Fremlin's "purely atomic" (`X = [0,1]`, `μ = λ + δ₀`, completed: the `{0,x}` are atoms and cover `X`, yet `(0,1]` contains none, and `L^∞ ≅ L^∞[0,1] ⊕ ℂ` is no `ℓ^∞(Y)`).  Also makes **129VI** vacuous and leaves a gap in **127III**.  ERRATA **129II.2**, QUESTIONS **A6** |
+| ~~132VI unit~~ | `exists_freeMonoidUnitCpsu` | :1206 | **CLOSED (session 62)** | and **47IV.3 was never the blocker**: `cstar_product_4` (`A/CStar/Matrices.lean:1156`, proved) already supplies the C*-half in the form that is literally the definition of `IsCompletelyPositiveMap`, plus subunitality; only normality of the mediating map had to be added, the same five-line pointwise argument `vn_products_nmiu` makes |
 
 Everything else in the file is in the vacuous band (see above).  Note that
 128VIII's main input, **Tomiyama 128II**, is proved in this file (`tomiyama`).

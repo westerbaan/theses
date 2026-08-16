@@ -265,6 +265,36 @@ that fails, and the Lean statement of 81VII does not claim it.  The thesis's
 parenthetical "(and uniformly so)" in 81VII should therefore be checked too:
 by the same counterexample it is false for the `c∖·` half.
 
+### A6. 129II.2 `discrete` is weaker than "purely atomic"; 130V is false as printed — which repair?
+`proc.tex:6188`.  129II.2 defines a finite complete measure space to be
+**discrete** when it is *covered by atomic measurable subsets*, and asserts
+parenthetically that this coincides with Fremlin 211K's *purely atomic*.  It
+does not: with `X = [0,1]` and `μ = λ + δ₀` (completed) the sets `{0,x}` are
+atoms and cover `X`, yet `(0,1]` has positive measure and includes no atom.
+For that `X`, `L^∞(X,μ) ≅ L^∞[0,1] ⊕ ℂ`, so **130V** `discrete-ell-x`
+("a discrete finite measure space has `L^∞(X) ≅ ℓ^∞(Y)`") is **false as
+stated** — see the 129II.2 row of ERRATA.md.  The Lean statement transcribes
+129II.2 verbatim, so `discrete_ell_x` is unprovable and is parked.
+
+The repair we expect is to replace the definition by Fremlin's ("every
+non-negligible measurable set includes an atom"), but that is a *statement*
+change and touches three further points, so it needs a ruling:
+
+1. **129VI** `measure-space-continuous-discrete` is *true* as stated but
+   **vacuous** under the printed definition (in the counterexample `D = univ`
+   satisfies both conjuncts).  With the repaired definition its Zorn argument
+   goes through if `𝒮` is taken to be *countable disjoint unions of atoms*
+   rather than *sets covered by atoms*.
+2. **130V** becomes provable, by the route the Lean tree already has: 130IV
+   `measure-space-partition` is proved, and `atomic_measure_space` turns each
+   atom into `ℂ`.
+3. **127III** `duplicable`, the main theorem of the chapter, is proved at
+   proc.tex:6543 from 129VI + 129X + 130V, so its proof has a gap as printed.
+   The theorem itself is not in doubt.
+
+Do you want the definition repaired (and 129VI's proof adjusted), or 130V
+restated with the stronger hypothesis carried explicitly?
+
 ### A2. `parsec-340.60` (34VI.1) is an empty `\TODO{}`
 The solution slot exists but is empty, and it is the *last* entry in
 `asols.tex` — which is why solution coverage appears to stop at parsec 340.

@@ -5517,18 +5517,226 @@ theorem centrally_similar_basic_2a [VonNeumannAlgebra A] (p q : A)
       (CentrallySimilar p 1 ↔ p ∈ centre A) ∧
       (CentrallySimilar p (p ^ 2) ↔ p ∈ centre A) := sorry
 
+/-- **104III**.3/.4/.5, obstruction: the projection `(1,0)` of
+`ℓ^∞({0,1})` is not centrally similar to `1` (it is a central projection
+`≠ 1`, so `centrally_similar_one_of_isStarProjection` applies).  This is
+the witness for the three counterexamples below. -/
+private theorem pbFourWitness_not_centrallySimilar_one :
+    ¬ CentrallySimilar (pbFourWitness : lp (fun _ : Fin 2 => ℂ) ⊤) 1 := fun h =>
+  pbFourWitness_ne_one
+    (centrally_similar_one_of_isStarProjection _ pbFourWitness_isStarProjection h)
+
+open scoped ENNReal in
+/-- **104III** (`centrally-similar-basic`, proc.tex:1465, Exercise),
+part 3 is **FALSE as printed**; this is the counterexample.  Take
+`𝒜 = ℓ^∞({0,1})`, `p = (1,0)`, `q = 1`.  They commute, `m := p∧q = p`
+(as `p ≤ q`), and `m/p = p`, `m/q = p` are central (the algebra is
+commutative), yet `p` and `q` are not centrally similar — by part 2 they
+would have to satisfy `⌈p⌉ = ⌈q⌉`, i.e. `(1,0) = 1`.
+The missing hypothesis is exactly that: `⌈p⌉ = ⌈q⌉` (the same omission as
+in part 2a, and as in **79VI**.4).  It is *necessary*, by part 2, and
+with it the argument runs: `m = (m/p)·p = (m/q)·q` exhibits the central
+similarity as soon as `⌈p⌉ ≤ ⌈m/p⌉` and `⌈q⌉ ≤ ⌈m/q⌉`, which follows
+from `⌈m⌉ = ⌈p⌉ = ⌈q⌉` — and that in turn is where `m = p∧q` is used. -/
+theorem centrally_similar_basic_3_counterexample :
+    ∃ p q m : lp (fun _ : Fin 2 => ℂ) ∞,
+      0 ≤ p ∧ 0 ≤ q ∧ p * q = q * p ∧ IsGLB {p, q} m ∧
+        div m p ∈ centre _ ∧ div m q ∈ centre _ ∧ ¬ CentrallySimilar p q := by
+  refine ⟨pbFourWitness, 1, pbFourWitness, pbFourWitness_isStarProjection.nonneg,
+    zero_le_one, by rw [mul_one, one_mul], ⟨?_, ?_⟩, ?_, ?_,
+    pbFourWitness_not_centrallySimilar_one⟩
+  · rintro x (rfl | rfl)
+    · exact le_rfl
+    · exact pbFourWitness_isStarProjection.le_one
+  · intro x hx
+    exact hx (by left; rfl)
+  · have hd : div (pbFourWitness : lp (fun _ : Fin 2 => ℂ) ∞) pbFourWitness
+        = pbFourWitness := by
+      refine div_eq (pbFourWitness_isStarProjection.isIdempotentElem.eq).symm ?_
+      rw [rangeProj_of_isStarProjection pbFourWitness_isStarProjection,
+        pbFourWitness_isStarProjection.isIdempotentElem.eq]
+    rw [hd]
+    exact fun a _ => mul_comm a _
+  · have hd : div (pbFourWitness : lp (fun _ : Fin 2 => ℂ) ∞) 1 = pbFourWitness := by
+      refine div_eq (by rw [mul_one]) ?_
+      rw [rangeProj_of_isStarProjection (IsStarProjection.one _), mul_one]
+    rw [hd]
+    exact fun a _ => mul_comm a _
+
 /-- **104III** (`centrally-similar-basic`, proc.tex:1465, Exercise),
 part 3: if `p` and `q` commute, `m` is their infimum, and both `m/p` and
-`m/q` are central, then `p` and `q` are centrally similar. -/
+`m/q` are central, then `p` and `q` are centrally similar.
+
+**Parked: false as printed** — see
+`centrally_similar_basic_3_counterexample` just above (and the 104III row
+of `ERRATA.md`); the hypothesis `⌈p⌉ = ⌈q⌉` is missing.  The statement is
+left untouched pending the author's ruling. -/
 theorem centrally_similar_basic_3 [VonNeumannAlgebra A] (p q m : A)
     (hp : 0 ≤ p) (hq : 0 ≤ q) (hcomm : p * q = q * p)
     (hm : IsGLB {p, q} m) (h1 : div m p ∈ centre A)
     (h2 : div m q ∈ centre A) : CentrallySimilar p q := sorry
 
+open scoped ENNReal in
+/-- **104III** (`centrally-similar-basic`, proc.tex:1465, Exercise),
+part 4 is **FALSE as printed**; this is the counterexample to its first
+`iff`.  Same witness as for part 3: in `ℓ^∞({0,1})` take `p = (1,0)` and
+`q = 1`; both are projections, hence pseudoinvertible, `p·q^∼¹ = p` is
+central, yet `p` and `q` are not centrally similar. -/
+theorem centrally_similar_basic_4_counterexample :
+    ∃ p q m : lp (fun _ : Fin 2 => ℂ) ∞,
+      0 ≤ p ∧ 0 ≤ q ∧ Pseudoinvertible _ p ∧ Pseudoinvertible _ q ∧ IsGLB {p, q} m ∧
+        p * pinv q ∈ centre _ ∧ ¬ CentrallySimilar p q := by
+  refine ⟨pbFourWitness, 1, pbFourWitness, pbFourWitness_isStarProjection.nonneg,
+    zero_le_one, pseudoinvertible_of_isStarProjection pbFourWitness_isStarProjection,
+    pseudoinvertible_of_isStarProjection (IsStarProjection.one _), ⟨?_, ?_⟩, ?_,
+    pbFourWitness_not_centrallySimilar_one⟩
+  · rintro x (rfl | rfl)
+    · exact le_rfl
+    · exact pbFourWitness_isStarProjection.le_one
+  · intro x hx
+    exact hx (by left; rfl)
+  · rw [pinv_of_isStarProjection (IsStarProjection.one _), mul_one]
+    exact fun a _ => mul_comm a _
+
+/-- **104III**.4, second obstruction: unlike parts 2a and 3, part 4 is
+**not** repaired by adding `⌈p⌉ = ⌈q⌉`.  Its first `iff` at `p = q = e`
+for a projection `e` (where `e` and `e` are trivially centrally similar,
+`m = e`, and `e·e^∼¹ = e`) would make *every* projection of *every* von
+Neumann algebra central — false already in `M₂(ℂ)` at `e = diag(1,0)`.
+What part 4 needs is the *faithfulness* hypothesis `⌈p⌉ = ⌈q⌉ = 1` of
+**104VII**, which turns pseudoinvertibility into invertibility; the
+`⟹` of the first `iff` is then three lines: `cp = dq` gives
+`c·(pq⁻¹) = d`, so `c·(a(pq⁻¹) − (pq⁻¹)a) = 0` for every `a`, and
+`⌈c⌉ = 1` cancels `c`. -/
+theorem centrally_similar_basic_4_obstruction [VonNeumannAlgebra A] (e : A)
+    (he : IsStarProjection e)
+    (h : CentrallySimilar e e ↔ e * pinv e ∈ centre A) : e ∈ centre A := by
+  have hcs : CentrallySimilar e e :=
+    ⟨1, 1, fun a _ => by rw [one_mul, mul_one], fun a _ => by rw [one_mul, mul_one],
+      zero_le_one, zero_le_one, rfl,
+      by rw [ceil_one, ceil_of_isStarProjection he]; exact he.le_one,
+      by rw [ceil_one, ceil_of_isStarProjection he]; exact he.le_one⟩
+  have hc := h.mp hcs
+  rwa [pinv_of_isStarProjection he, he.isIdempotentElem.eq] at hc
+
+/-- **104III**.4, the **repaired** first two `iff`s: with the faithfulness
+hypothesis `⌈p⌉ = ⌈q⌉ = 1` of **104VII** in place, `p` and `q` are
+centrally similar iff `p·q^∼¹` is central, iff `q·p^∼¹` is central.  (The
+third `iff`, the one involving `p ∧ q`, is not proved here.)
+
+`⌈q⌉ = 1` makes `q^∼¹` a two-sided inverse of `q`, so: if `z := pq⁻¹` is
+central then `zq = p` exhibits the central similarity — `z = √(q⁻¹) p
+√(q⁻¹) ≥ 0`, and `⌈z⌉ ≥ ⌈p⌉ = 1`; conversely `cp = dq` gives `cz = d`,
+hence `c(az − za) = ad − da = 0` for every `a`, and `⌈c⌉ ≥ ⌈p⌉ = 1`
+cancels `c`.  The second `iff` is that `qp⁻¹` is the inverse of `pq⁻¹` and
+that the inverse of a central element is central. -/
+theorem centrally_similar_basic_4_faithful [VonNeumannAlgebra A] (p q : A)
+    (hp : 0 ≤ p) (hq : 0 ≤ q) (hpi : Pseudoinvertible A p)
+    (hqi : Pseudoinvertible A q) (hcp : ceil p = 1) (hcq : ceil q = 1) :
+    (CentrallySimilar p q ↔ p * pinv q ∈ centre A) ∧
+      (p * pinv q ∈ centre A ↔ q * pinv p ∈ centre A) := by
+  -- `q^∼¹` is a two-sided inverse of `q` (and likewise for `p`)
+  have hinvs : ∀ x : A, 0 ≤ x → Pseudoinvertible A x → ceil x = 1 →
+      pinv x * x = 1 ∧ x * pinv x = 1 := by
+    intro x hx hxi hcx
+    obtain ⟨h1, -, -, h4⟩ := pinv_spec hxi
+    refine ⟨?_, ?_⟩
+    · rwa [suppProj_of_nonneg hx, hcx] at h1
+    · rwa [rangeProj_eq_suppProj_of_isSelfAdjoint (IsSelfAdjoint.of_nonneg hx),
+        suppProj_of_nonneg hx, hcx] at h4
+  obtain ⟨hqpq, hqqp⟩ := hinvs q hq hqi hcq
+  obtain ⟨hppp, hppq⟩ := hinvs p hp hpi hcp
+  -- the inverse of a central element is central
+  have hcentre_inv : ∀ x y : A, x * y = 1 → y * x = 1 → x ∈ centre A → y ∈ centre A := by
+    intro x y hxy hyx hxc a _
+    calc a * y = y * x * (a * y) := by rw [hyx, one_mul]
+      _ = y * (x * a) * y := by noncomm_ring
+      _ = y * (a * x) * y := by rw [hxc a (Set.mem_univ a)]
+      _ = y * a * (x * y) := by noncomm_ring
+      _ = y * a := by rw [hxy, mul_one]
+  have hzz : (p * pinv q) * (q * pinv p) = 1 := by
+    calc (p * pinv q) * (q * pinv p) = p * (pinv q * q) * pinv p := by noncomm_ring
+      _ = 1 := by rw [hqpq, mul_one, hppq]
+  have hzz' : (q * pinv p) * (p * pinv q) = 1 := by
+    calc (q * pinv p) * (p * pinv q) = q * (pinv p * p) * pinv q := by noncomm_ring
+      _ = 1 := by rw [hppp, mul_one, hqqp]
+  refine ⟨⟨?_, ?_⟩, ⟨fun h => hcentre_inv _ _ hzz hzz' h,
+    fun h => hcentre_inv _ _ hzz' hzz h⟩⟩
+  · -- centrally similar ⟹ `pq⁻¹` central
+    rintro ⟨c, d, hc, hd, hc0, hd0, hcd, hpc, -⟩
+    have hcc : ceil c = 1 :=
+      le_antisymm (ceil_spec hc0).1.le_one (by rw [← hcp]; exact hpc)
+    have hcz : c * (p * pinv q) = d := by
+      calc c * (p * pinv q) = c * p * pinv q := by noncomm_ring
+        _ = d * q * pinv q := by rw [hcd]
+        _ = d := by rw [mul_assoc, hqqp, mul_one]
+    intro a _
+    have key : c * (a * (p * pinv q) - p * pinv q * a) = 0 := by
+      have h1 : c * (a * (p * pinv q)) = a * d := by
+        rw [← mul_assoc, ← hc a (Set.mem_univ a), mul_assoc, hcz]
+      have h2 : c * (p * pinv q * a) = d * a := by rw [← mul_assoc, hcz]
+      rw [mul_sub, h1, h2, hd a (Set.mem_univ a), sub_self]
+    have h0 := ceil_mul_eq_zero hc0 key
+    rw [hcc, one_mul, sub_eq_zero] at h0
+    exact h0
+  · -- `pq⁻¹` central ⟹ centrally similar
+    intro hzc
+    have hzq : p * pinv q * q = p := by rw [mul_assoc, hqpq, mul_one]
+    -- `z = √(q⁻¹) p √(q⁻¹)` is positive
+    have hpq0 : (0 : A) ≤ pinv q := pinv_nonneg hq hqi
+    have ht0 : (0 : A) ≤ CFC.sqrt (pinv q) := CFC.sqrt_nonneg _
+    have htsa : star (CFC.sqrt (pinv q)) = CFC.sqrt (pinv q) :=
+      (IsSelfAdjoint.of_nonneg ht0).star_eq
+    have htt : CFC.sqrt (pinv q) * CFC.sqrt (pinv q) = pinv q :=
+      CFC.sqrt_mul_sqrt_self _ hpq0
+    have htq : q * CFC.sqrt (pinv q) = CFC.sqrt (pinv q) * q :=
+      (Theses.A.CStar.sqrt_commute (pinv q) hpq0 q (by rw [hqqp, hqpq])).1
+    have htqt : CFC.sqrt (pinv q) * q * CFC.sqrt (pinv q) = 1 := by
+      calc CFC.sqrt (pinv q) * q * CFC.sqrt (pinv q)
+          = q * CFC.sqrt (pinv q) * CFC.sqrt (pinv q) := by rw [← htq]
+        _ = q * pinv q := by rw [mul_assoc, htt]
+        _ = 1 := hqqp
+    have hz0 : (0 : A) ≤ p * pinv q := by
+      have hconj : CFC.sqrt (pinv q) * p * CFC.sqrt (pinv q) = p * pinv q := by
+        calc CFC.sqrt (pinv q) * p * CFC.sqrt (pinv q)
+            = CFC.sqrt (pinv q) * (p * pinv q * q) * CFC.sqrt (pinv q) := by rw [hzq]
+          _ = CFC.sqrt (pinv q) * (p * pinv q) * (q * CFC.sqrt (pinv q)) := by
+              noncomm_ring
+          _ = (p * pinv q) * CFC.sqrt (pinv q) * (q * CFC.sqrt (pinv q)) := by
+              rw [hzc _ (Set.mem_univ (CFC.sqrt (pinv q)))]
+          _ = (p * pinv q) * (CFC.sqrt (pinv q) * q * CFC.sqrt (pinv q)) := by
+              noncomm_ring
+          _ = p * pinv q := by rw [htqt, mul_one]
+      rw [← hconj]
+      have h := star_left_conjugate_nonneg hp (CFC.sqrt (pinv q))
+      rwa [htsa] at h
+    -- `⌈z⌉ ≥ ⌈p⌉ = 1`
+    have hcz1 : ceil (p * pinv q) = 1 := by
+      refine le_antisymm (ceil_spec hz0).1.le_one ?_
+      rw [← hcp]
+      refine ((ceil_basic_1 p (ceil (p * pinv q)) hp (ceil_spec hz0).1).out 0 2).mp ?_
+      have hzc' : (p * pinv q) * ceil (p * pinv q) = p * pinv q := (ceil_spec hz0).2.1
+      have hzl : ceil (p * pinv q) * (p * pinv q) = p * pinv q :=
+        ((ceil_basic_1 _ _ hz0 (ceil_spec hz0).1).out 1 0).mp hzc'
+      calc ceil (p * pinv q) * p = ceil (p * pinv q) * (p * pinv q * q) := by rw [hzq]
+        _ = (ceil (p * pinv q) * (p * pinv q)) * q := by noncomm_ring
+        _ = p := by rw [hzl, hzq]
+    exact ⟨1, p * pinv q, fun a _ => by rw [one_mul, mul_one],
+      hzc, zero_le_one, hz0, by rw [one_mul, hzq], by rw [hcp, ceil_one],
+      by rw [hcq, hcz1]⟩
+
 /-- **104III** (`centrally-similar-basic`, proc.tex:1465, Exercise),
 part 4: for pseudoinvertible `p, q`: centrally similar iff `p·q^∼¹`
 central iff `q·p^∼¹` central iff both `m·p^∼¹` and `m·q^∼¹` central
-(`m` the infimum of `p` and `q`). -/
+(`m` the infimum of `p` and `q`).
+
+**Parked: false as printed** — see
+`centrally_similar_basic_4_counterexample` and
+`centrally_similar_basic_4_obstruction` just above (and the 104III row of
+`ERRATA.md`); the hypothesis `⌈p⌉ = ⌈q⌉ = 1` is missing.  With it, the
+first two `iff`s are **proved** in
+`centrally_similar_basic_4_faithful` above.  The statement is left
+untouched pending the author's ruling. -/
 theorem centrally_similar_basic_4 [VonNeumannAlgebra A] (p q m : A)
     (hp : 0 ≤ p) (hq : 0 ≤ q) (hpi : Pseudoinvertible A p)
     (hqi : Pseudoinvertible A q) (hm : IsGLB {p, q} m) :
@@ -5537,11 +5745,52 @@ theorem centrally_similar_basic_4 [VonNeumannAlgebra A] (p q m : A)
       (q * pinv p ∈ centre A ↔
         m * pinv p ∈ centre A ∧ m * pinv q ∈ centre A) := sorry
 
+open scoped ENNReal in
+/-- **104III** (`centrally-similar-basic`, proc.tex:1465, Exercise),
+part 5 is **FALSE as printed**; this is the counterexample.  Same witness
+again: in `ℓ^∞({0,1})` take `p = (1,0)`, `q = 1` and the constant sequence
+`eₙ = (1,0)`.  Then `⋃ₙ eₙ = (1,0) = ⌈p⌉`, every `eₙp = eₙq = (1,0)` is
+pseudoinvertible, and `eₙp` and `eₙq` are centrally similar (they are
+equal), yet `p` and `q` are not.  The hypothesis `⋃ₙ eₙ = ⌈p⌉` controls
+only `p`'s carrier: what is missing is again `⌈p⌉ = ⌈q⌉` (equivalently
+`⋃ₙ eₙ = ⌈q⌉` as well). -/
+theorem centrally_similar_basic_5_counterexample :
+    ∃ (p q : lp (fun _ : Fin 2 => ℂ) ∞) (e : ℕ → lp (fun _ : Fin 2 => ℂ) ∞),
+      0 ≤ p ∧ 0 ≤ q ∧ p * q = q * p ∧ (∀ n, IsStarProjection (e n)) ∧ Monotone e ∧
+        (∀ n, e n * p = p * e n) ∧ (∀ n, e n * q = q * e n) ∧
+        projSup (Set.range e) = ceil p ∧
+        (∀ n, Pseudoinvertible _ (e n * p)) ∧ (∀ n, Pseudoinvertible _ (e n * q)) ∧
+        (∀ n, CentrallySimilar (e n * p) (e n * q)) ∧ ¬ CentrallySimilar p q := by
+  have hw := pbFourWitness_isStarProjection
+  have hww : (pbFourWitness : lp (fun _ : Fin 2 => ℂ) ∞) * pbFourWitness = pbFourWitness :=
+    hw.isIdempotentElem.eq
+  refine ⟨pbFourWitness, 1, fun _ => pbFourWitness, hw.nonneg, zero_le_one,
+    by rw [mul_one, one_mul], fun _ => hw, fun m n _ => le_rfl, fun _ => rfl,
+    fun n => by rw [mul_one, one_mul], ?_, ?_, ?_, ?_,
+    pbFourWitness_not_centrallySimilar_one⟩
+  · rw [ceil_of_isStarProjection hw]
+    refine projSup_eq ?_ hw ?_ ?_
+    · rintro p ⟨n, rfl⟩; exact hw
+    · rintro p ⟨n, rfl⟩; exact le_rfl
+    · intro q hq hub; exact hub pbFourWitness ⟨0, rfl⟩
+  · intro n; rw [hww]; exact pseudoinvertible_of_isStarProjection hw
+  · intro n; rw [mul_one]; exact pseudoinvertible_of_isStarProjection hw
+  · intro n
+    rw [hww, mul_one]
+    exact ⟨1, 1, fun a _ => mul_comm a _, fun a _ => mul_comm a _, zero_le_one, zero_le_one,
+      rfl, by rw [ceil_one]; exact (ceil_spec hw.nonneg).1.le_one,
+      by rw [ceil_one]; exact (ceil_spec hw.nonneg).1.le_one⟩
+
 /-- **104III** (`centrally-similar-basic`, proc.tex:1465, Exercise),
 part 5: if `p, q` commute and `e₁ ≤ e₂ ≤ ⋯` are projections commuting
 with `p` and `q`, with `⋃ₙ eₙ = ⌈p⌉`, such that the `eₙp` and `eₙq` are
 pseudoinvertible and centrally similar, then `p` and `q` are centrally
-similar. -/
+similar.
+
+**Parked: false as printed** — see
+`centrally_similar_basic_5_counterexample` just above (and the 104III row
+of `ERRATA.md`); the hypothesis `⌈p⌉ = ⌈q⌉` is missing.  The statement is
+left untouched pending the author's ruling. -/
 theorem centrally_similar_basic_5 [VonNeumannAlgebra A] (p q : A)
     (hp : 0 ≤ p) (hq : 0 ≤ q) (hcomm : p * q = q * p) (e : ℕ → A)
     (he : ∀ n, IsStarProjection (e n)) (hmono : Monotone e)
@@ -6451,13 +6700,524 @@ theorem sequential_product_counterexample_2 [VonNeumannAlgebra A] :
       (∀ p ∈ effects A, ∀ q ∈ effects A, op p (op p q) = op (op p p) q) ∧
       (∀ p ∈ effects A, ∃ q ∈ effects A, p = op q q) ∧
       (∀ p ∈ effects A, ∀ e₁ e₂ : A, IsStarProjection e₁ →
-        IsStarProjection e₂ → (op p e₁ ≤ 1 - e₂ ↔ op p e₂ ≤ 1 - e₁)) := sorry
+        IsStarProjection e₂ → (op p e₁ ≤ 1 - e₂ ↔ op p e₂ ≤ 1 - e₁)) := by
+  -- Exercise, no author argument.  Write `f := ⌊p⌋` and `s := √(p−⌊p⌋)`; the
+  -- whole computation rests on `fp = pf = f`, hence `f(p−f) = 0`, hence
+  -- `fs = sf = 0`, and on `ps = sp`.  Then `p ∗ q = fqf + sqs` with the two
+  -- summands living in orthogonal corners, which makes (A) `f + (p−f) = p`,
+  -- (C) `p ∗ p = p²` together with `⌊p²⌋ = ⌊p⌋` and `√(p²−⌊p⌋) = p−⌊p⌋`,
+  -- (D) `q ∗ q = q²` at `q = √p`, and (E) the conjunction of the two
+  -- symmetric conditions `e₁fe₂ = 0` and `e₁se₂ = 0`.
+  intro op hop
+  have basics : ∀ p ∈ effects A,
+      IsStarProjection (floor p) ∧ floor p * p = floor p ∧ p * floor p = floor p ∧
+        (0 : A) ≤ p - floor p ∧
+        CFC.sqrt (p - floor p) * CFC.sqrt (p - floor p) = p - floor p ∧
+        star (CFC.sqrt (p - floor p)) = CFC.sqrt (p - floor p) ∧
+        floor p * CFC.sqrt (p - floor p) = 0 ∧
+        CFC.sqrt (p - floor p) * floor p = 0 ∧
+        p * CFC.sqrt (p - floor p) = CFC.sqrt (p - floor p) * p := by
+    intro p hp
+    have hf : IsStarProjection (floor p) := (floor_spec hp).1
+    have hfp : floor p * p = floor p := (floor_spec hp).2.1
+    have hfsa : star (floor p) = floor p := hf.isSelfAdjoint.star_eq
+    have hpsa : star p = p := (IsSelfAdjoint.of_nonneg hp.1).star_eq
+    have hpf : p * floor p = floor p := by
+      have h := congrArg star hfp
+      rwa [star_mul, hpsa, hfsa] at h
+    have hsub : (0 : A) ≤ p - floor p := sub_nonneg.mpr (floor_le hp)
+    have hss : CFC.sqrt (p - floor p) * CFC.sqrt (p - floor p) = p - floor p :=
+      CFC.sqrt_mul_sqrt_self _ hsub
+    have hssa : star (CFC.sqrt (p - floor p)) = CFC.sqrt (p - floor p) :=
+      (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg _)).star_eq
+    have hfx : floor p * (p - floor p) = 0 := by
+      rw [mul_sub, hfp, hf.isIdempotentElem.eq, sub_self]
+    have hsf : CFC.sqrt (p - floor p) * floor p = 0 := by
+      refine (CStarRing.star_mul_self_eq_zero_iff _).mp ?_
+      rw [star_mul, hssa, hfsa]
+      calc floor p * CFC.sqrt (p - floor p) * (CFC.sqrt (p - floor p) * floor p)
+          = floor p * (CFC.sqrt (p - floor p) * CFC.sqrt (p - floor p)) * floor p := by
+            noncomm_ring
+        _ = 0 := by rw [hss, hfx, zero_mul]
+    have hfs : floor p * CFC.sqrt (p - floor p) = 0 := by
+      have h := congrArg star hsf
+      rwa [star_mul, hfsa, hssa, star_zero] at h
+    have hps : p * CFC.sqrt (p - floor p) = CFC.sqrt (p - floor p) * p := by
+      refine (Theses.A.CStar.sqrt_commute (p - floor p) hsub p ?_).1
+      rw [mul_sub, sub_mul, hfp, hpf]
+    exact ⟨hf, hfp, hpf, hsub, hss, hssa, hfs, hsf, hps⟩
+  refine ⟨?_, ?_, ?_, ?_⟩
+  · -- (A): `f·1·f + s·1·s = f + (p − f) = p`
+    intro p hp
+    obtain ⟨hf, -, -, -, hss, -, -, -, -⟩ := basics p hp
+    rw [hop, mul_one, mul_one, hf.isIdempotentElem.eq, hss]
+    abel
+  · -- (C): both sides are `fqf + (p−f)q(p−f)`
+    intro p hp q _
+    obtain ⟨hf, hfp, hpf, hsub, hss, -, hfs, hsf, hps⟩ := basics p hp
+    have hff : floor p * floor p = floor p := hf.isIdempotentElem.eq
+    have hpsa : star p = p := (IsSelfAdjoint.of_nonneg hp.1).star_eq
+    -- `p ∗ p = p²`
+    have hopp : op p p = p * p := by
+      rw [hop]
+      have e1 : floor p * p * floor p = floor p := by rw [hfp, hff]
+      have e2 : CFC.sqrt (p - floor p) * p * CFC.sqrt (p - floor p) = p * p - floor p := by
+        calc CFC.sqrt (p - floor p) * p * CFC.sqrt (p - floor p)
+            = CFC.sqrt (p - floor p) * (p * CFC.sqrt (p - floor p)) := by noncomm_ring
+          _ = CFC.sqrt (p - floor p) * CFC.sqrt (p - floor p) * p := by
+              rw [hps]; noncomm_ring
+          _ = p * p - floor p := by rw [hss, sub_mul, hfp]
+      rw [e1, e2]; abel
+    -- `⌊p²⌋ = ⌊p⌋` and `√(p² − ⌊p⌋) = p − ⌊p⌋`
+    have hpp0 : (0 : A) ≤ p * p := by
+      have h := star_mul_self_nonneg p
+      rwa [hpsa] at h
+    have hppeff : p * p ∈ effects A := ⟨hpp0, (mul_self_le_self hp).trans hp.2⟩
+    have hfle : floor p ≤ p * p := by
+      have h := ((projection_below_effect p (floor p) hp hf).out 0 5).mp (floor_le hp)
+      rwa [sq] at h
+    have hfpp : floor (p * p) = floor p := by
+      refine le_antisymm ?_ ((floor_isGreatest hppeff).2 ⟨hf, hfle⟩)
+      exact (floor_isGreatest hp).2
+        ⟨(floor_spec hppeff).1, (floor_le hppeff).trans (mul_self_le_self hp)⟩
+    have hsqpp : CFC.sqrt (p * p - floor p) = p - floor p := by
+      have hexp : p * p - floor p = (p - floor p) * (p - floor p) := by
+        rw [sub_mul, mul_sub, mul_sub, hfp, hpf, hff]; abel
+      rw [hexp, CFC.sqrt_mul_self _ hsub]
+    -- the two sides
+    rw [hopp, hop (p * p) q, hfpp, hsqpp, hop p (op p q), hop p q]
+    calc floor p * (floor p * q * floor p +
+          CFC.sqrt (p - floor p) * q * CFC.sqrt (p - floor p)) * floor p +
+          CFC.sqrt (p - floor p) * (floor p * q * floor p +
+            CFC.sqrt (p - floor p) * q * CFC.sqrt (p - floor p)) *
+            CFC.sqrt (p - floor p)
+        = (floor p * floor p) * q * (floor p * floor p) +
+            (floor p * CFC.sqrt (p - floor p)) * q *
+              (CFC.sqrt (p - floor p) * floor p) +
+            ((CFC.sqrt (p - floor p) * floor p) * q *
+                (floor p * CFC.sqrt (p - floor p)) +
+              (CFC.sqrt (p - floor p) * CFC.sqrt (p - floor p)) * q *
+                (CFC.sqrt (p - floor p) * CFC.sqrt (p - floor p))) := by noncomm_ring
+      _ = floor p * q * floor p + (p - floor p) * q * (p - floor p) := by
+          rw [hff, hfs, hsf, hss]; simp
+  · -- (D): `q ∗ q = q²`, so `p = √p ∗ √p`
+    intro p hp
+    refine ⟨CFC.sqrt p, sqrt_mem_effects hp, ?_⟩
+    obtain ⟨hf, hfq, -, -, hss, -, -, -, hqs⟩ := basics _ (sqrt_mem_effects hp)
+    rw [hop]
+    have e1 : floor (CFC.sqrt p) * CFC.sqrt p * floor (CFC.sqrt p) = floor (CFC.sqrt p) := by
+      rw [hfq, hf.isIdempotentElem.eq]
+    have e2 : CFC.sqrt (CFC.sqrt p - floor (CFC.sqrt p)) * CFC.sqrt p *
+        CFC.sqrt (CFC.sqrt p - floor (CFC.sqrt p))
+          = CFC.sqrt p * CFC.sqrt p - floor (CFC.sqrt p) := by
+      calc CFC.sqrt (CFC.sqrt p - floor (CFC.sqrt p)) * CFC.sqrt p *
+            CFC.sqrt (CFC.sqrt p - floor (CFC.sqrt p))
+          = CFC.sqrt (CFC.sqrt p - floor (CFC.sqrt p)) *
+              (CFC.sqrt p * CFC.sqrt (CFC.sqrt p - floor (CFC.sqrt p))) := by noncomm_ring
+        _ = CFC.sqrt (CFC.sqrt p - floor (CFC.sqrt p)) *
+              CFC.sqrt (CFC.sqrt p - floor (CFC.sqrt p)) * CFC.sqrt p := by
+            rw [hqs]; noncomm_ring
+        _ = CFC.sqrt p * CFC.sqrt p - floor (CFC.sqrt p) := by rw [hss, sub_mul, hfq]
+    rw [e1, e2, CFC.sqrt_mul_sqrt_self p hp.1]
+    abel
+  · -- (E): `p ∗ e₁ ≤ e₂^⊥` iff `e₁fe₂ = 0` and `e₁se₂ = 0`, which is symmetric
+    intro p hp e₁ e₂ h₁ h₂
+    obtain ⟨hf, hfp, hpf, hsub, hss, hssa, hfs, hsf, hps⟩ := basics p hp
+    have hfsa : star (floor p) = floor p := hf.isSelfAdjoint.star_eq
+    -- for an effect `x` and a projection `e`: `x ≤ e^⊥` iff `exe = 0`
+    have hiff : ∀ x : A, 0 ≤ x → x ≤ 1 → ∀ e : A, IsStarProjection e →
+        (x ≤ 1 - e ↔ e * x * e = 0) := by
+      intro x hx hx1 e he
+      constructor
+      · intro h
+        have h1 : e * x * e ≤ e * (1 - e) * e := by
+          have := star_left_conjugate_le_conjugate h e
+          rwa [he.isSelfAdjoint.star_eq] at this
+        have h2 : e * (1 - e) * e = 0 := by
+          rw [mul_sub, mul_one, he.isIdempotentElem.eq, sub_self, zero_mul]
+        have h3 : (0 : A) ≤ e * x * e := by
+          have := star_left_conjugate_nonneg hx e
+          rwa [he.isSelfAdjoint.star_eq] at this
+        exact le_antisymm (h2 ▸ h1) h3
+      · intro h
+        have hle : ceil x ≤ 1 - e := (ceil_le_perp_iff hx he).mpr h
+        have hxe : x * (1 - e) = x := (ceil_le_iff hx he.one_sub).mp hle
+        have hex : (1 - e) * x = x :=
+          ((ceil_basic_1 x (1 - e) hx he.one_sub).out 2 0).mp hle
+        calc x = (1 - e) * x * (1 - e) := by rw [hex, hxe]
+          _ ≤ (1 - e) * 1 * (1 - e) := by
+              have := star_left_conjugate_le_conjugate hx1 (1 - e)
+              rwa [he.one_sub.isSelfAdjoint.star_eq] at this
+          _ = 1 - e := by
+              rw [mul_one, sub_mul, one_mul, mul_sub, mul_one,
+                he.isIdempotentElem.eq]
+              abel
+    -- `p ∗ e` is an effect, for every projection `e`
+    have heff : ∀ e : A, IsStarProjection e → 0 ≤ op p e ∧ op p e ≤ 1 := by
+      intro e he
+      have hnn1 : (0 : A) ≤ floor p * e * floor p := by
+        have := star_left_conjugate_nonneg he.nonneg (floor p)
+        rwa [hfsa] at this
+      have hnn2 : (0 : A) ≤ CFC.sqrt (p - floor p) * e * CFC.sqrt (p - floor p) := by
+        have := star_left_conjugate_nonneg he.nonneg (CFC.sqrt (p - floor p))
+        rwa [hssa] at this
+      have hle1 : floor p * e * floor p ≤ floor p := by
+        have := star_left_conjugate_le_conjugate he.le_one (floor p)
+        rw [hfsa, mul_one, hf.isIdempotentElem.eq] at this
+        exact this
+      have hle2 : CFC.sqrt (p - floor p) * e * CFC.sqrt (p - floor p) ≤ p - floor p := by
+        have := star_left_conjugate_le_conjugate he.le_one (CFC.sqrt (p - floor p))
+        rw [hssa, mul_one, hss] at this
+        exact this
+      refine ⟨by rw [hop]; exact add_nonneg hnn1 hnn2, ?_⟩
+      rw [hop]
+      calc floor p * e * floor p + CFC.sqrt (p - floor p) * e * CFC.sqrt (p - floor p)
+          ≤ floor p + (p - floor p) := add_le_add hle1 hle2
+        _ = p := by abel
+        _ ≤ 1 := hp.2
+    -- the characterisation
+    have hcancel : ∀ x a b : A, star x = x → IsStarProjection a → IsStarProjection b →
+        (b * (x * a * x) * b = 0 ↔ a * x * b = 0) := by
+      intro x a b hx ha hb
+      have hstar : star (a * x * b) = b * x * a := by
+        rw [star_mul, star_mul, hb.isSelfAdjoint.star_eq, hx, ha.isSelfAdjoint.star_eq,
+          mul_assoc]
+      rw [← CStarRing.star_mul_self_eq_zero_iff (a * x * b), hstar]
+      constructor
+      · intro h
+        calc b * x * a * (a * x * b)
+            = b * (x * (a * a) * x) * b := by noncomm_ring
+          _ = 0 := by rw [ha.isIdempotentElem.eq]; exact h
+      · intro h
+        calc b * (x * a * x) * b = b * x * a * (a * x * b) := by
+              rw [show b * x * a * (a * x * b) = b * (x * (a * a) * x) * b by noncomm_ring,
+                ha.isIdempotentElem.eq]
+          _ = 0 := h
+    have hchar : ∀ d₁ d₂ : A, IsStarProjection d₁ → IsStarProjection d₂ →
+        (op p d₁ ≤ 1 - d₂ ↔ (d₁ * floor p * d₂ = 0 ∧
+          d₁ * CFC.sqrt (p - floor p) * d₂ = 0)) := by
+      intro d₁ d₂ hd₁ hd₂
+      rw [hiff _ (heff d₁ hd₁).1 (heff d₁ hd₁).2 d₂ hd₂, hop]
+      have hsplit : d₂ * (floor p * d₁ * floor p +
+          CFC.sqrt (p - floor p) * d₁ * CFC.sqrt (p - floor p)) * d₂
+          = d₂ * (floor p * d₁ * floor p) * d₂ +
+            d₂ * (CFC.sqrt (p - floor p) * d₁ * CFC.sqrt (p - floor p)) * d₂ := by
+        noncomm_ring
+      have hn1 : (0 : A) ≤ d₂ * (floor p * d₁ * floor p) * d₂ := by
+        have h0 : (0 : A) ≤ floor p * d₁ * floor p := by
+          have := star_left_conjugate_nonneg hd₁.nonneg (floor p)
+          rwa [hfsa] at this
+        have := star_left_conjugate_nonneg h0 d₂
+        rwa [hd₂.isSelfAdjoint.star_eq] at this
+      have hn2 : (0 : A) ≤ d₂ * (CFC.sqrt (p - floor p) * d₁ *
+          CFC.sqrt (p - floor p)) * d₂ := by
+        have h0 : (0 : A) ≤ CFC.sqrt (p - floor p) * d₁ * CFC.sqrt (p - floor p) := by
+          have := star_left_conjugate_nonneg hd₁.nonneg (CFC.sqrt (p - floor p))
+          rwa [hssa] at this
+        have := star_left_conjugate_nonneg h0 d₂
+        rwa [hd₂.isSelfAdjoint.star_eq] at this
+      rw [hsplit]
+      constructor
+      · intro h
+        have h1 : d₂ * (floor p * d₁ * floor p) * d₂ = 0 := by
+          refine le_antisymm ?_ hn1
+          calc d₂ * (floor p * d₁ * floor p) * d₂
+              ≤ d₂ * (floor p * d₁ * floor p) * d₂ +
+                d₂ * (CFC.sqrt (p - floor p) * d₁ * CFC.sqrt (p - floor p)) * d₂ :=
+                le_add_of_nonneg_right hn2
+            _ = 0 := h
+        have h2 : d₂ * (CFC.sqrt (p - floor p) * d₁ * CFC.sqrt (p - floor p)) * d₂ = 0 := by
+          rw [h1, zero_add] at h
+          exact h
+        exact ⟨(hcancel (floor p) d₁ d₂ hfsa hd₁ hd₂).mp h1,
+          (hcancel _ d₁ d₂ hssa hd₁ hd₂).mp h2⟩
+      · rintro ⟨h1, h2⟩
+        rw [(hcancel (floor p) d₁ d₂ hfsa hd₁ hd₂).mpr h1,
+          (hcancel _ d₁ d₂ hssa hd₁ hd₂).mpr h2, add_zero]
+    have hsym : ∀ x a b : A, star x = x → IsStarProjection a → IsStarProjection b →
+        a * x * b = 0 → b * x * a = 0 := by
+      intro x a b hx ha hb h
+      have := congrArg star h
+      rwa [star_mul, star_mul, hb.isSelfAdjoint.star_eq, hx, ha.isSelfAdjoint.star_eq,
+        ← mul_assoc, star_zero] at this
+    rw [hchar e₁ e₂ h₁ h₂, hchar e₂ e₁ h₂ h₁]
+    exact ⟨fun h => ⟨hsym _ _ _ hfsa h₁ h₂ h.1, hsym _ _ _ hssa h₁ h₂ h.2⟩,
+      fun h => ⟨hsym _ _ _ hfsa h₂ h₁ h.1, hsym _ _ _ hssa h₂ h₁ h.2⟩⟩
+
+/-! ### Infrastructure for the 106III.3 counterexample: `B(ℂ²)`
+
+The witnesses live in `B(ℂ²) = M₂(ℂ)`, transported from matrices along the
+`*`-isomorphism `Matrix.toEuclideanCLM`.  All the numbers are rational
+(`s = diag(1, 3/5)`, `p = s² = diag(1, 9/25)`, `1 − p = diag(0, 4/5)²`), so
+the matrix identities are `norm_num` computations; only the positivity of
+`s` needs an irrational entry (`s = diag(1,√(3/5))*diag(1,√(3/5))`). -/
+
+section SPC3
+
+private abbrev spc3B := EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2)
+
+private abbrev spc3T (M : Matrix (Fin 2) (Fin 2) ℂ) : spc3B :=
+  Matrix.toEuclideanCLM (𝕜 := ℂ) M
+
+private theorem spc3_mul (M N : Matrix (Fin 2) (Fin 2) ℂ) :
+    spc3T M * spc3T N = spc3T (M * N) := (map_mul _ _ _).symm
+
+private theorem spc3_star (M : Matrix (Fin 2) (Fin 2) ℂ) :
+    star (spc3T M) = spc3T (star M) := (map_star _ _).symm
+
+private theorem spc3_one : spc3T 1 = 1 := map_one _
+
+private theorem spc3_zero : spc3T 0 = 0 := map_zero _
+
+private theorem spc3_sub (M N : Matrix (Fin 2) (Fin 2) ℂ) :
+    spc3T M - spc3T N = spc3T (M - N) := (map_sub _ _ _).symm
+
+private theorem spc3_inj {M N : Matrix (Fin 2) (Fin 2) ℂ} (h : spc3T M = spc3T N) :
+    M = N := Matrix.toEuclideanCLM.injective h
+
+private def spc3S : Matrix (Fin 2) (Fin 2) ℂ := !![1, 0; 0, 3/5]
+private def spc3P : Matrix (Fin 2) (Fin 2) ℂ := !![1, 0; 0, 9/25]
+private def spc3V : Matrix (Fin 2) (Fin 2) ℂ := !![0, 1; 1, 0]
+private def spc3W : Matrix (Fin 2) (Fin 2) ℂ := !![0, 0; 0, 4/5]
+private def spc3Pi : Matrix (Fin 2) (Fin 2) ℂ := !![1, 0; 0, 25/9]
+private def spc3E1 : Matrix (Fin 2) (Fin 2) ℂ := !![25/34, -15/34; -15/34, 9/34]
+private def spc3E2 : Matrix (Fin 2) (Fin 2) ℂ := !![1/2, 1/2; 1/2, 1/2]
+
+private theorem spc3_SS : spc3S * spc3S = spc3P := by
+  ext i j; fin_cases i <;> fin_cases j <;>
+    norm_num [spc3S, spc3P, Matrix.mul_apply, Fin.sum_univ_two]
+
+private theorem spc3_Sstar : star spc3S = spc3S := by
+  ext i j; fin_cases i <;> fin_cases j <;> norm_num [spc3S, Matrix.star_apply]
+
+private theorem spc3_Vstar : star spc3V = spc3V := by
+  ext i j; fin_cases i <;> fin_cases j <;> norm_num [spc3V, Matrix.star_apply]
+
+private theorem spc3_VV : spc3V * spc3V = 1 := by
+  ext i j; fin_cases i <;> fin_cases j <;>
+    norm_num [spc3V, Matrix.mul_apply, Fin.sum_univ_two, Matrix.one_apply]
+
+private theorem spc3_PiP : spc3Pi * spc3P = 1 := by
+  ext i j; fin_cases i <;> fin_cases j <;>
+    norm_num [spc3P, spc3Pi, Matrix.mul_apply, Fin.sum_univ_two, Matrix.one_apply]
+
+private theorem spc3_WW : star spc3W * spc3W = 1 - spc3P := by
+  ext i j; fin_cases i <;> fin_cases j <;>
+    norm_num [spc3W, spc3P, Matrix.mul_apply, Fin.sum_univ_two, Matrix.one_apply,
+      Matrix.star_apply, Matrix.sub_apply, map_div₀, map_ofNat]
+
+private theorem spc3_E1E1 : spc3E1 * spc3E1 = spc3E1 := by
+  ext i j; fin_cases i <;> fin_cases j <;>
+    norm_num [spc3E1, Matrix.mul_apply, Fin.sum_univ_two]
+
+private theorem spc3_E1star : star spc3E1 = spc3E1 := by
+  ext i j; fin_cases i <;> fin_cases j <;> norm_num [spc3E1, Matrix.star_apply]
+
+private theorem spc3_E2E2 : spc3E2 * spc3E2 = spc3E2 := by
+  ext i j; fin_cases i <;> fin_cases j <;>
+    norm_num [spc3E2, Matrix.mul_apply, Fin.sum_univ_two]
+
+private theorem spc3_E2star : star spc3E2 = spc3E2 := by
+  ext i j; fin_cases i <;> fin_cases j <;> norm_num [spc3E2, Matrix.star_apply]
+
+private theorem spc3_zeroprod : spc3E1 * (spc3V * spc3S) * spc3E2 = 0 := by
+  ext i j; fin_cases i <;> fin_cases j <;>
+    norm_num [spc3E1, spc3E2, spc3V, spc3S, Matrix.mul_apply, Fin.sum_univ_two]
+
+private theorem spc3_nonzeroprod : spc3E2 * (spc3V * spc3S) * spc3E1 ≠ 0 := by
+  intro h
+  have h00 := congrFun (congrFun h 0) 0
+  norm_num [spc3E1, spc3E2, spc3V, spc3S, Matrix.mul_apply, Fin.sum_univ_two] at h00
+
+private theorem spc3_S0 : ∃ T0 : Matrix (Fin 2) (Fin 2) ℂ, star T0 * T0 = spc3S := by
+  obtain ⟨r, -, hr⟩ : ∃ r : ℝ, 0 ≤ r ∧ (r : ℂ) * (r : ℂ) = (3/5 : ℂ) := by
+    refine ⟨Real.sqrt (3/5), Real.sqrt_nonneg _, ?_⟩
+    rw [← Complex.ofReal_mul, Real.mul_self_sqrt (by norm_num)]
+    norm_num
+  refine ⟨!![1, 0; 0, (r : ℂ)], ?_⟩
+  have hrc : (starRingEnd ℂ) (r : ℂ) = (r : ℂ) := Complex.conj_ofReal r
+  ext i j; fin_cases i <;> fin_cases j <;>
+    norm_num [spc3S, Matrix.mul_apply, Fin.sum_univ_two, Matrix.star_apply, hrc, hr]
+
+open scoped Classical in
+/-- **106III** (proc.tex:1858, Exercise), part 3: its claim that `∗` obeys
+axiom (E) as soon as `u_p^* = u_p` is **FALSE as printed**; this is the
+counterexample.  Work in `𝒜 = B(ℂ²)`, put `p := diag(1, 9/25)` (so
+`⌈p⌉ = 1` and `√p = diag(1, 3/5)`), and take the family `u_p := ` the flip
+`!![0,1;1,0]` at that one `p` and `u_x := ⌈x⌉` at every other effect `x`:
+every `u_x` is a self-adjoint unitary of `⌈x⌉𝒜⌈x⌉`.  With
+`a := u_p√p = !![0,3/5;1,0]`, axiom (E) at `p` says
+`e₁ a e₂ = 0 ⟺ e₂ a e₁ = 0` for all projections `e₁, e₂`, i.e. that `a`
+and `a^*` have the same zero pattern; at the rank-one projections onto
+`(5,−3)` and `(1,1)` it fails.
+
+What (E) needs is not `u_p^* = u_p` but `p u_p = u_p p` — the hypothesis
+the exercise attaches to (D) — for then `a = u_p√p` is *normal*, which is
+what makes the two sides of (E) star-conjugate.  (The same is true of the
+claim about axiom (C): `p ∗ (p ∗ q)` is `Ad` at `u_p√p u_p√p` and
+`(p ∗ p) ∗ q` is `Ad` at `u_{p∗p}√(p∗p)`, and `u_p² = u_{p²}` identifies
+the two only when `u_p` commutes with `p`, since only then is
+`p ∗ p = p²`.  Refuting (C) needs a family that also meets `u_x² = u_{x²}`
+along the *backward* chain `x, √x, ⁴√x, …` of the modified point, so it is
+not formalized here.)  Both slips are harmless for the exercise's own
+conclusion, where `u_p = g(p)` is a Borel function of `p`. -/
+theorem sequential_product_counterexample_3_ax5_is_false :
+    ∃ u : (EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2)) →
+        (EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2)),
+      (∀ p ∈ effects (EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2)),
+          u p ∈ cornerSet (EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2))
+            (ceil p) ∧
+          star (u p) * u p = ceil p ∧ u p * star (u p) = ceil p) ∧
+      (∀ p ∈ effects (EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2)),
+          star (u p) = u p) ∧
+      ¬ (∀ p ∈ effects (EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2)),
+          ∀ e₁ e₂ : EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2),
+          IsStarProjection e₁ → IsStarProjection e₂ →
+          (CFC.sqrt p * star (u p) * e₁ * u p * CFC.sqrt p ≤ 1 - e₂ ↔
+            CFC.sqrt p * star (u p) * e₂ * u p * CFC.sqrt p ≤ 1 - e₁)) := by
+  classical
+  set s : spc3B := spc3T spc3S with hs_def
+  set p : spc3B := spc3T spc3P with hp_def
+  set v : spc3B := spc3T spc3V with hv_def
+  set d1 : spc3B := spc3T spc3E1 with hd1_def
+  set d2 : spc3B := spc3T spc3E2 with hd2_def
+  have hs0 : (0 : spc3B) ≤ s := by
+    obtain ⟨T0, hT0⟩ := spc3_S0
+    have h := star_mul_self_nonneg (spc3T T0)
+    rwa [spc3_star, spc3_mul, hT0] at h
+  have hssa : star s = s := by rw [hs_def, spc3_star, spc3_Sstar]
+  have hss : s * s = p := by rw [hs_def, hp_def, spc3_mul, spc3_SS]
+  have hp0 : (0 : spc3B) ≤ p := by
+    have h := star_mul_self_nonneg s
+    rwa [hssa, hss] at h
+  have hp1 : p ≤ 1 := by
+    refine sub_nonneg.mp ?_
+    have h := star_mul_self_nonneg (spc3T spc3W)
+    rwa [spc3_star, spc3_mul, spc3_WW, ← spc3_sub, spc3_one, ← hp_def] at h
+  have hsqrt : CFC.sqrt p = s := by rw [← hss]; exact CFC.sqrt_mul_self s hs0
+  have hceil : ceil p = 1 := by
+    have hpi : spc3T spc3Pi * p = 1 := by rw [hp_def, spc3_mul, spc3_PiP, spc3_one]
+    have h1 : p * ceil p = p := (ceil_spec hp0).2.1
+    calc ceil p = 1 * ceil p := (one_mul _).symm
+      _ = spc3T spc3Pi * p * ceil p := by rw [hpi]
+      _ = spc3T spc3Pi * (p * ceil p) := by rw [mul_assoc]
+      _ = spc3T spc3Pi * p := by rw [h1]
+      _ = 1 := hpi
+  have hvsa : star v = v := by rw [hv_def, spc3_star, spc3_Vstar]
+  have hvv : v * v = 1 := by rw [hv_def, spc3_mul, spc3_VV, spc3_one]
+  have he1 : IsStarProjection d1 :=
+    ⟨show d1 * d1 = d1 by rw [hd1_def, spc3_mul, spc3_E1E1],
+      show star d1 = d1 by rw [hd1_def, spc3_star, spc3_E1star]⟩
+  have he2 : IsStarProjection d2 :=
+    ⟨show d2 * d2 = d2 by rw [hd2_def, spc3_mul, spc3_E2E2],
+      show star d2 = d2 by rw [hd2_def, spc3_star, spc3_E2star]⟩
+  have hastar : star (v * s) = s * v := by rw [star_mul, hssa, hvsa]
+  have haa : star (v * s) * (v * s) = p := by
+    rw [hastar]
+    calc s * v * (v * s) = s * (v * v) * s := by noncomm_ring
+      _ = p := by rw [hvv, mul_one, hss]
+  have hz1 : d1 * (v * s) * d2 = 0 := by
+    rw [hd1_def, hv_def, hs_def, hd2_def, spc3_mul, spc3_mul, spc3_mul, spc3_zeroprod,
+      spc3_zero]
+  have hz2 : d2 * (v * s) * d1 ≠ 0 := by
+    rw [hd2_def, hv_def, hs_def, hd1_def, spc3_mul, spc3_mul, spc3_mul]
+    intro h
+    exact spc3_nonzeroprod (spc3_inj (by rw [h, spc3_zero]))
+  have heff : ∀ e : spc3B, IsStarProjection e →
+      (0 : spc3B) ≤ star (v * s) * e * (v * s) ∧ star (v * s) * e * (v * s) ≤ 1 := by
+    intro e he
+    refine ⟨star_left_conjugate_nonneg he.nonneg _, ?_⟩
+    calc star (v * s) * e * (v * s) ≤ star (v * s) * 1 * (v * s) :=
+          star_left_conjugate_le_conjugate he.le_one _
+      _ = p := by rw [mul_one, haa]
+      _ ≤ 1 := hp1
+  have hiff : ∀ x : spc3B, 0 ≤ x → x ≤ 1 → ∀ e : spc3B, IsStarProjection e →
+      (x ≤ 1 - e ↔ e * x * e = 0) := by
+    intro x hx hx1 e he
+    constructor
+    · intro h
+      have h1 : e * x * e ≤ e * (1 - e) * e := by
+        have := star_left_conjugate_le_conjugate h e
+        rwa [he.isSelfAdjoint.star_eq] at this
+      have h2 : e * (1 - e) * e = 0 := by
+        rw [mul_sub, mul_one, he.isIdempotentElem.eq, sub_self, zero_mul]
+      have h3 : (0 : spc3B) ≤ e * x * e := by
+        have := star_left_conjugate_nonneg hx e
+        rwa [he.isSelfAdjoint.star_eq] at this
+      exact le_antisymm (h2 ▸ h1) h3
+    · intro h
+      have hle : ceil x ≤ 1 - e := (ceil_le_perp_iff hx he).mpr h
+      have hxe : x * (1 - e) = x := (ceil_le_iff hx he.one_sub).mp hle
+      have hex : (1 - e) * x = x :=
+        ((ceil_basic_1 x (1 - e) hx he.one_sub).out 2 0).mp hle
+      calc x = (1 - e) * x * (1 - e) := by rw [hex, hxe]
+        _ ≤ (1 - e) * 1 * (1 - e) := by
+            have := star_left_conjugate_le_conjugate hx1 (1 - e)
+            rwa [he.one_sub.isSelfAdjoint.star_eq] at this
+        _ = 1 - e := by
+            rw [mul_one, sub_mul, one_mul, mul_sub, mul_one, he.isIdempotentElem.eq]
+            abel
+  have hsand : ∀ x y : spc3B, IsStarProjection x → IsStarProjection y →
+      y * (star (v * s) * x * (v * s)) * y
+        = star (x * (v * s) * y) * (x * (v * s) * y) := by
+    intro x y hx hy
+    have hstar' : star (x * (v * s) * y) = y * star (v * s) * x := by
+      rw [star_mul, star_mul, hy.isSelfAdjoint.star_eq, hx.isSelfAdjoint.star_eq,
+        mul_assoc]
+    rw [hstar']
+    calc y * (star (v * s) * x * (v * s)) * y
+        = y * star (v * s) * (x * x) * (v * s) * y := by
+          rw [hx.isIdempotentElem.eq]; noncomm_ring
+      _ = y * star (v * s) * x * (x * (v * s) * y) := by noncomm_ring
+  set u : spc3B → spc3B := fun x => if x = p then v else ceil x with hu_def
+  have hup : u p = v := by simp [hu_def]
+  have hux : ∀ x : spc3B, x ≠ p → u x = ceil x := by intro x hx; simp [hu_def, hx]
+  refine ⟨u, ?_, ?_, ?_⟩
+  · intro x _
+    by_cases hxp : x = p
+    · rw [hxp, hup, hceil]
+      exact ⟨show (1 : spc3B) * v * 1 = v by rw [one_mul, mul_one], by rw [hvsa, hvv],
+        by rw [hvsa, hvv]⟩
+    · rw [hux x hxp]
+      have hc : IsStarProjection (ceil x) := isStarProjection_ceil x
+      exact ⟨show ceil x * ceil x * ceil x = ceil x by
+          rw [hc.isIdempotentElem.eq, hc.isIdempotentElem.eq],
+        by rw [hc.isSelfAdjoint.star_eq, hc.isIdempotentElem.eq],
+        by rw [hc.isSelfAdjoint.star_eq, hc.isIdempotentElem.eq]⟩
+  · intro x _
+    by_cases hxp : x = p
+    · rw [hxp, hup]; exact hvsa
+    · rw [hux x hxp]; exact (isStarProjection_ceil x).isSelfAdjoint.star_eq
+  · intro hE
+    have hEp := hE p ⟨hp0, hp1⟩ d1 d2 he1 he2
+    rw [hup, hsqrt, hvsa] at hEp
+    have hshape : ∀ e : spc3B, s * v * e * v * s = star (v * s) * e * (v * s) := by
+      intro e; rw [hastar]; noncomm_ring
+    rw [hshape, hshape] at hEp
+    have hfwd : star (v * s) * d1 * (v * s) ≤ 1 - d2 := by
+      refine (hiff _ (heff d1 he1).1 (heff d1 he1).2 d2 he2).mpr ?_
+      rw [hsand d1 d2 he1 he2, hz1]
+      simp
+    have hbad := (hiff _ (heff d2 he2).1 (heff d2 he2).2 d1 he1).mp (hEp.mp hfwd)
+    rw [hsand d2 d1 he2 he1] at hbad
+    exact hz2 ((CStarRing.star_mul_self_eq_zero_iff _).mp hbad)
+
+end SPC3
 
 /-- **106III** (proc.tex:1858, Exercise), part 3: for a family `u` of
 unitaries `u_p` of the corners `⌈p⌉𝒜⌈p⌉`, the operation
 `p ∗ q := √p u_p* q u_p √p` satisfies (A) and (B); it moreover satisfies
 (C) when `u_p² = u_{p²}`, (D) when `p u_p = u_p p`, and (E) when
-`u_p* = u_p`. -/
+`u_p* = u_p`.
+
+**Parked: the (E) clause is false as printed** — see
+`sequential_product_counterexample_3_ax5_is_false` just above, and the
+analysis of the (C) clause in its doc comment (also false, and for the
+same reason: both need `p u_p = u_p p`).  (A), (B) and (D) are fine:
+(A) is `√p u_p* u_p √p = √p ⌈p⌉ √p = p`, (B) is `Ad` at `u_p√p`
+(`isPure_adSelf`), and (D) is `q ∗ q = q²` at `q = √p`, using the
+commutation hypothesis attached to it.  The statement is left untouched
+pending the author's ruling. -/
 theorem sequential_product_counterexample_3 [VonNeumannAlgebra A]
     (u : A → A)
     (hu : ∀ p ∈ effects A, u p ∈ cornerSet A (ceil p) ∧

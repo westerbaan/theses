@@ -13789,3 +13789,197 @@ one already holds), and it would again have been invisible to a
 grep of all ~70 new public names against `Theses/` before writing was what
 caught it; `exists_rho` (private in `A/CStar/TowardsVN.lean`, different
 namespace) was renamed to `exists_prho` for the same reason.
+
+## Session 62 — `A/Proc`: **the 1160 block falls whole** (116I, 116III.2/.3, 116IV.1/.2, 118II.1), **130IV closes** — and **104III.3/.4/.5 and 130V are false** (three workers)
+
+**A/Proc 64 → 53**, compiler-counted, `lake build Theses.A.Proc.Duplicators
+Theses.A.Proc.Measurement` completing successfully with 0 errors:
+`Tensor` **19** (was 25), `Measurement` **10** (was 11), `QuantumLambda` 17
+(untouched), `Duplicators` **7** (was 11).  Every new theorem is axiom-clean
+(`propext, Classical.choice, Quot.sound`) except one whose *statement* is
+tainted (§4).  The three files are disjoint and were worked in parallel.
+
+### 1. `Tensor.lean` 25 → 19 — parsec 1160 closes except for 116III.4
+
+Closed: **116I** `product_functional_norm`, **116III.2**
+`tensor_simple_facts_2`, **116III.3** `tensor_simple_facts_3`, **116IV.1**
+`tensor_generation_1`, **116IV.2** `tensor_generation_2`, **118II.1**
+`ceil_tensor`.
+
+**(a) The `≥` half of 116III.2 needed a statement A/VN does not have.**  The
+supremum defining `tensorNorm` runs over basic functionals with `ω(1) ≤ 1`,
+while **21VII** `order_separating_norm` is stated only for *unital* maps, and
+the rescaling `ω ↦ ω(1)⁻¹ω` cannot repair that (it fails at `ω(1) = 0`).  So
+the subunital supremum formula was proved outright, as three new public
+universe-polymorphic lemmas in `Tensor.lean`'s `DensityAux` section:
+
+* `exists_npFunctional_polar` — **86IX** packaged: for ultraweakly continuous
+  `f` there are a partial isometry `u` and an np-functional `|f| = f(u(·))`
+  with `f = f(uu*(·))` and `|f|(1) = f(u) = ‖f‖` (**86XIV**).  This is the
+  construction already inlined in A/VN's `uwcont_on_ball`.
+* `starMulSelf_le_one_of_isPartialIsometry` — `u* u ≤ 1`.
+* `exists_npFunctional_ge_norm_sub` — for `0 ≤ p`, `ε > 0` an np-functional
+  `σ` with `σ(1) ≤ 1` and `σ(p) ≥ ‖p‖ − ε`.  **87VI** `norm_predual` gives a
+  normal `f` in the unit ball with `‖f(p)‖ > ‖p‖ − ε/2`; Cauchy–Schwarz for
+  `‖·‖_{|f|}` at `(√p·u)* √p = u* p`, with `‖√p‖ = √‖p‖` and `u* u ≤ 1`, gives
+  `|f(p)|² ≤ ‖p‖·|f|(p)`.
+* `exists_npFunctional_ge_omegaNorm_sub` — the same in `‖·‖_σ` form.
+
+116III.2 is then the basic functional `σ ⊙ τ` at
+`(a ⊙ b)*(a ⊙ b) = (a* a) ⊙ (b* b)`, plus **112X**.2.  Its second half — norm
+continuity of `⊗`, which the thesis flags as "not entirely trivial" because
+`⊗` is not linear — is `LinearMap.mkContinuous₂` with constant 1, i.e. the
+sharp cross-norm just proved.
+
+**(b) 116IV.1: the thesis's own proof cannot be transcribed.**  proc.tex:3510
+derives it from **116III.4**, *joint* ultraweak continuity of `⊗` — the one
+part of 116III that is still open and whose own hint establishes only the
+*separate* statement.  What the argument really needs is separate continuity
+plus "the ultraweak closure of a submodule is a submodule".  Two additions:
+`ultraweak_continuousSMul_complex` (A/VN records only `ContinuousSMul ℝ`,
+which is what Krein–Milman in 86IX needs; the ℂ-version is three lines, since
+`ultraweak` is an infimum of topologies induced by ℂ-linear maps) and
+`continuous_ultraweak_vtmul_left`, the mirror of 116III.5's normality half.
+The mirror is **not** free: `IsTensorProduct γ` is not symmetric on the nose
+(one would first have to prove `IsTensorProduct γ.flip` and generalise
+`continuous_ultraweak_vtmul_right` off the *chosen* `vnTensor A B`), so the
+~90-line chain `npTmulLeft` / `continuous_npTmulLeft_conjProdNP` /
+`continuous_ultraweak_vtmul_left` was written out; only which factor of
+`star_tmul_conj_expand`'s double sum carries the variable changes.  **ERRATA
+gained a 116V row.**
+
+**(c) 116I is the thesis's proof verbatim** and needed nothing new:
+polar-decompose `f` and `g`, note `u ⊗ v` is a partial isometry,
+`(f⊗g)((u⊗v)(·))` *is* the product np-functional `prodNP σ τ` (equal by
+`clm_ext_of_tmul`, hence positive) and `f⊗g = (f⊗g)((u⊗v)(u⊗v)*(·))` is
+`f = f(uu*·)`, `g = g(vv*·)` read off pure tensors; **86XIV** then gives
+`‖f⊗g‖ = f(u)g(v) = ‖f‖‖g‖`.  **116III.3** is
+`f⊗g − f'⊗g' = (f−f')⊗g + f'⊗(g−g')` plus 116I.
+
+**(d) 116IV.2** is the thesis's proof with one implicit step made explicit.
+108II(3) reduces to `h t = 0` for every product functional; **90II**.2 (with
+`S = univ`) writes `σ`, `τ` as operator-norm limits of `∑ₖ ωₖ(sₖ*(·)sₖ)`; the
+corresponding functional on `𝒜 ⊗ ℬ` is
+`G = ∑ₖₗ (ωₖ⊗θₗ)((sₖ⊗rₗ)*(·)(sₖ⊗rₗ))`, which the hypothesis kills; and the
+new private `norm_sub_le_of_tmul_factor` (116III.3 plus 116I's uniqueness
+clause, so that *any* two normal functionals factoring on pure tensors are
+compared) bounds `‖h − G‖ ≤ ε(‖σ‖+‖τ‖+1)`.  The implicit step is that the
+approximants are again product functionals *of that shape*, i.e.
+`(ω(s*(·)s)) ⊗ (θ(r*(·)r)) = (ω⊗θ)((s⊗r)*(·)(s⊗r))`, checked on pure tensors.
+
+**(e) 118II.1** is the thesis's proof: `ncp_ceil` (**60VI**) applied to the two
+np-slices `(·) ⊗ b` and `⌈a⌉ ⊗ (·)` — the left one being exactly what
+`continuous_ultraweak_vtmul_left` now supplies — and `⌈a⌉ ⊗ ⌈b⌉` is already a
+projection.
+
+**116III.4 was re-derived and the session-59 obstruction stands**: joint
+ultraweak continuity is tested along nets in the *product*, and every estimate
+available (now including `‖a ⊗ b‖ = ‖a‖‖b‖` as an *equality*) is uniform only
+on bounded sets while ultraweak neighbourhoods are norm-unbounded.  Neither
+proved nor refuted.
+
+**The next gate in `Tensor.lean` is 116VII `tensor_characterization`, and all
+its inputs now exist** (112X, 116IV.1, 116IV.2) — but it is a ~250-line
+development, not a corollary: proc.tex:3600 makes `γ_⊙` bounded (21VII again,
+on the functionals `γ(σ,τ)(γ_⊙(s)*(·)γ_⊙(s))`) and ultraweakly continuous (via
+90II.2), applies 112XI + 114I to get an nmiu-map `γ_⊗`, and then proves it
+bijective through `injective-nmiu-iso-on-image`.
+
+### 2. `Measurement.lean` 11 → 10, and **104III.3/.4/.5 are false as printed**
+
+This contradicts the brief and the survey, which both had them as "unsolved
+exercises, not blocked items".  They are not exercises that resist; they are
+wrong, by the same omission that already sinks 104III.2a.  Part 2 (proved)
+forces `⌈p⌉ = ⌈q⌉` for centrally similar `p`, `q`, while parts 3, 4 and 5
+conclude central similarity from hypotheses that never constrain the carriers.
+One witness refutes all three and is machine-checked in the file
+(`centrally_similar_basic_{3,4,5}_counterexample`): `𝒜 = ℓ^∞({0,1})`,
+`p = (1,0)`, `q = 1`, `m = p ∧ q = p`, `eₙ = p` — non-degenerate (`p ≠ 0`) and
+with genuine, not junk-valued, quotients.  For **.4** the obvious repair
+`⌈p⌉ = ⌈q⌉` is **not enough**: `centrally_similar_basic_4_obstruction` shows
+that its first `iff` at `p = q = e` would make every projection of every von
+Neumann algebra central.  What .4 needs is the faithfulness `⌈p⌉ = ⌈q⌉ = 1`
+that its only consumer 104VII already assumes — and under that hypothesis its
+first two `iff`s are **proved** (`centrally_similar_basic_4_faithful`).
+
+**106III.2** `sequential_product_counterexample_2` closed (no author argument
+exists; `p ∗ q = ⌊p⌋q⌊p⌋ + √(p−⌊p⌋)q√(p−⌊p⌋)`, everything resting on
+`⌊p⌋s = s⌊p⌋ = 0` for `s = √(p−⌊p⌋)`).  **106III.3's clause (E) is also
+false**, machine-checked in `B(ℂ²)`
+(`sequential_product_counterexample_3_ax5_is_false`): `p = diag(1,9/25)`,
+`u_p` the flip, `a = u_p√p` has `e₁ a e₂ = 0 ≠ e₂ a e₁`.  Clause (C) fails for
+the same reason but refuting it needs a family modified along the whole
+backward chain `p, √p, ⁴√p, …`, so it is documented rather than built.  Both
+clauses silently need the commutation `p u_p = u_p p` that clause (D) already
+carries — harmless for the exercise's own conclusion, where `u_p = g(p)`.
+
+**The next gate is precisely 104VII** `positive_quotients_centrally_similar`,
+and it is *not* "blocked on .4/.5": the direction of .4 its proof uses is now
+available, 104V/104VI are proved, and what remains is (i) "`p` is a norm limit
+of linear combinations of projections *commuting with `p`*" — the tree has
+65IV only for *all* projections, nothing spectral — and (ii) the reduction to
+the invertible case, which needs the *repaired* .5 and, inside it,
+`⌈p ∧ q⌉ = ⌈p⌉ = ⌈q⌉` for the GLB of two commuting positives.  104IX, 105V
+uniqueness, 105VII and 106I uniqueness remain behind 104VII.
+
+### 3. `Duplicators.lean` 11 → 7, and **130V is false as printed**
+
+Closed: **130IV** `measure_space_partition` (the main target, ~230 lines plus
+nine private helpers), **128XIII** `duplicable_product`, **132VI**'s unit
+`exists_freeMonoidUnitCpsu`, **132III.4** `dup_vna_is_monoid_4`.
+
+130IV is a bare Exercise (proc.tex:6518) with no argument to transcribe.  The
+brief's costing was right: the only real obstruction was the missing norm
+dictionary, supplied by two new private lemmas — `linfty_norm_le` (a pointwise
+bound gives `‖q f‖ ≤ C`, via `√(C² − |f|²)`) and its converse
+`linfty_ae_bound` (`‖q f‖ ≤ M` forces `|f| ≤ M` a.e., via the nonzero
+projection `q 1_S`) — and surjectivity then glues *truncated* representatives
+along the partition with Mathlib's `Measurable.find`.  Normality was indeed
+free via `starAlgEquiv_preservesDirSups'`.  Two of the statement's hypotheses,
+`μ.IsComplete` and `[IsFiniteMeasure μ]`, are **not used**.
+
+**130V `discrete_ell_x` is false as stated, and so is the thesis's Corollary.**
+129II.2 defines *discrete* as "covered by atomic measurable subsets" and
+asserts parenthetically that this coincides with Fremlin 211K's *purely
+atomic*; it does not.  Counterexample: `X = [0,1]`, `μ = λ + δ₀` (completed) —
+every `{0,x}` is an atom and they cover `X`, yet `(0,1]` has positive measure
+and includes no atom, and `L^∞(X,μ) ≅ L^∞[0,1] ⊕ ℂ` is not `ℓ^∞(Y)` for any
+`Y`.  Blast radius: **129VI** becomes *vacuous* under the printed definition
+(`D = univ` satisfies both conjuncts), and the proof of the chapter's main
+theorem **127III** at proc.tex:6543, which combines 129VI, 129X and 130V, has
+a genuine gap until the definition is repaired.  ERRATA gained a **129II.2**
+row and QUESTIONS an **A6** entry; the Lean statement and doc comment were
+left untouched.
+
+**Three more blockers in the brief/survey turned out to be wrong**, each
+refuted by closing the item: **128XIII** does *not* need `tmapM` (the
+inclusion `κᵢ` is non-unital, so the proved ncp-functoriality `tmap` suffices);
+**132VI's unit is not blocked on 47IV.3**, since `cstar_product_4`
+(`A/CStar/Matrices.lean`, proved) already supplies the C*-half and normality is
+the same five-line pointwise argument `vn_products_nmiu` makes; and
+**132III.4 was not blocked at all**.
+
+### 4. One statement-level taint, and it is not ours
+
+`dup_vna_is_monoid_4` (132III.4) is proved but reports `sorryAx`, **through its
+own statement**: it mentions `braiding`, which is `(exists_braiding 𝒜 ℬ).choose`
+and **119IVc `exists_braiding` is still `sorry` in `Tensor.lean`**.  Its
+braiding-free sibling `dup_vna_is_monoid_3` is clean, which pins the source.
+Incidentally this retires the survey's "vacuous band" for `Duplicators.lean`:
+`⊗ᵥ`/`VNT`/`Duplicable` have been clean since session 52 and `braiding` is now
+the only remaining taint there.
+
+### 5. Verification
+
+Seven new public names went into `Tensor.lean`
+(`ultraweak_continuousSMul_complex`, `exists_npFunctional_polar`,
+`starMulSelf_le_one_of_isPartialIsometry`, `exists_npFunctional_ge_norm_sub`,
+`exists_npFunctional_ge_omegaNorm_sub`, `norm_vtmul`,
+`continuous_ultraweak_vtmul_left`).  All seven were grepped against the whole
+`Theses/` tree in both directions before writing — none is declared anywhere
+else — and, since `QuantumLambda.lean` and `Duplicators.lean` import
+`Tensor.lean`, the check was closed by a real `lake build` of
+`Theses.A.Proc.Duplicators`, which completed successfully.  This is the
+discipline that `SelfDual.lean` lacked for two sessions.  The first five
+lemmas are about a *single* von Neumann algebra and belong in A/VN; they live
+in `Tensor.lean` only because A/Proc must not edit A/VN.

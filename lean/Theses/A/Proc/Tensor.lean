@@ -3972,6 +3972,171 @@ theorem uwTendsto_starMul {ι : Type*} {l : Filter ι} {u v : ι → A₄} {x y 
       (h2.mul_const (omegaNorm A₄ ω y))
   exact squeeze_zero (fun i => norm_nonneg _) hbd hz
 
+/-! ### The ultraweak topology as a topological **ℂ**-vector space, and the
+norm as a supremum over *subunital* np-functionals
+
+Two facts about a single von Neumann algebra that `A/VN` does not record and
+that **116III**.2 and **116IV**.1 need.  `A/VN` has `ultraweak_continuousSMul`
+only for `ℝ` (that is what Krein–Milman in **86IX** needs) and **21VII**
+`order_separating_norm` only for *unital* maps, while the collection of
+np-functionals with `ω(1) ≤ 1` — the one the tensor product norm runs over —
+is subunital. -/
+
+/-- The ultraweak topology makes `A` a topological **ℂ**-vector space: it is
+an infimum of topologies induced by `ℂ`-linear maps, so the `ℝ`-argument of
+`ultraweak_continuousSMul` works verbatim over `ℂ`. -/
+theorem ultraweak_continuousSMul_complex :
+    @ContinuousSMul ℂ A₄ _ _ (ultraweak A₄) := by
+  rw [ultraweak]
+  refine continuousSMul_iInf fun ω => ?_
+  exact continuousSMul_induced ω.toPositiveLinearMap.toLinearMap
+
+/-- `‖p‖ = sup {ω(p) : ω np-functional with ω(1) ≤ 1}` for positive `p`, in
+the `ε`-form.  **21VII** `order_separating_norm` gives the same supremum only
+over *unital* maps, and the rescaling `ω ↦ ω(1)⁻¹ω` is unavailable when
+`ω(1) = 0`; so this is proved instead from **87VI** `norm_predual` and **86IX**
+`polar_decomposition_of_functional`: the polar decomposition turns a normal
+`f` in the unit ball into the np-functional `|f| = f(u(·))` with
+`|f|(1) = f(u) = ‖f‖ ≤ 1` (**86XIV** `functional_norm`), and Cauchy–Schwarz
+for `‖·‖_{|f|}` at `(√p·u)* √p = u* p` gives `|f(p)|² ≤ ‖p‖·|f|(p)`. -/
+theorem exists_npFunctional_polar [VonNeumannAlgebra A₄] (f : A₄ →L[ℂ] ℂ)
+    (hfc : @Continuous A₄ ℂ (ultraweak A₄) _ ⇑f) :
+    ∃ (u : A₄) (σ : NPFunctional A₄), IsPartialIsometry A₄ u ∧
+      (∀ a : A₄, (σ a : ℂ) = f (u * a)) ∧
+      (∀ a : A₄, (f a : ℂ) = f (u * star u * a)) ∧
+      (σ 1 : ℂ) = ((‖f‖ : ℝ) : ℂ) := by
+  obtain ⟨u, hpi, h1, -, hpos, -⟩ :=
+    polar_decomposition_of_functional (f : A₄ →L[ℂ] ℂ).toLinearMap
+      (by
+        letI : TopologicalSpace A₄ := ultraweak A₄
+        exact hfc.continuousOn)
+  let g : A₄ →ₚ[ℂ] ℂ :=
+    { toFun := fun a => f (u * a)
+      map_add' := fun x y => by simp only [mul_add, map_add]
+      map_smul' := fun s x => by
+        simp only [RingHom.id_apply, mul_smul_comm, map_smul, smul_eq_mul]
+      monotone' := fun a b hab => by
+        have h0 : (0 : ℂ) ≤ f (u * (b - a)) := hpos _ (sub_nonneg.mpr hab)
+        rw [mul_sub, map_sub, sub_nonneg] at h0
+        exact h0 }
+  have hcont : @ContinuousOn A₄ ℂ (ultraweak A₄) _ ⇑g (effects A₄) := by
+    letI : TopologicalSpace A₄ := ultraweak A₄
+    have hmul : Continuous (fun a : A₄ => u * a) := (mult_uws_cont u).1
+    exact (hfc.continuousOn).comp hmul.continuousOn (fun a _ => Set.mem_univ _)
+  refine ⟨u, ⟨g, preservesDirSups_of_continuousOn_effects_functional g hcont⟩,
+    hpi, fun _ => rfl, fun a => h1 a, ?_⟩
+  show f (u * 1) = ((‖f‖ : ℝ) : ℂ)
+  rw [mul_one]
+  exact functional_norm f hfc u hpi hpos h1
+
+/-- A partial isometry has `u* u ≤ 1`: `1 − u* u` is a projection. -/
+theorem starMulSelf_le_one_of_isPartialIsometry [VonNeumannAlgebra A₄] {u : A₄}
+    (hpi : IsPartialIsometry A₄ u) : star u * u ≤ (1 : A₄) := by
+  have hproj : IsStarProjection (star u * u) :=
+    ((partial_isometry_equivalents u).out 0 1).mp hpi
+  have hi : (star u * u) * (star u * u) = star u * u := hproj.isIdempotentElem.eq
+  have hsa : star (star u * u) = star u * u := hproj.isSelfAdjoint.star_eq
+  have he : (1 : A₄) - star u * u
+      = star ((1 : A₄) - star u * u) * ((1 : A₄) - star u * u) := by
+    rw [star_sub, star_one, hsa]
+    have hexp : ((1 : A₄) - star u * u) * ((1 : A₄) - star u * u)
+        = 1 - star u * u - star u * u + (star u * u) * (star u * u) := by
+      noncomm_ring
+    rw [hexp, hi]
+    abel
+  have h0 : (0 : A₄) ≤ 1 - star u * u := by rw [he]; exact star_mul_self_nonneg _
+  exact sub_nonneg.mp h0
+
+theorem exists_npFunctional_ge_norm_sub [VonNeumannAlgebra A₄] {p : A₄}
+    (hp : 0 ≤ p) {ε : ℝ} (hε : 0 < ε) :
+    ∃ σ : NPFunctional A₄, (σ 1).re ≤ 1 ∧ ‖p‖ - ε ≤ (σ p).re := by
+  rcases le_or_gt ‖p‖ ε with hsmall | hbig
+  · refine ⟨zeroNP, ?_, ?_⟩
+    · show ((0 : ℂ)).re ≤ 1; simp
+    · show ‖p‖ - ε ≤ ((0 : ℂ)).re
+      simp only [Complex.zero_re]
+      linarith
+  have hp0 : (0 : ℝ) < ‖p‖ := lt_of_le_of_lt hε.le hbig
+  -- **87VI**: a normal `f` in the unit ball with `‖f p‖` close to `‖p‖`
+  have hnub : (‖p‖ - ε / 2) ∉
+      upperBounds {r : ℝ | ∃ f ∈ predual A₄, ‖f‖ ≤ 1 ∧ r = ‖f p‖} := by
+    intro hub
+    have := (norm_predual p).2 hub
+    linarith
+  rw [mem_upperBounds] at hnub
+  push_neg at hnub
+  obtain ⟨r, ⟨f, hfmem, hf1, rfl⟩, hfp⟩ := hnub
+  have hfc : @Continuous A₄ ℂ (ultraweak A₄) _ ⇑f := hfmem
+  -- **86IX** + **86XIV**: the np-functional `|f| = f(u ·)` with `|f|(1) = ‖f‖`
+  obtain ⟨u, σ, hpi, hσapp, h1', hσone⟩ := exists_npFunctional_polar f hfc
+  have hule : star u * u ≤ (1 : A₄) := starMulSelf_le_one_of_isPartialIsometry hpi
+  have hσ1 : (σ (1 : A₄)).re ≤ 1 := by rw [hσone, Complex.ofReal_re]; exact hf1
+  refine ⟨σ, hσ1, ?_⟩
+  -- Cauchy–Schwarz for `‖·‖_σ`: `‖f p‖ ≤ √‖p‖ · √(σ p)`
+  have hsq : CFC.sqrt p * CFC.sqrt p = p := CFC.sqrt_mul_sqrt_self p hp
+  have hsqsa : star (CFC.sqrt p) = CFC.sqrt p :=
+    (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg p)).star_eq
+  have hkey : (σ (star u * p) : ℂ) = f p := by
+    rw [hσapp, ← mul_assoc, ← h1' p]
+  have hrew : star (CFC.sqrt p * u) * CFC.sqrt p = star u * p := by
+    rw [star_mul, hsqsa, mul_assoc, hsq]
+  have hcs := norm_apply_star_mul_le σ (CFC.sqrt p * u) (CFC.sqrt p)
+  rw [hrew, hkey] at hcs
+  have hom_p : omegaNorm A₄ σ (CFC.sqrt p) = Real.sqrt (σ p).re := by
+    rw [omegaNorm, hsqsa, hsq]
+  have hom_u : omegaNorm A₄ σ u ≤ 1 := by
+    have hmono : (σ (star u * u)).re ≤ (σ (1 : A₄)).re := by
+      have h := npFunctional_mono σ hule
+      simpa using (Complex.le_def.mp h).1
+    rw [omegaNorm]
+    calc Real.sqrt (σ (star u * u)).re ≤ Real.sqrt 1 :=
+          Real.sqrt_le_sqrt (hmono.trans hσ1)
+      _ = 1 := Real.sqrt_one
+  have hnsq : ‖CFC.sqrt p‖ = Real.sqrt ‖p‖ := by
+    have h : ‖CFC.sqrt p‖ * ‖CFC.sqrt p‖ = ‖p‖ := by
+      rw [← CStarRing.norm_star_mul_self, hsqsa, hsq]
+    rw [← h, Real.sqrt_mul_self (norm_nonneg _)]
+  have hom_pu : omegaNorm A₄ σ (CFC.sqrt p * u) ≤ Real.sqrt ‖p‖ := by
+    refine (omegaNorm_mul_le σ (CFC.sqrt p) u).trans ?_
+    rw [hnsq]
+    calc Real.sqrt ‖p‖ * omegaNorm A₄ σ u ≤ Real.sqrt ‖p‖ * 1 :=
+          mul_le_mul_of_nonneg_left hom_u (Real.sqrt_nonneg _)
+      _ = Real.sqrt ‖p‖ := mul_one _
+  have hfinal : ‖f p‖ ≤ Real.sqrt (‖p‖ * (σ p).re) := by
+    refine hcs.trans ?_
+    rw [hom_p, Real.sqrt_mul (norm_nonneg p)]
+    exact mul_le_mul_of_nonneg_right hom_pu (Real.sqrt_nonneg _)
+  have hlt : ‖p‖ - ε / 2 < Real.sqrt (‖p‖ * (σ p).re) := lt_of_lt_of_le hfp hfinal
+  have hpos2 : (0 : ℝ) < ‖p‖ - ε / 2 := by linarith
+  have hsqlt : (‖p‖ - ε / 2) ^ 2 < ‖p‖ * (σ p).re := by
+    have h := (Real.lt_sqrt (by positivity)).mp hlt
+    linarith
+  nlinarith [sq_nonneg ε, hp0]
+
+/-- The `‖·‖_σ` form of the previous lemma: `‖a‖ ≤ sup_σ σ(a* a)^½` over
+np-functionals with `σ(1) ≤ 1`.  (Apply the previous lemma at `p = a* a` with
+`ε' = 2‖a‖ε − ε²`.) -/
+theorem exists_npFunctional_ge_omegaNorm_sub [VonNeumannAlgebra A₄] (a : A₄)
+    {ε : ℝ} (hε : 0 < ε) :
+    ∃ σ : NPFunctional A₄, (σ 1).re ≤ 1 ∧
+      ‖a‖ - ε ≤ Real.sqrt (σ (star a * a)).re := by
+  rcases le_or_gt ‖a‖ ε with h | h
+  · refine ⟨zeroNP, by show ((0 : ℂ)).re ≤ 1; simp, ?_⟩
+    have hz : (zeroNP (star a * a) : ℂ) = 0 := rfl
+    rw [hz]
+    simp only [Complex.zero_re, Real.sqrt_zero]
+    linarith
+  · have hna : (0 : ℝ) ≤ ‖a‖ := norm_nonneg a
+    obtain ⟨σ, hσ1, hσa⟩ :=
+      exists_npFunctional_ge_norm_sub (p := star a * a) (star_mul_self_nonneg a)
+        (ε := 2 * ‖a‖ * ε - ε ^ 2) (by nlinarith)
+    refine ⟨σ, hσ1, ?_⟩
+    have hnorm : ‖star a * a‖ = ‖a‖ * ‖a‖ := CStarRing.norm_star_mul_self
+    rw [hnorm] at hσa
+    have hge : (‖a‖ - ε) ^ 2 ≤ (σ (star a * a)).re := by nlinarith
+    calc ‖a‖ - ε = Real.sqrt ((‖a‖ - ε) ^ 2) := (Real.sqrt_sq (by linarith)).symm
+      _ ≤ Real.sqrt (σ (star a * a)).re := Real.sqrt_le_sqrt hge
+
 end DensityAux
 
 section Extra
@@ -5394,13 +5559,70 @@ noncomputable def predualTensor (f : A →L[ℂ] ℂ) (g : B →L[ℂ] ℂ)
 theorem product_functional_norm (f : A →L[ℂ] ℂ) (g : B →L[ℂ] ℂ)
     (hf : @Continuous A ℂ (ultraweak A) _ ⇑f)
     (hg : @Continuous B ℂ (ultraweak B) _ ⇑g) :
-    ‖predualTensor f g hf hg‖ = ‖f‖ * ‖g‖ := sorry
-
-/-- **116III** (`tensor-simple-facts`, proc.tex:3427, Exercise), part 2:
-`‖a ⊗ b‖ = ‖a‖·‖b‖`, and `⊗ : 𝒜 × ℬ → 𝒜 ⊗ ℬ` is norm continuous. -/
-theorem tensor_simple_facts_2 :
-    (∀ (a : A) (b : B), ‖a ⊗ᵥ b‖ = ‖a‖ * ‖b‖) ∧
-      Continuous fun p : A × B => p.1 ⊗ᵥ p.2 := sorry
+    ‖predualTensor f g hf hg‖ = ‖f‖ * ‖g‖ := by
+  -- The thesis's proof (proc.tex:3405) verbatim: polar-decompose `f` and `g`
+  -- (**86IX**), note that `u ⊗ v` is a partial isometry doing the same job for
+  -- `f ⊗ g`, and read the norm off **86XIV** `functional_norm`.
+  set F : VNT A B →L[ℂ] ℂ := predualTensor f g hf hg with hFdef
+  have hspec := (exists_predualTensor f g hf hg).choose_spec.1
+  have hFc : @Continuous (VNT A B) ℂ (ultraweak (VNT A B)) _ ⇑F := hspec.1
+  have hFval : ∀ (a : A) (b : B), F (a ⊗ᵥ b) = f a * g b := hspec.2
+  have hcw : ∀ z : VNT A B,
+      @Continuous (VNT A B) ℂ (ultraweak (VNT A B)) _ (fun x => (F (z * x) : ℂ)) := by
+    intro z
+    letI : TopologicalSpace (VNT A B) := ultraweak (VNT A B)
+    exact hFc.comp (mult_uws_cont z).1
+  obtain ⟨u, σ, hpiu, hσapp, h1u, hσone⟩ := exists_npFunctional_polar f hf
+  obtain ⟨v, τ, hpiv, hτapp, h1v, hτone⟩ := exists_npFunctional_polar g hg
+  have hmiu := (vnTensor A B).isTensorProduct.miu
+  have hmul : ∀ (x x' : A) (y y' : B),
+      (x ⊗ᵥ y) * (x' ⊗ᵥ y') = (x * x') ⊗ᵥ (y * y') :=
+    fun x x' y y' => (hmiu.2.1 x x' y y').symm
+  have hstar : ∀ (x : A) (y : B), star (x ⊗ᵥ y) = star x ⊗ᵥ star y :=
+    fun x y => hmiu.2.2 x y
+  set w : VNT A B := u ⊗ᵥ v with hwdef
+  have hstarw : star w = star u ⊗ᵥ star v := hstar u v
+  have hu2 : u * star u * u = u := ((partial_isometry_equivalents u).out 0 2).mp hpiu
+  have hv2 : v * star v * v = v := ((partial_isometry_equivalents v).out 0 2).mp hpiv
+  have hpiw : IsPartialIsometry (VNT A B) w := by
+    refine ((partial_isometry_equivalents w).out 2 0).mp ?_
+    rw [hwdef, hstarw, hmul, hmul, hu2, hv2]
+  -- `F(w ·)` is the product np-functional `σ ⊗ τ`, hence positive
+  set χ : NPFunctional (VNT A B) :=
+    prodNP (vnTensor A B).isTensorProduct σ τ with hχdef
+  have hχval : ∀ (a : A) (b : B), χ (a ⊗ᵥ b) = (σ a : ℂ) * τ b :=
+    fun a b => prodNP_apply (vnTensor A B).isTensorProduct σ τ a b
+  have hposw : ∀ x : VNT A B, 0 ≤ x → 0 ≤ F (w * x) := by
+    have heqχ : F.comp (ContinuousLinearMap.mul ℂ (VNT A B) w) = npCLM χ := by
+      refine clm_ext_of_tmul (hcw w) (continuous_ultraweak_npFunctional χ)
+        (fun a b => ?_)
+      show F (w * (a ⊗ᵥ b)) = (χ (a ⊗ᵥ b) : ℂ)
+      rw [hwdef, hmul, hFval, hχval, hσapp, hτapp]
+    intro x hx
+    have hxv : F (w * x) = (χ x : ℂ) :=
+      congrArg (fun h : VNT A B →L[ℂ] ℂ => h x) heqχ
+    rw [hxv]
+    exact npFunctional_nonneg χ hx
+  -- `F = F(w w* ·)`
+  have heqw : ∀ x : VNT A B, F x = F (w * star w * x) := by
+    have hcomp : F = F.comp (ContinuousLinearMap.mul ℂ (VNT A B) (w * star w)) := by
+      refine clm_ext_of_tmul hFc (hcw (w * star w)) (fun a b => ?_)
+      show F (a ⊗ᵥ b) = F (w * star w * (a ⊗ᵥ b))
+      have hw : w * star w * (a ⊗ᵥ b) = (u * star u * a) ⊗ᵥ (v * star v * b) := by
+        rw [hwdef, hstarw, hmul, hmul]
+      rw [hw, hFval, hFval, ← h1u a, ← h1v b]
+    intro x
+    exact congrArg (fun h : VNT A B →L[ℂ] ℂ => h x) hcomp
+  have hFw : F w = ((‖F‖ : ℝ) : ℂ) := functional_norm F hFc w hpiw hposw heqw
+  -- the two one-sided norms
+  have hfu : f u = ((‖f‖ : ℝ) : ℂ) := by
+    rw [← hσone, hσapp 1, mul_one]
+  have hgv : g v = ((‖g‖ : ℝ) : ℂ) := by
+    rw [← hτone, hτapp 1, mul_one]
+  have hval : F w = ((‖f‖ * ‖g‖ : ℝ) : ℂ) := by
+    rw [hwdef, hFval, hfu, hgv, Complex.ofReal_mul]
+  have := hFw.symm.trans hval
+  exact_mod_cast this
 
 /-- **116III** (`tensor-simple-facts`, proc.tex:3427, Exercise), part 3:
 `⊗ : 𝒜_* × ℬ_* → (𝒜 ⊗ ℬ)_*` is norm continuous — rendered by the
@@ -5411,7 +5633,78 @@ theorem tensor_simple_facts_3 (f f' : A →L[ℂ] ℂ) (g g' : B →L[ℂ] ℂ)
     (hg : @Continuous B ℂ (ultraweak B) _ ⇑g)
     (hg' : @Continuous B ℂ (ultraweak B) _ ⇑g') :
     ‖predualTensor f g hf hg - predualTensor f' g' hf' hg'‖ ≤
-      ‖f - f'‖ * ‖g‖ + ‖f'‖ * ‖g - g'‖ := sorry
+      ‖f - f'‖ * ‖g‖ + ‖f'‖ * ‖g - g'‖ := by
+  -- the thesis's argument: `f⊗g − f'⊗g' = (f−f')⊗g + f'⊗(g−g')`, then **116I**
+  have hfs : @Continuous A ℂ (ultraweak A) _ ⇑(f - f') := by
+    letI : TopologicalSpace A := ultraweak A
+    have he : ⇑(f - f') = fun a : A => (f a : ℂ) - f' a := by funext a; simp
+    rw [he]; exact hf.sub hf'
+  have hgs : @Continuous B ℂ (ultraweak B) _ ⇑(g - g') := by
+    letI : TopologicalSpace B := ultraweak B
+    have he : ⇑(g - g') = fun b : B => (g b : ℂ) - g' b := by funext b; simp
+    rw [he]; exact hg.sub hg'
+  have hspec : ∀ (p : A →L[ℂ] ℂ) (q : B →L[ℂ] ℂ)
+      (hp : @Continuous A ℂ (ultraweak A) _ ⇑p)
+      (hq : @Continuous B ℂ (ultraweak B) _ ⇑q),
+      (@Continuous (VNT A B) ℂ (ultraweak (VNT A B)) _ ⇑(predualTensor p q hp hq)) ∧
+        ∀ (a : A) (b : B), predualTensor p q hp hq (a ⊗ᵥ b) = p a * q b :=
+    fun p q hp hq => (exists_predualTensor p q hp hq).choose_spec.1
+  have hkey : predualTensor f g hf hg - predualTensor f' g' hf' hg'
+      = predualTensor (f - f') g hfs hg + predualTensor f' (g - g') hf' hgs := by
+    refine clm_ext_of_tmul ?_ ?_ (fun a b => ?_)
+    · letI : TopologicalSpace (VNT A B) := ultraweak (VNT A B)
+      have he : ⇑(predualTensor f g hf hg - predualTensor f' g' hf' hg')
+          = fun x : VNT A B =>
+            (predualTensor f g hf hg x : ℂ) - predualTensor f' g' hf' hg' x := by
+        funext x; simp
+      rw [he]
+      exact (hspec f g hf hg).1.sub (hspec f' g' hf' hg').1
+    · letI : TopologicalSpace (VNT A B) := ultraweak (VNT A B)
+      have he : ⇑(predualTensor (f - f') g hfs hg + predualTensor f' (g - g') hf' hgs)
+          = fun x : VNT A B => (predualTensor (f - f') g hfs hg x : ℂ)
+              + predualTensor f' (g - g') hf' hgs x := by
+        funext x; simp
+      rw [he]
+      exact (hspec (f - f') g hfs hg).1.add (hspec f' (g - g') hf' hgs).1
+    · show (predualTensor f g hf hg (a ⊗ᵥ b) : ℂ) - predualTensor f' g' hf' hg' (a ⊗ᵥ b)
+        = predualTensor (f - f') g hfs hg (a ⊗ᵥ b)
+            + predualTensor f' (g - g') hf' hgs (a ⊗ᵥ b)
+      rw [(hspec f g hf hg).2, (hspec f' g' hf' hg').2,
+        (hspec (f - f') g hfs hg).2, (hspec f' (g - g') hf' hgs).2]
+      show (f a : ℂ) * g b - f' a * g' b
+        = ((f a : ℂ) - f' a) * g b + (f' a : ℂ) * ((g b : ℂ) - g' b)
+      ring
+  calc ‖predualTensor f g hf hg - predualTensor f' g' hf' hg'‖
+      = ‖predualTensor (f - f') g hfs hg + predualTensor f' (g - g') hf' hgs‖ := by
+        rw [hkey]
+    _ ≤ ‖predualTensor (f - f') g hfs hg‖ + ‖predualTensor f' (g - g') hf' hgs‖ :=
+        norm_add_le _ _
+    _ = ‖f - f'‖ * ‖g‖ + ‖f'‖ * ‖g - g'‖ := by
+        rw [product_functional_norm, product_functional_norm]
+
+/-- **116III**.3 in the form **116IV**.2 uses it: two normal functionals on
+`𝒜 ⊗ ℬ` that factor on pure tensors are compared by the cross-norm estimate.
+(Both are the corresponding `predualTensor`, by the uniqueness clause of
+**116I**.) -/
+private theorem norm_sub_le_of_tmul_factor (F G : VNT A B →L[ℂ] ℂ)
+    (hFc : @Continuous (VNT A B) ℂ (ultraweak (VNT A B)) _ ⇑F)
+    (hGc : @Continuous (VNT A B) ℂ (ultraweak (VNT A B)) _ ⇑G)
+    (p p' : A →L[ℂ] ℂ) (q q' : B →L[ℂ] ℂ)
+    (hp : @Continuous A ℂ (ultraweak A) _ ⇑p)
+    (hp' : @Continuous A ℂ (ultraweak A) _ ⇑p')
+    (hq : @Continuous B ℂ (ultraweak B) _ ⇑q)
+    (hq' : @Continuous B ℂ (ultraweak B) _ ⇑q')
+    (hF : ∀ (a : A) (b : B), F (a ⊗ᵥ b) = p a * q b)
+    (hG : ∀ (a : A) (b : B), G (a ⊗ᵥ b) = p' a * q' b) :
+    ‖F - G‖ ≤ ‖p - p'‖ * ‖q‖ + ‖p'‖ * ‖q - q'‖ := by
+  have hFeq : F = predualTensor p q hp hq :=
+    (exists_predualTensor p q hp hq).unique ⟨hFc, hF⟩
+      (exists_predualTensor p q hp hq).choose_spec.1
+  have hGeq : G = predualTensor p' q' hp' hq' :=
+    (exists_predualTensor p' q' hp' hq').unique ⟨hGc, hG⟩
+      (exists_predualTensor p' q' hp' hq').choose_spec.1
+  rw [hFeq, hGeq]
+  exact tensor_simple_facts_3 p p' q q' hp hp' hq hq'
 
 /-- **116III** (`tensor-simple-facts`, proc.tex:3427, Exercise), part 4:
 `⊗ : 𝒜 × ℬ → 𝒜 ⊗ ℬ` is (jointly) ultraweakly continuous. -/
@@ -5442,6 +5735,93 @@ theorem norm_vtmul_le (a : A) (b : B) : ‖a ⊗ᵥ b‖ ≤ ‖a‖ * ‖b‖ :
     rw [TensorProduct.lift.tmul]; rfl
   rw [h, tensor_basic_2 (vnTensor A B).map (vnTensor A B).isTensorProduct]
   exact tensorNorm_tmul_le a b
+
+/-- The `≥` half of **116III**.2, in tensor-norm form.  The basic functional
+`σ ⊙ τ` (witness `t₀ = 1`) sends `(a ⊙ b)*(a ⊙ b) = (a* a) ⊙ (b* b)` to
+`σ(a* a)·τ(b* b)`, so `‖a ⊙ b‖ ≥ σ(a* a)^½ τ(b* b)^½`; both factors are pushed
+to `‖a‖`, `‖b‖` by `exists_npFunctional_ge_omegaNorm_sub`, which is exactly
+the *subunital* form of **21VII** `order_separating_norm` that the supremum
+defining `tensorNorm` runs over. -/
+private theorem le_tensorNorm_tmul (a : A) (b : B) :
+    ‖a‖ * ‖b‖ ≤ tensorNorm A B (a ⊗ₜ[ℂ] b) := by
+  refine le_of_forall_pos_le_add (fun δ hδ => ?_)
+  set ε : ℝ := δ / (‖a‖ + ‖b‖ + 1) with hεdef
+  have hna : (0 : ℝ) ≤ ‖a‖ := norm_nonneg a
+  have hnb : (0 : ℝ) ≤ ‖b‖ := norm_nonneg b
+  have hε : 0 < ε := by rw [hεdef]; positivity
+  have hεsum : ε * (‖a‖ + ‖b‖) ≤ δ := by
+    have hd : ε * (‖a‖ + ‖b‖ + 1) = δ := by
+      rw [hεdef]; field_simp
+    nlinarith
+  obtain ⟨σ, hσ1, hσa⟩ := exists_npFunctional_ge_omegaNorm_sub a hε
+  obtain ⟨τ, hτ1, hτb⟩ := exists_npFunctional_ge_omegaNorm_sub b hε
+  set ω : A ⊗[ℂ] B →ₗ[ℂ] ℂ := odotF (npLin σ) (npLin τ) with hωdef
+  have hωb : IsBasicFunctional ω := isBasicFunctional_odotF σ τ
+  -- the two values are nonnegative reals
+  have hσ0 := Complex.le_def.mp (npFunctional_nonneg σ (star_mul_self_nonneg a))
+  have hτ0 := Complex.le_def.mp (npFunctional_nonneg τ (star_mul_self_nonneg b))
+  have hσ01 := Complex.le_def.mp (npFunctional_nonneg σ (zero_le_one (α := A)))
+  have hτ01 := Complex.le_def.mp (npFunctional_nonneg τ (zero_le_one (α := B)))
+  have him1 : ((σ (1 : A) : ℂ)).im = 0 := by simpa using hσ01.2.symm
+  have him2 : ((τ (1 : B) : ℂ)).im = 0 := by simpa using hτ01.2.symm
+  have hre2 : (0 : ℝ) ≤ (τ (1 : B)).re := by simpa using hτ01.1
+  have hω1 : (ω 1).re ≤ 1 := by
+    have hval : ω (1 : A ⊗[ℂ] B) = (σ 1 : ℂ) * (τ 1 : ℂ) := by
+      rw [hωdef, Algebra.TensorProduct.one_def, odotF_tmul]; rfl
+    rw [hval, Complex.mul_re, him1, him2, mul_zero, sub_zero]
+    calc (σ (1 : A)).re * (τ (1 : B)).re ≤ 1 * 1 :=
+          mul_le_mul hσ1 hτ1 hre2 zero_le_one
+      _ = 1 := one_mul 1
+  have hstar : star (a ⊗ₜ[ℂ] b) * (a ⊗ₜ[ℂ] b)
+      = (star a * a) ⊗ₜ[ℂ] (star b * b) := by
+    rw [TensorProduct.star_tmul, Algebra.TensorProduct.tmul_mul_tmul]
+  have hval : (ω (star (a ⊗ₜ[ℂ] b) * (a ⊗ₜ[ℂ] b))).re
+      = (σ (star a * a)).re * (τ (star b * b)).re := by
+    have he : ω (star (a ⊗ₜ[ℂ] b) * (a ⊗ₜ[ℂ] b))
+        = (σ (star a * a) : ℂ) * (τ (star b * b) : ℂ) := by
+      rw [hstar, hωdef, odotF_tmul]; rfl
+    have hia : ((σ (star a * a) : ℂ)).im = 0 := by simpa using hσ0.2.symm
+    have hib : ((τ (star b * b) : ℂ)).im = 0 := by simpa using hτ0.2.symm
+    rw [he, Complex.mul_re, hia, hib, mul_zero, sub_zero]
+  have hmem := le_csSup (tnSet_bddAbove (a ⊗ₜ[ℂ] b))
+    (⟨ω, hωb, hω1, rfl⟩ :
+      Real.sqrt (ω (star (a ⊗ₜ[ℂ] b) * (a ⊗ₜ[ℂ] b))).re ∈ tnSet (a ⊗ₜ[ℂ] b))
+  rw [← tensorNorm_eq_sSup, hval,
+    Real.sqrt_mul (by simpa using hσ0.1)] at hmem
+  -- combine the two approximations
+  set X : ℝ := Real.sqrt (σ (star a * a)).re with hXdef
+  set Y : ℝ := Real.sqrt (τ (star b * b)).re with hYdef
+  have hX0 : 0 ≤ X := Real.sqrt_nonneg _
+  have hY0 : 0 ≤ Y := Real.sqrt_nonneg _
+  have hprod : ‖a‖ * ‖b‖ ≤ X * Y + δ := by
+    rcases le_or_gt ε ‖a‖ with hA | hA
+    · rcases le_or_gt ε ‖b‖ with hB | hB
+      · nlinarith
+      · nlinarith
+    · nlinarith
+  linarith
+
+/-- **116III**.2: `‖a ⊗ b‖ = ‖a‖·‖b‖`. -/
+theorem norm_vtmul (a : A) (b : B) : ‖a ⊗ᵥ b‖ = ‖a‖ * ‖b‖ := by
+  refine le_antisymm (norm_vtmul_le a b) ?_
+  have h : (a ⊗ᵥ b) = TensorProduct.lift (vnTensor A B).map (a ⊗ₜ[ℂ] b) := by
+    rw [TensorProduct.lift.tmul]; rfl
+  rw [h, tensor_basic_2 (vnTensor A B).map (vnTensor A B).isTensorProduct]
+  exact le_tensorNorm_tmul a b
+
+/-- **116III** (`tensor-simple-facts`, proc.tex:3427, Exercise), part 2:
+`‖a ⊗ b‖ = ‖a‖·‖b‖`, and `⊗ : 𝒜 × ℬ → 𝒜 ⊗ ℬ` is norm continuous. -/
+theorem tensor_simple_facts_2 :
+    (∀ (a : A) (b : B), ‖a ⊗ᵥ b‖ = ‖a‖ * ‖b‖) ∧
+      Continuous fun p : A × B => p.1 ⊗ᵥ p.2 := by
+  refine ⟨norm_vtmul, ?_⟩
+  -- the thesis's warning that this "is not entirely trivial" is the
+  -- bilinearity step: `⊗` is a bounded bilinear map with constant `1`.
+  have hbd : ∀ (a : A) (b : B), ‖(vnTensor A B).map a b‖ ≤ 1 * ‖a‖ * ‖b‖ := by
+    intro a b
+    rw [one_mul]
+    exact le_of_eq (norm_vtmul a b)
+  exact (LinearMap.mkContinuous₂ (vnTensor A B).map 1 hbd).continuous₂
 
 /-- `b ↦ χ(a ⊗ b)` as a continuous linear functional on `ℬ`. -/
 private noncomputable def npTmulRight (χ : NPFunctional (VNT A B)) (a : A) :
@@ -5535,6 +5915,107 @@ theorem continuous_ultraweak_vtmul_right (a : A) :
         _ = ε * ‖b‖ := by ring
   exact hF
 
+/-! ### The mirror: `(·) ⊗ b` is ultraweakly continuous
+
+**116IV**.1 needs ultraweak continuity of `⊗` in *each* variable separately
+(**116III**.4, joint continuity, is not available — see the note above), so the
+argument of `continuous_ultraweak_vtmul_right` is repeated with the roles of
+the two factors exchanged.  The expansion is the same one, `star_tmul_conj_expand`;
+only which of its two factors carries the variable changes. -/
+
+/-- `a ↦ χ(a ⊗ b)` as a continuous linear functional on `𝒜`. -/
+private noncomputable def npTmulLeft (χ : NPFunctional (VNT A B)) (b : B) :
+    A →L[ℂ] ℂ :=
+  LinearMap.mkContinuous ((npLin χ).comp ((vnTensor A B).map.flip b))
+    ((χ 1).re * ‖b‖) (fun a => by
+      have h1 : ‖(χ (a ⊗ᵥ b) : ℂ)‖ ≤ (χ 1).re * ‖a ⊗ᵥ b‖ :=
+        npFunctional_norm_le χ _
+      have h0 : (0 : ℝ) ≤ (χ 1).re := by
+        simpa using (Complex.le_def.mp (npFunctional_nonneg χ zero_le_one)).1
+      calc ‖((npLin χ).comp ((vnTensor A B).map.flip b)) a‖
+          = ‖(χ (a ⊗ᵥ b) : ℂ)‖ := rfl
+        _ ≤ (χ 1).re * ‖a ⊗ᵥ b‖ := h1
+        _ ≤ (χ 1).re * (‖a‖ * ‖b‖) :=
+            mul_le_mul_of_nonneg_left (norm_vtmul_le a b) h0
+        _ = (χ 1).re * ‖b‖ * ‖a‖ := by ring)
+
+@[simp] private theorem npTmulLeft_apply (χ : NPFunctional (VNT A B)) (b : B)
+    (a : A) : npTmulLeft χ b a = χ (a ⊗ᵥ b) := rfl
+
+/-- For a member `χ` of `Ω` the functional `a ↦ χ(a ⊗ b)` is ultraweakly
+continuous: it is the finite sum `∑ₖₗ σ(cₖ*(·)c_l) τ(dₖ* b d_l)`. -/
+private theorem continuous_npTmulLeft_conjProdNP (b : B) (σ : NPFunctional A)
+    (τ : NPFunctional B) (s : A ⊗[ℂ] B) :
+    @Continuous A ℂ (ultraweak A) _
+      ⇑(npTmulLeft (conjProdNP (vnTensor A B).isTensorProduct σ τ s) b) := by
+  classical
+  obtain ⟨N, c, d, hs⟩ := exists_fin_repr s
+  letI : TopologicalSpace A := ultraweak A
+  have hval : ⇑(npTmulLeft (conjProdNP (vnTensor A B).isTensorProduct σ τ s) b)
+      = fun a : A => ∑ k, ∑ l, σ (star (c k) * a * c l) * τ (star (d k) * b * d l) := by
+    funext a
+    show (conjProdNP (vnTensor A B).isTensorProduct σ τ s) (a ⊗ᵥ b) = _
+    have h1 : (a ⊗ᵥ b) = TensorProduct.lift (vnTensor A B).map (a ⊗ₜ[ℂ] b) := by
+      rw [TensorProduct.lift.tmul]; rfl
+    rw [h1, conjProdNP_lift (vnTensor A B).isTensorProduct, hs,
+      star_tmul_conj_expand c d a b, map_sum]
+    refine Finset.sum_congr rfl fun k _ => ?_
+    rw [map_sum]
+    exact Finset.sum_congr rfl fun l _ => by rw [odotF_tmul]; rfl
+  rw [hval]
+  refine continuous_finsetSum _ fun k _ => continuous_finsetSum _ fun l _ => ?_
+  refine Continuous.mul ?_ continuous_const
+  have h1 : Continuous (fun z : A => star (c k) * z) := (mult_uws_cont (star (c k))).1
+  have h2 : Continuous (fun z : A => z * c l) := (mult_uws_cont (c l)).2.1
+  exact (continuous_ultraweak_npFunctional σ).comp (h2.comp h1)
+
+/-- The mirror of **116III**.5's normality half: `(·) ⊗ b` is ultraweakly
+continuous. -/
+theorem continuous_ultraweak_vtmul_left (b : B) :
+    @Continuous A (VNT A B) (ultraweak A) (ultraweak (VNT A B))
+      (fun a => a ⊗ᵥ b) := by
+  classical
+  refine continuous_ultraweak_of_forall' (ultraweak A) _ (fun χ => ?_)
+  have hF : @Continuous A ℂ (ultraweak A) _ ⇑(npTmulLeft χ b) := by
+    refine continuous_ultraweak_of_normLimit (npTmulLeft χ b) (fun ε hε => ?_)
+    obtain ⟨n, σ, τ, s, hb⟩ :=
+      (tensor_basic_1 (vnTensor A B).map (vnTensor A B).isTensorProduct).2 χ
+        (ε / (‖b‖ + 1)) (by positivity)
+    refine ⟨∑ i, npTmulLeft
+      (conjProdNP (vnTensor A B).isTensorProduct (σ i) (τ i) (s i)) b, ?_, ?_⟩
+    · letI : TopologicalSpace A := ultraweak A
+      have hfun : ⇑(∑ i, npTmulLeft
+          (conjProdNP (vnTensor A B).isTensorProduct (σ i) (τ i) (s i)) b)
+          = fun a : A => ∑ i, npTmulLeft
+            (conjProdNP (vnTensor A B).isTensorProduct (σ i) (τ i) (s i)) b a := by
+        funext a; simp
+      rw [hfun]
+      exact continuous_finsetSum _ fun i _ =>
+        continuous_npTmulLeft_conjProdNP b (σ i) (τ i) (s i)
+    · refine ContinuousLinearMap.opNorm_le_bound _ hε.le (fun a => ?_)
+      have hb' := hb (a ⊗ᵥ b)
+      have hnorm : ‖a ⊗ᵥ b‖ ≤ ‖a‖ * ‖b‖ := norm_vtmul_le a b
+      have hpt : ‖(npTmulLeft χ b - ∑ i, npTmulLeft
+          (conjProdNP (vnTensor A B).isTensorProduct (σ i) (τ i) (s i)) b) a‖
+          ≤ ε / (‖b‖ + 1) * ‖a ⊗ᵥ b‖ := by
+        rw [ContinuousLinearMap.sub_apply, ContinuousLinearMap.sum_apply]
+        exact hb'
+      refine hpt.trans ?_
+      have h0 : (0 : ℝ) ≤ ε / (‖b‖ + 1) := by positivity
+      have hle : ‖b‖ / (‖b‖ + 1) ≤ 1 := by
+        rw [div_le_one (by positivity)]
+        linarith [norm_nonneg b]
+      have he : ε / (‖b‖ + 1) * (‖a‖ * ‖b‖) = ε * (‖b‖ / (‖b‖ + 1)) * ‖a‖ := by
+        field_simp
+      calc ε / (‖b‖ + 1) * ‖a ⊗ᵥ b‖
+          ≤ ε / (‖b‖ + 1) * (‖a‖ * ‖b‖) := mul_le_mul_of_nonneg_left hnorm h0
+        _ = ε * (‖b‖ / (‖b‖ + 1)) * ‖a‖ := he
+        _ ≤ ε * 1 * ‖a‖ := by
+            refine mul_le_mul_of_nonneg_right ?_ (norm_nonneg a)
+            exact mul_le_mul_of_nonneg_left hle hε.le
+        _ = ε * ‖a‖ := by ring
+  exact hF
+
 /-- **116III** (`tensor-simple-facts`, proc.tex:3427, Exercise), part 5:
 `a ⊗ (·) : ℬ → 𝒜 ⊗ ℬ` is an ncp-map for positive `a`, and `1 ⊗ (·)` is
 an nmiu-map. -/
@@ -5625,7 +6106,91 @@ theorem tensor_generation_1 (S : Set A) (T : Set B)
     (hT : @Dense B (ultraweak B) (Submodule.span ℂ T : Set B)) :
     @Dense (VNT A B) (ultraweak (VNT A B))
       (Submodule.span ℂ {x : VNT A B | ∃ s ∈ S, ∃ t ∈ T, x = s ⊗ᵥ t} :
-        Set (VNT A B)) := sorry
+        Set (VNT A B)) := by
+  -- The thesis (proc.tex:3510) runs this through **116III**.4, joint ultraweak
+  -- continuity of `⊗`; that is not available (see the note at 116III.4), and
+  -- the *separate* continuity of the two slices is enough, since the closure
+  -- of a submodule is a submodule.
+  letI : TopologicalSpace A := ultraweak A
+  letI : TopologicalSpace B := ultraweak B
+  letI : TopologicalSpace (VNT A B) := ultraweak (VNT A B)
+  haveI : IsTopologicalAddGroup (VNT A B) := ultraweak_isTopologicalAddGroup
+  haveI : ContinuousSMul ℂ (VNT A B) := ultraweak_continuousSMul_complex
+  set P : Submodule ℂ (VNT A B) :=
+    Submodule.span ℂ {x : VNT A B | ∃ s ∈ S, ∃ t ∈ T, x = s ⊗ᵥ t} with hPdef
+  set M : Submodule ℂ (VNT A B) := P.topologicalClosure with hMdef
+  have hMclosed : IsClosed (M : Set (VNT A B)) := P.isClosed_topologicalClosure
+  have hPM : (P : Set (VNT A B)) ⊆ (M : Set (VNT A B)) := P.le_topologicalClosure
+  -- Step 1: `s ⊗ y ∈ P` for `s ∈ S` and `y` in the span of `T`
+  have hstep1 : ∀ s ∈ S, ∀ y ∈ (Submodule.span ℂ T : Set B), s ⊗ᵥ y ∈ P := by
+    intro s hs y hy
+    induction hy using Submodule.span_induction with
+    | mem u hu => exact Submodule.subset_span ⟨s, hs, u, hu, rfl⟩
+    | zero => rw [show s ⊗ᵥ (0 : B) = 0 from map_zero ((vnTensor A B).map s)]
+              exact P.zero_mem
+    | add u v _ _ hu hv =>
+        rw [show s ⊗ᵥ (u + v) = s ⊗ᵥ u + s ⊗ᵥ v from map_add ((vnTensor A B).map s) u v]
+        exact P.add_mem hu hv
+    | smul c u _ hu =>
+        rw [show s ⊗ᵥ (c • u) = c • (s ⊗ᵥ u) from map_smul ((vnTensor A B).map s) c u]
+        exact P.smul_mem c hu
+  -- Step 2: `s ⊗ b ∈ M` for `s ∈ S` and every `b`, by right-continuity
+  have hstep2 : ∀ s ∈ S, ∀ b : B, s ⊗ᵥ b ∈ M := by
+    intro s hs b
+    have hcont : Continuous (fun y : B => s ⊗ᵥ y) := continuous_ultraweak_vtmul_right s
+    have himg : (fun y : B => s ⊗ᵥ y) '' (Submodule.span ℂ T : Set B)
+        ⊆ (M : Set (VNT A B)) := by
+      rintro _ ⟨y, hy, rfl⟩
+      exact hPM (hstep1 s hs y hy)
+    have hb : b ∈ closure ((Submodule.span ℂ T : Set B)) := by
+      rw [hT.closure_eq]; trivial
+    have h := image_closure_subset_closure_image hcont
+      (s := (Submodule.span ℂ T : Set B)) ⟨b, hb, rfl⟩
+    exact hMclosed.closure_subset_iff.mpr himg h
+  -- Step 3: `x ⊗ b ∈ M` for `x` in the span of `S`
+  have hstep3 : ∀ b : B, ∀ x ∈ (Submodule.span ℂ S : Set A), x ⊗ᵥ b ∈ M := by
+    intro b x hx
+    induction hx using Submodule.span_induction with
+    | mem u hu => exact hstep2 u hu b
+    | zero =>
+        rw [show (0 : A) ⊗ᵥ b = 0 from by
+          rw [show ((0 : A) ⊗ᵥ b) = (vnTensor A B).map 0 b from rfl, map_zero]; rfl]
+        exact M.zero_mem
+    | add u v _ _ hu hv =>
+        rw [show (u + v) ⊗ᵥ b = u ⊗ᵥ b + v ⊗ᵥ b from by
+          rw [show ((u + v) ⊗ᵥ b) = (vnTensor A B).map (u + v) b from rfl, map_add]; rfl]
+        exact M.add_mem hu hv
+    | smul c u _ hu =>
+        rw [show (c • u) ⊗ᵥ b = c • (u ⊗ᵥ b) from by
+          rw [show ((c • u) ⊗ᵥ b) = (vnTensor A B).map (c • u) b from rfl, map_smul]; rfl]
+        exact M.smul_mem c hu
+  -- Step 4: every pure tensor is in `M`, by left-continuity
+  have hstep4 : ∀ (a : A) (b : B), a ⊗ᵥ b ∈ M := by
+    intro a b
+    have hcont : Continuous (fun x : A => x ⊗ᵥ b) := continuous_ultraweak_vtmul_left b
+    have himg : (fun x : A => x ⊗ᵥ b) '' (Submodule.span ℂ S : Set A)
+        ⊆ (M : Set (VNT A B)) := by
+      rintro _ ⟨x, hx, rfl⟩
+      exact hstep3 b x hx
+    have ha : a ∈ closure ((Submodule.span ℂ S : Set A)) := by
+      rw [hS.closure_eq]; trivial
+    have h := image_closure_subset_closure_image hcont
+      (s := (Submodule.span ℂ S : Set A)) ⟨a, ha, rfl⟩
+    exact hMclosed.closure_subset_iff.mpr himg h
+  -- Step 5: conclude by 108II(1)
+  have hspan : Submodule.span ℂ {t : VNT A B | ∃ a b, t = (vnTensor A B).map a b} ≤ M := by
+    rw [Submodule.span_le]
+    rintro x ⟨a, b, rfl⟩
+    exact hstep4 a b
+  have hdM : Dense (M : Set (VNT A B)) :=
+    Dense.mono hspan (vnTensor A B).isTensorProduct.dense
+  have hMuniv : (M : Set (VNT A B)) = Set.univ := by
+    rw [← hMclosed.closure_eq, hdM.closure_eq]
+  have hMtop : M = ⊤ := by
+    refine Submodule.eq_top_iff'.mpr fun x => ?_
+    rw [← SetLike.mem_coe, hMuniv]
+    trivial
+  exact Submodule.dense_iff_topologicalClosure_eq_top.mpr hMtop
 
 /-- **116IV** (`tensor-generation`, proc.tex:3489, Proposition), part 2:
 centre separating collections `Ω`, `Θ` of np-functionals on `𝒜`, `ℬ`
@@ -5635,7 +6200,181 @@ theorem tensor_generation_2 (Ω : Set (NPFunctional A))
     (hΘ : CentreSeparatingConj B Θ) :
     CentreSeparatingConj (VNT A B)
       {χ : NPFunctional (VNT A B) | ∃ ω ∈ Ω, ∃ θ ∈ Θ,
-        ∀ (a : A) (b : B), χ (a ⊗ᵥ b) = ω a * θ b} := sorry
+        ∀ (a : A) (b : B), χ (a ⊗ᵥ b) = ω a * θ b} := by
+  classical
+  -- The thesis's proof (proc.tex:3538): it is enough that *every* product
+  -- functional `σ ⊗ τ` kills `t` (108II(3)), and **90II**.2 makes `σ` an
+  -- operator-norm limit of sums `∑ₖ ωₖ(sₖ*(·)sₖ)` with `ωₖ ∈ Ω`, likewise `τ`;
+  -- **116III**.3 transports the two limits to `𝒜 ⊗ ℬ`.
+  rw [centreSeparatingConj_iff]
+  intro t ht
+  refine ⟨fun h χ _ v => by rw [h]; simp, fun hkill => ?_⟩
+  refine (vnTensor A B).isTensorProduct.faithful t ht (fun σ τ h hval => ?_)
+  have hvalv : ∀ (a : A) (b : B), (h (a ⊗ᵥ b) : ℂ) = (σ a : ℂ) * τ b := hval
+  have hhc : @Continuous (VNT A B) ℂ (ultraweak (VNT A B)) _ ⇑(npCLM h) :=
+    continuous_ultraweak_npFunctional h
+  have hdA : @Dense A (ultrastrong A) (Set.univ : Set A) := by
+    letI : TopologicalSpace A := ultrastrong A; exact dense_univ
+  have hdB : @Dense B (ultrastrong B) (Set.univ : Set B) := by
+    letI : TopologicalSpace B := ultrastrong B; exact dense_univ
+  -- the ε-estimate
+  have hbound : ∀ ε : ℝ, 0 < ε → ε ≤ 1 →
+      ‖(h t : ℂ)‖ ≤ ε * (‖npCLM σ‖ + ‖npCLM τ‖ + 1) * ‖t‖ := by
+    intro ε hε hε1
+    obtain ⟨n, ω, s, hωs, hσap⟩ :=
+      vn_center_separating_fundamental_2 Ω hΩ Set.univ hdA σ ε hε
+    obtain ⟨m, θ, r, hθr, hτap⟩ :=
+      vn_center_separating_fundamental_2 Θ hΘ Set.univ hdB τ ε hε
+    -- the approximating functionals `σ'`, `τ'`
+    set σlin : A →ₗ[ℂ] ℂ := ∑ k, (npLin (ω k)).comp
+      ((LinearMap.mulRight ℂ (s k)).comp (LinearMap.mulLeft ℂ (star (s k))))
+      with hσlindef
+    have hσlinapp : ∀ a : A, σlin a = ∑ k, ((ω k) (star (s k) * a * s k) : ℂ) := by
+      intro a
+      rw [hσlindef]
+      simp only [LinearMap.sum_apply, LinearMap.coe_comp, Function.comp_apply,
+        LinearMap.mulRight_apply, LinearMap.mulLeft_apply]
+      rfl
+    set τlin : B →ₗ[ℂ] ℂ := ∑ l, (npLin (θ l)).comp
+      ((LinearMap.mulRight ℂ (r l)).comp (LinearMap.mulLeft ℂ (star (r l))))
+      with hτlindef
+    have hτlinapp : ∀ b : B, τlin b = ∑ l, ((θ l) (star (r l) * b * r l) : ℂ) := by
+      intro b
+      rw [hτlindef]
+      simp only [LinearMap.sum_apply, LinearMap.coe_comp, Function.comp_apply,
+        LinearMap.mulRight_apply, LinearMap.mulLeft_apply]
+      rfl
+    have hσdiff : ∀ a : A, ‖(σ a : ℂ) - σlin a‖ ≤ ε * ‖a‖ := by
+      intro a; rw [hσlinapp a]; exact hσap a
+    have hτdiff : ∀ b : B, ‖(τ b : ℂ) - τlin b‖ ≤ ε * ‖b‖ := by
+      intro b; rw [hτlinapp b]; exact hτap b
+    have hσbd : ∀ a : A, ‖σlin a‖ ≤ (‖npCLM σ‖ + ε) * ‖a‖ := by
+      intro a
+      have h1 : ‖(σ a : ℂ)‖ ≤ ‖npCLM σ‖ * ‖a‖ := (npCLM σ).le_opNorm a
+      have h2 := hσdiff a
+      have h3 : ‖σlin a‖ ≤ ‖(σ a : ℂ)‖ + ‖(σ a : ℂ) - σlin a‖ := by
+        have := norm_sub_le (σ a : ℂ) ((σ a : ℂ) - σlin a)
+        simpa using this
+      nlinarith [norm_nonneg a]
+    have hτbd : ∀ b : B, ‖τlin b‖ ≤ (‖npCLM τ‖ + ε) * ‖b‖ := by
+      intro b
+      have h1 : ‖(τ b : ℂ)‖ ≤ ‖npCLM τ‖ * ‖b‖ := (npCLM τ).le_opNorm b
+      have h2 := hτdiff b
+      have h3 : ‖τlin b‖ ≤ ‖(τ b : ℂ)‖ + ‖(τ b : ℂ) - τlin b‖ := by
+        have := norm_sub_le (τ b : ℂ) ((τ b : ℂ) - τlin b)
+        simpa using this
+      nlinarith [norm_nonneg b]
+    set σ' : A →L[ℂ] ℂ := σlin.mkContinuous (‖npCLM σ‖ + ε) hσbd with hσ'def
+    set τ' : B →L[ℂ] ℂ := τlin.mkContinuous (‖npCLM τ‖ + ε) hτbd with hτ'def
+    have hσ'app : ∀ a : A, (σ' a : ℂ) = σlin a := fun _ => rfl
+    have hτ'app : ∀ b : B, (τ' b : ℂ) = τlin b := fun _ => rfl
+    have hσ'c : @Continuous A ℂ (ultraweak A) _ ⇑σ' := by
+      letI : TopologicalSpace A := ultraweak A
+      have he : ⇑σ' = fun a : A => ∑ k, ((ω k) (star (s k) * a * s k) : ℂ) :=
+        funext (fun a => (hσ'app a).trans (hσlinapp a))
+      rw [he]
+      exact continuous_finsetSum _ fun k _ =>
+        (continuous_ultraweak_npFunctional (ω k)).comp
+          (((mult_uws_cont (s k)).2.1).comp (mult_uws_cont (star (s k))).1)
+    have hτ'c : @Continuous B ℂ (ultraweak B) _ ⇑τ' := by
+      letI : TopologicalSpace B := ultraweak B
+      have he : ⇑τ' = fun b : B => ∑ l, ((θ l) (star (r l) * b * r l) : ℂ) :=
+        funext (fun b => (hτ'app b).trans (hτlinapp b))
+      rw [he]
+      exact continuous_finsetSum _ fun l _ =>
+        (continuous_ultraweak_npFunctional (θ l)).comp
+          (((mult_uws_cont (r l)).2.1).comp (mult_uws_cont (star (r l))).1)
+    -- the corresponding functional on `𝒜 ⊗ ℬ`
+    set χ : Fin n → Fin m → NPFunctional (VNT A B) :=
+      fun k l => prodNP (vnTensor A B).isTensorProduct (ω k) (θ l) with hχdef
+    set v : Fin n → Fin m → VNT A B := fun k l => (s k) ⊗ᵥ (r l) with hvdef
+    set G : VNT A B →L[ℂ] ℂ :=
+      ∑ p : Fin n × Fin m, npCLM (conjNP (v p.1 p.2) (χ p.1 p.2)) with hGdef
+    have hGapp : ∀ x : VNT A B, (G x : ℂ)
+        = ∑ p : Fin n × Fin m, (χ p.1 p.2) (star (v p.1 p.2) * x * v p.1 p.2) := by
+      intro x
+      rw [hGdef]
+      simp [ContinuousLinearMap.sum_apply]
+    have hGc : @Continuous (VNT A B) ℂ (ultraweak (VNT A B)) _ ⇑G := by
+      letI : TopologicalSpace (VNT A B) := ultraweak (VNT A B)
+      have he : ⇑G = fun x : VNT A B =>
+          ∑ p : Fin n × Fin m, ((χ p.1 p.2) (star (v p.1 p.2) * x * v p.1 p.2) : ℂ) :=
+        funext hGapp
+      rw [he]
+      exact continuous_finsetSum _ fun p _ =>
+        (continuous_ultraweak_npFunctional (χ p.1 p.2)).comp
+          (((mult_uws_cont (v p.1 p.2)).2.1).comp
+            (mult_uws_cont (star (v p.1 p.2))).1)
+    have hmiu := (vnTensor A B).isTensorProduct.miu
+    have hmulv : ∀ (x x' : A) (y y' : B),
+        (x ⊗ᵥ y) * (x' ⊗ᵥ y') = (x * x') ⊗ᵥ (y * y') :=
+      fun x x' y y' => (hmiu.2.1 x x' y y').symm
+    have hstarv : ∀ (x : A) (y : B), star (x ⊗ᵥ y) = star x ⊗ᵥ star y :=
+      fun x y => hmiu.2.2 x y
+    have hGval : ∀ (a : A) (b : B), (G (a ⊗ᵥ b) : ℂ) = (σ' a : ℂ) * τ' b := by
+      intro a b
+      rw [hGapp, hσ'app, hτ'app, hσlinapp, hτlinapp, Finset.sum_mul_sum,
+        ← Finset.sum_product']
+      refine Finset.sum_congr rfl fun p _ => ?_
+      have hconj : star (v p.1 p.2) * (a ⊗ᵥ b) * v p.1 p.2
+          = (star (s p.1) * a * s p.1) ⊗ᵥ (star (r p.2) * b * r p.2) := by
+        rw [hvdef, hstarv, hmulv, hmulv]
+      rw [hconj, hχdef]
+      exact prodNP_apply (vnTensor A B).isTensorProduct (ω p.1) (θ p.2) _ _
+    have hGt : (G t : ℂ) = 0 := by
+      rw [hGapp]
+      refine Finset.sum_eq_zero fun p _ => ?_
+      refine hkill (χ p.1 p.2) ⟨ω p.1, (hωs p.1).1, θ p.2, (hθr p.2).1, fun a b => ?_⟩
+        (v p.1 p.2)
+      exact prodNP_apply (vnTensor A B).isTensorProduct (ω p.1) (θ p.2) a b
+    -- the cross-norm estimate
+    have hnσ : ‖npCLM σ - σ'‖ ≤ ε :=
+      ContinuousLinearMap.opNorm_le_bound _ hε.le (fun a => by
+        simpa [hσ'app] using hσdiff a)
+    have hnτ : ‖npCLM τ - τ'‖ ≤ ε :=
+      ContinuousLinearMap.opNorm_le_bound _ hε.le (fun b => by
+        simpa [hτ'app] using hτdiff b)
+    have hnσ' : ‖σ'‖ ≤ ‖npCLM σ‖ + ε :=
+      LinearMap.mkContinuous_norm_le _ (by positivity) _
+    have hmain := norm_sub_le_of_tmul_factor (npCLM h) G hhc hGc (npCLM σ) σ'
+      (npCLM τ) τ' (continuous_ultraweak_npFunctional σ) hσ'c
+      (continuous_ultraweak_npFunctional τ) hτ'c (fun a b => hvalv a b) hGval
+    have hht : ‖(h t : ℂ)‖ ≤ ‖npCLM h - G‖ * ‖t‖ := by
+      have h0 : ((npCLM h - G) t : ℂ) = (h t : ℂ) := by
+        rw [ContinuousLinearMap.sub_apply, hGt, sub_zero]; rfl
+      have := (npCLM h - G).le_opNorm t
+      rwa [h0] at this
+    have hfin : ‖npCLM h - G‖ ≤ ε * (‖npCLM σ‖ + ‖npCLM τ‖ + 1) := by
+      refine hmain.trans ?_
+      have h1 : ‖npCLM σ - σ'‖ * ‖npCLM τ‖ ≤ ε * ‖npCLM τ‖ :=
+        mul_le_mul_of_nonneg_right hnσ (norm_nonneg _)
+      have h2 : ‖σ'‖ * ‖npCLM τ - τ'‖ ≤ (‖npCLM σ‖ + ε) * ε := by
+        refine mul_le_mul hnσ' hnτ (norm_nonneg _) (by positivity)
+      nlinarith [norm_nonneg (npCLM σ), norm_nonneg (npCLM τ), hε.le]
+    calc ‖(h t : ℂ)‖ ≤ ‖npCLM h - G‖ * ‖t‖ := hht
+      _ ≤ ε * (‖npCLM σ‖ + ‖npCLM τ‖ + 1) * ‖t‖ :=
+          mul_le_mul_of_nonneg_right hfin (norm_nonneg t)
+  -- let `ε → 0`
+  have hzero : ∀ δ : ℝ, 0 < δ → ‖(h t : ℂ)‖ ≤ δ := by
+    intro δ hδ
+    set C : ℝ := ‖npCLM σ‖ + ‖npCLM τ‖ + 1 with hCdef
+    have hC : (0 : ℝ) < C := by
+      rw [hCdef]; positivity
+    have hden : (0 : ℝ) < C * (‖t‖ + 1) := by positivity
+    set ε : ℝ := min 1 (δ / (C * (‖t‖ + 1))) with hεdef
+    have hε : 0 < ε := lt_min one_pos (by positivity)
+    have hε1 : ε ≤ 1 := min_le_left _ _
+    have hε2 : ε ≤ δ / (C * (‖t‖ + 1)) := min_le_right _ _
+    have h1 := hbound ε hε hε1
+    have h2 : ε * C * ‖t‖ ≤ δ := by
+      have h3 : ε * (C * (‖t‖ + 1)) ≤ δ := by
+        rw [le_div_iff₀ hden] at hε2; linarith
+      nlinarith [norm_nonneg t, hε.le, hC.le]
+    linarith
+  have hnorm0 : ‖(h t : ℂ)‖ = 0 :=
+    le_antisymm (le_of_forall_pos_le_add (fun δ hδ => by
+      simpa using hzero δ hδ)) (norm_nonneg _)
+  exact norm_eq_zero.mp hnorm0
 
 end Chosen
 
@@ -6190,7 +6929,70 @@ variable [VonNeumannAlgebra A] [VonNeumannAlgebra B] [VonNeumannAlgebra C]
 /-- **118II** (proc.tex:3802, Lemma), part 1:
 `⌈a ⊗ b⌉ = ⌈a⌉ ⊗ ⌈b⌉` for positive `a`, `b`. -/
 theorem ceil_tensor (a : A) (b : B) (ha : 0 ≤ a) (hb : 0 ≤ b) :
-    ceil (a ⊗ᵥ b) = ceil a ⊗ᵥ ceil b := sorry
+    ceil (a ⊗ᵥ b) = ceil a ⊗ᵥ ceil b := by
+  -- The thesis's proof (proc.tex:3813): `⌈a ⊗ b⌉ = ⌈⌈a⌉ ⊗ b⌉ = ⌈⌈a⌉ ⊗ ⌈b⌉⌉`
+  -- by **60VI** `ncp_ceil` applied to the two np-maps `(·) ⊗ b` and
+  -- `⌈a⌉ ⊗ (·)`, and `⌈a⌉ ⊗ ⌈b⌉` is already a projection.
+  have hmiu := (vnTensor A B).isTensorProduct.miu
+  have hmul : ∀ (x x' : A) (y y' : B),
+      (x ⊗ᵥ y) * (x' ⊗ᵥ y') = (x * x') ⊗ᵥ (y * y') :=
+    fun x x' y y' => (hmiu.2.1 x x' y y').symm
+  have hstar : ∀ (x : A) (y : B), star (x ⊗ᵥ y) = star x ⊗ᵥ star y :=
+    fun x y => hmiu.2.2 x y
+  have hca : IsStarProjection (ceil a) := (ceil_spec ha).1
+  have hcb : IsStarProjection (ceil b) := (ceil_spec hb).1
+  have hca0 : (0 : A) ≤ ceil a := by
+    have he : ceil a = star (ceil a) * ceil a := by
+      rw [hca.isSelfAdjoint.star_eq, hca.isIdempotentElem.eq]
+    rw [he]; exact star_mul_self_nonneg _
+  -- monotonicity of the two slices
+  have hposL : ∀ (y : B), 0 ≤ y → ∀ x x' : A, x ≤ x' → x ⊗ᵥ y ≤ x' ⊗ᵥ y := by
+    intro y hy x x' hx
+    have h := vtmul_nonneg (x' - x) y (sub_nonneg.mpr hx) hy
+    have he : ((x' - x) ⊗ᵥ y) = x' ⊗ᵥ y - x ⊗ᵥ y := by
+      show (vnTensor A B).map (x' - x) y = _
+      rw [map_sub, LinearMap.sub_apply]
+      rfl
+    rw [he] at h
+    exact sub_nonneg.mp h
+  have hposR : ∀ (x : A), 0 ≤ x → ∀ y y' : B, y ≤ y' → x ⊗ᵥ y ≤ x ⊗ᵥ y' := by
+    intro x hx y y' hy
+    have h := vtmul_nonneg x (y' - y) hx (sub_nonneg.mpr hy)
+    have he : (x ⊗ᵥ (y' - y)) = x ⊗ᵥ y' - x ⊗ᵥ y :=
+      map_sub ((vnTensor A B).map x) y' y
+    rw [he] at h
+    exact sub_nonneg.mp h
+  -- the np-map `(·) ⊗ b`
+  set FL : A →ₚ[ℂ] VNT A B :=
+    { toFun := fun x => x ⊗ᵥ b
+      map_add' := fun x y => by
+        show (vnTensor A B).map (x + y) b = _
+        rw [map_add, LinearMap.add_apply]
+        rfl
+      map_smul' := fun c x => by
+        show (vnTensor A B).map (c • x) b = _
+        rw [map_smul, LinearMap.smul_apply]
+        rfl
+      monotone' := fun x x' h => hposL b hb x x' h } with hFLdef
+  have hFLn : PreservesDirSups ⇑FL :=
+    ((p_uwcont FL).out 0 2).mp (continuous_ultraweak_vtmul_left b)
+  -- the np-map `⌈a⌉ ⊗ (·)`
+  set FR : B →ₚ[ℂ] VNT A B :=
+    { toFun := fun y => ceil a ⊗ᵥ y
+      map_add' := fun x y => map_add ((vnTensor A B).map (ceil a)) x y
+      map_smul' := fun c x => map_smul ((vnTensor A B).map (ceil a)) c x
+      monotone' := fun y y' h => hposR (ceil a) hca0 y y' h } with hFRdef
+  have hFRn : PreservesDirSups ⇑FR :=
+    ((p_uwcont FR).out 0 2).mp (continuous_ultraweak_vtmul_right (ceil a))
+  have h1 : ceil (a ⊗ᵥ b) = ceil (ceil a ⊗ᵥ b) := ncp_ceil FL hFLn a ha
+  have h2 : ceil (ceil a ⊗ᵥ b) = ceil (ceil a ⊗ᵥ ceil b) := ncp_ceil FR hFRn b hb
+  have hproj : IsStarProjection (ceil a ⊗ᵥ ceil b) := by
+    constructor
+    · show (ceil a ⊗ᵥ ceil b) * (ceil a ⊗ᵥ ceil b) = ceil a ⊗ᵥ ceil b
+      rw [hmul, hca.isIdempotentElem.eq, hcb.isIdempotentElem.eq]
+    · show star (ceil a ⊗ᵥ ceil b) = ceil a ⊗ᵥ ceil b
+      rw [hstar, hca.isSelfAdjoint.star_eq, hcb.isSelfAdjoint.star_eq]
+  rw [h1, h2, ceil_of_isStarProjection hproj]
 
 /-- **118II** (proc.tex:3802, Lemma), part 2:
 `⌈⌈a ⊗ b⌉⌉ = ⌈⌈a⌉⌉ ⊗ ⌈⌈b⌉⌉` (central supports/carriers). -/
@@ -6408,3 +7210,5 @@ theorem vn_smc_symmetry :
 end Monoidal
 
 end Theses.A.Proc
+
+

@@ -646,6 +646,41 @@ theorem duplicability_multiplication [VonNeumannAlgebra A] :
   · rintro ⟨d⟩
     exact (uniqueness_duplicator d).1
 
+/-- Auxiliary for **128XIII**: the inclusion `κᵢ : 𝒜ᵢ → ⊕ⱼ𝒜ⱼ` is normal.
+(The projections are **47IV**.2, `vn_products_proj_normal`.)  Directed
+suprema in `⊕ⱼ𝒜ⱼ` are computed coordinatewise, and `κᵢ` is `0` off `i`. -/
+private theorem lpKappa_normal {I : Type u} (𝒜 : I → Type u)
+    [∀ i, CStarAlgebra (𝒜 i)] [∀ i, Nontrivial (𝒜 i)]
+    [∀ i, PartialOrder (𝒜 i)] [∀ i, StarOrderedRing (𝒜 i)] (i : I) :
+    PreservesDirSups (fun a : 𝒜 i => lpKappa i a) := by
+  intro D s hne _ hlub
+  constructor
+  · rintro _ ⟨d, hd, rfl⟩
+    exact lpKappa_le i (Subtype.coe_le_coe.mpr (hlub.1 hd))
+  · intro u hu
+    obtain ⟨d₀, hd₀⟩ := hne
+    have hu₀ : lpKappa i (d₀ : 𝒜 i) ≤ u := hu ⟨d₀, hd₀, rfl⟩
+    have husa : IsSelfAdjoint u := by
+      have h1 : IsSelfAdjoint (u - lpKappa i (d₀ : 𝒜 i)) :=
+        IsSelfAdjoint.of_nonneg (sub_nonneg.mpr hu₀)
+      have h2 := h1.add (lpKappa_sa' i d₀.2)
+      rwa [sub_add_cancel] at h2
+    rw [lp_infty_le_iff]
+    intro j
+    by_cases hj : j = i
+    · subst hj
+      rw [lpKappa_apply_self]
+      have hub : (⟨(u : ∀ j, 𝒜 j) j, lp_infty_isSelfAdjoint husa j⟩ :
+          selfAdjoint (𝒜 j)) ∈ upperBounds D := by
+        intro d hd
+        rw [← Subtype.coe_le_coe]
+        have h2 := (lp_infty_le_iff _ _).mp (hu ⟨d, hd, rfl⟩) j
+        rwa [lpKappa_apply_self] at h2
+      exact Subtype.coe_le_coe.mpr (hlub.2 hub)
+    · rw [lpKappa_apply_ne _ _ hj]
+      have h2 := (lp_infty_le_iff _ _).mp hu₀ j
+      rwa [lpKappa_apply_ne _ _ hj] at h2
+
 /-- **128XIII** (`cor:duplicable-product`, proc.tex:6128, Corollary): when
 a direct sum of von Neumann algebras is duplicable, so is each summand.
 (Stated for an arbitrary family; the thesis states the binary case
@@ -654,7 +689,46 @@ theorem duplicable_product {I : Type u} (𝒜 : I → Type u)
     [∀ i, CStarAlgebra (𝒜 i)] [∀ i, Nontrivial (𝒜 i)]
     [∀ i, PartialOrder (𝒜 i)] [∀ i, StarOrderedRing (𝒜 i)]
     [∀ i, VonNeumannAlgebra (𝒜 i)] (h : Duplicable (lp 𝒜 ∞)) (i : I) :
-    Duplicable (𝒜 i) := sorry
+    Duplicable (𝒜 i) := by
+  -- **128XII** turns the duplicator on `⊕ⱼ𝒜ⱼ` into its multiplication
+  obtain ⟨δ, hδnorm, hδmul⟩ := (duplicability_multiplication (A := lp 𝒜 ∞)).1.mp h
+  -- the inclusion `κᵢ : 𝒜ᵢ → ⊕ⱼ𝒜ⱼ` is an ncp-map: it is an mi-map (**34IV**.3)
+  set κlin : 𝒜 i →ₗ[ℂ] lp 𝒜 ∞ :=
+    { toFun := fun a => lpKappa i a
+      map_add' := lpKappa_add i
+      map_smul' := fun c a => lpKappa_smul i c a } with hκlin
+  have hκcp : Theses.A.CStar.IsCompletelyPositiveMap κlin :=
+    Theses.A.CStar.cp_of_mi κlin (fun a b => (lpKappa_mul i a b).symm)
+      (fun a => (lpKappa_star i a).symm)
+  set κ : NCPMap (𝒜 i) (lp 𝒜 ∞) :=
+    { toCompletelyPositiveMap :=
+        { toLinearMap := κlin
+          map_cstarMatrix_nonneg' :=
+            (Theses.A.CStar.cp_iff κlin).out 0 1 |>.mp hκcp }
+      preservesDirSups' := lpKappa_normal 𝒜 i } with hκ
+  have hκapp : ∀ a : 𝒜 i, κ a = lpKappa i a := fun _ => rfl
+  -- `δᵢ := πᵢ ∘ δ ∘ (κᵢ ⊗ κᵢ)`, with `κᵢ ⊗ κᵢ` from **115II**
+  set Pκ : VNT (𝒜 i) (𝒜 i) →ₚ[ℂ] VNT (lp 𝒜 ∞) (lp 𝒜 ∞) :=
+    PositiveLinearMap.ofClass (tmap κ κ).toCompletelyPositiveMap with hPκ
+  set Pπ : lp 𝒜 ∞ →ₚ[ℂ] 𝒜 i :=
+    { toLinearMap := lpEvalₗ 𝒜 i
+      monotone' := fun a b hab => (lp_infty_le_iff a b).mp hab i } with hPπ
+  refine (duplicability_multiplication (A := 𝒜 i)).1.mpr
+    ⟨Pπ.comp (δ.comp Pκ), ?_, ?_⟩
+  · -- normality of a composite of normal maps
+    have h1 : PreservesDirSups (fun t : VNT (𝒜 i) (𝒜 i) => δ (Pκ t)) :=
+      preservesDirSups_comp (fun _ hx => isSelfAdjoint_map_of_pos Pκ hx)
+        (fun _ _ hxy => Pκ.monotone' hxy) (tmap κ κ).preservesDirSups' hδnorm
+    exact preservesDirSups_comp (f := fun t : VNT (𝒜 i) (𝒜 i) => δ (Pκ t))
+      (g := fun x : lp 𝒜 ∞ => Pπ x)
+      (fun _ hx => isSelfAdjoint_map_of_pos (δ.comp Pκ) hx)
+      (fun _ _ hxy => (δ.comp Pκ).monotone' hxy) h1 (vn_products_proj_normal 𝒜 i)
+  · -- `πᵢ(δ(κᵢa ⊗ κᵢb)) = πᵢ(κᵢa · κᵢb) = πᵢ(κᵢ(ab)) = ab`
+    intro a b
+    show Pπ (δ (Pκ (a ⊗ᵥ b))) = a * b
+    have hPκa : Pκ (a ⊗ᵥ b) = κ a ⊗ᵥ κ b := tmap_apply κ κ a b
+    rw [hPκa, hκapp, hκapp, hδmul, lpKappa_mul]
+    exact lpKappa_apply_self i (a * b)
 
 /-! ## Parsec 1290: measure-theoretic interlude -/
 
@@ -1221,6 +1295,282 @@ theorem atomic_measure_space [IsFiniteMeasure μ] (hμ : μ.IsComplete)
   exact ⟨{ toStarAlgHom := (φ : 𝒜 →⋆ₐ[ℂ] ℂ), preservesDirSups' := hnorm },
     φ.bijective⟩
 
+/-! ### Auxiliaries for **130IV**
+
+proc.tex:6518 is a bare Exercise: the thesis gives no argument, so what
+follows is ours.  The isomorphism itself is the obvious one,
+`q f ↦ (q_{Pₙ} f)ₙ`, and the only real work is that `IsLinftyOf` records
+*no* norm information — it says `q` is a surjective ∗-algebra map whose
+kernel is the a.e.-zero functions, and nothing else.  Both directions of
+the missing dictionary are needed:
+
+* `linfty_norm_le` (a pointwise bound on `f` bounds `‖q f‖`) makes the
+  family `(q_{Pₙ} f)ₙ` a member of `ℓ^∞(ℬ)`;
+* `linfty_ae_bound` (its converse: `‖q f‖ ≤ M` forces `‖f‖ ≤ M` a.e.) is
+  what makes the map *surjective* — the representatives `fₙ` of a given
+  `y ∈ ℓ^∞(ℬ)` have to be glued into one *bounded* function on `X`, and
+  for that they must be uniformly bounded, which is exactly the converse
+  bound.  It is proved by the usual argument: if `‖f‖ > M + ε` on a set
+  `S` of positive measure then `p := q 1_S` is a nonzero projection with
+  `(M+ε)²p ≤ (q f · p)^* (q f · p)`, whence `(M+ε)² ≤ ‖q f‖² ≤ M²`. -/
+
+private theorem bm_const (z : ℂ) : IsBoundedMeasurable X (fun _ : X => z) :=
+  ⟨measurable_const, ‖z‖, fun _ => le_rfl⟩
+
+private theorem bm_one : IsBoundedMeasurable X (1 : X → ℂ) := bm_const 1
+
+private theorem bm_zero : IsBoundedMeasurable X (0 : X → ℂ) := bm_const 0
+
+private theorem bm_nonneg {f : X → ℂ} (hf : IsBoundedMeasurable X f) :
+    ∃ C : ℝ, 0 ≤ C ∧ ∀ x, ‖f x‖ ≤ C := by
+  obtain ⟨-, C, hC⟩ := hf
+  exact ⟨max C 0, le_max_right _ _, fun x => (hC x).trans (le_max_left _ _)⟩
+
+private theorem bm_add {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
+    (hg : IsBoundedMeasurable X g) : IsBoundedMeasurable X (f + g) := by
+  obtain ⟨hfm, Cf, hCf⟩ := hf
+  obtain ⟨hgm, Cg, hCg⟩ := hg
+  refine ⟨hfm.add hgm, Cf + Cg, fun x => ?_⟩
+  exact (norm_add_le (f x) (g x)).trans (add_le_add (hCf x) (hCg x))
+
+private theorem bm_sub {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
+    (hg : IsBoundedMeasurable X g) : IsBoundedMeasurable X (f - g) := by
+  obtain ⟨hfm, Cf, hCf⟩ := hf
+  obtain ⟨hgm, Cg, hCg⟩ := hg
+  refine ⟨hfm.sub hgm, Cf + Cg, fun x => ?_⟩
+  exact (norm_sub_le (f x) (g x)).trans (add_le_add (hCf x) (hCg x))
+
+private theorem bm_mul {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
+    (hg : IsBoundedMeasurable X g) : IsBoundedMeasurable X (f * g) := by
+  obtain ⟨Cf, hCf0, hCf⟩ := bm_nonneg hf
+  obtain ⟨Cg, hCg0, hCg⟩ := bm_nonneg hg
+  refine ⟨hf.1.mul hg.1, Cf * Cg, fun x => ?_⟩
+  exact (norm_mul_le (f x) (g x)).trans
+    (mul_le_mul (hCf x) (hCg x) (norm_nonneg _) hCf0)
+
+private theorem bm_star {f : X → ℂ} (hf : IsBoundedMeasurable X f) :
+    IsBoundedMeasurable X (star f) := by
+  obtain ⟨hfm, Cf, hCf⟩ := hf
+  exact ⟨continuous_star.measurable.comp hfm, Cf, fun x => by simpa using hCf x⟩
+
+private theorem bm_smul (z : ℂ) {f : X → ℂ} (hf : IsBoundedMeasurable X f) :
+    IsBoundedMeasurable X (z • f) := by
+  obtain ⟨C, hC0, hC⟩ := bm_nonneg hf
+  refine ⟨hf.1.const_smul z, ‖z‖ * C, fun x => ?_⟩
+  simpa [norm_smul] using mul_le_mul_of_nonneg_left (hC x) (norm_nonneg z)
+
+/-- Auxiliary for **130IV**: `q` only depends on the a.e.-class of its
+argument.  (This is the argument already made inline in **130II**.) -/
+private theorem linfty_congr (ν : Measure X) (𝒞 : Type u) [CStarAlgebra 𝒞]
+    [PartialOrder 𝒞] [StarOrderedRing 𝒞] (p : (X → ℂ) → 𝒞)
+    (hp : IsLinftyOf ν 𝒞 p) {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
+    (hg : IsBoundedMeasurable X g) (h : f =ᵐ[ν] g) : p f = p g := by
+  have hsub := bm_sub hf hg
+  have h0 : p (f - g) = 0 := by
+    refine (hp.kernel _ hsub).mpr ?_
+    filter_upwards [h] with x hx
+    simp [hx]
+  have hadd := hp.add (f - g) g hsub hg
+  rw [sub_add_cancel, h0, zero_add] at hadd
+  exact hadd
+
+/-- Auxiliary for **130IV**: `q` is additive, hence subtractive. -/
+private theorem linfty_sub (ν : Measure X) (𝒞 : Type u) [CStarAlgebra 𝒞]
+    [PartialOrder 𝒞] [StarOrderedRing 𝒞] (p : (X → ℂ) → 𝒞)
+    (hp : IsLinftyOf ν 𝒞 p) {f g : X → ℂ} (hf : IsBoundedMeasurable X f)
+    (hg : IsBoundedMeasurable X g) : p (f - g) = p f - p g := by
+  have h := hp.add (f - g) g (bm_sub hf hg) hg
+  rw [sub_add_cancel] at h
+  rw [h, add_sub_cancel_right]
+
+/-- Auxiliary for **130IV**: a function that vanishes a.e. on each member
+of a countable measurable cover vanishes a.e. -/
+private theorem ae_of_ae_restrict_cover (ν : Measure X) (P : ℕ → Set X)
+    (hcover : Set.univ ⊆ ⋃ n, P n)
+    {f : X → ℂ} (hf : Measurable f)
+    (h : ∀ n, f =ᵐ[ν.restrict (P n)] 0) : f =ᵐ[ν] 0 := by
+  rw [Filter.EventuallyEq, ae_iff]
+  set T : Set X := {x | ¬ f x = (0 : X → ℂ) x} with hT
+  have hTm : MeasurableSet T := by
+    have : T = f ⁻¹' {0}ᶜ := by ext x; simp [hT]
+    rw [this]
+    exact hf (measurableSet_singleton 0).compl
+  have hsub : T ⊆ ⋃ n, T ∩ P n := by
+    intro x hx
+    obtain ⟨n, hn⟩ := Set.mem_iUnion.mp (hcover (Set.mem_univ x))
+    exact Set.mem_iUnion.mpr ⟨n, hx, hn⟩
+  refine measure_mono_null hsub (measure_iUnion_null fun n => ?_)
+  have h1 := ae_iff.mp (h n)
+  rwa [Measure.restrict_apply hTm] at h1
+
+/-- Auxiliary for **130IV**, the easy half of the norm dictionary: a
+pointwise bound on `f` bounds `‖q f‖`.  The proof is the C*-algebraic
+form of `|f|² ≤ C²`: the function `√(C² − |f|²)` is again bounded
+measurable, so `(q f)^*(q f) + (q h)^*(q h) = C²·1` in `𝒞`. -/
+private theorem linfty_norm_le (ν : Measure X) (𝒞 : Type u) [CStarAlgebra 𝒞]
+    [PartialOrder 𝒞] [StarOrderedRing 𝒞] [Nontrivial 𝒞] (p : (X → ℂ) → 𝒞)
+    (hp : IsLinftyOf ν 𝒞 p) {f : X → ℂ} (hf : IsBoundedMeasurable X f)
+    {C : ℝ} (hC0 : 0 ≤ C) (hC : ∀ x, ‖f x‖ ≤ C) : ‖p f‖ ≤ C := by
+  set h : X → ℂ := fun x => ((Real.sqrt (C ^ 2 - ‖f x‖ ^ 2) : ℝ) : ℂ) with hhdef
+  have hhm : Measurable h :=
+    Complex.measurable_ofReal.comp (measurable_const.sub (hf.1.norm.pow_const 2)).sqrt
+  have hnn : ∀ x, 0 ≤ C ^ 2 - ‖f x‖ ^ 2 := fun x => by
+    have := hC x
+    nlinarith [norm_nonneg (f x)]
+  have hhb : IsBoundedMeasurable X h := by
+    refine ⟨hhm, C, fun x => ?_⟩
+    rw [hhdef]
+    simp only [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (Real.sqrt_nonneg _)]
+    calc Real.sqrt (C ^ 2 - ‖f x‖ ^ 2) ≤ Real.sqrt (C ^ 2) :=
+          Real.sqrt_le_sqrt (by nlinarith [sq_nonneg ‖f x‖])
+      _ = C := Real.sqrt_sq hC0
+  -- the pointwise identity `f^*f + h^*h = C²·1`
+  have hid : star f * f + star h * h = ((C ^ 2 : ℝ) : ℂ) • (1 : X → ℂ) := by
+    funext x
+    have h1 : (star f * f) x = ((‖f x‖ ^ 2 : ℝ) : ℂ) := by
+      simpa using RCLike.conj_mul (f x)
+    have h2 : (star h * h) x = ((C ^ 2 - ‖f x‖ ^ 2 : ℝ) : ℂ) := by
+      have : (star h * h) x = ((‖h x‖ ^ 2 : ℝ) : ℂ) := by
+        simpa using RCLike.conj_mul (h x)
+      rw [this, hhdef]
+      simp only [Complex.norm_real, Real.norm_eq_abs,
+        abs_of_nonneg (Real.sqrt_nonneg _)]
+      rw [Real.sq_sqrt (hnn x)]
+    simp only [Pi.add_apply, h1, h2, Pi.smul_apply, Pi.one_apply, smul_eq_mul,
+      mul_one, ← Complex.ofReal_add]
+    ring_nf
+  have happ := congrArg p hid
+  rw [hp.add _ _ (bm_mul (bm_star hf) hf) (bm_mul (bm_star hhb) hhb),
+    hp.mul _ _ (bm_star hf) hf, hp.mul _ _ (bm_star hhb) hhb,
+    hp.star_map _ hf, hp.star_map _ hhb, hp.smul _ _ bm_one, hp.one] at happ
+  have hle : star (p f) * p f ≤ ((C ^ 2 : ℝ) : ℂ) • (1 : 𝒞) := by
+    rw [← happ]
+    exact le_add_of_nonneg_right (star_mul_self_nonneg _)
+  have hnorm : ‖p f‖ * ‖p f‖ ≤ C ^ 2 := by
+    have h1 : ‖star (p f) * p f‖ ≤ ‖((C ^ 2 : ℝ) : ℂ) • (1 : 𝒞)‖ :=
+      CStarAlgebra.norm_le_norm_of_nonneg_of_le (star_mul_self_nonneg _) hle
+    rw [CStarRing.norm_star_mul_self] at h1
+    refine h1.trans ?_
+    rw [norm_smul, norm_one, mul_one, Complex.norm_real, Real.norm_eq_abs,
+      abs_of_nonneg (by positivity)]
+  nlinarith [norm_nonneg (p f)]
+
+/-- Auxiliary for **130IV**: `(f^* f)(x) = |f(x)|²`. -/
+private theorem star_mul_apply (u : X → ℂ) (x : X) :
+    (star u * u) x = ((‖u x‖ ^ 2 : ℝ) : ℂ) := by
+  simpa using RCLike.conj_mul (u x)
+
+/-- Auxiliary for **130IV**, the hard half of the norm dictionary and the
+one thing the construction cannot do without: `‖q f‖ ≤ M` forces
+`|f| ≤ M` almost everywhere. -/
+private theorem linfty_ae_bound (ν : Measure X) (𝒞 : Type u) [CStarAlgebra 𝒞]
+    [PartialOrder 𝒞] [StarOrderedRing 𝒞] [Nontrivial 𝒞] (p : (X → ℂ) → 𝒞)
+    (hp : IsLinftyOf ν 𝒞 p) {f : X → ℂ} (hf : IsBoundedMeasurable X f)
+    {M : ℝ} (hM0 : 0 ≤ M) (hM : ‖p f‖ ≤ M) : ∀ᵐ x ∂ν, ‖f x‖ ≤ M := by
+  -- for each `ε > 0` the set `{|f| ≥ M + ε}` is null
+  have key : ∀ ε : ℝ, 0 < ε → ν {x | M + ε ≤ ‖f x‖} = 0 := by
+    intro ε hε
+    set c : ℝ := M + ε with hc
+    have hc0 : 0 < c := by positivity
+    set S : Set X := {x | c ≤ ‖f x‖} with hS
+    have hSm : MeasurableSet S := measurableSet_le measurable_const hf.1.norm
+    set s : X → ℂ := S.indicator 1 with hs
+    have hsm : Measurable s := (measurable_const : Measurable (1 : X → ℂ)).indicator hSm
+    have hsb : IsBoundedMeasurable X s := by
+      refine ⟨hsm, 1, fun x => ?_⟩
+      by_cases hx : x ∈ S <;> simp [hs, Set.indicator_apply, hx]
+    by_contra hne
+    -- `P := q 1_S` is a nonzero projection
+    have hss : s * s = s := by
+      funext x; by_cases hx : x ∈ S <;> simp [hs, Set.indicator_apply, hx]
+    have hsstar : star s = s := by
+      funext x; by_cases hx : x ∈ S <;> simp [hs, Set.indicator_apply, hx]
+    set P : 𝒞 := p s with hP
+    have hPP : P * P = P := by rw [hP, ← hp.mul _ _ hsb hsb, hss]
+    have hPstar : star P = P := by rw [hP, ← hp.star_map _ hsb, hsstar]
+    have hPne : P ≠ 0 := by
+      intro h0
+      refine hne ?_
+      have hae := (hp.kernel _ hsb).mp h0
+      have hset : {x | ¬ s x = (0 : X → ℂ) x} = S := by
+        ext x
+        by_cases hx : x ∈ S <;> simp [hs, Set.indicator_apply, hx]
+      have h2 := ae_iff.mp hae
+      rwa [hset] at h2
+    have hPnorm : ‖P‖ = 1 := by
+      have h1 : ‖P‖ * ‖P‖ = 1 * ‖P‖ := by
+        rw [one_mul, ← CStarRing.norm_star_mul_self, hPstar, hPP]
+      exact mul_right_cancel₀ (fun h => hPne (norm_eq_zero.mp h)) h1
+    -- the pointwise identity `(f·1_S)^*(f·1_S) = c²·1_S + w^*w`
+    set w : X → ℂ :=
+      fun x => ((Real.sqrt (max 0 (‖f x‖ ^ 2 - c ^ 2)) : ℝ) : ℂ) * s x with hw
+    have hwm : Measurable w :=
+      (Complex.measurable_ofReal.comp
+        (measurable_const.max ((hf.1.norm.pow_const 2).sub measurable_const)).sqrt).mul hsm
+    have hwb : IsBoundedMeasurable X w := by
+      obtain ⟨C, hC0, hC⟩ := bm_nonneg hf
+      refine ⟨hwm, Real.sqrt (max 0 (C ^ 2 - c ^ 2)) * 1, fun x => ?_⟩
+      rw [hw]
+      simp only [norm_mul, Complex.norm_real, Real.norm_eq_abs,
+        abs_of_nonneg (Real.sqrt_nonneg _)]
+      refine mul_le_mul (Real.sqrt_le_sqrt ?_) ?_ (norm_nonneg _) (Real.sqrt_nonneg _)
+      · exact max_le_max le_rfl (by nlinarith [norm_nonneg (f x), hC x])
+      · by_cases hx : x ∈ S <;> simp [hs, Set.indicator_apply, hx]
+    have hu : IsBoundedMeasurable X (f * s) := bm_mul hf hsb
+    have hid : star (f * s) * (f * s) = ((c ^ 2 : ℝ) : ℂ) • s + star w * w := by
+      funext x
+      rw [star_mul_apply, Pi.add_apply, star_mul_apply, Pi.smul_apply, smul_eq_mul]
+      by_cases hx : x ∈ S
+      · have hfx : c ≤ ‖f x‖ := hx
+        have hsx : s x = 1 := by simp [hs, hx]
+        have hmax : max 0 (‖f x‖ ^ 2 - c ^ 2) = ‖f x‖ ^ 2 - c ^ 2 :=
+          max_eq_right (by nlinarith)
+        have hwx : ‖w x‖ = Real.sqrt (‖f x‖ ^ 2 - c ^ 2) := by
+          rw [hw]
+          simp [hsx, hmax, abs_of_nonneg (Real.sqrt_nonneg _)]
+        have hfsx : ‖(f * s) x‖ = ‖f x‖ := by simp [hsx]
+        rw [hwx, hfsx, hsx, Real.sq_sqrt (by nlinarith : (0:ℝ) ≤ ‖f x‖ ^ 2 - c ^ 2)]
+        push_cast
+        ring
+      · have hsx : s x = 0 := by simp [hs, Set.indicator_apply, hx]
+        have hwx : w x = 0 := by rw [hw]; simp [hsx]
+        have hfsx : (f * s) x = 0 := by simp [hsx]
+        rw [hwx, hfsx, hsx]
+        simp
+    have happ := congrArg p hid
+    rw [hp.mul _ _ (bm_star hu) hu, hp.star_map _ hu,
+      hp.add _ _ (bm_smul _ hsb) (bm_mul (bm_star hwb) hwb),
+      hp.smul _ _ hsb, hp.mul _ _ (bm_star hwb) hwb, hp.star_map _ hwb,
+      hp.mul _ _ hf hsb, ← hP] at happ
+    -- `c²·P ≤ (q f · P)^* (q f · P)`, so `c² ≤ ‖q f‖² ≤ M²`
+    have hnn : (0 : 𝒞) ≤ ((c ^ 2 : ℝ) : ℂ) • P := by
+      have hsq : ((c ^ 2 : ℝ) : ℂ) • P = star (((c : ℝ) : ℂ) • P) * (((c : ℝ) : ℂ) • P) := by
+        rw [star_smul, mul_smul_comm, smul_mul_assoc, hPstar, hPP, smul_smul]
+        norm_num [Complex.conj_ofReal, ← Complex.ofReal_mul, sq]
+      rw [hsq]
+      exact star_mul_self_nonneg _
+    have hge : ((c ^ 2 : ℝ) : ℂ) • P ≤ star (p f * P) * (p f * P) := by
+      rw [happ]
+      exact le_add_of_nonneg_right (star_mul_self_nonneg _)
+    have h1 : ‖((c ^ 2 : ℝ) : ℂ) • P‖ ≤ ‖star (p f * P) * (p f * P)‖ :=
+      CStarAlgebra.norm_le_norm_of_nonneg_of_le hnn hge
+    rw [CStarRing.norm_star_mul_self, norm_smul, hPnorm, mul_one, Complex.norm_real,
+      Real.norm_eq_abs, abs_of_nonneg (by positivity)] at h1
+    have h2 : ‖p f * P‖ ≤ M := by
+      refine (norm_mul_le _ _).trans ?_
+      rw [hPnorm, mul_one]
+      exact hM
+    nlinarith [norm_nonneg (p f * P)]
+  rw [ae_iff]
+  have hsub : {x | ¬ ‖f x‖ ≤ M} ⊆ ⋃ k : ℕ, {x | M + 1 / (k + 1 : ℝ) ≤ ‖f x‖} := by
+    intro x hx
+    simp only [Set.mem_ofPred_eq, not_le] at hx
+    obtain ⟨k, hk⟩ := exists_nat_one_div_lt (show (0:ℝ) < ‖f x‖ - M by linarith)
+    exact Set.mem_iUnion.mpr ⟨k, by simp only [Set.mem_ofPred_eq]; linarith⟩
+  exact measure_mono_null hsub
+    (measure_iUnion_null fun k => key _ (by positivity))
+
+
 /-- **130IV** (`lem:measure-space-partition`, proc.tex:6518, Exercise):
 `L^∞(X) ≅ ⊕_{A ∈ 𝒫} L^∞(A)` for every countable partition `𝒫` of a
 finite measure space `X` into measurable subsets (rendered for a
@@ -1236,7 +1586,161 @@ theorem measure_space_partition [IsFiniteMeasure μ] (hμ : μ.IsComplete)
     [∀ n, PartialOrder (ℬ n)] [∀ n, StarOrderedRing (ℬ n)]
     [∀ n, VonNeumannAlgebra (ℬ n)] (qB : ∀ n, (X → ℂ) → ℬ n)
     (hqB : ∀ n, IsLinftyOf (μ.restrict (P n)) (ℬ n) (qB n)) :
-    ∃ φ : NMIUMap 𝒜 (lp ℬ ∞), Function.Bijective ⇑φ := sorry
+    ∃ φ : NMIUMap 𝒜 (lp ℬ ∞), Function.Bijective ⇑φ := by
+  classical
+  -- a representative for each class
+  have hrepex : ∀ a : 𝒜, ∃ f, IsBoundedMeasurable X f ∧ q f = a := hq.surj
+  have hrepBM : ∀ a, IsBoundedMeasurable X (hrepex a).choose :=
+    fun a => (hrepex a).choose_spec.1
+  have hrepq : ∀ a, q ((hrepex a).choose) = a := fun a => (hrepex a).choose_spec.2
+  set rep : 𝒜 → (X → ℂ) := fun a => (hrepex a).choose with hrepdef
+  -- the components do not depend on the chosen representative
+  have hwd : ∀ f g, IsBoundedMeasurable X f → IsBoundedMeasurable X g →
+      q f = q g → ∀ n, qB n f = qB n g := by
+    intro f g hf hg h n
+    have h0 : q (f - g) = 0 := by rw [linfty_sub _ _ _ hq hf hg, h, sub_self]
+    have hae : (f - g) =ᵐ[μ] 0 := (hq.kernel _ (bm_sub hf hg)).mp h0
+    refine linfty_congr _ _ _ (hqB n) hf hg (ae_restrict_of_ae ?_)
+    filter_upwards [hae] with x hx
+    have hx' : f x - g x = 0 := hx
+    exact sub_eq_zero.mp hx'
+  -- the family `(q_{Pₙ} f)ₙ` is uniformly bounded, hence lies in `ℓ^∞(ℬ)`
+  have hmem : ∀ f, IsBoundedMeasurable X f → Memℓp (fun n => qB n f) ∞ := by
+    intro f hf
+    obtain ⟨C, hC0, hC⟩ := bm_nonneg hf
+    refine memℓp_infty ⟨C, ?_⟩
+    rintro _ ⟨n, rfl⟩
+    exact linfty_norm_le _ _ _ (hqB n) hf hC0 hC
+  obtain ⟨Φ, hΦapp⟩ : ∃ Φ : 𝒜 → lp ℬ ∞,
+      ∀ (a : 𝒜) (n : ℕ), (Φ a : ∀ n, ℬ n) n = qB n (rep a) :=
+    ⟨fun a => ⟨fun n => qB n (rep a), hmem _ (hrepBM a)⟩, fun _ _ => rfl⟩
+  have hΦrep : ∀ (a : 𝒜) (f : X → ℂ), IsBoundedMeasurable X f → q f = a →
+      ∀ n, (Φ a : ∀ n, ℬ n) n = qB n f := fun a f hf hfa n =>
+    (hΦapp a n).trans (hwd _ _ (hrepBM a) hf ((hrepq a).trans hfa.symm) n)
+  -- `Φ` is a unital ∗-algebra map
+  have hΦadd : ∀ a b, Φ (a + b) = Φ a + Φ b := by
+    intro a b
+    refine lp.ext ?_
+    funext n
+    rw [lp.coeFn_add, Pi.add_apply,
+      hΦrep (a + b) (rep a + rep b) (bm_add (hrepBM a) (hrepBM b))
+        (by rw [hq.add _ _ (hrepBM a) (hrepBM b), hrepq, hrepq]) n,
+      hΦapp, hΦapp, (hqB n).add _ _ (hrepBM a) (hrepBM b)]
+  have hΦmul : ∀ a b, Φ (a * b) = Φ a * Φ b := by
+    intro a b
+    refine lp.ext ?_
+    funext n
+    rw [lp.infty_coeFn_mul, Pi.mul_apply,
+      hΦrep (a * b) (rep a * rep b) (bm_mul (hrepBM a) (hrepBM b))
+        (by rw [hq.mul _ _ (hrepBM a) (hrepBM b), hrepq, hrepq]) n,
+      hΦapp, hΦapp, (hqB n).mul _ _ (hrepBM a) (hrepBM b)]
+  have hΦstar : ∀ a, Φ (star a) = star (Φ a) := by
+    intro a
+    refine lp.ext ?_
+    funext n
+    rw [lp.coeFn_star, Pi.star_apply,
+      hΦrep (star a) (star (rep a)) (bm_star (hrepBM a))
+        (by rw [hq.star_map _ (hrepBM a), hrepq]) n,
+      hΦapp, (hqB n).star_map _ (hrepBM a)]
+  have hΦone : Φ 1 = 1 := by
+    refine lp.ext ?_
+    funext n
+    rw [lp.infty_coeFn_one, Pi.one_apply,
+      hΦrep 1 1 bm_one hq.one n, (hqB n).one]
+  have hΦzero : Φ 0 = 0 := by
+    refine lp.ext ?_
+    funext n
+    have h0 : q (0 : X → ℂ) = 0 := (hq.kernel _ bm_zero).mpr (by rfl)
+    rw [lp.coeFn_zero, Pi.zero_apply, hΦrep 0 0 bm_zero h0 n,
+      (hqB n).kernel _ bm_zero |>.mpr (by rfl)]
+  have hΦsmul : ∀ (c : ℂ) (a : 𝒜), Φ (c • a) = c • Φ a := by
+    intro c a
+    refine lp.ext ?_
+    funext n
+    rw [lp.coeFn_smul, Pi.smul_apply,
+      hΦrep (c • a) (c • rep a) (bm_smul c (hrepBM a))
+        (by rw [hq.smul _ _ (hrepBM a), hrepq]) n,
+      hΦapp, (hqB n).smul _ _ (hrepBM a)]
+  -- injectivity: a class killed on every block is null on every block
+  have hinj : Function.Injective Φ := by
+    intro a b hab
+    have hcomp : ∀ n, qB n (rep a) = qB n (rep b) := by
+      intro n
+      have h := congrArg (fun z : lp ℬ ∞ => (z : ∀ n, ℬ n) n) hab
+      simpa only [hΦapp] using h
+    have hae : (rep a - rep b) =ᵐ[μ] 0 := by
+      refine ae_of_ae_restrict_cover μ P hcover
+        (bm_sub (hrepBM a) (hrepBM b)).1 fun n => ?_
+      refine ((hqB n).kernel _ (bm_sub (hrepBM a) (hrepBM b))).mp ?_
+      rw [linfty_sub _ _ _ (hqB n) (hrepBM a) (hrepBM b), hcomp n, sub_self]
+    have h0 : q (rep a - rep b) = 0 := (hq.kernel _ (bm_sub (hrepBM a) (hrepBM b))).mpr hae
+    rw [linfty_sub _ _ _ hq (hrepBM a) (hrepBM b), hrepq, hrepq, sub_eq_zero] at h0
+    exact h0
+  -- surjectivity: this is where the uniform bound on the representatives is used
+  have hsurj : Function.Surjective Φ := by
+    intro y
+    obtain ⟨M, hM⟩ := memℓp_infty_iff.mp y.2
+    have hMn : ∀ n, ‖(y : ∀ n, ℬ n) n‖ ≤ M := fun n => hM (Set.mem_range_self n)
+    have hM0 : 0 ≤ M := le_trans (norm_nonneg _) (hMn 0)
+    choose g hgBM hgy using fun n => (hqB n).surj ((y : ∀ n, ℬ n) n)
+    have hgae : ∀ n, ∀ᵐ x ∂(μ.restrict (P n)), ‖g n x‖ ≤ M := fun n =>
+      linfty_ae_bound _ _ _ (hqB n) (hgBM n) hM0 (by rw [hgy n]; exact hMn n)
+    have hex : ∀ x, ∃ n, x ∈ P n := fun x =>
+      Set.mem_iUnion.mp (hcover (Set.mem_univ x))
+    -- glue the (truncated) representatives into one bounded measurable function
+    set F : ℕ → X → ℂ := fun n x => if ‖g n x‖ ≤ M then g n x else 0 with hFdef
+    have hFm : ∀ n, Measurable (F n) := fun n =>
+      Measurable.ite (measurableSet_le (hgBM n).1.norm measurable_const)
+        (hgBM n).1 measurable_const
+    have hFb : ∀ n x, ‖F n x‖ ≤ M := by
+      intro n x
+      by_cases h : ‖g n x‖ ≤ M
+      · simpa [hFdef, h] using h
+      · simpa [hFdef, h] using hM0
+    obtain ⟨f, hfm, hfeq⟩ : ∃ f : X → ℂ, Measurable f ∧
+        ∀ (n : ℕ) (x : X), x ∈ P n → f x = F n x := by
+      set Q : ℕ → X → Prop := fun n x => x ∈ P n with hQ
+      haveI : ∀ n, DecidablePred (Q n) := fun n => Classical.decPred _
+      have hQm : ∀ n, MeasurableSet {x | Q n x} := hmeas
+      have hexQ : ∀ x, ∃ n, Q n x := hex
+      refine ⟨_, Measurable.find hFm hQm hexQ, ?_⟩
+      intro n x hx
+      have hfind : Nat.find (hexQ x) = n := by
+        by_contra hne
+        exact Set.disjoint_left.mp (hdisj hne) (Nat.find_spec (hexQ x)) hx
+      rw [hfind]
+    have hfBM : IsBoundedMeasurable X f := by
+      refine ⟨hfm, M, fun x => ?_⟩
+      obtain ⟨n, hn⟩ := hex x
+      rw [hfeq n x hn]
+      exact hFb n x
+    -- on `Pₙ` the glued function is (a.e.) the `n`-th representative
+    have hfg : ∀ n, f =ᵐ[μ.restrict (P n)] g n := by
+      intro n
+      have hmemP : ∀ᵐ x ∂(μ.restrict (P n)), x ∈ P n :=
+        ae_restrict_of_forall_mem (hmeas n) fun x hx => hx
+      filter_upwards [hgae n, hmemP] with x hbd hxP
+      rw [hfeq n x hxP]
+      simp [hFdef, hbd]
+    refine ⟨q f, lp.ext ?_⟩
+    funext n
+    rw [hΦrep (q f) f hfBM rfl n,
+      linfty_congr _ _ _ (hqB n) hfBM (hgBM n) (hfg n), hgy n]
+  -- normality is free: a bijective ∗-homomorphism is an order isomorphism
+  obtain ⟨Ψ, hΨbij⟩ : ∃ Ψ : 𝒜 →⋆ₐ[ℂ] lp ℬ ∞, Function.Bijective ⇑Ψ :=
+    ⟨{ toFun := Φ
+       map_one' := hΦone
+       map_mul' := hΦmul
+       map_zero' := hΦzero
+       map_add' := hΦadd
+       commutes' := fun c => by
+         rw [Algebra.algebraMap_eq_smul_one, Algebra.algebraMap_eq_smul_one,
+           hΦsmul, hΦone]
+       map_star' := hΦstar }, ⟨hinj, hsurj⟩⟩
+  exact ⟨{ toStarAlgHom := Ψ
+           preservesDirSups' :=
+             starAlgEquiv_preservesDirSups' (StarAlgEquiv.ofBijective Ψ hΨbij) },
+    hΨbij⟩
 
 /-- **130V** (`cor:discrete-ell-x`, proc.tex:6525, Corollary): for a
 discrete measure space `X` with `μ(X) < ∞` there is a set `Y` with
@@ -1354,7 +1858,131 @@ rendered: every monoid in `W*_cpsu` is commutative (`m ∘ γ = m`) and its
 multiplication is an nmiu-map. -/
 theorem dup_vna_is_monoid_4 [VonNeumannAlgebra A] (M : MonoidInWcpsu A) :
     (∀ t : VNT A A, M.m.toNCPMap (braiding A A t) = M.m.toNCPMap t) ∧
-      ∃ ρ : NMIUMap (VNT A A) A, ∀ t, ρ t = M.m.toNCPMap t := sorry
+      ∃ ρ : NMIUMap (VNT A A) A, ∀ t, ρ t = M.m.toNCPMap t := by
+  -- By **128VIII** the multiplication is the algebra's own on pure tensors and
+  -- (**128XII**.2) `𝒜` is commutative; both claims are then the statement that
+  -- two *normal* maps agreeing on the pure tensors agree, since the span of the
+  -- pure tensors is ultraweakly dense (108II.1) and normal = ultraweakly
+  -- continuous (**45III** `p_uwcont`).
+  letI : TopologicalSpace (VNT A A) := ultraweak (VNT A A)
+  letI : TopologicalSpace A := ultraweak A
+  haveI : T2Space A := (vn_positive_basic_1 (A := A)).1
+  obtain ⟨-, hm⟩ := monoid_e_and_mul M
+  have hm0 : M.m.toNCPMap (0 : VNT A A) = 0 :=
+    map_zero M.m.toNCPMap.toCompletelyPositiveMap
+  have hmadd : ∀ x y : VNT A A,
+      M.m.toNCPMap (x + y) = M.m.toNCPMap x + M.m.toNCPMap y :=
+    map_add M.m.toNCPMap.toCompletelyPositiveMap
+  have hcomm : ∀ a b : A, a * b = b * a :=
+    (duplicability_multiplication (A := A)).2 (dup_vna_is_monoid_1 M)
+  have hmc : Continuous (fun t : VNT A A => M.m.toNCPMap t) :=
+    ((p_uwcont (ncpPositive M.m.toNCPMap)).out 2 0).mp
+      M.m.toNCPMap.preservesDirSups'
+  -- the extension principle
+  have hdense : Dense (Set.range ⇑(TensorProduct.lift (vnTensor A A).map)) := by
+    rw [range_lift_eq_span]
+    exact (vnTensor A A).isTensorProduct.dense
+  have hext : ∀ F G : VNT A A → A, Continuous F → Continuous G →
+      (∀ t : A ⊗[ℂ] A, F (TensorProduct.lift (vnTensor A A).map t)
+        = G (TensorProduct.lift (vnTensor A A).map t)) → ∀ x, F x = G x := by
+    intro F G hF hG hFG x
+    have h : F = G := by
+      refine Continuous.ext_on hdense hF hG ?_
+      rintro _ ⟨t, rfl⟩
+      exact hFG t
+    exact congrFun h x
+  have hlift : ∀ a b : A,
+      TensorProduct.lift (vnTensor A A).map (a ⊗ₜ[ℂ] b) = a ⊗ᵥ b := by
+    intro a b
+    rw [TensorProduct.lift.tmul]
+    rfl
+  constructor
+  · -- (1) commutativity: `m ∘ γ` and `m` agree on pure tensors
+    have hbc : Continuous (fun t : VNT A A => braiding A A t) :=
+      ((p_uwcont (nmiuP (braiding A A))).out 2 0).mp (braiding A A).preservesDirSups'
+    have hb0 : braiding A A (0 : VNT A A) = 0 :=
+      map_zero (braiding A A).toStarAlgHom
+    have hbadd : ∀ x y : VNT A A,
+        braiding A A (x + y) = braiding A A x + braiding A A y :=
+      map_add (braiding A A).toStarAlgHom
+    have hbtmul : ∀ a b : A, braiding A A (a ⊗ᵥ b) = b ⊗ᵥ a :=
+      (exists_braiding A A).choose_spec.1
+    refine hext _ _ (hmc.comp hbc) hmc fun t => ?_
+    induction t using TensorProduct.induction_on with
+    | zero =>
+        simp only [map_zero]
+        rw [hb0]
+    | tmul a b => rw [hlift, hbtmul, hm, hm, hcomm]
+    | add u v hu hv =>
+        simp only [map_add]
+        rw [hbadd, hmadd, hmadd, hu, hv]
+  · -- (2) `m` is multiplicative: `m ∘ γ_⊙` is the lift of the (multiplicative,
+    -- because `𝒜` is commutative) bilinear map `(a, b) ↦ ab`
+    have hmβ : BilinMult (LinearMap.mul ℂ A) := by
+      intro a b c d
+      show (a * b) * (c * d) = (a * c) * (b * d)
+      rw [mul_assoc, mul_assoc, ← mul_assoc b c d, ← mul_assoc c b d, hcomm b c]
+    have hcomp : ∀ t : A ⊗[ℂ] A,
+        M.m.toNCPMap (TensorProduct.lift (vnTensor A A).map t)
+          = TensorProduct.lift (LinearMap.mul ℂ A) t := by
+      intro t
+      induction t using TensorProduct.induction_on with
+      | zero =>
+          simp only [map_zero]
+          exact hm0
+      | tmul a b => rw [hlift, hm, TensorProduct.lift.tmul]; rfl
+      | add u v hu hv =>
+          simp only [map_add]
+          rw [hmadd, hu, hv]
+    have step1 : ∀ s t : A ⊗[ℂ] A,
+        M.m.toNCPMap (TensorProduct.lift (vnTensor A A).map s *
+            TensorProduct.lift (vnTensor A A).map t)
+          = M.m.toNCPMap (TensorProduct.lift (vnTensor A A).map s) *
+            M.m.toNCPMap (TensorProduct.lift (vnTensor A A).map t) := by
+      intro s t
+      rw [← lift_mul _ (vnTensor A A).isTensorProduct.miu.2.1, hcomp, hcomp,
+        hcomp, lift_mul _ hmβ]
+    have step2 : ∀ (t : A ⊗[ℂ] A) (x : VNT A A),
+        M.m.toNCPMap (x * TensorProduct.lift (vnTensor A A).map t)
+          = M.m.toNCPMap x *
+            M.m.toNCPMap (TensorProduct.lift (vnTensor A A).map t) := by
+      intro t
+      refine hext (fun z => M.m.toNCPMap (z * TensorProduct.lift (vnTensor A A).map t))
+        (fun z => M.m.toNCPMap z *
+          M.m.toNCPMap (TensorProduct.lift (vnTensor A A).map t)) ?_ ?_
+        (fun s => step1 s t)
+      · exact hmc.comp (mult_uws_cont _).2.1
+      · exact (mult_uws_cont
+          (M.m.toNCPMap (TensorProduct.lift (vnTensor A A).map t))).2.1.comp hmc
+    have hmul : ∀ x y : VNT A A,
+        M.m.toNCPMap (x * y) = M.m.toNCPMap x * M.m.toNCPMap y := by
+      intro x y
+      refine hext (fun z => M.m.toNCPMap (x * z))
+        (fun z => M.m.toNCPMap x * M.m.toNCPMap z) ?_ ?_ (fun t => step2 t x) y
+      · exact hmc.comp (mult_uws_cont x).1
+      · exact (mult_uws_cont (M.m.toNCPMap x)).1.comp hmc
+    have hone : M.m.toNCPMap (1 : VNT A A) = 1 := by
+      have h1 : ((1 : A) ⊗ᵥ (1 : A)) = (1 : VNT A A) :=
+        (vnTensor A A).isTensorProduct.miu.1
+      have h := hm 1 1
+      rw [h1, one_mul] at h
+      exact h
+    refine ⟨{ toStarAlgHom :=
+                { toFun := fun t => M.m.toNCPMap t,
+                  map_one' := hone,
+                  map_mul' := hmul,
+                  map_zero' := map_zero M.m.toNCPMap.toCompletelyPositiveMap,
+                  map_add' := map_add M.m.toNCPMap.toCompletelyPositiveMap,
+                  commutes' := fun c => by
+                    rw [Algebra.algebraMap_eq_smul_one, Algebra.algebraMap_eq_smul_one]
+                    show M.m.toNCPMap (c • (1 : VNT A A)) = c • (1 : A)
+                    have h2 : M.m.toNCPMap (c • (1 : VNT A A))
+                        = c • M.m.toNCPMap (1 : VNT A A) :=
+                      map_smul M.m.toNCPMap.toCompletelyPositiveMap c _
+                    rw [h2, hone],
+                  map_star' := fun t => ncp_star M.m.toNCPMap t },
+              preservesDirSups' := M.m.toNCPMap.preservesDirSups' },
+      fun _ => rfl⟩
 
 /-- **132III** (`prop:dup-vna-is-monoid`, proc.tex:6677, Exercise),
 part 5: `Mon(W*_miu) ≅ dW*_miu ≃ Set^op` — rendered: for duplicable
@@ -1452,7 +2080,47 @@ theorem free_monoid_in_vNAMIU [VonNeumannAlgebra A] [VonNeumannAlgebra B]
 evaluation `𝒜 → ℓ^∞(W*_cpsu(𝒜, ℂ))` is an ncpsu-map. -/
 theorem exists_freeMonoidUnitCpsu [VonNeumannAlgebra A] :
     ∃ η : NCPSUMap A (linf (NCPSUMap A ℂ)),
-      ∀ (a : A) (ω : NCPSUMap A ℂ), η.toNCPMap a ω = ω.toNCPMap a := sorry
+      ∀ (a : A) (ω : NCPSUMap A ℂ), η.toNCPMap a ω = ω.toNCPMap a := by
+  -- `η` is the mediating map of the `W*_cpsu`-product of the constant family
+  -- `(ℂ)_{ω}` for the cone `(ω)_{ω}`.  Its C*-half is **20aI**.4
+  -- (`cstar_product_4`, proved), which delivers complete positivity and
+  -- subunitality; normality is pointwise, exactly as in **47IV**.3, because
+  -- the order on `ℓ^∞` is pointwise (`lp_infty_le_iff`) and each `ω` is
+  -- normal.  (**47IV**.3 `vn_products_ncpsu` itself is not needed.)
+  have hcp : ∀ ω : NCPSUMap A ℂ, Theses.A.CStar.IsCompletelyPositiveMap
+      (ω.toNCPMap.toCompletelyPositiveMap.toLinearMap) := fun ω =>
+    (Theses.A.CStar.cp_iff _).out 1 0 |>.mp fun N M hM =>
+      ω.toNCPMap.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM
+  have hsu : ∀ ω : NCPSUMap A ℂ,
+      Subunital ⇑(ω.toNCPMap.toCompletelyPositiveMap.toLinearMap) :=
+    fun ω => ω.subunital'
+  obtain ⟨g, ⟨hgcp, hgsu, hgval⟩, -⟩ :=
+    Theses.A.CStar.cstar_product_4 (𝒜f := fun _ : NCPSUMap A ℂ => ℂ)
+      (fun ω => ω.toNCPMap.toCompletelyPositiveMap.toLinearMap) hcp hsu
+  have hgcp' : Theses.A.CStar.IsCompletelyPositiveMap g := hgcp
+  have hnorm : PreservesDirSups ⇑g := by
+    intro D s hne hdir hlub
+    constructor
+    · rintro _ ⟨d, hd, rfl⟩
+      rw [lp_infty_le_iff]
+      intro ω
+      rw [hgval ω, hgval ω]
+      exact (ω.toNCPMap.preservesDirSups' D s hne hdir hlub).1 ⟨d, hd, rfl⟩
+    · intro u hu
+      rw [lp_infty_le_iff]
+      intro ω
+      rw [hgval ω]
+      refine (ω.toNCPMap.preservesDirSups' D s hne hdir hlub).2 ?_
+      rintro _ ⟨d, hd, rfl⟩
+      have hd' := (lp_infty_le_iff _ _).mp (hu ⟨d, hd, rfl⟩) ω
+      rwa [hgval ω] at hd'
+  exact ⟨{ toNCPMap :=
+             { toCompletelyPositiveMap :=
+                 { toLinearMap := g,
+                   map_cstarMatrix_nonneg' :=
+                     (Theses.A.CStar.cp_iff g).out 0 1 |>.mp hgcp' },
+               preservesDirSups' := hnorm },
+           subunital' := hgsu }, fun a ω => hgval ω a⟩
 
 /-- **132VI** (proc.tex:6766, Corollary): `ℓ^∞(W*_cpsu(𝒜, ℂ))` is the
 free (commutative) monoid on `𝒜` in `W*_cpsu`: every ncpsu-map from `𝒜`
