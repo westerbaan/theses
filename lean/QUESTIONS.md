@@ -26,38 +26,6 @@ number, not by line**.
 
 Thesis A was ruled on 2026-08-13; none of thesis B has been.
 
-### B1. 192V.3.3 — "semilattices are exactly abstract 2-convex sets" is false
-`eff.tex:2577`.  By the thesis's **own** Definition 192II the support condition
-uses the *partial* effect-algebra sum, and `1 ⋁ 1` is undefined in `2`.  Hence
-`𝒟_2 ≅ Id` and the abstract 2-convex sets are just **sets**, not semilattices.
-
-Verified formally: our Lean proof of `semilattice_two_convex` goes through
-**without ever using `SemilatticeSup`**.  The intended claim holds for the
-non-empty-finite-powerset monad.
-
-*Decision needed*: correct the thesis, and tell us whether to restate our
-version (as written it is silently weaker and useless as a validation).
-
-Bas: fixed. (A followup question is whether semilattices can be defined as abstract M-convex sets for some M. Probably not.)
-
-**REALIGNED 2026-08-15** (`bb9615f`, "Fix 192V3"): the false claim is deleted
-upstream and the surviving direction carries the new label
-`eff-semilattice-aconv`.  Our side (session 39): `semilattice_two_convex` is
-gone; in its place `two_convexComb_eq_eta`, `two_convex_nonempty` and
-`two_convex_unique` say what is actually true (`𝒟₂ ≅ Id`, so `AConv₂ ≅ Set`),
-and `semilattice_unitInterval_convex` — the thesis's surviving claim — now
-*pins* the structure map to the join of the support instead of merely asserting
-`Nonempty (MConvex I L)`.  The second sentence of the corrected item
-("cancellative iff `x = y` for all `x,y`") is proved as
-`semilattice_cancellative_iff`.  The followup question is discussed in
-PROVING-LOG session 39.
-
-### B3. 221IV.6 — purity of the mediating map is never checked
-`eff.tex:6923`.  221II requires the mediating map to be pure, and the proof of
-221IV.6 never establishes it.  The gap is real but harmless: we have now proved
-it (`isPure_of_isQuotient_comp` / `isPure_of_comp_isComprehension`, in plain
-effectus generality).  Recorded so the thesis can add the step.
-
 ### B10. 158II `kaplansky-hilbmod` — the thesis's proof is dead and no replacement is known
 `dils.tex` parsec 1580.  158II is proved in the thesis via **158V**, and 158V is
 **false** (counterexample in `PROVING-LOG`; `B(ℓ²)`, `y = |e₂⟩⟨e₁|`,
