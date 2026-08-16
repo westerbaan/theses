@@ -26,23 +26,59 @@ number, not by line**.
 
 Thesis A was ruled on 2026-08-13; none of thesis B has been.
 
-### B10. 158II `kaplansky-hilbmod` — the thesis's proof is dead and no replacement is known
-`dils.tex` parsec 1580.  158II is proved in the thesis via **158V**, and 158V is
-**false** (counterexample in `PROVING-LOG`; `B(ℓ²)`, `y = |e₂⟩⟨e₁|`,
-`yₙ = |e₂⟩⟨e₁+eₙ|`).  A dedicated run then failed both to prove and to refute
-158II itself:
+### B10. 158II `kaplansky-hilbmod` — **now proved, by a different route**; the printed proof (158III–158V) must be replaced
+`dils.tex` parsec 1580.  The thesis proves 158II via **158V**, and 158V is
+**false** (counterexample in `PROVING-LOG`/`ERRATA`; `B(ℓ²)`, `y = |e₂⟩⟨e₁|`,
+`yₙ = |e₂⟩⟨e₁+eₙ|`).  **158II itself is true**: it is now proved in Lean
+(`Theses/B/Dils/Kaplansky.lean`, 2026-08-16) through the **linking algebra**,
+with no strengthening of its hypotheses.
 
-* every replacement route tried — truncation/`h`-style renormalizers, adaptive
-  two-stage `conjNP` requests, a least-squares sandwich — funnels into the same
-  mirrored quantity, the `ω`-mass of `spec ⟪d₀,d₀⟫` above `‖x‖²`, which an
-  adversarial approximant makes `O(1)` for any *one-shot* renormalizer;
-* every adversarial `D` collapses, because `⟪D,D⟫ ⊆ 𝒜` lets `𝒜`-functional
-  calculus trim the escaping components — so the `∃ d ∈ D` form genuinely
-  resists the 158V counterexample.
+**The proof.**  Let `Lk = X ⊕ ℬ` (a Hilbert ℬ-module) and work in the von
+Neumann algebra `ℬᵃ(Lk)` (**152X** `ba_vonNeumannAlgebra`, which needs `Lk`
+self dual).  Embed `X` in the corner by `cor z = |z ⊕ 0⟩⟨0 ⊕ 1|`, i.e.
+`[[0,z],[0,0]]`.  Then
 
-*The renormalizer approach is dead for **every** choice of renormalizer, not
-just the thesis's (Bas asked: `h(y) = y·h'(y)` with `g` chosen to match — is the
-approach flawed for any `h'`?).  Recorded 2026-08-16.*
+    (cor z)* (cor z) = ι⟨z,z⟩,    ι b = [[0,0],[0,b]],
+
+so the ultrastrong seminorms of `cor z` are **exactly** the ultranorm
+seminorms of `z` — the mirrored quantity `ω(bb*)` that kills every route
+through 158V never appears.  `D` sits inside the closed ∗-subalgebra
+`S = {T : T(N) ⊆ N and T*(N) ⊆ N}`, `N = cl(D) ⊕ 𝒜`, and the two hypotheses
+of 158II are exactly what puts it there: `⟨D,D⟩ ⊆ 𝒜` (by polarization from
+`⟨d,d⟩ ∈ 𝒜`) and `𝒜·D ⊆ D`.  Ultranorm density of `D` gives
+`cor x ∈ ultrastrong-closure(S)`, thesis A's **74IV** `kaplansky` returns a
+net in `S` bounded by `‖cor x‖ = ‖x‖`, and compressing at the vector `0 ⊕ 1`
+lands in `cl(D)`; a norm approximation plus a rescaling `d ↦ t·d` puts it back
+in `D` inside the ball (`kaplansky_hilbmod_of_closure`).
+
+Three points worth recording, because they answer questions the earlier
+analysis left open.
+
+1. **`𝒜` need not be ultrastrongly dense in `ℬ`** (the hypothesis Lin's
+   Theorem 4.4 needs and 158II lacks).  74IV is applied to a *single element*
+   `cor x` and a subalgebra whose ultrastrong closure need not be everything.
+2. **The self-adjointization `[[0,x],[x*,0]]` of the classical proof is not
+   usable and not needed.**  Its square has the `|e⟩⟨e|` corner, which
+   reintroduces the mirror (`θ_{e,e} = |e₂⟩⟨e₂|` is constant along the
+   standard counterexample), so `ξ(dₙ) → ξ(x)` fails ultrastrongly.  Our
+   `cor` is not self-adjoint, and 74IV — repaired in `A/VN` for exactly this
+   reason — already handles non-self-adjoint elements.
+3. **The only dependency is the self-dual completion 150II** `dils_completion`
+   (parsec 1500, before 1580, so the thesis's own order is respected), used to
+   pass from `X` to a self-dual `X̄`; ultranorm density is transitive, and both
+   the norm bound and the seminorms are computed from the inner product, which
+   the embedding preserves.  `150II` is still `sorry` in Lean, so
+   `#print axioms kaplansky_hilbmod` shows `sorryAx`.  The **self-dual case**
+   `kaplansky_hilbmod_of_selfDual` is unconditional and axiom-clean.
+
+*Decision needed*: how to repair the thesis.  Concretely, 158III–158V should
+be deleted or demoted, and the proof of `kaplansky-hilbmod` replaced by the
+linking-algebra argument above (which the thesis has all the material for:
+152X at parsec 1520, 150II at 1500, `kaplansky` at 74IV).  The erratum row for
+158V in `ERRATA.md` carries the same request.
+
+*Superseded material, kept because it rules routes out.*  The renormalizer
+approach is dead for **every** renormalizer, not just the thesis's:
 
 **Claim.** Let `φ : [0,∞) → ℝ` and `h(y) := y·φ(⟨y,y⟩)` (functional calculus —
 the shape of every renormalizer of this kind, the thesis's `φ(t) = 2/(1+t)`
@@ -63,64 +99,20 @@ whose second term is ultranorm null.  Continuity at `y` thus forces
 `h(y) = κy` for every `y ≠ 0`, so `‖h‖` is unbounded on `X` unless `κ = 0`,
 and `κ = 0` contradicts `h(g(x)) = x` for `x ≠ 0`. ∎
 
-**Why the scheme cannot be patched.**  A renormalizer is a function of
-`⟨y,y⟩`, whose norm jumps by exactly the escaping mass `c` that the ultranorm
-topology declares null.  The scheme therefore asks one continuous function to be
-*sensitive* to that mass (to contract into the unit ball) and *insensitive* to it
-(to be ultranorm continuous) at once.  Verified numerically for
-`2/(1+t)`, `1/√(1+t)`, `min(1,1/√t)` and `e^{-t}`; the persistent gap is
-`|φ(a+c) − φ(a)|·‖v‖` in every case.
-
-The escape route this leaves is precise: the renormalization must be allowed to
-depend on the **np-functionals**, which a fixed `φ` cannot do.  That is exactly
-the `∃ d ∈ D` entourage form of the statement — choose the approximant *after*
-seeing the finite family it must satisfy — together with the `𝒜`-module trimming
-`⟨D,D⟩ ⊆ 𝒜`.
-
-*Dead end, recorded 2026-08-16 (Bas asked: can we require `h` to be ultranorm
-continuous only where the proof uses it — at `g(x)`, along nets from `D`?).*
-**No: the counterexample already lies inside that restriction.**  Put
-`x := h(y) = |e₂⟩⟨e₁|`, so `‖x‖ = 1`; then `g(x) = y` **exactly** (checked
-numerically), so the failure point *is* of the form `g(x)` and `h(g(x)) = x` as
-the proof wants.  Both `y` and `yₙ = |e₂⟩⟨e₁+eₙ|` are rank one, hence compact,
-so both lie in `D` for the legitimate choice `ℬ = B(ℓ²)`, `X = ℬ` over itself,
-`𝒜 = D = K(ℓ²)` — a C\*-subalgebra, an `𝒜`-submodule, `⟨d,d⟩ = d*d ∈ 𝒜`, and
-`K` ultrastrongly (= ultranorm on `X = ℬ`) dense in `B(ℓ²)`.  Yet
-`h(yₙ) = ⅔yₙ` and `‖⟨h(yₙ)−h(y), h(yₙ)−h(y)⟩‖ = 5/9`, constant in `n`.
-Note 158II itself is **true** in this instance (classical Kaplansky supplies the
-net directly), which locates the defect precisely: the proof fixes `h` *before*
-the approximating net, whereas the statement only asks for `∃ d ∈ D` per finite
-family of np-functionals.  A repair must choose the approximant **after** seeing
-which functionals it must satisfy.
-
-Recorded, and worth keeping: the `∃ d ∈ D` freedom is real but **not sufficient
-on its own** — pointwise ultranorm continuity of `h` fails even at norm-interior
-points, so any proof must exploit the `𝒜`-module trimming, not just the
-entourage form.
-
-**Banked**: `kaplansky_hilbmod_of_weak` (proved, axiom-clean) reduces 158II to
-*weak* bounded approximation — `‖ω⟪w, x−d⟫‖ ≤ η` with `d` in the `‖x‖`-ball of
-`D` — via a Mazur-style variational lemma.  So the open part is now the weak
-form alone.
-
-*Decision needed*: prove the weak form, refute 158II, or strengthen its
-hypotheses.  The pointer H. Lin, *Double duals and Hilbert modules*,
-arXiv:2311.15462 §4 has now been **checked in full** (worker 60, session 30
-of `PROVING-LOG`): Lemma 4.3/Theorem 4.4 do prove the analogue — for an
-*arbitrary* Hilbert `𝒜`-module, not just the standard one, via matrix
-Kaplansky + Kasparov stabilization + an approximate identity of `K(H)` —
-but under two hypotheses 158II lacks: `𝒜` SOT-dense in the enveloping
-`M`, and the target in the *norm*-closed `M`-module generated by `D`
-rather than the ultranorm closure.  His §5 Example 5.1 also shows the
-analogous density *fails* one topology further out (for `H^♯`).  Session 30
-additionally rules out finite/decidable counterexamples for (W)/158II/158V
-(all true in finite dimension, and 158V is true for commutative `ℬ`), shows
-commutative 158II is provable outright, and blocks the natural
-iterated-trimming route on a precise structural fact: the accumulated
-coefficient is an ordered product of noncommuting positive contractions,
-whose defect `1 − q_{k-1}⋯q₀` can exceed the unit ball (`‖·‖ ≈ 1.155`
-already for two ideal trimmers) — no two-sided trimming exists on a
-one-sided module.
+The scheme asks one continuous function to be *sensitive* to the escaping mass
+(to contract into the unit ball) and *insensitive* to it (to be ultranorm
+continuous) at once; restricting `h`'s continuity to points `g(x)` or to nets
+from `D` does not help, since the counterexample already lies inside that
+restriction.  Also recorded: iterated trimming fails because the accumulated
+coefficient `1 − q_{k-1}⋯q₀` is an ordered product of noncommuting positive
+contractions and can exceed the unit ball (`‖·‖ ≈ 1.155` for two ideal
+trimmers) — there is no two-sided trimming on a one-sided module.  H. Lin,
+*Double duals and Hilbert modules*, arXiv:2311.15462 §4 proves an analogue
+under two hypotheses 158II lacks (`𝒜` SOT-dense in `M`; the target in the
+norm-closed `M`-module generated by `D`); the linking-algebra proof needs
+neither.  `kaplansky_hilbmod_of_weak` (158II from *weak* bounded
+approximation) and `kaplansky_hilbmod_of_commutative` remain in the file as
+independent partial results.
 
 ### B11. 169VIII `dils-def-filter` — "filter **for** `b`" is defined weaker than in proc.tex, and 169XI.2 is false as printed
 `dils.tex:6118`.  The Definition says "`c` is a filter for `b ≥ 0` if

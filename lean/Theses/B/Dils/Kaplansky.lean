@@ -5,16 +5,18 @@ lines 4082–4279.
 
   parsec 1580:  the Kaplansky density theorem for Hilbert C*-modules
 
-**158Ia** is proved; **158II** and the four **158V** estimates are `sorry`
-(the latter four are *false*, see below).  The **commutative case of 158II**
-is proved outright (`kaplansky_hilbmod_of_commutative`, end of this file) —
-there the mirror obstruction vanishes and a one-shot renormalization closes
-the weak statement.  For the general 158II the sound part of a
-replacement proof is banked as `kaplansky_hilbmod_of_weak` (axiom-clean):
-158II reduces, by an elementary Mazur-style variational argument, to *weak*
-bounded approximation — making `ω ⟪w, x−d⟫` small with `d` in the
-`‖x‖`-ball of `D`; see the section "Reduction of 158II to weak bounded
-approximation" and `PROVING-LOG.md`.  Following the conventions of
+**158Ia** and **158II** are proved (158II through the linking algebra, at the
+end of the file, modulo **150II** `dils_completion`); the four **158V**
+estimates are `sorry`
+(they are *false*, see below).  The thesis's route to 158II is therefore
+dead; the proof here runs the **linking algebra** `ℬᵃ(X ⊕ ℬ)` and thesis A's
+**74IV** `kaplansky` instead — see the section comment before
+`kaplansky_hilbmod_of_selfDual`, which is the self-dual case and is
+axiom-clean.  Two earlier partial results are kept, both still of interest:
+`kaplansky_hilbmod_of_weak` (158II reduces, by a Mazur-style variational
+argument, to *weak* bounded approximation) and
+`kaplansky_hilbmod_of_commutative` (the commutative case, proved through the
+weak form and needing neither the linking algebra nor 150II).  Following the conventions of
 `HilbertModules.lean`, ultrastrong/ultranorm approximation is expressed
 through the seminorms `unSeminorm ω B` (with `B = mulInner ℬ` for the
 ultrastrong uniformity on `ℬ` itself); "there is a net `x_α → x` ultranorm
@@ -24,6 +26,7 @@ approximating net.
 -/
 import Theses.A.VN.Completeness
 import Theses.B.Dils.HilbertModules
+import Theses.B.Dils.SelfDualCompletion
 
 open scoped ComplexOrder CStarAlgebra WithCStarModule
 open Filter Topology Theses Theses.A.CStar Theses.A.VN
@@ -97,39 +100,12 @@ theorem kaplansky_bounded_approx [VonNeumannAlgebra ℬ]
 variable {X : Type v}
   [NormedAddCommGroup X] [Module ℂ X] [SMul ℬ X] [CStarModule ℬ X]
 
-/-- **158II** (`kaplansky-hilbmod`, dils.tex:4135, Kaplansky density
-theorem for Hilbert C*-modules): let `X` be a Hilbert ℬ-module for a von
-Neumann algebra `ℬ` with an ultranorm-dense 𝒜-submodule `D ⊆ X`, where
-`𝒜 ⊆ ℬ` is a C*-subalgebra with `⟨y,y⟩ ∈ 𝒜` for all `y ∈ D`.  Then every
-`x ∈ X` is the ultranorm limit of a net in `D` norm-bounded by `‖x‖`.
-
-**158III** and **158IV** are the elementary part of the proof (with
-`h y = y · 2/(1+⟨y,y⟩)` and `g x = x · 1/(1+√(1-⟨x,x⟩))`: `‖h y‖ ≤ 1` and
-`h (g x) = x`) — not converted.  **158V**, the ultranorm continuity of `h`,
-is the real work; its four convergence estimates are stated separately
-below as `kaplansky_hilbmod_A₁`, `kaplansky_hilbmod_A₁'`,
-`kaplansky_hilbmod_A₂` and `kaplansky_hilbmod_A₂'`.
-
-⚠️ The thesis's proof route is **dead**: 158V is false (see the section
-comment below), so this `sorry` cannot be closed by the printed argument.
-The statement itself is believed true but currently *open*: by
-`kaplansky_hilbmod_of_weak` (end of this file, proved) it reduces to the
-weak bounded-approximation statement recorded there; the obstruction to
-proving *that* — and the reason no counterexample is known either — is
-analyzed in `PROVING-LOG.md`.  The **commutative case** is proved:
-`kaplansky_hilbmod_of_commutative` (end of this file). -/
-theorem kaplansky_hilbmod [VonNeumannAlgebra ℬ] [CompleteSpace X]
-    (A : StarSubalgebra ℂ ℬ) (hA : IsClosed (A : Set ℬ))
-    (D : Set X)
-    (hD0 : (0 : X) ∈ D)
-    (hDadd : ∀ d ∈ D, ∀ d' ∈ D, d + d' ∈ D)
-    (hDsmul : ∀ a ∈ A, ∀ d ∈ D, a • d ∈ D)
-    (hDinner : ∀ d ∈ D, inner ℬ d d ∈ A)
-    (hdense : UnDense (inner ℬ) D) (x : X) :
-    ∀ (n : ℕ) (ωs : Fin n → NPFunctional ℬ) (ε : ℝ), 0 < ε →
-      ∃ d ∈ D, ‖d‖ ≤ ‖x‖ ∧
-        ∀ i, unSeminorm (ωs i) (inner ℬ) (x - d) ≤ ε :=
-  sorry
+/-! **158II** (`kaplansky-hilbmod`, dils.tex:4135, Kaplansky density theorem
+for Hilbert C*-modules) is stated and **proved** at the end of this file, as
+`kaplansky_hilbmod`, because its proof (through the linking algebra) needs
+the whole of the file: the np-functional helpers of the `WeakToStrong`
+section and the linking-algebra development after it.  Its self-dual case is
+`kaplansky_hilbmod_of_selfDual`. -/
 
 /-! ### 158V (dils.tex:4189): ultranorm continuity of `h`
 
@@ -1194,6 +1170,837 @@ theorem kaplansky_hilbmod_of_commutative [VonNeumannAlgebra ℬ] [CompleteSpace 
     kaplansky_weak_of_commutative hcomm A hA D hD0 hDsmul hDinner hdense x ω w η hη
 
 end Commutative
+
+/-! ### 158II through the linking algebra
+
+The route that works.  Form the **linking module** `Lk = X ⊕ ℬ` (Mathlib's
+`C⋆ᵐᵒᵈ(ℬ, X × ℬ)`) and the von Neumann algebra `ℬᵃ(Lk)` of its adjointable
+operators (**152X** `ba_vonNeumannAlgebra`, which needs `Lk` self dual — hence
+the `SelfDual ℬ X` hypothesis below, the one place the self-dual completion
+**150II** would be needed for the general case).  Inside it,
+
+  `cor z = |z ⊕ 0⟩⟨0 ⊕ 1|`   ("`[[0,z],[0,0]]`")
+
+is a linear isometry of `X` into the corner with
+
+  `(cor z)* (cor z) = ι⟨z,z⟩`,  `ι b = |0 ⊕ b⟩⟨0 ⊕ 1|`   ("`[[0,0],[0,b]]`"),
+
+so the ultrastrong seminorms of `cor z` are *exactly* the ultranorm seminorms
+of `z` — no mirrored (`ω(bb*)`) quantity appears, which is what kills every
+route through 158V.  (The *self-adjoint* `[[0,z],[z*,0]]` of the classical
+proof would reintroduce the mirror, through the `|z⟩⟨z|` corner; it is not
+needed, because thesis A's **74IV** `kaplansky` already handles a
+non-self-adjoint element.)  `D` sits inside the closed ∗-subalgebra
+`lkSub` of operators preserving `N = cl(D) ⊕ 𝒜` — this is exactly what the
+hypotheses `⟨D,D⟩ ⊆ 𝒜` (through polarization) and `𝒜·D ⊆ D` say — and 74IV
+compresses back into `cl(D)`, from where `kaplansky_hilbmod_of_closure`
+rescales into `D` itself.  Note that `𝒜` is *not* assumed ultrastrongly dense
+in `ℬ` anywhere. -/
+
+section Linking
+
+
+
+/-- The linking module `X ⊕ ℬ`. -/
+private abbrev Lk (ℬ : Type u) (X : Type v) [CStarAlgebra ℬ] [PartialOrder ℬ]
+    [StarOrderedRing ℬ] [NormedAddCommGroup X] [Module ℂ X] [SMul ℬ X]
+    [CStarModule ℬ X] : Type (max u v) := C⋆ᵐᵒᵈ(ℬ, X × ℬ)
+
+/-- `x ∈ X` as a vector of the linking module. -/
+private def lkX (z : X) : Lk ℬ X := (z, 0)
+/-- `b ∈ ℬ` as a vector of the linking module. -/
+private def lkB (b : ℬ) : Lk ℬ X := (0, b)
+
+@[simp] private theorem lkX_fst (z : X) : (lkX (ℬ := ℬ) z).1 = z := rfl
+@[simp] private theorem lkX_snd (z : X) : (lkX (ℬ := ℬ) z).2 = 0 := rfl
+@[simp] private theorem lkB_fst (b : ℬ) : (lkB (X := X) b).1 = 0 := rfl
+@[simp] private theorem lkB_snd (b : ℬ) : (lkB (X := X) b).2 = b := rfl
+
+private theorem lk_inner (v w : Lk ℬ X) :
+    (inner ℬ v w : ℬ) = inner ℬ v.1 w.1 + inner ℬ v.2 w.2 := rfl
+
+private theorem inner_lkX (z z' : X) : (inner ℬ (lkX (ℬ := ℬ) z) (lkX (ℬ := ℬ) z') : ℬ)
+    = inner ℬ z z' := by
+  rw [lk_inner]; simp
+
+private theorem inner_lkB (b b' : ℬ) : (inner ℬ (lkB (X := X) b) (lkB (X := X) b') : ℬ)
+    = b' * star b := by
+  rw [lk_inner]; simp; rfl
+
+private theorem norm_lkX (z : X) : ‖lkX (ℬ := ℬ) z‖ = ‖z‖ := by
+  rw [CStarModule.norm_eq_sqrt_norm_inner_self (A := ℬ), inner_lkX,
+    ← CStarModule.norm_eq_sqrt_norm_inner_self (A := ℬ)]
+
+private theorem norm_lkB (b : ℬ) : ‖lkB (X := X) b‖ = ‖b‖ := by
+  rw [CStarModule.norm_eq_sqrt_norm_inner_self (A := ℬ), inner_lkB,
+    CStarModule.norm_eq_sqrt_norm_inner_self (A := ℬ) (x := b)]
+  rfl
+
+private theorem norm_lkB_one_le : ‖lkB (X := X) (1 : ℬ)‖ ≤ 1 := by
+  rw [CStarModule.norm_eq_sqrt_norm_inner_self (A := ℬ), inner_lkB, star_one, mul_one]
+  rw [show (1:ℝ) = Real.sqrt 1 by simp]
+  refine Real.sqrt_le_sqrt ?_
+  rcases subsingleton_or_nontrivial ℬ with _ | _
+  · rw [Subsingleton.elim (1:ℬ) 0, norm_zero]; exact zero_le_one
+  · exact le_of_eq CStarRing.norm_one
+
+/-- `|v⟩⟨w| : u ↦ ⟨w,u⟩ • v` on the linking module (a private copy of 159II
+`mketbra`, which lives downstream in `SelfDual.lean`). -/
+private noncomputable def mkb (v w : Lk ℬ X) : Lk ℬ X →L[ℂ] Lk ℬ X :=
+  LinearMap.mkContinuous
+    { toFun := fun u => inner ℬ w u • v
+      map_add' := fun z z' => by rw [CStarModule.inner_add_right, op_add_smul]
+      map_smul' := fun c z => by
+        rw [CStarModule.inner_smul_right_complex, op_smul_complex_smul,
+          RingHom.id_apply] }
+    (‖w‖ * ‖v‖) fun u => by
+      calc ‖(inner ℬ w u : ℬ) • v‖ ≤ ‖(inner ℬ w u : ℬ)‖ * ‖v‖ := norm_op_smul_le _ _
+        _ ≤ ‖w‖ * ‖u‖ * ‖v‖ :=
+            mul_le_mul_of_nonneg_right (CStarModule.norm_inner_le (Lk ℬ X)) (norm_nonneg _)
+        _ = ‖w‖ * ‖v‖ * ‖u‖ := by ring
+
+@[simp] private theorem mkb_apply (v w u : Lk ℬ X) : mkb v w u = inner ℬ w u • v := rfl
+
+private theorem mkb_adjointTo (v w : Lk ℬ X) :
+    ModuleAdjointTo ℬ (⇑(mkb v w) : Lk ℬ X → Lk ℬ X) ⇑(mkb w v) := by
+  intro z u
+  rw [mkb_apply, mkb_apply, CStarModule.inner_op_smul_left,
+    CStarModule.inner_op_smul_right, CStarModule.star_inner]
+
+private theorem mkb_adjointable (v w : Lk ℬ X) :
+    ModuleAdjointable ℬ (⇑(mkb v w) : Lk ℬ X → Lk ℬ X) := ⟨_, mkb_adjointTo v w⟩
+
+private theorem mkb_comp (v w v' w' : Lk ℬ X) :
+    (mkb v w).comp (mkb v' w') = mkb ((inner ℬ w v' : ℬ) • v) w' := by
+  ext u
+  change (inner ℬ w ((inner ℬ w' u : ℬ) • v') : ℬ) • v
+    = (inner ℬ w' u : ℬ) • ((inner ℬ w v' : ℬ) • v)
+  rw [CStarModule.inner_op_smul_right, op_mul_smul]
+
+private theorem op_smul_sub (a : ℬ) (v v' : Lk ℬ X) : a • (v - v') = a • v - a • v' :=
+  eq_sub_of_add_eq (by rw [← op_smul_add, sub_add_cancel])
+
+private theorem mkb_add_left (v v' w : Lk ℬ X) : mkb (v + v') w = mkb v w + mkb v' w := by
+  ext u
+  show (inner ℬ w u : ℬ) • (v + v') = mkb v w u + mkb v' w u
+  rw [op_smul_add]; rfl
+
+private theorem mkb_smul_left (c : ℂ) (v w : Lk ℬ X) : mkb (c • v) w = c • mkb v w := by
+  ext u
+  exact op_smul_comm_complex c (inner ℬ w u) v
+
+private theorem mkb_sub_left (v v' w : Lk ℬ X) : mkb (v - v') w = mkb v w - mkb v' w := by
+  ext u
+  show (inner ℬ w u : ℬ) • (v - v') = mkb v w u - mkb v' w u
+  rw [op_smul_sub]; rfl
+
+private theorem smul_lkX (b : ℬ) (z : X) : b • lkX (ℬ := ℬ) z = lkX (b • z) :=
+  Prod.ext rfl (by show b • (0:ℬ) = 0; rw [smul_eq_mul, mul_zero])
+
+private theorem smul_lkB (b c : ℬ) : b • lkB (X := X) c = lkB (b * c) :=
+  Prod.ext (by show b • (0:X) = 0; rw [op_smul_zero]) rfl
+
+variable [CompleteSpace X]
+
+omit [CompleteSpace X] in
+theorem norm_mkb_le (v w : Lk ℬ X) : ‖mkb v w‖ ≤ ‖w‖ * ‖v‖ :=
+  LinearMap.mkContinuous_norm_le _ (by positivity) _
+
+/-- The corner embedding `x ↦ [[0,x],[0,0]]` of `X` into the linking algebra. -/
+private noncomputable def cor (z : X) : Ba ℬ (Lk ℬ X) :=
+  ⟨mkb (lkX z) (lkB (1:ℬ)), mkb_adjointable _ _⟩
+
+/-- The diagonal embedding of `ℬ` into the linking algebra. -/
+private noncomputable def iota (b : ℬ) : Ba ℬ (Lk ℬ X) :=
+  ⟨mkb (lkB b) (lkB (1:ℬ)), mkb_adjointable _ _⟩
+
+omit [CompleteSpace X] in
+private theorem cor_apply (z : X) (u : Lk ℬ X) : (cor z).1 u = lkX (u.2 • z) := by
+  show (inner ℬ (lkB (X := X) (1:ℬ)) u : ℬ) • lkX z = _
+  rw [lk_inner]
+  simp only [lkB_fst, lkB_snd, CStarModule.inner_zero_left, zero_add]
+  show (u.2 * star (1:ℬ)) • lkX (ℬ := ℬ) z = _
+  rw [star_one, mul_one, smul_lkX]
+
+omit [CompleteSpace X] in
+private theorem iota_apply (b : ℬ) (u : Lk ℬ X) : (iota (X := X) b).1 u = lkB (u.2 * b) := by
+  show (inner ℬ (lkB (X := X) (1:ℬ)) u : ℬ) • lkB b = _
+  rw [lk_inner]
+  simp only [lkB_fst, lkB_snd, CStarModule.inner_zero_left, zero_add]
+  show (u.2 * star (1:ℬ)) • lkB (X := X) b = _
+  rw [star_one, mul_one, smul_lkB]
+
+private theorem star_cor_coe (z : X) :
+    (star (cor (ℬ := ℬ) z)).1 = mkb (lkB (X := X) (1:ℬ)) (lkX z) :=
+  DFunLike.coe_injective
+    (moduleAdjointTo_unique _ _ _ (baSubalgebra_star_spec (cor z)) (mkb_adjointTo _ _))
+
+omit [CompleteSpace X] in
+private theorem lkX_sub (z z' : X) : lkX (ℬ := ℬ) (z - z') = lkX z - lkX z' :=
+  Prod.ext rfl (sub_zero (0:ℬ)).symm
+
+private theorem cor_sub (z z' : X) : cor (ℬ := ℬ) (z - z') = cor z - cor z' :=
+  Subtype.ext (by
+    show mkb (lkX (z - z')) (lkB (X := X) (1:ℬ)) = _
+    rw [lkX_sub, mkb_sub_left]; rfl)
+
+private theorem star_cor_mul_cor (z : X) :
+    star (cor (ℬ := ℬ) z) * cor z = iota (inner ℬ z z) := by
+  refine Subtype.ext ?_
+  show (star (cor (ℬ := ℬ) z)).1.comp
+      (mkb (lkX z) (lkB (X := X) (1:ℬ))) = mkb (lkB (inner ℬ z z)) (lkB (X := X) (1:ℬ))
+  rw [star_cor_coe, mkb_comp, inner_lkX, smul_lkB, mul_one]
+
+private theorem norm_cor_le (z : X) : ‖cor (ℬ := ℬ) z‖ ≤ ‖z‖ := by
+  have h : ‖cor (ℬ := ℬ) z‖ = ‖mkb (lkX (ℬ := ℬ) z) (lkB (X := X) (1:ℬ))‖ := rfl
+  rw [h]
+  calc ‖mkb (lkX (ℬ := ℬ) z) (lkB (X := X) (1:ℬ))‖ ≤ ‖lkB (X := X) (1:ℬ)‖ * ‖lkX (ℬ := ℬ) z‖ :=
+        norm_mkb_le _ _
+    _ ≤ 1 * ‖z‖ := by
+        rw [norm_lkX]
+        exact mul_le_mul_of_nonneg_right norm_lkB_one_le (norm_nonneg _)
+    _ = ‖z‖ := one_mul _
+
+-- PART 2 (appended to Link.lean before `end Linking`)
+
+/-- `X` sits in the linking module ℂ-linearly. -/
+private noncomputable def lkXLM : X →ₗ[ℂ] Lk ℬ X where
+  toFun := lkX
+  map_add' z z' := Prod.ext rfl (add_zero (0:ℬ)).symm
+  map_smul' c z := Prod.ext rfl (smul_zero c).symm
+
+/-- `ℬ` sits in the linking module ℂ-linearly. -/
+private noncomputable def lkBLM : ℬ →ₗ[ℂ] Lk ℬ X where
+  toFun := lkB
+  map_add' b b' := Prod.ext (add_zero (0:X)).symm rfl
+  map_smul' c b := Prod.ext (smul_zero c).symm rfl
+
+omit [CompleteSpace X] in
+private theorem lk_decomp (v : Lk ℬ X) : v = lkX v.1 + lkB v.2 :=
+  Prod.ext (add_zero v.1).symm (zero_add v.2).symm
+
+/-- **141III** (direct sums): the linking module `X ⊕ ℬ` is self dual when
+`X` is. -/
+private theorem selfDual_lk (hX : SelfDual ℬ X) : SelfDual ℬ (Lk ℬ X) := by
+  intro τ hmod hbdd
+  obtain ⟨C, hC⟩ := hbdd
+  obtain ⟨t₁, ht₁⟩ := hX (τ.comp lkXLM)
+    (fun b z => by
+      show τ (lkX (b • z)) = b * τ (lkX z)
+      rw [← smul_lkX]; exact hmod b (lkX z))
+    ⟨C, fun z => by
+      show ‖τ (lkX z)‖ ≤ C * ‖z‖
+      rw [← norm_lkX (ℬ := ℬ) z]; exact hC _⟩
+  obtain ⟨t₂, ht₂⟩ := selfDual_self ℬ (τ.comp lkBLM)
+    (fun b c => by
+      show τ (lkB (X := X) (b • c)) = b * τ (lkB c)
+      rw [smul_eq_mul, ← smul_lkB]; exact hmod b (lkB c))
+    ⟨C, fun c => by
+      show ‖τ (lkB (X := X) c)‖ ≤ C * ‖c‖
+      rw [← norm_lkB (X := X) c]; exact hC _⟩
+  refine ⟨lkX t₁ + lkB t₂, fun v => ?_⟩
+  have h1 : (inner ℬ (lkX (ℬ := ℬ) t₁ + lkB t₂) v : ℬ)
+      = inner ℬ t₁ v.1 + inner ℬ t₂ v.2 := by
+    rw [lk_inner]
+    show (inner ℬ (t₁ + 0) v.1 : ℬ) + inner ℬ (0 + t₂) v.2 = _
+    rw [add_zero, zero_add]
+  rw [h1, ← ht₁ v.1, ← ht₂ v.2]
+  show τ v = τ (lkX v.1) + τ (lkB v.2)
+  rw [← map_add, ← lk_decomp]
+
+-- PART 3: iota is normal
+
+private theorem inner_iota (b : ℬ) (u : Lk ℬ X) :
+    (inner ℬ u ((iota (X := X) b).1 u) : ℬ) = u.2 * b * star u.2 := by
+  rw [iota_apply, lk_inner]
+  simp only [lkB_fst, lkB_snd, CStarModule.inner_zero_right, zero_add]
+  rfl
+
+private theorem iota_sub (b b' : ℬ) : iota (X := X) (b - b') = iota b - iota b' :=
+  Subtype.ext (by
+    show mkb (lkB (X := X) (b - b')) (lkB (X := X) (1:ℬ)) = _
+    rw [show lkB (X := X) (b - b') = lkB b - lkB b' from Prod.ext (sub_zero (0:X)).symm rfl,
+      mkb_sub_left]
+    rfl)
+
+omit [CompleteSpace X] in
+private theorem lkB_add (b b' : ℬ) : lkB (X := X) (b + b') = lkB b + lkB b' :=
+  Prod.ext (add_zero (0:X)).symm rfl
+
+omit [CompleteSpace X] in
+private theorem lkB_smul (c : ℂ) (b : ℬ) : lkB (X := X) (c • b) = c • lkB b :=
+  Prod.ext (smul_zero c).symm rfl
+
+private theorem iota_add (b b' : ℬ) : iota (X := X) (b + b') = iota b + iota b' :=
+  Subtype.ext (by
+    show mkb (lkB (X := X) (b + b')) (lkB (X := X) (1:ℬ)) = _
+    rw [lkB_add, mkb_add_left]; rfl)
+
+private theorem iota_smul (c : ℂ) (b : ℬ) : iota (X := X) (c • b) = c • iota b :=
+  Subtype.ext (by
+    show mkb (lkB (X := X) (c • b)) (lkB (X := X) (1:ℬ)) = _
+    rw [lkB_smul, mkb_smul_left]; rfl)
+
+private theorem iota_mono {b b' : ℬ} (h : b ≤ b') : iota (X := X) b ≤ iota b' := by
+  rw [← sub_nonneg, ← iota_sub]
+  refine (ba_nonneg_iff _).mpr fun u => ?_
+  rw [inner_iota]
+  have := star_left_conjugate_nonneg (sub_nonneg.mpr h) (star u.2)
+  rwa [star_star] at this
+
+private theorem star_iota (b : ℬ) : star (iota (X := X) b) = iota (star b) := by
+  refine Subtype.ext ?_
+  have h : (star (iota (X := X) b)).1 = mkb (lkB (X := X) (1:ℬ)) (lkB b) :=
+    DFunLike.coe_injective
+      (moduleAdjointTo_unique _ _ _ (baSubalgebra_star_spec (iota (X := X) b))
+        (mkb_adjointTo _ _))
+  rw [h]
+  ext u
+  show (inner ℬ (lkB (X := X) b) u : ℬ) • lkB (X := X) (1:ℬ)
+    = (inner ℬ (lkB (X := X) (1:ℬ)) u : ℬ) • lkB (X := X) (star b)
+  rw [lk_inner, lk_inner]
+  simp only [lkB_fst, lkB_snd, CStarModule.inner_zero_left, zero_add]
+  show (u.2 * star b) • lkB (X := X) (1:ℬ) = (u.2 * star (1:ℬ)) • lkB (X := X) (star b)
+  rw [star_one, mul_one, smul_lkB, smul_lkB, mul_one]
+
+private theorem isSelfAdjoint_iota {b : ℬ} (hb : IsSelfAdjoint b) :
+    IsSelfAdjoint (iota (X := X) b) := by
+  change star (iota (X := X) b) = _
+  rw [star_iota, hb.star_eq]
+
+/-- `ι` on self-adjoint elements. -/
+private noncomputable def iotaSA (d : selfAdjoint ℬ) : selfAdjoint (Ba ℬ (Lk ℬ X)) :=
+  ⟨iota (X := X) d, isSelfAdjoint_iota (X := X) d.2⟩
+
+private theorem iotaSA_mono : Monotone (iotaSA (ℬ := ℬ) (X := X)) := fun _ _ h =>
+  Subtype.coe_le_coe.mp (iota_mono (Subtype.coe_le_coe.mpr h))
+
+variable [VonNeumannAlgebra ℬ]
+
+private theorem iotaSA_isLUB {D : Set (selfAdjoint ℬ)} {s : selfAdjoint ℬ}
+    (hne : D.Nonempty) (hdir : DirectedOn (· ≤ ·) D) (hlub : IsLUB D s) :
+    IsLUB (iotaSA (ℬ := ℬ) (X := X) '' D) (iotaSA s) := by
+  constructor
+  · rintro _ ⟨d, hd, rfl⟩
+    exact iotaSA_mono (hlub.1 hd)
+  · intro T hT
+    rw [← Subtype.coe_le_coe, ← sub_nonneg]
+    refine (ba_nonneg_iff _).mpr fun u => ?_
+    have hsub : ((T : Ba ℬ (Lk ℬ X)) - (iotaSA (ℬ := ℬ) (X := X) s : Ba ℬ (Lk ℬ X))).1 u
+        = (T : Ba ℬ (Lk ℬ X)).1 u - (iota (X := X) (s : ℬ)).1 u := rfl
+    rw [hsub, CStarModule.inner_sub_right, sub_nonneg, inner_iota]
+    refine np_orderSeparating _ _ ?_ ?_ fun ω => ?_
+    · exact s.2.conjugate u.2
+    · exact ba_inner_isSelfAdjoint u (T : Ba ℬ (Lk ℬ X)) T.2
+    · have hkey := (conjNP (star u.2) ω).preservesDirSups' D s hne hdir hlub
+      have hub : ∀ y ∈ (fun d : selfAdjoint ℬ =>
+          (conjNP (star (u.2 : ℬ)) ω) (d : ℬ)) '' D,
+          y ≤ ω (inner ℬ u ((T : Ba ℬ (Lk ℬ X)).1 u)) := by
+        rintro _ ⟨d, hd, rfl⟩
+        have h1 : (iotaSA (ℬ := ℬ) (X := X) d : Ba ℬ (Lk ℬ X)) ≤ (T : Ba ℬ (Lk ℬ X)) :=
+          Subtype.coe_le_coe.mpr (hT ⟨d, hd, rfl⟩)
+        have h2 := ba_inner_mono u h1
+        rw [show ((iotaSA (ℬ := ℬ) (X := X) d : Ba ℬ (Lk ℬ X)) : Ba ℬ (Lk ℬ X))
+            = iota (X := X) (d : ℬ) from rfl, inner_iota] at h2
+        have h3 := np_mono ω h2
+        show ω (star (star (u.2 : ℬ)) * (d : ℬ) * star (u.2 : ℬ)) ≤ _
+        rw [star_star]
+        exact h3
+      have h := hkey.2 hub
+      have h' : ω (star (star (u.2 : ℬ)) * (s : ℬ) * star (u.2 : ℬ))
+          ≤ ω (inner ℬ u ((T : Ba ℬ (Lk ℬ X)).1 u)) := h
+      rwa [star_star] at h'
+
+/-- The linking algebra's np-functionals restrict to np-functionals of `ℬ`
+along the diagonal embedding `ι`.  This is the step that needs `ι` to be
+*normal*, i.e. the normality of `b ↦ c b c*`. -/
+private noncomputable def iotaNP [CompleteSpace X] (hY : SelfDual ℬ (Lk ℬ X))
+    (φ : NPFunctional (Ba ℬ (Lk ℬ X))) : NPFunctional ℬ where
+  toPositiveLinearMap :=
+    { toFun := fun b => φ (iota (X := X) b)
+      map_add' := fun b b' => by
+        rw [iota_add]
+        exact map_add φ.toPositiveLinearMap _ _
+      map_smul' := fun c b => by
+        rw [iota_smul]
+        exact map_smul φ.toPositiveLinearMap _ _
+      monotone' := fun b b' h => φ.toPositiveLinearMap.monotone (iota_mono h) }
+  preservesDirSups' := by
+    intro D s hne hdir hlub
+    have hdir' : DirectedOn (· ≤ ·) (iotaSA (ℬ := ℬ) (X := X) '' D) := by
+      rintro _ ⟨x, hx, rfl⟩ _ ⟨z, hz, rfl⟩
+      obtain ⟨w, hw, hxw, hzw⟩ := hdir x hx z hz
+      exact ⟨iotaSA w, ⟨w, hw, rfl⟩, iotaSA_mono hxw, iotaSA_mono hzw⟩
+    have hkey := φ.preservesDirSups' (iotaSA (ℬ := ℬ) (X := X) '' D) (iotaSA s)
+      (hne.image _) hdir' (iotaSA_isLUB hne hdir hlub)
+    rw [← Set.image_comp] at hkey
+    exact hkey
+
+-- PART 4: the linking subalgebra
+
+omit [VonNeumannAlgebra ℬ] in
+private theorem op_smul_sub' {W : Type*} [NormedAddCommGroup W] [Module ℂ W] [SMul ℬ W]
+    [CStarModule ℬ W] (a : ℬ) (v v' : W) : a • (v - v') = a • v - a • v' :=
+  eq_sub_of_add_eq (by rw [← op_smul_add, sub_add_cancel])
+
+section Sub
+
+omit [CompleteSpace X] [VonNeumannAlgebra ℬ] in
+private theorem lipschitz_lk_fst : LipschitzWith 1 (fun v : Lk ℬ X => v.1) :=
+  LipschitzWith.of_dist_le_mul fun v w => by
+    rw [NNReal.coe_one, one_mul, dist_eq_norm, dist_eq_norm]
+    exact (le_max_left _ _).trans (WithCStarModule.max_le_prod_norm (v - w))
+
+omit [CompleteSpace X] [VonNeumannAlgebra ℬ] in
+private theorem lipschitz_lk_snd : LipschitzWith 1 (fun v : Lk ℬ X => v.2) :=
+  LipschitzWith.of_dist_le_mul fun v w => by
+    rw [NNReal.coe_one, one_mul, dist_eq_norm, dist_eq_norm]
+    exact (le_max_right _ _).trans (WithCStarModule.max_le_prod_norm (v - w))
+
+omit [VonNeumannAlgebra ℬ] in
+private theorem continuous_ba_apply (v : Lk ℬ X) :
+    Continuous (fun T : Ba ℬ (Lk ℬ X) => T.1 v) :=
+  (ContinuousLinearMap.apply ℂ (Lk ℬ X) v).continuous.comp continuous_subtype_val
+
+/-- The `∗`-subalgebra of the linking algebra of the operators that preserve
+a ℂ-subspace `N ⊆ X ⊕ ℬ` together with their adjoints. -/
+private noncomputable def lkSub (N : Set (Lk ℬ X)) (hadd : ∀ v ∈ N, ∀ w ∈ N, v + w ∈ N)
+    (hsmul : ∀ (c : ℂ), ∀ v ∈ N, c • v ∈ N) :
+    StarSubalgebra ℂ (Ba ℬ (Lk ℬ X)) where
+  carrier := {T | ∀ v ∈ N, T.1 v ∈ N ∧ (star T).1 v ∈ N}
+  mul_mem' := by
+    intro S T hS hT v hv
+    refine ⟨(hS _ (hT v hv).1).1, ?_⟩
+    rw [star_mul]
+    exact (hT _ (hS v hv).2).2
+  add_mem' := by
+    intro S T hS hT v hv
+    refine ⟨hadd _ (hS v hv).1 _ (hT v hv).1, ?_⟩
+    rw [star_add]
+    exact hadd _ (hS v hv).2 _ (hT v hv).2
+  algebraMap_mem' := by
+    intro c v hv
+    refine ⟨hsmul c v hv, ?_⟩
+    rw [← algebraMap_star_comm]
+    exact hsmul _ v hv
+  star_mem' := by
+    intro T hT v hv
+    exact ⟨(hT v hv).2, by rw [star_star]; exact (hT v hv).1⟩
+
+omit [VonNeumannAlgebra ℬ] in
+private theorem mem_lkSub {N : Set (Lk ℬ X)} {hadd hsmul} {T : Ba ℬ (Lk ℬ X)} :
+    T ∈ lkSub N hadd hsmul ↔ ∀ v ∈ N, T.1 v ∈ N ∧ (star T).1 v ∈ N := Iff.rfl
+
+private theorem isClosed_lkSub {N : Set (Lk ℬ X)} (hadd hsmul) (hN : IsClosed N) :
+    IsClosed ((lkSub N hadd hsmul : StarSubalgebra ℂ (Ba ℬ (Lk ℬ X))) :
+      Set (Ba ℬ (Lk ℬ X))) := by
+  have hset : ((lkSub N hadd hsmul : StarSubalgebra ℂ (Ba ℬ (Lk ℬ X))) :
+        Set (Ba ℬ (Lk ℬ X)))
+      = ⋂ v ∈ N, ((fun T : Ba ℬ (Lk ℬ X) => T.1 v) ⁻¹' N)
+          ∩ ((fun T : Ba ℬ (Lk ℬ X) => (star T).1 v) ⁻¹' N) := by
+    ext T
+    simp only [Set.mem_iInter, Set.mem_inter_iff, Set.mem_preimage]
+    exact Iff.rfl
+  rw [hset]
+  refine isClosed_iInter fun v => isClosed_iInter fun _ => ?_
+  exact (hN.preimage (continuous_ba_apply v)).inter
+    (hN.preimage ((continuous_ba_apply v).comp continuous_star))
+
+end Sub
+
+-- PART 5: 158II for self-dual modules
+
+section Main
+
+omit [CompleteSpace X] [VonNeumannAlgebra ℬ] in
+/-- From approximation inside the *norm closure* of `D` to approximation
+inside `D` itself: norm-approximate, then rescale into the ball. -/
+theorem kaplansky_hilbmod_of_closure
+    (A : StarSubalgebra ℂ ℬ) (D : Set X)
+    (hDsmul : ∀ a ∈ A, ∀ d ∈ D, a • d ∈ D) (x : X)
+    (h : ∀ (n : ℕ) (ωs : Fin n → NPFunctional ℬ) (ε : ℝ), 0 < ε →
+      ∃ z ∈ closure D, ‖z‖ ≤ ‖x‖ ∧
+        ∀ i, unSeminorm (ωs i) (inner ℬ) (x - z) ≤ ε) :
+    ∀ (n : ℕ) (ωs : Fin n → NPFunctional ℬ) (ε : ℝ), 0 < ε →
+      ∃ d ∈ D, ‖d‖ ≤ ‖x‖ ∧
+        ∀ i, unSeminorm (ωs i) (inner ℬ) (x - d) ≤ ε := by
+  intro n ωs ε hε
+  have hDc : ∀ (c : ℂ), ∀ d ∈ D, c • d ∈ D := by
+    intro c d hd
+    have h1 : (c • (1 : ℬ)) ∈ A := by
+      rw [← Algebra.algebraMap_eq_smul_one]; exact A.algebraMap_mem c
+    have h2 := hDsmul _ h1 d hd
+    rwa [smul_one_smul' c d] at h2
+  set ω := npSum n ωs with hω
+  set M : ℝ := Real.sqrt (ω 1).re with hM
+  have hM0 : 0 ≤ M := Real.sqrt_nonneg _
+  set δ : ℝ := (ε / 2) / (2 * (M + 1)) with hδ
+  have hδ0 : 0 < δ := by positivity
+  have hMδ : 2 * M * δ ≤ ε / 2 := by
+    have h1 : (0:ℝ) < 2 * (M + 1) := by positivity
+    have h2 : 2 * M / (2 * (M + 1)) ≤ 1 := by rw [div_le_one h1]; linarith
+    have h3 : 2 * M * δ = (2 * M / (2 * (M + 1))) * (ε / 2) := by rw [hδ]; field_simp
+    rw [h3]
+    nlinarith [hε.le, h2, hM0]
+  obtain ⟨z, hz, hzn, hzε⟩ := h 1 (fun _ => ω) (ε / 2) (by positivity)
+  have hzω : unSeminorm ω (inner ℬ) (x - z) ≤ ε / 2 := hzε 0
+  obtain ⟨d', hd', hd'δ⟩ := Metric.mem_closure_iff.mp hz δ hδ0
+  set γ : ℝ := ‖x‖ with hγ
+  have hγ0 : 0 ≤ γ := norm_nonneg _
+  have hpos : 0 < γ + δ := by linarith
+  set t : ℝ := γ / (γ + δ) with ht
+  have ht0 : 0 ≤ t := by positivity
+  have htγ : t * (γ + δ) = γ := by rw [ht]; field_simp
+  have hzd' : ‖z - d'‖ ≤ δ := by
+    rw [← dist_eq_norm]; exact hd'δ.le
+  have hd'n : ‖d'‖ ≤ γ + δ := by
+    have h1 : ‖d'‖ ≤ ‖z‖ + ‖d' - z‖ := by
+      simpa using norm_add_le z (d' - z)
+    have h2 : ‖d' - z‖ = ‖z - d'‖ := norm_sub_rev _ _
+    linarith
+  refine ⟨((t : ℝ) : ℂ) • d', hDc _ _ hd', ?_, fun i => ?_⟩
+  · rw [norm_smul_complex (ℬ := ℬ), Complex.norm_real, Real.norm_eq_abs,
+      abs_of_nonneg ht0]
+    nlinarith [hd'n, ht0]
+  · refine le_trans (unSeminorm_le_npSum n ωs i (cstarBInner ℬ X) _) ?_
+    have hsplit : x - ((t : ℝ) : ℂ) • d'
+        = (x - z) + ((z - d') + (d' - ((t : ℝ) : ℂ) • d')) := by abel
+    have htri : unSeminorm ω (cstarBInner ℬ X).inner (x - ((t : ℝ) : ℂ) • d')
+        ≤ unSeminorm ω (cstarBInner ℬ X).inner (x - z)
+          + (unSeminorm ω (cstarBInner ℬ X).inner (z - d')
+            + unSeminorm ω (cstarBInner ℬ X).inner
+                (d' - ((t : ℝ) : ℂ) • d')) := by
+      rw [hsplit]
+      have ha := unSeminorm_add_le ω (cstarBInner ℬ X) (x - z)
+        ((z - d') + (d' - ((t : ℝ) : ℂ) • d'))
+      have hb := unSeminorm_add_le ω (cstarBInner ℬ X) (z - d')
+        (d' - ((t : ℝ) : ℂ) • d')
+      linarith
+    have h2 : unSeminorm ω (cstarBInner ℬ X).inner (z - d') ≤ M * δ :=
+      le_trans (unSeminorm_le_norm' ω (z - d'))
+        (mul_le_mul_of_nonneg_left hzd' hM0)
+    have hrest : ‖d' - ((t : ℝ) : ℂ) • d'‖ ≤ δ := by
+      have he : d' - ((t : ℝ) : ℂ) • d' = ((1 - t : ℝ) : ℂ) • d' := by
+        push_cast; module
+      rw [he, norm_smul_complex (ℬ := ℬ), Complex.norm_real, Real.norm_eq_abs]
+      have ht1 : t ≤ 1 := by rw [ht, div_le_one hpos]; linarith
+      rw [abs_of_nonneg (by linarith : (0:ℝ) ≤ 1 - t)]
+      nlinarith [hd'n, norm_nonneg d']
+    have h3 : unSeminorm ω (cstarBInner ℬ X).inner (d' - ((t : ℝ) : ℂ) • d')
+        ≤ M * δ :=
+      le_trans (unSeminorm_le_norm' ω _) (mul_le_mul_of_nonneg_left hrest hM0)
+    have h1 : unSeminorm ω (cstarBInner ℬ X).inner (x - z) ≤ ε / 2 := hzω
+    have : M * δ + M * δ = 2 * M * δ := by ring
+    linarith
+
+/-- **158II** (`kaplansky-hilbmod`, dils.tex:4135) for a **self-dual**
+Hilbert module, proved through the linking algebra. -/
+theorem kaplansky_hilbmod_of_selfDual (hX : SelfDual ℬ X)
+    (A : StarSubalgebra ℂ ℬ) (hA : IsClosed (A : Set ℬ)) (D : Set X)
+    (hD0 : (0 : X) ∈ D)
+    (hDadd : ∀ d ∈ D, ∀ d' ∈ D, d + d' ∈ D)
+    (hDsmul : ∀ a ∈ A, ∀ d ∈ D, a • d ∈ D)
+    (hDinner : ∀ d ∈ D, inner ℬ d d ∈ A)
+    (hdense : UnDense (inner ℬ) D) (x : X) :
+    ∀ (n : ℕ) (ωs : Fin n → NPFunctional ℬ) (ε : ℝ), 0 < ε →
+      ∃ d ∈ D, ‖d‖ ≤ ‖x‖ ∧
+        ∀ i, unSeminorm (ωs i) (inner ℬ) (x - d) ≤ ε := by
+  refine kaplansky_hilbmod_of_closure A D hDsmul x ?_
+  intro n ωs ε hε
+  -- `D` is a ℂ-subspace, through `A ∋ c·1`
+  have hDc : ∀ (c : ℂ), ∀ d ∈ D, c • d ∈ D := by
+    intro c d hd
+    have h1 : (c • (1 : ℬ)) ∈ A := by
+      rw [← Algebra.algebraMap_eq_smul_one]; exact A.algebraMap_mem c
+    have h2 := hDsmul _ h1 d hd
+    rwa [smul_one_smul' c d] at h2
+  -- polarization: `⟪D,D⟫ ⊆ A`
+  have hsum : ∀ e ∈ D, ∀ e' ∈ D,
+      (inner ℬ e e' : ℬ) + inner ℬ e' e ∈ A := by
+    intro e he e' he'
+    have hid : (inner ℬ e e' : ℬ) + inner ℬ e' e
+        = inner ℬ (e + e') (e + e') - inner ℬ e e - inner ℬ e' e' := by
+      rw [CStarModule.inner_add_left, CStarModule.inner_add_right,
+        CStarModule.inner_add_right]
+      abel
+    rw [hid]
+    exact sub_mem (sub_mem (hDinner _ (hDadd _ he _ he')) (hDinner _ he))
+      (hDinner _ he')
+  have hpol : ∀ e ∈ D, ∀ e' ∈ D, (inner ℬ e e' : ℬ) ∈ A := by
+    intro e he e' he'
+    have h1 := hsum e he e' he'
+    have h2 := hsum e he (Complex.I • e') (hDc Complex.I e' he')
+    have hI : (inner ℬ e (Complex.I • e') : ℬ) + inner ℬ (Complex.I • e') e
+        = Complex.I • ((inner ℬ e e' : ℬ) - inner ℬ e' e) := by
+      rw [CStarModule.inner_smul_right_complex, CStarModule.inner_smul_left_complex,
+        show (star Complex.I : ℂ) = -Complex.I by simp, neg_smul, smul_sub,
+        ← sub_eq_add_neg]
+    rw [hI] at h2
+    have h3 : (inner ℬ e e' : ℬ) - inner ℬ e' e ∈ A := by
+      have h4 := A.smul_mem h2 (-Complex.I)
+      rwa [smul_smul, show (-Complex.I) * Complex.I = 1 by
+        simp [Complex.I_mul_I], one_smul] at h4
+    have h5 := A.smul_mem (add_mem h1 h3) (1/2 : ℂ)
+    rwa [show (1/2 : ℂ) • (((inner ℬ e e' : ℬ) + inner ℬ e' e)
+        + ((inner ℬ e e' : ℬ) - inner ℬ e' e)) = inner ℬ e e' by module] at h5
+  -- closure facts
+  have hclA : ∀ u ∈ closure D, ∀ w ∈ closure D, u + w ∈ closure D := by
+    intro u hu w hw
+    have hmaps : Set.MapsTo (fun p : X × X => p.1 + p.2) (D ×ˢ D) D :=
+      fun p hp => hDadd _ hp.1 _ hp.2
+    have h2 := hmaps.closure (continuous_fst.add continuous_snd)
+    rw [closure_prod_eq] at h2
+    exact h2 (Set.mk_mem_prod hu hw)
+  have hclC : ∀ (c : ℂ), ∀ u ∈ closure D, c • u ∈ closure D := by
+    intro c u hu
+    have hcont : Continuous (fun z : X => c • z) := by
+      refine LipschitzWith.continuous (K := ‖c‖₊)
+        (LipschitzWith.of_dist_le_mul fun z z' => ?_)
+      rw [dist_eq_norm, dist_eq_norm, ← smul_sub, norm_smul_complex (ℬ := ℬ)]
+      simp
+    exact (Set.MapsTo.closure (fun z hz => hDc c z hz) hcont) hu
+  have hclB : ∀ a ∈ A, ∀ u ∈ closure D, a • u ∈ closure D := by
+    intro a ha u hu
+    have hcont : Continuous (fun z : X => a • z) := by
+      refine LipschitzWith.continuous (K := ‖a‖₊)
+        (LipschitzWith.of_dist_le_mul fun z z' => ?_)
+      rw [dist_eq_norm, dist_eq_norm, ← op_smul_sub']
+      simpa using norm_op_smul_le a (z - z')
+    exact (Set.MapsTo.closure (fun z hz => hDsmul a ha z hz) hcont) hu
+  have hclI : ∀ d ∈ D, ∀ u ∈ closure D, (inner ℬ d u : ℬ) ∈ A := by
+    intro d hd u hu
+    have hcont : Continuous (fun z : X => (inner ℬ d z : ℬ)) := by
+      refine LipschitzWith.continuous (K := ‖d‖₊)
+        (LipschitzWith.of_dist_le_mul fun z z' => ?_)
+      rw [dist_eq_norm, dist_eq_norm, ← CStarModule.inner_sub_right, coe_nnnorm]
+      exact CStarModule.norm_inner_le X
+    have hmaps : Set.MapsTo (fun z : X => (inner ℬ d z : ℬ)) D (A : Set ℬ) :=
+      fun z hz => hpol d hd z hz
+    have := hmaps.closure hcont hu
+    rwa [hA.closure_eq] at this
+  -- the ℂ-subspace `N = cl(D) ⊕ A` of the linking module
+  set N : Set (Lk ℬ X) := {v | v.1 ∈ closure D ∧ v.2 ∈ A} with hN
+  have hNadd : ∀ v ∈ N, ∀ w ∈ N, v + w ∈ N := fun v hv w hw =>
+    ⟨hclA _ hv.1 _ hw.1, add_mem hv.2 hw.2⟩
+  have hNsmul : ∀ (c : ℂ), ∀ v ∈ N, c • v ∈ N := fun c v hv =>
+    ⟨hclC c _ hv.1, A.smul_mem hv.2 c⟩
+  have hNclosed : IsClosed N :=
+    (isClosed_closure.preimage lipschitz_lk_fst.continuous).inter
+      (hA.preimage lipschitz_lk_snd.continuous)
+  have hone : lkB (X := X) (1 : ℬ) ∈ N :=
+    ⟨subset_closure hD0, A.one_mem⟩
+  -- the linking subalgebra
+  set S := lkSub N hNadd hNsmul with hS
+  have hScl : IsClosed ((S : StarSubalgebra ℂ (Ba ℬ (Lk ℬ X))) :
+      Set (Ba ℬ (Lk ℬ X))) := isClosed_lkSub _ _ hNclosed
+  have hcor : ∀ d ∈ D, cor (ℬ := ℬ) d ∈ S := by
+    intro d hd v hv
+    constructor
+    · rw [cor_apply]
+      exact ⟨hclB _ hv.2 _ (subset_closure hd), A.zero_mem⟩
+    · rw [star_cor_coe]
+      show (inner ℬ (lkX (ℬ := ℬ) d) v : ℬ) • lkB (X := X) (1 : ℬ) ∈ N
+      rw [lk_inner]
+      simp only [lkX_fst, lkX_snd, CStarModule.inner_zero_left, add_zero]
+      rw [smul_lkB, mul_one]
+      exact ⟨subset_closure hD0, hclI d hd _ hv.1⟩
+  -- the linking algebra is a von Neumann algebra
+  have hY : SelfDual ℬ (Lk ℬ X) := selfDual_lk hX
+  haveI : VonNeumannAlgebra (Ba ℬ (Lk ℬ X)) := ba_vonNeumannAlgebra hY
+  -- `cor x` lies in the ultrastrong closure of `S`
+  have hmem : cor (ℬ := ℬ) x ∈
+      @closure _ (ultrastrong _) ((S : StarSubalgebra ℂ (Ba ℬ (Lk ℬ X))) :
+        Set (Ba ℬ (Lk ℬ X))) := by
+    let _ : TopologicalSpace (Ba ℬ (Lk ℬ X)) := ultrastrong _
+    rw [mem_closure_iff]
+    intro o ho hmemo
+    obtain ⟨φ, δ, hδ, hsub⟩ := exists_ultrastrong_ball_of_isOpen ho _ hmemo
+    obtain ⟨d, hd, hdd⟩ :=
+      hdense x 1 (fun _ => iotaNP hY φ) (δ / 2) (by positivity)
+    refine ⟨cor d, hsub ?_, hcor d hd⟩
+    have h1 : cor (ℬ := ℬ) d - cor x = cor (d - x) := (cor_sub d x).symm
+    have h2 : omegaNorm (Ba ℬ (Lk ℬ X)) φ (cor (ℬ := ℬ) (d - x))
+        = unSeminorm (iotaNP hY φ) (inner ℬ) (d - x) := by
+      rw [omegaNorm, star_cor_mul_cor]
+      rfl
+    have h3 := hdd 0
+    rw [show x - d = -(d - x) by abel] at h3
+    rw [show unSeminorm (iotaNP hY φ) (inner ℬ) (-(d - x))
+        = unSeminorm (iotaNP hY φ) (cstarBInner ℬ X).inner (-(d - x)) from rfl,
+      unSeminorm_neg'] at h3
+    show omegaNorm (Ba ℬ (Lk ℬ X)) φ (cor (ℬ := ℬ) d - cor x) < δ
+    rw [h1, h2]
+    calc unSeminorm (iotaNP hY φ) (inner ℬ) (d - x) ≤ δ / 2 := h3
+      _ < δ := by linarith
+  -- classical Kaplansky in the linking algebra
+  obtain ⟨ι, l, hl, a, ha, hlim⟩ :=
+    Theses.A.VN.kaplansky (S : StarSubalgebra ℂ (Ba ℬ (Lk ℬ X))) hScl
+      (cor (ℬ := ℬ) x) hmem
+  haveI := hl
+  have hev : ∀ᶠ j in l, ∀ i,
+      omegaNorm (Ba ℬ (Lk ℬ X)) (baVecNP hY (lkB (X := X) (1 : ℬ)) (ωs i))
+        (a j - cor (ℬ := ℬ) x) ≤ ε := by
+    refine Filter.eventually_all.mpr fun i => ?_
+    have hi := (usTendsto_iff a l (cor (ℬ := ℬ) x)).mp hlim
+      (baVecNP hY (lkB (X := X) (1 : ℬ)) (ωs i))
+    filter_upwards [Metric.tendsto_nhds.mp hi ε hε] with j hj
+    rw [Real.dist_eq, sub_zero, abs_of_nonneg (omegaNorm_nonneg _ _)] at hj
+    exact hj.le
+  obtain ⟨j, hj⟩ := hev.exists
+  -- compress to the corner
+  set w : Lk ℬ X := (a j).1 (lkB (X := X) (1 : ℬ)) with hw
+  have hwN : w ∈ N := ((ha j).1 _ hone).1
+  refine ⟨w.1, hwN.1, ?_, fun i => ?_⟩
+  · calc ‖w.1‖ ≤ ‖w‖ := (le_max_left _ _).trans (WithCStarModule.max_le_prod_norm w)
+      _ ≤ ‖a j‖ * ‖lkB (X := X) (1 : ℬ)‖ := by
+          exact (a j).1.le_opNorm _
+      _ ≤ ‖cor (ℬ := ℬ) x‖ * 1 := by
+          refine mul_le_mul (ha j).2 norm_lkB_one_le (norm_nonneg _) (norm_nonneg _)
+      _ ≤ ‖x‖ := by rw [mul_one]; exact norm_cor_le x
+  · -- the corner seminorm is dominated by the ultrastrong seminorm
+    have hTv : ((a j) - cor (ℬ := ℬ) x).1 (lkB (X := X) (1 : ℬ)) = w - lkX x := by
+      show (a j).1 (lkB (X := X) (1:ℬ)) - (cor (ℬ := ℬ) x).1 (lkB (X := X) (1:ℬ)) = _
+      rw [cor_apply]
+      show w - lkX ((1:ℬ) • x) = w - lkX x
+      rw [op_one_smul]
+    have hkey : omegaNorm (Ba ℬ (Lk ℬ X))
+        (baVecNP hY (lkB (X := X) (1 : ℬ)) (ωs i)) (a j - cor (ℬ := ℬ) x)
+        = Real.sqrt ((ωs i) (inner ℬ (w - lkX x) (w - lkX x))).re := by
+      rw [omegaNorm]
+      congr 2
+      show (baVecNP hY (lkB (X := X) (1:ℬ)) (ωs i))
+        (star (a j - cor (ℬ := ℬ) x) * (a j - cor (ℬ := ℬ) x)) = _
+      rw [baVecNP_apply]
+      congr 1
+      exact (baSubalgebra_inner_star_mul_self (𝒷 := ℬ) (X := Lk ℬ X)
+        (a j - cor (ℬ := ℬ) x) (lkB (X := X) (1:ℬ))).trans (by rw [hTv])
+    have hji := hj i
+    rw [hkey] at hji
+    refine le_trans ?_ hji
+    have hin : (inner ℬ (w - lkX (ℬ := ℬ) x) (w - lkX (ℬ := ℬ) x) : ℬ)
+        = inner ℬ (w.1 - x) (w.1 - x) + inner ℬ w.2 w.2 := by
+      rw [lk_inner]
+      congr 1
+      show (inner ℬ (w.2 - (0:ℬ)) (w.2 - (0:ℬ)) : ℬ) = _
+      rw [sub_zero]
+    show unSeminorm (ωs i) (cstarBInner ℬ X).inner (x - w.1) ≤ _
+    rw [show x - w.1 = -(w.1 - x) by abel, unSeminorm_neg', unSeminorm]
+    refine Real.sqrt_le_sqrt ?_
+    rw [hin]
+    have hle : (inner ℬ (w.1 - x) (w.1 - x) : ℬ)
+        ≤ inner ℬ (w.1 - x) (w.1 - x) + inner ℬ w.2 w.2 :=
+      le_add_of_nonneg_right CStarModule.inner_self_nonneg
+    exact np_re_mono' (ωs i) hle
+
+end Main
+
+
+
+omit [CompleteSpace X] [VonNeumannAlgebra ℬ] in
+/-- Ultranorm density is transitive: if `D` is ultranorm dense in `X` and (the
+image of) `X` is ultranorm dense in `Y`, then `D` is ultranorm dense in `Y`. -/
+private theorem unDense_trans {Y : Type*} [NormedAddCommGroup Y] [Module ℂ Y]
+    [SMul ℬ Y] [CStarModule ℬ Y] (D : Set X) (η : X → Y)
+    (hη_add : ∀ z z' : X, η (z + z') = η z + η z')
+    (hη_inner : ∀ z z' : X, (inner ℬ (η z) (η z') : ℬ) = inner ℬ z z')
+    (hD : UnDense (inner ℬ) D) (hηd : UnDense (inner ℬ) (Set.range η)) :
+    UnDense (inner ℬ) (η '' D) := by
+  intro y n ωs ε hε
+  obtain ⟨p, ⟨z, rfl⟩, hp⟩ := hηd y n ωs (ε / 2) (by positivity)
+  obtain ⟨d, hd, hdz⟩ := hD z n ωs (ε / 2) (by positivity)
+  refine ⟨η d, ⟨d, hd, rfl⟩, fun i => ?_⟩
+  have hsub : ∀ z z' : X, η z - η z' = η (z - z') := by
+    intro z z'
+    have h := hη_add (z - z') z'
+    rw [sub_add_cancel] at h
+    rw [h]; abel
+  have hkey : unSeminorm (ωs i) (inner ℬ) (η z - η d)
+      = unSeminorm (ωs i) (inner ℬ) (z - d) := by
+    rw [hsub, unSeminorm, unSeminorm, hη_inner]
+  have hsplit : y - η d = (y - η z) + (η z - η d) := by abel
+  have htri := unSeminorm_add_le (ωs i) (cstarBInner ℬ Y) (y - η z) (η z - η d)
+  rw [← hsplit, show ((cstarBInner ℬ Y).inner : Y → Y → ℬ) = inner ℬ from rfl] at htri
+  have h1 := hp i
+  have h2 : unSeminorm (ωs i) (inner ℬ) (η z - η d) ≤ ε / 2 := by
+    rw [hkey]; exact hdz i
+  show unSeminorm (ωs i) (inner ℬ) (y - η d) ≤ ε
+  linarith [htri, h1, h2]
+
+/-- **158II** (`kaplansky-hilbmod`, dils.tex:4135, Kaplansky density
+theorem for Hilbert C*-modules): let `X` be a Hilbert ℬ-module for a von
+Neumann algebra `ℬ` with an ultranorm-dense 𝒜-submodule `D ⊆ X`, where
+`𝒜 ⊆ ℬ` is a C*-subalgebra with `⟨y,y⟩ ∈ 𝒜` for all `y ∈ D`.  Then every
+`x ∈ X` is the ultranorm limit of a net in `D` norm-bounded by `‖x‖`.
+
+*Class 2 — a different proof.*  The thesis's route is through **158V**,
+which is **false** (see the section comment above and ERRATA.md); this proof
+instead runs the **linking algebra** `ℬᵃ(X ⊕ ℬ)` and thesis A's **74IV**
+`kaplansky`, as described before `kaplansky_hilbmod_of_selfDual`.  The
+general case is reduced to the self-dual one by the self-dual completion
+**150II** `dils_completion` (whose own proof is still `sorry`, so this
+theorem is proved *modulo 150II* — `#print axioms` shows `sorryAx`): `D` is
+ultranorm dense in `X`, `X` is ultranorm dense in its completion `X̄`, so `D`
+is ultranorm dense in `X̄` (`unDense_trans`), and both the norm bound and the
+ultranorm seminorms are computed from the inner product, which `η` preserves.
+Note the thesis proves 150II at parsec 1500, before 1580, so the dependency
+respects the thesis's own order.
+
+**158III** and **158IV** (`h y = y · 2/(1+⟨y,y⟩)`, `g x = x · 1/(1+√(1-⟨x,x⟩))`)
+are the elementary part of the *printed* proof and are not needed here. -/
+theorem kaplansky_hilbmod
+    (A : StarSubalgebra ℂ ℬ) (hA : IsClosed (A : Set ℬ))
+    (D : Set X)
+    (hD0 : (0 : X) ∈ D)
+    (hDadd : ∀ d ∈ D, ∀ d' ∈ D, d + d' ∈ D)
+    (hDsmul : ∀ a ∈ A, ∀ d ∈ D, a • d ∈ D)
+    (hDinner : ∀ d ∈ D, inner ℬ d d ∈ A)
+    (hdense : UnDense (inner ℬ) D) (x : X) :
+    ∀ (n : ℕ) (ωs : Fin n → NPFunctional ℬ) (ε : ℝ), 0 < ε →
+      ∃ d ∈ D, ‖d‖ ≤ ‖x‖ ∧
+        ∀ i, unSeminorm (ωs i) (inner ℬ) (x - d) ≤ ε := by
+  intro n ωs ε hε
+  obtain ⟨E⟩ := dils_completion (cstarBInner ℬ X)
+  have hηsub : ∀ z z' : X, E.η z - E.η z' = E.η (z - z') := by
+    intro z z'
+    have h := E.η_add (z - z') z'
+    rw [sub_add_cancel] at h
+    rw [h]; abel
+  have hηnorm : ∀ z : X, ‖E.η z‖ = ‖z‖ := by
+    intro z
+    rw [CStarModule.norm_eq_sqrt_norm_inner_self (A := ℬ), E.η_inner,
+      CStarModule.norm_eq_sqrt_norm_inner_self (A := ℬ) (x := z)]
+    rfl
+  have hηsem : ∀ (ω : NPFunctional ℬ) (z : X),
+      unSeminorm ω (inner ℬ) (E.η z) = unSeminorm ω (inner ℬ) z := by
+    intro ω z
+    rw [unSeminorm, unSeminorm, E.η_inner]
+    rfl
+  have hη0 : E.η (0 : X) = 0 := by
+    have h := E.η_smul_complex 0 0
+    rwa [zero_smul, zero_smul] at h
+  obtain ⟨d', ⟨d, hd, rfl⟩, hdn, hds⟩ :=
+    kaplansky_hilbmod_of_selfDual E.selfDual A hA (E.η '' D)
+      (by rw [← hη0]; exact ⟨0, hD0, rfl⟩)
+      (by
+        rintro _ ⟨e, he, rfl⟩ _ ⟨e', he', rfl⟩
+        exact ⟨e + e', hDadd e he e' he', E.η_add e e'⟩)
+      (by
+        rintro a ha _ ⟨e, he, rfl⟩
+        exact ⟨a • e, hDsmul a ha e he, E.η_smul a e⟩)
+      (by
+        rintro _ ⟨e, he, rfl⟩
+        rw [E.η_inner]
+        exact hDinner e he)
+      (unDense_trans D E.η E.η_add (fun z z' => E.η_inner z z') hdense E.dense)
+      (E.η x) n ωs ε hε
+  refine ⟨d, hd, ?_, fun i => ?_⟩
+  · rw [hηnorm, hηnorm] at hdn; exact hdn
+  · have h := hds i
+    rw [hηsub, hηsem] at h
+    exact h
+
+
+end Linking
 
 end Kaplansky
 
