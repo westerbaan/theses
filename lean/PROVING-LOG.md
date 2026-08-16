@@ -12334,3 +12334,410 @@ thesis's own proofs.
 `A/Proc`'s external frontier on `A/VN` is **empty**: 90II.2 closed in session
 55, 87III and 86IX here.  112X `tensor-basic` and 87VI (for 116III.2's `≥`
 half) are now A/Proc-local work.
+
+---
+
+## Session 55 — `B/Dils`: **151Ia `selfdual_completion_univ`** falls, and **163II-uniq** with it; 165VI is *not* the next gate (worker 82)
+
+Two `sorry`s closed, both axiom-clean
+(`propext, Classical.choice, Quot.sound`).  `B/Dils` **36 → 34**
+(compiler-counted: `SelfDualCompletion` 2 → **1**, `SelfDual` 8 → **7**;
+`Paschke` 7, `Kaplansky` 5, `Stinespring` 2, `Pure` 12, `HilbertModules` 0
+unchanged).
+
+### 1. **151Ia** `selfdual_completion_univ` (`SelfDualCompletion.lean`)
+
+Cost **~360 lines** of proof plus ~110 lines of reusable private helpers,
+against the survey's 300–400 line estimate — the estimate held.
+
+The thesis's proof (151II) is transcribed as written, with one structural
+choice forced by Lean.  The author says "pick a net `x_α` in `V` with
+`η(x_α) → x` ultranorm, then `T̂x := unlim_α T(x_α)`"; our `UnDense` is the
+*entourage* form, so the net is built explicitly, indexed by
+`Finset (NPFunctional 𝒷 × ℕ)` (a finite family of functionals together with a
+precision `1/(n+1)` for each), ordered by `atTop`.  `Finset` is directed, so
+`atTop` is `NeBot`, and pushing that net forward along `T` gives an ultranorm
+Cauchy filter on `Y`; **149V** `dils_selfdual` (`1 ⇒ 2`) supplies ultranorm
+completeness of the self-dual `Y`, which produces the limit.
+
+The one idea worth keeping is that the whole rest of the proof runs off a
+**single fundamental estimate**, proved once from the net and then never
+mentioning nets again:
+
+    ‖T̂x − Tv‖_ω  ≤  C ‖x − ηv‖_ω        for every ω, every x ∈ X, every v ∈ V.
+
+From it, *one np-functional at a time*:
+* `T̂ ∘ η = T` — take `v` with `x = ηv`, so the right-hand side is `0`;
+* additivity, ℂ-homogeneity, ℬ-homogeneity and uniqueness — each is
+  "`‖(both sides) difference‖_ω ≤ (const)·ε` for every `ε`", with the
+  approximant chosen for that single `ω` (two of them for ℬ-homogeneity, see
+  below);
+* boundedness — take `v = 0`, giving `‖T̂x‖_ω ≤ C‖x‖_ω` directly, with no
+  density argument at all.
+
+**Divergence, class 2 (different route for one step).**  For the final bound
+the thesis takes `⟨Tx_α,Tx_α⟩ ≤ ‖T‖²[x_α,x_α]` (**144V**) to the ultraweak
+limit through **148V** `innerprod_ultraweak`.  We get `‖T̂x‖_ω ≤ C‖x‖_ω` for
+every `ω` from the fundamental estimate at `v = 0` and then convert it to
+`⟨T̂x,T̂x⟩ ≤ C²⟨x,x⟩` by **44XI** `np_orderSeparating`.  Same content, and it
+avoids ultraweak limits entirely.  (Note our statement does not claim
+`‖T̂‖ = ‖T‖`, only that *some* bound exists, so the sharp constant is not
+formalized either way — see the moreover-clause of the doc comment.)
+
+**The ℬ-homogeneity step needs two functionals, not one.**  `‖b·z‖_ω` is not
+controlled by `‖z‖_ω`; the identity is
+`‖b·z‖_ω = ‖z‖_{ω(b(·)b*)}`, i.e. the seminorm at the *conjugated*
+np-functional `conjNP (star b) ω` (**44XI**).  So the approximant for
+`T̂(b·x) = b·T̂x` has to be chosen against the two-element family
+`{ω, conjNP (star b) ω}` — which is exactly why the entourage form of
+`UnDense`, and not a one-seminorm-at-a-time version, is the right hypothesis.
+
+Reusable private helpers added at the top of the parsec-1510 block, all
+phrased with `inner 𝒷` rather than `(cstarBInner 𝒷 W).inner` so that `rw`
+can use them (`HilbertModules.lean` keeps its versions `private`):
+`un_zero`, `un_neg`, `un_add_le`, `un_sub_le`, `un_sub_comm`,
+`un_smul_complex` (`‖c·z‖_ω = |c|‖z‖_ω`), `un_op_smul` (the conjugation
+identity above), `un_bmm_le`, `op_smul_sub'`, `eq_zero_of_un_small` (the
+seminorms are separating), and `npf_smul`/`npf_nonneg`/`npf_im_zero`.
+
+### 2. **163II**-uniq `selfdual_compl_defining_unique` (`SelfDual.lean`)
+
+~110 lines, immediate once 151Ia is available.  151Ia is applied four times:
+`E₁ → E₂` (giving `U`), `E₂ → E₁` (giving `W`), and once on each of `E₁`,
+`E₂` for the *uniqueness* clause, which identifies `W ∘ U` and `U ∘ W` with
+the identity because all four factor the embedding through itself.  That is
+the thesis's own argument verbatim.
+
+**Divergence, class 2 (different route), for the inner-product clause.**  The
+thesis argues that `U(ηV) = η₂V` is ultranorm dense and concludes by
+**148V** `innerprod_ultraweak`.  We instead bundle `U` as a
+`E₁.X →L[ℂ] E₂.X`, take its adjoint `U*` — which exists by **152VIII**
+`hilbmod_adjoint_exists`, since `E₁.X` is self dual — and observe that
+`U*U` and `id` have the same vector states on `η₁V`:
+
+    ⟨η₁v, U*U η₁v⟩ = ⟨Uη₁v, Uη₁v⟩ = ⟨η₂v, η₂v⟩ = [v,v] = ⟨η₁v, η₁v⟩.
+
+**152IX**.2 `hilmod_fixed_on_V_eq` then gives `U*U = id`, whence
+`⟨Ux,Uy⟩ = ⟨x, U*Uy⟩ = ⟨x,y⟩`.  This is the same density argument, but run
+once inside 152IX (which is proved) instead of being re-run on nets here.
+
+### 3. **165VI is not the next gate** — the survey was wrong about what it owes
+
+`docs/BDils-survey.md` said 165VI `ba_ext_tensor_pres` was down to
+"165IX/165X for `exists_productFunctional`/`separating`".  That is wrong on
+both counts, and the item is **blocked outside the directory**:
+
+* the thesis's 165IX/165X produce product functionals only for the *vector
+  states* `Ω_X = {f⟨x,(·)x⟩}` and `Ω_Y`, and then appeal to
+  **116VII** `tensor-characterization` (proc.tex:3578) — the criterion that a
+  *faithful family* of product functionals suffices;
+* our `IsVNTensor.exists_productFunctional` transcribes proc.tex's `tensor`
+  definition literally and demands a product functional for **every** pair of
+  np-functionals, which 165IX does not supply;
+* `tensor_characterization` lives in `Theses/A/Proc/Tensor.lean`, is **itself
+  `sorry`**, and `A/Proc` is not on `B/Dils`'s import path.
+
+So closing 165VI needs 116VII proved *and* importable (or re-derived inside
+`B/Dils`), not 165IX/165X.  Recorded in the survey.
+
+### 4. What is left
+
+Nothing else in `B/Dils` was unblocked.  `existence_paschke`,
+`univprop_ext_tensor` and the whole 157IV.2/.3 → 171II → `Pure.lean` chain
+still sit on **150II** `dils_completion`, which is the type construction and
+was not attempted.  The only remaining item in the directory that is
+neither blocked nor known-false and was not attempted is
+**138VIII-findim** `kraus_decomposition_findim` (`Stinespring.lean:2037`);
+`Stinespring`'s other `sorry` is 139XI `ess_uniq_pur`, which is false
+(QUESTIONS **B12**).
+
+## Session 57 — `A/Proc`: **112X closes whole (all five parts) and 112XI `tensor_universal_property` with it** (worker 82, `Tensor.lean`)
+
+Territory: `Theses/A/Proc/` only.  Files touched: `Theses/A/Proc/Tensor.lean`,
+`docs/AProc-survey.md`, this log.  Nothing staged, nothing committed.
+**A/Proc 77 → 72**, compiler-counted per file: `Tensor` **33** (was 38),
+`Measurement` 11, `QuantumLambda` 17, `Duplicators` 11 (the last three
+untouched).
+
+| point | declaration | divergence class |
+|---|---|---|
+| **112X**.2 | `tensor_basic_2` | 2 — the thesis's `Ω₁`/**21VII** route replaced by the order-separating property itself (§2) |
+| **112X**.3 | `tensor_basic_3` | 1 — the thesis's route |
+| **112X**.4 | `tensor_basic_4` | 1 — the thesis's route verbatim |
+| **112X**.5 | `tensor_basic_5` | 1 — the thesis's route, with the topology half done by `induced_mono` rather than pointwise (§4) |
+| **112XI** | `tensor_universal_property` | 1 — proc.tex:2998's one-line proof, with its "trivial details" spelled out (§5) |
+
+### 1. The brief was stale in the decisive place
+
+It said "A/Proc's remaining external frontier is just 87III and 86IX, and an
+A/VN worker is on both".  **That worker finished in session 56**: the log
+entry immediately above the brief's own baseline records
+`NormalFunctionals.lean` going 4 → 0, i.e. **86IX and 87III were already
+proved** when this session began.  So 112X.4 and 112X.5 — listed as
+externally blocked in both the brief and the survey — were A/Proc-local from
+the start, and with them 112XI.  The nominated targets (112X.2, then .3) were
+the right *first* two steps but not the ceiling; taking the frontier claim at
+face value would have stopped four sorries short.
+
+Correspondingly, **116III.4/.5, 116IV.1 and 118II did not fall** — they were
+not attempted.  112X.3 does unblock them in the dependency sense, but 116III.4
+in particular is *not* a corollary: its hint reduces joint ultraweak
+continuity of `⊗` to continuity of `(a,b) ↦ ∑ σ(aᵢ*aaⱼ)τ(bᵢ*bbⱼ)`, which
+handles the *simple* functionals only, while `uwTensorTopology` and the
+ultraweak topology of `𝒜⊗ℬ` are generated by their operator-norm limits — and
+the approximation `‖f(x) − g(x)‖ ≤ ε‖x‖` is not uniform on ultraweak
+neighbourhoods, which are unbounded.  Flagged here rather than in ERRATA
+because the gap may well be closable; it is not a defect until someone tries.
+
+### 2. **112X**.2 needed no `Ω₁` and no sSup bookkeeping
+
+The session-55 plan (rescale `Ω` to its unital members `Ω₁`, feed **21VII**
+`order_separating_norm`, match suprema) was not used.  `order_separating_norm`
+wants a family of *unital* pu-maps, so the plan pays for a renormalisation of
+every member of `Ω` and then has to match two suprema.  Instead:
+
+* **`‖γ_⊙ s‖ ≤ ‖s‖`** — 112X.1's *order separating* conjunct applied at
+  `x = γ_⊙(s)*γ_⊙(s)`, `y = ‖s‖²·1`.  Its hypothesis is exactly
+  `ω(s* s) ≤ ‖s‖²ω(1)` for the basic functional `ω = χ ∘ γ_⊙`, which is the
+  one new private lemma, `basic_star_self_le`: rescale `ω` by `ω(1)⁻¹`
+  (`isBasicFunctional_smul`) to land in the subunital family the supremum
+  runs over; the degenerate branch `ω(1) = 0` is `basic_norm_le_tensorNorm`,
+  already in the file.  Then `‖x‖ ≤ ‖s‖²` by 17VI.3a
+  `norm_le_iff_neg_algebraMap_le`.
+* **`‖s‖ ≤ ‖γ_⊙ s‖`** — `Real.sSup_le` over the defining set, with
+  `exists_conjProdNP_of_isBasicFunctional` turning each basic `ω` into an
+  np-functional `χ` on `𝒯` and `χ(star y * y) ≤ ‖star y * y‖ χ(1)` doing the
+  rest.
+
+This is 21VII's own argument with the renormalisation step deleted, so no
+mathematical content of the thesis is skipped — but it *is* a divergence, and
+the author's phrasing ("the subset `Ω₁` of unital maps is order separating, and
+so determines the norm") is a longer road than the exercise needs.
+
+### 3. **112X**.3 and **112X**.4
+
+112X.3's second conjunct is 112X.1's second conjunct restricted along `γ_⊙`:
+`isBasicFunctional_comp_lift` makes each summand of the approximating sum a
+basic functional, so the sum is *simple*, and 112X.2 converts the
+operator-norm bound `ε‖γ_⊙ t‖` into the tensor-norm bound
+`ε·tensorNorm t`.  The continuity conjunct is then `iInf_le`: those
+restrictions are by definition among the maps `uwTensorTopology` is initial
+for.
+
+112X.4 is the thesis's paragraph verbatim — **86IX** for the partial isometry
+`u`, **86XI** `functional_norm` for `f(u) = ‖f‖`, **74VI** for a net from
+`γ_⊙(𝒜⊙ℬ)` with `‖s_α‖ ≤ ‖u‖(1+ε)`, and `‖u‖ ≤ 1` from
+`IsStarProjection.norm_le` at `u*u`.  The converse half is one line of 112X.2.
+
+### 4. **112X**.5: what the two halves actually cost
+
+*Existence.*  The thesis says "using the fact that the operator norm limit of
+np-functionals is an np-functional again, see `predual-complete`".  Three
+things have to be supplied around that:
+* each simple functional is lifted to a *sum* of members of `Ω`, which needs
+  np-functionals as bounded operators — new private `npFunctional_norm_le`
+  (`‖ω a‖ ≤ ω(1)‖a‖`, from Kadison's inequality and
+  `‖a‖_ω ≤ ‖a‖‖1‖_ω`) and `npCLM`;
+* the sequence is Cauchy **because of 112X.4**, which is the only place the
+  isometry of restriction is used;
+* `predual_complete` returns a member of the *predual* — an ultraweakly
+  continuous bounded functional, not an np-functional.  Positivity of the
+  limit is a re/im argument; **normality** is
+  `preservesDirSups_of_continuousOn_effects_functional`, the 44XV(2)⇒(3)
+  helper A/VN banked in session 56.  Without it there is no route from
+  "ultraweakly continuous and positive" to `NPFunctional` in the tree.
+
+*The topology equality* is cheaper than the survey suggested: `≤` is 112X.3's
+first conjunct through `continuous_iff_le_induced`, and `≥` is
+`induced_mono` applied to `ultraweak 𝒯 ≤ induced ω` for the extension `ω` of
+the given norm-limit-of-simple functional, followed by `induced_compose`.  No
+pointwise argument is needed.
+
+### 5. **112XI**: the "trivial details"
+
+proc.tex:2998 is one sentence: `β_⊙` is ultraweakly continuous and bounded,
+`𝒜⊙ℬ` is an ultraweakly dense ∗-subalgebra of `𝒯` via `γ_⊙`, so **77V**
+`vn_extension` applies "except for some trivial details".  The details are two,
+and only one is trivial:
+* `vn_extension` wants a map **on the subalgebra**, so one needs
+  `γ_⊙⁻¹ : S → 𝒜⊙ℬ`.  `γ_⊙` is injective (it is an isometry, 112X.2, and
+  `tensorNorm_eq_zero_iff`), so the inverse is a `choose` and its linearity is
+  injectivity applied twice.  Its continuity for the topology *induced from
+  `𝒯`* is exactly **112X.5**'s topology equality — this is the step the
+  session-54 note correctly identified as not substitutable by
+  `BilinNormal β`.
+* the moreover-clause `‖β_γ‖ = ‖β_⊙‖`.  `≥` is 112X.2; `≤` needs the same
+  74VI approximation as 112X.4 and a new private
+  `norm_le_of_uwTendsto` — the ultraweak twin of `norm_le_of_usTendsto`
+  (`A/VN/Division.lean`), immediate from `isClosed_ultraweak_closedBall`.
+  Worth keeping: **A/VN has the ultrastrong version only**, and the ultraweak
+  one is what any "extend a bounded map by density" argument wants.
+
+### 6. Nothing false found
+
+No ERRATA or QUESTIONS row was added, changed or removed.  Every step of the
+thesis's argument for 112X.3/.4/.5 and 112XI checked out; the divergences are
+those listed in the table.
+
+### 7. Verification
+
+`lean` under the `LEAN_PATH` bypass: `Tensor.lean` **0 errors, 33
+`declaration uses 'sorry'` warnings** (was 38).  Every new declaration
+`#print axioms` to exactly `[propext, Classical.choice, Quot.sound]`, checked
+by appending the commands to a *copy* of the module.
+
+*Operational note.* For roughly an hour mid-session `A/VN/Basic.olean` was
+**deleted** from `.lake/build` by a concurrent `lake build`, and the A/VN
+worker's source was itself transiently broken, so `Tensor.lean` could not be
+checked at all.  Retrying is the documented cure and it eventually worked;
+building a private copy of the olean into a scratch directory (`lean -o`) is
+the fallback when the shared one is missing, but it does not help while the
+*source* is red.
+
+## Session 57 — `A/VN`: **66IV.4, 70II and 70III close `Projections.lean`'s last chain**, eight of the nine 43II counterexamples fall, and both `Basic.lean` cleanups land (worker 82, A chain)
+
+`Basic.lean` 24 → **16**, `Projections.lean` 11 → **8**, `Division.lean`
+7 → **6**; A/VN total 42 → **30** (compiler-counted).  All twelve new theorems
+and all new helpers are `#print axioms`-clean.  264 lines of duplicated code
+were deleted.
+
+### 1. The parsec 660–700 chain, finished
+
+* **66IV**.4 `ultracyclic_basic_4` — the Zorn argument, on the template of
+  **83V** `cceil_sum` (`Division.lean`): a maximal set `S` of np-functionals
+  whose carriers lie below `p` and are pairwise orthogonal; if
+  `q = ⋁_{ω∈S}⌈ω⌉ ≠ p` then `r = p − q` is a non-zero projection, faithfulness
+  of the np-functionals (**42I**.2) gives `τ` with `τ(r) ≠ 0`, and
+  `ω = τ(r(·)r)` has `0 ≠ ⌈ω⌉ ≤ r ⊥ q`, contradicting maximality.
+* **70II** `central_projection_central_carrier` — **the brief and the survey
+  both said this was blocked on 66IV.4; it is not.**  vn.tex 70II's own hint
+  ("take a maximal set of np-functionals for which the `⌈⌈ωᵢ⌉⌉` are
+  orthogonal") is an independent Zorn argument of the same shape, run on the
+  *central* carriers.  The only extra ingredient is that `r = c − q` is
+  *central* (`projSup_isCentral` for `q`, the hypothesis for `c`), so
+  `⌈ω⌉ ≤ r` upgrades to `⌈⌈ω⌉⌉ ≤ r` by leastness of the central support.
+* **70III** `cvn` — **it does not need 54XI either.**  Our statement is the
+  FIXME reduction (`1 = ∑ᵢ ⌈⌈ωᵢ⌉⌉` with each `ωᵢ` faithful on its corner), not
+  the `⊕ᵢ L^∞(Xᵢ)` classification; 54XI is what would turn the corners into
+  `L^∞`, and that is exactly the part the FIXME says we do not state.  So 70III
+  is 70II at `c = 1` plus: in a commutative algebra `⌈⌈ω⌉⌉ = ⌈ω⌉`, and
+  `⌈ω⌉a = a` with `ω(a) = 0` forces `⌈a⌉ ≤ ⌈ω⌉ ≤ ⌈a⌉^⊥` (**60I**
+  `ceil_functionals_lemma` and carrier leastness), i.e. `⌈a⌉ = 0`, i.e. `a = 0`.
+
+*Divergence, class 4 (never consulted):* 66IV.4 and 70II are exercises with no
+solution in `asols.tex` (there is no `parsec-660.40` or `parsec-700.20`
+entry — the file's solutions stop at parsec 340), so only the hints were
+available; both hints were followed.
+
+### 2. Our own mis-transcription: `∃ (ι : Type _)` auto-bound a fresh universe
+
+`ultracyclic_basic_4`, `central_projection_central_carrier` and `cvn` all wrote
+the index type as `∃ (ι : Type _)`.  In a theorem statement that `_` is
+**auto-bound as a new universe parameter of the theorem**, so the three
+statements claimed: *for every universe `v` there is an index type in `Type v`
+and a family …*.  That is false as soon as `A` is bigger than `Type v` allows
+— the honest index set is a set of np-functionals on `A`, which lives in `A`'s
+own universe.  `Division.lean`'s `cceil_sum` had already got this right
+(`∃ (ι : Type u)`, with `universe u` declared at the top of that file).
+`Projections.lean` now declares `universe u v w` and `variable {A : Type u}
+{B : Type v}` in place of `{A B : Type*}` (the same thing, only named), and the
+three statements read `∃ (ι : Type u)` — `∃ (ι : Type w)` for `cvn`, whose
+carrier `C : Type w` is bound in the statement itself.  No use sites exist
+outside the file, so nothing downstream is affected.  **Grep the tree for
+`∃ (ι : Type _)` before trusting any similar statement.**
+
+### 3. `Basic.lean`: eight of the nine 43II counterexamples
+
+Proved: **43II**.2a `vn_counterexamples_2_sup`, .2b `_2_tendsto`, .4a `_4_ket`,
+.4b `_4_bra`, .4c `_4_star`, .5 `_5`, .6 `_6`, .6c `_6_sq`.  Only .11 is left.
+
+Three new public helpers in `Basic.lean`'s `section BH`, all reusable:
+
+* **`omegaNorm_vectorNP`** — `‖a‖_ω = ‖aξ‖` for `ω = ⟪ξ,(·)ξ⟫`.  Moved up from
+  `Completeness.lean` (where it sat 3000 lines downstream of `vectorNP`); the
+  copy there is deleted.
+* **`hasSum_omegaNorm_sq`** — for `ω = ∑ₙ⟪xₙ,(·)xₙ⟫` (**39IX** `bh_np`),
+  `HasSum (n ↦ ‖T xₙ‖²) (‖T‖²_ω)`.  This is the survey's observation made
+  usable; it turns every part into an estimate on `∑ₙ`.
+* **`ultrastrong_continuous_apply`** — `a ↦ ax` is ultrastrongly continuous,
+  i.e. **the ultrastrong topology is finer than the strong topology**.  Three
+  lines from `omegaNorm_vectorNP` plus `isOpen_generateFrom_of_mem`, and it is
+  what makes part 5 tractable: the image of the ultrastrongly compact ball
+  under `a ↦ a e₀` would be a compact subset of `ℓ²` containing every `eₙ`,
+  hence (metric space) sequentially compact, and no subsequence of an
+  orthonormal basis converges.
+
+The engine for parts 2 and 4 is one private lemma,
+`usTendsto_zero_of_norm_apply_coord`: a sequence `(Tₙ)` on `ℓ²` with
+`‖Tₙ y‖ = |y(n)|` for every `y` converges ultrastrongly to `0`.  Both
+`|n⟩⟨n|` and `|0⟩⟨n|` satisfy that hypothesis, so 2b and 4a are the same
+theorem.  The limit `∑ₘ |xₘ(n)|² → 0` is Mathlib's Tannery theorem
+`tendsto_tsum_of_dominated_convergence` with bound `(‖xₘ‖²)ₘ`.
+
+*Divergences.*  vn.tex 43II is an Exercise with no printed solution, so all
+eight are class 4 (thesis proof never consulted — there is none) except that
+the *statements* were followed exactly.  Two routes are worth recording as
+deliberate choices:
+
+* part **4b**'s "no ultrastrong limit" and part **5** are both closed by the
+  same observation, isolated as `not_tendsto_single_sub`: if `e_{φ n} → v` in
+  `ℓ²` then `‖1 − v(φ n)‖ ≤ ‖e_{φ n} − v‖`, whose left side tends to `1` (the
+  coordinates of `v ∈ ℓ²` tend to `0`) and whose right side tends to `0`.  This
+  is cheaper than computing `‖eₙ − eₘ‖ = √2`.
+* part **6c** avoids Hausdorffness of the ultraweak topology (44XI.1, which is
+  awkward to apply with an explicit non-instance topology): both ultraweak
+  limits are tested against the single np-functional `⟪e₀,(·)e₀⟫` and
+  uniqueness of limits is taken in `ℂ`.
+
+### 4. Cleanup 1: `Basic.lean`'s `GNSSum` block is now family-indexed
+
+`gnsHilbFam`, `gnsRepFam`, `gnsRepFam_apply_coe`, `gnsElemVecsFam`,
+`gnsElemVecsFam_separating` and `gnsRepFam_normal` are stated for an arbitrary
+`F : ι → NPFunctional A`.  `gnsHilb`/`gnsRep`/`gnsElemVecs`/`gnsRep_normal`
+(**48VIII**) are the instance at `F = id`, and `NormalFunctionals.lean`'s
+`gnsHilbOn`/`gnsRepOn`/`gnsElemVecsOn`/`gnsRepOn_normal` the instance at
+`F = Subtype.val`.  **161 lines** of near-verbatim copy deleted from
+`NormalFunctionals.lean`; `gnsRepOn_injective` (the genuinely new item there)
+is untouched.  All public names on both sides are unchanged, so nothing
+downstream had to move.
+
+### 5. Cleanup 2: 44XV (2) ⇒ (3) is un-`private`d, and the functional copy is gone
+
+`preservesDirSups_of_continuousOn_effects` is now public, and
+`NormalFunctionals.lean`'s `preservesDirSups_of_continuousOn_effects_functional`
+is a four-line corollary of it — **103 lines** deleted.
+
+**Session 56's diagnosis of why the copy was needed was wrong on both counts.**
+It recorded that the general lemma "needs a target in `Type u` with a
+`VonNeumannAlgebra` instance, which `ℂ : Type 0` has not".  In fact (i) the
+lemma sits in a `variable {A B : Type*}` section, so `B` is
+universe-polymorphic, and (ii) `ℂ` *does* carry a `VonNeumannAlgebra` instance,
+declared at `Basic.lean:646` right after `complexIdNP`.  The one real gap was
+that the functional version phrases continuity against `ℂ`'s *usual* topology
+while the general one uses `ultraweak ℂ`.  Those agree, and that is now a
+lemma: **`ultraweak_complex : ultraweak ℂ = inferInstance`** — `complexIdNP` is
+the identity, so it induces the usual topology, and every np-functional on `ℂ`
+is `z ↦ z·ω(1)`, hence continuous, so the `⨅` is squeezed.
+
+### 6. `Division.lean`: 79VI.5
+
+**79VI**.5 `pseudoinverse_basic_2'_5` — `(0,0,1,½,⅓,…)` is not pseudoinvertible
+in `ℓ^∞(ℕ)`.  The short route is **59VI**.2 `ceill_basic_2` (`⌊x⌉x = x`): a
+pseudoinverse `t` satisfies `xt = ⌊x⌉`, so `xtx = x`, which coordinatewise
+forces `tₙ = n − 1` for `n ≥ 2` — unbounded, contradicting
+`‖tₙ‖ ≤ ‖t‖`.  No suppProj/rangeProj computation in `ℓ^∞` is needed.
+
+### 7. Operational notes
+
+* A concurrent `lake build` from another worker deleted and rebuilt
+  `A/VN/Basic.olean` mid-session (it depends on my edits), which surfaced as
+  `object file … does not exist`.  Waiting for the file to reappear is the
+  cure; `lean <file> -o <olean> -i <ilean>` (no `-c`) is a lake-free way to
+  refresh one module's olean without taking the lake lock.
+* `set x := e with h` leaves `x` a *let*-bound fvar, so `rw [mul_sub]` &c. can
+  see through it and rewrite inside `e`.  This bit twice in the Zorn proofs
+  (`r * (1 − r) * r` was rewritten as `p − ⋁Q`).  `obtain ⟨r, hr⟩ : ∃ r, r = e
+  := ⟨_, rfl⟩` gives an opaque `r` and is the reliable idiom.
+* `rintro ν (rfl | hν) μ (rfl | hμ)` on `insert ω S` substitutes the *later*
+  variable, so the name `ω` disappears in some branches.  `rcases
+  Set.mem_insert_iff.mp hν with hν | hν` and an explicit `rw [hν]` is stabler.

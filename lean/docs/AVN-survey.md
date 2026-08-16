@@ -1,16 +1,16 @@
-# `Theses/A/VN/` — full survey of the remaining `sorry`s (updated session 56)
+# `Theses/A/VN/` — full survey of the remaining `sorry`s (updated session 57)
 
-**Headline count: A/VN has 42 code `sorry`s** after session 56 (was 48).
+**Headline count: A/VN has 30 code `sorry`s** after session 57 (was 42).
 Per file, compiler-counted (`declaration uses 'sorry'` warnings, *not* grep):
 
 | file | sorries |
 |---|---|
-| `Basic.lean` | 24 |
-| `Projections.lean` | **11** |
-| `Division.lean` | 7 |
+| `Basic.lean` | 16 |
+| `Projections.lean` | **8** |
+| `Division.lean` | 6 |
 | `NormalFunctionals.lean` | **0** |
 | `Completeness.lean` | **0** |
-| **total** | **42** |
+| **total** | **30** |
 
 Refresh with (bypasses another agent's `lake build` lock):
 
@@ -22,6 +22,47 @@ for f in Basic Projections Division NormalFunctionals Completeness; do
 done
 ```
 
+> **Session 57 headline — `Projections.lean`'s last chain is finished, and
+> eight of the nine 43II counterexamples fell.**  **66IV**.4
+> `ultracyclic_basic_4`, **70II** `central_projection_central_carrier` and
+> **70III** `cvn` are all proved.  70II turned out **not** to need 66IV.4 (the
+> thesis's own hint runs the same Zorn argument directly on the *central*
+> carriers), and 70III does **not** need 54XI — the Lean statement is the
+> reduction `1 = ∑ᵢ ⌈⌈ωᵢ⌉⌉` with each `ωᵢ` faithful on its corner, and in a
+> commutative algebra `⌈⌈ω⌉⌉ = ⌈ω⌉`, so faithfulness is `ceil_functionals_lemma`
+> plus carrier leastness.  All three follow **83V** `cceil_sum`'s Zorn template.
+>
+> In `Basic.lean`, **43II** parts 2a, 2b, 4a, 4b, 4c, 5, 6 and 6c are proved
+> (only part 11 is left).  The enabling helpers, all public and in
+> `Basic.lean`'s `section BH`, are `omegaNorm_vectorNP` (moved up from
+> `Completeness.lean`), `hasSum_omegaNorm_sq` (`‖T‖²_ω = ∑ₙ‖Txₙ‖²` from
+> **39IX**) and `ultrastrong_continuous_apply` (`a ↦ ax` is ultrastrongly
+> continuous — the ultrastrong topology is finer than the strong one, which is
+> what turns part 5 into sequential compactness in `ℓ²`).  Mathlib's Tannery
+> theorem `tendsto_tsum_of_dominated_convergence` is the dominated-convergence
+> step.  In `Division.lean`, **79VI**.5 `pseudoinverse_basic_2'_5` is proved.
+>
+> **Two cleanups landed.**  (i) `Basic.lean`'s `GNSSum` block is now stated for
+> an arbitrary family `F : ι → NPFunctional A` (`gnsHilbFam`, `gnsRepFam`,
+> `gnsElemVecsFam`, `gnsRepFam_normal`); `gnsHilb`/`gnsRep` are its instance at
+> `F = id` and `NormalFunctionals.lean`'s `gnsHilbOn`/`gnsRepOn` its instance at
+> `F = Subtype.val` — 161 lines of duplication deleted.  (ii)
+> `preservesDirSups_of_continuousOn_effects` (44XV (2) ⇒ (3)) is no longer
+> `private`, and `preservesDirSups_of_continuousOn_effects_functional` is now a
+> four-line corollary of it (103 lines deleted).  The obstacle recorded in
+> session 56 was misdiagnosed: `ℂ` *does* carry a `VonNeumannAlgebra` instance
+> (`Basic.lean:646`) and the section variable is `Type*`, not `Type u`; the one
+> real gap was `ultraweak ℂ = ` the usual topology, now proved as
+> `ultraweak_complex`.
+>
+> **A statement repair (ours).**  `ultracyclic_basic_4`, 70II and 70III wrote
+> the index type as `∃ (ι : Type _)`, which auto-bound a *fresh* universe
+> parameter — so as stated they asserted the existence of an index type in
+> **every** universe, which is false for large `A`.  `Projections.lean` now
+> names its universes (`universe u v w`, `{A : Type u} {B : Type v}`) and the
+> three statements read `∃ (ι : Type u)` (resp. `Type w` for `cvn`'s `C`), which
+> is what `Division.lean`'s `cceil_sum` already did.
+>
 > **Session 56 headline — `NormalFunctionals.lean` is finished, and with it
 > `A/Proc`'s entire external frontier on `A/VN`.**  **86IX**
 > `polar_decomposition_of_functional`, **86XII** `uwcont_on_ball`, **87III**
@@ -102,13 +143,12 @@ lines, plus six reusable helpers — `uwTendsto_unique`, `UWTendsto.add`/`.smul`
 `isClosed_ultraweak_closedBall`, `uw_map_of_cont` — placed just above them and
 usable anywhere in `A/VN` and downstream.)
 
-## `Division.lean` — 7
+## `Division.lean` — 6
 
 | line | point | decl | class |
 |---|---|---|---|
 | 766 | **79VI**.4 | `pseudoinverse_basic_2'_4` | **[F]** false as stated; refutation `pseudoinverse_basic_2'_4_is_false` sits just above it, ERRATA filed, awaiting author |
-| 779 | **79VI**.5 | `pseudoinverse_basic_2'_5` | [S] concrete: `(0,0,1,½,⅓,…)` is not pseudoinvertible in `ℓ^∞(ℕ)` — cheapest item in the file |
-| 2494 | **81VIII**.2 | `sequential_quotient_2` | [S] uniqueness + ultraweak convergence of `∑_{m,n} tₘ a tₙ`; 81VIII.1 is proved |
+| 2549 | **81VIII**.2 | `sequential_quotient_2` | [S] uniqueness + ultraweak convergence of `∑_{m,n} tₘ a tₙ`; 81VIII.1 is proved |
 | 2581 | **81IX** | `div_usc` | **[F]** second conjunct false (counterexample in the doc comment), ERRATA filed |
 | 3040 | **84II** | `fdcstar` | [L] Artin–Wedderburn for finite-dimensional C\*-algebras; large |
 | 3074 | **84bIII** | `hereditarilyAtomic_subalgebra` | [S] but real work |
@@ -118,85 +158,81 @@ usable anywhere in `A/VN` and downstream.)
 nmiu-maps is a von Neumann subalgebra", is 47V and was proved this session,
 so 84bV is now only blocked on 84bIII.
 
-## `Projections.lean` — 11
+## `Projections.lean` — 8
 
 | line | point | decl | class |
 |---|---|---|---|
-| 1693 | **56XVII**.3 | `ceil_supremum_3` | [S] counterexample `1, ½, ⅓, …`; needs a `Nontrivial` witness built by hand |
-| 1930 | **58IV** | `ceil_sequential_product` | [S] `⌈pqp⌉ = p ∩ (p^⊥ ∪ q)` |
-| 2182 | **59VII**.1–2 | `hilb_ceil_1` | [S] `⌊T⌉`/`⌈T⌋` as range/support projections on a Hilbert space |
-| 2191 | **59VII**.3 | `hilb_ceil_2` | [S] `⌊T⌋` for an effect is the projection onto `{x | Tx = x}` |
-| 2736 | **62I** | `ncpsu_floor` | [S] `⌊f(a)⌋ = ⌊f(⌊a⌋)⌋`; the thesis's proof cites `cp-cs` (erratum 620.20) |
-| 2924 | **63III**.2 | `carrier_ad_operator` | [S] Hilbert-space form of `carrier_ad`, which **is** proved right above it |
-| 3818 | **66IV**.4 | `ultracyclic_basic_4` | [S] Zorn over orthogonal families of ultracyclic projections; 66IV.1/.2/.3 are all proved |
-| 3836 | **67II**.3 | `central_examples_3` | [S] only scalars are central in `B(H)` — commute with `|x⟩⟨y|` |
-| 3846 | **67IV**.1 | `central_projections_sums_1` | [S] the corner `cA` of a central projection |
-| 3862 | **67IV**.2 | `central_projections_sums_2` | [B] on 67IV.1 |
-| 4444 | **69II** | `weakly_closed_ideal` | [S] weakly closed two-sided ideals are `cA`; substantial |
-| — | **70II** | `central_projection_central_carrier` | [B] on 66IV.4 (**69IX** is now proved) |
-| — | **70III** | `cvn` | [B] on 70II; also needs 54XI |
+| 1695 | **56XVII**.3 | `ceil_supremum_3` | [S] counterexample `1, ½, ⅓, …`; needs a `Nontrivial` witness built by hand |
+| 1932 | **58IV** | `ceil_sequential_product` | [S] `⌈pqp⌉ = p ∩ (p^⊥ ∪ q)` |
+| 2184 | **59VII**.1–2 | `hilb_ceil_1` | [S] `⌊T⌉`/`⌈T⌋` as range/support projections on a Hilbert space |
+| 2193 | **59VII**.3 | `hilb_ceil_2` | [S] `⌊T⌋` for an effect is the projection onto `{x | Tx = x}` |
+| 2738 | **62I** | `ncpsu_floor` | [S] `⌊f(a)⌋ = ⌊f(⌊a⌋)⌋`; the thesis's proof cites `cp-cs` (erratum 620.20) |
+| 2926 | **63III**.2 | `carrier_ad_operator` | [S] Hilbert-space form of `carrier_ad`, which **is** proved right above it |
+| 4150 | **67IV**.2 | `central_projections_sums_2` | [S] 67IV.1 is proved (session 56), so this is **no longer blocked** |
+| 4732 | **69II** | `weakly_closed_ideal` | [S] weakly closed two-sided ideals are `cA`; substantial |
 
-The parsec 690–700 block was one chain, **69V → 69VII → 69IX → 70II → 70III**;
-the first three links are now proved (69IX in session 54, by the cycle
-(1) ⇒ (3) ⇒ (2) ⇒ (1) — it never needed the missing lemma "`⌈a⌉` is central
-for central positive `a`", which the session-53 note wrongly put on its
-critical path).  What is left is 70II (which wants **66IV**.4) and 70III
-(which also wants **54XI**).
-**67II**.3 and **67IV**.1 were proved in session 56.  The best *isolated*
-target remaining in this file is **63III**.2 `carrier_ad_operator` (the
-Hilbert-space form of the already-proved `carrier_ad` right above it): take
-`p` = the orthogonal projection onto `closure (range T)`, note
-`T*(1-p)T = ((1-p)T)*((1-p)T) = 0`, and get minimality the same way; the cost
-is Hilbert-space plumbing (`orthogonalProjection` as an `IsStarProjection`,
-and its fixed-point set), not von Neumann theory.
+**The parsec 690–700 chain is finished.**  69V → 69VII → 69IX → **70II** →
+**70III** are all proved (69V/69VII in session 53, 69IX in session 54, 70II and
+70III in session 57), as is **66IV**.4.  Two corrections to the earlier notes:
+70II is *not* downstream of 66IV.4 — the thesis's hint runs its own Zorn
+argument over np-functionals with orthogonal *central* carriers — and 70III
+does *not* need 54XI, because our statement of `cvn` is the FIXME reduction
+(`1 = ∑ᵢ ⌈⌈ωᵢ⌉⌉`, each `ωᵢ` faithful on its corner) rather than the
+`⊕ᵢ L^∞(Xᵢ)` classification itself.
 
-Line numbers in this table are those of session 50 except where noted; the
-session-53 insertions shifted everything below `cp_comprehension` by ~180
-lines.  Locate by name.
+The best *isolated* targets remaining in this file are **63III**.2
+`carrier_ad_operator` (the Hilbert-space form of the already-proved
+`carrier_ad` right above it): take `p` = the orthogonal projection onto
+`closure (range T)`, note `T*(1-p)T = ((1-p)T)*((1-p)T) = 0`, and get
+minimality the same way — the cost is Hilbert-space plumbing
+(`orthogonalProjection` as an `IsStarProjection`, and its fixed-point set), not
+von Neumann theory — and **67IV**.2, freshly unblocked.
 
-## `Basic.lean` — 24
+Line numbers in this table are as of session 57.  Locate by name.
+
+## `Basic.lean` — 16
 
 | line | point | decl | class |
 |---|---|---|---|
-| 1059 | **43II**.2a | `vn_counterexamples_2_sup` | [S] `⋁_N ∑_{n≤N}\|n⟩⟨n\| = 1` in `B(ℓ²)` |
-| 1069 | **43II**.2b | `vn_counterexamples_2_tendsto` | [S] |
-| 1144 | **43II**.4a | `vn_counterexamples_4_ket` | [S] |
-| 1151 | **43II**.4b | `vn_counterexamples_4_bra` | [S] |
-| 1158 | **43II**.4c | `vn_counterexamples_4_star` | [B] on 4a/4b |
-| 1166 | **43II**.5 | `vn_counterexamples_5` | [B] on 4a/4b |
-| 1174 | **43II**.6 | `vn_counterexamples_6` | [S] |
-| 1183 | **43II**.6c | `vn_counterexamples_6_sq` | [B] on 6 |
-| 1192 | **43II**.11 | `vn_counterexamples_11` | [S] but the hardest of the nine (unbounded functional + Riesz on finite-dimensional subspaces) |
-| 2589 | **45I**.1 | `us_cont_normal` | [S] |
-| 2598 | **45I**.2 | `normal_not_us_cont` | [S] the transpose on `B(ℓ²)` |
-| 2901 | **47IV**.3 | `vn_products_ncpsu` | [S] categorical; 47IV.1/.2 are proved |
-| 3584 | **48III** | `gns_normal` | [L] the GNS construction (cstar.tex 30VI) is not formalized |
-| 4248 | **49IV**.2 | `mn_vna_2` | [S] |
-| 4308 | **49IV**.3 | `mn_vna_3` | [S] |
-| 4334 | **51VII**.1 | `vna_of_faithful_countably_normal_1` | [S] |
-| 4344 | **51VII**.2 | `vna_of_faithful_countably_normal_2` | [B] on 51VII.1 |
-| 4365 | **51IX** | `Linfty_vn` | [L] no `L^∞` carrier in Mathlib (FIXME) |
-| 4531 | **53II**.1 | `ngelfand_vna` | [S] |
-| 4539 | **53II**.2 | `ngelfand_normal` | [S] |
-| 4546 | **53III** | `vn_spectrum_extremally_disconnected` | [B] on 53II |
-| 4680 | **54XI**.1 | `cvn_faithful_1` | [L] measure on the almost-clopen σ-algebra; large |
-| 4696 | **54XI**.2 | `cvn_faithful_2` | [B] on 54XI.1 |
-| 4711 | **54XI**.3 | `cvn_faithful_3` | [B] on 54XI.1 |
+| 1598 | **43II**.11 | `vn_counterexamples_11` | [S] the only survivor of the nine (unbounded functional + Riesz on finite-dimensional subspaces) |
+| 2995 | **45I**.1 | `us_cont_normal` | [S] the `preservesDirSups_of_continuousOn_effects` proof with `ultraweak` replaced by `ultrastrong` — see below |
+| 3004 | **45I**.2 | `normal_not_us_cont` | [S] the transpose on `B(ℓ²)` |
+| 3307 | **47IV**.3 | `vn_products_ncpsu` | [S] categorical; 47IV.1/.2 are proved |
+| 4035 | **48III** | `gns_normal` | [L] the GNS construction (cstar.tex 30VI) is not formalized |
+| 4699 | **49IV**.2 | `mn_vna_2` | [S] |
+| 4759 | **49IV**.3 | `mn_vna_3` | [S] |
+| 4785 | **51VII**.1 | `vna_of_faithful_countably_normal_1` | [S] |
+| 4795 | **51VII**.2 | `vna_of_faithful_countably_normal_2` | [B] on 51VII.1 |
+| 4816 | **51IX** | `Linfty_vn` | [L] no `L^∞` carrier in Mathlib (FIXME) |
+| 4982 | **53II**.1 | `ngelfand_vna` | [S] |
+| 4990 | **53II**.2 | `ngelfand_normal` | [S] |
+| 4997 | **53III** | `vn_spectrum_extremally_disconnected` | [B] on 53II |
+| 5131 | **54XI**.1 | `cvn_faithful_1` | [L] measure on the almost-clopen σ-algebra; large |
+| 5147 | **54XI**.2 | `cvn_faithful_2` | [B] on 54XI.1 |
+| 5162 | **54XI**.3 | `cvn_faithful_3` | [B] on 54XI.1 |
 
-### The nine 43II counterexamples are now much cheaper than they look
+### The 43II counterexamples: eight down, one to go
 
 All of them are estimates of `‖·‖_ω` and `ω(·)` for an **arbitrary**
-np-functional `ω` on `B(ℓ²)`, which used to mean fighting the definition.
-Since **39IX** `bh_np` (`A/CStar/TowardsVN.lean`) is proved, every such `ω`
-is `∑ₙ ⟪xₙ, (·) xₙ⟫` with `∑ₙ‖xₙ‖² = ω 1 < ∞`, so
+np-functional `ω` on `B(ℓ²)`.  Since **39IX** `bh_np`
+(`A/CStar/TowardsVN.lean`) is proved, every such `ω` is `∑ₙ ⟪xₙ, (·) xₙ⟫` with
+`∑ₙ‖xₙ‖² = ω 1 < ∞`, so `‖T‖²_ω = ω(T*T) = ∑ₙ ‖T xₙ‖²`
+(`hasSum_omegaNorm_sq`, session 57), and parts 2, 4 and 6 are one
+dominated-convergence argument (Mathlib's Tannery theorem
+`tendsto_tsum_of_dominated_convergence`) with dominating family `(‖xₙ‖²)ₙ`.
+Parts 2a, 2b, 4a, 4b, 4c, 5, 6 and 6c are proved.  Part **11** is left: it
+needs an unbounded functional on `ℓ²` built by Riesz representation on
+finite-dimensional subspaces, and is genuinely different from the rest.
 
-* `‖T‖²_ω = ω(T*T) = ∑ₙ ‖T xₙ‖²`, and
-* each of parts 2, 4 and 6 becomes a dominated-convergence argument over `n`
-  with the summable dominating family `(‖xₙ‖²)ₙ`.
-
-`omegaNorm_vectorNP` (`Completeness.lean:757`) and `usTendsto_iff` are the
-other two pieces.  This block (9 of the 24) is the cheapest volume left in
-`A/VN`.
+**45I**.1 `us_cont_normal` is the closest remaining item to something already
+in the file: it is `preservesDirSups_of_continuousOn_effects` (44XV (2) ⇒ (3),
+now public, `Basic.lean:2775`) with the ultraweak topology replaced by the
+ultrastrong one in both source and target.  Every step transcribes — the net
+`d → ⋁D` converges *ultrastrongly* by **44XIV** `vna_supremum_uslimit`, the
+affine rescaling into the effects scales `‖·‖_ω` by `c⁻¹`, and at `hfnet` one
+drops back to the ultraweak topology on the target via
+`ultrastrong_le_ultraweak`, after which the tail of the existing proof applies
+verbatim.  Factoring that tail out is the tidy way to do it.
 
 ---
 

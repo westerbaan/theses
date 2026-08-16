@@ -41,6 +41,11 @@ At the end of **session 54** (159IX, and 164II.2b refuted):
 `Kaplansky.lean` 5, `Stinespring.lean` 2, `SelfDualCompletion.lean` 2,
 `HilbertModules.lean` 0 — **36**, compiler-counted per file.
 
+At the end of **session 55** (151Ia, and 163II-uniq with it):
+`SelfDual.lean` **7**, `Pure.lean` 12, `Paschke.lean` 7,
+`Kaplansky.lean` 5, `Stinespring.lean` 2, `SelfDualCompletion.lean` **1**,
+`HilbertModules.lean` 0 — **34**, compiler-counted per file.
+
 Classification key: **(a)** self-contained, **(b)** blocked on a named
 `sorry` elsewhere, **(c)** cited to the literature / another chapter,
 **(d)** suspicious/false.
@@ -61,13 +66,13 @@ Classification key: **(a)** self-contained, **(b)** blocked on a named
 | **161IV.2** | `onb1_el2` | **(a)** | **CLOSED this session** (direct bijection, see log); the brief's assumption that it needs 161II was wrong |
 | 162II | `total_mv_order` | **(a)/(c)** | comparison of projections in a factor; proof 162III not converted.  Genuinely hard (Zorn + halving) |
 | 162IV | `selfdual_normalish_form` | **(b)** | needs 162II and 161II.2 |
-| 163II uniq | `selfdual_compl_defining_unique` | **(b)** | needs **151Ia** `selfdual_completion_univ` (`SelfDualCompletion.lean`, `sorry`) |
+| **163II uniq** | `selfdual_compl_defining_unique` | **(a)** | **CLOSED session 55**, ~110 lines, immediately after 151Ia: apply 151Ia four times (`E₁→E₂`, `E₂→E₁`, and once on each `Eᵢ` for the uniqueness clause, which identifies `W∘U` and `U∘W` with the identity).  ⚠️ For the inner-product clause we do **not** re-run the thesis's density argument: `U` is bundled as a CLM, **152VIII** gives `U*`, and `U*U` and `id` have equal vector states on `η₁V`, so **152IX**.2 `hilmod_fixed_on_V_eq` closes it |
 | **163II dense** | `selfdual_compl_defining_dense` | **(a)** | **CLOSED session 49**.  The survey's "needs 151Ia" was **wrong**: the statement takes the universal property as a hypothesis |
 | 164II ex. | `univprop_ext_tensor` | **(a)/(b)** | the construction 164III–164VIII via `ℓ²((pᵢⱼ))`; the single biggest item in the file.  **Session 52**: the case `X = 𝒜`, `Y = ℬ` *is* proved, as `extTensorSelf` (see below); the general case still needs `ℓ²((pᵢⱼ))` as an actual Hilbert `𝒞`-module (our `L2Set` is a bare `Set (ι → ℬ)`), and the shortcut through the self-dual completion is blocked on **151I** `dils_completion` (`SelfDualCompletion.lean:81`, `sorry`).  Multi-session |
 | **164II.1** | `ext_tensor_dense` | **(a)** | **CLOSED session 50.**  `P = id` from `exists_orthoProj` + `ExtTensor.univ` as in 163II-dense; the `bSpan D ⊆ unClosure D` gap is the thesis's own 164VII, and needs only *unbounded* ultrastrong density of `𝒜 ⊙ ℬ` (`IsVNTensor.generates` + `isVNSubalgebra_usClosureSubalgebra`) — **not** Kaplansky density, contrary to this row's earlier text |
 | **164II.2a** | `ext_tensor_basis` | **(a)** | **CLOSED session 51** (~170 lines).  It needed 164II.1 but **not** 161II.2, contrary to this row's earlier text: the thesis's 164X reduces to a Parseval identity checked against product np-functionals only because its `X ⊗ Y` *is* `ℓ²((pᵢⱼ))`; for an abstract `E : ExtTensor` the cheaper route is 164II.1 + the 166III estimates with `s` chosen before `u` |
 | 164II.2b | `ext_tensor_ketbra_dense` | **(d)** | **FALSE as transcribed** (session 54, QUESTIONS **D6**): our statement forces a `Finset (ι × κ)`-indexed net along `atTop`, and at `ι = κ = PUnit` (`X = 𝒜`, `Y = ℬ`, `E = extTensorSelf`) `atTop` is principal at the top element, so the net's value there would have to *equal* `T` — forcing `𝒜 ⊗ ℬ = 𝒜 ⊙ ℬ`.  The thesis claims only ultraweak **density** of `span D`, and *that* **is proved**, as the new public `ext_tensor_ketbra_uwDense` (entourage form), by the thesis's own 164XI: 159IV + 164II.2a + Kaplansky 74IV + 159IX.  Left `sorry` per the never-change-a-statement rule |
-| 165VI | `ba_ext_tensor_pres` | **(b)** | proof 165VII–165X; the `generates` clause of `IsVNTensor` is what needs 164XI, and `ext_tensor_ketbra_uwDense` now supplies it — what is left is 165IX/165X for `exists_productFunctional`/`separating`.  165III (its companion) *is* proved |
+| 165VI | `ba_ext_tensor_pres` | **(b)** | proof 165VII–165X.  `generates` is supplied by `ext_tensor_ketbra_uwDense`, and the miu-clauses by 165III (proved).  ⚠️ **This row previously said "what is left is 165IX/165X" — that is wrong** (session 55): 165IX/165X give product functionals only for the *vector states* `Ω_X`, `Ω_Y` and then appeal to **116VII** `tensor-characterization`, whereas our `IsVNTensor.exists_productFunctional` transcribes proc.tex's `tensor` literally and demands one for **every** pair of np-functionals.  `tensor_characterization` (`A/Proc/Tensor.lean:3848`) is itself `sorry` **and** off this import path, so 165VI is blocked *outside* `B/Dils` |
 | **166IV** | `exttensor_dense_subsets` | **(a)** | **CLOSED session 50.**  The thesis's route through 158II `kaplansky_hilbmod` (open, printed proof false) is avoided: `u ∈ U` is chosen before `v ∈ V`, so no norm-bounded net is required |
 | **166VI** | `dilationspace_dense_subset` | **(a)** | **CLOSED session 50**, together with the new public `paschke_tprod_dense` (the elementary tensors of `𝒜 ⊗_φ ℬ` are ultranorm dense — easier than 164II.1, since `{∑ aᵢ ⊗ bᵢ}` is already a ℬ-submodule) |
 | 167I | `paschke_tensor` | **(b)** | needs 165VI + `existence_paschke` |
@@ -264,3 +269,44 @@ estimate was right (~150 lines).  For the record, since it is reusable:
 Note 170IV.**2** stays blocked, and on *two* things, not one: 169IV, and the
 thesis's `iso` (a bijective ncp-map of von Neumann algebras is nmiu), which
 the tree does not have.
+
+
+---
+
+## Session 55: 151Ia is closed, and what that does and does not unblock
+
+**151Ia** `selfdual_completion_univ` cost **~360 lines** of proof plus ~110
+lines of reusable helpers — the 300–400 line estimate held.  It is the
+thesis's own proof (151II): the approximating net is built explicitly over
+`Finset (NPFunctional 𝒷 × ℕ)` (functionals × precision, `atTop`), pushed
+forward along `T`, and the limit comes from ultranorm completeness of the
+self-dual `Y` (**149V** `dils_selfdual`, `1 ⇒ 2`).  Everything after that
+runs off one estimate, `‖T̂x − Tv‖_ω ≤ C‖x − ηv‖_ω`, which settles
+`T̂∘η = T`, additivity, both homogeneities, boundedness (at `v = 0`) and
+uniqueness one np-functional at a time.  See PROVING-LOG session 55 for the
+two divergences and for why the ℬ-homogeneity step needs the *two*-functional
+entourage `{ω, conjNP (star b) ω}`.
+
+**163II-uniq fell with it**, as predicted.  Nothing else did:
+
+* **154III `existence_paschke`** is now blocked on a *single* root, **150II**
+  `dils_completion` — 151Ia is no longer part of its blocker set.  The
+  remaining costing of session 54 stands: the `𝒜 ⊙ ℬ` inner-product space
+  ~250 lines, `ϱ`/`h` and their nmiu/ncp clauses ~300 lines, both on top of
+  150II.
+* **164II ex.** `univprop_ext_tensor` likewise still needs 150II (or
+  `ℓ²((pᵢⱼ))` as an actual Hilbert `𝒞`-module).
+* **165VI** is blocked outside the directory — see its row above.
+
+**So the next gate inside `B/Dils` is 150II `dils_completion`**
+(`SelfDualCompletion.lean:79`), and it is the *only* remaining root: every
+open item of `Paschke.lean` and `Pure.lean` is downstream of it or of
+proc.tex's 96V/98I.  It is a type construction (150III–150XV: fast nets, the
+uniformity on `V̄`, the module structure, extending the seminorms, a
+transfinite induction on compatible extensions, self-duality) carrying
+`NormedAddCommGroup`/`CStarModule`/`CompleteSpace`/`SelfDual`, and it is not
+session-sized.
+
+The only item in the directory that is neither blocked nor known-false and
+has never been attempted is **138VIII-findim** `kraus_decomposition_findim`
+(`Stinespring.lean:2037`).

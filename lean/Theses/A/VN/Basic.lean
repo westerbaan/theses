@@ -640,6 +640,26 @@ noncomputable def complexIdNP : NPFunctional ℂ where
         fun d hd => Subtype.coe_le_coe.mp (hw ⟨d, hd, rfl⟩)
       exact Subtype.coe_le_coe.mpr (hlub.2 hub)
 
+/-- The ultraweak topology of the von Neumann algebra `ℂ` is its usual one:
+`complexIdNP` is the identity, so it induces the norm topology, and every
+np-functional on `ℂ` is `z ↦ z·ω(1)`, hence continuous.  (Needed to specialise
+maps into a general von Neumann algebra `B` to functionals.) -/
+theorem ultraweak_complex : ultraweak ℂ = (inferInstance : TopologicalSpace ℂ) := by
+  refine le_antisymm ?_ (le_iInf fun ω => ?_)
+  · refine le_trans (iInf_le _ complexIdNP) (le_of_eq ?_)
+    exact induced_id
+  · refine continuous_iff_le_induced.mp ?_
+    have hval : ∀ z : ℂ, (ω z : ℂ) = z * ω 1 := by
+      intro z
+      have h : (ω.toPositiveLinearMap (z • (1 : ℂ)) : ℂ)
+          = z • (ω.toPositiveLinearMap (1 : ℂ) : ℂ) :=
+        map_smul ω.toPositiveLinearMap z (1 : ℂ)
+      rw [smul_eq_mul, mul_one, smul_eq_mul] at h
+      exact h
+    have hcont : Continuous fun z : ℂ => z * (ω 1 : ℂ) :=
+      continuous_id.mul continuous_const
+    exact hcont.congr fun z => (hval z).symm
+
 /-- **42V** (`von-neumann-examples`, vn.tex:262, Examples), part 1: `ℂ` is a
 von Neumann algebra.  (`{0}` — any subsingleton C*-algebra — is one too,
 trivially.) -/
@@ -738,6 +758,74 @@ instance : VonNeumannAlgebra (H →L[ℂ] H) where
     refine ContinuousLinearMap.coe_injective ?_
     rw [ContinuousLinearMap.toLinearMap_zero]
     exact (inner_map_self_eq_zero _).mp hz
+
+/-- `‖a‖_ω = ‖a x‖` for the vector functional `ω = ⟪x, (·) x⟫` on `B(H)`. -/
+theorem omegaNorm_vectorNP (x : H) (a : H →L[ℂ] H) :
+    omegaNorm (H →L[ℂ] H) (vectorNP x) a = ‖a x‖ := by
+  have h : ((vectorNP x) (star a * a)).re = ‖a x‖ ^ 2 := by
+    have h1 : ((vectorNP x) (star a * a) : ℂ) = ⟪a x, a x⟫ := by
+      change (⟪x, (star a * a) x⟫ : ℂ) = _
+      rw [ContinuousLinearMap.star_eq_adjoint]
+      change (⟪x, ContinuousLinearMap.adjoint a (a x)⟫ : ℂ) = _
+      rw [ContinuousLinearMap.adjoint_inner_right]
+    rw [h1]
+    simpa using inner_self_eq_norm_sq (𝕜 := ℂ) (a x)
+  rw [omegaNorm, h, Real.sqrt_sq (norm_nonneg _)]
+
+/-- The ultrastrong topology on `B(H)` is finer than the *strong* topology:
+each evaluation `a ↦ a x` is ultrastrongly continuous.  Indeed the
+ultrastrong "ball" of the vector functional `⟪x, (·) x⟫` around `a₀` is
+literally `{a | ‖(a - a₀) x‖ < ε}` (`omegaNorm_vectorNP`). -/
+theorem ultrastrong_continuous_apply (x : H) :
+    @Continuous (H →L[ℂ] H) H (ultrastrong (H →L[ℂ] H)) _ (fun a => a x) := by
+  rw [@continuous_iff_continuousAt (H →L[ℂ] H) H (ultrastrong _)]
+  intro a₀
+  show Filter.Tendsto (fun a : H →L[ℂ] H => a x)
+    (@nhds (H →L[ℂ] H) (ultrastrong (H →L[ℂ] H)) a₀) (nhds (a₀ x))
+  rw [Metric.tendsto_nhds]
+  intro ε hε
+  have hopen : @IsOpen (H →L[ℂ] H) (ultrastrong (H →L[ℂ] H))
+      {a : H →L[ℂ] H | omegaNorm (H →L[ℂ] H) (vectorNP x) (a - a₀) < ε} :=
+    TopologicalSpace.isOpen_generateFrom_of_mem ⟨vectorNP x, a₀, ε, hε, rfl⟩
+  have hmem : a₀ ∈ {a : H →L[ℂ] H |
+      omegaNorm (H →L[ℂ] H) (vectorNP x) (a - a₀) < ε} := by
+    simp [hε]
+  have hnbhd : {a : H →L[ℂ] H | omegaNorm (H →L[ℂ] H) (vectorNP x) (a - a₀) < ε}
+      ∈ @nhds (H →L[ℂ] H) (ultrastrong (H →L[ℂ] H)) a₀ :=
+    @IsOpen.mem_nhds (H →L[ℂ] H) (ultrastrong (H →L[ℂ] H)) _ _ hopen hmem
+  filter_upwards [hnbhd] with a ha
+  have hsub : a x - a₀ x = (a - a₀) x := rfl
+  rw [dist_eq_norm, hsub, ← omegaNorm_vectorNP x (a - a₀)]
+  exact ha
+
+/-- Since **39IX** `bh_np` writes every np-functional `ω` on `B(H)` as
+`∑ₙ ⟪xₙ, (·) xₙ⟫`, the GNS seminorm of `42III` is
+`‖T‖²_ω = ω(T*T) = ∑ₙ ‖T xₙ‖²`.  This is what makes the estimates of **43II**
+dominated-convergence arguments. -/
+theorem hasSum_omegaNorm_sq {ω : NPFunctional (H →L[ℂ] H)} {x : ℕ → H}
+    (hx : ∀ T : H →L[ℂ] H, HasSum (fun n => (⟪x n, T (x n)⟫ : ℂ)) (ω T))
+    (T : H →L[ℂ] H) :
+    HasSum (fun n => ‖T (x n)‖ ^ 2) (omegaNorm (H →L[ℂ] H) ω T ^ 2) := by
+  have hnn : (0 : ℝ) ≤ (ω (star T * T)).re := by
+    have h : (0 : ℂ) ≤ ω (star T * T) :=
+      npFunctional_nonneg ω (star_mul_self_nonneg T)
+    simpa using (Complex.le_def.mp h).1
+  have hterm : ∀ n : ℕ,
+      (⟪x n, (star T * T) (x n)⟫ : ℂ) = ((‖T (x n)‖ ^ 2 : ℝ) : ℂ) := by
+    intro n
+    have hap : ((star T * T) (x n)) = ContinuousLinearMap.adjoint T (T (x n)) := by
+      rw [ContinuousLinearMap.star_eq_adjoint]; rfl
+    rw [hap, ContinuousLinearMap.adjoint_inner_right]
+    rw [← inner_self_eq_norm_sq (𝕜 := ℂ) (T (x n))]
+    exact (inner_self_ofReal_re (T (x n))).symm
+  have h : HasSum (fun n : ℕ => ((‖T (x n)‖ ^ 2 : ℝ) : ℂ)) (ω (star T * T)) := by
+    simpa only [hterm] using hx (star T * T)
+  have hre := Complex.reCLM.hasSum h
+  simp only [Complex.reCLM_apply, Complex.ofReal_re] at hre
+  have hsq : omegaNorm (H →L[ℂ] H) ω T ^ 2 = (ω (star T * T)).re := by
+    rw [omegaNorm, Real.sq_sqrt hnn]
+  rw [hsq]
+  exact hre
 
 end BH
 
@@ -1054,13 +1142,223 @@ theorem vn_counterexamples_1 (k l m n : ℕ) :
     · simp only [h, ite_true, one_mul, ketbraNat_apply]
     · simp only [h, ite_false, zero_mul, zero_smul, zero_apply]
 
+/-! ### Auxiliary machinery for parts 2–6
+
+Since **39IX** `bh_np` is proved, every np-functional `ω` on `B(ℓ²)` is
+`∑ₘ ⟪xₘ, (·) xₘ⟫` with `∑ₘ ‖xₘ‖² = ω(1) < ∞`, and `hasSum_omegaNorm_sq`
+turns the seminorm of `42III` into `‖T‖²_ω = ∑ₘ ‖T xₘ‖²`.  For both
+`T = |n⟩⟨n|` and `T = |0⟩⟨n|` one has `‖T y‖ = |y(n)|`, so parts 2 and 4 are
+one and the same dominated-convergence argument over `m` (Tannery's theorem),
+with the summable dominating family `(‖xₘ‖²)ₘ`. -/
+
+private theorem star_ketbraNat (n m : ℕ) :
+    star (ketbraNat n m) = ketbraNat m n :=
+  (vn_counterexamples_1 0 0 m n).1
+
+private theorem inner_single_coord (n : ℕ) (y : ℓ²) :
+    (⟪(lp.single 2 n (1 : ℂ) : ℓ²), y⟫ : ℂ) = y n := by
+  rw [lp.inner_single_left]
+  simp [RCLike.inner_apply']
+
+private theorem inner_single_coord' (n : ℕ) (y : ℓ²) :
+    (⟪y, (lp.single 2 n (1 : ℂ) : ℓ²)⟫ : ℂ) = star (y n) := by
+  rw [← inner_conj_symm, inner_single_coord]
+  rfl
+
+private theorem norm_single_nat (n : ℕ) : ‖(lp.single 2 n (1 : ℂ) : ℓ²)‖ = 1 := by
+  rw [lp.norm_single (by norm_num)]
+  simp
+
+private theorem hasSum_coord_sq (y : ℓ²) :
+    HasSum (fun n : ℕ => ‖y n‖ ^ 2) (‖y‖ ^ 2) := by
+  have hterm : ∀ n : ℕ, (⟪y n, y n⟫ : ℂ) = ((‖y n‖ ^ 2 : ℝ) : ℂ) := fun n => by
+    rw [← inner_self_eq_norm_sq (𝕜 := ℂ) (y n)]
+    exact (inner_self_ofReal_re _).symm
+  have hy : (⟪y, y⟫ : ℂ) = ((‖y‖ ^ 2 : ℝ) : ℂ) := by
+    rw [← inner_self_eq_norm_sq (𝕜 := ℂ) y]
+    exact (inner_self_ofReal_re _).symm
+  have h : HasSum (fun n : ℕ => ((‖y n‖ ^ 2 : ℝ) : ℂ)) (((‖y‖ ^ 2 : ℝ) : ℂ)) := by
+    simpa only [hterm, hy] using lp.hasSum_inner (𝕜 := ℂ) y y
+  simpa only [Complex.reCLM_apply, Complex.ofReal_re] using Complex.reCLM.hasSum h
+
+private theorem tendsto_coord_zero (y : ℓ²) :
+    Tendsto (fun n : ℕ => y n) atTop (𝓝 0) := by
+  have h0 : Tendsto (fun n : ℕ => ‖y n‖ ^ 2) atTop (𝓝 0) :=
+    (hasSum_coord_sq y).summable.tendsto_atTop_zero
+  have h1 : Tendsto (fun n : ℕ => ‖y n‖) atTop (𝓝 0) := by
+    have h2 := (Real.continuous_sqrt.tendsto 0).comp h0
+    simp only [Function.comp_def, Real.sqrt_zero] at h2
+    exact h2.congr fun n => Real.sqrt_sq (norm_nonneg _)
+  exact tendsto_zero_iff_norm_tendsto_zero.mpr h1
+
+private theorem norm_ketbraNat_apply (n m : ℕ) (y : ℓ²) :
+    ‖ketbraNat n m y‖ = ‖y m‖ := by
+  rw [ketbraNat_apply, norm_smul, inner_single_coord, norm_single_nat, mul_one]
+
+private theorem norm_ketbraNat_le_one (n m : ℕ) : ‖ketbraNat n m‖ ≤ 1 := by
+  refine ContinuousLinearMap.opNorm_le_bound _ zero_le_one fun y => ?_
+  rw [norm_ketbraNat_apply, one_mul]
+  exact lp.norm_apply_le_norm (by norm_num) y m
+
+/-- The heart of parts 2 and 4: a sequence `(Tₙ)` on `ℓ²` with
+`‖Tₙ y‖ = |y(n)|` for every `y` converges *ultrastrongly* to `0`.  Writing
+`ω = ∑ₘ⟪xₘ,(·)xₘ⟫` (**39IX**), `‖Tₙ‖²_ω = ∑ₘ |xₘ(n)|²`, which tends to `0` by
+Tannery's theorem: each `|xₘ(n)|² → 0` in `n` because `xₘ ∈ ℓ²`, and
+`|xₘ(n)|² ≤ ‖xₘ‖²` is summable in `m`. -/
+private theorem usTendsto_zero_of_norm_apply_coord (T : ℕ → (ℓ² →L[ℂ] ℓ²))
+    (hT : ∀ (n : ℕ) (y : ℓ²), ‖T n y‖ = ‖y n‖) : USTendsto T atTop 0 := by
+  rw [usTendsto_iff]
+  intro ω
+  obtain ⟨x, hx, hone⟩ := bh_np ω
+  have hbound : Summable fun m : ℕ => ‖x m‖ ^ 2 := by
+    have hre := Complex.reCLM.hasSum hone
+    simp only [Complex.reCLM_apply, Complex.ofReal_re] at hre
+    exact hre.summable
+  have hsq : ∀ n : ℕ, omegaNorm (ℓ² →L[ℂ] ℓ²) ω (T n - 0) ^ 2
+      = ∑' m : ℕ, ‖(x m) n‖ ^ 2 := by
+    intro n
+    rw [sub_zero]
+    refine (HasSum.tsum_eq ?_).symm
+    simpa only [hT n] using hasSum_omegaNorm_sq hx (T n)
+  have htan : Tendsto (fun n : ℕ => ∑' m : ℕ, ‖(x m) n‖ ^ 2) atTop (𝓝 0) := by
+    have h := tendsto_tsum_of_dominated_convergence (𝓕 := (atTop : Filter ℕ))
+      (f := fun n m : ℕ => ‖(x m) n‖ ^ 2) (g := fun _ : ℕ => (0 : ℝ))
+      (bound := fun m : ℕ => ‖x m‖ ^ 2) hbound
+      (fun m => (hasSum_coord_sq (x m)).summable.tendsto_atTop_zero)
+      (Filter.Eventually.of_forall fun n m => by
+        rw [Real.norm_eq_abs, abs_of_nonneg (by positivity)]
+        gcongr
+        exact lp.norm_apply_le_norm (by norm_num) (x m) n)
+    simpa using h
+  have h2 : Tendsto (fun n : ℕ => omegaNorm (ℓ² →L[ℂ] ℓ²) ω (T n - 0) ^ 2)
+      atTop (𝓝 0) := by
+    simpa only [hsq] using htan
+  have h3 := (Real.continuous_sqrt.tendsto 0).comp h2
+  simp only [Function.comp_def, Real.sqrt_zero] at h3
+  exact h3.congr fun n => Real.sqrt_sq (omegaNorm_nonneg _ _)
+
+/-- Auxiliary for parts 4 and 5: no subsequence of the standard basis of `ℓ²`
+converges — `‖1 − v(φ n)‖ ≤ ‖e_{φ n} − v‖` while the left side tends to `1`. -/
+private theorem not_tendsto_single_sub (v : ℓ²) {φ : ℕ → ℕ}
+    (hφ : Tendsto φ atTop atTop) :
+    ¬Tendsto (fun n : ℕ => ‖(lp.single 2 (φ n) (1 : ℂ) : ℓ²) - v‖) atTop (𝓝 0) := by
+  intro h
+  have hle : ∀ n : ℕ,
+      ‖(1 : ℂ) - v (φ n)‖ ≤ ‖(lp.single 2 (φ n) (1 : ℂ) : ℓ²) - v‖ := by
+    intro n
+    have h1 := lp.norm_apply_le_norm (E := fun _ : ℕ => ℂ) (p := 2) (by norm_num)
+      ((lp.single 2 (φ n) (1 : ℂ) : ℓ²) - v) (φ n)
+    rwa [lp.coeFn_sub, Pi.sub_apply, lp.single_apply_self] at h1
+  have hv : Tendsto (fun n : ℕ => v (φ n)) atTop (𝓝 0) :=
+    (tendsto_coord_zero v).comp hφ
+  have hlim : Tendsto (fun n : ℕ => ‖(1 : ℂ) - v (φ n)‖) atTop (𝓝 1) := by
+    have h1 : Tendsto (fun n : ℕ => (1 : ℂ) - v (φ n)) atTop (𝓝 ((1 : ℂ) - 0)) :=
+      tendsto_const_nhds.sub hv
+    simpa [Function.comp_def] using (continuous_norm.tendsto ((1 : ℂ) - 0)).comp h1
+  have hcon : (1 : ℝ) ≤ 0 :=
+    le_of_tendsto_of_tendsto hlim h (Filter.Eventually.of_forall hle)
+  linarith
+
+/-- Auxiliary: the diagonal values `⟪z, A z⟫` are conjugate-symmetric. -/
+private theorem re_inner_swap (A : ℓ² →L[ℂ] ℓ²) (z : ℓ²) :
+    (⟪z, A z⟫ : ℂ).re = (⟪A z, z⟫ : ℂ).re := by
+  have h : (starRingEnd ℂ) (⟪A z, z⟫ : ℂ) = ⟪z, A z⟫ := inner_conj_symm z (A z)
+  rw [← h, Complex.conj_re]
+
+/-- Auxiliary: the diagonal values of a self-adjoint operator are real. -/
+private theorem inner_self_real {A : ℓ² →L[ℂ] ℓ²} (hA : IsSelfAdjoint A) (z : ℓ²) :
+    ((((⟪z, A z⟫ : ℂ).re : ℝ)) : ℂ) = ⟪z, A z⟫ := by
+  have hsym : (⟪A z, z⟫ : ℂ) = ⟪z, A z⟫ :=
+    ContinuousLinearMap.isSelfAdjoint_iff_isSymmetric.mp hA z z
+  refine Complex.conj_eq_iff_re.mp ?_
+  rw [inner_conj_symm]
+  exact hsym
+
+/-- Auxiliary (a private copy of `Theses.A.CStar`'s): monotonicity of the
+diagonal values of operators. -/
+private theorem re_inner_mono {S T : ℓ² →L[ℂ] ℓ²} (h : S ≤ T) (z : ℓ²) :
+    (⟪z, S z⟫ : ℂ).re ≤ (⟪z, T z⟫ : ℂ).re := by
+  have h0 : (0 : ℓ² →L[ℂ] ℓ²) ≤ T - S := sub_nonneg.mpr h
+  have hp := (ContinuousLinearMap.isPositive_iff_complex (T - S)).mp
+    ((ContinuousLinearMap.nonneg_iff_isPositive _).mp h0) z
+  have h2 : (0 : ℝ) ≤ (⟪(T - S) z, z⟫ : ℂ).re := hp.2
+  rw [ContinuousLinearMap.sub_apply, inner_sub_left, Complex.sub_re] at h2
+  rw [re_inner_swap S z, re_inner_swap T z]
+  linarith
+
+/-- Auxiliary (a private copy of `Theses.A.CStar`'s): a self-adjoint operator
+dominating another on the diagonal dominates it. -/
+private theorem le_of_re_inner {S T : ℓ² →L[ℂ] ℓ²} (hS : IsSelfAdjoint S)
+    (hT : IsSelfAdjoint T) (h : ∀ z, (⟪z, S z⟫ : ℂ).re ≤ (⟪z, T z⟫ : ℂ).re) :
+    S ≤ T := by
+  have hTS : IsSelfAdjoint (T - S) := hT.sub hS
+  rw [← sub_nonneg, ContinuousLinearMap.nonneg_iff_isPositive,
+    ContinuousLinearMap.isPositive_iff_complex]
+  intro z
+  have hre : ((((⟪z, (T - S) z⟫ : ℂ).re : ℝ)) : ℂ) = ⟪z, (T - S) z⟫ :=
+    inner_self_real hTS z
+  have hcomm : (⟪(T - S) z, z⟫ : ℂ) = ⟪z, (T - S) z⟫ :=
+    ContinuousLinearMap.isSelfAdjoint_iff_isSymmetric.mp hTS z z
+  have hnn : (0 : ℝ) ≤ (⟪z, (T - S) z⟫ : ℂ).re := by
+    rw [ContinuousLinearMap.sub_apply, inner_sub_right, Complex.sub_re]
+    linarith [h z]
+  rw [hcomm]
+  exact ⟨hre, hnn⟩
+
+private theorem ketbraNat_sum_apply (N : ℕ) (z : ℓ²) :
+    (∑ n ∈ Finset.range N, ketbraNat n n) z
+      = ∑ n ∈ Finset.range N, (z n) • (lp.single 2 n (1 : ℂ) : ℓ²) := by
+  induction N with
+  | zero => simp
+  | succ N ih =>
+      rw [Finset.sum_range_succ, Finset.sum_range_succ,
+        ContinuousLinearMap.add_apply, ih, ketbraNat_apply, inner_single_coord]
+
+private theorem ketbraNat_sum_inner (N : ℕ) (z : ℓ²) :
+    (⟪z, (∑ n ∈ Finset.range N, ketbraNat n n) z⟫ : ℂ)
+      = ((∑ n ∈ Finset.range N, ‖z n‖ ^ 2 : ℝ) : ℂ) := by
+  rw [ketbraNat_sum_apply, inner_sum]
+  push_cast
+  refine Finset.sum_congr rfl fun n _ => ?_
+  rw [inner_smul_right, inner_single_coord']
+  simp [Complex.mul_conj, Complex.normSq_eq_norm_sq]
+
+private theorem ketbraNat_sum_isSelfAdjoint (N : ℕ) :
+    IsSelfAdjoint (∑ n ∈ Finset.range N, ketbraNat n n) := by
+  rw [IsSelfAdjoint, star_sum]
+  exact Finset.sum_congr rfl fun n _ => star_ketbraNat n n
+
 /-- **43II** (`vn-counterexamples`, vn.tex:374, Exercise), part 2 (first
 half): `⋁_N ∑_{n≤N} |n⟩⟨n| = 1` in `B(ℓ²)`. -/
 theorem vn_counterexamples_2_sup :
     IsLUB {T : ℓ² →L[ℂ] ℓ² |
         ∃ N : ℕ, T = ∑ n ∈ Finset.range N, ketbraNat n n}
-      1 :=
-  sorry
+      1 := by
+  have hone : ∀ z : ℓ², (⟪z, (1 : ℓ² →L[ℂ] ℓ²) z⟫ : ℂ).re = ‖z‖ ^ 2 := fun z => by
+    simpa using inner_self_eq_norm_sq (𝕜 := ℂ) z
+  constructor
+  · rintro T ⟨N, rfl⟩
+    refine le_of_re_inner (ketbraNat_sum_isSelfAdjoint N) (star_one _) fun z => ?_
+    rw [ketbraNat_sum_inner, hone z, Complex.ofReal_re]
+    exact sum_le_hasSum (Finset.range N) (fun i _ => by positivity) (hasSum_coord_sq z)
+  · intro T hT
+    have h0 : (0 : ℓ² →L[ℂ] ℓ²) ≤ T := by
+      have h := hT (⟨0, by simp⟩ : (0 : ℓ² →L[ℂ] ℓ²) ∈ {T : ℓ² →L[ℂ] ℓ² |
+        ∃ N : ℕ, T = ∑ n ∈ Finset.range N, ketbraNat n n})
+      exact h
+    have hTsa : IsSelfAdjoint T :=
+      ((ContinuousLinearMap.nonneg_iff_isPositive T).mp h0).isSelfAdjoint
+    refine le_of_re_inner (star_one _) hTsa fun z => ?_
+    rw [hone z]
+    refine hasSum_le_of_sum_le (hasSum_coord_sq z) fun F => ?_
+    obtain ⟨N, hN⟩ := F.exists_nat_subset_range
+    have hstep : ∑ n ∈ F, ‖z n‖ ^ 2 ≤ ∑ n ∈ Finset.range N, ‖z n‖ ^ 2 :=
+      Finset.sum_le_sum_of_subset_of_nonneg hN fun _ _ _ => by positivity
+    have hle := re_inner_mono (hT (⟨N, rfl⟩ :
+      (∑ n ∈ Finset.range N, ketbraNat n n) ∈ {T : ℓ² →L[ℂ] ℓ² |
+        ∃ N : ℕ, T = ∑ n ∈ Finset.range N, ketbraNat n n})) z
+    rw [ketbraNat_sum_inner, Complex.ofReal_re] at hle
+    linarith
 
 /-- **43II** (`vn-counterexamples`, vn.tex:374, Exercise), part 2 (second
 half): `(|n⟩⟨n|)_n` converges ultrastrongly (hence ultraweakly) to `0`; so
@@ -1068,7 +1366,7 @@ ultrastrong convergence does not imply norm convergence, and `‖·‖` is not
 ultraweakly continuous. -/
 theorem vn_counterexamples_2_tendsto :
     USTendsto (fun n : ℕ => ketbraNat n n) atTop 0 :=
-  sorry
+  usTendsto_zero_of_norm_apply_coord _ fun n y => norm_ketbraNat_apply n n y
 
 /-- **43II** (`vn-counterexamples`, vn.tex:374, Exercise), part 3: already in
 `ℂ`, the sequence `(e^{in})_n` does not converge ultraweakly, although the
@@ -1143,30 +1441,83 @@ theorem vn_counterexamples_3 :
 half): `(|0⟩⟨n|)_n` converges ultrastrongly to `0`. -/
 theorem vn_counterexamples_4_ket :
     USTendsto (fun n : ℕ => ketbraNat 0 n) atTop 0 :=
-  sorry
+  usTendsto_zero_of_norm_apply_coord _ fun n y => norm_ketbraNat_apply 0 n y
 
 /-- **43II** (`vn-counterexamples`, vn.tex:374, Exercise), part 4 (second
 half): `(|n⟩⟨0|)_n` converges ultraweakly to `0` but does not converge
 ultrastrongly at all. -/
 theorem vn_counterexamples_4_bra :
     UWTendsto (fun n : ℕ => ketbraNat n 0) atTop 0 ∧
-      ¬∃ T : ℓ² →L[ℂ] ℓ², USTendsto (fun n : ℕ => ketbraNat n 0) atTop T :=
-  sorry
+      ¬∃ T : ℓ² →L[ℂ] ℓ², USTendsto (fun n : ℕ => ketbraNat n 0) atTop T := by
+  constructor
+  · -- `ω(|n⟩⟨0|) = conj ω(|0⟩⟨n|)`, and `|0⟩⟨n| → 0` ultrastrongly, hence
+    -- ultraweakly (**43I**.2)
+    have huw : UWTendsto (fun n : ℕ => ketbraNat 0 n) atTop 0 :=
+      uwweaker_2 _ _ _ vn_counterexamples_4_ket
+    rw [uwTendsto_iff] at huw ⊢
+    intro ω
+    have h := (continuous_star.tendsto ((ω (0 : ℓ² →L[ℂ] ℓ²)) : ℂ)).comp (huw ω)
+    simp only [Function.comp_def] at h
+    have hstar : ∀ n : ℕ, star (ω (ketbraNat 0 n) : ℂ) = ω (ketbraNat n 0) := by
+      intro n
+      rw [← npFunctional_star, star_ketbraNat]
+    simp only [hstar] at h
+    simpa using h
+  · rintro ⟨T, hT⟩
+    rw [usTendsto_iff] at hT
+    have h := hT (vectorNP (lp.single 2 0 (1 : ℂ) : ℓ²))
+    simp only [omegaNorm_vectorNP] at h
+    have happ : ∀ n : ℕ, (ketbraNat n 0 - T) (lp.single 2 0 (1 : ℂ) : ℓ²)
+        = (lp.single 2 n (1 : ℂ) : ℓ²) - T (lp.single 2 0 (1 : ℂ) : ℓ²) := by
+      intro n
+      rw [ContinuousLinearMap.sub_apply, ketbraNat_apply, inner_single_nat]
+      simp
+    simp only [happ] at h
+    exact not_tendsto_single_sub _ (tendsto_id (x := (atTop : Filter ℕ))) h
 
 /-- **43II** (`vn-counterexamples`, vn.tex:374, Exercise), part 4
 (conclusion): `a ↦ a*` is not ultrastrongly continuous on `B(ℓ²)`. -/
 theorem vn_counterexamples_4_star :
     ¬@Continuous (ℓ² →L[ℂ] ℓ²) (ℓ² →L[ℂ] ℓ²)
-        (ultrastrong _) (ultrastrong _) star :=
-  sorry
+        (ultrastrong _) (ultrastrong _) star := by
+  intro hcont
+  refine vn_counterexamples_4_bra.2 ⟨0, ?_⟩
+  have h0 : Filter.Tendsto (star : (ℓ² →L[ℂ] ℓ²) → (ℓ² →L[ℂ] ℓ²))
+      (@nhds (ℓ² →L[ℂ] ℓ²) (ultrastrong _) 0)
+      (@nhds (ℓ² →L[ℂ] ℓ²) (ultrastrong _) (star (0 : ℓ² →L[ℂ] ℓ²))) :=
+    @Continuous.tendsto (ℓ² →L[ℂ] ℓ²) (ℓ² →L[ℂ] ℓ²) (ultrastrong _) (ultrastrong _)
+      star hcont 0
+  have h : USTendsto (fun n : ℕ => star (ketbraNat 0 n)) atTop
+      (star (0 : ℓ² →L[ℂ] ℓ²)) := h0.comp vn_counterexamples_4_ket
+  simpa only [star_zero, star_ketbraNat] using h
 
 /-- **43II** (`vn-counterexamples`, vn.tex:374, Exercise), part 5: the unit
 ball of `B(ℓ²)` is not ultrastrongly compact (the sequence `(|0⟩⟨n|)_n` has
 no ultrastrongly convergent subnet). -/
 theorem vn_counterexamples_5 :
     ¬@IsCompact (ℓ² →L[ℂ] ℓ²) (ultrastrong _)
-        (Metric.closedBall (0 : ℓ² →L[ℂ] ℓ²) 1) :=
-  sorry
+        (Metric.closedBall (0 : ℓ² →L[ℂ] ℓ²) 1) := by
+  intro hcpt
+  -- `a ↦ a e₀` is ultrastrongly continuous, so the image of the ball is a
+  -- compact — hence sequentially compact — subset of `ℓ²`
+  have hcont : @Continuous (ℓ² →L[ℂ] ℓ²) ℓ² (ultrastrong _) _
+      (fun a => a (lp.single 2 0 (1 : ℂ) : ℓ²)) := ultrastrong_continuous_apply _
+  have himg : IsCompact ((fun a : ℓ² →L[ℂ] ℓ² => a (lp.single 2 0 (1 : ℂ) : ℓ²)) ''
+      Metric.closedBall (0 : ℓ² →L[ℂ] ℓ²) 1) :=
+    @IsCompact.image _ _ (ultrastrong (ℓ² →L[ℂ] ℓ²)) _ _ _ hcpt hcont
+  have hmem : ∀ n : ℕ, (lp.single 2 n (1 : ℂ) : ℓ²) ∈
+      (fun a : ℓ² →L[ℂ] ℓ² => a (lp.single 2 0 (1 : ℂ) : ℓ²)) ''
+        Metric.closedBall (0 : ℓ² →L[ℂ] ℓ²) 1 := by
+    intro n
+    refine ⟨ketbraNat n 0, ?_, ?_⟩
+    · simpa [Metric.mem_closedBall, dist_eq_norm] using norm_ketbraNat_le_one n 0
+    · show ketbraNat n 0 (lp.single 2 0 (1 : ℂ) : ℓ²) = (lp.single 2 n (1 : ℂ) : ℓ²)
+      rw [ketbraNat_apply, inner_single_nat]
+      simp
+  obtain ⟨v, -, φ, hφ, hlim⟩ := himg.tendsto_subseq hmem
+  refine not_tendsto_single_sub v hφ.tendsto_atTop ?_
+  have := tendsto_iff_norm_sub_tendsto_zero.mp hlim
+  simpa [Function.comp_def] using this
 
 /-- **43II** (`vn-counterexamples`, vn.tex:374, Exercise), part 6:
 `|n⟩⟨0| + |0⟩⟨n| → 0` ultraweakly while its squares converge ultraweakly to
@@ -1174,16 +1525,71 @@ theorem vn_counterexamples_5 :
 theorem vn_counterexamples_6 :
     UWTendsto (fun n : ℕ => ketbraNat n 0 + ketbraNat 0 n) atTop 0 ∧
       UWTendsto (fun n : ℕ => (ketbraNat n 0 + ketbraNat 0 n) ^ 2) atTop
-        (ketbraNat 0 0) :=
-  sorry
+        (ketbraNat 0 0) := by
+  have h1 : UWTendsto (fun n : ℕ => ketbraNat n 0) atTop 0 :=
+    vn_counterexamples_4_bra.1
+  have h2 : UWTendsto (fun n : ℕ => ketbraNat 0 n) atTop 0 :=
+    uwweaker_2 _ _ _ vn_counterexamples_4_ket
+  have h3 : UWTendsto (fun n : ℕ => ketbraNat n n) atTop 0 :=
+    uwweaker_2 _ _ _ vn_counterexamples_2_tendsto
+  rw [uwTendsto_iff] at h1 h2 h3
+  -- the computation rules of part 1: for `n ≠ 0` the two "diagonal" products
+  -- vanish and `(|n⟩⟨0| + |0⟩⟨n|)² = |n⟩⟨n| + |0⟩⟨0|`
+  have hsq : ∀ n : ℕ, n ≠ 0 →
+      (ketbraNat n 0 + ketbraNat 0 n) ^ 2 = ketbraNat n n + ketbraNat 0 0 := by
+    intro n hn
+    rw [sq, add_mul, mul_add, mul_add, (vn_counterexamples_1 0 n 0 n).2,
+      (vn_counterexamples_1 n 0 0 n).2, (vn_counterexamples_1 0 n n 0).2,
+      (vn_counterexamples_1 n 0 n 0).2, if_neg (Ne.symm hn), if_pos rfl,
+      if_pos rfl, if_neg hn]
+    abel
+  refine ⟨?_, ?_⟩
+  · rw [uwTendsto_iff]
+    intro ω
+    have h := (h1 ω).add (h2 ω)
+    simpa using h
+  · rw [uwTendsto_iff]
+    intro ω
+    have hc : Tendsto (fun _ : ℕ => (ω (ketbraNat 0 0) : ℂ)) atTop
+        (𝓝 (ω (ketbraNat 0 0) : ℂ)) := tendsto_const_nhds
+    have h := (h3 ω).add hc
+    rw [npFunctional_zero, zero_add] at h
+    refine h.congr' ?_
+    filter_upwards [eventually_gt_atTop 0] with n hn
+    rw [← npFunctional_add, ← hsq n hn.ne']
 
 /-- **43II** (`vn-counterexamples`, vn.tex:374, Exercise), part 6
 (conclusion): squaring — hence also multiplication jointly, `|·|`, and
 `√·` (part 8) — is not ultraweakly continuous on `B(ℓ²)`. -/
 theorem vn_counterexamples_6_sq :
     ¬@Continuous (ℓ² →L[ℂ] ℓ²) (ℓ² →L[ℂ] ℓ²) (ultraweak _) (ultraweak _)
-        (fun a => a * a) :=
-  sorry
+        (fun a => a * a) := by
+  intro hcont
+  obtain ⟨h1, h2⟩ := vn_counterexamples_6
+  have h0 : Filter.Tendsto (fun a : ℓ² →L[ℂ] ℓ² => a * a)
+      (@nhds (ℓ² →L[ℂ] ℓ²) (ultraweak _) 0)
+      (@nhds (ℓ² →L[ℂ] ℓ²) (ultraweak _) ((0 : ℓ² →L[ℂ] ℓ²) * 0)) :=
+    @Continuous.tendsto (ℓ² →L[ℂ] ℓ²) (ℓ² →L[ℂ] ℓ²) (ultraweak _) (ultraweak _)
+      _ hcont 0
+  have hsq : UWTendsto (fun n : ℕ => (ketbraNat n 0 + ketbraNat 0 n) *
+      (ketbraNat n 0 + ketbraNat 0 n)) atTop ((0 : ℓ² →L[ℂ] ℓ²) * 0) := h0.comp h1
+  rw [mul_zero] at hsq
+  have h2' : UWTendsto (fun n : ℕ => (ketbraNat n 0 + ketbraNat 0 n) *
+      (ketbraNat n 0 + ketbraNat 0 n)) atTop (ketbraNat 0 0) := by
+    simpa only [sq] using h2
+  -- two ultraweak limits, tested against the vector functional at `e₀`
+  rw [uwTendsto_iff] at hsq h2'
+  set ω : NPFunctional (ℓ² →L[ℂ] ℓ²) := vectorNP (lp.single 2 0 (1 : ℂ) : ℓ²)
+  have huniq : (ω (ketbraNat 0 0) : ℂ) = ω (0 : ℓ² →L[ℂ] ℓ²) :=
+    tendsto_nhds_unique (h2' ω) (hsq ω)
+  rw [npFunctional_zero] at huniq
+  have hval : (ω (ketbraNat 0 0) : ℂ) = 1 := by
+    show (⟪(lp.single 2 0 (1 : ℂ) : ℓ²),
+      ketbraNat 0 0 (lp.single 2 0 (1 : ℂ) : ℓ²)⟫ : ℂ) = 1
+    rw [ketbraNat_apply, inner_single_nat]
+    simp
+  rw [hval] at huniq
+  exact one_ne_zero huniq
 
 /-- **43II** (`vn-counterexamples`, vn.tex:374, Exercise), part 11: `B(ℓ²)`
 is not ultraweakly complete: there is an ultraweakly Cauchy net (built from
@@ -2366,7 +2772,7 @@ norm-bounded, and rescale it into `[0,1]_A` by the affine map
 `a ↦ (a − d₀)/‖⋁D − d₀‖`; **44VI** pushes the net into the effects, the
 hypothesis pushes it through `f`, and **44XI** (order separation) identifies
 the limit as the least upper bound. -/
-private theorem preservesDirSups_of_continuousOn_effects
+theorem preservesDirSups_of_continuousOn_effects
     [VonNeumannAlgebra A] [VonNeumannAlgebra B] (f : A →ₚ[ℂ] B)
     (h : @ContinuousOn A B (ultraweak A) (ultraweak B) f (effects A)) :
     PreservesDirSups ⇑f := by
@@ -3222,115 +3628,123 @@ end HilbertRep
 
 section GNSSum
 
-variable (A) in
-/-- The Hilbert space `ℋ_Ω = ⊕_ω ℋ_ω` of the normal Gelfand–Naimark
-construction (**48VIII**): the `ℓ²`-direct sum of the GNS spaces of *all*
-np-functionals on `A`. -/
-abbrev gnsHilb : Type u := lp (fun ω : NPFunctional A => ω.toPositiveLinearMap.GNS) 2
+/-! ### The direct-sum GNS representation over a family of np-functionals
+
+`ϱ_Ω : A → B(⊕_i ℋ_{F i})` for an arbitrary family `F : ι → NPFunctional A`
+(**48V**).  Two instances are used: `F = id`, over *all* np-functionals, which
+is the `gnsHilb`/`gnsRep` of the normal Gelfand–Naimark theorem **48VIII**
+below; and `F = Subtype.val` over a set `Ω` of np-functionals, which
+`A/VN/NormalFunctionals.lean` needs for **90II**.2. -/
+
+variable {ι : Type u} (F : ι → NPFunctional A)
+
+/-- `ℋ_Ω = ⊕_i ℋ_{F i}`: the `ℓ²`-direct sum of the GNS spaces of a family of
+np-functionals. -/
+abbrev gnsHilbFam : Type u := lp (fun i : ι => (F i).toPositiveLinearMap.GNS) 2
 
 private theorem rpow_two_toReal (x : ℝ) : x ^ (2 : ℝ≥0∞).toReal = x ^ 2 := by
   rw [show (2 : ℝ≥0∞).toReal = ((2 : ℕ) : ℝ) by norm_num, Real.rpow_natCast]
 
-/-- The pointwise (diagonal) action of `a` on `⊕_ω ℋ_ω`. -/
-private noncomputable def gnsDiagFun (a : A) (y : gnsHilb A) :
-    ∀ ω : NPFunctional A, ω.toPositiveLinearMap.GNS :=
-  fun ω => ω.toPositiveLinearMap.gnsStarAlgHom a ((y : ∀ ω : NPFunctional A, _) ω)
+/-- The pointwise (diagonal) action of `a` on `⊕_i ℋ_{F i}`. -/
+private noncomputable def gnsDiagFun (a : A) (y : gnsHilbFam F) :
+    ∀ i : ι, (F i).toPositiveLinearMap.GNS :=
+  fun i => (F i).toPositiveLinearMap.gnsStarAlgHom a ((y : ∀ i : ι, _) i)
 
-private theorem gnsDiag_memlp (a : A) (y : gnsHilb A) : Memℓp (gnsDiagFun a y) 2 := by
+private theorem gnsDiag_memlp (a : A) (y : gnsHilbFam F) :
+    Memℓp (gnsDiagFun F a y) 2 := by
   refine memℓp_gen ?_
-  have hy : Summable (fun ω : NPFunctional A =>
-      ‖(y : ∀ ω : NPFunctional A, _) ω‖ ^ (2 : ℝ≥0∞).toReal) :=
+  have hy : Summable (fun i : ι =>
+      ‖(y : ∀ i : ι, _) i‖ ^ (2 : ℝ≥0∞).toReal) :=
     (lp.hasSum_norm (by norm_num) y).summable
   refine Summable.of_nonneg_of_le (fun _ => Real.rpow_nonneg (norm_nonneg _) _)
-    (fun ω => ?_) (hy.mul_left (‖a‖ ^ 2))
+    (fun i => ?_) (hy.mul_left (‖a‖ ^ 2))
   rw [rpow_two_toReal, rpow_two_toReal]
   simp only [gnsDiagFun]
-  have h := starAlgHom_apply_norm_le (ω.toPositiveLinearMap.gnsStarAlgHom) a
-    ((y : ∀ ω : NPFunctional A, _) ω)
+  have h := starAlgHom_apply_norm_le ((F i).toPositiveLinearMap.gnsStarAlgHom) a
+    ((y : ∀ i : ι, _) i)
   have h3 := pow_le_pow_left₀ (norm_nonneg _) h 2
   rwa [mul_pow] at h3
 
-/-- The diagonal action of `a` on `⊕_ω ℋ_ω` as a linear map. -/
-private noncomputable def gnsDiagLin (a : A) : gnsHilb A →ₗ[ℂ] gnsHilb A where
-  toFun y := ⟨gnsDiagFun a y, gnsDiag_memlp a y⟩
+/-- The diagonal action of `a` on `⊕_i ℋ_{F i}` as a linear map. -/
+private noncomputable def gnsDiagLin (a : A) : gnsHilbFam F →ₗ[ℂ] gnsHilbFam F where
+  toFun y := ⟨gnsDiagFun F a y, gnsDiag_memlp F a y⟩
   map_add' y z := by
-    refine Subtype.ext (funext fun ω => ?_)
-    show gnsDiagFun a (y + z) ω = gnsDiagFun a y ω + gnsDiagFun a z ω
+    refine Subtype.ext (funext fun i => ?_)
+    show gnsDiagFun F a (y + z) i = gnsDiagFun F a y i + gnsDiagFun F a z i
     simp [gnsDiagFun]
   map_smul' c y := by
-    refine Subtype.ext (funext fun ω => ?_)
-    show gnsDiagFun a (c • y) ω = c • gnsDiagFun a y ω
+    refine Subtype.ext (funext fun i => ?_)
+    show gnsDiagFun F a (c • y) i = c • gnsDiagFun F a y i
     simp [gnsDiagFun]
 
-private theorem gnsDiagLin_apply_coe (a : A) (y : gnsHilb A) (ω : NPFunctional A) :
-    ((gnsDiagLin a y : gnsHilb A) : ∀ ω : NPFunctional A, _) ω
-      = ω.toPositiveLinearMap.gnsStarAlgHom a ((y : ∀ ω : NPFunctional A, _) ω) := rfl
+private theorem gnsDiagLin_apply_coe (a : A) (y : gnsHilbFam F) (i : ι) :
+    ((gnsDiagLin F a y : gnsHilbFam F) : ∀ i : ι, _) i
+      = (F i).toPositiveLinearMap.gnsStarAlgHom a ((y : ∀ i : ι, _) i) := rfl
 
-private theorem gnsDiagLin_norm_le (a : A) (y : gnsHilb A) :
-    ‖gnsDiagLin a y‖ ≤ ‖a‖ * ‖y‖ := by
+private theorem gnsDiagLin_norm_le (a : A) (y : gnsHilbFam F) :
+    ‖gnsDiagLin F a y‖ ≤ ‖a‖ * ‖y‖ := by
   have hp : (0:ℝ) < (2 : ℝ≥0∞).toReal := by norm_num
-  have hsum1 := lp.hasSum_norm hp (gnsDiagLin a y)
+  have hsum1 := lp.hasSum_norm hp (gnsDiagLin F a y)
   have hsum2 := lp.hasSum_norm hp y
-  have hle : ∀ ω : NPFunctional A,
-      ‖((gnsDiagLin a y : gnsHilb A) : ∀ ω : NPFunctional A, _) ω‖ ^ (2 : ℝ≥0∞).toReal
-        ≤ ‖a‖ ^ 2 * ‖(y : ∀ ω : NPFunctional A, _) ω‖ ^ (2 : ℝ≥0∞).toReal := by
-    intro ω
+  have hle : ∀ i : ι,
+      ‖((gnsDiagLin F a y : gnsHilbFam F) : ∀ i : ι, _) i‖ ^ (2 : ℝ≥0∞).toReal
+        ≤ ‖a‖ ^ 2 * ‖(y : ∀ i : ι, _) i‖ ^ (2 : ℝ≥0∞).toReal := by
+    intro i
     rw [rpow_two_toReal, rpow_two_toReal, gnsDiagLin_apply_coe]
-    have h := starAlgHom_apply_norm_le (ω.toPositiveLinearMap.gnsStarAlgHom) a
-      ((y : ∀ ω : NPFunctional A, _) ω)
+    have h := starAlgHom_apply_norm_le ((F i).toPositiveLinearMap.gnsStarAlgHom) a
+      ((y : ∀ i : ι, _) i)
     have h3 := pow_le_pow_left₀ (norm_nonneg _) h 2
     rwa [mul_pow] at h3
-  have hkey : ‖gnsDiagLin a y‖ ^ (2 : ℝ≥0∞).toReal
+  have hkey : ‖gnsDiagLin F a y‖ ^ (2 : ℝ≥0∞).toReal
       ≤ ‖a‖ ^ 2 * ‖y‖ ^ (2 : ℝ≥0∞).toReal := by
     rw [← hsum1.tsum_eq, ← hsum2.tsum_eq, ← tsum_mul_left]
     exact hsum1.summable.tsum_le_tsum hle (hsum2.summable.mul_left _)
   rw [rpow_two_toReal, rpow_two_toReal] at hkey
-  have hsq : ‖gnsDiagLin a y‖ ^ 2 ≤ (‖a‖ * ‖y‖) ^ 2 := by rw [mul_pow]; exact hkey
+  have hsq : ‖gnsDiagLin F a y‖ ^ 2 ≤ (‖a‖ * ‖y‖) ^ 2 := by rw [mul_pow]; exact hkey
   exact le_of_pow_le_pow_left₀ (by norm_num) (by positivity) hsq
 
-/-- The diagonal action of `a` on `⊕_ω ℋ_ω` as a bounded operator. -/
-private noncomputable def gnsDiag (a : A) : gnsHilb A →L[ℂ] gnsHilb A :=
-  LinearMap.mkContinuous (gnsDiagLin a) ‖a‖ (gnsDiagLin_norm_le a)
+/-- The diagonal action of `a` on `⊕_i ℋ_{F i}` as a bounded operator. -/
+private noncomputable def gnsDiag (a : A) : gnsHilbFam F →L[ℂ] gnsHilbFam F :=
+  LinearMap.mkContinuous (gnsDiagLin F a) ‖a‖ (gnsDiagLin_norm_le F a)
 
-@[simp] private theorem gnsDiag_apply_coe (a : A) (y : gnsHilb A) (ω : NPFunctional A) :
-    ((gnsDiag a y : gnsHilb A) : ∀ ω : NPFunctional A, _) ω
-      = ω.toPositiveLinearMap.gnsStarAlgHom a ((y : ∀ ω : NPFunctional A, _) ω) := rfl
+@[simp] private theorem gnsDiag_apply_coe (a : A) (y : gnsHilbFam F) (i : ι) :
+    ((gnsDiag F a y : gnsHilbFam F) : ∀ i : ι, _) i
+      = (F i).toPositiveLinearMap.gnsStarAlgHom a ((y : ∀ i : ι, _) i) := rfl
 
-private theorem gnsHilb_ext {y z : gnsHilb A}
-    (h : ∀ ω : NPFunctional A, (y : ∀ ω : NPFunctional A, _) ω
-      = (z : ∀ ω : NPFunctional A, _) ω) : y = z :=
+private theorem gnsHilbFam_ext {F : ι → NPFunctional A} {y z : gnsHilbFam F}
+    (h : ∀ i : ι, (y : ∀ i : ι, _) i = (z : ∀ i : ι, _) i) : y = z :=
   Subtype.ext (funext h)
 
 /-- **48V** (`varrho-Omega-normal`, vn.tex:1113): the direct-sum GNS
-representation `ϱ_Ω : A → B(⊕_ω ℋ_ω)` over *all* np-functionals of `A`. -/
-noncomputable def gnsRep : A →⋆ₐ[ℂ] (gnsHilb A →L[ℂ] gnsHilb A) where
-  toFun := gnsDiag
+representation `ϱ_Ω : A → B(⊕_i ℋ_{F i})` of a family of np-functionals. -/
+noncomputable def gnsRepFam : A →⋆ₐ[ℂ] (gnsHilbFam F →L[ℂ] gnsHilbFam F) where
+  toFun := gnsDiag F
   map_one' := by
-    refine ContinuousLinearMap.ext fun y => gnsHilb_ext fun ω => ?_
+    refine ContinuousLinearMap.ext fun y => gnsHilbFam_ext fun i => ?_
     simp
   map_mul' a b := by
-    refine ContinuousLinearMap.ext fun y => gnsHilb_ext fun ω => ?_
+    refine ContinuousLinearMap.ext fun y => gnsHilbFam_ext fun i => ?_
     simp
   map_zero' := by
-    refine ContinuousLinearMap.ext fun y => gnsHilb_ext fun ω => ?_
+    refine ContinuousLinearMap.ext fun y => gnsHilbFam_ext fun i => ?_
     simp
   map_add' a b := by
-    refine ContinuousLinearMap.ext fun y => gnsHilb_ext fun ω => ?_
+    refine ContinuousLinearMap.ext fun y => gnsHilbFam_ext fun i => ?_
     simp
   commutes' r := by
-    refine ContinuousLinearMap.ext fun y => gnsHilb_ext fun ω => ?_
+    refine ContinuousLinearMap.ext fun y => gnsHilbFam_ext fun i => ?_
     simp [Algebra.algebraMap_eq_smul_one]
   map_star' a := by
     refine (ContinuousLinearMap.eq_adjoint_iff _ _).mpr fun x y => ?_
     rw [lp.inner_eq_tsum, lp.inner_eq_tsum]
-    refine tsum_congr fun ω => ?_
-    show (⟪ω.toPositiveLinearMap.gnsStarAlgHom (star a) _, _⟫) = _
+    refine tsum_congr fun i => ?_
+    show (⟪(F i).toPositiveLinearMap.gnsStarAlgHom (star a) _, _⟫) = _
     rw [map_star]
     exact ContinuousLinearMap.adjoint_inner_left _ _ _
 
-@[simp] theorem gnsRep_apply_coe (a : A) (y : gnsHilb A) (ω : NPFunctional A) :
-    ((gnsRep a y : gnsHilb A) : ∀ ω : NPFunctional A, _) ω
-      = ω.toPositiveLinearMap.gnsStarAlgHom a ((y : ∀ ω : NPFunctional A, _) ω) := rfl
+@[simp] theorem gnsRepFam_apply_coe (a : A) (y : gnsHilbFam F) (i : ι) :
+    ((gnsRepFam F a y : gnsHilbFam F) : ∀ i : ι, _) i
+      = (F i).toPositiveLinearMap.gnsStarAlgHom a ((y : ∀ i : ι, _) i) := rfl
 
 /-- The canonical vector `η_ω(b) ∈ ℋ_ω`. -/
 noncomputable def gnsVec (ω : NPFunctional A) (b : A) : ω.toPositiveLinearMap.GNS :=
@@ -3362,37 +3776,85 @@ theorem gnsVec_denseRange (ω : NPFunctional A) : DenseRange (gnsVec ω) := by
   exact UniformSpace.Completion.denseRange_coe
 
 open scoped Classical in
-/-- The "elementary" vectors `η_ω(b)` of `⊕_ω ℋ_ω`, sitting in a single
-summand.  They separate the operators on `⊕_ω ℋ_ω`, and their vector
-functionals pull back along `ϱ_Ω` to the np-functionals `b*ω`. -/
-def gnsElemVecs : Set (gnsHilb A) :=
-  {y | ∃ (ω : NPFunctional A) (b : A), y = lp.single 2 ω (gnsVec ω b)}
+/-- The "elementary" vectors `η_{F i}(b)` of `⊕_i ℋ_{F i}`, sitting in a
+single summand.  They separate the operators on `⊕_i ℋ_{F i}`, and their
+vector functionals pull back along `ϱ_Ω` to the np-functionals `b*ω`. -/
+def gnsElemVecsFam : Set (gnsHilbFam F) :=
+  {y | ∃ (i : ι) (b : A), y = lp.single 2 i (gnsVec (F i) b)}
 
-theorem gnsElemVecs_separating (R : gnsHilb A →L[ℂ] gnsHilb A)
-    (h : ∀ y ∈ gnsElemVecs (A := A), R y = 0) : R = 0 := by
+theorem gnsElemVecsFam_separating (R : gnsHilbFam F →L[ℂ] gnsHilbFam F)
+    (h : ∀ y ∈ gnsElemVecsFam F, R y = 0) : R = 0 := by
   classical
-  have hsingle : ∀ (ω : NPFunctional A) (z : ω.toPositiveLinearMap.GNS),
-      R (lp.single 2 ω z) = 0 := by
-    intro ω
-    have hcont : Continuous fun z : ω.toPositiveLinearMap.GNS => R (lp.single 2 ω z) :=
+  have hsingle : ∀ (i : ι) (z : (F i).toPositiveLinearMap.GNS),
+      R (lp.single 2 i z) = 0 := by
+    intro i
+    have hcont : Continuous
+        fun z : (F i).toPositiveLinearMap.GNS => R (lp.single 2 i z) :=
       R.continuous.comp
         (lp.singleContinuousLinearMap ℂ
-          (fun ω : NPFunctional A => ω.toPositiveLinearMap.GNS) 2 ω).continuous
-    have hdense : Dense (Set.range (gnsVec ω)) := gnsVec_denseRange ω
+          (fun i : ι => (F i).toPositiveLinearMap.GNS) 2 i).continuous
+    have hdense : Dense (Set.range (gnsVec (F i))) := gnsVec_denseRange (F i)
     have hfun := Continuous.ext_on hdense hcont continuous_const
-      (fun x hx => by obtain ⟨b, rfl⟩ := hx; exact h _ ⟨ω, b, rfl⟩)
+      (fun x hx => by obtain ⟨b, rfl⟩ := hx; exact h _ ⟨i, b, rfl⟩)
     exact fun z => congrFun hfun z
   refine ContinuousLinearMap.ext fun y => ?_
-  have hs : HasSum (fun ω : NPFunctional A =>
-      lp.single 2 ω ((y : ∀ ω : NPFunctional A, _) ω)) y :=
+  have hs : HasSum (fun i : ι =>
+      lp.single 2 i ((y : ∀ i : ι, _) i)) y :=
     lp.hasSum_single (by norm_num) y
   have hmap := hs.mapL R
-  have h0 : HasSum (fun _ : NPFunctional A => (0 : gnsHilb A)) (R y) := by
-    refine hmap.congr_fun fun ω => ?_
-    exact (hsingle ω ((y : ∀ ω : NPFunctional A, _) ω)).symm
+  have h0 : HasSum (fun _ : ι => (0 : gnsHilbFam F)) (R y) := by
+    refine hmap.congr_fun fun i => ?_
+    exact (hsingle i ((y : ∀ i : ι, _) i)).symm
   simpa using (hasSum_zero.unique h0).symm
 
 variable [VonNeumannAlgebra A]
+
+-- the `lp`-based Hilbert space `⊕_i ℋ_{F i}` makes the (routine) instance
+-- defeq checks against `B(H)`'s C*-algebra structure expensive
+set_option maxHeartbeats 2000000 in
+theorem gnsRepFam_normal : PreservesDirSups ⇑(gnsRepFam F) := by
+  classical
+  refine starAlgHom_preservesDirSups_of_vectors (gnsRepFam F) (gnsElemVecsFam F)
+    (gnsElemVecsFam_separating F) ?_
+  rintro _ ⟨i, b, rfl⟩
+  refine ⟨conjNP b (F i), fun a => ?_⟩
+  rw [lp.inner_single_left]
+  show (⟪gnsVec (F i) b,
+    ((gnsRepFam F a (lp.single 2 i (gnsVec (F i) b)) : gnsHilbFam F) :
+      ∀ _ : ι, _) i⟫) = _
+  rw [gnsRepFam_apply_coe, lp.single_apply_self, gnsRep_gnsVec, gnsVec_inner,
+    conjNP_apply, mul_assoc]
+
+/-! ### The instance over *all* np-functionals (**48VIII**) -/
+
+section All
+
+variable (A)
+
+/-- The Hilbert space `ℋ_Ω = ⊕_ω ℋ_ω` of the normal Gelfand–Naimark
+construction (**48VIII**): the `ℓ²`-direct sum of the GNS spaces of *all*
+np-functionals on `A`. -/
+abbrev gnsHilb : Type u := gnsHilbFam (fun ω : NPFunctional A => ω)
+
+variable {A}
+
+/-- **48V** (`varrho-Omega-normal`, vn.tex:1113): the direct-sum GNS
+representation `ϱ_Ω : A → B(⊕_ω ℋ_ω)` over *all* np-functionals of `A`. -/
+noncomputable def gnsRep : A →⋆ₐ[ℂ] (gnsHilb A →L[ℂ] gnsHilb A) :=
+  gnsRepFam (fun ω : NPFunctional A => ω)
+
+@[simp] theorem gnsRep_apply_coe (a : A) (y : gnsHilb A) (ω : NPFunctional A) :
+    ((gnsRep a y : gnsHilb A) : ∀ ω : NPFunctional A, _) ω
+      = ω.toPositiveLinearMap.gnsStarAlgHom a ((y : ∀ ω : NPFunctional A, _) ω) := rfl
+
+open scoped Classical in
+/-- The "elementary" vectors `η_ω(b)` of `⊕_ω ℋ_ω`. -/
+def gnsElemVecs : Set (gnsHilb A) :=
+  gnsElemVecsFam (fun ω : NPFunctional A => ω)
+
+theorem gnsElemVecs_separating (R : gnsHilb A →L[ℂ] gnsHilb A)
+    (h : ∀ y ∈ gnsElemVecs (A := A), R y = 0) : R = 0 :=
+  gnsElemVecsFam_separating _ R h
 
 theorem gnsRep_injective : Function.Injective (gnsRep (A := A)) := by
   classical
@@ -3414,21 +3876,10 @@ theorem gnsRep_injective : Function.Injective (gnsRep (A := A)) := by
   have h : gnsRep (a - b) = 0 := by rw [map_sub, hab, sub_self]
   exact sub_eq_zero.mp (hker _ h)
 
--- the `lp`-based Hilbert space `⊕_ω ℋ_ω` makes the (routine) instance
--- defeq checks against `B(H)`'s C*-algebra structure expensive
-set_option maxHeartbeats 2000000 in
-theorem gnsRep_normal : PreservesDirSups ⇑(gnsRep (A := A)) := by
-  classical
-  refine starAlgHom_preservesDirSups_of_vectors gnsRep (gnsElemVecs (A := A))
-    gnsElemVecs_separating ?_
-  rintro _ ⟨ω, b, rfl⟩
-  refine ⟨conjNP b ω, fun a => ?_⟩
-  rw [lp.inner_single_left]
-  show (⟪gnsVec ω b, ((gnsRep a (lp.single 2 ω (gnsVec ω b)) : gnsHilb A) :
-    ∀ _ : NPFunctional A, _) ω⟫) = _
-  rw [gnsRep_apply_coe, lp.single_apply_self, gnsRep_gnsVec, gnsVec_inner,
-    conjNP_apply, mul_assoc]
+theorem gnsRep_normal : PreservesDirSups ⇑(gnsRep (A := A)) :=
+  gnsRepFam_normal _
 
+end All
 
 end GNSSum
 

@@ -2608,6 +2608,46 @@ theorem product_functional [VonNeumannAlgebra A] [VonNeumannAlgebra B]
       continuous_const.mul
         (continuous_uwTensor_of_basic (isBasicFunctional_odotF (F k) (G l)))
 
+/-- The defining property of the tensor product norm, read for a basic
+functional that is *not* assumed subunital: `ω(s* s) ≤ ‖s‖² ω(1)`.  (Rescale
+`ω` by `ω(1)⁻¹`, which keeps it basic by `isBasicFunctional_smul`; the
+degenerate case `ω(1) = 0` forces `ω = 0` by Cauchy–Schwarz.)  This is the
+estimate **112X**.2 needs. -/
+private theorem basic_star_self_le [VonNeumannAlgebra A] [VonNeumannAlgebra B]
+    {ω : A ⊗[ℂ] B →ₗ[ℂ] ℂ} (hω : IsBasicFunctional ω) (s : A ⊗[ℂ] B) :
+    (ω (star s * s)).re ≤ tensorNorm A B s ^ 2 * (ω 1).re := by
+  have h0 : (0 : ℝ) ≤ (ω 1).re := by
+    simpa using (Complex.le_def.mp (basic_one_nonneg hω)).1
+  rcases h0.eq_or_lt with hc | hc
+  · have hb := basic_norm_le_tensorNorm hω (star s * s)
+    rw [← hc, zero_mul] at hb
+    have hz : ω (star s * s) = 0 := norm_le_zero_iff.mp hb
+    rw [hz, ← hc]
+    simp
+  · set c : ℝ := (ω 1).re with hcdef
+    set ω' : A ⊗[ℂ] B →ₗ[ℂ] ℂ := (((c⁻¹ : ℝ)) : ℂ) • ω with hω'def
+    have hbω' : IsBasicFunctional ω' :=
+      isBasicFunctional_smul hω (inv_pos.mpr hc).le
+    have h1 : (ω' 1).re ≤ 1 := by
+      rw [hω'def, smul_apply_re, ← hcdef, inv_mul_cancel₀ (ne_of_gt hc)]
+    have hmem : tsn ω' s ≤ tensorNorm A B s := by
+      rw [tensorNorm_eq_sSup]
+      exact le_csSup (tnSet_bddAbove s) ⟨ω', hbω', h1, rfl⟩
+    have hXnn : (0 : ℝ) ≤ (ω (star s * s)).re := by
+      simpa using (Complex.le_def.mp ((basic_state_inner_product ω hω).2 s)).1
+    have hval : tsn ω' s = Real.sqrt (c⁻¹ * (ω (star s * s)).re) := by
+      unfold tsn
+      rw [hω'def, smul_apply_re]
+    rw [hval] at hmem
+    have hnn : (0 : ℝ) ≤ c⁻¹ * (ω (star s * s)).re :=
+      mul_nonneg (inv_nonneg.mpr hc.le) hXnn
+    have hsq : c⁻¹ * (ω (star s * s)).re ≤ tensorNorm A B s ^ 2 := by
+      nlinarith [Real.sq_sqrt hnn, Real.sqrt_nonneg (c⁻¹ * (ω (star s * s)).re)]
+    calc (ω (star s * s)).re = c * (c⁻¹ * (ω (star s * s)).re) := by
+          field_simp
+      _ ≤ c * tensorNorm A B s ^ 2 := mul_le_mul_of_nonneg_left hsq hc.le
+      _ = tensorNorm A B s ^ 2 * c := mul_comm _ _
+
 section TensorBasic
 
 variable [VonNeumannAlgebra A] [VonNeumannAlgebra B] [VonNeumannAlgebra C]
@@ -2914,7 +2954,91 @@ theorem tensor_basic_1 (γ : A →ₗ[ℂ] B →ₗ[ℂ] T) (hγ : IsTensorProdu
 claim): `γ_⊙ : 𝒜 ⊙ ℬ → 𝒯` is an isometry for the tensor product
 norm. -/
 theorem tensor_basic_2 (γ : A →ₗ[ℂ] B →ₗ[ℂ] T) (hγ : IsTensorProduct γ)
-    (s : A ⊗[ℂ] B) : ‖TensorProduct.lift γ s‖ = tensorNorm A B s := sorry
+    (s : A ⊗[ℂ] B) : ‖TensorProduct.lift γ s‖ = tensorNorm A B s := by
+  -- Both halves are read off the identity `γ_⊙(s)*γ_⊙(s) = γ_⊙(s* s)` and the
+  -- bijection `Ω ↔ basic functionals` of 112X.1.
+  have hsmul : ∀ (χ : NPFunctional T) (r : ℝ) (x : T),
+      χ (((r : ℝ) : ℂ) • x) = ((r : ℝ) : ℂ) * χ x := by
+    intro χ r x
+    show npLin χ (((r : ℝ) : ℂ) • x) = _
+    rw [map_smul]
+    rfl
+  set y : T := TensorProduct.lift γ s with hydef
+  have hstarmul : star y * y = TensorProduct.lift γ (star s * s) := by
+    rw [hydef, lift_mul γ hγ.miu.2.1, lift_star γ hγ.miu.2.2]
+  have hxnn : (0 : T) ≤ star y * y := star_mul_self_nonneg y
+  have hnx : ‖star y * y‖ = ‖y‖ ^ 2 := by
+    rw [CStarRing.norm_star_mul_self]; ring
+  have hone : TensorProduct.lift γ (1 : A ⊗[ℂ] B) = 1 := lift_one γ hγ.miu.1
+  refine le_antisymm ?_ ?_
+  · -- `‖γ_⊙ s‖ ≤ ‖s‖`.  The thesis obtains this from `order-separating-norm`
+    -- (**21VII**) applied to the *unital* members `Ω₁`; we apply the order
+    -- separating property of 112X.1 directly at `γ_⊙(s)*γ_⊙(s) ≤ ‖s‖²·1`,
+    -- which is 21VII's own argument without the renormalisation of `Ω` to
+    -- `Ω₁` (see the log).
+    have hN : (0 : ℝ) ≤ tensorNorm A B s := tensorNorm_nonneg s
+    have hsa1 : IsSelfAdjoint (((tensorNorm A B s ^ 2 : ℝ) : ℂ) • (1 : T)) := by
+      show star _ = _
+      simp
+    have hle : star y * y ≤ ((tensorNorm A B s ^ 2 : ℝ) : ℂ) • (1 : T) := by
+      refine (tensor_basic_1 γ hγ).1 _ _ (IsSelfAdjoint.star_mul_self y) hsa1 ?_
+      intro σ τ v
+      have hbasic := isBasicFunctional_comp_lift hγ σ τ v
+      set ω' : A ⊗[ℂ] B →ₗ[ℂ] ℂ :=
+        (npLin (conjProdNP hγ σ τ v)).comp (TensorProduct.lift γ) with hω'def
+      have hL : prodNP hγ σ τ (star (TensorProduct.lift γ v) * (star y * y) *
+          TensorProduct.lift γ v) = ω' (star s * s) := by
+        rw [hstarmul]
+        rfl
+      have hR : prodNP hγ σ τ (star (TensorProduct.lift γ v) *
+            (((tensorNorm A B s ^ 2 : ℝ) : ℂ) • (1 : T)) *
+            TensorProduct.lift γ v)
+          = ((tensorNorm A B s ^ 2 : ℝ) : ℂ) * ω' 1 := by
+        have he : star (TensorProduct.lift γ v) *
+              (((tensorNorm A B s ^ 2 : ℝ) : ℂ) • (1 : T)) *
+              TensorProduct.lift γ v
+            = ((tensorNorm A B s ^ 2 : ℝ) : ℂ) •
+              (star (TensorProduct.lift γ v) * 1 * TensorProduct.lift γ v) := by
+          rw [mul_smul_comm, smul_mul_assoc]
+        rw [he, hsmul]
+        congr 1
+        show _ = conjProdNP hγ σ τ v (TensorProduct.lift γ 1)
+        rw [conjProdNP_apply, hone]
+      rw [hL, hR, Complex.re_ofReal_mul]
+      exact basic_star_self_le hbasic s
+    have hnorm : ‖star y * y‖ ≤ tensorNorm A B s ^ 2 := by
+      refine (Theses.A.CStar.norm_le_iff_neg_algebraMap_le
+        (IsSelfAdjoint.star_mul_self y) (by positivity)).mpr ⟨?_, ?_⟩
+      · refine le_trans (neg_nonpos.mpr ?_) hxnn
+        exact Theses.A.CStar.algebraMap_ofReal_nonneg (by positivity)
+      · rwa [Algebra.algebraMap_eq_smul_one]
+    rw [hnx] at hnorm
+    nlinarith [norm_nonneg y, hN]
+  · -- `‖s‖ ≤ ‖γ_⊙ s‖`: every basic functional is `χ ∘ γ_⊙` for a member `χ`
+    -- of `Ω`, and `χ(γ_⊙(s)*γ_⊙(s)) ≤ ‖γ_⊙ s‖² χ(1)` by positivity of `χ`.
+    refine Real.sSup_le (fun r hr => ?_) (norm_nonneg y)
+    obtain ⟨ω, hω, h1, rfl⟩ := hr
+    obtain ⟨σ, τ, u, hrep⟩ := exists_conjProdNP_of_isBasicFunctional hγ ω hω
+    have hval : ω (star s * s) = conjProdNP hγ σ τ u (star y * y) := by
+      rw [hrep, hstarmul]
+    have hone' : ω 1 = conjProdNP hγ σ τ u 1 := by rw [hrep, hone]
+    have hb : star y * y ≤ ((‖star y * y‖ : ℝ) : ℂ) • (1 : T) := by
+      rw [Complex.coe_smul]
+      exact le_norm_smul_one hxnn
+    have hmono := npFunctional_mono (conjProdNP hγ σ τ u) hb
+    rw [hsmul] at hmono
+    have hre : (ω (star s * s)).re ≤ ‖y‖ ^ 2 * (ω 1).re := by
+      rw [hval, hone']
+      have := (Complex.le_def.mp hmono).1
+      rwa [Complex.re_ofReal_mul, hnx] at this
+    have h1nn : (0 : ℝ) ≤ (ω 1).re := by
+      simpa using (Complex.le_def.mp (basic_one_nonneg hω)).1
+    have hfin : (ω (star s * s)).re ≤ ‖y‖ ^ 2 := by
+      refine hre.trans ?_
+      nlinarith [sq_nonneg ‖y‖]
+    calc Real.sqrt (ω (star s * s)).re ≤ Real.sqrt (‖y‖ ^ 2) :=
+          Real.sqrt_le_sqrt hfin
+      _ = ‖y‖ := Real.sqrt_sq (norm_nonneg y)
 
 /-- **112X** (`tensor-basic`, proc.tex:2868, Exercise), part 3 (headline
 claim): `γ_⊙` is continuous from the ultraweak tensor product topology to
@@ -2925,7 +3049,39 @@ theorem tensor_basic_3 (γ : A →ₗ[ℂ] B →ₗ[ℂ] T) (hγ : IsTensorProdu
         ⇑(TensorProduct.lift γ)) ∧
       ∀ h : NPFunctional T,
         NormLimitOfSimple A B
-          ((npLin h).comp (TensorProduct.lift γ)) := sorry
+          ((npLin h).comp (TensorProduct.lift γ)) := by
+  -- The second half first.  **112X**.1's second conjunct approximates an
+  -- np-functional `h` on `𝒯`, in *operator* norm, by a finite sum of members
+  -- of `Ω`; restricting along `γ_⊙` turns that sum into a simple functional
+  -- (`isBasicFunctional_comp_lift`), and **112X**.2 converts `ε‖γ_⊙ t‖` into
+  -- `ε‖t‖` — which is the thesis's `‖f ∘ γ_⊙‖ ≤ ‖f‖`, here in the only form
+  -- it is used.  The first half then follows because `uwTensorTopology` is
+  -- by definition the initial topology of exactly these functionals.
+  have hnl : ∀ h : NPFunctional T,
+      NormLimitOfSimple A B ((npLin h).comp (TensorProduct.lift γ)) := by
+    intro h ε hε
+    obtain ⟨n, σ, τ, s, hb⟩ := (tensor_basic_1 γ hγ).2 h ε hε
+    refine ⟨∑ i, (npLin (conjProdNP hγ (σ i) (τ i) (s i))).comp
+      (TensorProduct.lift γ), ⟨n, fun i =>
+        (npLin (conjProdNP hγ (σ i) (τ i) (s i))).comp (TensorProduct.lift γ),
+        fun i => isBasicFunctional_comp_lift hγ (σ i) (τ i) (s i), rfl⟩,
+      fun t => ?_⟩
+    have hbt := hb (TensorProduct.lift γ t)
+    rw [tensor_basic_2 γ hγ t] at hbt
+    refine le_trans (le_of_eq ?_) hbt
+    congr 1
+    simp only [LinearMap.sub_apply, LinearMap.comp_apply, LinearMap.sum_apply]
+    rfl
+  refine ⟨?_, hnl⟩
+  rw [continuous_iff_le_induced]
+  show uwTensorTopology A B ≤ TopologicalSpace.induced ⇑(TensorProduct.lift γ)
+    (⨅ ω : NPFunctional T,
+      TopologicalSpace.induced (fun x : T => (ω x : ℂ)) inferInstance)
+  rw [induced_iInf]
+  refine le_iInf fun ω => ?_
+  rw [induced_compose]
+  exact iInf_le _ (⟨(npLin ω).comp (TensorProduct.lift γ), hnl ω⟩ :
+    {f : A ⊗[ℂ] B →ₗ[ℂ] ℂ // NormLimitOfSimple A B f})
 
 /-- **112X** (`tensor-basic`, proc.tex:2868, Exercise), part 4:
 `‖f ∘ γ_⊙‖ = ‖f‖` for every `f ∈ 𝒯_*` — rendered in bound form: `f` and
@@ -2935,7 +3091,89 @@ theorem tensor_basic_4 (γ : A →ₗ[ℂ] B →ₗ[ℂ] T) (hγ : IsTensorProdu
     (hM : 0 ≤ M) :
     (∀ t : A ⊗[ℂ] B,
         ‖f (TensorProduct.lift γ t)‖ ≤ M * tensorNorm A B t) ↔
-      ∀ x : T, ‖f x‖ ≤ M * ‖x‖ := sorry
+      ∀ x : T, ‖f x‖ ≤ M * ‖x‖ := by
+  constructor
+  · -- The thesis's argument verbatim: **86IX** supplies a partial isometry `u`
+    -- with `f(u) = ‖f‖` (**86XI** `functional_norm`); **74VI** approximates `u`
+    -- ultrastrongly from `γ_⊙(𝒜 ⊙ ℬ)` with `‖s_α‖ ≤ ‖u‖(1+ε)`; and **112X**.2
+    -- turns the tensor-norm bound on `f ∘ γ_⊙` into a `𝒯`-norm bound along the
+    -- net.  Hence `‖f‖ ≤ M(1+ε)` for every `ε > 0`.
+    intro h
+    obtain ⟨u, hu, heq, -, hpos, -⟩ :=
+      polar_decomposition_of_functional (A := T) f.toLinearMap
+        (by simpa using
+          (@Continuous.continuousOn T ℂ (ultraweak T) _ ⇑f _ hf))
+    have hfu : f u = ((‖f‖ : ℝ) : ℂ) := functional_norm f hf u hu hpos heq
+    have hpr : IsStarProjection (star u * u) := by
+      rw [hu.1, suppProj]
+      exact (ceil_spec (star_mul_self_nonneg u)).1
+    have hu1 : ‖u‖ ≤ 1 := by
+      have h1 : ‖u‖ * ‖u‖ ≤ 1 := by
+        rw [← CStarRing.norm_star_mul_self]
+        exact IsStarProjection.norm_le _ hpr
+      nlinarith [norm_nonneg u]
+    have hkey : ∀ ε : ℝ, 0 < ε → ‖f‖ ≤ M * (1 + ε) := by
+      intro ε hε
+      obtain ⟨ι, l, hl, s, hs, hlim⟩ :=
+        dense_subalgebra (tensorSpan γ hγ.miu) hγ.dense ε hε u
+      have _ : l.NeBot := hl
+      have huw : UWTendsto s l u := uwweaker_2 s l u hlim
+      have hconv : Tendsto (fun i => ‖f (s i)‖) l (𝓝 ‖f u‖) :=
+        ((@Continuous.tendsto T ℂ (ultraweak T) _ ⇑f hf u).comp huw).norm
+      have hbd : ∀ i, ‖f (s i)‖ ≤ M * (1 + ε) := by
+        intro i
+        have hmem : s i ∈ Set.range ⇑(TensorProduct.lift γ) := by
+          rw [range_lift_eq_span]; exact (hs i).1
+        obtain ⟨v, hv⟩ := hmem
+        have h1 := h v
+        rw [← tensor_basic_2 γ hγ v, hv] at h1
+        refine h1.trans ?_
+        have h2 := (hs i).2
+        have h3 : ‖s i‖ ≤ 1 * (1 + ε) := by
+          refine h2.trans ?_
+          gcongr
+        calc M * ‖s i‖ ≤ M * (1 * (1 + ε)) := by gcongr
+          _ = M * (1 + ε) := by ring
+      have hlim' := le_of_tendsto hconv (Filter.Eventually.of_forall hbd)
+      rw [hfu] at hlim'
+      simpa using hlim'
+    have hfM : ‖f‖ ≤ M := by
+      refine le_of_forall_pos_le_add fun δ hδ => ?_
+      have hpos1 : (0 : ℝ) < M + 1 := by linarith
+      have hε : (0 : ℝ) < δ / (M + 1) := by positivity
+      have he : (M + 1) * (δ / (M + 1)) = δ := by field_simp
+      have h2 : M * (δ / (M + 1)) ≤ (M + 1) * (δ / (M + 1)) :=
+        mul_le_mul_of_nonneg_right (by linarith) (by positivity)
+      have h3 : M * (1 + δ / (M + 1)) = M + M * (δ / (M + 1)) := by ring
+      linarith [hkey _ hε]
+    intro x
+    calc ‖f x‖ ≤ ‖f‖ * ‖x‖ := f.le_opNorm x
+      _ ≤ M * ‖x‖ := by gcongr
+  · -- The easy half: **112X**.2 again.
+    intro h t
+    rw [← tensor_basic_2 γ hγ t]
+    exact h _
+
+/-- An np-functional is bounded, with `‖ω‖ ≤ ω(1)`: Kadison's inequality
+`‖ω a‖ ≤ ‖a‖_ω √(ω 1)` together with `‖a‖_ω = ‖a·1‖_ω ≤ ‖a‖‖1‖_ω`. -/
+private theorem npFunctional_norm_le (ω : NPFunctional T) (a : T) :
+    ‖ω a‖ ≤ (ω 1).re * ‖a‖ := by
+  have h0 : (0 : ℝ) ≤ (ω 1).re := by
+    simpa using (Complex.le_def.mp (npFunctional_nonneg ω zero_le_one)).1
+  have h1 := norm_apply_le_omegaNorm ω a
+  have h2 : omegaNorm T ω a ≤ ‖a‖ * Real.sqrt (ω 1).re := by
+    have h := omegaNorm_mul_le ω a 1
+    rwa [mul_one, omegaNorm_one] at h
+  have h3 : Real.sqrt (ω 1).re * Real.sqrt (ω 1).re = (ω 1).re :=
+    Real.mul_self_sqrt h0
+  nlinarith [Real.sqrt_nonneg (ω 1).re, norm_nonneg a, omegaNorm_nonneg ω a]
+
+/-- An np-functional as a continuous linear functional. -/
+private noncomputable def npCLM (ω : NPFunctional T) : T →L[ℂ] ℂ :=
+  LinearMap.mkContinuous (npLin ω) ((ω 1).re) (npFunctional_norm_le ω)
+
+@[simp] private theorem npCLM_apply (ω : NPFunctional T) (a : T) :
+    npCLM ω a = ω a := rfl
 
 /-- **112X** (`tensor-basic`, proc.tex:2868, Exercise), part 5: every
 operator norm limit of simple functionals extends uniquely along `γ_⊙` to
@@ -2946,8 +3184,188 @@ theorem tensor_basic_5 (γ : A →ₗ[ℂ] B →ₗ[ℂ] T) (hγ : IsTensorProdu
       ∃! ω : NPFunctional T,
         ∀ s : A ⊗[ℂ] B, ω (TensorProduct.lift γ s) = ω' s) ∧
     uwTensorTopology A B =
-      TopologicalSpace.induced ⇑(TensorProduct.lift γ) (ultraweak T) :=
-  sorry
+      TopologicalSpace.induced ⇑(TensorProduct.lift γ) (ultraweak T) := by
+  -- Uniqueness is ultraweak density of `γ_⊙(𝒜 ⊙ ℬ)` (108II(1)); existence is
+  -- the thesis's route through **87III** `predual_complete`, with **112X**.4
+  -- supplying `‖f ∘ γ_⊙‖ = ‖f‖`, which is what makes the approximating
+  -- sequence Cauchy in `𝒯_*`.  The topology equality then follows: `≤` is
+  -- 112X.3's first conjunct, and `≥` is the factorisation just obtained.
+  have huniq : ∀ ω₁ ω₂ : NPFunctional T,
+      (∀ s : A ⊗[ℂ] B,
+        ω₁ (TensorProduct.lift γ s) = ω₂ (TensorProduct.lift γ s)) → ω₁ = ω₂ := by
+    intro ω₁ ω₂ h
+    letI : TopologicalSpace T := ultraweak T
+    refine DFunLike.coe_injective (Continuous.ext_on hγ.dense
+      (continuous_ultraweak_npFunctional ω₁)
+      (continuous_ultraweak_npFunctional ω₂) ?_)
+    intro t ht
+    rw [← range_lift_eq_span] at ht
+    obtain ⟨s, rfl⟩ := ht
+    exact h s
+  have hexists : ∀ ω' : A ⊗[ℂ] B →ₗ[ℂ] ℂ, NormLimitOfSimple A B ω' →
+      ∃ ω : NPFunctional T, ∀ s, ω (TensorProduct.lift γ s) = ω' s := by
+    intro ω' hω'
+    choose G hGs hGb using fun n : ℕ => hω' (1 / (n + 1)) (by positivity)
+    -- each simple functional lifts to a positive normal functional on `𝒯`
+    have hrep : ∀ n : ℕ, ∃ H : T →L[ℂ] ℂ,
+        (@Continuous T ℂ (ultraweak T) _ ⇑H) ∧ (∀ x : T, 0 ≤ x → 0 ≤ H x) ∧
+        ∀ t : A ⊗[ℂ] B, H (TensorProduct.lift γ t) = G n t := by
+      intro n
+      obtain ⟨k, ωs, hbasic, hsum⟩ := hGs n
+      choose σ τ u hu using fun i =>
+        exists_conjProdNP_of_isBasicFunctional hγ (ωs i) (hbasic i)
+      refine ⟨∑ i, npCLM (conjProdNP hγ (σ i) (τ i) (u i)), ?_, ?_, ?_⟩
+      · letI : TopologicalSpace T := ultraweak T
+        have hfun : ⇑(∑ i, npCLM (conjProdNP hγ (σ i) (τ i) (u i)))
+            = fun x : T => ∑ i, (conjProdNP hγ (σ i) (τ i) (u i) x : ℂ) := by
+          funext x
+          simp [ContinuousLinearMap.sum_apply]
+        rw [hfun]
+        exact continuous_finsetSum _ fun i _ =>
+          continuous_ultraweak_npFunctional _
+      · intro x hx
+        rw [ContinuousLinearMap.sum_apply]
+        exact Finset.sum_nonneg fun i _ => by
+          simpa using npFunctional_nonneg (conjProdNP hγ (σ i) (τ i) (u i)) hx
+      · intro t
+        rw [ContinuousLinearMap.sum_apply, hsum]
+        simp only [LinearMap.sum_apply, npCLM_apply]
+        exact Finset.sum_congr rfl fun i _ => (hu i t).symm
+    choose H hHc hHpos hHval using hrep
+    -- the sequence is Cauchy in the predual, by **112X**.4
+    have hdiff : ∀ n m : ℕ,
+        ‖H n - H m‖ ≤ 1 / (n + 1) + 1 / (m + 1) := by
+      intro n m
+      have hM : (0 : ℝ) ≤ 1 / (n + 1) + 1 / (m + 1) := by positivity
+      have hc : @Continuous T ℂ (ultraweak T) _ ⇑(H n - H m) := by
+        letI : TopologicalSpace T := ultraweak T
+        have : ⇑(H n - H m) = fun x : T => H n x - H m x := by
+          funext x; simp
+        rw [this]
+        exact (hHc n).sub (hHc m)
+      have hpt : ∀ x : T, ‖(H n - H m) x‖ ≤ (1 / (n + 1) + 1 / (m + 1)) * ‖x‖ := by
+        refine (tensor_basic_4 γ hγ (H n - H m) hc _ hM).mp ?_
+        intro t
+        rw [ContinuousLinearMap.sub_apply, hHval n t, hHval m t]
+        have e : G n t - G m t = -(ω' t - G n t) + (ω' t - G m t) := by ring
+        rw [e]
+        refine (norm_add_le _ _).trans ?_
+        rw [norm_neg]
+        have := hGb n t
+        have := hGb m t
+        rw [add_mul]
+        push_cast at *
+        linarith
+      exact ContinuousLinearMap.opNorm_le_bound _ hM hpt
+    have hCauchy : CauchySeq H := by
+      refine cauchySeq_of_le_tendsto_0 (fun N : ℕ => 2 / (N + 1)) ?_ ?_
+      · intro n m N hn hm
+        rw [dist_eq_norm]
+        refine (hdiff n m).trans ?_
+        have h1 : 1 / ((n : ℝ) + 1) ≤ 1 / (N + 1) := by
+          apply one_div_le_one_div_of_le <;> [positivity; exact_mod_cast by omega]
+        have h2 : 1 / ((m : ℝ) + 1) ≤ 1 / (N + 1) := by
+          apply one_div_le_one_div_of_le <;> [positivity; exact_mod_cast by omega]
+        have : (2 : ℝ) / (N + 1) = 1 / (N + 1) + 1 / (N + 1) := by ring
+        linarith
+      · have h : Tendsto (fun n : ℕ => (2 : ℝ) * (1 / ((n : ℝ) + 1))) atTop
+            (𝓝 ((2 : ℝ) * 0)) :=
+          Filter.Tendsto.const_mul (2 : ℝ) tendsto_one_div_add_atTop_nhds_zero_nat
+        rw [mul_zero] at h
+        exact h.congr fun n => by ring
+    obtain ⟨F, hFmem, hFtend⟩ :=
+      cauchySeq_tendsto_of_isComplete predual_complete (fun n => hHc n) hCauchy
+    have hFc : @Continuous T ℂ (ultraweak T) _ ⇑F := hFmem
+    have hev : ∀ x : T, Tendsto (fun n => H n x) atTop (𝓝 (F x)) := by
+      intro x
+      have hb : ∀ n, ‖H n x - F x‖ ≤ ‖H n - F‖ * ‖x‖ := by
+        intro n
+        simpa using (H n - F).le_opNorm x
+      have h1 : Tendsto (fun n => ‖H n - F‖) atTop (𝓝 0) :=
+        tendsto_iff_norm_sub_tendsto_zero.mp hFtend
+      have h0 : Tendsto (fun n => ‖H n - F‖ * ‖x‖) atTop (𝓝 0) := by
+        simpa using h1.mul_const ‖x‖
+      rw [tendsto_iff_norm_sub_tendsto_zero]
+      exact squeeze_zero (fun n => norm_nonneg _) hb h0
+    have hFpos : ∀ x : T, 0 ≤ x → 0 ≤ F x := by
+      intro x hx
+      have h := hev x
+      have hre : Tendsto (fun n => (H n x).re) atTop (𝓝 (F x).re) :=
+        (Complex.continuous_re.tendsto _).comp h
+      have him : Tendsto (fun n => (H n x).im) atTop (𝓝 (F x).im) :=
+        (Complex.continuous_im.tendsto _).comp h
+      rw [Complex.le_def]
+      refine ⟨?_, ?_⟩
+      · simpa using ge_of_tendsto hre (Filter.Eventually.of_forall
+          fun n => (Complex.le_def.mp (hHpos n x hx)).1)
+      · have hz : Tendsto (fun _ : ℕ => (0 : ℝ)) atTop (𝓝 (0 : ℝ)) :=
+          tendsto_const_nhds
+        have heq : (fun n : ℕ => (H n x).im) = fun _ : ℕ => (0 : ℝ) := by
+          funext n
+          exact ((Complex.le_def.mp (hHpos n x hx)).2).symm
+        rw [heq] at him
+        simpa using (tendsto_nhds_unique him hz).symm
+    have hFval : ∀ t : A ⊗[ℂ] B, F (TensorProduct.lift γ t) = ω' t := by
+      intro t
+      have h1 : Tendsto (fun n => G n t) atTop (𝓝 (F (TensorProduct.lift γ t))) := by
+        have := hev (TensorProduct.lift γ t)
+        simpa only [hHval] using this
+      have h2 : Tendsto (fun n : ℕ => G n t) atTop (𝓝 (ω' t)) := by
+        rw [tendsto_iff_norm_sub_tendsto_zero]
+        have hb : ∀ n : ℕ, ‖G n t - ω' t‖ ≤ 1 / (n + 1) * tensorNorm A B t := by
+          intro n
+          rw [norm_sub_rev]
+          exact_mod_cast hGb n t
+        have h0 : Tendsto (fun n : ℕ => 1 / ((n : ℝ) + 1) * tensorNorm A B t)
+            atTop (𝓝 0) := by
+          simpa using tendsto_one_div_add_atTop_nhds_zero_nat.mul_const
+            (tensorNorm A B t)
+        exact squeeze_zero (fun n => norm_nonneg _) hb h0
+      exact tendsto_nhds_unique h1 h2
+    -- package `F` as an np-functional
+    let g : T →ₚ[ℂ] ℂ :=
+      { toFun := fun x => F x
+        map_add' := fun x y => by simp
+        map_smul' := fun c x => by simp
+        monotone' := fun x y hxy => by
+          have h := hFpos (y - x) (sub_nonneg.mpr hxy)
+          rw [map_sub] at h
+          exact sub_nonneg.mp h }
+    refine ⟨⟨g, preservesDirSups_of_continuousOn_effects_functional g
+      (@Continuous.continuousOn T ℂ (ultraweak T) _ ⇑g (effects T) hFc)⟩, hFval⟩
+  refine ⟨fun ω' hω' => ?_, ?_⟩
+  · obtain ⟨ω, hω⟩ := hexists ω' hω'
+    exact ⟨ω, hω, fun ω₂ hω₂ => huniq ω₂ ω fun s => (hω₂ s).trans (hω s).symm⟩
+  refine le_antisymm (continuous_iff_le_induced.mp (tensor_basic_3 γ hγ).1) ?_
+  show TopologicalSpace.induced ⇑(TensorProduct.lift γ) (ultraweak T) ≤
+    ⨅ f : {f : A ⊗[ℂ] B →ₗ[ℂ] ℂ // NormLimitOfSimple A B f},
+      TopologicalSpace.induced (fun t => f.1 t) inferInstance
+  refine le_iInf fun f => ?_
+  obtain ⟨ω, hω⟩ := hexists f.1 f.2
+  have h1 : ultraweak T ≤
+      TopologicalSpace.induced (fun x : T => (ω x : ℂ)) inferInstance :=
+    continuous_iff_le_induced.mp (continuous_ultraweak_npFunctional ω)
+  calc TopologicalSpace.induced ⇑(TensorProduct.lift γ) (ultraweak T)
+      ≤ TopologicalSpace.induced ⇑(TensorProduct.lift γ)
+          (TopologicalSpace.induced (fun x : T => (ω x : ℂ)) inferInstance) :=
+        induced_mono h1
+    _ = TopologicalSpace.induced (fun t => f.1 t) inferInstance := by
+        rw [induced_compose]
+        congr 1
+        funext t
+        exact hω t
+
+/-- An ultraweak limit of a norm-bounded net is norm-bounded: every closed
+ball is ultraweakly closed (`isClosed_ultraweak_closedBall`).  The
+ultrastrong analogue is `norm_le_of_usTendsto`. -/
+private theorem norm_le_of_uwTendsto {ι : Type*} {l : Filter ι} [l.NeBot]
+    {x : ι → C} {y : C} {K : ℝ} (hK : 0 ≤ K) (hconv : UWTendsto x l y)
+    (hbdd : ∀ i, ‖x i‖ ≤ K) : ‖y‖ ≤ K := by
+  letI : TopologicalSpace C := ultraweak C
+  have h := (isClosed_ultraweak_closedBall hK).mem_of_tendsto hconv
+    (Filter.Eventually.of_forall fun i => by
+      simpa using hbdd i)
+  simpa using h
 
 /-- **112XI** (`tensor-universal-property`, proc.tex:2980, Theorem): a
 tensor product `γ : 𝒜 × ℬ → 𝒯` has the universal property that every
@@ -2965,7 +3383,130 @@ theorem tensor_universal_property (γ : A →ₗ[ℂ] B →ₗ[ℂ] T)
       (∀ (a : A) (b : B), g (γ a b) = β a b) →
       ∀ M : ℝ, 0 ≤ M →
         ((∀ t, ‖TensorProduct.lift β t‖ ≤ M * tensorNorm A B t) ↔
-          ∀ x : T, ‖g x‖ ≤ M * ‖x‖) := sorry
+          ∀ x : T, ‖g x‖ ≤ M * ‖x‖) := by
+  -- proc.tex:2998 verbatim: `β_⊙` is ultraweakly continuous and bounded, and
+  -- by **112X** `𝒜 ⊙ ℬ` *is* an ultraweakly dense ∗-subalgebra of `𝒯` via
+  -- `γ_⊙` — 112X.2 makes `γ_⊙` injective and isometric, 112X.5 identifies the
+  -- ultraweak tensor topology with the one induced from `𝒯` — so **77V**
+  -- `vn_extension` applies.  The "trivial details" the thesis skips are the
+  -- inverse `γ_⊙⁻¹` on the subalgebra and the `‖β_γ‖ = ‖β_⊙‖` half, which
+  -- needs the same 74VI approximation as 112X.4.
+  classical
+  have hinj : Function.Injective ⇑(TensorProduct.lift γ) := by
+    intro t t' h
+    have h0 : tensorNorm A B (t - t') = 0 := by
+      rw [← tensor_basic_2 γ hγ, map_sub, h, sub_self, norm_zero]
+    exact sub_eq_zero.mp ((tensorNorm_eq_zero_iff _).mp h0)
+  have hcomp : ∀ g : T →ₗ[ℂ] C, (∀ (a : A) (b : B), g (γ a b) = β a b) →
+      ∀ t : A ⊗[ℂ] B, g (TensorProduct.lift γ t) = TensorProduct.lift β t := by
+    intro g hg t
+    induction t using TensorProduct.induction_on with
+    | zero => simp
+    | tmul a b => simpa using hg a b
+    | add u v hu hv => rw [map_add, map_add, map_add, hu, hv]
+  set S : StarSubalgebra ℂ T := tensorSpan γ hγ.miu with hSdef
+  have hmemS : ∀ y : T, y ∈ S ↔ y ∈ Set.range ⇑(TensorProduct.lift γ) := by
+    intro y
+    rw [range_lift_eq_span, hSdef, ← SetLike.mem_coe, coe_tensorSpan]
+  have hSdense : @Dense T (ultraweak T) (S : Set T) := by
+    rw [hSdef, coe_tensorSpan]; exact hγ.dense
+  have hsurj : ∀ s : S, ∃ t : A ⊗[ℂ] B, TensorProduct.lift γ t = (s : T) :=
+    fun s => (hmemS _).mp s.2
+  choose pre hpre using hsurj
+  -- the linear map `f = β_⊙ ∘ γ_⊙⁻¹` on `S`
+  have hprelin : ∀ s s' : S, pre (s + s') = pre s + pre s' := by
+    intro s s'
+    refine hinj ?_
+    rw [hpre, map_add, hpre, hpre]
+    rfl
+  have hpresmul : ∀ (c : ℂ) (s : S), pre (c • s) = c • pre s := by
+    intro c s
+    refine hinj ?_
+    rw [hpre, map_smul, hpre]
+    rfl
+  obtain ⟨M₀, hM₀0, hM₀⟩ := hb
+  set f : S →ₗ[ℂ] C :=
+    { toFun := fun s => TensorProduct.lift β (pre s)
+      map_add' := fun s s' => by rw [hprelin, map_add]
+      map_smul' := fun c s => by rw [hpresmul, map_smul]; rfl } with hfdef
+  have hfcont : @Continuous S C
+      (TopologicalSpace.induced Subtype.val (ultraweak T)) (ultraweak C) ⇑f := by
+    have hprecont : @Continuous S (A ⊗[ℂ] B)
+        (TopologicalSpace.induced Subtype.val (ultraweak T))
+        (uwTensorTopology A B) pre := by
+      rw [(tensor_basic_5 γ hγ).2]
+      refine continuous_induced_rng.mpr ?_
+      have he : ⇑(TensorProduct.lift γ) ∘ pre = (Subtype.val : S → T) := funext hpre
+      rw [he]
+      exact continuous_induced_dom (f := (Subtype.val : S → T)) (t := ultraweak T)
+    exact @Continuous.comp S (A ⊗[ℂ] B) C
+      (TopologicalSpace.induced Subtype.val (ultraweak T))
+      (uwTensorTopology A B) (ultraweak C) _ _ hn hprecont
+  have hfbd : ∀ s : S, ‖f s‖ ≤ M₀ * ‖(s : T)‖ := by
+    intro s
+    have h1 := hM₀ (pre s)
+    rwa [← tensor_basic_2 γ hγ (pre s), hpre s] at h1
+  obtain ⟨g0, ⟨hg0c, hg0e⟩, -⟩ := vn_extension S hSdense f hfcont M₀ hfbd
+  have hg0γ : ∀ (a : A) (b : B), g0 (γ a b) = β a b := by
+    intro a b
+    have hmem : γ a b ∈ S := (hmemS _).mpr ⟨a ⊗ₜ[ℂ] b, by simp⟩
+    have h := hg0e ⟨γ a b, hmem⟩
+    have hp : pre ⟨γ a b, hmem⟩ = a ⊗ₜ[ℂ] b := by
+      refine hinj ?_
+      rw [hpre]
+      simp
+    rw [hfdef] at h
+    simp only [LinearMap.coe_mk, AddHom.coe_mk, hp] at h
+    simpa using h
+  have huniqg : ∀ g g' : T →ₗ[ℂ] C,
+      @Continuous T C (ultraweak T) (ultraweak C) ⇑g →
+      @Continuous T C (ultraweak T) (ultraweak C) ⇑g' →
+      (∀ (a : A) (b : B), g (γ a b) = β a b) →
+      (∀ (a : A) (b : B), g' (γ a b) = β a b) → g = g' := by
+    intro g g' hgc hg'c hg hg'
+    letI : TopologicalSpace T := ultraweak T
+    letI : TopologicalSpace C := ultraweak C
+    have _t2 : T2Space C := vn_positive_basic_1.1
+    refine DFunLike.coe_injective (Continuous.ext_on hγ.dense hgc hg'c ?_)
+    intro t ht
+    rw [← range_lift_eq_span] at ht
+    obtain ⟨u, rfl⟩ := ht
+    rw [hcomp g hg u, hcomp g' hg' u]
+  refine ⟨⟨g0, ⟨hg0c, hg0γ⟩, fun g' hg' => huniqg g' g0 hg'.1 hg0c hg'.2 hg0γ⟩,
+    fun g hgc hg M hM => ⟨fun h x => ?_, fun h t => ?_⟩⟩
+  · -- `‖β_γ‖ ≤ ‖β_⊙‖`: approximate `x` from `S` by **74VI** as in 112X.4
+    have hx0 : (0 : ℝ) ≤ ‖x‖ := norm_nonneg x
+    have hpos1 : (0 : ℝ) < M * ‖x‖ + 1 := by nlinarith
+    have hkey : ∀ ε : ℝ, 0 < ε → ‖g x‖ ≤ M * ‖x‖ * (1 + ε) := by
+      intro ε hε
+      obtain ⟨ι, l, hl, s, hs, hlim⟩ := dense_subalgebra S hSdense ε hε x
+      have _ : l.NeBot := hl
+      have huw : UWTendsto s l x := uwweaker_2 s l x hlim
+      have hgconv : UWTendsto (fun i => g (s i)) l (g x) :=
+        (@Continuous.tendsto T C (ultraweak T) (ultraweak C) ⇑g hgc x).comp huw
+      refine norm_le_of_uwTendsto
+        (mul_nonneg (mul_nonneg hM hx0) (by linarith)) hgconv fun i => ?_
+      obtain ⟨v, hv⟩ := (hmemS (s i)).mp (hs i).1
+      have h1 : g (s i) = TensorProduct.lift β v := by rw [← hv, hcomp g hg v]
+      rw [h1]
+      refine (h v).trans ?_
+      rw [← tensor_basic_2 γ hγ v, hv]
+      calc M * ‖s i‖ ≤ M * (‖x‖ * (1 + ε)) :=
+            mul_le_mul_of_nonneg_left (hs i).2 hM
+        _ = M * ‖x‖ * (1 + ε) := by ring
+    refine le_of_forall_pos_le_add fun δ hδ => ?_
+    have hd : (0 : ℝ) < δ / (M * ‖x‖ + 1) := div_pos hδ hpos1
+    have hk := hkey _ hd
+    have he : (M * ‖x‖ + 1) * (δ / (M * ‖x‖ + 1)) = δ := by field_simp
+    have h2 : M * ‖x‖ * (δ / (M * ‖x‖ + 1))
+        ≤ (M * ‖x‖ + 1) * (δ / (M * ‖x‖ + 1)) :=
+      mul_le_mul_of_nonneg_right (by linarith) hd.le
+    have hexp : M * ‖x‖ * (1 + δ / (M * ‖x‖ + 1))
+        = M * ‖x‖ + M * ‖x‖ * (δ / (M * ‖x‖ + 1)) := by ring
+    linarith
+  · -- `‖β_⊙‖ ≤ ‖β_γ‖`: immediate from 112X.2
+    rw [← hcomp g hg t, ← tensor_basic_2 γ hγ t]
+    exact h _
 
 end TensorBasic
 

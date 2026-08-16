@@ -939,114 +939,15 @@ private theorem np_real_smul (ω : NPFunctional A) (r : ℝ) (a : A) :
   rw [← Complex.coe_smul]
   exact (map_smul ω.toPositiveLinearMap _ _).trans (smul_eq_mul _ _)
 
-private theorem plm_real_smul (g : A →ₚ[ℂ] ℂ) (r : ℝ) (a : A) :
-    (g (r • a) : ℂ) = (r : ℂ) * g a := by
-  rw [← Complex.coe_smul]
-  exact (map_smul g _ _).trans (smul_eq_mul _ _)
-
-/-- **44XV**, (2) ⇒ (3), for functionals. -/
+/-- **44XV**, (2) ⇒ (3), for functionals: a positive linear functional that
+is ultraweakly continuous on the effects is normal.  This is the general
+`Theses.A.VN.preservesDirSups_of_continuousOn_effects` (`A/VN/Basic.lean`)
+with target `B = ℂ`, which is a von Neumann algebra whose ultraweak topology
+is its usual one (`ultraweak_complex`). -/
 theorem preservesDirSups_of_continuousOn_effects_functional (g : A →ₚ[ℂ] ℂ)
     (h : @ContinuousOn A ℂ (ultraweak A) _ ⇑g (effects A)) :
-    PreservesDirSups ⇑g := by
-  let _ : TopologicalSpace A := ultraweak A
-  intro D s hne hdir hlub
-  refine ⟨?_, ?_⟩
-  · rintro _ ⟨d, hd, rfl⟩
-    exact g.monotone (Subtype.coe_le_coe.mpr (hlub.1 hd))
-  intro z hz
-  obtain ⟨d₀, hd₀⟩ := hne
-  set D' : Set (selfAdjoint A) := {d ∈ D | d₀ ≤ d} with hD'
-  have hne' : D'.Nonempty := ⟨d₀, hd₀, le_refl _⟩
-  have hdir' : DirectedOn (· ≤ ·) D' := by
-    rintro x ⟨hxD, hx0⟩ y ⟨hyD, hy0⟩
-    obtain ⟨e, heD, hxe, hye⟩ := hdir x hxD y hyD
-    exact ⟨e, ⟨heD, hx0.trans hxe⟩, hxe, hye⟩
-  have hlub' : IsLUB D' s := by
-    refine ⟨fun d hd => hlub.1 hd.1, fun u hu => hlub.2 fun d hd => ?_⟩
-    obtain ⟨e, heD, hde, h0e⟩ := hdir d hd d₀ hd₀
-    exact hde.trans (hu ⟨heD, h0e⟩)
-  have hd₀s : ((d₀ : selfAdjoint A) : A) ≤ (s : A) :=
-    Subtype.coe_le_coe.mpr (hlub.1 hd₀)
-  set c : ℝ := ‖(s : A) - ((d₀ : selfAdjoint A) : A)‖ with hc
-  by_cases hc0 : c = 0
-  · have hsd : (s : A) = ((d₀ : selfAdjoint A) : A) :=
-      sub_eq_zero.mp (norm_eq_zero.mp hc0)
-    rw [hsd]
-    exact hz ⟨d₀, hd₀, rfl⟩
-  have hcpos : 0 < c := lt_of_le_of_ne (norm_nonneg _) (Ne.symm hc0)
-  set e : A → A := fun a => c⁻¹ • (a - ((d₀ : selfAdjoint A) : A)) with he
-  have heff : ∀ a : A, ((d₀ : selfAdjoint A) : A) ≤ a → a ≤ (s : A) →
-      e a ∈ effects A := by
-    intro a h1 h2
-    have hnn : (0 : A) ≤ a - ((d₀ : selfAdjoint A) : A) := sub_nonneg.mpr h1
-    refine ⟨smul_nonneg (inv_nonneg.mpr hcpos.le) hnn, ?_⟩
-    have hle : a - ((d₀ : selfAdjoint A) : A) ≤ c • (1 : A) := by
-      refine (sub_le_sub_right h2 _).trans ?_
-      simpa [hc] using le_norm_smul_one (sub_nonneg.mpr hd₀s)
-    have := smul_le_smul_of_nonneg_left hle (inv_nonneg.mpr hcpos.le)
-    rwa [smul_smul, inv_mul_cancel₀ hcpos.ne', one_smul] at this
-  have hes : e (s : A) ∈ effects A := heff _ hd₀s le_rfl
-  have hnonempty : Nonempty D' := ⟨⟨d₀, hd₀, le_refl _⟩⟩
-  have hdo : IsDirectedOrder D' := directedOn_iff_isDirectedOrder.mp hdir'
-  have hh' : D'.Nonempty ∧ DirectedOn (· ≤ ·) D' ∧ BddAbove D' :=
-    ⟨hne', hdir', ⟨s, hlub'.1⟩⟩
-  have hsup : dirSup D' hh' = s := (isLUB_dirSup D' hh').unique hlub'
-  have hbase : UWTendsto (fun d : D' => ((d : selfAdjoint A) : A)) atTop (s : A) := by
-    have := vna_supremum_uwlimit D' hh'
-    rwa [hsup] at this
-  have hnet : UWTendsto (fun d : D' => e ((d : selfAdjoint A) : A)) atTop
-      (e (s : A)) := by
-    rw [uwTendsto_iff] at hbase ⊢
-    intro ω
-    have h1 := ((hbase ω).sub (tendsto_const_nhds
-      (x := (ω ((d₀ : selfAdjoint A) : A) : ℂ)) (f := (atTop : Filter D')))).const_mul
-      ((c⁻¹ : ℝ) : ℂ)
-    have hrw : ∀ a : A, (ω (e a) : ℂ)
-        = ((c⁻¹ : ℝ) : ℂ) * (ω a - ω ((d₀ : selfAdjoint A) : A)) := by
-      intro a
-      rw [he]
-      simp only [np_real_smul, npFunctional_sub]
-    simp only [hrw]
-    exact h1
-  have hin : ∀ᶠ d : D' in atTop, e ((d : selfAdjoint A) : A) ∈ effects A :=
-    Eventually.of_forall fun d =>
-      heff _ (Subtype.coe_le_coe.mpr d.2.2) (Subtype.coe_le_coe.mpr (hlub'.1 d.2))
-  have htw : Tendsto (fun d : D' => e ((d : selfAdjoint A) : A)) atTop
-      (𝓝[effects A] (e (s : A))) :=
-    tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within _ hnet hin
-  have hfnet : Tendsto (fun d : D' => (g (e ((d : selfAdjoint A) : A)) : ℂ)) atTop
-      (𝓝 (g (e (s : A)))) := Filter.Tendsto.comp (h _ hes) htw
-  have hback : ∀ a : A, (g a : ℂ)
-      = ((c : ℝ) : ℂ) * g (e a) + g ((d₀ : selfAdjoint A) : A) := by
-    intro a
-    rw [he]
-    simp only
-    rw [plm_real_smul, map_sub]
-    have hcne : ((c : ℝ) : ℂ) ≠ 0 := by exact_mod_cast hcpos.ne'
-    push_cast
-    field_simp
-    ring
-  have hfd : Tendsto (fun d : D' => (g ((d : selfAdjoint A) : A) : ℂ)) atTop
-      (𝓝 (g (s : A))) := by
-    have h1 := (hfnet.const_mul (((c : ℝ) : ℂ))).add_const
-      ((g ((d₀ : selfAdjoint A) : A) : ℂ))
-    rw [show (g (s : A) : ℂ) = ((c : ℝ) : ℂ) * g (e (s : A))
-      + g ((d₀ : selfAdjoint A) : A) from hback _]
-    exact h1.congr fun d => (hback _).symm
-  have hle : ∀ d : D', (g ((d : selfAdjoint A) : A) : ℂ) ≤ z := fun d =>
-    hz ⟨(d : selfAdjoint A), d.2.1, rfl⟩
-  have hre : (g (s : A) : ℂ).re ≤ z.re :=
-    le_of_tendsto ((Complex.continuous_re.tendsto _).comp hfd)
-      (Eventually.of_forall fun d => (Complex.le_def.mp (hle d)).1)
-  have him : (g (s : A) : ℂ).im = z.im := by
-    have h1 : Tendsto (fun d : D' => (g ((d : selfAdjoint A) : A) : ℂ).im) atTop
-        (𝓝 (g (s : A) : ℂ).im) := (Complex.continuous_im.tendsto _).comp hfd
-    have h2 : Tendsto (fun d : D' => (g ((d : selfAdjoint A) : A) : ℂ).im) atTop
-        (𝓝 z.im) := by
-      refine Tendsto.congr' (Eventually.of_forall fun d => ?_) tendsto_const_nhds
-      exact ((Complex.le_def.mp (hle d)).2).symm
-    exact tendsto_nhds_unique h1 h2
-  exact Complex.le_def.mpr ⟨hre, him⟩
+    PreservesDirSups ⇑g :=
+  preservesDirSups_of_continuousOn_effects g (by rwa [ultraweak_complex])
 
 
 /-- **86IX** (`polar-decomposition-of-functional`, vn.tex:6373, Theorem
@@ -3875,13 +3776,10 @@ theorem vn_center_separating_fundamental_1 (Ω : Set (NPFunctional A))
 /-! ### The direct-sum GNS representation `ϱ_Ω` over a *set* of functionals
 
 **90II**.2 runs through `ϱ_Ω : 𝒜 → 𝔅(ℋ_Ω)`, `ℋ_Ω = ⊕_{ω∈Ω} ℋ_ω`, for the
-given collection `Ω` — whereas `A/VN/Basic.lean` builds `⊕_ω ℋ_ω` over *all*
-np-functionals (`gnsHilb`, **48VIII**).  The block below is that construction
-with the index set cut down to `Ω`; it is a near-verbatim copy of the
-`GNSSum` section of `Basic.lean`, kept here rather than obtained by
-generalising the original because `Basic.lean` sits at the root of the import
-graph.  Whoever next touches `Basic.lean` should generalise `gnsHilb` over an
-index family and delete this copy.
+given collection `Ω`.  `A/VN/Basic.lean`'s `GNSSum` section now builds this
+for an arbitrary family `F : ι → NPFunctional A` (`gnsHilbFam`, `gnsRepFam`),
+so the definitions below are its instance at `F = Subtype.val`; the
+`gnsHilb`/`gnsRep` of **48VIII** are its instance at `F = id`.
 
 The one genuinely new item is `gnsRepOn_injective`: `ϱ_Ω(a) = 0` says
 `ω(b* a*a b) = ‖ϱ_Ω(a) η_ω(b)‖² = 0` for all `ω ∈ Ω` and `b`, so `a*a = 0`
@@ -3891,114 +3789,21 @@ exactly when `Ω` is centre separating in the sense of cstar.tex **21II**.4.
 section GNSSumOn
 
 variable (A) in
-/-- `ℋ_Ω = ⊕_{ω∈Ω} ℋ_ω`. -/
+/-- `ℋ_Ω = ⊕_{ω∈Ω} ℋ_ω`: `A/VN/Basic.lean`'s `gnsHilbFam` at the family
+`Subtype.val : Ω → NPFunctional A`. -/
 abbrev gnsHilbOn (Ω : Set (NPFunctional A)) : Type u :=
-  lp (fun ω : Ω => (ω : NPFunctional A).toPositiveLinearMap.GNS) 2
+  gnsHilbFam (Subtype.val : Ω → NPFunctional A)
 
 variable {Ω : Set (NPFunctional A)}
 
 private theorem rpow_two_toReal' (x : ℝ) : x ^ (2 : ℝ≥0∞).toReal = x ^ 2 := by
   rw [show (2 : ℝ≥0∞).toReal = ((2 : ℕ) : ℝ) by norm_num, Real.rpow_natCast]
 
-/-- The pointwise (diagonal) action of `a` on `⊕_{ω∈Ω} ℋ_ω`. -/
-private noncomputable def gnsDiagFunOn (a : A) (y : gnsHilbOn A Ω) :
-    ∀ ω : Ω, (ω : NPFunctional A).toPositiveLinearMap.GNS :=
-  fun ω => (ω : NPFunctional A).toPositiveLinearMap.gnsStarAlgHom a
-    ((y : ∀ ω : Ω, _) ω)
-
-private theorem gnsDiagOn_memlp (a : A) (y : gnsHilbOn A Ω) :
-    Memℓp (gnsDiagFunOn a y) 2 := by
-  refine memℓp_gen ?_
-  have hy : Summable (fun ω : Ω => ‖(y : ∀ ω : Ω, _) ω‖ ^ (2 : ℝ≥0∞).toReal) :=
-    (lp.hasSum_norm (by norm_num) y).summable
-  refine Summable.of_nonneg_of_le (fun _ => Real.rpow_nonneg (norm_nonneg _) _)
-    (fun ω => ?_) (hy.mul_left (‖a‖ ^ 2))
-  rw [rpow_two_toReal', rpow_two_toReal']
-  simp only [gnsDiagFunOn]
-  have h := starAlgHom_apply_norm_le
-    ((ω : NPFunctional A).toPositiveLinearMap.gnsStarAlgHom) a ((y : ∀ ω : Ω, _) ω)
-  have h3 := pow_le_pow_left₀ (norm_nonneg _) h 2
-  rwa [mul_pow] at h3
-
-/-- The diagonal action of `a` on `⊕_{ω∈Ω} ℋ_ω` as a linear map. -/
-private noncomputable def gnsDiagLinOn (a : A) : gnsHilbOn A Ω →ₗ[ℂ] gnsHilbOn A Ω where
-  toFun y := ⟨gnsDiagFunOn a y, gnsDiagOn_memlp a y⟩
-  map_add' y z := by
-    refine Subtype.ext (funext fun ω => ?_)
-    show gnsDiagFunOn a (y + z) ω = gnsDiagFunOn a y ω + gnsDiagFunOn a z ω
-    simp [gnsDiagFunOn]
-  map_smul' c y := by
-    refine Subtype.ext (funext fun ω => ?_)
-    show gnsDiagFunOn a (c • y) ω = c • gnsDiagFunOn a y ω
-    simp [gnsDiagFunOn]
-
-private theorem gnsDiagLinOn_apply_coe (a : A) (y : gnsHilbOn A Ω) (ω : Ω) :
-    ((gnsDiagLinOn a y : gnsHilbOn A Ω) : ∀ ω : Ω, _) ω
-      = (ω : NPFunctional A).toPositiveLinearMap.gnsStarAlgHom a
-        ((y : ∀ ω : Ω, _) ω) := rfl
-
-private theorem gnsDiagLinOn_norm_le (a : A) (y : gnsHilbOn A Ω) :
-    ‖gnsDiagLinOn a y‖ ≤ ‖a‖ * ‖y‖ := by
-  have hp : (0:ℝ) < (2 : ℝ≥0∞).toReal := by norm_num
-  have hsum1 := lp.hasSum_norm hp (gnsDiagLinOn a y)
-  have hsum2 := lp.hasSum_norm hp y
-  have hle : ∀ ω : Ω,
-      ‖((gnsDiagLinOn a y : gnsHilbOn A Ω) : ∀ ω : Ω, _) ω‖ ^ (2 : ℝ≥0∞).toReal
-        ≤ ‖a‖ ^ 2 * ‖(y : ∀ ω : Ω, _) ω‖ ^ (2 : ℝ≥0∞).toReal := by
-    intro ω
-    rw [rpow_two_toReal', rpow_two_toReal', gnsDiagLinOn_apply_coe]
-    have h := starAlgHom_apply_norm_le
-      ((ω : NPFunctional A).toPositiveLinearMap.gnsStarAlgHom) a ((y : ∀ ω : Ω, _) ω)
-    have h3 := pow_le_pow_left₀ (norm_nonneg _) h 2
-    rwa [mul_pow] at h3
-  have hkey : ‖gnsDiagLinOn a y‖ ^ (2 : ℝ≥0∞).toReal
-      ≤ ‖a‖ ^ 2 * ‖y‖ ^ (2 : ℝ≥0∞).toReal := by
-    rw [← hsum1.tsum_eq, ← hsum2.tsum_eq, ← tsum_mul_left]
-    exact hsum1.summable.tsum_le_tsum hle (hsum2.summable.mul_left _)
-  rw [rpow_two_toReal', rpow_two_toReal'] at hkey
-  have hsq : ‖gnsDiagLinOn a y‖ ^ 2 ≤ (‖a‖ * ‖y‖) ^ 2 := by rw [mul_pow]; exact hkey
-  exact le_of_pow_le_pow_left₀ (by norm_num) (by positivity) hsq
-
-/-- The diagonal action of `a` on `⊕_{ω∈Ω} ℋ_ω` as a bounded operator. -/
-private noncomputable def gnsDiagOn (a : A) : gnsHilbOn A Ω →L[ℂ] gnsHilbOn A Ω :=
-  LinearMap.mkContinuous (gnsDiagLinOn a) ‖a‖ (gnsDiagLinOn_norm_le a)
-
-@[simp] private theorem gnsDiagOn_apply_coe (a : A) (y : gnsHilbOn A Ω) (ω : Ω) :
-    ((gnsDiagOn a y : gnsHilbOn A Ω) : ∀ ω : Ω, _) ω
-      = (ω : NPFunctional A).toPositiveLinearMap.gnsStarAlgHom a
-        ((y : ∀ ω : Ω, _) ω) := rfl
-
-private theorem gnsHilbOn_ext {y z : gnsHilbOn A Ω}
-    (h : ∀ ω : Ω, (y : ∀ ω : Ω, _) ω = (z : ∀ ω : Ω, _) ω) : y = z :=
-  Subtype.ext (funext h)
-
 variable (Ω) in
 /-- The direct-sum GNS representation `ϱ_Ω : A → B(⊕_{ω∈Ω} ℋ_ω)` over a
-*set* `Ω` of np-functionals. -/
-noncomputable def gnsRepOn : A →⋆ₐ[ℂ] (gnsHilbOn A Ω →L[ℂ] gnsHilbOn A Ω) where
-  toFun := gnsDiagOn
-  map_one' := by
-    refine ContinuousLinearMap.ext fun y => gnsHilbOn_ext fun ω => ?_
-    simp
-  map_mul' a b := by
-    refine ContinuousLinearMap.ext fun y => gnsHilbOn_ext fun ω => ?_
-    simp
-  map_zero' := by
-    refine ContinuousLinearMap.ext fun y => gnsHilbOn_ext fun ω => ?_
-    simp
-  map_add' a b := by
-    refine ContinuousLinearMap.ext fun y => gnsHilbOn_ext fun ω => ?_
-    simp
-  commutes' r := by
-    refine ContinuousLinearMap.ext fun y => gnsHilbOn_ext fun ω => ?_
-    simp [Algebra.algebraMap_eq_smul_one]
-  map_star' a := by
-    refine (ContinuousLinearMap.eq_adjoint_iff _ _).mpr fun x y => ?_
-    rw [lp.inner_eq_tsum, lp.inner_eq_tsum]
-    refine tsum_congr fun ω => ?_
-    show (⟪(ω : NPFunctional A).toPositiveLinearMap.gnsStarAlgHom (star a) _, _⟫) = _
-    rw [map_star]
-    exact ContinuousLinearMap.adjoint_inner_left _ _ _
+*set* `Ω` of np-functionals (**48V** at `Subtype.val`). -/
+noncomputable def gnsRepOn : A →⋆ₐ[ℂ] (gnsHilbOn A Ω →L[ℂ] gnsHilbOn A Ω) :=
+  gnsRepFam (Subtype.val : Ω → NPFunctional A)
 
 @[simp] theorem gnsRepOn_apply_coe (a : A) (y : gnsHilbOn A Ω) (ω : Ω) :
     ((gnsRepOn Ω a y : gnsHilbOn A Ω) : ∀ ω : Ω, _) ω
@@ -4008,46 +3813,15 @@ noncomputable def gnsRepOn : A →⋆ₐ[ℂ] (gnsHilbOn A Ω →L[ℂ] gnsHilbO
 open scoped Classical in
 /-- The "elementary" vectors `η_ω(b)` of `⊕_{ω∈Ω} ℋ_ω`. -/
 def gnsElemVecsOn (Ω : Set (NPFunctional A)) : Set (gnsHilbOn A Ω) :=
-  {y | ∃ (ω : Ω) (b : A), y = lp.single 2 ω (gnsVec (ω : NPFunctional A) b)}
+  gnsElemVecsFam (Subtype.val : Ω → NPFunctional A)
 
 theorem gnsElemVecsOn_separating (R : gnsHilbOn A Ω →L[ℂ] gnsHilbOn A Ω)
-    (h : ∀ y ∈ gnsElemVecsOn Ω, R y = 0) : R = 0 := by
-  classical
-  have hsingle : ∀ (ω : Ω) (z : (ω : NPFunctional A).toPositiveLinearMap.GNS),
-      R (lp.single 2 ω z) = 0 := by
-    intro ω
-    have hcont : Continuous
-        fun z : (ω : NPFunctional A).toPositiveLinearMap.GNS => R (lp.single 2 ω z) :=
-      R.continuous.comp
-        (lp.singleContinuousLinearMap ℂ
-          (fun ω : Ω => (ω : NPFunctional A).toPositiveLinearMap.GNS) 2 ω).continuous
-    have hdense : Dense (Set.range (gnsVec (ω : NPFunctional A))) :=
-      gnsVec_denseRange (ω : NPFunctional A)
-    have hfun := Continuous.ext_on hdense hcont continuous_const
-      (fun x hx => by obtain ⟨b, rfl⟩ := hx; exact h _ ⟨ω, b, rfl⟩)
-    exact fun z => congrFun hfun z
-  refine ContinuousLinearMap.ext fun y => ?_
-  have hs : HasSum (fun ω : Ω => lp.single 2 ω ((y : ∀ ω : Ω, _) ω)) y :=
-    lp.hasSum_single (by norm_num) y
-  have hmap := hs.mapL R
-  have h0 : HasSum (fun _ : Ω => (0 : gnsHilbOn A Ω)) (R y) := by
-    refine hmap.congr_fun fun ω => ?_
-    exact (hsingle ω ((y : ∀ ω : Ω, _) ω)).symm
-  simpa using (hasSum_zero.unique h0).symm
+    (h : ∀ y ∈ gnsElemVecsOn Ω, R y = 0) : R = 0 :=
+  gnsElemVecsFam_separating _ R h
 
-set_option maxHeartbeats 2000000 in
-theorem gnsRepOn_normal : PreservesDirSups ⇑(gnsRepOn (A := A) Ω) := by
-  classical
-  refine starAlgHom_preservesDirSups_of_vectors (gnsRepOn Ω) (gnsElemVecsOn Ω)
-    gnsElemVecsOn_separating ?_
-  rintro _ ⟨ω, b, rfl⟩
-  refine ⟨conjNP b (ω : NPFunctional A), fun a => ?_⟩
-  rw [lp.inner_single_left]
-  show (⟪gnsVec (ω : NPFunctional A) b,
-    ((gnsRepOn Ω a (lp.single 2 ω (gnsVec (ω : NPFunctional A) b)) : gnsHilbOn A Ω) :
-      ∀ _ : Ω, _) ω⟫) = _
-  rw [gnsRepOn_apply_coe, lp.single_apply_self, gnsRep_gnsVec, gnsVec_inner,
-    conjNP_apply, mul_assoc]
+theorem gnsRepOn_normal : PreservesDirSups ⇑(gnsRepOn (A := A) Ω) :=
+  gnsRepFam_normal _
+
 
 /-- `ϱ_Ω` is injective exactly when `Ω` is centre separating (cstar.tex
 **21II**.4): `ϱ_Ω(a) = 0` says `ω(b* a* a b) = ‖ϱ_Ω(a) η_ω(b)‖² = 0`. -/

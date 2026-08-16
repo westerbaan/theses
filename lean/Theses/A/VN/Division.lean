@@ -780,8 +780,63 @@ theorem pseudoinverse_basic_2'_5 :
     ∃ x : lp (fun _ : ℕ => ℂ) ∞,
       (∀ n : ℕ, (x : ∀ _ : ℕ, ℂ) n =
         if n < 2 then 0 else ((n : ℂ) - 1)⁻¹) ∧
-      ¬Pseudoinvertible (lp (fun _ : ℕ => ℂ) ∞) x :=
-  sorry
+      ¬Pseudoinvertible (lp (fun _ : ℕ => ℂ) ∞) x := by
+  classical
+  set g : ∀ _ : ℕ, ℂ := fun n => if n < 2 then 0 else ((n : ℂ) - 1)⁻¹ with hg
+  have hcast : ∀ n : ℕ, 2 ≤ n → ((n : ℂ) - 1) = (((n : ℝ) - 1 : ℝ) : ℂ) := by
+    intro n _; push_cast; ring
+  have hnorm : ∀ n : ℕ, 2 ≤ n → ‖(n : ℂ) - 1‖ = (n : ℝ) - 1 := by
+    intro n hn
+    have h1 : (1 : ℝ) ≤ (n : ℝ) - 1 := by
+      have : (2 : ℝ) ≤ (n : ℝ) := by exact_mod_cast hn
+      linarith
+    rw [hcast n hn, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by linarith)]
+  have hgval : ∀ n : ℕ, g n = if n < 2 then (0 : ℂ) else ((n : ℂ) - 1)⁻¹ :=
+    fun _ => rfl
+  have hbd : ∀ n : ℕ, ‖g n‖ ≤ 1 := by
+    intro n
+    rw [hgval n]
+    by_cases h : n < 2
+    · simp [h]
+    · push_neg at h
+      rw [if_neg (Nat.not_lt.mpr h), norm_inv, hnorm n h]
+      refine inv_le_one_of_one_le₀ ?_
+      have : (2 : ℝ) ≤ (n : ℝ) := by exact_mod_cast h
+      linarith
+  have hmem : Memℓp g ∞ := memℓp_infty ⟨1, by rintro _ ⟨n, rfl⟩; exact hbd n⟩
+  refine ⟨⟨g, hmem⟩, fun n => rfl, ?_⟩
+  rintro ⟨t, -, -, -, h4⟩
+  set x : lp (fun _ : ℕ => ℂ) ∞ := ⟨g, hmem⟩ with hx
+  -- `⌊x⌉x = x` (**59VI**.2), so `x t x = x` pointwise
+  have hkey : x * t * x = x := by
+    rw [h4]; exact (ceill_basic_2 x).1.2
+  have hcoord : ∀ n : ℕ, g n * (t : ∀ _ : ℕ, ℂ) n * g n = g n := by
+    intro n
+    have h := congrArg (fun y : lp (fun _ : ℕ => ℂ) ∞ => (y : ∀ _ : ℕ, ℂ) n) hkey
+    simpa only [lp.infty_coeFn_mul, Pi.mul_apply] using h
+  -- for `n ≥ 2` this forces `tₙ = n − 1`, which is unbounded
+  have hval : ∀ n : ℕ, 2 ≤ n → (t : ∀ _ : ℕ, ℂ) n = (n : ℂ) - 1 := by
+    intro n hn
+    have hgn : g n = ((n : ℂ) - 1)⁻¹ := by
+      rw [hgval n, if_neg (Nat.not_lt.mpr hn)]
+    have hne : ((n : ℂ) - 1) ≠ 0 := by
+      intro h0
+      have h1 := hnorm n hn
+      rw [h0, norm_zero] at h1
+      have h2 : (2 : ℝ) ≤ (n : ℝ) := by exact_mod_cast hn
+      linarith
+    have h := hcoord n
+    rw [hgn] at h
+    field_simp at h
+    exact h
+  obtain ⟨N, hN⟩ := exists_nat_gt (‖t‖ + 2)
+  have hN2 : 2 ≤ N := by
+    have : (0 : ℝ) ≤ ‖t‖ := norm_nonneg _
+    have h2 : (2 : ℝ) < (N : ℝ) := by linarith
+    exact_mod_cast h2.le
+  have hle : ‖(t : ∀ _ : ℕ, ℂ) N‖ ≤ ‖t‖ := lp.norm_apply_le_norm (by simp) t N
+  rw [hval N hN2, hnorm N hN2] at hle
+  linarith
 
 /-! ## Parsec 800: approximate pseudoinverses -/
 

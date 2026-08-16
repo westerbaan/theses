@@ -1,11 +1,59 @@
 # `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–80, sessions 47–55)
 
-**Headline count: A/Proc has 77 code `sorry`s** after session 55.
-Per file: `Tensor` **38** (was 39), `Measurement` **11**, `QuantumLambda` 17,
+**Headline count: A/Proc has 72 code `sorry`s** after session 57.
+Per file: `Tensor` **33** (was 38), `Measurement` **11**, `QuantumLambda` 17,
 `Duplicators` **11**.  (`grep -c sorry` over-counts, because the file
 docstrings mention `sorry` in prose; the code counts are the ones above.
 Note `\bsorry\b` also matches "sorry-ed" in prose — count the compiler's
 `declaration uses \`sorry\`` warnings instead.)
+
+> **Session 57 — 112X IS CLOSED WHOLE (all five parts) AND SO IS 112XI
+> `tensor_universal_property`.  A/Proc has no external frontier at all.**
+> The session-55/56 notes below are correct but their blocker lists are now
+> stale in the decisive place: **A/VN session 56 finished
+> `NormalFunctionals.lean`**, so **86IX** `polar_decomposition_of_functional`
+> and **87III** `predual_complete` — the last two external gates, which the
+> notes below still list as `sorry` — were already proved when this session
+> started.  112X.4 and 112X.5 were therefore local, not blocked, and with
+> them 112XI.  `Tensor.lean` 38 → 33; A/Proc **77 → 72**.
+>
+> * **112X.2** `‖γ_⊙ s‖ = ‖s‖`.  The route in the session-55 note (rescale
+>   `Ω` to the unital `Ω₁`, apply **21VII** `order_separating_norm`) was not
+>   used and is *not* needed: the `≤` half is 112X.1's order-separating
+>   conjunct applied directly at `γ_⊙(s)*γ_⊙(s) ≤ ‖s‖²·1`, which is 21VII's
+>   own argument with the `Ω → Ω₁` renormalisation left out.  The predicted
+>   "sSup bookkeeping" reduced to one private lemma, `basic_star_self_le`
+>   (`ω(s* s) ≤ ‖s‖²ω(1)` for every basic `ω`, by rescaling `ω` by `ω(1)⁻¹`
+>   — the `ω(1) = 0` branch is `basic_norm_le_tensorNorm`).  The `≥` half is
+>   `χ(γ_⊙(s)*γ_⊙(s)) ≤ ‖γ_⊙ s‖²χ(1)` through
+>   `exists_conjProdNP_of_isBasicFunctional`.
+> * **112X.3** is 112X.1's second conjunct restricted along `γ_⊙`
+>   (`isBasicFunctional_comp_lift` makes each summand basic, 112X.2 converts
+>   `ε‖γ_⊙ t‖` to `ε‖t‖`), plus `iInf_le` for the continuity half.
+> * **112X.4** `‖f ∘ γ_⊙‖ = ‖f‖` is the thesis's argument verbatim: **86IX**
+>   gives the partial isometry `u` with `f(u) = ‖f‖` (**86XI**
+>   `functional_norm`), **74VI** approximates it with `‖s_α‖ ≤ ‖u‖(1+ε)`,
+>   and 112X.2 converts the bound.
+> * **112X.5**: the extension is the thesis's route through **87III**, with
+>   112X.4 supplying the isometry that makes the approximating sequence
+>   Cauchy in `𝒯_*`; the limit is positive by a re/im argument and normal by
+>   `preservesDirSups_of_continuousOn_effects_functional` (banked by A/VN in
+>   session 56 — it is exactly what turns an ultraweakly continuous positive
+>   functional into an `NPFunctional`).  The topology equality is
+>   `le_antisymm` of 112X.3's first conjunct and `induced_mono` applied to
+>   the factorisation just obtained.
+> * **112XI** is **77V** `vn_extension` on `S = tensorSpan γ`, exactly as
+>   proc.tex:2998 says.  The "trivial details" the thesis waves at are two:
+>   the inverse `γ_⊙⁻¹ : S → 𝒜⊙ℬ` (`γ_⊙` is injective because it is an
+>   isometry, 112X.2) built by `choose`, and the `‖β_γ‖ ≤ ‖β_⊙‖` half, which
+>   needs the same 74VI approximation as 112X.4 plus a new
+>   `norm_le_of_uwTendsto` (the ultraweak twin of `norm_le_of_usTendsto`,
+>   from `isClosed_ultraweak_closedBall`).
+>
+> **The next gate is 115II `exists_tmap`**, which now has no external
+> blocker: it needs `(a,b) ↦ f a ⊗ g b` to be a *normal bounded* bilinear
+> map, i.e. `BilinNormal` + `BilinBounded` for it, and then 112XI plus
+> 114I(5).  114I and 114II are also local now.
 
 > **Session 55 — 112X.1 IS PROVED; the external frontier is down to two
 > `sorry`s, and `Tensor.lean`'s next gate is 112X.2, which is in *this*
@@ -384,13 +432,13 @@ to be `Nonempty.some` of the sorried `vnTensorProduct_nonempty`.
 | DISP | decl | blocked on |
 |---|---|---|
 | 112X.1 | `tensor_basic_1` | **CLOSED (session 55)** — 90II.1 *and* .2 are proved, and this is 90II.2 applied to the product functionals plus 74VI/72III.1c for the order-separating half.  See the session-55 note at the top |
-| 112X.2 | `tensor_basic_2` | **unblocked — this is now the gate.**  90II.2 is proved and 21VII `order_separating_norm` is proved; what is left is the `Ω₁`-rescaling and the sSup bookkeeping (session-55 note) |
-| 112X.3 | `tensor_basic_3` | 112X.2 (its second conjunct is 112X.1's second conjunct restricted along `γ_⊙`, once 112X.2 supplies the norm bound) |
-| 112X.4 | `tensor_basic_4` | 74IV/74VI now **proved**; still needs **86IX** `polar_decomposition_of_functional` (A/VN, `sorry`) |
-| 112X.5 | `tensor_basic_5` | **87III** `predual_complete` (A/VN, `sorry`) |
-| 112XI | `tensor_universal_property` | ~~77V~~ — 77V is proved (session 53); 112XI is blocked on 112X.2 and 112X.5, hence (correction, session 55: 90II.2 is proved) on **87III** alone plus the local 112X.2.  See the session-54 and session-55 notes at the top |
-| 114I | `tensor_universal_property_extra` | 112XI |
-| 114II | `tensor_uniqueness` | 112XI |
+| 112X.2 | `tensor_basic_2` | **CLOSED (session 57)** — no `Ω₁` rescaling was needed; see the session-57 note at the top |
+| 112X.3 | `tensor_basic_3` | **CLOSED (session 57)** |
+| 112X.4 | `tensor_basic_4` | **CLOSED (session 57)** — 86IX closed in A/VN session 56 |
+| 112X.5 | `tensor_basic_5` | **CLOSED (session 57)** — 87III closed in A/VN session 56 |
+| 112XI | `tensor_universal_property` | **CLOSED (session 57)** — 77V applied to `S = γ_⊙(𝒜⊙ℬ)`, with 112X.2 for injectivity/the bound and 112X.5 for the topology |
+| 114I | `tensor_universal_property_extra` | **unblocked — 112XI is proved.**  Local work |
+| 114II | `tensor_uniqueness` | **unblocked — 112XI is proved.**  Apply 112XI in both directions (`γ'` is normal and bounded *as a bilinear map* by 112X.3.1 and 112X.2); miu-ness of the extension is the usual separate-continuity-plus-density argument (`mult_uws_cont`), normality is then free via `starAlgEquiv_preservesDirSups'` |
 | 116VII | `tensor_characterization` | 112X + 116IV |
 
 ### `QuantumLambda.lean` — the 7 untainted ones (recounted, session 51)

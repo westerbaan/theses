@@ -24,7 +24,9 @@ open Filter Topology Theses Theses.A.CStar
 
 namespace Theses.A.VN
 
-variable {A B : Type*} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
+universe u v w
+
+variable {A : Type u} {B : Type v} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
   [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
 
 /-! ## Parsec 550: projections
@@ -3874,12 +3876,122 @@ theorem ultracyclic_basic_3 (p : A) (hp : IsStarProjection p) :
 
 /-- **66IV** (`ultracyclic-basic`, vn.tex:3334, Exercise), part 4: every
 projection is the sum of a family of pairwise orthogonal ultracyclic
-projections. -/
+projections.
+
+The argument is Zorn's lemma over the sets of np-functionals whose carriers
+lie below `p` and are pairwise orthogonal (the same shape as **83V**
+`cceil_sum`).  For a maximal such set `S` put `q = ⋁_{ω ∈ S} ⌈ω⌉ ≤ p`; if
+`q ≠ p` then `r = p - q` is a non-zero projection, so by faithfulness of the
+np-functionals (**42I**.2) some `τ` has `τ(r) ≠ 0`, and `ω = τ(r(·)r)`
+satisfies `0 ≠ ⌈ω⌉ ≤ r`, which is orthogonal to `q` — contradicting
+maximality. -/
 theorem ultracyclic_basic_4 (p : A) (hp : IsStarProjection p) :
-    ∃ (ι : Type _) (ω : ι → NPFunctional A),
+    ∃ (ι : Type u) (ω : ι → NPFunctional A),
       (Pairwise fun i j => npCarrier (ω i) * npCarrier (ω j) = 0) ∧
-        p = projSup (Set.range fun i => npCarrier (ω i)) :=
-  sorry
+        p = projSup (Set.range fun i => npCarrier (ω i)) := by
+  classical
+  set T : Set (Set (NPFunctional A)) :=
+    {S | (∀ ω ∈ S, npCarrier ω ≤ p) ∧
+      ∀ ω ∈ S, ∀ τ ∈ S, ω ≠ τ → npCarrier ω * npCarrier τ = 0} with hT
+  obtain ⟨S, hSmax⟩ : ∃ S, Maximal (· ∈ T) S := by
+    refine zorn_subset T fun c hc hchain =>
+      ⟨⋃₀ c, ⟨?_, ?_⟩, fun s hs => Set.subset_sUnion_of_mem hs⟩
+    · rintro ω ⟨s, hs, hωs⟩
+      exact (hc hs).1 ω hωs
+    · rintro ω ⟨s, hs, hωs⟩ τ ⟨s', hs', hτs'⟩ hne
+      rcases hchain.total hs hs' with hsub | hsub
+      · exact (hc hs').2 ω (hsub hωs) τ hτs' hne
+      · exact (hc hs).2 ω hωs τ (hsub hτs') hne
+  refine ⟨↥S, Subtype.val,
+    fun i j hij => hSmax.1.2 i.1 i.2 j.1 j.2 fun h => hij (Subtype.ext h), ?_⟩
+  set Q : Set A := Set.range fun i : ↥S => npCarrier (i : NPFunctional A) with hQ
+  have hcarrierproj : ∀ ω : NPFunctional A, IsStarProjection (npCarrier ω) :=
+    fun ω => (carrier_spec ω.toPositiveLinearMap ω.preservesDirSups').1
+  have hQproj : ∀ x ∈ Q, IsStarProjection x := by
+    rintro _ ⟨i, rfl⟩; exact hcarrierproj _
+  obtain ⟨hqproj, hqub, hqleast⟩ := projSup_spec hQproj
+  have hqle : projSup Q ≤ p := by
+    refine hqleast p hp ?_
+    rintro _ ⟨i, rfl⟩
+    exact hSmax.1.1 i.1 i.2
+  refine le_antisymm ?_ hqle
+  by_contra hlt
+  obtain ⟨r, hrdef⟩ : ∃ r : A, r = p - projSup Q := ⟨_, rfl⟩
+  have hrproj : IsStarProjection r := by
+    rw [hrdef]; exact projection_below_projection _ _ hqproj hp hqle
+  have hrne : r ≠ 0 := by
+    intro h
+    rw [hrdef, sub_eq_zero] at h
+    exact hlt h.le
+  have hrp : r ≤ p := by
+    rw [hrdef, sub_le_self_iff]
+    exact hqproj.nonneg
+  have hpq : p * projSup Q = projSup Q :=
+    ((projection_below_effect p (projSup Q) ⟨hp.nonneg, hp.le_one⟩ hqproj).out 0 6).mp hqle
+  have hrq : r * projSup Q = 0 := by
+    rw [hrdef, sub_mul, hpq, hqproj.isIdempotentElem.eq, sub_self]
+  -- some np-functional does not kill `r`
+  obtain ⟨τ, hτ⟩ : ∃ τ : NPFunctional A, τ r ≠ 0 := by
+    by_contra hcon
+    push_neg at hcon
+    exact hrne (VonNeumannAlgebra.np_faithful r hrproj.nonneg hcon)
+  obtain ⟨ω, hωdef⟩ : ∃ ω : NPFunctional A, ω = conjNP r τ := ⟨_, rfl⟩
+  have hrort : r * ((1 : A) - r) * r = 0 := by
+    rw [mul_sub, mul_one, hrproj.isIdempotentElem.eq, sub_self, zero_mul]
+  have hω1 : (ω 1 : ℂ) = τ r := by
+    rw [hωdef, conjNP_apply, hrproj.isSelfAdjoint.star_eq, mul_one,
+      hrproj.isIdempotentElem.eq]
+  have hcle : npCarrier ω ≤ r := by
+    refine (carrier_spec ω.toPositiveLinearMap ω.preservesDirSups').2.2 r hrproj ?_
+    show ((ω : A → ℂ) (1 - r)) = 0
+    rw [hωdef, conjNP_apply, hrproj.isSelfAdjoint.star_eq, hrort]
+    exact npFunctional_zero _
+  have hcne : npCarrier ω ≠ 0 := by
+    intro h
+    have h0 := (carrier_spec ω.toPositiveLinearMap ω.preservesDirSups').2.1
+    change ((ω : A → ℂ) (1 - npCarrier ω)) = 0 at h0
+    rw [h, sub_zero, hω1] at h0
+    exact hτ h0
+  have hcr : npCarrier ω * r = npCarrier ω :=
+    ((projection_below_effect r (npCarrier ω) ⟨hrproj.nonneg, hrproj.le_one⟩
+      (hcarrierproj ω)).out 0 7).mp hcle
+  -- `⌈ω⌉` is orthogonal to every `⌈τ'⌉`, `τ' ∈ S`
+  have horth : ∀ τ' ∈ S, npCarrier ω * npCarrier τ' = 0 := by
+    intro τ' hτ'
+    have hle : npCarrier τ' ≤ projSup Q := hqub _ ⟨⟨τ', hτ'⟩, rfl⟩
+    have hmul : projSup Q * npCarrier τ' = npCarrier τ' :=
+      ((projection_below_effect (projSup Q) (npCarrier τ')
+        ⟨hqproj.nonneg, hqproj.le_one⟩ (hcarrierproj τ')).out 0 6).mp hle
+    calc npCarrier ω * npCarrier τ'
+        = (npCarrier ω * r) * (projSup Q * npCarrier τ') := by rw [hcr, hmul]
+      _ = npCarrier ω * (r * projSup Q) * npCarrier τ' := by noncomm_ring
+      _ = 0 := by rw [hrq, mul_zero, zero_mul]
+  have hins : insert ω S ∈ T := by
+    constructor
+    · intro ν hν
+      rcases Set.mem_insert_iff.mp hν with hν | hν
+      · rw [hν]; exact hcle.trans hrp
+      · exact hSmax.1.1 ν hν
+    · intro ν hν μ hμ hne
+      rcases Set.mem_insert_iff.mp hν with hν | hν <;>
+        rcases Set.mem_insert_iff.mp hμ with hμ | hμ
+      · exact absurd (hν.trans hμ.symm) hne
+      · rw [hν]; exact horth μ hμ
+      · rw [hμ]
+        have h' := congrArg star (horth ν hν)
+        rwa [star_mul, (hcarrierproj ν).isSelfAdjoint.star_eq,
+          (hcarrierproj ω).isSelfAdjoint.star_eq, star_zero] at h'
+      · exact hSmax.1.2 ν hν μ hμ hne
+  have hωS : ω ∈ S := hSmax.2 hins (Set.subset_insert _ _) (Set.mem_insert _ _)
+  have hcq : npCarrier ω * projSup Q = npCarrier ω :=
+    ((projection_below_effect (projSup Q) (npCarrier ω)
+      ⟨hqproj.nonneg, hqproj.le_one⟩ (hcarrierproj ω)).out 0 7).mp
+      (hqub _ ⟨⟨ω, hωS⟩, rfl⟩)
+  refine hcne ?_
+  calc npCarrier ω = npCarrier ω * projSup Q := hcq.symm
+    _ = (npCarrier ω * r) * projSup Q := by rw [hcr]
+    _ = npCarrier ω * (r * projSup Q) := by noncomm_ring
+    _ = 0 := by rw [hrq, mul_zero]
 
 /-! ## Parsec 670: central elements -/
 
@@ -5443,14 +5555,138 @@ theorem vn_center_separating (Ω : Set (NPFunctional A)) :
 /-- **70II** (`central-projection-central-carrier`, vn.tex:3749, Exercise):
 every central projection `c` of a von Neumann algebra is of the form
 `c = ∑ᵢ ⌈⌈ωᵢ⌉⌉` for a family of np-functionals with pairwise orthogonal
-central carriers. -/
+central carriers.
+
+This is the thesis's own hint — "take `(ωᵢ)ᵢ` to be a maximal set of
+np-functionals for which the `⌈⌈ωᵢ⌉⌉` are orthogonal" — and it does **not**
+go through **66IV**.4: the Zorn argument is run directly on the central
+carriers.  If `q = ⋁ᵢ ⌈⌈ωᵢ⌉⌉ ≠ c` then `r = c - q` is a non-zero *central*
+projection, so some np-functional `τ` has `τ(r) ≠ 0`, and `ω = τ(r(·)r)`
+satisfies `0 ≠ ⌈ω⌉ ≤ r`, whence `⌈⌈ω⌉⌉ ≤ r` (`r` being central), which is
+orthogonal to `q` — contradicting maximality. -/
 theorem central_projection_central_carrier (c : A)
     (hc : IsStarProjection c) (hcentral : IsCentral A c) :
-    ∃ (ι : Type _) (ω : ι → NPFunctional A),
+    ∃ (ι : Type u) (ω : ι → NPFunctional A),
       (Pairwise fun i j =>
         cceil (npCarrier (ω i)) * cceil (npCarrier (ω j)) = 0) ∧
-      c = projSup (Set.range fun i => cceil (npCarrier (ω i))) :=
-  sorry
+      c = projSup (Set.range fun i => cceil (npCarrier (ω i))) := by
+  classical
+  set T : Set (Set (NPFunctional A)) :=
+    {S | (∀ ω ∈ S, cceil (npCarrier ω) ≤ c) ∧
+      ∀ ω ∈ S, ∀ τ ∈ S, ω ≠ τ →
+        cceil (npCarrier ω) * cceil (npCarrier τ) = 0} with hT
+  obtain ⟨S, hSmax⟩ : ∃ S, Maximal (· ∈ T) S := by
+    refine zorn_subset T fun cc hcc hchain =>
+      ⟨⋃₀ cc, ⟨?_, ?_⟩, fun s hs => Set.subset_sUnion_of_mem hs⟩
+    · rintro ω ⟨s, hs, hωs⟩
+      exact (hcc hs).1 ω hωs
+    · rintro ω ⟨s, hs, hωs⟩ τ ⟨s', hs', hτs'⟩ hne
+      rcases hchain.total hs hs' with hsub | hsub
+      · exact (hcc hs').2 ω (hsub hωs) τ hτs' hne
+      · exact (hcc hs).2 ω hωs τ (hsub hτs') hne
+  refine ⟨↥S, Subtype.val,
+    fun i j hij => hSmax.1.2 i.1 i.2 j.1 j.2 fun h => hij (Subtype.ext h), ?_⟩
+  set Q : Set A :=
+    Set.range fun i : ↥S => cceil (npCarrier (i : NPFunctional A)) with hQ
+  have hcarrierproj : ∀ ω : NPFunctional A, IsStarProjection (npCarrier ω) :=
+    fun ω => (carrier_spec ω.toPositiveLinearMap ω.preservesDirSups').1
+  have hQproj : ∀ x ∈ Q, IsStarProjection x := by
+    rintro _ ⟨i, rfl⟩; exact (cceil_isLeast _).1.1
+  have hQcen : ∀ x ∈ Q, IsCentral A x := by
+    rintro _ ⟨i, rfl⟩; exact (cceil_isLeast _).1.2.1
+  obtain ⟨hqproj, hqub, hqleast⟩ := projSup_spec hQproj
+  have hqcen : IsCentral A (projSup Q) := projSup_isCentral hQproj hQcen
+  have hqle : projSup Q ≤ c := by
+    refine hqleast c hc ?_
+    rintro _ ⟨i, rfl⟩
+    exact hSmax.1.1 i.1 i.2
+  refine le_antisymm ?_ hqle
+  by_contra hlt
+  obtain ⟨r, hrdef⟩ : ∃ r : A, r = c - projSup Q := ⟨_, rfl⟩
+  have hrproj : IsStarProjection r := by
+    rw [hrdef]; exact projection_below_projection _ _ hqproj hc hqle
+  have hrcen : IsCentral A r := by
+    rw [hrdef]; intro x; rw [sub_mul, mul_sub, hcentral x, hqcen x]
+  have hrne : r ≠ 0 := by
+    intro h
+    rw [hrdef, sub_eq_zero] at h
+    exact hlt h.le
+  have hrc : r ≤ c := by
+    rw [hrdef, sub_le_self_iff]
+    exact hqproj.nonneg
+  have hcq : c * projSup Q = projSup Q :=
+    ((projection_below_effect c (projSup Q) ⟨hc.nonneg, hc.le_one⟩ hqproj).out 0 6).mp hqle
+  have hrq : r * projSup Q = 0 := by
+    rw [hrdef, sub_mul, hcq, hqproj.isIdempotentElem.eq, sub_self]
+  obtain ⟨τ, hτ⟩ : ∃ τ : NPFunctional A, τ r ≠ 0 := by
+    by_contra hcon
+    push_neg at hcon
+    exact hrne (VonNeumannAlgebra.np_faithful r hrproj.nonneg hcon)
+  obtain ⟨ω, hωdef⟩ : ∃ ω : NPFunctional A, ω = conjNP r τ := ⟨_, rfl⟩
+  have hrort : r * ((1 : A) - r) * r = 0 := by
+    rw [mul_sub, mul_one, hrproj.isIdempotentElem.eq, sub_self, zero_mul]
+  have hω1 : (ω 1 : ℂ) = τ r := by
+    rw [hωdef, conjNP_apply, hrproj.isSelfAdjoint.star_eq, mul_one,
+      hrproj.isIdempotentElem.eq]
+  have hcle : npCarrier ω ≤ r := by
+    refine (carrier_spec ω.toPositiveLinearMap ω.preservesDirSups').2.2 r hrproj ?_
+    show ((ω : A → ℂ) (1 - r)) = 0
+    rw [hωdef, conjNP_apply, hrproj.isSelfAdjoint.star_eq, hrort]
+    exact npFunctional_zero _
+  have hcne : npCarrier ω ≠ 0 := by
+    intro h
+    have h0 := (carrier_spec ω.toPositiveLinearMap ω.preservesDirSups').2.1
+    change ((ω : A → ℂ) (1 - npCarrier ω)) = 0 at h0
+    rw [h, sub_zero, hω1] at h0
+    exact hτ h0
+  -- `r` is central, so it dominates the *central* carrier of `ω` too
+  have hccle : cceil (npCarrier ω) ≤ r :=
+    (cceil_isLeast _).2
+      ⟨hrproj, hrcen, (proj_le_iff_mul_left (hcarrierproj ω) hrproj).mp hcle⟩
+  have hccne : cceil (npCarrier ω) ≠ 0 := by
+    intro h
+    have habs := (cceil_isLeast (npCarrier ω)).1.2.2
+    rw [h, zero_mul] at habs
+    exact hcne habs.symm
+  have hccproj : ∀ ν : NPFunctional A, IsStarProjection (cceil (npCarrier ν)) :=
+    fun ν => (cceil_isLeast _).1.1
+  have hccr : cceil (npCarrier ω) * r = cceil (npCarrier ω) :=
+    (proj_le_iff_mul_right (hccproj ω) hrproj).mp hccle
+  have horth : ∀ τ' ∈ S, cceil (npCarrier ω) * cceil (npCarrier τ') = 0 := by
+    intro τ' hτ'
+    have hle : cceil (npCarrier τ') ≤ projSup Q := hqub _ ⟨⟨τ', hτ'⟩, rfl⟩
+    have hmul : projSup Q * cceil (npCarrier τ') = cceil (npCarrier τ') :=
+      (proj_le_iff_mul_left (hccproj τ') hqproj).mp hle
+    calc cceil (npCarrier ω) * cceil (npCarrier τ')
+        = (cceil (npCarrier ω) * r) * (projSup Q * cceil (npCarrier τ')) := by
+          rw [hccr, hmul]
+      _ = cceil (npCarrier ω) * (r * projSup Q) * cceil (npCarrier τ') := by
+          noncomm_ring
+      _ = 0 := by rw [hrq, mul_zero, zero_mul]
+  have hins : insert ω S ∈ T := by
+    constructor
+    · intro ν hν
+      rcases Set.mem_insert_iff.mp hν with hν | hν
+      · rw [hν]; exact hccle.trans hrc
+      · exact hSmax.1.1 ν hν
+    · intro ν hν μ hμ hne
+      rcases Set.mem_insert_iff.mp hν with hν | hν <;>
+        rcases Set.mem_insert_iff.mp hμ with hμ | hμ
+      · exact absurd (hν.trans hμ.symm) hne
+      · rw [hν]; exact horth μ hμ
+      · rw [hμ]
+        have h' := congrArg star (horth ν hν)
+        rwa [star_mul, (hccproj ν).isSelfAdjoint.star_eq,
+          (hccproj ω).isSelfAdjoint.star_eq, star_zero] at h'
+      · exact hSmax.1.2 ν hν μ hμ hne
+  have hωS : ω ∈ S := hSmax.2 hins (Set.subset_insert _ _) (Set.mem_insert _ _)
+  have hccq : cceil (npCarrier ω) * projSup Q = cceil (npCarrier ω) :=
+    (proj_le_iff_mul_right (hccproj ω) hqproj).mp (hqub _ ⟨⟨ω, hωS⟩, rfl⟩)
+  refine hccne ?_
+  calc cceil (npCarrier ω) = cceil (npCarrier ω) * projSup Q := hccq.symm
+    _ = (cceil (npCarrier ω) * r) * projSup Q := by rw [hccr]
+    _ = cceil (npCarrier ω) * (r * projSup Q) := by noncomm_ring
+    _ = 0 := by rw [hrq, mul_zero]
 
 end Commutant
 
@@ -5461,14 +5697,46 @@ complete measure spaces.
 51IX), so we state the reduction actually proved: `1 = ∑ᵢ ⌈⌈ωᵢ⌉⌉` for
 np-functionals `ωᵢ` each faithful on its corner `⌈⌈ωᵢ⌉⌉A` — each corner is
 then `L^∞(Xᵢ)` by 54XI (`cvn_faithful_1`). -/
-theorem cvn {C : Type*} [CommCStarAlgebra C] [PartialOrder C]
+theorem cvn {C : Type w} [CommCStarAlgebra C] [PartialOrder C]
     [StarOrderedRing C] [VonNeumannAlgebra C] :
-    ∃ (ι : Type _) (ω : ι → NPFunctional C),
+    ∃ (ι : Type w) (ω : ι → NPFunctional C),
       (Pairwise fun i j =>
         cceil (npCarrier (ω i)) * cceil (npCarrier (ω j)) = 0) ∧
       projSup (Set.range fun i => cceil (npCarrier (ω i))) = 1 ∧
       ∀ i, ∀ a : C, 0 ≤ a → cceil (npCarrier (ω i)) * a = a →
-        (ω i) a = 0 → a = 0 :=
-  sorry
+        (ω i) a = 0 → a = 0 := by
+  -- **70II** applied to `c = 1` gives the orthogonal decomposition; the
+  -- faithfulness of `ωᵢ` on its corner is the thesis's observation that in a
+  -- commutative algebra `⌈⌈ωᵢ⌉⌉ = ⌈ωᵢ⌉`, so `⌈ωᵢ⌉a = a` and `ωᵢ(a) = 0`
+  -- together force `⌈a⌉ ≤ ⌈ωᵢ⌉ ≤ ⌈a⌉^⊥`, i.e. `⌈a⌉ = 0`.
+  obtain ⟨ι, ω, hpair, hsum⟩ :=
+    central_projection_central_carrier (1 : C) projection_basic_1.2
+      (fun b => by rw [one_mul, mul_one])
+  refine ⟨ι, ω, hpair, hsum.symm, fun i a ha hmul h0 => ?_⟩
+  have hcarrproj : IsStarProjection (npCarrier (ω i)) :=
+    (carrier_spec (ω i).toPositiveLinearMap (ω i).preservesDirSups').1
+  -- in a commutative algebra the central carrier is the carrier
+  have hcc : cceil (npCarrier (ω i)) = npCarrier (ω i) := by
+    refine le_antisymm ((cceil_isLeast _).2
+      ⟨hcarrproj, fun b => mul_comm _ b, hcarrproj.isIdempotentElem.eq⟩) ?_
+    exact (proj_le_iff_mul_left hcarrproj (cceil_isLeast _).1.1).mpr
+      (cceil_isLeast _).1.2.2
+  rw [hcc] at hmul
+  -- `⌈a⌉ ≤ ⌈ωᵢ⌉`
+  have hceille : ceil a ≤ npCarrier (ω i) :=
+    ((ceil_basic_1 a _ ha hcarrproj).out 0 2).mp hmul
+  -- and `⌈ωᵢ⌉ ≤ ⌈a⌉^⊥`, because `ωᵢ(⌈a⌉) = 0`
+  have hceil0 : (ω i) (ceil a) = 0 := (ceil_functionals_lemma a ha (ω i)).mp h0
+  have hcarrle : npCarrier (ω i) ≤ 1 - ceil a := by
+    refine (carrier_spec (ω i).toPositiveLinearMap (ω i).preservesDirSups').2.2
+      _ (ceil_spec ha).1.one_sub ?_
+    show ((ω i : C → ℂ) (1 - (1 - ceil a))) = 0
+    rw [sub_sub_cancel]
+    exact hceil0
+  have hself : ceil a * ceil a = 0 :=
+    ((orthogonal_tuple_of_projections_1 (ceil a) (ceil a) (ceil_spec ha).1
+      (ceil_spec ha).1).out 4 0).mp (hceille.trans hcarrle)
+  refine (ceil_basic_3 a ha).mpr ?_
+  rw [← (ceil_spec ha).1.isIdempotentElem.eq, hself]
 
 end Theses.A.VN

@@ -753,18 +753,9 @@ omit [CompleteSpace H] in
 @[simp] theorem vectorPairFunctional_apply (ξ η : H) (a : H →L[ℂ] H) :
     vectorPairFunctional ξ η a = ⟪η, a ξ⟫ := rfl
 
-/-- `‖a‖_ω = ‖a ξ‖` for the vector functional `ω = ⟪ξ, (·) ξ⟫` on `B(H)`. -/
-theorem omegaNorm_vectorNP (ξ : H) (a : H →L[ℂ] H) :
-    omegaNorm (H →L[ℂ] H) (vectorNP ξ) a = ‖a ξ‖ := by
-  have h : ((vectorNP ξ) (star a * a)).re = ‖a ξ‖ ^ 2 := by
-    have h1 : ((vectorNP ξ) (star a * a) : ℂ) = ⟪a ξ, a ξ⟫ := by
-      change (⟪ξ, (star a * a) ξ⟫ : ℂ) = _
-      rw [ContinuousLinearMap.star_eq_adjoint]
-      change (⟪ξ, ContinuousLinearMap.adjoint a (a ξ)⟫ : ℂ) = _
-      rw [ContinuousLinearMap.adjoint_inner_right]
-    rw [h1]
-    simpa using inner_self_eq_norm_sq (𝕜 := ℂ) (a ξ)
-  rw [omegaNorm, h, Real.sqrt_sq (norm_nonneg _)]
+/-! `omegaNorm_vectorNP` (`‖a‖_ω = ‖aξ‖` for `ω = ⟪ξ,(·)ξ⟫`) used to be
+restated here; it now lives in `Theses/A/VN/Basic.lean`, beside `vectorNP`
+itself, and is imported. -/
 
 /-- **Counterexample to 72V.(4)** (ours).  For orthonormal `ξ, η` in a
 Hilbert space `H`, the functional `f = ⟪η, (·) ξ⟫` on `B(H)` satisfies
