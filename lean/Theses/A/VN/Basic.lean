@@ -2919,8 +2919,33 @@ variable {A B : Type u} [CStarAlgebra A] [PartialOrder A] [StarOrderedRing A]
 theorem vn_equalisers [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (f g : NMIUMap A B) :
     ∃ S : StarSubalgebra ℂ A, IsVNSubalgebra A S ∧
-      (S : Set A) = {a : A | f a = g a} :=
-  sorry
+      (S : Set A) = {a : A | f a = g a} := by
+  classical
+  -- `E` is a ∗-subalgebra as the equalizer of two ∗-homomorphisms
+  -- (`StarAlgHom.equalizer`); it is norm-closed because miu-maps are
+  -- contractive, hence continuous; and it is closed under directed suprema
+  -- because `f` and `g` are normal, so `f(⋁D)` and `g(⋁D)` are both suprema
+  -- of the *same* set `f''D = g''D`.
+  refine ⟨StarAlgHom.equalizer f.toStarAlgHom g.toStarAlgHom, ⟨?_, ?_⟩, rfl⟩
+  · have hfc : Continuous ⇑f.toStarAlgHom :=
+      AddMonoidHomClass.continuous_of_bound f.toStarAlgHom 1 fun a => by
+        simpa using norm_mi_map_contractive f.toStarAlgHom a
+    have hgc : Continuous ⇑g.toStarAlgHom :=
+      AddMonoidHomClass.continuous_of_bound g.toStarAlgHom 1 fun a => by
+        simpa using norm_mi_map_contractive g.toStarAlgHom a
+    exact isClosed_eq hfc hgc
+  · intro D s hDsub hne hdir hlub
+    have hf := f.preservesDirSups' D s hne hdir hlub
+    have hg := g.preservesDirSups' D s hne hdir hlub
+    have himg : (fun d : selfAdjoint A => (f.toStarAlgHom (d : A) : B)) '' D
+        = (fun d : selfAdjoint A => (g.toStarAlgHom (d : A) : B)) '' D := by
+      ext y
+      constructor
+      · rintro ⟨d, hd, rfl⟩; exact ⟨d, hd, (hDsub d hd).symm⟩
+      · rintro ⟨d, hd, rfl⟩; exact ⟨d, hd, hDsub d hd⟩
+    rw [himg] at hf
+    show f.toStarAlgHom (s : A) = g.toStarAlgHom (s : A)
+    exact hf.unique hg
 
 /-! ## Parsec 480: the normal Gelfand–Naimark theorem -/
 

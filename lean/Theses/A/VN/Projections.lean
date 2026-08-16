@@ -3681,14 +3681,74 @@ def Ultracyclic (p : A) : Prop :=
 /-- **66IV** (`ultracyclic-basic`, vn.tex:3334, Exercise), part 1: the
 supremum of two ultracyclic projections is ultracyclic. -/
 theorem ultracyclic_basic_1 (p q : A) (hp : Ultracyclic A p)
-    (hq : Ultracyclic A q) : Ultracyclic A (projSup {p, q}) :=
-  sorry
+    (hq : Ultracyclic A q) : Ultracyclic A (projSup {p, q}) := by
+  -- `⌈ω⌉ ∪ ⌈τ⌉ = ⌈ω + τ⌉` is **63II**.2 `carrier_basic_2`.
+  obtain ⟨ω, rfl⟩ := hp
+  obtain ⟨τ, rfl⟩ := hq
+  exact ⟨addNP ω τ, (carrier_basic_2 _ _ _ ω.preservesDirSups' τ.preservesDirSups'
+    (addNP ω τ).preservesDirSups' fun _ => rfl).symm⟩
 
 /-- **66IV** (`ultracyclic-basic`, vn.tex:3334, Exercise), part 2: a
 projection below an ultracyclic projection is ultracyclic. -/
 theorem ultracyclic_basic_2 (p q : A) (hp : IsStarProjection p)
-    (hq : Ultracyclic A q) (hpq : p ≤ q) : Ultracyclic A p :=
-  sorry
+    (hq : Ultracyclic A q) (hpq : p ≤ q) : Ultracyclic A p := by
+  -- `p = ⌈ω(p(·)p)⌉` for `q = ⌈ω⌉`: the compression kills `p^⊥`, and if
+  -- `ω(p r^⊥ p) = 0` for a projection `r` then `ω(⌈p r^⊥ p⌉) = 0` (**60I**),
+  -- so `⌈ω⌉ ≤ ⌈p r^⊥ p⌉^⊥`; as `⌈p r^⊥ p⌉ ≤ p ≤ ⌈ω⌉` this forces
+  -- `⌈p r^⊥ p⌉ ≤ its own complement`, i.e. `p r^⊥ p = 0`, i.e. `p ≤ r`.
+  obtain ⟨ω, rfl⟩ := hq
+  refine ⟨conjNP p ω, ?_⟩
+  refine (carrier_eq _ _ hp ?_ ?_).symm
+  · -- `ω(p p^⊥ p) = ω 0 = 0`
+    show ((conjNP p ω) (1 - p) : ℂ) = 0
+    rw [conjNP_apply, hp.isSelfAdjoint.star_eq,
+      show p * (1 - p) * p = 0 from by
+        rw [mul_sub, mul_one, hp.isIdempotentElem.eq, sub_self, zero_mul]]
+    exact npFunctional_zero _
+  · intro r hr hr0
+    -- `ω(p r^⊥ p) = 0`, so `ω(⌈p r^⊥ p⌉) = 0`
+    replace hr0 : ((conjNP p ω) (1 - r) : ℂ) = 0 := hr0
+    rw [conjNP_apply, hp.isSelfAdjoint.star_eq] at hr0
+    have hnn : (0 : A) ≤ p * (1 - r) * p :=
+      IsSelfAdjoint.conjugate_nonneg hr.one_sub.nonneg hp.isSelfAdjoint
+    set c : A := ceil (p * (1 - r) * p) with hc
+    have hcproj : IsStarProjection c := (ceil_spec hnn).1
+    have hcω : ω c = 0 := (ceil_functionals_lemma _ hnn ω).mp hr0
+    -- hence `⌈ω⌉ ≤ 1 - c`
+    have hle1c : npCarrier ω ≤ 1 - c := by
+      refine (carrier_spec ω.toPositiveLinearMap ω.preservesDirSups').2.2 _
+        hcproj.one_sub ?_
+      show (ω.toPositiveLinearMap (1 - (1 - c)) : ℂ) = 0
+      rw [sub_sub_cancel]
+      exact hcω
+    -- but `c ≤ p ≤ ⌈ω⌉`, so `c ≤ 1 - c`, forcing `c = 0`
+    have hcp : c ≤ p := (ceil_le_iff hnn hp).mpr (by
+      rw [mul_assoc, hp.isIdempotentElem.eq])
+    have hc0 : c = 0 := by
+      have h0 : c ≤ 1 - c := le_trans hcp (le_trans hpq hle1c)
+      have h1 : c * c * c ≤ c * (1 - c) * c :=
+        IsSelfAdjoint.conjugate_le_conjugate h0 hcproj.isSelfAdjoint
+      rw [hcproj.isIdempotentElem.eq, hcproj.isIdempotentElem.eq,
+        show c * (1 - c) * c = 0 from by
+          rw [mul_sub, mul_one, hcproj.isIdempotentElem.eq, sub_self, zero_mul]] at h1
+      exact le_antisymm h1 hcproj.nonneg
+    have hzero0 : p * (1 - r) * p = 0 := (ceil_basic_3 _ hnn).mpr hc0
+    -- `p r^⊥ = 0`, i.e. `p ≤ r`
+    have hzero : ((1 : A) - r) * p = 0 := by
+      refine (CStarRing.star_mul_self_eq_zero_iff _).mp ?_
+      rw [star_mul, hp.isSelfAdjoint.star_eq, hr.one_sub.isSelfAdjoint.star_eq]
+      calc p * (1 - r) * ((1 - r) * p) = p * ((1 - r) * (1 - r)) * p := by noncomm_ring
+        _ = p * (1 - r) * p := by rw [hr.one_sub.isIdempotentElem.eq]
+        _ = 0 := hzero0
+    have hrp : r * p = p := by
+      rw [sub_mul, one_mul] at hzero
+      exact (sub_eq_zero.mp hzero).symm
+    have hpr : p * r = p := by
+      have h := congrArg star hrp
+      rwa [star_mul, hr.isSelfAdjoint.star_eq, hp.isSelfAdjoint.star_eq] at h
+    calc p = r * p * r := by rw [hrp, hpr]
+      _ ≤ r * 1 * r := IsSelfAdjoint.conjugate_le_conjugate hp.le_one hr.isSelfAdjoint
+      _ = r := by rw [mul_one, hr.isIdempotentElem.eq]
 
 /-- **66IV** (`ultracyclic-basic`, vn.tex:3334, Exercise), part 3: every
 projection `p` is the directed supremum of ultracyclic projections:

@@ -2976,6 +2976,43 @@ theorem exists_nat_reindex {ι : Type*} (x : ι → H)
   exact Function.extend_apply' (f := φ) (fun i : Function.support x => x i) (fun _ => 0) n
     (fun h => hn ⟨h.choose, h.choose_spec⟩)
 
+/-- The converse of **89IX**, for an arbitrary index type: a square-summable
+family `(xᵢ)ᵢ` of vectors defines an np-functional `T ↦ ∑ᵢ ⟪xᵢ, T xᵢ⟫` on
+`B(H)`.
+
+For `ι = ℕ` this is **38IV**.2 `bh_functional_lemma_2`
+(`A/CStar/TowardsVN.lean`), already proved; all that is added here is the
+re-indexing, since a square-summable family has countable support.  Stated
+in `A/VN` because both **89XI** and **111VII**'s condition `tensor-2` need
+it, the latter for the family `(n,m) ↦ xₙ ⊗ yₘ` indexed by `ℕ × ℕ`. -/
+theorem exists_sumVectorNP {ι : Type*} (x : ι → H)
+    (hx : Summable fun i => ‖x i‖ ^ 2) :
+    ∃ ω : NPFunctional (H →L[ℂ] H),
+      ∀ T : H →L[ℂ] H, HasSum (fun i => ⟪x i, T (x i)⟫) (ω T) := by
+  classical
+  obtain ⟨x', φ, hφ, hval, hzero⟩ := exists_nat_reindex x hx
+  have hx' : Summable fun n => ‖x' n‖ ^ 2 := by
+    refine (hφ.summable_iff ?_).mp ?_
+    · intro n hn; rw [hzero n hn]; simp
+    · exact (hx.subtype _).congr fun i => by
+        show ‖x (i : ι)‖ ^ 2 = ‖x' (φ i)‖ ^ 2
+        rw [hval i]
+  obtain ⟨ν, hν⟩ := bh_functional_lemma_2 x' hx'
+  refine ⟨ν, fun T => ?_⟩
+  have h1 : HasSum (fun n => ⟪x' n, T (x' n)⟫) (ν T) := by
+    rw [hν T]; exact (bh_functional_lemma_1 x' hx' T).hasSum
+  have hz : ∀ n ∉ Set.range φ, (⟪x' n, T (x' n)⟫ : ℂ) = 0 := by
+    intro n hn; rw [hzero n hn]; simp
+  have h2 : HasSum (fun i : Function.support x => ⟪x i, T (x i)⟫) (ν T) := by
+    refine ((hφ.hasSum_iff hz).mpr h1).congr_fun fun i => ?_
+    rw [Function.comp_apply, hval i]
+  have hsub : (Function.support fun i => (⟪x i, T (x i)⟫ : ℂ)) ⊆ Function.support x := by
+    intro i hi
+    by_contra hc
+    simp only [Function.mem_support, not_not] at hc
+    exact hi (by simp [hc])
+  exact (hasSum_subtype_iff_of_support_subset hsub).mp h2
+
 /-- A family of vectors indexed by an arbitrary type representing an
 np-functional can be re-indexed by `ℕ`. -/
 theorem exists_nat_index {ι : Type*} (ρ : NMIUMap A (H →L[ℂ] H)) (ω : NPFunctional A)
@@ -3078,8 +3115,34 @@ to an np-functional `ξ` on `B`: `ξ ∘ ρ = ω`. -/
 theorem functional_permanence_1 (ρ : NMIUMap A B)
     (hρ : Function.Injective ⇑ρ)
     (hR : IsVNSubalgebra B ρ.toStarAlgHom.range) (ω : NPFunctional A) :
-    ∃ ξ : NPFunctional B, ∀ a : A, ξ (ρ a) = ω a :=
-  sorry
+    ∃ ξ : NPFunctional B, ∀ a : A, ξ (ρ a) = ω a := by
+  classical
+  -- Represent `B` faithfully and normally on a Hilbert space (**48VIII**
+  -- `ngns`).  Then `A` sits inside `B(ℓ²(ι))` through `σ = f ∘ ρ`, which is
+  -- again injective and normal, so its range is a von Neumann subalgebra
+  -- (**48VI**.1) and **89IX** applies: `ω = ∑ₙ ⟨xₙ, σ(·)xₙ⟩`.  The *same*
+  -- square-summable family defines an np-functional `ν` on all of
+  -- `B(ℓ²(ι))` — that is **38IV**.2 `bh_functional_lemma_2`, the converse of
+  -- 39IX — and `ξ = ν ∘ f` is the required extension.
+  -- (The hypothesis `hR` is not needed: `ρ` injective already forces it, by
+  -- 48VI.1.  It is kept because the thesis states the corollary for a von
+  -- Neumann subalgebra.)
+  obtain ⟨ι, f, hfinj, -⟩ := ngns B
+  have hσn : PreservesDirSups ⇑(f.toStarAlgHom.comp ρ.toStarAlgHom) :=
+    preservesDirSups_pmap_comp (starAlgHomP ρ.toStarAlgHom) ρ.preservesDirSups'
+      (starAlgHomP f.toStarAlgHom) f.preservesDirSups'
+  set σ : NMIUMap A (lp (fun _ : ι => ℂ) 2 →L[ℂ] lp (fun _ : ι => ℂ) 2) :=
+    ⟨f.toStarAlgHom.comp ρ.toStarAlgHom, hσn⟩ with hσ
+  have hσinj : Function.Injective ⇑σ := hfinj.comp hρ
+  have hσR : IsVNSubalgebra _ σ.toStarAlgHom.range :=
+    isVNSubalgebra_range σ.toStarAlgHom hσinj hσn
+  obtain ⟨x, hx, hsum⟩ := normal_functional σ hσinj hσR ω
+  obtain ⟨ν, hν⟩ := bh_functional_lemma_2 x hx
+  have hfP : PreservesDirSups ⇑(nmiuP f) := f.preservesDirSups'
+  refine ⟨compNP (nmiuP f) hfP ν, fun a => ?_⟩
+  show ν (f (ρ a)) = ω a
+  rw [hν]
+  exact (hsum a).tsum_eq
 
 /-- **89XI** (`functional-permanence`, vn.tex:7155, Corollary), part 2
 (**ultraweak permanence**): the ultraweak topology of a von Neumann
@@ -3088,16 +3151,83 @@ subalgebra `A` of `B` is the restriction of the ultraweak topology of
 theorem functional_permanence_2 (ρ : NMIUMap A B)
     (hρ : Function.Injective ⇑ρ)
     (hR : IsVNSubalgebra B ρ.toStarAlgHom.range) :
-    ultraweak A = TopologicalSpace.induced ⇑ρ (ultraweak B) :=
-  sorry
+    ultraweak A = TopologicalSpace.induced ⇑ρ (ultraweak B) := by
+  classical
+  -- Both topologies are initial topologies for a family of functionals: the
+  -- ultraweak topology of `A` for *all* np-functionals of `A`, the induced
+  -- one for the family `ξ ∘ ρ`, `ξ` an np-functional of `B`.  Each `ξ ∘ ρ`
+  -- is an np-functional of `A` (`compNP`), and by part 1 every np-functional
+  -- of `A` is of that form; so the two families generate the same topology.
+  have hρP : PreservesDirSups ⇑(nmiuP ρ) := ρ.preservesDirSups'
+  have hind : TopologicalSpace.induced ⇑ρ (ultraweak B)
+      = ⨅ ξ : NPFunctional B,
+          TopologicalSpace.induced (fun a : A => (ξ (ρ a) : ℂ)) inferInstance := by
+    rw [ultraweak, induced_iInf]
+    exact iInf_congr fun ξ => induced_compose
+  rw [hind, ultraweak]
+  refine le_antisymm (le_iInf fun ξ => ?_) (le_iInf fun ω => ?_)
+  · exact iInf_le_of_le (compNP (nmiuP ρ) hρP ξ) le_rfl
+  · obtain ⟨ξ, hξ⟩ := functional_permanence_1 ρ hρ hR ω
+    refine iInf_le_of_le ξ ?_
+    have heq : (fun a : A => (ξ (ρ a) : ℂ)) = fun a : A => (ω a : ℂ) := funext hξ
+    rw [heq]
 
 /-- **89XI** (`functional-permanence`, vn.tex:7155, Corollary), part 3
 (**ultrastrong permanence**): likewise for the ultrastrong topologies. -/
 theorem functional_permanence_3 (ρ : NMIUMap A B)
     (hρ : Function.Injective ⇑ρ)
     (hR : IsVNSubalgebra B ρ.toStarAlgHom.range) :
-    ultrastrong A = TopologicalSpace.induced ⇑ρ (ultrastrong B) :=
-  sorry
+    ultrastrong A = TopologicalSpace.induced ⇑ρ (ultrastrong B) := by
+  classical
+  -- The two topologies have the *same* generating balls: `‖ρ a - ρ b‖_ξ
+  -- = ‖a - b‖_{ξ∘ρ}`, so a ball of `A` is the `ρ`-preimage of a ball of `B`
+  -- (part 1 provides the `ξ` with `ξ∘ρ = ω`), and conversely the preimage of
+  -- a ball around an arbitrary `c ∈ B` is ultrastrongly open in `A` because
+  -- `a ↦ ‖ρ a - c‖_ξ` is `‖·‖_{ξ∘ρ}`-Lipschitz.
+  have hρP : PreservesDirSups ⇑(nmiuP ρ) := ρ.preservesDirSups'
+  have hnorm : ∀ (ξ : NPFunctional B) (a : A),
+      omegaNorm A (compNP (nmiuP ρ) hρP ξ) a = omegaNorm B ξ (ρ a) :=
+    fun ξ a => omegaNorm_comp_starAlgHom ρ.toStarAlgHom _ ξ (fun _ => rfl) a
+  have hsub : ∀ a b : A, (ρ (a - b) : B) = ρ a - ρ b := fun a b =>
+    map_sub ρ.toStarAlgHom a b
+  have hopen : ∀ (ξ : NPFunctional B) (c : B) (ε : ℝ),
+      @IsOpen A (ultrastrong A) {a : A | omegaNorm B ξ (ρ a - c) < ε} := by
+    intro ξ c ε
+    rw [@isOpen_iff_mem_nhds A (ultrastrong A)]
+    intro a ha
+    have ha' : omegaNorm B ξ (ρ a - c) < ε := ha
+    set δ : ℝ := ε - omegaNorm B ξ (ρ a - c) with hδ
+    have hδ0 : 0 < δ := by rw [hδ]; linarith
+    refine mem_of_superset
+      (ultrastrong_ball_mem_nhds (compNP (nmiuP ρ) hρP ξ) a hδ0) ?_
+    intro z hz
+    have hz' : omegaNorm A (compNP (nmiuP ρ) hρP ξ) (z - a) < δ := hz
+    rw [hnorm ξ (z - a), hsub] at hz'
+    have htri : omegaNorm B ξ (ρ z - c) ≤ omegaNorm B ξ (ρ z - ρ a)
+        + omegaNorm B ξ (ρ a - c) := by
+      have h := omegaNorm_add_le ξ (ρ z - ρ a) (ρ a - c)
+      simpa using h
+    show omegaNorm B ξ (ρ z - c) < ε
+    rw [hδ] at hz'
+    linarith
+  refine le_antisymm ?_ ?_
+  · unfold ultrastrong
+    rw [induced_generateFrom_eq]
+    refine le_generateFrom ?_
+    rintro _ ⟨U, ⟨ξ, c, ε, hε, rfl⟩, rfl⟩
+    exact hopen ξ c ε
+  · unfold ultrastrong
+    rw [induced_generateFrom_eq]
+    refine TopologicalSpace.generateFrom_anti ?_
+    rintro U ⟨ω, b, ε, hε, rfl⟩
+    obtain ⟨ξ, hξ⟩ := functional_permanence_1 ρ hρ hR ω
+    refine ⟨{y : B | omegaNorm B ξ (y - ρ b) < ε}, ⟨ξ, ρ b, ε, hε, rfl⟩, ?_⟩
+    ext a
+    have hcomp : omegaNorm A ω (a - b) = omegaNorm B ξ (ρ a - ρ b) := by
+      rw [← hsub]
+      exact omegaNorm_comp_starAlgHom ρ.toStarAlgHom ω ξ (fun a => (hξ a).symm) (a - b)
+    show omegaNorm B ξ (ρ a - ρ b) < ε ↔ omegaNorm A ω (a - b) < ε
+    rw [hcomp]
 
 /-- **89XII** (`functional-extension`, vn.tex:7175, Exercise): every
 np-functional `ω` on `A` extends along any injective nmiu-map
@@ -3106,7 +3236,9 @@ np-functional `ω` on `A` extends along any injective nmiu-map
 theorem functional_extension (ρ : NMIUMap A B)
     (hρ : Function.Injective ⇑ρ) (ω : NPFunctional A) :
     ∃ ω' : NPFunctional B, ∀ a : A, ω' (ρ a) = ω a :=
-  sorry
+  -- the thesis's hint: `injective-nmiu-iso-on-image` (**48VI**.1) supplies
+  -- the missing hypothesis of 89XI.1.
+  functional_permanence_1 ρ hρ (injective_nmiu_iso_on_image_1 ρ hρ) ω
 
 /-! ## Parsec 900: centre separating collections
 
