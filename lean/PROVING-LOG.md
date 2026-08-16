@@ -11017,3 +11017,177 @@ errors; per-file `sorry`-declaration counts 0 / 5 / 8 / 2 / 2 / **11** / 13,
 **41** in total.  `#print axioms` on `ext_tensor_dense`,
 `exttensor_dense_subsets`, `dilationspace_dense_subset` and
 `paschke_tprod_dense`: all exactly `[propext, Classical.choice, Quot.sound]`.
+
+## Session 52 — `A/Proc`: **111VII and 111XII are proved — the vacuous band is open** (worker 77, `Tensor.lean`)
+
+Target: `special_tensor` (**111VII**, proc.tex:2491) and both forms of
+**111XII**, the gate that made 54 of A/Proc's statements vacuous.  All three
+are closed, plus the first band member, **116III**.1.
+
+`Tensor.lean` **43 → 39** (compiler-counted); A/Proc 88 → **84**.
+
+| point | declaration | class |
+|---|---|---|
+| **111VII** | `special_tensor` | 1 — the thesis's proof, condition by condition |
+| **111XII** | `vnTensorProduct_exists` (unbundled), `vnTensorProduct_nonempty` (bundled) | 1 — the thesis's `ngns` + 111VII route |
+| **116III**.1 | `tensor_simple_facts_1`, `vtmul_nonneg` | 2 — no author solution (exercise; `asols.tex` stops at parsec 340) |
+
+Reusable machinery added (all axiom-clean): `ext_htmul`, `eq_of_inner_htmul`,
+`htmul_inner`, `norm_htmul`, `htmul_add_left`, `htmul_smul_left`,
+`opTensor_{one,mul,add_left,add_right,smul_left,smul_right,adjoint,star}`;
+`VNSub.{valLinearMap,valStarAlgHom,valNMIU,valNMIU_injective,valNMIU_range,
+isVNSubalgebra_valNMIU_range,ultraweak_eq_induced}`; `spatialSpan`,
+`coe_spatialSpan`, `wstar_spatialSpan`, `spatial_dense`,
+`exists_np_of_spatial_product`, `eq_zero_of_inner_htmul_eq_zero`;
+`isLUB_image_of_orderIso`, `starAlgHom_nonneg'`, `starAlgHom_mono'`,
+`starAlgEquiv_le_iff`, `starAlgEquiv_preservesDirSups'`, `isVNSubalgebra_map`,
+`nmiuSymm`, `nmiuLin`, `nmiuCorestrict(_val,_bijective)`,
+`isTensorProduct_comp`; `InnerProductSpace ℂ (ULift H)`, `uliftIsometry`,
+`ngns_ulift`.
+
+### 1. `tensor-2` did close, and the assembly was cheap
+
+The brief was right: nothing was missing.  `exists_np_of_spatial_product` is
+40 lines — **89IX** `normal_functional` applied to the inclusion
+`VNSub S ↪ B(ℋ)` (new: `VNSub.valNMIU`) for `σ` and for `τ`,
+`Summable.mul_of_nonneg` for `∑_{n,m}‖xₙ ⊗ yₘ‖² = (∑‖xₙ‖²)(∑‖yₘ‖²)`,
+`exists_sumVectorNP` for the `ℕ × ℕ`-family, and `HasSum.mul` (plus a norm
+comparison `‖⟨xₙ,axₙ⟩‖ ≤ ‖a‖‖xₙ‖²` for the summability side condition) to
+identify `∑_{n,m}⟨xₙ,axₙ⟩⟨yₘ,byₘ⟩` with `σ(a)τ(b)`.  `VNSub.restrictNP`
+transports the functional to `𝒯`.  The termwise identity
+`⟨x⊗y,(A⊗B)(x⊗y)⟩ = ⟨x,Ax⟩⟨y,By⟩` is one `rw` off `opTensor_apply` and the
+`inner_mul` field of `IsHilbertTensorProduct`.
+
+`tensor-3` (25 lines) is the thesis's argument verbatim: the *vector* product
+functionals `⟨x⊗y,(·)x⊗y⟩` (which are product functionals, with
+`σ = ⟨x,(·)x⟩` and `τ = ⟨y,(·)y⟩`, all three obtained by `VNSub.restrictNP` of
+`vectorNP`) kill `t`, hence `√t` vanishes on elementary tensors, hence `√t = 0`
+by density, hence `t = 0`.
+
+`tensor-1` is the one condition whose Lean form asks for more than the thesis's
+one-line "by the way `𝒯` was defined": our `IsTensorProduct.dense` demands
+*ultraweak* density of the span in `𝒯`, and `𝒯` is `wstar` of a set.  Two
+inputs: **88VI** `double_commutant` (`W*(S)` = ultraweak closure of a unital
+∗-subalgebra) applied to `spatialSpan`, the span of `{A ⊗ B}`, which is a
+∗-subalgebra because `(A⊗B)(A'⊗B') = AA'⊗BB'` and `(A⊗B)* = A*⊗B*`; and
+**89XI**.2 `functional_permanence_2`, which says the ultraweak topology of
+`VNSub S` is the one *induced* from `B(ℋ⊗𝒦)` — without it, density in the
+subalgebra's own (finer) ultraweak topology does not follow from density in the
+ambient closure.  `IsInducing.dense_iff` then reduces it to
+`t.val ∈ W*(span) = uwClosure(span)`.  Miu-bilinearity, which the thesis leaves
+to the reader, is four `ext_htmul` one-liners (`opTensor_one/mul/adjoint`).
+
+### 2. Lean notes worth keeping
+
+* **`maxHeartbeats` is per declaration, not per file.**  A first attempt with
+  `special_tensor` as one 200-line proof hit `(deterministic) timeout at
+  isDefEq` on a step that took 3 s standalone.  Factoring the three conditions
+  into `spatial_dense`, `exists_np_of_spatial_product` and
+  `eq_zero_of_inner_htmul_eq_zero` fixed it with no other change; the file
+  needs no `set_option`.
+* Since the topologies are `def`s, `Topology.IsInducing` cannot be built with
+  `@IsInducing _ _ (ultraweak _) (ultraweak _) f` (the elaborator re-synthesises
+  the instances and rejects the term).  `letI : TopologicalSpace _ := ultraweak _`
+  first, then `⟨VNSub.ultraweak_eq_induced⟩`, works.
+* `Summable.mul_norm`'s higher-order unification (`?f p.1 * ?g p.2`) is what
+  blew the heartbeat budget; naming the two norm-summability facts first and
+  using `Summable.mul_of_nonneg` + `Summable.of_norm` is instant.
+
+### 3. The fifth ingredient did appear: **the bundled 111XII crosses universes**
+
+`vnTensorProduct_nonempty` is stated for `𝒜 : Type u` and `ℬ : Type v` with
+carrier in `Type (max u v)` — but `ngns` represents `𝒜 : Type u` on a Hilbert
+space in `Type u`, and `hilbTensor` needs **both** Hilbert spaces in one
+universe.  So the unbundled `vnTensorProduct_exists` (both algebras in `Type u`)
+is immediate from 111VII, and the bundled form is not.  Two pieces were needed,
+about 120 lines together:
+
+* a Hilbert-space structure on `ULift H` (Mathlib has the normed group, the
+  normed space and `CompleteSpace`, but **no `Inner`/`InnerProductSpace`
+  instance**), the isometry `uliftIsometry : ULift H ≃ₗᵢ[ℂ] H`, and `ngns_ulift`
+  = `ngns` conjugated by `LinearIsometryEquiv.conjStarAlgEquiv` into
+  `B(ULift ℓ²(ι))`;
+* **universe-polymorphic twins of four `A/VN` lemmas**.  `A/VN/Basic.lean`
+  declares `variable {A B C : Type u}`, so `starAlgHom_mono`,
+  `starAlgHom_le_iff`, `starAlgEquiv_preservesDirSups` and
+  `isVNSubalgebra_range` all force the two algebras into the *same* universe and
+  are unusable for `𝒜 : Type u → B(ULift H) : Type (max u v)`.  Re-proving them
+  is cheap because a ∗-hom is positive by `a = (√a)*√a`
+  (`starAlgHom_nonneg'`, 6 lines), an equiv is then an order isomorphism, and
+  `isLUB_image_of_orderIso` (new, and universe-polymorphic) gives normality and
+  `isVNSubalgebra_map` (transport of a von Neumann subalgebra along a
+  ∗-isomorphism) without redoing the 100-line `isVNSubalgebra_range`.
+  **If `A/VN` ever generalises those four to `Type*`, the local copies in
+  `Tensor.lean` should be deleted.**
+
+`isTensorProduct_comp` (transport of a tensor product along nmiu-isomorphisms
+of the two factors) is what turns the spatial `γ` for `VNSub (ran ρ_𝒜)`,
+`VNSub (ran ρ_ℬ)` into one for `𝒜`, `ℬ`; its `prod_exists` half needs the
+inverse of a bijective nmiu-map to be normal (`nmiuSymm`), its `faithful` half
+does not (it pushes the given functionals *forward* with `compNP`).
+
+### 4. What the closure actually buys — measured
+
+`#print axioms` was run over **every** declaration of `Tensor.lean`,
+`QuantumLambda.lean` and `Duplicators.lean` twice, once against the previous
+`Tensor.olean` and once against the new one:
+
+* `Tensor.lean` 83 → 121 clean (but +38 of that is the new machinery); of the
+  136 declarations present in *both* versions, **6** went from tainted to
+  clean: the three theorems above and `vnTensor`, `VNT`, `vtmul`.
+* `QuantumLambda.lean` 30 → 32 (`tensorSub`, `TensorBSurjective`).
+* `Duplicators.lean` 33 → 37 (`Duplicator`, `Duplicable`, `MonoidInWcpsu`,
+  `MonoidInWmiu`).
+
+**So the answer to "how many of the 54 become axiom-clean immediately" is
+zero, and the honest total is 12** — every band member is itself a `sorry`, so
+nothing about them flips; what flipped is the nine *definitions* their
+statements are built from, which is precisely what stops the statements being
+vacuous.  As a demonstration, **116III**.1 was then proved (`a ⊗ b ≥ 0` because
+`a ⊗ b = (√a ⊗ √b)*(√a ⊗ √b)`, then `a₂⊗b₂ − a⊗b = (a₂−a)⊗b₂ + a⊗(b₂−b)`) and
+is axiom-clean — the first genuinely non-vacuous theorem about `⊗ᵥ`.
+
+Of `Tensor.lean`'s 39 remaining `sorry`s, 8 further declarations are still
+tainted without being `sorry`ed themselves — `tmap`, `tmap_apply`, `tmapM`,
+`associator`, `braiding`, `leftUnitor`, `rightUnitor`, `predualTensor` — each
+chosen from a sorried unique-existence lemma, so they clean up automatically
+when 115II, 116I, 119IV, 119IVb, 119IVc are proved.
+
+### 5. Corrections to the brief
+
+1. **"Report how many of the 54 become axiom-clean immediately on 111XII
+   closing"** presupposes that band members are *proved-but-tainted*.  They are
+   not: all 54 are `sorry`s.  The measurable effect is the 12 declarations of
+   §4, of which 9 are definitions.
+2. **"What remains is A/Proc-local assembly, not a missing theorem"** — true for
+   111VII, and true for 111XII *in a single universe*; the bundled 111XII needed
+   the `ULift` bridge of §3.  That is the fifth ingredient the brief asked to be
+   told about plainly: it is not a missing *theorem*, but it is not assembly
+   either — it is a universe defect in `A/VN`'s statements.
+3. **"The copy of the `VNSub` block in `A/Proc/Tensor.lean` should be deleted
+   by whoever next touches that file"** (session 49) — **do not delete it.**
+   The statement of 111VII names `VNSub`, and the whole spatial construction
+   runs on it; if the duplication is ever resolved it must be by pointing
+   `Tensor.lean` at `Theses.A.VN.VNSub`, which changes the *statement* of
+   111VII and needs the usual approval.
+4. Nothing false was found in the theses this session; no ERRATA or QUESTIONS
+   rows added.  Every step of the thesis's proof of 111VII checked out, down to
+   the "left to the reader" miu-bilinearity.
+
+### 6. Verification
+
+`lean Theses/A/Proc/Tensor.lean` under the `LEAN_PATH` bypass: **0 errors, 39
+`declaration uses 'sorry'` warnings** (was 43), no new warning of any kind.
+`QuantumLambda.lean` and `Duplicators.lean` recompile unchanged against the new
+`Tensor.olean` (0 errors), so the new global `InnerProductSpace (ULift H)`
+instance disturbs nothing downstream.  `#print axioms` was run by appending the
+commands to the module and recompiling (never from an importing scratch file):
+`special_tensor`, `vnTensorProduct_exists`, `vnTensorProduct_nonempty`,
+`vnTensor`, `VNT`, `vtmul`, `tensor_simple_facts_1`, `vtmul_nonneg`,
+`spatial_dense`, `exists_np_of_spatial_product`, `ngns_ulift`,
+`isTensorProduct_comp`, `nmiuSymm`, `isVNSubalgebra_map`, `VNSub.valNMIU`,
+`VNSub.ultraweak_eq_induced`, `opTensor_adjoint` and `uliftIsometry` are all
+exactly `[propext, Classical.choice, Quot.sound]`; the commands were then
+removed.  **The olean for `Theses.A.Proc.Tensor` is left built and current**
+(`lean -o`), so downstream workers need no rebuild.  Files touched:
+`Theses/A/Proc/Tensor.lean`, `docs/AProc-survey.md`, and this log.

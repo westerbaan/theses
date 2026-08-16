@@ -843,6 +843,104 @@ theorem opTensor_apply (f : H →L[ℂ] H') (g : K →L[ℂ] K') (x : H) (y : K)
     opTensor f g (x ⊗ₕ y) = f x ⊗ₕ g y :=
   (exists_opTensor f g).choose_spec.1 x y
 
+/-- Two continuous linear maps out of `ℋ ⊗ 𝒦` agreeing on elementary
+tensors are equal. -/
+theorem ext_htmul {Z : Type*} [NormedAddCommGroup Z] [NormedSpace ℂ Z]
+    {f g : HT H K →L[ℂ] Z} (h : ∀ (x : H) (y : K), f (x ⊗ₕ y) = g (x ⊗ₕ y)) :
+    f = g := by
+  refine ContinuousLinearMap.ext_on (hilbTensor H K).isTensor.dense ?_
+  rintro _ ⟨x, y, rfl⟩
+  exact h x y
+
+/-- The defining inner product of `ℋ ⊗ 𝒦`. -/
+theorem htmul_inner (x x' : H) (y y' : K) :
+    ⟪x ⊗ₕ y, x' ⊗ₕ y'⟫ = ⟪x, x'⟫ * ⟪y, y'⟫ :=
+  (hilbTensor H K).isTensor.inner_mul x x' y y'
+
+theorem norm_htmul (x : H) (y : K) : ‖x ⊗ₕ y‖ = ‖x‖ * ‖y‖ :=
+  hilb_tensor_basic_1 _ (hilbTensor H K).isTensor x y
+
+theorem htmul_add_left (x x' : H) (y : K) :
+    (x + x') ⊗ₕ y = x ⊗ₕ y + x' ⊗ₕ y := by
+  show (hilbTensor H K).map (x + x') y = _
+  rw [map_add]; rfl
+
+theorem htmul_smul_left (c : ℂ) (x : H) (y : K) :
+    (c • x) ⊗ₕ y = c • (x ⊗ₕ y) := by
+  show (hilbTensor H K).map (c • x) y = _
+  rw [map_smul]; rfl
+
+theorem opTensor_one : opTensor (1 : H →L[ℂ] H) (1 : K →L[ℂ] K) = 1 :=
+  ext_htmul fun x y => by rw [opTensor_apply]; rfl
+
+theorem opTensor_mul (a a' : H →L[ℂ] H) (b b' : K →L[ℂ] K) :
+    opTensor (a * a') (b * b') = opTensor a b * opTensor a' b' :=
+  ext_htmul fun x y => by
+    simp only [ContinuousLinearMap.mul_apply, opTensor_apply]
+
+theorem opTensor_add_left (a a' : H →L[ℂ] H') (b : K →L[ℂ] K') :
+    opTensor (a + a') b = opTensor a b + opTensor a' b :=
+  ext_htmul fun x y => by
+    rw [opTensor_apply]
+    show (a + a') x ⊗ₕ b y = opTensor a b (x ⊗ₕ y) + opTensor a' b (x ⊗ₕ y)
+    rw [opTensor_apply, opTensor_apply]
+    show (a x + a' x) ⊗ₕ b y = _
+    rw [htmul_add_left]
+
+theorem opTensor_add_right (a : H →L[ℂ] H') (b b' : K →L[ℂ] K') :
+    opTensor a (b + b') = opTensor a b + opTensor a b' :=
+  ext_htmul fun x y => by
+    rw [opTensor_apply]
+    show a x ⊗ₕ (b + b') y = opTensor a b (x ⊗ₕ y) + opTensor a b' (x ⊗ₕ y)
+    rw [opTensor_apply, opTensor_apply]
+    show a x ⊗ₕ (b y + b' y) = _
+    show (hilbTensor H' K').map (a x) (b y + b' y) = _
+    rw [map_add]; rfl
+
+theorem opTensor_smul_left (c : ℂ) (a : H →L[ℂ] H') (b : K →L[ℂ] K') :
+    opTensor (c • a) b = c • opTensor a b :=
+  ext_htmul fun x y => by
+    rw [opTensor_apply]
+    show (c • a) x ⊗ₕ b y = c • opTensor a b (x ⊗ₕ y)
+    rw [opTensor_apply]
+    show (c • a x) ⊗ₕ b y = _
+    rw [htmul_smul_left]
+
+theorem opTensor_smul_right (c : ℂ) (a : H →L[ℂ] H') (b : K →L[ℂ] K') :
+    opTensor a (c • b) = c • opTensor a b :=
+  ext_htmul fun x y => by
+    rw [opTensor_apply]
+    show a x ⊗ₕ (c • b) y = c • opTensor a b (x ⊗ₕ y)
+    rw [opTensor_apply]
+    show (hilbTensor H' K').map (a x) (c • b y) = _
+    rw [map_smul]; rfl
+
+/-- A vector of `ℋ ⊗ 𝒦` is determined by its inner products with the
+elementary tensors. -/
+theorem eq_of_inner_htmul {u v : HT H K}
+    (h : ∀ (x : H) (y : K), ⟪x ⊗ₕ y, u⟫ = ⟪x ⊗ₕ y, v⟫) : u = v := by
+  have hcl : (innerSL ℂ u : HT H K →L[ℂ] ℂ) = innerSL ℂ v := by
+    refine ext_htmul fun x y => ?_
+    have h1 := congrArg (starRingEnd ℂ) (h x y)
+    rw [inner_conj_symm, inner_conj_symm] at h1
+    simpa using h1
+  refine ext_inner_right ℂ fun z => ?_
+  exact congrArg (fun L : HT H K →L[ℂ] ℂ => L z) hcl
+
+/-- The adjoint of `A ⊗ B` is `A* ⊗ B*`. -/
+theorem opTensor_adjoint (a : H →L[ℂ] H) (b : K →L[ℂ] K) :
+    ContinuousLinearMap.adjoint (opTensor a b)
+      = opTensor (ContinuousLinearMap.adjoint a) (ContinuousLinearMap.adjoint b) := by
+  refine ext_htmul fun x y => ?_
+  refine eq_of_inner_htmul fun x' y' => ?_
+  rw [ContinuousLinearMap.adjoint_inner_right, opTensor_apply, opTensor_apply,
+    htmul_inner, htmul_inner, ContinuousLinearMap.adjoint_inner_right,
+    ContinuousLinearMap.adjoint_inner_right]
+
+theorem opTensor_star (a : H →L[ℂ] H) (b : K →L[ℂ] K) :
+    star (opTensor a b) = opTensor (star a) (star b) :=
+  opTensor_adjoint a b
+
 end Hilbert
 
 /-! ## Von Neumann subalgebras as bundled algebras (for the spatial
@@ -1106,11 +1204,307 @@ instance (S : StarSubalgebra ℂ A) (hS : IsVNSubalgebra A S)
     refine VNSub.val_injective ?_
     exact VonNeumannAlgebra.np_faithful a.val ha (fun ω => hω (VNSub.restrictNP ω))
 
+/-! ### The inclusion of a von Neumann subalgebra as an nmiu-map -/
+
+namespace VNSub
+
+variable {S : StarSubalgebra ℂ A} {hS : IsVNSubalgebra A S} [VonNeumannAlgebra A]
+
+/-- `VNSub.val` as a `ℂ`-linear map. -/
+def valLinearMap : VNSub A S hS →ₗ[ℂ] A where
+  toFun := VNSub.val
+  map_add' _ _ := rfl
+  map_smul' _ _ := rfl
+
+/-- The inclusion `S ↪ A` of a von Neumann subalgebra as a ∗-homomorphism. -/
+def valStarAlgHom : VNSub A S hS →⋆ₐ[ℂ] A where
+  toFun := VNSub.val
+  map_one' := rfl
+  map_mul' _ _ := rfl
+  map_zero' := rfl
+  map_add' _ _ := rfl
+  commutes' r := by
+    show (algebraMap ℂ (VNSub A S hS) r).val = algebraMap ℂ A r
+    rw [Algebra.algebraMap_eq_smul_one, Algebra.algebraMap_eq_smul_one]
+    rfl
+  map_star' _ := rfl
+
+@[simp] theorem valStarAlgHom_apply (a : VNSub A S hS) :
+    valStarAlgHom a = a.val := rfl
+
+/-- The inclusion `S ↪ A` of a von Neumann subalgebra is an nmiu-map: it is
+a ∗-homomorphism, and normal because suprema in `S` are computed in `A`. -/
+def valNMIU : NMIUMap (VNSub A S hS) A where
+  toStarAlgHom := valStarAlgHom
+  preservesDirSups' := by
+    intro D s hne hdir hlub
+    have h := isLUB_coe_of_isLUB (hne.image saMap) (isLUB_saMap_image hne hdir hlub)
+    rw [← Set.image_comp] at h
+    exact h
+
+@[simp] theorem valNMIU_apply (a : VNSub A S hS) :
+    valNMIU (S := S) (hS := hS) a = a.val := rfl
+
+theorem valNMIU_injective :
+    Function.Injective ⇑(valNMIU (A := A) (S := S) (hS := hS)) :=
+  val_injective
+
+theorem valNMIU_range :
+    (valNMIU (A := A) (S := S) (hS := hS)).toStarAlgHom.range = S := by
+  refine SetLike.ext fun a => ?_
+  constructor
+  · rintro ⟨b, rfl⟩; exact b.property
+  · intro ha; exact ⟨⟨a, ha⟩, rfl⟩
+
+theorem isVNSubalgebra_valNMIU_range :
+    IsVNSubalgebra A (valNMIU (A := A) (S := S) (hS := hS)).toStarAlgHom.range := by
+  rw [valNMIU_range]; exact hS
+
+/-- The ultraweak topology of a von Neumann subalgebra is the one induced
+from the ambient algebra (**89XI**.2). -/
+theorem ultraweak_eq_induced :
+    ultraweak (VNSub A S hS) =
+      TopologicalSpace.induced (VNSub.val (A := A) (S := S) (hS := hS))
+        (ultraweak A) :=
+  functional_permanence_2 valNMIU valNMIU_injective isVNSubalgebra_valNMIU_range
+
+end VNSub
+
 section Spatial
 
 variable {H K : Type u}
   [NormedAddCommGroup H] [InnerProductSpace ℂ H] [CompleteSpace H]
   [NormedAddCommGroup K] [InnerProductSpace ℂ K] [CompleteSpace K]
+
+open scoped Pointwise in
+/-- The linear span of `{A ⊗ B : A ∈ 𝒜, B ∈ ℬ}` is a ∗-subalgebra of
+`B(ℋ ⊗ 𝒦)`: it contains `1 = 1 ⊗ 1`, and is closed under multiplication and
+the involution because `(A⊗B)(A'⊗B') = AA' ⊗ BB'` and `(A⊗B)* = A*⊗B*`. -/
+def spatialSpan (SA : StarSubalgebra ℂ (H →L[ℂ] H))
+    (SB : StarSubalgebra ℂ (K →L[ℂ] K)) :
+    StarSubalgebra ℂ (HT H K →L[ℂ] HT H K) where
+  carrier := ↑(Submodule.span ℂ
+    {x : HT H K →L[ℂ] HT H K | ∃ a ∈ SA, ∃ b ∈ SB, x = opTensor a b})
+  mul_mem' := by
+    intro a b ha hb
+    have hle : Submodule.span ℂ
+        ({x : HT H K →L[ℂ] HT H K | ∃ a ∈ SA, ∃ b ∈ SB, x = opTensor a b} *
+          {x : HT H K →L[ℂ] HT H K | ∃ a ∈ SA, ∃ b ∈ SB, x = opTensor a b}) ≤
+        Submodule.span ℂ
+          {x : HT H K →L[ℂ] HT H K | ∃ a ∈ SA, ∃ b ∈ SB, x = opTensor a b} := by
+      refine Submodule.span_le.mpr ?_
+      rintro _ ⟨_, ⟨a1, ha1, b1, hb1, rfl⟩, _, ⟨a2, ha2, b2, hb2, rfl⟩, rfl⟩
+      exact Submodule.subset_span
+        ⟨a1 * a2, mul_mem ha1 ha2, b1 * b2, mul_mem hb1 hb2,
+          (opTensor_mul a1 a2 b1 b2).symm⟩
+    have h : a * b ∈
+        (Submodule.span ℂ
+            {x : HT H K →L[ℂ] HT H K | ∃ a ∈ SA, ∃ b ∈ SB, x = opTensor a b}) *
+          (Submodule.span ℂ
+            {x : HT H K →L[ℂ] HT H K | ∃ a ∈ SA, ∃ b ∈ SB, x = opTensor a b}) :=
+      Submodule.mul_mem_mul ha hb
+    rw [Submodule.span_mul_span] at h
+    exact hle h
+  one_mem' := Submodule.subset_span ⟨1, one_mem SA, 1, one_mem SB, opTensor_one.symm⟩
+  add_mem' := fun ha hb => Submodule.add_mem _ ha hb
+  zero_mem' := Submodule.zero_mem _
+  algebraMap_mem' := by
+    intro r
+    have h1 : (algebraMap ℂ (HT H K →L[ℂ] HT H K)) r = r • (1 : HT H K →L[ℂ] HT H K) :=
+      Algebra.algebraMap_eq_smul_one r
+    rw [h1]
+    exact Submodule.smul_mem _ _
+      (Submodule.subset_span ⟨1, one_mem SA, 1, one_mem SB, opTensor_one.symm⟩)
+  star_mem' := by
+    intro a ha
+    refine Submodule.span_induction (p := fun x _ => star x ∈ Submodule.span ℂ
+      {x : HT H K →L[ℂ] HT H K | ∃ a ∈ SA, ∃ b ∈ SB, x = opTensor a b}) ?_ ?_ ?_ ?_ ha
+    · rintro _ ⟨a1, ha1, b1, hb1, rfl⟩
+      exact Submodule.subset_span
+        ⟨star a1, star_mem ha1, star b1, star_mem hb1, opTensor_star a1 b1⟩
+    · simp
+    · intro x y _ _ hx hy
+      rw [star_add]
+      exact Submodule.add_mem _ hx hy
+    · intro c x _ hx
+      rw [star_smul]
+      exact Submodule.smul_mem _ _ hx
+
+theorem coe_spatialSpan (SA : StarSubalgebra ℂ (H →L[ℂ] H))
+    (SB : StarSubalgebra ℂ (K →L[ℂ] K)) :
+    (spatialSpan SA SB : Set (HT H K →L[ℂ] HT H K)) =
+      ↑(Submodule.span ℂ
+        {x : HT H K →L[ℂ] HT H K | ∃ a ∈ SA, ∃ b ∈ SB, x = opTensor a b}) := rfl
+
+theorem wstar_spatialSpan (SA : StarSubalgebra ℂ (H →L[ℂ] H))
+    (SB : StarSubalgebra ℂ (K →L[ℂ] K)) :
+    wstar (HT H K →L[ℂ] HT H K) (spatialSpan SA SB : Set (HT H K →L[ℂ] HT H K)) =
+      wstar (HT H K →L[ℂ] HT H K)
+        {x : HT H K →L[ℂ] HT H K | ∃ a ∈ SA, ∃ b ∈ SB, x = opTensor a b} := by
+  have hGsub : {x : HT H K →L[ℂ] HT H K | ∃ a ∈ SA, ∃ b ∈ SB, x = opTensor a b} ⊆
+      (spatialSpan SA SB : Set (HT H K →L[ℂ] HT H K)) := Submodule.subset_span
+  have hspan : (spatialSpan SA SB : Set (HT H K →L[ℂ] HT H K)) ⊆
+      (wstar (HT H K →L[ℂ] HT H K)
+        {x : HT H K →L[ℂ] HT H K | ∃ a ∈ SA, ∃ b ∈ SB, x = opTensor a b} :
+          Set (HT H K →L[ℂ] HT H K)) := by
+    rw [coe_spatialSpan]
+    refine (Submodule.span_le (p := (wstar (HT H K →L[ℂ] HT H K)
+      {x : HT H K →L[ℂ] HT H K | ∃ a ∈ SA, ∃ b ∈ SB, x = opTensor a b}).toSubmodule)).mpr ?_
+    exact (isVNSubalgebra_wstar
+      {x : HT H K →L[ℂ] HT H K | ∃ a ∈ SA, ∃ b ∈ SB, x = opTensor a b}).2
+  have h2 : {x : HT H K →L[ℂ] HT H K | ∃ a ∈ SA, ∃ b ∈ SB, x = opTensor a b} ⊆
+      (wstar (HT H K →L[ℂ] HT H K)
+        (spatialSpan SA SB : Set (HT H K →L[ℂ] HT H K)) :
+          Set (HT H K →L[ℂ] HT H K)) :=
+    hGsub.trans (isVNSubalgebra_wstar
+      (spatialSpan SA SB : Set (HT H K →L[ℂ] HT H K))).2
+  exact le_antisymm
+    (sInf_le ⟨(isVNSubalgebra_wstar
+      {x : HT H K →L[ℂ] HT H K | ∃ a ∈ SA, ∃ b ∈ SB, x = opTensor a b}).1, hspan⟩)
+    (sInf_le ⟨(isVNSubalgebra_wstar
+      (spatialSpan SA SB : Set (HT H K →L[ℂ] HT H K))).1, h2⟩)
+
+/-- The vector functionals `⟨x⊗y,(·)x⊗y⟩` are faithful on `B(ℋ ⊗ 𝒦)`:
+a positive operator killed by all of them is zero (the last step of the
+proof of **111VII**, condition `tensor-3`). -/
+theorem eq_zero_of_inner_htmul_eq_zero {t : HT H K →L[ℂ] HT H K} (ht : 0 ≤ t)
+    (h : ∀ (x : H) (y : K), ⟪x ⊗ₕ y, t (x ⊗ₕ y)⟫ = 0) : t = 0 := by
+  have hRR : CFC.sqrt t * CFC.sqrt t = t := CFC.sqrt_mul_sqrt_self t ht
+  have hRsa : IsSelfAdjoint (CFC.sqrt t) := IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg t)
+  have hRadj : ContinuousLinearMap.adjoint (CFC.sqrt t) = CFC.sqrt t := hRsa.star_eq
+  have hkill : ∀ (x : H) (y : K), CFC.sqrt t (x ⊗ₕ y) = 0 := by
+    intro x y
+    have h0 := h x y
+    rw [← hRR] at h0
+    have hstep : ⟪CFC.sqrt t (x ⊗ₕ y), CFC.sqrt t (x ⊗ₕ y)⟫ = 0 := by
+      rw [← ContinuousLinearMap.adjoint_inner_right, hRadj]
+      simpa using h0
+    exact inner_self_eq_zero.mp hstep
+  have hR0 : CFC.sqrt t = 0 := by
+    refine ext_htmul fun x y => ?_
+    rw [hkill x y]
+    rfl
+  rw [← hRR, hR0, mul_zero]
+
+/-- The heart of condition `tensor-2` of **111VII**: given np-functionals
+`σ` on `𝒜 ⊆ B(ℋ)` and `τ` on `ℬ ⊆ B(𝒦)`, write them (by **89IX**
+`normal-functional`) as `σ = ∑ₙ⟨xₙ,(·)xₙ⟩` and `τ = ∑ₘ⟨yₘ,(·)yₘ⟩`; then
+`∑_{n,m}‖xₙ ⊗ yₘ‖² < ∞`, so `(xₙ ⊗ yₘ)_{n,m}` defines an np-functional `ω`
+on `B(ℋ ⊗ 𝒦)` (**38IV**.2 through `exists_sumVectorNP`), and
+`ω(A ⊗ B) = σ(A)τ(B)`. -/
+theorem exists_np_of_spatial_product {SA : StarSubalgebra ℂ (H →L[ℂ] H)}
+    {SB : StarSubalgebra ℂ (K →L[ℂ] K)} {hSA : IsVNSubalgebra (H →L[ℂ] H) SA}
+    {hSB : IsVNSubalgebra (K →L[ℂ] K) SB}
+    (σ : NPFunctional (VNSub (H →L[ℂ] H) SA hSA))
+    (τ : NPFunctional (VNSub (K →L[ℂ] K) SB hSB)) :
+    ∃ ω : NPFunctional (HT H K →L[ℂ] HT H K),
+      ∀ (a : VNSub (H →L[ℂ] H) SA hSA) (b : VNSub (K →L[ℂ] K) SB hSB),
+        ω (opTensor a.val b.val) = σ a * τ b := by
+  obtain ⟨x, hxsum, hx⟩ := normal_functional VNSub.valNMIU
+    VNSub.valNMIU_injective VNSub.isVNSubalgebra_valNMIU_range σ
+  obtain ⟨y, hysum, hy⟩ := normal_functional VNSub.valNMIU
+    VNSub.valNMIU_injective VNSub.isVNSubalgebra_valNMIU_range τ
+  -- `∑_{n,m} ‖xₙ ⊗ yₘ‖² = (∑ₙ‖xₙ‖²)(∑ₘ‖yₘ‖²) < ∞`
+  have hz : Summable fun p : ℕ × ℕ => ‖x p.1 ⊗ₕ y p.2‖ ^ 2 := by
+    refine ((hxsum.mul_of_nonneg hysum (fun n => by positivity)
+      (fun m => by positivity)).congr fun p => ?_)
+    rw [norm_htmul, mul_pow]
+  obtain ⟨ω, hω⟩ :=
+    exists_sumVectorNP (H := HT H K) (ι := ℕ × ℕ) (fun p => x p.1 ⊗ₕ y p.2) hz
+  refine ⟨ω, fun a b => ?_⟩
+  -- both `ω(A⊗B)` and `σ(A)τ(B)` are the sum of the same double family
+  have hfn : Summable fun n : ℕ => ‖⟪x n, a.val (x n)⟫‖ := by
+    refine Summable.of_nonneg_of_le (fun n => norm_nonneg _)
+      (fun n => ?_) (hxsum.mul_left ‖a.val‖)
+    calc ‖⟪x n, a.val (x n)⟫‖ ≤ ‖x n‖ * ‖a.val (x n)‖ := norm_inner_le_norm _ _
+      _ ≤ ‖x n‖ * (‖a.val‖ * ‖x n‖) := by
+          gcongr
+          exact a.val.le_opNorm _
+      _ = ‖a.val‖ * ‖x n‖ ^ 2 := by ring
+  have hgn : Summable fun m : ℕ => ‖⟪y m, b.val (y m)⟫‖ := by
+    refine Summable.of_nonneg_of_le (fun m => norm_nonneg _)
+      (fun m => ?_) (hysum.mul_left ‖b.val‖)
+    calc ‖⟪y m, b.val (y m)⟫‖ ≤ ‖y m‖ * ‖b.val (y m)‖ := norm_inner_le_norm _ _
+      _ ≤ ‖y m‖ * (‖b.val‖ * ‖y m‖) := by
+          gcongr
+          exact b.val.le_opNorm _
+      _ = ‖b.val‖ * ‖y m‖ ^ 2 := by ring
+  have hsummable : Summable fun p : ℕ × ℕ =>
+      ⟪x p.1, a.val (x p.1)⟫ * ⟪y p.2, b.val (y p.2)⟫ := by
+    refine Summable.of_norm ?_
+    refine (hfn.mul_of_nonneg hgn (fun n => norm_nonneg _) (fun m => norm_nonneg _)).congr
+      fun p => ?_
+    rw [norm_mul]
+  have h1 := hω (opTensor a.val b.val)
+  have h2 := (hx a).mul (hy b) hsummable
+  have hterm : ∀ p : ℕ × ℕ,
+      ⟪x p.1 ⊗ₕ y p.2, opTensor a.val b.val (x p.1 ⊗ₕ y p.2)⟫
+        = ⟪x p.1, a.val (x p.1)⟫ * ⟪y p.2, b.val (y p.2)⟫ := by
+    intro p
+    rw [opTensor_apply, htmul_inner]
+  rw [funext hterm] at h1
+  exact h1.unique h2
+
+/-- Condition `tensor-1` of **111VII**: the linear span of the elementary
+tensors is ultraweakly dense in the von Neumann algebra `𝒯` they generate.
+This is the Double Commutant Theorem (**88VI**: `W*(S)` is the ultraweak
+closure of a unital ∗-subalgebra `S`) together with the fact that the
+ultraweak topology of a von Neumann subalgebra is induced from the ambient
+algebra (**89XI**.2). -/
+theorem spatial_dense (SA : StarSubalgebra ℂ (H →L[ℂ] H))
+    (SB : StarSubalgebra ℂ (K →L[ℂ] K))
+    (U : Set (VNSub (HT H K →L[ℂ] HT H K)
+      (wstar (HT H K →L[ℂ] HT H K)
+        {x | ∃ a ∈ SA, ∃ b ∈ SB, x = opTensor a b})
+      (isVNSubalgebra_wstar _).1))
+    (hU : VNSub.val '' U =
+      {x : HT H K →L[ℂ] HT H K | ∃ a ∈ SA, ∃ b ∈ SB, x = opTensor a b}) :
+    @Dense (VNSub (HT H K →L[ℂ] HT H K)
+      (wstar (HT H K →L[ℂ] HT H K)
+        {x | ∃ a ∈ SA, ∃ b ∈ SB, x = opTensor a b})
+      (isVNSubalgebra_wstar _).1) (ultraweak _)
+      (Submodule.span ℂ U : Set (VNSub (HT H K →L[ℂ] HT H K)
+        (wstar (HT H K →L[ℂ] HT H K)
+          {x | ∃ a ∈ SA, ∃ b ∈ SB, x = opTensor a b})
+        (isVNSubalgebra_wstar _).1)) := by
+  letI : TopologicalSpace (HT H K →L[ℂ] HT H K) := ultraweak (HT H K →L[ℂ] HT H K)
+  letI : TopologicalSpace (VNSub (HT H K →L[ℂ] HT H K)
+      (wstar (HT H K →L[ℂ] HT H K)
+        {x | ∃ a ∈ SA, ∃ b ∈ SB, x = opTensor a b})
+      (isVNSubalgebra_wstar _).1) :=
+    ultraweak (VNSub (HT H K →L[ℂ] HT H K)
+      (wstar (HT H K →L[ℂ] HT H K)
+        {x | ∃ a ∈ SA, ∃ b ∈ SB, x = opTensor a b})
+      (isVNSubalgebra_wstar _).1)
+  have hind : Topology.IsInducing
+      (VNSub.val (A := HT H K →L[ℂ] HT H K)
+        (S := wstar (HT H K →L[ℂ] HT H K)
+          {x | ∃ a ∈ SA, ∃ b ∈ SB, x = opTensor a b})
+        (hS := (isVNSubalgebra_wstar _).1)) :=
+    ⟨VNSub.ultraweak_eq_induced⟩
+  refine hind.dense_iff.mpr fun t => ?_
+  have himg : VNSub.val '' (Submodule.span ℂ U : Set (VNSub (HT H K →L[ℂ] HT H K)
+        (wstar (HT H K →L[ℂ] HT H K)
+          {x | ∃ a ∈ SA, ∃ b ∈ SB, x = opTensor a b})
+        (isVNSubalgebra_wstar _).1)) =
+      (Submodule.span ℂ (VNSub.val '' U) : Set (HT H K →L[ℂ] HT H K)) := by
+    show ⇑VNSub.valLinearMap '' (Submodule.span ℂ U : Set (VNSub (HT H K →L[ℂ] HT H K)
+        (wstar (HT H K →L[ℂ] HT H K)
+          {x | ∃ a ∈ SA, ∃ b ∈ SB, x = opTensor a b})
+        (isVNSubalgebra_wstar _).1)) =
+      (Submodule.span ℂ (⇑VNSub.valLinearMap '' U) : Set (HT H K →L[ℂ] HT H K))
+    rw [← Submodule.map_span, Submodule.map_coe]
+  rw [himg, hU]
+  have hclosure : closure
+      (↑(Submodule.span ℂ
+        {x : HT H K →L[ℂ] HT H K | ∃ a ∈ SA, ∃ b ∈ SB, x = opTensor a b})) =
+      (wstar (HT H K →L[ℂ] HT H K)
+        {x : HT H K →L[ℂ] HT H K | ∃ a ∈ SA, ∃ b ∈ SB, x = opTensor a b} :
+          Set (HT H K →L[ℂ] HT H K)) := by
+    rw [← coe_spatialSpan SA SB, ← (double_commutant (spatialSpan SA SB)).2.1,
+      (double_commutant (spatialSpan SA SB)).2.2, wstar_spatialSpan]
+  rw [hclosure]
+  exact t.property
 
 /-- **111VII** (`special-tensor`, proc.tex:2491, Theorem): for von Neumann
 algebras `𝒜 ⊆ B(ℋ)`, `ℬ ⊆ B(𝒦)` of operators, the map
@@ -1126,10 +1520,322 @@ theorem special_tensor (SA : StarSubalgebra ℂ (H →L[ℂ] H))
           (wstar (HT H K →L[ℂ] HT H K)
             {x | ∃ a ∈ SA, ∃ b ∈ SB, x = opTensor a b})
           (isVNSubalgebra_wstar _).1,
-      (∀ a b, (γ a b).val = opTensor a.val b.val) ∧ IsTensorProduct γ :=
-  sorry
+      (∀ a b, (γ a b).val = opTensor a.val b.val) ∧ IsTensorProduct γ := by
+  have hmem : ∀ (a : VNSub (H →L[ℂ] H) SA hSA) (b : VNSub (K →L[ℂ] K) SB hSB),
+      opTensor a.val b.val ∈
+        wstar (HT H K →L[ℂ] HT H K) {x | ∃ a ∈ SA, ∃ b ∈ SB, x = opTensor a b} :=
+    fun a b => (isVNSubalgebra_wstar _).2 ⟨a.val, a.property, b.val, b.property, rfl⟩
+  refine ⟨LinearMap.mk₂ ℂ (fun a b => ⟨opTensor a.val b.val, hmem a b⟩)
+      (fun a a' b => VNSub.val_injective (opTensor_add_left _ _ _))
+      (fun c a b => VNSub.val_injective (opTensor_smul_left c _ _))
+      (fun a b b' => VNSub.val_injective (opTensor_add_right _ _ _))
+      (fun c a b => VNSub.val_injective (opTensor_smul_right c _ _)),
+    fun a b => rfl, ?_, ?_, ?_, ?_⟩
+  · -- miu-bilinearity
+    refine ⟨VNSub.val_injective opTensor_one, fun a b c d => ?_, fun a b => ?_⟩
+    · exact VNSub.val_injective (opTensor_mul _ _ _ _)
+    · exact VNSub.val_injective (opTensor_star _ _)
+  · -- **tensor-1**
+    refine spatial_dense SA SB _ ?_
+    ext u
+    constructor
+    · rintro ⟨t, ⟨a, b, rfl⟩, rfl⟩
+      exact ⟨a.val, a.property, b.val, b.property, rfl⟩
+    · rintro ⟨a, ha, b, hb, rfl⟩
+      exact ⟨⟨opTensor a b, hmem ⟨a, ha⟩ ⟨b, hb⟩⟩, ⟨⟨a, ha⟩, ⟨b, hb⟩, rfl⟩, rfl⟩
+  · -- **tensor-2**
+    intro σ τ
+    obtain ⟨ω, hω⟩ := exists_np_of_spatial_product σ τ
+    exact ⟨VNSub.restrictNP ω, fun a b => hω a b⟩
+  · -- **tensor-3**
+    intro t ht hfaith
+    refine VNSub.val_injective ?_
+    show t.val = (0 : HT H K →L[ℂ] HT H K)
+    refine eq_zero_of_inner_htmul_eq_zero ht fun x y => ?_
+    refine hfaith (VNSub.restrictNP (vectorNP x)) (VNSub.restrictNP (vectorNP y))
+      (VNSub.restrictNP (vectorNP (x ⊗ₕ y))) fun a b => ?_
+    show ⟪x ⊗ₕ y, opTensor a.val b.val (x ⊗ₕ y)⟫ = ⟪x, a.val x⟫ * ⟪y, b.val y⟫
+    rw [opTensor_apply, htmul_inner]
 
 end Spatial
+
+/-! ### Transport of a tensor product along nmiu-isomorphisms (for 111XII) -/
+
+section Transport
+
+/-- Transfer of a least upper bound along an order isomorphism. -/
+theorem isLUB_image_of_orderIso {X Y : Type*} [Preorder X] [Preorder Y]
+    (ψ : X → Y) (hmono : ∀ x y, ψ x ≤ ψ y ↔ x ≤ y)
+    (hsurj : Function.Surjective ψ) {E : Set X} {e : X} (h : IsLUB E e) :
+    IsLUB (ψ '' E) (ψ e) := by
+  constructor
+  · rintro _ ⟨x, hx, rfl⟩
+    exact (hmono x e).mpr (h.1 hx)
+  · intro u hu
+    obtain ⟨v, rfl⟩ := hsurj u
+    exact (hmono e v).mpr (h.2 fun x hx => (hmono x v).mp (hu ⟨x, hx, rfl⟩))
+
+variable {A₂ : Type u₁} {B₂ : Type u₂}
+  [CStarAlgebra A₂] [PartialOrder A₂] [StarOrderedRing A₂]
+  [CStarAlgebra B₂] [PartialOrder B₂] [StarOrderedRing B₂]
+
+/-- A ∗-homomorphism between C*-algebras is positive: `a = (√a)*√a`.
+(The universe-polymorphic form of `starAlgHom_nonneg`, which `A/VN` states
+for two algebras in the *same* universe.) -/
+theorem starAlgHom_nonneg' (φ : A₂ →⋆ₐ[ℂ] B₂) {a : A₂} (ha : 0 ≤ a) : 0 ≤ φ a := by
+  have hsa : IsSelfAdjoint (CFC.sqrt a) := IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg a)
+  have h : a = star (CFC.sqrt a) * CFC.sqrt a := by
+    rw [hsa.star_eq, CFC.sqrt_mul_sqrt_self a ha]
+  rw [h, map_mul, map_star]
+  exact star_mul_self_nonneg _
+
+/-- The universe-polymorphic form of `starAlgHom_mono`. -/
+theorem starAlgHom_mono' (φ : A₂ →⋆ₐ[ℂ] B₂) {x y : A₂} (h : x ≤ y) : φ x ≤ φ y := by
+  have h0 := starAlgHom_nonneg' φ (sub_nonneg.mpr h)
+  rw [map_sub] at h0
+  exact sub_nonneg.mp h0
+
+/-- A ∗-isomorphism is an order isomorphism. -/
+theorem starAlgEquiv_le_iff (Φ : A₂ ≃⋆ₐ[ℂ] B₂) (x y : A₂) : Φ x ≤ Φ y ↔ x ≤ y := by
+  refine ⟨fun h => ?_, fun h => starAlgHom_mono' Φ.toStarAlgHom h⟩
+  have h' : Φ.symm (Φ x) ≤ Φ.symm (Φ y) := starAlgHom_mono' Φ.symm.toStarAlgHom h
+  rwa [Φ.symm_apply_apply, Φ.symm_apply_apply] at h'
+
+/-- The universe-polymorphic form of `starAlgEquiv_preservesDirSups`. -/
+theorem starAlgEquiv_preservesDirSups' (Φ : A₂ ≃⋆ₐ[ℂ] B₂) : PreservesDirSups ⇑Φ := by
+  intro D s hne hdir hlub
+  have h := isLUB_image_of_orderIso ⇑Φ (starAlgEquiv_le_iff Φ) Φ.surjective
+    (isLUB_coe_of_isLUB hne hlub)
+  rw [← Set.image_comp] at h
+  exact h
+
+/-- A von Neumann subalgebra is carried to one by a ∗-isomorphism. -/
+theorem isVNSubalgebra_map [VonNeumannAlgebra A₂] [VonNeumannAlgebra B₂]
+    (Φ : A₂ ≃⋆ₐ[ℂ] B₂) (S : StarSubalgebra ℂ A₂) (hS : IsVNSubalgebra A₂ S) :
+    IsVNSubalgebra B₂ (S.map Φ.toStarAlgHom) := by
+  have hmem : ∀ y : B₂, y ∈ S.map Φ.toStarAlgHom ↔ Φ.symm y ∈ S := by
+    intro y
+    constructor
+    · rintro ⟨x, hx, rfl⟩
+      show Φ.symm (Φ x) ∈ S
+      rwa [Φ.symm_apply_apply]
+    · intro hy
+      refine ⟨Φ.symm y, hy, ?_⟩
+      show Φ (Φ.symm y) = y
+      rw [Φ.apply_symm_apply]
+  have hsa : ∀ d : selfAdjoint B₂, IsSelfAdjoint (Φ.symm (d : B₂)) := by
+    intro d
+    show star (Φ.symm (d : B₂)) = Φ.symm (d : B₂)
+    rw [← map_star Φ.symm]
+    exact congrArg (fun z : B₂ => Φ.symm z) d.2.star_eq
+  refine ⟨?_, ?_⟩
+  · have hset : (S.map Φ.toStarAlgHom : Set B₂) = ⇑Φ.symm ⁻¹' (S : Set A₂) := by
+      ext y
+      exact hmem y
+    rw [hset]
+    exact hS.isClosed.preimage
+      (NonUnitalStarAlgHom.isometry Φ.symm.toStarAlgHom Φ.symm.injective).continuous
+  · intro D s hDsub hne hdir hlub
+    rw [hmem]
+    refine hS.dirSup_mem ((fun d : selfAdjoint B₂ => (⟨Φ.symm (d : B₂), hsa d⟩ :
+      selfAdjoint A₂)) '' D) ⟨Φ.symm (s : B₂), hsa s⟩ ?_ (hne.image _) ?_ ?_
+    · rintro _ ⟨d, hd, rfl⟩
+      exact (hmem (d : B₂)).mp (hDsub d hd)
+    · rintro _ ⟨d, hd, rfl⟩ _ ⟨e, he, rfl⟩
+      obtain ⟨f, hf, hdf, hef⟩ := hdir d hd e he
+      exact ⟨⟨Φ.symm (f : B₂), hsa f⟩, ⟨f, hf, rfl⟩,
+        (starAlgEquiv_le_iff Φ.symm _ _).mpr hdf,
+        (starAlgEquiv_le_iff Φ.symm _ _).mpr hef⟩
+    · refine isLUB_sa_of_isLUB ?_
+      have h := isLUB_image_of_orderIso ⇑Φ.symm (starAlgEquiv_le_iff Φ.symm)
+        Φ.symm.surjective (isLUB_coe_of_isLUB hne hlub)
+      rw [← Set.image_comp] at h
+      rw [← Set.image_comp]
+      exact h
+
+/-- The inverse of a bijective nmiu-map is again an nmiu-map: it is a
+∗-isomorphism, hence an order isomorphism (**48VI**.2), and an order
+isomorphism transports suprema. -/
+noncomputable def nmiuSymm [VonNeumannAlgebra A₂] [VonNeumannAlgebra B₂]
+    (φ : NMIUMap A₂ B₂) (hφ : Function.Bijective ⇑φ) : NMIUMap B₂ A₂ where
+  toStarAlgHom := (StarAlgEquiv.ofBijective φ.toStarAlgHom hφ).symm.toStarAlgHom
+  preservesDirSups' :=
+    starAlgEquiv_preservesDirSups' (StarAlgEquiv.ofBijective φ.toStarAlgHom hφ).symm
+
+@[simp] theorem nmiuSymm_apply_apply [VonNeumannAlgebra A₂] [VonNeumannAlgebra B₂]
+    (φ : NMIUMap A₂ B₂) (hφ : Function.Bijective ⇑φ) (a : A₂) :
+    nmiuSymm φ hφ (φ a) = a :=
+  (StarAlgEquiv.ofBijective φ.toStarAlgHom hφ).symm_apply_apply a
+
+/-- An nmiu-map as a plain `ℂ`-linear map. -/
+def nmiuLin (f : NMIUMap A₂ B₂) : A₂ →ₗ[ℂ] B₂ where
+  toFun := f
+  map_add' := map_add f.toStarAlgHom
+  map_smul' := map_smul f.toStarAlgHom
+
+@[simp] theorem nmiuLin_apply (f : NMIUMap A₂ B₂) (a : A₂) : nmiuLin f a = f a := rfl
+
+variable {A₃ : Type u₃} {B₃ : Type u₄} {T₂ : Type u₅}
+  [CStarAlgebra A₃] [PartialOrder A₃] [StarOrderedRing A₃]
+  [CStarAlgebra B₃] [PartialOrder B₃] [StarOrderedRing B₃]
+  [CStarAlgebra T₂] [PartialOrder T₂] [StarOrderedRing T₂]
+
+/-- A tensor product transports along nmiu-isomorphisms of the two factors:
+if `γ : 𝒜' × ℬ' → 𝒯` is a tensor product and `φ : 𝒜 ≅ 𝒜'`, `ψ : ℬ ≅ ℬ'` are
+nmiu-isomorphisms, then `(a,b) ↦ γ(φa, ψb)` is a tensor product of `𝒜` and
+`ℬ`.  (This is what turns the *spatial* tensor product 111VII into the
+abstract existence statement **111XII**.) -/
+theorem isTensorProduct_comp [VonNeumannAlgebra A₂] [VonNeumannAlgebra B₂]
+    [VonNeumannAlgebra A₃] [VonNeumannAlgebra B₃] [VonNeumannAlgebra T₂]
+    (φ : NMIUMap A₂ A₃) (hφ : Function.Bijective ⇑φ)
+    (ψ : NMIUMap B₂ B₃) (hψ : Function.Bijective ⇑ψ)
+    {γ : A₃ →ₗ[ℂ] B₃ →ₗ[ℂ] T₂} (hγ : IsTensorProduct γ) :
+    IsTensorProduct (γ.compl₁₂ (nmiuLin φ) (nmiuLin ψ)) := by
+  have hφP : PreservesDirSups ⇑(nmiuP φ) := φ.preservesDirSups'
+  have hψP : PreservesDirSups ⇑(nmiuP ψ) := ψ.preservesDirSups'
+  have happ : ∀ (a : A₂) (b : B₂),
+      (γ.compl₁₂ (nmiuLin φ) (nmiuLin ψ)) a b = γ (φ a) (ψ b) := fun _ _ => rfl
+  have hφ1 : φ (1 : A₂) = 1 := map_one φ.toStarAlgHom
+  have hψ1 : ψ (1 : B₂) = 1 := map_one ψ.toStarAlgHom
+  have hφmul : ∀ a a' : A₂, φ (a * a') = φ a * φ a' := map_mul φ.toStarAlgHom
+  have hψmul : ∀ b b' : B₂, ψ (b * b') = ψ b * ψ b' := map_mul ψ.toStarAlgHom
+  have hφstar : ∀ a : A₂, φ (star a) = star (φ a) := map_star φ.toStarAlgHom
+  have hψstar : ∀ b : B₂, ψ (star b) = star (ψ b) := map_star ψ.toStarAlgHom
+  refine ⟨⟨?_, ?_, ?_⟩, ?_, ?_, ?_⟩
+  · show (γ.compl₁₂ (nmiuLin φ) (nmiuLin ψ)) 1 1 = 1
+    rw [happ, hφ1, hψ1]
+    exact hγ.miu.1
+  · intro a b c d
+    rw [happ, happ, happ, hφmul, hψmul]
+    exact hγ.miu.2.1 _ _ _ _
+  · intro a b
+    rw [happ, happ, hφstar, hψstar]
+    exact hγ.miu.2.2 _ _
+  · have hset : {t : T₂ | ∃ (a : A₂) (b : B₂),
+        t = (γ.compl₁₂ (nmiuLin φ) (nmiuLin ψ)) a b} = {t : T₂ | ∃ a b, t = γ a b} := by
+      ext t
+      constructor
+      · rintro ⟨a, b, rfl⟩
+        exact ⟨φ a, ψ b, rfl⟩
+      · rintro ⟨a', b', rfl⟩
+        obtain ⟨a, rfl⟩ := hφ.2 a'
+        obtain ⟨b, rfl⟩ := hψ.2 b'
+        exact ⟨a, b, rfl⟩
+    rw [hset]
+    exact hγ.dense
+  · intro σ τ
+    obtain ⟨h, hh⟩ := hγ.prod_exists
+      (compNP (nmiuP (nmiuSymm φ hφ)) (nmiuSymm φ hφ).preservesDirSups' σ)
+      (compNP (nmiuP (nmiuSymm ψ hψ)) (nmiuSymm ψ hψ).preservesDirSups' τ)
+    refine ⟨h, fun a b => ?_⟩
+    rw [happ, hh (φ a) (ψ b)]
+    show σ (nmiuSymm φ hφ (φ a)) * τ (nmiuSymm ψ hψ (ψ b)) = σ a * τ b
+    rw [nmiuSymm_apply_apply φ hφ a, nmiuSymm_apply_apply ψ hψ b]
+  · intro t ht hfaith
+    refine hγ.faithful t ht fun σ₃ τ₃ h hcompat => ?_
+    refine hfaith (compNP (nmiuP φ) hφP σ₃) (compNP (nmiuP ψ) hψP τ₃) h fun a b => ?_
+    rw [happ, hcompat (φ a) (ψ b)]
+    rfl
+
+/-- An nmiu-map `f : 𝒜 → ℬ` whose image is a von Neumann subalgebra `S`
+corestricts to an nmiu-map into the bundled algebra `VNSub ℬ S`. -/
+noncomputable def nmiuCorestrict [VonNeumannAlgebra A₂] [VonNeumannAlgebra B₂]
+    (f : NMIUMap A₂ B₂) (S : StarSubalgebra ℂ B₂) (hS : IsVNSubalgebra B₂ S)
+    (hmem : ∀ a, f a ∈ S) : NMIUMap A₂ (VNSub B₂ S hS) where
+  toStarAlgHom :=
+    { toFun := fun a => ⟨f a, hmem a⟩
+      map_one' := VNSub.val_injective (map_one f.toStarAlgHom)
+      map_mul' := fun a a' => VNSub.val_injective (map_mul f.toStarAlgHom a a')
+      map_zero' := VNSub.val_injective (map_zero f.toStarAlgHom)
+      map_add' := fun a a' => VNSub.val_injective (map_add f.toStarAlgHom a a')
+      commutes' := fun r => VNSub.val_injective (by
+        show f (algebraMap ℂ A₂ r) = (algebraMap ℂ (VNSub B₂ S hS) r).val
+        have halg : (algebraMap ℂ (VNSub B₂ S hS) r).val = algebraMap ℂ B₂ r := by
+          rw [Algebra.algebraMap_eq_smul_one, Algebra.algebraMap_eq_smul_one]
+          rfl
+        rw [halg]
+        exact f.toStarAlgHom.commutes r)
+      map_star' := fun a => VNSub.val_injective (map_star f.toStarAlgHom a) }
+  preservesDirSups' := by
+    intro D s hne hdir hlub
+    have hfn := f.preservesDirSups' D s hne hdir hlub
+    constructor
+    · rintro _ ⟨d, hd, rfl⟩
+      exact hfn.1 ⟨d, hd, rfl⟩
+    · intro u hu
+      exact hfn.2 (by rintro _ ⟨d, hd, rfl⟩; exact hu ⟨d, hd, rfl⟩)
+
+@[simp] theorem nmiuCorestrict_val [VonNeumannAlgebra A₂] [VonNeumannAlgebra B₂]
+    (f : NMIUMap A₂ B₂) (S : StarSubalgebra ℂ B₂) (hS : IsVNSubalgebra B₂ S)
+    (hmem : ∀ a, f a ∈ S) (a : A₂) : (nmiuCorestrict f S hS hmem a).val = f a := rfl
+
+theorem nmiuCorestrict_bijective [VonNeumannAlgebra A₂] [VonNeumannAlgebra B₂]
+    (f : NMIUMap A₂ B₂) (S : StarSubalgebra ℂ B₂) (hS : IsVNSubalgebra B₂ S)
+    (hmem : ∀ a, f a ∈ S) (hinj : Function.Injective ⇑f)
+    (hsurj : ∀ s ∈ S, ∃ a, f a = s) :
+    Function.Bijective ⇑(nmiuCorestrict f S hS hmem) := by
+  constructor
+  · intro a a' h
+    exact hinj (congrArg VNSub.val h)
+  · rintro ⟨x, hx⟩
+    obtain ⟨a, ha⟩ := hsurj x hx
+    exact ⟨a, VNSub.val_injective ha⟩
+
+end Transport
+
+/-! ### Universe-lifting a Hilbert space
+
+The bundled form of 111XII has its two algebras in *different* universes `u`
+and `v`, while the spatial construction needs both Hilbert spaces in one
+universe; `ULift` supplies the common refinement `max u v`. -/
+
+section ULiftHilbert
+
+variable {H₀ : Type u₁} [NormedAddCommGroup H₀] [InnerProductSpace ℂ H₀]
+
+instance : InnerProductSpace ℂ (ULift.{u₂} H₀) :=
+  { ULift.normedSpace with
+    inner := fun x y => ⟪x.down, y.down⟫
+    norm_sq_eq_re_inner := fun x => norm_sq_eq_re_inner (𝕜 := ℂ) x.down
+    conj_inner_symm := fun x y => inner_conj_symm (𝕜 := ℂ) x.down y.down
+    add_left := fun x y z => inner_add_left (𝕜 := ℂ) x.down y.down z.down
+    smul_left := fun x y r => inner_smul_left (𝕜 := ℂ) x.down y.down (r := r) }
+
+/-- The canonical isometric isomorphism `ULift ℋ ≃ ℋ`. -/
+def uliftIsometry : ULift.{u₂} H₀ ≃ₗᵢ[ℂ] H₀ where
+  toLinearEquiv := ULift.moduleEquiv
+  norm_map' _ := rfl
+
+end ULiftHilbert
+
+/-- **48VIII** `ngns` with the representing Hilbert space lifted into
+`Type (max u₁ u₂)`: every von Neumann algebra `𝒜 : Type u₁` is
+nmiu-isomorphic to a von Neumann subalgebra of `B(ULift ℓ²(ι))`. -/
+theorem ngns_ulift (A₄ : Type u₁) [CStarAlgebra A₄] [PartialOrder A₄]
+    [StarOrderedRing A₄] [VonNeumannAlgebra A₄] :
+    ∃ (ι : Type u₁)
+      (f : NMIUMap A₄ (ULift.{u₂} (lp (fun _ : ι => ℂ) 2) →L[ℂ]
+        ULift.{u₂} (lp (fun _ : ι => ℂ) 2)))
+      (S : StarSubalgebra ℂ (ULift.{u₂} (lp (fun _ : ι => ℂ) 2) →L[ℂ]
+        ULift.{u₂} (lp (fun _ : ι => ℂ) 2)))
+      (hS : IsVNSubalgebra _ S),
+      (∀ a, f a ∈ S) ∧ (∀ s ∈ S, ∃ a, f a = s) ∧ Function.Injective ⇑f := by
+  obtain ⟨ι, f₀, hinj, hR⟩ := ngns A₄
+  set Φ : ((lp (fun _ : ι => ℂ) 2) →L[ℂ] (lp (fun _ : ι => ℂ) 2)) ≃⋆ₐ[ℂ]
+      (ULift.{u₂} (lp (fun _ : ι => ℂ) 2) →L[ℂ] ULift.{u₂} (lp (fun _ : ι => ℂ) 2)) :=
+    (uliftIsometry (H₀ := lp (fun _ : ι => ℂ) 2)).symm.conjStarAlgEquiv with hΦ
+  refine ⟨ι, ⟨Φ.toStarAlgHom.comp f₀.toStarAlgHom, ?_⟩,
+    (f₀.toStarAlgHom.range).map Φ.toStarAlgHom, isVNSubalgebra_map Φ _ hR,
+    fun a => ⟨f₀ a, ⟨a, rfl⟩, rfl⟩, ?_, ?_⟩
+  · intro D s hne hdir hlub
+    have h1 := f₀.preservesDirSups' D s hne hdir hlub
+    have h2 := isLUB_image_of_orderIso ⇑Φ (starAlgEquiv_le_iff Φ) Φ.surjective h1
+    rw [← Set.image_comp] at h2
+    exact h2
+  · rintro _ ⟨_, ⟨a, rfl⟩, rfl⟩
+    exact ⟨a, rfl⟩
+  · intro a a' h
+    exact hinj (Φ.injective h)
 
 /-- **111XII** (proc.tex:2583, Exercise): every pair of (abstract) von
 Neumann algebras has a tensor product (via the normal Gelfand–Naimark
@@ -1137,7 +1843,19 @@ representation, vn.tex 48VIII, and 111VII). -/
 theorem vnTensorProduct_exists [VonNeumannAlgebra A] [VonNeumannAlgebra B] :
     ∃ (T : Type u) (_ : CStarAlgebra T) (_ : PartialOrder T)
       (_ : StarOrderedRing T) (_ : VonNeumannAlgebra T)
-      (γ : A →ₗ[ℂ] B →ₗ[ℂ] T), IsTensorProduct γ := sorry
+      (γ : A →ₗ[ℂ] B →ₗ[ℂ] T), IsTensorProduct γ := by
+  obtain ⟨ι, f, hfinj, hfR⟩ := ngns A
+  obtain ⟨κ, g, hginj, hgR⟩ := ngns B
+  obtain ⟨γ₀, -, hγ₀⟩ := special_tensor f.toStarAlgHom.range g.toStarAlgHom.range hfR hgR
+  have hfmem : ∀ a, f a ∈ f.toStarAlgHom.range := fun a => ⟨a, rfl⟩
+  have hgmem : ∀ b, g b ∈ g.toStarAlgHom.range := fun b => ⟨b, rfl⟩
+  exact ⟨_, inferInstance, inferInstance, inferInstance, inferInstance,
+    γ₀.compl₁₂ (nmiuLin (nmiuCorestrict f _ hfR hfmem))
+      (nmiuLin (nmiuCorestrict g _ hgR hgmem)),
+    isTensorProduct_comp _
+      (nmiuCorestrict_bijective f _ hfR hfmem hfinj (by rintro _ ⟨a, rfl⟩; exact ⟨a, rfl⟩)) _
+      (nmiuCorestrict_bijective g _ hgR hgmem hginj (by rintro _ ⟨b, rfl⟩; exact ⟨b, rfl⟩))
+      hγ₀⟩
 
 /-! ## Parsec 1120: the algebraic tensor product `𝒜 ⊙ ℬ` and the
 universal property -/
@@ -2233,7 +2951,16 @@ attribute [instance] VNTensorProduct.cstar VNTensorProduct.po
 
 /-- **111XII** (proc.tex:2583, Exercise), bundled form: a tensor product
 of `𝒜` and `ℬ` exists. -/
-theorem vnTensorProduct_nonempty : Nonempty (VNTensorProduct 𝒜 ℬ) := sorry
+theorem vnTensorProduct_nonempty : Nonempty (VNTensorProduct 𝒜 ℬ) := by
+  obtain ⟨ι, f, SA, hSA, hfmem, hfsurj, hfinj⟩ := ngns_ulift.{u, v} 𝒜
+  obtain ⟨κ, g, SB, hSB, hgmem, hgsurj, hginj⟩ := ngns_ulift.{v, u} ℬ
+  obtain ⟨γ₀, -, hγ₀⟩ := special_tensor SA SB hSA hSB
+  exact ⟨{ carrier := _
+           map := γ₀.compl₁₂ (nmiuLin (nmiuCorestrict f SA hSA hfmem))
+             (nmiuLin (nmiuCorestrict g SB hSB hgmem))
+           isTensorProduct := isTensorProduct_comp _
+             (nmiuCorestrict_bijective f SA hSA hfmem hfinj hfsurj) _
+             (nmiuCorestrict_bijective g SB hSB hgmem hginj hgsurj) hγ₀ }⟩
 
 /-- **115I** (proc.tex:3103, Notation): we pick one tensor product
 `⊗ : 𝒜 × ℬ → 𝒜 ⊗ ℬ` of von Neumann algebras. -/
@@ -2338,12 +3065,47 @@ theorem product_functional_norm (f : A →L[ℂ] ℂ) (g : B →L[ℂ] ℂ)
     (hg : @Continuous B ℂ (ultraweak B) _ ⇑g) :
     ‖predualTensor f g hf hg‖ = ‖f‖ * ‖g‖ := sorry
 
+/-- The first half of **116III**.1: `a ⊗ b ≥ 0` for positive `a` and `b`. -/
+theorem vtmul_nonneg (a : A) (b : B) (ha : 0 ≤ a) (hb : 0 ≤ b) :
+    0 ≤ a ⊗ᵥ b := by
+  -- `a ⊗ b = (√a)*(√a) ⊗ (√b)*(√b) = (√a ⊗ √b)* (√a ⊗ √b)`, by
+  -- multiplicativity and involution-preservation of `⊗` (108I).
+  have hsa : star (CFC.sqrt a) = CFC.sqrt a :=
+    (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg a)).star_eq
+  have hsb : star (CFC.sqrt b) = CFC.sqrt b :=
+    (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg b)).star_eq
+  have ha' : a = star (CFC.sqrt a) * CFC.sqrt a := by
+    rw [hsa, CFC.sqrt_mul_sqrt_self a ha]
+  have hb' : b = star (CFC.sqrt b) * CFC.sqrt b := by
+    rw [hsb, CFC.sqrt_mul_sqrt_self b hb]
+  have hmul := (vnTensor A B).isTensorProduct.miu.2.1
+    (star (CFC.sqrt a)) (CFC.sqrt a) (star (CFC.sqrt b)) (CFC.sqrt b)
+  have hstar := (vnTensor A B).isTensorProduct.miu.2.2 (CFC.sqrt a) (CFC.sqrt b)
+  show (0 : VNT A B) ≤ (vnTensor A B).map a b
+  rw [ha', hb', hmul, ← hstar]
+  exact star_mul_self_nonneg _
+
 /-- **116III** (`tensor-simple-facts`, proc.tex:3427, Exercise), part 1:
 `a ⊗ b ≥ 0` for positive `a`, `b`; hence `a₁ ⊗ b₁ ≤ a₂ ⊗ b₂` for
 `0 ≤ a₁ ≤ a₂` and `0 ≤ b₁ ≤ b₂`. -/
 theorem tensor_simple_facts_1 (a : A) (b : B) (ha : 0 ≤ a) (hb : 0 ≤ b) :
     0 ≤ a ⊗ᵥ b ∧
-      ∀ (a₂ : A) (b₂ : B), a ≤ a₂ → b ≤ b₂ → a ⊗ᵥ b ≤ a₂ ⊗ᵥ b₂ := sorry
+      ∀ (a₂ : A) (b₂ : B), a ≤ a₂ → b ≤ b₂ → a ⊗ᵥ b ≤ a₂ ⊗ᵥ b₂ := by
+  refine ⟨vtmul_nonneg a b ha hb, fun a₂ b₂ ha₂ hb₂ => ?_⟩
+  -- `a₂ ⊗ b₂ - a ⊗ b = (a₂ - a) ⊗ b₂ + a ⊗ (b₂ - b)`, both terms positive
+  have h1 : (0 : VNT A B) ≤ (a₂ - a) ⊗ᵥ b₂ :=
+    vtmul_nonneg _ _ (sub_nonneg.mpr ha₂) (hb.trans hb₂)
+  have h2 : (0 : VNT A B) ≤ a ⊗ᵥ (b₂ - b) :=
+    vtmul_nonneg _ _ ha (sub_nonneg.mpr hb₂)
+  have hsplit : a₂ ⊗ᵥ b₂ - a ⊗ᵥ b = (a₂ - a) ⊗ᵥ b₂ + a ⊗ᵥ (b₂ - b) := by
+    show (vnTensor A B).map a₂ b₂ - (vnTensor A B).map a b =
+      (vnTensor A B).map (a₂ - a) b₂ + (vnTensor A B).map a (b₂ - b)
+    rw [map_sub, map_sub]
+    simp only [LinearMap.sub_apply]
+    abel
+  have hsum := add_nonneg h1 h2
+  rw [← hsplit] at hsum
+  exact sub_nonneg.mp hsum
 
 /-- **116III** (`tensor-simple-facts`, proc.tex:3427, Exercise), part 2:
 `‖a ⊗ b‖ = ‖a‖·‖b‖`, and `⊗ : 𝒜 × ℬ → 𝒜 ⊗ ℬ` is norm continuous. -/

@@ -1,11 +1,38 @@
-# `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–76, sessions 47–51)
+# `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–77, sessions 47–52)
 
-**Headline count: A/Proc has 88 code `sorry`s** after session 51.
-Per file: `Tensor` 43, `Measurement` **11** (was 20), `QuantumLambda` 17,
-`Duplicators` 17.  (`grep -c sorry` over-counts, because the file
+**Headline count: A/Proc has 84 code `sorry`s** after session 52.
+Per file: `Tensor` **39** (was 43), `Measurement` **11** (was 20),
+`QuantumLambda` 17, `Duplicators` 17.  (`grep -c sorry` over-counts, because the file
 docstrings mention `sorry` in prose; the code counts are the ones above.
 Note `\bsorry\b` also matches "sorry-ed" in prose — count the compiler's
 `declaration uses \`sorry\`` warnings instead.)
+
+> **Session 52 update — THE VACUOUS BAND IS OPEN: 111VII and 111XII are
+> proved and axiom-clean.**
+> `special_tensor` (**111VII**), `vnTensorProduct_exists` and
+> `vnTensorProduct_nonempty` (**111XII**, unbundled and bundled) are proved,
+> so `vnTensor`, `VNT` and `⊗ᵥ` are now axiom-clean *definitions*.
+> **What that buys, measured rather than estimated: exactly 12 previously
+> `sorryAx`-tainted declarations became clean — the 3 theorems above plus
+> the 9 definitions built from them** (`vnTensor`, `VNT`, `vtmul` in
+> `Tensor`; `tensorSub`, `TensorBSurjective` in `QuantumLambda`;
+> `Duplicator`, `Duplicable`, `MonoidInWcpsu`, `MonoidInWmiu` in
+> `Duplicators`).  **None of the 54 band members flips to clean by itself**
+> — every one of them is still a `sorry`; what changed is that their
+> statements are no longer vacuous, so proving one now *yields* an
+> axiom-clean theorem.  First one done: **116III.1**
+> `tensor_simple_facts_1` (+ the reusable `vtmul_nonneg`), which is three
+> lines of `a ⊗ b = (√a ⊗ √b)*(√a ⊗ √b)` off miu-bilinearity.
+> Session-51's analysis of 111VII was right in every detail; the one thing
+> it did not foresee is that the *bundled* 111XII has its two algebras in
+> **different universes** while the spatial construction needs both Hilbert
+> spaces in one, which cost a `ULift` Hilbert-space instance and
+> universe-polymorphic re-proofs of four `A/VN` lemmas (see PROVING-LOG
+> session 52 §3).
+> **The next gate for `Tensor.lean` is now 112XI `tensor_universal_property`
+> (blocked on A/VN 77V `vn_extension`)**, which gates 114I, 114II and — with
+> 112X — 116VII; and **115II `exists_tmap`**, which gates all of the
+> functoriality/monoidal block (115IV, 115V, 118IV, 119II–119V).
 
 > **Session 51 update — parsec 1020 is closed, and the next gate is 111VII,
 > which is in *this* chapter.**
@@ -167,11 +194,15 @@ banked separately, so the `sorry` stands.
 its statement mentions no `VNT`; it is what gates the band, and it has been
 removed from the `Tensor.lean` list below, which is therefore 31.)*
 
-Their *types* mention `VNT 𝒜 ℬ = (vnTensor 𝒜 ℬ).carrier`, and `vnTensor` is
-`Nonempty.some` of the sorried `vnTensorProduct_nonempty`.  Nothing in this
-band can be `#print axioms`-clean until 111XII is.
+**Session 52: this band is no longer vacuous.**  `vnTensorProduct_nonempty`
+is proved, so `vnTensor`/`VNT`/`⊗ᵥ` are axiom-clean and every statement below
+is now a real (provable, and once proved axiom-clean) obligation rather than a
+vacuous one.  The list is kept because it is still the list of open `sorry`s;
+strike 111XII ×2 (proved) and 116III.1 (proved, session 52).  Historical note:
+their *types* mention `VNT 𝒜 ℬ = (vnTensor 𝒜 ℬ).carrier`, and `vnTensor` used
+to be `Nonempty.some` of the sorried `vnTensorProduct_nonempty`.
 
-* `Tensor.lean` (31): 111XII ×2, 115II ×2
+* `Tensor.lean` (31, of which 111XII ×2 and 116III.1 are now closed): 115II ×2
   (`exists_tmap`, `tensor_functorial`), 115IV ×2, 115V, 116I ×2, 116III.1/.2/.4/.5,
   116IV.1/.2, 117III, 118II ×2, 118IV.1/.4/.5/.6, 119II, 119IV, 119IVb, 119IVc,
   `exists_tmapM`, 119V ×5.  (`tensor_simple_facts_3` and `product_functional_norm`
