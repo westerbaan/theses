@@ -2596,11 +2596,171 @@ theorem iso [VonNeumannAlgebra A] [VonNeumannAlgebra B]
       isStarProjection_map f.toNCPMap g.toNCPMap hgf hfg hfu hgu hp)),
     fun a => ncp_star f.toNCPMap a⟩
 
+/-! ### Infrastructure for 99XI: the corner inclusion of a *projection* is a
+filter
+
+The standard filter `c_p(a) = √p a √p` of an arbitrary positive `p` is a
+filter by **96V** (`canonical_filter`), which is out of reach here — its
+proof needs `sequential-douglas`, `div-approx` and `div-usc` (vn.tex 81VI,
+81VII, 81IX), all still `sorry` in `A/VN/Division.lean`.  For a *projection*
+`p`, however, `c_p` is just the inclusion `p𝒜p → 𝒜` and the universal
+property is elementary: an ncp-map `f` with `f(1) ≤ p` already takes its
+values in the corner, so it corestricts, uniquely because the inclusion is
+injective.  That is all 99XI needs. -/
+
+/-- If an ncp-map `f : ℬ → 𝒜` satisfies `f(1) ≤ p` for a projection `p`,
+then all of its values lie in the corner `p𝒜p`.  For positive `b` this is
+`⌈f(b)⌉ ≤ ⌈f(1)⌉ ≤ ⌈p⌉ = p` (using `f(b) ≤ ‖b‖·f(1)`); the general case
+follows by linearity (`b = ℜb + i·ℑb`, `y = y⁺ − y⁻`). -/
+private theorem conj_ncp_eq_of_le_proj [VonNeumannAlgebra A]
+    {B' : Type u} [CStarAlgebra B'] [PartialOrder B'] [StarOrderedRing B']
+    [VonNeumannAlgebra B'] {p : A} (hp : IsStarProjection p) (f : NCPMap B' A)
+    (hf1 : (f 1 : A) ≤ p) (b : B') : p * f b * p = f b := by
+  have hpos : ∀ y : B', 0 ≤ y → p * f y * p = f y := by
+    intro y hy
+    have hfy : (0 : A) ≤ f y := ncpMap_nonneg f hy
+    have hle : ceil (f y) ≤ p := by
+      rcases eq_or_lt_of_le (norm_nonneg y) with hn | hn
+      · have hy0 : y = 0 := by
+          have : ‖y‖ = 0 := hn.symm
+          exact norm_eq_zero.mp this
+        rw [hy0, ncpMap_zero, ceil_zero]
+        exact hp.nonneg
+      · have hyle : y ≤ algebraMap ℂ B' ((‖y‖ : ℝ) : ℂ) := by
+          rw [← Theses.A.CStar.algebraMap_real_eq]
+          exact (IsSelfAdjoint.of_nonneg hy).le_algebraMap_norm_self
+        have h1 : (f y : A) ≤ f (algebraMap ℂ B' ((‖y‖ : ℝ) : ℂ)) :=
+          ncpMap_mono f hyle
+        have h2 : (f (algebraMap ℂ B' ((‖y‖ : ℝ) : ℂ)) : A)
+            = ((‖y‖ : ℝ) : ℂ) • f 1 := by
+          rw [Algebra.algebraMap_eq_smul_one, ncpMap_smul]
+        rw [h2] at h1
+        have h3 : ceil (f y) ≤ ceil (((‖y‖ : ℝ) : ℂ) • (f 1 : A)) :=
+          ceil_mono hfy h1
+        rw [(ceil_basic_4 (f 1) (f 1) (ncpMap_nonneg f zero_le_one)
+          (ncpMap_nonneg f zero_le_one) ‖y‖ hn).1] at h3
+        refine h3.trans ?_
+        have := ceil_mono (ncpMap_nonneg f zero_le_one) hf1
+        rwa [ceil_of_isStarProjection hp] at this
+    have hr : (f y : A) * p = f y := (ceil_le_iff hfy hp).mp hle
+    have hl : p * (f y : A) = f y :=
+      ((ceil_basic_1 (f y) p hfy hp).out 2 0).mp hle
+    rw [hl, hr]
+  have hsa : ∀ y : B', IsSelfAdjoint y → p * f y * p = f y := by
+    intro y hy
+    have hd : posPart y - negPart y = y := CFC.posPart_sub_negPart y hy
+    rw [← hd, ncpMap_sub, mul_sub, sub_mul,
+      hpos _ (CFC.posPart_nonneg y), hpos _ (CFC.negPart_nonneg y)]
+  have hb : (realPart b : B') + Complex.I • (imaginaryPart b : B') = b :=
+    realPart_add_I_smul_imaginaryPart b
+  rw [← hb, ncpMap_add, ncpMap_smul, mul_add, add_mul, mul_smul_comm,
+    smul_mul_assoc, hsa _ (realPart b).2, hsa _ (imaginaryPart b).2]
+
+/-- Corestriction of an ncp-map along a corner: if every value of
+`f : ℬ → 𝒜` lies in `p𝒜p`, then `f` is `val ∘ g` for an ncp-map
+`g : ℬ → p𝒜p`. -/
+private theorem exists_ncpCorestrict [VonNeumannAlgebra A]
+    {B' : Type u} [CStarAlgebra B'] [PartialOrder B'] [StarOrderedRing B']
+    [VonNeumannAlgebra B'] (p : A) [Fact (IsStarProjection p)]
+    (f : NCPMap B' A) (hf : ∀ b : B', p * f b * p = f b) :
+    ∃ g : NCPMap B' (Corner A p), ∀ b : B', (g b).val = f b := by
+  refine ⟨{ toCompletelyPositiveMap :=
+              { toFun := fun b => ⟨f b, hf b⟩
+                map_add' := fun x y => Corner.val_injective (by
+                  show (f (x + y) : A) = f x + f y
+                  exact ncpMap_add f x y)
+                map_smul' := fun z x => Corner.val_injective (by
+                  show (f (z • x) : A) = z • f x
+                  exact ncpMap_smul f z x)
+                map_cstarMatrix_nonneg' := fun k M hM => ?_ }
+            preservesDirSups' := ?_ }, fun _ => rfl⟩
+  · refine (Corner.nonneg_map_val_iff k _).mp ?_
+    change (0 : CStarMatrix (Fin k) (Fin k) A) ≤
+      (CStarMatrix.map M fun b => (⟨f b, hf b⟩ : Corner A p)).map Corner.val
+    have hkey : (CStarMatrix.map M fun b => (⟨f b, hf b⟩ : Corner A p)).map
+        Corner.val = M.map ⇑f.toCompletelyPositiveMap.toLinearMap := by
+      ext i j
+      rw [CStarMatrix.map_apply, CStarMatrix.map_apply, CStarMatrix.map_apply]
+      rfl
+    rw [hkey]
+    exact f.toCompletelyPositiveMap.map_cstarMatrix_nonneg' k M hM
+  · intro D s hne hdir hlub
+    refine Corner.isLUB_of_isLUB_image_val ?_
+    have h := f.preservesDirSups' D s hne hdir hlub
+    rw [← Set.image_comp]
+    exact h
+
+/-- The inclusion `p𝒜p → 𝒜` of the corner of a **projection** `p` is a
+filter (96V for `d = p`, but without any of its division theory). -/
+theorem isFilter_cornerIncl [VonNeumannAlgebra A] (p : A)
+    [Fact (IsStarProjection p)] : IsFilter (cornerIncl p).toNCPMap := by
+  refine ⟨fun B' _ _ _ _ f hf1 => ?_⟩
+  have hone : ((cornerIncl p).toNCPMap 1 : A) = p := by
+    rw [cornerIncl_apply]; exact Corner.val_one
+  rw [hone] at hf1
+  obtain ⟨g, hg⟩ := exists_ncpCorestrict p f
+    (conj_ncp_eq_of_le_proj (Corner.proj p) f hf1)
+  refine ⟨g, fun b => ?_, fun k hk => ?_⟩
+  · rw [cornerIncl_apply, hg]
+  · refine DFunLike.ext _ _ fun b => Corner.val_injective ?_
+    have h1 := hk b
+    rw [cornerIncl_apply] at h1
+    rw [hg, h1]
+
 /-- **99XI** (proc.tex:897, Exercise): any filter of a projection is
 multiplicative. -/
 theorem filter_of_projection_multiplicative [VonNeumannAlgebra A]
     [VonNeumannAlgebra C] (c : NCPMap C A) (hc : IsFilter c)
-    (hp : IsStarProjection (c 1)) : ∀ x y : C, c (x * y) = c x * c y := sorry
+    (hp : IsStarProjection (c 1)) : ∀ x y : C, c (x * y) = c x * c y := by
+  -- The exercise's own hint: `c` is the standard filter of `p := c(1)` up to
+  -- an ncpu-isomorphism (98II), which is an nmiu-isomorphism by 99IX `iso`.
+  -- Since `p` is a projection the standard filter is the corner inclusion,
+  -- so `isFilter_cornerIncl` replaces the (unavailable) 96V here, and the
+  -- two universal properties give the isomorphism directly.
+  have : Fact (IsStarProjection (c 1)) := ⟨hp⟩
+  have hone : ((cornerIncl (c 1)).toNCPMap 1 : A) = c 1 := by
+    rw [cornerIncl_apply]; exact Corner.val_one
+  obtain ⟨α, hα, -⟩ := (isFilter_cornerIncl (c 1)).universal C c (by rw [hone])
+  obtain ⟨β, hβ, -⟩ :=
+    hc.universal (Corner A (c 1)) (cornerIncl (c 1)).toNCPMap (by rw [hone])
+  obtain ⟨c₀, -, huniqC⟩ := hc.universal C c le_rfl
+  -- `α` and `β` are mutually inverse
+  have hαβ : ∀ y : Corner A (c 1), α (β y) = y := by
+    intro y
+    refine Corner.val_injective ?_
+    have h1 := hα (β y)
+    rw [cornerIncl_apply] at h1
+    have h2 := hβ y
+    rw [cornerIncl_apply] at h2
+    rw [← h1, ← h2]
+  have hβα : ncpComp β α = ncpId C := by
+    rw [huniqC (ncpComp β α) (fun x => by
+        rw [ncpComp_apply, ← hβ (α x), ← hα x]),
+      huniqC (ncpId C) (fun x => by rw [ncpId_apply])]
+  have hβα' : ∀ x : C, β (α x) = x := fun x => by
+    have := congrArg (fun k : NCPMap C C => k x) hβα
+    simpa [ncpComp_apply, ncpId_apply] using this
+  -- both are unital
+  have hα1 : α 1 = 1 := by
+    refine Corner.val_injective ?_
+    have h1 := hα 1
+    rw [cornerIncl_apply] at h1
+    rw [← h1, Corner.val_one]
+  have hβ1 : β 1 = 1 := by
+    have := hβα' 1
+    rwa [hα1] at this
+  -- `iso` (99IX): a unital ncp-isomorphism is multiplicative
+  have hmul := (iso (A := C) (B := Corner A (c 1))
+    ⟨α, by change (α 1 : Corner A (c 1)) ≤ 1; rw [hα1]⟩
+    ⟨β, by change (β 1 : C) ≤ 1; rw [hβ1]⟩ hβα' hαβ).2.1
+  intro x y
+  have h1 := hα (x * y)
+  rw [cornerIncl_apply] at h1
+  have h2 := hα x
+  rw [cornerIncl_apply] at h2
+  have h3 := hα y
+  rw [cornerIncl_apply] at h3
+  rw [h1, hmul x y, Corner.val_mul, ← h2, ← h3]
 
 /-- **99XII** (`sharp-multiplicative`, proc.tex:905, Exercise): for an
 ncp-map `f` between von Neumann algebras: multiplicative ⟺ sends
@@ -4129,7 +4289,150 @@ theorem sequential_product_counterexample_1 [VonNeumannAlgebra A]
     (∀ p ∈ effects A, ∀ e₁ e₂ : A, IsStarProjection e₁ →
         IsStarProjection e₂ →
         (ceil p * e₁ * ceil p ≤ 1 - e₂ ↔ ceil p * e₂ * ceil p ≤ 1 - e₁)) ∧
-    ¬ IsSequentialProduct (fun p q : A => ceil p * q * ceil p) := sorry
+    ¬ IsSequentialProduct (fun p q : A => ceil p * q * ceil p) := by
+  -- `⌈b⌉b⌈b⌉ = b` for every effect `b` (both `b⌈b⌉ = b` and `⌈b⌉b = b`)
+  have hsandwich : ∀ b : A, 0 ≤ b → ceil b * b * ceil b = b := by
+    intro b hb
+    have h2 : b * ceil b = b := (ceil_spec hb).2.1
+    have h1 : ceil b * b = b :=
+      ((ceil_basic_1 b (ceil b) hb (ceil_spec hb).1).out 2 0).mp le_rfl
+    rw [h1, h2]
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
+  · -- (B): `⌈p⌉(·)⌈p⌉` is pure — the corner projection onto `⌈p⌉𝒜⌈p⌉`
+    -- followed by the corner *inclusion*, which is a filter by
+    -- `isFilter_cornerIncl` (this is where 96V would otherwise be needed).
+    intro p _
+    have hcp : IsStarProjection (ceil p) := isStarProjection_ceil p
+    have heff : ceil p ∈ effects A := ⟨hcp.nonneg, hcp.le_one⟩
+    have hfl : floor (ceil p) = ceil p := by
+      refine le_antisymm (floor_le heff) ?_
+      exact (floor_spec heff).2.2 _ hcp hcp.isIdempotentElem.eq
+    have hfac : adSelf (ceil p)
+        = ncpComp (cornerIncl (floor (ceil p))).toNCPMap
+          (stdCorner (ceil p)).toNCPMap := by
+      refine DFunLike.ext _ _ fun a => ?_
+      rw [adSelf_apply, ncpComp_apply, cornerIncl_apply, stdCorner_apply, hfl,
+        hcp.isSelfAdjoint.star_eq]
+    have hcorner : IsCornerMap (stdCorner (ceil p)).toNCPMap :=
+      ⟨(stdCorner (ceil p)).unital', ceil p, heff, isCornerOf_stdCorner (ceil p) heff⟩
+    refine ⟨adSelf (ceil p), ?_, fun q _ => ?_⟩
+    · rw [hfac]
+      exact IsPure.comp (IsPure.filter (isFilter_cornerIncl (floor (ceil p))))
+        (IsPure.corner hcorner)
+    · rw [adSelf_apply, hcp.isSelfAdjoint.star_eq]
+  · -- (C): both sides are `⌈p⌉q⌈p⌉`
+    intro p hp q hq
+    rw [hsandwich q hq.1, hsandwich p hp.1]
+  · -- (D): `p = ⌈p⌉p⌈p⌉`
+    intro p hp
+    exact ⟨p, hp, (hsandwich p hp.1).symm⟩
+  · -- (E): both sides say `e₁⌈p⌉e₂ = 0`
+    intro p _ e₁ e₂ he₁ he₂
+    have hcp : IsStarProjection (ceil p) := isStarProjection_ceil p
+    have hc : star (ceil p) = ceil p := hcp.isSelfAdjoint.star_eq
+    -- for an effect `x` and a projection `e`: `x ≤ e^⊥` iff `e x e = 0`
+    have hiff : ∀ x : A, 0 ≤ x → x ≤ 1 → ∀ e : A, IsStarProjection e →
+        (x ≤ 1 - e ↔ e * x * e = 0) := by
+      intro x hx hx1 e he
+      constructor
+      · intro h
+        have h1 : e * x * e ≤ e * (1 - e) * e := by
+          have := star_left_conjugate_le_conjugate h e
+          rwa [he.isSelfAdjoint.star_eq] at this
+        have h2 : e * (1 - e) * e = 0 := by
+          rw [mul_sub, mul_one, he.isIdempotentElem.eq, sub_self, zero_mul]
+        have h3 : (0 : A) ≤ e * x * e := by
+          have := star_left_conjugate_nonneg hx e
+          rwa [he.isSelfAdjoint.star_eq] at this
+        exact le_antisymm (h2 ▸ h1) h3
+      · intro h
+        have hle : ceil x ≤ 1 - e := (ceil_le_perp_iff hx he).mpr h
+        have hxe : x * (1 - e) = x := (ceil_le_iff hx he.one_sub).mp hle
+        have hex : (1 - e) * x = x :=
+          ((ceil_basic_1 x (1 - e) hx he.one_sub).out 2 0).mp hle
+        calc x = (1 - e) * x * (1 - e) := by rw [hex, hxe]
+          _ ≤ (1 - e) * 1 * (1 - e) := by
+              have := star_left_conjugate_le_conjugate hx1 (1 - e)
+              rwa [he.one_sub.isSelfAdjoint.star_eq] at this
+          _ = 1 - e := by
+              rw [mul_one, sub_mul, one_mul, mul_sub, mul_one,
+                he.isIdempotentElem.eq]
+              abel
+    have hnn : ∀ e : A, IsStarProjection e → (0 : A) ≤ ceil p * e * ceil p := by
+      intro e he
+      have := star_left_conjugate_nonneg he.nonneg (ceil p)
+      rwa [hc] at this
+    have hle1 : ∀ e : A, IsStarProjection e → ceil p * e * ceil p ≤ 1 := by
+      intro e he
+      calc ceil p * e * ceil p ≤ ceil p * 1 * ceil p := by
+            have := star_left_conjugate_le_conjugate he.le_one (ceil p)
+            rwa [hc] at this
+        _ = ceil p := by rw [mul_one, hcp.isIdempotentElem.eq]
+        _ ≤ 1 := hcp.le_one
+    have hkey : ∀ e f : A, IsStarProjection e → IsStarProjection f →
+        (f * (ceil p * e * ceil p) * f = 0 ↔ e * ceil p * f = 0) := by
+      intro e f he hf
+      have hstar : star (e * ceil p * f) = f * ceil p * e := by
+        rw [star_mul, star_mul, hf.isSelfAdjoint.star_eq, hc,
+          he.isSelfAdjoint.star_eq, mul_assoc]
+      constructor
+      · intro h
+        refine (CStarRing.star_mul_self_eq_zero_iff (e * ceil p * f)).mp ?_
+        rw [hstar]
+        calc f * ceil p * e * (e * ceil p * f)
+            = f * (ceil p * e * ceil p) * f := by
+              rw [show f * ceil p * e * (e * ceil p * f)
+                = f * ceil p * (e * e) * ceil p * f by noncomm_ring,
+                he.isIdempotentElem.eq]
+              noncomm_ring
+          _ = 0 := h
+      · intro h
+        have h' : f * ceil p * e = 0 := by rw [← hstar, h, star_zero]
+        calc f * (ceil p * e * ceil p) * f
+            = (f * ceil p * e) * (e * ceil p * f) := by
+              rw [show (f * ceil p * e) * (e * ceil p * f)
+                = f * ceil p * (e * e) * ceil p * f by noncomm_ring,
+                he.isIdempotentElem.eq]
+              noncomm_ring
+          _ = 0 := by rw [h', zero_mul]
+    have hst : ∀ x y : A, IsStarProjection x → IsStarProjection y →
+        star (x * ceil p * y) = y * ceil p * x := by
+      intro x y hx hy
+      rw [star_mul, star_mul, hy.isSelfAdjoint.star_eq, hc,
+        hx.isSelfAdjoint.star_eq, ← mul_assoc]
+    rw [hiff _ (hnn e₁ he₁) (hle1 e₁ he₁) e₂ he₂,
+      hiff _ (hnn e₂ he₂) (hle1 e₂ he₂) e₁ he₁,
+      hkey e₁ e₂ he₁ he₂, hkey e₂ e₁ he₂ he₁]
+    constructor
+    · intro h
+      rw [← hst e₁ e₂ he₁ he₂, h, star_zero]
+    · intro h
+      rw [← hst e₂ e₁ he₂ he₁, h, star_zero]
+  · -- ¬(A): at `p = ½·1` the operation gives `⌈p⌉ = 1 ≠ p`
+    intro h
+    set p : A := ((1 / 2 : ℝ) : ℂ) • 1 with hpdef
+    have hhalf : (0 : ℝ) < 1 / 2 := by norm_num
+    have hp0 : (0 : A) ≤ p := Theses.A.CStar.ofReal_smul_nonneg zero_le_one hhalf.le
+    have hp1 : p ≤ (1 : A) := by
+      rw [hpdef, ← Algebra.algebraMap_eq_smul_one]
+      have := Theses.A.CStar.algebraMap_ofReal_mono (𝒜 := A) (s := (1 / 2 : ℝ))
+        (t := (1 : ℝ)) (by norm_num)
+      rwa [Complex.ofReal_one, map_one] at this
+    have hceil : ceil p = 1 := by
+      rw [hpdef, (ceil_basic_4 (1 : A) (1 : A) zero_le_one zero_le_one (1 / 2) hhalf).1,
+        ceil_of_isStarProjection (IsStarProjection.one (R := A))]
+    have hax1 := h.ax1 p ⟨hp0, hp1⟩
+    rw [hceil, one_mul, mul_one] at hax1
+    -- `p = 1` forces `A` trivial
+    have hone : ((1 / 2 : ℝ) : ℂ) • (1 : A) = (1 : A) := hpdef.symm.trans hax1.symm
+    have hzero : (((1 / 2 : ℝ) : ℂ) - 1) • (1 : A) = 0 := by
+      rw [sub_smul, hone, one_smul, sub_self]
+    have hne : (((1 / 2 : ℝ) : ℂ) - 1) ≠ 0 := by
+      simp only [ne_eq, sub_eq_zero]
+      intro hcc
+      have : ((1 / 2 : ℝ) : ℝ) = 1 := by exact_mod_cast hcc
+      norm_num at this
+    exact one_ne_zero ((smul_eq_zero.mp hzero).resolve_left hne)
 
 /-- **106III** (proc.tex:1858, Exercise), part 2:
 `p ∗ q := ⌊p⌋q⌊p⌋ + √(p−⌊p⌋) q √(p−⌊p⌋)` satisfies axioms (A), (C),

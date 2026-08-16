@@ -8822,3 +8822,340 @@ LEAN_PATH="$LP" lean Theses/B/Dils/Pure.lean
 With this, `Pure.lean` (820 lines) checks in well under a minute even with
 two other agents building.  Use `lake build` only when oleans genuinely need
 regenerating.
+
+---
+
+## Session 46 — `A/Proc`: full survey of the chapter, and two parsec-980/1060 items that do **not** need 96V (worker 71)
+
+Files touched: `Theses/A/Proc/Measurement.lean`, this log.  `Tensor.lean`,
+`QuantumLambda.lean`, `Duplicators.lean`, `A/CStar`, `A/VN`, `B/` untouched.
+**A/Proc 115 → 113**: `Measurement` 38 → **36**, `Tensor` 43,
+`QuantumLambda` 17, `Duplicators` 17.
+
+| point | declaration | class |
+|---|---|---|
+| **99XI** | `filter_of_projection_multiplicative` | 1 (the exercise's own hint) |
+| **106III**.1 | `sequential_product_counterexample_1` | 1 (exercise, no published solution) |
+| — | `isFilter_cornerIncl`, `exists_ncpCorestrict`, `conj_ncp_eq_of_le_proj` | new reusable infrastructure |
+
+### 1. The finding: the corner inclusion of a *projection* is a filter, and 96V is not needed for it
+
+Every earlier map of this chapter treated **the whole of parsecs 960–1060 as
+one block behind 96V** `canonical_filter`, which needs `sequential-douglas`
+(81VI), `div-approx` (81VII) and `div-usc` (81IX) — all three still `sorry`
+in `A/VN/Division.lean`.  That is right for the standard filter
+`c_p(a) = √p a √p` of a general positive `p`.  It is **not** right when `p` is
+a projection: there `c_p` is just the inclusion `p𝒜p → 𝒜`, and its universal
+property is elementary.
+
+`isFilter_cornerIncl (p) [Fact (IsStarProjection p)] : IsFilter (cornerIncl p)`
+is proved from two new private lemmas:
+
+* `conj_ncp_eq_of_le_proj` — an ncp-map `f : ℬ → 𝒜` with `f(1) ≤ p` takes all
+  its values in `p𝒜p`.  For positive `y` this is
+  `⌈f(y)⌉ ≤ ⌈f(1)⌉ ≤ ⌈p⌉ = p` (from `f(y) ≤ ‖y‖·f(1)`, `ceil_mono`,
+  `ceil_basic_4`); the general case is `y = ℜy + i·ℑy`, `y = y⁺ − y⁻`.
+* `exists_ncpCorestrict` — the corestriction of such an `f` to `p𝒜p` is an
+  ncp-map (complete positivity through `Corner.nonneg_map_val_iff`, normality
+  through `Corner.isLUB_of_isLUB_image_val`).
+
+Uniqueness is `Corner.val_injective`.  No division theory anywhere.
+
+### 2. **99XI** `filter_of_projection_multiplicative` — class 1
+
+proc.tex:897's own hint is "the filter is a standard filter up to an
+ncpu-isomorphism (`filter-basic`), which is an nmiu-isomorphism by `iso`".
+That is exactly the proof, with `isFilter_cornerIncl` standing in for the
+`sorry`ed 96V/98II.1: for a filter `c` with `p := c(1)` a projection, the two
+universal properties (of `c` and of `cornerIncl p`, which have the same value
+at `1`) produce mutually inverse ncp-maps `α : C → p𝒜p`, `β : p𝒜p → C`;
+`α(1) = 1` because `cornerIncl` is injective; **99IX** `iso` (proved) then
+makes `α` multiplicative, and `Corner.val_mul` transports that to `c`.
+
+Note the *general* 98II.1 is still blocked — it needs `c_p` to be a filter for
+arbitrary positive `p`, i.e. 96V.
+
+### 3. **106III**.1 `sequential_product_counterexample_1` — class 1
+
+An Exercise past parsec 340, so no published solution.  Four clauses plus the
+refutation:
+
+* **(B)** is what 96V was thought to gate: `⌈p⌉(·)⌈p⌉` has to be *pure*.  It
+  is `cornerIncl ∘ stdCorner ⌈p⌉` — a corner followed by a filter — and the
+  filter half is now `isFilter_cornerIncl`.  (Working with
+  `floor (ceil p)` rather than rewriting it to `ceil p` avoids a
+  motive-is-not-type-correct failure: `Corner A e`'s algebra instances depend
+  on `e`, so `rw` cannot cross `⌊⌈p⌉⌋ = ⌈p⌉`.)
+* **(C)** collapses: `⌈q⌉q⌈q⌉ = q` for every effect, so both sides are
+  `⌈p⌉q⌈p⌉` and the identity is `rfl` after two rewrites.  Worth telling the
+  author: axiom (C) is *vacuous* for this operation, not merely satisfied.
+* **(D)** is `q := p`.
+* **(E)** reduces to a one-line C\*-identity.  For an effect `x` and a
+  projection `e`, `x ≤ e^⊥ ⟺ exe = 0`; then
+  `e₂(⌈p⌉e₁⌈p⌉)e₂ = (e₁⌈p⌉e₂)*(e₁⌈p⌉e₂)`, which vanishes iff `e₁⌈p⌉e₂ = 0`,
+  and that condition is star-symmetric in `e₁, e₂`.  No contraposition theory
+  (101VII) is used, contrary to what the shape of the clause suggests.
+* **¬(A)** at `p = ½·1`: `⌈½·1⌉ = 1 ≠ ½·1` in any nontrivial algebra.
+
+### 4. Survey of the whole chapter (the round's main deliverable)
+
+The full map — every `sorry` with its DISP number, its classification, and its
+named blocker — is in the session scratch file `AProc-survey.md`.  Headlines:
+
+* **A/Proc is 115 `sorry`s (113 after this round), not ~120.**
+* **54 of them (47%) are in the vacuous band**: their *statements* mention
+  `VNT 𝒜 ℬ`/`⊗ᵥ`/`Duplicator`, hence depend on `sorryAx` through **111XII**,
+  and cannot be closed axiom-cleanly at all until 111XII is.
+* **111XII hangs on exactly one thing.**  Its two inputs are 48VIII `ngns`
+  (vn.tex) and 111VII `special_tensor` (proc.tex:2491).  **`ngns` is proved.**
+  111VII's proof needs `normal-functional` — **89IX**
+  (`A/VN/NormalFunctionals.lean:1727`, `sorry`) — for its condition (2), and
+  nothing else that is missing.  So **89IX gates 47% of A/Proc**, and it is in
+  `A/VN`.  This is by a wide margin the highest-leverage item for this
+  chapter, and no A/Proc worker can touch it.
+* **`Measurement.lean`'s remaining 36 are almost all rooted at 96V**, i.e. at
+  81VI/81VII/81IX in `A/VN/Division.lean`.
+* **`Tensor.lean`'s 11 untainted statements** are blocked on 90II.2, 86IX,
+  87III and 77V — all `A/VN`, all `sorry`.
+
+### 5. The near miss worth banking: **98II.2** `filter_basic_2`
+
+Two of its three conjuncts are provable directly from the universal property,
+by a route the thesis does not take (it goes through 98II.1 and hence 96V):
+
+* **mono in `W*_cp`** is the uniqueness clause of `IsFilter.universal` after
+  rescaling `g`, `h` by `s⁻¹`, `s := ‖g(1)‖ + ‖h(1)‖ + 1`, so that the
+  hypothesis `f(1) ≤ c(1)` can be met (an arbitrary ncp-map is not subunital).
+  Written and type-checked this session.
+* **faithfulness `⌈c⌉ = 1`** then follows: mono applied to `√z(·)√z` and the
+  zero map gives `c(z) = 0 ⟹ z = 0` for positive `z`, because
+  `√z x √z ≤ ‖x‖·z` for positive `x`.
+* **Injectivity does not**, and the obstruction is exact: it needs mono at
+  `B = ℂ`, i.e. the ncp-map `ℂ → C`, `ζ ↦ ζ·a` for positive `a`.  **The tree
+  has no ncp-map out of `ℂ` at all** — there is no `algebraMap` as an
+  `NCPMap`/`NMIUMap`, and `cp_commutative_dom` (**34IX**.2) is itself `sorry`.
+  Building it needs (i) `0 ≤ M` in `M_k(ℂ)` implies
+  `0 ≤ M.map (algebraMap ℂ C)` (route: `M = star X * X`, and `CStarMatrix.map`
+  of a ∗-homomorphism is multiplicative) and (ii) `algebraMap ℂ C` preserves
+  directed suprema (route: a LUB of reals lies in the closure of the set, and
+  the positive cone is norm-closed).  That gadget closes 98II.2 outright and
+  is the cheapest useful new infrastructure in the chapter.  Since 98II.2 is a
+  single conjunction, the two provable clauses could not be banked, and the
+  attempt was reverted.
+
+### 6. Corrections to earlier reports and to the round's brief
+
+1. **The brief's "roughly 120 sorries" is 115** (Tensor 43 not 45,
+   QuantumLambda 17 not 20 — the difference is `sorry` mentioned in file
+   docstrings).
+2. **48VIII `ngns` is proved**, so 111XII is one theorem (89IX) away, not
+   several.  Earlier notes listed 89IX among blockers without noting it is now
+   the *only* one.
+3. **21VII `order_separating_norm` and 90II.1
+   `vn_center_separating_fundamental_1` are proved.**  w42's table put 112X.1
+   and 112X.2 behind "90II + 21VII" wholesale; 90II.1 *is* 112X.1's first
+   conjunct, and only 90II.2 is left.  The two conjuncts sit in one theorem,
+   so 112X.1 is still `sorry`.
+4. **80IV `approximate_pseudoinverse` is proved** (session 36), so w46 §7's
+   "104VII is blocked on 80IV" is stale; what is left there is 104III.4/.5,
+   which need 81V `douglas` / 81VIII `sequential-quotient`.
+5. **74IV/74VI are proved** (sessions 23/25), so 112X.4 is down to **86IX**
+   alone.
+6. w41's "81VI/81VII/81IX are still `sorry`, so the 96V/98IX/100II.3/103II/99XI
+   cluster has not opened" was right about the cluster but wrong about **99XI**,
+   which is now closed by the projection-only route above.
+
+### 7. Nothing false found
+
+No new `ERRATA.md` or `QUESTIONS.md` entry.  The three known false statements
+of this chapter (104III.2a parked, 104IV and 101VII.2 repaired) are unchanged;
+117II.1's repaired form is proved.  121II `intersection_tensor` remains the
+chapter's only statement with no thesis argument at all (proc.tex:4450 cites
+Takesaki IV.5.10) — it is also in the vacuous band, so it is doubly out of
+reach.
+
+### 8. Verification
+
+`env LEAN_PATH=… lean Theses/A/Proc/Measurement.lean` → **0** `error:` lines.
+Warning profile is byte-for-byte the pre-session one **minus** the two
+`declaration uses 'sorry'` that disappeared (121 → 119 warnings; no new
+warning of any kind).  `#print axioms` (run from an appended block inside the
+file itself, to avoid the stale-olean trap) →
+`[propext, Classical.choice, Quot.sound]` for
+`filter_of_projection_multiplicative`, `sequential_product_counterexample_1`,
+`isFilter_cornerIncl`, and the regressions `iso` and `gardner`.  Nothing
+staged, nothing committed.  (`Theses/A/VN/Division.lean`,
+`Theses/B/Dils/Stinespring.lean` and `ERRATA.md` are also dirty — not mine.)
+
+## Session 46 — `A/VN` parsec 810 closed except 81VIII.2: the norm-bounded-limit helper, 81V, 81VI, 81VII, 81VIII.1, and **81IX's second half is false** (worker 71, A chain)
+
+Target given: build "the ~40-line helper — the ultrastrong limit of a
+norm-bounded net is norm-bounded" and close **81V**.1 and **81IX**.  The
+helper turned out to be **30 lines and to need no new mathematics at all**;
+81V went through, and 81IX split in two, one half true and proved, the other
+**false**.
+
+Closed (all `#print axioms` = `[propext, Classical.choice, Quot.sound]`):
+
+| point | declaration | class |
+|---|---|---|
+| **81V**.1 | `douglas_1` | 2 — Exercise, no author solution exists (`asols.tex` stops at parsec 340) |
+| **81V**.2 | `douglas_2` | 2 — Exercise; the counterexample is the thesis's own 81XI one |
+| **81VI**.1 | `sequential_douglas_1` | 2 — Exercise |
+| **81VI**.2 | `sequential_douglas_2` | 2 — Exercise, and the thesis's hint is *not* the route taken (§3) |
+| **81VII** | `div_approx` | 2 — Exercise |
+| **81VIII**.1 | `sequential_quotient_1` | 2 — Exercise |
+| **81IX** (first half) | `div_usc_ball` | 1 — the thesis's own argument, verbatim |
+
+Five reusable auxiliaries, all public, all in `Division.lean`:
+`norm_le_of_usTendsto`, `apinv_partialSum_norm_le`, `div_smul_left`,
+`sequential_douglas_core`, `ldiv_div_recover`.
+
+`A/VN` sorries **74 → 68**; `Division.lean` **13 → 7**.  Nothing outside
+`Theses/A/VN/Division.lean` (plus these three docs) was touched.
+
+### 1. The helper is not 40 lines of analysis — it is `vn_positive_basic_3` plus a rescaling
+
+The brief expected `‖·‖ ≤ C` to have to be transported through
+`np_orderSeparating` (44XI) by hand: `ω(y*y) = ‖y‖_ω² ≤ (‖y−x_α‖_ω + ‖x_α‖_ω)²`
+and so on.  None of that is needed, because **44XI**.3
+(`vn_positive_basic_3`, *the closed unit ball is ultrastrongly closed*) is
+already proved in `Basic.lean` and is exactly the `C = 1` case.  The general
+case is three lines of scaling:
+
+* `‖λ·x‖_ω = |λ|‖x‖_ω` (`omegaNorm_smul`) makes `x ↦ (C+ε)⁻¹·x` preserve
+  ultrastrong convergence;
+* the rescaled net lies in the unit ball, so `IsClosed.mem_of_tendsto` puts
+  the limit there;
+* `le_of_forall_pos_le_add` removes the `ε`, which also disposes of `C = 0`
+  without a case split.
+
+Total: 30 lines, of which about half is `Complex`/`ℝ`-cast bookkeeping.
+**Lesson for the next brief**: before costing a "missing analytic lemma",
+grep the *already proved* statements of the same parsec range — this one had
+been sitting two files away since session 3.
+
+One Lean-specific trap worth recording, since it cost two compiles: with the
+topologies encoded as `def`s (`ultrastrong A`) rather than instances,
+`filter_upwards [self_mem_nhdsWithin, …]` elaborates its arguments **before**
+seeing the goal's filter, so instance resolution silently picks the *norm*
+topology and the tactic fails with "synthesized type class instance is not
+definitionally equal".  Every `nhds`/`nhdsWithin` fact fed to `filter_upwards`
+in these files has to be stated as a `have` with `@nhdsWithin A (ultrastrong A)`
+written out.
+
+### 2. 81V: scale the numerator, not the denominator
+
+Douglas' lemma is `a*a ≤ λ²b*b ⟹ a ∈ (𝒜)_λb` and `‖a/b‖ ≤ λ`.  **81III**
+`proto_douglas_1` handles only `λ = 1`.  The obvious reduction — replace `b`
+by `λb` — needs `⌊λb⌉ = ⌊b⌉`, which is extra work; replacing `a` by `λ⁻¹a`
+needs only `(λ·a)/b = λ·(a/b)`, which is two lines from `div_eq`
+(`div_smul_left`).  With that, `‖a/b‖ ≤ λ` follows from
+`‖∑_{n<N} (λ⁻¹a)tₙ‖ ≤ 1` (`apinv_partialSum_norm_le`: the same conjugation
+estimate as `apinv_block_est`, with the block `[M,N)` replaced by `[0,N)`,
+landing in `∑_{n<N} btₙ ≤ 1` because that partial sum is a projection) and
+the helper of §1.  The `⇐` half of the `iff` then comes free from
+`div_spec`.
+
+`douglas_2` (`a ∈ 𝒜⌊b⌉` need not give `a ∈ 𝒜b`) is the thesis's **own**
+81XI example, one parsec later: `b = (1,½,⅓,…) ∈ ℓ^∞(ℕ)`, `a = ⌊b⌉`.  All
+coordinates of `b` are non-zero, so every coordinate of the projection `⌊b⌉`
+is `1` (from `⌊b⌉b = b` and cancellation in `ℂ`), and `⌊b⌉ = cb` would force
+`cₙ = n+1`.
+
+### 3. 81VI: one core lemma serves both parts, and it is not the thesis's hint
+
+`sequential-douglas` asks for (1) `a ∈ b*(𝒜)_λb ⟺ a ≤ λb*b`, with
+`‖b*∖a/b‖ ≤ λ`, and (2) positivity of `b*∖a/b`.  Both come out of a single
+auxiliary, `sequential_douglas_core`: from `0 ≤ a ≤ λ·b*b`, apply **81V** to
+`√a` (which satisfies `(√a)*√a = a ≤ (√λ)²b*b`) to get `‖c‖ ≤ √λ` with
+`√a = cb`; then
+
+    a = (√a)*√a = b*(c*c)b     and     b*∖a/b = ⌈b*⌋(c*c)⌊b⌉ = (c⌊b⌉)*(c⌊b⌉),
+
+using `⌈b*⌋ = ⌊b⌉` (**59VI**.3).  The last expression gives the norm bound
+(`‖x*x‖ = ‖x‖²`) *and* part 2's positivity at once.
+
+The thesis's hint for part 2 is different — "prove that
+`(b*∖√a)(√a/b) = b*∖a/b`" — and is a genuine alternative, but it needs the
+two one-sided divisions of `√a` to be related, whereas the route above needs
+only the explicit formula `b*∖x/b = ⌈b*⌋d⌊b⌉` for `x = b*db`, which is
+already inside the proof of **81II**.3 (`division_basic_3`).  **Divergence
+class 2.**
+
+The `⇒` half of (1) needs one step the exercise does not mention: `‖c‖ ≤ λ`
+does **not** give `c ≤ λ·1` (that needs `c` self-adjoint).  Since `a` is
+positive, `a = b*cb = b*c*b`, so one may replace `c` by `½(c + c*)`, which
+is self-adjoint with the same bound.  Worth a line in the solution when one
+is written.
+
+### 4. 81VII is true; 81IX's second half is **false**
+
+These two look like the same statement and they are not.
+
+**81VII** `div_approx`: `(∑_{n<N}sₙ)a(∑_{m<N}tₘ) → c∖a/b` for `a = cdb`,
+`‖d‖ ≤ 1`.  The net is literally `Q_N d P_N` with `Q_N = ∑ sₙc ↑ ⌈c⌋` and
+`P_N = ∑ btₘ ↑ ⌊b⌉`, and
+
+    Q_N d P_N − ⌈c⌋d⌊b⌉ = (Q_N−⌈c⌋)d(P_N−⌊b⌉) + (Q_N−⌈c⌋)(d⌊b⌉) + (⌈c⌋d)(P_N−⌊b⌉).
+
+The first term is `≤ 2‖P_N − ⌊b⌉‖_ω` by `‖xy‖_ω ≤ ‖x‖‖y‖_ω`; the second and
+third are instances of `usTendsto_mul_left_right` (multiplication by a fixed
+element on either side is ultrastrongly continuous).  **True, proved.**
+
+**81IX** second half — `a ↦ c∖a/b` ultrastrongly continuous on `c(𝒜)₁b` — is
+**false**.  Take `b = 1`, so the map is `c∖(·)` on `c(𝒜)₁`; in `B(ℓ²)` take
+`c = diag(1,½,⅓,…)` (positive, injective, so `⌈c⌋ = 1` and `c∖(cd) = d`) and
+`dₙ = |n⟩⟨0|`.  Then `cdₙ = (n+1)⁻¹|n⟩⟨0| → 0` in *norm*, hence
+ultrastrongly, while `c∖(cdₙ) = dₙ` has `‖dₙ‖_ω = ‖dₙ|0⟩‖ = 1` for the vector
+state at `|0⟩`.  Continuity implies sequential continuity, so the map is not
+continuous.  Filed in ERRATA.md and QUESTIONS.md (A5) with three candidate
+repairs.
+
+The difference between the two is exactly the quantifier: in 81VII `d` is
+**fixed**, and `‖(⌈c⌋−Q_N)(d⌊b⌉)‖_ω² = (d⌊b⌉)^*ω(⌈c⌋−Q_N)(d⌊b⌉) → 0` by
+*normality* of `conjNP (d⌊b⌉) ω`; continuity would need this uniformly over
+the unit ball of `d`, and `sup_{‖d‖≤1}‖R_N d‖_ω = ‖ξ‖` for every `N`.  This
+also refutes the parenthetical "(and uniformly so)" in **81VII** itself,
+though our Lean statement of 81VII does not claim it.  Note the commutative
+case *is* fine (`‖e‖_ω² ≤ c_K⁻²‖ce‖_ω² + 4ε` for `‖e‖ ≤ 2`), which is a
+plausible source of the slip; and note that `(·)/b` is unaffected, because
+the seminorms `ω(x*x)^½` control exactly the side on which `(·)/b` divides —
+this is why **81III**.2's uniformity exists at all.
+
+`div_usc` is therefore left `sorry` (it is a conjunction, and we never change
+a statement); the true half is proved separately as `div_usc_ball`, with the
+counterexample in its doc comment.
+
+`div_usc_ball` is a literal transcription of vn.tex:5541: `proto_douglas_2`
+gives `N` with `‖a/b − ∑_{n<N}atₙ‖_ω ≤ ε/3` for *every* `a ∈ (𝒜)₁b` at once,
+`∑_{n<N}atₙ = a·d` with `d = ∑_{n<N}tₙ`, and
+`‖(a−a₀)d‖_ω = ‖a−a₀‖_{d*ωd}` (**44VIII**) makes the middle third an
+ultrastrong ball around `a₀`.
+
+### 5. What is left in parsec 810
+
+Only **81VIII**.2 and the false `div_usc`.  **81VIII**.1 went through as
+predicted, on top of 81VI applied to `√b` (note `(√b)*√b = b`): the witness
+is `√b∖a/√b`, positive by 81VI.2 and a genuine witness by the new
+`ldiv_div_recover`; the `⇐` direction is `√b c √b ≤ ‖c‖·√b√b = ‖c‖·b`.
+**81VIII**.2 additionally wants uniqueness of `c` with `⌈c⌉ ≤ ⌈b⌉` and
+*ultraweak* convergence of the double series `∑_{m,n} tₘatₙ`, which is a
+genuine extra argument and was not attempted.
+
+### 6. Verification
+
+`lean Theses/A/VN/Division.lean` (invoked directly with `LEAN_PATH`, per the
+process note — `lake env lean` blocks on other agents' locks): no errors, the
+only warnings are the two pre-existing `dif_pos` deprecations at lines 70 and
+1521.  Full-file check takes ~13 s against warm oleans, so this file is cheap
+to iterate on.  `#print axioms` was run by **appending the commands to the
+module itself** and recompiling, never from an importing scratch file — that
+avoids the stale-olean trap entirely and needs no rebuild.  All twelve new
+declarations: exactly `[propext, Classical.choice, Quot.sound]`.
+
+Sorry counts (`grep`-free, from the compiler's `declaration uses 'sorry'`
+lines): `Division.lean` 13 → **7** (lines 766 and 779 in parsec 790,
+81VIII.2, `div_usc`, and three in parsec 842).  `A/VN` total 74 → **68**
+(Basic 25, Completeness 2, Division 7, NormalFunctionals 14,
+Projections 20).
