@@ -1,10 +1,23 @@
-# `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16)
+# `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised worker 72, session 47)
 
-**Headline count correction: A/Proc has 113 code `sorry`s, not ~120.**
-Per file after this session: `Tensor` 43, `Measurement` **36** (was 38),
-`QuantumLambda` 17, `Duplicators` 17.  (`grep -c sorry` gives 45/38/20/17
-because the file docstrings mention `sorry` in prose; the code counts are the
-ones above.  Session 41 already reported 115.)
+**Headline count: A/Proc has 104 code `sorry`s** after session 47.
+Per file: `Tensor` 43, `Measurement` **27** (was 36), `QuantumLambda` 17,
+`Duplicators` 17.  (`grep -c sorry` gives 45/29/20/17 because the file
+docstrings mention `sorry` in prose; the code counts are the ones above.)
+
+> **Session 47 update — 96V is proved, and the Measurement chain is open.**
+> `canonical_filter` (**96V**) is closed and axiom-clean, and does **not**
+> need the false conjunct of 81IX: only 81VI.1/.2 and 81VII (all proved) are
+> used, and the thesis's `div-usc` step for *normality* is replaced by an
+> elementary bipositivity argument (ERRATA row **96VI**).  Two corrections to
+> the map below follow: (i) our Lean statement of 96V used `suppProj d` where
+> the thesis has `\ceilr{d} = rangeProj d`, which made it **false** — fixed;
+> (ii) with `isFilter_stdFilter` in place, the parsec-980 block is no longer
+> one undifferentiated block behind 96V.  **Closed in session 47:** 96V,
+> 98II.1, 98II.2, 98II.3, 98VII, 98VII-formula, 98IX `exists_sqBracket`,
+> 98IX `square_f`, 100II.3.  **Still blocking the rest of parsec 980–1000:**
+> **98III** `filters_composition` and **98VI** `corners_composition`, which
+> together gate 100III `pure_fundamental` and everything above it.
 
 ## Classification summary
 
@@ -25,9 +38,9 @@ The two blockers that gate almost everything:
   proved**, so 89IX is the *only* thing between A/Proc and un-vacuuming 47% of
   the chapter.  **This is by a wide margin the highest-leverage item for
   A/Proc, and it is in A/VN, not here.**
-* **81VI `sequential-douglas` / 81VII `div-approx` / 81IX `div-usc`**
-  (`A/VN/Division.lean`, all three `sorry`) — gate **96V `canonical_filter`**,
-  which gates essentially all of `Measurement.lean` (parsecs 960–1060).
+* ~~**81VI / 81VII / 81IX** gate **96V**~~ — **resolved.** 81VI.1/.2, 81VII,
+  81V.1/.2 and 81VIII.1 are proved (session 46), and 96V is proved from them
+  (session 47).  81IX's false second half is **not** needed.
 
 ## (a) Reachable now
 
@@ -40,7 +53,12 @@ The two blockers that gate almost everything:
 | **125II** | `vn_gns_bound` | QuantumLambda 729 | `ngns` + a cardinality count of the GNS direct sum; `ngns` is proved |
 | **129X** | `continuous_finite_measure_space_not_duplicable` | Duplicators 725 | `Duplicable A` is the hypothesis (not the conclusion) so the statement is *not* `VNT`-tainted in a way that blocks a proof by contradiction; but its proof (proc.tex:6363) does use the duplicator's `δ`, so treat as (b) until checked |
 
-### The near miss: 98II.2 `filter_basic_2`
+### The near miss: 98II.2 `filter_basic_2` — **superseded (session 47)**
+
+*Kept for the record; 98II.2 was closed the thesis's own way, through 98II.1,
+once 96V made `c_p` a filter.  The ℂ-gadget below is still the cheapest new
+infrastructure in the chapter, but nothing in parsec 980 needs it any more.*
+
 
 Worth writing down because it is a genuinely short route the thesis does not
 take, and because it stops one gadget short.
@@ -87,25 +105,20 @@ band can be `#print axioms`-clean until 111XII is.
 
 ## (b) Blocked, with the named blocker
 
-### `Measurement.lean` (parsecs 960–1060) — all 36 rooted at 96V
-
-`96V canonical_filter` (proc.tex:414) needs `sequential-douglas` (81VI),
-`div-usc` (81IX) and `div-approx` (81VII), all `sorry` in
-`A/VN/Division.lean`.  Everything below then follows the thesis's own
-dependency chain:
+### `Measurement.lean` (parsecs 960–1060) — 27 left, 9 closed in session 47
 
 | DISP | decl | blocked on |
 |---|---|---|
-| 96V | `canonical_filter` | **81VI, 81VII, 81IX** (A/VN) |
-| 98II.1 | `filter_basic_1` | 96V (needs `c_p` to *be* a filter) |
-| 98II.2 | `filter_basic_2` | see "near miss" above — only the ℂ-gadget |
-| 98II.3 | `filter_basic_3` (bipositivity) | 96V / 81VI |
-| 98III | `filters_composition` | 98II.3 (to get `g 1 ≤ c 1` back through `d`) |
-| 98VI | `corners_composition` | the exercise's own hint inequality; 98IV/98V are proved, so this one is *closer* than the rest — worth a second look |
-| 98VII, 98VII-formula | `filter_corner`, `filter_corner_formula` | 98II.1 + 96V |
-| 98IX | `exists_sqBracket`, `square_f` | 98VII |
-| 100II.3 | `isPure_adSelf` | 96V (`a*(·)a = canonicalFilter a ∘ π_{⌈a⌉ᵣ}`) |
-| 100III | `pure_fundamental` | 98II, 98III, 98VI, 98IX |
+| 96V | `canonical_filter` | **CLOSED (session 47)** — also `isFilter_ad`, `isFilter_stdFilter`, `ldiv_div_ad`, `ad_injective`, `ad_bipositive` |
+| 98II.1 | `filter_basic_1` | **CLOSED** |
+| 98II.2 | `filter_basic_2` | **CLOSED** — via 98II.1, so the ℂ-gadget of the "near miss" below was **not** needed |
+| 98II.3 | `filter_basic_3` (bipositivity) | **CLOSED** |
+| 98III | `filters_composition` | **the live blocker.**  `d ∘ c` cannot be factored by using `d`'s universal property first: `f(1) ≤ d(c(1))` does *not* give `f(1) ≤ d(1)`, since a filter's `c(1)` need not be an effect.  The route that should work is via 98II.1 on both factors, giving `c_q ∘ c_{p'} = (√p'√q)*(·)(√p'√q)`, plus `⌊√p'√q⌉ = ⌈p'⌉` so that `isFilter_ad` applies |
+| 98VI | `corners_composition` | the exercise's own hint inequality (see the 98VI ERRATA row: only the converse of the printed inequality is usable) |
+| 98VII, 98VII-formula | `filter_corner`, `filter_corner_formula` | **CLOSED** (the thesis's proof verbatim) |
+| 98IX | `exists_sqBracket`, `square_f` | **CLOSED** |
+| 100II.3 | `isPure_adSelf` | **CLOSED** (`a*(·)a = canonicalFilter a ∘ π_{⌊a⌉}`) |
+| 100III | `pure_fundamental` | 98III + 98VI (98II and 98IX are now proved) |
 | 100VII.1/.2/.3 | `special_pure_maps_*` | 100III |
 | 102VII | `canonical_quotient_rigid` | 96V (80IV and 45VI, its other inputs, **are** proved) |
 | 102IX | `pure_is_rigid` | 98IX + 102VII + 100III |

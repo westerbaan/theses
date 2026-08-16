@@ -9470,3 +9470,145 @@ Files touched: `Theses/A/VN/{Projections,NormalFunctionals}.lean` and this
 log.  Oleans were **not** rebuilt (`lake build` was avoided to keep the other
 two workers' checkout locks free), so the next worker in this chain should
 rebuild `Theses.A.VN.Projections` before relying on `nmiu_image`.
+
+## Session 47 — `A/Proc`: **96V is proved without `div-usc`**, and nine of `Measurement.lean`'s sorries with it (worker 72)
+
+Files touched: `Theses/A/Proc/Measurement.lean`, `ERRATA.md`, `QUESTIONS.md`,
+`docs/AProc-survey.md`, this log.  Nothing outside `Theses/A/Proc/`.
+**A/Proc 113 → 104**: `Measurement` 36 → **27**, `Tensor` 43,
+`QuantumLambda` 17, `Duplicators` 17.
+
+Closed (all `#print axioms` = `[propext, Classical.choice, Quot.sound]`):
+
+| point | declaration | class |
+|---|---|---|
+| **96V** | `canonical_filter` (+ `isFilter_ad`) | 1 — the thesis's proof, **except** its normality step (§2) |
+| **98II**.1 | `filter_basic_1` | 1 — the exercise's own route |
+| **98II**.2 | `filter_basic_2` | 1 |
+| **98II**.3 | `filter_basic_3` | 1 |
+| **98VII** | `filter_corner` | 1 — proc.tex:678 verbatim |
+| **98VII** | `filter_corner_formula` | 1 |
+| **98IX** | `exists_sqBracket` | 1 |
+| **98IX** | `square_f` | 1 (faithfulness is ours, §5) |
+| **100II**.3 | `isPure_adSelf` | 1 |
+| — | `ldiv_div_ad`, `ad_injective`, `ad_bipositive`, `isFilter_stdFilter`, `stdFilter_one`, `stdFilter_injective`, `stdFilter_bipositive`, `ceil_eq_rangeProj_sqrt`, `floor_of_isStarProjection`, `isCornerOf_cornerProjMap`, `isStarProjection_rangeProj`, `isApproxPseudoinverse_star` | new reusable infrastructure |
+
+### 1. Our statement of 96V was **false**: `⌈d⌉ᵣ` was read as the wrong projection
+
+`\ceilr{d}` (common-lite.tex:141) renders as `(d⌉` and is the **range**
+projection `⌊d⌉ = ⌈dd*⌉` of vn.tex 59I — the least `p` with `pd = d`.  Our
+`exists_canonicalFilter`/`canonicalFilter`/`canonical_filter` used
+`suppProj d = ⌈d⌋ = ⌈d*d⌉` instead, the **support** projection.  The trap is
+local to our tree: `Measurement.lean`'s own doc comments write `⌈b⌉ᵣ` for
+`suppProj` ("the support projection `⌈b⌉ᵣ = ⌈b*b⌉`"), so the ASCII rendering
+of `\ceilr` matched the Lean name for the *other* projection.
+
+As stated it is not merely off by a convention — it is **false**.  Take
+`d = |0⟩⟨1|` in `B(ℓ²)`: then `⌈d⌋ = |1⟩⟨1|`, the corner is `ℂ|1⟩⟨1|`, and
+`d*ad = 0` for every `a` in it, so `c` is the zero map, `c(1) = 0`, and the
+factorisation of the zero map through it is very far from unique.  With the
+range projection `c` is the filter for `d*d`, which is what 98I needs at
+`d = √p` (there `⌊√p⌉ = ⌈p⌉`).  **Mis-transcription on our side, corrected**
+(no ERRATA entry; the thesis is right).
+
+### 2. 96V's proof *does* use the false half of 81IX — and does not need to
+
+The brief asked whether 96V is reachable and whether it needs 81IX's refuted
+second conjunct.  Both answers are yes-and-no:
+
+* **It does use it.**  proc.tex:440 gets normality of `g(b) = d*∖f(b)/d` from
+  "`d*∖(·)/d : d*(𝒜)₁d → 𝒜` is ultrastrongly continuous by `div-usc`" — that
+  is exactly the conjunct refuted in session 46.  So the printed proof has a
+  genuine gap.  Filed as **ERRATA 96VI**, and QUESTIONS A5 (which said
+  "nothing in the thesis appears to use it") is corrected.
+* **It does not need it.**  Normality of `g` follows from two facts the proof
+  already has: `c = d*(·)d` is normal, and `c` is **bipositive** on the corner
+  (81VI.2 — the same lemma the proof invokes for existence).  Given a directed
+  `D` with supremum `s` and an upper bound `u` of `g(D)` *in the corner*,
+  `f(x) = c(g(x)) ≤ c(u)`, so `c(g(s)) = f(s) ≤ c(u)` by normality of `f`, and
+  bipositivity gives `g(s) ≤ u`.  Note the upper bound is quantified in the
+  corner, not in `𝒜` — that is what makes the argument short, and it is
+  exactly what `PreservesDirSups` for a map *into* the corner asks for.
+
+Everything else is the thesis's argument.  Existence of the value is 81VI.1
+applied to `0 ≤ f(b) ≤ ‖b‖f(1) ≤ ‖b‖d*d`, extended off the positive cone by
+linearity of `d*𝒜d`; the map is then defined by `g(b) = d*∖f(b)/d` and is
+linear because `c` is injective; positivity is 81VI.2; complete positivity is
+`ncp-uwlim` (96III.1) applied to the cp approximants
+`(∑_{n<N}t_n)* f(·) (∑_{n<N}t_n)`, which converge **pointwise** to `g` by
+`div-approx` (81VII).  *Only* the pointwise form of 81VII is used, so the
+refuted parenthetical "(and uniformly so)" is not needed either.
+**Divergence class 1 for everything except the normality step, class 3 there.**
+
+Two small pieces of glue the exercise does not mention:
+
+* `div_approx` demands `‖e‖ ≤ 1` in `a = c e b`, so the pointwise convergence
+  was proved first for `0 ≤ y` with `‖y‖ ≤ 1` and then propagated by
+  closure of the convergence statement under `+` and `ℂ`-scaling
+  (`usTendsto_add`/`usTendsto_smul`), through `y = ‖y‖·(‖y‖⁻¹y)`,
+  `y = y⁺ − y⁻`, `b = ℜb + iℑb`.
+* the approximants are `star(S_N) f(·) S_N` only because `star ∘ t` is an
+  approximate pseudoinverse of `d*` whenever `t` is one of `d`
+  (`isApproxPseudoinverse_star`) — the six clauses are star-images of one
+  another, and the two partial-sum *sets* coincide on the nose because
+  `t_n a` and `a t_n` are projections.
+
+### 3. The inversion formula is the whole of parsec 980's glue
+
+`ldiv_div_ad : d*∖(d*xd)/d = x` for `x ∈ ⌊d⌉𝒜⌊d⌉` is two applications of the
+uniqueness clauses `div_eq`/`ldiv_eq` of 81II — `(d*xd)/d = d*x` because
+`x⌊d⌉ = x`, and `d*∖(d*x) = x` because `⌈d*⌋ = ⌊d⌉` and `⌊d⌉x = x`.  It gives
+injectivity **and** bipositivity of `d*(·)d` immediately (the exercise's two
+hints for 98II.2 and 98II.3), and it is what makes the whole 96V construction
+avoid `mult-cancellation` except in one place.
+
+`isFilter_ad d e (he : e = ⌊d⌉) c (hc : c a = d* a d)` is the general form:
+carrying an arbitrary index `e` with an equation avoids transporting along
+`⌊√p⌉ = ⌈p⌉` inside the dependent type `Corner A e`, which `rw` cannot do
+(the algebra instances depend on `e`).  `isFilter_stdFilter` — **`c_p` is a
+filter** — is then `d = √p`, and it is what actually unblocks parsec 980.
+
+### 4. 98II.2's "near miss" of session 46 was not needed
+
+Session 46 banked a direct proof of two of 98II.2's three conjuncts and
+identified an ncp-map out of `ℂ` as the missing gadget for the third.  With
+96V in hand the exercise's own route is shorter and gives all three at once:
+`c = c_p ∘ α` with `α` an ncp-isomorphism (98II.1), `c_p` is injective, and
+faithfulness (`⌈c⌉ = 1`) and mono-ness are then formal consequences of
+injectivity of `c`.  **The ℂ-gadget is still worth building, but no longer for
+this.**
+
+### 5. 98IX `square_f`: the faithfulness clause is ours
+
+The Corollary asserts `[f]` unital and faithful without argument.  Unitality is
+`c_p([f](1)) = f(1) = p = c_p(1)` plus injectivity of `c_p`.  Faithfulness we
+argued as follows: if `[f](x) = 0` for `0 ≤ x` in `⌈f⌉𝒜⌈f⌉` then `f(x) = 0`,
+so `⌈f(⌈x⌉)⌉ = ⌈f(x)⌉ = 0` by 60V, so `f(⌈x⌉) = 0`, so `⌈f⌉ ≤ ⌈x⌉^⊥` by
+minimality of the carrier; but `⌈x⌉ ≤ ⌈f⌉`, so `⌈x⌉ ≤ ⌈x⌉^⊥`, and conjugating
+that by `⌈x⌉` gives `⌈x⌉ = ⌈x⌉³ ≤ 0`, hence `x = 0`.  Applied to
+`x = 1 − ⌈[f]⌉` it gives `⌈[f]⌉ = 1`.
+
+### 6. What is left in parsec 980–1000, and what it now hangs on
+
+**98III `filters-composition` is the live blocker** (with 98VI), and it is
+harder than it looks.  One cannot factor `f` through `d` first: the hypothesis
+is `f(1) ≤ d(c(1))`, and `c(1)` is an arbitrary *positive* element, not an
+effect, so `d(c(1)) ≰ d(1)` in general and `d`'s universal property does not
+apply.  The route that should work is to replace both factors by standard
+filters (98II.1): `c_q ∘ c_{p'} = (√p'√q)^*(·)(√p'√q)`, and then
+`isFilter_ad` closes it provided `⌊√p'√q⌉ = ⌈p'⌉` — which is where the real
+work is (it is a `⌊ab⌉ = ⌊a⌉` statement under `⌈a⌋ ≤ ⌊b⌉`).  Not attempted.
+100III `pure_fundamental` and everything above it wait on 98III + 98VI.
+
+### 7. Verification
+
+`env LEAN_PATH=… lean Theses/A/Proc/Measurement.lean` → **0** `error:` lines;
+27 `declaration uses 'sorry'` warnings, down from 36, and no new warning of any
+kind.  `#print axioms` was run by appending a block to the module itself and
+recompiling (never from an importing scratch file, to avoid the stale-olean
+trap): all twelve named declarations above, plus the session-46 regressions
+`filter_of_projection_multiplicative` and `sequential_product_counterexample_1`,
+are exactly `[propext, Classical.choice, Quot.sound]`.  Nothing staged, nothing
+committed.  One build was lost to `A/VN/NormalFunctionals.olean` disappearing
+under another worker's `lake build`; retrying 20 s later worked, as the brief
+predicted.

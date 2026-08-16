@@ -607,9 +607,14 @@ is now proved from the thesis's own argument (`div_usc_ball`).  The second is
 Three repairs are available and they are not equivalent, so this needs a
 decision:
 
-1. **Drop the second map.**  Nothing in the thesis appears to use it: the
+1. **Drop the second map.**  Nothing in **vn.tex** appears to use it: the
    sequel (**82I** polar decomposition, **83II**, **83V**) uses only
-   **81III** and the definition of division.
+   **81III** and the definition of division.  ⚠️ **Update (session 47):** it
+   *is* used, in **proc.tex** — the proof of **96V** `canonical-filter`
+   derives normality of `g = d*∖f(·)/d` from precisely this false half.  96V
+   itself is true, and its proof has been repaired (and machine-checked)
+   without any form of `div-usc`: see the **96VI** row of ERRATA.md.  So
+   option 1 remains available, but it needs the 96VI repair alongside it.
 2. **Restrict `c`.**  For `c` with closed range — equivalently `c`
    pseudoinvertible in the sense of **79I** — one has `c∖x = tx` for the
    bounded pseudoinverse `t`, and `‖t(x−x₀)‖_ω ≤ ‖t‖‖x−x₀‖_ω` makes the map

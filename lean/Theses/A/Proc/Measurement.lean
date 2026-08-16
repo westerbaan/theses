@@ -1869,26 +1869,426 @@ theorem exists_adFromCorner [VonNeumannAlgebra A] (e : A)
     rw [← Set.image_comp] at hnat
     exact hnat
 
+/-- The range projection `⌊b⌉ = ⌈b b*⌉` is a projection, for **every**
+`b : A`.  The corner of **96V** is formed with it (see the note on the
+statement of `exists_canonicalFilter`). -/
+theorem isStarProjection_rangeProj [VonNeumannAlgebra A] (b : A) :
+    IsStarProjection (rangeProj b) := isStarProjection_ceil _
+
+instance factIsStarProjectionRangeProj [VonNeumannAlgebra A] (b : A) :
+    Fact (IsStarProjection (rangeProj b)) := ⟨isStarProjection_rangeProj b⟩
+
+/-- Auxiliary for **96V**: `t` is an approximate pseudoinverse of `a` iff
+`t*` is one of `a*`.  Each of the six clauses of `IsApproxPseudoinverse` is
+the star-image of another; the two partial-sum sets even coincide *on the
+nose*, because `t_n a` and `a t_n` are projections, hence self-adjoint. -/
+private theorem isApproxPseudoinverse_star [VonNeumannAlgebra A] {a : A}
+    {t : ℕ → A} (h : IsApproxPseudoinverse A a t) :
+    IsApproxPseudoinverse A (star a) (fun n => star (t n)) := by
+  have hL : ∀ n, star (t n) * star a = a * t n := by
+    intro n; rw [← star_mul, (h.proj_right n).isSelfAdjoint.star_eq]
+  have hR : ∀ n, star a * star (t n) = t n * a := by
+    intro n; rw [← star_mul, (h.proj_left n).isSelfAdjoint.star_eq]
+  refine { proj_left := ?_, proj_right := ?_, sum_left := ?_, sum_range := ?_,
+           sum_right := ?_, sum_supp := ?_ }
+  · intro n; rw [hL n]; exact h.proj_right n
+  · intro n; rw [hR n]; exact h.proj_left n
+  · have he : {x : A | ∃ N : ℕ, x = ∑ n ∈ Finset.range N, star (t n) * star a}
+        = {x : A | ∃ N : ℕ, x = ∑ n ∈ Finset.range N, a * t n} := by
+      ext x
+      constructor <;> rintro ⟨N, rfl⟩ <;> exact ⟨N, by simp only [hL]⟩
+    rw [he, suppProj_star]
+    exact h.sum_right
+  · have he : {x : A | ∃ N : ℕ, x = ∑ n ∈ Finset.range N, rangeProj (star (t n))}
+        = {x : A | ∃ N : ℕ, x = ∑ n ∈ Finset.range N, suppProj (t n)} := by
+      ext x
+      constructor <;> rintro ⟨N, rfl⟩ <;> exact ⟨N, by simp only [rangeProj_star]⟩
+    rw [he, suppProj_star]
+    exact h.sum_supp
+  · have he : {x : A | ∃ N : ℕ, x = ∑ n ∈ Finset.range N, star a * star (t n)}
+        = {x : A | ∃ N : ℕ, x = ∑ n ∈ Finset.range N, t n * a} := by
+      ext x
+      constructor <;> rintro ⟨N, rfl⟩ <;> exact ⟨N, by simp only [hR]⟩
+    rw [he, rangeProj_star]
+    exact h.sum_left
+  · have he : {x : A | ∃ N : ℕ, x = ∑ n ∈ Finset.range N, suppProj (star (t n))}
+        = {x : A | ∃ N : ℕ, x = ∑ n ∈ Finset.range N, rangeProj (t n)} := by
+      ext x
+      constructor <;> rintro ⟨N, rfl⟩ <;> exact ⟨N, by simp only [suppProj_star]⟩
+    rw [he, rangeProj_star]
+    exact h.sum_range
+
 /-- **96V** (`canonical-filter`, proc.tex:414, Proposition),
 well-definedness: for `d ∈ 𝒜` the assignment `a ↦ d* a d` gives an
-ncp-map `⌈d⌉ᵣ𝒜⌈d⌉ᵣ → 𝒜`; by choice `canonicalFilter`. -/
-theorem exists_canonicalFilter [VonNeumannAlgebra A] (d : A) :
-    ∃ c : NCPMap (Corner A (suppProj d)) A,
-      ∀ a : Corner A (suppProj d), c a = star d * a.val * d :=
-  exists_adFromCorner (suppProj d) d
+ncp-map `(d⌉𝒜(d⌉ → 𝒜`; by choice `canonicalFilter`.
 
-/-- The map `d*(·)d : ⌈d⌉ᵣ𝒜⌈d⌉ᵣ → 𝒜` of 96V. -/
+**Note on the index.**  The thesis writes the corner as `\ceilr{d}𝒜\ceilr{d}`,
+and `\ceilr{·}` is the **range** projection `⌊d⌉ = ⌈dd*⌉` (vn.tex 59I), not
+the support projection `⌈d⌋ = ⌈d*d⌉`.  An earlier transcription used
+`suppProj d` here, which makes `canonical_filter` **false**: for
+`d = |0⟩⟨1|` one has `⌈d⌋ = |1⟩⟨1|` and `d* a d = 0` for every `a` in
+`⌈d⌋𝒜⌈d⌋`, so `c` is the zero map and the factorisation is not unique.
+With the range projection the map is the filter for `d*d`, as it must be to
+match the standard filter `c_p` of 98I at `d = √p` (where
+`⌊√p⌉ = ⌈p⌉`). -/
+theorem exists_canonicalFilter [VonNeumannAlgebra A] (d : A) :
+    ∃ c : NCPMap (Corner A (rangeProj d)) A,
+      ∀ a : Corner A (rangeProj d), c a = star d * a.val * d :=
+  exists_adFromCorner (rangeProj d) d
+
+/-- The map `d*(·)d : ⌊d⌉𝒜⌊d⌉ → 𝒜` of 96V. -/
 noncomputable def canonicalFilter [VonNeumannAlgebra A] (d : A) :
-    NCPMap (Corner A (suppProj d)) A := (exists_canonicalFilter d).choose
+    NCPMap (Corner A (rangeProj d)) A := (exists_canonicalFilter d).choose
 
 theorem canonicalFilter_apply [VonNeumannAlgebra A] (d : A)
-    (a : Corner A (suppProj d)) : canonicalFilter d a = star d * a.val * d :=
+    (a : Corner A (rangeProj d)) : canonicalFilter d a = star d * a.val * d :=
   (exists_canonicalFilter d).choose_spec a
 
+/-- Infrastructure for **96V** and parsec 980: for `x` in the corner
+`⌊d⌉𝒜⌊d⌉` one has `d*∖(d*xd)/d = x`.  Both steps are the explicit
+characterisations of **81II**: `(d*xd)/d = d*x` because `x⌊d⌉ = x`, and
+`d*∖(d*x) = x` because `⌈d*⌋ = ⌊d⌉` (**59VI**.3) and `⌊d⌉x = x`. -/
+theorem ldiv_div_ad [VonNeumannAlgebra A] (d x : A)
+    (hx : rangeProj d * x * rangeProj d = x) :
+    ldiv (star d) (div (star d * x * d) d) = x := by
+  have hqq : rangeProj d * rangeProj d = rangeProj d :=
+    (isStarProjection_rangeProj d).isIdempotentElem.eq
+  have hxq : x * rangeProj d = x := by
+    calc x * rangeProj d
+        = (rangeProj d * x * rangeProj d) * rangeProj d := by rw [hx]
+      _ = rangeProj d * x * (rangeProj d * rangeProj d) := by noncomm_ring
+      _ = rangeProj d * x * rangeProj d := by rw [hqq]
+      _ = x := hx
+  have hqx : rangeProj d * x = x := by
+    calc rangeProj d * x
+        = rangeProj d * (rangeProj d * x * rangeProj d) := by rw [hx]
+      _ = (rangeProj d * rangeProj d) * x * rangeProj d := by noncomm_ring
+      _ = rangeProj d * x * rangeProj d := by rw [hqq]
+      _ = x := hx
+  have h1 : div (star d * x * d) d = star d * x :=
+    div_eq rfl (by rw [mul_assoc, hxq])
+  rw [h1]
+  exact ldiv_eq rfl (by rw [suppProj_star, hqx])
+
+/-- The heart of **96V** (proc.tex:426): an ncp-map `f : ℬ → 𝒜` with
+`f(1) ≤ d*d` factors as `f = d*g(·)d` through an ncp-map
+`g : ℬ → ⌊d⌉𝒜⌊d⌉`, namely `g(b) = d*∖f(b)/d`.
+
+The author's argument, with one divergence.  *Existence* of the value is
+`sequential-douglas` (**81VI**.1) applied to `0 ≤ f(b) ≤ ‖b‖f(1) ≤ ‖b‖d*d`,
+extended off the positive cone by linearity; *positivity* is **81VI**.2;
+*complete positivity* is `ncp-uwlim` (**96III**.1) applied to the
+completely positive approximants `(∑_{n<N}t_n)* f(·) (∑_{n<N}t_n)`, which
+converge pointwise to `g` by `div-approx` (**81VII**).
+
+**Divergence.**  The thesis obtains *normality* of `g` from `div-usc`
+(**81IX**) — from ultrastrong continuity of `a ↦ d*∖a/d` on `d*(𝒜)₁d`.  That
+half of 81IX is **false** (see the counterexample in the doc comment of
+`Theses.A.VN.div_usc`), so normality is proved here instead from the two
+elementary properties of `c = d*(·)d` that this file already has: `c` is
+normal (`exists_adFromCorner`) and **bipositive** on the corner
+(`0 ≤ d*xd ⟹ 0 ≤ x`, again 81VI.2).  Given a directed `D` with supremum `s`
+and an upper bound `u` of `g(D)` in the corner, `f(x) = c(g(x)) ≤ c(u)` for
+`x ∈ D`, so `c(g(s)) = f(s) ≤ c(u)` by normality of `f`, and bipositivity
+gives `g(s) ≤ u`. -/
+private theorem canonicalFilter_factor [VonNeumannAlgebra A]
+    {B' : Type u} [CStarAlgebra B'] [PartialOrder B'] [StarOrderedRing B']
+    [VonNeumannAlgebra B'] (d : A) (f : NCPMap B' A)
+    (hf1 : (f 1 : A) ≤ star d * d) :
+    ∃ g : NCPMap B' (Corner A (rangeProj d)),
+      ∀ b : B', star d * (g b).val * d = (f b : A) := by
+  classical
+  set q : A := rangeProj d with hqdef
+  have hq : IsStarProjection q := isStarProjection_rangeProj d
+  have hqq : q * q = q := hq.isIdempotentElem.eq
+  have hqd : q * d = d := (ceill_basic_2 d).1.2
+  have hdq : star d * q = star d := by
+    have h := congrArg star hqd
+    rwa [star_mul, hq.isSelfAdjoint.star_eq] at h
+  -- linearity helpers for `f`
+  have hfadd : ∀ x y : B', (f (x + y) : A) = f x + f y :=
+    fun x y => map_add f.toCompletelyPositiveMap x y
+  have hfsmul : ∀ (z : ℂ) (x : B'), (f (z • x) : A) = z • f x :=
+    fun z x => map_smul f.toCompletelyPositiveMap z x
+  have hfsub : ∀ x y : B', (f (x - y) : A) = f x - f y :=
+    fun x y => map_sub f.toCompletelyPositiveMap x y
+  have hfmono : ∀ {x y : B'}, x ≤ y → (f x : A) ≤ f y := by
+    intro x y h
+    have h0 : (0 : A) ≤ f (y - x) := ncpMap_nonneg f (sub_nonneg.mpr h)
+    rw [hfsub, sub_nonneg] at h0
+    exact h0
+  -- (1) the inversion formula `d*∖(d* x d)/d = x` for `x` in the corner
+  have hinv : ∀ x : A, q * x * q = x →
+      ldiv (star d) (div (star d * x * d) d) = x := fun x hx => ldiv_div_ad d x hx
+  -- (2) bipositivity and injectivity of `c = d*(·)d` on the corner
+  have hbipos : ∀ x : A, q * x * q = x → 0 ≤ star d * x * d → 0 ≤ x := by
+    intro x hx hpos
+    have h := sequential_douglas_2 (star d * x * d) d hpos ⟨x, rfl⟩
+    rwa [hinv x hx] at h
+  have hinj : ∀ x y : A, q * x * q = x → q * y * q = y →
+      star d * x * d = star d * y * d → x = y := by
+    intro x y hx hy h
+    rw [← hinv x hx, ← hinv y hy, h]
+  -- (3) every value of `f` lies in `d*𝒜d` (81VI.1 plus linearity)
+  have hsmulmono : ∀ (r : ℝ), 0 ≤ r → ∀ x z : A, x ≤ z →
+      ((r : ℂ)) • x ≤ ((r : ℂ)) • z := by
+    intro r hr x z h
+    have h2 := Theses.A.CStar.ofReal_smul_nonneg (sub_nonneg.mpr h) hr
+    rwa [smul_sub, sub_nonneg] at h2
+  have hposmem : ∀ y : B', 0 ≤ y →
+      ∃ e : A, ‖e‖ ≤ ‖y‖ ∧ (f y : A) = star d * e * d := by
+    intro y hy
+    have hyle : y ≤ algebraMap ℂ B' ((‖y‖ : ℝ) : ℂ) := by
+      rw [← Theses.A.CStar.algebraMap_real_eq]
+      exact (IsSelfAdjoint.of_nonneg hy).le_algebraMap_norm_self
+    have h1 : (f y : A) ≤ ((‖y‖ : ℝ) : ℂ) • (f 1 : A) := by
+      have h := hfmono hyle
+      rwa [Algebra.algebraMap_eq_smul_one, hfsmul] at h
+    have h2 : (f y : A) ≤ ((‖y‖ : ℝ) : ℂ) • (star d * d) :=
+      h1.trans (hsmulmono ‖y‖ (norm_nonneg y) _ _ hf1)
+    exact (sequential_douglas_1 (f y) d (ncpMap_nonneg f hy) ‖y‖
+      (norm_nonneg y)).1.2 h2
+  have hmem : ∀ b : B', ∃ e : A, (f b : A) = star d * e * d := by
+    intro b
+    obtain ⟨e1, -, h1⟩ := hposmem _ (CFC.posPart_nonneg ((realPart b : B')))
+    obtain ⟨e2, -, h2⟩ := hposmem _ (CFC.negPart_nonneg ((realPart b : B')))
+    obtain ⟨e3, -, h3⟩ := hposmem _ (CFC.posPart_nonneg ((imaginaryPart b : B')))
+    obtain ⟨e4, -, h4⟩ := hposmem _ (CFC.negPart_nonneg ((imaginaryPart b : B')))
+    refine ⟨e1 - e2 + Complex.I • (e3 - e4), ?_⟩
+    have hb : (realPart b : B') + Complex.I • (imaginaryPart b : B') = b :=
+      realPart_add_I_smul_imaginaryPart b
+    have hr : posPart ((realPart b : B')) - negPart ((realPart b : B'))
+        = (realPart b : B') := CFC.posPart_sub_negPart _ (realPart b).2
+    have hi : posPart ((imaginaryPart b : B')) - negPart ((imaginaryPart b : B'))
+        = (imaginaryPart b : B') := CFC.posPart_sub_negPart _ (imaginaryPart b).2
+    rw [← hb, ← hr, ← hi, hfadd, hfsmul, hfsub, hfsub, h1, h2, h3, h4]
+    simp only [mul_sub, sub_mul, mul_add, add_mul, mul_smul_comm, smul_mul_assoc]
+  -- (4) the factorisation, elementwise
+  set F : B' → A := fun b => ldiv (star d) (div ((f b : A)) d) with hFdef
+  have hFapp : ∀ b : B', F b = ldiv (star d) (div ((f b : A)) d) :=
+    fun b => by rw [hFdef]
+  have hF : ∀ b : B', q * F b * q = F b ∧ star d * F b * d = (f b : A) := by
+    intro b
+    obtain ⟨e, he⟩ := hmem b
+    have hcorner : q * (q * e * q) * q = q * e * q := by
+      calc q * (q * e * q) * q = (q * q) * e * (q * q) := by noncomm_ring
+        _ = q * e * q := by rw [hqq]
+    have hfe : (f b : A) = star d * (q * e * q) * d := by
+      rw [he]
+      calc star d * e * d = (star d * q) * e * (q * d) := by rw [hdq, hqd]
+        _ = star d * (q * e * q) * d := by noncomm_ring
+    have hFb : F b = q * e * q := by
+      rw [hFapp b, hfe]
+      exact hinv _ hcorner
+    exact ⟨by rw [hFb]; exact hcorner, by rw [hFb, ← hfe]⟩
+  -- (5) linearity and positivity of `F`
+  have hFadd : ∀ x y : B', F (x + y) = F x + F y := by
+    intro x y
+    refine hinj _ _ (hF (x + y)).1 ?_ ?_
+    · rw [mul_add, add_mul, (hF x).1, (hF y).1]
+    · rw [(hF (x + y)).2, hfadd, mul_add, add_mul, (hF x).2, (hF y).2]
+  have hFsmul : ∀ (z : ℂ) (x : B'), F (z • x) = z • F x := by
+    intro z x
+    refine hinj _ _ (hF (z • x)).1 ?_ ?_
+    · rw [mul_smul_comm, smul_mul_assoc, (hF x).1]
+    · rw [(hF (z • x)).2, hfsmul, mul_smul_comm, smul_mul_assoc, (hF x).2]
+  set Flin : B' →ₗ[ℂ] A :=
+    { toFun := F, map_add' := hFadd, map_smul' := hFsmul } with hFlin
+  have hFlinapp : ∀ b : B', Flin b = F b := fun _ => rfl
+  have hFpos : ∀ y : B', 0 ≤ y → 0 ≤ F y := by
+    intro y hy
+    obtain ⟨e, he⟩ := hmem y
+    rw [hFapp y]
+    exact sequential_douglas_2 ((f y : A)) d (ncpMap_nonneg f hy) ⟨e, he⟩
+  have hFmono : ∀ {x y : B'}, x ≤ y → F x ≤ F y := by
+    intro x y h
+    have h0 := hFpos (y - x) (sub_nonneg.mpr h)
+    rw [show F (y - x) = F y - F x from map_sub Flin y x, sub_nonneg] at h0
+    exact h0
+  -- (6) complete positivity: the thesis's `div-approx` + `ncp-uwlim` argument
+  have hFcp : Theses.A.CStar.IsCompletelyPositiveMap Flin := by
+    obtain ⟨t, ht⟩ := approximate_pseudoinverse d
+    have hst : IsApproxPseudoinverse A (star d) (fun n => star (t n)) :=
+      isApproxPseudoinverse_star ht
+    set T : ℕ → A := fun N => ∑ n ∈ Finset.range N, t n with hTdef
+    have hTstar : ∀ N : ℕ, (∑ n ∈ Finset.range N, star (t n)) = star (T N) := by
+      intro N; rw [hTdef, star_sum]
+    set hN : ℕ → (B' →ₚ[ℂ] A) := fun N =>
+      PositiveLinearMap.ofClass
+        (ncpComp (adSelf (T N)) f).toCompletelyPositiveMap with hNdef
+    have hNapp : ∀ (N : ℕ) (b : B'), (hN N b : A) = star (T N) * (f b : A) * T N := by
+      intro N b
+      show ((ncpComp (adSelf (T N)) f) b : A) = _
+      rw [ncpComp_apply, adSelf_apply]
+    -- the pointwise ultrastrong convergence, first for `0 ≤ y` with `‖y‖ ≤ 1`
+    have hbase : ∀ y : B', 0 ≤ y → ‖y‖ ≤ 1 →
+        USTendsto (fun N => star (T N) * (f y : A) * T N) atTop (F y) := by
+      intro y hy hy1
+      obtain ⟨e, hen, he⟩ := hposmem y hy
+      have hconv := div_approx ((f y : A)) d (star d) t (fun n => star (t n)) ht
+        hst ⟨e, hen.trans hy1, he⟩
+      rw [hFapp y]
+      simpa only [hTstar] using hconv
+    -- closure under sums and scalars
+    have hadd : ∀ x y : B',
+        USTendsto (fun N => star (T N) * (f x : A) * T N) atTop (F x) →
+        USTendsto (fun N => star (T N) * (f y : A) * T N) atTop (F y) →
+        USTendsto (fun N => star (T N) * (f (x + y) : A) * T N) atTop (F (x + y)) := by
+      intro x y hx hy
+      have h := usTendsto_add hx hy
+      rw [hFadd]
+      refine h.congr fun N => ?_
+      rw [hfadd, mul_add, add_mul]
+    have hsmul : ∀ (z : ℂ) (x : B'),
+        USTendsto (fun N => star (T N) * (f x : A) * T N) atTop (F x) →
+        USTendsto (fun N => star (T N) * (f (z • x) : A) * T N) atTop (F (z • x)) := by
+      intro z x hx
+      have h := usTendsto_smul z hx
+      rw [hFsmul]
+      refine h.congr fun N => ?_
+      rw [hfsmul, mul_smul_comm, smul_mul_assoc]
+    have hpos : ∀ y : B', 0 ≤ y →
+        USTendsto (fun N => star (T N) * (f y : A) * T N) atTop (F y) := by
+      intro y hy
+      rcases eq_or_lt_of_le (norm_nonneg y) with hn | hn
+      · have hy0 : y = 0 := norm_eq_zero.mp hn.symm
+        subst hy0
+        have hf0 : (f (0 : B') : A) = 0 := map_zero f.toCompletelyPositiveMap
+        have hF0 : F (0 : B') = 0 := by
+          refine hinj _ _ (hF 0).1 (by simp) ?_
+          rw [(hF 0).2, hf0]; simp
+        rw [hF0]
+        simp only [hf0, mul_zero, zero_mul]
+        exact usTendsto_const 0
+      · have hu0 : (0 : B') ≤ ((‖y‖⁻¹ : ℝ) : ℂ) • y :=
+          Theses.A.CStar.ofReal_smul_nonneg hy (by positivity)
+        have hu1 : ‖((‖y‖⁻¹ : ℝ) : ℂ) • y‖ ≤ 1 := by
+          rw [norm_smul, Complex.norm_real, Real.norm_eq_abs,
+            abs_of_pos (inv_pos.mpr hn)]
+          rw [inv_mul_cancel₀ (ne_of_gt hn)]
+        have hy' : ((‖y‖ : ℝ) : ℂ) • (((‖y‖⁻¹ : ℝ) : ℂ) • y) = y := by
+          rw [smul_smul, ← Complex.ofReal_mul, mul_inv_cancel₀ (ne_of_gt hn)]
+          simp
+        have h := hsmul ((‖y‖ : ℝ) : ℂ) _ (hbase _ hu0 hu1)
+        rwa [hy'] at h
+    have hsa : ∀ y : B', IsSelfAdjoint y →
+        USTendsto (fun N => star (T N) * (f y : A) * T N) atTop (F y) := by
+      intro y hy
+      have hd0 : posPart y + (-1 : ℂ) • negPart y = y := by
+        rw [neg_one_smul, ← sub_eq_add_neg]
+        exact CFC.posPart_sub_negPart y hy
+      have h := hadd _ _ (hpos _ (CFC.posPart_nonneg y))
+        (hsmul (-1 : ℂ) _ (hpos _ (CFC.negPart_nonneg y)))
+      rwa [hd0] at h
+    have hall : ∀ b : B',
+        USTendsto (fun N => star (T N) * (f b : A) * T N) atTop (F b) := by
+      intro b
+      have hb : (realPart b : B') + Complex.I • (imaginaryPart b : B') = b :=
+        realPart_add_I_smul_imaginaryPart b
+      have h := hadd _ _ (hsa _ (realPart b).2)
+        (hsmul Complex.I _ (hsa _ (imaginaryPart b).2))
+      rwa [hb] at h
+    refine Theses.A.Proc.ncp_uwlim_1 atTop hN Flin ?_ ?_
+    · intro b
+      have h := uwweaker_2 _ atTop _ (hall b)
+      rw [hFlinapp b]
+      exact h.congr fun N => (hNapp N b).symm
+    · intro N
+      refine ((Theses.A.CStar.cp_iff _).out 1 0).mp fun k M hM => ?_
+      exact (ncpComp (adSelf (T N)) f).toCompletelyPositiveMap.map_cstarMatrix_nonneg'
+        k M hM
+  -- (7) assemble
+  refine ⟨{ toCompletelyPositiveMap :=
+              { toFun := fun b => ⟨F b, (hF b).1⟩
+                map_add' := fun x y => Corner.val_injective (hFadd x y)
+                map_smul' := fun z x => Corner.val_injective (hFsmul z x)
+                map_cstarMatrix_nonneg' := fun k M hM => ?_ }
+            preservesDirSups' := ?_ }, fun b => (hF b).2⟩
+  · refine (Corner.nonneg_map_val_iff k _).mp ?_
+    have hcp2 : ∀ (N : ℕ) (X : CStarMatrix (Fin N) (Fin N) B'), 0 ≤ X →
+        0 ≤ X.map ⇑Flin := ((Theses.A.CStar.cp_iff Flin).out 0 1).mp hFcp
+    refine (hcp2 k M hM).trans_eq ?_
+    ext i j
+    rw [CStarMatrix.map_apply, CStarMatrix.map_apply, CStarMatrix.map_apply]
+    rfl
+  · intro D s hne hdir hlub
+    constructor
+    · rintro _ ⟨x, hx, rfl⟩
+      exact hFmono (hlub.1 hx)
+    · intro u hu
+      show F ((s : selfAdjoint B') : B') ≤ u.val
+      have hfle : ∀ x ∈ D, (f ((x : selfAdjoint B') : B') : A)
+          ≤ star d * u.val * d := by
+        intro x hx
+        have h1 : F ((x : selfAdjoint B') : B') ≤ u.val := hu ⟨x, hx, rfl⟩
+        have h2 := star_left_conjugate_le_conjugate h1 d
+        rwa [(hF _).2] at h2
+      have hfl := f.preservesDirSups' D s hne hdir hlub
+      have hfs : (f ((s : selfAdjoint B') : B') : A) ≤ star d * u.val * d := by
+        refine hfl.2 ?_
+        rintro _ ⟨x, hx, rfl⟩
+        exact hfle x hx
+      have hz : q * (u.val - F ((s : selfAdjoint B') : B')) * q
+          = u.val - F ((s : selfAdjoint B') : B') := by
+        rw [mul_sub, sub_mul, u.property, (hF _).1]
+      have hzz : 0 ≤ star d * (u.val - F ((s : selfAdjoint B') : B')) * d := by
+        rw [mul_sub, sub_mul, (hF _).2, sub_nonneg]
+        exact hfs
+      have h := hbipos _ hz hzz
+      rwa [sub_nonneg] at h
+
+/-- **96V** (`canonical-filter`, proc.tex:414, Proposition), in the general
+form in which parsec 980 uses it: *any* ncp-map `c : e𝒜e → 𝒜` of the shape
+`a ↦ d*ad`, with `e` the range projection `⌊d⌉`, is a filter.
+`canonical_filter` is the case `e = ⌊d⌉` on the nose, and
+`isFilter_stdFilter` (the standard filter `c_p` of 98I) is `d = √p`; the
+detour through an arbitrary `e` avoids having to transport along
+`⌊√p⌉ = ⌈p⌉` inside the dependent type `Corner A e`. -/
+theorem isFilter_ad [VonNeumannAlgebra A] (d e : A) [Fact (IsStarProjection e)]
+    (he : e = rangeProj d) (c : NCPMap (Corner A e) A)
+    (hc : ∀ a : Corner A e, (c a : A) = star d * a.val * d) : IsFilter c := by
+  subst he
+  have hqd : rangeProj d * d = d := (ceill_basic_2 d).1.2
+  have hdq : star d * rangeProj d = star d := by
+    have h := congrArg star hqd
+    rwa [star_mul, (isStarProjection_rangeProj d).isSelfAdjoint.star_eq] at h
+  have hc1 : (c 1 : A) = star d * d := by
+    rw [hc 1, Corner.val_one, hdq]
+  refine ⟨fun B' _ _ _ _ f hf1 => ?_⟩
+  rw [hc1] at hf1
+  obtain ⟨g, hg⟩ := canonicalFilter_factor d f hf1
+  refine ⟨g, fun b => ?_, fun g' hg' => ?_⟩
+  · rw [hc (g b), hg b]
+  · refine DFunLike.ext _ _ fun b => Corner.val_injective ?_
+    have h1 := hg' b
+    rw [hc] at h1
+    have h2 : star d * (g' b).val * d = star d * (g b).val * d := by
+      rw [← h1, hg b]
+    exact mult_cancellation_3 d _ _ (g' b).property (g b).property h2
+
 /-- **96V** (`canonical-filter`, proc.tex:414, Proposition): the map
-`c(a) = d* a d : ⌈d⌉ᵣ𝒜⌈d⌉ᵣ → 𝒜` is a filter. -/
+`c(a) = d* a d : ⌊d⌉𝒜⌊d⌉ → 𝒜` is a filter. -/
 theorem canonical_filter [VonNeumannAlgebra A] (d : A) :
-    IsFilter (canonicalFilter d) := sorry
+    IsFilter (canonicalFilter d) :=
+  isFilter_ad d (rangeProj d) rfl (canonicalFilter d) (canonicalFilter_apply d)
+
+/-- Infrastructure for **98II**.2 (proc.tex:588, "by proving first that
+`c_p` is injective using `mult-cancellation`"): `a ↦ d*ad` is injective on
+`⌊d⌉𝒜⌊d⌉`.  This is **60VIII**.3 verbatim. -/
+theorem ad_injective [VonNeumannAlgebra A] (d e : A) (he : e = rangeProj d)
+    {x y : A} (hx : e * x * e = x) (hy : e * y * e = y)
+    (h : star d * x * d = star d * y * d) : x = y := by
+  subst he
+  exact mult_cancellation_3 d _ _ hx hy h
+
+/-- Infrastructure for **98II**.3 (proc.tex:594, "by proving first that
+`c_p` is bipositive using `sequential-douglas`"): `a ↦ d*ad` is bipositive
+on `⌊d⌉𝒜⌊d⌉`.  Positivity of `d*∖(d*ad)/d = a` is **81VI**.2. -/
+theorem ad_bipositive [VonNeumannAlgebra A] (d e : A) (he : e = rangeProj d)
+    {x : A} (hx : e * x * e = x) (h : 0 ≤ star d * x * d) : 0 ≤ x := by
+  subst he
+  have h2 := sequential_douglas_2 (star d * x * d) d h ⟨x, rfl⟩
+  rwa [ldiv_div_ad d x hx] at h2
 
 /-! ## Parsec 980: standard corner and filter -/
 
@@ -1911,6 +2311,62 @@ noncomputable def stdFilter [VonNeumannAlgebra A] (p : A) :
 theorem stdFilter_apply [VonNeumannAlgebra A] (p : A)
     (a : Corner A (ceil p)) : stdFilter p a = CFC.sqrt p * a.val * CFC.sqrt p :=
   (exists_stdFilter p).choose_spec a
+
+/-- Auxiliary: `⌈p⌉ = ⌊√p⌉` for positive `p` (both are `⌈√p √p⌉`). -/
+theorem ceil_eq_rangeProj_sqrt [VonNeumannAlgebra A] {p : A} (hp : 0 ≤ p) :
+    ceil p = rangeProj (CFC.sqrt p) := by
+  rw [rangeProj, (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg p)).star_eq,
+    CFC.sqrt_mul_sqrt_self p hp]
+
+/-- **96V** for the standard filter: `c_p` **is** a filter, for every
+positive `p`.  This is `isFilter_ad` at `d = √p`, using `⌈p⌉ = ⌊√p⌉`; the
+whole of parsec 980 rests on it. -/
+theorem isFilter_stdFilter [VonNeumannAlgebra A] (p : A) (hp : 0 ≤ p) :
+    IsFilter (stdFilter p) := by
+  refine isFilter_ad (CFC.sqrt p) (ceil p) (ceil_eq_rangeProj_sqrt hp)
+    (stdFilter p) fun a => ?_
+  rw [stdFilter_apply, (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg p)).star_eq]
+
+/-- `c_p(1) = p`: the standard filter is a filter **for** `p`. -/
+theorem stdFilter_one [VonNeumannAlgebra A] {p : A} (hp : 0 ≤ p) :
+    (stdFilter p 1 : A) = p := by
+  have h : ceil p * CFC.sqrt p = CFC.sqrt p := by
+    rw [ceil_eq_rangeProj_sqrt hp]
+    exact (ceill_basic_2 (CFC.sqrt p)).1.2
+  rw [stdFilter_apply, Corner.val_one]
+  rw [show CFC.sqrt p * ceil p = CFC.sqrt p from by
+    have h2 := congrArg star h
+    rwa [star_mul, (isStarProjection_ceil p).isSelfAdjoint.star_eq,
+      (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg p)).star_eq] at h2]
+  exact CFC.sqrt_mul_sqrt_self p hp
+
+/-- **98II**.2, first half, for the standard filter (the exercise's own
+hint): `c_p` is injective, by **60VIII** `mult-cancellation`. -/
+theorem stdFilter_injective [VonNeumannAlgebra A] {p : A} (hp : 0 ≤ p) :
+    Function.Injective ⇑(stdFilter p) := by
+  intro x y h
+  rw [stdFilter_apply, stdFilter_apply] at h
+  refine Corner.val_injective
+    (ad_injective (CFC.sqrt p) (ceil p) (ceil_eq_rangeProj_sqrt hp)
+      x.property y.property ?_)
+  rwa [(IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg p)).star_eq]
+
+/-- **98II**.3 for the standard filter (the exercise's own hint): `c_p` is
+bipositive, by **81VI**.2 `sequential-douglas`. -/
+theorem stdFilter_bipositive [VonNeumannAlgebra A] {p : A} (hp : 0 ≤ p)
+    (x : Corner A (ceil p)) : 0 ≤ (stdFilter p x : A) ↔ 0 ≤ x := by
+  have hsa : star (CFC.sqrt p) = CFC.sqrt p :=
+    (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg p)).star_eq
+  rw [stdFilter_apply]
+  constructor
+  · intro h
+    have h2 : 0 ≤ star (CFC.sqrt p) * x.val * CFC.sqrt p := by rwa [hsa]
+    exact ad_bipositive (CFC.sqrt p) (ceil p) (ceil_eq_rangeProj_sqrt hp)
+      x.property h2
+  · intro h
+    have h1 : (0 : A) ≤ x.val := h
+    have h2 := star_left_conjugate_nonneg h1 (CFC.sqrt p)
+    rwa [hsa] at h2
 
 /-- **98I** (`dfn-standard-corner-and-filter`, proc.tex:551, Definition),
 part 2: the **standard corner** `π_p : 𝒜 → ⌊p⌋𝒜⌊p⌋` of an effect `p`,
@@ -2010,7 +2466,33 @@ theorem filter_basic_1 [VonNeumannAlgebra A] [VonNeumannAlgebra C]
       (∃ α' : NCPMap (Corner A (ceil (c 1))) C,
         (∀ x, α' (α x) = x) ∧ ∀ y, α (α' y) = y) ∧
       (∀ β : NCPMap C (Corner A (ceil (c 1))),
-        (∀ x : C, c x = stdFilter (c 1) (β x)) → β = α) := sorry
+        (∀ x : C, c x = stdFilter (c 1) (β x)) → β = α) := by
+  -- Both universal properties are now available: `c_p` is a filter for
+  -- `p = c(1)` (96V via `isFilter_stdFilter`) and `c` is one by hypothesis,
+  -- and `c(1) = p = c_p(1)`, so each factors through the other; the two
+  -- uniqueness clauses make the factorisations mutually inverse.
+  have hp : (0 : A) ≤ c 1 := ncpMap_nonneg c zero_le_one
+  have hone : (stdFilter (c 1) 1 : A) = c 1 := stdFilter_one hp
+  obtain ⟨α, hα, huniqα⟩ :=
+    (isFilter_stdFilter (c 1) hp).universal C c (by rw [hone])
+  obtain ⟨β, hβ, -⟩ :=
+    hc.universal (Corner A (ceil (c 1))) (stdFilter (c 1)) (by rw [hone])
+  obtain ⟨c₀, -, huniqC⟩ := hc.universal C c le_rfl
+  have hαβ : ∀ y : Corner A (ceil (c 1)), α (β y) = y := by
+    intro y
+    refine stdFilter_injective hp ?_
+    rw [← hα (β y), ← hβ y]
+  have hβα : ncpComp β α = ncpId C :=
+    (huniqC (ncpComp β α) fun x => by
+        rw [ncpComp_apply, ← hβ (α x), ← hα x]).trans
+      (huniqC (ncpId C) fun x => by rw [ncpId_apply]).symm
+  have hβα' : ∀ x : C, β (α x) = x := fun x => by
+    have h := congrArg (fun k : NCPMap C C => k x) hβα
+    simpa [ncpComp_apply, ncpId_apply] using h
+  have hα1 : α 1 = 1 := by
+    refine stdFilter_injective hp ?_
+    rw [← hα 1, hone]
+  exact ⟨α, hα, hα1, ⟨β, hβα', hαβ⟩, fun γ hγ => huniqα γ hγ⟩
 
 /-- **98II** (`filter-basic`, proc.tex:577, Exercise), part 2: a filter is
 injective, faithful (`⌈c⌉ = 1`), and mono in `W*_cp`. -/
@@ -2019,12 +2501,44 @@ theorem filter_basic_2 [VonNeumannAlgebra A] [VonNeumannAlgebra C]
     Function.Injective ⇑c ∧ ncpCarrier c = 1 ∧
       ∀ (B : Type u) [CStarAlgebra B] [PartialOrder B] [StarOrderedRing B]
         [VonNeumannAlgebra B] (g h : NCPMap B C),
-        (∀ b, c (g b) = c (h b)) → g = h := sorry
+        (∀ b, c (g b) = c (h b)) → g = h := by
+  -- The exercise's own route: `c = c_p ∘ α` with `α` an isomorphism (part 1)
+  -- and `c_p` injective by `mult-cancellation`; faithfulness and mono are
+  -- then formal consequences of injectivity.
+  obtain ⟨α, hα, -, ⟨α', hα'1, -⟩, -⟩ := filter_basic_1 c hc
+  have hp : (0 : A) ≤ c 1 := ncpMap_nonneg c zero_le_one
+  have hinj : Function.Injective ⇑c := by
+    intro x y h
+    have h1 : (stdFilter (c 1) (α x) : A) = stdFilter (c 1) (α y) := by
+      rw [← hα x, ← hα y, h]
+    have h2 := stdFilter_injective hp h1
+    have h3 := congrArg (fun z => α' z) h2
+    rwa [hα'1, hα'1] at h3
+  refine ⟨hinj, ?_, fun B _ _ _ _ g h hgh => ?_⟩
+  · have hspec := (exists_ncpCarrier c).choose_spec.1
+    have h0 : (c (1 - ncpCarrier c) : A) = 0 := hspec.2.1
+    have hz : (c (0 : C) : A) = 0 := map_zero c.toCompletelyPositiveMap
+    have h1 : (1 : C) - ncpCarrier c = 0 := hinj (h0.trans hz.symm)
+    exact (sub_eq_zero.mp h1).symm
+  · exact DFunLike.ext _ _ fun b => hinj (hgh b)
 
 /-- **98II** (`filter-basic`, proc.tex:577, Exercise), part 3: a filter is
 bipositive. -/
 theorem filter_basic_3 [VonNeumannAlgebra A] [VonNeumannAlgebra C]
-    (c : NCPMap C A) (hc : IsFilter c) (x : C) : 0 ≤ c x ↔ 0 ≤ x := sorry
+    (c : NCPMap C A) (hc : IsFilter c) (x : C) : 0 ≤ c x ↔ 0 ≤ x := by
+  -- again `c = c_p ∘ α` with `α` an isomorphism (part 1); `c_p` is
+  -- bipositive by `sequential-douglas`, and `α`, `α'` are positive.
+  obtain ⟨α, hα, -, ⟨α', hα'1, -⟩, -⟩ := filter_basic_1 c hc
+  have hp : (0 : A) ≤ c 1 := ncpMap_nonneg c zero_le_one
+  constructor
+  · intro h
+    rw [hα x] at h
+    have h2 := (stdFilter_bipositive hp (α x)).mp h
+    have h3 := ncpMap_nonneg α' h2
+    rwa [hα'1] at h3
+  · intro h
+    rw [hα x]
+    exact (stdFilter_bipositive hp (α x)).mpr (ncpMap_nonneg α h)
 
 /-- **98III** (`filters-composition`, proc.tex:601, Exercise): the
 composition of filters is a filter. -/
@@ -2142,6 +2656,22 @@ theorem corners_composition [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (hπ : IsCornerMap π) (hτ : IsCornerMap τ) : IsCornerMap (ncpComp τ π) :=
   sorry
 
+/-- Auxiliary: `⌊e⌋ = e` for a projection `e`. -/
+theorem floor_of_isStarProjection [VonNeumannAlgebra A] {e : A}
+    (he : IsStarProjection e) : floor e = e :=
+  le_antisymm (floor_le ⟨he.nonneg, he.le_one⟩)
+    ((floor_spec ⟨he.nonneg, he.le_one⟩).2.2 e he he.isIdempotentElem.eq)
+
+/-- The corner projection onto a *projection* `e` is a corner of `e`: this is
+`isCornerOf_stdCorner` at `p = e`, transported along `⌊e⌋ = e` (the extra
+argument `u` carries the transport, since `Corner A u` is a dependent
+type). -/
+theorem isCornerOf_cornerProjMap [VonNeumannAlgebra A] (e u : A)
+    [Fact (IsStarProjection u)] (he : IsStarProjection e) (h : floor e = u) :
+    IsCornerOf e (cornerProjMap u).toNCPMap := by
+  subst h
+  exact isCornerOf_stdCorner e ⟨he.nonneg, he.le_one⟩
+
 /-- **98VII** (`filter-corner`, proc.tex:642, Theorem): given an ncp-map
 `f : 𝒜 → ℬ`, a projection `e` with `⌈f⌉ ≤ e`, and a positive `p` with
 `f(1) ≤ p`, there is a unique ncp-map `g : e𝒜e → ⌈p⌉ℬ⌈p⌉` with
@@ -2150,7 +2680,49 @@ theorem filter_corner [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (f : NCPMap A B) (e : A) [Fact (IsStarProjection e)]
     (hce : ncpCarrier f ≤ e) (p : B) (hp : 0 ≤ p) (hfp : f 1 ≤ p) :
     ∃! g : NCPMap (Corner A e) (Corner B (ceil p)),
-      ∀ a : A, f a = stdFilter p (g ((cornerProjMap e).toNCPMap a)) := sorry
+      ∀ a : A, f a = stdFilter p (g ((cornerProjMap e).toNCPMap a)) := by
+  -- The thesis's proof (proc.tex:678) verbatim: `π_e` is a corner of `e` and
+  -- `f(e^⊥) = 0`, so `f = h ∘ π_e` for a unique `h`; `h(1) = f(1) ≤ p = c_p(1)`
+  -- and `c_p` is a filter (96V), so `h = c_p ∘ g` for a unique `g`.
+  -- Uniqueness is `π_e` epi (98IV.2, here directly: `π_e` is surjective) and
+  -- `c_p` mono (98II.2, here directly: `c_p` is injective).
+  have he : IsStarProjection e := Corner.proj e
+  have hcspec : IsStarProjection (ncpCarrier f) ∧ (f (1 - ncpCarrier f) : B) = 0 ∧
+      ∀ q : A, IsStarProjection q → f (1 - q) = 0 → ncpCarrier f ≤ q :=
+    (exists_ncpCarrier f).choose_spec.1
+  have hsub : ∀ x y : A, (f (x - y) : B) = f x - f y :=
+    fun x y => map_sub f.toCompletelyPositiveMap x y
+  have hfe : (f (1 - e) : B) = 0 := by
+    refine le_antisymm ?_ (ncpMap_nonneg f (sub_nonneg.mpr he.le_one))
+    have h1 : (0 : B) ≤ f (1 - ncpCarrier f - (1 - e)) :=
+      ncpMap_nonneg f (by
+        have h2 : (1 : A) - ncpCarrier f - (1 - e) = e - ncpCarrier f := by abel
+        rw [h2]
+        exact sub_nonneg.mpr hce)
+    rw [hsub, sub_nonneg, hcspec.2.1] at h1
+    exact h1
+  obtain ⟨h, hh, -⟩ :=
+    (isCornerOf_cornerProjMap e e he (floor_of_isStarProjection he)).universal B f hfe
+  have hh1 : (h 1 : B) ≤ p := by
+    have h1 : ((cornerProjMap e).toNCPMap 1 : Corner A e) = 1 := (cornerProjMap e).unital'
+    have h2 := hh 1
+    rw [h1] at h2
+    rw [← h2]
+    exact hfp
+  obtain ⟨g, hg, -⟩ := (isFilter_stdFilter p hp).universal (Corner A e) h
+    (by rw [stdFilter_one hp]; exact hh1)
+  refine ⟨g, fun a => ?_, fun g' hg' => ?_⟩
+  · rw [hh a, hg]
+  · refine DFunLike.ext _ _ fun x => ?_
+    have hsurj : (cornerProjMap e).toNCPMap x.val = x :=
+      Corner.val_injective (by rw [cornerProjMap_apply]; exact x.property)
+    refine stdFilter_injective hp ?_
+    calc (stdFilter p (g' x) : B)
+        = stdFilter p (g' ((cornerProjMap e).toNCPMap x.val)) := by rw [hsurj]
+      _ = f x.val := (hg' x.val).symm
+      _ = h ((cornerProjMap e).toNCPMap x.val) := hh x.val
+      _ = stdFilter p (g ((cornerProjMap e).toNCPMap x.val)) := hg _
+      _ = stdFilter p (g x) := by rw [hsurj]
 
 /-- **98VII** (`filter-corner`, proc.tex:642, Theorem), formula: the unique
 `g` above is given by `g(a) = √p \ f(a) / √p`. -/
@@ -2160,7 +2732,22 @@ theorem filter_corner_formula [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (g : NCPMap (Corner A e) (Corner B (ceil p)))
     (hg : ∀ a : A, f a = stdFilter p (g ((cornerProjMap e).toNCPMap a))) :
     ∀ x : Corner A e,
-      (g x).val = ldiv (CFC.sqrt p) (div (f x.val) (CFC.sqrt p)) := sorry
+      (g x).val = ldiv (CFC.sqrt p) (div (f x.val) (CFC.sqrt p)) := by
+  intro x
+  have hsa : star (CFC.sqrt p) = CFC.sqrt p :=
+    (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg p)).star_eq
+  have hsurj : (cornerProjMap e).toNCPMap x.val = x :=
+    Corner.val_injective (by rw [cornerProjMap_apply]; exact x.property)
+  have hval : (f x.val : B) = CFC.sqrt p * (g x).val * CFC.sqrt p := by
+    rw [hg x.val, hsurj, stdFilter_apply]
+  have hcorner : rangeProj (CFC.sqrt p) * (g x).val * rangeProj (CFC.sqrt p)
+      = (g x).val := by
+    rw [← ceil_eq_rangeProj_sqrt hp]
+    exact (g x).property
+  have hkey := ldiv_div_ad (CFC.sqrt p) (g x).val hcorner
+  rw [hsa] at hkey
+  rw [hval]
+  exact hkey.symm
 
 /-- **98IX** (`square-f`, proc.tex:698, Corollary), well-definedness: for
 an ncp-map `f : 𝒜 → ℬ` the formula `a ↦ √f(1) \ f(a) / √f(1)` gives an
@@ -2170,8 +2757,11 @@ theorem exists_sqBracket [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (f : NCPMap A B) :
     ∃ g : NCPMap (Corner A (ncpCarrier f)) (Corner B (ceil (f 1))),
       ∀ a : Corner A (ncpCarrier f),
-        (g a).val = ldiv (CFC.sqrt (f 1)) (div (f a.val) (CFC.sqrt (f 1))) :=
-  sorry
+        (g a).val = ldiv (CFC.sqrt (f 1)) (div (f a.val) (CFC.sqrt (f 1))) := by
+  -- **98IX** is **98VII** at `e = ⌈f⌉` and `p = f(1)`.
+  have hp : (0 : B) ≤ f 1 := ncpMap_nonneg f zero_le_one
+  obtain ⟨g, hg, -⟩ := filter_corner f (ncpCarrier f) le_rfl (f 1) hp le_rfl
+  exact ⟨g, filter_corner_formula f (ncpCarrier f) le_rfl (f 1) hp le_rfl g hg⟩
 
 /-- **98IX** (`square-f`, proc.tex:698, Corollary): the ncp-map
 `[f] : ⌈f⌉𝒜⌈f⌉ → ⌈f(1)⌉ℬ⌈f(1)⌉` with `c_{f(1)} ∘ [f] ∘ π_{⌈f⌉} = f`. -/
@@ -2191,7 +2781,97 @@ theorem square_f [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (∀ g : NCPMap (Corner A (ncpCarrier f)) (Corner B (ceil (f 1))),
       (∀ a : A, f a = stdFilter (f 1)
         (g ((cornerProjMap (ncpCarrier f)).toNCPMap a))) → g = sqBracket f) ∧
-    sqBracket f 1 = 1 ∧ ncpCarrier (sqBracket f) = 1 := sorry
+    sqBracket f 1 = 1 ∧ ncpCarrier (sqBracket f) = 1 := by
+  -- `[f]` is the `g` of **98VII** at `e = ⌈f⌉`, `p = f(1)`; it is pinned down
+  -- by the *formula*, which determines its values, so it coincides with that
+  -- `g` and inherits the square and its uniqueness.  Unitality is
+  -- `c_p([f](1)) = f(1) = p = c_p(1)` plus injectivity of `c_p`.
+  -- Faithfulness: if `[f](x) = 0` for `0 ≤ x ∈ ⌈f⌉𝒜⌈f⌉` then `f(x) = 0`,
+  -- so `f(⌈x⌉) = 0` by 60V, so `⌈f⌉ ≤ ⌈x⌉^⊥` by minimality of the carrier,
+  -- while `⌈x⌉ ≤ ⌈f⌉`; hence `⌈x⌉ = 0` and `x = 0`.
+  have hp : (0 : B) ≤ f 1 := ncpMap_nonneg f zero_le_one
+  have hcspec : IsStarProjection (ncpCarrier f) ∧ (f (1 - ncpCarrier f) : B) = 0 ∧
+      ∀ q : A, IsStarProjection q → f (1 - q) = 0 → ncpCarrier f ≤ q :=
+    (exists_ncpCarrier f).choose_spec.1
+  obtain ⟨g, hg, hgu⟩ := filter_corner f (ncpCarrier f) le_rfl (f 1) hp le_rfl
+  have hform := filter_corner_formula f (ncpCarrier f) le_rfl (f 1) hp le_rfl g hg
+  have hsq : ∀ x : Corner A (ncpCarrier f),
+      (sqBracket f x).val
+        = ldiv (CFC.sqrt (f 1)) (div (f x.val) (CFC.sqrt (f 1))) :=
+    (exists_sqBracket f).choose_spec
+  have heq : sqBracket f = g := by
+    refine DFunLike.ext _ _ fun x => Corner.val_injective ?_
+    rw [hsq x, hform x]
+  refine ⟨by rw [heq]; exact hg, fun g₂ hg₂ => by rw [heq]; exact hgu g₂ hg₂, ?_, ?_⟩
+  · rw [heq]
+    refine stdFilter_injective hp ?_
+    have h1 : ((cornerProjMap (ncpCarrier f)).toNCPMap 1 :
+        Corner A (ncpCarrier f)) = 1 := (cornerProjMap (ncpCarrier f)).unital'
+    have h2 := hg 1
+    rw [h1] at h2
+    rw [← h2, stdFilter_one hp]
+  · -- faithfulness
+    have hspec : IsStarProjection (ncpCarrier (sqBracket f)) ∧
+        (sqBracket f (1 - ncpCarrier (sqBracket f)) :
+          Corner B (ceil (f 1))) = 0 ∧
+        ∀ q : Corner A (ncpCarrier f), IsStarProjection q →
+          sqBracket f (1 - q) = 0 → ncpCarrier (sqBracket f) ≤ q :=
+      (exists_ncpCarrier (sqBracket f)).choose_spec.1
+    set x : Corner A (ncpCarrier f) := 1 - ncpCarrier (sqBracket f) with hxdef
+    have hsurj : (cornerProjMap (ncpCarrier f)).toNCPMap x.val = x :=
+      Corner.val_injective (by rw [cornerProjMap_apply]; exact x.property)
+    have hfx : (f x.val : B) = 0 := by
+      have h3 := hg x.val
+      rw [hsurj, ← heq, hspec.2.1] at h3
+      rw [h3]
+      exact map_zero (stdFilter (f 1)).toCompletelyPositiveMap
+    have hxnn : (0 : Corner A (ncpCarrier f)) ≤ x :=
+      sub_nonneg.mpr hspec.1.le_one
+    have hxpos : (0 : A) ≤ x.val := hxnn
+    have hxq : x.val * ncpCarrier f = x.val := by
+      have hpp : ncpCarrier f * ncpCarrier f = ncpCarrier f :=
+        (Corner.proj (ncpCarrier f)).isIdempotentElem.eq
+      calc x.val * ncpCarrier f
+          = ncpCarrier f * x.val * (ncpCarrier f * ncpCarrier f) := by
+            conv_lhs => rw [← x.property]
+            noncomm_ring
+        _ = ncpCarrier f * x.val * ncpCarrier f := by rw [hpp]
+        _ = x.val := x.property
+    have hsle : ceil x.val ≤ ncpCarrier f :=
+      ((ceil_basic_1 x.val (ncpCarrier f) hxpos hcspec.1).out 1 2).mp hxq
+    have hFF : ∀ a : A,
+        (PositiveLinearMap.ofClass f.toCompletelyPositiveMap a : B) = f a :=
+      fun _ => rfl
+    have hceil := ncp_ceil (PositiveLinearMap.ofClass f.toCompletelyPositiveMap)
+      f.preservesDirSups' x.val hxpos
+    simp only [hFF] at hceil
+    rw [hfx, ceil_zero] at hceil
+    have hfs : (f (ceil x.val) : B) = 0 :=
+      (ceil_basic_3 _ (ncpMap_nonneg f (isStarProjection_ceil x.val).nonneg)).mpr
+        hceil.symm
+    have hle : ncpCarrier f ≤ 1 - ceil x.val := by
+      refine hcspec.2.2 (1 - ceil x.val) (isStarProjection_ceil x.val).one_sub ?_
+      have h4 : (1 : A) - (1 - ceil x.val) = ceil x.val := by abel
+      rw [h4]
+      exact hfs
+    have hsp := isStarProjection_ceil x.val
+    have hc0 : ceil x.val = 0 := by
+      -- `s ≤ s^⊥` conjugated by `s` gives `s = s³ ≤ s s^⊥ s = 0`
+      have hconj := star_left_conjugate_le_conjugate (hsle.trans hle) (ceil x.val)
+      rw [hsp.isSelfAdjoint.star_eq] at hconj
+      have hL : ceil x.val * ceil x.val * ceil x.val = ceil x.val := by
+        rw [hsp.isIdempotentElem.eq, hsp.isIdempotentElem.eq]
+      have hR : ceil x.val * (1 - ceil x.val) * ceil x.val = 0 := by
+        have h5 : ceil x.val * (1 - ceil x.val) * ceil x.val
+            = ceil x.val * ceil x.val
+              - ceil x.val * ceil x.val * ceil x.val := by noncomm_ring
+        rw [h5, hL, hsp.isIdempotentElem.eq, sub_self]
+      rw [hL, hR] at hconj
+      exact le_antisymm hconj hsp.nonneg
+    have hx0 : x = 0 :=
+      Corner.val_injective ((ceil_basic_3 x.val hxpos).mpr hc0)
+    rw [hxdef] at hx0
+    exact (sub_eq_zero.mp hx0).symm
 
 /-- An ncp-map commutes with subtraction (it is linear; `NCPMap` carries no
 `AddMonoidHomClass` instance, so this goes through its
@@ -2824,8 +3504,27 @@ theorem isPure_id [VonNeumannAlgebra A] : IsPure (ncpId A) :=
 
 /-- **100II** (proc.tex:931, Exercise), part 3: the map `a*(·)a : 𝒜 → 𝒜`
 is pure, for any element `a` of a von Neumann algebra `𝒜`. -/
-theorem isPure_adSelf [VonNeumannAlgebra A] (a : A) : IsPure (adSelf a) :=
-  sorry
+theorem isPure_adSelf [VonNeumannAlgebra A] (a : A) : IsPure (adSelf a) := by
+  -- `a*(·)a = c ∘ π_{⌊a⌉}` with `c` the canonical filter of `a` (**96V**)
+  -- and `π_{⌊a⌉}` the corner projection onto the projection `⌊a⌉`.
+  have hq : IsStarProjection (rangeProj a) := isStarProjection_rangeProj a
+  have hqa : rangeProj a * a = a := (ceill_basic_2 a).1.2
+  have haq : star a * rangeProj a = star a := by
+    have h := congrArg star hqa
+    rwa [star_mul, hq.isSelfAdjoint.star_eq] at h
+  have hfac : adSelf a
+      = ncpComp (canonicalFilter a) (cornerProjMap (rangeProj a)).toNCPMap := by
+    refine DFunLike.ext _ _ fun b => ?_
+    rw [adSelf_apply, ncpComp_apply, canonicalFilter_apply, cornerProjMap_apply]
+    calc star a * b * a = (star a * rangeProj a) * b * (rangeProj a * a) := by
+          rw [haq, hqa]
+      _ = star a * (rangeProj a * b * rangeProj a) * a := by noncomm_ring
+  rw [hfac]
+  refine IsPure.comp (IsPure.filter (canonical_filter a)) (IsPure.corner ?_)
+  exact ⟨(cornerProjMap (rangeProj a)).unital', rangeProj a,
+    ⟨hq.nonneg, hq.le_one⟩,
+    isCornerOf_cornerProjMap (rangeProj a) (rangeProj a) hq
+      (floor_of_isStarProjection hq)⟩
 
 /-- **100III** (`pure-fundamental`, proc.tex:945, Proposition): for an
 ncp-map `f : 𝒜 → ℬ` between von Neumann algebras are equivalent:
