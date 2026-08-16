@@ -2033,13 +2033,239 @@ theorem kraus_decomposition (φ : NCPMap (H →L[ℂ] H) (K →L[ℂ] K)) :
 
 /-- **138VIII** (`kraus-exercise`, dils.tex:742, Exercise*), finite
 dimensional case: for finite-dimensional `ℋ` and `𝒦` the number of Kraus
-operators can be chosen `≤ dim ℋ · dim 𝒦`. -/
+operators can be chosen `≤ dim ℋ · dim 𝒦`.
+
+**Divergence from the author's solution** (bsols.tex, `kraus-exercise`),
+logged in PROVING-LOG.  The author bounds the *dilation space*: the standard
+Stinespring space `𝒦''` is a quotient of `B(ℋ) ⊙ 𝒦`, hence
+`dim 𝒦'' ≤ (dim ℋ)²·dim 𝒦`, and `𝒦'' ≅ ℋ ⊗ 𝒦'` by **138II**, so
+`dim 𝒦' ≤ dim ℋ · dim 𝒦`.  That route needs a dimension bound *inside* the
+construction of `stinespring_normal`, which our `physics_stinespring` does
+not expose (it returns `𝒦'` existentially).  Instead we cut `𝒦'` down after
+the fact: `W ξ := V₀* ∘ (· ⊗ ξ) : ℋ → 𝒦` is ℂ-linear and bounded in `ξ`,
+and on `N := ker W` the Kraus operator `(1 ⊗ ⟨ξ|) V₀` vanishes, so only an
+orthonormal basis of `Nᗮ` contributes — and `W` is injective on `Nᗮ`, which
+therefore embeds in `ℋ →ₗ[ℂ] 𝒦` and has `finrank ≤ dim ℋ · dim 𝒦`.
+Extending that basis of `Nᗮ` to a Hilbert basis of `𝒦'`
+(`Orthonormal.exists_hilbertBasis_extension`) makes the ultraweakly
+convergent sum of **138VIII** a *finite* sum, so the ultraweak convergence
+of `kraus_decomposition` is not needed either: the net of partial sums is
+eventually constant and converges in norm.
+
+Note the author's argument divides by `dim ℋ`, which is invalid when
+`ℋ = 0`; the statement is still true there (`n = 0`), and the route taken
+here covers that case uniformly. -/
 theorem kraus_decomposition_findim [FiniteDimensional ℂ H]
     [FiniteDimensional ℂ K] (φ : NCPMap (H →L[ℂ] H) (K →L[ℂ] K)) :
     ∃ n : ℕ, n ≤ Module.finrank ℂ H * Module.finrank ℂ K ∧
       ∃ V : Fin n → (K →L[ℂ] H),
-        ∀ a : H →L[ℂ] H, φ a = ∑ i, conjOperator (V i) a :=
-  sorry
+        ∀ a : H →L[ℂ] H, φ a = ∑ i, conjOperator (V i) a := by
+  classical
+  obtain ⟨K', i1, i2, i3, V₀, hV₀⟩ := physics_stinespring φ
+  letI := i1; letI := i2; letI := i3
+  -- `ξ ↦ (· ⊗ ξ)` is ℂ-linear and bounded by `‖ξ‖`
+  have hket_add : ∀ ξ ξ' : K',
+      hilbTensorKet (H := H) (ξ + ξ') = hilbTensorKet ξ + hilbTensorKet ξ' := by
+    intro ξ ξ'
+    refine ContinuousLinearMap.ext fun x => ?_
+    simp only [hilbTensorKet_apply, ContinuousLinearMap.add_apply]
+    exact hilbTensorMk_add_right x ξ ξ'
+  have hket_smul : ∀ (c : ℂ) (ξ : K'),
+      hilbTensorKet (H := H) (c • ξ) = c • hilbTensorKet ξ := by
+    intro c ξ
+    refine ContinuousLinearMap.ext fun x => ?_
+    simp only [hilbTensorKet_apply, ContinuousLinearMap.smul_apply]
+    exact hilbTensorMk_smul_right c x ξ
+  have hket_norm : ∀ ξ : K', ‖hilbTensorKet (H := H) ξ‖ ≤ ‖ξ‖ := by
+    intro ξ
+    refine ContinuousLinearMap.opNorm_le_bound _ (norm_nonneg ξ) fun x => ?_
+    rw [hilbTensorKet_apply, norm_hilbTensorMk]
+    exact le_of_eq (mul_comm _ _)
+  -- the ℂ-linear map `W : ξ ↦ V₀* ∘ (· ⊗ ξ) : K' → B(H, K)`
+  let Wl : K' →ₗ[ℂ] (H →L[ℂ] K) :=
+    { toFun := fun ξ => (ContinuousLinearMap.adjoint V₀).comp (hilbTensorKet ξ)
+      map_add' := by intro ξ ξ'; simp only [hket_add]; ext x; simp
+      map_smul' := by intro c ξ; simp only [hket_smul]; ext x; simp }
+  have hWl_apply : ∀ ξ : K',
+      Wl ξ = (ContinuousLinearMap.adjoint V₀).comp (hilbTensorKet ξ) := fun _ => rfl
+  have hWl_bound : ∀ ξ : K',
+      ‖Wl ξ‖ ≤ ‖ContinuousLinearMap.adjoint V₀‖ * ‖ξ‖ := by
+    intro ξ
+    rw [hWl_apply]
+    calc ‖(ContinuousLinearMap.adjoint V₀).comp (hilbTensorKet (H := H) ξ)‖
+        ≤ ‖ContinuousLinearMap.adjoint V₀‖ * ‖hilbTensorKet (H := H) ξ‖ :=
+          ContinuousLinearMap.opNorm_comp_le _ _
+      _ ≤ ‖ContinuousLinearMap.adjoint V₀‖ * ‖ξ‖ :=
+          mul_le_mul_of_nonneg_left (hket_norm ξ) (norm_nonneg _)
+  have hNclosed : IsClosed ((LinearMap.ker Wl : Submodule ℂ K') : Set K') := by
+    have := (Wl.mkContinuous _ hWl_bound).isClosed_ker
+    exact this
+  set N : Submodule ℂ K' := LinearMap.ker Wl with hNdef
+  haveI : CompleteSpace N := hNclosed.completeSpace_coe
+  haveI : N.HasOrthogonalProjection := inferInstance
+  -- `W` is injective on `Nᗮ`, which is therefore finite dimensional
+  let toLM : (H →L[ℂ] K) →ₗ[ℂ] (H →ₗ[ℂ] K) :=
+    { toFun := fun T => (T : H →ₗ[ℂ] K)
+      map_add' := fun _ _ => rfl
+      map_smul' := fun _ _ => rfl }
+  let g : (Nᗮ : Submodule ℂ K') →ₗ[ℂ] (H →ₗ[ℂ] K) := toLM ∘ₗ (Wl ∘ₗ (Nᗮ).subtype)
+  have hginj : Function.Injective g := by
+    refine (injective_iff_map_eq_zero g).mpr fun x hx => ?_
+    have hx0 : Wl (x : K') = 0 := by
+      apply ContinuousLinearMap.coe_injective
+      exact hx
+    have hxN : (x : K') ∈ N := hx0
+    have := (Submodule.mem_orthogonal N (x : K')).mp x.2 (x : K') hxN
+    exact Subtype.ext (inner_self_eq_zero.mp this)
+  haveI : FiniteDimensional ℂ ((Nᗮ : Submodule ℂ K')) :=
+    FiniteDimensional.of_injective g hginj
+  have hrank : Module.finrank ℂ ((Nᗮ : Submodule ℂ K'))
+      ≤ Module.finrank ℂ H * Module.finrank ℂ K := by
+    have h := LinearMap.finrank_le_finrank_of_injective (f := g) hginj
+    rwa [Module.finrank_linearMap] at h
+  set n : ℕ := Module.finrank ℂ ((Nᗮ : Submodule ℂ K')) with hndef
+  -- an orthonormal basis of `Nᗮ`, extended to a Hilbert basis of `K'`
+  let e : OrthonormalBasis (Fin n) ℂ ((Nᗮ : Submodule ℂ K')) :=
+    stdOrthonormalBasis ℂ ((Nᗮ : Submodule ℂ K'))
+  let ξ : Fin n → K' := fun i => ((e i : (Nᗮ : Submodule ℂ K')) : K')
+  have hξ : Orthonormal ℂ ξ :=
+    e.orthonormal.comp_linearIsometry ((Nᗮ : Submodule ℂ K')).subtypeₗᵢ
+  have hξinj : Function.Injective ξ := hξ.linearIndependent.injective
+  have hs : Orthonormal ℂ ((↑) : Set.range ξ → K') :=
+    (orthonormal_subtype_range hξinj).mpr hξ
+  obtain ⟨w, bb, hsw, hbb⟩ := hs.exists_hilbertBasis_extension
+  have hmemw : ∀ i : Fin n, ξ i ∈ w := fun i => hsw ⟨i, rfl⟩
+  let emb : Fin n → w := fun i => (⟨ξ i, hmemw i⟩ : w)
+  -- vectors of the extended basis outside `range ξ` lie in `N`
+  have hzero : ∀ j : w, (j : K') ∉ Set.range ξ → Wl ((j : K')) = 0 := by
+    intro j hj
+    have horth : ∀ i : Fin n, (inner ℂ (ξ i) (j : K') : ℂ) = 0 := by
+      intro i
+      have hne : emb i ≠ j := by
+        intro h
+        exact hj (h ▸ (⟨i, rfl⟩ : (ξ i) ∈ Set.range ξ))
+      have h := bb.orthonormal.2 hne
+      rw [hbb] at h
+      exact h
+    have hjN : (j : K') ∈ N := by
+      rw [← Submodule.orthogonal_orthogonal N]
+      refine (Submodule.mem_orthogonal _ _).mpr fun u hu => ?_
+      have hrepr : ((⟨u, hu⟩ : (Nᗮ : Submodule ℂ K')) : K')
+          = ∑ i : Fin n, (inner ℂ (e i) (⟨u, hu⟩ : (Nᗮ : Submodule ℂ K')) : ℂ) • ξ i := by
+        have h := e.sum_repr (⟨u, hu⟩ : (Nᗮ : Submodule ℂ K'))
+        simp only [OrthonormalBasis.repr_apply_apply] at h
+        have := congrArg (fun z : (Nᗮ : Submodule ℂ K') => (z : K')) h
+        simpa [ξ] using this.symm
+      calc (inner ℂ u (j : K') : ℂ)
+          = inner ℂ (∑ i : Fin n,
+              (inner ℂ (e i) (⟨u, hu⟩ : (Nᗮ : Submodule ℂ K')) : ℂ) • ξ i) (j : K') := by
+            rw [← hrepr]
+        _ = 0 := by
+            rw [sum_inner]
+            refine Finset.sum_eq_zero fun i _ => ?_
+            rw [inner_smul_left, horth i, mul_zero]
+    exact hjN
+  -- the Kraus operators
+  let Vf : w → (K →L[ℂ] H) := fun j =>
+    (ContinuousLinearMap.adjoint (hilbTensorKet (H := H) (bb j))).comp V₀
+  have hVadj : ∀ j : w, Vf j = ContinuousLinearMap.adjoint (Wl (bb j)) := by
+    intro j
+    rw [hWl_apply, ContinuousLinearMap.adjoint_comp,
+      ContinuousLinearMap.adjoint_adjoint]
+  have hVzero : ∀ j : w, (j : K') ∉ Set.range ξ → Vf j = 0 := by
+    intro j hj
+    rw [hVadj]
+    have : bb j = (j : K') := by rw [hbb]
+    rw [this, hzero j hj, map_zero]
+  -- conjugation by a composite
+  have hcc : ∀ (S : hilbTensor H K' →L[ℂ] H) (b : H →L[ℂ] H),
+      conjOperator (S.comp V₀) b = conjOperator V₀ (conjOperator S b) := by
+    intro S b
+    show (ContinuousLinearMap.adjoint (S.comp V₀)).comp (b.comp (S.comp V₀))
+        = (ContinuousLinearMap.adjoint V₀).comp
+            (((ContinuousLinearMap.adjoint S).comp (b.comp S)).comp V₀)
+    rw [ContinuousLinearMap.adjoint_comp]
+    simp only [ContinuousLinearMap.comp_assoc]
+  refine ⟨n, hrank,
+    fun i => (ContinuousLinearMap.adjoint (hilbTensorKet (H := H) (ξ i))).comp V₀, ?_⟩
+  intro a
+  refine ContinuousLinearMap.ext fun y => ?_
+  -- the partial sums, as slices of the projections `1 ⊗ P_F`
+  have hEq : ∀ F : Finset w,
+      (ContinuousLinearMap.adjoint V₀)
+          ((tensorCLM a (1 : K' →L[ℂ] K'))
+            (tensorCLM (1 : H →L[ℂ] H) (basisProj bb F) (V₀ y)))
+        = ∑ j ∈ F, (conjOperator (Vf j) a) y := by
+    intro F
+    have h1 : (tensorCLM a (1 : K' →L[ℂ] K'))
+        ((tensorCLM (1 : H →L[ℂ] H) (basisProj bb F)) (V₀ y))
+        = (tensorCLM a (basisProj bb F)) (V₀ y) := by
+      have h := tensorCLM_mul a (1 : H →L[ℂ] H) (1 : K' →L[ℂ] K') (basisProj bb F)
+      rw [mul_one, one_mul] at h
+      have h2 := congrArg (fun T : hilbTensor H K' →L[ℂ] hilbTensor H K' => T (V₀ y)) h
+      simpa [ContinuousLinearMap.mul_apply] using h2
+    have h3 : tensorCLM a (basisProj bb F)
+        = ∑ j ∈ F, conjOperator
+            (ContinuousLinearMap.adjoint (hilbTensorKet (H := H) (bb j))) a := by
+      rw [basisProj, tensorCLM_sum_right]
+      exact Finset.sum_congr rfl fun j _ => (conjOperator_ketAdjoint a (bb j)).symm
+    rw [h1, h3, ContinuousLinearMap.sum_apply, map_sum]
+    refine Finset.sum_congr rfl fun j _ => ?_
+    have hVfj : Vf j
+        = (ContinuousLinearMap.adjoint (hilbTensorKet (H := H) (bb j))).comp V₀ := rfl
+    rw [hVfj, hcc]
+    rfl
+  -- the net is eventually constant
+  set F₀ : Finset w := Finset.image emb Finset.univ with hF₀
+  have hconst : ∀ F : Finset w, F₀ ⊆ F →
+      ∑ j ∈ F, (conjOperator (Vf j) a) y = ∑ j ∈ F₀, (conjOperator (Vf j) a) y := by
+    intro F hF
+    refine (Finset.sum_subset hF fun j _ hjn => ?_).symm
+    have hjr : (j : K') ∉ Set.range ξ := by
+      rintro ⟨i, hi⟩
+      exact hjn (Finset.mem_image.mpr ⟨i, Finset.mem_univ i, Subtype.ext hi⟩)
+    rw [hVzero j hjr]
+    simp [conjOperator]
+  have hF₀sum : ∑ j ∈ F₀, (conjOperator (Vf j) a) y
+      = ∑ i : Fin n, (conjOperator
+          ((ContinuousLinearMap.adjoint (hilbTensorKet (H := H) (ξ i))).comp V₀) a) y := by
+    have hembinj : ∀ i ∈ (Finset.univ : Finset (Fin n)),
+        ∀ j ∈ (Finset.univ : Finset (Fin n)), emb i = emb j → i = j := by
+      intro i _ j _ h
+      refine hξinj ?_
+      have hval : ((emb i : w) : K') = ((emb j : w) : K') := by rw [h]
+      exact hval
+    rw [hF₀, Finset.sum_image hembinj]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    have hbe : bb (emb i) = ξ i := by rw [hbb]
+    simp only [Vf, hbe]
+  -- pass to the limit
+  have hlim : Filter.Tendsto (fun F : Finset w =>
+      (ContinuousLinearMap.adjoint V₀)
+        ((tensorCLM a (1 : K' →L[ℂ] K'))
+          (tensorCLM (1 : H →L[ℂ] H) (basisProj bb F) (V₀ y))))
+      atTop (𝓝 ((ContinuousLinearMap.adjoint V₀)
+        ((tensorCLM a (1 : K' →L[ℂ] K')) (V₀ y)))) := by
+    have hcont : Continuous (fun z : hilbTensor H K' =>
+        (ContinuousLinearMap.adjoint V₀) ((tensorCLM a (1 : K' →L[ℂ] K')) z)) :=
+      ((ContinuousLinearMap.adjoint V₀).comp
+        (tensorCLM a (1 : K' →L[ℂ] K'))).continuous
+    exact (hcont.tendsto _).comp (tendsto_tensorProj H bb (V₀ y))
+  have hlim2 : Filter.Tendsto (fun F : Finset w =>
+      (ContinuousLinearMap.adjoint V₀)
+        ((tensorCLM a (1 : K' →L[ℂ] K'))
+          (tensorCLM (1 : H →L[ℂ] H) (basisProj bb F) (V₀ y))))
+      atTop (𝓝 (∑ i : Fin n, (conjOperator
+        ((ContinuousLinearMap.adjoint (hilbTensorKet (H := H) (ξ i))).comp V₀) a) y)) := by
+    refine Filter.Tendsto.congr' ?_ (tendsto_const_nhds)
+    filter_upwards [Filter.Ici_mem_atTop F₀] with F hF
+    rw [hEq F, hconst F hF, hF₀sum]
+  have hfin := tendsto_nhds_unique hlim hlim2
+  rw [ContinuousLinearMap.sum_apply]
+  rw [← hfin]
+  have := hV₀ a
+  rw [this]
+  rfl
 
 end TypeI
 

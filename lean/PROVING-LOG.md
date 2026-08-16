@@ -12874,3 +12874,171 @@ is **unchanged**.
   what one must avoid here.
 * Bas's alternative route through 161II/161IV (`X ≅ ℓ²((pᵢ))`, `L(X)` a corner
   of a matrix algebra) is not needed — `Ba` is already available abstractly.
+
+---
+
+## Session 58 — `B/Dils`: **150II is costed, not closed**; Kaplansky does *not* collapse the iteration, Mathlib's completion *does* replace 150V–150IX, and **138VIII-findim** falls (worker on `SelfDualCompletion` / `Stinespring`)
+
+**Result.** `dils_completion` (**150II**, `SelfDualCompletion.lean:79`) is
+**not closed**.  It was investigated to the point where the architecture is
+settled and each remaining piece is costed (below); no code was written for
+it, so `SelfDualCompletion.lean` is untouched and still compiles.  The
+session's closed `sorry` is **138VIII-findim** `kraus_decomposition_findim`
+(`Stinespring.lean`), the one item in the directory that was unblocked,
+never attempted and not known false.
+
+Compiler-counted `B/Dils` after this session (per file, `lean` on each
+source, `declaration uses 'sorry'`): `HilbertModules` 0, **`Stinespring` 1**
+(was 2), `SelfDualCompletion` 1, `Kaplansky` 4, `Paschke` 7, `SelfDual` 7,
+`Pure` 12 — **32**, down from 33.  (`docs/BDils-survey.md` said `Kaplansky`
+5 at the end of session 55; session 57 closed one, and the survey row was
+stale.  The brief's 33 was right.)
+
+### 138VIII-findim `kraus_decomposition_findim` — closed, ~200 lines
+
+Statement: for finite-dimensional `ℋ`, `𝒦` an ncp-map `φ : B(ℋ) → B(𝒦)` has
+a Kraus family of size `n ≤ dim ℋ · dim 𝒦`.
+
+**Divergence from the author's solution** (case 2: the thesis's argument is
+correct, we took another route; `bsols.tex`, `solution}{kraus-exercise}`).
+The author bounds the *dilation space*: the standard Stinespring space `𝒦''`
+is a quotient of `B(ℋ) ⊙ 𝒦`, hence `dim 𝒦'' ≤ (dim ℋ)²·dim 𝒦`; by **138II**
+`𝒦'' ≅ ℋ ⊗ 𝒦'`, so `dim ℋ · dim 𝒦' ≤ (dim ℋ)²·dim 𝒦` and `𝒦'` has the wanted
+dimension.  That route needs a dimension bound *inside* `stinespring_normal`,
+which our `physics_stinespring` does not expose — it returns `𝒦'`
+existentially, with no handle on the GNS construction.  Re-opening the
+construction to expose it looked like more work than a model-independent
+argument, so we cut `𝒦'` down *after* the fact:
+
+* `W ξ := V₀* ∘ (· ⊗ ξ) : ℋ →L 𝒦` is **ℂ-linear** in `ξ` and bounded by
+  `‖V₀‖‖ξ‖`.  (It is the adjoint of the Kraus operator `V_ξ := (1⊗⟨ξ|)V₀`,
+  which is only *conjugate*-linear in `ξ` — taking the adjoint is what makes
+  the map linear, and that is the only reason `W` is phrased this way.)
+* `N := ker W` is closed; on `N` the Kraus operator vanishes.
+* `W` is injective on `Nᗮ`, which therefore embeds in `ℋ →ₗ[ℂ] 𝒦` and has
+  `finrank ≤ dim ℋ · dim 𝒦` (`Module.finrank_linearMap`).
+* An orthonormal basis of `Nᗮ` extends to a Hilbert basis of `𝒦'`
+  (`Orthonormal.exists_hilbertBasis_extension`), and every added vector is
+  orthogonal to `Nᗮ`, hence in `Nᗮᗮ = N`, hence contributes `V = 0`.
+
+A by-product worth noting: the ultraweak convergence of the general
+**138VIII** `kraus_decomposition` is then **not needed**, and that theorem is
+not used.  With the adapted basis the net of partial sums
+`∑_{j∈F} V_j* a V_j` is *eventually constant*, so the limit is taken in the
+norm topology and is the finite sum; the whole proof runs off
+`tendsto_tensorProj` + `conjOperator_ketAdjoint` + `tensorCLM_mul`, all
+already in the file.
+
+**Erratum filed** (nit): the author's argument divides by `dim ℋ`, which is
+invalid at `ℋ = 0`.  The statement is still true there (`n = 0`, every
+`V_i : 𝒦 → 0` is `0`); our route covers it uniformly.
+
+Axiom-clean: `[propext, Classical.choice, Quot.sound]`.
+
+### 150II `dils_completion` — the three questions the brief asked, answered
+
+**1. Mathlib's completion applies, and replaces 150V–150IX outright.**  The
+ultranorm uniformity is the uniformity of the *seminorm family*
+`(unSeminorm ω B)_{ω : NPFunctional 𝒷}`, and both seminorm laws are already
+proved in the tree (`unSeminorm_add_le` in `HilbertModules.lean`;
+ℂ-homogeneity as `un_smul_complex` in `SelfDualCompletion.lean` and
+`module_seminorm_2`).  So `SeminormFamily.moduleFilterBasis` /
+`WithSeminorms` give `IsTopologicalAddGroup` + `ContinuousSMul`, and
+`UniformSpace.Completion` then supplies `AddCommGroup`, `IsUniformAddGroup`,
+`Module ℂ` (`UniformSpace.Completion.instModule`) and even the 𝒷-action
+(`GroupCompletion.lean:156`, needing `UniformContinuousConstSMul 𝒷 V`, which
+is exactly `un_op_smul`: `‖b·z‖_ω = ‖z‖_{conjNP (star b) ω}`).  The thesis's
+150V (fast nets), 150VI (the uniform space `N`), 150VII–150IX (the uniformity
+on `V̄` and its module structure) are therefore **not** to be transcribed —
+and the *indefiniteness* of `B` is handled for free, since the completion of
+a non-separated uniform space is the separated completion.  Precedent in the
+tree: **136II** `prop_complete_into_hilbert_space` (`Stinespring.lean:91`)
+does exactly this for the ℂ-valued case, via
+`UniformSpace.Completion (SeparationQuotient V)`.
+
+What Mathlib does **not** give is the whole of the difficulty: the inner
+product is not uniformly continuous (that *is* the thesis's problem), the
+norm `‖x‖ = ‖[x,x]‖^½` is not continuous, and there is no analogue of the
+σ-iteration.
+
+**2. `kaplansky_hilbmod_of_selfDual` does *not* collapse the transfinite
+iteration.**  It takes `hX : SelfDual ℬ X` as a hypothesis and is proved
+through the linking algebra `Lk ℬ X = X ⊕ ℬ` (`selfDual_lk`,
+`Kaplansky.lean:1384`), i.e. it needs `ℬᵃ(X ⊕ ℬ)` to be a **von Neumann
+algebra**, which is **152X** and needs self-duality.  Applying it to
+`V₁ = σ(V₀)` would require `SelfDual ℬ V₁`, which is the goal.  The self-dual
+case is no escape: the module the iteration is building is the only candidate
+for `X`.  This is exactly what dils.tex parsec 1500 says ("later, when we
+have established that `V̄` is a Hilbert module, we will find out that in fact
+`V̄ ⊆ V₁`") — the brief's hope that the self-dual case might not be circular
+does not survive contact with the proof.
+
+For the record, *why* Kaplansky is the thing one wants: to show `σ(V₀)` is
+closed under norm-bounded ultranorm limits one must replace an element `x_i`
+of a norm-bounded net in `V₁` by an element of `V₀` of norm `≤ ‖x_i‖` — the
+bounds `M_i` coming from `x_i ∈ σ(V₀)` are not uniform, and the ultranorm
+uniformity is not metrizable, so no diagonal choice is available either.
+`kaplansky_hilbmod_of_closure` (`Kaplansky.lean:1618`), which needs **no** von
+Neumann / self-duality / completeness hypotheses, does only the rescaling
+step: its input already assumes approximation with the sharp bound.
+
+**But the ordinal-indexed induction is avoidable — by an inductive
+predicate, not by Kaplansky.**  Every ultranorm-Cauchy net is equivalent to a
+*fast* one indexed by the fixed type `Φ` of entourages (the thesis's own
+150V), so the σ-closure can be defined as a Lean `inductive` predicate on `V̄`
+with one infinitary constructor over the fixed index type `Φ` — a legal
+inductive, needing neither ordinals nor the cardinality/stabilization
+argument, and neither the thesis's Zorn reformulation nor its poset of
+partial inner products (the extension of the inner product becomes structural
+induction).  Caveat to carry forward: the predicate is `Prop`-valued, so the
+inner product on the closure must still be obtained non-constructively —
+prove `∃!` by induction on the predicate, then choose.
+
+**3. 149V is the engine, and it does more than the survey claimed.**  Because
+`dils_selfdual` is proved as a TFAE, the *only* property that has to be
+established on the constructed carrier is **`BddUnComplete`** (condition 3) —
+`exists_isONBasis_of_bddUnComplete` (3⇒4), `selfDual_of_isONBasis` (4⇒1) and
+`unComplete_of_isONBasis` (4⇒2) then give self-duality and ultranorm
+completeness for free.  The thesis's separate self-duality argument (150XV)
+therefore does not need transcribing at all.
+
+⚠ **A gap the survey's costing missed.**  `SelfDualCompletion` also demands
+`[CompleteSpace X]`, i.e. **norm** completeness, and 149V gives neither that
+nor a route to it — `CompleteSpace` occurs in `HilbertModules.lean` only as a
+hypothesis, never as a conclusion.  It is provable (a norm-Cauchy sequence is
+ultranorm-Cauchy by `unSeminorm_le_norm'` and norm-bounded, so it has an
+ultranorm limit; the norm estimate then follows from ultraweak lower
+semicontinuity of `‖·‖` via **148V** `innerprod_ultraweak`), but it is a
+separate item.
+
+### 150II — the costing
+
+Architecture: Mathlib completion (1–4) + inductive σ-closure (5) + 149V (7).
+
+| # | piece | ~lines |
+|---|---|---|
+| 1 | `unSeminorm ω B` as a bundled `Seminorm ℂ V`, the `SeminormFamily`, the resulting `UniformSpace V`, and the **bridge lemmas** identifying the tree's `UnTendsto`/`UnCauchy`/`UnDense` with the uniform-space notions | 250 |
+| 2 | `V̄ := UniformSpace.Completion V`; `AddCommGroup`, `Module ℂ`, `SMul 𝒷` and the module axioms by density | 200 |
+| 3 | extended seminorms on `V̄` (`Completion.extension`; uniformly continuous since `‖x‖_ω − ‖y‖_ω ≤ ‖x−y‖_ω`), their laws and the two transformation rules | 250 |
+| 4 | the norm on `V̄` as `⨆_ω ‖·‖_ω` over np *states*, and its agreement with `‖v‖` on the image of `V` (needs `‖b‖ = sup{ω b}` for `0 ≤ b`; **check A/VN for this first**) | 200 |
+| 5 | **the heart**: the σ-closure as an inductive predicate over `Φ`, the inner product on it by `∃!`-induction, and the `BInner` axioms | 600–900 |
+| 6 | the carrier `X` as the subtype, with `NormedAddCommGroup` / `NormedSpace ℂ` / `SMul 𝒷` / `CStarModule` instances | 250 |
+| 7 | `BddUnComplete 𝒷 X` — the point of the σ-closure — then `SelfDual` and `UnComplete` from **149V** | 150 |
+| 8 | `CompleteSpace X` (see the ⚠ above; *not* supplied by 149V) | 100 |
+| 9 | `η`, `η_inner`, and `UnDense` of its range | 150 |
+
+**≈ 2100–2600 lines, i.e. 3–4 sessions.**  Steps 1–4 are a self-contained
+first session that leaves the file compiling and are **independently useful**:
+putting a real `UniformSpace` on the ultranorm uniformity would let all of
+`B/Dils` reuse Mathlib's `Cauchy`/`CompleteSpace`/`DenseRange` API instead of
+the hand-rolled `Un*` predicates.  Step 5 is the only genuinely new
+mathematics.
+
+### Things the brief got wrong
+
+* "`kaplansky_hilbmod_of_selfDual` may collapse the iteration" — it does not,
+  and cannot (see 2 above).  The iteration *is* avoidable, but by a different
+  device.
+* Nothing else; the sorry counts, the blocked/false list and the reading of
+  151Ia's interface were all accurate, and `Kaplansky` 4 was right against the
+  survey's stale 5.

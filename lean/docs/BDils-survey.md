@@ -46,6 +46,15 @@ At the end of **session 55** (151Ia, and 163II-uniq with it):
 `Kaplansky.lean` 5, `Stinespring.lean` 2, `SelfDualCompletion.lean` **1**,
 `HilbertModules.lean` 0 — **34**, compiler-counted per file.
 
+At the end of **session 57** (158II `kaplansky_hilbmod`, through the linking
+algebra): `Kaplansky.lean` **4**, rest unchanged — **33**.
+
+At the end of **session 58** (138VIII-findim; 150II costed, not closed):
+`SelfDual.lean` 7, `Pure.lean` 12, `Paschke.lean` 7, `Kaplansky.lean` 4,
+`Stinespring.lean` **1**, `SelfDualCompletion.lean` 1,
+`HilbertModules.lean` 0 — **32**, compiler-counted per file (each source run
+through `lean` individually).
+
 Classification key: **(a)** self-contained, **(b)** blocked on a named
 `sorry` elsewhere, **(c)** cited to the literature / another chapter,
 **(d)** suspicious/false.
@@ -310,3 +319,75 @@ session-sized.
 The only item in the directory that is neither blocked nor known-false and
 has never been attempted is **138VIII-findim** `kraus_decomposition_findim`
 (`Stinespring.lean:2037`).
+
+---
+
+## Session 58: 150II is costed, 138VIII-findim is closed
+
+**138VIII-findim** `kraus_decomposition_findim` (`Stinespring.lean`) — the
+one item that was unblocked, never attempted and not known false — is
+**closed**, ~200 lines, axiom-clean, and the 200–300 line estimate held.  It
+does **not** use `kraus_decomposition` (the general 138VIII) and needs no
+ultraweak convergence: cutting `𝒦'` down to `Nᗮ` for
+`N = ker(ξ ↦ V₀* ∘ (· ⊗ ξ))` and extending an orthonormal basis of `Nᗮ` to a
+Hilbert basis of `𝒦'` makes the Kraus sum *finite*, so the net of partial
+sums is eventually constant.  Divergence from the author's solution (which
+bounds the dilation space inside the GNS construction) and a nit erratum
+(the solution divides by `dim ℋ`) are logged.
+
+`Stinespring.lean`'s remaining `sorry` is **139XI** `ess_uniq_pur`, which is
+false as stated (ERRATA / QUESTIONS **B12**).  **The file is therefore
+finished**, up to that ruling.
+
+### 150II `dils_completion` — still the only root, now costed
+
+Not closed, and not session-sized; `SelfDualCompletion.lean` is untouched.
+The three questions the session was sent to answer, with the working in
+PROVING-LOG session 58:
+
+1. **Mathlib's completion applies** and replaces **150V–150IX** outright.
+   The ultranorm uniformity is the uniformity of the seminorm family
+   `(unSeminorm ω B)_ω`, whose two seminorm laws are already proved; then
+   `WithSeminorms` + `UniformSpace.Completion` give the additive group, the
+   ℂ-module *and* the 𝒷-action (via `un_op_smul`), and the possible
+   **indefiniteness of `B` is handled for free** by the separated completion.
+   In-tree precedent: **136II** does exactly this for the ℂ-valued case.
+   What Mathlib does not give is the inner product (not uniformly
+   continuous), the norm (not continuous) and the σ-iteration.
+2. **`kaplansky_hilbmod_of_selfDual` does *not* collapse the iteration.**  It
+   hypothesises `SelfDual ℬ X` and goes through the linking algebra, i.e.
+   needs `ℬᵃ(X ⊕ ℬ)` to be a von Neumann algebra (**152X**) — so applying it
+   to `V₁ = σ(V₀)` assumes the goal.  The ordinal induction *is* avoidable,
+   but by an **inductive predicate** over the fixed index type `Φ` of
+   entourages (legal because every Cauchy net is equivalent to a fast one),
+   which also removes the thesis's Zorn reformulation.
+3. **149V does more than this survey claimed**: as a TFAE it means the only
+   property to prove on the carrier is `BddUnComplete`; self-duality and
+   ultranorm completeness follow.  ⚠ But `SelfDualCompletion` also demands
+   `[CompleteSpace X]` (**norm** completeness), which 149V does **not** give
+   and which no lemma in the tree provides — an extra ~100-line item that the
+   session-54/55 costing omitted.
+
+Total costing: **≈ 2100–2600 lines, 3–4 sessions**, of which steps 1–4
+(seminorm family → `UniformSpace` → `Completion` → extended seminorms and
+norm, ~900 lines) form a self-contained first session that leaves the file
+compiling and are independently useful to the whole directory.  Step 5 (the
+σ-closure and the inner product on it, 600–900 lines) is the only genuinely
+new mathematics.  See the table in PROVING-LOG session 58.
+
+**The next gate inside `B/Dils` is still 150II** — every open item of
+`Paschke.lean` and `Pure.lean` is downstream of it or of proc.tex's
+96V/98I.  With 138VIII-findim closed, **the only self-contained item left in
+the directory is 162II `total_mv_order`** (comparison of projections in a
+factor; Zorn + halving, genuinely hard).  Everything else is 150II, an item
+downstream of it, known-false, or blocked outside `B/Dils`:
+
+* `Kaplansky.lean`'s remaining **4** are exactly the known-false
+  `kaplansky_hilbmod_A₁/_A₁'/_A₂/_A₂'` — **the file is finished** (158II
+  itself was proved in session 57).
+* `Stinespring.lean`'s remaining **1** is the known-false 139XI.
+* `HilbertModules.lean` is 0.
+
+So three of the seven files are done, and the directory's whole remaining
+mass — `Pure` 12, `SelfDual` 7, `Paschke` 7 — sits behind 150II, proc.tex's
+96V/98I, `tensor_characterization`, and the false 169XI.2a / 164II.2b.
