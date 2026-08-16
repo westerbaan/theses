@@ -796,14 +796,254 @@ theorem carrier_vector_state' (S : StarSubalgebra ℂ (H →L[ℂ] H)) (x : H) :
     rintro _ ⟨T, hT, rfl⟩
     exact ⟨T, fun m hm => (hm T hT).symm, rfl⟩
 
+/-! ### The `ℕ`-fold amplification `ρ' : B(H) → B(⊕ₙ H)`
+
+Infrastructure for **88V** (`proto-double-commutant`): the Hilbert space
+`⊕ₙ H = lp (fun _ : ℕ => H) 2`, the nmiu-map `ρ'(t)y = (t yₙ)ₙ`, and the two
+facts the thesis's hint (vn.tex:6752) asks for — `Pₙ a Pₘ* ∈ S□` for
+`a ∈ ρ'(S)□`, and `ρ'(t) ∈ ρ'(S)□□` for `t ∈ S□□`. -/
+
+omit [CompleteSpace H] in
+/-- `(t yₙ)ₙ` is again square-summable: `‖t yₙ‖ ≤ ‖t‖‖yₙ‖`. -/
+theorem amp_memLp (t : H →L[ℂ] H) (y : lp (fun _ : ℕ => H) 2) :
+    Memℓp (fun n : ℕ => t (y n)) 2 := by
+  refine memℓp_gen (Summable.of_nonneg_of_le (fun n => by positivity) (fun n => ?_)
+    (((lp.memℓp y).summable (by norm_num)).mul_left (‖t‖ ^ (2 : ℝ≥0∞).toReal)))
+  calc ‖t ((y : ∀ _ : ℕ, H) n)‖ ^ (2 : ℝ≥0∞).toReal
+      ≤ (‖t‖ * ‖(y : ∀ _ : ℕ, H) n‖) ^ (2 : ℝ≥0∞).toReal :=
+        Real.rpow_le_rpow (norm_nonneg _) (t.le_opNorm _) (by norm_num)
+    _ = ‖t‖ ^ (2 : ℝ≥0∞).toReal * ‖(y : ∀ _ : ℕ, H) n‖ ^ (2 : ℝ≥0∞).toReal :=
+        Real.mul_rpow (norm_nonneg _) (norm_nonneg _)
+
+/-- The amplification `ρ'(t)y = (t yₙ)ₙ`, as a linear map. -/
+noncomputable def ampLM (t : H →L[ℂ] H) :
+    lp (fun _ : ℕ => H) 2 →ₗ[ℂ] lp (fun _ : ℕ => H) 2 where
+  toFun y := ⟨fun n => t (y n), amp_memLp t y⟩
+  map_add' y z := by ext n; simp only [lp.coeFn_add, Pi.add_apply]; exact map_add t _ _
+  map_smul' c y := by
+    ext n
+    simp only [lp.coeFn_smul, Pi.smul_apply, RingHom.id_apply]
+    exact map_smul t _ _
+
+omit [CompleteSpace H] in
+/-- The components of `ρ'(t)y`. -/
+@[simp] theorem ampLM_apply (t : H →L[ℂ] H) (y : lp (fun _ : ℕ => H) 2) (n : ℕ) :
+    ((ampLM t y : lp (fun _ : ℕ => H) 2) : ∀ _ : ℕ, H) n = t (y n) := rfl
+
+omit [CompleteSpace H] in
+/-- `ρ'` is bounded, with `‖ρ'(t)‖ ≤ ‖t‖`. -/
+theorem ampLM_norm_le (t : H →L[ℂ] H) (y : lp (fun _ : ℕ => H) 2) :
+    ‖ampLM t y‖ ≤ ‖t‖ * ‖y‖ := by
+  have hp : (0:ℝ) < (2 : ℝ≥0∞).toReal := by norm_num
+  have hsy : Summable fun n : ℕ => ‖(y : ∀ _ : ℕ, H) n‖ ^ (2 : ℝ≥0∞).toReal :=
+    (lp.memℓp y).summable hp
+  have hsz : Summable fun n : ℕ =>
+      ‖((ampLM t y : lp (fun _ : ℕ => H) 2) : ∀ _ : ℕ, H) n‖ ^ (2 : ℝ≥0∞).toReal :=
+    (lp.memℓp _).summable hp
+  have hle : ∀ n : ℕ, ‖((ampLM t y : lp (fun _ : ℕ => H) 2) : ∀ _ : ℕ, H) n‖ ^ (2 : ℝ≥0∞).toReal
+      ≤ ‖t‖ ^ (2 : ℝ≥0∞).toReal * ‖(y : ∀ _ : ℕ, H) n‖ ^ (2 : ℝ≥0∞).toReal := by
+    intro n
+    rw [ampLM_apply]
+    calc ‖t ((y : ∀ _ : ℕ, H) n)‖ ^ (2 : ℝ≥0∞).toReal
+        ≤ (‖t‖ * ‖(y : ∀ _ : ℕ, H) n‖) ^ (2 : ℝ≥0∞).toReal :=
+          Real.rpow_le_rpow (norm_nonneg _) (t.le_opNorm _) hp.le
+      _ = _ := Real.mul_rpow (norm_nonneg _) (norm_nonneg _)
+  have h1 : ‖ampLM t y‖ ^ (2 : ℝ≥0∞).toReal ≤ (‖t‖ * ‖y‖) ^ (2 : ℝ≥0∞).toReal := by
+    rw [lp.norm_rpow_eq_tsum hp, Real.mul_rpow (norm_nonneg _) (norm_nonneg _),
+      lp.norm_rpow_eq_tsum hp y, ← tsum_mul_left]
+    exact hsz.tsum_le_tsum hle (hsy.mul_left _)
+  have hcast : (2 : ℝ≥0∞).toReal = ((2:ℕ):ℝ) := by norm_num
+  rw [hcast, Real.rpow_natCast, Real.rpow_natCast] at h1
+  nlinarith [norm_nonneg (ampLM t y), mul_nonneg (norm_nonneg t) (norm_nonneg y)]
+
+/-- The amplification `ρ'(t)y = (t yₙ)ₙ` of `t ∈ B(H)` to `B(⊕ₙ H)`. -/
+noncomputable def amp (t : H →L[ℂ] H) :
+    lp (fun _ : ℕ => H) 2 →L[ℂ] lp (fun _ : ℕ => H) 2 :=
+  (ampLM t).mkContinuous ‖t‖ (ampLM_norm_le t)
+
+/-- The components of `ρ'(t)y`. -/
+@[simp] theorem amp_apply (t : H →L[ℂ] H) (y : lp (fun _ : ℕ => H) 2) (n : ℕ) :
+    ((amp t y : lp (fun _ : ℕ => H) 2) : ∀ _ : ℕ, H) n = t (y n) := rfl
+
+omit [CompleteSpace H] in
+/-- Two operators on `⊕ₙ H` agree as soon as they agree componentwise. -/
+theorem lp_clm_ext {f g : lp (fun _ : ℕ => H) 2 →L[ℂ] lp (fun _ : ℕ => H) 2}
+    (h : ∀ (y : lp (fun _ : ℕ => H) 2) (n : ℕ),
+      ((f y : lp (fun _ : ℕ => H) 2) : ∀ _ : ℕ, H) n
+        = ((g y : lp (fun _ : ℕ => H) 2) : ∀ _ : ℕ, H) n) : f = g :=
+  ContinuousLinearMap.ext fun y => Subtype.ext (funext (h y))
+
+/-- `ρ'` commutes with the involution: `ρ'(t*) = ρ'(t)*`. -/
+theorem amp_star (t : H →L[ℂ] H) : amp (star t) = star (amp t) := by
+  rw [ContinuousLinearMap.star_eq_adjoint]
+  refine (ContinuousLinearMap.eq_adjoint_iff _ _).mpr fun y z => ?_
+  rw [lp.inner_eq_tsum, lp.inner_eq_tsum]
+  refine tsum_congr fun n => ?_
+  rw [amp_apply, amp_apply]
+  exact ContinuousLinearMap.adjoint_inner_left t ((z : ∀ _ : ℕ, H) n)
+    ((y : ∀ _ : ℕ, H) n)
+
+/-- The amplification as a ∗-homomorphism `B(H) → B(⊕ₙ H)`. -/
+noncomputable def ampHom :
+    (H →L[ℂ] H) →⋆ₐ[ℂ] (lp (fun _ : ℕ => H) 2 →L[ℂ] lp (fun _ : ℕ => H) 2) where
+  toFun := amp
+  map_one' := by refine lp_clm_ext fun y n => ?_; rw [amp_apply]; rfl
+  map_mul' t s := by refine lp_clm_ext fun y n => ?_; rw [amp_apply]; rfl
+  map_zero' := by refine lp_clm_ext fun y n => ?_; rw [amp_apply]; simp
+  map_add' t s := by
+    refine lp_clm_ext fun y n => ?_
+    rw [amp_apply]
+    change t (y n) + s (y n) = _
+    rfl
+  commutes' r := by
+    refine lp_clm_ext fun y n => ?_
+    rw [amp_apply]
+    change r • (y : ∀ _ : ℕ, H) n = _
+    rfl
+  map_star' t := amp_star t
+
+/-- `ampHom` is `amp`. -/
+@[simp] theorem ampHom_apply (t : H →L[ℂ] H) : (ampHom (H := H)) t = amp t := rfl
+
+
+/-- `ρ'(b) Pₘ* = Pₘ* b`: the amplification respects the `m`-th coordinate
+embedding. -/
+theorem amp_single (b : H →L[ℂ] H) (m : ℕ) (u : H) :
+    amp b (lp.single 2 m u) = lp.single 2 m (b u) := by
+  refine Subtype.ext (funext fun j => ?_)
+  rw [amp_apply, lp.single_apply, lp.single_apply]
+  rcases eq_or_ne j m with rfl | hj
+  · simp
+  · simp [Pi.single_eq_of_ne hj]
+
+/-- `Pₙ a Pₘ*`, the `(n,m)`-corner of an operator on `⊕ₙ H`. -/
+noncomputable def ampCorner
+    (a : lp (fun _ : ℕ => H) 2 →L[ℂ] lp (fun _ : ℕ => H) 2) (n m : ℕ) :
+    H →L[ℂ] H :=
+  (lp.evalCLM ℂ (fun _ : ℕ => H) 2 n) ∘L a ∘L
+    (lp.singleContinuousLinearMap ℂ (fun _ : ℕ => H) 2 m)
+
+omit [CompleteSpace H] in
+/-- `(Pₙ a Pₘ*)u` is the `n`-th component of `a (Pₘ* u)`. -/
+theorem ampCorner_apply (a : lp (fun _ : ℕ => H) 2 →L[ℂ] lp (fun _ : ℕ => H) 2)
+    (n m : ℕ) (u : H) :
+    ampCorner a n m u
+      = ((a (lp.single 2 m u) : lp (fun _ : ℕ => H) 2) : ∀ _ : ℕ, H) n := rfl
+
+/-- The thesis's hint for **88V**: `Pₙ a Pₘ* ∈ S□` whenever `a ∈ ρ'(S)□`. -/
+theorem ampCorner_mem_commutant (S : StarSubalgebra ℂ (H →L[ℂ] H))
+    (a : lp (fun _ : ℕ => H) 2 →L[ℂ] lp (fun _ : ℕ => H) 2)
+    (ha : a ∈ commutant (lp (fun _ : ℕ => H) 2 →L[ℂ] lp (fun _ : ℕ => H) 2)
+      ((S.map (ampHom (H := H)) : StarSubalgebra ℂ _) : Set _))
+    (n m : ℕ) :
+    ampCorner a n m ∈ commutant (H →L[ℂ] H) (S : Set (H →L[ℂ] H)) := by
+  intro s hs
+  refine ContinuousLinearMap.ext fun u => ?_
+  change s (ampCorner a n m u) = ampCorner a n m (s u)
+  have h2 := congrArg (fun T : lp (fun _ : ℕ => H) 2 →L[ℂ] lp (fun _ : ℕ => H) 2 =>
+    T (lp.single 2 m u)) (ha (amp s) ⟨s, hs, rfl⟩)
+  simp only [mul_apply_eq_comp] at h2
+  rw [ampCorner_apply, ampCorner_apply, ← amp_apply s, h2, amp_single]
+
+/-- The second half of the thesis's hint: `ρ'(t) ∈ ρ'(S)□□` for
+`t ∈ S□□`. -/
+theorem amp_mem_double_commutant (S : StarSubalgebra ℂ (H →L[ℂ] H))
+    (t : H →L[ℂ] H)
+    (ht : t ∈ commutant (H →L[ℂ] H)
+      (commutant (H →L[ℂ] H) (S : Set (H →L[ℂ] H)))) :
+    amp t ∈ commutant (lp (fun _ : ℕ => H) 2 →L[ℂ] lp (fun _ : ℕ => H) 2)
+      (commutant (lp (fun _ : ℕ => H) 2 →L[ℂ] lp (fun _ : ℕ => H) 2)
+        ((S.map (ampHom (H := H)) : StarSubalgebra ℂ _) : Set _)) := by
+  intro a ha
+  refine ContinuousLinearMap.ext fun y => ?_
+  change a (amp t y) = amp t (a y)
+  refine Subtype.ext (funext fun n => ?_)
+  rw [amp_apply]
+  set Φ : lp (fun _ : ℕ => H) 2 →L[ℂ] H :=
+    (lp.evalCLM ℂ (fun _ : ℕ => H) 2 n) ∘L a with hΦ
+  have hy : HasSum (fun m : ℕ => lp.single 2 m ((y : ∀ _ : ℕ, H) m)) y :=
+    lp.hasSum_single ENNReal.ofNat_ne_top y
+  have hty : HasSum
+      (fun m : ℕ => lp.single 2 m (t ((y : ∀ _ : ℕ, H) m))) (amp t y) := by
+    have h := lp.hasSum_single (E := fun _ : ℕ => H) ENNReal.ofNat_ne_top (amp t y)
+    simpa using h
+  have h1 : HasSum (fun m : ℕ => ampCorner a n m ((y : ∀ _ : ℕ, H) m)) (Φ y) :=
+    Φ.hasSum hy
+  have h2 : HasSum (fun m : ℕ => t (ampCorner a n m ((y : ∀ _ : ℕ, H) m)))
+      (t (Φ y)) := t.hasSum h1
+  have h3 : HasSum (fun m : ℕ => ampCorner a n m (t ((y : ∀ _ : ℕ, H) m)))
+      (Φ (amp t y)) := Φ.hasSum hty
+  have hterm : ∀ m : ℕ, t (ampCorner a n m ((y : ∀ _ : ℕ, H) m))
+      = ampCorner a n m (t ((y : ∀ _ : ℕ, H) m)) := by
+    intro m
+    have h := ht (ampCorner a n m) (ampCorner_mem_commutant S a ha n m)
+    exact (congrArg (fun T : H →L[ℂ] H => T ((y : ∀ _ : ℕ, H) m)) h).symm
+  have h3' : HasSum (fun m : ℕ => t (ampCorner a n m ((y : ∀ _ : ℕ, H) m)))
+      (Φ (amp t y)) := by simpa only [hterm] using h3
+  exact (h2.unique h3').symm
+
+/-- The commutant of a ∗-subalgebra is closed under the involution (the
+star-closedness that **65III** `commutant_basic_3'` asks for). -/
+theorem star_mem_commutant_of_starSubalgebra (S : StarSubalgebra ℂ (H →L[ℂ] H))
+    {a : H →L[ℂ] H} (ha : a ∈ commutant (H →L[ℂ] H) (S : Set (H →L[ℂ] H))) :
+    star a ∈ commutant (H →L[ℂ] H) (S : Set (H →L[ℂ] H)) := by
+  intro m hm
+  have h := ha (star m) (star_mem hm)
+  have h2 := congrArg star h
+  rw [star_mul, star_mul, star_star] at h2
+  exact h2.symm
+
+/-- `W*(R) = R` for a von Neumann subalgebra `R`. -/
+theorem wstar_eq_of_isVNSubalgebra (R : StarSubalgebra ℂ (H →L[ℂ] H))
+    (hR : IsVNSubalgebra (H →L[ℂ] H) R) :
+    wstar (H →L[ℂ] H) (R : Set (H →L[ℂ] H)) = R :=
+  le_antisymm (sInf_le ⟨hR, subset_rfl⟩)
+    (fun _ ha => (isVNSubalgebra_wstar (R : Set (H →L[ℂ] H))).2 ha)
+
 /-- **88V** (`proto-double-commutant`, vn.tex:6737): for a unital
 ∗-subalgebra `S` of `B(H)`, the double commutant `S^□□` is contained in
 the ultrastrong closure of `S`.  (The enumerated items are steps of the
 proof, not converted separately.) -/
 theorem proto_double_commutant (S : StarSubalgebra ℂ (H →L[ℂ] H)) :
     commutant (H →L[ℂ] H) (commutant (H →L[ℂ] H) S) ⊆
-      @closure _ (ultrastrong (H →L[ℂ] H)) (S : Set (H →L[ℂ] H)) :=
-  sorry
+      @closure _ (ultrastrong (H →L[ℂ] H)) (S : Set (H →L[ℂ] H)) := by
+  intro t ht
+  rw [mem_usClosure_iff]
+  intro ω ε hε
+  obtain ⟨x, hx, hxsum⟩ := bh_np ω
+  have hsum : Summable fun n : ℕ => ‖x n‖ ^ 2 := by
+    have h := ((Complex.hasSum_iff _ _).mp hxsum).1
+    simpa only [Complex.ofReal_re] using h.summable
+  have hmem : Memℓp x 2 := by
+    refine memℓp_gen ?_
+    have hcast : (2 : ℝ≥0∞).toReal = ((2 : ℕ) : ℝ) := by norm_num
+    simpa [hcast, Real.rpow_natCast] using hsum
+  set x' : lp (fun _ : ℕ => H) 2 := ⟨x, hmem⟩ with hx'
+  have hnorm : ∀ u : H →L[ℂ] H, ‖amp u x'‖ = omegaNorm (H →L[ℂ] H) ω u := by
+    intro u
+    have hp : (0 : ℝ) < (2 : ℝ≥0∞).toReal := by norm_num
+    have hcast : (2 : ℝ≥0∞).toReal = ((2 : ℕ) : ℝ) := by norm_num
+    have h1 : ‖amp u x'‖ ^ (2 : ℕ) = ∑' n : ℕ, ‖u (x n)‖ ^ (2 : ℕ) := by
+      have := lp.norm_rpow_eq_tsum hp (amp u x')
+      rw [hcast] at this
+      simpa [Real.rpow_natCast] using this
+    have h2 := (hasSum_normSq_of_np hx u).tsum_eq
+    rw [h2] at h1
+    have := congrArg Real.sqrt h1
+    rwa [Real.sqrt_sq (norm_nonneg _), Real.sqrt_sq (omegaNorm_nonneg ω u)] at this
+  have hin : amp t x' ∈ closure {y : lp (fun _ : ℕ => H) 2 |
+      ∃ R ∈ (S.map (ampHom (H := H)) : StarSubalgebra ℂ _), y = R x'} := by
+    rw [← carrier_vector_state' (S.map (ampHom (H := H))) x']
+    exact subset_closure ⟨amp t, amp_mem_double_commutant S t ht, rfl⟩
+  obtain ⟨w, ⟨R, hR, rfl⟩, hd⟩ := Metric.mem_closure_iff.mp hin ε hε
+  obtain ⟨s, hs, rfl⟩ := hR
+  refine ⟨s, hs, ?_⟩
+  have hmapsub : amp (t - s) = amp t - amp s := by
+    simpa only [ampHom_apply] using map_sub (ampHom (H := H)) t s
+  rw [dist_eq_norm] at hd
+  have hd2 : ‖amp (t - s) x'‖ < ε := by rw [hmapsub]; simpa using hd
+  rw [hnorm] at hd2
+  rwa [show s - t = -(t - s) by abel, omegaNorm_neg]
 
 /-- **88VI** (`double-commutant`, vn.tex:6781, Double Commutant Theorem):
 for a unital ∗-subalgebra `S` of `B(H)` the following coincide: the double
@@ -816,8 +1056,30 @@ theorem double_commutant (S : StarSubalgebra ℂ (H →L[ℂ] H)) :
         @closure _ (ultraweak (H →L[ℂ] H)) (S : Set (H →L[ℂ] H)) ∧
       commutant (H →L[ℂ] H) (commutant (H →L[ℂ] H) S) =
         (wstar (H →L[ℂ] H) (S : Set (H →L[ℂ] H)) :
-          StarSubalgebra ℂ (H →L[ℂ] H)) :=
-  sorry
+          StarSubalgebra ℂ (H →L[ℂ] H)) := by
+  have hAB := proto_double_commutant S
+  have hBC := usClosure_subset_uwClosure (A := H →L[ℂ] H) (S : Set (H →L[ℂ] H))
+  obtain ⟨T, hTvn, hTcoe⟩ :=
+    (commutant_basic_3' (commutant (H →L[ℂ] H) (S : Set (H →L[ℂ] H)))
+      (fun _ ha => star_mem_commutant_of_starSubalgebra S ha)).1
+  have hST : (S : Set (H →L[ℂ] H)) ⊆ (T : Set (H →L[ℂ] H)) := by
+    rw [hTcoe]
+    exact (commutant_basic_1 (S : Set (H →L[ℂ] H)) (S : Set (H →L[ℂ] H))).2.2.1
+  have hCD : @closure _ (ultraweak (H →L[ℂ] H)) (S : Set (H →L[ℂ] H)) ⊆
+      (wstar (H →L[ℂ] H) (S : Set (H →L[ℂ] H)) : Set (H →L[ℂ] H)) :=
+    @closure_minimal _ (ultraweak (H →L[ℂ] H)) _ _
+      (isVNSubalgebra_wstar (S : Set (H →L[ℂ] H))).2
+      (vnsac _ (isVNSubalgebra_wstar (S : Set (H →L[ℂ] H))).1).2
+  have hDA : (wstar (H →L[ℂ] H) (S : Set (H →L[ℂ] H)) : Set (H →L[ℂ] H)) ⊆
+      commutant (H →L[ℂ] H) (commutant (H →L[ℂ] H) (S : Set (H →L[ℂ] H))) := by
+    intro a ha
+    rw [SetLike.mem_coe, wstar, StarSubalgebra.mem_sInf] at ha
+    have : a ∈ T := ha T ⟨hTvn, hST⟩
+    rw [← hTcoe]
+    exact this
+  exact ⟨subset_antisymm hAB fun z hz => hDA (hCD (hBC hz)),
+    subset_antisymm (hAB.trans hBC) fun z hz => hDA (hCD hz),
+    subset_antisymm ((hAB.trans hBC).trans hCD) hDA⟩
 
 /-- **88VIII** (`centre-commutant`, vn.tex:6824, Exercise): for a von
 Neumann subalgebra `R` of `B(H)`: `Z(R) = Z(R^□)`, i.e. the central
@@ -826,8 +1088,10 @@ theorem centre_commutant (R : StarSubalgebra ℂ (H →L[ℂ] H))
     (hR : IsVNSubalgebra (H →L[ℂ] H) R) :
     (R : Set (H →L[ℂ] H)) ∩ commutant (H →L[ℂ] H) R =
       commutant (H →L[ℂ] H) R ∩
-        commutant (H →L[ℂ] H) (commutant (H →L[ℂ] H) R) :=
-  sorry
+        commutant (H →L[ℂ] H) (commutant (H →L[ℂ] H) R) := by
+  have h := (double_commutant R).2.2
+  rw [wstar_eq_of_isVNSubalgebra R hR] at h
+  rw [h, Set.inter_comm]
 
 /-- **88IX** (`commutant-cceil`, vn.tex:6831): for an np-map
 `f : B(H) → B` and a von Neumann subalgebra `R` of `B(H)`, the central

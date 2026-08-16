@@ -1359,6 +1359,32 @@ theorem projSup_eq {P : Set A} (hP : ∀ p ∈ P, IsStarProjection p) {s : A}
     projSup P = s :=
   (exists_projSup P hP).unique (projSup_spec hP) ⟨hs, hub, hleast⟩
 
+/-- Auxiliary: for a directed set of projections, `projSup` is the supremum
+in `A` itself. -/
+theorem isLUB_projSup_of_directed (D : Set A) (hD : ∀ p ∈ D, IsStarProjection p)
+    (hne : D.Nonempty) (hdir : DirectedOn (· ≤ ·) D) : IsLUB D (projSup D) := by
+  classical
+  obtain ⟨d₀, hd₀⟩ := hne
+  set D' : Set (selfAdjoint A) := {d : selfAdjoint A | (d : A) ∈ D} with hD'def
+  have hval : Subtype.val '' D' = D := by
+    ext x
+    exact ⟨by rintro ⟨d, hd, rfl⟩; exact hd,
+      fun hx => ⟨⟨x, (hD x hx).isSelfAdjoint⟩, hx, rfl⟩⟩
+  have hne' : D'.Nonempty := ⟨⟨d₀, (hD d₀ hd₀).isSelfAdjoint⟩, hd₀⟩
+  have hdir' : DirectedOn (· ≤ ·) D' := by
+    intro x hx y hy
+    obtain ⟨c, hc, hxc, hyc⟩ := hdir _ hx _ hy
+    exact ⟨⟨c, (hD c hc).isSelfAdjoint⟩, hc, hxc, hyc⟩
+  have hbdd' : BddAbove D' := ⟨1, fun d hd => (hD _ hd).le_one⟩
+  have h3 : D'.Nonempty ∧ DirectedOn (· ≤ ·) D' ∧ BddAbove D' := ⟨hne', hdir', hbdd'⟩
+  have hlub : IsLUB D ((dirSup D' h3 : selfAdjoint A) : A) := by
+    rw [← hval]; exact isLUB_coe_of_isLUB hne' (isLUB_dirSup D' h3)
+  have hproj : IsStarProjection ((dirSup D' h3 : selfAdjoint A) : A) :=
+    vna_directed_supremum_projections D _ hD ⟨d₀, hd₀⟩ hdir hlub
+  have hEq : projSup D = ((dirSup D' h3 : selfAdjoint A) : A) :=
+    projSup_eq hD hproj (fun p hp => hlub.1 hp) fun q _ hub => hlub.2 hub
+  rwa [hEq]
+
 /-- **56XVI** (vn.tex:2542, Exercise), infima: every set of projections of a
 von Neumann algebra has an infimum `⋂A` in the poset of projections. -/
 theorem exists_projInf (P : Set A) (hP : ∀ p ∈ P, IsStarProjection p) :
@@ -1677,8 +1703,136 @@ theorem sum_of_orthogonal_projections {ι : Type*} (p : ι → A)
     (hp : ∀ i, IsStarProjection (p i))
     (horth : Pairwise fun i j => p i * p j = 0) :
     USTendsto (fun F : Finset ι => ∑ i ∈ F, p i) atTop
-      (projSup (Set.range p)) :=
-  sorry
+      (projSup (Set.range p)) := by
+  classical
+  have hmulL : ∀ {e q : A}, IsStarProjection e → IsStarProjection q → e ≤ q →
+      q * e = e := fun he hq h =>
+    ((projection_below_effect _ _ ⟨hq.nonneg, hq.le_one⟩ he).out 0 6).mp h
+  have hmulR : ∀ {e q : A}, IsStarProjection e → IsStarProjection q → e ≤ q →
+      e * q = e := fun he hq h =>
+    ((projection_below_effect _ _ ⟨hq.nonneg, hq.le_one⟩ he).out 0 7).mp h
+  set s : Finset ι → A := fun F => ∑ i ∈ F, p i with hsdef
+  have hsproj : ∀ F, IsStarProjection (s F) := fun F =>
+    isStarProjection_sum F p hp fun i _ j _ hij => horth hij
+  have hprange : ∀ r ∈ Set.range p, IsStarProjection r := by
+    rintro _ ⟨i, rfl⟩; exact hp i
+  have hsrange : ∀ r ∈ Set.range s, IsStarProjection r := by
+    rintro _ ⟨F, rfl⟩; exact hsproj F
+  set q : A := projSup (Set.range p) with hqdef
+  obtain ⟨hqproj, hqub, hqleast⟩ := projSup_spec hprange
+  -- every partial sum is below `q`
+  have hsq : ∀ F : Finset ι, s F ≤ q := by
+    intro F
+    have hqs : q * s F = s F := by
+      rw [hsdef]
+      simp only [Finset.mul_sum]
+      exact Finset.sum_congr rfl fun i _ => hmulL (hp i) hqproj (hqub _ ⟨i, rfl⟩)
+    have hsq' : s F * q = s F := by
+      rw [hsdef]
+      simp only [Finset.sum_mul]
+      exact Finset.sum_congr rfl fun i _ => hmulR (hp i) hqproj (hqub _ ⟨i, rfl⟩)
+    have hdiff : IsStarProjection (q - s F) := by
+      constructor
+      · change (q - s F) * (q - s F) = q - s F
+        rw [sub_mul, mul_sub, mul_sub, hqproj.isIdempotentElem.eq, hqs, hsq',
+          (hsproj F).isIdempotentElem.eq]
+        abel
+      · exact (hqproj.isSelfAdjoint.sub (hsproj F).isSelfAdjoint)
+    exact sub_nonneg.mp hdiff.nonneg
+  -- the two suprema agree
+  have hqeq : projSup (Set.range s) = q := by
+    refine projSup_eq hsrange hqproj (fun r hr => by obtain ⟨F, rfl⟩ := hr; exact hsq F) ?_
+    intro r hr hub
+    refine hqleast r hr ?_
+    rintro _ ⟨i, rfl⟩
+    have : p i = s {i} := by simp [hsdef]
+    rw [this]
+    exact hub _ ⟨{i}, rfl⟩
+  -- directedness
+  have hdir : DirectedOn (· ≤ ·) (Set.range s) := by
+    rintro _ ⟨F, rfl⟩ _ ⟨G, rfl⟩
+    refine ⟨s (F ∪ G), ⟨F ∪ G, rfl⟩, ?_, ?_⟩
+    · exact Finset.sum_le_sum_of_subset_of_nonneg Finset.subset_union_left
+        fun i _ _ => (hp i).nonneg
+    · exact Finset.sum_le_sum_of_subset_of_nonneg Finset.subset_union_right
+        fun i _ _ => (hp i).nonneg
+  have hlub : IsLUB (Set.range s) q := by
+    have := isLUB_projSup_of_directed (Set.range s) hsrange ⟨s ∅, ⟨∅, rfl⟩⟩ hdir
+    rwa [hqeq] at this
+  -- ultrastrong convergence
+  rw [usTendsto_iff]
+  intro ω
+  have hsa : ∀ F : Finset ι, IsSelfAdjoint (s F) := fun F => (hsproj F).isSelfAdjoint
+  set D : Set (selfAdjoint A) := {d : selfAdjoint A | (d : A) ∈ Set.range s} with hD
+  have hDval : Subtype.val '' D = Set.range s := by
+    ext x
+    exact ⟨by rintro ⟨d, hd, rfl⟩; exact hd,
+      fun hx => ⟨⟨x, by obtain ⟨F, rfl⟩ := hx; exact hsa F⟩, hx, rfl⟩⟩
+  have hDne : D.Nonempty := ⟨⟨s ∅, hsa ∅⟩, ⟨∅, rfl⟩⟩
+  have hDdir : DirectedOn (· ≤ ·) D := by
+    intro x hx y hy
+    obtain ⟨c, hc, hxc, hyc⟩ := hdir _ hx _ hy
+    exact ⟨⟨c, by obtain ⟨F, rfl⟩ := hc; exact hsa F⟩, hc, hxc, hyc⟩
+  have hDlub : IsLUB D (⟨q, hqproj.isSelfAdjoint⟩ : selfAdjoint A) := by
+    refine isLUB_sa_of_isLUB ?_
+    rw [hDval]; exact hlub
+  have hωlub := ω.preservesDirSups' D _ hDne hDdir hDlub
+  have hreal : ∀ w ∈ ((fun d : selfAdjoint A => (ω (d : A) : ℂ)) '' D), w.im = 0 := by
+    rintro _ ⟨d, hd, rfl⟩
+    obtain ⟨F, hF⟩ := hd
+    have h0 : (0 : ℂ) ≤ ω (d : A) := by
+      rw [← hF] at *
+      exact npFunctional_nonneg ω (hsproj F).nonneg
+    exact ((Complex.le_def.mp h0).2).symm
+  have hrelub := isLUB_re_of_isLUB hreal hωlub
+  have hrange : Complex.re '' ((fun d : selfAdjoint A => (ω (d : A) : ℂ)) '' D)
+      = Set.range (fun F : Finset ι => (ω (s F) : ℂ).re) := by
+    ext r
+    constructor
+    · rintro ⟨_, ⟨d, hd, rfl⟩, rfl⟩
+      obtain ⟨F, hF⟩ := hd
+      refine ⟨F, ?_⟩
+      change (ω (s F) : ℂ).re = ((ω (d : A) : ℂ)).re
+      rw [hF]
+    · rintro ⟨F, rfl⟩
+      exact ⟨ω (s F), ⟨⟨s F, hsa F⟩, ⟨F, rfl⟩, rfl⟩, rfl⟩
+  rw [hrange] at hrelub
+  have hmono : Monotone (fun F : Finset ι => (ω (s F) : ℂ).re) := by
+    intro F G hFG
+    have h := npFunctional_mono ω (Finset.sum_le_sum_of_subset_of_nonneg hFG
+      fun i _ _ => (hp i).nonneg)
+    exact (Complex.le_def.mp h).1
+  have htend := tendsto_atTop_isLUB hmono hrelub
+  have hfun : ∀ F : Finset ι, omegaNorm A ω (s F - q)
+      = Real.sqrt ((ω q : ℂ).re - (ω (s F) : ℂ).re) := by
+    intro F
+    have hdiff : IsStarProjection (q - s F) := by
+      have hqs : q * s F = s F := hmulL (hsproj F) hqproj (hsq F)
+      have hsq' : s F * q = s F := hmulR (hsproj F) hqproj (hsq F)
+      constructor
+      · change (q - s F) * (q - s F) = q - s F
+        rw [sub_mul, mul_sub, mul_sub, hqproj.isIdempotentElem.eq, hqs, hsq',
+          (hsproj F).isIdempotentElem.eq]
+        abel
+      · exact (hqproj.isSelfAdjoint.sub (hsproj F).isSelfAdjoint)
+    have hstar : star (s F - q) * (s F - q) = q - s F := by
+      have : star (s F - q) = -(q - s F) := by
+        rw [star_sub, (hsproj F).isSelfAdjoint.star_eq, hqproj.isSelfAdjoint.star_eq]
+        abel
+      rw [this, show s F - q = -(q - s F) by abel, neg_mul_neg]
+      exact hdiff.isIdempotentElem.eq
+    rw [omegaNorm, hstar, npFunctional_sub]
+    simp
+  simp only [hfun]
+  have htend' : Tendsto (fun F : Finset ι => (ω (s F) : ℂ).re) atTop
+      (𝓝 ((ω q : ℂ).re)) := htend
+  have hlim : Tendsto (fun F : Finset ι => (ω q : ℂ).re - (ω (s F) : ℂ).re)
+      atTop (𝓝 0) := by
+    have h := (tendsto_const_nhds
+      (x := (ω q : ℂ).re) (f := (atTop : Filter (Finset ι)))).sub htend'
+    simpa using h
+  have hc := (Real.continuous_sqrt.tendsto 0).comp hlim
+  simpa [Function.comp_def] using hc
 
 /-! ## Parsec 570 (`floor-sequential-product`) -/
 

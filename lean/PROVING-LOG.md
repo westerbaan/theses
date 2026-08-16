@@ -7926,3 +7926,275 @@ the regressions `lp_nmiu_functional_factors`, `sum_generation_2`,
 `linf_generated`, `sum_generation_1_is_false`.  Files touched:
 `Theses/A/Proc/{Tensor,QuantumLambda,Duplicators}.lean`, `ERRATA.md`, this log.
 Nothing staged, nothing committed.
+
+## Session 42 — `A/VN` parsec 880: the **Double Commutant Theorem** (88V, 88VI, 88VIII) and 56XVIII `sum-of-orthogonal-projections` (worker 67, A chain)
+
+Target given: parsec 890 (89V `sigma-weak-lemma-2`, 89VII `sigma-weak-lemma`,
+83V `cceil-sum`, 89IX `normal-functional`).  **None of the four is reachable
+without first closing parsec 880 and parsec 810–820**, which the brief did not
+say; §4 below records the corrected dependency graph, which is the main
+non-Lean result of the session.  What was proved instead is the gate itself.
+
+Closed (all `#print axioms` = `[propext, Classical.choice, Quot.sound]`):
+
+| point | declaration | file | class |
+|---|---|---|---|
+| **88V** | `proto_double_commutant` | `NormalFunctionals.lean` | 1 — the thesis's own hint, followed step by step |
+| **88VI** | `double_commutant` | `NormalFunctionals.lean` | 1 |
+| **88VIII** | `centre_commutant` | `NormalFunctionals.lean` | 1 |
+| **56XVIII** | `sum_of_orthogonal_projections` | `Projections.lean` | 2 — Exercise, no author argument exists |
+
+`A/VN` sorries 86 → 82; `A/CStar` 28 → 28 (untouched).
+
+### 1. 88V: the amplification, built as a reusable API
+
+vn.tex 6752 asks for the `ℕ`-fold amplification `ρ' : B(H) → B(⊕ₙ H)` and two
+facts about it.  `⊕ₙ H` is Mathlib's `lp (fun _ : ℕ => H) 2`; the new
+declarations in `NormalFunctionals.lean` (all public, all in `section BH`) are
+
+* `amp_memLp`, `ampLM`, `ampLM_apply`, `ampLM_norm_le`, `amp`, `amp_apply` —
+  the operator `ρ'(t)y = (t yₙ)ₙ`, bounded by `‖t‖`;
+* `lp_clm_ext` (two operators on `lp` agree iff they agree componentwise),
+  `amp_star`, `ampHom`, `ampHom_apply` — `ρ'` as a `→⋆ₐ[ℂ]`, so that
+  `S.map ampHom` is the amplified subalgebra;
+* `amp_single` (`ρ'(b) Pₘ* = Pₘ* b`), `ampCorner`, `ampCorner_apply` —
+  `Pₙ a Pₘ*` via Mathlib's `lp.evalCLM` / `lp.singleContinuousLinearMap`;
+* `ampCorner_mem_commutant` — the thesis's first hint, `Pₙ a Pₘ* ∈ S□` for
+  `a ∈ ρ'(S)□`, three lines once `amp_single` is available;
+* `amp_mem_double_commutant` — the second hint, `ρ'(t) ∈ ρ'(S)□□` for
+  `t ∈ S□□`.  The only real work: `y = ∑ₘ Pₘ*yₘ` (`lp.hasSum_single`) is
+  pushed through `Pₙ ∘ a`, giving `Pₙ(a y) = ∑ₘ (Pₙ a Pₘ*) yₘ`; applying `t`
+  and commuting it past each corner turns this into `Pₙ(a ρ'(t) y)`.
+
+88V itself is then: `t ∈ S□□`, `ω` an np-functional on `B(H)`, `ε > 0`.
+**39IX** `bh_np` (already proved, `A/CStar/TowardsVN.lean`) writes
+`ω = ∑ₙ ⟨xₙ,(·)xₙ⟩` with `∑‖xₙ‖² < ∞`, so `x' := (xₙ)ₙ ∈ ⊕ₙ H`; the private
+`hasSum_normSq_of_np` of `Completeness.lean` gives `‖ρ'(u)x'‖ = ‖u‖_ω` for
+every `u`, and **88IV'** `carrier_vector_state'` (already proved) gives
+`closure(ρ'(S)□□ x') = closure(ρ'(S) x')`.  So `ρ'(t)x'` is `ε`-approximated
+by some `ρ'(s)x'` with `s ∈ S`, i.e. `‖s − t‖_ω < ε`.
+
+Three lemmas of `Completeness.lean` were **de-privatised** to make this
+possible (no other change to that file): `mem_usClosure_iff`,
+`usClosure_subset_uwClosure`, `hasSum_normSq_of_np`.
+
+### 2. 88VI, 88VIII: assembly
+
+`S□□ ⊆ us-cl(S)` is 88V; `us-cl ⊆ uw-cl` is `usClosure_subset_uwClosure`;
+`uw-cl(S) ⊆ W*(S)` is `closure_minimal` against `vnsac` (75VIII, proved) for
+`isVNSubalgebra_wstar`; and `W*(S) ⊆ S□□` because `commutant_basic_3'` (65III,
+proved) makes `S□□` a von Neumann subalgebra containing `S` — the auxiliary
+`star_mem_commutant_of_starSubalgebra` supplies the star-closedness of `S□`
+that 65III wants.  88VIII is then `wstar_eq_of_isVNSubalgebra` (new, three
+lines) plus `Set.inter_comm`.
+
+### 3. 56XVIII: no forward reference needed after all
+
+The Exercise has no published solution.  Proof: the partial sums `s_F` are
+projections (`isStarProjection_sum`, already in the file), `s_F ≤ ⋃ᵢpᵢ` because
+`q pᵢ = pᵢ` makes `q − s_F` idempotent and self-adjoint hence positive, and
+`⋃_F s_F = ⋃ᵢ pᵢ` because the two families have the same projection upper
+bounds.  `{s_F}` is directed, so `isLUB_projSup_of_directed` turns `⋃ᵢpᵢ` into
+an honest `IsLUB`; normality of `ω` (`preservesDirSups'`) plus
+`isLUB_re_of_isLUB` and `tendsto_atTop_isLUB` give `ω(s_F).re ↑ ω(q).re`; and
+`‖s_F − q‖_ω = √(ω(q − s_F).re)` because `q − s_F` is a projection.
+
+`isLUB_projSup_of_directed` was **moved** from `Division.lean` (where session
+36 introduced it) to `Projections.lean`, just after `projSup_eq`, since
+56XVIII sits earlier in the file order.  Its statement and proof are
+unchanged; `Division.lean` keeps using it under the same name.
+
+### 4. Corrected dependency graph for parsec 890 (the brief was wrong here)
+
+The brief said "890 is 400–600 lines, 111VII another 300–450 given 89IX".
+Measured against the tree, the real picture is:
+
+* **89V** `sigma_weak_lemma_2` needs, beyond 89I and 89III (both already
+  proved): **88IV** `carrier_vector_state` (`sorry`), **88IX**
+  `commutant_cceil` (`sorry`), and — for the *leastness* half of its
+  `IsLeast` conclusion — **69IVb** `nmiu_image` (`sorry`, `Projections.lean`),
+  because the argument needs `Z(π(𝒜)□) ⊆ π(𝒜)`, and 88VIII only gives
+  `Z(π(𝒜)□) = Z(π(𝒜)□□) = Z(W*(π(𝒜)))`.  88IX in turn needs 88VIII (now
+  proved) *and* the existence of relative central carriers in a von Neumann
+  *subalgebra*, which `cceilMap` does not supply (it is stated for a von
+  Neumann algebra as a type).
+* **83V** `cceil_sum` needs **82I** `polar_decomposition` (`sorry`), which
+  needs **81III** `proto_douglas_1` (`sorry`), which needs 77I `vn_complete_1`
+  (proved) *and* 56XVIII (proved this session).  There is no shorter route:
+  `MvNLE` is defined by partial isometries, so a proof of 83V must produce
+  them, and in a von Neumann algebra that is the polar decomposition.
+* **89IX** needs 89VII (hence 89V) *and* 83V.
+
+One short route *was* found and is worth recording even though it is not yet
+usable: in 89V the pairwise orthogonality of the `U_ω U_ω*` — which the thesis
+gets from `commutant_cceil` (88IX) — is available for free, because
+`ω(1 − ⌈⌈ω⌉⌉) = 0` forces `ρ(⌈⌈ω⌉⌉)x_ω = x_ω`, so `closure(ρ(𝒜)x_ω)` sits
+inside the range of the central projection `ρ(⌈⌈ω⌉⌉)`, and those are pairwise
+orthogonal by hypothesis.  Only the *leastness* half of 89V needs 88IX/69IVb.
+
+### 5. Verification
+
+Whole-project `lake build`: exit 0, `Build completed successfully (8738
+jobs)`, identical to the baseline taken at the start of the session, so
+`Theses.A.Proc.*` and `Theses.B.Dils.*` build as cleanly as they were found.
+(Worth knowing: `lake build` here reports "build failed" while **swallowing
+the error message**.  Twice there was no cause at all — `Theses.B.Dils.Paschke`
+and `HilbertModules`, rebuilt fine on their own, memory pressure on a 14 GB
+box — and once there was a real one, four parse errors of mine that neither
+`lake build`'s output nor a `grep error` on it revealed.  `lake env lean
+Theses/…/Foo.lean` prints them; use it before concluding a failure was
+transient.)
+`#print axioms` clean on all sixteen new declarations and on the regression
+target `approximate_pseudoinverse`.  No new ERRATA rows, no new QUESTIONS
+rows.  Files touched: `Theses/A/VN/{Completeness,Division,NormalFunctionals,
+Projections}.lean` and this log.  Nothing staged, nothing committed.
+
+## Session 43 — `B/Dils` Paschke unfrozen: the `ᵐᵒᵖ` repair, `154III`.2/.4, and a non-vacuity witness (worker 68)
+
+**Class (4)** — our statement mis-transcribed the thesis.  Bas ruled
+("Ok, fix the transcription please", 2026-08-16) on QUESTIONS **D2**; this
+session implements the fix.  Files touched: `Theses/B/Dils/Paschke.lean`,
+`Theses/B/Dils/HilbertModules.lean`, `Theses/B/Dils/SelfDual.lean`,
+`QUESTIONS.md`, this log.  Nothing staged, nothing committed.
+
+### 1. The mirroring dictionary was incomplete, and that is the whole bug
+
+Sessions 14–15 established that `PaschkeModule` was uninhabited for every
+non-zero `φ` and that no edit of `inner_tprod`/`h_def` repairs it.  The
+missing ingredient is one line of the dictionary.  Mathlib's
+`CStarModule ℬ X` is the **conjugate** module of a right Hilbert ℬ-module,
+and a conjugate module conjugates the **ℂ**-action as well as the ℬ-action:
+
+    b • x := x·b*      ⟨x,y⟩ := [y,x]      c ·̄ x := c̄ x
+
+(the third clause is forced — `[·,·]` is conjugate-linear in its first slot
+and so is Mathlib's `⟨·,·⟩`, so `⟨x,y⟩ = [y,x]` is ℂ-sesquilinear only for
+the conjugated action).  The tree had the first two clauses and not the
+third, and rendered the thesis's `⊗` as `tprod a b = (a ⊗ b*)_thesis`.  With
+the third clause the correct rendering carries a `star` in **both**
+arguments,
+
+    tprod a b = (a* ⊗ b*)_thesis,
+
+and that single correction produces, simultaneously and consistently:
+
+* `PhiCompatible.smul_complex` (`tprod` is ℂ-linear in `a` — it is `star`
+  composed with a conjugate-linear map into a conjugated ℂ-structure);
+* `inner_tprod : ⟨a ⊗ b, a' ⊗ b'⟩ = b' φ(a' a*) b*`, the substitution
+  `a ↦ a*`, `b ↦ b*` into the thesis's `[a⊗b, α⊗β] = b* φ(a* α) β`;
+* `PhiCompatible.bound` with `∑ᵢⱼ bᵢ φ(aᵢ aⱼ*) bⱼ*` (same substitution),
+  whose positivity is complete positivity of `φ` at the families `(aᵢ*)`,
+  `(bᵢ*)`;
+* and the `ᵐᵒᵖ`: because the ℂ-action of `End(X̄)` is conjugated too, the
+  ℂ-*linear* rendering of `ϱ` is the anti-homomorphism
+  `a₀ ↦ (a ⊗ b ↦ (a a₀) ⊗ b)`, i.e. `ρ : NMIUMap 𝒜 (Ba ℬ X)ᵐᵒᵖ`, whose
+  adjoint is `ρ(a₀*)` on the nose.
+
+`h_def` is unchanged and `paschkeModule_h_ρ` proves `h (ρ a) = φ a` with no
+`star`, so `IsPaschkeDilationOf` (`Stinespring.lean:1179`) stands as ruled.
+The two negative results are kept in the tree as
+`paschke_inner_conj_forces_zero` (was `paschke_module_phi_eq_zero`, now
+stated with explicit hypotheses so it survives the repair) and
+`paschke_rho_forces_cyclic`.
+
+### 2. Mechanism: `ᵐᵒᵖ` on the operators, not on the scalars
+
+Two mechanisms were on the table.  The brief's guess was `ᵐᵒᵖ` on the
+*scalars* (`CStarModule ℬᵐᵒᵖ X`, making `𝒜 ⊗_φ ℬ` an honest right module),
+on the theory that Mathlib's `MulOpposite` support for a C*-algebra `ℬ` is
+richer than anything available for `Ba ℬ X`.  **That turned out to be
+false.**  `CStarAlgebra Aᵐᵒᵖ` (`Mathlib/Analysis/CStarAlgebra/Classes.lean:139`),
+`MulOpposite.instPartialOrder` (`Mathlib/Algebra/Order/Group/Opposite.lean:33`,
+with `op_le_op` *definitional*) and `StarOrderedRing Aᵐᵒᵖ`
+(`Mathlib/Algebra/Order/Star/Basic.lean:395`) are generic in `A` and apply
+verbatim to `Ba ℬ X`.  The only missing instance, the abstract Kadison
+`VonNeumannAlgebra Aᵐᵒᵖ` of `Theses/Common.lean`, is needed *identically* by
+both routes — the scalars route needs it for `ℬᵐᵒᵖ` to invoke
+`ba_vonNeumannAlgebra`.  It is proved once here as
+`vonNeumannAlgebra_mulOpposite` (via `selfAdjointUnop : selfAdjoint Aᵐᵒᵖ ≃o
+selfAdjoint A`, whose `map_rel_iff'` is `Iff.rfl`, and `npFunctionalOp`).
+
+With the tiebreaker gone the decision is churn, and the operators route
+wins decisively: `𝒜 ⊗_φ ℬ` stays a `CStarModule ℬ`-module, in the same
+mirrored convention as the rest of the chapter, so `SelfDual`,
+`cstarBInner`, `IsBoundedModuleMap`, `UnDense` and `ExtTensor` apply
+unchanged.  **167I** (`paschke_tensor`, `paschke_tensor_module`) and
+**166VI** (`dilationspace_dense_subset`) in `SelfDual.lean` needed no edit
+at all and still build; the scalars route would have needed `ExtTensor`
+over `ℬᵢᵐᵒᵖ` plus an `IsVNTensor`-to-the-opposite transfer, i.e. new
+infrastructure for statements that are still `sorry`.  `ᵐᵒᵖ` now appears in
+exactly three places, all inside `Paschke.lean`.
+
+### 3. A third symptom the `ᵐᵒᵖ` explains — and a lead on 145I
+
+In the mirrored convention the vector state is completely positive on the
+**opposite** of `𝒷ᵃ(X)`.  Concretely, for `X = ℬ` the adjointable operators
+are the *right* multiplications, `t ↦ R_t : ℬ ≅ 𝒷ᵃ(ℬ)ᵐᵒᵖ` (proved here as
+`rightMulEquiv`), and `h(R_t) = ⟨1, R_t 1⟩ = t`.  So `h : 𝒷ᵃ(ℬ) → ℬ` is
+`unop`, which under `M₂ᵐᵒᵖ ≅ M₂` is the transpose — positive but **not**
+completely positive; `h : 𝒷ᵃ(ℬ)ᵐᵒᵖ → ℬ` is a ∗-isomorphism.  The old
+`h : NCPMap (Ba ℬ X) ℬ` was therefore wrong for a third, independent
+reason.  **Lead for a later session:** **145I**
+`hilbmod_vectstates_cp` in `HilbertModules.lean` states exactly the form
+that fails here (`T ↦ ⟨x, Tx⟩ : 𝒷ᵃ(X) → 𝒷` is cp) and is still `sorry`; it
+is very likely mis-mirrored the same way and should be checked against
+`X = ℬ = M₂` before anyone tries to prove it.  Out of scope this session.
+
+### 4. What closed
+
+* **154III.2** `existence_paschke_2` (already proved before the session)
+  survives the repair.  Its 100-line φ-compatibility argument was
+  **extracted** as `PhiCompatible.mul_right`: shifting a φ-compatible map to
+  `(a,b) ↦ T (a a₀) b` is again φ-compatible.  `existence_paschke_2` is now
+  eight lines, and the extracted lemma is what makes 154III.4's intertwining
+  clause cheap.
+* **154III.4** `existence_paschke_4` (`paschke-spatial`) — **new**.  The
+  thesis proves it via `paschke-uniqueness`, a λ-scaling lemma and a density
+  statement.  None of that is needed: the universal property of part 1 does
+  it alone, applied four times.  (i) To `T(a,b) = b·ϱ'(a)e`, whose Gram
+  matrix `⟨T(aᵢ,bᵢ), T(aⱼ,bⱼ)⟩ = bⱼ φ(aⱼ aᵢ*) bᵢ*` is the required bound
+  *with equality and constant 1* — the computation goes through
+  `ϱ'(a*)ϱ'(a') = ϱ'(a' a*)` in the opposite algebra.  That yields `S`.
+  (ii)+(iii) Twice against **ℬ itself** — self dual by the new
+  `selfDual_self` (141III's example, three lines: a ℬ-linear `τ` is
+  `τ x = x·τ1 = ⟨(τ1)*, x⟩`) — to upgrade
+  `⟨S(a⊗b), S(a'⊗b')⟩ = ⟨a⊗b, a'⊗b'⟩` from elementary tensors to all of
+  `𝒜 ⊗_φ ℬ`, one variable at a time (the second variable via
+  `star_inner`).  (iv) To `PhiCompatible.mul_right` for
+  `S(ϱ(a)x) = ϱ'(a)(S x)`.  Uniqueness is then immediate from
+  `a ⊗ b = b·ϱ(a)(1 ⊗ 1)`.  The hypothesis `hφ : φ a = ⟨e, ϱ'(a)e⟩` is the
+  exact mirror of `h_def` — it is **not** off by a `star`, and `ϱ'` lands in
+  `𝒷ᵃ(Y)ᵐᵒᵖ` for the same reason `ρ` does.
+* **154III.5** `existence_paschke_5`: the conjunct `h ∘ ϱ = φ`, which was
+  *false* under the old fields, is now proved (`paschkeModule_h_ρ`).  The
+  universal property among all Paschke triples (154IV–154X) remains `sorry`.
+* `Paschke.lean` goes from 9 `sorry`s to 8.
+
+### 5. Non-vacuity: `paschkeModuleId`
+
+`vnTensor_mul_complex` is the model.  `ℬ` itself, with `tprod a b = b·a`,
+is a `PaschkeModule` of `φ = id`: `⟨b·a, b'·a'⟩ = (b'a')(ba)* =
+b' (a' a*) b*` is `inner_tprod` on the nose, the bound holds with `r = 1`
+because `∑ᵢⱼ bᵢ(aᵢ aⱼ*)bⱼ* = v v*` for `v = ∑ᵢ bᵢaᵢ` (`gram_id_sum`), the
+universal property forces `T' x = T x 1` and is proved by feeding the bound
+the two-element family `(b·a, a)`, `(1, −b)` whose `v` is `0`, and
+`ρ = rightMulEquiv`, `h = rightMulEquiv.symm` are a ∗-isomorphism and its
+inverse.  Normality of both is `starAlgEquiv_preservesDirSups` (a
+∗-isomorphism of C*-algebras is normal — new, general); complete positivity
+of `h` is Mathlib's `NonUnitalStarAlgHomClass.instCompletelyPositiveMapClass`.
+So the repaired bundle is inhabited for a non-zero `φ`, and the nine
+theorems quantifying over `PaschkeModule` say something.  This is the check
+that would have caught both this defect and the `PhiCompatible.bound`
+defect of session 14, and it is exactly the sort of thing three readings of
+the statements did not catch.
+
+### 6. Refactor: the module-action lemmas moved upstream
+
+`op_add_smul`, `op_mul_smul`, `op_smul_complex_smul`, `op_smul_add`,
+`op_zero_smul`, `op_smul_zero`, `norm_op_smul_le` were in `SelfDual.lean`,
+which is *downstream* of `Paschke.lean`.  They are the module laws for
+`SMul ℬ X` that `CStarModule` does not assume, and 154III.4 needs them, so
+they moved verbatim into `HilbertModules.lean` (new `ModuleAction` section,
+right after `cstarBInner`), joined by two new ones, `op_one_smul` and
+`op_smul_comm_complex`.  Names and statements unchanged; `SelfDual.lean`
+keeps using them and still builds.  `selfDual_self` is also new there.

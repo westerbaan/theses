@@ -847,32 +847,6 @@ theorem eq_of_le_of_isLUB_partialSums {p r : ℕ → A} (hp0 : ∀ n, 0 ≤ p n)
     simpa using this
   exact (sub_eq_zero.mp (le_antisymm hle0 hd0)).symm
 
-/-- Auxiliary: for a directed set of projections, `projSup` is the supremum
-in `A` itself. -/
-theorem isLUB_projSup_of_directed (D : Set A) (hD : ∀ p ∈ D, IsStarProjection p)
-    (hne : D.Nonempty) (hdir : DirectedOn (· ≤ ·) D) : IsLUB D (projSup D) := by
-  classical
-  obtain ⟨d₀, hd₀⟩ := hne
-  set D' : Set (selfAdjoint A) := {d : selfAdjoint A | (d : A) ∈ D} with hD'def
-  have hval : Subtype.val '' D' = D := by
-    ext x
-    exact ⟨by rintro ⟨d, hd, rfl⟩; exact hd,
-      fun hx => ⟨⟨x, (hD x hx).isSelfAdjoint⟩, hx, rfl⟩⟩
-  have hne' : D'.Nonempty := ⟨⟨d₀, (hD d₀ hd₀).isSelfAdjoint⟩, hd₀⟩
-  have hdir' : DirectedOn (· ≤ ·) D' := by
-    intro x hx y hy
-    obtain ⟨c, hc, hxc, hyc⟩ := hdir _ hx _ hy
-    exact ⟨⟨c, (hD c hc).isSelfAdjoint⟩, hc, hxc, hyc⟩
-  have hbdd' : BddAbove D' := ⟨1, fun d hd => (hD _ hd).le_one⟩
-  have h3 : D'.Nonempty ∧ DirectedOn (· ≤ ·) D' ∧ BddAbove D' := ⟨hne', hdir', hbdd'⟩
-  have hlub : IsLUB D ((dirSup D' h3 : selfAdjoint A) : A) := by
-    rw [← hval]; exact isLUB_coe_of_isLUB hne' (isLUB_dirSup D' h3)
-  have hproj : IsStarProjection ((dirSup D' h3 : selfAdjoint A) : A) :=
-    vna_directed_supremum_projections D _ hD ⟨d₀, hd₀⟩ hdir hlub
-  have hEq : projSup D = ((dirSup D' h3 : selfAdjoint A) : A) :=
-    projSup_eq hD hproj (fun p hp => hlub.1 hp) fun q _ hub => hlub.2 hub
-  rwa [hEq]
-
 namespace IsApproxPseudoinverse
 
 variable {a : A} {t : ℕ → A}

@@ -1921,7 +1921,7 @@ after the self-adjoint case it consumes. -/
 
 omit [VonNeumannAlgebra A] in
 /-- Membership of the ultrastrong closure, in terms of the seminorms. -/
-private theorem mem_usClosure_iff (K : Set A) (x : A) :
+theorem mem_usClosure_iff (K : Set A) (x : A) :
     x ∈ @closure A (ultrastrong A) K ↔
       ∀ (ω : NPFunctional A) (ε : ℝ), 0 < ε → ∃ z ∈ K, omegaNorm A ω (z - x) < ε := by
   let _ : TopologicalSpace A := ultrastrong A
@@ -1970,7 +1970,7 @@ private theorem closure_subset_closure_of_continuous_id {X : Type*}
 omit [VonNeumannAlgebra A] in
 /-- The ultrastrong topology is finer than the ultraweak one (**43I**
 `uwweaker`), so ultrastrong closures are contained in ultraweak ones. -/
-private theorem usClosure_subset_uwClosure (K : Set A) :
+theorem usClosure_subset_uwClosure (K : Set A) :
     @closure A (ultrastrong A) K ⊆ @closure A (ultraweak A) K :=
   closure_subset_closure_of_continuous_id _ _
     (continuous_le_dom ultrastrong_le_ultraweak (@continuous_id A (ultraweak A))) K
@@ -3440,7 +3440,7 @@ private theorem omegaNorm_vector {ω : NPFunctional (H →L[ℂ] H)} {x : H}
 /-- If `ω = ∑ₙ ⟪xₙ, (·) xₙ⟫` on `B(H)` then `‖S‖_ω² = ∑ₙ ‖S xₙ‖²`.  This is
 the identity that makes the whole of parsec 760 work, and it is exactly what
 **39IX** (`bh_np`) supplies for an arbitrary np-functional. -/
-private theorem hasSum_normSq_of_np {x : ℕ → H} {ω : NPFunctional (H →L[ℂ] H)}
+theorem hasSum_normSq_of_np {x : ℕ → H} {ω : NPFunctional (H →L[ℂ] H)}
     (hω : ∀ S : H →L[ℂ] H, HasSum (fun n => ⟪x n, S (x n)⟫) (ω S))
     (S : H →L[ℂ] H) :
     HasSum (fun n => ‖S (x n)‖ ^ 2) (omegaNorm (H →L[ℂ] H) ω S ^ 2) := by
