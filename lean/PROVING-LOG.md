@@ -11957,3 +11957,272 @@ the (now empty) "Ours to decide, not the authors'" heading.
 `vn_center_separating_fundamental_1` and `vn_center_separating_fundamental_2`.
 Nothing outside `A/VN` referenced the changed declarations, so `A/Proc` and
 `B/Dils` are untouched.
+
+## Session 54 — `B/Dils`: **159IX `ketbra_ultranorm_continuous`** falls with 90II.2, and **164II.2b is false as we transcribed it** (worker 81)
+
+Files touched: `Theses/B/Dils/SelfDual.lean`, `QUESTIONS.md`,
+`docs/BDils-survey.md`, this log.  Nothing staged, nothing committed.
+**B/Dils 37 → 36 `sorry`s** (compiler-counted per file: `HilbertModules` 0,
+`Kaplansky` 5, `Paschke` 7, `Stinespring` 2, `SelfDualCompletion` 2,
+`SelfDual` 9 → **8**, `Pure` 12).  Both new theorems `#print axioms` to
+exactly `[propext, Classical.choice, Quot.sound]` (checked from *inside* the
+module).
+
+### 1. **159IX** `ketbra_ultranorm_continuous` — ~110 lines
+
+A/VN's **90II**.2 `vn_center_separating_fundamental_2` was the sole blocker
+and it landed last session, so the thesis's 159X–159XI transcribes almost
+verbatim.  The two pieces that had to be located rather than built:
+
+* `Ω = {f(⟨x,(·)x⟩)}` already exists as `baVecNP`
+  (`SelfDualCompletion.lean`, written for **152X**), so the "order
+  separating" step is `ba_nonneg_iff` plus `VonNeumannAlgebra.np_faithful`
+  fed to `centreSeparatingConj_iff` at `b = 1`.
+* 90II.2 wants an ultrastrongly dense `S`; we pass `S = 𝒷ᵃ(X)` itself and
+  read each resulting `ωₖ(sₖ*(·)sₖ)` back as `baVecNP (sₖ xₖ) fₖ` (the
+  adjoint moves `sₖ` onto the vector).  The thesis instead observes
+  "`ω(T*(·)T) ∈ Ω`" and quotes 90II for the span; same content, but our form
+  of 90II makes the conjugation explicit, so no closure argument on `Ω` is
+  needed.
+
+**Divergence, class 2.** The thesis spends the first half of 159X proving
+`‖|z⟩⟨y|‖ ≤ ‖z‖‖y‖` from order separation of the vector states plus
+`order-separating-norm` (**21IV**).  That is *already the bound with which
+`mketbra` is defined* in our tree — Cauchy–Schwarz `‖⟨y,z⟩‖ ≤ ‖y‖‖z‖`
+together with `‖b·x‖ ≤ ‖b‖‖x‖` gives it outright, via
+`LinearMap.mkContinuous_norm_le`.  So 159X's preparation is not needed at
+all; whether it is needed in the thesis's own development (where `mketbra`
+is not defined through a bound) is a separate question, and we have not
+claimed an erratum.
+
+### 2. **164II.2b `ext_tensor_ketbra_dense` is FALSE as transcribed** — QUESTIONS **D6**
+
+The brief expected 164II.2b to follow from 159IX.  It does not, and the
+obstacle the previous worker flagged as "an aggravating factor" is fatal
+rather than inconvenient.
+
+Our statement demands an approximating **net indexed by `Finset (ι × κ)`
+along `atTop`**; the thesis (164XI) claims only that the span of
+`D = {|(e'ᵢa) ⊗ (d'ⱼb)⟩⟨e_k ⊗ d_l|}` is ultraweakly **dense**.  Take
+`ι = κ = PUnit`, `𝒜 = ℬ = B(ℓ²)`, `𝒞 = 𝒜 ⊗ ℬ`, `X = 𝒜`, `Y = ℬ`,
+`E = extTensorSelf` (session 52), `e = d = 1`.  Then `E.Z = 𝒞`,
+`𝒞ᵃ(E.Z) ≅ 𝒞` by right multiplication, `span D ≅ 𝒜 ⊙ ℬ`, and
+`Finset (PUnit × PUnit)` has a **greatest element**, so `atTop` is principal
+there and — the ultraweak topology being Hausdorff — the net's value at that
+element must *equal* `T`.  The statement therefore asserts
+`𝒜 ⊗ ℬ = 𝒜 ⊙ ℬ`.
+
+This is a defect in **our** transcription, not in the thesis; and it cannot
+be refuted inside the tree, because `IsVNTensor` is axiomatized (proc.tex
+**108II** is not formalized) and the one concrete instance we have is
+`ℂ ⊗ ℂ = ℂ`, where the statement happens to be true.  The `sorry` is left in
+place per the never-change-a-statement rule.  Note **159IV**
+`ketbra_ultraweakly_dense` carries the same net shape *legitimately* — there
+the thesis's own proof produces the net `p_S T p_S`; copying that shape into
+164II.2b, where the thesis produces no net, is what went wrong.
+
+### 3. The thesis's 164XI *is* proved: `ext_tensor_ketbra_uwDense` (~210 lines)
+
+New public theorem, in the entourage form ("for finitely many
+np-functionals and `ε > 0` some element of `span D` is within `ε` of `T` on
+all of them"), which is the form **165VI**'s `generates` clause consumes.
+The proof is the thesis's:
+
+* **159IV** applied to the basis `E₂` of **164II**.2a gives an
+  approximant in the span of the `|b·(e'ᵢ⊗d'ⱼ)⟩⟨e'_k⊗d'_l|`, `b ∈ 𝒞`
+  arbitrary;
+* a `Submodule.span_induction` reduces to a *single* such generator;
+* Kaplansky (**74IV**, via `unDense_tSpan` and
+  `StarSubalgebra.topologicalClosure`) gives a net in `𝒜 ⊙ ℬ`'s *norm*
+  closure, norm-bounded by `‖b‖`, converging ultrastrongly to `b`;
+  `unSeminorm_op_smul_le` turns that into ultranorm convergence of
+  `b_α·(e'ᵢ⊗d'ⱼ)`, and **159IX** into ultraweak convergence of the ketbras.
+
+**One step is ours, not the thesis's.** The thesis says Kaplansky produces a
+bounded net "in `𝒜 ⊙ ℬ`"; Kaplansky needs a *C\*-subalgebra*, so what it
+actually produces lies in the **norm closure** of `𝒜 ⊙ ℬ` (the spatial
+C\*-tensor product).  Coming back is easy but has to be said: `b ↦ |b·v⟩⟨w|`
+is norm-continuous (`‖·‖ ≤ ‖b‖‖v‖‖w‖`) and np-functionals are norm-bounded
+(`PositiveLinearMap.exists_norm_apply_le`), so a norm-approximation of the
+net's value by an element of `𝒜 ⊙ ℬ` costs only another `ε/2`.  Worth a
+half-sentence in dils.tex:5348.
+
+### 4. `existence_paschke` re-costed — and it is blocked on **two** roots
+
+Re-read against dils.tex:3600 (**154IV**–**154V**).  The construction is:
+`𝒜 ⊙ ℬ` with `[∑aᵢ⊗bᵢ, ∑αⱼ⊗βⱼ] = ∑ bᵢ*φ(aᵢ*αⱼ)βⱼ`, then **150II**
+`dils_completion`, then **151Ia** `selfdual_completion_univ` for the
+universal property.  Sessions 51–52 named only 150II; **151Ia is a second
+blocker**, and unlike 150II it is *not* itself a construction: it takes the
+completion as a hypothesis, and the ultranorm completeness it needs is
+already in the tree (`unComplete_of_isONBasis`, the TFAE at
+`HilbertModules.lean:3492`).  Costing and the recommendation that **151Ia is
+the next gate** are in `docs/BDils-survey.md`.
+
+### 5. Corrections to the brief
+
+* "164II.2b — check whether the `Finset (ι × κ)` net is a real obstacle or
+  just an inconvenience" — **real, and fatal**: the statement is false.
+  Consequently "after 164II.2b, the chain 165VI → 167I follows" does not
+  hold; what 165VI needs is now supplied by `ext_tensor_ketbra_uwDense`, but
+  165VI still owes 165IX/165X (product functionals, separation).
+* "existence_paschke … sits between 150II and 157IV.2/.3, 171II" — right,
+  but it needs **151Ia** as well as 150II, and 151Ia is the cheaper and
+  unblocked one.
+* The brief's "159IX is the largest self-contained item in `SelfDual.lean`"
+  over-costed it: ~110 lines, and 159X's norm estimate was free.
+
+### 6. Verification
+
+`lean Theses/B/Dils/SelfDual.lean` under the `LEAN_PATH` bypass: no errors;
+`sorry`-declaration count **8** (2478, 2496, 2521, 3315, 4165, 4608, 5044,
+5066).  `#print axioms` on `ketbra_ultranorm_continuous` and
+`ext_tensor_ketbra_uwDense`: both exactly
+`[propext, Classical.choice, Quot.sound]`.
+
+---
+
+## Session 55 — `A/Proc`: **112X.1 `tensor-basic` part 1 falls** (90II.2 unblocked it), and the eight `CentreSeparating` uses are migrated (worker 81)
+
+Territory: `Theses/A/Proc/` only.  Files touched: `Theses/A/Proc/Tensor.lean`,
+`docs/AProc-survey.md`, this log.  Nothing staged, nothing committed.
+**A/Proc 78 → 77**, compiler-counted per file: `Tensor` **38** (was 39),
+`Measurement` 11, `QuantumLambda` 17, `Duplicators` 11 (the last three
+untouched and recompiled unchanged).  Every new declaration `#print axioms`
+to exactly `[propext, Classical.choice, Quot.sound]`, checked by appending the
+commands to a *copy* of the module.
+
+| point | declaration | divergence class |
+|---|---|---|
+| **112X**.1 | `tensor_basic_1` | 1 — the thesis's route, with two steps it leaves implicit spelled out (see §1) |
+| **117II**.2 | `sum_generation_2` | 0 — reproved under `CentreSeparatingConj`, *shorter* than before |
+
+### 1. **112X**.1 `tensor-basic` part 1
+
+**The brief's frontier list was out of date in exactly one place.**  It said
+A/Proc's external frontier was "87III `predual_complete` and 86IX, a third
+(90II.2) closed last session" — and it was right, but neither the brief nor
+the survey drew the consequence: **90II.2 is precisely what 112X.1 was blocked
+on**, so 112X.1 became A/Proc-local the moment it closed.  It is now proved.
+
+Both conjuncts, following proc.tex:2884 ("Show using
+\sref{vn-center-separating-fundamental} that the collection `Ω` … is order
+separating, and that every np-functional on `𝒯` is the operator norm limit of
+finite sums of functionals from `Ω`"):
+
+* **Second conjunct** — a direct application of **90II**.2
+  `vn_center_separating_fundamental_2` with `Ω` = the product functionals
+  `γ(σ,τ)` and `S = γ_⊙(𝒜⊙ℬ)`.  Two small facts make it fit:
+  * the product functionals are `CentreSeparatingConj` for a *trivial* reason
+    — condition (3) of **108II** (`faithful`) is the `b = 1` instance of the
+    conjugated form, and `prod_functional_unique` identifies any implementing
+    functional with the chosen `prodNP`;
+  * `S` is *ultrastrongly* dense.  108II gives only ultraweak density, and the
+    convex-set lemma `mem_usClosure_of_mem_uwClosure` is `private` in
+    `A/VN/Completeness.lean`, so the upgrade goes through the public **74VI**
+    `dense_subalgebra` instead — which needs `S` as a `StarSubalgebra`, hence
+    the new `tensorSpan`.
+* **First conjunct (order separating)** — `nonneg_of_conjNP_of_centreSeparating`
+  (**30X** fed with the above) reduces `x ≤ y` to
+  `γ(σ,τ)(c*(y−x)c) ≥ 0` for **every** `c ∈ 𝒯`, while the hypothesis supplies
+  it only for `c ∈ γ_⊙(𝒜⊙ℬ)`.  This gap is the one real step, and the thesis
+  does not mention it.  It is closed by **74VI** (a net `s_α → c`
+  ultrastrongly with `‖s_α‖ ≤ 2‖c‖`) together with **72III**.1c
+  `bstaromega_lipschitz`,
+  `|ω(b*ab) − ω(b'*ab')| ≤ ‖b−b'‖_ω(‖b‖_ω+‖b'‖_ω)‖a‖`, which squeezes
+  `ω(s_α* a s_α) → ω(c* a c)`; the terms are real because `c* a c` is
+  self-adjoint (`npFunctional_im_eq_zero`).  Note the *ultraweak* topology
+  would not do here — the map `c ↦ ω(c*ac)` is quadratic — which is why the
+  Kaplansky-based 74VI is the right tool and not `hγ.dense` by itself.
+
+Infrastructure banked in `Tensor.lean`, all public and all axiom-clean:
+`tensorSpan` (the linear span of `ran γ` as a ∗-subalgebra — it *is* one
+because `γ` is miu-bilinear), `coe_tensorSpan`, `range_lift_eq_span`
+(`ran γ_⊙ = span (ran γ)`), `prodFunctionals`, `eq_prodNP`,
+`centreSeparatingConj_prodFunctionals`, `dense_ultrastrong_tensorSpan`.
+
+Additionally banked, because 112X.2/.3 need it and our rendering of 112X.1
+does not state it — **the second half of the exercise's part 1**, "show that
+`ω ∘ γ_⊙` is a basic functional for every `ω ∈ Ω`, and that every basic
+functional is of this form": `lift_one`, `lift_mul`, `lift_star` (`γ_⊙` is a
+∗-homomorphism `𝒜 ⊙ ℬ → 𝒯`), `prodNP_lift` (`γ(σ,τ) ∘ γ_⊙ = σ ⊙ τ`),
+`conjProdNP` (+`_apply`, `_lift`) for the members of `Ω`,
+`isBasicFunctional_comp_lift` and `exists_conjProdNP_of_isBasicFunctional`.
+
+**Next gate, named precisely: 112X.2 `tensor_basic_2` (`‖γ_⊙ s‖ = ‖s‖`), and
+it is A/Proc-local.**  The route is written out in the session-55 note at the
+top of `docs/AProc-survey.md`: rescale to the unital members `Ω₁`, apply the
+proved **21VII** `order_separating_norm` at `γ_⊙(s*s)`, and match the
+supremum with `tensorNorm`'s through the `Ω ↔ basic functionals` bijection
+just banked.  What is left is sSup/iSup bookkeeping (squares against square
+roots, subunital against unital).  112X.3 then follows from 112X.1's second
+conjunct, and 112X.3 unblocks 116III.4/.5, 116IV.1 and 118II — none of which
+touch 87III.
+
+### 2. `CentreSeparating` → `CentreSeparatingConj`: all eight uses migrated
+
+As the brief asked.  116IV.2 `tensor_generation_2` (3 occurrences), 116VII
+`tensor_characterization` (3) and 117II.2 `sum_generation_2` (2) now use
+`CentreSeparatingConj` = cstar.tex **21II**.4, the thesis's notion.  The first
+two are still `sorry`, so this is a statement fix only; `sum_generation_2` was
+reproved, and the brief's prediction is confirmed — **it is shorter**.  Under
+the auxiliary notion the proof had to push centrality of `a` down to each
+coordinate (testing against `κᵢ(b)` for centrality, then against `ω ∘ πᵢ`);
+under the thesis's notion there is no centrality to push, and the whole proof
+is "test `a` against `ω ∘ πᵢ` conjugated by `κᵢ(b)`, then read off
+`star b * aᵢ * b`".
+
+Consequence for A/VN, which is not my territory: the auxiliary
+`Theses.A.VN.CentreSeparating` now has **no A/Proc consumer** — its doc
+comment says it is "kept under this name only because `A/Proc/Tensor.lean`
+states eight results with it … and are to be migrated".  Its only remaining
+use in the tree is a `have` inside a proof at `A/VN/Basic.lean:1837`, so A/VN
+can retire or inline it.
+
+### 3. Two corrections to `docs/AProc-survey.md`
+
+1. **129X `continuous_finite_measure_space_not_duplicable` is not behind
+   115II.**  The survey said it "needs the product functional `ω ⊗ ω` and
+   `carrier-tensor` faithfulness (118IV), both behind 115II".  Neither is:
+   `prodNP` produces `ω ⊗ ω` directly from `IsTensorProduct.prod_exists`, with
+   no `tmap` anywhere, and the *statement* of **118IV.4** `carrier_tensor_4`
+   quantifies over an np-functional `χ` on `𝒜 ⊗ ℬ` restricting to the product
+   — again no `tmap`.  129X's blocker is therefore **118IV.4, inside this
+   chapter**, plus the dyadic-halving construction of proc.tex:6395 (whose
+   input `continuous_measure_space` is already proved in `Duplicators.lean`).
+2. **The D1 `smul` fix does not, by itself, make 129X/130IV/130V provable.**
+   It was necessary — without ℂ-linearity the map `ψ : z ↦ q(const z)` need
+   not be the algebra map, which is exactly why **130II** had to be routed
+   through Gelfand–Mazur — but it is not the missing piece.  For **130IV**
+   the missing piece is a *uniform* bound on representatives: to invert
+   `q f ↦ (qB n f)ₙ` one must, given `y ∈ ℓ^∞(ℬ)`, choose representatives
+   `fₙ` with a common bound, and `IsLinftyOf` records no norm or order at
+   all.  It is derivable — `q` preserves positivity (`f ≥ 0` is `g*g` for
+   `g = √f`), `q(1_S) ≠ 0` when `μ S > 0` by the `kernel` field, and
+   `(y n · q(1_S))*(y n · q(1_S)) ≥ (M+ε)² q(1_S)` contradicts `‖y n‖ ≤ M` —
+   but it is a build, not a corollary.  *One thing is free*: normality of the
+   resulting map, since a bijective ∗-homomorphism is an order isomorphism
+   and `starAlgEquiv_preservesDirSups'` (already in `Tensor.lean`) applies.
+   130V remains blocked on 130IV alone.
+
+### 4. Nothing false found
+
+No ERRATA or QUESTIONS row was added, changed or removed this session.  Every
+step of the thesis's argument for 112X.1 checked out; the only divergence is
+the density/continuity step of §1, which the thesis leaves implicit and which
+needs 74VI rather than 108II's own ultraweak density.
+
+### 5. Verification
+
+`lean` under the `LEAN_PATH` bypass: `Tensor.lean` **0 errors, 38
+`declaration uses 'sorry'` warnings** (was 39); `Duplicators` 11,
+`QuantumLambda` 17, `Measurement` 11, all 0 errors, recompiled against the
+rebuilt `Tensor.olean` (written with `lean -o` to the scratchpad and copied
+into `.lake/build/lib/lean/Theses/A/Proc/`, which is therefore current).
+`#print axioms` was run from a *copy* of `Tensor.lean`, never from an
+importing scratch file, and returns `[propext, Classical.choice, Quot.sound]`
+for `tensor_basic_1`, `sum_generation_2`, `tensorSpan`, `range_lift_eq_span`,
+`eq_prodNP`, `centreSeparatingConj_prodFunctionals`,
+`dense_ultrastrong_tensorSpan`, `lift_one`, `lift_mul`, `lift_star`,
+`prodNP_lift`, `conjProdNP_lift`, `isBasicFunctional_comp_lift` and
+`exists_conjProdNP_of_isBasicFunctional`.

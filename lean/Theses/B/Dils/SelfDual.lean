@@ -468,15 +468,154 @@ theorem ketbra_ultraweakly_dense [VonNeumannAlgebra ℬ]
 for a self-dual Hilbert ℬ-module `X`: if a norm-bounded net `x_α → x`
 ultranorm, then `|x_α⟩⟨y| → |x⟩⟨y|` ultraweakly.
 
-**159X**–**159XI** are the proof — not converted. -/
+**159X**–**159XI** are the proof, transcribed below.  Two divergences:
+the thesis's preparatory estimate `‖|z⟩⟨y|‖ ≤ ‖z‖‖y‖` (159X, proved there
+from order separation of the vector states and `order-separating-norm`) is
+already the bound with which `mketbra` is defined — Cauchy–Schwarz plus
+`‖b·x‖ ≤ ‖b‖‖x‖` give it outright — so that half of 159X is not needed;
+and where the thesis says "`ω(T*(·)T) ∈ Ω`, so `span Ω` is operator-norm
+dense by **90II**", we feed `Ω` to `vn_center_separating_fundamental_2`
+directly with `S = 𝒷ᵃ(X)` and read the resulting `ωₖ(sₖ*(·)sₖ)` back as
+the vector functional of `sₖxₖ`. -/
 theorem ketbra_ultranorm_continuous [VonNeumannAlgebra ℬ]
     (hX : SelfDual ℬ X) {ι : Type v} {l : Filter ι} (x : ι → X) (x₀ : X)
     (hbdd : ∃ M : ℝ, ∀ i, ‖x i‖ ≤ M)
     (hx : UnTendsto (inner ℬ) x l x₀) (y : X)
     (K : ι → Ba ℬ X) (hK : ∀ i, (K i).1 = mketbra ℬ (x i) y)
     (K₀ : Ba ℬ X) (hK₀ : K₀.1 = mketbra ℬ x₀ y) :
-    UWTendsto K l K₀ :=
-  sorry
+    UWTendsto K l K₀ := by
+  classical
+  have : VonNeumannAlgebra (Ba ℬ X) := ba_vonNeumannAlgebra hX
+  obtain ⟨M, hM⟩ := hbdd
+  set z : ι → X := fun i => x i - x₀ with hzdef
+  have hzt : UnTendsto (inner ℬ) z l 0 := by
+    intro ν
+    simpa [hzdef, sub_zero] using hx ν
+  have hKz : ∀ i, (K i - K₀).1 = mketbra ℬ (z i) y := by
+    intro i
+    have h : (K i - K₀).1 = (K i).1 - K₀.1 := rfl
+    rw [h, hK i, hK₀]
+    refine ContinuousLinearMap.ext fun v => ?_
+    show (inner ℬ y v : ℬ) • x i - (inner ℬ y v : ℬ) • x₀
+      = (inner ℬ y v : ℬ) • (x i - x₀)
+    have hadd : (inner ℬ y v : ℬ) • (x i - x₀) + (inner ℬ y v : ℬ) • x₀
+        = (inner ℬ y v : ℬ) • x i := by
+      rw [← op_smul_add]; congr 1; abel
+    exact (eq_sub_of_add_eq hadd).symm
+  have hnb : ∀ i, ‖K i - K₀‖ ≤ ‖y‖ * (M + ‖x₀‖) := by
+    intro i
+    have h1 : ‖K i - K₀‖ ≤ ‖y‖ * ‖z i‖ := by
+      show ‖(K i - K₀).1‖ ≤ _
+      rw [hKz i]
+      exact LinearMap.mkContinuous_norm_le _ (by positivity) _
+    have h2 : ‖z i‖ ≤ M + ‖x₀‖ := by
+      show ‖x i - x₀‖ ≤ M + ‖x₀‖
+      linarith [norm_sub_le (x i) x₀, hM i]
+    exact h1.trans (mul_le_mul_of_nonneg_left h2 (norm_nonneg y))
+  set Ω : Set (NPFunctional (Ba ℬ X)) :=
+    {ν | ∃ (v : X) (fν : NPFunctional ℬ), ν = baVecNP hX v fν} with hΩdef
+  have hΩ : CentreSeparatingConj (Ba ℬ X) Ω := by
+    rw [centreSeparatingConj_iff]
+    intro a ha
+    refine ⟨fun h ν hν b => by rw [h]; simp, fun h => ?_⟩
+    have hvec : ∀ v : X, (inner ℬ v (a.1 v) : ℬ) = 0 := by
+      intro v
+      refine VonNeumannAlgebra.np_faithful _ ((ba_nonneg_iff a).mp ha v) fun fν => ?_
+      have h1 := h (baVecNP hX v fν) ⟨v, fν, rfl⟩ 1
+      rw [star_one, one_mul, mul_one, baVecNP_apply] at h1
+      exact h1
+    have hle : a ≤ 0 := by
+      rw [← neg_nonneg]
+      refine (ba_nonneg_iff _).mpr fun v => ?_
+      have he : (-a).1 v = -(a.1 v) := rfl
+      rw [he, CStarModule.inner_neg_right, hvec v, neg_zero]
+    exact le_antisymm hle ha
+  rw [uwTendsto_iff]
+  intro g
+  rw [← tendsto_sub_nhds_zero_iff, NormedAddGroup.tendsto_nhds_zero]
+  intro ε hε
+  set C : ℝ := max (‖y‖ * (M + ‖x₀‖)) 0 + 1 with hCdef
+  have hC0 : 0 < C := by
+    have : (0:ℝ) ≤ max (‖y‖ * (M + ‖x₀‖)) 0 := le_max_right _ _
+    linarith
+  obtain ⟨n, ω, s, hωs, hgs⟩ :=
+    vn_center_separating_fundamental_2 Ω hΩ Set.univ
+      (@dense_univ _ (ultrastrong (Ba ℬ X))) g (ε / (2 * C))
+      (by positivity)
+  have hmem : ∀ k : Fin n, ∃ (v : X) (fν : NPFunctional ℬ), ω k = baVecNP hX v fν :=
+    fun k => (hωs k).1
+  choose u f hu using hmem
+  have hkey : ∀ (k : Fin n) (T : Ba ℬ X),
+      ((ω k) (star (s k) * T * s k) : ℂ)
+        = f k (inner ℬ ((s k).1 (u k)) (T.1 ((s k).1 (u k)))) := by
+    intro k T
+    have hadj : ModuleAdjointTo ℬ (⇑((s k).1) : X → X) ⇑((star (s k) : Ba ℬ X)).1 :=
+      baSubalgebra_star_spec (s k)
+    have hinner : (inner ℬ (u k) ((star (s k) * T * s k).1 (u k)) : ℬ)
+        = inner ℬ ((s k).1 (u k)) (T.1 ((s k).1 (u k))) := by
+      have h1 : (star (s k) * T * s k).1 (u k)
+          = (star (s k) : Ba ℬ X).1 (T.1 ((s k).1 (u k))) := rfl
+      rw [h1]
+      exact (hadj (u k) (T.1 ((s k).1 (u k)))).symm
+    rw [hu k, baVecNP_apply, hinner]
+  have hlim : ∀ k : Fin n,
+      Tendsto (fun i => ((ω k) (star (s k) * (K i - K₀) * s k) : ℂ)) l (𝓝 0) := by
+    intro k
+    have hsm : UnTendsto (inner ℬ)
+        (fun i => (inner ℬ y ((s k).1 (u k)) : ℬ) • z i) l 0 := by
+      have h := ultranormscalar (cstarBInner ℬ X)
+        (inner ℬ y ((s k).1 (u k)) : ℬ) z 0 hzt
+      rw [op_smul_zero] at h
+      exact h
+    have hconst : UnTendsto (inner ℬ : X → X → ℬ)
+        (fun _ : ι => (s k).1 (u k)) l ((s k).1 (u k)) := by
+      intro ν
+      simp only [sub_self]
+      have h0 : (inner ℬ (0 : X) (0 : X) : ℬ) = 0 :=
+        (cstarBInner ℬ X).inner_zero_left 0
+      simp [unSeminorm, h0]
+      exact tendsto_const_nhds
+    have huw := innerprod_ultraweak (cstarBInner ℬ X)
+      (fun _ : ι => (s k).1 (u k))
+      (fun i => (inner ℬ y ((s k).1 (u k)) : ℬ) • z i)
+      ((s k).1 (u k)) 0 hconst hsm
+    rw [uwTendsto_iff] at huw
+    have h2 := huw (f k)
+    have heq : ∀ i, ((ω k) (star (s k) * (K i - K₀) * s k) : ℂ)
+        = f k (inner ℬ ((s k).1 (u k))
+            ((inner ℬ y ((s k).1 (u k)) : ℬ) • z i)) := by
+      intro i
+      rw [hkey k (K i - K₀), hKz i, mketbra_apply]
+    simp only [heq]
+    have hz0 : (inner ℬ ((s k).1 (u k)) (0 : X) : ℬ) = 0 :=
+      CStarModule.inner_zero_right
+    rw [show ((cstarBInner ℬ X).inner : X → X → ℬ) = inner ℬ from rfl] at h2
+    rw [hz0, npFunctional_zero] at h2
+    exact h2
+  have hsum : Tendsto
+      (fun i => ∑ k : Fin n, ((ω k) (star (s k) * (K i - K₀) * s k) : ℂ)) l (𝓝 0) := by
+    have h := tendsto_finsetSum (Finset.univ : Finset (Fin n)) (fun k _ => hlim k)
+    simpa using h
+  filter_upwards [NormedAddGroup.tendsto_nhds_zero.mp hsum (ε/2) (half_pos hε)]
+    with i hi
+  set Sm : ℂ := ∑ k : Fin n, ((ω k) (star (s k) * (K i - K₀) * s k) : ℂ) with hSm
+  have hgi : ((g (K i) : ℂ) - g K₀) = g (K i - K₀) := (npFunctional_sub g _ _).symm
+  have hb1 : ‖(g (K i - K₀) : ℂ) - Sm‖ ≤ (ε / (2 * C)) * ‖K i - K₀‖ := hgs (K i - K₀)
+  have hb2 : ‖K i - K₀‖ ≤ C := by
+    have := hnb i
+    have h3 : ‖y‖ * (M + ‖x₀‖) ≤ max (‖y‖ * (M + ‖x₀‖)) 0 := le_max_left _ _
+    simp only [hCdef]
+    linarith
+  have hb3 : (ε / (2 * C)) * ‖K i - K₀‖ ≤ ε / 2 := by
+    have h4 : (0:ℝ) ≤ ε / (2 * C) := by positivity
+    have h5 : (ε / (2 * C)) * ‖K i - K₀‖ ≤ (ε / (2 * C)) * C :=
+      mul_le_mul_of_nonneg_left hb2 h4
+    have h6 : (ε / (2 * C)) * C = ε / 2 := by field_simp
+    linarith
+  calc ‖(g (K i) : ℂ) - g K₀‖ = ‖(g (K i - K₀) : ℂ)‖ := by rw [hgi]
+    _ = ‖((g (K i - K₀) : ℂ) - Sm) + Sm‖ := by rw [sub_add_cancel]
+    _ ≤ ‖(g (K i - K₀) : ℂ) - Sm‖ + ‖Sm‖ := norm_add_le _ _
+    _ < ε := by linarith
 
 end Ketbra
 
@@ -4034,6 +4173,261 @@ theorem ext_tensor_ketbra_dense [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
           S.1 = mketbra 𝒞 (E.η (a • e i) (b • d j)) (E.η (e k) (d l))}) ∧
       UWTendsto approx atTop T :=
   sorry
+
+/-- **164XI** (dils.tex:5327), the thesis's own claim: the linear span of
+`D = {|(e'ᵢa) ⊗ (d'ⱼb)⟩⟨e_k ⊗ d_l|}` is **ultraweakly dense** in
+`𝒞ᵃ(X ⊗ Y)` — here in the entourage form (given finitely many
+np-functionals and an `ε > 0`, some element of the span is within `ε` of
+`T` on all of them).
+
+⚠️ This is *weaker* than `ext_tensor_ketbra_dense` above, which forces the
+approximating net to be indexed by `Finset (ι × κ)` along `atTop`; that
+form is **false** (QUESTIONS **D6**): take `ι = κ = PUnit`, `X = 𝒜`,
+`Y = ℬ`, `E = extTensorSelf` — then `Finset (ι × κ)` has a greatest
+element, `atTop` is the principal filter there, and the net's value at that
+element would have to *equal* `T`, forcing `𝒜 ⊗ ℬ = 𝒜 ⊙ ℬ`.
+
+The proof is the thesis's **164XI**: **159IV** `ketbra_ultraweakly_dense`,
+applied to the basis `E₂` supplied by **164II**.2a, gives the operators
+`|b·(e'ᵢ ⊗ d'ⱼ)⟩⟨e'_k ⊗ d'_l|` with `b ∈ 𝒜 ⊗ ℬ` arbitrary, and Kaplansky
+(**74IV**, through `unDense_tSpan`) together with **159IX**
+`ketbra_ultranorm_continuous` replaces `b` by an element of `𝒜 ⊙ ℬ` — the
+extra step being that Kaplansky's net lies in the *norm* closure of
+`𝒜 ⊙ ℬ`, from which the norm-continuity of `b ↦ |b·v⟩⟨w|` and of the
+np-functionals brings it back into `𝒜 ⊙ ℬ` itself. -/
+theorem ext_tensor_ketbra_uwDense [VonNeumannAlgebra 𝒜] [VonNeumannAlgebra ℬ]
+    [VonNeumannAlgebra 𝒞] [CompleteSpace X] [CompleteSpace Y]
+    (hX : SelfDual 𝒜 X) (hY : SelfDual ℬ Y) (E : ExtTensor t ht X Y)
+    {ι κ : Type u} (e : ι → X) (d : κ → Y)
+    (he : IsONBasis 𝒜 e) (hd : IsONBasis ℬ d) (T : Ba 𝒞 E.Z)
+    {m : ℕ} (gs : Fin m → NPFunctional (Ba 𝒞 E.Z)) (ε : ℝ) (hε : 0 < ε) :
+    ∃ S ∈ Submodule.span ℂ
+        {S : Ba 𝒞 E.Z | ∃ (i k : ι) (j l : κ) (a : 𝒜) (b : ℬ),
+          S.1 = mketbra 𝒞 (E.η (a • e i) (b • d j)) (E.η (e k) (d l))},
+      ∀ k, ‖(gs k) T - (gs k) S‖ ≤ ε := by
+  classical
+  set f : ι × κ → E.Z := fun p => E.η (e p.1) (d p.2) with hfdef
+  have hf : IsONBasis 𝒞 f := ext_tensor_basis hX hY E e d he hd
+  set Dset : Set (Ba 𝒞 E.Z) :=
+    {S : Ba 𝒞 E.Z | ∃ (i k : ι) (j l : κ) (a : 𝒜) (b : ℬ),
+      S.1 = mketbra 𝒞 (E.η (a • e i) (b • d j)) (E.η (e k) (d l))} with hDdef
+  -- the `gs` are norm-bounded (positive linear maps are)
+  choose Cs hCs using fun k : Fin m =>
+    PositiveLinearMap.exists_norm_apply_le (gs k).toPositiveLinearMap
+  set Cmax : ℝ := ∑ k : Fin m, (Cs k : ℝ) with hCmaxdef
+  have hCmax0 : (0 : ℝ) ≤ Cmax :=
+    Finset.sum_nonneg fun k _ => (Cs k).coe_nonneg
+  have hgsb : ∀ (k : Fin m) (z : Ba 𝒞 E.Z), ‖(gs k) z‖ ≤ Cmax * ‖z‖ := by
+    intro k z
+    refine (hCs k z).trans (mul_le_mul_of_nonneg_right ?_ (norm_nonneg z))
+    exact Finset.single_le_sum (f := fun k : Fin m => (Cs k : ℝ))
+      (fun k _ => (Cs k).coe_nonneg) (Finset.mem_univ k)
+  -- **Kaplansky**: every `c ∈ 𝒜 ⊗ ℬ` is the limit of a norm-bounded net
+  -- from the norm closure of `𝒜 ⊙ ℬ`
+  have hkap : ∀ c : 𝒞, ∃ (J : Type u) (l : Filter J), l.NeBot ∧ ∃ a : J → 𝒞,
+      (∀ j, a j ∈ (tSpanSubalg ht).topologicalClosure ∧ ‖a j‖ ≤ ‖c‖) ∧
+      UnTendsto (mulInner 𝒞) a l c := by
+    intro c
+    have hsub : tSpan t ⊆ (((tSpanSubalg ht).topologicalClosure : StarSubalgebra ℂ 𝒞) : Set 𝒞) :=
+      fun x hx => subset_closure (show x ∈ (tSpanSubalg ht : Set 𝒞) from hx)
+    have hmem : star c ∈ @closure 𝒞 (ultrastrong 𝒞)
+        ((((tSpanSubalg ht).topologicalClosure : StarSubalgebra ℂ 𝒞) : Set 𝒞)) := by
+      rw [mem_usClosure_iff]
+      intro ω δ hδ
+      obtain ⟨z, hz, hzε⟩ := unDense_tSpan ht c 1 (fun _ => ω) (δ / 2) (by positivity)
+      have h0 := hzε 0
+      rw [unSeminorm_mulInner_eq, star_sub] at h0
+      refine ⟨star z, star_mem (hsub hz), ?_⟩
+      have h1 : omegaNorm 𝒞 ω (star z - star c) = omegaNorm 𝒞 ω (star c - star z) := by
+        rw [← omegaNorm_neg, neg_sub]
+      rw [h1]
+      linarith
+    obtain ⟨J, l, hl, b, hb, hlim⟩ := Theses.A.VN.kaplansky
+      ((tSpanSubalg ht).topologicalClosure)
+      (StarSubalgebra.isClosed_topologicalClosure _) (star c) hmem
+    refine ⟨J, l, hl, fun j => star (b j),
+      fun j => ⟨star_mem (hb j).1, by simpa using (hb j).2⟩, fun ω => ?_⟩
+    refine ((usTendsto_iff b l (star c)).mp hlim ω).congr fun j => ?_
+    rw [unSeminorm_mulInner_eq, star_sub, star_star]
+  -- the generators of **159IV** are approximable from `span D`
+  have hgen : ∀ (c : 𝒞) (p q : ι × κ) (δ : ℝ), 0 < δ →
+      ∃ S ∈ Submodule.span ℂ Dset,
+        ∀ k, ‖(gs k) (mketbraBa (ℬ := 𝒞) (c • f p) (f q)) - (gs k) S‖ ≤ δ := by
+    intro c p q δ hδ
+    obtain ⟨J, l, hl, a, ha, halim⟩ := hkap c
+    haveI := hl
+    have hsmul_sub : ∀ (u v : 𝒞) (z : E.Z), (u - v) • z = u • z - v • z := by
+      intro u v z
+      have h := op_add_smul (u - v) v z
+      rw [sub_add_cancel] at h
+      rw [h]; abel
+    have hsmul_sub' : ∀ (b : 𝒞) (u v : E.Z), b • (u - v) = b • u - b • v := by
+      intro b u v
+      have h := op_smul_add b (u - v) v
+      rw [sub_add_cancel] at h
+      rw [h]; abel
+    have hun : UnTendsto (inner 𝒞) (fun j => a j • f p) l (c • f p) := by
+      intro ω
+      have hb : ∀ j, unSeminorm ω (inner 𝒞 : E.Z → E.Z → 𝒞) (a j • f p - c • f p)
+          ≤ ‖f p‖ * unSeminorm ω (mulInner 𝒞) (a j - c) := by
+        intro j
+        rw [← hsmul_sub]
+        exact unSeminorm_op_smul_le ω (a j - c) (f p)
+      refine squeeze_zero (fun j => Real.sqrt_nonneg _) hb ?_
+      simpa using (halim ω).const_mul ‖f p‖
+    have hbdd : ∃ M : ℝ, ∀ j, ‖a j • f p‖ ≤ M :=
+      ⟨‖c‖ * ‖f p‖, fun j => (norm_op_smul_le _ _).trans
+        (mul_le_mul_of_nonneg_right (ha j).2 (norm_nonneg _))⟩
+    have huw : UWTendsto (fun j => mketbraBa (ℬ := 𝒞) (a j • f p) (f q)) l
+        (mketbraBa (ℬ := 𝒞) (c • f p) (f q)) :=
+      ketbra_ultranorm_continuous E.selfDual _ _ hbdd hun (f q) _ (fun j => rfl) _ rfl
+    rw [uwTendsto_iff] at huw
+    have hev : ∀ᶠ j in l, ∀ k,
+        ‖(gs k) (mketbraBa (ℬ := 𝒞) (c • f p) (f q))
+          - (gs k) (mketbraBa (ℬ := 𝒞) (a j • f p) (f q))‖ ≤ δ / 2 := by
+      refine Filter.eventually_all.mpr fun k => ?_
+      filter_upwards [Metric.tendsto_nhds.mp (huw (gs k)) (δ / 2) (by positivity)] with j hj
+      rw [dist_eq_norm] at hj
+      rw [norm_sub_rev]
+      exact hj.le
+    obtain ⟨j₀, hj₀⟩ := hev.exists
+    -- back from the norm closure into `𝒜 ⊙ ℬ`
+    set η₀ : ℝ := δ / (2 * (Cmax + 1) * (‖f p‖ * ‖f q‖ + 1)) with hηdef
+    have hη0 : 0 < η₀ := by
+      rw [hηdef]; positivity
+    obtain ⟨s, hs, hsd⟩ : ∃ s ∈ tSpan t, ‖a j₀ - s‖ < η₀ := by
+      have hmem : a j₀ ∈ closure (tSpan t) := (ha j₀).1
+      rw [Metric.mem_closure_iff] at hmem
+      obtain ⟨s, hs, hdist⟩ := hmem η₀ hη0
+      exact ⟨s, hs, by rwa [dist_eq_norm] at hdist⟩
+    refine ⟨mketbraBa (ℬ := 𝒞) (s • f p) (f q), ?_, fun k => ?_⟩
+    · obtain ⟨n, α, β, rfl⟩ := hs
+      have hsum : mketbraBa (ℬ := 𝒞) ((∑ i, t (α i) (β i)) • f p) (f q)
+          = ∑ i, mketbraBa (ℬ := 𝒞) (t (α i) (β i) • f p) (f q) := by
+        refine Subtype.ext (ContinuousLinearMap.ext fun z => ?_)
+        rw [baVal_sum]
+        show (inner 𝒞 (f q) z : 𝒞) • ((∑ i, t (α i) (β i)) • f p)
+          = ∑ i, (inner 𝒞 (f q) z : 𝒞) • (t (α i) (β i) • f p)
+        rw [add_smul_sum, op_smul_sum]
+      rw [hsum]
+      refine Submodule.sum_mem _ fun i _ => Submodule.subset_span ?_
+      refine ⟨p.1, q.1, p.2, q.2, α i, β i, ?_⟩
+      show mketbra 𝒞 (t (α i) (β i) • f p) (f q) = _
+      rw [hfdef]
+      rw [← E.η_smul]
+    · have hdiff : mketbraBa (ℬ := 𝒞) (a j₀ • f p) (f q)
+          - mketbraBa (ℬ := 𝒞) (s • f p) (f q)
+          = mketbraBa (ℬ := 𝒞) ((a j₀ - s) • f p) (f q) := by
+        refine Subtype.ext (ContinuousLinearMap.ext fun z => ?_)
+        show (inner 𝒞 (f q) z : 𝒞) • (a j₀ • f p) - (inner 𝒞 (f q) z : 𝒞) • (s • f p)
+          = (inner 𝒞 (f q) z : 𝒞) • ((a j₀ - s) • f p)
+        rw [hsmul_sub, hsmul_sub']
+      have hnorm : ‖mketbraBa (ℬ := 𝒞) (a j₀ • f p) (f q)
+          - mketbraBa (ℬ := 𝒞) (s • f p) (f q)‖ ≤ ‖f q‖ * (‖a j₀ - s‖ * ‖f p‖) := by
+        rw [hdiff]
+        show ‖mketbra 𝒞 ((a j₀ - s) • f p) (f q)‖ ≤ _
+        refine (LinearMap.mkContinuous_norm_le _ (by positivity) _).trans ?_
+        exact mul_le_mul_of_nonneg_left (norm_op_smul_le _ _) (norm_nonneg _)
+      have hgsdiff : ‖(gs k) (mketbraBa (ℬ := 𝒞) (a j₀ • f p) (f q))
+          - (gs k) (mketbraBa (ℬ := 𝒞) (s • f p) (f q))‖
+          ≤ Cmax * (‖f q‖ * (‖a j₀ - s‖ * ‖f p‖)) := by
+        rw [← npFunctional_sub]
+        exact (hgsb k _).trans (mul_le_mul_of_nonneg_left hnorm hCmax0)
+      have hkey : Cmax * (‖f q‖ * (‖a j₀ - s‖ * ‖f p‖)) ≤ δ / 2 := by
+        have h1 : ‖a j₀ - s‖ ≤ η₀ := hsd.le
+        have hn1 : (0 : ℝ) ≤ ‖f p‖ := norm_nonneg _
+        have hn2 : (0 : ℝ) ≤ ‖f q‖ := norm_nonneg _
+        have hA : Cmax * (‖f q‖ * (‖a j₀ - s‖ * ‖f p‖))
+            ≤ Cmax * (‖f p‖ * ‖f q‖) * η₀ := by
+          have hrw : Cmax * (‖f q‖ * (‖a j₀ - s‖ * ‖f p‖))
+              = Cmax * (‖f p‖ * ‖f q‖) * ‖a j₀ - s‖ := by ring
+          rw [hrw]
+          exact mul_le_mul_of_nonneg_left h1 (by positivity)
+        have hB : Cmax * (‖f p‖ * ‖f q‖) * η₀
+            ≤ (Cmax + 1) * (‖f p‖ * ‖f q‖ + 1) * η₀ := by
+          refine mul_le_mul_of_nonneg_right ?_ hη0.le
+          nlinarith
+        have h3 : (Cmax + 1) * (‖f p‖ * ‖f q‖ + 1) * η₀ = δ / 2 := by
+          rw [hηdef]
+          field_simp
+        linarith
+      calc ‖(gs k) (mketbraBa (ℬ := 𝒞) (c • f p) (f q))
+            - (gs k) (mketbraBa (ℬ := 𝒞) (s • f p) (f q))‖
+          ≤ ‖(gs k) (mketbraBa (ℬ := 𝒞) (c • f p) (f q))
+              - (gs k) (mketbraBa (ℬ := 𝒞) (a j₀ • f p) (f q))‖
+            + ‖(gs k) (mketbraBa (ℬ := 𝒞) (a j₀ • f p) (f q))
+              - (gs k) (mketbraBa (ℬ := 𝒞) (s • f p) (f q))‖ := by
+            simpa using norm_sub_le_norm_sub_add_norm_sub
+              ((gs k) (mketbraBa (ℬ := 𝒞) (c • f p) (f q)))
+              ((gs k) (mketbraBa (ℬ := 𝒞) (a j₀ • f p) (f q)))
+              ((gs k) (mketbraBa (ℬ := 𝒞) (s • f p) (f q)))
+        _ ≤ δ / 2 + δ / 2 := add_le_add (hj₀ k) (hgsdiff.trans hkey)
+        _ = δ := by ring
+  -- the whole span of the **159IV** generators is approximable
+  have hspan : ∀ z ∈ Submodule.span ℂ
+      {S : Ba 𝒞 E.Z | ∃ (p q : ι × κ) (b : 𝒞), S.1 = mketbra 𝒞 (b • f p) (f q)},
+      ∀ δ : ℝ, 0 < δ → ∃ S ∈ Submodule.span ℂ Dset,
+        ∀ k, ‖(gs k) z - (gs k) S‖ ≤ δ := by
+    intro z hz
+    induction hz using Submodule.span_induction with
+    | mem x hx =>
+        obtain ⟨p, q, b, hb⟩ := hx
+        intro δ hδ
+        have hx' : x = mketbraBa (ℬ := 𝒞) (b • f p) (f q) := Subtype.ext hb
+        rw [hx']
+        exact hgen b p q δ hδ
+    | zero =>
+        intro δ hδ
+        exact ⟨0, Submodule.zero_mem _, fun k => by simp [hδ.le]⟩
+    | add x y hx hy ihx ihy =>
+        intro δ hδ
+        obtain ⟨S₁, hS₁, hS₁e⟩ := ihx (δ / 2) (by positivity)
+        obtain ⟨S₂, hS₂, hS₂e⟩ := ihy (δ / 2) (by positivity)
+        refine ⟨S₁ + S₂, Submodule.add_mem _ hS₁ hS₂, fun k => ?_⟩
+        have hsplit : (gs k) (x + y) - (gs k) (S₁ + S₂)
+            = ((gs k) x - (gs k) S₁) + ((gs k) y - (gs k) S₂) := by
+          rw [npFunctional_add, npFunctional_add]; ring
+        rw [hsplit]
+        calc ‖((gs k) x - (gs k) S₁) + ((gs k) y - (gs k) S₂)‖
+            ≤ ‖(gs k) x - (gs k) S₁‖ + ‖(gs k) y - (gs k) S₂‖ := norm_add_le _ _
+          _ ≤ δ / 2 + δ / 2 := add_le_add (hS₁e k) (hS₂e k)
+          _ = δ := by ring
+    | smul c x hx ih =>
+        intro δ hδ
+        obtain ⟨S₁, hS₁, hS₁e⟩ := ih (δ / (‖c‖ + 1)) (by positivity)
+        refine ⟨c • S₁, Submodule.smul_mem _ c hS₁, fun k => ?_⟩
+        have hsplit : (gs k) (c • x) - (gs k) (c • S₁)
+            = c * ((gs k) x - (gs k) S₁) := by
+          rw [npf_csmul, npf_csmul]; ring
+        rw [hsplit, norm_mul]
+        have hc0 : (0 : ℝ) ≤ ‖c‖ := norm_nonneg c
+        have h1 : ‖(gs k) x - (gs k) S₁‖ ≤ δ / (‖c‖ + 1) := hS₁e k
+        have h2 : ‖c‖ * (δ / (‖c‖ + 1)) ≤ δ := by
+          rw [mul_div_assoc'] at *
+          rw [div_le_iff₀ (by positivity)]
+          nlinarith
+        calc ‖c‖ * ‖(gs k) x - (gs k) S₁‖ ≤ ‖c‖ * (δ / (‖c‖ + 1)) :=
+              mul_le_mul_of_nonneg_left h1 hc0
+          _ ≤ δ := h2
+  -- **159IV**, then the two approximations
+  obtain ⟨approx, happrox, hlim⟩ := ketbra_ultraweakly_dense E.selfDual f hf T
+  rw [uwTendsto_iff] at hlim
+  have hev : ∀ᶠ s in (atTop : Filter (Finset (ι × κ))), ∀ k,
+      ‖(gs k) T - (gs k) (approx s)‖ ≤ ε / 2 := by
+    refine Filter.eventually_all.mpr fun k => ?_
+    filter_upwards [Metric.tendsto_nhds.mp (hlim (gs k)) (ε / 2) (by positivity)] with s hs
+    rw [dist_eq_norm] at hs
+    rw [norm_sub_rev]
+    exact hs.le
+  obtain ⟨s₀, hs₀⟩ := hev.exists
+  obtain ⟨S, hS, hSe⟩ := hspan (approx s₀) (happrox s₀) (ε / 2) (by positivity)
+  refine ⟨S, hS, fun k => ?_⟩
+  calc ‖(gs k) T - (gs k) S‖
+      ≤ ‖(gs k) T - (gs k) (approx s₀)‖ + ‖(gs k) (approx s₀) - (gs k) S‖ := by
+        simpa using norm_sub_le_norm_sub_add_norm_sub ((gs k) T)
+          ((gs k) (approx s₀)) ((gs k) S)
+    _ ≤ ε / 2 + ε / 2 := add_le_add (hs₀ k) (hSe k)
+    _ = ε := by ring
 
 /-! ## Parsec 1650: 𝒷ᵃ(X) ⊗ 𝒷ᵃ(Y) ≅ 𝒷ᵃ(X ⊗ Y)
 
