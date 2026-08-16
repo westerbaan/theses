@@ -336,29 +336,9 @@ theorem isSumOf_mul_left {M : Type u} [EffectMonoid M] (x : M) {l : List M}
       rw [List.map_cons, he]
       exact PCM.IsSumOf.cons ih h'
 
-/-- Helper: multiplication in an effect monoid distributes over a partial sum
-in its *left* argument (the mirror image of `emon_mul_ovee`). -/
-theorem emon_ovee_mul {M : Type u} [EffectMonoid M] (x : M) {p q : M}
-    (hpq : Perp p q) :
-    ∃ h' : Perp (p * x) (q * x),
-      ovee p q hpq * x = ovee (p * x) (q * x) h' := by
-  have hd := EffectMonoid.distrib hpq (PCM.perp_zero x)
-  rw [PCM.ovee_zero x (PCM.perp_zero x), (exc_emonzero p).1,
-    (exc_emonzero q).1] at hd
-  obtain ⟨t1, h1, hp1, e1⟩ := PCM.isSumOf_cons_iff.mp hd
-  obtain ⟨t2, h2, hp2, e2⟩ := PCM.isSumOf_cons_iff.mp h1
-  obtain ⟨t3, h3, hp3, e3⟩ := PCM.isSumOf_cons_iff.mp h2
-  obtain ⟨t4, h4, hp4, e4⟩ := PCM.isSumOf_cons_iff.mp h3
-  have ht4 : t4 = 0 := PCM.isSumOf_nil_iff.mp h4
-  have ht3 : t3 = 0 := by rw [← e4, PCM.zero_ovee' t4 hp4]; exact ht4
-  have ht2 : t2 = 0 := by rw [← e3, PCM.zero_ovee' t3 hp3]; exact ht3
-  have ht1 : t1 = q * x := by
-    rw [← e2, PCM.ovee_congr rfl ht2 hp2 (PCM.perp_zero (q * x))]
-    exact PCM.ovee_zero _ _
-  have hp' : Perp (p * x) (q * x) := by rw [← ht1]; exact hp1
-  refine ⟨hp', ?_⟩
-  rw [← e1]
-  exact PCM.ovee_congr rfl ht1 hp1 hp'
+/- Helper: `emon_ovee_mul` (multiplication distributes over a partial sum in
+its *left* argument) used to live here; it is now in `EffectAlgebras.lean`,
+next to `emon_mul_ovee`, since the proof of 178III.2 needs it there. -/
 
 /-- Helper: multiplication in an effect monoid distributes over a finite
 partial sum in its left argument. -/

@@ -39,7 +39,7 @@ universe u v
 
 /-! ## †-categories (parsec 214) -/
 
-/-- **214I** (`dagger-effectus`, eff.tex:5257, Definition): a **†-category**
+/-- **214I** (`dagger-effectus`, eff.tex:5240, Definition): a **†-category**
 is a category with an involutive identity-on-objects functor
 `(–)† : C → Cᵒᵖ`: `(f ∘ g)† = g† ∘ f†`, `id† = id`, `f†† = f` (and
 `X† = X`, built into the type here). -/
@@ -55,16 +55,16 @@ section DaggerCat
 
 variable {D : Type u} [Category.{v} D] [DaggerCat D]
 
-/-- **214I.1** (`dagger-effectus`, eff.tex:5277, Definition): an endomap of
+/-- **214I.1** (`dagger-effectus`, eff.tex:5260, Definition): an endomap of
 a †-category is **†-self-adjoint** when `f† = f`. -/
 def DaggerCat.SelfAdjoint {X : D} (f : X ⟶ X) : Prop := dag f = f
 
-/-- **214I.2** (`dagger-effectus`, eff.tex:5281, Definition): an endomap is
+/-- **214I.2** (`dagger-effectus`, eff.tex:5264, Definition): an endomap is
 **†-positive** when `f = g† ∘ g` for some map `g`. -/
 def DaggerCat.IsPositive {X : D} (f : X ⟶ X) : Prop :=
   ∃ (Y : D) (g : X ⟶ Y), f = g ≫ dag g
 
-/-- **214I.3** (`dagger-effectus`, eff.tex:5285, Definition): an isomorphism
+/-- **214I.3** (`dagger-effectus`, eff.tex:5268, Definition): an isomorphism
 `α` is **†-unitary** when `α⁻¹ = α†`. -/
 def DaggerCat.Unitary {X Y : D} (α : X ≅ Y) : Prop := α.inv = dag α.hom
 
@@ -97,7 +97,7 @@ theorem faithfulMap_of_isIso {X Y : C} (θ : X ⟶ Y) [IsIso θ] : FaithfulMap �
   have h4 := isImage_imPred θ
   rwa [h] at h4
 
-/-- **215I** (eff.tex:5299, Definition): a **†-effectus** is an &-effectus
+/-- **215I** (eff.tex:5282, Definition): a **†-effectus** is an &-effectus
 `C` such that
 
 1. `Pure C` is a †-category with `asrt_p† = asrt_p` and `f` ⋄-adjoint to
@@ -118,8 +118,8 @@ class DaggerEffectus where
   diamond_pos_dagger_pos : ∀ {X : C} (f : X ⟶ X) (hf : DiamondPositive f),
     @DaggerCat.IsPositive _ _ daggerCat (PureCat.of X) ⟨f, hf.1⟩
 
-/-- **215III** (`dagger-theorem`, eff.tex:5327, Theorem) and **215V**
-(eff.tex:5348): a **†'-effectus** is an &-effectus such that
+/-- **215III** (`dagger-theorem`, eff.tex:5310, Theorem) and **215V**
+(eff.tex:5331): a **†'-effectus** is an &-effectus such that
 
 1. every predicate has a unique square root (`q & q = p`);
 2. `asrt²_{p & q} = asrt_p ∘ asrt²_q ∘ asrt_p`; and
@@ -132,12 +132,12 @@ class DaggerPrimeEffectus : Prop where
   quot_sharp : ∀ {X W : C} {s : Pred X} (_ : IsSharp s) {ξ : X ⟶ W},
     IsQuotient s ξ → SharpMap ξ
 
--- **215III** (`dagger-theorem`, eff.tex:5327, Theorem), `dagger_theorem`:
+-- **215III** (`dagger-theorem`, eff.tex:5310, Theorem), `dagger_theorem`:
 -- an &-effectus is a †-effectus iff it is a †'-effectus.  It is stated and
 -- proved after 220II (`dagger_thm_sufficiency`), which is one of its two
 -- halves; the other is 216XI (`dagger_thm_necessity`).
 
-/-- **215VI** (`vn-is-dagger-category`, eff.tex:5355, Corollary): the
+/-- **215VI** (`vn-is-dagger-category`, eff.tex:5338, Corollary): the
 &-effectus `vNᵒᵖ` is a †-effectus. -/
 theorem vn_is_dagger_category (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
     letI := s.hasFiniteCoproducts
@@ -156,7 +156,7 @@ section DaggerConsequences
 
 variable [AndThenEffectus C] {X Y : C}
 
-/-- **216I** (`diamond-is-dagger-positive`, eff.tex:5440, Lemma): in a
+/-- **216I** (`diamond-is-dagger-positive`, eff.tex:5423, Lemma): in a
 †-effectus, a (pure endo)map is †-positive iff it is ⋄-positive. -/
 theorem diamond_is_dagger_positive (d : DaggerEffectus C) (f : X ⟶ X)
     (hf : IsPure f) :
@@ -182,7 +182,7 @@ theorem diamond_is_dagger_positive (d : DaggerEffectus C) (f : X ⟶ X)
   · intro hdp
     exact d.diamond_pos_dagger_pos f hdp
 
-/-- **216III** (`dagger-eff-square-root`, eff.tex:5464, Lemma): in a
+/-- **216III** (`dagger-eff-square-root`, eff.tex:5447, Lemma): in a
 †-effectus every predicate has a unique square root: a unique `q` with
 `q & q = p`. -/
 theorem dagger_eff_square_root (d : DaggerEffectus C) (p : Pred X) :
@@ -210,7 +210,7 @@ theorem dagger_eff_square_root (d : DaggerEffectus C) (p : Pred X) :
     rw [← congrArg Subtype.val heq]
     exact ((asrt_spec r).2).symm
 
-/-- **216V** (`asrt-iso`, eff.tex:5507, Proposition): in an &-effectus with
+/-- **216V** (`asrt-iso`, eff.tex:5490, Proposition): in an &-effectus with
 square roots (e.g. a †- or †'-effectus), `asrt_p ∘ α = α ∘ asrt_{p ∘ α}`
 for every isomorphism `α` and predicate `p`. -/
 theorem asrt_iso (hsqrt : ∀ {Z : C} (p : Pred Z), ∃ q, andThen q q = p)
@@ -250,7 +250,7 @@ theorem asrt_iso (hsqrt : ∀ {Z : C} (p : Pred Z), ∃ q, andThen q q = p)
         simp only [Category.assoc]; rw [IsIso.inv_hom_id, Category.comp_id]
     _ = asrt (α ≫ p) ≫ α := by rw [key]
 
-/-- **216VII** (`dagger-of-zeta`, eff.tex:5537, Proposition): in a
+/-- **216VII** (`dagger-of-zeta`, eff.tex:5520, Proposition): in a
 †-effectus `ζ_s† = π_s` (for the corresponding pair of 211IX). -/
 theorem dagger_of_zeta (d : DaggerEffectus C) {s : Pred X} (hs : IsSharp s) :
     d.daggerCat.dag (X := PureCat.of X) (Y := PureCat.of (comprObj s))
@@ -325,7 +325,7 @@ theorem dagger_of_zeta (d : DaggerEffectus C) {s : Pred X} (hs : IsSharp s) :
     exact hasrt
   exact main _ _ rfl rfl
 
-/-- **216VII** (`dagger-of-zeta`, eff.tex:5537, Proposition), dually: in a
+/-- **216VII** (`dagger-of-zeta`, eff.tex:5520, Proposition), dually: in a
 †-effectus `π_s† = ζ_s††† = ζ_s`. -/
 theorem dagger_of_compr (d : DaggerEffectus C) {s : Pred X} (hs : IsSharp s) :
     d.daggerCat.dag (X := PureCat.of (comprObj s)) (Y := PureCat.of X)
@@ -333,7 +333,7 @@ theorem dagger_of_compr (d : DaggerEffectus C) {s : Pred X} (hs : IsSharp s) :
       ⟨zetaMap s hs, isPure_of_isQuotient (zetaMap_spec s hs).1⟩ := by
   rw [← dagger_of_zeta d hs, d.daggerCat.dag_dag]
 
-/-- **216IX** (`dagger-of-iso`, eff.tex:5575, Corollary), first half: in a
+/-- **216IX** (`dagger-of-iso`, eff.tex:5558, Corollary), first half: in a
 †-effectus `π_s` is ⋄-adjoint to `ζ_s`. -/
 theorem dagger_of_iso_adjoint (d : DaggerEffectus C) {s : Pred X}
     (hs : IsSharp s) : DiamondAdjoint (comprMap s) (zetaMap s hs) := by
@@ -343,7 +343,7 @@ theorem dagger_of_iso_adjoint (d : DaggerEffectus C) {s : Pred X}
   rw [dagger_of_compr d hs] at h
   exact h
 
-/-- **216IX** (`dagger-of-iso`, eff.tex:5575, Corollary), second half: in a
+/-- **216IX** (`dagger-of-iso`, eff.tex:5558, Corollary), second half: in a
 †-effectus `α† = α⁻¹` for every isomorphism `α` of `Pure C`. -/
 theorem dagger_of_iso (d : DaggerEffectus C) {P Q : PureCat C} (α : P ≅ Q) :
     d.daggerCat.dag α.hom = α.inv := by
@@ -373,7 +373,7 @@ theorem dagger_of_iso (d : DaggerEffectus C) {P Q : PureCat C} (α : P ≅ Q) :
         rw [α.hom_inv_id, Category.comp_id]
     _ = α.inv := by rw [← Category.assoc, key, Category.id_comp]
 
-/-- **216X** (`zeta-through-asrt`, eff.tex:5581, Exercise): in an
+/-- **216X** (`zeta-through-asrt`, eff.tex:5564, Exercise): in an
 &-effectus with square roots where `π_s` is ⋄-adjoint to `ζ_s` (e.g. a
 †-effectus), `asrt_p ∘ ζ_s = ζ_s ∘ asrt_{p ∘ ζ_s}`. -/
 theorem zeta_through_asrt
@@ -434,7 +434,7 @@ theorem standard_form_of_eq {f : X ⟶ Y} (hf : IsPure f) {c : Pred X}
   haveI : IsIso g := standard_form_map_pure hf g hg
   exact ⟨asIso g, hg⟩
 
-/-- **216XI.Ax2** (`pqqp-from-dagger`, eff.tex:5595): in an &-effectus
+/-- **216XI.Ax2** (`pqqp-from-dagger`, eff.tex:5578): in an &-effectus
 `asrt_q ∘ asrt_p = π_{⌈q&p⌉} ∘ α ∘ ζ_{⌈p&q⌉} ∘ asrt_{p&q}` for some
 isomorphism `α`; indeed `1 ∘ asrt_q ∘ asrt_p = p & q` and
 `im (asrt_q ∘ asrt_p) = ⌈q & p⌉`, as `asrt_q ∘ asrt_p` and
@@ -465,7 +465,7 @@ theorem asrt_comp_standard_form (p q : Pred X) :
   rw [h1] at hβ
   exact ⟨β, hβ⟩
 
-/-- **216XI.Ax3** (`dagger-thm-necessity`, eff.tex:5645): in a †-effectus
+/-- **216XI.Ax3** (`dagger-thm-necessity`, eff.tex:5628): in a †-effectus
 `t ∘ ζ_s` is sharp for sharp `s` and `t`; indeed `⌈t ∘ ζ_s⌉ = im (π_s ∘ π_t)`
 because `ζ_s` is ⋄-adjoint to `π_s` (216VII), and `im (π_s ∘ π_t) ≤ t ∘ ζ_s`
 because `t ∘ ζ_s ∘ π_s ∘ π_t = 1 ∘ π_s ∘ π_t`. -/
@@ -495,7 +495,7 @@ theorem sharpMap_zetaMap (d : DaggerEffectus C) {s : Pred X} (hs : IsSharp s) :
   rw [heq]
   exact isSharp_ceil _
 
-/-- **216XI** (`dagger-thm-necessity`, eff.tex:5590, Theorem): a †-effectus
+/-- **216XI** (`dagger-thm-necessity`, eff.tex:5573, Theorem): a †-effectus
 is a †'-effectus. -/
 theorem dagger_thm_necessity (d : DaggerEffectus C) :
     DaggerPrimeEffectus C := by
@@ -605,7 +605,7 @@ section PureDagger
 
 variable [AndThenEffectus C] {X Y Z : C}
 
-/-- **217II** (`dagger-definition2`, eff.tex:5738, Definition), as a
+/-- **217II** (`dagger-definition2`, eff.tex:5721, Definition), as a
 relation: `g` is *the* dagger of `f`,
 `g = f† = asrt_{1∘f} ∘ π_{⌈1∘f⌉} ∘ α⁻¹ ∘ ζ_{im f}`, where `α` is the
 unique isomorphism putting `f` in the standard form of 212III. -/
@@ -617,7 +617,7 @@ def IsDaggerOf (f : X ⟶ Y) (g : Y ⟶ X) : Prop :=
     g = zetaMap (imPred f) (isSharp_imPred C f) ≫ α.inv ≫
         comprMap (ceilPred (f ≫ truth Y)) ≫ asrt (f ≫ truth Y)
 
-/-- **217I–II** (`dagger-definition2`, eff.tex:5670–5738): in a
+/-- **217I–II** (`dagger-definition2`, eff.tex:5653–5738): in a
 †'-effectus every pure map has a unique dagger in the sense of
 `IsDaggerOf` (well-definedness is the argument of 217I). -/
 theorem pureDagger_existsUnique [DaggerPrimeEffectus C] (f : X ⟶ Y)
@@ -636,7 +636,7 @@ theorem pureDagger_existsUnique [DaggerPrimeEffectus C] (f : X ⟶ Y)
     rw [IsIso.inv_hom_id, ← hαg, α.inv_hom_id]
   rw [hgeq, hinv]
 
-/-- **217II** (`dagger-definition2`, eff.tex:5738, Definition): the dagger
+/-- **217II** (`dagger-definition2`, eff.tex:5721, Definition): the dagger
 `f†` of a pure map `f` in a †'-effectus. -/
 noncomputable def pureDagger [DaggerPrimeEffectus C] (f : X ⟶ Y)
     (hf : IsPure f) : Y ⟶ X :=
@@ -730,7 +730,7 @@ theorem isDaggerOf_of_eq {f : X ⟶ Y} {g : Y ⟶ X} {c : Pred X} {i : Pred Y}
     IsDaggerOf f g := by
   subst hc; subst hi; exact ⟨β, h1, h2⟩
 
-/-- **217III** (`dagger-prime-basics`, eff.tex:5752, Exercise):
+/-- **217III** (`dagger-prime-basics`, eff.tex:5735, Exercise):
 `asrt_p† = asrt_p`. -/
 theorem dagger_prime_basics_asrt [DaggerPrimeEffectus C] (p : Pred X) :
     IsDaggerOf (asrt p) (asrt p) := by
@@ -748,7 +748,7 @@ theorem dagger_prime_basics_asrt [DaggerPrimeEffectus C] (p : Pred X) :
   · rw [h1, Iso.refl_hom, Category.id_comp, hζπ, habs1]
   · rw [h1, Iso.refl_inv, Category.id_comp, ← Category.assoc, hζπ, habs2]
 
-/-- **217III** (`dagger-prime-basics`, eff.tex:5752, Exercise):
+/-- **217III** (`dagger-prime-basics`, eff.tex:5735, Exercise):
 `π_s† = ζ_s` for a corresponding pair. -/
 theorem dagger_prime_basics_pi [DaggerPrimeEffectus C] {s : Pred X}
     (hs : IsSharp s) : IsDaggerOf (comprMap s) (zetaMap s hs) := by
@@ -767,7 +767,7 @@ theorem dagger_prime_basics_pi [DaggerPrimeEffectus C] {s : Pred X}
       Category.id_comp]
   · rw [hone, Category.comp_id, asIso_inv, IsIso.inv_hom_id, Category.comp_id]
 
-/-- **217III** (`dagger-prime-basics`, eff.tex:5752, Exercise):
+/-- **217III** (`dagger-prime-basics`, eff.tex:5735, Exercise):
 `ζ_s† = π_s`. -/
 theorem dagger_prime_basics_zeta [DaggerPrimeEffectus C] {s : Pred X}
     (hs : IsSharp s) : IsDaggerOf (zetaMap s hs) (comprMap s) := by
@@ -796,7 +796,7 @@ theorem dagger_prime_basics_zeta [DaggerPrimeEffectus C] {s : Pred X}
   · rw [hζ1, Iso.symm_inv, asIso_hom, ← Category.assoc, hζπ1,
       Category.id_comp, habs2]
 
-/-- **217III** (`dagger-prime-basics`, eff.tex:5752, Exercise):
+/-- **217III** (`dagger-prime-basics`, eff.tex:5735, Exercise):
 `α† = α⁻¹` for an isomorphism `α`. -/
 theorem dagger_prime_basics_iso [DaggerPrimeEffectus C] (α : X ≅ Y) :
     IsDaggerOf α.hom α.inv := by
@@ -877,7 +877,7 @@ theorem eqToHom_comprMap_assoc {s t : Pred X} (e : s = t) {W : C} (f : X ⟶ W) 
 
 /-! ## Pristine maps (parsec 218) -/
 
-/-- **218II** (`quotcompr-diamond-adjoint`, eff.tex:5774, Lemma): in a
+/-- **218II** (`quotcompr-diamond-adjoint`, eff.tex:5757, Lemma): in a
 †'-effectus, `π_s` is ⋄-adjoint to `ζ_s`. -/
 theorem quotcompr_diamond_adjoint [DaggerPrimeEffectus C] {s : Pred X}
     (hs : IsSharp s) : DiamondAdjoint (comprMap s) (zetaMap s hs) := by
@@ -944,13 +944,13 @@ theorem quotcompr_diamond_adjoint [DaggerPrimeEffectus C] {s : Pred X}
   exact Subtype.ext (eabasics_le_antisymm (hB.mp (pcm_preorder_refl _))
     (hA.mpr (pcm_preorder_refl _)))
 
-/-- **218IV** (`dfn-pristine`, eff.tex:5805, Definition): a map `f` in an
+/-- **218IV** (`dfn-pristine`, eff.tex:5788, Definition): a map `f` in an
 &-effectus is **pristine** when it is pure and `1 ∘ f` is sharp.
 (Pristine maps are not closed under composition, 218V.) -/
 def Pristine (f : X ⟶ Y) : Prop :=
   IsPure f ∧ IsSharp (f ≫ truth Y)
 
-/-- **218VI** (`standard-form-pristine`, eff.tex:5825, Exercise): every
+/-- **218VI** (`standard-form-pristine`, eff.tex:5808, Exercise): every
 pristine map is of the form `h = π_{im h} ∘ α ∘ ζ_{1∘h}` for an
 isomorphism `α`. -/
 theorem standard_form_pristine {h : X ⟶ Y} (hp : Pristine h) :
@@ -985,7 +985,7 @@ theorem standard_form_pristine {h : X ⟶ Y} (hp : Pristine h) :
           rw [zetaMap_eqToHom hp.2 (isSharp_ceil _) hc.symm]
     _ = _ := by simp only [Category.assoc]
 
-/-- Helper for 218VII (the first computation of eff.tex:5854): in a
+/-- Helper for 218VII (the first computation of eff.tex:5850): in a
 †'-effectus `asrt_p ∘ π_s = π_s ∘ asrt_{p ∘ π_s}` for sharp `s` and
 `p ≤ s`. (The mirror image of 216X.) -/
 theorem compr_through_asrt [DaggerPrimeEffectus C] {s : Pred Y}
@@ -1018,7 +1018,7 @@ theorem compr_through_asrt [DaggerPrimeEffectus C] {s : Pred Y}
     _ = asrt (comprMap s ≫ p) ≫ comprMap s := by
         rw [hπζ, Category.id_comp]
 
-/-- **218VII** (`pristine-asrt`, eff.tex:5832, Proposition): in a
+/-- **218VII** (`pristine-asrt`, eff.tex:5815, Proposition): in a
 †'-effectus, for a pristine `h` and predicate `p ≤ im h`:
 `asrt_p ∘ h = h ∘ asrt_{p ∘ h}`. -/
 theorem pristine_asrt [DaggerPrimeEffectus C] {h : X ⟶ Y} (hp : Pristine h)
@@ -1052,7 +1052,7 @@ theorem pristine_asrt [DaggerPrimeEffectus C] {h : X ⟶ Y} (hp : Pristine h)
         conv_rhs => rw [hform]
         simp only [Category.assoc]
 
-/-- **218IX.1** (`asrt-pristine-reverse`, eff.tex:5881, Exercise): if
+/-- **218IX.1** (`asrt-pristine-reverse`, eff.tex:5864, Exercise): if
 `h = π_{im h} ∘ α ∘ ζ_{1∘h}` is pristine, then
 `h† = π_{1∘h} ∘ α⁻¹ ∘ ζ_{im h}`. -/
 theorem asrt_pristine_reverse_1 [DaggerPrimeEffectus C] {h : X ⟶ Y}
@@ -1115,7 +1115,7 @@ theorem pristine_dagger_imPred [DaggerPrimeEffectus C] {h : X ⟶ Y}
     (im_ineq (comprMap (h ≫ truth Y)) α.inv).2 α.inv inferInstance,
     (img_of_compr (h ≫ truth Y)).2 _ hp.2]
 
-/-- **218IX.2** (`asrt-pristine-reverse`, eff.tex:5881, Exercise):
+/-- **218IX.2** (`asrt-pristine-reverse`, eff.tex:5864, Exercise):
 `h†† = h` for pristine `h`. -/
 theorem asrt_pristine_reverse_2 [DaggerPrimeEffectus C] {h : X ⟶ Y}
     (hp : Pristine h) :
@@ -1138,7 +1138,7 @@ theorem asrt_pristine_reverse_2 [DaggerPrimeEffectus C] {h : X ⟶ Y}
     rw [zetaMap_eqToHom_assoc _ hp.2 e2, eqToHom_comprMap e1.symm]
     exact hform.symm
 
-/-- **218IX.3** (`asrt-pristine-reverse`, eff.tex:5881, Exercise):
+/-- **218IX.3** (`asrt-pristine-reverse`, eff.tex:5864, Exercise):
 `h† ∘ h = asrt_{1∘h}` for pristine `h`. -/
 theorem asrt_pristine_reverse_3 [DaggerPrimeEffectus C] {h : X ⟶ Y}
     (hp : Pristine h) :
@@ -1157,7 +1157,7 @@ theorem asrt_pristine_reverse_3 [DaggerPrimeEffectus C] {h : X ⟶ Y}
           Category.id_comp, α.hom_inv_id_assoc]
     _ = asrt (h ≫ truth Y) := (zetaMap_spec (h ≫ truth Y) hp.2).2.2
 
-/-- **218IX.4** (`asrt-pristine-reverse`, eff.tex:5881, Exercise):
+/-- **218IX.4** (`asrt-pristine-reverse`, eff.tex:5864, Exercise):
 `p ∘ h† ≤ im h` for any predicate `p` and pristine `h`. -/
 theorem asrt_pristine_reverse_4 [DaggerPrimeEffectus C] {h : X ⟶ Y}
     (hp : Pristine h) (p : Pred X) :
@@ -1165,7 +1165,7 @@ theorem asrt_pristine_reverse_4 [DaggerPrimeEffectus C] {h : X ⟶ Y}
   have h1 := comp_le_comp (pureDagger h hp.1) (pred_le_truth p)
   rwa [pristine_dagger_truth hp] at h1
 
-/-- **218IX.5** (`asrt-pristine-reverse`, eff.tex:5881, Exercise): if
+/-- **218IX.5** (`asrt-pristine-reverse`, eff.tex:5864, Exercise): if
 `p ≤ 1 ∘ h` then `asrt_{p ∘ h†} ∘ h = h ∘ asrt_p` for pristine `h`. -/
 theorem asrt_pristine_reverse_5 [DaggerPrimeEffectus C] {h : X ⟶ Y}
     (hp : Pristine h) {p : Pred X} (hle : p ≼ (h ≫ truth Y)) :
@@ -1178,7 +1178,7 @@ theorem asrt_pristine_reverse_5 [DaggerPrimeEffectus C] {h : X ⟶ Y}
   have h1 := pristine_asrt hp (asrt_pristine_reverse_4 hp p)
   rwa [← Category.assoc, asrt_pristine_reverse_3 hp, hb] at h1
 
-/-- **218X** (`prist-asrt-decomp`, eff.tex:5898, Proposition), first half:
+/-- **218X** (`prist-asrt-decomp`, eff.tex:5881, Proposition), first half:
 in a †'-effectus every pure map `f` decomposes uniquely as
 `f = h ∘ asrt_{1∘f}` with `h` pristine and `1 ∘ h = ⌈1 ∘ f⌉`. -/
 theorem imPred_of_prist_asrt [DaggerPrimeEffectus C] {f h : X ⟶ Y}
@@ -1204,7 +1204,7 @@ theorem imPred_of_prist_asrt [DaggerPrimeEffectus C] {f h : X ⟶ Y}
     (im_ineq (comprMap (imPred h)) α.hom).2 α.hom inferInstance,
     (img_of_compr (imPred h)).2 _ (isSharp_imPred C h)]
 
-/-- **218X** (`prist-asrt-decomp`, eff.tex:5898, Proposition), first half:
+/-- **218X** (`prist-asrt-decomp`, eff.tex:5881, Proposition), first half:
 in a †'-effectus every pure map `f` decomposes uniquely as
 `f = h ∘ asrt_{1∘f}` with `h` pristine and `1 ∘ h = ⌈1 ∘ f⌉`. -/
 theorem prist_asrt_decomp [DaggerPrimeEffectus C] {f : X ⟶ Y}
@@ -1252,7 +1252,7 @@ theorem prist_asrt_decomp [DaggerPrimeEffectus C] {f : X ⟶ Y}
     eqToHom_comprMap him]
   exact hform
 
-/-- **218X** (`prist-asrt-decomp`, eff.tex:5898, Proposition), second half:
+/-- **218X** (`prist-asrt-decomp`, eff.tex:5881, Proposition), second half:
 for the pristine part `h` of a pure `f`, we have
 `f† = asrt_{1∘f} ∘ h†`. -/
 theorem prist_asrt_decomp_dagger [DaggerPrimeEffectus C] {f : X ⟶ Y}
@@ -1275,7 +1275,7 @@ theorem prist_asrt_decomp_dagger [DaggerPrimeEffectus C] {f : X ⟶ Y}
     rw [zetaMap_eqToHom_assoc (isSharp_imPred C f) (isSharp_imPred C h) him.symm,
       eqToHom_comprMap_assoc h1]
 
-/-- **218XII** (`dagger-idempotent`, eff.tex:5946, Proposition): in a
+/-- **218XII** (`dagger-idempotent`, eff.tex:5929, Proposition): in a
 †'-effectus, `f†† = f` for every pure `f`. -/
 theorem dagger_idempotent [DaggerPrimeEffectus C] {f : X ⟶ Y}
     (hf : IsPure f) :
@@ -1341,7 +1341,7 @@ theorem zeta_asrt_bar [DaggerPrimeEffectus C] (p : Pred X) :
   rwa [zeta_comp_bar p] at h
 
 /-- Helper for 219XI (the computation before
-`dagger-seqprod-inversion`, eff.tex:6355): `⌈p̄⌉ = 1`. -/
+`dagger-seqprod-inversion`, eff.tex:6338): `⌈p̄⌉ = 1`. -/
 theorem ceil_bar [DaggerPrimeEffectus C] (p : Pred X) :
     ceilPred (comprMap (ceilPred p) ≫ p) =
       (1 : Pred (comprObj (ceilPred p))) := by
@@ -1362,7 +1362,7 @@ theorem ceil_bar [DaggerPrimeEffectus C] (p : Pred X) :
   exact h1.symm
 
 /-- Helper for 219XI ("`asrt_p̄` is a quotient and therefore an epi",
-eff.tex:6362): `asrt_p̄` is epic. -/
+eff.tex:6345): `asrt_p̄` is epic. -/
 theorem epi_asrt_bar [DaggerPrimeEffectus C] (p : Pred X) :
     Epi (asrt (comprMap (ceilPred p) ≫ p)) := by
   have him : imPred (asrt (comprMap (ceilPred p) ≫ p)) = 1 := by
@@ -1373,7 +1373,7 @@ theorem epi_asrt_bar [DaggerPrimeEffectus C] (p : Pred X) :
   obtain ⟨r, hr⟩ := standard_form_map_quot (asrt_spec _).1.1 hfaith
   exact quotient_basics_6 hr
 
-/-- Helper for 219XI (the computation of eff.tex:6310–6390, from the second
+/-- Helper for 219XI (the computation of eff.tex:6293–6390, from the second
 axiom of a †'-effectus down to `dagger-seqprod-inversion`): if
 `asrt²_{ab} = (π_{⌈ba⌉} ∘ μ ∘ ζ_{⌈ab⌉} ∘ asrt_{ab}) ∘
 (π_{⌈ab⌉} ∘ ν ∘ ζ_{⌈ba⌉} ∘ asrt_{ba})`, then `ν ∘ μ = id` and
@@ -1469,7 +1469,7 @@ theorem asrt_mu_inv [DaggerPrimeEffectus C] {ab ba : Pred X}
   conv_lhs => rw [← Category.assoc, ← hE4, Category.assoc]
   exact hE2.symm
 
-/-- **219XI** (`dagger-iso-mu`, eff.tex:6266, Proposition): in a
+/-- **219XI** (`dagger-iso-mu`, eff.tex:6249, Proposition): in a
 †'-effectus, if `ν` is the unique isomorphism with
 `asrt_a ∘ asrt_b = π_{⌈a&b⌉} ∘ ν ∘ ζ_{⌈b&a⌉} ∘ asrt_{b&a}`, then
 `asrt_b ∘ asrt_a = asrt_{b&a} ∘ π_{⌈b&a⌉} ∘ ν⁻¹ ∘ ζ_{⌈a&b⌉}`. -/
@@ -1590,7 +1590,7 @@ theorem imPred_comp_iso (f : X ⟶ Y) (θ : Y ⟶ Z) [IsIso θ] :
     rwa [← Category.assoc, IsIso.inv_hom_id, Category.id_comp] at h2
 
 /-- Helper for the daggered squares of 219II (the technique of the published
-solution to **219IX**, `bsols.tex:3283`): if `m = π_J ∘ δ` for an isomorphism
+solution to **219IX**, `bsols.tex:3286`): if `m = π_J ∘ δ` for an isomorphism
 `δ` and `m ∘ z = asrt_J`, then `δ ∘ z = ζ_J` — a map into a comprehension for
 `J` composing with it to `asrt_J` *is* the corresponding quotient, comprehensions
 being monic. -/
@@ -1602,7 +1602,7 @@ theorem zetaMap_eq_of_compr {J : Pred Y} (hJ : IsSharp J) {A : C}
   rw [Category.assoc, hm, hz, (zetaMap_spec J hJ).2.2]
 
 /-- Helper, dual to `zetaMap_eq_of_compr` (the technique of **219VII**,
-eff.tex:6203): if `z = β ∘ ζ_J` for an isomorphism `β` and `c ∘ z = asrt_J`, then
+eff.tex:6186): if `z = β ∘ ζ_J` for an isomorphism `β` and `c ∘ z = asrt_J`, then
 `β⁻¹ ∘ π_J = c`, quotients being epic. -/
 theorem comprMap_eq_of_zeta {J : Pred Y} (hJ : IsSharp J) {B : C}
     (β : comprObj J ≅ B) {z : Y ⟶ B} (hz : zetaMap J hJ ≫ β.hom = z)
@@ -1774,7 +1774,7 @@ theorem pureDagger_comp_compr [DaggerPrimeEffectus C] {i : Pred Y}
     simp only [Category.assoc]
     rw [← Category.assoc δ (inv δ), IsIso.hom_inv_id, Category.id_comp]
 
-/-- **219XI** (`dagger-iso-mu`, eff.tex:6266, Proposition), restated as the
+/-- **219XI** (`dagger-iso-mu`, eff.tex:6249, Proposition), restated as the
 functoriality of the dagger on assert maps: `(asrt_b ∘ asrt_a)† =
 asrt_a ∘ asrt_b`.  (216XI.Ax2 puts `asrt_b ∘ asrt_a` in standard form; 219XI
 identifies the resulting formula for the dagger with `asrt_a ∘ asrt_b`.) -/
@@ -1808,7 +1808,7 @@ theorem isPure_compr_asrt_zeta [DaggerPrimeEffectus C] {t e : Pred Y} (he : IsSh
     (upm_closed_pure (asrt_spec p).1.1
       (isPure_of_isQuotient (zetaMap_spec e he).1))
 
-/-- **219XIV** (`dagger-iso-chi2`, eff.tex:6429, Lemma), in the general form
+/-- **219XIV** (`dagger-iso-chi2`, eff.tex:6412, Lemma), in the general form
 that avoids the Setting 219II: for sharp `t`, `e` and a predicate `p` with
 `⌈p⌉ ≤ e`,
 `(ζ_e ∘ asrt_p ∘ π_t)† = ζ_t ∘ asrt_p ∘ π_e`.
@@ -2095,7 +2095,7 @@ theorem pureDagger_comp_asrt [DaggerPrimeEffectus C] (q : Pred Y)
     (upm_closed_pure (asrt_spec q).1.1 (isPure_pureDagger hM))) h.symm).trans ?_
   exact dagger_idempotent _
 
-/-- **219XVI** (`dagger-is-functor`, eff.tex:6552, Proposition): in a
+/-- **219XVI** (`dagger-is-functor`, eff.tex:6535, Proposition): in a
 †'-effectus, `(f ∘ g)† = g† ∘ f†` for pure `f, g`. -/
 theorem dagger_is_functor [DaggerPrimeEffectus C] {g : X ⟶ Y} {f : Y ⟶ Z}
     (hg : IsPure g) (hf : IsPure f) :
@@ -2116,7 +2116,7 @@ theorem dagger_is_functor [DaggerPrimeEffectus C] {g : X ⟶ Y} {f : Y ⟶ Z}
     pureDagger_comp_asrt (f ≫ truth Z) hg, hdf]
   simp only [Category.assoc]
 
-/-- **220II** (`dagger-thm-sufficiency`, eff.tex:6682), Ax. 1: a pure map is
+/-- **220II** (`dagger-thm-sufficiency`, eff.tex:6665), Ax. 1: a pure map is
 ⋄-adjoint to its dagger.  (Apply `(–)^⋄` to the standard form 212III of `f`,
 using 218II for `π/ζ` and 209IV for the isomorphism.) -/
 theorem pureDagger_diamond_adjoint [DaggerPrimeEffectus C] {f : X ⟶ Y}
@@ -2193,7 +2193,7 @@ theorem pureDaggerCat_dag [DaggerPrimeEffectus C] {P Q : PureCat C} (f : P ⟶ Q
 theorem pureCat_comp_val {P Q R : PureCat C}
     (f : P ⟶ Q) (g : Q ⟶ R) : (f ≫ g).1 = f.1 ≫ g.1 := rfl
 
-/-- **220II** (`dagger-thm-sufficiency`, eff.tex:6682, Theorem): a
+/-- **220II** (`dagger-thm-sufficiency`, eff.tex:6665, Theorem): a
 †'-effectus is a †-effectus, with the dagger of 217II. -/
 theorem dagger_thm_sufficiency [DaggerPrimeEffectus C] :
     Nonempty (DaggerEffectus C) := by
@@ -2253,7 +2253,7 @@ section DaggerTheorem
 
 variable (C)
 
-/-- **215III** (`dagger-theorem`, eff.tex:5327, Theorem): an &-effectus is
+/-- **215III** (`dagger-theorem`, eff.tex:5310, Theorem): an &-effectus is
 a †-effectus if and only if it is a †'-effectus (necessity is 216XI,
 sufficiency 220II).  (Stated at its numbering slot in parsec 215; proved here,
 where 220II is available.) -/
@@ -2275,7 +2275,7 @@ section Dilations
 
 variable [DiamondEffectus C] {X Y P : C}
 
-/-- **221II** (`dfn-eff-dilations`, eff.tex:6803, Definition): a
+/-- **221II** (`dfn-eff-dilations`, eff.tex:6786, Definition): a
 **dilation** of a map `f : X ⟶ Y` is a triple `(P, ϱ, h)` of a sharp total
 map `ϱ : P ⟶ Y` and a pure map `h : X ⟶ P` with `ϱ ∘ h = f`, universal
 among such factorizations: for every `(P', ϱ', h')` with `ϱ'` total sharp
@@ -2287,7 +2287,7 @@ def IsDilation (f : X ⟶ Y) (ϱ : P ⟶ Y) (h : X ⟶ P) : Prop :=
       SharpMap ϱ' → IsTotal ϱ' → h' ≫ ϱ' = f →
         ∃! σ : P ⟶ P', h ≫ σ = h' ∧ σ ≫ ϱ' = ϱ
 
-/-- **221II** (`dfn-eff-dilations`, eff.tex:6819, Definition): an effectus
+/-- **221II** (`dfn-eff-dilations`, eff.tex:6802, Definition): an effectus
 **has dilations** when every map has a dilation. -/
 class HasDilations (C : Type u) [Category.{v} C] [HasFiniteCoproducts C]
     [∀ X Y : C, PCM (X ⟶ Y)] [FinPAC C] [EffectusPartialForm C]
@@ -2295,7 +2295,7 @@ class HasDilations (C : Type u) [Category.{v} C] [HasFiniteCoproducts C]
   dil : ∀ {X Y : C} (f : X ⟶ Y),
     ∃ (P : C) (ϱ : P ⟶ Y) (h : X ⟶ P), IsDilation f ϱ h
 
-/-- **221IV.1** (`dils-abstract-basics`, eff.tex:6837, Proposition): any
+/-- **221IV.1** (`dils-abstract-basics`, eff.tex:6820, Proposition): any
 two dilations of `f` are related by a unique isomorphism. -/
 theorem dils_abstract_basics_1 {P₂ : C} {f : X ⟶ Y} {ϱ₁ : P ⟶ Y}
     {h₁ : X ⟶ P} {ϱ₂ : P₂ ⟶ Y} {h₂ : X ⟶ P₂}
@@ -2346,7 +2346,7 @@ theorem isPure_comp_iso {X Y Z : C} {f : X ⟶ Y} (hf : IsPure f) (θ : Y ⟶ Z)
   exact ⟨Q, ξ, π ≫ θ, p, inv θ ≫ q, hξ, isComprehension_comp_iso hπ θ,
     Category.assoc _ _ _⟩
 
-/-- **221IV.2** (`dils-abstract-basics`, eff.tex:6837, Proposition):
+/-- **221IV.2** (`dils-abstract-basics`, eff.tex:6820, Proposition):
 dilations transport along isomorphisms:
 `(P', ϱ ∘ α⁻¹, α ∘ h)` is a dilation of `f` when `(P, ϱ, h)` is. -/
 theorem dils_abstract_basics_2 {P' : C} {f : X ⟶ Y} {ϱ : P ⟶ Y}
@@ -2371,7 +2371,7 @@ theorem dils_abstract_basics_2 {P' : C} {f : X ⟶ Y} {ϱ : P ⟶ Y}
         Category.id_comp]
     rw [← h1, ← Category.assoc, α.inv_hom_id, Category.id_comp]
 
-/-- **221IV.3** (`dils-abstract-basics`, eff.tex:6837, Proposition):
+/-- **221IV.3** (`dils-abstract-basics`, eff.tex:6820, Proposition):
 `(X, ϱ, id)` is the dilation of a sharp total map `ϱ`. -/
 theorem dils_abstract_basics_3 {ϱ : X ⟶ Y} (hs : SharpMap ϱ)
     (ht : IsTotal ϱ) (hp : IsPure (𝟙 X)) :
@@ -2382,7 +2382,7 @@ theorem dils_abstract_basics_3 {ϱ : X ⟶ Y} (hs : SharpMap ϱ)
   rintro σ ⟨hσ, -⟩
   rw [← hσ, Category.id_comp]
 
-/-- **221IV.4** (`dils-abstract-basics`, eff.tex:6837, Proposition): if
+/-- **221IV.4** (`dils-abstract-basics`, eff.tex:6820, Proposition): if
 `(P, ϱ, h)` is a dilation (of some map), then `(P, id, h)` is a dilation
 of `h`. -/
 theorem dils_abstract_basics_4 {f : X ⟶ Y} {ϱ : P ⟶ Y} {h : X ⟶ P}
@@ -2407,7 +2407,7 @@ theorem dils_abstract_basics_4 {f : X ⟶ Y} {ϱ : P ⟶ Y} {h : X ⟶ P}
   refine hσu σ' ⟨hσ'1, ?_⟩
   rw [← Category.assoc, hσ'2, Category.id_comp]
 
-/-- **221IV.5** (`dils-abstract-basics`, eff.tex:6837, Proposition): for a
+/-- **221IV.5** (`dils-abstract-basics`, eff.tex:6820, Proposition): for a
 quotient `ξ : X ⟶ Q` and `f : Q ⟶ Y` with dilation `(P, ϱ, h)`, the triple
 `(P, ϱ, h ∘ ξ)` is a dilation of `f ∘ ξ`. -/
 theorem dils_abstract_basics_5 {Q : C} {p : Pred X} {ξ : X ⟶ Q}
@@ -2437,7 +2437,7 @@ theorem dils_abstract_basics_5 {Q : C} {p : Pred X} {ξ : X ⟶ Q}
   apply (cancel_epi ξ).mp
   rw [← Category.assoc, hσ'1, hh'']
 
-/-- **221IV.6** (`dils-abstract-basics`, eff.tex:6837, Proposition):
+/-- **221IV.6** (`dils-abstract-basics`, eff.tex:6820, Proposition):
 conversely, if `(P, ϱ, h)` is a dilation of `f ∘ ξ` for a quotient `ξ`,
 then `(P, ϱ, h'')` is a dilation of `f`, where `h''` is the unique map
 with `h'' ∘ ξ = h`. -/
@@ -2461,7 +2461,7 @@ theorem dils_abstract_basics_6 {Q : C} {p : Pred X} {ξ : X ⟶ Q}
     rw [← Category.assoc, hh'', hfac]
   refine ⟨h'', hh'', hsϱ, htϱ, ?_, hfacQ, ?_⟩
   · -- purity of `h''`: pure maps divide on the left by quotients, applied to
-    -- `ξ ≫ h'' = h` (the thesis leaves this step implicit, eff.tex:6923)
+    -- `ξ ≫ h'' = h` (the thesis leaves this step implicit, eff.tex:6906)
     exact isPure_of_isQuotient_comp hξ (by rw [hh'']; exact hph)
   · intro P' ϱ' h' hsϱ' htϱ' hfac'
     have hfac'' : (ξ ≫ h') ≫ ϱ' = ξ ≫ f := by
@@ -2474,7 +2474,7 @@ theorem dils_abstract_basics_6 {Q : C} {p : Pred X} {ξ : X ⟶ Q}
       refine hσu σ' ⟨?_, hσ'2⟩
       rw [← hh'', Category.assoc, hσ'1]
 
-/-- **221IV.7** (`dils-abstract-basics`, eff.tex:6837, Proposition):
+/-- **221IV.7** (`dils-abstract-basics`, eff.tex:6820, Proposition):
 dilations are closed under coproducts:
 `(P₁ + P₂, [ϱ₁, ϱ₂], h₁ + h₂)` dilates `[f₁, f₂]`. -/
 theorem dils_abstract_basics_7 {X₁ X₂ P₁ P₂ : C}
@@ -2520,7 +2520,7 @@ theorem dils_abstract_basics_7 {X₁ X₂ P₁ P₂ : C}
       · rw [coprod.inl_desc, k₁]
       · rw [coprod.inr_desc, k₂]
 
-/-- **221III** (eff.tex:6822, Example): the effectus `vNᵒᵖ` has dilations
+/-- **221III** (eff.tex:6805, Example): the effectus `vNᵒᵖ` has dilations
 (Paschke dilations; the full subcategory `CvNᵒᵖ` does not, 221IIIa — not
 formalized here). -/
 theorem vn_has_dilations (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
@@ -2548,22 +2548,22 @@ theorem asrt_perp_asrt_orth (p : Pred X) :
   rw [(asrt_spec p).2, (asrt_spec (orth p)).2]
   exact EffectAlgebra.perp_orth p
 
-/-- **223II** (`sefp`, eff.tex:7055, Definition): the **side-effect**
+/-- **223II** (`sefp`, eff.tex:7038, Definition): the **side-effect**
 `sef_p = asrt_p ⋁ asrt_{pᵖ}` of measuring the predicate `p`. -/
 noncomputable def sef (p : Pred X) : X ⟶ X :=
   ovee (asrt p) (asrt (orth p)) (asrt_perp_asrt_orth p)
 
-/-- **223II** (`sefp`, eff.tex:7061, Definition): the set
+/-- **223II** (`sefp`, eff.tex:7044, Definition): the set
 `Inv f = {p : f ∘ sef_p = f}` of predicates whose measurement does not
 disturb `f`. -/
 def InvSet (f : X ⟶ Y) : Set (Pred X) :=
   { p : Pred X | sef p ≫ f = f }
 
-/-- **223V** (eff.tex:7093, Definition): the down-set
+/-- **223V** (eff.tex:7076, Definition): the down-set
 `↓f = {g : g ≤ f}` of a map in an &-effectus. -/
 def belowSet (f : X ⟶ Y) : Set (X ⟶ Y) := { g : X ⟶ Y | g ≼ f }
 
-/-- **223V** (eff.tex:7093, Definition): a dilation `(P, ϱ, h)` of `f` has
+/-- **223V** (eff.tex:7076, Definition): a dilation `(P, ϱ, h)` of `f` has
 **the order correspondence** when there is an order isomorphism
 `Θ : ↓f → Inv ϱ` with `g = ϱ ∘ asrt_{Θ(g)} ∘ h` for every `g ≤ f`. -/
 def DilationOrderCorrespondence (f : X ⟶ Y) (ϱ : P ⟶ Y) (h : X ⟶ P) :
@@ -2572,7 +2572,7 @@ def DilationOrderCorrespondence (f : X ⟶ Y) (ϱ : P ⟶ Y) (h : X ⟶ P) :
     (∀ g₁ g₂ : belowSet f, g₁.1 ≼ g₂.1 ↔ (Θ g₁).1 ≼ (Θ g₂).1) ∧
     ∀ g : belowSet f, g.1 = h ≫ asrt (Θ g).1 ≫ ϱ
 
-/-- **223VI** (eff.tex:7112, Example): every dilation in `vNᵒᵖ` has the
+/-- **223VI** (eff.tex:7095, Example): every dilation in `vNᵒᵖ` has the
 order correspondence (by the Paschke correspondence of the dils
 chapter). -/
 theorem vn_dilation_order_correspondence

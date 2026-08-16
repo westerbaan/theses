@@ -35,7 +35,7 @@ variable {C : Type u} [Category.{v} C] [HasFiniteCoproducts C]
 
 /-! ## ⋄-effectuses (parsec 206) -/
 
-/-- **206II** (`diamond-basics`, eff.tex:4430, Definition): a
+/-- **206II** (`diamond-basics`, eff.tex:4413, Definition): a
 **⋄-effectus** is an effectus with quotients, comprehension and images such
 that `sᵖ` is sharp for every sharp predicate `s`. -/
 class DiamondEffectus (C : Type u) [Category.{v} C] [HasFiniteCoproducts C]
@@ -62,49 +62,49 @@ theorem isSharp_ceil (p : Pred X) : IsSharp (ceilPred p) :=
 def SPred.orth (s : SPred X) : SPred X :=
   ⟨EffectAlgebra.orth s.1, DiamondEffectus.orth_sharp s.2⟩
 
-/-- **206II** (`diamond-basics`, eff.tex:4444, Definition): the restriction
+/-- **206II** (`diamond-basics`, eff.tex:4427, Definition): the restriction
 `f^⋄ : SPred Y → SPred X` of `f : X ⟶ Y` to sharp predicates,
 `f^⋄(s) = ⌈s ∘ f⌉`. -/
 noncomputable def diaPull (f : X ⟶ Y) (s : SPred Y) : SPred X :=
   ⟨ceilPred (f ≫ s.1), isSharp_ceil _⟩
 
-/-- **206II** (`diamond-basics`, eff.tex:4449, Definition): the map
+/-- **206II** (`diamond-basics`, eff.tex:4432, Definition): the map
 `f_⋄ : SPred X → SPred Y` of `f : X ⟶ Y`, `f_⋄(s) = im (f ∘ π_s)`. -/
 noncomputable def diaPush (f : X ⟶ Y) (s : SPred X) : SPred Y :=
   ⟨imPred (comprMap s.1 ≫ f), _, _, isImage_imPred _⟩
 
-/-- **206II** (`diamond-basics`, eff.tex:4473, Definition):
+/-- **206II** (`diamond-basics`, eff.tex:4456, Definition):
 `f^□(s) = f^⋄(sᵖ)ᵖ`. -/
 noncomputable def boxPull (f : X ⟶ Y) (s : SPred Y) : SPred X :=
   (diaPull f s.orth).orth
 
-/-- **206II** (`diamond-basics`, eff.tex:4474, Definition):
+/-- **206II** (`diamond-basics`, eff.tex:4457, Definition):
 `f_□(s) = f_⋄(sᵖ)ᵖ`. -/
 noncomputable def boxPush (f : X ⟶ Y) (s : SPred X) : SPred Y :=
   (diaPush f s.orth).orth
 
-/-- **206II.1** (`diamond-basics`, eff.tex:4453, Definition): maps
+/-- **206II.1** (`diamond-basics`, eff.tex:4436, Definition): maps
 `f : X ⟶ Y` and `g : Y ⟶ X` are **⋄-adjoint** when `f^⋄ = g_⋄`. -/
 def DiamondAdjoint (f : X ⟶ Y) (g : Y ⟶ X) : Prop :=
   diaPull f = diaPush g
 
-/-- **206II.2** (`diamond-basics`, eff.tex:4458, Definition): an endomap is
+/-- **206II.2** (`diamond-basics`, eff.tex:4441, Definition): an endomap is
 **⋄-self-adjoint** when it is ⋄-adjoint to itself. -/
 def DiamondSelfAdjoint (f : X ⟶ X) : Prop := DiamondAdjoint f f
 
-/-- **206II.3** (`diamond-basics`, eff.tex:4462, Definition): maps
+/-- **206II.3** (`diamond-basics`, eff.tex:4445, Definition): maps
 `f, g : X ⟶ Y` are **⋄-equivalent** when `f^⋄ = g^⋄` (equivalently
 `f_⋄ = g_⋄`, 207VIIa). -/
 def DiamondEquivalent (f g : X ⟶ Y) : Prop := diaPull f = diaPull g
 
-/-- **206II.4** (`diamond-basics`, eff.tex:4468, Definition): a pure endomap
+/-- **206II.4** (`diamond-basics`, eff.tex:4451, Definition): a pure endomap
 `f` is **⋄-positive** when `f = g ∘ g` for some ⋄-self-adjoint `g`. -/
 def DiamondPositive (f : X ⟶ X) : Prop :=
   IsPure f ∧ ∃ g : X ⟶ X, DiamondSelfAdjoint g ∧ f = g ≫ g
 
 end Diamond
 
-/-- **206III** (eff.tex:4477, Examples): `vNᵒᵖ` is a ⋄-effectus (as are
+/-- **206III** (eff.tex:4460, Examples): `vNᵒᵖ` is a ⋄-effectus (as are
 `CvNᵒᵖ`, `EJAᵒᵖ` and `Set`, not formalized here). -/
 theorem diamond_effectus_vn (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
     letI := s.hasFiniteCoproducts
@@ -221,7 +221,7 @@ for 207V, 208IX). -/
 def SPred.IsInf (s t m : SPred X) : Prop :=
   m.1 ≼ s.1 ∧ m.1 ≼ t.1 ∧ ∀ r : SPred X, r.1 ≼ s.1 → r.1 ≼ t.1 → r.1 ≼ m.1
 
-/-- **207II** (`exc-diam-order-pres`, eff.tex:4487, Exercise): `f^⋄` and
+/-- **207II** (`exc-diam-order-pres`, eff.tex:4470, Exercise): `f^⋄` and
 `f^□` are order preserving. -/
 theorem exc_diam_order_pres (f : X ⟶ Y) {s t : SPred Y} (h : s.1 ≼ t.1) :
     (diaPull f s).1 ≼ (diaPull f t).1 ∧
@@ -232,7 +232,7 @@ theorem exc_diam_order_pres (f : X ⟶ Y) {s t : SPred Y} (h : s.1 ≼ t.1) :
     ceil_mono (comp_le_comp f h2)
   exact eabasics_le_iff_orth_le.mp h3
 
-/-- **207III** (`diamond-adjunction`, eff.tex:4491, Proposition): for
+/-- **207III** (`diamond-adjunction`, eff.tex:4474, Proposition): for
 `f : X ⟶ Y` and sharp `s, t` we have `f^⋄(s) ≤ tᵖ` iff `f_⋄(t) ≤ sᵖ`. -/
 theorem diamond_adjunction (f : X ⟶ Y) (s : SPred Y) (t : SPred X) :
     (diaPull f s).1 ≼ orth t.1 ↔ (diaPush f t).1 ≼ orth s.1 := by
@@ -245,7 +245,7 @@ theorem diamond_adjunction (f : X ⟶ Y) (s : SPred Y) (t : SPred X) :
   show ceilPred (f ≫ s.1) ≼ orth t.1 ↔ imPred (comprMap t.1 ≫ f) ≼ orth s.1
   rw [e0, floor_basics_6, im_le_orth_iff, Category.assoc]
 
-/-- **207III** (`diamond-adjunction`, eff.tex:4499, Proposition),
+/-- **207III** (`diamond-adjunction`, eff.tex:4482, Proposition),
 reformulated: `f_⋄` is the left order-adjoint of `f^□`:
 `f_⋄(s) ≤ t ⟺ s ≤ f^□(t)`. -/
 theorem diamond_adjunction' (f : X ⟶ Y) (s : SPred X) (t : SPred Y) :
@@ -276,7 +276,7 @@ theorem orth_boxPull (f : X ⟶ Y) (s : SPred Y) :
     (boxPull f s).orth = diaPull f s.orth :=
   spred_orth_orth _
 
-/-- **207V.1** (`order-adj-basics`, eff.tex:4527, Exercise): `f_⋄` is order
+/-- **207V.1** (`order-adj-basics`, eff.tex:4510, Exercise): `f_⋄` is order
 preserving. -/
 theorem order_adj_basics_1 (f : X ⟶ Y) {s t : SPred X} (h : s.1 ≼ t.1) :
     (diaPush f s).1 ≼ (diaPush f t).1 :=
@@ -308,7 +308,7 @@ theorem spred_isInf_orth {s t m : SPred X} (h : SPred.IsInf s t m) :
   have k3 := eabasics_le_iff_orth_le.mp (h3 r.orth k1 k2)
   rwa [spred_orth_val, eabasics_orth_orth] at k3
 
-/-- **207V.2** (`order-adj-basics`, eff.tex:4527, Exercise): `f_⋄` preserves
+/-- **207V.2** (`order-adj-basics`, eff.tex:4510, Exercise): `f_⋄` preserves
 (binary) suprema. -/
 theorem order_adj_basics_2 (f : X ⟶ Y) {s t j : SPred X}
     (h : SPred.IsSup s t j) :
@@ -320,7 +320,7 @@ theorem order_adj_basics_2 (f : X ⟶ Y) {s t j : SPred X}
     (h3 (boxPull f r) ((diamond_adjunction' f s r).mp hr1)
       ((diamond_adjunction' f t r).mp hr2))
 
-/-- **207V.3** (`order-adj-basics`, eff.tex:4527, Exercise): `f^□` preserves
+/-- **207V.3** (`order-adj-basics`, eff.tex:4510, Exercise): `f^□` preserves
 (binary) infima. -/
 theorem order_adj_basics_3 (f : X ⟶ Y) {s t m : SPred Y}
     (h : SPred.IsInf s t m) :
@@ -332,7 +332,7 @@ theorem order_adj_basics_3 (f : X ⟶ Y) {s t m : SPred Y}
     (h3 (diaPush f r) ((diamond_adjunction' f r s).mpr hr1)
       ((diamond_adjunction' f r t).mpr hr2))
 
-/-- **207V.4** (`order-adj-basics`, eff.tex:4527, Exercise): `f^⋄` preserves
+/-- **207V.4** (`order-adj-basics`, eff.tex:4510, Exercise): `f^⋄` preserves
 (binary) suprema. -/
 theorem order_adj_basics_4 (f : X ⟶ Y) {s t j : SPred Y}
     (h : SPred.IsSup s t j) :
@@ -342,14 +342,14 @@ theorem order_adj_basics_4 (f : X ⟶ Y) {s t j : SPred Y}
   have h4 := spred_isInf_orth h3
   rwa [spred_orth_orth, spred_orth_orth, spred_orth_orth] at h4
 
-/-- **207V.5** (`order-adj-basics`, eff.tex:4527, Exercise):
+/-- **207V.5** (`order-adj-basics`, eff.tex:4510, Exercise):
 `f_⋄ ∘ f^□ ∘ f_⋄ = f_⋄`. -/
 theorem order_adj_basics_5 (f : X ⟶ Y) (s : SPred X) :
     diaPush f (boxPull f (diaPush f s)) = diaPush f s :=
   Subtype.ext (eabasics_le_antisymm (diaPush_boxPull_le f (diaPush f s))
     (order_adj_basics_1 f (le_boxPull_diaPush f s)))
 
-/-- **207V.6** (`order-adj-basics`, eff.tex:4527, Exercise):
+/-- **207V.6** (`order-adj-basics`, eff.tex:4510, Exercise):
 `f^□ ∘ f_⋄ ∘ f^□ = f^□`. -/
 theorem order_adj_basics_6 (f : X ⟶ Y) (t : SPred Y) :
     boxPull f (diaPush f (boxPull f t)) = boxPull f t :=
@@ -368,7 +368,7 @@ theorem diaPull_comp (g : X ⟶ Y) (f : Y ⟶ Z) (s : SPred Z) :
   show ceilPred ((g ≫ f) ≫ s.1) = ceilPred (g ≫ ceilPred (f ≫ s.1))
   rw [ceiling_within_ceiling, Category.assoc]
 
-/-- **207VI.1–2** (`diamond-functor`, eff.tex:4543, Lemma): `(–)^⋄` is
+/-- **207VI.1–2** (`diamond-functor`, eff.tex:4526, Lemma): `(–)^⋄` is
 functorial: `(id)^⋄ = id` and `(f ∘ g)^⋄ = g^⋄ ∘ f^⋄`. -/
 theorem diamond_functor_pull :
     (∀ s : SPred X, diaPull (𝟙 X) s = s) ∧
@@ -385,7 +385,7 @@ theorem boxPull_comp (g : X ⟶ Y) (f : Y ⟶ Z) (s : SPred Z) :
   show (diaPull (g ≫ f) s.orth).orth = (diaPull g (boxPull f s).orth).orth
   rw [diaPull_comp, orth_boxPull]
 
-/-- **207VI.3–4** (`diamond-functor`, eff.tex:4543, Lemma): `(–)^□` is
+/-- **207VI.3–4** (`diamond-functor`, eff.tex:4526, Lemma): `(–)^□` is
 functorial. -/
 theorem diamond_functor_box :
     (∀ s : SPred X, boxPull (𝟙 X) s = s) ∧
@@ -411,7 +411,7 @@ theorem diaPush_comp (g : X ⟶ Y) (f : Y ⟶ Z) (s : SPred X) :
     rw [← boxPull_comp]
     exact le_boxPull_diaPush (g ≫ f) s
 
-/-- **207VI.5–6** (`diamond-functor`, eff.tex:4543, Lemma): `(–)_⋄` is
+/-- **207VI.5–6** (`diamond-functor`, eff.tex:4526, Lemma): `(–)_⋄` is
 functorial: `(id)_⋄ = id` and `(f ∘ g)_⋄ = f_⋄ ∘ g_⋄`. -/
 theorem diamond_functor_push :
     (∀ s : SPred X, diaPush (𝟙 X) s = s) ∧
@@ -419,7 +419,7 @@ theorem diamond_functor_push :
         diaPush (g ≫ f) s = diaPush f (diaPush g s) :=
   ⟨diaPush_id, diaPush_comp⟩
 
-/-- **207VIIa** (`diamond-equiv-equiv`, eff.tex:4594, Exercise):
+/-- **207VIIa** (`diamond-equiv-equiv`, eff.tex:4577, Exercise):
 `f^⋄ = g^⋄` iff `f_⋄ = g_⋄`. -/
 theorem diamond_equiv_equiv (f g : X ⟶ Y) :
     diaPull f = diaPull g ↔ diaPush f = diaPush g := by
@@ -453,7 +453,7 @@ theorem diamond_equiv_equiv (f g : X ⟶ Y) :
     funext s
     rw [e f s, e g s, hbox s.orth]
 
-/-- **208I** (`image-sharp-is-order-sharp`, eff.tex:4601, Lemma): in a
+/-- **208I** (`image-sharp-is-order-sharp`, eff.tex:4584, Lemma): in a
 ⋄-effectus sharp predicates are **order sharp**: `p ≤ s` and `p ≤ sᵖ` imply
 `p = 0`. -/
 theorem image_sharp_is_order_sharp {p s : Pred X} (hs : IsSharp s)
@@ -546,7 +546,7 @@ theorem isSharp_ovee {X : C} {s t : Pred X} (hs : IsSharp s) (ht : IsSharp t)
   rw [← eabasics_le_antisymm h1 h2]
   exact hjsharp
 
-/-- **208III** (`diamond-oml`, eff.tex:4625, Proposition (Cho)), first half:
+/-- **208III** (`diamond-oml`, eff.tex:4608, Proposition (Cho)), first half:
 in a ⋄-effectus the sharp predicates form a sub-effect algebra of
 `Pred X`. -/
 theorem diamond_oml_subEA (X : C) :
@@ -556,7 +556,7 @@ theorem diamond_oml_subEA (X : C) :
     fun h ha hb => isSharp_ovee ha hb h,
     fun ha => DiamondEffectus.orth_sharp ha⟩, rfl⟩
 
-/-! **208III** (`diamond-oml`, eff.tex:4625, Proposition (Cho)), second
+/-! **208III** (`diamond-oml`, eff.tex:4608, Proposition (Cho)), second
 half — `SPred X` is an orthomodular lattice — is stated and proved as
 `diamond_oml` below, after 208IX/208XII: its lattice operations are the
 `SPred`-infimum and `SPred`-supremum constructed there. (The thesis takes
@@ -590,7 +590,7 @@ instance : Category.{u} OMLatGalCat.{u} where
   comp_id _ := rfl
   assoc _ _ _ := rfl
 
-/-! **208VII** (eff.tex:4661, Corollary) — the functor `X ↦ SPred X` into
+/-! **208VII** (eff.tex:4644, Corollary) — the functor `X ↦ SPred X` into
 `OMLatGal` — is `diamond_omlatgal_functor` below; it needs the orthomodular
 structure of 208III, which is only available after 208IX/208XII. -/
 
@@ -602,7 +602,7 @@ theorem diaPush_one_val (f : X ⟶ Y) :
     (diaPush f (sOne X)).1 = imPred f :=
   (im_ineq f (comprMap (1 : Pred X))).2 _ (isIso_comprMap_one X)
 
-/-- **208IX** (`spred-infimum`, eff.tex:4676, Lemma): for sharp `s, t` the
+/-- **208IX** (`spred-infimum`, eff.tex:4659, Lemma): for sharp `s, t` the
 infimum is `s ∧ t = (π_s)_⋄ ((π_s)^□ (t))`. -/
 theorem spred_infimum {X : C} (s t : SPred X) :
     SPred.IsInf s t
@@ -641,7 +641,7 @@ theorem boxPull_zero_of_isQuotient {X Q : C} {q : Pred X} (hq : IsSharp q)
   rw [h0, show ξ ≫ truth Q = orth q from quotient_basics_5 hξ,
     ceil_of_isSharp (DiamondEffectus.orth_sharp hq), eabasics_orth_orth]
 
-/-- **208XII** (`spred-sup`, eff.tex:4709, Exercise): for sharp `s, t` and a
+/-- **208XII** (`spred-sup`, eff.tex:4692, Exercise): for sharp `s, t` and a
 quotient `ξ` for `s`, we have `(ξ^□ ∘ ξ_⋄)(t) = s ∨ t`. -/
 theorem spred_sup {X : C} (s t : SPred X) :
     SPred.IsSup s t
@@ -674,7 +674,7 @@ theorem spred_sup {X : C} (s t : SPred X) :
     have h3 := (exc_diam_order_pres (quotMap s.1) h2).2
     rwa [hr] at h3
 
-/-- **208III** (`diamond-oml`, eff.tex:4625, Proposition (Cho)), second
+/-- **208III** (`diamond-oml`, eff.tex:4608, Proposition (Cho)), second
 half: `SPred X` is an orthomodular lattice (for the order inherited from
 `Pred X`, with orthocomplement `sᵖ`).
 
@@ -747,7 +747,7 @@ theorem diamond_oml (X : C) :
     compl_compl := spred_orth_orth
     orthomodular := hom }, fun s t => ⟨Iff.rfl, rfl⟩⟩
 
-/-- **208VII** (eff.tex:4661, Corollary): in a ⋄-effectus the assignment
+/-- **208VII** (eff.tex:4644, Corollary): in a ⋄-effectus the assignment
 `X ↦ SPred X`, `f ↦ (f_⋄, f^□)` yields a functor to `OMLatGal`, the
 category of orthomodular lattices with Galois connections (Jacobs). -/
 theorem diamond_omlatgal_functor :
@@ -782,7 +782,7 @@ theorem diamond_omlatgal_functor :
 
 /-! ### ⋄-adjointness (parsec 209) -/
 
-/-- **209II.1** (`exc-diamond-adj`, eff.tex:4722, Exercise): `f^⋄ = g_⋄` iff
+/-- **209II.1** (`exc-diamond-adj`, eff.tex:4705, Exercise): `f^⋄ = g_⋄` iff
 `f_⋄ = g^⋄`. -/
 theorem exc_diamond_adj_1 (f : X ⟶ Y) (g : Y ⟶ X) :
     DiamondAdjoint f g ↔ diaPush f = diaPull g := by
@@ -808,7 +808,7 @@ theorem exc_diamond_adj_1 (f : X ⟶ Y) (g : Y ⟶ X) :
       ((step a (diaPush f a)).mp (pcm_preorder_refl _))
   exact ⟨fun h => key f g h, fun h => (key g f h.symm).symm⟩
 
-/-- **209II.2** (`exc-diamond-adj`, eff.tex:4722, Exercise): if `f` and `g`
+/-- **209II.2** (`exc-diamond-adj`, eff.tex:4705, Exercise): if `f` and `g`
 are ⋄-adjoint, then `im f = ⌈1 ∘ g⌉`. -/
 theorem exc_diamond_adj_2 {f : X ⟶ Y} {g : Y ⟶ X}
     (h : DiamondAdjoint f g) :
@@ -819,7 +819,7 @@ theorem exc_diamond_adj_2 {f : X ⟶ Y} {g : Y ⟶ X}
   rw [(im_ineq f (comprMap (1 : Pred X))).2 _ (isIso_comprMap_one X)] at h1
   exact h1
 
-/-- **209III.1** (`diamond-squares`, eff.tex:4735, Exercise): if `f` is
+/-- **209III.1** (`diamond-squares`, eff.tex:4718, Exercise): if `f` is
 ⋄-self-adjoint, then so is `f ∘ f`. -/
 theorem diamond_squares_1 {f : X ⟶ X} (h : DiamondSelfAdjoint f) :
     DiamondSelfAdjoint (f ≫ f) := by
@@ -828,14 +828,14 @@ theorem diamond_squares_1 {f : X ⟶ X} (h : DiamondSelfAdjoint f) :
   funext s
   rw [diaPull_comp, diaPush_comp, h']
 
-/-- **209III.2** (`diamond-squares`, eff.tex:4735, Exercise): ⋄-positive
+/-- **209III.2** (`diamond-squares`, eff.tex:4718, Exercise): ⋄-positive
 maps are ⋄-self-adjoint. -/
 theorem diamond_squares_2 {f : X ⟶ X} (h : DiamondPositive f) :
     DiamondSelfAdjoint f := by
   obtain ⟨-, g, hg, rfl⟩ := h
   exact diamond_squares_1 hg
 
-/-- **209III.3** (`diamond-squares`, eff.tex:4735, Exercise): if `f` is
+/-- **209III.3** (`diamond-squares`, eff.tex:4718, Exercise): if `f` is
 ⋄-positive and `f ∘ f` is pure, then `f ∘ f` is ⋄-positive. -/
 theorem diamond_squares_3 {f : X ⟶ X} (h : DiamondPositive f)
     (hp : IsPure (f ≫ f)) : DiamondPositive (f ≫ f) :=
@@ -861,13 +861,13 @@ theorem isImage_compr_comp_inv (α : X ⟶ Y) [IsIso α] {s : Pred Y}
       comp_le_comp α (him.2 (inv α ≫ p) hp')
     rwa [← Category.assoc, IsIso.hom_inv_id, Category.id_comp] at h3
 
-/-- **209IV.1** (`iso-diamond-adjoint`, eff.tex:4750, Lemma): for an
+/-- **209IV.1** (`iso-diamond-adjoint`, eff.tex:4733, Lemma): for an
 isomorphism `α`, the predicate `s ∘ α` is sharp for sharp `s`. -/
 theorem iso_diamond_adjoint_1 (α : X ⟶ Y) [IsIso α] {s : Pred Y}
     (hs : IsSharp s) : IsSharp (α ≫ s) :=
   ⟨comprObj s, comprMap s ≫ inv α, isImage_compr_comp_inv α hs⟩
 
-/-- **209IV.2** (`iso-diamond-adjoint`, eff.tex:4750, Lemma): for an
+/-- **209IV.2** (`iso-diamond-adjoint`, eff.tex:4733, Lemma): for an
 isomorphism `α`, `α^⋄(s) = s ∘ α` and `α_⋄(s) = s ∘ α⁻¹`; in particular `α`
 and `α⁻¹` are ⋄-adjoint. -/
 theorem iso_diamond_adjoint_2 (α : X ⟶ Y) [IsIso α] :
@@ -890,12 +890,12 @@ theorem iso_diamond_adjoint_2 (α : X ⟶ Y) [IsIso α] :
 
 /-! ### Sharp maps (parsec 210) -/
 
-/-- **210I** (`sharp-map`, eff.tex:4779, Definition): a map `f` in a
+/-- **210I** (`sharp-map`, eff.tex:4762, Definition): a map `f` in a
 ⋄-effectus is **sharp** when `s ∘ f` is sharp for every sharp `s`. -/
 def SharpMap (f : X ⟶ Y) : Prop :=
   ∀ s : Pred Y, IsSharp s → IsSharp (f ≫ s)
 
-/-- **210II** (`sharp-ceil`, eff.tex:4784, Exercise): `f` is sharp iff
+/-- **210II** (`sharp-ceil`, eff.tex:4767, Exercise): `f` is sharp iff
 `⌈p ∘ f⌉ = ⌈p⌉ ∘ f` for every predicate `p`. -/
 theorem sharp_ceil (f : X ⟶ Y) :
     SharpMap f ↔ ∀ p : Pred Y, ceilPred (f ≫ p) = f ≫ ceilPred p := by
@@ -971,7 +971,7 @@ end DiamondBasics2
 
 /-! ## &-effectuses (parsec 211) -/
 
-/-- **211II** (eff.tex:4809, Definition): an **&-effectus** ("andthen
+/-- **211II** (eff.tex:4792, Definition): an **&-effectus** ("andthen
 effectus") is a ⋄-effectus such that
 
 1. for each predicate `p` on `X` there is a unique ⋄-positive map
@@ -991,7 +991,7 @@ section AndThen
 
 variable [AndThenEffectus C] {X Y Z : C}
 
-/-- **211II** (eff.tex:4818, Definition): the **assert map**
+/-- **211II** (eff.tex:4801, Definition): the **assert map**
 `asrt_p : X ⟶ X` of a predicate `p` — the unique ⋄-positive map with
 `1 ∘ asrt_p = p`. -/
 noncomputable def asrt (p : Pred X) : X ⟶ X :=
@@ -1030,11 +1030,11 @@ theorem isPure_of_isQuotient {Q : C} {q : Pred X} {ξ : X ⟶ Q}
     (h : IsQuotient q ξ) : IsPure ξ :=
   ⟨Q, ξ, 𝟙 Q, q, 1, h, compr_basics_3 (𝟙 Q), (Category.comp_id _).symm⟩
 
-/-- **211II** (eff.tex:4830, Definition): the sequential conjunction
+/-- **211II** (eff.tex:4813, Definition): the sequential conjunction
 `p & q = q ∘ asrt_p` ("`p` andthen `q`"); `p² = p & p`. -/
 noncomputable def andThen (p q : Pred X) : Pred X := asrt p ≫ q
 
-/-- **211IV** (`vn-is-andthen-eff`, eff.tex:4876, Examples): `vNᵒᵖ` is an
+/-- **211IV** (`vn-is-andthen-eff`, eff.tex:4859, Examples): `vNᵒᵖ` is an
 &-effectus, with `asrt_a(b) = √a b √a` (as are `CvNᵒᵖ` and `EJAᵒᵖ`, not
 formalized here; these are the only known examples). -/
 theorem vn_is_andthen_eff (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
@@ -1044,7 +1044,7 @@ theorem vn_is_andthen_eff (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
     letI := s.effectus
     AndThenEffectus WStarCPSU.{u}ᵒᵖ := sorry
 
-/-- **211V** (`sharp-prop`, eff.tex:4889, Proposition): for a predicate `p`
+/-- **211V** (`sharp-prop`, eff.tex:4872, Proposition): for a predicate `p`
 in an &-effectus the following are equivalent: (1) `p` is sharp;
 (2) `p & p = p`; (3) `asrt_p ∘ asrt_p = asrt_p`. -/
 theorem sharp_prop (p : Pred X) :
@@ -1171,7 +1171,7 @@ theorem sharp_prop (p : Pred X) :
     exact hpp
   exact ⟨⟨h12, h21⟩, ⟨h13, fun h => h21 (h32 h)⟩⟩
 
-/-- **211VII** (`prop-corr-zeta-pi`, eff.tex:4951, Proposition), first
+/-- **211VII** (`prop-corr-zeta-pi`, eff.tex:4934, Proposition), first
 part: for sharp `s` there are a comprehension `π_s` for `s` and a quotient
 `ζ_s` for `sᵖ` with `ζ_s ∘ π_s = id` and `π_s ∘ ζ_s = asrt_s`. -/
 theorem prop_corr_zeta_pi {s : Pred X} (hs : IsSharp s) :
@@ -1232,7 +1232,7 @@ theorem prop_corr_zeta_pi {s : Pred X} (hs : IsSharp s) :
     exact h.symm
   exact ⟨Q, π, ξ, himπ ▸ isComprehension_imPred hπ, hp₀ ▸ hξ, hπξ, hasrt.symm⟩
 
-/-- **211VII** (`prop-corr-zeta-pi`, eff.tex:4960, Proposition), second
+/-- **211VII** (`prop-corr-zeta-pi`, eff.tex:4943, Proposition), second
 part (with the uniqueness of 211IX): for *every* comprehension `π` for a
 sharp `s` there is a unique quotient `ζ` for `sᵖ` with `ζ ∘ π = id` and
 `π ∘ ζ = asrt_s`. -/
@@ -1256,7 +1256,7 @@ theorem prop_corr_zeta_pi_compr {s : Pred X} (hs : IsSharp s) {W : C}
   rintro ζ' ⟨-, -, hζ'⟩
   exact (cancel_mono π).mp (by rw [hζ', hB])
 
-/-- **211VII** (`prop-corr-zeta-pi`, eff.tex:4963, Proposition), third
+/-- **211VII** (`prop-corr-zeta-pi`, eff.tex:4946, Proposition), third
 part: conversely, for every quotient `ζ` for `sᵖ` (`s` sharp) there is a
 comprehension `π` for `s` with `ζ ∘ π = id` and `π ∘ ζ = asrt_s`. -/
 theorem prop_corr_zeta_pi_quot {s : Pred X} (hs : IsSharp s) {W : C}
@@ -1277,7 +1277,7 @@ theorem prop_corr_zeta_pi_quot {s : Pred X} (hs : IsSharp s) {W : C}
       rw [← hζeq]; simp only [Category.assoc]
     rw [e, IsIso.inv_hom_id, Category.comp_id, h2]
 
-/-- **211IX** (`zeta-s-convention`, eff.tex:5002, Notation): the
+/-- **211IX** (`zeta-s-convention`, eff.tex:4985, Notation): the
 **corresponding quotient** `ζ_s : X ⟶ {X|s}` of the chosen comprehension
 `π_s` for a sharp predicate `s`: the unique quotient for `sᵖ` with
 `ζ_s ∘ π_s = id` and `π_s ∘ ζ_s = asrt_s`.  (Beware, 211X:
@@ -1292,7 +1292,7 @@ theorem zetaMap_spec (s : Pred X) (hs : IsSharp s) :
       zetaMap s hs ≫ comprMap s = asrt s :=
   (prop_corr_zeta_pi_compr hs (isComprehension_comprMap s)).exists.choose_spec
 
-/-- **211XI** (`upm-closed`, eff.tex:5020, Proposition), first half: in an
+/-- **211XI** (`upm-closed`, eff.tex:5003, Proposition), first half: in an
 &-effectus comprehensions are closed under composition. -/
 theorem upm_closed_compr {p : Pred Y} {q : Pred Z} {π₁ : X ⟶ Y}
     {π₂ : Y ⟶ Z} (h₁ : IsComprehension p π₁) (h₂ : IsComprehension q π₂) :
@@ -1344,7 +1344,7 @@ theorem upm_closed_compr {p : Pred Y} {q : Pred Z} {π₁ : X ⟶ Y}
     refine (cancel_mono (π₁ ≫ π₂)).mp ?_
     rw [hg', ← Category.assoc, hg₁, hg₂]
 
-/-- **211XI** (`upm-closed`, eff.tex:5020, Proposition), second half: in an
+/-- **211XI** (`upm-closed`, eff.tex:5003, Proposition), second half: in an
 &-effectus pure maps are closed under composition. -/
 theorem upm_closed_pure {f : X ⟶ Y} {g : Y ⟶ Z}
     (hf : IsPure f) (hg : IsPure g) : IsPure (f ≫ g) := by
@@ -1365,7 +1365,7 @@ theorem upm_closed_pure {f : X ⟶ Y} {g : Y ⟶ Z}
     _ = ξ₁ ≫ ((ξ' ≫ π') ≫ π₂) := by rw [hcomp]
     _ = (ξ₁ ≫ ξ') ≫ (π' ≫ π₂) := by simp only [Category.assoc]
 
-/-- **211XIV** (`andthen-square-rule`, eff.tex:5075, Exercise):
+/-- **211XIV** (`andthen-square-rule`, eff.tex:5058, Exercise):
 `asrt_p ∘ asrt_p = asrt_{p & p}`. -/
 theorem andthen_square_rule (p : Pred X) :
     asrt p ≫ asrt p = asrt (andThen p p) := by
@@ -1375,7 +1375,7 @@ theorem andthen_square_rule (p : Pred X) :
   · rw [Category.assoc, (asrt_spec p).2]
     rfl
 
-/-- **211XV** (`asrt-absorp-rule`, eff.tex:5079, Exercise): for sharp `s`
+/-- **211XV** (`asrt-absorp-rule`, eff.tex:5062, Exercise): for sharp `s`
 (on the codomain) and `t` (on the domain): `im f ≤ s ⟺ asrt_s ∘ f = f` and
 `1 ∘ f ≤ t ⟺ f ∘ asrt_t = f`. -/
 theorem asrt_absorp_rule (f : X ⟶ Y) {s : Pred Y} {t : Pred X}
@@ -1418,7 +1418,7 @@ theorem asrt_absorp_rule (f : X ⟶ Y) {s : Pred Y} {t : Pred X}
 
 end AndThen
 
-/-- **211XVI** (eff.tex:5088, Definition): the subcategory `Pure C` of pure
+/-- **211XVI** (eff.tex:5071, Definition): the subcategory `Pure C` of pure
 maps of an &-effectus (objects wrapped; closure under composition is
 211XI). -/
 structure PureCat (C : Type u) : Type u where
@@ -1441,7 +1441,7 @@ section AndThenMore
 
 variable [AndThenEffectus C] {X Y : C}
 
-/-- **212I** (`zeta-asrt-quot`, eff.tex:5097, Lemma): in an &-effectus,
+/-- **212I** (`zeta-asrt-quot`, eff.tex:5080, Lemma): in an &-effectus,
 `ζ_{⌈p⌉} ∘ asrt_p` is a quotient for `pᵖ`. -/
 theorem zeta_asrt_quot (p : Pred X) :
     IsQuotient (orth p)
@@ -1484,7 +1484,7 @@ theorem zeta_asrt_quot (p : Pred X) :
     rw [← eabasics_orth_orth p', ← h]
   rwa [hp'] at hq
 
-/-- **212III** (`standard-form-map`, eff.tex:5119, Proposition): every map
+/-- **212III** (`standard-form-map`, eff.tex:5102, Proposition): every map
 `f` in an &-effectus factors as
 `f = π_{im f} ∘ g ∘ ζ_{⌈1∘f⌉} ∘ asrt_{1∘f}` for a unique total and faithful
 `g`. -/
@@ -1561,7 +1561,7 @@ theorem standard_form_map (f : X ⟶ Y) :
   rw [← heq₁]
   exact heqg
 
-/-- **212III.1** (`standard-form-map`, eff.tex:5128, Proposition): if `f`
+/-- **212III.1** (`standard-form-map`, eff.tex:5111, Proposition): if `f`
 is pure, the total faithful part `g` of its standard form is an
 isomorphism. -/
 theorem standard_form_map_pure {f : X ⟶ Y} (hf : IsPure f)
@@ -1607,7 +1607,7 @@ theorem standard_form_map_pure {f : X ⟶ Y} (hf : IsPure f)
   rw [key]
   infer_instance
 
-/-- **212III.2** (`standard-form-map`, eff.tex:5128, Proposition): a pure
+/-- **212III.2** (`standard-form-map`, eff.tex:5111, Proposition): a pure
 faithful map (`im f = 1`) is a quotient. -/
 theorem standard_form_map_quot {f : X ⟶ Y} (hf : IsPure f)
     (him : FaithfulMap f) : ∃ p : Pred X, IsQuotient p f := by
@@ -1630,7 +1630,7 @@ theorem standard_form_map_quot {f : X ⟶ Y} (hf : IsPure f)
   rw [← e, ← hg] at hq
   exact ⟨_, hq⟩
 
-/-- **212III.3** (`standard-form-map`, eff.tex:5128, Proposition): a pure
+/-- **212III.3** (`standard-form-map`, eff.tex:5111, Proposition): a pure
 total map is a comprehension. -/
 theorem standard_form_map_compr {f : X ⟶ Y} (hf : IsPure f)
     (ht : IsTotal f) : ∃ q : Pred Y, IsComprehension q f := by
@@ -1744,7 +1744,7 @@ private theorem scalDiv_unique {a b c : Scal C} (hab : a ≼ b)
   have := (scal_factor hab).unique hkey ((scal_factor hab).exists.choose_spec)
   rw [scalDiv, dif_pos hab, ← this, ← hc', scalZeta]
 
-/-- **213I** (`andthen-effect-divisoid`, eff.tex:5184, Proposition): if `C`
+/-- **213I** (`andthen-effect-divisoid`, eff.tex:5167, Proposition): if `C`
 is an &-effectus, then `(Scal C)ᵒᵖ` (scalars with reversed multiplication)
 is an effect divisoid. -/
 theorem andthen_effect_divisoid :
@@ -1784,7 +1784,7 @@ section AndThenSharp
 
 variable [AndThenEffectus C] {X Y Z : C}
 
-/-- **213III** (`perp-sharp-is-orth`, eff.tex:5224, Lemma): in an
+/-- **213III** (`perp-sharp-is-orth`, eff.tex:5207, Lemma): in an
 &-effectus, if `s ⊥ t` for sharp `s, t` then `s & t = 0 = t & s`. -/
 theorem perp_sharp_is_orth {s t : Pred X} (hs : IsSharp s) (ht : IsSharp t)
     (h : Perp s t) : andThen s t = 0 ∧ andThen t s = 0 := by
@@ -1817,14 +1817,14 @@ theorem perp_sharp_is_orth {s t : Pred X} (hs : IsSharp s) (ht : IsSharp t)
     rw [key ht] at hle
     exact eq_zero_of_le_zero hle
 
-/-- **213V** (`simple-andthen-absorption`, eff.tex:5239, Exercise): for
+/-- **213V** (`simple-andthen-absorption`, eff.tex:5222, Exercise): for
 sharp `s` and any predicate `p`: `p ≤ s ⟺ s & p = p`. -/
 theorem simple_andthen_absorption {s p : Pred X} (hs : IsSharp s) :
     p ≼ s ↔ andThen s p = p := by
   have h := (asrt_absorp_rule p (isSharp_one (effObj C)) hs).2
   rwa [truth_effObj_eq_id, Category.comp_id] at h
 
-/-- **213VI** (`exc-prod-sharp-maps`, eff.tex:5246, Exercise): a pairing
+/-- **213VI** (`exc-prod-sharp-maps`, eff.tex:5229, Exercise): a pairing
 `⟨f, g⟩` is a sharp map iff both `f` and `g` are sharp maps. -/
 theorem exc_prod_sharp_maps (f : Z ⟶ X) (g : Z ⟶ Y)
     (h : Perp (f ≫ truth X) (g ≫ truth Y)) :

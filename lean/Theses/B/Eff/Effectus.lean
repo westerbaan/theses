@@ -2417,7 +2417,7 @@ theorem distinction_part_tot_eff_1 {C : Type u} [Category.{v} C]
     [HasFiniteCoproducts C] [HasTerminal C] [EffectusTotalForm C]
     {X : C} (f : X ⟶ ⊥_ C) : IsIso f := by
   -- the right pullback square of 185I for `𝟙 : 0 ⟶ 0` and `f : X ⟶ 0`,
-  -- transported along `0 + A ≅ A` (bsols.tex:1801)
+  -- transported along `0 + A ≅ A` (bsols.tex:1804)
   have hsq : IsPullback (𝟙 (⊥_ C)) (initial.to X) (𝟙 (⊥_ C)) f := by
     refine (tot_pullbacks_right (𝟙 (⊥_ C)) f).of_iso (Iso.refl _) (Iso.refl _)
       (coprodInitialIso X) (coprodInitialIso (⊥_ C)) ?_ ?_ ?_ ?_

@@ -123,7 +123,7 @@ theorem total_comp_orth {W X : C} {f : W ⟶ X} (hf : IsTotal f) (p : Pred X) :
 
 /-! ## Effectuses with quotients (parsec 197) -/
 
-/-- **197II** (`dfn-quotient`, eff.tex:3670, Definition): a map
+/-- **197II** (`dfn-quotient`, eff.tex:3653, Definition): a map
 `ξ : X ⟶ X/p` is a **quotient** for a predicate `p` on `X` when
 `1 ∘ ξ ≤ pᵖ` and, universally, every `f : X ⟶ Y` with `1 ∘ f ≤ pᵖ` factors
 as `f = f' ∘ ξ` for a unique `f'`. -/
@@ -132,18 +132,18 @@ def IsQuotient {X Q : C} (p : Pred X) (ξ : X ⟶ Q) : Prop :=
     ∀ ⦃Y : C⦄ (f : X ⟶ Y), (f ≫ truth Y) ≼ orth p →
       ∃! f' : Q ⟶ Y, ξ ≫ f' = f
 
-/-- **197II** (`dfn-quotient`, eff.tex:3672, Definition): an **effectus with
+/-- **197II** (`dfn-quotient`, eff.tex:3655, Definition): an **effectus with
 quotients**: every predicate has a quotient. -/
 class HasQuotients (C : Type u) [Category.{v} C] [HasFiniteCoproducts C]
     [∀ X Y : C, PCM (X ⟶ Y)] [FinPAC C] [EffectusPartialForm C] : Prop where
   quot : ∀ {X : C} (p : Pred X), ∃ (Q : C) (ξ : X ⟶ Q), IsQuotient p ξ
 
-/-- **197III** (`quot-not`, eff.tex:3695, Notation): the codomain `X/p` of a
+/-- **197III** (`quot-not`, eff.tex:3678, Notation): the codomain `X/p` of a
 chosen quotient for `p`. -/
 noncomputable def quotObj [HasQuotients C] {X : C} (p : Pred X) : C :=
   (HasQuotients.quot p).choose
 
-/-- **197III** (`quot-not`, eff.tex:3695, Notation): a chosen quotient
+/-- **197III** (`quot-not`, eff.tex:3678, Notation): a chosen quotient
 `ξ_p : X ⟶ X/p` for `p`. -/
 noncomputable def quotMap [HasQuotients C] {X : C} (p : Pred X) :
     X ⟶ quotObj p :=
@@ -158,7 +158,7 @@ section QuotientBasics
 
 variable {X Q Q' Z : C}
 
-/-- **197V.1** (`quotient-basics`, eff.tex:3729, Exercise): postcomposing a
+/-- **197V.1** (`quotient-basics`, eff.tex:3712, Exercise): postcomposing a
 quotient for `p` with an isomorphism yields a quotient for `p`. -/
 theorem quotient_basics_1 {p : Pred X} {ξ : X ⟶ Q} (h : IsQuotient p ξ)
     (θ : Q ⟶ Z) [IsIso θ] : IsQuotient p (ξ ≫ θ) := by
@@ -177,7 +177,7 @@ theorem quotient_basics_1 {p : Pred X} {ξ : X ⟶ Q} (h : IsQuotient p ξ)
       have hg' := huniq _ hgf
       rw [← hg', ← Category.assoc, IsIso.inv_hom_id, Category.id_comp]
 
-/-- **197V.2** (`quotient-basics`, eff.tex:3737, Exercise): any two
+/-- **197V.2** (`quotient-basics`, eff.tex:3720, Exercise): any two
 quotients for `p` differ by a unique isomorphism. -/
 theorem quotient_basics_2 {p : Pred X} {ξ₁ : X ⟶ Q} {ξ₂ : X ⟶ Q'}
     (h₁ : IsQuotient p ξ₁) (h₂ : IsQuotient p ξ₂) :
@@ -193,7 +193,7 @@ theorem quotient_basics_2 {p : Pred X} {ξ₁ : X ⟶ Q} {ξ₂ : X ⟶ Q'}
     rw [huu (θ' ≫ θ) (show ξ₁ ≫ (θ' ≫ θ) = ξ₁ by rw [← Category.assoc, hθ', hθ]),
       huu (𝟙 Q) (Category.comp_id _)]
 
-/-- **197V.3** (`quotient-basics`, eff.tex:3741, Exercise): isomorphisms are
+/-- **197V.3** (`quotient-basics`, eff.tex:3724, Exercise): isomorphisms are
 quotients for `0`. -/
 theorem quotient_basics_3 (f : X ⟶ Q) [IsIso f] :
     IsQuotient (0 : Pred X) f := by
@@ -207,7 +207,7 @@ theorem quotient_basics_3 (f : X ⟶ Q) [IsIso f] :
       replace hg' : f ≫ g' = g := hg'
       rw [← hg', ← Category.assoc, IsIso.inv_hom_id, Category.id_comp]
 
-/-- **197V.4** (`quotient-basics`, eff.tex:3742, Exercise): maps into the
+/-- **197V.4** (`quotient-basics`, eff.tex:3725, Exercise): maps into the
 zero object are quotients for `1`. -/
 theorem quotient_basics_4 (f : X ⟶ (⊥_ C)) :
     IsQuotient (1 : Pred X) f := by
@@ -223,7 +223,7 @@ theorem quotient_basics_4 (f : X ⟶ (⊥_ C)) :
     · intro g' _
       exact initial.hom_ext g' 0
 
-/-- **197V.5** (`quotient-basics`, eff.tex:3743, Exercise): if `ξ` is a
+/-- **197V.5** (`quotient-basics`, eff.tex:3726, Exercise): if `ξ` is a
 quotient for `p`, then `1 ∘ ξ = pᵖ`. -/
 theorem quotient_basics_5 {p : Pred X} {ξ : X ⟶ Q} (h : IsQuotient p ξ) :
     ξ ≫ truth Q = orth p := by
@@ -247,7 +247,7 @@ theorem quotient_basics_5 {p : Pred X} {ξ : X ⟶ Q} (h : IsQuotient p ξ) :
   rw [hf] at hle
   exact eabasics_le_antisymm h.1 hle
 
-/-- **197V.6** (`quotient-basics`, eff.tex:3745, Exercise): quotients are
+/-- **197V.6** (`quotient-basics`, eff.tex:3728, Exercise): quotients are
 epic. -/
 theorem quotient_basics_6 {p : Pred X} {ξ : X ⟶ Q} (h : IsQuotient p ξ) :
     Epi ξ := by
@@ -259,7 +259,7 @@ theorem quotient_basics_6 {p : Pred X} {ξ : X ⟶ Q} (h : IsQuotient p ξ) :
   obtain ⟨u, -, huu⟩ := h.2 (ξ ≫ a) hf
   rw [huu a rfl, huu b hab.symm]
 
-/-- **197VII** (`quotient-total`, eff.tex:3755, Proposition): if
+/-- **197VII** (`quotient-total`, eff.tex:3738, Proposition): if
 `ξ : X ⟶ X/pᵖ` is a quotient for `pᵖ`, then every `f : X ⟶ Z` with
 `1 ∘ f = p` factors as `f = g ∘ ξ` for a unique *total* `g`.  (So every map
 factors as a total map after a quotient.) -/
@@ -275,7 +275,7 @@ theorem quotient_total {p : Pred X} {ξ : X ⟶ Q} (hξ : IsQuotient (orth p) ξ
     rw [← Category.assoc, hg, hf, quotient_basics_5 hξ, eabasics_orth_orth]
   exact (cancel_epi ξ).mp this
 
-/-- **197IX** (`quotients-composition`, eff.tex:3772, Proposition): in an
+/-- **197IX** (`quotients-composition`, eff.tex:3755, Proposition): in an
 effectus with quotients, quotients are closed under composition: if `ξ₁` is
 a quotient for `pᵖ` and `ξ₂` a quotient for `qᵖ`, then `ξ₂ ∘ ξ₁` is a
 quotient for `(q ∘ ξ₁)ᵖ`. -/
@@ -318,7 +318,7 @@ theorem quotients_composition [HasQuotients C] {Y : C} {p : Pred X}
   have hq := quotient_basics_1 hξ g
   rwa [hg] at hq
 
-/-- **197XI** (`quot-fact-system`, eff.tex:3814, Exercise): (quotient, total)
+/-- **197XI** (`quot-fact-system`, eff.tex:3797, Exercise): (quotient, total)
 is an orthogonal factorization system: if `t ∘ ξ = t' ∘ ξ'` with `ξ, ξ'`
 quotients (for `p`, `p'`) and `t, t'` total, then there is a unique
 isomorphism `θ` with `ξ' = θ ∘ ξ` and `t = t' ∘ θ`. -/
@@ -344,7 +344,7 @@ end QuotientBasics
 
 /-! ## The Grothendieck-style category `∫ Pred_□` (parsec 198) -/
 
-/-- **198II** (`dfn-eff-grothendieck`, eff.tex:3838, Definition): the
+/-- **198II** (`dfn-eff-grothendieck`, eff.tex:3821, Definition): the
 category `∫ Pred_□` of an effectus `C`: objects are pairs `(X, p)` of an
 object with a predicate; a morphism `(X,p) → (Y,q)` is a map `f : X ⟶ Y`
 of `C` with `p ≤ (qᵖ ∘ f)ᵖ`. -/
@@ -372,7 +372,7 @@ instance : Category.{v} (PredSquare C) where
   comp_id _ := Subtype.ext (by simp)
   assoc _ _ _ := Subtype.ext (by simp)
 
-/-- **198II** (`dfn-eff-grothendieck`, eff.tex:3852, Definition): the
+/-- **198II** (`dfn-eff-grothendieck`, eff.tex:3835, Definition): the
 forgetful functor `U : ∫ Pred_□ → C`. -/
 def predSquareForget (C : Type u) [Category.{v} C] [HasFiniteCoproducts C]
     [∀ X Y : C, PCM (X ⟶ Y)] [FinPAC C] [EffectusPartialForm C] :
@@ -380,7 +380,7 @@ def predSquareForget (C : Type u) [Category.{v} C] [HasFiniteCoproducts C]
   obj P := P.obj
   map f := f.1
 
-/-- **198II** (`dfn-eff-grothendieck`, eff.tex:3856, Definition): the
+/-- **198II** (`dfn-eff-grothendieck`, eff.tex:3839, Definition): the
 functor `0 : C → ∫ Pred_□`, `X ↦ (X, 0)`. -/
 def predSquareZero (C : Type u) [Category.{v} C] [HasFiniteCoproducts C]
     [∀ X Y : C, PCM (X ⟶ Y)] [FinPAC C] [EffectusPartialForm C] :
@@ -390,7 +390,7 @@ def predSquareZero (C : Type u) [Category.{v} C] [HasFiniteCoproducts C]
   map_id _ := Subtype.ext rfl
   map_comp _ _ := Subtype.ext rfl
 
-/-- **198II** (`dfn-eff-grothendieck`, eff.tex:3856, Definition): the
+/-- **198II** (`dfn-eff-grothendieck`, eff.tex:3839, Definition): the
 functor `1 : C → ∫ Pred_□`, `X ↦ (X, 1)`. -/
 def predSquareOne (C : Type u) [Category.{v} C] [HasFiniteCoproducts C]
     [∀ X Y : C, PCM (X ⟶ Y)] [FinPAC C] [EffectusPartialForm C] :
@@ -400,7 +400,7 @@ def predSquareOne (C : Type u) [Category.{v} C] [HasFiniteCoproducts C]
   map_id _ := Subtype.ext rfl
   map_comp _ _ := Subtype.ext rfl
 
-/-- **198II** (`dfn-eff-grothendieck`, eff.tex:3855, Definition): the
+/-- **198II** (`dfn-eff-grothendieck`, eff.tex:3838, Definition): the
 adjunction `0 ⊣ U`. -/
 theorem predSquare_zero_adj :
     Nonempty (predSquareZero C ⊣ predSquareForget C) :=
@@ -411,7 +411,7 @@ theorem predSquare_zero_adj :
           left_inv := fun _ => rfl
           right_inv := fun _ => rfl } }⟩
 
-/-- **198II** (`dfn-eff-grothendieck`, eff.tex:3855, Definition): the
+/-- **198II** (`dfn-eff-grothendieck`, eff.tex:3838, Definition): the
 adjunction `U ⊣ 1`. -/
 theorem predSquare_one_adj :
     Nonempty (predSquareForget C ⊣ predSquareOne C) :=
@@ -422,7 +422,7 @@ theorem predSquare_one_adj :
           left_inv := fun _ => rfl
           right_inv := fun _ => rfl } }⟩
 
-/-- **198III** (`exc-quot-adjoint`, eff.tex:3862, Exercise\*): an effectus
+/-- **198III** (`exc-quot-adjoint`, eff.tex:3845, Exercise\*): an effectus
 has quotients if and only if the functor `0 : C → ∫ Pred_□` has a left
 adjoint `Q`. -/
 theorem exc_quot_adjoint :
@@ -489,7 +489,7 @@ theorem exc_quot_adjoint :
 
 /-! ## Effectuses with comprehension (parsec 199) -/
 
-/-- **199II** (`dfn-comprehension`, eff.tex:3912, Definition): a map
+/-- **199II** (`dfn-comprehension`, eff.tex:3895, Definition): a map
 `π : {X|p} ⟶ X` is a **comprehension** for a predicate `p` on `X` when
 `p ∘ π = 1 ∘ π` and, universally, every `g : Z ⟶ X` with `p ∘ g = 1 ∘ g`
 factors as `g = π ∘ g'` for a unique `g'`.  (Comprehensions are *not*
@@ -499,18 +499,18 @@ def IsComprehension {W X : C} (p : Pred X) (π : W ⟶ X) : Prop :=
     ∀ ⦃Z : C⦄ (g : Z ⟶ X), g ≫ p = g ≫ truth X →
       ∃! g' : Z ⟶ W, g' ≫ π = g
 
-/-- **199II** (`dfn-comprehension`, eff.tex:3914, Definition): an effectus
+/-- **199II** (`dfn-comprehension`, eff.tex:3897, Definition): an effectus
 **has comprehension** when every predicate has a comprehension. -/
 class HasComprehension (C : Type u) [Category.{v} C] [HasFiniteCoproducts C]
     [∀ X Y : C, PCM (X ⟶ Y)] [FinPAC C] [EffectusPartialForm C] : Prop where
   compr : ∀ {X : C} (p : Pred X), ∃ (W : C) (π : W ⟶ X), IsComprehension p π
 
-/-- **199IV** (`compr-not`, eff.tex:3945, Notation): the domain `{X|p}` of a
+/-- **199IV** (`compr-not`, eff.tex:3928, Notation): the domain `{X|p}` of a
 chosen comprehension for `p`. -/
 noncomputable def comprObj [HasComprehension C] {X : C} (p : Pred X) : C :=
   (HasComprehension.compr p).choose
 
-/-- **199IV** (`compr-not`, eff.tex:3945, Notation): a chosen comprehension
+/-- **199IV** (`compr-not`, eff.tex:3928, Notation): a chosen comprehension
 `π_p : {X|p} ⟶ X` for `p`. -/
 noncomputable def comprMap [HasComprehension C] {X : C} (p : Pred X) :
     comprObj p ⟶ X :=
@@ -521,7 +521,7 @@ theorem isComprehension_comprMap [HasComprehension C] {X : C} (p : Pred X) :
     IsComprehension p (comprMap p) :=
   (HasComprehension.compr p).choose_spec.choose_spec
 
-/-- **199VI** (`compr-grothendieck`, eff.tex:3977, Exercise\*): an effectus
+/-- **199VI** (`compr-grothendieck`, eff.tex:3960, Exercise\*): an effectus
 has comprehension if and only if the functor `1 : C → ∫ Pred_□` has a right
 adjoint `K`. -/
 theorem compr_grothendieck :
@@ -608,7 +608,7 @@ section ComprBasics
 
 variable {W W' X Z : C}
 
-/-- **199VII.1** (`compr-basics`, eff.tex:3983, Exercise): precomposing a
+/-- **199VII.1** (`compr-basics`, eff.tex:3966, Exercise): precomposing a
 comprehension for `p` with an isomorphism yields a comprehension for
 `p`. -/
 theorem compr_basics_1 {p : Pred X} {π : W ⟶ X} (h : IsComprehension p π)
@@ -658,7 +658,7 @@ theorem isComprehension_comp_iso {p : Pred X} {π : W ⟶ X}
       rw [← hk, Category.assoc, Category.assoc, IsIso.hom_inv_id,
         Category.comp_id]
 
-/-- **199VII.2** (`compr-basics`, eff.tex:3991, Exercise): any two
+/-- **199VII.2** (`compr-basics`, eff.tex:3974, Exercise): any two
 comprehensions for `p` differ by a unique isomorphism. -/
 theorem compr_basics_2 {p : Pred X} {π₁ : W ⟶ X} {π₂ : W' ⟶ X}
     (h₁ : IsComprehension p π₁) (h₂ : IsComprehension p π₂) :
@@ -674,7 +674,7 @@ theorem compr_basics_2 {p : Pred X} {π₁ : W ⟶ X} {π₂ : W' ⟶ X}
     rw [huu (θ' ≫ θ) (show (θ' ≫ θ) ≫ π₂ = π₂ by rw [Category.assoc, hθ, hθ']),
       huu (𝟙 W') (Category.id_comp _)]
 
-/-- **199VII.3** (`compr-basics`, eff.tex:3995, Exercise): isomorphisms are
+/-- **199VII.3** (`compr-basics`, eff.tex:3978, Exercise): isomorphisms are
 comprehensions for `1`. -/
 theorem compr_basics_3 (f : W ⟶ X) [IsIso f] :
     IsComprehension (1 : Pred X) f := by
@@ -687,7 +687,7 @@ theorem compr_basics_3 (f : W ⟶ X) [IsIso f] :
     replace hk : k ≫ f = g := hk
     rw [← hk, Category.assoc, IsIso.hom_inv_id, Category.comp_id]
 
-/-- **199VII.4** (`compr-basics`, eff.tex:3996, Exercise): the zero map out
+/-- **199VII.4** (`compr-basics`, eff.tex:3979, Exercise): the zero map out
 of the zero object is a comprehension for `0`. -/
 theorem compr_basics_4 (X : C) :
     IsComprehension (0 : Pred X) (0 : (⊥_ C) ⟶ X) := by
@@ -702,7 +702,7 @@ theorem compr_basics_4 (X : C) :
     · intro k _
       exact eq_zero_of_hom_to_initial k
 
-/-- **199VII.5** (`compr-basics`, eff.tex:3997, Exercise): comprehensions
+/-- **199VII.5** (`compr-basics`, eff.tex:3980, Exercise): comprehensions
 are monic. -/
 theorem compr_basics_5 {p : Pred X} {π : W ⟶ X} (h : IsComprehension p π) :
     Mono π := by
@@ -713,7 +713,7 @@ theorem compr_basics_5 {p : Pred X} {π : W ⟶ X} (h : IsComprehension p π) :
   obtain ⟨u, -, huu⟩ := h.2 (a ≫ π) hg
   rw [huu a rfl, huu b hab.symm]
 
-/-- **199VII.6** (`compr-basics`, eff.tex:3998, Exercise): `pᵖ ∘ π = 0` for
+/-- **199VII.6** (`compr-basics`, eff.tex:3981, Exercise): `pᵖ ∘ π = 0` for
 a comprehension `π` for `p`. -/
 theorem compr_basics_6 {p : Pred X} {π : W ⟶ X} (h : IsComprehension p π) :
     π ≫ orth p = 0 := (comp_orth_eq_zero_iff π p).mpr h.1
@@ -722,7 +722,7 @@ end ComprBasics
 
 /-! ## Kernels and cokernels (parsec 200) -/
 
-/-- **200II** (eff.tex:4007, Definition): a **kernel** of `f : X ⟶ Y` is an
+/-- **200II** (eff.tex:3990, Definition): a **kernel** of `f : X ⟶ Y` is an
 equalizer of `f` with the zero map: `k` with `f ∘ k = 0` such that every
 `g` with `f ∘ g = 0` factors uniquely through `k`.  (Zero maps are those of
 the PCM-enrichment; an effectus in partial form has a zero object.) -/
@@ -730,13 +730,13 @@ def IsKernel {W X Y : C} (f : X ⟶ Y) (k : W ⟶ X) : Prop :=
   k ≫ f = 0 ∧
     ∀ ⦃Z : C⦄ (g : Z ⟶ X), g ≫ f = 0 → ∃! g' : Z ⟶ W, g' ≫ k = g
 
-/-- **200II** (eff.tex:4017, Definition): a **cokernel** of `f : X ⟶ Y` is
+/-- **200II** (eff.tex:4000, Definition): a **cokernel** of `f : X ⟶ Y` is
 a kernel of `f` in `Cᵒᵖ`. -/
 def IsCokernel {X Y W : C} (f : X ⟶ Y) (c : Y ⟶ W) : Prop :=
   f ≫ c = 0 ∧
     ∀ ⦃Z : C⦄ (g : Y ⟶ Z), f ≫ g = 0 → ∃! g' : W ⟶ Z, c ≫ g' = g
 
-/-- **200III** (`effectus-kernels`, eff.tex:4022, Proposition): an effectus
+/-- **200III** (`effectus-kernels`, eff.tex:4005, Proposition): an effectus
 with comprehension has all kernels; a kernel of `f` is given by a
 comprehension for `(1 ∘ f)ᵖ`. -/
 theorem effectus_kernels {W X Y : C} (f : X ⟶ Y) {π : W ⟶ X}
@@ -751,7 +751,7 @@ theorem effectus_kernels {W X Y : C} (f : X ⟶ Y) {π : W ⟶ X}
   rw [← comp_orth_eq_zero_iff, eabasics_orth_orth, ← Category.assoc, hg,
     FinPAC.zero_comp]
 
-/-- **200V** (`compr-is-kernel`, eff.tex:4037, Exercise): in an effectus, a
+/-- **200V** (`compr-is-kernel`, eff.tex:4020, Exercise): in an effectus, a
 map is a comprehension for `p` if and only if it is a kernel of `pᵖ`. -/
 theorem compr_is_kernel {W X : C} (p : Pred X) (f : W ⟶ X) :
     IsComprehension p f ↔ IsKernel (orth p) f := by
@@ -765,7 +765,7 @@ theorem compr_is_kernel {W X : C} (p : Pred X) (f : W ⟶ X) :
 
 /-! ## Pure maps (parsec 201) -/
 
-/-- **201II** (eff.tex:4048, Definition): a map in an effectus is **pure**
+/-- **201II** (eff.tex:4031, Definition): a map in an effectus is **pure**
 if it is a comprehension after a quotient. -/
 def IsPure {X Y : C} (f : X ⟶ Y) : Prop :=
   ∃ (Q : C) (ξ : X ⟶ Q) (π : Q ⟶ Y) (p : Pred X) (q : Pred Y),
@@ -773,20 +773,20 @@ def IsPure {X Y : C} (f : X ⟶ Y) : Prop :=
 
 /-! ## Images and faithful maps (parsec 202) -/
 
-/-- **202I.1** (eff.tex:4097, Definition): a predicate `im` on `Y` is *the*
+/-- **202I.1** (eff.tex:4080, Definition): a predicate `im` on `Y` is *the*
 **image** of `f : X ⟶ Y` when it is the least predicate with
 `im ∘ f = 1 ∘ f`. -/
 def IsImage {X Y : C} (f : X ⟶ Y) (im : Pred Y) : Prop :=
   f ≫ im = f ≫ truth Y ∧
     ∀ p : Pred Y, f ≫ p = f ≫ truth Y → im ≼ p
 
-/-- **202I.1** (eff.tex:4101, Definition): an effectus **has images** when
+/-- **202I.1** (eff.tex:4084, Definition): an effectus **has images** when
 every map has an image. -/
 class HasImages (C : Type u) [Category.{v} C] [HasFiniteCoproducts C]
     [∀ X Y : C, PCM (X ⟶ Y)] [FinPAC C] [EffectusPartialForm C] : Prop where
   im : ∀ {X Y : C} (f : X ⟶ Y), ∃ p : Pred Y, IsImage f p
 
-/-- **202II** (eff.tex:4122, Notation): the image `im f` of a map `f` in an
+/-- **202II** (eff.tex:4105, Notation): the image `im f` of a map `f` in an
 effectus with images (`im f ∘ g` is read as `im (f ∘ g)`; the thesis's
 `im^⊥ f` is `orth (imPred f)`). -/
 noncomputable def imPred [HasImages C] {X Y : C} (f : X ⟶ Y) : Pred Y :=
@@ -797,13 +797,13 @@ theorem isImage_imPred [HasImages C] {X Y : C} (f : X ⟶ Y) :
     IsImage f (imPred f) :=
   (HasImages.im f).choose_spec
 
-/-- **202I.2** (eff.tex:4114, Definition): a map `f : X ⟶ Y` is
+/-- **202I.2** (eff.tex:4097, Definition): a map `f : X ⟶ Y` is
 **faithful** if `im f = 1`; equivalently, `p ∘ f = 0` implies `p = 0` for
 every predicate `p` on `Y`. -/
 def FaithfulMap {X Y : C} (f : X ⟶ Y) : Prop :=
   IsImage f (1 : Pred Y)
 
-/-- **202I.2** (eff.tex:4117, Definition): the equivalent characterization
+/-- **202I.2** (eff.tex:4100, Definition): the equivalent characterization
 of faithfulness: `p ∘ f = 0` implies `p = 0`. -/
 theorem faithfulMap_iff {X Y : C} (f : X ⟶ Y) :
     FaithfulMap f ↔ ∀ p : Pred Y, f ≫ p = 0 → p = 0 := by
@@ -824,7 +824,7 @@ theorem faithfulMap_iff {X Y : C} (f : X ⟶ Y) :
     rw [hp1]
     exact pcm_preorder_refl _
 
-/-- **202V** (`im-ineq`, eff.tex:4147, Exercise): `im (f ∘ g) ≤ im f`, with
+/-- **202V** (`im-ineq`, eff.tex:4130, Exercise): `im (f ∘ g) ≤ im f`, with
 equality when `g` is an isomorphism. -/
 theorem im_ineq [HasImages C] {X Y Z : C} (f : X ⟶ Y) (g : Z ⟶ X) :
     imPred (g ≫ f) ≼ imPred f ∧
@@ -840,7 +840,7 @@ theorem im_ineq [HasImages C] {X Y Z : C} (f : X ⟶ Y) (g : Z ⟶ X) :
   rw [← Category.assoc, IsIso.inv_hom_id, Category.id_comp] at h3
   exact eabasics_le_antisymm (key α f) h3
 
-/-- **202VI** (`exc-quot-faithful`, eff.tex:4152, Exercise): quotients are
+/-- **202VI** (`exc-quot-faithful`, eff.tex:4135, Exercise): quotients are
 faithful. -/
 theorem exc_quot_faithful {X Q : C} {p : Pred X} {ξ : X ⟶ Q}
     (h : IsQuotient p ξ) : FaithfulMap ξ := by
@@ -850,7 +850,7 @@ theorem exc_quot_faithful {X Q : C} {p : Pred X} {ξ : X ⟶ Q}
   have h2 : ξ ≫ q = ξ ≫ 0 := by rw [hq, FinPAC.comp_zero]
   exact (cancel_epi ξ).mp h2
 
-/-- **202VIII** (`compr-total`, eff.tex:4162, Lemma): in an effectus with
+/-- **202VIII** (`compr-total`, eff.tex:4145, Lemma): in an effectus with
 quotients, comprehensions are total. -/
 theorem compr_total [HasQuotients C] {W X : C} {p : Pred X} {π : W ⟶ X}
     (h : IsComprehension p π) : IsTotal π := by
@@ -874,7 +874,7 @@ theorem compr_total [HasQuotients C] {W X : C} {p : Pred X} {π : W ⟶ X}
   exact eabasics_le_antisymm (pred_le_truth _) h3
 
 
-/-- Helper (quotients cancel on the left; needed for 221IV.6, eff.tex:6923):
+/-- Helper (quotients cancel on the left; needed for 221IV.6, eff.tex:6906):
 if `ξ` and `ξ ≫ η` are quotients, then so is `η` — namely a quotient for
 `(1 ∘ η)ᵖ`. -/
 theorem isQuotient_of_comp_left {X Q R : C} {p₀ p : Pred X}
@@ -926,7 +926,7 @@ theorem isComprehension_of_comp_right [HasQuotients C] {W Z X : C}
 
 /-- Helper (**pure maps divide on the left by quotients**): if `ξ` is a
 quotient and `ξ ≫ g` is pure, then `g` is pure.  The thesis uses this
-tacitly in the proof of 221IV.6 (eff.tex:6923), where it asserts that the
+tacitly in the proof of 221IV.6 (eff.tex:6906), where it asserts that the
 factor `h''` of the pure map `h = h'' ∘ ξ` is again pure. -/
 theorem isPure_of_isQuotient_comp [HasQuotients C] {X Q Y : C} {p₀ : Pred X}
     {ξ : X ⟶ Q} (hξ : IsQuotient p₀ ξ) {g : Q ⟶ Y}
@@ -971,24 +971,24 @@ theorem isPure_of_comp_isComprehension [HasQuotients C] {X Z Y : C}
 
 /-! ## Sharp predicates, floor and ceiling (parsecs 203–204) -/
 
-/-- **203I.1** (eff.tex:4185, Definition): a predicate is (image) **sharp**
+/-- **203I.1** (eff.tex:4168, Definition): a predicate is (image) **sharp**
 if it is the image of some map.  (`SPred X` is the set of sharp predicates
 on `X`.) -/
 def IsSharp {X : C} (p : Pred X) : Prop :=
   ∃ (Y : C) (f : Y ⟶ X), IsImage f p
 
-/-- **203I.1** (eff.tex:4191, Definition): the set `SPred X` of sharp
+/-- **203I.1** (eff.tex:4174, Definition): the set `SPred X` of sharp
 predicates on `X`. -/
 def SPred (X : C) : Type v := { p : Pred X // IsSharp p }
 
-/-- **203I.2** (eff.tex:4194, Definition): the **floor**
+/-- **203I.2** (eff.tex:4177, Definition): the **floor**
 `⌊p⌋ = im π_p` of a predicate (comprehensions for the same predicate have
 the same image by 202V). -/
 noncomputable def floorPred [HasComprehension C] [HasImages C] {X : C}
     (p : Pred X) : Pred X :=
   imPred (comprMap p)
 
-/-- **203I.2** (eff.tex:4198, Definition): the **ceiling**
+/-- **203I.2** (eff.tex:4181, Definition): the **ceiling**
 `⌈p⌉ = ⌊pᵖ⌋ᵖ` of a predicate. -/
 noncomputable def ceilPred [HasComprehension C] [HasImages C] {X : C}
     (p : Pred X) : Pred X :=
@@ -998,11 +998,11 @@ section FloorBasics
 
 variable [HasComprehension C] [HasImages C] {X Y : C}
 
-/-- **203IV.1** (`floor-basics`, eff.tex:4217, Lemma): `⌊p⌋ ≤ p`. -/
+/-- **203IV.1** (`floor-basics`, eff.tex:4200, Lemma): `⌊p⌋ ≤ p`. -/
 theorem floor_basics_1 (p : Pred X) : floorPred p ≼ p :=
   (isImage_imPred (comprMap p)).2 p (isComprehension_comprMap p).1
 
-/-- **203IV.2** (`floor-basics`, eff.tex:4217, Lemma):
+/-- **203IV.2** (`floor-basics`, eff.tex:4200, Lemma):
 `π_p = π_{⌊p⌋} ∘ α` for some isomorphism `α` (indeed `π_p` is also a
 comprehension for `⌊p⌋`). -/
 theorem floor_basics_2 (p : Pred X) :
@@ -1019,7 +1019,7 @@ theorem floor_basics_2 (p : Pred X) :
     compr_basics_2 hc (isComprehension_comprMap (floorPred p))
   exact ⟨θ, hiso, hθ⟩
 
-/-- **203IV.3** (`floor-basics`, eff.tex:4217, Lemma): `⌊⌊p⌋⌋ = ⌊p⌋`. -/
+/-- **203IV.3** (`floor-basics`, eff.tex:4200, Lemma): `⌊⌊p⌋⌋ = ⌊p⌋`. -/
 theorem floor_basics_3 (p : Pred X) :
     floorPred (floorPred p) = floorPred p := by
   obtain ⟨α, hiso, hα⟩ := floor_basics_2 p
@@ -1027,7 +1027,7 @@ theorem floor_basics_3 (p : Pred X) :
   rw [hα] at h
   exact h.symm
 
-/-- **203IV.4** (`floor-basics`, eff.tex:4217, Lemma): `p ≤ q` implies
+/-- **203IV.4** (`floor-basics`, eff.tex:4200, Lemma): `p ≤ q` implies
 `⌊p⌋ ≤ ⌊q⌋`. -/
 theorem floor_basics_4 {p q : Pred X} (h : p ≼ q) :
     floorPred p ≼ floorPred q := by
@@ -1070,7 +1070,7 @@ theorem ceilPred_mono {p q : Pred X} (h : p ≼ q) : ceilPred p ≼ ceilPred q :
     (floor_basics_4 (eabasics_le_iff_orth_le.mp h))
   exact h2
 
-/-- **203IV.5** (`floor-basics`, eff.tex:4217, Lemma):
+/-- **203IV.5** (`floor-basics`, eff.tex:4200, Lemma):
 `⌈p⌉ ∘ f ≤ ⌈p ∘ f⌉`. -/
 theorem floor_basics_5 (p : Pred X) (f : Y ⟶ X) :
     (f ≫ ceilPred p) ≼ ceilPred (f ≫ p) := by
@@ -1103,7 +1103,7 @@ theorem floor_basics_5 (p : Pred X) (f : Y ⟶ X) :
   rw [eabasics_orth_orth] at h2
   exact h2
 
-/-- **203IV.6** (`floor-basics`, eff.tex:4217, Lemma): `⌈p⌉ ∘ f = 0` iff
+/-- **203IV.6** (`floor-basics`, eff.tex:4200, Lemma): `⌈p⌉ ∘ f = 0` iff
 `p ∘ f = 0`. -/
 theorem floor_basics_6 (p : Pred X) (f : Y ⟶ X) :
     f ≫ ceilPred p = 0 ↔ f ≫ p = 0 := by
@@ -1117,7 +1117,7 @@ theorem floor_basics_6 (p : Pred X) (f : Y ⟶ X) :
     rw [h, ceilPred_zero] at h5
     exact eq_zero_of_le_zero h5
 
-/-- **203XII** (`img-of-compr`, eff.tex:4301, Exercise): `p` is sharp iff
+/-- **203XII** (`img-of-compr`, eff.tex:4284, Exercise): `p` is sharp iff
 `⌊p⌋ = p`; consequently `im π_s = s` for sharp `s`. -/
 theorem img_of_compr (p : Pred X) :
     (IsSharp p ↔ floorPred p = p) ∧
@@ -1137,7 +1137,7 @@ theorem img_of_compr (p : Pred X) :
   rw [show imPred (comprMap p) = p from hfp] at h3
   exact ⟨_, _, h3⟩
 
-/-- **203XIII** (`ceiling-within-ceiling`, eff.tex:4306, Exercise):
+/-- **203XIII** (`ceiling-within-ceiling`, eff.tex:4289, Exercise):
 `⌈⌈p⌉ ∘ f⌉ = ⌈p ∘ f⌉`. -/
 theorem ceiling_within_ceiling (p : Pred X) (f : Y ⟶ X) :
     ceilPred (f ≫ ceilPred p) = ceilPred (f ≫ p) := by
@@ -1163,7 +1163,7 @@ theorem ovee_eq_of_eq {E : Type*} [PCM E] {a b a' b' : E} (ha : a = a')
 
 /-- Helper (used for 203XIV): in an effect algebra, `a ⋁ b = A ⋁ B` together
 with `a ≤ A` and `b ≤ B` forces `a = A` and `b = B`.  (This is the
-"cancellation" step of the solution `img-tupling`, bsols.tex:2889.) -/
+"cancellation" step of the solution `img-tupling`, bsols.tex:2892.) -/
 theorem eq_of_ovee_eq_of_le {E : Type*} [EffectAlgebra E] {a b A B : E}
     (hab : Perp a b) (hAB : Perp A B) (haA : a ≼ A) (hbB : b ≼ B)
     (heq : ovee a b hab = ovee A B hAB) : a = A ∧ b = B := by
@@ -1185,7 +1185,7 @@ theorem eq_of_ovee_eq_of_le {E : Type*} [EffectAlgebra E] {a b A B : E}
   subst hbeq
   exact ⟨eabasics_cancellation hab hAB heq, rfl⟩
 
-/-- **203XIV** (`img-tupling`, eff.tex:4312, Exercise), first half: in an
+/-- **203XIV** (`img-tupling`, eff.tex:4295, Exercise), first half: in an
 effectus with images, `im ⟨f, g⟩ = [im f, im g]`. -/
 theorem img_tupling [HasImages C] {X Y Z : C} (f : Z ⟶ X) (g : Z ⟶ Y)
     (h : Perp (f ≫ truth X) (g ≫ truth Y)) :
@@ -1227,7 +1227,7 @@ theorem img_tupling [HasImages C] {X Y Z : C} (f : Z ⟶ X) (g : Z ⟶ Y)
   rw [← hdesc (imPred (effPair f g h)), eabasics_le_antisymm hf' hf,
     eabasics_le_antisymm hg' hg]
 
-/-- **203XIV** (`img-tupling`, eff.tex:4312, Exercise), second half: a
+/-- **203XIV** (`img-tupling`, eff.tex:4295, Exercise), second half: a
 predicate `[p, q]` is sharp iff `p` and `q` are sharp. -/
 theorem img_tupling_sharp [HasImages C] {X Y : C} (p : Pred X) (q : Pred Y) :
     IsSharp (coprod.desc p q : X ⨿ Y ⟶ effObj C) ↔ IsSharp p ∧ IsSharp q := by
@@ -1300,7 +1300,7 @@ theorem img_tupling_sharp [HasImages C] {X Y : C} (p : Pred X) (q : Pred Y) :
       rw [him0, e1, e2, hf1, hg1]
     exact ⟨_, coprod.map f g, by rw [hfp, hgq, ← him]; exact isImage_imPred _⟩
 
-/-- **204I** (`compr-is-full`, eff.tex:4321, Lemma): for sharp predicates
+/-- **204I** (`compr-is-full`, eff.tex:4304, Lemma): for sharp predicates
 `s, t` on the same object, `s ≤ t` iff `π_s` factors through `π_t`. -/
 theorem compr_is_full [HasComprehension C] [HasImages C] {X : C}
     {s t : Pred X} (hs : IsSharp s) (ht : IsSharp t) :
@@ -1319,7 +1319,7 @@ theorem compr_is_full [HasComprehension C] [HasImages C] {X : C}
     rw [← (img_of_compr s).2 s hs, ← (img_of_compr t).2 t ht]
     exact h2
 
-/-- **204III** (eff.tex:4347, Lemma): in an effectus with images,
+/-- **204III** (eff.tex:4330, Lemma): in an effectus with images,
 `im [f, g] = im f ∨ im g` (a supremum among all predicates). -/
 theorem im_cotuple_sup [HasImages C] {X Y Z : C} (f : X ⟶ Z) (g : Y ⟶ Z) :
     PCM.IsSup (imPred f) (imPred g) (imPred (coprod.desc f g)) := by
@@ -1347,7 +1347,7 @@ theorem im_cotuple_sup [HasImages C] {X Y Z : C} (f : X ⟶ Z) (g : Y ⟶ Z) :
     · rw [← Category.assoc, ← Category.assoc, coprod.inr_desc]
       exact hkey g c hcg
 
-/-- **204V** (`lattice-compr`, eff.tex:4370, Corollary): in an effectus
+/-- **204V** (`lattice-compr`, eff.tex:4353, Corollary): in an effectus
 with comprehension and images, sharp predicates `s, t` have a supremum
 `s ∨ t = im [π_s, π_t]` among all predicates, which is itself sharp. -/
 theorem lattice_compr [HasComprehension C] [HasImages C] {X : C}
@@ -1361,7 +1361,7 @@ theorem lattice_compr [HasComprehension C] [HasImages C] {X : C}
 
 /-! ## Cokernels (parsec 205) -/
 
-/-- **205II** (`effectus-cokernels`, eff.tex:4386, Proposition): an effectus
+/-- **205II** (`effectus-cokernels`, eff.tex:4369, Proposition): an effectus
 with quotients and images has all cokernels; a cokernel of `f` is given by
 a quotient for `im f`. -/
 theorem effectus_cokernels [HasImages C] {X Y Q : C} (f : X ⟶ Y)
@@ -1384,7 +1384,7 @@ theorem effectus_cokernels [HasImages C] {X Y Q : C} (f : X ⟶ Y)
   exact eabasics_perp_iff_le_orth.mp
     (PCM.perp_comm (eabasics_perp_iff_le_orth.mpr hmin))
 
-/-- **205IV** (`exc-cokernels`, eff.tex:4400, Exercise): in an effectus
+/-- **205IV** (`exc-cokernels`, eff.tex:4383, Exercise): in an effectus
 with comprehension and images, a map `f` is a quotient for a sharp
 predicate `s` iff `f` is a cokernel of a comprehension `π_s` for `s`. -/
 theorem exc_cokernels [HasComprehension C] [HasImages C] {X Z : C}

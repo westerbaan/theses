@@ -39,23 +39,23 @@ section DaggerKernel
 
 variable {D : Type u} [Category.{v} D] [DaggerCat D]
 
-/-- **224II** (eff.tex:7138, Definition): in a †-category, `f` is
+/-- **224II** (eff.tex:7121, Definition): in a †-category, `f` is
 **†-mono** when `f† ∘ f = id`. -/
 def DaggerCat.DagMono {X Y : D} (f : X ⟶ Y) : Prop :=
   f ≫ DaggerCat.dag f = 𝟙 X
 
-/-- **224II** (eff.tex:7138, Definition): dually, `f` is **†-epi** when
+/-- **224II** (eff.tex:7121, Definition): dually, `f` is **†-epi** when
 `f ∘ f† = id`. -/
 def DaggerCat.DagEpi {X Y : D} (f : X ⟶ Y) : Prop :=
   DaggerCat.dag f ≫ f = 𝟙 Y
 
-/-- **224II** (eff.tex:7147, Definition): `f` is a **†-partial isometry**
+/-- **224II** (eff.tex:7130, Definition): `f` is a **†-partial isometry**
 when `f = m ∘ e` for a †-mono `m` and †-epi `e`. -/
 def DaggerCat.DagPartialIsometry {X Y : D} (f : X ⟶ Y) : Prop :=
   ∃ (Z : D) (e : X ⟶ Z) (m : Z ⟶ Y),
     DaggerCat.DagEpi e ∧ DaggerCat.DagMono m ∧ f = e ≫ m
 
-/-- **224II** (eff.tex:7153, Definition): a **†-kernel** of `f` is an
+/-- **224II** (eff.tex:7136, Definition): a **†-kernel** of `f` is an
 equalizer of `f` with `0` which is †-mono; a **†-kernel category** is a
 †-category with a zero object in which every arrow has a †-kernel. -/
 class DaggerKernelCategory (D : Type u) [Category.{v} D] [DaggerCat D]
@@ -79,7 +79,7 @@ theorem isPure_zero {X Y : C} : IsPure (0 : X ⟶ Y) :=
   ⟨⊥_ C, 0, 0, 1, 0, quotient_basics_4 _, compr_basics_4 _,
     (FinPAC.zero_comp _).symm⟩
 
-/-- Helper for 224III (the first computation of eff.tex:7169): in a
+/-- Helper for 224III (the first computation of eff.tex:7152): in a
 †-effectus `f† ∘ f = asrt_{p&p}` where `p = 1 ∘ f`, since
 `f = π_{im f} ∘ α ∘ ζ_{⌈p⌉} ∘ asrt_p` and
 `f† = asrt_p ∘ π_{⌈p⌉} ∘ α⁻¹ ∘ ζ_{im f}` (`isDaggerOf_dag`), and
@@ -112,7 +112,7 @@ theorem dag_comp_dag_self (d : DaggerEffectus C) {P Q : PureCat C} (f : P ⟶ Q)
     (zetaMap_spec (ceilPred (f.1 ≫ truth Q.base)) (isSharp_ceil _)).2.2,
     ← Category.assoc, habs, andthen_square_rule]
 
-/-- **224III.1** (eff.tex:7162, Proposition): in `Pure C` for a †-effectus
+/-- **224III.1** (eff.tex:7145, Proposition): in `Pure C` for a †-effectus
 `C`, a map is †-mono iff it is a comprehension. -/
 theorem pure_dagMono_iff_compr (d : DaggerEffectus C)
     {P Q : PureCat C} (f : P ⟶ Q) :
@@ -163,7 +163,7 @@ theorem pure_dagMono_iff_compr (d : DaggerEffectus C)
     show f.1 ≫ (d.daggerCat.dag f).1 = 𝟙 P.base
     rw [dag_comp_dag_self d f, h3, asrt_one]
 
-/-- **224III.1** (eff.tex:7162, Proposition), dually: a map of `Pure C` is
+/-- **224III.1** (eff.tex:7145, Proposition), dually: a map of `Pure C` is
 †-epi iff it is a quotient for a sharp predicate. -/
 theorem pure_dagEpi_iff_quot (d : DaggerEffectus C)
     {P Q : PureCat C} (f : P ⟶ Q) :
@@ -259,7 +259,7 @@ theorem pure_dagEpi_iff_quot (d : DaggerEffectus C)
       d.daggerCat.dag (d.daggerCat.dag f) = 𝟙 Q := hm
     rwa [d.daggerCat.dag_dag] at hm2
 
-/-- **224III.2** (eff.tex:7162, Proposition): the †-partial isometries of
+/-- **224III.2** (eff.tex:7145, Proposition): the †-partial isometries of
 `Pure C` are exactly the pristine maps. -/
 theorem pure_dagPartialIsometry_iff_pristine (d : DaggerEffectus C)
     {P Q : PureCat C} (f : P ⟶ Q) :
@@ -309,7 +309,7 @@ theorem pure_dagPartialIsometry_iff_pristine (d : DaggerEffectus C)
       rw [Category.assoc]
       exact hβ
 
-/-- **224III** (eff.tex:7173, Proposition): `Pure C` is a †-kernel
+/-- **224III** (eff.tex:7156, Proposition): `Pure C` is a †-kernel
 category: the †-kernel of `f` is given by the comprehension
 `π_{(1∘f)ᵖ}`. -/
 theorem pure_daggerKernelCategory (d : DaggerEffectus C)
@@ -399,7 +399,7 @@ theorem pure_daggerKernelCategory (d : DaggerEffectus C)
 
 end PureDaggerKernel
 
-/-- **224VI** (`exc-purec-no-biproduct`, eff.tex:7206, Exercise\*):
+/-- **224VI** (`exc-purec-no-biproduct`, eff.tex:7189, Exercise\*):
 `Pure (vNᵒᵖ)` does not have finite (bi)products — in particular it has no
 binary coproducts. -/
 theorem exc_purec_no_biproduct (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
@@ -411,7 +411,7 @@ theorem exc_purec_no_biproduct (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ
       letI := hA
       ¬ HasBinaryCoproducts (PureCat WStarCPSU.{u}ᵒᵖ) := sorry
 
-/-- **224VII** (`exc-purec-equal`, eff.tex:7235, Exercise\*):
+/-- **224VII** (`exc-purec-equal`, eff.tex:7218, Exercise\*):
 `Pure (vNᵒᵖ)` does not have all coequalizers. -/
 theorem exc_purec_equal (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
     letI := s.hasFiniteCoproducts
@@ -424,7 +424,7 @@ theorem exc_purec_equal (s : EffectusPartialStructure WStarCPSU.{u}ᵒᵖ) :
 
 /-! ## Sequential effect algebras (parsec 225) -/
 
-/-- **225IV** (eff.tex:7369, Definition): a **sequential effect algebra**
+/-- **225IV** (eff.tex:7352, Definition): a **sequential effect algebra**
 (SEA) is an effect algebra with a binary operation `&` satisfying
 
 * (S1) `c & (–)` is additive;
@@ -449,14 +449,14 @@ class SequentialEffectAlgebra (E : Type u) [EffectAlgebra E] where
       seq c (seq a b) = seq (seq a b) c ∧
       seq c (ovee a b h) = seq (ovee a b h) c
 
-/-- **225V** (eff.tex:7398, Examples): the effect algebra `[0,1]_𝒜` of a
+/-- **225V** (eff.tex:7381, Examples): the effect algebra `[0,1]_𝒜` of a
 von Neumann algebra is a sequential effect algebra with
 `a & b = √a b √a`. -/
 theorem effects_sea (A : Type u) [CStarAlgebra A] [PartialOrder A]
     [StarOrderedRing A] [Theses.VonNeumannAlgebra A] :
     Nonempty (SequentialEffectAlgebra (Theses.effects A)) := sorry
 
-/-- **225V** (eff.tex:7398, Examples): any commutative effect monoid is a
+/-- **225V** (eff.tex:7381, Examples): any commutative effect monoid is a
 sequential effect algebra with `a & b = a ⊙ b`. -/
 theorem commutative_effectMonoid_sea (M : Type u) [EffectMonoid M]
     (hc : EffectMonoid.Commutative M) :
@@ -471,7 +471,7 @@ theorem commutative_effectMonoid_sea (M : Type u) [EffectMonoid M]
      seq_comm_assoc := fun {a b} _ c => EffectMonoid.mul_assoc a b c
      seq_comm_compat := fun {a b c} h _ _ => ⟨hc c (a * b), hc c (ovee a b h)⟩ }⟩
 
-/-- **225VI** (eff.tex:7405, Proposition): in a †-effectus, the predicates
+/-- **225VI** (eff.tex:7388, Proposition): in a †-effectus, the predicates
 `Pred X` with `p & q = q ∘ asrt_p` satisfy axioms (S1), (S2) and (S3) of a
 sequential effect algebra.  (Whether they form a SEA is open, 225VIII.) -/
 theorem pred_sea_s1_s2_s3 [AndThenEffectus C] [DaggerPrimeEffectus C]
@@ -492,7 +492,7 @@ theorem pred_sea_s1_s2_s3 [AndThenEffectus C] [DaggerPrimeEffectus C]
     intro p
     exact ((asrt_absorp_rule p (isSharp_one (effObj C)) (isSharp_one X)).2).mp
       (pred_le_truth _)
-  · -- (S3): the thesis (eff.tex:7415) applies the dagger to
+  · -- (S3): the thesis (eff.tex:7398) applies the dagger to
     -- `asrt_q ∘ asrt_p = 0 = asrt_0`.  We avoid `pureDagger`
     -- and argue instead with the `asrt_sq` axiom of a †-effectus together
     -- with the uniqueness of square roots; see the errata note.
@@ -523,7 +523,7 @@ section Homological
 
 variable [AndThenEffectus C]
 
-/-- **226II** (`homology-lemma`, eff.tex:7440, Lemma): for sharp predicates
+/-- **226II** (`homology-lemma`, eff.tex:7423, Lemma): for sharp predicates
 `s, t` on the same object of a †-effectus with `sᵖ ≤ t`, the predicate
 `s & t` is sharp. -/
 theorem homology_lemma [DaggerPrimeEffectus C] {X : C} {s t : Pred X}
@@ -564,14 +564,14 @@ theorem homology_lemma [DaggerPrimeEffectus C] {X : C} {s t : Pred X}
   rw [← hfix]
   exact isSharp_ceil _
 
-/-- **226IV.1** (eff.tex:7483, Definition): the preorder on kernels:
+/-- **226IV.1** (eff.tex:7466, Definition): the preorder on kernels:
 `n ≤ m` when `n` factors through `m` (Grandis; `n ≈ m` when both `n ≤ m`
 and `m ≤ n`, and `Nsb A` is the poset of kernels modulo `≈` — the latter
 is represented in a ⋄-effectus by `SPred A`, cf. 227III). -/
 def KernelLE {W W' X : C} (n : W ⟶ X) (m : W' ⟶ X) : Prop :=
   ∃ f : W ⟶ W', f ≫ m = n
 
-/-- **226IV.2** (eff.tex:7483, Definition): a map `f` is **exact** when the
+/-- **226IV.2** (eff.tex:7466, Definition): a map `f` is **exact** when the
 unique `g` with `f = ker (cok f) ∘ g ∘ cok (ker f)` is an isomorphism.
 (An effectus with comprehension, quotients and images is *pointed
 semiexact*: it has a zero object and all kernels and cokernels, by 200III
@@ -611,7 +611,7 @@ theorem isCokernel_unique {X Y Q Q' : C} {g : X ⟶ Y} {c : Y ⟶ Q} {c' : Y ⟶
     rw [huu (θ' ≫ θ) (by show c' ≫ θ' ≫ θ = c'; rw [← Category.assoc, hθ', hθ]),
       huu (𝟙 Q') (Category.comp_id _)]
 
-/-- **226V.1** (eff.tex:7523, Theorem): in a †-effectus (in partial form)
+/-- **226V.1** (eff.tex:7506, Theorem): in a †-effectus (in partial form)
 a map is a kernel iff it is a comprehension. -/
 theorem homological_kernels [DaggerPrimeEffectus C] {W X : C} (f : W ⟶ X) :
     (∃ (Y : C) (g : X ⟶ Y), IsKernel g f) ↔
@@ -629,7 +629,7 @@ theorem homological_kernels [DaggerPrimeEffectus C] {W X : C} (f : W ⟶ X) :
     rintro ⟨p, hp⟩
     exact ⟨effObj C, orth p, (compr_is_kernel p f).mp hp⟩
 
-/-- **226V.2** (eff.tex:7523, Theorem): a map is a cokernel iff it is a
+/-- **226V.2** (eff.tex:7506, Theorem): a map is a cokernel iff it is a
 quotient for a sharp predicate. -/
 theorem homological_cokernels [DaggerPrimeEffectus C] {X Y : C}
     (f : X ⟶ Y) :
@@ -648,7 +648,7 @@ theorem homological_cokernels [DaggerPrimeEffectus C] {X Y : C}
     rintro ⟨s, hs, hq⟩
     exact ⟨comprObj s, comprMap s, (exc_cokernels hs f).mp hq⟩
 
-/-- **226V.3** (eff.tex:7523, Theorem): a map is exact iff it is
+/-- **226V.3** (eff.tex:7506, Theorem): a map is exact iff it is
 pristine. -/
 theorem homological_exact [DaggerPrimeEffectus C] {X Y : C} (f : X ⟶ Y) :
     IsExactMap f ↔ Pristine f := by
@@ -690,7 +690,7 @@ theorem homological_exact [DaggerPrimeEffectus C] {X Y : C} (f : X ⟶ Y) :
       rw [quotient_basics_5 (isQuotient_quotMap (imPred f)), eabasics_orth_orth]
       exact isComprehension_comprMap _
 
-/-- **226V** (eff.tex:7523, Theorem): a †-effectus is a pointed
+/-- **226V** (eff.tex:7506, Theorem): a †-effectus is a pointed
 homological category: kernels and cokernels are closed under composition,
 and (**226VII**, homology axiom) for a kernel `m` and cokernel `q` with
 `ker q ≤ m`, the composite `q ∘ m` is exact. -/
@@ -774,7 +774,7 @@ theorem homological_category [DaggerPrimeEffectus C] :
     rw [← key]
     exact isSharp_ceil _
 
-/-- **227II.1** (eff.tex:7586, Definition): a composable pair
+/-- **227II.1** (eff.tex:7569, Definition): a composable pair
 `A → f → B → g → C` is **exact at** `B` when `ker (cok f) ≈ ker g`.  (In a
 †-effectus this amounts to `imᵖ f = ⌈1 ∘ g⌉`, 227III.1.) -/
 def ExactAt {X Y Z : C} (f : X ⟶ Y) (g : Y ⟶ Z) : Prop :=
@@ -782,7 +782,7 @@ def ExactAt {X Y Z : C} (f : X ⟶ Y) (g : Y ⟶ Z) : Prop :=
     IsCokernel f cf ∧ IsKernel cf k ∧ IsKernel g k' ∧
       KernelLE k k' ∧ KernelLE k' k
 
-/-- **227III.1** (eff.tex:7622, Example): in a †-effectus, `f ∘ g` is
+/-- **227III.1** (eff.tex:7605, Example): in a †-effectus, `f ∘ g` is
 exact at the middle object iff `imᵖ f = ⌈1 ∘ g⌉`. -/
 theorem exactAt_iff [DaggerPrimeEffectus C] {X Y Z : C} (f : X ⟶ Y)
     (g : Y ⟶ Z) :
@@ -886,7 +886,7 @@ theorem diaPush_boxPull_of_sharp_retract {X W : C} {f : X ⟶ W} {g : W ⟶ X}
   rw [h1, total_comp_orth htot, ← Category.assoc, hgf, Category.id_comp,
     eabasics_orth_orth, ceil_of_isSharp t.2]
 
-/-- **227V** (`diamondboxlemma`, eff.tex:7653, Lemma), first half: in a
+/-- **227V** (`diamondboxlemma`, eff.tex:7636, Lemma), first half: in a
 †-effectus, `π^□ ∘ π_⋄ = id` for any comprehension `π`. -/
 theorem diamondboxlemma_compr [DaggerPrimeEffectus C] {W X : C}
     {p : Pred X} {π : W ⟶ X} (hπ : IsComprehension p π) (s : SPred W) :
@@ -918,7 +918,7 @@ theorem diamondboxlemma_compr [DaggerPrimeEffectus C] {W X : C}
       (exc_diamond_adj_1 (θ ≫ α) (inv (θ ≫ α))).mp
         (iso_diamond_adjoint_2 (θ ≫ α)).2.2]
 
-/-- **227V** (`diamondboxlemma`, eff.tex:7653, Lemma), second half:
+/-- **227V** (`diamondboxlemma`, eff.tex:7636, Lemma), second half:
 `ζ_⋄ ∘ ζ^□ = id` for any sharp quotient `ζ`. -/
 theorem diamondboxlemma_quot [DaggerPrimeEffectus C] {X W : C}
     {s₀ : Pred X} (hs : IsSharp s₀) {ζ : X ⟶ W}
@@ -1269,7 +1269,7 @@ theorem boxPull_pureDagger_zero {f : X ⟶ Y} (hf : IsPure f) :
   change (diaPull (pureDagger f hf) (sZero X).orth).orth = _
   rw [diaPull_pureDagger hf, spred_orth_zero]
 
-/-- **228II** (eff.tex:7687, Snake Lemma; Grandis): suppose the diagram
+/-- **228II** (eff.tex:7670, Snake Lemma; Grandis): suppose the diagram
 
 ```
         A --f--> B --g--> C --> 0

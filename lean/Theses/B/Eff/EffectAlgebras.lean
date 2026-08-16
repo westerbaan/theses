@@ -1864,20 +1864,446 @@ is in particular commutative. -/
 theorem finite_effectMonoid_boolean (M : Type u) [em : EffectMonoid M] [Finite M] :
     ∃ ba : BooleanAlgebra M, @booleanEffectMonoid M ba = em := sorry
 
-/-- **178III.2** (`eff-monoid-examples`, eff.tex:640, Examples), corollary:
-every finite effect monoid is commutative. -/
-theorem finite_effectMonoid_commutative (M : Type u) [EffectMonoid M] [Finite M] :
-    EffectMonoid.Commutative M := sorry
+/- **178III.2** (`eff-monoid-examples`, eff.tex:640, Examples), corollary:
+`finite_effectMonoid_commutative` belongs here, but its proof needs
+`exc_emonzero` (178IIIa) and `emon_mul_le_self` (178V), so — as with
+`unitInterval_effectMonoid_unique` — it is stated below, after those. -/
+
+/-! ### 178III.4: a non-commutative effect monoid on lexicographic `ℝ⁵`
+
+The thesis (eff.tex:651) only *cites* this example to \[basmsc, cor. 51];
+what follows is a self-contained construction, and hence an independent check
+that the cited claim holds.
+
+Let `V = ℝ⁵` carry the lexicographic order (`x > 0` iff its first non-zero
+coordinate is positive) and `u = e₁`.  Then `[0,u]` is an effect algebra
+(175II.2, `orderIntervalEffectAlgebra`).  Make `V` an associative unital
+`ℝ`-algebra by declaring `e₁` the unit and, on `N = span(e₂,e₃,e₄,e₅)`,
+
+  `e₂ ⊙ e₂ = e₄`,  `e₂ ⊙ e₃ = e₅`,  all other products of basis vectors `0`.
+
+`N` is then 2-step nilpotent (all triple products vanish), so associativity of
+`V` is immediate, and `e₂ ⊙ e₃ = e₅ ≠ 0 = e₃ ⊙ e₂` gives non-commutativity —
+both `e₂` and `e₃` lie in `[0,u]`.  The point of the two "deeper" generators
+`e₄, e₅` is that the positive cone must be closed under `⊙`: with `e₂ ⊙ e₂`
+landing *strictly above* `e₂ ⊙ e₃` in the lexicographic order, the leading
+term of a product of two positive elements is `n₂m₂e₄ > 0`, which dominates
+the sign-indeterminate `n₂m₃e₅`.  (A 4-dimensional variant with
+`e₂ ⊙ e₂ = e₂ ⊙ e₃ = e₄` fails exactly here: `e₂ ⊙ (e₂ - 2e₃) = -e₄ < 0`
+while `e₂, e₂ - 2e₃ ≥ 0`.)  Closure of `[0,u]` itself then needs no further
+case analysis, by `u - xy = (u - y) + (u - x)y`. -/
+
+namespace LexNC
+
+/-- `LexR G` is `ℝ × G` ordered lexicographically, with the `ℝ`-component
+dominant. -/
+def LexR (G : Type) : Type := ℝ × G
+
+namespace LexR
+
+variable {G : Type}
+
+/-- The dominant (real) coordinate. -/
+def hd : LexR G → ℝ := Prod.fst
+
+/-- The lower-order part. -/
+def tl : LexR G → G := Prod.snd
+
+/-- Constructor. -/
+def mk (a : ℝ) (g : G) : LexR G := (a, g)
+
+@[simp] theorem hd_mk (a : ℝ) (g : G) : (mk a g).hd = a := rfl
+@[simp] theorem tl_mk (a : ℝ) (g : G) : (mk a g).tl = g := rfl
+
+theorem ext {x y : LexR G} (h1 : x.hd = y.hd) (h2 : x.tl = y.tl) : x = y :=
+  Prod.ext h1 h2
+
+instance [AddCommGroup G] : AddCommGroup (LexR G) :=
+  inferInstanceAs (AddCommGroup (ℝ × G))
+
+instance [AddCommGroup G] [Module ℝ G] : Module ℝ (LexR G) :=
+  inferInstanceAs (Module ℝ (ℝ × G))
+
+section Alg
+variable [AddCommGroup G]
+
+@[simp] theorem hd_add (x y : LexR G) : (x + y).hd = x.hd + y.hd := rfl
+@[simp] theorem tl_add (x y : LexR G) : (x + y).tl = x.tl + y.tl := rfl
+@[simp] theorem hd_zero : (0 : LexR G).hd = 0 := rfl
+@[simp] theorem tl_zero : (0 : LexR G).tl = 0 := rfl
+@[simp] theorem hd_neg (x : LexR G) : (-x).hd = -x.hd := rfl
+@[simp] theorem tl_neg (x : LexR G) : (-x).tl = -x.tl := rfl
+@[simp] theorem hd_sub (x y : LexR G) : (x - y).hd = x.hd - y.hd := rfl
+@[simp] theorem tl_sub (x y : LexR G) : (x - y).tl = x.tl - y.tl := rfl
+
+@[simp] theorem hd_smul [Module ℝ G] (r : ℝ) (x : LexR G) :
+    (r • x).hd = r * x.hd := rfl
+@[simp] theorem tl_smul [Module ℝ G] (r : ℝ) (x : LexR G) :
+    (r • x).tl = r • x.tl := rfl
+
+end Alg
+
+instance [PartialOrder G] : PartialOrder (LexR G) where
+  le x y := x.hd < y.hd ∨ (x.hd = y.hd ∧ x.tl ≤ y.tl)
+  le_refl _ := Or.inr ⟨rfl, le_rfl⟩
+  le_trans x y z hxy hyz := by
+    rcases hxy with h | ⟨h1, h2⟩ <;> rcases hyz with h' | ⟨h1', h2'⟩
+    · exact Or.inl (lt_trans h h')
+    · exact Or.inl (h1' ▸ h)
+    · exact Or.inl (h1 ▸ h')
+    · exact Or.inr ⟨h1.trans h1', h2.trans h2'⟩
+  le_antisymm x y hxy hyx := by
+    rcases hxy with h | ⟨h1, h2⟩ <;> rcases hyx with h' | ⟨h1', h2'⟩
+    · exact absurd h' (not_lt.mpr h.le)
+    · exact absurd h1' (ne_of_gt h)
+    · exact absurd h1 (ne_of_gt h')
+    · exact ext h1 (le_antisymm h2 h2')
+
+theorem le_iff [PartialOrder G] {x y : LexR G} :
+    x ≤ y ↔ x.hd < y.hd ∨ (x.hd = y.hd ∧ x.tl ≤ y.tl) := Iff.rfl
+
+instance [AddCommGroup G] [PartialOrder G] [IsOrderedAddMonoid G] :
+    IsOrderedAddMonoid (LexR G) where
+  add_le_add_left a b h c := by
+    rcases h with h | ⟨h1, h2⟩
+    · exact Or.inl (by simp only [hd_add]; linarith)
+    · refine Or.inr ⟨by simp only [hd_add, h1], ?_⟩
+      simp only [tl_add]
+      exact add_le_add_left h2 _
+
+/-- Nonnegativity in `LexR G`, unfolded. -/
+theorem nonneg_iff [AddCommGroup G] [PartialOrder G] {x : LexR G} :
+    0 ≤ x ↔ 0 < x.hd ∨ (x.hd = 0 ∧ 0 ≤ x.tl) := by
+  rw [le_iff]
+  simp only [hd_zero, tl_zero]
+  constructor
+  · rintro (h | ⟨h1, h2⟩)
+    · exact Or.inl h
+    · exact Or.inr ⟨h1.symm, h2⟩
+  · rintro (h | ⟨h1, h2⟩)
+    · exact Or.inl h
+    · exact Or.inr ⟨h1.symm, h2⟩
+
+end LexR
+
+open LexR
+
+/-- The four-dimensional lexicographically ordered "infinitesimal" part
+`N = ℝ⁴`; coordinates `n.hd, n.tl.hd, n.tl.tl.hd, n.tl.tl.tl`. -/
+abbrev N : Type := LexR (LexR (LexR ℝ))
+
+/-- The five-dimensional lexicographically ordered space `V = ℝ⁵`. -/
+abbrev V : Type := LexR N
+
+/-- The order unit `u = (1,0,0,0,0)`. -/
+def u : V := mk 1 0
+
+theorem u_nonneg : (0 : V) ≤ u := by
+  rw [nonneg_iff]; exact Or.inl (by norm_num [u])
+
+/-- Nonnegativity in `N`, in coordinates. -/
+theorem N_nonneg_iff {n : N} :
+    0 ≤ n ↔ 0 < n.hd ∨ (n.hd = 0 ∧ (0 < n.tl.hd ∨ (n.tl.hd = 0 ∧
+      (0 < n.tl.tl.hd ∨ (n.tl.tl.hd = 0 ∧ 0 ≤ n.tl.tl.tl))))) := by
+  rw [nonneg_iff]
+  constructor
+  · rintro (h | ⟨h1, h2⟩)
+    · exact Or.inl h
+    · refine Or.inr ⟨h1, ?_⟩
+      rw [nonneg_iff] at h2
+      rcases h2 with h | ⟨h1', h2'⟩
+      · exact Or.inl h
+      · refine Or.inr ⟨h1', ?_⟩
+        rw [nonneg_iff] at h2'
+        exact h2'
+  · rintro (h | ⟨h1, h2⟩)
+    · exact Or.inl h
+    · refine Or.inr ⟨h1, ?_⟩
+      rw [nonneg_iff]
+      rcases h2 with h | ⟨h1', h2'⟩
+      · exact Or.inl h
+      · exact Or.inr ⟨h1', by rw [nonneg_iff]; exact h2'⟩
+
+/-- The nilpotent product on `N`: `e₂ ⊙ e₂ = e₄`, `e₂ ⊙ e₃ = e₅`, all other
+products of basis vectors zero. -/
+def nmul (n m : N) : N := mk 0 (mk 0 (mk (n.hd * m.hd) (n.hd * m.tl.hd)))
+
+@[simp] theorem nmul_hd (n m : N) : (nmul n m).hd = 0 := rfl
+@[simp] theorem nmul_tl_hd (n m : N) : (nmul n m).tl.hd = 0 := rfl
+@[simp] theorem nmul_tl_tl_hd (n m : N) : (nmul n m).tl.tl.hd = n.hd * m.hd := rfl
+@[simp] theorem nmul_tl_tl_tl (n m : N) : (nmul n m).tl.tl.tl = n.hd * m.tl.hd := rfl
+
+theorem nmul_add_left (n n' m : N) : nmul (n + n') m = nmul n m + nmul n' m := by
+  refine ext (by simp) (ext (by simp) (ext ?_ ?_)) <;> simp <;> ring
+
+theorem nmul_add_right (n m m' : N) : nmul n (m + m') = nmul n m + nmul n m' := by
+  refine ext (by simp) (ext (by simp) (ext ?_ ?_)) <;> simp <;> ring
+
+theorem nmul_smul_left (r : ℝ) (n m : N) : nmul (r • n) m = r • nmul n m := by
+  refine ext (by simp) (ext (by simp) (ext ?_ ?_)) <;> simp <;> ring
+
+theorem nmul_smul_right (r : ℝ) (n m : N) : nmul n (r • m) = r • nmul n m := by
+  refine ext (by simp) (ext (by simp) (ext ?_ ?_)) <;> simp <;> ring
+
+theorem nmul_left_zero (n m k : N) : nmul (nmul n m) k = 0 := by
+  refine ext (by simp) (ext (by simp) (ext ?_ ?_)) <;> simp
+
+theorem nmul_right_zero (n m k : N) : nmul n (nmul m k) = 0 := by
+  refine ext (by simp) (ext (by simp) (ext ?_ ?_)) <;> simp
+
+/-- The product on `V`: `(a, n) * (b, m) = (ab, a·m + b·n + n ⊙ m)`. -/
+def vmul (x y : V) : V := mk (x.hd * y.hd) (x.hd • y.tl + y.hd • x.tl + nmul x.tl y.tl)
+
+@[simp] theorem vmul_hd (x y : V) : (vmul x y).hd = x.hd * y.hd := rfl
+@[simp] theorem vmul_tl (x y : V) :
+    (vmul x y).tl = x.hd • y.tl + y.hd • x.tl + nmul x.tl y.tl := rfl
+
+theorem u_vmul (x : V) : vmul u x = x := by
+  refine ext (by simp [u]) ?_
+  simp only [vmul_tl, u, hd_mk, tl_mk, one_smul]
+  refine ext (by simp [nmul]) (ext (by simp [nmul]) (ext ?_ ?_)) <;> simp [nmul]
+
+theorem vmul_u (x : V) : vmul x u = x := by
+  refine ext (by simp [u]) ?_
+  simp only [vmul_tl, u, hd_mk, tl_mk, one_smul, smul_zero]
+  refine ext (by simp [nmul]) (ext (by simp [nmul]) (ext ?_ ?_)) <;> simp [nmul]
+
+theorem vmul_add_left (x x' y : V) : vmul (x + x') y = vmul x y + vmul x' y := by
+  refine ext (by simp; ring) ?_
+  simp only [vmul_tl, hd_add, tl_add, add_smul, smul_add, nmul_add_left]
+  abel
+
+theorem vmul_add_right (x y y' : V) : vmul x (y + y') = vmul x y + vmul x y' := by
+  refine ext (by simp; ring) ?_
+  simp only [vmul_tl, hd_add, tl_add, add_smul, smul_add, nmul_add_right]
+  abel
+
+theorem vmul_assoc (x y z : V) : vmul (vmul x y) z = vmul x (vmul y z) := by
+  refine ext (by simp; ring) ?_
+  simp only [vmul_tl, vmul_hd, smul_add, nmul_add_left, nmul_add_right,
+    nmul_smul_left, nmul_smul_right, nmul_left_zero, nmul_right_zero, smul_smul,
+    add_zero]
+  module
+
+/-! ### The positive cone is closed under multiplication -/
+
+/-- If `m ≥ 0` and `b > 0` then `b • m + n ⊙ m ≥ 0`, for arbitrary `n`. -/
+theorem nonneg_smul_add_nmul_right {b : ℝ} (hb : 0 < b) {n m : N} (hm : 0 ≤ m) :
+    0 ≤ b • m + nmul n m := by
+  rw [N_nonneg_iff] at hm ⊢
+  simp only [hd_add, tl_add, hd_smul, tl_smul, nmul_hd, nmul_tl_hd,
+    nmul_tl_tl_hd, nmul_tl_tl_tl, add_zero, smul_eq_mul]
+  rcases hm with h | ⟨h1, h2⟩
+  · exact Or.inl (mul_pos hb h)
+  · rcases h2 with h | ⟨h1', h2'⟩
+    · exact Or.inr ⟨by rw [h1]; ring, Or.inl (mul_pos hb h)⟩
+    · rcases h2' with h | ⟨h1'', h2''⟩
+      · refine Or.inr ⟨by rw [h1]; ring, Or.inr ⟨by rw [h1']; ring, Or.inl ?_⟩⟩
+        rw [h1, mul_zero, add_zero]
+        exact mul_pos hb h
+      · refine Or.inr ⟨by rw [h1]; ring, Or.inr ⟨by rw [h1']; ring,
+          Or.inr ⟨by rw [h1, h1'']; ring, ?_⟩⟩⟩
+        rw [h1', mul_zero, add_zero]
+        exact mul_nonneg hb.le h2''
+
+/-- If `n ≥ 0` and `b > 0` then `b • n + n ⊙ m ≥ 0`, for arbitrary `m`. -/
+theorem nonneg_smul_add_nmul_left {b : ℝ} (hb : 0 < b) {n m : N} (hn : 0 ≤ n) :
+    0 ≤ b • n + nmul n m := by
+  rw [N_nonneg_iff] at hn ⊢
+  simp only [hd_add, tl_add, hd_smul, tl_smul, nmul_hd, nmul_tl_hd,
+    nmul_tl_tl_hd, nmul_tl_tl_tl, add_zero, smul_eq_mul]
+  rcases hn with h | ⟨h1, h2⟩
+  · exact Or.inl (mul_pos hb h)
+  · rcases h2 with h | ⟨h1', h2'⟩
+    · exact Or.inr ⟨by rw [h1]; ring, Or.inl (mul_pos hb h)⟩
+    · rcases h2' with h | ⟨h1'', h2''⟩
+      · refine Or.inr ⟨by rw [h1]; ring, Or.inr ⟨by rw [h1']; ring, Or.inl ?_⟩⟩
+        rw [h1, zero_mul, add_zero]
+        exact mul_pos hb h
+      · refine Or.inr ⟨by rw [h1]; ring, Or.inr ⟨by rw [h1']; ring,
+          Or.inr ⟨by rw [h1, h1'']; ring, ?_⟩⟩⟩
+        rw [h1, zero_mul, add_zero]
+        exact mul_nonneg hb.le h2''
+
+/-- The cone of `N` is closed under `⊙`. -/
+theorem nmul_nonneg {n m : N} (hn : 0 ≤ n) (hm : 0 ≤ m) : 0 ≤ nmul n m := by
+  rw [N_nonneg_iff] at hn hm
+  rw [N_nonneg_iff]
+  refine Or.inr ⟨by simp, Or.inr ⟨by simp, ?_⟩⟩
+  simp only [nmul_tl_tl_hd, nmul_tl_tl_tl]
+  rcases hn with h | ⟨h1, _⟩
+  · rcases hm with h' | ⟨h1', h2'⟩
+    · exact Or.inl (mul_pos h h')
+    · refine Or.inr ⟨by rw [h1']; ring, ?_⟩
+      rcases h2' with h' | ⟨h1'', _⟩
+      · exact mul_nonneg h.le h'.le
+      · rw [h1'', mul_zero]
+  · rw [h1, zero_mul, zero_mul]
+    exact Or.inr ⟨rfl, le_rfl⟩
+
+/-- **K1**: the positive cone of `V` is closed under multiplication. -/
+theorem vmul_nonneg {x y : V} (hx : 0 ≤ x) (hy : 0 ≤ y) : 0 ≤ vmul x y := by
+  rw [nonneg_iff] at hx hy
+  rcases hx with ha | ⟨ha, hn⟩ <;> rcases hy with hb | ⟨hb, hm⟩
+  · exact nonneg_iff.mpr (Or.inl (by simpa using mul_pos ha hb))
+  · refine nonneg_iff.mpr (Or.inr ⟨by simp [hb], ?_⟩)
+    have he : (vmul x y).tl = x.hd • y.tl + nmul x.tl y.tl := by
+      simp [hb]
+    rw [he]
+    exact nonneg_smul_add_nmul_right ha hm
+  · refine nonneg_iff.mpr (Or.inr ⟨by simp [ha], ?_⟩)
+    have he : (vmul x y).tl = y.hd • x.tl + nmul x.tl y.tl := by
+      simp [ha]
+    rw [he]
+    exact nonneg_smul_add_nmul_left hb hn
+  · refine nonneg_iff.mpr (Or.inr ⟨by simp [ha], ?_⟩)
+    have he : (vmul x y).tl = nmul x.tl y.tl := by simp [ha, hb]
+    rw [he]
+    exact nmul_nonneg hn hm
+
+/-- **K2**: the unit interval `[0,u]` is closed under multiplication.  The
+argument is `u - xy = (u - y) + (u - x)y`. -/
+theorem vmul_mem_Icc {x y : V} (hx : x ∈ Set.Icc (0 : V) u)
+    (hy : y ∈ Set.Icc (0 : V) u) : vmul x y ∈ Set.Icc (0 : V) u := by
+  obtain ⟨hx0, hx1⟩ := hx
+  obtain ⟨hy0, hy1⟩ := hy
+  refine ⟨vmul_nonneg hx0 hy0, ?_⟩
+  have key : u - vmul x y = (u - y) + vmul (u - x) y := by
+    have h1 : vmul (u - x) y = vmul u y - vmul x y := by
+      have h2 := vmul_add_left (u - x) x y
+      rw [sub_add_cancel] at h2
+      rw [h2]; abel
+    rw [h1, u_vmul]; abel
+  have h2 : (0 : V) ≤ (u - y) + vmul (u - x) y :=
+    add_nonneg (sub_nonneg.mpr hy1)
+      (vmul_nonneg (sub_nonneg.mpr hx1) hy0)
+  rw [← key] at h2
+  exact sub_nonneg.mp h2
+
+/-! ### The effect monoid -/
+
+noncomputable instance : EffectAlgebra (Set.Icc (0 : V) u) :=
+  orderIntervalEffectAlgebra V u u_nonneg
+
+/-- The effect monoid structure on `[0,u] ⊆ ℝ⁵`. -/
+noncomputable def effectMonoid : EffectMonoid (Set.Icc (0 : V) u) :=
+  { orderIntervalEffectAlgebra V u u_nonneg with
+    mul := fun x y => ⟨vmul (x : V) (y : V), vmul_mem_Icc x.2 y.2⟩
+    one_mul := by
+      intro a; apply Subtype.ext; exact u_vmul (a : V)
+    mul_one := by
+      intro a; apply Subtype.ext; exact vmul_u (a : V)
+    mul_assoc := by
+      intro a b c; apply Subtype.ext; exact vmul_assoc (a : V) (b : V) (c : V)
+    distrib := by
+      intro a b c d hab hcd
+      have hab' : (a : V) + (b : V) ≤ u := hab
+      have hcd' : (c : V) + (d : V) ≤ u := hcd
+      have hABmem : ((a : V) + (b : V)) ∈ Set.Icc (0 : V) u :=
+        ⟨add_nonneg a.2.1 b.2.1, hab'⟩
+      have hCDmem : ((c : V) + (d : V)) ∈ Set.Icc (0 : V) u :=
+        ⟨add_nonneg c.2.1 d.2.1, hcd'⟩
+      -- the four products, and their partial sums
+      have hexp : vmul ((a : V) + b) ((c : V) + d) =
+          vmul (a : V) c + vmul (b : V) c + (vmul (a : V) d + vmul (b : V) d) := by
+        rw [vmul_add_left, vmul_add_right, vmul_add_right]; abel
+      have htotal : vmul ((a : V) + b) ((c : V) + d) ≤ u :=
+        (vmul_mem_Icc hABmem hCDmem).2
+      have hACnn : (0 : V) ≤ vmul (a : V) c := vmul_nonneg a.2.1 c.2.1
+      have hBCnn : (0 : V) ≤ vmul (b : V) c := vmul_nonneg b.2.1 c.2.1
+      have hADnn : (0 : V) ≤ vmul (a : V) d := vmul_nonneg a.2.1 d.2.1
+      have hBDnn : (0 : V) ≤ vmul (b : V) d := vmul_nonneg b.2.1 d.2.1
+      have hP : ∀ x y : Set.Icc (0 : V) u, (x : V) + (y : V) ≤ u → Perp x y :=
+        fun _ _ h => h
+      have hO : ∀ (x y : Set.Icc (0 : V) u) (h : Perp x y),
+          ((ovee x y h : Set.Icc (0 : V) u) : V) = (x : V) + (y : V) :=
+        fun _ _ _ => rfl
+      -- s₃ = a⊙d ⋁ b⊙d, s₂ = b⊙c ⋁ s₃, s₁ = a⊙c ⋁ s₂
+      have hs3 : vmul (a : V) d + vmul (b : V) d ≤ u := by
+        have : vmul (a : V) d + vmul (b : V) d = vmul ((a : V) + b) d := by
+          rw [vmul_add_left]
+        rw [this]
+        exact (vmul_mem_Icc hABmem d.2).2
+      have hs2 : vmul (b : V) c + (vmul (a : V) d + vmul (b : V) d) ≤ u := by
+        refine le_trans ?_ htotal
+        rw [hexp]
+        have : vmul (a : V) c + vmul (b : V) c + (vmul (a : V) d + vmul (b : V) d)
+            = vmul (a : V) c + (vmul (b : V) c
+              + (vmul (a : V) d + vmul (b : V) d)) := by abel
+        rw [this]
+        simpa using add_le_add_right hACnn
+          (vmul (b : V) c + (vmul (a : V) d + vmul (b : V) d))
+      have hs1 : vmul (a : V) c + (vmul (b : V) c
+          + (vmul (a : V) d + vmul (b : V) d)) ≤ u := by
+        refine le_trans (le_of_eq ?_) htotal
+        rw [hexp]; abel
+      refine PCM.isSumOf_cons_iff.mpr
+        ⟨⟨vmul (b : V) c + (vmul (a : V) d + vmul (b : V) d),
+            add_nonneg hBCnn (add_nonneg hADnn hBDnn), hs2⟩, ?_, hP _ _ ?_, ?_⟩
+      · refine PCM.isSumOf_cons_iff.mpr
+          ⟨⟨vmul (a : V) d + vmul (b : V) d,
+              add_nonneg hADnn hBDnn, hs3⟩, ?_, hP _ _ ?_, ?_⟩
+        · refine PCM.isSumOf_cons_iff.mpr
+            ⟨⟨vmul (b : V) d, hBDnn, (vmul_mem_Icc b.2 d.2).2⟩, ?_, hP _ _ ?_, ?_⟩
+          · exact PCM.isSumOf_cons_iff.mpr
+              ⟨0, PCM.IsSumOf.nil, PCM.perp_zero _, PCM.ovee_zero _ _⟩
+          · show vmul (a : V) d + vmul (b : V) d ≤ u
+            exact hs3
+          · rfl
+        · show vmul (b : V) c + (vmul (a : V) d + vmul (b : V) d) ≤ u
+          exact hs2
+        · rfl
+      · show vmul (a : V) c + (vmul (b : V) c
+          + (vmul (a : V) d + vmul (b : V) d)) ≤ u
+        exact hs1
+      · apply Subtype.ext
+        show vmul (a : V) c + (vmul (b : V) c
+          + (vmul (a : V) d + vmul (b : V) d)) = vmul ((a : V) + b) ((c : V) + d)
+        rw [hexp]; abel }
+
+/-- `e₂ = (0,1,0,0,0)`. -/
+def e2 : V := mk 0 (mk 1 0)
+
+/-- `e₃ = (0,0,1,0,0)`. -/
+def e3 : V := mk 0 (mk 0 (mk 1 0))
+
+theorem e2_mem : e2 ∈ Set.Icc (0 : V) u := by
+  constructor
+  · refine nonneg_iff.mpr (Or.inr ⟨rfl, ?_⟩)
+    exact N_nonneg_iff.mpr (Or.inl (by norm_num [e2]))
+  · exact le_iff.mpr (Or.inl (by norm_num [e2, u]))
+
+theorem e3_mem : e3 ∈ Set.Icc (0 : V) u := by
+  constructor
+  · refine nonneg_iff.mpr (Or.inr ⟨rfl, ?_⟩)
+    exact N_nonneg_iff.mpr (Or.inr ⟨by norm_num [e3], Or.inl (by norm_num [e3])⟩)
+  · exact le_iff.mpr (Or.inl (by norm_num [e3, u]))
+
+/-- The effect monoid built above is not commutative: `e₂ ⊙ e₃ = e₅` while
+`e₃ ⊙ e₂ = 0`. -/
+theorem not_commutative :
+    ¬ @EffectMonoid.Commutative (Set.Icc (0 : V) u) effectMonoid := by
+  intro h
+  have h2 := h ⟨e2, e2_mem⟩ ⟨e3, e3_mem⟩
+  have h3 : vmul e2 e3 = vmul e3 e2 := congrArg Subtype.val h2
+  have h4 := congrArg (fun v : V => v.tl.tl.tl.tl) h3
+  simp only [vmul, e2, e3, nmul, hd_mk, tl_mk, tl_add, tl_smul, tl_zero] at h4
+  norm_num at h4
+
+end LexNC
+
 
 /-- **178III.4** (`eff-monoid-examples`, eff.tex:651, Examples): there is a
 non-commutative effect monoid (one exists on the lexicographically ordered
 vector space `ℝ⁵`). -/
 theorem exists_noncommutative_effectMonoid :
-    ∃ (M : Type) (_ : EffectMonoid M), ¬ EffectMonoid.Commutative M := sorry
+    ∃ (M : Type) (_ : EffectMonoid M), ¬ EffectMonoid.Commutative M :=
+  ⟨Set.Icc (0 : LexNC.V) LexNC.u, LexNC.effectMonoid, LexNC.not_commutative⟩
 
 /-- **178IIIa** (`exc-emonzero`, eff.tex:661, Exercise): `a ⊙ 0 = 0 = 0 ⊙ a`
-in any effect monoid.  (The thesis's "`a ⊙ 0 = a = 0 ⊙ a`" is a typo for
-"`= 0 =`".) -/
+in any effect monoid.  (The exercise used to read "`a ⊙ 0 = a = 0 ⊙ a`",
+which is false in `[0,1]`; corrected upstream, with an erratum on
+`exc-emonzero`.) -/
 theorem exc_emonzero {M : Type u} [EffectMonoid M] (a : M) :
     a * 0 = 0 ∧ (0 : M) * a = 0 := by
   -- `(x ⋁ 0) ⊙ (0 ⋁ 0) = x ⊙ 0` expands to `(x⊙0) ⋁ (0⊙0) ⋁ (x⊙0) ⋁ (0⊙0)`;
@@ -1925,8 +2351,9 @@ theorem exc_emonzero {M : Type u} [EffectMonoid M] (a : M) :
 `a ⊙ c ⊥ a ⊙ d` and `(a ⊙ c) ⋁ (a ⊙ d) = a ⊙ (c ⋁ d)`.  This is *not* an
 axiom — 178II only gives the four-fold law — but it follows from it once
 `0 ⊙ x = 0` is known (178IIIa), by instantiating at `(a ⋁ 0) ⊙ (c ⋁ d)`.
-(The `exc-emonzero` solution in `bsols.tex` uses one-sided distributivity to
-*prove* `a ⊙ 0 = 0`, which is circular; see PROVING-LOG.) -/
+(The `exc-emonzero` solution in `bsols.tex` used to *prove* `a ⊙ 0 = 0` from
+one-sided distributivity, which is circular; it has since been rewritten to
+argue from the four-fold law, as `exc_emonzero` does.  See PROVING-LOG.) -/
 theorem emon_mul_ovee {M : Type u} [EffectMonoid M] (a : M) {c d : M}
     (hcd : Perp c d) :
     ∃ h : Perp (a * c) (a * d), a * ovee c d hcd = ovee (a * c) (a * d) h := by
@@ -2119,6 +2546,233 @@ theorem emon_mul_le_self {M : Type u} [EffectMonoid M] (a b : M) : a * b ≼ a :
   rw [PCM.ovee_zero a (PCM.perp_zero a), EffectAlgebra.ovee_orth b,
     EffectMonoid.mul_one a] at hd
   exact PCM.le_of_isSumOf_cons hd
+
+section FiniteEffectMonoid
+
+variable {M : Type u} [EffectMonoid M]
+
+/-- Helper: multiplication in an effect monoid distributes over a partial sum
+in its *left* argument (the mirror image of `emon_mul_ovee`).  Migrated here
+from `StatesPredicates.lean`, where it used to live, because 178III.2 needs
+it. -/
+theorem emon_ovee_mul {M : Type u} [EffectMonoid M] (x : M) {p q : M}
+    (hpq : Perp p q) :
+    ∃ h' : Perp (p * x) (q * x),
+      ovee p q hpq * x = ovee (p * x) (q * x) h' := by
+  have hd := EffectMonoid.distrib hpq (PCM.perp_zero x)
+  rw [PCM.ovee_zero x (PCM.perp_zero x), (exc_emonzero p).1,
+    (exc_emonzero q).1] at hd
+  obtain ⟨t1, h1, hp1, e1⟩ := PCM.isSumOf_cons_iff.mp hd
+  obtain ⟨t2, h2, hp2, e2⟩ := PCM.isSumOf_cons_iff.mp h1
+  obtain ⟨t3, h3, hp3, e3⟩ := PCM.isSumOf_cons_iff.mp h2
+  obtain ⟨t4, h4, hp4, e4⟩ := PCM.isSumOf_cons_iff.mp h3
+  have ht4 : t4 = 0 := PCM.isSumOf_nil_iff.mp h4
+  have ht3 : t3 = 0 := by rw [← e4, PCM.zero_ovee' t4 hp4]; exact ht4
+  have ht2 : t2 = 0 := by rw [← e3, PCM.zero_ovee' t3 hp3]; exact ht3
+  have ht1 : t1 = q * x := by
+    rw [← e2, PCM.ovee_congr rfl ht2 hp2 (PCM.perp_zero (q * x))]
+    exact PCM.ovee_zero _ _
+  have hp' : Perp (p * x) (q * x) := by rw [← ht1]; exact hp1
+  refine ⟨hp', ?_⟩
+  rw [← e1]
+  exact PCM.ovee_congr rfl ht1 hp1 hp'
+
+/-- Helper: `a ⊙ b ≼ b` (the mirror of `emon_mul_le_self`). -/
+theorem emon_mul_le_self_right (a b : M) : a * b ≼ b := by
+  have hd := EffectMonoid.distrib (EffectAlgebra.perp_orth a) (PCM.perp_zero b)
+  rw [PCM.ovee_zero b (PCM.perp_zero b), EffectAlgebra.ovee_orth a,
+    EffectMonoid.one_mul b] at hd
+  exact PCM.le_of_isSumOf_cons hd
+
+/-- Helper: `⊙` is monotone in its first argument. -/
+theorem emon_mul_mono_left {a a' : M} (h : a ≼ a') (b : M) : a * b ≼ a' * b := by
+  obtain ⟨e, hae, rfl⟩ := h
+  obtain ⟨h', he⟩ := emon_ovee_mul b hae
+  exact ⟨e * b, h', he.symm⟩
+
+/-- Helper: `⊙` is monotone in its second argument. -/
+theorem emon_mul_mono_right (a : M) {b b' : M} (h : b ≼ b') : a * b ≼ a * b' := by
+  obtain ⟨e, hbe, rfl⟩ := h
+  obtain ⟨h', he⟩ := emon_mul_ovee a hbe
+  exact ⟨a * e, h', he.symm⟩
+
+/-- Helper: `a = (a ⊙ a) ⋁ (a ⊙ aᵖ)`, by expanding `a ⊙ 1` along
+`1 = a ⋁ aᵖ`. -/
+theorem emon_split_right (a : M) :
+    ∃ h : Perp (a * a) (a * orth a), ovee (a * a) (a * orth a) h = a := by
+  obtain ⟨h', he⟩ := emon_mul_ovee a (EffectAlgebra.perp_orth a)
+  rw [EffectAlgebra.ovee_orth a, EffectMonoid.mul_one a] at he
+  exact ⟨h', he.symm⟩
+
+/-- Helper: `a = (a ⊙ a) ⋁ (aᵖ ⊙ a)`, by expanding `1 ⊙ a` along
+`1 = a ⋁ aᵖ`. -/
+theorem emon_split_left (a : M) :
+    ∃ h : Perp (a * a) (orth a * a), ovee (a * a) (orth a * a) h = a := by
+  obtain ⟨h', he⟩ := emon_ovee_mul a (EffectAlgebra.perp_orth a)
+  rw [EffectAlgebra.ovee_orth a, EffectMonoid.one_mul a] at he
+  exact ⟨h', he.symm⟩
+
+/-- Helper: in *any* effect monoid an element commutes with its
+orthocomplement, `a ⊙ aᵖ = aᵖ ⊙ a`: both `(a ⊙ a) ⋁ (a ⊙ aᵖ)` and
+`(a ⊙ a) ⋁ (aᵖ ⊙ a)` equal `a`, so cancellation (175V.4) applies. -/
+theorem emon_mul_orth_comm (a : M) : a * orth a = orth a * a := by
+  obtain ⟨h1, he1⟩ := emon_split_right a
+  obtain ⟨h2, he2⟩ := emon_split_left a
+  refine eabasics_cancellation (c := a * a) (PCM.perp_comm h1) (PCM.perp_comm h2) ?_
+  rw [← PCM.ovee_comm h1, ← PCM.ovee_comm h2, he1, he2]
+
+/-- Helper: an idempotent `x` with `x ⊥ x` is `0` — no finiteness needed.
+
+`x = x ⊙ 1 = (x ⊙ x) ⋁ (x ⊙ xᵖ) = x ⋁ (x ⊙ xᵖ)` gives `x ⊙ xᵖ = 0` by
+cancellation, while `x ⊥ x` means `x ≼ xᵖ`, say `xᵖ = x ⋁ z`; then
+`0 = x ⊙ xᵖ = (x ⊙ x) ⋁ (x ⊙ z) = x ⋁ (x ⊙ z)`, so `x = 0` by
+positivity. -/
+theorem emon_idem_perp_self_zero {x : M} (hidem : x * x = x) (hp : Perp x x) :
+    x = 0 := by
+  obtain ⟨h1, he1⟩ := emon_split_right x
+  have hzero : x * orth x = 0 := by
+    refine eabasics_cancellation (c := x * x) (PCM.perp_comm h1) (PCM.zero_perp _) ?_
+    rw [← PCM.ovee_comm h1, he1, PCM.zero_ovee, hidem]
+  obtain ⟨z, hz, hzz⟩ := eabasics_perp_iff_le_orth.mp hp
+  obtain ⟨h2, he2⟩ := emon_mul_ovee x hz
+  rw [hzz, hzero] at he2
+  have hxx := (eabasics_positivity h2 he2.symm).1
+  rwa [hidem] at hxx
+
+/-- The algebraic order `≼` of 174II as a bundled partial order (175V.5), so
+that finiteness of `M` gives well-foundedness. -/
+private def emonOrder (M : Type u) [EffectMonoid M] : PartialOrder M where
+  le := PCM.le
+  le_refl := pcm_preorder_refl
+  le_trans _ _ _ := pcm_preorder_trans
+  le_antisymm _ _ := eabasics_le_antisymm
+
+variable [Finite M]
+
+/-- Helper: in a *finite* effect monoid `x ⊙ x = 0` forces `x = 0`.
+
+If `x ≼ y` and `x ⊙ y = x`, write `y = x ⋁ g`; then
+`x = x ⊙ y = (x ⊙ x) ⋁ (x ⊙ g) = x ⊙ g`, so `x ≼ g`, and `g ≺ y` unless
+`x = 0`, while `x ⊙ g = x` keeps the two hypotheses alive.  Starting at
+`y = 1` this descends forever, which a finite effect monoid cannot
+afford. -/
+theorem emon_sq_zero {x : M} (hsq : x * x = 0) : x = 0 := by
+  letI : PartialOrder M := emonOrder M
+  haveI : WellFoundedLT M := Finite.to_wellFoundedLT
+  have toLe : ∀ {a b : M}, a ≼ b → a ≤ b := fun {_ _} h => h
+  have wf : WellFounded (· < · : M → M → Prop) := IsWellFounded.wf
+  have key : ∀ y : M, x ≼ y → x * y = x → x = 0 := by
+    intro y
+    refine wf.induction (C := fun y => x ≼ y → x * y = x → x = 0) y ?_
+    intro y ih hxy hxmul
+    obtain ⟨g, hxg, hgy⟩ := hxy
+    subst hgy
+    obtain ⟨h2, he2⟩ := emon_mul_ovee x hxg
+    rw [hxmul] at he2
+    -- `he2 : x = (x ⊙ x) ⋁ (x ⊙ g)`, and `x ⊙ x = 0`
+    have hz : Perp (0 : M) (x * g) := PCM.zero_perp _
+    have hcong : ovee (x * x) (x * g) h2 = ovee 0 (x * g) hz :=
+      PCM.ovee_congr hsq rfl h2 hz
+    rw [PCM.zero_ovee] at hcong
+    have hxeq : x = x * g := he2.trans hcong
+    have hxle : x ≼ g := by
+      rw [hxeq]; exact emon_mul_le_self_right x g
+    by_cases hx0 : x = 0
+    · exact hx0
+    · have hgley : g ≼ ovee x g hxg := by
+        refine ⟨x, PCM.perp_comm hxg, ?_⟩
+        rw [← PCM.ovee_comm hxg]
+      have hne : g ≠ ovee x g hxg := by
+        intro hgy'
+        refine hx0 (eabasics_cancellation (c := g) hxg (PCM.zero_perp g) ?_)
+        rw [PCM.zero_ovee]
+        exact hgy'.symm
+      exact ih g (lt_of_le_of_ne (toLe hgley) hne) hxle hxeq.symm
+  exact key 1 ⟨orth x, EffectAlgebra.perp_orth x, EffectAlgebra.ovee_orth x⟩
+    (EffectMonoid.mul_one x)
+
+/-- Helper: in a finite effect monoid `x ⊥ x` forces `x = 0`.
+
+The squares `x ≽ x⊙x ≽ (x⊙x)⊙(x⊙x) ≽ …` descend, and each inherits
+`⊥`-self-ness from the distributivity axiom — `(x ⋁ x) ⊙ (x ⋁ x)` is a
+fourfold sum of `x ⊙ x`, so in particular `x⊙x ⊥ x⊙x`.  A descending chain
+in a finite poset stops, i.e. at an idempotent, which is `0` by
+`emon_idem_perp_self_zero`; `emon_sq_zero` then propagates that back. -/
+theorem emon_perp_self_zero {x : M} (hp : Perp x x) : x = 0 := by
+  letI : PartialOrder M := emonOrder M
+  haveI : WellFoundedLT M := Finite.to_wellFoundedLT
+  have toLe : ∀ {a b : M}, a ≼ b → a ≤ b := fun {_ _} h => h
+  have wf : WellFounded (· < · : M → M → Prop) := IsWellFounded.wf
+  have key : ∀ x : M, Perp x x → x = 0 := by
+    intro x
+    refine wf.induction (C := fun x => Perp x x → x = 0) x ?_
+    intro x ih hp
+    have hsq : Perp (x * x) (x * x) := by
+      have hd := EffectMonoid.distrib hp hp
+      rw [PCM.isSumOf_cons_iff] at hd
+      obtain ⟨t1, ht1, _, _⟩ := hd
+      rw [PCM.isSumOf_cons_iff] at ht1
+      obtain ⟨t2, ht2, _, _⟩ := ht1
+      rw [PCM.isSumOf_cons_iff] at ht2
+      obtain ⟨t3, ht3, hp3, _⟩ := ht2
+      rw [PCM.isSumOf_cons_iff] at ht3
+      obtain ⟨t4, ht4, hp4, he4⟩ := ht3
+      rw [PCM.isSumOf_nil_iff] at ht4
+      subst ht4
+      rw [PCM.ovee_zero _ hp4] at he4
+      subst he4
+      exact hp3
+    by_cases hidem : x * x = x
+    · exact emon_idem_perp_self_zero hidem hp
+    · exact emon_sq_zero (ih (x * x)
+        (lt_of_le_of_ne (toLe (emon_mul_le_self x x)) hidem) hsq)
+  exact key x hp
+
+/-- Helper: every element of a finite effect monoid is idempotent: `a ⊙ aᵖ`
+is below both `a` and `aᵖ`, hence orthogonal to itself, hence `0`. -/
+theorem emon_finite_idem (a : M) : a * a = a := by
+  have hd : a * orth a = 0 := by
+    refine emon_perp_self_zero (eabasics_perp_iff_le_orth.mpr ?_)
+    refine pcm_preorder_trans (emon_mul_le_self_right a (orth a)) ?_
+    exact eabasics_le_iff_orth_le.mp (emon_mul_le_self a (orth a))
+  obtain ⟨h1, he1⟩ := emon_split_right a
+  have hz : Perp (a * a) (0 : M) := PCM.perp_zero _
+  have hcong : ovee (a * a) (a * orth a) h1 = ovee (a * a) 0 hz :=
+    PCM.ovee_congr rfl hd h1 hz
+  rw [PCM.ovee_zero] at hcong
+  exact hcong.symm.trans he1
+
+end FiniteEffectMonoid
+
+/-- **178III.2** (`eff-monoid-examples`, eff.tex:640, Examples), corollary:
+every finite effect monoid is commutative.
+
+⚠️ *Different route from the thesis.*  eff.tex:640 obtains this from "every
+finite effect monoid comes from a Boolean algebra"
+(`finite_effectMonoid_boolean`, still `sorry`), which it cites to
+\[basmsc, prop. 40]; there is no argument in either thesis to transcribe.
+The proof below is direct, and needs only three steps: (i) `a ⊙ aᵖ = aᵖ ⊙ a`
+in *any* effect monoid (`emon_mul_orth_comm`, by cancellation); (ii) in a
+finite effect monoid every element is idempotent (`emon_finite_idem`), since
+`a ⊙ aᵖ` is orthogonal to itself and self-orthogonal elements vanish — the
+squares descend to an idempotent, idempotent-and-self-orthogonal forces `0`,
+and `x ⊙ x = 0` propagates back; (iii) with every element idempotent, `a ⊙ b`
+*is* the infimum of `a` and `b` — it is a lower bound, and any lower bound
+`c = c ⊙ c ≼ a ⊙ b` by monotonicity — so `a ⊙ b = b ⊙ a` by uniqueness of
+infima. -/
+theorem finite_effectMonoid_commutative (M : Type u) [EffectMonoid M] [Finite M] :
+    EffectMonoid.Commutative M := by
+  have hinf : ∀ a b : M, PCM.IsInf a b (a * b) := by
+    intro a b
+    refine ⟨emon_mul_le_self a b, emon_mul_le_self_right a b, ?_⟩
+    intro c hca hcb
+    have h1 : c ≼ c * c := by
+      rw [emon_finite_idem c]
+      exact pcm_preorder_refl c
+    exact pcm_preorder_trans h1
+      (pcm_preorder_trans (emon_mul_mono_left hca c) (emon_mul_mono_right a hcb))
+  intro a b
+  exact isInf_unique (hinf a b) (isInf_comm (hinf b a))
 
 /-- Helper: sums are monotone termwise. -/
 theorem PCM.isSumOf_le_of_forall₂ {M : Type u} [EffectAlgebra M] {l l' : List M}
