@@ -10033,3 +10033,164 @@ minus backticked mentions) **over-counts**, because `\bsorry\b` matches the
 prose "sorry-ed" that appears in `QuantumLambda.lean`'s and `Tensor.lean`'s
 doc comments; it gave 20/45 for files whose code counts are 17/43.  Count the
 compiler's warnings instead.
+
+---
+
+## Session 48 — `B/Dils` survey of `SelfDual.lean` + `Pure.lean`, and four sorries closed (worker 73)
+
+Files touched: `Theses/B/Dils/Pure.lean`, `Theses/B/Dils/SelfDual.lean`,
+`QUESTIONS.md` (B11 status), this log.  Nothing staged, nothing committed.
+**B/Dils 53 → 49 `sorry`s** (`SelfDual.lean` 21 → 19, `Pure.lean` 15 → 13).
+All four new theorems `#print axioms` to exactly
+`[propext, Classical.choice, Quot.sound]`.
+
+The full survey table (every `sorry` of both files with its DISP number and a
+blocked-on note) is in the scratchpad as `dils-survey.md`; the load-bearing
+conclusions are repeated here.
+
+### 1. The survey's verdict: `Pure.lean` is not volume, and `SelfDual.lean` funnels through 160IV.3
+
+`Pure.lean`'s 15 sorries were **13 blocked, 1 false, 2 reachable**, and the
+two reachable ones are the two closed below.  The blockage is concentrated in
+three roots — `existence_paschke` (`Paschke.lean`), **169IV**
+`standard_corner_dils` and **169X** `dils_stand_filter` — and the last two are
+*cited to proc.tex* (98I/95II and 96V), which is off this chapter's import
+path, so proving them here means redoing thesis-A work (QUESTIONS **D3**).
+**A worker sent at `Pure.lean` for throughput will find nothing left.**
+
+`SelfDual.lean`'s 21 were **5 self-contained** (159IX, 160IV.2, 160IV.3,
+161II.1, 161IV.2), two more self-contained-but-very-large (161II.2, and the
+164II existence construction), and the remaining fourteen blocked.  The
+funnel is worth stating precisely: **160IV.3 `hilbmod_projthm_3`** (the
+orthogonal decomposition `X = V^⊥⊥ ⊕ V^⊥`) directly blocks 160IX, 160X,
+163II-dense and **164II.1** `ext_tensor_dense`, and 164II.1 in turn gates
+164II.2a → 164II.2b → 165VI → 166IV → 166VI → 167I.  Eleven of the file's
+remaining nineteen sorries sit downstream of it.  Note in particular that
+ultranorm-density of the image of `η` is **not** a field of the `ExtTensor`
+structure, so it has to be derived from the universal property, and that
+derivation is where 160IV.3 enters.
+
+### 2. **169XI**.1 `dils_filter_basics_1` and **169XI**.2b `dils_filter_basics_2b` — proved
+
+The author's solution (`bsols.tex`, `dils-filter-basics-exercise`) is
+transcribed, with two deliberate divergences (**class 2**), both recorded in
+the doc comment:
+
+* **The `φ(1) ≤ 1` case split is removed.**  The solution proves part 1 under
+  `φ(1) ≤ 1` — so that a competing triple's `h'` satisfies
+  `h'(1) = c(φ(1)) ≤ c(1) ≤ b` and `c`'s universal property applies — and then
+  reduces the general case by rescaling *the whole dilation* through **140X**.4
+  twice.  Rescaling `h'` alone is enough: with `λ = (‖φ(1)‖+1)⁻¹` one has
+  `λ·φ(1) ≤ 1` unconditionally, hence `(λh')(1) ≤ b`; factor `λh'` through `c`
+  and scale the factor back by `λ⁻¹`.  No case split, no appeal to 140X.4.
+  (The `φ(1) = 0` branch the solution worries about — "then `φ(1) ≠ 0`" — does
+  not arise: `φ(1) = 0` already satisfies `φ(1) ≤ 1`.)
+* **Injectivity replaces uniqueness.**  Where the solution reads off
+  `φ = h'' ∘ ϱ'` and the uniqueness of `σ` from the *uniqueness* clause of
+  `c`'s universal property, we use `dils_filters_injective` (**169XII**,
+  already proved in the file) directly.  Same fact, three lines instead of ten.
+
+**This settles the blast radius of QUESTIONS B11.**  Both are proved against
+the *weak* dils.tex reading `c(1) ≤ b`, so the defect touches exactly one Lean
+statement, `dils_filter_basics_2a`.  Part 1 survives because the only place it
+needs `c`'s universal property is at `h'(1) = c(φ(1))`, and `c(φ(1)) ≤ c(1) ≤
+b` holds either way; part 2b never uses the unitality of `φ'` — it is
+literally part 1 applied to `c'` and the dilation of `φ'`.  QUESTIONS B11 has
+been annotated accordingly; `dils_filter_basics_2a` stays `sorry`.
+
+*File reorder*: **169XI**'s three statements now sit **after** **169XII** in
+`Pure.lean`, because both parts use `dils_filters_injective` and Lean needs it
+declared first.  A comment at the old position says so.  No statement changed.
+
+*New private helpers in `Pure.lean`*: `ncpPos`, `exists_ncpComp`,
+`smul_le_smul_iff_pos`, `exists_ncpSmul` (all four transcribed from
+`Stinespring.lean`, where they are `private` and therefore not importable —
+the standing note to merge the two corner/ncp developments now covers these
+too) and `smul_norm_succ_inv_le_one` (`(1+‖w‖)⁻¹w ≤ 1` for `w ≥ 0`).
+
+### 3. **161II**.1 `hilbmod_el2_inner` — proved by polarization, not by completeness
+
+The statement is that `∑ᵢ cᵢbᵢ*` converges ultraweakly for ℓ²-summable
+tuples.  The author's solution (`bsols.tex`, `hilbmod-el2`) proves the net of
+partial sums is norm-bounded and ultraweakly **Cauchy** — two Cauchy–Schwarz
+estimates, one for `𝒷`-valued inner products and one classical, plus an
+ε-argument over `S − T` and `T − S` — and then appeals to bounded ultraweak
+completeness (`bh-bounded-uw-complete`, our **77I**.2).
+
+**Divergence, class 2.**  The Lean proof polarizes instead:
+`4·cb* = (b+c)(b+c)* − (b−c)(b−c)* − i(b+ic)(b+ic)* + i(b−ic)(b−ic)*`
+(`polarization_mul_star`), so the sum is a fixed ℂ-combination of four
+*diagonal* nets `∑ᵢ dᵢdᵢ*`, each of which is monotone, positive and
+norm-bounded — hence ultraweakly convergent to its supremum by **44VI** alone
+(`uwTendsto_of_monotone_isLUB`, from session 47).  **Neither completeness nor
+Cauchy–Schwarz is used.**  The only closure fact needed is that ℓ²-summable
+families are closed under addition, and that too avoids the solution's
+Cauchy–Schwarz estimate: `(x+y)(x+y)* ≤ 2xx* + 2yy*` follows from
+`(x−y)(x−y)* ≥ 0`, and bounds the partial sums directly.
+
+This is worth keeping as a pattern: **anywhere the theses reach for bounded
+ultraweak completeness to sum a non-positive family, polarization reduces it
+to 44VI.**
+
+New private helpers in `SelfDual.lean`'s `section L2`: `mul_star_add_le`,
+`l2Summable_add`, `l2Summable_smul`, `exists_uwTendsto_l2_diag`,
+`polarization_mul_star`.
+
+### 4. **161IV**.2 `onb1_el2` — proved directly, and it never needed 161II
+
+The author's solution routes this through the *module* `ℓ²((pᵢ))`: the `δᵢ`
+are an orthonormal basis by **161II**, `(δᵢuᵢ)ᵢ` is another one by part 1 of
+this same exercise (which *is* proved in the file), and the second half of
+161II then produces `ℓ²((pᵢ)) ≅ ℓ²((uᵢ*pᵢuᵢ)) = ℓ²((qᵢ))`.  Both halves of
+161II.2 are `sorry`, so that route is closed.
+
+**Divergence, class 2**, and a cheap one: the bijection can be written down.
+With `uᵢ*uᵢ = pᵢ`, `uᵢuᵢ* = qᵢ`, put `Φ(b)ᵢ = bᵢuᵢ*` (mirrored from the
+thesis's `uᵢ*bᵢ`), with inverse `bᵢ ↦ bᵢuᵢ`.  Membership of `L2Set` is an
+absorption condition — `⌈bᵢ*bᵢ⌉ ≤ pᵢ` iff `bᵢpᵢ = bᵢ`, which is **59VI**.1
+`ceill_basic_1` and is packaged here as `ceil_star_mul_self_le_iff` /
+`mem_l2Set_iff` — and absorption makes
+`Φ(c)ᵢΦ(b)ᵢ* = cᵢpᵢbᵢ* = cᵢbᵢ*` **termwise**.  So the two nets of partial
+sums are *equal as functions*, which is why the theorem's inner-product clause
+comes out as `rw [hEq]` rather than a limit argument, and why ℓ²-summability
+transfers with the same bound.  About 90 lines.
+
+`ceil_star_mul_self_le_iff` is stated in terms of `ceil (star x * x) ≤ r`
+rather than `suppProj x ≤ r` because that is the form `L2Set` uses; note that
+Mathlib-side `star_mul_self_absorb_iff` in `A/VN/Projections.lean` is
+`private`, so the proof goes through the public `ceill_basic_1` +
+`ceil_le_iff` + `ceil_of_isStarProjection` instead.
+
+### 5. A lead for the next worker: **170IV**.1 is no longer blocked
+
+The author's solution to `surjective-nmiu` sends the kernel of a surjective
+nmiu-map through `kernel-ultraweak-twosided-ideal-dils` and **69II**
+`prop:weakly-closed-ideal`, and 69II is still `sorry`
+(`A/VN/Projections.lean:4384`).  **It is not needed.**  **69IV** `carrier_miu`
+is proved (`A/VN/Projections.lean:4399`) and gives precisely the two facts the
+argument uses: the carrier `z = ⌈ϱ⌉` of an nmiu-map is **central**, and
+`ϱ(a) = 0 ↔ z·a = 0`.
+
+What is left is routine but not short: for ncp `f : A → C` with `f(z) = f(1)`,
+show `f((1−z)x) = 0` — with `w = (1−z)x = x(1−z)` (centrality),
+`ww* = (1−z)xx*(1−z) ≤ ‖x‖²(1−z)`, so Kadison–Schwarz (`ncp_cp_cs`, proved)
+gives `f(w)f(w)* ≤ ‖f(1)‖·f(ww*) = 0` — and then bundle the induced map on
+`B ≅ A/ker ϱ` as an `NCPMap`.  Estimate 200–250 lines, mostly the bundle.
+**170IV.2** (the converse) stays blocked on 169IV regardless, since it needs
+the standard corner `h_z` as a *second* corner for `z`.
+
+### 6. Verification
+
+`lean Theses/B/Dils/Pure.lean` and `lean Theses/B/Dils/SelfDual.lean`
+(with the `LEAN_PATH` bypass — `lake env lean` still blocks on the other
+workers' `lake build`): no errors; 13 and 19 `sorry` warnings respectively,
+matching the code counts.  `#print axioms` on `dils_filter_basics_1`,
+`dils_filter_basics_2b`, `hilbmod_el2_inner` and `onb1_el2`: all exactly
+`[propext, Classical.choice, Quot.sound]`.
+
+⚠️ **Operational note.** Three times during this session a full `lake build`
+in another worker's session removed and re-created `A/VN/NormalFunctionals`,
+`B/Dils/HilbertModules` and `B/Dils/SelfDualCompletion` oleans, and the
+single-module check failed with `object file … does not exist` — *not* with a
+type error.  The brief's "retry rather than debug" rule extends to this
+failure mode, and it hits **B/Dils** oleans too, not only the A-chain ones.

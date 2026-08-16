@@ -196,6 +196,15 @@ dils.tex literally and so carries the weak form, which leaves
 (the proc.tex form) — we have not, under the standing rule that statements are
 not altered without an author's ruling.
 
+*Status 2026-08-16 (worker 73): the blast radius is now **machine-confirmed**
+to be exactly `dils_filter_basics_2a`.*  **169XI**.1 `dils_filter_basics_1`
+and **169XI**.2's second half `dils_filter_basics_2b` are both **proved**
+against the weak (dils.tex) reading and are axiom-clean.  Part 1 survives
+because the only place it needs the filter's universal property is at
+`h'(1) = c(φ(1))`, and `c(φ(1)) ≤ c(1) ≤ b` holds under either reading; part
+2b never uses unitality of `φ'` at all — it is part 1 applied to `c'` and the
+dilation of `φ'`.  So a ruling on B11 changes exactly one Lean statement.
+
 ### B12. 139XI `ess-uniq-pur` — essential uniqueness of purification is false without a dimension hypothesis; which repair?
 `dils.tex:998`, solution `bsols.tex:209`.  The exercise asks to show: if
 `V, W : 𝒦 → ℋ ⊗ 𝒦'` satisfy `V*(a⊗1)V = φ(a) = W*(a⊗1)W` for all `a ∈ B(ℋ)`,

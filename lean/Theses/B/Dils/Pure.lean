@@ -688,45 +688,9 @@ theorem dils_stand_filter [VonNeumannAlgebra B] (b : B) (hb : 0 ≤ b) :
       IsFilterFor c b :=
   sorry
 
-/-- **169XI** (`dils-filter-basics-exercise`, dils.tex:6158, Exercise),
-part 1: if `(𝒫, ϱ, h)` is a Paschke dilation of `φ : A → B` and
-`c : B → C` a filter, then `(𝒫, ϱ, c ∘ h)` is a Paschke dilation of
-`c ∘ φ`. -/
-theorem dils_filter_basics_1 {C : Type u} [CStarAlgebra C] [PartialOrder C]
-    [StarOrderedRing C] (φ : NCPMap A B) (D : PaschkeTriple A B)
-    (hD : IsPaschkeDilationOf D ⇑φ) (c : NCPMap B C) (hc : IsFilter c) :
-    ∃ h' : NCPMap D.P C, (∀ x, h' x = c (D.h x)) ∧
-      IsPaschkeDilationOf ⟨D.P, D.vn, D.ρ, h'⟩ fun a => c (φ a) :=
-  sorry
-
-/-- **169XI** (`dils-filter-basics-exercise`, dils.tex:6158, Exercise),
-part 2, first half: for a filter `c' : C' → B` of `φ(1)` there is a unique
-unital ncp-map `φ'` with `φ = c' ∘ φ'`.
-
-⚠️ **False as stated**, because `IsFilterFor` transcribes dils.tex's
-`c 1 ≤ b` rather than proc.tex's `c 1 = b` (see the note on `IsFilterFor`,
-and QUESTIONS **B11**): for `A = B = C' = ℂ`, `φ = id` and `c' = ½·id` —
-which is an `IsFilterFor c' (φ 1)` — the unital `φ'` demanded here would need
-`c'(1) = φ(1)`, i.e. `½ = 1`.  Left `sorry` pending the author's ruling; with
-`c 1 = b` the thesis's own two-line argument (`c'(φ'(1)) = φ(1) = c'(1)` and
-injectivity of `c'`, `dils_filters_injective`) closes it. -/
-theorem dils_filter_basics_2a {C' : Type u} [CStarAlgebra C']
-    [PartialOrder C'] [StarOrderedRing C'] (φ : NCPMap A B)
-    (c' : NCPMap C' B) (hc : IsFilterFor c' (φ 1)) :
-    ∃! φ' : NCPMap A C', φ' 1 = 1 ∧ ∀ a, c' (φ' a) = φ a :=
-  sorry
-
-/-- **169XI** (`dils-filter-basics-exercise`, dils.tex:6158, Exercise),
-part 2, second half: if moreover `(𝒫, ϱ, h)` is a Paschke dilation of
-`φ'`, then `(𝒫, ϱ, c' ∘ h)` is a Paschke dilation of `φ`. -/
-theorem dils_filter_basics_2b {C' : Type u} [CStarAlgebra C']
-    [PartialOrder C'] [StarOrderedRing C'] (φ : NCPMap A B)
-    (c' : NCPMap C' B) (hc : IsFilterFor c' (φ 1)) (φ' : NCPMap A C')
-    (hφ' : φ' 1 = 1 ∧ ∀ a, c' (φ' a) = φ a) (D : PaschkeTriple A C')
-    (hD : IsPaschkeDilationOf D ⇑φ') :
-    ∃ h' : NCPMap D.P B, (∀ x, h' x = c' (D.h x)) ∧
-      IsPaschkeDilationOf ⟨D.P, D.vn, D.ρ, h'⟩ ⇑φ :=
-  sorry
+/- **169XI** (`dils-filter-basics-exercise`) follows **169XII** below: both
+its parts use the injectivity of filters, and Lean needs that declaration
+first.  The three statements are otherwise unchanged. -/
 
 /-- **169XII** (`dils-filters-injective`, dils.tex:6180, Exercise): filters
 are injective.
@@ -864,6 +828,255 @@ theorem dils_filters_injective (c : NCPMap A B) (hc : IsFilter c) :
   have h : c (x - y) = 0 := by
     rw [← hLc, map_sub, hLc, hLc, hxy, sub_self]
   exact sub_eq_zero.mp (hzero _ h)
+
+/-! ### Auxiliary: ncp-maps compose and scale
+
+`Theses/B/Dils/Stinespring.lean` carries the same three constructions, but
+as `private` declarations, so they are repeated here rather than exported
+(a merge is noted in that file's header). -/
+
+/-- An ncp-map, as a positive linear map. -/
+private noncomputable def ncpPos {P Q : Type u} [CStarAlgebra P]
+    [PartialOrder P] [StarOrderedRing P] [CStarAlgebra Q] [PartialOrder Q]
+    [StarOrderedRing Q] (f : NCPMap P Q) : P →ₚ[ℂ] Q where
+  toLinearMap := f.toCompletelyPositiveMap.toLinearMap
+  monotone' := fun x y hxy => by
+    have hcp : IsCompletelyPositiveMap f.toCompletelyPositiveMap.toLinearMap :=
+      (cp_iff _).out 1 0 |>.mp fun N M hM =>
+        f.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM
+    have h := astara_pos_basic_2_cp _ hcp (y - x) (sub_nonneg.mpr hxy)
+    rw [map_sub] at h
+    exact sub_nonneg.mp h
+
+/-- The composition of two ncp-maps is an ncp-map. -/
+private theorem exists_ncpComp {P Q R : Type u} [CStarAlgebra P]
+    [PartialOrder P] [StarOrderedRing P] [CStarAlgebra Q] [PartialOrder Q]
+    [StarOrderedRing Q] [CStarAlgebra R] [PartialOrder R] [StarOrderedRing R]
+    (f : NCPMap Q R) (g : NCPMap P Q) :
+    ∃ k : NCPMap P R, ∀ a, k a = f (g a) := by
+  set Lg : P →ₗ[ℂ] Q := g.toCompletelyPositiveMap.toLinearMap with hLg
+  set Lf : Q →ₗ[ℂ] R := f.toCompletelyPositiveMap.toLinearMap with hLf
+  have hLgcp : IsCompletelyPositiveMap Lg :=
+    (cp_iff Lg).out 1 0 |>.mp fun N M hM =>
+      g.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM
+  have hLfcp : IsCompletelyPositiveMap Lf :=
+    (cp_iff Lf).out 1 0 |>.mp fun N M hM =>
+      f.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM
+  exact ⟨{ toCompletelyPositiveMap :=
+             { toLinearMap := Lf.comp Lg
+               map_cstarMatrix_nonneg' :=
+                 (cp_iff (Lf.comp Lg)).out 0 1 |>.mp
+                   (cp_comp Lg Lf hLgcp hLfcp) }
+           preservesDirSups' :=
+             preservesDirSups_pmap_comp (ncpPos g) g.preservesDirSups'
+               (ncpPos f) f.preservesDirSups' },
+    fun _ => rfl⟩
+
+/-- Multiplication by a positive real is an order isomorphism of a
+C*-algebra (auxiliary for `exists_ncpSmul`). -/
+private theorem smul_le_smul_iff_pos {P : Type*} [CStarAlgebra P]
+    [PartialOrder P] [StarOrderedRing P] {l : ℝ} (hl : 0 < l) (x y : P) :
+    (l : ℂ) • x ≤ (l : ℂ) • y ↔ x ≤ y := by
+  have main : ∀ (m : ℝ), 0 ≤ m → ∀ u v : P, u ≤ v → (m : ℂ) • u ≤ (m : ℂ) • v := by
+    intro m hm u v huv
+    have h0 : (0 : P) ≤ (m : ℂ) • (v - u) :=
+      cstar_positive_1 _ (sub_nonneg.mpr huv) m hm
+    rw [smul_sub] at h0
+    rwa [← sub_nonneg]
+  refine ⟨fun h => ?_, main l hl.le x y⟩
+  have h' := main l⁻¹ (inv_nonneg.mpr hl.le) _ _ h
+  rwa [smul_smul, smul_smul, ← Complex.ofReal_mul, inv_mul_cancel₀ hl.ne',
+    Complex.ofReal_one, one_smul, one_smul] at h'
+
+/-- A positive real multiple of an ncp-map is an ncp-map. -/
+private theorem exists_ncpSmul {P Q : Type*} [CStarAlgebra P] [PartialOrder P]
+    [StarOrderedRing P] [CStarAlgebra Q] [PartialOrder Q] [StarOrderedRing Q]
+    (f : NCPMap P Q) {l : ℝ} (hl : 0 < l) :
+    ∃ g : NCPMap P Q, ∀ a, g a = (l : ℂ) • f a := by
+  refine ⟨{ toCompletelyPositiveMap :=
+              { toLinearMap := (l : ℂ) • (f.toCompletelyPositiveMap.toLinearMap)
+                map_cstarMatrix_nonneg' := fun k M hM => ?_ }
+            preservesDirSups' := ?_ }, fun _ => rfl⟩
+  · have h1 : (0 : CStarMatrix (Fin k) (Fin k) Q)
+        ≤ M.map f.toCompletelyPositiveMap.toLinearMap :=
+      f.toCompletelyPositiveMap.map_cstarMatrix_nonneg' k M hM
+    have h2 : M.map ((l : ℂ) • f.toCompletelyPositiveMap.toLinearMap)
+        = (l : ℂ) • M.map f.toCompletelyPositiveMap.toLinearMap := rfl
+    rw [h2]
+    exact cstar_positive_1 _ h1 l hl.le
+  · intro D s hne hdir hlub
+    have h := f.preservesDirSups' D s hne hdir hlub
+    constructor
+    · rintro _ ⟨d, hd, rfl⟩
+      exact (smul_le_smul_iff_pos hl _ _).mpr (h.1 ⟨d, hd, rfl⟩)
+    · intro u hu
+      have hu' : (l : ℂ)⁻¹ • u ∈ upperBounds ((fun d : selfAdjoint P => f d) '' D) := by
+        rintro _ ⟨d, hd, rfl⟩
+        have := hu ⟨d, hd, rfl⟩
+        have hle : (l : ℂ) • (f d) ≤ (l : ℂ) • ((l : ℂ)⁻¹ • u) := by
+          rwa [smul_smul, mul_inv_cancel₀ (by exact_mod_cast hl.ne'), one_smul]
+        exact (smul_le_smul_iff_pos hl _ _).mp hle
+      have := h.2 hu'
+      have hle : (l : ℂ) • f s ≤ (l : ℂ) • ((l : ℂ)⁻¹ • u) :=
+        (smul_le_smul_iff_pos hl _ _).mpr this
+      rwa [smul_smul, mul_inv_cancel₀ (by exact_mod_cast hl.ne'), one_smul] at hle
+
+/-- `(1 + ‖w‖)⁻¹ w ≤ 1` for `w ≥ 0`: the rescaling that makes an arbitrary
+positive element subunital.  (Auxiliary for **169XI**.1.) -/
+private theorem smul_norm_succ_inv_le_one {P : Type*} [CStarAlgebra P]
+    [PartialOrder P] [StarOrderedRing P] {w : P} (hw : 0 ≤ w) :
+    (((‖w‖ + 1)⁻¹ : ℝ) : ℂ) • w ≤ 1 := by
+  set t : ℝ := (‖w‖ + 1)⁻¹ with htdef
+  have hden : (0 : ℝ) < ‖w‖ + 1 := by positivity
+  have htpos : 0 < t := by rw [htdef]; exact inv_pos.mpr hden
+  have h1 : w ≤ algebraMap ℂ P ((‖w‖ : ℝ) : ℂ) := by
+    have h := IsSelfAdjoint.le_algebraMap_norm_self (IsSelfAdjoint.of_nonneg hw)
+    rwa [algebraMap_real_eq] at h
+  have h2 : (t : ℂ) • w ≤ (t : ℂ) • algebraMap ℂ P ((‖w‖ : ℝ) : ℂ) := by
+    have h0 : (0 : P) ≤ (t : ℂ) • (algebraMap ℂ P ((‖w‖ : ℝ) : ℂ) - w) :=
+      cstar_positive_1 _ (sub_nonneg.mpr h1) t htpos.le
+    rw [smul_sub] at h0
+    exact sub_nonneg.mp h0
+  have h3 : (t : ℂ) • algebraMap ℂ P ((‖w‖ : ℝ) : ℂ)
+      = algebraMap ℂ P (((t * ‖w‖ : ℝ)) : ℂ) := by
+    rw [Algebra.algebraMap_eq_smul_one, Algebra.algebraMap_eq_smul_one,
+      smul_smul]
+    push_cast
+    ring_nf
+  have h4 : algebraMap ℂ P (((t * ‖w‖ : ℝ)) : ℂ) ≤ (1 : P) := by
+    have hle : t * ‖w‖ ≤ 1 := by
+      rw [htdef, inv_mul_le_iff₀ hden]
+      linarith [norm_nonneg w]
+    have h := algebraMap_ofReal_mono (𝒜 := P) hle
+    rwa [show (((1 : ℝ)) : ℂ) = 1 by norm_num, map_one] at h
+  exact h2.trans (h3 ▸ h4)
+
+/-- **169XI** (`dils-filter-basics-exercise`, dils.tex:6158, Exercise),
+part 1: if `(𝒫, ϱ, h)` is a Paschke dilation of `φ : A → B` and
+`c : B → C` a filter, then `(𝒫, ϱ, c ∘ h)` is a Paschke dilation of
+`c ∘ φ`.
+
+The author's solution (`bsols.tex`, `dils-filter-basics-exercise`.1) is
+transcribed, with **two divergences**, both recorded in PROVING-LOG.
+
+*(i)* The solution first assumes `φ(1) ≤ 1`, so that the mediating
+`h' : 𝒫' → 𝒞` of a competing triple satisfies `h'(1) = c(φ(1)) ≤ c(1) ≤ b`
+and `c`'s universal property applies; the general case is then reduced to it
+by rescaling the *whole dilation* through **140X**.4 twice.  Here the
+rescaling is done to `h'` alone — `λ := (‖φ(1)‖+1)⁻¹` makes `λ h'(1) ≤ b`,
+and the factorisation `h''` of `λ h'` is scaled back by `λ⁻¹` — which needs
+no case split and no appeal to 140X.4.
+
+*(ii)* Where the solution derives `φ = h'' ∘ ϱ'` and the uniqueness of `σ`
+from *uniqueness* in `c`'s universal property, we use the injectivity of `c`
+(**169XII**) directly; it is proved above and is the same fact. -/
+theorem dils_filter_basics_1 {C : Type u} [CStarAlgebra C] [PartialOrder C]
+    [StarOrderedRing C] (φ : NCPMap A B) (D : PaschkeTriple A B)
+    (hD : IsPaschkeDilationOf D ⇑φ) (c : NCPMap B C) (hc : IsFilter c) :
+    ∃ h' : NCPMap D.P C, (∀ x, h' x = c (D.h x)) ∧
+      IsPaschkeDilationOf ⟨D.P, D.vn, D.ρ, h'⟩ fun a => c (φ a) := by
+  have hcinj : Function.Injective ⇑c := dils_filters_injective c hc
+  obtain ⟨b, -, hcb, huniv⟩ := hc
+  -- linearity and monotonicity of `c`
+  set Lc : B →ₗ[ℂ] C := c.toCompletelyPositiveMap.toLinearMap with hLcdef
+  have hLc : ∀ x : B, Lc x = c x := fun _ => rfl
+  have hccp : IsCompletelyPositiveMap Lc :=
+    (cp_iff Lc).out 1 0 |>.mp fun N M hM =>
+      c.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM
+  have hcpos : IsPositiveMap Lc := astara_pos_basic_2_cp Lc hccp
+  have hcmono : ∀ x y : B, x ≤ y → c x ≤ c y := by
+    intro x y hxy
+    have h := hcpos (y - x) (sub_nonneg.mpr hxy)
+    rw [map_sub, hLc, hLc] at h
+    exact sub_nonneg.mp h
+  have hcsmul : ∀ (z : ℂ) (x : B), c (z • x) = z • c x := by
+    intro z x
+    rw [← hLc, ← hLc, map_smul]
+  -- `h' := c ∘ h`
+  obtain ⟨h', hh'⟩ := exists_ncpComp c D.h
+  refine ⟨h', hh', fun a => by rw [hh', hD.1 a], ?_⟩
+  intro D' hD'
+  -- `λ = (‖φ(1)‖+1)⁻¹`, so that `λ·φ(1) ≤ 1` and hence `λ·h''(1) ≤ b`
+  have hφ1 : (0 : B) ≤ φ 1 := by
+    have h := (astara_pos_basic_2_cp (φ.toCompletelyPositiveMap.toLinearMap)
+      ((cp_iff _).out 1 0 |>.mp fun N M hM =>
+        φ.toCompletelyPositiveMap.map_cstarMatrix_nonneg' N M hM)) 1 zero_le_one
+    exact h
+  set l : ℝ := (‖(φ 1 : B)‖ + 1)⁻¹ with hldef
+  have hlpos : 0 < l := by
+    rw [hldef]; positivity
+  have hlne : ((l : ℝ) : ℂ) ≠ 0 := by exact_mod_cast hlpos.ne'
+  have hsub : ((l : ℝ) : ℂ) • (φ 1 : B) ≤ 1 := smul_norm_succ_inv_le_one hφ1
+  obtain ⟨k, hk⟩ := exists_ncpSmul D'.h hlpos
+  have hρ1 : (D'.ρ (1 : A) : D'.P) = 1 := map_one D'.ρ.toStarAlgHom
+  have hh1 : (D'.h (1 : D'.P) : C) = c (φ 1) := by
+    rw [← hρ1]; exact hD' 1
+  have hk1 : (k 1 : C) ≤ b := by
+    rw [hk, hh1, ← hcsmul]
+    exact le_trans (hcmono _ _ hsub) hcb
+  -- factor `λ h''` through `c`, then scale back
+  obtain ⟨g₀, hg₀, -⟩ :=
+    huniv D'.P inferInstance inferInstance inferInstance k hk1
+  obtain ⟨g, hg⟩ := exists_ncpSmul g₀ (inv_pos.mpr hlpos)
+  have hcg : ∀ x : D'.P, (c (g x) : C) = D'.h x := by
+    intro x
+    rw [hg, hcsmul, hg₀ x, hk x, smul_smul, Complex.ofReal_inv,
+      inv_mul_cancel₀ hlne, one_smul]
+  -- `g ∘ ϱ' = φ`, because `c` is injective
+  have hgρ : ∀ a : A, (g (D'.ρ a) : B) = φ a := by
+    intro a
+    refine hcinj ?_
+    rw [hcg (D'.ρ a)]
+    exact hD' a
+  obtain ⟨σ, ⟨hσ1, hσ2⟩, hσu⟩ := hD.2 ⟨D'.P, D'.vn, D'.ρ, g⟩ hgρ
+  refine ⟨σ, ⟨hσ1, fun x => ?_⟩, ?_⟩
+  · show (h' (σ x) : C) = D'.h x
+    rw [hh', hσ2 x, hcg x]
+  · rintro σ' ⟨hσ'1, hσ'2⟩
+    refine hσu σ' ⟨hσ'1, fun x => ?_⟩
+    refine hcinj ?_
+    have h := hσ'2 x
+    show (c (D.h (σ' x)) : C) = c (g x)
+    rw [← hh', hcg x]
+    exact h
+
+/-- **169XI** (`dils-filter-basics-exercise`, dils.tex:6158, Exercise),
+part 2, first half: for a filter `c' : C' → B` of `φ(1)` there is a unique
+unital ncp-map `φ'` with `φ = c' ∘ φ'`.
+
+⚠️ **False as stated**, because `IsFilterFor` transcribes dils.tex's
+`c 1 ≤ b` rather than proc.tex's `c 1 = b` (see the note on `IsFilterFor`,
+and QUESTIONS **B11**): for `A = B = C' = ℂ`, `φ = id` and `c' = ½·id` —
+which is an `IsFilterFor c' (φ 1)` — the unital `φ'` demanded here would need
+`c'(1) = φ(1)`, i.e. `½ = 1`.  Left `sorry` pending the author's ruling; with
+`c 1 = b` the thesis's own two-line argument (`c'(φ'(1)) = φ(1) = c'(1)` and
+injectivity of `c'`, `dils_filters_injective`) closes it. -/
+theorem dils_filter_basics_2a {C' : Type u} [CStarAlgebra C']
+    [PartialOrder C'] [StarOrderedRing C'] (φ : NCPMap A B)
+    (c' : NCPMap C' B) (hc : IsFilterFor c' (φ 1)) :
+    ∃! φ' : NCPMap A C', φ' 1 = 1 ∧ ∀ a, c' (φ' a) = φ a :=
+  sorry
+
+/-- **169XI** (`dils-filter-basics-exercise`, dils.tex:6158, Exercise),
+part 2, second half: if moreover `(𝒫, ϱ, h)` is a Paschke dilation of
+`φ'`, then `(𝒫, ϱ, c' ∘ h)` is a Paschke dilation of `φ`.
+
+The author's solution is "by the previous point" — that is, part 1 applied
+to the filter `c'` and the dilation of `φ'` — and that is what is done
+here; the unitality of `φ'` is not used.  (So this half does *not* inherit
+the defect of part 2's first half, which is the only place `c(1) = b` is
+needed.) -/
+theorem dils_filter_basics_2b {C' : Type u} [CStarAlgebra C']
+    [PartialOrder C'] [StarOrderedRing C'] (φ : NCPMap A B)
+    (c' : NCPMap C' B) (hc : IsFilterFor c' (φ 1)) (φ' : NCPMap A C')
+    (hφ' : φ' 1 = 1 ∧ ∀ a, c' (φ' a) = φ a) (D : PaschkeTriple A C')
+    (hD : IsPaschkeDilationOf D ⇑φ') :
+    ∃ h' : NCPMap D.P B, (∀ x, h' x = c' (D.h x)) ∧
+      IsPaschkeDilationOf ⟨D.P, D.vn, D.ρ, h'⟩ ⇑φ := by
+  obtain ⟨h', hh', hdil⟩ := dils_filter_basics_1 φ' D hD c' ⟨φ 1, hc⟩
+  refine ⟨h', hh', ?_⟩
+  have hfun : (fun a => c' (φ' a)) = ⇑φ := funext hφ'.2
+  rwa [hfun] at hdil
 
 end CornersFilters
 
