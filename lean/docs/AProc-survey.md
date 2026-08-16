@@ -1,11 +1,37 @@
-# `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–74, sessions 47–49)
+# `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–76, sessions 47–51)
 
-**Headline count: A/Proc has 90 code `sorry`s** after session 49.
-Per file: `Tensor` 43, `Measurement` **13** (was 20), `QuantumLambda` 17,
+**Headline count: A/Proc has 88 code `sorry`s** after session 51.
+Per file: `Tensor` 43, `Measurement` **11** (was 20), `QuantumLambda` 17,
 `Duplicators` 17.  (`grep -c sorry` over-counts, because the file
 docstrings mention `sorry` in prose; the code counts are the ones above.
 Note `\bsorry\b` also matches "sorry-ed" in prose — count the compiler's
 `declaration uses \`sorry\`` warnings instead.)
+
+> **Session 51 update — parsec 1020 is closed, and the next gate is 111VII,
+> which is in *this* chapter.**
+> **102VII** `canonical_quotient_rigid` and **102IX** `pure_is_rigid` are
+> **proved and axiom-clean**, together with the index-free `ad_rigid` (any
+> `d*(·)d : ⌈d⌉ᵣ𝒜⌈d⌉ᵣ → 𝒜` is rigid) and `stdFilter_rigid`.  102VII cost
+> ~210 lines and needed nothing the tree lacked; the only real step is the
+> compression `x ↦ eₙ h(x) eₙ` being the identity by **102V** `nmiu-rigid`
+> (private `compress_eq_of_ceil`).  Three corrections to what follows:
+> (i) **81V `douglas` is proved** — `A/VN/Division.lean`'s seven `sorry`s do
+> not include `douglas_1/2` or `sequential_quotient_1`; only **81VIII.2**
+> `sequential_quotient_2` and **81IX.2** `div_usc` remain of that block, so
+> the "104III.3/.4/.5 → 81V/81VIII" row below is half stale (those three are
+> unsolved *exercises* about `div`/`pinv`/infima, not blocked items).
+> (ii) **111VII `special_tensor` is NOT in the vacuous band** — its statement
+> mentions no `VNT`; it is what *gates* the band, and the table under "(c)"
+> should not list it.
+> (iii) **111VII is now A/Proc-local.**  Session 50 supplied the last A/VN
+> input to `tensor-2` (89IX + `exists_sumVectorNP`); `tensor-1` is **88VI**
+> `double_commutant` (proved: `W*(S)` = the ultraweak closure of a unital
+> ∗-subalgebra, and the span of the range of `⊗` is one, since
+> `(A⊗B)(C⊗D) = AC⊗BD`); `tensor-3` is the thesis's `√T·x⊗y = 0` argument
+> plus `(hilbTensor H K).isTensor.dense`.  Only miu-bilinearity of `opTensor`
+> ("left to the reader") is genuinely unwritten.  **111VII → 111XII
+> un-vacuums 54 of the 88 remaining statements and is the highest-leverage
+> target in the chapter.**
 
 > **Session 49 update — 100III is proved, and the parsec-1000 gate is open.**
 > **100III** `pure_fundamental`, **100VII**.1/.2/.3 `special_pure_maps_*`,
@@ -63,16 +89,17 @@ Note `\bsorry\b` also matches "sorry-ed" in prose — count the compiler's
 
 | class | count | share |
 |---|---|---|
-| (c) **vacuous band** — statement mentions `VNT`/`⊗ᵥ`/`Duplicator`, hence depends on `sorryAx` through **111XII**; can never be closed axiom-cleanly until 111XII is | **54** | 47% |
-| (b) blocked on a *named* `sorry` outside A/Proc | **50** | 44% |
-| (a) self-contained / reachable now | **5** | 4% |
-| (c′) cited to literature, no thesis argument at all | **1** | 1% |
+| (c) **vacuous band** — statement mentions `VNT`/`⊗ᵥ`/`Duplicator`, hence depends on `sorryAx` through **111XII**; can never be closed axiom-cleanly until 111XII is | **56** | 64% |
+| (b) blocked on a *named* `sorry` outside A/Proc, or on another A/Proc `sorry` | **~24** | 27% |
+| (a) self-contained / reachable now | **4** (124I, 125II, 125cIII, 130IV) | 5% |
+| (c′) cited to literature, no thesis argument at all | **1** (121II) | 1% |
 | (d) suspicious | **0 new** (3 already-known false statements are recorded and realigned) | |
-| closed in session 46 | **2** (99XI, 106III.1) | |
 
-*(The class counts above are as of session 46 and have not been recomputed;
-16 of the (b) entries have been closed since, all in `Measurement.lean`.  The
-per-item tables below are current.)*
+*(Recomputed in session 51 against the current 88.  `QuantumLambda` and
+`Duplicators` were surveyed per-declaration for the first time; the earlier
+band figures for those two files were both wrong, in opposite directions.
+`Measurement`'s and `Tensor`'s rows have not been re-derived — the per-item
+tables below are the current record.)*
 
 The two blockers that gate almost everything:
 
@@ -95,7 +122,9 @@ The two blockers that gate almost everything:
 | **98II**.2 | `filter_basic_2` | Measurement 2018 | **two of the three conjuncts are directly provable** — see "the near miss" below |
 | **124I** | `vn_generation_bound` | QuantumLambda 678 | pure cardinal arithmetic on `wstar S`; no thesis proof, no dependency on anything sorried |
 | **125II** | `vn_gns_bound` | QuantumLambda 729 | `ngns` + a cardinality count of the GNS direct sum; `ngns` is proved |
-| **129X** | `continuous_finite_measure_space_not_duplicable` | Duplicators 725 | `Duplicable A` is the hypothesis (not the conclusion) so the statement is *not* `VNT`-tainted in a way that blocks a proof by contradiction; but its proof (proc.tex:6363) does use the duplicator's `δ`, so treat as (b) until checked |
+| ~~**129X**~~ | `continuous_finite_measure_space_not_duplicable` | Duplicators 725 | **REMOVED (session 51)** — `hd : Duplicable 𝒜` is in the *type*, so it is tainted after all; and proc.tex:6367 really does use the product functional `ω⊗ω` and `carrier-tensor` faithfulness |
+| **130IV** | `measure_space_partition` | Duplicators 1019 | (a) — its recorded obstruction has been discharged; see the `Duplicators` table |
+| **125cIII** | `Fha_concrete` | QuantumLambda 894 | (a) but long — nothing it needs is `sorry` |
 
 ### The near miss: 98II.2 `filter_basic_2` — **superseded (session 47)**
 
@@ -131,25 +160,39 @@ take, and because it stops one gadget short.
 Since the statement is one conjunction, the two provable clauses cannot be
 banked separately, so the `sorry` stands.
 
-## (c) The vacuous band — 54 statements behind 111XII
+## (c) The vacuous band — 56 statements behind 111XII
+
+*(Recounted per-declaration in session 51: `QuantumLambda` is 10, not 13, and
+`Duplicators` is 14, not 9.  **111VII `special_tensor` is not in the band** —
+its statement mentions no `VNT`; it is what gates the band, and it has been
+removed from the `Tensor.lean` list below, which is therefore 31.)*
 
 Their *types* mention `VNT 𝒜 ℬ = (vnTensor 𝒜 ℬ).carrier`, and `vnTensor` is
 `Nonempty.some` of the sorried `vnTensorProduct_nonempty`.  Nothing in this
 band can be `#print axioms`-clean until 111XII is.
 
-* `Tensor.lean` (32): 111VII `special_tensor`, 111XII ×2, 115II ×2
+* `Tensor.lean` (31): 111XII ×2, 115II ×2
   (`exists_tmap`, `tensor_functorial`), 115IV ×2, 115V, 116I ×2, 116III.1/.2/.4/.5,
   116IV.1/.2, 117III, 118II ×2, 118IV.1/.4/.5/.6, 119II, 119IV, 119IVb, 119IVc,
   `exists_tmapM`, 119V ×5.  (`tensor_simple_facts_3` and `product_functional_norm`
   are tainted too — via `predualTensor`, itself chosen from a sorried existence.)
-* `QuantumLambda.lean` (13): 121II, 123II.1/.2, 125IV, 125VI, 125VIIb, 125VIII,
-  125bII, 125cIII, 125dII, 125eIIa, 125eIII, 125eVII.
-* `Duplicators.lean` (9): 127III (uniqueness), 127VI, 128VIII, 128XI, 132III.2/.3/.4,
-  132IV, 132VI.
+* `QuantumLambda.lean` (10): 123II.1/.2, 125IV, 125VI, 125VIIb, 125VIII,
+  125dII, 125eIIa, 125eIII, 125eVII.  **Not** tainted (corrections, session 51):
+  **121II** (it is about the *concrete* Hilbert-space tensor product, whose
+  `hilbTensor` comes from the **proved** `hilbertTensor_nonempty`), **125bII**
+  and **125cIII** (`HaFreeMIU` / `MatAlg` / `lp` contain no `VNT`, and the
+  `VonNeumannAlgebra (MatAlg n)` instance `Theses.A.VN.mn_vna_1` is proved).
+* `Duplicators.lean` (14): 127III (main equivalence **and** uniqueness), 127VI,
+  128VIII, 128XI, **128XIII**, **129X**, **132III.1**, 132III.2/.3/.4,
+  **132III.5**, 132IV, **132VI** `free_monoid_in_Wcpsu`.  The five in bold were
+  previously classified (b) or (a); each carries `Duplicable`/`Duplicator`/`⊗ᵥ`
+  in its *type*, hypothesis side included, so none can be axiom-clean before
+  111XII.  Only **130IV**, **130V** and the unit `exists_freeMonoidUnitCpsu`
+  are untainted.
 
 ## (b) Blocked, with the named blocker
 
-### `Measurement.lean` (parsecs 960–1060) — 13 left, 7 closed in session 49 (7 in session 48, 9 in session 47)
+### `Measurement.lean` (parsecs 960–1060) — 11 left, 2 closed in session 51 (7 in session 49, 7 in session 48, 9 in session 47)
 
 | DISP | decl | blocked on |
 |---|---|---|
@@ -164,11 +207,11 @@ band can be `#print axioms`-clean until 111XII is.
 | 100II.3 | `isPure_adSelf` | **CLOSED** (`a*(·)a = canonicalFilter a ∘ π_{⌊a⌉}`) |
 | 100III | `pure_fundamental` | **CLOSED (session 49)** — and **without 98XI**: `π_s ∘ c_p` factors directly as (corner into `⌊a⌉𝒜⌊a⌉`) then (filter `a*(·)a`), `a = √p·s`.  Needed one repair to our own `IsPure` (see the session-49 note above) |
 | 100VII.1/.2/.3 | `special_pure_maps_*` | **CLOSED (session 49)** — a unital filter and a corner of `1` are isomorphisms |
-| 102VII | `canonical_quotient_rigid` | 96V is proved, so this is *reachable*, but it is a long proof: approximate pseudoinverses `eₙ = Σ⌈tₙ⌉`, ultrastrong convergence via 66-something `mult-jus-cont`, and `nmiu-rigid`.  Not attempted in session 48 |
-| 102IX | `pure_is_rigid` | 102VII alone now (98IX and 100III are proved) |
+| 102VII | `canonical_quotient_rigid` | **CLOSED (session 51)** — the thesis's proof, ~210 lines; `approximate_pseudoinverse` (80IV), `IsApproxPseudoinverse.mul_eq_suppProj`, `partialSums_of_isLUB`, `ceil_fundamental_1` (60VII.1) and `nmiu_rigid` were all already in the tree.  The final limit is taken **ultraweakly** on the truncations `eₘ x eₘ`, not ultrastrongly on `eₙ h(eₙ a eₙ) eₙ`, so `cp-uscont` and the corner-topology transfer are not needed (ERRATA **102VIII**) |
+| 102IX | `pure_is_rigid` | **CLOSED (session 51)** — 60 lines from `ad_rigid` at `d = √f(1)` (`stdFilter_rigid`), the 98IX square, and 100III's inverse for `[f]`; the thesis's `⋄`-computation is replaced by the pointwise identity `π_{⌈f⌉}(q.val) = q` |
 | 103II.1/.2 | `purely_positive_examples_*` | **CLOSED (session 48)** — .1 is `isPure_adSelf` (100II.3) plus 101VII.1 at `a* = a`; .2 is `a(·)a = g∘g` for `g = √a(·)√a` |
 | 104III.2a | `centrally_similar_basic_2a` | **parked: false as printed**, ERRATA row exists |
-| 104III.3/.4/.5 | `centrally_similar_basic_*` | 81V `douglas` / 81VIII `sequential-quotient` (A/VN, `sorry`) |
+| 104III.3/.4/.5 | `centrally_similar_basic_*` | **not blocked** — 81V `douglas` and 81VIII.1 are proved (correction, session 51).  These are unsolved exercises about `div`, `pinv` and infima of positive elements, with no published solution (asols stops at parsec 340) |
 | 104VII | `positive_quotients_centrally_similar` | 104III.4/.5 (80IV is now proved — correction to w46 §7) |
 | 104IX | `faithful_positive_map_uniqueness` | 100VII + 104VII |
 | 105III.1-2 | `chevron_f_basic_12` | **CLOSED (session 48)** — part 1 is the defining formula, part 2 is the 98IX square at `a ∈ ⌈f⌉𝒜⌈f⌉` plus `ceilOne_conj` |
@@ -193,32 +236,34 @@ band can be `#print axioms`-clean until 111XII is.
 | 114II | `tensor_uniqueness` | 112XI |
 | 116VII | `tensor_characterization` | 112X + 116IV |
 
-### `QuantumLambda.lean` — the 4 untainted ones
+### `QuantumLambda.lean` — the 7 untainted ones (recounted, session 51)
 
-| DISP | decl | note |
-|---|---|---|
-| 123I.3 | `linf_tensor` | reachable in principle (checking `IsTensorProduct` for `ℓ^∞(X) × ℓ^∞(Y) → ℓ^∞(X×Y)`); needs the centre-separating clause, i.e. 116VII-style work.  Exercise, no author argument. |
-| 124I | `vn_generation_bound` | (a) — cardinal count |
-| 124III | `second_adjunction` | needs 124I + 125II + a Zorn/limit construction; Theorem with a full proof at proc.tex:4718 |
-| 125II | `vn_gns_bound` | (a) — `ngns` is proved |
+| DISP | decl | file:line | class | note |
+|---|---|---|---|---|
+| 121II | `intersection_tensor` | :326 | (c′) | proc.tex:4473 gives no argument, only "See Corollary IV.5.10 of Takesaki I".  **Not** in the vacuous band |
+| 123I.3 | `linf_tensor` | :650 | (b) | **116VII** `tensor_characterization` (`Tensor.lean:2407`, `sorry`), which proc.tex:4645 cites explicitly; parts 1/2 of the exercise are proved just above it |
+| 124I | `vn_generation_bound` | :678 | (a) | proc.tex:4696 needs `#(∗-algebra generated by S) ≤ #ℂ + #S` **and** that every element of `wstar S` is an ultraweak limit of a filter on it — the tree has **no** characterisation of `wstar` as a closure (only `isVNSubalgebra_wstar`), so a transfinite-closure construction has to be written |
+| 124III | `second_adjunction` | :707 | (b) | Freyd's AFT: needs products and equalisers in `W*_miu` preserved into `W*_cpsu`.  47V `vn_equalisers` is **proved**; **47IV.3 `vn_products_ncpsu` (`A/VN/Basic.lean:2905`, `sorry`) is the real external blocker** — the earlier note ("124I + 125II + Zorn") missed it |
+| 125II | `vn_gns_bound` | :729 | (a) | `ngns` is proved and `gnsHilb`/`exists_faithful_normal_rep` give the representation concretely; only the cardinal count `#H ≤ 2^#A` is left (the thesis's `#H = Σ_ω #H_ω` is correct only via countable support of `ℓ²`-families) |
+| 125bII | `ha_second_adjunction` | :852 | (b) | AFT again: `ha_equalisers` (84bV, `A/VN/Division.lean:3084`), `hereditarilyAtomic_subalgebra` (84bIII, `Division.lean:3074`) and `vn_products_ncpsu`, all `sorry` |
+| 125cIII | `Fha_concrete` | :894 | (a), long | nothing it needs is `sorry`: `HereditarilyAtomic` *is* the direct-sum decomposition by definition, and `mn_vna_1` is proved.  The work is the representatives/re-indexing bijection |
 
-### `Duplicators.lean` — the 8 untainted ones
+### `Duplicators.lean` — the 3 untainted ones (recounted, session 51)
 
-| DISP | decl | blocked on |
-|---|---|---|
-| 127III | `duplicable` (main equivalence) | 128VIII/128XI (tainted) |
-| 128XIII | `duplicable_product` | `Duplicable` hypothesis ⇒ 111XII |
-| 129X | `continuous_finite_measure_space_not_duplicable` | uses the duplicator's `δ` ⇒ 111XII |
-| 130IV | `measure_space_partition` | the missing componentwise description of `spectralOrder` on `lp ℬ ∞` (same mathematics as `vonNeumannAlgebra_lp_infty`, now discharged — **recheck**, this may have opened) |
-| 130V | `discrete_ell_x` | 130IV |
-| 132III.1 | `dup_vna_is_monoid_1` | `Duplicator` ⇒ 111XII |
-| 132III.5 | `dup_vna_is_monoid_5` | 132III.2–.4 |
-| 132VI | `exists_freeMonoidUnitCpsu` | the missing componentwise positivity of `CStarMatrix n (lp …)` (w66 §132VI) |
+| DISP | decl | file:line | class | note |
+|---|---|---|---|---|
+| 130IV | `measure_space_partition` | :1019 | (a) | **the recorded obstruction is gone**: `lp_infty_nonneg_iff` / `lp_infty_le_iff` (`A/VN/Basic.lean:765 ff.`) and 47IV.1/.2 supply the componentwise order on `lp ℬ ∞`.  proc.tex:6518 is a bare Exercise — build `𝒜 ≅ ⊕ₙ ℬₙ` from `IsLinftyOf` by restriction maps; ordinary measure theory |
+| 130V | `discrete_ell_x` | :1034 | (b) | 130IV alone; `atomic_measure_space` (same file, :892, **proved**) already turns each atom into `ℂ` |
+| 132VI unit | `exists_freeMonoidUnitCpsu` | :1206 | (b) | **47IV.3 `vn_products_ncpsu` (`A/VN/Basic.lean:2905`, `sorry`)** — it is exactly the `W*_cpsu` product of the family `(ω)_{ω ∈ W*_cpsu(𝒜,ℂ)}`.  The earlier note ("missing componentwise positivity of `CStarMatrix n (lp …)`") named the symptom, not the blocker |
+
+Everything else in the file is in the vacuous band (see above).  Note that
+128VIII's main input, **Tomiyama 128II**, is proved in this file (`tomiyama`).
 
 ## (c′) Cited to literature
 
-* **121II** `intersection_tensor` — proc.tex:4450 cites Takesaki IV.5.10 and gives
-  no argument.  (Also in the vacuous band.)
+* **121II** `intersection_tensor` — proc.tex:4473 cites Takesaki IV.5.10 and gives
+  no argument.  (**Not** in the vacuous band — correction, session 51: it is about
+  the concrete Hilbert-space tensor product.)
 
 ## (d) Suspicious
 

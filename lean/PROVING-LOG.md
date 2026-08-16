@@ -10750,3 +10750,155 @@ because `ηV` is already a submodule.
 The olean-disappearance failure mode of session 48 recurred twice
 (`A/VN/Completeness`, `A/VN/Division`), both times cured by waiting and
 retrying, as the brief says.
+
+## Session 51 — `A/Proc`: **102VII `canonical-quotient-rigid`** falls, and **102IX `pure-is-rigid`** with it (worker 76)
+
+Files touched: `Theses/A/Proc/Measurement.lean`, `ERRATA.md`,
+`docs/AProc-survey.md`, this log.  Nothing outside `Theses/A/Proc/`.
+**A/Proc 90 → 88**: `Measurement` 13 → **11**, `Tensor` 43,
+`QuantumLambda` 17, `Duplicators` 17 (compiler-counted).
+
+Closed (all `#print axioms` = `[propext, Classical.choice, Quot.sound]`):
+
+| point | declaration | class |
+|---|---|---|
+| **102VII** | `canonical_quotient_rigid` (via the index-free `ad_rigid`) | 2 for the limit step (§2), 1 elsewhere |
+| **102IX** | `pure_is_rigid` | 2 — the thesis's argument with the `⋄`-bookkeeping done pointwise (§3) |
+| — | `ad_rigid`, `stdFilter_rigid`, and the private `nmiuIdAux`, `isRigid_ncpId`, `norm_isStarProjection_le_one`, `compress_eq_of_ceil` | new reusable infrastructure |
+
+`corner_ceil_val` was **moved** (unchanged) from parsec 1050 up to just before
+parsec 1020, because `compress_eq_of_ceil` needs it.  No statement changed.
+
+### 1. The brief's "long" was right about the shape and wrong about the cost
+
+102VII is ~210 lines and its skeleton is the thesis's, step for step:
+factor `g = c ∘ h` through the filter `c = b*(·)b` (**96V**), show `h` unital
+by injectivity of `c` (`ad_injective`), take an approximate pseudoinverse
+`t` of `b` (**80IV**, proved), put `eₙ = ∑_{k<n} ⌈t_k⌋` and `sₙ = ∑_{k<n} t_k`
+so that `b sₙ = eₙ`, and prove `⌈eₙ h(P) eₙ⌉ = ⌈eₙ P eₙ⌉` by the thesis's
+five-step chain
+
+  `⌈eₙ h(P) eₙ⌉ = ⌈sₙ* g(P) sₙ⌉ = ⌈sₙ* ⌈g(P)⌉ sₙ⌉ = ⌈sₙ* ⌈c(P)⌉ sₙ⌉
+   = ⌈sₙ* c(P) sₙ⌉ = ⌈eₙ P eₙ⌉`,
+
+whose two ceiling steps are **60VII**.1 `ceil_fundamental_1`
+(`⌈a* x a⌉ = ⌈a* ⌈x⌉ a⌉`), already in `A/VN/Projections.lean`.  Everything
+the brief listed as expensive was in the tree: `approximate_pseudoinverse`,
+`IsApproxPseudoinverse.mul_eq_suppProj` (`b tₙ = ⌈tₙ⌋`),
+`partialSums_of_isLUB` (the `eₙ` are projections, increase, and converge
+ultrastrongly to `⌊b⌉`), `mult_jus_cont`, and `nmiu_rigid`.  **Nineteenth
+over-costed blocker.**
+
+The one genuinely new piece is the compression argument, extracted as
+`compress_eq_of_ceil`: for projections `e ≤ r` and a unital ncp-map `h` on
+`r𝒜r` with `⌈e h(P) e⌉ = ⌈e P e⌉` for all projections `P`, the map
+`x ↦ e h(x) e : e𝒜e → e𝒜e` is an ncp-map (built as `adNCP e r e ∘ h ∘
+adNCP e e r`, the compression after the inclusion) which agrees with the
+identity at `1` and on ceilings of projections, so it *is* the identity by
+**102V** `nmiu-rigid` — the thesis's own move, and the reason the file now
+carries `isRigid_ncpId`.  Unitality is the thesis's `p = eₙ^⊥` trick:
+`⌈e h(r−e) e⌉ = ⌈e(r−e)e⌉ = 0`, so `e h(r−e) e = 0` and `e h(e) e = e r e = e`.
+
+### 2. Divergence: the limit is taken **ultraweakly**, on a different sequence
+
+The thesis finishes by proving `eₙ h(eₙ a eₙ) eₙ = eₙ a eₙ` for *every*
+`a` and letting `n → ∞` ultrastrongly.  That step needs `h` itself to be
+ultrastrongly continuous — true, and it is the thesis's own **45II**
+`cp-uscont` (proved in `A/VN/Basic.lean` as `cp_uscont`), but the proof of
+102VII does not cite it: it cites only `mult-jus-cont` (**45VI**), which is
+about *products* and does not move `h` past a limit.  Transcribing it that
+way would in addition need `corner_vna_basic_10'` to identify the ultrastrong
+topology of `⌊b⌉𝒜⌊b⌉` with the induced one, since the convergence
+`eₙ a eₙ → a` happens inside the corner.
+
+We do it in two cheaper steps instead, and `h` is never moved past an
+ultrastrong limit:
+
+* **fixed `x`, moving projections.**  If `eₙ x eₙ = x` then `e_m x e_m = x`
+  for every `m ≥ n`, so `compress_eq_of_ceil` gives `e_m h(x) e_m = x` for
+  all `m ≥ n`.  Now only the *projections* move: `e_m z e_m → r z r`
+  ultrastrongly for a **fixed** `z` (two applications of `mult_jus_cont`,
+  with `‖e_m‖ ≤ 1`), so at `z = h(x)` the left side is eventually the
+  constant `x` and the limit is `h(x)`; hence `h(x) = x`.
+* **moving `x`.**  For general `x ∈ ⌊b⌉𝒜⌊b⌉` the truncations
+  `x_m = e_m x e_m` are each fixed by `h`, and `x_m → x` ultraweakly.  Only
+  **ultraweak** continuity of `h` — plain normality — is then needed, and
+  it is applied not as a topological statement but through `compNP`: `ω ∘ h`
+  is an np-functional of the corner, hence (by `corner_vna_basic_10`) of the
+  form `ω₂(·.val)`, so `ω(h(x_m)) → ω(h(x))` follows from `uwTendsto_iff` in
+  `𝒜` alone.  `eq_of_forall_npFunctional` closes it.
+
+Reading the step also turned up **ERRATA 102VIII**: the printed proof says
+the left-hand side "converges ultrastrongly to `g(a)`", but the left-hand
+side is `eₙ h(eₙ a eₙ) eₙ`, whose limit is `h(a)` — `g(a)` is not even in
+the same algebra as the right-hand side.  Filed with the missing `cp-uscont`
+citation.
+
+### 3. 102IX is 60 lines once 102VII is in the index-free form
+
+The proof of 102VII was written for a general `c : e𝒜e → 𝒜` with
+`c(x) = d* x d` and `e = ⌈d⌉ᵣ` (`ad_rigid`, the shape `isFilter_ad` already
+uses), because 102IX needs it at `d = √p`, where the index is `⌈p⌉` and not
+`⌈√p⌉ᵣ`; transporting along `⌈p⌉ = ⌈√p⌉ᵣ` inside the dependent type
+`Corner 𝒜 e` is not type-correct.  `canonical_quotient_rigid` and
+`stdFilter_rigid` are then both one line.
+
+The rest follows the thesis: `⌈f⌉ = ⌈g⌉` (here directly — `f(q^⊥) = 0 ⟺
+⌈f(q^⊥)⌉ = 0 ⟺ ⌈g(q^⊥)⌉ = 0 ⟺ g(q^⊥) = 0`, so the two carriers are least
+in the *same* set), `g = h ∘ π_{⌈f⌉}` by the universal property of the
+corner, `[f]` invertible by **100III**, and `h ∘ [f]⁻¹ = c_{f(1)}` by
+rigidity of `c_{f(1)}`.
+
+**Divergence.**  The thesis gets the hypotheses of that last step from a
+`⋄`-computation (`h^⋄ ∘ π^⋄ = g^⋄ = c^⋄ ∘ [f]^⋄ ∘ π^⋄` and `π^⋄` surjective).
+Our `IsRigid` is already phrased pointwise on projections, so the diamond
+detour is unnecessary: for a projection `Q` of `⌈f(1)⌉ℬ⌈f(1)⌉`, put
+`q = [f]⁻¹(Q)` — a projection, by the private `isStarProjection_map` (a
+unital ncp-isomorphism maps projections to projections, **99V**) — and note
+`π_{⌈f⌉}(q.val) = q`, so `h(q) = g(q.val)` and
+`⌈h([f]⁻¹ Q)⌉ = ⌈g(q.val)⌉ = ⌈f(q.val)⌉ = ⌈c_{f(1)}([f](q))⌉ = ⌈c_{f(1)}(Q)⌉`
+by the **98IX** square.  "`π^⋄` is clearly surjective" is exactly the
+observation `π_{⌈f⌉}(q.val) = q`.
+
+### 4. Corrections to the brief and to `docs/AProc-survey.md`
+
+1. **81V `douglas` is proved.**  The survey (and the brief) say
+   "104III.3/.4/.5 → 81V `douglas` / 81VIII `sequential-quotient` (A/VN,
+   `sorry`)".  `A/VN/Division.lean` has seven `sorry`s and none of them is
+   `douglas_1`, `douglas_2` or `sequential_quotient_1`; only **81VIII.2**
+   `sequential_quotient_2` (Division.lean:2502) and **81IX.2** `div_usc`
+   (2587) are left of that block, plus 79VI.4/.5 and the parsec-840 items.
+   104III.3/.4/.5 are exercises about `div`/`pinv`/infima with no published
+   solution (asols stops at parsec 340) — they are not cheap, but they are
+   not blocked on `douglas` either.
+2. **111VII is no longer blocked on `A/VN`, and it is in this territory.**
+   Session 50 closed the last A/VN input to `tensor-2` (89IX, plus
+   `exists_sumVectorNP`) and recorded that what remains is "A/Proc-local
+   assembly".  That is right, and the other two conditions are also within
+   reach now: `tensor-1` is **88VI** `double_commutant` (proved,
+   `A/VN/NormalFunctionals.lean:1524`), which gives `W*(S) = ` the ultraweak
+   closure of a unital ∗-subalgebra `S`, and the span of the range of `⊗` is
+   such a subalgebra because `(A⊗B)(C⊗D) = AC⊗BD`; `tensor-3` is the
+   thesis's two-line `√T x⊗y = 0` argument plus density of the elementary
+   tensors, which `(hilbTensor H K).isTensor.dense` already supplies.  What
+   is genuinely missing is miu-bilinearity of `opTensor` ("we leave it to
+   the reader"), provable on elementary tensors by
+   `ContinuousLinearMap.ext_on … isTensor.dense`.  **111VII → 111XII is the
+   single highest-leverage target in A/Proc — it un-vacuums 54 of the 88
+   remaining statements** — and it is now A/Proc-local.  Estimate: one full
+   session.
+3. The survey lists **111VII** under "(c) the vacuous band".  It is not in
+   the band: its statement mentions no `VNT`.  It is what *gates* the band.
+
+### 5. Verification
+
+`env LEAN_PATH=… lean Theses/A/Proc/Measurement.lean` → **0** `error:` lines
+and **11** `declaration uses 'sorry'` warnings, down from 13, with no new
+warning of any kind.  `#print axioms` was run by appending a block to the
+module itself and recompiling (never from an importing scratch file): all
+of `ad_rigid`, `canonical_quotient_rigid`, `stdFilter_rigid`,
+`pure_is_rigid`, `corner_ceil_val` (after the move), `isRigid_ncpId`,
+`compress_eq_of_ceil`, and the regression pair `pure_fundamental` /
+`chevron_f_purely_positive_1` are exactly
+`[propext, Classical.choice, Quot.sound]`.  Nothing staged, nothing
+committed.

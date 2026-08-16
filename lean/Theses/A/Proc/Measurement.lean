@@ -4886,16 +4886,419 @@ theorem nmiu_rigid [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     isClosed_eq (ncpMap_continuous g) (ncpMap_continuous f)
   exact mem_of_isClosed_of_projections S hclosed hagree x
 
+/-- Auxiliary for **105IV**: the ceiling computed *in a corner* is the
+ambient ceiling.  For `0 ≤ x` in `e𝒜e` one has `⌈x⌉ ≤ e` (59III), so the
+ambient `⌈x⌉` lies in the corner, and the two least-ness clauses are the
+same condition on the same projections. -/
+theorem corner_ceil_val [VonNeumannAlgebra A] {e : A}
+    [Fact (IsStarProjection e)] (x : Corner A e) (hx : 0 ≤ x) :
+    (ceil x).val = ceil x.val := by
+  have he : IsStarProjection e := Corner.proj e
+  have hx0 : (0 : A) ≤ x.val := hx
+  have hcproj : IsStarProjection (ceil x.val) := isStarProjection_ceil x.val
+  have hle : ceil x.val ≤ e := (ceil_le_iff hx0 he).mpr (Corner.mul_right x)
+  have hce : ceil x.val * e = ceil x.val :=
+    ((projection_below_effect e (ceil x.val) ⟨he.nonneg, he.le_one⟩
+      hcproj).out 0 7).mp hle
+  have hec : e * ceil x.val = ceil x.val := by
+    have h := congrArg star hce
+    rwa [star_mul, he.isSelfAdjoint.star_eq, hcproj.isSelfAdjoint.star_eq] at h
+  have hmem : e * ceil x.val * e = ceil x.val := by rw [hec, hce]
+  have hcorner : IsStarProjection (⟨ceil x.val, hmem⟩ : Corner A e) :=
+    ⟨Corner.val_injective (by
+        show ceil x.val * ceil x.val = ceil x.val
+        exact hcproj.isIdempotentElem.eq),
+      Corner.val_injective (by
+        show star (ceil x.val) = ceil x.val
+        exact hcproj.isSelfAdjoint.star_eq)⟩
+  refine congrArg Corner.val (ceil_eq_of_isLeast hx hcorner ?_ ?_)
+  · exact Corner.val_injective (by
+      show x.val * ceil x.val = x.val
+      exact (ceil_spec hx0).2.1)
+  · intro q hq hxq
+    show ceil x.val ≤ q.val
+    refine (ceil_spec hx0).2.2 q.val ?_ ?_
+    · exact ⟨congrArg Corner.val hq.isIdempotentElem.eq,
+        congrArg Corner.val hq.isSelfAdjoint.star_eq⟩
+    · exact congrArg Corner.val hxq
+
+/-- Auxiliary for **102VII**: the identity nmiu-map of a von Neumann
+algebra.  (`nmiuId` proper lives in `Tensor.lean`, which imports this
+file.) -/
+private noncomputable def nmiuIdAux (X : Type u) [CStarAlgebra X]
+    [PartialOrder X] [StarOrderedRing X] : NMIUMap X X where
+  toStarAlgHom := StarAlgHom.id ℂ X
+  preservesDirSups' := preservesDirSups_id
+
+/-- Auxiliary for **102VII**: the identity ncp-map of a von Neumann algebra
+is rigid — this is **102V** `nmiu-rigid` at `ϱ = id`, and it is the form in
+which the thesis's proof of 102VII uses it ("since the identity on `eₙ𝒜eₙ`
+is rigid by `nmiu-rigid` …"). -/
+private theorem isRigid_ncpId (X : Type u) [CStarAlgebra X] [PartialOrder X]
+    [StarOrderedRing X] [VonNeumannAlgebra X] : IsRigid (ncpId X) :=
+  nmiu_rigid (nmiuIdAux X) (ncpId X) fun a => by rw [ncpId_apply]; rfl
+
+/-- Auxiliary for **102VII**: `‖q‖ ≤ 1` for a projection `q` (needed as the
+norm bound in `mult-jus-cont`). -/
+private theorem norm_isStarProjection_le_one [VonNeumannAlgebra A] {q : A}
+    (hq : IsStarProjection q) : ‖q‖ ≤ 1 := by
+  have h : ‖star q * q‖ = ‖q‖ * ‖q‖ := CStarRing.norm_star_mul_self
+  rw [hq.isSelfAdjoint.star_eq, hq.isIdempotentElem.eq] at h
+  nlinarith [norm_nonneg q]
+
+/-- Auxiliary for **102VII**, the heart of the thesis's argument
+(proc.tex:1290): let `e ≤ r` be projections and `h` a unital ncp-map on
+`r𝒜r` such that `⌈e h(p) e⌉ = ⌈e p e⌉` for every projection `p` of `r𝒜r`.
+Then `e h(x) e = x` for every `x` in `e𝒜e`.
+
+The proof is the thesis's: the compression `x ↦ e h(x) e : e𝒜e → e𝒜e` is
+an ncp-map which agrees with the identity on `1` and on ceilings of
+projections, and the identity is rigid by **102V**. -/
+private theorem compress_eq_of_ceil [VonNeumannAlgebra A] {r e : A}
+    [Fact (IsStarProjection r)] [Fact (IsStarProjection e)] (hle : e ≤ r)
+    (h : NCPMap (Corner A r) (Corner A r)) (hh1 : (h 1).val = r)
+    (hceil : ∀ P : Corner A r, IsStarProjection P →
+      ceil (e * (h P).val * e) = ceil (e * P.val * e))
+    (x : Corner A r) (hx : e * x.val * e = x.val) :
+    e * (h x).val * e = x.val := by
+  have hr : IsStarProjection r := Corner.proj r
+  have he : IsStarProjection e := Corner.proj e
+  have hse : star e = e := he.isSelfAdjoint.star_eq
+  have hee : e * e = e := he.isIdempotentElem.eq
+  have her : e * r = e :=
+    ((projection_below_effect r e ⟨hr.nonneg, hr.le_one⟩ he).out 0 7).mp hle
+  have hre : r * e = e :=
+    ((projection_below_effect r e ⟨hr.nonneg, hr.le_one⟩ he).out 0 6).mp hle
+  -- the inclusion `e𝒜e → r𝒜r` and the compression `r𝒜r → e𝒜e`
+  obtain ⟨ι, hι⟩ := exists_adNCP (A := A) e e r
+    (by rw [hse, hee, hee]; exact hle)
+  obtain ⟨κ, hκ⟩ := exists_adNCP (A := A) e r e
+    (le_of_eq (by rw [hse, her, hee]))
+  have hιval : ∀ y : Corner A e, (ι y).val = y.val := by
+    intro y
+    rw [hι, hse]
+    exact y.property
+  have hκval : ∀ z : Corner A r, (κ z).val = e * z.val * e := by
+    intro z; rw [hκ, hse]
+  set k : NCPMap (Corner A e) (Corner A e) := ncpComp κ (ncpComp h ι) with hkdef
+  have hkval : ∀ y : Corner A e, (k y).val = e * (h (ι y)).val * e := by
+    intro y
+    rw [hkdef, ncpComp_apply, ncpComp_apply, hκval]
+  -- `k` is unital: apply the ceiling hypothesis at `P = 1 - ι(1)`
+  have hone : (k 1 : Corner A e) = 1 := by
+    have hι1 : (ι (1 : Corner A e)).val = e := by rw [hιval]; rfl
+    -- `Q = 1 - ι 1` is a projection of `r𝒜r`
+    set Q : Corner A r := 1 - ι 1 with hQdef
+    have hQval : Q.val = r - e := by rw [hQdef]; simp [hι1]
+    have hQproj : IsStarProjection Q := by
+      constructor
+      · refine Corner.val_injective ?_
+        show Q.val * Q.val = Q.val
+        rw [hQval]
+        calc (r - e) * (r - e) = r * r - r * e - e * r + e * e := by noncomm_ring
+          _ = r - e := by rw [hr.isIdempotentElem.eq, hre, her, hee]; abel
+      · refine Corner.val_injective ?_
+        show star Q.val = Q.val
+        rw [hQval, star_sub, hr.isSelfAdjoint.star_eq, hse]
+    have hQ0 : ceil (e * (h Q).val * e) = 0 := by
+      rw [hceil Q hQproj, hQval]
+      have hz : e * (r - e) * e = 0 := by
+        have hexp : e * (r - e) * e = (e * r) * e - (e * e) * e := by noncomm_ring
+        rw [hexp]
+        simp only [her, hee, sub_self]
+      rw [hz, ceil_zero]
+    have hQnn : (0 : A) ≤ e * (h Q).val * e := by
+      have h0 : (0 : Corner A r) ≤ h Q := ncpMap_nonneg h hQproj.nonneg
+      have h1 : (0 : A) ≤ (h Q).val := h0
+      have := star_left_conjugate_nonneg h1 e
+      rwa [hse] at this
+    have hQzero : e * (h Q).val * e = 0 := (ceil_basic_3 _ hQnn).mpr hQ0
+    have hsub : (h Q).val = r - (h (ι 1)).val := by
+      have : (h Q : Corner A r) = h 1 - h (ι 1) := by
+        rw [hQdef]; exact ncpMap_sub h 1 (ι 1)
+      have hv := congrArg Corner.val this
+      rw [Corner.val_sub, hh1] at hv
+      exact hv
+    refine Corner.val_injective ?_
+    rw [hkval, Corner.val_one]
+    have hexp : e * (h (ι 1)).val * e = e * r * e - e * (h Q).val * e := by
+      rw [hsub]; noncomm_ring
+    rw [hexp, hQzero, her, hee, sub_zero]
+  -- `k` and the identity have the same ceilings on projections
+  have hceilk : ∀ P : Corner A e, IsStarProjection P →
+      ceil ((ncpId (Corner A e)) P) = ceil (k P) := by
+    intro P hP
+    have hPval : IsStarProjection P.val :=
+      ⟨congrArg Corner.val hP.isIdempotentElem.eq,
+        congrArg Corner.val hP.isSelfAdjoint.star_eq⟩
+    have hιP : IsStarProjection (ι P) := by
+      constructor
+      · exact Corner.val_injective (by
+          show (ι P).val * (ι P).val = (ι P).val
+          rw [hιval]; exact hPval.isIdempotentElem.eq)
+      · exact Corner.val_injective (by
+          show star (ι P).val = (ι P).val
+          rw [hιval]; exact hPval.isSelfAdjoint.star_eq)
+    have hePe : e * P.val * e = P.val := P.property
+    refine Corner.val_injective ?_
+    have hid0 : (0 : Corner A e) ≤ ncpId (Corner A e) P := by
+      rw [ncpId_apply]; exact hP.nonneg
+    have hk0 : (0 : Corner A e) ≤ k P := ncpMap_nonneg k hP.nonneg
+    rw [corner_ceil_val _ hid0, corner_ceil_val _ hk0,
+      ncpId_apply, hkval, hceil (ι P) hιP, hιval, hePe]
+  have hkid : k = ncpId (Corner A e) := isRigid_ncpId (Corner A e) k
+    (by rw [hone, ncpId_apply]) hceilk
+  -- conclude
+  have hιx : ι (⟨x.val, hx⟩ : Corner A e) = x :=
+    Corner.val_injective (by rw [hιval])
+  have hkx := congrArg (fun (m : NCPMap (Corner A e) (Corner A e)) =>
+    (m (⟨x.val, hx⟩ : Corner A e)).val) hkid
+  simp only [hkval, ncpId_apply, hιx] at hkx
+  exact hkx
+
+/-- **102VII** (`canonical-quotient-rigid`, proc.tex:1268, Lemma), in the
+index-free form of `isFilter_ad`: any ncp-map `c : e𝒜e → 𝒜` given by the
+formula `a ↦ d* a d`, where `e = ⌈d⌉ᵣ`, is rigid.  (`canonical_quotient_rigid`
+below is the case `e = ⌈d⌉ᵣ`, `c = c_d`; `stdFilter_rigid` is the case
+`d = √p`, which 102IX needs and which would otherwise require a transport
+along `⌈p⌉ = ⌈√p⌉ᵣ` inside the dependent type `Corner 𝒜 e`.) -/
+theorem ad_rigid [VonNeumannAlgebra A] (b e : A) [Fact (IsStarProjection e)]
+    (he : e = rangeProj b) (c : NCPMap (Corner A e) A)
+    (hcapp : ∀ a : Corner A e, (c a : A) = star b * a.val * b) : IsRigid c := by
+  classical
+  subst he
+  intro g hg1 hgceil
+  set r : A := rangeProj b with hrdef
+  have hr : IsStarProjection r := isStarProjection_rangeProj b
+  have hrb : r * b = b := (ceill_basic_2 b).1.2
+  have hbr : star b * r = star b := by
+    have h := congrArg star hrb
+    rwa [star_mul, hr.isSelfAdjoint.star_eq] at h
+  -- (1) the factorisation `g = c ∘ h` through the filter `c = b*(·)b`
+  obtain ⟨h, hh, -⟩ :=
+    (isFilter_ad b r rfl c hcapp).universal (Corner A r) g (le_of_eq hg1)
+  -- (2) `h` is unital
+  have hh1 : (h 1).val = r := by
+    refine ad_injective b r rfl ((h 1).property) ?_ ?_
+    · show r * r * r = r
+      rw [hr.isIdempotentElem.eq, hr.isIdempotentElem.eq]
+    · have e1 : star b * (h 1).val * b = (c (h 1) : A) := (hcapp _).symm
+      have e2 : (c (h (1 : Corner A r)) : A) = g 1 := (hh 1).symm
+      rw [e1, e2, hg1, hcapp, Corner.val_one]
+  -- (3) an approximate pseudoinverse of `b`, and the projections `eₙ`
+  obtain ⟨t, ht⟩ := approximate_pseudoinverse b
+  set p : ℕ → A := fun n => suppProj (t n) with hpdef
+  have hpproj : ∀ n, IsStarProjection (p n) := fun n => isStarProjection_suppProj _
+  have hlub : IsLUB {x : A | ∃ N : ℕ, x = ∑ n ∈ Finset.range N, p n} r := ht.sum_supp
+  obtain ⟨heproj, hemono, hetend⟩ := partialSums_of_isLUB hpproj hlub hr.le_one
+  set e : ℕ → A := fun N => ∑ n ∈ Finset.range N, p n with hedef
+  have hele : ∀ N, e N ≤ r := fun N => hlub.1 ⟨N, rfl⟩
+  have hbs : ∀ N, b * (∑ n ∈ Finset.range N, t n) = e N := by
+    intro N
+    rw [Finset.mul_sum, hedef]
+    exact Finset.sum_congr rfl fun n _ => ht.mul_eq_suppProj n
+  -- (4) the ceiling identity `⌈eₙ h(P) eₙ⌉ = ⌈eₙ P eₙ⌉`
+  have hceil : ∀ (N : ℕ) (P : Corner A r), IsStarProjection P →
+      ceil (e N * (h P).val * e N) = ceil (e N * P.val * e N) := by
+    intro N P hP
+    set s : A := ∑ n ∈ Finset.range N, t n with hsdef
+    have hes : e N = b * s := (hbs N).symm
+    have hse : star s * star b = e N := by
+      have hst := congrArg star hes
+      rw [star_mul, (heproj N).isSelfAdjoint.star_eq] at hst
+      exact hst.symm
+    have hconj : ∀ y : A, e N * y * e N = star s * (star b * y * b) * s := by
+      intro y
+      have hexp : star s * (star b * y * b) * s = (star s * star b) * y * (b * s) := by
+        noncomm_ring
+      rw [hexp, hse, ← hes]
+    have hgP : (0 : A) ≤ g P := ncpMap_nonneg g hP.nonneg
+    have hcP : (0 : A) ≤ (c P : A) := ncpMap_nonneg c hP.nonneg
+    have hstep : star b * (h P).val * b = (g P : A) := by
+      rw [← hcapp, ← hh P]
+    calc ceil (e N * (h P).val * e N)
+        = ceil (star s * (g P : A) * s) := by rw [hconj, hstep]
+      _ = ceil (star s * ceil (g P : A) * s) := ceil_fundamental_1 s _ hgP
+      _ = ceil (star s * ceil (c P : A) * s) := by rw [hgceil P hP]
+      _ = ceil (star s * (c P : A) * s) := (ceil_fundamental_1 s _ hcP).symm
+      _ = ceil (e N * P.val * e N) := by rw [hconj, hcapp]
+  -- (5) `eₙ h(x) eₙ = x` for `x` in `eₙ𝒜eₙ`, by `compress_eq_of_ceil`
+  have hcompress : ∀ (N : ℕ) (x : Corner A r), e N * x.val * e N = x.val →
+      e N * (h x).val * e N = x.val := by
+    intro N x hx
+    have : Fact (IsStarProjection (e N)) := ⟨heproj N⟩
+    exact compress_eq_of_ceil (hele N) h hh1 (hceil N) x hx
+  -- (6) `eₙ z eₙ → r z r` ultrastrongly, hence ultraweakly (`mult-jus-cont`)
+  have hconv : ∀ z : A, UWTendsto (fun N => e N * z * e N) atTop (r * z * r) := by
+    intro z
+    have hb1 : ∀ N, ‖e N‖ ≤ 1 := fun N => norm_isStarProjection_le_one (heproj N)
+    have h1 : USTendsto (fun N => e N * z) atTop (r * z) :=
+      mult_jus_cont _ _ _ _ hetend (usTendsto_const z) ⟨1, hb1⟩
+    have h2 : USTendsto (fun N => (e N * z) * e N) atTop ((r * z) * r) :=
+      mult_jus_cont _ _ _ _ h1 hetend ⟨‖z‖, fun N => by
+        calc ‖e N * z‖ ≤ ‖e N‖ * ‖z‖ := norm_mul_le _ _
+          _ ≤ 1 * ‖z‖ := by
+              exact mul_le_mul_of_nonneg_right (hb1 N) (norm_nonneg z)
+          _ = ‖z‖ := one_mul _⟩
+    exact uwweaker_2 _ _ _ h2
+  -- (7) `h` fixes every `x` supported by some `eₙ`
+  have hfix : ∀ (N : ℕ) (x : Corner A r), e N * x.val * e N = x.val →
+      (h x).val = x.val := by
+    intro N x hx
+    have hstab : ∀ M, N ≤ M → e M * x.val * e M = x.val := by
+      intro M hNM
+      have hle : e N ≤ e M := hemono hNM
+      have h1 : e M * e N = e N :=
+        ((projection_below_effect (e M) (e N)
+          ⟨(heproj M).nonneg, (heproj M).le_one⟩ (heproj N)).out 0 6).mp hle
+      have h2 : e N * e M = e N :=
+        ((projection_below_effect (e M) (e N)
+          ⟨(heproj M).nonneg, (heproj M).le_one⟩ (heproj N)).out 0 7).mp hle
+      calc e M * x.val * e M = e M * (e N * x.val * e N) * e M := by rw [hx]
+        _ = (e M * e N) * x.val * (e N * e M) := by noncomm_ring
+        _ = e N * x.val * e N := by rw [h1, h2]
+        _ = x.val := hx
+    refine eq_of_forall_npFunctional fun ω => ?_
+    have hlim := (uwTendsto_iff _ _ _).mp (hconv ((h x).val)) ω
+    have hval : r * (h x).val * r = (h x).val := (h x).property
+    rw [hval] at hlim
+    have heq : ∀ᶠ M in atTop, (ω (e M * (h x).val * e M) : ℂ) = ω x.val := by
+      filter_upwards [Filter.eventually_ge_atTop N] with M hM
+      rw [hcompress M x (hstab M hM)]
+    exact tendsto_nhds_unique (hlim.congr' heq) tendsto_const_nhds
+  -- (8) `h = id`, by ultraweak density of `⋃ₙ eₙ𝒜eₙ`
+  have hhid : ∀ x : Corner A r, (h x : Corner A r) = x := by
+    intro x
+    refine Corner.val_injective (eq_of_forall_npFunctional fun ω => ?_)
+    -- the truncations `x_M = e_M x e_M`, all fixed by `h`
+    have hmem : ∀ M, e M * (e M * x.val * e M) * e M = e M * x.val * e M := by
+      intro M
+      calc e M * (e M * x.val * e M) * e M
+          = (e M * e M) * x.val * (e M * e M) := by noncomm_ring
+        _ = e M * x.val * e M := by rw [(heproj M).isIdempotentElem.eq]
+    have hcor : ∀ M, r * (e M * x.val * e M) * r = e M * x.val * e M := by
+      intro M
+      have h1 : r * e M = e M :=
+        ((projection_below_effect r (e M) ⟨hr.nonneg, hr.le_one⟩
+          (heproj M)).out 0 6).mp (hele M)
+      have h2 : e M * r = e M :=
+        ((projection_below_effect r (e M) ⟨hr.nonneg, hr.le_one⟩
+          (heproj M)).out 0 7).mp (hele M)
+      calc r * (e M * x.val * e M) * r = (r * e M) * x.val * (e M * r) := by
+            noncomm_ring
+        _ = e M * x.val * e M := by rw [h1, h2]
+    set y : ℕ → Corner A r := fun M => ⟨e M * x.val * e M, hcor M⟩ with hydef
+    have hyfix : ∀ M, (h (y M)).val = (y M).val := fun M => hfix M (y M) (hmem M)
+    -- `ν = ω ∘ h` is an np-functional on the corner, hence of the form
+    -- `ω₂(·.val)` by `corner-vna-basic` part 10
+    set ν : NPFunctional (Corner A r) :=
+      compNP (PositiveLinearMap.ofClass h.toCompletelyPositiveMap)
+        h.preservesDirSups' (Corner.restrictNP r ω) with hνdef
+    obtain ⟨ω₂, -, hω₂⟩ := corner_vna_basic_10 r ν
+    have hxval : r * x.val * r = x.val := x.property
+    have hconvx := (uwTendsto_iff _ _ _).mp (hconv x.val) ω
+    rw [hxval] at hconvx
+    have hconvx₂ := (uwTendsto_iff _ _ _).mp (hconv x.val) ω₂
+    rw [hxval] at hconvx₂
+    have hL : Filter.Tendsto (fun M => (ω ((h (y M)).val) : ℂ)) atTop
+        (𝓝 (ω x.val)) := by
+      refine hconvx.congr fun M => ?_
+      rw [hyfix M]
+    have hR : Filter.Tendsto (fun M => (ω ((h (y M)).val) : ℂ)) atTop
+        (𝓝 (ω ((h x).val))) := by
+      have hrep : ∀ z : Corner A r, (ω ((h z).val) : ℂ) = ω₂ z.val := fun z =>
+        hω₂ z
+      simp only [hrep]
+      exact hconvx₂.congr fun M => rfl
+    exact tendsto_nhds_unique hR hL
+  refine DFunLike.ext _ _ fun x => ?_
+  rw [hh x, hhid x]
+
 /-- **102VII** (`canonical-quotient-rigid`, proc.tex:1268, Lemma): for an
 element `b` of a von Neumann algebra the ncp-map
 `a ↦ b* a b : ⌈b⌉ᵣ𝒜⌈b⌉ᵣ → 𝒜` is rigid. -/
 theorem canonical_quotient_rigid [VonNeumannAlgebra A] (b : A) :
-    IsRigid (canonicalFilter b) := sorry
+    IsRigid (canonicalFilter b) :=
+  ad_rigid b (rangeProj b) rfl (canonicalFilter b) (canonicalFilter_apply b)
+
+/-- **102VII** for the *standard* filter `c_p = √p(·)√p` of a positive `p`
+(the form 102IX uses). -/
+theorem stdFilter_rigid [VonNeumannAlgebra A] (p : A) (hp : 0 ≤ p) :
+    IsRigid (stdFilter p) := by
+  refine ad_rigid (CFC.sqrt p) (ceil p) (ceil_eq_rangeProj_sqrt hp)
+    (stdFilter p) fun a => ?_
+  rw [stdFilter_apply, (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg p)).star_eq]
 
 /-- **102IX** (`pure-is-rigid`, proc.tex:1341, Theorem): every pure map
 between von Neumann algebras is rigid. -/
 theorem pure_is_rigid [VonNeumannAlgebra A] [VonNeumannAlgebra B]
-    (f : NCPMap A B) (hf : IsPure f) : IsRigid f := sorry
+    (f : NCPMap A B) (hf : IsPure f) : IsRigid f := by
+  classical
+  intro g hg1 hgceil
+  have hp : (0 : B) ≤ f 1 := ncpMap_nonneg f zero_le_one
+  have hcfp : IsStarProjection (ncpCarrier f) := isStarProjection_ncpCarrier f
+  have hspecf : IsStarProjection (ncpCarrier f) ∧ (f (1 - ncpCarrier f) : B) = 0 ∧
+      ∀ q : A, IsStarProjection q → f (1 - q) = 0 → ncpCarrier f ≤ q :=
+    (exists_ncpCarrier f).choose_spec.1
+  have hspecg : IsStarProjection (ncpCarrier g) ∧ (g (1 - ncpCarrier g) : B) = 0 ∧
+      ∀ q : A, IsStarProjection q → g (1 - q) = 0 → ncpCarrier g ≤ q :=
+    (exists_ncpCarrier g).choose_spec.1
+  -- (1) `⌈f⌉ = ⌈g⌉`: the two carriers are least in the *same* set of
+  -- projections, because `f(q^⊥) = 0 ↔ ⌈f(q^⊥)⌉ = 0 ↔ ⌈g(q^⊥)⌉ = 0 ↔ g(q^⊥) = 0`
+  have hzero : ∀ q : A, IsStarProjection q →
+      ((f (1 - q) : B) = 0 ↔ (g (1 - q) : B) = 0) := by
+    intro q hq
+    have hfn : (0 : B) ≤ f (1 - q) := ncpMap_nonneg f (sub_nonneg.mpr hq.le_one)
+    have hgn : (0 : B) ≤ g (1 - q) := ncpMap_nonneg g (sub_nonneg.mpr hq.le_one)
+    rw [ceil_basic_3 _ hfn, ceil_basic_3 _ hgn, hgceil _ hq.one_sub]
+  have hcarrier : ncpCarrier g = ncpCarrier f := by
+    refine le_antisymm (hspecg.2.2 _ hcfp ((hzero _ hcfp).mp hspecf.2.1))
+      (hspecf.2.2 _ hspecg.1 ((hzero _ hspecg.1).mpr hspecg.2.1))
+  -- (2) `g` factors through the corner `π_{⌈f⌉}` of `⌈f⌉ = ⌈g⌉`
+  have hπ : IsCornerOf (ncpCarrier f) (cornerProjMap (ncpCarrier f)).toNCPMap :=
+    isCornerOf_cornerProjMap _ _ hcfp (floor_of_isStarProjection hcfp)
+  have hgperp : (g (1 - ncpCarrier f) : B) = 0 := by
+    rw [← hcarrier]; exact hspecg.2.1
+  obtain ⟨h, hh, -⟩ := hπ.universal B g hgperp
+  have hπ1 : ((cornerProjMap (ncpCarrier f)).toNCPMap 1 : Corner A (ncpCarrier f))
+      = 1 := by
+    refine Corner.val_injective ?_
+    rw [cornerProjMap_apply, Corner.val_one, mul_one, hcfp.isIdempotentElem.eq]
+  have hh1 : (h 1 : B) = f 1 := by rw [← hπ1, ← hh 1, hg1]
+  -- (3) `[f]` is an isomorphism, by **100III**
+  obtain ⟨hfu, finv, hinvl, hinvr⟩ := ((pure_fundamental f).out 0 2).mp hf
+  have hfinvu : (finv 1 : Corner A (ncpCarrier f)) = 1 := by
+    rw [← hfu, hinvl]
+  -- (4) `h ∘ [f]⁻¹ = c_{f(1)}`, by rigidity of `c_{f(1)}` (**102VII**)
+  have hsquare := (square_f f).1
+  have hcomp : ncpComp h finv = stdFilter (f 1) := by
+    refine stdFilter_rigid (f 1) hp (ncpComp h finv) ?_ ?_
+    · rw [ncpComp_apply, hfinvu, hh1, stdFilter_one hp]
+    · intro Q hQ
+      -- `Q = [f](q)` with `q = [f]⁻¹(Q)` a projection, and `π(q) = q`
+      have hq : IsStarProjection (finv Q) :=
+        isStarProjection_map finv (sqBracket f) hinvr hinvl hfinvu hfu hQ
+      have hqval : IsStarProjection ((finv Q).val) :=
+        ⟨congrArg Corner.val hq.isIdempotentElem.eq,
+          congrArg Corner.val hq.isSelfAdjoint.star_eq⟩
+      have hπq : ((cornerProjMap (ncpCarrier f)).toNCPMap ((finv Q).val)
+          : Corner A (ncpCarrier f)) = finv Q := by
+        refine Corner.val_injective ?_
+        rw [cornerProjMap_apply]
+        exact (finv Q).property
+      have hfq : (f ((finv Q).val) : B) = stdFilter (f 1) Q := by
+        rw [hsquare, hπq, hinvr]
+      have hhq : (h (finv Q) : B) = g ((finv Q).val) := by
+        rw [hh ((finv Q).val), hπq]
+      rw [ncpComp_apply, hhq, ← hgceil _ hqval, hfq]
+  -- (5) conclude
+  refine DFunLike.ext _ _ fun a => ?_
+  calc (g a : B) = h ((cornerProjMap (ncpCarrier f)).toNCPMap a) := hh a
+    _ = h (finv (sqBracket f ((cornerProjMap (ncpCarrier f)).toNCPMap a))) := by
+        rw [hinvl]
+    _ = ncpComp h finv (sqBracket f ((cornerProjMap (ncpCarrier f)).toNCPMap a)) :=
+        (ncpComp_apply _ _ _).symm
+    _ = f a := by rw [hcomp, ← hsquare]
 
 /-! ## Parsec 1030: ⋄-positivity -/
 
@@ -5530,42 +5933,6 @@ theorem chevron_f_basic_4 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
         (floor_of_isStarProjection hce)⟩
   exact ⟨hpure, special_pure_maps_1 _ hpure (chevron_f_basic_3 f).1⟩
 
-/-- Auxiliary for **105IV**: the ceiling computed *in a corner* is the
-ambient ceiling.  For `0 ≤ x` in `e𝒜e` one has `⌈x⌉ ≤ e` (59III), so the
-ambient `⌈x⌉` lies in the corner, and the two least-ness clauses are the
-same condition on the same projections. -/
-theorem corner_ceil_val [VonNeumannAlgebra A] {e : A}
-    [Fact (IsStarProjection e)] (x : Corner A e) (hx : 0 ≤ x) :
-    (ceil x).val = ceil x.val := by
-  have he : IsStarProjection e := Corner.proj e
-  have hx0 : (0 : A) ≤ x.val := hx
-  have hcproj : IsStarProjection (ceil x.val) := isStarProjection_ceil x.val
-  have hle : ceil x.val ≤ e := (ceil_le_iff hx0 he).mpr (Corner.mul_right x)
-  have hce : ceil x.val * e = ceil x.val :=
-    ((projection_below_effect e (ceil x.val) ⟨he.nonneg, he.le_one⟩
-      hcproj).out 0 7).mp hle
-  have hec : e * ceil x.val = ceil x.val := by
-    have h := congrArg star hce
-    rwa [star_mul, he.isSelfAdjoint.star_eq, hcproj.isSelfAdjoint.star_eq] at h
-  have hmem : e * ceil x.val * e = ceil x.val := by rw [hec, hce]
-  have hcorner : IsStarProjection (⟨ceil x.val, hmem⟩ : Corner A e) :=
-    ⟨Corner.val_injective (by
-        show ceil x.val * ceil x.val = ceil x.val
-        exact hcproj.isIdempotentElem.eq),
-      Corner.val_injective (by
-        show star (ceil x.val) = ceil x.val
-        exact hcproj.isSelfAdjoint.star_eq)⟩
-  refine congrArg Corner.val (ceil_eq_of_isLeast hx hcorner ?_ ?_)
-  · exact Corner.val_injective (by
-      show x.val * ceil x.val = x.val
-      exact (ceil_spec hx0).2.1)
-  · intro q hq hxq
-    show ceil x.val ≤ q.val
-    refine (ceil_spec hx0).2.2 q.val ?_ ?_
-    · exact ⟨congrArg Corner.val hq.isIdempotentElem.eq,
-        congrArg Corner.val hq.isSelfAdjoint.star_eq⟩
-    · exact congrArg Corner.val hxq
-
 /-- Auxiliary for **105IV**: for projections `p, t ≤ u` the ambient
 orthocomplement and the one of the corner `u𝒜u` cut out the same
 condition: `p ≤ 1 − t` iff `p ≤ u − t`. -/
@@ -6147,3 +6514,4 @@ axiom (D) redundant?) — not formalizable as a theorem; skipped.
 [westerbaan2016universal]; skipped. -/
 
 end Theses.A.Proc
+
