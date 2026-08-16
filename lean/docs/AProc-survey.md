@@ -1,11 +1,99 @@
-# `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–80, sessions 47–55)
+# `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–81, sessions 47–58)
 
-**Headline count: A/Proc has 72 code `sorry`s** after session 57.
-Per file: `Tensor` **33** (was 38), `Measurement` **11**, `QuantumLambda` 17,
+**Headline count: A/Proc has 70 code `sorry`s** after session 58.
+Per file: `Tensor` **31** (was 33), `Measurement` **11**, `QuantumLambda` 17,
 `Duplicators` **11**.  (`grep -c sorry` over-counts, because the file
 docstrings mention `sorry` in prose; the code counts are the ones above.
 Note `\bsorry\b` also matches "sorry-ed" in prose — count the compiler's
 `declaration uses \`sorry\`` warnings instead.)
+
+
+> **Session 58 — 114I and 114II are CLOSED; 115II is *not*, and its two
+> remaining hypotheses are each a real piece of work, not a corollary.**
+>
+> * **114I** `tensor_universal_property_extra` (all five parts, ~180 lines).
+>   Its hypotheses `hn`, `hb` are **not used**: the extension `g` is given, so
+>   every clause is an identity on the ultraweakly dense ∗-subalgebra
+>   `γ_⊙(𝒜⊙ℬ)` pushed to `𝒯`.  The linear clauses (1)–(3) go by separate
+>   ultraweak continuity (**45IV** `mult_uws_cont` and the new
+>   `continuous_ultraweak_star`).  The *quadratic* clauses (4)–(5) do not:
+>   the new **`uwTendsto_starMul`** (`s_α* t_α → s* t` **ultraweakly** along a
+>   norm-bounded ultrastrong net — Cauchy–Schwarz for `‖·‖_ω`, **72III**.1b)
+>   plus ultraweak closedness of the positive cone (**44XI**.2) is what
+>   carries them.  For (5) the `n` arguments have to converge *simultaneously*:
+>   the trick that works is the **product filter** `Filter.pi` over the `n`
+>   nets of **74VI**, which needs no `NeBot` side condition (`Fin 0` included).
+>   The base case of (5) — families from `γ_⊙(𝒜⊙ℬ)` — is `BilinCP β`
+>   re-indexed along `finSigmaFinEquiv`, because `BilinCP` only quantifies over
+>   *pure* tensors while `γ_⊙(𝒜⊙ℬ)` consists of sums of them.
+> * **114II** `tensor_uniqueness` (~55 lines) is then exactly as advertised:
+>   `BilinNormal γ' = (tensor_basic_3 γ' hγ').1`, `BilinBounded γ'` is
+>   `tensor_basic_2` with `M = 1`, 112XI both ways, the two composites are the
+>   identity by 112XI's own uniqueness clause, miu-ness is 114I.1/.2/.3 read off
+>   `hγ'.miu`, normality is `starAlgEquiv_preservesDirSups'`, and uniqueness
+>   among nmiu-maps uses **44XV** `p_uwcont` (3)⇒(1) to make an arbitrary
+>   nmiu-map ultraweakly continuous.
+>
+> **115II `exists_tmap`: what is actually left.**  With `β(a,b) = f(a) ⊗ g(b)`:
+> `BilinCP β` is `cp_bilinear_comp` (one line); the extension, its complete
+> positivity and its normality are then 112XI + 114I(5) + `p_uwcont`.  The two
+> real gaps are `BilinBounded β` and `BilinNormal β`.
+> * **`BilinBounded β` — the hard half is now banked.**  proc.tex:3210 needs
+>   `β_⊙(s)*β_⊙(s) ≤ ‖f‖‖g‖ β_⊙(s* s)`, which it gets from `cp-cs` applied to
+>   the amplification `M_n f` and an `M_n ⊗` computation.  **That inequality is
+>   proved and axiom-clean in the file as `tmap_cs`**, by a route that never
+>   amplifies: the new **`cp_cs_sum`** is `cp-cs` for a *vector* of arguments
+>   (apply `cstar_positive_2x2matrix` to the 2×2 compression of the positive
+>   matrix `(f(vᵢ* vⱼ))` along `v = (a₁,…,a_n,1)`; the compression is positive
+>   by `cstar_matrix_positive_iff` at `w = (c₁x,…,c_nx,y)`), and `tmap_cs`
+>   splits `‖f1‖‖g1‖ Q⊗Q' − P⊗P'` as `P⊗R' + R⊗P' + R⊗R'` with
+>   `R = ‖f1‖Q − P ≥ 0`, each summand positive by
+>   `Theses.A.CStar.matBilin_nonneg_of_mi`.
+>   What remains for `BilinBounded` is the *other* promise of proc.tex:3175,
+>   `‖ω∘β_⊙‖ ≤ ‖f‖‖g‖` for a basic `ω` on `𝒞⊙𝒟` with `ω(1) ≤ 1`.  The route is
+>   the thesis's, and every input is proved: write `ω = χ ∘ ⊗_⊙` with
+>   `χ = conjProdNP σ τ v ∈ Ω` (`exists_conjProdNP_of_isBasicFunctional`) and
+>   `v = ∑ₖ cₖ ⊗ dₖ`; then
+>   `χ(β(a,b)) = ∑ₖₗ σ(cₖ* f(a) c_l) · τ(dₖ* g(b) d_l)`, so `χ ∘ β_⊙` is a
+>   finite sum of `odotF`s of bounded ultraweakly continuous functionals, hence
+>   bounded *and* `uwTensorTopology`-continuous by **112IX**
+>   `product_functional`; **112XI** then extends it to `ω'` on `𝒜⊗ℬ` **with the
+>   same bounds** (112XI's second clause), `ω'` is positive by **114I**(4)
+>   (`BilinCP β` with `c ≡ 1`), so `‖ω'‖ = ‖ω'(1)‖ = ‖χ(f1 ⊗ g1)‖ ≤ ‖f1‖‖g1‖`
+>   by `russo_dye_cor` and `npFunctional_norm_le`.  Feeding that back through
+>   112XI's bound clause gives `‖ω(β_⊙ t)‖ ≤ ‖f1‖‖g1‖ ‖t‖`, and combining with
+>   `tmap_cs` inside `tensor_basic_2`'s supremum finishes.  Estimate: ~150 lines.
+> * **`BilinNormal β` is the genuine gate, and it is NOT a corollary of 112IX +
+>   112X.1.2.**  Continuity into `ultraweak (𝒞⊗𝒟)` has to be tested against
+>   *every* np-functional `χ` on `𝒞⊗𝒟`, and only the members of `Ω` come with
+>   the `∑ₖₗ odotF` decomposition above.  112X.1.2 makes a general `χ` an
+>   *operator-norm* limit of finite sums from `Ω`, and passing that through
+>   `β_⊙` gives a limit that is uniform only relative to `tensorNorm` — this is
+>   the **same dead end already recorded for 116III.4** (a `tensorNorm`-uniform
+>   limit of `uwTensorTopology`-continuous functionals need not be continuous).
+>   Two escapes that do *not* work, both checked: (i) `simple ∘ (f⊙g)` is not
+>   simple (basic functionals are `(σ⊙τ)(t₀*(·)t₀)` and `f⊙g` does not commute
+>   with the conjugation), so `NormLimitOfSimple` is not preserved; (ii) using
+>   112X.5 to replace `uwTensorTopology (𝒞,𝒟)` by the topology induced from
+>   `𝒞⊗𝒟` turns the goal back into itself.  **The route that should work** is
+>   the one 112X.5 itself takes: each `∑ᵢχᵢ ∘ β_⊙` is `Eₙ ∘ γ_⊙^{𝒜ℬ}` for an
+>   ultraweakly continuous `Eₙ` on `𝒜⊗ℬ` (112XI again); `‖Eₙ − Eₘ‖` is
+>   controlled on the *whole* algebra because **74VI** makes the unit ball of
+>   `γ_⊙(𝒜⊙ℬ)` ultrastrongly dense in the unit ball of `𝒜⊗ℬ`; **87III**
+>   `predual_complete` (proved) gives the limit `E`, and `χ ∘ β_⊙ = E ∘ γ_⊙`
+>   is then `uwTensorTopology`-continuous by **112X**.3.1.  Estimate: ~150 lines.
+>   *The same lemma — "an operator-norm limit of normal functionals is normal",
+>   i.e. `predual_complete` used as a closure property — is what 116III.4 and
+>   116III.5 need too*, so it is worth writing once, publicly, in `Tensor.lean`.
+>
+> **New in `Tensor.lean`, all axiom-clean:** `continuous_ultraweak_star`,
+> `uwTendsto_starMul` (both in a new `DensityAux` section, universe-polymorphic
+> and hypothesis-minimal), `cp_cs_sum`, `tmap_cs`.
+> **ERRATA gained a 115II row** (four slips in parsec 1150, including
+> `(f⊗g)(a⊗b) = f(a)⊗f(b)` in the statement itself).
+> **Correction to the session-57 note:** its one-line summary of 115II
+> ("needs `BilinNormal` + `BilinBounded`, then 112XI plus 114I(5)") is correct
+> but hides that each of those two is a ~150-line development in its own right.
 
 > **Session 57 — 112X IS CLOSED WHOLE (all five parts) AND SO IS 112XI
 > `tensor_universal_property`.  A/Proc has no external frontier at all.**
@@ -437,8 +525,8 @@ to be `Nonempty.some` of the sorried `vnTensorProduct_nonempty`.
 | 112X.4 | `tensor_basic_4` | **CLOSED (session 57)** — 86IX closed in A/VN session 56 |
 | 112X.5 | `tensor_basic_5` | **CLOSED (session 57)** — 87III closed in A/VN session 56 |
 | 112XI | `tensor_universal_property` | **CLOSED (session 57)** — 77V applied to `S = γ_⊙(𝒜⊙ℬ)`, with 112X.2 for injectivity/the bound and 112X.5 for the topology |
-| 114I | `tensor_universal_property_extra` | **unblocked — 112XI is proved.**  Local work |
-| 114II | `tensor_uniqueness` | **unblocked — 112XI is proved.**  Apply 112XI in both directions (`γ'` is normal and bounded *as a bilinear map* by 112X.3.1 and 112X.2); miu-ness of the extension is the usual separate-continuity-plus-density argument (`mult_uws_cont`), normality is then free via `starAlgEquiv_preservesDirSups'` |
+| 114I | `tensor_universal_property_extra` | **CLOSED (session 58)** — see the note at the top |
+| 114II | `tensor_uniqueness` | **CLOSED (session 58)** — as predicted: apply 112XI in both directions (`γ'` is normal and bounded *as a bilinear map* by 112X.3.1 and 112X.2); miu-ness of the extension is the usual separate-continuity-plus-density argument (`mult_uws_cont`), normality is then free via `starAlgEquiv_preservesDirSups'` |
 | 116VII | `tensor_characterization` | 112X + 116IV |
 
 ### `QuantumLambda.lean` — the 7 untainted ones (recounted, session 51)

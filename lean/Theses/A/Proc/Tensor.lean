@@ -3703,6 +3703,72 @@ not import `A/Proc`.  See `QUESTIONS.md` D3. -/
 
 /-! ## Parsec 1140: extra universal properties and uniqueness -/
 
+/-! ### Auxiliaries for **114I** and **114II**
+
+Both exercises extend an identity from the ultraweakly dense ∗-subalgebra
+`γ_⊙(𝒜 ⊙ ℬ)` to all of `𝒯`.  For the *linear* identities (multiplicativity,
+involution, unitality) separate ultraweak continuity (**45IV**
+`mult_uws_cont` and `continuous_ultraweak_star` below) suffices; for the
+*quadratic* ones (positivity, complete positivity) it does not, and one needs
+`uwTendsto_starMul`: along a norm-bounded ultrastrongly convergent net,
+`s_α* t_α → s* t` **ultraweakly**.  That is Cauchy–Schwarz for `‖·‖_ω`
+(**72III**.1b, `norm_apply_star_mul_le`) applied to the splitting
+`s_α* t_α − s* t = s_α*(t_α − t) + (s_α − s)* t`. -/
+
+section DensityAux
+
+variable {A₄ : Type*} [CStarAlgebra A₄] [PartialOrder A₄] [StarOrderedRing A₄]
+
+/-- The involution is ultraweakly continuous: `ω(a*) = ω(a)*` for every
+np-functional `ω` (cstar.tex 10IV), so `continuous_ultraweak_of_forall`
+applies. -/
+theorem continuous_ultraweak_star :
+    @Continuous A₄ A₄ (ultraweak A₄) (ultraweak A₄) (fun a => star a) := by
+  letI : TopologicalSpace A₄ := ultraweak A₄
+  refine continuous_ultraweak_of_forall _ fun ω => ?_
+  have h : (fun x : A₄ => (ω (star x) : ℂ)) = fun x : A₄ => star (ω x) :=
+    funext fun x => npFunctional_star ω x
+  rw [h]
+  exact (continuous_ultraweak_npFunctional ω).star
+
+/-- If `u_α → u` and `v_α → v` ultrastrongly and the `u_α` are norm bounded,
+then `u_α* v_α → u* v` **ultraweakly** — the quantitative content of
+**45VI** `mult-jus-cont` that the extension arguments of 114I need.  (Only
+the `u`-net has to be bounded.) -/
+theorem uwTendsto_starMul {ι : Type*} {l : Filter ι} {u v : ι → A₄} {x y : A₄}
+    {K : ℝ} (hK : ∀ i, ‖u i‖ ≤ K) (hu : USTendsto u l x) (hv : USTendsto v l y) :
+    UWTendsto (fun i => star (u i) * v i) l (star x * y) := by
+  rw [uwTendsto_iff]
+  intro ω
+  rw [tendsto_iff_norm_sub_tendsto_zero]
+  have hbd : ∀ i, ‖ω (star (u i) * v i) - ω (star x * y)‖
+      ≤ K * omegaNorm A₄ ω 1 * omegaNorm A₄ ω (v i - y)
+        + omegaNorm A₄ ω (u i - x) * omegaNorm A₄ ω y := by
+    intro i
+    have e : star (u i) * v i - star x * y
+        = star (u i) * (v i - y) + star (u i - x) * y := by
+      rw [star_sub]; noncomm_ring
+    have h1 : ω (star (u i) * v i) - ω (star x * y)
+        = ω (star (u i) * (v i - y)) + ω (star (u i - x) * y) := by
+      rw [← npFunctional_sub, e, npFunctional_add]
+    rw [h1]
+    refine (norm_add_le _ _).trans (add_le_add ?_ ?_)
+    · refine (norm_apply_star_mul_le ω (u i) (v i - y)).trans ?_
+      refine mul_le_mul_of_nonneg_right ?_ (omegaNorm_nonneg ω _)
+      have h2 := omegaNorm_mul_le ω (u i) 1
+      rw [mul_one] at h2
+      exact h2.trans (mul_le_mul_of_nonneg_right (hK i) (omegaNorm_nonneg ω 1))
+    · exact norm_apply_star_mul_le ω (u i - x) y
+  have hz : Tendsto (fun i => K * omegaNorm A₄ ω 1 * omegaNorm A₄ ω (v i - y)
+      + omegaNorm A₄ ω (u i - x) * omegaNorm A₄ ω y) l (𝓝 0) := by
+    have h1 := (usTendsto_iff v l y).mp hv ω
+    have h2 := (usTendsto_iff u l x).mp hu ω
+    simpa using (h1.const_mul (K * omegaNorm A₄ ω 1)).add
+      (h2.mul_const (omegaNorm A₄ ω y))
+  exact squeeze_zero (fun i => norm_nonneg _) hbd hz
+
+end DensityAux
+
 section Extra
 
 variable [VonNeumannAlgebra A] [VonNeumannAlgebra B] [VonNeumannAlgebra C]
@@ -3726,7 +3792,234 @@ theorem tensor_universal_property_extra (γ : A →ₗ[ℂ] B →ₗ[ℂ] T)
       (Theses.A.CStar.IsPositiveMap g ↔
         ∀ (n : ℕ) (a : Fin n → A) (b : Fin n → B),
           0 ≤ ∑ i, ∑ j, β (star (a i) * a j) (star (b i) * b j)) ∧
-      (Theses.A.CStar.IsCompletelyPositiveMap g ↔ BilinCP β) := sorry
+      (Theses.A.CStar.IsCompletelyPositiveMap g ↔ BilinCP β) := by
+  -- Each of the five is an identity on the ultraweakly dense ∗-subalgebra
+  -- `γ_⊙(𝒜 ⊙ ℬ)` extended to `𝒯`; `hn` and `hb` are not needed, since the
+  -- extension `g` is *given*.  The linear clauses (1)–(3) use separate
+  -- ultraweak continuity of multiplication and of the involution; the
+  -- quadratic clauses (4)–(5) use `uwTendsto_starMul` along the bounded
+  -- ultrastrong net of **74VI** `dense_subalgebra`, plus ultraweak closedness
+  -- of the positive cone (**44XI**.2).
+  classical
+  letI : TopologicalSpace T := ultraweak T
+  letI : TopologicalSpace C := ultraweak C
+  haveI _t2C : T2Space C := vn_positive_basic_1.1
+  have hcomp : ∀ t : A ⊗[ℂ] B,
+      g (TensorProduct.lift γ t) = TensorProduct.lift β t := by
+    intro t
+    induction t using TensorProduct.induction_on with
+    | zero => simp
+    | tmul a b => simpa using hg a b
+    | add u v hu hv => rw [map_add, map_add, map_add, hu, hv]
+  have hdense : Dense (Set.range ⇑(TensorProduct.lift γ)) := by
+    rw [range_lift_eq_span]; exact hγ.dense
+  have hext : ∀ p q : T → C, Continuous p → Continuous q →
+      (∀ t : A ⊗[ℂ] B, p (TensorProduct.lift γ t) = q (TensorProduct.lift γ t)) →
+      ∀ x, p x = q x := by
+    intro p q hp hq h x
+    exact congrFun (Continuous.ext_on hdense hp hq
+      (by rintro _ ⟨t, rfl⟩; exact h t)) x
+  -- `β_⊙(s* t)` expanded on representations of `s`, `t` by pure tensors
+  have hliftq : ∀ {N M : ℕ} (a : Fin N → A) (b : Fin N → B)
+      (a' : Fin M → A) (b' : Fin M → B),
+      TensorProduct.lift β (star (∑ k, a k ⊗ₜ[ℂ] b k) * ∑ l, a' l ⊗ₜ[ℂ] b' l)
+        = ∑ k, ∑ l, β (star (a k) * a' l) (star (b k) * b' l) := by
+    intro N M a b a' b'
+    rw [star_sum, Finset.sum_mul, map_sum]
+    refine Finset.sum_congr rfl fun k _ => ?_
+    rw [Finset.mul_sum, map_sum]
+    refine Finset.sum_congr rfl fun l _ => ?_
+    have he : star (a k ⊗ₜ[ℂ] b k) * (a' l ⊗ₜ[ℂ] b' l)
+        = (star (a k) * a' l) ⊗ₜ[ℂ] (star (b k) * b' l) := by
+      simp [Algebra.TensorProduct.tmul_mul_tmul]
+    rw [he, TensorProduct.lift.tmul]
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
+  · -- (1) `β_γ` is multiplicative iff `β` is
+    constructor
+    · intro hm a a' b b'
+      rw [← hg (a * a') (b * b'), ← hg a b, ← hg a' b', hγ.miu.2.1 a a' b b', hm]
+    · intro hmβ
+      have step1 : ∀ s t : A ⊗[ℂ] B,
+          g (TensorProduct.lift γ s * TensorProduct.lift γ t)
+            = g (TensorProduct.lift γ s) * g (TensorProduct.lift γ t) := by
+        intro s t
+        rw [← lift_mul γ hγ.miu.2.1, hcomp, hcomp, hcomp, lift_mul β hmβ]
+      have step2 : ∀ (t : A ⊗[ℂ] B) (x : T),
+          g (x * TensorProduct.lift γ t) = g x * g (TensorProduct.lift γ t) := by
+        intro t
+        refine hext (fun z => g (z * TensorProduct.lift γ t))
+          (fun z => g z * g (TensorProduct.lift γ t)) ?_ ?_ (fun s => step1 s t)
+        · exact hgc.comp (mult_uws_cont _).2.1
+        · exact (mult_uws_cont (g (TensorProduct.lift γ t))).2.1.comp hgc
+      intro x y
+      refine hext (fun z => g (x * z)) (fun z => g x * g z) ?_ ?_
+        (fun t => step2 t x) y
+      · exact hgc.comp (mult_uws_cont x).1
+      · exact (mult_uws_cont (g x)).1.comp hgc
+  · -- (2) `β_γ` is involution preserving iff `β` is
+    constructor
+    · intro hi a b
+      rw [← hg a b, ← hi, hγ.miu.2.2 a b]
+      exact hg _ _
+    · intro hsβ x
+      refine hext (fun z => g (star z)) (fun z => star (g z)) ?_ ?_ (fun t => ?_) x
+      · exact hgc.comp continuous_ultraweak_star
+      · exact continuous_ultraweak_star.comp hgc
+      · rw [← lift_star γ hγ.miu.2.2, hcomp, hcomp, lift_star β hsβ]
+  · -- (3) `β_γ` is unital iff `β` is — immediate from `γ(1,1) = 1`
+    have h1 : g (1 : T) = β 1 1 := by
+      have h := hg 1 1
+      rwa [hγ.miu.1] at h
+    rw [h1]
+    exact Iff.rfl
+  · -- (4) `β_γ` is positive iff `∑ᵢⱼ β(aᵢ*aⱼ, bᵢ*bⱼ) ≥ 0`
+    constructor
+    · intro hp n a b
+      have hz : (0 : T) ≤ star (∑ i, γ (a i) (b i)) * ∑ i, γ (a i) (b i) :=
+        star_mul_self_nonneg _
+      have hexp : star (∑ i, γ (a i) (b i)) * (∑ i, γ (a i) (b i))
+          = ∑ i, ∑ j, γ (star (a i) * a j) (star (b i) * b j) := by
+        rw [star_sum, Finset.sum_mul]
+        refine Finset.sum_congr rfl fun i _ => ?_
+        rw [Finset.mul_sum]
+        refine Finset.sum_congr rfl fun j _ => ?_
+        rw [hγ.miu.2.2 (a i) (b i), ← hγ.miu.2.1]
+      have hgs : g (∑ i, ∑ j, γ (star (a i) * a j) (star (b i) * b j))
+          = ∑ i, ∑ j, β (star (a i) * a j) (star (b i) * b j) := by
+        rw [map_sum]
+        refine Finset.sum_congr rfl fun i _ => ?_
+        rw [map_sum]
+        exact Finset.sum_congr rfl fun j _ => hg _ _
+      rw [← hgs, ← hexp]
+      exact hp _ hz
+    · intro H x hx
+      obtain ⟨y, rfl⟩ := exists_star_mul_self hx
+      obtain ⟨ι, l, hl, s, hs, hlim⟩ :=
+        dense_subalgebra (tensorSpan γ hγ.miu) hγ.dense 1 one_pos y
+      have _ : l.NeBot := hl
+      have hconv : UWTendsto (fun i => star (s i) * s i) l (star y * y) :=
+        uwTendsto_starMul (K := ‖y‖ * (1 + 1)) (fun i => (hs i).2) hlim hlim
+      have hgconv : Tendsto (fun i => g (star (s i) * s i)) l (𝓝 (g (star y * y))) :=
+        (hgc.tendsto _).comp hconv
+      refine (vn_positive_basic_2.1).mem_of_tendsto hgconv
+        (Filter.Eventually.of_forall fun i => ?_)
+      obtain ⟨t, ht⟩ : s i ∈ Set.range ⇑(TensorProduct.lift γ) := by
+        rw [range_lift_eq_span]; exact (hs i).1
+      show (0 : C) ≤ g (star (s i) * s i)
+      rw [← ht, ← lift_star γ hγ.miu.2.2, ← lift_mul γ hγ.miu.2.1, hcomp]
+      obtain ⟨N, a, b, rfl⟩ := exists_fin_repr t
+      rw [hliftq a b a b]
+      exact H N a b
+  · -- (5) `β_γ` is completely positive iff `β` is
+    constructor
+    · intro hcpg n a b c
+      refine le_of_le_of_eq (hcpg n (fun i => γ (a i) (b i)) c) ?_
+      refine Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => ?_
+      congr 2
+      rw [hγ.miu.2.2 (a i) (b i), ← hγ.miu.2.1, hg]
+    · intro hcpβ n u c
+      -- first for families from `γ_⊙(𝒜 ⊙ ℬ)`: expanding each `tᵢ` into pure
+      -- tensors turns the quadratic form into an instance of `BilinCP β`
+      -- indexed by `Σ i, Fin (Nᵢ) ≃ Fin (∑ᵢ Nᵢ)`
+      have hbase : ∀ (m : ℕ) (t : Fin m → A ⊗[ℂ] B) (d : Fin m → C),
+          0 ≤ ∑ i, ∑ j, star (d i) *
+            g (star (TensorProduct.lift γ (t i)) *
+              TensorProduct.lift γ (t j)) * d j := by
+        intro m t d
+        choose N a b hab using fun i => exists_fin_repr (t i)
+        set F : ((i : Fin m) × Fin (N i)) → ((i : Fin m) × Fin (N i)) → C :=
+          fun p q => star (d p.1) *
+            β (star (a p.1 p.2) * a q.1 q.2) (star (b p.1 p.2) * b q.1 q.2) * d q.1
+          with hF
+        set e := (finSigmaFinEquiv (n := N)) with he
+        have key := hcpβ (∑ i, N i) (fun p => a (e.symm p).1 (e.symm p).2)
+          (fun p => b (e.symm p).1 (e.symm p).2) (fun p => d (e.symm p).1)
+        have hsig : ∑ p, ∑ q, F p q
+            = ∑ p' : Fin (∑ i, N i), ∑ q' : Fin (∑ i, N i),
+                F (e.symm p') (e.symm q') := by
+          refine (Fintype.sum_equiv e.symm _ _ ?_).symm
+          intro p'
+          exact Fintype.sum_equiv e.symm (fun q' => F (e.symm p') (e.symm q'))
+            (fun q => F (e.symm p') q) (fun _ => rfl)
+        have h1 : (0 : C) ≤ ∑ p, ∑ q, F p q := by
+          rw [hsig]; simpa only [hF] using key
+        have hval : ∀ i j : Fin m,
+            ∑ k, ∑ l, F ⟨i, k⟩ ⟨j, l⟩
+              = star (d i) * g (star (TensorProduct.lift γ (t i)) *
+                  TensorProduct.lift γ (t j)) * d j := by
+          intro i j
+          have hgt : g (star (TensorProduct.lift γ (t i)) *
+              TensorProduct.lift γ (t j))
+              = ∑ k, ∑ l, β (star (a i k) * a j l) (star (b i k) * b j l) := by
+            rw [← lift_star γ hγ.miu.2.2, ← lift_mul γ hγ.miu.2.1, hcomp,
+              hab i, hab j, hliftq (a i) (b i) (a j) (b j)]
+          rw [hgt, Finset.mul_sum, Finset.sum_mul]
+          refine Finset.sum_congr rfl fun k _ => ?_
+          rw [Finset.mul_sum, Finset.sum_mul]
+        have hfull : ∑ p, ∑ q, F p q
+            = ∑ i, ∑ j, star (d i) * g (star (TensorProduct.lift γ (t i)) *
+                TensorProduct.lift γ (t j)) * d j := by
+          rw [Fintype.sum_sigma (fun p => ∑ q, F p q)]
+          refine Finset.sum_congr rfl fun i _ => ?_
+          have hinner : ∀ k : Fin (N i),
+              (∑ q, F ⟨i, k⟩ q) = ∑ j, ∑ l, F ⟨i, k⟩ ⟨j, l⟩ :=
+            fun k => Fintype.sum_sigma (fun q => F ⟨i, k⟩ q)
+          rw [Finset.sum_congr rfl (fun k (_ : k ∈ Finset.univ) => hinner k),
+            Finset.sum_comm]
+          exact Finset.sum_congr rfl fun j _ => hval i j
+        rwa [hfull] at h1
+      -- and then for arbitrary `uᵢ ∈ 𝒯`, approximating all `n` of them
+      -- simultaneously along the product of the `n` nets of **74VI**
+      have happrox : ∀ x : T, ∃ (ι : Type u) (l : Filter ι), l.NeBot ∧
+          ∃ s : ι → T,
+            (∀ i, s i ∈ tensorSpan γ hγ.miu ∧ ‖s i‖ ≤ ‖x‖ * (1 + 1)) ∧
+              USTendsto s l x :=
+        fun x => dense_subalgebra (tensorSpan γ hγ.miu) hγ.dense 1 one_pos x
+      choose ι l hl s hs hlim using happrox
+      haveI hlb : ∀ i : Fin n, (l (u i)).NeBot := fun i => hl (u i)
+      set L : Filter (∀ i : Fin n, ι (u i)) := Filter.pi (fun i => l (u i)) with hL
+      haveI hLne : L.NeBot := by rw [hL]; infer_instance
+      set S : Fin n → (∀ i : Fin n, ι (u i)) → T := fun i x => s (u i) (x i) with hS
+      have hSlim : ∀ i, USTendsto (S i) L (u i) := fun i =>
+        (hlim (u i)).comp (tendsto_eval_pi (fun i => l (u i)) i)
+      have hconv : ∀ i j : Fin n,
+          UWTendsto (fun x => star (S i x) * S j x) L (star (u i) * u j) :=
+        fun i j => uwTendsto_starMul (K := ‖u i‖ * (1 + 1))
+          (fun x => (hs (u i) (x i)).2) (hSlim i) (hSlim j)
+      have hsum : Tendsto
+          (fun x => ∑ i, ∑ j, star (c i) * g (star (S i x) * S j x) * c j) L
+          (𝓝 (∑ i, ∑ j, star (c i) * g (star (u i) * u j) * c j)) := by
+        rw [show (𝓝 (∑ i, ∑ j, star (c i) * g (star (u i) * u j) * c j))
+            = @nhds C (ultraweak C) _ from rfl]
+        rw [← UWTendsto, uwTendsto_iff]
+        intro χ
+        have hterm : ∀ i j : Fin n,
+            Tendsto (fun x => (χ (star (c i) * g (star (S i x) * S j x) * c j) : ℂ))
+              L (𝓝 (χ (star (c i) * g (star (u i) * u j) * c j))) := by
+          intro i j
+          exact ((continuous_ultraweak_conj χ (star (c i)) (c j)).tendsto _).comp
+            ((hgc.tendsto _).comp (hconv i j))
+        have hexpand : ∀ (z : Fin n → Fin n → C),
+            (χ (∑ i, ∑ j, star (c i) * z i j * c j) : ℂ)
+              = ∑ i, ∑ j, (χ (star (c i) * z i j * c j) : ℂ) := by
+          intro z
+          show npLin χ _ = _
+          rw [map_sum]
+          exact Finset.sum_congr rfl fun i _ => map_sum (npLin χ) _ _
+        simp only [hexpand]
+        exact tendsto_finsetSum _ fun i _ =>
+          tendsto_finsetSum _ fun j _ => hterm i j
+      refine (vn_positive_basic_2.1).mem_of_tendsto hsum
+        (Filter.Eventually.of_forall fun x => ?_)
+      have hmem : ∀ i : Fin n, ∃ t : A ⊗[ℂ] B, TensorProduct.lift γ t = S i x := by
+        intro i
+        have hmm := (hs (u i) (x i)).1
+        rw [← SetLike.mem_coe, coe_tensorSpan, ← range_lift_eq_span] at hmm
+        exact hmm
+      choose t ht using hmem
+      have hb' := hbase n t c
+      show (0 : C) ≤ ∑ i, ∑ j, star (c i) * g (star (S i x) * S j x) * c j
+      simpa only [ht] using hb'
 
 /-- **114II** (`tensor-uniqueness`, proc.tex:3087, Exercise): the tensor
 product of von Neumann algebras is unique: for tensor products
@@ -3738,7 +4031,71 @@ theorem tensor_uniqueness {T' : Type u} [CStarAlgebra T'] [PartialOrder T']
     (hγ' : IsTensorProduct γ') :
     ∃ φ : NMIUMap T T', (∀ a b, φ (γ a b) = γ' a b) ∧
       Function.Bijective ⇑φ ∧
-      ∀ ψ : NMIUMap T T', (∀ a b, ψ (γ a b) = γ' a b) → ψ = φ := sorry
+      ∀ ψ : NMIUMap T T', (∀ a b, ψ (γ a b) = γ' a b) → ψ = φ := by
+  -- Each of `γ`, `γ'` is a normal bounded bilinear map — normality is
+  -- **112X**.3.1 and boundedness is the isometry **112X**.2 — so **112XI**
+  -- extends each along the other, and the two composites are the identity by
+  -- 112XI's own uniqueness clause.  Multiplicativity, involution preservation
+  -- and unitality of the extension are **114I**.1/.2/.3 read off `γ'`'s
+  -- miu-bilinearity, and normality of the resulting ∗-isomorphism is free
+  -- (`starAlgEquiv_preservesDirSups'`).  Uniqueness among *nmiu*-maps is
+  -- 112XI's uniqueness again, since a normal positive map is ultraweakly
+  -- continuous (**44XV** `p_uwcont`).
+  classical
+  letI : TopologicalSpace T := ultraweak T
+  letI : TopologicalSpace T' := ultraweak T'
+  have hnb : ∀ {T₀ : Type u} [CStarAlgebra T₀] [PartialOrder T₀]
+      [StarOrderedRing T₀] [VonNeumannAlgebra T₀] (δ : A →ₗ[ℂ] B →ₗ[ℂ] T₀),
+      IsTensorProduct δ → BilinNormal δ ∧ BilinBounded δ := by
+    intro T₀ _ _ _ _ δ hδ
+    exact ⟨(tensor_basic_3 δ hδ).1, ⟨1, zero_le_one, fun t => by
+      rw [tensor_basic_2 δ hδ t, one_mul]⟩⟩
+  obtain ⟨hn', hb'⟩ := hnb γ' hγ'
+  obtain ⟨hn, hb⟩ := hnb γ hγ
+  obtain ⟨⟨φ₀, ⟨hφc, hφe⟩, hφu⟩, -⟩ := tensor_universal_property γ hγ γ' hn' hb'
+  obtain ⟨⟨ψ₀, ⟨hψc, hψe⟩, -⟩, -⟩ := tensor_universal_property γ' hγ' γ hn hb
+  obtain ⟨⟨gT, -, huniqT⟩, -⟩ := tensor_universal_property γ hγ γ hn hb
+  obtain ⟨⟨gT', -, huniqT'⟩, -⟩ := tensor_universal_property γ' hγ' γ' hn' hb'
+  have hid1 : ∀ x : T, ψ₀ (φ₀ x) = x := by
+    have h1 := huniqT (ψ₀.comp φ₀) ⟨hψc.comp hφc, fun a b => by
+      rw [LinearMap.comp_apply, hφe, hψe]⟩
+    have h2 := huniqT (LinearMap.id) ⟨continuous_id, fun _ _ => rfl⟩
+    intro x
+    exact congrArg (fun f : T →ₗ[ℂ] T => f x) (h1.trans h2.symm)
+  have hid2 : ∀ y : T', φ₀ (ψ₀ y) = y := by
+    have h1 := huniqT' (φ₀.comp ψ₀) ⟨hφc.comp hψc, fun a b => by
+      rw [LinearMap.comp_apply, hψe, hφe]⟩
+    have h2 := huniqT' (LinearMap.id) ⟨continuous_id, fun _ _ => rfl⟩
+    intro y
+    exact congrArg (fun f : T' →ₗ[ℂ] T' => f y) (h1.trans h2.symm)
+  have hbij : Function.Bijective ⇑φ₀ :=
+    ⟨Function.LeftInverse.injective hid1, Function.RightInverse.surjective hid2⟩
+  obtain ⟨hm, hs, hu, -, -⟩ :=
+    tensor_universal_property_extra γ hγ γ' hn' hb' φ₀ hφc hφe
+  have hmult := hm.mpr hγ'.miu.2.1
+  have hstar := hs.mpr hγ'.miu.2.2
+  have hunit := hu.mpr hγ'.miu.1
+  set Φ : T →⋆ₐ[ℂ] T' :=
+    { toFun := ⇑φ₀
+      map_one' := hunit
+      map_mul' := hmult
+      map_zero' := map_zero φ₀
+      map_add' := map_add φ₀
+      commutes' := fun r => by
+        show φ₀ (algebraMap ℂ T r) = algebraMap ℂ T' r
+        rw [Algebra.algebraMap_eq_smul_one, Algebra.algebraMap_eq_smul_one,
+          map_smul, hunit]
+      map_star' := hstar } with hΦ
+  refine ⟨{ toStarAlgHom := Φ
+            preservesDirSups' :=
+              starAlgEquiv_preservesDirSups' (StarAlgEquiv.ofBijective Φ hbij) },
+          fun a b => hφe a b, hbij, ?_⟩
+  intro ψ hψ
+  have hψcont : @Continuous T T' (ultraweak T) (ultraweak T') ⇑(nmiuLin ψ) :=
+    ((p_uwcont (nmiuP ψ)).out 2 0).mp ψ.preservesDirSups'
+  have heq : nmiuLin ψ = φ₀ := hφu (nmiuLin ψ) ⟨hψcont, hψ⟩
+  refine DFunLike.ext _ _ fun x => ?_
+  exact congrArg (fun f : T →ₗ[ℂ] T' => f x) heq
 
 end Extra
 
@@ -3801,6 +4158,286 @@ section Chosen
 
 variable [VonNeumannAlgebra A] [VonNeumannAlgebra B] [VonNeumannAlgebra C]
   [VonNeumannAlgebra D]
+
+/-! ### Infrastructure for **115II**: the cp-Cauchy–Schwarz step
+
+proc.tex:3210 bounds `β_⊙` for `β(a,b) = f(a) ⊗ g(b)` through the inequality
+`β_⊙(s)* β_⊙(s) ≤ ‖f‖‖g‖ β_⊙(s* s)`, which it derives from **34XIV**
+`cp-cs` applied to the amplification `M_n f` and the row matrix
+`A = (a₁ … a_n; 0)`.  We take the same inequality but avoid amplifying `f`:
+`cp_cs_sum` is `cp-cs` for a *vector* of arguments (proved by applying
+`cstar_positive_2x2matrix` to the 2×2 compression of the positive matrix
+`(f(vᵢ* vⱼ))` along `v = (a₁,…,a_n,1)`), and `tmap_cs` then splits
+`‖f(1)‖‖g(1)‖ Q ⊗ Q' − P ⊗ P'` into `P⊗R' + R⊗P' + R⊗R'` with
+`R = ‖f(1)‖Q − P ≥ 0`, each summand positive by
+`Theses.A.CStar.matBilin_nonneg_of_mi` (**113II**+**113IV** for the
+miu-bilinear `⊗`).  This replaces the thesis's `M_n ⊗` bookkeeping. -/
+
+open Theses.A.CStar in
+theorem cp_cs_sum {A₅ B₅ : Type u} [CStarAlgebra A₅] [PartialOrder A₅]
+    [StarOrderedRing A₅] [CStarAlgebra B₅] [PartialOrder B₅]
+    [StarOrderedRing B₅] (f : A₅ →ₗ[ℂ] B₅)
+    (hf : Theses.A.CStar.IsCompletelyPositiveMap f)
+    {n : ℕ} (a : Fin n → A₅) (c : Fin n → B₅) :
+    star (∑ i, f (a i) * c i) * (∑ i, f (a i) * c i)
+      ≤ ((‖f 1‖ : ℝ) : ℂ) • ∑ i, ∑ j, star (c i) * f (star (a i) * a j) * c j := by
+  classical
+  set z : B₅ := ∑ i, f (a i) * c i with hz
+  set Q : B₅ := ∑ i, ∑ j, star (c i) * f (star (a i) * a j) * c j with hQ
+  set v : Fin (n + 1) → A₅ := Fin.snoc a 1 with hv
+  have hfstar : ∀ x : A₅, f (star x) = star (f x) :=
+    cstar_p_implies_i f (astara_pos_basic_2_cp f hf)
+  have hcp2 : ∀ (N : ℕ) (x : Fin N → A₅),
+      (0 : CStarMatrix (Fin N) (Fin N) B₅) ≤
+        CStarMatrix.ofMatrix (Matrix.of fun i j => f (star (x i) * x j)) :=
+    ((cp_iff f).out 0 2).mp hf
+  have hG := hcp2 (n+1) v
+  have hq : ∀ w : Fin (n+1) → B₅,
+      0 ≤ ∑ i, ∑ j, star (w i) * f (star (v i) * v j) * w j := by
+    intro w
+    have h := (cstar_matrix_positive_iff _).mp hG w
+    simpa using h
+  have hstarz : star z = ∑ i, star (c i) * f (star (a i)) := by
+    rw [hz, star_sum]
+    exact Finset.sum_congr rfl fun i _ => by rw [star_mul, hfstar]
+  have hexp : ∀ x y : B₅,
+      ∑ i, ∑ j, star ((Fin.snoc (fun i => c i * x) y : Fin (n+1) → B₅) i) *
+          f (star (v i) * v j) * ((Fin.snoc (fun i => c i * x) y : Fin (n+1) → B₅) j)
+        = star x * Q * x + star x * star z * y
+          + (star y * z * x + star y * f 1 * y) := by
+    intro x y
+    set w : Fin (n+1) → B₅ := Fin.snoc (fun i => c i * x) y with hw
+    have hwc : ∀ i : Fin n, w i.castSucc = c i * x := fun i => by
+      rw [hw]; exact Fin.snoc_castSucc _ _ _
+    have hwl : w (Fin.last n) = y := by rw [hw]; exact Fin.snoc_last _ _
+    have hvc : ∀ i : Fin n, v i.castSucc = a i := fun i => by
+      rw [hv]; exact Fin.snoc_castSucc _ _ _
+    have hvl : v (Fin.last n) = 1 := by rw [hv]; exact Fin.snoc_last _ _
+    have hinner : ∀ i : Fin (n+1),
+        ∑ j, star (w i) * f (star (v i) * v j) * w j
+          = (∑ j : Fin n, star (w i) * f (star (v i) * a j) * (c j * x))
+            + star (w i) * f (star (v i)) * y := by
+      intro i
+      rw [Fin.sum_univ_castSucc]
+      congr 1
+      · exact Finset.sum_congr rfl fun j _ => by rw [hvc, hwc]
+      · rw [hwl, hvl, mul_one]
+    rw [Finset.sum_congr rfl fun i (_ : i ∈ Finset.univ) => hinner i,
+      Finset.sum_add_distrib, Fin.sum_univ_castSucc, Fin.sum_univ_castSucc]
+    have e1 : ∑ i : Fin n, ∑ j : Fin n,
+        star (w i.castSucc) * f (star (v i.castSucc) * a j) * (c j * x)
+          = star x * Q * x := by
+      rw [hQ, Finset.mul_sum, Finset.sum_mul]
+      refine Finset.sum_congr rfl fun i _ => ?_
+      rw [Finset.mul_sum, Finset.sum_mul]
+      refine Finset.sum_congr rfl fun j _ => ?_
+      rw [hwc, hvc, star_mul]
+      noncomm_ring
+    have e2 : ∑ j : Fin n, star (w (Fin.last n)) * f (star (v (Fin.last n)) * a j)
+        * (c j * x) = star y * z * x := by
+      rw [hz, Finset.mul_sum, Finset.sum_mul]
+      refine Finset.sum_congr rfl fun j _ => ?_
+      rw [hwl, hvl, star_one, one_mul]
+      noncomm_ring
+    have e3 : ∑ i : Fin n, star (w i.castSucc) * f (star (v i.castSucc)) * y
+        = star x * star z * y := by
+      rw [hstarz, Finset.mul_sum, Finset.sum_mul]
+      refine Finset.sum_congr rfl fun i _ => ?_
+      rw [hwc, hvc, star_mul]
+      noncomm_ring
+    have e4 : star (w (Fin.last n)) * f (star (v (Fin.last n))) * y
+        = star y * f 1 * y := by
+      rw [hwl, hvl, star_one]
+    rw [e1, e2, e3, e4]
+    abel
+  set M : CStarMatrix (Fin 2) (Fin 2) B₅ :=
+    CStarMatrix.ofMatrix (Matrix.of ![![Q, star z], ![z, f 1]]) with hM
+  have hM00 : M 0 0 = Q := rfl
+  have hM01 : M 0 1 = star z := rfl
+  have hM11 : M 1 1 = f 1 := rfl
+  have hMpos : (0 : CStarMatrix (Fin 2) (Fin 2) B₅) ≤ M := by
+    rw [cstar_matrix_positive_iff]
+    intro e
+    have h := hq ((Fin.snoc (fun i => c i * (e 0)) (e 1) : Fin (n+1) → B₅))
+    rw [hexp (e 0) (e 1)] at h
+    rw [Fin.sum_univ_two, Fin.sum_univ_two, Fin.sum_univ_two]
+    show 0 ≤ star (e 0) * M 0 0 * e 0 + star (e 0) * M 0 1 * e 1
+      + (star (e 1) * M 1 0 * e 0 + star (e 1) * M 1 1 * e 1)
+    rw [hM00, hM01, hM11, show M 1 0 = z from rfl]
+    exact h
+  obtain ⟨-, h2⟩ := cstar_positive_2x2matrix M hMpos
+  rw [hM00, hM01, hM11, star_star] at h2
+  rwa [show (((‖f 1‖ : ℝ) : ℂ)) • Q = (‖f 1‖ : ℝ) • Q from by
+    rw [← IsScalarTower.algebraMap_smul ℂ (‖f 1‖ : ℝ) Q, Complex.coe_algebraMap]]
+
+open Theses.A.CStar in
+/-- The cp-Cauchy–Schwarz step of **115II**. -/
+theorem tmap_cs (F : A →ₗ[ℂ] C) (G : B →ₗ[ℂ] D)
+    (hF : Theses.A.CStar.IsCompletelyPositiveMap F)
+    (hG : Theses.A.CStar.IsCompletelyPositiveMap G)
+    {n : ℕ} (a : Fin n → A) (b : Fin n → B) :
+    star (∑ i, (F (a i)) ⊗ᵥ (G (b i))) * (∑ i, (F (a i)) ⊗ᵥ (G (b i)))
+      ≤ ((‖F 1‖ * ‖G 1‖ : ℝ) : ℂ) •
+        ∑ i, ∑ j, (F (star (a i) * a j)) ⊗ᵥ (G (star (b i) * b j)) := by
+  classical
+  set vt : C → D → VNT C D := fun x y => x ⊗ᵥ y with hvt
+  have hmiu := (vnTensor C D).isTensorProduct.miu
+  have hl : ∀ (x x' : C) (y : D), vt (x + x') y = vt x y + vt x' y := by
+    intro x x' y
+    show (vnTensor C D).map (x + x') y = _
+    rw [map_add]; rfl
+  have hr : ∀ (x : C) (y y' : D), vt x (y + y') = vt x y + vt x y' := by
+    intro x y y'
+    show (vnTensor C D).map x (y + y') = _
+    rw [map_add]; rfl
+  have hmul : ∀ (x x' : C) (y y' : D), vt x y * vt x' y' = vt (x * x') (y * y') :=
+    fun x x' y y' => (hmiu.2.1 x x' y y').symm
+  have hstar : ∀ (x : C) (y : D), star (vt x y) = vt (star x) (star y) :=
+    fun x y => hmiu.2.2 x y
+  have hvtsmul : ∀ (r s : ℂ) (x : C) (y : D),
+      vt (r • x) (s • y) = (r * s) • vt x y := by
+    intro r s x y
+    show ((vnTensor C D).map (r • x)) (s • y) = _
+    simp only [map_smul, LinearMap.smul_apply, smul_smul]
+    rw [mul_comm s r]
+    rfl
+  set K₁ : ℂ := ((‖F 1‖ : ℝ) : ℂ) with hK₁
+  set K₂ : ℂ := ((‖G 1‖ : ℝ) : ℂ) with hK₂
+  set p : Fin n → Fin n → C := fun i j => star (F (a i)) * F (a j) with hp
+  set q : Fin n → Fin n → C := fun i j => K₁ • F (star (a i) * a j) with hq
+  set p' : Fin n → Fin n → D := fun i j => star (G (b i)) * G (b j) with hp'
+  set q' : Fin n → Fin n → D := fun i j => K₂ • G (star (b i) * b j) with hq'
+  set r : Fin n → Fin n → C := fun i j => q i j - p i j with hrr
+  set r' : Fin n → Fin n → D := fun i j => q' i j - p' i j with hrr'
+  have hPpos : (0 : CStarMatrix (Fin n) (Fin n) C) ≤
+      CStarMatrix.ofMatrix (Matrix.of p) := cstar_matrix_star_mul_nonneg _
+  have hP'pos : (0 : CStarMatrix (Fin n) (Fin n) D) ≤
+      CStarMatrix.ofMatrix (Matrix.of p') := cstar_matrix_star_mul_nonneg _
+  have hRpos : (0 : CStarMatrix (Fin n) (Fin n) C) ≤
+      CStarMatrix.ofMatrix (Matrix.of r) := by
+    rw [cstar_matrix_positive_iff]
+    intro c
+    have hcs := cp_cs_sum F hF a c
+    have hlhs : star (∑ i, F (a i) * c i) * (∑ i, F (a i) * c i)
+        = ∑ i, ∑ j, star (c i) * p i j * c j := by
+      rw [star_sum, Finset.sum_mul]
+      refine Finset.sum_congr rfl fun i _ => ?_
+      rw [Finset.mul_sum]
+      refine Finset.sum_congr rfl fun j _ => ?_
+      rw [star_mul]
+      show _ = star (c i) * (star (F (a i)) * F (a j)) * c j
+      noncomm_ring
+    have hrhs : K₁ • (∑ i, ∑ j, star (c i) * F (star (a i) * a j) * c j)
+        = ∑ i, ∑ j, star (c i) * q i j * c j := by
+      rw [Finset.smul_sum]
+      refine Finset.sum_congr rfl fun i _ => ?_
+      rw [Finset.smul_sum]
+      refine Finset.sum_congr rfl fun j _ => ?_
+      show K₁ • (star (c i) * F (star (a i) * a j) * c j)
+        = star (c i) * (K₁ • F (star (a i) * a j)) * c j
+      rw [mul_smul_comm, smul_mul_assoc]
+    rw [hlhs, hrhs] at hcs
+    have hsub : ∑ i, ∑ j, star (c i) *
+        (CStarMatrix.ofMatrix (Matrix.of r) : CStarMatrix (Fin n) (Fin n) C) i j * c j
+        = (∑ i, ∑ j, star (c i) * q i j * c j)
+          - ∑ i, ∑ j, star (c i) * p i j * c j := by
+      rw [← Finset.sum_sub_distrib]
+      refine Finset.sum_congr rfl fun i _ => ?_
+      rw [← Finset.sum_sub_distrib]
+      refine Finset.sum_congr rfl fun j _ => ?_
+      show star (c i) * (q i j - p i j) * c j = _
+      noncomm_ring
+    rw [hsub, sub_nonneg]
+    exact hcs
+  have hR'pos : (0 : CStarMatrix (Fin n) (Fin n) D) ≤
+      CStarMatrix.ofMatrix (Matrix.of r') := by
+    rw [cstar_matrix_positive_iff]
+    intro c
+    have hcs := cp_cs_sum G hG b c
+    have hlhs : star (∑ i, G (b i) * c i) * (∑ i, G (b i) * c i)
+        = ∑ i, ∑ j, star (c i) * p' i j * c j := by
+      rw [star_sum, Finset.sum_mul]
+      refine Finset.sum_congr rfl fun i _ => ?_
+      rw [Finset.mul_sum]
+      refine Finset.sum_congr rfl fun j _ => ?_
+      rw [star_mul]
+      show _ = star (c i) * (star (G (b i)) * G (b j)) * c j
+      noncomm_ring
+    have hrhs : K₂ • (∑ i, ∑ j, star (c i) * G (star (b i) * b j) * c j)
+        = ∑ i, ∑ j, star (c i) * q' i j * c j := by
+      rw [Finset.smul_sum]
+      refine Finset.sum_congr rfl fun i _ => ?_
+      rw [Finset.smul_sum]
+      refine Finset.sum_congr rfl fun j _ => ?_
+      show K₂ • (star (c i) * G (star (b i) * b j) * c j)
+        = star (c i) * (K₂ • G (star (b i) * b j)) * c j
+      rw [mul_smul_comm, smul_mul_assoc]
+    rw [hlhs, hrhs] at hcs
+    have hsub : ∑ i, ∑ j, star (c i) *
+        (CStarMatrix.ofMatrix (Matrix.of r') : CStarMatrix (Fin n) (Fin n) D) i j * c j
+        = (∑ i, ∑ j, star (c i) * q' i j * c j)
+          - ∑ i, ∑ j, star (c i) * p' i j * c j := by
+      rw [← Finset.sum_sub_distrib]
+      refine Finset.sum_congr rfl fun i _ => ?_
+      rw [← Finset.sum_sub_distrib]
+      refine Finset.sum_congr rfl fun j _ => ?_
+      show star (c i) * (q' i j - p' i j) * c j = _
+      noncomm_ring
+    rw [hsub, sub_nonneg]
+    exact hcs
+  have hcross : ∀ (M : Fin n → Fin n → C) (M' : Fin n → Fin n → D),
+      (0 : CStarMatrix (Fin n) (Fin n) C) ≤ CStarMatrix.ofMatrix (Matrix.of M) →
+      (0 : CStarMatrix (Fin n) (Fin n) D) ≤ CStarMatrix.ofMatrix (Matrix.of M') →
+      0 ≤ ∑ i, ∑ j, vt (M i j) (M' i j) := by
+    intro M M' hM hM'
+    have h := matBilin_nonneg_of_mi vt hl hr hmul hstar
+      (CStarMatrix.ofMatrix (Matrix.of M)) (CStarMatrix.ofMatrix (Matrix.of M'))
+      hM hM' (fun _ => 1)
+    simpa using h
+  -- expand
+  have hLHS : star (∑ i, (F (a i)) ⊗ᵥ (G (b i))) * (∑ i, (F (a i)) ⊗ᵥ (G (b i)))
+      = ∑ i, ∑ j, vt (p i j) (p' i j) := by
+    rw [star_sum, Finset.sum_mul]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [Finset.mul_sum]
+    refine Finset.sum_congr rfl fun j _ => ?_
+    show star (vt (F (a i)) (G (b i))) * vt (F (a j)) (G (b j)) = _
+    rw [hstar, hmul]
+  have hRHS : ((‖F 1‖ * ‖G 1‖ : ℝ) : ℂ) •
+      ∑ i, ∑ j, (F (star (a i) * a j)) ⊗ᵥ (G (star (b i) * b j))
+      = ∑ i, ∑ j, vt (q i j) (q' i j) := by
+    rw [Finset.smul_sum]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [Finset.smul_sum]
+    refine Finset.sum_congr rfl fun j _ => ?_
+    rw [hq, hq']
+    show _ = vt (K₁ • F (star (a i) * a j)) (K₂ • G (star (b i) * b j))
+    rw [hvtsmul, hK₁, hK₂, ← Complex.ofReal_mul]
+  have hqp : ∀ i j, q i j = p i j + r i j := by
+    intro i j; simp only [hrr]; abel
+  have hqp' : ∀ i j, q' i j = p' i j + r' i j := by
+    intro i j; simp only [hrr']; abel
+  have hterm : ∀ i j : Fin n, vt (q i j) (q' i j)
+      = vt (p i j) (p' i j) + vt (p i j) (r' i j) + vt (r i j) (p' i j)
+        + vt (r i j) (r' i j) := by
+    intro i j
+    rw [hqp i j, hqp' i j, hl, hr, hr]
+    abel
+  have hsum : ∑ i, ∑ j, vt (q i j) (q' i j)
+      = (∑ i, ∑ j, vt (p i j) (p' i j)) + (∑ i, ∑ j, vt (p i j) (r' i j))
+        + (∑ i, ∑ j, vt (r i j) (p' i j)) + (∑ i, ∑ j, vt (r i j) (r' i j)) := by
+    simp only [hterm, Finset.sum_add_distrib]
+  rw [hLHS, hRHS, hsum]
+  have h0 : (0 : VNT C D) ≤ (∑ i, ∑ j, vt (p i j) (r' i j))
+      + (∑ i, ∑ j, vt (r i j) (p' i j)) + ∑ i, ∑ j, vt (r i j) (r' i j) :=
+    add_nonneg (add_nonneg (hcross p r' hPpos hR'pos) (hcross r p' hRpos hP'pos))
+      (hcross r r' hRpos hR'pos)
+  rw [show ((∑ i, ∑ j, vt (p i j) (p' i j)) + (∑ i, ∑ j, vt (p i j) (r' i j))
+        + (∑ i, ∑ j, vt (r i j) (p' i j)) + (∑ i, ∑ j, vt (r i j) (r' i j)))
+      = (∑ i, ∑ j, vt (p i j) (p' i j)) + ((∑ i, ∑ j, vt (p i j) (r' i j))
+        + (∑ i, ∑ j, vt (r i j) (p' i j)) + ∑ i, ∑ j, vt (r i j) (r' i j)) from
+    by abel]
+  exact le_add_of_nonneg_right h0
 
 /-- **115II** (`tensor-functorial`, proc.tex:3114, Proposition),
 well-definedness: for ncp-maps `f : 𝒜 → 𝒞` and `g : ℬ → 𝒟` there is a

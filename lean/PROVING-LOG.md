@@ -13042,3 +13042,141 @@ mathematics.
 * Nothing else; the sorry counts, the blocked/false list and the reading of
   151Ia's interface were all accurate, and `Kaplansky` 4 was right against the
   survey's stale 5.
+
+## Session 58 — `A/Proc`: **114I and 114II close**; 115II's two hypotheses are costed, and its cp-Cauchy–Schwarz core is banked (worker on `Tensor.lean`)
+
+**`Tensor.lean` 33 → 31, A/Proc 72 → 70** (compiler-counted).  Both new
+theorems and all four new auxiliaries are axiom-clean
+(`propext, Classical.choice, Quot.sound`).
+
+### 1. 114I `tensor_universal_property_extra` (all five parts)
+
+The two hypotheses `hn : BilinNormal β` and `hb : BilinBounded β` are **not
+used**: the extension `g` is handed to us, so all five clauses are identities
+on the ultraweakly dense ∗-subalgebra `γ_⊙(𝒜⊙ℬ)` transported to `𝒯`.
+
+* Clauses (1)–(3) (multiplicative / involution preserving / unital) need only
+  *separate* ultraweak continuity: **45IV** `mult_uws_cont` for the two
+  multiplications, and a new `continuous_ultraweak_star` (the involution is
+  ultraweakly continuous because `ω(a*) = ω(a)*` for np `ω`).  Clause (3) is
+  immediate from `γ(1,1) = 1`.
+* Clauses (4)–(5) are *quadratic* in the approximating net, so no amount of
+  separate continuity does them.  The new **`uwTendsto_starMul`** is what
+  carries them: if `u_α → u` and `v_α → v` ultrastrongly and the `u_α` are
+  norm-bounded, then `u_α* v_α → u* v` **ultraweakly**.  Proof: split
+  `u_α* v_α − u* v = u_α*(v_α − v) + (u_α − u)* v` and apply Cauchy–Schwarz
+  for `‖·‖_ω` (`norm_apply_star_mul_le`, i.e. **72III**.1b) twice.  With that,
+  `x = y* y` is approximated by **74VI** `dense_subalgebra` and the value is
+  caught by ultraweak closedness of the positive cone (**44XI**.2
+  `vn_positive_basic_2`).
+* **The `n`-fold simultaneous approximation of clause (5)** is the one place
+  where a new device was needed.  `dense_subalgebra` returns a *different*
+  index type and filter for each of the `n` arguments; the fix is the
+  **product filter** `Filter.pi (fun i => l (u i))` on `∀ i, ι (u i)`, with
+  `Filter.tendsto_eval_pi` giving all `n` convergences along one filter.
+  Mathlib's `NeBot` instance for `Filter.pi` needs nothing beyond `NeBot` of
+  the factors, so the `n = 0` case needs no split.
+* **Also worth recording**: `BilinCP β` quantifies only over *pure* tensors,
+  while the base case of (5) needs the quadratic form for arbitrary elements
+  of `γ_⊙(𝒜⊙ℬ)`, which are *sums* of pure tensors.  Expanding each `tᵢ` and
+  re-indexing along `finSigmaFinEquiv : (Σ i, Fin (Nᵢ)) ≃ Fin (∑ᵢ Nᵢ)` reduces
+  it to one instance of `BilinCP β`.  (Zero-padding to a common length was
+  tried first and is strictly more painful.)
+
+**Lean trap re-confirmed.**  `letI : TopologicalSpace T := ultraweak T` at the
+top of a proof makes `Continuous`/`Dense`/`𝓝` mean the right thing, but it
+**breaks typeclass synthesis for the continuous functional calculus** on `T`
+(`CStarAlgebra.nonneg_iff_eq_star_mul_self` fails with
+`NonUnitalContinuousFunctionalCalculus ℝ T IsSelfAdjoint` unsynthesizable).
+The dodge already in the file — a private lemma stated for a *fresh* type
+variable with its instances as arguments (`exists_star_mul_self`) — is what
+makes it work, because the synthesis then happens outside the `letI` scope.
+
+### 2. 114II `tensor_uniqueness`
+
+Exactly the route the survey predicted, ~55 lines.  `BilinNormal γ'` is
+`(tensor_basic_3 γ' hγ').1` and `BilinBounded γ'` is `tensor_basic_2` with
+`M = 1`; 112XI extends each tensor product along the other; both composites
+equal the identity by 112XI's *own* uniqueness clause (at `β = γ`, resp. `γ'`);
+miu-ness of the extension is 114I.1/.2/.3 fed `hγ'.miu`; normality is free from
+`starAlgEquiv_preservesDirSups'`.  Uniqueness among nmiu-maps needs an
+arbitrary nmiu-map to be ultraweakly continuous — **44XV** `p_uwcont` (3)⇒(1)
+applied to `nmiuP ψ`.
+
+### 3. 115II `exists_tmap` — not closed; the cost, and the core that is banked
+
+`β(a,b) = f(a) ⊗ g(b)`.  `BilinCP β` is one application of `cp_bilinear_comp`;
+once `BilinNormal β` and `BilinBounded β` are in hand, 112XI + 114I(5) +
+`p_uwcont` finish.  Both hypotheses are ~150-line developments.
+
+**Banked (proved, axiom-clean): the cp-Cauchy–Schwarz step.**  proc.tex:3210
+needs `β_⊙(s)* β_⊙(s) ≤ ‖f‖‖g‖ β_⊙(s* s)`, and derives it from **34XIV**
+`cp-cs` applied to the amplification `M_n f` plus an `M_n ⊗` computation.
+Transcribing that would need `M_n f` to be completely positive as a map on
+`CStarMatrix`, i.e. `M_2(M_n(𝒜)) ≅ M_{2n}(𝒜)`, which the tree does not have.
+**Divergence (case 2: thesis proof fine, different route).**  We prove instead
+
+* `cp_cs_sum` — `cp-cs` for a *vector* of arguments:
+  `(∑ᵢ f(aᵢ)cᵢ)* (∑ⱼ f(aⱼ)cⱼ) ≤ ‖f(1)‖ ∑ᵢⱼ cᵢ* f(aᵢ* aⱼ) cⱼ`.
+  Take `v = (a₁,…,a_n,1) ∈ 𝒜^{n+1}`, so `(f(vᵢ* vⱼ))ᵢⱼ ≥ 0` by **34IV**
+  `cp_iff`; its 2×2 *compression* along the two coefficient vectors
+  `(c₁,…,c_n,0)` and `(0,…,0,1)` is positive (test
+  `cstar_matrix_positive_iff` at `w = (c₁x,…,c_nx,y)`), and
+  `cstar_positive_2x2matrix` part 2 reads off exactly the claim, its corners
+  being `∑ᵢⱼ cᵢ* f(aᵢ*aⱼ) cⱼ`, `(∑ᵢ f(aᵢ)cᵢ)*` and `f(1)`.
+* `tmap_cs` — the inequality itself, with no `M_n ⊗`: with
+  `P = (f(aᵢ)* f(aⱼ))`, `Q = ‖f1‖(f(aᵢ*aⱼ))`, `R = Q − P ≥ 0` (that is
+  `cp_cs_sum`) and primed twins for `g`, expand
+  `Q ⊗ Q' − P ⊗ P' = P⊗R' + R⊗P' + R⊗R'` and apply
+  `Theses.A.CStar.matBilin_nonneg_of_mi` (**113II**+**113IV** for the
+  miu-bilinear `⊗`) with coefficient vector `1` to each summand.
+
+**Still open for `BilinBounded β`**: the thesis's other promise,
+`‖ω∘β_⊙‖ ≤ ‖f‖‖g‖` for basic `ω` on `𝒞⊙𝒟` with `ω(1) ≤ 1`.  Every input is
+proved; see the session-58 note in `docs/AProc-survey.md` for the eight-step
+recipe (`exists_conjProdNP_of_isBasicFunctional` → the `∑ₖₗ odotF` expansion →
+**112IX** → **112XI**'s *same-bounds* clause → **114I**(4) → `russo_dye_cor`).
+
+**`BilinNormal β` is the real gate.**  It is **not** a corollary of 112IX plus
+112X.1.2: continuity into `ultraweak (𝒞⊗𝒟)` must be tested against *every*
+np-functional, only the members of `Ω` carry the `∑ₖₗ odotF` expansion, and
+112X.1.2 only makes a general `χ` an *operator-norm* limit of sums from `Ω` —
+whose transport through `β_⊙` is uniform only relative to `tensorNorm`.  That
+is the **same failure already recorded for 116III.4**.  Two further escapes
+were checked and both fail: `NormLimitOfSimple` is *not* preserved by
+`(·)∘(f⊙g)` (a basic functional is `(σ⊙τ)(t₀*(·)t₀)` and `f⊙g` does not
+commute with the conjugation, so `simple ∘ (f⊙g)` is a **ℂ**-combination of
+basic functionals, not a sum of them); and rewriting `uwTensorTopology (𝒞,𝒟)`
+by 112X.5 as the topology induced from `𝒞⊗𝒟` turns the goal into itself.  The
+route that should work is 112X.5's own: extend each `∑ᵢχᵢ ∘ β_⊙` to `Eₙ` on
+`𝒜⊗ℬ` by 112XI, bound `‖Eₙ − Eₘ‖` on the *whole* algebra using **74VI**
+(the unit ball of `γ_⊙(𝒜⊙ℬ)` is ultrastrongly dense in the unit ball), and
+take the limit with **87III** `predual_complete`.  **That last step —
+"an operator-norm limit of normal functionals is normal" — is also what
+116III.4 and 116III.5 want, so it should be written once as a public lemma.**
+
+### 4. ERRATA
+
+New row **115II** (`tensor-functorial`), four slips in parsec 1150: the
+statement's displayed equation reads `(f⊗g)(a⊗b) = f(a)⊗f(b)` (second factor
+must be `g(b)`); the boundedness step says "basic functional `ω` on `𝒜⊙ℬ`"
+where `σ`, `τ` are np-maps on `𝒞`, `𝒟` and `β_⊙(s) ∈ 𝒞⊗𝒟`, so `ω` is on
+`𝒞⊙𝒟`; `t ≡ ∑_{ij} c_i ⊙ d_i` carries a double index on a singly-indexed
+summand; and `ω' := (ω∘β)_⊗` is said to live on `𝒞⊗𝒟` when `ω∘β` is a
+bilinear map `𝒜×ℬ→ℂ` and the next line's `ω'(1) = ω(f(1)⊗g(1))` places it on
+`𝒜⊗ℬ`.
+
+### Things the brief got wrong
+
+* The one-line costing of 115II ("needs `BilinNormal` + `BilinBounded` for
+  `(a,b) ↦ f a ⊗ g b`, then 112XI plus 114I(5)") is *true* but reads as though
+  the two hypotheses were routine.  Each is a substantial development, and
+  `BilinNormal` runs into the very dead end the brief flags for 116III.4 —
+  so the brief's own "known dead end" warning applies one item further up the
+  chain than it says.
+* `norm_le_of_uwTendsto` was listed as "banked last session for any
+  extend-by-density argument"; it is in the file but neither 114I nor 114II
+  needed it (the quadratic clauses need `uwTendsto_starMul`, which is new).
+  `npCLM`/`npFunctional_norm_le` likewise went unused here.
+* Everything else checked out: 112X and 112XI really are closed, A/Proc really
+  had no external blocker, and the 72/33/17/11/11 counts were exact.
