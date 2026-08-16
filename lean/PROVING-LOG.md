@@ -14703,3 +14703,50 @@ since the statements are existential and mention only
 `EuclideanSpace ℂ (Fin 2) →L[ℂ] EuclideanSpace ℂ (Fin 2)`.  All names were
 greped against the whole `Theses/` tree first (all four were free), and the
 dependents `Tensor`, `QuantumLambda`, `Duplicators` were rebuilt.
+
+## Attribution note — commit `7ea9bbc` contains two sessions' work
+
+`7ea9bbc` carries a message about the 104III central-carrier investigation, but
+its diff also contains the **157IV.2/.3** work (`paschke_correspondence_embedding`,
+`paschke_correspondence_surjective`, ~470 lines in `Paschke.lean`, plus
+`exists_phiT_ncp`, `paschkeModule_rho_adjoint`,
+`paschkeModule_norm_sq_sum_tprod`, `paschkeModule_inner_tprod_commutant`,
+`paschkeModule_phiT_injective`, `paschkeModule_phiT_surjective`,
+`starAlgHom_nonneg_reflect`, `bmm_comp_aux`).  Both are verified axiom-clean.
+That is the **fifth** time the git-index trap in HANDOFF has swept a concurrent
+worker's files into an unrelated commit; the message simply does not describe
+half of what landed.
+
+### 157IV.2 and .3 — what the session found
+
+* **`Paschke.lean` 5 → 3, B/Dils 28 → 26.**
+* **The transfer corollary was never the bottleneck.**  `exists_paschke_iso_paschkeModule`
+  is used once per theorem, and the whole 157IX transport — commutant, order in
+  both directions, `φ_t^{𝒫'} = φ_{ϑ(t)}^{𝒫}` — is ~60 lines against ~150 costed.
+  The only missing piece was `starAlgHom_nonneg_reflect` (a bijective
+  ∗-homomorphism *reflects* positivity), the machine version of the thesis's
+  "it is easy to see `ϑ` restricts to an order isomorphism".
+* **157IV.2 does not need the concrete module**, contrary to the brief: neither
+  `hilbmod_ordersep` nor `E.dense` is used, and **no density argument appears
+  anywhere in 157IV**.  Both parts run on an *abstract* `PaschkeModule`.
+* The replacement is the **full matrix identity** `⟨a ⊗ b, t(a' ⊗ b')⟩ =
+  b' φ_t(a' a*) b*` for `t` in the commutant — the thesis computes only its
+  diagonal — which together with `paschkeModule_inner_tprod_separating`/`_ba_ext`
+  yields **injectivity of `t ↦ φ_t`** outright.  Positivity of `T` is then never
+  proved by hand (part 3 supplies `T = W*W`), and `T ≤ 1` follows by running the
+  construction on `φ − ψ` and comparing with `φ_1`.
+* **The dependency inverts: .3 proves .2.**  And 157IV.2's hypotheses `0 ≤ s`
+  and `t ≤ 1` are unused.
+* `isBoundedModuleMap_comp` was unusable — a `private` lemma of that name lives
+  in the dependent `SelfDual.lean`, the same collision as the session-59
+  regression — so the local one is `bmm_comp_aux`.
+* **Next gate: 156II** (`paschke_injective_carrier`/`paschke_injective`), with
+  `paschkeModule_inner_tprod_commutant` as the likely workhorse; it is also an
+  A/VN question, so check `cceil-fundamental`/`ad-contraposed` first.  The third
+  remaining `Paschke.lean` item, 155II `ksgns`, is a KSGNS construction, not a
+  Paschke item.
+
+Operational: compilation stalled ~90 minutes on two **idle** MCP `lean --worker`
+processes holding ~4.3 GB between them (static CPU, hours old).  Killing them
+restored full speed.  They respawn on demand.  Worth a periodic sweep — this is
+the second time stale language servers have eaten the box.
