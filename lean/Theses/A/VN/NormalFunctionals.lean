@@ -708,27 +708,40 @@ variable {H K : Type u} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
   [CompleteSpace H] [NormedAddCommGroup K] [InnerProductSpace ℂ K]
   [CompleteSpace K]
 
-/-- **88IV** (`carrier-vector-state`, vn.tex:6714, Exercise): for a vector
-`x` of a Hilbert space `H` and a unital ∗-subalgebra `S` of `B(H)`, the
-least projection in `S^□` above `⌈|x⟩⟨x|⌉` equals
-`⋃_{a∈S} ⌈|ax⟩⟨ax|⌉` and is the projection onto `closure (S x)` (a
-projection identified by its fixed points).  (Item 2, identifying it with
-the carrier of the vector functional restricted to `S^□`, needs the
-relative carrier and is subsumed by the `IsLeast` formulation.) -/
-theorem carrier_vector_state (S : StarSubalgebra ℂ (H →L[ℂ] H)) (x : H) :
-    commutantCeil (H →L[ℂ] H) S (ceil (ketbra x x)) =
-        projSup {p : H →L[ℂ] H | ∃ T ∈ S, p = ceil (ketbra (T x) (T x))} ∧
-      {y : H | commutantCeil (H →L[ℂ] H) S (ceil (ketbra x x)) y = y} =
-        closure {y : H | ∃ T ∈ S, y = T x} :=
-  sorry
+/-! ### The rank-one projection `|x⟩⟨x|` and the cyclic subspace `closure (S x)`
 
-/-- **88IV** (`carrier-vector-state`, vn.tex:6714, Exercise), conclusion:
-`closure (S^□□ x) = closure (S x)`. -/
-theorem carrier_vector_state' (S : StarSubalgebra ℂ (H →L[ℂ] H)) (x : H) :
-    closure {y : H | ∃ T ∈ commutant (H →L[ℂ] H)
-        (commutant (H →L[ℂ] H) S), y = T x} =
-      closure {y : H | ∃ T ∈ S, y = T x} := by
-  -- the cyclic subspace `S x` and its closure `M`
+Infrastructure for **88IV** (`carrier-vector-state`). -/
+
+omit [CompleteSpace H] in
+/-- `|x⟩⟨x| = ‖x‖² · P_{ℂx}`: the rank-one operator is a positive multiple
+of the orthogonal projection onto the line it spans. -/
+theorem ketbra_self_eq_smul_starProjection (x : H) :
+    ketbra x x = ((‖x‖ ^ 2 : ℝ) : ℂ) • (Submodule.starProjection (ℂ ∙ x)) := by
+  ext w
+  rw [smul_apply]
+  exact (Submodule.smul_starProjection_singleton ℂ w).symm
+
+/-- `|x⟩⟨x| ≥ 0`. -/
+theorem ketbra_self_nonneg (x : H) : (0 : H →L[ℂ] H) ≤ ketbra x x := by
+  rw [ketbra_self_eq_smul_starProjection]
+  exact ofReal_smul_nonneg isStarProjection_starProjection.nonneg (by positivity)
+
+/-- `a* |x⟩⟨x| a = |a*x⟩⟨a*x|`. -/
+theorem ketbra_conj_self (a : H →L[ℂ] H) (x : H) :
+    star a * ketbra x x * a = ketbra (star a x) (star a x) := by
+  ext w
+  simp only [ContinuousLinearMap.mul_apply, ketbra, ContinuousLinearMap.smulRight_apply,
+    map_smul, ContinuousLinearMap.star_eq_adjoint]
+  congr 1
+  exact (ContinuousLinearMap.adjoint_inner_left a w x).symm
+
+/-- The orthogonal projection onto the cyclic subspace `closure (S x)` of a
+∗-subalgebra `S ⊆ B(H)`: it lies in `S^□`, fixes `x`, and its fixed points
+are exactly `closure (S x)`.  (This is the geometric half of **88IV**, and
+the construction the thesis's item 4 refers to.) -/
+theorem exists_cyclic_projection (S : StarSubalgebra ℂ (H →L[ℂ] H)) (x : H) :
+    ∃ q : H →L[ℂ] H, IsStarProjection q ∧ q ∈ commutant (H →L[ℂ] H) S ∧
+      q x = x ∧ {y : H | q y = y} = closure {y : H | ∃ T ∈ S, y = T x} := by
   set L : S →ₗ[ℂ] H :=
     { toFun := fun T => (T : H →L[ℂ] H) x
       map_add' := fun T T' => rfl
@@ -758,7 +771,7 @@ theorem carrier_vector_state' (S : StarSubalgebra ℂ (H →L[ℂ] H)) (x : H) :
       rw [hM, Submodule.topologicalClosure_coe]
       exact closure_minimal hsub hcl
     exact this hz
-  -- `Mᗮ` is invariant under `S`
+  -- and so is `Mᗮ`, because `S` is ∗-closed
   have hinvo : ∀ T ∈ S, ∀ z ∈ Mᗮ, T z ∈ Mᗮ := by
     intro T hT z hz
     rw [Submodule.mem_orthogonal]
@@ -770,7 +783,6 @@ theorem carrier_vector_state' (S : StarSubalgebra ℂ (H →L[ℂ] H)) (x : H) :
       ContinuousLinearMap.adjoint_inner_left T z m
     rw [← h1]
     exact (Submodule.mem_orthogonal M z).mp hz _ (hinv _ hadj m hm)
-  -- the projection onto `M` lies in `S□`
   have hPcomm : M.starProjection ∈ commutant (H →L[ℂ] H) S := by
     intro T hT
     ext z
@@ -782,16 +794,107 @@ theorem carrier_vector_state' (S : StarSubalgebra ℂ (H →L[ℂ] H)) (x : H) :
     rw [e1, map_add,
       (Submodule.starProjection_eq_self_iff).mpr (hinv T hT _ hz1),
       (Submodule.starProjection_apply_eq_zero_iff M).mpr (hinvo T hT _ hz2), add_zero]
-  -- conclusion
+  refine ⟨M.starProjection, isStarProjection_starProjection, hPcomm,
+    (Submodule.starProjection_eq_self_iff).mpr hxM, ?_⟩
+  rw [← hMset]
+  ext y
+  exact Submodule.starProjection_eq_self_iff
+
+/-- **88IV** (`carrier-vector-state`, vn.tex:6714, Exercise): for a vector
+`x` of a Hilbert space `H` and a unital ∗-subalgebra `S` of `B(H)`, the
+least projection in `S^□` above `⌈|x⟩⟨x|⌉` equals
+`⋃_{a∈S} ⌈|ax⟩⟨ax|⌉` and is the projection onto `closure (S x)` (a
+projection identified by its fixed points).  (Item 2, identifying it with
+the carrier of the vector functional restricted to `S^□`, needs the
+relative carrier and is subsumed by the `IsLeast` formulation.) -/
+theorem carrier_vector_state (S : StarSubalgebra ℂ (H →L[ℂ] H)) (x : H) :
+    commutantCeil (H →L[ℂ] H) S (ceil (ketbra x x)) =
+        projSup {p : H →L[ℂ] H | ∃ T ∈ S, p = ceil (ketbra (T x) (T x))} ∧
+      {y : H | commutantCeil (H →L[ℂ] H) S (ceil (ketbra x x)) y = y} =
+        closure {y : H | ∃ T ∈ S, y = T x} := by
+  have hkb := ketbra_self_nonneg x
+  -- (1) `⌈|x⟩⟨x|⌉_{S□} = ⋃_{a∈S} ⌈a* ⌈|x⟩⟨x|⌉ a⌉` is **88II**; the index set is
+  -- reindexed by `a ↦ a*` using `⌈a* ⌈b⌉ a⌉ = ⌈a* b a⌉` (**60VII**.1) and
+  -- `a* |x⟩⟨x| a = |a*x⟩⟨a*x|`.
+  have hset : {y : H →L[ℂ] H | ∃ a ∈ (S : Set (H →L[ℂ] H)),
+        y = ceil (star a * ceil (ketbra x x) * a)}
+      = {p : H →L[ℂ] H | ∃ T ∈ S, p = ceil (ketbra (T x) (T x))} := by
+    ext y
+    constructor
+    · rintro ⟨a, ha, rfl⟩
+      exact ⟨star a, star_mem ha,
+        by rw [← ceil_fundamental_1 a _ hkb, ketbra_conj_self]⟩
+    · rintro ⟨T, hT, rfl⟩
+      refine ⟨star T, star_mem hT, ?_⟩
+      rw [← ceil_fundamental_1 (star T) _ hkb, ketbra_conj_self, star_star]
+  have h1 : commutantCeil (H →L[ℂ] H) S (ceil (ketbra x x)) =
+      projSup {p : H →L[ℂ] H | ∃ T ∈ S, p = ceil (ketbra (T x) (T x))} := by
+    rw [commutantCeil, hset]
+  refine ⟨h1, ?_⟩
+  -- (2) the fixed points of that projection are `closure (S x)`: the projection
+  -- `q` onto `closure (S x)` is a competitor, and `p` fixes `x` hence all of `S x`.
+  obtain ⟨q, hqproj, hqcomm, hqx, hqfix⟩ := exists_cyclic_projection S x
+  obtain ⟨⟨hpproj, hpcomm, hple⟩, hpmin⟩ :=
+    commutant_ceil (A := H →L[ℂ] H) (S : Set (H →L[ℂ] H))
+      (fun a ha b hb => mul_mem ha hb) (fun a ha => star_mem ha) (one_mem S)
+      _ (ceil_spec hkb).1
+  set p : H →L[ℂ] H := commutantCeil (H →L[ℂ] H) S (ceil (ketbra x x)) with hp
+  have hpx : p x = x := by
+    have h2 : p * ketbra x x = ketbra x x := ((ceil_basic_1 _ p hkb hpproj).out 2 0).mp hple
+    have h3 := congrArg (fun T : H →L[ℂ] H => T x) h2
+    simp only [ContinuousLinearMap.mul_apply, ketbra, ContinuousLinearMap.smulRight_apply,
+      map_smul] at h3
+    rcases eq_or_ne x 0 with rfl | hx
+    · simp
+    · have hne : (inner ℂ x x : ℂ) ≠ 0 := by
+        simpa [inner_self_eq_zero] using hx
+      exact smul_right_injective H hne h3
+  have hkbq : ketbra x x * q = ketbra x x := by
+    ext w
+    simp only [ContinuousLinearMap.mul_apply, ketbra, ContinuousLinearMap.smulRight_apply]
+    congr 1
+    calc (inner ℂ x (q w) : ℂ) = inner ℂ ((ContinuousLinearMap.adjoint q) x) w :=
+          (ContinuousLinearMap.adjoint_inner_left q w x).symm
+      _ = inner ℂ x w := by
+          rw [← ContinuousLinearMap.star_eq_adjoint, hqproj.isSelfAdjoint.star_eq, hqx]
+  have hpq : p ≤ q := hpmin ⟨hqproj, hqcomm, (ceil_le_iff hkb hqproj).mpr hkbq⟩
+  have hqp : q * p = p := by
+    have h4 : p * q = p :=
+      ((projection_below_effect q p ⟨hqproj.nonneg, hqproj.le_one⟩ hpproj).out 0 7).mp hpq
+    have h5 := congrArg star h4
+    rwa [star_mul, hqproj.isSelfAdjoint.star_eq, hpproj.isSelfAdjoint.star_eq] at h5
+  apply Set.Subset.antisymm
+  · intro y hy
+    rw [← hqfix]
+    show q y = y
+    calc q y = q (p y) := by rw [(show p y = y from hy)]
+      _ = (q * p) y := rfl
+      _ = y := by rw [hqp]; exact hy
+  · refine closure_minimal ?_ (isClosed_eq p.continuous continuous_id)
+    rintro _ ⟨T, hT, rfl⟩
+    show p (T x) = T x
+    calc p (T x) = (p * T) x := rfl
+      _ = (T * p) x := by rw [hpcomm T hT]
+      _ = T x := by show T (p x) = T x; rw [hpx]
+
+/-- **88IV** (`carrier-vector-state`, vn.tex:6714, Exercise), conclusion:
+`closure (S^□□ x) = closure (S x)`. -/
+theorem carrier_vector_state' (S : StarSubalgebra ℂ (H →L[ℂ] H)) (x : H) :
+    closure {y : H | ∃ T ∈ commutant (H →L[ℂ] H)
+        (commutant (H →L[ℂ] H) S), y = T x} =
+      closure {y : H | ∃ T ∈ S, y = T x} := by
+  -- the projection onto the cyclic subspace `closure (S x)` lies in `S□`, so every
+  -- `R ∈ S□□` commutes with it and therefore maps `x` back into `closure (S x)`.
+  obtain ⟨q, hqproj, hqcomm, hqx, hqfix⟩ := exists_cyclic_projection S x
   apply le_antisymm
-  · refine closure_minimal ?_ hMclosed |>.trans (le_of_eq hMset)
+  · rw [← hqfix]
+    refine closure_minimal ?_ (isClosed_eq q.continuous continuous_id)
     rintro _ ⟨R, hR, rfl⟩
-    have hcomm := hR _ hPcomm
-    have : R x = M.starProjection (R x) := by
-      conv_lhs => rw [← (Submodule.starProjection_eq_self_iff).mpr hxM]
-      exact congrArg (fun (T : H →L[ℂ] H) => T x) hcomm.symm
-    rw [this]
-    exact M.starProjection_apply_mem _
+    show q (R x) = R x
+    have hcomm := hR _ hqcomm
+    calc q (R x) = (q * R) x := rfl
+      _ = (R * q) x := by rw [hcomm]
+      _ = R x := by show R (q x) = R x; rw [hqx]
   · refine closure_mono ?_
     rintro _ ⟨T, hT, rfl⟩
     exact ⟨T, fun m hm => (hm T hT).symm, rfl⟩
@@ -1304,6 +1407,8 @@ theorem gns_mapping_property (ω : NPFunctional A)
           closure {z : H | ∃ a : A, z = ρ a x} ∧
       {z : K | (ContinuousLinearMap.adjoint U ∘L U) z = z} =
           closure {z : K | ∃ a : A, z = π a y} ∧
+      IsStarProjection (U ∘L ContinuousLinearMap.adjoint U) ∧
+      IsStarProjection (ContinuousLinearMap.adjoint U ∘L U) ∧
       ∀ a : A, U ∘L π a = ρ a ∘L U := by
   classical
   -- the ∗-algebra structure of `ρ` and `π`, through their `StarAlgHom`s
@@ -1526,7 +1631,8 @@ theorem gns_mapping_property (ω : NPFunctional A)
       congr 1
       abel
     rw [hsplit, map_add, hOnN u huN, hOnPerp _ hvperp, ← map_add, ← hsplitU]
-  refine ⟨U, ?_, ?_, ?_⟩
+  refine ⟨U, ?_, ?_, by rw [hadjU, hUW]; exact isStarProjection_starProjection,
+    by rw [hadjU, hWU]; exact isStarProjection_starProjection, ?_⟩
   · rw [hadjU, hUW]
     ext w
     simp only [Set.mem_setOf_eq, Submodule.starProjection_eq_self_iff, hM]
@@ -1838,6 +1944,107 @@ theorem summing_partial_isometries {ι : Type*} (U : ι → (H →L[ℂ] K))
     rw [hWV] at hs
     simpa only [ContinuousLinearMap.comp_apply] using hs
 
+/-! ### Vector states, central carriers and the image of an nmiu-map
+
+Infrastructure for **89V** (`sigma-weak-lemma-2`). -/
+
+section Helpers
+variable {L : Type u} [NormedAddCommGroup L] [InnerProductSpace ℂ L] [CompleteSpace L]
+
+theorem isStarProjection_le_of_fix_subset {e f : L →L[ℂ] L}
+    (he : IsStarProjection e) (hf : IsStarProjection f)
+    (h : {z : L | e z = z} ⊆ {z : L | f z = z}) : e ≤ f := by
+  refine ((projection_below_effect f e ⟨hf.nonneg, hf.le_one⟩ he).out 0 6).mpr ?_
+  ext z
+  show f (e z) = e z
+  refine h ?_
+  show e (e z) = e z
+  rw [← ContinuousLinearMap.mul_apply, he.isIdempotentElem]
+
+theorem nmiu_isStarProjection (σ : NMIUMap A (L →L[ℂ] L)) {q : A}
+    (hq : IsStarProjection q) : IsStarProjection (σ q) := by
+  constructor
+  · show σ q * σ q = σ q
+    have h : σ (q * q) = σ q * σ q := map_mul σ.toStarAlgHom _ _
+    rw [← h, hq.isIdempotentElem.eq]
+  · show star (σ q) = σ q
+    have h : σ (star q) = star (σ q) := map_star σ.toStarAlgHom _
+    rw [← h, hq.isSelfAdjoint.star_eq]
+
+theorem nmiu_vector_fix (σ : NMIUMap A (L →L[ℂ] L)) (v : L) {q : A}
+    (hq : IsStarProjection q) (h0 : (⟪v, σ ((1 : A) - q) v⟫ : ℂ) = 0) : σ q v = v := by
+  have hone : σ (1 : A) = 1 := map_one σ.toStarAlgHom
+  have hsub : σ ((1 : A) - q) = 1 - σ q := by
+    have h : σ ((1 : A) - q) = σ (1 : A) - σ q := map_sub σ.toStarAlgHom _ _
+    rw [h, hone]
+  have hP : IsStarProjection (σ ((1 : A) - q)) := nmiu_isStarProjection σ hq.one_sub
+  have hnorm : (⟪v, σ ((1 : A) - q) v⟫ : ℂ) = ⟪σ ((1 : A) - q) v, σ ((1 : A) - q) v⟫ := by
+    conv_lhs => rw [← hP.isIdempotentElem.eq]
+    rw [ContinuousLinearMap.mul_apply, ← ContinuousLinearMap.adjoint_inner_left,
+      ← ContinuousLinearMap.star_eq_adjoint, hP.isSelfAdjoint.star_eq]
+  rw [hnorm, inner_self_eq_zero, hsub] at h0
+  have h1 : v - σ q v = 0 := by simpa using h0
+  exact (sub_eq_zero.mp h1).symm
+
+theorem nmiu_orbit_subset_fix (σ : NMIUMap A (L →L[ℂ] L)) (v : L) {q : A}
+    (hqc : IsCentral A q) (hv : σ q v = v) :
+    closure {z : L | ∃ a : A, z = σ a v} ⊆ {z : L | σ q z = z} := by
+  refine closure_minimal ?_ (isClosed_eq (σ q).continuous continuous_id)
+  rintro _ ⟨a, rfl⟩
+  show σ q (σ a v) = σ a v
+  have h1 : σ (q * a) = σ q * σ a := map_mul σ.toStarAlgHom _ _
+  have h2 : σ (a * q) = σ a * σ q := map_mul σ.toStarAlgHom _ _
+  calc σ q (σ a v) = (σ q * σ a) v := rfl
+    _ = σ (q * a) v := by rw [h1]
+    _ = σ (a * q) v := by rw [hqc a]
+    _ = (σ a * σ q) v := by rw [h2]
+    _ = σ a (σ q v) := rfl
+    _ = σ a v := by rw [hv]
+
+theorem nmiu_central_preimage (π : NMIUMap A (L →L[ℂ] L)) {p : L →L[ℂ] L}
+    (hp : IsStarProjection p) (w : A) (hw : π w = p)
+    (hcomm : ∀ a : A, p * π a = π a * p) :
+    ∃ z : A, IsStarProjection z ∧ IsCentral A z ∧ π z = p := by
+  set g : A →ₚ[ℂ] (L →L[ℂ] L) := nmiuP π with hg
+  have hgp : PreservesDirSups ⇑g := π.preservesDirSups'
+  have heq : ∀ a, (g a : L →L[ℂ] L) = π a := fun a => rfl
+  set c : A := carrier g hgp with hc
+  have hcproj : IsStarProjection c := (carrier_spec g hgp).1
+  have hccen : IsCentral A c := (carrier_miu π g hgp heq).1
+  refine ⟨c * w, ?_, ?_, ?_⟩
+  · constructor
+    · show c * w * (c * w) = c * w
+      have hstep : c * (w * w) = c * w := by
+        refine ((nmiu_factors π g hgp heq (w * w) w).2).mp ?_
+        have h : π (w * w) = π w * π w := map_mul π.toStarAlgHom _ _
+        rw [h, hw, hp.isIdempotentElem.eq]
+      calc c * w * (c * w) = c * (w * c) * w := by noncomm_ring
+        _ = c * (c * w) * w := by rw [hccen w]
+        _ = c * (c * (w * w)) := by noncomm_ring
+        _ = c * (c * w) := by rw [hstep]
+        _ = c * w := by rw [← mul_assoc, hcproj.isIdempotentElem.eq]
+    · show star (c * w) = c * w
+      have hstep : c * star w = c * w := by
+        refine ((nmiu_factors π g hgp heq (star w) w).2).mp ?_
+        have h : π (star w) = star (π w) := map_star π.toStarAlgHom _
+        rw [h, hw, hp.isSelfAdjoint.star_eq]
+      rw [star_mul, hcproj.isSelfAdjoint.star_eq, ← hccen (star w), hstep]
+  · intro b
+    have hstep : c * (w * b) = c * (b * w) := by
+      refine ((nmiu_factors π g hgp heq (w * b) (b * w)).2).mp ?_
+      have h1 : π (w * b) = π w * π b := map_mul π.toStarAlgHom _ _
+      have h2 : π (b * w) = π b * π w := map_mul π.toStarAlgHom _ _
+      rw [h1, h2, hw, hcomm b]
+    calc c * w * b = c * (w * b) := by noncomm_ring
+      _ = c * (b * w) := hstep
+      _ = c * b * w := by noncomm_ring
+      _ = b * c * w := by rw [hccen b]
+      _ = b * (c * w) := by noncomm_ring
+  · have h := (nmiu_factors π g hgp heq w w).1
+    rw [← h, hw]
+
+end Helpers
+
 /-- **89V** (`sigma-weak-lemma-2`, vn.tex:6952, Lemma): let `Ω` be a
 collection of np-functionals on a von Neumann algebra `A` with pairwise
 orthogonal central carriers, and let `ρ : A → B(H)`, `π : A → B(K)` be
@@ -1864,8 +2071,262 @@ theorem sigma_weak_lemma_2 (Ω : Set (NPFunctional A))
           (∀ b ∈ commutant (K →L[ℂ] K)
             (Set.range fun a : A => (π a : K →L[ℂ] K)), p * b = b * p) ∧
           ContinuousLinearMap.adjoint U ∘L U ≤ p}
-        (π (projSup {c : A | ∃ ω ∈ Ω, c = cceil (npCarrier ω)})) :=
-  sorry
+        (π (projSup {c : A | ∃ ω ∈ Ω, c = cceil (npCarrier ω)})) := by
+  classical
+  set c : Ω → A := fun ω => cceil (npCarrier (ω : NPFunctional A)) with hcdef
+  have hcproj : ∀ ω : Ω, IsStarProjection (c ω) := fun ω => (cceil_isLeast _).1.1
+  have hccen : ∀ ω : Ω, IsCentral A (c ω) := fun ω => (cceil_isLeast _).1.2.1
+  have hcorth : Pairwise fun ω ω' : Ω => c ω * c ω' = 0 := fun ω ω' h =>
+    horth ω.1 ω.2 ω'.1 ω'.2 fun hh => h (Subtype.ext hh)
+  -- each `ω` kills `(c ω)^⊥`
+  have hkill : ∀ ω : Ω, ((ω : NPFunctional A) ((1 : A) - c ω)) = 0 := by
+    intro ω
+    have hcar : IsStarProjection (npCarrier (ω : NPFunctional A)) := (carrier_spec _ _).1
+    have h0 : ((ω : NPFunctional A) ((1 : A) - npCarrier (ω : NPFunctional A))) = 0 :=
+      (carrier_spec _ _).2.1
+    have hle : npCarrier (ω : NPFunctional A) ≤ c ω := (cceil_fundamental _ hcar).1.1.2.2
+    set f : A →ₚ[ℂ] ℂ := (ω : NPFunctional A).toPositiveLinearMap with hf
+    have hfeq : ∀ a : A, (f a : ℂ) = (ω : NPFunctional A) a := fun _ => rfl
+    have h1 : (f ((1 : A) - c ω) : ℂ) ≤ f ((1 : A) - npCarrier (ω : NPFunctional A)) :=
+      f.monotone (sub_le_sub_left hle 1)
+    have h2 : (0 : ℂ) ≤ f ((1 : A) - c ω) := by
+      have h3 : (f (0 : A) : ℂ) ≤ f ((1 : A) - c ω) :=
+        f.monotone (by simpa using (hcproj ω).le_one)
+      rwa [map_zero] at h3
+    simp only [hfeq] at h1 h2
+    rw [h0] at h1
+    exact le_antisymm h1 h2
+  have hfixx : ∀ ω : Ω, ρ (c ω) (x ω) = x ω := fun ω =>
+    nmiu_vector_fix ρ (x ω) (hcproj ω) (by rw [← hx ω, hkill ω])
+  have hfixy : ∀ ω : Ω, π (c ω) (y ω) = y ω := fun ω =>
+    nmiu_vector_fix π (y ω) (hcproj ω) (by rw [← hy ω, hkill ω])
+  -- the partial isometries of **89I**
+  choose U hUfixH hUfixK hUprojH hUprojK hUint using
+    fun ω : Ω => gns_mapping_property (ω : NPFunctional A) ρ π (x ω) (y ω) (hx ω) (hy ω)
+  set p : Ω → (K →L[ℂ] K) := fun ω => ContinuousLinearMap.adjoint (U ω) ∘L U ω with hpdef
+  set q : Ω → (H →L[ℂ] H) := fun ω => U ω ∘L ContinuousLinearMap.adjoint (U ω) with hqdef
+  -- the range projections sit under the images of the central carriers
+  have hple : ∀ ω : Ω, p ω ≤ π (c ω) := fun ω =>
+    isStarProjection_le_of_fix_subset (hUprojK ω) (nmiu_isStarProjection π (hcproj ω))
+      (by rw [hUfixK ω]; exact nmiu_orbit_subset_fix π (y ω) (hccen ω) (hfixy ω))
+  have hqle : ∀ ω : Ω, q ω ≤ ρ (c ω) := fun ω =>
+    isStarProjection_le_of_fix_subset (hUprojH ω) (nmiu_isStarProjection ρ (hcproj ω))
+      (by rw [hUfixH ω]; exact nmiu_orbit_subset_fix ρ (x ω) (hccen ω) (hfixx ω))
+  -- hence pairwise orthogonal
+  have horthgen : ∀ {M : Type u} [CStarAlgebra M] [PartialOrder M] [StarOrderedRing M]
+      {e f g h : M}, IsStarProjection e →
+      IsStarProjection f → IsStarProjection g → IsStarProjection h →
+      e ≤ g → f ≤ h → g * h = 0 → e * f = 0 := by
+    intro M _ _ _ e f g h he hf hg hh heg hfh hgh
+    have h1 : e * g = e := ((projection_below_effect g e ⟨hg.nonneg, hg.le_one⟩ he).out 0 7).mp heg
+    have h2 : h * f = f := ((projection_below_effect h f ⟨hh.nonneg, hh.le_one⟩ hf).out 0 6).mp hfh
+    calc e * f = (e * g) * (h * f) := by rw [h1, h2]
+      _ = e * (g * h) * f := by noncomm_ring
+      _ = 0 := by rw [hgh]; noncomm_ring
+  have hπorth : ∀ ω ω' : Ω, ω ≠ ω' → π (c ω) * π (c ω') = 0 := by
+    intro ω ω' hne
+    have h : π (c ω * c ω') = π (c ω) * π (c ω') := map_mul π.toStarAlgHom _ _
+    have hz : π (0 : A) = 0 := map_zero π.toStarAlgHom
+    rw [← h, hcorth hne, hz]
+  have hρorth : ∀ ω ω' : Ω, ω ≠ ω' → ρ (c ω) * ρ (c ω') = 0 := by
+    intro ω ω' hne
+    have h : ρ (c ω * c ω') = ρ (c ω) * ρ (c ω') := map_mul ρ.toStarAlgHom _ _
+    have hz : ρ (0 : A) = 0 := map_zero ρ.toStarAlgHom
+    rw [← h, hcorth hne, hz]
+  have horthK : Pairwise fun ω ω' : Ω => p ω ∘L p ω' = 0 := fun ω ω' hne =>
+    horthgen (hUprojK ω) (hUprojK ω') (nmiu_isStarProjection π (hcproj ω))
+      (nmiu_isStarProjection π (hcproj ω')) (hple ω) (hple ω') (hπorth ω ω' hne)
+  have horthH : Pairwise fun ω ω' : Ω => q ω ∘L q ω' = 0 := fun ω ω' hne =>
+    horthgen (hUprojH ω) (hUprojH ω') (nmiu_isStarProjection ρ (hcproj ω))
+      (nmiu_isStarProjection ρ (hcproj ω')) (hqle ω) (hqle ω') (hρorth ω ω' hne)
+  -- **89III**: sum them
+  obtain ⟨V, hVinner, hVsumK, hVsumH⟩ :=
+    summing_partial_isometries U hUprojK horthK horthH
+  set P : K →L[ℂ] K := ContinuousLinearMap.adjoint V ∘L V with hPdef
+  -- `V` intertwines `π` and `ρ`
+  have hρadj : ∀ a : A, ContinuousLinearMap.adjoint (ρ a) = ρ (star a) := by
+    intro a
+    rw [← ContinuousLinearMap.star_eq_adjoint]
+    exact (map_star ρ.toStarAlgHom a).symm
+  have hπadj : ∀ a : A, ContinuousLinearMap.adjoint (π a) = π (star a) := by
+    intro a
+    rw [← ContinuousLinearMap.star_eq_adjoint]
+    exact (map_star π.toStarAlgHom a).symm
+  have hVint : ∀ a : A, V ∘L π a = ρ a ∘L V := by
+    intro a
+    ext z
+    show V (π a z) = ρ a (V z)
+    refine ext_inner_left ℂ ?_
+    intro w
+    have h2 : HasSum (fun ω : Ω => (⟪ρ (star a) w, U ω z⟫ : ℂ)) ⟪ρ (star a) w, V z⟫ :=
+      hVinner z (ρ (star a) w)
+    have heq : ∀ ω : Ω, (⟪w, U ω (π a z)⟫ : ℂ) = ⟪ρ (star a) w, U ω z⟫ := by
+      intro ω
+      have h3 : U ω (π a z) = ρ a (U ω z) :=
+        congrArg (fun T : K →L[ℂ] H => T z) (hUint ω a)
+      rw [h3, ← hρadj a]
+      exact (ContinuousLinearMap.adjoint_inner_left (ρ a) (U ω z) w).symm
+    have h1 : HasSum (fun ω : Ω => (⟪ρ (star a) w, U ω z⟫ : ℂ)) ⟪w, V (π a z)⟫ := by
+      simpa only [heq] using hVinner (π a z) w
+    rw [h1.unique h2, ← hρadj a]
+    exact ContinuousLinearMap.adjoint_inner_left (ρ a) (V z) w
+  -- `P = V*V` is a projection: the `p ω` are orthogonal and sum to it
+  have hpP : ∀ (ν : Ω) (z : K), p ν (P z) = p ν z := by
+    intro ν z
+    have h1 : HasSum (fun ω : Ω => p ν (p ω z)) (p ν (P z)) :=
+      (hVsumK z).map (p ν) (ContinuousLinearMap.continuous _)
+    have h2 : HasSum (fun ω : Ω => p ν (p ω z)) (p ν (p ν z)) := by
+      refine hasSum_single ν ?_
+      intro ω hω
+      have h3 : p ν ∘L p ω = 0 := horthK (Ne.symm hω)
+      exact congrArg (fun T : K →L[ℂ] K => T z) h3
+    have h4 : p ν (p ν z) = p ν z := by
+      have := (hUprojK ν).isIdempotentElem.eq
+      exact congrArg (fun T : K →L[ℂ] K => T z) this
+    rw [← h4]
+    exact h1.unique h2
+  have hPproj : IsStarProjection P := by
+    constructor
+    · show P * P = P
+      ext z
+      show P (P z) = P z
+      have h1 : HasSum (fun ω : Ω => p ω (P z)) (P (P z)) := hVsumK (P z)
+      have h2 : HasSum (fun ω : Ω => p ω (P z)) (P z) := by
+        simpa only [hpP] using hVsumK z
+      exact h1.unique h2
+    · show star P = P
+      rw [hPdef, ContinuousLinearMap.star_eq_adjoint, ContinuousLinearMap.adjoint_comp,
+        ContinuousLinearMap.adjoint_adjoint]
+  have hpleP : ∀ ν : Ω, p ν ≤ P := by
+    intro ν
+    refine ((projection_below_effect P (p ν) ⟨hPproj.nonneg, hPproj.le_one⟩
+      (hUprojK ν)).out 0 7).mpr ?_
+    ext z
+    show p ν (P z) = p ν z
+    exact hpP ν z
+  -- `P` commutes with `π(A)`
+  have hadjint : ∀ a : A, π a ∘L ContinuousLinearMap.adjoint V
+      = ContinuousLinearMap.adjoint V ∘L ρ a := by
+    intro a
+    have h := congrArg ContinuousLinearMap.adjoint (hVint (star a))
+    rw [ContinuousLinearMap.adjoint_comp, ContinuousLinearMap.adjoint_comp, hπadj, hρadj,
+      star_star] at h
+    exact h
+  have hPcomm : ∀ a : A, P * π a = π a * P := by
+    intro a
+    calc P * π a = ContinuousLinearMap.adjoint V ∘L (V ∘L π a) := rfl
+      _ = ContinuousLinearMap.adjoint V ∘L (ρ a ∘L V) := by rw [hVint a]
+      _ = (ContinuousLinearMap.adjoint V ∘L ρ a) ∘L V := rfl
+      _ = (π a ∘L ContinuousLinearMap.adjoint V) ∘L V := by rw [hadjint a]
+      _ = π a * P := rfl
+  -- the central projection `e = ∑_ω ⌈⌈ω⌉⌉`
+  set E : Set A := {c' : A | ∃ ω ∈ Ω, c' = cceil (npCarrier ω)} with hEdef
+  have hEeq : E = Set.range c := by
+    ext z
+    constructor
+    · rintro ⟨ω, hω, rfl⟩; exact ⟨⟨ω, hω⟩, rfl⟩
+    · rintro ⟨w, rfl⟩; exact ⟨w.1, w.2, rfl⟩
+  have hEproj : ∀ z ∈ E, IsStarProjection z := by
+    rw [hEeq]; rintro _ ⟨w, rfl⟩; exact hcproj w
+  have hEcen : ∀ z ∈ E, IsCentral A z := by
+    rw [hEeq]; rintro _ ⟨w, rfl⟩; exact hccen w
+  obtain ⟨heproj, heub, heleast⟩ := projSup_spec hEproj
+  have hecen : IsCentral A (projSup E) := projSup_isCentral hEproj hEcen
+  set e : A := projSup E with hedef
+  have hπmono : ∀ {a b : A}, a ≤ b → (π a : K →L[ℂ] K) ≤ π b := fun h => (nmiuP π).monotone h
+  have hπeproj : IsStarProjection (π e) := nmiu_isStarProjection π heproj
+  have hπecomm : ∀ a : A, (π e : K →L[ℂ] K) * π a = π a * π e := by
+    intro a
+    have h1 : π (e * a) = (π e : K →L[ℂ] K) * π a := map_mul π.toStarAlgHom _ _
+    have h2 : π (a * e) = (π a : K →L[ℂ] K) * π e := map_mul π.toStarAlgHom _ _
+    rw [← h1, ← h2, hecen a]
+  have hπemem : (π e : K →L[ℂ] K) ∈
+      commutant (K →L[ℂ] K) (Set.range fun a : A => (π a : K →L[ℂ] K)) := by
+    rintro _ ⟨a, rfl⟩
+    exact (hπecomm a).symm
+  -- the centre of `π(A)` is the centre of `π(A)□` (**88VIII**), via **69IVb**
+  have hRset : (π.toStarAlgHom.range : Set (K →L[ℂ] K))
+      = Set.range fun a : A => (π a : K →L[ℂ] K) := by
+    ext b
+    exact ⟨fun ⟨a, ha⟩ => ⟨a, ha⟩, fun ⟨a, ha⟩ => ⟨a, ha⟩⟩
+  have hcc := centre_commutant π.toStarAlgHom.range (nmiu_image π)
+  rw [hRset] at hcc
+  have hπecentre : ∀ b ∈ commutant (K →L[ℂ] K)
+      (Set.range fun a : A => (π a : K →L[ℂ] K)), (π e : K →L[ℂ] K) * b = b * π e := by
+    have hmem : (π e : K →L[ℂ] K) ∈ (Set.range fun a : A => (π a : K →L[ℂ] K)) ∩
+        commutant (K →L[ℂ] K) (Set.range fun a : A => (π a : K →L[ℂ] K)) := ⟨⟨e, rfl⟩, hπemem⟩
+    rw [hcc] at hmem
+    intro b hb
+    exact (hmem.2 b hb).symm
+  have hce : ∀ ω : Ω, c ω ≤ e := fun ω => heub (c ω) (by rw [hEeq]; exact ⟨ω, rfl⟩)
+  have hpπe : ∀ ω : Ω, (π e : K →L[ℂ] K) * p ω = p ω := fun ω =>
+    ((projection_below_effect (π e) (p ω) ⟨hπeproj.nonneg, hπeproj.le_one⟩
+      (hUprojK ω)).out 0 6).mp (le_trans (hple ω) (hπmono (hce ω)))
+  have hPle : P ≤ π e := by
+    refine ((projection_below_effect (π e) P ⟨hπeproj.nonneg, hπeproj.le_one⟩
+      hPproj).out 0 6).mpr ?_
+    ext z
+    show (π e : K →L[ℂ] K) (P z) = P z
+    have h1 : HasSum (fun ω : Ω => (π e : K →L[ℂ] K) (p ω z)) ((π e : K →L[ℂ] K) (P z)) :=
+      (hVsumK z).map (π e : K →L[ℂ] K) (ContinuousLinearMap.continuous _)
+    have h2 : HasSum (fun ω : Ω => (π e : K →L[ℂ] K) (p ω z)) (P z) := by
+      have hstep : ∀ ω : Ω, (π e : K →L[ℂ] K) (p ω z) = p ω z := fun ω =>
+        congrArg (fun T : K →L[ℂ] K => T z) (hpπe ω)
+      simpa only [hstep] using hVsumK z
+    exact h1.unique h2
+  -- the fixed vectors
+  have hyfix : ∀ ω : Ω, p ω (y ω) = y ω := by
+    intro ω
+    have hmem : y ω ∈ {z : K | p ω z = z} := by
+      rw [hUfixK ω]
+      refine subset_closure ⟨1, ?_⟩
+      have h : π (1 : A) = 1 := map_one π.toStarAlgHom
+      rw [h]; rfl
+    exact hmem
+  refine ⟨V, hVint, hPproj, ?_, ⟨⟨hπemem, hπeproj, hπecentre, hPle⟩, ?_⟩⟩
+  · rintro _ ⟨a, rfl⟩
+    exact (hPcomm a).symm
+  rintro pp ⟨hpmem, hppproj, hpcentre, hpge⟩
+  -- `pp` lies in `π(A)`, hence is `π` of a central projection
+  have hmem2 : pp ∈ commutant (K →L[ℂ] K) (Set.range fun a : A => (π a : K →L[ℂ] K)) ∩
+      commutant (K →L[ℂ] K)
+        (commutant (K →L[ℂ] K) (Set.range fun a : A => (π a : K →L[ℂ] K))) :=
+    ⟨hpmem, fun b hb => (hpcentre b hb).symm⟩
+  rw [← hcc] at hmem2
+  obtain ⟨w, hw⟩ := hmem2.1
+  have hppcomm : ∀ a : A, pp * π a = π a * pp := fun a => (hpmem _ ⟨a, rfl⟩).symm
+  obtain ⟨z, hzproj, hzcen, hzπ⟩ := nmiu_central_preimage π hppproj w hw hppcomm
+  -- `pp` fixes every `y ω`, so `ω((1-z)) = 0`
+  have hppfix : ∀ ω : Ω, pp (y ω) = y ω := by
+    intro ω
+    have hle2 : p ω ≤ pp := le_trans (hpleP ω) hpge
+    have hmul : pp * p ω = p ω :=
+      ((projection_below_effect pp (p ω) ⟨hppproj.nonneg, hppproj.le_one⟩
+        (hUprojK ω)).out 0 6).mp hle2
+    have h := congrArg (fun T : K →L[ℂ] K => T (y ω)) hmul
+    simp only [ContinuousLinearMap.mul_apply] at h
+    rw [hyfix ω] at h
+    exact h
+  have hzkill : ∀ ω : Ω, ((ω : NPFunctional A) ((1 : A) - z)) = 0 := by
+    intro ω
+    have hone : π (1 : A) = 1 := map_one π.toStarAlgHom
+    have hsub : π ((1 : A) - z) = 1 - pp := by
+      have h : π ((1 : A) - z) = π (1 : A) - π z := map_sub π.toStarAlgHom _ _
+      rw [h, hone, hzπ]
+    rw [hy ω ((1 : A) - z), hsub]
+    show (⟪y ω, ((1 : K →L[ℂ] K) - pp) (y ω)⟫ : ℂ) = 0
+    simp only [ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply, hppfix ω,
+      sub_self, inner_zero_right]
+  have hcz : ∀ ω : Ω, c ω ≤ z := by
+    intro ω
+    have hcar : IsStarProjection (npCarrier (ω : NPFunctional A)) := (carrier_spec _ _).1
+    have hnp : npCarrier (ω : NPFunctional A) ≤ z :=
+      (carrier_spec _ _).2.2 z hzproj (hzkill ω)
+    exact (cceil_fundamental _ hcar).1.2 ⟨hzproj, hzcen, hnp⟩
+  have hez : e ≤ z := heleast z hzproj (by rw [hEeq]; rintro _ ⟨w', rfl⟩; exact hcz w')
+  calc (π e : K →L[ℂ] K) ≤ π z := hπmono hez
+    _ = pp := hzπ
+
 
 /-- **89VII** (`sigma-weak-lemma`, vn.tex:7052, Corollary): let `A` be
 (represented as) a von Neumann algebra of operators on `H` via an injective
@@ -1891,8 +2352,158 @@ theorem sigma_weak_lemma (ρ : NMIUMap A (H →L[ℂ] H))
           (∀ b ∈ commutant (K →L[ℂ] K)
             (Set.range fun a : A => (π a : K →L[ℂ] K)), p * b = b * p) ∧
           ContinuousLinearMap.adjoint U ∘L U ≤ p}
-        1 :=
-  sorry
+        1 := by
+  classical
+  -- the vector functional of `v ∈ H`, as an np-functional on `A`
+  set vf : H → NPFunctional A :=
+    fun v => compNP (nmiuP ρ) ρ.preservesDirSups' (vectorNP v) with hvf
+  have hvfapp : ∀ (v : H) (a : A), vf v a = ⟪v, ρ a v⟫ := fun v a => rfl
+  -- a maximal family of vector functionals with pairwise orthogonal central carriers
+  set T : Set (Set (NPFunctional A)) :=
+    {Ω | (∀ ω ∈ Ω, ∃ v : H, ω = vf v) ∧ (∀ ω ∈ Ω, cceil (npCarrier ω) ≠ 0) ∧
+      ∀ ω ∈ Ω, ∀ ω' ∈ Ω, ω ≠ ω' → cceil (npCarrier ω) * cceil (npCarrier ω') = 0} with hT
+  obtain ⟨Ω, hΩmax⟩ : ∃ Ω, Maximal (· ∈ T) Ω := by
+    refine zorn_subset T fun cc hcc hchain =>
+      ⟨⋃₀ cc, ⟨?_, ?_, ?_⟩, fun s hs => Set.subset_sUnion_of_mem hs⟩
+    · rintro ω ⟨s, hs, hωs⟩; exact (hcc hs).1 ω hωs
+    · rintro ω ⟨s, hs, hωs⟩; exact (hcc hs).2.1 ω hωs
+    · rintro ω ⟨s, hs, hωs⟩ ω' ⟨s', hs', hω's'⟩ hne
+      rcases hchain.total hs hs' with hsub | hsub
+      · exact (hcc hs').2.2 ω (hsub hωs) ω' hω's' hne
+      · exact (hcc hs).2.2 ω hωs ω' (hsub hω's') hne
+  obtain ⟨hΩrep, hΩne, hΩorth⟩ := hΩmax.1
+  -- the central carriers sum to `1`
+  set E : Set A := {c : A | ∃ ω ∈ Ω, c = cceil (npCarrier ω)} with hE
+  have hEproj : ∀ z ∈ E, IsStarProjection z := by
+    rintro _ ⟨ω, hω, rfl⟩; exact (cceil_isLeast _).1.1
+  have hEcen : ∀ z ∈ E, IsCentral A z := by
+    rintro _ ⟨ω, hω, rfl⟩; exact (cceil_isLeast _).1.2.1
+  obtain ⟨heproj, heub, heleast⟩ := projSup_spec hEproj
+  have hecen : IsCentral A (projSup E) := projSup_isCentral hEproj hEcen
+  set e : A := projSup E with hedef
+  have hone : e = 1 := by
+    by_contra hne1
+    -- `1 - e ≠ 0`, so `ρ(1-e) ≠ 0`, so some vector is fixed by it
+    have hf : (1 : A) - e ≠ 0 := fun h => hne1 (by
+      have : (1 : A) = e := by rw [← sub_eq_zero]; exact h
+      exact this.symm)
+    have hρf : (ρ ((1 : A) - e) : H →L[ℂ] H) ≠ 0 := by
+      intro h
+      refine hf (hρ ?_)
+      have hz : ρ (0 : A) = 0 := map_zero ρ.toStarAlgHom
+      rw [h, hz]
+    obtain ⟨v₀, hv₀⟩ : ∃ v₀ : H, ρ ((1 : A) - e) v₀ ≠ 0 := by
+      by_contra hcon
+      push_neg at hcon
+      exact hρf (by ext v; simpa using hcon v)
+    set v : H := ρ ((1 : A) - e) v₀ with hv
+    set ω' : NPFunctional A := vf v with hω'
+    have hmul : ∀ a b : A, ρ (a * b) = (ρ a : H →L[ℂ] H) * ρ b := fun a b =>
+      map_mul ρ.toStarAlgHom a b
+    -- `ω'` kills `e`
+    have hωe : ω' e = 0 := by
+      have hρe : (ρ e : H →L[ℂ] H) v = 0 := by
+        have h1 : (ρ e : H →L[ℂ] H) * ρ ((1 : A) - e) = ρ (e * ((1 : A) - e)) := (hmul _ _).symm
+        have h2 : e * ((1 : A) - e) = 0 := by
+          rw [mul_sub, mul_one, heproj.isIdempotentElem.eq, sub_self]
+        have hz : ρ (0 : A) = 0 := map_zero ρ.toStarAlgHom
+        have h3 : (ρ e : H →L[ℂ] H) * ρ ((1 : A) - e) = 0 := by rw [h1, h2, hz]
+        have := congrArg (fun T : H →L[ℂ] H => T v₀) h3
+        simpa [hv] using this
+      rw [hω', hvfapp, hρe, inner_zero_right]
+    have hcarle : npCarrier ω' ≤ (1 : A) - e := by
+      refine (carrier_spec _ _).2.2 _ heproj.one_sub ?_
+      have hrw : (1 : A) - ((1 : A) - e) = e := by abel
+      rw [hrw]
+      exact hωe
+    have hecen' : IsCentral A ((1 : A) - e) := fun b => by
+      rw [sub_mul, mul_sub, one_mul, mul_one, hecen b]
+    have hcceille : cceil (npCarrier ω') ≤ (1 : A) - e :=
+      (cceil_fundamental _ (carrier_spec _ _).1).1.2
+        ⟨heproj.one_sub, hecen', hcarle⟩
+    -- `ω'` is non-degenerate
+    have hω'ne : cceil (npCarrier ω') ≠ 0 := by
+      intro h
+      have hcar0 : npCarrier ω' = 0 := le_antisymm (h ▸ (cceil_fundamental _
+        (carrier_spec _ _).1).1.1.2.2) (carrier_spec _ _).1.nonneg
+      have h0 : ω' ((1 : A) - npCarrier ω') = 0 := (carrier_spec _ _).2.1
+      rw [hcar0, sub_zero] at h0
+      have hone' : ρ (1 : A) = 1 := map_one ρ.toStarAlgHom
+      rw [hω', hvfapp, hone'] at h0
+      have : (⟪v, v⟫ : ℂ) = 0 := by simpa using h0
+      exact hv₀ (inner_self_eq_zero.mp this)
+    -- adding `ω'` contradicts maximality
+    have horthnew : ∀ ω ∈ Ω, cceil (npCarrier ω) * cceil (npCarrier ω') = 0 ∧
+        cceil (npCarrier ω') * cceil (npCarrier ω) = 0 := by
+      intro ω hω
+      have h1 : cceil (npCarrier ω) ≤ e := heub _ ⟨ω, hω, rfl⟩
+      have hp1 : IsStarProjection (cceil (npCarrier ω)) := (cceil_isLeast _).1.1
+      have hp2 : IsStarProjection (cceil (npCarrier ω')) := (cceil_isLeast _).1.1
+      have e1 : cceil (npCarrier ω) * e = cceil (npCarrier ω) :=
+        ((projection_below_effect e _ ⟨heproj.nonneg, heproj.le_one⟩ hp1).out 0 7).mp h1
+      have e2 : ((1 : A) - e) * cceil (npCarrier ω') = cceil (npCarrier ω') :=
+        ((projection_below_effect ((1 : A) - e) _
+          ⟨heproj.one_sub.nonneg, heproj.one_sub.le_one⟩ hp2).out 0 6).mp hcceille
+      have e3 : cceil (npCarrier ω') * ((1 : A) - e) = cceil (npCarrier ω') :=
+        ((projection_below_effect ((1 : A) - e) _
+          ⟨heproj.one_sub.nonneg, heproj.one_sub.le_one⟩ hp2).out 0 7).mp hcceille
+      have e4 : e * cceil (npCarrier ω) = cceil (npCarrier ω) :=
+        ((projection_below_effect e _ ⟨heproj.nonneg, heproj.le_one⟩ hp1).out 0 6).mp h1
+      constructor
+      · calc cceil (npCarrier ω) * cceil (npCarrier ω')
+            = (cceil (npCarrier ω) * e) * (((1 : A) - e) * cceil (npCarrier ω')) := by
+              rw [e1, e2]
+          _ = cceil (npCarrier ω) * (e * ((1 : A) - e)) * cceil (npCarrier ω') := by
+              noncomm_ring
+          _ = 0 := by
+              rw [mul_sub, mul_one, heproj.isIdempotentElem.eq, sub_self]; noncomm_ring
+      · calc cceil (npCarrier ω') * cceil (npCarrier ω)
+            = (cceil (npCarrier ω') * ((1 : A) - e)) * (e * cceil (npCarrier ω)) := by
+              rw [e3, e4]
+          _ = cceil (npCarrier ω') * (((1 : A) - e) * e) * cceil (npCarrier ω) := by
+              noncomm_ring
+          _ = 0 := by
+              rw [sub_mul, one_mul, heproj.isIdempotentElem.eq, sub_self]; noncomm_ring
+    have hmem : insert ω' Ω ∈ T := by
+      refine ⟨?_, ?_, ?_⟩
+      · rintro ω (rfl | hω)
+        · exact ⟨v, rfl⟩
+        · exact hΩrep ω hω
+      · rintro ω (rfl | hω)
+        · exact hω'ne
+        · exact hΩne ω hω
+      · rintro ω (rfl | hω) ω'' (rfl | hω'') hne
+        · exact absurd rfl hne
+        · exact (horthnew ω'' hω'').2
+        · exact (horthnew ω hω).1
+        · exact hΩorth ω hω ω'' hω'' hne
+    have hsub : Ω ⊆ insert ω' Ω := Set.subset_insert _ _
+    have hback := hΩmax.2 hmem hsub
+    have hω'Ω : ω' ∈ Ω := hback (Set.mem_insert _ _)
+    have h1 : cceil (npCarrier ω') ≤ e := heub _ ⟨ω', hω'Ω, rfl⟩
+    have hp2 : IsStarProjection (cceil (npCarrier ω')) := (cceil_isLeast _).1.1
+    have e1 : cceil (npCarrier ω') * e = cceil (npCarrier ω') :=
+      ((projection_below_effect e _ ⟨heproj.nonneg, heproj.le_one⟩ hp2).out 0 7).mp h1
+    have e3 : cceil (npCarrier ω') * ((1 : A) - e) = cceil (npCarrier ω') :=
+      ((projection_below_effect ((1 : A) - e) _
+        ⟨heproj.one_sub.nonneg, heproj.one_sub.le_one⟩ hp2).out 0 7).mp hcceille
+    refine hω'ne ?_
+    calc cceil (npCarrier ω') = cceil (npCarrier ω') * ((1 : A) - e) := e3.symm
+      _ = cceil (npCarrier ω') - cceil (npCarrier ω') * e := by noncomm_ring
+      _ = 0 := by rw [e1, sub_self]
+  -- realise the family in both representations
+  choose xv hxv using fun ω : Ω => hΩrep ω.1 ω.2
+  choose yv hyv using fun ω : Ω => huniv (ω : NPFunctional A)
+  obtain ⟨U, hUint, hUproj, hUmem, hUleast⟩ :=
+    sigma_weak_lemma_2 Ω (fun ω hω ω' hω' h => hΩorth ω hω ω' hω' h) ρ π xv yv
+      (fun ω a => by rw [hxv ω]; exact hvfapp _ _) hyv
+  refine ⟨U, hUint, hUproj, hUmem, ?_⟩
+  have hEeq : {c : A | ∃ ω ∈ Ω, c = cceil (npCarrier ω)} = E := rfl
+  have hπone : (π (projSup {c : A | ∃ ω ∈ Ω, c = cceil (npCarrier ω)}) : K →L[ℂ] K) = 1 := by
+    rw [hEeq, ← hedef, hone]
+    exact map_one π.toStarAlgHom
+  rwa [hπone] at hUleast
+
 
 /-- **89IX** (`normal-functional`, vn.tex:7089, Theorem): every
 np-functional `ω` on a von Neumann subalgebra `A` of `B(H)` (given by an

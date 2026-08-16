@@ -4052,7 +4052,7 @@ theorem cceil_basic_1 (a : A) :
 central.  The argument is the one of **68I**: `⌈b*cb⌉ = ⋃_{p∈S} ⌈b*pb⌉ ≤ c`
 by **60IX**.2 (each `⌈b*pb⌉ ≤ p` because `p` is central), so `cbc = cb`; and
 `bc = cbc` follows by taking adjoints. -/
-private theorem projSup_isCentral {S : Set A} (hSproj : ∀ p ∈ S, IsStarProjection p)
+theorem projSup_isCentral {S : Set A} (hSproj : ∀ p ∈ S, IsStarProjection p)
     (hScentral : ∀ p ∈ S, IsCentral A p) : IsCentral A (projSup S) := by
   obtain ⟨hcproj, hcub, -⟩ := projSup_spec hSproj
   set c : A := projSup S with hcdef
@@ -4476,7 +4476,7 @@ theorem nmiu_factors (f : NMIUMap A B) (g : A →ₚ[ℂ] B)
 omit [VonNeumannAlgebra A] [VonNeumannAlgebra B] in
 /-- Auxiliary: an nmiu-map is positive.  (`starAlgHom_nonneg` of `Basic.lean`
 says the same, but is stated for two algebras in a *common* universe.) -/
-private theorem nmiu_nonneg (f : NMIUMap A B) {x : A} (hx : 0 ≤ x) : (0 : B) ≤ f x := by
+theorem nmiu_nonneg (f : NMIUMap A B) {x : A} (hx : 0 ≤ x) : (0 : B) ≤ f x := by
   have hs : CFC.sqrt x * CFC.sqrt x = x := CFC.sqrt_mul_sqrt_self x hx
   have hsa : IsSelfAdjoint (CFC.sqrt x) := IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg x)
   have hstar : ∀ y : A, (f (star y) : B) = star (f y) := fun y => map_star f.toStarAlgHom y
@@ -4489,7 +4489,7 @@ private theorem nmiu_nonneg (f : NMIUMap A B) {x : A} (hx : 0 ≤ x) : (0 : B) �
   exact star_mul_self_nonneg _
 
 /-- Auxiliary: an nmiu-map as a positive linear map, so that `carrier` applies. -/
-private noncomputable def nmiuP (f : NMIUMap A B) : A →ₚ[ℂ] B where
+noncomputable def nmiuP (f : NMIUMap A B) : A →ₚ[ℂ] B where
   toFun := f
   map_add' := map_add f.toStarAlgHom
   map_smul' := map_smul f.toStarAlgHom
@@ -4501,7 +4501,7 @@ private noncomputable def nmiuP (f : NMIUMap A B) : A →ₚ[ℂ] B where
     exact sub_nonneg.mp h0
 
 omit [VonNeumannAlgebra A] [VonNeumannAlgebra B] in
-@[simp] private theorem nmiuP_apply (f : NMIUMap A B) (x : A) : nmiuP f x = f x := rfl
+@[simp] theorem nmiuP_apply (f : NMIUMap A B) (x : A) : nmiuP f x = f x := rfl
 
 /-- **69IVb** (`nmiu-image`, vn.tex:3637): the image of an nmiu-map
 `f : A → B` between von Neumann algebras is a von Neumann subalgebra of

@@ -9753,3 +9753,171 @@ the subtype `↥D` to an arbitrary directed index type, which is what any
 The `.olean` was regenerated with `lean -o` (which does not take the workspace
 lock) and `Theses/B/Dils/Paschke.lean`, the one file importing it, re-checks
 clean, so none of the ~40 new names collides downstream.
+
+## Session 48 — `A/VN` parsecs 880–890: **88IV**, **89V** and **89VII** closed; 89IX is the last gate of the 89-chain (worker 73, A chain)
+
+Target: the chain `89IX ← 89VII ← 89V ← {88IV, 88IX, 69IVb}`, of which 88IX and
+69IVb were closed last session.  Closed here (all three `#print axioms` =
+`[propext, Classical.choice, Quot.sound]`):
+
+| point | declaration | file | class |
+|---|---|---|---|
+| **88IV** | `carrier_vector_state` | `NormalFunctionals.lean` | 2 — the thesis's items 1/3/4, but part 1 by reindexing rather than by computing a `projSup` (§1) |
+| **89V** | `sigma_weak_lemma_2` | `NormalFunctionals.lean` | 1/3 — the thesis's proof, with its relative-carrier step replaced by an elementary one (§3) |
+| **89VII** | `sigma_weak_lemma` | `NormalFunctionals.lean` | 1 — the thesis's Zorn argument, with the "so that we'll have `∑ᵢ⌈⌈ωᵢ⌉⌉ = 1`" step supplied (§4) |
+
+`A/VN` sorries **66 → 63** (Basic 25, Completeness 2, Division 7,
+NormalFunctionals 10, Projections 19).  **89IX `normal_functional` is still
+open, so 111VII/111XII and the whole A/Proc "vacuous band" are still blocked**
+— see §5 for exactly what 89IX now needs.
+
+### 1. 88IV did *not* need new Hilbert-space geometry
+
+The brief said 88IV needs "`projSup` of a family of rank-one projections in
+`B(H)` identified with the orthogonal projection onto a closed span, which the
+tree does not have in any form".  Neither half of that turned out to be
+needed.
+
+* **Part 1** (`⌈|x⟩⟨x|⌉_{S□} = ⋃_{T∈S} ⌈|Tx⟩⟨Tx|⌉`) is **88II**
+  `commutant_ceil` (proved since session 42) plus a *reindexing* of its index
+  set along `a ↦ a*`: unfolding `commutantCeil` gives
+  `⋃_{a∈S} ⌈a* ⌈|x⟩⟨x|⌉ a⌉`, which is `⌈a* |x⟩⟨x| a⌉` by **60VII**.1
+  (`ceil_fundamental_1`) and `= ⌈|a*x⟩⟨a*x|⌉` by a two-line computation.  No
+  `projSup` is ever evaluated: the two sets are literally equal, so the two
+  `projSup`s are.
+* **Part 2** (the fixed points are `closure (S x)`) needs only that `88II`'s
+  `IsLeast` characterisation is squeezed between the projection `q` onto
+  `closure (S x)` — which the *already proved* `carrier_vector_state'` was
+  constructing inline — and the observation that `⌈|x⟩⟨x|⌉ ≤ p` forces
+  `p x = x`, hence `p (T x) = T (p x) = T x`.
+* The one Mathlib fact that made this cheap is
+  `Submodule.smul_starProjection_singleton`, giving
+  `|x⟩⟨x| = ‖x‖² · P_{ℂx}` (`ketbra_self_eq_smul_starProjection`) and with it
+  `0 ≤ |x⟩⟨x|`.
+
+The cyclic-subspace construction is now factored out as
+`exists_cyclic_projection` (projection onto `closure (S x)`, in `S□`, fixing
+`x`, with its fixed-point set computed), and `carrier_vector_state'` was
+rewritten to use it — its 60-line inline copy is gone.
+
+**Sixteenth "needs a Mathlib-sized development" estimate to collapse on
+contact.**
+
+### 2. **89I was transcribed weaker than the thesis** — repaired
+
+vn.tex:6849 says "`UU*` **is the projection** on `closure(ρ(𝒜)x)`"; the Lean
+statement only said `{z | (U U*) z = z} = closure(ρ(𝒜)x)`, which for a general
+positive operator does *not* imply it is a projection (`P_M + 2P_N` with
+`N ⊥ M` has fixed-point set `M`).  89V needs the projection-ness, both for
+**89III** `summing_partial_isometries`'s hypothesis and for its own
+conclusion.  This is **our** transcription defect, not a thesis one, so it is
+recorded here rather than in ERRATA: `gns_mapping_property` now also concludes
+`IsStarProjection (U ∘L U*)` and `IsStarProjection (U* ∘L U)`.  The existing
+proof already had `hUW : U ∘L W = M.starProjection`, so the repair is two
+lines and nothing downstream changed.
+
+### 3. 89V — the thesis's proof, with the relative carriers routed around
+
+The thesis argues that `⌈σ'_ω⌉ ≤ ⌈⌈σ'_ω⌉⌉ = ⌈⌈σ_ω⌉⌉ = ρ(⌈⌈ω⌉⌉)` using **88IX**
+`commutant-cceil`, and then that `⌈⌈UU*⌉⌉ = ∑_ω ⌈⌈U_ωU_ω*⌉⌉` by **68IV** and
+**56XVIII**.  Both steps are about central carriers *relative to `ρ(𝒜)□`*,
+which is a subalgebra-as-a-set here, not a type; `cceil` does not apply to it.
+The Lean proof therefore replaces them by the elementary facts that make them
+true, all of which are cheap:
+
+* `ω((cceil ⌈ω⌉)^⊥) = 0` (monotonicity of `ω` plus `⌈ω⌉ ≤ ⌈⌈ω⌉⌉`), hence
+  `ρ(⌈⌈ω⌉⌉) x_ω = x_ω` — that is `nmiu_vector_fix`, which only needs that
+  `σ(q^⊥)` is a projection and `⟨v, σ(q^⊥)v⟩ = ‖σ(q^⊥)v‖²`;
+* `⌈⌈ω⌉⌉` central ⟹ `closure(σ(𝒜)v) ⊆ fix σ(⌈⌈ω⌉⌉)` (`nmiu_orbit_subset_fix`);
+* for star projections of `B(L)`, inclusion of fixed-point sets *is* the order
+  (`isStarProjection_le_of_fix_subset`, three lines) — so
+  `U_ω*U_ω ≤ π(⌈⌈ω⌉⌉)` follows from 89I's fixed-point description directly,
+  and pairwise orthogonality follows from `⌈⌈ω⌉⌉⌈⌈ω'⌉⌉ = 0`.
+
+The remaining `IsLeast` (the least central projection of `π(𝒜)□` above `U*U`
+is `π(∑_ω ⌈⌈ω⌉⌉)`) is then proved as the thesis intends, with one step the
+thesis leaves implicit: a competitor `p` lies in `Z(π(𝒜)□) = Z(π(𝒜))` by
+**88VIII** `centre_commutant` (which needs `π(𝒜)` to be a von Neumann
+subalgebra, i.e. **69IVb** `nmiu_image` — this is where 69IVb is actually
+used), so `p = π(w)`; and `⌈π⌉·w` is then a *central projection* of `𝒜`
+mapping to `p`, by three applications of **69IV**'s
+`f a = f b ↔ ⌈f⌉a = ⌈f⌉b` (`nmiu_central_preimage`).  With that, `p` fixes
+each `y_ω`, so `ω((1-z)^⊥)`-style leastness of `⌈ω⌉` and then of `⌈⌈ω⌉⌉`
+gives `∑_ω⌈⌈ω⌉⌉ ≤ z` and finally `π(∑_ω⌈⌈ω⌉⌉) ≤ p`.
+
+`V*V` is a projection because the `U_ω*U_ω` are orthogonal projections summing
+to it pointwise — `HasSum.map` plus `hasSum_single`, no ultraweak topology
+needed.
+
+Four declarations in `Projections.lean` were made public for this (no
+statement changed): `nmiuP`, `nmiuP_apply`, `nmiu_nonneg`, `projSup_isCentral`.
+
+### 4. 89VII — the thesis's maximal family, and the step it skips
+
+"Let `{xᵢ}` be a maximal set of vectors whose central carriers are pairwise
+orthogonal; **so that we'll have `∑ᵢ⌈⌈ωᵢ⌉⌉ = 1`**."  That last clause is the
+content and is not argued in the thesis.  In Lean: Zorn over sets of
+np-functionals of the form `⟨v, ρ(·)v⟩` with non-zero, pairwise orthogonal
+central carriers (`compNP (nmiuP ρ) _ (vectorNP v)` is the carrier for
+"vector functional of `ρ`"); if `e := ∑ᵢ⌈⌈ωᵢ⌉⌉ ≠ 1` then `ρ(e^⊥) ≠ 0` by
+injectivity of `ρ`, any `v := ρ(e^⊥)v₀ ≠ 0` gives a vector functional `ω'`
+with `ω'(e) = 0`, hence `⌈⌈ω'⌉⌉ ≤ e^⊥` and `⌈⌈ω'⌉⌉ ≠ 0`, so `Ω ∪ {ω'}` is a
+strictly larger member of the poset.  Then 89V applies verbatim and
+`π(1) = 1`.
+
+### 5. What 89IX still needs — the precise next gate
+
+89IX's proof is short given 89VII, and its two remaining ingredients are both
+identified:
+
+1. **A relative form of 83V `cceil-sum`.**  The thesis writes: "since
+   `1 = ⌈⌈U*U⌉⌉_{ρ_Ω(𝒜)□}` we can (by cceil-sum) find partial isometries
+   `(vᵢ)` in `ρ_Ω(𝒜)□` with `1 = ∑ᵢ vᵢ*vᵢ` and `vᵢvᵢ* ≤ U*U`".  Our `cceil_sum`
+   (Division.lean, proved) is stated for a von Neumann algebra **as a type**,
+   and `ρ_Ω(𝒜)□` is a subalgebra-as-a-set — the same mismatch that §3 routed
+   around, but here it cannot be routed around, because the conclusion *is* a
+   comparison-theory statement inside the subalgebra (`MvNLE` relative to
+   `ρ_Ω(𝒜)□`).  So the gate is precisely:
+   *for a von Neumann subalgebra `R ⊆ B(K)` and a projection `e ∈ R` whose
+   least central-in-`R` majorant is `1`, there is a family `vᵢ ∈ R` of partial
+   isometries with `∑ᵢ vᵢ*vᵢ = 1` (pointwise) and `vᵢvᵢ* ≤ e`.*
+   Either prove that directly (redo 83V's Zorn argument with `MvNLE` replaced
+   by "there is `v ∈ R` with `v*v = p`, `vv* ≤ q`"), or give `VNSub` a
+   `VonNeumannAlgebra` instance and reuse `cceil_sum` — the latter would also
+   simplify §3 and 88IX, and is probably the better investment.
+2. **The `ℕ`-indexing.**  Given the family, `ω(1) = ∑ᵢ ‖U vᵢ y‖²` is summable,
+   so `Summable.countable_support` gives a countable support; the statement
+   wants `x : ℕ → H`, so one needs an injection of the support into `ℕ` and a
+   `HasSum` transport with zero padding (and a `Fintype`/finite-support branch).
+   Perhaps 40 lines, independent of (1).
+
+Everything else is in place: `exists_faithful_normal_rep_vectors`
+(`Basic.lean`) supplies the universal representation `π` that 89VII wants, and
+the computation `ω(a) = ∑ᵢ ⟨U vᵢ y, ρ(a) U vᵢ y⟩` is four rewrites given
+`vᵢ*U*U vᵢ = vᵢ*vᵢ` (from `vᵢvᵢ* ≤ U*U`) and `U π(a) = ρ(a) U`.
+
+### 6. Corrections to the brief
+
+1. **"88IV needs `projSup` of rank-one projections, which the tree has in no
+   form"** — it needs neither (§1).
+2. **"89IX ← 89VII ← 89V ← {88IV, 88IX, 69IVb}, four theorems and the band
+   turns over"** — the count was right but the *last* of the four is the one
+   that does not fall to the same techniques (§5); 88IV, the one the brief
+   flagged as hard, was the cheapest.
+3. The brief's implicit assumption that 89I was usable as stated was wrong
+   (§2).
+4. Nothing false was found in the theses this session; no ERRATA or QUESTIONS
+   rows added.
+
+### 7. Verification
+
+`lean Theses/A/VN/{Projections,NormalFunctionals}.lean` (invoked directly with
+`LEAN_PATH`): no errors.  `#print axioms` was run by appending the commands to
+`NormalFunctionals.lean` and recompiling: `carrier_vector_state`,
+`carrier_vector_state'`, `gns_mapping_property`, `sigma_weak_lemma_2`,
+`sigma_weak_lemma`, `exists_cyclic_projection` and `nmiu_central_preimage` are
+all exactly `[propext, Classical.choice, Quot.sound]`; the commands were then
+removed.  **Oleans for `Theses.A.VN.Projections` and
+`Theses.A.VN.NormalFunctionals` are left built and current**, so downstream
+workers need no rebuild.  Files touched:
+`Theses/A/VN/{Projections,NormalFunctionals}.lean` and this log.
