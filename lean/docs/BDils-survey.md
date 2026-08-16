@@ -20,13 +20,18 @@ At the end of **session 50** (164II.1 and the 1660 parsec): `SelfDual.lean`
 `Stinespring.lean` 2, `SelfDualCompletion.lean` 2, `HilbertModules.lean` 0 —
 **41**, compiler-counted per file.
 
+At the end of **session 51** (161II.2 and 164II.2a): `SelfDual.lean` **9**,
+`Pure.lean` 13, `Paschke.lean` 8, `Kaplansky.lean` 5, `Stinespring.lean` 2,
+`SelfDualCompletion.lean` 2, `HilbertModules.lean` 0 — **39**,
+compiler-counted per file.
+
 Classification key: **(a)** self-contained, **(b)** blocked on a named
 `sorry` elsewhere, **(c)** cited to the literature / another chapter,
 **(d)** suspicious/false.
 
 ---
 
-## `SelfDual.lean` — 21 items (11 open after session 50)
+## `SelfDual.lean` — 21 items (9 open after session 51)
 
 | DISP | name | class | note |
 |---|---|---|---|
@@ -36,7 +41,7 @@ Classification key: **(a)** self-contained, **(b)** blocked on a named
 | **160IX** | `selfdual_orthn_basis` | **(a)** | **CLOSED session 49**; needed no Zorn, and the "ℓ²-sum convergence for a non-basis orthonormal family" is now `exists_unTendsto_of_l2Summable` in `HilbertModules.lean` |
 | **160X** | `selfdual_gramschmidt` | **(a)** | **CLOSED session 49**, by induction on `n` with the polar decomposition as the orthonormalization step |
 | **161II.1** | `hilbmod_el2_inner` | **(a)** | **CLOSED this session** (polarization, see log) |
-| 161II.2 | `hilbmod_el2` | **(a)** | large: `ℓ²((pᵢ))` self dual + coordinate map is a bijection.  Now that 161II.1 is closed the inner product exists, so this is the natural next target in this parsec |
+| **161II.2** | `hilbmod_el2` | **(a)** | **CLOSED session 51**, and it cost ~90 lines, not "large": the statement never mentions the module `ℓ²((pᵢ))` (only the coordinate map), so nothing had to be constructed and `hX : SelfDual ℬ X` is not even used — the two convergence clauses of `IsONBasis` carry all three parts.  ⚠️ Our statement is therefore **weaker than the exercise**, which also asks for the right-ℬ-module structure on `ℓ²((pᵢ))` and its self-duality; neither is formalized anywhere |
 | **161IV.2** | `onb1_el2` | **(a)** | **CLOSED this session** (direct bijection, see log); the brief's assumption that it needs 161II was wrong |
 | 162II | `total_mv_order` | **(a)/(c)** | comparison of projections in a factor; proof 162III not converted.  Genuinely hard (Zorn + halving) |
 | 162IV | `selfdual_normalish_form` | **(b)** | needs 162II and 161II.2 |
@@ -44,13 +49,40 @@ Classification key: **(a)** self-contained, **(b)** blocked on a named
 | **163II dense** | `selfdual_compl_defining_dense` | **(a)** | **CLOSED session 49**.  The survey's "needs 151Ia" was **wrong**: the statement takes the universal property as a hypothesis |
 | 164II ex. | `univprop_ext_tensor` | **(a)** | the construction 164III–164VIII via `ℓ²((pᵢⱼ))`; the single biggest item in the file, and 161II.2 is a prerequisite in practice |
 | **164II.1** | `ext_tensor_dense` | **(a)** | **CLOSED session 50.**  `P = id` from `exists_orthoProj` + `ExtTensor.univ` as in 163II-dense; the `bSpan D ⊆ unClosure D` gap is the thesis's own 164VII, and needs only *unbounded* ultrastrong density of `𝒜 ⊙ ℬ` (`IsVNTensor.generates` + `isVNSubalgebra_usClosureSubalgebra`) — **not** Kaplansky density, contrary to this row's earlier text |
-| 164II.2a | `ext_tensor_basis` | **(b)** | needs 164II.1 and 161II.2 |
-| 164II.2b | `ext_tensor_ketbra_dense` | **(b)** | needs 164II.2a |
-| 165VI | `ba_ext_tensor_pres` | **(b)** | proof 165VII–165X; needs 164II.2b.  165III (its companion) *is* proved |
+| **164II.2a** | `ext_tensor_basis` | **(a)** | **CLOSED session 51** (~170 lines).  It needed 164II.1 but **not** 161II.2, contrary to this row's earlier text: the thesis's 164X reduces to a Parseval identity checked against product np-functionals only because its `X ⊗ Y` *is* `ℓ²((pᵢⱼ))`; for an abstract `E : ExtTensor` the cheaper route is 164II.1 + the 166III estimates with `s` chosen before `u` |
+| 164II.2b | `ext_tensor_ketbra_dense` | **(b)/(d?)** | needs **159IX** `ketbra_ultranorm_continuous`, hence 90II.2 in `A/VN` — see below.  164II.2a is *not* the blocker any more |
+| 165VI | `ba_ext_tensor_pres` | **(b)** | proof 165VII–165X; needs 164II.2b for the `generates` clause of `IsVNTensor`, plus 165IX/165X for `exists_productFunctional`/`separating`.  165III (its companion) *is* proved |
 | **166IV** | `exttensor_dense_subsets` | **(a)** | **CLOSED session 50.**  The thesis's route through 158II `kaplansky_hilbmod` (open, printed proof false) is avoided: `u ∈ U` is chosen before `v ∈ V`, so no norm-bounded net is required |
 | **166VI** | `dilationspace_dense_subset` | **(a)** | **CLOSED session 50**, together with the new public `paschke_tprod_dense` (the elementary tensors of `𝒜 ⊗_φ ℬ` are ultranorm dense — easier than 164II.1, since `{∑ aᵢ ⊗ bᵢ}` is already a ℬ-submodule) |
 | 167I | `paschke_tensor` | **(b)** | needs 165VI + `existence_paschke` |
 | 167I furth. | `paschke_tensor_module` | **(b)** | needs 167I |
+
+**Bottom line for `SelfDual.lean` after session 51.**  The 1600 and 1610
+parsecs are closed except 162II/162IV/163II-uniq, and the 1640 parsec is
+down to the **existence** construction `univprop_ext_tensor` and
+**164II.2b**.  The next gate is **164II.2b `ext_tensor_ketbra_dense`**, and
+it is *not* self-contained: the thesis's 164XI replaces a general
+`t ∈ 𝒜 ⊗ ℬ` in `|(eᵢ⊗dⱼ)t⟩⟨e_k⊗d_l|` by an ultrastrong limit from
+`𝒜 ⊙ ℬ` and appeals to **159IX** `ketbra_ultranorm_continuous`, which is
+`sorry` and blocked on **90II**.2 (`A/VN/NormalFunctionals.lean:3343`).
+Two extra obstacles specific to our transcription: the approximating net is
+forced to be indexed by `Finset (ι × κ)` (the thesis only claims "the span
+is ultraweakly dense", with no net), and the ultraweak topology is not
+metrizable, so a diagonal choice is not available either.  Everything else
+of 164XI — `ketbra_ultraweakly_dense` (**159IV**, proved) applied to the
+basis now supplied by 164II.2a, and `unDense_tSpan` — is already in the
+file.
+
+⚠️ **Non-vacuity gap.**  `ExtTensor` has **no** inhabitation witness in the
+tree (unlike `IsVNTensor`, which has `vnTensor_mul_complex`, and
+`PaschkeModule`, which has `paschkeModuleId`), and `univprop_ext_tensor`
+is `sorry`.  So every theorem of parsecs 1640–1670 hypothesising
+`E : ExtTensor t ht X Y` — 164II.1, 164II.2a/2b, 165III, 165VI, 166IV,
+166VI, 167I — is *conditionally* proved only.  A cheap check would be
+`𝒜 = ℬ = 𝒞 = X = Y = Z = ℂ`, `t = (· * ·)`, `η x y = x * y`; PROVING-LOG
+session 14 records a mirroring defect that left `PaschkeModule`
+uninhabited and nine theorems vacuous, and only a concrete example caught
+it.
 
 **Bottom line for `SelfDual.lean` after session 50.**  The 1600 parsec is
 closed (160IV.1/.2/.3, 160IX, 160X) and so is the 1660 parsec (166II, 166IV,
@@ -59,14 +91,13 @@ the self-contained ones are **161II.2** `hilbmod_el2`, the **164II
 existence** construction (both large) and **162II** `total_mv_order` (Zorn +
 halving, genuinely hard); **159IX** is *not* self-contained — see its row.
 
-**The next gate is 161II.2 `hilbmod_el2`**, and it is now the only thing
-between the file and the 1640–1650 chain: 164II.2a `ext_tensor_basis` needs
-it, then 164II.2b, then 165VI, then 167I (which additionally needs
-`existence_paschke`).  Its three parts each have their tool already in the
-tree — `IsONBasis` clause (a) for injectivity, `exists_unTendsto_of_l2Summable`
-+ `inner_of_unTendsto_sum_smul` for surjectivity onto `L2Set`, and the
-polarisation of 160IX.2 for the inner-product clause — but the `L2Set`
-support condition `⌈bᵢ*bᵢ⌉ ≤ pᵢ` will need `ceil` lemmas from `A/VN`.
+~~**The next gate is 161II.2 `hilbmod_el2`**~~ — closed session 51.  For the
+record, the costing above was wrong in two places: 164II.2a does **not**
+need 161II.2, and the "polarisation of 160IX.2" for the inner-product clause
+is unnecessary (148V `innerprod_ultraweak` on the two basis expansions gives
+it directly).  The `ceil` lemma prediction was right: it is
+`ceil_star_mul_self_le_iff`, which already existed in the file (private,
+written for 161IV.2) and only had to be moved above 161II.2.
 
 Reusable output of sessions 49–50 (all `private` in `SelfDual.lean` unless
 noted): `exists_orthogonal_decomp` / `exists_orthoProj` (the projection

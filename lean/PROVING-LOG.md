@@ -11191,3 +11191,129 @@ exactly `[propext, Classical.choice, Quot.sound]`; the commands were then
 removed.  **The olean for `Theses.A.Proc.Tensor` is left built and current**
 (`lean -o`), so downstream workers need no rebuild.  Files touched:
 `Theses/A/Proc/Tensor.lean`, `docs/AProc-survey.md`, and this log.
+
+## Session 51 — `B/Dils`: **161II.2 `hilbmod_el2`** falls, and **164II.2a `ext_tensor_basis`** with it — but the chain stops at 164II.2b, which is blocked outside the directory (worker 77)
+
+Files touched: `Theses/B/Dils/SelfDual.lean`, `docs/BDils-survey.md`, this
+log.  Nothing staged, nothing committed.  **B/Dils 41 → 39 `sorry`s**
+(`SelfDual.lean` 11 → 9).  Both new theorems `#print axioms` to exactly
+`[propext, Classical.choice, Quot.sound]` (checked from *inside* the module,
+since `hilbmod_el2`'s helpers are `private`).
+
+### 1. **161II**.2 `hilbmod_el2` — ~90 lines, and the brief over-costed it twice
+
+The survey called it "large: `ℓ²((pᵢ))` self dual + coordinate map is a
+bijection".  Our *statement* claims neither: it takes `hX : SelfDual ℬ X`
+and an `IsONBasis ℬ e` as hypotheses and asserts only that
+`x ↦ (⟨eᵢ,x⟩)ᵢ` is a bijection of `X` onto `L2Set ℬ (⟨eᵢ,eᵢ⟩)` identifying
+the inner products.  All three clauses come out of the two convergence
+clauses of `IsONBasis`, and **`hX` is not used at all** (an orthonormal
+*basis* already carries everything).
+
+* `MapsTo` — Bessel (`mod_bessel`) for ℓ²-summability, and
+  `onbasis_coef_absorb` for the support condition, which by
+  `ceil_star_mul_self_le_iff` *is* `⌈bᵢ*bᵢ⌉ ≤ pᵢ`.  The brief predicted
+  "`ceil` lemmas from `A/VN`"; the lemma already existed **in this file**,
+  written for 161IV.2, and only had to be moved above 161II.2.
+* `SurjOn` — clause (b) of `IsONBasis`, then
+  `inner_of_unTendsto_sum_smul`; the absorption it asks for is again the
+  support condition, so the two directions of `mem_l2Set_iff` are used once
+  each.
+* `InjOn` and the inner-product clause — **both** are **148V**
+  `innerprod_ultraweak` applied to the basis expansions of clause (a).  For
+  injectivity the two expansions are literally the *same* net, so all four
+  of `⟨x,x⟩, ⟨x,y⟩, ⟨y,x⟩, ⟨y,y⟩` are limits of it and `⟨x−y,x−y⟩ = 0`.
+  The brief's "polarisation of 160IX.2" is **not** needed: the cross Gram
+  sum collapses to the Parseval sum by `inner_sum_smul_orthogonal` plus
+  absorption, and no polarisation identity appears.
+
+**Our statement is weaker than the exercise** (dils.tex:4602), which also
+asks that `ℓ²((pᵢ))` be a right ℬ-module and be self-dual.  Neither is
+formalized anywhere in `SelfDual.lean` — `L2Set` is a `Set (ι → ℬ)` with no
+module structure.  Recorded in the survey; not an erratum (it is our
+transcription, not the author's text).
+
+The `L2Set` mirroring flagged in the brief was checked again and is right as
+it stands: `bᵢ_ours = ⟨x,eᵢ⟩_thesis = (bᵢ_thesis)*`, so `⌈bᵢbᵢ*⌉ ≤ pᵢ`
+mirrors to `⌈bᵢ*bᵢ⌉ ≤ pᵢ`, and the inner-product clause
+`∑ᵢ ⟨eᵢ,y⟩⟨eᵢ,x⟩*` is the mirror of the thesis's `∑ᵢ bᵢ*cᵢ`.
+
+### 2. **164II**.2a `ext_tensor_basis` — and it never needed 161II.2
+
+Divergence, class 2, in the last step only.  The thesis's **164X** proves
+`E₂ = {e'ᵢ ⊗ d'ⱼ}` is a basis by reducing (via **160IX** + **160IV**) to
+`eᵢ₀ ⊗ dⱼ₀ ∈ E₂^⊥⊥` for the *distinguished* basis along which `X ⊗ Y` was
+constructed as `ℓ²((pᵢⱼ))`, then verifying the Parseval identity of
+160IX.2 by testing `(∑ᵢaᵢ*aᵢ) ⊗ (∑ⱼbⱼ*bⱼ) = ∑ᵢⱼ aᵢ*aᵢ ⊗ bⱼ*bⱼ` against
+product np-functionals (`tensor-3`).
+
+Our `E` is an arbitrary `ExtTensor`, so there is no distinguished basis to
+reduce to.  Instead **164II**.1 `ext_tensor_dense` (closed last session)
+reduces the claim to the *elementary* tensors, and `η v w` is approximated
+directly by `η vₛ wᵤ = ∑_{i∈s}∑_{j∈u} (⟨eᵢ,v⟩ ⊗ ⟨dⱼ,w⟩)·(eᵢ ⊗ dⱼ)`, with
+`s` chosen first and `u` afterwards against the already-fixed `‖vₛ‖` —
+the same order-of-choice device that removed 158II from 166IV.  Only the
+**166III** estimates `unSeminorm_eta_le_left/_right` are used (their
+`section EtaEstimates` moved up in the file accordingly), and the whole
+double-limit / product-functional computation disappears.  Consequently
+**161II.2 was never a prerequisite** for this item, contrary to the survey.
+
+The only use of `IsVNTensor` beyond bilinearity is non-degeneracy,
+`⟨eᵢ,eᵢ⟩ ⊗ ⟨dⱼ,dⱼ⟩ ≠ 0`, and *there* the product functionals are needed:
+`np_separating` gives `ω`, `ξ` not killing the two projections, and
+`exists_productFunctional` turns them into an `Ω` with
+`Ω(t p q) = ω p · ξ q ≠ 0`.  (The thesis does not remark on this step —
+it says only "clearly `E₂` is orthonormal".)
+
+### 3. What the chain now hangs on, precisely
+
+**164II.2b `ext_tensor_ketbra_dense` is the next gate, and it is not
+self-contained.**  Its 164XI proof needs to replace a general
+`t ∈ 𝒜 ⊗ ℬ` in `|(eᵢ⊗dⱼ)t⟩⟨e_k⊗d_l|` by an ultrastrong limit from
+`𝒜 ⊙ ℬ`, and appeals to **159IX** `ketbra_ultranorm_continuous`, which is
+`sorry` (`SelfDual.lean:472`) and blocked on **90II**.2
+`vn_center_separating_fundamental_2` (`A/VN/NormalFunctionals.lean:3343`),
+outside `B/Dils`.  Two further obstacles are ours, not the thesis's: the
+statement forces the approximating net to be indexed by `Finset (ι × κ)`
+(the thesis claims only "the span is ultraweakly dense"), and the ultraweak
+topology is not metrizable, so a diagonal choice over that index is not
+available either.  Everything *else* of 164XI is in place —
+`ketbra_ultraweakly_dense` (159IV, proved) now applies, because 164II.2a
+supplies the basis it wants.  165VI and 167I stay behind 164II.2b.
+
+### 4. A non-vacuity gap worth an author-independent check
+
+`ExtTensor` has **no inhabitation witness** anywhere in the tree, and
+`univprop_ext_tensor` (its existence theorem) is `sorry`.  So all of
+164II.1, 164II.2a/2b, 165III, 165VI, 166IV, 166VI, 167I are proved only
+*conditionally* on a structure not yet known to exist.  `IsVNTensor` has
+`vnTensor_mul_complex` for exactly this purpose and `PaschkeModule` has
+`paschkeModuleId`; session 14 records a mirroring defect that left
+`PaschkeModule` uninhabited and nine theorems vacuous, caught only by a
+concrete example.  A cheap witness would be
+`𝒜 = ℬ = 𝒞 = X = Y = Z = ℂ`, `t = (· * ·)`, `η x y = x * y`.  Flagged in
+`docs/BDils-survey.md`; not attempted this session.
+
+### 5. Corrections to the brief
+
+* "161II.2 … part (b) `exists_unTendsto_of_l2Summable`" — right, but part
+  (a) needed no separate tool and part (c) needed no polarisation.
+* "the `L2Set` support condition will need some `ceil` lemmas" — right that
+  it needs one, wrong that it had to be found: it was eleven hundred lines
+  below in the same file.
+* "161II.2 alone now blocks the chain 164II.2a → 164II.2b → 165VI → 167I" —
+  the chain is real but 161II.2 was not on it; 164II.2a needed 164II.1
+  only, and the chain's actual wall is 159IX/90II.2 at 164II.2b.
+* "`Paschke.lean` — the useful item there is `existence_paschke` itself" —
+  inspected and not attempted: it asks for a whole `PaschkeModule` bundle
+  (self-dual completion of `𝒜 ⊙ ℬ` with the φ-inner product, plus `ϱ` and
+  `h`), i.e. a construction the size of `univprop_ext_tensor`, not a
+  session-sized item.
+
+### 6. Verification
+
+`lean Theses/B/Dils/{HilbertModules,Kaplansky,Paschke,Stinespring,
+SelfDualCompletion,SelfDual,Pure}.lean` under the `LEAN_PATH` bypass: no
+errors; per-file `sorry`-declaration counts 0 / 5 / 8 / 2 / 2 / **9** / 13,
+**39** in total.  `#print axioms` on `hilbmod_el2` and `ext_tensor_basis`:
+both exactly `[propext, Classical.choice, Quot.sound]`.
