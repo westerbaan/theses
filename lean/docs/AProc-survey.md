@@ -1,11 +1,105 @@
 # `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–81, sessions 47–58)
 
-**Headline count: A/Proc has 70 code `sorry`s** after session 58.
-Per file: `Tensor` **31** (was 33), `Measurement` **11**, `QuantumLambda` 17,
+**Headline count: A/Proc has 64 code `sorry`s** after session 59.
+Per file: `Tensor` **25** (was 31), `Measurement` **11**, `QuantumLambda` 17,
 `Duplicators` **11**.  (`grep -c sorry` over-counts, because the file
 docstrings mention `sorry` in prose; the code counts are the ones above.
 Note `\bsorry\b` also matches "sorry-ed" in prose — count the compiler's
 `declaration uses \`sorry\`` warnings instead.)
+
+
+> **Session 59 — the normal-limit lemma is written, and **115II `exists_tmap`
+> is CLOSED**, together with 115IV, 116I's existence half and 116III.5.**
+>
+> **The public lemma, in two shapes** (both in `Tensor.lean`, both
+> axiom-clean).  "An operator-norm limit of normal functionals is normal" is
+> **87III** `predual_complete` used as a closure property:
+> * `continuous_ultraweak_of_normLimit` — on a single von Neumann algebra:
+>   `predual_complete.isClosed`, four lines.  This is the shape **116III.5**
+>   wants.
+> * `exists_uwExtension_of_normLimit` — on `𝒜 ⊙ ℬ`: if `ν` is, uniformly in
+>   the tensor product norm, a limit of restrictions `E ∘ γ_⊙` of normal
+>   functionals on a tensor product `𝒯`, then `ν` is itself such a
+>   restriction.  This is 112X.5's own Cauchy argument with "sum of members of
+>   `Ω`" abstracted away, and `uwTensor_continuous_of_uwExtension` then reads
+>   off `uwTensorTopology`-continuity (112X.3.1) and the bound (112X.2).
+>
+> **The brief's plan needed one repair: 112XI cannot be used to build the
+> approximants.**  `BilinNormal`/`BilinBounded` are stated for the section
+> variables `{A B C : Type u}` — *one* universe — so they cannot be
+> instantiated at `C := ℂ`, and neither 112XI nor 114I applies to a
+> `ℂ`-valued bilinear map.  Two replacements were written:
+> `exists_uwExtension_odotF` (112IX's *factorisation*: for uw-continuous
+> `f ∈ 𝒜_*`, `g ∈ ℬ_*`, `f ⊙ g = E ∘ γ_⊙` for a normal `E` on `𝒯` — `luws`
+> splits `f`, `g` into four np-functionals each and `prodNP_lift` factors the
+> sixteen products) and `nonneg_of_nonneg_on_tensorSpan` (114I.4 for
+> functionals: a uw-continuous functional nonnegative on `γ_⊙(v* v)` is
+> positive, by 74VI + `uwTendsto_starMul`).  As a bonus `exists_uwExtension_odotF`
+> *is* the existence half of **116I** (`exists_predualTensor`), which fell out
+> in three lines.
+>
+> **115II.**  `BilinBounded β` and `BilinNormal β` for `β(a,b) = f(a) ⊗ g(b)`
+> both run through one object: for an np-functional `χ` on `𝒞 ⊗ 𝒟`, an
+> np-functional `E_χ` on `𝒜 ⊗ ℬ` with `E_χ ∘ ⊗_⊙ = χ ∘ β_⊙`.
+> * For `χ ∈ Ω` (`exists_extension_conjProdNP`) this is the thesis's
+>   computation `χ ∘ β_⊙ = ∑ₖₗ σ(cₖ* f(·)c_l) ⊙ τ(dₖ* g(·)d_l)` fed to
+>   `exists_uwExtension_odotF`; `E_χ` is positive by `BilinCP β` (with `c ≡ 1`)
+>   plus `nonneg_of_nonneg_on_tensorSpan`, hence an np-functional, and
+>   `npFunctional_norm_le` is the Russo–Dye step the thesis takes with
+>   `cp-russo-dye`: `‖χ(β_⊙ t)‖ ≤ ‖f(1)‖‖g(1)‖ χ(1) ‖t‖`.
+> * `BilinBounded` is then the thesis's argument verbatim: `tmap_cs` (banked in
+>   session 58) gives `χ(β_⊙(t)*β_⊙(t)) ≤ ‖f1‖‖g1‖ χ(β_⊙(t* t))`, the bound
+>   above gives `≤ ‖f1‖²‖g1‖²‖t‖²χ(1)`, and the *order-separating* half of
+>   112X.1 turns that into `β_⊙(t)*β_⊙(t) ≤ (‖f1‖‖g1‖‖t‖)²·1`, i.e.
+>   `‖β_⊙ t‖ ≤ ‖f1‖‖g1‖‖t‖` — the sharp constant, and no `tensorNorm C D`
+>   bookkeeping (the route through `TensorProduct.map` was not needed).
+> * `BilinNormal` is where the normal-limit lemma earns its keep: a general
+>   `χ` is only an operator-norm limit of members of `Ω` (112X.1.2), and
+>   boundedness transports that limit to `𝒜 ⊙ ℬ` with the factor `M`.
+>   **The thesis's "incidentally, since each `ω∘β_⊙` is ultraweakly continuous,
+>   so is `β_⊙`" is a gap, not a slip** — it is proved only for *basic* `ω`.
+>   ERRATA's 115II row gained item (e).
+> * `exists_tmap` is then 112XI + 114I(5) + 44XV, and `tensor_functorial`'s
+>   four parts are 114I(1)(2)(3) plus one monotonicity step; **115IV** (both
+>   functor laws) is `exists_tmap`'s own uniqueness clause, twice.
+>
+> **116III.5** `tensor_simple_facts_5` falls with the *single-algebra* shape of
+> the lemma: `b ↦ χ(a ⊗ b)` is, uniformly on the unit ball of `ℬ` (because
+> `‖a ⊗ b‖ ≤ ‖a‖‖b‖`, the new `norm_vtmul_le`), a limit of the ultraweakly
+> continuous `∑ₖₗ σ(cₖ* a c_l) τ(dₖ*(·)d_l)`, hence ultraweakly continuous.
+> Complete positivity of `a ⊗ (·)` is `a = x* x` and
+> `star(x ⊗ bᵢ)(x ⊗ bⱼ) = a ⊗ (bᵢ* bⱼ)`; the nmiu-map `1 ⊗ (·)` is the same
+> map with the miu clauses read off 108I.
+>
+> **116III.4 does *not* fall with it — the brief was wrong about that.**  Joint
+> ultraweak continuity of `(a,b) ↦ a ⊗ b` is tested along nets in the
+> *product*, and the error term `ε‖a‖‖b‖` is uniform only on bounded sets,
+> while ultraweak neighbourhoods are norm-unbounded; `predual_complete` has
+> nothing to close on.  Worth noting for the authors: ultraweakly convergent
+> *sequences* are automatically norm-bounded (uniform boundedness in
+> `(ℬ_*)^*`), so the exercise is only about nets, and we could neither prove
+> it nor refute it.  Its hint's reduction ("`⊙ : 𝒜 × ℬ → 𝒜 ⊙ ℬ` ultraweakly
+> continuous, which boils down to `(a,b) ↦ ∑ᵢⱼ σ(aᵢ*a aⱼ)τ(bᵢ*b bⱼ)`") proves
+> exactly the *separate* statement, which is 116III.5's half.
+>
+> **Next gate, precisely.**  In `Tensor.lean` the cheap remainder is now
+> gated on two independent facts, neither of which is the normal-limit lemma:
+> (i) the **`≥` half of 116III.2**, `‖a‖‖b‖ ≤ ‖a ⊗ b‖` (the `≤` half is proved
+> as `norm_vtmul_le`), which wants "`‖x‖ = sup over np-functionals with
+> `ω(1) ≤ 1`" — `order_separating_norm` (21VII) is stated for *unital* maps,
+> so the rescaling is the work; and (ii) **116IV.1** `tensor_generation_1`,
+> for which separate ultraweak continuity (now available on the right, and by
+> symmetry on the left) plus closedness of the ultraweak closure of a
+> submodule is the thesis's own two-step argument — the missing ingredient is
+> that `ultraweak` makes the algebra a topological vector space, which the
+> tree does not record.  **118IV.4** (129X's blocker) was *not* attempted: the
+> thesis proves it through 118IV.2/.3, a spatial argument needing
+> `carrier-vector-state` and the double commutant, and it is a genuine
+> development rather than a corollary.  One more trap found: **`exists_tmapM`
+> is *not* a corollary of `exists_tmap`** — it is stated in four *different*
+> universes `u₁…u₄`, while `exists_tmap` (like `BilinNormal`, `BilinBounded`,
+> 112XI and 114I) lives in a single `Type u`; making the `tmap` construction
+> universe-polymorphic is a prerequisite for it and hence for 119V.
 
 
 > **Session 58 — 114I and 114II are CLOSED; 115II is *not*, and its two
@@ -462,10 +556,11 @@ strike 111XII ×2 (proved) and 116III.1 (proved, session 52).  Historical note:
 their *types* mention `VNT 𝒜 ℬ = (vnTensor 𝒜 ℬ).carrier`, and `vnTensor` used
 to be `Nonempty.some` of the sorried `vnTensorProduct_nonempty`.
 
-* `Tensor.lean` (31, of which 111XII ×2 and 116III.1 are now closed): 115II ×2
-  (`exists_tmap`, `tensor_functorial`), 115IV ×2, 115V, 116I ×2, 116III.1/.2/.4/.5,
-  116IV.1/.2, 117III, 118II ×2, 118IV.1/.4/.5/.6, 119II, 119IV, 119IVb, 119IVc,
-  `exists_tmapM`, 119V ×5.  (`tensor_simple_facts_3` and `product_functional_norm`
+* `Tensor.lean` (25, of which 111XII ×2, 116III.1, **115II ×2, 115IV ×2,
+  116I's existence half and 116III.5** are now closed): ~~115II ×2~~,
+  ~~115IV ×2~~, 115V, 116I (`product_functional_norm`; `exists_predualTensor`
+  is closed), 116III.2/.4, 116IV.1/.2, 117III, 118II ×2, 118IV.1/.4/.5/.6,
+  119II, 119IV, 119IVb, 119IVc, `exists_tmapM`, 119V ×5.  (`tensor_simple_facts_3` and `product_functional_norm`
   are tainted too — via `predualTensor`, itself chosen from a sorried existence.)
 * `QuantumLambda.lean` (10): 123II.1/.2, 125IV, 125VI, 125VIIb, 125VIII,
   125dII, 125eIIa, 125eIII, 125eVII.  **Not** tainted (corrections, session 51):

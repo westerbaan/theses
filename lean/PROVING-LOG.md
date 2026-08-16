@@ -13412,3 +13412,138 @@ transcription defect) all held.  The only superseded advice is session 58's
 "σ-closure as an inductive predicate over `Φ`": legal, but unnecessary — with
 the inner product determined by the set, the thesis's own Zorn argument is
 cheaper, and it keeps the proof a transcription rather than a redesign.
+
+## Session 59 — `A/Proc`: **the normal-limit lemma is written and 115II `exists_tmap` closes**, with 115IV, 116I-existence and 116III.5 (worker on `Tensor.lean`)
+
+**`Tensor.lean` 31 → 25, A/Proc 70 → 64** (compiler-counted).  Every new
+theorem and every new auxiliary is axiom-clean
+(`propext, Classical.choice, Quot.sound`; checked with `#print axioms` inside
+the file itself, so no stale-olean risk).
+
+### 1. The public normal-limit lemma, in two shapes
+
+"An operator-norm limit of normal functionals is normal" is **87III**
+`predual_complete` used as a closure property.  Both shapes are public in
+`Tensor.lean`:
+
+* **`continuous_ultraweak_of_normLimit`** — on a single von Neumann algebra:
+  `predual_complete.isClosed` plus `Metric.mem_closure_iff`.  Four lines.
+  This is the shape **116III**.5 needs.
+* **`exists_uwExtension_of_normLimit`** — on `𝒜 ⊙ ℬ`: if `ν` is, uniformly in
+  the tensor product norm, a limit of restrictions `E ∘ γ_⊙` of normal
+  functionals on a tensor product `𝒯`, then `ν = E ∘ γ_⊙` for a normal `E`.
+  This is **112X**.5's own Cauchy argument with "finite sum of members of `Ω`"
+  abstracted to "normal functional on `𝒯`"; **112X**.4 is what makes the
+  approximants Cauchy *in the predual*.  `uwTensor_continuous_of_uwExtension`
+  then reads off `uwTensorTopology`-continuity (112X.3.1) and the tensor-norm
+  bound (112X.2).
+
+### 2. The brief's plan needed one repair: **112XI cannot build the approximants**
+
+`BilinNormal`, `BilinBounded`, `BilinCP`, 112XI and 114I are all stated for
+the file's section variables `{A B C D : Type u}` — a **single** universe —
+so none of them can be instantiated at `C := ℂ`, which lives in `Type 0`.
+(The first attempt did exactly that and failed with a universe mismatch
+inside `TensorProduct.curry`.)  Two replacements were written instead, both
+public:
+
+* **`exists_uwExtension_odotF`** — the factorisation that **112IX**'s proof
+  really produces: for ultraweakly continuous `f ∈ 𝒜_*`, `g ∈ ℬ_*`,
+  `f ⊙ g = E ∘ γ_⊙` for a normal `E` on `𝒯`.  **72XI** `luws` splits `f` and
+  `g` into four np-functionals each and `prodNP_lift` factors each of the
+  sixteen products.
+* **`nonneg_of_nonneg_on_tensorSpan`** — **114I**.4 for functionals: an
+  ultraweakly continuous functional that is nonnegative on `γ_⊙(v* v)` is
+  positive.  Same proof as 114I's quadratic clauses (74VI `dense_subalgebra`
+  + `uwTendsto_starMul` + closedness of `ℝ≥0` in `ℂ`), ~25 lines.
+
+`exists_uwExtension_odotF` is *also* the existence half of **116I**
+`exists_predualTensor`, which then cost three lines (uniqueness is the new
+private `clm_ext_of_tmul`: two normal functionals agreeing on pure tensors are
+equal).
+
+### 3. 115II `exists_tmap`
+
+Both hypotheses go through one object: for an np-functional `χ` on `𝒞 ⊗ 𝒟`,
+an np-functional `E_χ` on `𝒜 ⊗ ℬ` with `E_χ ∘ ⊗_⊙ = χ ∘ β_⊙`.
+
+* **`exists_extension_conjProdNP`** builds it for `χ ∈ Ω`: this is the
+  thesis's own computation
+  `χ ∘ β_⊙ = ∑ₖₗ σ(cₖ* f(·)c_l) ⊙ τ(dₖ* g(·)d_l)` (expand `t₀ = ∑ₖ cₖ ⊙ dₖ`,
+  `star_tmul_conj_expand`), with each factor ultraweakly continuous by 44XV
+  and 45IV, fed to `exists_uwExtension_odotF` instead of to 112IX.
+* **`exists_npExtension_conjProdNP`** upgrades it to an np-functional:
+  positivity is `BilinCP β` at `c ≡ 1` (`lift_tmapBilin_star_mul_self_nonneg`)
+  plus `nonneg_of_nonneg_on_tensorSpan`; normality is then
+  `preservesDirSups_of_continuousOn_effects_functional`.
+* **`conjProdNP_tmapBilin_norm_le`** is the thesis's *first promise*,
+  `‖χ(β_⊙ t)‖ ≤ ‖f(1)‖‖g(1)‖ χ(1) ‖t‖`.  The thesis gets it from
+  `cp-russo-dye` applied to the extension; here `npFunctional_norm_le`
+  (`‖ω x‖ ≤ ω(1)‖x‖` for np `ω`) *is* that step, and `E_χ(1) = χ(f1 ⊗ g1) ≤
+  ‖f1‖‖g1‖χ(1)` by monotonicity of `⊗` (116III.1) at `f1 ≤ ‖f1‖·1`.
+* **`tmapBilin_bounded`** is then the thesis's argument verbatim, with one
+  simplification: instead of computing `tensorNorm C D` of `(f⊙g)(t)` we use
+  the *order-separating* half of **112X**.1 directly, exactly as
+  `tensor_basic_2` does.  `tmap_cs` (banked in session 58) gives
+  `χ(β_⊙(t)*β_⊙(t)) ≤ ‖f1‖‖g1‖ χ(β_⊙(t* t))`, the first promise gives
+  `≤ ‖f1‖²‖g1‖²‖t‖²χ(1)`, and order separation converts that into
+  `β_⊙(t)*β_⊙(t) ≤ (‖f1‖‖g1‖‖t‖)²·1`, i.e. `‖β_⊙ t‖ ≤ ‖f1‖‖g1‖‖t‖` — the
+  sharp constant.  `TensorProduct.map` never appears.
+* **`tmapBilin_normal`** is where the normal-limit lemma earns its keep: a
+  general np-functional `χ` on `𝒞 ⊗ 𝒟` is only an *operator-norm* limit of
+  members of `Ω` (112X.1.2); boundedness transports that limit through `β_⊙`
+  with the factor `M`, and `exists_uwExtension_of_normLimit` closes it.
+  Continuity into `ultraweak (𝒞 ⊗ 𝒟)` is assembled by the new private
+  `continuous_ultraweak_of_forall'` (A/VN's `continuous_ultraweak_of_forall`
+  with the *domain* topology arbitrary — here `uwTensorTopology`).
+* `exists_tmap` itself is 112XI + 114I(5) + 44XV, with uniqueness by ultraweak
+  density; `tensor_functorial`'s first three parts are 114I(1)(2)(3) and the
+  fourth (subunitality) is 116III.1's monotonicity.
+
+**115IV** (`tensor_functor_id`, `tensor_functor_comp`) is `exists_tmap`'s own
+uniqueness clause, twice — two lines each.
+
+### 4. 116III.5, and why 116III.4 does *not* follow
+
+`tensor_simple_facts_5`: `b ↦ χ(a ⊗ b)` is, uniformly on the unit ball of `ℬ`
+(because `‖a ⊗ b‖ ≤ ‖a‖‖b‖` — the new `norm_vtmul_le`, which is the `≤` half
+of 116III.2 and follows from the private `tsn_tmul_le`), a limit of the
+ultraweakly continuous functionals `∑ₖₗ σ(cₖ* a c_l) τ(dₖ*(·)d_l)`; so
+`continuous_ultraweak_of_normLimit` applies and `a ⊗ (·)` is normal.  Complete
+positivity is `a = x* x` and `star(x ⊗ bᵢ)·(x ⊗ bⱼ) = a ⊗ (bᵢ* bⱼ)`; the
+nmiu-map `1 ⊗ (·)` is the same map with the miu clauses read off 108I.
+
+**116III.4 is not unblocked** (the brief claimed it was).  Joint ultraweak
+continuity is tested along nets in the *product*, and the error term
+`ε‖a‖‖b‖` is uniform only on bounded sets while ultraweak neighbourhoods are
+norm-unbounded — `predual_complete` has nothing to close on.  Note that
+ultraweakly convergent *sequences* are automatically norm-bounded (uniform
+boundedness in `(ℬ_*)^*`), so the exercise is entirely about nets; we could
+neither prove nor refute it.  The hint's reduction proves exactly the
+*separate* statement, i.e. 116III.5's half.
+
+### 5. ERRATA
+
+The **115II** row gained an item (e): the proof's "incidentally, since each
+`ω∘β_⊙` is ultraweakly continuous, so is `β_⊙`, and thus `β` is normal" is a
+**gap, not a slip** — ultraweak continuity of `ω∘β_⊙` is established only for
+the *basic* `ω`, while normality is tested against every np-functional on
+`𝒞⊗𝒟`, which 112X.1.2 only reaches in operator norm.  The claim is true; the
+justification needs the `predual-complete` step above.
+
+### Things the brief got wrong
+
+* "116III.4 and 116III.5 want it too" — only **.5** does; **.4** is not
+  unblocked by the normal-limit lemma (§4).
+* The route "extend each `∑ᵢχᵢ ∘ β_⊙` to `Eₙ` on `𝒜⊗ℬ` by **112XI**" cannot
+  be taken as stated: 112XI (and 114I, and `BilinNormal`/`BilinBounded`
+  themselves) confine all three algebras to one universe, so they do not apply
+  to `ℂ`-valued bilinear maps.  `exists_uwExtension_odotF` and
+  `nonneg_of_nonneg_on_tensorSpan` are the universe-free substitutes.
+* Everything else checked out: the 70/31/17/11/11 counts were exact, A/Proc
+  really had no external blocker, `tmap_cs`/`cp_cs_sum` were exactly what the
+  boundedness half needed, and `BilinNormal` really was the gate.
+* Not attempted, and re-costed rather than assumed: **118IV.4** (129X's
+  blocker) goes through 118IV.2/.3 — a spatial argument using
+  `carrier-vector-state` and the double commutant — and is a development, not
+  a corollary; **130IV** was not reached.
