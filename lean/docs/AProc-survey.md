@@ -1,9 +1,28 @@
-# `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised worker 72, session 47)
+# `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised worker 72, session 47; worker 73, session 48)
 
-**Headline count: A/Proc has 104 code `sorry`s** after session 47.
-Per file: `Tensor` 43, `Measurement` **27** (was 36), `QuantumLambda` 17,
-`Duplicators` 17.  (`grep -c sorry` gives 45/29/20/17 because the file
-docstrings mention `sorry` in prose; the code counts are the ones above.)
+**Headline count: A/Proc has 97 code `sorry`s** after session 48.
+Per file: `Tensor` 43, `Measurement` **20** (was 27), `QuantumLambda` 17,
+`Duplicators` 17.  (`grep -c sorry` gives 45/25/20/17 because the file
+docstrings mention `sorry` in prose; the code counts are the ones above.
+Note `\bsorry\b` also matches "sorry-ed" in prose — count the compiler's
+`declaration uses \`sorry\`` warnings instead.)
+
+> **Session 48 update — both parsec-980 blockers are gone.**
+> **98III** `filters_composition` and **98VI** `corners_composition` are
+> **proved and axiom-clean**, and neither needed the machinery the previous
+> two surveys expected: 98III needs no `⌊√p'√q⌉ = ⌈p'⌉` (see below), and 98VI
+> needs neither the printed hint nor its converse.  Also closed: **103II**.1/.2
+> (`purely_positive_examples_1/2`), **105III**.1-2 (`chevron_f_basic_12`),
+> **105V** existence (`positive_map_uniqueness_exists`) and **106I** existence
+> (`uniqueness_sequential_product_exists`).  **The single blocker of the whole
+> parsec 1000–1060 chain is now 100III `pure_fundamental`**, and inside it the
+> one hard implication (1)⟹(2), which needs **98XI `ad-pure`** — the statement
+> that `[a*(·)a] = [a](·)[a]*` is an ncpu-isomorphism.  `ad-pure` is an
+> *Example* in proc.tex and **is not transcribed in the Lean file at all**; it
+> needs 82I `polar-decomposition` (proved, A/VN) plus corner bookkeeping.
+> Everything else in 100III is short: (2)⟹(3) is the uniqueness clause of
+> 98IX, and (3)⟹(1) is `f = c_{f(1)} ∘ [f] ∘ π_{⌈f⌉}` with an iso in the
+> middle (an ncp-isomorphism is a filter — see `isPure_of_iso`).
 
 > **Session 47 update — 96V is proved, and the Measurement chain is open.**
 > `canonical_filter` (**96V**) is closed and axiom-clean, and does **not**
@@ -28,7 +47,11 @@ docstrings mention `sorry` in prose; the code counts are the ones above.)
 | (a) self-contained / reachable now | **5** | 4% |
 | (c′) cited to literature, no thesis argument at all | **1** | 1% |
 | (d) suspicious | **0 new** (3 already-known false statements are recorded and realigned) | |
-| closed this session | **2** (99XI, 106III.1) | |
+| closed in session 46 | **2** (99XI, 106III.1) | |
+
+*(The class counts above are as of session 46 and have not been recomputed;
+16 of the (b) entries have been closed since, all in `Measurement.lean`.  The
+per-item tables below are current.)*
 
 The two blockers that gate almost everything:
 
@@ -105,7 +128,7 @@ band can be `#print axioms`-clean until 111XII is.
 
 ## (b) Blocked, with the named blocker
 
-### `Measurement.lean` (parsecs 960–1060) — 27 left, 9 closed in session 47
+### `Measurement.lean` (parsecs 960–1060) — 20 left, 7 closed in session 48 (9 in session 47)
 
 | DISP | decl | blocked on |
 |---|---|---|
@@ -113,24 +136,25 @@ band can be `#print axioms`-clean until 111XII is.
 | 98II.1 | `filter_basic_1` | **CLOSED** |
 | 98II.2 | `filter_basic_2` | **CLOSED** — via 98II.1, so the ℂ-gadget of the "near miss" below was **not** needed |
 | 98II.3 | `filter_basic_3` (bipositivity) | **CLOSED** |
-| 98III | `filters_composition` | **the live blocker.**  `d ∘ c` cannot be factored by using `d`'s universal property first: `f(1) ≤ d(c(1))` does *not* give `f(1) ≤ d(1)`, since a filter's `c(1)` need not be an effect.  The route that should work is via 98II.1 on both factors, giving `c_q ∘ c_{p'} = (√p'√q)*(·)(√p'√q)`, plus `⌊√p'√q⌉ = ⌈p'⌉` so that `isFilter_ad` applies |
-| 98VI | `corners_composition` | the exercise's own hint inequality (see the 98VI ERRATA row: only the converse of the printed inequality is usable) |
+| 98III | `filters_composition` | **CLOSED (session 48)** — and the "route that should work" recorded in session 47 (reduce to `c_q ∘ c_{p'}` and prove `⌊√p'√q⌉ = ⌈p'⌉`) is **not needed**.  The obstruction (`f(1) ≤ d(c(1))` does not give `f(1) ≤ d(1)`) is removed by *rescaling*: `c(1) ≤ l·1` with `l = ‖c(1)‖+1`, so `f(1) ≤ l·d(1)`, and `l⁻¹f` factors through `d`; rescaling the factor back by `l` gives `h'` with `d(h'(1)) = f(1) ≤ d(c(1))`, hence `h'(1) ≤ c(1)` by bipositivity of `d` (98II.3), hence a factorisation through `c`.  Uniqueness is injectivity of both (98II.2).  Total: ~45 lines, using `exists_ncpSmul` |
+| 98VI | `corners_composition` | **CLOSED (session 48)** — using neither the printed hint nor its converse.  Take the composite's effect to be `s := β'(r)`, the transport of `τ`'s effect along the 98IV.1 isomorphism `β : ⌊p⌋𝒜⌊p⌋ ≅ ℬ`; then `s ≤ ⌊p⌋ ≤ p` and `π(1−s) = 1−r`, and the universal property falls out of `π`'s and `τ`'s.  Uniqueness is surjectivity of `τ∘π` (98IV.2).  ERRATA row 98VI and QUESTIONS A1 updated |
 | 98VII, 98VII-formula | `filter_corner`, `filter_corner_formula` | **CLOSED** (the thesis's proof verbatim) |
 | 98IX | `exists_sqBracket`, `square_f` | **CLOSED** |
 | 100II.3 | `isPure_adSelf` | **CLOSED** (`a*(·)a = canonicalFilter a ∘ π_{⌊a⌉}`) |
-| 100III | `pure_fundamental` | 98III + 98VI (98II and 98IX are now proved) |
+| 100III | `pure_fundamental` | **the live blocker of the whole chain.**  98III/98VI are now proved, so only (1)⟹(2) is left: the induction over `IsPure` reduces (via 98III + 98VI + 98II.1 + 98IV.1) to "`π_s ∘ c_p` is properly pure", which is **98XI `ad-pure`** — *not transcribed in the Lean file*, and needing 82I polar decomposition |
 | 100VII.1/.2/.3 | `special_pure_maps_*` | 100III |
-| 102VII | `canonical_quotient_rigid` | 96V (80IV and 45VI, its other inputs, **are** proved) |
+| 102VII | `canonical_quotient_rigid` | 96V is proved, so this is *reachable*, but it is a long proof: approximate pseudoinverses `eₙ = Σ⌈tₙ⌉`, ultrastrong convergence via 66-something `mult-jus-cont`, and `nmiu-rigid`.  Not attempted in session 48 |
 | 102IX | `pure_is_rigid` | 98IX + 102VII + 100III |
-| 103II.1/.2 | `purely_positive_examples_*` | 100II.3 (purity half); 101VII.1 half is proved |
+| 103II.1/.2 | `purely_positive_examples_*` | **CLOSED (session 48)** — .1 is `isPure_adSelf` (100II.3) plus 101VII.1 at `a* = a`; .2 is `a(·)a = g∘g` for `g = √a(·)√a` |
 | 104III.2a | `centrally_similar_basic_2a` | **parked: false as printed**, ERRATA row exists |
 | 104III.3/.4/.5 | `centrally_similar_basic_*` | 81V `douglas` / 81VIII `sequential-quotient` (A/VN, `sorry`) |
 | 104VII | `positive_quotients_centrally_similar` | 104III.4/.5 (80IV is now proved — correction to w46 §7) |
 | 104IX | `faithful_positive_map_uniqueness` | 100VII + 104VII |
-| 105III.1-2/.4 | `chevron_f_basic_*` | 98IX (`chevron` is defined from `[f]`) |
-| 105IV.1/.3 | `chevron_f_purely_positive_*` | 103II + 105III |
-| 105V ×2, 105VII | `positive_map_uniqueness*`, `sqrt_axiom` | 104IX + 105IV |
-| 106I ×2 | `uniqueness_sequential_product*` | 105V (and purity for axiom B) |
+| 105III.1-2 | `chevron_f_basic_12` | **CLOSED (session 48)** — part 1 is the defining formula, part 2 is the 98IX square at `a ∈ ⌈f⌉𝒜⌈f⌉` plus `ceilOne_conj` |
+| 105III.4 | `chevron_f_basic_4` | purity of `⟨f⟩` ⇒ **100III** (via 100VII.1 for the filter half) |
+| 105IV.1/.3 | `chevron_f_purely_positive_*` | 105III.4, hence 100III (the ⋄-self-adjointness of `⟨f⟩` needs its *purity*).  103II is no longer a blocker |
+| 105V uniqueness, 105VII | `positive_map_uniqueness`, `sqrt_axiom` | 104IX + 105IV.  **105V existence is CLOSED (session 48)**: it is `adSelf √p`, ⋄-positive by 103II.2 — it never needed 104IX |
+| 106I uniqueness | `uniqueness_sequential_product` | 105V uniqueness.  **106I existence is CLOSED (session 48)**: (A)/(C)/(D) are `√p√p = p` computations, (B) is `adSelf √p` with 100II.3, and (E) is 101VII.1 transported from ceilings to the order by the new private helper `effect_le_isStarProjection_iff` (`b ≤ q ↔ ⌈b⌉ ≤ q` for an *effect* `b` and a projection `q`) |
 | 106III.1 | `sequential_product_counterexample_1` | **CLOSED this session** |
 | 106III.2/.3 | `sequential_product_counterexample_2/3` | purity-free? .2's axioms (A)(C)(D)(E) are computations; (E) needs contraposition.  Worth a look after 106III.1 |
 

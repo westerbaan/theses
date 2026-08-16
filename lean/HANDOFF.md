@@ -86,18 +86,38 @@ Four files are complete: `A/CStar/Basic`, `A/CStar/TowardsVN`,
 | **A/Proc** | 233 | **177** | 24% |
 | **total** | **1402** | **458** | **67%** |
 
-Refresh with:
+Refresh with — **the only trustworthy recipe is to ask the compiler**:
 
 ```sh
-for d in A/CStar A/VN A/Proc B/Dils B/Eff; do
-  t=0; for f in Theses/$d/*.lean; do
-    n=$(grep -o '\bsorry\b' $f | wc -l); m=$(grep -o '`sorry`' $f | wc -l)
-    t=$((t+n-m)); done; echo "$d: $t"; done
+lake build 2>&1 | grep -oE "Theses/[A-Za-z/]+\.lean:[0-9]+:[0-9]+: declaration uses" \
+  | sort -u | sed 's|:[0-9]*:[0-9]*.*||' | uniq -c | sort -rn
 ```
 
+This counts **declarations that still use `sorry`**, per file, from the compiler's
+own warnings.  Warnings replay from cache, so it is cheap after the first build.
+
+Do **not** count with grep.  The old recipe was
+
+```sh
+n=$(grep -o '\bsorry\b' $f | wc -l); m=$(grep -o '`sorry`' $f | wc -l)   # WRONG
+```
+
+and it over-counts in two independent ways that between them inflated the
+project total by about 5%:
+
+* `\bsorry\b` matches prose in doc comments — "sorry-ed", "still sorry", file
+  header summaries.  This produced wrong per-file counts four times in one week
+  (`Stinespring` 7 vs 6, A/Proc 120 vs 115, `QuantumLambda` 20 vs 17,
+  `Tensor` 45 vs 43), and three of those errors reached commit messages.
+* It counts `sorry` **tokens**, while the compiler counts **declarations**.  One
+  declaration with three `sorry`s is one open goal, not three (`Pure.lean`: 15
+  tokens, 13 declarations).
+
+Use the token count only when you specifically mean tokens, and say so.
 (Excludes the two tooling `sorry`s in `AxiomCheck.lean`.  The baseline is the
 statements-only commit `8d6f684`; earlier notes say 1401, counted slightly
-differently.)
+differently — and on the grep basis, so the historical trend line is not exactly
+comparable with compiler-counted figures.)
 
 **A/Proc and most of B/Dils are cold because of sequencing, not difficulty** —
 they sit at the end of the import chain `A/CStar → A/VN → {A/Proc, B/Dils}` and

@@ -2544,7 +2544,71 @@ theorem filter_basic_3 [VonNeumannAlgebra A] [VonNeumannAlgebra C]
 composition of filters is a filter. -/
 theorem filters_composition [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     [VonNeumannAlgebra C] (c : NCPMap C B) (d : NCPMap B A)
-    (hc : IsFilter c) (hd : IsFilter d) : IsFilter (ncpComp d c) := sorry
+    (hc : IsFilter c) (hd : IsFilter d) : IsFilter (ncpComp d c) := by
+  -- The obstruction the naive argument runs into is that `f(1) ≤ d(c(1))`
+  -- does *not* give `f(1) ≤ d(1)`, because `c(1)` need not be an effect.
+  -- It is removed by **rescaling**: `c(1) ≤ l·1` for `l = ‖c(1)‖+1`, so
+  -- `f(1) ≤ l·d(1)`, and `l⁻¹f` factors through `d` as `l⁻¹f = d ∘ h`.
+  -- Then `h' := l·h` has `d(h'(1)) = f(1) ≤ d(c(1))`, so `h'(1) ≤ c(1)` by
+  -- bipositivity of `d` (98II.3), and `h'` factors through `c`.
+  refine ⟨fun E _ _ _ _ f hf1 => ?_⟩
+  rw [ncpComp_apply] at hf1
+  set l : ℝ := ‖(c 1 : B)‖ + 1 with hldef
+  have hl0 : (0 : ℝ) ≤ l := by positivity
+  have hlpos : (0 : ℝ) < l := by
+    have : (0 : ℝ) ≤ ‖(c 1 : B)‖ := norm_nonneg _
+    simp only [hldef]; linarith
+  have hlinv : (0 : ℝ) ≤ l⁻¹ := inv_nonneg.mpr hl0
+  -- `c(1) ≤ l·1`
+  have hc1l : (c 1 : B) ≤ algebraMap ℂ B ((l : ℝ) : ℂ) := by
+    have h1 : (c 1 : B) ≤ algebraMap ℝ B ‖(c 1 : B)‖ :=
+      (IsSelfAdjoint.of_nonneg (ncpMap_nonneg c zero_le_one)).le_algebraMap_norm_self
+    rw [Theses.A.CStar.algebraMap_real_eq] at h1
+    exact h1.trans (Theses.A.CStar.algebraMap_ofReal_mono (by simp [hldef]))
+  -- hence `f(1) ≤ d(c(1)) ≤ l·d(1)`
+  have hdsmul : ∀ (t : ℝ) (x : B), (d (((t : ℝ) : ℂ) • x) : A) = ((t : ℝ) : ℂ) • d x :=
+    fun t x => map_smul d.toCompletelyPositiveMap.toLinearMap _ _
+  have hfl : (f 1 : A) ≤ ((l : ℝ) : ℂ) • d 1 := by
+    refine hf1.trans ?_
+    have hc1l' : (c 1 : B) ≤ ((l : ℝ) : ℂ) • (1 : B) := by
+      rwa [← Algebra.algebraMap_eq_smul_one]
+    have h : (d (c 1) : A) ≤ d (((l : ℝ) : ℂ) • (1 : B)) :=
+      OrderHomClass.mono d.toCompletelyPositiveMap hc1l'
+    rwa [hdsmul] at h
+  -- `l⁻¹f` factors through `d`
+  obtain ⟨f', hf'⟩ := exists_ncpSmul f hlinv
+  have hf'1 : (f' 1 : A) ≤ d 1 := by
+    have h0 : (0 : A) ≤ ((l⁻¹ : ℝ) : ℂ) • (((l : ℝ) : ℂ) • (d 1 : A) - f 1) :=
+      Theses.A.CStar.ofReal_smul_nonneg (sub_nonneg.mpr hfl) hlinv
+    rw [smul_sub, smul_smul, ← Complex.ofReal_mul, inv_mul_cancel₀ (ne_of_gt hlpos),
+      Complex.ofReal_one, one_smul, sub_nonneg] at h0
+    rwa [hf' 1]
+  obtain ⟨h, hh, -⟩ := hd.universal E f' hf'1
+  -- rescale back: `h' = l·h` satisfies `d ∘ h' = f`
+  obtain ⟨h', hh'⟩ := exists_ncpSmul h hl0
+  have hdh' : ∀ b : E, (d (h' b) : A) = f b := by
+    intro b
+    rw [hh' b, hdsmul, ← hh b, hf' b, smul_smul, ← Complex.ofReal_mul,
+      mul_inv_cancel₀ (ne_of_gt hlpos), Complex.ofReal_one, one_smul]
+  -- `h'(1) ≤ c(1)`, by bipositivity of `d`
+  have hh'1 : (h' 1 : B) ≤ c 1 := by
+    have hsub : (d ((c 1 : B) - h' 1) : A) = d (c 1) - d (h' 1) :=
+      map_sub d.toCompletelyPositiveMap.toLinearMap _ _
+    have h0 : (0 : A) ≤ d ((c 1 : B) - h' 1) := by
+      rw [hsub, hdh' 1, sub_nonneg]
+      exact hf1
+    have := (filter_basic_3 d hd ((c 1 : B) - h' 1)).mp h0
+    rwa [sub_nonneg] at this
+  obtain ⟨g, hg, -⟩ := hc.universal E h' hh'1
+  refine ⟨g, fun b => ?_, fun g' hg' => ?_⟩
+  · rw [ncpComp_apply, ← hg b, hdh' b]
+  · refine DFunLike.ext _ _ fun b => ?_
+    have hinjd : Function.Injective ⇑d := (filter_basic_2 d hd).1
+    have hinjc : Function.Injective ⇑c := (filter_basic_2 c hc).1
+    refine hinjc (hinjd ?_)
+    have h1 := hg' b
+    rw [ncpComp_apply] at h1
+    rw [← h1, ← hg b, hdh' b]
 
 /-- **98IV** (`corner-basic`, proc.tex:608, Exercise), part 1: for a
 (unital) corner `π : 𝒜 → C` of an effect `p` there is a unique ncp-map
@@ -2653,8 +2717,61 @@ theorem corners_floor [VonNeumannAlgebra A] [VonNeumannAlgebra B]
 composition of corners is again a corner. -/
 theorem corners_composition [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     [VonNeumannAlgebra C] (π : NCPMap A B) (τ : NCPMap B C)
-    (hπ : IsCornerMap π) (hτ : IsCornerMap τ) : IsCornerMap (ncpComp τ π) :=
-  sorry
+    (hπ : IsCornerMap π) (hτ : IsCornerMap τ) : IsCornerMap (ncpComp τ π) := by
+  -- The effect to take is `s := β'(r)`, the transport of `τ`'s effect `r`
+  -- along the isomorphism `β : ⌊p⌋𝒜⌊p⌋ ≅ ℬ` of 98IV.1: then `s ≤ ⌊p⌋` and
+  -- `π(s) = r`, so `π(1−s) = 1−r` and the maps killing `1−s` are exactly
+  -- those that factor through `π` and then through `τ`.  (The exercise's
+  -- hint — `⌈τ⌉ ≤ ⌈π(⌈τ∘π⌉^⊥)⌉^⊥` — is the direction one does not need;
+  -- see the 98VI row of ERRATA.md.)
+  obtain ⟨hπu, p, hp, hπc⟩ := hπ
+  obtain ⟨hτu, r, hr, hτc⟩ := hτ
+  obtain ⟨β, hβ, hβ1, ⟨β', hβ'β, hββ'⟩, -⟩ := corner_basic_1 p hp π hπc hπu
+  have hβinj : Function.Injective ⇑β := fun x y hxy => by rw [← hβ'β x, ← hβ'β y, hxy]
+  have hβ'1 : β' 1 = 1 := hβinj (by rw [hββ', hβ1])
+  set s : A := (β' r).val with hsdef
+  have hsfl : s ≤ floor p := by
+    have h : β' r ≤ 1 := by rw [← hβ'1]; exact OrderHomClass.mono β'.toCompletelyPositiveMap hr.2
+    have h2 := (Corner.le_def (β' r) 1).mp h
+    rwa [Corner.val_one] at h2
+  have hs0 : (0 : A) ≤ s := by
+    have h : (0 : Corner A (floor p)) ≤ β' r := ncpMap_nonneg β' hr.1
+    have h2 := (Corner.le_def 0 (β' r)).mp h
+    rwa [show ((0 : Corner A (floor p)) : Corner A (floor p)).val = 0 from rfl] at h2
+  have hsp : s ≤ p := hsfl.trans (floor_le hp)
+  have hseff : s ∈ effects A := ⟨hs0, hsp.trans hp.2⟩
+  have hπs : (π s : B) = r := by
+    have hstd : (stdCorner p).toNCPMap s = β' r :=
+      Corner.val_injective (by rw [stdCorner_apply]; exact (β' r).property)
+    rw [hβ s, hstd, hββ']
+  have hπ1s : (π (1 - s) : B) = 1 - r := by
+    have hsub : (π (1 - s) : B) = π 1 - π s :=
+      map_sub π.toCompletelyPositiveMap.toLinearMap _ _
+    rw [hsub, hπu, hπs]
+  refine ⟨by rw [ncpComp_apply, hπu, hτu], s, hseff, ?_, ?_⟩
+  · rw [ncpComp_apply, hπ1s]
+    exact hτc.map_perp
+  · intro E _ _ _ _ f hf
+    -- `f` kills `1−p` because `s ≤ p`
+    have hfp : (f (1 - p) : E) = 0 := by
+      refine le_antisymm ?_ (ncpMap_nonneg f (sub_nonneg.mpr hp.2))
+      have h : (f (1 - p) : E) ≤ f (1 - s) :=
+        OrderHomClass.mono f.toCompletelyPositiveMap (sub_le_sub_left hsp 1)
+      rwa [hf] at h
+    obtain ⟨f₁, hf₁, -⟩ := hπc.universal E f hfp
+    have hf₁r : (f₁ (1 - r) : E) = 0 := by rw [← hπ1s, ← hf₁, hf]
+    obtain ⟨g, hg, -⟩ := hτc.universal E f₁ hf₁r
+    refine ⟨g, fun a => ?_, fun g' hg' => ?_⟩
+    · rw [ncpComp_apply, ← hg, ← hf₁]
+    · -- uniqueness: `τ ∘ π` is surjective (98IV.2)
+      have hsπ : Function.Surjective ⇑π := (corner_basic_2 p hp π hπc hπu).1
+      have hsτ : Function.Surjective ⇑τ := (corner_basic_2 r hr τ hτc hτu).1
+      refine DFunLike.ext _ _ fun y => ?_
+      obtain ⟨b, rfl⟩ := hsτ y
+      obtain ⟨a, rfl⟩ := hsπ b
+      have h1 := hg' a
+      rw [ncpComp_apply] at h1
+      rw [← h1, ← hg, ← hf₁]
 
 /-- Auxiliary: `⌊e⌋ = e` for a projection `e`. -/
 theorem floor_of_isStarProjection [VonNeumannAlgebra A] {e : A}
@@ -4313,12 +4430,26 @@ def IsDiamondPositive [VonNeumannAlgebra A] (f : NCPMap A A) : Prop :=
 /-- **103II** (`purely-positive-examples`, proc.tex:1412, Examples),
 part 1: for self-adjoint `a` the map `a(·)a` is ⋄-self-adjoint. -/
 theorem purely_positive_examples_1 [VonNeumannAlgebra A] (a : A)
-    (ha : IsSelfAdjoint a) : IsDiamondSelfAdjoint (adSelf a) := sorry
+    (ha : IsSelfAdjoint a) : IsDiamondSelfAdjoint (adSelf a) := by
+  -- purity is 100II.3; contraposition to itself is 101VII.1 at `a* = a`
+  refine ⟨isPure_adSelf a, ?_⟩
+  have h := equivalent_examples_1 a
+  rwa [ha.star_eq] at h
 
 /-- **103II** (`purely-positive-examples`, proc.tex:1412, Examples),
 part 2: for positive `a` the map `a(·)a` is ⋄-positive. -/
 theorem purely_positive_examples_2 [VonNeumannAlgebra A] (a : A)
-    (ha : 0 ≤ a) : IsDiamondPositive (adSelf a) := sorry
+    (ha : 0 ≤ a) : IsDiamondPositive (adSelf a) := by
+  -- `a(·)a = g ∘ g` for `g = √a(·)√a`, which is ⋄-self-adjoint by part 1
+  have hsa : IsSelfAdjoint (CFC.sqrt a) := IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg a)
+  refine ⟨adSelf (CFC.sqrt a), purely_positive_examples_1 _ hsa, ?_⟩
+  refine DFunLike.ext _ _ fun x => ?_
+  rw [ncpComp_apply, adSelf_apply, adSelf_apply, adSelf_apply, hsa.star_eq,
+    (IsSelfAdjoint.of_nonneg ha).star_eq]
+  calc a * x * a
+      = (CFC.sqrt a * CFC.sqrt a) * x * (CFC.sqrt a * CFC.sqrt a) := by
+        rw [CFC.sqrt_mul_sqrt_self a ha]
+    _ = CFC.sqrt a * (CFC.sqrt a * x * CFC.sqrt a) * CFC.sqrt a := by noncomm_ring
 
 /-- **103III** (`purely-positive-basic`, proc.tex:1425, Exercise), part 1:
 `⌈f⌉ = ⌈f(1)⌉` for a ⋄-self-adjoint `f`. -/
@@ -4787,7 +4918,18 @@ theorem chevron_f_basic_12 [VonNeumannAlgebra A] [VonNeumannAlgebra B]
     (f : NCPMap A B) (a : Corner A (ncpCarrier f)) :
     (chevron f a).val = ceil (f 1) * f a.val * ceil (f 1) ∧
       (chevron f a).val =
-        CFC.sqrt (f 1) * (sqBracket f a).val * CFC.sqrt (f 1) := sorry
+        CFC.sqrt (f 1) * (sqBracket f a).val * CFC.sqrt (f 1) := by
+  -- Part 1 is the defining formula of `chevron`; part 2 is the square of
+  -- **98IX** at `a ∈ ⌈f⌉𝒜⌈f⌉` (where `π_{⌈f⌉}a = a`), together with
+  -- `⌈f(1)⌉f(x)⌈f(1)⌉ = f(x)`.
+  have hch : (chevron f a).val = ceil (f 1) * f a.val * ceil (f 1) :=
+    (exists_chevron f).choose_spec a
+  refine ⟨hch, ?_⟩
+  have hsurj : (cornerProjMap (ncpCarrier f)).toNCPMap a.val = a :=
+    Corner.val_injective (by rw [cornerProjMap_apply]; exact a.property)
+  have h := (square_f f).1 a.val
+  rw [hsurj, stdFilter_apply] at h
+  rw [hch, ceilOne_conj, h]
 
 /-- **105III** (`chevron-f-basic`, proc.tex:1717, Exercise), part 3:
 `⟨f⟩` is faithful and `⟨f⟩(1) = f(1)`. -/
@@ -4924,7 +5066,15 @@ existence: `√p(·)√p` is a ⋄-positive map with value `p` at `1`. -/
 theorem positive_map_uniqueness_exists [VonNeumannAlgebra A] (p : A)
     (hp : 0 ≤ p) :
     ∃ f : NCPMap A A, IsDiamondPositive f ∧ f 1 = p ∧
-      ∀ a, f a = CFC.sqrt p * a * CFC.sqrt p := sorry
+      ∀ a, f a = CFC.sqrt p * a * CFC.sqrt p := by
+  -- the map is `√p(·)√p = adSelf √p`, which is ⋄-positive by **103II**.2
+  -- (applied to the positive element `√p`); its value at `1` is `√p√p = p`
+  have hsa : star (CFC.sqrt p) = CFC.sqrt p :=
+    (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg p)).star_eq
+  refine ⟨adSelf (CFC.sqrt p),
+    purely_positive_examples_2 _ (CFC.sqrt_nonneg p), ?_, fun a => ?_⟩
+  · rw [adSelf_apply, hsa, mul_one, CFC.sqrt_mul_sqrt_self p hp]
+  · rw [adSelf_apply, hsa]
 
 /-- **105V** (`positive-map-uniqueness`, proc.tex:1766, Theorem),
 uniqueness: any ⋄-positive `f : 𝒜 → 𝒜` with `f(1) = p` is
@@ -4960,11 +5110,114 @@ structure IsSequentialProduct [VonNeumannAlgebra A] (op : A → A → A) :
   ax5 : ∀ p ∈ effects A, ∀ e₁ e₂ : A, IsStarProjection e₁ →
     IsStarProjection e₂ → (op p e₁ ≤ 1 - e₂ ↔ op p e₂ ≤ 1 - e₁)
 
+/-- Infrastructure for 106I, axiom (E): for an **effect** `b` and a
+projection `q` one has `b ≤ q` iff `⌈b⌉ ≤ q`.  (The `⟸` direction needs
+`b ≤ 1`: it fails for positive `b` of norm `> 1`, e.g. `b = 2q`.)  This is
+what turns the order-theoretic axiom (E) into the ceiling-theoretic
+contraposition of **101VII**.1. -/
+private theorem effect_le_isStarProjection_iff [VonNeumannAlgebra A] {b q : A}
+    (hb : 0 ≤ b) (hb1 : b ≤ 1) (hq : IsStarProjection q) :
+    b ≤ q ↔ ceil b ≤ q := by
+  constructor
+  · intro h
+    have hc : star (1 - q) = 1 - q := hq.one_sub.isSelfAdjoint.star_eq
+    have h1 : (0 : A) ≤ (1 - q) * (q - b) * (1 - q) := by
+      have h0 := star_left_conjugate_nonneg (sub_nonneg.mpr h) (1 - q)
+      rwa [hc] at h0
+    have h2 : (1 - q) * (q - b) * (1 - q) = -((1 - q) * b * (1 - q)) := by
+      have hz : (1 - q) * q = 0 := by
+        rw [sub_mul, one_mul, hq.isIdempotentElem.eq, sub_self]
+      calc (1 - q) * (q - b) * (1 - q)
+          = ((1 - q) * q) * (1 - q) - (1 - q) * b * (1 - q) := by noncomm_ring
+        _ = -((1 - q) * b * (1 - q)) := by rw [hz, zero_mul, zero_sub]
+    have h3 : (1 - q) * b * (1 - q) = 0 := by
+      refine le_antisymm (neg_nonneg.mp (h2 ▸ h1)) ?_
+      have h0 := star_left_conjugate_nonneg hb (1 - q)
+      rwa [hc] at h0
+    have h4 := (ceil_le_perp_iff hb hq.one_sub).mpr h3
+    rwa [sub_sub_cancel] at h4
+  · intro h
+    have hbq : b * q = b := (ceil_le_iff hb hq).mp h
+    have hqb : q * b = b := ((ceil_basic_1 b q hb hq).out 2 0).mp h
+    have hz : (0 : A) ≤ q * (1 - b) * q := by
+      have h0 := star_left_conjugate_nonneg (sub_nonneg.mpr hb1) q
+      rwa [hq.isSelfAdjoint.star_eq] at h0
+    have he : q * (1 - b) * q = q - b := by
+      calc q * (1 - b) * q = q * q - (q * b) * q := by noncomm_ring
+        _ = q - b := by rw [hq.isIdempotentElem.eq, hqb, hbq]
+    rw [he] at hz
+    exact sub_nonneg.mp hz
+
 /-- **106I** (`uniqueness-sequential-product`, proc.tex:1811, Theorem),
 existence: `p ∗ q = √p q √p` is a sequential product on the effects of
 any von Neumann algebra. -/
 theorem uniqueness_sequential_product_exists [VonNeumannAlgebra A] :
-    IsSequentialProduct (fun p q : A => CFC.sqrt p * q * CFC.sqrt p) := sorry
+    IsSequentialProduct (fun p q : A => CFC.sqrt p * q * CFC.sqrt p) := by
+  -- (A) `√p1√p = p`; (B) `√p(·)√p = adSelf √p`, pure by **100II**.3;
+  -- (C) both sides are `pqp`, since `√p p √p = pp` and `√(pp) = p`;
+  -- (D) `p = √p ∗ √p` with `√p` an effect; (E) is **101VII**.1, the
+  -- contraposition of `a*(·)a` with `a(·)a*` at the self-adjoint `a = √p`,
+  -- transported from ceilings to the order by `effect_le_isStarProjection_iff`.
+  refine ⟨fun p hp => ?_, fun p hp => ?_, fun p hp q hq => ?_, fun p hp => ?_,
+    fun p hp e₁ e₂ h₁ h₂ => ?_⟩
+  · show CFC.sqrt p * 1 * CFC.sqrt p = p
+    rw [mul_one, CFC.sqrt_mul_sqrt_self p hp.1]
+  · exact ⟨adSelf (CFC.sqrt p), isPure_adSelf _, fun q _ => by
+      rw [adSelf_apply, (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg p)).star_eq]⟩
+  · show CFC.sqrt p * (CFC.sqrt p * q * CFC.sqrt p) * CFC.sqrt p
+      = CFC.sqrt (CFC.sqrt p * p * CFC.sqrt p) * q
+        * CFC.sqrt (CFC.sqrt p * p * CFC.sqrt p)
+    set s := CFC.sqrt p with hsdef
+    have hps : s * s = p := CFC.sqrt_mul_sqrt_self p hp.1
+    have h1 : s * p * s = p * p := by rw [← hps]; noncomm_ring
+    rw [h1, CFC.sqrt_mul_self p hp.1]
+    calc s * (s * q * s) * s = (s * s) * q * (s * s) := by noncomm_ring
+      _ = p * q * p := by rw [hps]
+  · set s := CFC.sqrt p with hsdef
+    have hs0 : (0 : A) ≤ s := CFC.sqrt_nonneg p
+    have hps : s * s = p := CFC.sqrt_mul_sqrt_self p hp.1
+    have hs1 : s ≤ 1 := by
+      have h := CFC.sqrt_le_sqrt p 1 hp.2
+      rwa [CFC.sqrt_one] at h
+    refine ⟨s, ⟨hs0, hs1⟩, ?_⟩
+    show p = CFC.sqrt s * s * CFC.sqrt s
+    set t := CFC.sqrt s with htdef
+    have hts : t * t = s := CFC.sqrt_mul_sqrt_self s hs0
+    calc p = s * s := hps.symm
+      _ = t * s * t := by rw [← hts]; noncomm_ring
+  · show CFC.sqrt p * e₁ * CFC.sqrt p ≤ 1 - e₂ ↔
+      CFC.sqrt p * e₂ * CFC.sqrt p ≤ 1 - e₁
+    set s := CFC.sqrt p with hsdef
+    have hs0 : (0 : A) ≤ s := CFC.sqrt_nonneg p
+    have hssa : star s = s := (IsSelfAdjoint.of_nonneg hs0).star_eq
+    have hps : s * s = p := CFC.sqrt_mul_sqrt_self p hp.1
+    -- `s e s` is an effect, for every effect `e`
+    have heff : ∀ e : A, IsStarProjection e →
+        (0 : A) ≤ s * e * s ∧ s * e * s ≤ 1 := by
+      intro e he
+      have h0 : (0 : A) ≤ s * e * s := by
+        have h := star_left_conjugate_nonneg he.nonneg s
+        rwa [hssa] at h
+      refine ⟨h0, ?_⟩
+      have h1 : (0 : A) ≤ s * (1 - e) * s := by
+        have h := star_left_conjugate_nonneg (sub_nonneg.mpr he.le_one) s
+        rwa [hssa] at h
+      have h2 : s * (1 - e) * s = p - s * e * s := by
+        calc s * (1 - e) * s = s * s - s * e * s := by noncomm_ring
+          _ = p - s * e * s := by rw [hps]
+      rw [h2, sub_nonneg] at h1
+      exact h1.trans hp.2
+    have hd : ∀ e : A, diamondUp (adSelf s) e = ceil (s * e * s) := by
+      intro e
+      show ceil (adSelf s e) = _
+      rw [adSelf_apply, hssa]
+    have hcon : Contraposed (adSelf s) (adSelf s) := by
+      have h := equivalent_examples_1 s
+      rwa [hssa] at h
+    rw [effect_le_isStarProjection_iff (heff e₁ h₁).1 (heff e₁ h₁).2 h₂.one_sub,
+      effect_le_isStarProjection_iff (heff e₂ h₂).1 (heff e₂ h₂).2 h₁.one_sub,
+      ← hd e₁, ← hd e₂]
+    exact hcon e₁ e₂ h₁ h₂
 
 /-- **106I** (`uniqueness-sequential-product`, proc.tex:1811, Theorem),
 uniqueness: any sequential product on the effects of a von Neumann algebra

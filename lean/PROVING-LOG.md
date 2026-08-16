@@ -9921,3 +9921,115 @@ removed.  **Oleans for `Theses.A.VN.Projections` and
 `Theses.A.VN.NormalFunctionals` are left built and current**, so downstream
 workers need no rebuild.  Files touched:
 `Theses/A/VN/{Projections,NormalFunctionals}.lean` and this log.
+
+## Session 48 — `A/Proc`: **both parsec-980 blockers fall** (98III, 98VI), and five more of `Measurement.lean` (worker 73)
+
+Files touched: `Theses/A/Proc/Measurement.lean`, `ERRATA.md`, `QUESTIONS.md`,
+`docs/AProc-survey.md`, this log.  Nothing outside `Theses/A/Proc/`.
+**A/Proc 104 → 97**: `Measurement` 27 → **20**, `Tensor` 43,
+`QuantumLambda` 17, `Duplicators` 17.
+
+Closed (all `#print axioms` = `[propext, Classical.choice, Quot.sound]`):
+
+| point | declaration | class |
+|---|---|---|
+| **98III** | `filters_composition` | 3 — the exercise has no printed proof; our route is not the one the survey predicted (§1) |
+| **98VI** | `corners_composition` | 3 — proved *without* the exercise's hint or its converse (§2) |
+| **103II**.1 | `purely_positive_examples_1` | 1 |
+| **103II**.2 | `purely_positive_examples_2` | 1 |
+| **105III**.1-2 | `chevron_f_basic_12` | 1 |
+| **105V** existence | `positive_map_uniqueness_exists` | 1 |
+| **106I** existence | `uniqueness_sequential_product_exists` | 1 — the thesis's own five axioms, checked one by one |
+| — | `effect_le_isStarProjection_iff` | new reusable infrastructure (§4) |
+
+### 1. 98III: the fix is **rescaling**, not `⌊√p'√q⌉ = ⌈p'⌉`
+
+Session 47 recorded the obstruction correctly — for a filter `c`, `c(1)` is an
+arbitrary positive element, so `f(1) ≤ d(c(1))` does *not* give `f(1) ≤ d(1)`
+and `d`'s universal property cannot be applied first — and then proposed to
+route around it through standard filters, with `⌊√p'√q⌉ = ⌈p'⌉` as the hard
+step.  **None of that is needed.**  `c(1) ≤ l·1` for `l = ‖c(1)‖+1`, so by
+positivity and linearity `f(1) ≤ d(c(1)) ≤ l·d(1)`; hence `l⁻¹f` *does* satisfy
+the hypothesis of `d`'s universal property and factors as `l⁻¹f = d ∘ h`.
+Rescaling back, `h' := l·h` (an ncp-map by `exists_ncpSmul`) satisfies
+`d ∘ h' = f`, so `d(h'(1)) = f(1) ≤ d(c(1))`, and **bipositivity of `d`**
+(98II.3, proved last session) upgrades that to `h'(1) ≤ c(1)` — which is
+exactly the hypothesis `c`'s universal property wants.  Uniqueness is
+injectivity of `d` and of `c` (98II.2).  ~45 lines.
+
+The moral is that the two things 98II gives us — bipositivity and injectivity —
+are precisely what makes the composition work, which is presumably why the
+thesis places 98II immediately before 98III.
+
+### 2. 98VI: the hint can be dropped, not merely reversed
+
+ERRATA's 98VI row (and QUESTIONS A1) recorded that the printed hint
+`⌈τ⌉ ≤ ⌈π(⌈τ∘π⌉^⊥)⌉^⊥` is the useless direction and that the proof "needs the
+converse".  That is true of the route that takes the composite's effect to be
+the carrier `⌈τ∘π⌉`.  Taking a different effect avoids the carrier calculus
+completely: with `π` a corner of `p`, `τ` a corner of `r`, and
+`β : ⌊p⌋𝒜⌊p⌋ ≅ ℬ` the isomorphism of 98IV.1 with inverse `β'`, put
+
+  `s := β'(r) ∈ ⌊p⌋𝒜⌊p⌋ ⊆ 𝒜`.
+
+Then `0 ≤ s ≤ ⌊p⌋ ≤ p` (because `β'` is positive and `β'(1) = 1`), and
+`π(s) = β(π_p(s)) = β(β'(r)) = r`, so `π(1−s) = 1−r`.  Everything follows:
+`(τ∘π)(1−s) = τ(1−r) = 0`; a map `f` killing `1−s` also kills `1−p` (since
+`1−p ≤ 1−s` and `f` is positive) hence factors as `f = f₁∘π`; and then
+`f₁(1−r) = f₁(π(1−s)) = f(1−s) = 0`, so `f₁` factors through `τ`.  Uniqueness
+is surjectivity of `τ∘π`, i.e. 98IV.2.  Both documents updated.
+
+### 3. What 100III now hangs on, precisely
+
+With 98III and 98VI proved, `pure_fundamental` (100III) is the only thing
+between us and 100VII, 102IX, 105III.4, 105IV, 105V-uniqueness, 105VII and
+106I-uniqueness.  Its (2)⟹(3) and (3)⟹(1) are short (the uniqueness clause of
+98IX; and `f = c_{f(1)} ∘ [f] ∘ π_{⌈f⌉}` with `[f]` an iso, an iso being a
+filter by the argument inside `isPure_of_iso`).  The work is **(1)⟹(2)**: the
+induction over `IsPure` reduces — using 98III, 98VI, 98II.1 and 98IV.1 — to
+showing that `π_s ∘ c_p` is properly pure, which is the thesis's Example 98XI
+`ad-pure`: for `f = a*(·)a` between corners, `[f] = [a](·)[a]*` is an ncpu-
+isomorphism, `[a] = a/√(a*a)` being the partial isometry of the polar
+decomposition (82I, proved in A/VN).  **98XI is not transcribed in the Lean
+file at all** — no declaration mentions it — so the next worker on this must
+state it first.  That is the whole remaining cost of parsec 1000.
+
+### 4. 106I(E) needed a small order/ceiling bridge
+
+Axiom (E) of the sequential product is stated with `≤` (`p ∗ e₁ ≤ e₂^⊥`),
+while 101VII.1 — the contraposition of `a*(·)a` with `a(·)a*`, which is what
+proves it — is stated with ceilings (`⌈f(s)⌉ ≤ t^⊥`).  The bridge is
+`effect_le_isStarProjection_iff`: for an **effect** `b` and a projection `q`,
+`b ≤ q ↔ ⌈b⌉ ≤ q`.  `⟹` is `(1−q)b(1−q) ≤ (1−q)q(1−q) = 0` plus
+`ceil_le_perp_iff`; `⟸` is `b = qbq ≤ q`, which is where `b ≤ 1` is used —
+the statement is **false** for positive `b` of norm `> 1` (`b = 2q`).  Since
+`√p e √p ≤ √p√p = p ≤ 1`, the hypothesis is available where it is needed.
+The other four axioms are computations with `√p√p = p`: (C) rests on
+`√p p √p = pp` and `√(pp) = p`, and (D) on `√p` being an effect
+(`CFC.sqrt_le_sqrt` and `CFC.sqrt_one`).
+
+### 5. Two survey dependency claims were stale
+
+The survey listed **105V ×2** as blocked on "104IX + 105IV" and **106I ×2** on
+"105V (and purity for axiom B)".  Both are right for the *uniqueness* halves
+and wrong for the *existence* halves, which need only 103II.2 and 100II.3 —
+both of which were already available at the start of this session.  Fixed in
+`docs/AProc-survey.md`.  Also corrected there: 103II is no longer a blocker of
+105IV (105III.4 is), and 102VII is now reachable rather than blocked, though it
+is a long proof (approximate pseudoinverses + `mult-jus-cont` + `nmiu-rigid`)
+that was not attempted.
+
+### 6. Verification
+
+`env LEAN_PATH=… lean Theses/A/Proc/Measurement.lean` → **0** `error:` lines
+and **20** `declaration uses \`sorry\`` warnings, down from 27, with no new
+warning of any kind.  `#print axioms` was run by appending a block to the
+module itself and recompiling (never from an importing scratch file), for all
+seven statements above: each is exactly `[propext, Classical.choice,
+Quot.sound]`.  Nothing staged, nothing committed.
+
+**Note on counting**: the refresh snippet in HANDOFF.md (`grep -o '\bsorry\b'`
+minus backticked mentions) **over-counts**, because `\bsorry\b` matches the
+prose "sorry-ed" that appears in `QuantumLambda.lean`'s and `Tensor.lean`'s
+doc comments; it gave 20/45 for files whose code counts are 17/43.  Count the
+compiler's warnings instead.

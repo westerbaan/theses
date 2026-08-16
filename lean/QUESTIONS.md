@@ -623,6 +623,13 @@ proof requires the **converse**, `⌈τ⌉^⊥ ≤ ⌈π(⌈τ∘π⌉^⊥)⌉`.
 both hold (the two sides are equal), so nothing downstream is wrong — but only
 the converse is usable.
 
+⚠️ **Update (session 48): 98VI is now proved, and it needs neither the hint nor
+its converse**, so this is a question about the *hint* only.  The exercise is
+short if one takes the corner's effect to be `s := β'(r)` rather than the
+carrier `⌈τ∘π⌉` — see the 98VI row of ERRATA.md for the four-line argument.
+The decision left is whether to replace the hint by that route or to keep the
+carrier route with the inequality turned round.
+
 ### A5. 81IX `div-usc` — the second half is false; which repair do you want?
 `vn.tex:5533`.  The Lemma claims both `a ↦ a/b : (𝒜)₁b → 𝒜` **and**
 `a ↦ c∖a/b : c(𝒜)₁b → 𝒜` are ultrastrongly continuous.  The first is true and
