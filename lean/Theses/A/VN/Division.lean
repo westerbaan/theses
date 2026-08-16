@@ -2014,20 +2014,255 @@ theorem proto_douglas_2 (b : A) (t : ℕ → A)
       _ = ε := by rw [Real.sqrt_sq hε.le]
   linarith
 
+/-- Auxiliary for **81V** and **81IX**: *an ultrastrong limit of a
+norm-bounded net is norm-bounded*.  The closed unit ball is ultrastrongly
+closed (**44XI**.3, `vn_positive_basic_3`); rescaling by `(C+ε)⁻¹` — which is
+an ultrastrong homeomorphism because `‖λ·x‖_ω = |λ|‖x‖_ω` — transports that to
+every radius, and `ε ↓ 0` gives the bound. -/
+theorem norm_le_of_usTendsto {ι : Type*} {l : Filter ι} [l.NeBot]
+    {x : ι → A} {y : A} {C : ℝ} (hconv : USTendsto x l y)
+    (hbdd : ∀ᶠ i in l, ‖x i‖ ≤ C) : ‖y‖ ≤ C := by
+  have hC0 : 0 ≤ C := le_trans (norm_nonneg _) hbdd.exists.choose_spec
+  refine le_of_forall_pos_le_add fun ε hε => ?_
+  have hr0 : (0 : ℝ) < C + ε := by linarith
+  set r : ℂ := (((C + ε)⁻¹ : ℝ) : ℂ) with hrdef
+  have hrn : ‖r‖ = (C + ε)⁻¹ := by
+    rw [hrdef, Complex.norm_real, Real.norm_eq_abs,
+      abs_of_nonneg (inv_nonneg.mpr hr0.le)]
+  -- the rescaled net still converges ultrastrongly
+  have hsc : USTendsto (fun i => r • x i) l (r • y) := by
+    rw [usTendsto_iff]
+    intro ω
+    have h0 := (usTendsto_iff x l y).mp hconv ω
+    have h1 : Tendsto (fun i => ‖r‖ * omegaNorm A ω (x i - y)) l (𝓝 (‖r‖ * 0)) :=
+      h0.const_mul ‖r‖
+    rw [mul_zero] at h1
+    exact h1.congr fun i => by rw [← smul_sub, omegaNorm_smul]
+  -- and it lands in the closed unit ball
+  have hmem : ∀ᶠ i in l, r • x i ∈ Metric.closedBall (0 : A) 1 := by
+    filter_upwards [hbdd] with i hi
+    rw [mem_closedBall_zero_iff, norm_smul, hrn]
+    have h2 : (C + ε)⁻¹ * ‖x i‖ ≤ (C + ε)⁻¹ * (C + ε) :=
+      mul_le_mul_of_nonneg_left (hi.trans (by linarith)) (inv_nonneg.mpr hr0.le)
+    rwa [inv_mul_cancel₀ hr0.ne'] at h2
+  let _ : TopologicalSpace A := ultrastrong A
+  have hsc' : Tendsto (fun i => r • x i) l
+      (@nhds A (ultrastrong A) (r • y)) := hsc
+  have hy := vn_positive_basic_3.mem_of_tendsto hsc' hmem
+  rw [mem_closedBall_zero_iff, norm_smul, hrn] at hy
+  have h3 := mul_le_mul_of_nonneg_left hy hr0.le
+  rw [← mul_assoc, mul_inv_cancel₀ hr0.ne', one_mul, mul_one] at h3
+  exact h3
+
+/-- Auxiliary for **81V**: the partial sums `∑_{n<N} a tₙ` of **81III** are
+contractions when `a*a ≤ b*b`.  Writing `d = ∑_{n<N} tₙ`, one has
+`(ad)*(ad) = d*(a*a)d ≤ d*(b*b)d = (bd)*(bd) = ∑_{n<N} b tₙ ≤ 1`, the last
+step because that partial sum is a projection. -/
+theorem apinv_partialSum_norm_le {a b : A} (h : star a * a ≤ star b * b)
+    {t : ℕ → A} (ht : IsApproxPseudoinverse A b t) (N : ℕ) :
+    ‖∑ n ∈ Finset.range N, a * t n‖ ≤ 1 := by
+  classical
+  obtain ⟨hPproj, _, _⟩ :=
+    partialSums_of_isLUB (p := fun n => b * t n) ht.proj_right ht.sum_right
+      (ceill_basic_2 b).1.1.le_one
+  have hsum : ∀ c : A, ∑ n ∈ Finset.range N, c * t n
+      = c * ∑ n ∈ Finset.range N, t n := fun c => (Finset.mul_sum _ _ _).symm
+  have hest : star (∑ n ∈ Finset.range N, a * t n) * (∑ n ∈ Finset.range N, a * t n)
+      ≤ ∑ n ∈ Finset.range N, b * t n := by
+    rw [hsum a]
+    calc star (a * ∑ n ∈ Finset.range N, t n) * (a * ∑ n ∈ Finset.range N, t n)
+        = star (∑ n ∈ Finset.range N, t n) * (star a * a) *
+            (∑ n ∈ Finset.range N, t n) := by rw [star_mul]; noncomm_ring
+      _ ≤ star (∑ n ∈ Finset.range N, t n) * (star b * b) *
+            (∑ n ∈ Finset.range N, t n) := star_left_conjugate_le_conjugate h _
+      _ = star (b * ∑ n ∈ Finset.range N, t n) *
+            (b * ∑ n ∈ Finset.range N, t n) := by rw [star_mul]; noncomm_ring
+      _ = star (∑ n ∈ Finset.range N, b * t n) *
+            (∑ n ∈ Finset.range N, b * t n) := by rw [hsum b]
+      _ = ∑ n ∈ Finset.range N, b * t n := by
+          rw [(hPproj N).isSelfAdjoint.star_eq]; exact (hPproj N).isIdempotentElem.eq
+  have hle1 : star (∑ n ∈ Finset.range N, a * t n) * (∑ n ∈ Finset.range N, a * t n)
+      ≤ 1 := hest.trans (hPproj N).le_one
+  have hn := (CStarAlgebra.norm_le_one_iff_of_nonneg _
+    (star_mul_self_nonneg (∑ n ∈ Finset.range N, a * t n))).mpr hle1
+  rw [CStarRing.norm_star_mul_self] at hn
+  nlinarith [norm_nonneg (∑ n ∈ Finset.range N, a * t n)]
+
+/-- Auxiliary for **81V**: `(λ·a)/b = λ·(a/b)` for `a ∈ Ab`. -/
+theorem div_smul_left (a b : A) (z : ℂ) (h : ∃ c : A, a = c * b) :
+    div (z • a) b = z • div a b := by
+  obtain ⟨h1, h2⟩ := div_spec a b h
+  exact div_eq (by rw [smul_mul_assoc, ← h1]) (by rw [smul_mul_assoc, h2])
+
 /-- **81V** (`douglas`, vn.tex:5461, Exercise), part 1 (Douglas' lemma):
 `a ∈ (A)_λ·b` iff `a*a ≤ λ²b*b`, and then `‖a/b‖ ≤ λ`. -/
 theorem douglas_1 (a b : A) (l : ℝ) (hl : 0 ≤ l) :
     ((∃ c : A, ‖c‖ ≤ l ∧ a = c * b) ↔
         star a * a ≤ ((l : ℂ) ^ 2) • (star b * b)) ∧
-      (star a * a ≤ ((l : ℂ) ^ 2) • (star b * b) → ‖div a b‖ ≤ l) :=
-  sorry
+      (star a * a ≤ ((l : ℂ) ^ 2) • (star b * b) → ‖div a b‖ ≤ l) := by
+  classical
+  -- bookkeeping for real scalars acting through `ℂ`
+  have hRC : ∀ (r : ℝ) (x : A), (r : ℝ) • x = ((r : ℂ)) • x := fun r x => by
+    rw [← IsScalarTower.algebraMap_smul ℂ r x, Complex.coe_algebraMap]
+  have hmono : ∀ {x y : A}, x ≤ y → ∀ {r : ℝ}, 0 ≤ r →
+      ((r : ℂ)) • x ≤ ((r : ℂ)) • y := by
+    intro x y h r hr
+    rw [← sub_nonneg, ← smul_sub]
+    exact ofReal_smul_nonneg (sub_nonneg.mpr h) hr
+  have hone : ∀ {r s : ℝ}, r ≤ s → ((r : ℂ)) • (1 : A) ≤ ((s : ℂ)) • (1 : A) := by
+    intro r s h
+    have h2 := algebraMap_ofReal_mono (𝒜 := A) h
+    rwa [Algebra.algebraMap_eq_smul_one, Algebra.algebraMap_eq_smul_one] at h2
+  have hsq : ∀ (r : ℝ) (x : A), star (((r : ℝ) : ℂ) • x) * (((r : ℝ) : ℂ) • x)
+      = ((r * r : ℝ) : ℂ) • (star x * x) := by
+    intro r x
+    rw [star_smul, smul_mul_assoc, mul_smul_comm, smul_smul,
+      show star ((r : ℝ) : ℂ) = ((r : ℝ) : ℂ) from by simp, ← Complex.ofReal_mul]
+  have hcast : ((l : ℂ) ^ 2) • (star b * b) = ((l * l : ℝ) : ℂ) • (star b * b) := by
+    rw [Complex.ofReal_mul, sq]
+  -- (⇒) conjugate `c*c ≤ λ²·1` by `b`
+  have hfwd : ∀ c : A, ‖c‖ ≤ l → a = c * b →
+      star a * a ≤ ((l : ℂ) ^ 2) • (star b * b) := by
+    intro c hc hac
+    have h1 : star c * c ≤ ((l * l : ℝ) : ℂ) • (1 : A) := by
+      have h2 : star c * c ≤ (‖star c * c‖ : ℝ) • (1 : A) :=
+        le_norm_smul_one (star_mul_self_nonneg c)
+      rw [hRC, CStarRing.norm_star_mul_self] at h2
+      exact h2.trans (hone (by nlinarith [norm_nonneg c]))
+    have h3 := star_left_conjugate_le_conjugate h1 b
+    rw [hcast]
+    calc star a * a = star b * (star c * c) * b := by
+          rw [hac, star_mul]; noncomm_ring
+      _ ≤ star b * (((l * l : ℝ) : ℂ) • (1 : A)) * b := h3
+      _ = ((l * l : ℝ) : ℂ) • (star b * b) := by
+          rw [mul_smul_comm, smul_mul_assoc, mul_one]
+  -- (⇐) and the norm bound, together
+  have hmain : star a * a ≤ ((l : ℂ) ^ 2) • (star b * b) →
+      (∃ c : A, a = c * b) ∧ ‖div a b‖ ≤ l := by
+    intro hle
+    rcases eq_or_lt_of_le hl with hl0 | hl0
+    · -- `λ = 0`: then `a*a ≤ 0`, so `a = 0` and `a/b = 0`
+      have hz : star a * a ≤ 0 := by
+        rw [hcast, ← hl0] at hle
+        simpa using hle
+      have ha0 : a = 0 := by
+        have heq := le_antisymm hz (star_mul_self_nonneg a)
+        have hnn : ‖a‖ * ‖a‖ = 0 := by
+          rw [← CStarRing.norm_star_mul_self, heq, norm_zero]
+        exact norm_eq_zero.mp (by nlinarith [norm_nonneg a])
+      refine ⟨⟨0, by rw [ha0, zero_mul]⟩, ?_⟩
+      rw [ha0, div_eq (c := 0) (by rw [zero_mul]) (by rw [zero_mul]), norm_zero, ← hl0]
+    · -- `λ > 0`: rescale to `a' = λ⁻¹a`, which satisfies `a'*a' ≤ b*b`
+      have hlne : (l : ℝ) ≠ 0 := ne_of_gt hl0
+      set a' : A := ((l⁻¹ : ℝ) : ℂ) • a with ha'def
+      have hle2 : star a * a ≤ ((l * l : ℝ) : ℂ) • (star b * b) := by
+        rw [← hcast]; exact hle
+      have hle' : star a' * a' ≤ star b * b := by
+        rw [ha'def, hsq]
+        refine (hmono hle2 (by positivity : (0:ℝ) ≤ l⁻¹ * l⁻¹)).trans (le_of_eq ?_)
+        rw [smul_smul, ← Complex.ofReal_mul,
+          show (l⁻¹ * l⁻¹) * (l * l) = 1 by field_simp]
+        simp
+      obtain ⟨t, ht⟩ := approximate_pseudoinverse b
+      obtain ⟨⟨c', hc'⟩, hconv⟩ := proto_douglas_1 a' b hle' t ht
+      have hex : ∃ c : A, a = c * b := by
+        refine ⟨((l : ℝ) : ℂ) • c', ?_⟩
+        rw [smul_mul_assoc, ← hc', ha'def, smul_smul, ← Complex.ofReal_mul,
+          mul_inv_cancel₀ hlne]
+        simp
+      refine ⟨hex, ?_⟩
+      have hbd : ‖div a' b‖ ≤ 1 :=
+        norm_le_of_usTendsto hconv
+          (Filter.Eventually.of_forall fun N => apinv_partialSum_norm_le hle' ht N)
+      have hda : div a b = ((l : ℝ) : ℂ) • div a' b := by
+        rw [ha'def, div_smul_left a b _ hex, smul_smul, ← Complex.ofReal_mul,
+          mul_inv_cancel₀ hlne]
+        simp
+      rw [hda, norm_smul]
+      simp only [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hl]
+      nlinarith [norm_nonneg (div a' b)]
+  refine ⟨⟨fun ⟨c, hc, hac⟩ => hfwd c hc hac, fun hle => ?_⟩, fun hle => (hmain hle).2⟩
+  exact ⟨div a b, (hmain hle).2, (div_spec a b (hmain hle).1).1⟩
 
 /-- **81V** (`douglas`, vn.tex:5461, Exercise), part 2: `a ∈ A⌊b⌉` need
 not entail `a ∈ Ab` (a counterexample exists, e.g. in `ℓ^∞(ℕ)`). -/
 theorem douglas_2 :
     ∃ a b : lp (fun _ : ℕ => ℂ) ∞,
-      a * rangeProj b = a ∧ ¬∃ c, a = c * b :=
-  sorry
+      a * rangeProj b = a ∧ ¬∃ c, a = c * b := by
+  -- `b = (1, ½, ⅓, …)` has all coordinates nonzero, so `⌊b⌉ = 1`; but
+  -- `⌊b⌉ = cb` would force the unbounded `c = (1, 2, 3, …)`
+  have hmem : Memℓp (fun n : ℕ => (((n : ℝ) + 1 : ℝ) : ℂ)⁻¹) ∞ := by
+    refine memℓp_infty ⟨1, ?_⟩
+    rintro _ ⟨n, rfl⟩
+    show ‖(((n : ℝ) + 1 : ℝ) : ℂ)⁻¹‖ ≤ 1
+    rw [norm_inv, Complex.norm_real, Real.norm_eq_abs,
+      abs_of_nonneg (by positivity : (0:ℝ) ≤ (n : ℝ) + 1),
+      inv_le_one₀ (by positivity)]
+    simp
+  set b : lp (fun _ : ℕ => ℂ) ∞ := ⟨fun n => (((n : ℝ) + 1 : ℝ) : ℂ)⁻¹, hmem⟩
+    with hbdef
+  have hbn : ∀ n : ℕ, b n = (((n : ℝ) + 1 : ℝ) : ℂ)⁻¹ := fun _ => rfl
+  have hne : ∀ n : ℕ, (((n : ℝ) + 1 : ℝ) : ℂ) ≠ 0 := fun n =>
+    Complex.ofReal_ne_zero.mpr (by positivity : (0:ℝ) < (n : ℝ) + 1).ne'
+  refine ⟨rangeProj b, b, (ceill_basic_2 b).1.1.isIdempotentElem.eq, ?_⟩
+  rintro ⟨c, hc⟩
+  -- `⌊b⌉` is a projection with `⌊b⌉b = b`, so every coordinate of `⌊b⌉` is `1`
+  have hp : rangeProj b * b = b := (ceill_basic_2 b).1.2
+  have hp1 : ∀ n : ℕ, rangeProj b n = 1 := by
+    intro n
+    have h : (rangeProj b * b) n = b n := by rw [hp]
+    rw [lp.infty_coeFn_mul, Pi.mul_apply, hbn n] at h
+    field_simp at h
+    exact h
+  -- hence `c n = n+1` for every `n`, which is unbounded
+  have hcn : ∀ n : ℕ, c n = (((n : ℝ) + 1 : ℝ) : ℂ) := by
+    intro n
+    have h : rangeProj b n = (c * b) n := by rw [hc]
+    rw [lp.infty_coeFn_mul, Pi.mul_apply, hp1 n, hbn n] at h
+    field_simp at h
+    exact h.symm
+  obtain ⟨N, hN⟩ := exists_nat_gt ‖c‖
+  have hle := lp.norm_apply_le_norm ENNReal.top_ne_zero c N
+  rw [hcn N, Complex.norm_real, Real.norm_eq_abs,
+    abs_of_nonneg (by positivity : (0:ℝ) ≤ (N : ℝ) + 1)] at hle
+  linarith
+
+/-- Auxiliary for **81VI**, the common core of `sequential-douglas`: from
+`0 ≤ a ≤ λ·b*b`, Douglas' lemma (**81V**) applied to `√a` — which satisfies
+`(√a)*√a = a ≤ (√λ)²·b*b` — produces `c` with `‖c‖ ≤ √λ` and `√a = cb`;
+then `a = b*(c*c)b` and `b*∖a/b = ⌊b⌉(c*c)⌊b⌉ = (c⌊b⌉)*(c⌊b⌉)`, which
+gives at once the norm bound of part 1 and the positivity of part 2. -/
+theorem sequential_douglas_core {a b : A} (ha : 0 ≤ a) {l : ℝ} (hl : 0 ≤ l)
+    (hle : a ≤ (l : ℂ) • (star b * b)) :
+    ∃ c : A, ‖c‖ ≤ Real.sqrt l ∧ a = star b * (star c * c) * b ∧
+      ldiv (star b) (div a b)
+        = star (c * rangeProj b) * (c * rangeProj b) := by
+  classical
+  have hsa : star (CFC.sqrt a) = CFC.sqrt a :=
+    (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg a)).star_eq
+  have hq : star (CFC.sqrt a) * CFC.sqrt a = a := by
+    rw [hsa, CFC.sqrt_mul_sqrt_self a ha]
+  have hm0 : (0 : ℝ) ≤ Real.sqrt l := Real.sqrt_nonneg l
+  have hdoug : star (CFC.sqrt a) * CFC.sqrt a
+      ≤ (((Real.sqrt l : ℝ) : ℂ) ^ 2) • (star b * b) := by
+    rw [hq, ← Complex.ofReal_pow, Real.sq_sqrt hl]
+    exact hle
+  obtain ⟨c, hc, hcb⟩ := (douglas_1 (CFC.sqrt a) b (Real.sqrt l) hm0).1.2 hdoug
+  have he : a = star b * (star c * c) * b := by
+    rw [← hq, hcb, star_mul]; noncomm_ring
+  refine ⟨c, hc, he, ?_⟩
+  -- `b*∖a = ⌈b*⌋(c*c)b`, and dividing that by `b` on the right gives
+  -- `⌈b*⌋(c*c)⌊b⌉`; finally `⌈b*⌋ = ⌊b⌉`
+  have hsp : IsStarProjection (suppProj (star b)) := (ceill_basic_1 (star b)).1.1
+  have hsb : star b * suppProj (star b) = star b := (ceill_basic_1 (star b)).1.2
+  have hl1 : ldiv (star b) a = suppProj (star b) * (star c * c) * b := by
+    refine ldiv_eq ?_ ?_
+    · rw [← mul_assoc, ← mul_assoc, hsb]; exact he
+    · rw [← mul_assoc, ← mul_assoc, hsp.isIdempotentElem.eq]
+  have hcomm := (division_basic_3 (star b) b a ⟨star c * c, he⟩).2.2.1
+  rw [← hcomm, hl1, (division_basic_2 (suppProj (star b) * (star c * c)) b).1,
+    suppProj_star, star_mul, (ceill_basic_2 b).1.1.isSelfAdjoint.star_eq]
+  noncomm_ring
 
 /-- **81VI** (`sequential-douglas`, vn.tex:5480, Exercise), part 1: for
 positive `a` and `λ ≥ 0`: `a ∈ b*(A)_λ b` iff `a ≤ λb*b`, and then
@@ -2036,15 +2271,70 @@ theorem sequential_douglas_1 (a b : A) (ha : 0 ≤ a) (l : ℝ) (hl : 0 ≤ l) :
     ((∃ c : A, ‖c‖ ≤ l ∧ a = star b * c * b) ↔
         a ≤ (l : ℂ) • (star b * b)) ∧
       (a ≤ (l : ℂ) • (star b * b) →
-        ‖ldiv (star b) (div a b)‖ ≤ l) :=
-  sorry
+        ‖ldiv (star b) (div a b)‖ ≤ l) := by
+  classical
+  have hsl : Real.sqrt l * Real.sqrt l = l := Real.mul_self_sqrt hl
+  have hrp : ‖rangeProj b‖ ≤ 1 :=
+    (CStarAlgebra.norm_le_one_iff_of_nonneg _ (ceill_basic_2 b).1.1.nonneg).mpr
+      (ceill_basic_2 b).1.1.le_one
+  -- (⇒) `a = b*cb = b*sb` with `s = ½(c + c*)` self-adjoint of norm `≤ λ`,
+  -- and `s ≤ λ·1`, which conjugates to `a ≤ λ·b*b`
+  have hfwd : ∀ c : A, ‖c‖ ≤ l → a = star b * c * b →
+      a ≤ (l : ℂ) • (star b * b) := by
+    intro c hc hac
+    set s : A := ((2⁻¹ : ℝ) : ℂ) • (c + star c) with hsdef
+    have hss : IsSelfAdjoint s := by
+      rw [hsdef, IsSelfAdjoint, star_smul, star_add, star_star,
+        show star (((2⁻¹ : ℝ) : ℂ)) = ((2⁻¹ : ℝ) : ℂ) from by simp, add_comm]
+    have hastar : star b * star c * b = a := by
+      have h1 : star a = star (star b * c * b) := by rw [hac]
+      rw [(IsSelfAdjoint.of_nonneg ha).star_eq, star_mul, star_mul, star_star] at h1
+      rw [h1]
+      noncomm_ring
+    have hsa : star b * s * b = a := by
+      rw [hsdef, mul_smul_comm, smul_mul_assoc, mul_add, add_mul, hastar,
+        show star b * c * b = a from hac.symm, smul_add, ← add_smul,
+        ← Complex.ofReal_add]
+      norm_num
+    have hns : ‖s‖ ≤ l := by
+      rw [hsdef, norm_smul]
+      have h2 : ‖c + star c‖ ≤ ‖c‖ + ‖c‖ := by
+        refine (norm_add_le _ _).trans_eq ?_
+        rw [norm_star]
+      have h3 : ‖(((2⁻¹ : ℝ) : ℂ))‖ = 2⁻¹ := by
+        rw [Complex.norm_real, Real.norm_eq_abs]; norm_num
+      rw [h3]
+      nlinarith [norm_nonneg c]
+    have hsle : s ≤ ((l : ℂ)) • (1 : A) := by
+      have h4 := ((norm_le_iff_neg_algebraMap_le hss hl).mp hns).2
+      rwa [Algebra.algebraMap_eq_smul_one] at h4
+    have h5 := star_left_conjugate_le_conjugate hsle b
+    rw [hsa, mul_smul_comm, smul_mul_assoc, mul_one] at h5
+    exact h5
+  refine ⟨⟨fun ⟨c, hc, hac⟩ => hfwd c hc hac, fun hle => ?_⟩, fun hle => ?_⟩
+  · obtain ⟨c, hc, he, _⟩ := sequential_douglas_core ha hl hle
+    refine ⟨star c * c, ?_, he⟩
+    rw [CStarRing.norm_star_mul_self]
+    nlinarith [norm_nonneg c]
+  · obtain ⟨c, hc, _, hd⟩ := sequential_douglas_core ha hl hle
+    rw [hd, CStarRing.norm_star_mul_self]
+    have h6 : ‖c * rangeProj b‖ ≤ Real.sqrt l :=
+      (norm_mul_le _ _).trans (by nlinarith [norm_nonneg c, Real.sqrt_nonneg l])
+    nlinarith [norm_nonneg (c * rangeProj b), Real.sqrt_nonneg l]
 
 /-- **81VI** (`sequential-douglas`, vn.tex:5480, Exercise), part 2:
 `b*∖a/b` is positive for positive `a ∈ b*Ab`. -/
 theorem sequential_douglas_2 (a b : A) (ha : 0 ≤ a)
     (h : ∃ c : A, a = star b * c * b) :
-    0 ≤ ldiv (star b) (div a b) :=
-  sorry
+    0 ≤ ldiv (star b) (div a b) := by
+  obtain ⟨c, hac⟩ := h
+  -- part 1 turns `a ∈ b*Ab` into `a ≤ ‖c‖·b*b`, and the core writes
+  -- `b*∖a/b` as `x*x`
+  have hle : a ≤ ((‖c‖ : ℝ) : ℂ) • (star b * b) :=
+    (sequential_douglas_1 a b ha ‖c‖ (norm_nonneg c)).1.1 ⟨c, le_rfl, hac⟩
+  obtain ⟨d, _, _, hd⟩ := sequential_douglas_core ha (norm_nonneg c) hle
+  rw [hd]
+  exact star_mul_self_nonneg _
 
 /-- **81VII** (`div-approx`, vn.tex:5500, Exercise): for approximate
 pseudoinverses `t` of `b` and `s` of `c`, the net
@@ -2056,16 +2346,146 @@ theorem div_approx (a b c : A) (t s : ℕ → A)
     USTendsto
       (fun N : ℕ => (∑ n ∈ Finset.range N, s n) * a *
         (∑ m ∈ Finset.range N, t m))
-      atTop (ldiv c (div a b)) :=
-  sorry
+      atTop (ldiv c (div a b)) := by
+  classical
+  obtain ⟨d, hd, rfl⟩ := ha
+  obtain ⟨hQproj, _, hQtend⟩ :=
+    partialSums_of_isLUB (p := fun n => s n * c) hs.proj_left hs.sum_left
+      (ceill_basic_1 c).1.1.le_one
+  obtain ⟨hPproj, _, hPtend⟩ :=
+    partialSums_of_isLUB (p := fun n => b * t n) ht.proj_right ht.sum_right
+      (ceill_basic_2 b).1.1.le_one
+  -- `c∖(cdb)/b = ⌈c⌋d⌊b⌉`, by the explicit formulas of **81II**
+  have hsp : IsStarProjection (suppProj c) := (ceill_basic_1 c).1.1
+  have hsc : c * suppProj c = c := (ceill_basic_1 c).1.2
+  have hl1 : ldiv c (c * d * b) = suppProj c * d * b :=
+    ldiv_eq (by rw [← mul_assoc, ← mul_assoc, hsc])
+      (by rw [← mul_assoc, ← mul_assoc, hsp.isIdempotentElem.eq])
+  have hlim : ldiv c (div (c * d * b) b) = suppProj c * d * rangeProj b := by
+    rw [← (division_basic_3 c b (c * d * b) ⟨d, rfl⟩).2.2.1, hl1,
+      (division_basic_2 (suppProj c * d) b).1]
+  rw [hlim]
+  -- the net *is* `Q_N d P_N`
+  have hnet : ∀ N : ℕ, (∑ n ∈ Finset.range N, s n) * (c * d * b) *
+      (∑ m ∈ Finset.range N, t m)
+      = (∑ n ∈ Finset.range N, s n * c) * d * (∑ n ∈ Finset.range N, b * t n) := by
+    intro N
+    rw [← Finset.sum_mul, ← Finset.mul_sum]
+    noncomm_ring
+  -- the two "one-sided" limits, which are ultrastrongly continuous
+  have hy : USTendsto
+      (fun N : ℕ => (∑ n ∈ Finset.range N, s n * c) * (d * rangeProj b))
+      atTop (suppProj c * (d * rangeProj b)) := by
+    simpa using usTendsto_mul_left_right (1 : A) (d * rangeProj b) hQtend
+  have hz : USTendsto
+      (fun N : ℕ => suppProj c * d * (∑ n ∈ Finset.range N, b * t n))
+      atTop (suppProj c * d * rangeProj b) := by
+    simpa using usTendsto_mul_left_right (suppProj c * d) (1 : A) hPtend
+  rw [usTendsto_iff]
+  intro ω
+  have hP0 := (usTendsto_iff _ atTop (rangeProj b)).mp hPtend ω
+  have hy0 := (usTendsto_iff _ atTop (suppProj c * (d * rangeProj b))).mp hy ω
+  have hz0 := (usTendsto_iff _ atTop (suppProj c * d * rangeProj b)).mp hz ω
+  -- the three-term decomposition
+  have hdecomp : ∀ N : ℕ,
+      (∑ n ∈ Finset.range N, s n) * (c * d * b) * (∑ m ∈ Finset.range N, t m)
+        - suppProj c * d * rangeProj b
+      = (((∑ n ∈ Finset.range N, s n * c) - suppProj c) * d) *
+          ((∑ n ∈ Finset.range N, b * t n) - rangeProj b)
+        + ((∑ n ∈ Finset.range N, s n * c) * (d * rangeProj b)
+            - suppProj c * (d * rangeProj b))
+        + (suppProj c * d * (∑ n ∈ Finset.range N, b * t n)
+            - suppProj c * d * rangeProj b) := by
+    intro N
+    rw [hnet N]
+    noncomm_ring
+  -- bound the first term by `2‖P_N − ⌊b⌉‖_ω`
+  have hbd : ∀ N : ℕ, ‖((∑ n ∈ Finset.range N, s n * c) - suppProj c) * d‖ ≤ 2 := by
+    intro N
+    have h1 : ‖∑ n ∈ Finset.range N, s n * c‖ ≤ 1 :=
+      (CStarAlgebra.norm_le_one_iff_of_nonneg _ (hQproj N).nonneg).mpr
+        (hQproj N).le_one
+    have h2 : ‖suppProj c‖ ≤ 1 :=
+      (CStarAlgebra.norm_le_one_iff_of_nonneg _ hsp.nonneg).mpr hsp.le_one
+    calc ‖((∑ n ∈ Finset.range N, s n * c) - suppProj c) * d‖
+        ≤ ‖(∑ n ∈ Finset.range N, s n * c) - suppProj c‖ * ‖d‖ := norm_mul_le _ _
+      _ ≤ 2 * 1 := by
+          have := norm_sub_le (∑ n ∈ Finset.range N, s n * c) (suppProj c)
+          have h3 : (0:ℝ) ≤ ‖(∑ n ∈ Finset.range N, s n * c) - suppProj c‖ :=
+            norm_nonneg _
+          nlinarith [norm_nonneg d]
+      _ = 2 := by ring
+  refine squeeze_zero (g := fun N : ℕ =>
+      2 * omegaNorm A ω ((∑ n ∈ Finset.range N, b * t n) - rangeProj b)
+        + omegaNorm A ω ((∑ n ∈ Finset.range N, s n * c) * (d * rangeProj b)
+            - suppProj c * (d * rangeProj b))
+        + omegaNorm A ω (suppProj c * d * (∑ n ∈ Finset.range N, b * t n)
+            - suppProj c * d * rangeProj b))
+    (fun N => omegaNorm_nonneg _ _) (fun N => ?_) ?_
+  · rw [hdecomp N]
+    refine (omegaNorm_add_le ω _ _).trans (add_le_add ((omegaNorm_add_le ω _ _).trans
+      (add_le_add ?_ le_rfl)) le_rfl)
+    exact (omegaNorm_mul_le ω _ _).trans
+      (mul_le_mul_of_nonneg_right (hbd N) (omegaNorm_nonneg _ _))
+  · have h1 : Tendsto (fun N : ℕ =>
+        2 * omegaNorm A ω ((∑ n ∈ Finset.range N, b * t n) - rangeProj b)
+          + omegaNorm A ω ((∑ n ∈ Finset.range N, s n * c) * (d * rangeProj b)
+              - suppProj c * (d * rangeProj b))
+          + omegaNorm A ω (suppProj c * d * (∑ n ∈ Finset.range N, b * t n)
+              - suppProj c * d * rangeProj b)) atTop (𝓝 (2 * 0 + 0 + 0)) :=
+      ((hP0.const_mul 2).add hy0).add hz0
+    simpa using h1
+
+/-- Auxiliary for **81VI**/**81VIII**: `b*∖a/b` really is a witness, i.e.
+`a = b*(b*∖a/b)b` for `a ∈ b*Ab`.  (The explicit description
+`b*∖a/b = ⌈b*⌋d⌊b⌉` of **81II**.3, with `⌈b*⌋` absorbed by `b*` on the left
+and `⌊b⌉` by `b` on the right.) -/
+theorem ldiv_div_recover {a b : A} (h : ∃ d : A, a = star b * d * b) :
+    a = star b * ldiv (star b) (div a b) * b := by
+  obtain ⟨d, hd⟩ := h
+  have hsp : IsStarProjection (suppProj (star b)) := (ceill_basic_1 (star b)).1.1
+  have hsb : star b * suppProj (star b) = star b := (ceill_basic_1 (star b)).1.2
+  have hrb : rangeProj b * b = b := (ceill_basic_2 b).1.2
+  have hl1 : ldiv (star b) a = suppProj (star b) * d * b :=
+    ldiv_eq (by rw [← mul_assoc, ← mul_assoc, hsb]; exact hd)
+      (by rw [← mul_assoc, ← mul_assoc, hsp.isIdempotentElem.eq])
+  rw [← (division_basic_3 (star b) b a ⟨d, hd⟩).2.2.1, hl1,
+    (division_basic_2 (suppProj (star b) * d) b).1]
+  calc a = star b * d * b := hd
+    _ = (star b * suppProj (star b)) * d * (rangeProj b * b) := by rw [hsb, hrb]
+    _ = star b * (suppProj (star b) * d * rangeProj b) * b := by noncomm_ring
 
 /-- **81VIII** (`sequential-quotient`, vn.tex:5513, Exercise), part 1: for
 positive `a`, `b`: `a ≤ λb` for some `λ ≥ 0` iff `a = √b c √b` for some
 positive `c`. -/
 theorem sequential_quotient_1 (a b : A) (ha : 0 ≤ a) (hb : 0 ≤ b) :
     (∃ l : ℝ, 0 ≤ l ∧ a ≤ (l : ℂ) • b) ↔
-      ∃ c : A, 0 ≤ c ∧ a = CFC.sqrt b * c * CFC.sqrt b :=
-  sorry
+      ∃ c : A, 0 ≤ c ∧ a = CFC.sqrt b * c * CFC.sqrt b := by
+  have hsq : star (CFC.sqrt b) = CFC.sqrt b :=
+    (IsSelfAdjoint.of_nonneg (CFC.sqrt_nonneg b)).star_eq
+  have hbb : star (CFC.sqrt b) * CFC.sqrt b = b := by
+    rw [hsq, CFC.sqrt_mul_sqrt_self b hb]
+  constructor
+  · rintro ⟨l, hl, hle⟩
+    -- **81VI** applied to `√b`: the witness is `√b∖a/√b`, positive by 81VI.2
+    rw [← hbb] at hle
+    obtain ⟨c, _, he, _⟩ := sequential_douglas_core ha hl hle
+    refine ⟨ldiv (star (CFC.sqrt b)) (div a (CFC.sqrt b)), ?_, ?_⟩
+    · exact sequential_douglas_2 a (CFC.sqrt b) ha ⟨star c * c, he⟩
+    · conv_lhs => rw [ldiv_div_recover ⟨star c * c, he⟩]
+      rw [hsq]
+  · rintro ⟨c, hc, hac⟩
+    -- conversely `√b c √b ≤ ‖c‖·√b√b = ‖c‖·b`
+    refine ⟨‖c‖, norm_nonneg c, ?_⟩
+    have h1 : c ≤ ((‖c‖ : ℝ) : ℂ) • (1 : A) := by
+      have h2 : c ≤ (‖c‖ : ℝ) • (1 : A) := le_norm_smul_one hc
+      rwa [← IsScalarTower.algebraMap_smul ℂ (‖c‖ : ℝ) (1 : A),
+        Complex.coe_algebraMap] at h2
+    have h3 := star_left_conjugate_le_conjugate h1 (CFC.sqrt b)
+    rw [hsq, mul_smul_comm, smul_mul_assoc, mul_one,
+      CFC.sqrt_mul_sqrt_self b hb] at h3
+    rw [hac]
+    exact h3
 
 /-- **81VIII** (`sequential-quotient`, vn.tex:5513, Exercise), part 2: in
 that case there is a *unique* positive `c` with `a = √b c √b` and
@@ -2081,10 +2501,83 @@ theorem sequential_quotient_2 (a b : A) (ha : 0 ≤ a) (hb : 0 ≤ b)
           t m * a * t n) atTop c :=
   sorry
 
+/-- **81IX** (`div-usc`, vn.tex:5533, Lemma), **first half**: `a ↦ a/b` is
+ultrastrongly continuous on `(A)₁b`.  This is the thesis's own argument
+(vn.tex:5541): by **81III**.2 the partial sums `a ↦ ∑_{n<N} a tₙ` converge to
+`a/b` *uniformly* on `(A)₁b` (in each seminorm `‖·‖_ω` separately, which is
+all that is needed), and each partial sum is `a ↦ a·(∑_{n<N} tₙ)`, which is
+ultrastrongly continuous because `‖yd‖_ω = ‖y‖_{d*ωd}` (**44VIII**).
+
+The *second* half of 81IX — ultrastrong continuity of `a ↦ c∖a/b` on
+`c(A)₁b` — is **false**; see the note on `div_usc` below. -/
+theorem div_usc_ball (b : A) :
+    @ContinuousOn A A (ultrastrong A) (ultrastrong A) (fun a => div a b)
+      {a : A | ∃ d : A, ‖d‖ ≤ 1 ∧ a = d * b} := by
+  classical
+  set S : Set A := {a : A | ∃ d : A, ‖d‖ ≤ 1 ∧ a = d * b} with hSdef
+  obtain ⟨t, ht⟩ := approximate_pseudoinverse b
+  -- membership in `(A)₁b` is exactly Douglas' hypothesis with `λ = 1`
+  have hdoug : ∀ a ∈ S, star a * a ≤ star b * b := by
+    rintro a ⟨d, hd, rfl⟩
+    have h := (douglas_1 (d * b) b 1 zero_le_one).1.1 ⟨d, hd, rfl⟩
+    simpa using h
+  intro a₀ ha₀
+  have hkey : USTendsto (fun a => div a b)
+      (@nhdsWithin A (ultrastrong A) a₀ S) (div a₀ b) := by
+    rw [usTendsto_iff]
+    intro ω
+    refine Metric.tendsto_nhds.mpr fun ε hε => ?_
+    have hε3 : (0 : ℝ) < ε / 3 := by linarith
+    obtain ⟨N, hN⟩ := proto_douglas_2 b t ht ω (ε / 3) hε3
+    set d : A := ∑ n ∈ Finset.range N, t n with hddef
+    have hsum : ∀ x : A, ∑ n ∈ Finset.range N, x * t n = x * d :=
+      fun x => (Finset.mul_sum _ _ _).symm
+    have hball : {a : A | omegaNorm A (conjNP d ω) (a - a₀) < ε / 3}
+        ∈ @nhds A (ultrastrong A) a₀ := ultrastrong_ball_mem_nhds _ a₀ hε3
+    have hSW : S ∈ @nhdsWithin A (ultrastrong A) a₀ S :=
+      @self_mem_nhdsWithin A (ultrastrong A) a₀ S
+    have hballW : {a : A | omegaNorm A (conjNP d ω) (a - a₀) < ε / 3}
+        ∈ @nhdsWithin A (ultrastrong A) a₀ S :=
+      @mem_nhdsWithin_of_mem_nhds A (ultrastrong A) _ _ _ hball
+    filter_upwards [hSW, hballW] with a haS haB
+    have h1 : omegaNorm A ω (div a b - a * d) ≤ ε / 3 := by
+      have := hN a (hdoug a haS) N le_rfl
+      rwa [hsum a] at this
+    have h3 : omegaNorm A ω (a₀ * d - div a₀ b) ≤ ε / 3 := by
+      have := hN a₀ (hdoug a₀ ha₀) N le_rfl
+      rwa [hsum a₀, ← omegaNorm_neg ω (div a₀ b - a₀ * d), neg_sub] at this
+    have h2 : omegaNorm A ω (a * d - a₀ * d) < ε / 3 := by
+      rw [← sub_mul, omegaNorm_mul_right]
+      exact haB
+    have hstep : omegaNorm A ω (div a b - div a₀ b)
+        ≤ omegaNorm A ω (div a b - a * d) + omegaNorm A ω (a * d - div a₀ b) :=
+      omegaNorm_sub_le ω _ _ _
+    have hstep' : omegaNorm A ω (a * d - div a₀ b)
+        ≤ omegaNorm A ω (a * d - a₀ * d) + omegaNorm A ω (a₀ * d - div a₀ b) :=
+      omegaNorm_sub_le ω _ _ _
+    rw [Real.dist_eq, sub_zero, abs_of_nonneg (omegaNorm_nonneg ω _)]
+    linarith
+  exact hkey
+
 /-- **81IX** (`div-usc`, vn.tex:5533, Lemma): the maps
 `a ↦ a/b : (A)₁b → A` and `a ↦ c∖a/b : c(A)₁b → A` are ultrastrongly
 continuous.  (**81XI**, Remark: this fails on the larger domain `Ab` —
-not converted.) -/
+not converted.)
+
+**The second conjunct is false**, so this statement is left `sorry`; the
+first conjunct is `div_usc_ball` above.  Counterexample to the second, with
+`b = 1`, so that `a ↦ c∖a/b` is `a ↦ c∖a` on `c(A)₁`: in `A = B(ℓ²)` take
+`c = diag(1, ½, ⅓, …)`, which is positive and injective, so `⌈c⌋ = 1` and
+`c∖(cd) = d`.  Put `dₙ = |n⟩⟨0|`, so `‖dₙ‖ = 1` and `cdₙ = (n+1)⁻¹|n⟩⟨0| → 0`
+*in norm*, hence ultrastrongly; but `c∖(cdₙ) = dₙ` and `‖dₙ‖_ω = ‖dₙ|0⟩‖ = 1`
+for the vector state `ω` at `|0⟩`, so `(dₙ)ₙ` does not converge ultrastrongly
+to `0 = c∖0`.  Continuity implies sequential continuity, so `c∖(·)` is not
+ultrastrongly continuous on `c(A)₁`.  The thesis's proof factors the map as
+`c(A)₁b → c(A)₁ → A` and asserts the second factor is ultrastrongly
+continuous "as follows"; it is not — left division is ultrastrongly
+continuous only in the commutative case (there `‖e‖ ≤ 2` really does bound
+`‖e‖_ω` by `c_K⁻¹‖ce‖_ω + 4ε`), and in general only for the ultrastrong-*
+topology.  See ERRATA.md. -/
 theorem div_usc (b c : A) :
     @ContinuousOn A A (ultrastrong A) (ultrastrong A) (fun a => div a b)
         {a : A | ∃ d : A, ‖d‖ ≤ 1 ∧ a = d * b} ∧

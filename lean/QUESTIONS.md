@@ -597,6 +597,34 @@ proof requires the **converse**, `⌈τ⌉^⊥ ≤ ⌈π(⌈τ∘π⌉^⊥)⌉`.
 both hold (the two sides are equal), so nothing downstream is wrong — but only
 the converse is usable.
 
+### A5. 81IX `div-usc` — the second half is false; which repair do you want?
+`vn.tex:5533`.  The Lemma claims both `a ↦ a/b : (𝒜)₁b → 𝒜` **and**
+`a ↦ c∖a/b : c(𝒜)₁b → 𝒜` are ultrastrongly continuous.  The first is true and
+is now proved from the thesis's own argument (`div_usc_ball`).  The second is
+**false** — see the 81IX row in ERRATA.md for the counterexample
+(`b = 1`, `c = diag(1,½,⅓,…)` in `B(ℓ²)`, `dₙ = |n⟩⟨0|`).
+
+Three repairs are available and they are not equivalent, so this needs a
+decision:
+
+1. **Drop the second map.**  Nothing in the thesis appears to use it: the
+   sequel (**82I** polar decomposition, **83II**, **83V**) uses only
+   **81III** and the definition of division.
+2. **Restrict `c`.**  For `c` with closed range — equivalently `c`
+   pseudoinvertible in the sense of **79I** — one has `c∖x = tx` for the
+   bounded pseudoinverse `t`, and `‖t(x−x₀)‖_ω ≤ ‖t‖‖x−x₀‖_ω` makes the map
+   continuous at once.
+3. **Weaken the topology for that factor** to the ultrastrong-\* topology,
+   in which `c∖(·)` *is* continuous on `c(𝒜)₁` (the mirror of the thesis's
+   own argument, run on the seminorms `ω(xx*)^½`).
+
+Note that **81VII** `div-approx` — which reads like the same statement about
+`c∖·/b` — is **true** and is proved (`div_approx`): for one fixed `a` the
+convergence holds by normality; it is only the *uniformity* over the unit ball
+that fails, and the Lean statement of 81VII does not claim it.  The thesis's
+parenthetical "(and uniformly so)" in 81VII should therefore be checked too:
+by the same counterexample it is false for the `c∖·` half.
+
 ### A2. `parsec-340.60` (34VI.1) is an empty `\TODO{}`
 The solution slot exists but is empty, and it is the *last* entry in
 `asols.tex` — which is why solution coverage appears to stop at parsec 340.
