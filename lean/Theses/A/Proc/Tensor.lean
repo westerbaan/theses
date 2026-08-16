@@ -1783,6 +1783,169 @@ theorem nmiuCorestrict_bijective [VonNeumannAlgebra A₂] [VonNeumannAlgebra B�
 
 end Transport
 
+/-! ### Universe-polymorphic infrastructure for nmiu-maps
+
+These are the pieces the *universe-polymorphic* `tmap` of 119V needs
+(`exists_tmapM`), where the four algebras `𝒜, ℬ, 𝒞, 𝒟` live in four
+independent universes and so `𝒜 ⊗ ℬ` and `𝒞 ⊗ 𝒟` do too.  None of the
+parsec-1120/1130/1140 machinery is re-universed: instead the four algebras
+and the two tensor products are *lifted* into one common universe
+(`exists_vnLift`, from `ngns_ulift`), where the single-universe development
+applies verbatim, and the result is transported back.  The only genuinely
+cross-universe ingredients are here — and the two A/VN lemmas they need,
+**44XV** `p_uwcont` and `compNP`, are already universe-polymorphic in
+`A/VN/Basic.lean` (they sit in a `variable {A B : Type*}` section), so no
+A/VN twin is required. -/
+
+section NmiuAux
+
+variable {X : Type p} {Y : Type q} {Z : Type r}
+  [CStarAlgebra X] [PartialOrder X] [StarOrderedRing X]
+  [CStarAlgebra Y] [PartialOrder Y] [StarOrderedRing Y]
+  [CStarAlgebra Z] [PartialOrder Z] [StarOrderedRing Z]
+
+/-- Composition of nmiu-maps. -/
+def nmiuComp (g : NMIUMap Y Z) (f : NMIUMap X Y) : NMIUMap X Z where
+  toStarAlgHom := g.toStarAlgHom.comp f.toStarAlgHom
+  preservesDirSups' := by
+    refine preservesDirSups_comp (f := ⇑f) (g := ⇑g) (fun x hx => ?_)
+      (fun _ _ h => starAlgHom_mono' f.toStarAlgHom h)
+      f.preservesDirSups' g.preservesDirSups'
+    show IsSelfAdjoint (f.toStarAlgHom x)
+    rw [IsSelfAdjoint, ← map_star, hx.star_eq]
+
+@[simp] theorem nmiuComp_apply (g : NMIUMap Y Z) (f : NMIUMap X Y) (x : X) :
+    nmiuComp g f x = g (f x) := rfl
+
+/-- The companion of `nmiuSymm_apply_apply` on the other side. -/
+theorem nmiuSymm_apply_apply' [VonNeumannAlgebra X] [VonNeumannAlgebra Y]
+    (φ : NMIUMap X Y) (hφ : Function.Bijective ⇑φ) (b : Y) :
+    φ (nmiuSymm φ hφ b) = b :=
+  (StarAlgEquiv.ofBijective φ.toStarAlgHom hφ).apply_symm_apply b
+
+theorem nmiuSymm_bijective [VonNeumannAlgebra X] [VonNeumannAlgebra Y]
+    (φ : NMIUMap X Y) (hφ : Function.Bijective ⇑φ) :
+    Function.Bijective ⇑(nmiuSymm φ hφ) :=
+  ⟨fun x y h => by
+      have := congrArg (fun z => φ z) h
+      simpa [nmiuSymm_apply_apply'] using this,
+    fun x => ⟨φ x, nmiuSymm_apply_apply φ hφ x⟩⟩
+
+/-- An nmiu-map is completely positive in the sense of cstar.tex **10II**:
+it takes `star (a i) * a j` to `star (f (a i)) * f (a j)`, so the defining
+sum is `star z * z`. -/
+theorem nmiuLin_cp (f : NMIUMap X Y) :
+    Theses.A.CStar.IsCompletelyPositiveMap (nmiuLin f) := by
+  have hm : ∀ x y : X, f (x * y) = f x * f y := map_mul f.toStarAlgHom
+  have hs : ∀ x : X, f (star x) = star (f x) := map_star f.toStarAlgHom
+  intro n a c
+  have he : ∑ i, ∑ j, star (c i) * (nmiuLin f) (star (a i) * a j) * c j
+      = star (∑ i, f (a i) * c i) * ∑ j, f (a j) * c j := by
+    rw [star_sum, Finset.sum_mul]
+    refine Finset.sum_congr rfl fun i _ => ?_
+    rw [Finset.mul_sum]
+    refine Finset.sum_congr rfl fun j _ => ?_
+    show star (c i) * (f (star (a i) * a j)) * c j
+      = star (f (a i) * c i) * (f (a j) * c j)
+    rw [hm, hs, star_mul]
+    noncomm_ring
+  rw [he]
+  exact star_mul_self_nonneg _
+
+/-- An nmiu-map as an ncp-map. -/
+def nmiuNCP (f : NMIUMap X Y) : NCPMap X Y where
+  toCompletelyPositiveMap :=
+    { toLinearMap := nmiuLin f
+      map_cstarMatrix_nonneg' := by
+        have h : ∀ (N : ℕ) (M : CStarMatrix (Fin N) (Fin N) X), 0 ≤ M →
+            0 ≤ M.map ⇑(nmiuLin f) :=
+          (Theses.A.CStar.cp_iff (nmiuLin f)).out 0 1 |>.mp (nmiuLin_cp f)
+        exact h }
+  preservesDirSups' := f.preservesDirSups'
+
+@[simp] theorem nmiuNCP_apply (f : NMIUMap X Y) (x : X) : nmiuNCP f x = f x := rfl
+
+end NmiuAux
+
+section TensorTransfer
+
+variable {Xa : Type p} {Xb : Type q} {Xt : Type r} {Xt' : Type s}
+  [CStarAlgebra Xa] [PartialOrder Xa] [StarOrderedRing Xa] [VonNeumannAlgebra Xa]
+  [CStarAlgebra Xb] [PartialOrder Xb] [StarOrderedRing Xb] [VonNeumannAlgebra Xb]
+  [CStarAlgebra Xt] [PartialOrder Xt] [StarOrderedRing Xt] [VonNeumannAlgebra Xt]
+  [CStarAlgebra Xt'] [PartialOrder Xt'] [StarOrderedRing Xt']
+  [VonNeumannAlgebra Xt']
+
+/-- An nmiu-map is ultraweakly continuous (**44XV** `p_uwcont`, which is
+already universe-polymorphic in `A/VN/Basic.lean`). -/
+theorem nmiu_uwContinuous (f : NMIUMap Xt Xt') :
+    @Continuous Xt Xt' (ultraweak Xt) (ultraweak Xt') ⇑f :=
+  ((p_uwcont (nmiuP f)).out 2 0).mp f.preservesDirSups'
+
+set_option linter.unusedSectionVars false in
+/-- A tensor product transports along an nmiu-isomorphism of the *target*:
+if `γ : 𝒜 × ℬ → 𝒯` is a tensor product and `ℓ : 𝒯 ≅ 𝒯'` is an
+nmiu-isomorphism, then `ℓ ∘ γ` is a tensor product of `𝒜` and `ℬ`.  (The
+companion of `isTensorProduct_comp`, which transports along isomorphisms of
+the two *factors*; unlike that one this moves the tensor product itself to
+another universe, which is what makes `exists_tmapM` possible.) -/
+theorem isTensorProduct_comp_target {γ : Xa →ₗ[ℂ] Xb →ₗ[ℂ] Xt}
+    (hγ : IsTensorProduct γ) (ℓ : NMIUMap Xt Xt')
+    (hℓ : Function.Bijective ⇑ℓ) :
+    IsTensorProduct (γ.compr₂ (nmiuLin ℓ)) := by
+  have happ : ∀ (a : Xa) (b : Xb), (γ.compr₂ (nmiuLin ℓ)) a b = ℓ (γ a b) :=
+    fun _ _ => rfl
+  have hℓ1 : ℓ (1 : Xt) = 1 := map_one ℓ.toStarAlgHom
+  have hℓmul : ∀ x y : Xt, ℓ (x * y) = ℓ x * ℓ y := map_mul ℓ.toStarAlgHom
+  have hℓstar : ∀ x : Xt, ℓ (star x) = star (ℓ x) := map_star ℓ.toStarAlgHom
+  set g := nmiuSymm ℓ hℓ with hg
+  refine ⟨⟨?_, ?_, ?_⟩, ?_, ?_, ?_⟩
+  · show (γ.compr₂ (nmiuLin ℓ)) 1 1 = 1
+    rw [happ, hγ.miu.1, hℓ1]
+  · intro a b c d
+    rw [happ, happ, happ, hγ.miu.2.1, hℓmul]
+  · intro a b
+    rw [happ, happ, ← hγ.miu.2.2, hℓstar]
+  · -- density: `ℓ` is an ultraweak homeomorphism
+    let _ : TopologicalSpace Xt := ultraweak Xt
+    let _ : TopologicalSpace Xt' := ultraweak Xt'
+    have hset : {t : Xt' | ∃ a b, t = (γ.compr₂ (nmiuLin ℓ)) a b}
+        = ⇑(nmiuLin ℓ) '' {t : Xt | ∃ a b, t = γ a b} := by
+      ext t
+      constructor
+      · rintro ⟨a, b, rfl⟩; exact ⟨γ a b, ⟨a, b, rfl⟩, rfl⟩
+      · rintro ⟨_, ⟨a, b, rfl⟩, rfl⟩; exact ⟨a, b, rfl⟩
+    have hspan : (Submodule.span ℂ
+          {t : Xt' | ∃ a b, t = (γ.compr₂ (nmiuLin ℓ)) a b} : Set Xt')
+        = ⇑(nmiuLin ℓ) ''
+          (Submodule.span ℂ {t : Xt | ∃ a b, t = γ a b} : Set Xt) := by
+      rw [hset, ← Submodule.map_span, Submodule.map_coe]
+    rw [hspan]
+    refine dense_iff_closure_eq.mpr (Set.eq_univ_of_univ_subset ?_)
+    rw [← Set.image_univ_of_surjective (f := ⇑(nmiuLin ℓ)) hℓ.2,
+      ← dense_iff_closure_eq.mp hγ.dense]
+    exact image_closure_subset_closure_image (nmiu_uwContinuous ℓ)
+  · intro σ τ
+    obtain ⟨h, hh⟩ := hγ.prod_exists σ τ
+    refine ⟨compNP (nmiuP g) g.preservesDirSups' h, fun a b => ?_⟩
+    show h (g (ℓ (γ a b))) = σ a * τ b
+    rw [hg, nmiuSymm_apply_apply ℓ hℓ]
+    exact hh a b
+  · intro t ht hfaith
+    have ht0 : (0 : Xt) ≤ g t := starAlgHom_nonneg' g.toStarAlgHom ht
+    have hgt : g t = 0 := by
+      refine hγ.faithful (g t) ht0 fun σ τ h hcompat => ?_
+      exact hfaith σ τ (compNP (nmiuP g) g.preservesDirSups' h)
+        (fun a b => by
+          show h (g (ℓ (γ a b))) = σ a * τ b
+          rw [hg, nmiuSymm_apply_apply ℓ hℓ]
+          exact hcompat a b)
+    have hlt := nmiuSymm_apply_apply' ℓ hℓ t
+    rw [← hlt, ← hg, hgt]
+    exact map_zero ℓ.toStarAlgHom
+
+end TensorTransfer
+
 /-! ### Universe-lifting a Hilbert space
 
 The bundled form of 111XII has its two algebras in *different* universes `u`
@@ -1836,6 +1999,21 @@ theorem ngns_ulift (A₄ : Type u₁) [CStarAlgebra A₄] [PartialOrder A₄]
     exact ⟨a, rfl⟩
   · intro a a' h
     exact hinj (Φ.injective h)
+
+/-- Universe lift: every von Neumann algebra `𝒳 : Type p` is
+nmiu-isomorphic to one living in `Type (max p q)` — by **48VIII** `ngns`
+with the representing Hilbert space lifted (`ngns_ulift`) and the image
+bundled as a `VNSub`.  This is what lets the four-universe `tmap`
+(`exists_tmapM`) be reduced to the single-universe one. -/
+theorem exists_vnLift (𝒳 : Type p) [CStarAlgebra 𝒳] [PartialOrder 𝒳]
+    [StarOrderedRing 𝒳] [VonNeumannAlgebra 𝒳] :
+    ∃ (X' : Type (max p q)) (_ : CStarAlgebra X') (_ : PartialOrder X')
+      (_ : StarOrderedRing X') (_ : VonNeumannAlgebra X') (ε : NMIUMap 𝒳 X'),
+      Function.Bijective ⇑ε := by
+  obtain ⟨ι, f, S, hS, hmem, hsurj, hinj⟩ := ngns_ulift.{p, q} 𝒳
+  exact ⟨VNSub _ S hS, inferInstance, inferInstance, inferInstance, inferInstance,
+    nmiuCorestrict f S hS hmem,
+    nmiuCorestrict_bijective f S hS hmem hinj hsurj⟩
 
 /-- **111XII** (proc.tex:2583, Exercise): every pair of (abstract) von
 Neumann algebras has a tensor product (via the normal Gelfand–Naimark
@@ -7149,9 +7327,79 @@ end SumGeneration
 
 /-! ## Parsec 1170: distribution over direct sums -/
 
+/-! ### Bridging `W*(S) = 𝒯` and ultraweak density
+
+**117III** uses **117II**.1 `sum_generation_1`, which is phrased with `W*(·)`,
+to prove condition (1) of **116VII**, which is phrased with ultraweak density
+of a linear span.  These two lemmas connect them; both directions are needed
+(the first to feed `sum_generation_1`, the second to read its conclusion). -/
+
+section WstarDense
+
+variable {T : Type u} [CStarAlgebra T] [PartialOrder T] [StarOrderedRing T]
+  [VonNeumannAlgebra T]
+
+/-- If the linear span of `S` is ultraweakly dense then `W*(S) = 𝒯`: `W*(S)`
+is a von Neumann subalgebra, hence ultraweakly closed (**75VIII** `vnsac`),
+and it contains the span. -/
+theorem wstar_eq_top_of_dense_span (S : Set T)
+    (h : @Dense T (ultraweak T) (Submodule.span ℂ S : Set T)) :
+    wstar T S = ⊤ := by
+  let _ : TopologicalSpace T := ultraweak T
+  obtain ⟨hvn, hsub⟩ := isVNSubalgebra_wstar (A := T) S
+  have hclosed : @IsClosed T (ultraweak T) ((wstar T S : Set T)) := (vnsac _ hvn).2
+  have hspanle : (Submodule.span ℂ S : Set T) ⊆ (wstar T S : Set T) := by
+    have hle : Submodule.span ℂ S ≤ Subalgebra.toSubmodule (wstar T S).toSubalgebra :=
+      Submodule.span_le.mpr hsub
+    exact fun x hx => hle hx
+  refine StarSubalgebra.eq_top_iff.mpr fun x => ?_
+  have hx : x ∈ @closure T (ultraweak T) (Submodule.span ℂ S : Set T) := by
+    rw [h.closure_eq]; trivial
+  exact hclosed.closure_subset_iff.mpr hspanle hx
+
+/-- Conversely, if `W*(S) = 𝒯` for a ∗-subalgebra `S` then `S` is ultraweakly
+dense: its *ultrastrong* closure is already a von Neumann subalgebra
+(**75VII** `usClosureSubalgebra`), hence contains `W*(S)`. -/
+theorem dense_of_wstar_eq_top (S : StarSubalgebra ℂ T)
+    (h : wstar T (S : Set T) = ⊤) :
+    @Dense T (ultraweak T) (S : Set T) := by
+  have hle : wstar T (S : Set T) ≤ usClosureSubalgebra S :=
+    sInf_le ⟨isVNSubalgebra_usClosureSubalgebra S,
+      @subset_closure T (ultrastrong T) (S : Set T)⟩
+  rw [h] at hle
+  intro x
+  have hx : x ∈ usClosureSubalgebra S := hle (by trivial)
+  exact usClosure_subset_uwClosure (S : Set T) hx
+
+/-- `W*(·)` is monotone. -/
+theorem wstar_mono {S S' : Set T} (h : S ⊆ S') : wstar T S ≤ wstar T S' :=
+  sInf_le_sInf fun _ hW => ⟨hW.1, h.trans hW.2⟩
+
+/-- *All* np-functionals form a centre separating collection (they are
+faithful, 42I). -/
+theorem centreSeparatingConj_univ :
+    CentreSeparatingConj T (Set.univ : Set (NPFunctional T)) := by
+  rw [centreSeparatingConj_iff]
+  intro a ha
+  refine ⟨fun h ω _ b => by rw [h]; simp, fun H => ?_⟩
+  refine VonNeumannAlgebra.np_faithful a ha fun ω => ?_
+  have h := H ω (Set.mem_univ _) 1
+  simpa using h
+
+/-- A centre separating collection stays centre separating when enlarged. -/
+theorem centreSeparatingConj_mono {Ω Ω' : Set (NPFunctional T)}
+    (h : CentreSeparatingConj T Ω) (hsub : Ω ⊆ Ω') :
+    CentreSeparatingConj T Ω' := by
+  rw [centreSeparatingConj_iff] at h ⊢
+  intro a ha
+  refine ⟨fun hz ω _ b => by rw [hz]; simp, fun H => ?_⟩
+  exact (h a ha).mpr fun ω hω b => H ω (hsub hω) b
+
+end WstarDense
+
 section Sums
 
-variable {I : Type u} (𝒜 : I → Type u) [∀ i, CStarAlgebra (𝒜 i)]
+variable {I : Type*} (𝒜 : I → Type*) [∀ i, CStarAlgebra (𝒜 i)]
   [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
   [∀ i, StarOrderedRing (𝒜 i)] [∀ i, VonNeumannAlgebra (𝒜 i)]
 
@@ -7300,7 +7548,80 @@ theorem sum_generation_2 (Ω : ∀ i, Set (NPFunctional (𝒜 i)))
     simp only [Pi.mul_apply, Pi.star_apply, lp.single_apply_self]
   simpa using key
 
+end Sums
+
+/-! ### **117III**
+
+`sum_generation_1`/`sum_generation_2` above are polymorphic in the universes
+of `I` and of the summands (`ℓ^∞(X) = ⊕_{x∈X} ℂ` needs that, see
+**123I**.3 `linf_tensor`); 117III itself needs `𝒜`, `⊕ᵢ 𝒜ᵢ` and
+`⊕ᵢ 𝒜 ⊗ 𝒜ᵢ` in *one* universe, because **116VII** does. -/
+
+section SumsTensor
+
+variable {I : Type u} (𝒜 : I → Type u) [∀ i, CStarAlgebra (𝒜 i)]
+  [∀ i, Nontrivial (𝒜 i)] [∀ i, PartialOrder (𝒜 i)]
+  [∀ i, StarOrderedRing (𝒜 i)] [∀ i, VonNeumannAlgebra (𝒜 i)]
+
 variable [VonNeumannAlgebra A] [∀ i, Nontrivial (VNT A (𝒜 i))]
+
+set_option linter.unusedSectionVars false in
+theorem sumTmul_memℓp (a : A) (b : lp 𝒜 ∞) :
+    Memℓp (fun i => a ⊗ᵥ (b : ∀ i, 𝒜 i) i) ∞ := by
+  rw [memℓp_infty_iff]
+  refine ⟨‖a‖ * ‖b‖, ?_⟩
+  rintro _ ⟨i, rfl⟩
+  show ‖a ⊗ᵥ (b : ∀ i, 𝒜 i) i‖ ≤ ‖a‖ * ‖b‖
+  rw [norm_vtmul]
+  exact mul_le_mul_of_nonneg_left (lp.norm_apply_le_norm (by simp) b i) (norm_nonneg a)
+
+/-- The map `(a, b) ↦ (a ⊗ bᵢ)ᵢ : 𝒜 × ⊕ᵢ ℬᵢ → ⊕ᵢ (𝒜 ⊗ ℬᵢ)` of **117III**. -/
+noncomputable def sumTmul (a : A) (b : lp 𝒜 ∞) : lp (fun i => VNT A (𝒜 i)) ∞ :=
+  ⟨fun i => a ⊗ᵥ (b : ∀ i, 𝒜 i) i, sumTmul_memℓp 𝒜 a b⟩
+
+@[simp] theorem sumTmul_apply (a : A) (b : lp 𝒜 ∞) (i : I) :
+    (sumTmul 𝒜 a b : ∀ i, VNT A (𝒜 i)) i = a ⊗ᵥ (b : ∀ i, 𝒜 i) i := rfl
+
+/-- `sumTmul` as a bilinear map. -/
+noncomputable def sumTmulBilin :
+    A →ₗ[ℂ] lp 𝒜 ∞ →ₗ[ℂ] lp (fun i => VNT A (𝒜 i)) ∞ :=
+  LinearMap.mk₂ ℂ (sumTmul 𝒜)
+    (fun a a' b => by
+      refine lp.ext (funext fun i => ?_)
+      simp only [sumTmul_apply, lp.coeFn_add, Pi.add_apply]
+      exact map_add (((vnTensor A (𝒜 i)).map).flip ((b : ∀ i, 𝒜 i) i)) a a')
+    (fun c a b => by
+      refine lp.ext (funext fun i => ?_)
+      simp only [sumTmul_apply, lp.coeFn_smul, Pi.smul_apply]
+      exact map_smul (((vnTensor A (𝒜 i)).map).flip ((b : ∀ i, 𝒜 i) i)) c a)
+    (fun a b b' => by
+      refine lp.ext (funext fun i => ?_)
+      simp only [sumTmul_apply, lp.coeFn_add, Pi.add_apply]
+      exact map_add ((vnTensor A (𝒜 i)).map a) _ _)
+    (fun c a b => by
+      refine lp.ext (funext fun i => ?_)
+      simp only [sumTmul_apply, lp.coeFn_smul, Pi.smul_apply]
+      exact map_smul ((vnTensor A (𝒜 i)).map a) c _)
+
+@[simp] theorem sumTmulBilin_apply (a : A) (b : lp 𝒜 ∞) (i : I) :
+    ((sumTmulBilin 𝒜 a b : lp (fun i => VNT A (𝒜 i)) ∞) : ∀ i, VNT A (𝒜 i)) i
+      = a ⊗ᵥ (b : ∀ i, 𝒜 i) i := rfl
+
+/-- `γ` is miu-bilinear, pointwise from the miu-bilinearity of each `⊗`. -/
+theorem sumTmulBilin_miu : MIUBilinear (sumTmulBilin 𝒜 (A := A)) := by
+  refine ⟨?_, ?_, ?_⟩
+  · refine lp.ext (funext fun i => ?_)
+    simp only [sumTmulBilin_apply, lp.infty_coeFn_one, Pi.one_apply]
+    exact (vnTensor A (𝒜 i)).isTensorProduct.miu.1
+  · intro a a' b b'
+    refine lp.ext (funext fun i => ?_)
+    simp only [sumTmulBilin_apply, lp.infty_coeFn_mul, Pi.mul_apply]
+    exact (vnTensor A (𝒜 i)).isTensorProduct.miu.2.1 a a'
+      ((b : ∀ i, 𝒜 i) i) ((b' : ∀ i, 𝒜 i) i)
+  · intro a b
+    refine lp.ext (funext fun i => ?_)
+    simp only [sumTmulBilin_apply, lp.coeFn_star, Pi.star_apply]
+    exact (vnTensor A (𝒜 i)).isTensorProduct.miu.2.2 a ((b : ∀ i, 𝒜 i) i)
 
 /-- **117III** (`tensor-distributes-over-sums`, proc.tex:3758,
 Proposition): the bilinear map
@@ -7309,9 +7630,89 @@ product; whence `𝒜 ⊗ ⊕ᵢ ℬᵢ ≅ ⊕ᵢ (𝒜 ⊗ ℬᵢ)`. -/
 theorem tensor_distributes_over_sums :
     ∃ γ : A →ₗ[ℂ] lp 𝒜 ∞ →ₗ[ℂ] lp (fun i => VNT A (𝒜 i)) ∞,
       (∀ (a : A) (b : lp 𝒜 ∞) (i : I), (γ a b) i = a ⊗ᵥ b i) ∧
-        IsTensorProduct γ := sorry
+        IsTensorProduct γ := by
+  -- proc.tex:3772 runs this through **116VII** `tensor_characterization`:
+  -- `γ` is miu-bilinear, its range generates `⊕ᵢ 𝒜 ⊗ ℬᵢ` by **117II**.1,
+  -- the product functional `γ(σ, τ ∘ πᵢ)` is `(σ ⊗ τ) ∘ πᵢ`, and those are
+  -- centre separating by **116IV**.2 and **117II**.2.
+  classical
+  refine ⟨sumTmulBilin 𝒜, fun a b i => rfl, ?_⟩
+  set γ := sumTmulBilin 𝒜 (A := A) with hγ
+  have hmiu : MIUBilinear γ := sumTmulBilin_miu 𝒜
+  set Γ : Set (NPFunctional (lp 𝒜 ∞)) :=
+    {χ : NPFunctional (lp 𝒜 ∞) | ∃ i, ∃ ω ∈ (Set.univ : Set (NPFunctional (𝒜 i))),
+      ∀ x : lp 𝒜 ∞, χ x = ω ((x : ∀ i, 𝒜 i) i)} with hΓdef
+  have hΓ : CentreSeparatingConj (lp 𝒜 ∞) Γ :=
+    sum_generation_2 𝒜 (fun _ => Set.univ) (fun _ => centreSeparatingConj_univ)
+  refine (tensor_characterization Set.univ Γ centreSeparatingConj_univ hΓ γ
+    hmiu).mpr ⟨?_, ?_, ?_⟩
+  · -- (1) density, via **117II**.1 `sum_generation_1`
+    set S : ∀ i, Set (VNT A (𝒜 i)) :=
+      fun i => {t : VNT A (𝒜 i) | ∃ a b, t = (vnTensor A (𝒜 i)).map a b} with hS
+    have hStop : ∀ i, wstar (VNT A (𝒜 i)) (S i) = ⊤ := fun i =>
+      wstar_eq_top_of_dense_span (S i) (vnTensor A (𝒜 i)).isTensorProduct.dense
+    have hgen := sum_generation_1 (fun i => VNT A (𝒜 i)) S hStop
+    have hsub : ({x : lp (fun i => VNT A (𝒜 i)) ∞ | ∃ i, ∃ a ∈ S i,
+          x = lp.single ∞ i a} ∪
+        {x : lp (fun i => VNT A (𝒜 i)) ∞ | ∃ i, x = lp.single ∞ i 1})
+        ⊆ (tensorSpan γ hmiu : Set (lp (fun i => VNT A (𝒜 i)) ∞)) := by
+      rintro x (⟨i, c, ⟨a, b, rfl⟩, rfl⟩ | ⟨i, rfl⟩)
+      · refine Submodule.subset_span ⟨a, lp.single ∞ i b, ?_⟩
+        refine lp.ext (funext fun j => ?_)
+        by_cases hj : j = i
+        · subst hj
+          rw [lp.single_apply_self]
+          show ((vnTensor A (𝒜 j)).map a) b
+            = a ⊗ᵥ ((lp.single ∞ j b : lp 𝒜 ∞) : ∀ i, 𝒜 i) j
+          rw [lp.single_apply_self]
+          rfl
+        · rw [lp.single_apply_ne _ _ _ hj]
+          show (0 : VNT A (𝒜 j)) = a ⊗ᵥ ((lp.single ∞ i b : lp 𝒜 ∞) : ∀ i, 𝒜 i) j
+          rw [lp.single_apply_ne _ _ _ hj]
+          exact (map_zero ((vnTensor A (𝒜 j)).map a)).symm
+      · refine Submodule.subset_span ⟨1, lp.single ∞ i 1, ?_⟩
+        refine lp.ext (funext fun j => ?_)
+        by_cases hj : j = i
+        · subst hj
+          rw [lp.single_apply_self]
+          show (1 : VNT A (𝒜 j))
+            = 1 ⊗ᵥ ((lp.single ∞ j (1 : 𝒜 j) : lp 𝒜 ∞) : ∀ i, 𝒜 i) j
+          rw [lp.single_apply_self]
+          exact (vnTensor A (𝒜 j)).isTensorProduct.miu.1.symm
+        · rw [lp.single_apply_ne _ _ _ hj]
+          show (0 : VNT A (𝒜 j))
+            = 1 ⊗ᵥ ((lp.single ∞ i (1 : 𝒜 i) : lp 𝒜 ∞) : ∀ i, 𝒜 i) j
+          rw [lp.single_apply_ne _ _ _ hj]
+          exact (map_zero ((vnTensor A (𝒜 j)).map 1)).symm
+    have htop : wstar (lp (fun i => VNT A (𝒜 i)) ∞)
+        (tensorSpan γ hmiu : Set (lp (fun i => VNT A (𝒜 i)) ∞)) = ⊤ := by
+      refine top_le_iff.mp ?_
+      rw [← hgen]
+      exact wstar_mono hsub
+    exact dense_of_wstar_eq_top _ htop
+  · -- (2) the product functionals exist: `γ(σ, τ ∘ πᵢ) = (σ ⊗ τ) ∘ πᵢ`
+    rintro σ - χ ⟨i, ω, -, hχ⟩
+    refine ⟨lpNP i (prodNP (vnTensor A (𝒜 i)).isTensorProduct σ ω), fun a b => ?_⟩
+    rw [lp_infty_np_apply, hχ b]
+    show prodNP (vnTensor A (𝒜 i)).isTensorProduct σ ω
+        ((vnTensor A (𝒜 i)).map a ((b : ∀ i, 𝒜 i) i)) = _
+    exact prodNP_apply _ σ ω a _
+  · -- (3) they are centre separating: **116IV**.2 plus **117II**.2
+    have h := sum_generation_2 (fun i => VNT A (𝒜 i))
+      (fun i => {χ : NPFunctional (VNT A (𝒜 i)) |
+        ∃ ω ∈ (Set.univ : Set (NPFunctional A)),
+        ∃ θ ∈ (Set.univ : Set (NPFunctional (𝒜 i))),
+        ∀ (a : A) (b : 𝒜 i), χ (a ⊗ᵥ b) = ω a * θ b})
+      (fun i => tensor_generation_2 Set.univ Set.univ centreSeparatingConj_univ
+        centreSeparatingConj_univ)
+    refine centreSeparatingConj_mono h ?_
+    rintro χ ⟨i, ω, ⟨σ, -, τ, -, hω⟩, hχ⟩
+    refine ⟨σ, Set.mem_univ _, lpNP i τ, ⟨i, τ, Set.mem_univ _, fun x => rfl⟩,
+      fun a b => ?_⟩
+    rw [hχ, lp_infty_np_apply]
+    exact hω a ((b : ∀ i, 𝒜 i) i)
 
-end Sums
+end SumsTensor
 
 /-! ## Parsec 1180: tensors of projections and carriers -/
 
@@ -7541,15 +7942,141 @@ variable {A₂ : Type u₁} {B₂ : Type u₂} {C₂ : Type u₃} {D₂ : Type u
   [CStarAlgebra D₂] [PartialOrder D₂] [StarOrderedRing D₂]
   [VonNeumannAlgebra D₂]
 
+set_option linter.unusedSectionVars false in
+/-- Transfer of the chosen tensor product along a universe lift: given
+nmiu-isomorphisms `εA : 𝒳 ≅ 𝒜'`, `εB : 𝒴 ≅ ℬ'` and `ℓ : 𝒳 ⊗ 𝒴 ≅ 𝒯'`,
+with `𝒜'`, `ℬ'`, `𝒯'` in one universe, there is an nmiu-isomorphism
+`Φ : 𝒜' ⊗ ℬ' → 𝒯'` with `Φ(εA a ⊗ εB b) = ℓ(a ⊗ b)`.  (`isTensorProduct_comp`
+moves the factors, `isTensorProduct_comp_target` moves the target, and
+**114II** `tensor_uniqueness` — a single-universe statement, here applied at
+the common universe — compares the result with `𝒜' ⊗ ℬ'`.) -/
+theorem exists_vnt_transfer {Xa : Type p} {Xb : Type q} {A' B' T' : Type r}
+    [CStarAlgebra Xa] [PartialOrder Xa] [StarOrderedRing Xa]
+    [VonNeumannAlgebra Xa]
+    [CStarAlgebra Xb] [PartialOrder Xb] [StarOrderedRing Xb]
+    [VonNeumannAlgebra Xb]
+    [CStarAlgebra A'] [PartialOrder A'] [StarOrderedRing A'] [VonNeumannAlgebra A']
+    [CStarAlgebra B'] [PartialOrder B'] [StarOrderedRing B'] [VonNeumannAlgebra B']
+    [CStarAlgebra T'] [PartialOrder T'] [StarOrderedRing T'] [VonNeumannAlgebra T']
+    (εA : NMIUMap Xa A') (hA : Function.Bijective ⇑εA)
+    (εB : NMIUMap Xb B') (hB : Function.Bijective ⇑εB)
+    (ℓ : NMIUMap (VNT Xa Xb) T') (hℓ : Function.Bijective ⇑ℓ) :
+    ∃ Φ : NMIUMap (VNT A' B') T', Function.Bijective ⇑Φ ∧
+      ∀ (a : Xa) (b : Xb), Φ (εA a ⊗ᵥ εB b) = ℓ (a ⊗ᵥ b) := by
+  have h1 : IsTensorProduct (((vnTensor Xa Xb).map).compr₂ (nmiuLin ℓ)) :=
+    isTensorProduct_comp_target (vnTensor Xa Xb).isTensorProduct ℓ hℓ
+  have h2 := isTensorProduct_comp (nmiuSymm εA hA) (nmiuSymm_bijective εA hA)
+    (nmiuSymm εB hB) (nmiuSymm_bijective εB hB) h1
+  obtain ⟨Φ, hΦe, hΦb, -⟩ :=
+    tensor_uniqueness (vnTensor A' B').map _ (vnTensor A' B').isTensorProduct h2
+  refine ⟨Φ, hΦb, fun a b => ?_⟩
+  have hab := hΦe (εA a) (εB b)
+  show Φ ((vnTensor A' B').map (εA a) (εB b)) = ℓ ((vnTensor Xa Xb).map a b)
+  rw [hab]
+  show ℓ ((vnTensor Xa Xb).map (nmiuSymm εA hA (εA a)) (nmiuSymm εB hB (εB b)))
+    = ℓ ((vnTensor Xa Xb).map a b)
+  rw [nmiuSymm_apply_apply εA hA, nmiuSymm_apply_apply εB hB]
+
 /-- Infrastructure for 119V: for nmiu-maps `ρ : 𝒜 → 𝒞`, `σ : ℬ → 𝒟`
-there is a unique nmiu-map `ρ ⊗ σ` acting on pure tensors as expected. -/
+there is a unique nmiu-map `ρ ⊗ σ` acting on pure tensors as expected.
+
+The four algebras sit in four independent universes, so 112XI/114I — which
+`exists_tmap` uses directly — cannot be applied: they confine their algebras
+to one universe.  Rather than re-universing parsecs 1120–1140, we *lift* the
+four algebras and the two tensor products into the common universe
+`max u₁ u₂ u₃ u₄` (`exists_vnLift`), apply `exists_tmap` there, and transport
+back along `exists_vnt_transfer`. -/
 theorem exists_tmapM (ρ : NMIUMap A₂ C₂) (σ : NMIUMap B₂ D₂) :
     ∃! h : NMIUMap (VNT A₂ B₂) (VNT C₂ D₂),
-      ∀ (a : A₂) (b : B₂), h (a ⊗ᵥ b) = ρ a ⊗ᵥ σ b := sorry
+      ∀ (a : A₂) (b : B₂), h (a ⊗ᵥ b) = ρ a ⊗ᵥ σ b := by
+  obtain ⟨A', _, _, _, _, εA, hεA⟩ := exists_vnLift.{u₁, max u₁ u₂ u₃ u₄} A₂
+  obtain ⟨B', _, _, _, _, εB, hεB⟩ := exists_vnLift.{u₂, max u₁ u₂ u₃ u₄} B₂
+  obtain ⟨C', _, _, _, _, εC, hεC⟩ := exists_vnLift.{u₃, max u₁ u₂ u₃ u₄} C₂
+  obtain ⟨D', _, _, _, _, εD, hεD⟩ := exists_vnLift.{u₄, max u₁ u₂ u₃ u₄} D₂
+  obtain ⟨T', _, _, _, _, l, hl⟩ :=
+    exists_vnLift.{max u₁ u₂, max u₁ u₂ u₃ u₄} (VNT A₂ B₂)
+  obtain ⟨S', _, _, _, _, m, hm⟩ :=
+    exists_vnLift.{max u₃ u₄, max u₁ u₂ u₃ u₄} (VNT C₂ D₂)
+  obtain ⟨Φ, hΦb, hΦe⟩ := exists_vnt_transfer εA hεA εB hεB l hl
+  obtain ⟨Ψ, hΨb, hΨe⟩ := exists_vnt_transfer εC hεC εD hεD m hm
+  set ρ' : NMIUMap A' C' := nmiuComp εC (nmiuComp ρ (nmiuSymm εA hεA)) with hρ'
+  set σ' : NMIUMap B' D' := nmiuComp εD (nmiuComp σ (nmiuSymm εB hεB)) with hσ'
+  have hρ'a : ∀ a : A₂, ρ' (εA a) = εC (ρ a) := by
+    intro a; show εC (ρ (nmiuSymm εA hεA (εA a))) = εC (ρ a)
+    rw [nmiuSymm_apply_apply]
+  have hσ'a : ∀ b : B₂, σ' (εB b) = εD (σ b) := by
+    intro b; show εD (σ (nmiuSymm εB hεB (εB b))) = εD (σ b)
+    rw [nmiuSymm_apply_apply]
+  -- 115II at the common universe, upgraded to an nmiu-map by 115II.1–.3
+  set kl := (tmap (nmiuNCP ρ') (nmiuNCP σ')).toCompletelyPositiveMap.toLinearMap
+    with hkl
+  have hfun := tensor_functorial (nmiuNCP ρ') (nmiuNCP σ')
+  have hmul := hfun.1 (fun a a' => map_mul ρ'.toStarAlgHom a a')
+    (fun b b' => map_mul σ'.toStarAlgHom b b')
+  have hstar := hfun.2.1 (fun a => map_star ρ'.toStarAlgHom a)
+    (fun b => map_star σ'.toStarAlgHom b)
+  have hunit := hfun.2.2.1 (map_one ρ'.toStarAlgHom) (map_one σ'.toStarAlgHom)
+  set k : NMIUMap (VNT A' B') (VNT C' D') :=
+    { toStarAlgHom :=
+        { toFun := ⇑kl
+          map_one' := hunit
+          map_mul' := hmul
+          map_zero' := map_zero kl
+          map_add' := map_add kl
+          commutes' := fun r => by
+            show kl (algebraMap ℂ (VNT A' B') r) = algebraMap ℂ (VNT C' D') r
+            rw [Algebra.algebraMap_eq_smul_one, Algebra.algebraMap_eq_smul_one,
+              map_smul]
+            exact congrArg (fun z => r • z) hunit
+          map_star' := hstar }
+      preservesDirSups' := (tmap (nmiuNCP ρ') (nmiuNCP σ')).preservesDirSups' }
+    with hk
+  have hka : ∀ (a : A') (b : B'), k (a ⊗ᵥ b) = ρ' a ⊗ᵥ σ' b := by
+    intro a b
+    show kl (a ⊗ᵥ b) = ρ' a ⊗ᵥ σ' b
+    exact tmap_apply (nmiuNCP ρ') (nmiuNCP σ') a b
+  refine ⟨nmiuComp (nmiuSymm m hm) (nmiuComp Ψ
+      (nmiuComp k (nmiuComp (nmiuSymm Φ hΦb) l))), ?_, ?_⟩
+  · intro a b
+    show nmiuSymm m hm (Ψ (k (nmiuSymm Φ hΦb (l (a ⊗ᵥ b))))) = ρ a ⊗ᵥ σ b
+    rw [← hΦe a b, nmiuSymm_apply_apply Φ hΦb, hka, hρ'a, hσ'a, hΨe,
+      nmiuSymm_apply_apply m hm]
+  · intro h' hh'
+    set k' : NMIUMap (VNT A' B') (VNT C' D') :=
+      nmiuComp (nmiuSymm Ψ hΨb) (nmiuComp m
+        (nmiuComp h' (nmiuComp (nmiuSymm l hl) Φ))) with hk'
+    have hk'a : ∀ (a : A') (b : B'), k' (a ⊗ᵥ b) = ρ' a ⊗ᵥ σ' b := by
+      intro x y
+      obtain ⟨a, rfl⟩ := hεA.2 x
+      obtain ⟨b, rfl⟩ := hεB.2 y
+      show nmiuSymm Ψ hΨb (m (h' (nmiuSymm l hl (Φ (εA a ⊗ᵥ εB b))))) = _
+      rw [hΦe a b, nmiuSymm_apply_apply l hl, hh' a b, ← hΨe (ρ a) (σ b),
+        nmiuSymm_apply_apply Ψ hΨb, hρ'a, hσ'a]
+    have hkk : (tmap (nmiuNCP ρ') (nmiuNCP σ')) = nmiuNCP k' :=
+      (exists_tmap (nmiuNCP ρ') (nmiuNCP σ')).unique
+        (tmap_apply (nmiuNCP ρ') (nmiuNCP σ'))
+        (fun a b => by
+          show k' (a ⊗ᵥ b) = ρ' a ⊗ᵥ σ' b
+          exact hk'a a b)
+    have hkeq : ∀ x : VNT A' B', k x = k' x := by
+      intro x
+      show kl x = k' x
+      exact congrArg (fun f : NCPMap (VNT A' B') (VNT C' D') => f x) hkk
+    refine DFunLike.coe_injective (funext fun t => ?_)
+    show h' t = nmiuSymm m hm (Ψ (k (nmiuSymm Φ hΦb (l t))))
+    have h1 : k' (nmiuSymm Φ hΦb (l t)) = nmiuSymm Ψ hΨb (m (h' t)) := by
+      show nmiuSymm Ψ hΨb (m (h' (nmiuSymm l hl (Φ (nmiuSymm Φ hΦb (l t)))))) = _
+      rw [nmiuSymm_apply_apply' Φ hΦb, nmiuSymm_apply_apply l hl]
+    rw [hkeq, h1, nmiuSymm_apply_apply' Ψ hΨb, nmiuSymm_apply_apply m hm]
+
 
 /-- The nmiu-map `ρ ⊗ σ` (infrastructure for 119V). -/
 noncomputable def tmapM (ρ : NMIUMap A₂ C₂) (σ : NMIUMap B₂ D₂) :
     NMIUMap (VNT A₂ B₂) (VNT C₂ D₂) := (exists_tmapM ρ σ).choose
+
+@[simp] theorem tmapM_apply (ρ : NMIUMap A₂ C₂) (σ : NMIUMap B₂ D₂)
+    (a : A₂) (b : B₂) : tmapM ρ σ (a ⊗ᵥ b) = ρ a ⊗ᵥ σ b :=
+  (exists_tmapM ρ σ).choose_spec.1 a b
 
 end TmapM
 

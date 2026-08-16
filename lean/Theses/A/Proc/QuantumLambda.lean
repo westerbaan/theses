@@ -46,26 +46,6 @@ variable {A B C D : Type u}
 
 /-! ## Infrastructure -/
 
-section NmiuComp
-
-variable {A₁ : Type u} {B₁ : Type v} {C₁ : Type w}
-  [CStarAlgebra A₁] [PartialOrder A₁] [StarOrderedRing A₁]
-  [CStarAlgebra B₁] [PartialOrder B₁] [StarOrderedRing B₁]
-  [CStarAlgebra C₁] [PartialOrder C₁] [StarOrderedRing C₁]
-
-/-- Infrastructure: composition of nmiu-maps (normality sorry-ed). -/
-noncomputable def nmiuComp (g : NMIUMap B₁ C₁) (f : NMIUMap A₁ B₁) :
-    NMIUMap A₁ C₁ :=
-  { toStarAlgHom := g.toStarAlgHom.comp f.toStarAlgHom
-    preservesDirSups' := by
-      refine preservesDirSups_comp (f := ⇑f) (g := ⇑g) (fun x hx => ?_)
-        (fun x y h => OrderHomClass.mono f.toStarAlgHom h)
-        f.preservesDirSups' g.preservesDirSups'
-      show IsSelfAdjoint (f.toStarAlgHom x)
-      rw [IsSelfAdjoint, ← map_star, hx.star_eq] }
-
-end NmiuComp
-
 section DirectSums
 
 variable {I : Type*} {𝒜 : I → Type*} [∀ i, CStarAlgebra (𝒜 i)]
@@ -643,6 +623,66 @@ theorem linf_projections_order_separating (X : Type u) (f g : linf X)
   rw [Complex.conj_eq_iff_im.mp (lp_infty_isSelfAdjoint hf x),
     Complex.conj_eq_iff_im.mp (lp_infty_isSelfAdjoint hg x)]
 
+/-- `{id}` is a centre separating collection on `ℂ`. -/
+theorem centreSeparatingConj_complexId :
+    CentreSeparatingConj ℂ {Theses.A.VN.complexIdNP} := by
+  rw [centreSeparatingConj_iff]
+  intro a ha
+  refine ⟨fun h ω _ b => by rw [h]; simp, fun H => ?_⟩
+  have h := H Theses.A.VN.complexIdNP rfl 1
+  rw [star_one, one_mul, mul_one] at h
+  exact h
+
+theorem linfT_memℓp (X Y : Type u) (f : linf X) (g : linf Y) :
+    Memℓp (fun p : X × Y => (f : ∀ _ : X, ℂ) p.1 * (g : ∀ _ : Y, ℂ) p.2) ∞ := by
+  rw [memℓp_infty_iff]
+  refine ⟨‖f‖ * ‖g‖, ?_⟩
+  rintro _ ⟨p, rfl⟩
+  show ‖(f : ∀ _ : X, ℂ) p.1 * (g : ∀ _ : Y, ℂ) p.2‖ ≤ ‖f‖ * ‖g‖
+  rw [norm_mul]
+  exact mul_le_mul (lp.norm_apply_le_norm (by simp) f p.1)
+    (lp.norm_apply_le_norm (by simp) g p.2) (norm_nonneg _) (norm_nonneg f)
+
+/-- `(f ⊗ g)(x,y) = f(x)·g(y) : ℓ^∞(X) × ℓ^∞(Y) → ℓ^∞(X × Y)` (**123I**.3). -/
+def linfT (X Y : Type u) (f : linf X) (g : linf Y) : linf (X × Y) :=
+  ⟨fun p => (f : ∀ _ : X, ℂ) p.1 * (g : ∀ _ : Y, ℂ) p.2, linfT_memℓp X Y f g⟩
+
+@[simp] theorem linfT_apply (X Y : Type u) (f : linf X) (g : linf Y) (p : X × Y) :
+    ((linfT X Y f g : linf (X × Y)) : ∀ _ : X × Y, ℂ) p
+      = (f : ∀ _ : X, ℂ) p.1 * (g : ∀ _ : Y, ℂ) p.2 := rfl
+
+/-- `linfT` as a bilinear map. -/
+def linfTmul (X Y : Type u) : linf X →ₗ[ℂ] linf Y →ₗ[ℂ] linf (X × Y) :=
+  LinearMap.mk₂ ℂ (linfT X Y)
+    (fun f f' g => by
+      refine lp.ext (funext fun p => ?_)
+      simp only [linfT_apply, lp.coeFn_add, Pi.add_apply]; ring)
+    (fun c f g => by
+      refine lp.ext (funext fun p => ?_)
+      simp only [linfT_apply, lp.coeFn_smul, Pi.smul_apply, smul_eq_mul]; ring)
+    (fun f g g' => by
+      refine lp.ext (funext fun p => ?_)
+      simp only [linfT_apply, lp.coeFn_add, Pi.add_apply]; ring)
+    (fun c f g => by
+      refine lp.ext (funext fun p => ?_)
+      simp only [linfT_apply, lp.coeFn_smul, Pi.smul_apply, smul_eq_mul]; ring)
+
+@[simp] theorem linfTmul_apply (X Y : Type u) (f : linf X) (g : linf Y) (p : X × Y) :
+    ((linfTmul X Y f g : linf (X × Y)) : ∀ _ : X × Y, ℂ) p
+      = (f : ∀ _ : X, ℂ) p.1 * (g : ∀ _ : Y, ℂ) p.2 := rfl
+
+theorem linfTmul_miu (X Y : Type u) : MIUBilinear (linfTmul X Y) := by
+  refine ⟨?_, ?_, ?_⟩
+  · refine lp.ext (funext fun p => ?_)
+    simp only [linfTmul_apply, lp.infty_coeFn_one, Pi.one_apply, one_mul]
+  · intro f f' g g'
+    refine lp.ext (funext fun p => ?_)
+    simp only [linfTmul_apply, lp.infty_coeFn_mul, Pi.mul_apply]
+    ring
+  · intro f g
+    refine lp.ext (funext fun p => ?_)
+    simp only [linfTmul_apply, lp.coeFn_star, Pi.star_apply, star_mul']
+
 /-- **123I** (proc.tex:4628, Exercise), part 3: the map
 `⊗ : ℓ^∞(X) × ℓ^∞(Y) → ℓ^∞(X × Y)`, `(f ⊗ g)(x,y) = f(x)g(y)` is a
 tensor product; whence `ℓ^∞(X × Y) ≅ ℓ^∞(X) ⊗ ℓ^∞(Y)` (and `ℓ^∞` is
@@ -650,7 +690,75 @@ strong monoidal). -/
 theorem linf_tensor (X Y : Type u) :
     ∃ γ : linf X →ₗ[ℂ] linf Y →ₗ[ℂ] linf (X × Y),
       (∀ (f : linf X) (g : linf Y) (x : X) (y : Y),
-        γ f g (x, y) = f x * g y) ∧ IsTensorProduct γ := sorry
+        γ f g (x, y) = f x * g y) ∧ IsTensorProduct γ := by
+  classical
+  refine ⟨linfTmul X Y, fun f g x y => rfl, ?_⟩
+  set γ := linfTmul X Y with hγ
+  have hmiu : MIUBilinear γ := linfTmul_miu X Y
+  set Sg : Set (NPFunctional (linf X)) :=
+    {χ : NPFunctional (linf X) | ∃ x, ∃ ω ∈ ({Theses.A.VN.complexIdNP} :
+      Set (NPFunctional ℂ)), ∀ u : linf X, χ u = ω ((u : ∀ _ : X, ℂ) x)} with hSgd
+  set Γ : Set (NPFunctional (linf Y)) :=
+    {χ : NPFunctional (linf Y) | ∃ y, ∃ ω ∈ ({Theses.A.VN.complexIdNP} :
+      Set (NPFunctional ℂ)), ∀ u : linf Y, χ u = ω ((u : ∀ _ : Y, ℂ) y)} with hΓd
+  have hSg : CentreSeparatingConj (linf X) Sg :=
+    sum_generation_2 (fun _ : X => ℂ) (fun _ => {Theses.A.VN.complexIdNP})
+      (fun _ => centreSeparatingConj_complexId)
+  have hΓ : CentreSeparatingConj (linf Y) Γ :=
+    sum_generation_2 (fun _ : Y => ℂ) (fun _ => {Theses.A.VN.complexIdNP})
+      (fun _ => centreSeparatingConj_complexId)
+  refine (tensor_characterization Sg Γ hSg hΓ γ hmiu).mpr ⟨?_, ?_, ?_⟩
+  · -- (1) the `δ_{(x,y)} = δ_x ⊗ δ_y` generate, by **117II**.1
+    have hgen := sum_generation_1 (fun _ : X × Y => ℂ) (fun _ => (∅ : Set ℂ))
+      (fun _ => starSubalgebra_complex_eq_top _)
+    have hsub : ({x : linf (X × Y) | ∃ i, ∃ a ∈ (∅ : Set ℂ),
+          x = lp.single ∞ i a} ∪
+        {x : linf (X × Y) | ∃ i, x = lp.single ∞ i 1})
+        ⊆ (tensorSpan γ hmiu : Set (linf (X × Y))) := by
+      rintro x (⟨i, a, ha, -⟩ | ⟨p, rfl⟩)
+      · exact ha.elim
+      · refine Submodule.subset_span ⟨lp.single ∞ p.1 1, lp.single ∞ p.2 1, ?_⟩
+        refine lp.ext (funext fun q => ?_)
+        by_cases hq : q = p
+        · subst hq
+          rw [lp.single_apply_self]
+          show (1 : ℂ) = ((lp.single ∞ q.1 (1 : ℂ) : linf X) : ∀ _ : X, ℂ) q.1
+            * ((lp.single ∞ q.2 (1 : ℂ) : linf Y) : ∀ _ : Y, ℂ) q.2
+          rw [lp.single_apply_self, lp.single_apply_self, one_mul]
+        · rw [lp.single_apply_ne _ _ _ hq]
+          show (0 : ℂ) = ((lp.single ∞ p.1 (1 : ℂ) : linf X) : ∀ _ : X, ℂ) q.1
+            * ((lp.single ∞ p.2 (1 : ℂ) : linf Y) : ∀ _ : Y, ℂ) q.2
+          by_cases h1 : q.1 = p.1
+          · have h2 : q.2 ≠ p.2 := fun h2 => hq (Prod.ext h1 h2)
+            rw [lp.single_apply_ne _ _ _ h2, mul_zero]
+          · rw [lp.single_apply_ne _ _ _ h1, zero_mul]
+    have htop : wstar (linf (X × Y))
+        (tensorSpan γ hmiu : Set (linf (X × Y))) = ⊤ := by
+      refine top_le_iff.mp ?_
+      rw [← hgen]
+      exact wstar_mono hsub
+    exact dense_of_wstar_eq_top _ htop
+  · -- (2) the product functional of two point evaluations is a point evaluation
+    rintro σ ⟨x, ω, hω, hσ⟩ τ ⟨y, ω', hω', hτ⟩
+    obtain rfl : ω = Theses.A.VN.complexIdNP := hω
+    obtain rfl : ω' = Theses.A.VN.complexIdNP := hω'
+    refine ⟨lpNP (x, y) Theses.A.VN.complexIdNP, fun f g => ?_⟩
+    rw [lp_infty_np_apply, hσ f, hτ g]
+    rfl
+  · -- (3) they are centre separating, again by **117II**.2
+    have h := sum_generation_2 (fun _ : X × Y => ℂ)
+      (fun _ => {Theses.A.VN.complexIdNP})
+      (fun _ => centreSeparatingConj_complexId)
+    refine centreSeparatingConj_mono h ?_
+    rintro χ ⟨p, ω, hω, hχ⟩
+    obtain rfl : ω = Theses.A.VN.complexIdNP := hω
+    refine ⟨lpNP p.1 Theses.A.VN.complexIdNP,
+      ⟨p.1, Theses.A.VN.complexIdNP, rfl, fun u => rfl⟩,
+      lpNP p.2 Theses.A.VN.complexIdNP,
+      ⟨p.2, Theses.A.VN.complexIdNP, rfl, fun u => rfl⟩, fun f g => ?_⟩
+    rw [hχ]
+    rfl
+
 
 /-- **123II** (proc.tex:4663, Exercise), part 1: an nmiu-functional `φ` on
 `𝒜 ⊗ ℬ` restricts to nmiu-functionals `σ = φ((·) ⊗ 1)` and
