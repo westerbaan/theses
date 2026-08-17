@@ -1,14 +1,60 @@
-# `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–83, sessions 47–77)
+# `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–84, sessions 47–78)
 
-**Headline count: A/Proc has 28 code `sorry`s** after session 77.
+**Headline count: A/Proc has 26 code `sorry`s** after session 78.
 Per file: `Tensor` **2**, `QuantumLambda` **11**,
-`Measurement` **10**, `Duplicators` **5**.  **All four compiler-verified in
-session 77 (0 errors each, `lean` run per file against rebuilt oleans, after a
-successful `lake build Theses.A.Proc.Duplicators`).**
+`Measurement` **10**, `Duplicators` **3**.  **All four compiler-verified in
+session 78 (0 errors each, `lean` run per file against rebuilt oleans).**
 **No statement in the project is `sorry`-tainted.**  (`grep -c sorry`
 over-counts, because the file docstrings mention `sorry` in prose; the code
 counts are the ones above.  Note `\bsorry\b` also matches "sorry-ed" in
 prose — count the compiler's `declaration uses \`sorry\`` warnings instead.)
+
+> **Session 78 — 127III `duplicable` is CLOSED, and 132III.2 falls with it.**
+> `Duplicators` **5 → 3**; A/Proc **28 → 26**, 0 errors in all four files, both
+> new theorems axiom-clean.  **+700 lines**, all in `Duplicators.lean`; no new
+> public name (the only public names touched are the two that were `sorry`).
+>
+> * **The recorded next gate — the atom ↔ minimal-projection bridge — was
+>   never needed.**  Its purpose was to transfer "continuous"/"discrete"
+>   between two presentations of the same algebra, because `μ.restrict K` is
+>   not complete and **129X** demands completeness.  But the continuous block
+>   can be cut out *inside the presentation already in hand*: take the
+>   **subtype** `↥K` with `μ.comap (↑)`, which **is** complete when `μ` is (a
+>   `comap`-null set has `μ`-null image, hence measurable image, and is its
+>   preimage), is finite, and is atomless exactly when no subset of `K` is a
+>   `μ`-atom.  The corner `q(1_K)𝒜q(1_K)` is then presented on `↥K` by
+>   `f ↦ q(f extended by zero)`, so there is only ever **one** presentation and
+>   nothing to transfer.  `exists_ell_of_isLinftyOf` (the whole
+>   measure-theoretic core, ~300 lines) went through on the first compile.
+> * **The one real case split is `μ(X) = 0`.**  `DiscreteSpace` asks for a
+>   *partition* of the whole space into atoms, so the null continuous block `K`
+>   has to be absorbed into one of the atoms of `D` (still an atom, since
+>   `μ K = 0`).  When there is no atom to absorb it into, `μ(X) = 0`, so
+>   `q 1 = 0 = 1` and `𝒜` is trivial: `ℓ^∞(∅)`, written out.
+> * **`cvn` needs a `CommCStarAlgebra` instance built by hand**, both for `𝒜`
+>   (from **128VIII**) and for each corner.  `{ ‹CStarAlgebra A› with
+>   mul_comm := hcomm }` works and does *not* produce an instance diamond that
+>   `cvn`, `cvn_faithful_1` or `gelfandStarTransform` notice.
+> * **The reassembly is 67IV.2 plus `NonUnitalStarAlgHom.norm_apply_le`.**
+>   `Ψ a` at `(i, y)` is `φᵢ(zᵢa)(y)`; `Memℓp … ∞` needs a uniform bound, which
+>   is free because each `ψᵢ = φᵢ ∘ (a ↦ zᵢazᵢ)` is a ∗-homomorphism of
+>   C*-algebras, hence contractive.  Injectivity needs **no** case on `Yᵢ`
+>   being empty: `lp.ext ∘ funext` over an empty index is vacuous.
+>   Surjectivity is **67IV**.2 with `bᵢ = φᵢ⁻¹(g|Yᵢ)`, bounded by
+>   `StarAlgEquiv.norm_map` and `lp.norm_le_of_forall_le`.
+> * **The `⇐` direction needed a transfer lemma** (`duplicable_of_nmiu_bijective`,
+>   duplicability along an nmiu-isomorphism, ~35 lines on the pattern of
+>   `duplicable_corner`) — it was not recorded anywhere.
+> * **132III.2 `dup_vna_is_monoid_2` closes as a corollary**, but not quite for
+>   free: a duplicator is only a *positive* map, whereas `MonoidInWmiu` wants an
+>   **nmiu**-map, so the multiplication has to be obtained from the `ℓ^∞`
+>   picture (`exists_nmiu_mul`, transporting `linf_nmiu_mul` along the
+>   classification).  `linf_duplicable` was split to expose it.
+> * **Still open in `Duplicators.lean`: 132III.5, 132IV, 132VI.**  None is
+>   blocked on 127III any more; all three now run through **132III.5**
+>   (`nsp(ℓ^∞(X)) ≅ X` and "every nmiu-map `ℓ^∞(X) → ℓ^∞(Y)` is `linfMap` of a
+>   function `Y → X`"), which is the remaining root.
+> * Nothing for ERRATA or QUESTIONS.
 
 > **Session 77 — 127III `duplicable` did NOT close, and its recorded
 > remaining pieces were not the ones that were missing.**  A/Proc **28 → 28**,

@@ -18507,3 +18507,123 @@ transplant the abstract subalgebra was instantiated to the existing private
 to just before `univprop_ext_tensor`, so that the theorem could stay where it
 is instead of being relocated to the end of the parsec.  Ten `show`s that
 change the goal were converted to `change` for `lake`'s style linter.
+
+## Session 78 — `A/Proc`: **127III `duplicable` is CLOSED** — and the recorded next gate, the atom ↔ minimal-projection bridge, was never needed (worker on `Theses/A/Proc/`)
+
+A/Proc **28 → 26**, 0 errors in all four files (`Duplicators` **5 → 3**,
+`QuantumLambda` 11, `Measurement` 10, `Tensor` 2, each source run through
+`lean` individually).  **+700 lines, all in `Duplicators.lean`.**  Two public
+`sorry`s closed — **127III** `duplicable` and **132III**.2
+`dup_vna_is_monoid_2` — both `#print axioms`-clean
+(`[propext, Classical.choice, Quot.sound]`).  No *new* public name was added,
+and nothing in the tree imports `Duplicators.lean`, so there is nothing
+downstream to rebuild.
+
+### 1. The brief's next gate does not exist
+
+The handoff named the **atom ↔ minimal-projection bridge** ("`S` is a `μ`-atom
+iff `q(1_S)` is a minimal projection", ~150 lines) as the thing that would make
+`ContinuousSpace`/`DiscreteSpace` algebraic and therefore transferable between
+two presentations of the same algebra.  It is not needed, because **there is
+never a second presentation**.
+
+Session 77 was right that `μ.restrict K` is not complete while **129X** demands
+completeness.  But the fix is not to give the corner a spectrum of its own; it
+is to keep the *same* space and pass to the **subtype**:
+
+* `μ.comap (Subtype.val : ↥K → X)` **is complete** when `μ` is — a
+  `comap`-null `s ⊆ K` sits in a measurable `comap`-null `T`, so `↑s` is
+  `μ`-null, hence `μ`-measurable by completeness, and `s = ↑⁻¹(↑s)`.  This is
+  exactly what `restrict` fails to do, and the reason is visible: `restrict`
+  keeps the ambient σ-algebra, the subtype does not.
+* it is finite (`μ K ≤ μ X`), and it is `ContinuousSpace` exactly when no
+  subset of `K` is a `μ`-atom, which is what **129VI** hands over;
+* and the corner `q(1_K)𝒜q(1_K)` is presented on it by
+  `q_K f = e·q(f extended by zero)·e` — the compression is written into the
+  definition so that `q_K` lands in the corner for *every* `f`, not only the
+  bounded measurable ones, and `hval` shows it is redundant on the latter.
+
+So the chain is `IsLinftyOf μ 𝒜 q` → 129VI → the subtype presentation →
+`duplicable_corner` → **129X** → `μ K = 0` → absorb `K` into an atom →
+`DiscreteSpace μ` → **130V**.  `exists_ell_of_isLinftyOf`, ~300 lines,
+compiled on the first attempt.
+
+### 2. The one real case split is `μ(X) = 0`
+
+`DiscreteSpace` (as ruled, A6) asks for a *partition* of the **whole** space
+into atoms, so the null continuous block `K` must be absorbed into one of the
+atoms `A₀` of the discrete part; `A₀ ∪ K` is still an atom because `μ K = 0`,
+and it is still disjoint from the other blocks because they lie in `D`.  When
+the atom family is empty there is nothing to absorb into: then `μ(X) = 0`, so
+`1 = q 1 = 0` and `𝒜` is trivial, and the answer is `ℓ^∞(PEmpty)` written out
+by hand (`exists_ell_of_subsingleton`).  This is the same `Nontrivial` friction
+that already kept 130V away from 130IV, and session 77 predicted it correctly.
+
+### 3. `cvn` needs a `CommCStarAlgebra` instance manufactured on the spot
+
+**128VIII** gives commutativity as a *proposition*; `cvn`, `cvn_faithful_1` and
+`gelfandStarTransform` all want the *instance*.
+`letI : CommCStarAlgebra A := { ‹CStarAlgebra A› with mul_comm := hcomm }`
+works, both for `𝒜` and for each corner `zᵢ𝒜`, and — the thing worth
+recording — it does **not** create a diamond that the ambient `PartialOrder`,
+`StarOrderedRing` or `VonNeumannAlgebra` instances notice.
+
+### 4. The reassembly
+
+70III `cvn` gives orthogonal central projections `zᵢ = ⌈⌈ωᵢ⌉⌉` with
+`projSup = 1` and `ωᵢ` faithful on `zᵢ𝒜`.  Each corner is commutative,
+duplicable (`duplicable_corner`) and carries `Corner.restrictNP zᵢ ωᵢ`
+faithfully, so §1 makes it `ℓ^∞(Yᵢ)`.  Then `Ψ a` at `(i, y)` is
+`φᵢ(zᵢ a)(y)`, and:
+
+* **`Memℓp … ∞` is free.**  `ψᵢ = φᵢ ∘ (a ↦ zᵢazᵢ)` is a ∗-homomorphism of
+  C*-algebras, so `NonUnitalStarAlgHom.norm_apply_le` bounds every coordinate
+  by `‖a‖`.  The compression is bundled as a `StarAlgHom`
+  (`centralCompression`) purely to get this; multiplicativity is where
+  centrality is used.
+* **Injectivity needs no case on `Yᵢ` empty.**  `ψᵢ x = 0` follows from
+  `lp.ext ∘ funext`, which is vacuously available over an empty index — so the
+  "some summands may be trivial" worry never materialises.  From `ψᵢ x = 0` and
+  injectivity of `φᵢ`, `zᵢ x = 0` for all `i`, and **67IV**.2's *uniqueness*
+  clause (applied to `b = 0`) gives `x = 0`.
+* **Surjectivity is 67IV.2's existence clause** with `bᵢ = φᵢ⁻¹(g|_{Yᵢ})`,
+  norm-bounded by `StarAlgEquiv.norm_map` (a ∗-isomorphism of C*-algebras is
+  isometric) and `lp.norm_le_of_forall_le`.
+* Normality of `Ψ` is `starAlgEquiv_preservesDirSups'` on
+  `StarAlgEquiv.ofBijective`, exactly as 130V does it.
+
+### 5. The `⇐` direction needed a lemma nobody had recorded
+
+"`𝒜 ≅ ℓ^∞(X)` ⟹ duplicable" is not `linf_duplicable` on its own:
+duplicability has to be *transported along the isomorphism*.
+`duplicable_of_nmiu_bijective` (`δ_𝒜 = φ⁻¹ ∘ δ_ℓ ∘ (φ ⊗ φ)`, ~35 lines) is the
+same shape as `duplicable_corner`, using **115II** `tmap` and **128XI**.
+
+### 6. 132III.2 falls, but not for free
+
+Three of its four conjuncts are immediate (127III itself, **128VIII** through
+`monoid_e_and_mul`, and `dup_vna_is_monoid_1`).  The fourth,
+`Duplicable 𝒜 → Nonempty (MonoidInWmiu 𝒜)`, is **not**: a duplicator's `δ` is
+only a *positive* normal map, while `MonoidInWmiu` wants an **nmiu**-map.  The
+multiplication is recovered from the `ℓ^∞` picture instead — on `ℓ^∞(X)` it is
+`linfMap` of the diagonal, which is nmiu on the nose — so `linf_duplicable` was
+split into `linf_nmiu_mul` (the nmiu multiplication) and its duplicator
+reading, and `exists_nmiu_mul` transports the former along **127III** with
+`tmapM`/`nmiuSymm`/`nmiuComp`.  For `MonoidInWcpsu` the same `ρ` serves via
+`nmiuNCP`.
+
+### 7. What is left in `Duplicators.lean`
+
+**132III.5, 132IV, 132VI — and none of them is blocked on 127III any more.**
+All three route through **132III.5** `dup_vna_is_monoid_5`
+(`Mon(W*_miu) ≃ Set^op`), whose content is now precisely: `nsp(ℓ^∞(X)) ≅ X`,
+and every nmiu-map `ℓ^∞(X) → ℓ^∞(Y)` is `linfMap` of a function `Y → X`.  The
+transport from `𝒜`, `ℬ` to their `ℓ^∞`s is `exists_nmiu_mul`'s pattern.
+`docs/why-open.csv` is updated accordingly (the `duplicable` and
+`dup_vna_is_monoid_2` rows are deleted; the other three are re-rooted).
+
+### 8. Nothing for ERRATA or QUESTIONS
+
+The thesis's proof of 127III is correct as printed; every divergence in this
+session is one of rendering (the subtype in place of `restrict`, corners in
+place of an `lp`-sum, the `μ(X) = 0` case the thesis does not mention).

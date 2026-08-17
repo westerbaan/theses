@@ -33,17 +33,15 @@ centrally_similar_basic_2a|awaiting-ruling||all three claims false as printed (E
 centrally_similar_basic_3|awaiting-ruling||false as printed, one machine-checked witness; the equal-carrier repair awaits the author
 centrally_similar_basic_4|awaiting-ruling||false as printed; equal carriers are not enough, and the faithfulness repair is unauthorised
 centrally_similar_basic_5|awaiting-ruling||false as printed; the equal-carrier repair awaits the author
-dup_vna_is_monoid_2|blocked|duplicable|132III.2 restates the 127III classification of duplicable algebras
 dup_vna_is_monoid_4|open||yellow: the proof is complete, but the statement mentions the braiding of 119IVc, which is now proved
-dup_vna_is_monoid_5|blocked|duplicable|132III.5 computes nmiu-maps through the l-infinity classification of 127III
-duplicable|costed||127III: the easy direction (l-infinity is duplicable) and the corner form of 128XIII are now PROVED private lemmas, and so is the L-infinity presentation of a commutative vNA with a faithful np-functional (exists_isLinftyOf_of_starAlgEquiv, the missing half of 54XI); what remains is the atom/minimal-projection bridge needed to feed 129X and 130V through corners (mu.restrict is not complete), the cvn decomposition into corners, and the reassembly of the summands' l-infinity's (67IV.2 central_projections_sums_2, closed in A/VN in the same round, is the surjectivity) -- ~600-900 lines
+dup_vna_is_monoid_5|costed||132III.5: 127III is now PROVED, so the blocker is gone; what is left is the Set^op half -- that nsp(l-infinity X) is X and that every nmiu-map l-infinity(X) -> l-infinity(Y) is linfMap of a function Y -> X; the transport along the classification is exists_nmiu_mul's pattern
 equaliser_lemma|open||125IV (Kornell); no route recorded, and its statement uses the sorried tmapM
 exists_braiding|open||119IVc, the exercise that (a,b) maps to b tensor a is a tensor product; not attempted
 exists_tmapM|costed||needs the tmap construction made universe-polymorphic (four universes); prerequisite for all of 119V
 exists_unitors|open||119IVb, the two unitors; not attempted
 faithful_positive_map_uniqueness|blocked|positive_quotients_centrally_similar|104IX is 100VII plus 104VII, both cited by name
-free_monoid_in_Wcpsu|blocked|duplicable|132VI's freeness runs through the monoid classification; only its unit is proved
-free_monoid_in_vNAMIU|blocked|duplicable|132IV's freeness runs through the monoid classification; only its unit is proved
+free_monoid_in_Wcpsu|blocked|dup_vna_is_monoid_5|132VI's freeness runs through the monoid classification; only its unit is proved (127III itself is no longer the blocker)
+free_monoid_in_vNAMIU|blocked|dup_vna_is_monoid_5|132IV's freeness runs through the monoid classification; only its unit is proved (127III itself is no longer the blocker)
 ha_second_adjunction|open||125bII: vn_products_ncpsu and fdcstar (84II) are proved, but ha_equalisers (84bV) and hereditarilyAtomic_subalgebra (84bIII) are still sorry; not yet attempted
 ha_tensor_closed|open||125dII, the hereditarily atomic free exponential; no route recorded
 intersection_tensor|cited||121II gives no argument, only a pointer to Corollary IV.5.10 of Takesaki I
