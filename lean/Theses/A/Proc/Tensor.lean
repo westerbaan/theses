@@ -26,8 +26,9 @@ on `W*_miu`, `W*_cp`, `W*_cpu`, and `W*_cpsu` (119V).
   proved (as for `Corner` in `Measurement.lean`).
 * Maps out of the tensor (`tmap f g` for ncp-maps, `tmapM ρ σ` for
   nmiu-maps, product functionals on the predual, associators, unitors,
-  braidings) are obtained by choice from sorry-ed unique-existence
-  lemmas; their defining equations on pure tensors are `_apply` lemmas.
+  braidings) are obtained by choice from unique-existence lemmas — all of
+  them now proved; their defining equations on pure tensors are `_apply`
+  lemmas.
 * The monoidal structure (119V) is stated concretely (naturality,
   pentagon, triangle, hexagon, symmetry — as equations between the chosen
   structure maps), not through Mathlib's `MonoidalCategory`, per the
@@ -132,6 +133,26 @@ theorem prod_functional_unique [VonNeumannAlgebra A₁]
     | add u v _ _ hu hv => simp [map_add, hu, hv]
     | smul c u _ hu => simp [map_smul, hu]
   exact DFunLike.coe_injective (Continuous.ext_on hγ.dense hc₁ hc₂ hspan)
+
+/-- The vector-valued form of `prod_functional_unique`: two ultraweakly
+continuous linear maps out of a tensor product `𝒯` which agree on the range
+of `γ` are equal, by condition (1) of 108II.  (The target needs no algebra
+structure — any Hausdorff topological `ℂ`-module will do.) -/
+theorem tensor_linear_ext [VonNeumannAlgebra A₁] [VonNeumannAlgebra B₁]
+    [VonNeumannAlgebra C₁] {X : Type*} [AddCommGroup X] [Module ℂ X]
+    [TopologicalSpace X] [T2Space X] {γ : A₁ →ₗ[ℂ] B₁ →ₗ[ℂ] C₁}
+    (hγ : IsTensorProduct γ) (f g : C₁ →ₗ[ℂ] X)
+    (hf : @Continuous C₁ X (ultraweak C₁) _ ⇑f)
+    (hg : @Continuous C₁ X (ultraweak C₁) _ ⇑g)
+    (h : ∀ a b, f (γ a b) = g (γ a b)) : f = g := by
+  letI : TopologicalSpace C₁ := ultraweak C₁
+  refine DFunLike.coe_injective (Continuous.ext_on hγ.dense hf hg ?_)
+  intro t ht
+  induction ht using Submodule.span_induction with
+  | mem u hu => obtain ⟨a, b, rfl⟩ := hu; exact h a b
+  | zero => simp
+  | add u v _ _ hu hv => simp [map_add, hu, hv]
+  | smul c u _ hu => simp [map_smul, hu]
 
 /-- The chosen product np-functional `γ(σ,τ)` of a tensor product (from
 field `prod_exists` of `IsTensorProduct`, by choice). -/
@@ -7941,6 +7962,283 @@ theorem exists_vnt_transfer {Xa : Type p} {Xb : Type q} {A' B' T' : Type r}
   rw [nmiuSymm_apply_apply εA hA, nmiuSymm_apply_apply εB hB]
 
 
+section NestedExt
+
+/-! The two nesting-extensionality lemmas below carry a universe constraint
+that is forced by **116III**.5 `continuous_ultraweak_vtmul_right`, which —
+like everything in the 1150/1160 development — confines its two factors to a
+single universe: the outer factor `𝒜` must live in the universe of the inner
+tensor product `ℬ ⊗ 𝒞`.  Every use in 119V satisfies it (`ℂ : Type 0` pairs
+with `𝒞 : Type u` to give `Type u`). -/
+
+variable {B₁ : Type v} {C₁ : Type w} {A₁ : Type (max v w)}
+  [CStarAlgebra A₁] [PartialOrder A₁] [StarOrderedRing A₁] [VonNeumannAlgebra A₁]
+  [CStarAlgebra B₁] [PartialOrder B₁] [StarOrderedRing B₁] [VonNeumannAlgebra B₁]
+  [CStarAlgebra C₁] [PartialOrder C₁] [StarOrderedRing C₁] [VonNeumannAlgebra C₁]
+  {X : Type*} [AddCommGroup X] [Module ℂ X] [TopologicalSpace X] [T2Space X]
+
+/-- `tensor_linear_ext` for a doubly nested tensor product: two ultraweakly
+continuous linear maps on `𝒜 ⊗ (ℬ ⊗ 𝒞)` agreeing on the elementary tensors
+`a ⊗ (b ⊗ c)` are equal. -/
+theorem vnt_linear_ext₂ (f g : VNT A₁ (VNT B₁ C₁) →ₗ[ℂ] X)
+    (hf : @Continuous (VNT A₁ (VNT B₁ C₁)) X (ultraweak _) _ ⇑f)
+    (hg : @Continuous (VNT A₁ (VNT B₁ C₁)) X (ultraweak _) _ ⇑g)
+    (h : ∀ (a : A₁) (b : B₁) (c : C₁),
+      f (a ⊗ᵥ (b ⊗ᵥ c)) = g (a ⊗ᵥ (b ⊗ᵥ c))) : f = g := by
+  letI : TopologicalSpace (VNT A₁ (VNT B₁ C₁)) := ultraweak _
+  letI : TopologicalSpace (VNT B₁ C₁) := ultraweak _
+  refine tensor_linear_ext (vnTensor A₁ (VNT B₁ C₁)).isTensorProduct f g hf hg ?_
+  intro a s
+  show f (a ⊗ᵥ s) = g (a ⊗ᵥ s)
+  have hva : @Continuous (VNT B₁ C₁) (VNT A₁ (VNT B₁ C₁)) (ultraweak _)
+      (ultraweak _) ⇑((vnTensor A₁ (VNT B₁ C₁)).map a) :=
+    continuous_ultraweak_vtmul_right a
+  have hkey := tensor_linear_ext (vnTensor B₁ C₁).isTensorProduct
+    (f.comp ((vnTensor A₁ (VNT B₁ C₁)).map a))
+    (g.comp ((vnTensor A₁ (VNT B₁ C₁)).map a))
+    (hf.comp hva) (hg.comp hva)
+    (fun b c => by
+      show f (a ⊗ᵥ (b ⊗ᵥ c)) = g (a ⊗ᵥ (b ⊗ᵥ c))
+      exact h a b c)
+  exact congrFun (congrArg (fun F : VNT B₁ C₁ →ₗ[ℂ] X => ⇑F) hkey) s
+
+/-- `tensor_linear_ext` for a triply nested tensor product (the pentagon). -/
+theorem vnt_linear_ext₃ {C₂ : Type v} {D₂ : Type w} {A₂ B₂ : Type (max v w)}
+    [CStarAlgebra A₂] [PartialOrder A₂] [StarOrderedRing A₂] [VonNeumannAlgebra A₂]
+    [CStarAlgebra B₂] [PartialOrder B₂] [StarOrderedRing B₂] [VonNeumannAlgebra B₂]
+    [CStarAlgebra C₂] [PartialOrder C₂] [StarOrderedRing C₂] [VonNeumannAlgebra C₂]
+    [CStarAlgebra D₂] [PartialOrder D₂] [StarOrderedRing D₂] [VonNeumannAlgebra D₂]
+    (f g : VNT A₂ (VNT B₂ (VNT C₂ D₂)) →ₗ[ℂ] X)
+    (hf : @Continuous (VNT A₂ (VNT B₂ (VNT C₂ D₂))) X (ultraweak _) _ ⇑f)
+    (hg : @Continuous (VNT A₂ (VNT B₂ (VNT C₂ D₂))) X (ultraweak _) _ ⇑g)
+    (h : ∀ (a : A₂) (b : B₂) (c : C₂) (d : D₂),
+      f (a ⊗ᵥ (b ⊗ᵥ (c ⊗ᵥ d))) = g (a ⊗ᵥ (b ⊗ᵥ (c ⊗ᵥ d)))) : f = g := by
+  letI : TopologicalSpace (VNT A₂ (VNT B₂ (VNT C₂ D₂))) := ultraweak _
+  letI : TopologicalSpace (VNT B₂ (VNT C₂ D₂)) := ultraweak _
+  letI : TopologicalSpace (VNT C₂ D₂) := ultraweak _
+  refine tensor_linear_ext (vnTensor A₂ (VNT B₂ (VNT C₂ D₂))).isTensorProduct f g
+    hf hg ?_
+  intro a s
+  show f (a ⊗ᵥ s) = g (a ⊗ᵥ s)
+  have hva : @Continuous (VNT B₂ (VNT C₂ D₂)) (VNT A₂ (VNT B₂ (VNT C₂ D₂)))
+      (ultraweak _) (ultraweak _) ⇑((vnTensor A₂ (VNT B₂ (VNT C₂ D₂))).map a) :=
+    continuous_ultraweak_vtmul_right a
+  have hkey := vnt_linear_ext₂
+    (f.comp ((vnTensor A₂ (VNT B₂ (VNT C₂ D₂))).map a))
+    (g.comp ((vnTensor A₂ (VNT B₂ (VNT C₂ D₂))).map a))
+    (hf.comp hva) (hg.comp hva)
+    (fun b c d => by
+      show f (a ⊗ᵥ (b ⊗ᵥ (c ⊗ᵥ d))) = g (a ⊗ᵥ (b ⊗ᵥ (c ⊗ᵥ d)))
+      exact h a b c d)
+  exact congrFun (congrArg (fun F : VNT B₂ (VNT C₂ D₂) →ₗ[ℂ] X => ⇑F) hkey) s
+
+end NestedExt
+
+/-- The bilinear map `β : 𝒜 × (ℬ ⊗ 𝒞) → (𝒜 ⊗ ℬ) ⊗ 𝒞`,
+`β(a,t) = ((a ⊗ 1) ⊗ 1)·Θ(t)` with `Θ = (1 ⊗ (·)) ⊗ id_𝒞` (**116III**.5 and
+**115II**), is a tensor product, and `β(a, b ⊗ c) = (a ⊗ b) ⊗ c`.
+
+This is the *bilinear* route to the associator **119IV**: it feeds plain
+**114II** `tensor_uniqueness` and so needs no trilinear development.  Its
+three conditions are the thesis's own for **119II** (proc.tex:3994) —
+density from **116IV**.1, product functionals `(σ ⊗ τ) ⊗ υ`, centre
+separation from **116IV**.2 — read through **116VII**
+`tensor_characterization`, which is what lets the product functionals be
+verified only for the centre separating collection `{τ ⊗ υ}` on `ℬ ⊗ 𝒞`
+instead of for every np-functional there.  The one genuinely new step is
+miu-bilinearity: `(a ⊗ 1) ⊗ 1` commutes with the whole range of `Θ`
+because it does so on the elementary tensors and `Θ` is ultraweakly
+continuous. -/
+theorem isTensorProduct_assoc :
+    ∃ β : A →ₗ[ℂ] VNT B C →ₗ[ℂ] VNT (VNT A B) C,
+      (∀ (a : A) (b : B) (c : C), β a (b ⊗ᵥ c) = (a ⊗ᵥ b) ⊗ᵥ c) ∧
+      IsTensorProduct β := by
+  classical
+  have hAB := (vnTensor A B).isTensorProduct
+  have hBC := (vnTensor B C).isTensorProduct
+  have hABC := (vnTensor (VNT A B) C).isTensorProduct
+  letI : TopologicalSpace (VNT B C) := ultraweak (VNT B C)
+  letI : TopologicalSpace (VNT (VNT A B) C) := ultraweak (VNT (VNT A B) C)
+  letI : TopologicalSpace (VNT A B) := ultraweak (VNT A B)
+  haveI : T2Space (VNT (VNT A B) C) := vn_positive_basic_1.1
+  -- ι : ℬ → 𝒜 ⊗ ℬ, b ↦ 1 ⊗ b (116III.5)
+  obtain ⟨ι, hι⟩ := (tensor_simple_facts_5 (A := A) (B := B) 1 zero_le_one).2
+  -- Θ : ℬ ⊗ 𝒞 → (𝒜 ⊗ ℬ) ⊗ 𝒞, b ⊗ c ↦ (1 ⊗ b) ⊗ c
+  set Θ : NCPMap (VNT B C) (VNT (VNT A B) C) := tmap (nmiuNCP ι) (ncpId C) with hΘdef
+  have hΘt : ∀ (b : B) (c : C), Θ (b ⊗ᵥ c) = ((1 : A) ⊗ᵥ b) ⊗ᵥ c := by
+    intro b c
+    rw [hΘdef, tmap_apply, nmiuNCP_apply, ncpId_apply, hι]
+  have hΘcont : @Continuous (VNT B C) (VNT (VNT A B) C) (ultraweak (VNT B C))
+      (ultraweak (VNT (VNT A B) C)) ⇑Θ :=
+    ((p_uwcont (ncpPositive Θ)).out 2 0).mp Θ.preservesDirSups'
+  have hfun := tensor_functorial (nmiuNCP ι) (ncpId C)
+  have hΘmul : ∀ x y, Θ (x * y) = Θ x * Θ y :=
+    hfun.1 (fun a a' => map_mul ι.toStarAlgHom a a')
+      (fun b b' => by rw [ncpId_apply, ncpId_apply, ncpId_apply])
+  have hΘstar : ∀ x, Θ (star x) = star (Θ x) :=
+    hfun.2.1 (fun a => map_star ι.toStarAlgHom a)
+      (fun b => by rw [ncpId_apply, ncpId_apply])
+  have hΘone : Θ 1 = 1 :=
+    hfun.2.2.1 (map_one ι.toStarAlgHom) (by rw [ncpId_apply])
+  -- `L : 𝒜 → (𝒜 ⊗ ℬ) ⊗ 𝒞`, `a ↦ (a ⊗ 1) ⊗ 1`
+  set L : A →ₗ[ℂ] VNT (VNT A B) C :=
+    ((vnTensor (VNT A B) C).map.flip 1).comp ((vnTensor A B).map.flip 1) with hLdef
+  have hL : ∀ a : A, L a = (a ⊗ᵥ (1 : B)) ⊗ᵥ (1 : C) := fun a => rfl
+  set M : VNT B C →ₗ[ℂ] VNT (VNT A B) C :=
+    Θ.toCompletelyPositiveMap.toLinearMap with hMdef
+  have hM : ∀ t, M t = Θ t := fun _ => rfl
+  set β : A →ₗ[ℂ] VNT B C →ₗ[ℂ] VNT (VNT A B) C :=
+    (LinearMap.mul ℂ (VNT (VNT A B) C)).compl₁₂ L M with hβdef
+  have hβ : ∀ (a : A) (t : VNT B C), β a t = L a * Θ t := fun _ _ => rfl
+  -- multiplicativity, involution and unitality of `⊗ᵥ`
+  have hmulAB : ∀ (x x' : A) (y y' : B), (x ⊗ᵥ y) * (x' ⊗ᵥ y') = (x * x') ⊗ᵥ (y * y') :=
+    fun x x' y y' => ((vnTensor A B).isTensorProduct.miu.2.1 x x' y y').symm
+  have hmulT : ∀ (x x' : VNT A B) (y y' : C),
+      (x ⊗ᵥ y) * (x' ⊗ᵥ y') = (x * x') ⊗ᵥ (y * y') :=
+    fun x x' y y' => ((vnTensor (VNT A B) C).isTensorProduct.miu.2.1 x x' y y').symm
+  have hstarAB : ∀ (x : A) (y : B), star (x ⊗ᵥ y) = star x ⊗ᵥ star y :=
+    fun x y => (vnTensor A B).isTensorProduct.miu.2.2 x y
+  have hstarT : ∀ (x : VNT A B) (y : C), star (x ⊗ᵥ y) = star x ⊗ᵥ star y :=
+    fun x y => (vnTensor (VNT A B) C).isTensorProduct.miu.2.2 x y
+  have honeAB : (1 : A) ⊗ᵥ (1 : B) = 1 := (vnTensor A B).isTensorProduct.miu.1
+  have honeT : (1 : VNT A B) ⊗ᵥ (1 : C) = 1 := (vnTensor (VNT A B) C).isTensorProduct.miu.1
+  -- `β` on elementary tensors
+  have hβt : ∀ (a : A) (b : B) (c : C), β a (b ⊗ᵥ c) = (a ⊗ᵥ b) ⊗ᵥ c := by
+    intro a b c
+    rw [hβ, hΘt, hL, hmulT, hmulAB, mul_one, one_mul, one_mul]
+  -- the commutation `((a ⊗ 1) ⊗ 1) · Θ(t) = Θ(t) · ((a ⊗ 1) ⊗ 1)`
+  have hcomm : ∀ (a : A) (t : VNT B C), L a * Θ t = Θ t * L a := by
+    intro a
+    have hkey := tensor_linear_ext (vnTensor B C).isTensorProduct
+      ((LinearMap.mulLeft ℂ (L a)).comp M) ((LinearMap.mulRight ℂ (L a)).comp M)
+      (((mult_uws_cont (L a)).1).comp hΘcont) (((mult_uws_cont (L a)).2.1).comp hΘcont)
+      (fun b c => by
+        show L a * Θ ((vnTensor B C).map b c) = Θ ((vnTensor B C).map b c) * L a
+        show L a * Θ (b ⊗ᵥ c) = Θ (b ⊗ᵥ c) * L a
+        rw [hΘt, hL, hmulT, hmulT, hmulAB, hmulAB]
+        simp only [one_mul, mul_one])
+    intro t
+    exact congrFun (congrArg (fun f : VNT B C →ₗ[ℂ] VNT (VNT A B) C => ⇑f) hkey) t
+  have hmiu : MIUBilinear β := by
+    refine ⟨?_, ?_, ?_⟩
+    · show β 1 1 = 1
+      rw [hβ, hΘone, mul_one, hL, honeAB, honeT]
+    · intro a a' t t'
+      have hLm : L (a * a') = L a * L a' := by
+        rw [hL, hL, hL, hmulT, hmulAB]
+        simp only [one_mul, mul_one]
+      have hswap : L a * Θ t * (L a' * Θ t') = L a * L a' * (Θ t * Θ t') := by
+        rw [mul_assoc, ← mul_assoc (Θ t) (L a') (Θ t'), ← hcomm a' t, mul_assoc,
+          ← mul_assoc]
+      rw [hβ, hβ, hβ, hΘmul, hLm, hswap]
+    · intro a t
+      rw [hβ, hβ, star_mul, ← hΘstar, hL, hL, hstarT, hstarAB, star_one, star_one]
+      exact (hcomm (star a) (star t)).symm
+  -- the extension device: a product-functional identity holding on the
+  -- elementary tensors `b ⊗ c` holds on all of `ℬ ⊗ 𝒞`
+  have hext : ∀ (a : A) (h : NPFunctional (VNT (VNT A B) C)) (σ : NPFunctional A)
+      (χ : NPFunctional (VNT B C)),
+      (∀ (b : B) (c : C), (h ((a ⊗ᵥ b) ⊗ᵥ c) : ℂ) = σ a * χ (b ⊗ᵥ c)) →
+      ∀ t : VNT B C, (h (β a t) : ℂ) = σ a * χ t := by
+    intro a h σ χ hgen t
+    have hc1 : @Continuous (VNT B C) ℂ (ultraweak (VNT B C)) _
+        ⇑((npLin h).comp (β a)) :=
+      (continuous_ultraweak_npFunctional h).comp
+        ((mult_uws_cont (L a)).1.comp hΘcont)
+    have hc2 : @Continuous (VNT B C) ℂ (ultraweak (VNT B C)) _
+        ⇑((σ a) • npLin χ) := by
+      have hfun : ⇑((σ a) • npLin χ) = fun t : VNT B C => (σ a : ℂ) * χ t := by
+        funext s; rfl
+      rw [hfun]
+      exact continuous_const.mul (continuous_ultraweak_npFunctional χ)
+    have hkey := tensor_linear_ext hBC ((npLin h).comp (β a)) ((σ a) • npLin χ)
+      hc1 hc2 (fun b c => by
+        show (h (β a (b ⊗ᵥ c)) : ℂ) = (σ a : ℂ) * χ (b ⊗ᵥ c)
+        rw [hβt]
+        exact hgen b c)
+    exact congrFun (congrArg (fun f : VNT B C →ₗ[ℂ] ℂ => ⇑f) hkey) t
+  -- (1) density: **116IV**.1 applied to `{a ⊗ b}` and `𝒞`
+  have hunivC : @Dense C (ultraweak C) (Submodule.span ℂ (Set.univ : Set C) : Set C) := by
+    rw [Submodule.span_univ, Submodule.top_coe]
+    exact @dense_univ C (ultraweak C)
+  have hdense : @Dense (VNT (VNT A B) C) (ultraweak (VNT (VNT A B) C))
+      (Submodule.span ℂ {t : VNT (VNT A B) C | ∃ a t', t = β a t'} : Set _) := by
+    have hgen := tensor_generation_1 (A := VNT A B) (B := C)
+      {x : VNT A B | ∃ a b, x = a ⊗ᵥ b} Set.univ hAB.dense hunivC
+    refine Dense.mono ?_ hgen
+    refine Submodule.span_mono ?_
+    rintro x ⟨s, ⟨a, b, rfl⟩, c, -, rfl⟩
+    exact ⟨a, b ⊗ᵥ c, (hβt a b c).symm⟩
+  have hprodAB : ∀ (σ' : NPFunctional A) (τ' : NPFunctional B) (a : A) (b : B),
+      (prodNP hAB σ' τ' (a ⊗ᵥ b) : ℂ) = σ' a * τ' b :=
+    fun σ' τ' a b => prodNP_apply hAB σ' τ' a b
+  have hprodBC : ∀ (τ' : NPFunctional B) (υ' : NPFunctional C) (b : B) (c : C),
+      (prodNP hBC τ' υ' (b ⊗ᵥ c) : ℂ) = τ' b * υ' c :=
+    fun τ' υ' b c => prodNP_apply hBC τ' υ' b c
+  have hprodABC : ∀ (ρ' : NPFunctional (VNT A B)) (υ' : NPFunctional C)
+      (x : VNT A B) (c : C),
+      (prodNP hABC ρ' υ' (x ⊗ᵥ c) : ℂ) = ρ' x * υ' c :=
+    fun ρ' υ' x c => prodNP_apply hABC ρ' υ' x c
+  refine ⟨β, hβt, ?_⟩
+  refine (tensor_characterization (A := A) (B := VNT B C) Set.univ
+    (prodFunctionals hBC) centreSeparatingConj_univ
+    (centreSeparatingConj_prodFunctionals hBC) β hmiu).mpr ⟨hdense, ?_, ?_⟩
+  · -- (2) the product functionals exist: `β(σ, τ ⊗ υ) = (σ ⊗ τ) ⊗ υ`
+    rintro σ - χ ⟨τ, υ, rfl⟩
+    refine ⟨prodNP hABC (prodNP hAB σ τ) υ, fun a t => ?_⟩
+    refine hext a _ σ _ (fun b c => ?_) t
+    rw [hprodABC, hprodAB, hprodBC, mul_assoc]
+  · -- (3) they are centre separating: **116IV**.2, twice
+    have h1 := tensor_generation_2 (A := A) (B := B) Set.univ Set.univ
+      centreSeparatingConj_univ centreSeparatingConj_univ
+    have h2 := tensor_generation_2 (A := VNT A B) (B := C) _ Set.univ h1
+      centreSeparatingConj_univ
+    refine centreSeparatingConj_mono h2 ?_
+    rintro ψ ⟨χ, ⟨ω, -, θ, -, hχ⟩, υ, -, hψ⟩
+    refine ⟨ω, Set.mem_univ _, prodNP hBC θ υ, ⟨θ, υ, rfl⟩, fun a t => ?_⟩
+    refine hext a _ ω _ (fun b c => ?_) t
+    rw [hψ, hχ, hprodBC, mul_assoc]
+
+
+
+/-- **119IV** (`associator`, proc.tex:4031, Corollary) at a single universe:
+the associator exists and is unique when `𝒜`, `ℬ`, `𝒞` all live in `Type u`
+(which is what **114II** `tensor_uniqueness` requires).  The general form
+`exists_associator` lifts to this one. -/
+theorem exists_associator_same :
+    ∃ α : NMIUMap (VNT A (VNT B C)) (VNT (VNT A B) C),
+      (∀ (a : A) (b : B) (c : C), α (a ⊗ᵥ (b ⊗ᵥ c)) = (a ⊗ᵥ b) ⊗ᵥ c) ∧
+      Function.Bijective ⇑α ∧
+      ∀ α' : NMIUMap (VNT A (VNT B C)) (VNT (VNT A B) C),
+        (∀ (a : A) (b : B) (c : C), α' (a ⊗ᵥ (b ⊗ᵥ c)) = (a ⊗ᵥ b) ⊗ᵥ c) →
+        α' = α := by
+  classical
+  letI : TopologicalSpace (VNT B C) := ultraweak (VNT B C)
+  letI : TopologicalSpace (VNT (VNT A B) C) := ultraweak (VNT (VNT A B) C)
+  letI : TopologicalSpace (VNT A (VNT B C)) := ultraweak (VNT A (VNT B C))
+  haveI : T2Space (VNT (VNT A B) C) := vn_positive_basic_1.1
+  obtain ⟨β, hβt, hβ⟩ := isTensorProduct_assoc (A := A) (B := B) (C := C)
+  obtain ⟨α, hαe, hαb, hαu⟩ := tensor_uniqueness (vnTensor A (VNT B C)).map β
+    (vnTensor A (VNT B C)).isTensorProduct hβ
+  have hαe' : ∀ (a : A) (t : VNT B C), α (a ⊗ᵥ t) = β a t := hαe
+  have hαabc : ∀ (a : A) (b : B) (c : C), α (a ⊗ᵥ (b ⊗ᵥ c)) = (a ⊗ᵥ b) ⊗ᵥ c :=
+    fun a b c => by rw [hαe' a (b ⊗ᵥ c), hβt]
+  refine ⟨α, hαabc, hαb, fun α' hα' => ?_⟩
+  refine hαu α' (fun a t => ?_)
+  have hkey := tensor_linear_ext (vnTensor B C).isTensorProduct
+    ((nmiuLin α').comp ((vnTensor A (VNT B C)).map a))
+    ((nmiuLin α).comp ((vnTensor A (VNT B C)).map a))
+    ((nmiu_uwContinuous α').comp (continuous_ultraweak_vtmul_right a))
+    ((nmiu_uwContinuous α).comp (continuous_ultraweak_vtmul_right a))
+    (fun b c => by
+      show α' (a ⊗ᵥ (b ⊗ᵥ c)) = α (a ⊗ᵥ (b ⊗ᵥ c))
+      rw [hα' a b c, hαabc a b c])
+  have h1 := congrFun (congrArg (fun f : VNT B C →ₗ[ℂ] VNT (VNT A B) C => ⇑f) hkey) t
+  show α' (a ⊗ᵥ t) = β a t
+  rw [← hαe' a t]
+  exact h1
+
+
 section AssocBraid
 
 variable (𝒜 : Type u) (ℬ : Type v) (𝒞 : Type w)
@@ -7959,12 +8257,78 @@ theorem exists_associator :
       (∀ a b c, α (a ⊗ᵥ (b ⊗ᵥ c)) = (a ⊗ᵥ b) ⊗ᵥ c) ∧
       Function.Bijective ⇑α ∧
       ∀ α' : NMIUMap (VNT 𝒜 (VNT ℬ 𝒞)) (VNT (VNT 𝒜 ℬ) 𝒞),
-        (∀ a b c, α' (a ⊗ᵥ (b ⊗ᵥ c)) = (a ⊗ᵥ b) ⊗ᵥ c) → α' = α := sorry
+        (∀ a b c, α' (a ⊗ᵥ (b ⊗ᵥ c)) = (a ⊗ᵥ b) ⊗ᵥ c) → α' = α := by
+  classical
+  obtain ⟨A', _, _, _, _, εA, hεA⟩ := exists_vnLift.{u, max v w} 𝒜
+  obtain ⟨B', _, _, _, _, εB, hεB⟩ := exists_vnLift.{v, max u w} ℬ
+  obtain ⟨C', _, _, _, _, εC, hεC⟩ := exists_vnLift.{w, max u v} 𝒞
+  -- `ε_{ℬ𝒞} : ℬ ⊗ 𝒞 ≅ B' ⊗ C'` and `ε_{𝒜ℬ} : 𝒜 ⊗ ℬ ≅ A' ⊗ B'`
+  obtain ⟨X, _, _, _, _, l, hl⟩ := exists_vnLift.{max v w, u} (VNT ℬ 𝒞)
+  obtain ⟨Φ₁, hΦ₁b, hΦ₁e⟩ := exists_vnt_transfer εB hεB εC hεC l hl
+  set εBC : NMIUMap (VNT ℬ 𝒞) (VNT B' C') := nmiuComp (nmiuSymm Φ₁ hΦ₁b) l with hεBCdef
+  have hεBCb : Function.Bijective ⇑εBC := (nmiuSymm_bijective Φ₁ hΦ₁b).comp hl
+  have hεBCe : ∀ (b : ℬ) (c : 𝒞), εBC (b ⊗ᵥ c) = εB b ⊗ᵥ εC c := by
+    intro b c
+    show nmiuSymm Φ₁ hΦ₁b (l (b ⊗ᵥ c)) = εB b ⊗ᵥ εC c
+    rw [← hΦ₁e b c, nmiuSymm_apply_apply Φ₁ hΦ₁b]
+  obtain ⟨Y, _, _, _, _, m, hm⟩ := exists_vnLift.{max u v, w} (VNT 𝒜 ℬ)
+  obtain ⟨Φ₂, hΦ₂b, hΦ₂e⟩ := exists_vnt_transfer εA hεA εB hεB m hm
+  set εAB : NMIUMap (VNT 𝒜 ℬ) (VNT A' B') := nmiuComp (nmiuSymm Φ₂ hΦ₂b) m with hεABdef
+  have hεABb : Function.Bijective ⇑εAB := (nmiuSymm_bijective Φ₂ hΦ₂b).comp hm
+  have hεABe : ∀ (a : 𝒜) (b : ℬ), εAB (a ⊗ᵥ b) = εA a ⊗ᵥ εB b := by
+    intro a b
+    show nmiuSymm Φ₂ hΦ₂b (m (a ⊗ᵥ b)) = εA a ⊗ᵥ εB b
+    rw [← hΦ₂e a b, nmiuSymm_apply_apply Φ₂ hΦ₂b]
+  -- the two transports of the chosen tensor products
+  obtain ⟨Φ, hΦb, hΦe⟩ := exists_vnt_transfer εA hεA εBC hεBCb
+    (nmiuId (VNT 𝒜 (VNT ℬ 𝒞))) nmiuId_bijective
+  obtain ⟨Ψ, hΨb, hΨe⟩ := exists_vnt_transfer εAB hεABb εC hεC
+    (nmiuId (VNT (VNT 𝒜 ℬ) 𝒞)) nmiuId_bijective
+  have hΦe' : ∀ (a : 𝒜) (t : VNT ℬ 𝒞), Φ (εA a ⊗ᵥ εBC t) = a ⊗ᵥ t := hΦe
+  have hΨe' : ∀ (x : VNT 𝒜 ℬ) (c : 𝒞), Ψ (εAB x ⊗ᵥ εC c) = x ⊗ᵥ c := hΨe
+  obtain ⟨α₀, hα₀e, hα₀b, hα₀u⟩ := exists_associator_same (A := A') (B := B') (C := C')
+  refine ⟨nmiuComp Ψ (nmiuComp α₀ (nmiuSymm Φ hΦb)), fun a b c => ?_, ?_, ?_⟩
+  · have hΦabc : Φ (εA a ⊗ᵥ (εB b ⊗ᵥ εC c)) = a ⊗ᵥ (b ⊗ᵥ c) := by
+      rw [← hεBCe b c]; exact hΦe' a (b ⊗ᵥ c)
+    have hΨab : Ψ ((εA a ⊗ᵥ εB b) ⊗ᵥ εC c) = (a ⊗ᵥ b) ⊗ᵥ c := by
+      rw [← hεABe a b]; exact hΨe' (a ⊗ᵥ b) c
+    show Ψ (α₀ (nmiuSymm Φ hΦb (a ⊗ᵥ (b ⊗ᵥ c)))) = (a ⊗ᵥ b) ⊗ᵥ c
+    rw [← hΦabc, nmiuSymm_apply_apply Φ hΦb, hα₀e, hΨab]
+  · exact hΨb.comp (hα₀b.comp (nmiuSymm_bijective Φ hΦb))
+  · intro α' hα'
+    have hα'' : ∀ (x : A') (y : B') (z : C'),
+        (nmiuComp (nmiuSymm Ψ hΨb) (nmiuComp α' Φ)) (x ⊗ᵥ (y ⊗ᵥ z))
+          = (x ⊗ᵥ y) ⊗ᵥ z := by
+      intro x y z
+      obtain ⟨a, rfl⟩ := hεA.2 x
+      obtain ⟨b, rfl⟩ := hεB.2 y
+      obtain ⟨c, rfl⟩ := hεC.2 z
+      have hΦabc : Φ (εA a ⊗ᵥ (εB b ⊗ᵥ εC c)) = a ⊗ᵥ (b ⊗ᵥ c) := by
+        rw [← hεBCe b c]; exact hΦe' a (b ⊗ᵥ c)
+      have hΨab : Ψ ((εA a ⊗ᵥ εB b) ⊗ᵥ εC c) = (a ⊗ᵥ b) ⊗ᵥ c := by
+        rw [← hεABe a b]; exact hΨe' (a ⊗ᵥ b) c
+      show nmiuSymm Ψ hΨb (α' (Φ (εA a ⊗ᵥ (εB b ⊗ᵥ εC c)))) = _
+      rw [hΦabc, hα' a b c, ← hΨab, nmiuSymm_apply_apply Ψ hΨb]
+    have hkk := hα₀u _ hα''
+    refine DFunLike.ext _ _ fun x => ?_
+    have h1 : nmiuSymm Ψ hΨb (α' (Φ (nmiuSymm Φ hΦb x)))
+        = α₀ (nmiuSymm Φ hΦb x) :=
+      congrArg (fun f : NMIUMap (VNT A' (VNT B' C')) (VNT (VNT A' B') C') =>
+        f (nmiuSymm Φ hΦb x)) hkk
+    rw [nmiuSymm_apply_apply' Φ hΦb] at h1
+    show α' x = Ψ (α₀ (nmiuSymm Φ hΦb x))
+    rw [← h1, nmiuSymm_apply_apply' Ψ hΨb]
+
 
 /-- The associator `α_{𝒜,ℬ,𝒞}` (119IV), by choice. -/
 noncomputable def associator :
     NMIUMap (VNT 𝒜 (VNT ℬ 𝒞)) (VNT (VNT 𝒜 ℬ) 𝒞) :=
   (exists_associator 𝒜 ℬ 𝒞).choose
+
+variable {𝒜 ℬ 𝒞} in
+@[simp] theorem associator_apply (a : 𝒜) (b : ℬ) (c : 𝒞) :
+    associator 𝒜 ℬ 𝒞 (a ⊗ᵥ (b ⊗ᵥ c)) = (a ⊗ᵥ b) ⊗ᵥ c :=
+  (exists_associator 𝒜 ℬ 𝒞).choose_spec.1 a b c
 
 /-- **119IVc** (proc.tex:4072, Exercise): the bilinear map
 `(a, b) ↦ b ⊗ a : 𝒜 × ℬ → ℬ ⊗ 𝒜` is a tensor product; hence there is a
@@ -8312,28 +8676,116 @@ theorem vn_smc_associator_natural {A' B' C' : Type u} [CStarAlgebra A']
     [StarOrderedRing C'] [VonNeumannAlgebra C'] (f : NCPMap A A')
     (g : NCPMap B B') (h : NCPMap C C') (t : VNT A (VNT B C)) :
     associator A' B' C' (tmap f (tmap g h) t) =
-      tmap (tmap f g) h (associator A B C t) := sorry
+      tmap (tmap f g) h (associator A B C t) := by
+  letI : TopologicalSpace (VNT A (VNT B C)) := ultraweak _
+  letI : TopologicalSpace (VNT A' (VNT B' C')) := ultraweak _
+  letI : TopologicalSpace (VNT (VNT A' B') C') := ultraweak _
+  letI : TopologicalSpace (VNT (VNT A B) C) := ultraweak _
+  haveI : T2Space (VNT (VNT A' B') C') := vn_positive_basic_1.1
+  have hcf : @Continuous (VNT A (VNT B C)) (VNT A' (VNT B' C')) (ultraweak _)
+      (ultraweak _) ⇑(tmap f (tmap g h)) :=
+    ((p_uwcont (ncpPositive (tmap f (tmap g h)))).out 2 0).mp
+      (tmap f (tmap g h)).preservesDirSups'
+  have hcg : @Continuous (VNT (VNT A B) C) (VNT (VNT A' B') C')
+      (ultraweak _) (ultraweak _) ⇑(tmap (tmap f g) h) :=
+    ((p_uwcont (ncpPositive (tmap (tmap f g) h))).out 2 0).mp
+      (tmap (tmap f g) h).preservesDirSups'
+  have hkey := vnt_linear_ext₂
+    ((nmiuLin (associator A' B' C')).comp
+      (tmap f (tmap g h)).toCompletelyPositiveMap.toLinearMap)
+    ((tmap (tmap f g) h).toCompletelyPositiveMap.toLinearMap.comp
+      (nmiuLin (associator A B C)))
+    ((nmiu_uwContinuous (associator A' B' C')).comp hcf)
+    (hcg.comp (nmiu_uwContinuous (associator A B C)))
+    (fun a b c => by
+      show associator A' B' C' (tmap f (tmap g h) (a ⊗ᵥ (b ⊗ᵥ c)))
+        = tmap (tmap f g) h (associator A B C (a ⊗ᵥ (b ⊗ᵥ c)))
+      rw [tmap_apply, tmap_apply, associator_apply, associator_apply,
+        tmap_apply, tmap_apply])
+  exact congrFun
+    (congrArg (fun k : VNT A (VNT B C) →ₗ[ℂ] VNT (VNT A' B') C' => ⇑k) hkey) t
+
 
 /-- **119V** (`vn-smc`, proc.tex:4087, Theorem), pentagon: the pentagon
 coherence diagram for the associators commutes. -/
 theorem vn_smc_pentagon (t : VNT A (VNT B (VNT C D))) :
     associator (VNT A B) C D (associator A B (VNT C D) t) =
       tmapM (associator A B C) (nmiuId D)
-        (associator A (VNT B C) D (tmapM (nmiuId A) (associator B C D) t)) :=
-  sorry
+        (associator A (VNT B C) D (tmapM (nmiuId A) (associator B C D) t)) := by
+  letI : TopologicalSpace (VNT (VNT (VNT A B) C) D) := ultraweak _
+  haveI : T2Space (VNT (VNT (VNT A B) C) D) := vn_positive_basic_1.1
+  set F : NMIUMap (VNT A (VNT B (VNT C D))) (VNT (VNT (VNT A B) C) D) :=
+    nmiuComp (associator (VNT A B) C D) (associator A B (VNT C D)) with hF
+  set G : NMIUMap (VNT A (VNT B (VNT C D))) (VNT (VNT (VNT A B) C) D) :=
+    nmiuComp (tmapM (associator A B C) (nmiuId D))
+      (nmiuComp (associator A (VNT B C) D)
+        (tmapM (nmiuId A) (associator B C D))) with hG
+  have hkey := vnt_linear_ext₃ (nmiuLin F) (nmiuLin G)
+    (nmiu_uwContinuous F) (nmiu_uwContinuous G)
+    (fun a b c d => by
+      show associator (VNT A B) C D (associator A B (VNT C D) (a ⊗ᵥ (b ⊗ᵥ (c ⊗ᵥ d))))
+        = tmapM (associator A B C) (nmiuId D)
+            (associator A (VNT B C) D
+              (tmapM (nmiuId A) (associator B C D) (a ⊗ᵥ (b ⊗ᵥ (c ⊗ᵥ d)))))
+      rw [associator_apply, associator_apply, tmapM_apply, nmiuId_apply,
+        associator_apply, associator_apply, tmapM_apply, associator_apply,
+        nmiuId_apply])
+  exact congrFun
+    (congrArg (fun f : VNT A (VNT B (VNT C D)) →ₗ[ℂ] VNT (VNT (VNT A B) C) D => ⇑f)
+      hkey) t
+
 
 /-- **119V** (`vn-smc`, proc.tex:4087, Theorem), triangle: the unitor
 coherence diagram commutes: `(ρ_𝒜 ⊗ id) ∘ α = id ⊗ λ_𝒞`. -/
 theorem vn_smc_triangle (t : VNT A (VNT ℂ C)) :
     tmapM (rightUnitor A) (nmiuId C) (associator A ℂ C t) =
-      tmapM (nmiuId A) (leftUnitor C) t := sorry
+      tmapM (nmiuId A) (leftUnitor C) t := by
+  letI : TopologicalSpace (VNT A C) := ultraweak _
+  haveI : T2Space (VNT A C) := vn_positive_basic_1.1
+  set F : NMIUMap (VNT A (VNT ℂ C)) (VNT A C) :=
+    nmiuComp (tmapM (rightUnitor A) (nmiuId C)) (associator A ℂ C) with hF
+  set G : NMIUMap (VNT A (VNT ℂ C)) (VNT A C) :=
+    tmapM (nmiuId A) (leftUnitor C) with hG
+  have hkey := vnt_linear_ext₂ (nmiuLin F) (nmiuLin G)
+    (nmiu_uwContinuous F) (nmiu_uwContinuous G)
+    (fun a z c => by
+      show tmapM (rightUnitor A) (nmiuId C) (associator A ℂ C (a ⊗ᵥ (z ⊗ᵥ c)))
+        = tmapM (nmiuId A) (leftUnitor C) (a ⊗ᵥ (z ⊗ᵥ c))
+      rw [associator_apply, tmapM_apply, tmapM_apply, rightUnitor_apply,
+        nmiuId_apply, nmiuId_apply, leftUnitor_apply]
+      show (z • a) ⊗ᵥ c = a ⊗ᵥ (z • c)
+      rw [show ((z • a) ⊗ᵥ c) = z • (a ⊗ᵥ c) from
+          (map_smul ((vnTensor A C).map.flip c) z a),
+        show (a ⊗ᵥ (z • c)) = z • (a ⊗ᵥ c) from map_smul ((vnTensor A C).map a) z c])
+  exact congrFun (congrArg (fun f : VNT A (VNT ℂ C) →ₗ[ℂ] VNT A C => ⇑f) hkey) t
+
 
 /-- **119V** (`vn-smc`, proc.tex:4087, Theorem), hexagon: the braiding
 satisfies the hexagon identity. -/
 theorem vn_smc_hexagon (t : VNT A (VNT B C)) :
     associator C A B (braiding (VNT A B) C (associator A B C t)) =
       tmapM (braiding A C) (nmiuId B)
-        (associator A C B (tmapM (nmiuId A) (braiding B C) t)) := sorry
+        (associator A C B (tmapM (nmiuId A) (braiding B C) t)) := by
+  letI : TopologicalSpace (VNT (VNT C A) B) := ultraweak _
+  haveI : T2Space (VNT (VNT C A) B) := vn_positive_basic_1.1
+  set F : NMIUMap (VNT A (VNT B C)) (VNT (VNT C A) B) :=
+    nmiuComp (associator C A B)
+      (nmiuComp (braiding (VNT A B) C) (associator A B C)) with hF
+  set G : NMIUMap (VNT A (VNT B C)) (VNT (VNT C A) B) :=
+    nmiuComp (tmapM (braiding A C) (nmiuId B))
+      (nmiuComp (associator A C B) (tmapM (nmiuId A) (braiding B C))) with hG
+  have hkey := vnt_linear_ext₂ (nmiuLin F) (nmiuLin G)
+    (nmiu_uwContinuous F) (nmiu_uwContinuous G)
+    (fun a b c => by
+      show associator C A B (braiding (VNT A B) C (associator A B C (a ⊗ᵥ (b ⊗ᵥ c))))
+        = tmapM (braiding A C) (nmiuId B)
+            (associator A C B (tmapM (nmiuId A) (braiding B C) (a ⊗ᵥ (b ⊗ᵥ c))))
+      rw [associator_apply, braiding_apply, associator_apply, tmapM_apply,
+        nmiuId_apply, braiding_apply, associator_apply, tmapM_apply,
+        braiding_apply, nmiuId_apply])
+  exact congrFun
+    (congrArg (fun f : VNT A (VNT B C) →ₗ[ℂ] VNT (VNT C A) B => ⇑f) hkey) t
+
 
 /-- **119V** (`vn-smc`, proc.tex:4087, Theorem), symmetry:
 `γ_{ℬ,𝒜} ∘ γ_{𝒜,ℬ} = id` and `λ_ℬ ∘ γ_{ℬ,ℂ} = ρ_ℬ`. -/

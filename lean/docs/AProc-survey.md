@@ -1,15 +1,60 @@
 # `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–81, sessions 47–58)
 
-**Headline count: A/Proc has 46 code `sorry`s** after session 68.
-Per file: `Tensor` **13** (was 16), `QuantumLambda` 16,
-`Measurement` 10, `Duplicators` 6.  **All four compiler-verified in session 68
-(0 errors each; `lake build Theses.A.Proc.Duplicators` exits 0).**
+**Headline count: A/Proc has 40 code `sorry`s** after session 69.
+Per file: `Tensor` **8** (was 13), `QuantumLambda` 16,
+`Measurement` 10, `Duplicators` 6.  **All four compiler-verified in session 69
+(0 errors each, `lean` run per file against rebuilt oleans).**
+⚠️ The pre-session-69 headline said 46; the four per-file figures were right
+and sum to **45** — the total was wrong, not a file.
 **No statement in the project is `sorry`-tainted any more**: `dup_vna_is_monoid_4`
 went axiom-clean in session 68 when 119IVc closed.  (`grep -c sorry` over-counts, because the file
 docstrings mention `sorry` in prose; the code counts are the ones above.
 Note `\bsorry\b` also matches "sorry-ed" in prose — count the compiler's
 `declaration uses \`sorry\`` warnings instead.)
 
+
+> **Session 69 — 119IV `exists_associator` is CLOSED, and with it *all* of
+> 119V; 119II is not needed and its thesis proof has a gap.**  `Tensor.lean`
+> **13 → 8**; A/Proc **45 → 40**, 0 errors in all four files, everything new
+> axiom-clean.  **+457 / −6 lines**.
+>
+> * **The bilinear route (route 2) was taken and is much cheaper than costed.**
+>   `β(a,t) = ((a⊗1)⊗1)·Θ(t) : 𝒜 × (ℬ⊗𝒞) → (𝒜⊗ℬ)⊗𝒞` is a tensor product
+>   (`isTensorProduct_assoc`, ~130 lines), and 114II turns that into `α`.
+>   The costing's worry — "`prod_exists` for *arbitrary* np-functionals on
+>   `ℬ⊗𝒞`" — is void: **116VII `tensor_characterization` only asks for the
+>   product functionals over centre separating collections**, so `Γ` can be
+>   the products `{τ⊗υ}` (`centreSeparatingConj_prodFunctionals`) and the
+>   witness is `prodNP (prodNP σ τ) υ`.  The three conditions are then
+>   literally the thesis's for **119II**: 116IV.1 for density, `(σ⊗τ)⊗υ`,
+>   116IV.2 twice for centre separation.
+> * **`Θ` needs only `tmap` (115II), not `tmapM`** — `tmap (nmiuNCP (1⊗·))
+>   (ncpId 𝒞)` at a single universe — so the whole construction sits *above*
+>   `section TmapM` and nothing had to be moved.
+> * **The one new mathematical step** is the commutation of `(a⊗1)⊗1` with
+>   the range of `Θ`: continuous in `t` (45IV.2 + normality of `Θ`), true on
+>   `b⊗c`, hence everywhere.
+> * **New reusable device: `tensor_linear_ext`** — the vector-valued
+>   `prod_functional_unique`, whose target may be *any* Hausdorff topological
+>   `ℂ`-module — plus `vnt_linear_ext₂` / `vnt_linear_ext₃` for `𝒜⊗(ℬ⊗𝒞)`
+>   and `𝒜⊗(ℬ⊗(𝒞⊗𝒟))`.  ⚠️ The nested two carry the universe constraint
+>   `{B₁ : Type v} {C₁ : Type w} {A₁ : Type (max v w)}`, forced by 116III.5
+>   `continuous_ultraweak_vtmul_right`; every 119V use satisfies it.
+> * **All four remaining `vn_smc_*` parts fell in ~20 lines each** on those
+>   lemmas plus the new `@[simp] associator_apply`: triangle is bilinearity
+>   of `⊗`, hexagon/pentagon/naturality are rewriting on elementary tensors.
+>   **119V is complete.**
+> * **119II `triple_tensor` is parked, with an ERRATA row.**  Its thesis
+>   proof establishes *centre separation* of `(σ⊗τ)⊗υ` while condition (3) of
+>   108II asks for a *faithful* collection — the mismatch 116VII exists to
+>   bridge in the bilinear case, with no trilinear analogue given.  Closing it
+>   needs ~150 lines (Cauchy–Schwarz on conjugates by elementary tensors, then
+>   `dense_ultrastrong_tensorSpan`).  **Nothing else in the tree wants it.**
+> * **Next gate in `Tensor.lean`**: the parsec-1180 carriers block —
+>   **118II** (`cceil (a⊗b) = cceil a ⊗ cceil b`) and the four parts of
+>   **118IV** `carrier-tensor` — five of the remaining eight.  The other three
+>   are **115V** `tensor-injective`, **116III**.4 (joint ultraweak continuity
+>   of `⊗`, an unsolved thesis exercise — see ERRATA 116V) and **119II**.
 
 > **Session 68 — 119IVc `exists_braiding` and 119IVb `exists_unitors` are
 > CLOSED, and `dup_vna_is_monoid_4` is AXIOM-CLEAN.**  `Tensor.lean`
