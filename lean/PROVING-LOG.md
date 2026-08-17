@@ -17886,6 +17886,139 @@ Two observations for whoever takes `Duplicators.lean`:
 
 ---
 
+## Session 77 — `A/Proc`: **127III `duplicable` does NOT close** — its recorded remaining pieces were not the ones that were missing; the real gap is the `L^∞` presentation of a commutative von Neumann algebra, now built (worker on `Theses/A/Proc/`)
+
+A/Proc **28 → 28**, 0 errors in all four files (`Duplicators` 5,
+`QuantumLambda` 11, `Measurement` 10, `Tensor` 2, each source run through
+`lean` individually against rebuilt oleans).  **+500 lines, all in
+`Duplicators.lean`, all `private`** — the diff adds no public name, so
+nothing downstream needs rebuilding.  All seven new declarations are
+`#print axioms`-clean (`[propext, Classical.choice, Quot.sound]`, checked
+from inside the module since they are `private`).
+
+### 1. The brief's inventory of what 127III still needs was wrong
+
+The handoff recorded exactly two remaining pieces — "`ℓ^∞(X)` is duplicable"
+and "the `⊕ᵢ L^∞(Xᵢ)` carrier" — and said every blocker was gone.  The first
+is right and is now proved (§2).  The second badly understates the position:
+
+* **54XI.1 `cvn_faithful_1` does not give an `L^∞`.**  It gives the *measure*
+  on the almost clopen σ-algebra of `spec 𝒞` and nothing else.  What **129X**
+  and **130V** consume is `IsLinftyOf μ 𝒜 q`, i.e. a *presentation*
+  `q : 𝓛^∞(X) → 𝒜`, and 54XI's own statement of it ("`f ↦ f°` is an
+  nmiu-isomorphism `C(spec 𝒜) → L^∞(spec 𝒜)`") is explicitly **not rendered**
+  in the tree, because `L^∞` has no Mathlib carrier — the same reason **51IX**
+  `Linfty_vn` is still `sorry`.  So the presentation had to be built; it is
+  §3, ~350 lines, and it is the piece the survey called "the carrier".
+* **`Measure.restrict` destroys completeness, and 129X asks for it.**  The
+  thesis splits `X` into its discrete and continuous parts and applies 129X to
+  the continuous one.  `μ.restrict C` is *not* complete when `μ` is (a subset
+  of a `μ.restrict C`-null set can meet `D = Cᶜ` arbitrarily), and
+  `continuous_finite_measure_space_not_duplicable` takes `hμ : μ.IsComplete`
+  because **129VIII**'s Zorn argument needs it.  So the two-block split cannot
+  be done by restricting the measure; it has to be done by moving to a corner
+  algebra with a spectrum and measure of its own, which needs a *transfer* of
+  "continuous"/"discrete" between two different presentations of the same
+  algebra (§4).
+* **67IV.2 `central_projections_sums_2` was `sorry` in A/VN** when this
+  session began, and it is what the reassembly `𝒜 ≅ ⊕ᵢ zᵢ𝒜` needs:
+  surjectivity of `a ↦ (zᵢa)ᵢ` on norm-bounded families.  **The concurrent
+  A/VN worker closed it in this same round** (see its session-77 entry below),
+  so no private A/Proc copy is needed after all — but note the reassembly
+  target is `ℓ^∞(Σᵢ Yᵢ)`, and 67IV.2 is stated as "there is a unique `a` with
+  `cᵢa = bᵢ`", which is exactly the surjectivity clause wanted.
+
+**Revised costing for 127III: ~700–1000 further lines**, i.e. one to two more
+sessions, not "~100 lines".
+
+### 2. The easy direction is 35 lines, not ~100 (`linf_duplicable`)
+
+`linf_tensor` (**123I**.3) says `(f,g) ↦ ((x,y) ↦ f(x)g(y))` is a tensor
+product on `ℓ^∞(X × X)`, so **114II** `tensor_uniqueness` gives an
+nmiu-isomorphism `φ : ℓ^∞(X) ⊗ ℓ^∞(X) ≅ ℓ^∞(X × X)`; restriction along the
+diagonal is `linfMap (fun x => (x,x))` (**122II**), already in
+`QuantumLambda.lean`; and `linfMap diag ∘ φ` sends `f ⊗ g` to `f·g`, so
+**128XI** `duplicability_multiplication` makes it a duplicator.  The brief's
+two claims about this piece — that `linfMap` is what is needed and that 114II
+is in the right form — are both **correct**.
+
+### 3. The `L^∞` presentation (`exists_isLinftyOf_of_starAlgEquiv`)
+
+For an extremally disconnected compact Hausdorff `X` carrying the almost
+clopen σ-algebra and a measure `μ` whose null sets are exactly the meagre
+almost clopen sets, and a ∗-isomorphism `γ : 𝒞 ≅ C(X, ℂ)`, the map
+
+    q f  =  γ⁻¹(the continuous function agreeing with f almost everywhere)
+
+satisfies every clause of `IsLinftyOf μ 𝒞 q`.  Two lemmas carry it.
+
+* **`exists_contRep`: every bounded measurable `f` agrees off a meagre set
+  with a continuous function.**  This is *not* 54XI.2 `cvn_faithful_2`, which
+  gives only that `f` is continuous *at* almost every point — enough to
+  recognise measurable functions, not enough to name an element of `𝒞`.  The
+  construction is the classical one: `Cᵣ := clRep {f < r}` for rational `r`
+  (`clRep` needs extremal disconnectedness, and a new
+  `clRep_mono`), and `g(x) := inf {r : x ∈ Cᵣ}`.  Monotonicity of `r ↦ Cᵣ`
+  and `Cᵣ = ∅` below `−M`, `= X` above `M` make the infimum well defined;
+  `{g < r} = ⋃_{q<r} C_q` and `{g > r} = ⋃_{q>r} C_qᶜ` are open, which gives
+  continuity through `tendsto_order`; and `f = g` off
+  `⋃_q ({f < q} ∆ C_q)`, meagre by `clRep_equiv`.  The complex case splits
+  into real and imaginary parts.  ~180 lines.
+* **`eq_of_isMeagre_ne`: the continuous representative is unique** — two
+  continuous functions differing on a meagre set differ on an *open* meagre
+  set, empty by `baire_category_theorem`.  This is what makes `q`
+  well defined and what proves its `kernel` clause (a continuous function
+  supported on a null set vanishes).
+
+The `IsLinftyOf` clauses are then bookkeeping: `add`/`smul`/`mul`/`star_map`
+transport along `γ⁻¹` because a sum/product/… of representatives represents
+the sum/product/…, `one` because `1` represents itself, and `surj` because
+`γ(y)` is its own representative (a continuous function is measurable here
+because *every open set is almost clopen*, **54IX** `open_almost_clopen`).
+**Note the closure lemmas `bm_add`/`bm_mul`/… are never needed**: the clauses
+are proved from meagre-agreement alone, not from measurability of the
+combination.
+
+The lemma is stated for an abstract `X` with `hms : MeasurableSet s ↔
+AlmostClopen s` rather than for `almostClopenMS (characterSpace ℂ 𝒞)`, so
+that it can be applied to a *clopen subspace* of the spectrum as well —
+which is what §4 will need.
+
+### 4. What is left, precisely
+
+1. **The atom ↔ minimal-projection bridge.**  Under `IsLinftyOf μ 𝒜 q`, a
+   measurable `S` is an atom iff `q(1_S)` is a *minimal* projection (every
+   projection below `q(1_S)` is `0` or `q(1_S)`; the ↔ uses that a projection
+   in the image is `q` of an indicator, because `f² =ᵐ f`).  Hence
+   `ContinuousSpace μ` ⟺ `𝒜` has no minimal projections and (with 129VI)
+   `DiscreteSpace μ` ⟺ the minimal projections have supremum `1`.  This is
+   what lets 129X and 130V be applied to a corner *through its own* spectrum
+   and measure, sidestepping the `Measure.restrict` completeness failure.
+   ~150 lines.
+2. **The corner presentation.**  `duplicable_corner` (this session, ~90
+   lines) already shows a corner `e𝒜e` of a duplicable algebra is duplicable:
+   the compression `a ↦ eae` is positive (**25II**.1) and normal (**44VIII**
+   `ad_normal`), `cornerIncl` is an ncp-map, `tmap` (**115II**) tensors it
+   with itself, and `e(ab)e = ab` on the corner.  What is still needed is that
+   a corner of a *commutative* algebra with a faithful np-functional inherits
+   one (immediate: restrict `ω`), so that §3 applies to it.
+3. **The `cvn` decomposition and the reassembly.**  70III `cvn` gives
+   orthogonal central projections `zᵢ` with `projSup = 1` and `ωᵢ` faithful on
+   `zᵢ𝒜`.  Injectivity of `a ↦ (φᵢ(zᵢa))ᵢ : 𝒜 → ℓ^∞(Σᵢ Yᵢ)` is easy;
+   surjectivity is **67IV.2 `central_projections_sums_2`, closed in A/VN in
+   this same round**, applied to `bᵢ = φᵢ⁻¹(f|Yᵢ)`.
+4. **The trivial cases.**  `μ(X) = 0` forces `1 = q 1 = 0`, so `𝒜 ≅ ℓ^∞(∅)`;
+   and `discrete_ell_x` cannot be reached in that case because a
+   `DiscreteSpace` needs at least one atom.  This is the same
+   `Nontrivial`-friction that already forced 130V not to go through 130IV.
+
+### 5. Nothing for ERRATA or QUESTIONS
+
+No new defect: the thesis's proof of 127III is correct; what is missing is
+infrastructure our rendering deliberately does not carry (`L^∞` as a type).
+`docs/why-open.csv` gained a rewritten `duplicable` row and **lost the stale
+`vn_products_ncpsu` row** (it is proved), as the brief noted.
+
 ## Session 75 — `B/Dils`: **167I-furthermore `paschke_tensor_module`** (worker on `Theses/B/Dils/`)
 
 **Result: `SelfDual.lean` 7 → 6, `B/Dils` 15 → 14, 0 errors in all seven

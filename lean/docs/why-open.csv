@@ -28,7 +28,6 @@ mn_vna_3|open||49IV.3, normality of the amplification M_N f; recorded as genuine
 ngelfand_normal|open||53II.2, surveyed self-contained but with no route or estimate recorded
 ngelfand_vna|open||53II.1, surveyed self-contained but with no route or estimate recorded
 us_cont_normal|costed||45I.1 is preservesDirSups_of_continuousOn_effects with ultraweak replaced by ultrastrong
-vn_products_ncpsu|costed||47IV.3, categorical, with 47IV.1 and .2 proved; it gates 124III and 125bII in A/Proc
 AstarhaB_concrete|open||125eVII sits at the top of the parsec-1255 chain; no route recorded
 Fha_concrete|costed||long but self-contained: nothing it needs is sorry, the work is representatives and re-indexing
 centrally_similar_basic_2a|awaiting-ruling||all three claims false as printed (ERRATA 104III.2a); the carrier repair is not yet authorised
@@ -38,7 +37,7 @@ centrally_similar_basic_5|awaiting-ruling||false as printed; the equal-carrier r
 dup_vna_is_monoid_2|blocked|duplicable|132III.2 restates the 127III classification of duplicable algebras
 dup_vna_is_monoid_4|open||yellow: the proof is complete, but the statement mentions the braiding of 119IVc, which is now proved
 dup_vna_is_monoid_5|blocked|duplicable|132III.5 computes nmiu-maps through the l-infinity classification of 127III
-duplicable|costed||127III: 129X and 54XI.1 cvn_faithful_1 are now PROVED; what remains is an A/Proc-local direct-sum-of-L-infinity carrier (it mirrors 51IX Linfty_vn but does not use it) and the easy direction (l-infinity is duplicable) behind the tensor block
+duplicable|costed||127III: the easy direction (l-infinity is duplicable) and the corner form of 128XIII are now PROVED private lemmas, and so is the L-infinity presentation of a commutative vNA with a faithful np-functional (exists_isLinftyOf_of_starAlgEquiv, the missing half of 54XI); what remains is the atom/minimal-projection bridge needed to feed 129X and 130V through corners (mu.restrict is not complete), the cvn decomposition into corners, and the reassembly of the summands' l-infinity's (67IV.2 central_projections_sums_2, closed in A/VN in the same round, is the surjectivity) -- ~600-900 lines
 equaliser_lemma|open||125IV (Kornell); no route recorded, and its statement uses the sorried tmapM
 exists_braiding|open||119IVc, the exercise that (a,b) maps to b tensor a is a tensor product; not attempted
 exists_tmapM|costed||needs the tmap construction made universe-polymorphic (four universes); prerequisite for all of 119V

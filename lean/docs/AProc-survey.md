@@ -1,14 +1,60 @@
-# `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–82, sessions 47–76)
+# `Theses/A/Proc/` — full survey of the remaining `sorry`s (worker 71, 2026-08-16; revised workers 72–83, sessions 47–77)
 
-**Headline count: A/Proc has 28 code `sorry`s** after session 76.
+**Headline count: A/Proc has 28 code `sorry`s** after session 77.
 Per file: `Tensor` **2**, `QuantumLambda` **11**,
 `Measurement` **10**, `Duplicators` **5**.  **All four compiler-verified in
-session 76 (0 errors each, `lean` run per file against rebuilt oleans, after a
+session 77 (0 errors each, `lean` run per file against rebuilt oleans, after a
 successful `lake build Theses.A.Proc.Duplicators`).**
 **No statement in the project is `sorry`-tainted.**  (`grep -c sorry`
 over-counts, because the file docstrings mention `sorry` in prose; the code
 counts are the ones above.  Note `\bsorry\b` also matches "sorry-ed" in
 prose — count the compiler's `declaration uses \`sorry\`` warnings instead.)
+
+> **Session 77 — 127III `duplicable` did NOT close, and its recorded
+> remaining pieces were not the ones that were missing.**  A/Proc **28 → 28**,
+> 0 errors in all four files.  **+500 lines, all in `Duplicators.lean`, all
+> `private`, all axiom-clean** — no public name added, nothing downstream to
+> rebuild.
+>
+> * **The easy direction is proved and cost 35 lines, not ~100.**
+>   `linf_duplicable`: **123I**.3 `linf_tensor` + **114II** `tensor_uniqueness`
+>   give `ℓ^∞(X) ⊗ ℓ^∞(X) ≅ ℓ^∞(X × X)`, `linfMap (fun x => (x,x))` restricts
+>   along the diagonal, and **128XI** `duplicability_multiplication` turns the
+>   composite into a duplicator.  Both of the brief's claims about this piece
+>   were correct.
+> * **"The `⊕ᵢ L^∞(Xᵢ)` carrier" badly understated what was missing.**
+>   **54XI.1 `cvn_faithful_1` gives only the measure**, not a presentation;
+>   what 129X and 130V consume is `IsLinftyOf μ 𝒜 q`, and 54XI's own statement
+>   of that (`C(spec 𝒜) ≅ L^∞(spec 𝒜)`) is *not rendered* in the tree, for the
+>   same reason **51IX** `Linfty_vn` is `sorry`.  So it was built:
+>   **`exists_isLinftyOf_of_starAlgEquiv`** (~350 lines), whose one piece of
+>   real mathematics is **`exists_contRep`** — every bounded measurable
+>   function on an extremally disconnected compact Hausdorff space agrees off
+>   a meagre set with a *continuous* one, via `Cᵣ = clRep {f < r}` and
+>   `g(x) = inf {r : x ∈ Cᵣ}`.  **This is strictly more than 54XI.2**
+>   `cvn_faithful_2`, which gives only continuity *at* almost every point.
+>   Uniqueness of the representative is Baire (`eq_of_isMeagre_ne`).
+> * **`Measure.restrict` is not complete, and 129X asks for completeness.**
+>   The thesis's discrete/continuous split therefore *cannot* be done by
+>   restricting `μ`; the continuous part has to become a **corner algebra with
+>   its own spectrum and measure**.  `duplicable_corner` (this session, ~90
+>   lines: compression `a ↦ eae` positive by **25II**.1 and normal by
+>   **44VIII** `ad_normal`, `cornerIncl` ⊗ itself by **115II**) supplies the
+>   duplicability half.  What is missing is the **atom ↔ minimal-projection
+>   bridge**: under `IsLinftyOf μ 𝒜 q`, `S` is an atom iff `q(1_S)` is a
+>   minimal projection, so `ContinuousSpace`/`DiscreteSpace` become *algebraic*
+>   and transfer between presentations.  ~150 lines.
+> * **67IV.2 `central_projections_sums_2`, the reassembly's surjectivity, was
+>   closed in A/VN in this same round** — so the `⊕ᵢ` step needs no private
+>   copy.
+> * **Revised costing for 127III: ~600–900 further lines**, one to two
+>   sessions.  Remaining: the atom bridge, the faithful functional on a corner
+>   (immediate), the `cvn` assembly, and the `μ(X) = 0`/`𝒜 = {0}` edge case
+>   (a `DiscreteSpace` needs at least one atom, so `discrete_ell_x` is
+>   unreachable there — the same `Nontrivial` friction that kept 130V away
+>   from 130IV).
+> * Nothing for ERRATA or QUESTIONS.  `docs/why-open.csv`: the `duplicable`
+>   row is rewritten and the stale `vn_products_ncpsu` row deleted.
 
 > **Session 76 — 124III `second_adjunction` is CLOSED.**  `QuantumLambda`
 > **12 → 11**; A/Proc **29 → 28**, 0 errors in all four files, the new theorem
